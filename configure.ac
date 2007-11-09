@@ -4,7 +4,7 @@
 #
 #
 
-define([psi_version],[3.3.0])
+define([psi_version],[4.0.0])
 define([psi_bugreport],[psicode@users.sourceforge.net])
 AC_PREREQ(2.57)
 AC_INIT([psi],[psi_version],[psi_bugreport])
@@ -283,10 +283,10 @@ AC_SUBST(LDFLAGS)
 
 AC_CHECK_PROGS(PERL,perl,perl) AC_SUBST(PERL)
 
-AC_PROG_LATEX
-AC_PROG_LATEX2HTML
-AC_PROG_DVIPS
-AC_PROG_BIBTEX
+#AC_PROG_LATEX
+#AC_PROG_LATEX2HTML
+#AC_PROG_DVIPS
+#AC_PROG_BIBTEX
 
 ########
 ## Check for libraries
@@ -439,7 +439,7 @@ LIBS=$SAVE_LIBS
 # Check for libcompat.a availability
 case $target_vendor in
   apple)
-    AC_HAVE_LIBRARY(compat,CLIBS="-lcompat $CLIBS",AC_MSG_ERROR([Missing libcompat.a: See http://www.opensource.apple.com/ for more information]))
+    AC_HAVE_LIBRARY(compat,CLIBS="-lcompat $CLIBS",AC_MSG_WARN([Missing libcompat.a: See http://www.opensource.apple.com/ for more information]))
     echo "$CLIBS"
   ;;
 esac

@@ -1,0 +1,69 @@
+SHELL = /bin/sh
+
+.PHONY:	default all install depend clean dclean targetclean
+
+subdirs = lib bin util
+
+default: all
+
+all:
+	for dir in $(subdirs); \
+          do \
+            (cd $${dir}; echo Making in $${dir}; $(MAKE) all) || exit 1; \
+          done
+
+install:
+	for dir in $(subdirs); \
+          do \
+            (cd $${dir}; echo Making install in $${dir}; $(MAKE) install) || exit 1; \
+          done
+
+install_inc:
+	for dir in $(subdirs); \
+          do \
+            (cd $${dir}; echo Making install in $${dir}; $(MAKE) install_inc) || exit 1; \
+          done
+
+install_man:
+	for dir in $(subdirs); \
+          do \
+            (cd $${dir}; echo Making install in $${dir}; $(MAKE) install_man) || exit 1; \
+          done
+
+depend:
+	for dir in $(subdirs); \
+          do \
+            (cd $${dir}; echo Making depend in $${dir}; $(MAKE) depend) || exit 1; \
+          done
+
+clean:
+	for dir in $(subdirs); \
+          do \
+            (cd $${dir}; echo Making clean in $${dir}; $(MAKE) clean) || exit 1; \
+          done
+
+dclean:
+	for dir in $(subdirs); \
+          do \
+            (cd $${dir}; echo Making dclean in $${dir}; $(MAKE) dclean) || exit 1; \
+          done
+
+targetclean:
+	for dir in $(subdirs); \
+          do \
+            (cd $${dir}; echo Making clean in $${dir}; $(MAKE) targetclean) || exit 1; \
+          done
+
+top_srcdir = @top_srcdir@
+srcdir = @srcdir@
+datarootdir = @datarootdir@
+top_objdir = ..
+
+$(top_srcdir)/configure: $(top_srcdir)/configure.ac $(top_srcdir)/aclocal.m4
+	cd $(top_srcdir) && autoconf
+
+$(top_objdir)/config.status: $(top_srcdir)/configure
+	cd $(top_objdir) && ./config.status --recheck
+
+Makefile: $(srcdir)/Makefile.in $(top_objdir)/config.status
+	cd $(top_objdir) && CONFIG_FILES=src/Makefile ./config.status

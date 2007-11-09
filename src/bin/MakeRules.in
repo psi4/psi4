@@ -1,0 +1,117 @@
+
+#
+# Targets which don't generate files should be listed as dependencies
+# of the special target .PHONY
+#
+
+.PHONY:	all default install install_inc install_target install_man
+.PHONY:	 clean oclean uclean dclean target_clean
+
+#
+# This should be the first rule.  It will create a library without
+# installing it.
+#
+
+default:: $(PSITARGET)
+
+all: default
+
+#
+# run compilers or utilities
+#
+
+%.o : %.F
+
+%.$(F77SUF): %.F
+	$(PSIPP) $(FDEF) $(FINC) -o $@ $<
+
+%.$(OBJSUF): %.c
+	$(CC) $(CFLAGS) -c $< $(OUTPUT_OPTION)
+
+%.$(OBJSUF): %.$(F77SUF)
+	$(FC) $(FFLAGS) -c $< $(OUTPUT_OPTION)
+
+%.$(OBJSUF): %.C
+	$(CXX) $(CXXFLAGS) $(CXXINCLUDE) -c $< $(OUTPUT_OPTION)
+
+%.$(OBJSUF): %.cc
+	$(CXX) $(CXXFLAGS) $(CXXINCLUDE) -c $< $(OUTPUT_OPTION)
+
+#
+# do installations
+#
+
+install:: install_inc install_target install_man
+
+install_inc::
+
+install_man::
+
+$(PSITARGET): $(BINOBJ) $(PSILIBS)
+	$(MKDIRS) `dirname $(PSITARGET)`
+	$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+
+install_target:: $(PSITARGET)
+	$(MKDIRS) $(bindir)
+	$(INSTALL_PROGRAM) $< $(bindir)
+
+#
+# clean up
+#
+
+clean:: oclean dclean uclean targetclean
+
+oclean:
+	-rm -f *.o
+
+dclean:
+	-rm -f *.d
+
+uclean:
+	-rm -f *.u
+
+targetclean:
+	-rm -f $(PSITARGET)
+
+#
+# dependencies
+#
+
+ifneq ($(CCDEPENDSUF),none)
+%.d: %.c
+	$(CCDEPEND) $(CCDEPENDFLAGS) -c $(CPPFLAGS) $(CFLAGS) $< > /dev/null
+	sed 's/^$*.o/$*.$(OBJSUF) $*.d/g' < $(*F).$(CCDEPENDSUF) > $(@F)
+	/bin/rm -f $(*F).$(CCDEPENDSUF)
+else
+%.d: %.c
+	$(CCDEPEND) $(CCDEPENDFLAGS) -c $(CPPFLAGS) $(CFLAGS) $< | sed 's/^$*.o/$*.$(OBJSUF) $*.d/g' > $(@F)
+endif
+
+ifneq ($(CXXDEPENDSUF),none)
+%.d: %.cc
+	$(CXXDEPEND) $(CXXDEPENDFLAGS) -c $(CPPFLAGS) $(CXXFLAGS) $< > /dev/null
+	sed 's/^$*.o/$*.$(OBJSUF) $*.d/g' < $(*F).$(CXXDEPENDSUF) > $(@F)
+	/bin/rm -f $(*F).$(CXXDEPENDSUF)
+else
+%.d: %.cc
+	$(CXXDEPEND) $(CXXDEPENDFLAGS) -c $(CPPFLAGS) $(CXXFLAGS) $< | sed 's/^$*.o/$*.$(OBJSUF) $*.d/g' > $(@F)
+endif
+
+#
+# keep the configuration information and makefiles up-to-date
+#
+
+$(top_srcdir)/configure: $(top_srcdir)/configure.ac $(top_srcdir)/aclocal.m4
+	cd $(top_srcdir) && autoconf
+
+$(top_objdir)/config.status: $(top_srcdir)/configure
+	cd $(top_objdir) && ./config.status --recheck
+
+Makefile: $(srcdir)/Makefile.in $(top_objdir)/config.status
+	cd $(top_objdir) && CONFIG_FILES=src/bin/`basename $(srcdir)`/Makefile ./config.status
+
+../MakeVars: $(top_srcdir)/src/bin/MakeVars.in $(top_objdir)/config.status
+	cd $(top_objdir) && CONFIG_FILES=src/bin/MakeVars ./config.status
+
+../MakeRules: $(top_srcdir)/src/bin/MakeRules.in $(top_objdir)/config.status
+	cd $(top_objdir) && CONFIG_FILES=src/bin/MakeRules ./config.status

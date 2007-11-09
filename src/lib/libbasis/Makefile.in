@@ -1,0 +1,26 @@
+
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+PSITARGET = $(top_objdir)/lib/libPSI_basis.a
+
+TRUESRC = \
+basisset.cc shell.cc overlap.cc osrecur.cc gnorm.cc rotation.cc combinate.cc
+
+DEPENDINCLUDE = basisset.h shell.h overlap.h osrecur.h gnorm.h rotation.h combinate.h
+
+LIBOBJ = $(TRUESRC:%.cc=%.o)
+
+include ../MakeRules
+
+ifneq ($(DODEPEND),no)
+include $(LIBOBJ:%.o=%.d)
+endif
+
+install_inc:: $(DEPENDINCLUDE)
+	$(MKDIRS) $(incdir)/libbasis
+	$(INSTALL_INCLUDE) $^ $(incdir)/libbasis
+
+
