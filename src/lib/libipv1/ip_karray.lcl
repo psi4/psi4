@@ -1,0 +1,26 @@
+#ifndef _psi_src_lib_libipv1_ipkarray_lcl_
+#define _psi_src_lib_libipv1_ipkarray_lcl_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifdef LOCAL_HEADER_USED
+/* #  error included two local headers */#else
+#  define LOCAL_HEADER_USED
+#endif
+#ifndef LOCAL_STORAGE_CLASS
+#  define LOCAL_STORAGE_CLASS static
+#endif
+#ifndef LOCAL_FUNCTION
+#  define LOCAL_FUNCTION LOCAL_STORAGE_CLASS
+#endif
+#ifndef LOCAL_VA_FUNCTION
+#  define LOCAL_VA_FUNCTION LOCAL_STORAGE_CLASS
+#endif
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* header guard */

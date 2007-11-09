@@ -1,0 +1,21 @@
+#ifndef _psi_src_lib_libciomr_iomrparam_h_
+#define _psi_src_lib_libciomr_iomrparam_h_
+
+/* Change this macro to unsigned long long int for systems that allow it */
+#define PSI_FPTR unsigned long int
+
+#define MAX_UNIT 300
+#define MAX_VOLUME 8
+#define MAX_STRING 512
+
+#define PSIIO_UNOPENED 0
+#define PSIIO_SEQUENTIAL 1
+#define PSIIO_S_ASYNC 2
+#define PSIIO_R_ASYNC 3
+#define PSIIO_RAM 4
+#define PSIIO_FORTRAN 5
+
+#define IOOP_READ 1
+#define IOOP_WRITE 2
+
+#endif /* header guard */

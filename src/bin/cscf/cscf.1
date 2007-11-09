@@ -1,0 +1,389 @@
+.TH cscf 1 "30 May, 1991" "\*(]W" "\*(]D"
+.SH NAME
+cscf \- solves the Hartree-Fock equations
+
+.SH DESCRIPTION
+.LP
+The program
+.B cscf
+carries out the iterative procedure to solve the
+Hartree-Fock equations.
+
+.LP
+This program is restricted to
+.if n D2h
+.if t D\s-2\d2h\u\s0
+symmetry and its subgroups
+and the orbital occupations are required to be integers.
+Thus, certain pure
+angular momentum states derived from partial occupation of degenerate
+orbitals cannot be obtained with the present codes.  For example, the
+.if n 2PIu (doublet PI u)
+.if t \s-2\u2\d\s0\(*P\s-2\du\u\s0
+state of linear O-N-O derived from the lowest energy
+linear
+.if n (pi u)1
+.if t \(*p\s-2\d\zu\u\u1\d\s0
+configuration may only be computed as the
+.if n 2B2u (doublet B2u)
+.if t \s-2\u2\d\s0B\s-2\d2u\u\s0
+or
+.if n 2B3u (doublet B 3u)
+.if t \s-2\u2\d\s0B\s-2\d3u\u\s0
+component of the
+.if n 2PIu (doublet PI u)
+.if t \s-2\u2\d\s0\(*P\s-2\du\u\s0
+state,
+and the resulting spatial wavefunction will not have
+.if n PI
+.if t \(*P
+symmetry.  In a
+certain sense, however, this is desirable, as the energy will be a
+continuous function of the bending angle.  Calculating the energy of
+bent configurations as
+.if n 2B2u (doublet B 2u)
+.if t \s-2\u2\d\s0B\s-2\d2u\u\s0
+or
+.if n 2B3u (doublet B 3u)
+.if t \s-2\u2\d\s0B\s-2\d3u\u\s0
+and doing a pure
+.if n 2PIu (doublet PI u)
+.if t \s-2\u2\d\s0\(*P\s-2\du\u\s0
+state at linear geometries results in a pronounced discontinuity.
+
+.LP
+For the most part, triplet states resulting from double occupation
+of a doubly degenerate orbital, such as the
+.if n 3A2 (triplet A 2)
+.if t \s-2\u3\d\s0A\s-2\d2\u\s0
+state resulting from the
+.if n (e')2
+.if t e\(fm\s-2\u2\d\s0
+or
+.if n (e")2
+.if t e\(fm\(fm\s-2\u2\d\s0
+configurations in
+.if n D3h
+.if t D\s-2\d3h\u\s0
+symmetry, or
+the
+.if n 3SIGMAg (triplet SIGMA g)
+.if t \s-2\u3\d\s0\(*S\s-2\dg\u\s0
+state of a
+.if n (pi g)2
+.if t \(*p\s-2\d\zg\u\u2\d\s0
+or
+.if n (pi u)2
+.if t \(*p\s-2\d\zu\u\u2\d\s0
+configuration in
+.if n Dinfh (D infinity h)
+.if t D\s-2\d\(ifh\u\s0
+symmetry, will have the proper spatial symetry.
+The singlet states resulting from these same electronic configurations
+are inherently multiconfiguration and, as such, are not well represented
+by single configuration wavefunctions.
+
+.SH REFERENCES
+.LP
+PK-file method:
+.IP "1."
+R. C. Raffenetti, Chem. Phys. Lett. 20 (1973) 335.
+.LP
+Molecular symmetry and closed shell HF calculations:
+.IP "1."
+M.Dupuis, and H.F.King, Int. J. Quant. Chem.  11 (1977) 613.
+.LP
+DIIS for closed shell:
+.IP "1."
+P. Pulay, Chem. Phys. Lett. 73 (1980) 393.
+.IP "2."
+P. Pulay, J. Comp. Chem. 3 (1982) 556.
+.LP
+Coupling coefficients (alpha and beta) for open shell:
+.IP "1."
+C. C. J. Roothaan, Rev. Mod. Phys. 32 (1960) 179.
+.LP
+Damping:
+.IP "1."
+D. R. Hartree, "The Calculation of Atomic Structures" (Wiley: New
+York) 1957.
+.IP "2."
+M. C. Zerner and M. Hehenberger, Chem. Phys. Lett. 62 (1979) 550.
+.LP
+Level shifting:
+.IP "1."
+V. R. Saunders and I. H. Hillier, Int. J. Quant. Chem. 7 (1973)
+699.
+
+.sL
+.pN INPUT
+.pN FILE30
+.pN FILE34
+.eL "FILES REQUIRED"
+
+.sL
+.pN FILE92
+.pN FILE93
+.eL "TEMPORARY FILES USED"
+
+.sL
+.pN OUTPUT
+.pN FILE30     "	(MO coefficients)"
+.eL "FILES UPDATED"
+
+.sL
+.pN CHECK
+.pN FILE6
+.pN FILE31     
+.pN FILE49    
+.pN FILE47
+.eL "FILES GENERATED"
+
+.SH CONVERGING \fBCSCF\fP
+.LP
+For difficult open shell cases, it is recommended
+that an appropriate closed shell calculation be run first (add or
+remove an extra electron) and that this SCF vector then be used as
+a guess for the desired open shell wavefunction.  For
+TCSCF cases, it is always wise to run a closed shell (or perhaps
+the appropriate triplet) SCF first and then use this as a guess for
+the TCSCF.
+
+.LP
+For open shell systems, a level shift value of
+0.5 to 3.0 is recommended.  Start with a high value (2.0 - 3.0)
+for the first SCF calculation and then reduce it (to 0.5 - 1.0)
+for subsequent runs which use a converged SCF vector as the
+starting point.
+
+.LP
+It is extremely important to note that this version of the code no
+longer supports \fBOPENTYPE.  One must use the new keywords \fBREFERENCE
+and \fBMULTP to specify the type of SCF needed.
+
+.SH INPUT FORMAT
+.\" ---------------------------------------- Commonly used input here:
+.LP
+The
+.B cscf
+program
+searches through the default keyword path (first
+.B SCF
+and then
+.BR DEFAULT )
+for the following keywords:
+
+.IP "\fBLABEL =\fP \fIstring\fP"
+This is a character string to be included in the output.  This string is not
+used by the program.
+There is no default.
+
+.IP "\fBWFN =\fP \fIstring\fP"
+This is the type of wavefunction which is ultimately desired.
+The default is
+.BR SCF .
+
+.IP "\fBOPENTYPE \fBis \fBno \fBlonger \fBsupported"
+
+.IP "\fBREFERENCE =\fP \fIstring\fP"
+This specifies the type of SCF calculation
+one wants to do.  It can be one of
+.B RHF
+(for a closed shell singlet),
+.B ROHF
+(for a restricted open shell calculation),
+.B UHF
+(for an unrestricted open shell calculation),
+.B TWOCON
+(for a two configuration singlet), or
+.BR SPECIAL .
+If \fBSPECIAL\fP is given, then
+.if n alpha
+.if t \(*a
+and
+.if n beta
+.if t \(*b
+coupling coefficients must be given with the
+.B ALPHA
+and
+.B BETA
+keywords.
+The default is
+.BR RHF .
+
+.IP "\fBMULTP=\fP \fIinteger\fP"
+Specifies the multiplicity of the molecule.  Default is singlet.
+
+.IP "\fBCHARGE=\fP \fIinteger\fP"
+Specifies the charge of the molecule. Defauly is 0.
+
+.IP "\fBDOCC =\fP \fIinteger_vector\fP"
+This gives the number of doubly occupied orbitals in each
+irreducible representation.  There is no default.  If this 
+is not given, CSCF will attempt to guess at the occupations
+using the core hamiltonian.
+
+.IP "\fBSOCC =\fP \fIinteger_vector\fP"
+This gives the number of singly occupied orbitals in each
+irreducible representation. There is no default.
+
+.IP "\fBDERTYPE =\fP \fIstring\fP"
+This specifies the order of derivative that is to eventually be done.
+It is used by the
+.B scf
+program to determine if certain files are to be written and it is
+also used to determine the default convergence of the wavefunction.
+The default is
+.BR FIRST .
+
+.IP "\fBMAXITER =\fP \fIinteger\fP"
+This gives the maximum number of iterations.
+The default is 40.
+
+.IP "\fBCONVERGENCE =\fP \fIinteger\fP"
+This specifies how tightly the wavefunction will be converged.  
+Convergence is determined by comparing the RMS change in the density
+matrix ("delta P") to the given value.  The convergence criterion is
+.if n 10**(\-\fIinteger\fP).
+.if t 10\s-2\u(\-\fIinteger\fP)\d\s0.
+The default is 7
+if both \fBDERTYPE = NONE\fP and \fBWFN = SCF\fP are given
+and 10 otherwise.
+
+.IP "\fBLEVELSHIFT =\fP \fIreal\fP"
+This specifies the level shift. The default is 1.
+
+.IP "\fBDIRECT = \fP \fIboolean\fP"
+Specifies whether to do the SCF calculation with
+an integral direct technique.  The default is false.
+
+.IP "\fBPRINT_MOS = \fP \fIboolean\fP"
+Specifies whether to print the molecular orbitals or not.
+The default is false.
+
+.\" ---------------------------------------- Uncommonly used input here:
+.LP
+There are also a large number of less commonly used input parameters.
+If you do not understand what the following options mean, then
+make sure that they do not appear in your input.  The defaults will
+work in the overwhelming majority of cases.
+These are specified with the following keywords:
+
+.IP "\fBDELETE_INTS =\fP \fIboolean\fP"
+Integrals files
+will be erased if \fBWFN = SCF\fP and \fBDERTYPE = FIRST\fP
+or \fBDERTYPE = NONE\fP.  
+If you wish to keep 
+integrals files then set \fBDELETE_INTS\fP = false.  The default is true.
+
+.IP "\fBREORDER =\fP \fIboolean\fP"
+The molecular orbitals will be reordered if this is true, in which
+case, the \fBMOORDER\fP parameter must be present.
+The default is false.
+
+.IP "\fBMOORDER =\fP \fIinteger_vector\fP"
+This specifies a molecular orbital reordering vector.  It will only
+be used if \fBREORDER = YES\fP.  This vector contains first the
+ordering for the orbitals in the first irreducible representation
+and then the second and so on.  The first orbital of each
+irreducible representation is numbered 1.
+There is no default.
+
+.if n .ds MM MM
+.if t .ds MM n\s-2\dsocc\u\s0
+
+.IP "\fBALPHA =\fP \fIreal_vector\fP"
+If \fBOPENTYPE = SPECIAL\fR, then this parameter gives the
+.if n alpha
+.if t \(*a
+coupling coefficients.  The number of elements in this vector is
+\*(MM(\*(MM+1)/2, where \*(MM is the number of
+irreducible representations containing singly
+occupied molecular orbitals.
+There is no default.
+
+.IP "\fBBETA =\fP \fIreal_vector\fP"
+If \fBOPENTYPE = SPECIAL\fR, then this parameter gives the
+.if n beta
+.if t \(*b
+coupling coefficients.  The number of elements in this vector is
+\*(MM(\*(MM+1)/2, where \*(MM is the number of
+irreducible representations containing singly
+occupied molecular orbitals.
+There is no default.
+
+.IP "\fBGUESS =\fP \fIstring\fP"
+This option determines the type of initial guess at the eigenvector
+CSCF will use. The only valid option at the moment are : (1) \fBGUESS = CORE\fP,
+which causes it to use core Hamiltonian eigenvector to start the calculation;
+(2) \fBGUESS = AUTO\fP which results in an attempt to use the MO vector
+in the checkpoint file, or resorts to core guess if there is no eigenvector
+in that file. The default if \fBAUTO\fP.
+
+.IP "\fBIPRINT =\fP \fIinteger\fP"
+This is a print option.
+The default is 0.
+
+.IP "\fBMO_OUT =\fP \fIboolean\fP"
+Prints out the orbitals with symmetry and occupations 
+at the end of the calculation.  Default is true.
+
+.IP "\fBROTATE =\fP \fIboolean\fP"
+The molecular orbitals will not be rotated if this is false.
+The rotation only affects the virtual orbitals for open shell systems.
+This parameter must be true for correlated gradients and it must be
+false for second and higher derivatives.
+The default is false if \fBWFN = SCF\fP
+and true otherwise.
+
+.IP "\fBCHECK_ROT =\fP \fIboolean\fP"
+Check the molecular orbital rotation described above to ensure that
+no columns of the SCF eigenvector matrix are swapped by the rotation.
+Has no effect if \fBROTATE = false\fP.  The default is true.
+
+.IP "\fBCHECK_MO_ORTHOGONALITY =\fP \fIboolean\fP"
+Check if the molecular orbitals are orthonormal. Useful for debugging only.
+The default is false.
+
+.IP "\fBDIIS =\fP \fIboolean\fP"
+This determines whether diis will be used.  The default is
+true.
+
+.IP "\fBDIISSTART =\fP \fIinteger\fP"
+This gives the first iteration for which DIIS will be used.
+The default is 0.
+
+.IP "\fBNDIIS =\fP \fIinteger\fP"
+This gives the number of error matrices to use in the diis
+procedure.  The default is 6 for closed shell, 4 for open 
+shell, and 3 for tcscf.
+
+.IP "\fBDIISDAMP =\fP \fIreal\fP"
+This gives the damping factor for the diis procedure.  The 
+default is 0.0 for closed shell, 0.02 for open shell, and
+0.01 for tcscf.
+
+.IP "\fBINCR =\fP \fIreal\fP"
+This is used in tcscf to determine how often the ci    
+coefficients are recalculated.  A small number (~0.25)  
+will cause them to be recalculated nearly every scf      
+iteration.  The default is 0.25. 
+
+.IP "\fBDYN_ACC = \fP \fIboolean\fP"
+When performing direct scf this specifies whether dynamic integral
+accuracy cutoffs will be used.  Default is true (use dynamic cutoffs).
+Initial iterations are performed with integrals accurate to six digits.
+After density is converged to 10^-5 or 30 iterations are completed,
+full integral accuracy is used.  If scf convergence problems are experienced
+disabling dynamic cutoffs by setting this variable to false might help.
+
+.IP "\fBORTHOG_ONLY = \fP \fIboolean\fP"
+Sometimes in CASSCF or other non-HF/KS schemes for orbital optimization,
+it is useful to reorthogonalize MO's from other geometries for the current
+geometry so they can be used as an initial guess for the new MO's.  This
+can be performed by running CSCF with \fBORTHOG_ONLY = true\fP.  After
+the orbitals are orthogonalized, the program will quit without performing
+an SCF computation.  This keyword will be ignored if there are no
+previous orbitals in the checkpoint file.  Defaults to \fBtrue\fP if
+\fBWFN = DETCAS\fP.
+

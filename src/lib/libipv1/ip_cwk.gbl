@@ -1,0 +1,22 @@
+#ifndef _psi_src_lib_libipv1_ipcwk_gbl_
+#define _psi_src_lib_libipv1_ipcwk_gbl_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+void ip_cwk_root(void);
+void ip_cwk_clear(void);
+void ip_cwk_add(char *keyword);
+void ip_cwk_push(void);
+void ip_cwk_pop(void);
+ip_keyword_tree_t *ip_cwk_descend_tree(char *keyword);
+ip_keyword_tree_t *ip_descend_tree(ip_keyword_tree_t *kt, char *keyword);
+ip_value_t *ip_key_value(char *keyword);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* header guard */

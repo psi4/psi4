@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="StarOffice/5.1 (Linux)">
+	<META NAME="AUTHOR" CONTENT="Edward Valeev">
+	<META NAME="CREATED" CONTENT="20000105;16103400">
+	<META NAME="CHANGEDBY" CONTENT="Edward Valeev">
+	<META NAME="CHANGED" CONTENT="20000620;22292800">
+	<STYLE>
+	<!--
+		P.sdfootnote { margin-left: 0.2in; text-indent: -0.2in; margin-bottom: 0in; font-size: 10pt }
+		A.sdfootnoteanc { font-size: 57% }
+	-->
+	</STYLE>
+</HEAD>
+<BODY>
+<H3>General</H3>
+<P>Program <FONT COLOR="#ff3333">CINTS</FONT> can evaluate integrals
+over Gaussian functions of the following one- and two-electron
+operators which appear in quantum chemical theories:</P>
+<UL>
+	<LI><P>overlap</P>
+	<LI><P>electron kinetic energy</P>
+	<LI><P>nuclear attraction</P>
+	<LI><P>electron repulsion (ERI)</P>
+	<LI><P>anticoulombic (r<SUB>12</SUB>-operator)</P>
+	<LI><P>[r<SUB>12</SUB>,T<I><SUB>i</SUB></I>] operator (<I>i</I><SPAN STYLE="font-style: normal">=1,2)</SPAN></P>
+	<LI><P STYLE="font-style: normal">various one-electron property
+	operators (currently, only dipole moment and electronic nabla operators) 
+	</P>
+</UL>
+<P>First-order derivatives with respect to nuclear positions may be
+evaluated for the first four types of integrals. (Derivative)
+integrals are evaluated over symmetry-adapted Cartesian and Spherical
+Harmonics contracted Gaussian functions. Symmetry use is restricted
+to <I>D</I><SUB>2h</SUB> and it's subgroups. The program does not
+have theoretical limits on the number of basis functions or the
+maximum angular momentum of Gaussian functions in the basis.</P>
+<H3>Tasks</H3>
+<P>As integrals are evaluated, the program can either write them out
+to disk (available for only up-to first-order derivative integrals) or contract them
+with appropriate quantities to form various entities of interest. 
+</P>
+<H4>Disk storage</H4>
+<P>Integrals are written to disk in the new Integrals With Labels
+(<FONT COLOR="#ff3333">IWL</FONT>) format (see PSI 3 Programmer's
+Manual, section on <FONT COLOR="#ff3333">LIBIWL)</FONT><FONT COLOR="#000000">.
+<FONT COLOR="#ff0000">LIBIWL</FONT> functions provide the interface
+which may be used to access integrals files. Non-zero, unique with
+respect to index permutations<A CLASS="sdfootnoteanc" NAME="sdfootnote1anc" HREF="#sdfootnote1sym"><SUP>1</SUP></A>
+two-electron integrals are written in shell-quartet order, i.e. all
+integrals which belong to the same quartet of (symmetry unique)
+shells are written together. There are no markers between
+shell-quartets. However, there's a particular order in which
+shell-quartets of ERIs get stored to disk. Shell-quartets of ERIs
+which contribute to the same shell-quartet of supermatrix integrals P
+and K are written together. The last integral in each PK-block is
+written with its first index set to the negative of itself so that
+<FONT COLOR="#ff0000">CSCF</FONT> knows where it can stop and dump a
+complete block of P and K elements to disk.</FONT></P>
+<H4>Contraction</H4>
+<P><FONT COLOR="#000000">Depending on the keywords or command-line
+options specified, the following types of contractions can be
+performed:</FONT></P>
+<UL>
+	<LI><P>formation of the two-electron part of Fock matrix
+	(spin-restricted for closed- and high-spin open-shell systems and
+	spin-unrestricted cases) from ERIs (works in conjunction with <FONT COLOR="#ff0000">CSCF</FONT>)</P>
+	<LI><P>restricted integral-direct transformation to compute RHF MP2
+	energy</P>
+	<LI><P>restricted integral-direct transformation to compute and dump
+	MO integrals that appear in the RHF MP2-R12 energy expression (MO
+	integrals are used by program <FONT COLOR="#ff0000">MP2R12</FONT>)</P>
+	<LI><P>evaluate energy gradients at Hartree-Fock and correlated
+	levels</P>
+</UL>
+<P><BR><BR>
+</P>
+<DIV ID="sdfootnote1">
+	<P CLASS="sdfootnote" STYLE="margin-bottom: 0.2in"><A CLASS="sdfootnotesym" NAME="sdfootnote1sym" HREF="#sdfootnote1anc">1</A>Two-electron
+	integrals of Hermitian operators have the usual 8-fold permutation
+	symmetry. Operator [r<SUB>12</SUB>,T<I><SUB>i</SUB></I>] is
+	non-Hermitian, hence a permutation of its integrals's bra and ket
+	does not leave the integral invariant. See Wim Klopper's article in
+	Theor. Chim. Acta..</P>
+</DIV>
+</BODY>
+</HTML>

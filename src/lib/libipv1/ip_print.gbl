@@ -1,0 +1,18 @@
+#ifndef _psi_src_lib_libipv1_ipprint_gbl_
+#define _psi_src_lib_libipv1_ipprint_gbl_
+
+#include <stdio.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void ip_print_keyword(FILE *fp, ip_keyword_tree_t *st);
+void ip_print_tree(FILE *fp, ip_keyword_tree_t *tree);
+void ip_print_value(FILE *fp, ip_value_t *value);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* header guard */

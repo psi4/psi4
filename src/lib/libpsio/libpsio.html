@@ -1,0 +1,272 @@
+<html> <head>
+<title>LIBPSIO --- The PSI I/O Library</title>
+</head>
+
+<body>
+<hr>
+<center>
+<h1>Programmer's Manual for LIBPSIO: The PSI I/O Library
+</h1>
+</center>
+
+<center>T. Daniel Crawford <br>
+22 October 1998 <br>
+Updated: 27 July 2006<br>
+<a href="mailto:crawdad@vt.edu">crawdad@vt.edu</a></center><p>
+
+<hr>
+
+<h3><a name="philosophy">I. The structure and philosophy of the
+library</a></h3>
+
+Many I/O libraries for quantum chemistry packages (including those in
+the old PSI2 code) expect the programmer to know the byte-by-byte
+layout of the given binary file.  Accordingly, the primary read
+and write functions in such libraries require as an argument a global
+bytewise file pointer to the beginning of the desired data.  As a
+result, when this pointer is defined to be an unsigned four-byte
+integer (common on 32-bit computers), the total size of the direct
+access file is limited to 4 GB (2<sup>32</sup> bytes).  Furthermore,
+in order to avoid code duplication, this I/O design requires that one
+construct specialized libraries of functions (e.g., <tt>libfile30</tt>
+in PSI2) for interaction with particularly complicated files such as a
+checkpoint file.  Even slight modification of the file layout can
+require substantial changes to such libraries.<p>
+
+This PSI3 I/O library, <tt>libpsio</tt>, is intended to overcome these
+problems in two ways:
+<ul>
+  <li> Each file makes use of its own <b>table of contents (TOC)</b>
+       which contains file-global starting and ending addresses for each
+       data item.</li>
+  <li> Addresses to data items in the TOC are provided to the standard
+       read and write functions by the programmer as <b>entry-relative
+       page/offset pairs</b>, which are translated to file-global
+       addresses internally.</li>
+</ul><p>
+
+Data items in the TOC are identified by keyword strings (e.g.,
+<tt>"Nuclear Repulsion Energy"</tt>).  If the programmer wishes to
+read or write an entire TOC entry, he/she is required to provide only
+the TOC keyword and the entry size (in bytes) to obtain the data; the
+entry's global starting address is supplied by the TOC.  Furthermore,
+it is possible to read pieces of TOC entries (say a single buffer of a
+large list of two-electron integrals) by providing the appropriate TOC
+keyword, a size, and a starting address relative to the beginning of
+the TOC entry.  In short, the TOC design hides all information about
+the <em>global</em> structure of the file from the programmer and
+allows him/her to be concerned only with the structure of individual
+entries.<p>
+
+<h3><a name="file structure">II. The structure of <tt>libpsio</tt>
+file</a></h3>
+
+The first element in every <tt>libpsio</tt> file is a single
+integer, <tt>toclen</tt>, indicating the number of entries in the
+file.  Each entry is stored together with its TOC "header", i.e., the
+keyword-string and global-address information for the data.  When the
+file is opened, the first entry's TOC header is read from the file
+into an in-core TOC list.  If a second entry exists, the
+ending-address data from the first entry is used to <tt>lseek()</tt>
+to the next entry, whose header is read into the in-core TOC, and so
+on. If a new entry is added or an existing entry is modified (e.g.,
+extended), both the in-core TOC and the corresponding TOC header
+on-disk are updated automatically.  This prevents most cases of
+corruption of the file in case of a program crash.
+
+Apart from the <tt>toclen</tt> integer, the file itself is viewed by
+the library as a series of pages, each of which contains an identical
+number of bytes.  The global address of the beginning of a given entry
+is stored on the TOC as a page/offset pair comprised of the starting
+page and byte-offset on that page where the data reside.
+The <em>entry-relative</em> page/offset addresses which the programmer
+must provide work in exactly the same manner, but the 0/0 (PSIO_ZERO)
+position is taken to be the beginning of the desired entry rather than
+the beginning of the file.
+
+<h3><a name="basic interface">II. The user interface</a></h3>
+
+All of the functions needed to carry out basic I/O are described in
+this subsection.  Proper declarations of these routines are provided
+by the header file <tt><font color=purple>psio.h</font></tt>.  Note
+that before any open/close functions may be called, the input parsing
+library, <tt>libipv1</tt> must be initialized so that the necessary
+file striping information may be read from user input.  (See the
+PSI3 programmer's manual for details on the current version of the
+input parser.) Also note that <tt>ULI</tt> is used as an abbreviation
+for <tt>unsigned long int</tt> in the remainder of this manual.<p>
+
+<tt><b><font color=darkblue>int psio_init(void)</font></b></tt>: Before any
+files may be opened or the basic read/write functions of
+<tt>libpsio</tt> may be used, the global data needed by the library
+functions must be initialized using this function.<p>
+
+<tt><b><font color=darkblue>int psio_ipv1_config(void)</font></b></tt>:
+If the library is operator within a PSI module, the library can find
+its configuration data in the input file or in the .psirc file when this
+function is called. Therefore it should be called immediately after
+<tt>psio_init()</tt>. <p>
+
+<tt><b><font color=darkblue>int psio_done(void)</font></b></tt>: When
+all interaction with the files is complete, this function is used to
+free the library's global memory.<p>
+
+<tt><b><font color=darkblue>int psio_open(ULI unit, int
+status)</font></b></tt>: Opens the binary file identified by
+<tt>unit</tt>.  The <tt>status</tt> flag is a boolean used to indicate
+if the file is new (PSIO_OPEN_NEW) or if it already exists and is
+being re-opened (PSIO_OPEN_OLD).  If specified in the user input file,
+the file will be automatically opened as a multivolume (striped) file,
+and each page of data will be read from or written to each volume in
+succession.  (Note that a non-existent file can still be opened with
+status PSIO_OPEN_OLD.)<p>
+
+<tt><b><font color=darkblue>int psio_close(ULI unit, int
+keep)</font></b></tt>: Closes a binary file identified by
+<tt>unit</tt>.  The <tt>keep</tt> flag is a boolean used to indicate
+if the file's volumes should be deleted (0) or retained (1) after
+being closed.<p>
+
+<tt><b><font color=darkblue>int psio_read_entry(ULI unit, char *key, char
+*buffer, ULI size)</font></b></tt>: Used to read an entire TOC entry
+identified by the string <tt>key</tt> from <tt>unit</tt> into the
+array <tt>buffer</tt>.  The number of bytes to be read is given by
+<tt>size</tt>, but this value is only used to ensure that the read
+request does not exceed the end of the entry.  If the entry does not
+exist, an error is printed to <tt>stderr</tt> and the program will
+exit.<p>
+
+<tt><b><font color=darkblue>int psio_write_entry(ULI unit, char *key, char
+*buffer, ULI size)</font></b></tt>: Used to write an entire TOC entry
+idenitified by the string <tt>key</tt> to <tt>unit</tt> into the array
+<tt>buffer</tt>.  The number of bytes to be written is given by
+<tt>size</tt>.  If the entry already exists and its data is being
+overwritten, the value of <tt>size</tt> is used to ensure that the
+write request does not exceed the end of the entry.<p>
+
+<tt><b><font color=darkblue>int psio_read(ULI unit, char *key, char
+*buffer, ULI size, psio_address sadd, psio_address
+*eadd)</font></b></tt>: Used to read a fragment of <tt>size</tt> bytes
+of a given TOC entry identified by <tt>key</tt> from <tt>unit</tt>
+into the array <tt>buffer</tt>.  The starting address is given by the
+<tt>sadd</tt> and the ending address (that is, the entry-relative
+address of the next byte in the file) is returned in
+<tt>*eadd</tt>.<p>
+
+<tt><b><font color=darkblue>int psio_write(ULI unit, char *key, char
+*buffer, ULI size, psio_address sadd, psio_address
+*eadd)</font></b></tt>: Used to write a fragment of <tt>size</tt>
+bytes of a given TOC entry identified by <tt>key</tt> to <tt>unit</tt>
+into the array <tt>buffer</tt>.  The starting address is given by the
+<tt>sadd</tt> and the ending address (that is, the entry-relative
+address of the next byte in the file) is returned in
+<tt>*eadd</tt>.<p>
+
+The page/offset address pairs required by the preceeding read and
+write functions are supplied via variables of the data type
+<tt>psio_address</tt>, defined by:<p>
+
+<tt><b><font color=green>
+typedef struct {<br>
+  ULI page;<br>
+  ULI offset;<br>
+} psio_address;<br>
+</font></b></tt><br>
+
+The <tt>PSIO_ZERO</tt> defined as a global variable provides a
+convenient input for the 0/0 page/offset.<p>
+
+<h3><a name="TOC manipulation">III. Manipulating the table of contents</a></h3>
+
+In addition, to the basic open/close/read/write functions
+described above, the programmer also has a limited ability to directly
+manipulate or examine the data in the TOC itself.<p>
+
+<tt><b><font color=darkblue>int psio_tocprint(ULI unit, FILE
+*outfile)</font></b></tt>: Prints the TOC of <tt>unit</tt> in a
+readable form to <tt>outfile</tt>, including entry keywords and
+starting/ending addresses.<p>
+
+<tt><b><font color=darkblue>int psio_toclen(ULI unit, FILE
+*outfile)</font></b></tt>:  Returns the number of entries in the TOC
+of <tt>unit</tt>.<p>
+
+<tt><b><font color=darkblue>int psio_tocdel(ULI unit, char
+*key)</font></b></tt>: Deletes the TOC entry corresponding to
+<tt>key</tt>.  NB: Do not use this function if you are not a PSI3
+expert. This function only deletes the entry's reference from the TOC
+itself and does not remove the corresponding data from the file.
+Hence, it is possible to introduce data "holes" into the file.<p>
+
+<h3><a name="examples">IV. Some simple examples</a></h3>
+
+The following code illustrates the basic use of the library, as well
+as when/how the <tt>psio_init()</tt> and <tt>psio_done()</tt> functions
+should be called in relation to initialization of <tt>libipv1</tt>.
+
+<pre>
+<font color=purple>
+#include &#60;stdio.h&#62;
+#include &#60;libipv1/ip_lib.h&#62;
+#include &#60;libpsio/psio.h&#62;
+#include &#60;libciomr/libciomr.h&#62;
+</font>
+
+FILE *infile, *outfile;
+
+int main()
+{
+  int i, M, N;
+  double enuc, *some_data;<font color=green>
+  psio_address next;</font><font color=red>  /* Special page/offset structure */
+</font>
+
+  psi_start(&infile,&outfile,&psi_file_prefix,argc-1,argv+1,0);
+  ip_cwk_add(progid);
+
+<font color=red>
+  /* Initialize the I/O system */</font><font color=darkblue>
+  psio_init(); psio_ipv1_config();</font>
+
+<font color=red>
+  /* Open the file and write an energy */</font><font color=darkblue>
+  psio_open(31, PSIO_OPEN_NEW);</font>
+  enuc = 12.3456789; <font color=darkblue>
+  psio_write_entry(31, "Nuclear Repulsion Energy", (char *) &enuc,
+                   sizeof(double));</font><font color=darkblue>
+  psio_close(31,1);</font>
+
+<font color=red>
+  /* Read M rows of an MxN matrix from a file */</font>
+  some_data = init_matrix(M,N);
+
+<font color=darkblue>
+  psio_open(91, PSIO_OPEN_OLD);</font><font color=green>
+  next = PSIO_ZERO;</font><font color=red>/* Note use of the special variable */
+</font>  for(i=0; i < M; i++)<font color=darkblue>
+      psio_read(91, "Some Coefficients", (char *) (some_data + i*N),
+                N*sizeof(double), next, &next);
+  psio_close(91,0);</font>
+
+<font color=red>
+  /* Close the I/O system */</font><font color=darkblue>
+  psio_done();</font>
+
+  ip_done();
+}
+
+char *gprgid()
+{
+   char *prgid = "CODE_NAME";
+   return(prgid);
+}
+</pre>
+<p>
+
+<hr> <address>
+<a href="http://www.chem.vt.edu/chem-dept/~crawford/">T. Daniel Crawford</a>&#160; /
+<a href="mailto:crawdad@vt.edu">crawdad@vt.edu</a>
+</address>
+
+</body> </html>
+

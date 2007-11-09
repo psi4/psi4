@@ -1,0 +1,59 @@
+
+srcdir = @srcdir@
+VPATH = @srcdir@
+YACC = @YACC@
+LEX = @LEX@
+LEXLIB = @LEXLIB@
+
+include ../MakeVars
+
+# The Portland Group compilers don't accept K&R arguments by default
+ifneq (,$(findstring pgcc,$(CC)))
+CFLAGS += -Xs
+endif
+
+CINC += -I$(srcdir)
+
+PSITARGET = $(top_objdir)/lib/libPSI_ipv1.a
+
+DEFINES += -DNO_TEMPLATES
+
+CSRC =
+CXXSRC = ip_cwk.cc ip_alloc.cc ip_data.cc ip_error.cc ip_karray.cc ip_print.cc ip_read.cc
+TRUESRC = $(CSRC) $(CXXGEN) scan.l parse.y
+GENSRC = scan.c y.tab.c
+ALLCSRC = $(CSRC) $(GENSRC)
+ALLCXXSRC = $(CXXSRC)
+
+GBLINC = $(ALLCSRC:%.c=%.gbl) $(ALLCXXSRC:%.cc=%.gbl)
+
+ALLINCLUDE = ip_lib.h ip_error.h ip_types.h ip_global.h tmpl.h $(GBLINC)
+
+LIBOBJ = $(ALLCSRC:%.c=%.o) $(ALLCXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+y.tab.c y.tab.h: parse.y
+	$(YACC) -v -d $<
+
+scan.c: scan.l
+	$(LEX) -t $^ > scan.c
+
+install_inc:: $(ALLINCLUDE)
+	$(MKDIRS) $(incdir)/libipv1
+	$(INSTALL_INCLUDE) $^ $(incdir)/libipv1
+
+clean::
+	-/bin/rm -f y.tab.h y.tab.c y.output scan.c
+
+depend:: $(ALLINCLUDE) y.tab.h
+
+ifneq ($(DODEPEND),no)
+include $(LIBOBJ:%.o=%.d)
+endif
+
+#
+# in case DODEPEND is no
+#
+
+ip_read.o: y.tab.h

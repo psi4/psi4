@@ -1,0 +1,36 @@
+
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+PSITARGET = $(top_objdir)/lib/libPSI_iwl.a
+
+CXXSRC = \
+buf_close.cc   buf_rd_all_act.cc      buf_wrt_arr2.cc          buf_wrt_val_SI.cc \
+buf_fetch.cc   buf_rd_all_mp2r12a.cc  buf_wrt_arr_SI.cc        rdone.cc \
+buf_flush.cc   buf_rd_arr.cc          buf_wrt_arr_SI_nocut.cc  rdtwo.cc \
+buf_init.cc    buf_rd_arr2.cc         buf_wrt_mat.cc           sortbuf.cc \
+buf_put.cc     buf_wrt.cc             buf_wrt_mp2.cc           wrtone.cc \
+buf_rd.cc      buf_wrt_all.cc         buf_wrt_mp2r12a.cc       wrttwo.cc \
+buf_rd_all.cc  buf_wrt_arr.cc         buf_wrt_val.cc           buf_toend.cc
+
+
+DEPENDINCLUDE = iwl.h
+
+LIBOBJ = $(CXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+ifneq ($(DODEPEND),no)
+include $(LIBOBJ:%.o=%.d)
+endif
+
+install_inc:: iwl.h
+	$(MKDIRS) $(incdir)/libiwl
+	$(INSTALL_INCLUDE) $^ $(incdir)/libiwl
+
+install_man:: libiwl.txt
+	$(MKDIRS) $(txtdir)
+	$(INSTALL_INCLUDE) $^ $(txtdir)
+

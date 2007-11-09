@@ -1,0 +1,27 @@
+#ifndef _psi_src_lib_libipv1_ipdata_gbl_
+#define _psi_src_lib_libipv1_ipdata_gbl_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int ip_count(char *keyword, int *count, int n, ...);
+int ip_count_v(char *keyword, int *count, int n, int *v);
+int ip_boolean(char *keyword, int *boolean, int n, ...);
+int ip_boolean_v(char *keyword, int *boolean, int n, int *v);
+int ip_exist(char *keyword, int n, ...);
+int ip_exist_v(char *keyword, int n, int *v);
+int ip_data(char *keyword, char *conv, void *value, int n, ...);
+int ip_data_v(char *keyword, char *conv, void *value, int n, int *v);
+int ip_string(char *keyword, char **value, int n, ...);
+int ip_string_v(char *keyword, char **value, int n, int *v);
+int ip_value(char *keyword, ip_value_t **value, int n, ...);
+int ip_value_v(char *keyword, ip_value_t **value, int n, int *v);
+int ip_int_array(char *keyword, int *arr, int len);
+int ip_double_array(char *keyword, double *arr, int len);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* header guard */
