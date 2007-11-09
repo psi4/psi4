@@ -1,0 +1,15 @@
+#ifndef _psi_src_lib_libipv1_scan_gbl_
+#define _psi_src_lib_libipv1_scan_gbl_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+void showpos(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* header guard */

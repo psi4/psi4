@@ -1,0 +1,52 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=iso-8859-1">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="StarOffice/5.2 (Linux)">
+	<META NAME="AUTHOR" CONTENT="Edward Valeev">
+	<META NAME="CREATED" CONTENT="20000105;16103400">
+	<META NAME="CHANGEDBY" CONTENT="Edward Valeev">
+	<META NAME="CHANGED" CONTENT="20001201;13264800">
+</HEAD>
+<BODY>
+<H3>Valid keywords</H3>
+<UL>
+	<LI><P><B>PRINT</B> - this integer determines the amount of
+	information to be printed out. Defaults to 1; 0 if <B>--fock</B> is
+	specified on command-line. Print level thresholds for some
+	quantities of interest may be looked up in defines.h</P>
+	<LI><P><B>CUTOFF</B> - integer; 10^(-<B>CUTOFF</B>) is the cutoff on
+	the integrals to be computed. Defaults value is 15 and can be
+	changed by prior to compilation by editing defines.h. Keyword <B>CUTOFF</B>
+	is not-used when <FONT COLOR="#ff0000">CINTS</FONT> is run in direct
+	Hartree-Fock mode (<B>--fock</B> is specified).</P>
+	<LI><P><B>S_FILE, T_FILE, V_FILE, ERI_FILE</B> <SPAN STYLE="font-weight: medium">-
+	integers specifying file numbers to store overlap, kinetic energy,
+	potential energy, and electron-repulsion integrals. Defaults are 35,
+	35, 35, and 33.</SPAN></P>
+	<LI><P ALIGN=LEFT STYLE="font-weight: medium"><B>MEMORY</B> - number
+	of double-precision words to use. Valid only in MP2 and MP2-R12
+	modes. In other modes <FONT COLOR="#ff0000">CINTS</FONT> will use
+	the minimal amount of memory possible. Default is 2500000 (20 MB)
+	and can be changed by editing defines.h.</P>
+	<LI><P ALIGN=LEFT STYLE="font-weight: medium"><B>NUM_THREADS</B> -
+	number of threads to use. Values higher than 1 are valid only while
+	computing the Fock matrix and HF gradients. In other modes <FONT COLOR="#ff0000">CINTS</FONT>
+	will use just 1 thread Default is 1</P>
+	<LI><P ALIGN=LEFT STYLE="font-weight: medium"><B>RESTART</B> -
+	whether to a calculation is a restart. At the moment, only the
+	direct MP2-R12/A integrals transformation can be restarted. For
+	example, if your MP2-R12/A transformation is done in several passes
+	and the calculation terminates after a few passes, you may restart
+	the calculation provided you preserved the transformed integrals
+	files (files 72, 79, and 80). To do that, set <B>RESTART</B>=true
+	and <B>RESTART_TASK</B>=<I>i</I> where <I>i</I><SPAN STYLE="font-style: normal">
+	is the number of the pass which wasn't completed.</SPAN></P>
+</UL>
+<P><SPAN STYLE="font-weight: medium">Other keywords, such as <B>WFN</B>,
+<B>REFERENCE</B>, and <B>DERTYPE</B> are also checked in certain
+modes.</SPAN> It is done primarily to double-check users intentions
+and to detect inconsistencies in the program's input.</P>
+</BODY>
+</HTML>

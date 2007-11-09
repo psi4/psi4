@@ -1,0 +1,633 @@
+Manual for the PSI routines found in LIBCIOMR
+Still incomplete, but now in alphabetical order
+
+David Sherrill, July 1993
+
+Last modified by Edward Valeev, February 1998
+Updated descriptions of EIGSORT, SQ_RSP, RSP.
+
+This file is now obsolete and is replaced by the automatically
+generated documentation from doxygen --- David Sherrill, April 2002
+=====================================================================
+BLOCK_MATRIX
+
+double **block_matrix(int rows, int columns)
+
+   Function allocates a contiguous block of memory and an array of pointers
+  to the beginning of each row.  Returns a pointer to the first element
+   of the array of pointers.  Allows transparent use of memory in 2d-array
+   format, but keeps memory together such that it could be used with a
+   FORTRAN matrix routine.
+
+Parameters:
+   rows    = number of rows in the matrix
+   columns = number of columns in the matrix
+
+Returns:
+   Pointer to the first row pointer
+
+=====================================================================
+DOT_ARR
+
+void dot_arr(double *a, double *b, int size, double *value)
+
+   This function performs an inner (dot) product on two vectors
+of a given length and stores the result in variable 'value'.  The
+two vectors must be of type double.
+
+Parameters:
+   a     = pointer to first vector
+   b     = pointer to second vector
+   size  = length of vectors 
+   value = pointer to variable which will store the result
+
+Returns:
+   none.  The dot product is returned into 'value'.
+
+=====================================================================
+EIGSORT
+
+void eigsort(double *evals, double **evecs, int n)
+
+   This function sorts the vector evals (usually eigenvalues) in ascending
+(n > 0) or descending (n < 0) order, as well as the corresponding matrix
+(usually eigenvectors). The vector has length 'abs(n)', and the matrix has
+'abs(n)' columns.
+
+Parameters:
+   evals = eigenvalues
+   evecs = eigenvectors
+   n     = number of eigenvalues - if positive, then sort in ascending order,
+           else - in descending order.
+
+Returns: none
+
+=====================================================================
+EIVOUT
+
+void eivout(double **a, double *b, int m, int n, FILE *out)
+
+   This function prints out a matrix (usu eigenvectors) and an associated
+vector (usu eigenvalues).  The matrix has dimensions 'm' by 'n', and the
+vector has length 'n'.  The result is printed to the 'out' filestream.
+
+Parameters:
+   a   = matrix to print
+   b   = vector to print below matrix
+   m   = rows of a
+   n   = cols of a (or length of b)
+   out = output filestream
+
+Returns: none
+
+=====================================================================
+FFILE
+
+void ffile (FILE **unit, char *name, int code)
+
+   Function opens an ASCII file.
+
+Parameters:
+   unit = pointer to file pointer
+   name = filename 
+   code = 0 to open for writing
+          1 to open for appending
+          2 to open for reading 
+
+Returns: 
+   none
+
+Notes:
+   Close with fclose(*unit)
+
+=====================================================================
+FREE_BLOCK
+
+void free_block(double **array)
+
+   Function frees memory allocated by block_matrix routine.
+
+Parameters:
+   array  =  pointer to pointer to first row
+
+Returns:
+   none
+
+=====================================================================
+FREE_INT_MATRIX
+
+void free_int_matrix(int **array, int size)
+
+   Function free()'s the integer matrix allocated by init_int_matrix().
+
+Parameters:
+   array  =  pointer to integer matrix to free
+   size   =  number of rows in matrix to free
+
+Returns:
+   none
+
+=====================================================================
+FREE_MATRIX
+
+void free_matrix(double **array, int size)
+
+   Function frees up memory allocated to matrix (array).
+
+Parameters:
+   array = pointer to matrix
+   size  = number of rows in matrix
+
+Returns:
+   none
+
+=====================================================================
+I2SEC
+
+int i2sec(int n)
+
+   Function determines the sector address corresponding to the a given
+byte address.
+
+Parameters:
+   n = byte address in a file
+
+Returns:
+   sector in which the given byte address may be found
+
+Note:  This function actually returns a sector value that is one too large.
+However, since its return value is usually passed to rsetsa() or rread() 
+(vide infra), which reduces the sector address by one before setting the 
+global file pointer, this isn't really a problem (we hope).
+
+=====================================================================
+INIT_ARRAY
+
+double * init_array(int size)
+
+   Function allocates a single block of size integers and aborts if 
+the allocation cannot be made.  The block will be zeroed, and a 
+pointer to the new memory is returned.
+
+Parameters:
+   size = the size (in doubles) of the array to allocate
+
+Returns:
+   pointer to the array (double *)
+
+=====================================================================
+INIT_INT_ARRAY 
+
+int *init_int_array(int size)
+
+   Function initializes an integer array of 'size' integers
+and returns a pointer to the first element.
+
+Parameters:
+   size = number of integer words to dynamically allocate
+
+Returns:
+   a pointer to the first integer word allocated.
+
+=====================================================================
+INIT_INT_MATRIX
+
+int **init_int_matrix(int rows, int cols)
+
+   Function initializes (allocates and clears) a matrix of integers
+with dimensions 'rows' by 'cols' and returns a pointer to it (ptr
+to first row ptr).
+
+Parameters:
+   rows  =  number of rows in matrix
+   cols  =  number of columns in matrix
+
+Returns:
+   pointer to first row pointer
+
+=====================================================================
+INIT_MATRIX
+
+double ** init_matrix(int rows, int cols)
+
+   Function initializes a matrix of dimension (rows) x (cols) and 
+returns a pointer to a pointer to the first element (i.e. a pointer
+to the first row).  The elements of the matrix are all made zero.
+
+Parameters:
+   rows = number of rows in matrix
+   cols = number of columns in matrix
+
+Returns:
+   pointer to matrix (double **)
+
+=====================================================================
+LI2SEC
+
+int i2sec(unsigned long int n)
+
+   Function determines the sector address corresponding to the a given
+byte address.
+
+Parameters:
+   n = byte address in a file
+
+Returns:
+   sector in which the given byte address may be found
+
+Note:  This function actually returns a sector value that is one too large.
+However, since its return value is usually passed to rsetsa() or rread()
+(vide infra), which reduces the sector address by one before setting the 
+global file pointer, this isn't really a problem (we hope).
+
+=====================================================================
+MMULT
+
+void mmult(double **AF, int ta, double **BF, int tb, double **CF, int tc,
+   int nr, int nl, int nc, int add)
+
+   This function multiplies two matrices (AF and BF) and stores the
+result in a third matrix (CF).  All matrices must already have been 
+allocated.  The flags ta, tb, and tc allow for using the transposes of
+the three matrices.  The flag add, if set, tells the routine to add the
+results of the multiply to whatever may already be in matrix CF.
+
+Parameters:
+   AF   =  the left matrix in the multiply
+   BF   =  the right matrix in the multiply
+   CF   =  the matrix to store the result of AF * BF in
+   ta   =  whether to use the transpose of AF (1) or not (0)
+   tb   =  use transpose of BF or not
+   tc   =  whether to store the results in CF normally (0) or whether
+           to transpose them first (1)
+   nr   =  number of rows in the matrix multiply AFTER transposes have
+           been considered (i.e. the number of rows in (transposed) AF)
+   nl   =  number of "links" in multiply after transposes.  If ta=0,
+           the number of cols in AF.  If ta=1, then the rows of AF.
+   nc   =  num of cols in matrix multiply after transposes.  If tb=0,
+           the cols of BF.  If tb=1, then the rows of BF.
+   add  =  add AF * BF to the contents of CF (1) or overwrite them (0) 
+
+Returns: none
+
+=====================================================================
+PRINT_ARRAY
+
+void print_array(double *a, int m, FILE *out)
+
+   Function prints the lower triangle of a matrix stored in 
+lower-triangular form.
+
+Parameters:
+   a   = array of numbers to print
+   m   = one dimension of the square matrix
+   out = file pointer for output
+
+Returns:
+   none
+
+=====================================================================
+PRINT_MAT
+
+void print_mat(double **a, int rows, int cols, FILE *out)
+
+   Function prints a matrix (of doubles) to the output file.
+
+Parameters:
+   a    = matrix to print
+   rows = number of rows
+   cols = number of columns
+   out = file pointer for output
+
+Returns:
+   none
+
+=====================================================================
+RCLOSE
+
+void rclose(int unit, int status)
+
+   Function closes a binary file.  
+
+Parameters:
+   unit = number of file to close (i.e. 30 for file30)
+   status = how to close file.  3=keep unit, 4=erase unit.
+
+Returns:
+   none
+
+=====================================================================
+RFILE 
+
+void rfile(int unit)
+
+   Function opens a binary file (may be striped) for reading and/or
+writing.
+  
+Parameters:
+   unit = number id of file to open (i.e. 30 for file30)
+
+Returns:
+   none
+
+=====================================================================
+RGETSA
+
+void rgetsa(int unit, unsigned long int *iadr)
+
+   Function determines current sector address from current file pointer.
+
+Parameters:
+   unit = number id of current file
+   iadr = pointer to sector address
+
+Returns:
+   none
+
+=====================================================================
+RREAD
+
+void rread(int itape, int *array, int nlen, int irec)
+
+   Function reads data from binary file.  
+
+Parameters:
+   itape = number id of file for reading 
+   array = pointer to data buffer
+   nlen  = number of bytes to read into array
+   irec  = sector to start reading at (first one numbered 1)
+
+Returns:
+   none
+
+=====================================================================
+RSETSA
+
+void rsetsa(int unit, unsigned long int address)
+
+   This function sets the current file pointer for the unit to the 
+first byte of the given sector number.
+
+Parameters:
+   unit    = number id of current binary file
+   address = sector address.
+
+Returns:
+   none
+
+=====================================================================
+RSP
+
+void rsp(int nm, int n, int nv, double *array, double *e_vals, 
+   int matz, double **e_vecs, double toler)
+
+   This function diagonalizes a matrix in packed (lower triangular) form.
+Otherwise similar to sq_rsp() described above.
+
+Parameters:
+   nm     = rows of matrix 
+   n      = cols of matrix
+   nv     = number of elements in lower triangle of matrix (n*(n+1)/2)
+   array  = matrix to diagonalize
+   e_vals = array to hold eigenvalues
+   matz   = 0 (return no eigenvectors; eigenvalues in ascending order);
+            1 (return eigenvectors and eigenvalues in ascending order);
+            2 (return no eigenvectors; eigenvalues in descending order);
+            3 (return eigenvectors and eigenvalues in descending order);
+   e_vecs = matrix of eigenvectors (one column for each eigenvector)
+   toler  = tolerance for eigenvalues?
+
+Returns: none
+
+=====================================================================
+RWRIT
+
+void rwrit(int itape, int *array, int nlen, int irec)
+
+   Function writes nlen bytes into array starting at sector irec
+
+Parameters:
+   itape = number identifier for binary file to write
+   array = pointer to buffer to write
+   nlen  = number of bytes to write
+   irec  = number of record where writing is to begin
+
+Returns:
+   none
+
+=====================================================================
+SEC2I
+
+int sec2li(int n)
+
+   Function determines the byte address of the first element of sector n.
+
+Parameters:
+   n = the sector address
+
+Returns:
+   byte address of first element of the sector (int)
+   
+=====================================================================
+SEC2LI
+
+unsigned long int sec2li(int n)
+
+   Function determines the byte address of the first element of sector n.
+
+Parameters:
+   n = the sector address
+
+Returns:
+   byte address of first element of the sector (unsigned long int)
+   
+=====================================================================
+SREAD
+
+void sread(int itape, int *array, int nlen)
+
+   Function reads (nlen) bytes from unit number (itape) starting at the
+current file pointer location.  The incoming data is stored in the
+buffer (array).
+
+Parameters:
+   itape  = number identifier for binary file to read
+   array  = array of integers for storing incoming data
+   nlen   = number of bytes to read
+
+Returns:
+   none
+
+=====================================================================
+SQ_RSP
+
+void sq_rsp(int rows, int cols, double **matrix, double *eigenvalues,
+      int matz, double **eigenvectors, double toler) 
+
+   This function diagonalizes a matrix (of doubles) stored in square form.  
+The 'rows' and 'cols' parameters should be the same.  Parameter 
+'eigenvalues' is an array of 'rows' doubles (which should already have 
+been allocated with malloc or init_array) to store the eigenvalues, and 
+'eigenvectors' is a matrix (again, pre-allocated) of size 'rows' x 'cols' 
+which holds the eigenvectors (each eigenvector is stored as a column of 
+the 'eigenvectors' matrix).  I suggest 1.0E-14 for the tolerance.
+
+Parameters:
+   rows        = rows of matrix
+   cols        = cols of matrix (should == rows)
+   matrix      = matrix to diagonalize
+   eigenvalues = array to store eigenvalues
+   matz        = 0 (return no eigenvectors; eigenvalues in ascending order);
+                 1 (return eigenvectors and eigenvalues in ascending order);
+                 2 (return no eigenvectors; eigenvalues in descending order);
+                 3 (return eigenvectors and eigenvalues in descending order);
+   eigenvectors= matrix to store eigenvectors
+   toler       = tolerance for eigenvalues?
+
+Returns: none
+
+=====================================================================
+SQ_TO_TRI
+
+void sq_to_tri(double **mat, double *arr, int size)
+
+     This function takes a square matrix and returns the lower 
+     triangle as an array
+
+Parameters
+    mat  = the square matrix 
+    arr  = array to store lower triangle
+    size = number of rows or columns in the square matrix 
+
+Returns: none
+      
+=====================================================================
+SREW
+
+void srew(int itape)
+
+   Function rewinds the sequential binary file itape to beginning.
+
+Parameters:
+   itape = number identifier for binary file to rewind
+
+Returns:
+   none
+
+=====================================================================
+SWRIT
+
+void swrit(int itape, int *array, int nlen)
+
+   Function writes nlen bytes from array to file itape starting at the 
+current pointer location.  After the write completes, it sets the current
+pointer location to the start of the next sector.
+
+Parameters:
+   itape  = the unit number of the current file
+   array  = contains data to be written
+   nlen   = the number of bytes to be written to itape from array
+
+Returns:
+   none
+
+=====================================================================
+WREADW
+
+void wreadw(int tape, char *buffer, int nbytes, unsigned long int fword,
+            unsigned long int *nxtwrd)
+
+   This function reads nwords bytes to tape from buffer starting at
+fword.  The function modifies the value of nxtwrd which is the current
+pointer location.
+
+Parameters:
+   tape   = file number
+   buffer = data read will be placed in this buffer
+   nbytes = number of bytes to be read
+   fword  = first byte of buffer to be read
+   nxtwrd = pointer to hold file pointer position after read
+
+Returns:
+   none
+
+=====================================================================
+WWRITW
+
+void wwritw(int unit, char *buffer, int nbytes, unsigned long int fword, 
+            unsigned long int *nxtwrd)
+
+   This function writes nwords bytes to unit from buffer starting at
+fword.  The function modifies the value of nxtwrd which is the current
+pointer location.
+
+Parameters:
+   unit   = file number
+   buffer = contains data to be written
+   nbytes = number of bytes to be written
+   fword  = first byte of buffer to be written
+   nxtword= pointer to hold pointer position after write
+
+Returns: none
+
+=====================================================================
+ZERO_ARR
+
+void zero_arr(double *a, int size)
+
+   Function zeros out an array (a) of (size) doubles.
+
+Parameters:
+   a    = pointer to array to zero
+   size = number of elements (type double) in array to zero
+
+Returns:
+   none
+
+=====================================================================
+ZERO_INT_ARRAY
+
+void zero_int_array(int *a, int size)
+
+   Zeroes out an array of integers 'size' integers long.
+
+Parameters:
+   a    =  array to zero
+   size =  number of integer words in array to zero
+
+Returns:
+   none
+
+
+=====================================================================
+ZERO_INT_MATRIX
+
+void zero_int_matrix(int **array, int rows, int cols)
+
+   Function zeros an integer matrix created by init_int_matrix().
+
+Parameters:
+   array  =  pointer to integer matrix to zero
+   rows   =  number of rows in matrix
+   cols   =  number of columns in matrix
+
+Returns:
+   none
+
+=====================================================================
+ZERO_MAT
+
+void zero_mat(double **a, int rows, int cols)
+
+   Function zeros out a matrix (a) of doubles with (rows) rows and
+(cols) columns.
+
+Parameters:
+   a    = pointer to matrix to zero
+   rows = number of rows in matrix
+   cols = number of columns in matrix
+
+Returns:
+   none
+
+=====================================================================

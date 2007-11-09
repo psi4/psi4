@@ -1,0 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="StarOffice/5.1 (Linux)">
+	<META NAME="AUTHOR" CONTENT="Edward Valeev">
+	<META NAME="CREATED" CONTENT="20000105;16103400">
+	<META NAME="CHANGEDBY" CONTENT="Edward Valeev">
+	<META NAME="CHANGED" CONTENT="20000620;22333100">
+</HEAD>
+<BODY>
+<H3>Valid command-line options</H3>
+<OL>
+	<LI><P><B>--oeints</B> will cause <FONT COLOR="#ff0000">CINTS</FONT>
+	to compute standard one-electron integrals only. Subdirectory
+	Default_Ints had to be compiled in (it is by default).</P>
+	<LI><P><B>--teints</B> will cause <FONT COLOR="#ff0000">CINTS</FONT>
+	to compute ERIs only. Subdirectory Default_Ints had to be compiled
+	in (it is by default).</P>
+	<LI><P><B>--oeprop</B> will cause <FONT COLOR="#ff0000">CINTS</FONT>
+	to compute one-electron property integrals (overlap, dipole
+	moment, and integrals over electronic nabla operator) <EM>in AO basis</EM>.
+	Subdirectory OEProp_Ints had to be compiled in (it if by default).</P>
+	<LI><P><B>--fock</B> is used by <FONT COLOR="#ff0000">CSCF</FONT> to
+	cause <FONT COLOR="#ff0000">CINTS</FONT> to form the Fock matrices
+	directly. Subdirectory HF_Fock and DFT had to be compiled in (it is by
+	default). Do not use this option to run <FONT COLOR="#ff0000">CINTS</FONT>
+	standalone, as it will try to read an intermediate file produced by
+	<FONT COLOR="#ff0000">CSCF</FONT>.</P>
+	<LI><P><B>--mp2</B> will cause <FONT COLOR="#ff0000">CINTS</FONT> to
+	compute MP2 energy directly. Subdirectory MP2 had to be compiled in
+	(it is by default).</P>
+	<LI><P><B>--deriv1</B> will cause <FONT COLOR="#ff0000">CINTS</FONT>
+	to compute first-order energy derivatives. Subdirectory
+	Default_Deriv1 had to be compiled in (it is by default).</P>
+	<LI><P><B>--deriv1_ints</B> will cause <FONT COLOR="#ff0000">CINTS</FONT>
+	to compute symmetry adapted first-order derivative integrals. Subdirectory
+	Default_Deriv1 had to be compiled in (it is by default).</P>
+	<LI><P><B>--deriv2</B> will cause <FONT COLOR="#ff0000">CINTS</FONT>
+	to compute second-order energy derivative components and first-order
+	derivative Fock and overlap matrices for solving first-order CPHF equations.
+	Subdirectory Default_Deriv2 had to be compiled in (it is by default).</P>
+	<LI><P><B>--mp2r12</B> will cause <FONT COLOR="#ff0000">CINTS</FONT>
+	to compute non-standard MO integrals necessary to evaluate MP2-R12
+	energy with program MP2R12. Subdirectory MP2R12 had to be compiled
+	in (it is NOT by default).</P>
+	<LI><P ALIGN=LEFT><B>--r12ints</B> will cause <FONT COLOR="#ff0000">CINTS</FONT>
+	to compute non-standard AO integrals necessary to evaluate MP2-R12
+	energy. Subdirectories MP2R12 and R12_Ints had to be compiled in
+	(they are NOT by default).</P>
+</OL>
+<P ALIGN=LEFT>No command-line options will cause <FONT COLOR="#ff0000">CINTS</FONT>
+to evaluate and store standard one- and two-electron integrals. It is
+the default and most frequently used mode.</P>
+<P><BR><BR>
+</P>
+</BODY>
+</HTML>

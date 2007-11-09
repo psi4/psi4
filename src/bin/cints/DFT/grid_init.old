@@ -1,0 +1,268 @@
+#include<stdio.h>
+#include<math.h>
+#include <libipv1/ip_lib.h>
+#include <libciomr/libciomr.h>
+
+#include"defines.h"
+#define EXTERN
+#include"global.h"
+#include"lebedev_init.h"
+#include"physconst.h"
+#include"bragg.h"
+
+prim_atomic_grid_t init_uniform_prim_atomic_grid(int n_rpoints,int n_angpoints,int num_chunk);
+
+struct pruned_info_s {
+    int *alphas;
+    int *ang_points;
+};
+    
+prim_atomic_grid_t init_pruned_prim_atomic_grid(int myass);
+
+grid_t grid_init(){
+    int errcod,i,j;
+    int num_ang_grids;
+    int rpointstmp;
+    int angpoints;
+    int chunktmp;
+    int start,end;
+    int chunk_size;
+    int u_atom_num;
+    int Z_nuc;
+    
+    struct pruned_info_s *pruned_info;
+    
+    char *gridstring;
+    
+    /* Abstract Classes */
+    prim_atomic_grid_t prim_atomic_grid;
+    
+    /* Contcrete Object */
+    grid_t grid;
+    struct leb_chunk_s *chnk;
+    prim_leb_chunk_t *prim_chnk;
+    
+    
+    /* ---------------------------
+       Do all of the input parsing
+       and then initialize primitive
+       atomic grid
+       --------------------------*/
+    DFT_options.Bragg = init_array(Molecule.num_atoms);
+    
+    for(i=0;i<Molecule.num_atoms;i++){
+	DFT_options.Bragg[i]= Bragg_radii[(int) Molecule.centers[i].Z_nuc]*1.8897269;
+    }
+    
+    errcod = ip_string("GRID_SPEC",&gridstring,0);
+    if(errcod != IPE_OK){
+	
+	/* Uniform Grid */
+	
+	grid.label = "Euler-Mclaren / Lebedev Spheres";
+	
+	rpointstmp = 50;
+	errcod = ip_data("GRID_RPOINTS","%d",&rpointstmp,0);
+	grid.n_rad_points = rpointstmp;
+	
+	angpoints=302;
+	errcod = ip_data("GRID_ANGPOINTS","%d",&angpoints,0);
+	
+	/* -------------------------
+	   Construct Primitive atomic grid data 
+	   ------------------------*/
+	chunktmp = 4;
+	errcod = ip_data("CHUNK_NUM","%d",&chunktmp,0);
+	
+	prim_atomic_grid = init_uniform_prim_atomic_grid(rpointstmp,angpoints,chunktmp);
+
+	
+	
+    }
+    
+    else if(!strcmp(gridstring,"SG1") || !strcmp(gridstring,"SG-1")){
+	
+	/* Build SG1 information structures */
+	
+	pruned_info = (struct pruned_info_s *)
+	    malloc(sizeof(struct pruned_info_s)*Symmetry.num_unique_atoms);
+	
+	for(i=0;i<Symmetry.num_unique_atoms;i++){
+	    pruned_info[i] = (int *) init_array(4);
+	    Z_nuc =(int) Molecule.centers[Symmetry.ua2a[i]].Z_nuc;
+	    alpha[0] = SG1alpha1[Z_nuc]
+    }
+    else
+	punt("No Special Grids have been implemented in this code yet");
+
+    
+    /* ------------------------
+       Set up Concrete classes 
+    ---------------------------*/
+    
+    grid.atomic_grid = (struct atomic_grid_s *)
+	malloc(sizeof(struct atomic_grid_s)*Symmetry.num_unique_atoms);
+    
+    for(i=0;i<Symmetry.num_unique_atoms;i++){
+	
+	/* ------- Must take care of symmetry here ------- */
+	
+	u_atom_num = Symmetry.ua2a[i];
+	grid.atomic_grid[i].atom_num = u_atom_num;
+	grid.atomic_grid[i].atom_center = Molecule.centers[u_atom_num];
+	
+	/* --- Calculate the degeneracy of symmetry unique atoms ---*/
+	
+	if(Symmetry.nirreps > 1)
+	    grid.atomic_grid[i].atom_degen = Symmetry.nirreps/
+		Symmetry.dcr_deg[Symmetry.atom_positions[u_atom_num]]
+		[Symmetry.atom_positions[u_atom_num]];
+	else
+	    grid.atomic_grid[i].atom_degen = 1;
+	
+	/* --- These may not exactly be the Bragg-Slater Radii ---*/
+	/* ------------ See Bragg.h for the reference ------------*/
+	
+	grid.atomic_grid[i].Bragg_radii = 
+	    Bragg_radii[(int) Molecule.centers[Symmetry.ua2a[i]].Z_nuc];
+	
+	/* ---- Set up chunk information ----*/
+	
+	grid.atomic_grid[i].chunk_num = prim_atomic_grid.chunk_num;
+	
+	grid.atomic_grid[i].leb_chunk = (struct leb_chunk_s *)
+	    malloc(sizeof(struct leb_chunk_s)*grid.atomic_grid[i].chunk_num);
+	
+	for(j=0;j<grid.atomic_grid[i].chunk_num;j++){
+	    chnk = &(grid.atomic_grid[i].leb_chunk[j]);
+	    prim_chnk = &(prim_atomic_grid.leb_chunk[j]);
+	    
+	    chnk->radial_start = prim_chnk->radial_start;
+	    chnk->radial_end = prim_chnk->radial_end;
+	    chnk->size = prim_chnk->size;
+	    chnk->spheres = prim_chnk->spheres;
+	    
+	    chnk->bf_close_to_chunk = 
+		(int *)malloc(sizeof(int)*BasisSet.num_ao);
+	}
+    }
+    return grid;
+}
+	
+
+	
+	
+prim_atomic_grid_t init_uniform_prim_atomic_grid(int n_rpoints,int n_angpoints,int num_chunks){
+    int i,j,k;
+    int start,end;
+    int chunk_size;
+    double qr;
+    double r;
+    double rind;
+    double n_rpoints_d;
+    double four_pi_div_by_rps;
+    double x,y,z;
+    double drdq;
+    
+    prim_atomic_grid_t prim_atomic_grid;
+    leb_sphere_t unit_sphere;
+    leb_sphere_t *sph;
+    
+    /* Constants */
+
+    n_rpoints_d = (double) n_rpoints;
+    four_pi_div_by_rps = 4.0*_pi/n_rpoints_d;
+    prim_atomic_grid.chunk_num = num_chunks;
+/*-------------------------
+  Initialize the unit sphere, 
+  there is only one here 
+  ---------------------------*/
+    
+    unit_sphere = lebedev_init(n_angpoints);    
+    
+    /* ------------------------
+       Set up primitive chunks
+       -----------------------*/
+    
+    chunk_size = n_rpoints/num_chunks;
+    
+    prim_atomic_grid.leb_chunk = (prim_leb_chunk_t *)
+	malloc(sizeof(prim_leb_chunk_t)*num_chunks);
+    
+    for(i=0;i<num_chunks;i++){
+	
+	/* ----- Set up radial offsets for each chunk ------*/
+	
+	start = i*chunk_size+1;
+	end = start+chunk_size;
+	
+	
+	if(i == num_chunks-1){
+	    end = n_rpoints;
+	    chunk_size = end-start; 
+	}
+	
+      
+    
+    /*------------------------------
+      Here I am actually going to 
+      calculate the r values as
+      if the Bragg radii was 1.0.
+      This way the primitive 
+      atomic grid will be self contained
+      ------------------------------*/
+	
+	prim_atomic_grid.leb_chunk[i].spheres = (leb_sphere_t *)
+	    malloc(sizeof(leb_sphere_t)*chunk_size);
+	
+	for(j=0;j<chunk_size;j++){
+	    sph = &(prim_atomic_grid.leb_chunk[i].spheres[j]);
+	    
+	    rind = (double) j + (double) start;
+	    
+	    qr = rind/n_rpoints_d;
+	    
+	    /* -------------------------------
+	     Straight from the Murray, Handy, Laming paper
+	     for mr = 2 
+	     ----------------------------------*/
+	    
+	    r = rind*rind/((n_rpoints_d - rind)
+			       *(n_rpoints_d - rind));
+	    
+	    drdq = four_pi_div_by_rps*r*r*2.0*qr/((1-qr)*(1-qr)*(1-qr));
+	    
+	    sph->points = (leb_point_t *)malloc(sizeof(leb_point_t)*n_angpoints);
+	    
+	    for(k=0;k<n_angpoints;k++){
+
+		sph->points[k].p_cart.x = 
+		    unit_sphere.points[k].p_cart.x*r;
+		sph->points[k].p_cart.y =
+		    unit_sphere.points[k].p_cart.y*r;
+		sph->points[k].p_cart.z =
+		    unit_sphere.points[k].p_cart.z*r;
+		sph->points[k].ang_weight =
+		    unit_sphere.points[k].ang_weight;
+	    }
+
+	    sph->r = r;
+	    sph->drdq = drdq;
+	    sph->n_ang_points = unit_sphere.n_ang_points;
+	}
+ 
+	prim_atomic_grid.leb_chunk[i].radial_start = start;
+	prim_atomic_grid.leb_chunk[i].radial_end = end;
+	prim_atomic_grid.leb_chunk[i].size = chunk_size;    
+    }
+    return prim_atomic_grid;
+}	   
+
+	   
+	   
+	   
+
+
+
+
+

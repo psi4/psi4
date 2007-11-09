@@ -1,0 +1,66 @@
+
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+#CXXFLAGS += -DDPD_TIMER
+#CXXFLAGS += -DDPD_DEBUG
+#CXXFLAGS += -DUSE_DMALLOC
+
+PSITARGET = $(top_objdir)/lib/libPSI_dpd.a
+
+CXXSRC = \
+4mat_irrep_print.cc           buf4_symm2.cc      file2_trace.cc                \
+buf4_axpy.cc                  close.cc           file4_cache.cc                \
+buf4_close.cc                 contract222.cc     file4_close.cc                \
+buf4_copy.cc                  contract244.cc     file4_init.cc                 \
+buf4_dirprd.cc                contract422.cc     file4_init_nocache.cc         \
+buf4_dot.cc                   contract424.cc     file4_mat_irrep_close.cc      \
+buf4_dump.cc                  contract442.cc     file4_mat_irrep_init.cc       \
+buf4_init.cc                  contract444.cc     file4_mat_irrep_rd.cc         \
+buf4_mat_irrep_close.cc       dot13.cc           file4_mat_irrep_rd_block.cc   \
+buf4_mat_irrep_close_block.cc dot14.cc           file4_mat_irrep_row_close.cc  \
+buf4_mat_irrep_init.cc        dot23.cc           file4_mat_irrep_row_init.cc   \
+buf4_mat_irrep_init_block.cc  dot24.cc           file4_mat_irrep_row_rd.cc     \
+buf4_mat_irrep_rd.cc          error.cc           file4_mat_irrep_row_wrt.cc    \
+buf4_mat_irrep_rd_block.cc    file2_axpy.cc      file4_mat_irrep_row_zero.cc   \
+buf4_mat_irrep_row_close.cc   file2_cache.cc     file4_mat_irrep_wrt.cc        \
+buf4_mat_irrep_row_init.cc    file2_close.cc     file4_mat_irrep_wrt_block.cc  \
+buf4_mat_irrep_row_rd.cc      file2_copy.cc      file4_print.cc                \
+buf4_mat_irrep_row_wrt.cc     file2_dirprd.cc    init.cc                       \
+buf4_mat_irrep_row_zero.cc    file2_dot.cc       trans4_close.cc               \
+buf4_mat_irrep_shift13.cc     file2_init.cc      trans4_init.cc                \
+buf4_mat_irrep_shift31.cc     file2_mat_close.cc trans4_mat_irrep_close.cc     \
+buf4_mat_irrep_wrt.cc         file2_mat_init.cc  trans4_mat_irrep_init.cc      \
+buf4_mat_irrep_wrt_block.cc   file2_mat_print.cc trans4_mat_irrep_rd.cc        \
+buf4_dot_self.cc              file2_mat_rd.cc    trans4_mat_irrep_shift13.cc   \
+buf4_print.cc                 file2_mat_wrt.cc   trans4_mat_irrep_shift31.cc   \
+buf4_scm.cc                   file2_dot_self.cc  trans4_mat_irrep_wrt.cc       \
+buf4_sort.cc                  file2_print.cc     set_default.cc                \
+file2_axpbycz.cc      \
+buf4_axpbycz.cc                \
+buf4_symm.cc                  buf4_scmcopy.cc    file2_scm.cc                  \
+buf4_sort_ooc.cc              block_matrix.cc    memfree.cc                    \
+trace42_13.cc                 buf4_sort_axpy.cc  3d_sort.cc \
+T3_AAA.cc                     T3_AAB.cc          T3_RHF.cc  T3_RHF_ic.cc \
+cc3_sigma_RHF.cc              cc3_sigma_UHF.cc   cc3_sigma_RHF_ic.cc
+
+DEPENDINCLUDE = dpd.h dpd.gbl
+
+LIBOBJ = $(CXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+ifneq ($(DODEPEND),no)
+include $(LIBOBJ:%.o=%.d)
+endif
+
+install_inc:: dpd.h
+	$(MKDIRS) $(incdir)/libdpd
+	$(INSTALL_INCLUDE) $^ $(incdir)/libdpd
+
+install_man:: libdpd.html
+	$(MKDIRS) $(htmldir)
+	$(INSTALL_INCLUDE) $^ $(htmldir)
+

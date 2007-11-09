@@ -1,0 +1,23 @@
+#ifndef _psi_src_lib_libipv1_ipread_gbl_
+#define _psi_src_lib_libipv1_ipread_gbl_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void ip_set_uppercase(int uc);
+void ip_initialize(FILE *in, FILE *out);
+void ip_append(FILE *in, FILE *out);
+void ip_internal_values(void);
+void ip_done(void);
+void ip_push_keyword(char *keyword);
+void ip_pop_keyword(void);
+void ip_assign_value(ip_value_t *value);
+ip_value_t *ip_scalar(char *scalar);
+ip_value_t *ip_array(ip_value_t *arrayval, ip_value_t *newval);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* header guard */

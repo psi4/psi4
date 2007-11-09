@@ -1,0 +1,238 @@
+Functions available in the library LIBQT
+
+Documentation created by 
+C. David Sherrill, April 1995
+
+Last revised 6/19/96 by D. Sherrill, moving several routines to libciomr
+
+=====================================================================
+COMBINATIONS
+
+double combinations(int n, int k)
+
+   Function finds the number of combinations of n objects taken k
+at a time (i.e. "n choose k").  Returns a double because the number
+might be very large.
+
+Parameters:
+   n   =  number of objects in total
+   k   =  number of objects taken at a time
+
+Returns:
+   number of combinations of n objects taken k at a time
+   ("n choose k").  Result is returned as double.
+
+
+=====================================================================
+FACTORIAL
+
+double factorial(int n)
+
+   Function returns n factorial (i.e. n!)
+
+Parameters:
+   n  = number to take factorial of
+
+Returns:
+   n factorial, as a double word (since n! can get very large).
+
+
+=====================================================================
+FILL_SYM_MATRIX
+
+void fill_sym_matrix(double **A, int size)
+
+   This function fills a symmetric matrix by placing the elements of 
+the lower triangle into the upper triangle.
+
+Parameters:
+   A    = matrix to symmetrize
+   size = number of rows or columns in matrix (assume square)
+
+Returns: 
+   none
+
+
+=====================================================================
+INVERT_MATRIX
+
+void invert_matrix(double **a, double **y, int N)
+
+   The function takes the inverse of a matrix using the C routines
+in Numerical Recipes in C (available in libciomr).
+
+Parameters:
+   a  = matrix to take the inverse of (modified by invert_matrix())
+   y  = the inverse matrix
+   N  = the size of the matrices
+
+Returns:
+   none
+
+Note: The original matrix is modified by invert_matrix()
+
+
+=====================================================================
+MAT_IN
+
+int mat_in(FILE *fp, double **array, int width, int max_length, 
+      int *stat)
+
+   Function to read in a matrix.  Simple version for now.
+
+Parameters:
+   fp         =  file pointer to input stream
+   array      =  matrix to hold data
+   width      =  number of columns to read
+   max_length = maximum number of rows to read
+   stat       = pointer to int to hold status flag (0=ok, 1=error)
+
+Returns: 
+   number of rows read
+   Also modifies stat to = error code (0 = ok, 1 = error)
+
+
+=====================================================================
+NORMALIZE
+
+void normalize(double **A, int rows, int cols)
+
+   Function to normalize a set of vectors.  Assume the vectors to
+be normalized are in the ROWS of matrix A.
+
+Parameters:
+   A     =  matrix (of doubles) to be normalized
+   rows  =  number of rows in matrix
+   cols  =  number of columns in matrix
+
+Returns:
+   none
+
+
+=====================================================================
+REORDER_QT
+
+void reorder_qt(int *docc, int *socc, int *frozen_docc,
+      int *frozen_uocc, int *order, int *orbs_per_irrep, int nirreps)
+
+   Obtain the reordering array for Quantum Trio Standard Ordering.
+This function returns an integer array (in 'order') which maps 
+a basis function in Pitzer ordering (orbitals grouped according to
+irrep) and gives the corresponding index in the Quantum Trio ordering
+scheme, which orders the orbitals as: frozen core, docc, socc, 
+uocc, and frozen uocc.  Within each subspace, orbitals are ordered
+according to irrep.
+
+Parameters:
+   docc            = number of doubly occupied orbitals per irrep
+   socc            = number of singly occupied orbs per irrep
+   frozen_docc     = number of frozen doubly occ'd orbs per irrep
+   frozen_uocc     = number of frozen unocc'd orbs per irrep
+   order           = array to hold the reordering map
+   orbs_per_irrep  = number of orbitals per irrep
+   nirreps         = total number of irreps in point group
+
+Returns:
+   none
+
+
+=====================================================================
+REORDER_RAS
+
+void reorder_ras(int *docc, int *socc, int *frozen_docc,
+      int *frozen_uocc, int *order, int *orbs_per_irrep, 
+      int *ras1, int *ras2, int *ras3, int *ras4, int do_ras4,
+      int nirreps)
+
+   Obtain the reordering array for RAS wavefunctions.  This function 
+returns an integer array (in 'order') which maps a basis function 
+in Pitzer ordering (orbitals grouped according to irrep) and gives 
+the corresponding index in the RAS scheme, which orders the 
+orbitals as: frozen core, RAS1, RAS2, RAS3, [RAS4], frozen uocc.
+Within the RAS subspaces, the orbitals are arranged according to
+docc, then socc, then uocc.  Within this ordering, orbitals are
+further ordered according to irrep.
+
+Parameters:
+   docc            = number of doubly occupied orbitals per irrep
+   socc            = number of singly occupied orbs per irrep
+   frozen_docc     = number of frozen doubly occ'd orbs per irrep
+   frozen_uocc     = number of frozen unocc'd orbs per irrep
+   order           = array to hold the reordering map
+   orbs_per_irrep  = number of orbitals per irrep
+   ras1            = number of RAS1 orbitals per irrep
+   ras2            = number of RAS2 orbitals per irrep
+   ras3            = number of RAS3 orbitals per irrep (if do_ras4=0
+                     then this array will be overwritten by a 
+                     routine that calculates it automatically)
+   ras4            = if do_ras4=0, pass NULL or an empty array.
+                     if do_ras4=1, pass an empty array (ras4 will
+                     be automatically calculated)
+   do_ras4         = 1 to use a RAS4 subspace, 0 otherwise
+   nirreps         = total number of irreps in point group
+
+Returns:
+   none
+
+
+=====================================================================
+SCHMIDT
+
+void schmidt(double **A, int rows, int cols, FILE *outfile)
+
+   Gram-Schmidt orthogonalize a set of vectors.  Assume we're 
+orthogonalizing the ROWS, since in C a vector is usually a row more 
+often than a column.
+
+Parameters:
+   A    = matrix to orthogonalize (matrix of doubles)
+   rows = rows of A
+   cols = columns of A
+outfile = pointer to output file
+
+Returns:
+   none
+
+
+=====================================================================
+SCHMIDT_ADD
+
+   Assume A is a orthogonal matrix.  This function Gram-Schmidt
+orthogonalizes a new vector v and adds it to matrix A.  A must 
+contain a free row pointer for a new row.  Don't add orthogonalized 
+v' if norm(v') < NORM_TOL.
+
+int schmidt_add(double **A, int rows, int cols, double *v)
+
+Parameters:
+   A    = matrix to add new vector to
+   rows = current number of rows in A (A must have ptr for 
+          'rows+1' row.)
+   cols = columns in A
+   v    = vector to add to A after it has been made orthogonal 
+          to rest of A
+
+Returns:
+   1 if a vector is added to A, 0 otherwise
+
+
+=====================================================================
+
+ POPLE(): Uses Pople's method to iteratively solve linear equations
+          Ax = b
+
+void pople(double **A, double *x, int dimen, int num_vecs, 
+           double tolerance, FILE *outfile, int print_lvl)
+
+ Arguments:
+ A         = matrix
+ x         = initially has vector b, but returns vector x.
+ dimen     = dimension of vector x.
+ num_vecs  = number of vectors x to obtain.
+ tolerance = cutoff threshold for norm of expansion vector.
+ outfile   = output file
+ print_lvl = Print level for a variety of print options.
+
+ Returns: none
+
+======================================================================

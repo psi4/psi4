@@ -1,0 +1,68 @@
+#ifndef _psi_src_lib_libipv1_ipprint_lcl_
+#define _psi_src_lib_libipv1_ipprint_lcl_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifdef LOCAL_HEADER_USED
+/* #  error included two local headers */#else
+#  define LOCAL_HEADER_USED
+#endif
+#ifndef LOCAL_STORAGE_CLASS
+#  define LOCAL_STORAGE_CLASS static
+#endif
+#ifndef LOCAL_FUNCTION
+#  define LOCAL_FUNCTION LOCAL_STORAGE_CLASS
+#endif
+#ifndef LOCAL_VA_FUNCTION
+#  define LOCAL_VA_FUNCTION LOCAL_STORAGE_CLASS
+#endif
+LOCAL_STORAGE_CLASS VOID
+ip_print_tree_(
+#if defined(__STDC__) || defined(__cplusplus)
+FILE *fp,
+ip_keyword_tree_t *tree,
+int indent
+
+#endif
+);
+LOCAL_STORAGE_CLASS VOID
+ip_indent(
+#if defined(__STDC__) || defined(__cplusplus)
+FILE *fp,
+int n
+
+#endif
+);
+LOCAL_STORAGE_CLASS VOID
+ip_print_value_(
+#if defined(__STDC__) || defined(__cplusplus)
+FILE *fp,
+ip_value_t *value,
+int indent
+
+#endif
+);
+LOCAL_STORAGE_CLASS VOID
+ip_print_array_(
+#if defined(__STDC__) || defined(__cplusplus)
+FILE *fp,
+ip_array_t *array,
+int indent
+
+#endif
+);
+LOCAL_STORAGE_CLASS int
+ip_special_characters(
+#if defined(__STDC__) || defined(__cplusplus)
+char *keyword
+
+#endif
+);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* header guard */
