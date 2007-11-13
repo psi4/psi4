@@ -16,7 +16,7 @@ guess.cc sortev.cc occ_fun.cc init_uhf.cc cmatsplit.cc dmatuhf.cc \
 findit_uhf.cc uhf_iter.cc schmit_uhf.cc diis2_uhf.cc formg_direct.cc \
 orb_mix.cc
 
-BINOBJ = $(CXXSRC:%.cc=%.o)
+LIBOBJ = $(CXXSRC:%.cc=%.o)
 
 include ../MakeRules
 
@@ -25,8 +25,8 @@ packit_o.o: packit_o.cc
 	$(CXX) $(CXXDBG) $(CXXDEF) $(CXXOTH) $(CXXINC) -c $< $(OUTPUT_OPTION)
 
 ifneq ($(DODEPEND),no)
-$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
-include $(BINOBJ:%.o=%.d)
+$(LIBOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(LIBOBJ:%.o=%.d)
 endif
 
 install_man:: cscf.1

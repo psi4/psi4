@@ -3,11 +3,21 @@
   \ingroup (IWL)
 */
 #include <stdio.h>
+#include <libpsio/psio.hpp>
 #include <libpsio/psio.h>
+#include "iwl.hpp"
 #include "iwl.h"
 
+  using namespace psi;
+  
+void IWL::wrtone(PSIO* psio, int itap, char *label, int ntri, double *onel_ints)
+{
+  psio->open(itap, PSIO_OPEN_OLD);
+  psio->write_entry(itap, label, (char *) onel_ints, ntri*sizeof(double));
+  psio->close(itap,1);
+}
+
 extern "C" {
-	
 /*!
 ** IWL_WRTONE()
 **

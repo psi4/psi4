@@ -1,0 +1,679 @@
+.TH input 1 "Psi Release 3" "\*(]D"
+.SH NAME
+input \- initializes files prior to a run of Psi
+
+.SH DESCRIPTION
+.LP
+The program
+.B input
+is a preliminary program which reads the input data for the
+molecule (geometry, basis set, etc. ) and generates a working file
+called
+.pN FILE32
+which is the real starting point of each calculation.
+The
+.B input
+program can handle a total of 100 atoms and 1500
+unique primitive gaussian functions.  The
+.B input
+program limits the use of symmetry
+point groups to
+.if n D2h
+.if t D\s-2\d2h\u\s0
+and its subgroups.
+
+.SH REFERENCES
+
+.LP
+For STO basis sets:
+.IP "1."
+W. J. Hehre, R. F. Stewart and J.A. Pople, J. Chem. Phys. 51
+(1969) 2657.
+.IP "2."
+W. J. Hehre, R. Ditchfield, R. F. Stewart and J.A. Pople, J. Chem.
+Phys. 52 (1970) 2769.
+
+.LP
+For DZ and the old TZ basis sets:
+.IP "1."
+S. Huzinaga,    J. Chem. Phys. 42 (1965) 1293.
+.IP "2."
+T. H. Dunning,  J. Chem. Phys. 53 (1970) 2823.
+
+.LP
+For DZP basis sets:
+  for Li and Be;
+.IP "1."
+A. J. Thakkar, T. Koga, M. Saito, R. E. Hoffmeyer, Inter. J. Quant. Chem.
+Symp. 27 (1993) 343.
+.LP
+  for Na and Mg;
+.IP "1."
+S. Huzinaga, Approximate Atomic Wavefunction II, Dept. of Chem. Report, 
+Univ. of Alberta, Edmonton, Alberta, Canada, 1971.
+
+.LP
+For the Rydberg and negative ion basis sets:
+.IP "1."
+T. H. Dunning, Jr. and P. J. Hay, in Modern Theoretical Chemistry,
+Volume 3, Ed. H. F. Schaefer III, Plenum Press, NY, 1977.
+
+.LP
+For the new TZ basis sets:
+.IP "1."
+T. H. Dunning, J. Chem. Phys. 55, (1971) 716.
+.IP "2."
+A. D. McLean and G. S. Chandler, J. Chem. Phys., 72 (1980) 5639.
+
+.LP
+For the general contracted basis sets:
+.IP "1."
+T. H. Dunning Jr., J. Chem. Phys. 90, (1989).
+.IP "2."
+F. B. van Duijneveldt, IBM Res. Rep.  RJ 945 (1971).
+
+.LP
+For the Wachters basis sets:
+.IP "1."
+A. J. H. Wachters, J. Chem. Phys. 52, (1970) 1033.
+
+.LP
+For the cc-pVXZ (X=D,T,Q) basis sets for hydrogen and the 
+  first row atoms B-Ne:
+.IP "1."
+T.H. Dunning, Jr., J. Chem. Phys. 90, 1007 (1989).
+
+.LP
+For the aug-cc-pVXZ (X=D,T,Q) basis sets for H and B-Ne:
+.IP "1."
+R.A. Kendall, T.H. Dunning, Jr., and R.J. Harrison, J. Chem. Phys.
+96, 6796 (1992).
+
+.LP
+For the cc-pVXZ and aug-cc-pVXZ (X=D,T,Q) sets for the 
+  second row atoms Al-Ar:
+.IP "1."
+D.E. Woon and T.H. Dunning, Jr., J. Chem. Phys. 98, 1358 (1993).
+
+.LP
+For the cc-pVXZ (X=D,T,Q) basis sets for helium; cc-pV5Z and 
+  aug-cc-pV5Z basis sets for H, B-Ne, and Al-Ar:
+.IP "1."
+D.E. Woon, K.A. Peterson, and T.H. Dunning, Jr. (unpublished).
+
+.LP
+For the cc-pVXZ and aug-cc-pVXZ (X=D,T,Q) basis sets for 
+  lithium, beryllium, and sodium; cc-pV5Z and aug-cc-pV5Z
+  basis sets for beryllium:
+.IP "1."
+D.E. Woon and T.H. Dunning, Jr. (unpublished).
+
+.LP
+Also see
+.IP "1."
+R. Poirier, R. Kari and I. G. Csizmadia, "Handbook of Gaussian
+Basis Sets" Phys. Sci. Data 24 (Elsevier, 1985),
+and references therein.
+
+.sL
+.pN INPUT
+.eL "FILES REQUIRED"
+
+.sL
+.pN "user defined basis file"
+.pN BASIS
+.eL "FILES OPTIONAL"
+
+.sL
+.pN OUTPUT
+.pN FILE30
+.eL "FILES GENERATED"
+
+.SH INPUT FORMAT
+.LP
+In addition to the standard command-line options supported by all Psi 3 modules,
+the following command-line arguments are available:
+.IP "\fI--keep_chkpt\fP"
+This option will cause input to keep the checkpoint file
+and possibly overwrite the information. By default, input
+will delete the checkpoint file and create a new one.
+.IP "\fI--chkptgeom\fP"
+This option will cause input to read the geometry from checkpoint file
+rather than from the input file.
+.IP "\fI--chkptmos\fP"
+This option will cause \fBINPUT\fP to try to recover molecular
+orbitals from a previous calculation archived in the
+checkpoint file. If found, occupied MOs will be projected onto
+the new basis. The virtual space is filled up by the virtual MOs
+obtained by diagonalizing the core Hamiltonian (even if the new
+and old basis sets are identical). This will not affect the subsequent
+SCF procedure in any way, but should be kept in mind.
+.IP "\fI--noproject\fP"
+This option will prevent projection of MOs onto the new basis. Useful in combination with
+the previous option.
+.IP "\fI--noreorient\fP"
+This option will prevent the reorientation of the molecule to the reference
+inertia frame prior to the determination of the point group.
+.IP "\fI--nocomshift\fP"
+This option will prevent shift of the center of mass of the molecule
+to the origin prior to the determination of the point group.
+.IP "\fI--savemos\fP"
+This option will cause \fBINPUT\fP to try to recover molecular
+orbitals from a previous calculation archived in the
+checkpoint file. If found, the SCF eigenvector and other information
+will be stored to file 42.
+
+
+.LP
+The
+.B input
+program
+searches through the default keyword path (first
+.B INPUT
+and then
+.BR DEFAULT )
+for the following keywords:
+
+.IP "\fBLABEL =\fP \fIstring\fP"
+This is a descriptive label for the calculation.
+There is no default.
+
+.IP "\fBNORMBASIS =\fP \fIboolean\fP"
+If \fBNORMBASIS=YES\fP, the molecular orbital coefficients of the
+occupied orbitals are given in terms of normalized
+contracted basis functions.
+This should always be true.  The default is true.
+
+.IP "\fBPRIMNORM =\fP \fIboolean\fP"
+If \fBPRIMNORM=YES\fP, the contraction coefficients of the
+D, F, and G
+primitive functions that are input should be the ones
+corresponding to the normalized D(XX), F(XXX) and G(XXXX)
+primitives.
+All of the basis sets provided
+with Psi require that this be true.  The default is true.
+
+.IP "\fBSUBGROUP =\fP \fIstring\fP"
+This is the subgroup to be used in the calculation.
+For the
+.if n C1
+.if t C\s-2\d1\u\s0
+point group
+use \fIstring\fP \fB= C1\fP;
+for
+.if n Cs
+.if t C\s-2\ds\u\s0
+use \fBCS\fP;
+for
+.if n Ci
+.if t C\s-2\di\u\s0
+use \fBCI\fP;
+for
+.if n C2
+.if t C\s-2\d2\u\s0
+use \fBC2\fP;
+for
+.if n C2h
+.if t C\s-2\d2h\u\s0
+use \fBC2H\fP;
+for
+.if n C2v
+.if t C\s-2\d2v\u\s0
+use \fBC2V\fP;
+and
+for
+.if n D2
+.if t D\s-2\d2\u\s0
+use \fBD2\fP;
+There is no default.
+
+.IP "\fBUNIQUE_AXIS =\fP \fIstring\fP"
+This keyword specifies which axis in the original (before the principal axis reorientation) coordinate system 
+should be chosen as the unique axis in the subgroup specification. For example, 
+if one wants to perform a calculation on a 
+.if n D2h
+.if t D\s-2\d2h\u\s0
+molecule in
+.if n C2v
+.if t C\s-2\d2v\u\s0
+symmetry, one has to specify which of the three
+.if n C2
+.if t C\s-2\d2\u\s0
+axes has to serve as the unique axis.
+There's no default.
+
+.IP "\fBUNITS =\fP \fIstring\fP"
+If \fIstring\fP is \fBBOHR\fR, then the \fBGEOMETRY\fP array is in bohr.
+If \fIstring\fP is \fBANGSTROM\fR, then the \fBGEOMETRY\fP array
+is in angstoms.
+The default is \fBBOHR\fP.
+
+.IP "\fBGEOMETRY =\fP \fIarray\fP"
+The \fIarray\fP is a vector of cartesian coordinates of EACH atom.
+Each element of this vector is another vector in the
+form \fB(\fP \fIatom_name\fP \fIx\fP \fIy\fP \fIz\fP\fB)\fP.
+There is no default.
+
+.IP "\fBZMAT =\fP \fIarray\fP"
+The \fIarray\fP is a Z-matrix for the molecule.
+Each element of this vector is another vector in the
+general form \fB(\fP \fIatom_name\fP \fIatom1\fP \fIbond_distance\fP \fIatom2\fP \fIvalence_angle\fP \fIatom3\fP \fItorsional_angle\fP\fB)\fP.
+The first three atoms don't require all of the parameters to be specified
+There is no default.
+
+.IP "\fBPUREAM =\fP \fIboolean\fP"
+If \fIboolean\fP is \fBTRUE\fP, then shells with pure angular momentum
+will be used.  Thus, a D shell will have five function, a F shell will
+have seven functions, a G shell will have nine functions, etc.
+The default is false.
+
+.IP "\fBBASIS =\fP \fIstring/string_vector\fP"
+If basis set is given as a single string, the same basis set will be 
+used for all atoms. Basis set for EACH atom can be specified in a one-dimensional string vector, 
+however, user must be careful, since only basis sets for unique atoms will be read from the vector.
+Basis set for each element type can be specified analogously, however each element of the basis
+set vector must be a vector consisting of two elements: element name and basis set name.
+There is no default.
+
+.IP "\fBBASIS_FILE =\fP \fIstring\fP"
+This keyword specifies the name of an alternate file to be searched for
+basis set information. Either an absolute path to the file or a path relative to the current
+directory can be used. If the string is terminated by "/" (only directory is specified) then the 
+default file name "basis.dat" will be appended. 
+
+.IP "\fBNO_REORIENT =\fP \fIboolean\fP"
+This keyword is a hack to give user more control in certain situations
+when reorientation into the principal frame leaves some symmetry elements
+undetected. When set to \fBTRUE\fP, the program will skip this reorientation
+step. The user then becomes responsible for providing an initial orientation
+that is oriented properly for all symmetry elements to be detected. This
+can be tricky with Z-matrices, hence only experts should use this keyword.
+
+.IP "\fBKEEP_REF_FRAME =\fP \fIboolean\fP"
+When this keyword is set to true Psi will keep track of the original
+coordinate frame, i.e. the coordinate frame right after the center of mass shift
+and before the reorientation into the principal frame. That frame is called reference
+frame and, in general, is different from the canonical coordinate frame adopted at the end of
+input run and used for computations by all Psi modules programs henceforth.
+The information about the reference frame thus need to be stored in
+the checkpoint file if Psi modules (such as \fBCINTS\fP) need to transform
+their frame-dependent results (such as forces on the nuclei)
+into the original reference frame for external programs to use.
+This keyword becomes useful in finite difference computations
+where changes in point group may cause the molecule to reorient -
+when \fBKEEP_REF_FRAME\fP is set to \fBTRUE\fP all gradients in \fBFILE11\fP
+will be printed in the same coordinate frame. 
+
+.IP "\fBPRINT =\fP \fIinteger\fP"
+This controls the amount of information to be printed out. The greater the number - the more 
+information gets printed. Default (\fBPRINT =\fP 1) should be enough for routine use.
+
+
+.SH BASIS SETS
+.LP
+The
+.B input
+program
+searches through the \fBBASIS\fP keyword path for the basis set information.
+It first searches through the user's
+.pN INPUT
+file, then searches through a
+.pN BASIS 
+file in the working directory (if one exists), and then through a user 
+specified basis file specified by the \fBBASIS_FILE\fP keyword (if any).
+Finally, it searches through the
+.pN PBASIS
+file in the Psi library directory.
+The name of the basis set which is searched for is obtained by
+appending the atom name to the basis name with a ':' inbetween.
+The format of the basis set information is best understood by looking
+in the
+.pN PBASIS
+file.
+
+.SH STANDARD BASIS SETS
+.LP
+Psi can use
+use standard basis sets
+which are provided in a file named
+.pN PBASIS .
+in the Psi library directory.  Many of the basis set names contain
+nonalphanumeric characters.  These names must be surrounded by `"'.
+.IP "STO" 25
+This gets the STO-3G basis set which is available for hydrogen-argon.
+The STO-3G basis sets for the atoms sodium-argon contain a D function.
+.IP "DZ" 25
+This gets double zeta (DZ) basis set, which is (4s/2s)
+for hydrogen, (9s5p/4s2p) for boron-fluorine, and (11s7p/6s4p) for
+aluminum-chlorine.
+.IP "(4S/2S)" 25
+This gets a DZ basis set for hydrogen.
+.IP "(9S5P/4S2P)" 25
+This gets a DZ basis set for boron-fluorine.
+.IP "(11S7P/6S4P)" 25
+This gets a DZ basis set for aluminum-chlorine.
+.IP "DZP-OLD" 25
+This is a DZ basis set with a shell of polarization functions added.
+The exponents of these functions are the old value.
+It is available for hydrogen, boron-fluorine, and aluminum-chlorine.
+.IP "TZ-OLD" 25
+The old triple zeta (TZ) basis set is (4s/3s) for hydrogen,
+(9s5p/5s3p) for boron-fluorine, and (11s7p/7s5p) for
+aluminum-chlorine.  The TZ basis set
+is triple zeta in the valence only.
+This basis is provided for verification of old results; do not use it.
+.IP "TZP-OLD" 25
+This is the old TZ basis set with the old polarization functions added.
+It is available for hydrogen, boron-fluorine, and aluminum-chlorine.
+This basis is provided for verification of old results; do not use it.
+.IP "(5S/3S)" 25
+This gets a TZ basis set for hydrogen.
+.IP "(10S6P/5S3P)" 25
+This gets a TZ basis set for boron-neon.
+The TZ basis set is triple zeta in the valence only.
+.IP "(12S9P/6S5P)" 25
+This gets a TZ basis set for sodium-argon.
+The TZ basis set is triple zeta in the valence only.
+.IP "1P_POLARIZATION" 25
+This gets a set of polarization functions for hydrogen.
+.IP "1D_POLARIZATION" 25
+This gets a set of polarization functions for
+boron-fluorine and aluminum-chlorine.
+.IP "2P_POLARIZATION" 25
+This gets two sets of polarization functions for hydrogen.
+.IP "2D_POLARIZATION" 25
+This gets two sets of polarization functions for
+boron-fluorine and aluminum-chlorine.
+.IP "1D_POLARIZATION" 25
+This gets a set of second polarization functions for hydrogen.
+.IP "1F_POLARIZATION" 25
+This gets a set of second polarization functions for
+boron-fluorine and aluminum-chlorine.
+.IP "DZP" 25
+This gets a (4S/2S) basis with a "1P_POLARIZATION" function 
+for hydrogen, a (9S5P/4S2P) basis with a "1D_POLARIZATION"
+funtion for lithium-flourine, a (11S5P/7S2P) plus two even-tempered p
+functions for sodium and magnesium, and a (11S7P/6S4P) basis with a
+"1D_POLARIZATION" function for aluminium-chlorine.
+
+.IP "TZ2P" 25
+This gets a (5S/3S) basis with "2P_POLARIZATION" functions 
+for hydrogen, a (10S6P/5S3P) basis with "2D_POLARIZATION"
+funtions for boron-flourine, and a (12S9P/6S5P) basis with
+"2D_POLARIZATION" functions for aluminium-chlorine.
+.IP "DZ_DIF" 25
+This gets a DZ basis with a diffuse s for hydrogen, and a diffuse s
+and diffuse p for boron-flourine, and aluminum-chlorine.
+.IP "TZ_DIF" 25
+This gets a TZ basis with a diffuse s for hydrogen, and a diffuse s
+and diffuse p for boron-flourine, and aluminum-chlorine.
+.IP "DZP_DIF" 25
+This gets the DZP basis with
+a diffuse s for hydrogen, and a diffuse s
+and diffuse p for boron-flourine, and aluminum-chlorine.
+.IP "TZ2P_DIF" 25
+This gets the TZ2P basis with 
+a diffuse s for hydrogen, and a diffuse s
+and diffuse p for boron-flourine, and aluminum-chlorine.
+.IP "TZ2PF"
+This gets the TZ2P basis and adds "1D_POLARIZATION"
+for hydrogen and "1F_POLARIZATION" for boron-flourine,
+and aluminum-chlorine.
+.IP "TZ2PD"
+This gets the TZ2PF basis set for hydrogen.
+.IP "TZ2PF_DIF"
+This gets a TZ2PF basis and adds the appropriate s diffuse functions
+for hydrogen and s and p
+diffuse functions
+for boron-flourine,
+and aluminum-chlorine.
+.IP "CCPVDZ"
+This gets the segmentally contracted correlation consistent basis set cc-pVDZ, 
+which is (4s1p/2s1p) 
+for hydrogen and helium, (9s4p1d/3s2p1d) for lithium - neon, and 
+(12s8p1d/4s3p1d) for sodium and aluminum - argon.
+.IP "CCPVTZ"
+This gets the segmentally contracted correlation consistent basis set cc-pVTZ, 
+which is (5s2p1d/3s2p1d)
+for hydrogen and helium, (10s5p2d1f/4s3p2d1f) for lithium - neon, and
+(15s9p2d1f/5s4p2d1f) for sodium and aluminum - argon.
+.IP "CCPVQZ"
+This gets the segmentally contracted correlation consistent basis set cc-pVQZ, 
+which is (6s3p2d1f/4s3p2d1f)
+for hydrogen and helium, (12s6p3d2f1g/5s4p3d2f1g) for lithium - neon, and
+(16s11p3d2f1g/6s5p3d2f1g) for sodium and aluminum - argon.
+.IP "CCPV5Z"
+This gets the segmentally contracted correlation consistent basis set cc-pV5Z, 
+which is (8s4p3d2f1g/5s4p3d2f1g)
+for hydrogen and helium, (14s8p4d3f2g1h/6s5p4d3f2g1h) for beryllium - neon, and
+(20s12p4d3f2g1h/7s6p4d3f2g1h) for aluminum - argon.
+.IP " "
+.B PLEASE NOTE:
+The correlation consistent basis sets cc-pVXZ (X = D, T, Q, 5) are designed
+for use with pure angular momentum functions.
+.IP "AUGCCPVDZ"
+This gets the correlation consistent basis set aug-cc-pVDZ, which is the cc-pVDZ basis set
+augmented with optimized diffuse functions.  This is a diffuse (1s1p) set for hydrogen 
+and helium and a diffuse (1s1p1d) set for lithium - neon, sodium, and aluminum - argon.
+.IP "AUGCCPVTZ"
+This gets the correlation consistent basis set aug-cc-pVTZ, which is the cc-pVTZ basis set
+augmented with optimized diffuse functions.  This is a diffuse (1s1p1d) set for hydrogen
+and helium and a diffuse (1s1p1d1f) set for lithium - neon, sodium, and aluminum - argon.
+.IP "AUGCCPVQZ"
+This gets the correlation consistent basis set aug-cc-pVQZ, which is the cc-pVQZ basis set
+augmented with optimized diffuse functions.  This is a diffuse (1s1p1d1f) set for hydrogen
+and helium and a diffuse (1s1p1d1f1g) set for lithium - neon, sodium, and aluminum - argon.
+.IP "AUGCCPV5Z"
+This gets the correlation consistent basis set aug-cc-pV5Z, which is the cc-pV5Z basis set
+augmented with optimized diffuse functions.  This is a diffuse (1s1p1d1f1g) set for hydrogen
+and helium and a diffuse (1s1p1d1f1g1h) set for beryllium - neon and aluminum - argon.
+.IP "GCVDZ" 25
+A general contracted basis set for hydrogen, for which it
+is (4s)/[2s], and for boron-neon for which it is (9s4p)/[3s2p].
+.IP "GCVTZ" 25
+A general contracted basis set for hydrogen, for which it
+is (5s)/[3s], and for boron-neon for which
+it is (10s5p)/[4s3p].
+.IP "GCVQZ" 25
+A general contracted basis set for hydrogen, for which it
+is (6s)/[4s], and for boron-neon for which
+it is (12s6p)/[5s4p].
+.IP "GCV1P"
+This gets one P polarization shell for hydrogen (for use with GCVDZ).
+.IP "GCV2P"
+This gets two P polarization shells for hydrogen (for use with GCVTZ).
+.IP "GCV3P"
+This gets three P polarization shells for hydrogen (for use with GCVQZ).
+.IP "GCV1D"
+This gets one D polarization shell for hydrogen (for use with GCVTZ) and
+boron-neon (for use with GCVDZ).
+.IP "GCV2D"
+This gets two D polarization shells for hydrogen (for use with GCVQZ)
+and boron-neon (for use with GCVTZ).
+.IP "GCV3D"
+This gets three D polarization shells for boron-neon (for use with GCVQZ).
+.IP "GCV1F"
+This gets one F polarization shell for hydrogen (for use with GCVQZ)
+and boron-neon (for use with GCVTZ).
+.IP "GCV2F"
+This gets two F polarization shells for boron-neon (for use with GCVQZ).
+.IP "GCV1G"
+This gets one G polarization shell for boron-neon (for use with GCVQZ).
+
+.IP "GCV1DPURE"
+This is GCV1D with pure angular momentum explicitly turned on.
+.IP "GCV2DPURE"
+This is GCV2D with pure angular momentum explicitly turned on.
+.IP "GCV3DPURE"
+This is GCV3D with pure angular momentum explicitly turned on.
+.IP "GCV1FPURE"
+This is GCV1F with pure angular momentum explicitly turned on.
+.IP "GCV2FPURE"
+This is GCV2F with pure angular momentum explicitly turned on.
+.IP "GCV1GPURE"
+This is GCV1G with pure angular momentum explicitly turned on.
+
+.IP "GCVDZP" 25
+A general contracted basis set for hydrogen, for which it
+is (4s1p)/[2s1p], and for boron-neon, for which it is (9s4p1d)/[3s2p1d].
+.IP "GCVTZP" 25
+A general contracted basis set for hydrogen, for which it
+is (5s2p1d)/[3s2p1d], and for boron-neon, for which
+it is (10s5p2d1f)/[4s3p2d1f].
+.IP "GCVQZP" 25
+A general contracted basis set for hydrogen, for which it
+is (6s3p2d1f)/[4s3p2d1f], and for boron-neon for which
+it is (12s6p3d2f1g)/[5s4p3d2f1g].
+.IP "DUNNING_RYDBERG_3S" 25
+This gets a Rydberg shell for boron-fluorine.
+.IP "DUNNING_RYDBERG_3P" 25
+This gets a Rydberg shell for boron-fluorine.
+.IP "DUNNING_RYDBERG_3D" 25
+This gets a Rydberg shell for boron-fluorine and aluminum-chlorine.
+.IP "DUNNING_RYDBERG_4S" 25
+This gets a Rydberg shell for boron-fluorine and aluminum-chlorine.
+.IP "DUNNING_RYDBERG_4P" 25
+This gets a Rydberg shell for boron-fluorine and aluminum-chlorine.
+.IP "DUNNING_RYDBERG_4D" 25
+This gets a Rydberg shell for boron-fluorine.
+.IP "DUNNING_NEGATIVE_ION_2P" 25
+This gets a diffuse shell for boron-fluorine and aluminum-chlorine.
+.IP "WACHTERS" 25
+This gets a (14s11p6d/10s8p3d) basis set for potassium,scandium-zinc.
+.IP "321G" 25
+This gets a 3-21G basis set for hydrogen-argon.
+.IP "631G" 25
+This gets a 6-31G basis set for hydrogen-argon.
+.IP "6311G" 25
+This gets a 6-311G basis set for hydrogen-neon.
+.IP "631GST" 25
+This gets a 6-31G* basis set for hydrogen-argon.
+.IP "631PGS" 25
+This gets a 6-31+G* basis set for hydrogen-argon.
+.IP "6311PPGSS" 25
+This gets a 6-311++G** basis set for hydrogen-neon.
+.IP "PLUSS" 25
+This gets a diffuse S (Pople) for hydrogen-argon.
+.IP "PLUSP" 25
+This gets a diffuse P (Pople) for hydrogen-argon.
+
+
+.SH EXAMPLE
+The following input is for the water molecule:
+
+.DS
+  default: (
+    )
+
+  input: (
+    basis = dzp
+    geometry = ((o   0.0  0.00000000   0.00000000)
+                (h   0.0 -1.49495900   0.99859206)
+                (h   0.0  1.49495900   0.99859206))
+    )
+.DE
+
+The following input is equivalent to the above example:
+
+.DS
+  default: (
+    )
+
+  input: (
+    basis = ( (o dzp)
+              (h dzp) )
+    geometry = ((oxygen   0.0  0.00000000   0.00000000)
+                (hydrogen 0.0 -1.49495900   0.99859206)
+                (hydrogen 0.0  1.49495900   0.99859206))
+    )
+.DE
+
+The following is an example of Z-matrix specification
+
+.DS
+  default: (
+    )
+
+  input: (
+    basis = ( (oxygen ccpv6z)
+              (hydrogen ccpv5z) )
+    zmat  = ((x)
+             (o  1 1.0)
+             (h  2 0.995  1 127.75) 
+             (h  2 0.995  1 127.75  3 180.0) 
+            )
+    )
+.DE
+
+
+.SH BASIS SET EXAMPLE
+.LP
+The following lines input could be placed in an input file to redefine
+the hydrogen DZP basis set.
+Note that double quotes must be used when a basis set name has special
+characters in it.
+
+.DS
+basis: (
+  % definition for hydrogen's DZP basis:
+  hydrogen:dzp = (
+    % inserts hydrogen:dz:
+    (get "DZ")
+    % uses pbasis.dat for polarization:
+    (get "DUNNING_POLARIZATION")
+    )
+  % definition for hydrogen's DZ basis:
+  hydrogen:dz = (
+    % inserts hydrogen:"HUZINAGA-DUNNING_(9S/4S)":
+    (get "HUZINAGA-DUNNING_(9S/4S)")
+    )
+  % definition for hydrogen's (9s/4s) basis:
+  hydrogen:"HUZINAGA-DUNNING_(9S/4S)" = (
+    (S (     19.2406     0.032828)
+       (      2.8992     0.231208)
+       (      0.6534     0.817238))
+    (S (      0.1776     1.0))
+    )
+  )
+.DE
+
+.SH FILES SUBSECTION EXAMPLE
+.LP
+The following lines input could be placed in an input file to define
+an alternate location to look for basis set information.
+Note that double quotes must be used when a string has special
+characters in it.
+
+.DS
+input: (
+  basis = (mydzp mydzp mydzp)
+  geometry = ((o 0.0  0.00000000   0.00000000)
+              (h 0.0 -1.49495900   0.99859206)
+              (h 0.0  1.49495900   0.99859206))
+    %  I like to keep everything in my chem applications 
+    %  sub directory.
+    %  Basis set is in 
+    %    /home/general/user/chem/my_very_own.basis
+  basis_file = "/home/general/user/chem/my_very_own.basis" 
+  )
+.DE
+
+.DS
+input: (
+  basis_file = "/home/general/user/basis/dzp_plus_diff/"
+    %  I like to keep everything in it's own directory.
+    %  Basis set is in 
+    %    /home/general/user/basis/dzp_plus_diff/basis.dat
+  basis = dzpdiff
+  geometry = ((o 0.0  0.00000000   0.00000000)
+              (h 0.0 -1.49495900   0.99859206)
+              (h 0.0  1.49495900   0.99859206) )
+  )
+.DE
+
+
+.SH LAST THINGS
+This program has been written by Edward F. Valeev, Dr. Justin T. Fermann, and Timothy J. Van Huis.
+Authors would like to thank Dr. T. Daniel Crawford and Rollin A. King for help.
+Any problems should be e-mailed to evaleev@schroedinger.ccqc.uga.edu. 
+

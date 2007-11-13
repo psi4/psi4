@@ -8,7 +8,9 @@
 /*-----------------
   global variables
  -----------------*/
-#include"defines.h"
+ 
+#include <cstdio>
+#include "defines.h"
 #include "data_structs.h"
 
 #ifdef EXTERN
@@ -81,12 +83,11 @@ EXTERN double ***HDS;    /* Half-Differentiated overlap matrices in AO basis */
 EXTERN double **Grad;    /* Nuclear forces */
 EXTERN double **Hess;    /* Nuclear force constants */
 
-}
-};
-
-#include<cstdio>
 /*--- Mandatory: Input and Output files, PSI file prefix ---*/
 EXTERN FILE *infile;
 EXTERN FILE *outfile;
 EXTERN char *psi_file_prefix;
+}
+};
+
 #endif

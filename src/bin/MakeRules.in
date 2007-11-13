@@ -47,9 +47,9 @@ install_inc::
 
 install_man::
 
-$(PSITARGET): $(BINOBJ) $(PSILIBS)
+$(PSITARGET): $(LIBOBJ)
 	$(MKDIRS) `dirname $(PSITARGET)`
-	$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	$(AR) $(ARFLAGS) `dirname $(PSITARGET)`/lib`basename $(PSITARGET)`.a $^
 
 install_target:: $(PSITARGET)
 	$(MKDIRS) $(bindir)
@@ -71,7 +71,7 @@ uclean:
 	-rm -f *.u
 
 targetclean:
-	-rm -f $(PSITARGET)
+	-rm -f `dirname $(PSITARGET)`/lib`basename $(PSITARGET)`.a
 
 #
 # dependencies

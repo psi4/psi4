@@ -1,0 +1,37 @@
+
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+LD = $(CXX)
+LDLIBS +=  $(LAPACK) $(BLAS) $(RUBYLIB)
+
+# Override LDFLAGS, sometimes users want static linking, but static linking will break Ruby's
+# ability to load modules from shared libraries.
+LDFLAGS += $(RUBYLDFLAGS)
+
+PSILIBS = -lPSI_dpd -lPSI_qt -lPSI_chkpt -lPSI_deriv -lPSI_r12 -lPSI_int \
+          -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
+PSIMODULES = -L`dirname $(PSITARGET)` -linput -lcints -lcscf
+
+CXXINC += $(RUBYINC) -DINSTALLEDPSIDATADIR=\"$(datadir)\"
+CXXSRC = psi4.cc ruby.cc
+
+BINOBJ = $(CXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+$(PSITARGET): $(BINOBJ) $(PSILIBS)
+	$(MKDIRS) `dirname $(PSITARGET)`
+	$(LD) $(LDFLAGS) -o $@ $(PSIMODULES) $^ $(LDLIBS)
+	
+ifneq ($(DODEPEND),no)
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(BINOBJ:%.o=%.d)
+endif
+
+#install_man:: psirb.1
+#	$(MKDIRS) $(mandir)/man1
+#	$(INSTALL_INCLUDE) $^ $(mandir)/man1
+

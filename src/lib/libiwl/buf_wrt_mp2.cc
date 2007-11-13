@@ -5,7 +5,63 @@
 #include <stdio.h>
 #include <math.h>
 #include <libciomr/libciomr.h>
+#include "iwl.hpp"
 #include "iwl.h"
+
+  using namespace psi;
+  
+void IWL::wrt_mp2(int p, int q, int pq, int pqsym,
+   double **arr, int rsym, int *firstr, int *lastr, int *firsts, int *lasts,
+   int *occ, int *vir, int *ioff, int printflag, FILE *outfile)
+{
+   int idx, r, s, rs, ssym;
+   int R,S,rnew,snew;
+   double value;
+   Label *lblptr;
+   Value *valptr;
+
+   lblptr = Buf.labels;
+   valptr = Buf.values;
+
+   ssym = pqsym ^ rsym;
+   for (r=firstr[rsym],R=0; r <= lastr[rsym]; r++,R++) {
+     rnew = occ[r];
+     for (s=firsts[ssym],S=0; s <=lasts[ssym]; s++,S++) {
+       snew = vir[s];
+       rs = ioff[rnew] + snew;
+       /*------------------------------------------
+	       We do not need integrals with rs > pq
+	       rs can only increase, hence if rs > pq -
+	       it is time to leave
+	     ------------------------------------------*/
+       if (rs > pq)
+         return;
+       value = arr[R][S];
+       
+       if (fabs(value) > Buf.cutoff) {
+         idx = 4 * Buf.idx;
+         lblptr[idx++] = (Label) p;
+         lblptr[idx++] = (Label) q;
+         lblptr[idx++] = (Label) rnew;
+         lblptr[idx++] = (Label) snew;
+         valptr[Buf.idx] = (Value) value;
+
+         Buf.idx++;
+	 
+         if (Buf.idx == Buf.ints_per_buf) {
+           Buf.lastbuf = 0;
+           Buf.inbuf = Buf.idx;
+           put();
+           Buf.idx = 0;
+         }
+	 
+	       if(printflag)
+	         fprintf(outfile, "<%d %d %d %d> [%d] [%d] = %20.10lf\n",
+		       p, q, rnew, snew, pq, rs, value);
+       } /* end if (fabs(value) > Buf->cutoff) ... */
+     } /* end loop over s */
+   } /* end loop over r */
+}
 
 extern "C" {
 	

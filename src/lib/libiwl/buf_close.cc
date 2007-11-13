@@ -6,8 +6,19 @@
 */
 #include <stdio.h>
 #include <stdlib.h>
+#include <libpsio/psio.hpp>
 #include <libpsio/psio.h>
+#include "iwl.hpp"
 #include "iwl.h"
+
+  using namespace psi;
+  
+IWL::~IWL()
+{
+  psio->close(Buf.itap, keep);
+  free(Buf.labels);
+  free(Buf.values);
+}
 
 extern "C" {
 
