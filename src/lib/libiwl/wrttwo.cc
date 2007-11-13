@@ -5,7 +5,19 @@
 #include <stdio.h>
 #include <math.h>
 #include <libciomr/libciomr.h>
+#include "iwl.hpp"
 #include "iwl.h"
+
+  using namespace psi;
+
+void IWL::wrttwo(PSIO *psio, int itap, int nbfso, double *ints, int *ioff, double toler, 
+                int printflg, FILE *outfile)
+{
+  IWL two_ints(psio, itap, toler, 0, 0);
+  two_ints.wrt_all(nbfso, ints, ioff, printflg, outfile);
+  two_ints.flush(1);
+  two_ints.set_keep(1);
+}
 
 extern "C" {
 	

@@ -5,13 +5,26 @@
 #include <stdio.h>
 #include <math.h>
 #include <libciomr/libciomr.h>
+#include "iwl.hpp"
 #include "iwl.h"
 
-extern "C" {
-	
+  using namespace psi;
+  
 #define MIN0(a,b) (((a)<(b)) ? (a) : (b))
 #define MAX0(a,b) (((a)>(b)) ? (a) : (b))
 
+void IWL::rdtwo(PSIO* psio, int itap, double *ints, int *ioff, int norbs, 
+      int nfzc, int nfzv, int printflg, FILE *outfile)
+{
+  IWL two_ints(psio, itap, 0.0, 1, 1);
+  if ((nfzc == 0) && (nfzv == 0))
+    two_ints.rd_all(ints, ioff, ioff, 0, ioff, printflg, outfile);
+  else
+    two_ints.rd_all_act(ints, ioff, ioff, 0, ioff, nfzc, norbs-nfzv-1, printflg, outfile);
+  two_ints.set_keep(1);
+}
+
+extern "C" {	
 /*!
 ** iwl_rdtwo(): read two electron ints from the given file.
 ** The "iwl" stands for "integrals with labels," and this is the proposed

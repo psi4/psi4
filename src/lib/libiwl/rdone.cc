@@ -4,9 +4,30 @@
 */
 #include <stdio.h>
 #include <math.h>
+#include <libpsio/psio.hpp>
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
+#include "iwl.hpp"
 #include "iwl.h"
+
+  using namespace psi;
+  
+int IWL::rdone(PSIO* psio, int itap, char *label, double *ints, int ntri, int erase, 
+              int printflg, FILE *outfile)
+{
+  int nmo;
+
+  psio->open(itap, PSIO_OPEN_OLD);
+  psio->read_entry(itap, label, (char *) ints, ntri*sizeof(double));
+  psio->close(itap, !erase);
+
+  if (printflg) {
+    nmo = (sqrt((double) (1 + 8 * ntri)) - 1)/2;
+    print_array(ints, nmo, outfile);
+  }
+
+  return(1);
+}
 
 extern "C" {
 	

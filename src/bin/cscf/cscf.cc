@@ -179,7 +179,6 @@ static char *rcsid = "$Id: cscf.cc 3661 2007-10-25 19:29:39Z evaleev $";
 namespace psi { namespace cscf {
   void print_initial_vec();
   extern void write_scf_matrices(void);
-}}
 
 int main(int argc,char* argv[])
 {
@@ -389,6 +388,7 @@ int main(int argc,char* argv[])
   cleanup();
   psio_done();
 }
+}} // end namespace psi::cscf
 
 namespace psi { namespace cscf {
 

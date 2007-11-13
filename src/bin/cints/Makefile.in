@@ -115,7 +115,7 @@ endif
 CXXSRC = $(DIRS:%=%/*.cc) *.cc
 TRUECXXSRC = $(notdir $(shell echo `ls $(CXXSRC:%=$(srcdir)/%)`))
 
-BINOBJ = $(TRUECXXSRC:%.cc=%.o)
+LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
 
 include ../MakeRules
 
@@ -144,6 +144,6 @@ install_htmlsrc: $(HTMLSRC)
 	$(INSTALL_INCLUDE) $(HTMLSRC) $(htmldir)/CINTS
 
 ifneq ($(DODEPEND),no)
-$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
-include $(BINOBJ:%.o=%.d)
+$(LIBOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(LIBOBJ:%.o=%.d)
 endif

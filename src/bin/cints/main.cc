@@ -69,12 +69,9 @@ namespace psi {
     -------------------------------*/
     void init_globals();
     void check_max_am();
-  }
-}
 
 char *gprgid();
 
-using namespace psi::CINTS;
   
 //! CINTS main procedure.
 int main(int argc, char *argv[])
@@ -178,3 +175,4 @@ int main(int argc, char *argv[])
   }
   exit(PSI_RETURN_SUCCESS);
 }
+}} // end namespace psi::CINTS

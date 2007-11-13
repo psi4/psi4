@@ -176,12 +176,10 @@
 # define EXTERN
 #endif
 
-extern "C" {
-  EXTERN FILE *infile, *outfile;
-  EXTERN char *psi_file_prefix;
-}
-
 namespace psi { namespace cscf {
+
+    EXTERN FILE *infile, *outfile;
+    EXTERN char *psi_file_prefix;
 
 EXTERN FILE *JK,*gmat,*diis_out;
 

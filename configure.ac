@@ -13,6 +13,9 @@ AC_CONFIG_HEADER(include/psiconfig.h)
 
 PSI_VERSION=psi_version
 PSI_BUGREPORT=psi_bugreport
+
+AC_DEFINE_UNQUOTED(PSI_VERSION,"${PSI_VERSION}")
+
 AC_SUBST(PSI_VERSION)
 AC_SUBST(PSI_BUGREPORT)
 AC_CONFIG_AUX_DIR(bin)
@@ -792,6 +795,7 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libr12/libr12_config.h
 
           src/bin/psi4/Makefile
+          src/bin/input/Makefile
           src/bin/cints/Makefile
           src/bin/cscf/Makefile
 ])
