@@ -25,3 +25,15 @@ List detailing what has been done:
  * The explicit call to input::main works, but CINTS::main causes a seg fault
      in libpsio. Haven't tracked it down yet.
 
+ * Fixed the seg fault in cints. Modified psio_done to set _default_psio_lib_
+     to NULL after the being deleted.
+
+ * There is code somewhere that is writing to memory that is used elsewhere.
+     On my machine it reveals itself by changing psi_file_prefix from "psi"
+     to "CSCF". It is happening sometime during the call to CINTS::main.
+     I tracked the code that is modifying psi_file_prefix to the strcpy
+     function call in ip_string_v (ip_data.c) it appears that the strcpy is
+     receiving bogus memory addresses. gdb is unable to provide me a call
+     stack backtrace outside of this function so it's going to take a little
+     longer to nail the bug.
+

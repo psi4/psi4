@@ -13,6 +13,11 @@
 
 using namespace psi;
 
+extern "C" {
+  extern char* psi_file_prefix;
+  extern char* gprgid();
+}
+
 PSIO::~PSIO() {
 #ifdef PSIO_STATS
   int i;
@@ -58,6 +63,7 @@ extern "C" {
 
   int psio_done(void) {
     delete _default_psio_lib_;
+    _default_psio_lib_ = NULL;
   }
 
 }
