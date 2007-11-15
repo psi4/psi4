@@ -173,6 +173,6 @@ int main(int argc, char *argv[])
     std::cerr << "cints failed due to errors\n";
     punt(const_cast<char*>(e.what()));
   }
-  exit(PSI_RETURN_SUCCESS);
+  return PSI_RETURN_SUCCESS;
 }
 }} // end namespace psi::CINTS
