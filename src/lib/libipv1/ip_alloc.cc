@@ -49,13 +49,17 @@ void ip_free_keyword_tree(ip_keyword_tree_t *tree)
     /* Free the sub trees first. */
     ip_free_keyword_tree(I->down);
     free(I->keyword);
+    /* free any values */
+    
     nextI = I->across;
+    ip_free_value(I->value);
 
     /* Zero out I (so if I accidently use it again I'll get SEGV). */
     I->down = NULL;
     I->keyword = NULL;
     I->across = NULL;
     I->up = NULL;
+    I->value = NULL;
 
     free(I);
     } while ((I = nextI) != tree);
