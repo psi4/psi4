@@ -12,9 +12,9 @@ LDLIBS +=  $(LAPACK) $(BLAS) $(RUBYLIB)
 LDFLAGS += $(RUBYLDFLAGS)
 
 PSILIBS = -lPSI_dpd -lPSI_qt -lPSI_chkpt -lPSI_deriv -lPSI_r12 -lPSI_int \
-          -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
-PSIMODULES = -L`dirname $(PSITARGET)` -linput -lcints -lcscf
-
+          -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1 \
+          -linput -lcints -lcscf
+          
 CXXINC += $(RUBYINC) -DINSTALLEDPSIDATADIR=\"$(datadir)\"
 CXXSRC = psi4.cc ruby.cc
 
@@ -27,7 +27,7 @@ $(PSITARGET): $(BINOBJ) $(PSILIBS)
 	$(LD) $(LDFLAGS) -o $@ $(PSIMODULES) $^ $(LDLIBS)
 	
 ifneq ($(DODEPEND),no)
-$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE) $(PSILIBS)
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE) $(PSILIBS) $(PSIMODULES)
 include $(BINOBJ:%.o=%.d)
 endif
 

@@ -48,8 +48,7 @@ install_inc::
 install_man::
 
 $(PSITARGET): $(LIBOBJ)
-	$(MKDIRS) `dirname $(PSITARGET)`
-	$(AR) $(ARFLAGS) `dirname $(PSITARGET)`/lib`basename $(PSITARGET)`.a $^
+	$(AR) $(ARFLAGS) $(top_objdir)/lib/lib`basename $(PSITARGET)`.a $^
 
 install_target:: $(PSITARGET)
 	$(MKDIRS) $(bindir)
