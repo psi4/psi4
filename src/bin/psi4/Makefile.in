@@ -27,7 +27,7 @@ $(PSITARGET): $(BINOBJ) $(PSILIBS)
 	$(LD) $(LDFLAGS) -o $@ $(PSIMODULES) $^ $(LDLIBS)
 	
 ifneq ($(DODEPEND),no)
-$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE) $(PSILIBS)
 include $(BINOBJ:%.o=%.d)
 endif
 
