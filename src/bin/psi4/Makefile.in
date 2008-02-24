@@ -4,6 +4,7 @@ VPATH = @srcdir@
 
 include ../MakeVars
 
+PSITARGET = $(top_objdir)/bin/$(shell basename `pwd`)
 LD = $(CXX)
 LDLIBS +=  $(LAPACK) $(BLAS) $(RUBYLIB)
 
@@ -12,9 +13,9 @@ LDLIBS +=  $(LAPACK) $(BLAS) $(RUBYLIB)
 LDFLAGS += $(RUBYLDFLAGS)
 
 PSILIBS = -lPSI_dpd -lPSI_qt -lPSI_chkpt -lPSI_deriv -lPSI_r12 -lPSI_int \
-          -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1 \
-          -linput -lcints -lcscf
-          
+          -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
+PSIMODULES = -lPSI_input -lPSI_cints -lPSI_cscf
+
 CXXINC += $(RUBYINC) -DINSTALLEDPSIDATADIR=\"$(datadir)\"
 CXXSRC = psi4.cc ruby.cc
 
@@ -22,9 +23,9 @@ BINOBJ = $(CXXSRC:%.cc=%.o)
 
 include ../MakeRules
 
-$(PSITARGET): $(BINOBJ) $(PSILIBS)
+$(PSITARGET): $(BINOBJ) $(PSIMODULES) $(PSILIBS)
 	$(MKDIRS) `dirname $(PSITARGET)`
-	$(LD) $(LDFLAGS) -o $@ $(PSIMODULES) $^ $(LDLIBS)
+	$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 	
 ifneq ($(DODEPEND),no)
 $(BINOBJ:%.o=%.d): $(DEPENDINCLUDE) $(PSILIBS) $(PSIMODULES)

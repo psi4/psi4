@@ -107,7 +107,7 @@ vpath %.a $(top_objdir)/lib:$(libdir)
 #
 # have target default to the name of the directory we're in
 #
-PSITARGET = $(top_objdir)/bin/$(shell basename `pwd`)
+PSITARGET = $(top_objdir)/lib/$(shell basename `pwd`)
 
 # Force -lx to only look for libx.a.
 .LIBPATTERNS = lib%.a
