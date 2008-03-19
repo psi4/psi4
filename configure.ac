@@ -793,6 +793,7 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libr12/Makefile
           src/lib/libr12/MakeVars
           src/lib/libr12/libr12_config.h
+          src/lib/liboptions/Makefile
 
           src/bin/psi4/Makefile
           src/bin/input/Makefile
