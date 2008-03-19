@@ -50,6 +50,7 @@ install_man::
 $(PSITARGET): $(LIBOBJ)
 	$(MKDIRS) `dirname $(PSITARGET)`
 	$(AR) $(ARFLAGS) `dirname $(PSITARGET)`/libPSI_`basename $(PSITARGET)`.a $^
+	$(RANLIB) $(top_objdir)/lib/lib`basename $(PSITARGET)`.a
 
 install_target:: $(PSITARGET)
 	$(MKDIRS) $(bindir)
