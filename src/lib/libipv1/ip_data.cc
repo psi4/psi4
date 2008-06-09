@@ -1,11 +1,11 @@
-/*! \file ip_data.c
-    \ingroup (IPV1)
+/*! \file
+    \ingroup IPV1
     \brief Rudimentary data retrieval routines from the input file 
 */
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstdarg>
+#include <cstring>
 #include "tmpl.h"
 
 #ifdef DEC
@@ -112,7 +112,7 @@ int ip_boolean_v(char *keyword, int *boolean, int n, int *v)
 
   if (val->type != IP_SCALAR) return IPE_NOT_A_SCALAR;
 
-  strncpy(copy,val->v.scalar,10);
+  ::strncpy(copy,val->v.scalar,10);
   copy[9] = '\0';
 
   /* Convert the string to uppercase. */

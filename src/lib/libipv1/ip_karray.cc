@@ -1,5 +1,5 @@
-/*! \file ip_karray.cc
-    \ingroup (IPV1)
+/*! \file
+    \ingroup IPV1
     \brief These routines manipulate keyword arrays.  A keyword
  * array differs from a data array in that its indices are indicated
  * by a keyword segment.  For example: array:0:1 = 6 is a keyword
@@ -9,10 +9,10 @@
  * only the first place in the cwk in which a keyword array name is
  * found will be used. */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstdarg>
+#include <cstring>
 #include "tmpl.h"
 #include "ip_types.h"
 #include "ip_global.h"

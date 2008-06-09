@@ -40,8 +40,8 @@ scan.c: scan.l
 	$(LEX) -t $^ > scan.c
 
 install_inc:: $(ALLINCLUDE)
-	$(MKDIRS) $(incdir)/libipv1
-	$(INSTALL_INCLUDE) $^ $(incdir)/libipv1
+	$(MKDIRS) $(DESTDIR)$(incdir)/libipv1
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libipv1
 
 clean::
 	-/bin/rm -f y.tab.h y.tab.c y.output scan.c
