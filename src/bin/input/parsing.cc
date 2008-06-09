@@ -1,12 +1,12 @@
-/*! \file 
-    \ingroup (INPUT)
+/*! \file
+    \ingroup INPUT
     \brief Enter brief description of file here 
 */
 #define EXTERN
-#include <stdio.h>
+#include <cstdio>
 #include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
-#include <string.h>
+#include <cstring>
 #include "input.h"
 #include <physconst.h>
 #include "global.h"
@@ -16,8 +16,8 @@ namespace psi { namespace input {
 
 void parsing()
 {
-   int errcod;
-   char *guess;
+   int errcod, i;
+   char *guess, tmp_label[80];
 
      /* Same as --noreorient */
      errcod = ip_boolean("NO_REORIENT",&no_reorient,0);
@@ -85,12 +85,29 @@ void parsing()
 	     if (strcmp(unique_axis,"X") && strcmp(unique_axis,"Y") && strcmp(unique_axis,"Z"))
 		 unique_axis = NULL;
 
+     nfragments = 1;
+     if (ip_exist("NFRAGMENTS",0))
+	   errcod = ip_data("NFRAGMENTS","%d",&nfragments,0);
+     /* check to make sure all fragment geometries are present */
+
 	 if (geomdat_geom == 0) {
 	   /*No default for these two unless running a findif procedure*/
-	   if (ip_exist("ZMAT",0) == 1)
+	   if (ip_exist("ZMAT",0) == 1) {
 	     cartOn = 0;
-	   else if (ip_exist("GEOMETRY",0) == 1)
+         for (i=1;i<nfragments;++i) {
+           sprintf(tmp_label,"ZMAT%d",i+1);
+           if (ip_exist(tmp_label,0) == 0)
+	         punt("input cannot find all the needed fragment structures!");
+         }
+       }
+	   else if (ip_exist("GEOMETRY",0) == 1) {
 	     cartOn = 1;
+         for (i=1;i<nfragments;++i) {
+           sprintf(tmp_label,"GEOMETRY%d",i+1);
+           if (ip_exist(tmp_label,0) == 0)
+	         punt("input cannot find all the needed fragment structures!");
+         }
+       }
 	   else
 	     punt("Both ZMAT and GEOMETRY are missing!");
 	   

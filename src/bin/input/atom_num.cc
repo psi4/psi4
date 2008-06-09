@@ -1,12 +1,8 @@
-/*! \file 
-    \ingroup (INPUT)
-    \brief Enter brief description of file here 
+/*! 
+  \file
+  \ingroup INPUT
+  \brief Determine atomic number for atoms input by the user
 */
-
-/*! \defgroup INPUT Add a description of the group INPUT */
-
-/* This file contains the function to determine atomic number for atoms
-   input by the user */
 
 #define EXTERN
 #include <cstdio>
@@ -316,7 +312,7 @@ else if(!strcmp(A,"CM") || !strcmp(A,"CURIUM")){
 else if(!strcmp(A,"BK") || !strcmp(A,"BERKELIUM")){
   *C = 97.00;
  }
-else if(!strcmp(A,"CF") || !strcmp(A,"CALELSE IFORNIUM")){
+else if(!strcmp(A,"CF") || !strcmp(A,"CALIFORNIUM")){
   *C = 98.00;
  }
 else if(!strcmp(A,"ES") || !strcmp(A,"EINSTEINIUM")){

@@ -1,20 +1,22 @@
-/*! \file 
-    \ingroup (INPUT)
+/*! \file
+    \ingroup INPUT
     \brief Enter brief description of file here 
 */
 #define EXTERN
-#include <stdio.h>
+#include <cstdio>
 #include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
+#include <cstdlib>
+#include <cmath>
+#include <cstring>
 #include "input.h"
 #include <physconst.h>
 #include "global.h"
 #include "defines.h"
 
 namespace psi { namespace input {
+
+using namespace psi;
 
 /*
    Main routine to read the basis set info.  It calls recur, and all of the
@@ -361,12 +363,16 @@ int *ang_mom)
    char *grep;
    char *next_key;
    char *puntstr;
+   char *temp_string;
     
    next_key = init_char_array(50);
    temp = init_char_matrix(MAXATOM,50);
  
 
    for(i=0;i<num_levels;i++){
+      //errcod = ip_string(temp_string, &grep,2,i,0);
+      //strcpy(ip_token2[atom_number],temp_string);
+      //free(temp_string);
       errcod = ip_string(ip_token2[atom_number], &grep,2,i,0);
 
       /*----------------------
@@ -376,6 +382,9 @@ int *ang_mom)
 
         /*Create new keyword from base and string after "GET"*/
         errcod = ip_string(ip_token2[atom_number], &next_key,2,i,1);
+        //errcod = ip_string(temp_string, &next_key,2,i,1);
+        //strcpy(ip_token2[atom_number],temp_string);
+        //free(temp_string);
         sprintf(temp[atom_number],"%s:%s",ip_token1[atom_number],next_key);
 	
 	/*Check if the basis to be GET'ed exists*/

@@ -1,14 +1,18 @@
-/*! \file 
-    \ingroup (INPUT)
-    \brief Enter brief description of file here 
+/*! \defgroup INPUT input: Set up a PSI computation based on user input */
+
+/*! 
+** \file
+** \ingroup INPUT
+** \brief Set up a PSI computation based on user input
 */
-#include <stdio.h>
+
+#include <cstdio>
 #include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <chkpt_params.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
 #include <psifiles.h>
 #include "input.h"
 #include <physconst.h>
@@ -26,10 +30,12 @@ void print_symm_trans();
 void print_basis_info();
 void cleanup();
 extern void build_cartdisp_salcs();
+void am_i_to_char(int am, char *am_label);
 
-int main(int argc, char *argv[])
+using namespace psi;
+
+int input(int argc, char *argv[])
 {
-  using namespace psi::input;
    /*variables and arrays*/
    int i,j,k,l;
    int errcod;
@@ -111,9 +117,11 @@ int main(int argc, char *argv[])
       -----------------*/
      if (chkpt_geom == 0 && geomdat_geom == 0) { /* read geometry from input.dat */
        if (cartOn)
-	 read_cart();
+         read_cart();
        else
-	 read_zmat();
+         read_zmat();
+       if (nfragments > 1)
+         orient_fragments();
      }
      else if (chkpt_geom) { /* else read the next molecular geometry from checkpoint file */
        read_chkpt_geom();
@@ -293,8 +301,7 @@ void print_intro()
 {
   if (print_lvl) {
       fprintf(outfile,"                                --------------\n");
-      fprintf(outfile,"                                  WELCOME TO\n");
-      fprintf(outfile,"                                    PSI  3\n");
+      fprintf(outfile,"                                    INPUT\n");
       fprintf(outfile,"                                --------------\n\n");
       fflush(outfile);
   }
@@ -429,7 +436,9 @@ void print_symm_trans()
 
 void print_basis_info()
 {
-  int i,j;
+  int i,jshell,kshell,jprim,kprim,am,first,last,cnt_bf,redundant;
+  double jexp, kexp;
+  char am_label[2];
 
   fprintf(outfile,"  -BASIS SET INFORMATION:\n");
   fprintf(outfile,"    Total number of shells = %d\n",num_shells);
@@ -440,6 +449,66 @@ void print_basis_info()
   fprintf(outfile,"    -----    ------------\n");
   for(i=0;i<nirreps;i++)
     fprintf(outfile,"    %3d      %7d\n",i+1,num_so_per_irrep[i]);
+
+  fprintf(outfile,"\n  -Contraction Scheme:\n");
+  fprintf(outfile,"    Atom     All Primitives // Unique Primitives // Shells\n");
+  fprintf(outfile,"    ----     ---------------------------------------------\n");
+  for(i=0;i<num_atoms;i++) {
+    fprintf(outfile,"    %4d     ", i+1);  
+    first = first_shell_on_atom[i];
+    last = first + nshells_per_atom[i];
+    /* print out # and am of primitives per atom */
+    for(am=0; am<max_angmom+1; ++am) {
+      cnt_bf = 0;
+      for(jshell=first;jshell<last;jshell++) {
+        if (am == shell_ang_mom[jshell])
+          cnt_bf += nprim_in_shell[jshell];
+      }
+      if(cnt_bf > 0) {
+        am_i_to_char(am, am_label);
+        fprintf(outfile," %d%s", cnt_bf, am_label);
+      }
+    }
+    fprintf(outfile," // ");
+    /* print out # and am of unique primitives per atom */
+    for(am=0; am<max_angmom+1; ++am) {
+      cnt_bf = 0;
+      for(jshell=first;jshell<last;jshell++) {
+        if (am == shell_ang_mom[jshell]) {
+          for(jprim=0; jprim<nprim_in_shell[jshell]; ++jprim) {
+            jexp = exponents[first_prim_shell[jshell]+jprim];
+            redundant = 0;
+            for(kshell=first; kshell<jshell; kshell++) {
+              for(kprim=0; kprim<nprim_in_shell[kshell]; ++kprim) {
+                kexp = exponents[first_prim_shell[kshell]+kprim];
+                if (jexp == kexp)
+                  redundant = 1;
+              }
+            }
+            if (!redundant) ++cnt_bf;
+          }
+        }
+      }
+      if(cnt_bf > 0) {
+        am_i_to_char(am, am_label);
+        fprintf(outfile," %d%s", cnt_bf, am_label);
+      }
+    }
+    fprintf(outfile," // ");
+    /* print out # and am of shells per atom */
+    for(am=0; am<max_angmom+1; ++am) {
+      cnt_bf = 0;
+      for(jshell=first;jshell<last;jshell++) {
+        if (am == shell_ang_mom[jshell]) ++cnt_bf;
+      }
+      if(cnt_bf > 0) {
+        am_i_to_char(am, am_label);
+        fprintf(outfile," %d%s", cnt_bf, am_label);
+      }
+    }
+    fprintf(outfile,"\n");
+  }
+
   fprintf(outfile,"\n");
   if (print_lvl >= DEBUGPRINT) {
     fprintf(outfile,"    Prim#     Exponent     Norm. contr. coeff.\n");
@@ -543,7 +612,35 @@ void cleanup()
   free(ioff);
   free(df);
   free(z_geom);
+  free(frag_num_atoms);
+  free(frag_num_allatoms);
+  free(frag_atom);
+  free(frag_allatom);
+  free(nref_per_fragment);
+  for (i=0; i<(nfragments-1); ++i) {
+    if (nref_per_fragment[i] > 0)
+      free_block(ref_pts_lc[i]);
+  }
+  free(ref_pts_lc);
   
+  return;
+}
+
+void am_i_to_char(int am, char *am_label)
+{
+  if(am == 0) am_label[0] = 's';
+  else if(am == 1) am_label[0] = 'p';
+  else if(am == 2) am_label[0] = 'd';
+  else if(am == 3) am_label[0] = 'f';
+  else if(am == 4) am_label[0] = 'g';
+  else if(am == 5) am_label[0] = 'h';
+  else if(am == 6) am_label[0] = 'i';
+  else if(am == 7) am_label[0] = 'k';
+  else if(am == 8) am_label[0] = 'l';
+  else if(am == 9) am_label[0] = 'm';
+  else if(am == 10) am_label[0] = 'n';
+  else am_label[0] = 'x';
+  am_label[1] = '\0';
   return;
 }
 

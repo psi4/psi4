@@ -1,12 +1,12 @@
-/*! \file 
-    \ingroup (INPUT)
+/*! \file
+    \ingroup INPUT
     \brief Enter brief description of file here 
 */
 #define EXTERN
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <libciomr/libciomr.h>
-#include <math.h>
+#include <cmath>
 #include <symmetry.h>
 #include "input.h"
 #include "global.h"
@@ -113,7 +113,8 @@ void build_transmat()
 	for(irr=0;irr<nirreps;irr++) {
 	  coeff = 0;
 	  for(symop=0;symop<nirreps;symop++)
-	    coeff += ao_type_transmat[l][symop][ao]*irr_char[irr][symop];
+	    coeff += static_cast <int> (ao_type_transmat[l][symop][ao]
+          *irr_char[irr][symop]);
 	  if (coeff != 0) {
 	    ao_type_irr[l][ao] = irr;
 	    num_cart_so[l][irr]++;

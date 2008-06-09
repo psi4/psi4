@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (INPUT)
+/*! \file
+    \ingroup INPUT
     \brief Enter brief description of file here 
 */
 /***************************
@@ -11,6 +11,7 @@
 
 /*need this for z_entry structure*/
 #include <libchkpt/chkpt.h>
+#include <psi4.h>
 
 #ifdef EXTERN
 # undef EXTERN
@@ -34,10 +35,6 @@ struct coordinates{
 };
 
 /*Super-global stuff - the same no matter what calculation is running */
-extern "C" {
-  EXTERN FILE *infile, *outfile;
-  EXTERN char *psi_file_prefix;
-}
 EXTERN int *ioff;
 EXTERN double *df;                  /*df[i] = (i-1)!!*/
 EXTERN char **elem_name;            /*Element names*/
@@ -109,6 +106,13 @@ EXTERN int nirreps;                 /*Number of irreducible representations in t
 
 EXTERN int num_allatoms;            /*Total number of all atoms (including dummies)*/
 EXTERN int num_atoms;               /*Total number of atoms*/
+EXTERN int nfragments;              /*Number of molecular fragments in input to read*/
+EXTERN int *frag_num_atoms;         /*Total number of atoms in each fragment*/
+EXTERN int *frag_num_allatoms;      /*Total number of all atoms (including dummies) in each fragment*/
+EXTERN int *frag_atom;              /* a fragment number -> first atom lookup array */
+EXTERN int *frag_allatom;              /* a fragment number -> first atom lookup array */
+EXTERN int *nref_per_fragment;      /* number of reference points on each fragment */
+EXTERN double ***ref_pts_lc;        /* coefficients that determine reference points on each fragment */
 EXTERN int num_uniques;             /*Number of unique atoms*/
 EXTERN int num_shells;              /*Total number of shells*/
 EXTERN int num_unique_shells;       /*Number of unique shells*/

@@ -1,13 +1,13 @@
-/*! \file 
-    \ingroup (INPUT)
+/*! \file
+    \ingroup INPUT
     \brief Enter brief description of file here 
 */
 #define EXTERN
-#include <stdio.h>
+#include <cstdio>
 #include <libciomr/libciomr.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
 #include "input.h"
 #include "global.h"
 #include "defines.h"
@@ -511,6 +511,7 @@ void find_symmetry()
 
 namespace {
 
+using namespace psi;
 using namespace psi::input;
 
 void alloc_irr_char()
@@ -561,6 +562,7 @@ void alloc_irr_char()
    unit vectors */
 void permute_axes(double **geom, int axis1, int axis2)
 {
+  using namespace psi;
   int atom,i,j;
   int axis3;
   double tmp;
@@ -586,3 +588,4 @@ void permute_axes(double **geom, int axis1, int axis2)
 }
 
 } // namespace
+
