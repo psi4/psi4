@@ -1,11 +1,11 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
+#include <cstdio>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 
 /* dpd_buf4_symm2(): Symmetrizes two dpdbuf4's by
 ** taking, I'(pq,rs) = 1/2 [I1(pq,rs) + I2(pq,rs)] (note the
@@ -48,4 +48,4 @@ int dpd_buf4_symm2(dpdbuf4 *Buf1, dpdbuf4 *Buf2)
 }
 
 
-} /* extern "C" */
+} // namespace psi

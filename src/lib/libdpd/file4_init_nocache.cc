@@ -1,16 +1,16 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <libpsio/psio.h>
 #include "dpd.h"
 #define EXTERN
 #include "dpd.gbl"
 
-extern "C" {
+namespace psi {
 
 /** This file4_init() does not add the file4 to the cache **/
 
@@ -86,4 +86,4 @@ int dpd_file4_init_nocache(dpdfile4 *File, int filenum, int irrep, int pqnum,
 }
 		  
 
-} /* extern "C" */
+} // namespace psi

@@ -1,17 +1,17 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libdpd/dpd.h>
 #include <ccfiles.h>
 
-extern "C" {
+namespace psi {
 
 /*
   This function computes contributions to singles and doubles of
@@ -1572,4 +1572,4 @@ void cc3_sigma_UHF_BBA(dpdbuf4 *C2BB, dpdbuf4 *C2AB, dpdbuf4 *C2BA,
 
 }
 
-} /* extern "C" */
+} // namespace psi

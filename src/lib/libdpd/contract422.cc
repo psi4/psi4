@@ -1,13 +1,13 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include <libqt/qt.h>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 
 /* dpd_contract422(): Contracts a four-index dpd with a two-index
 ** dpd to give another two-index dpd.  Both indices of the
@@ -134,4 +134,4 @@ int dpd_contract422(dpdbuf4 *X, dpdfile2 *Y, dpdfile2 *Z, int trans_Y,
   return 0;
 }
 
-} /* extern "C" */
+} // namespace psi

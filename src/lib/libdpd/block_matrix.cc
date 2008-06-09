@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
 
@@ -27,15 +27,15 @@
 ** TDC, 6/24/00
 */
 
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
+#include<cstdio>
+#include<cstdlib>
+#include<cstring>
 #include <libqt/qt.h>
 #include "dpd.h"
 #define EXTERN
 #include "dpd.gbl"
 
-extern "C" {
+namespace psi {
 	
 double **dpd_block_matrix(int n, int m)
 {
@@ -137,4 +137,4 @@ void dpd_free_block(double **array, int n, int m)
   dpd_main.memused -= size;
 }
 
-} /* extern "C" */
+} // namespace psi

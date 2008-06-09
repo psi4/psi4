@@ -1,16 +1,16 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <libpsio/psio.h>
 #include "dpd.h"
 #define EXTERN
 #include "dpd.gbl"
 
-extern "C" {
+namespace psi {
 
 /* dpd_file2_init(): Initializes a dpd two-index file for reading
 ** or writing data.
@@ -69,4 +69,4 @@ int dpd_file2_init(dpdfile2 *File, int filenum, int irrep, int pnum,
   return 0;
 }
 
-} /* extern "C" */
+} // namespace psi

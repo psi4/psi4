@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
 
@@ -58,15 +58,15 @@
 ** TDC, July 2004
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
 #include <libqt/qt.h>
 #include <libdpd/dpd.h>
 #include <ccfiles.h>
 
-extern "C" {
+namespace psi {
 
 void T3_AAB(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk, 
 	    dpdbuf4 *T2AA, dpdbuf4 *T2AB, dpdbuf4 *T2BA, dpdbuf4 *FAA, dpdbuf4 *FAB, dpdbuf4 *FBA,
@@ -580,4 +580,4 @@ void T3_AAB(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
   }
 }
 
-} /* extern "C" */
+} // namespace psi

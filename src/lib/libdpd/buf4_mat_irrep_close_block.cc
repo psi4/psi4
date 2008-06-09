@@ -1,15 +1,15 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <libciomr/libciomr.h>
 #include "dpd.h"
 #define EXTERN
 #include "dpd.gbl"
 
-extern "C" {
+namespace psi {
 	
 /* dpd_buf4_mat_irrep_close_block(): Releases memory for a subblock of
 ** a matrix for a single irrep of a dpd four-index buffer.
@@ -44,4 +44,5 @@ int dpd_buf4_mat_irrep_close_block(dpdbuf4 *Buf, int irrep, int num_pq)
   return 0;
 }
 
-} /* extern "C" */
+} // namespace psi
+

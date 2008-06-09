@@ -1,14 +1,14 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
 #include <libqt/qt.h>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 
 /*
 ** dpd_buf4_sort_ooc(): A general DPD buffer sorting function that will
@@ -70,7 +70,7 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 
 	if(!rows_per_bucket) dpd_error("buf4_sort_pqsr: Not enough memory for one row!", stderr);
 
-	nbuckets = ceil(((double) InBuf->params->rowtot[h])/((double) rows_per_bucket));
+	nbuckets = (int) ceil(((double) InBuf->params->rowtot[h])/((double) rows_per_bucket));
 
 	rows_left = InBuf->params->rowtot[h] % rows_per_bucket;
 
@@ -1108,4 +1108,5 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 #endif
 }
 
-} /* extern "C" */
+} // namespace psi
+

@@ -1,13 +1,13 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
+#include <cstdio>
+#include <cstring>
+#include <cmath>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 	
 /* dpd_buf4_copy(): Copies an existing four-index dpdbuf4 into another file.
 **
@@ -130,4 +130,4 @@ int dpd_buf4_copy(dpdbuf4 *InBuf, int outfilenum, char *label)
   return 0;
 }
 
-} /* extern "C" */
+} // namespace psi

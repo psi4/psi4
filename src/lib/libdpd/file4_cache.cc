@@ -1,16 +1,16 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <libqt/qt.h>
 #include "dpd.h"
 #define EXTERN
 #include "dpd.gbl"
 
-extern "C" {
+namespace psi {
 
 void dpd_file4_cache_init(void)
 {
@@ -556,4 +556,4 @@ void dpd_file4_cache_unlock(dpdfile4 *File)
 }
 
 
-} /* extern "C" */
+} // namespace psi

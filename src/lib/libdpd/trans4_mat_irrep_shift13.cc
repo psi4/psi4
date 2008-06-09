@@ -1,14 +1,14 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 
 /* buf_block is the block of buffer to shift (also the row-irrep) */
 
@@ -16,7 +16,7 @@ int dpd_trans4_mat_irrep_shift13(dpdtrans4 *Trans, int buf_block)
 {
   int h, i, nirreps, all_buf_irrep;
   int *count;
-  long int *dataoff;
+  int *dataoff;
   int rowtot, coltot;
   double *data;
 
@@ -54,7 +54,7 @@ int dpd_trans4_mat_irrep_shift13(dpdtrans4 *Trans, int buf_block)
 	    (double **) malloc(Trans->shift.rowtot[buf_block][h] * sizeof(double *)));
 
   /* Calculate the data offset */
-  dataoff = init_long_int_array(nirreps);
+  dataoff = init_int_array(nirreps);
   dataoff[0] = 0;
   for(h=1; h < nirreps; h++)
       dataoff[h] = dataoff[h-1] +
@@ -83,4 +83,4 @@ int dpd_trans4_mat_irrep_shift13(dpdtrans4 *Trans, int buf_block)
   return 0;
 }
 
-} /* extern "C" */
+} // namespace psi

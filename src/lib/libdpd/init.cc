@@ -1,15 +1,15 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstdarg>
 #include <libciomr/libciomr.h>
 #include "dpd.h"
 #include "dpd.gbl"
 
-extern "C" {
+namespace psi {
 
 typedef struct {
     int *left_orbspi;
@@ -600,4 +600,4 @@ int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype,
 }
 
 
-} /* extern "C" */
+} // namespace psi

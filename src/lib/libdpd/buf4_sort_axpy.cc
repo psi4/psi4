@@ -1,14 +1,14 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
 #include <libqt/qt.h>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 
 /*
 ** dpd_buf4_sort_axpy(): A general DPD buffer sorting function that also adds 
@@ -170,7 +170,7 @@ int dpd_buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 	rows_per_bucket = dpd_memfree()/(2 * OutBuf.params->coltot[Grs]);
 	if(rows_per_bucket > OutBuf.params->rowtot[Gpq])
 	  rows_per_bucket = OutBuf.params->rowtot[Gpq];
-	nbuckets = ceil((double) OutBuf.params->rowtot[Gpq]/(double) rows_per_bucket);
+	nbuckets = (int) ceil((double) OutBuf.params->rowtot[Gpq]/(double) rows_per_bucket);
 	rows_left = OutBuf.params->rowtot[Gpq] % rows_per_bucket;
 
 	/* allocate space for the bucket of rows */
@@ -275,7 +275,7 @@ int dpd_buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 	out_rows_per_bucket = dpd_memfree()/(2 * OutBuf.params->coltot[Grs]);
 	if(out_rows_per_bucket > OutBuf.params->rowtot[Gpq])
 	  out_rows_per_bucket = OutBuf.params->rowtot[Gpq];
-	out_nbuckets = ceil((double) OutBuf.params->rowtot[Gpq]/(double) out_rows_per_bucket);
+	out_nbuckets = (int) ceil((double) OutBuf.params->rowtot[Gpq]/(double) out_rows_per_bucket);
 	out_rows_left = OutBuf.params->rowtot[Gpq] % out_rows_per_bucket;
 
 	/* allocate space for the bucket of rows */
@@ -293,7 +293,7 @@ int dpd_buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 	    in_rows_per_bucket = dpd_memfree()/(2 * InBuf->params->coltot[Gcol]);
 	    if(in_rows_per_bucket > InBuf->params->rowtot[Grow])
 	      in_rows_per_bucket = InBuf->params->rowtot[Grow];
-	    in_nbuckets = ceil((double) InBuf->params->rowtot[Grow]/(double) in_rows_per_bucket);
+	    in_nbuckets = (int) ceil((double) InBuf->params->rowtot[Grow]/(double) in_rows_per_bucket);
 	    in_rows_left = InBuf->params->rowtot[Grow] % in_rows_per_bucket;
 
 	    /* allocate space for the bucket of rows */
@@ -377,7 +377,7 @@ int dpd_buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 	    in_rows_per_bucket = dpd_memfree()/(2 * InBuf->params->coltot[Gcol]);
 	    if(in_rows_per_bucket > InBuf->params->rowtot[Grow])
 	      in_rows_per_bucket = InBuf->params->rowtot[Grow];
-	    in_nbuckets = ceil((double) InBuf->params->rowtot[Grow]/(double) in_rows_per_bucket);
+	    in_nbuckets = (int) ceil((double) InBuf->params->rowtot[Grow]/(double) in_rows_per_bucket);
 	    in_rows_left = InBuf->params->rowtot[Grow] % in_rows_per_bucket;
 
 	    /* allocate space for the bucket of rows */
@@ -513,7 +513,7 @@ int dpd_buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 	out_rows_per_bucket = dpd_memfree()/(2 * OutBuf.params->coltot[Grs]);
 	if(out_rows_per_bucket > OutBuf.params->rowtot[Gpq])
 	  out_rows_per_bucket = OutBuf.params->rowtot[Gpq];
-	out_nbuckets = ceil((double) OutBuf.params->rowtot[Gpq]/(double) out_rows_per_bucket);
+	out_nbuckets = (int) ceil((double) OutBuf.params->rowtot[Gpq]/(double) out_rows_per_bucket);
 	out_rows_left = OutBuf.params->rowtot[Gpq] % out_rows_per_bucket;
 
 	/* allocate space for the bucket of rows */
@@ -531,7 +531,7 @@ int dpd_buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 	    in_rows_per_bucket = dpd_memfree()/(2 * InBuf->params->coltot[Gcol]);
 	    if(in_rows_per_bucket > InBuf->params->rowtot[Grow])
 	      in_rows_per_bucket = InBuf->params->rowtot[Grow];
-	    in_nbuckets = ceil((double) InBuf->params->rowtot[Grow]/(double) in_rows_per_bucket);
+	    in_nbuckets = (int) ceil((double) InBuf->params->rowtot[Grow]/(double) in_rows_per_bucket);
 	    in_rows_left = InBuf->params->rowtot[Grow] % in_rows_per_bucket;
 
 	    /* allocate space for the bucket of rows */
@@ -615,7 +615,7 @@ int dpd_buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 	    in_rows_per_bucket = dpd_memfree()/(2 * InBuf->params->coltot[Gcol]);
 	    if(in_rows_per_bucket > InBuf->params->rowtot[Grow])
 	      in_rows_per_bucket = InBuf->params->rowtot[Grow];
-	    in_nbuckets = ceil((double) InBuf->params->rowtot[Grow]/(double) in_rows_per_bucket);
+	    in_nbuckets = (int) ceil((double) InBuf->params->rowtot[Grow]/(double) in_rows_per_bucket);
 	    in_rows_left = InBuf->params->rowtot[Grow] % in_rows_per_bucket;
 
 	    /* allocate space for the bucket of rows */
@@ -1161,7 +1161,7 @@ int dpd_buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 	out_rows_per_bucket = dpd_memfree()/(2 * OutBuf.params->coltot[Grs]);
 	if(out_rows_per_bucket > OutBuf.params->rowtot[Gpq])
 	  out_rows_per_bucket = OutBuf.params->rowtot[Gpq];
-	out_nbuckets = ceil((double) OutBuf.params->rowtot[Gpq]/(double) out_rows_per_bucket);
+	out_nbuckets = (int) ceil((double) OutBuf.params->rowtot[Gpq]/(double) out_rows_per_bucket);
 	out_rows_left = OutBuf.params->rowtot[Gpq] % out_rows_per_bucket;
 
 	/* allocate space for the bucket of rows */
@@ -1179,7 +1179,7 @@ int dpd_buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 	    in_rows_per_bucket = dpd_memfree()/(2 * InBuf->params->coltot[Gcol]);
 	    if(in_rows_per_bucket > InBuf->params->rowtot[Grow])
 	      in_rows_per_bucket = InBuf->params->rowtot[Grow];
-	    in_nbuckets = ceil((double) InBuf->params->rowtot[Grow]/(double) in_rows_per_bucket);
+	    in_nbuckets = (int) ceil((double) InBuf->params->rowtot[Grow]/(double) in_rows_per_bucket);
 	    in_rows_left = InBuf->params->rowtot[Grow] % in_rows_per_bucket;
 
 	    /* allocate space for the bucket of rows */
@@ -1263,7 +1263,7 @@ int dpd_buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 	    in_rows_per_bucket = dpd_memfree()/(2 * InBuf->params->coltot[Gcol]);
 	    if(in_rows_per_bucket > InBuf->params->rowtot[Grow])
 	      in_rows_per_bucket = InBuf->params->rowtot[Grow];
-	    in_nbuckets = ceil((double) InBuf->params->rowtot[Grow]/(double) in_rows_per_bucket);
+	    in_nbuckets = (int) ceil((double) InBuf->params->rowtot[Grow]/(double) in_rows_per_bucket);
 	    in_rows_left = InBuf->params->rowtot[Grow] % in_rows_per_bucket;
 
 	    /* allocate space for the bucket of rows */
@@ -1396,7 +1396,7 @@ int dpd_buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 	out_rows_per_bucket = dpd_memfree()/(2 * OutBuf.params->coltot[Grs]);
 	if(out_rows_per_bucket > OutBuf.params->rowtot[Gpq])
 	  out_rows_per_bucket = OutBuf.params->rowtot[Gpq];
-	out_nbuckets = ceil((double) OutBuf.params->rowtot[Gpq]/(double) out_rows_per_bucket);
+	out_nbuckets = (int) ceil((double) OutBuf.params->rowtot[Gpq]/(double) out_rows_per_bucket);
 	out_rows_left = OutBuf.params->rowtot[Gpq] % out_rows_per_bucket;
 
 	/* allocate space for the bucket of rows */
@@ -1414,7 +1414,7 @@ int dpd_buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 	    in_rows_per_bucket = dpd_memfree()/(2 * InBuf->params->coltot[Gcol]);
 	    if(in_rows_per_bucket > InBuf->params->rowtot[Grow])
 	      in_rows_per_bucket = InBuf->params->rowtot[Grow];
-	    in_nbuckets = ceil((double) InBuf->params->rowtot[Grow]/(double) in_rows_per_bucket);
+	    in_nbuckets = (int) ceil((double) InBuf->params->rowtot[Grow]/(double) in_rows_per_bucket);
 	    in_rows_left = InBuf->params->rowtot[Grow] % in_rows_per_bucket;
 
 	    /* allocate space for the bucket of rows */
@@ -1498,7 +1498,7 @@ int dpd_buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 	    in_rows_per_bucket = dpd_memfree()/(2 * InBuf->params->coltot[Gcol]);
 	    if(in_rows_per_bucket > InBuf->params->rowtot[Grow])
 	      in_rows_per_bucket = InBuf->params->rowtot[Grow];
-	    in_nbuckets = ceil((double) InBuf->params->rowtot[Grow]/(double) in_rows_per_bucket);
+	    in_nbuckets = (int) ceil((double) InBuf->params->rowtot[Grow]/(double) in_rows_per_bucket);
 	    in_rows_left = InBuf->params->rowtot[Grow] % in_rows_per_bucket;
 
 	    /* allocate space for the bucket of rows */
@@ -1665,7 +1665,7 @@ int dpd_buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 	out_rows_per_bucket = dpd_memfree()/(2 * OutBuf.params->coltot[Grs]);
 	if(out_rows_per_bucket > OutBuf.params->rowtot[Gpq])
 	  out_rows_per_bucket = OutBuf.params->rowtot[Gpq];
-	out_nbuckets = ceil((double) OutBuf.params->rowtot[Gpq]/(double) out_rows_per_bucket);
+	out_nbuckets = (int) ceil((double) OutBuf.params->rowtot[Gpq]/(double) out_rows_per_bucket);
 	out_rows_left = OutBuf.params->rowtot[Gpq] % out_rows_per_bucket;
 
 	/* allocate space for the bucket of rows */
@@ -1675,7 +1675,7 @@ int dpd_buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 	in_rows_per_bucket = dpd_memfree()/(2 * InBuf->params->coltot[Gpq]);
 	if(in_rows_per_bucket > InBuf->params->rowtot[Grs])
 	  in_rows_per_bucket = InBuf->params->rowtot[Grs];
-	in_nbuckets = ceil((double) InBuf->params->rowtot[Grs]/(double) in_rows_per_bucket);
+	in_nbuckets = (int) ceil((double) InBuf->params->rowtot[Grs]/(double) in_rows_per_bucket);
 	in_rows_left = InBuf->params->rowtot[Grs] % in_rows_per_bucket;
 
 	/* allocate space for the bucket of rows */
@@ -1859,7 +1859,7 @@ int dpd_buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 	out_rows_per_bucket = dpd_memfree()/(2 * OutBuf.params->coltot[Grs]);
 	if(out_rows_per_bucket > OutBuf.params->rowtot[Gpq])
 	  out_rows_per_bucket = OutBuf.params->rowtot[Gpq];
-	out_nbuckets = ceil((double) OutBuf.params->rowtot[Gpq]/(double) out_rows_per_bucket);
+	out_nbuckets = (int) ceil((double) OutBuf.params->rowtot[Gpq]/(double) out_rows_per_bucket);
 	out_rows_left = OutBuf.params->rowtot[Gpq] % out_rows_per_bucket;
 
 	/* allocate space for the bucket of rows */
@@ -1869,7 +1869,7 @@ int dpd_buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 	in_rows_per_bucket = dpd_memfree()/(2 * InBuf->params->coltot[Gpq]);
 	if(in_rows_per_bucket > InBuf->params->rowtot[Grs])
 	  in_rows_per_bucket = InBuf->params->rowtot[Grs];
-	in_nbuckets = ceil((double) InBuf->params->rowtot[Grs]/(double) in_rows_per_bucket);
+	in_nbuckets = (int) ceil((double) InBuf->params->rowtot[Grs]/(double) in_rows_per_bucket);
 	in_rows_left = InBuf->params->rowtot[Grs] % in_rows_per_bucket;
 
 	/* allocate space for the bucket of rows */
@@ -2155,4 +2155,4 @@ int dpd_buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 #endif
 }
 
-} /* extern "C" */
+} // namespace psi

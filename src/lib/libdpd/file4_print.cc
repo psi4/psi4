@@ -1,11 +1,11 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
+#include <cstdio>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 
 int dpd_file4_print(dpdfile4 *File, FILE *outfile)
 {
@@ -42,4 +42,4 @@ int dpd_file4_print(dpdfile4 *File, FILE *outfile)
 
 }
 
-} /* extern "C" */
+} // namespace psi

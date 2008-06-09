@@ -1,14 +1,14 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
+#include <cstdio>
 #include <libciomr/libciomr.h>
 #include "dpd.h"
 #define EXTERN
 #include "dpd.gbl"
 
-extern "C" {
+namespace psi {
 
 /* dpd_file4_mat_irrep_init(): Allocates and initializes memory for a
 ** matrix for a single irrep of a dpd four-index file.
@@ -35,4 +35,4 @@ int dpd_file4_mat_irrep_init(dpdfile4 *File, int irrep)
   return 0;
 }
 
-} /* extern "C" */
+} // namespace psi

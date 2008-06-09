@@ -1,12 +1,12 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
+#include <cstdio>
 #include <libqt/qt.h>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 
 int dpd_trans4_mat_irrep_wrt(dpdtrans4 *Trans, int irrep)
 {
@@ -34,4 +34,4 @@ int dpd_trans4_mat_irrep_wrt(dpdtrans4 *Trans, int irrep)
   return 0;
 }
 
-} /* extern "C" */
+} // namespace psi

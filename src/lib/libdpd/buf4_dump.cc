@@ -1,11 +1,11 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
+#include <cstdio>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 	
 int dpd_buf4_dump(dpdbuf4 *DPDBuf, struct iwlbuf *IWLBuf,
  		  int *prel, int *qrel, int *rrel, int *srel, 
@@ -60,4 +60,5 @@ int dpd_buf4_dump(dpdbuf4 *DPDBuf, struct iwlbuf *IWLBuf,
   return 0;
 }
 
-} /* extern "C" */
+} // namespace psi
+

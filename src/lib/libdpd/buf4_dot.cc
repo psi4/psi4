@@ -1,13 +1,13 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include <libqt/qt.h>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 	
 double dpd_buf4_dot(dpdbuf4 *BufA, dpdbuf4 *BufB)
 {
@@ -39,7 +39,7 @@ double dpd_buf4_dot(dpdbuf4 *BufA, dpdbuf4 *BufB)
       if(!rows_per_bucket)
 	dpd_error("buf4_dot: Not enough memory for one row!", stderr);
 
-      nbuckets = ceil((double) BufA->params->rowtot[h]/
+      nbuckets = (int) ceil((double) BufA->params->rowtot[h]/
 		      (double) rows_per_bucket);
 
       rows_left = BufA->params->rowtot[h] % rows_per_bucket;
@@ -101,4 +101,5 @@ double dpd_buf4_dot(dpdbuf4 *BufA, dpdbuf4 *BufB)
   return dot;
 }
       
-} /* extern "C" */
+} // namespace psi
+

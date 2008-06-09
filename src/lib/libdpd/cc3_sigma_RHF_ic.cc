@@ -1,18 +1,18 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
 #include <libciomr/libciomr.h>
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include <ccfiles.h>
 #include <pthread.h>
 
-extern "C" {
+namespace psi {
 
 /*
   This function computes contributions to singles and doubles of
@@ -31,7 +31,7 @@ struct thread_data {
  dpdfile2 *SIA; int do_doubles; dpdfile2 *FME; dpdbuf4 *WmAEf; dpdbuf4 *WMnIe;
  dpdbuf4 *SIjAb; int *occpi; int *occ_off; int *virtpi; int *vir_off;
  double omega; dpdfile2 *fIJ; dpdfile2 *fAB; int Gi; int Gj; int Gk;
- int start_i; int start_j; int start_k; int end_i; int end_j; int end_k;
+ int first_ijk; int last_ijk;
  FILE *outfile; int thr_id; dpdfile2 SIA_local; dpdbuf4 SIjAb_local;
 };
 
@@ -43,7 +43,7 @@ void cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
     dpdbuf4 *SIjAb, int *occpi, int *occ_off, int *virtpi, int *vir_off,
     double omega, FILE *outfile, int nthreads)
 {
-  int h, nirreps, thread, ijk_tot, ijk_part, errcod=0;
+  int h, nirreps, thread, nijk, *ijk_part, errcod=0;
   int Gi, Gj, Gk, Gl, Ga, Gb, Gc, Gd;
   int i, j, k, l, a, b, c, d, row, col;
   int I, J, K, L, A, B, C, D;
@@ -161,6 +161,8 @@ void cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
     thread_data_array[thread].SIjAb_local = SIjAb_local[thread];
   }
 
+  ijk_part = new int [nthreads];
+
   for(Gi=0; Gi < nirreps; Gi++) {
     for(Gj=0; Gj < nirreps; Gj++) {
       Gij = Gji = Gi ^ Gj; 
@@ -169,14 +171,15 @@ void cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
         Gik = Gki = Gi ^ Gk;
         Gijk = Gi ^ Gj ^ Gk;
 
-        ijk_tot = occpi[Gi] * occpi[Gj] * occpi[Gk];
-        if (ijk_tot == 0) continue;
-        ijk_part = ijk_tot / nthreads;
+        nijk = occpi[Gi] * occpi[Gj] * occpi[Gk];
+        if (nijk == 0) continue;
 
         for (thread=0; thread<nthreads;++thread) {
           thread_data_array[thread].Gi = Gi;
           thread_data_array[thread].Gj = Gj;
           thread_data_array[thread].Gk = Gk;
+          ijk_part[thread] = nijk / nthreads;
+          if (thread < (nijk % nthreads)) ++ijk_part[thread];
           if (do_singles) { /* zero S's */
             for (h=0; h<nirreps;++h) 
               zero_mat(SIA_local[thread].matrix[h], SIA_local[thread].params->rowtot[h],
@@ -189,66 +192,28 @@ void cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
           }
         }
 
-        if (ijk_part) { /* at least one ijk for each thread */
-          thread = 0; cnt = 0;
-          for (i=0; i < occpi[Gi]; i++)
-            for (j=0; j < occpi[Gj]; j++)
-              for (k=0; k < occpi[Gk]; k++) {
-                if (thread < nthreads) {
-                  ++cnt;
-                  if (cnt == 1) {
-                    thread_data_array[thread].start_i = i;
-                    thread_data_array[thread].start_j = j;
-                    thread_data_array[thread].start_k = k;
-                  }
-                  if (cnt == ijk_part) {
-                    thread_data_array[thread].end_i = i;
-                    thread_data_array[thread].end_j = j;
-                    thread_data_array[thread].end_k = k;
-                    ++thread;
-                    cnt=0;
-                  }
-                }
-              }
-          /* last thread does the extra ijk's too */
-          thread_data_array[nthreads-1].end_i = occpi[Gi];
-          thread_data_array[nthreads-1].end_j = occpi[Gj];
-          thread_data_array[nthreads-1].end_k = occpi[Gk];
-        }
-        else { /* there'll only be one thread */
-          thread_data_array[0].start_i = 0;
-          thread_data_array[0].start_j = 0;
-          thread_data_array[0].start_k = 0;
-          thread_data_array[0].end_i = occpi[Gi];
-          thread_data_array[0].end_j = occpi[Gj];
-          thread_data_array[0].end_k = occpi[Gk];
+        cnt = 0;
+        for (thread=0; thread<nthreads; ++thread) {
+          if (!ijk_part[thread]) continue;  // there are more threads than nijk
+          thread_data_array[thread].first_ijk = cnt;
+          cnt += ijk_part[thread];
+          thread_data_array[thread].last_ijk = cnt-1;
         }
 
-        if (ijk_part) { /* start nthreads */
-          for (thread=0;thread<nthreads;++thread) {
-            errcod = pthread_create(&(p_thread[thread]), NULL, cc3_sigma_RHF_ic_thread,
-                       (void *) &thread_data_array[thread]);
-            if (errcod) {
-              fprintf(stderr,"pthread_create in cc3_sigma_RHF_ic failed\n");
-              exit(PSI_RETURN_FAILURE);
-            }
-          }
-          for (thread=0; thread<nthreads;++thread) {
-            errcod = pthread_join(p_thread[thread], NULL);
-            if (errcod) {
-              fprintf(stderr,"pthread_join in cc3_sigma_RHF_ic failed\n");
-              exit(PSI_RETURN_FAILURE);
-            }
-          }
-        }
-        else { /* only one thread */
-          errcod = pthread_create(&(p_thread[0]), NULL, cc3_sigma_RHF_ic_thread,
-                     (void *) &thread_data_array[0]);
+        /* execute threads */
+        for (thread=0;thread<nthreads;++thread) {
+          if (!ijk_part[thread]) continue;
+          errcod = pthread_create(&(p_thread[thread]), NULL, cc3_sigma_RHF_ic_thread,
+                 (void *) &thread_data_array[thread]);
           if (errcod) {
             fprintf(stderr,"pthread_create in cc3_sigma_RHF_ic failed\n");
             exit(PSI_RETURN_FAILURE);
           }
-          errcod = pthread_join(p_thread[0], NULL);
+        }
+
+        for (thread=0; thread<nthreads;++thread) {
+          if (!ijk_part[thread]) continue;
+          errcod = pthread_join(p_thread[thread], NULL);
           if (errcod) {
             fprintf(stderr,"pthread_join in cc3_sigma_RHF_ic failed\n");
             exit(PSI_RETURN_FAILURE);
@@ -295,6 +260,7 @@ void cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
       dpd_buf4_close(&(SIjAb_local[i]));
     }
   }
+  delete [] ijk_part;
 
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_close(WAbEi, h);
@@ -315,15 +281,17 @@ void cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
       dpd_buf4_mat_irrep_close(SIjAb, h);
     }
   }
+  free(thread_data_array);
+  free(p_thread);
 }
 
 void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
 {
   int Ga, Gb, Gc, Gd, Gab, Gbc, Gl, Gik, Gki, Gkj, Glk, Gjk, Gli, Gijk, nirreps;
   int GC, GWX3, GX3, GW, GS, Gij, Gji, Gid, Gjd, Gkd;
-  int i, j, k, l, I, J, K, L, nrows, ncols, nlinks,h;
+  int i, j, k, l, I, J, K, L, nrows, ncols, nlinks,h,cnt_ijk;
   int ij, ji, ik, ki, jk, kj, lc, li, il, lk, kl, id, jd, kd;
-  int a, b, c, d, A, B, C, D, ab, ba, bc, ad, da, cnt, do_ijk;
+  int a, b, c, d, A, B, C, D, ab, ba, bc, ad, da, cnt;
   double **Z, *tvect, ***W3, ***W3a;
   dpdbuf4 *SIjAb, SIjAb_local;
   dpdfile2 *SIA, SIA_local;
@@ -331,7 +299,7 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
   struct thread_data data;
 
   int do_singles, do_doubles, *occpi, *occ_off, *virtpi, *vir_off;
-  int start_i, start_j, start_k, end_i, end_j, end_k, Gi, Gj, Gk, thr_id;
+  int Gi, Gj, Gk, thr_id, first_ijk, last_ijk;
   double omega;
   dpdfile2 *FME, *fIJ, *fAB;
   dpdbuf4 *CIjAb, *WAbEi, *WMbIj, *Dints, *WmAEf, *WMnIe;
@@ -360,12 +328,8 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
   Gi    =  data.Gi;
   Gj    =  data.Gj;
   Gk    =  data.Gk;
-  start_i = data.start_i;
-  start_j = data.start_j;
-  start_k = data.start_k;
-  end_i = data.end_i;
-  end_j = data.end_j;
-  end_k = data.end_k;
+  first_ijk = data.first_ijk;
+  last_ijk = data.last_ijk;
   outfile = data.outfile;
   thr_id = data.thr_id;
   SIA_local = data.SIA_local;
@@ -395,7 +359,7 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
     W3a[Ga] = dpd_block_matrix(virtpi[Ga], WAbEi->params->coltot[Gbc]);
   }
 
-  do_ijk = 0;
+  cnt_ijk = -1;
   for(i=0; i < occpi[Gi]; i++) {
     I = occ_off[Gi] + i;
     for(j=0; j < occpi[Gj]; j++) {
@@ -403,10 +367,10 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
       for(k=0; k < occpi[Gk]; k++) {
         K = occ_off[Gk] + k;
 
-        /* check if yours */
-        if ( (start_i==i) && (start_j==j) && (start_k==k) )
-          do_ijk = 1;
-        if (!do_ijk) continue;
+        ++cnt_ijk;
+        /* check to see if this ijk is for this thread */
+        if ( (cnt_ijk < first_ijk) || (cnt_ijk > last_ijk))
+           continue;
 
         ij = CIjAb->params->rowidx[I][J];
         ji = CIjAb->params->rowidx[J][I];
@@ -715,8 +679,6 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
             }
           }
         } /* end do_doubles */
-        if ( (end_i==i) && (end_j==j) && (end_k==k) )
-          do_ijk = 0;
       } /* k */
     } /* j */
   } /* i */
@@ -735,4 +697,4 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
   pthread_exit(NULL);
 }
 
-} /* extern "C" */
+} // namespace psi

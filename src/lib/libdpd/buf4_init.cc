@@ -1,15 +1,15 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <libciomr/libciomr.h>
 #include "dpd.h"
 #define EXTERN
 #include "dpd.gbl"
 
-extern "C" {
+namespace psi {
 	
 /* dpd_buf4_init(): Initializes a dpd four-index buffer for reading or writing
 **   data.
@@ -85,4 +85,5 @@ int dpd_buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, int pqnum, int rsnum,
   return 0;
 }
 
-} /* extern "C" */
+} // namespace psi
+

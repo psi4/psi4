@@ -1,13 +1,13 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
+#include <cstdio>
 #include <libqt/qt.h>
 #include <libciomr/libciomr.h>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 
 int dpd_buf4_mat_irrep_row_init(dpdbuf4 *Buf, int irrep)
 {
@@ -24,4 +24,4 @@ int dpd_buf4_mat_irrep_row_init(dpdbuf4 *Buf, int irrep)
   return 0;
 }
 
-} /* extern "C" */
+} // namespace psi

@@ -1,12 +1,12 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
+#include <cstdio>
 #include <libqt/qt.h>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 
 /* file2_dirprd(): Computes the direct product between two two-index dpd
 ** files.
@@ -43,4 +43,4 @@ int dpd_file2_dirprd(dpdfile2 *FileA, dpdfile2 *FileB)
 }
       
 
-} /* extern "C" */
+} // namespace psi

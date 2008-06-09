@@ -1,14 +1,14 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include "dpd.h"
 #define EXTERN
 #include "dpd.gbl"
 
-extern "C" {
+namespace psi {
 
 
 void dpd_error(char *caller, FILE *outfile)
@@ -18,4 +18,4 @@ void dpd_error(char *caller, FILE *outfile)
   exit(PSI_RETURN_FAILURE);
 }
 
-} /* extern "C" */
+} // namespace psi

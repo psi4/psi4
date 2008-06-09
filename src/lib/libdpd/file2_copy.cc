@@ -1,12 +1,12 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 
 int dpd_file2_copy(dpdfile2 *InFile, int outfilenum, char *label)
 {
@@ -40,4 +40,4 @@ int dpd_file2_copy(dpdfile2 *InFile, int outfilenum, char *label)
   return 0;
 }
 
-} /* extern "C" */
+} // namespace psi

@@ -1,12 +1,12 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
+#include <cstdio>
 #include <libqt/qt.h>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 
 /* dpd_trace42_13(): Take a "trace" of the specified indices of a buf4 and put the
 ** result into a file2.
@@ -96,4 +96,4 @@ int dpd_trace42_13(dpdbuf4 *A, dpdfile2 *B, int transb, double alpha, double bet
   return 0;
 }
 
-} /* extern "C" */
+} // namespace psi

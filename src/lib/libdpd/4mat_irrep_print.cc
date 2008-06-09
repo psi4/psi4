@@ -1,12 +1,12 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 	
 int dpd_4mat_irrep_print(double **matrix, dpdparams4 *Params,
 			 int block, int my_irrep, FILE *outfile)
@@ -81,4 +81,5 @@ int dpd_4mat_irrep_print(double **matrix, dpdparams4 *Params,
 
 }
 
-} /* extern "C" */
+} // namespace psi
+

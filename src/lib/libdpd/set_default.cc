@@ -1,12 +1,12 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
 #include "dpd.h"
 #define EXTERN
 #include "dpd.gbl"
 
-extern "C" {
+namespace psi {
 
 int dpd_set_default(int dpd_num)
 {
@@ -15,4 +15,4 @@ int dpd_set_default(int dpd_num)
   return 0;
 }
 
-} /* extern "C" */
+} // namespace psi

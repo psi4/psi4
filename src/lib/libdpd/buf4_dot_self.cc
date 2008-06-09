@@ -1,11 +1,11 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
+#include <cstdio>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 	
 /* dpd_buf4_dot_self(): Evaluates the sum of the squares of the elements of a
 ** given dpdbuf4.
@@ -38,4 +38,5 @@ double dpd_buf4_dot_self(dpdbuf4 *BufX)
   return alpha;
 }
 
-} /* extern "C" */
+} // namespace psi
+

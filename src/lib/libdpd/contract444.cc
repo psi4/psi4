@@ -1,16 +1,16 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include <libqt/qt.h>
 #include <libpsio/psio.h>
 #include "dpd.h"
 #define EXTERN
 #include "dpd.gbl"
 
-extern "C" {
+namespace psi {
 
 /* dpd_contract444(): Contracts a pair of four-index quantities to
 ** give a product four-index quantity.
@@ -94,7 +94,7 @@ int dpd_contract444(dpdbuf4 *X, dpdbuf4 *Y, dpdbuf4 *Z,
       if(!rows_per_bucket)
 	dpd_error("contract444: Not enough memory for one row", stderr);
 
-      nbuckets = ceil((double) X->params->rowtot[Hx]/
+      nbuckets = (int) ceil((double) X->params->rowtot[Hx]/
 		      (double) rows_per_bucket);
 
       rows_left = X->params->rowtot[Hx] % rows_per_bucket;
@@ -230,4 +230,4 @@ int dpd_contract444(dpdbuf4 *X, dpdbuf4 *Y, dpdbuf4 *Z,
   return 0;
 }
 
-} /* extern "C" */
+} // namespace psi

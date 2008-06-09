@@ -1,11 +1,11 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
 #include <libpsio/psio.h>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 
 int dpd_file2_mat_rd(dpdfile2 *File)
 {
@@ -32,4 +32,4 @@ int dpd_file2_mat_rd(dpdfile2 *File)
   return 0;
 }
 
-} /* extern "C" */
+} // namespace psi

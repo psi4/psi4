@@ -1,11 +1,11 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
+#include <cstdio>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 
 /* dpd_buf4_print(): Prints out data for all irreps of a dpd
 ** four-index buffer.
@@ -53,4 +53,4 @@ int dpd_buf4_print(dpdbuf4 *Buf, FILE *outfile, int print_data)
 
 }
 
-} /* extern "C" */
+} // namespace psi

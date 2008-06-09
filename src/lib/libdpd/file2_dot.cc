@@ -1,12 +1,12 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
+#include <cstdio>
 #include <libqt/qt.h>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 
 double dpd_file2_dot(dpdfile2 *FileA, dpdfile2 *FileB)
 {
@@ -38,4 +38,4 @@ double dpd_file2_dot(dpdfile2 *FileA, dpdfile2 *FileB)
 
 }
 
-} /* extern "C" */
+} // namespace psi

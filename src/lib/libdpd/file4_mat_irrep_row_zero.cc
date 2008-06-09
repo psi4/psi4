@@ -1,12 +1,12 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
+#include <cstdio>
 #include <libciomr/libciomr.h>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 
 int dpd_file4_mat_irrep_row_zero(dpdfile4 *File, int irrep, int row)
 {
@@ -25,4 +25,4 @@ int dpd_file4_mat_irrep_row_zero(dpdfile4 *File, int irrep, int row)
 
 }
 
-} /* extern "C" */
+} // namespace psi
