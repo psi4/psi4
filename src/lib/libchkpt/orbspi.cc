@@ -1,17 +1,15 @@
 /*!
-  \file orbspi.c
+  \file
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int *Chkpt::rd_orbspi(void)
 {
@@ -42,7 +40,6 @@ void Chkpt::wt_orbspi(int *orbspi)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_orbspi():  Reads in the number of molecular orbitals in each irrep.
 **

@@ -1,18 +1,16 @@
 /*!
-  \file exist.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int Chkpt::exist(char *keyword)
 {
@@ -24,7 +22,6 @@ int Chkpt::exist(char *keyword)
 	return exists;
 }
 
-extern "C" {
 /*!
 ** chkpt_exist(): Checks to see if entry already exists in chkpt file. Note
 ** this function should be called only by functions in the chkpt library, as
@@ -34,10 +31,10 @@ extern "C" {
 **  
 **   returns: 1 if entry exists, 0 otherwise
 **        
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int chkpt_exist(char *keyword)
 	{
-		_default_chkpt_lib_->exist(keyword);
+		return(_default_chkpt_lib_->exist(keyword));
 	}
 }

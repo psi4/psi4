@@ -1,17 +1,15 @@
 /*!
-    \file zvals.c
+    \file
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 double *Chkpt::rd_zvals(void)
 {
@@ -44,7 +42,6 @@ void Chkpt::wt_zvals(double *zvals)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_zvals()
 ** Reads the nuclear charges from the checkpoint file.

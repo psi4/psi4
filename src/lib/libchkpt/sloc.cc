@@ -1,18 +1,16 @@
 /*!
-  \file sloc.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int *Chkpt::rd_sloc(void)
 {
@@ -44,7 +42,6 @@ void Chkpt::wt_sloc(int *sloc)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_sloc():	Read in an array of the numbers of the first AO 
 **			from the shells.
@@ -54,7 +51,7 @@ extern "C" {
 **  returns: sloc = An array nshell long of the numbers of 
 **                  the first AOs from the shells.
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int *chkpt_rd_sloc(void)
 	{
@@ -69,7 +66,7 @@ extern "C" {
 **                from the shells.
 **  returns: none
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_sloc(int *sloc)
 	{

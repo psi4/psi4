@@ -1,17 +1,15 @@
 /*!
-  \file us2c.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int *Chkpt::rd_us2s(void)
 {
@@ -42,7 +40,6 @@ void Chkpt::wt_us2s(int *us2s)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** int *chkpt_rd_us2s()
 ** Read in a mapping array betwen unique shell and 
@@ -50,7 +47,7 @@ extern "C" {
 **
 ** returns: us2s = Read in an array num_unique_shell
 ** 
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int *chkpt_rd_us2s(void)
 	{
@@ -66,7 +63,7 @@ extern "C" {
 **
 ** returns: none
 ** 
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_us2s(int *us2s)
 	{

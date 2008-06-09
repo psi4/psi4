@@ -1,18 +1,16 @@
 /*!
-  \file cdsalc2cd.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int *Chkpt::rd_cdsalcpi(void)
 {
@@ -38,15 +36,14 @@ void Chkpt::wt_cdsalcpi(const int *cdsalcpi)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_cdsalcpi(): Read in number of SALCs per irrep
 **
-** takes no arguments.
+** Parameters: none
 **
-** returns: cdsalcpi = An array of nirreps integers.
+** Returns: cdsalcpi = An array of nirreps integers.
 ** 
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int *chkpt_rd_cdsalcpi(void)
 	{
@@ -58,12 +55,13 @@ extern "C" {
 **
 ** \param cdsalcpi = An array of nirreps integers
 **
-** returns: none
+** Returns: none
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_cdsalcpi(const int *cdsalcpi)
 	{
 		_default_chkpt_lib_->wt_cdsalcpi(cdsalcpi);
 	}
 }
+

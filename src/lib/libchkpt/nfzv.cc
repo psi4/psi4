@@ -1,17 +1,15 @@
 /*!
-  \file nfzv.cc
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int Chkpt::rd_nfzv(void)
 {
@@ -35,13 +33,12 @@ void Chkpt::wt_nfzv(int nfzv)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** int chkpt_rd_nfzv()  
 ** Reads in the total number of frozen unoccupied molecular orbitals.
 **
 ** returns: nfzv = total number of frozen unoccupied molecular orbitals.
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int chkpt_rd_nfzv(void)
 	{
@@ -54,7 +51,7 @@ extern "C" {
 **
 ** \param nfzv = total number of frozen unoccupied molecular orbitals.
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_nfzv(int nfzv)
 	{

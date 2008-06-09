@@ -1,18 +1,16 @@
 /*!
-  \file contr_full.cc
+  \file
   \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 double **Chkpt::rd_contr_full(void)
 {
@@ -40,15 +38,15 @@ double **Chkpt::rd_contr_full(void)
 	return contr;
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_contr_full(): Reads in the normalized contraction coefficients.
 **
-**  takes no arguments.
+** Parameters: none
 **
-**  returns: double **contr Normalized contraction coefficients are
-**  returned as a matrix of doubles.
-** \ingroup (CHKPT)
+** Returns: 
+** double **contr, Normalized contraction coefficients are returned 
+** as a matrix of doubles.
+** \ingroup CHKPT
 */
 
 	double **chkpt_rd_contr_full(void)
@@ -56,3 +54,4 @@ extern "C" {
 		return _default_chkpt_lib_->rd_contr_full();
 	}   
 }
+

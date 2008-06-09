@@ -1,19 +1,17 @@
 /*!
-  \file e_labeled.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 double Chkpt::rd_e_labeled(char *label)
 {
@@ -42,7 +40,6 @@ void Chkpt::wt_e_labeled(char *label, double E)
 	free(s);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_e_labeled(): Reads in an energy with a given label
 **
@@ -50,7 +47,7 @@ extern "C" {
 **   \param char * label
 **
 **  returns: double E, the energy
-**  \ingroup (CHKPT)
+**  \ingroup CHKPT
 */
 	double chkpt_rd_e_labeled(char *label)
 	{
@@ -67,7 +64,7 @@ extern "C" {
 **   \param double E, the energy
 **
 **  returns: none
-**  \ingroup (CHKPT)
+**  \ingroup CHKPT
 */
 	void chkpt_wt_e_labeled(char *label, double E)
 	{

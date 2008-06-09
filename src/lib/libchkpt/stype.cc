@@ -1,18 +1,16 @@
 /*!
-  \file stype.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int *Chkpt::rd_stype(void)
 {
@@ -45,7 +43,6 @@ void Chkpt::wt_stype(int *stype)
 }
 
 
-extern "C" {
 /*!
 ** chkpt_rd_stype(): 	Reads in an array of the angular momentum numbers of 
 **			the shells.
@@ -54,7 +51,7 @@ extern "C" {
 **
 **  returns: stype = an array of the angular momentum numbers of the shells
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int *chkpt_rd_stype(void)
 	{
@@ -69,7 +66,7 @@ extern "C" {
 **
 **  returns: none
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_stype(int *stype)
 	{

@@ -1,17 +1,15 @@
 /*!
-  \file nshell.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int Chkpt::rd_nshell(void)
 {
@@ -35,7 +33,6 @@ void Chkpt::wt_nshell(int nshell)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** int chkpt_rd_nshell() 
 ** Reads in the total number of shells. For example,
@@ -44,7 +41,7 @@ extern "C" {
 ** Shells of all atoms are counted (compare nprim).
 **
 ** returns: nshell = total number of shells.
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int chkpt_rd_nshell(void)
 	{
@@ -63,7 +60,7 @@ extern "C" {
 **
 ** returns:none 
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_nshell(int nshell)
 	{

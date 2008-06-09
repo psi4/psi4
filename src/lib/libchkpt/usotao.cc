@@ -1,18 +1,16 @@
 /*!
-  \file usotao.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 double **Chkpt::rd_usotao(void)
 {
@@ -52,7 +50,6 @@ void Chkpt::wt_usotao(double **usotao)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_usotao(): Read in the SO to AO transformation matrix 
 **
@@ -60,7 +57,7 @@ extern "C" {
 **
 ** returns: usotao = A num_so by num_ao matrix of doubles
 ** 
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	double **chkpt_rd_usotao(void)
 	{
@@ -74,7 +71,7 @@ extern "C" {
 **
 ** returns: none
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_usotao(double **usotao)
 	{

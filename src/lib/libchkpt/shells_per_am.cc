@@ -1,17 +1,15 @@
 /*!
-  \file shells_per_am.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int *Chkpt::rd_shells_per_am(void)
 {
@@ -44,14 +42,13 @@ void Chkpt::wt_shells_per_am(int *shells_per_am)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** int *chkpt_rd_shells_per_am() 
 ** Reads in the numbers of shells of each angular momentum.
 **
 ** returns: shells_per_am = array of shells per angular momentum
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int *chkpt_rd_shells_per_am(void)
 	{
@@ -66,7 +63,7 @@ extern "C" {
 **
 ** returns: none
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_shells_per_am(int *shells_per_am)
 	{

@@ -1,18 +1,16 @@
 /*!
-  \file eccsd.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 double Chkpt::rd_e_t()
 {
@@ -38,14 +36,13 @@ void Chkpt::wt_e_t(double e_t)
 }
 
 
-extern "C" {
 /*!
 ** chkpt_rd_e_t(): Reads in the (T) contribution to total energy.
 **
 **   takes no arguments.
 **
 **   returns: double e_t  the (T) energy.
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	double chkpt_rd_e_t(void)
 	{
@@ -60,7 +57,7 @@ extern "C" {
 ** \param e_t = the (T) energy.
 **
 ** returns: none
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_e_t(double e_t)
 	{

@@ -1,17 +1,15 @@
 /*!
-  \file close.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 Chkpt::~Chkpt()
 {
@@ -22,13 +20,12 @@ Chkpt::~Chkpt()
 /*!
 **  chkpt_close()  closes up the checkpoint file.
 ** 
-**  arguments: none, but chkpt_init must already have been called for 
+**  Parameters: none, but chkpt_init must already have been called for 
 **    this to work.  
 **
-**  returns: zero.  Perhaps this, too, will change one day.
-**  \ingroup (CHKPT)
+**  Returns: none
+**  \ingroup CHKPT
 */
-extern "C" {
 	int chkpt_close(void)
 	{
 		if (_default_chkpt_lib_) {

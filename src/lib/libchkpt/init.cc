@@ -1,21 +1,19 @@
 /*!
-  \file init.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 /* Definition of global data */
-Chkpt* psi::_default_chkpt_lib_ = 0;
+Chkpt* _default_chkpt_lib_ = 0;
 
 //extern "C" {
 /* first definition of chkpt_prefix */
@@ -36,7 +34,7 @@ Chkpt::Chkpt(psi::PSIO *psioObject, int status) : psio(psioObject)
 	}
 	else {
 		set_prefix("");
-		commit_prefix();  /* we assume that no default prefix existed in PSIF_CHKPT */
+		commit_prefix();  /* assume no default prefix existed in PSIF_CHKPT */
 	}
 }
 
@@ -45,7 +43,6 @@ Chkpt::rehash() {
   psio->rehash(PSIF_CHKPT);
 }
 
-extern "C" {
 /*!
 **  chkpt_init()  Initializes the checkpoint file for other chkpt_
 **    functions to perform their duties.
@@ -56,7 +53,7 @@ extern "C" {
 **                file should be used (PSIO_OPEN_OLD).
 **
 **  returns: zero.  Perhaps this will change some day.
-** \ingroup (CHKPT)
+**  \ingroup CHKPT
 */
 	int chkpt_init(int status)
 	{
@@ -70,3 +67,4 @@ extern "C" {
 		return 0;
 	}
 }
+

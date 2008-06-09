@@ -1,17 +1,15 @@
 /*!
-  \file rottype.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int Chkpt::rd_rottype(void)
 {
@@ -35,7 +33,6 @@ void Chkpt::wt_rottype(int rottype)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** int chkpt_rd_rottype()  
 ** Reads in type of the rigid rotor molecule represents.
@@ -46,7 +43,7 @@ extern "C" {
 **            2 - spherical top
 **            3 - linear molecule
 **            6 - atom
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int chkpt_rd_rottype(void)
 	{
@@ -65,7 +62,7 @@ extern "C" {
 **            6 - atom
 **
 ** returns: none
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_rottype(int rottype)
 	{

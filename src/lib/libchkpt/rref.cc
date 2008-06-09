@@ -1,18 +1,16 @@
 /*!
-  \file rref.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 double **Chkpt::rd_rref(void)
 {
@@ -39,7 +37,6 @@ void Chkpt::wt_rref(double **Rref)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_rref()  
 ** Reads in a 3x3 matrix used to rotate back to the reference frame.
@@ -54,7 +51,7 @@ extern "C" {
 **            calculations (gradients at displaced geometries) to a 
 **            common frame.
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	double **chkpt_rd_rref(void)
 	{
@@ -75,7 +72,7 @@ extern "C" {
 **
 ** returns: none
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_rref(double **Rref)
 	{

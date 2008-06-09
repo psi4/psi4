@@ -1,17 +1,15 @@
 /*!
-  \file ref.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int Chkpt::rd_ref(void)
 {
@@ -35,14 +33,13 @@ void Chkpt::wt_ref(int refnum)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** int chkpt_rd_ref()  
 ** Reads the reference type from the flag in checkpoint
 ** 0 = RHF | 1 = UHF | 2 = ROHF | 3 = TCSCF 
 **
 ** returns: refnum = number indicating the reference.
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int chkpt_rd_ref(void)
 	{
@@ -55,7 +52,7 @@ extern "C" {
 ** 0 = RHF | 1 = UHF | 2 = ROHF | 3 = TCSCF 
 **
 ** \param refnum = number indicating the reference.
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_ref(int refnum)
 	{

@@ -1,18 +1,16 @@
 /*!
-  \file openpi.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int *Chkpt::rd_openpi(void)
 {
@@ -45,7 +43,6 @@ void Chkpt::wt_openpi(int *openpi)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_openpi(): Reads in the number of open-shell orbitals in each irrep.
 **

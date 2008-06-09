@@ -1,18 +1,16 @@
 /*!
-  \file snuc.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int *Chkpt::rd_snuc(void)
 {
@@ -44,7 +42,6 @@ void Chkpt::wt_snuc(int *snuc)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_snuc(): Reads in array of the nuclei numbers shells belong to.
 **
@@ -53,7 +50,7 @@ extern "C" {
 **  returns: snuc = an array of the nuclei numbers to which shells 
 **                  belong to.
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int *chkpt_rd_snuc(void)
 	{
@@ -67,7 +64,7 @@ extern "C" {
 **
 **  returns: none
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_snuc(int *snuc)
 	{

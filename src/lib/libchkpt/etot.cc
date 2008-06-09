@@ -1,17 +1,15 @@
 /*!
-  \file etot.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 double Chkpt::rd_etot(void)
 {
@@ -35,14 +33,13 @@ void Chkpt::wt_etot(double etot)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_etot(): Reads in the total energy.
 **
 **  takes no arguments.
 **
 **  returns: double etot  the total energy.
-**  \ingroup (CHKPT)
+**  \ingroup CHKPT
 */
 	double chkpt_rd_etot(void)
 	{
@@ -58,7 +55,7 @@ extern "C" {
 **   \param double etot  the total energy.
 **
 **  returns: none
-**  \ingroup (CHKPT)
+**  \ingroup CHKPT
 */
 	void chkpt_wt_etot(double etot)
 	{

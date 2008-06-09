@@ -1,17 +1,15 @@
 /*!
-  \file nmo.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int Chkpt::rd_nmo(void)
 {
@@ -35,13 +33,12 @@ void Chkpt::wt_nmo(int nmo)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** int chkpt_rd_nmo()  
 ** Reads in the total number of molecular orbitals.
 **
 ** returns: nmo = total number of molecular orbitals.
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int chkpt_rd_nmo(void)
 	{
@@ -54,7 +51,7 @@ extern "C" {
 **
 ** \param nmo = total number of molecular orbitals.
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_nmo(int nmo)
 	{

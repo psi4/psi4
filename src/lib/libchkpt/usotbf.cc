@@ -1,18 +1,16 @@
 /*!
-  \file usotbf.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 double **Chkpt::rd_usotbf(void)
 {
@@ -49,7 +47,6 @@ void Chkpt::wt_usotbf(double **usotbf)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_usotbf(): Reads in the SO to basis functions transformation matrix 
 **
@@ -57,7 +54,7 @@ extern "C" {
 **
 ** returns: usotbf = Read in a num_so by num_so matrix of doubles
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	double **chkpt_rd_usotbf(void)
 	{
@@ -72,7 +69,7 @@ extern "C" {
 **
 ** returns: none
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_usotbf(double **usotbf)
 	{

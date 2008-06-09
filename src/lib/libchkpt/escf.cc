@@ -1,17 +1,15 @@
 /*!
-  \file escf.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 double Chkpt::rd_escf(void)
 {
@@ -35,14 +33,13 @@ void Chkpt::wt_escf(double escf)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_escf(): Reads in the scf energy.
 **
 **  takes no arguments.
 **
 **  returns: double escf  the scf energy.
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	double chkpt_rd_escf(void)
 	{
@@ -58,7 +55,7 @@ extern "C" {
 **   \param double escf  the scf energy.
 **
 ** returns: none
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 
 	void chkpt_wt_escf(double escf)

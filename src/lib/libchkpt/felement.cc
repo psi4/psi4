@@ -1,17 +1,15 @@
 /*!
-  \file felement.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 char **Chkpt::rd_felement(void)
 {
@@ -53,14 +51,13 @@ void Chkpt::wt_felement(char **label)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_felement():  Reads in element labels including dummy atoms
 **
 **   takes no arguments.
 **
 **   returns: char **label element label matrix
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	char **chkpt_rd_felement(void)
 	{
@@ -74,7 +71,7 @@ extern "C" {
 **   \param label = element label matrix.
 **
 ** returns: none
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_felement(char **label)
 	{

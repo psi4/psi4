@@ -1,17 +1,15 @@
 /*!
-  \file num_unique_atom.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int Chkpt::rd_num_unique_atom(void)
 {
@@ -35,13 +33,12 @@ psio->write_entry(PSIF_CHKPT, keyword, (char *) &nunique, sizeof(int));
 free(keyword);
 }
 
-extern "C" {
 /*!
 ** int chkpt_rd_num_unique_atom()  
 ** Reads in the number of symmetry unique atoms.
 **
 ** returns: nunique = number of symmetry unique atoms.
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int chkpt_rd_num_unique_atom(void)
 	{
@@ -55,7 +52,7 @@ extern "C" {
 ** \param nunique = number of symmetry unique atoms.
 **
 ** returns: none
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_num_unique_atom(int nunique)
 	{

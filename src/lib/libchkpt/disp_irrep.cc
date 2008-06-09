@@ -1,17 +1,15 @@
 /*!
-  \file disp_irrep.cc
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int Chkpt::rd_disp_irrep(void)
 {
@@ -35,15 +33,16 @@ void Chkpt::wt_disp_irrep(int disp_irrep)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** int chkpt_rd_disp_irrep()  
+**
 ** Reads in the irrep of the current displaced geometry assuming
 ** Cotton ordering of irreps - to be used by input to determine
 ** docc and socc
 **
-** returns: disp_irrep = irrep of current displaced geometry
-** \ingroup (CHKPT)
+** Returns: 
+**   disp_irrep = irrep of current displaced geometry
+** \ingroup CHKPT
 */
 	int chkpt_rd_disp_irrep(void)
 	{
@@ -53,16 +52,20 @@ extern "C" {
 	}
 
 /*!
-** void chkpt_wt_disp_irrep(int)  
+** void chkpt_wt_disp_irrep()  
+**
 ** Writes the irrep of the current displaced geometry assuming
 ** Cotton ordering of irreps - to be used by input to determine
 ** docc and socc
 **
 ** \param disp_irrep = irrep of current displaced geometry
-** \ingroup (CHKPT)
+**
+** Returns: none
+** \ingroup CHKPT
 */
 	void chkpt_wt_disp_irrep(int disp_irrep)
 	{
 		_default_chkpt_lib_->wt_disp_irrep(disp_irrep);
 	}
 }
+

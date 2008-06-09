@@ -1,17 +1,15 @@
 /*!
-  \file zmat.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 struct z_entry *Chkpt::rd_zmat(void)
 {
@@ -44,7 +42,6 @@ void Chkpt::wt_zmat(struct z_entry *z_geom)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_zmat():  Reads in the z_matrix.
 **
@@ -53,7 +50,7 @@ extern "C" {
 **   returns: z_geom = An array natom long which contains 
 **     a z_entry struct for each atom
 ** 
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	struct z_entry *chkpt_rd_zmat(void)
 	{
@@ -68,7 +65,7 @@ extern "C" {
 **
 ** returns: none
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_zmat(struct z_entry *z_geom)
 	{

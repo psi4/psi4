@@ -1,17 +1,15 @@
 /*!
-  \file nso.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int Chkpt::rd_nso(void)
 {
@@ -35,13 +33,12 @@ void Chkpt::wt_nso(int nso)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** int chkpt_rd_nso()  
 ** Reads in the total number of SOs.
 **
 ** returns: nso = total number of symmetry-adapted basis functions.
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int chkpt_rd_nso(void)
 	{
@@ -56,7 +53,7 @@ extern "C" {
 **
 ** returns: none
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_nso(int nso)
 	{

@@ -1,18 +1,16 @@
 /*!
-  \file ict.cc
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int **Chkpt::rd_ict(void)
 {
@@ -29,7 +27,8 @@ int **Chkpt::rd_ict(void)
 	ict = (int **) malloc(sizeof(char *) * nirreps);
 	for(i=0; i < nirreps; i++) {
 		ict[i] = (int *) malloc(sizeof(int) * natom);
-		psio->read(PSIF_CHKPT, keyword, (char *) ict[i], natom*sizeof(int), ptr, &ptr);
+		psio->read(PSIF_CHKPT, keyword, (char *) ict[i], 
+                  natom*sizeof(int), ptr, &ptr);
 	}
 
 	free(keyword);
@@ -48,13 +47,12 @@ void Chkpt::wt_ict(int **ict)
 
 	ptr = PSIO_ZERO;
 	for(i=0; i < nirreps; i++)
-		psio->write(PSIF_CHKPT, keyword, (char *) ict[i], natom*sizeof(int), 
-		ptr, &ptr);
+		psio->write(PSIF_CHKPT, keyword, (char *) ict[i], 
+                  natom*sizeof(int), ptr, &ptr);
 
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_ict():  Reads the transformation properties of the nuclei
 **     under the operations allowed for the particular symmetry point group 
@@ -68,7 +66,7 @@ extern "C" {
 **     in the following manner: under the third symmetry operation of the 
 **     relavant point group, the second atom is placed in the location
 **     originally occupied by the atom with the index ict[2][1].
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int **chkpt_rd_ict(void)
 	{
@@ -89,7 +87,7 @@ extern "C" {
 **     originally occupied by the atom with the index ict[2][1].
 **
 **   returns: none
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_ict(int **ict)
 	{

@@ -1,17 +1,15 @@
 /*!
-  \file symoper.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int *Chkpt::rd_symoper(void)
 {
@@ -42,7 +40,6 @@ void Chkpt::wt_symoper(int *symoper)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** int *chkpt_rd_symoper()
 ** Reads in the mapping array between "canonical" ordering of symmetry
@@ -50,7 +47,7 @@ extern "C" {
 **
 ** returns: symoper = Array nirrep long
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int *chkpt_rd_symoper(void)
 	{
@@ -66,7 +63,7 @@ extern "C" {
 **
 ** returns: none
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_symoper(int *symoper)
 	{
