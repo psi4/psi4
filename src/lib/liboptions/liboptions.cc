@@ -8,8 +8,10 @@
 #include <vector>
 #include <cstdlib>
 #include <cstring>
+#include <algorithm>
 
 #include <libipv1/ip_lib.h>
+#include <libutil/libutil.h>
 
 #include "liboptions.h"
 
@@ -23,6 +25,8 @@ Options* _default_psi_options_;
 void options_init()
 {
   _default_psi_options_ = new Options();
+  _default_psi_options_->add_int_option("CHARGE",0);
+  _default_psi_options_->add_int_option("MULTP",1);
 }
 
 /*!
@@ -31,6 +35,14 @@ void options_init()
 void options_close()
 {
   delete _default_psi_options_;
+}
+
+/*!
+ * Read the options from the input file. 
+ */
+void options_read()
+{
+  _default_psi_options_->read_options();
 }
 
 /*!
@@ -45,7 +57,7 @@ void options_print(){
  * @param cstr_option a string containing the parameter name
  * @param bool_default the default value for this option
  */
-void options_add_bool(char* cstr_option,bool bool_default)
+void options_add_bool(const char* cstr_option,bool bool_default)
 {
   _default_psi_options_->add_bool_option(cstr_option,bool_default);
 }
@@ -55,7 +67,7 @@ void options_add_bool(char* cstr_option,bool bool_default)
  * @param cstr_option a string containing the parameter name
  * @param int_default the default value for this option
  */
-void options_add_int(char* cstr_option,int int_default)
+void options_add_int(const char* cstr_option,int int_default)
 {
   _default_psi_options_->add_int_option(cstr_option,int_default);
 }
@@ -65,7 +77,7 @@ void options_add_int(char* cstr_option,int int_default)
  * @param cstr_option a string containing the parameter name
  * @param double_default the default value for this option
  */
-void options_add_double(char* cstr_option,double double_default)
+void options_add_double(const char* cstr_option,double double_default)
 {
   _default_psi_options_->add_double_option(cstr_option,double_default);
 }
@@ -75,7 +87,7 @@ void options_add_double(char* cstr_option,double double_default)
  * @param cstr_option a string containing the parameter name
  * @param cstr_default the default value for this option
  */
-void options_add_str(char* cstr_option,char* cstr_default)
+void options_add_str(const char* cstr_option,const char* cstr_default)
 {
   _default_psi_options_->add_str_option(cstr_option,cstr_default);
 }
@@ -86,7 +98,7 @@ void options_add_str(char* cstr_option,char* cstr_default)
  * @param cstr_default the default value for this option
  * @param cstr_choices a list of choices separated by a space
  */
-void options_add_str_with_choices(char* cstr_option,char* cstr_default,char* cstr_choices)
+void options_add_str_with_choices(const char* cstr_option,const char* cstr_default,const char* cstr_choices)
 {
   _default_psi_options_->add_str_option_with_choices(cstr_option,cstr_default,cstr_choices);
 }
@@ -94,14 +106,14 @@ void options_add_str_with_choices(char* cstr_option,char* cstr_default,char* cst
 /*!
  * Get the value of a boolean option
  */
-bool options_get_bool(char* cstr_option){
+bool options_get_bool(const char* cstr_option){
   return(_default_psi_options_->get_bool_option(cstr_option));    
 }
 
 /*!
  * Get the value of an integer option
  */
-int options_get_int(char* cstr_option){
+int options_get_int(const char* cstr_option){
   return(_default_psi_options_->get_int_option(cstr_option));    
 }
 
@@ -112,14 +124,9 @@ int options_get_int(char* cstr_option){
 /*!
  * Get the value of a string option
  */
-std::string options_get_str(char* cstr_option){
+std::string options_get_str(const char* cstr_option){
   return(_default_psi_options_->get_str_option(cstr_option));    
 }
-
-// Auxiliary functions
-std::vector<std::string> split(const std::string& str);
-bool space(char c);
-bool not_space(char c);
 
 using namespace std;
 
@@ -131,7 +138,7 @@ Options::~Options()
 {
 }
 
-void Options::add_bool_option(char* cstr_option,bool bool_default)
+void Options::add_bool_option(const char* cstr_option,bool bool_default)
 {
   string str_option(cstr_option);
   // Make sure that the option that we are adding is not already present
@@ -144,7 +151,7 @@ void Options::add_bool_option(char* cstr_option,bool bool_default)
   }
 }
 
-void Options::add_int_option(char* cstr_option,int int_default)
+void Options::add_int_option(const char* cstr_option,int int_default)
 {
   string str_option(cstr_option);
   // Make sure that the option that we are adding is not already present
@@ -157,7 +164,7 @@ void Options::add_int_option(char* cstr_option,int int_default)
   }
 }
 
-void Options::add_double_option(char* cstr_option,double double_default)
+void Options::add_double_option(const char* cstr_option,double double_default)
 {
   string str_option(cstr_option);
   // Make sure that the option that we are adding is not already present
@@ -171,12 +178,12 @@ void Options::add_double_option(char* cstr_option,double double_default)
 }
 
 
-void Options::add_str_option(char* cstr_option,char* cstr_default)
+void Options::add_str_option(const char* cstr_option,const char* cstr_default)
 {
   add_str_option_with_choices(cstr_option,cstr_default,"");
 }
 
-void Options::add_str_option_with_choices(char* cstr_option,char* cstr_default,char* cstr_choices)
+void Options::add_str_option_with_choices(const char* cstr_option,const char* cstr_default,const char* cstr_choices)
 {
   string str_option(cstr_option);
   string str_default(cstr_default);
@@ -192,7 +199,7 @@ void Options::add_str_option_with_choices(char* cstr_option,char* cstr_default,c
   }
 }
 
-bool Options::get_bool_option(char* cstr_option)
+bool Options::get_bool_option(const char* cstr_option)
 {
   string str_option(cstr_option);
   // Make sure that the option that we are adding is available
@@ -207,7 +214,7 @@ bool Options::get_bool_option(char* cstr_option)
   }
 }
 
-int Options::get_int_option(char* cstr_option)
+int Options::get_int_option(const char* cstr_option)
 {
   string str_option(cstr_option);
   // Make sure that the option that we are adding is available
@@ -222,7 +229,7 @@ int Options::get_int_option(char* cstr_option)
   }
 }
 
-std::string Options::get_str_option(char* cstr_option)
+std::string Options::get_str_option(const char* cstr_option)
 {
   string str_option(cstr_option);
   // Make sure that the option that we are adding is available
@@ -237,25 +244,25 @@ std::string Options::get_str_option(char* cstr_option)
   }
 }
 
-void Options::set_bool_option(char* cstr_option, bool bool_value)
+void Options::set_bool_option(const char* cstr_option, bool bool_value)
 {
   string str_option(cstr_option);
   bool_options[str_option].option  = bool_value;
 }
 
-void Options::set_int_option(char* cstr_option, int int_value)
+void Options::set_int_option(const char* cstr_option, int int_value)
 {
   string str_option(cstr_option);
   int_options[str_option].option  = int_value;
 }
 
-void Options::set_double_option(char* cstr_option, double double_value)
+void Options::set_double_option(const char* cstr_option, double double_value)
 {
   string str_option(cstr_option);
   double_options[str_option].option  = double_value;
 }
 
-void Options::set_str_option(char* cstr_option, char* cstr_value)
+void Options::set_str_option(const char* cstr_option, const char* cstr_value)
 {
   string str_option(cstr_option);
   string_options[str_option].option  = string(cstr_value);
@@ -303,7 +310,7 @@ void Options::read_int(IntOptionsMap::iterator& it)
   memset (cstr_label, 0x00, it->first.length () + 1);
   strcpy (cstr_label, it->first.c_str ());
 
-  int status = ip_data(cstr_label,"%d",&int_value,0);
+  int status = ip_data(cstr_label,const_cast<char *>("%d"),&int_value,0);
   if (status == IPE_OK){
     it->second.option = int_value;
   }
@@ -317,7 +324,7 @@ void Options::read_double(DoubleOptionsMap::iterator& it)
   memset (cstr_label, 0x00, it->first.length () + 1);
   strcpy (cstr_label, it->first.c_str ());
 
-  int status = ip_data(cstr_label,"%f",&double_value,0);
+  int status = ip_data(cstr_label,const_cast<char *>("%f"),&double_value,0);
   if (status == IPE_OK){
     it->second.option = double_value;
   }
@@ -357,80 +364,45 @@ void Options::read_string(StringOptionsMap::iterator& it)
 
 void Options::print()
 {
+  int max_option_width = 0;
+  for(BoolOptionsMap::iterator it = bool_options.begin();it != bool_options.end();++it)
+    if(it->first.size() > max_option_width)
+      max_option_width = it->first.size();
+  
+  for(IntOptionsMap::iterator it = int_options.begin();it != int_options.end();++it)
+    if(it->first.size() > max_option_width)
+      max_option_width = it->first.size();
+  
+  for(DoubleOptionsMap::iterator it = double_options.begin();it != double_options.end();++it)
+    if(it->first.size() > max_option_width)
+      max_option_width = it->first.size();
+  
+  for(StringOptionsMap::iterator it = string_options.begin();it != string_options.end();++it)
+    if(it->first.size() > max_option_width)
+      max_option_width = it->first.size();
+
   fprintf(outfile,"\n\n  Options:");
-  fprintf(outfile,"\n  ------------------------------------------------------------------------------");
+  fprintf(outfile,"\n  ----------------------------------------------------------------------------");
   for(BoolOptionsMap::iterator it = bool_options.begin();it != bool_options.end();++it){
-    fprintf(outfile,"\n  %-35s = %s",it->first.c_str(),it->second.option ? "TRUE" : "FALSE" );
+    fprintf(outfile,"\n  %s",it->first.c_str());
+    for(int n =0; n < max_option_width - it->first.size(); ++n) fprintf(outfile," "); 
+    fprintf(outfile," = %s",it->second.option ? "TRUE" : "FALSE" );
   }
   for(IntOptionsMap::iterator it = int_options.begin();it != int_options.end();++it){
-    fprintf(outfile,"\n  %-35s = %-d",it->first.c_str(),it->second.option);
+    fprintf(outfile,"\n  %s",it->first.c_str());
+    for(int n =0; n < max_option_width - it->first.size(); ++n) fprintf(outfile," ");
+    fprintf(outfile," = %-d",it->second.option);
   }
   for(DoubleOptionsMap::iterator it = double_options.begin();it != double_options.end();++it){
-    fprintf(outfile,"\n  %-35s = %-d",it->first.c_str(),it->second.option);
+    fprintf(outfile,"\n  %s",it->first.c_str());
+    for(int n =0; n < max_option_width - it->first.size(); ++n) fprintf(outfile," ");
+    fprintf(outfile," = %-lf",it->second.option);
   }
   for(StringOptionsMap::iterator it = string_options.begin();it != string_options.end();++it){
-    fprintf(outfile,"\n  %-35s = %-35s",it->first.c_str(),it->second.option.c_str());
+    fprintf(outfile,"\n  %s",it->first.c_str());
+    for(int n =0; n < max_option_width - it->first.size(); ++n) fprintf(outfile," ");
+    fprintf(outfile," = %s",it->second.option.c_str());
   }
-//   int bool_printed = 0;
-//   for(BoolOptionsMap::iterator it = bool_options.begin();it != bool_options.end();++it){
-//     if(bool_printed % 2 ==0)
-//       fprintf(outfile,"\n  %-12s = %-21s",it->first.c_str(),it->second.option ? "TRUE" : "FALSE" );
-//     else
-//       fprintf(outfile," %-12s = %-21s",it->first.c_str(),it->second.option ? "TRUE" : "FALSE" );
-//     bool_printed++;
-//   }
-// 
-//   int int_printed = 0;
-//   for(IntOptionsMap::iterator it = int_options.begin();it != int_options.end();++it){
-//     if(int_printed % 2 ==0)
-//       fprintf(outfile,"\n  %-12s = %-21d",it->first.c_str(),it->second.option);
-//     else
-//       fprintf(outfile," %-12s = %-21d",it->first.c_str(),it->second.option);
-//   }
-// 
-//   int double_printed = 0;
-//   for(DoubleOptionsMap::iterator it = double_options.begin();it != double_options.end();++it){
-//     if(double_printed % 2 ==0)
-//       fprintf(outfile,"\n  %-12s = %-21f",it->first.c_str(),it->second.option);
-//     else
-//       fprintf(outfile," %-12s = %-21f",it->first.c_str(),it->second.option);
-//   }
-// 
-//   int str_printed = 0;
-//   for(StringOptionsMap::iterator it = string_options.begin();it != string_options.end();++it){
-//     if(str_printed % 2 ==0)
-//       fprintf(outfile,"\n  %-12s = %-21s",it->first.c_str(),it->second.option.c_str());
-//     else
-//       fprintf(outfile," %-12s = %-21s",it->first.c_str(),it->second.option.c_str());
-//     str_printed++;
-//   }
+  fprintf(outfile,"\n  ----------------------------------------------------------------------------");
 }
 
-std::vector<std::string> split(const std::string& str)
-{
-  // Split a string
-  typedef string::const_iterator iter;
-  std::vector<std::string> splitted_string;
-  iter i = str.begin();
-  while(i != str.end()){
-    // Ignore leading blanks
-    i = find_if(i,str.end(), not_space);
-    // Find the end of next word
-    iter j = find_if(i,str.end(),space);
-    // Copy the characters in [i,j)
-    if(i!=str.end())
-      splitted_string.push_back(string(i,j));
-    i = j;
-  }
-  return(splitted_string);
-}
-
-bool space(char c)
-{
-  return isspace(c);
-}
-
-bool not_space(char c)
-{
-  return !isspace(c);
-}
