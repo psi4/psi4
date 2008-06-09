@@ -9,8 +9,9 @@ namespace psi {
 	class PSIO;
 	
 	/**
-		Chkpt is an instance of the libchkpt library. Multiple instances are 
-		supported by having multiple instances of libpsio available.
+		Chkpt is an instance of the libchkpt library. 
+                Multiple instances are supported by having multiple 
+                instances of libpsio available.
 		
 		Each instance is configured by the constructor:
 		Chkpt new_instance(&libpsio_instance, PSIO_OPEN_OLD);
@@ -22,11 +23,11 @@ namespace psi {
 		char chkpt_prefix[CHKPT_PREFIX_LEN];
 	public:
 		/*! Constructor. Calls PSIO::open to open the checkpoint file.
-			\param psioObject Instance of libpsio to connect through.
+			\param psioObject Instance of libpsio to connect through
 			\param status Either PSIO_OPEN_OLD or PSIO_OPEN_NEW.
 		*/
 		Chkpt(PSIO *psioObject, int status);
-		/*! Destructor. Call PSIO::close to close the checkpoint file. */
+		/*! Destructor. Call PSIO::close to close the checkpoint file.*/
 		~Chkpt();
 		/// update this object. call rehash() if the state of the checkpoint file may have changed
 		void rehash();
@@ -41,6 +42,7 @@ namespace psi {
 		char *build_keyword(char *key);
 
 		int exist(char *keyword);
+		int exist_add_prefix(char *keyword);
 
 		char *rd_label();
 		void wt_label(char *label);
@@ -290,6 +292,21 @@ namespace psi {
 		
 		int* rd_cdsalcpi();
 		void wt_cdsalcpi(const int*);
+
+        int rd_nfragment(void);
+        void wt_nfragment(int);
+
+        int *rd_natom_per_fragment(void);
+        void wt_natom_per_fragment(int *);
+
+        int *rd_nallatom_per_fragment(void);
+        void wt_nallatom_per_fragment(int *);
+
+        int *rd_nref_per_fragment(void);
+        void wt_nref_per_fragment(int *);
+
+        double ***rd_fragment_coeff(void);
+        void wt_fragment_coeff(double ***);
 		
 		/// allocate a block matrix -- analogous to libciomr's block_matrix
 		template <typename T> static T** matrix(int nrow, int ncol) {
