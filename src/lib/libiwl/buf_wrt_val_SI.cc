@@ -1,66 +1,64 @@
 /*!
-  \file bufg_wrt_val_SI.c
-  \ingroup (IWL)
+  \file
+  \ingroup IWL
 */
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include <libciomr/libciomr.h>
-#include "iwl.hpp"
 #include "iwl.h"
+#include "iwl.hpp"
 
-  using namespace psi;
-
-void IWL::wrt_val_SI(short int p, short int q, 
-  short int r, short int s, double value, int printflag, 
-  FILE *outfile, int dirac)
+namespace psi {
+  
+void IWL::write_value_SI(short int p, short int q,
+    short int r, short int s, double value, int printflag,
+    FILE *outfile, int dirac)
 {
-   int idx;
-   Label *lblptr;
-   Value *valptr;
+    int idx;
+    Label *lblptr;
+    Value *valptr;
 
-   lblptr = Buf.labels;
-   valptr = Buf.values;
+    lblptr = labels_;
+    valptr = values_;
 
-   if (fabs(value) > Buf.cutoff) {
-     idx = 4 * Buf.idx;
-     if(dirac) {
-       lblptr[idx++] = (Label) p;
-       lblptr[idx++] = (Label) r;
-       lblptr[idx++] = (Label) q;
-       lblptr[idx++] = (Label) s;
-     }
-     else {
-       lblptr[idx++] = (Label) p;
-       lblptr[idx++] = (Label) q;
-       lblptr[idx++] = (Label) r;
-       lblptr[idx++] = (Label) s;
-     }
-     valptr[Buf.idx] = (Value) value;
+    if (fabs(value) > cutoff_) {
+        idx = 4 * idx_;
+        if(dirac) {
+            lblptr[idx++] = (Label) p;
+            lblptr[idx++] = (Label) r;
+            lblptr[idx++] = (Label) q;
+            lblptr[idx++] = (Label) s;
+        }
+        else {
+            lblptr[idx++] = (Label) p;
+            lblptr[idx++] = (Label) q;
+            lblptr[idx++] = (Label) r;
+            lblptr[idx++] = (Label) s;
+        }
+        valptr[idx_] = (Value) value;
 
-     Buf.idx++;
-     
-     if (Buf.idx == Buf.ints_per_buf) {
-       Buf.lastbuf = 0;
-       Buf.inbuf = Buf.idx;
-       put();
-       Buf.idx = 0;
-     }
-     
-     if (printflag) {
-       if(dirac) {
-	       fprintf(outfile, "<%d %d %d %d> = %20.10lf\n",
-		       p, r, q, s, value);
-       }
-       else {
-	       fprintf(outfile, "<%d %d %d %d> = %20.10lf\n",
-		       p, q, r, s, value);
-       }
-     }
-   } 
+        idx_++;
+
+        if (idx_ == ints_per_buf_) {
+            lastbuf_ = 0;
+            inbuf_ = idx_;
+            put();
+            idx_ = 0;
+        }
+
+        if (printflag) {
+            if(dirac) {
+                fprintf(outfile, ">%d %d %d %d = %20.10f\n",
+                    p, r, q, s, value);
+            }
+            else {
+                fprintf(outfile, ">%d %d %d %d = %20.10f\n",
+                    p, q, r, s, value);
+            }
+        }
+    }
 }
 
-extern "C" {
-	
 /*!
 ** iwl_buf_wrt_val_SI()
 **
@@ -78,7 +76,7 @@ extern "C" {
 **
 ** Uses short int's as indices. May be useful.
 ** Ed Valeev, February 1999
-** \ingroup (IWL)
+** \ingroup IWL
 */
 void iwl_buf_wrt_val_SI(struct iwlbuf *Buf, short int p, short int q, 
                         short int r, short int s, double value, int printflag, 
@@ -129,4 +127,5 @@ void iwl_buf_wrt_val_SI(struct iwlbuf *Buf, short int p, short int q,
    } 
 }
 
-} /* extern "C" */
+}
+

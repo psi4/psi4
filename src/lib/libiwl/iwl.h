@@ -10,14 +10,25 @@
 #ifndef _psi_src_lib_libiwl_iwl_h_
 #define _psi_src_lib_libiwl_iwl_h_
 
-#include <stdio.h>
+#include <cstdio>
 #include <libpsio/psio.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "config.h"
+
+namespace psi {
+
+struct iwlbuf {
+  int itap;                   /* tape number for input file */
+  psio_address bufpos;        /* current page/offset */
+  int ints_per_buf;           /* integrals per buffer */
+  int bufszc;                 /* buffer size in characters (bytes) */
+  double cutoff;              /* cutoff value for writing */
+  int lastbuf;                /* is this the last IWL buffer? 1=yes,0=no */
+  int inbuf;                  /* how many ints in current buffer? */
+  int idx;                    /* index of integral in current buffer */
+  Label *labels;              /* pointer to where integral values begin */
+  Value *values;              /* integral values */
+};
+
 
 void iwl_buf_fetch(struct iwlbuf *Buf);
 void iwl_buf_put(struct iwlbuf *Buf);
@@ -94,8 +105,7 @@ void iwl_buf_wrt_val(struct iwlbuf *Buf, int p, int q, int r, int s,
 void iwl_buf_wrt_val_SI(struct iwlbuf *Buf, short int p, short int q,
                      short int r, short int s, double value, int printflag,
                      FILE *outfile, int dirac);
-#ifdef __cplusplus
+
 }
-#endif
 
 #endif /* end _psi_src_lib_libiwl_iwl_h */

@@ -1,122 +1,120 @@
 /*!
-  \file buf_wrt_mat.c
-  \ingroup (IWL)
+  \file
+  \ingroup IWL
 */
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include <libciomr/libciomr.h>
-#include "iwl.hpp"
 #include "iwl.h"
+#include "iwl.hpp"
 
-  using namespace psi;
+namespace psi {
 
 #define MAX0(a,b) (((a)>(b)) ? (a) : (b))
 #define MIN0(a,b) (((a)<(b)) ? (a) : (b))
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
-
-void IWL::wrt_mat(int ptr, int qtr, 
-     double **mat, int rfirst, int rlast, int sfirst, int slast,
-     int *reorder, int reorder_offset, int printflag, int *ioff,
-      FILE *outfile)
+  
+void IWL::write_matrix(int ptr, int qtr, double **mat, int rfirst, int rlast, 
+    int sfirst, int slast, int *reorder, int reorder_offset, 
+    int printflag, int *ioff, FILE *outfile)
 {
-   int idx, r, s, R, S, rtr, str;
-   int ij, kl;
-   double value;
-   Label *lblptr;
-   Value *valptr;
+    int idx, r, s, R, S, rtr, str;
+    int ij, kl;
+    double value;
+    Label *lblptr;
+    Value *valptr;
 
-   lblptr = Buf.labels;
-   valptr = Buf.values;
+    lblptr = labels_;
+    valptr = values_;
 
-   ij = INDEX(ptr,qtr);
-   
-   for (r=rfirst,R=0; r <= rlast; r++,R++) {
-     rtr = reorder[r] - reorder_offset;
+    ij = INDEX(ptr,qtr);
 
-     for (s=sfirst,S=0; s <= slast && s <= r; s++,S++) {
-       str = reorder[s] - reorder_offset;
+    for (r=rfirst,R=0; r <= rlast; r++,R++) {
+        rtr = reorder[r] - reorder_offset;
 
-       kl = INDEX(rtr,str);
-       
-       value = mat[R][S];
+        for (s=sfirst,S=0; s <= slast && s <= r; s++,S++) {
+            str = reorder[s] - reorder_offset;
 
-       if (ij >= kl && fabs(value) > Buf.cutoff) {
-	       idx = 4 * Buf.idx;
-	       lblptr[idx++] = (Label) MAX0(ptr,qtr);
-	       lblptr[idx++] = (Label) MIN0(ptr,qtr);
-	       lblptr[idx++] = (Label) MAX0(rtr,str);
-	       lblptr[idx++] = (Label) MIN0(rtr,str);
-	       valptr[Buf.idx] = (Value) value;
-	 
-	       Buf.idx++;
-	 
-	       if (Buf.idx == Buf.ints_per_buf) {
-           Buf.lastbuf = 0;
-           Buf.inbuf = Buf.idx;
-           put();
-           Buf.idx = 0;
-         }
-	 
-	       if (printflag)
-	         fprintf(outfile, "<%d %d %d %d> [%d] [%d] = %20.10lf\n",
-		        ptr, qtr, rtr, str, ij, kl, value);
-       } /* end if (fabs(value) > Buf->cutoff) ... */
-     } /* end loop over s */
-   } /* end loop over r */
+            kl = INDEX(rtr,str);
+
+            value = mat[R][S];
+
+            if (ij >= kl && fabs(value) > cutoff_) {
+                idx = 4 * idx_;
+                lblptr[idx++] = (Label) MAX0(ptr,qtr);
+                lblptr[idx++] = (Label) MIN0(ptr,qtr);
+                lblptr[idx++] = (Label) MAX0(rtr,str);
+                lblptr[idx++] = (Label) MIN0(rtr,str);
+                valptr[idx_] = (Value) value;
+
+                idx_++;
+
+                if (idx_ == ints_per_buf_) {
+                    lastbuf_ = 0;
+                    inbuf_ = idx_;
+                    put();
+                    idx_ = 0;
+                }
+
+                if (printflag)
+                    fprintf(outfile, ">%d %d %d %d [%d] [%d] = %20.10f\n",
+                    ptr, qtr, rtr, str, ij, kl, value);
+
+            } /* end if (fabs(value) > Buf->cutoff) ... */
+        } /* end loop over s */
+    } /* end loop over r */
 }
 
-void IWL::wrt_mat2(int ptr, int qtr, 
-     double **mat, int rfirst, int rlast, int sfirst, int slast,
-     int *reorder, int reorder_offset, int printflag, int *ioff,
-      FILE *outfile)
+void IWL::write_matrix2(int ptr, int qtr, double **mat, int rfirst, int rlast, 
+    int sfirst, int slast, int *reorder, int reorder_offset, 
+    int printflag, int *ioff, FILE *outfile)
 {
-   int idx, r, s, R, S, rtr, str;
-   int ij, kl;
-   double value;
-   Label *lblptr;
-   Value *valptr;
+    int idx, r, s, R, S, rtr, str;
+    int ij, kl;
+    double value;
+    Label *lblptr;
+    Value *valptr;
 
-   lblptr = Buf.labels;
-   valptr = Buf.values;
+    lblptr = labels_;
+    valptr = values_;
 
-   ij = INDEX(ptr,qtr);
-   
-   for (r=rfirst,R=0; r <= rlast; r++,R++) {
-     rtr = reorder[r] - reorder_offset;
+    ij = INDEX(ptr,qtr);
 
-     for (s=sfirst,S=0; s <= slast && s <= r; s++,S++) {
-       str = reorder[s] - reorder_offset;
+    for (r=rfirst,R=0; r <= rlast; r++,R++) {
+        rtr = reorder[r] - reorder_offset;
 
-       kl = INDEX(rtr,str);
-       
-       value = mat[R][S];
+        for (s=sfirst,S=0; s <= slast && s <= r; s++,S++) {
+            str = reorder[s] - reorder_offset;
 
-       if (fabs(value) > Buf.cutoff) {
-         idx = 4 * Buf.idx;
-         lblptr[idx++] = (Label) MAX0(ptr,qtr);
-         lblptr[idx++] = (Label) MIN0(ptr,qtr);
-         lblptr[idx++] = (Label) MAX0(rtr,str);
-         lblptr[idx++] = (Label) MIN0(rtr,str);
-         valptr[Buf.idx] = (Value) value;
-	 
-	       Buf.idx++;
-	 
-         if (Buf.idx == Buf.ints_per_buf) {
-           Buf.lastbuf = 0;
-           Buf.inbuf = Buf.idx;
-           put();
-           Buf.idx = 0;
-         }
+            kl = INDEX(rtr,str);
 
-         if (printflag)
-           fprintf(outfile, "<%d %d %d %d> [%d] [%d] = %20.10lf\n",
-           ptr, qtr, rtr, str, ij, kl, value);
-       } /* end if (fabs(value) > Buf->cutoff) ... */
-     } /* end loop over s */
-   } /* end loop over r */
+            value = mat[R][S];
+
+            if (fabs(value) > cutoff_) {
+                idx = 4 * idx_;
+                lblptr[idx++] = (Label) MAX0(ptr,qtr);
+                lblptr[idx++] = (Label) MIN0(ptr,qtr);
+                lblptr[idx++] = (Label) MAX0(rtr,str);
+                lblptr[idx++] = (Label) MIN0(rtr,str);
+                valptr[idx_] = (Value) value;
+
+                idx_++;
+
+                if (idx_ == ints_per_buf_) {
+                    lastbuf_ = 0;
+                    inbuf_ = idx_;
+                    put();
+                    idx_ = 0;
+                }
+
+                if (printflag)
+                    fprintf(outfile, ">%d %d %d %d [%d] [%d] = %20.10f\n",
+                    ptr, qtr, rtr, str, ij, kl, value);
+            } /* end if (fabs(value) > Buf->cutoff) ... */
+        } /* end loop over s */
+    } /* end loop over r */
 }
 
-extern "C" {
 /*!
 ** iwl_buf_wrt_mat()
 **
@@ -143,7 +141,7 @@ extern "C" {
 ** David Sherrill, October 1995
 **
 ** Revised 6/27/96 by CDS for new format
-** \ingroup (IWL)
+** \ingroup IWL
 */
 void iwl_buf_wrt_mat(struct iwlbuf *Buf, int ptr, int qtr, 
      double **mat, int rfirst, int rlast, int sfirst, int slast,
@@ -205,7 +203,7 @@ void iwl_buf_wrt_mat(struct iwlbuf *Buf, int ptr, int qtr,
 ** integrals.
 **
 ** TDC, 6/01
-** \ingroup (IWL)
+** \ingroup IWL
 */
 void iwl_buf_wrt_mat2(struct iwlbuf *Buf, int ptr, int qtr, 
      double **mat, int rfirst, int rlast, int sfirst, int slast,
@@ -260,4 +258,5 @@ void iwl_buf_wrt_mat2(struct iwlbuf *Buf, int ptr, int qtr,
    
 }
 
-} /* extern "C" */
+}
+

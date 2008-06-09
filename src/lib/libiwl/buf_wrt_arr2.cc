@@ -1,64 +1,63 @@
 /*!
-  \file buf_wrt_arr2.c
-  \ingroup (IWL)
+  \file
+  \ingroup IWL
 */
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include <libciomr/libciomr.h>
-#include "iwl.hpp"
 #include "iwl.h"
+#include "iwl.hpp"
 
-  using namespace psi;
-
-void IWL::wrt_arr2(double *arr, int p, int q, 
-      int *rlist, int *slist, int size, int printflag, FILE *outfile)
+namespace psi {
+  
+void IWL::write_array2(double *arr, int p, int q, int *rlist, int *slist, int size, 
+    int printflag, FILE *outfile)
 {
-  int i,idx;
-  double value;
-  Label *lblptr;
-  Value *valptr;
+    int i,idx;
+    double value;
+    Label *lblptr;
+    Value *valptr;
 
-  if (size < 0) {
-    fprintf(stderr, "(iwl_buf_wrt_arr2): Called with size = %d\n", size);
-    return;
-  }
-  
-  if (arr == NULL || rlist == NULL || slist == NULL) {
-    fprintf(stderr, "(iwl_buf_wrt_arr2): Called with null pointer argument\n");
-    return;
-  }
-  
-  lblptr = Buf.labels;
-  valptr = Buf.values;
+    if (size < 0) {
+        printf("(iwl_buf_wrt_arr2): Called with size = %d\n",
+            size);
+        return;
+    }
 
-  for (i=0; i<size; i++) {
-    value = *arr++;
-    if (fabs(value) > Buf.cutoff) {
-      idx = 4 * Buf.idx;
-      lblptr[idx++] = (Label) p;
-      lblptr[idx++] = (Label) q;
-      lblptr[idx++] = (Label) rlist[i];
-      lblptr[idx++] = (Label) slist[i];
-      valptr[Buf.idx] = (Value) value;
-   
-      if(printflag) 
-	      fprintf(outfile, "<%d %d %d %d> %20.10f\n", p, q, 
-		      rlist[i], slist[i], value);
-      
-      Buf.idx++;
-      
-      if (Buf.idx == Buf.ints_per_buf) {
-	      Buf.lastbuf = 0;
-	      Buf.inbuf = Buf.idx;
-	      put();
-	      Buf.idx = 0;
-      }
-    } /* end if (fabs(value) > Buf->cutoff) ... */             
-  } /* end loop over i */
+    if (arr == NULL || rlist == NULL || slist == NULL) {
+        printf("(iwl_buf_wrt_arr2): Called with null pointer argument\n");
+        return;
+    }
+
+    lblptr = labels_;
+    valptr = values_;
+
+    for (i=0; i<size; i++) {
+        value = *arr++;
+        if (fabs(value) > cutoff_) {
+            idx = 4 * idx_;
+            lblptr[idx++] = (Label) p;
+            lblptr[idx++] = (Label) q;
+            lblptr[idx++] = (Label) rlist[i];
+            lblptr[idx++] = (Label) slist[i];
+            valptr[idx_] = (Value) value;
+
+            if(printflag) 
+                fprintf(outfile, "%d %d %d %d %20.10f\n", p, q, 
+                rlist[i], slist[i], value);
+
+            idx_++;
+
+            if (idx_ == ints_per_buf_) {
+                lastbuf_ = 0;
+                inbuf_ = idx_;
+                put();
+                idx_ = 0;
+            }
+        } /* end if (fabs(value) > Buf->cutoff) ... */             
+    } /* end loop over i */
 }
 
-extern "C" {
-	
 /*!
 ** IWL_BUF_WRT_ARR2()
 **
@@ -69,7 +68,7 @@ extern "C" {
 ** David Sherrill, March 1995
 **
 ** Revised 6/27/96 by CDS for new format
-** \ingroup (IWL)
+** \ingroup IWL
 */
 void iwl_buf_wrt_arr2(struct iwlbuf *Buf, double *arr, int p, int q, 
       int *rlist, int *slist, int size, int printflag, FILE *outfile)
@@ -121,4 +120,5 @@ void iwl_buf_wrt_arr2(struct iwlbuf *Buf, double *arr, int p, int q,
 
 }
 
-} /* extern "C" */
+}
+

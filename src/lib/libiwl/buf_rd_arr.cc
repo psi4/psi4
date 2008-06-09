@@ -1,94 +1,89 @@
 /*!
-  \file buf_rd_arr.c
-  \ingroup (IWL)
+  \file
+  \ingroup IWL
 */
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include <libciomr/libciomr.h>
-#include "iwl.hpp"
 #include "iwl.h"
+#include "iwl.hpp"
 
-  using namespace psi;
-  
+namespace psi {
+
 #define MIN0(a,b) (((a)<(b)) ? (a) : (b))
 #define MAX0(a,b) (((a)>(b)) ? (a) : (b))
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
 
-int IWL::rd_arr(int target_pq, double *ints,
-        int *rlist, int *slist, int *size, int *ioff, 
-        int printflg, FILE *outfile)
+int IWL::read_array(int target_pq, double *ints, int *rlist, int *slist, int *size, 
+    int *ioff, int printflg, FILE *outfile)
 {
-  int lastbuf;
-  int idx, p, q, r, s, pq;
-  double value;
-  Value *valptr;
-  Label *lblptr;
+    int lastbuf;
+    int idx, p, q, r, s, pq;
+    double value;
+    Value *valptr;
+    Label *lblptr;
 
-  lblptr = Buf.labels;
-  valptr = Buf.values;
+    lblptr = labels_;
+    valptr = values_;
 
-  lastbuf = Buf.lastbuf;
+    lastbuf = lastbuf_;
 
-  *size = 0;
+    *size = 0;
 
-  for (idx=4*Buf.idx; Buf.idx<Buf.inbuf; Buf.idx++) {
-    p = (int) lblptr[idx++];
-    q = (int) lblptr[idx++];
-    r = (int) lblptr[idx++];
-    s = (int) lblptr[idx++];
+    for (idx=4*idx_; idx_ < inbuf_; idx_++) {
+        p = (int) lblptr[idx++];
+        q = (int) lblptr[idx++];
+        r = (int) lblptr[idx++];
+        s = (int) lblptr[idx++];
 
-    pq = INDEX(p,q);
+        pq = INDEX(p,q);
 
-    if (pq < target_pq) continue;
-    if (pq > target_pq) return(1);
+        if (pq < target_pq) continue;
+        if (pq > target_pq) return(1);
 
-    value = (double) valptr[Buf.idx];
-    *ints++ = value;
-    *rlist++ = r;
-    *slist++ = s;
-    *size = *size + 1;
+        value = (double) valptr[idx_];
+        *ints++ = value;
+        *rlist++ = r;
+        *slist++ = s;
+        *size = *size + 1;
 
-    if (printflg) 
-      fprintf(outfile, "<%d %d %d %d> [%d] = %20.10lf\n", p, q, r, s,
-        pq, value);
-
-  } /*! end loop through current buffer */
-
-/*! read new buffers */
-  while (!lastbuf) {
-    fetch();
-    lastbuf = Buf.lastbuf;
-
-    for (idx=4*Buf.idx; Buf.idx<Buf.inbuf; Buf.idx++) {
-      p = (int) lblptr[idx++];
-      q = (int) lblptr[idx++];
-      r = (int) lblptr[idx++];
-      s = (int) lblptr[idx++];
-
-      pq = INDEX(p,q);
-
-      if (pq < target_pq) continue;
-      if (pq > target_pq) return(1);
-
-      value = (double) valptr[Buf.idx];
-      *ints++ = value;
-      *rlist++ = r;
-      *slist++ = s;
-      *size = *size + 1;
-
-      if (printflg) 
-        fprintf(outfile, "<%d %d %d %d> [%d] = %20.10lf\n", p, q, r, s,
-          pq, value);
+        if (printflg) 
+            fprintf(outfile, "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
+            pq, value);
 
     } /*! end loop through current buffer */
 
-  } /*! end loop over reading buffers */
+    /*! read new buffers */
+    while (!lastbuf) {
+        fetch();
+        lastbuf = lastbuf_;
 
-  return(0); /*! we must have reached the last buffer at this point */
+        for (idx=4*idx_; idx_ < inbuf_; idx_++) {
+            p = (int) lblptr[idx++];
+            q = (int) lblptr[idx++];
+            r = (int) lblptr[idx++];
+            s = (int) lblptr[idx++];
+
+            pq = INDEX(p,q);
+
+            if (pq < target_pq) continue;
+            if (pq > target_pq) return(1);
+
+            value = (double) valptr[idx_];
+            *ints++ = value;
+            *rlist++ = r;
+            *slist++ = s;
+            *size = *size + 1;
+
+            if (printflg) 
+                fprintf(outfile, "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
+                pq, value);
+        } /*! end loop through current buffer */
+    } /*! end loop over reading buffers */
+
+    return(0); /*! we must have reached the last buffer at this point */
 }
 
-extern "C" {
-	
 /*!
 ** iwl_buf_rd_arr()
 **
@@ -101,7 +96,7 @@ extern "C" {
 ** Returns: 0 if end of file, otherwise 1
 **
 ** Revised 6/27/96 by CDS for new format
-** \ingroup (IWL)
+** \ingroup IWL
 */
 int iwl_buf_rd_arr(struct iwlbuf *Buf, int target_pq, double *ints,
       int *rlist, int *slist, int *size, int *ioff, 
@@ -176,4 +171,5 @@ int iwl_buf_rd_arr(struct iwlbuf *Buf, int target_pq, double *ints,
    return(0); /*! we must have reached the last buffer at this point */
 }
 
-} /* extern "C" */
+}
+

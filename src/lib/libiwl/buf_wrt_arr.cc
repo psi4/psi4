@@ -1,61 +1,60 @@
 /*!
-  \file buf_wrt_arr.c
-  \ingroup (IWL)
+  \file
+  \ingroup IWL
 */
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include <libciomr/libciomr.h>
-#include "iwl.hpp"
 #include "iwl.h"
+#include "iwl.hpp"
 
-  using namespace psi;
+namespace psi {
 
-void IWL::wrt_arr(double *arr, int *p, int *q, int *r, int *s, long int size)
+void IWL::write_array(double *arr, int *p, int *q, int *r, int *s, long int size)
 {
-  long int i;
-  int idx;
-  double value;
-  Label *lblptr;
-  Value *valptr;
+    long int i;
+    int idx;
+    double value;
+    Label *lblptr;
+    Value *valptr;
 
-  if (size < 0) {
-    fprintf(stderr, "(iwl_buf_wrt_arr): Called with size = %ld\n", size);
-    return;
-  }
+    if (size < 0) {
+        printf("(iwl_buf_wrt_arr): Called with size = %ld\n", size);
+        return;
+    }
 
-  if (arr == NULL || p == NULL || q == NULL || r == NULL || s == NULL) {
-    fprintf(stderr, "(iwl_buf_wrt_arr): Called with null pointer argument\n");
-    return;
-  }
-  
-  lblptr = Buf.labels;
-  valptr = Buf.values;
+    if (arr == NULL || p == NULL || q == NULL || r == NULL 
+    || s == NULL) {
+        printf("(iwl_buf_wrt_arr): Called with null pointer argument\n");
+        return;
+    }
 
-  for (i=0; i<size; i++) {
-    value = *arr++;
+    lblptr = labels_;
+    valptr = values_;
 
-    if (fabs(value) > Buf.cutoff) {
-      idx = 4 * Buf.idx;
-      lblptr[idx++] = (Label) p[i];
-      lblptr[idx++] = (Label) q[i];
-      lblptr[idx++] = (Label) r[i];
-      lblptr[idx++] = (Label) s[i];
-      valptr[Buf.idx] = (Value) value;
-      
-      Buf.idx++;
+    for (i=0; i<size; i++) {
+        value = *arr++;
 
-      if (Buf.idx == Buf.ints_per_buf) {
-	      Buf.lastbuf = 0;
-	      Buf.inbuf = Buf.idx;
-	      put();
-	      Buf.idx = 0;
-      }      
-    } /* end if cutoff */
-  } /* end loop over i */
+        if (fabs(value) > cutoff_) {
+            idx = 4 * idx_;
+            lblptr[idx++] = (Label) p[i];
+            lblptr[idx++] = (Label) q[i];
+            lblptr[idx++] = (Label) r[i];
+            lblptr[idx++] = (Label) s[i];
+            valptr[idx_] = (Value) value;
+
+            idx_++;
+
+            if (idx_ == ints_per_buf_) {
+                lastbuf_ = 0;
+                inbuf_ = idx_;
+                put();
+                idx_ = 0;
+            }
+        } /* end if cutoff */
+    } /* end loop over i */
 }
 
-extern "C" {
-	
 /*!
 ** IWL_BUF_WRT_ARR()
 **
@@ -64,7 +63,7 @@ extern "C" {
 ** David Sherrill, March 1995
 **
 ** Revised 6/27/96 by CDS for new format
-** \ingroup (IWL)
+** \ingroup IWL
 */
 void iwl_buf_wrt_arr(struct iwlbuf *Buf, double *arr, int *p, int *q, 
 		     int *r, int *s, long int size)
@@ -115,4 +114,5 @@ void iwl_buf_wrt_arr(struct iwlbuf *Buf, double *arr, int *p, int *q,
   
 }
 
-} /* extern "C" */
+}
+

@@ -1,36 +1,31 @@
 /*!
-  \file rdone.c
-  \ingroup (IWL)
+  \file
+  \ingroup IWL
 */
-#include <stdio.h>
-#include <math.h>
-#include <libpsio/psio.hpp>
+#include <cstdio>
+#include <cmath>
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
-#include "iwl.hpp"
 #include "iwl.h"
+#include "iwl.hpp"
 
-  using namespace psi;
+namespace psi {
   
-int IWL::rdone(PSIO* psio, int itap, char *label, double *ints, int ntri, int erase, 
-              int printflg, FILE *outfile)
+void IWL::read_one(PSIO *psio, int itap, char *label, double *ints, 
+    int ntri, int erase, int printflg, FILE *outfile)  
 {
-  int nmo;
+    int nmo;
 
-  psio->open(itap, PSIO_OPEN_OLD);
-  psio->read_entry(itap, label, (char *) ints, ntri*sizeof(double));
-  psio->close(itap, !erase);
+    psio->open(itap, PSIO_OPEN_OLD);
+    psio->read_entry(itap, label, (char *) ints, ntri*sizeof(double));
+    psio->close(itap, !erase);
 
-  if (printflg) {
-    nmo = (sqrt((double) (1 + 8 * ntri)) - 1)/2;
-    print_array(ints, nmo, outfile);
-  }
-
-  return(1);
+    if (printflg) {
+        nmo = (int) (sqrt((double) (1 + 8 * ntri)) - 1)/2;
+        print_array(ints, nmo, outfile);
+    }
 }
 
-extern "C" {
-	
 /*!
 ** IWL_RDONE()
 **
@@ -52,7 +47,7 @@ extern "C" {
 **   \param printflg   = printing flag.  Set to 1 to print ints; 
 **                       otherwise, set to 0
 **   \param outfile    = file pointer for output of ints or error messages
-** \ingroup (IWL)
+** \ingroup IWL
 */
 int iwl_rdone(int itap, char *label, double *ints, int ntri, int erase, 
               int printflg, FILE *outfile)
@@ -65,11 +60,12 @@ int iwl_rdone(int itap, char *label, double *ints, int ntri, int erase,
   psio_close(itap, !erase);
 
   if (printflg) {
-    nmo = (sqrt((double) (1 + 8 * ntri)) - 1)/2;
+    nmo = (int) (sqrt((double) (1 + 8 * ntri)) - 1)/2;
     print_array(ints, nmo, outfile);
   }
 
   return(1);
 }
 
-} /* extern "C" */
+}
+

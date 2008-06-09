@@ -1,23 +1,21 @@
 /*!
-  \file wrtone.c
-  \ingroup (IWL)
+  \file
+  \ingroup IWL
 */
-#include <stdio.h>
-#include <libpsio/psio.hpp>
+#include <cstdio>
 #include <libpsio/psio.h>
-#include "iwl.hpp"
 #include "iwl.h"
+#include "iwl.hpp"
 
-  using namespace psi;
-  
-void IWL::wrtone(PSIO* psio, int itap, char *label, int ntri, double *onel_ints)
+namespace psi {
+ 
+void IWL::write_one(PSIO *psio, int itap, char *label, int ntri, double *onel_ints)
 {
-  psio->open(itap, PSIO_OPEN_OLD);
-  psio->write_entry(itap, label, (char *) onel_ints, ntri*sizeof(double));
-  psio->close(itap,1);
+    psio->open(itap, PSIO_OPEN_OLD);
+    psio->write_entry(itap, label, (char*)onel_ints, ntri*sizeof(double));
+    psio->close(itap, 1);
 }
 
-extern "C" {
 /*!
 ** IWL_WRTONE()
 **
@@ -30,7 +28,7 @@ extern "C" {
 **
 ** David Sherrill, March 1995
 ** Revised by TDC, June 2001
-** \ingroup (IWL)
+** \ingroup IWL
 */
 void iwl_wrtone(int itap, char *label, int ntri, double *onel_ints)
 {
@@ -39,4 +37,5 @@ void iwl_wrtone(int itap, char *label, int ntri, double *onel_ints)
   psio_close(itap,1);
 }
 
-} /* extern "C" */
+}
+
