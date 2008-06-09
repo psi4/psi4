@@ -2,7 +2,7 @@
 #define _psi_src_bin_cints_Tools_transform_h
 
 /*! \file transform.h
-    \ingroup (CINTS)
+    \ingroup CINTS
 */
 
 namespace psi { namespace CINTS {

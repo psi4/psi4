@@ -1,5 +1,5 @@
 /*! \file oe_deriv2.cc
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief One-electron integral second derivatives
 */
 #include <cstring>

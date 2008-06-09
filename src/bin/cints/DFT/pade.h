@@ -2,7 +2,7 @@
 #define _psi_src_bin_cints_DFT_pade_h
 
 /*! \file pade.h
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 namespace psi { namespace CINTS {

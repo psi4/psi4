@@ -1,5 +1,5 @@
-/*! \file scf_parsing.cc
-    \ingroup (CINTS)
+/*! \file
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include<cstdio>

@@ -1,12 +1,12 @@
-/*! \file r12_te_ints.cc
-    \ingroup (CINTS)
+/*! \file
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include<cmath>
 #include<cstdio>
 #include<cstring>
 #include<memory.h>
-#include<stdlib.h>
+#include<cstdlib>
 #include<libiwl/iwl.h>
 #include<libciomr/libciomr.h>
 #include<libint/libint.h>

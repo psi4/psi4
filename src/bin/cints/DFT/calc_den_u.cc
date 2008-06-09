@@ -1,5 +1,5 @@
 /*! \file calc_den_u.cc
-    \ingroup (CINTS)
+    \ingroup CINTS
     \author Shawn Brown
   
     The code contains functions that will retrieve 
@@ -8,8 +8,8 @@
     
     --------------------------------------------------*/
 #include <cmath>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>

@@ -2,7 +2,7 @@
 #define _psi_src_bin_cints_Tools_small_fns_h
 
 /*! \file small_fns.h
-    \ingroup (CINTS)
+    \ingroup CINTS
 */
 
 namespace psi { namespace CINTS {

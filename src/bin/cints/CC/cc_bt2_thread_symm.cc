@@ -1,17 +1,17 @@
-/*! \file cc_bt2_thread_symm.cc
-    \ingroup (CINTS)
+/*! \file
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #if HAVE_CMATH
 # include <cmath>
 #else
-# include <math.h>
+# include <cmath>
 #endif
 
 #include <cstring>
-#include<stdio.h>
+#include<cstdio>
 #include<memory.h>
-#include<stdlib.h>
+#include<cstdlib>
 #include<pthread.h>
 
 #include<libqt/qt.h>

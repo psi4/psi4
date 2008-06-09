@@ -2,7 +2,7 @@
 #define _psi_src_bin_cints_Default_Deriv2_oe_deriv2_h
 
 /*! \file oe_deriv2.h
-    \ingroup (CINTS)
+    \ingroup CINTS
 */namespace psi { namespace CINTS {
 void oe_deriv2();
 }}

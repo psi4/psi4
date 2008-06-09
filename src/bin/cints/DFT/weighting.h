@@ -2,7 +2,7 @@
 #define _psi_src_bin_cints_DFT_weighting_h
 
 /*! \file weighting.h
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 namespace psi { namespace CINTS {

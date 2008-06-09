@@ -1,5 +1,5 @@
-/*! \file rmp2_energy_thread.cc
-    \ingroup (CINTS)
+/*! \file
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include<cmath>

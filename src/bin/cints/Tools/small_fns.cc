@@ -1,12 +1,12 @@
 /*! \file small_fns.cc
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include<cstdio>
-#include<stdlib.h>
+#include<cstdlib>
 #include <cstring>
 #include<libipv1/ip_lib.h>
-#include<math.h>
+#include<cmath>
 #include<libciomr/libciomr.h>
 #include<libchkpt/chkpt.h>
 #include <psifiles.h>
@@ -58,10 +58,11 @@ void start_io(int argc, char *argv[])
 {
   int i, errcod;
   int num_extra_args = 0;
-  char **extra_args;
-  extra_args = (char **) malloc(argc*sizeof(char *));
+  //char **extra_args;
+  //extra_args = (char **) malloc(argc*sizeof(char *));
 
   /* Filter out known options */
+/*
   for (i=1; i<argc; i++) {
     if ( strcmp(argv[i], "--fock") &&
 	 strcmp(argv[i], "--oeints") &&
@@ -76,17 +77,22 @@ void start_io(int argc, char *argv[])
 	 strcmp(argv[i], "--cc_bt2") &&
 	 strcmp(argv[i], "--giao_deriv") &&
 	 strcmp(argv[i], "--mp2r12") )
-      extra_args[num_extra_args++] = argv[i];
+      //extra_args[num_extra_args++] = argv[i];
   }
+*/
   
-  errcod = psi_start(&infile,&outfile,&psi_file_prefix,num_extra_args, extra_args, 0);
-  if (errcod != PSI_RETURN_SUCCESS)
-    abort();
+  //errcod = psi_start(&infile,&outfile,&psi_file_prefix,num_extra_args, extra_args, 0);
+  //if (errcod != PSI_RETURN_SUCCESS)
+  //  abort();
+  ip_cwk_clear();
+  ip_cwk_add(":DEFAULT");
+  ip_cwk_add(":PSI");
   ip_cwk_add(":CINTS");
-  psio_init(); psio_ipv1_config();
+  psio_init();
+  psio_ipv1_config();
   chkpt_init(PSIO_OPEN_OLD);
 
-  free(extra_args);
+  //free(extra_args);
   return;
 }
 
@@ -96,7 +102,7 @@ void stop_io()
   if(UserOptions.print_lvl)
     tstop(outfile);
   psio_done();
-  psi_stop(infile,outfile,psi_file_prefix);
+  //psi_stop(infile,outfile,psi_file_prefix);
 }
 
 void punt(char *mess)

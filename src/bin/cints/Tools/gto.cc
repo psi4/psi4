@@ -1,9 +1,9 @@
 /*! \file gto.cc
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include<cstdio>
-#include<stdlib.h>
+#include<cstdlib>
 #include<cmath>
 #include<psiconfig.h>
 #include<libciomr/libciomr.h>

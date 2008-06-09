@@ -1,5 +1,5 @@
 /*! \file deriv2.cc
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Driver for second derivative integrals.
 */
 #include<cstdio>

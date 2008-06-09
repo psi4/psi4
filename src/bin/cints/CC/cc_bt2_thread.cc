@@ -1,11 +1,11 @@
-/*! \file cc_bt2_thread.cc
-    \ingroup (CINTS)
+/*! \file
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include<pthread.h>
-#include<stdio.h>
+#include<cstdio>
 #include<memory.h>
-#include<stdlib.h>
+#include<cstdlib>
 #include<cstring>
 #include<cmath>
 #include<libqt/qt.h>

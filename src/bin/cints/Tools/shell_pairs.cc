@@ -1,11 +1,11 @@
 /*! \file shell_pairs.cc
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include<cmath>
 #include<cstdio>
 #include<cstring>
-#include<stdlib.h>
+#include<cstdlib>
 #include<libciomr/libciomr.h>
 #include<libint/libint.h>
 
@@ -278,10 +278,12 @@ void dealloc_pairs(void)
 {
   int i, j, k, l, si, sj;
   struct shell_pair *sp;
+  int np_i;
 
   free(stack);
   for(si=0;si<BasisSet.num_shells;si++)
     for(sj=0;sj<BasisSet.num_shells;sj++) {
+      np_i = BasisSet.shells[si].n_prims;
       sp = &(BasisSet.shell_pairs[si][sj]);
       if (sp->dmato != NULL)
 	free_block(sp->dmat);
@@ -291,7 +293,26 @@ void dealloc_pairs(void)
 	free_block(sp->dmata);
       if (sp->dmat != NULL)
 	free_block(sp->dmatb);
+
+    free(sp->gamma);
+    free(sp->Sovlp);
+
+    if (sp->P != NULL) {
+      for(i=0;i<np_i;i++)
+	    free(sp->P[i]);
+      free(sp->P);
     }
+    if (sp->PA != NULL) {
+      for(i=0;i<np_i;i++)
+	    free(sp->PA[i]);
+      free(sp->PA);
+    }
+    if (sp->PB != NULL) {
+      for(i=0;i<np_i;i++)
+	    free(sp->PB[i]);
+      free(sp->PB);
+    }
+  }
 
   for(si=0;si<BasisSet.num_shells;si++)
     free(BasisSet.shell_pairs[si]);

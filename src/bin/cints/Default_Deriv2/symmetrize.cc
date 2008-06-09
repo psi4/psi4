@@ -1,8 +1,8 @@
 /*! \file symmetrize.cc
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
-#include<stdio.h>
+#include<cstdio>
 #include<cmath>
 
 #include"defines.h"

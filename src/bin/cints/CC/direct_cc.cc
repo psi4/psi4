@@ -1,8 +1,8 @@
-/*! \file direct_cc.cc
-    \ingroup (CINTS)
+/*! \file
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
-#include<stdio.h>
+#include<cstdio>
 #include<libint/libint.h>
 
 #include"defines.h"

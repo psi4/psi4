@@ -1,10 +1,10 @@
-/*! \file moment_deriv1.cc
-    \ingroup (CINTS)
+/*! \file
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include<cmath>
 #include<cstdio>
-#include<stdlib.h>
+#include<cstdlib>
 #include<cstring>
 #include<libipv1/ip_lib.h>
 #include<libiwl/iwl.h>

@@ -1,9 +1,10 @@
-/*! \file deriv1.cc
-    \ingroup (CINTS)
+/*! \file
+    \ingroup CINTS
     \brief Driver for the computation of first derivatives.
 */
 #include<cstdio>
 #include<cstring>
+#include<cstdlib>
 
 #include<pthread.h>
 #include<libipv1/ip_lib.h>
@@ -42,8 +43,19 @@ void deriv1()
     /*--- Gradient in the canonical frame ---*/
     Grad = block_matrix(Molecule.num_atoms,3);
     
+    if (UserOptions.empirical_dispersion) {
+      double *oldgrad = chkpt_rd_grad();
+      for (int i=0,j=0; i<Molecule.num_atoms; i++) {
+        Grad[i][0] = oldgrad[j++];
+        Grad[i][1] = oldgrad[j++];
+        Grad[i][2] = oldgrad[j++];
+      }
+      free(oldgrad);
+    }
+
     if (Molecule.num_atoms != 0) {
-      if ((!strcmp(UserOptions.wfn,"SCF")) || (!strcmp(UserOptions.wfn,"SCF_MVD"))) {
+      if ((!strcmp(UserOptions.wfn,"SCF")) || 
+          (!strcmp(UserOptions.wfn,"SCF_MVD"))) {
         init_moinfo();
         compute_scf_opdm();
       }
@@ -55,15 +67,18 @@ void deriv1()
         oe_deriv1_darwin1();
         oe_deriv1_mvc();
       }
-      if ((!strcmp(UserOptions.wfn,"SCF")) || (!strcmp(UserOptions.wfn,"SCF_MVD")))
+      if ((!strcmp(UserOptions.wfn,"SCF")) || 
+          (!strcmp(UserOptions.wfn,"SCF_MVD")))
         te_deriv1_scf();
       else
         te_deriv1_corr();
       symmetrize_deriv1();
       check_rot_inv();
-      if ((!strcmp(UserOptions.wfn,"SCF")) || (!strcmp(UserOptions.wfn,"SCF_MVD")))
+      if ((!strcmp(UserOptions.wfn,"SCF")) || 
+          (!strcmp(UserOptions.wfn,"SCF_MVD")))
         cleanup_moinfo();
     }
+    
     
     file11();
     chkpt_wt_grad(Grad[0]);

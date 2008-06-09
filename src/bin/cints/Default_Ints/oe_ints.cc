@@ -1,14 +1,18 @@
-/*! \file oe_ints.cc
-    \ingroup (CINTS)
+/*! \file
+    \ingroup CINTS
     \brief One-electron integrals.
 */
 #include<cmath>
 #include<cstring>
-#include<stdio.h>
-#include<stdlib.h>
+#include<cstdio>
+#include<cstdlib>
 #include<libipv1/ip_lib.h>
 #include<libiwl/iwl.h>
+#include<libqt/qt.h>
 #include<libciomr/libciomr.h>
+#include<libchkpt/chkpt.h>
+#include<libchkpt/chkpt.hpp>
+#include<libiwl/iwl.h>
 #include<libint/libint.h>
 #include<psifiles.h>
 
@@ -18,10 +22,16 @@
 #include <stdexcept>
 #include"oe_osrr.h"
 #include"small_fns.h"
+#include"moment_ints.h"
 
 #ifdef USE_TAYLOR_FM
   #include"taylor_fm_eval.h"
 #endif
+
+namespace {
+  double** real_usotao;
+  double* ao_to_so(double*);
+}
 
 namespace psi { namespace CINTS {
 /*--- These frequently used numbers are to avoid costs of passing parameters ---*/
@@ -375,9 +385,6 @@ void oe_ints()
   if (BasisSet.puream)
     free_matrix(temp,dimension); 
   dimension=ioff[Symmetry.num_so];
-  iwl_wrtone(IOUnits.itapS,PSIF_SO_S,dimension,S);
-  iwl_wrtone(IOUnits.itapT,PSIF_SO_T,dimension,T);
-  iwl_wrtone(IOUnits.itapV,PSIF_SO_V,dimension,V);
   if (UserOptions.print_lvl >= PRINT_OEI) {
     fprintf(outfile,"  -Overlap integrals:\n\n");
     print_array(S,Symmetry.num_so,outfile);
@@ -387,9 +394,87 @@ void oe_ints()
     print_array(V,Symmetry.num_so,outfile);
     fprintf(outfile,"\n");
   }
+
+  //
+  // If EFIELD was specified, add the contribution to the potential integrals
+  //
+  if (UserOptions.E_given) {
+    moment_ints();
+    const int ntri_ao = ioff[BasisSet.num_ao];
+    double* MX;
+    double* MY;
+    double* MZ;
+    double* M = init_array(ntri_ao);
+    // Read and transform to SO basis
+    real_usotao = BasisSet.puream ? chkpt_rd_usotao() : Symmetry.usotao;
+    iwl_rdone(IOUnits.itapMX_AO,PSIF_AO_MX,M,ntri_ao,0,0,outfile);
+    MX = ao_to_so(M);
+    if (UserOptions.print_lvl >= PRINT_OEI) {
+      fprintf(outfile,"\n  -mu(x) in SO basis:\n\n");
+      print_array(MX,Symmetry.num_so,outfile);
+    }
+    iwl_rdone(IOUnits.itapMY_AO,PSIF_AO_MY,M,ntri_ao,0,0,outfile);
+    MY = ao_to_so(M);
+    if (UserOptions.print_lvl >= PRINT_OEI) {
+      fprintf(outfile,"\n  -mu(y) in SO basis:\n\n");
+      print_array(MY,Symmetry.num_so,outfile);
+    }
+    iwl_rdone(IOUnits.itapMZ_AO,PSIF_AO_MZ,M,ntri_ao,0,0,outfile);
+    MZ = ao_to_so(M);
+    if (UserOptions.print_lvl >= PRINT_OEI) {
+      fprintf(outfile,"\n  -mu(z) in SO basis:\n\n");
+      print_array(MZ,Symmetry.num_so,outfile);
+    }
+    if (BasisSet.puream) Chkpt::free(real_usotao);
+
+    // E field is given in the frame specified by EFIELD_FRAME
+    // if necessary, rotate E to the canonical frame, in which all integrals are computed
+    double* E = new double[3];  for(int i=0; i<3; ++i) E[i] = 0.0;
+    switch(UserOptions.E_frame) {
+      case reference:
+      {
+        double** rref = chkpt_rd_rref();
+        for(int i=0; i<3; ++i)
+          for(int j=0; j<3; ++j)
+            E[i] += rref[i][j] * UserOptions.E[j];
+        Chkpt::free(rref);
+      }
+      break;
+        
+      case canonical:
+        for(int i=0; i<3; ++i) E[i] = UserOptions.E[i];
+        break;
+        
+      default:
+        throw std::runtime_error("This value for UserOptions.E_frame not supported. See documentation for keyword EFIELD_FRAME.");
+    }
+    
+    fprintf(outfile,"\n    EFIELD(input file) = ( ");
+    for(int i=0; i<3; ++i) fprintf(outfile," %12.9lf ",UserOptions.E[i]);
+    fprintf(outfile," )\n");
+    if (UserOptions.E_frame != canonical) {
+      fprintf(outfile,"    EFIELD(%s frame) = ( ", (UserOptions.E_frame==canonical ? "canonical" : "reference"));
+      for(int i=0; i<3; ++i) fprintf(outfile," %12.9lf ",E[i]);
+      fprintf(outfile," )\n");
+    }
+    
+    const int ntri_so = ioff[Symmetry.num_so];
+    C_DAXPY(ntri_so, E[0], MX, 1, V, 1);
+    C_DAXPY(ntri_so, E[1], MY, 1, V, 1);
+    C_DAXPY(ntri_so, E[2], MZ, 1, V, 1);
+    fprintf(outfile,"    Electric field contribution added to the one-electron potential integrals\n");
+    if (UserOptions.print_lvl >= PRINT_OEI) {
+      fprintf(outfile,"\n  -Nuclear attraction energy integrals (+electric field):\n\n");
+      print_array(V,Symmetry.num_so,outfile);
+    }
+  }
+  iwl_wrtone(IOUnits.itapS,PSIF_SO_S,dimension,S);
+  iwl_wrtone(IOUnits.itapT,PSIF_SO_T,dimension,T);
+  iwl_wrtone(IOUnits.itapV,PSIF_SO_V,dimension,V);
   free(S);
   free(T);
   free(V);
+  free(sj_arr);
 
 #ifdef USE_TAYLOR_FM
   free_Taylor_Fm_Eval();
@@ -398,3 +483,34 @@ void oe_ints()
   return;
 }   
 };};
+
+namespace {
+  using namespace psi;
+  using namespace psi::CINTS;
+  // takes a lower triangle of a AO matrix and returns an allocated lower triangle of an SO matrix
+  double* ao_to_so(double* M_ao_tri) {
+    double** M_ao_sq = block_matrix(BasisSet.num_ao,BasisSet.num_ao);
+    int ij = 0;
+    for(int i=0; i<BasisSet.num_ao; ++i) {
+      for(int j=0; j<=i; ++j, ++ij)
+        M_ao_sq[i][j] = M_ao_sq[j][i] = M_ao_tri[ij];
+    }
+    
+    double** tmp = block_matrix(Symmetry.num_so,BasisSet.num_ao);
+    mmult(real_usotao,0,M_ao_sq,0,tmp,0,Symmetry.num_so,BasisSet.num_ao,BasisSet.num_ao,0);
+    free_block(M_ao_sq);
+    double** M_so_sq = block_matrix(Symmetry.num_so,Symmetry.num_so);
+    mmult(tmp,0,real_usotao,1,M_so_sq,0,Symmetry.num_so,BasisSet.num_ao,Symmetry.num_so,0);
+    free_block(tmp);
+
+    double* M_so_tri = init_array(ioff[Symmetry.num_so]);
+    ij = 0;
+    for(int i=0; i<Symmetry.num_so; ++i) {
+      for(int j=0; j<=i; ++j, ++ij)
+        M_so_tri[ij] = M_so_sq[i][j];
+    }
+    free_block(M_so_sq);
+    
+    return M_so_tri;
+  }
+}

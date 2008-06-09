@@ -1,9 +1,9 @@
-/*! \file parsing.cc
-    \ingroup (CINTS)
+/*! \file
+    \ingroup CINTS
     \brief Parse the input file and command line for CINTS specific options.
 */
-#include<stdio.h>
-#include<stdlib.h>
+#include<cstdio>
+#include<cstdlib>
 #include<cstring>
 #include<cmath>
 #include<vector>
@@ -59,11 +59,16 @@ namespace psi { namespace CINTS {
     if (UserOptions.make_eri)
       errcod = ip_data("ERI_FILE","%d",&(IOUnits.itap33),0);
     
+    UserOptions.empirical_dispersion = 0;
+    errcod = ip_boolean("EMPIRICAL_DISPERSION", 
+      &UserOptions.empirical_dispersion, 0);
+    
     UserOptions.scf_only = 0;
     errcod = ip_string("WFN",&UserOptions.wfn,0);
     if (UserOptions.wfn == NULL)
       throw std::domain_error("Keyword WFN is missing");
-    if ((!strcmp("SCF",UserOptions.wfn)) || (!strcmp("SCF_MVD",UserOptions.wfn)))
+    if ((!strcmp("SCF",UserOptions.wfn)) || 
+        (!strcmp("SCF_MVD",UserOptions.wfn)))
       UserOptions.scf_only = 1;
     
     UserOptions.num_threads = 1;
@@ -92,7 +97,33 @@ namespace psi { namespace CINTS {
       UserOptions.origin.z = 0;
     }
     UserOptions.origin.Z_nuc = 0;
-    
+
+    UserOptions.E_given = false;
+    if (ip_exist("EFIELD",0)) {
+      UserOptions.E_given = true;
+      errcod = ip_double_array("EFIELD", UserOptions.E, 3);
+      if(errcod != IPE_OK)
+        throw std::runtime_error("Could not read EFIELD");
+      else {
+        // if the field is specified also need to query the frame        
+        char* frame;
+        errcod = ip_string("EFIELD_FRAME",&frame,0);
+        if (errcod == IPE_OK) {
+          if (!strcmp(frame,"CANONICAL"))
+            UserOptions.E_frame = canonical;
+          else if (!strcmp(frame,"REFERENCE"))
+            UserOptions.E_frame = reference;
+          else
+            throw std::invalid_argument("Invalid value for keyword EFIELD_FRAME");
+          free(frame);
+        }
+        else {
+          UserOptions.E_frame = canonical;
+        }
+        
+      }
+    }
+
     return;
     
   }
@@ -177,9 +208,9 @@ namespace psi { namespace CINTS {
 	UserOptions.make_eri = 0;
 	UserOptions.make_fock = 0;
 	UserOptions.make_deriv1 = 1;
-    UserOptions.make_deriv1_mvd = 0;
-    if (!strcmp("SCF_MVD",UserOptions.wfn))
-      UserOptions.make_deriv1_mvd = 1;
+        UserOptions.make_deriv1_mvd = 0;
+        if (!strcmp("SCF_MVD",UserOptions.wfn))
+          UserOptions.make_deriv1_mvd = 1;
 	UserOptions.symm_ints = 0;
 	UserOptions.dertype = strdup("FIRST");
 	if (!strcmp("SCF",UserOptions.wfn)) {

@@ -1,5 +1,5 @@
 /*! \file transform.cc
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
     -------------------------------------------------------------------------------------------------
     Functions for performing four-index transformation from cartesian to pure angular momentum basis

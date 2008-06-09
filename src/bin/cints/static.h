@@ -1,8 +1,8 @@
 #ifndef _psi_src_bin_cints_static_h
 #define _psi_src_bin_cints_static_h
 
-/*! \file static.h
-    \ingroup (CINTS)
+/*! \file
+    \ingroup CINTS
     \brief Static variables.
 */
 //namespace psi {

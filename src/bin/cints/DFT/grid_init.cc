@@ -1,9 +1,9 @@
 /*! \file grid_init.cc
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
-#include<stdio.h>
-#include <stdlib.h>
+#include<cstdio>
+#include <cstdlib>
 #include <cstring>
 #include<cmath>
 #include <libipv1/ip_lib.h>

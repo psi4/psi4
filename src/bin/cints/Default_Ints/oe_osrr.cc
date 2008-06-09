@@ -1,8 +1,8 @@
-/*! \file oe_osrr.cc
-    \ingroup (CINTS)
+/*! \file
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
+#include <cstdio>
 #include <cmath>
 #include <libciomr/libciomr.h>
 #include <libint/libint.h>

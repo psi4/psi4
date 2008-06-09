@@ -2,7 +2,7 @@
 #define _psi_src_bin_cints_DFT_xc_fock_u_h
 
 /*! \file xc_fock_u.h
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */namespace psi { namespace CINTS {
 void xc_fock_u(void);

@@ -1,9 +1,9 @@
-/*! \file scf_opdm.cc
-    \ingroup (CINTS)
+/*! \file compute_scf_opdm.cc
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include<cstdio>
-#include<stdlib.h>
+#include<cstdlib>
 #include<cstring>
 #include<libciomr/libciomr.h>
 #include<libchkpt/chkpt.h>

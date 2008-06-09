@@ -2,7 +2,7 @@
 #define _psi_src_bin_cints_Tools_quartet_data_h
 
 /*! \file quartet_data.h
-    \ingroup (CINTS)
+    \ingroup CINTS
 */
 namespace psi { 
   namespace CINTS {

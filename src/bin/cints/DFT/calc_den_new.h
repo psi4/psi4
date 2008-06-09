@@ -2,7 +2,7 @@
 #define _psi_src_bin_cints_DFT_calc_den_new_h
 
 /*! \file calc_den_new.h
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include "data_structs.h"

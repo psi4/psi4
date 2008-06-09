@@ -1,12 +1,12 @@
 #ifndef _psi_src_bin_cints_data_structs_h
 #define _psi_src_bin_cints_data_structs_h
 
-/*! \file data_structs.h
-    \ingroup (CINTS)
+/*! \file
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
-#ifndef DATA_STRUCTS_H
-#define DATA_STRUCTS_H
+//#ifndef DATA_STRUCTS_H
+//#define DATA_STRUCTS_H
 #include"defines.h"
 
 namespace psi {
@@ -115,6 +115,7 @@ namespace psi {
     
     
     enum scftype {rhf = 0, uhf = 1, rohf = 2, twocon = 3};
+    enum frametype {canonical = 0, reference = 1};
     
     typedef struct {
       char *wfn;                         /* Wavefunction */
@@ -146,8 +147,12 @@ namespace psi {
       enum scftype reftype;              /* Reference type, e.g. RHF, ROHF, UHF */
       int restart;                       /* Is this a restart? */
       int restart_task;                  /* Where to restart? */
-      struct coordinates origin;           /* user-selected origin for magnetic dipole integrals */
+      struct coordinates origin;         /* user-selected origin for magnetic dipole integrals */
       double fine_structure_alpha;       /* scalar to multiply fine-structure constant */
+      double E[3];                       /* electric field vector */
+      bool E_given;                      /* Was EFIELD given? */
+      enum frametype E_frame;            /* in which frame is the field given? the default is canonical */
+      int empirical_dispersion;          /* add grad to empirical dispersion terms? */
     } UserOptions_t;
     
     typedef struct {
@@ -529,4 +534,5 @@ namespace psi {
 };
     
 #endif
-#endif
+//#endif
+

@@ -1,5 +1,5 @@
-/*! \file symmetrize_deriv1.cc
-    \ingroup (CINTS)
+/*! \file
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 

@@ -1,9 +1,9 @@
-/*! \file rot_inv.cc
-    \ingroup (CINTS)
+/*! \file
+    \ingroup CINTS
     \brief Routines for determining the rotational invariance of gradients.
 */
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <libipv1/ip_lib.h>
 #include <cmath>
 #include <masses.h>

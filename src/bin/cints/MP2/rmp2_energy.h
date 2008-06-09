@@ -1,8 +1,8 @@
 #ifndef _psi_src_bin_cints_MP2_rmp2_energy_h
 #define _psi_src_bin_cints_MP2_rmp2_energy_h
 
-/*! \file rmp2_energy.h
-    \ingroup (CINTS)
+/*! \file
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #define LOCK_RS_SHELL 0      /*--- When updating (js|ia) and (jr|ia) in (JS|IA) lock blocks corresponding to the entire shell

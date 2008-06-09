@@ -1,10 +1,10 @@
 /*! \file dcr.cc
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include<cstdio>
 #include<cstring>
-#include<stdlib.h>
+#include<cstdlib>
 #include<libciomr/libciomr.h>
 #include<symmetry.h>
 #include<libint/libint.h>

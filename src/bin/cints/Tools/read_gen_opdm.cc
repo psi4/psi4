@@ -1,9 +1,9 @@
 /*! \file read_gen_opdm.cc
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include<cstdio>
-#include<stdlib.h>
+#include<cstdlib>
 #include<libciomr/libciomr.h>
 #include<libpsio/psio.h>
 #include<libint/libint.h>
@@ -19,7 +19,6 @@ namespace psi { namespace CINTS {
 void read_gen_opdm()
 { 
   int natri = ioff[BasisSet.num_ao];
-  PSI_FPTR next;
   double *dens, *lagr;
 
   dens = init_array(natri);

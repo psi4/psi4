@@ -1,5 +1,5 @@
-/*! \file oe_deriv1_mvc.c;
-  \ingroup (CINTS)
+/*! \file
+  \ingroup CINTS
   Compute the derivative of the mass-velocity relativistic correction.
   Energy code adapted from oeprop by E.F. Valeev.
   \author R.A. King
@@ -17,6 +17,7 @@
 #include <libchkpt/chkpt.h>
 #include <psifiles.h>
 #include <physconst.h>
+#include <psiconfig.h>
 
 #include "defines.h"
 #define EXTERN
@@ -25,6 +26,8 @@
 namespace psi {
   namespace CINTS {
 
+    static const int use_cca_integrals_standard = (PSI_INTEGRALS_STANDARD == 1);
+    
 double ***MIX, ***MIY, ***MIZ;
 void MI_OSrecurs(double pax, double pay, double paz,
                  double pbx, double pby, double pbz, double gamma,
@@ -65,7 +68,7 @@ void oe_deriv1_mvc(void) {
         ypow_bf[l][ibf] = i - j;
         zpow_bf[l][ibf] = j;
         /* norm_bf is an additional normalization factor for gaussians with l>=d */
-        norm_bf[l][ibf] = sqrt(df[2*l]/(df[2*(l-i)]*df[2*(i-j)]*df[2*j]));
+        norm_bf[l][ibf] = use_cca_integrals_standard ? 1.0 : sqrt(df[2*l]/(df[2*(l-i)]*df[2*(i-j)]*df[2*j]));
         ibf++;
       }
     }

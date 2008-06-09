@@ -1,8 +1,8 @@
 #ifndef _psi_src_bin_cints_DFT_calc_den_h
 #define _psi_src_bin_cints_DFT_calc_den_h
 
-/*! \file 
-    \ingroup (CINTS)
+/*! \file calc_den.h
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include "data_structs.h"

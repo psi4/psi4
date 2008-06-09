@@ -1,12 +1,12 @@
 /*! \file pade.cc
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include <cmath>
 #include <cstring>
-#include <stdio.h>
+#include <cstdio>
 #include <memory.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include"defines.h"
 #define EXTERN
 #include"global.h"

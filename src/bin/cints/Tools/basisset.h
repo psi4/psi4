@@ -2,7 +2,7 @@
 #define _psi_src_bin_cints_Tools_basisset_h
 
 /*! \file basisset.h
-    \ingroup (CINTS)
+    \ingroup CINTS
 */namespace psi { namespace CINTS {
 
 void init_basisset();
