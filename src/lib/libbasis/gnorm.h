@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (BASIS)
+/*! \file
+    \ingroup BASIS
     \brief Enter brief description of file here 
 */
 
@@ -9,6 +9,8 @@
 #include <psitypes.h>
 #include <psiconfig.h>
 
+namespace psi {
+  
 class GaussianNormalization {
 
   static const bool use_cca_integrals_standard = (PSI_INTEGRALS_STANDARD == 1);
@@ -30,5 +32,7 @@ class GaussianNormalization {
   PSI_FLOAT norm(int l, int bf);
 
 };
+
+} // end of namespace psi
 
 #endif

@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (BASIS)
+/*! \file
+    \ingroup BASIS
     \brief Enter brief description of file here 
 */
 
@@ -9,6 +9,8 @@
 #include "basisset.h"
 #include "gnorm.h"
 #include "combinate.h"
+
+namespace psi {
 
 class RotationOp {
 
@@ -38,5 +40,7 @@ class RotationOp {
   /// Return the transformation matrix for a shell of a given angular momentum
   PSI_FLOAT** rotation_mat(PSI_FLOAT** R, int l);
 };
+
+} // end of namespace psi
 
 #endif

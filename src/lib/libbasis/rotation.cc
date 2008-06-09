@@ -1,18 +1,14 @@
-/*! \file 
-    \ingroup (BASIS)
+/*! \file
+    \ingroup BASIS
     \brief Enter brief description of file here 
 */
 
 #include <stdexcept>
-#if HAVE_CMATH
-# include <cmath>
-#else
-# include <math.h>
-#endif
-extern "C" {
+#include <cmath>
 #include <libciomr/libciomr.h>
-}
 #include "rotation.h"
+
+namespace psi {
 
 RotationOp::RotationOp(BasisSet* bs) :
   gnorm_(bs->max_am()), scdata_(bs->max_am())
@@ -138,3 +134,6 @@ PSI_FLOAT** RotationOp::full_rotation_mat(PSI_FLOAT** R)
 
   return TM;
 }
+
+}
+

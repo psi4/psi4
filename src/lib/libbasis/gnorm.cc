@@ -1,15 +1,13 @@
-/*! \file 
-    \ingroup (BASIS)
+/*! \file
+    \ingroup BASIS
     \brief Enter brief description of file here 
 */
 
 #include <stdexcept>
-#if HAVE_CMATH
-# include <cmath>
-#else
-# include <math.h>
-#endif
+#include <cmath>
 #include "gnorm.h"
+
+namespace psi {
 
 GaussianNormalization::GaussianNormalization(int am) :
   maxam_(am)
@@ -76,4 +74,6 @@ PSI_FLOAT GaussianNormalization::norm(int x, int y, int z)
   int bf = (l_x+1)*l_x/2 + z;
 
   return norm_coeffs_[l][bf];
+}
+
 }

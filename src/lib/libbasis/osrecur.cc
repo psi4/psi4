@@ -1,14 +1,13 @@
-/*! \file 
-    \ingroup (BASIS)
+/*! \file
+    \ingroup BASIS
     \brief Enter brief description of file here 
 */
 
 #include <stdexcept>
-extern "C" {
 #include <libciomr/libciomr.h>
-}
-
 #include "osrecur.h"
+
+namespace psi {
 
 OI_OSRecursor::OI_OSRecursor(int maxam1, int maxam2) :
   maxam1_(maxam1), maxam2_(maxam2)
@@ -59,36 +58,40 @@ void OI_OSRecursor::compute(PSI_FLOAT PA[3], PSI_FLOAT PB[3], PSI_FLOAT gamma, i
     OIZ_[0][j+1] += j*pp*OIZ_[0][j-1];
   }
 
-	/* Upward recursion in i for all j's */
-
-  OIX_[1][0] = PA[0];
-  OIY_[1][0] = PA[1];
-  OIZ_[1][0] = PA[2];
-  for(j=1;j<=lmaxj;j++) {
-    OIX_[1][j] = PA[0]*OIX_[0][j];
-    OIY_[1][j] = PA[1]*OIY_[0][j];
-    OIZ_[1][j] = PA[2]*OIZ_[0][j];
-    OIX_[1][j] += j*pp*OIX_[0][j-1];
-    OIY_[1][j] += j*pp*OIY_[0][j-1];
-    OIZ_[1][j] += j*pp*OIZ_[0][j-1];
-  }
-  for(i=1;i<lmaxi;i++) {
-    OIX_[i+1][0] = PA[0]*OIX_[i][0];
-    OIY_[i+1][0] = PA[1]*OIY_[i][0];
-    OIZ_[i+1][0] = PA[2]*OIZ_[i][0];
-    OIX_[i+1][0] += i*pp*OIX_[i-1][0];
-    OIY_[i+1][0] += i*pp*OIY_[i-1][0];
-    OIZ_[i+1][0] += i*pp*OIZ_[i-1][0];
+  /* Upward recursion in i for all j's */
+  if (lmaxi > 0) {
+    OIX_[1][0] = PA[0];
+    OIY_[1][0] = PA[1];
+    OIZ_[1][0] = PA[2];
     for(j=1;j<=lmaxj;j++) {
-      OIX_[i+1][j] = PA[0]*OIX_[i][j];
-      OIY_[i+1][j] = PA[1]*OIY_[i][j];
-      OIZ_[i+1][j] = PA[2]*OIZ_[i][j];
-      OIX_[i+1][j] += i*pp*OIX_[i-1][j];
-      OIY_[i+1][j] += i*pp*OIY_[i-1][j];
-      OIZ_[i+1][j] += i*pp*OIZ_[i-1][j];
-      OIX_[i+1][j] += j*pp*OIX_[i][j-1];
-      OIY_[i+1][j] += j*pp*OIY_[i][j-1];
-      OIZ_[i+1][j] += j*pp*OIZ_[i][j-1];
+      OIX_[1][j] = PA[0]*OIX_[0][j];
+      OIY_[1][j] = PA[1]*OIY_[0][j];
+      OIZ_[1][j] = PA[2]*OIZ_[0][j];
+      OIX_[1][j] += j*pp*OIX_[0][j-1];
+      OIY_[1][j] += j*pp*OIY_[0][j-1];
+      OIZ_[1][j] += j*pp*OIZ_[0][j-1];
+    }
+    for(i=1;i<lmaxi;i++) {
+      OIX_[i+1][0] = PA[0]*OIX_[i][0];
+      OIY_[i+1][0] = PA[1]*OIY_[i][0];
+      OIZ_[i+1][0] = PA[2]*OIZ_[i][0];
+      OIX_[i+1][0] += i*pp*OIX_[i-1][0];
+      OIY_[i+1][0] += i*pp*OIY_[i-1][0];
+      OIZ_[i+1][0] += i*pp*OIZ_[i-1][0];
+      for(j=1;j<=lmaxj;j++) {
+        OIX_[i+1][j] = PA[0]*OIX_[i][j];
+        OIY_[i+1][j] = PA[1]*OIY_[i][j];
+        OIZ_[i+1][j] = PA[2]*OIZ_[i][j];
+        OIX_[i+1][j] += i*pp*OIX_[i-1][j];
+        OIY_[i+1][j] += i*pp*OIY_[i-1][j];
+        OIZ_[i+1][j] += i*pp*OIZ_[i-1][j];
+        OIX_[i+1][j] += j*pp*OIX_[i][j-1];
+        OIY_[i+1][j] += j*pp*OIY_[i][j-1];
+        OIZ_[i+1][j] += j*pp*OIZ_[i][j-1];
+      }
     }
   }
 }
+
+}
+
