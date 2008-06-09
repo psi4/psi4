@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (IPV1)
+/*! \file
+    \ingroup IPV1
     \brief Enter brief description of file here 
 */
 #ifndef _psi_src_lib_libipv1_tmpl_h_

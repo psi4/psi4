@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (IPV1)
+/*! \file
+    \ingroup IPV1
     \brief Enter brief description of file here 
 */
 /* These routines manipulate the current working keyword.  This
@@ -8,9 +8,9 @@
  * tree in the current working keyword list and if it is not found
  * continue looking under successive members of the list. */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include "tmpl.h"
 #include "ip_types.h"
 #include "ip_global.h"

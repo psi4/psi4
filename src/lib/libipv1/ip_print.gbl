@@ -1,7 +1,7 @@
 #ifndef _psi_src_lib_libipv1_ipprint_gbl_
 #define _psi_src_lib_libipv1_ipprint_gbl_
 
-#include <stdio.h>
+#include <cstdio>
 
 #ifdef __cplusplus
 extern "C" {

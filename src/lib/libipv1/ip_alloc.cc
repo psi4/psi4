@@ -1,12 +1,12 @@
-/*! \file 
-    \ingroup (IPV1)
+/*! \file
+    \ingroup IPV1
     \brief Enter brief description of file here 
 */
 
 /*! \defgroup IPV1 libipv1: The Input Parsing Library */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include "tmpl.h"
 #include "ip_types.h"
 #include "ip_global.h"
@@ -49,17 +49,14 @@ void ip_free_keyword_tree(ip_keyword_tree_t *tree)
     /* Free the sub trees first. */
     ip_free_keyword_tree(I->down);
     free(I->keyword);
-    /* free any values */
-    
-    nextI = I->across;
     ip_free_value(I->value);
+    nextI = I->across;
 
     /* Zero out I (so if I accidently use it again I'll get SEGV). */
     I->down = NULL;
     I->keyword = NULL;
     I->across = NULL;
     I->up = NULL;
-    I->value = NULL;
 
     free(I);
     } while ((I = nextI) != tree);
