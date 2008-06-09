@@ -1,14 +1,14 @@
 /*!
- \file tocread.cc
- \ingroup (PSIO)
+ \file
+ \ingroup PSIO
  */
 
 #include <unistd.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 
-using namespace psi;
+namespace psi {
 
 void PSIO::tocread(unsigned int unit) {
   unsigned int i;
@@ -50,20 +50,5 @@ void PSIO::tocread(unsigned int unit) {
   }
 }
 
-#if 0
-extern "C" {
-  /*!
-   ** PSIO_TOCREAD(): Read the table of contents for file number 'unit'.
-   **
-   ** \params unit = The PSI unit number from which to read the TOC.
-   ** 
-   ** \ingroup (PSIO)
-   */
-  int psio_tocread(unsigned int unit)
-  {
-    _default_psio_lib_->tocread(unit);
-    return 1;
-  }
 }
-#endif
 

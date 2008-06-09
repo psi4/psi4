@@ -7,31 +7,34 @@
 #include <algorithm>
 #include <cctype>
 
-using namespace std;
-using namespace psi;
+#include<iostream>
+#include<ostream>
 
-namespace {
-  std::string fullkwd(const char* kwdgrp, const char* kwd, int unit) {
-    std::string unitname;
-    if (unit < 0)
-      unitname = "DEFAULT";
-    else {
-      std::ostringstream oss;
-      oss << "FILE"<< unit;
-      unitname = oss.str();
-    }
-    const std::string sep(":");
-    
-    std::string fkwd = sep + kwdgrp + sep + "FILES"+ sep + unitname + sep + kwd;
-    // convert to upper case
-    std::transform(fkwd.begin(), fkwd.end(), fkwd.begin(), static_cast<int(*)(int)>(toupper));
-    return fkwd;
+namespace psi {
+
+std::string fullkwd(const char* kwdgrp, const char* kwd, int unit) {
+  std::string unitname;
+  if (unit < 0)
+    unitname = "DEFAULT";
+  else {
+    std::ostringstream oss;
+    oss << "FILE"<< unit;
+    unitname = oss.str();
   }
+  const std::string sep(":");
+  
+  std::string fkwd = sep + kwdgrp + sep + "FILES"+ sep + unitname + sep + kwd;
+  // convert to upper case
+  std::transform(fkwd.begin(), fkwd.end(), fkwd.begin(), static_cast<int(*)(int)>(toupper));
+  return fkwd;
 }
 
 void PSIO::filecfg_kwd(const char* kwdgrp, const char* kwd, int unit,
                        const char* kwdval) {
+std::cout << "calling fullkwd\n" << std::flush;
   std::string fkwd = fullkwd(kwdgrp, kwd, unit);
+std::cout << fkwd << std::endl << std::flush;
+std::cout << kwdval << std::endl << std::flush;
   files_keywords_[fkwd] = kwdval;
 }
 
@@ -47,17 +50,16 @@ const std::string&PSIO::filecfg_kwd(const char* kwdgrp, const char* kwd,
     return nullstr;
 }
 
-extern "C" {
-  
-  int psio_set_filescfg_kwd(const char* kwdgrp, const char* kwd, int unit,
-                            const char* kwdval) {
-    _default_psio_lib_->filecfg_kwd(kwdgrp, kwd, unit, kwdval);
-    return 1;
-  }
-  
-  const char* psio_get_filescfg_kwd(const char* kwdgrp, const char* kwd,
-                                    int unit) {
-    return _default_psio_lib_->filecfg_kwd(kwdgrp,kwd,unit).c_str();
-  }
+int psio_set_filescfg_kwd(const char* kwdgrp, const char* kwd, int unit,
+                          const char* kwdval) {
+  _default_psio_lib_->filecfg_kwd(kwdgrp, kwd, unit, kwdval);
+  return 1;
+}
+
+const char* psio_get_filescfg_kwd(const char* kwdgrp, const char* kwd,
+                                  int unit) {
+  return _default_psio_lib_->filecfg_kwd(kwdgrp,kwd,unit).c_str();
+}
 
 }
+

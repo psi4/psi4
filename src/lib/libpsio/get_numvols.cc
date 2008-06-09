@@ -1,26 +1,26 @@
 /*!
- \file get_numvols.cc
- \ingroup (PSIO)
+ \file
+ \ingroup PSIO
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
+#include <psi4.h>
 
-using namespace psi;
-
-extern "C" {
-  extern char *gprgid();
-}
+namespace psi {
 
 unsigned int PSIO::get_numvols(unsigned int unit) {
   std::string charnum;
-  
-  charnum = filecfg_kwd(gprgid(), "NVOLUME", unit);
+
+  char *module_name = module.gprgid();
+  charnum = filecfg_kwd(module_name, "NVOLUME", unit);
   if (!charnum.empty())
     return ((unsigned int)atoi(charnum.c_str()));
-  charnum = filecfg_kwd(gprgid(), "NVOLUME", -1);
+  charnum = filecfg_kwd(module_name, "NVOLUME", -1);
+  delete [] module_name;
+
   if (!charnum.empty())
     return ((unsigned int)atoi(charnum.c_str()));
   charnum = filecfg_kwd("PSI", "NVOLUME", unit);
@@ -40,16 +40,9 @@ unsigned int PSIO::get_numvols(unsigned int unit) {
   abort();
 }
 
-extern "C" {
-  /*!
-   ** PSIO_GET_NUMVOLS_DEFAULT(): Get the number of volumes that file 
-   ** number 'unit' is split across.
-   **
-   ** \ingroup (PSIO)
-   */
   unsigned int psio_get_numvols_default(void) {
     std::string charnum;
-    
+     
     charnum = _default_psio_lib_->filecfg_kwd("PSI", "NVOLUME", -1);
     if (!charnum.empty())
       return ((unsigned int)atoi(charnum.c_str()));
@@ -59,6 +52,7 @@ extern "C" {
     
     // assume that the default has been provided already
     abort();
-  }
+  } 
+
 }
 

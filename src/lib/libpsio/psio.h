@@ -1,13 +1,12 @@
 #ifndef PSIO_H
 #define PSIO_H
 
-#include <stdio.h>
+#include <cstdio>
 #include <libpsio/config.h>
+#include <psi4.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-  
+namespace psi {
+
   int psio_init(void);
   int psio_ipv1_config(void);
   int psio_state(void);
@@ -57,8 +56,7 @@ extern "C" {
   const char* psio_get_filescfg_kwd(const char* kwdgrp, const char* kwd,
                                     int unit);
 
-#ifdef __cplusplus
 }
-#endif
 
 #endif    /* #ifndef PSIO_H */
+

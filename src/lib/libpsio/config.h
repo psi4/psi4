@@ -1,6 +1,8 @@
 #ifndef _psi_src_lib_libpsio_config_h_
 #define _psi_src_lib_libpsio_config_h_
 
+namespace psi {
+
 #define PSIO_OPEN_NEW 0
 #define PSIO_OPEN_OLD 1
 
@@ -59,5 +61,7 @@ typedef struct {
 
 /** A convenient address initialization struct */
 extern psio_address PSIO_ZERO;
+
+}
 
 #endif /* header guard */

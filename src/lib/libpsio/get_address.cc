@@ -1,18 +1,16 @@
 /*!
- ** \file get_address.cc
- ** \ingroup (PSIO)
+ ** \file
+ ** \ingroup PSIO
  */
 
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 
-using namespace psi;
-
-extern "C" {
+namespace psi {
   /*!
    ** PSIO_GET_ADDRESS(): Given a starting page/offset and a shift length
    ** (in bytes), return the page/offset of the next position in the file.
-   ** \ingroup(PSIO)
+   ** \ingroup PSIO
    */
 
   psio_address psio_get_address(psio_address start, ULI shift) {
@@ -32,4 +30,6 @@ extern "C" {
     
     return address;
   }
+
 }
+

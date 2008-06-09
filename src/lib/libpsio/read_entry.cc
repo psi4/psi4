@@ -1,19 +1,18 @@
 /*!
- \file read_entry.cc
- \ingroup (PSIO)
+ \file
+ \ingroup PSIO
  */
 
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 
-using namespace psi;
+namespace psi {
 
 void PSIO::read_entry(unsigned int unit, char *key, char *buffer, ULI size) {
   psio_address end;
   read(unit, key, buffer, size, PSIO_ZERO, &end);
 }
 
-extern "C" {
   /*!
    ** PSIO_READ_ENTRY(): Reads an entire TOC entry from a PSI file.
    **
@@ -27,12 +26,13 @@ extern "C" {
    ** size of the entry, but care is taken to ensure that the end of the
    ** entry is not surpassed.
    **
-   ** \ingroup (PSIO)
+   ** \ingroup PSIO
    */
 
   int psio_read_entry(unsigned int unit, char *key, char *buffer, ULI size) {
     psio_address end;
     return psio_read(unit, key, buffer, size, PSIO_ZERO, &end);
   }
+
 }
 

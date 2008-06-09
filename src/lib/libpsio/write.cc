@@ -1,14 +1,14 @@
 /*!
- \file write.cc
- \ingroup (PSIO)
+ \file
+ \ingroup PSIO
  */
 
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 
-using namespace psi;
+namespace psi {
 
 void PSIO::write(unsigned int unit, char *key, char *buffer, ULI size,
                  psio_address start, psio_address *end) {
@@ -32,7 +32,8 @@ void PSIO::write(unsigned int unit, char *key, char *buffer, ULI size,
     dirty = 1; /* set flag for writing the TOC header */
     
     this_entry = (psio_tocentry *) malloc(sizeof(psio_tocentry));
-    strcpy(this_entry->key, key);
+    ::strncpy(this_entry->key, key, PSIO_KEYLEN);
+    this_entry->key[PSIO_KEYLEN-1] = '\0';
     this_entry->next = NULL;
     this_entry->last = NULL;
     
@@ -111,7 +112,6 @@ void PSIO::write(unsigned int unit, char *key, char *buffer, ULI size,
 #endif
 }
 
-extern "C" {
   /*!
    ** PSIO_WRITE(): Writes data to a TOC entry in a PSI file.
    **
@@ -124,7 +124,7 @@ extern "C" {
    **  \param end     = A pointer to the entry-relative page/offset for the next
    **                   byte after the end of the write request.
    **
-   ** \ingroup (PSIO)
+   ** \ingroup PSIO
    */
 
   int psio_write(unsigned int unit, char *key, char *buffer, ULI size,
@@ -132,5 +132,6 @@ extern "C" {
     _default_psio_lib_->write(unit, key, buffer, size, start, end);
     return 1;
   }
+
 }
 

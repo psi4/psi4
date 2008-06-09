@@ -1,6 +1,6 @@
 /*!
- \file volseek.cc
- \ingroup (PSIO)
+ \file
+ \ingroup PSIO
  */
 
 #include <unistd.h>
@@ -9,11 +9,11 @@
 /* This is strictly used to avoid overflow errors on lseek() calls */
 #define PSIO_BIGNUM 10000
 
-extern "C" {
+namespace psi {
   /*!
    ** PSIO_VOLSEEK()
    **
-   ** \ingroup (PSIO)
+   ** \ingroup PSIO
    */
   int psio_volseek(psio_vol *vol, ULI page, ULI offset, ULI numvols) {
     int stream, errcod;
@@ -46,4 +46,6 @@ extern "C" {
     
     return (0);
   }
+
 }
+

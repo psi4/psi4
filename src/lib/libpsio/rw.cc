@@ -1,14 +1,14 @@
 /*!
- \file rw.cc
- \ingroup (PSIO)
+ \file
+ \ingroup PSIO
  */
 
-#include <stdio.h>
+#include <cstdio>
 #include <unistd.h>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 
-using namespace psi;
+namespace psi {
 
 void PSIO::rw(unsigned int unit, char *buffer, psio_address address, ULI size,
               int wrt) {
@@ -100,7 +100,6 @@ void PSIO::rw(unsigned int unit, char *buffer, psio_address address, ULI size,
   }
 }
 
-extern "C" {
   /*!
    ** PSIO_RW(): Central function for all reads and writes on a PSIO unit.
    **
@@ -110,12 +109,14 @@ extern "C" {
    ** \params size    = The number of bytes to read/write.
    ** \params         = Indicates if the call is to read (0) or write (0) the input data.
    **
-   ** \ingroup (PSIO)
+   ** \ingroup PSIO
    */
+
   int psio_rw(unsigned int unit, char *buffer, psio_address address, ULI size,
               int wrt) {
     _default_psio_lib_->rw(unit, buffer, address, size, wrt);
     return 1;
   }
+
 }
 

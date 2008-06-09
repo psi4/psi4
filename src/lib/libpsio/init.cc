@@ -1,23 +1,20 @@
 /*!
- \file init.cc
- \ingroup (PSIO)
+ \file
+ \ingroup PSIO
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-extern "C" {
+#include <cstdio>
+#include <cstdlib>
 #include <libpsio/psio.h>
-}
 #include <libpsio/psio.hpp>
 
-using namespace psi;
+namespace psi {
 
 /* Definition of global data */
-PSIO* psi::_default_psio_lib_ = 0;
+PSIO* _default_psio_lib_ = 0;
+
 int PSIO::_error_exit_code_ = 1;
-extern "C" {
-  psio_address PSIO_ZERO = { 0, 0 };
-}
+psio_address PSIO_ZERO = { 0, 0 };
 
 PSIO::PSIO() {
   int i, j;
@@ -48,38 +45,25 @@ PSIO::PSIO() {
   }
 }
 
-extern "C" {
-  
-  /*!
-   ** PSIO_INIT(): Allocates global memory needed by the I/O routines.
-   **
-   ** No arguments.
-   **
-   ** \ingroup (PSIO)
-   */
-
   int psio_init(void) {
+fprintf(outfile,"running psio_init\n");
+fflush(outfile);
     if (!_default_psio_lib_) {
       _default_psio_lib_ = new PSIO;
+fprintf(outfile,"making new psio\n");
+fflush(outfile);
       if (_default_psio_lib_ == 0) {
         fprintf(stderr,"LIBPSIO::init() -- failed to allocate the memory");
         exit(PSIO::_error_exit_code_);
       }
     }
-    
+
     return 1;
   }
-  
-  /*!
-   ** PSIO_STATE(): Returns state of the library (1=initialized, 0=noninitialized).
-   **
-   ** No arguments.
-   **
-   ** \ingroup (PSIO)
-   */
 
   int psio_state() {
     return _default_psio_lib_->state();
   }
 
 }
+

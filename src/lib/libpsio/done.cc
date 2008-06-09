@@ -1,22 +1,17 @@
 /*!
- ** \file done.cc
- ** \ingroup (PSIO)
+ ** \file
+ ** \ingroup PSIO
  */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 
 #ifdef PSIO_STATS
-#include <time.h>
+#include <<ctime>>
 #endif
 
-using namespace psi;
-
-extern "C" {
-  extern char* psi_file_prefix;
-  extern char* gprgid();
-}
+namespace psi {
 
 PSIO::~PSIO() {
 #ifdef PSIO_STATS
@@ -50,20 +45,16 @@ PSIO::~PSIO() {
   
   free(psio_unit);
   state_ = 0;
+fprintf(outfile,"psio-done-destructed\n");
+  files_keywords_.clear();
+fprintf(outfile,"erase set\n");
+fflush(outfile);
 }
 
-extern "C" {
-  /*!
-   ** \ingroup (PSIO)
-   **
-   ** PSIO_DONE(): Frees global data used by the I/O routines.
-   **
-   ** No arguments.
-   */
-
-  int psio_done(void) {
-    delete _default_psio_lib_;
-    _default_psio_lib_ = NULL;
-  }
+int psio_done(void) {
+  delete _default_psio_lib_;
+  _default_psio_lib_ = 0; //must be assigned 0 for test in psio_init()
+}
 
 }
+

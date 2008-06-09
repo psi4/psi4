@@ -1,15 +1,15 @@
 /*!
- \file read.cc
- \ingroup (PSIO)
+ \file
+ \ingroup PSIO
  */
 
-#include <stdlib.h> 
+#include <cstdlib> 
 #include <unistd.h>
-#include <string.h>
+#include <cstring>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 
-using namespace psi;
+namespace psi {
 
 void PSIO::read(unsigned int unit, char *key, char *buffer, ULI size,
                 psio_address start, psio_address *end) {
@@ -61,7 +61,6 @@ void PSIO::read(unsigned int unit, char *key, char *buffer, ULI size,
 #endif  
 }
 
-extern "C" {
   /*!
    ** PSIO_READ(): Reads data from within a TOC entry from a PSI file.
    **
@@ -74,12 +73,14 @@ extern "C" {
    **  \param end    = A pointer to the entry-relative page/offset for the next
    **                  byte after the end of the read request.
    ** 
-   ** \ingroup (PSIO)
+   ** \ingroup PSIO
    */
+
   int psio_read(unsigned int unit, char *key, char *buffer, ULI size,
                 psio_address start, psio_address *end) {
     _default_psio_lib_->read(unit, key, buffer, size, start, end);
     return 1;
   }
+
 }
 
