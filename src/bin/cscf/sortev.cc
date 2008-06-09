@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (CSCF)
+/*! \file
+    \ingroup CSCF
     \brief Enter brief description of file here 
 */
 /*-------------------------------------------------------------
@@ -18,8 +18,8 @@ namespace psi { namespace cscf {
 void sortev()
 {
   int i,j,k;
-  static int *ct;
-  static int *pt;
+//  static int *ct, *pt; // these get assigned below anyway?
+  int *ct, *pt;
   int rep;
   double lowvalue;
   int elect;
@@ -47,17 +47,19 @@ void sortev()
 	scf_info[i].hevals[j] = scf_info[i].fock_evals[j];
 
 /* excluding irreps that have zero so's out of consideration */
-  for(i=0; i < num_arr; i++)
-    if(ct[pt[i]]==scf_info[pt[i]].num_mo) {
-      if(i != num_arr-1) {
-	for(j=i;j<num_arr-1;j++)
-	  pt[j]=pt[j+1];
-	num_arr--;
-	i--;
+  for(i=0; i < num_arr; i++) {
+    //if(ct[pt[i]]==scf_info[pt[i]].num_mo) { // just checks 0?
+    if(!scf_info[pt[i]].num_mo) {
+      if(i != num_arr-1) { // if i is last one just leave it
+        for(j=i;j<num_arr-1;j++)
+          pt[j]=pt[j+1];
+        num_arr--;
+        i--;
       }
       else
-	num_arr--;
+        num_arr--;
     }
+  }
 
 /* Sort eigenvalues and put them in order in the ener_tot array*/
   

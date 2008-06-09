@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (CSCF)
+/*! \file
+    \ingroup CSCF
     \brief Enter brief description of file here 
 */
 #define EXTERN
@@ -24,9 +24,7 @@ void scf_input(ip_value_t* ipvalue)
    int norder,*iorder,reordr;
    int nc,no,nh,nn,num_mo;
    int ncalcs;
-   PSI_FPTR junk,locvec,loccal;
    int optri,ierr,nat;
-   int io_locate();
    int errcod;
    int size;
    int phase_chk;
@@ -116,7 +114,7 @@ void scf_input(ip_value_t* ipvalue)
    exitflag = 0;
    errcod = ip_boolean("EXIT_CINTS",&exitflag,0);
    
-   itmax = 40;
+   itmax = 100;
    errcod = ip_data("MAXITER","%d",&itmax,0);
 
    it_diis = 0;
@@ -372,6 +370,7 @@ void scf_input(ip_value_t* ipvalue)
        fprintf(outfile,"  first run, so defaulting to core-hamiltonian guess\n");
        /* TDC(6/19/96) - If not starting from old vector, don't allow
 	  phase checking */
+       for(k=0; k < num_ir; k++) scf_info[k].num_mo = 0;
        phase_check = 0;
    }
 
@@ -432,6 +431,8 @@ void scf_input(ip_value_t* ipvalue)
    errcod = ip_boolean("DELETE_1E",&delete_1e,0);
    delete_2e = delete_ints;
    errcod = ip_boolean("DELETE_2E",&delete_2e,0);
+
+   free(dertype);
    
    fflush(outfile);
 }

@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (CSCF)
+/*! \file
+    \ingroup CSCF
     \brief Enter brief description of file here 
 */
 /* $Log$
@@ -90,7 +90,7 @@
 /* -Ed
  * */
 
-static char *rcsid = "$Id: init_scf.cc 3592 2007-09-28 13:01:33Z evaleev $";
+static char *rcsid = "$Id: init_scf.cc 3956 2008-06-09 12:24:49Z rking $";
 
 #define EXTERN
 #include "includes.h"
@@ -104,7 +104,6 @@ void init_scf()
    int i,jj;
    int nn,isadr;
    int nkind,junk;
-   PSI_FPTR next;
    int degen[20],*num_so;
    char char_dum[80];
    char **irr_labs;
@@ -181,6 +180,8 @@ void init_scf()
 	   scf_info[i].xcmat = init_array(ioff[nn]);
          }
      }
+   free(irr_labs);
+   free(num_so);
    /* read in number of atoms and nuclear charges and total number of MO*/
    natom = chkpt_rd_natom();
    zvals = chkpt_rd_zvals();

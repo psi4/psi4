@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (CSCF)
+/*! \file
+    \ingroup CSCF
     \brief Enter brief description of file here 
 */
 /**************************************************
@@ -9,7 +9,7 @@
     By Shawn Brown
 
 **************************************************/
-static char *rcsid = "$Id: init_uhf.cc 3661 2007-10-25 19:29:39Z evaleev $";
+static char *rcsid = "$Id: init_uhf.cc 3815 2008-02-13 21:50:07Z sherrill $";
 
 #define EXTERN
 #include "includes.h"
@@ -23,7 +23,6 @@ void init_uhf()
    int i,m,jj;
    int nn,isadr;
    int nkind,junk;
-   PSI_FPTR next;
    int degen[20],*num_so;
    char char_dum[80];
    char **irr_labs;

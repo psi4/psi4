@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (CSCF)
+/*! \file
+    \ingroup CSCF
     \brief Enter brief description of file here 
 */
 /* $Log$
@@ -49,7 +49,7 @@
  * Initial revision
  * */
 
-static char *rcsid = "$Id: findit_uhf.cc 3592 2007-09-28 13:01:33Z evaleev $";
+static char *rcsid = "$Id: findit_uhf.cc 3815 2008-02-13 21:50:07Z sherrill $";
 
 #define EXTERN
 #include "includes.h"

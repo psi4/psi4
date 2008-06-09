@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (CSCF)
+/*! \file
+    \ingroup CSCF
     \brief Enter brief description of file here 
 */
 /* $Log$
@@ -205,7 +205,7 @@
 /* Added a version of CSCF that can work with CINTS.
 /* -Ed */
 
-static char *rcsid = "$Id: cleanup.cc 3661 2007-10-25 19:29:39Z evaleev $";
+static char *rcsid = "$Id: cleanup.cc 3956 2008-06-09 12:24:49Z rking $";
 
 #define EXTERN
 #include "includes.h"
@@ -226,14 +226,12 @@ void cleanup()
 
 {
   int i,j,k,ij,ijk,m,nn,num_mo;
-  PSI_FPTR junk,junk1,junk2;
   int mpoint,mconst,mcalcs,loccal;
-  PSI_FPTR locvec;
   int nx,ntri;
   int newvec;
   int nat,iend,ierr,ci_calc,irot,nbfao;
   int numso;
-  int n_there[20],nc[10],no[10];
+  int *n_there,*nc,*no;
   int mo_print;
   int errcod;
   char *ci_type="SCF";
@@ -326,6 +324,10 @@ void cleanup()
   chkpt_wt_eref(etot);
 
   /* These new arrays for PSIF_CHKPT contain data for ALL irreps */
+  n_there = init_int_array(num_ir);
+  no = init_int_array(num_ir);
+  nc = init_int_array(num_ir);
+
   for(i=0; i < num_ir; i++) {
     s=&scf_info[i];
     n_there[i]=s->num_mo;
@@ -335,7 +337,10 @@ void cleanup()
   chkpt_wt_orbspi(n_there);
   chkpt_wt_clsdpi(nc);
   chkpt_wt_openpi(no);
-  for(i=0; i < num_ir; i++) n_there[i] = nc[i] = no[i] = 0;
+
+  free(n_there);
+  free(no);
+  free(nc);
 
   /* Figure out frozen core orbitals in each irrep and write them out*/
   nfzc = chkpt_rd_nfzc();
@@ -604,7 +609,7 @@ void cleanup()
   /* TDC (04/04/07) -- some old cleanups */
   free(reference);
       
-  fprintf(outfile,"\n%8cSCF total energy   = %20.12f\n",' ',etot);
+  fprintf(outfile,"\n%6c* SCF total energy   = %20.12f\n",' ',etot);
       
   if(ksdft){
     fprintf(outfile,"%8ccoulomb energy     = %20.12f\n"
@@ -638,12 +643,17 @@ void cleanup()
       
   if(!converged)
     fprintf(outfile,"\n%8cCalculation has not converged!\n",' ');
+
+  for (i=0; i < num_ir ; i++)
+    free(scf_info[i].irrep_label);
       
   tstop(outfile);
   psi_stop(infile,outfile,psi_file_prefix);
       
   if(!converged) exit(PSI_RETURN_FAILURE);
+  //if(!converged) return(PSI_RETURN_FAILURE);
   exit(PSI_RETURN_SUCCESS);
+  //return(PSI_RETURN_SUCCESS);
 
 }
 

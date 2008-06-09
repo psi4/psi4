@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (CSCF)
+/*! \file
+    \ingroup CSCF
     \brief Enter brief description of file here 
 */
 /*****************************************************/
@@ -132,7 +132,7 @@ void occ_init(void){
     nelec = 0;
     for(i=0; i < natom;i++)
 	{
-	    nelec = nelec + zvals[i];
+	    nelec = nelec + static_cast <int> (zvals[i]);
 	}
     nelec = nelec - charge;
     
