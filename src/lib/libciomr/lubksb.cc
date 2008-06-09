@@ -1,6 +1,5 @@
-#include "includes.h"
 
-extern "C" {
+namespace psi {
 
 void lubksb(double** a,int n,int* indx,double* b)
    {
@@ -28,4 +27,5 @@ void lubksb(double** a,int n,int* indx,double* b)
          }
       }
 
-} /* extern "C" */
+}
+

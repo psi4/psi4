@@ -1,6 +1,9 @@
-#include "includes.h"
 
-extern "C" {
+#include <cstdlib>
+#include <cmath>
+#include "libciomr.h"
+
+namespace psi {
 
 void ludcmp(double** a,int n,int* indx,double* d)
    {
@@ -58,4 +61,5 @@ void ludcmp(double** a,int n,int* indx,double* d)
       free(vv);
       }
 
-} /* extern "C" */
+}
+

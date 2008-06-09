@@ -1,18 +1,21 @@
 /*!
-  \file block_matrix.cc
-  \ingroup (CIOMR)
+  \file
+  \brief Allocate a blocked (memory-contiguous) 2D matrix of doubles
+  \ingroup CIOMR
 */
 
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-#include<strings.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <strings.h>
 #include <psifiles.h>
 
-extern "C" {
+namespace psi {
 
 /*!
-** block_matrix() : Allocates a contiguous block of memory for an array of
+** block_matrix(): Allocate a 2D array of doubles using contiguous memory
+**
+** Allocates a contiguous block of memory for an array of
 ** doubles, allocates an array of pointers to the beginning of each row and
 ** returns the pointer to the first row pointer.  This allows transparent
 ** 2d-array style access, but keeps memory together such that the matrix 
@@ -21,11 +24,16 @@ extern "C" {
 ** Allocates memory for an n x m matrix and returns a pointer to the
 ** first row. 
 **
+** \param n = number of rows (unsigned long to allow large matrices)
+** \param m = number of columns (unsigned long to allow large matrices)
+**
+** Returns: double star pointer to newly allocated matrix
+**
 ** T. Daniel Crawford
 ** Sometime in 1994
 **
 ** Based on init_matrix() from libciomr
-** \ingroup (CIOMR)
+** \ingroup CIOMR
 */
 
 double ** block_matrix(unsigned long int n, unsigned long int m)
@@ -57,10 +65,15 @@ double ** block_matrix(unsigned long int n, unsigned long int m)
     return(A);
    }
 
+
 /*!
 ** free_block(): Free a block matrix
 **
-** \ingroup (CIOMR)
+** \param array = pointer to matrix to be freed
+**
+** Returns: none
+**
+** \ingroup CIOMR
 */
 void free_block(double **array)
    {
@@ -69,4 +82,4 @@ void free_block(double **array)
       free(array);
    }
 
-} /* extern "C" */
+}

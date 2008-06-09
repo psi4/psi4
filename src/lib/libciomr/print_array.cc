@@ -1,22 +1,24 @@
 /*!
-** \file print_array.cc
-** \ingroup (CIOMR)
+** \file
+** \brief Print a lower-triangle array of doubles
+** \ingroup CIOMR
 */
 
-#include "includes.h"
+#include <cstdio>
 
-extern "C" {
+namespace psi {
 
 /*!
-** print_array: Prints a lower-triangle of a symmetric matrix packed as
+** print_array(): Prints a lower-triangle of a symmetric matrix packed as
 **  an array of doubles.
 **
-** Arguments:
-** \param a     = array (packed lower triangle of matrix) to print
-** \param m     = dimension of matrix (mxm)
-** \param out   = file pointer for output
+** \param a   = array (packed lower triangle of matrix) to print
+** \param m   = dimension of matrix (mxm)
+** \param out = file pointer for output
 **
-** \ingroup (CIOMR)
+** Returns: none
+**
+** \ingroup CIOMR
 */
 void print_array(double *a, int m, FILE *out)
    {
@@ -52,4 +54,5 @@ L200:
       ii=kk; goto L200;
       }
 
-} /* extern "C" */
+}
+

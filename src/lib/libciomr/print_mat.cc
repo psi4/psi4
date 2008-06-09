@@ -1,22 +1,24 @@
 /*!
-** \file print_mat.cc
-** \ingroup (CIOMR)
+** \file
+** \brief Print a matrix of doubles
+** \ingroup CIOMR
 */
 
-#include "includes.h"
+#include <cstdio>
 
-extern "C" {
+namespace psi {
 
 /*!
 ** print_mat: Print a matrix a of dimensions mxn to file pointer out.
 **
-** Arguments:
-**  \param a   = matrix to print
-**  \param m   = number of rows in matrix
-**  \param n   = number of columns in matrix
-**  \param out = file pointer for output
+** \param a   = matrix to print
+** \param m   = number of rows in matrix
+** \param n   = number of columns in matrix
+** \param out = file pointer for output
 **
-** \ingroup (CIOMR)
+** Returns: none
+**
+** \ingroup CIOMR
 */
 void print_mat(double **a, int m, int n, FILE *out)
    {
@@ -48,4 +50,5 @@ L200:
       ii=kk; goto L200;
       }
 
-} /* extern "C" */
+}
+

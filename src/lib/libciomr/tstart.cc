@@ -1,33 +1,30 @@
 /*!
-** \file tstart.cc
+** \file
 ** \brief Controls starting and stopping of timers
-** \ingroup (CIOMR)
+** \ingroup CIOMR
 */
 
-#include "includes.h"
-#define ALLOC_GLOBALS
-#include "pointers.h"
-#undef ALLOC_GLOBALS
-
+#include <cstdio>
+#include <cstdlib>
 #include <unistd.h>
-#include <string.h>
+#include <cstring>
+#include <ctime>
+#define EXTERN
+#include <psi4.h>
 
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-
-#ifdef HAVE_SYS_TIMES_H
 #include <sys/times.h>
-#endif
 
-extern "C" {
+namespace psi {
 
-/*
-** tstart: Starts a timer.
+time_t time_start, time_end;
+struct tms total_tmstime;
+
+/*!
+** tstart(): Starts a timer
 **
 ** \param outfile = output file pointer
 **
-** \ingroup (CIOMR)
+** \ingroup CIOMR
 */
 void tstart(FILE *outfile)
 {
@@ -43,7 +40,9 @@ void tstart(FILE *outfile)
     fprintf(outfile,"*");
   }
   fprintf(outfile,"\n");
-
+  char *module_name = module.gprgid();
+  fprintf(outfile,"%s ", module_name);
+  delete [] module_name;
   fprintf(outfile,"tstart called on %s\n", name);
   fprintf(outfile,"%s\n",ctime(&time_start));
 
@@ -51,11 +50,11 @@ void tstart(FILE *outfile)
 }
 
 /*!
-** tstop: Stop timer.
+** tstop(): Stop timer
 **
 ** \param outfile = output file pointer.
 **
-** \ingroup (CIOMR)
+** \ingroup CIOMR
 */ 
 void tstop(FILE *outfile)
 {
@@ -82,6 +81,9 @@ void tstop(FILE *outfile)
     fprintf(outfile,"*");
   }
   fprintf(outfile,"\n");
+  char *module_name = module.gprgid();
+  fprintf(outfile,"%s ", module_name);
+  delete [] module_name;
   fprintf(outfile,"tstop called on %s\n", name);
   fprintf(outfile,"%s\n",ctime(&time_end));
   fprintf(outfile,"user time   = %10.2f seconds = %10.2f minutes\n",
@@ -95,4 +97,5 @@ void tstop(FILE *outfile)
 
 }
 
-} /* extern "C" */
+}
+
