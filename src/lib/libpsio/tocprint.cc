@@ -1,13 +1,13 @@
 /*!
- \file tocprint.cc
- \ingroup (PSIO)
+ \file
+ \ingroup PSIO
  */
 
-#include <stdio.h>
+#include <cstdio>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 
-using namespace psi;
+namespace psi {
 
 void PSIO::tocprint(unsigned int unit, FILE *output) {
   psio_tocentry *this_entry;
@@ -35,13 +35,16 @@ void PSIO::tocprint(unsigned int unit, FILE *output) {
   fflush(output);
 }
 
-extern "C" {
   /*!
    ** PSIO_TOCPRINT(): Print the table of contents for the given unit
    **
-   ** \ingroup (PSIO)
+   ** \ingroup PSIO
    */
+
   void psio_tocprint(unsigned int unit, FILE *output) {
     return _default_psio_lib_->tocprint(unit, output);
   }
+
+
 }
+

@@ -1,17 +1,17 @@
 /*! \defgroup PSIO libpsio: The PSI I/O Library */
 
 /*!
- ** \file close.cc
- ** \ingroup (PSIO)
+ ** \file
+ ** \ingroup PSIO
  */
 
 #include <unistd.h>
-#include <string.h>
-#include <stdlib.h>
+#include <cstring>
+#include <cstdlib>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 
-using namespace psi;
+namespace psi {
 
 void PSIO::close(unsigned int unit, int keep) {
   unsigned int i;
@@ -54,10 +54,10 @@ void PSIO::close(unsigned int unit, int keep) {
   this_unit->toclen = 0;
 }
 
-extern "C" {
-  int psio_close(unsigned int unit, int keep) {
-    _default_psio_lib_->close(unit, keep);
-    return 0;
-  }
+int psio_close(unsigned int unit, int keep) {
+  _default_psio_lib_->close(unit, keep);
+  return 0;
+}
+
 }
 

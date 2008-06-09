@@ -1,14 +1,14 @@
 /*!
- \file tocwrite.cc
- \ingroup (PSIO)
+ \file
+ \ingroup PSIO
  */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <unistd.h>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 
-using namespace psi;
+namespace psi {
 
 void PSIO::tocwrite(unsigned int unit) {
   unsigned int i;
@@ -36,7 +36,6 @@ void PSIO::tocwrite(unsigned int unit) {
   }
 }
 
-extern "C" {
   /*!
    ** PSIO_TOCWRITE(): Write the table of contents for file number 'unit'.
    **
@@ -44,10 +43,13 @@ extern "C" {
    **
    ** NB: This function should NOT call psio_error because the latter calls it!
    **
-   ** \ingroup (PSIO)
+   ** \ingroup PSIO
    */
+
   int psio_tocwrite(unsigned int unit) {
     _default_psio_lib_->tocwrite(unit);
     return 1;
   }
+
 }
+

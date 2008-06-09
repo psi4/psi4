@@ -1,14 +1,14 @@
 /*!
- \file open.cc
- \ingroup (PSIO)
+ \file
+ \ingroup PSIO
  */
 
-#include <stdio.h>
+#include <cstdio>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <string.h>
-#include <stdlib.h>
+#include <cstring>
+#include <cstdlib>
 #include <unistd.h>
 #include <string>
 #include <map>
@@ -16,7 +16,7 @@
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 
-using namespace psi;
+namespace psi {
 
 void PSIO::open(unsigned int unit, int status) {
   unsigned int i, j;
@@ -61,6 +61,7 @@ void PSIO::open(unsigned int unit, int status) {
       if (n != names.end())
         psio_error(unit, PSIO_ERROR_IDENTVOLPATH);
       names[fullpath] = 1;
+      free(path);
     }
   }
   
@@ -112,21 +113,10 @@ PSIO::rehash(unsigned int unit)
   }
 }
 
-extern "C" {
-  /*!
-   ** PSIO_OPEN(): Opens a multivolume PSI direct access file for
-   ** reading/writing data.
-   **
-   **  \param unit   = The PSI unit number used to identify the file to all
-   **                  read and write functions.
-   **  \param status = Indicates if the file is old (PSIO_OPEN_OLD) or new
-   **                  (PSIO_OPEN_NEW). 
-   **
-   ** \ingroup (PSIO)
-   */
   int psio_open(unsigned int unit, int status) {
     _default_psio_lib_->open(unit, status);
     return 1;
-  }
+  }   
+
 }
 

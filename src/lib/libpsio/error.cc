@@ -1,18 +1,17 @@
 /*!
- ** \file error.cc
- ** \ingroup (PSIO)
+ ** \file
+ ** \ingroup PSIO
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 
-using namespace psi;
+namespace psi {
 
-extern "C" {
   /*!
-   ** \ingroup (PSIO)
+   ** \ingroup PSIO
    **
    ** PSIO_ERROR(): Print out an error message for libpsio.
    **
@@ -89,5 +88,6 @@ extern "C" {
     }
     exit(PSIO::_error_exit_code_);
   }
+
 }
 

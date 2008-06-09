@@ -27,10 +27,10 @@ include $(LIBOBJ:%.o=%.d)
 endif
 
 install_inc:: $(INC)
-	$(MKDIRS) $(incdir)/libpsio
-	$(INSTALL_INCLUDE) $^ $(incdir)/libpsio
+	$(MKDIRS) $(DESTDIR)$(incdir)/libpsio
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libpsio
 
 install_man:: libpsio.html
-	$(MKDIRS) $(htmldir)
-	$(INSTALL_INCLUDE) $^ $(htmldir)
+	$(MKDIRS) $(DESTDIR)$(htmldir)
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(htmldir)
 

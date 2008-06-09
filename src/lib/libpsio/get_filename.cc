@@ -1,28 +1,27 @@
 /*!
- \file get_filename.cc
- \ingroup (PSIO)
+ \file
+ \ingroup PSIO
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
+#include <psi4.h>
 
-using namespace psi;
-
-extern "C" {
-  extern char *gprgid();
-}
+namespace psi {
 
 void PSIO::get_filename(unsigned int unit, char **name) {
   std::string kval;
-  kval = filecfg_kwd(gprgid(), "NAME", unit);
+  char *module_name = module.gprgid();
+  kval = filecfg_kwd(module_name, "NAME", unit);
   if (!kval.empty()) {
     *name = strdup(kval.c_str());
     return;
   }
-  kval = filecfg_kwd(gprgid(), "NAME", -1);
+  kval = filecfg_kwd(module_name, "NAME", -1);
+  delete [] module_name;
   if (!kval.empty()) {
     *name = strdup(kval.c_str());
     return;
@@ -52,25 +51,22 @@ void PSIO::get_filename(unsigned int unit, char **name) {
   abort();
 }
 
-extern "C" {
-  /*!
-   ** PSIO_GET_FILENAME_DEFAULT(): Get the default filename
-   */
-  int psio_get_filename_default(char **name) {
-    std::string kval;
-    kval = _default_psio_lib_->filecfg_kwd("PSI", "NAME", -1);
-    if (!kval.empty()) {
-      *name = strdup(kval.c_str());
-      return (1);
-    }
-    kval = _default_psio_lib_->filecfg_kwd("DEFAULT", "NAME", -1);
-    if (!kval.empty()) {
-      *name = strdup(kval.c_str());
-      return (1);
-    }
-    
-    // assume that the default has been provided already
-    abort();
+int psio_get_filename_default(char **name) {
+  std::string kval;
+  kval = _default_psio_lib_->filecfg_kwd("PSI", "NAME", -1);
+  if (!kval.empty()) {
+    *name = strdup(kval.c_str());
+    return (1);
   }
+  kval = _default_psio_lib_->filecfg_kwd("DEFAULT", "NAME", -1);
+  if (!kval.empty()) {
+    *name = strdup(kval.c_str());
+    return (1);
+  }
+
+  // assume that the default has been provided already
+  abort();
+}
+
 }
 

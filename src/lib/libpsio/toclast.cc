@@ -1,12 +1,12 @@
 /*!
- \file toclast.cc
- \ingroup (PSIO)
+ \file
+ \ingroup PSIO
  */
 
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 
-using namespace psi;
+namespace psi {
 
 psio_tocentry*PSIO::toclast(unsigned int unit) {
   psio_tocentry *this_entry = psio_unit[unit].toc;
@@ -16,3 +16,6 @@ psio_tocentry*PSIO::toclast(unsigned int unit) {
   
   return (this_entry);
 }
+
+}
+
