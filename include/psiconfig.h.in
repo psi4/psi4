@@ -8,8 +8,5 @@
 /* Which integrals standard is used? */
 #undef PSI_INTEGRALS_STANDARD
 
-/* PSI version number */
-#undef PSI_VERSION
-
 #endif /* _psi_src_psiconfig_h */
 

@@ -21,13 +21,13 @@ MKDIRS = @MKDIRS@
 INSTALL = @INSTALL@
 INSTALL_INCLUDE = @INSTALL_INCLUDE@
 
-HEADERS = psiconfig.h psitypes.h masses.h physconst.h psifiles.h symmetry.h rgb.h vdw_radii.h chkpt_params.h
+HEADERS = psiconfig.h psitypes.h ccfiles.h masses.h physconst.h psifiles.h symmetry.h rgb.h vdw_radii.h chkpt_params.h psi4.h psi4_def.h
 
 install: install_inc
 
 install_inc: $(HEADERS)
-	$(MKDIRS) $(incdir)
-	$(INSTALL_INCLUDE) $^ $(incdir)
+	$(MKDIRS) $(DESTDIR)$(incdir)
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)
 
 $(top_srcdir)/configure: $(top_srcdir)/configure.ac $(top_srcdir)/aclocal.m4
 	cd $(top_srcdir) && autoconf
