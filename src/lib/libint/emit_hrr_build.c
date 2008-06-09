@@ -1,9 +1,10 @@
-/*! \file 
-    \ingroup (INT)
+/*! \file
+    \ingroup INT
     \brief Enter brief description of file here 
 */
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "build_libint.h"
 #include <libint/constants.h>
 

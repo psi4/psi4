@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (INT)
+/*! \file
+    \ingroup INT
     \brief Enter brief description of file here 
 */
 /*------------------------------------------------------------------------------------------------------
@@ -7,6 +7,7 @@
  ------------------------------------------------------------------------------------------------------*/
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "mem_man.h"
 #include "build_libint.h"
@@ -137,6 +138,7 @@ void emit_order()
        -----------------------------------*/
       fprintf(hrr_code,"#include <stdio.h>\n");
       fprintf(hrr_code,"#include <string.h>\n");
+      fprintf(hrr_code,"#include <psi4.h>\n");
       fprintf(hrr_code,"#include \"libint.h\"\n");
       if (to_inline_hrr) {
 	fprintf(hrr_code,"#define INLINE_HRR_WORKER\n");
@@ -165,6 +167,7 @@ void emit_order()
 	Write the overhead to the VRR code
        -----------------------------------*/
       fprintf(vrr_code,"#include <stdio.h>\n");
+      fprintf(vrr_code,"#include <psi4.h>\n");
       fprintf(vrr_code,"#include \"libint.h\"\n");
       if (to_inline_vrr) {
 	fprintf(vrr_code,"#define INLINE_VRR_WORKER\n");
