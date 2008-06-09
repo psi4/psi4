@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (INT)
+/*! \file
+    \ingroup INT
     \brief Enter brief description of file here 
 */
 
@@ -112,6 +112,7 @@ int main()
   /* Setting up init_libint.c, header.h */
   fprintf(init_code,"#include <stdio.h>\n");
   fprintf(init_code,"#include <stdlib.h>\n");
+  fprintf(init_code,"#include <psi4.h>\n");
   fprintf(init_code,"#include \"libint.h\"\n");
   fprintf(init_code,"#include \"hrr_header.h\"\n\n");
   fprintf(init_code,"extern \"C\" {\n");

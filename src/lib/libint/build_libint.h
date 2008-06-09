@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (INT)
+/*! \file
+    \ingroup INT
     \brief Enter brief description of file here 
 */
 #define MAX_AM 22
