@@ -1,14 +1,14 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 
 int dpd_trans4_mat_irrep_shift31(dpdtrans4 *Trans, int buf_block)
 {
@@ -100,4 +100,4 @@ int dpd_trans4_mat_irrep_shift31(dpdtrans4 *Trans, int buf_block)
   return 0;
 }
 
-} /* extern "C" */
+} // namespace psi

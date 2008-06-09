@@ -1,11 +1,11 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
 #ifndef _psi_src_lib_libdpd_dpd_h
 #define _psi_src_lib_libdpd_dpd_h
 
-#include <stdio.h>
+#include <cstdio>
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
 #include <libiwl/iwl.h>
@@ -15,9 +15,7 @@
 #include <dmalloc.h>
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace psi {
 	
 #define T3_TIMER_ON (0)
 
@@ -427,9 +425,7 @@ void cc3_sigma_UHF_BBA(dpdbuf4 *C2BB, dpdbuf4 *C2AB, dpdbuf4 *C2BA,
     int *bocc_off, int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off,
     double omega, FILE *outfile);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+}
 
 #endif /* _psi_src_lib_libdpd_dpd_h */
 

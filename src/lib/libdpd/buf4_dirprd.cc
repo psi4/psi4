@@ -1,12 +1,12 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
+#include <cstdio>
 #include <libqt/qt.h>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 	
 /* dpd_buf4_dirprd(): Computes the direct product between two dpd four-index
 ** buffers.
@@ -42,4 +42,4 @@ int dpd_buf4_dirprd(dpdbuf4 *BufA, dpdbuf4 *BufB)
   return 0;
 }
       
-} /* extern "C" */
+} // namespace psi

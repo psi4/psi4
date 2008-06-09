@@ -1,14 +1,14 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include "dpd.h"
 #define EXTERN
 #include "dpd.gbl"
 
-extern "C" {
+namespace psi {
 
 int dpd_close(int dpd_num)
 {
@@ -93,4 +93,4 @@ int dpd_close(int dpd_num)
   return 0;
 }
 
-} /* extern "C" */
+} // namespace psi

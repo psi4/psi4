@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
 
@@ -58,15 +58,15 @@
 ** -omega argument added, RAK 2006
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
 #include <libqt/qt.h>
 #include <libdpd/dpd.h>
 #include <ccfiles.h>
 
-extern "C" {
+namespace psi {
 
 void T3_RHF(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk, 
 		dpdbuf4 *T2, dpdbuf4 *F, dpdbuf4 *E, dpdfile2 *fIJ, dpdfile2 *fAB, 
@@ -499,4 +499,4 @@ void T3_RHF(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
 
 }
 
-} /* extern "C" */
+} // namespace psi

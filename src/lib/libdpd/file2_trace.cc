@@ -1,11 +1,11 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
+#include <cstdio>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 
 double dpd_file2_trace(dpdfile2 *InFile)
 {
@@ -30,4 +30,4 @@ double dpd_file2_trace(dpdfile2 *InFile)
 }
 
 
-} /* extern "C" */
+} // namespace psi

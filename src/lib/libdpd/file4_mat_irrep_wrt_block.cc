@@ -1,12 +1,12 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
+#include <cstdio>
 #include <libciomr/libciomr.h>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 
 int dpd_file4_mat_irrep_wrt_block(dpdfile4 *File, int irrep, int start_pq,
 				 int num_pq)
@@ -48,4 +48,4 @@ int dpd_file4_mat_irrep_wrt_block(dpdfile4 *File, int irrep, int start_pq,
 
 }
 
-} /* extern "C" */
+} // namespace psi

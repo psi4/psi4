@@ -1,13 +1,13 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include "dpd.h"
 #include <libqt/qt.h>
 
-extern "C" {
+namespace psi {
 	
 /* dpd_buf4_axpy(): Evaluates the standard operation a * X + Y -> Y for dpd
 ** four-index buffers.
@@ -47,7 +47,7 @@ int dpd_buf4_axpy(dpdbuf4 *BufX, dpdbuf4 *BufY, double alpha)
 
       if(!rows_per_bucket) dpd_error("buf4_axpy: Not enough memory for one row!", stderr);
 
-      nbuckets = ceil(((double) BufX->params->rowtot[h])/((double) rows_per_bucket));
+      nbuckets = (int) ceil(((double) BufX->params->rowtot[h])/((double) rows_per_bucket));
 
       rows_left = BufX->params->rowtot[h] % rows_per_bucket;
 
@@ -128,4 +128,4 @@ int dpd_buf4_axpy(dpdbuf4 *BufX, dpdbuf4 *BufY, double alpha)
   return 0;
 }
 
-} /* extern "C" */
+} // namespace psi

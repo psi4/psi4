@@ -1,15 +1,15 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <libciomr/libciomr.h>
 #include "dpd.h"
 #define EXTERN
 #include "dpd.gbl"
 
-extern "C" {
+namespace psi {
 
 /* dpd_file2_close(): Closes a two-index dpd file.
 **
@@ -27,4 +27,4 @@ int dpd_file2_close(dpdfile2 *File)
   return 0;
 }
 
-} /* extern "C" */
+} // namespace psi

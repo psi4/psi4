@@ -1,12 +1,12 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
+#include <cstdio>
 #include <libqt/qt.h>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 	
 /* buf4_axpbycz(): Evaluates the standard operation aX + bY -> cZ for
 ** dpdbuf4's.
@@ -29,4 +29,4 @@ int dpd_buf4_axpbycz(dpdbuf4 *FileA, dpdbuf4 *FileB, dpdbuf4 *FileC,
   return 0;
 }
 
-} /* extern "C" */
+} // namespace psi

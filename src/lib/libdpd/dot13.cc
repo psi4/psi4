@@ -1,12 +1,12 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
+#include <cstdio>
 #include <libqt/qt.h>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 
 /* the non-symmetric transpose cases have not been tested */
 
@@ -115,4 +115,4 @@ int dpd_dot13(dpdfile2 *T, dpdbuf4 *I, dpdfile2 *Z,
   return 0;
 }
 
-} /* extern "C" */
+} // namespace psi

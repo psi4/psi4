@@ -1,11 +1,11 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
+#include <cstdio>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 
 /* dpd_file2_print(): Prints out data for all irreps of a two-index dpdfile.
 **
@@ -44,4 +44,4 @@ int dpd_file2_print(dpdfile2 *File, FILE *outfile)
 
 }
 
-} /* extern "C" */
+} // namespace psi

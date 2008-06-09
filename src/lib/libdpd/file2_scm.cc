@@ -1,11 +1,11 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
+#include <cstdio>
 #include "dpd.h"
 #include <libqt/qt.h>
-extern "C" {
+namespace psi {
 
 
 int dpd_file2_scm(dpdfile2 *InFile, double alpha)
@@ -40,4 +40,4 @@ int dpd_file2_scm(dpdfile2 *InFile, double alpha)
   return 0;
 }
 
-} /* extern "C" */
+} // namespace psi

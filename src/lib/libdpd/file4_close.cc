@@ -1,12 +1,12 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 
 /* dpd_file4_close(): Closes a four-index dpd file.
 **
@@ -26,4 +26,4 @@ int dpd_file4_close(dpdfile4 *File)
   return 0;
 }
 
-} /* extern "C" */
+} // namespace psi

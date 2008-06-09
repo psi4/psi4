@@ -1,13 +1,13 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <libciomr/libciomr.h>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 
 int dpd_trans4_init(dpdtrans4 *Trans, dpdbuf4 *Buf)
 {
@@ -29,4 +29,4 @@ int dpd_trans4_init(dpdtrans4 *Trans, dpdbuf4 *Buf)
   return 0;
 }
 
-} /* extern "C" */
+} // namespace psi

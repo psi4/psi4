@@ -1,14 +1,14 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <math.h>
-#include <string.h>
+#include <cstdio>
+#include <cmath>
+#include <cstring>
 #include <libqt/qt.h>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 
 /* dpd_buf4_scmcopy(): Copies an existing four-index dpdbuf4 into another 
 ** file and multiplies it by a scalar at the same time.
@@ -134,4 +134,4 @@ int dpd_buf4_scmcopy(dpdbuf4 *InBuf, int outfilenum, char *label, double alpha)
   return 0;
 }
 
-} /* extern "C" */
+} // namespace psi

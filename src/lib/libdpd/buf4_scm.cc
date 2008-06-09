@@ -1,14 +1,14 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
+#include <cstdio>
 #include "dpd.h"
 #include <libqt/qt.h>
 #define EXTERN
 #include "dpd.gbl"
 
-extern "C" {
+namespace psi {
 
 /* dpd_buf4_scm(): Multiplies every element of a four-index dpdbuf by a scalar.
 **
@@ -121,4 +121,4 @@ int dpd_buf4_scm(dpdbuf4 *InBuf, double alpha)
   return 0;
 }
 
-} /* extern "C" */
+} // namespace psi

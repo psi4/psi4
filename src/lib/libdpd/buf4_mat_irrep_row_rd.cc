@@ -1,12 +1,12 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 
 int dpd_buf4_mat_irrep_row_rd(dpdbuf4 *Buf, int irrep, int pq)
 {
@@ -462,4 +462,4 @@ int dpd_buf4_mat_irrep_row_rd(dpdbuf4 *Buf, int irrep, int pq)
 
 }
 
-} /* extern "C" */
+} // namespace psi

@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
 
@@ -44,10 +44,10 @@
 **  Moved to libdpd for use by (T) and CC3 codes by TDC, July 2004.
 */
 
-#include <stdio.h>
+#include <cstdio>
 #include "dpd.h"
 
-extern "C" {
+namespace psi {
 	
 void dpd_3d_sort(double ***Win, double ***Wout, int nirreps, int h, int *rowtot, int **rowidx, 
 		 int ***roworb, int *asym, int *bsym, int *aoff, int *boff,
@@ -199,4 +199,4 @@ void dpd_3d_sort(double ***Win, double ***Wout, int nirreps, int h, int *rowtot,
   }
 }
 
-} /* extern "C" */
+} // namespace psi

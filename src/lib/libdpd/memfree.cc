@@ -1,17 +1,17 @@
-/*! \file 
-    \ingroup (DPD)
+/*! \file
+    \ingroup DPD
     \brief Enter brief description of file here 
 */
 /*
 ** Function to return number of double words available for allocation.
 */
 
-#include <stdio.h>
+#include <cstdio>
 #include "dpd.h"
 #define EXTERN
 #include "dpd.gbl"
 
-extern "C" {
+namespace psi {
 
 long int dpd_memfree(void)
 {
@@ -25,4 +25,4 @@ void dpd_memset(long int memory)
   dpd_main.memory = memory;
 }
 
-} /* extern "C" */
+} // namespace psi
