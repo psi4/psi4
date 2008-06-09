@@ -1,13 +1,14 @@
-/*! \file 
-    \ingroup (R12)
+/*! \file
+    \ingroup R12
     \brief Enter brief description of file here 
 */
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "build_libr12.h"
 #include <libint/constants.h>
 
-extern FILE *outfile, *hrr_header;
+extern FILE *hrr_header;
 extern Libr12Params_t Params;
 
 extern void punt(char *);

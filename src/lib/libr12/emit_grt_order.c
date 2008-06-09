@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (R12)
+/*! \file
+    \ingroup R12
     \brief Enter brief description of file here 
 */
 /*------------------------------------------------------------------------------------------------------
@@ -7,6 +7,7 @@
  ------------------------------------------------------------------------------------------------------*/
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <libint/libint.h>
 #include "mem_man.h"
@@ -24,7 +25,8 @@
 static int last_hrr_node = 0;      /* Global pointer to the last node on the HRR stack */
 static int last_vrr_node = 0;      /* Global pointer to the last node on the VRR stack */
 
-extern FILE *outfile, *hrr_header, *init_code;
+#include <psi4.h>
+extern FILE *hrr_header, *init_code;
 extern int libr12_stack_size[MAX_AM/2+1];
 extern Libr12Params_t Params;
 
