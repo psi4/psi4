@@ -1,21 +1,21 @@
-/*! \file 
-    \ingroup (BASIS)
+/*! \file
+    \ingroup BASIS
     \brief Enter brief description of file here 
 */
 
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-extern "C" {
-  #include <libciomr/libciomr.h>
-  #include <physconst.h>
-}
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
+#include <libciomr/libciomr.h>
+#include <physconst.h>
 
 #include "basisset.h"
 #include "shell.h"
 #include "overlap.h"
 
 #define MAX(a,b) (a > b ? a : b)
+
+namespace psi{
 
 OverlapEngine::OverlapEngine(const BasisSet* bs1, const BasisSet* bs2) :
   bs1_(bs1), bs2_(bs2), overlap_recur_(bs1_->max_am(),bs2_->max_am()),
@@ -157,3 +157,6 @@ PSI_FLOAT** OverlapEngine::compute_full_matrix()
 
   return result;
 }
+
+}
+

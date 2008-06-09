@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (BASIS)
+/*! \file
+    \ingroup BASIS
     \brief Enter brief description of file here 
 */
 
@@ -8,6 +8,8 @@
 
 #include <psitypes.h>
 #include "shell.h"
+
+namespace psi {
 
 class BasisSet {
 
@@ -65,5 +67,7 @@ class BasisSet {
   /// Get i-th coordinate of center ci
   PSI_FLOAT get_center(int ci, int i);
 };
+
+} // end of namespace psi
 
 #endif

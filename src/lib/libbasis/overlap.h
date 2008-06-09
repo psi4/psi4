@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (BASIS)
+/*! \file
+    \ingroup BASIS
     \brief Enter brief description of file here 
 */
 
@@ -11,6 +11,8 @@
 #include "shell.h"
 #include "osrecur.h"
 #include "gnorm.h"
+
+namespace psi {
 
 class OverlapEngine {
 
@@ -33,5 +35,7 @@ class OverlapEngine {
   /// Allocate and compute full overlap matrix
   PSI_FLOAT** compute_full_matrix();
 };
+
+} // end of namespace psi
 
 #endif

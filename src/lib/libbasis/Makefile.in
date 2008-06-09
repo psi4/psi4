@@ -20,7 +20,7 @@ include $(LIBOBJ:%.o=%.d)
 endif
 
 install_inc:: $(DEPENDINCLUDE)
-	$(MKDIRS) $(incdir)/libbasis
-	$(INSTALL_INCLUDE) $^ $(incdir)/libbasis
+	$(MKDIRS) $(DESTDIR)$(incdir)/libbasis
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libbasis
 
 

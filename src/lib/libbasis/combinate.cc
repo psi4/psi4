@@ -1,21 +1,17 @@
-/*! \file 
-    \ingroup (BASIS)
+/*! \file
+    \ingroup BASIS
     \brief Enter brief description of file here 
 */
 
-extern "C" {
 #include <libciomr/libciomr.h>
-}
-
 #include <stdexcept>
 #include "combinate.h"
+
+namespace psi {
 
 StatCombData::StatCombData(int imax) :
   imax_(imax)
 {
-  if (imax < 1)
-    throw std::runtime_error("ERROR: StatCombData::StatCombData -- argument out of range");
-
   Fact_ = new PSI_FLOAT[imax+1];
   Fact_[0] = 1.0;
   for(int i=1; i<=imax; i++)
@@ -38,4 +34,6 @@ StatCombData::~StatCombData()
   delete[] Fact_;
   delete[] Fact2_;
   free_block(BinomC_);
+}
+
 }

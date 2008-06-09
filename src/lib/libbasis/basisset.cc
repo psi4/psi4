@@ -1,21 +1,20 @@
-/*! \file 
-    \ingroup (BASIS)
+/*! \file
+    \ingroup BASIS
     \brief Enter brief description of file here 
 */
 
 /*! \defgroup BASIS libbasis: The Basis Set Library */
 
 #include <stdexcept>
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-extern "C" {
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
 #include <psifiles.h>
-}
 #include "basisset.h"
-//#include "shell_pairs.h"
+
+namespace psi {
 
 BasisSet::BasisSet(int chkptfile)
 {
@@ -194,3 +193,4 @@ void BasisSet::print(char *id, FILE* outfile) const {
     shells_[s]->print(s,outfile);
 }
 
+}

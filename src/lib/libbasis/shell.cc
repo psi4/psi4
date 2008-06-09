@@ -1,14 +1,14 @@
-/*! \file 
-    \ingroup (BASIS)
+/*! \file
+    \ingroup BASIS
     \brief Enter brief description of file here 
 */
 
 #include <stdexcept>
-#include <stdio.h>
-#include <stdlib.h>
-
+#include <cstdio>
+#include <cstdlib>
 #include "shell.h"
 
+namespace psi {
 
 GaussianShell::GaussianShell(int nprims, int ncontr, int *am, bool puream, PSI_FLOAT *exps, PSI_FLOAT **ccoeffs, PSI_FLOAT origin[3]) :
   num_prims_(nprims), num_contr_(ncontr), puream_(puream)
@@ -165,3 +165,6 @@ void GaussianShell::print(int id, FILE* outfile) const {
   }
   fprintf(outfile,"\n");
 }
+
+}
+
