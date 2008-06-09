@@ -1,5 +1,5 @@
 /*! \file enuc_deriv2.cc
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Second derivatives of the nuclear repulsion
 */
 #include<cstdio>

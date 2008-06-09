@@ -1,10 +1,10 @@
-/*! \file angmom_ints.cc
-    \ingroup (CINTS)
+/*! \file
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include<cmath>
 #include<cstdio>
-#include<stdlib.h>
+#include<cstdlib>
 #include<string>
 #include<libipv1/ip_lib.h>
 #include<libiwl/iwl.h>

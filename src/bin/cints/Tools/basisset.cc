@@ -1,9 +1,9 @@
 /*! \file basisset.cc
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include<cstdio>
-#include<stdlib.h>
+#include<cstdlib>
 #include<cmath>
 #include<libciomr/libciomr.h>
 #include<libchkpt/chkpt.h>
@@ -167,4 +167,5 @@ void get_primitives(void)
 }
 
 
-};};
+}}
+

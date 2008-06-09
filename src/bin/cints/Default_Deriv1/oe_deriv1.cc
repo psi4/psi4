@@ -1,5 +1,5 @@
-/*! \file oe_deriv1.cc
-    \ingroup (CINTS)
+/*! \file
+    \ingroup CINTS
     \brief Computation of the one-electron integral derivatives
 */
 #include <cmath>

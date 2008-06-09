@@ -1,14 +1,14 @@
 /*! \file functional_u.cc
-    \ingroup (CINTS)
+    \ingroup CINTS
     functionals go here
     
     ----------------------------------------- */ 
 
 #include <cmath>
 #include <cstring>
-#include <stdio.h>
+#include <cstdio>
 #include <memory.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include<libipv1/ip_lib.h>
 #include<libciomr/libciomr.h>
 #include<libpsio/psio.h>

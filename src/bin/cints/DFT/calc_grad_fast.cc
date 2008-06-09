@@ -1,5 +1,5 @@
 /*! \file calc_grad_fast.cc
-    \ingroup (CINTS)
+    \ingroup CINTS
     \author  Shawn Brown
   
   The code contains functions that will retrieve 

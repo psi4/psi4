@@ -1,9 +1,10 @@
-/*! \file 
-    \ingroup (CINTS)
+/*! \file
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
+
 #include<memory.h>
-#include<stdlib.h>
+#include<cstdlib>
 #include<pthread.h>
 #include<cstdio>
 #include<cstring>
@@ -17,8 +18,6 @@
 #include"global.h"
 #include <stdexcept>
 #include"Tools/int_fjt.h"
-
-#define USE_SYMM_CODE 0
 
 namespace psi { namespace CINTS {
   /*-------------------------------
@@ -110,5 +109,6 @@ namespace psi { namespace CINTS {
     
     return;
   }
-};
-};
+
+}}
+

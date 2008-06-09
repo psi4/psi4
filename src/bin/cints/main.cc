@@ -1,5 +1,9 @@
-/*! \file main.cc
-    \defgroup CINTS CINTS:The integral computation suite.
+/*! \defgroup CINTS cints: The Integral Computation Suite */
+
+/*! 
+  \file
+  \ingroup CINTS
+  \brief Integral Computation Module
 */
 #include<cstdio>
 #include<cstdlib>
@@ -70,11 +74,8 @@ namespace psi {
     void init_globals();
     void check_max_am();
 
-char *gprgid();
-
-  
 //! CINTS main procedure.
-int main(int argc, char *argv[])
+int cints(int argc, char *argv[])
 {
   try {
     /*--- Local variables ---*/
@@ -168,11 +169,13 @@ int main(int argc, char *argv[])
     cleanup_molecule();
     
     stop_io();
-  } catch (std::domain_error e) {
+  } catch (std::exception e) {
     std::cerr << e.what() << std::endl;
     std::cerr << "cints failed due to errors\n";
     punt(const_cast<char*>(e.what()));
   }
-  return PSI_RETURN_SUCCESS;
+  return(PSI_RETURN_SUCCESS);
 }
-}} // end namespace psi::CINTS
+
+}}
+

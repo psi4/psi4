@@ -1,5 +1,5 @@
 /*! \file dft_init.cc
-    \ingroup (CINTS)
+    \ingroup CINTS
     \author Shawn Brown
     \brief Enter brief description of file here 
 */

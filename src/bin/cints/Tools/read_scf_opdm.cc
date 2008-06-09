@@ -1,10 +1,10 @@
-/*! \file rad_scf_opdm.cc
-    \ingroup (CINTS)
+/*! \file read_scf_opdm.cc
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include <cstdio>
 #include <cmath>
-#include <stdlib.h>
+#include <cstdlib>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libint/libint.h>
@@ -22,7 +22,6 @@ void read_scf_opdm()
   int i, j, ij, nao_i, nao_j, sh_i, sh_j;
   int ioffset, joffset;
   int nstri = ioff[Symmetry.num_so];
-  PSI_FPTR next;
   double *dens, *denso;
   double **sq_dens, **sq_denso;
   double **tmp_mat;

@@ -2,7 +2,7 @@
 #define _psi_src_bin_cints_Tools_moinfo_h
 
 /*! \file moinfo.h
-    \ingroup (CINTS)
+    \ingroup CINTS
 */namespace psi { namespace CINTS {
 
 void init_moinfo();

@@ -2,7 +2,7 @@
 #define _psi_src_bin_cints_DFT_bas_comp_functions_h
 
 /*! \file bas_comp_functions.h
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 namespace psi { namespace CINTS {

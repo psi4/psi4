@@ -1,5 +1,5 @@
 /*! \file calc_den_fast.cc
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
     \author Shawn Brown
     

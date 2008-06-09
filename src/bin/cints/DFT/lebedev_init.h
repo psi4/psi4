@@ -2,7 +2,7 @@
 #define _psi_src_bin_cints_DFT_lebedev_init_h
 
 /*! \file lebedev_init.h
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include "data_structs.h"

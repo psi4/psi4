@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (CINTS)
+/*! \file compute_eri.cc
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 

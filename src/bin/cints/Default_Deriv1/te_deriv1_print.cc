@@ -1,5 +1,5 @@
-/*! \file te_deriv1_print.cc
-    \ingroup (CINTS)
+/*! \file
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include <cmath>

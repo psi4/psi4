@@ -1,9 +1,9 @@
 /*! \file symm.cc
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include<cstdio>
-#include<stdlib.h>
+#include<cstdlib>
 #include<libipv1/ip_lib.h>
 #include<libciomr/libciomr.h>
 #include<libchkpt/chkpt.h>

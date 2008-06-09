@@ -2,7 +2,7 @@
 #define _psi_src_bin_cints_DFT_bragg_h
 
 /*! \file bragg.h
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
 
     These are the Slater-Bragg Radii in Angstoms */

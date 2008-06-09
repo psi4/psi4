@@ -1,12 +1,12 @@
-/*! \file te_deriv1_scf.cc
-    \ingroup (CINTS)
+/*! \file
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include <cmath>
 #include <cstring>
-#include <stdio.h>
+#include <cstdio>
 #include <memory.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <pthread.h>
 #include <libipv1/ip_lib.h>
 #include <libiwl/iwl.h>

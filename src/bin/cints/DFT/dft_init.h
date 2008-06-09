@@ -2,7 +2,7 @@
 #define _psi_src_bin_cints_DFT_dft_init_h
 
 /*! \file dft_init.h
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 namespace psi { namespace CINTS {

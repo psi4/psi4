@@ -1,5 +1,5 @@
 /*! \file prints.cc
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 

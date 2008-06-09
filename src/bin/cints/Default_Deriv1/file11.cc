@@ -1,5 +1,5 @@
-/*! \file file11.cc
-    \ingroup (CINTS)
+/*! \file
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include <cstdio>
@@ -20,6 +20,7 @@ void file11()
 {
   int i;
   char wfnstring[80];
+  char tmpwfn[80];
   double **Geom, **GradRef, **GeomRef;
   double Etot;
   FILE *fp11;
@@ -41,15 +42,21 @@ void file11()
   mmult(Geom,0,Molecule.Rref,0,GeomRef,0,Molecule.num_atoms,3,3,0);
   mmult(Grad,0,Molecule.Rref,0,GradRef,0,Molecule.num_atoms,3,3,0);
 
-  
-  sprintf(wfnstring,"%s forces in the reference frame (a.u.)",UserOptions.wfn);
+  if (UserOptions.empirical_dispersion) {
+    sprintf(tmpwfn, "%s+D", UserOptions.wfn);
+  }
+  else 
+    sprintf(tmpwfn, "%s", UserOptions.wfn);
+
+  sprintf(wfnstring,"%s forces in the reference frame (a.u.)", tmpwfn);
   print_atomvec(wfnstring,GradRef);
   ffile(&fp11, "file11.dat", 1);
 
-  fprintf(fp11,"%-59.59s %-10.10s%-8.8s\n",Molecule.label,UserOptions.wfn,UserOptions.dertype);
+  fprintf(fp11,"%-59.59s %-10.10s%-8.8s\n",Molecule.label, tmpwfn,
+    UserOptions.dertype);
 
   fprintf(fp11,"%5d",Molecule.num_atoms);
-  if (strcmp(UserOptions.wfn,"SCF") == 0)
+  if (strcmp(UserOptions.wfn,"SCF") == 0 && !UserOptions.empirical_dispersion)
     fprintf(fp11,"%20.10lf\n",MOInfo.Escf);
   else
     fprintf(fp11,"%20.10lf\n",Etot); 

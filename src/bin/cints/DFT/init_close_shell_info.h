@@ -2,7 +2,7 @@
 #define _psi_src_bin_cints_DFT_init_close_shell_info_h
 
 /*! \file init_close_shell_info.h
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include"data_structs.h"

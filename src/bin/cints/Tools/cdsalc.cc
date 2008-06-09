@@ -1,9 +1,9 @@
 /*! \file cdsalc.cc
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include <cstdio>
-#include <stdlib.h>
+#include <cstdlib>
 #include <cstring>
 
 #include <libint/libint.h>

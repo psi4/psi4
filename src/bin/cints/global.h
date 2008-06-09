@@ -1,16 +1,14 @@
 #ifndef _psi_src_bin_cints_global_h
 #define _psi_src_bin_cints_global_h
 
-/*! \file global.h
-    \ingroup (CINTS)
+/*! \file
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 /*-----------------
   global variables
  -----------------*/
- 
-#include <cstdio>
-#include "defines.h"
+#include"defines.h"
 #include "data_structs.h"
 
 #ifdef EXTERN
@@ -83,11 +81,12 @@ EXTERN double ***HDS;    /* Half-Differentiated overlap matrices in AO basis */
 EXTERN double **Grad;    /* Nuclear forces */
 EXTERN double **Hess;    /* Nuclear force constants */
 
-/*--- Mandatory: Input and Output files, PSI file prefix ---*/
-EXTERN FILE *infile;
-EXTERN FILE *outfile;
-EXTERN char *psi_file_prefix;
 }
 };
 
+#include<cstdio>
+/*--- Mandatory: Input and Output files, PSI file prefix ---*/
+#include <psi4.h>
+
 #endif
+

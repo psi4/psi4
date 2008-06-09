@@ -1,12 +1,12 @@
 /*! \file quartet_data.cc
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include<cmath>
 #include<cstdio>
 #include<cstring>
 #include<memory.h>
-#include<stdlib.h>
+#include<cstdlib>
 #include<libint/libint.h>
 
 #include"defines.h"

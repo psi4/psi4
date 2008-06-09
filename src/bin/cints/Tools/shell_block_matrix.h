@@ -2,7 +2,7 @@
 #define _psi_src_bin_cints_Tools_shell_block_matrix_h
 
 /*! \file shell_block_matrix.h
-    \ingroup (CINTS)
+    \ingroup CINTS
 */
 
 namespace psi { namespace CINTS {

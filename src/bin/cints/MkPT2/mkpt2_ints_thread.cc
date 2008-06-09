@@ -1,5 +1,5 @@
-/*! \file mkpt2_ints_thread.cc
-    \ingroup (CINTS)
+/*! \file
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include<cmath>
@@ -923,7 +923,7 @@ void *mkpt2_ints_thread(void *tnum_ptr)
             int asym = MOInfo.mo2symblk_uocc[0][mo_a];
             for(int mo_b=0;mo_b<=mo_a;mo_b++) {
              int b = MOInfo.vir_to_pitzer[mo_b]; 
-             int bsym = MOInfo.mo2symblk_uocc[0][mo_y];
+             int bsym = MOInfo.mo2symblk_uocc[0][mo_b];
               /*--- Skip this integral if it's non-totally symmetric -
                 Pitzer's contribution theorem in Abelian case ---*/
               if ((isym ^ jsym) ^ (asym ^ bsym)) continue;

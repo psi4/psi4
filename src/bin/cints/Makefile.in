@@ -115,7 +115,7 @@ endif
 CXXSRC = $(DIRS:%=%/*.cc) *.cc
 TRUECXXSRC = $(notdir $(shell echo `ls $(CXXSRC:%=$(srcdir)/%)`))
 
-LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
+BINOBJ = $(TRUECXXSRC:%.cc=%.o)
 
 include ../MakeRules
 
@@ -129,21 +129,21 @@ endif
 install:: install_html
 
 install_man:: cints.1
-	$(MKDIRS) $(mandir)/man1
-	$(INSTALL_INCLUDE) $^ $(mandir)/man1
+	$(MKDIRS) $(DESTDIR)$(mandir)/man1
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(mandir)/man1
 
 install_html:: install_index install_htmlsrc
 
 install_index:: cints.html
-	$(MKDIRS) $(htmldir)
-	$(INSTALL_INCLUDE) $^ $(htmldir)
+	$(MKDIRS) $(DESTDIR)$(htmldir)
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(htmldir)
 
 HTMLSRC = $(shell echo `ls $(srcdir)/Documentation/*.html`)
 install_htmlsrc: $(HTMLSRC)
-	$(MKDIRS) $(htmldir)/CINTS
-	$(INSTALL_INCLUDE) $(HTMLSRC) $(htmldir)/CINTS
+	$(MKDIRS) $(DESTDIR)$(htmldir)/CINTS
+	$(INSTALL_INCLUDE) $(HTMLSRC) $(DESTDIR)$(htmldir)/CINTS
 
 ifneq ($(DODEPEND),no)
-$(LIBOBJ:%.o=%.d): $(DEPENDINCLUDE)
-include $(LIBOBJ:%.o=%.d)
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(BINOBJ:%.o=%.d)
 endif

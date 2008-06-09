@@ -2,7 +2,7 @@
 #define _psi_src_bin_cints_Tools_symm_h
 
 /*! \file symm.h
-    \ingroup (CINTS)
+    \ingroup CINTS
 */namespace psi { namespace CINTS {
 
 void init_symmetry();

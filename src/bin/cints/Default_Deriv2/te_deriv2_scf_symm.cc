@@ -1,5 +1,5 @@
 /*! \file te_deriv2_scf_symm.cc
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include <cmath>

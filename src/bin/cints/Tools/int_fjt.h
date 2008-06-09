@@ -2,7 +2,7 @@
 #define _psi_src_bin_cints_Tools_int_fjt_h
 
 /*! \file int_fjt.h
-    \ingroup (CINTS)
+    \ingroup CINTS
 */
 
 namespace psi { namespace CINTS {

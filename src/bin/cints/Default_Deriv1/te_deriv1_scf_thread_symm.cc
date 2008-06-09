@@ -1,5 +1,5 @@
-/*! \file te_deriv1_scf_thread_symm.cc
-    \ingroup (CINTS)
+/*! \file
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include <cmath>

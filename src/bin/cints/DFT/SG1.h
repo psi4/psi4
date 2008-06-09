@@ -2,7 +2,7 @@
 #define _psi_src_bin_cints_DFT_SG1_h
 
 /*! \file SG1.h
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
 
  These are the first Partitioning parameters for the SG-1 Grid

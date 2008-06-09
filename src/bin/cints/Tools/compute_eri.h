@@ -2,7 +2,7 @@
 #define _psi_src_bin_cints_Tools_compute_eri_h
 
 /*! \file compute_eri.h
-    \ingroup (CINTS)
+    \ingroup CINTS
 */
 #include <libint/libint.h>
 

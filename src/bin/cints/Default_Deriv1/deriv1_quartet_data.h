@@ -1,8 +1,8 @@
 #ifndef _psi_src_bin_cints_Default_Deriv1_deriv1_quartet_data_h
 #define _psi_src_bin_cints_Default_Deriv1_deriv1_quartet_data_h
 
-/*! \file deriv1_quartet_data.h
-    \ingroup (CINTS)
+/*! \file
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */namespace psi { namespace CINTS {
 

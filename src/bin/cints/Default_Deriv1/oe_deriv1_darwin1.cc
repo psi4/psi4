@@ -1,5 +1,5 @@
-/*! \file oe_deriv1_darwin1.c
-  \ingroup (CINTS)
+/*! \file
+  \ingroup CINTS
   \brief Compute the derivative of the one-electron Darwin relativistic correction.
   \author R.A. King
 */
@@ -15,7 +15,8 @@
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.h>
 #include <psifiles.h>
-#include<physconst.h>
+#include <physconst.h>
+#include <psiconfig.h>
 
 #include "defines.h"
 #define EXTERN
@@ -23,6 +24,8 @@
 
 namespace psi {
   namespace CINTS {
+
+    static const int use_cca_integrals_standard = (PSI_INTEGRALS_STANDARD == 1);
 
 void oe_deriv1_darwin1(void) {
   double **AO_at_nuc, contr, ax, ay, az, ai, energy, *energy_atom;
@@ -51,7 +54,7 @@ void oe_deriv1_darwin1(void) {
         ypow_bf[l][ibf] = i - j;
         zpow_bf[l][ibf] = j;
         /* norm_bf is an additional normalization factor for gaussians with l>=d */
-        norm_bf[l][ibf] = sqrt(df[2*l]/(df[2*(l-i)]*df[2*(i-j)]*df[2*j]));
+        norm_bf[l][ibf] = use_cca_integrals_standard ? 1.0 : sqrt(df[2*l]/(df[2*(l-i)]*df[2*(i-j)]*df[2*j]));
         ibf++;
       }
     }

@@ -1,5 +1,5 @@
 /*! \file functional.cc
-  \ingroup (CINTS)
+  \ingroup CINTS
   functionals go here
 
   The way the nomenclature workes is
@@ -14,9 +14,9 @@
 
 #include <cmath>
 #include <cstring>
-#include <stdio.h>
+#include <cstdio>
 #include <memory.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include"defines.h"
 #define EXTERN
 #include"global.h"

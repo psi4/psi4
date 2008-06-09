@@ -1,9 +1,9 @@
 /*! \file read_scf_occ_evec.cc
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include <cstdio>
-#include <stdlib.h>
+#include <cstdlib>
 #include <cmath>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
@@ -24,7 +24,6 @@ void read_scf_occ_evec(void)
     int aocc,bocc;
     int bas_off;
     int shell_start,shell_end,shell_type;
-    PSI_FPTR next;
     double **SO_cmat, **SO_cmato;
     double **Cocc_un;
     

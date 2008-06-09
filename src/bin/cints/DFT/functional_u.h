@@ -2,7 +2,7 @@
 #define _psi_src_bin_cints_DFT_functional_u_h
 
 /*! \file functional_u.h
-    \ingroup (CINTS)
+    \ingroup CINTS
     \brief Enter brief description of file here 
 */
 #include "data_structs.h"
