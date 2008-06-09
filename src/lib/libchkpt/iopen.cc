@@ -1,17 +1,15 @@
 /*!
-  \file iopen.cc
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int Chkpt::rd_iopen(void)
 {
@@ -35,7 +33,6 @@ void Chkpt::wt_iopen(int iopen)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** int chkpt_rd_iopen()
 ** Reads in dimensionality of ALPHA and BETA vectors of two-electron 
@@ -47,7 +44,7 @@ extern "C" {
 ** returns: 
 **   iopen = dimensionality of ALPHA and BETA vectors of coupling
 **           coefficients for open shells. 
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int chkpt_rd_iopen(void)
 	{
@@ -66,10 +63,11 @@ extern "C" {
 **  arguments: 
 **   \param iopen = dimensionality of ALPHA and BETA vectors of coupling
 **                  coefficients for open shells. 
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_iopen(int iopen)
 	{
 		_default_chkpt_lib_->wt_iopen(iopen);
 	}
 }
+

@@ -1,17 +1,15 @@
 /*!
-  \file sloc_new.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int *Chkpt::rd_sloc_new(void)
 {
@@ -42,7 +40,6 @@ void Chkpt::wt_sloc_new(int *sloc_new)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** int *chkpt_rd_sloc_new()	
 ** Read in an array of the numbers of the first basis 

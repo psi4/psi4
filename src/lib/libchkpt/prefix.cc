@@ -1,18 +1,16 @@
 /*!
-  \file prefix.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 char *Chkpt::rd_prefix()
 {
@@ -32,7 +30,8 @@ void Chkpt::wt_prefix(char *prefix)
 
 void Chkpt::set_prefix(char *prefix)
 {
-  	strcpy(chkpt_prefix, prefix);
+  	::strncpy(chkpt_prefix, prefix, CHKPT_PREFIX_LEN);
+  	chkpt_prefix[CHKPT_PREFIX_LEN-1] = '\0';
 }
 
 void Chkpt::commit_prefix()
@@ -51,18 +50,18 @@ char *Chkpt::get_prefix(void)
 
 	prefix = (char *) malloc(CHKPT_PREFIX_LEN*sizeof(char));
 
-	strcpy(prefix,chkpt_prefix);
+	::strncpy(prefix,chkpt_prefix,CHKPT_PREFIX_LEN);
+    prefix[CHKPT_PREFIX_LEN-1] = '\0';
 
 	return prefix;
 }
 
-extern "C" {
 /*!
 	**  char *chkpt_rd_prefix() 
 	**  Reads the global default chkpt prefix keyword stored in the CHKPT file.
 	**
 	**  returns: the prefix string
-	** \ingroup (CHKPT)
+	** \ingroup CHKPT
 */
 	char *chkpt_rd_prefix(void)
 	{  
@@ -78,7 +77,7 @@ extern "C" {
 	**  \param prefix = the prefix string (must be CHKPT_PREFIX_LEN long)
 	**
 	**  returns: none
-	** \ingroup (CHKPT)
+	** \ingroup CHKPT
 */
 	void chkpt_wt_prefix(char *prefix)
 	{ 
@@ -95,7 +94,7 @@ extern "C" {
 	**  \param prefix = the prefix string
 	**
 	**  returns: none
-	** \ingroup (CHKPT)
+	** \ingroup CHKPT
 */
 	void chkpt_set_prefix(char *prefix)
 	{
@@ -109,7 +108,7 @@ extern "C" {
 	**  arguments: none
 	**
 	**  returns: none
-	** \ingroup (CHKPT)
+	** \ingroup CHKPT
 */
 	void chkpt_commit_prefix(void)
 	{
@@ -124,7 +123,7 @@ extern "C" {
 	**  arguments: none
 	**
 	**  returns: none
-	** \ingroup (CHKPT)
+	** \ingroup CHKPT
 */
 	void chkpt_reset_prefix(void)
 	{
@@ -139,7 +138,7 @@ extern "C" {
 	**  arguments: none
 	**
 	**  returns: prefix = the current global prefix
-	** \ingroup (CHKPT)
+	** \ingroup CHKPT
 */
 	char *chkpt_get_prefix(void)
 	{

@@ -1,18 +1,16 @@
 /*!
-  \file ecorr.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 double Chkpt::rd_ecorr(void)
 {
@@ -38,7 +36,6 @@ void Chkpt::wt_ecorr(double ecorr)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_ecorr():  Reads in the correlated energy.
 **
@@ -47,7 +44,7 @@ extern "C" {
 ** returns: e_corr = the correlated energy.  To get some
 **        information (a label) on the type of correlated wavefunction
 **        used to get this energy, see rd_corr_lab().
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	double chkpt_rd_ecorr(void)
 	{
@@ -64,7 +61,7 @@ extern "C" {
 **        used to get this energy, see rd_corr_lab().
 **
 ** returns: none
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_ecorr(double ecorr)
 	{

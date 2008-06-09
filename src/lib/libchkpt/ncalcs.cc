@@ -1,17 +1,15 @@
 /*!
-  \file calcs.cc
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int Chkpt::rd_ncalcs(void)
 {
@@ -29,16 +27,16 @@ int Chkpt::rd_ncalcs(void)
 	free(keyword_alpha_mo);
 }
 
-extern "C" {
 /*!
 ** int chkpt_rd_ncalcs()  
 ** Reads in the total number of HF wave functions.
 **
 ** returns: ncalcs = total number of HF wave functions in checkpoint
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int chkpt_rd_ncalcs(void)
 	{
 		return _default_chkpt_lib_->rd_ncalcs();
 	}
 }
+

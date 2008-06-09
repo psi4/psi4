@@ -1,18 +1,16 @@
 /*!
-  \file cartrep.cc
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 double **Chkpt::rd_cartrep(void)
 {
@@ -50,17 +48,16 @@ void Chkpt::wt_cartrep(double **cartrep)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_cartrep():  Reads the point group representation in the basis of
 **     cartesian unit vectors.
 **
-**   takes no arguments.
+** Parameters: none
 **
-**   returns: double **cartrep  a vector of block matrices of doubles. Each 
+** Returns: double **cartrep  a vector of block matrices of doubles. Each 
 **     row corresponds to a particular symmetry operation, each column is 
 **     a 3x3 block matrix.
-**  \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	double **chkpt_rd_cartrep(void)
 	{
@@ -75,11 +72,12 @@ extern "C" {
 **                  corresponds to a particular symmetry operation, each 
 **                  column is a 3x3 block matrix.
 **
-** returns nothing.
-** \ingroup (CHKPT)
+** Returns: none
+** \ingroup CHKPT
 */
 	void chkpt_wt_cartrep(double **cartrep)
 	{
 		_default_chkpt_lib_->wt_cartrep(cartrep);
 	}
 }
+

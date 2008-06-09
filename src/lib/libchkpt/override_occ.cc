@@ -1,17 +1,15 @@
 /*!
-  \file override_occ.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int Chkpt::rd_override_occ(void)
 {
@@ -59,7 +57,6 @@ void Chkpt::wt_override_occ(int override)
 	return;
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_override_occ(): Reads flag which tells cscf to ignore docc/socc
 ** vectors and use occupations in chkpt file instead
@@ -68,7 +65,7 @@ extern "C" {
 **  
 ** returns: 1 if chkpt occupations should be forced; 0 otherwise
 **        
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int chkpt_rd_override_occ(void)
 	{
@@ -83,7 +80,7 @@ extern "C" {
 **  
 ** returns: none
 **        
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_override_occ(int override)
 	{

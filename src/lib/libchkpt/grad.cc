@@ -1,18 +1,16 @@
 /*!
-  \file grad.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 double *Chkpt::rd_grad(void)
 {
@@ -24,7 +22,8 @@ double *Chkpt::rd_grad(void)
 	natom = rd_natom();
 	grad = array<double>(natom*3);
 
-	psio->read_entry(PSIF_CHKPT, keyword, (char *) grad, natom*3*sizeof(double));
+	psio->read_entry(PSIF_CHKPT, keyword, (char *) grad, 
+          natom*3*sizeof(double));
 
 	free(keyword);
 	return grad;
@@ -38,12 +37,12 @@ void Chkpt::wt_grad(double *grad)
 
 	natom = rd_natom();
 
-	psio->write_entry(PSIF_CHKPT, keyword, (char *) grad, natom*3*sizeof(double));
+	psio->write_entry(PSIF_CHKPT, keyword, (char *) grad, 
+          natom*3*sizeof(double));
 
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_grad():  Reads the energy gradient WRT nuclear coordinates
 **
@@ -53,7 +52,7 @@ extern "C" {
 **     grad[0] = gradient wrt x coordinate of atom 0
 **     grad[1] = gradient wrt y coordinate of atom 0
 **     grad[8] = gradient wrt z coordinate of atom 2
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	double *chkpt_rd_grad(void)
 	{
@@ -70,10 +69,11 @@ extern "C" {
 **     grad[8] = gradient wrt z coordinate of atom 2
 **
 **   returns: none
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_grad(double *grad)
 	{
 		_default_chkpt_lib_->wt_grad(grad);
 	}
 }
+

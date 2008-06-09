@@ -1,18 +1,16 @@
 /*!
-  \file fgeom.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 double **Chkpt::rd_fgeom(void)
 {
@@ -45,13 +43,12 @@ void Chkpt::wt_fgeom(double **fgeom)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_fgeom():  Reads in full cartesian geometry including dummy atoms
 **
 ** takes no arguments.
 ** returns: double **full_geom;
-** \ingroup (CHKPT)    
+** \ingroup CHKPT    
 */
 	double **chkpt_rd_fgeom(void)
 	{
@@ -65,7 +62,7 @@ extern "C" {
 **   \param full_geom = Matrix for cartesian coordinates
 **
 ** returns: none
-** \ingroup (CHKPT) 
+** \ingroup CHKPT 
 */
 	void chkpt_wt_fgeom(double **fgeom)
 	{

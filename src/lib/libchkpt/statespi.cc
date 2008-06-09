@@ -1,18 +1,16 @@
 /*!
-  \file statespi.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int *Chkpt::rd_statespi(void)
 {
@@ -45,7 +43,6 @@ void Chkpt::wt_statespi(int *statespi)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_statespi():  Reads in the number of excited-states for each
 **   irrep.
@@ -58,7 +55,7 @@ extern "C" {
 **                 with a non-zero number of basis functions). each 
 **                 element contains the number of excited states of that
 **                 irrep to be studied.
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int *chkpt_rd_statespi(void)
 	{
@@ -75,7 +72,7 @@ extern "C" {
 **                 irrep to be studied.
 **
 ** returns: none
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_statespi(int *statespi)
 	{

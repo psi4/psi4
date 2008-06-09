@@ -1,18 +1,16 @@
 /*!
-  \file contr.cc
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 double *Chkpt::rd_contr(void)
 {
@@ -58,19 +56,18 @@ void Chkpt::wt_contr(double *contr)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_contr(): Reads in the normalized contraction coefficients.
 **
-**  takes no arguments.
+** Parameters: none
 **
-**  returns: double *contr Normalized contraction coefficients are
-**  returned as an array of doubles. In the checkpoint file they are
-**  stored as a matrix MAXANGMOM by the total number of primitives
-**  nprim, but each primitive Gaussian contributes to only one shell
-**  (and one basis function, of course), so most of these values are
-**  zero and not returned.
-** \ingroup (CHKPT)
+** Returns: double *contr Normalized contraction coefficients are
+** returned as an array of doubles. In the checkpoint file they are
+** stored as a matrix MAXANGMOM by the total number of primitives
+** nprim, but each primitive Gaussian contributes to only one shell
+** (and one basis function, of course), so most of these values are
+** zero and not returned.
+** \ingroup CHKPT
 */
 	double *chkpt_rd_contr(void)
 	{
@@ -82,14 +79,15 @@ extern "C" {
 /*!
 ** chkpt_wt_contr(): Write out the normalized contraction coefficients.
 **
-**  \param contr = The array of contraction coefficients.  The
-**                 ordering is that given in cints.
+** \param contr = The array of contraction coefficients.  The
+**                ordering is that given in cints.
 **
-**  returns: none
-**  \ingroup (CHKPT)
+** Returns: none
+** \ingroup CHKPT
 */
 	void chkpt_wt_contr(double *contr)
 	{
 		_default_chkpt_lib_->wt_contr(contr);
 	}
 }
+

@@ -1,18 +1,16 @@
 /*!
-  \file eref.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 double Chkpt::rd_eref(void)
 {
@@ -37,7 +35,6 @@ void Chkpt::wt_eref(double eref)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_eref(): Reads in the reference energy.
 **
@@ -45,7 +42,7 @@ extern "C" {
 **
 **   returns: double eref  the reference energy.
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	double chkpt_rd_eref(void)
 	{
@@ -62,7 +59,7 @@ extern "C" {
 **
 ** returns: none
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_eref(double eref)
 	{

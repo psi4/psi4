@@ -1,18 +1,16 @@
 /*!
-  \file geom.cc
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 double **Chkpt::rd_geom(void)
 {
@@ -70,7 +68,6 @@ void Chkpt::wt_geom(double **geom)
 	free(atom_dummy);
 }
 
-extern "C" {
 /* chkpt_rd_geom(): Reads in the cartesian geometry from chkpt
 **
 **  takes no arguments.
@@ -79,7 +76,7 @@ extern "C" {
 **     of doubles.  The row index is the atomic index, and the column is the
 **     cartesian direction index (x=0, y=1, z=2).  Therefore, geom[2][0] 
 **     would be the x-coordinate of the third atom.
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	double **chkpt_rd_geom(void)
 	{
@@ -93,7 +90,7 @@ extern "C" {
 **     of doubles.  The row index is the atomic index, and the column is the
 **     cartesian direction index (x=0, y=1, z=2).  Therefore, geom[2][0] 
 **     would be the x-coordinate of the third atom.
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_geom(double **geom)
 	{

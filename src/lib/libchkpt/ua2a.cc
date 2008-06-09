@@ -1,17 +1,15 @@
 /*!
-  \file ua2a.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int *Chkpt::rd_ua2a(void)
 {
@@ -42,7 +40,6 @@ void Chkpt::wt_ua2a(int *ua2a)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** int *chkpt_rd_ua2a()
 ** Reads in a mapping array from the symmetry-unique atom
@@ -50,7 +47,7 @@ extern "C" {
 **
 ** returns: ua2a = Read in an array num_unique_atom long
 ** 
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int *chkpt_rd_ua2a(void)
 	{

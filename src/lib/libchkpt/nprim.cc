@@ -1,17 +1,15 @@
 /*!
-  \file nprim.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int Chkpt::rd_nprim(void)
 {
@@ -35,14 +33,13 @@ void Chkpt::wt_nprim(int nprim)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** int chkpt_rd_nprim()  
 ** Reads in the total number of primitive Gaussian functions 
 ** (only primitives of symmetry independent atoms are taken into account!).
 **
 ** returns: nprim = total number of primitive Gaussian functions.
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int chkpt_rd_nprim(void)
 	{
@@ -57,7 +54,7 @@ extern "C" {
 ** \param nprim = total number of primitive Gaussian functions.
 **
 ** returns: none
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_nprim(int nprim)
 	{

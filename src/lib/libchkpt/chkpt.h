@@ -6,9 +6,7 @@
 #include <chkpt_params.h>
 #include <libchkpt/config.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace psi {
 
 int chkpt_init(int status);
 int chkpt_close(void);
@@ -274,6 +272,7 @@ double *chkpt_rd_exps();
 void chkpt_wt_exps(double*);
 
 int chkpt_exist(char *);
+int chkpt_exist_add_prefix(char *);
 
 int chkpt_rd_override_occ(void);
 void chkpt_wt_override_occ(int);
@@ -281,8 +280,21 @@ void chkpt_wt_override_occ(int);
 int *chkpt_rd_statespi(void);
 void chkpt_wt_statespi(int *);
 
-#ifdef __cplusplus
+int chkpt_rd_nfragment(void);
+void chkpt_wt_nfragment(int);
+
+int *chkpt_rd_natom_per_fragment(void);
+void chkpt_wt_natom_per_fragment(int *);
+
+int *chkpt_rd_nallatom_per_fragment(void);
+void chkpt_wt_nallatom_per_fragment(int *);
+
+int *chkpt_rd_nref_per_fragment(void);
+void chkpt_wt_nref_per_fragment(int *);
+
+double ***chkpt_rd_fragment_coeff(void);
+void chkpt_wt_fragment_coeff(double ***);
+
 }
-#endif
 
 #endif

@@ -1,17 +1,15 @@
 /*!
-  \file phase_check.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int Chkpt::rd_phase_check(void)
 {
@@ -35,7 +33,6 @@ void Chkpt::wt_phase_check(int pcheck)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** int chkpt_rd_phase_check()
 **
@@ -47,7 +44,7 @@ extern "C" {
 **
 ** returns: pcheck = Phase check flag (1 if phase has been checked, else 0)
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int chkpt_rd_phase_check(void)
 	{
@@ -65,7 +62,7 @@ extern "C" {
 **
 ** returns: none
 ** 
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_phase_check(int pcheck)
 	{

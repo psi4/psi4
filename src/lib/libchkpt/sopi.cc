@@ -1,18 +1,16 @@
 /*!
-  \file sopi.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int *Chkpt::rd_sopi(void)
 {
@@ -42,7 +40,6 @@ void Chkpt::wt_sopi(int *sopi)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_sopi()
 ** Reads in the number of symmetry orbitals in each irrep.
@@ -56,7 +53,7 @@ extern "C" {
 **            element contains the number of symmetry orbitals for
 **            that irrep. Also, see chkpt_rd_orbspi().
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int *chkpt_rd_sopi(void)
 	{
@@ -74,7 +71,7 @@ extern "C" {
 **
 ** returns: none
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_sopi(int *sopi)
 	{

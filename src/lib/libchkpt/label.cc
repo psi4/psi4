@@ -1,17 +1,15 @@
 /*!
-  \file label.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 char *Chkpt::rd_label()
 {
@@ -37,14 +35,13 @@ void Chkpt::wt_label(char *label)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_label():  Reads the main chkpt label.
 **
 **   takes no arguments.
 **
 **   returns: pointer to the checkpoint label
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	char *chkpt_rd_label(void)
 	{
@@ -60,7 +57,7 @@ extern "C" {
 **  \param label = The calculation label.
 **
 **   returns: none
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 
 	void chkpt_wt_label(char *label)

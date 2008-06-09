@@ -1,18 +1,16 @@
 /*!
-  \file emp2.cc
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 double Chkpt::rd_emp2()
 {
@@ -38,14 +36,13 @@ void Chkpt::wt_emp2(double emp2)
 }
 
 
-extern "C" {
 /*!
 ** chkpt_rd_emp2(): Reads in the MP2 contribution to total energy.
 **
 **   takes no arguments.
 **
 **   returns: double emp2  the MP2 energy.
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	double chkpt_rd_emp2(void)
 	{
@@ -60,7 +57,7 @@ extern "C" {
 ** \param emp2 = the MP2 energy.
 **
 ** returns: none
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_emp2(double emp2)
 	{

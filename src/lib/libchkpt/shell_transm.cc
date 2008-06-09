@@ -1,18 +1,16 @@
 /*!
-  \file shell_transm.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int **Chkpt::rd_shell_transm(void)
 {
@@ -54,7 +52,6 @@ void Chkpt::wt_shell_transm(int **shell_transm)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_shell_transm():	Read in a matrix of nshell*nirreps integers 
 **			        that contains symmetry information.
@@ -64,7 +61,7 @@ extern "C" {
 **  returns: 
 **    shell_transm = matrix of nshell*nirrpes ints w/ symmetry info
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int **chkpt_rd_shell_transm(void)
 	{
@@ -79,7 +76,7 @@ extern "C" {
 **
 ** returns: none
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_shell_transm(int **shell_transm)
 	{

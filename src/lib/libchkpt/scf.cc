@@ -1,18 +1,16 @@
 /*!
-  \file scf.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 double **Chkpt::rd_scf(void)
 {
@@ -129,24 +127,26 @@ void Chkpt::wt_beta_scf(double **scf)
 double **Chkpt::rd_scf_irrep(int irrep)
 {
 	int i, j, row, col;
-	int nirreps, nso, nmo;
 	int *sopi, *mopi;
 	double **scf, **scf_full;
 
-	nirreps = rd_nirreps();
 	sopi = rd_sopi();
 	mopi = rd_orbspi();
-	nso = rd_nso();
-	nmo = rd_nmo();
 
-	scf = matrix<double>(sopi[irrep],mopi[irrep]);
+	if (!sopi[irrep] || !mopi[irrep]) {
+		free(sopi);
+		free(mopi);
+		return NULL;
+    }
+
 	scf_full = rd_scf();
 	if (scf_full == NULL) {
-		free(scf);
 		free(sopi);
 		free(mopi);
 		return NULL;
 	}
+
+	scf = matrix<double>(sopi[irrep],mopi[irrep]);
 
 /* compute row and column offsets */
 	for(i=0,row=0,col=0; i < irrep; i++) {
@@ -386,7 +386,6 @@ void Chkpt::wt_local_scf(double **scf)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_scf():  Reads in the full SCF eigenvector matrix for RHF/ROHF.
 **  
@@ -407,7 +406,7 @@ extern "C" {
 **    where the *** represent the non-zero values, and the 0.0 entries 
 **    represent (double)0.
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	double **chkpt_rd_scf(void)
 	{
@@ -434,7 +433,7 @@ extern "C" {
 **    where the *** represent the non-zero values, and the 0.0 entries 
 **    represent (double)0.
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	double **chkpt_rd_alpha_scf(void)
 	{
@@ -461,7 +460,7 @@ extern "C" {
 **    where the *** represent the non-zero values, and the 0.0 entries 
 **    represent (double)0.
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	double **chkpt_rd_beta_scf(void)
 	{
@@ -492,7 +491,7 @@ extern "C" {
 ** nso memory.  Use matrix<double>() to allocate space for
 ** the matrix.
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_scf(double **scf)
 	{
@@ -523,7 +522,7 @@ extern "C" {
 ** nso memory.  Use matrix<double>() to allocate space for
 ** the matrix.
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_alpha_scf(double **scf)
 	{
@@ -554,7 +553,7 @@ extern "C" {
 ** nso memory.  Use matrix<double>() to allocate space for
 ** the matrix.
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_beta_scf(double **scf)
 	{
@@ -569,7 +568,7 @@ extern "C" {
 **
 ** returns: double **scf   A rectangualr sopi[irrep] by orbspi[irrep] matrix.
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	double **chkpt_rd_scf_irrep(int irrep)
 	{
@@ -583,7 +582,7 @@ extern "C" {
 ** \param irrep = The desired irreducible representation.
 **
 ** returns: double **scf = A rectangualr sopi[irrep] by orbspi[irrep] matrix.
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	double **chkpt_rd_alpha_scf_irrep(int irrep)
 	{
@@ -598,7 +597,7 @@ extern "C" {
 **
 ** returns: double **scf = A rectangualr sopi[irrep] by orbspi[irrep] matrix.
 ** 
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	double **chkpt_rd_beta_scf_irrep(int irrep)
 	{
@@ -613,7 +612,7 @@ extern "C" {
 **
 ** returns: double **scf = A rectangualr sopi[irrep] by orbspi[irrep] matrix.
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_scf_irrep(double **scf, int irrep)
 	{
@@ -628,7 +627,7 @@ extern "C" {
 **
 ** returns: double **scf = A rectangualr sopi[irrep] by orbspi[irrep] matrix.
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_alpha_scf_irrep(double **scf, int irrep)
 	{
@@ -643,7 +642,7 @@ extern "C" {
 **
 ** returns: double **scf = A rectangualr sopi[irrep] by orbspi[irrep] matrix.
 ** 
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_beta_scf_irrep(double **scf, int irrep)
 	{

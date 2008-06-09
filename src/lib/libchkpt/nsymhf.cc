@@ -1,17 +1,15 @@
 /*!
-  \file nsymhf.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int Chkpt::rd_nsymhf(void)
 {
@@ -35,7 +33,6 @@ void Chkpt::wt_nsymhf(int nsymhf)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** int chkpt_rd_nsymhf()  
 ** Reads in the total number of irreps in the point group 
@@ -45,7 +42,7 @@ extern "C" {
 ** returns: nirreps = total number of irreducible representations
 **      with a non-zero number of basis functions. For STO or DZ water, for
 **      example, this is three, even though nirreps is 4 (see rd_nirreps()).
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int chkpt_rd_nsymhf(void)
 	{
@@ -61,7 +58,7 @@ extern "C" {
 ** \param nirreps = total number of irreducible representations
 **      with a non-zero number of basis functions. For STO or DZ water, for
 **      example, this is three, even though nirreps is 4 (see rd_nirreps()).
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_nsymhf(int nsymhf)
 	{

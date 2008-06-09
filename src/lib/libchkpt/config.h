@@ -1,6 +1,8 @@
 #ifndef _psi3_libchkpt_config_h_
 #define _psi3_libchkpt_config_h_
 
+namespace psi {
+
 #ifndef MAX_ELEMNAME
 #define MAX_ELEMNAME 13
 #endif
@@ -9,6 +11,7 @@
 #define CHKPT_PREFIX_LEN 32
 #endif
 
+#define CHKPT_ZMAT_LABEL_LEN 20
 /*--- Z-matrix entry type ---*/
 struct z_entry {
   int bond_atom;            /* first reference atom (bond) */
@@ -20,13 +23,15 @@ struct z_entry {
   double bond_val;          /* coordinate values */
   double angle_val; 
   double tors_val; 
-  char bond_label[20];      /* variable labels, if any */
-  char angle_label[20]; 
-  char tors_label[20]; 
+  char bond_label[CHKPT_ZMAT_LABEL_LEN];      /* variable labels, if any */
+  char angle_label[CHKPT_ZMAT_LABEL_LEN]; 
+  char tors_label[CHKPT_ZMAT_LABEL_LEN]; 
 };
 
 /*--- Types of reference determinants ---*/
 typedef enum {ref_rhf = 0, ref_uhf = 1, ref_rohf = 2, ref_tcscf = 3,
 	      ref_rks = 4, ref_uks = 5} reftype;
+
+}
 
 #endif

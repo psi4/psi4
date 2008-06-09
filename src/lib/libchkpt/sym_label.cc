@@ -1,17 +1,15 @@
 /*!
-  \file sym_label.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 char *Chkpt::rd_sym_label(void)
 {
@@ -39,7 +37,6 @@ void Chkpt::wt_sym_label(char *sym_label)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_sym_label():  Reads in the symmetry label.
 **
@@ -47,7 +44,7 @@ extern "C" {
 **
 **   returns: symmetry = symmetry label.
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	char *chkpt_rd_sym_label(void)
 	{
@@ -61,7 +58,7 @@ extern "C" {
 **
 ** returns none
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_sym_label(char *sym_label)
 	{

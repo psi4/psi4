@@ -1,18 +1,16 @@
 /*!
-  \file exps.cc
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 double *Chkpt::rd_exps(void)
 {
@@ -45,7 +43,6 @@ void Chkpt::wt_exps(double *exps)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_exps():	
 ** Reads in the exponents of the primitive Gaussian functions.
@@ -54,7 +51,7 @@ extern "C" {
 **
 ** returns: double *exps   
 ** The exponents are returned as an array of doubles.
-** \ingroup(CHKPT)
+** \ingroup CHKPT
 */
 	double *chkpt_rd_exps(void)
 	{
@@ -71,7 +68,7 @@ extern "C" {
 **  \param exps = The exponents are returned as an array of doubles.
 **
 ** returns: none
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_exps(double *exps)
 	{

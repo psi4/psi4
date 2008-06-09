@@ -1,17 +1,15 @@
 /*!
-  \file puream.cc
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 bool Chkpt::rd_puream(void)
 {
@@ -36,14 +34,13 @@ void Chkpt::wt_puream(bool puream)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 **  int chkpt_rd_puream()
 **  Reads whether cartesian or spherical harmonics are used (Psi is currently
 **  limited to only using one type of functions at a time)
 **
 **  returns: 1 (harmonics) or 0 (cartesian)
-**  \ingroup (CHKPT)
+**  \ingroup CHKPT
 */
 	int chkpt_rd_puream(void)
 	{
@@ -58,7 +55,7 @@ extern "C" {
 **  \param 1 (harmonics) or 0 (cartesian)
 **
 **  returns: none
-**  \ingroup (CHKPT)
+**  \ingroup CHKPT
 */
 	void chkpt_wt_puream(int puream)
 	{

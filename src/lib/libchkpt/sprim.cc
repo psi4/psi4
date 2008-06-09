@@ -1,18 +1,16 @@
 /*!
-  \file sprim.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int *Chkpt::rd_sprim(void)
 {
@@ -44,7 +42,6 @@ void Chkpt::wt_sprim(int *sprim)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_sprim(): Reads in array of the numbers of first primitives 
 **                   from the shells.
@@ -54,7 +51,7 @@ extern "C" {
 **  returns: sprim = an array of the numbers of first primitives
 **           from the shells.
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int *chkpt_rd_sprim(void)
 	{
@@ -70,7 +67,7 @@ extern "C" {
 **
 **  returns: none
 ** 
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_sprim(int *sprim)
 	{

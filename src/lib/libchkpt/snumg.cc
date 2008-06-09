@@ -1,18 +1,16 @@
 /*!
-  \file snumg.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 int *Chkpt::rd_snumg(void)
 {
@@ -43,7 +41,6 @@ void Chkpt::wt_snumg(int *snumg)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_snumg()
 **
@@ -55,7 +52,7 @@ extern "C" {
 **    snumg = Reads in array of the numbers of the primitive Gaussians
 **            in shells
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	int *chkpt_rd_snumg(void)
 	{
@@ -70,7 +67,7 @@ extern "C" {
 **  \param snumg = array of the numbers of the primitive Gaussians
 **                 in shells
 **
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_snumg(int *snumg)
 	{

@@ -1,19 +1,17 @@
 /*!
-  \file keyword.c
-  \ingrpu (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 char *Chkpt::build_keyword(char *key)
 {
@@ -34,7 +32,6 @@ char *Chkpt::build_keyword(char *key)
 	return keyword;
 }
 
-extern "C" {
 	char *chkpt_build_keyword(char *key)
 	{
 		char *keyword;
@@ -42,3 +39,4 @@ extern "C" {
 		return keyword;
 	}
 }
+

@@ -1,18 +1,16 @@
 /*!
-  \file evals.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 double *Chkpt::rd_evals(void)
 {
@@ -92,7 +90,6 @@ void Chkpt::wt_beta_evals(double *energies)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_evals():  Reads in the SCF orbital energies for RHF/ROHF.
 **
@@ -103,7 +100,7 @@ extern "C" {
 **      (i.e. for sto water, the four a1 eigenvalues all come first, and 
 **      those four are ordered from lowest energy to highest energy,
 **      followed by the single b1 eigenvalue, etc.)
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	double *chkpt_rd_evals(void)
 	{
@@ -122,7 +119,7 @@ extern "C" {
 **      (i.e. for sto water, the four a1 eigenvalues all come first, and 
 **      those four are ordered from lowest energy to highest energy,
 **      followed by the single b1 eigenvalue, etc.)
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	double *chkpt_rd_alpha_evals(void)
 	{
@@ -141,7 +138,7 @@ extern "C" {
 **      (i.e. for sto water, the four a1 eigenvalues all come first, and 
 **      those four are ordered from lowest energy to highest energy,
 **      followed by the single b1 eigenvalue, etc.)
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	double *chkpt_rd_beta_evals(void)
 	{
@@ -161,7 +158,7 @@ extern "C" {
 **      followed by the single b1 eigenvalue, etc.)
 **
 ** returns: none
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_evals(double *energies)
 	{
@@ -179,7 +176,7 @@ extern "C" {
 **      followed by the single b1 eigenvalue, etc.)
 **
 ** returns: none
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_alpha_evals(double *energies)
 	{
@@ -197,7 +194,7 @@ extern "C" {
 **      followed by the single b1 eigenvalue, etc.)
 **
 ** returns: none
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_beta_evals(double *energies)
 	{

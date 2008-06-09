@@ -1,18 +1,16 @@
 /*!
-  \file efzc.c
-  \ingroup (CHKPT)
+  \file
+  \ingroup CHKPT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
 #include <libchkpt/chkpt.h>
-}
 #include <libchkpt/chkpt.hpp>
 
-using namespace psi;
+namespace psi {
 
 double Chkpt::rd_efzc(void)
 {
@@ -37,14 +35,13 @@ void Chkpt::wt_efzc(double efzc)
 	free(keyword);
 }
 
-extern "C" {
 /*!
 ** chkpt_rd_efzc(): Reads in the frozen-core energy.
 **
 **   takes no arguments.
 **
 **   returns: double efzc  the frozen-core energy.
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	double chkpt_rd_efzc(void)
 	{
@@ -59,7 +56,7 @@ extern "C" {
 ** \param efzc = the frozen-core energy.
 **
 ** returns: none
-** \ingroup (CHKPT)
+** \ingroup CHKPT
 */
 	void chkpt_wt_efzc(double efzc)
 	{
