@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (INPUT)
+/*! \file
+    \ingroup INPUT
     \brief Enter brief description of file here 
 */
 /** This function returns a lookup array that correlates irreps of a point group
@@ -9,10 +9,10 @@
  ** point group.
  ** returns: int *array with dimension (number of old irreps) */ 
 #define EXTERN
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
-#include <math.h>
+#include <cmath>
 #include <libciomr/libciomr.h>
 #include "global.h"
 

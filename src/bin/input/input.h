@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (INPUT)
+/*! \file
+    \ingroup INPUT
     \brief Enter brief description of file here 
 */
 /**************************
@@ -9,13 +9,12 @@
 #ifndef _psi3_bin_input_input_h_
 #define _psi3_bin_input_input_h_
 
+#include <psi4.h>
+
 namespace psi { namespace input {
 
-/*
-   strange, but necessary, gprgid function
-*/
-char *gprgid ();
-
+/* strange, but necessary, gprgid function */
+//char *gprgid (void);
 
 /*
    Function to perform symmetry operations on input cartesians
@@ -74,11 +73,6 @@ void atom_num(char *A,  double *C);
 double ***unit_vectors(double **, double **);
 
 /*
-   Function to compute the unit vector between a pair of atoms
-*/
-void unit_vec(double *, double *, double *);
-
-/*
    Function to calculate all non-redundant bond angles
 */
 double ***calc_bond_angles(double ***, double **);
@@ -94,17 +88,6 @@ void calc_oop_angles(double ***, double ***, double **);
 */
 
 void calc_tors_angles(double ***, double ***, double **);
-
-/*
-   Takes a dot product
-*/
-double dot_prod(double *A, double *B);
-
-/*
-   Computes the cross product
-*/
-void cross_prod(double *v1, double *v2, double *out);
-
 
 /*
    Function to calculate all internuclear distances
@@ -194,6 +177,7 @@ void freeze_core();
 void init_globals();
 void read_cart();
 void read_zmat();
+void orient_fragments();
 void read_chkpt_geom();
 void read_geomdat();
 void freeze_virt();

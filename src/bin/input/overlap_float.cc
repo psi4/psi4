@@ -1,11 +1,11 @@
-/*! \file 
-    \ingroup (INPUT)
+/*! \file
+    \ingroup INPUT
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
 #include <libciomr/libciomr.h>
 
 #include "input.h"

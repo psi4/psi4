@@ -1,29 +1,21 @@
-/*! \file 
- \ingroup (INPUT)
+/*! \file
+ \ingroup INPUT
  \brief Enter brief description of file here 
  */
 /* This file contains functions such as Rotation, distance, and bond angle
  calculations */
 
 #define EXTERN
-#include <stdio.h>
+#include <cstdio>
 #include <libciomr/libciomr.h>
-#include <stdlib.h>
-#include <math.h>
+#include <cstdlib>
+#include <cmath>
 #include "input.h"
 #include <physconst.h>
 #include "global.h"
 #include "defines.h"
 #include <libqt/qt.h>
 #include <psifiles.h>
-
-/*
- strange, but necessary, gprgid function
- */
-extern "C" char *gprgid() {
-  char *prgid = "INPUT";
-  return (prgid);
-}
 
 namespace psi { namespace input {
 
@@ -72,23 +64,6 @@ double ***unit_vectors(double **Geom, double **Distances) {
   }
   
   return (E);
-}
-
-/* 
- UNIT_VEC(): Function calculates the unit vector between a
- pair of atoms and stores it in AB. 
- */
-
-void unit_vec(double *B, double *A, double *AB) {
-  double norm = 0.0;
-  int i;
-  
-  for (i=0; i<3; i++)
-    norm += (A[i]-B[i])*(A[i]-B[i]);
-  norm = sqrt(norm);
-  for (i=0; i<3; i++)
-    AB[i] = (B[i] - A[i]) / norm;
-  return;
 }
 
 /*
@@ -278,25 +253,6 @@ void Nuc_repulsion(double *Distance, double *repulsion) {
     for (j=0; j<i; j++)
       if (nuclear_charges[i] != 0.0&& nuclear_charges[j] != 0.0)
         *repulsion += nuclear_charges[i]*nuclear_charges[j]/Distance[ioff[i]+j];
-  return;
-}
-
-/*
- Function to take the dot product
- */
-
-double dot_prod(double *v1, double *v2) {
-  return v1[0]*v2[0]+ v1[1]*v2[1]+ v1[2]*v2[2];
-}
-
-/*
- Function to compute the cross product of 2 vectors
- */
-
-void cross_prod(double *v1, double *v2, double *out) {
-  out[0] = v1[1]*v2[2]-v1[2]*v2[1];
-  out[1] = -v1[0]*v2[2]+v1[2]*v2[0];
-  out[2] = v1[0]*v2[1]-v1[1]*v2[0];
   return;
 }
 

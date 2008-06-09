@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (INPUT)
+/*! \file
+    \ingroup INPUT
     \brief Enter brief description of file here 
 */
 #define EXTERN
@@ -20,8 +20,8 @@ void start_io(int argc, char *argv[])
 {
   int i, errcod;
   int num_extra_args = 0;
-  char **extra_args;
-  extra_args = (char **) malloc(argc*sizeof(char *));
+  //char **extra_args;
+  //extra_args = (char **) malloc(argc*sizeof(char *));
 
   keep_chkpt = 0;  
   read_chkpt = 0;
@@ -30,7 +30,7 @@ void start_io(int argc, char *argv[])
   dont_project_mos = 0; 
   geomdat_geom = 0;
   save_oldcalc = 0;
-  overwrite_output = 1;
+  overwrite_output = 0;
   no_comshift = 0;
   no_reorient = 0;
 			  
@@ -82,18 +82,24 @@ void start_io(int argc, char *argv[])
       keep_chkpt = 1;
     }
     else {
-      extra_args[num_extra_args++] = argv[i];
+      //extra_args[num_extra_args++] = argv[i];
     }
   }
   
-  errcod = psi_start(&infile,&outfile,&psi_file_prefix,num_extra_args, extra_args, overwrite_output);
-  if (errcod != PSI_RETURN_SUCCESS)
-    abort();
+  //errcod = psi_start(&infile,&outfile,&psi_file_prefix,num_extra_args, extra_args, overwrite_output);
+  //if (errcod != PSI_RETURN_SUCCESS)
+  //  abort();
+  //ip_cwk_add(":INPUT");
+  ip_cwk_clear();
+  ip_cwk_add(":DEFAULT");
+  ip_cwk_add(":PSI");
   ip_cwk_add(":INPUT");
+  
   tstart(outfile);
-  psio_init(); psio_ipv1_config();
+  psio_init();
+  psio_ipv1_config();
 
-  free(extra_args);
+  //free(extra_args);
 
   return;
 }
@@ -102,7 +108,7 @@ void stop_io()
 {
   tstop(outfile);
   psio_done();
-  psi_stop(infile,outfile,psi_file_prefix);
+//  psi_stop(infile,outfile,psi_file_prefix);
 }
 
 }} // namespace psi::input

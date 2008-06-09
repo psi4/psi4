@@ -1,10 +1,10 @@
-/*! \file 
-    \ingroup (INPUT)
+/*! \file
+    \ingroup INPUT
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
 #include <libciomr/libciomr.h>
 #include <libiwl/iwl.h>
 #include <psifiles.h>
@@ -14,8 +14,7 @@
 #define EXTERN
 #include "global.h"
 
-namespace psi { namespace input {
-  using namespace psi::input;
+namespace {
   void get_oeints();
   double **canon_orthog(double **);
   double **core_vector(double **);
@@ -25,7 +24,7 @@ namespace psi { namespace input {
   
   double **S11; /* Overlap matrix 11 - for the new basis */
   double **H11; /* Core Hamiltonian matrix */
-}}
+}
 
 namespace psi { namespace input {
 
@@ -135,6 +134,13 @@ void oldcalc_projection()
   return;
 }
 
+}} // namespace psi::input
+
+namespace {
+
+using namespace psi;
+using namespace psi::input;
+
 /*--------------------------------------------------------
   This function calls CINTS to get one-electron integrals
  --------------------------------------------------------*/
@@ -164,7 +170,7 @@ void get_oeints()
   ints = init_array(ntri);
 
   /* S integrals */
-  stat = ::iwl_rdone(PSIF_OEI,PSIF_SO_S,ints,ntri,0,0,outfile);
+  stat = iwl_rdone(PSIF_OEI,PSIF_SO_S,ints,ntri,0,0,outfile);
   S11 = block_matrix(num_so,num_so);
   count = 0;
   for(i=0;i<num_so;i++)
@@ -173,7 +179,7 @@ void get_oeints()
 
   
   /* T integrals */
-  stat = ::iwl_rdone(PSIF_OEI,PSIF_SO_T,ints,ntri,0,0,outfile);
+  stat = iwl_rdone(PSIF_OEI,PSIF_SO_T,ints,ntri,0,0,outfile);
   H11 = block_matrix(num_so,num_so);
   count = 0;
   for(i=0;i<num_so;i++)
@@ -181,7 +187,7 @@ void get_oeints()
 	  H11[i][j] = H11[j][i] = ints[count++];
 
   /* V integrals */
-  stat = ::iwl_rdone(PSIF_OEI,PSIF_SO_V,ints,ntri,1,0,outfile);
+  stat = iwl_rdone(PSIF_OEI,PSIF_SO_V,ints,ntri,1,0,outfile);
   count = 0;
   for(i=0;i<num_so;i++)
       for(j=0;j<=i;j++) {
@@ -391,4 +397,4 @@ void finish_projection()
   return;
 }
 
-}} // namespace psi::input
+} // namespace

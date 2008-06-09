@@ -1,10 +1,10 @@
-/*! \file 
-    \ingroup (INPUT)
+/*! \file
+    \ingroup INPUT
     \brief Enter brief description of file here 
 */
 #define EXTERN
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <libciomr/libciomr.h>
 #include <libipv1/ip_lib.h>
 #include "input.h"
@@ -63,6 +63,17 @@ void read_geomdat()
     geometry[i] = full_geom[i];
     atom_dummy[i] = 0;
   }
+
+  // --read_geomdat implies only 1 frament - but we create these here so
+  // that read_charges() works and a general free call can be made later
+  frag_num_atoms = (int *) malloc(nfragments*sizeof(int));
+  frag_num_allatoms = (int *) malloc(nfragments*sizeof(int));
+  frag_atom = (int *) malloc(nfragments*sizeof(int));
+  frag_allatom = (int *) malloc(nfragments*sizeof(int));
+  frag_num_atoms[0] = num_atoms;
+  frag_num_allatoms[0] = num_allatoms;
+  frag_atom[0] = 0;
+  frag_allatom[0] = 0;
 
   read_charges();
 

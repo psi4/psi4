@@ -1,10 +1,10 @@
-/*! \file 
-    \ingroup (INPUT)
+/*! \file
+    \ingroup INPUT
     \brief Enter brief description of file here 
 */
 #define EXTERN
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <libciomr/libciomr.h>
 #include <libipv1/ip_lib.h>
 #include <libchkpt/chkpt.h>

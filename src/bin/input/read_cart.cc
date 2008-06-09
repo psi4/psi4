@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (INPUT)
+/*! \file
+    \ingroup INPUT
     \brief Enter brief description of file here 
 */
 #define EXTERN
@@ -16,48 +16,84 @@ namespace psi { namespace input {
 
 void read_cart()
 {
-  int i, j, errcod;
-  int atomcount;
+  int i, j, errcod, atomcount, f, all_atomcount;
   double Z = 0.0;
   double tmp = 0.0;
-  char *atom_label;
-  int simple_geom, num_elem, entry_length;
+  char *atom_label, **geom_label, error_message[80];
+  int simple_geom, num_elem, entry_length, ival;
 
-  ip_count("GEOMETRY", &num_elem, 0);
-  simple_geom = 1;
-  entry_length = 0;
-  for(i=0; i < num_elem; i++) {
-    ip_count("GEOMETRY", &entry_length, 1, i);
-    if(entry_length > 1) simple_geom = 0;
+  frag_num_atoms = (int *) malloc(nfragments*sizeof(int));
+  frag_num_allatoms = (int *) malloc(nfragments*sizeof(int));
+  frag_atom = (int *) malloc(nfragments*sizeof(int));
+  frag_allatom = (int *) malloc(nfragments*sizeof(int));
+  nref_per_fragment = (int *) malloc(nfragments*sizeof(int));
+  ref_pts_lc = (double ***) malloc(nfragments*sizeof(double **));
+  num_atoms = 0;
+  num_allatoms = 0;
+
+  geom_label = (char **) malloc(nfragments*sizeof(char *));
+
+  for (f=0; f<nfragments; ++f) {
+
+    geom_label[f] = (char *) malloc(10*sizeof(char)); 
+    if (f == 0)
+      sprintf(geom_label[f],"GEOMETRY");
+    else
+      sprintf(geom_label[f],"GEOMETRY%d",f+1);
+
+    num_elem = 0;
+    ip_count(geom_label[f], &num_elem, 0);
+
+    simple_geom = 1;
+    entry_length = 0;
+    for(i=0; i < num_elem; i++) {
+      ip_count(geom_label[f], &entry_length, 1, i);
+      if(entry_length > 1) simple_geom = 0;
+    }
+
+    if(simple_geom && num_elem%4) {
+      sprintf(error_message, "Problem with number of elements in %s.",geom_label[f]);
+      punt(error_message);
+    }
+    if(simple_geom) {
+      frag_num_allatoms[f] = num_elem/4;
+    }
+    else {
+      frag_num_allatoms[f] = 0;
+      ip_count(geom_label[f],&(frag_num_allatoms[f]),0);
+    }
+    if (frag_num_allatoms[f] == 0) {
+      sprintf(error_message, "%s is empty!",geom_label[f]);
+      punt(error_message);
+    }
+
+    num_allatoms += frag_num_allatoms[f];
+
+    /* Figure out how many non-dummy atoms are there */
+    frag_num_atoms[f] = 0;
+    for(i=0;i<frag_num_allatoms[f];i++) {
+      if(simple_geom) 
+        errcod = ip_string(geom_label[f], &atom_label, 1, i*4);
+      else
+        errcod = ip_string(geom_label[f], &atom_label, 2, i,0);
+      if (errcod != IPE_OK) {
+        sprintf(error_message, "Problem reading %s array!", geom_label[f]);
+        punt(error_message);
+      }
+      if (strcmp(atom_label,"X"))
+        ++frag_num_atoms[f];
+      free(atom_label);
+    }
+    num_atoms += frag_num_atoms[f];
   }
 
-  if(simple_geom && num_elem%4) 
-    punt("Problem with number of elements in GEOMETRY.");
-
-  if(simple_geom) {
-    num_allatoms = num_elem/4;
-  }
-  else {
-    num_allatoms = 0;
-    ip_count("GEOMETRY",&num_allatoms,0);
-  }
-
-  if (num_allatoms == 0)
-    punt("GEOMETRY is empty!");
-  else if (num_allatoms > MAXATOM)
+  if (num_allatoms > MAXATOM)
     punt("There are more atoms than allowed!");
 
-  /* Figure out how many non-dummy atoms are there */
-  num_atoms = 0;
-  for(i=0;i<num_allatoms;i++){
-    if(simple_geom) 
-      errcod = ip_string("GEOMETRY", &atom_label, 1, i*4);
-    else
-      errcod = ip_string("GEOMETRY",&atom_label,2,i,0);
-    if (errcod != IPE_OK)
-      punt("Problem reading GEOMETRY array.");
-    if (strcmp(atom_label,"X"))
-      ++num_atoms;
+  frag_atom[0] = frag_allatom[0] = 0;
+  for (f=1; f<nfragments; ++f) {
+    frag_atom[f] = frag_atom[f-1] + frag_num_atoms[f-1];
+    frag_allatom[f] = frag_allatom[f-1] + frag_num_allatoms[f-1];
   }
 
   /*-----------------------
@@ -71,41 +107,52 @@ void read_cart()
   elemsymb_charges = init_array(num_atoms);
 
   atomcount = 0;
-  for(i=0;i<num_allatoms;i++){
-    if(simple_geom) 
-      errcod = ip_string("GEOMETRY",&atom_label,1,4*i);
-    else
-      errcod = ip_string("GEOMETRY",&atom_label,2,i,0);
-    if (errcod != IPE_OK)
-      punt("Problem with the GEOMETRY array.");
-    if (strcmp(atom_label,"X")) {
-       atom_num(atom_label, &Z);
-       free(atom_label);
-       elemsymb_charges[atomcount] = Z;
-       element[atomcount] = elem_name[(int)Z];
-       full_element[i] = elem_name[(int)Z];
-       geometry[atomcount] = full_geom[i];
-       atom_dummy[i] = 0;
-       ++atomcount;
-     }
-     else {
-       full_element[i] = "X";
-       free(atom_label);
-       atom_dummy[i] = 1;
-     }
+  all_atomcount = 0;
+  for (f=0; f<nfragments; ++f) {
 
-    for(j=0; j<3;j++){
+    for(i=0;i<frag_num_allatoms[f];i++){
       if(simple_geom) 
-        errcod = ip_data("GEOMETRY","%lf", &tmp,1,4*i+j+1);
+        errcod = ip_string(geom_label[f],&atom_label,1,4*i);
       else
-        errcod = ip_data("GEOMETRY","%lf", &tmp,2,i,j+1);
-      if (errcod != IPE_OK)
-	punt("Problem with the GEOMETRY array.");
-      else
-	full_geom[i][j] = tmp*conv_factor;
+        errcod = ip_string(geom_label[f],&atom_label,2,i,0);
+      if (errcod != IPE_OK) {
+        sprintf(error_message,"Problem with the %s array.", geom_label[f]);
+        punt(error_message);
+      }
+      if (strcmp(atom_label,"X")) {
+         atom_num(atom_label, &Z);
+         elemsymb_charges[atomcount] = Z;
+         element[atomcount] = elem_name[(int)Z];
+         full_element[all_atomcount] = elem_name[(int)Z];
+         geometry[atomcount] = full_geom[all_atomcount];
+         atom_dummy[all_atomcount] = 0;
+         ++atomcount;
+       }
+       else {
+         full_element[all_atomcount] = "X";
+         atom_dummy[all_atomcount] = 1;
+       }
+       free(atom_label);
+  
+      for(j=0; j<3;j++){
+        if(simple_geom) 
+          errcod = ip_data(geom_label[f],"%lf", &tmp,1,4*i+j+1);
+        else
+          errcod = ip_data(geom_label[f],"%lf", &tmp,2,i,j+1);
+        if (errcod != IPE_OK) {
+          sprintf(error_message,"Problem with the %s array.", geom_label[f]);
+          punt(error_message);
+        }
+        else
+          full_geom[all_atomcount][j] = tmp*conv_factor;
+      }
+      ++all_atomcount;
     }
   }
 
+  for (f=0; f<nfragments; ++f)
+    free(geom_label[f]);
+  free(geom_label);
   read_charges();
 
   return;

@@ -1,15 +1,16 @@
-/*! \file 
-    \ingroup (INPUT)
+/*! \file
+    \ingroup INPUT
     \brief Enter brief description of file here 
 */
 #define EXTERN
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
+#include <cstring>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.h>
+#include <libqt/qt.h>
 #include <psifiles.h>
 #include "input.h"
 #include "global.h"
@@ -51,9 +52,7 @@ void write_to_chkpt(double repulsion)
     Write out the label then 80 zeros
     ----------------------------------*/
   calc_label = init_char_array(80);
-  strncpy(calc_label,label,MIN(80,strlen(label)));
-  if(strlen(label) < 80) calc_label[strlen(label)] = '\0';
-  else calc_label[79] = '\0';
+  strncpy(calc_label,label,80);
   
   /*----------------------------------
     Write out basic info to chkpt
@@ -74,6 +73,13 @@ void write_to_chkpt(double repulsion)
   chkpt_wt_nallatom(num_allatoms);
   chkpt_wt_nfzc(nfzc);
   chkpt_wt_nfzv(nfzv);
+  chkpt_wt_nfragment(nfragments);
+  if (nfragments > 1) {
+    chkpt_wt_natom_per_fragment(frag_num_atoms);
+    chkpt_wt_nallatom_per_fragment(frag_num_allatoms);
+    chkpt_wt_nref_per_fragment(nref_per_fragment);
+    chkpt_wt_fragment_coeff(ref_pts_lc);
+  }
   free(calc_label);
 
 
@@ -170,8 +176,7 @@ void write_to_chkpt(double repulsion)
     if(strlen(full_element[atom]) > MAX_ELEMNAME)
       punt("Element name exceeds limit, MAX_ELEMNAME.\n");
 
-    strncpy(tmp_atom_label[atom],full_element[atom],strlen(full_element[atom]));
-    tmp_atom_label[atom][strlen(full_element[atom])] = '\0';
+    strncpy(tmp_atom_label[atom],full_element[atom],strlen(full_element[atom])+1);
   }
   chkpt_wt_felement(tmp_atom_label);
   for(atom=0; atom<num_allatoms; atom++) {

@@ -1,10 +1,10 @@
-/*! \file 
- \ingroup (INPUT)
+/*! \file
+ \ingroup INPUT
  \brief Enter brief description of file here 
  */
 #define EXTERN
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <strings.h>
 #include <libciomr/libciomr.h>
 #include <cmath>
@@ -48,6 +48,7 @@ namespace psi {
           class_num_angmom[clss][shell_ang_mom[j]]++;
         }
       }
+      free_int_matrix(class_num_angmom);
       
       /*-----------------------
        Allocate global arrays
@@ -84,7 +85,7 @@ namespace psi {
         clss = uc2c[uc];
         class_first = clss;
         class_last = clss + unique_class_degen[uc];
-        const double norm_pfac = 1.0 / std::sqrt(unique_class_degen[uc]);
+        const double norm_pfac = 1.0 / std::sqrt((double) unique_class_degen[uc]);
         
         lmax = max_angmom_class[clss];
         for (l=0; l<=lmax; l++) {
@@ -93,8 +94,8 @@ namespace psi {
             if (class_orbit[clss][symop] == clss)
               for (irr=0; irr<nirreps; irr++)
                 for (ao=0; ao<ao_max; ao++)
-                  coeff_irr[irr][ao] += irr_char[irr][symop]
-                      *ao_type_transmat[l][symop][ao];
+                  coeff_irr[irr][ao] += static_cast <int> (irr_char[irr][symop]
+                      *ao_type_transmat[l][symop][ao]);
           for (irr=0; irr<nirreps; irr++)
             for (ao=0; ao<ao_max; ao++)
               if (coeff_irr[irr][ao] > 0)
@@ -152,8 +153,8 @@ namespace psi {
                 for (irr=0; irr<nirreps; irr++)
                   if (num_cart_so_in_class[clss][l][irr] != 0) /*There are SOs in this class and ang. momentum type*/
                     for (ao=0; ao<ao_max; ao++)
-                      coeff_irr[irr][ao] += irr_char[irr][symop]
-                          *ao_type_transmat[l][symop][ao];
+                      coeff_irr[irr][ao] += static_cast <int> (irr_char[irr][symop]
+                          *ao_type_transmat[l][symop][ao]);
             so_cnt = 0;
             for (irr=0; irr<nirreps; irr++)
               if (num_cart_so_in_class[clss][l][irr] != 0)
@@ -190,6 +191,7 @@ namespace psi {
           }
         }
       
+      free_int_matrix(coeff_irr);
       return;
     }
   
