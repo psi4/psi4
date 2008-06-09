@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (R12)
+/*! \file
+    \ingroup R12
     \brief Enter brief description of file here 
 */
 
@@ -26,6 +26,7 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <libint/libint.h>
 #include "build_libr12.h"
 #include <libint/constants.h>

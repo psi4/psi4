@@ -64,11 +64,11 @@ dclean:
 targetclean:
 
 install: $(PSITARGET)
-	$(MKDIRS) $(libdir)
-	$(INSTALL_DATA) $< $(libdir)
-	$(RANLIB) $(libdir)/`basename $(PSITARGET)`
-	$(MKDIRS) $(incdir)/libr12
-	$(INSTALL_INCLUDE) $(TARGET_HEADERS) $(incdir)/libr12
+	$(MKDIRS) $(DESTDIR)$(libdir)
+	$(INSTALL_DATA) $< $(DESTDIR)$(libdir)
+	$(RANLIB) $(DESTDIR)$(libdir)/`basename $(PSITARGET)`
+	$(MKDIRS) $(DESTDIR)$(incdir)/libr12
+	$(INSTALL_INCLUDE) $(TARGET_HEADERS) $(DESTDIR)$(incdir)/libr12
 
 #
 # keep the configuration information and makefiles up-to-date
