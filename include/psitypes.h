@@ -19,7 +19,7 @@ typedef int_least64_t PSI_INT_LEAST64;
 
 #else
 
-#include <limits.h>
+#include <climits>
 
 #if defined(ULONGLONG_MAX) && !defined(ULLONG_MAX)
 #    define ULLONG_MAX ULONGLONG_MAX

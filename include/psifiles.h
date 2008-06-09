@@ -179,4 +179,12 @@ integrals out (i.e. multiply by i=sqrt(-1) to get the integrals) */
 #define PSIF_MO_A_QRR       "MO-basis Alpha Q-XX + Q-YY + Q-ZZ Ints"
 #define PSIF_MO_B_QRR       "MO-basis Beta Q-XX + Q-YY + Q-ZZ Ints"
 // end ACS additions
+
+/* PSIMRCC files */
+#define PSIF_PSIMRCC_INTEGRALS        50
+#define PSIF_PSIMRCC_RESTART          51
+
+/* MCSCF files */
+#define PSIF_MCSCF                    52
+
 #endif /* header guard */
