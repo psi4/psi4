@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (DERIV)
+/*! \file
+    \ingroup DERIV
     \brief Enter brief description of file here 
 */
 #include <math.h>
