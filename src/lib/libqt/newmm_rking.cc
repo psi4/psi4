@@ -1,10 +1,18 @@
-extern "C" {
+/*!
+  \file
+  \brief Matrix multiplication routine (deprecated)
+  \ingroup QT
+*/
+
+namespace psi {
 
 /*
 ** NEWMM():  A general matrix multiplication routine with nearly ideal 
 ** memory access patterns and low overhead.  In the near future, loops will
 ** need to be unrolled in each of the four algorithms below before this
 ** code can be used for production.
+**
+** Perform C = alpha A * B + beta C 
 **
 ** T. Daniel Crawford
 ** November, 1996
@@ -16,6 +24,21 @@ extern "C" {
 **
 ** Rollin A. King
 ** July, 1997
+**
+** Note: Deprecated, C_DGEMM is preferred
+**
+** \param A         = matrix A
+** \param transa    = 1 if A should be transposed
+** \param B         = matrix B
+** \param transb    = 1 if B should be transposed
+** \param C         = matrix for result of A*B
+** \param num_rows  = number of rows of A
+** \param num_links = columns of A or rows of B
+** \param num_cols  = number of columns of A
+** \param alpha     = coefficient multiplying A
+** \param beta      = coefficient multiplying C
+**
+** \ingroup QT
 */
 
 void newmm_rking(double **A, int transa, double **B, int transb, double **C,
@@ -610,4 +633,5 @@ void newmm_rking(double **A, int transa, double **B, int transb, double **C,
       }
 }
 
-} /* extern "C" */
+}
+

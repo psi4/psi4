@@ -1,14 +1,15 @@
 /*!
-  \file schmidt.c
-  \ingroup (QT)
+  \file
+  \brief Gram-Schmidt orthogonalize a set of vectors
+  \ingroup QT
 */
  
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
 #include <libciomr/libciomr.h>
 
-extern "C" {
+namespace psi {
 	
 /* #define STANDALONE */
 
@@ -20,12 +21,12 @@ extern "C" {
 **
 ** David Sherrill, Feb 1994
 **
-**   \param A    = matrix to orthogonalize (matrix of doubles)
-**   \param rows = rows of A 
-**   \param cols = columns of A
+** \param A    = matrix to orthogonalize (matrix of doubles)
+** \param rows = rows of A 
+** \param cols = columns of A
 **
 ** Returns: none
-** \ingroup (QT)
+** \ingroup QT
 */
 void schmidt(double **A, int rows, int cols, FILE *outfile)
 {
@@ -95,4 +96,5 @@ main()
 } 
 #endif
 
-} /* extern "C" */
+}
+

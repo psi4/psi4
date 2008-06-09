@@ -1,13 +1,14 @@
 /*!
-  \file solve_pep.c
-  \ingroup (QT)
+  \file
+  \brief Solve a 2x2 pseudo-eigenvalue problem
+  \ingroup QT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
 
-extern "C" {
+namespace psi {
 	
 #define A_MIN 1.0E-10
 
@@ -21,7 +22,8 @@ extern "C" {
 **  \param evals =  pointer to array to hold 2 eigenvalues
 **  \param evecs =  matrix to hold 2 eigenvectors
 **
-** \ingroup (QT)
+** Returns: none
+** \ingroup QT
 */
 void solve_2x2_pep(double **H, double S, double *evals, double **evecs)
 {
@@ -120,4 +122,5 @@ void solve_2x2_pep() ;
 }
 ***/
 
-} /* extern "C" */
+}
+

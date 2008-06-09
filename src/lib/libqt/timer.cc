@@ -1,11 +1,9 @@
-extern "C" {
-
 /*!
-**  \file timer.c
-**  \brief Obtain user and system timings for blocks of code
-**  \ingroup (QT)
+** \file
+** \brief Obtain user and system timings for blocks of code
+** \ingroup QT
 **
-** TIMER.C: These functions allow one to obtain user and system
+** TIMER.CC: These functions allow one to obtain user and system
 ** timings for arbitrary blocks of code.  If a code block is called
 ** repeatedly during the course of program execution, the timer
 ** functions will report the block's cumulative execution time and
@@ -30,13 +28,14 @@ extern "C" {
 ** NB this code uses system functions ctime(), time(), and times(),
 ** which may not quite be standard on all machines.
 **
-** T. Daniel Crawford, August 1999.  */
+** T. Daniel Crawford, August 1999.  
+*/
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <unistd.h>
-#include <string.h>
-#include <time.h>
+#include <cstring>
+#include <ctime>
 #include <sys/param.h>
 #include <sys/times.h>
 #include <libciomr/libciomr.h>
@@ -50,6 +49,8 @@ extern "C" {
 #define TIMER_KEYLEN 32
 #define TIMER_OFF 0
 #define TIMER_ON 1
+
+namespace psi {
 
 struct timer {
     char key[TIMER_KEYLEN];
@@ -67,10 +68,10 @@ struct timer {
 struct timer *global_timer;
 time_t timer_start, timer_end;  /* Global wall-clock on and off times */
 
-/*
+/*!
 ** timer_init(): Initialize the linked list of timers
 **
-** \ingroup (QT)
+** \ingroup QT
 */
 void timer_init(void)
 {
@@ -85,7 +86,7 @@ void timer_init(void)
 /*!
 ** timer_done(): Close down all timers and write results to timer.dat
 **
-** \ingroup (QT)
+** \ingroup QT
 */ 
 void timer_done(void)
 {
@@ -132,6 +133,15 @@ void timer_done(void)
   free(host);
 }
 
+/*!
+** timer_scan(): Return a timer structure whose name matches that given
+**   by supplied string
+**
+** \param key = name of timer to search for
+**
+** Returns: the timer structure with the given name, else NULL
+** \ingroup QT
+*/
 struct timer *timer_scan(char *key)
 {
   extern struct timer *global_timer;
@@ -147,6 +157,13 @@ struct timer *timer_scan(char *key)
   return(this_timer);
 }
 
+/*
+** timer_last(): Find the last timer in the list and return a pointer to it
+**
+** Returns: pointer to last timer in list, else NULL
+**
+** \ingroup QT
+*/
 struct timer *timer_last(void)
 {
   extern struct timer *global_timer;
@@ -167,7 +184,7 @@ struct timer *timer_last(void)
 **
 ** \param key = Name of timer
 **
-** \ingroup (QT)
+** \ingroup QT
 */
 void timer_on(char *key)
 {
@@ -207,7 +224,7 @@ void timer_on(char *key)
 **
 ** \param key = Name of timer
 **
-** \ingroup (QT)
+** \ingroup QT
 */
 void timer_off(char *key)
 {
@@ -240,4 +257,5 @@ void timer_off(char *key)
   this_timer->status = TIMER_OFF;
 }
 
-} /* extern "C" */
+}
+

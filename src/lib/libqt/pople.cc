@@ -1,15 +1,16 @@
 /*!
-  \file pople.c
-  \ingroup (QT)
+  \file
+  \brief Pople's method for solving linear equations
+  \ingroup QT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
 #include <libciomr/libciomr.h>
 #include "qt.h"
 
-extern "C" {
+namespace psi {
 	
 #define ZERO 1e-13
 
@@ -19,15 +20,14 @@ extern "C" {
 **
 ** Matt Leininger, April 1998
 **
-** Arguments: 
 **  \param A         = matrix 
 **  \param x         = initially has vector b, but returns vector x.
 **  \param dimen     = dimension of vector x.
 **  \param num_vecs  = number of vectors x to obtain.
 **  \param tolerance = cutoff threshold for norm of expansion vector.
 **
-** Returns: none
-** \ingroup (QT)
+** Returns: 0 for success, 1 for failure
+** \ingroup QT
 */
 int pople(double **A, double *x, int dimen, int num_vecs, double tolerance,
           FILE *outfile, int print_lvl)
@@ -63,11 +63,11 @@ int pople(double **A, double *x, int dimen, int num_vecs, double tolerance,
    sign = init_array(dimen);
 
    if (print_lvl > 6) {
-     fprintf(outfile,"\n\n Using Pople's Method for solving linear equations.\n");
-     fprintf(outfile,"     --------------------------------------------------\n");
-     fprintf(outfile,"         Iter             Norm of Residual Vector      \n");
-     fprintf(outfile,"        ------           -------------------------     \n");
-     }
+   fprintf(outfile,"\n\n Using Pople's Method for solving linear equations.\n");
+   fprintf(outfile,"     --------------------------------------------------\n");
+   fprintf(outfile,"         Iter             Norm of Residual Vector      \n");
+   fprintf(outfile,"        ------           -------------------------     \n");
+   }
 
    norm = 0.0;
    for (i=0; i<dimen; i++) norm += x[i]*x[i];
@@ -169,7 +169,7 @@ int pople(double **A, double *x, int dimen, int num_vecs, double tolerance,
            flin(Mtmp, alpha, L+1, 1, &det);
  
  
-           /* Need to form and backtransform x to orginal basis x = D^(-1/2) x */
+           /* Need to form and backtransform x to orig basis x = D^(-1/2) x */
            zero_arr(x, dimen);
            for (i=0; i<=L; i++)
                for (I=0; I<dimen; I++)
@@ -186,7 +186,8 @@ int pople(double **A, double *x, int dimen, int num_vecs, double tolerance,
            dot_arr(r, r, dimen, &rnorm);
            rnorm = sqrt(rnorm);
            if (print_lvl > 6) {
-               fprintf(outfile,"        %3d                     %10.3E\n",L+1,rnorm);
+               fprintf(outfile,
+                 "        %3d                     %10.3E\n",L+1,rnorm);
                fflush(outfile);
              }
 
@@ -197,7 +198,8 @@ int pople(double **A, double *x, int dimen, int num_vecs, double tolerance,
 
            /* place residual in b vector space */
            if (L+1>= maxdimen) {
-               fprintf(outfile,"POPLE (LIBQT): Number of expansion vectors exceeds"
+               fprintf(outfile,
+                 "POPLE (LIBQT): Number of expansion vectors exceeds"
                        " maxdimen (%d)\n", L+1);
 	       return 1;
              }
@@ -259,4 +261,5 @@ int pople(double **A, double *x, int dimen, int num_vecs, double tolerance,
    return 0;
 }
 
-} /* extern "C" */
+}
+

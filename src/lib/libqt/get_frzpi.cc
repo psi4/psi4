@@ -1,12 +1,18 @@
-#include <stdio.h>
-#include <stdlib.h>
+/*!
+  \file
+  \brief Get frozen core/virtuals per irrep
+  \ingroup QT
+*/
+
+#include <cstdio>
+#include <cstdlib>
 #include <libciomr/libciomr.h>
 #include <libipv1/ip_lib.h>
 #include <libchkpt/chkpt.h>
 #include <psifiles.h>
 #include "qt.h"
 
-extern "C" {
+namespace psi {
 
 #define PSIO_INIT if (!psio_state()) { \
     psio_init(); psio_ipv1_config(); \
@@ -24,6 +30,15 @@ extern "C" {
 #define CHKPT_DONE if (need_to_init_chkpt) \
     chkpt_close();
 
+/*!
+** get_frzcpi(): Get frozen core per irrep array.
+**
+** Parameters: none
+**
+** Returns: pointer to int array
+**
+** \ingroup QT
+*/
 int* get_frzcpi()
 {
   int errcod;
@@ -55,6 +70,15 @@ PSIO_DONE
 }
 
 
+/*!
+** get_frzvpi(): Get frozen virtuals per irrep array.
+**
+** Parameters: none
+**
+** Returns: pointer to int array
+**
+** \ingroup QT
+*/
 int* get_frzvpi()
 {
   int errcod;
@@ -85,4 +109,5 @@ PSIO_DONE
   return frzvpi;
 }
 
-} /* extern "C" */
+}
+

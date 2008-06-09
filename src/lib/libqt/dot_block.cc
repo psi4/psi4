@@ -1,21 +1,22 @@
 /*!
-  \file dot_block.c
-  \ingroup (QT)
+  \file
+  \brief Take dot product of two block matrices
+  \ingroup QT
 */
 
-extern "C" {
+namespace psi {
 	
 /*!
-** dot_block()
-** This function takes two block matrices A and B and finds
-** the dot product.
+** dot_block(): Find dot product of two block matrices
 **
-**  \param double **A: block matrix A
-**  \param double **B: block matrix B 
-**  \param int nrows: number of rows of A and B
-**  \param int ncols: number of columns of A and B
-**  \param double alpha: scale factor by which the dot product is multiplied
-** \ingroup (QT)
+** \param A     = block matrix A
+** \param B     = block matrix B 
+** \param nrows = number of rows of A and B
+** \param ncols = number of columns of A and B
+** \param alpha = scale factor by which the dot product is multiplied
+**
+** Returns: dot product
+** \ingroup QT
 */
 double dot_block(double **A, double **B, int rows, int cols, double alpha)
 {
@@ -36,4 +37,5 @@ double dot_block(double **A, double **B, int rows, int cols, double alpha)
   return alpha*value;
 }
 
-} /* extern "C" */
+}
+

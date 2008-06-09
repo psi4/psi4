@@ -1,16 +1,17 @@
 /*!
-  \file eri.c
+  \file
+  \brief Inefficient electron repulsion integral evaluation
   By Edward Valeev
-  \ingroup (QT)
+  \ingroup QT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
 #include <libciomr/libciomr.h>
 #include "qt.h"
 
-extern "C" {
+namespace psi {
 	
 #define MAXFAC 100
 #define EPS 1.0E-17     /* Absolute precision in computing Fm(t)
@@ -24,15 +25,15 @@ static void calc_f(double *, int, double);
 
 
 /*!
-  eri()
+   eri()
 
-  This is a very inefficient function for computing ERIs
-  over primitive Gaussian functions. The argument 
-  list is self-explanatory, except for norm_flag:
+   This is a very inefficient function for computing ERIs
+   over primitive Gaussian functions. The argument 
+   list is self-explanatory, except for norm_flag:
 
-  \param norm_flag:  tells what kind of normalization to use,
-         0 - no normalization, >0 - normalized ERI
-  \ingroup (QT)
+   \param norm_flag =  tells what kind of normalization to use,
+          0 - no normalization, >0 - normalized ERI
+   \ingroup QT
 */
 
 double eri(unsigned int l1, unsigned int m1, unsigned int n1, 
@@ -254,14 +255,15 @@ double eri(unsigned int l1, unsigned int m1, unsigned int n1,
 
 
 /*!
-  calc_f()
+   calc_f()
 
-  This function computes infamous integral Fn(t). For its definition
-  see Obara and Saika paper, or Shavitt's chapter in the
-  Methods in Computational Physics book (see reference below).
-  This piece of code is from Dr. Justin Fermann's program CINTS 
+   This function computes infamous integral Fn(t). For its definition
+   see Obara and Saika paper, or Shavitt's chapter in the
+   Methods in Computational Physics book (see reference below).
+   This piece of code is from Dr. Justin Fermann's program CINTS 
 
- \ingroup (QT)
+   Returns: none
+   \ingroup QT
 */
 void calc_f(double *F, int n, double t)
 {
@@ -309,9 +311,10 @@ void calc_f(double *F, int n, double t)
 
 
 /*!
-  norm_const()
+   norm_const()
 
-  \ingroup (QT)
+   Returns: normalization constant
+   \ingroup QT
 */  
 double norm_const(unsigned int l1, unsigned int m1, unsigned int n1, 
                   double alpha1, double A[3])
@@ -331,4 +334,5 @@ double norm_const(unsigned int l1, unsigned int m1, unsigned int n1,
   return pow(2*alpha1/M_PI,0.75)*pow(4*alpha1,0.5*(l1+m1+n1))/sqrt(df[2*l1]*df[2*m1]*df[2*n1]);
 }
 
-} /* extern "C" */
+}
+

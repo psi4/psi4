@@ -1,13 +1,14 @@
 /*!
-  \file normalize.c
-  \ingroup (QT)
+** \file
+** \brief Normalize a set of vectors
+** \ingroup QT
 */
 
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include <libciomr/libciomr.h>
 
-extern "C" {
+namespace psi {
 	
 /* #define STANDALONE */
 
@@ -16,21 +17,27 @@ extern "C" {
 **
 ** Assume we're normalizing the ROWS
 **
+** \param A    = matrix holding vectors to normalize
+** \param rows = number of rows in A
+** \param cols = number of columns in A
+**
+** Returns: none
+**
 ** David Sherrill, Feb 1994
-** \ingroup (QT)
+** \ingroup QT
 */
 
 void normalize(double **A, int rows, int cols)
 {
-   double normval ;
-   register int i, j ;
+  double normval;
+  register int i, j;
 
-   /* divide each row by the square root of its norm */
-   for (i=0; i<rows; i++) {
-      dot_arr(A[i], A[i], cols, &normval) ;
-      normval = sqrt(normval) ;
-      for (j=0; j<cols; j++) A[i][j] /= normval ;
-      }
+  /* divide each row by the square root of its norm */
+  for (i=0; i<rows; i++) {
+    dot_arr(A[i], A[i], cols, &normval);
+    normval = sqrt(normval);
+    for (j=0; j<cols; j++) A[i][j] /= normval;
+  }
 
 }
 
@@ -57,4 +64,5 @@ void normalize(double **A, int rows, int cols) ;
 } 
 #endif
 
-} /* extern "C" */
+}
+
