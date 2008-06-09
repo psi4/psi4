@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (CSCF)
+/*! \file
+    \ingroup CSCF
     \brief Enter brief description of file here 
 */
 /* $Log$
@@ -23,9 +23,9 @@
 /* -Ed
  * */
 
-static char *rcsid = "$Id: errchk.cc 3592 2007-09-28 13:01:33Z evaleev $";
+static char *rcsid = "$Id: errchk.cc 3840 2008-02-22 21:35:18Z evaleev $";
 
-#include <stdio.h>
+#include <cstdio>
 #include <libipv1/ip_lib.h>
 
 namespace psi { namespace cscf {

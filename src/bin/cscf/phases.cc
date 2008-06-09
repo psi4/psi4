@@ -1,8 +1,8 @@
-/*! \file 
-    \ingroup (CSCF)
+/*! \file
+    \ingroup CSCF
     \brief Enter brief description of file here 
 */
-#include <stdio.h>
+#include <cstdio>
 #include <libciomr/libciomr.h>
 #define EXTERN
 #include "includes.h"

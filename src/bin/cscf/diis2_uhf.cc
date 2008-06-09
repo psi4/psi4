@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (CSCF)
+/*! \file
+    \ingroup CSCF
     \brief Enter brief description of file here 
 */
 /* diis_uhf(): DIIS extrapolation for the UHF SCF procedure.  This version

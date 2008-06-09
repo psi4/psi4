@@ -1,8 +1,8 @@
-/*! \file 
-    \ingroup (CSCF)
+/*! \file
+    \ingroup CSCF
     \brief Enter brief description of file here 
 */
-/* $Id: common.h 3666 2007-11-01 21:42:55Z evaleev $ */
+/* $Id: common.h 3955 2008-06-07 09:04:04Z rking $ */
 /* $Log$
  * Revision 1.17  2005/11/10 16:37:50  evaleev
  * Added CHECK_MO_ORTHONORMALITY input keyword. Useful for debugging.
@@ -176,10 +176,9 @@
 # define EXTERN
 #endif
 
-namespace psi { namespace cscf {
+#include <psi4.h>
 
-    EXTERN FILE *infile, *outfile;
-    EXTERN char *psi_file_prefix;
+namespace psi { namespace cscf {
 
 EXTERN FILE *JK,*gmat,*diis_out;
 
@@ -254,14 +253,13 @@ EXTERN int special;             /* 1 if OPENTYPE=special */
 EXTERN int twocon;              /* 1 if tcscf */
 EXTERN int ksdft;               /* 1 if Kohn-Sham DFT */
 EXTERN int mixing;              /* 1 if mixing for UHF, default is 0 */
-EXTERN PSI_FPTR pos34;               /* pointer to location in file34 */
 EXTERN int cscf_nint;                /* number of pki ints in present batch */
 EXTERN int opshl1,opshl2;
 EXTERN int opblk1,opblk2;
 EXTERN int second_root;         /* get the second root of the MCSCF */
 EXTERN int icheck_rot;          /* check orbital rotations? */
 EXTERN int check_mo_orthonormality;
-EXTERN int ediff;
+//EXTERN int ediff;
 
 EXTERN int itap30,itap34,itapS,itapT,itapV,itap33,itap92,itap93,itapDSCF;
 EXTERN double alpha1,alpha2,alpha3;  /* two configuration things */

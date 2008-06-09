@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (CSCF)
+/*! \file
+    \ingroup CSCF
     \brief Enter brief description of file here 
 */
 /* $Log$
@@ -89,7 +89,7 @@
 /* -Ed
  * */
 
-static char *rcsid = "$Id: ecalc.cc 3592 2007-09-28 13:01:33Z evaleev $";
+static char *rcsid = "$Id: ecalc.cc 3955 2008-06-07 09:04:04Z rking $";
 
 #define EXTERN
 #include "includes.h"
@@ -170,7 +170,7 @@ int ecalc(double incr)
    
   etot = repnuc + neelec;
   edif =  eelec - neelec;
-  ediff = edif;
+  // ediff = edif; //do we need this for anything?
 
   if (!iter) fprintf(outfile,"\n  iter       total energy        delta E         delta P          diiser\n");
   fprintf(outfile, "%5d %20.10f %15.6e %15.6e %15.6e\n", 
@@ -179,13 +179,14 @@ int ecalc(double incr)
     fprintf(outfile, "one-electron energy = %25.15f\n", oe_energy);
     fprintf(outfile, "two-electron energy = %25.15f\n", te_energy);
     fprintf(outfile, "coulomb energy      = %25.15f\n",coulomb_energy);
-    fprintf(outfile, "SCF total energy    = %25.15f\n", etot);
+    fprintf(outfile, "* SCF total energy  = %25.15f\n", etot);
   }
   fflush(outfile);
   diiser=0.0;
 
   if ( delta < plimit && iter > 1) {
     converged=1;
+fflush(outfile);
     if(!iopen || iopen && fock_typ >= 2) cleanup();
   }
 

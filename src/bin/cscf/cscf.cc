@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (CSCF)
+/*! \file
+    \ingroup CSCF
     \brief Enter brief description of file here 
 */
 /*
@@ -167,7 +167,7 @@
  -------------------------------------------------------------------------*/
 
 
-static char *rcsid = "$Id: cscf.cc 3661 2007-10-25 19:29:39Z evaleev $";
+static char *rcsid = "$Id: cscf.cc 3955 2008-06-07 09:04:04Z rking $";
 
 #include "includes.h"
 #include "common.h"
@@ -180,9 +180,8 @@ namespace psi { namespace cscf {
   void print_initial_vec();
   extern void write_scf_matrices(void);
 
-int main(int argc,char* argv[])
+int cscf(int argc,char* argv[])
 {
-  using namespace psi::cscf;
   int i,nn;
   char *prog_name="CSCF3.0: An SCF program written in C";
   char *output="APPEND  ";
@@ -191,9 +190,12 @@ int main(int argc,char* argv[])
   int errcod, orthog_only, mo_print;
   char *wfn;
  
-  errcod = psi_start(&infile,&outfile,&psi_file_prefix,argc-1, argv+1, 0);
-  if (errcod != PSI_RETURN_SUCCESS)
-    exit(PSI_RETURN_FAILURE);
+  //errcod = psi_start(&infile,&outfile,&psi_file_prefix,argc-1, argv+1, 0);
+  //if (errcod != PSI_RETURN_SUCCESS)
+  //  exit(PSI_RETURN_FAILURE);
+  ip_cwk_clear();
+  ip_cwk_add(":DEFAULT");
+  ip_cwk_add(":PSI");
   ip_cwk_add(":SCF");
   tstart(outfile);
    
@@ -322,8 +324,9 @@ int main(int argc,char* argv[])
     write_scf_matrices();
     psio_done();
     tstop(outfile);
-    psi_stop(infile,outfile,psi_file_prefix);
-    exit(PSI_RETURN_SUCCESS);
+    //psi_stop(infile,outfile,psi_file_prefix);
+    //exit(PSI_RETURN_SUCCESS);
+    return(PSI_RETURN_SUCCESS);
   }
 
   if (!twocon){
@@ -367,8 +370,9 @@ int main(int argc,char* argv[])
       fprintf(stderr,"rohf open shell singlet doesn't work direct\n");
       fprintf(stderr,"remove 'direct_scf = true' from input\n");
       chkpt_close();
-      psio_done();
-      exit(PSI_RETURN_FAILURE);
+      //psio_done();
+      //exit(PSI_RETURN_FAILURE);
+      return(PSI_RETURN_FAILURE);
     }
 
     formg_direct();
@@ -387,10 +391,8 @@ int main(int argc,char* argv[])
 
   cleanup();
   psio_done();
+  return(PSI_RETURN_SUCCESS);
 }
-}} // end namespace psi::cscf
-
-namespace psi { namespace cscf {
 
 void print_initial_vec()
 {

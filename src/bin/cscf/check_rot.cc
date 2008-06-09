@@ -1,12 +1,9 @@
-/*! \file 
-    \ingroup (CSCF)
-    \brief Enter brief description of file here 
-*/
+/*! \defgroup CSCF cscf: Hartree-Fock Self-Consistent-Field Module */
 
-/*! \defgroup CSCF Add a description of the group CSCF */
-
-/*
-** CHECK_ROT.C
+/*! 
+** \file
+** \ingroup CSCF
+** \brief Check MO rotation to make sure C cols haven't swapped
 ** 
 ** Check the MO rotation performed in rotate_vector() to make sure that
 ** columns of the C matrix haven't swapped.  If so, swap them (and their
@@ -16,7 +13,7 @@
 **
 */
 
-#include <stdio.h>
+#include <cstdio>
 #include <libciomr/libciomr.h>
 #define EXTERN
 #include "includes.h"
@@ -26,8 +23,22 @@ namespace psi { namespace cscf {
 
 void swap_vectors(double **c, int nn, int j, int i);
 
-void check_rot(int nn, int num_mo, double **cold, double **cnew, double *smat_pac, 
-      double *fock_evals, int irrep)
+/*!
+** check_rot(): Check if a rotation has swapped columns of C
+**
+** \param nn         = number of SO's in an irrep
+** \param num_mo     = number of MO's in an irrep
+** \param cold       = old C matrix
+** \param cnew       = new C matrix
+** \param smat_pac   = S matrix, packed lower triangular
+** \param fock_evals = Fock matrix eigenvalues
+** \param irrep      = which irrep we're working on (starts from zero)
+**
+** Returns: none
+** \ingroup CSCF
+*/
+void check_rot(int nn, int num_mo, double **cold, double **cnew, 
+  double *smat_pac, double *fock_evals, int irrep)
 {
   int i,j,jmaxcoeff,swapped;
   double maxcoeff=0.0, tval;
@@ -105,6 +116,17 @@ void check_rot(int nn, int num_mo, double **cold, double **cnew, double *smat_pa
 }
 
 
+/*!
+** swap_vectors(): Swap two vectors of an SCF coefficient matrix
+**
+** \param C   = SCF coefficient matrix
+** \param nn  = number of rows in C matrix (number of SO's in that irrep)
+** \param j   = one of the columns to swap
+** \param i   = the other column to swap
+**
+** Returns: none
+** \ingroup CSCF
+*/
 void swap_vectors(double **c, int nn, int j, int i)
 {
   int k;

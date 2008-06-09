@@ -1,5 +1,5 @@
-/*! \file 
-    \ingroup (CSCF)
+/*! \file
+    \ingroup CSCF
     \brief Enter brief description of file here 
 */
 /* $Log$
@@ -20,7 +20,7 @@
 /* -Ed
  * */
 
-static char *rcsid = "$Id: rotate_vector.cc 3592 2007-09-28 13:01:33Z evaleev $";
+static char *rcsid = "$Id: rotate_vector.cc 3815 2008-02-13 21:50:07Z sherrill $";
 
 #define EXTERN
 #include "includes.h"
@@ -28,8 +28,8 @@ static char *rcsid = "$Id: rotate_vector.cc 3592 2007-09-28 13:01:33Z evaleev $"
 
 namespace psi { namespace cscf {
 
-void check_rot(int nn, int num_mo, double **cold, double **cnew, double *smat_pac,
-      double *fock_evals, int irrep);
+void check_rot(int nn, int num_mo, double **cold, double **cnew, 
+  double *smat_pac, double *fock_evals, int irrep);
 extern void formg_two(int iju, int* optest);
 extern void formg_open();
 
