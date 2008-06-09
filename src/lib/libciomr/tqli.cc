@@ -1,18 +1,22 @@
 /*!
-   \file tqli.cc
-   \ingroup (CIOMR)
+** \file
+** \brief Diagonalizes a tridiagonal matrix output by tred2
+** \ingroup CIOMR
 */ 
 
 #include <psifiles.h>
-#include "includes.h"
+#include <cstdio>
+#include <cmath>
 
-extern "C" {
+#define DSIGN(a,b) ((b) >= 0.0) ? (fabs(a)) : (-fabs(a))
+
+namespace psi {
 
 /*!
-** tqli: diagonalizes tridiagonal matrix output by tred2.  Gives only
+** tqli(): diagonalizes tridiagonal matrix output by tred2.  Gives only
 ** eigenvalues if matz=0, both eigenvalues and eigenvectors if matz=1
 **
-** \ingroup (CIOMR)
+** \ingroup CIOMR
 */
 void tqli(int n, double *d, double **z, double *e, int matz, double toler)
    {
@@ -103,4 +107,5 @@ L2:
          }
    }
 
-} /* extern "C" */
+}
+

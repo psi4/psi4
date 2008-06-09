@@ -1,20 +1,21 @@
 /*!
-   \file tri_to_sq.cc
-   \ingroup (CIOMR)
+** \file
+** \brief Converts lower triangle to square matrix
+** \ingroup CIOMR
 */
 
-#include "includes.h"
-#include <libciomr/libciomr.h>
-
-extern "C" {
+namespace psi {
 
 /*!
-** tri_to_sq: converts lower triangle to square matrix.
+** tri_to_sq(): converts lower triangle to square matrix
 **
 ** \param amat = lower triangle matrix
 ** \param bmat = square matrix
 ** \param size = number of rows/cols of matrix
-** \ingroup (CIOMR)
+**
+** Returns: none
+**
+** \ingroup CIOMR
 */
 void tri_to_sq(double *amat, double **bmat, int size)
 {
@@ -29,4 +30,5 @@ void tri_to_sq(double *amat, double **bmat, int size)
   }
 }
 
-} /* extern "C" */
+}
+

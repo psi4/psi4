@@ -1,23 +1,28 @@
 /*!
-** \file ffile.cc
-** \ingroup (CIOMR)
+** \file
+** \brief Open PSI ASCII or small local binary (non-libpsio) files for 
+**   reading/writing
+** \ingroup CIOMR
 */ 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <psifiles.h>
+#include <psi4.h>
 
-extern "C" {
+namespace psi {
 
-extern char *psi_file_prefix;
 /*!
 ** ffile(): Open a PSI3 ASCII file for reading/writing.  Returns a
 ** pointer to the new file.
 **
 ** \param suffix = name of the file, not including automatic prefix
 ** \param code = 0 (write), 1 (write/append), 2 (read)
-** \ingroup (CIOMR)
+**
+** Returns: none
+**
+** \ingroup CIOMR
 */
 void ffile(FILE **fptr, char *suffix, int code)
 {
@@ -45,6 +50,7 @@ void ffile(FILE **fptr, char *suffix, int code)
   }
 }
 
+
 /*!
 ** ffile_noexit(): Open a PSI3 ASCII file for reading/writing.
 ** Returns a pointer to the new file via an argument.  This function
@@ -52,7 +58,10 @@ void ffile(FILE **fptr, char *suffix, int code)
 **
 ** \param suffix = name of the file, not including automatic prefix
 ** \param code = 0 (write), 1 (write/append), 2 (read)
-** \ingroup (CIOMR)
+**
+** Returns: none
+**
+** \ingroup CIOMR
 */
 void ffile_noexit(FILE **fptr, char *suffix, int code)
 {
@@ -76,17 +85,22 @@ void ffile_noexit(FILE **fptr, char *suffix, int code)
   }
 }
 
+
 /*!
 ** ffileb(): Open a PSI3 binary file for reading/writing.  Returns a
 ** pointer to the new file.
 **
 ** \param suffix = name of the file, not including automatic prefix
 ** \param code = 0 (write), 1 (write/append), 2 (read)
-** \ingroup (CIOMR)
+**
+** Returns: none
+**
+** \ingroup CIOMR
 */
 void ffileb(FILE **fptr, char *suffix, int code)
 {
-  char* name = (char*) malloc( (strlen(psi_file_prefix) + strlen(suffix) + 2)*sizeof(char) );
+  char* name = (char*) malloc( (strlen(psi_file_prefix) + 
+    strlen(suffix) + 2)*sizeof(char) );
 
   /* build the standard file name */
   sprintf(name, "%s.%s", psi_file_prefix, suffix);
@@ -112,6 +126,7 @@ void ffileb(FILE **fptr, char *suffix, int code)
   }
 }
 
+
 /*!
 ** ffileb_noexit(): Open a PSI3 binary file for reading/writing.
 ** Returns a pointer to the new file via an argument.  This function
@@ -119,11 +134,15 @@ void ffileb(FILE **fptr, char *suffix, int code)
 **
 ** \param suffix = name of the file, not including automatic prefix
 ** \param code = 0 (write), 1 (write/append), 2 (read)
-** \ingroup (CIOMR)
+** 
+** Returns: none
+**
+** \ingroup CIOMR
 */
 void ffileb_noexit(FILE **fptr, char *suffix, int code)
 {
-  char* name = (char*) malloc( (strlen(psi_file_prefix) + strlen(suffix) + 2)*sizeof(char) );
+  char* name = (char*) malloc( (strlen(psi_file_prefix) + 
+    strlen(suffix) + 2)*sizeof(char) );
 
   /* build the standard file name */
   sprintf(name, "%s.%s", psi_file_prefix, suffix);
@@ -144,4 +163,5 @@ void ffileb_noexit(FILE **fptr, char *suffix, int code)
   free(name);
 }
 
-} /* extern "C" */
+}
+

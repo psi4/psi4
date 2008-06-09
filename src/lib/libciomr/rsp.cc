@@ -1,41 +1,45 @@
 /*!
-** \file rsp.cc
-** \ingroup (CIOMR)
+** \file
+** \brief Diagonalize a symmetric matrix in packed (lower triangular) form
+** \ingroup CIOMR
 */
 
 #include <psifiles.h>
-#include "includes.h"
-#include <libciomr/libciomr.h>
+#include <cstdlib>
+#include "libciomr.h"
 
-extern "C" {
+namespace psi {
   
 extern void tred2(int n,double** a,double* d,double* e,int matz);
-extern void tqli(int n, double *d, double **z, double *e, int matz, double toler);
+extern void tqli(int n, double *d, double **z, double *e, int matz, 
+  double toler);
 
 /* translation into c of a translation into FORTRAN77 of the EISPACK */
 /* matrix diagonalization routines */
 
 /*!
-** rsp: diagonalize a symmetric matrix in packed (lower triangular) form 
+** rsp(): diagonalize a symmetric matrix in packed (lower triangular) form 
 ** in 'array'. For square symmetric matrices, see sq_rsp().
 **
-**   \param nm     = rows of matrix
-**   \param n      = columns of matrix
-**   \param nv     = number of elements in lower triangle (n*(n+1)/2)
-**   \param array  = matrix to diagonalize (packed as linear array)
-**   \param e_vals = array to hold eigenvalues 
-**   \param matz   = 0 (no eigenvectors, eigenvals in ascending order)
-**                 = 1 (eigenvectors and eigenvalues in ascending order)
-**                 = 2 (no eigenvectors, eigenvalues in descending order)
-**                 = 3 (eigenvectors and eigenvalues in descending order)
-**   \param e_vecs = matrix of eigenvectors (one column for each eigvector)
-**   \param toler  = tolerance for eigenvalues?  Often 1.0E-14.
+** \param nm     = rows of matrix
+** \param n      = columns of matrix
+** \param nv     = number of elements in lower triangle (n*(n+1)/2)
+** \param array  = matrix to diagonalize (packed as linear array)
+** \param e_vals = array to hold eigenvalues 
+** \param matz   = 0 (no eigenvectors, eigenvals in ascending order)
+**               = 1 (eigenvectors and eigenvalues in ascending order)
+**               = 2 (no eigenvectors, eigenvalues in descending order)
+**               = 3 (eigenvectors and eigenvalues in descending order)
+** \param e_vecs = matrix of eigenvectors (one column for each eigvector)
+** \param toler  = tolerance for eigenvalues?  Often 1.0E-14.
 **
-** \ingroup (CIOMR)
+** Returns: none
+**
+** \ingroup CIOMR
 */
 void rsp(int nm, int n,int nv,double *array, double *e_vals, int matz,
          double ** e_vecs, double toler)
-   {
+{
       int i, j, ii, ij, ierr;
       int ascend_order;
       double *fv1=NULL;
@@ -109,6 +113,7 @@ void rsp(int nm, int n,int nv,double *array, double *e_vals, int matz,
 
       free(fv1);
       /*free_matrix(temp,n);*/
-      }
+}
             
-} /* extern "C" */
+}
+

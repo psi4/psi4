@@ -1,12 +1,13 @@
 /*!
-   \file mmult.cc
-   \ingroup (CIOMR)
+** \file
+** \brief Multiply two matrices (superceded by C_DGEMM)
+** \ingroup CIOMR
 */
 
-#include <math.h>
+#include <cmath>
 #include <libciomr/libciomr.h>
 
-extern "C" {
+namespace psi {
 
 static int keep_nr=0;
 static int keep_nl=0;
@@ -14,16 +15,23 @@ static int keep_nc=0;
 static double **aa,**bb;
 
 /*!
-**                                                             
 ** mmult():
 ** a reasonably fast matrix multiply (at least on the DEC3100) 
 ** written by ETS                                              
 **                                                             
-** AF,BF,and CF are fortran arrays                             
-**                                                             
-** ta,tb and tc indicate whether the corresponding arrays are  
-**              to be converted to their transpose             
-**                                                             
+** \param AF = first matrix to multiply
+** \param ta = if 1, transpose AF before multiplying; otherwise, 0
+** \param BF = second matrix to multiply
+** \param tb = if 1, transpose BF before multiplying; otherwise 0
+** \param CF = matrix to hold result of AF*BF
+** \param tc = if 1, transpose CF after the multiplication; otherwise 0
+** \param nr = number of rows of AF 
+** \param nl = number of cols of AF and rows of BF
+** \param nc = number of cols of BF
+** \param add = if 1, add AF*BF to the matrix passed in as CF; else 0
+**
+** Returns: none
+**
 ** nr,nl,nc are the number of rows,links,and columns in the    
 **          final matrices to be multiplied together           
 **          if ta=0 AF should have the dimensions nr x nl      
@@ -33,13 +41,10 @@ static double **aa,**bb;
 **          if tc=0 CF should have the dimensions nr x nc      
 **          if tc=1 CF should have the dimensions nc x nr      
 **                                                             
-** add is 1 if this matrix is to be added to the one passed    
-**        in as CF, 0 otherwise                                
-**
-** \ingroup (CIOMR)
+** \ingroup CIOMR
 */
 void mmult(double **AF, int ta, double **BF, int tb, double **CF, int tc,
-	   int nr, int nl, int nc, int add)
+  int nr, int nl, int nc, int add)
 {
    int odd_nr,odd_nc,odd_nl;
    int i,j,k,ij;
@@ -203,4 +208,5 @@ void mmult(double **AF, int ta, double **BF, int tb, double **CF, int tc,
       }
    }
 
-} /* extern "C" */
+}
+

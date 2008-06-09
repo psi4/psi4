@@ -1,20 +1,31 @@
 /*!
-  \file eigout.cc
-  \ingroup (CIOMR)
+  \file
+  \brief Print eigenvectors and eigenvalues
+  \ingroup CIOMR
 */
 
-#include "includes.h"
+#include <cstdio>
 
-extern "C" {
+namespace psi {
 
 /*!
-** eigout(): Print out eigenvectors and eigenvalues.  Prints an n x m
-** matrix of eigenvectors.  Under each eigenvector, the corresponding
-** elements of two arrays, b and c, will also be printed.  This is
-** useful for printing, for example, the SCF eigenvectors with their
-** associated eigenvalues (orbital energies) and also the population.
+** eigout(): Print out eigenvectors and eigenvalues.  
 **
-** \ingroup (CIOMR)
+** Prints an n x m matrix of eigenvectors.  Under each eigenvector, 
+** the corresponding elements of two arrays, b and c, will also be printed.  
+** This is useful for printing, for example, the SCF eigenvectors with 
+** their associated eigenvalues (orbital energies) and also the population.
+**
+** \param a    = matrix of eigenvectors (eigenvectors are columns)
+** \param b    = first array to print under eigenvectors (e.g., eigenvalues)
+** \param c    = second array to print under eigenvectors (e.g., populations)
+** \param m    = number of rows in matrix a
+** \param n    = number of columns in matrix a (and length of b and c)
+** \param out = file pointer for output
+**
+** Returns: none
+**
+** \ingroup CIOMR
 */
 void eigout(double **a, double *b, double *c, int m, int n, FILE *out)
    {
@@ -55,4 +66,4 @@ L200:
       ii=kk; goto L200;
       }
 
-} /* extern "C" */
+}
