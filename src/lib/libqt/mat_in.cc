@@ -1,11 +1,12 @@
-#include <stdio.h>
+#include <cstdio>
 
 /*!
-  \file mat_in.c
-  \ingroup (QT)
+  \file
+  \brief read in a matrix from an input stream (deprecated)
+  \ingroup QT
 */
 
-extern "C" {
+namespace psi {
 	
 /*!
 ** MAT_IN(): Function to read in a matrix.  Simple version for now.
@@ -21,7 +22,7 @@ extern "C" {
 ** Returns: 
 **    number of rows read
 **    Also modifies stat to = error code (0 = ok, 1 = error)
-** \ingroup (QT)
+** \ingroup QT
 */
 
 int mat_in(FILE *fp, double **array, int width, int max_length, int *stat) 
@@ -50,4 +51,5 @@ int mat_in(FILE *fp, double **array, int width, int max_length, int *stat)
    return(i) ;
 }
 
-} /* extern "C" */
+}
+

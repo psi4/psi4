@@ -1,10 +1,10 @@
 /*!
-  \file probabil.c
+  \file
   \brief Contains some probability functions
-  \ingroup (QT)
+  \ingroup QT
 */
 
-extern "C" {
+namespace psi {
 	
 /*!
 ** combinations() : Calculates the number of ways to choose k objects
@@ -18,7 +18,7 @@ extern "C" {
 **    number of combinations of n objects taken k at a time ("n choose k")
 **    (returned as a double).
 **
-** \ingroup (QT)
+** \ingroup QT
 */
 double combinations(int n, int k)
 {
@@ -42,7 +42,7 @@ double combinations(int n, int k)
 **
 ** Returns:
 **    n factorial, as a double word (since n! can get very large).
-** \ingroup (QT)
+** \ingroup QT
 */
 double factorial(int n)
 {
@@ -59,7 +59,7 @@ double factorial(int n)
 /*
 ** test combinations routines
 **
-#include <stdio.h>
+#include <cstdio>
 
 main()
 {
@@ -76,4 +76,5 @@ main()
 **
 */
 
-} /* extern "C" */
+}
+

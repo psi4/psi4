@@ -1,7 +1,7 @@
-/*
-** qt.h
-**
-** Header file for the Quantum Trio Library 
+/*!
+** \file
+** \brief Header file for the Quantum Trio Library 
+** \ingroup QT
 **
 ** David Sherrill 1994
 **
@@ -11,9 +11,9 @@
 #ifndef _psi_src_lib_libqt_qt_h_
 #define _psi_src_lib_libqt_qt_h_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <cstdio>
+
+namespace psi {
 
 int mat_in(FILE *fp, double **array, int width, int max_length, int *stat);
 void fill_sym_matrix(double **A, int size);
@@ -63,24 +63,6 @@ double eri(unsigned int l1, unsigned int m1, unsigned int n1,
 double norm_const(unsigned int l1, unsigned int m1, unsigned int n1, 
         double alpha1, double A[3]);
 
-void C_DAXPY(int length, double a, double *x, int inc_x,
-             double *y, int inc_y);
-void C_DCOPY(int length, double *x, int inc_x,
-             double *y, int inc_y);
-void C_DGEMM(char transa, char transb, int m, int n, int k,
-             double alpha, double *A, int nca, double *B, int ncb,
-             double beta, double *C, int ncc);
-void C_DROT(int ntot, double *x, int incx, double *y, int incy,
-             double costheta, double sintheta);
-void C_DSCAL(long int len, double alpha, double *vec, int inc);
-void C_DGEMV(char transa, int m, int n, double alpha, double *A, 
-             int nca, double *X, int inc_x, double beta, double *Y,
-             int inc_y);
-void C_DSPMV(char uplo, int n, double alpha, double *A,
-             double *X, int inc_x, double beta, double *Y,
-             int inc_y);
-double C_DDOT(int n, double *X, int inc_x, double *Y, int inc_y);
-int C_DGETRF(int nrow, int ncol, double *a, int lda, int *ipiv);
 void timer_init(void);
 void timer_done(void);
 void timer_on(char *key);
@@ -88,17 +70,6 @@ void timer_off(char *key);
 
 void filter(double *input, double *output, int *ioff, int norbs, int nfzc, 
       int nfzv);
-
-int C_DGEEV(int n, double **a, int lda, double *wr, double *wi, double **vl, 
-     int ldvl, double **vr, int ldvr, double *work, int lwork, int info);
-
-int C_DGESV(int n, int nrhs, double *a, int lda, int *ipiv, double *b, int ldb);
-int C_DGETRI(int n, double *a, int lda, int *ipiv, double *work, int lwork);
-int C_DGESVD(char jobu, char jobvt, int m, int n, double *A, int lda, 
-     double *s, double *u, int ldu, double *vt, int ldvt, 
-     double *work, int lwork);
-int C_DSYEV(char jobz, char uplo, int n, double *A, int lda, double *w, 
-     double *work, int lwork);
 
 void print_block(double *, int, int, FILE *);
 
@@ -115,11 +86,48 @@ int cc_wfn(char *wfn);
 void free_3d_array(double ***A, int p, int q);
 double ***init_3d_array(int p, int q, int r);
 int ci_wfn(char *wfn);
+void orient_fragment(int natom_A, int natom_B, int P_A, int P_B, double **geom_A, double **geom_B,
+  double **ref_coeff_A, double **ref_coeff_B, double R_AB, double theta_A, double theta_B,
+  double tau, double phi_A, double phi_B, FILE *outfile);
+void zmat_point(double *A, double *B, double *C, double R_CD, double theta_BCD, double phi_ABCD, double *D);
+void rotate_vecs(double *axis, double phi, double **vectors, int num_vectors);
+double dot_prod(double *v1, double *v2);
+void cross_prod(double *v1, double *v2, double *out);
+void unit_vec(double *B, double *A, double *AB);
 
 #define MAX_RAS_SPACES 4
 
-#ifdef __cplusplus
+/// Same as ::strncpy(), but make sure that dest ends in \0
+char* strncpy(char* dest, const char* source, size_t n);
+
+void C_DAXPY(int length, double a, double *x, int inc_x,
+             double *y, int inc_y);
+void C_DCOPY(int length, double *x, int inc_x,
+             double *y, int inc_y);
+void C_DGEMM(char transa, char transb, int m, int n, int k,
+             double alpha, double *A, int nca, double *B, int ncb,
+             double beta, double *C, int ncc);
+void C_DROT(int ntot, double *x, int incx, double *y, int incy,
+             double costheta, double sintheta);
+void C_DSCAL(long int len, double alpha, double *vec, int inc);
+void C_DGEMV(char transa, int m, int n, double alpha, double *A,
+             int nca, double *X, int inc_x, double beta, double *Y,
+             int inc_y);
+void C_DSPMV(char uplo, int n, double alpha, double *A,
+             double *X, int inc_x, double beta, double *Y,
+             int inc_y);
+double C_DDOT(int n, double *X, int inc_x, double *Y, int inc_y);
+int C_DGETRF(int nrow, int ncol, double *a, int lda, int *ipiv);
+int C_DGEEV(int n, double **a, int lda, double *wr, double *wi, double **vl,
+     int ldvl, double **vr, int ldvr, double *work, int lwork, int info);
+int C_DGESV(int n, int nrhs, double *a, int lda, int *ipiv, double *b, int ldb);
+int C_DGETRI(int n, double *a, int lda, int *ipiv, double *work, int lwork);
+int C_DGESVD(char jobu, char jobvt, int m, int n, double *A, int lda,
+     double *s, double *u, int ldu, double *vt, int ldvt,
+     double *work, int lwork);
+int C_DSYEV(char jobz, char uplo, int n, double *A, int lda, double *w,
+     double *work, int lwork);
 }
-#endif
 
 #endif /* _psi_src_lib_libqt_qt_h */
+

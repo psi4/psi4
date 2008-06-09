@@ -1,13 +1,15 @@
 /*!
-  \file reorder_qt.c
-  \ingroup (QT)
+  \file
+  \brief Obtain the QT orbital reordering array between Pitzer and correlated 
+    order
+  \ingroup QT
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <libciomr/libciomr.h>
 
-extern "C" {
+namespace psi {
 	
 /*!
 ** reorder_qt()
@@ -33,7 +35,7 @@ extern "C" {
 ** \param order          = reordering array (Pitzer->QT order)
 ** \param nirreps        = number of irreducible representations
 **
-** \ingroup (QT)
+** \ingroup QT
 */
 void reorder_qt(int *docc_in, int *socc_in, int *frozen_docc_in, 
       int *frozen_uocc_in, int *order, int *orbs_per_irrep, int nirreps)
@@ -157,7 +159,7 @@ void reorder_qt(int *docc_in, int *socc_in, int *frozen_docc_in,
 ** \param order_beta  = reordering array for beta  (Pitzer->QT order)
 ** \param nirreps     = number of irreducible representations
 **
-** \ingroup (QT)
+** \ingroup QT
 */
 void reorder_qt_uhf(int *docc, int *socc, int *frozen_docc, 
 		    int *frozen_uocc, int *order_alpha, int *order_beta,
@@ -262,4 +264,5 @@ void reorder_qt_uhf(int *docc, int *socc, int *frozen_docc,
   free(uocc);
 }
 
-} /* extern "C" */
+}
+

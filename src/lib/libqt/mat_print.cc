@@ -1,17 +1,25 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 /*!
-  \file mat_print.c
-  \ingroup (QT)
+** \file
+** \brief Print a matrix to a file in a formatted style
+** \ingroup QT
 */
 
-extern "C" {
+namespace psi {
 	
 /*!
-** mat_print()
-** This function prints a matrix to a file in a formatted style
-** \ingroup (QT)
+** mat_print(): Prints a matrix to a file in a formatted style
+**
+** \param matrix  = matrix to print
+** \param rows    = number of rows
+** \param cols    = number of columns
+** \param outfile = output file pointer for printing
+**
+** Returns: Always returns zero...
+**
+** \ingroup QT
 */
 int mat_print(double **matrix, int rows, int cols, FILE *outfile)
 {
@@ -68,4 +76,5 @@ int mat_print(double **matrix, int rows, int cols, FILE *outfile)
 
 }
 
-} /* extern "C" */
+}
+

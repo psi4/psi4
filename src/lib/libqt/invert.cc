@@ -1,15 +1,16 @@
 /*!
-  \file invert.c
-  \ingroup (QT)
+  \file
+  \brief Invert a small matrix
+  \ingroup QT
 */
 
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
+#include <cstdio>
+#include <cstring>
+#include <cmath>
 #include <libciomr/libciomr.h>
 #include "qt.h"
 
-extern "C" {
+namespace psi {
 	
 #define SMALL_DET 1.0E-10
 
@@ -32,7 +33,7 @@ extern "C" {
 ** 
 ** Returns: double (determinant)
 ** Note: The original matrix is modified by invert_matrix()
-** \ingroup (QT)
+** \ingroup QT
 */
 double invert_matrix(double **a, double **y, int N, FILE *outfile)
 {
@@ -67,4 +68,5 @@ double invert_matrix(double **a, double **y, int N, FILE *outfile)
    return(d);
 }
 
-} /* extern "C" */
+}
+

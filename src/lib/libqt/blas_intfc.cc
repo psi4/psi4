@@ -1,8 +1,9 @@
 /*! \defgroup QT libqt: The Quantum-Trio Miscellaneous Library */
 
-/*! \file blas_intfc.c
-    \ingroup (QT)
-    \brief The PSI3 BLAS interface routines
+/*! 
+ \file
+ \ingroup QT
+ \brief The PSI3 BLAS interface routines
 
  Interface to the BLAS routines
 
@@ -14,9 +15,7 @@
  Additions by TD Crawford and EF Valeev, June 1999.
 */
 
-#include <stdio.h>
-
-extern "C" {
+#include <cstdio>
 
 #if FC_SYMBOL==2
 #define F_DAXPY daxpy_
@@ -56,27 +55,43 @@ extern "C" {
 #define F_DDOT  DDOT_
 #endif
 
+extern "C" {
+
 extern void F_DAXPY(int *length, double *a, double *x, int *inc_x, 
-                    double *y, int *inc_y);
+  double *y, int *inc_y);
 extern void F_DCOPY(int *length, double *x, int *inc_x, 
-                    double *y, int *inc_y);
+  double *y, int *inc_y);
 extern void F_DGEMM(char *transa, char *transb, int *m, int *n, int *k, 
-                    double *alpha, double *A, int *lda, double *B, int *ldb, 
-                    double *beta, double *C, int *ldc);
-extern void F_DROT(int *ntot,double *x, int *incx,double *y, int *incy,
-                  double *cotheta,double *sintheta);
+  double *alpha, double *A, int *lda, double *B, int *ldb, 
+  double *beta, double *C, int *ldc);
+extern void F_DROT(int *ntot, double *x, int *incx, double *y, int *incy,
+  double *cotheta, double *sintheta);
 extern void F_DSCAL(int *n, double *alpha, double *vec, int *inc);
 extern void F_DGEMV(char *transa, int *m, int *n, double *alpha, double *A, 
-                    int *lda, double *X, int *inc_x, double *beta, 
-                    double *Y, int *inc_y);
-extern void F_DSPMV(char *uplo,int *n,double *alpha,double *A,double *X,int *inc_x,double *beta,double *Y,int *inc_y);
+  int *lda, double *X, int *inc_x, double *beta, double *Y, int *inc_y);
+extern void F_DSPMV(char *uplo, int *n, double *alpha, double *A, double *X,
+  int *inc_x, double *beta, double *Y, int *inc_y);
 extern double F_DDOT(int *n, double *x, int *incx, double *y, int *incy);
 
+}
+
+namespace psi {
+
 /*! 
-** C_DAXPY()
-** This function performs y = a * x + y. 
+** C_DAXPY(): This function performs y = a * x + y. 
+**
 ** Steps every inc_x in x and every inc_y in y (normally both 1).
-** \ingroup (QT)
+**
+** \param length  = length of arrays
+** \param a       = scalar a to multiply vector x
+** \param x       = vector x
+** \param inc_x   = how many places to skip to get to next element in x
+** \param y       = vector y
+** \param inc_y   = how many places to skip to get to next element in y
+** 
+** Returns:none
+**
+** \ingroup QT
 */
 void C_DAXPY(int length, double a, double *x, int inc_x, 
              double *y, int inc_y)
@@ -84,11 +99,21 @@ void C_DAXPY(int length, double a, double *x, int inc_x,
   F_DAXPY(&length, &a, x, &inc_x, y, &inc_y);
 }
 
+
 /*!
-** C_DCOPY()
-** This function copies x into y.
+** C_DCOPY(): This function copies x into y.
+**
 ** Steps every inc_x in x and every inc_y in y (normally both 1).
-** \ingroup (QT)
+**
+** \param length  = length of array
+** \param x       = vector x
+** \param inc_x   = how many places to skip to get to next element in x
+** \param y       = vector y
+** \param inc_y   = how many places to skip to get to next element in y
+**
+** Returns: none
+**
+** \ingroup QT
 */
 void C_DCOPY(int length, double *x, int inc_x, 
              double *y, int inc_y)
@@ -98,106 +123,117 @@ void C_DCOPY(int length, double *x, int inc_x,
 
 
 /*!
-** C_DSCAL()
-** This function scales a vector by a real scalar.
-** \ingroup (QT)
+** C_DSCAL(): This function scales a vector by a real scalar.
+**
+** \param length  = length of array
+** \param alpha   = scale factor
+** \param vec     = vector to scale
+** \param inc     = how many places to skip to get to next element in vec
+**
+** Returns: none
+**
+** \ingroup QT
 */
-void C_DSCAL(int n, double alpha, double *vec, int inc)
+void C_DSCAL(int length, double alpha, double *vec, int inc)
 {
-  F_DSCAL(&n, &alpha, vec, &inc);
+  F_DSCAL(&length, &alpha, vec, &inc);
 }
 
 
 /*!
-** C_DROT()
-** This function calculates plane Givens rotation for vectors
-** x,y and angle theta.  x = x*cos + y*sin, y = -x*sin + y*cos.
+** C_DROT(): Calculates a plane Givens rotation for vectors x, y and 
+** angle theta.  x = x*cos + y*sin, y = -x*sin + y*cos.
 **
-**  \param x: vector x
-**  \param y: vector Y
-**  \param tot: length of x,y
-**  \param incx: increment for x
-**  \param incy: increment for y
-** \ingroup (QT)
+** \param x       = vector x
+** \param y       = vector Y
+** \param length  = length of x,y
+** \param inc_x   = how many places to skip to get to the next element of x
+** \param inc_y   = how many places to skip to get to the next element of y
+** 
+** Returns: none
+**
+** \ingroup QT
 */
-void C_DROT(int ntot, double *x, int incx, double *y, int incy,
+void C_DROT(int length, double *x, int inc_x, double *y, int inc_y,
             double costheta, double sintheta)
 {
 
-  F_DROT(&ntot,x,&incx,y,&incy,&costheta,&sintheta);
+  F_DROT(&length,x,&inc_x,y,&inc_y,&costheta,&sintheta);
 }
 
 
 /*!
-** C_DGEMM()
-**
-** This function calculates C(m,n)=alpha*(opT)A(m,k)*(opT)B(k,n)+ beta*C(m,n)
+** C_DGEMM(): This function calculates C(m,n)=alpha*(opT)A(m,k)*(opT)B(k,n)+ 
+** beta*C(m,n)
 **
 ** These arguments mimic their Fortran conterparts; parameters have been 
-** reversed nca, ncb, ncc, A, B, C,  to make it correct for C.
+** reversed (nca, ncb, ncc, A, B, C), to make it correct for C.
 **  
-** \param char transa: On entry, specifies the form of (op)A used in the
-**                    matrix multiplication:
-**                    If transa = 'N' or 'n', (op)A = A.
-**                    If transa = 'T' or 't', (op)A = transp(A).
-**                    If transa = 'R' or 'r', (op)A = conjugate(A).
-**                    If transa = 'C' or 'c', (op)A = conjug_transp(A).
-**                    On exit, transa is unchanged.
+** \param transa =  On entry, specifies the form of (op)A used in the
+**                  matrix multiplication:
+**                  If transa = 'N' or 'n', (op)A = A.
+**                  If transa = 'T' or 't', (op)A = transp(A).
+**                  If transa = 'R' or 'r', (op)A = conjugate(A).
+**                  If transa = 'C' or 'c', (op)A = conjug_transp(A).
+**                  On exit, transa is unchanged.
 **
-** \param char transb: On entry, specifies the form of (op)B used in the
-**                    matrix multiplication:
-**                    If transb = 'N' or 'n', (op)B = B.
-**                    If transb = 'T' or 't', (op)B = transp(B).
-**                    If transb = 'R' or 'r', (op)B = conjugate(B)
+** \param transb =  On entry, specifies the form of (op)B used in the
+**                  matrix multiplication:
+**                  If transb = 'N' or 'n', (op)B = B.
+**                  If transb = 'T' or 't', (op)B = transp(B).
+**                  If transb = 'R' or 'r', (op)B = conjugate(B)
 ** 
-** \param int m:      On entry, the number of rows of the matrix (op)A and of
-**                    the matrix C; m >= 0. On exit, m is unchanged.
+** \param m      =  On entry, the number of rows of the matrix (op)A and of
+**                  the matrix C; m >= 0. On exit, m is unchanged.
 **
-** \param int n:      On entry, the number of columns of the matrix (op)B and
-**                    of the matrix C; n >= 0. On exit, n is unchanged.
+** \param n      =  On entry, the number of columns of the matrix (op)B and
+**                  of the matrix C; n >= 0. On exit, n is unchanged.
 **
-** \param int k:      On entry, the number of columns of the matrix (op)A and
-**                    the number of rows of the matrix (op)B; k >= 0. On exit,
-**                    k is unchanged.
+** \param k      =  On entry, the number of columns of the matrix (op)A and
+**                  the number of rows of the matrix (op)B; k >= 0. On exit,
+**                  k is unchanged.
 ** 
-** \param double alpha:  On entry, specifies the scalar alpha. On exit, alpha is
-**                       unchanged.
+** \param alpha  =  On entry, specifies the scalar alpha. On exit, alpha is
+**                  unchanged.
 ** 
-** \param double* A:  On entry, a two-dimensional array A with dimensions ka
-**                    by nca. For (op)A = A  or  conjugate(A), nca >= k and the
-**                    leading m by k portion of the array A contains the matrix
-**                    A. For (op)A = transp(A) or conjug_transp(A), nca >= m
-**                    and the leading k by m part of the array A contains the
-**                    matrix A. On exit, a is unchanged.
+** \param A      =  On entry, a two-dimensional array A with dimensions ka
+**                  by nca. For (op)A = A  or  conjugate(A), nca >= k and the
+**                  leading m by k portion of the array A contains the matrix
+**                  A. For (op)A = transp(A) or conjug_transp(A), nca >= m
+**                  and the leading k by m part of the array A contains the
+**                  matrix A. On exit, a is unchanged.
 ** 
-** \param int nca:    On entry, the second dimension of array A.
-**                    For (op)A = A  or conjugate(A), nca >= MAX(1,k).
-**                    For (op)A=transp(A) or conjug_transp(A), nca >= MAX(1,m).
-**                    On exit, nca is unchanged.
+** \param nca    =  On entry, the second dimension of array A.
+**                  For (op)A = A  or conjugate(A), nca >= MAX(1,k).
+**                  For (op)A=transp(A) or conjug_transp(A), nca >= MAX(1,m).
+**                  On exit, nca is unchanged.
 **
-** \param double* B:  On entry, a two-dimensional array B with dimensions kb
+** \param B      =  On entry, a two-dimensional array B with dimensions kb
 **                  by ncb. For (op)B = B or conjugate(B), kb >= k and the
 **                  leading k by n portion of the array contains the matrix
 **                  B. For (op)B = transp(B) or conjug_transp(B), ncb >= k and
 **                  the leading n by k part of the array contains the matrix
 **                  B. On exit, B is unchanged.
 **
-** \param int ncb:    On entry, the second dimension of array B.
-**                    For (op)B = B or <conjugate(B), ncb >= MAX(1,n).
-**                    For (op)B = transp(B) or conjug_transp(B), ncb >=
-**                    MAX(1,k). On exit, ncb is unchanged.
+** \param ncb    =  On entry, the second dimension of array B.
+**                  For (op)B = B or <conjugate(B), ncb >= MAX(1,n).
+**                  For (op)B = transp(B) or conjug_transp(B), ncb >=
+**                  MAX(1,k). On exit, ncb is unchanged.
 **
-** \param double beta: On entry, specifies the scalar beta. On exit, beta is
-**                    unchanged.
+** \param beta   =  On entry, specifies the scalar beta. On exit, beta is
+**                  unchanged.
 **
-** \param double* C:  On entry, a two-dimensional array with the dimension
-**                    at least m by ncc. On exit,  the leading  m by n part of
-**                    array C is overwritten by the matrix alpha*(op)A*(op)B +
-**                    beta*C.
+** \param C      =  On entry, a two-dimensional array with the dimension
+**                  at least m by ncc. On exit,  the leading  m by n part of
+**                  array C is overwritten by the matrix alpha*(op)A*(op)B +
+**                  beta*C.
 **
-** \param int ncc:    On entry, the second dimension  of array C; 
-**                    ncc >=MAX(1,n).  On exit, ncc is unchanged.
-** \ingroup (QT)
+** \param ncc    =  On entry, the second dimension  of array C; 
+**                  ncc >=MAX(1,n).  On exit, ncc is unchanged.
+**
+** Returns: none
+**
+** \ingroup QT
 */
 void C_DGEMM(char transa, char transb, int m, int n, int k, double alpha,
            double *A, int nca, double *B, int ncb, double beta, double *C,
@@ -215,36 +251,39 @@ void C_DGEMM(char transa, char transb, int m, int n, int k, double alpha,
 
 }
 
+
 /*!
-**  C_DGEMV()
-**  This function calculates the matrix-vector product:
+** C_DGEMV(): This function calculates the matrix-vector product.
 **
-**  Y = alpha * A * X + beta * Y
+** Y = alpha * A * X + beta * Y
 **
 ** where X and Y are vectors, A is a matrix, and alpha and beta are
 ** constants. 
 **
-** \param char transa:     Indicates whether the matrix A should be
+** \param transa     =     Indicates whether the matrix A should be
 **                         transposed ('t') or left alone ('n').
-** \param int m:           The row dimension of A (regardless of transa).
-** \param int n:           The column dimension of A (regardless of transa).
-** \param double alpha:    The scalar alpha.
-** \param double* A:       A pointer to the beginning of the data in A.
-** \param int nca:         The number of columns *actually* in A.  This is
+** \param m          =     The row dimension of A (regardless of transa).
+** \param n          =     The column dimension of A (regardless of transa).
+** \param alpha      =     The scalar alpha.
+** \param A          =     A pointer to the beginning of the data in A.
+** \param nca        =     The number of columns *actually* in A.  This is
 **                         useful if one only wishes to multiply the first
 **                         n columns of A times X even though A
 **                         contains nca columns.
-** \param double* X:       A pointer to the beginning of the data in X.
-** \param int inc_x:       The desired stride for X.  Useful for skipping
+** \param X          =     A pointer to the beginning of the data in X.
+** \param inc_x      =     The desired stride for X.  Useful for skipping
 **                         sections of data to treat only one column of a
 **                         complete matrix.  Usually 1, though.
-** \param double beta:     The scalar beta.
-** \param double* Y:       A pointer to the beginning of the data in Y.
-** \param int inc_y:       The desired stride for Y.
+** \param beta       =     The scalar beta.
+** \param Y          =     A pointer to the beginning of the data in Y.
+** \param inc_y      =     The desired stride for Y.
 ** 
+** Returns: none
+**
 ** Interface written by TD Crawford and EF Valeev.
-** June 1999.
-** \ingroup (QT)
+** June 1999
+**
+** \ingroup QT
 */
 
 void C_DGEMV(char transa, int m, int n, double alpha, double *A, 
@@ -262,33 +301,34 @@ void C_DGEMV(char transa, int m, int n, double alpha, double *A,
 
 
 /*!
-**  C_DSPMV()
-**  This function calculates the matrix-vector product:
+**  C_DSPMV(): This function calculates the matrix-vector product
 **
 **  Y = alpha * A * X + beta * Y
 **
 ** where X and Y are vectors, A is a matrix, and alpha and beta are
 ** constants. 
 **
-** \param char uplo:       Indicates whether the matrix A is packed in
+** \param uplo        =    Indicates whether the matrix A is packed in
 **                         upper ('U' or 'u') or lower ('L' or 'l')
 **                         triangular form.  We reverse what is passed
 **                         before sending it on to Fortran because of 
 **                         the different Fortran/C conventions
-** \param int n:           The order of the matrix A (number of rows/columns)
-** \param double alpha:    The scalar alpha.
-** \param double* A:       A pointer to the beginning of the data in A.
-** \param double* X:       A pointer to the beginning of the data in X.
-** \param int inc_x:       The desired stride for X.  Useful for skipping
+** \param n           =    The order of the matrix A (number of rows/columns)
+** \param alpha       =    The scalar alpha.
+** \param A           =    A pointer to the beginning of the data in A.
+** \param X           =    A pointer to the beginning of the data in X.
+** \param inc_x       =    The desired stride for X.  Useful for skipping
 **                         sections of data to treat only one column of a
 **                         complete matrix.  Usually 1, though.
-** \param double beta:     The scalar beta.
-** \param double* Y:       A pointer to the beginning of the data in Y.
-** \param int inc_y:       The desired stride for Y.
+** \param beta        =    The scalar beta.
+** \param Y           =    A pointer to the beginning of the data in Y.
+** \param inc_y       =    The desired stride for Y.
 ** 
+** Returns: none
+**
 ** Interface written by CD Sherrill
 ** July 2003
-** \ingroup (QT)
+** \ingroup QT
 */
 
 void C_DSPMV(char uplo, int n, double alpha, double *A, 
@@ -307,28 +347,30 @@ void C_DSPMV(char uplo, int n, double alpha, double *A,
 
 }
 
+
 /*!
-** C_DDOT()
-** This function returns the dot product of two vectors, X and Y.
+** C_DDOT(): This function returns the dot product of two vectors, x and y.
 **
-** \param n:      Number of elements in X and Y.
-** \param X:      A pointer to the beginning of the data in X.
-**                Must be of at least length (1+(N-1)*abs(inc_x).
-** \param inc_x:  The desired stride of X. Useful for skipping
-**                    around to certain data stored in X.
-** \param Y:      A pointer to the beginning of the data in Y.
-** \param inc_y:  The desired stride for Y.
+** \param length  = Number of elements in x and y.
+** \param x       = A pointer to the beginning of the data in x.
+**                  Must be of at least length (1+(N-1)*abs(inc_x).
+** \param inc_x   = how many places to skip to get to next element in x
+** \param y       = A pointer to the beginning of the data in y.
+** \param inc_y   = how many places to skip to get to next element in y
+**
+** Returns: the dot product
 **
 ** Interface written by ST Brown.
 ** July 2000
-** \ingroup (QT)
+** \ingroup QT
 */
 
-double C_DDOT(int n, double *X, int inc_x, double *Y, int inc_y)
+double C_DDOT(int n, double *x, int inc_x, double *y, int inc_y)
 {
    if(n == 0) return 0.0;
 
-   return F_DDOT(&n,X,&inc_x,Y,&inc_y);
+   return F_DDOT(&n,x,&inc_x,y,&inc_y);
 }
 
-} /* extern "C" */
+}
+
