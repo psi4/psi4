@@ -1,26 +1,23 @@
 /*!
-  \file wrttwo.c
-  \ingroup (IWL)
+  \file
+  \ingroup IWL
 */
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include <libciomr/libciomr.h>
-#include "iwl.hpp"
 #include "iwl.h"
+#include "iwl.hpp"
 
-  using namespace psi;
-
-void IWL::wrttwo(PSIO *psio, int itap, int nbfso, double *ints, int *ioff, double toler, 
-                int printflg, FILE *outfile)
+namespace psi {
+  
+void IWL::write_two(PSIO *psio, int itap, int nbfso, double *ints, int *ioff, 
+    double toler, int printflg, FILE *outfile)
 {
-  IWL two_ints(psio, itap, toler, 0, 0);
-  two_ints.wrt_all(nbfso, ints, ioff, printflg, outfile);
-  two_ints.flush(1);
-  two_ints.set_keep(1);
+    IWL Buf(psio, itap, toler, 0, 0);
+    Buf.write_all(nbfso, ints, ioff, printflg, outfile);
+    Buf.flush(1);
 }
 
-extern "C" {
-	
 /*!
 ** iwl_wrttwo()
 **
@@ -37,7 +34,7 @@ extern "C" {
 **    \param outfile  =  output file
 **
 ** Revised 6/27/96 by CDS
-** \ingroup (IWL)
+** \ingroup IWL
 */
 void iwl_wrttwo(int itap, int nbfso, double *ints, int *ioff, double toler, 
                 int printflg, FILE *outfile)
@@ -51,4 +48,5 @@ void iwl_wrttwo(int itap, int nbfso, double *ints, int *ioff, double toler,
 
 }
 
-} /* extern "C" */
+}
+

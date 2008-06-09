@@ -1,26 +1,32 @@
 /*! \defgroup IWL libiwl: I/O Library for Integrals with Labels */
 
 /*!
-  \file buf_close.c
-  \ingroup (IWL)
+  \file
+  \ingroup IWL
 */
-#include <stdio.h>
-#include <stdlib.h>
-#include <libpsio/psio.hpp>
+#include <cstdio>
+#include <cstdlib>
 #include <libpsio/psio.h>
-#include "iwl.hpp"
 #include "iwl.h"
+#include "iwl.hpp"
 
-  using namespace psi;
-  
+namespace psi {
+
 IWL::~IWL()
 {
-  psio->close(Buf.itap, keep);
-  free(Buf.labels);
-  free(Buf.values);
+    close();
 }
 
-extern "C" {
+void IWL::close()
+{
+    psio_->close(itap_, keep_);
+    if (labels_)
+        delete[](labels_);
+    if (values_)
+        delete[](values_);
+    labels_ = NULL;
+    values_ = NULL;
+}
 
 /*!
 ** IWL_BUF_CLOSE()
@@ -29,7 +35,7 @@ extern "C" {
 **	\param keep    Do not delete if keep==1
 **
 ** Close a Integrals With Labels Buffer
-** \ingroup (IWL)
+** \ingroup IWL
 */
 void iwl_buf_close(struct iwlbuf *Buf, int keep)
 {
@@ -39,4 +45,5 @@ void iwl_buf_close(struct iwlbuf *Buf, int keep)
    free(Buf->values);
 }
 
-} /* extern "C" */
+}
+

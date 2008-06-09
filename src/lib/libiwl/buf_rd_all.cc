@@ -1,159 +1,160 @@
 /*!
-  \file buf_rd_all.c
-  \ingroup (IWL)
+  \file
+  \ingroup IWL
 */
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include <libciomr/libciomr.h>
-#include "iwl.hpp"
 #include "iwl.h"
+#include "iwl.hpp"
 
-  using namespace psi;
-
+namespace psi {
+  
 #define MIN0(a,b) (((a)<(b)) ? (a) : (b))
 #define MAX0(a,b) (((a)>(b)) ? (a) : (b))
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
 
-int IWL::rd_all(double *ints, int *ioff_lt, int *ioff_rt, int no_pq_perm, int *ioff,
-                int printflg, FILE *outfile)
+int IWL::read_all(double *ints, int *ioff_lt, int *ioff_rt, int no_pq_perm,
+    int *ioff, int printflg, FILE *outfile)
 {
-  int lastbuf;
-  Label *lblptr;
-  Value *valptr;
-  int idx, p, q, r, s, pq, rs, pqrs;
+    int lastbuf;
+    Label *lblptr;
+    Value *valptr;
+    int idx, p, q, r, s, pq, rs, pqrs;
 
-  lblptr = Buf.labels;
-  valptr = Buf.values;
+    lblptr = labels_;
+    valptr = values_;
 
-  lastbuf = Buf.lastbuf;
+    lastbuf = lastbuf_;
 
-  for (idx=4*Buf.idx; Buf.idx<Buf.inbuf; Buf.idx++) {
-    p = fabs((int) lblptr[idx++]);
-    q = (int) lblptr[idx++];
-    r = (int) lblptr[idx++];
-    s = (int) lblptr[idx++];
+    for (idx=4*idx_; idx_ < inbuf_; idx_++) {
+        p = (int) fabs((int) lblptr[idx++]);
+        q = (int) lblptr[idx++];
+        r = (int) lblptr[idx++];
+        s = (int) lblptr[idx++];
 
-    if(no_pq_perm) { /*! I _think_ this will work */
-      pq = ioff_lt[p] + q;
-      rs = ioff_rt[r] + s;
-    }
-    else {
-      pq = ioff_lt[MAX0(p,q)] + MIN0(p,q);
-      rs = ioff_rt[MAX0(r,s)] + MIN0(r,s);
-    }
+        if(no_pq_perm) { /*! I _think_ this will work */
+            pq = ioff_lt[p] + q;
+            rs = ioff_rt[r] + s;
+        }
+        else {
+            pq = ioff_lt[MAX0(p,q)] + MIN0(p,q);
+            rs = ioff_rt[MAX0(r,s)] + MIN0(r,s);
+        }
 
-    pqrs = INDEX(pq,rs);
+        pqrs = INDEX(pq,rs);
 
-    ints[pqrs] = (double) valptr[Buf.idx];
+        ints[pqrs] = (double) valptr[idx_];
 
-    if (printflg) 
-      fprintf(outfile, "<%2d %2d %2d %2d> [%2d][%2d] [[%3d]] = %20.10lf\n", p, q, r, s, pq, rs, pqrs, ints[pqrs]) ;
-  } /*! end loop through current buffer */
-
-  /*! read new PSI buffers */
-  while (!lastbuf) {
-    fetch();
-    lastbuf = Buf.lastbuf;
-
-    for (idx=4*Buf.idx; Buf.idx<Buf.inbuf; Buf.idx++) {
-      p = fabs((int) lblptr[idx++]);
-      q = (int) lblptr[idx++];
-      r = (int) lblptr[idx++];
-      s = (int) lblptr[idx++];
-
-      if(no_pq_perm) { /*! I _think_ this will work */
-        pq = ioff_lt[p] + q;
-        rs = ioff_rt[r] + s;
-      }
-      else {
-        pq = ioff_lt[MAX0(p,q)] + MIN0(p,q);
-        rs = ioff_rt[MAX0(r,s)] + MIN0(r,s);
-      }
-
-      pqrs = INDEX(pq,rs);
-
-      ints[pqrs] = (double) valptr[Buf.idx];
-
-      if (printflg) 
-        fprintf(outfile, "<%d %d %d %d> [%d][%d] [[%d]] = %20.10lf\n",
-          p, q, r, s, pq, rs, pqrs, ints[pqrs]) ;
+        if (printflg) 
+            fprintf(outfile, "<%2d %2d %2d %2d [%2d][%2d] [[%3d]] = %20.10f\n",
+            p, q, r, s, pq, rs, pqrs, ints[pqrs]) ;
 
     } /*! end loop through current buffer */
-  } /*! end loop over reading buffers */
 
-  return(0); /*! we must have reached the last buffer at this point */
+    /*! read new PSI buffers */
+    while (!lastbuf) {
+        fetch();
+        lastbuf = lastbuf_;
+
+        for (idx=4*idx_; idx_ < inbuf_; idx_++) {
+            p = (int) fabs((int) lblptr[idx++]);
+            q = (int) lblptr[idx++];
+            r = (int) lblptr[idx++];
+            s = (int) lblptr[idx++];
+
+            if(no_pq_perm) { /*! I _think_ this will work */
+                pq = ioff_lt[p] + q;
+                rs = ioff_rt[r] + s;
+            }
+            else {
+                pq = ioff_lt[MAX0(p,q)] + MIN0(p,q);
+                rs = ioff_rt[MAX0(r,s)] + MIN0(r,s);
+            }
+
+            pqrs = INDEX(pq,rs);
+
+            ints[pqrs] = (double) valptr[idx_];
+
+            if (printflg) 
+                fprintf(outfile, "<%d %d %d %d [%d][%d] [[%d]] = %20.10f\n",
+                p, q, r, s, pq, rs, pqrs, ints[pqrs]) ;
+
+        } /*! end loop through current buffer */
+
+    } /*! end loop over reading buffers */
+
+    return(0); /*! we must have reached the last buffer at this point */
 }
 
-int IWL::rd_all2(double **ints, int *ioff_lt, int *ioff_rt, int no_pq_perm, int *ioff,
-                 int printflg, FILE *outfile)
+int IWL::read_all2(double **ints, int *ioff_lt, int *ioff_rt, int no_pq_perm, 
+    int *ioff, int printflg, FILE *outfile)
 {
-  int lastbuf;
-  Label *lblptr;
-  Value *valptr;
-  int idx, p, q, r, s, pq, rs;
-  
-  lblptr = Buf.labels;
-  valptr = Buf.values;
-  
-  lastbuf = Buf.lastbuf;
-  
-  for (idx=4*Buf.idx; Buf.idx<Buf.inbuf; Buf.idx++) {
-    p = fabs((int) lblptr[idx++]);
-    q = (int) lblptr[idx++];
-    r = (int) lblptr[idx++];
-    s = (int) lblptr[idx++];
+    int lastbuf;
+    Label *lblptr;
+    Value *valptr;
+    int idx, p, q, r, s, pq, rs;
 
-    if(no_pq_perm) { /*! I _think_ this will work */
-      pq = ioff_lt[p] + q;
-      rs = ioff_rt[r] + s;
-    }
-    else {
-      pq = ioff_lt[MAX0(p,q)] + MIN0(p,q);
-      rs = ioff_rt[MAX0(r,s)] + MIN0(r,s);
-    }
-    
-    ints[pq][rs] = (double) valptr[Buf.idx];
-    
-    if (printflg) 
-      fprintf(outfile, "<%2d %2d %2d %2d> [%2d][%2d] = %20.10lf\n",
-	      p, q, r, s, pq, rs, ints[pq][rs]) ;
-    
-  } /*! end loop through current buffer */
-  
-   /*! read new PSI buffers */
-  while (!lastbuf) {
-    fetch();
-    lastbuf = Buf.lastbuf;
-    
-    for (idx=4*Buf.idx; Buf.idx<Buf.inbuf; Buf.idx++) {
-      p = fabs((int) lblptr[idx++]);
-      q = (int) lblptr[idx++];
-      r = (int) lblptr[idx++];
-      s = (int) lblptr[idx++];
+    lblptr = labels_;
+    valptr = values_;
 
-      if(no_pq_perm) { /*! I _think_ this will work */
-	      pq = ioff_lt[p] + q;
-	      rs = ioff_rt[r] + s;
-      }
-      else {
-	      pq = ioff_lt[MAX0(p,q)] + MIN0(p,q);
-	      rs = ioff_rt[MAX0(r,s)] + MIN0(r,s);
-      }
-      
-      ints[pq][rs] = (double) valptr[Buf.idx];
-      
-      if (printflg) 
-	      fprintf(outfile, "<%d %d %d %d> [%d][%d] = %20.10lf\n",
-		      p, q, r, s, pq, rs, ints[pq][rs]) ;
-      
+    lastbuf = lastbuf_;
+
+    for (idx=4*idx_; idx_ < inbuf_; idx_++) {
+        p = (int) fabs((int) lblptr[idx++]);
+        q = (int) lblptr[idx++];
+        r = (int) lblptr[idx++];
+        s = (int) lblptr[idx++];
+
+        if(no_pq_perm) { /*! I _think_ this will work */
+            pq = ioff_lt[p] + q;
+            rs = ioff_rt[r] + s;
+        }
+        else {
+            pq = ioff_lt[MAX0(p,q)] + MIN0(p,q);
+            rs = ioff_rt[MAX0(r,s)] + MIN0(r,s);
+        }
+
+        ints[pq][rs] = (double) valptr[idx_];
+
+        if (printflg) 
+            fprintf(outfile, "<%2d %2d %2d %2d [%2d][%2d] = %20.10f\n",
+            p, q, r, s, pq, rs, ints[pq][rs]) ;
+
     } /*! end loop through current buffer */
-    
-  } /*! end loop over reading buffers */
-  
-  return(0); /*! we must have reached the last buffer at this point */
-}
 
-extern "C" {	
+     /*! read new PSI buffers */
+    while (!lastbuf) {
+        fetch();
+        lastbuf = lastbuf_;
+
+        for (idx=4*idx_; idx_ < inbuf_; idx_++) {
+            p = (int) fabs((int) lblptr[idx++]);
+            q = (int) lblptr[idx++];
+            r = (int) lblptr[idx++];
+            s = (int) lblptr[idx++];
+
+            if(no_pq_perm) { /*! I _think_ this will work */
+                pq = ioff_lt[p] + q;
+                rs = ioff_rt[r] + s;
+            }
+            else {
+                pq = ioff_lt[MAX0(p,q)] + MIN0(p,q);
+                rs = ioff_rt[MAX0(r,s)] + MIN0(r,s);
+            }
+
+            ints[pq][rs] = (double) valptr[idx_];
+
+            if (printflg) 
+                fprintf(outfile, "<%d %d %d %d [%d][%d] = %20.10f\n",
+                p, q, r, s, pq, rs, ints[pq][rs]) ;
+
+        } /*! end loop through current buffer */
+
+    } /*! end loop over reading buffers */
+
+    return(0); /*! we must have reached the last buffer at this point */
+}
 
 /*!
 ** iwl_buf_rd_all()
@@ -173,7 +174,7 @@ extern "C" {
 **    \param outfile       =  pointer to output file for printing
 **
 ** Returns: 0 if end of file, otherwise 1
-** \ingroup (IWL)
+** \ingroup IWL
 */
 int iwl_buf_rd_all(struct iwlbuf *Buf, double *ints,
 		   int *ioff_lt, int *ioff_rt, int no_pq_perm, int *ioff,
@@ -190,7 +191,7 @@ int iwl_buf_rd_all(struct iwlbuf *Buf, double *ints,
   lastbuf = Buf->lastbuf;
   
   for (idx=4*Buf->idx; Buf->idx<Buf->inbuf; Buf->idx++) {
-    p = fabs((int) lblptr[idx++]);
+    p = (int) fabs((int) lblptr[idx++]);
     q = (int) lblptr[idx++];
     r = (int) lblptr[idx++];
     s = (int) lblptr[idx++];
@@ -220,7 +221,7 @@ int iwl_buf_rd_all(struct iwlbuf *Buf, double *ints,
     lastbuf = Buf->lastbuf;
     
     for (idx=4*Buf->idx; Buf->idx<Buf->inbuf; Buf->idx++) {
-      p = fabs((int) lblptr[idx++]);
+      p = (int) fabs((int) lblptr[idx++]);
       q = (int) lblptr[idx++];
       r = (int) lblptr[idx++];
       s = (int) lblptr[idx++];
@@ -260,7 +261,7 @@ int iwl_buf_rd_all(struct iwlbuf *Buf, double *ints,
 ** UHF transqt code.
 **
 ** TDC, 6/01
-** \ingroup (IWL)
+** \ingroup IWL
 */
 
 int iwl_buf_rd_all2(struct iwlbuf *Buf, double **ints,
@@ -278,7 +279,7 @@ int iwl_buf_rd_all2(struct iwlbuf *Buf, double **ints,
   lastbuf = Buf->lastbuf;
   
   for (idx=4*Buf->idx; Buf->idx<Buf->inbuf; Buf->idx++) {
-    p = fabs((int) lblptr[idx++]);
+    p = (int) fabs((int) lblptr[idx++]);
     q = (int) lblptr[idx++];
     r = (int) lblptr[idx++];
     s = (int) lblptr[idx++];
@@ -306,7 +307,7 @@ int iwl_buf_rd_all2(struct iwlbuf *Buf, double **ints,
     lastbuf = Buf->lastbuf;
     
     for (idx=4*Buf->idx; Buf->idx<Buf->inbuf; Buf->idx++) {
-      p = fabs((int) lblptr[idx++]);
+      p = (int) fabs((int) lblptr[idx++]);
       q = (int) lblptr[idx++];
       r = (int) lblptr[idx++];
       s = (int) lblptr[idx++];
@@ -333,4 +334,5 @@ int iwl_buf_rd_all2(struct iwlbuf *Buf, double **ints,
   return(0); /*! we must have reached the last buffer at this point */
 }
 
-} /* extern "C" */
+}
+

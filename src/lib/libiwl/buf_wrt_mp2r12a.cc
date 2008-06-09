@@ -1,69 +1,69 @@
 /*!
-  \file buf_wrt_mp2r12a.c
-  \ingroup (IWL)
+  \file
+  \ingroup IWL
 */
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include <libciomr/libciomr.h>
-#include "iwl.hpp"
 #include "iwl.h"
+#include "iwl.hpp"
 
-  using namespace psi;
+namespace psi {
 
-void IWL::wrt_mp2r12a(int p, int q, int pq, int pqsym,
-   double **arr, int rsym, int *firstr, int *lastr, int *firsts, int *lasts,
-   int *occ, int bra_ket_symm, int *ioff, int printflag, FILE *outfile)
+void IWL::write_mp2r12a(int p, int q, int pq, int pqsym, double **arr, 
+    int rsym, int *firstr, int *lastr, int *firsts, int *lasts, 
+    int *occ, int bra_ket_symm, int *ioff, int printflag, FILE *outfile)
 {
-   int idx, r, s, rs, ssym;
-   int R,S,rnew,snew;
-   double value;
-   Label *lblptr;
-   Value *valptr;
+    int idx, r, s, rs, ssym;
+    int R,S,rnew,snew;
+    double value;
+    Label *lblptr;
+    Value *valptr;
 
-   lblptr = Buf.labels;
-   valptr = Buf.values;
+    lblptr = labels_;
+    valptr = values_;
 
-   ssym = pqsym ^ rsym;
-   for (r=firstr[rsym],R=0; r <= lastr[rsym]; r++,R++) {
-     rnew = occ[r];  /* r-index is in QTS-ordering, not Pitzer */
-     for (s=firsts[ssym],S=0; s <=lasts[ssym]; s++,S++) {
-       snew = s;     /* s-index is in Pitzer ordering */
-       rs = ioff[rnew] + snew;
-       /*---------------------------------------
-	       If bra_ket_symm != 0 -> we do not need
-	       integrals with rs > pq. rs can only
-	       increase here
-	     ---------------------------------------*/
-       if (bra_ket_symm && rs > pq)
-	       return;
-       value = arr[R][S];
-       
-       if (fabs(value) > Buf.cutoff) {
-         idx = 4 * Buf.idx;
-         lblptr[idx++] = (Label) p;
-         lblptr[idx++] = (Label) q;
-         lblptr[idx++] = (Label) rnew;
-         lblptr[idx++] = (Label) snew;
-         valptr[Buf.idx] = (Value) value;
+    ssym = pqsym ^ rsym;
+    for (r=firstr[rsym],R=0; r <= lastr[rsym]; r++,R++) {
+        rnew = occ[r];  /* r-index is in QTS-ordering, not Pitzer */
+        for (s=firsts[ssym],S=0; s <=lasts[ssym]; s++,S++) {
+            snew = s;     /* s-index is in Pitzer ordering */
+            rs = ioff[rnew] + snew;
+            /*---------------------------------------
+            If bra_ket_symm != 0 -> we do not need
+            integrals with rs > pq. rs can only
+            increase here
+            ---------------------------------------*/
+            if (bra_ket_symm && rs > pq)
+                return;
+            value = arr[R][S];
 
-         Buf.idx++;
+            if (fabs(value) > cutoff_) {
+                idx = 4 * idx_;
+                lblptr[idx++] = (Label) p;
+                lblptr[idx++] = (Label) q;
+                lblptr[idx++] = (Label) rnew;
+                lblptr[idx++] = (Label) snew;
+                valptr[idx_] = (Value) value;
 
-         if (Buf.idx == Buf.ints_per_buf) {
-           Buf.lastbuf = 0;
-           Buf.inbuf = Buf.idx;
-           put();
-           Buf.idx = 0;
-         }
-	 
-	       if(printflag)
-	         fprintf(outfile, "<%d %d %d %d> [%d] [%d] = %20.10lf\n",
-		        p, q, rnew, snew, pq, rs, value);
-       } /* end if (fabs(value) > Buf->cutoff) ... */
-     } /* end loop over s */
-   } /* end loop over r */
+                idx_++;
+
+                if (idx_ == ints_per_buf_) {
+                    lastbuf_ = 0;
+                    inbuf_ = idx_;
+                    put();
+                    idx_ = 0;
+                }
+
+                if(printflag)
+                    fprintf(outfile, "<%d %d %d %d [%d] [%d] = %20.10f\n",
+                    p, q, rnew, snew, pq, rs, value);
+
+            } /* end if (fabs(value) > Buf->cutoff) ... */
+        } /* end loop over s */
+    } /* end loop over r */
 }
 
-extern "C" {
 /*!
 ** iwl_buf_wrt_mp2r12a()
 **
@@ -80,7 +80,7 @@ extern "C" {
 ** This routine is a modified form of iwl_buf_wrt_mp2() specific to mp2r12a-type
 ** restricted transforms.
 ** Edward, 8/04/99
-** \ingroup (IWL)
+** \ingroup IWL
 */
 void iwl_buf_wrt_mp2r12a(struct iwlbuf *Buf, int p, int q, int pq, int pqsym,
    double **arr, int rsym, int *firstr, int *lastr, int *firsts, int *lasts,
@@ -137,4 +137,5 @@ void iwl_buf_wrt_mp2r12a(struct iwlbuf *Buf, int p, int q, int pq, int pqsym,
    
 }
 
-} /* extern "C" */
+}
+

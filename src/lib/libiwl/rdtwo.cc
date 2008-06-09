@@ -1,30 +1,28 @@
 /*!
-  \file rdtwo.c
-  \ingroup (IWL)
+  \file
+  \ingroup IWL
 */
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include <libciomr/libciomr.h>
-#include "iwl.hpp"
 #include "iwl.h"
+#include "iwl.hpp"
 
-  using namespace psi;
-  
 #define MIN0(a,b) (((a)<(b)) ? (a) : (b))
 #define MAX0(a,b) (((a)>(b)) ? (a) : (b))
 
-void IWL::rdtwo(PSIO* psio, int itap, double *ints, int *ioff, int norbs, 
-      int nfzc, int nfzv, int printflg, FILE *outfile)
+namespace psi {
+  
+void IWL::read_two(PSIO *psio, int itap, double *ints, int *ioff, int norbs, 
+    int nfzc, int nfzv, int printflg, FILE *outfile)
 {
-  IWL two_ints(psio, itap, 0.0, 1, 1);
-  if ((nfzc == 0) && (nfzv == 0))
-    two_ints.rd_all(ints, ioff, ioff, 0, ioff, printflg, outfile);
-  else
-    two_ints.rd_all_act(ints, ioff, ioff, 0, ioff, nfzc, norbs-nfzv-1, printflg, outfile);
-  two_ints.set_keep(1);
+    IWL Buf(psio, itap, 0.0, 1, 1);
+    if ((nfzc == 0) && (nfzv == 0))
+        Buf.read_all(ints, ioff, ioff, 0, ioff, printflg, outfile);
+    else
+        Buf.read_all_active(ints, ioff, ioff, 0, ioff, nfzc, norbs-nfzv-1, printflg, outfile);
 }
 
-extern "C" {	
 /*!
 ** iwl_rdtwo(): read two electron ints from the given file.
 ** The "iwl" stands for "integrals with labels," and this is the proposed
@@ -41,7 +39,7 @@ extern "C" {
 **    \param outfile  = output file pointer
 **
 ** David Sherrill, 1995
-** \ingroup (IWL)
+** \ingroup IWL
 */
 void iwl_rdtwo(int itap, double *ints, int *ioff, int norbs, 
       int nfzc, int nfzv, int printflg, FILE *outfile)
@@ -57,4 +55,5 @@ void iwl_rdtwo(int itap, double *ints, int *ioff, int norbs,
   iwl_buf_close(&Buf, 1);
 }
 
-} /* extern "C" */
+}
+

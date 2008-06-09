@@ -26,11 +26,11 @@ ifneq ($(DODEPEND),no)
 include $(LIBOBJ:%.o=%.d)
 endif
 
-install_inc:: iwl.h
-	$(MKDIRS) $(incdir)/libiwl
-	$(INSTALL_INCLUDE) $^ $(incdir)/libiwl
+install_inc:: iwl.h iwl.hpp config.h
+	$(MKDIRS) $(DESTDIR)$(incdir)/libiwl
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libiwl
 
 install_man:: libiwl.txt
-	$(MKDIRS) $(txtdir)
-	$(INSTALL_INCLUDE) $^ $(txtdir)
+	$(MKDIRS) $(DESTDIR)$(txtdir)
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(txtdir)
 

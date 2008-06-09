@@ -1,89 +1,85 @@
 /*!
-  \file buf_rd_arr2.c
+  \file
 */
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include <libciomr/libciomr.h>
-#include "iwl.hpp"
 #include "iwl.h"
+#include "iwl.hpp"
 
-  using namespace psi;
+namespace psi {
 
 #define MIN0(a,b) (((a)<(b)) ? (a) : (b))
 #define MAX0(a,b) (((a)>(b)) ? (a) : (b))
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
-
-int IWL::rd_arr2(double *ints, int *plist, int *qlist, int *rlist, int *slist,
-      int *size, int *ioff, int printflg, FILE *outfile)
+      
+int IWL::read_array2(double *ints, int *plist, int *qlist, int *rlist, int *slist,
+    int *size, int *ioff, int printflg, FILE *outfile)
 {
-  int lastbuf;
-  Label *lblptr;
-  Value *valptr;
-  int idx, p, q, pq, r, s;
-  double value;
-  
-  lblptr = Buf.labels;
-  valptr = Buf.values;
-  
-  lastbuf = Buf.lastbuf;
-  
-  *size = 0;
-  
-  for (idx=4*Buf.idx; Buf.idx<Buf.inbuf; Buf.idx++) {
-    p = (int) lblptr[idx++];
-    q = (int) lblptr[idx++];
-    r = (int) lblptr[idx++];
-    s = (int) lblptr[idx++];
-    
-    pq = INDEX(p,q);
-    
-    value = (double) valptr[Buf.idx];
-    *ints++ = value;
-    *plist++ = p;
-    *qlist++ = q;
-    *rlist++ = r;
-    *slist++ = s;
-    *size= *size + 1;
-    
-    if (printflg) 
-      fprintf(outfile, "<%d %d %d %d> [%d] = %20.10lf\n", p, q, r, s,
-	      pq, value);
-    
-  } /*! end loop through current buffer */
+    int lastbuf;
+    Label *lblptr;
+    Value *valptr;
+    int idx, p, q, pq, r, s;
+    double value;
 
-  /*! read new buffers */
-  while (!lastbuf) {
-    fetch();
-    lastbuf = Buf.lastbuf;
+    lblptr = labels_;
+    valptr = values_;
 
-    for (idx=4*Buf.idx; Buf.idx<Buf.inbuf; Buf.idx++) {
-      p = (int) lblptr[idx++];
-      q = (int) lblptr[idx++];
-      r = (int) lblptr[idx++];
-      s = (int) lblptr[idx++];
-      
-      pq = INDEX(p,q);
+    lastbuf = lastbuf_;
 
-      value = (double) valptr[Buf.idx];
-      *ints++ = value;
-      *plist++ = p;
-      *qlist++ = q;
-      *rlist++ = r;
-      *slist++ = s;
-      *size = *size + 1;
-      
-      if (printflg) 
-	      fprintf(outfile, "<%d %d %d %d> [%d] = %20.10lf\n", p, q, r, s,
-		      pq, value);
-      
+    *size = 0;
+
+    for (idx=4*idx_; idx_ < inbuf_; idx_++) {
+        p = (int) lblptr[idx++];
+        q = (int) lblptr[idx++];
+        r = (int) lblptr[idx++];
+        s = (int) lblptr[idx++];
+
+        pq = INDEX(p,q);
+
+        value = (double) valptr[idx_];
+        *ints++ = value;
+        *plist++ = p;
+        *qlist++ = q;
+        *rlist++ = r;
+        *slist++ = s;
+        *size= *size + 1;
+
+        if (printflg) 
+            fprintf(outfile, "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
+            pq, value);
     } /*! end loop through current buffer */
-    
-  } /*! end loop over reading buffers */
 
-  return(0); /*! we must have reached the last buffer at this point */
+    /*! read new buffers */
+    while (!lastbuf) {
+        fetch();
+        lastbuf = lastbuf_;
+
+        for (idx=4*idx_; idx_ < inbuf_; idx_++) {
+            p = (int) lblptr[idx++];
+            q = (int) lblptr[idx++];
+            r = (int) lblptr[idx++];
+            s = (int) lblptr[idx++];
+
+            pq = INDEX(p,q);
+
+            value = (double) valptr[idx_];
+            *ints++ = value;
+            *plist++ = p;
+            *qlist++ = q;
+            *rlist++ = r;
+            *slist++ = s;
+            *size = *size + 1;
+
+            if (printflg) 
+                fprintf(outfile, "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
+                pq, value);
+        } /*! end loop through current buffer */
+    } /*! end loop over reading buffers */
+
+    return(0); /*! we must have reached the last buffer at this point */
 }
 
-extern "C" {
 /*!
 ** iwl_buf_rd_arr2()
 **
@@ -169,4 +165,5 @@ int iwl_buf_rd_arr2(struct iwlbuf *Buf, double *ints, int *plist,
   return(0); /*! we must have reached the last buffer at this point */
 }
 
-} /* extern "C" */
+}
+
