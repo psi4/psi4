@@ -11,7 +11,7 @@
 
 /*need this for z_entry structure*/
 #include <libchkpt/chkpt.h>
-#include <psi4.h>
+#include <psi4-dec.h>
 
 #ifdef EXTERN
 # undef EXTERN

@@ -7,7 +7,7 @@
 #include <libpsio/psio.h>
 #include "iwl.h"
 #include "iwl.hpp"
-#include <psi4.h> // need outfile;
+#include <psi4-dec.h> // need outfile;
 
 namespace psi {
 

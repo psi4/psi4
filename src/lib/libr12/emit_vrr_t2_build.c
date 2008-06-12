@@ -9,7 +9,7 @@
 #include "build_libr12.h"
 #include <libint/constants.h>
  
-#include <psi4.h>
+#include <psi4-dec.h>
 extern FILE *vrr_header;
 extern Libr12Params_t Params;
 

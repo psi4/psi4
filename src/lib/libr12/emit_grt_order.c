@@ -25,7 +25,7 @@
 static int last_hrr_node = 0;      /* Global pointer to the last node on the HRR stack */
 static int last_vrr_node = 0;      /* Global pointer to the last node on the VRR stack */
 
-#include <psi4.h>
+#include <psi4-dec.h>
 extern FILE *hrr_header, *init_code;
 extern int libr12_stack_size[MAX_AM/2+1];
 extern Libr12Params_t Params;

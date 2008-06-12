@@ -138,7 +138,7 @@ void emit_order()
        -----------------------------------*/
       fprintf(hrr_code,"#include <stdio.h>\n");
       fprintf(hrr_code,"#include <string.h>\n");
-      fprintf(hrr_code,"#include <psi4.h>\n");
+      fprintf(hrr_code,"#include <psi4-dec.h>\n");
       fprintf(hrr_code,"#include \"libint.h\"\n");
       if (to_inline_hrr) {
 	fprintf(hrr_code,"#define INLINE_HRR_WORKER\n");
@@ -167,7 +167,7 @@ void emit_order()
 	Write the overhead to the VRR code
        -----------------------------------*/
       fprintf(vrr_code,"#include <stdio.h>\n");
-      fprintf(vrr_code,"#include <psi4.h>\n");
+      fprintf(vrr_code,"#include <psi4-dec.h>\n");
       fprintf(vrr_code,"#include \"libint.h\"\n");
       if (to_inline_vrr) {
 	fprintf(vrr_code,"#define INLINE_VRR_WORKER\n");

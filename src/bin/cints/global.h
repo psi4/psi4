@@ -86,7 +86,7 @@ EXTERN double **Hess;    /* Nuclear force constants */
 
 #include<cstdio>
 /*--- Mandatory: Input and Output files, PSI file prefix ---*/
-#include <psi4.h>
+#include <psi4-dec.h>
 
 #endif
 

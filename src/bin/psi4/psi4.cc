@@ -16,20 +16,14 @@
 #include "psi4.h"
 
 namespace psi { 
+  namespace input { extern int input(int argc, char *argv[]); }
+  namespace CINTS { extern int cints(int argc, char *argv[]); }
+  namespace cscf  { extern int cscf(int argc, char *argv[]); }
+}
+
+namespace psi { 
   
-  namespace input {
-    extern int main(int argc, char *argv[]);
-  }
-  
-  namespace CINTS {
-    extern int main(int argc, char *argv[]);
-  }
-  
-  namespace cscf {
-    extern int main(int argc, char *argv[]);
-  }
-  
-  namespace psi4 {
+  //namespace psi4 {
     // Functions defined in ruby.c that are only needed here
     extern bool initialize_ruby();
     extern void load_input_file_into_ruby();
@@ -42,24 +36,32 @@ namespace psi {
     void print_version();
     void print_usage();
     void redirect_output(char *szFilename, bool append = true);
-  }
+  //}
 }
 
 // This is the ONLY main function in PSI
 int main(int argc, char *argv[])
 {
-    using namespace psi::psi4;
-    bool run_psi3_modules = false;
+//    using namespace psi::psi4;
+    using namespace psi;
+    bool run_psi3_modules = true;
+    int errcod;
+
+    int overwrite_output = 1;
+    int num_extra_args = 0;
+    char **extra_args; 
+    //extra_args = (char **) malloc(argc*sizeof(char *));
+    //for (i=1; i<argc; i++)
+    //  extra_args[num_extra_args++] = argv[i];
     
     // Parse the command-line arguments
-    parse_command_line(argc, argv);
-    
-    // Print the version of PSI first
+    //parse_command_line(argc, argv);
+
+    errcod = psi_start(&infile,&outfile,&psi_file_prefix,num_extra_args,extra_args,overwrite_output);
     print_version();
-    
+
     // Initialize the interpreter
 //    initialize_ruby();
-    
     // At this point the following has happened:
     //  1. Where output goes has been decided.
     //  2. Input filename has been determined.
@@ -84,14 +86,16 @@ int main(int argc, char *argv[])
     */
     // Test a quick call to input. This is to ensure things can link.
     // If we don't make calls to the code it isn't linked in.
-    run_psi3_modules = true;
     if (run_psi3_modules) {
-      psi::input::main(argc, argv);
-      // There must be an exit call somewhere in psi::input::main because we never
-      // call cints or cscf
-      psi::CINTS::main(argc, argv);
-      psi::cscf::main(argc, argv);
+      module.set_prgid("INPUT");
+      psi::input::input(argc, argv);
+      module.set_prgid("CINTS");
+      psi::CINTS::cints(argc, argv);
+      module.set_prgid("CSCF");
+      psi::cscf::cscf(argc, argv);
     }
+
+    psi_stop(infile, outfile, psi_file_prefix);
     
     // Close the interpreter
 //    finalize_ruby();
@@ -100,7 +104,7 @@ int main(int argc, char *argv[])
     return EXIT_SUCCESS;
 }
 
-namespace psi { namespace psi4 {
+namespace psi { /*namespace psi4 {*/
   /*! Handles the command line arguments and stores them in global variables. In some cases
   	default globals variables are set.
   	\param argc Number of command-line arguments received.
@@ -211,7 +215,21 @@ namespace psi { namespace psi4 {
   /*! Print PSI version information that is was set in configure.ac */
   void print_version()
   {
-  	fprintf(Globals::g_fOutput, "PSI %s Driver\n", PSI_VERSION);
+  	//fprintf(Globals::g_fOutput, "PSI %s Driver\n", PSI_VERSION);
+  fprintf(outfile,
+  "    -----------------------------------------------------------------------    \n");
+  fprintf(outfile,
+  "            PSI4: An Open-Source Ab Initio Electronic Structure Package \n");
+  fprintf(outfile,
+  "                            PSI %s Driver\n", PSI_VERSION);
+  fprintf(outfile,
+  "    T. D. Crawford, C. D. Sherrill, E. F. Valeev, J. T. Fermann, R. A. King,\n");
+  fprintf(outfile,
+  "    M. L. Leininger, S. T. Brown, C. L. Janssen, E. T. Seidl, J. P. Kenny,\n");
+  fprintf(outfile,
+  "    and W. D. Allen, J. Comput. Chem. 28, 1610-1616 (2007)\n");
+  fprintf(outfile,
+  "    -----------------------------------------------------------------------    \n");
   }
 
   /*! Print command-line usage information. */
@@ -226,4 +244,15 @@ namespace psi { namespace psi4 {
 
   	exit(EXIT_FAILURE);
   }
-}} // end namespace psi::psi4
+
+  void psi4_abort(void)
+  {
+    if (outfile)
+      fprintf(outfile,"\nPSI4 exiting.\n");
+    else
+      fprintf(stderr, "\nPSI4 exiting.\n");
+  
+    abort();
+  }
+
+/*}*/} // end namespace psi::psi4
