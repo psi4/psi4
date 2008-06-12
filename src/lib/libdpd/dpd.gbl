@@ -10,16 +10,12 @@
 #define EXTERN
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace psi {
 
 EXTERN int dpd_default;
 EXTERN dpd_data dpd_list[2];  /* Just allow two active DPDs for now */
 EXTERN dpd_gbl dpd_main;     /* Central cache for all DPD's */
 
-#ifdef __cplusplus
 }
-#endif
 
 #endif /* _psi_src_lib_libdpd_dpd_gbl */

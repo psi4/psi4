@@ -9,7 +9,7 @@
 #ifndef _psi3_bin_input_input_h_
 #define _psi3_bin_input_input_h_
 
-#include <psi4.h>
+#include <psi4-dec.h>
 
 namespace psi { namespace input {
 

@@ -13,7 +13,30 @@
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>
 
-namespace psi { namespace psi4 {
+extern "C" {
+  FILE *infile, *outfile;
+  char *psi_file_prefix;
+}
+
+namespace psi { /* namespace psi4 { */
+
+  class Module {
+    std::string prgid;
+  
+    public:
+    Module(std::string s = "PSI4") { prgid = s; }
+    void set_prgid (std::string s) { prgid = s; }
+    char *gprgid(void) const {
+      char *name;
+      name = new char [prgid.size()+1];
+      for (int i=0; i<prgid.size(); ++i)
+        name[i] = prgid[i];
+      name[prgid.size()] = '\0';
+      return name;
+    }
+  };
+
+  EXT Module module;
   
   //
   // Useful functions for converting between C and Ruby arrays
@@ -59,5 +82,5 @@ namespace psi { namespace psi4 {
   /*! Help the user get the Psi object from Ruby. */
   #define RUBYPSIDATA(RObj, OType, OPtr) \
   	Data_Get_Object(RObj, OType, OPtr);
-}}
+/*}*/}
 #endif

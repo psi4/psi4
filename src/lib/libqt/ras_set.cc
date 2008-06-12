@@ -10,7 +10,7 @@
 #include <libciomr/libciomr.h>
 #include "qt.h"
 #include <psifiles.h>
-#include <psi4.h>
+#include <psi4-dec.h>
 
 namespace psi {
 	

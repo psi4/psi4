@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
-#include <psi4.h>
+#include <psi4-dec.h>
 
 namespace psi {
 

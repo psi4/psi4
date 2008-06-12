@@ -781,7 +781,6 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libqt/Makefile
           src/lib/libbasis/Makefile
           src/lib/libciomr/Makefile
-          src/lib/libciomr/iomrparam.h
           src/lib/libipv1/Makefile
           src/lib/libchkpt/Makefile
           src/lib/libderiv/Makefile

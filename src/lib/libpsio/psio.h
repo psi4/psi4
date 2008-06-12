@@ -3,7 +3,7 @@
 
 #include <cstdio>
 #include <libpsio/config.h>
-#include <psi4.h>
+#include <psi4-dec.h>
 
 namespace psi {
 

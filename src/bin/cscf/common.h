@@ -176,7 +176,7 @@
 # define EXTERN
 #endif
 
-#include <psi4.h>
+#include <psi4-dec.h>
 
 namespace psi { namespace cscf {
 
