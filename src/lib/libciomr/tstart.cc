@@ -10,7 +10,7 @@
 #include <cstring>
 #include <ctime>
 #define EXTERN
-#include <psi4.h>
+#include <psi4-dec.h>
 
 #include <sys/times.h>
 
