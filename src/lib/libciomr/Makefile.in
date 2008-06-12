@@ -11,64 +11,33 @@ PSITARGET = $(top_objdir)/lib/libPSI_ciomr.a
 CXXSRC = \
 add_arr.cc \
 add_mat.cc \
-balance.cc \
-block_alloc.cc \
 block_matrix.cc \
 dot.cc \
 eigout.cc \
 eigsort.cc \
 eivout.cc \
-errors.cc \
 ffile.cc \
-flen.cc \
 flin.cc \
 fndcor.cc \
-get_file_info.cc \
-get_file_ptr.cc \
-get_param.cc \
-i2sec.cc \
 init_array.cc \
 init_matrix.cc \
-init_ptrs.cc \
 int_array.cc \
-int_pac.cc \
-io_getline.cc \
-io_locate.cc \
-ioopen.cc \
-long_int_array.cc \
 lubksb.cc \
 ludcmp.cc \
 mmult.cc \
 mxmb.cc \
-old_inp.cc \
 print_array.cc \
 print_mat.cc \
 psi_start.cc \
 psi_stop.cc \
-r_async.cc \
-ram.cc \
-rclose.cc \
-rfile.cc \
-rgetsa.cc \
-rread.cc \
-rsetsa.cc \
 rsp.cc \
-rwrit.cc \
-s_async.cc \
-sec2i.cc \
-sequential.cc \
 sq_rsp.cc \
 sq_to_tri.cc \
-sread.cc \
-srew.cc \
-swrit.cc \
 tqli.cc \
 tred2.cc \
 tri_to_sq.cc \
 tstart.cc \
-wreadw.cc \
-wwritw.cc \
-zero.cc 
+zero.cc
 
 
 TRUECSRC =

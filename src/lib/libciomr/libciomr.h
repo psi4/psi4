@@ -28,12 +28,6 @@ void add_arr(double *a, double *b, double *c, int n);
 void add_mat(double **a,double **b,double **c,int n,int m);
 void balance(double **a, int n);
 
-/* Functions under block_alloc.c */
-double *** block_mat_alloc(int n_so_typs,int num_ir,int *num_so);
-void block_mat_dealloc(double ***array,int num_ir,int *num_so);
-double ** block_arr_alloc(int n_so_typs,int num_ir,int *num_so);
-void block_arr_dealloc(double **array,int n_so_typs);
-
 /* Functions under dot.cc */
 void dot_arr(double *a, double *b, int size, double *value) ;
 double dot_mat(double **a,double **b,int n);
