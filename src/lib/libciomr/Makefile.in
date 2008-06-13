@@ -42,7 +42,7 @@ zero.cc
 
 TRUECSRC =
 
-DEPENDINCLUDE = includes.h iomrparam.h common.h pointers.h structs.h types.h
+DEPENDINCLUDE = includes.h
 
 LIBOBJ = $(TRUECSRC:%.c=%.o) $(CXXSRC:%.cc=%.o)
 
@@ -52,6 +52,6 @@ ifneq ($(DODEPEND),no)
 include $(LIBOBJ:%.o=%.d)
 endif
 
-install_inc:: libciomr.h iomrparam.h
+install_inc:: libciomr.h
 	$(MKDIRS) $(incdir)/libciomr
 	$(INSTALL_INCLUDE) $^ $(incdir)/libciomr
