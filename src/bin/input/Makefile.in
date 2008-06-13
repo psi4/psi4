@@ -3,7 +3,9 @@ VPATH = @srcdir@
 
 include ../MakeVars
 
-PSILIBS = -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
+PSITARGET = $(top_objdir)/lib/libPSI_input.a
+
+#PSILIBS = -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
 
 CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"
 

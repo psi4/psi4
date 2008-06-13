@@ -92,6 +92,8 @@ VPATH += $(DIRS:%=$(srcdir)/%)
 
 include ../MakeVars
 
+PSITARGET = $(top_objdir)/lib/libPSI_cints.a
+
 #Need do remove -DAIX because I have a variable named AIX
 CDEF_NOAIX = $(CDEF:-DAIX=)
 CFLAGS = $(CDBG) $(COPT) $(CDEF_NOAIX) $(COTH) $(CINC)

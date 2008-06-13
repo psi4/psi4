@@ -52,9 +52,9 @@ $(PSITARGET): $(LIBOBJ)
 	$(RANLIB)  $(PSITARGET)
 
 install_target:: $(PSITARGET)
-	$(MKDIRS) $(libdir)
-	$(INSTALL_DATA) $< $(libdir)
-	$(RANLIB) $(libdir)/`basename $(PSITARGET)`
+	$(MKDIRS) $(DESTDIR)$(libdir)
+	$(INSTALL_DATA) $< $(DESTDIR)$(libdir)
+	$(RANLIB) $(DESTDIR)$(libdir)/`basename $(PSITARGET)`
 
 install_man::
 
