@@ -5,6 +5,7 @@
 #
 
 define([psi_version],[4.0.0-alpha])
+define([psi_buildid],[alpha])
 define([psi_bugreport],[psicode@users.sourceforge.net])
 AC_PREREQ(2.57)
 AC_INIT([psi],[psi_version],[psi_bugreport])
@@ -12,11 +13,10 @@ AC_INIT([psi],[psi_version],[psi_bugreport])
 AC_CONFIG_HEADER(include/psiconfig.h)
 
 PSI_VERSION=psi_version
+PSI_BUILDID=psi_buildid
 PSI_BUGREPORT=psi_bugreport
-
-AC_DEFINE_UNQUOTED(PSI_VERSION,"${PSI_VERSION}")
-
 AC_SUBST(PSI_VERSION)
+AC_SUBST(PSI_BUILDID)
 AC_SUBST(PSI_BUGREPORT)
 AC_CONFIG_AUX_DIR(bin)
 
@@ -31,17 +31,24 @@ srcdir=`(cd $srcdir; pwd)`
 objincdir='$(top_objdir)/include'
 AC_SUBST(objincdir)
 
-docdir='$(prefix)/doc'
-mandir='$(docdir)/man'
-txtdir='$(docdir)/txt'
-htmldir='$(docdir)/html'
-dvidir='$(docdir)/dvi'
-
-AC_SUBST(docdir)
-AC_SUBST(mandir)
-AC_SUBST(htmldir)
-AC_SUBST(dvidir)
-AC_SUBST(txtdir)
+if test -z $docdir; then
+       docdir='$(datadir)/doc/$(PACKAGE)'
+       AC_SUBST([docdir])
+fi
+if test -z $txtdir; then
+       txtdir='$(docdir)/txt'
+       AC_SUBST([txtdir])
+fi
+if test -z $htmldir; then
+       htmldir='$(docdir)/html'
+       AC_SUBST([htmldir])
+fi
+if test -z $dvidir; then
+       dvidir='$(docdir)/dvi'
+       AC_SUBST([dvidir])
+fi
+pkgdatadir='$(datadir)/psi'
+AC_SUBST([pkgdatadir])
 
 INSTALL_INCLUDE='$(top_srcdir)/bin/installinc.sh' AC_SUBST(INSTALL_INCLUDE)
 MKDIRS='$(top_srcdir)/bin/mkdirs.sh' AC_SUBST(MKDIRS)
@@ -100,7 +107,7 @@ AC_ARG_WITH(max-am-r12,[  --with-max-am-r12       maximum AM in R12 integrals],[
 AC_SUBST(LIBR12_NEW_AM)
 AC_SUBST(LIBR12_OPT_AM)
 
-PSI_INTEGRALS_STANDARD=0
+PSI_INTEGRALS_STANDARD=1
 AC_ARG_WITH(integrals-standard,[  --with-integrals-standard     specifies the standard for the basis normalization, etc.
                                 The allowed values are cca and psi (default).],[
 case $withval in
@@ -153,15 +160,18 @@ AC_PROG_CXX([$CXX_LIST])
 AC_ARG_WITH(fc,[  --with-fc               which Fortran compiler to use],[
 case $withval in
   no)
-    F77=
+    F77=="no"
     ;;
   *)
     F77=$withval
     ;;
 esac
 ])
-if test X"$F77" != X; then
-  AC_PROG_F77([$F77_LIST])
+
+if test -z "$F77"; then
+  AC_PROG_F77
+elif test "$F77" = "no"; then
+  F77=""
 fi
 AC_SUBST(FC,[$F77])
 
@@ -286,10 +296,31 @@ AC_SUBST(LDFLAGS)
 
 AC_CHECK_PROGS(PERL,perl,perl) AC_SUBST(PERL)
 
-#AC_PROG_LATEX
-#AC_PROG_LATEX2HTML
-#AC_PROG_DVIPS
-#AC_PROG_BIBTEX
+AC_PROG_LATEX
+AC_PROG_LATEX2HTML
+AC_PROG_DVIPS
+AC_PROG_BIBTEX
+
+####
+# Check for doxygen and it buddies
+####
+AC_CHECK_PROGS(DOXYGEN,doxygen,NO)
+DOT=yes
+AC_ARG_WITH(dot,
+[  --with-dot              Gives the path to the dot graph generator.],
+DOT=$withval
+)
+DOT_PATH=""
+if test X$DOT = Xno; then
+  HAVE_DOT=NO
+elif test X$DOT = Xyes; then
+  AC_CHECK_PROG(HAVE_DOT,dot,YES,NO)
+else
+  HAVE_DOT=YES
+  DOT_PATH=$DOT
+fi
+AC_SUBST(DOT_PATH)
+AC_SUBST(HAVE_DOT)
 
 ########
 ## Check for libraries
@@ -438,14 +469,6 @@ else
 fi
 AC_SUBST(LAPACK)
 LIBS=$SAVE_LIBS
-
-# Check for libcompat.a availability
-case $target_vendor in
-  apple)
-    AC_HAVE_LIBRARY(compat,CLIBS="-lcompat $CLIBS",AC_MSG_WARN([Missing libcompat.a: See http://www.opensource.apple.com/ for more information]))
-    echo "$CLIBS"
-  ;;
-esac
 
 ########
 ## Check for header files
@@ -792,7 +815,6 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libr12/Makefile
           src/lib/libr12/MakeVars
           src/lib/libr12/libr12_config.h
-          src/lib/liboptions/Makefile
 
           src/bin/psi4/Makefile
           src/bin/input/Makefile

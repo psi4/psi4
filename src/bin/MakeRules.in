@@ -47,14 +47,16 @@ install_inc::
 
 install_man::
 
-$(PSITARGET): $(LIBOBJ)
+$(PSITARGET): $(BINOBJ)
 	$(MKDIRS) `dirname $(PSITARGET)`
-	$(AR) $(ARFLAGS) `dirname $(PSITARGET)`/libPSI_`basename $(PSITARGET)`.a $^
-	$(RANLIB) $(top_objdir)/lib/lib`basename $(PSITARGET)`.a
+	rm -f $(PSITARGET)
+	$(AR) $(ARFLAGS) $(PSITARGET) $^
+	$(RANLIB) $(PSITARGET)
 
 install_target:: $(PSITARGET)
-	$(MKDIRS) $(bindir)
-	$(INSTALL_PROGRAM) $< $(bindir)
+	$(MKDIRS) $(libdir)
+	$(INSTALL_DATA) $< $(libdir)
+	$(RANLIB) $(libdir)/`basename $(PSITARGET)`
 
 #
 # clean up
@@ -72,7 +74,7 @@ uclean:
 	-rm -f *.u
 
 targetclean:
-	-rm -f `dirname $(PSITARGET)`/lib`basename $(PSITARGET)`.a
+	-rm -f `basename $(PSITARGET)`
 
 #
 # dependencies

@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <ruby.h>       // This is from Ruby
 #include <psiconfig.h>
+#include <libciomr/libciomr.h>
 
 #define MAIN
 #include "psi4.h"
@@ -215,6 +216,7 @@ namespace psi { /*namespace psi4 {*/
   /*! Print PSI version information that is was set in configure.ac */
   void print_version()
   {
+  char *PSI_VERSION = "0.1";
   	//fprintf(Globals::g_fOutput, "PSI %s Driver\n", PSI_VERSION);
   fprintf(outfile,
   "    -----------------------------------------------------------------------    \n");

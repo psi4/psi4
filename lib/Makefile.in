@@ -1,7 +1,7 @@
 
 .PHONY:	default all install depend clean dclean targetclean
 
-subdirs = ruby
+#subdirs = ruby
 
 default: all
 

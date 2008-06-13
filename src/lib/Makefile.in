@@ -2,7 +2,7 @@
 .PHONY:	default all install depend clean dclean targetclean
 
 subdirs = libipv1 libciomr libchkpt libqt libpsio libiwl libdpd \
-          libint libderiv libr12 libbasis liboptions
+          libint libderiv libr12 libbasis
 
 all: default
 
@@ -61,7 +61,6 @@ targetclean:
 
 top_srcdir = @top_srcdir@
 srcdir = @srcdir@
-datarootdir = @datarootdir@
 top_objdir = ../..
 
 $(top_srcdir)/configure: $(top_srcdir)/configure.ac $(top_srcdir)/aclocal.m4

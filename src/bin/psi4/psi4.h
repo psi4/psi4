@@ -14,8 +14,8 @@
 #include <libchkpt/chkpt.hpp>
 
 extern "C" {
-  FILE *infile, *outfile;
-  char *psi_file_prefix;
+  EXT FILE *infile, *outfile;
+  EXT char *psi_file_prefix;
 }
 
 namespace psi { /* namespace psi4 { */

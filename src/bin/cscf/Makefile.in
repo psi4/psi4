@@ -3,8 +3,10 @@ VPATH = @srcdir@
 
 include ../MakeVars
 
+PSITARGET = $(top_objdir)/lib/libPSI_cscf.a
+
 LDLIBS += $(LAPACK) $(BLAS)
-PSILIBS = -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
+#PSILIBS = -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
 
 CXXSRC = \
 cscf.cc cleanup.cc dft_inputs.cc diis.cc dmat.cc \
