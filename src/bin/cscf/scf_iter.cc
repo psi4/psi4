@@ -437,7 +437,8 @@ void scf_iter()
 	free(c1);
 	free(c2);
       }
-      cleanup();
+      //cleanup();
+      return;
     }
 
     schmit(1);

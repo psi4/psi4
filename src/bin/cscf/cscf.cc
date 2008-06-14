@@ -198,12 +198,13 @@ int cscf(int argc,char* argv[])
   ip_cwk_add(":PSI");
   ip_cwk_add(":SCF");
   tstart(outfile);
+  psio_init();
+  psio_ipv1_config();
    
-  fprintf(outfile,"\n%13c------------------------------------------\n",' ');
+  fprintf(outfile,"%13c------------------------------------------\n",' ');
   fprintf(outfile,"\n%16c%s\n",' ',prog_name);
   fprintf(outfile,"\n%14cWritten by too many people to mention here\n",' ');
   fprintf(outfile,"\n%13c------------------------------------------\n",' ');
-   
    
   itap30 = 30;
   itap33 = PSIF_SO_TEI;
@@ -235,10 +236,6 @@ int cscf(int argc,char* argv[])
   ip_boolean("ORTHOG_ONLY",&orthog_only,0);
   free(wfn);
 
-  /* open integrals file(s) */
-
-  psio_init(); psio_ipv1_config();
-   
   /* STB (6/30/99) - Function added because in order to initialize things
      one must know whether you are doing UHF or restricted */   
    
@@ -322,6 +319,7 @@ int cscf(int argc,char* argv[])
     errcod = ip_boolean("PRINT_MOS",&mo_print,0);
     if (mo_print) print_mos("Alpha",scf_info);
     write_scf_matrices();
+    chkpt_close();
     psio_done();
     tstop(outfile);
     //psi_stop(infile,outfile,psi_file_prefix);
@@ -370,7 +368,7 @@ int cscf(int argc,char* argv[])
       fprintf(stderr,"rohf open shell singlet doesn't work direct\n");
       fprintf(stderr,"remove 'direct_scf = true' from input\n");
       chkpt_close();
-      //psio_done();
+      psio_done();
       //exit(PSI_RETURN_FAILURE);
       return(PSI_RETURN_FAILURE);
     }
@@ -384,12 +382,14 @@ int cscf(int argc,char* argv[])
   iter = 0;
   converged = 0;
       
-  if(twocon) scf_iter_2();
+  // these call cleanup if converged
+  if(twocon) scf_iter_2(); 
   else if(uhf) uhf_iter();
-  else scf_iter();
-
+  else scf_iter(); 
 
   cleanup();
+
+  chkpt_close();
   psio_done();
   return(PSI_RETURN_SUCCESS);
 }

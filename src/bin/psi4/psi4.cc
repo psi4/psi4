@@ -16,13 +16,14 @@
 #define MAIN
 #include "psi4.h"
 
-namespace psi { 
-  namespace input { extern int input(int argc, char *argv[]); }
-  namespace CINTS { extern int cints(int argc, char *argv[]); }
-  namespace cscf  { extern int cscf(int argc, char *argv[]); }
+namespace psi {
+  namespace input { int input(int argc, char *argv[]); }
+  namespace CINTS { int cints(int argc, char *argv[]); }
+  namespace cscf  { int cscf(int argc, char *argv[]); }
+  namespace psiclean  { int psiclean(int argc, char *argv[]); }
 }
 
-namespace psi { 
+namespace psi {
   
   //namespace psi4 {
     // Functions defined in ruby.c that are only needed here
@@ -51,9 +52,9 @@ int main(int argc, char *argv[])
     int overwrite_output = 1;
     int num_extra_args = 0;
     char **extra_args; 
-    //extra_args = (char **) malloc(argc*sizeof(char *));
-    //for (i=1; i<argc; i++)
-    //  extra_args[num_extra_args++] = argv[i];
+    extra_args = (char **) malloc(argc*sizeof(char *));
+    for (int i=1; i<argc; i++)
+      extra_args[num_extra_args++] = argv[i];
     
     // Parse the command-line arguments
     //parse_command_line(argc, argv);
@@ -94,6 +95,8 @@ int main(int argc, char *argv[])
       psi::CINTS::cints(argc, argv);
       module.set_prgid("CSCF");
       psi::cscf::cscf(argc, argv);
+      module.set_prgid("PSICLEAN");
+      psi::psiclean::psiclean(argc, argv);
     }
 
     psi_stop(infile, outfile, psi_file_prefix);
@@ -218,6 +221,7 @@ namespace psi { /*namespace psi4 {*/
   {
   char *PSI_VERSION = "0.1";
   	//fprintf(Globals::g_fOutput, "PSI %s Driver\n", PSI_VERSION);
+  fprintf(outfile,"\n");
   fprintf(outfile,
   "    -----------------------------------------------------------------------    \n");
   fprintf(outfile,
@@ -258,3 +262,4 @@ namespace psi { /*namespace psi4 {*/
   }
 
 /*}*/} // end namespace psi::psi4
+
