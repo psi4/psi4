@@ -371,7 +371,7 @@ void formg_direct();
 void scf_iter();
 void scf_iter_2();
 void uhf_iter();
-void cleanup();
+int cleanup();
 void sortev();
 void rotate_vector();
 void sdot(double** a, double** b, int n, double* value);

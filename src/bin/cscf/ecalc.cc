@@ -186,8 +186,8 @@ int ecalc(double incr)
 
   if ( delta < plimit && iter > 1) {
     converged=1;
-fflush(outfile);
-    if(!iopen || iopen && fock_typ >= 2) cleanup();
+    fflush(outfile);
+    //if(!iopen || iopen && fock_typ >= 2) cleanup();
   }
 
   eelec = neelec;

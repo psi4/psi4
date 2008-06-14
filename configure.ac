@@ -820,6 +820,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/input/Makefile
           src/bin/cints/Makefile
           src/bin/cscf/Makefile
+          src/bin/psiclean/Makefile
 ])
 
 AC_OUTPUT

@@ -222,7 +222,7 @@ double ssquare(void);
 static int* compute_frzcpi(int);
 static int* compute_frzvpi(int);
 
-void cleanup()
+int cleanup()
 
 {
   int i,j,k,ij,ijk,m,nn,num_mo;
@@ -634,8 +634,6 @@ void cleanup()
     fprintf(outfile,  "  Proceed at your own risk!\n");
   }
       
-  chkpt_close();
-
   if(!direct_scf){
     psio_close(Pmat.unit, 0);
     psio_close(PKmat.unit, 0);
@@ -648,13 +646,10 @@ void cleanup()
     free(scf_info[i].irrep_label);
       
   tstop(outfile);
-  psi_stop(infile,outfile,psi_file_prefix);
+  //psi_stop(infile,outfile,psi_file_prefix);
       
   if(!converged) exit(PSI_RETURN_FAILURE);
-  //if(!converged) return(PSI_RETURN_FAILURE);
-  exit(PSI_RETURN_SUCCESS);
-  //return(PSI_RETURN_SUCCESS);
-
+  return(PSI_RETURN_SUCCESS);
 }
 
 void print_mos(const char* spincase, const struct symm* scfinfo)

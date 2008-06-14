@@ -289,7 +289,7 @@ int input(int argc, char *argv[])
        }
        
        free(Distance);
-       fprintf(outfile,"\n\n");
+       //fprintf(outfile,"\n\n");
      }
 
      cleanup();

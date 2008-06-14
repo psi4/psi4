@@ -45,10 +45,7 @@ PSIO::~PSIO() {
   
   free(psio_unit);
   state_ = 0;
-fprintf(outfile,"psio-done-destructed\n");
   files_keywords_.clear();
-fprintf(outfile,"erase set\n");
-fflush(outfile);
 }
 
 int psio_done(void) {

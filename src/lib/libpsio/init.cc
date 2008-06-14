@@ -46,12 +46,8 @@ PSIO::PSIO() {
 }
 
   int psio_init(void) {
-fprintf(outfile,"running psio_init\n");
-fflush(outfile);
     if (!_default_psio_lib_) {
       _default_psio_lib_ = new PSIO;
-fprintf(outfile,"making new psio\n");
-fflush(outfile);
       if (_default_psio_lib_ == 0) {
         fprintf(stderr,"LIBPSIO::init() -- failed to allocate the memory");
         exit(PSIO::_error_exit_code_);

@@ -445,7 +445,7 @@ L2:
 				   if (nn=s->num_so)
 				   free_block(s->ucmat);
 				 }
-         cleanup();
+         //cleanup();
          }
       }
    }

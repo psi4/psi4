@@ -1,0 +1,126 @@
+.TH psiclean 1 "29 July, 1999" "Psi Version 3.0" ""
+.  \"
+.  \" Notice of Document Modification
+.  \"
+.  \"   man page created by David Sherrill, 29 July 1999
+.  \"
+.  \"
+.SH NAME
+psiclean \- delete files in the PSI temporary directories
+
+.SH DESCRIPTION
+The
+.B psiclean
+command finds a job name by scanning the input file
+for a keyword assignment of the form
+.nf
+
+   \fBDEFAULT:FILES:DEFAULT:NAME\fP = \fIstring\fP
+
+.fi
+It then goes through all of the machine's temporary
+directories and deletes all files of the form
+\fIstring\fP.*.  In previous versions of 
+.B psiclean
+, temporary directories were assumed to be of the form
+.nf
+
+   \fI/tmp[0-9]/$user\fP
+
+.fi
+In this version of 
+.B psiclean
+, we get the names of the temporary directories from the
+user input file by looking for volume paths of the form
+.nf
+
+   \fBDEFAULT:FILES:DEFAULT:VOLUME\fIi\fP = \fIstring\fP
+.fi
+
+.PP
+It is essential that users see to the removal of their scratch
+files as soon as their job completes,
+because temporary directories are usually a shared resource and there
+is not necessarily an automatic way for files to be deleted from these
+areas.
+Thus, the last command run after
+a job has finished
+should be the
+.B psiclean
+command.
+
+.PP
+The user must take care to follow certain conventions when choosing filenames.
+Any files which are to be kept after a job completes should not be kept
+in the default temporary directories.  The \fBFILES\fP
+input must be used to specify other locations for the specific files which 
+are to be kept.  
+.B psiclean
+will ignore files which are specifically listed by number (e.g., \fIPSIF_CHKPT\fP )
+in the \fBFILES\fP section.
+Files which are not needed after the run should use the default path
+given in the input file.  Otherwise, these files will remain on the system 
+and will impede other jobs.
+.SH EXAMPLE
+Suppose the PSI temporary directories contained the following subdirectories
+and files:
+.nf
+
+/tmp1/cpuhog:
+-rw-r--r--  1 cpuhog      14492 Jun 11 16:48 dicubane.30
+-rw-r--r--  1 cpuhog     187320 Jun  8 17:20 diketene.34
+-rw-r--r--  1 cpuhog      16384 Jun  7 19:17 o4big.30
+-rw-r--r--  1 cpuhog      16384 Jun  7 19:17 o4.30
+-rw-r--r--  1 cpuhog     974848 Jun  7 18:41 o4.34
+
+/tmp2/cpuhog:
+-rw-r--r--  1 cpuhog      14492 Jun 11 16:48 dicubane.30
+-rw-r--r--  1 cpuhog     187320 Jun  8 17:20 diketene.34
+-rw-r--r--  1 cpuhog      10904 Jun  7 18:50 o4big.30
+-rw-r--r--  1 cpuhog      10904 Jun  7 18:50 o4.30
+-rw-r--r--  1 cpuhog     973752 Jun  7 18:41 o4.34
+
+/tmp3/cpuhog:
+-rw-r--r--  1 cpuhog      14492 Jun 11 16:48 dicubane.30
+-rw-r--r--  1 cpuhog     187320 Jun  8 17:20 diketene.34
+-rw-r--r--  1 cpuhog       8192 Jun  7 19:17 o4big.30
+-rw-r--r--  1 cpuhog       8192 Jun  7 19:17 o4.30
+-rw-r--r--  1 cpuhog     966656 Jun  7 18:41 o4.34
+
+.fi
+
+Let's also say that the user cpuhog is in a directory which contains
+an input file which has the following line in it:
+.nf
+
+\fBDEFAULT:FILES:DEFAULT:NAME = "o4"\fP
+
+.fi
+If the user cpuhog now executes the
+.B psiclean
+command, then the o4 files in the temporary directories would be
+deleted, leaving the following files:
+
+.nf
+/tmp1/cpuhog:
+-rw-r--r--  1 cpuhog      14492 Jun 11 16:48 dicubane.30
+-rw-r--r--  1 cpuhog     187320 Jun  8 17:20 diketene.34
+-rw-r--r--  1 cpuhog      16384 Jun  7 19:17 o4big.30
+
+/tmp2/cpuhog:
+-rw-r--r--  1 cpuhog      14492 Jun 11 16:48 dicubane.30
+-rw-r--r--  1 cpuhog     187320 Jun  8 17:20 diketene.34
+-rw-r--r--  1 cpuhog      10904 Jun  7 18:50 o4big.30
+
+/tmp3/cpuhog:
+-rw-r--r--  1 cpuhog      14492 Jun 11 16:48 dicubane.30
+-rw-r--r--  1 cpuhog     187320 Jun  8 17:20 diketene.34
+-rw-r--r--  1 cpuhog       8192 Jun  7 19:17 o4big.30
+
+.fi
+
+.SH AUTHOR
+.nf
+C. David Sherrill <sherrill@alum.mit.edu>
+.fi
+

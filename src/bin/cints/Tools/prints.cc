@@ -40,7 +40,7 @@ void print_scalars()
      Print constants, etc.
     ----------------------*/
    if (UserOptions.print_lvl >= PRINT_OPTIONS) {
-     fprintf(outfile,"\n  -OPTIONS:\n");
+     fprintf(outfile,"  -OPTIONS:\n");
      fprintf(outfile,"    Print level                 = %d\n",UserOptions.print_lvl);
      if (UserOptions.restart)
        fprintf(outfile,"    Restart                     = yes\n");

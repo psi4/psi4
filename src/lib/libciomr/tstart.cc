@@ -36,15 +36,12 @@ void tstart(FILE *outfile)
 
   time_start = time(NULL);
 
-  for (i=0; i < 78 ; i++) {
-    fprintf(outfile,"*");
-  }
-  fprintf(outfile,"\n");
+  //for (i=0; i < 78 ; i++) { fprintf(outfile,"*"); }
   char *module_name = module.gprgid();
-  fprintf(outfile,"%s ", module_name);
+  fprintf(outfile,"\n*** %s ", module_name);
   delete [] module_name;
-  fprintf(outfile,"tstart called on %s\n", name);
-  fprintf(outfile,"%s\n",ctime(&time_start));
+  fprintf(outfile,"called tstart() on %s\n", name);
+  fprintf(outfile,"*** at %s\n",ctime(&time_start));
 
   free(name);
 }
@@ -77,20 +74,17 @@ void tstop(FILE *outfile)
   user_s = ((double) total_tmstime.tms_utime)/clk_tck;
   sys_s = ((double) total_tmstime.tms_stime)/clk_tck;
 
-  for (i=0; i < 78 ; i++) {
-    fprintf(outfile,"*");
-  }
-  fprintf(outfile,"\n");
+  //for (i=0; i < 78 ; i++) { fprintf(outfile,"*"); }
   char *module_name = module.gprgid();
-  fprintf(outfile,"%s ", module_name);
+  fprintf(outfile,"\n*** %s ", module_name);
   delete [] module_name;
-  fprintf(outfile,"tstop called on %s\n", name);
-  fprintf(outfile,"%s\n",ctime(&time_end));
-  fprintf(outfile,"user time   = %10.2f seconds = %10.2f minutes\n",
+  fprintf(outfile,"called tstop() on %s\n", name);
+  fprintf(outfile,"*** at %s\n",ctime(&time_end));
+  fprintf(outfile,"\tuser time   = %10.2f seconds = %10.2f minutes\n",
 	  user_s, user_s/60.0);
-  fprintf(outfile,"system time = %10.2f seconds = %10.2f minutes\n",
+  fprintf(outfile,"\tsystem time = %10.2f seconds = %10.2f minutes\n",
 	  sys_s, sys_s/60.0);
-  fprintf(outfile,"total time  = %10d seconds = %10.2f minutes\n",
+  fprintf(outfile,"\ttotal time  = %10d seconds = %10.2f minutes\n",
 	  total_time, ((double) total_time)/60.0);
 
   free(name);
