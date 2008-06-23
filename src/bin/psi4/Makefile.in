@@ -13,7 +13,7 @@ LDLIBS +=  $(LAPACK) $(BLAS) $(RUBYLIB) -lpthread -ldl -lm
 LDFLAGS += $(RUBYLDFLAGS)
 
 PSILIBS = -lPSI_dpd -lPSI_qt -lPSI_chkpt -lPSI_deriv -lPSI_r12 -lPSI_int \
-          -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
+          -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1 -lPSI_options -lPSI_util
 PSIMODULES = -lPSI_input -lPSI_cints -lPSI_cscf -lPSI_psiclean
 
 CXXINC += -I$(RUBYINC) -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"

@@ -15,7 +15,9 @@
 
 #include "liboptions.h"
 
-extern FILE* outfile;
+#include <psi4-dec.h>
+
+namespace psi {
 
 Options* _default_psi_options_;
 
@@ -404,5 +406,7 @@ void Options::print()
     fprintf(outfile," = %s",it->second.option.c_str());
   }
   fprintf(outfile,"\n  ----------------------------------------------------------------------------");
+}
+
 }
 

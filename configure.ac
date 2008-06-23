@@ -799,6 +799,8 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/Makefile src/bin/MakeRules src/bin/MakeVars
 
           src/lib/libdpd/Makefile
+          src/lib/liboptions/Makefile
+          src/lib/libutil/Makefile
           src/lib/libiwl/Makefile
           src/lib/libpsio/Makefile
           src/lib/libqt/Makefile
