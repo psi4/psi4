@@ -12,19 +12,20 @@
 #include <ruby.h>       // This is from Ruby
 #include <psiconfig.h>
 #include <libciomr/libciomr.h>
+#include <liboptions/liboptions.h>
 
 #define MAIN
 #include "psi4.h"
 
-namespace psi {
-  namespace input { int input(int argc, char *argv[]); }
-  namespace CINTS { int cints(int argc, char *argv[]); }
-  namespace cscf  { int cscf(int argc, char *argv[]); }
+namespace psi { 
+  namespace input { extern int input(Options & options); }
+  namespace CINTS { extern int cints(int argc, char *argv[]); }
+  namespace cscf  { extern int cscf(int argc, char *argv[]); }
   namespace psiclean  { int psiclean(int argc, char *argv[]); }
+  extern int read_options(std::string name, Options & options);
 }
 
 namespace psi {
-  
   //namespace psi4 {
     // Functions defined in ruby.c that are only needed here
     extern bool initialize_ruby();
@@ -38,7 +39,6 @@ namespace psi {
     void print_version();
     void print_usage();
     void redirect_output(char *szFilename, bool append = true);
-  //}
 }
 
 // This is the ONLY main function in PSI
@@ -61,6 +61,8 @@ int main(int argc, char *argv[])
 
     errcod = psi_start(&infile,&outfile,&psi_file_prefix,num_extra_args,extra_args,overwrite_output);
     print_version();
+
+    Options options;
 
     // Initialize the interpreter
 //    initialize_ruby();
@@ -89,10 +91,15 @@ int main(int argc, char *argv[])
     // Test a quick call to input. This is to ensure things can link.
     // If we don't make calls to the code it isn't linked in.
     if (run_psi3_modules) {
+
+      psi::read_options("INPUT", options); //pass reference to Options
+
       module.set_prgid("INPUT");
-      psi::input::input(argc, argv);
+      psi::input::input(options);
+
       module.set_prgid("CINTS");
       psi::CINTS::cints(argc, argv);
+
       module.set_prgid("CSCF");
       psi::cscf::cscf(argc, argv);
       module.set_prgid("PSICLEAN");
