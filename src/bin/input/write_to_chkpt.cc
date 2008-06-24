@@ -49,10 +49,12 @@ void write_to_chkpt(double repulsion)
 
   
   /*----------------------------------
-    Write out the label then 80 zeros
+    Write out the label then 80 zeros - Why (RAK)?
     ----------------------------------*/
   calc_label = init_char_array(80);
-  strncpy(calc_label,label,80);
+  for (i=0; i<label.size(); ++i)
+    calc_label[i] = label[i];
+  // strncpy(calc_label,label,80);
   
   /*----------------------------------
     Write out basic info to chkpt

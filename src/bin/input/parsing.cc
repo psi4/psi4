@@ -11,37 +11,38 @@
 #include <physconst.h>
 #include "global.h"
 #include "defines.h"
+#include <liboptions/liboptions.h>
 
 namespace psi { namespace input {
 
-void parsing()
+void parsing(Options & options)
 {
    int errcod, i;
    char tmp_label[80];
 
    no_reorient = options.get_bool_option("no_reorient");
    chkpt_mos   = options.get_bool_option("chkpt_mos");
-   label       = options.get_str("label");
+   label       = options.get_str_option("label");
    shownorm    = options.get_bool_option("shownorm");
    puream      = options.get_bool_option("puream");
    expert      = options.get_bool_option("expert");
    print_lvl   = options.get_int_option("print");
-   subgroup    = options.get_str_option_with_choices("SUBGROUP");
-   unique_axis = options.get_str_option_with_choices("UNIQUE_AXIS");
+   subgroup    = options.get_cstr_option("SUBGROUP");
+   unique_axis = options.get_cstr_option("UNIQUE_AXIS");
    nfragments  = options.get_int_option("NFRAGMENTS");
    keep_ref_frame = options.get_bool_option("KEEP_REF_FRAME");
    normalize_contractions = options.get_bool_option("normalize");
 
-   units       = options.get_str_option_with_choices("UNITS");
-   if (!strcmp(units,"BOHR") || !strcmp(units,"AU"))
+   units       = options.get_str_option("UNITS");
+   if (units == "BOHR" || units == "AU")
      conv_factor = 1.0;
-   else if (!strcmp(units,"ANGSTROMS") || !strcmp(units,"ANGSTROM"))
+   else if (units == "ANGSTROMS" || units == "ANGSTROM")
      conv_factor = 1.0 / _bohr2angstroms;
    else
-     punt("Unrecognized UNITS");
+     punt("Unrecognized UNITS - should be caught by read_options()");
 
-   frozen_core = options.get_bool_option("FREEZE_CORE");
-   frozen_virt = options.get_bool_option("FREEZE_VIRT");
+   frozen_core = options.get_str_option("FREEZE_CORE");
+   nfzv = options.get_int_option("FREEZE_VIRT");
 
    if (chkpt_mos) read_chkpt = 1;
 
