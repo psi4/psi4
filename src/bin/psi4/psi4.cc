@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 {
 //    using namespace psi::psi4;
     using namespace psi;
-    bool run_psi3_modules = true;
+    bool run_modules = true;
     int errcod;
 
     int overwrite_output = 1;
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
     */
     // Test a quick call to input. This is to ensure things can link.
     // If we don't make calls to the code it isn't linked in.
-    if (run_psi3_modules) {
+    if (run_modules) {
 
       psi::read_options("INPUT", options); //pass reference to Options
 
@@ -102,6 +102,7 @@ int main(int argc, char *argv[])
 
       module.set_prgid("CSCF");
       psi::cscf::cscf(argc, argv);
+
       module.set_prgid("PSICLEAN");
       psi::psiclean::psiclean(argc, argv);
     }

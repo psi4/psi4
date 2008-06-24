@@ -75,6 +75,7 @@ public:
   int         get_int_option(const char* cstr_option);
   double      get_double_option(const char* cstr_option);
   std::string get_str_option(const char* cstr_option);
+  char *      get_cstr_option(const char* cstr_option);
 
   void        set_bool_option(const char* cstr_option, bool bool_value);
   void        set_int_option(const char* cstr_option,int int_value);

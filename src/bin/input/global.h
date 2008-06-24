@@ -12,6 +12,7 @@
 /*need this for z_entry structure*/
 #include <libchkpt/chkpt.h>
 #include <psi4-dec.h>
+#include <string>
 
 #ifdef EXTERN
 # undef EXTERN
@@ -45,7 +46,7 @@ EXTERN int cartOn;                  /*Cartesian input flag*/
 EXTERN int puream;
 EXTERN int shownorm;		    /*Show normalized basis set*/
 EXTERN int normalize_contractions;  /*Re-normalize contractions or leave as is*/
-EXTERN char *units;
+EXTERN std::string units;
 EXTERN int print_lvl;               /*Printing level*/
 EXTERN int keep_chkpt;              /*Keep the content of checkpoint file(1) or start over with a new one(0)*/
 EXTERN int no_comshift;             /*No Center-of-Mass shift?*/
@@ -64,11 +65,11 @@ EXTERN int save_oldcalc;            /*Save old calculation and old/new basis ove
 EXTERN int overwrite_output;        /*Overwrite output.dat?*/
 EXTERN int expert;                  /*If expert is true - safety checks are off - 
 				      no guarantee of correctness */
-EXTERN char *frozen_core;           /*Frozen core option*/
-EXTERN char *frozen_virt;           /*Frozen virtuals option*/
+EXTERN std::string frozen_core;           /*Frozen core option*/
+EXTERN int frozen_virt;           /*Frozen virtuals option*/
 
 /*Labels*/
-EXTERN char *label;                 /*Label*/
+EXTERN std::string label;                 /*Label*/
 
 
 /*Symmetry-related stuff*/

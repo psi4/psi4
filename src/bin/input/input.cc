@@ -7,15 +7,19 @@
 */
 
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <string>
+#include <cmath>
+
 #include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <chkpt_params.h>
-#include <cstdlib>
-#include <cstring>
-#include <cmath>
 #include <psifiles.h>
-#include "input.h"
+#include <liboptions/liboptions.h>
 #include <physconst.h>
+
+#include "input.h"
 #include "global.h"
 #include "defines.h"
 
@@ -34,9 +38,11 @@ void am_i_to_char(int am, char *am_label);
 
 using namespace psi;
 
-int input(int argc, char *argv[])
+int input(Options & options)
 {
    /*variables and arrays*/
+   int argc = 0;
+   char **argv = NULL;
    int i,j,k,l;
    int errcod;
    int is_dummy;
@@ -62,7 +68,7 @@ int input(int argc, char *argv[])
      start_io(argc, argv);
 
      init_globals();
-     parsing();
+     parsing(options);
      print_intro();
      print_options();
      
@@ -131,7 +137,6 @@ int input(int argc, char *argv[])
      }
 
      freeze_core();
-     freeze_virt();
 
      repulsion = 0.0;
      if (num_atoms > 1) {
@@ -313,8 +318,8 @@ void print_intro()
 void print_options()
 {
   if (print_lvl) {
-      if (strlen(label))
-	  fprintf(outfile,"  LABEL       =\t%s\n", label);
+      if (label.size())
+	    fprintf(outfile,"  LABEL       =\t%s\n", label.c_str());
       fprintf(outfile,"  SHOWNORM    =\t%d\n",shownorm);
       fprintf(outfile,"  PUREAM      =\t%d\n",puream);
       if (subgroup != NULL) {

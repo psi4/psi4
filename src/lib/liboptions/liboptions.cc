@@ -19,6 +19,8 @@
 
 namespace psi {
 
+using std::string;
+
 Options* _default_psi_options_;
 
 /*!
@@ -126,7 +128,7 @@ int options_get_int(const char* cstr_option){
 /*!
  * Get the value of a string option
  */
-std::string options_get_str(const char* cstr_option){
+string options_get_str(const char* cstr_option){
   return(_default_psi_options_->get_str_option(cstr_option));    
 }
 
@@ -188,13 +190,20 @@ void Options::add_str_option(const char* cstr_option,const char* cstr_default)
 void Options::add_str_option_with_choices(const char* cstr_option,const char* cstr_default,const char* cstr_choices)
 {
   string str_option(cstr_option);
-  string str_default(cstr_default);
+  string str_default; // empty string created if user sends NULL default
+
+  if (cstr_default != NULL) {
+    string temp_string(cstr_default);
+    str_default = temp_string;
+  }
+
   string str_choices(cstr_choices);
   // Make sure that the option that we are adding is not already present
   StringOptionsMap::iterator it = string_options.find(str_option);
   if(it==string_options.end()){
     string_options[str_option];
     string_options[str_option].option  = str_default;
+std::cout << "default" << str_default << std::endl;
     string_options[str_option].choices = str_choices;
   }else{
     fprintf(outfile,"\n  Options: add_str_option(%s), option %s already declared",cstr_option,cstr_option);
@@ -243,6 +252,23 @@ std::string Options::get_str_option(const char* cstr_option)
     fflush(outfile);
     abort();
     return("NA");
+  }
+}
+
+// if string is empty then cstr() returns a NULL pointer (a la old C-style)
+char * Options::get_cstr_option(const char* cstr_option)
+{
+  string temp_string = get_str_option(cstr_option);
+
+  if (temp_string.size() == 0) {
+    return NULL;
+  }
+  else {
+    char *cstyle = new char [temp_string.size()+1];
+    cstyle[temp_string.size()+1] = '\0';
+    for (int i=0; i<temp_string.size(); ++i)
+      cstyle[i] = temp_string[i];
+    return cstyle;
   }
 }
 
