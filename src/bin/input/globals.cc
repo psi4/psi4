@@ -22,8 +22,6 @@ void init_globals()
   /*Make ioff and stuff*/
   setup(MAXIOFF);
 
-  errcod = ip_string("WFN", &wfn, 0);
-     
   /*Create the elem_name array to hold all element names*/
   elem_name = (char **) malloc(sizeof(char *)*NUM_ELEMENTS);
   init_elem_names();

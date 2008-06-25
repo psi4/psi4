@@ -18,11 +18,16 @@
 #include "psi4.h"
 
 namespace psi { 
-  namespace input { extern int input(Options & options); }
+  namespace input { extern int input(Options & options, char **atom_basis); }
   namespace CINTS { extern int cints(int argc, char *argv[]); }
   namespace cscf  { extern int cscf(int argc, char *argv[]); }
   namespace psiclean  { int psiclean(int argc, char *argv[]); }
+
   extern int read_options(std::string name, Options & options);
+  extern void read_atom_basis(char ** & atom_basis);
+
+  int num_atoms = 3;
+  char **atom_basis;
 }
 
 namespace psi {
@@ -64,6 +69,13 @@ int main(int argc, char *argv[])
 
     Options options;
 
+    try { read_atom_basis(atom_basis); }
+    catch (const char * s) {
+      fprintf(outfile,"Unable to determine basis set:\n\t %s\n",s);
+      fprintf(stderr, "Unable to determine basis set:\n\t %s\n",s);
+      abort();
+    }
+
     // Initialize the interpreter
 //    initialize_ruby();
     // At this point the following has happened:
@@ -95,7 +107,7 @@ int main(int argc, char *argv[])
       psi::read_options("INPUT", options); //pass reference to Options
 
       module.set_prgid("INPUT");
-      psi::input::input(options);
+      psi::input::input(options,atom_basis);
 
       module.set_prgid("CINTS");
       psi::CINTS::cints(argc, argv);

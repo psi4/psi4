@@ -149,7 +149,6 @@ EXTERN double *nuclear_charges;	    /*Nuclear charges*/
 EXTERN double *elemsymb_charges;    /*Nuclear charges derived from element names*/
 EXTERN char **element;       	    /*Atom names*/
 EXTERN char **full_element;         /*Atom names including dummy atoms*/
-EXTERN char **atom_basis;           /*Array of basis set names*/
 EXTERN int **atom_orbit;            /*Atom orbits*/
 EXTERN int **class_orbit;           /*Class orbits*/
 EXTERN int **red_unique_orbit;      /*Reduced atomic orbits for unique atoms (each symmetry equiv atom appears only once),

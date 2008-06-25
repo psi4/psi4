@@ -203,7 +203,6 @@ void Options::add_str_option_with_choices(const char* cstr_option,const char* cs
   if(it==string_options.end()){
     string_options[str_option];
     string_options[str_option].option  = str_default;
-std::cout << "default" << str_default << std::endl;
     string_options[str_option].choices = str_choices;
   }else{
     fprintf(outfile,"\n  Options: add_str_option(%s), option %s already declared",cstr_option,cstr_option);
@@ -327,7 +326,10 @@ void Options::read_bool(BoolOptionsMap::iterator& it)
   int status = ip_boolean(cstr_label,&int_value,0);
   if (status == IPE_OK){
     it->second.option = bool(int_value);
+    it->second.ip_specified = true;
   }
+  else
+    it->second.ip_specified = false;
   delete[] cstr_label;
 }
 
@@ -341,7 +343,10 @@ void Options::read_int(IntOptionsMap::iterator& it)
   int status = ip_data(cstr_label,const_cast<char *>("%d"),&int_value,0);
   if (status == IPE_OK){
     it->second.option = int_value;
+    it->second.ip_specified = true;
   }
+  else
+    it->second.ip_specified = false;
   delete[] cstr_label;
 }
 
@@ -355,7 +360,10 @@ void Options::read_double(DoubleOptionsMap::iterator& it)
   int status = ip_data(cstr_label,const_cast<char *>("%f"),&double_value,0);
   if (status == IPE_OK){
     it->second.option = double_value;
+    it->second.ip_specified = true;
   }
+  else
+    it->second.ip_specified = false;
   delete[] cstr_label;
 }
 
@@ -370,6 +378,7 @@ void Options::read_string(StringOptionsMap::iterator& it)
   int status = ip_string(cstr_label,&cstr_value,0);
   if (status == IPE_OK){
     it->second.option = string(cstr_value);
+    it->second.ip_specified = true;
     // Check if there are restricted choices
     if(it->second.choices.size()>0){
       bool wrong_input = true;
@@ -387,6 +396,8 @@ void Options::read_string(StringOptionsMap::iterator& it)
     if(cstr_value!=NULL)
       free(cstr_value);
   }
+  else
+    it->second.ip_specified = false;
   delete[] cstr_label;
 }
 
@@ -414,22 +425,34 @@ void Options::print()
   for(BoolOptionsMap::iterator it = bool_options.begin();it != bool_options.end();++it){
     fprintf(outfile,"\n  %s",it->first.c_str());
     for(int n =0; n < max_option_width - it->first.size(); ++n) fprintf(outfile," "); 
-    fprintf(outfile," = %s",it->second.option ? "TRUE" : "FALSE" );
+      if (it->second.ip_specified)
+        fprintf(outfile," = %s",it->second.option ? "TRUE" : "FALSE" );
+      else
+        fprintf(outfile," = %s",it->second.option ? "(TRUE)" : "(FALSE)" );
   }
   for(IntOptionsMap::iterator it = int_options.begin();it != int_options.end();++it){
     fprintf(outfile,"\n  %s",it->first.c_str());
     for(int n =0; n < max_option_width - it->first.size(); ++n) fprintf(outfile," ");
-    fprintf(outfile," = %-d",it->second.option);
+      if (it->second.ip_specified)
+        fprintf(outfile," = %-d",it->second.option);
+      else
+        fprintf(outfile," = (%-d)",it->second.option);
   }
   for(DoubleOptionsMap::iterator it = double_options.begin();it != double_options.end();++it){
     fprintf(outfile,"\n  %s",it->first.c_str());
     for(int n =0; n < max_option_width - it->first.size(); ++n) fprintf(outfile," ");
-    fprintf(outfile," = %-lf",it->second.option);
+      if (it->second.ip_specified)
+        fprintf(outfile," = %-lf",it->second.option);
+      else
+        fprintf(outfile," = (%-lf)",it->second.option);
   }
   for(StringOptionsMap::iterator it = string_options.begin();it != string_options.end();++it){
     fprintf(outfile,"\n  %s",it->first.c_str());
     for(int n =0; n < max_option_width - it->first.size(); ++n) fprintf(outfile," ");
-    fprintf(outfile," = %s",it->second.option.c_str());
+    if (it->second.ip_specified)
+      fprintf(outfile," = %s",it->second.option.c_str());
+    else
+      fprintf(outfile," = (%s)",it->second.option.c_str());
   }
   fprintf(outfile,"\n  ----------------------------------------------------------------------------");
 }
