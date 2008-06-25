@@ -38,7 +38,7 @@ void am_i_to_char(int am, char *am_label);
 
 using namespace psi;
 
-int input(Options & options)
+int input(Options & options, char **atom_basis)
 {
    /*variables and arrays*/
    int argc = 0;
@@ -68,9 +68,12 @@ int input(Options & options)
      start_io(argc, argv);
 
      init_globals();
+     wfn = options.get_cstr_option("WFN");
      parsing(options);
      print_intro();
-     print_options();
+     if (options.get_int_option("PRINT"));
+       options.print();
+     //print_options();
      
      /* To find default basis set file first check the environment, then its location after installation */
      pbasis_dirname = getenv("PSIDATADIR");
@@ -171,10 +174,7 @@ int input(Options & options)
        Parse basis set data
       ---------------------*/
      
-     atom_basis = (char **) malloc(sizeof(char *)*num_atoms);
-     for(i=0;i<num_atoms;i++)
-       atom_basis[i] = NULL;
-     read_basis();
+     read_basis(atom_basis);
      
      /*----------------------------------------------
        Form symmetry information arrays of all kinds
@@ -554,8 +554,7 @@ void cleanup()
   free_block(Rref);
   free(nuclear_charges);
 /*  free_char_matrix(element,num_atoms);
-    free_char_matrix(full_element,num_allatoms);
-  free_char_matrix(atom_basis,num_atoms);*/
+    free_char_matrix(full_element,num_allatoms);*/
   free_int_matrix(atom_orbit);
   free_int_matrix(class_orbit);
   free_int_matrix(red_unique_orbit);

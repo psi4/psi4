@@ -17,21 +17,70 @@ namespace psi { namespace input {
 
 void parsing(Options & options)
 {
-   int errcod, i;
-   char tmp_label[80];
+  int errcod, i;
+  char tmp_label[80];
 
-   no_reorient = options.get_bool_option("no_reorient");
-   chkpt_mos   = options.get_bool_option("chkpt_mos");
-   label       = options.get_str_option("label");
-   shownorm    = options.get_bool_option("shownorm");
-   puream      = options.get_bool_option("puream");
-   expert      = options.get_bool_option("expert");
-   print_lvl   = options.get_int_option("print");
+  /*--- read MOs from checkpoint file and project onto new basis ---*/
+  chkpt_mos   = options.get_bool_option("CHKPT_MOS");
+
+  /*--- read geometry from checkpoint file (in findif calculations) ---*/
+  // this keyword may be obseleted in psi4
+  chkpt_geom = options.get_bool_option("CHKPT_GEOM");
+
+  /*--- don't project MOs but simply keep them ---*/
+  dont_project_mos = options.get_bool_option("NOPROJECT");
+
+  geomdat_geom = options.get_bool_option("GEOMDAT");
+  save_oldcalc = 0;
+  overwrite_output = 0;
+  no_comshift = options.get_bool_option("NO_COM_SHIFT");
+  no_reorient = 0;
+			  
+  // will not survive psi4
+  //if (geomdat_geom) 
+  //  geomdat_entry = atoi(argv[i+1]);  i++;
+
+  no_reorient = options.get_bool_option("NO_REORIENT");
+
+  read_chkpt = 0;
+
+    /*--- read MOs from checkpoint file and save to a separate file ---*/
+   if (options.get_bool_option("SAVE_MOS")) {
+      read_chkpt = 1;
+      save_oldcalc = 1;
+   }
+
+    /*--- read geometry from checkpoint file (in findif calculations) ---*/
+   if (chkpt_geom) {
+      read_chkpt = 0;
+      chkpt_geom = 1;
+      /* preserve the information about the original reference frame
+ *        * so that properties can be rotated back later by other codes */
+      keep_ref_frame = 1;
+      print_lvl = 0;
+      cartOn = 1;
+      overwrite_output = 0;
+    }
+
+    if (chkpt_mos) read_chkpt = 1;
+
+	/* Don't overwrite the output file */
+	if (options.get_bool_option("KEEP_OUTPUT"))
+      overwrite_output = 0;
+
+    /* Keep the chkpt file. */
+   keep_chkpt = options.get_bool_option("KEEP_CHKPT");  
+
+   label       = options.get_str_option("LABEL");
+   shownorm    = options.get_bool_option("SHOWNORM");
+   puream      = options.get_bool_option("PUREAM");
+   expert      = options.get_bool_option("EXPERT");
+   print_lvl   = options.get_int_option("PRINT");
    subgroup    = options.get_cstr_option("SUBGROUP");
    unique_axis = options.get_cstr_option("UNIQUE_AXIS");
    nfragments  = options.get_int_option("NFRAGMENTS");
    keep_ref_frame = options.get_bool_option("KEEP_REF_FRAME");
-   normalize_contractions = options.get_bool_option("normalize");
+   normalize_contractions = options.get_bool_option("NORMALIZE");
 
    units       = options.get_str_option("UNITS");
    if (units == "BOHR" || units == "AU")

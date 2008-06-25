@@ -131,7 +131,7 @@ void init_elem_names();
 /*
    Main routine to read the basis set info.  It calls recur, and all of the normalization
    routines. */
-void read_basis();
+void read_basis(char **atom_basis);
 
 /*
    normalization functions in read_basis.c 

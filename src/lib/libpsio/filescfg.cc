@@ -31,10 +31,7 @@ std::string fullkwd(const char* kwdgrp, const char* kwd, int unit) {
 
 void PSIO::filecfg_kwd(const char* kwdgrp, const char* kwd, int unit,
                        const char* kwdval) {
-std::cout << "calling fullkwd\n" << std::flush;
   std::string fkwd = fullkwd(kwdgrp, kwd, unit);
-std::cout << fkwd << std::endl << std::flush;
-std::cout << kwdval << std::endl << std::flush;
   files_keywords_[fkwd] = kwdval;
 }
 

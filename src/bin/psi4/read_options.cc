@@ -17,8 +17,35 @@ int read_options(std::string name, Options & options) {
 
   if (name == "INPUT") {
     ip_cwk_add(":INPUT");
-    options.add_bool_option("NO_REORIENT",false);
+
+    /* Keep the chkpt file. */
+    options.add_bool_option("KEEP_CHKPT",false);
+
+    /* read MOs from checkpoint file and project onto new basis */
     options.add_bool_option("CHKPT_MOS",false);
+
+  // these may be obseleted in psi4
+    /*--- read geometry from checkpoint file (in findif calculations) ---*/
+    options.add_bool_option("CHKPT_GEOM",false);
+
+    /*--- don't project MOs but simply keep them ---*/
+    options.add_bool_option("NOPROJECT",false);
+
+    /*--- read geometry from geom.dat file (in findif calculations) ---*/
+    options.add_bool_option("GEOMDAT",false);
+
+    /* No center of mass shift */
+    options.add_bool_option("NO_COM_SHIFT",false);
+
+    /*--- read MOs from checkpoint file and save to a separate file ---*/
+    options.add_bool_option("SAVE_MOS",false);
+
+    /* Don't overwrite the output file. */
+    options.add_bool_option("KEEP_OUTPUT",false);
+  
+    options.add_str_option("WFN", NULL);
+
+    options.add_bool_option("NO_REORIENT",false);
     options.add_str_option("LABEL","Default PSI3 Label");
     options.add_bool_option("SHOWNORM",false);
     options.add_bool_option("NORMALIZE",true);
@@ -37,8 +64,10 @@ int read_options(std::string name, Options & options) {
       "FALSE NO TRUE YES SMALL LARGE");
     options.add_int_option("FREEZE_VIRT",0);
   }
+
+ 
     options.read_options();
-    options.print();
+//    options.print();
   }
 
 } //end ::psi

@@ -22,7 +22,7 @@ using namespace psi;
    Main routine to read the basis set info.  It calls recur, and all of the
    normalization routines. */
 
-void read_basis()
+void read_basis(char **atom_basis)
 {
    int i = 0;
    int j = 0;
@@ -81,61 +81,6 @@ void read_basis()
    /*-----------------------
      Parsing basis set data
     -----------------------*/
-   
-     depth = 0;
-     errcod = ip_count("BASIS",&depth,0);
-     if (depth == 0) { /* the same basis for all atoms */
-       errcod = ip_string("BASIS",&basis_type,0);
-       if (errcod != IPE_OK)
-	 punt("There is a problem with the BASIS keyword!");
-       for(i=0;i<num_atoms;i++)
-	 atom_basis[i] = basis_type;
-     }
-     else {
-       errcod = ip_count("BASIS",&j,1,0);
-       if (errcod == IPE_NOT_AN_ARRAY)
-         /*----------
-	   Basis sets for each atom is specified, e.g.
-	   basis = (dzp dzp dz dz)
-	  ----------*/
-         if (depth == num_atoms)
-	   for(i=0;i<num_atoms;i++) {
-	     errcod = ip_string("BASIS",&basis_type,1,i);
-	     if (errcod != IPE_OK)
-	       punt("There is a problem with the BASIS array!");
-	     atom_basis[i] = basis_type;
-	   }
-	 else
-	   punt("Number of entries in the BASIS array not the same as num_atoms!");
-       else {
-	   /*----------
-	     Basis sets for each element type is specified, e.g.
-	     basis = (
-	       (h dz)
-	       (c dzp)
-	     )
-	    ----------*/
-	 for(i=0;i<depth;i++) {
-	   errcod = ip_count("BASIS",&j,1,i);
-	   if (errcod != IPE_OK || j != 2) {
-	     fprintf(outfile,"  There is a problem with line %d of the BASIS array!\n",i+1);
-	     punt("Invalid basis set file");;
-	   }
-	   errcod = ip_string("BASIS",&elem_label,2,i,0);
-	   atom_num(elem_label,&Z);
-	   free(elem_label);
-	   errcod = ip_string("BASIS",&basis_type,2,i,1);
-	   for(k=0;k<num_atoms;k++)
-	     if (!strcmp(elem_name[(int)Z],element[k]))
-	        atom_basis[k] = basis_type;
-	 }
-	 for(i=0;i<num_atoms;i++)
-	   if (atom_basis[i] == NULL) {
-	     fprintf(outfile,"  Missing basis set for %s\n",element[i]);
-	     punt("Missing basis set");
-	   }
-       }
-     }
    
    ip_token1 = init_char_matrix(MAXATOM,50);
    ip_token2 = init_char_matrix(MAXATOM,50);   

@@ -33,22 +33,26 @@ std::string options_get_str(const char* cstr_option);
 typedef struct 
 {
   bool option;
+  bool ip_specified;
 } BoolOption;
 
 typedef struct 
 {
   int option;
+  bool ip_specified;
 } IntOption;
 
 typedef struct 
 {
   double option;
+  bool ip_specified;
 } DoubleOption;
 
 typedef struct 
 {
   std::string option;
   std::string choices;
+  bool ip_specified;
 } StringOption;
 
 typedef std::map<std::string,BoolOption>       BoolOptionsMap;
