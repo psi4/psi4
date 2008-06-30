@@ -14,6 +14,8 @@
 #include <libciomr/libciomr.h>
 #include <liboptions/liboptions.h>
 
+#include "Molecular_system.h"
+
 #define MAIN
 #include "psi4.h"
 
