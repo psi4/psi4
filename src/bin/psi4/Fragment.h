@@ -2,113 +2,79 @@
 #define _psi4_src_lib_fragment_h_
 
 #include <string>
+#include <libipv1/ip_lib.h>
+#include <element_to_Z.h>
 
 namespace psi {
 
-using std::vector;
-using std::cout;
 using std::string;
-using std::endl;
 
 class Fragment {
   int num_atoms;  // number of atoms in fragment
-  int *Z;         // atomic numbers
-  double *masses; // atomic masses
+  double *Z;         // atomic numbers
   double **geom;   // cartesian coordinates
  public:
   Fragment() {};  // default constructor is empty
   ~Fragment() {
     delete [] Z;
-    delete [] masses;
     if (geom != NULL) free_block(geom);
   }
-  // read cart geom from input file and "$geom_label ="
-  read_cartesian_from_input(char *geom_label);
-}
 
-Fragment::Fragment(void) {
-}
+  // read cart geom from input file and geom_label
+  void read_cartesian_from_input(string geom_label);
+};
 
-Fragment::read_cartesian_from_input(char *geom_label) {
-  int i, j, errcod, atomcount, f, all_atomcount;
-  double Z = 0.0;
-  double tmp = 0.0;
-  char *atom_label, **geom_label, error_message[80];
-  int ival;
+// lets obselete non-"simple" geometry format:
+// geometry = ( (atom 1) (atom 2) ... )
+void Fragment::read_cartesian_from_input(string geom_label) {
+  int i, j, errcod, num_elem;
+  double tmp;
+  char *c_geom_label, *c_atom_label;
+  string error_message, string_atom_label;
 
-  int num_elem, simple_geom, entry_length;
+  c_geom_label = const_cast<char *>(geom_label.c_str());
 
+  // Determine number of atoms in fragment
   num_elem = 0;
-  ip_count(geom_label, &num_elem, 0);
-
-  // is geometry simple, geometry = (H 0.0 0.0 0.0 C 0.0 ...)?
-  simple_geom = 1;
-  entry_length = 0;
-  for(i=0; i < num_elem; i++) {
-    ip_count(geom_label, &entry_length, 1, i);
-    if(entry_length > 1) simple_geom = 0;
+  ip_count(c_geom_label, &num_elem, 0);
+  if (!num_atoms) {
+    error_message = "Fragment " + geom_label + " has no atoms.";
+    throw(error_message);
   }
-
-  if (simple_geom) {
-    if (num_elem%4) {
-      sprintf(error_message, "Problem with number of elements in %s.",geom_label);
-      throw(error_message);
-    }
-    num_atoms = num_elem/4;
-    if (!num_atoms)
-      throw("fragment has no atoms");
+  if (num_elem % 4) {
+    error_message = "Problem with number of entries in " + geom_label;
+    throw(error_message);
   }
-  else {
-    num_atoms = num_elem;
-  }
+  num_atoms = num_elem/4;
 
+  // allocate memory for Z, geom
+  Z = init_array(num_atoms);
   geom = block_matrix(num_atoms,3);
-  element = (char **) malloc(sizeof(char *)*num_atoms);
-  elemsymb_charges = init_array(num_atoms);
 
   for (i=0; i<num_atoms; ++i) {
-    if(simple_geom)
-      errcod = ip_string(geom_label,&atom_label,1,4*i);
-    else
-      errcod = ip_string(geom_label,&atom_label,2,i,0);
-
+    // read symbol and determine atomic number
+    errcod = ip_string(c_geom_label,&c_atom_label,1,4*i);
     if (errcod != IPE_OK) {
-      sprintf(error_message,"Problem with the %s array.", geom_label);
+      error_message = "Problem reading the " + geom_label + " array.";
       throw(error_message);
     }
-    if (strcmp(atom_label,"X")) {
-         atom_num(atom_label, &Z);
-         elemsymb_charges[atomcount] = Z;
-         element[atomcount] = elem_name[(int)Z];
-         atom_dummy[all_atomcount] = 0;
-         ++atomcount;
-       }
-       else {
-         full_element[all_atomcount] = "X";
-         atom_dummy[all_atomcount] = 1;
-       }
-       free(atom_label);
+    Element_to_Z elem_map;
+    Z[i] = elem_map[string_atom_label = c_atom_label];
+    free(c_atom_label);
 
-      for(j=0; j<3;j++){
-        if(simple_geom)
-          errcod = ip_data(geom_label,"%lf", &tmp,1,4*i+j+1);
-        else
-          errcod = ip_data(geom_label,"%lf", &tmp,2,i,j+1);
-        if (errcod != IPE_OK) {
-          sprintf(error_message,"Problem with the %s array.", geom_label);
-          throw(error_message);
-        }
-        else
-          full_geom[all_atomcount][j] = tmp*conv_factor;
-      }
-      ++all_atomcount;
+    // read geometry
+    tmp = 0.0;
+    errcod = ip_data(c_geom_label,"%lf", &tmp,1,4*i+j+1);
+    if (errcod != IPE_OK) {
+      error_message = "Problem reading the " + geom_label + " array.";
+      throw(error_message);
     }
+    geom[i][j] = tmp;
   }
-  read_charges();
 
   return;
 }
 
-}
+} // psi
 
 #endif
