@@ -17,7 +17,8 @@ PSILIBS = -lPSI_dpd -lPSI_qt -lPSI_chkpt -lPSI_deriv -lPSI_r12 -lPSI_int \
 PSIMODULES = -lPSI_input -lPSI_cints -lPSI_cscf -lPSI_psiclean
 
 CXXINC += -I$(RUBYINC) -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"
-CXXSRC = psi4.cc ruby.cc read_options.cc read_atom_basis.cc
+CXXSRC = psi4.cc ruby.cc read_options.cc read_atom_basis.cc \
+fragment.cc molecular_system.cc element_to_Z.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 

@@ -19,6 +19,7 @@
 #include <liboptions/liboptions.h>
 #include <physconst.h>
 
+#include <Molecular_system.h>
 #include "input.h"
 #include "global.h"
 #include "defines.h"
@@ -36,9 +37,11 @@ void cleanup();
 extern void build_cartdisp_salcs();
 void am_i_to_char(int am, char *am_label);
 
+extern void read_cart(Molecular_system &);
+
 using namespace psi;
 
-int input(Options & options, char **atom_basis)
+int input(Options & options, char **atom_basis, Molecular_system & molecules)
 {
    /*variables and arrays*/
    int argc = 0;
@@ -121,23 +124,17 @@ int input(Options & options, char **atom_basis)
 
      ip_cwk_add(":BASIS");
 
-     /*-----------------
-       Read in geometry
-      -----------------*/
-     if (chkpt_geom == 0 && geomdat_geom == 0) { /* read geometry from input.dat */
-       if (cartOn)
-         read_cart();
-       else
-         read_zmat();
-       if (nfragments > 1)
-         orient_fragments();
-     }
-     else if (chkpt_geom) { /* else read the next molecular geometry from checkpoint file */
-       read_chkpt_geom();
-     }
-     else if (geomdat_geom) { /* else read the next molecular geometry from geom.dat */
-       read_geomdat();
-     }
+     // geometry is passed in
+     //
+  fprintf(outfile,"fragment size %d",molecules.get_num_fragments());
+  fprintf(outfile,"fragment size %d",molecules.get_num_fragments2());
+fflush(outfile);
+
+     read_cart(molecules);
+
+     nuclear_charges = molecules.get_Z();
+
+    // orient_fragments();
 
      freeze_core();
 

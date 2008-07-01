@@ -175,7 +175,6 @@ void write_scf_to_chkpt();
 void freeze_core();
 
 void init_globals();
-void read_cart();
 void read_zmat();
 void orient_fragments();
 void read_chkpt_geom();

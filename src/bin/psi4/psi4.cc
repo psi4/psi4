@@ -14,22 +14,19 @@
 #include <libciomr/libciomr.h>
 #include <liboptions/liboptions.h>
 
-#include "Molecular_system.h"
+#include <Molecular_system.h>
 
 #define MAIN
 #include "psi4.h"
 
 namespace psi { 
-  namespace input { extern int input(Options & options, char **atom_basis); }
-  namespace CINTS { extern int cints(int argc, char *argv[]); }
-  namespace cscf  { extern int cscf(int argc, char *argv[]); }
-  namespace psiclean  { int psiclean(int argc, char *argv[]); }
+  namespace input    { int input(Options &, char **atom_basis, Molecular_system & ); }
+  namespace CINTS    { int cints(int argc, char *argv[]); }
+  namespace cscf     { int cscf(int argc, char *argv[]); }
+  namespace psiclean { int psiclean(int argc, char *argv[]); }
 
-  extern int read_options(std::string name, Options & options);
-  extern void read_atom_basis(char ** & atom_basis);
-
-  int num_atoms = 3;
-  char **atom_basis;
+  int read_options(std::string name, Options & options);
+  void read_atom_basis(char ** & atom_basis, int num_atoms);
 }
 
 namespace psi {
@@ -66,17 +63,11 @@ int main(int argc, char *argv[])
     // Parse the command-line arguments
     //parse_command_line(argc, argv);
 
-    errcod = psi_start(&infile,&outfile,&psi_file_prefix,num_extra_args,extra_args,overwrite_output);
+    errcod = psi_start(&infile,&outfile,&psi_file_prefix,num_extra_args, \
+        extra_args,overwrite_output);
     print_version();
 
     Options options;
-
-    try { read_atom_basis(atom_basis); }
-    catch (const char * s) {
-      fprintf(outfile,"Unable to determine basis set:\n\t %s\n",s);
-      fprintf(stderr, "Unable to determine basis set:\n\t %s\n",s);
-      abort();
-    }
 
     // Initialize the interpreter
 //    initialize_ruby();
@@ -106,10 +97,21 @@ int main(int argc, char *argv[])
     // If we don't make calls to the code it isn't linked in.
     if (run_modules) {
 
-      psi::read_options("INPUT", options); //pass reference to Options
+      Molecular_system molecules;  // by default, reads geometry from input.dat
 
+      molecules.print();
+
+      char **atom_basis; // basis set label for each atom
+      try { read_atom_basis(atom_basis, molecules.get_num_atoms()); }
+      catch (const char * s) {
+        fprintf(outfile,"Unable to determine basis set:\n\t %s\n",s);
+        fprintf(stderr, "Unable to determine basis set:\n\t %s\n",s);
+        abort();
+      }
+
+      psi::read_options("INPUT", options); //pass reference to Options
       module.set_prgid("INPUT");
-      psi::input::input(options,atom_basis);
+      psi::input::input(options,atom_basis,molecules);
 
       module.set_prgid("CINTS");
       psi::CINTS::cints(argc, argv);
