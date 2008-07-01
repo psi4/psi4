@@ -13,12 +13,10 @@
 
 namespace psi {
 
-  extern int num_atoms;
-
 void punt(const char *mess);
 
 // establish basis label for each atom
-void read_atom_basis(char ** & atom_basis) {
+void read_atom_basis(char ** & atom_basis, int num_atoms) {
 
   int i,j,errcod, depth = 0;
   char *basis_type, *buf;
