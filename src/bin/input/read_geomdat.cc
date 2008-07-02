@@ -51,8 +51,8 @@ void read_geomdat()
     if (errcod != IPE_OK)
       punt("Problem with the geom.dat entry.");
     elemsymb_charges[i] = Z;
-    element[i] = elem_name[(int)Z];
-    full_element[i] = elem_name[(int)Z];
+    //element[i] = elem_name[(int)Z];
+    //full_element[i] = elem_name[(int)Z];
     for(j=0; j<3;j++){
       errcod = ip_data(entry_name,"%lf", &tmp,2,i,j+1);
       if (errcod != IPE_OK)

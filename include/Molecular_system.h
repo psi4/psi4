@@ -14,19 +14,22 @@ using std::string;
 using std::ostringstream;
 
 class Molecular_system {
-  int num_atoms;
-  int num_fragments;
   vector<Fragment> fragment;
   int charge;
 
  public:
-  Molecular_system();
+  Molecular_system(double conv_factor=1.0);
   ~Molecular_system() { fragment.clear(); }
   Molecular_system(const Molecular_system & sys); // deep copy constructor
 
-  int get_num_atoms(void) { return num_atoms; }
-  int get_num_fragments(void) { return num_fragments; }
-  int get_num_fragments2(void) { return fragment.size(); }
+  int get_num_atoms(void) {
+    int num=0;
+    for (int i=0; i<fragment.size(); ++i)
+      num += fragment.at(i).num_atoms;
+    return num;
+  };
+
+  int get_num_fragments(void) { return fragment.size(); }
   double **get_geom(void);
   double *get_Z(void);
   string *get_atom_label(void);

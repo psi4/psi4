@@ -429,8 +429,8 @@ z_geom[all_atomcount].bond_label[0]= z_geom[all_atomcount].angle_label[0]= z_geo
         atom_num(buffer, &Z);
         free(buffer);
         elemsymb_charges[atomcount] = Z;
-        element[atomcount] = elem_name[(int)Z];
-        full_element[all_atomcount] = elem_name[(int)Z];
+        //element[atomcount] = elem_name[(int)Z];
+        //full_element[all_atomcount] = elem_name[(int)Z];
         geometry[atomcount] = full_geom[all_atomcount];
         atom_dummy[all_atomcount] = 0;
         ++atomcount;

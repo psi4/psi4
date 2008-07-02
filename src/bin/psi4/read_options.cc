@@ -15,7 +15,12 @@ int read_options(std::string name, Options & options) {
   ip_cwk_add(":PSI");
   ip_set_uppercase(1);
 
-  if (name == "INPUT") {
+  if (name == "PSI4") {
+
+    options.add_str_option_with_choices("UNITS", "ANGSTROMS", "BOHR AU ANGSTROMS ANGSTROM");
+
+  }
+  else if (name == "INPUT") {
     ip_cwk_add(":INPUT");
 
     /* Keep the chkpt file. */
@@ -56,7 +61,6 @@ int read_options(std::string name, Options & options) {
     options.add_str_option_with_choices("UNIQUE_AXIS", NULL, "X Y Z");
     options.add_int_option("NFRAGMENTS",1);
     options.add_bool_option("KEEP_REF_FRAME",false);
-    options.add_str_option_with_choices("UNITS", "ANGSTROMS", "BOHR AU ANGSTROMS ANGSTROM");
     options.add_bool_option("FRAGMENT_DISTANCE_INVERSE",false);
     // input also does ip calls to read basis, geometry
     
@@ -65,10 +69,9 @@ int read_options(std::string name, Options & options) {
     options.add_int_option("FREEZE_VIRT",0);
   }
 
- 
     options.read_options();
-//    options.print();
-  }
+    options.print();
+ }
 
 } //end ::psi
 

@@ -46,7 +46,7 @@ Fragment & Fragment::operator=(const Fragment & frag)
 
 // does not support non-"simple" geometry format:
 // geometry = ( (atom 1) (atom 2) ... )
-void Fragment::read_cartesian_from_input(string geom_label)
+void Fragment::read_cartesian_from_input(string geom_label,double conv_factor)
 {
   int i, xyz, errcod, num_elem;
   double tmp;
@@ -100,6 +100,9 @@ void Fragment::read_cartesian_from_input(string geom_label)
       geom[i][xyz] = tmp;
     }
   }
+  for (i=0; i<num_atoms; ++i)
+    for (xyz=0; xyz<3; ++xyz)
+      geom[i][xyz] *= conv_factor;
 
   return;
 }

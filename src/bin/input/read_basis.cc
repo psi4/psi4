@@ -13,6 +13,7 @@
 #include <physconst.h>
 #include "global.h"
 #include "defines.h"
+#include <Z_to_element.h>
 
 namespace psi { namespace input {
 
@@ -104,7 +105,7 @@ void read_basis(char **atom_basis)
 
    /*Create basis "keyword"*/
    for(i=0;i<num_uniques;i++){
-     sprintf(ip_token1[i],":BASIS:%s",elem_name[(int)elemsymb_charges[u2a[i]]]);
+     sprintf(ip_token1[i],":BASIS:%s", Z_to_element[(int)elemsymb_charges[u2a[i]]].c_str());
      sprintf(ip_token2[i],"%s:%s", ip_token1[i],atom_basis[u2a[i]]);
 
      /* If user didn't specify PUREAM in input file, then use the data

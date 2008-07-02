@@ -125,10 +125,6 @@ int input(Options & options, char **atom_basis, Molecular_system & molecules)
      ip_cwk_add(":BASIS");
 
      // geometry is passed in
-     //
-  fprintf(outfile,"fragment size %d",molecules.get_num_fragments());
-  fprintf(outfile,"fragment size %d",molecules.get_num_fragments2());
-fflush(outfile);
 
      read_cart(molecules);
 
@@ -137,6 +133,7 @@ fflush(outfile);
     // orient_fragments();
 
      freeze_core();
+     //freeze_virt();
 
      repulsion = 0.0;
      if (num_atoms > 1) {
@@ -544,14 +541,13 @@ void cleanup()
     Free up global arrays
    ----------------------*/
 
-/*  free_char_matrix(elem_name,NUM_ELEMENTS);*/
   free(sym_oper);
   free_block(full_geom);
   free(geometry);
   free_block(Rref);
   free(nuclear_charges);
-/*  free_char_matrix(element,num_atoms);
-    free_char_matrix(full_element,num_allatoms);*/
+  free_char_matrix(element,num_atoms);
+  free_char_matrix(full_element,num_allatoms);
   free_int_matrix(atom_orbit);
   free_int_matrix(class_orbit);
   free_int_matrix(red_unique_orbit);
