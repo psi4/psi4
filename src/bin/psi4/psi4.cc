@@ -13,6 +13,7 @@
 #include <psiconfig.h>
 #include <libciomr/libciomr.h>
 #include <liboptions/liboptions.h>
+#include <physconst.h>
 
 #include <Molecular_system.h>
 
@@ -67,8 +68,6 @@ int main(int argc, char *argv[])
         extra_args,overwrite_output);
     print_version();
 
-    Options options;
-
     // Initialize the interpreter
 //    initialize_ruby();
     // At this point the following has happened:
@@ -97,9 +96,20 @@ int main(int argc, char *argv[])
     // If we don't make calls to the code it isn't linked in.
     if (run_modules) {
 
-      Molecular_system molecules;  // by default, reads geometry from input.dat
+      Options options;
 
-      molecules.print();
+      psi::read_options("PSI4", options);
+
+      // if read from input.dat, scale.  Elsewhere always use au internally
+      string units = options.get_str_option("UNITS");
+      double conv_factor;
+      if (units == "BOHR" || units == "AU")
+        conv_factor = 1.0;
+      else if (units == "ANGSTROMS" || units == "ANGSTROM")
+        conv_factor = 1.0 / _bohr2angstroms;
+      Molecular_system molecules(conv_factor);  // by default, reads geometry from input.dat
+
+      molecules.print(); fflush(outfile);
 
       char **atom_basis; // basis set label for each atom
       try { read_atom_basis(atom_basis, molecules.get_num_atoms()); }

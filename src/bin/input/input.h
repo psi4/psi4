@@ -106,6 +106,11 @@ void Nuc_repulsion(double *Distance, double *repulsion);
 void Rotate(double **Rotate_axis, double *old_coord);
 
 /*
+   Free array of char *
+*/
+void free_char_matrix(char **mat, int A);
+
+/*
   Function rotates global **full_geom by new_coord[][]
 */
 
@@ -122,11 +127,6 @@ void memorize_rotation(double **R);
    Convert from angstroms to bohr
 */
 void conv_2_bohr(double *old_coord);
-
-/*
-   Create the elem_name matrix
-*/
-void init_elem_names();
 
 /*
    Main routine to read the basis set info.  It calls recur, and all of the normalization

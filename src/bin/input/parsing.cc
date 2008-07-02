@@ -82,14 +82,6 @@ void parsing(Options & options)
    keep_ref_frame = options.get_bool_option("KEEP_REF_FRAME");
    normalize_contractions = options.get_bool_option("NORMALIZE");
 
-   units       = options.get_str_option("UNITS");
-   if (units == "BOHR" || units == "AU")
-     conv_factor = 1.0;
-   else if (units == "ANGSTROMS" || units == "ANGSTROM")
-     conv_factor = 1.0 / _bohr2angstroms;
-   else
-     punt("Unrecognized UNITS - should be caught by read_options()");
-
    frozen_core = options.get_str_option("FREEZE_CORE");
    nfzv = options.get_int_option("FREEZE_VIRT");
 

@@ -28,7 +28,26 @@ void read_cart(Molecular_system & molecules)
 
   // PSI3 did NOT include dummies in these
   elemsymb_charges = molecules.get_Z(); 
+  nuclear_charges = molecules.get_Z(); 
   geometry     = molecules.get_geom();
+
+  std::string *estring = molecules.get_atom_label();
+
+  element = (char **) malloc(num_atoms*sizeof(char *));
+  for (i=0; i<num_atoms; ++i) {
+    element[i] = (char *) malloc((estring[i].size()+1)*sizeof(char));
+    for (j=0; j<estring[i].size(); ++j)
+      element[i][j] = estring[i][j];
+    element[i][estring[i].size()] = '\0';
+  }
+
+  full_element = (char **) malloc(num_atoms*sizeof(char *));
+  for (i=0; i<num_atoms; ++i) {
+    full_element[i] = (char *) malloc((estring[i].size()+1)*sizeof(char));
+    for (j=0; j<estring[i].size(); ++j)
+      full_element[i][j] = estring[i][j];
+    full_element[i][estring[i].size()] = '\0';
+  }
 
   // PSI3 did include dummies in these
   full_geom        = molecules.get_geom();

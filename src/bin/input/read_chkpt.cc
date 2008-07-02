@@ -135,7 +135,7 @@ void read_chkpt_geom()
   element = (char **) malloc(sizeof(char *)*num_atoms);
   elemsymb_charges = init_array(num_atoms);
   for(i=0;i<num_atoms;i++) {
-    element[i] = elem_name[(int)nuclear_charges[i]];
+    //element[i] = elem_name[(int)nuclear_charges[i]];
     elemsymb_charges[i] = nuclear_charges[i];
   }
 

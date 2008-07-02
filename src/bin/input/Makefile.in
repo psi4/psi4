@@ -11,7 +11,7 @@ CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"
 
 CXXSRC = input.cc parsing.cc read_cart.cc read_zmat.cc reorient.cc io.cc \
 find_symmetry.cc count_uniques.cc functions.cc sym_operations.cc atom_num.cc \
-init_elem_names.cc read_basis.cc build_transmat.cc build_cart2pureang.cc \
+read_basis.cc build_transmat.cc build_cart2pureang.cc \
 build_so_classes.cc build_usotao.cc write_to_chkpt.cc projection.cc oe_osrr.cc \
 overlap.cc gto.cc oldcalc.cc write_scf_to_chkpt.cc globals.cc read_chkpt.cc \
 read_charges.cc read_geomdat.cc linalg.cc overlap_float.cc oe_osrr_float.cc \

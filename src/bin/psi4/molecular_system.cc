@@ -1,5 +1,5 @@
 #include <Molecular_system.h>
-#include <psi4-dec.h>
+#include <psi4-dec.h> // for outfile
 
 namespace psi {
 
@@ -10,20 +10,17 @@ using std::ostringstream;
 // deep copy constructor
 Molecular_system::Molecular_system(const Molecular_system & sys)
 {
-  num_atoms = sys.num_atoms;
-  num_fragments = sys.num_fragments;
   fragment = sys.fragment;
   charge = sys.charge;
 }
 
 // default constructor: get molecule from input file
-Molecular_system::Molecular_system()
+Molecular_system::Molecular_system(double conv_factor)
 {
-  int i, errcod = 0;
+  int num_fragments=1, i, errcod = 0;
   string geom_label;
 
-  // read how many fragments there are
-  num_fragments = 1;
+  // read how many fragments to try to read
   errcod = ip_data("NUM_FRAGMENTS","%d",&i,0);
   if (errcod == IPE_OK) num_fragments = i;
 
@@ -35,8 +32,6 @@ Molecular_system::Molecular_system()
     throw("zmatrix not yet implemented");
   else
     throw("could not find GEOMETRY or ZMAT in input!");
-
-  num_atoms = 0;
 
   // add fragment from input.dat
   if (cart) {
@@ -50,62 +45,68 @@ Molecular_system::Molecular_system()
         geom_label = outstr.str();
         outstr.clear();
       }
-      lfrag.read_cartesian_from_input(geom_label);
+      lfrag.read_cartesian_from_input(geom_label,conv_factor);
       fragment.push_back(lfrag);
-      // keep _system::num_atoms updated
-      num_atoms += fragment[i].num_atoms;
     }
   }
 }
 
 double **Molecular_system::get_geom(void)
 {
-  int i,j,xyz,cnt=0;
-  double **lgeom = block_matrix(num_atoms,3);
+  int j,xyz,cnt=0;
+  double **lgeom = block_matrix(get_num_atoms(),3);
+  vector<Fragment>::iterator it;
 
-  for(i=0; i<num_fragments; ++i)
-    for (j=0; j<fragment[i].get_num_atoms(); ++j)
+  for(it=fragment.begin(); it!=fragment.end(); ++it) {
+    for (j=0; j<(*it).num_atoms; ++j) {
       for (xyz=0; xyz<3; ++xyz)
-        lgeom[cnt++][xyz] = fragment[i].geom[j][xyz];
-
+        lgeom[cnt][xyz] = (*it).geom[j][xyz];
+      ++cnt;
+    }
+  }
   return lgeom;
 }
 
 double *Molecular_system::get_Z(void)
 {
-  int i,j,cnt=0;
-  double *lZ = init_array(3*num_atoms);
+  int j,cnt=0;
+  double *lZ = init_array(get_num_atoms());
+  vector<Fragment>::iterator it;
 
-  for(i=0; i<num_fragments; ++i)
-    for (j=0; j<fragment[i].get_num_atoms(); ++j)
-      lZ[cnt++] = fragment[i].Z[j];
+  for(it=fragment.begin(); it!=fragment.end(); ++it)
+    for (j=0; j<(*it).num_atoms; ++j)
+      lZ[cnt++] = (*it).Z[j];
 
   return lZ;
 }
 
 string *Molecular_system::get_atom_label(void)
 {
-  int i,j,cnt=0;
+  int j,cnt=0;
+  string *latom_label = new string [get_num_atoms()];
+  vector<Fragment>::iterator it;
 
-  string *latom_label = new string [num_atoms];
-  for(i=0; i<num_fragments; ++i)
-    for (j=0; j<fragment[i].num_atoms; ++j)
-      latom_label[cnt++] = fragment[i].atom_label[j];
+  for(it=fragment.begin(); it!=fragment.end(); ++it)
+    for (j=0; j<(*it).num_atoms; ++j)
+      latom_label[cnt++] = (*it).atom_label[j];
 
   return latom_label;
 }
 
 void Molecular_system::print(void) const
 {
-  int i,j,xyz;
-  for(i=0; i<num_fragments; ++i) {
-    fprintf(outfile,"Geometry for fragment %d:\n",i);
-    for (j=0; j<fragment[i].num_atoms; ++j) {
+  int j,xyz,i=0;
+  vector<Fragment>::const_iterator it;
+
+  for(it=fragment.begin(); it!=fragment.end(); ++it) {
+    fprintf(outfile,"\nGeometry for fragment %d:\n",++i);
+    for (j=0; j<(*it).num_atoms; ++j) {
       for (xyz=0; xyz<3; ++xyz)
-        fprintf(outfile,"\t%20.10lf",fragment[i].geom[j][xyz]);
+        fprintf(outfile,"\t%20.10lf",(*it).geom[j][xyz]);
       fprintf(outfile,"\n");
     }
   }
+  fprintf(outfile,"\n");
 }
 
 

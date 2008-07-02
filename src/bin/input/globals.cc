@@ -22,10 +22,6 @@ void init_globals()
   /*Make ioff and stuff*/
   setup(MAXIOFF);
 
-  /*Create the elem_name array to hold all element names*/
-  elem_name = (char **) malloc(sizeof(char *)*NUM_ELEMENTS);
-  init_elem_names();
-
   /*No rotation has been performed yet -
     hence canonical and reference frames are equivalent */
   Rref = block_matrix(3,3);

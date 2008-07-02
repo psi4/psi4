@@ -38,7 +38,6 @@ struct coordinates{
 /*Super-global stuff - the same no matter what calculation is running */
 EXTERN int *ioff;
 EXTERN double *df;                  /*df[i] = (i-1)!!*/
-EXTERN char **elem_name;            /*Element names*/
 EXTERN char *wfn;
 
 /*Calculation options*/
