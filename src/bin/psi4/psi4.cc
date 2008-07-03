@@ -17,12 +17,13 @@
 
 #include <Molecular_system.h>
 
+#include <psi4-def.h>
 #define MAIN
 #include "psi4.h"
 
 namespace psi { 
   namespace input    { int input(Options &, char **atom_basis, Molecular_system & ); }
-  namespace CINTS    { int cints(int argc, char *argv[]); }
+  namespace CINTS    { int cints(Options &, int argc, char *argv[]); }
   namespace cscf     { int cscf(int argc, char *argv[]); }
   namespace psiclean { int psiclean(int argc, char *argv[]); }
 
@@ -49,7 +50,6 @@ namespace psi {
 // This is the ONLY main function in PSI
 int main(int argc, char *argv[])
 {
-//    using namespace psi::psi4;
     using namespace psi;
     bool run_modules = true;
     int errcod;
@@ -98,8 +98,7 @@ int main(int argc, char *argv[])
 
       Options options;
 
-      psi::read_options("PSI4", options);
-
+      read_options("PSI4", options);
       // if read from input.dat, scale.  Elsewhere always use au internally
       string units = options.get_str_option("UNITS");
       double conv_factor;
@@ -107,9 +106,10 @@ int main(int argc, char *argv[])
         conv_factor = 1.0;
       else if (units == "ANGSTROMS" || units == "ANGSTROM")
         conv_factor = 1.0 / _bohr2angstroms;
-      Molecular_system molecules(conv_factor);  // by default, reads geometry from input.dat
 
+      Molecular_system molecules(conv_factor);  // by default, reads geometry from input.dat
       molecules.print(); fflush(outfile);
+      options.clear();
 
       char **atom_basis; // basis set label for each atom
       try { read_atom_basis(atom_basis, molecules.get_num_atoms()); }
@@ -119,18 +119,20 @@ int main(int argc, char *argv[])
         abort();
       }
 
-      psi::read_options("INPUT", options); //pass reference to Options
+      read_options("INPUT", options);
       module.set_prgid("INPUT");
-      psi::input::input(options,atom_basis,molecules);
+      input::input(options,atom_basis,molecules);
+      options.clear();
 
+      read_options("CINTS", options);
       module.set_prgid("CINTS");
-      psi::CINTS::cints(argc, argv);
+      CINTS::cints(options,argc, argv);
 
       module.set_prgid("CSCF");
-      psi::cscf::cscf(argc, argv);
+      cscf::cscf(argc, argv);
 
       module.set_prgid("PSICLEAN");
-      psi::psiclean::psiclean(argc, argv);
+      psiclean::psiclean(argc, argv);
     }
 
     psi_stop(infile, outfile, psi_file_prefix);

@@ -85,6 +85,7 @@ public:
   void        set_int_option(const char* cstr_option,int int_value);
   void        set_double_option(const char* cstr_option,double double_value);
   void        set_str_option(const char* cstr_option,const char* cstr_value);
+  void        clear(void);
 private:
   void read_bool(BoolOptionsMap::iterator& it);
   void read_int(IntOptionsMap::iterator& it);

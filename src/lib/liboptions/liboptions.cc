@@ -121,9 +121,9 @@ int options_get_int(const char* cstr_option){
   return(_default_psi_options_->get_int_option(cstr_option));    
 }
 
-// double options_get_double(char* cstr_option){
-//   return(_default_psi_options_->get_double_option(cstr_option));    
-// }
+double options_get_double(char* cstr_option){
+  return(_default_psi_options_->get_double_option(cstr_option));    
+}
 
 /*!
  * Get the value of a string option
@@ -232,7 +232,22 @@ int Options::get_int_option(const char* cstr_option)
   if(it!=int_options.end()){
     return(int_options[str_option].option);
   }else{
-    fprintf(outfile,"\n  Options: get_str_option(%s), option %s is not available",cstr_option,cstr_option);
+    fprintf(outfile,"\n  Options: get_int_option(%s), option %s is not available",cstr_option,cstr_option);
+    fflush(outfile);
+    abort();
+    return(0);
+  }
+}
+
+double Options::get_double_option(const char* cstr_option)
+{
+  string str_option(cstr_option);
+  // Make sure that the option that we are adding is available
+  DoubleOptionsMap::iterator it = double_options.find(str_option);
+  if(it!=double_options.end()){
+    return(double_options[str_option].option);
+  }else{
+    fprintf(outfile,"\n  Options: get_double_option(%s), option %s is not available",cstr_option,cstr_option);
     fflush(outfile);
     abort();
     return(0);
@@ -455,6 +470,14 @@ void Options::print()
       fprintf(outfile," = (%s)",it->second.option.c_str());
   }
   fprintf(outfile,"\n  ----------------------------------------------------------------------------");
+}
+
+void Options::clear(void)
+{
+  bool_options.clear();
+  int_options.clear();
+  double_options.clear();
+  string_options.clear();
 }
 
 }

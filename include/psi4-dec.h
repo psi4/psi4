@@ -1,5 +1,5 @@
-#ifndef psi_include_psi4_h
-#define psi_include_psi4_h
+#ifndef psi_include_psi4_dec_h
+#define psi_include_psi4_dec_h
 
 // declarations for modules
 #ifdef __cplusplus

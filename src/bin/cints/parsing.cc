@@ -5,12 +5,14 @@
 #include<cstdio>
 #include<cstdlib>
 #include<cstring>
+#include<string>
 #include<cmath>
 #include<vector>
 #include<libipv1/ip_lib.h>
 #include<libint/libint.h>
 #include<libciomr/libciomr.h>
 #include <psifiles.h>
+#include <liboptions/liboptions.h>
 
 #include"defines.h"
 #define EXTERN
@@ -22,14 +24,13 @@
 
 namespace psi { namespace CINTS {
   //! Main parsing routine for input.
-  void parsing()
+  void parsing(Options & options)
   {
     int errcod;
     int cutoff_exp;
     long int max_bytes;
   
-    UserOptions.print_lvl = 1;
-    errcod = ip_data("PRINT","%d",&(UserOptions.print_lvl),0);
+    UserOptions.print_lvl = options.get_int_option("PRINT");
     
     /*--- This piece of code from CPHF by Ed Seidl ---*/
     if (ip_exist("MEMORY", 0)) {
@@ -39,50 +40,35 @@ namespace psi { namespace CINTS {
     else
       UserOptions.max_memory = MAX_NUM_DOUBLES;
     UserOptions.memory = UserOptions.max_memory;
+
+    UserOptions.num_threads = options.get_int_option("NUM_THREADS");
     
-    cutoff_exp = CUTOFF;
-    errcod = ip_data("CUTOFF","%d",&cutoff_exp,0);
-    UserOptions.cutoff = 1.0/pow(10.0,(double)cutoff_exp);
-
-    UserOptions.fine_structure_alpha = 1.0;
-    errcod = ip_data("FINE_STRUCTURE_ALPHA","%lf",&(UserOptions.fine_structure_alpha),0);
-
+    UserOptions.fine_structure_alpha = options.get_double_option("FINE_STRUCTURE_ALPHA");
+    UserOptions.cutoff = 1.0/pow(10.0,(double) (options.get_int_option("CUTOFF")) );
     UserOptions.make_oei = 1;
     UserOptions.make_fock = 0;
-    UserOptions.make_eri = 1;
     UserOptions.symm_ints = 1;
-    errcod = ip_boolean("MAKE_ERI",&(UserOptions.make_eri),0);
-    
-    errcod = ip_data("S_FILE","%d",&(IOUnits.itapS),0);
-    errcod = ip_data("T_FILE","%d",&(IOUnits.itapT),0);
-    errcod = ip_data("V_FILE","%d",&(IOUnits.itapV),0);
-    if (UserOptions.make_eri)
-      errcod = ip_data("ERI_FILE","%d",&(IOUnits.itap33),0);
-    
-    UserOptions.empirical_dispersion = 0;
-    errcod = ip_boolean("EMPIRICAL_DISPERSION", 
-      &UserOptions.empirical_dispersion, 0);
-    
+    UserOptions.make_eri = options.get_bool_option("MAKE_ERI");
+
+    IOUnits.itapS = options.get_int_option("S_FILE");
+    IOUnits.itapT = options.get_int_option("T_FILE");
+    IOUnits.itapV = options.get_int_option("V_FILE");
+    IOUnits.itap33 = options.get_int_option("ERI_FILE");
+
+    UserOptions.empirical_dispersion =
+      options.get_bool_option("EMPIRICAL_DISPERSION");
+
+    UserOptions.wfn = options.get_cstr_option("WFN");
+
     UserOptions.scf_only = 0;
-    errcod = ip_string("WFN",&UserOptions.wfn,0);
-    if (UserOptions.wfn == NULL)
-      throw std::domain_error("Keyword WFN is missing");
     if ((!strcmp("SCF",UserOptions.wfn)) || 
         (!strcmp("SCF_MVD",UserOptions.wfn)))
       UserOptions.scf_only = 1;
     
-    UserOptions.num_threads = 1;
-    errcod = ip_data("NUM_THREADS","%d",&(UserOptions.num_threads),0);
-    if (UserOptions.num_threads < 1)
-      UserOptions.num_threads = 1;
-    
-    UserOptions.restart = 0;
-    errcod = ip_boolean("RESTART",&UserOptions.restart,0);
-    if (UserOptions.restart) {
-      errcod = ip_data("RESTART_TASK","%d",&UserOptions.restart_task,0);
-      if (UserOptions.restart_task < 0)
-	throw std::domain_error("RESTART_TASK < 0");
-    }
+    UserOptions.restart = options.get_bool_option("RESTART");
+    UserOptions.restart_task = options.get_int_option("RESTART_TASK");
+    if (UserOptions.restart_task < 0)
+      throw std::domain_error("RESTART_TASK < 0");
     
     std::vector<double> temp(3);
     errcod = ip_double_array("ORIGIN", &temp[0], 3);

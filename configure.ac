@@ -796,6 +796,7 @@ AC_CONFIG_FILES([include/Makefile
           include/chkpt_params.h
           Makefile lib/Makefile src/Makefile
           src/lib/Makefile src/lib/MakeRules src/lib/MakeVars
+          src/util/Makefile src/util/MakeRules src/util/MakeVars
           src/bin/Makefile src/bin/MakeRules src/bin/MakeVars
 
           src/lib/libdpd/Makefile
@@ -817,6 +818,9 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libr12/Makefile
           src/lib/libr12/MakeVars
           src/lib/libr12/libr12_config.h
+
+          src/util/tocprint/Makefile
+          src/util/psiclean/Makefile
 
           src/bin/psi4/Makefile
           src/bin/input/Makefile
