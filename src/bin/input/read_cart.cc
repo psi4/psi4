@@ -26,10 +26,21 @@ void read_cart(Molecular_system & molecules)
   num_atoms        = molecules.get_num_atoms();
   num_allatoms     = num_atoms;
 
+  // PSI3 did include dummies in these
+  full_geom    = molecules.get_geom();
+  atom_dummy   = (int *) malloc(sizeof(int)*num_allatoms);
+  //std::string *atom_label;
+  //atom_label =  molecules.get_atom_label();
+
   // PSI3 did NOT include dummies in these
   elemsymb_charges = molecules.get_Z(); 
   nuclear_charges = molecules.get_Z(); 
-  geometry     = molecules.get_geom();
+  
+  geometry = (double **) malloc(num_atoms*sizeof(double *));
+  for (i=0; i<num_atoms; ++i) {
+    atom_dummy[i] = 0;
+    geometry[i] = full_geom[i];
+  }
 
   std::string *estring = molecules.get_atom_label();
 
@@ -48,13 +59,6 @@ void read_cart(Molecular_system & molecules)
       full_element[i][j] = estring[i][j];
     full_element[i][estring[i].size()] = '\0';
   }
-
-  // PSI3 did include dummies in these
-  full_geom        = molecules.get_geom();
-  atom_dummy   = (int *) malloc(sizeof(int)*num_allatoms);
-
-  //std::string *atom_label;
-  //atom_label =  molecules.get_atom_label();
 
   //read_charges();
 

@@ -15,6 +15,7 @@
 #include<libpsio/psio.h>
 #include<psifiles.h>
 #include<libint/libint.h>
+#include<liboptions/liboptions.h>
 
 #include"defines.h"
 #include"global.h"
@@ -75,7 +76,7 @@ namespace psi {
     void check_max_am();
 
 //! CINTS main procedure.
-int cints(int argc, char *argv[])
+int cints(Options & options, int argc, char *argv[])
 {
   try {
     /*--- Local variables ---*/
@@ -83,7 +84,7 @@ int cints(int argc, char *argv[])
     
     init_globals();
     start_io(argc, argv);
-    parsing();
+    parsing(options);
     /*--- Parse the command line ---*/
     parsing_cmdline(argc,argv);
     print_intro();

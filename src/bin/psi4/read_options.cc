@@ -4,6 +4,7 @@
 
 #include <libipv1/ip_lib.h>
 #include <liboptions/liboptions.h>
+#include <psifiles.h>
 
 namespace psi {
 
@@ -16,9 +17,7 @@ int read_options(std::string name, Options & options) {
   ip_set_uppercase(1);
 
   if (name == "PSI4") {
-
     options.add_str_option_with_choices("UNITS", "ANGSTROMS", "BOHR AU ANGSTROMS ANGSTROM");
-
   }
   else if (name == "INPUT") {
     ip_cwk_add(":INPUT");
@@ -68,9 +67,29 @@ int read_options(std::string name, Options & options) {
       "FALSE NO TRUE YES SMALL LARGE");
     options.add_int_option("FREEZE_VIRT",0);
   }
+  else if (name == "CINTS") {
+    ip_cwk_add(":CINTS");
+    options.add_str_option("WFN", NULL);
+    options.add_int_option("PRINT",1);
+    options.add_int_option("NUM_THREADS",1);
+    options.add_int_option("CUTOFF",15); // cutoff on integrals
+    // scaling for counterfactual fine-structure constant
+    options.add_double_option("FINE_STRUCTURE_ALPHA", 1.0);
 
-    options.read_options();
-    options.print();
+    options.add_bool_option("MAKE_ERI", 1);
+    options.add_bool_option("EMPIRICAL_DISPERSION", 0);
+    options.add_bool_option("RESTART", 0);
+    options.add_int_option("RESTART_TASK", 0);
+
+    options.add_int_option("S_FILE", PSIF_OEI);
+    options.add_int_option("T_FILE", PSIF_OEI);
+    options.add_int_option("V_FILE", PSIF_OEI);
+    options.add_int_option("ERI_FILE", PSIF_SO_TEI);
+
+  }
+
+  options.read_options();
+  options.print();
  }
 
 } //end ::psi
