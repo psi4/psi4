@@ -166,25 +166,27 @@ void packit_closed(unsigned int* lbij, unsigned int* lbkl, int endflg)
 	   }
 	   }*/
        
-       num_ints += ibl;
-       if(print & 16) fprintf(outfile,"buf %3d: ibl = %10d\n",num_bufs,ibl);
-       fflush(outfile);
-       num_bufs++;
-       last = ibl;
-       if(readflg) psio_write(Pmat.unit, Pmat.key, (char *) c_outbuf, sizeof(struct c_pkints)*maxbuf,
-			    Pmat.bufpos, &(Pmat.bufpos));
+      num_ints += ibl;
+      if(print & 16) fprintf(outfile,"buf %3d: ibl = %10d\n",num_bufs,ibl);
+      fflush(outfile);
+      num_bufs++;
+      last = ibl;
+      if(readflg) psio_write(Pmat.unit, Pmat.key, (char *) c_outbuf, sizeof(struct c_pkints)*maxbuf,
+      Pmat.bufpos, &(Pmat.bufpos));
        
       for(k=joff=0; k < num_ir ; k++) {
-         if(nn=scf_info[k].num_so) {
-            for(i=0; i < nn ; i++)
-               for(j=0; j <= i ; j++)
-                  scf_info[k].gmat[ioff[i]+j] = gtmp[ioff[i+joff]+j+joff];
-            joff += nn;
-            }
-         }
+        if(nn=scf_info[k].num_so) {
+          for(i=0; i < nn ; i++)
+            for(j=0; j <= i ; j++)
+              scf_info[k].gmat[ioff[i]+j] = gtmp[ioff[i+joff]+j+joff];
+          joff += nn;
+        }
+      }
       free(gtmp);
       free(ptmp);
-      }
+      gtmp = NULL;
+      ptmp = NULL;
    }
+}
 
 }} // namespace psi::cscf
