@@ -119,6 +119,28 @@ int main(int argc, char *argv[])
         abort();
       }
 
+      for (int i=0; i<molecules.get_num_atoms(); ++i)
+        strcpy(atom_basis[i],"DZ");
+
+      read_options("INPUT", options);
+      module.set_prgid("INPUT");
+      input::input(options,atom_basis,molecules);
+      options.clear();
+
+      read_options("CINTS", options);
+      module.set_prgid("CINTS");
+      CINTS::cints(options,argc, argv);
+
+      module.set_prgid("CSCF");
+      cscf::cscf(argc, argv);
+
+      options.clear();
+      module.set_prgid("PSICLEAN");
+      psiclean::psiclean(argc, argv);
+
+      for (int i=0; i<molecules.get_num_atoms(); ++i)
+        strcpy(atom_basis[i],"DZ");
+
       read_options("INPUT", options);
       module.set_prgid("INPUT");
       input::input(options,atom_basis,molecules);
