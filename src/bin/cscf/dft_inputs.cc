@@ -52,6 +52,7 @@ char *determine_functional(void){
 	    sprintf(functional,"%s%s",exch_str,corr_str);
 	}
 	free(exch_str); free(corr_str);
+    exch_str = NULL;  corr_str = NULL;
     }
     else{
 	fprintf(outfile,"\nwrong number of records in FUNCTIONAL keyword");
@@ -83,7 +84,7 @@ char *determine_grid(void){
 	grid_str = (char *)malloc(sizeof(char)*(i+1));
 	sprintf(grid_str,"%s %s %s",Euler,r,ang);
 	
-	free(r);free(ang);
+	free(r);free(ang); r = NULL; ang = NULL;
     }
     else{
 	fprintf(outfile,"\nProblem with Grid specification: Wrong number of elements for keyword Grid");

@@ -98,8 +98,8 @@ void schmit(int all)
 
          }
       }
-   free(v);
-   free_matrix(ctmp,nsfmax);
+   free(v); v = NULL;
+   free_matrix(ctmp,nsfmax); ctmp = NULL;
    }
 
 }} // namespace psi::cscf

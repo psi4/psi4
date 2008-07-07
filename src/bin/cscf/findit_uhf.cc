@@ -61,7 +61,7 @@ extern double *pa, *pb;
 extern int *inext;
 extern unsigned int *lbij,*lbkl;
 extern int intmx;
-static int old_nint=25920;
+extern int old_nint;
 
 void findit_uhf(int ii, int jj, int kk, int ll, int ism, int ksm, double value, int iab)
 {

@@ -89,7 +89,7 @@ int read_options(std::string name, Options & options) {
   }
 
   options.read_options();
-  options.print();
+  options.print(name);
  }
 
 } //end ::psi

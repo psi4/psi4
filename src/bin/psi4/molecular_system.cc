@@ -99,10 +99,10 @@ void Molecular_system::print(void) const
   vector<Fragment>::const_iterator it;
 
   for(it=fragment.begin(); it!=fragment.end(); ++it) {
-    fprintf(outfile,"\nGeometry for fragment %d:\n",++i);
+    fprintf(outfile,"\n\tGeometry for fragment %d:\n",++i);
     for (j=0; j<(*it).num_atoms; ++j) {
       for (xyz=0; xyz<3; ++xyz)
-        fprintf(outfile,"\t%20.10lf",(*it).geom[j][xyz]);
+        fprintf(outfile,"\t\t%15.10lf",(*it).geom[j][xyz]);
       fprintf(outfile,"\n");
     }
   }

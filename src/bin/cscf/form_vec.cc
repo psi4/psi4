@@ -112,6 +112,7 @@ void form_vec()
         //print_mat(s->cmat, nn, num_mo, outfile);
         eigout(s->cmat, s->hevals, occs, nn, num_mo, outfile);
         free(occs);
+        occs = NULL;
       }
     }
   }
@@ -121,6 +122,8 @@ void form_vec()
   free_matrix(temp,nsfmax);
   free_matrix(sqhmat,nsfmax);
   free_matrix(sqhmat2,nsfmax);
+  hevals = NULL;
+  ctrans = temp = sqhmat = sqhmat2 = NULL;
 }
 
 }} // namespace psi::cscf

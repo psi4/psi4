@@ -221,6 +221,7 @@ void dmat()
 	 psio_write_entry(itapDSCF, "Occupied SCF Eigenvector", 
 			  (char *) &(cmat[0][0]),sizeof(double)*ntri);
 	 free_block(cmat);
+     cmat = NULL;
 	 
 	 /*--- Get full dpmat ---*/
 	 for(i=0;i<num_ir;i++) {
@@ -261,6 +262,7 @@ void dmat()
 			(char *) dmat,sizeof(double)*ntri);
      }
      free(dmat);
+     dmat = NULL;
      psio_close(itapDSCF, 1);
    }
    

@@ -74,8 +74,7 @@ int input(Options & options, char **atom_basis, Molecular_system & molecules)
      wfn = options.get_cstr_option("WFN");
      parsing(options);
      print_intro();
-     if (options.get_int_option("PRINT"));
-       options.print();
+     //if (options.get_int_option("PRINT"));
      //print_options();
      
      /* To find default basis set file first check the environment, then its location after installation */

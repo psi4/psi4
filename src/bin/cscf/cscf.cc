@@ -179,6 +179,14 @@ static char *rcsid = "$Id: cscf.cc 3955 2008-06-07 09:04:04Z rking $";
 namespace psi { namespace cscf {
   void print_initial_vec();
   extern void write_scf_matrices(void);
+  extern void diis_free(void);
+  extern double eelec;
+  int old_nint=25920;
+  extern void formg_two_free(void);
+  extern void formg_direct_free(void);
+  extern void formg_open_free(void);
+  extern void formg_closed_free(void);
+  extern int readflgc, readflgo, num_bufs_o, num_bufs_c, intmx, last;
 
 int cscf(int argc,char* argv[])
 {
@@ -235,6 +243,7 @@ int cscf(int argc,char* argv[])
   else orthog_only = 0;
   ip_boolean("ORTHOG_ONLY",&orthog_only,0);
   free(wfn);
+  wfn = NULL;
 
   /* STB (6/30/99) - Function added because in order to initialize things
      one must know whether you are doing UHF or restricted */   
@@ -382,12 +391,29 @@ int cscf(int argc,char* argv[])
   iter = 0;
   converged = 0;
       
-  // these call cleanup if converged
+  // these now don't call cleanup when converged
   if(twocon) scf_iter_2(); 
   else if(uhf) uhf_iter();
   else scf_iter(); 
 
+  diis_free();
   cleanup();
+
+  if (twocon)
+    formg_two_free();
+  if (direct_scf)
+    formg_direct_free();
+  else {
+    if(iopen) formg_open_free();
+    else formg_closed_free();
+  }
+
+  cscf_nint = 0; 
+  intmx = old_nint = 25920;
+  iter = converged = 0;
+  eelec = 0.0;
+  last = readflgc = readflgo = num_bufs_o = num_bufs_c = 0;
+
 
   chkpt_close();
   psio_done();

@@ -156,8 +156,8 @@ void shalf(void)
     }
   }
 
-  free(eig_vals);
-  free_matrix(eig_vecs,nsfmax);
+  free(eig_vals); eig_vals = NULL;
+  free_matrix(eig_vecs,nsfmax); eig_vecs = NULL;
 
   fprintf(outfile,"\n  The lowest eigenvalue of the overlap matrix was %e\n\n",
 	  min_eval);

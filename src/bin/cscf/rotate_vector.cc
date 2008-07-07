@@ -118,6 +118,7 @@ void rotate_vector()
    free_matrix(scr1,nsfmax);
    free_matrix(scr2,nsfmax);
    free_matrix(scr3,nsfmax);
+   scr1 = scr2 = scr3 = NULL;
    }
 
 }} // namespace psi::cscf

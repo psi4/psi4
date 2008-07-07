@@ -239,6 +239,7 @@ void dmatuhf()
 		       (char *) &(cmat[0][0]),sizeof(double)*ntri);
       /*fprintf(outfile,"\na_elec = %d",a_elec);*/
       free_block(cmat);
+      cmat = NULL;
       /*------ Get the Alpha Occupied Eigenvector --------*/
       ntri = nbfso*b_elec;
       cmat = block_matrix(nbfso,b_elec);

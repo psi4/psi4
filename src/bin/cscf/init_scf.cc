@@ -182,6 +182,8 @@ void init_scf()
      }
    free(irr_labs);
    free(num_so);
+   irr_labs = NULL;
+   num_so = NULL;
    /* read in number of atoms and nuclear charges and total number of MO*/
    natom = chkpt_rd_natom();
    zvals = chkpt_rd_zvals();

@@ -66,7 +66,7 @@ public:
   Options();
   ~Options();
 
-  void        print();
+  void        print(std::string options_for_who);
   void        read_options();
 
   void        add_bool_option(const char* cstr_option,bool bool_default);

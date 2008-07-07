@@ -108,6 +108,9 @@ void check_rot(int nn, int num_mo, double **cold, double **cnew,
   free_matrix(smat,nn);
   free_matrix(tmp1,nn);
   free_matrix(tmp2,nn);
+  smat = NULL;
+  tmp1 = NULL;
+  tmp2 = NULL;
   
   /*  
   fprintf(outfile, "C_New Matrix(after phase change):\n");

@@ -183,7 +183,7 @@ void scf_input(ip_value_t* ipvalue)
    fprintf(outfile,"  dertype      = %s\n",dertype);
    fprintf(outfile,"  convergence  = %d\n",scf_conv);
    fprintf(outfile,"  maxiter      = %d\n",itmax);
-   fprintf(outfile,"  guess        = %s\n",guess); free(guess);
+   fprintf(outfile,"  guess        = %s\n",guess); free(guess); guess=NULL;
    if(print) fprintf(outfile,"  iprint       = %d\n",print);
    if (second_root)
      fprintf(outfile,"  second_root = TRUE\n");
@@ -222,7 +222,7 @@ void scf_input(ip_value_t* ipvalue)
        /* Add MO's per/irrep for scf_info */
        mopi = chkpt_rd_orbspi();
        for(k=0; k < num_ir; k++) scf_info[k].num_mo = mopi[k];
-       free(mopi);
+       free(mopi); mopi = NULL;
 
 /* ----------------------------------------------------
 ** This is the UHF part of the restarting algorithm
@@ -299,11 +299,11 @@ void scf_input(ip_value_t* ipvalue)
 				   spin_info[m].spinlabel,s->irrep_label);
 			   print_mat(spin_info[m].scf_spin[i].cmat,nn,num_mo,outfile);
 			   loff += num_mo;
-			   free_matrix(scr_mat,nn);
+			   free_matrix(scr_mat,nn); scr_mat = NULL;
 		       }
 		   }
 	       }
-	       free(iorder);
+	       free(iorder); iorder = NULL;
 	   }
        }
        else{
@@ -358,10 +358,10 @@ void scf_input(ip_value_t* ipvalue)
 			       s->irrep_label);
 		       print_mat(s->cmat,nn,num_mo,outfile);
 		       loff += num_mo;
-		       free_matrix(scr_mat,nn);
+		       free_matrix(scr_mat,nn); scr_mat = NULL;
 		   }
 	       }
-	       free(iorder);
+	       free(iorder); iorder = NULL;
 	   }
        }
    }
@@ -432,7 +432,7 @@ void scf_input(ip_value_t* ipvalue)
    delete_2e = delete_ints;
    errcod = ip_boolean("DELETE_2E",&delete_2e,0);
 
-   free(dertype);
+   free(dertype); dertype = NULL;
    
    fflush(outfile);
 }

@@ -38,10 +38,10 @@ void tstart(FILE *outfile)
 
   //for (i=0; i < 78 ; i++) { fprintf(outfile,"*"); }
   char *module_name = module.gprgid();
-  fprintf(outfile,"\n*** %s ", module_name);
+  fprintf(outfile,"\n\t*** %s ", module_name);
   delete [] module_name;
   fprintf(outfile,"called tstart() on %s\n", name);
-  fprintf(outfile,"*** at %s\n",ctime(&time_start));
+  fprintf(outfile,"\t*** at %s\n",ctime(&time_start));
 
   free(name);
 }

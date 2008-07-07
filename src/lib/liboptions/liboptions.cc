@@ -53,7 +53,8 @@ void options_read()
  * Print the options. 
  */
 void options_print(){
-  return(_default_psi_options_->print());    
+  std::string s; //send empty string for auto-interface
+  return(_default_psi_options_->print(s));
 }
 
 /*!
@@ -416,7 +417,7 @@ void Options::read_string(StringOptionsMap::iterator& it)
   delete[] cstr_label;
 }
 
-void Options::print()
+void Options::print(std::string options_for_who)
 {
   int max_option_width = 0;
   for(BoolOptionsMap::iterator it = bool_options.begin();it != bool_options.end();++it)
@@ -435,7 +436,10 @@ void Options::print()
     if(it->first.size() > max_option_width)
       max_option_width = it->first.size();
 
-  fprintf(outfile,"\n\n  Options:");
+  if (options_for_who.size() > 0)
+    fprintf(outfile,"\n\n  Options: %s", options_for_who.c_str());
+  else
+    fprintf(outfile,"\n\n  Options:");
   fprintf(outfile,"\n  ----------------------------------------------------------------------------");
   for(BoolOptionsMap::iterator it = bool_options.begin();it != bool_options.end();++it){
     fprintf(outfile,"\n  %s",it->first.c_str());
