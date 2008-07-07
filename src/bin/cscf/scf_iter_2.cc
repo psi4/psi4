@@ -436,14 +436,16 @@ L2:
          free_matrix(fock_ct,nsfmax);
          free_matrix(ctrans,nsfmax);
          free_matrix(fock_o,nsfmax);
+         scr = fock_c = fock_ct = ctrans = fock_o = NULL;
          free(c1);
          free(c2);
-         free(optest);
+         c1 = c2 = NULL;
+         free(optest); optest = NULL;
          /* Clean up */
 				 for(i=0; i < num_ir ; i++) {
 				   s = &scf_info[i];
 				   if (nn=s->num_so)
-				   free_block(s->ucmat);
+				   free_block(s->ucmat); s->ucmat = NULL;
 				 }
          //cleanup();
          }

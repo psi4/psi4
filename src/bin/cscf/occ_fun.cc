@@ -314,6 +314,8 @@ void occ_read(){
     }
     free(cldpi);
     free(openpi);
+    cldpi = NULL;
+    openpi = NULL;
 }
 
 void occ_out(void){

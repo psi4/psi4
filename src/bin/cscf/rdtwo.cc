@@ -294,8 +294,9 @@ void rdtwo()
    free(lbij);
    free(lbkl);
    free(inext);
+   pa = pb = NULL;
+   lbij = lbkl = NULL;
    inext = NULL;
-   
    iwl_buf_close(&ERIIN,!delete_2e);
 }
 

@@ -31,7 +31,8 @@ static char *rcsid = "$Id: formg2.cc 3815 2008-02-13 21:50:07Z sherrill $";
 
 namespace psi { namespace cscf {
 
-static double *gtmp2,*gtmpo2,*ptmp2,*ptmpo2;
+double *gtmp2,*gtmpo2,*ptmp2,*ptmpo2;
+
 extern int num_bufs_c,num_bufs_o,readflgc,readflgo;
 extern struct c_pkints {
          int ij;
@@ -205,5 +206,11 @@ void formg_two(int iju, int* optest)
          }
       }
    }
+
+// free and reset static pointers
+void formg_two_free(void) {
+  free(gtmp2); free(gtmpo2); free(ptmp2); free(ptmpo2);
+  gtmp2 = gtmpo2 = ptmp2 = ptmpo2 = NULL;
+}
 
 }} // namespace psi::cscf

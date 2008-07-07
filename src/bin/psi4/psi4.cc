@@ -138,6 +138,8 @@ int main(int argc, char *argv[])
       module.set_prgid("PSICLEAN");
       psiclean::psiclean(argc, argv);
 
+system("rm -f *.32");
+
       for (int i=0; i<molecules.get_num_atoms(); ++i)
         strcpy(atom_basis[i],"DZ");
 
@@ -153,6 +155,7 @@ int main(int argc, char *argv[])
       module.set_prgid("CSCF");
       cscf::cscf(argc, argv);
 
+      options.clear();
       module.set_prgid("PSICLEAN");
       psiclean::psiclean(argc, argv);
     }

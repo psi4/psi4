@@ -202,7 +202,11 @@ void formg_direct()
    psio_close(itapDSCF, 1);
    
    free(gtmp);
+   gtmp = NULL;
    return;
+}
+
+void formg_direct_free() {
 }
 
 }} // namespace psi::cscf

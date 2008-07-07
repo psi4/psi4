@@ -34,15 +34,22 @@ static char *rcsid = "$Id: formgc.cc 3815 2008-02-13 21:50:07Z sherrill $";
 
 namespace psi { namespace cscf {
 
-static double *gtmp,*ptmp;
+double *gtmp,*ptmp;
 extern struct c_pkints {
          int ij;
          int kl;
          double pval;
          } *c_outbuf;
 extern int last;
-static int where=0;
-static int *int_nums;
+int where=0;
+int *int_nums;
+
+void formg_closed_free(void) {
+  where = 0;
+  free(int_nums);
+  free(gtmp); gtmp = NULL;
+  free(ptmp); ptmp = NULL;
+}
 
 void formg_closed()
 

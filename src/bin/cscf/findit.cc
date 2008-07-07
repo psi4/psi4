@@ -41,7 +41,7 @@ extern double *pa, *pb;
 extern int *inext;
 extern unsigned int *lbij,*lbkl;
 extern int intmx;
-static int old_nint=25920;
+extern int old_nint;
 
 void findit(int ii, int jj, int kk, int ll, int ism, int ksm, double value, int iab)
 {
@@ -63,7 +63,7 @@ void findit(int ii, int jj, int kk, int ll, int ism, int ksm, double value, int 
      }
 
    /* if(!inext) inext = (int *) init_array((int) (keep+intmx)/d2i); */
-   if (!inext) inext = (int *) init_int_array(keep+intmx);
+   if (inext == NULL) inext = (int *) init_int_array(keep+intmx);
 
    noi = scf_info[ism].nopen+scf_info[ism].nhalf;
    nok = scf_info[ksm].nopen+scf_info[ksm].nhalf;

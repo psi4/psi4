@@ -129,6 +129,7 @@ void rdone_iwl()
     }
   }
   free(ints);
+  ints = NULL;
 }
 
 }} // namespace psi::cscf

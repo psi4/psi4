@@ -432,10 +432,12 @@ void scf_iter()
       free_block(fock_c);
       free_block(fock_ct);
       free_block(ctrans);
+      scr = fock_c = fock_ct = ctrans = NULL;
       if(iopen) {
-	free_block(fock_o);
+	free_block(fock_o); fock_o = NULL;
 	free(c1);
 	free(c2);
+        c1 = c2 = NULL;
       }
       //cleanup();
       return;
@@ -479,8 +481,10 @@ void scf_iter()
   /* Clean up */
   for(i=0; i < num_ir ; i++) {
     s = &scf_info[i];
-    if (nn=s->num_so)
+    if (nn=s->num_so) {
       free_block(s->ucmat);
+      s->ucmat = NULL;
+    }
   }
 
 }

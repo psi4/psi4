@@ -341,6 +341,9 @@ int cleanup()
   free(n_there);
   free(no);
   free(nc);
+  n_there = NULL;
+  no = NULL;
+  nc = NULL;
 
   /* Figure out frozen core orbitals in each irrep and write them out*/
   nfzc = chkpt_rd_nfzc();
@@ -377,6 +380,7 @@ int cleanup()
 
   }
   free(scr_arr);
+  scr_arr = NULL;
 
   /* This will write the full SCF matrices (including zeroes) */
   scr1 = block_matrix(nbfso,nmo);
@@ -420,7 +424,9 @@ int cleanup()
           print_mat(s_sq,s->num_mo,s->num_mo,outfile);
           free_block(s_sq);
           free_block(tmp);
-        } 
+          s_sq = NULL;
+          tmp = NULL;
+        }
         
         for(i=0; i < s->num_so; i++) {
           for(j=0; j < s->num_mo; j++) {
@@ -435,6 +441,7 @@ int cleanup()
     chkpt_wt_scf(scr1);
   }
   free_block(scr1);
+  scr1 = NULL;
 
   /* write open-shell coupling coefficients */
   if(iopen){
@@ -445,6 +452,7 @@ int cleanup()
     }
     chkpt_wt_ccvecs(ccvecs);
     free_block(ccvecs);
+    ccvecs = NULL;
   }
 
   /* calculate mo lagrangian and write to file30 */
@@ -536,6 +544,8 @@ int cleanup()
       }
       free_matrix(scr1,nsfmax);
       free_matrix(scr2,nsfmax);
+      scr1 = NULL;
+      scr2 = NULL;
     }
        
     else {
@@ -566,6 +576,8 @@ int cleanup()
   }
   free(lagrangian);
   free_block(lagr);
+  lagrangian = NULL;
+  lagr = NULL;
 
   if(ci_calc && iopen && irot) {
     fprintf(outfile,
@@ -608,6 +620,7 @@ int cleanup()
 
   /* TDC (04/04/07) -- some old cleanups */
   free(reference);
+  reference = NULL;
       
   fprintf(outfile,"\n%6c* SCF total energy   = %20.12f\n",' ',etot);
       
@@ -642,8 +655,10 @@ int cleanup()
   if(!converged)
     fprintf(outfile,"\n%8cCalculation has not converged!\n",' ');
 
-  for (i=0; i < num_ir ; i++)
+  for (i=0; i < num_ir ; i++) {
     free(scf_info[i].irrep_label);
+    scf_info[i].irrep_label = NULL;
+  }
       
   tstop(outfile);
   //psi_stop(infile,outfile,psi_file_prefix);
@@ -692,13 +707,16 @@ void print_mos_aobasis(const char* spincase, const struct symm* scfinfo)
               s->irrep_label);
       eigout(cmat_bf, s->fock_evals, s->occ_num, num_bf, num_mo, outfile);
       free_block(usotbf_blk);
+      usotbf_blk = NULL;
       free_block(cmat_bf);
+      cmat_bf = NULL;
     }
 
     so_offset += num_so;
   }
 
   free_block(usotbf);
+  usotbf = NULL;
 }
 
 
@@ -723,12 +741,15 @@ void print_mos_cartaobasis(const char* spincase, const struct symm* scfinfo)
       eigout(cmat_ao, s->fock_evals, s->occ_num, num_ao, num_mo, outfile);
       free_block(usotao_blk);
       free_block(cmat_ao);
+      usotao_blk = NULL;
+      cmat_ao = NULL;
     }
     
     so_offset += num_so;
   }
   
   free_block(usotao);
+  usotao = NULL;
 }
 
 /* STB(11/2/99) - This function does not at the moment, hence why it is commented out above*/
@@ -816,7 +837,9 @@ double ssquare(void){
   ss += (nm*(nm+1))+nb;
     
   free_matrix(scr1,nsfmax);
+  scr1 = NULL;
   free_matrix(scr2,nsfmax);
+  scr2 = NULL;
     
   return fabs(ss);
 }
@@ -960,6 +983,10 @@ void print_mo_eigvals(void)
     free_int_matrix(sorted_index);
     free_int_matrix(sorted_irreps);
     free_matrix(sorted_evals,3);
+    sorted_counter = NULL;
+    sorted_index = NULL;
+    sorted_irreps = NULL;
+    sorted_evals = NULL;
   }
 
   /* UHF case */
@@ -1098,12 +1125,16 @@ void print_mo_eigvals(void)
     free_int_matrix(sorted_index);
     free_int_matrix(sorted_irreps);
     free_matrix(sorted_evals,2);
+    sorted_counter = NULL;
+    sorted_index = NULL;
+    sorted_irreps = NULL;
+    sorted_evals = NULL;
   }
 
   fprintf(outfile, "\n");
 
   free(counter);
-
+  counter = NULL;
 }
 
 
@@ -1161,6 +1192,7 @@ void write_scf_matrices(void)
     chkpt_wt_scf(scr1);
   }
   free_block(scr1);
+  scr1 = NULL;
 }
 
 
@@ -1249,6 +1281,7 @@ static int* compute_frzcpi(int nfzc)
       }
     }
     free(frzcpi_b);
+    frzcpi_b = NULL;
     frzcpi = frzcpi_a;
   }
 
@@ -1340,6 +1373,7 @@ static int* compute_frzvpi(int nfzv)
       }
     }
     free(frzvpi_b);
+    frzvpi_b = NULL;
     frzvpi = frzvpi_a;
   }
 

@@ -24,9 +24,9 @@
 namespace psi { namespace cscf {
 
 extern double delta;
-static double *btemp, **bold, **bmat;
+extern double *btemp, **bold, **bmat;
 
-static struct diis_data {
+extern struct diis_data {
     double ****fock;
     double ****error;
 } *diism, dtemp;
@@ -156,6 +156,7 @@ void diis_uhf(void)
   free_block(D);
   free_block(X);
   free_block(Z);
+  S = D = X = Z = NULL;
 
   if(iter > ndiis) {
     for(i=0; i < last; i++) {

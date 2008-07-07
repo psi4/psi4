@@ -89,6 +89,7 @@ int phase(void)
 	  free_block(smat);
 	  free_block(tmp);
 	  free_block(identity);
+      smat = tmp = identity = NULL;
 
 	}
       }

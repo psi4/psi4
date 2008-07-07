@@ -250,6 +250,7 @@ void uhf_iter()
 	free_block(fock_c);
 	free_block(fock_ct);
 	free_block(ctrans);
+    scr = fock_c = fock_ct = ctrans = NULL;
 	exit(PSI_RETURN_FAILURE);
 	cleanup();
       }

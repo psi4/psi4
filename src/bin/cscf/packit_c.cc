@@ -74,13 +74,16 @@ namespace psi { namespace cscf {
 int last;
 
 extern double *pa, *pb;
-static int ibl=0;
-static double *gtmp,*ptmp;
 struct c_pkints {
          int ij;
          int kl;
          double pval;
          } *c_outbuf;
+
+namespace {
+double *gtmp,*ptmp;
+int ibl=0;
+}
 
 void packit_closed(unsigned int* lbij, unsigned int* lbkl, int endflg)
 {
