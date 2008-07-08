@@ -106,8 +106,8 @@ static char *rcsid = "$Id: scf_iter.cc 3815 2008-02-13 21:50:07Z sherrill $";
 
 namespace psi { namespace cscf {
 
-void scf_iter()
-
+// now returns 1 if converged
+int scf_iter()
 {
   int i,j,k,m,ij;
   int max,off,jj,kk;
@@ -434,13 +434,12 @@ void scf_iter()
       free_block(ctrans);
       scr = fock_c = fock_ct = ctrans = NULL;
       if(iopen) {
-	free_block(fock_o); fock_o = NULL;
-	free(c1);
-	free(c2);
+        free_block(fock_o); fock_o = NULL;
+        free(c1);
+        free(c2);
         c1 = c2 = NULL;
       }
-      //cleanup();
-      return;
+      return 1;
     }
 
     schmit(1);
@@ -486,7 +485,7 @@ void scf_iter()
       s->ucmat = NULL;
     }
   }
-
+  return 0;
 }
 
 }} // namespace psi::cscf

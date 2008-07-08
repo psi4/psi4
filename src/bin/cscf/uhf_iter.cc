@@ -100,8 +100,7 @@ static char *rcsid = "$Id: uhf_iter.cc 3815 2008-02-13 21:50:07Z sherrill $";
 
 namespace psi { namespace cscf {
 
-void uhf_iter()
-
+int uhf_iter()
 {
   int i,j,l,m,t,ij;
   int nn,num_mo,newci;
@@ -246,13 +245,12 @@ void uhf_iter()
       }
 	   
       if(converged) {
-	free_block(scr);
-	free_block(fock_c);
-	free_block(fock_ct);
-	free_block(ctrans);
-    scr = fock_c = fock_ct = ctrans = NULL;
-	exit(PSI_RETURN_FAILURE);
-	cleanup();
+        free_block(scr);
+        free_block(fock_c);
+        free_block(fock_ct);
+        free_block(ctrans);
+        scr = fock_c = fock_ct = ctrans = NULL;
+        return 1;
       }
     }
     schmit_uhf(1);
@@ -285,6 +283,7 @@ void uhf_iter()
 	formg_direct();
     }
   }
+  return 0;
 }
 
 }} // namespace psi::cscf
