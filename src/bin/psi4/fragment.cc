@@ -19,6 +19,11 @@ Fragment::Fragment(const Fragment & frag)
     for (j=0; j<3; ++j) 
       geom[i][j] = frag.geom[i][j];
   }
+  if (frag.masses != NULL) {
+    masses = init_array(num_atoms);
+    for (i=0; i<num_atoms; ++i)
+      masses[i] = frag.masses[i];
+  }
 }
 
 // deep assignment operator
@@ -105,6 +110,70 @@ void Fragment::read_cartesian_from_input(string geom_label,double conv_factor)
       geom[i][xyz] *= conv_factor;
 
   return;
+}
+
+// read masses from input file - return 1 if successful
+int Fragment::read_masses_from_input(string geom_label) throw(bad_masses_io)
+{
+  int i,j,a,cnt,natom;
+  char *buf;
+  double tval;
+
+  char *c_geom_label;
+  c_geom_label = const_cast<char *>(geom_label.c_str());
+  natom = get_natom();
+
+  if (masses == NULL) masses = new double[natom];
+
+  cnt = 0;
+  if (ip_exist("ISOTOPES",0)) {
+    a = 0;
+    ip_count("ISOTOPES", &a, 0);
+    if (a != natom) {
+      fprintf(outfile,"ISOTOPES array has wrong dimension.\n");
+      throw bad_masses_io("ISOTOPES",0);
+    }
+    for (i=0;i<natom;++i) {
+      ip_data("ISOTOPES","%s", &buf,1,i);
+      for (j=0;j<LAST_MASS_INDEX;j++) {
+        if (!strcmp(buf, mass_labels[j])) {
+          masses[cnt++] = atomic_masses[j];
+          break;
+        }
+      }
+      fprintf(outfile, "Isotope label %s is unidentifiable.\n", buf);
+      throw bad_masses_io("ISOTOPES",i);
+    }
+    return 1;
+  }
+  else if (ip_exist("MASSES",0)) {
+    a = 0;
+    ip_count("MASSES",&a,0);
+    if (a != natom) {
+      fprintf(outfile,"MASSES array has wrong dimension\n");
+      throw bad_masses_io("MASSES",0);
+    }
+    else {
+      for(i=0;i<natom;++i) {
+        ip_data("MASSES","%lf",&tval,1,i);
+        if (tval < 0.0) {
+          fprintf(outfile,"Given mass value is negative!\n");
+          throw bad_masses_io("MASSES",i);
+        }
+        masses[cnt++] = tval;
+      }
+    }
+    return 1;
+  }
+  else
+    return 0;
+}
+
+// use atomic numbers to set masses
+void Fragment::load_default_masses(void)
+{
+  for(int i=0; i<get_natom(); ++i)
+    masses[cnt++] = an2masses[(int) Z[i]];
 }
 
 } // psi

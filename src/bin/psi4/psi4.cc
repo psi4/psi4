@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
       psiclean::psiclean(argc, argv);
 
       for (int i=0; i<molecules.get_num_atoms(); ++i)
-        strcpy(atom_basis[i],"DZ");
+        strcpy(atom_basis[i],"DZP");
 
       read_options("INPUT", options);
       module.set_prgid("INPUT");

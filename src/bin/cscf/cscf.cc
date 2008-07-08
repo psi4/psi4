@@ -394,28 +394,43 @@ int cscf(int argc,char* argv[])
   else scf_iter(); 
 
   // free diis stuff - need to add UHF code later
-  if (refnum == 0) {
-    free(btemp); btemp = NULL;
-    free_block(bold); bold = NULL;
-    free_block(bmat);  bmat = NULL;
+  free(btemp); btemp = NULL;
+  free_block(bold); bold = NULL;
+  free_block(bmat);  bmat = NULL;
+printf("refnum %d\n", refnum);
+  if (refnum == 0) { //RHF 
     for (i=0; i<ndiis; ++i) {
       for(j=0; j<num_ir; ++j) {
         if(scf_info[j].num_so) {
           free_block(diism[i].fock_c[j]);
-          diism[i].fock_c[j] = NULL;
           free_block(diism[i].error[j]);
-          diism[i].error[j] = NULL;
-          if (iopen) {
-            free_block(diism[i].fock_o[j]);
-            diism[i].fock_o[j] = NULL;
-          }
+          if (iopen) free_block(diism[i].fock_o[j]);
         }
       }
-      free(diism[i].fock_c); diism[i].fock_c = NULL;
-      if (iopen) { free(diism[i].fock_o); diism[i].fock_o = NULL; }
-      free(diism[i].error);  diism[i].error = NULL;
+      free(diism[i].fock_c);
+      if (iopen) free(diism[i].fock_o);
+      free(diism[i].error);
     }
     free(diism); diism = NULL;
+  }
+  else if (refnum == 1) { //UHF
+    for (i=0; i<ndiis; ++i) {
+      for(j=0; j<num_ir; ++j) {
+        if(scf_info[j].num_so) {
+          free_block(udiism[i].fock[0][j]);
+          free_block(udiism[i].fock[1][j]);
+          free_block(udiism[i].error[0][j]);
+          free_block(udiism[i].error[1][j]);
+        }
+      }
+      free(udiism[i].fock[0]);
+      free(udiism[i].fock[1]);
+      free(udiism[i].fock);
+      free(udiism[i].error[0]);
+      free(udiism[i].error[1]);
+      free(udiism[i].error);
+    }
+    free(udiism); udiism = NULL;
   }
 
   cleanup();
