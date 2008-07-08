@@ -53,28 +53,6 @@ static char *rcsid = "$Id: formgo.cc 3815 2008-02-13 21:50:07Z sherrill $";
 
 namespace psi { namespace cscf {
 
-extern double *gtmp,*ptmp; // defined in formgc.cc
-extern double *gtmpo2,*ptmpo2; // defined in formg2.cc
-double *gtmpo,*ptmpo;
-extern int num_bufs_c,num_bufs_o,readflgc,readflgo;
-extern struct c_pkints {
-         int ij;
-         int kl;
-         double pval;
-         } *c_outbuf;
-extern struct o_pkints {
-         int ij;
-         int kl;
-         double pval;
-         double qval;
-         } *o_outbuf;
-
-extern int lasto,lastc;
-int wherec=0;
-int whereo=0;
-int *int_nums_c;
-int *int_nums_o;
-
 void formg_open()
 {
    register int i,j,k,joff,nn;
@@ -251,16 +229,4 @@ void formg_open()
    }
 }
 
-void formg_open_free() {
-  free(gtmp); gtmp = NULL;
-  free(gtmpo); gtmpo = NULL;
-  free(gtmpo2); gtmpo2 = NULL;
-  free(ptmp); ptmp = NULL;
-  free(ptmpo); ptmpo = NULL;
-  free(ptmpo2); ptmpo2 = NULL;
-  wherec=0;
-  whereo=0;
-  free(int_nums_c); int_nums_c = NULL;
-  free(int_nums_o); int_nums_o = NULL;
-}
 }} // namespace psi::cscf

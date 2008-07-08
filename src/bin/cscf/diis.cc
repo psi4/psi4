@@ -64,40 +64,6 @@ static char *rcsid = "$Id: diis.cc 3815 2008-02-13 21:50:07Z sherrill $";
 
 namespace psi { namespace cscf {
 
-double *btemp, **bold, **bmat;
-struct diis_mats {
-  double ***fock_c;       /* Closed-shell Fock matrix in AO basis */
-  double ***fock_o;       /* Open-shell Fock matrix in AO basis */
-  double ***error;        /* Error matrix in AO basis */
-  } *diism,dtemp;
-
-extern double delta;
-
-void diis_free(void) {
-  int i,j;
-  free(btemp); btemp = NULL;
-  free_block(bold); bold = NULL;
-  free_block(bmat);  bmat = NULL;
-  for (i=0; i<ndiis; ++i) {
-    for(j=0; j<num_ir; ++j) {
-      if(scf_info[j].num_so) {
-        free_block(diism[i].fock_c[j]);
-        diism[i].fock_c[j] = NULL;
-        free_block(diism[i].error[j]);
-        diism[i].error[j] = NULL;
-        if (iopen) {
-          free_block(diism[i].fock_o[j]);
-          diism[i].fock_o[j] = NULL;
-        }
-      }
-    }
-    free(diism[i].fock_c); diism[i].fock_c = NULL;
-    if (iopen) { free(diism[i].fock_o); diism[i].fock_o = NULL; }
-    free(diism[i].error);  diism[i].error = NULL;
-  }
-  free(diism); diism = NULL;
-}
-
 void diis(double** scr1, double** scr2, double** scr3, double* c1, double* c2, double cim, int newci)
 {
   int i,j,k,ij;

@@ -71,20 +71,6 @@ static char *rcsid = "$Id: packit_c.cc 3815 2008-02-13 21:50:07Z sherrill $";
 
 namespace psi { namespace cscf {
 
-int last;
-
-extern double *pa, *pb;
-struct c_pkints {
-         int ij;
-         int kl;
-         double pval;
-         } *c_outbuf;
-
-namespace {
-double *gtmp,*ptmp;
-int ibl=0;
-}
-
 void packit_closed(unsigned int* lbij, unsigned int* lbkl, int endflg)
 {
    int i,j,k,joff,ij,kl;

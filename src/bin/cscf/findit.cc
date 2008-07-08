@@ -37,12 +37,6 @@ static char *rcsid = "$Id: findit.cc 3815 2008-02-13 21:50:07Z sherrill $";
 
 namespace psi { namespace cscf {
 
-extern double *pa, *pb;
-extern int *inext;
-extern unsigned int *lbij,*lbkl;
-extern int intmx;
-extern int old_nint;
-
 void findit(int ii, int jj, int kk, int ll, int ism, int ksm, double value, int iab)
 {
    register int i,j;

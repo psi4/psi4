@@ -65,37 +65,6 @@ static char *rcsid = "$Id: packit_o.cc 3815 2008-02-13 21:50:07Z sherrill $";
 
 namespace psi { namespace cscf {
 
-extern double *pa, *pb;
-
-namespace {
-int iblc=0;
-int iblo=0;
-int num_ints_o=0;
-int num_ints_c=0;
-double *gtmp,*gtmpo,*ptmp,*ptmpo,*ptmpo2,*gtmpo2;
-double *testj,*testk;
-}
-
-int lastc;
-int lasto;
-int readflgc=0;
-int readflgo=0;
-int num_bufs_o=0;
-int num_bufs_c=0;
-
-struct c_pkints {
-         int ij;
-         int kl;
-         double pval;
-};
-extern struct c_pkints *c_outbuf;
-struct o_pkints {
-         int ij;
-         int kl;
-         double pval;
-         double qval;
-} *o_outbuf;
-
 void packit_open(unsigned int* lbij, unsigned int* lbkl, int endflg)
 {
    int i,j,k,joff,ij,kl,l,lmax,ijkl;

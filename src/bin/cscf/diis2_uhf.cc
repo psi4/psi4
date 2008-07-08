@@ -23,14 +23,6 @@
 
 namespace psi { namespace cscf {
 
-extern double delta;
-extern double *btemp, **bold, **bmat;
-
-extern struct diis_data {
-    double ****fock;
-    double ****error;
-} *diism, dtemp;
-
 void diis_uhf(void)
 {
   int i,j,k,ij, kk;
@@ -46,16 +38,16 @@ void diis_uhf(void)
   double **S, **F, **D, **X, **Y, **Z;
   double sum, maximum;
     
-  if(diism == NULL){ /* first call, so allocate memory */
+  if(udiism == NULL){ /* first call, so allocate memory */
 
     /* use one DIIS b-matrix for alpha+beta error vectors */
     bmat = block_matrix(ndiis+1,ndiis+1);
     bold = block_matrix(ndiis,ndiis);
     btemp = init_array(ndiis+1);
 
-    diism = (struct diis_data *) malloc(sizeof(struct diis_data)*ndiis);
+    udiism = (struct diis_data *) malloc(sizeof(struct diis_data)*ndiis);
     for(m=0; m < ndiis ; m++) {
-      d = &diism[m];
+      d = &udiism[m];
       d->fock = (double ****) malloc(2 * sizeof(double ***));
       d->error = (double ****) malloc(2 * sizeof(double ***));
       for(n=0; n < 2; n++) {
@@ -87,11 +79,11 @@ void diis_uhf(void)
 
   if (iter > ndiis) {
     /* shift DIIS structs up */
-    dtemp = diism[0];
+    udtemp = udiism[0];
     for (i=0; i < last ; i++) {
-      diism[i] = diism[i+1];
+      udiism[i] = udiism[i+1];
     }
-    diism[last] = dtemp;
+    udiism[last] = udtemp;
   } 
 	
   diis_print = 0;
@@ -99,7 +91,7 @@ void diis_uhf(void)
   if(iter == 1 && diis_print)
     ffile(&diis_out,"diis_out.dat",0);
 
-  d = &diism[last];
+  d = &udiism[last];
   for(n=0; n < 2; n++){
     for(m=0; m < num_ir; m++) {
       s = &scf_info[m];
@@ -172,7 +164,7 @@ void diis_uhf(void)
       for(m=0; m < num_ir; m++) {
 	s = &scf_info[m];
 	if(nn=s->num_so) {
-	  sdot(diism[i].error[n][m], diism[last].error[n][m], s->num_mo, &dotp);
+	  sdot(udiism[i].error[n][m], udiism[last].error[n][m], s->num_mo, &dotp);
 	  etemp += dotp;
 	}
       }
@@ -268,7 +260,7 @@ void diis_uhf(void)
 	      for(j=0; j <= i; j++,ij++) {
 		etemp =0.0;
 		for(k=_try,kk=1; k < last+1; k++,kk++)
-		  etemp += btemp[kk] * diism[k].fock[n][m][i][j];
+		  etemp += btemp[kk] * udiism[k].fock[n][m][i][j];
 
 		spin_info[n].scf_spin[m].fock_pac[ij] = etemp;
 	      }

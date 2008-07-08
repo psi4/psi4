@@ -191,13 +191,18 @@ EXTERN double corr_energy;      /* KS DFT correlation energy */
 EXTERN double coulomb_energy;   /* Coulomb energy */
 EXTERN double den_trace;        /* KS DFT trace of the density */
 EXTERN double lshift;           /* levelshift */
-EXTERN int    stop_lshift;      /* cycle to turn off levelshift */
 EXTERN double diiser;           /* max off-diag. element in MO fock mat. */
 EXTERN double save_ci1,save_ci2; /* ci coefficients for tcscf */
 EXTERN double dampd;
 EXTERN double dampo;
 EXTERN double eri_cutoff;       /* accuracy of integrals to request from cints if doing direct */
+EXTERN double delta;               /*just another density convergence variable*/
+EXTERN double alpha1,alpha2,alpha3;  /* two configuration things */
+EXTERN double twocut;
+EXTERN double eelec;       /*--- elec. energy from the previous iteration ---*/
+EXTERN double dconv;
 
+EXTERN int stop_lshift;      /* cycle to turn off levelshift */
 EXTERN int direct_scf;          /* 1 to request direct formation of the Fock matrices */
 EXTERN int diisflg;             /* 0 for diis, 1 disables diis */
 EXTERN int scf_conv;               /* dmat convg. criterion */
@@ -224,9 +229,9 @@ EXTERN int natom;		/* number of atoms in the molecule */
 EXTERN int nelec;		/* number of electrons in the molecule */
 EXTERN int nbfso;		/* total number of symmetry-adapted basis functions */
 EXTERN int nmo;                 /* total number of molecular orbitals */
+
 EXTERN char *reference;         /* RHF,UHF,ROHF,TCSCF,RKS,UKS */
 EXTERN char *functional;        /* KS DFT functional name, just to print out */
-
 EXTERN reftype refnum;
 
 EXTERN int exitflag;            /* remove the after debugging */
@@ -262,7 +267,6 @@ EXTERN int check_mo_orthonormality;
 //EXTERN int ediff;
 
 EXTERN int itap30,itap34,itapS,itapT,itapV,itap33,itap92,itap93,itapDSCF;
-EXTERN double alpha1,alpha2,alpha3;  /* two configuration things */
 
 EXTERN int ioff[MAXIOFF];       /* matrix offsets */
 
@@ -273,11 +277,11 @@ EXTERN double *ener_tot;        /* array containing the orbital energies in orde
 
 EXTERN int *i10;  
 
-EXTERN union psi_buffer {
+/*EXTERN union psi_buffer {
           int *lbli;
           double *pki;
           double **pki_p;
-          } oubuf;
+          }; oubuf; */
 
 EXTERN struct pkbuf {
     int unit;
@@ -346,8 +350,51 @@ EXTERN int tight_ints, ok_ints,    /*keeps track of acccuracy being used*/
        dyn_acc,                    /*1 for dynamic integral accuracy, else 0*/    
        acc_switch;                 /*accuracy switch:  1 -> accuracy has been 
                                      switched*/
-EXTERN double delta;               /*just another density convergence
-                                     variable*/
+
+
+//DIIS stuff
+EXTERN double *btemp, **bold, **bmat;
+struct diis_mats {
+  double ***fock_c;       /* Closed-shell Fock matrix in AO basis */
+  double ***fock_o;       /* Open-shell Fock matrix in AO basis */
+  double ***error;        /* Error matrix in AO basis */
+};
+EXTERN diis_mats *diism,dtemp;
+
+//DIIS for UHF stuff
+struct diis_data {
+    double ****fock;
+    double ****error;
+};
+EXTERN diis_data *udiism, udtemp;
+
+struct c_pkints {
+  int ij;
+  int kl;
+  double pval;
+};
+EXTERN c_pkints *c_outbuf;
+
+struct o_pkints {
+         int ij;
+         int kl;
+         double pval;
+         double qval;
+};
+EXTERN o_pkints *o_outbuf;
+
+EXTERN int readflgc, readflgo, num_bufs_o, num_bufs_c, intmx;
+EXTERN int num_ints_c, num_ints_o;
+EXTERN int last, lasto, lastc;
+EXTERN int ibl, iblc, iblo;
+EXTERN int old_nint, old_ninta;
+EXTERN int where, wherec,whereo;
+EXTERN int *int_nums, *int_nums_c, *int_nums_o;
+EXTERN int *inext;
+EXTERN unsigned int *lbij, *lbkl;
+
+EXTERN double *gtmp,*ptmp,*gtmpo,*ptmpo,*gtmp2,*gtmpo2,*ptmp2,*ptmpo2;
+EXTERN double *pa, *pb, *testj, *testk;
 
 void occ_init();
 void init_scf();

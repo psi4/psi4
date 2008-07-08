@@ -179,24 +179,21 @@ static char *rcsid = "$Id: cscf.cc 3955 2008-06-07 09:04:04Z rking $";
 namespace psi { namespace cscf {
   void print_initial_vec();
   extern void write_scf_matrices(void);
-  extern void diis_free(void);
-  extern double eelec;
-  int old_nint=25920;
-  extern void formg_two_free(void);
-  extern void formg_direct_free(void);
-  extern void formg_open_free(void);
-  extern void formg_closed_free(void);
-  extern int readflgc, readflgo, num_bufs_o, num_bufs_c, intmx, last;
 
 int cscf(int argc,char* argv[])
 {
-  int i,nn;
+  int i,j,nn;
   char *prog_name="CSCF3.0: An SCF program written in C";
   char *output="APPEND  ";
   struct symm *s;
   ip_value_t *ipvalue=NULL;
   int errcod, orthog_only, mo_print;
   char *wfn;
+
+  twocut = 1.0;
+  readflgc = readflgo = num_bufs_o = num_bufs_c = ibl = iblc = iblo = 0;
+  where = wherec = whereo = 0;
+  intmx = old_ninta = 25920;
  
   //errcod = psi_start(&infile,&outfile,&psi_file_prefix,argc-1, argv+1, 0);
   //if (errcod != PSI_RETURN_SUCCESS)
@@ -396,24 +393,105 @@ int cscf(int argc,char* argv[])
   else if(uhf) uhf_iter();
   else scf_iter(); 
 
-  diis_free();
-  cleanup();
-
-  if (twocon)
-    formg_two_free();
-  if (direct_scf)
-    formg_direct_free();
-  else {
-    if(iopen) formg_open_free();
-    else formg_closed_free();
+  // free diis stuff - need to add UHF code later
+  if (refnum == 0) {
+    free(btemp); btemp = NULL;
+    free_block(bold); bold = NULL;
+    free_block(bmat);  bmat = NULL;
+    for (i=0; i<ndiis; ++i) {
+      for(j=0; j<num_ir; ++j) {
+        if(scf_info[j].num_so) {
+          free_block(diism[i].fock_c[j]);
+          diism[i].fock_c[j] = NULL;
+          free_block(diism[i].error[j]);
+          diism[i].error[j] = NULL;
+          if (iopen) {
+            free_block(diism[i].fock_o[j]);
+            diism[i].fock_o[j] = NULL;
+          }
+        }
+      }
+      free(diism[i].fock_c); diism[i].fock_c = NULL;
+      if (iopen) { free(diism[i].fock_o); diism[i].fock_o = NULL; }
+      free(diism[i].error);  diism[i].error = NULL;
+    }
+    free(diism); diism = NULL;
   }
 
-  cscf_nint = 0; 
-  intmx = old_nint = 25920;
-  iter = converged = 0;
-  eelec = 0.0;
-  last = readflgc = readflgo = num_bufs_o = num_bufs_c = 0;
+  cleanup();
 
+  JK = gmat = diis_out = NULL;
+
+  dampsv = repnuc = etot = exc = exch_energy = corr_energy = coulomb_energy = 0.0;
+  den_trace = lshift = diiser = save_ci1 = save_ci2 = dampd = dampo = eri_cutoff = 0.0;
+  delta = alpha1 = alpha2 = alpha3 = eelec = dconv = 0.0;
+  twocut = 1.0;
+
+  stop_lshift = direct_scf = diisflg = scf_conv = iopen = inflg = hcore_guess = print = 0;
+  fock_typ = ndiis = it_diis = itmax = use_iwl = delete_ints = delete_1e = delete_2e = 0;
+  reset_occ = multp = mflag = charge = natom = nelec = nbfso = nmo = 0;
+  phase_check = tight_ints = ok_ints = dyn_acc = acc_switch = 0;
+  readflgc = readflgo = 0;
+  num_bufs_o = num_bufs_c = 0;
+  intmx = old_ninta = 25920;
+  last = lasto = lastc = 0;
+
+  if (reference != NULL) { free(reference); reference = NULL; }
+  if (functional != NULL) { free(reference); reference = NULL; }
+
+  exitflag = mo_out = n_so_typs = nbasis = nsfmax = n_closed = n_open = a_elec = 0;
+  b_elec = num_ir = mxcoef2 = maxbuf = num_bufs = num_ints = iter = 0;
+  converged = hsos = singlet = uhf = special = twocon = ksdft = mixing = cscf_nint = 0;
+  opshl1 = opshl2 = opblk1 = opblk2 = second_root = icheck_rot = check_mo_orthonormality = 0;
+  ibl = iblc = iblo = 0;
+  
+  itap30 = itap34 = itapS = itapT = itapV = itap33 = itap92 = itap93 = itapDSCF = 0;
+
+  if (alpha != NULL) {free(alpha); alpha = NULL;}
+  if (beta != NULL) {free(beta); beta = NULL;}
+  if (zvals != NULL) {free(zvals); zvals = NULL;}
+  if (symm_tot != NULL) {free(symm_tot); symm_tot = NULL;}
+  if (ener_tot != NULL) {free(ener_tot); ener_tot = NULL;}
+  if (i10 != NULL) {free(i10); i10 = NULL;}
+  if (so2symblk != NULL) {free(so2symblk); so2symblk = NULL;}
+
+  // Pmat PKmat?
+  // need psi_buffer?
+  //scf_info
+
+  if (uhf && spin_info != NULL) {
+    free(spin_info[0].scf_spin);  free(spin_info[1].scf_spin);
+    free(spin_info[0].spinlabel); free(spin_info[1].spinlabel);
+    free(spin_info);
+  }
+
+  if (c_outbuf != NULL) { free(c_outbuf); c_outbuf = NULL; }
+  if (o_outbuf != NULL) { free(o_outbuf); o_outbuf = NULL; }
+
+
+  // formg stuff
+  where = wherec = whereo = 0;
+
+  if (int_nums != NULL) { free(int_nums); int_nums = NULL; }
+  if (int_nums_c != NULL) { free(int_nums_c); int_nums_c = NULL; }
+  if (int_nums_o != NULL) { free(int_nums_o); int_nums_o = NULL; }
+  if (inext != NULL) { free(inext); inext = NULL; }
+  if (lbij != NULL) { free(lbij); lbij = NULL; }
+  if (lbkl != NULL) { free(lbkl); lbkl = NULL; }
+
+  if (gtmp != NULL) { free(gtmp); gtmp = NULL; }
+  if (gtmp2 != NULL) { free(gtmp2); gtmp2 = NULL; }
+  if (gtmpo != NULL) { free(gtmpo); gtmpo = NULL; }
+  if (gtmpo2 != NULL) { free(gtmpo2); gtmpo2 = NULL; }
+  if (ptmp != NULL) { free(ptmp); ptmp = NULL; }
+  if (ptmp2 != NULL) { free(ptmp2); ptmp2 = NULL; }
+  if (ptmpo != NULL) { free(ptmpo); ptmpo = NULL; }
+  if (ptmpo2 != NULL) { free(ptmpo2); ptmpo2 = NULL; }
+
+  if (pa != NULL) { free(pa); pa = NULL; }
+  if (pb != NULL) { free(pb); pb = NULL; }
+  if (testj != NULL) { free(testj); testj = NULL; }
+  if (testk != NULL) { free(testk); testk = NULL; }
 
   chkpt_close();
   psio_done();
