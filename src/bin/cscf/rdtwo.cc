@@ -81,12 +81,6 @@ static char *rcsid = "$Id: rdtwo.cc 3815 2008-02-13 21:50:07Z sherrill $";
 
 namespace psi { namespace cscf {
 
-double *pa, *pb;
-int *inext;
-unsigned int *lbij,*lbkl;
-int intmx=25920;
-/*int intmx=51840;*/
-
 extern void findit(int ii, int jj, int kk, int ll, int ism, int ksm, double value, int iab);
 extern void findit_uhf(int ii, int jj, int kk, int ll, int ism, int ksm, double value, int iab);
 extern void packit_closed(unsigned int* lbij, unsigned int* lbkl, int endflg);
@@ -108,7 +102,7 @@ void rdtwo()
    int d2i = sizeof(double)/sizeof(int);
    double pki_int;
    int *tmp;
-   union psi_buffer inbuf;
+   //union psi_buffer inbuf;
    struct iwlbuf ERIIN;
    int pk_flush;
    double *ints;

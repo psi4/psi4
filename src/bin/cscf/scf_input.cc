@@ -34,11 +34,10 @@ void scf_input(ip_value_t* ipvalue)
    int depth;
    int *mopi;
 
-   /*
    ip_cwk_clear();
+   ip_cwk_add(":PSI");
    ip_cwk_add(":DEFAULT");
    ip_cwk_add(":SCF");
-   */
   
    if(ipvalue) ip_print_value(stdout,ipvalue);
 
@@ -433,6 +432,7 @@ void scf_input(ip_value_t* ipvalue)
    errcod = ip_boolean("DELETE_2E",&delete_2e,0);
 
    free(dertype); dertype = NULL;
+   free(wfn);
    
    fflush(outfile);
 }

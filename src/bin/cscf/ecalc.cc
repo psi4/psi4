@@ -97,10 +97,6 @@ static char *rcsid = "$Id: ecalc.cc 3955 2008-06-07 09:04:04Z rking $";
 
 namespace psi { namespace cscf {
 
-double twocut=1.0;
-double eelec;       /*--- elec. energy from the previous iteration ---*/
-double dconv;
-
 int ecalc(double incr)
 {
   int i,j,k,ij,nn;

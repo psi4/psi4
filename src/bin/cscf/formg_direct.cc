@@ -206,7 +206,4 @@ void formg_direct()
    return;
 }
 
-void formg_direct_free() {
-}
-
 }} // namespace psi::cscf
