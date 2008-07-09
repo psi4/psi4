@@ -111,7 +111,6 @@ int main(int argc, char *argv[])
       molecules.print(); fflush(outfile);
       options.clear();
 
-      char **atom_basis; // basis set label for each atom
       try { read_atom_basis(atom_basis, molecules.get_num_atoms()); }
       catch (const char * s) {
         fprintf(outfile,"Unable to determine basis set:\n\t %s\n",s);

@@ -15,6 +15,9 @@
 
 namespace psi {
 
+enum energy_type { scf, cisd, ccsd };
+char **atom_basis; // basis set label for each atom
+
   // Useful functions for converting between C and Ruby arrays
   extern VALUE create_array(unsigned int count, int *array);
   extern VALUE create_array(unsigned int count, double *array);
