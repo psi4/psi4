@@ -6,6 +6,7 @@
 #include <ruby.h>             // THIS IS FROM Ruby
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>
+#include <libipv1/ip_lib.h>
 
 #ifdef MAIN
 #define EXT
@@ -15,8 +16,62 @@
 
 namespace psi {
 
-enum energy_type { scf, cisd, ccsd };
+// Define Calculation class
+
+class Calculation
+{
+  enum Jobtype { sp, opt, freq } jobtype;
+  enum Wfn { SCF, CCSD, G3 } wfn;
+  enum Dertype { none, first, second, unspecified } dertype;
+
+  // sets values of calculation from cstrings - order must match the
+  // enumerated lists above - could make more elegant later 
+  void set(char *sj, char *sw, char *sd) {
+    if      (!strcmp(sj,"SP"))   jobtype = sp;
+    else if (!strcmp(sj,"OPT"))  jobtype = opt;
+    else if (!strcmp(sj,"FREQ")) jobtype = freq;
+    else throw("Calculation::set(): JOBTYPE unknown\n");
+
+    if      (!strcmp(sw,"SCF"))   wfn = SCF;
+    else if (!strcmp(sw,"CCSD"))  wfn = CCSD;
+    else if (!strcmp(sw,"G3"))    wfn = G3;
+    else throw("Calculation::set() WFN unknown\n");
+
+    if      (!strcmp(sd,"NONE"))        dertype = none;
+    else if (!strcmp(sd,"FIRST"))       dertype = first;
+    else if (!strcmp(sd,"SECOND"))      dertype = second;
+    else if (!strcmp(sd,"UNSPECIFIED")) dertype = unspecified;
+    else throw("Calculation::set() DERTYPE unknown\n");
+  }
+  // this constructor is used if calculation type is known
+  Calculation(Jobtype j, Wfn w, Dertype d) {
+    jobtype = j; wfn = w; dertype = d;
+  }
+  // this constructor reads calculation type from input.dat
+  Calculation(void) {
+    char *sj, *sw, *sd;
+
+    if (!ip_exist("JOBTYPE",0))
+      throw("JOBTYPE keyword not found in input\n");
+    ip_string("JOBTYPE",&sj,0);
+
+    if (!ip_exist("WFN",0))
+      throw("WFN keyword not found in input\n");
+    ip_string("WFN",&sw,0);
+
+    if (ip_exist("DERTYPE",0))
+      ip_string("WFN",&sd,0);
+    else sd = "UNSPECIFIED";
+
+    set(sj,sw,sd);
+  }
+};
+
+enum energy_type { SCF, CISD, CCSD, G3 };
+
 char **atom_basis; // basis set label for each atom
+
+
 
   // Useful functions for converting between C and Ruby arrays
   extern VALUE create_array(unsigned int count, int *array);

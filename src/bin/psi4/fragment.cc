@@ -113,15 +113,21 @@ void Fragment::read_cartesian_from_input(string geom_label,double conv_factor)
 }
 
 // read masses from input file - return 1 if successful
-int Fragment::read_masses_from_input(string geom_label) throw(bad_masses_io)
+int Fragment::read_masses_from_input(int fragment_id) throw(bad_masses_io)
 {
   int i,j,a,cnt,natom;
-  char *buf;
+  char *buf, *c_mass_label;
   double tval;
+  std::string mass_label;
 
-  char *c_geom_label;
-  c_geom_label = const_cast<char *>(geom_label.c_str());
-  natom = get_natom();
+  std::ostringstream outstr;
+  outstr << "ISOTOPES" << fragment_id;
+  mass_label = outstr.str();
+  outstr.clear();
+
+  c_mass_label = const_cast<char *>(mass_label.c_str());
+
+  natom = get_num_atom();
 
   if (masses == NULL) masses = new double[natom];
 
