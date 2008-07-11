@@ -2,6 +2,7 @@
 #define _psi_include_fragment_h_
 
 #include <string>
+#include <iostream>
 #include <libciomr/libciomr.h>
 #include <libipv1/ip_lib.h>
 #include <Element_to_Z.h>

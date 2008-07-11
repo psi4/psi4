@@ -31,15 +31,22 @@ double energy(energy_type etype)
       module.set_prgid("PSICLEAN");
       psiclean::psiclean(argc, argv);
       return 1;
-
+   case CISD :
+      fprintf(outfile,"Do CISD energy\n");
+      return 1;
+   case CISD :
+      fprintf(outfile,"Do CISD energy\n");
+      return 1;
+   case G3 :
+      energy(SCF);
+      energy(CISD);
+      energy(CCSD);
+      return 1;
     default :
       throw("invalid energy type");
-
   }
 }
 
-double energy_cbs(energy_type etype)
-{
-
+//double energy_cbs(energy_type etype)
 } // psi
 
