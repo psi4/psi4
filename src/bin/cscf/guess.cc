@@ -57,8 +57,7 @@ void guess()
       
 	  errcod = ip_exist("DOCC",0);
 	  if(errcod) {
-	      fprintf(outfile,"\n  Using DOCC and SOCC to \n");
-	      fprintf(outfile,"  determine occupations\n\n");
+	      fprintf(outfile,"\n  Using DOCC and SOCC to determine occupations\n\n");
 	      
 	      errcod = ip_count("DOCC",&size,0);
 	      if(errcod == IPE_OK && size != num_ir) {
