@@ -21,8 +21,8 @@ namespace psi {
 void tqli(int n, double *d, double **z, double *e, int matz, double toler)
    {
       register int k;
-      int i,j,l,m,iter;
-      double dd,g,r,s,c,p,f,b,h;
+      int i,l,m,iter;
+      double dd,g,r,s,c,p,f,b;
       double azi;
 
       f=0.0;

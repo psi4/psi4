@@ -12,7 +12,7 @@
 
 namespace psi {
 
-int Chkpt::exist(char *keyword)
+int Chkpt::exist(const char *keyword)
 {
 	int exists=0;
 	
@@ -33,7 +33,7 @@ int Chkpt::exist(char *keyword)
 **        
 ** \ingroup CHKPT
 */
-	int chkpt_exist(char *keyword)
+	int chkpt_exist(const char *keyword)
 	{
 		return(_default_chkpt_lib_->exist(keyword));
 	}

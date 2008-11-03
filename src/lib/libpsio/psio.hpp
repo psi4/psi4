@@ -65,7 +65,7 @@ namespace psi {
        **  \param end    = A pointer to the entry-relative page/offset for the next
        **                  byte after the end of the read request.
        */
-      void read(unsigned int unit, char *key, char *buffer, ULI size,
+      void read(unsigned int unit, const char *key, char *buffer, ULI size,
                 psio_address start, psio_address *end);
       /** Writes data to a TOC entry in a PSI file.
        **
@@ -78,11 +78,11 @@ namespace psi {
        **  \param end     = A pointer to the entry-relative page/offset for the next
        **                   byte after the end of the write request.
        */
-      void write(unsigned int unit, char *key, char *buffer, ULI size,
+      void write(unsigned int unit, const char *key, char *buffer, ULI size,
                  psio_address start, psio_address *end);
 
-      void read_entry(unsigned int unit, char *key, char *buffer, ULI size);
-      void write_entry(unsigned int unit, char *key, char *buffer, ULI size);
+      void read_entry(unsigned int unit, const char *key, char *buffer, ULI size);
+      void write_entry(unsigned int unit, const char *key, char *buffer, ULI size);
 
       /** Central function for all reads and writes on a PSIO unit.
        **
@@ -97,11 +97,11 @@ namespace psi {
       void rw(unsigned int unit, char *buffer, psio_address address, ULI size,
               int wrt);
       /// Delete all TOC entries after the given key. If a blank key is given, the entire TOC will be wiped.
-      void tocclean(unsigned int unit, char *key);
+      void tocclean(unsigned int unit, const char *key);
       /// Print the table of contents for the given unit
       void tocprint(unsigned int unit, FILE *output);
       /// Scans the TOC for a particular keyword and returns either a pointer to the entry or NULL to the caller.
-      psio_tocentry* tocscan(unsigned int unit, char *key);
+      psio_tocentry* tocscan(unsigned int unit, const char *key);
       ///  Write the table of contents for file number 'unit'. NB: This function should NOT call psio_error because the latter calls it!
       void tocwrite(unsigned int unit);
 

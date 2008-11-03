@@ -52,24 +52,24 @@ void fndcor(long int *maxcrb, FILE *infile, FILE *outfile)
 
   maxcrr = DEF_MAXCRR;        /* set maxcor to default first */
 
-  if(ip_exist("MEMORY",0)) { /* check if the keyword exists */
-    errcod = ip_count("MEMORY", &count, 0);
+  if(ip_exist(const_cast<char*>("MEMORY"),0)) { /* check if the keyword exists */
+    errcod = ip_count(const_cast<char*>("MEMORY"), &count, 0);
     if (errcod != IPE_OK) fndcor_abort(infile, outfile);
     else if (errcod == IPE_NOT_AN_ARRAY) { /* Scalar specification of MEMORY */
-      errcod = ip_string("MEMORY", &maxcrr_str, 0);
+      errcod = ip_string(const_cast<char*>("MEMORY"), &maxcrr_str, 0);
       if (errcod != IPE_OK) fndcor_abort(infile, outfile);
       maxcrr = atol(maxcrr_str);
     }
     /* Array specification of MEMORY */
     else if (count == 1) {
-      errcod = ip_string("MEMORY", &maxcrr_str, 0);
+      errcod = ip_string(const_cast<char*>("MEMORY"), &maxcrr_str, 0);
       if (errcod != IPE_OK) fndcor_abort(infile, outfile) ;
       maxcrr = atol(maxcrr_str);
     }
     else if (count == 2) {
-      errcod = ip_data("MEMORY", "%lf", &size, 1, 0);
+      errcod = ip_data(const_cast<char*>("MEMORY"), const_cast<char*>("%lf"), &size, 1, 0);
       if (errcod != IPE_OK) fndcor_abort(infile, outfile);
-      errcod = ip_data("MEMORY", "%s", type, 1, 1);
+      errcod = ip_data(const_cast<char*>("MEMORY"), const_cast<char*>("%s"), type, 1, 1);
       if (errcod != IPE_OK) fndcor_abort(infile, outfile);
       /* convert string to uppercase */
       for (s=type; *s!='\0'; s++) {

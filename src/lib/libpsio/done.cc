@@ -51,6 +51,7 @@ PSIO::~PSIO() {
 int psio_done(void) {
   delete _default_psio_lib_;
   _default_psio_lib_ = 0; //must be assigned 0 for test in psio_init()
+  return true;
 }
 
 }

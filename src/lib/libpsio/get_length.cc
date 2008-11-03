@@ -21,9 +21,11 @@ namespace psi {
     /* Number of bytes on fullpages */
     full_page_bytes = (eadd.page - sadd.page- 1)*PSIO_PAGELEN;
     
-    if (full_page_bytes < 0) { /* We're on a single page */
-      return (eadd.offset - sadd.offset);
-    } else if (full_page_bytes == 0) { /* We're on the next page */
+    /* Uh, ULI will NEVER be less than 0 */
+    //if (full_page_bytes < 0) { /* We're on a single page */
+    //  return (eadd.offset - sadd.offset);
+    //} else if (full_page_bytes == 0) { /* We're on the next page */
+    if (full_page_bytes == 0) { /* We're on the next page */
       return ((PSIO_PAGELEN - sadd.offset) + eadd.offset);
     } else {
       return ((PSIO_PAGELEN - sadd.offset) + full_page_bytes + eadd.offset);

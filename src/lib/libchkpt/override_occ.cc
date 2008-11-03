@@ -13,7 +13,7 @@ namespace psi {
 
 int Chkpt::rd_override_occ(void)
 {
-	int override=0, i, keylen;
+	int override=0, keylen;
 	char *keyword;
 /*
 	keyword = chkpt_build_keyword("Override Occupations");

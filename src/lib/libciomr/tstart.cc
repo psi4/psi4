@@ -17,7 +17,6 @@
 namespace psi {
 
 time_t time_start, time_end;
-struct tms total_tmstime;
 
 /*!
 ** tstart(): Starts a timer
@@ -28,7 +27,7 @@ struct tms total_tmstime;
 */
 void tstart(FILE *outfile)
 {
-  int i,error;
+  int error;
   char *name;
   name = (char *) malloc(40 * sizeof(char));
   error = gethostname(name, 40);
@@ -55,7 +54,6 @@ void tstart(FILE *outfile)
 */ 
 void tstop(FILE *outfile)
 {
-  int i;
   int error;
   time_t total_time;
   struct tms total_tmstime;
@@ -85,7 +83,7 @@ void tstop(FILE *outfile)
   fprintf(outfile,"\tsystem time = %10.2f seconds = %10.2f minutes\n",
 	  sys_s, sys_s/60.0);
   fprintf(outfile,"\ttotal time  = %10d seconds = %10.2f minutes\n",
-	  total_time, ((double) total_time)/60.0);
+	  (int)total_time, ((double) total_time)/60.0);
 
   free(name);
 

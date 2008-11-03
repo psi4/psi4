@@ -12,7 +12,6 @@ namespace psi {
 
 void PSIO::tocwrite(unsigned int unit) {
   unsigned int i;
-  int errcod, volume, stream;
   psio_ud *this_unit;
   psio_tocentry *this_entry;
   ULI entry_size;

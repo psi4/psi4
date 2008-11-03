@@ -13,7 +13,7 @@
 
 namespace psi {
 
-double Chkpt::rd_e_labeled(char *label)
+double Chkpt::rd_e_labeled(const char *label)
 {
 	char *s;
 	double E;
@@ -28,7 +28,7 @@ double Chkpt::rd_e_labeled(char *label)
 	return E;
 }
 
-void Chkpt::wt_e_labeled(char *label, double E)
+void Chkpt::wt_e_labeled(const char *label, double E)
 {
 	char *s;
 
@@ -49,7 +49,7 @@ void Chkpt::wt_e_labeled(char *label, double E)
 **  returns: double E, the energy
 **  \ingroup CHKPT
 */
-	double chkpt_rd_e_labeled(char *label)
+	double chkpt_rd_e_labeled(const char *label)
 	{
 		double E;
 		E = _default_chkpt_lib_->rd_e_labeled(label);
@@ -66,7 +66,7 @@ void Chkpt::wt_e_labeled(char *label, double E)
 **  returns: none
 **  \ingroup CHKPT
 */
-	void chkpt_wt_e_labeled(char *label, double E)
+	void chkpt_wt_e_labeled(const char *label, double E)
 	{
 		_default_chkpt_lib_->wt_e_labeled(label, E);
 	}

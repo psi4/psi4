@@ -13,13 +13,11 @@ namespace psi {
 
 unsigned int PSIO::get_numvols(unsigned int unit) {
   std::string charnum;
-
-  char *module_name = module.gprgid();
-  charnum = filecfg_kwd(module_name, "NVOLUME", unit);
+  std::string module_name = module.gprgid();
+  charnum = filecfg_kwd(module_name.c_str(), "NVOLUME", unit);
   if (!charnum.empty())
     return ((unsigned int)atoi(charnum.c_str()));
-  charnum = filecfg_kwd(module_name, "NVOLUME", -1);
-  delete [] module_name;
+  charnum = filecfg_kwd(module_name.c_str(), "NVOLUME", -1);
 
   if (!charnum.empty())
     return ((unsigned int)atoi(charnum.c_str()));

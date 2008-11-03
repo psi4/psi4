@@ -19,8 +19,7 @@
 namespace psi {
 
 void PSIO::open(unsigned int unit, int status) {
-  unsigned int i, j;
-  int stream;
+  unsigned int i;
   char *name, *path;
   psio_ud *this_unit;
   

@@ -182,18 +182,18 @@ int psi_start(FILE** infile, FILE** outfile, char** psi_file_prefix,
   }  
 
   /* lastly, everybody needs DEFAULT and PSI sections */
-  ip_cwk_add(":DEFAULT");
-  ip_cwk_add(":PSI");
+  ip_cwk_add(const_cast<char*>(":DEFAULT"));
+  ip_cwk_add(const_cast<char*>(":PSI"));
 
   /* if prefix still NULL - check input file */
   if (fprefix == NULL)
-    errcod = ip_string(":DEFAULT:FILES:DEFAULT:NAME",&fprefix,0);
+    errcod = ip_string(const_cast<char*>(":DEFAULT:FILES:DEFAULT:NAME"),&fprefix,0);
   if (fprefix == NULL)
-    errcod = ip_string(":DEFAULT:NAME",&fprefix,0);
+    errcod = ip_string(const_cast<char*>(":DEFAULT:NAME"),&fprefix,0);
   if (fprefix == NULL)
-    errcod = ip_string(":PSI:FILES:DEFAULT:NAME",&fprefix,0);
+    errcod = ip_string(const_cast<char*>(":PSI:FILES:DEFAULT:NAME"),&fprefix,0);
   if (fprefix == NULL)
-    errcod = ip_string(":PSI:NAME",&fprefix,0);
+    errcod = ip_string(const_cast<char*>(":PSI:NAME"),&fprefix,0);
 
   /* copy over file prefix, etc. into their appropriate variables */
   if (fprefix == NULL) {

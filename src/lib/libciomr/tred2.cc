@@ -20,9 +20,8 @@ namespace psi {
 ** \ingroup CIOMR
 */
 void tred2(int n, double** a, double* d, double* e, int matz) {
-    int i, j, k, l, il, ik, jk, kj;
+    int i, j, k, l;
     double f, g, h, hh, scale, scale_inv, h_inv;
-    double temp;
     
     if (n == 1)
       return;

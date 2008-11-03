@@ -12,13 +12,13 @@ int chkpt_init(int status);
 int chkpt_close(void);
 
 char *chkpt_rd_prefix(void);
-void chkpt_wt_prefix(char *prefix);
-void chkpt_set_prefix(char *prefix);
+void chkpt_wt_prefix(const char *prefix);
+void chkpt_set_prefix(const char *prefix);
 void chkpt_commit_prefix(void);
 void chkpt_reset_prefix(void);
 char *chkpt_get_prefix(void);
 
-char *chkpt_build_keyword(char *);
+char *chkpt_build_keyword(const char *);
 
 int chkpt_rd_ncalcs(void);
 
@@ -86,7 +86,7 @@ int *chkpt_rd_sopi(void);
 void chkpt_wt_sopi(int *);
 
 char *chkpt_rd_label(void);
-void chkpt_wt_label(char *);
+void chkpt_wt_label(const char *);
 
 char **chkpt_rd_irr_labs(void);
 void chkpt_wt_irr_labs(char **);
@@ -138,7 +138,7 @@ int *chkpt_rd_symoper(void);
 void chkpt_wt_symoper(int *);
 
 char *chkpt_rd_sym_label(void);
-void chkpt_wt_sym_label(char *sym_label);
+void chkpt_wt_sym_label(const char *sym_label);
 
 struct z_entry *chkpt_rd_zmat(void);
 void chkpt_wt_zmat(struct z_entry *);
@@ -217,7 +217,7 @@ void chkpt_wt_scf_irrep(double **, int);
 void chkpt_wt_alpha_scf_irrep(double **, int);
 void chkpt_wt_beta_scf_irrep(double **, int);
 
-double **chkpt_set_mo_phases(double **coeff, int nrows, int ncols);
+void chkpt_set_mo_phases(double **coeff, int nrows, int ncols);
 
 double **chkpt_rd_lagr(void);
 double **chkpt_rd_alpha_lagr(void);
@@ -271,8 +271,8 @@ void chkpt_wt_cdsalc2cd(const double**);
 double *chkpt_rd_exps();
 void chkpt_wt_exps(double*);
 
-int chkpt_exist(char *);
-int chkpt_exist_add_prefix(char *);
+int chkpt_exist(const char *);
+int chkpt_exist_add_prefix(const char *);
 
 int chkpt_rd_override_occ(void);
 void chkpt_wt_override_occ(int);

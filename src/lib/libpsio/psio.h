@@ -23,25 +23,25 @@ namespace psi {
                                        psio_address rel_address);
   int psio_volseek(psio_vol *vol, ULI page, ULI offset, ULI numvols);
   ULI psio_get_length(psio_address sadd, psio_address eadd);
-  psio_address psio_get_entry_end(unsigned int unit, char *key);
+  psio_address psio_get_entry_end(unsigned int unit, const char *key);
   
   int psio_tocwrite(unsigned int unit);
   int psio_tocread(unsigned int unit);
   void psio_tocprint(unsigned int unit, FILE *output);
-  psio_tocentry *psio_tocscan(unsigned int unit, char *key);
+  psio_tocentry *psio_tocscan(unsigned int unit, const char *key);
   psio_tocentry *psio_toclast(unsigned int unit);
   unsigned int psio_toclen(unsigned int unit);
-  int psio_tocclean(unsigned int unit, char *key);
+  int psio_tocclean(unsigned int unit, const char *key);
   
-  int psio_write(unsigned int unit, char *key, char *buffer, ULI size,
+  int psio_write(unsigned int unit, const char *key, char *buffer, ULI size,
                  psio_address sadd, psio_address *eadd);
-  int psio_read(unsigned int unit, char *key, char *buffer, ULI size,
+  int psio_read(unsigned int unit, const char *key, char *buffer, ULI size,
                 psio_address sadd, psio_address *eadd);
-  int psio_write_entry(unsigned int unit, char *key, char *buffer, ULI size);
-  int psio_read_entry(unsigned int unit, char *key, char *buffer, ULI size);
-  int psio_write_block(unsigned int unit, char *key, char *buffer, ULI blksiz,
+  int psio_write_entry(unsigned int unit, const char *key, char *buffer, ULI size);
+  int psio_read_entry(unsigned int unit, const char *key, char *buffer, ULI size);
+  int psio_write_block(unsigned int unit, const char *key, char *buffer, ULI blksiz,
                        ULI start_blk, ULI end_blk);
-  int psio_read_block(unsigned int unit, char *key, char *buffer, ULI blksiz,
+  int psio_read_block(unsigned int unit, const char *key, char *buffer, ULI blksiz,
                       ULI start_blk, ULI end_blk);
   int psio_rw(unsigned int unit, char *buffer, psio_address address, ULI size,
               int wrt);

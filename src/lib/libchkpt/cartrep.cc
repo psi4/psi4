@@ -14,7 +14,7 @@ namespace psi {
 
 double **Chkpt::rd_cartrep(void)
 {
-	int i, nirrep;
+	int nirrep;
 	double **cartrep;
 	psio_address ptr;
 	char *keyword;

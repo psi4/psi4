@@ -23,7 +23,7 @@ namespace psi {
 void print_mat(double **a, int m, int n, FILE *out)
    {
       int ii,jj,kk,nn,ll;
-      int i,j,k;
+      int i,j;
 
       ii=0;jj=0;
 L200:
