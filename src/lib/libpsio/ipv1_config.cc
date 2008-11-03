@@ -65,8 +65,8 @@ namespace psi {
 
     /* allocate ip_token
      conservative estimate for its length = strlen(gprgid())+80 */
-    char *module_name = module.gprgid();
-    ip_token = (char*) malloc( (strlen(module_name)+80)*sizeof(char));
+    std::string module_name = module.gprgid();
+    ip_token = (char*) malloc( (strlen(module_name.c_str())+80)*sizeof(char));
     name = (char*) malloc( 80 * sizeof(char));
 
     for (i=0; i<nkwds; ++i) {
@@ -74,24 +74,24 @@ namespace psi {
 
       /* unit and program specific */
       for (unit=0; unit<PSIO_MAXUNIT; ++unit) {
-        sprintf(ip_token, ":%s:FILES:FILE%u:%s", module_name, unit, kwd);
-        errcod = ip_data(ip_token, "%s", name, 0);
+        sprintf(ip_token, ":%s:FILES:FILE%u:%s", module_name.c_str(), unit, kwd);
+        errcod = ip_data(ip_token, const_cast<char*>("%s"), name, 0);
         if (errcod == IPE_OK) {
-          psio_obj->filecfg_kwd(module_name, kwd, unit, name);
+          psio_obj->filecfg_kwd(module_name.c_str(), kwd, unit, name);
         }
       }
 
       /* program specific */
-      sprintf(ip_token, ":%s:FILES:DEFAULT:%s", module_name, kwd);
-      errcod = ip_data(ip_token, "%s", name, 0);
+      sprintf(ip_token, ":%s:FILES:DEFAULT:%s", module_name.c_str(), kwd);
+      errcod = ip_data(ip_token, const_cast<char*>("%s"), name, 0);
       if (errcod == IPE_OK) {
-        psio_obj->filecfg_kwd(module_name, kwd, -1, name);
+        psio_obj->filecfg_kwd(module_name.c_str(), kwd, -1, name);
       }
 
       /* unit specific in PSI section */
       for (unit=0; unit<PSIO_MAXUNIT; ++unit) {
         sprintf(ip_token, ":PSI:FILES:FILE%u:%s", unit, kwd);
-        errcod = ip_data(ip_token, "%s", name, 0);
+        errcod = ip_data(ip_token, const_cast<char*>("%s"), name, 0);
         if (errcod == IPE_OK) {
           psio_obj->filecfg_kwd("PSI", kwd, unit, name);
         }
@@ -99,7 +99,7 @@ namespace psi {
 
       /* in PSI section */
       sprintf(ip_token, ":PSI:FILES:DEFAULT:%s", kwd);
-      errcod = ip_data(ip_token, "%s", name, 0);
+      errcod = ip_data(ip_token, const_cast<char*>("%s"), name, 0);
       if (errcod == IPE_OK) {
         psio_obj->filecfg_kwd("PSI", kwd, -1, name);
       }
@@ -107,7 +107,7 @@ namespace psi {
       /* unit specific in DEFAULT section */
       for (unit=0; unit<PSIO_MAXUNIT; ++unit) {
         sprintf(ip_token, ":DEFAULT:FILES:FILE%u:%s", unit, kwd);
-        errcod = ip_data(ip_token, "%s", name, 0);
+        errcod = ip_data(ip_token, const_cast<char*>("%s"), name, 0);
         if (errcod == IPE_OK) {
           psio_obj->filecfg_kwd("DEFAULT", kwd, unit, name);
         }
@@ -115,12 +115,11 @@ namespace psi {
 
       /* in DEFAULT section */
       sprintf(ip_token, ":DEFAULT:FILES:DEFAULT:%s", kwd);
-      errcod = ip_data(ip_token, "%s", name, 0);
+      errcod = ip_data(ip_token, const_cast<char*>("%s"), name, 0);
       if (errcod == IPE_OK) {
         psio_obj->filecfg_kwd("DEFAULT", kwd, -1, name);
       }
     }
-    delete [] module_name;
 
     for (i=0; i<nkwds; ++i) {
       free(kwds[i]);

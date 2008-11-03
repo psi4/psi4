@@ -14,14 +14,13 @@ namespace psi {
 
 void PSIO::get_filename(unsigned int unit, char **name) {
   std::string kval;
-  char *module_name = module.gprgid();
-  kval = filecfg_kwd(module_name, "NAME", unit);
+  std::string module_name = module.gprgid();
+  kval = filecfg_kwd(module_name.c_str(), "NAME", unit);
   if (!kval.empty()) {
     *name = strdup(kval.c_str());
     return;
   }
-  kval = filecfg_kwd(module_name, "NAME", -1);
-  delete [] module_name;
+  kval = filecfg_kwd(module_name.c_str(), "NAME", -1);
   if (!kval.empty()) {
     *name = strdup(kval.c_str());
     return;

@@ -23,7 +23,6 @@ Chkpt* _default_chkpt_lib_ = 0;
 Chkpt::Chkpt(psi::PSIO *psioObject, int status) : psio(psioObject)
 {
 	char *prefix;
-	psio_tocentry *this_entry;
 	
 	psio->open(PSIF_CHKPT, status);
 

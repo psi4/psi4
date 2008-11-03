@@ -17,14 +17,13 @@ void PSIO::get_volpath(unsigned int unit, unsigned int volume, char **path) {
   char volumeX[20];
   sprintf(volumeX, "VOLUME%u", volume+1);
   
-  char *module_name = module.gprgid();
-  kval = filecfg_kwd(module_name, volumeX, unit);
+  std::string module_name = module.gprgid();
+  kval = filecfg_kwd(module_name.c_str(), volumeX, unit);
   if (!kval.empty()) {
     *path = strdup(kval.c_str());
     return;
   }
-  kval = filecfg_kwd(module_name, volumeX, -1);
-  delete [] module_name;
+  kval = filecfg_kwd(module_name.c_str(), volumeX, -1);
   if (!kval.empty()) {
     *path = strdup(kval.c_str());
     return;

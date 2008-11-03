@@ -28,7 +28,7 @@ extern void lubksb(double **, int, int *, double *);
 */
 void flin(double **a, double *b, int in, int im, double *det)
 {
-  int i,j,k,*indx;
+  int i,j,*indx;
 
   indx = (int *) init_array(in);
 

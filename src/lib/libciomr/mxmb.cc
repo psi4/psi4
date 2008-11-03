@@ -10,8 +10,8 @@
 
 namespace psi {
 
-  static void mxmbol(double **a, int ia, int ja, double **b, int ib, int jb, 
-    double **c, int ic, int jc, int nrow, int nlnk, int ncol) 
+  static void mxmbol(double **, int, int, double **, int, int, 
+    double **, int, int, int, int, int) 
   {
   abort();
   }

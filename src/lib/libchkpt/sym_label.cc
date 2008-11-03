@@ -27,12 +27,12 @@ char *Chkpt::rd_sym_label(void)
 	return sym_label;  
 }
 
-void Chkpt::wt_sym_label(char *sym_label)
+void Chkpt::wt_sym_label(const char *sym_label)
 {
 	char *keyword;
 	keyword = build_keyword("Symmetry label");
 
-	psio->write_entry(PSIF_CHKPT, keyword, (char *) sym_label, 4*sizeof(char));
+	psio->write_entry(PSIF_CHKPT, keyword, const_cast<char*>(sym_label), 4*sizeof(char));
 
 	free(keyword);
 }
@@ -60,7 +60,7 @@ void Chkpt::wt_sym_label(char *sym_label)
 **
 ** \ingroup CHKPT
 */
-	void chkpt_wt_sym_label(char *sym_label)
+	void chkpt_wt_sym_label(const char *sym_label)
 	{
 		_default_chkpt_lib_->wt_sym_label(sym_label);
 	}

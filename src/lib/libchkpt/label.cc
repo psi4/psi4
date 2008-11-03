@@ -25,12 +25,12 @@ char *Chkpt::rd_label()
 	return label;
 }
 
-void Chkpt::wt_label(char *label)
+void Chkpt::wt_label(const char *label)
 {
 	char *keyword;
 	keyword = build_keyword("Label");
 	
-	psio->write_entry(PSIF_CHKPT, keyword, (char*)label, 80*sizeof(char));
+	psio->write_entry(PSIF_CHKPT, keyword, const_cast<char*>(label), 80*sizeof(char));
 	
 	free(keyword);
 }
@@ -46,7 +46,7 @@ void Chkpt::wt_label(char *label)
 	char *chkpt_rd_label(void)
 	{
   		char *label;
-		label = _default_chkpt_lib_->rd_label();
+      label = _default_chkpt_lib_->rd_label();
   		return label;
 	}
 
@@ -60,7 +60,7 @@ void Chkpt::wt_label(char *label)
 ** \ingroup CHKPT
 */
 
-	void chkpt_wt_label(char *label)
+	void chkpt_wt_label(const char *label)
 	{
 		_default_chkpt_lib_->wt_label(label);
 	}

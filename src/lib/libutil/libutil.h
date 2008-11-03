@@ -7,6 +7,7 @@
 #include <sys/time.h>
 
 #include <psi4-dec.h>
+#include "ref.h"
 
 namespace psi {
 

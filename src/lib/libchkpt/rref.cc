@@ -14,7 +14,6 @@ namespace psi {
 
 double **Chkpt::rd_rref(void)
 {
-	char *key;
 	double **Rref;
 	char *keyword;
 	keyword = build_keyword("Transmat to reference frame");

@@ -12,7 +12,7 @@ namespace psi {
 
 void PSIO::tocread(unsigned int unit) {
   unsigned int i;
-  int errcod, stream, volume, entry_size;
+  int entry_size;
   psio_ud *this_unit;
   psio_tocentry *last_entry, *this_entry;
   psio_address address;
@@ -20,8 +20,9 @@ void PSIO::tocread(unsigned int unit) {
   this_unit = &(psio_unit[unit]);
   entry_size = sizeof(psio_tocentry) - 2*sizeof(psio_tocentry *);
   
-  if (!open_check(unit))
-    ;
+  /* This wasn't doing anything. */
+  //if (!open_check(unit))
+  //  ;
   
   /* grab the number of records */
   this_unit->toclen = rd_toclen(unit);

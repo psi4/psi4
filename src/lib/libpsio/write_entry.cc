@@ -8,7 +8,7 @@
 
 namespace psi {
 
-void PSIO::write_entry(unsigned int unit, char *key, char *buffer, ULI size) {
+void PSIO::write_entry(unsigned int unit, const char *key, char *buffer, ULI size) {
   psio_address end = PSIO_ZERO;
   write(unit, key, buffer, size, PSIO_ZERO, &end);
 }
@@ -19,7 +19,7 @@ void PSIO::write_entry(unsigned int unit, char *key, char *buffer, ULI size) {
    ** \ingroup PSIO
    */
 
-  int psio_write_entry(unsigned int unit, char *key, char *buffer, ULI size) {
+  int psio_write_entry(unsigned int unit, const char *key, char *buffer, ULI size) {
     _default_psio_lib_->write_entry(unit, key, buffer, size);
     return 1;
   }

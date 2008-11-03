@@ -23,7 +23,7 @@ namespace psi {
 void print_array(double *a, int m, FILE *out)
    {
       int ii,jj,kk,mm,nn,ll;
-      int i,j,k,i1,i2;
+      int i,j,i1,i2;
 
       ii=0;jj=0;
 L200:

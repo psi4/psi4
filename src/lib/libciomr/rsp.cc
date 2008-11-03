@@ -40,12 +40,9 @@ extern void tqli(int n, double *d, double **z, double *e, int matz,
 void rsp(int nm, int n,int nv,double *array, double *e_vals, int matz,
          double ** e_vecs, double toler)
 {
-      int i, j, ii, ij, ierr;
+      int i, j, ij, ierr;
       int ascend_order;
       double *fv1=NULL;
-      /*double **temp=NULL;*/
-      double zero = 0.0;
-      double one = 1.0;
       double sw;
 
       /* Modified by Ed - matz can have values 0 through 3 */
