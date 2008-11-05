@@ -11,7 +11,7 @@
 namespace psi {
   
 void IWL::write_array2(double *arr, int p, int q, int *rlist, int *slist, int size, 
-    int printflag, FILE *outfile)
+    int printflag, FILE *out)
 {
     int i,idx;
     double value;
@@ -43,7 +43,7 @@ void IWL::write_array2(double *arr, int p, int q, int *rlist, int *slist, int si
             valptr[idx_] = (Value) value;
 
             if(printflag) 
-                fprintf(outfile, "%d %d %d %d %20.10f\n", p, q, 
+                fprintf(out, "%d %d %d %d %20.10f\n", p, q, 
                 rlist[i], slist[i], value);
 
             idx_++;
@@ -71,7 +71,7 @@ void IWL::write_array2(double *arr, int p, int q, int *rlist, int *slist, int si
 ** \ingroup IWL
 */
 void iwl_buf_wrt_arr2(struct iwlbuf *Buf, double *arr, int p, int q, 
-      int *rlist, int *slist, int size, int printflag, FILE *outfile)
+      int *rlist, int *slist, int size, int printflag, FILE *out)
 {
   int i,idx;
   double value;
@@ -103,7 +103,7 @@ void iwl_buf_wrt_arr2(struct iwlbuf *Buf, double *arr, int p, int q,
       valptr[Buf->idx] = (Value) value;
    
       if(printflag) 
-	fprintf(outfile, "%d %d %d %d %20.10f\n", p, q, 
+	fprintf(out, "%d %d %d %d %20.10f\n", p, q, 
 		rlist[i], slist[i], value);
       
       Buf->idx++;

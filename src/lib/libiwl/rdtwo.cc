@@ -14,13 +14,13 @@
 namespace psi {
   
 void IWL::read_two(PSIO *psio, int itap, double *ints, int *ioff, int norbs, 
-    int nfzc, int nfzv, int printflg, FILE *outfile)
+    int nfzc, int nfzv, int printflg, FILE *out)
 {
     IWL Buf(psio, itap, 0.0, 1, 1);
     if ((nfzc == 0) && (nfzv == 0))
-        Buf.read_all(ints, ioff, ioff, 0, ioff, printflg, outfile);
+        Buf.read_all(ints, ioff, ioff, 0, ioff, printflg, out);
     else
-        Buf.read_all_active(ints, ioff, ioff, 0, ioff, nfzc, norbs-nfzv-1, printflg, outfile);
+        Buf.read_all_active(ints, ioff, ioff, 0, ioff, nfzc, norbs-nfzv-1, printflg, out);
 }
 
 /*!
@@ -36,22 +36,22 @@ void IWL::read_two(PSIO *psio, int itap, double *ints, int *ioff, int norbs,
 **    \param nfzc     = number of frozen core orbitals
 **    \param nfzv     = number of frozen virtual orbitals
 **    \param printflg = print integrals as they're read 
-**    \param outfile  = output file pointer
+**    \param out  = output file pointer
 **
 ** David Sherrill, 1995
 ** \ingroup IWL
 */
 void iwl_rdtwo(int itap, double *ints, int *ioff, int norbs, 
-      int nfzc, int nfzv, int printflg, FILE *outfile)
+      int nfzc, int nfzv, int printflg, FILE *out)
 {
   struct iwlbuf Buf;
   
   iwl_buf_init(&Buf, itap, 0.0, 1, 1);
   if ((nfzc == 0) && (nfzv == 0))
-    iwl_buf_rd_all(&Buf, ints, ioff, ioff, 0, ioff, printflg, outfile);
+    iwl_buf_rd_all(&Buf, ints, ioff, ioff, 0, ioff, printflg, out);
   else
     iwl_buf_rd_all_act(&Buf, ints, ioff, ioff, 0, ioff, nfzc, norbs-nfzv-1,
-                       printflg, outfile);
+                       printflg, out);
   iwl_buf_close(&Buf, 1);
 }
 

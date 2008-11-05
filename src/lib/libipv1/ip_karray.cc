@@ -189,4 +189,4 @@ int ip_karray_count(char *keyword, int *karray_count, int n, ...)
     }
   }
 
-}; /* extern "C" */
+} /* extern "C" */

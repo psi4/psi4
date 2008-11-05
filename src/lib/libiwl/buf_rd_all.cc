@@ -15,7 +15,7 @@ namespace psi {
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
 
 int IWL::read_all(double *ints, int *ioff_lt, int *ioff_rt, int no_pq_perm,
-    int *ioff, int printflg, FILE *outfile)
+    int *ioff, int printflg, FILE *out)
 {
     int lastbuf;
     Label *lblptr;
@@ -47,7 +47,7 @@ int IWL::read_all(double *ints, int *ioff_lt, int *ioff_rt, int no_pq_perm,
         ints[pqrs] = (double) valptr[idx_];
 
         if (printflg) 
-            fprintf(outfile, "<%2d %2d %2d %2d [%2d][%2d] [[%3d]] = %20.10f\n",
+            fprintf(out, "<%2d %2d %2d %2d [%2d][%2d] [[%3d]] = %20.10f\n",
             p, q, r, s, pq, rs, pqrs, ints[pqrs]) ;
 
     } /*! end loop through current buffer */
@@ -77,7 +77,7 @@ int IWL::read_all(double *ints, int *ioff_lt, int *ioff_rt, int no_pq_perm,
             ints[pqrs] = (double) valptr[idx_];
 
             if (printflg) 
-                fprintf(outfile, "<%d %d %d %d [%d][%d] [[%d]] = %20.10f\n",
+                fprintf(out, "<%d %d %d %d [%d][%d] [[%d]] = %20.10f\n",
                 p, q, r, s, pq, rs, pqrs, ints[pqrs]) ;
 
         } /*! end loop through current buffer */
@@ -88,7 +88,7 @@ int IWL::read_all(double *ints, int *ioff_lt, int *ioff_rt, int no_pq_perm,
 }
 
 int IWL::read_all2(double **ints, int *ioff_lt, int *ioff_rt, int no_pq_perm, 
-    int *, int printflg, FILE *outfile)
+    int *, int printflg, FILE *out)
 {
     int lastbuf;
     Label *lblptr;
@@ -118,7 +118,7 @@ int IWL::read_all2(double **ints, int *ioff_lt, int *ioff_rt, int no_pq_perm,
         ints[pq][rs] = (double) valptr[idx_];
 
         if (printflg) 
-            fprintf(outfile, "<%2d %2d %2d %2d [%2d][%2d] = %20.10f\n",
+            fprintf(out, "<%2d %2d %2d %2d [%2d][%2d] = %20.10f\n",
             p, q, r, s, pq, rs, ints[pq][rs]) ;
 
     } /*! end loop through current buffer */
@@ -146,7 +146,7 @@ int IWL::read_all2(double **ints, int *ioff_lt, int *ioff_rt, int no_pq_perm,
             ints[pq][rs] = (double) valptr[idx_];
 
             if (printflg) 
-                fprintf(outfile, "<%d %d %d %d [%d][%d] = %20.10f\n",
+                fprintf(out, "<%d %d %d %d [%d][%d] = %20.10f\n",
                 p, q, r, s, pq, rs, ints[pq][rs]) ;
 
         } /*! end loop through current buffer */
@@ -171,14 +171,14 @@ int IWL::read_all2(double **ints, int *ioff_lt, int *ioff_rt, int no_pq_perm,
 **    \param ioff          =  the ioff array to figure the total index pqrs from
 **                     the pair indices pq and rs
 **    \param printflg      =  if 1, print integrals as they are read
-**    \param outfile       =  pointer to output file for printing
+**    \param out       =  pointer to output file for printing
 **
 ** Returns: 0 if end of file, otherwise 1
 ** \ingroup IWL
 */
 int iwl_buf_rd_all(struct iwlbuf *Buf, double *ints,
 		   int *ioff_lt, int *ioff_rt, int no_pq_perm, int *ioff,
-                   int printflg, FILE *outfile)
+                   int printflg, FILE *out)
 {
   int lastbuf;
   Label *lblptr;
@@ -210,7 +210,7 @@ int iwl_buf_rd_all(struct iwlbuf *Buf, double *ints,
     ints[pqrs] = (double) valptr[Buf->idx];
     
     if (printflg) 
-      fprintf(outfile, "<%2d %2d %2d %2d [%2d][%2d] [[%3d]] = %20.10f\n",
+      fprintf(out, "<%2d %2d %2d %2d [%2d][%2d] [[%3d]] = %20.10f\n",
 	      p, q, r, s, pq, rs, pqrs, ints[pqrs]) ;
     
   } /*! end loop through current buffer */
@@ -240,7 +240,7 @@ int iwl_buf_rd_all(struct iwlbuf *Buf, double *ints,
       ints[pqrs] = (double) valptr[Buf->idx];
       
       if (printflg) 
-	fprintf(outfile, "<%d %d %d %d [%d][%d] [[%d]] = %20.10f\n",
+	fprintf(out, "<%d %d %d %d [%d][%d] [[%d]] = %20.10f\n",
 		p, q, r, s, pq, rs, pqrs, ints[pqrs]) ;
       
     } /*! end loop through current buffer */
@@ -266,7 +266,7 @@ int iwl_buf_rd_all(struct iwlbuf *Buf, double *ints,
 
 int iwl_buf_rd_all2(struct iwlbuf *Buf, double **ints,
 		   int *ioff_lt, int *ioff_rt, int no_pq_perm, int *,
-                   int printflg, FILE *outfile)
+                   int printflg, FILE *out)
 {
   int lastbuf;
   Label *lblptr;
@@ -296,7 +296,7 @@ int iwl_buf_rd_all2(struct iwlbuf *Buf, double **ints,
     ints[pq][rs] = (double) valptr[Buf->idx];
     
     if (printflg) 
-      fprintf(outfile, "<%2d %2d %2d %2d [%2d][%2d] = %20.10f\n",
+      fprintf(out, "<%2d %2d %2d %2d [%2d][%2d] = %20.10f\n",
 	      p, q, r, s, pq, rs, ints[pq][rs]) ;
     
   } /*! end loop through current buffer */
@@ -324,7 +324,7 @@ int iwl_buf_rd_all2(struct iwlbuf *Buf, double **ints,
       ints[pq][rs] = (double) valptr[Buf->idx];
       
       if (printflg) 
-	fprintf(outfile, "<%d %d %d %d [%d][%d] = %20.10f\n",
+	fprintf(out, "<%d %d %d %d [%d][%d] = %20.10f\n",
 		p, q, r, s, pq, rs, ints[pq][rs]) ;
       
     } /*! end loop through current buffer */

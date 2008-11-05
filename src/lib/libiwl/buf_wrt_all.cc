@@ -11,7 +11,7 @@
 namespace psi {
   
 void IWL::write_all(int nbfso, double *ints, 
-    int *ioff, int printflg, FILE *outfile)
+    int *ioff, int printflg, FILE *out)
 {
     int idx, p, q, r, s, smax, pq, rs, pqrs;
     Label *lblptr;
@@ -37,7 +37,7 @@ void IWL::write_all(int nbfso, double *ints,
                         lblptr[idx++] = (Label) s;
                         valptr[idx_] = (Value) ints[pqrs];
                         idx_++;
-                        if (printflg) fprintf(outfile, "%d %d %d %d [%d] = %10.6f\n",
+                        if (printflg) fprintf(out, "%d %d %d %d [%d] = %10.6f\n",
                             p, q, r, s, pqrs, ints[pqrs]) ;
 
                         if (idx_ == ints_per_buf_) {
@@ -64,7 +64,7 @@ void IWL::write_all(int nbfso, double *ints,
 **    \param ints     = two electron integrals 
 **    \param ioff     = the old ioff array for lexical ordering
 **    \param printflg = print flag (1 or 0)
-**    \param outfile  =  output file
+**    \param out  =  output file
 **
 ** David Sherrill, 6/27/96
 **
@@ -78,7 +78,7 @@ void IWL::write_all(int nbfso, double *ints,
 ** \ingroup IWL
 */
 void iwl_buf_wrt_all(struct iwlbuf *Buf, int nbfso, double *ints, int *ioff,
-      int printflg, FILE *outfile)
+      int printflg, FILE *out)
 {
   int idx, p, q, r, s, smax, pq, rs, pqrs;
   Label *lblptr;
@@ -104,7 +104,7 @@ void iwl_buf_wrt_all(struct iwlbuf *Buf, int nbfso, double *ints, int *ioff,
 	    lblptr[idx++] = (Label) s;
 	    valptr[Buf->idx] = (Value) ints[pqrs];
 	    Buf->idx++;
-	    if (printflg) fprintf(outfile, "%d %d %d %d [%d] = %10.6f\n",
+	    if (printflg) fprintf(out, "%d %d %d %d [%d] = %10.6f\n",
 				  p, q, r, s, pqrs, ints[pqrs]) ;
 	    
 	    if (Buf->idx == Buf->ints_per_buf) {

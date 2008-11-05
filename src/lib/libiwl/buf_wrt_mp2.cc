@@ -13,7 +13,7 @@ namespace psi {
 void IWL::write_mp2(int p, int q, int pq,
     int pqsym, double **arr, int rsym, int *firstr, int *lastr, 
     int *firsts, int *lasts, int *occ, int *vir, int *ioff, 
-    int printflag, FILE *outfile)
+    int printflag, FILE *out)
 {
     int idx, r, s, rs, ssym;
     int R,S,rnew,snew;
@@ -57,7 +57,7 @@ void IWL::write_mp2(int p, int q, int pq,
                 }
 
                 if(printflag)
-                    fprintf(outfile, "<%d %d %d %d [%d] [%d] = %20.10f\n",
+                    fprintf(out, "<%d %d %d %d [%d] [%d] = %20.10f\n",
                     p, q, rnew, snew, pq, rs, value);
 
             } /* end if (fabs(value) > Buf->cutoff) ... */
@@ -81,7 +81,7 @@ void IWL::write_mp2(int p, int q, int pq,
 */
 void iwl_buf_wrt_mp2(struct iwlbuf *Buf, int p, int q, int pq, int pqsym,
    double **arr, int rsym, int *firstr, int *lastr, int *firsts, int *lasts,
-   int *occ, int *vir, int *ioff, int printflag, FILE *outfile)
+   int *occ, int *vir, int *ioff, int printflag, FILE *out)
 {
    int idx, r, s, rs, ssym;
    int R,S,rnew,snew;
@@ -125,7 +125,7 @@ void iwl_buf_wrt_mp2(struct iwlbuf *Buf, int p, int q, int pq, int pqsym,
 	 }
 	 
 	 if(printflag)
-	   fprintf(outfile, "<%d %d %d %d [%d] [%d] = %20.10f\n",
+	   fprintf(out, "<%d %d %d %d [%d] [%d] = %20.10f\n",
 		   p, q, rnew, snew, pq, rs, value);
 	 
        } /* end if (fabs(value) > Buf->cutoff) ... */

@@ -44,7 +44,7 @@ namespace psi {
         
         void init(PSIO *psio, int itap, double cutoff, int oldfile, int readflag);
         
-        void set_keep_flag(bool keep) { keep_ = keep; }
+        void set_keep_flag(bool k) { keep_ = k; }
         void close();
         
         void fetch();

@@ -148,4 +148,4 @@ LOCAL_FUNCTION int ip_special_characters(char *keyword)
   return 0;
   }
 
-}; /* extern "C" */
+} /* extern "C" */

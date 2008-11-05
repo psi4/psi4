@@ -105,4 +105,4 @@ void ip_free_array(ip_array_t *array)
   free(array);
   }
 
-}; /* extern "C" */
+} /* extern "C" */

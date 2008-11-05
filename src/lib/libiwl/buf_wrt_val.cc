@@ -11,7 +11,7 @@
 namespace psi {
   
 void IWL::write_value(int p, int q, int r, int s, double value, int printflag,
-    FILE *outfile, int dirac)
+    FILE *out, int dirac)
 {
     int idx;
     Label *lblptr;
@@ -47,11 +47,11 @@ void IWL::write_value(int p, int q, int r, int s, double value, int printflag,
 
         if (printflag) {
             if(dirac) {
-                fprintf(outfile, ">%d %d %d %d = %20.10f\n",
+                fprintf(out, ">%d %d %d %d = %20.10f\n",
                     p, r, q, s, value);
             }
             else {
-                fprintf(outfile, ">%d %d %d %d = %20.10f\n",
+                fprintf(out, ">%d %d %d %d = %20.10f\n",
                     p, q, r, s, value);
             }
         }
@@ -75,7 +75,7 @@ void IWL::write_value(int p, int q, int r, int s, double value, int printflag,
 ** \ingroup IWL
 */
 void iwl_buf_wrt_val(struct iwlbuf *Buf, int p, int q, int r, int s,
-                     double value, int printflag, FILE *outfile, int dirac)
+                     double value, int printflag, FILE *out, int dirac)
 {
   int idx;
   Label *lblptr;
@@ -111,11 +111,11 @@ void iwl_buf_wrt_val(struct iwlbuf *Buf, int p, int q, int r, int s,
      
     if (printflag) {
       if(dirac) {
-	fprintf(outfile, ">%d %d %d %d = %20.10f\n",
+	fprintf(out, ">%d %d %d %d = %20.10f\n",
 		p, r, q, s, value);
       }
       else {
-	fprintf(outfile, ">%d %d %d %d = %20.10f\n",
+	fprintf(out, ">%d %d %d %d = %20.10f\n",
 		p, q, r, s, value);
       }
     }

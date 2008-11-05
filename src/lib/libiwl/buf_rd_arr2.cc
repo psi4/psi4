@@ -14,7 +14,7 @@ namespace psi {
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
       
 int IWL::read_array2(double *ints, int *plist, int *qlist, int *rlist, int *slist,
-    int *size, int *ioff, int printflg, FILE *outfile)
+    int *size, int *ioff, int printflg, FILE *out)
 {
     int lastbuf;
     Label *lblptr;
@@ -46,7 +46,7 @@ int IWL::read_array2(double *ints, int *plist, int *qlist, int *rlist, int *slis
         *size= *size + 1;
 
         if (printflg) 
-            fprintf(outfile, "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
+            fprintf(out, "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
             pq, value);
     } /*! end loop through current buffer */
 
@@ -72,7 +72,7 @@ int IWL::read_array2(double *ints, int *plist, int *qlist, int *rlist, int *slis
             *size = *size + 1;
 
             if (printflg) 
-                fprintf(outfile, "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
+                fprintf(out, "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
                 pq, value);
         } /*! end loop through current buffer */
     } /*! end loop over reading buffers */
@@ -96,7 +96,7 @@ int IWL::read_array2(double *ints, int *plist, int *qlist, int *rlist, int *slis
 */
 int iwl_buf_rd_arr2(struct iwlbuf *Buf, double *ints, int *plist, 
       int *qlist, int *rlist, int *slist, int *size, int *ioff,
-      int printflg, FILE *outfile)
+      int printflg, FILE *out)
 {
   int lastbuf;
   Label *lblptr;
@@ -128,7 +128,7 @@ int iwl_buf_rd_arr2(struct iwlbuf *Buf, double *ints, int *plist,
     *size= *size + 1;
     
     if (printflg) 
-      fprintf(outfile, "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
+      fprintf(out, "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
 	      pq, value);
     
   } /*! end loop through current buffer */
@@ -155,7 +155,7 @@ int iwl_buf_rd_arr2(struct iwlbuf *Buf, double *ints, int *plist,
       *size = *size + 1;
       
       if (printflg) 
-	fprintf(outfile, "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
+	fprintf(out, "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
 		pq, value);
       
     } /*! end loop through current buffer */

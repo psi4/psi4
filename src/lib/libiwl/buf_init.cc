@@ -25,21 +25,21 @@ IWL::IWL()
     idx_ = 0;    
 }
 
-IWL::IWL(PSIO *psio, int itap, double cutoff, int oldfile, int readflag):
+IWL::IWL(PSIO *psio, int it, double coff, int oldfile, int readflag):
     keep_(true)
 {
-    init(psio, itap, cutoff, oldfile, readflag);
+    init(psio, it, coff, oldfile, readflag);
 }
 
-void IWL::init(PSIO *psio, int itap, double cutoff, int oldfile, int readflag)
+void IWL::init(PSIO *psio, int it, double coff, int oldfile, int readflag)
 {
     psio_ = psio;
     
     /*! set up buffer info */
-    itap_ = itap;
+    itap_ = it;
     bufpos_ = PSIO_ZERO;
     ints_per_buf_ = IWL_INTS_PER_BUF;
-    cutoff_ = cutoff;
+    cutoff_ = coff;
     bufszc_ = 2 * sizeof(int) + ints_per_buf_ * 4 * sizeof(Label) +
         ints_per_buf_ * sizeof(Value);
     lastbuf_ = 0;
