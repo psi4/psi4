@@ -111,11 +111,11 @@ void iwl_buf_wrt_val(struct iwlbuf *Buf, int p, int q, int r, int s,
      
     if (printflag) {
       if(dirac) {
-	fprintf(outfile, ">%d %d %d %d = %20.10lf\n",
+	fprintf(outfile, ">%d %d %d %d = %20.10f\n",
 		p, r, q, s, value);
       }
       else {
-	fprintf(outfile, ">%d %d %d %d = %20.10lf\n",
+	fprintf(outfile, ">%d %d %d %d = %20.10f\n",
 		p, q, r, s, value);
       }
     }

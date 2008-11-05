@@ -88,7 +88,7 @@ int IWL::read_all(double *ints, int *ioff_lt, int *ioff_rt, int no_pq_perm,
 }
 
 int IWL::read_all2(double **ints, int *ioff_lt, int *ioff_rt, int no_pq_perm, 
-    int *ioff, int printflg, FILE *outfile)
+    int *, int printflg, FILE *outfile)
 {
     int lastbuf;
     Label *lblptr;
@@ -210,7 +210,7 @@ int iwl_buf_rd_all(struct iwlbuf *Buf, double *ints,
     ints[pqrs] = (double) valptr[Buf->idx];
     
     if (printflg) 
-      fprintf(outfile, "<%2d %2d %2d %2d [%2d][%2d] [[%3d]] = %20.10lf\n",
+      fprintf(outfile, "<%2d %2d %2d %2d [%2d][%2d] [[%3d]] = %20.10f\n",
 	      p, q, r, s, pq, rs, pqrs, ints[pqrs]) ;
     
   } /*! end loop through current buffer */
@@ -240,7 +240,7 @@ int iwl_buf_rd_all(struct iwlbuf *Buf, double *ints,
       ints[pqrs] = (double) valptr[Buf->idx];
       
       if (printflg) 
-	fprintf(outfile, "<%d %d %d %d [%d][%d] [[%d]] = %20.10lf\n",
+	fprintf(outfile, "<%d %d %d %d [%d][%d] [[%d]] = %20.10f\n",
 		p, q, r, s, pq, rs, pqrs, ints[pqrs]) ;
       
     } /*! end loop through current buffer */
@@ -265,7 +265,7 @@ int iwl_buf_rd_all(struct iwlbuf *Buf, double *ints,
 */
 
 int iwl_buf_rd_all2(struct iwlbuf *Buf, double **ints,
-		   int *ioff_lt, int *ioff_rt, int no_pq_perm, int *ioff,
+		   int *ioff_lt, int *ioff_rt, int no_pq_perm, int *,
                    int printflg, FILE *outfile)
 {
   int lastbuf;
@@ -296,7 +296,7 @@ int iwl_buf_rd_all2(struct iwlbuf *Buf, double **ints,
     ints[pq][rs] = (double) valptr[Buf->idx];
     
     if (printflg) 
-      fprintf(outfile, "<%2d %2d %2d %2d [%2d][%2d] = %20.10lf\n",
+      fprintf(outfile, "<%2d %2d %2d %2d [%2d][%2d] = %20.10f\n",
 	      p, q, r, s, pq, rs, ints[pq][rs]) ;
     
   } /*! end loop through current buffer */
@@ -324,7 +324,7 @@ int iwl_buf_rd_all2(struct iwlbuf *Buf, double **ints,
       ints[pq][rs] = (double) valptr[Buf->idx];
       
       if (printflg) 
-	fprintf(outfile, "<%d %d %d %d [%d][%d] = %20.10lf\n",
+	fprintf(outfile, "<%d %d %d %d [%d][%d] = %20.10f\n",
 		p, q, r, s, pq, rs, ints[pq][rs]) ;
       
     } /*! end loop through current buffer */

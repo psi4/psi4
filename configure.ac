@@ -475,7 +475,7 @@ LIBS=$SAVE_LIBS
 ########
 
 # check for header files
-AC_CHECK_HEADERS([errno.h fcntl.h unistd.h stdint.h sys/types.h sys/times.h sys/param.h])
+AC_CHECK_HEADERS([errno.h fcntl.h unistd.h stdint.h sys/types.h sys/param.h sys/times.h sys/time.h utime.h time.h])
 # check for C++ headers
 AC_CXX_PROCESS_CHECK([cmath],[#include <cmath>],,[HAVE_CMATH=1],[HAVE_CMATH=0]) 
 CXXDEF="$CXXDEF -DHAVE_CMATH=$HAVE_CMATH"
@@ -493,69 +493,8 @@ CXXDEF="$CXXDEF -DHAVE_CSTDDEF=$HAVE_CSTDDEF"
 ####################
 #  Check for Ruby  #
 ####################
-RUBYLIB=""
-CHECKRUBY="yes"
-AC_ARG_WITH(ruby-lib,[  --with-ruby-lib         which Ruby library to use],[
-case $withval in
-  yes)
-	CHECKRUBY="yes"
-    ;;
-  no)
-    RUBYLIB=''
-	RUBYLINK="no"
-	CHECKRUBY="no"
-    ;;
-  *)
-    RUBYLIB="$withval"
-	RUBYLINK="yes"
-	CHECKRUBY="no"
-    ;;
-esac
-])
-if test $CHECKRUBY = yes; then
-	AC_CHECK_LIB(ruby-static,ruby_init,[RUBYLIB="-lruby-static" RUBYLINK="yes"],[RUBYLIB="" RUBYLINK="no"])
-fi
-
-RUBYINC=""
-CHECKRUBY="yes"
-AC_ARG_WITH(ruby-include,[  --with-ruby-include     which Ruby header directory],[
-case $withval in
-  yes)
-	CHECKRUBY="yes"
-    ;;
-  no)
-    RUBYINC=""
-	RUBYLINK="no"
-	CHECKRUBY="no"
-    ;;
-  *)
-    RUBYINC="$withval"
-	RUBYLINK="yes"
-	CHECKRUBY="no"
-    ;;
-esac
-])
-if test $CHECKRUBY = yes; then
-	AC_CHECK_HEADER(ruby.h,[RUBYINC="" RUBYLINK="yes"],[RUBYINC="" RUBYLINK="no"])
-fi
-
-#########################################################################
-# Special linking flags for psirb, because it loads shared object files #
-#  This has to do with dlopen being "lazy" by default on Apple, but not #
-#  on Linux                                                             #
-#########################################################################
-case $target_vendor in
-	apple)
-		RUBYLDFLAGS=""
-		;;
-	*)
-		RUBYLDFLAGS="-rdynamic -Wl,-export-dynamic"
-		;;
-esac
-AC_SUBST(RUBYLIB)
-AC_SUBST(RUBYINC)
-AC_SUBST(RUBYLINK)
-AC_SUBST(RUBYLDFLAGS)
+m4_include(ruby.ac)
+RB_INIT_RUBY
 
 ########
 ## Check for types
@@ -831,11 +770,11 @@ AC_CONFIG_FILES([include/Makefile
 
 AC_OUTPUT
 
-if test $RUBYLINK = no; then
-	if test -z $RUBYLIB; then
-		AC_MSG_NOTICE([Unable to locate libruby-static.a will not link the psirb module.])
-	fi
-	if test -z $RUBYINC; then
-		AC_MSG_NOTICE([Unable to locate ruby.h will not link the psirb module.])
-	fi
-fi
+dnl if test $RUBYLINK = no; then
+dnl 	if test -z $RUBYLIB; then
+dnl 		AC_MSG_NOTICE([Unable to locate libruby-static.a will not link the psirb module.])
+dnl 	fi
+dnl 	if test -z $RUBYINC; then
+dnl 		AC_MSG_NOTICE([Unable to locate ruby.h will not link the psirb module.])
+dnl 	fi
+dnl fi

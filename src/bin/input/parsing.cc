@@ -17,7 +17,7 @@ namespace psi { namespace input {
 
 void parsing(Options & options)
 {
-  int errcod, i;
+  int i;
   char tmp_label[80];
 
   /*--- read MOs from checkpoint file and project onto new basis ---*/
