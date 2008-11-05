@@ -70,8 +70,8 @@ void block_to_tri(double *a,double **b,int num_ir,int *num_so,int *ioff);
 void tri_to_sq(double *amat,double **bmat,int size);
 
 /* Functions under tstart.c */
-void tstart(FILE *outfile) ;
-void tstop(FILE *outfile) ;
+void tstart() ;
+void tstop() ;
 
 /* Functions in zero.c */
 void zero_arr(double *a, int size) ;

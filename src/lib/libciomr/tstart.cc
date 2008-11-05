@@ -26,7 +26,7 @@ time_t time_start, time_end;
 **
 ** \ingroup CIOMR
 */
-void tstart(FILE *outfile)
+void tstart()
 {
   int error;
   char *name;
@@ -52,7 +52,7 @@ void tstart(FILE *outfile)
 **
 ** \ingroup CIOMR
 */ 
-void tstop(FILE *outfile)
+void tstop()
 {
   int error;
   time_t total_time;
