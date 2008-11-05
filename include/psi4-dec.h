@@ -18,7 +18,8 @@ class Module {
 };
 
 extern Module module;
-
+extern FILE *outfile;
+extern char *psi_file_prefix;
 }
 
 #endif
