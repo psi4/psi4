@@ -12,7 +12,7 @@
 namespace psi {
   
 void IWL::read_one(PSIO *psio, int itap, char *label, double *ints, 
-    int ntri, int erase, int printflg, FILE *outfile)  
+    int ntri, int erase, int printflg, FILE *out)  
 {
     int nmo;
 
@@ -22,7 +22,7 @@ void IWL::read_one(PSIO *psio, int itap, char *label, double *ints,
 
     if (printflg) {
         nmo = (int) (sqrt((double) (1 + 8 * ntri)) - 1)/2;
-        print_array(ints, nmo, outfile);
+        print_array(ints, nmo, out);
     }
 }
 
@@ -46,11 +46,11 @@ void IWL::read_one(PSIO *psio, int itap, char *label, double *ints,
 **   \param erase      = erase itap (1=yes, 0=no)
 **   \param printflg   = printing flag.  Set to 1 to print ints; 
 **                       otherwise, set to 0
-**   \param outfile    = file pointer for output of ints or error messages
+**   \param out    = file pointer for output of ints or error messages
 ** \ingroup IWL
 */
 int iwl_rdone(int itap, char *label, double *ints, int ntri, int erase, 
-              int printflg, FILE *outfile)
+              int printflg, FILE *out)
 {
 
   int nmo;
@@ -61,7 +61,7 @@ int iwl_rdone(int itap, char *label, double *ints, int ntri, int erase,
 
   if (printflg) {
     nmo = (int) (sqrt((double) (1 + 8 * ntri)) - 1)/2;
-    print_array(ints, nmo, outfile);
+    print_array(ints, nmo, out);
   }
 
   return(1);

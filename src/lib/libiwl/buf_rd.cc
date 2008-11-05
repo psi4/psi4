@@ -14,7 +14,7 @@
 namespace psi {
   
 int IWL::read(int target_pq, double *ints, int *ioff_lt, int *ioff_rt, 
-    int mp2, int printflg, FILE *outfile)
+    int mp2, int printflg, FILE *out)
 {
     int lastbuf;
     Value *valptr;
@@ -47,7 +47,7 @@ int IWL::read(int target_pq, double *ints, int *ioff_lt, int *ioff_rt,
         ints[rs] = (double) valptr[idx_];
 
         if (printflg) 
-            fprintf(outfile, "<%d %d %d %d [%d][%d] = %20.10f\n",
+            fprintf(out, "<%d %d %d %d [%d][%d] = %20.10f\n",
             p, q, r, s, pq, rs, ints[rs]) ;
 
     } /*! end loop through current buffer */
@@ -78,7 +78,7 @@ int IWL::read(int target_pq, double *ints, int *ioff_lt, int *ioff_rt,
             ints[rs] = (double) valptr[idx_];
 
             if (printflg) 
-                fprintf(outfile, "<%d %d %d %d [%d][%d] = %20.10f\n",
+                fprintf(out, "<%d %d %d %d [%d][%d] = %20.10f\n",
                 p, q, r, s, pq, rs, ints[rs]) ;
 
         } /*! end loop through current buffer */
@@ -91,7 +91,7 @@ int IWL::read(int target_pq, double *ints, int *ioff_lt, int *ioff_rt,
 /*!
 ** iwl_buf_rd(struct iwlbuf *Buf, int target_pq, double *ints,
 **	       int *ioff_lt, int *ioff_rt, int mp2, int printflg, 
-**	       FILE *outfile)
+**	       FILE *out)
 **
 **
 ** Read from an Integrals With Labels formatted PSI buffer.
@@ -110,7 +110,7 @@ int IWL::read(int target_pq, double *ints, int *ioff_lt, int *ioff_rt,
 */
 int iwl_buf_rd(struct iwlbuf *Buf, int target_pq, double *ints,
 	       int *ioff_lt, int *ioff_rt, int mp2, int printflg, 
-	       FILE *outfile)
+	       FILE *out)
 {
   int lastbuf;
   Value *valptr;
@@ -143,7 +143,7 @@ int iwl_buf_rd(struct iwlbuf *Buf, int target_pq, double *ints,
     ints[rs] = (double) valptr[Buf->idx];
     
     if (printflg) 
-      fprintf(outfile, "<%d %d %d %d [%d][%d] = %20.10f\n",
+      fprintf(out, "<%d %d %d %d [%d][%d] = %20.10f\n",
 	      p, q, r, s, pq, rs, ints[rs]) ;
     
   } /*! end loop through current buffer */
@@ -174,7 +174,7 @@ int iwl_buf_rd(struct iwlbuf *Buf, int target_pq, double *ints,
       ints[rs] = (double) valptr[Buf->idx];
       
       if (printflg) 
-	fprintf(outfile, "<%d %d %d %d [%d][%d] = %20.10f\n",
+	fprintf(out, "<%d %d %d %d [%d][%d] = %20.10f\n",
 		p, q, r, s, pq, rs, ints[rs]) ;
       
     } /*! end loop through current buffer */

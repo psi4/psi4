@@ -15,7 +15,7 @@ namespace psi {
 #define INDEX(i,j) ((i>j) ? (((i)*((i)+1))/2+(j)) : (((j)*((j)+1))/2+(i)))
   
 int IWL::read_all_mp2r12a(double *ints, int *ioff_lt, int *ioff_rt, 
-    int bra_ket_symm, int *, int printflg, FILE *outfile)
+    int bra_ket_symm, int *, int printflg, FILE *out)
 {
     int lastbuf;
     Label *lblptr;
@@ -49,7 +49,7 @@ int IWL::read_all_mp2r12a(double *ints, int *ioff_lt, int *ioff_rt,
         }
 
         if (printflg) 
-            fprintf(outfile, "<%2d %2d %2d %2d [%2ld][%2ld] [[%3ld]] = %20.10f\n",
+            fprintf(out, "<%2d %2d %2d %2d [%2ld][%2ld] [[%3ld]] = %20.10f\n",
             p, q, r, s, pq, rs, pqrs, ints[pqrs]) ;
 
     } /*! end loop through current buffer */
@@ -80,7 +80,7 @@ int IWL::read_all_mp2r12a(double *ints, int *ioff_lt, int *ioff_rt,
             }
 
             if (printflg) 
-                fprintf(outfile, "<%d %d %d %d [%ld][%ld] [[%ld]] = %20.10f\n",
+                fprintf(out, "<%d %d %d %d [%ld][%ld] [[%ld]] = %20.10f\n",
                 p, q, r, s, pq, rs, pqrs, ints[pqrs]) ;
 
         } /*! end loop through current buffer */
@@ -109,14 +109,14 @@ int IWL::read_all_mp2r12a(double *ints, int *ioff_lt, int *ioff_rt,
 **    \param ioff          =  the ioff array to figure the total index pqrs 
 **                            from the pair indices pq and rs
 **    \param printflg      =  if 1, print integrals as they are read
-**    \param outfile       =  pointer to output file for printing
+**    \param out       =  pointer to output file for printing
 **
 ** Returns: 0 if end of file, otherwise 1
 ** \ingroup IWL
 */
 int iwl_buf_rd_all_mp2r12a(struct iwlbuf *Buf, double *ints,
 			   int *ioff_lt, int *ioff_rt, int bra_ket_symm, 
-                           int *, int printflg, FILE *outfile)
+                           int *, int printflg, FILE *out)
 {
   int lastbuf;
   Label *lblptr;
@@ -150,7 +150,7 @@ int iwl_buf_rd_all_mp2r12a(struct iwlbuf *Buf, double *ints,
     }
     
     if (printflg) 
-      fprintf(outfile, "<%2d %2d %2d %2d [%2ld][%2ld] [[%3ld]] = %20.10f\n",
+      fprintf(out, "<%2d %2d %2d %2d [%2ld][%2ld] [[%3ld]] = %20.10f\n",
 	      p, q, r, s, pq, rs, pqrs, ints[pqrs]) ;
     
   } /*! end loop through current buffer */
@@ -181,7 +181,7 @@ int iwl_buf_rd_all_mp2r12a(struct iwlbuf *Buf, double *ints,
       }
       
       if (printflg) 
-	fprintf(outfile, "<%d %d %d %d [%ld][%ld] [[%ld]] = %20.10f\n",
+	fprintf(out, "<%d %d %d %d [%ld][%ld] [[%ld]] = %20.10f\n",
 		p, q, r, s, pq, rs, pqrs, ints[pqrs]) ;
       
     } /*! end loop through current buffer */

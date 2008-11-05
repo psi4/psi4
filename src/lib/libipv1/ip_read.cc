@@ -263,4 +263,4 @@ ip_value_t *ip_array(ip_value_t *arrayval, ip_value_t *newval)
   return result;
   }
 
-}; /* extern "C" */
+} /* extern "C" */

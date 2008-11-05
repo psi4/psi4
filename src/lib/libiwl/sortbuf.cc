@@ -18,7 +18,7 @@ namespace psi {
 void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,
     double *ints, int fpq, int lpq, int *ioff, int *ioff2, 
     int nbfso, int elbert, int intermediate, int no_pq_perm, 
-    int qdim, int add, int printflg, FILE *outfile)
+    int qdim, int add, int printflg, FILE *out)
 {
     int i;
     Value *valptr;              /* array of integral values */
@@ -31,11 +31,11 @@ void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,
     int nbstri;
 
     if (printflg) {
-        fprintf(outfile, "\nsortbuf for pq=%d to %d\n", fpq, lpq);
+        fprintf(out, "\nsortbuf for pq=%d to %d\n", fpq, lpq);
     }
 
     if (no_pq_perm && !intermediate) {
-        fprintf(outfile,"(sortbuf): illegal parameter combination.\n");
+        fprintf(out,"(sortbuf): illegal parameter combination.\n");
         fprintf(stderr, "(sortbuf): illegal parameter combination.\n");
     }
 
@@ -46,13 +46,13 @@ void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,
     i = 0;
     while (fpq >= ioff[i] && i < BIGNUM) i++;
     if (i == BIGNUM) {
-        fprintf(outfile, "(sortbuf): parameter error\n") ;
+        fprintf(out, "(sortbuf): parameter error\n") ;
         return;
     }
     first_p = i-1 ; first_q = fpq - ioff[i-1];
     first_pq = ioff[first_p] + first_q;
     if (first_pq != fpq) {
-        fprintf(outfile, "(sortbuf): fpq != first_pq.\n");
+        fprintf(out, "(sortbuf): fpq != first_pq.\n");
         fprintf(stderr,  "(sortbuf): fpq != first_pq.\n");
     }
 
@@ -65,7 +65,7 @@ void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,
     i=0; 
     while (lpq >= ioff[i] && i < BIGNUM) i++ ;
     if (i == BIGNUM) {
-        fprintf(outfile, "(sortbuf): parameter error\n") ;
+        fprintf(out, "(sortbuf): parameter error\n") ;
         return ;
     }
     last_p = i-1 ; last_q = lpq - ioff[i-1] ;
@@ -112,14 +112,14 @@ void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,
             }
 
             if (printflg && ints[pqrs-offset] != 0.0) 
-                fprintf(outfile, "Adding %10.6f to el %d %d %d %d = %10.6f\n", 
+                fprintf(out, "Adding %10.6f to el %d %d %d %d = %10.6f\n", 
                 valptr[Inbuf->idx_], p, q, r, s, ints[pqrs-offset]);
 
             if (add) ints[pqrs-offset] += valptr[Inbuf->idx_];
             else ints[pqrs-offset] += valptr[Inbuf->idx_];
 
             if (printflg) 
-                fprintf(outfile, "<%d %d %d %d | %d %d [%ld] = %10.6f\n",
+                fprintf(out, "<%d %d %d %d | %d %d [%ld] = %10.6f\n",
                 p, q, r, s, pq, rs, pqrs, ints[pqrs-offset]) ;
         }
     } while (!lastbuf);
@@ -187,7 +187,7 @@ void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,
                         lblptr[idx++] = s;
                         valptr[Outbuf->idx_] = ints[pqrs-offset];
                         if (printflg) 
-                            fprintf(outfile, ">%d %d %d %d | %d %d [%ld] = %10.6f\n",
+                            fprintf(out, ">%d %d %d %d | %d %d [%ld] = %10.6f\n",
                             p, q, r, s, pq, rs, pqrs, ints[pqrs-offset]) ;
 
                         Outbuf->idx_++;
@@ -253,7 +253,7 @@ void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,
 **    \param qdim        = dimensions for the q index...nvirt for MP2
 **    \param add         = add contributions to the same integral during sort
 **    \param printflg    = 1 for printing, 0 otherwise
-**    \param outfile     = output file pointer
+**    \param out     = output file pointer
 **
 ** Returns: none
 **
@@ -264,7 +264,7 @@ void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,
 void sortbuf(struct iwlbuf *Inbuf, struct iwlbuf *Outbuf,
       double *ints, int fpq, int lpq, int *ioff, int *ioff2, 
       int nbfso, int elbert, int intermediate, int no_pq_perm, 
-      int qdim, int add, int printflg, FILE *outfile) 
+      int qdim, int add, int printflg, FILE *out) 
 {
    int i;
    Value *valptr;              /* array of integral values */
@@ -277,11 +277,11 @@ void sortbuf(struct iwlbuf *Inbuf, struct iwlbuf *Outbuf,
    int nbstri;
 
    if (printflg) {
-     fprintf(outfile, "\nsortbuf for pq=%d to %d\n", fpq, lpq);
+     fprintf(out, "\nsortbuf for pq=%d to %d\n", fpq, lpq);
    }
 
    if (no_pq_perm && !intermediate) {
-     fprintf(outfile,"(sortbuf): illegal parameter combination.\n");
+     fprintf(out,"(sortbuf): illegal parameter combination.\n");
      fprintf(stderr, "(sortbuf): illegal parameter combination.\n");
    }
    
@@ -292,13 +292,13 @@ void sortbuf(struct iwlbuf *Inbuf, struct iwlbuf *Outbuf,
    i = 0;
    while (fpq >= ioff[i] && i < BIGNUM) i++;
    if (i == BIGNUM) {
-     fprintf(outfile, "(sortbuf): parameter error\n") ;
+     fprintf(out, "(sortbuf): parameter error\n") ;
      return;
    }
    first_p = i-1 ; first_q = fpq - ioff[i-1];
    first_pq = ioff[first_p] + first_q;
    if (first_pq != fpq) {
-     fprintf(outfile, "(sortbuf): fpq != first_pq.\n");
+     fprintf(out, "(sortbuf): fpq != first_pq.\n");
      fprintf(stderr,  "(sortbuf): fpq != first_pq.\n");
    }
    
@@ -311,7 +311,7 @@ void sortbuf(struct iwlbuf *Inbuf, struct iwlbuf *Outbuf,
    i=0; 
    while (lpq >= ioff[i] && i < BIGNUM) i++ ;
    if (i == BIGNUM) {
-     fprintf(outfile, "(sortbuf): parameter error\n") ;
+     fprintf(out, "(sortbuf): parameter error\n") ;
      return ;
    }
    last_p = i-1 ; last_q = lpq - ioff[i-1] ;
@@ -358,14 +358,14 @@ void sortbuf(struct iwlbuf *Inbuf, struct iwlbuf *Outbuf,
 	}
 	
         if (printflg && ints[pqrs-offset] != 0.0) 
-	   fprintf(outfile, "Adding %10.6f to el %d %d %d %d = %10.6f\n", 
+	   fprintf(out, "Adding %10.6f to el %d %d %d %d = %10.6f\n", 
                    valptr[Inbuf->idx], p, q, r, s, ints[pqrs-offset]);
 
         if (add) ints[pqrs-offset] += valptr[Inbuf->idx];
         else ints[pqrs-offset] += valptr[Inbuf->idx];
 
 	if (printflg) 
-	  fprintf(outfile, "<%d %d %d %d | %d %d [%ld] = %10.6f\n",
+	  fprintf(out, "<%d %d %d %d | %d %d [%ld] = %10.6f\n",
 		  p, q, r, s, pq, rs, pqrs, ints[pqrs-offset]) ;
       }
    } while (!lastbuf);
@@ -433,7 +433,7 @@ void sortbuf(struct iwlbuf *Inbuf, struct iwlbuf *Outbuf,
 	     lblptr[idx++] = s;
 	     valptr[Outbuf->idx] = ints[pqrs-offset];
 	     if (printflg) 
-	       fprintf(outfile, ">%d %d %d %d | %d %d [%ld] = %10.6f\n",
+	       fprintf(out, ">%d %d %d %d | %d %d [%ld] = %10.6f\n",
 		       p, q, r, s, pq, rs, pqrs, ints[pqrs-offset]) ;
 	     
 	     Outbuf->idx++;

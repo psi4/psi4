@@ -12,7 +12,7 @@ namespace psi {
   
 void IWL::write(int p, int q, int pq, int pqsym,
     double *arr, int rmax, int *, int *ioff, int *orbsym, int *firsti, 
-    int *lasti, int , int printflag, FILE *outfile)
+    int *lasti, int , int printflag, FILE *out)
 {
     int r, s, rs, rsym, ssym, smax, idx;
     double value;
@@ -49,7 +49,7 @@ void IWL::write(int p, int q, int pq, int pqsym,
                 }
 
                 if(printflag)
-                    fprintf(outfile, "<%d %d %d %d [%d] [%d] = %20.10f\n",
+                    fprintf(out, "<%d %d %d %d [%d] [%d] = %20.10f\n",
                     p, q, r, s, pq, rs, value);
 
             } /* end if (fabs(value) > Buf->cutoff) ... */
@@ -71,7 +71,7 @@ void IWL::write(int p, int q, int pq, int pqsym,
 */
 void iwl_buf_wrt(struct iwlbuf *Buf, int p, int q, int pq, int pqsym,
    double *arr, int rmax, int *, int *ioff, int *orbsym, int *firsti, 
-   int *lasti, int , int printflag, FILE *outfile)
+   int *lasti, int , int printflag, FILE *out)
 {
   int r, s, rs, rsym, ssym, smax, idx;
   double value;
@@ -108,7 +108,7 @@ void iwl_buf_wrt(struct iwlbuf *Buf, int p, int q, int pq, int pqsym,
 	}
 	
 	if(printflag)
-	  fprintf(outfile, "<%d %d %d %d [%d] [%d] = %20.10f\n",
+	  fprintf(out, "<%d %d %d %d [%d] [%d] = %20.10f\n",
 		  p, q, r, s, pq, rs, value);
 	 
       } /* end if (fabs(value) > Buf->cutoff) ... */
