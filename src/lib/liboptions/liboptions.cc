@@ -281,7 +281,7 @@ char * Options::get_cstr_option(const char* cstr_option)
   else {
     char *cstyle = new char [temp_string.size()+1];
     cstyle[temp_string.size()+1] = '\0';
-    for (int i=0; i<temp_string.size(); ++i)
+    for (unsigned int i=0; i<temp_string.size(); ++i)
       cstyle[i] = temp_string[i];
     return cstyle;
   }
@@ -399,7 +399,7 @@ void Options::read_string(StringOptionsMap::iterator& it)
     if(it->second.choices.size()>0){
       bool wrong_input = true;
       vector<string> choices = split(it->second.choices);
-      for(int i=0;i<choices.size();++i){
+      for(unsigned int i=0;i<choices.size();++i){
         if(it->second.option==choices[i])
           wrong_input = false;
       }
@@ -419,7 +419,7 @@ void Options::read_string(StringOptionsMap::iterator& it)
 
 void Options::print(std::string options_for_who)
 {
-  int max_option_width = 0;
+  unsigned int max_option_width = 0;
   for(BoolOptionsMap::iterator it = bool_options.begin();it != bool_options.end();++it)
     if(it->first.size() > max_option_width)
       max_option_width = it->first.size();
@@ -443,7 +443,7 @@ void Options::print(std::string options_for_who)
   fprintf(outfile,"\n  ----------------------------------------------------------------------------");
   for(BoolOptionsMap::iterator it = bool_options.begin();it != bool_options.end();++it){
     fprintf(outfile,"\n  %s",it->first.c_str());
-    for(int n =0; n < max_option_width - it->first.size(); ++n) fprintf(outfile," "); 
+    for(unsigned int n =0; n < max_option_width - it->first.size(); ++n) fprintf(outfile," "); 
       if (it->second.ip_specified)
         fprintf(outfile," = %s",it->second.option ? "TRUE" : "FALSE" );
       else
@@ -451,7 +451,7 @@ void Options::print(std::string options_for_who)
   }
   for(IntOptionsMap::iterator it = int_options.begin();it != int_options.end();++it){
     fprintf(outfile,"\n  %s",it->first.c_str());
-    for(int n =0; n < max_option_width - it->first.size(); ++n) fprintf(outfile," ");
+    for(unsigned int n =0; n < max_option_width - it->first.size(); ++n) fprintf(outfile," ");
       if (it->second.ip_specified)
         fprintf(outfile," = %-d",it->second.option);
       else
@@ -459,15 +459,15 @@ void Options::print(std::string options_for_who)
   }
   for(DoubleOptionsMap::iterator it = double_options.begin();it != double_options.end();++it){
     fprintf(outfile,"\n  %s",it->first.c_str());
-    for(int n =0; n < max_option_width - it->first.size(); ++n) fprintf(outfile," ");
+    for(unsigned int n =0; n < max_option_width - it->first.size(); ++n) fprintf(outfile," ");
       if (it->second.ip_specified)
-        fprintf(outfile," = %-lf",it->second.option);
+        fprintf(outfile," = %-f",it->second.option);
       else
-        fprintf(outfile," = (%-lf)",it->second.option);
+        fprintf(outfile," = (%-f)",it->second.option);
   }
   for(StringOptionsMap::iterator it = string_options.begin();it != string_options.end();++it){
     fprintf(outfile,"\n  %s",it->first.c_str());
-    for(int n =0; n < max_option_width - it->first.size(); ++n) fprintf(outfile," ");
+    for(unsigned int n =0; n < max_option_width - it->first.size(); ++n) fprintf(outfile," ");
     if (it->second.ip_specified)
       fprintf(outfile," = %s",it->second.option.c_str());
     else
