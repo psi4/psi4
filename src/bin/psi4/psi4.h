@@ -7,6 +7,7 @@
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>
 #include <libipv1/ip_lib.h>
+#include "task.h"
 
 #ifdef MAIN
 #define EXT
@@ -51,17 +52,17 @@ class Calculation
   Calculation(void) {
     char *sj, *sw, *sd;
 
-    if (!ip_exist("JOBTYPE",0))
+    if (!ip_exist(const_cast<char*>("JOBTYPE"),0))
       throw("JOBTYPE keyword not found in input\n");
-    ip_string("JOBTYPE",&sj,0);
+    ip_string(const_cast<char*>("JOBTYPE"),&sj,0);
 
-    if (!ip_exist("WFN",0))
+    if (!ip_exist(const_cast<char*>("WFN"),0))
       throw("WFN keyword not found in input\n");
-    ip_string("WFN",&sw,0);
+    ip_string(const_cast<char*>("WFN"),&sw,0);
 
-    if (ip_exist("DERTYPE",0))
-      ip_string("WFN",&sd,0);
-    else sd = "UNSPECIFIED";
+    if (ip_exist(const_cast<char*>("DERTYPE"),0))
+      ip_string(const_cast<char*>("WFN"),&sd,0);
+    else sd = const_cast<char*>("UNSPECIFIED");
 
     set(sj,sw,sd);
   }
@@ -79,35 +80,43 @@ char **atom_basis; // basis set label for each atom
   extern int create_array(VALUE arr, int **array);
   extern int create_array(VALUE arr, double **array);
   
-  /*! Namespace for containing global variables.
-      Note: Global does not necessary infer global to all PSI */
-  namespace Globals {
-    /*! All output should be sent to this variable */
-    EXT FILE* g_fOutput;
-    
+  /*! All output should be sent to this variable */
+  EXT FILE* outfile;
+
     /*! The name of the input file, could be useful for something */
-    EXT std::string g_szInputFile;
-    
+  EXT std::string g_szInputFile;
+
     /*! Name of the output file */
-    EXT std::string g_szOutputFilename;
-    
+  EXT std::string g_szOutputFilename;
+
     /*! Verbosity */
-    EXT bool g_bVerbose;
-    
-    #ifdef MAIN
-    /*! All classes that provide a Ruby interface need this to say which module they belong to */
-    EXT VALUE g_rbPsi = Qnil;
-    /*! How much to indent the Ruby puts output by. */
-    EXT int g_iPutsIndent = 0;
-    EXT bool g_bQuietRuby = false;
-    EXT bool g_bIRB = false;
-    #else
-    EXT VALUE g_rbPsi;
-    EXT int g_iPutsIndent;
-    EXT bool g_bQuietRuby;
-    EXT bool g_bIRB;
-    #endif
-  };
+  EXT bool g_bVerbose;
+
+    /*! Global task object */
+  EXT psi4::Task *g_cTask;
+  EXT VALUE *g_rbTask;
+
+# ifdef MAIN
+  /*! All classes that provide a Ruby interface need this to say which module they belong to */
+  EXT VALUE g_rbPsi = Qnil;
+  /*! How much to indent the Ruby puts output by. */
+  EXT int g_iPutsIndent = 0;
+  EXT bool g_bQuietRuby = false;
+  EXT bool g_bIRB = false;
+  EXT void *g_rbExecNode = NULL;  // Only used in Ruby 1.9
+# else
+  extern VALUE g_rbPsi;
+  extern int g_iPutsIndent;
+  extern bool g_bQuietRuby;
+  extern bool g_bIRB;
+  extern void *g_rbExecNode;
+# endif
+  
+  // Pre 1.9 string access
+  #if !defined(RSTRING_LEN)
+  #  define RSTRING_LEN(x) (RSTRING(x)->len)
+  #  define RSTRING_PTR(x) (RSTRING(x)->ptr)
+  #endif
   
   // Helper macros
   /*! Cast a C/++ function to a Ruby acceptable form */

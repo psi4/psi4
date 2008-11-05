@@ -17,11 +17,7 @@ namespace psi { namespace input {
 
 void read_cart(Molecular_system & molecules)
 {
-  int i, j, errcod, atomcount, f, all_atomcount;
-  double Z = 0.0;
-  double tmp = 0.0;
-  char *atom_label, error_message[80];
-  int simple_geom, num_elem, entry_length, ival;
+  unsigned int i, j;
 
   num_atoms        = molecules.get_num_atoms();
   num_allatoms     = num_atoms;

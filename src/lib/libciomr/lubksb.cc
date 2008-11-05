@@ -3,7 +3,7 @@ namespace psi {
 
 void lubksb(double** a,int n,int* indx,double* b)
    {
-      int i,ii,ip,j;
+      int i,ii=0,ip,j;
       int t=0;
       double sum;
 

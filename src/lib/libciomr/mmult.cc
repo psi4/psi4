@@ -47,7 +47,7 @@ void mmult(double **AF, int ta, double **BF, int tb, double **CF, int tc,
   int nr, int nl, int nc, int add)
 {
    int odd_nr,odd_nc,odd_nl;
-   int i,j,k,ij;
+   int i,j,k;
    double t00,t01,t10,t11;
    double **a,**b;
    double *att,*bt;

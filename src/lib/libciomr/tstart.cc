@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <cstring>
+#include <string>
 #include <ctime>
 #define EXTERN
 #include <psi4-dec.h>
@@ -36,9 +37,8 @@ void tstart(FILE *outfile)
   time_start = time(NULL);
 
   //for (i=0; i < 78 ; i++) { fprintf(outfile,"*"); }
-  char *module_name = module.gprgid();
-  fprintf(outfile,"\n*** %s ", module_name);
-  delete [] module_name;
+  std::string module_name = module.gprgid();
+  fprintf(outfile,"\n*** %s ", module_name.c_str());
   fprintf(outfile,"called tstart() on %s\n", name);
   fprintf(outfile,"*** at %s\n",ctime(&time_start));
 
@@ -73,9 +73,8 @@ void tstop(FILE *outfile)
   sys_s = ((double) total_tmstime.tms_stime)/clk_tck;
 
   //for (i=0; i < 78 ; i++) { fprintf(outfile,"*"); }
-  char *module_name = module.gprgid();
-  fprintf(outfile,"\n*** %s ", module_name);
-  delete [] module_name;
+  std::string module_name = module.gprgid();
+  fprintf(outfile,"\n*** %s ", module_name.c_str());
   fprintf(outfile,"called tstop() on %s\n", name);
   fprintf(outfile,"*** at %s\n",ctime(&time_end));
   fprintf(outfile,"\tuser time   = %10.2f seconds = %10.2f minutes\n",

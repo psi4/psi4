@@ -133,7 +133,7 @@ int iwl_buf_rd_arr(struct iwlbuf *Buf, int target_pq, double *ints,
      *size = *size + 1;
      
      if (printflg) 
-       fprintf(outfile, "<%d %d %d %d [%d] = %20.10lf\n", p, q, r, s,
+       fprintf(outfile, "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
 	       pq, value);
      
    } /*! end loop through current buffer */
@@ -161,7 +161,7 @@ int iwl_buf_rd_arr(struct iwlbuf *Buf, int target_pq, double *ints,
        *size = *size + 1;
  
        if (printflg) 
-	 fprintf(outfile, "<%d %d %d %d [%d] = %20.10lf\n", p, q, r, s,
+	 fprintf(outfile, "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
 		 pq, value);
        
      } /*! end loop through current buffer */

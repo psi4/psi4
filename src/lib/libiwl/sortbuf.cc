@@ -112,7 +112,7 @@ void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,
             }
 
             if (printflg && ints[pqrs-offset] != 0.0) 
-                fprintf(outfile, "Adding %10.6f to el %d %d %d %d = %10.6lf\n", 
+                fprintf(outfile, "Adding %10.6f to el %d %d %d %d = %10.6f\n", 
                 valptr[Inbuf->idx_], p, q, r, s, ints[pqrs-offset]);
 
             if (add) ints[pqrs-offset] += valptr[Inbuf->idx_];
@@ -358,14 +358,14 @@ void sortbuf(struct iwlbuf *Inbuf, struct iwlbuf *Outbuf,
 	}
 	
         if (printflg && ints[pqrs-offset] != 0.0) 
-	   fprintf(outfile, "Adding %10.6lf to el %d %d %d %d = %10.6lf\n", 
+	   fprintf(outfile, "Adding %10.6f to el %d %d %d %d = %10.6f\n", 
                    valptr[Inbuf->idx], p, q, r, s, ints[pqrs-offset]);
 
         if (add) ints[pqrs-offset] += valptr[Inbuf->idx];
         else ints[pqrs-offset] += valptr[Inbuf->idx];
 
 	if (printflg) 
-	  fprintf(outfile, "<%d %d %d %d | %d %d [%ld] = %10.6lf\n",
+	  fprintf(outfile, "<%d %d %d %d | %d %d [%ld] = %10.6f\n",
 		  p, q, r, s, pq, rs, pqrs, ints[pqrs-offset]) ;
       }
    } while (!lastbuf);
@@ -433,7 +433,7 @@ void sortbuf(struct iwlbuf *Inbuf, struct iwlbuf *Outbuf,
 	     lblptr[idx++] = s;
 	     valptr[Outbuf->idx] = ints[pqrs-offset];
 	     if (printflg) 
-	       fprintf(outfile, ">%d %d %d %d | %d %d [%ld] = %10.6lf\n",
+	       fprintf(outfile, ">%d %d %d %d | %d %d [%ld] = %10.6f\n",
 		       p, q, r, s, pq, rs, pqrs, ints[pqrs-offset]) ;
 	     
 	     Outbuf->idx++;

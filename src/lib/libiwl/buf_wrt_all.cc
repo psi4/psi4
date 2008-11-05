@@ -104,7 +104,7 @@ void iwl_buf_wrt_all(struct iwlbuf *Buf, int nbfso, double *ints, int *ioff,
 	    lblptr[idx++] = (Label) s;
 	    valptr[Buf->idx] = (Value) ints[pqrs];
 	    Buf->idx++;
-	    if (printflg) fprintf(outfile, "%d %d %d %d [%d] = %10.6lf\n",
+	    if (printflg) fprintf(outfile, "%d %d %d %d [%d] = %10.6f\n",
 				  p, q, r, s, pqrs, ints[pqrs]) ;
 	    
 	    if (Buf->idx == Buf->ints_per_buf) {

@@ -46,16 +46,12 @@ int input(Options & options, char **atom_basis, Molecular_system & molecules)
    /*variables and arrays*/
    int argc = 0;
    char **argv = NULL;
-   int i,j,k,l;
+   int i,j;
    int errcod;
    int is_dummy;
-   double temp = 0.0;			/*temporary anything*/
    int natomtri = 0;                    /*number of elements in the lower triangle of a (num_atoms)x(num_atoms) matrix */
-   double Z = 0.0;			/*Atomic Number*/
-   double *Distance;			/*Lower triangle of the internuclear distance matrix*/
+   double *Distance=NULL;			/*Lower triangle of the internuclear distance matrix*/
    double repulsion;			/*nuclear Repulsion Energy*/
-   double ***E;				/*Unit Vectors between atoms*/
-   double ***Bond_Angle;		/*Matrix holds bond angles*/
    FILE *pbasis = NULL;
    FILE *user_basis = NULL;
    FILE *local_basis = NULL;
@@ -241,7 +237,7 @@ int input(Options & options, char **atom_basis, Molecular_system & molecules)
 
      if (num_atoms > 1) {
        /* Print the Nuclear Repulsion Energy */
-       fprintf(outfile,"\n    Nuclear Repulsion Energy (a.u.) = %20.12lf\n\n",repulsion);
+       fprintf(outfile,"\n    Nuclear Repulsion Energy (a.u.) = %20.12f\n\n",repulsion);
 
        /* Print the interatomic Distance Matrix in angstroms */
        for(i=0;i<natomtri;i++)
@@ -342,7 +338,7 @@ void print_geometry(double conv_factor)
   for(i=0;i<num_atoms;i++){
     fprintf(outfile,"    %12s ",element[i]); fflush(outfile);
     for(j=0;j<3;j++)
-      fprintf(outfile,"  %17.12lf",geometry[i][j]*conv_factor);
+      fprintf(outfile,"  %17.12f",geometry[i][j]*conv_factor);
     fprintf(outfile,"\n");
   }
   fprintf(outfile,"\n");
@@ -362,7 +358,7 @@ void print_full_geometry(double conv_factor)
   for(i=0;i<num_allatoms;i++){
     fprintf(outfile,"  %12s ",full_element[i]); fflush(outfile);
     for(j=0;j<3;j++)
-      fprintf(outfile,"  %17.12lf",full_geom[i][j]*conv_factor);
+      fprintf(outfile,"  %17.12f",full_geom[i][j]*conv_factor);
     fprintf(outfile,"\n");
   }
   fflush(outfile);
@@ -380,7 +376,7 @@ void print_unique_geometry(double conv_factor)
   for(i=0;i<num_uniques;i++){
     fprintf(outfile,"    %12s ",element[u2a[i]]);
     for(j=0;j<3;j++)
-      fprintf(outfile,"  %17.12lf",geometry[u2a[i]][j]*conv_factor);
+      fprintf(outfile,"  %17.12f",geometry[u2a[i]][j]*conv_factor);
     fprintf(outfile,"\n");
   }
   fprintf(outfile,"\n");
@@ -512,7 +508,7 @@ void print_basis_info()
     fprintf(outfile,"    Prim#     Exponent     Norm. contr. coeff.\n");
     fprintf(outfile,"    -----  --------------  -------------------\n");
     for(i=0;i<num_prims;i++)
-      fprintf(outfile,"    %3d    %14.7lf    %15.10lf\n",i+1,exponents[i],contr_coeff[i]);
+      fprintf(outfile,"    %3d    %14.7f    %15.10f\n",i+1,exponents[i],contr_coeff[i]);
     fprintf(outfile,"\n");
     fprintf(outfile,"    Shell#  Nuc#  L  SPRIM  SLOC  SNUMG\n");
     fprintf(outfile,"    ------  ----  -  -----  ----  -----\n");

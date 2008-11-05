@@ -143,7 +143,7 @@ int iwl_buf_rd(struct iwlbuf *Buf, int target_pq, double *ints,
     ints[rs] = (double) valptr[Buf->idx];
     
     if (printflg) 
-      fprintf(outfile, "<%d %d %d %d [%d][%d] = %20.10lf\n",
+      fprintf(outfile, "<%d %d %d %d [%d][%d] = %20.10f\n",
 	      p, q, r, s, pq, rs, ints[rs]) ;
     
   } /*! end loop through current buffer */
@@ -174,7 +174,7 @@ int iwl_buf_rd(struct iwlbuf *Buf, int target_pq, double *ints,
       ints[rs] = (double) valptr[Buf->idx];
       
       if (printflg) 
-	fprintf(outfile, "<%d %d %d %d [%d][%d] = %20.10lf\n",
+	fprintf(outfile, "<%d %d %d %d [%d][%d] = %20.10f\n",
 		p, q, r, s, pq, rs, ints[rs]) ;
       
     } /*! end loop through current buffer */
