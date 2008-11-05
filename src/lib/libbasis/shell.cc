@@ -10,12 +10,12 @@
 
 namespace psi {
 
-GaussianShell::GaussianShell(int nprims, int ncontr, int *am, bool puream, PSI_FLOAT *exps, PSI_FLOAT **ccoeffs, PSI_FLOAT origin[3]) :
-  num_prims_(nprims), num_contr_(ncontr), puream_(puream)
+GaussianShell::GaussianShell(int nprims, int ncontr, int *L, bool pam, PSI_FLOAT *exps, PSI_FLOAT **ccoeffs, PSI_FLOAT o[3]) :
+  num_prims_(nprims), num_contr_(ncontr), puream_(pam)
 {
   am_ = new int[num_contr_];
   for(int c=0; c<num_contr_; c++)
-    am_[c] = am[c];
+    am_[c] = L[c];
   min_am_ = am_[0];
   max_am_ = am_[0];
   for(int c=1; c<num_contr_; c++) {
@@ -44,9 +44,9 @@ GaussianShell::GaussianShell(int nprims, int ncontr, int *am, bool puream, PSI_F
     }
   }
 
-  O_[0] = origin[0];
-  O_[1] = origin[1];
-  O_[2] = origin[2];
+  O_[0] = o[0];
+  O_[1] = o[1];
+  O_[2] = o[2];
 }
 
 GaussianShell::GaussianShell(const GaussianShell& S) :
@@ -158,9 +158,9 @@ void GaussianShell::print(int id, FILE* outfile) const {
     fprintf(outfile, " Contr. %3d",c);
   fprintf(outfile,"\n");
   for(int p=0; p<num_prims_; p++) {
-    fprintf(outfile, "%s%15.10lf",indent2,exps_[p]);
+    fprintf(outfile, "%s%15.10f",indent2,exps_[p]);
     for(int c=0; c<num_contr_; c++)
-      fprintf(outfile, " %12.9lf",ccoeffs_[p][c]);
+      fprintf(outfile, " %12.9f",ccoeffs_[p][c]);
     fprintf(outfile,"\n");
   }
   fprintf(outfile,"\n");

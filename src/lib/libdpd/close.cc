@@ -12,7 +12,7 @@ namespace psi {
 
 int dpd_close(int dpd_num)
 {
-  int h,i,j,k,cnt;
+  int i,j,k,cnt;
   int nirreps,num_subspaces,num_pairs;
   dpd_data *this_dpd;
 

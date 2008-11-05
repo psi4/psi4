@@ -49,7 +49,7 @@
 
 namespace psi {
 	
-void dpd_3d_sort(double ***Win, double ***Wout, int nirreps, int h, int *rowtot, int **rowidx, 
+void dpd_3d_sort(double ***Win, double ***Wout, int nirreps, int h, int *rowtot, int **, 
 		 int ***roworb, int *asym, int *bsym, int *aoff, int *boff,
 		 int *cpi, int *coff, int **rowidx_out, enum pattern index, int sum)
 {

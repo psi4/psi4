@@ -35,7 +35,7 @@ int dpd_contract444(dpdbuf4 *X, dpdbuf4 *Y, dpdbuf4 *Z,
   int n, Hx, Hy, Hz, GX, GY, GZ, nirreps, Xtrans, Ytrans, *numlinks, symlink;
   long int size_Y, size_Z, size_file_X_row;
   int incore, nbuckets;
-  long int memoryd, core, rows_per_bucket, rows_left, memtotal;
+  long int memoryd, rows_per_bucket, rows_left;
 #if DPD_DEBUG
   int *xrow, *xcol, *yrow, *ycol, *zrow, *zcol;
   double byte_conv;

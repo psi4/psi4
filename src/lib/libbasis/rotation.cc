@@ -125,7 +125,7 @@ PSI_FLOAT** RotationOp::full_rotation_mat(PSI_FLOAT** R)
   int ao_offset = 0;
   for(int s=0; s<nshell; s++) {
     int am = bs_->shell(s).am();
-    int nao = bs_->shell(s).num_ao();
+        nao = bs_->shell(s).num_ao();
     for(int ao1=0; ao1<nao; ao1++)
       for(int ao2=0; ao2<nao; ao2++)
 	TM[ao_offset+ao1][ao_offset+ao2] = Rl_[am][ao1][ao2];

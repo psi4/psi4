@@ -65,8 +65,8 @@ double norm_const(unsigned int l1, unsigned int m1, unsigned int n1,
 
 void timer_init(void);
 void timer_done(void);
-void timer_on(char *key);
-void timer_off(char *key);
+void timer_on(const char *key);
+void timer_off(const char *key);
 
 void filter(double *input, double *output, int *ioff, int norbs, int nfzc, 
       int nfzv);

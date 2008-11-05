@@ -8,7 +8,7 @@
 
 namespace psi {
 
-int dpd_file4_mat_irrep_row_zero(dpdfile4 *File, int irrep, int row)
+int dpd_file4_mat_irrep_row_zero(dpdfile4 *File, int irrep, int)
 {
   int coltot, my_irrep;
 

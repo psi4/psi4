@@ -31,7 +31,7 @@ namespace psi {
 */
 
 int dpd_buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, int pqnum, int rsnum,
-		 int file_pqnum, int file_rsnum, int anti, char *label)
+		 int file_pqnum, int file_rsnum, int anti, const char *label)
 {
   int h, nirreps, nump, nrows, p, Gp, Gr, offset;
 

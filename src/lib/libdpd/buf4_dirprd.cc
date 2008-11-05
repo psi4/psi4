@@ -19,7 +19,6 @@ namespace psi {
 int dpd_buf4_dirprd(dpdbuf4 *BufA, dpdbuf4 *BufB)
 {
   int h, nirreps, my_irrep;
-  int row, col;
 
   nirreps = BufA->params->nirreps;
   my_irrep = BufA->file.my_irrep;

@@ -36,10 +36,10 @@ extern FILE *outfile;
 int dpd_contract442(dpdbuf4 *X, dpdbuf4 *Y, dpdfile2 *Z, int target_X,
     int target_Y, double alpha, double beta)
 {
-  int h,hxbuf,hybuf,nirreps,Gtar,GX,GY,GZ,Hx,Hy,Hz,hlinks;
+  int hxbuf,hybuf,nirreps,GX,GY,GZ,Hx,Hy,Hz;
   int rking=0;
   dpdtrans4 Xt, Yt;
-  double ***Xmat, ***Ymat, ***Zmat;
+  double ***Xmat, ***Ymat;
   int Xtrans, Ytrans, *numlinks;
 #ifdef DPD_DEBUG
   int *xrow, *xcol, *yrow, *ycol, *zrow, *zcol;

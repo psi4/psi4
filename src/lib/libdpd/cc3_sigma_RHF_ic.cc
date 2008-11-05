@@ -32,7 +32,7 @@ struct thread_data {
  dpdbuf4 *SIjAb; int *occpi; int *occ_off; int *virtpi; int *vir_off;
  double omega; dpdfile2 *fIJ; dpdfile2 *fAB; int Gi; int Gj; int Gk;
  int first_ijk; int last_ijk;
- FILE *outfile; int thr_id; dpdfile2 SIA_local; dpdbuf4 SIjAb_local;
+ FILE *out; int thr_id; dpdfile2 SIA_local; dpdbuf4 SIjAb_local;
 };
 
 void *cc3_sigma_RHF_ic_thread(void *thread_data);
@@ -41,27 +41,17 @@ void cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
     int do_singles, dpdbuf4 *Dints, dpdfile2 *SIA,
     int do_doubles, dpdfile2 *FME, dpdbuf4 *WmAEf, dpdbuf4 *WMnIe,
     dpdbuf4 *SIjAb, int *occpi, int *occ_off, int *virtpi, int *vir_off,
-    double omega, FILE *outfile, int nthreads)
+    double omega, FILE *out, int nthreads)
 {
   int h, nirreps, thread, nijk, *ijk_part, errcod=0;
-  int Gi, Gj, Gk, Gl, Ga, Gb, Gc, Gd;
-  int i, j, k, l, a, b, c, d, row, col;
-  int I, J, K, L, A, B, C, D;
-  int kj, jk, ji, ij, ik, ki;
-  int Gkj, Gjk, Gji, Gij, Gik, Gki, Gkd;
-  int Gijk, GS, GC, GWX3, GW, GX3, nrows,ncols,nlinks;
-  int ab, ba, ac, ca, bc, cb;
-  int Gab, Gba, Gac, Gca, Gbc, Gcb, Gid, Gjd;
-  int id, jd, kd, ad, bd, cd;
-  int il, jl, kl, la, lb, lc, li, lk;
-  int da, di, dj, dk, thr_id;
-  int Gad, Gdi, Gdj, Gdk, Glc, Gli, Glk,cnt,cnt2;
+  int Gi, Gj, Gk;
+  int i, row, col;
+  int Gkj, Gjk, Gji, Gij, Gik, Gki;
+  int Gijk, GS, GC, GWX3, GW, GX3;
+  int cnt;
   long int length;
-  double value, F_val, t_val, E_val;
-  double dijk, denom, *tvect, **Z;
-  double value_ia, value_ka, denom_ia, denom_ka;
   dpdfile2 fIJ, fAB, *SIA_local;
-  dpdbuf4 buf4_tmp, *SIjAb_local;
+  dpdbuf4 *SIjAb_local;
   pthread_t  *p_thread;
   struct thread_data *thread_data_array;
   char lbl[32];
@@ -87,7 +77,7 @@ void cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
   GW = WmAEf->file.my_irrep;
   GS = SIjAb->file.my_irrep;
   if (GS != (GX3^GW)) {
-    fprintf(outfile,"problem with irreps in cc3_sigma_RHF()\n"); 
+    fprintf(out,"problem with irreps in cc3_sigma_RHF()\n"); 
     exit(1);
   }
 
@@ -155,7 +145,7 @@ void cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
     thread_data_array[thread].omega = omega;
     thread_data_array[thread].fIJ = &fIJ;
     thread_data_array[thread].fAB = &fAB;
-    thread_data_array[thread].outfile = outfile;
+    thread_data_array[thread].out = out;
     thread_data_array[thread].thr_id = thread;
     thread_data_array[thread].SIA_local = SIA_local[thread];
     thread_data_array[thread].SIjAb_local = SIjAb_local[thread];
@@ -289,13 +279,12 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
 {
   int Ga, Gb, Gc, Gd, Gab, Gbc, Gl, Gik, Gki, Gkj, Glk, Gjk, Gli, Gijk, nirreps;
   int GC, GWX3, GX3, GW, GS, Gij, Gji, Gid, Gjd, Gkd;
-  int i, j, k, l, I, J, K, L, nrows, ncols, nlinks,h,cnt_ijk;
+  int i, j, k, l, I, J, K, L, nrows, ncols, nlinks,cnt_ijk;
   int ij, ji, ik, ki, jk, kj, lc, li, il, lk, kl, id, jd, kd;
-  int a, b, c, d, A, B, C, D, ab, ba, bc, ad, da, cnt;
+  int a, c, d, A, B, C, D, ab, ba, bc, ad, da, cnt;
   double **Z, *tvect, ***W3, ***W3a;
   dpdbuf4 *SIjAb, SIjAb_local;
   dpdfile2 *SIA, SIA_local;
-  char lbl[32];
   struct thread_data data;
 
   int do_singles, do_doubles, *occpi, *occ_off, *virtpi, *vir_off;
@@ -303,7 +292,7 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
   double omega;
   dpdfile2 *FME, *fIJ, *fAB;
   dpdbuf4 *CIjAb, *WAbEi, *WMbIj, *Dints, *WmAEf, *WMnIe;
-  FILE *outfile;
+  FILE *out;
 
   data = *(struct thread_data *) thread_data_in;
 
@@ -330,7 +319,7 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
   Gk    =  data.Gk;
   first_ijk = data.first_ijk;
   last_ijk = data.last_ijk;
-  outfile = data.outfile;
+  out = data.out;
   thr_id = data.thr_id;
   SIA_local = data.SIA_local;
   SIjAb_local = data.SIjAb_local;

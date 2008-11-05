@@ -16,7 +16,7 @@
 
 namespace psi {
 
-BasisSet::BasisSet(int chkptfile)
+BasisSet::BasisSet()
 {
   num_shells_ = chkpt_rd_nshell();
   num_prims_ = chkpt_rd_nprim();
@@ -107,13 +107,13 @@ void BasisSet::init_shells()
      am[0] = shell_am[i]-1;
      int fprim = shell_fprim[i] - 1;
      int nprims = shell_num_prims[i];
-     int center = shell_center_[i] - 1;
+     int cen = shell_center_[i] - 1;
      PSI_FLOAT **cc = new PSI_FLOAT*[nprims];
      for(int p=0; p<nprims; p++) {
        cc[p] = new PSI_FLOAT[ncontr];
        cc[p][0] = ccoeffs[fprim+p][am[0]];
      }
-     shells_[i] = new GaussianShell(nprims, ncontr, am, puream_, &(exponents[fprim]), cc, coords_[center]);
+     shells_[i] = new GaussianShell(nprims, ncontr, am, puream_, &(exponents[fprim]), cc, coords_[cen]);
      for(int p=0; p<nprims; p++) {
        delete[] cc[p];
      }
@@ -132,29 +132,29 @@ void BasisSet::check_shell_index(int si) const {
     throw std::runtime_error("ERROR: BasisSet::check_shell_index -- shell index out of bounds");
 }
 
-int BasisSet::num_prims() const { return num_prims_; };
-int BasisSet::num_shells() const { return num_shells_; };
-int BasisSet::num_ao() const { return num_ao_; };
-int BasisSet::num_bf() const { return num_bf_; };
-int BasisSet::max_am() const { return max_am_; };
+int BasisSet::num_prims() const { return num_prims_; }
+int BasisSet::num_shells() const { return num_shells_; }
+int BasisSet::num_ao() const { return num_ao_; }
+int BasisSet::num_bf() const { return num_bf_; }
+int BasisSet::max_am() const { return max_am_; }
 
 GaussianShell& BasisSet::shell(int si) const
 {
   check_shell_index(si);
   return *(shells_[si]);
-};
+}
 
 int BasisSet::first_bf(int si) const
 {
   check_shell_index(si);
   return shell_fbf_[si] - 1;
-};
+}
 
 int BasisSet::first_ao(int si) const
 {
   check_shell_index(si);
   return shell_fao_[si] - 1;
-};
+}
 
 int BasisSet::center(int si) const
 {
@@ -177,16 +177,16 @@ PSI_FLOAT BasisSet::get_center(int ci, int i)
   return coords_[ci][i];
 }
 
-void BasisSet::print(char *id, FILE* outfile) const {
+void BasisSet::print(char *id, FILE* out) const {
   char indent1[] = "  ";
   char indent2[] = "    ";
 
-  fprintf(outfile, "%s-Basis Set %s\n",indent1,id);
-  fprintf(outfile, "%sNumber of shells              = %d\n",indent2,num_shells_);
-  fprintf(outfile, "%sNumber of basis functions     = %d\n",indent2,num_bf_);
-  fprintf(outfile, "%sNumber of Cartesian Gaussians = %d\n",indent2,num_ao_);
-  fprintf(outfile, "%sSpherical Harmonics?          = %s\n",indent2,(puream_ ? "true" : "false"));
-  fprintf(outfile, "%sMax angular momentum          = %d\n\n",indent2,max_am_);
+  fprintf(out, "%s-Basis Set %s\n",indent1,id);
+  fprintf(out, "%sNumber of shells              = %d\n",indent2,num_shells_);
+  fprintf(out, "%sNumber of basis functions     = %d\n",indent2,num_bf_);
+  fprintf(out, "%sNumber of Cartesian Gaussians = %d\n",indent2,num_ao_);
+  fprintf(out, "%sSpherical Harmonics?          = %s\n",indent2,(puream_ ? "true" : "false"));
+  fprintf(out, "%sMax angular momentum          = %d\n\n",indent2,max_am_);
 
   fprintf(outfile, "%sShells:\n\n",indent2);
   for(int s=0; s<num_shells_; s++)

@@ -12,7 +12,6 @@ int dpd_buf4_dump(dpdbuf4 *DPDBuf, struct iwlbuf *IWLBuf,
 		  int bk_pack, int swap23)
 {
   int h, row, col, p, q, r, s, P, Q, R, S, my_irrep;
-  int soccs;
   double value;
 
   my_irrep = DPDBuf->file.my_irrep;

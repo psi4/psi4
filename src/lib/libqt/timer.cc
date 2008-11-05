@@ -186,7 +186,7 @@ struct timer *timer_last(void)
 **
 ** \ingroup QT
 */
-void timer_on(char *key)
+void timer_on(const char *key)
 {
   struct timer *this_timer;
 
@@ -226,7 +226,7 @@ void timer_on(char *key)
 **
 ** \ingroup QT
 */
-void timer_off(char *key)
+void timer_off(const char *key)
 {
   struct tms ontime, offtime;
   struct timer *this_timer;
