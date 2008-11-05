@@ -1,5 +1,5 @@
-#ifndef _psi_src_lib_liboptions_liboptions_h
-#define _psi_src_lib_liboptions_liboptions_h
+#ifndef _psi_src_lib_liboptions_liboptions_hpp
+#define _psi_src_lib_liboptions_liboptions_hpp
 
 #include <iostream>
 #include <vector>
@@ -40,6 +40,12 @@ namespace psi {
   public:
     NotImplementedException(const std::string& message) : std::runtime_error(message + " function not implemented") { }
   };
+  
+  class OptionsException : public std::runtime_error
+  {
+  public:
+    OptionsException(const std::string& message) : std::runtime_error("Options Exception: " + message) { }
+  };
 
   class Data;
   class DataType 
@@ -60,6 +66,10 @@ namespace psi {
       std::transform(str.begin(), str.end(), str.begin(), ::toupper);
     }
 
+    virtual std::string type() const {
+      return std::string("unknown");
+    }
+    
     virtual bool is_array() const {
       return false;
     }
@@ -72,30 +82,36 @@ namespace psi {
     virtual void add(std::string, DataType*) {
       throw NotImplementedException("add(std::string, DataType*)");
     }
-    virtual void add(int i) {
+    virtual void add(bool) {
+      throw NotImplementedException("add(bool)");
+    }
+    virtual void add(int) {
       throw NotImplementedException("add(int)");
     }
-    virtual void add(double d) {
+    virtual void add(double) {
       throw NotImplementedException("add(double)");
     }
-    virtual void add(std::string s, std::string c) {
+    virtual void add(std::string, bool) {
+      throw NotImplementedException("add(std::string, bool)");
+    }
+    virtual void add(std::string, std::string) {
       throw NotImplementedException("add(std::string, std::string)");
     }    
-    virtual void add(std::string key, int i) {
+    virtual void add(std::string, int) {
       throw NotImplementedException("add(std::string, int)");
     }
-    virtual void add(std::string key, double d) {
+    virtual void add(std::string, double) {
       throw NotImplementedException("add(std::string, double)");
     }
-    virtual void add(std::string key, std::string s, std::string) {
+    virtual void add(std::string, std::string, std::string) {
       throw NotImplementedException("add(std::string, std::string, std::string)");
     }
 
-    virtual bool exists(std::string key) {
+    virtual bool exists(std::string) {
       throw NotImplementedException("exists(std::string)");
     }
 
-    virtual std::string to_string() {
+    virtual std::string to_string() const {
       throw DataTypeException("don't know how to convert to a string");
     };
     virtual int to_integer() const {
@@ -105,6 +121,9 @@ namespace psi {
       throw DataTypeException("don't know how to convert to a double");
     }
 
+    virtual void assign(bool) {
+      throw DataTypeException("assign(bool) failure");
+    }
     virtual void assign(int) {
       throw DataTypeException("assign(int) failure");
     }
@@ -115,23 +134,69 @@ namespace psi {
       throw DataTypeException("assign(std:string) failure");
     }
 
-    virtual Data& operator[](std::string key) {
+    virtual Data& operator[](std::string) {
       throw NotImplementedException("Data& [string]");
     }    
-    virtual Data& operator[](unsigned int i) {
+    virtual Data& operator[](unsigned int) {
       throw NotImplementedException("Data& [unsigned int]");
     }
   };
 
+  class BooleanDataType : public DataType
+  {
+    bool boolean_;
+  public:
+    BooleanDataType() : DataType(), boolean_(false) { }
+    BooleanDataType(bool b) : DataType(), boolean_(b) { }
+    virtual ~BooleanDataType() { }
+    
+    virtual std::string type() const {
+      return std::string("boolean");
+    }
+    
+    virtual std::string to_string() const {
+      std::string ret;
+      if (boolean_)
+        ret = "TRUE";
+      else
+        ret = "FALSE";
+      return ret;      
+    }
+    virtual int to_integer() const {
+      return static_cast<int>(boolean_);
+    }
+    virtual double to_double() const {
+      return static_cast<double>(boolean_);
+    }
+    
+    virtual void assign(bool b) {
+      changed();
+      boolean_ = b;
+    }
+    virtual void assign(int i) {
+      assign(static_cast<bool>(i));
+    }
+    virtual void assign(double d) {
+      assign(static_cast<bool>(d));
+    }
+    virtual void assign(std::string s) {
+      assign(static_cast<bool>(std::strtod(s.c_str(), NULL)));
+    }
+  };
+  
   class IntDataType : public DataType
   {
     int integer_;
   public:
-    IntDataType() : DataType() { }
+    IntDataType() : DataType(), integer_(0) { }
     IntDataType(int i) : DataType(), integer_(i) { }
     virtual ~IntDataType() { }
 
-    virtual std::string to_string() {
+    virtual std::string type() const {
+      return std::string("int");
+    }
+
+    virtual std::string to_string() const {
       std::stringstream strm;
       strm << integer_;
       return strm.str();
@@ -143,6 +208,9 @@ namespace psi {
       return static_cast<double>(integer_);
     }
 
+    virtual void assign(bool b) {
+      assign(static_cast<int>(b));
+    }
     virtual void assign(int i) {
       changed();
       integer_ = i;
@@ -159,11 +227,15 @@ namespace psi {
   {
     double double_;
   public:
-    DoubleDataType() : DataType() { }
+    DoubleDataType() : DataType(), double_(0.0) { }
     DoubleDataType(double d) : DataType(), double_(d) { }
     virtual ~DoubleDataType() { }
 
-    virtual std::string to_string() {
+    virtual std::string type() const {
+      return std::string("double");
+    }
+
+    virtual std::string to_string() const {
       std::stringstream strm;
       strm << double_;
       return strm.str();
@@ -175,8 +247,11 @@ namespace psi {
       return double_;
     }
 
+    virtual void assign(bool b) {
+      assign(static_cast<double>(b));
+    }
     virtual void assign(int i) {
-      assign(tatic_cast<double>(i));
+      assign(static_cast<double>(i));
     }
     virtual void assign(double d) {
       changed();
@@ -197,6 +272,10 @@ namespace psi {
     StringDataType(std::string s, std::string c) : DataType(), str_(s) { to_upper(str_); to_upper(c); choices_ = split(c); }
     virtual ~StringDataType() { }
 
+    virtual std::string type() const {
+      return std::string("string");
+    }
+
     std::vector<std::string> split(const std::string& str){
       // Split a string
       typedef std::string::const_iterator iter;
@@ -215,7 +294,7 @@ namespace psi {
       return(splitted_string);
     }
 
-    virtual std::string to_string() {
+    virtual std::string to_string() const {
       return str_;
     }
     virtual int to_integer() const {
@@ -225,6 +304,12 @@ namespace psi {
       return std::strtod(str_.c_str(), NULL);
     }
 
+    virtual void assign(bool b) {
+      if (b)
+        assign("TRUE");
+      else
+        assign("FALSE");
+    }
     virtual void assign(int i) {
       std::stringstream strm;
       strm << i;
@@ -239,7 +324,7 @@ namespace psi {
       to_upper(s);
       if (choices_.size() > 0) {
         bool wrong_input = true;
-        for (int i=0; i<choices_.size(); ++i)
+        for (unsigned int i=0; i<choices_.size(); ++i)
           if (s == choices_[i])
           wrong_input = false;
         if (wrong_input)
@@ -258,10 +343,10 @@ namespace psi {
     Ref<DataType> ptr_;
   public:
     Data() { }
-    Data(DataType *type) : ptr_(type) { }
+    Data(DataType *t) : ptr_(t) { }
     Data(const Data& copy) { ptr_ = copy.ptr_; }
 
-    std::string to_string() {
+    std::string to_string() const {
       return ptr_->to_string();
     }
     int to_integer() const {
@@ -274,12 +359,22 @@ namespace psi {
     bool is_array() const {
       return ptr_->is_array();
     }
+    unsigned int size() const {
+      return ptr_->size();
+    }
 
+    std::string type() const {
+      return ptr_->type();
+    }
+    
     void add(DataType *data) {
       ptr_->add(data);
     }
     void add(std::string s, DataType *data) {
       ptr_->add(s, data);
+    }
+    void add(bool b) {
+      ptr_->add(b);
     }
     void add(int i) {
       ptr_->add(i);
@@ -289,7 +384,10 @@ namespace psi {
     }
     void add(std::string s, std::string c) {
       ptr_->add(s, c);
-    }    
+    }
+    void add(std::string key, bool b) {
+      ptr_->add(key, b);
+    }
     void add(std::string key, int i) {
       ptr_->add(key, i);
     }
@@ -300,6 +398,9 @@ namespace psi {
       ptr_->add(key, s, c);
     }
 
+    void assign(bool b) {
+      ptr_->assign(b);
+    }
     void assign(int i) {
       ptr_->assign(i);
     }
@@ -324,8 +425,15 @@ namespace psi {
   public:
     ArrayType() { }
 
+    virtual std::string type() const {
+      return std::string("array");
+    }
+
     virtual void add(DataType *data) {
       array_.push_back(Data(data));
+    }
+    virtual void add(bool b) {
+      add(new BooleanDataType(b));
     }
     virtual void add(int i) {
       add(new IntDataType(i));
@@ -343,7 +451,7 @@ namespace psi {
       return array_[i];
     }
     virtual Data& operator[](std::string s) {
-      int i = static_cast<int>(std::strtod(s.c_str(), NULL));
+      unsigned int i = static_cast<unsigned int>(std::strtod(s.c_str(), NULL));
       if (i >= array_.size())
         throw IndexException("out of range");
       return array_[i];
@@ -356,9 +464,9 @@ namespace psi {
       return array_.size();
     }
 
-    virtual std::string to_string() {
+    virtual std::string to_string() const {
       std::string str = "[ ";
-      for (int i=0; i<array_.size(); ++i) {
+      for (unsigned int i=0; i<array_.size(); ++i) {
         str += array_[i].to_string();
         if (i != array_.size() - 1)
           str += ", ";
@@ -372,8 +480,13 @@ namespace psi {
   {
     std::map<std::string, Data> keyvals_;
     typedef std::map<std::string, Data>::iterator iterator;
+    typedef std::map<std::string, Data>::const_iterator const_iterator;
   public:
     MapType() { }
+
+    virtual std::string type() const {
+      return std::string("map");
+    }
 
     virtual void add(std::string key, DataType *data) {
       to_upper(key);
@@ -383,7 +496,9 @@ namespace psi {
         throw DuplicateKeyException();
       keyvals_[key] = Data(data);
     }
-
+    virtual void add(std::string key, bool b) {
+      add(key, new BooleanDataType(b));
+    }
     virtual void add(std::string key, int i) {
       add(key, new IntDataType(i));
     }
@@ -416,9 +531,9 @@ namespace psi {
       return keyvals_.size();
     }
 
-    virtual std::string to_string() {
+    virtual std::string to_string() const {
       std::string str = "{ ";
-      for (iterator pos = keyvals_.begin(); pos != keyvals_.end(); ++pos) {
+      for (const_iterator pos = keyvals_.begin(); pos != keyvals_.end(); ++pos) {
         str += pos->first + " => " + pos->second.to_string() + ", ";
       }
       str += "}";
@@ -430,6 +545,7 @@ namespace psi {
   {
     std::map<std::string, Data> keyvals_;
     typedef std::map<std::string, Data>::iterator iterator;
+    typedef std::map<std::string, Data>::const_iterator const_iterator;
   public:
     Options() { }
 
@@ -446,7 +562,9 @@ namespace psi {
         throw DuplicateKeyException();
       keyvals_[key] = Data(data);
     }
-
+    void add(std::string key, bool b) {
+      add(key, new BooleanDataType(b));
+    }
     void add(std::string key, int i) {
       add(key, new IntDataType(i));
     }
@@ -477,14 +595,22 @@ namespace psi {
       return get(key);
     }
 
-    std::string to_string() {
+    std::string to_string() const {
       std::stringstream str;
       str << "Options: \n";
-      for (iterator pos = keyvals_.begin(); pos != keyvals_.end(); ++pos) {
+      for (const_iterator pos = keyvals_.begin(); pos != keyvals_.end(); ++pos) {
         str << "  " << std::setw(12) << pos->first << " => " << pos->second.to_string() << std::endl;
       }
       return str.str();
     }
+    
+    void read_ipv1();
+  private:
+    void read_boolean(Data& data, const std::string& key, int m = 0, int n = 0);
+    void read_int(Data& data, const std::string& key, int m = 0, int n = 0);
+    void read_double(Data& data, const std::string& key, int m = 0, int n = 0);
+    void read_array(Data& data, const std::string& key);
+    // DataType *read_map(const std::string& key);
   };
 
 }
