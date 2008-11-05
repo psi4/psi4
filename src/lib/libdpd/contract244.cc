@@ -38,14 +38,14 @@ extern FILE *outfile;
 int dpd_contract244(dpdfile2 *X, dpdbuf4 *Y, dpdbuf4 *Z, int sum_X, int sum_Y,
 		    int Ztrans, double alpha, double beta)
 {
-  int h, h0, Hx, hybuf, hzbuf, Hy, Hz, nirreps, GX, GY, GZ, bra_y;
-  int rking=0, *yrow, *ycol, symlink;
+  int Hx, hybuf, hzbuf, Hy, Hz, nirreps, GX, GY, GZ;
+  int rking=0, symlink;
   int Xtrans, Ytrans=0;
   int incore;
   int rowx, rowz, colx, colz;
-  int pq, Gr, GsY, GsZ, Gs, GrZ, GrY;
+  int pq, Gs, GrZ, GrY;
   int ncols, nrows, nlinks;
-  long int core, memoryd, core_total, rowtot, coltot, maxrows, Z_core;
+  long int memoryd, core_total, rowtot, coltot, maxrows, Z_core;
   int *numlinks, *numrows, *numcols;
   dpdtrans4 Yt, Zt;
   double ***Ymat, ***Zmat;

@@ -10,7 +10,7 @@ namespace psi {
 double dpd_file2_trace(dpdfile2 *InFile)
 {
   int h, nirreps;
-  int row, col;
+  int row;
   double trace;
 
   nirreps = InFile->params->nirreps;

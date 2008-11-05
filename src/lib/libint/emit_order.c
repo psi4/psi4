@@ -138,7 +138,6 @@ void emit_order()
        -----------------------------------*/
       fprintf(hrr_code,"#include <stdio.h>\n");
       fprintf(hrr_code,"#include <string.h>\n");
-      fprintf(hrr_code,"#include <psi4-dec.h>\n");
       fprintf(hrr_code,"#include \"libint.h\"\n");
       if (to_inline_hrr) {
 	fprintf(hrr_code,"#define INLINE_HRR_WORKER\n");

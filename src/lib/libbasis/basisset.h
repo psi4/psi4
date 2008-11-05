@@ -34,13 +34,11 @@ class BasisSet {
   /// Throw std::runtime_error if index out of bounds
   void check_shell_index(int si) const;
 
-  // No default constructor
-  BasisSet();
   // No assignment
   BasisSet& operator=(const BasisSet&);
 
  public:
-  BasisSet(int chkptfile);
+  BasisSet();
   BasisSet(const BasisSet&);
   ~BasisSet();
 

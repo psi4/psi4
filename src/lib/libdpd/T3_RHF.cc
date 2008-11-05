@@ -72,7 +72,6 @@ void T3_RHF(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
 		dpdbuf4 *T2, dpdbuf4 *F, dpdbuf4 *E, dpdfile2 *fIJ, dpdfile2 *fAB, 
 		int *occpi, int *occ_off, int *virtpi, int *vir_off, double omega)
 {
-  int h;
   int i, j, k;
   int ij, ji, ik, ki, jk, kj;
   int Gij, Gji, Gik, Gki, Gjk, Gkj, Gijk;
@@ -80,11 +79,10 @@ void T3_RHF(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
   int Gd, Gl;
   int Gid, Gjd, Gkd;
   int Gab, Gcb, Gca;
-  int Gla, Glb, Glc;
   int Gil, Gjl, Gkl;
   int a, b, c, A, B, C;
   int ab;
-  int cd, bd, ad,dc;
+  int cd, bd, ad;
   int id, jd, kd;
   int la, lb, lc;
   int il, jl, kl;

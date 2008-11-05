@@ -25,7 +25,7 @@ namespace psi {
 
 int dpd_buf4_copy(dpdbuf4 *InBuf, int outfilenum, char *label)
 {
-  int h, row, col, my_irrep;
+  int h, my_irrep;
   long int rowtot, coltot;
   int nbuckets, incore, n;
   long int memoryd, rows_per_bucket, rows_left, size;

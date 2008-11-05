@@ -29,27 +29,25 @@ void cc3_sigma_RHF(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
     int do_singles, dpdbuf4 *Dints, dpdfile2 *SIA,
     int do_doubles, dpdfile2 *FME, dpdbuf4 *WmAEf, dpdbuf4 *WMnIe,
     dpdbuf4 *SIjAb, int *occpi, int *occ_off, int *virtpi, int *vir_off,
-    double omega, FILE *outfile)
+    double omega, FILE *out)
 {
   int h, nirreps;
   int Gi, Gj, Gk, Gl, Ga, Gb, Gc, Gd;
-  int i, j, k, l, a, b, c, d;
+  int i, j, k, l, a, c, d;
   int I, J, K, L, A, B, C, D;
   int kj, jk, ji, ij, ik, ki;
   int Gkj, Gjk, Gji, Gij, Gik, Gki, Gkd;
   int Gijk, GS, GC, GWX3, GW, GX3, nrows,ncols;
-  int ab, ba, ac, ca, bc, cb;
-  int Gab, Gba, Gac, Gca, Gbc, Gcb, Gid, Gjd;
-  int id, jd, kd, ad, bd, cd;
-  int il, jl, kl, la, lb, lc, li, lk;
-  int da, di, dj, dk;
-  int Gad, Gdi, Gdj, Gdk, Glc, Gli, Glk,cnt;
+  int ab, ba, bc;
+  int Gab, Gbc, Gid, Gjd;
+  int id, jd, kd, ad;
+  int il, kl, lc, li, lk;
+  int da;
+  int Gli, Glk,cnt;
   int nlinks;
-  double value, F_val, t_val, E_val;
-  double dijk, denom, *tvect, **Z;
-  double value_ia, value_ka, denom_ia, denom_ka;
+  double *tvect, **Z;
   dpdfile2 fIJ, fIJ2, fAB, fAB2, SIA_inc;
-  dpdbuf4 SIjAb_inc, buf4_tmp;
+  dpdbuf4 SIjAb_inc;
   double ***W3, ***W3a;
 
   nirreps = CIjAb->params->nirreps;
@@ -77,7 +75,7 @@ void cc3_sigma_RHF(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
   GW = WmAEf->file.my_irrep;
   GS = SIjAb->file.my_irrep;
   if (GS != (GX3^GW)) {
-    fprintf(outfile,"problem with irreps in cc3_sigma_RHF()\n"); 
+    fprintf(out,"problem with irreps in cc3_sigma_RHF()\n"); 
     exit(1);
   }
   if (do_singles) {

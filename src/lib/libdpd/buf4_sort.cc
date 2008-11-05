@@ -82,7 +82,7 @@ namespace psi {
 ** -RAK, Nov. 2005*/
 
 int dpd_buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
-		  int pqnum, int rsnum, char *label)
+		  int pqnum, int rsnum, const char *label)
 {
   int h,nirreps, row, col, my_irrep, r_irrep;
   int p, q, r, s, P, Q, R, S, pq, rs, sr, pr, qs, qp, rq, qr, ps, sp, rp, sq;
@@ -94,7 +94,7 @@ int dpd_buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
   int Grow, Gcol;
   int out_rows_per_bucket, out_nbuckets, out_rows_left, out_row_start, n;
   int in_rows_per_bucket, in_nbuckets, in_rows_left, in_row_start, m;
-  int rows_per_bucket, nbuckets, rows_left, row_start;
+  int rows_per_bucket, nbuckets, rows_left;
 
   nirreps = InBuf->params->nirreps;
   my_irrep = InBuf->file.my_irrep;
@@ -1958,6 +1958,8 @@ int dpd_buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 #ifdef DPD_TIMER
   timer_off("buf4_sort");
 #endif
+
+  return 0;
 }
 
 } // namespace psi

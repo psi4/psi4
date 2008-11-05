@@ -11,7 +11,7 @@ namespace psi {
 int dpd_file2_scm(dpdfile2 *InFile, double alpha)
 {
   int h, nirreps, new_file2, my_irrep;
-  int row, col, length;
+  int length;
   double *X;
 
   nirreps = InFile->params->nirreps;

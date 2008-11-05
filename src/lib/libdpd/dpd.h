@@ -200,7 +200,7 @@ int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype,
 int dpd_close(int dpd_num);
 int dpd_set_default(int dpd_num);
 
-void dpd_error(char *caller, FILE *outfile);
+void dpd_error(const char *caller, FILE *out);
 
 double **dpd_block_matrix(int n, int m);
 void dpd_free_block(double **array, int n, int m);
@@ -233,14 +233,14 @@ int dpd_dot14(dpdfile2 *T, dpdbuf4 *I, dpdfile2 *Z,
 int dpd_trace42_13(dpdbuf4 *A, dpdfile2 *B, int transb, double alpha, double beta);
 
 int dpd_file2_init(dpdfile2 *File, int filenum, int irrep, int pnum,
-		   int qnum, char *label);
+		   int qnum, const char *label);
 int dpd_file2_close(dpdfile2 *File);
 int dpd_file2_mat_init(dpdfile2 *File);
 int dpd_file2_mat_close(dpdfile2 *File);
 int dpd_file2_mat_rd(dpdfile2 *File);
 int dpd_file2_mat_wrt(dpdfile2 *File);
-int dpd_file2_print(dpdfile2 *File, FILE *outfile);
-int dpd_file2_mat_print(dpdfile2 *File, FILE *outfile);
+int dpd_file2_print(dpdfile2 *File, FILE *out);
+int dpd_file2_mat_print(dpdfile2 *File, FILE *out);
 int dpd_file2_copy(dpdfile2 *InFile, int outfilenum, char *label);
 int dpd_file2_dirprd(dpdfile2 *FileA, dpdfile2 *FileB);
 double dpd_file2_dot(dpdfile2 *FileA, dpdfile2 *FileB);
@@ -254,9 +254,9 @@ int dpd_file2_axpbycz(dpdfile2 *FileA, dpdfile2 *FileB, dpdfile2 *FileC,
 
 
 int dpd_file4_init(dpdfile4 *File, int filenum, int irrep, int pqnum,
-		   int rsnum,  char *label);
+		   int rsnum, const char *label);
 int dpd_file4_init_nocache(dpdfile4 *File, int filenum, int irrep, int pqnum,
-		   int rsnum,  char *label);
+		   int rsnum, const char *label);
 int dpd_file4_close(dpdfile4 *File);
 int dpd_file4_mat_irrep_init(dpdfile4 *File, int irrep);
 int dpd_file4_mat_irrep_close(dpdfile4 *File, int irrep);
@@ -274,7 +274,7 @@ int dpd_file4_mat_irrep_wrt_block(dpdfile4 *File, int irrep, int start_pq,
 				 int num_pq);
 
 int dpd_buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, int pqnum, int rsnum,
-		 int file_pqnum, int file_rsnum, int anti, char *label);
+		 int file_pqnum, int file_rsnum, int anti, const char *label);
 int dpd_buf4_close(dpdbuf4 *Buf);
 int dpd_buf4_mat_irrep_init(dpdbuf4 *Buf, int irrep);
 int dpd_buf4_mat_irrep_close(dpdbuf4 *Buf, int irrep);
@@ -283,7 +283,7 @@ int dpd_buf4_mat_irrep_wrt(dpdbuf4 *Buf, int irrep);
 int dpd_buf4_print(dpdbuf4 *Buf, FILE *outfile, int print_data);
 int dpd_buf4_copy(dpdbuf4 *InBuf, int outfilenum, char *label);
 int dpd_buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
-		  int pqnum, int rsnum, char *label);
+		  int pqnum, int rsnum, const char *label);
 int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 		      int pqnum, int rsnum, char *label);
 int dpd_buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
@@ -330,9 +330,9 @@ int dpd_4mat_irrep_print(double **matrix, dpdparams4 *Params,
 
 void dpd_file2_cache_init(void);
 void dpd_file2_cache_close(void);
-void dpd_file2_cache_print(FILE *outfile);
+void dpd_file2_cache_print(FILE *out);
 struct dpd_file2_cache_entry
- *dpd_file2_cache_scan(int filenum, int irrep, int pnum, int qnum, char *label, int dpdnum);
+ *dpd_file2_cache_scan(int filenum, int irrep, int pnum, int qnum, const char *label, int dpdnum);
 struct dpd_file2_cache_entry *dpd_file2_cache_last(void);
 int dpd_file2_cache_add(dpdfile2 *File);
 int dpd_file2_cache_del(dpdfile2 *File);
@@ -346,7 +346,7 @@ void dpd_file4_cache_print_screen(void);
 int dpd_file4_cache_get_priority(dpdfile4 *File);
 
 struct dpd_file4_cache_entry
- *dpd_file4_cache_scan(int filenum, int irrep, int pqnum, int rsnum, char *label, int dpdnum);
+ *dpd_file4_cache_scan(int filenum, int irrep, int pqnum, int rsnum, const char *label, int dpdnum);
 struct dpd_file4_cache_entry *dpd_file4_cache_last(void);
 int dpd_file4_cache_add(dpdfile4 *File, unsigned int priority);
 int dpd_file4_cache_del(dpdfile4 *File);
@@ -383,25 +383,25 @@ void cc3_sigma_RHF(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
     int do_singles, dpdbuf4 *Dints, dpdfile2 *SIA,
     int do_doubles, dpdfile2 *FME, dpdbuf4 *WAmEf, dpdbuf4 *WMnIe,
     dpdbuf4 *SIjAb, int *occpi, int *occ_off, int *virtpi, int *vir_off,
-    double omega, FILE *outfile);
+    double omega, FILE *out);
 
 void cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
     int do_singles, dpdbuf4 *Dints, dpdfile2 *SIA,
     int do_doubles, dpdfile2 *FME, dpdbuf4 *WAmEf, dpdbuf4 *WMnIe,
     dpdbuf4 *SIjAb, int *occpi, int *occ_off, int *virtpi, int *vir_off,
-    double omega, FILE *outfile, int nthreads);
+    double omega, FILE *out, int nthreads);
 
 void cc3_sigma_UHF_AAA(dpdbuf4 *CMNEF, dpdbuf4 *WABEI, dpdbuf4 *WMBIJ,
     int do_singles, dpdbuf4 *Dints_anti, dpdfile2 *SIA, int do_doubles,
     dpdfile2 *FME, dpdbuf4 *WMAFE, dpdbuf4 *WMNIE, dpdbuf4 *SIJAB,
     int *aoccpi, int *aocc_off, int *avirtpi, int *avir_off, double omega,
-    FILE *outfile);
+    FILE *out);
 
 void cc3_sigma_UHF_BBB(dpdbuf4 *Cmnef, dpdbuf4 *Wabei, dpdbuf4 *Wmbij,
      int do_singles, dpdbuf4 *Dijab_anti, dpdfile2 *Sia, int do_doubles,
      dpdfile2 *Fme, dpdbuf4 *Wmafe, dpdbuf4 *Wmnie, dpdbuf4 *Sijab,
      int *boccpi, int *bocc_off, int *bvirtpi, int *bvir_off, double omega,
-     FILE *outfile);
+     FILE *out);
 
 void cc3_sigma_UHF_AAB(dpdbuf4 *C2AA, dpdbuf4 *C2AB, dpdbuf4 *C2BA,
     dpdbuf4 *FAA, dpdbuf4 *FAB, dpdbuf4 *FBA,
@@ -412,7 +412,7 @@ void cc3_sigma_UHF_AAB(dpdbuf4 *C2AA, dpdbuf4 *C2AB, dpdbuf4 *C2BA,
     dpdbuf4 *WMNIE, dpdbuf4 *WMnIe, dpdbuf4 *WmNiE,
     dpdbuf4 *SIJAB, dpdbuf4 *SIjAb, int *aoccpi, int *aocc_off, int *boccpi,
     int *bocc_off, int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off,
-    double omega, FILE *outfile);
+    double omega, FILE *out);
 
 void cc3_sigma_UHF_BBA(dpdbuf4 *C2BB, dpdbuf4 *C2AB, dpdbuf4 *C2BA,
     dpdbuf4 *FBB, dpdbuf4 *FAB, dpdbuf4 *FBA,
@@ -423,7 +423,7 @@ void cc3_sigma_UHF_BBA(dpdbuf4 *C2BB, dpdbuf4 *C2AB, dpdbuf4 *C2BA,
     dpdbuf4 *Wmnie, dpdbuf4 *WMnIe, dpdbuf4 *WmNiE,
     dpdbuf4 *Sijab, dpdbuf4 *SIjAb, int *aoccpi, int *aocc_off, int *boccpi,
     int *bocc_off, int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off,
-    double omega, FILE *outfile);
+    double omega, FILE *out);
 
 }
 

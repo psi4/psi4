@@ -10,7 +10,7 @@ namespace psi {
 
 int dpd_trans4_mat_irrep_rd(dpdtrans4 *Trans, int irrep)
 {
-  int pq, rs, all_buf_irrep;
+  int rs, all_buf_irrep;
   int rows, cols;
   dpdbuf4 *Buf;
   double *A, *B;

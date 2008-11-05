@@ -46,7 +46,7 @@ void dpd_file2_cache_close(void)
 }
 
 struct dpd_file2_cache_entry 
-*dpd_file2_cache_scan(int filenum, int irrep, int pnum, int qnum, char *label, int dpdnum)
+*dpd_file2_cache_scan(int filenum, int irrep, int pnum, int qnum, const char *label, int dpdnum)
 {
   struct dpd_file2_cache_entry *this_entry;
 
@@ -179,20 +179,20 @@ int dpd_file2_cache_del(dpdfile2 *File)
   return 0;
 }
 
-void dpd_file2_cache_print(FILE *outfile)
+void dpd_file2_cache_print(FILE *out)
 {
   int total_size=0;
   struct dpd_file2_cache_entry *this_entry;
 
   this_entry = dpd_main.file2_cache;
 
-  fprintf(outfile, "\n\tDPD File2 Cache Listing:\n\n");
-  fprintf(outfile,
+  fprintf(out, "\n\tDPD File2 Cache Listing:\n\n");
+  fprintf(out,
     "Cache Label                     File symm  p  q  size(kB)\n");
-  fprintf(outfile,
+  fprintf(out,
     "---------------------------------------------------------\n");
   while(this_entry != NULL) {
-      fprintf(outfile,
+      fprintf(out,
       "%-32s %3d    %1d  %1d  %1d  %8.1f\n",
 	      this_entry->label, this_entry->filenum, this_entry->irrep,
 	      this_entry->pnum, this_entry->qnum,
@@ -200,9 +200,9 @@ void dpd_file2_cache_print(FILE *outfile)
       total_size += this_entry->size;
       this_entry = this_entry->next;
     }
-  fprintf(outfile,
+  fprintf(out,
     "---------------------------------------------------------\n");
-  fprintf(outfile, "Total cached: %8.1f kB\n", total_size*sizeof(double)/1e3);
+  fprintf(out, "Total cached: %8.1f kB\n", total_size*sizeof(double)/1e3);
 }
 
 void dpd_file2_cache_dirty(dpdfile2 *File)

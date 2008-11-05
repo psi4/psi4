@@ -36,15 +36,15 @@ extern FILE *outfile;
 int dpd_contract424(dpdbuf4 *X, dpdfile2 *Y, dpdbuf4 *Z, int sum_X,
     int sum_Y, int Ztrans, double alpha, double beta)
 {
-  int h, nirreps, GX, GY, GZ, hxbuf, hzbuf, h0, Hx, Hy, Hz, GsX, GsZ;
+  int nirreps, GX, GY, GZ, hxbuf, hzbuf, Hx, Hy, Hz, GsX, GsZ;
   int rking=0, symlink;
   int Xtrans,Ytrans;
   int *numlinks, *numrows, *numcols;
   int incore;
-  long int core, memoryd, core_total, rowtot, coltot, maxrows;
-  int xcount, zcount, scount, Ysym;
+  long int memoryd, core_total, rowtot, coltot, maxrows;
+  int xcount, zcount;
   int rowx, rowz, colx, colz;
-  int pq, rs, r, s, Gr, Gs;
+  int pq, Gr;
   dpdtrans4 Xt, Zt;
   double ***Xmat, ***Zmat;
 #ifdef DPD_DEBUG

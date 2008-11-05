@@ -27,7 +27,7 @@ namespace psi {
 */
 
 int dpd_file4_init(dpdfile4 *File, int filenum, int irrep, int pqnum,
-		   int rsnum,  char *label)
+		   int rsnum,  const char *label)
 {
   int i;
   int maxrows, rowtot, coltot;

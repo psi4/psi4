@@ -14,11 +14,10 @@ int dpd_buf4_mat_irrep_wrt_block(dpdbuf4 *Buf, int irrep, int start_pq,
   int method, filerow, all_buf_irrep;
   int pq, rs;  /* dpdfile row and column indices */
   int p, q, r, s;  /* orbital indices */
-  int filepq, bufpq, bufrs;  /* Input dpdbuf row and column indices */
+  int filepq, bufrs;  /* Input dpdbuf row and column indices */
   int rowtot, coltot;  /* dpdfile row and column dimensions */
   int b_perm_pq, b_perm_rs, b_peq, b_res;
   int f_perm_pq, f_perm_rs, f_peq, f_res;
-  int permute;
   double value; 
 
   all_buf_irrep = Buf->file.my_irrep;
