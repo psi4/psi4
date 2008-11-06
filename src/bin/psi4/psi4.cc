@@ -40,6 +40,7 @@ namespace psi {
   extern void process_input_file();
   extern void finalize_ruby();
   extern int run_interactive_ruby();
+  extern bool create_global_task();
 
     // Functions defined here
   void psi_start_and_parse_command_line(int argc, char *argv[]);
@@ -62,39 +63,36 @@ int main(int argc, char *argv[])
   // for (int i=1; i<argc; i++)
   //   extra_args[num_extra_args++] = argv[i];
 
-  // Parse the command-line arguments
-  psi_start_and_parse_command_line(argc, argv);
-
   // No need for psi_start to be in a library, as NO module should be calling it 
-  // in a single-executable. It's functionality has been moved to psi_start_and_parse_command_line
+  // in a single-executable. It's functionality has been moved to
+  // psi_start_and_parse_command_line
   // errcod = psi_start(&infile,&outfile,&psi_file_prefix,num_extra_args, 
   //   extra_args,overwrite_output);
+  
+  // Parse the command-line arguments
+  psi_start_and_parse_command_line(argc, argv);
+  
+  // Sends version information to outfile.
   print_version();
 
   // Initialize the interpreter
-  //  initialize_ruby();
+  initialize_ruby();
   // At this point the following has happened:
   //  1. Where output goes has been decided.
   //  2. Input filename has been determined.
   //  3. Ruby has been initialized
-  //  4. Modules/libraries have registered themselves with the driver
 
-  // Now we need to branch off. If the user did not specify -I or --irb then process
-  // the input file.
-  /*
-  if (Globals::g_bIRB == false) {
-    // Now have Ruby load in the input file and begin processing.
-    //  In the future: Detect if the user provided an IPV1 input and internallj
-    //    create a Ruby script from it. Then execute the Ruby script.
-    load_input_file_into_ruby();
-
-    // Process the input file.
-    process_input_file();
+  if (create_global_task()) {
+    // register_and_enable_modules();
+    
+    if (g_bIRB == false) { // Are running Interactive Ruby?
+      // Process the input file.
+      process_input_file();
+    }
+    else {
+      run_interactive_ruby();
+    }
   }
-  else {
-    run_interactive_ruby();
-  }
-    */
     // Test a quick call to input. This is to ensure things can link.
     // If we don't make calls to the code it isn't linked in.
   // if (run_modules) {
@@ -163,31 +161,36 @@ int main(int argc, char *argv[])
   // psi_stop(infile, outfile, psi_file_prefix);
 
     // Close the interpreter
-//    finalize_ruby();
+   finalize_ruby();
 
     // This needs to be changed a return value from the processed script
   return EXIT_SUCCESS;
 }
 
 namespace psi {
-  /*! Handles the command line arguments and stores them in global variables. In some cases
-      default globals variables are set.
+  /*! Handles the command line arguments and stores them in 
+      global variables. In some cases default globals variables 
+      are set. Handles the routine that psi_start would have
+      done in individual modules.
         \param argc Number of command-line arguments received.
         \param argv Value of the command-line arguments.
   */
   void psi_start_and_parse_command_line(int argc, char *argv[])
   {
     int next_option;
+    // Defaults:
     std::string output_filename = "output.dat";
     std::string input_filename  = "input.dat";
     std::string file_prefix     = "psi";
+    bool append                 = false;
     
     // Set the default verbosity value
     g_bVerbose = false;
 
     // A string listing of valid short option letters
-    const char* const short_options = "IhvVo:p:i:";
+    const char* const short_options = "aIhvVo:p:i:";
     const struct option long_options[] = {
+      { "append",  0, NULL, 'a' },
       { "irb",     0, NULL, 'I' },
       { "help",    0, NULL, 'h' },
       { "verbose", 0, NULL, 'v' },
@@ -202,9 +205,14 @@ namespace psi {
     do {
       next_option = getopt_long(argc, argv, short_options, long_options, NULL);
 
-      switch (next_option) {			
+      switch (next_option) {
+        case 'a': // -a or --append
+        append = true;
+        break;
+        
         case 'h': // -h or --help
         print_usage();
+        exit(EXIT_SUCCESS);
         break;
 
         case 'I': // -I or --irb
@@ -243,14 +251,14 @@ namespace psi {
     } while (next_option != -1);
 
     // Where the output from the modules are to go
-    redirect_output(output_filename);
+    redirect_output(output_filename, append);
     if (!output_filename.empty())
       g_szOutputFilename = output_filename;
 
     // Check the input file name now
     // Default to input.dat if not given
     if (optind == argc) {
-      g_szInputFile = "input.dat";
+      g_szInputFile = input_filename;
     }
     else {
       g_szInputFile = argv[optind];
@@ -261,7 +269,7 @@ namespace psi {
     in the argument otherwise it is sent to the screen. This doesn't quite work right 
     in practice.
     \param szFilename File to redirect to.
-    \param append Append to it?
+    \param append Append to it? default false
   */
   void redirect_output(const std::string& szFilename, bool append)
   {
@@ -312,7 +320,8 @@ namespace psi {
     printf(" -V  --version            Print version information.\n");
     printf(" -o  --output filename    Redirect output elsewhere. Default: output.dat\n");
     printf(" -i  --input filename     Input file name. Default: input.dat\n");
-    printf(" -p  --prefix prefix      Prefix name for ");
+    printf(" -p  --prefix prefix      Prefix name for psi files. Default: psi\n");
+    printf(" -a  --append             Append results to output file. Default: Truncate first\n");
     printf(" -I  --irb                Run psi4 in interactive mode.\n");
 
     exit(EXIT_FAILURE);

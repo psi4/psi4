@@ -7,7 +7,7 @@
 #include "psi4.h"
 #include "task.h"
 
-namespace psi { namespace psi4 {
+namespace psi { //namespace psi4 {
   
   // Function declarations
   bool initialize_ruby();
@@ -16,6 +16,8 @@ namespace psi { namespace psi4 {
   void finalize_ruby();
   int run_interactive_ruby();
   void handle_ruby_exception();
+  bool create_global_task();
+  void create_psi_module();
   
   // Defined elsewhere
   extern void print_version();
@@ -27,6 +29,7 @@ namespace psi { namespace psi4 {
   */
   bool initialize_ruby()
   {
+    WHEREAMI();
     char *psishare_dirname;
     
     #if RUBY_MAJOR == 1 && RUBY_MINOR >= 9
@@ -72,6 +75,7 @@ namespace psi { namespace psi4 {
     // Add some basic functionality to Ruby
     //      TODO: Need to work out the best way to do this.
     create_psi_module();
+    Task::Ruby::create_ruby_class();
     
     // Done
     return true;
@@ -79,51 +83,36 @@ namespace psi { namespace psi4 {
   
   VALUE process_input_file_protected(VALUE)
   {
+    WHEREAMI();
+    
     // Run via the global task object.
-    rb_funcall(Globals::g_rTask, rb_intern("run"), 0);
+    rb_funcall(g_rbTask, rb_intern("run"), 0);
+    
+    return Qnil;
   }
   
   /*! Loads the Ruby input file into the interpreter. Does not perform syntax checking, nor does
       it begin executing the code. Just checks to see if the file exists and loads it. */
-  #if 0
   void load_input_file_into_ruby()
   {
+    WHEREAMI();
   	// Have Ruby do it
   	#if RUBY_MAJOR == 1 && RUBY_MINOR < 9
   	// In pre-Ruby 1.9 the input file was loaded into a single global space.
-  	rb_load_file(Globals::g_szInputFile.c_str());
+  	rb_load_file(g_szInputFile.c_str());
   	#else
   	// However, in Ruby 1.9 it seems there is the possibility of loading multiple input files.
   	// So rb_load_file loads the input file and returns an execution node that we tell Ruby
   	// to execute when ready.
-    Globals::g_rbExecNode = rb_load_file(Globals::g_szInputFile.c_str());
+    g_rbExecNode = rb_load_file(g_szInputFile.c_str());
     #endif
   }
-  #endif
   
   /*! Run the input file. */
   void process_input_file()
   {
-    #if 0
+    WHEREAMI();
   	// Process the input file
-  	// Since I do not want Ruby to take complete control of the system this is a 
-  	// hack version from Ruby's eval.c file function ruby_eval and ruby_stop
-  	// Typically you would call ruby_run but this function does not return at 
-  	// all from ruby_stop, it invokes an exit function call internally.
-  	#if RUBY_MAJOR == 1 && RUBY_MINOR < 9
-  	int state;
-    static int ex;
-
-    if (ruby_nerrs > 0) exit(EXIT_FAILURE);
-    state = ruby_exec();
-    if (state && !ex) ex = state;
-  	ruby_cleanup(ex);
-  	#else
-    if (Globals::g_rbExecNode == NULL) exit(EXIT_FAILURE);
-    ruby_run_node(Globals::g_rbExecNode);
-  	#endif
-  	#endif // 0
-  	
     int error;
     
     // Call the protected version of this function. This catches exceptions (Ruby/C++)
@@ -137,16 +126,17 @@ namespace psi { namespace psi4 {
   
   VALUE create_global_task_protected(VALUE)
   {
+    WHEREAMI();
     // If this fails it will throw a Ruby exception
     // Ruby is used to create a new Task instance, fully wrapped in Ruby.
-    Globals::g_rbTask = rb_class_new_instance(0, 0, Task::m_rbTask);
+    g_rbTask = rb_class_new_instance(0, 0, Task::Ruby::rbTask_);
     // Get the C++ object from Ruby to use.
-    Data_Get_Struct(Globals::g_rbTask, Task, Globals::g_cTask);
+    Data_Get_Struct(g_rbTask, Task, g_cTask);
     // Prevent Ruby from garbage collecting this new object when this
     // function returns by making it a global variable. I'm not sure
     // how you would access this global variable in Ruby.
     // Make sure the global task object know what input file to use.
-    Globals::g_cTask->input_task(Globals::g_szInputFile);
+    g_cTask->input_file(g_szInputFile);
     
     // This function doesn't need to return anything of value.
     // But ALL functions that Ruby calls MUST return something.
@@ -156,6 +146,7 @@ namespace psi { namespace psi4 {
   /*! Create the global Task object */
   bool create_global_task()
   {
+    WHEREAMI();
     int error;
     
     // Call the protected version of this function.
@@ -170,20 +161,23 @@ namespace psi { namespace psi4 {
   /*! Close out the global task object */
   void destroy_global_task()
   {
+    WHEREAMI();
     // Ruby is responsible for freeing the global task when it is ready.
-    Globals::g_rTask = Qnil;
-    Globals::g_cTask = NULL;
+    g_rbTask = Qnil;
+    g_cTask = NULL;
   }
   
   /*! Shutdown the interpreter */
   void finalize_ruby()
   {
+    WHEREAMI();
   	ruby_finalize();
   }
   
   /*! This is used to make the call to rb_protect easier. */
   VALUE load_modules_for_irb(VALUE)
   {
+    WHEREAMI();
     rb_require("psi4");
     rb_require("irb");
     return Qnil;
@@ -191,12 +185,14 @@ namespace psi { namespace psi4 {
   
   VALUE load_psi_module(VALUE)
   {
-    rb_require("psi4");
+    WHEREAMI();
+    rb_require("/Users/jturney/Dropbox/Code/psi4/lib/ruby/psi4.rb");
     return Qnil;
   }
   
   void handle_ruby_exception()
   {
+    WHEREAMI();
     VALUE err;
     
     // get the message from the exception.
@@ -205,16 +201,18 @@ namespace psi { namespace psi4 {
     #else
     err = rb_inspect(rb_errinfo());
     #endif
-    // Prin a backtrace to the screen, hopefully the user can make sense of it.
+    // Print a backtrace to the screen, hopefully the user can make sense of it.
     rb_backtrace();
     // Print what the error message was.
-    printf("ERROR: %s\n", StringValuePtr(err));
+    fprintf(stderr, "Ruby Exception caught: %s\n", StringValuePtr(err));
+    exit(EXIT_FAILURE);
   }
   
   /*! Handles running Ruby interactively. This version makes use of the
       irb module found in Ruby to handle Ruby input parsing. */
   int run_interactive_ruby()
   {
+    WHEREAMI();
     int error;
     
     printf("Starting interactive PSI4 driver:\n");
@@ -234,7 +232,8 @@ namespace psi { namespace psi4 {
   
   void create_psi_module()
   {
-    Globals::g_rbPsi = rb_define_module("Psi");
+    WHEREAMI();
+    g_rbPsi = rb_define_module("Psi");
     
     // Load in the psi4.rb file found in either lib/ruby or share/ruby.
     int error;
@@ -246,4 +245,4 @@ namespace psi { namespace psi4 {
       handle_ruby_exception();
     }
   }
-}}
+/*}*/}

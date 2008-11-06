@@ -12,13 +12,13 @@
   #ifdef __GNUC__
     #define WHEREAMI() if (g_bVerbose) { fprintf(stderr, "@:%s:%-6d\t-> %s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ ); }
   #else
-    #define WHEREAMI() if (g_bVerbose) { fprintf(stderr, "@:%s:%-6d\n"); }
+    #define WHEREAMI() if (g_bVerbose) { fprintf(stderr, "@:%s:%-6d\n", __FILE__, __LINE__); }
   #endif
 #else
   #define WHEREAMI(func)
 #endif
 
-namespace psi { namespace psi4 {
+namespace psi { //namespace psi4 {
   
   /* A calculation is group into a Task object. Tasks provide a simple
      way of having several prefixes in a single input file. There is a 
@@ -169,5 +169,5 @@ namespace psi { namespace psi4 {
 
     friend class Task::Ruby;
   };
-}}
+/*}*/}
 #endif // __psi_psi4_task_h_
