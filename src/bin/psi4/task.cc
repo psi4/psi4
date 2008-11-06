@@ -399,7 +399,7 @@ namespace psi { //namespace psi4 {
     WHEREAMI();
     
     // How did the user call this function in Ruby?
-    #if RUBY_MAJOR == 1 && RUBY_MINOR < 9
+    #if RUBY_VERSION_CODE < 190
     ID last_func = rb_frame_last_func();
     #else
     ID last_func = rb_frame_callee();

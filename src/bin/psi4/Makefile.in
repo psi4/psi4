@@ -20,8 +20,9 @@ PSIMODULES = -lPSI_input -lPSI_cints -lPSI_cscf -lPSI_psiclean
 
 CXXINC += $(RUBY_CPPFLAGS) -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"
 CXXFLAGS += $(RUBY_CXXFLAGS)
-CXXSRC = psi4.cc ruby.cc read_options.cc read_atom_basis.cc \
+#CXXSRC = psi4.cc ruby.cc read_options.cc read_atom_basis.cc \
 fragment.cc molecular_system.cc element_to_Z.cc
+CXXSRC = psi4.cc ruby.cc task.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 
