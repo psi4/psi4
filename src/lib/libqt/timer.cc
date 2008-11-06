@@ -142,7 +142,7 @@ void timer_done(void)
 ** Returns: the timer structure with the given name, else NULL
 ** \ingroup QT
 */
-struct timer *timer_scan(char *key)
+struct timer *timer_scan(const char *key)
 {
   extern struct timer *global_timer;
   struct timer *this_timer;
