@@ -70,7 +70,7 @@ class Calculation
 
 enum energy_type { SCF, CISD, CCSD, G3 };
 
-char **atom_basis; // basis set label for each atom
+EXT char **atom_basis; // basis set label for each atom
 
 
 
@@ -93,8 +93,8 @@ char **atom_basis; // basis set label for each atom
   EXT bool g_bVerbose;
 
     /*! Global task object */
-  EXT psi4::Task *g_cTask;
-  EXT VALUE *g_rbTask;
+  EXT Task *g_cTask;
+  EXT VALUE g_rbTask;
 
 # ifdef MAIN
   /*! All classes that provide a Ruby interface need this to say which module they belong to */

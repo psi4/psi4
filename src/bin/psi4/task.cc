@@ -4,7 +4,7 @@
 #include "psi4.h"
 #include "task.h"
 
-namespace psi { namespace psi4 {
+namespace psi { //namespace psi4 {
   VALUE Task::Ruby::rbTask_ = Qnil;
   // TODO: Module arrays.
   
@@ -111,7 +111,8 @@ namespace psi { namespace psi4 {
     rb_define_method(Task::Ruby::rbTask_, "input",    RUBYCAST(Task::Ruby::rb_input_file_get), 0);
     
     // Run input file
-    rb_define_method(Task::Ruby::rbTask_, "run", RUBYCAST(Task::Ruby::rb_run_input_file), 0);
+    // rb_define_method(Task::Ruby::rbTask_, "run", RUBYCAST(Task::Ruby::rb_run_input_file), 0);
+    rb_require("task");
     
     // Global Ruby methods are only needed when running in interactive mode. When running normally
     // the user's input file is "load"ed into the "run" function task, so that whichever instance
@@ -383,9 +384,11 @@ namespace psi { namespace psi4 {
     // The first argument to rb_funcall is the object scope to call into.
     VALUE file = rb_funcall(io, rb_intern("read"), 1, input);
     
+    rb_funcall(self, rb_intern("puts"), 1, file);
+    
     // file now contains the input file
     // Evaluate it using self (the task) as the scope
-    VALUE retVal = rb_funcall(self, rb_intern("eval"), 1, file);
+    VALUE retVal = rb_funcall(self, rb_intern("class_eval"), 1, file);
     
     // Return the value;
     return retVal;
@@ -449,4 +452,4 @@ namespace psi { namespace psi4 {
     WHEREAMI();
     return puts(g_cTask, argc, argv);
   }
-}}
+/*}*/}

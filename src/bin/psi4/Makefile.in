@@ -12,7 +12,9 @@ LDLIBS +=  $(LAPACK) $(BLAS) $(RUBY_LIBRUBYARG_STATIC) $(RUBY_LIBS) -lpthread -l
 # break Ruby's ability to load modules from shared libraries.
 LDFLAGS += $(RUBY_LDFLAGS)
 
-PSILIBS = -lPSI_dpd -lPSI_qt -lPSI_chkpt -lPSI_deriv -lPSI_r12 -lPSI_int \
+#PSILIBS = -L$(top_objdir)/lib -lPSI_dpd -lPSI_qt -lPSI_chkpt -lPSI_deriv -lPSI_r12 -lPSI_int \
+          -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1 -lPSI_options -lPSI_util
+PSILIBS = -L$(top_objdir)/lib -lPSI_dpd -lPSI_chkpt -lPSI_deriv -lPSI_r12 -lPSI_int \
           -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1 -lPSI_options -lPSI_util
 PSIMODULES = -lPSI_input -lPSI_cints -lPSI_cscf -lPSI_psiclean
 
@@ -23,9 +25,9 @@ fragment.cc molecular_system.cc element_to_Z.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 
-$(PSITARGET): $(BINOBJ) $(PSIMODULES) $(PSILIBS)
+$(PSITARGET): $(BINOBJ)
 	$(MKDIRS) `dirname $(PSITARGET)`
-	$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	$(LD) $(LDFLAGS) -o $@ $^ $(PSILIBS) $(LDLIBS)
 	
 #copied from ../MakeRules at least for now
 
