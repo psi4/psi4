@@ -186,7 +186,7 @@ namespace psi { //namespace psi4 {
   VALUE load_psi_module(VALUE)
   {
     WHEREAMI();
-    rb_require("/Users/jturney/Dropbox/Code/psi4/lib/ruby/psi4.rb");
+    rb_require("psi4");
     return Qnil;
   }
   
