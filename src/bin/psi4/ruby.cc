@@ -32,7 +32,7 @@ namespace psi { //namespace psi4 {
     WHEREAMI();
     char *psishare_dirname;
     
-    #if RUBY_MAJOR == 1 && RUBY_MINOR >= 9
+    #if RUBY_VERSION_CODE < 190
     ruby_sysinit(0, NULL);
     RUBY_INIT_STACK;
     #endif
@@ -97,7 +97,7 @@ namespace psi { //namespace psi4 {
   {
     WHEREAMI();
   	// Have Ruby do it
-  	#if RUBY_MAJOR == 1 && RUBY_MINOR < 9
+    #if RUBY_VERSION_CODE < 190
   	// In pre-Ruby 1.9 the input file was loaded into a single global space.
   	rb_load_file(g_szInputFile.c_str());
   	#else
@@ -196,7 +196,7 @@ namespace psi { //namespace psi4 {
     VALUE err;
     
     // get the message from the exception.
-    #if RUBY_MAJOR == 1 && RUBY_MINOR < 9
+    #if RUBY_VERSION_CODE < 190
     err = rb_inspect(ruby_errinfo);
     #else
     err = rb_inspect(rb_errinfo());
