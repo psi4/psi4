@@ -27,8 +27,10 @@ namespace psi {
         read_boolean(pos->second, pos->first);
       else if (pos->second.type() == "array")
         read_array(pos->second, pos->first);
+      else if (pos->second.type() == "string")
+        read_string(pos->second, pos->first);
       else
-        throw OptionsException("Unknown data type.");
+        throw OptionsException("Unknown data type. [type() == " + pos->second.type() + "]");
     }
   }
   
@@ -68,6 +70,21 @@ namespace psi {
       data.assign(int_value);    
   }
   
+  void Options::read_string(Data& data, const std::string& key, int m, int n)
+  {
+    char *value = NULL;
+    int err_code;
+    if (m == 0)
+      err_code = ip_string(const_cast<char*>(key.c_str()), &value, m);
+    else
+      err_code = ip_string(const_cast<char*>(key.c_str()), &value, m, n);
+    if (err_code == IPE_OK && value != NULL)
+      data.assign(std::string(value));
+    if (value != NULL)
+      free(value);
+    value = NULL;
+  }
+  
   void Options::read_array(Data& data, const std::string& key)
   {
     // Make sure ipv1 and data agree on the size of the array
@@ -75,9 +92,13 @@ namespace psi {
     int err_code = ip_count(const_cast<char*>(key.c_str()), &ipv1_size, 0);
     if (err_code != IPE_OK)
       return;
-      
-    if (data.size() != static_cast<unsigned int>(ipv1_size)) 
-      throw OptionsException("Options and ipv1 array size for " + key + " do not match!");
+    
+    if (data.size() < static_cast<unsigned int>(ipv1_size)) {
+      // Add enough StringDataTypes until it is the same size.
+      unsigned int diff = static_cast<unsigned int>(ipv1_size) - data.size();
+      for (unsigned int i = 0; i < diff; ++i)
+        data.add(new StringDataType("", ""));
+    }
     
     // Walk through the array and convert elements
     for (unsigned int i = 0; i < data.size(); ++i) {
@@ -88,10 +109,12 @@ namespace psi {
         read_int(data[i], key, 1, i);
       else if (data[i].type() == "boolean")
         read_boolean(data[i], key, 1, i);
+      else if (data[i].type() == "string")
+        read_string(data[i], key, 1, i);
       else if (data[i].type() == "array")
-        throw OptionsException("Don't nest an array if you expect to use Options. (" + key + ")");
+        throw OptionsException("Don't nest an array if you expect to use Options with IPV1. (" + key + ")");
       else if (data[i].type() == "map")
-        throw OptionsException("Don't nest a map if you expect to use Options. (" + key + ")");
+        throw OptionsException("Don't nest a map if you expect to use Options with IPV1. (" + key + ")");
       else
         throw OptionsException("Unknown data type detect in Options. (" + data[i].type() + ")");
     }

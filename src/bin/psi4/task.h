@@ -7,6 +7,7 @@
 #include <ruby.h>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>
+#include <psi4-dec.h>
 
 #ifndef NDEBUG
   #ifdef __GNUC__
@@ -25,14 +26,10 @@ namespace psi { //namespace psi4 {
      global Task object that is used by default, creaed by the driver.
      All commands given in a user's input file correlate to the global
      task unless a new Task object is created and used explicitly. */
-     
-  // Might want to derive this from another class which can be made
-  // available to other modules so that they need not include Ruby
-  // header files.
   class Task
   {
       /*! The libpsio object for this task. */
-      psi::PSIO psiPSIO_;
+      psi::PSIO psio_;
     
       /*! Equivalent to the psi_file_prefix */
       std::string szFilePrefix_;
@@ -43,6 +40,15 @@ namespace psi { //namespace psi4 {
       /*! Name of the input file to use */
       std::string szInputFile_;
     
+      /*! Name of the IPV1 input file (+path) being used */
+      std::string szIPV1File_;
+      
+      /*! Name of the Ruby input file (+path) being used */
+      std::string szRubyFile_;
+      
+      /*! Options for this Task */
+      psi::Options options_;
+      
       /*! Array of module entry points */
       // TODO: Array of module entry points.
 
@@ -62,7 +68,7 @@ namespace psi { //namespace psi4 {
       
       /*! Acessor function for the prefix
       \return current prefix */
-      const std::string& prefix();
+      const std::string& prefix() const;
       
       /*! Accessor function for the prefix
       \param new_prefix new prefix */
@@ -70,7 +76,7 @@ namespace psi { //namespace psi4 {
 
       /*! Acessor function for the scratch
       \return current scratch location */
-      const std::string& scratch();
+      const std::string& scratch() const;
       
       /*! Accessor function for the scratch
       \param new_scratch new scratch location */
@@ -78,20 +84,28 @@ namespace psi { //namespace psi4 {
       
       /*! Acessor function for the input file
       \return current input file */
-      const std::string& input_file();
+      const std::string& input_file() const;
       
       /*! Accessor function for the input file
       \param new_input new input file */
       void input_file(std::string new_input);
       
+      /*! Accessor function for the IPV1 input file */
+      const std::string& ipv1_file() const;
+    
+      /*! Accessor function for the IPV1 input file */
+      const std::string& ruby_file() const;
+  
       /*! Accessor function to retrieve the libpsio object associated
       with this Task. Do not delete this pointer. Should probably wrap
       this in a Ref<> object.
       \return libpsio object pointer */
-      psi::PSIO *libpsio();
+      const psi::PSIO& psio() const;
       
       /*! Accessor function to the file handle to send output to. */
-      FILE *output();
+      FILE *output() const;
+      
+      const psi::Options& options() const;
       
       class Ruby {
           // The following commands work on the Task object that is sent to it.
@@ -101,6 +115,8 @@ namespace psi { //namespace psi4 {
           static VALUE scratch_get(Task *task);
           static VALUE input_file_set(Task *task, VALUE newInput);
           static VALUE input_file_get(Task *task);
+          static VALUE ipv1_file_get(Task *task);
+          static VALUE ruby_file_get(Task *task);
         
           static VALUE puts(Task *task, int argc, VALUE *argv);
           static VALUE run_module(Task *task, int argc, VALUE *argv);
@@ -150,6 +166,9 @@ namespace psi { //namespace psi4 {
           /*! Ruby function: Task.input_file or Task.get_input_file */
           static VALUE rb_input_file_get(VALUE self);
           static VALUE rb_global_input_file_get(VALUE);
+
+          static VALUE rb_ipv1_file_get(VALUE self);
+          static VALUE rb_ruby_file_get(VALUE self);
 
           /*! Ruby function: Task.run 
           This function is the one responsible for loading and executing a user's input file.*/

@@ -9,7 +9,6 @@
 #ifndef _psi3_bin_input_input_h_
 #define _psi3_bin_input_input_h_
 
-#include <liboptions/liboptions.h>
 #include <psi4-dec.h>
 
 namespace psi { namespace input {
@@ -188,7 +187,7 @@ void build_cart2pureang();
 void build_so_classes();
 void write_to_chkpt(double erep);
 void read_charges();
-void parsing(Options & options);
+void parsing();
 
 void median_vec(double *A, double *B, double *median);
 void vectors_to_matrix(double *v1, double *v2, double *v3, double **matrix);

@@ -11,7 +11,6 @@ namespace psi { //namespace psi4 {
   
   // Function declarations
   bool initialize_ruby();
-  void load_input_file_into_ruby();
   void process_input_file();
   void finalize_ruby();
   int run_interactive_ruby();
@@ -54,7 +53,10 @@ namespace psi { //namespace psi4 {
     psishare_dirname = getenv("PSIDATADIR");
     if (psishare_dirname != NULL) {
       char *tmpstr = NULL;
-      asprintf(&tmpstr, "%s/ruby", psishare_dirname);
+      if (asprintf(&tmpstr, "%s/ruby", psishare_dirname) == -1) {
+        fprintf(stderr, "Unable to allocate memory to hold path for PSIDATADIR\n");
+        exit(EXIT_FAILURE);
+      }
       psishare_dirname = tmpstr;
     }
     else {
@@ -85,27 +87,10 @@ namespace psi { //namespace psi4 {
   {
     WHEREAMI();
     
-    // Run via the global task object.
+    // Run via the global task object. Run is declared in task.rb in PSIDATADIR/ruby/task.rb
     rb_funcall(g_rbTask, rb_intern("run"), 0);
     
     return Qnil;
-  }
-  
-  /*! Loads the Ruby input file into the interpreter. Does not perform syntax checking, nor does
-      it begin executing the code. Just checks to see if the file exists and loads it. */
-  void load_input_file_into_ruby()
-  {
-    WHEREAMI();
-  	// Have Ruby do it
-    #if RUBY_VERSION_CODE < 190
-  	// In pre-Ruby 1.9 the input file was loaded into a single global space.
-  	rb_load_file(g_szInputFile.c_str());
-  	#else
-  	// However, in Ruby 1.9 it seems there is the possibility of loading multiple input files.
-  	// So rb_load_file loads the input file and returns an execution node that we tell Ruby
-  	// to execute when ready.
-    g_rbExecNode = rb_load_file(g_szInputFile.c_str());
-    #endif
   }
   
   /*! Run the input file. */

@@ -115,6 +115,8 @@ EXT char **atom_basis; // basis set label for each atom
   // Pre 1.9 string access
   #if !defined(RSTRING_LEN)
   #  define RSTRING_LEN(x) (RSTRING(x)->len)
+  #endif
+  #if !defined(RSTRING_PTR)
   #  define RSTRING_PTR(x) (RSTRING(x)->ptr)
   #endif
   
