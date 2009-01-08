@@ -664,19 +664,19 @@ FFLAGS='$(FDBG) $(FOPT) $(FOTH) $(FSTATIC)' AC_SUBST(FFLAGS)
 AC_ARG_WITH(debug,[  --with-debug            will turn on debugging],[
 case $withval in
   yes)
+	CDBG='-g'
+	CXXDBG='-g'
     ;;
   no)
     CDBG=''
     CXXDBG=''
-    FDBG=''
     ;;
   *)
     CDBG="$withval"
     CXXDBG="$withval"
-    FDBG="$withval"
     ;;
 esac
-],CDBG='' CXXDBG='' FDBG='')
+],CDBG='' CXXDBG='')
 
 # Adjust the optimize flags.
 # The default is to optimize.  --with-opt=no or --without-opt will turn
@@ -686,14 +686,12 @@ case $withval in
   yes)
     ;;
   no)
-    COPT=''
-    CXXOPT=''
-    FOPT=''
+    COPT='-O0'
+    CXXOPT='-O0'
     ;;
   *)
     COPT="$withval"
     CXXOPT="$withval"
-    FOPT="$withval"
     ;;
 esac
 ])
@@ -709,10 +707,10 @@ case $withval in
       FOTH="$FOTH -Wall"
     fi
     if test "$GCC" = yes ; then
-      COTH="$COTH -Wall -ansi"
+      COTH="$COTH -Wall -ansi -pedantic -W -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings -Wno-long-long"
     fi
     if test "$GXX" = yes ; then
-      CXXOTH="$CXXOTH -Wall -ansi"
+      CXXOTH="$CXXOTH -Wall -ansi -pedantic -W -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings -Wno-long-long"
     fi
     ;;
   no)
@@ -757,6 +755,7 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libr12/Makefile
           src/lib/libr12/MakeVars
           src/lib/libr12/libr12_config.h
+          src/lib/librubypp/Makefile
 
           src/util/tocprint/Makefile
           src/util/psiclean/Makefile

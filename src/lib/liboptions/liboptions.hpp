@@ -276,23 +276,23 @@ namespace psi {
       return std::string("string");
     }
 
-    std::vector<std::string> split(const std::string& str){
-      // Split a string
-      typedef std::string::const_iterator iter;
-      std::vector<std::string> splitted_string;
-      iter i = str.begin();
-      while(i != str.end()){
-        // Ignore leading blanks
-        i = find_if(i,str.end(), not_space);
-        // Find the end of next word
-        iter j = find_if(i,str.end(),space);
-        // Copy the characters in [i,j)
-        if(i!=str.end())
-          splitted_string.push_back(std::string(i,j));
-        i = j;
-      }
-      return(splitted_string);
-    }
+    // std::vector<std::string> split(const std::string& str){
+    //   // Split a string
+    //   typedef std::string::const_iterator iter;
+    //   std::vector<std::string> splitted_string;
+    //   iter i = str.begin();
+    //   while(i != str.end()){
+    //     // Ignore leading blanks
+    //     i = find_if(i,str.end(), not_space);
+    //     // Find the end of next word
+    //     iter j = find_if(i,str.end(),space);
+    //     // Copy the characters in [i,j)
+    //     if(i!=str.end())
+    //       splitted_string.push_back(std::string(i,j));
+    //     i = j;
+    //   }
+    //   return(splitted_string);
+    // }
 
     virtual std::string to_string() const {
       return str_;
@@ -549,6 +549,15 @@ namespace psi {
   public:
     Options() { }
 
+    Options & operator=(const Options& rhs) {
+      // Don't self copy
+      if (this == &rhs)
+        return *this;
+        
+      keyvals_ = rhs.keyvals_;
+      return *this;
+    }
+    
     void to_upper(std::string& str) {
       std::transform(str.begin(), str.end(), str.begin(), ::toupper);
     }
@@ -558,8 +567,11 @@ namespace psi {
 
       // Make sure the key isn't already there
       iterator pos = keyvals_.find(key);
-      if (pos != keyvals_.end())
-        throw DuplicateKeyException();
+      if (pos != keyvals_.end()) { // If it is there, make sure they are the same type
+        if (pos->second.type() != data->type())
+          throw DuplicateKeyException();
+        return;
+      }
       keyvals_[key] = Data(data);
     }
     void add(std::string key, bool b) {
@@ -597,7 +609,6 @@ namespace psi {
 
     std::string to_string() const {
       std::stringstream str;
-      str << "Options: \n";
       for (const_iterator pos = keyvals_.begin(); pos != keyvals_.end(); ++pos) {
         str << "  " << std::setw(12) << pos->first << " => " << pos->second.to_string() << std::endl;
       }
@@ -609,6 +620,7 @@ namespace psi {
     void read_boolean(Data& data, const std::string& key, int m = 0, int n = 0);
     void read_int(Data& data, const std::string& key, int m = 0, int n = 0);
     void read_double(Data& data, const std::string& key, int m = 0, int n = 0);
+    void read_string(Data& data, const std::string& key, int m = 0, int n = 0);
     void read_array(Data& data, const std::string& key);
     // DataType *read_map(const std::string& key);
   };

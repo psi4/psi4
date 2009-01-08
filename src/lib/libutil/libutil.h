@@ -1,12 +1,12 @@
 #ifndef _psi_src_lib_libutil_libutil_h_
 #define _psi_src_lib_libutil_libutil_h_
 
+#include <string>
 #include <vector>
 #include <iostream>
 #include <sstream>
 #include <sys/time.h>
-
-#include <psi4-dec.h>
+#include <assert.h>
 #include "ref.h"
 
 namespace psi {
@@ -14,6 +14,8 @@ namespace psi {
 using namespace std;
 
 typedef std::vector<std::string>            strvec;
+
+std::string file_to_string(std::string const& name);
 
 bool space(char c);
 bool not_space(char c);

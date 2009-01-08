@@ -1,12 +1,20 @@
 #include <cstdlib>
 #include <cmath>
 #include <iomanip>
+#include <fstream>
 #include <algorithm>
+
+#include <psi4-dec.h>
 
 #include "libutil.h"
 
 namespace psi {
 
+std::string file_to_string(std::string const& name) {
+  std::ifstream in(name.c_str());
+  return std::string(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>());
+}
+  
 /*********************
  String manipulation
  ********************/

@@ -1,12 +1,17 @@
 #include <ruby.h>
+#include <iostream>
+#include <fstream>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>
+#include <libutil/libutil.h>
 #include "psi4.h"
 #include "task.h"
 
 namespace psi { //namespace psi4 {
   VALUE Task::Ruby::rbTask_ = Qnil;
-  // TODO: Module arrays.
+  extern ModuleInformation modules_;
+  extern void register_modules();
+  extern Options options;
   
   Task::Task(std::string input, std::string p, std::string s)
   {
@@ -14,15 +19,27 @@ namespace psi { //namespace psi4 {
     // Default: file32 is kept in the current working directory.
     // Default: only one volume is used.
     // The ability to change individual files will be added.
-    psiPSIO_.filecfg_kwd("DEFAULT", "NAME",    -1, p.c_str());
-    psiPSIO_.filecfg_kwd("DEFAULT", "NVOLUME", -1, "1");
-    psiPSIO_.filecfg_kwd("DEFAULT", "VOLUME1", -1, s.c_str());
-    psiPSIO_.filecfg_kwd("DEFAULT", "VOLUME1", 32, "./");
+    psio_.filecfg_kwd("DEFAULT", "NAME",    -1, p.c_str());
+    psio_.filecfg_kwd("DEFAULT", "NVOLUME", -1, "1");
+    psio_.filecfg_kwd("DEFAULT", "VOLUME1", -1, s.c_str());
+    psio_.filecfg_kwd("DEFAULT", "VOLUME1", 32, "./");
     
     // Save the variables for quick access.
     szFilePrefix_ = p;
     szScratchPath_ = s;
     szInputFile_ = input;
+    
+    // Set up some default options
+    options_.add("label", "(no label provided)", "");
+    
+    // Set the globals options variable to our local one.
+    psi::options = options_;
+    
+    // Have the modules register their options.
+    register_modules();
+
+    // Set our options to the global one.
+    options_ = psi::options;
   }
   
   Task::~Task()
@@ -32,7 +49,7 @@ namespace psi { //namespace psi4 {
   // TODO: Add module registration functions.
   
   
-  const std::string& Task::prefix()
+  const std::string& Task::prefix() const
   {
     return szFilePrefix_;
   }
@@ -42,10 +59,10 @@ namespace psi { //namespace psi4 {
     szFilePrefix_ = new_prefix;
     
     // change the setting in psiPSIO_
-    psiPSIO_.filecfg_kwd("DEFAULT", "NAME", -1, new_prefix.c_str());
+    psio_.filecfg_kwd("DEFAULT", "NAME", -1, new_prefix.c_str());
   }
   
-  const std::string& Task::scratch()
+  const std::string& Task::scratch() const
   {
     return szScratchPath_;
   }
@@ -55,27 +72,108 @@ namespace psi { //namespace psi4 {
     szScratchPath_ = new_scratch;
     
     // change the setting in psiPSIO_
-    psiPSIO_.filecfg_kwd("DEFAULT", "VOLUME1", -1, new_scratch.c_str());
+    psio_.filecfg_kwd("DEFAULT", "VOLUME1", -1, new_scratch.c_str());
   }
   
-  const std::string& Task::input_file()
+  const std::string& Task::input_file() const
   {
     return szInputFile_;
   }
   
+  const std::string& Task::ipv1_file() const
+  {
+    return szIPV1File_;
+  }
+    
+  const std::string& Task::ruby_file() const
+  {
+    return szRubyFile_;
+  }
+
   void Task::input_file(std::string new_input)
   {
+    WHEREAMI();
     szInputFile_ = new_input;
+    
+    // Need to split the input file into 2 parts:
+    //    1st: ipv1 compatible input
+    //    2nd: Ruby compatible input
+    //
+    // For right now this is separated by #!psi4
+    // Form filenames for both inputs.
+    szIPV1File_ = scratch() + "/" + prefix() + ".ipv1";
+    szRubyFile_ = scratch() + "/" + prefix() + ".ruby";
+    
+    std::ofstream ipv1(szIPV1File_.c_str());
+    std::ofstream ruby(szRubyFile_.c_str());
+    
+    // Read in entire contents of infile
+    std::string contents = file_to_string(szInputFile_.c_str());
+    
+    // Print out the input file.
+    fprintf(output(), "Input file contents:\n\n");
+    fprintf(output(), contents.c_str());
+    fprintf(output(), "\n");
+    
+    // Find "#!psi4"
+    std::string::size_type pos = contents.find("#!psi4");
+    
+    // Found?
+    if (pos == std::string::npos) { // nope
+      fprintf(output(), "  IPV1 input found.\n\n");
+      // Copy entire contents to ipv1, this assumes the user is using only ipv1
+      ipv1 << contents;
+    } else {
+      fprintf(output(), "  IPV1 and/or Ruby script input found.\n\n");
+      // It was found somewhere
+      // Save cooresponding sections to their files.
+      ipv1 << contents.substr(0, pos);
+      ruby << contents.substr(pos);
+    }
+    
+    ipv1.close();
+    ruby.close();
+    fflush(output());
+    
+    // Have ipv1 read in the contents
+    ip_set_uppercase(1);
+    FILE *infile = fopen(szIPV1File_.c_str(), "r");
+    ip_initialize(infile, output());
+    fclose(infile);
+    ip_cwk_clear();
+    ip_cwk_add(const_cast<char*>(":DEFAULT"));
+    ip_cwk_add(const_cast<char*>(":PSI"));
+
+    // ipv1 is ready, have options go through and gather data. (Should options_ be cleared first?)
+    try {
+      options_.read_ipv1();
+    }
+    catch (OptionsException e) {
+      fprintf(output(), "Options-IPV1: Exception caught: %s\n", e.what());
+    }
+    
+    // Right now, don't care if one of the exceptions above was caught.
+    // shutdown ipv1
+    ip_done();
+    
+    // Print out the global options from the input file.
+    fprintf(output(), "Global defaults:\n");
+    fprintf(output(), options_.to_string().c_str());
   }
   
-  psi::PSIO* Task::libpsio()
+  const psi::PSIO& Task::psio() const
   {
-    return &psiPSIO_;
+    return psio_;
   }
   
-  FILE *Task::output()
+  FILE *Task::output() const
   {
     return outfile;
+  }
+  
+  const Options& Task::options() const 
+  {
+    return options_;
   }
   
   // Ruby framework for Task
@@ -103,12 +201,17 @@ namespace psi { //namespace psi4 {
     rb_define_method(Task::Ruby::rbTask_, "to_s", RUBYCAST(Task::Ruby::rb_to_s), 0);
     
     // Psi specific functions
-    rb_define_method(Task::Ruby::rbTask_, "prefix=",  RUBYCAST(Task::Ruby::rb_prefix_set), 1);
-    rb_define_method(Task::Ruby::rbTask_, "prefix",   RUBYCAST(Task::Ruby::rb_prefix_get), 0);
-    rb_define_method(Task::Ruby::rbTask_, "scratch=", RUBYCAST(Task::Ruby::rb_scratch_set), 1);
-    rb_define_method(Task::Ruby::rbTask_, "scratch",  RUBYCAST(Task::Ruby::rb_scratch_get), 0);
-    rb_define_method(Task::Ruby::rbTask_, "input=",   RUBYCAST(Task::Ruby::rb_input_file_set), 1);
-    rb_define_method(Task::Ruby::rbTask_, "input",    RUBYCAST(Task::Ruby::rb_input_file_get), 0);
+    rb_define_method(Task::Ruby::rbTask_, "prefix=",     RUBYCAST(Task::Ruby::rb_prefix_set), 1);
+    rb_define_method(Task::Ruby::rbTask_, "set_prefix",  RUBYCAST(Task::Ruby::rb_prefix_set), 1);
+    rb_define_method(Task::Ruby::rbTask_, "prefix",      RUBYCAST(Task::Ruby::rb_prefix_get), 0);
+    rb_define_method(Task::Ruby::rbTask_, "scratch=",    RUBYCAST(Task::Ruby::rb_scratch_set), 1);
+    rb_define_method(Task::Ruby::rbTask_, "set_scratch", RUBYCAST(Task::Ruby::rb_scratch_set), 1);
+    rb_define_method(Task::Ruby::rbTask_, "scratch",     RUBYCAST(Task::Ruby::rb_scratch_get), 0);
+    rb_define_method(Task::Ruby::rbTask_, "input=",      RUBYCAST(Task::Ruby::rb_input_file_set), 1);
+    rb_define_method(Task::Ruby::rbTask_, "set_input",   RUBYCAST(Task::Ruby::rb_input_file_set), 1);
+    rb_define_method(Task::Ruby::rbTask_, "input",       RUBYCAST(Task::Ruby::rb_input_file_get), 0);
+    rb_define_method(Task::Ruby::rbTask_, "ipv1_file",   RUBYCAST(Task::Ruby::rb_ipv1_file_get), 0);
+    rb_define_method(Task::Ruby::rbTask_, "ruby_file",   RUBYCAST(Task::Ruby::rb_ruby_file_get), 0);
     
     // Run input file
     // rb_define_method(Task::Ruby::rbTask_, "run", RUBYCAST(Task::Ruby::rb_run_input_file), 0);
@@ -367,6 +470,34 @@ namespace psi { //namespace psi4 {
   {
     WHEREAMI();
     return input_file_get(g_cTask);
+  }
+  
+  VALUE Task::Ruby::ipv1_file_get(Task *task)
+  {
+    WHEREAMI();
+    return rb_str_new2(task->ipv1_file().c_str());
+  }
+  
+  VALUE Task::Ruby::rb_ipv1_file_get(VALUE self)
+  {
+    WHEREAMI();
+    Task *task;
+    Data_Get_Struct(self, Task, task);
+    return input_file_get(task);
+  }
+  
+  VALUE Task::Ruby::ruby_file_get(Task *task)
+  {
+    WHEREAMI();
+    return rb_str_new2(task->ruby_file().c_str());
+  }
+  
+  VALUE Task::Ruby::rb_ruby_file_get(VALUE self)
+  {
+    WHEREAMI();
+    Task *task;
+    Data_Get_Struct(self, Task, task);
+    return ruby_file_get(task);
   }
   
   VALUE Task::Ruby::rb_run_input_file(VALUE self)

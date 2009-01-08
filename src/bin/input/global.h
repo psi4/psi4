@@ -38,7 +38,7 @@ struct coordinates{
 /*Super-global stuff - the same no matter what calculation is running */
 EXTERN int *ioff;
 EXTERN double *df;                  /*df[i] = (i-1)!!*/
-EXTERN char *wfn;
+EXTERN std::string wfn;
 
 /*Calculation options*/
 EXTERN int cartOn;                  /*Cartesian input flag*/
@@ -72,9 +72,9 @@ EXTERN std::string label;                 /*Label*/
 
 
 /*Symmetry-related stuff*/
-EXTERN char *symmetry;              /*Symmetry group label*/
-EXTERN char *subgroup;              /*Subgroup label*/
-EXTERN char *unique_axis;           /*Unique axis label*/
+EXTERN char* symmetry;              /*Symmetry group label*/
+EXTERN std::string subgroup;              /*Subgroup label*/
+EXTERN std::string unique_axis;           /*Unique axis label*/
 EXTERN int **irr_char;              /*Character table for irreducible representations of D2h and subgroups*/
 EXTERN char **irr_labels;           /*Labels for irreducible representations*/
 EXTERN int *sym_oper;               /*Array that maps symmetry operation number of the point group to the canonical

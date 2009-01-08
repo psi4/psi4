@@ -35,7 +35,7 @@
 
 #define LAST_ATOMIC_INDEX (118)
 
-static char *atomic_labels[]= 
+static const char *atomic_labels[]= 
 {"X","H","HE","LI","BE","B","C","N","O","F","NE","NA","MG","AL","SI",
 "P","S","CL","AR","K","CA","SC","TI","V","CR","MN","FE","CO","NI",
 "CU","ZN","GA","GE","AS","SE","BR","KR","RB","SR","Y","ZR","NB","MO",
@@ -46,7 +46,7 @@ static char *atomic_labels[]=
 "ES","FM","MD","NO","LR","RF","DB","SG","BH","HS","MT","DS","RG",
   "UUB","UUT","UUQ","UUP","UUH","UUS","UUO"};
 
-static double an2masses[]=
+static const double an2masses[]=
 {0.,1.00782503207,4.00260325415,7.016004548,9.012182201,11.009305406,
 12,14.00307400478,15.99491461956,18.998403224,19.99244017542,
 22.98976928087,23.985041699,26.981538627,27.97692653246,30.973761629,
@@ -73,7 +73,7 @@ static double an2masses[]=
 
 #define LAST_MASS_INDEX (3297)
 
-static char *mass_labels[]=
+static const char *mass_labels[]=
 {"H","H1","H2","D","H3","T","H4","H5","H6","H7","HE","HE3","HE4",
 "HE5","HE6","HE7","HE8","HE9","HE10","LI","LI3","LI4","LI5","LI6",
 "LI7","LI8","LI9","LI10","LI11","LI12","BE","BE5","BE6","BE7","BE8",
@@ -447,7 +447,7 @@ static char *mass_labels[]=
 "UUP288","UUP289","UUP290","UUP291","UUH","UUH289","UUH290","UUH291",
 "UUH292","UUS","UUS291","UUS292","UUO","UUO293"};
 
-static double atomic_masses[] =
+static const double atomic_masses[] =
 {1.00782503207, 1.00782503207, 2.01410177785, 2.01410177785, 3.01604927767,
 3.01604927767, 4.027806424, 5.035311488, 6.044942594, 7.052749,
 4.00260325415, 3.01602931914, 4.00260325415, 5.012223624, 6.018889124,

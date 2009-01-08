@@ -12,7 +12,7 @@
 #include <ruby.h>
 #include <psiconfig.h>
 #include <libciomr/libciomr.h>
-#include <liboptions/liboptions.h>
+#include <liboptions/liboptions.hpp>
 #include <physconst.h>
 
 // #include <Molecular_system.h>
@@ -41,12 +41,16 @@ namespace psi {
   extern void finalize_ruby();
   extern int run_interactive_ruby();
   extern bool create_global_task();
+  extern void enable_modules();
 
     // Functions defined here
   void psi_start_and_parse_command_line(int argc, char *argv[]);
   void print_version();
   void print_usage();
   void redirect_output(const std::string& szFilename, bool append = true);
+  
+  Options options;
+  PSIO *psio = NULL;
 }
 
 // This is the ONLY main function in PSI
@@ -77,16 +81,23 @@ int main(int argc, char *argv[])
 
   // Initialize the interpreter
   initialize_ruby();
+  
   // At this point the following has happened:
   //  1. Where output goes has been decided.
   //  2. Input filename has been determined.
   //  3. Ruby has been initialized
 
+  // Create the global task object that is responsible for interfacing Ruby and Psi4.
+  //   The call sets the global variables g_rbTask and g_cTask to their initialized values.
+  //   g_rbTask is the Ruby object that refers to the C++ object g_cTask.
+  //   This also loads the input file (either input.dat or the one determined by 
+  //   psi_start_and_parse_command_line). If the file contains IPV1 data it is loaded
+  //   into the global task's options_ variable.
   if (create_global_task()) {
-    // register_and_enable_modules();
+    enable_modules();
     
     if (g_bIRB == false) { // Are running Interactive Ruby?
-      // Process the input file.
+      // Process the input file via the global task.
       process_input_file();
     }
     else {
@@ -293,8 +304,6 @@ namespace psi {
   void print_version()
   {
     const char *PSI_VERSION = "0.1";
-    //fprintf(Globals::g_fOutput, "PSI %s Driver\n", PSI_VERSION);
-    fprintf(outfile,"\n");
     fprintf(outfile,
       "    -----------------------------------------------------------------------    \n");
     fprintf(outfile,
@@ -302,13 +311,15 @@ namespace psi {
     fprintf(outfile,
       "                            PSI %s Driver\n", PSI_VERSION);
     fprintf(outfile,
+      "                      Using Ruby %d.%d.%d interpreter.\n", RUBY_MAJOR, RUBY_MINOR, RUBY_TEENY);
+    fprintf(outfile,
       "    T. D. Crawford, C. D. Sherrill, E. F. Valeev, J. T. Fermann, R. A. King,\n");
     fprintf(outfile,
       "    M. L. Leininger, S. T. Brown, C. L. Janssen, E. T. Seidl, J. P. Kenny,\n");
     fprintf(outfile,
       "    and W. D. Allen, J. Comput. Chem. 28, 1610-1616 (2007)\n");
     fprintf(outfile,
-      "    -----------------------------------------------------------------------    \n");
+      "    -----------------------------------------------------------------------    \n\n");
   }
 
   /*! Print command-line usage information. */
