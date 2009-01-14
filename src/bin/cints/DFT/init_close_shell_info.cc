@@ -72,4 +72,4 @@ void print_close_shell_info(struct close_shell_info_s close){
     }
     fflush(outfile);
 }
-};};
+}}

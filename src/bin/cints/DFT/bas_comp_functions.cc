@@ -44,7 +44,6 @@ namespace psi { namespace CINTS {
     
     int i;
     int shell_type;
-    int end;
     double bastmp;
     
     shell_type = BasisSet.shells[BasisSet.am2shell[shell_num]].am-1;
@@ -55,6 +54,6 @@ namespace psi { namespace CINTS {
     return bastmp;
   }
   
-};
+}
 
-};
+}

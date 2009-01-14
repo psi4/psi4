@@ -269,4 +269,4 @@ void int_fjt(double_array_t *table, int J, double wval)
   return;
 }
 
-};};
+}}

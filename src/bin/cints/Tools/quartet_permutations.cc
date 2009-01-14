@@ -57,4 +57,4 @@ void ijkl_to_klij(double *ijkl_buf, double *klij_buf, int nij, int nkl)
   }
 }
 
-};};
+}}

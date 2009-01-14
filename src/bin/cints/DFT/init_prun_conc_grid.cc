@@ -81,4 +81,4 @@ void init_pruned_con_grid(void){
     }
     return;
 }   
-};};
+}}

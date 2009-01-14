@@ -15,5 +15,5 @@ namespace psi { namespace CINTS {
   struct fun_info_s VWN5_u_ed(struct den_info_s den_info);
   struct fun_info_s VWN4_u_e(struct den_info_s den_info);
   struct fun_info_s VWN4_u_ed(struct den_info_s den_info);
-};}
+}}
 #endif

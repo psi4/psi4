@@ -9,5 +9,5 @@ namespace psi { namespace CINTS {
 
 void calc_close_basis(int atom_num, int chunk_num);
 
-};};
+}}
 #endif

@@ -365,4 +365,4 @@ void xc_grad_fock(void){
   psio_close(IOUnits.itapDSCF, 1);
   return;
 }
-};}
+}}

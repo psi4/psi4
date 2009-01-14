@@ -105,4 +105,4 @@ void GplusGt(double**** G, double**** Gsym)
   return;
 }
 
-};};
+}}

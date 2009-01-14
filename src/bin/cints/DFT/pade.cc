@@ -88,4 +88,4 @@ double d_Pade_int(double p, double x0, double b, double c, double A, double Q){
     dec = A*(term1+term2+term3+mult1*(term4+term2+term5));
     return dec;
 }                          
-};}
+}}

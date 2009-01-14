@@ -542,4 +542,4 @@ void cleanup_dcr(void)
   /*--- It's too messy to clean it up ---*/
   return;
 }
-};};
+}}

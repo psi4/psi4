@@ -6,95 +6,95 @@
  * Revision 1.11  2007/04/05 15:45:25  crawdad
  * Fixed a few memory leaks identified by valgrind. -TDC
  *
-/* Revision 1.10  2004/05/03 04:32:40  crawdad
-/* Major mods based on merge with stable psi-3-2-1 release.  Note that this
-/* version has not been fully tested and some scf-optn test cases do not run
-/* correctly beccause of changes in mid-March 2004 to optking.
-/* -TDC
-/*
-/* Revision 1.9.8.2  2004/04/21 15:45:07  evaleev
-/* Modified DIIS algorithm for RHF and ROHF to work in OSO basis rather than in
-/* AO basis, to avoid difficulties of transforming between MO and AO bases
-/* when linear dependencies are present.
-/*
-/* Revision 1.9.8.1  2004/04/06 21:29:05  crawdad
-/* Corrections to the RHF/ROHF DIIS algorithm, which was simply incorrect.
-/* The backtransformation of the DIIS error vectors to the AO basis was not
-/* mathematically right.
-/* -TDC and EFV
-/*
-/* Revision 1.9  2002/04/03 02:06:01  janssen
-/* Finish changes to use new include paths for libraries.
-/*
-/* Revision 1.8  2000/07/10 18:03:34  sbrown
-/* Enabling cscf to send over just the occupied SCF eigenvector for DFT
-/* calculations.  Only done for the RHF case.
-/*
-/* Revision 1.7  2000/07/06 20:04:02  sbrown
-/* Added capabilities to send the eigenvector to cints for DFT
-/* calculations.
-/*
-/* Revision 1.6  2000/07/05 21:47:31  sbrown
-/* Enabled the code to export the SCF eigenvector to CINTS when doing DFT.
-/*
-/* Revision 1.5  2000/06/27 21:12:33  evaleev
-/* .
-/*
-/* Revision 1.4  2000/06/27 21:08:11  evaleev
-/* Fixed a minor string manipulation problem in scf_input.c
-/*
-/* Revision 1.3  2000/06/26 19:04:12  sbrown
-/* Added DFT capapbilities to interface with cints using direct scf
-/*
-/* Revision 1.2  2000/06/22 22:15:02  evaleev
-/* Modifications for KS DFT. Reading in XC Fock matrices and XC energy in formg_direct need to be uncommented (at present those are not produced by CINTS yet).
-/*
-/* Revision 1.1.1.1  2000/02/04 22:52:32  evaleev
-/* Started PSI 3 repository
-/*
-/* Revision 1.6  1999/11/04 19:24:31  localpsi
-/* STB (11/4/99) - Added the orb_mix feature which is equivalent to guess = mix
-/* in G94 and also fixed restarting so that if you have different wavefuntions,
-/* everything works.  Also if you specify no DOCC and SOCC and restart, if the
-/* wavefunctions are different, it will guess again.
-/*
-/* Revision 1.5  1999/11/02 23:56:00  localpsi
-/* Shawn Brown - (11/2/99) Modified to the code in a few major ways.
-/*
-/* 1.  Added the capability to do UHF.  All of the features available with the
-/* other refrences have been added for UHF.
-/*
-/* 2.  For UHF, I had to alter the structure of file30. (See cleanup.c for a
-/* map)  This entailed adding a pointer array right after the header in the SCF
-/* section of file30 that pointed to all of the data for the SCF caclulation.
-/* Functions were added to libfile30 to account for this and they are
-/* incorporated in this code.
-/*
-/* 3.  Updated and fixed all of the problems associated with my previous
-/* guessing code.  The code no longer uses OPENTYPE to specify the type of
-/* occupation.  The keword REFERENCE and MULTP can now be used to indicate any
-/* type of calculation.  (e.g. ROHF with MULTP of 1 is an open shell singlet
-/* ROHF calculation)  This code was moved to occ_fun.c.  The code can also
-/* guess at any multplicity in a highspin case, provided enough electrons.
-/*
-/* Revision 1.4  1999/10/22 19:47:19  evaleev
-/* A direct SCF-enabled version (set DIRECT_SCF=TRUE in input.dat).
-/*
-/* Revision 1.3  1999/10/11 17:03:18  evaleev
-/* Modified the location of nmo in mconst array in file 30.
-/*
-/* Revision 1.2  1999/08/17 19:04:17  evaleev
-/* Changed the default symmetric orthogonalization to the canonical
-/* orthogonalization. Now, if near-linear dependencies in the basis are found,
-/* eigenvectors of the overlap matrix with eigenvalues less than 1E-6 will be
-/* left out. This will lead to num_mo != num_so, i.e. SCF eigenvector is no
-/* longer a square matrix. Had to rework some routines in libfile30, and add some.
-/* The program prints out a warning if near-linear dependencies are found. TRANSQT
-/* and a whole bunch of other codes have to be fixed to work with such basis sets.
-/*
-/* Revision 1.1.1.1  1999/04/12 16:59:28  evaleev
-/* Added a version of CSCF that can work with CINTS.
-/* -Ed
+ * Revision 1.10  2004/05/03 04:32:40  crawdad
+ * Major mods based on merge with stable psi-3-2-1 release.  Note that this
+ * version has not been fully tested and some scf-optn test cases do not run
+ * correctly beccause of changes in mid-March 2004 to optking.
+ * -TDC
+ *
+ * Revision 1.9.8.2  2004/04/21 15:45:07  evaleev
+ * Modified DIIS algorithm for RHF and ROHF to work in OSO basis rather than in
+ * AO basis, to avoid difficulties of transforming between MO and AO bases
+ * when linear dependencies are present.
+ *
+ * Revision 1.9.8.1  2004/04/06 21:29:05  crawdad
+ * Corrections to the RHF/ROHF DIIS algorithm, which was simply incorrect.
+ * The backtransformation of the DIIS error vectors to the AO basis was not
+ * mathematically right.
+ * -TDC and EFV
+ *
+ * Revision 1.9  2002/04/03 02:06:01  janssen
+ * Finish changes to use new include paths for libraries.
+ *
+ * Revision 1.8  2000/07/10 18:03:34  sbrown
+ * Enabling cscf to send over just the occupied SCF eigenvector for DFT
+ * calculations.  Only done for the RHF case.
+ *
+ * Revision 1.7  2000/07/06 20:04:02  sbrown
+ * Added capabilities to send the eigenvector to cints for DFT
+ * calculations.
+ *
+ * Revision 1.6  2000/07/05 21:47:31  sbrown
+ * Enabled the code to export the SCF eigenvector to CINTS when doing DFT.
+ *
+ * Revision 1.5  2000/06/27 21:12:33  evaleev
+ * .
+ *
+ * Revision 1.4  2000/06/27 21:08:11  evaleev
+ * Fixed a minor string manipulation problem in scf_input.c
+ *
+ * Revision 1.3  2000/06/26 19:04:12  sbrown
+ * Added DFT capapbilities to interface with cints using direct scf
+ *
+ * Revision 1.2  2000/06/22 22:15:02  evaleev
+ * Modifications for KS DFT. Reading in XC Fock matrices and XC energy in formg_direct need to be uncommented (at present those are not produced by CINTS yet).
+ *
+ * Revision 1.1.1.1  2000/02/04 22:52:32  evaleev
+ * Started PSI 3 repository
+ *
+ * Revision 1.6  1999/11/04 19:24:31  localpsi
+ * STB (11/4/99) - Added the orb_mix feature which is equivalent to guess = mix
+ * in G94 and also fixed restarting so that if you have different wavefuntions,
+ * everything works.  Also if you specify no DOCC and SOCC and restart, if the
+ * wavefunctions are different, it will guess again.
+ *
+ * Revision 1.5  1999/11/02 23:56:00  localpsi
+ * Shawn Brown - (11/2/99) Modified to the code in a few major ways.
+ *
+ * 1.  Added the capability to do UHF.  All of the features available with the
+ * other refrences have been added for UHF.
+ *
+ * 2.  For UHF, I had to alter the structure of file30. (See cleanup.c for a
+ * map)  This entailed adding a pointer array right after the header in the SCF
+ * section of file30 that pointed to all of the data for the SCF caclulation.
+ * Functions were added to libfile30 to account for this and they are
+ * incorporated in this code.
+ *
+ * 3.  Updated and fixed all of the problems associated with my previous
+ * guessing code.  The code no longer uses OPENTYPE to specify the type of
+ * occupation.  The keword REFERENCE and MULTP can now be used to indicate any
+ * type of calculation.  (e.g. ROHF with MULTP of 1 is an open shell singlet
+ * ROHF calculation)  This code was moved to occ_fun.c.  The code can also
+ * guess at any multplicity in a highspin case, provided enough electrons.
+ *
+ * Revision 1.4  1999/10/22 19:47:19  evaleev
+ * A direct SCF-enabled version (set DIRECT_SCF=TRUE in input.dat).
+ *
+ * Revision 1.3  1999/10/11 17:03:18  evaleev
+ * Modified the location of nmo in mconst array in file 30.
+ *
+ * Revision 1.2  1999/08/17 19:04:17  evaleev
+ * Changed the default symmetric orthogonalization to the canonical
+ * orthogonalization. Now, if near-linear dependencies in the basis are found,
+ * eigenvectors of the overlap matrix with eigenvalues less than 1E-6 will be
+ * left out. This will lead to num_mo != num_so, i.e. SCF eigenvector is no
+ * longer a square matrix. Had to rework some routines in libfile30, and add some.
+ * The program prints out a warning if near-linear dependencies are found. TRANSQT
+ * and a whole bunch of other codes have to be fixed to work with such basis sets.
+ *
+ * Revision 1.1.1.1  1999/04/12 16:59:28  evaleev
+ * Added a version of CSCF that can work with CINTS.
+ * -Ed
  * */
 
 static char *rcsid = "$Id: scf_iter.cc 3815 2008-02-13 21:50:07Z sherrill $";

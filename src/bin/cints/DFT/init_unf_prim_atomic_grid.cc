@@ -127,4 +127,4 @@ prim_atomic_grid_t init_uniform_prim_atomic_grid(int n_rpoints,int n_angpoints,i
     }
     return prim_atomic_grid;
 }	   
-};}
+}}

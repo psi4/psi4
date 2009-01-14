@@ -252,6 +252,6 @@ namespace psi { namespace CINTS {
     free(dist_atom);
     return den_info;
   }
-};
+}
   
-};	
+}	

@@ -189,4 +189,4 @@ int find_entry(htable_t *htable, PSI_INT_LEAST64 key)
     return curr_ptr;
 
 }
-};};
+}}

@@ -6,163 +6,163 @@
  * Revision 1.32  2007/04/05 15:45:25  crawdad
  * Fixed a few memory leaks identified by valgrind. -TDC
  *
-/* Revision 1.31  2005/11/10 16:37:50  evaleev
-/* Added CHECK_MO_ORTHONORMALITY input keyword. Useful for debugging.
-/*
-/* Revision 1.30  2004/08/12 19:13:32  crawdad
-/* Corrected computation of <S^2> for UHF references.  The equations were
-/* coded correctly, but variable types screwed up results for doublets,
-/* quartets, etc.  -TDC
-/*
-/* Revision 1.29  2004/05/03 04:32:40  crawdad
-/* Major mods based on merge with stable psi-3-2-1 release.  Note that this
-/* version has not been fully tested and some scf-optn test cases do not run
-/* correctly beccause of changes in mid-March 2004 to optking.
-/* -TDC
-/*
-/* Revision 1.28.4.1  2004/04/01 22:04:49  evaleev
-/* A critical bug: lagrangian was not written out to chkpt file correctly
-/* thanks to missing symblk offsets in computing MO indices. ROHF HF gradients
-/* now work correctly.
-/*
-/* Revision 1.28  2003/08/17 22:57:37  crawdad
-/* Removing libfile30 from the repository.  I believe that all code reference
-/* to the library have also been properly removed.  The current version
-/* passes all test cases on my systems.
-/* -TDC
-/*
-/* Revision 1.27  2003/08/09 17:39:56  crawdad
-/* I added the ability to determine frozen core orbitals for UHF references to
-/* cleanup.c.  I also commented out ip_cwk_clear and ip_cwk_add calls in
-/* cleanup.c, guess.c, scf_input.c and scf_iter_2.c.  These calls were (1) poor
-/* design and (2) interfering with default ip_tree behavior needed to simplify
-/* the format of input.dat.
-/* -TDC
-/*
-/* Revision 1.26  2003/05/19 22:26:26  crawdad
-/* Added phase corrections for UHF orbitals.
-/* -TDC
-/*
-/* Revision 1.25  2003/05/06 20:47:22  evaleev
-/* CSCF can now find frzvpi from the eigenvalues.
-/*
-/* Revision 1.24  2003/05/02 15:39:23  evaleev
-/* Added ability to figure out the number of frozen doubly occupied orbitals in each irrep.
-/*
-/* Revision 1.23  2003/04/14 17:25:47  sherrill
-/* Change "total energy" to "SCF total energy" to make more explicit for
-/* new users.  Yeah, this will probably break some test case perl scripts
-/* temporarily :)
-/*
-/* Revision 1.22  2002/12/22 17:01:14  evaleev
-/* Updated cints, cscf, psi3 (probably not complete) and transqt to use psi_start/psi_stop.
-/*
-/* Revision 1.21  2002/12/06 20:39:08  evaleev
-/* Write total SCF energy as reference energy as well.
-/*
-/* Revision 1.20  2002/12/06 15:50:32  crawdad
-/* Changed all exit values to PSI_RETURN_SUCCESS or PSI_RETURN_FAILURE as
-/* necessary.  This is new for the PSI3 execution driver.
-/* -TDC
-/*
-/* Revision 1.19  2002/11/24 22:52:17  crawdad
-/* Merging the gbye-file30 branch into the main trunk.
-/* -TDC
-/*
-/* Revision 1.18.2.4  2002/11/23 21:54:45  crawdad
-/* Removal of mxcoef stuff for chkpt runs.
-/* -TDC
-/*
-/* Revision 1.18.2.3  2002/11/23 19:35:14  sherrill
-/* re-institute writing scf vector to file30 if !USE_LIBCHKPT
-/*
-/* Revision 1.18.2.2  2002/10/01 22:16:28  sherrill
-/* Fix a few minor libchkpt/libfile30 things (one define condition was
-/* backwards), turn off libfile30 unless we're really using it, and
-/* clean up a stupid mistake for the orthog_only option ---CDS
-/*
-/* Revision 1.18.2.1  2002/07/29 23:08:30  evaleev
-/* A major set of changes designed to convert all psi modules to use libchkpt.
-/*
-/* Revision 1.18  2002/05/30 20:16:49  crawdad
-/* Accidentally left dmalloc calls in place.  Fixed.
-/* -TDC
-/*
-/* Revision 1.17  2002/05/30 12:57:08  crawdad
-/* Buf fix.  psio_done() was called before chkpt_close().
-/* -TDC
-/*
-/* Revision 1.16  2002/05/07 22:40:56  sherrill
-/* Fix missing s=&scf_info[k] in UHF case for evals, fix missing bracket
-/* in RHF case.
-/*
-/* Revision 1.15  2002/04/28 04:34:10  crawdad
-/* Finshed initial additions for mirroring old file30 with new PSIF_CHKPT.  I
-/* believe that everything cscf wrote to file30 is also written to PSIF_CHKPT.
-/* Now ready to start converting other codes to libchkpt.
-/* -TDC
-/*
-/* Revision 1.14  2002/04/27 22:28:48  crawdad
-/* More changes to cleanup in preparation for libchkpt conversion.
-/* -TDC
-/*
-/* Revision 1.13  2002/04/27 18:33:20  crawdad
-/* Working on changes for new libchkpt code.  Current version does no reading
-/* from chkpt yet.
-/* -TDC
-/*
-/* Revision 1.12  2002/03/25 03:16:51  sherrill
-/* Changed name of mxcoef keyword to Mxcoef
-/*
-/* Revision 1.11  2002/03/25 03:05:45  crawdad
-/* More additions for new chkpoint file.
-/* -TDC
-/*
-/* Revision 1.10  2002/03/25 02:17:36  janssen
-/* Get rid of tmpl.  Use new naming scheme for libipv1 includes.
-/*
-/* Revision 1.9  2002/03/25 01:07:59  crawdad
-/* Some changes to cleanup et al. to write SCF-generated data to both old
-/* file30 and new chkpt.
-/* -TDC
-/*
-/* Revision 1.8  2002/03/25 00:02:00  sherrill
-/* Add libpsio
-/*
-/* Revision 1.7  2002/01/04 18:03:24  crawdad
-/* Minor change to set phase_check flag to true when starting from a core
-/* guess.  This is to allow correlated calculations that might have stopped
-/* due to slow convergence to restart.
-/* -TDC
-/*
-/* Revision 1.6  2001/06/29 20:39:27  evaleev
-/* Modified cscf to use libpsio to store supermatrix files.
-/*
-/* Revision 1.5  2001/05/31 01:12:25  sherrill
-/* fix up printing orbital eigenvalues, now does TCSCF too!
-/*
-/* Revision 1.4  2001/04/11 19:31:46  sherrill
-/* I removed printing all MO's by default, since this gets pretty big
-/* and useless for many of the molecules of interest today.  I added
-/* a nice subroutine to print out orbital eigenvalues.  It seems
-/* to work for RHF/ROHF/UHF but is probably broken for TCSCF, which
-/* I'll try to check later.
-/*
-/* Revision 1.3  2000/10/13 19:51:19  evaleev
-/* Cleaned up a lot of stuff in order to get CSCF working with the new 
-/* "Mo-projection-capable" INPUT.
-/*
-/* Revision 1.2  2000/08/23 17:15:15  sbrown
-/* Added portions to separate out the correlation and exchange energy at the
-/* end the calculation as well as do the consistency check on the integrated
-/* density.
-/*
-/* Revision 1.1.1.1  2000/02/04 22:52:28  evaleev
-/* Started PSI 3 repository
-/*
-/* Revision 1.7  1999/11/11 21:04:36  evaleev
-/* A very minor fix.
-/*
+ * Revision 1.31  2005/11/10 16:37:50  evaleev
+ * Added CHECK_MO_ORTHONORMALITY input keyword. Useful for debugging.
+ *
+ * Revision 1.30  2004/08/12 19:13:32  crawdad
+ * Corrected computation of <S^2> for UHF references.  The equations were
+ * coded correctly, but variable types screwed up results for doublets,
+ * quartets, etc.  -TDC
+ *
+ * Revision 1.29  2004/05/03 04:32:40  crawdad
+ * Major mods based on merge with stable psi-3-2-1 release.  Note that this
+ * version has not been fully tested and some scf-optn test cases do not run
+ * correctly beccause of changes in mid-March 2004 to optking.
+ * -TDC
+ *
+ * Revision 1.28.4.1  2004/04/01 22:04:49  evaleev
+ * A critical bug: lagrangian was not written out to chkpt file correctly
+ * thanks to missing symblk offsets in computing MO indices. ROHF HF gradients
+ * now work correctly.
+ *
+ * Revision 1.28  2003/08/17 22:57:37  crawdad
+ * Removing libfile30 from the repository.  I believe that all code reference
+ * to the library have also been properly removed.  The current version
+ * passes all test cases on my systems.
+ * -TDC
+ *
+ * Revision 1.27  2003/08/09 17:39:56  crawdad
+ * I added the ability to determine frozen core orbitals for UHF references to
+ * cleanup.c.  I also commented out ip_cwk_clear and ip_cwk_add calls in
+ * cleanup.c, guess.c, scf_input.c and scf_iter_2.c.  These calls were (1) poor
+ * design and (2) interfering with default ip_tree behavior needed to simplify
+ * the format of input.dat.
+ * -TDC
+ *
+ * Revision 1.26  2003/05/19 22:26:26  crawdad
+ * Added phase corrections for UHF orbitals.
+ * -TDC
+ *
+ * Revision 1.25  2003/05/06 20:47:22  evaleev
+ * CSCF can now find frzvpi from the eigenvalues.
+ *
+ * Revision 1.24  2003/05/02 15:39:23  evaleev
+ * Added ability to figure out the number of frozen doubly occupied orbitals in each irrep.
+ *
+ * Revision 1.23  2003/04/14 17:25:47  sherrill
+ * Change "total energy" to "SCF total energy" to make more explicit for
+ * new users.  Yeah, this will probably break some test case perl scripts
+ * temporarily :)
+ *
+ * Revision 1.22  2002/12/22 17:01:14  evaleev
+ * Updated cints, cscf, psi3 (probably not complete) and transqt to use psi_start/psi_stop.
+ *
+ * Revision 1.21  2002/12/06 20:39:08  evaleev
+ * Write total SCF energy as reference energy as well.
+ *
+ * Revision 1.20  2002/12/06 15:50:32  crawdad
+ * Changed all exit values to PSI_RETURN_SUCCESS or PSI_RETURN_FAILURE as
+ * necessary.  This is new for the PSI3 execution driver.
+ * -TDC
+ *
+ * Revision 1.19  2002/11/24 22:52:17  crawdad
+ * Merging the gbye-file30 branch into the main trunk.
+ * -TDC
+ *
+ * Revision 1.18.2.4  2002/11/23 21:54:45  crawdad
+ * Removal of mxcoef stuff for chkpt runs.
+ * -TDC
+ *
+ * Revision 1.18.2.3  2002/11/23 19:35:14  sherrill
+ * re-institute writing scf vector to file30 if !USE_LIBCHKPT
+ *
+ * Revision 1.18.2.2  2002/10/01 22:16:28  sherrill
+ * Fix a few minor libchkpt/libfile30 things (one define condition was
+ * backwards), turn off libfile30 unless we're really using it, and
+ * clean up a stupid mistake for the orthog_only option ---CDS
+ *
+ * Revision 1.18.2.1  2002/07/29 23:08:30  evaleev
+ * A major set of changes designed to convert all psi modules to use libchkpt.
+ *
+ * Revision 1.18  2002/05/30 20:16:49  crawdad
+ * Accidentally left dmalloc calls in place.  Fixed.
+ * -TDC
+ *
+ * Revision 1.17  2002/05/30 12:57:08  crawdad
+ * Buf fix.  psio_done() was called before chkpt_close().
+ * -TDC
+ *
+ * Revision 1.16  2002/05/07 22:40:56  sherrill
+ * Fix missing s=&scf_info[k] in UHF case for evals, fix missing bracket
+ * in RHF case.
+ *
+ * Revision 1.15  2002/04/28 04:34:10  crawdad
+ * Finshed initial additions for mirroring old file30 with new PSIF_CHKPT.  I
+ * believe that everything cscf wrote to file30 is also written to PSIF_CHKPT.
+ * Now ready to start converting other codes to libchkpt.
+ * -TDC
+ *
+ * Revision 1.14  2002/04/27 22:28:48  crawdad
+ * More changes to cleanup in preparation for libchkpt conversion.
+ * -TDC
+ *
+ * Revision 1.13  2002/04/27 18:33:20  crawdad
+ * Working on changes for new libchkpt code.  Current version does no reading
+ * from chkpt yet.
+ * -TDC
+ *
+ * Revision 1.12  2002/03/25 03:16:51  sherrill
+ * Changed name of mxcoef keyword to Mxcoef
+ *
+ * Revision 1.11  2002/03/25 03:05:45  crawdad
+ * More additions for new chkpoint file.
+ * -TDC
+ *
+ * Revision 1.10  2002/03/25 02:17:36  janssen
+ * Get rid of tmpl.  Use new naming scheme for libipv1 includes.
+ *
+ * Revision 1.9  2002/03/25 01:07:59  crawdad
+ * Some changes to cleanup et al. to write SCF-generated data to both old
+ * file30 and new chkpt.
+ * -TDC
+ *
+ * Revision 1.8  2002/03/25 00:02:00  sherrill
+ * Add libpsio
+ *
+ * Revision 1.7  2002/01/04 18:03:24  crawdad
+ * Minor change to set phase_check flag to true when starting from a core
+ * guess.  This is to allow correlated calculations that might have stopped
+ * due to slow convergence to restart.
+ * -TDC
+ *
+ * Revision 1.6  2001/06/29 20:39:27  evaleev
+ * Modified cscf to use libpsio to store supermatrix files.
+ *
+ * Revision 1.5  2001/05/31 01:12:25  sherrill
+ * fix up printing orbital eigenvalues, now does TCSCF too!
+ *
+ * Revision 1.4  2001/04/11 19:31:46  sherrill
+ * I removed printing all MO's by default, since this gets pretty big
+ * and useless for many of the molecules of interest today.  I added
+ * a nice subroutine to print out orbital eigenvalues.  It seems
+ * to work for RHF/ROHF/UHF but is probably broken for TCSCF, which
+ * I'll try to check later.
+ *
+ * Revision 1.3  2000/10/13 19:51:19  evaleev
+ * Cleaned up a lot of stuff in order to get CSCF working with the new 
+ * "Mo-projection-capable" INPUT.
+ *
+ * Revision 1.2  2000/08/23 17:15:15  sbrown
+ * Added portions to separate out the correlation and exchange energy at the
+ * end the calculation as well as do the consistency check on the integrated
+ * density.
+ *
+ * Revision 1.1.1.1  2000/02/04 22:52:28  evaleev
+ * Started PSI 3 repository
+ *
+ * Revision 1.7  1999/11/11 21:04:36  evaleev
+ * A very minor fix.
+ *
  * Revision 1.6  1999/11/02  23:55:54  localpsi
  * Shawn Brown - (11/2/99) Modified to the code in a few major ways.
  *
@@ -182,28 +182,28 @@
  * ROHF calculation)  This code was moved to occ_fun.c.  The code can also
  * guess at any multplicity in a highspin case, provided enough electrons.
  *
-/* Revision 1.5  1999/10/22 19:47:17  evaleev
-/* A direct SCF-enabled version (set DIRECT_SCF=TRUE in input.dat).
-/*
-/* Revision 1.4  1999/10/11 17:03:17  evaleev
-/* Modified the location of nmo in mconst array in file 30.
-/*
-/* Revision 1.3  1999/08/19 14:44:16  evaleev
-/* Tiny fix in cleanup().
-/*
-/* Revision 1.2  1999/08/17 19:04:13  evaleev
-/* Changed the default symmetric orthogonalization to the canonical
-/* orthogonalization. Now, if near-linear dependencies in the basis are found,
-/* eigenvectors of the overlap matrix with eigenvalues less than 1E-6 will be
-/* left out. This will lead to num_mo != num_so, i.e. SCF eigenvector is no
-/* longer a square matrix. Had to rework some routines in libfile30, and add 
-/* some.  The progrem prints out a warning if near-linear dependencies are 
-/* found. TRANSQT and a whole bunch of other codes has to be fixed to 
-/* work with such basis sets.
-/*
-/* Revision 1.1.1.1  1999/04/12 16:59:25  evaleev
-/* Added a version of CSCF that can work with CINTS.
-/* -Ed */
+ * Revision 1.5  1999/10/22 19:47:17  evaleev
+ * A direct SCF-enabled version (set DIRECT_SCF=TRUE in input.dat).
+ *
+ * Revision 1.4  1999/10/11 17:03:17  evaleev
+ * Modified the location of nmo in mconst array in file 30.
+ *
+ * Revision 1.3  1999/08/19 14:44:16  evaleev
+ * Tiny fix in cleanup().
+ *
+ * Revision 1.2  1999/08/17 19:04:13  evaleev
+ * Changed the default symmetric orthogonalization to the canonical
+ * orthogonalization. Now, if near-linear dependencies in the basis are found,
+ * eigenvectors of the overlap matrix with eigenvalues less than 1E-6 will be
+ * left out. This will lead to num_mo != num_so, i.e. SCF eigenvector is no
+ * longer a square matrix. Had to rework some routines in libfile30, and add 
+ * some.  The progrem prints out a warning if near-linear dependencies are 
+ * found. TRANSQT and a whole bunch of other codes has to be fixed to 
+ * work with such basis sets.
+ *
+ * Revision 1.1.1.1  1999/04/12 16:59:25  evaleev
+ * Added a version of CSCF that can work with CINTS.
+ * -Ed */
 
 static char *rcsid = "$Id: cleanup.cc 3956 2008-06-09 12:24:49Z rking $";
 
@@ -660,7 +660,7 @@ int cleanup()
     scf_info[i].irrep_label = NULL;
   }
       
-  tstop(outfile);
+  tstop();
   //psi_stop(infile,outfile,psi_file_prefix);
       
   if(!converged) exit(PSI_RETURN_FAILURE);

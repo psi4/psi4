@@ -82,7 +82,7 @@ EXTERN double **Grad;    /* Nuclear forces */
 EXTERN double **Hess;    /* Nuclear force constants */
 
 }
-};
+}
 
 #include<cstdio>
 /*--- Mandatory: Input and Output files, PSI file prefix ---*/

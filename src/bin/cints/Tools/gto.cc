@@ -333,4 +333,4 @@ double xyz2lm_Coeff(int l, int m, int lx, int ly, int lz)
     return M_SQRT2*pfac*sum;
 }
 
-};};
+}}

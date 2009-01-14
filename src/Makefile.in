@@ -2,7 +2,7 @@ SHELL = /bin/sh
 
 .PHONY:	default all install depend clean dclean targetclean
 
-subdirs = lib bin util
+subdirs = lib bin
 
 default: all
 

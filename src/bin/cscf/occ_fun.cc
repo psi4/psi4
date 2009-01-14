@@ -7,7 +7,7 @@
 /*      occ_init - This function will take care of   */
 /*                   all of the input parameters     */
 /*                   concerning occupations          */
-/*      occ_calc - Determines the occupations from    */
+/*      occ_calc - Determines the occupations from   */
 /*                multiplicity and charge            */
 /*                                                   */
 /*      By Shawn Brown - 6/23/99                     */

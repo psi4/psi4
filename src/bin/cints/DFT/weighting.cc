@@ -124,4 +124,4 @@ double v_calc(int atomi, int atomj,double uij){
 
     return uij+tmp2;
 }               
-};}
+}}

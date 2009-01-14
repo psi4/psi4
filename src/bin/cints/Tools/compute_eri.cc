@@ -27,7 +27,7 @@
 namespace psi { 
   namespace CINTS {
     
-    static void inline switch_ij(int& a, int& b) {int dum = a; a = b; b = dum;};
+    static void inline switch_ij(int& a, int& b) {int dum = a; a = b; b = dum;}
     
     int compute_eri(double* target,
 		    Libint_t* Libint, int& si, int& sj, int& sk, int& sl,

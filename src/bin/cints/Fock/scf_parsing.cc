@@ -50,4 +50,4 @@ void scf_parsing(void)
     else
 	throw std::domain_error("The specified REFERENCE not implemented");
 }
-};};
+}}

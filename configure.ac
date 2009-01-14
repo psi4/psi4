@@ -737,7 +737,6 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/Makefile src/bin/MakeRules src/bin/MakeVars
 
           src/lib/libdpd/Makefile
-          src/lib/liboptions/Makefile
           src/lib/libutil/Makefile
           src/lib/libiwl/Makefile
           src/lib/libpsio/Makefile
@@ -755,6 +754,7 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libr12/Makefile
           src/lib/libr12/MakeVars
           src/lib/libr12/libr12_config.h
+          src/lib/liboptions/Makefile
           src/lib/librubypp/Makefile
 
           src/util/tocprint/Makefile

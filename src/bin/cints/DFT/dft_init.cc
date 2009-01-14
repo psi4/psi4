@@ -163,21 +163,6 @@ namespace psi { namespace CINTS {
     free(DFT_options.Bragg);
     cleanup_grid_type(DFT_options.grid);
   }
-};
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-};
+}

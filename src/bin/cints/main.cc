@@ -15,7 +15,7 @@
 #include<libpsio/psio.h>
 #include<psifiles.h>
 #include<libint/libint.h>
-#include<liboptions/liboptions.h>
+#include<liboptions/liboptions.hpp>
 
 #include"defines.h"
 #include"global.h"

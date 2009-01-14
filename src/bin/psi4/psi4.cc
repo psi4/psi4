@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
   //   psi_start_and_parse_command_line). If the file contains IPV1 data it is loaded
   //   into the global task's options_ variable.
   if (create_global_task()) {
-    enable_modules();
+    // enable_modules();
     
     if (g_bIRB == false) { // Are running Interactive Ruby?
       // Process the input file via the global task.
@@ -171,10 +171,10 @@ int main(int argc, char *argv[])
 
   // psi_stop(infile, outfile, psi_file_prefix);
 
-    // Close the interpreter
-   finalize_ruby();
+  // Close the interpreter
+  finalize_ruby();
 
-    // This needs to be changed a return value from the processed script
+  // This needs to be changed a return value from the processed script
   return EXIT_SUCCESS;
 }
 

@@ -16,5 +16,5 @@ namespace psi { namespace CINTS {
   void cleanup_conc_chunk(struct leb_chunk_s chunk);
   void cleanup_conc_atomic_grid(struct atomic_grid_s atomic_grid);
   void cleanup_grid_type(grid_t grid);
-};}
+}}
 #endif

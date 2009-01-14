@@ -36,7 +36,7 @@ namespace psi { //namespace psi4 {
     psi::options = options_;
     
     // Have the modules register their options.
-    register_modules();
+    // register_modules();
 
     // Set our options to the global one.
     options_ = psi::options;

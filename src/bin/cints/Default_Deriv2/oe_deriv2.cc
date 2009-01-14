@@ -1623,4 +1623,4 @@ double int_pow(double a, int p)
   for(i=0; i<p; i++) b = b*a;
   return b;
 }
-};};
+}}

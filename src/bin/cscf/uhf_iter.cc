@@ -9,69 +9,69 @@
  * correctly beccause of changes in mid-March 2004 to optking.
  * -TDC
  *
-/* Revision 1.5.4.3  2004/04/10 19:41:32  crawdad
-/* Fixed the DIIS code for UHF cases.  The new version uses the Pulay scheme of
-/* building the error vector in the AO basis as FDS-SDF, followed by xformation
-/* into the orthogonal AO basis.   This code converges faster for test cases
-/* like cc8, but fails for linearly dependent basis sets for unknown reasons.
-/* -TDC
-/*
-/* Revision 1.5.4.2  2004/04/09 00:17:37  evaleev
-/* Corrected dimensions of the matrix.
-/*
-/* Revision 1.5.4.1  2004/04/07 03:23:32  crawdad
-/* Working to fix UHF-based DIIS.
-/* -TDC
-/*
-/* Revision 1.5  2002/12/06 15:50:32  crawdad
-/* Changed all exit values to PSI_RETURN_SUCCESS or PSI_RETURN_FAILURE as
-/* necessary.  This is new for the PSI3 execution driver.
-/* -TDC
-/*
-/* Revision 1.4  2000/12/05 19:40:04  sbrown
-/* Added Unrestricted Kohn-Sham DFT.
-/*
-/* Revision 1.3  2000/10/13 19:51:22  evaleev
-/* Cleaned up a lot of stuff in order to get CSCF working with the new "Mo-projection-capable" INPUT.
-/*
-/* Revision 1.2  2000/06/22 22:15:02  evaleev
-/* Modifications for KS DFT. Reading in XC Fock matrices and XC energy in formg_direct need to be uncommented (at present those are not produced by CINTS yet).
-/*
-/* Revision 1.1.1.1  2000/02/04 22:52:34  evaleev
-/* Started PSI 3 repository
-/*
-/* Revision 1.3  1999/11/17 19:40:47  evaleev
-/* Made all the adjustments necessary to have direct UHF working. Still doesn't work though..
-/*
-/* Revision 1.2  1999/11/04 19:24:31  localpsi
-/* STB (11/4/99) - Added the orb_mix feature which is equivalent to guess = mix
-/* in G94 and also fixed restarting so that if you have different wavefuntions,
-/* everything works.  Also if you specify no DOCC and SOCC and restart, if the
-/* wavefunctions are different, it will guess again.
-/*
-/* Revision 1.1  1999/11/02 23:56:00  localpsi
-/* Shawn Brown - (11/2/99) Modified to the code in a few major ways.
-/*
-/* 1.  Added the capability to do UHF.  All of the features available with the
-/* other refrences have been added for UHF.
-/*
-/* 2.  For UHF, I had to alter the structure of file30. (See cleanup.c for a
-/* map)  This entailed adding a pointer array right after the header in the SCF
-/* section of file30 that pointed to all of the data for the SCF caclulation.
-/* Functions were added to libfile30 to account for this and they are
-/* incorporated in this code.
-/*
-/* 3.  Updated and fixed all of the problems associated with my previous
-/* guessing code.  The code no longer uses OPENTYPE to specify the type of
-/* occupation.  The keword REFERENCE and MULTP can now be used to indicate any
-/* type of calculation.  (e.g. ROHF with MULTP of 1 is an open shell singlet
-/* ROHF calculation)  This code was moved to occ_fun.c.  The code can also
-/* guess at any multplicity in a highspin case, provided enough electrons.
-/*
-/* Revision 1.1.1.1  1999/04/12 16:59:28  evaleev
-/* Added a version of CSCF that can work with CINTS.
-/* -Ed
-/*
+ * Revision 1.5.4.3  2004/04/10 19:41:32  crawdad
+ * Fixed the DIIS code for UHF cases.  The new version uses the Pulay scheme of
+ * building the error vector in the AO basis as FDS-SDF, followed by xformation
+ * into the orthogonal AO basis.   This code converges faster for test cases
+ * like cc8, but fails for linearly dependent basis sets for unknown reasons.
+ * -TDC
+ *
+ * Revision 1.5.4.2  2004/04/09 00:17:37  evaleev
+ * Corrected dimensions of the matrix.
+ *
+ * Revision 1.5.4.1  2004/04/07 03:23:32  crawdad
+ * Working to fix UHF-based DIIS.
+ * -TDC
+ *
+ * Revision 1.5  2002/12/06 15:50:32  crawdad
+ * Changed all exit values to PSI_RETURN_SUCCESS or PSI_RETURN_FAILURE as
+ * necessary.  This is new for the PSI3 execution driver.
+ * -TDC
+ *
+ * Revision 1.4  2000/12/05 19:40:04  sbrown
+ * Added Unrestricted Kohn-Sham DFT.
+ *
+ * Revision 1.3  2000/10/13 19:51:22  evaleev
+ * Cleaned up a lot of stuff in order to get CSCF working with the new "Mo-projection-capable" INPUT.
+ *
+ * Revision 1.2  2000/06/22 22:15:02  evaleev
+ * Modifications for KS DFT. Reading in XC Fock matrices and XC energy in formg_direct need to be uncommented (at present those are not produced by CINTS yet).
+ *
+ * Revision 1.1.1.1  2000/02/04 22:52:34  evaleev
+ * Started PSI 3 repository
+ *
+ * Revision 1.3  1999/11/17 19:40:47  evaleev
+ * Made all the adjustments necessary to have direct UHF working. Still doesn't work though..
+ *
+ * Revision 1.2  1999/11/04 19:24:31  localpsi
+ * STB (11/4/99) - Added the orb_mix feature which is equivalent to guess = mix
+ * in G94 and also fixed restarting so that if you have different wavefuntions,
+ * everything works.  Also if you specify no DOCC and SOCC and restart, if the
+ * wavefunctions are different, it will guess again.
+ *
+ * Revision 1.1  1999/11/02 23:56:00  localpsi
+ * Shawn Brown - (11/2/99) Modified to the code in a few major ways.
+ *
+ * 1.  Added the capability to do UHF.  All of the features available with the
+ * other refrences have been added for UHF.
+ *
+ * 2.  For UHF, I had to alter the structure of file30. (See cleanup.c for a
+ * map)  This entailed adding a pointer array right after the header in the SCF
+ * section of file30 that pointed to all of the data for the SCF caclulation.
+ * Functions were added to libfile30 to account for this and they are
+ * incorporated in this code.
+ *
+ * 3.  Updated and fixed all of the problems associated with my previous
+ * guessing code.  The code no longer uses OPENTYPE to specify the type of
+ * occupation.  The keword REFERENCE and MULTP can now be used to indicate any
+ * type of calculation.  (e.g. ROHF with MULTP of 1 is an open shell singlet
+ * ROHF calculation)  This code was moved to occ_fun.c.  The code can also
+ * guess at any multplicity in a highspin case, provided enough electrons.
+ *
+ * Revision 1.1.1.1  1999/04/12 16:59:28  evaleev
+ * Added a version of CSCF that can work with CINTS.
+ * -Ed
+ *
  * Revision 1.5  1998/06/30  14:11:12  sbrown
  * *************************************************************
  * *Program Modification                                       *

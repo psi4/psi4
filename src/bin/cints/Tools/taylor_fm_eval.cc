@@ -68,7 +68,7 @@ void init_Taylor_Fm_Eval(unsigned int mmax, double epsilon)
       the interpolation
      ------------------------------------------*/
     T = -log(epsilon);
-    egamma = epsilon*sqrt(M_PI)*df[2*m]/pow(2,m);
+    egamma = epsilon*sqrt(M_PI)*df[2*m]/pow(2.0,m);
     T_new = T;
     do {
       const double damping_factor = 0.2;
@@ -196,4 +196,4 @@ void taylor_compute_fm(double *F, double T, unsigned int l) {
   
 
 
-};};
+}}

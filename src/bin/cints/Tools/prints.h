@@ -13,5 +13,5 @@ void print_opdm();
 void print_atomvec(char *quantity, double **vecs);
 void print_atommat(char *quantity, double **mat);
  void print_moinfo_corr();
-};}
+}}
 #endif
