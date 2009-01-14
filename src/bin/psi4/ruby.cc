@@ -31,12 +31,12 @@ namespace psi { //namespace psi4 {
     WHEREAMI();
     char *psishare_dirname;
     
-    #if RUBY_VERSION_CODE < 190
+    #if RUBY_VERSION_CODE > 190
     ruby_sysinit(0, NULL);
     RUBY_INIT_STACK;
     #endif
     
-    // Setup the initialize the interpreter
+    // Initialize the interpreter
     ruby_init();
     
     // Initialize the $: (load path) variable; necessary if the input file

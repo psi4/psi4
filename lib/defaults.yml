@@ -1,0 +1,8 @@
+---
+    label: Default PSI4
+    wavefunction: scf
+    print_level: &DEFAULT 0
+    input:
+        tolerance: 0.001
+        print_level: *DEFAULT
+    

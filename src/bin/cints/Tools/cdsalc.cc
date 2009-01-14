@@ -67,4 +67,4 @@ void cleanup_cdsalc()
   }
   delete[] CDSALCs.cd2salc_map;
 }
-};};
+}}

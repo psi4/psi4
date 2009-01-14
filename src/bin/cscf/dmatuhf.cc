@@ -9,62 +9,62 @@
  * correctly beccause of changes in mid-March 2004 to optking.
  * -TDC
  *
-/* Revision 1.5.8.1  2004/04/10 19:41:32  crawdad
-/* Fixed the DIIS code for UHF cases.  The new version uses the Pulay scheme of
-/* building the error vector in the AO basis as FDS-SDF, followed by xformation
-/* into the orthogonal AO basis.   This code converges faster for test cases
-/* like cc8, but fails for linearly dependent basis sets for unknown reasons.
-/* -TDC
-/*
-/* Revision 1.5  2002/04/03 02:06:01  janssen
-/* Finish changes to use new include paths for libraries.
-/*
-/* Revision 1.4  2000/12/05 19:40:03  sbrown
-/* Added Unrestricted Kohn-Sham DFT.
-/*
-/* Revision 1.3  2000/06/22 22:15:00  evaleev
-/* Modifications for KS DFT. Reading in XC Fock matrices and XC energy in formg_direct need to be uncommented (at present those are not produced by CINTS yet).
-/*
-/* Revision 1.2  2000/06/02 13:32:15  kenny
-/*
-/*
-/* Added dynamic integral accuracy cutoffs for direct scf.  Added a few global
-/* variables.  Added keyword 'dyn_acc'; true--use dynamic cutoffs.  Use of
-/* 'dconv' and 'delta' to keep track of density convergence somewhat awkward,
-/* but avoids problems when accuracy is switched and we have to wipe out density
-/* matrices.  Also added error message and exit if direct rohf singlet is
-/* attempted since it doesn't work.
-/* --Joe Kenny
-/*
-/* Revision 1.1.1.1  2000/02/04 22:52:33  evaleev
-/* Started PSI 3 repository
-/*
-/* Revision 1.2  1999/11/17 19:40:46  evaleev
-/* Made all the adjustments necessary to have direct UHF working. Still doesn't work though..
-/*
-/* Revision 1.1  1999/11/02 23:55:56  sbrown
-/* Shawn Brown - (11/2/99) Modified to the code in a few major ways.
-/*
-/* 1.  Added the capability to do UHF.  All of the features available with the
-/* other refrences have been added for UHF.
-/*
-/* 2.  For UHF, I had to alter the structure of file30. (See cleanup.c for a
-/* map)  This entailed adding a pointer array right after the header in the SCF
-/* section of file30 that pointed to all of the data for the SCF caclulation.
-/* Functions were added to libfile30 to account for this and they are
-/* incorporated in this code.
-/*
-/* 3.  Updated and fixed all of the problems associated with my previous
-/* guessing code.  The code no longer uses OPENTYPE to specify the type of
-/* occupation.  The keword REFERENCE and MULTP can now be used to indicate any
-/* type of calculation.  (e.g. ROHF with MULTP of 1 is an open shell singlet
-/* ROHF calculation)  This code was moved to occ_fun.c.  The code can also
-/* guess at any multplicity in a highspin case, provided enough electrons.
-/*
-/* Revision 1.1.1.1  1999/04/12 16:59:25  evaleev
-/* Added a version of CSCF that can work with CINTS.
-/* -Ed
-/*
+ * Revision 1.5.8.1  2004/04/10 19:41:32  crawdad
+ * Fixed the DIIS code for UHF cases.  The new version uses the Pulay scheme of
+ * building the error vector in the AO basis as FDS-SDF, followed by xformation
+ * into the orthogonal AO basis.   This code converges faster for test cases
+ * like cc8, but fails for linearly dependent basis sets for unknown reasons.
+ * -TDC
+ *
+ * Revision 1.5  2002/04/03 02:06:01  janssen
+ * Finish changes to use new include paths for libraries.
+ *
+ * Revision 1.4  2000/12/05 19:40:03  sbrown
+ * Added Unrestricted Kohn-Sham DFT.
+ *
+ * Revision 1.3  2000/06/22 22:15:00  evaleev
+ * Modifications for KS DFT. Reading in XC Fock matrices and XC energy in formg_direct need to be uncommented (at present those are not produced by CINTS yet).
+ *
+ * Revision 1.2  2000/06/02 13:32:15  kenny
+ *
+ *
+ * Added dynamic integral accuracy cutoffs for direct scf.  Added a few global
+ * variables.  Added keyword 'dyn_acc'; true--use dynamic cutoffs.  Use of
+ * 'dconv' and 'delta' to keep track of density convergence somewhat awkward,
+ * but avoids problems when accuracy is switched and we have to wipe out density
+ * matrices.  Also added error message and exit if direct rohf singlet is
+ * attempted since it doesn't work.
+ * --Joe Kenny
+ *
+ * Revision 1.1.1.1  2000/02/04 22:52:33  evaleev
+ * Started PSI 3 repository
+ *
+ * Revision 1.2  1999/11/17 19:40:46  evaleev
+ * Made all the adjustments necessary to have direct UHF working. Still doesn't work though..
+ *
+ * Revision 1.1  1999/11/02 23:55:56  sbrown
+ * Shawn Brown - (11/2/99) Modified to the code in a few major ways.
+ *
+ * 1.  Added the capability to do UHF.  All of the features available with the
+ * other refrences have been added for UHF.
+ *
+ * 2.  For UHF, I had to alter the structure of file30. (See cleanup.c for a
+ * map)  This entailed adding a pointer array right after the header in the SCF
+ * section of file30 that pointed to all of the data for the SCF caclulation.
+ * Functions were added to libfile30 to account for this and they are
+ * incorporated in this code.
+ *
+ * 3.  Updated and fixed all of the problems associated with my previous
+ * guessing code.  The code no longer uses OPENTYPE to specify the type of
+ * occupation.  The keword REFERENCE and MULTP can now be used to indicate any
+ * type of calculation.  (e.g. ROHF with MULTP of 1 is an open shell singlet
+ * ROHF calculation)  This code was moved to occ_fun.c.  The code can also
+ * guess at any multplicity in a highspin case, provided enough electrons.
+ *
+ * Revision 1.1.1.1  1999/04/12 16:59:25  evaleev
+ * Added a version of CSCF that can work with CINTS.
+ * -Ed
+ *
  * Revision 1.1  1991/06/15  20:22:21  seidl
  * Initial revision
  * */

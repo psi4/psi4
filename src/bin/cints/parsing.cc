@@ -12,7 +12,7 @@
 #include<libint/libint.h>
 #include<libciomr/libciomr.h>
 #include <psifiles.h>
-#include <liboptions/liboptions.h>
+#include <liboptions/liboptions.hpp>
 
 #include"defines.h"
 #define EXTERN
@@ -30,43 +30,44 @@ namespace psi { namespace CINTS {
     int cutoff_exp;
     long int max_bytes;
   
-    UserOptions.print_lvl = options.get_int_option("PRINT");
+    UserOptions.print_lvl = options["PRINT"].to_integer();
     
     /*--- This piece of code from CPHF by Ed Seidl ---*/
     if (ip_exist("MEMORY", 0)) {
-      fndcor(&max_bytes, infile, outfile);
-      UserOptions.max_memory = max_bytes / sizeof(double);
+        // TODO: CHANGE MEMORY CHECK!!!
+      // fndcor(&max_bytes, infile, outfile);
+      // UserOptions.max_memory = max_bytes / sizeof(double);
+        UserOptions.max_memory = 100;
     }
     else
       UserOptions.max_memory = MAX_NUM_DOUBLES;
     UserOptions.memory = UserOptions.max_memory;
 
-    UserOptions.num_threads = options.get_int_option("NUM_THREADS");
+    UserOptions.num_threads = options["NUM_THREADS"].to_integer();
     
-    UserOptions.fine_structure_alpha = options.get_double_option("FINE_STRUCTURE_ALPHA");
-    UserOptions.cutoff = 1.0/pow(10.0,(double) (options.get_int_option("CUTOFF")) );
+    UserOptions.fine_structure_alpha = options["FINE_STRUCTURE_ALPHA"].to_double();
+    UserOptions.cutoff = 1.0/pow(10.0,(double) (options["CUTOFF"].to_integer()));
     UserOptions.make_oei = 1;
     UserOptions.make_fock = 0;
     UserOptions.symm_ints = 1;
-    UserOptions.make_eri = options.get_bool_option("MAKE_ERI");
+    UserOptions.make_eri = options["MAKE_ERI"].to_integer();
 
-    IOUnits.itapS = options.get_int_option("S_FILE");
-    IOUnits.itapT = options.get_int_option("T_FILE");
-    IOUnits.itapV = options.get_int_option("V_FILE");
-    IOUnits.itap33 = options.get_int_option("ERI_FILE");
+    IOUnits.itapS = options["S_FILE"].to_integer();
+    IOUnits.itapT = options["T_FILE"].to_integer();
+    IOUnits.itapV = options["V_FILE"].to_integer();
+    IOUnits.itap33 = options["ERI_FILE"].to_integer();
 
-    UserOptions.empirical_dispersion =
-      options.get_bool_option("EMPIRICAL_DISPERSION");
+    UserOptions.empirical_dispersion = options["EMPIRICAL_DISPERSION"].to_integer();
 
-    UserOptions.wfn = options.get_cstr_option("WFN");
+    UserOptions.wfn = const_cast<char*>(options["WFN"].to_string().c_str());
 
     UserOptions.scf_only = 0;
     if ((!strcmp("SCF",UserOptions.wfn)) || 
         (!strcmp("SCF_MVD",UserOptions.wfn)))
       UserOptions.scf_only = 1;
     
-    UserOptions.restart = options.get_bool_option("RESTART");
-    UserOptions.restart_task = options.get_int_option("RESTART_TASK");
+    UserOptions.restart = options["RESTART"].to_integer();
+    UserOptions.restart_task = options["RESTART_TASK"].to_integer();
     if (UserOptions.restart_task < 0)
       throw std::domain_error("RESTART_TASK < 0");
     
@@ -429,5 +430,5 @@ namespace psi { namespace CINTS {
     
     return;
   }
-};
-};
+}
+}

@@ -28,13 +28,11 @@ namespace psi { namespace CINTS {
     int shell_type;
     int am2shell;
     int max_am;
-    int num_ao;
     int ndocc;
     int num_shells;
     
     double chunk_rad_in;
     double chunk_rad_out;
-    double chunk_rad;
     double bragg;
     double dist;
     double r,rr;
@@ -45,7 +43,6 @@ namespace psi { namespace CINTS {
     
     struct atomic_grid_s *atom_grid;
     struct leb_chunk_s *chunk;
-    struct close_shell_info_s *close;
     
     num_shells = BasisSet.num_shells;
     ndocc = MOInfo.ndocc;
@@ -136,4 +133,4 @@ namespace psi { namespace CINTS {
     }
     /*print_close_shell_info(DFT_options.close_shell_info);*/
   }
-};};
+}}

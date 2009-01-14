@@ -482,7 +482,7 @@ void oe_ints()
 
   return;
 }   
-};};
+}}
 
 namespace {
   using namespace psi;

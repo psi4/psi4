@@ -8,5 +8,5 @@
 #include"data_structs.h"
 namespace psi { namespace CINTS {
   prim_atomic_grid_t *init_pruned_prim_atomic_grid(int n_rpoints, int num_chunk, struct pruned_info_s pruned_info);
-};}
+}}
 #endif

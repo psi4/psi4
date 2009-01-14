@@ -378,5 +378,5 @@ void *te_deriv1_scf_thread(void *tnum_ptr)
 
   return NULL;
 }
-};
+}
 }

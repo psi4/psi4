@@ -8,25 +8,25 @@
  * necessary.  This is new for the PSI3 execution driver.
  * -TDC
  *
-/* Revision 1.2  2000/10/13 19:51:22  evaleev
-/* Cleaned up a lot of stuff in order to get CSCF working with the new "Mo-projection-capable" INPUT.
-/*
-/* Revision 1.1.1.1  2000/02/04 22:52:32  evaleev
-/* Started PSI 3 repository
-/*
-/* Revision 1.2  1999/08/17 19:04:18  evaleev
-/* Changed the default symmetric orthogonalization to the canonical
-/* orthogonalization. Now, if near-linear dependencies in the basis are found,
-/* eigenvectors of the overlap matrix with eigenvalues less than 1E-6 will be
-/* left out. This will lead to num_mo != num_so, i.e. SCF eigenvector is no
-/* longer a square matrix. Had to rework some routines in libfile30, and add some.
-/* The progrem prints out a warning if near-linear dependencies are found. TRANSQT
-/* and a whole bunch of other codes has to be fixed to work with such basis sets.
-/*
-/* Revision 1.1.1.1  1999/04/12 16:59:28  evaleev
-/* Added a version of CSCF that can work with CINTS.
-/* -Ed
-/*
+ * Revision 1.2  2000/10/13 19:51:22  evaleev
+ * Cleaned up a lot of stuff in order to get CSCF working with the new "Mo-projection-capable" INPUT.
+ *
+ * Revision 1.1.1.1  2000/02/04 22:52:32  evaleev
+ * Started PSI 3 repository
+ *
+ * Revision 1.2  1999/08/17 19:04:18  evaleev
+ * Changed the default symmetric orthogonalization to the canonical
+ * orthogonalization. Now, if near-linear dependencies in the basis are found,
+ * eigenvectors of the overlap matrix with eigenvalues less than 1E-6 will be
+ * left out. This will lead to num_mo != num_so, i.e. SCF eigenvector is no
+ * longer a square matrix. Had to rework some routines in libfile30, and add some.
+ * The progrem prints out a warning if near-linear dependencies are found. TRANSQT
+ * and a whole bunch of other codes has to be fixed to work with such basis sets.
+ *
+ * Revision 1.1.1.1  1999/04/12 16:59:28  evaleev
+ * Added a version of CSCF that can work with CINTS.
+ * -Ed
+ *
  * Revision 1.1  1991/06/15  20:22:42  seidl
  * Initial revision
  * */

@@ -930,4 +930,4 @@ int generate_points(int type, int start, double a, double b, double v){
     }
     return end;
 }
-};}
+}}

@@ -8,5 +8,5 @@
 #include "data_structs.h"
 namespace psi { namespace CINTS {
 leb_sphere_t lebedev_init(int degree);
-};}
+}}
 #endif

@@ -9,85 +9,85 @@
  * correctly beccause of changes in mid-March 2004 to optking.
  * -TDC
  *
-/* Revision 1.11.4.1  2004/04/06 21:29:05  crawdad
-/* Corrections to the RHF/ROHF DIIS algorithm, which was simply incorrect.
-/* The backtransformation of the DIIS error vectors to the AO basis was not
-/* mathematically right.
-/* -TDC and EFV
-/*
-/* Revision 1.11  2003/08/17 22:57:37  crawdad
-/* Removing libfile30 from the repository.  I believe that all code reference
-/* to the library have also been properly removed.  The current version
-/* passes all test cases on my systems.
-/* -TDC
-/*
-/* Revision 1.10  2003/04/10 20:36:01  crawdad
-/* Modifications to cscf to account for *very* large cases.  Mainly converted
-/* terms to unsigned ints and more carefully computed pk-block sizes to avoid
-/* overflows.
-/* -TDC
-/*
-/* Revision 1.9  2002/11/24 22:52:17  crawdad
-/* Merging the gbye-file30 branch into the main trunk.
-/* -TDC
-/*
-/* Revision 1.8.2.1  2002/07/29 23:08:30  evaleev
-/* A major set of changes designed to convert all psi modules to use libchkpt.
-/*
-/* Revision 1.8  2002/05/15 02:29:14  sherrill
-/* Read from checkpoint
-/*
-/* Revision 1.7  2002/04/03 02:06:01  janssen
-/* Finish changes to use new include paths for libraries.
-/*
-/* Revision 1.6  2002/03/24 18:31:19  crawdad
-/* NOW it works.
-/* -TDC
-/*
-/* Revision 1.5  2002/03/24 18:30:08  crawdad
-/* Beginning mods for libpsio-based file30.  Current version works.
-/* -TDC
-/*
-/* Revision 1.4  2002/03/24 17:28:14  crawdad
-/* Minor modifications in preparation for conversion to libpsio-based file30.
-/* -TDC
-/*
-/* Revision 1.3  2000/10/13 19:51:21  evaleev
-/* Cleaned up a lot of stuff in order to get CSCF working with the new "Mo-projection-capable" INPUT.
-/*
-/* Revision 1.2  2000/06/22 22:15:01  evaleev
-/* Modifications for KS DFT. Reading in XC Fock matrices and XC energy in formg_direct need to be uncommented (at present those are not produced by CINTS yet).
-/*
-/* Revision 1.1.1.1  2000/02/04 22:52:31  evaleev
-/* Started PSI 3 repository
-/*
-/* Revision 1.6  1999/11/11 16:00:38  localpsi
-/* Fixed minor bug in occupations.  STB (11/11/99)
-/*
-/* Revision 1.5  1999/11/04 19:24:29  localpsi
-/* STB (11/4/99) - Added the orb_mix feature which is equivalent to guess = mix
-/* in G94 and also fixed restarting so that if you have different wavefuntions,
-/* everything works.  Also if you specify no DOCC and SOCC and restart, if the
-/* wavefunctions are different, it will guess again.
-/*
-/* Revision 1.4  1999/11/02 18:10:13  evaleev
-/* Direct SCF improved
-/*
-/* Revision 1.3  1999/08/17 19:04:15  evaleev
-/* Changed the default symmetric orthogonalization to the canonical
-/* orthogonalization. Now, if near-linear dependencies in the basis are found,
-/* eigenvectors of the overlap matrix with eigenvalues less than 1E-6 will be
-/* left out. This will lead to num_mo != num_so, i.e. SCF eigenvector is no
-/* longer a square matrix. Had to rework some routines in libfile30, and add some.
-/* The progrem prints out a warning if near-linear dependencies are found. TRANSQT
-/* and a whole bunch of other codes has to be fixed to work with such basis sets.
-/*
-/* Revision 1.2  1999/08/11 19:24:53  evaleev
-/* Unhardwired the size of the ioff array (set it to 1024 for now) and increased MAX_BASIS to 1024.
-/*
-/* Revision 1.1.1.1  1999/04/12 16:59:27  evaleev
-/* Added a version of CSCF that can work with CINTS.
-/* -Ed
+ * Revision 1.11.4.1  2004/04/06 21:29:05  crawdad
+ * Corrections to the RHF/ROHF DIIS algorithm, which was simply incorrect.
+ * The backtransformation of the DIIS error vectors to the AO basis was not
+ * mathematically right.
+ * -TDC and EFV
+ *
+ * Revision 1.11  2003/08/17 22:57:37  crawdad
+ * Removing libfile30 from the repository.  I believe that all code reference
+ * to the library have also been properly removed.  The current version
+ * passes all test cases on my systems.
+ * -TDC
+ *
+ * Revision 1.10  2003/04/10 20:36:01  crawdad
+ * Modifications to cscf to account for *very* large cases.  Mainly converted
+ * terms to unsigned ints and more carefully computed pk-block sizes to avoid
+ * overflows.
+ * -TDC
+ *
+ * Revision 1.9  2002/11/24 22:52:17  crawdad
+ * Merging the gbye-file30 branch into the main trunk.
+ * -TDC
+ *
+ * Revision 1.8.2.1  2002/07/29 23:08:30  evaleev
+ * A major set of changes designed to convert all psi modules to use libchkpt.
+ *
+ * Revision 1.8  2002/05/15 02:29:14  sherrill
+ * Read from checkpoint
+ *
+ * Revision 1.7  2002/04/03 02:06:01  janssen
+ * Finish changes to use new include paths for libraries.
+ *
+ * Revision 1.6  2002/03/24 18:31:19  crawdad
+ * NOW it works.
+ * -TDC
+ *
+ * Revision 1.5  2002/03/24 18:30:08  crawdad
+ * Beginning mods for libpsio-based file30.  Current version works.
+ * -TDC
+ *
+ * Revision 1.4  2002/03/24 17:28:14  crawdad
+ * Minor modifications in preparation for conversion to libpsio-based file30.
+ * -TDC
+ *
+ * Revision 1.3  2000/10/13 19:51:21  evaleev
+ * Cleaned up a lot of stuff in order to get CSCF working with the new "Mo-projection-capable" INPUT.
+ *
+ * Revision 1.2  2000/06/22 22:15:01  evaleev
+ * Modifications for KS DFT. Reading in XC Fock matrices and XC energy in formg_direct need to be uncommented (at present those are not produced by CINTS yet).
+ *
+ * Revision 1.1.1.1  2000/02/04 22:52:31  evaleev
+ * Started PSI 3 repository
+ *
+ * Revision 1.6  1999/11/11 16:00:38  localpsi
+ * Fixed minor bug in occupations.  STB (11/11/99)
+ *
+ * Revision 1.5  1999/11/04 19:24:29  localpsi
+ * STB (11/4/99) - Added the orb_mix feature which is equivalent to guess = mix
+ * in G94 and also fixed restarting so that if you have different wavefuntions,
+ * everything works.  Also if you specify no DOCC and SOCC and restart, if the
+ * wavefunctions are different, it will guess again.
+ *
+ * Revision 1.4  1999/11/02 18:10:13  evaleev
+ * Direct SCF improved
+ *
+ * Revision 1.3  1999/08/17 19:04:15  evaleev
+ * Changed the default symmetric orthogonalization to the canonical
+ * orthogonalization. Now, if near-linear dependencies in the basis are found,
+ * eigenvectors of the overlap matrix with eigenvalues less than 1E-6 will be
+ * left out. This will lead to num_mo != num_so, i.e. SCF eigenvector is no
+ * longer a square matrix. Had to rework some routines in libfile30, and add some.
+ * The progrem prints out a warning if near-linear dependencies are found. TRANSQT
+ * and a whole bunch of other codes has to be fixed to work with such basis sets.
+ *
+ * Revision 1.2  1999/08/11 19:24:53  evaleev
+ * Unhardwired the size of the ioff array (set it to 1024 for now) and increased MAX_BASIS to 1024.
+ *
+ * Revision 1.1.1.1  1999/04/12 16:59:27  evaleev
+ * Added a version of CSCF that can work with CINTS.
+ * -Ed
  * */
 
 static char *rcsid = "$Id: init_scf.cc 3956 2008-06-09 12:24:49Z rking $";

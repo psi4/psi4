@@ -8,57 +8,57 @@
  * into main trunk.  This code compiles and runs correctly on sirius.
  * -TDC
  *
-/* Revision 1.4.4.1  2003/12/31 01:59:54  crawdad
-/* Removed use_iwl option, which was deprecated anyway.  cscf now depends only
-/* on libpsio for its I/O functions.
-/* -TDC
-/*
-/* Revision 1.4  2002/12/06 15:50:32  crawdad
-/* Changed all exit values to PSI_RETURN_SUCCESS or PSI_RETURN_FAILURE as
-/* necessary.  This is new for the PSI3 execution driver.
-/* -TDC
-/*
-/* Revision 1.3  2002/04/03 02:06:01  janssen
-/* Finish changes to use new include paths for libraries.
-/*
-/* Revision 1.2  2002/03/25 02:17:36  janssen
-/* Get rid of tmpl.  Use new naming scheme for libipv1 includes.
-/*
-/* Revision 1.1.1.1  2000/02/04 22:52:29  evaleev
-/* Started PSI 3 repository
-/*
-/* Revision 1.6  1999/11/02 23:55:59  localpsi
-/* Shawn Brown - (11/2/99) Modified to the code in a few major ways.
-/*
-/* 1.  Added the capability to do UHF.  All of the features available with the
-/* other refrences have been added for UHF.
-/*
-/* 2.  For UHF, I had to alter the structure of file30. (See cleanup.c for a
-/* map)  This entailed adding a pointer array right after the header in the SCF
-/* section of file30 that pointed to all of the data for the SCF caclulation.
-/* Functions were added to libfile30 to account for this and they are
-/* incorporated in this code.
-/*
-/* 3.  Updated and fixed all of the problems associated with my previous
-/* guessing code.  The code no longer uses OPENTYPE to specify the type of
-/* occupation.  The keword REFERENCE and MULTP can now be used to indicate any
-/* type of calculation.  (e.g. ROHF with MULTP of 1 is an open shell singlet
-/* ROHF calculation)  This code was moved to occ_fun.c.  The code can also
-/* guess at any multplicity in a highspin case, provided enough electrons.
-/*
-/* Revision 1.5  1999/08/17 19:04:16  evaleev
-/* Changed the default symmetric orthogonalization to the canonical
-/* orthogonalization. Now, if near-linear dependencies in the basis are found,
-/* eigenvectors of the overlap matrix with eigenvalues less than 1E-6 will be
-/* left out. This will lead to num_mo != num_so, i.e. SCF eigenvector is no
-/* longer a square matrix. Had to rework some routines in libfile30, and add some.
-/* The progrem prints out a warning if near-linear dependencies are found. TRANSQT
-/* and a whole bunch of other codes has to be fixed to work with such basis sets.
-/*
-/* Revision 1.4  1999/07/24 18:13:54  crawdad
-/* Renamed variable "nint" to "cscf_nint" to avoid DEC compiler type conflict.
-/* -Daniel
-/*
+ * Revision 1.4.4.1  2003/12/31 01:59:54  crawdad
+ * Removed use_iwl option, which was deprecated anyway.  cscf now depends only
+ * on libpsio for its I/O functions.
+ * -TDC
+ *
+ * Revision 1.4  2002/12/06 15:50:32  crawdad
+ * Changed all exit values to PSI_RETURN_SUCCESS or PSI_RETURN_FAILURE as
+ * necessary.  This is new for the PSI3 execution driver.
+ * -TDC
+ *
+ * Revision 1.3  2002/04/03 02:06:01  janssen
+ * Finish changes to use new include paths for libraries.
+ *
+ * Revision 1.2  2002/03/25 02:17:36  janssen
+ * Get rid of tmpl.  Use new naming scheme for libipv1 includes.
+ *
+ * Revision 1.1.1.1  2000/02/04 22:52:29  evaleev
+ * Started PSI 3 repository
+ *
+ * Revision 1.6  1999/11/02 23:55:59  localpsi
+ * Shawn Brown - (11/2/99) Modified to the code in a few major ways.
+ *
+ * 1.  Added the capability to do UHF.  All of the features available with the
+ * other refrences have been added for UHF.
+ *
+ * 2.  For UHF, I had to alter the structure of file30. (See cleanup.c for a
+ * map)  This entailed adding a pointer array right after the header in the SCF
+ * section of file30 that pointed to all of the data for the SCF caclulation.
+ * Functions were added to libfile30 to account for this and they are
+ * incorporated in this code.
+ *
+ * 3.  Updated and fixed all of the problems associated with my previous
+ * guessing code.  The code no longer uses OPENTYPE to specify the type of
+ * occupation.  The keword REFERENCE and MULTP can now be used to indicate any
+ * type of calculation.  (e.g. ROHF with MULTP of 1 is an open shell singlet
+ * ROHF calculation)  This code was moved to occ_fun.c.  The code can also
+ * guess at any multplicity in a highspin case, provided enough electrons.
+ *
+ * Revision 1.5  1999/08/17 19:04:16  evaleev
+ * Changed the default symmetric orthogonalization to the canonical
+ * orthogonalization. Now, if near-linear dependencies in the basis are found,
+ * eigenvectors of the overlap matrix with eigenvalues less than 1E-6 will be
+ * left out. This will lead to num_mo != num_so, i.e. SCF eigenvector is no
+ * longer a square matrix. Had to rework some routines in libfile30, and add some.
+ * The progrem prints out a warning if near-linear dependencies are found. TRANSQT
+ * and a whole bunch of other codes has to be fixed to work with such basis sets.
+ *
+ * Revision 1.4  1999/07/24 18:13:54  crawdad
+ * Renamed variable "nint" to "cscf_nint" to avoid DEC compiler type conflict.
+ * -Daniel
+ *
  * Revision 1.3  1999/07/14  18:50:40  evaleev
  * Very important fix of a careless mistake I introduced before. (intmx has to
  * be the same as old_nint).
@@ -66,9 +66,9 @@
  * Revision 1.2  1999/06/13  20:30:04  evaleev
  * Fixed problems with Makefile.
  *
-/* Revision 1.1.1.1  1999/04/12 16:59:27  evaleev
-/* Added a version of CSCF that can work with CINTS.
-/* -Ed
+ * Revision 1.1.1.1  1999/04/12 16:59:27  evaleev
+ * Added a version of CSCF that can work with CINTS.
+ * -Ed
  * */
 
 static char *rcsid = "$Id: rdtwo.cc 3815 2008-02-13 21:50:07Z sherrill $";

@@ -77,4 +77,4 @@ namespace psi { namespace CINTS {
     for(i=0;i<Symmetry.num_unique_atoms;i++)
 	cleanup_conc_atomic_grid(grid.atomic_grid[i]);
   }
-};};
+}}

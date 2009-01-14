@@ -100,7 +100,7 @@ void stop_io()
 {
   chkpt_close();
   if(UserOptions.print_lvl)
-    tstop(outfile);
+    tstop();
   psio_done();
   //psi_stop(infile,outfile,psi_file_prefix);
 }
@@ -153,4 +153,4 @@ void free_box(double ***box, int a, int b)
   free(box);
 
 }
-};};
+}}

@@ -42,7 +42,7 @@ namespace psi {
       #define WHEREAMI() if (g_bVerbose) { fprintf(stderr, "@:%s:%-6d\n", __FILE__, __LINE__); }
     #endif
   #else
-    #define WHEREAMI(func)
+    #define WHEREAMI()
   #endif
 }
 

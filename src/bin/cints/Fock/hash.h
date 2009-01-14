@@ -30,5 +30,5 @@ int put_entry(htable_t *htable, PSI_INT_LEAST64 key,
               int si, int sj, int sk, int sl,
 	      double q4ijkl, double q4ikjl, double q4iljk);
 int find_entry(htable_t *htable, PSI_INT_LEAST64 key);
-};}
+}}
 #endif

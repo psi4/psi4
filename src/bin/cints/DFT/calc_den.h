@@ -8,5 +8,5 @@
 #include "data_structs.h"
 namespace psi { namespace CINTS {
 struct den_info_s calc_density(struct coordinates geom);
-};}
+}}
 #endif

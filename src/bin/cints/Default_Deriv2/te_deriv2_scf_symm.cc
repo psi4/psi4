@@ -975,4 +975,4 @@ void te_deriv2_scf_symm(void)
 
   return;
 }
-};};
+}}

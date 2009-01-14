@@ -116,4 +116,4 @@ void quartet_data(prim_data *Data, double_array_t *fjt_table, double AB2, double
 }
 
 
-};};
+}}

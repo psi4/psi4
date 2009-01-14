@@ -42,4 +42,4 @@ void read_gen_opdm()
   return;
 }
 
-};};
+}}

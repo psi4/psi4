@@ -9,51 +9,51 @@
  * correctly beccause of changes in mid-March 2004 to optking.
  * -TDC
  *
-/* Revision 1.8.8.1  2004/04/10 19:41:32  crawdad
-/* Fixed the DIIS code for UHF cases.  The new version uses the Pulay scheme of
-/* building the error vector in the AO basis as FDS-SDF, followed by xformation
-/* into the orthogonal AO basis.   This code converges faster for test cases
-/* like cc8, but fails for linearly dependent basis sets for unknown reasons.
-/* -TDC
-/*
-/* Revision 1.8  2002/04/03 02:06:01  janssen
-/* Finish changes to use new include paths for libraries.
-/*
-/* Revision 1.7  2002/03/25 02:51:57  janssen
-/* libciomr.h -> libciomr/libciomr.h
-/*
-/* Revision 1.6  2000/10/13 19:51:20  evaleev
-/* Cleaned up a lot of stuff in order to get CSCF working with the new "Mo-projection-capable" INPUT.
-/*
-/* Revision 1.5  2000/07/10 18:03:31  sbrown
-/* Enabling cscf to send over just the occupied SCF eigenvector for DFT
-/* calculations.  Only done for the RHF case.
-/*
-/* Revision 1.4  2000/07/06 21:06:05  sbrown
-/* Fixed a seg fault inf form_vec.c
-/*
-/* Revision 1.3  2000/07/06 20:04:01  sbrown
-/* Added capabilities to send the eigenvector to cints for DFT
-/* calculations.
-/*
-/* Revision 1.2  2000/07/05 21:47:30  sbrown
-/* Enabled the code to export the SCF eigenvector to CINTS when doing DFT.
-/*
-/* Revision 1.1.1.1  2000/02/04 22:52:30  evaleev
-/* Started PSI 3 repository
-/*
-/* Revision 1.2  1999/08/17 19:04:15  evaleev
-/* Changed the default symmetric orthogonalization to the canonical
-/* orthogonalization. Now, if near-linear dependencies in the basis are found,
-/* eigenvectors of the overlap matrix with eigenvalues less than 1E-6 will be
-/* left out. This will lead to num_mo != num_so, i.e. SCF eigenvector is no
-/* longer a square matrix. Had to rework some routines in libfile30, and add some.
-/* The progrem prints out a warning if near-linear dependencies are found. TRANSQT
-/* and a whole bunch of other codes has to be fixed to work with such basis sets.
-/*
-/* Revision 1.1.1.1  1999/04/12 16:59:26  evaleev
-/* Added a version of CSCF that can work with CINTS.
-/* -Ed
+ * Revision 1.8.8.1  2004/04/10 19:41:32  crawdad
+ * Fixed the DIIS code for UHF cases.  The new version uses the Pulay scheme of
+ * building the error vector in the AO basis as FDS-SDF, followed by xformation
+ * into the orthogonal AO basis.   This code converges faster for test cases
+ * like cc8, but fails for linearly dependent basis sets for unknown reasons.
+ * -TDC
+ *
+ * Revision 1.8  2002/04/03 02:06:01  janssen
+ * Finish changes to use new include paths for libraries.
+ *
+ * Revision 1.7  2002/03/25 02:51:57  janssen
+ * libciomr.h -> libciomr/libciomr.h
+ *
+ * Revision 1.6  2000/10/13 19:51:20  evaleev
+ * Cleaned up a lot of stuff in order to get CSCF working with the new "Mo-projection-capable" INPUT.
+ *
+ * Revision 1.5  2000/07/10 18:03:31  sbrown
+ * Enabling cscf to send over just the occupied SCF eigenvector for DFT
+ * calculations.  Only done for the RHF case.
+ *
+ * Revision 1.4  2000/07/06 21:06:05  sbrown
+ * Fixed a seg fault inf form_vec.c
+ *
+ * Revision 1.3  2000/07/06 20:04:01  sbrown
+ * Added capabilities to send the eigenvector to cints for DFT
+ * calculations.
+ *
+ * Revision 1.2  2000/07/05 21:47:30  sbrown
+ * Enabled the code to export the SCF eigenvector to CINTS when doing DFT.
+ *
+ * Revision 1.1.1.1  2000/02/04 22:52:30  evaleev
+ * Started PSI 3 repository
+ *
+ * Revision 1.2  1999/08/17 19:04:15  evaleev
+ * Changed the default symmetric orthogonalization to the canonical
+ * orthogonalization. Now, if near-linear dependencies in the basis are found,
+ * eigenvectors of the overlap matrix with eigenvalues less than 1E-6 will be
+ * left out. This will lead to num_mo != num_so, i.e. SCF eigenvector is no
+ * longer a square matrix. Had to rework some routines in libfile30, and add some.
+ * The progrem prints out a warning if near-linear dependencies are found. TRANSQT
+ * and a whole bunch of other codes has to be fixed to work with such basis sets.
+ *
+ * Revision 1.1.1.1  1999/04/12 16:59:26  evaleev
+ * Added a version of CSCF that can work with CINTS.
+ * -Ed
  * */
 
 static char *rcsid = "$Id: form_vec.cc 3815 2008-02-13 21:50:07Z sherrill $";

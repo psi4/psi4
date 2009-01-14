@@ -21,7 +21,7 @@ namespace psi {
 void print_intro()
 {
   if (UserOptions.print_lvl >= PRINT_INTRO) {
-     tstart(outfile);
+     tstart();
      fprintf(outfile,"                  --------------------------------------------\n");
      fprintf(outfile,"                    CINTS: An integrals program written in C\n");
      fprintf(outfile,"                     Justin T. Fermann and Edward F. Valeev\n");
@@ -229,4 +229,4 @@ void print_moinfo_corr()
 
   return;
 }
-};};
+}}

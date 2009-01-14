@@ -2,8 +2,8 @@
     \ingroup CSCF
     \brief Enter brief description of file here 
 */
-/*
-/*************************************************************************/
+
+/**************************************************************************/
 /*                                                                        */
 /*   CSCF:                                                                */
 /*      Written by Edward Seidl (a NON-hog)                               */
@@ -202,7 +202,7 @@ int cscf(int argc,char* argv[])
   ip_cwk_add(":DEFAULT");
   ip_cwk_add(":PSI");
   ip_cwk_add(":SCF");
-  tstart(outfile);
+  tstart();
   psio_init();
   psio_ipv1_config();
    
@@ -327,7 +327,7 @@ int cscf(int argc,char* argv[])
     write_scf_matrices();
     chkpt_close();
     psio_done();
-    tstop(outfile);
+    tstop();
     //psi_stop(infile,outfile,psi_file_prefix);
     //exit(PSI_RETURN_SUCCESS);
     return(PSI_RETURN_SUCCESS);

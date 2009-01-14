@@ -6,62 +6,62 @@
  * Revision 1.5  2007/04/05 15:45:25  crawdad
  * Fixed a few memory leaks identified by valgrind. -TDC
  *
-/* Revision 1.4  2004/05/03 04:32:40  crawdad
-/* Major mods based on merge with stable psi-3-2-1 release.  Note that this
-/* version has not been fully tested and some scf-optn test cases do not run
-/* correctly beccause of changes in mid-March 2004 to optking.
-/* -TDC
-/*
-/* Revision 1.3.6.4  2004/04/21 15:45:07  evaleev
-/* Modified DIIS algorithm for RHF and ROHF to work in OSO basis rather than in
-/* AO basis, to avoid difficulties of transforming between MO and AO bases
-/* when linear dependencies are present.
-/*
-/* Revision 1.3.6.3  2004/04/10 19:41:32  crawdad
-/* Fixed the DIIS code for UHF cases.  The new version uses the Pulay scheme of
-/* building the error vector in the AO basis as FDS-SDF, followed by xformation
-/* into the orthogonal AO basis.   This code converges faster for test cases
-/* like cc8, but fails for linearly dependent basis sets for unknown reasons.
-/* -TDC
-/*
-/* Revision 1.3.6.2  2004/04/09 00:16:29  evaleev
-/* Added messages explaining why DGETRF and DGETRI most likely fail.
-/*
-/* Revision 1.3.6.1  2004/04/06 21:29:05  crawdad
-/* Corrections to the RHF/ROHF DIIS algorithm, which was simply incorrect.
-/* The backtransformation of the DIIS error vectors to the AO basis was not
-/* mathematically right.
-/* -TDC and EFV
-/*
-/* Revision 1.3  2002/11/24 22:52:17  crawdad
-/* Merging the gbye-file30 branch into the main trunk.
-/* -TDC
-/*
-/* Revision 1.2.6.1  2002/11/23 21:54:45  crawdad
-/* Removal of mxcoef stuff for chkpt runs.
-/* -TDC
-/*
-/* Revision 1.2  2000/10/13 19:51:22  evaleev
-/* Cleaned up a lot of stuff in order to get CSCF working with the new "Mo-projection-capable" INPUT.
-/*
-/* Revision 1.1.1.1  2000/02/04 22:52:33  evaleev
-/* Started PSI 3 repository
-/*
-/* Revision 1.3  1999/08/17 19:04:18  evaleev
-/* Changed the default symmetric orthogonalization to the canonical
-/* orthogonalization. Now, if near-linear dependencies in the basis are found,
-/* eigenvectors of the overlap matrix with eigenvalues less than 1E-6 will be
-/* left out. This will lead to num_mo != num_so, i.e. SCF eigenvector is no
-/* longer a square matrix. Had to rework some routines in libfile30, and add some.
-/* The progrem prints out a warning if near-linear dependencies are found. TRANSQT
-/* and a whole bunch of other codes has to be fixed to work with such basis sets.
-/*
-/* Revision 1.2  1999/08/11 18:39:03  evaleev
-/* Added some checks on the lowest eigenvalue of the overlap matrix.
-/*
-/* Revision 1.1.1.1  1999/04/12 16:59:28  evaleev
-/* Added a version of CSCF that can work with CINTS.
-/* -Ed
+ * Revision 1.4  2004/05/03 04:32:40  crawdad
+ * Major mods based on merge with stable psi-3-2-1 release.  Note that this
+ * version has not been fully tested and some scf-optn test cases do not run
+ * correctly beccause of changes in mid-March 2004 to optking.
+ * -TDC
+ *
+ * Revision 1.3.6.4  2004/04/21 15:45:07  evaleev
+ * Modified DIIS algorithm for RHF and ROHF to work in OSO basis rather than in
+ * AO basis, to avoid difficulties of transforming between MO and AO bases
+ * when linear dependencies are present.
+ *
+ * Revision 1.3.6.3  2004/04/10 19:41:32  crawdad
+ * Fixed the DIIS code for UHF cases.  The new version uses the Pulay scheme of
+ * building the error vector in the AO basis as FDS-SDF, followed by xformation
+ * into the orthogonal AO basis.   This code converges faster for test cases
+ * like cc8, but fails for linearly dependent basis sets for unknown reasons.
+ * -TDC
+ *
+ * Revision 1.3.6.2  2004/04/09 00:16:29  evaleev
+ * Added messages explaining why DGETRF and DGETRI most likely fail.
+ *
+ * Revision 1.3.6.1  2004/04/06 21:29:05  crawdad
+ * Corrections to the RHF/ROHF DIIS algorithm, which was simply incorrect.
+ * The backtransformation of the DIIS error vectors to the AO basis was not
+ * mathematically right.
+ * -TDC and EFV
+ *
+ * Revision 1.3  2002/11/24 22:52:17  crawdad
+ * Merging the gbye-file30 branch into the main trunk.
+ * -TDC
+ *
+ * Revision 1.2.6.1  2002/11/23 21:54:45  crawdad
+ * Removal of mxcoef stuff for chkpt runs.
+ * -TDC
+ *
+ * Revision 1.2  2000/10/13 19:51:22  evaleev
+ * Cleaned up a lot of stuff in order to get CSCF working with the new "Mo-projection-capable" INPUT.
+ *
+ * Revision 1.1.1.1  2000/02/04 22:52:33  evaleev
+ * Started PSI 3 repository
+ *
+ * Revision 1.3  1999/08/17 19:04:18  evaleev
+ * Changed the default symmetric orthogonalization to the canonical
+ * orthogonalization. Now, if near-linear dependencies in the basis are found,
+ * eigenvectors of the overlap matrix with eigenvalues less than 1E-6 will be
+ * left out. This will lead to num_mo != num_so, i.e. SCF eigenvector is no
+ * longer a square matrix. Had to rework some routines in libfile30, and add some.
+ * The progrem prints out a warning if near-linear dependencies are found. TRANSQT
+ * and a whole bunch of other codes has to be fixed to work with such basis sets.
+ *
+ * Revision 1.2  1999/08/11 18:39:03  evaleev
+ * Added some checks on the lowest eigenvalue of the overlap matrix.
+ *
+ * Revision 1.1.1.1  1999/04/12 16:59:28  evaleev
+ * Added a version of CSCF that can work with CINTS.
+ * -Ed
  * */
 
 static char *rcsid = "$Id: shalf.cc 3815 2008-02-13 21:50:07Z sherrill $";

@@ -491,5 +491,5 @@ void *te_deriv1_scf_thread_symm(void *tnum_ptr)
 
   return NULL;
 }
-};
+}
 }

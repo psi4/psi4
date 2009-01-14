@@ -64,5 +64,5 @@ namespace psi { namespace CINTS {
       1.40,
       1.40  /* Sb-I  */
     };
-};};
+}}
 #endif

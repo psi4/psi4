@@ -8,5 +8,5 @@
 #include"data_structs.h"
 namespace psi { namespace CINTS {
 void init_uniform_con_grid(void);
-};}
+}}
 #endif

@@ -372,4 +372,4 @@ namespace psi { namespace CINTS {
     
     return corr_info;   
   }                         
-};};
+}}

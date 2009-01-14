@@ -229,4 +229,4 @@ void cleanup_moinfo_corr()
 
   return;
 }
-};};
+}}

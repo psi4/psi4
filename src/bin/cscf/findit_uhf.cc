@@ -8,32 +8,32 @@
  * necessary.  This is new for the PSI3 execution driver.
  * -TDC
  *
-/* Revision 1.1.1.1  2000/02/04 22:52:33  evaleev
-/* Started PSI 3 repository
-/*
-/* Revision 1.1  1999/11/02 23:55:57  localpsi
-/* Shawn Brown - (11/2/99) Modified to the code in a few major ways.
-/*
-/* 1.  Added the capability to do UHF.  All of the features available with the
-/* other refrences have been added for UHF.
-/*
-/* 2.  For UHF, I had to alter the structure of file30. (See cleanup.c for a
-/* map)  This entailed adding a pointer array right after the header in the SCF
-/* section of file30 that pointed to all of the data for the SCF caclulation.
-/* Functions were added to libfile30 to account for this and they are
-/* incorporated in this code.
-/*
-/* 3.  Updated and fixed all of the problems associated with my previous
-/* guessing code.  The code no longer uses OPENTYPE to specify the type of
-/* occupation.  The keword REFERENCE and MULTP can now be used to indicate any
-/* type of calculation.  (e.g. ROHF with MULTP of 1 is an open shell singlet
-/* ROHF calculation)  This code was moved to occ_fun.c.  The code can also
-/* guess at any multplicity in a highspin case, provided enough electrons.
-/*
-/* Revision 1.1.1.1  1999/04/12 16:59:26  evaleev
-/* Added a version of CSCF that can work with CINTS.
-/* -Ed
-/*
+ * Revision 1.1.1.1  2000/02/04 22:52:33  evaleev
+ * Started PSI 3 repository
+ *
+ * Revision 1.1  1999/11/02 23:55:57  localpsi
+ * Shawn Brown - (11/2/99) Modified to the code in a few major ways.
+ *
+ * 1.  Added the capability to do UHF.  All of the features available with the
+ * other refrences have been added for UHF.
+ *
+ * 2.  For UHF, I had to alter the structure of file30. (See cleanup.c for a
+ * map)  This entailed adding a pointer array right after the header in the SCF
+ * section of file30 that pointed to all of the data for the SCF caclulation.
+ * Functions were added to libfile30 to account for this and they are
+ * incorporated in this code.
+ *
+ * 3.  Updated and fixed all of the problems associated with my previous
+ * guessing code.  The code no longer uses OPENTYPE to specify the type of
+ * occupation.  The keword REFERENCE and MULTP can now be used to indicate any
+ * type of calculation.  (e.g. ROHF with MULTP of 1 is an open shell singlet
+ * ROHF calculation)  This code was moved to occ_fun.c.  The code can also
+ * guess at any multplicity in a highspin case, provided enough electrons.
+ *
+ * Revision 1.1.1.1  1999/04/12 16:59:26  evaleev
+ * Added a version of CSCF that can work with CINTS.
+ * -Ed
+ *
  * Revision 1.3  1996/11/26  05:20:52  sherrill
  * Add casts in front of init_int_array() calls to avoid compiler warnings
  * (really should include libciomr everywhere instead but that causes more

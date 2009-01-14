@@ -19,7 +19,7 @@
     their angular momenta
    ----------------------------------------------------------------------------------*/
 
-  static inline int hash(int a[2][3], int b[2])
+  static int hash(int a[2][3], int b[2])
    {
      int c[2] = {0,0};
      int i;
