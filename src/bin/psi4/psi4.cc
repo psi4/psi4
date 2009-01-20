@@ -106,7 +106,12 @@ int main(int argc, char *argv[])
   }
     // Test a quick call to input. This is to ensure things can link.
     // If we don't make calls to the code it isn't linked in.
-  // if (run_modules) {
+   if (run_modules) {
+  // psi_start(&infile,&outfile,&psi_file_prefix,argc-parsed,argv+parsed,0);
+  // ip_cwk_add(":PSI");
+  // ip_cwk_add(":OPT09");
+  // psio_init();
+  // psio_ipv1_config();
   // 
   //   Options options;
   // 
@@ -167,7 +172,25 @@ int main(int argc, char *argv[])
   //   options.clear();
   //   module.set_prgid("PSICLEAN");
   //   psiclean::psiclean(argc, argv);
-  // }
+
+  // SIMPLE_SET simple_set;
+  // simple_set.add_simples_from_input();
+  // simple_set.compute(geom);
+  // simple_set.compute_s(geom);
+  // simple_set.print(1);
+  // simple_set.print_s();
+// 
+  // double * q = simple_set.get_q();
+  // double ** B = simple_set.get_B(molecules.get_natoms());
+// 
+  // fprintf(outfile,"\nInternal values vector\n");
+  // for (i=0; i<simple_set.size(); ++i)
+    // fprintf(outfile,"%15.10lf",q[i]);
+  // fprintf(outfile,"\n");
+// 
+  // fprintf(outfile,"\nB matrix\n");
+  // print_mat(B,simple_set.size(),3*molecules.get_natoms(),outfile);
+   }
 
   // psi_stop(infile, outfile, psi_file_prefix);
 
