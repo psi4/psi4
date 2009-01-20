@@ -591,43 +591,43 @@ AC_MSG_CHECKING([for architecture/compiler specific optimization flags])
 case $target_cpu in
   rs6000)
     if test "$FC" = xlf_r ; then
-      FOPT="-O2 -qarch=com -qxflag=xalias -qdpc -qfloat=fold -qfloat=maf -qmaxmem=-1"
+      FOPT="-qarch=com -qxflag=xalias -qdpc -qfloat=fold -qfloat=maf -qmaxmem=-1"
     fi
     if test "$CC" = xlc_r -o "$CC" = cc_r ; then
-      COPT="-O2 -qarch=com -qfloat=maf -qfloat=fold -qmaxmem=-1"
+      COPT="-qarch=com -qfloat=maf -qfloat=fold -qmaxmem=-1"
     fi
     if test "$CXX" = xlC_r ; then
-      CXXOPT="-O2 -qarch=com -qfloat=maf -qfloat=fold -qmaxmem=-1"
+      CXXOPT="-qarch=com -qfloat=maf -qfloat=fold -qmaxmem=-1"
     fi
     ;;
   powerpc)
     if test "$FC" = xlf_r ; then
-      FOPT="-O2 -qarch=ppc -qxflag=xalias -qdpc -qfloat=fold -qmaxmem=-1 -qfloat=maf"
+      FOPT="-qarch=ppc -qxflag=xalias -qdpc -qfloat=fold -qmaxmem=-1 -qfloat=maf"
     fi
     if test "$CC" = xlc_r -o "$CC" = cc_r ; then
-      COPT="-O2 -qarch=ppc -qfloat=maf -qfloat=fold -qmaxmem=-1"
+      COPT="-qarch=ppc -qfloat=maf -qfloat=fold -qmaxmem=-1"
     fi
     if test "$CXX" = xlC_r ; then
-      CXXOPT="-O2 -qarch=ppc -qfloat=maf -qfloat=fold -qmaxmem=-1"
+      CXXOPT="-qarch=ppc -qfloat=maf -qfloat=fold -qmaxmem=-1"
     fi
     ;;
   i686)
     if test "$FC" = g77 ; then
-      FOPT="-O2 -march=pentiumpro"
+      FOPT=""
     fi
     if test "$CC" = gcc -o "$CC" = cc ; then
-      COPT="-O2 -march=pentiumpro"    
+      COPT=""    
     fi
     if test "$CXX" = g++ -o "$CXX" = c++ -o "$CXX" = gcc ; then
-      CXXOPT="-O2 -march=pentiumpro"
+      CXXOPT=""
     fi
     ;;
   x86_64)
     if test "$CC" = gcc -o "$CC" = cc ; then
-      COPT="-O3 -m64"
+      COPT="-m64"
     fi
     if test "$CXX" = g++ -o "$CXX" = c++ -o "$CXX" = gcc ; then
-      CXXOPT="-O3 -m64"
+      CXXOPT="-m64"
     fi
     ;;
 esac
@@ -652,12 +652,6 @@ case $target_os in
 esac
 AC_MSG_RESULT([C preprocessor directives: $CDEF])
 AC_MSG_RESULT([C++ preprocessor directives: $CXXDEF])
-
-# Set up CFLAGS and FFLAGS.
-
-CFLAGS='$(CDBG) $(COPT) $(CDEF) $(COTH) $(CINC)' AC_SUBST(CFLAGS)
-CXXFLAGS='$(CXXDBG) $(CXXOPT) $(CXXDEF) $(CXXOTH) $(CXXINC)' AC_SUBST(CXXFLAGS)
-FFLAGS='$(FDBG) $(FOPT) $(FOTH) $(FSTATIC)' AC_SUBST(FFLAGS)
 
 # Adjust the debug flags.
 # The default is to not debug.  --with-debug will turn on debugging.
@@ -720,6 +714,11 @@ esac
 AC_MSG_RESULT([C extra flags: $COTH])
 AC_MSG_RESULT([C++ extra flags: $CXXOTH])
 
+# Set up CFLAGS and FFLAGS.
+CFLAGS='$(CDBG) $(COPT) $(CDEF) $(COTH) $(CINC)' AC_SUBST(CFLAGS)
+CXXFLAGS='$(CXXDBG) $(CXXOPT) $(CXXDEF) $(CXXOTH) $(CXXINC)' AC_SUBST(CXXFLAGS)
+FFLAGS='$(FDBG) $(FOPT) $(FOTH) $(FSTATIC)' AC_SUBST(FFLAGS)
+
 ########
 ## Check for library functions
 ########
@@ -755,7 +754,6 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libr12/MakeVars
           src/lib/libr12/libr12_config.h
           src/lib/liboptions/Makefile
-          src/lib/librubypp/Makefile
 
           src/util/tocprint/Makefile
           src/util/psiclean/Makefile
