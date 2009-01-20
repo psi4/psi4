@@ -1,28 +1,31 @@
-#include <Fragment.h>
-#include <Element_to_Z.h>
+#include "fragment.h"
+#include "element_to_Z.h"
 
-namespace psi {
+namespace psi { namespace opt09 {
 
-using std::string;
+extern "C" { extern FILE *outfile; }
 
 // deep copy constructor
 Fragment::Fragment(const Fragment & frag)
 {
   int i,j;
-  num_atoms = frag.num_atoms;
-  Z = init_array(num_atoms);
-  geom = block_matrix(num_atoms,3);
-  atom_label = new string [num_atoms];
-  for (i=0; i<num_atoms; ++i) {
-    Z[i] = frag.Z[i];
+  natoms = frag.natoms;
+
+  Z = new double [natoms];
+  for (i=0; i<natoms; ++i) Z[i] = frag.Z[i];
+
+  masses = new double [natoms];
+  for (i=0; i<natoms; ++i) masses[i] = frag.masses[i];
+
+  atom_label = new string [natoms];
+  for (i=0; i<natoms; ++i)
     atom_label[i] = frag.atom_label[i];
-    for (j=0; j<3; ++j) 
-      geom[i][j] = frag.geom[i][j];
-  }
-  if (frag.masses != NULL) {
-    masses = init_array(num_atoms);
-    for (i=0; i<num_atoms; ++i)
-      masses[i] = frag.masses[i];
+
+  if (frag.geom != NULL) {
+    geom = block_matrix(natoms,3);
+    for (i=0; i<natoms; ++i)
+      for (j=0; j<3; ++j) 
+        geom[i][j] = frag.geom[i][j];
   }
 }
 
@@ -32,19 +35,31 @@ Fragment & Fragment::operator=(const Fragment & frag)
   if (this == &frag) //object assigned to itself
     return *this;
 
-  delete [] Z;   // delete old fragment
+  // delete lhs
+  delete [] Z;
+  delete [] masses;
   delete [] atom_label;
-  if (geom != NULL) free_block(geom);
+  if (geom != NULL) { free_block(geom); geom = NULL; }
 
-  int i,j; //deep copy fragment
-  num_atoms = frag.num_atoms;
-  geom = block_matrix(num_atoms,3);
-  atom_label = new string [num_atoms];
-  for (i=0; i<num_atoms; ++i) {
-    Z[i] = frag.Z[i];
+  // copy rhs
+  int i,j;
+  natoms = frag.natoms;
+
+  Z = new double [natoms];
+  for (i=0; i<natoms; ++i) Z[i] = frag.Z[i];
+
+  masses = new double [natoms];
+  for (i=0; i<natoms; ++i) masses[i] = frag.masses[i];
+
+  atom_label = new string [natoms];
+  for (i=0; i<natoms; ++i) 
     atom_label[i] = frag.atom_label[i];
-    for (j=0; j<3; ++j)
-      geom[i][j] = frag.geom[i][j];
+
+  if (frag.geom != NULL) {
+    geom = block_matrix(natoms,3);
+    for (i=0; i<natoms; ++i)
+      for (j=0; j<3; ++j)
+        geom[i][j] = frag.geom[i][j];
   }
   return *this;
 }
@@ -58,16 +73,12 @@ void Fragment::read_cartesian_from_input(string geom_label,double conv_factor)
   char *c_geom_label, *c_atom_label;
   string error_message, string_atom_label;
 
-  //if (Z != NULL) delete [] Z;  // clear current contents, if any
-  //if (atom_label != NULL) delete [] atom_label;
-  //if (geom != NULL) free_block(geom);
-
   c_geom_label = const_cast<char *>(geom_label.c_str());
 
-  // Determine number of atoms in fragment
+  // Determine number of atoms in fragment: natoms
   num_elem = 0;
   ip_count(c_geom_label, &num_elem, 0);
-  if (!num_atoms) {
+  if (!natoms) {
     error_message = "Fragment " + geom_label + " has no atoms.";
     throw(error_message);
   }
@@ -75,26 +86,25 @@ void Fragment::read_cartesian_from_input(string geom_label,double conv_factor)
     error_message = "Problem with number of entries in " + geom_label;
     throw(error_message);
   }
-  num_atoms = num_elem/4;
+  natoms = num_elem/4;
 
   // allocate memory for Z, geom
-  Z = init_array(num_atoms);
-  geom = block_matrix(num_atoms,3);
-  atom_label = new string [num_atoms]; 
+  Z = new double [natoms];
+  masses = new double [natoms];
+  atom_label = new string [natoms]; 
+  geom = block_matrix(natoms,3);
 
-  for (i=0; i<num_atoms; ++i) {
-    // read symbol and determine atomic number
+  for (i=0; i<natoms; ++i) {
     errcod = ip_string(c_geom_label,&c_atom_label,1,4*i);
     if (errcod != IPE_OK) {
       error_message = "Problem reading the " + geom_label + " array.";
       throw(error_message);
     }
     Element_to_Z elem_map;
-    Z[i] = elem_map[string_atom_label = c_atom_label];
+    Z[i] = elem_map[string_atom_label = c_atom_label]; // convert to string
     atom_label[i] = string_atom_label;
     free(c_atom_label);
 
-    // read geometry
     for (xyz=0; xyz<3; ++xyz) {
       tmp = 0.0;
       errcod = ip_data(c_geom_label,"%lf", &tmp,1,4*i+xyz+1);
@@ -105,7 +115,7 @@ void Fragment::read_cartesian_from_input(string geom_label,double conv_factor)
       geom[i][xyz] = tmp;
     }
   }
-  for (i=0; i<num_atoms; ++i)
+  for (i=0; i<natoms; ++i)
     for (xyz=0; xyz<3; ++xyz)
       geom[i][xyz] *= conv_factor;
 
@@ -115,72 +125,88 @@ void Fragment::read_cartesian_from_input(string geom_label,double conv_factor)
 // read masses from input file - return 1 if successful
 int Fragment::read_masses_from_input(int fragment_id) throw(bad_masses_io)
 {
-  int i,j,a,cnt,natom;
+  int i,j,a,cnt;
   char *buf, *c_mass_label;
   double tval;
-  std::string mass_label;
+  string mass_label;
+  bool found;
 
-  std::ostringstream outstr;
-  outstr << "ISOTOPES" << fragment_id;
+  ostringstream outstr;
+  if (fragment_id == 0)
+    outstr << "ISOTOPES";
+  else
+    outstr << "ISOTOPES" << fragment_id;
+
   mass_label = outstr.str();
   outstr.clear();
-
   c_mass_label = const_cast<char *>(mass_label.c_str());
 
-  natom = get_num_atom();
-
-  if (masses == NULL) masses = new double[natom];
-
   cnt = 0;
-  if (ip_exist("ISOTOPES",0)) {
+  if (ip_exist(c_mass_label,0)) {
     a = 0;
-    ip_count("ISOTOPES", &a, 0);
-    if (a != natom) {
-      fprintf(outfile,"ISOTOPES array has wrong dimension.\n");
-      throw bad_masses_io("ISOTOPES",0);
+    ip_count(c_mass_label, &a, 0);
+    if (a != natoms) {
+      fprintf(outfile,"%s array has wrong dimension.\n", c_mass_label);
+      throw bad_masses_io(c_mass_label,0);
     }
-    for (i=0;i<natom;++i) {
-      ip_data("ISOTOPES","%s", &buf,1,i);
+    for (i=0;i<natoms;++i) {
+      found = false;
+      ip_string(c_mass_label,&buf,1,i);
       for (j=0;j<LAST_MASS_INDEX;j++) {
         if (!strcmp(buf, mass_labels[j])) {
           masses[cnt++] = atomic_masses[j];
+          found = 1;
           break;
         }
       }
-      fprintf(outfile, "Isotope label %s is unidentifiable.\n", buf);
-      throw bad_masses_io("ISOTOPES",i);
+      if (!found) {
+        fprintf(outfile, "Isotope label %s is unidentifiable.\n", buf);
+        throw bad_masses_io(c_mass_label,i);
+      }
     }
     return 1;
   }
-  else if (ip_exist("MASSES",0)) {
+
+
+  if (fragment_id == 0) 
+    outstr << "MASSES";
+  else
+    outstr << "MASSES" << fragment_id;
+
+  mass_label = outstr.str();
+  outstr.clear();
+  c_mass_label = const_cast<char *>(mass_label.c_str());
+
+  if (ip_exist(c_mass_label,0)) {
     a = 0;
-    ip_count("MASSES",&a,0);
-    if (a != natom) {
-      fprintf(outfile,"MASSES array has wrong dimension\n");
-      throw bad_masses_io("MASSES",0);
+    ip_count(c_mass_label,&a,0);
+    if (a != natoms) {
+      fprintf(outfile,"%s array has wrong dimension\n", c_mass_label);
+      throw bad_masses_io(c_mass_label,0);
     }
     else {
-      for(i=0;i<natom;++i) {
-        ip_data("MASSES","%lf",&tval,1,i);
+      for(i=0;i<natoms;++i) {
+        ip_data(c_mass_label,"%lf",&tval,1,i);
         if (tval < 0.0) {
           fprintf(outfile,"Given mass value is negative!\n");
-          throw bad_masses_io("MASSES",i);
+          throw bad_masses_io(c_mass_label,i);
         }
         masses[cnt++] = tval;
       }
     }
     return 1;
   }
-  else
-    return 0;
+
+  return 0;
 }
 
 // use atomic numbers to set masses
-void Fragment::load_default_masses(void)
+void Fragment::read_default_masses(void)
 {
-  for(int i=0; i<get_natom(); ++i)
+  int cnt=0;
+  for(int i=0; i<natoms; ++i)
     masses[cnt++] = an2masses[(int) Z[i]];
 }
 
-} // psi
+}}
 

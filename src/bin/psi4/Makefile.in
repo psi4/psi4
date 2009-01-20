@@ -1,82 +1,21 @@
-
 srcdir = @srcdir@
 VPATH = @srcdir@
 
 include ../MakeVars
 
-PSITARGET = $(top_objdir)/bin/psi4
-LD = $(CXX)
-LDLIBS +=  $(LAPACK) $(BLAS) $(RUBY_LIBRUBYARG_STATIC) $(RUBY_LIBS) -lpthread -ldl -lm
+LDLIBS += $(LAPACK) $(BLAS)
 
-# Override LDFLAGS, sometimes users want static linking, but static linking will
-# break Ruby's ability to load modules from shared libraries.
-LDFLAGS += $(RUBY_LDFLAGS)
+PSILIBS = -lPSI_qt -lPSI_chkpt -lPSI_psio -lPSI_ciomr -lPSI_ipv1
 
-#PSILIBS = -L$(top_objdir)/lib -lPSI_dpd -lPSI_qt -lPSI_chkpt -lPSI_deriv -lPSI_r12 -lPSI_int \
-          -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1 -lPSI_options -lPSI_util
-PSILIBS = -L$(top_objdir)/lib -lPSI_dpd -lPSI_chkpt -lPSI_deriv -lPSI_r12 -lPSI_int \
-          -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1 -lPSI_util -lPSI_options
-PSIMODULES = -lPSI_input -lPSI_cints -lPSI_cscf -lPSI_psiclean
-
-CXXINC += $(RUBY_CPPFLAGS) -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"
-CXXFLAGS += $(RUBY_CXXFLAGS)
-#CXXSRC = psi4.cc ruby.cc read_options.cc read_atom_basis.cc \
-fragment.cc molecular_system.cc element_to_Z.cc
-CXXSRC = psi4.cc ruby.cc task.cc
+CXXSRC = opt.cc stretch.cc bend.cc simple_set.cc v3d.cc molecular_system.cc fragment.cc \
+element_to_Z.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 
-$(PSITARGET): $(BINOBJ)
-	$(MKDIRS) `dirname $(PSITARGET)`
-	$(LD) $(LDFLAGS) -o $@ $^ $(PSILIBS) $(LDLIBS)
-	
-#copied from ../MakeRules at least for now
+include ../MakeRules
 
-.PHONY: all default install install_inc install_target install_man
-.PHONY:  clean oclean uclean dclean target_clean
+ifneq ($(DODEPEND),no)
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(BINOBJ:%.o=%.d)
+endif
 
-default:: $(PSITARGET)
-all: default
-
-%.$(OBJSUF): %.cc
-	$(CXX) $(CXXFLAGS) $(CXXINCLUDE) -c $< $(OUTPUT_OPTION)
-
-install:: install_inc install_target install_man
-
-install_inc::
-
-install_man::
-
-install_target:: $(PSITARGET)
-	$(MKDIRS) $(bindir)
-	$(INSTALL_PROGRAM) $< $(bindir)
-
-clean:: oclean dclean uclean targetclean
-
-oclean:
-	-rm -f *.o
-
-dclean:
-	-rm -f *.d
-
-uclean:
-	-rm -f *.u
-
-targetclean:
-	-rm -f `basename $(PSITARGET)`
-
-#
-# keep the configuration information and makefiles up-to-date
-#
-
-$(top_srcdir)/configure: $(top_srcdir)/configure.ac $(top_srcdir)/aclocal.m4
-	cd $(top_srcdir) && autoconf
-
-$(top_objdir)/config.status: $(top_srcdir)/configure
-	cd $(top_objdir) && ./config.status --recheck
-
-Makefile: $(srcdir)/Makefile.in $(top_objdir)/config.status
-	cd $(top_objdir) && CONFIG_FILES=src/bin/`basename $(srcdir)`/Makefile ./config.status
-
-../MakeVars: $(top_srcdir)/src/bin/MakeVars.in $(top_objdir)/config.status
-	cd $(top_objdir) && CONFIG_FILES=src/bin/MakeVars ./config.status
