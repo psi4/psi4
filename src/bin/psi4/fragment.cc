@@ -1,9 +1,6 @@
-#include "fragment.h"
-#include "element_to_Z.h"
+#include <fragment.h>
 
-namespace psi { namespace opt09 {
-
-extern "C" { extern FILE *outfile; }
+namespace psi {
 
 // deep copy constructor
 Fragment::Fragment(const Fragment & frag)
@@ -208,5 +205,12 @@ void Fragment::read_default_masses(void)
     masses[cnt++] = an2masses[(int) Z[i]];
 }
 
-}}
+  // use atomic numbers to set mass values
+void Fragment::print(void) const {
+  for (int i=0; i<natoms; ++i) {
+    fprintf(outfile,"%5.2lf %12.8lf %s %13.8lf %13.8lf %13.8lf \n", Z[i], masses[i], atom_label[i].c_str(), \
+      geom[i][0], geom[i][1], geom[i][2]);
+  }
+}
 
+}

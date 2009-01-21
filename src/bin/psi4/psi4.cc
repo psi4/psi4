@@ -15,7 +15,7 @@
 #include <liboptions/liboptions.hpp>
 #include <physconst.h>
 
-// #include <Molecular_system.h>
+#include <molecular_system.h>
 
 #include <psi4-def.h>
 #define MAIN

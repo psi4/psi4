@@ -3,18 +3,16 @@
     \brief STRETCH class declaration
 */
 
-#ifndef _psi3_src_bin_opt09_bend_h_
-#define _psi3_src_bin_opt09_bend_h_
+#ifndef _psi4_src_bin_opt09_bend_h_
+#define _psi4_src_bin_opt09_bend_h_
 
-#include <cstdio>
-extern "C" { extern FILE *outfile;}
-
+#include <psi4-dec.h>
 #include "simple.h"
 #include "v3d.h"
 
-namespace psi { namespace opt09 {
-
 using namespace psi::v3d;
+
+namespace psi {
 
 class BEND : public SIMPLE {
     int    A;    // atom A index
@@ -37,9 +35,9 @@ class BEND : public SIMPLE {
 
     //double get_s(int atom_index, int xyz) const;
     //int get_atom(int atom_index) const;
-    int  get_A(void) const { return A;}
-    int  get_B(void) const { return B;}
-    int  get_C(void) const { return C;}
+    int get_A(void) const { return A;}
+    int get_B(void) const { return B;}
+    int get_C(void) const { return C;}
     int get_atom(int a) const {
       if (a == 0) return A;
       else if (a == 1) return B;
@@ -58,6 +56,6 @@ class BEND : public SIMPLE {
     bool operator==(const BEND & s2) const;
 };
 
-}}
+}
 #endif
 

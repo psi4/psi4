@@ -6,7 +6,7 @@
 #include "stretch.h"
 #include "physconst.h"
 
-namespace psi { namespace opt09 {
+namespace psi {
 
 // constructor - makes sure A<B
 STRETCH::STRETCH(int id_in, int A_in, int B_in) : SIMPLE(id_in) {
@@ -100,4 +100,4 @@ int Stretch::get_atom(int atom_index) const {
 }
 */
 
-}}
+}

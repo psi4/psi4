@@ -7,8 +7,7 @@ LDLIBS += $(LAPACK) $(BLAS)
 
 PSILIBS = -lPSI_qt -lPSI_chkpt -lPSI_psio -lPSI_ciomr -lPSI_ipv1
 
-CXXSRC = opt.cc stretch.cc bend.cc simple_set.cc v3d.cc molecular_system.cc fragment.cc \
-element_to_Z.cc
+CXXSRC = stretch.cc bend.cc simple_set.cc v3d.cc fragment.cc \
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 

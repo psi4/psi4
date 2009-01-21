@@ -8,7 +8,7 @@
 
 #include <iostream>
 
-namespace psi { namespace opt09 {
+namespace psi {
 
 // takes pointers to 2 simple coordinates - tells if they are identical
 bool equiv(const SIMPLE * s1, const SIMPLE * s2) {
@@ -195,4 +195,4 @@ int SIMPLE_SET::add_simples_by_distance(int natom, double *Z,
 
 }
 
-}}
+}

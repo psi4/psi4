@@ -15,10 +15,7 @@ namespace psi {
   public:
     Module(std::string s = "PSI4") { prgid = s; }
     void set_prgid (std::string s) { prgid = s; }
-  // const std::string & gprgid(void) const { return prgid; }
-    std::string gprgid(void) const {
-      return prgid;
-    }
+    std::string gprgid(void) const { return prgid; }
   };
 
   typedef struct ModuleInformation {
@@ -32,7 +29,6 @@ namespace psi {
   extern Options options;
   extern PSIO *psio;
   extern char *psi_file_prefix;
-  
   extern bool g_bVerbose;
   
   #ifndef NDEBUG
@@ -47,4 +43,3 @@ namespace psi {
 }
 
 #endif
-
