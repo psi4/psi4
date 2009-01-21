@@ -2,8 +2,8 @@
     \defgroup defines methods for PSI energies
 */
 
-#include <Molecular_system.h>
 #include <psi4-dec.h>
+#include <Molecular_system.h>
 #include "psi4.h"
 
 namespace psi {

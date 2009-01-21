@@ -3,21 +3,24 @@
     \brief simple internal coordinate base class
 */
 
-#ifndef _psi3_src_bin_opt09_simple_set_h_
-#define _psi3_src_bin_opt09_simple_set_h_
+#ifndef _psi4_src_bin_opt09_simple_set_h_
+#define _psi4_src_bin_opt09_simple_set_h_
+
+#include <psi4-dec.h>
 
 #include "simple.h"
 #include "stretch.h"
 #include "bend.h"
+#include "stretch.h"
 
 #include <vector>
-#include <typeinfo>
+//#include <typeinfo>
 #include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 
-namespace psi { namespace opt09 {
-
 using std::vector;
+
+namespace psi {
 
 class SIMPLE_SET {
 
@@ -83,6 +86,7 @@ class SIMPLE_SET {
     double ** get_B(int natom) const;
 
 };
-}}
+
+}
 
 #endif

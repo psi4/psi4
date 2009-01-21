@@ -19,7 +19,7 @@ void read_cart(Molecular_system & molecules)
 {
   unsigned int i, j;
 
-  num_atoms        = molecules.get_num_atoms();
+  num_atoms        = molecules.get_natoms();
   num_allatoms     = num_atoms;
 
   // PSI3 did include dummies in these

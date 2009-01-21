@@ -5,7 +5,7 @@
 
 #include "bend.h"
 
-namespace psi { namespace opt09 {
+namespace psi {
 
 // constructor - makes sure A<C
 BEND::BEND(int id_in, int A_in, int B_in, int C_in) : SIMPLE(id_in) {
@@ -89,4 +89,4 @@ double BEND::get_s(int atom_index, int xyz) const {
   }
 }
 
-}}
+}

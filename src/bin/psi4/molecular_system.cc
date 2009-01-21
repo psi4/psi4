@@ -1,9 +1,13 @@
-#include "Molecular_system.h"
-//#include <psi4-dec.h> // for outfile
+#include <Molecular_system.h>
 
-namespace psi { namespace opt09 {
+namespace psi {
 
-extern "C" {extern FILE *outfile;}
+int Molecular_system::get_natoms(void) const {
+  int i, num=0;
+  for (i=0; i<fragment.size(); ++i)
+    num += fragment.at(i).get_natoms();
+  return num;
+}
 
 // copy constructor
 Molecular_system::Molecular_system(const Molecular_system & sys) {
@@ -46,8 +50,7 @@ Molecular_system::Molecular_system(double conv_factor) {
   }
 }
 
-double **Molecular_system::get_geom(void)
-{
+double **Molecular_system::get_geom(void) const {
   int j,xyz,cnt=0;
   double **lgeom = block_matrix(get_natoms(),3);
   vector<Fragment>::iterator it;
@@ -62,8 +65,7 @@ double **Molecular_system::get_geom(void)
   return lgeom;
 }
 
-double *Molecular_system::get_Z(void)
-{
+double *Molecular_system::get_Z(void) const {
   int j,cnt=0;
   double *lZ = new double [get_natoms()];
   vector<Fragment>::iterator it;
@@ -75,8 +77,7 @@ double *Molecular_system::get_Z(void)
   return lZ;
 }
 
-string *Molecular_system::get_atom_label(void)
-{
+string *Molecular_system::get_atom_label(void) const {
   int j,cnt=0;
   string *latom_label = new string [get_natoms()];
   vector<Fragment>::iterator it;
@@ -88,8 +89,7 @@ string *Molecular_system::get_atom_label(void)
   return latom_label;
 }
 
-void Molecular_system::print(void) const
-{
+void Molecular_system::print(void) const {
   int j,xyz,i=0;
 
   vector<Fragment>::const_iterator it;
@@ -113,4 +113,4 @@ void Molecular_system::print(void) const
   fprintf(outfile,"\n");
 }
 
-}}
+}

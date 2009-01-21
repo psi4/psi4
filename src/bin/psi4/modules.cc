@@ -3,10 +3,9 @@
 #include <psiconfig.h>
 #include <liboptions/liboptions.hpp>
 
-#include "psi4.h"
+#include <psi4-dec.h>
 #include "task.h"
 
-extern FILE *outfile;
   
 namespace psi { 
   namespace input    { int input(); void register_input_options(); }

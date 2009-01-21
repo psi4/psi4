@@ -3,14 +3,14 @@
     \brief simple internal coordinate base class
 */
 
-#ifndef _psi3_src_bin_opt09_simple_h_
-#define _psi3_src_bin_opt09_simple_h_
+#ifndef _psi4_src_bin_opt09_simple_h_
+#define _psi4_src_bin_opt09_simple_h_
 
 #include <cstdio>
-#include <typeinfo>
-extern "C" { extern FILE *outfile; }
+//#include <typeinfo>
+#include <psi4-dec.h>
 
-namespace psi { namespace opt09 {
+namespace psi {
 
 enum intco_type {min, stre, bend, max};
 
@@ -59,6 +59,6 @@ class SIMPLE {
     // virtual bool operator==(const STRETCH & s2) const;
 };
 
-}}
+}
 
 #endif

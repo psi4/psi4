@@ -3,11 +3,10 @@
     \brief Functions for manipulating 3d space vectors
 */
 
-#ifndef _psi3_src_bin_opt09_v3d_h_
-#define _psi3_src_bin_opt09_v3d_h_
+#ifndef _psi4_src_bin_opt09_v3d_h_
+#define _psi4_src_bin_opt09_v3d_h_
 
 #include <cmath>
-//#include "physconst.h"
 #define V3D_SQR(x) ((x)*(x))
 
 namespace psi { namespace v3d {

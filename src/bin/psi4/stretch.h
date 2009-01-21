@@ -3,18 +3,18 @@
     \brief STRETCH class declaration
 */
 
-#ifndef _psi3_src_bin_opt09_stretch_h_
-#define _psi3_src_bin_opt09_stretch_h_
+#ifndef _psi4_src_bin_opt09_stretch_h_
+#define _psi4_src_bin_opt09_stretch_h_
 
 #include <cstdio>
-extern "C" { extern FILE *outfile;}
+#include <psi4-dec.h>
 
 #include "simple.h"
 #include "v3d.h"
 
-namespace psi { namespace opt09 {
-
 using namespace psi::v3d;
+
+namespace psi {
 
 class STRETCH : public SIMPLE {
     int    A;    // atom A index
@@ -51,8 +51,6 @@ class STRETCH : public SIMPLE {
     bool operator==(const STRETCH & s2) const;
 };
 
-
-}}
+}
 
 #endif
-
