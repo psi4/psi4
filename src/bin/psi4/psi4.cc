@@ -107,92 +107,55 @@ int main(int argc, char *argv[])
     // Test a quick call to input. This is to ensure things can link.
     // If we don't make calls to the code it isn't linked in.
    if (run_modules) {
-  // psi_start(&infile,&outfile,&psi_file_prefix,argc-parsed,argv+parsed,0);
-  // ip_cwk_add(":PSI");
-  // ip_cwk_add(":OPT09");
-  // psio_init();
-  // psio_ipv1_config();
-  // 
-  //   Options options;
-  // 
-  //   read_options("PSI4", options);
-  //     // if read from input.dat, scale.  Elsewhere always use au internally
-  //   std::string units = options.get_str_option("UNITS");
-  //   double conv_factor;
-  //   if (units == "BOHR" || units == "AU")
-  //     conv_factor = 1.0;
-  //   else if (units == "ANGSTROMS" || units == "ANGSTROM")
-  //     conv_factor = 1.0 / _bohr2angstroms;
-  // 
-  //   Molecular_system molecules(conv_factor);  // by default, reads geometry from input.dat
-  //   molecules.print(); fflush(outfile);
-  //   options.clear();
-  // 
-  //   try { read_atom_basis(atom_basis, molecules.get_num_atoms()); }
-  //   catch (const char * s) {
-  //     fprintf(outfile,"Unable to determine basis set:\n\t %s\n",s);
-  //     fprintf(stderr, "Unable to determine basis set:\n\t %s\n",s);
-  //     abort();
-  //   }
-  // 
-  //   for (int i=0; i<molecules.get_num_atoms(); ++i)
-  //     strcpy(atom_basis[i],"DZ");
-  // 
-  //   read_options("INPUT", options);
-  //   module.set_prgid("INPUT");
-  //   input::input(options,atom_basis,molecules);
-  //   options.clear();
-  // 
-  //   read_options("CINTS", options);
-  //   module.set_prgid("CINTS");
-  //   CINTS::cints(options,argc, argv);
-  // 
-  //   module.set_prgid("CSCF");
-  //   cscf::cscf(argc, argv);
-  // 
-  //   options.clear();
-  //   module.set_prgid("PSICLEAN");
-  //   psiclean::psiclean(argc, argv);
-  // 
-  //   for (int i=0; i<molecules.get_num_atoms(); ++i)
-  //     strcpy(atom_basis[i],"DZP");
-  // 
-  //   read_options("INPUT", options);
-  //   module.set_prgid("INPUT");
-  //   input::input(options,atom_basis,molecules);
-  //   options.clear();
-  // 
-  //   read_options("CINTS", options);
-  //   module.set_prgid("CINTS");
-  //   CINTS::cints(options,argc, argv);
-  // 
-  //   module.set_prgid("CSCF");
-  //   cscf::cscf(argc, argv);
-  // 
-  //   options.clear();
-  //   module.set_prgid("PSICLEAN");
-  //   psiclean::psiclean(argc, argv);
+   psi_start(&infile,&outfile,&psi_file_prefix,argc-parsed,argv+parsed,0);
+   ip_cwk_add(":OPT09");
+   psio_init();
+   psio_ipv1_config();
+   
+     Options options;
+   
+     read_options("PSI4", options);
+       // if read from input.dat, scale.  Elsewhere always use au internally
+     std::string units = options.get_str_option("UNITS");
+     double conv_factor;
+     if (units == "BOHR" || units == "AU")
+       conv_factor = 1.0;
+     else if (units == "ANGSTROMS" || units == "ANGSTROM")
+       conv_factor = 1.0 / _bohr2angstroms;
+   
+     Molecular_system molecules(conv_factor);  // by default, reads geometry from input.dat
+     molecules.print(); fflush(outfile);
+     options.clear();
+   
+     try { read_atom_basis(atom_basis, molecules.get_num_atoms()); }
+     catch (const char * s) {
+       fprintf(outfile,"Unable to determine basis set:\n\t %s\n",s);
+       fprintf(stderr, "Unable to determine basis set:\n\t %s\n",s);
+       abort();
+     }
+   
+     for (int i=0; i<molecules.get_num_atoms(); ++i)
+       strcpy(atom_basis[i],"DZ");
+   
+     read_options("INPUT", options);
+     module.set_prgid("INPUT");
+     input::input(options,atom_basis,molecules);
+     options.clear();
+   
+     read_options("CINTS", options);
+     module.set_prgid("CINTS");
+     CINTS::cints(options,argc, argv);
+   
+     module.set_prgid("CSCF");
+     cscf::cscf(argc, argv);
+   
+     options.clear();
+     module.set_prgid("PSICLEAN");
+     psiclean::psiclean(argc, argv);
 
-  // SIMPLE_SET simple_set;
-  // simple_set.add_simples_from_input();
-  // simple_set.compute(geom);
-  // simple_set.compute_s(geom);
-  // simple_set.print(1);
-  // simple_set.print_s();
-// 
-  // double * q = simple_set.get_q();
-  // double ** B = simple_set.get_B(molecules.get_natoms());
-// 
-  // fprintf(outfile,"\nInternal values vector\n");
-  // for (i=0; i<simple_set.size(); ++i)
-    // fprintf(outfile,"%15.10lf",q[i]);
-  // fprintf(outfile,"\n");
-// 
-  // fprintf(outfile,"\nB matrix\n");
-  // print_mat(B,simple_set.size(),3*molecules.get_natoms(),outfile);
    }
 
-  // psi_stop(infile, outfile, psi_file_prefix);
+   psi_stop(infile, outfile, psi_file_prefix);
 
   // Close the interpreter
   finalize_ruby();
