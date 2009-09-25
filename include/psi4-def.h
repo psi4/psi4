@@ -6,7 +6,7 @@
 
 namespace psi {
   Module module;
-
+  enum PsiReturnType {Success, Failure, Balk};
   FILE *outfile;
 }
 
