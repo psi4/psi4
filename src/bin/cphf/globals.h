@@ -5,6 +5,7 @@
 
 #ifndef _psi_bin_cphf_globals_h_
 #define _psi_bin_cphf_globals_h_
+#include<psi4-dec.h>
 
 /* Global variables */
 #ifdef EXTERN
@@ -13,11 +14,6 @@
 #else
 #define EXTERN
 #endif
-
-extern "C" {
-EXTERN FILE *infile, *outfile;
-EXTERN char *psi_file_prefix;
-}
 
 namespace psi { namespace cphf {
 

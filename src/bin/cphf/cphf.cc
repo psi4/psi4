@@ -34,7 +34,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libiwl/iwl.h>
@@ -195,17 +194,10 @@ int main(int argc, char *argv[])
 
 namespace psi { namespace cphf {
 
-extern "C" {
-extern const char *gprgid(void);
-}
-
 void init_io(int argc, char *argv[])
 {
   int i, num_unparsed;
   char *progid, *argv_unparsed[100];
-
-  progid = (char *) malloc(strlen(gprgid())+2);
-  sprintf(progid, ":%s",gprgid());
 
   X_only = 0;
   for (i=1, num_unparsed=0; i<argc; ++i) {
@@ -220,7 +212,6 @@ void init_io(int argc, char *argv[])
   free(progid);
   tstart(outfile);
 
-  psio_init(); psio_ipv1_config();
 }
 
 void title(void)
@@ -238,13 +229,6 @@ void exit_io(void)
   psio_done();
   tstop(outfile);
   psi_stop(infile,outfile,psi_file_prefix);
-}
-
-extern "C" const char *gprgid(void)
-{
-   const char *prgid = "CPHF";
-
-   return(prgid);
 }
 
 void init_ioff(void)
