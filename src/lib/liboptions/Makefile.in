@@ -8,9 +8,9 @@ PSITARGET = $(top_objdir)/lib/libPSI_options.a
 
 TRUECSRC = 
 
-TRUECXXSRC = ipv1.cc
+TRUECXXSRC = liboptions.cc
 
-INC = liboptions.hpp
+INC = liboptions.h
 
 LIBOBJ = $(TRUECSRC:%.c=%.o) $(TRUECXXSRC:%.cc=%.o)
 

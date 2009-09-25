@@ -72,7 +72,7 @@ void Options::add_double(const char* cstr_option,double double_default)
 
 void Options::add_str(const char* cstr_option,const char* cstr_default)
 {
-  add_str_option_with_choices(cstr_option,cstr_default,"");
+  add_str(cstr_option,cstr_default,"");
 }
 
 void Options::add_str(const char* cstr_option,const char* cstr_default,const char* cstr_choices)
@@ -160,7 +160,7 @@ std::string Options::get_str(const char* cstr_option)
 // if string is empty then cstr() returns a NULL pointer (a la old C-style)
 char * Options::get_cstr(const char* cstr_option)
 {
-  string temp_string = get_str_option(cstr_option);
+  string temp_string = get_str(cstr_option);
 
   if (temp_string.size() == 0) {
     return NULL;
