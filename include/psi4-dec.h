@@ -5,7 +5,7 @@
 // TODO: Change header file to liboptions.h when appropriate
 #include <libpsio/psio.hpp>
 #include <libutil/libutil.h>
-#include <liboptions/liboptions.hpp>
+#include <liboptions/liboptions.h>
 
 namespace psi {
 
