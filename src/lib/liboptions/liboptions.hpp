@@ -587,6 +587,33 @@ namespace psi {
       add(key, new StringDataType(s, c));
     }
 
+    void add_bool(std::string key, bool b) {
+      add(key,b);
+    }
+    void add_int(std::string key, int i) {
+      add(key,i);
+    }
+    void add_double(std::string key, double d) {
+      add(key,d);
+    }
+    void add_str(std::string key, std::string s, std::string c = "") {
+      add(key,s,c));
+    }
+
+    void set_bool(std::string key, bool b) {
+      assign(key,b);
+    }
+    void set_int(std::string key, int i) {
+      assign(key,i);
+    }
+    void set_double(std::string key, double d) {
+      assign(key,d);
+    }
+    void set_str(std::string key, std::string s, std::string c = "") {
+      assign(key,s,c));
+    }
+
+
     void clear(void) {
       keyvals_.clear();
     }
@@ -607,6 +634,27 @@ namespace psi {
       }
       return keyvals_[key];
     }
+
+    bool get_bool(std::string key) {
+      return(get(key).to_boolean());
+    }
+
+    int get_int(std::string key) {
+      return(get(key).to_integer());
+    }
+
+    double get_double(std::string key) {
+      return(get(key).to_double());
+    }
+
+    std::string get_str(std::string key) {
+      return(get(key).to_string());
+    }
+
+    const char* get_cstr(std::string key) {
+      return(get(key).to_string().c_str());
+    }
+
     Data& operator[](std::string key) {
       return get(key);
     }
