@@ -3,11 +3,12 @@
 
 #include <stdio.h>
 #include <string>
-#include <ruby.h>             // This is from Ruby
+//#include <ruby.h>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>
 #include <libipv1/ip_lib.h>
-#include "task.h"
+#include <libpsio/psio.h>
+//#include "task.h"
 
 #ifdef MAIN
 #define EXT
@@ -73,13 +74,12 @@ enum energy_type { SCF, CISD, CCSD, G3 };
 EXT char **atom_basis; // basis set label for each atom
 
 // Useful functions for converting between C and Ruby arrays
-extern VALUE create_array(unsigned int count, int *array);
-extern VALUE create_array(unsigned int count, double *array);
-extern int create_array(VALUE arr, int **array);
-extern int create_array(VALUE arr, double **array);
+//extern VALUE create_array(unsigned int count, int *array);
+//extern VALUE create_array(unsigned int count, double *array);
+//extern int create_array(VALUE arr, int **array);
+//extern int create_array(VALUE arr, double **array);
   
-/*! All output should be sent to this variable */
-EXT FILE* outfile;
+EXT FILE* infile;
 
 /*! The name of the input file, could be useful for something */
 EXT std::string g_szInputFile;
@@ -91,19 +91,19 @@ EXT std::string g_szOutputFilename;
 EXT bool g_bVerbose;
 
 /*! Global task object */
-EXT Task *g_cTask;
-EXT VALUE g_rbTask;
+//EXT Task *g_cTask;
+//EXT VALUE g_rbTask;
 
 # ifdef MAIN
   /*! All classes that provide a Ruby interface need this to say which module they belong to */
-  EXT VALUE g_rbPsi = Qnil;
+//  EXT VALUE g_rbPsi = Qnil;
   /*! How much to indent the Ruby puts output by. */
   EXT int g_iPutsIndent = 0;
   EXT bool g_bQuietRuby = false;
   EXT bool g_bIRB = false;
   EXT void *g_rbExecNode = NULL;  // Only used in Ruby 1.9+
 # else
-  extern VALUE g_rbPsi;
+//  extern VALUE g_rbPsi;
   extern int g_iPutsIndent;
   extern bool g_bQuietRuby;
   extern bool g_bIRB;

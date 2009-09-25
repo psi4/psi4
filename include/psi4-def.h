@@ -6,6 +6,8 @@
 
 namespace psi {
   Module module;
+
+  FILE *outfile;
 }
 
 #endif
