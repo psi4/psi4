@@ -98,7 +98,12 @@ int read_options(std::string name, Options & options) {
     options.add_cstr("AO_BASIS", "NONE");
     options.add_bool("DELETE_TEI", true);
   }
-
+  else if(name == "CLAG") {
+    options.get_bool("WRITE_CAS_FILES",0);
+    options.get_cstr("DERTYPE","NONE");
+    options.get_cstr("WFN","NONE");
+    options.get_int("ROOT",1);
+  }
   options.read_options();
   options.print(name);
  }
