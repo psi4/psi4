@@ -1,0 +1,73 @@
+.TH stable 1 " 23 Aug, 2003" "" ""
+.  \"
+.  \" Notice of Document Modification
+.  \"
+.  \"   man page created by David Sherrill, 23 Aug 2003
+.  \"
+.  \"
+.SH NAME
+stable \- MO Hessian stability analysis program
+
+.SH DESCRIPTION
+.LP
+The program
+.B stable
+performs a stability analysis on the molecular orbitals by
+diagonalizing the molecular orbital Hessian.  The analysis
+includes orbital rotations which may break spin or spatial
+symmetry.  If an instability is detected (i.e., there are
+negative eigenvalues of the MO Hessian), the previous
+Hartree-Fock self consistent field (SCF) computation has landed
+on a local minimum, not the global minimum, in orbital
+rotation space.  For spatial- or symmetry-breaking rotations,
+this merely means that there is another orbital occupation or a
+UHF wavefunction with a lower energy.  For instabilties which
+preserve the reference type (RHF or UHF) and are totally symmetric,
+this suggests that the SCF computation has simply found the wrong
+solution and should be re-run using a new initial guess.
+
+Instabilities corresponding to spatial symmetry breaking rotatios
+can be resolved by re-running the calculation in a lower 
+computational point group.  (It may also be necessary to employ
+some trick to break the symmetry of the initial guess wavefunction).
+Instabilities corresponding to spin symmetry breaking rotations
+(RHF->UHF) can be resolved by re-running the SCF using a UHF
+reference.
+
+For UHF wavefunctions with totally-symmetric instabilities, it is
+possible to follow the instability automatically toward the global
+minimum by setting FOLLOW=TRUE.
+
+.SH INPUT FORMAT
+.LP
+Input for this program is read from the file
+.pN INPUT .
+The following keywords are valid:
+
+.IP "\fBCACHELEV =\fP \fIinteger\fP"
+This is the cache level used for the DPD files.  It functions the
+same way as in the coupled-cluster codes.  Currently, this is 
+hardwired to 0.
+
+.IP "\fBFOLLOW =\fP \fIboolean\fP"
+If TRUE, then the eigenvector corresponding to the most negative 
+eigenvalue of the MO Hessian will be followed to try to find a lower
+energy Hartree-Fock solution.  The orbitals will be rotated, and the
+cscf module should be re-run using these new guess orbitals.
+
+.IP "\fBNUM\_EVECS\_PRINT =\fP \fIinteger\fP"
+Gives the number of MO Hessian eigenvectors to print.
+
+.IP "\fBPRINT =\fP \fIinteger\fP"
+The print level determines how much information is printed by the
+program.  Values typically range from 1 (minimal printing) to 5 (very
+verbose printing for debugging only).  The default is 1.
+
+.IP "\fBREFERENCE =\fP \fIstring\fP"
+This is the reference type, RHF, ROHF, or UHF.  The default is RHF.
+
+.IP "\fBSCALE =\fP \fIreal\fP"
+This is the scale factor used for taking steps in eigenvector
+following.  Normal values would be between 0 and 1.  The default is 0.5.
+
+

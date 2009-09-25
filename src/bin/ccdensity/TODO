@@ -1,0 +1,38 @@
+Spin-adaptation and general clean-up of CCDENSITY:
+
+X (1) dump
+X (2) add_ref
+X (3) add_core (nothing to be done here)
+X (4) deanti -- still need to make the energy calculation optional and account for all factors of 2
+X (5) fold -- Still need to make energy calculation optional.
+X (6) sortI
+X (7) sortone
+X (8) relax_D
+X (9) relax_I
+X (10) build_Z
+X (11) build_A
+X (12) build_X
+X (13) lag -- Still need proper spin adaptation of each term to minimize contractions
+ X (a) Iij
+ X (b) Iab
+ X (c) Iia
+ X (d) Iai
+X (14) energy -- Still need to make energy calc optional
+(15) twopdm
+ X (a) Gijkl
+ X (b) Gabcd
+ X (c) Gijka
+ X (d) Gaibc
+ X (e) Gijab
+  (f) Giajb -- save until after (T) density code is finished
+(16) V_build -- save until later
+(17) G_build -- save until later
+(18) onepdm -- must first fully spin-adapt Lagrangian
+
+Other tasks:
+
+(1) Make use of swap23 option to dpd_buf4_dump() to save disk space?
+
+(2) Modify get_params.c and get_moinfo.c so that the former is always called first in the CC codes.
+
+X (3) In EOM-CCSD gradient cases, force params.ref=1 (ROHF) to avoid having the spin-adapt the Xi and Zeta codes for now.

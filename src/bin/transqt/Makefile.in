@@ -1,0 +1,41 @@
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+LD = $(CXX)
+LDLIBS += $(LAPACK) $(BLAS)
+CDEF += -DUSE_BLAS
+
+PSILIBS = -lPSI_iwl -lPSI_qt -lPSI_chkpt -lPSI_psio -lPSI_ciomr -lPSI_ipv1
+
+CSRC = \
+gprgid.c \
+
+CXXSRC = transqt.cc \
+semicanonical.cc \
+transform_one.cc \
+transform_two.cc \
+transform_two_mp2.cc \
+transform_two_mp2r12a_gr.cc \
+transform_two_mp2r12a_t.cc \
+transform_two_uhf.cc \
+transform_two_backtr_uhf.cc \
+yoshimine.cc \
+frozen_core.cc \
+backsort.cc \
+cleanup.cc
+
+BINOBJ = $(CSRC:%.c=%.o) $(CXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+ifneq ($(DODEPEND),no)
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(BINOBJ:%.o=%.d)
+endif
+
+install_man:: transqt.1
+	$(MKDIRS) $(DESTDIR)$(mandir)/man1
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(mandir)/man1
+

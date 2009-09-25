@@ -1,0 +1,9 @@
+DETCI TO-DO LIST
+===============================================================
+Buffers bigger than 2E9 still don't work.  Known issues:
+   o Calls to wreadw can't handle size > 2E9
+   o vector.c contains lots of calls to be done on a per-buffer basis
+     which allow only integer buffer sizes
+   o need to finish converting to libpsio to avoid 2GB file pointer problem
+     on Linux
+

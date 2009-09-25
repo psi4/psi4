@@ -1,0 +1,555 @@
+/*! \defgroup DF-MP2 df-mp2: Density Fitted MP2 */
+
+/*! \file
+ *  \ingroup DF-MP2
+ *  \brief Density-fitted MP2
+ *
+ *  DF-MP2
+ *
+ *  Density-Fitted MP2 Program (no symmetry)
+ *
+ *  Justin Turney, University of Georgia
+ *  C. David Sherrill, Georgia Institute of Technology
+ *  Andy Simmonett, University of Georgia
+ *  Edward Hohenstein, Georgia Institute of Technology
+ *
+ *  Created 7/15/09
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <iostream>
+#define DEBUG 0
+#define TIME_DF_MP2 1
+
+#include <omp.h>
+#include <psifiles.h>
+#include <libciomr/libciomr.h>
+#include <libpsio/psio.hpp>
+#include <libchkpt/chkpt.hpp>
+#include <libipv1/ip_lib.h>
+#include <libiwl/iwl.h>
+#include <libqt/qt.h>
+
+#include <iostream>
+
+#include <libmints/basisset.h>
+#include <libmints/onebody.h>
+#include <libmints/twobody.h>
+#include <libmints/integral.h>
+#include <libmints/factory.h>
+#include <libmints/symmetry.h>
+#include <libmints/wavefunction.h>
+// #include <libmints/mints.h>
+
+
+namespace psi{ namespace dfmp2{
+  void title(void);
+}}
+
+FILE *infile = NULL, *outfile = NULL;
+char *psi_file_prefix = NULL;
+
+extern "C" {
+  char *gprgid()
+    {
+      const char *prgid = "DF-MP2";
+      return const_cast<char*>(prgid);
+    }
+}
+
+std::string to_string(const int val);  // in libmints/matrix.cc
+
+using namespace psi;
+using namespace psi::dfmp2;
+
+int main(int argc, char * argv[]) {
+
+  psi_start(&infile, &outfile, &psi_file_prefix, argc-1, argv+1, 0);
+  tstart(outfile);
+
+  title();
+
+  // Required for libmints, allocates and computes:
+  // ioff, fac, df, bc
+  Wavefunction::initialize_singletons();
+
+  PSIO* psio = new PSIO;
+  psiopp_ipv1_config(psio);
+  Chkpt* chkpt = new Chkpt(psio, PSIO_OPEN_OLD);
+
+  // Create a new matrix factory
+  MatrixFactory factory;
+
+  // Initialize the factory with data from checkpoint
+  factory.init_with_chkpt(chkpt);
+
+  // Form basis object:
+  BasisSet* basis = new BasisSet(chkpt);
+  char *ri_basis,*orbital_basis;
+  int errcod;
+  if(ip_exist("RI_BASIS",0)) {
+      errcod = ip_string("RI_BASIS", &(ri_basis),0);
+  }else{
+      fprintf(outfile, "Please specify RI_BASIS\n");
+      return EXIT_FAILURE;
+  }
+  if(errcod){
+      fprintf(outfile, "Error reading RI_BASIS\n");
+      return EXIT_FAILURE;
+  }
+  errcod = ip_string("BASIS", &(orbital_basis),0);
+  if(errcod){
+      fprintf(outfile, "Error reading BASIS\n");
+      return EXIT_FAILURE;
+  }
+  fprintf(outfile, 
+    "  Using the %s basis set for the orbitals, with the %s RI basis\n\n",
+    orbital_basis,ri_basis);
+  BasisSet* ribasis;
+  if(ip_exist("RI_BASISFILE",0)){
+    //User provided RI_BASISFILE
+  	char* ri_basisfile;
+  	errcod = ip_string("RI_BASISFILE", &(ri_basisfile),0);
+  	if (errcod) {
+  		fprintf(outfile,"Error reading RI_BASISFILE %s\n",ri_basisfile);
+  		return EXIT_FAILURE;
+  	} else {
+  		ribasis = new BasisSet(chkpt, ri_basisfile, ri_basis);
+  	}
+  } else {
+  	//Default RI_BASISFILE
+  	ribasis = new BasisSet(chkpt, "GENBAS", ri_basis); //find pbasis via the prefx
+  }
+  BasisSet* zero = BasisSet::zero_basis_set();
+  
+  // Taken from mp2 module, get_params.cc 
+  // get parameters related to SCS-MP2 or SCS-N-MP2 
+  // see papers by S. Grimme or J. Platz 
+  int scs = 0;
+  int scsn = 0;
+  double scs_scale_os = 6.0/5.0;
+  double scs_scale_ss = 1.0/3.0;
+  errcod = ip_boolean("SCS_N",&(scsn),0);
+  errcod = ip_boolean("SCS",&(scs),0);
+  if (scs == 1) {
+    errcod = ip_data("SCALE_OS","%lf",&(scs_scale_os),0);
+    errcod = ip_data("SCALE_SS","%lf",&(scs_scale_ss),0);
+    fprintf(outfile,"\n  Spin-Component Scaled RI-MP2 requested\n");
+    fprintf(outfile,"    Opposite-spin scaled by %10.4lf\n",scs_scale_os);
+    fprintf(outfile,"    Same-spin scaled by     %10.4lf\n",scs_scale_ss);
+    }
+  if (scsn == 1) {
+    fprintf(outfile,"\n  SCSN-RI-MP2 energies will be printed\n");
+  }
+    
+  int nirreps = chkpt->rd_nirreps();
+  int *clsdpi = chkpt->rd_clsdpi();
+  int *orbspi = chkpt->rd_orbspi();
+  int *frzcpi = chkpt->rd_frzcpi();
+  int *frzvpi = chkpt->rd_frzvpi();
+  int ndocc = 0;
+  int nvirt = 0;
+  int nfocc = 0;
+  int nfvir = 0;
+  int norbs = 0;
+  int nact_docc = 0;
+  int nact_virt = 0;
+  for(int h=0; h < nirreps; ++h){
+      nfocc     += frzcpi[h];
+      nfvir     += frzvpi[h];
+      ndocc     += clsdpi[h];
+      nact_docc += clsdpi[h] - frzcpi[h];
+      nvirt     += orbspi[h] - clsdpi[h];
+      nact_virt += orbspi[h] - frzvpi[h] - clsdpi[h];
+      norbs     += orbspi[h];
+  }
+
+  fprintf(outfile, "\n\t\t==============================================\n");
+  fprintf(outfile, "\t\t #ORBITALS #RI  FOCC DOCC AOCC AVIR VIRT FVIR \n");
+  fprintf(outfile, "\t\t----------------------------------------------\n");
+  fprintf(outfile, "\t\t  %5d  %5d  %4d %4d %4d %4d %4d %4d\n",
+          norbs,ribasis->nbf(),nfocc,ndocc,nact_docc,nact_virt,nvirt,nfvir);
+  fprintf(outfile, "\t\t==============================================\n");
+
+  double escf = chkpt->rd_escf();
+
+  // Read in C coefficients
+
+  SimpleMatrix *C_so = 
+    factory.create_simple_matrix("MO coefficients (SO basis)");
+  double **vectors = chkpt->rd_scf();
+  if (vectors == NULL) {
+    fprintf(stderr, "Could not find MO coefficients. Run cscf first.\n");
+    return EXIT_FAILURE;
+  }
+  C_so->set(vectors);
+  free_block(vectors);
+  double **Umat = chkpt->rd_usotbf();
+  SimpleMatrix *U = factory.create_simple_matrix("SO->BF");
+  U->set(Umat);
+  free_block(Umat);
+  // Transfrom the eigenvectors from the SO to the AO basis
+  SimpleMatrix *C = 
+    factory.create_simple_matrix("MO coefficients (AO basis)");
+  C->gemm(true, false, 1.0, U, C_so, 0.0);
+
+  // Load in orbital energies
+  double *orbital_energies = chkpt->rd_evals();
+
+  // Create integral factory
+  IntegralFactory rifactory(ribasis, zero, basis, basis);
+  IntegralFactory rifactory_J(ribasis, zero, ribasis, zero);
+    
+  TwoBodyInt* Jint = rifactory_J.eri();
+  double **J = block_matrix(ribasis->nbf(), ribasis->nbf());
+  double **J_mhalf = block_matrix(ribasis->nbf(), ribasis->nbf());
+  const double *Jbuffer = Jint->buffer();
+
+#ifdef TIME_DF_MP2
+  timer_init();
+  timer_on("Form J");
+#endif
+
+  int index = 0;
+    
+  for (int MU=0; MU < ribasis->nshell(); ++MU) {
+    int nummu = ribasis->shell(MU)->nfunction();
+        
+    for (int NU=0; NU < ribasis->nshell(); ++NU) {
+      int numnu = ribasis->shell(NU)->nfunction();
+    
+      Jint->compute_shell(MU, 0, NU, 0);
+            
+      index = 0;
+      for (int mu=0; mu < nummu; ++mu) {
+        int omu = ribasis->shell(MU)->function_index() + mu;
+                
+        for (int nu=0; nu < numnu; ++nu, ++index) {
+          int onu = ribasis->shell(NU)->function_index() + nu;
+
+          J[omu][onu] = Jbuffer[index];
+        }
+      }
+    }
+  }
+    
+  // fprintf(outfile, "J:\n");
+  // print_mat(J, ribasis->nbf(), ribasis->nbf(), outfile);    
+  // Invert J matrix
+  // invert_matrix(J, J_inverse, ribasis->nbf(), outfile);
+  // fprintf(outfile, "J^-1:\n");
+  // print_mat(J_inverse, ribasis->nbf(), ribasis->nbf(), outfile);
+  // Form J^-1/2
+  // First, diagonalize J
+  // the C_DSYEV call replaces the original matrix J with its eigenvectors
+  double* eigval = init_array(ribasis->nbf());
+  int lwork = ribasis->nbf() * 3;
+  double* work = init_array(lwork);
+  int stat = C_DSYEV('v','u',ribasis->nbf(),J[0],ribasis->nbf(),eigval,
+    work,lwork);
+  if (stat != 0) {
+    fprintf(outfile, "C_DSYEV failed\n");
+    exit(PSI_RETURN_FAILURE);
+  }
+  free(work);
+
+  // Now J contains the eigenvectors of the original J
+  // Copy J to J_copy
+  double **J_copy = block_matrix(ribasis->nbf(), ribasis->nbf());
+  C_DCOPY(ribasis->nbf()*ribasis->nbf(),J[0],1,J_copy[0],1); 
+  
+  // Now form J^{-1/2} = U(T)*j^{-1/2}*U,
+  // where j^{-1/2} is the diagonal matrix of the inverse square roots
+  // of the eigenvalues, and U is the matrix of eigenvectors of J
+  for (int i=0; i<ribasis->nbf(); i++) {
+    if (eigval[i] < 1.0E-10)
+      eigval[i] = 0.0;
+    else {
+      eigval[i] = 1.0 / sqrt(eigval[i]);
+    }
+    // scale one set of eigenvectors by the diagonal elements j^{-1/2}
+    C_DSCAL(ribasis->nbf(), eigval[i], J[i], 1);
+  }
+  free(eigval);
+
+  // J_mhalf = J_copy(T) * J
+  C_DGEMM('t','n',ribasis->nbf(),ribasis->nbf(),ribasis->nbf(),1.0,
+    J_copy[0],ribasis->nbf(),J[0],ribasis->nbf(),0.0,J_mhalf[0],ribasis->nbf());
+
+  free_block(J);
+  free_block(J_copy);
+
+#ifdef TIME_DF_MP2
+  timer_off("Form J");
+#endif
+
+//  const double *buffer = eri->buffer();
+  
+  double** Co   = block_matrix(norbs, nact_docc);
+  double** Cv   = block_matrix(norbs, nact_virt);
+  double** half = block_matrix(nact_docc, norbs);
+  double* epsilon_act_docc = new double[nact_docc];
+  double* epsilon_act_virt = new double[nact_virt];
+  int*    docc_sym = new int[nact_docc];
+  int*    virt_sym = new int[nact_virt];
+  int offset = 0;
+  int act_docc_count  = 0;
+  int act_virt_count  = 0;
+  for(int h=0; h<nirreps; ++h){
+    // Skip over the frozen core orbitals in this irrep
+    offset += frzcpi[h];
+    // Copy over the info for active occupied orbitals
+    for(int i=0; i<clsdpi[h]-frzcpi[h]; ++i){
+      for (int mu=0; mu<norbs; ++mu)
+        Co[mu][act_docc_count] = C->get(mu, offset);
+      epsilon_act_docc[act_docc_count] = orbital_energies[offset];
+      docc_sym[act_docc_count] = h;
+      ++act_docc_count;
+      ++offset;
+    }
+    // Copy over the info for active virtual orbitals
+    for(int a=0; a<orbspi[h]-clsdpi[h]-frzvpi[h]; ++a){
+      for (int mu=0; mu<norbs; ++mu)
+        Cv[mu][act_virt_count] = C->get(mu, offset);
+      epsilon_act_virt[act_virt_count] = orbital_energies[offset];
+      virt_sym[act_virt_count] = h;
+      ++offset;
+      ++act_virt_count;
+    }
+    // Skip over the frozen virtual orbitals in this irrep
+    offset += frzvpi[h];
+  }
+  Chkpt::free(orbital_energies);
+
+#if DEBUG 
+  fprintf(outfile, "Co:\n");
+  print_mat(Co, norbs, nact_docc, outfile);
+  fprintf(outfile, "Cv:\n");
+  print_mat(Cv, norbs, nact_virt, outfile);
+#endif
+
+  double **mo_p_ia = block_matrix(ribasis->nbf(),nact_docc*nact_virt);
+    
+  // find out the max number of P's in a P shell
+
+  int maxPshell = 0;
+  for (int Pshell=0; Pshell < ribasis->nshell(); ++Pshell) {
+    int numPshell = ribasis->shell(Pshell)->nfunction();
+    if (numPshell > maxPshell) maxPshell = numPshell;
+  }
+  double*** temp = new double**[maxPshell];
+  for (int P=0; P<maxPshell; P++) temp[P] = block_matrix(norbs, norbs);
+
+#ifdef TIME_DF_MP2
+  timer_on("Form mo_p_ia");
+#endif
+
+
+const double **buffer;
+TwoBodyInt **eri;
+
+#pragma omp parallel
+{
+  if(omp_get_thread_num()==0){
+    std::cout << "OMP_GET_NUM_THREADS=" << omp_get_num_threads() << std::endl;
+    eri = new TwoBodyInt*[omp_get_num_threads()];
+    buffer = new const double*[omp_get_num_threads()];
+      for(int i = 0;i < omp_get_num_threads();++i){
+         eri[i] = rifactory.eri();
+         buffer[i] = eri[i]->buffer();
+         std::cout << buffer[i] << std::endl;
+      }
+      std::cout << "outside loop" << std::endl;
+    }
+}
+
+int numPshell,Pshell,MU,NU,P,mu,nu,nummu,numnu,omu,onu;
+for (Pshell=0; Pshell < ribasis->nshell(); ++Pshell) {
+    numPshell = ribasis->shell(Pshell)->nfunction();
+    for (P=0; P<numPshell; ++P){
+       zero_mat(temp[P], norbs, norbs);
+    }
+    
+#pragma omp parallel
+{
+#pragma omp for private(MU,NU,P,mu,nu,nummu,numnu,omu,onu,index)
+    for (MU=0; MU < basis->nshell(); ++MU) {
+      nummu = basis->shell(MU)->nfunction();
+      for (NU=0; NU <= MU; ++NU) {
+        numnu = basis->shell(NU)->nfunction();
+        std::cout << "Thread: " << omp_get_thread_num() <<std::endl;
+        eri[omp_get_thread_num()]->compute_shell(Pshell, 0, MU, NU);
+        for (P=0, index=0; P < numPshell; ++P) {
+          for (mu=0; mu < nummu; ++mu) {
+            omu = basis->shell(MU)->function_index() + mu;
+            for (nu=0; nu < numnu; ++nu, ++index) {
+              onu = basis->shell(NU)->function_index() + nu;
+              temp[P][omu][onu] = buffer[omp_get_thread_num()][index]; // (oP | omu onu) integral
+              temp[P][onu][omu] = buffer[omp_get_thread_num()][index]; // (oP | onu omu) integral
+            }
+          }
+        } // end loop over P in Pshell
+      } // end loop over NU shell
+    } // end loop over MU shell
+} //CLOSE OMP PARALLEL  
+    std::cout << "WOOT!" << std::endl;
+    // now we've gone through all P, mu, nu for a given Pshell
+    // transform the integrals for all P in the given P shell
+            
+    for (int P=0, index=0; P < numPshell; ++P) {
+      int oP = ribasis->shell(Pshell)->function_index() + P;
+                    
+      // Do transform
+      C_DGEMM('T', 'N', nact_docc, norbs, norbs, 1.0, Co[0], 
+        nact_docc, temp[P][0], norbs, 0.0, half[0], norbs);
+      C_DGEMM('N', 'N', nact_docc, nact_virt, norbs, 1.0, half[0],
+        norbs, Cv[0], nact_virt, 0.0, mo_p_ia[oP], nact_virt);
+         
+    }
+  } // end loop over P shells; done with forming MO basis (P|ia)'s
+   
+  // should free temp here
+  for (int P=0; P<maxPshell; P++) free_block(temp[P]);
+  // destruct temp[] itself?
+ 
+#ifdef TIME_DF_MP2
+  timer_off("Form mo_p_ia");
+#endif
+
+  // fprintf(outfile, "mo_p_ia:\n");
+  // print_mat(mo_p_ia, ribasis->nbf(), nact_docc*nact_virt, outfile);
+    
+#ifdef TIME_DF_MP2
+  timer_on("Form B_ia^P");
+#endif
+
+  // mo_p_ia has integrals
+  // B_ia^P = Sum_Q (i a | Q) (J^-1/2)_QP
+  double **B_ia_p = block_matrix(nact_docc * nact_virt, ribasis->nbf());
+
+  C_DGEMM('T','N',nact_docc*nact_virt,ribasis->nbf(),ribasis->nbf(),
+    1.0, mo_p_ia[0], nact_docc*nact_virt, J_mhalf[0], ribasis->nbf(),
+    0.0, B_ia_p[0], ribasis->nbf());
+
+  free_block(mo_p_ia);
+  free_block(J_mhalf);
+
+#ifdef TIME_DF_MP2
+  timer_off("Form B_ia^P");
+#endif
+
+  // fprintf(outfile, "B_ia_p:\n");
+  // print_mat(B_ia_p, nact_docc*nact_virt, ribasis->nbf(), outfile);
+
+
+#ifdef TIME_DF_MP2
+  timer_on("Compute EMP2");
+#endif
+    
+  double *I = init_array(nact_virt*nact_virt);
+  double emp2 = 0.0;
+  double os_mp2 = 0.0, ss_mp2 = 0.0;
+  
+
+  // loop over i>=j pairs
+  for (int i=0; i < nact_docc; ++i) {
+    for (int j=0; j <= i; ++j) {
+      int ijsym = docc_sym[i] ^ docc_sym[j];
+
+      // get the integrals for this pair of occupied orbitals
+      #ifdef TIME_DF_MP2
+        timer_on("Construct I");
+      #endif
+      int ia, jb;
+      for (int a=0,ab=0; a < nact_virt; ++a) {
+        ia = nact_virt*i + a;
+        for (int b=0; b < nact_virt; ++b, ++ab) {
+          jb = nact_virt*j + b;
+          int absym = virt_sym[a] ^ virt_sym[b];
+          if (ijsym == absym)
+            I[ab] = C_DDOT(ribasis->nbf(), B_ia_p[ia], 1, B_ia_p[jb], 1);
+          else
+            I[ab] = 0.0;
+          // I[ab] = (ia|jb) for the fixed i,j
+          // note (I[ab] = (ia|jb)) != (I[ba] = (ib|ja))
+        }
+      } // end loop over a
+      #ifdef TIME_DF_MP2
+        timer_off("Construct I");
+      #endif
+	  double iajb, ibja, tval, denom;
+	  int ab, ba;
+      for (int a=0,ab=0; a < nact_virt; ++a) {
+        for (int b=0; b < nact_virt; ++b,ab++) {
+          int ba = b * nact_virt + a;
+          iajb = I[ab];
+          ibja = I[ba];
+          denom = 1.0 /
+            (epsilon_act_docc[i] + epsilon_act_docc[j] -
+             epsilon_act_virt[a] - epsilon_act_virt[b]);
+          
+          tval = ((i==j)?0.5:1.0) * (iajb * iajb + ibja * ibja) * denom;
+          os_mp2 += tval;
+          ss_mp2 += tval - ((i==j)?1.0:2.0)*(iajb*ibja)*denom;
+
+        }
+      }
+
+    } // end loop over j<=i
+  } // end loop over i
+  emp2 = os_mp2 + ss_mp2;
+
+#ifdef TIME_DF_MP2
+  timer_off("Compute EMP2");
+  timer_done();
+#endif
+
+  free(I);
+  free_block(B_ia_p);
+
+  fprintf(outfile,"\tRI-MP2 correlation energy         = %20.15f\n",emp2);
+  fprintf(outfile,"      * RI-MP2 total energy               = %20.15f\n\n",
+    escf + emp2);
+  fprintf(outfile,"\tOpposite-Spin correlation energy  = %20.15f\n",os_mp2);
+  fprintf(outfile,"\tSame-Spin correlation energy      = %20.15f\n\n",ss_mp2);
+  fprintf(outfile,"      * SCS-RI-MP2 total energy           = %20.15f\n\n",
+    escf + scs_scale_os*os_mp2 + scs_scale_ss*ss_mp2);
+  if (scsn) {
+    fprintf(outfile,"      * SCSN-RI-MP2 total energy          = %20.15f\n\n",
+      escf + 1.76*ss_mp2);
+    }
+    
+  // Shut down psi
+    delete basis;
+    delete ribasis;
+    delete zero;
+    delete chkpt;
+    delete psio;
+    
+  tstop(outfile);
+  fflush(outfile);
+  psi_stop(infile,outfile, psi_file_prefix);
+
+  Chkpt::free(clsdpi);
+  Chkpt::free(frzcpi);
+  Chkpt::free(frzvpi);
+  Chkpt::free(orbspi);
+
+  return PSI_RETURN_SUCCESS;
+}
+
+namespace psi{ namespace dfmp2{
+
+void title(void)
+{
+  fprintf(outfile, "\t\t\t*************************\n");
+  fprintf(outfile, "\t\t\t*                       *\n");
+  fprintf(outfile, "\t\t\t*         DF-MP2        *\n");
+  fprintf(outfile, "\t\t\t*                       *\n");
+  fprintf(outfile, "\t\t\t*************************\n");
+  fflush(outfile);
+}
+
+}} // end namespaces
+

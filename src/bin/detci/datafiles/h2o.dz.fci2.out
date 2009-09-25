@@ -1,0 +1,139 @@
+******************************************************************************
+tstart called on seldon
+Mon Nov 18 22:55:14 1996
+
+
+*******************************************************
+                      D E T C I  
+
+                    David Sherrill
+                     June 24 1996
+*******************************************************
+
+
+
+
+PARAMETERS: 
+   EX LVL       =       10      H0 BLOCKSIZE =       40
+   VAL EX LVL   =        0      H0 MP2GUESS  =       no
+   NPRINT       =       20      MAX DET      =   1500000
+   MAXITER      =       10      FREEZE CORE  =      yes
+   NUM ROOTS    =        1      ICORE        =        1
+   PRINT        =        2      FCI          =      yes
+   CONV         =        6      MIXED        =      yes
+   E CONV       =        6      MIXED4       =      yes
+   OEI FILE     =       71      R4S          =       no
+   OEI ERASE    =       no      REPL OTF     =       no
+   TEI FILE     =       72      DIAG METHOD  =      SEM
+   S            =        0      Ms0          =      yes
+   TEI ERASE    =       no      MAXNVECT     =       12
+   RESTART      =       no      RESTART VECS =        0
+   GUESS VECTOR =  H0BLOCK      OPENTYPE     =     NONE
+   GENCI ALG    =       no
+
+   FILES        =      50  51  52  53
+
+ORBITALS:
+   NBFSO        =       14      NUM ALP      =        5
+   ORBS IN CI   =       12      NUM ALP EXPL =        3
+   FROZEN CORE  =        2      NUM BET      =        5
+   RESTR CORE   =        0      NUM BET EXPL =        3
+   IOPEN        =       no
+   RAS1 LVL     =        2      A RAS3 MAX   =        3
+   RAS1 MIN     =        4      B RAS3 MAX   =        3
+   A RAS1 LVL   =        2      RAS4 LVL     =       12
+   A RAS1 MIN   =        2      A RAS4 MAX   =        0
+   A RAS1 MAX   =        5      B RAS4 MAX   =        0
+   B RAS1 LVL   =        2      RAS4 MAX     =        0
+   B RAS1 MIN   =        2      A RAS34 MAX  =        3
+   B RAS1 MAX   =        5      B RAS34 MAX  =        3
+   RAS3 LVL     =        3      RAS34 MAX    =        6
+   RAS3 MAX     =        6
+
+   DOCC         =  3  0  1  1 
+   SOCC         =  0  0  0  0 
+   FROZEN DOCC  =  2  0  0  0 
+   FROZEN UOCC  =  0  0  0  0 
+   RAS 1        =  1  0  1  1 
+   RAS 2        =  0  0  0  0 
+   RAS 3        =  5  0  1  3 
+   RAS 4        =  0  0  0  0 
+*******************************************************
+
+
+There are 220 alpha strings
+There are 220 beta strings
+CI space contains    4 blocks
+
+CI space requires 12536 determinants
+
+Check SCF Energy from 1- and 2-electron integrals
+
+SCF Energy (ref):            -76.0110023991
+Nuclear repulsion energy:      9.2342185209
+One-electron energy:         -22.4682305194
+Two-electron energy:           9.4431860277
+Frozen core energy:          -72.2201764283
+Total electronic energy:     -85.2452209200
+Total SCF energy:            -76.0110023991
+
+Forming diagonal elements of H
+
+Forming H0 block
+
+*** H0 Block Eigenvalue = -76.01710366
+
+Find the roots by the Simultaneous Expansion Method 
+Energy convergence = 1e-06
+RMS CI vector convergence = 1e-06
+
+Using 1 initial trial vectors
+Iter   0  Root 1 = -76.017103657    Delta_E -1.303E+01   Delta_C 4.862E-01
+Iter   1  Root 1 = -76.095909518    Delta_E -7.881E-02   Delta_C 1.383E-01
+Iter   2  Root 1 = -76.100515457    Delta_E -4.606E-03   Delta_C 3.509E-02
+Iter   3  Root 1 = -76.100812335    Delta_E -2.969E-04   Delta_C 9.812E-03
+Iter   4  Root 1 = -76.100837804    Delta_E -2.547E-05   Delta_C 2.415E-03
+Iter   5  Root 1 = -76.100839064    Delta_E -1.260E-06   Delta_C 7.230E-04
+Iter   6  Root 1 = -76.100839189    Delta_E -1.251E-07   Delta_C 1.900E-04
+Iter   7  Root 1 = -76.100839197    Delta_E -8.253E-09   Delta_C 4.778E-05
+Iter   8  Root 1 = -76.100839198    Delta_E -5.642E-10   Delta_C 1.451E-05
+Iter   9  Root 1 = -76.100839198    Delta_E -5.974E-11   Delta_C 4.284E-06
+Iter  10  Root 1 = -76.100839198    Delta_E -5.150E-12   Delta_C 1.295E-06
+
+Maximum number of iterations reached
+
+ROOT 1 ECI = -76.1008391981013
+
+
+The 20 most important determinants
+
+    1   -0.982307  (   62,   62)  3A1 X  1B1 X  1B2 X  
+*   2    0.057635  (   68,   68)  3A1 X  1B2 X  2B1 X  
+*   3    0.046874  (   64,   64)  1B1 X  1B2 X  5A1 X  
+*   4    0.039581  (   74,   74)  3A1 X  1B1 X  2B2 X  
+*   5   -0.036407  (   64,   68)  3A1 B  1B1 A  1B2 X  5A1 A  2B1 B  
+*   6   -0.036407  (   68,   64)  3A1 A  1B1 B  1B2 X  5A1 B  2B1 A  
+*   7    0.033715  (   98,   98)  3A1 X  1B1 X  4B2 X  
+*   8    0.028785  (   74,   98)  3A1 X  1B1 X  2B2 A  4B2 B  
+*   9    0.028785  (   98,   74)  3A1 X  1B1 X  2B2 B  4B2 A  
+*  10    0.027305  (   68,   74)  3A1 X  1B1 B  1B2 A  2B1 A  2B2 B  
+*  11    0.027305  (   74,   68)  3A1 X  1B1 A  1B2 B  2B1 B  2B2 A  
+*  12    0.026880  (   62,   70)  3A1 A  1B1 A  1B2 X  5A1 B  2B1 B  
+*  13    0.026880  (   70,   62)  3A1 B  1B1 B  1B2 X  5A1 A  2B1 A  
+*  14    0.025979  (  113,  113)  3A1 X  1B1 X  6A1 X  
+*  15   -0.024815  (   64,   74)  3A1 B  1B1 X  1B2 A  5A1 A  2B2 B  
+*  16   -0.024815  (   74,   64)  3A1 A  1B1 X  1B2 B  5A1 B  2B2 A  
+*  17    0.022414  (   68,   98)  3A1 X  1B1 B  1B2 A  2B1 A  4B2 B  
+*  18    0.022414  (   98,   68)  3A1 X  1B1 A  1B2 B  2B1 B  4B2 A  
+*  19   -0.021504  (   62,   80)  3A1 X  1B1 A  1B2 A  2B1 B  2B2 B  
+*  20   -0.021504  (   80,   62)  3A1 X  1B1 B  1B2 B  2B1 A  2B2 A  
+
+
+
+******************************************************************************
+tstop called on seldon
+Mon Nov 18 22:56:02 1996
+
+user time   =      42.10 seconds
+system time =       4.82 seconds
+total time  =         48 seconds

@@ -1,0 +1,37 @@
+
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+LD = $(CXX)
+LDLIBS += $(RUBYLIB)
+
+# Override LDFLAGS, sometimes users want static linking, but static linking will break Ruby's
+# ability to load modules from shared libraries.
+LDFLAGS += $(RUBYLDFLAGS)
+
+# Hopefully one day I can remove -lPSI_ipv1 from below.
+# It's only there to fix some link references.
+PSILIBS = -lPSI_chkpt -lPSI_psio
+
+CXXINC += $(RUBYINC) -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"
+CXXSRC = psirb.cc ruby.cc task.cc zentry.cc irb.cc common.cc matrix.cc
+
+BINOBJ = $(CXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+#$(PSITARGET): $(BINOBJ) $(PSILIBS)
+#	$(MKDIRS) `dirname $(PSITARGET)`
+#	$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS) $^
+	
+ifneq ($(DODEPEND),no)
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(BINOBJ:%.o=%.d)
+endif
+
+#install_man:: psirb.1
+#	$(MKDIRS) $(mandir)/man1
+#	$(INSTALL_INCLUDE) $^ $(mandir)/man1
+

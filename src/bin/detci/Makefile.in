@@ -1,0 +1,40 @@
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+LDLIBS += $(BLAS) -lpthread
+
+PSILIBS = libPSI_qt.a libPSI_chkpt.a libPSI_iwl.a libPSI_psio.a libPSI_ciomr.a \
+libPSI_psio.a libPSI_ipv1.a
+
+CSRC = 
+
+
+CXXSRC = detci.cc params.cc olsengraph.cc civect.cc odometer.cc slaterd.cc \
+mitrush_iter.cc sem.cc sigma.cc opdm.cc tpdm.cc mpn.cc compute_cc.cc \
+get_mo_info.cc check_energy.cc ints.cc shift.cc \
+stringlist.cc og_addr.cc printing.cc set_ciblks.cc calc_hd_block.cc \
+misc.cc h0block.cc olsenupdt.cc b2brepl.cc vector.cc calc_d.cc \
+sem_test.cc slater.cc form_ov.cc s3_block_bz.cc s1v.cc s2v.cc s3v.cc \
+s1.cc s2.cc s3.cc ssq.cc tpool.cc time.cc import_vector.cc 
+
+BINOBJ = $(CSRC:%.c=%.o) $(CXXSRC:%.cc=%.o)
+
+# DEC/Compaq Alpha compilers apparently require this for threaded code
+ifneq (,$(findstring osf, $(target)))
+  COPT += -pthread
+  CXXOPT += -pthread
+  LDFLAGS += -pthread
+endif
+
+include ../MakeRules
+
+ifneq ($(DODEPEND),no)
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(BINOBJ:%.o=%.d)
+endif
+
+install_man:: detci.1
+	$(MKDIRS) $(DESTDIR)$(mandir)/man1
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(mandir)/man1

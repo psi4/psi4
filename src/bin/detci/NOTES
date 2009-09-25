@@ -1,0 +1,41 @@
+****************************************************************************
+22 January 2008: CDS
+
+I took out 
+#include <unistd.h>
+#include <sys/time.h>
+
+from structs.h -- seems ok w/out it.
+****************************************************************************
+23 January 2008: CDS
+
+I'm going to extract the remaining wreadw/wwritw calls over the next
+few days.  As I'm working on this, I notice that there's a lot of
+leftover junk having to do with file offsets that we used before we
+had the convenience of keyword access with libpsio.  This code is (a)
+confusing and (b) not used anymore.  This might be a good opportunity
+to remove it to keep the code maintained in good shape.  Specifically,
+a lot of this has to do with zero_blocks.  Now zero_blocks tries to
+keep up with what blocks are zero and avoid unnecessary computations.
+But it *also* tries to avoid unnecessary disk storage in MPn calculations.
+The former is in and works and is all ok (and is NOT turned off
+by Parameters.zero_blocks = 0).  The latter is what is controlled
+by Parameters.zero_blocks, and it is all messed up and obsolete (I assume).
+Let me try an MPn calculation with it turned on and see if I even
+get the same answer.
+
+Hm, I can't even do it, b/c file51 isn't opened properly for the old I/O.
+While this could be fixed, I think it would be better to scrap this
+Parameters.zero_blocks feature since it is essentially never used,
+doesn't work now, and complicates the code.  I think it could be
+re-implemented better if it became of interest again.
+
+Before I go ripping this stuff out (as well as the presumably obsolete
+file_offsets junk), let me make a couple more test cases that might
+check the fancier versions of CIvect I/O; non-A1 open-shells states would
+be perfect, as well as different icore options.
+
+Ok, added several new test cases.  I then ripped out all I/O offset
+and I/O-related zero block stuff.  Amazingly, all test cases seem
+to pass.  This is actually somewhat surprising...
+

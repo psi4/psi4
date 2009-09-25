@@ -1,0 +1,83 @@
+.TH mp2 1 " 10 August, 2003" "" ""
+
+.SH NAME
+mp2 \- Moller-Plesset Perburbation Theory
+
+.SH DESCRIPTION
+.LP
+The module determines the second-order Moller-Plesset energy and 
+one-particle density matrix (OPDM) for RHF, UHF, and ROHF (using 
+semicanonical orbitals) references.  Frozen orbitals can be used 
+when computing the energy but not the OPDM.
+
+.SH REFERENCES
+.LP
+Original Moller-Plesset paper:
+.IP "1."
+C. Moller and M. S. Plesset, "Note on an Approximation Treatment for 
+Many-Electron Systems," Phys. Rev. 46, 618 (1934).
+.LP
+Open-Shell Perturbation Theory
+.IP "1."
+T. D. Crawford, H. F. Schaefer, and T. J. Lee, "On the energy invariance
+of open-shell perturbation theory with respect to unitary transformations
+of molecular orbitals," J. Chem. Phys. 105, 1060 (1996).
+.LP
+MP(2) Gradient Theory:
+.IP "1."
+M. Frisch, M. Head-Gordon, and J. Pople, "A Direct MP2 Gradient Method,"
+Chem. Phys. Lett. 166, 275 (1990).
+.IP "2."
+I. Nielsen, "A new direct MP2 gradient algorithm with implementation on 
+a massively parallel computer," Chem. Phys. Lett. 255, 210 (1996).
+
+.SH INPUT FORMAT
+.LP
+Input for this program is read from the file input.dat. The following
+keywords are valid:
+
+.IP "\fBWFN =\fP \fIstring\fP"
+Specifies the type of wave function desired. The only valid entry
+at the present is \fIMP2\fP. There is no default.
+
+.IP "\fBREFERENCE =\fP \fIstring\fP"
+Specifies the type of orbitals used for the single-determinant
+reference function. Valid entries include RHF, UHF, and ROHF.  
+There is no default.
+
+.IP "\fBPRINT =\fP \fIinteger\fP"
+Determines the verbosity of the output.  A value of 0 (the default)
+specifies minimal printing.
+
+.IP "\fBCACHETYPE=\fP \fIstring\fP"
+Selects the priority type for maintaining the automatic memory cache
+used by the DPD codes.  (See libdpd.html for further details.)  A
+value of \fILOW\fP (the default) selects a "low priority"
+scheme in which the deletion of items from the cache is based on
+pre-programmed priorities.  A value of \fILRU\fP selects a
+"least recently used" scheme in which the oldest item in the cache
+will be the first one deleted.
+
+.IP "\fBCACHELEV=\fP \fIinteger\fP"
+Selects the level of automatic cacheing desired in the storage of
+various amplitudes, integrals, and intermediates in the coupled
+cluster procedure.  A value of 0 retains no quantities in cache, while
+a level of 6 attempts to store all quantities in cache.  For
+particularly large calculations, a value of 0 may help with certain
+types of memory problems.  The default is 2, which means that all
+four-index quantites with up to two virtual-orbital indices (e.g.,
+<ij|ab> integrals) may be held in the cache.
+
+.IP "\fBOPDM =\fP \fIboolean\fP"
+If \fBTRUE\fP calculate the one-particle density matrix and 
+make \fBOPDM_WRITE\fP default to \fBTRUE\fP.  The default value 
+of \fBOPDM\fP is \fBFALSE\fP.
+
+.IP "\fBOPDM_WRITE =\fP \fIboolean\fP"
+Flag for whether or not to write the one-particle density matrix
+to disk.
+
+.IP "\fBOPDM_PRINT =\fP \fIboolean\fP"
+Flag for whether or not to print the one-particle density matrix.
+
+

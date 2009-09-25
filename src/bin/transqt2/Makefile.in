@@ -1,0 +1,24 @@
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+LDLIBS += $(LAPACK) $(BLAS)
+
+PSILIBS = -lPSI_dpd -lPSI_iwl -lPSI_qt -lPSI_chkpt -lPSI_psio -lPSI_ciomr -lPSI_ipv1
+
+CXXSRC = \
+cache.cc               idx_error.cc           transqt.cc \
+file_build_presort.cc  idx_permute_presort.cc transtwo_rhf.cc \
+get_moinfo.cc          semicanonical.cc       transtwo_uhf.cc \
+get_params.cc          transone.cc
+
+BINOBJ = $(CXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+ifneq ($(DODEPEND),no)
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(BINOBJ:%.o=%.d)
+endif
+

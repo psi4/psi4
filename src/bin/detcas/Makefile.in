@@ -1,0 +1,28 @@
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+LDLIBS += $(LAPACK) $(BLAS)
+
+PSILIBS = libPSI_qt.a libPSI_chkpt.a libPSI_iwl.a -lPSI_psio libPSI_ciomr.a libPSI_ipv1.a
+
+CSRC = 
+
+CXXSRC = detcas.cc indpairs.cc \
+get_mo_info.cc ints.cc setup_io.cc params.cc read_dens.cc \
+read_lag.cc ref_orbs.cc f_act.cc gradient.cc hessian.cc step.cc \
+thetas.cc cleanup.cc diis.cc test_bfgs.cc
+
+BINOBJ = $(CSRC:%.c=%.o) $(CXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+ifneq ($(DODEPEND),no)
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(BINOBJ:%.o=%.d)
+endif
+
+install_man:: detcas.1
+	$(MKDIRS) $(DESTDIR)$(mandir)/man1
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(mandir)/man1
