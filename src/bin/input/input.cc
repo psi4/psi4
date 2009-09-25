@@ -16,7 +16,7 @@
 #include <libciomr/libciomr.h>
 #include <chkpt_params.h>
 #include <psifiles.h>
-#include <liboptions/liboptions.hpp>
+#include <liboptions/liboptions.h>
 #include <physconst.h>
 
 #include <Molecular_system.h>
@@ -41,6 +41,7 @@ namespace psi { namespace input {
 
   using namespace psi;
 
+/*
   void register_input_options()
   {
     // Reference wavefunction
@@ -82,6 +83,7 @@ namespace psi { namespace input {
     options.add("FREEZE_CORE", "FALSE", "FALSE NO TRUE YES SMALL LARGE");
     options.add("FREEZE_VIRT",0);
   }
+*/
   
   int input() { return 0; }
   
@@ -111,7 +113,7 @@ namespace psi { namespace input {
       start_io(argc, argv);
 
     init_globals();
-    wfn = options["WFN"].to_string();
+    wfn = options.get_cstr["WFN"];
     parsing();
     print_intro();
      //if (options.get_int_option("PRINT"));
