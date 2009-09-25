@@ -2,7 +2,6 @@
 #define psi_include_psi4_dec_h
 
 #include <string>
-// TODO: Change header file to liboptions.h when appropriate
 #include <libpsio/psio.hpp>
 #include <libutil/libutil.h>
 #include <liboptions/liboptions.h>
