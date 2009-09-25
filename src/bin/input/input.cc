@@ -113,7 +113,7 @@ namespace psi { namespace input {
       start_io(argc, argv);
 
     init_globals();
-    wfn = options.get_cstr["WFN"];
+    wfn = options.get_str("WFN");
     parsing();
     print_intro();
      //if (options.get_int_option("PRINT"));

@@ -21,31 +21,31 @@ void parsing()
   char tmp_label[80];
 
   /*--- read MOs from checkpoint file and project onto new basis ---*/
-  chkpt_mos   = options["CHKPT_MOS"].to_integer();
+  chkpt_mos   = options.get_int("CHKPT_MOS");
 
   /*--- read geometry from checkpoint file (in findif calculations) ---*/
   // this keyword may be obseleted in psi4
-  chkpt_geom = options["CHKPT_GEOM"].to_integer();
+  chkpt_geom = options.get_int("CHKPT_GEOM");
 
   /*--- don't project MOs but simply keep them ---*/
-  dont_project_mos = options["NOPROJECT"].to_integer();
+  dont_project_mos = options.get_int("NOPROJECT");
 
-  geomdat_geom = options["GEOMDAT"].to_integer();
+  geomdat_geom = options.get_int("GEOMDAT");
   save_oldcalc = 0;
   overwrite_output = 0;
-  no_comshift = options["NO_COM_SHIFT"].to_integer();
+  no_comshift = options.get_int("NO_COM_SHIFT");
   no_reorient = 0;
 			  
   // will not survive psi4
   //if (geomdat_geom) 
   //  geomdat_entry = atoi(argv[i+1]);  i++;
 
-  no_reorient = options["NO_REORIENT"].to_integer();
+  no_reorient = options.get_int("NO_REORIENT");
 
   read_chkpt = 0;
 
     /*--- read MOs from checkpoint file and save to a separate file ---*/
-   if (options["SAVE_MOS"].to_integer()) {
+   if (options.get_int("SAVE_MOS")) {
       read_chkpt = 1;
       save_oldcalc = 1;
    }
@@ -65,25 +65,25 @@ void parsing()
     if (chkpt_mos) read_chkpt = 1;
 
 	/* Don't overwrite the output file */
-	if (options["KEEP_OUTPUT"].to_integer())
+	if (options.get_int("KEEP_OUTPUT"))
       overwrite_output = 0;
 
     /* Keep the chkpt file. */
-   keep_chkpt = options["KEEP_CHKPT"].to_integer();  
+   keep_chkpt = options.get_int("KEEP_CHKPT");
 
-   label       = options["LABEL"].to_string();
-   shownorm    = options["SHOWNORM"].to_integer();
-   puream      = options["PUREAM"].to_integer();
-   expert      = options["EXPERT"].to_integer();
-   print_lvl   = options["PRINT"].to_integer();
-   subgroup    = options["SUBGROUP"].to_string();
-   unique_axis = options["UNIQUE_AXIS"].to_string();
-   nfragments  = options["NFRAGMENTS"].to_integer();
-   keep_ref_frame = options["KEEP_REF_FRAME"].to_integer();
-   normalize_contractions = options["NORMALIZE"].to_integer();
+   label       = options.get_str("LABEL");
+   shownorm    = options.get_int("SHOWNORM");
+   puream      = options.get_int("PUREAM");
+   expert      = options.get_int("EXPERT");
+   print_lvl   = options.get_int("PRINT");
+   subgroup    = options.get_str("SUBGROUP");
+   unique_axis = options.get_str("UNIQUE_AXIS");
+   nfragments  = options.get_int("NFRAGMENTS");
+   keep_ref_frame = options.get_int("KEEP_REF_FRAME");
+   normalize_contractions = options.get_int("NORMALIZE");
 
-   frozen_core = options["FREEZE_CORE"].to_string();
-   nfzv = options["FREEZE_VIRT"].to_integer();
+   frozen_core = options.get_str("FREEZE_CORE");
+   nfzv = options.get_int("FREEZE_VIRT");
 
    if (chkpt_mos) read_chkpt = 1;
 
