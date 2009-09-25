@@ -1,6 +1,6 @@
 /*!
   \file
-  \brief Implementation of the options class and corresponding C-style interface
+  \brief Implementation of the options class
   \defgroup LIBOPTIONS liboptions: A library to read user options
   \ingroup LIBOPTIONS
 */
@@ -20,119 +20,6 @@
 namespace psi {
 
 using std::string;
-
-Options* _default_psi_options_;
-
-/*!
- * Initialize the options interface. Must be called before using the C-style functions. 
- */
-void options_init()
-{
-  _default_psi_options_ = new Options();
-  _default_psi_options_->add_int_option("CHARGE",0);
-  _default_psi_options_->add_int_option("MULTP",1);
-}
-
-/*!
- * Close the options interface. Must be called before the end of the program when using the C-style interface. 
- */
-void options_close()
-{
-  delete _default_psi_options_;
-}
-
-/*!
- * Read the options from the input file. 
- */
-void options_read()
-{
-  _default_psi_options_->read_options();
-}
-
-/*!
- * Print the options. 
- */
-void options_print(){
-  std::string s; //send empty string for auto-interface
-  return(_default_psi_options_->print(s));
-}
-
-/*!
- * Add a boolean option.
- * @param cstr_option a string containing the parameter name
- * @param bool_default the default value for this option
- */
-void options_add_bool(const char* cstr_option,bool bool_default)
-{
-  _default_psi_options_->add_bool_option(cstr_option,bool_default);
-}
-
-/*!
- * Add an integer option.
- * @param cstr_option a string containing the parameter name
- * @param int_default the default value for this option
- */
-void options_add_int(const char* cstr_option,int int_default)
-{
-  _default_psi_options_->add_int_option(cstr_option,int_default);
-}
-
-/*!
- * Add a double option.
- * @param cstr_option a string containing the parameter name
- * @param double_default the default value for this option
- */
-void options_add_double(const char* cstr_option,double double_default)
-{
-  _default_psi_options_->add_double_option(cstr_option,double_default);
-}
-
-/*!
- * Add a string option.
- * @param cstr_option a string containing the parameter name
- * @param cstr_default the default value for this option
- */
-void options_add_str(const char* cstr_option,const char* cstr_default)
-{
-  _default_psi_options_->add_str_option(cstr_option,cstr_default);
-}
-
-/*!
- * Add a string option with a restricted number of choices.
- * @param cstr_option a string containing the parameter name
- * @param cstr_default the default value for this option
- * @param cstr_choices a list of choices separated by a space
- */
-void options_add_str_with_choices(const char* cstr_option,const char* cstr_default,const char* cstr_choices)
-{
-  _default_psi_options_->add_str_option_with_choices(cstr_option,cstr_default,cstr_choices);
-}
-
-/*!
- * Get the value of a boolean option
- */
-bool options_get_bool(const char* cstr_option){
-  return(_default_psi_options_->get_bool_option(cstr_option));    
-}
-
-/*!
- * Get the value of an integer option
- */
-int options_get_int(const char* cstr_option){
-  return(_default_psi_options_->get_int_option(cstr_option));    
-}
-
-double options_get_double(char* cstr_option){
-  return(_default_psi_options_->get_double_option(cstr_option));    
-}
-
-/*!
- * Get the value of a string option
- */
-string options_get_str(const char* cstr_option){
-  return(_default_psi_options_->get_str_option(cstr_option));    
-}
-
 using namespace std;
 
 Options::Options()
@@ -143,7 +30,7 @@ Options::~Options()
 {
 }
 
-void Options::add_bool_option(const char* cstr_option,bool bool_default)
+void Options::add_bool(const char* cstr_option,bool bool_default)
 {
   string str_option(cstr_option);
   // Make sure that the option that we are adding is not already present
@@ -156,7 +43,7 @@ void Options::add_bool_option(const char* cstr_option,bool bool_default)
   }
 }
 
-void Options::add_int_option(const char* cstr_option,int int_default)
+void Options::add_int(const char* cstr_option,int int_default)
 {
   string str_option(cstr_option);
   // Make sure that the option that we are adding is not already present
@@ -169,7 +56,7 @@ void Options::add_int_option(const char* cstr_option,int int_default)
   }
 }
 
-void Options::add_double_option(const char* cstr_option,double double_default)
+void Options::add_double(const char* cstr_option,double double_default)
 {
   string str_option(cstr_option);
   // Make sure that the option that we are adding is not already present
@@ -183,12 +70,12 @@ void Options::add_double_option(const char* cstr_option,double double_default)
 }
 
 
-void Options::add_str_option(const char* cstr_option,const char* cstr_default)
+void Options::add_str(const char* cstr_option,const char* cstr_default)
 {
   add_str_option_with_choices(cstr_option,cstr_default,"");
 }
 
-void Options::add_str_option_with_choices(const char* cstr_option,const char* cstr_default,const char* cstr_choices)
+void Options::add_str(const char* cstr_option,const char* cstr_default,const char* cstr_choices)
 {
   string str_option(cstr_option);
   string str_default; // empty string created if user sends NULL default
@@ -210,7 +97,7 @@ void Options::add_str_option_with_choices(const char* cstr_option,const char* cs
   }
 }
 
-bool Options::get_bool_option(const char* cstr_option)
+bool Options::get_bool(const char* cstr_option)
 {
   string str_option(cstr_option);
   // Make sure that the option that we are adding is available
@@ -225,7 +112,7 @@ bool Options::get_bool_option(const char* cstr_option)
   }
 }
 
-int Options::get_int_option(const char* cstr_option)
+int Options::get_int(const char* cstr_option)
 {
   string str_option(cstr_option);
   // Make sure that the option that we are adding is available
@@ -240,7 +127,7 @@ int Options::get_int_option(const char* cstr_option)
   }
 }
 
-double Options::get_double_option(const char* cstr_option)
+double Options::get_double(const char* cstr_option)
 {
   string str_option(cstr_option);
   // Make sure that the option that we are adding is available
@@ -255,7 +142,7 @@ double Options::get_double_option(const char* cstr_option)
   }
 }
 
-std::string Options::get_str_option(const char* cstr_option)
+std::string Options::get_str(const char* cstr_option)
 {
   string str_option(cstr_option);
   // Make sure that the option that we are adding is available
@@ -271,7 +158,7 @@ std::string Options::get_str_option(const char* cstr_option)
 }
 
 // if string is empty then cstr() returns a NULL pointer (a la old C-style)
-char * Options::get_cstr_option(const char* cstr_option)
+char * Options::get_cstr(const char* cstr_option)
 {
   string temp_string = get_str_option(cstr_option);
 
@@ -287,25 +174,25 @@ char * Options::get_cstr_option(const char* cstr_option)
   }
 }
 
-void Options::set_bool_option(const char* cstr_option, bool bool_value)
+void Options::set_bool(const char* cstr_option, bool bool_value)
 {
   string str_option(cstr_option);
   bool_options[str_option].option  = bool_value;
 }
 
-void Options::set_int_option(const char* cstr_option, int int_value)
+void Options::set_int(const char* cstr_option, int int_value)
 {
   string str_option(cstr_option);
   int_options[str_option].option  = int_value;
 }
 
-void Options::set_double_option(const char* cstr_option, double double_value)
+void Options::set_double(const char* cstr_option, double double_value)
 {
   string str_option(cstr_option);
   double_options[str_option].option  = double_value;
 }
 
-void Options::set_str_option(const char* cstr_option, const char* cstr_value)
+void Options::set_str(const char* cstr_option, const char* cstr_value)
 {
   string str_option(cstr_option);
   string_options[str_option].option  = string(cstr_value);
@@ -486,3 +373,114 @@ void Options::clear(void)
 
 }
 
+//Options* _default_psi_options_;
+//
+///*!
+// * Initialize the options interface. Must be called before using the C-style functions.
+// */
+//void options_init()
+//{
+//  _default_psi_options_ = new Options();
+//  _default_psi_options_->add_int_option("CHARGE",0);
+//  _default_psi_options_->add_int_option("MULTP",1);
+//}
+//
+///*!
+// * Close the options interface. Must be called before the end of the program when using the C-style interface.
+// */
+//void options_close()
+//{
+//  delete _default_psi_options_;
+//}
+//
+///*!
+// * Read the options from the input file.
+// */
+//void options_read()
+//{
+//  _default_psi_options_->read_options();
+//}
+//
+///*!
+// * Print the options.
+// */
+//void options_print(){
+//  std::string s; //send empty string for auto-interface
+//  return(_default_psi_options_->print(s));
+//}
+//
+///*!
+// * Add a boolean option.
+// * @param cstr_option a string containing the parameter name
+// * @param bool_default the default value for this option
+// */
+//void options_add_bool(const char* cstr_option,bool bool_default)
+//{
+//  _default_psi_options_->add_bool_option(cstr_option,bool_default);
+//}
+//
+///*!
+// * Add an integer option.
+// * @param cstr_option a string containing the parameter name
+// * @param int_default the default value for this option
+// */
+//void options_add_int(const char* cstr_option,int int_default)
+//{
+//  _default_psi_options_->add_int_option(cstr_option,int_default);
+//}
+//
+///*!
+// * Add a double option.
+// * @param cstr_option a string containing the parameter name
+// * @param double_default the default value for this option
+// */
+//void options_add_double(const char* cstr_option,double double_default)
+//{
+//  _default_psi_options_->add_double_option(cstr_option,double_default);
+//}
+//
+///*!
+// * Add a string option.
+// * @param cstr_option a string containing the parameter name
+// * @param cstr_default the default value for this option
+// */
+//void options_add_str(const char* cstr_option,const char* cstr_default)
+//{
+//  _default_psi_options_->add_str_option(cstr_option,cstr_default);
+//}
+//
+///*!
+// * Add a string option with a restricted number of choices.
+// * @param cstr_option a string containing the parameter name
+// * @param cstr_default the default value for this option
+// * @param cstr_choices a list of choices separated by a space
+// */
+//void options_add_str_with_choices(const char* cstr_option,const char* cstr_default,const char* cstr_choices)
+//{
+//  _default_psi_options_->add_str_option_with_choices(cstr_option,cstr_default,cstr_choices);
+//}
+//
+///*!
+// * Get the value of a boolean option
+// */
+//bool options_get_bool(const char* cstr_option){
+//  return(_default_psi_options_->get_bool_option(cstr_option));
+//}
+//
+///*!
+// * Get the value of an integer option
+// */
+//int options_get_int(const char* cstr_option){
+//  return(_default_psi_options_->get_int_option(cstr_option));
+//}
+//
+//double options_get_double(char* cstr_option){
+//  return(_default_psi_options_->get_double_option(cstr_option));
+//}
+//
+///*!
+// * Get the value of a string option
+// */
+//string options_get_str(const char* cstr_option){
+//  return(_default_psi_options_->get_str_option(cstr_option));
+//}
