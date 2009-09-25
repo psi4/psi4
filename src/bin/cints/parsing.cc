@@ -12,7 +12,7 @@
 #include<libint/libint.h>
 #include<libciomr/libciomr.h>
 #include <psifiles.h>
-#include <liboptions/liboptions.hpp>
+#include <liboptions/liboptions.h>
 
 #include"defines.h"
 #define EXTERN
@@ -30,7 +30,7 @@ namespace psi { namespace CINTS {
     int cutoff_exp;
     long int max_bytes;
   
-    UserOptions.print_lvl = options["PRINT"].to_integer();
+    UserOptions.print_lvl = options.get_int("PRINT");
     
     /*--- This piece of code from CPHF by Ed Seidl ---*/
     if (ip_exist("MEMORY", 0)) {
@@ -43,31 +43,31 @@ namespace psi { namespace CINTS {
       UserOptions.max_memory = MAX_NUM_DOUBLES;
     UserOptions.memory = UserOptions.max_memory;
 
-    UserOptions.num_threads = options["NUM_THREADS"].to_integer();
+    UserOptions.num_threads = options.get_int("NUM_THREADS");
     
-    UserOptions.fine_structure_alpha = options["FINE_STRUCTURE_ALPHA"].to_double();
-    UserOptions.cutoff = 1.0/pow(10.0,(double) (options["CUTOFF"].to_integer()));
+    UserOptions.fine_structure_alpha = options.get_double("FINE_STRUCTURE_ALPHA");
+    UserOptions.cutoff = 1.0/pow(10.0,(double) (options.get_int("CUTOFF")));
     UserOptions.make_oei = 1;
     UserOptions.make_fock = 0;
     UserOptions.symm_ints = 1;
-    UserOptions.make_eri = options["MAKE_ERI"].to_integer();
+    UserOptions.make_eri = options.get_int("MAKE_ERI");
 
-    IOUnits.itapS = options["S_FILE"].to_integer();
-    IOUnits.itapT = options["T_FILE"].to_integer();
-    IOUnits.itapV = options["V_FILE"].to_integer();
-    IOUnits.itap33 = options["ERI_FILE"].to_integer();
+    IOUnits.itapS = options.get_int("S_FILE");
+    IOUnits.itapT = options.get_int("T_FILE");
+    IOUnits.itapV = options.get_int("V_FILE");
+    IOUnits.itap33 = options.get_int("ERI_FILE");
 
-    UserOptions.empirical_dispersion = options["EMPIRICAL_DISPERSION"].to_integer();
+    UserOptions.empirical_dispersion = options.get_int("EMPIRICAL_DISPERSION");
 
-    UserOptions.wfn = const_cast<char*>(options["WFN"].to_string().c_str());
+    UserOptions.wfn = const_cast<char*>(options.get_cstr("WFN"));
 
     UserOptions.scf_only = 0;
     if ((!strcmp("SCF",UserOptions.wfn)) || 
         (!strcmp("SCF_MVD",UserOptions.wfn)))
       UserOptions.scf_only = 1;
     
-    UserOptions.restart = options["RESTART"].to_integer();
-    UserOptions.restart_task = options["RESTART_TASK"].to_integer();
+    UserOptions.restart = options.get_int("RESTART");
+    UserOptions.restart_task = options.get_int("RESTART_TASK");
     if (UserOptions.restart_task < 0)
       throw std::domain_error("RESTART_TASK < 0");
     

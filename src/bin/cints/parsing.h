@@ -5,7 +5,7 @@
     \ingroup CINTS
     \brief parsing header file.
 */
-#include <liboptions/liboptions.hpp>
+#include <liboptions/liboptions.h>
 
 namespace psi { namespace CINTS {
 void parsing(Options &);
