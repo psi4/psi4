@@ -36,13 +36,14 @@ class Fragment {
   double **geom;      // cartesian coordinates
 
  public:
-  //default constructor is empty
+  Fragment(void); //default constructor is empty
   ~Fragment() {
     delete [] Z;
     delete [] masses;
     delete [] atom_label;
     if (geom != NULL) { free_block(geom); geom = NULL; }
   }
+
   Fragment(const Fragment &);             // deep copy constructor
   Fragment & operator=(const Fragment &); // deep assignment
 

@@ -587,6 +587,10 @@ namespace psi {
       add(key, new StringDataType(s, c));
     }
 
+    void clear(void) {
+      keyvals_.clear();
+    }
+
     bool exists(std::string key) {
       to_upper(key);
       iterator pos = keyvals_.find(key);
@@ -616,6 +620,7 @@ namespace psi {
     }
     
     void read_ipv1();
+
   private:
     void read_boolean(Data& data, const std::string& key, int m = 0, int n = 0);
     void read_int(Data& data, const std::string& key, int m = 0, int n = 0);

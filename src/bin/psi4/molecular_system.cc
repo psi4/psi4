@@ -53,7 +53,7 @@ Molecular_system::Molecular_system(double conv_factor) {
 double **Molecular_system::get_geom(void) const {
   int j,xyz,cnt=0;
   double **lgeom = block_matrix(get_natoms(),3);
-  vector<Fragment>::iterator it;
+  vector<Fragment>::const_iterator it;
 
   for(it=fragment.begin(); it!=fragment.end(); ++it) {
     for (j=0; j<it->natoms; ++j) {
@@ -62,13 +62,14 @@ double **Molecular_system::get_geom(void) const {
       ++cnt;
     }
   }
+
   return lgeom;
 }
 
 double *Molecular_system::get_Z(void) const {
-  int j,cnt=0;
+  int f, j, cnt=0;
   double *lZ = new double [get_natoms()];
-  vector<Fragment>::iterator it;
+  vector<Fragment>::const_iterator it;
 
   for(it=fragment.begin(); it!=fragment.end(); ++it)
     for (j=0; j<it->natoms; ++j)
@@ -80,7 +81,7 @@ double *Molecular_system::get_Z(void) const {
 string *Molecular_system::get_atom_label(void) const {
   int j,cnt=0;
   string *latom_label = new string [get_natoms()];
-  vector<Fragment>::iterator it;
+  vector<Fragment>::const_iterator it;
 
   for(it=fragment.begin(); it!=fragment.end(); ++it)
     for (j=0; j<it->natoms; ++j)

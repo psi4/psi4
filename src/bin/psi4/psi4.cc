@@ -2,14 +2,13 @@
 \defgroup PSI4 The new PSI4 driver.
 */
 
-//
 //  PSI4 driver
 //  Justin Turney
-//
+//  Rollin King
 
 #include <getopt.h>
 #include <stdio.h>
-#include <ruby.h>
+//#include <ruby.h>
 #include <psiconfig.h>
 #include <libciomr/libciomr.h>
 #include <liboptions/liboptions.hpp>
@@ -21,10 +20,10 @@
 #define MAIN
 #include "psi4.h"
 
-FILE *outfile = NULL;
+//FILE *outfile = NULL;
   
 namespace psi { 
-  // namespace input    { int input(Options &, char **atom_basis, Molecular_system & ); }
+  namespace input    { int input(Options &, char **atom_basis, Molecular_system & ); }
   namespace CINTS    { int cints(Options &, int argc, char *argv[]); }
   namespace cscf     { int cscf(int argc, char *argv[]); }
   namespace psiclean { int psiclean(int argc, char *argv[]); }
@@ -57,8 +56,7 @@ namespace psi {
 int main(int argc, char *argv[])
 {
   using namespace psi;
-  // bool run_modules = true;
-  // int errcod;
+  bool run_modules = true;
 
   // int overwrite_output = 1;
   // int num_extra_args = 0;
@@ -74,13 +72,11 @@ int main(int argc, char *argv[])
   //   extra_args,overwrite_output);
   
   // Parse the command-line arguments
-  psi_start_and_parse_command_line(argc, argv);
+  //psi_start_and_parse_command_line(argc, argv);
   
   // Sends version information to outfile.
-  print_version();
-
   // Initialize the interpreter
-  initialize_ruby();
+  //initialize_ruby();
   
   // At this point the following has happened:
   //  1. Where output goes has been decided.
@@ -93,30 +89,31 @@ int main(int argc, char *argv[])
   //   This also loads the input file (either input.dat or the one determined by 
   //   psi_start_and_parse_command_line). If the file contains IPV1 data it is loaded
   //   into the global task's options_ variable.
-  if (create_global_task()) {
+  //if (create_global_task()) {
     // enable_modules();
     
-    if (g_bIRB == false) { // Are running Interactive Ruby?
-      // Process the input file via the global task.
-      process_input_file();
-    }
-    else {
-      run_interactive_ruby();
-    }
-  }
-    // Test a quick call to input. This is to ensure things can link.
-    // If we don't make calls to the code it isn't linked in.
-   if (run_modules) {
-   psi_start(&infile,&outfile,&psi_file_prefix,argc-parsed,argv+parsed,0);
-   ip_cwk_add(":OPT09");
-   psio_init();
-   psio_ipv1_config();
+  //  if (g_bIRB == false) { // Are running Interactive Ruby?
+  //    process_input_file();
+  //  }
+  //  else {
+  //    run_interactive_ruby();
+  //  }
+  // }
+  if (run_modules) {
+    int parsed = 0;
+    psi_start(&infile,&outfile,&psi_file_prefix,argc-parsed,argv+parsed,0);
+    print_version();
+
+    //ip_cwk_add(":OPT09");
+    psio_init();
+    psio_ipv1_config();
    
      Options options;
    
      read_options("PSI4", options);
+
        // if read from input.dat, scale.  Elsewhere always use au internally
-     std::string units = options.get_str_option("UNITS");
+     std::string units = options["UNITS"].to_string();
      double conv_factor;
      if (units == "BOHR" || units == "AU")
        conv_factor = 1.0;
@@ -127,15 +124,15 @@ int main(int argc, char *argv[])
      molecules.print(); fflush(outfile);
      options.clear();
    
-     try { read_atom_basis(atom_basis, molecules.get_num_atoms()); }
+     try { read_atom_basis(atom_basis, molecules.get_natoms()); }
      catch (const char * s) {
        fprintf(outfile,"Unable to determine basis set:\n\t %s\n",s);
        fprintf(stderr, "Unable to determine basis set:\n\t %s\n",s);
        abort();
      }
    
-     for (int i=0; i<molecules.get_num_atoms(); ++i)
-       strcpy(atom_basis[i],"DZ");
+     //for (int i=0; i<molecules.get_num_atoms(); ++i)
+     //  strcpy(atom_basis[i],"DZ");
    
      read_options("INPUT", options);
      module.set_prgid("INPUT");
@@ -158,7 +155,7 @@ int main(int argc, char *argv[])
    psi_stop(infile, outfile, psi_file_prefix);
 
   // Close the interpreter
-  finalize_ruby();
+  //finalize_ruby();
 
   // This needs to be changed a return value from the processed script
   return EXIT_SUCCESS;
@@ -296,8 +293,8 @@ namespace psi {
       "            PSI4: An Open-Source Ab Initio Electronic Structure Package \n");
     fprintf(outfile,
       "                            PSI %s Driver\n", PSI_VERSION);
-    fprintf(outfile,
-      "                      Using Ruby %d.%d.%d interpreter.\n", RUBY_MAJOR, RUBY_MINOR, RUBY_TEENY);
+    //fprintf(outfile,
+    //  "                      Using Ruby %d.%d.%d interpreter.\n", RUBY_MAJOR, RUBY_MINOR, RUBY_TEENY);
     fprintf(outfile,
       "    T. D. Crawford, C. D. Sherrill, E. F. Valeev, J. T. Fermann, R. A. King,\n");
     fprintf(outfile,
