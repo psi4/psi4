@@ -6,7 +6,7 @@
 
 extern FILE* outfile;
 
-namespace psi{ namespace mcscf{
+namespace psi{ namespace MCSCF{
 
 BlockMatrix::BlockMatrix()
  : nirreps_(0) ,ref_(0), matrix_base_(0), rows_size_(0), cols_size_(0), rows_offset_(0), cols_offset_(0)

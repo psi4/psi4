@@ -11,7 +11,7 @@
 #include <physconst.h>
 #include "global.h"
 #include "defines.h"
-#include <liboptions/liboptions.h>
+#include <liboptions/liboptions.hpp>
 
 namespace psi { namespace input {
 

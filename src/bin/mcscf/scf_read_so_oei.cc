@@ -6,7 +6,7 @@
 
 #include <psifiles.h>
 #include <libmoinfo/libmoinfo.h>
-#include <liboptions/liboptions.h>
+#include <liboptions/liboptions.hpp>
 #include <libiwl/iwl.h>
 #include <libutil/libutil.h>
 
@@ -14,7 +14,7 @@
 
 extern FILE* outfile;
 
-namespace psi{ namespace mcscf{
+namespace psi{ namespace MCSCF{
 
 void SCF::read_so_oei()
 {

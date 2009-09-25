@@ -3,7 +3,7 @@
 
 #include <cstring> // for size_t
 
-namespace psi{ namespace mcscf{
+namespace psi{ namespace MCSCF{
 
 class VectorBase
 {

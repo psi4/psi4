@@ -43,7 +43,7 @@
 #define F_DDOT  DDOT_
 #endif
 
-namespace psi{ namespace mcscf{
+namespace psi{ namespace MCSCF{
 
 extern "C" void F_DAXPY(int *length, double *a, double *x, int *inc_x,
                     double *y, int *inc_y);

@@ -16,7 +16,7 @@
 #include <libciomr/libciomr.h>
 #include <chkpt_params.h>
 #include <psifiles.h>
-#include <liboptions/liboptions.h>
+#include <liboptions/liboptions.hpp>
 #include <physconst.h>
 
 #include <Molecular_system.h>

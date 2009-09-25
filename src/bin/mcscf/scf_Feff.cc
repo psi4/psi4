@@ -1,9 +1,9 @@
-#include <liboptions/liboptions.h>
+#include <liboptions/liboptions.hpp>
 #include <cstdio>
 
 #include "scf.h"
 
-namespace psi{ namespace mcscf{
+namespace psi{ namespace MCSCF{
 
 void SCF::construct_Feff(int cycle)
 {

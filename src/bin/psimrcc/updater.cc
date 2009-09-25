@@ -9,7 +9,7 @@
 //
 #include <cstdio>
 #include <libmoinfo/libmoinfo.h>
-#include <liboptions/liboptions.h>
+#include <liboptions/liboptions.hpp>
 
 #include "blas.h"
 #include "matrix.h"

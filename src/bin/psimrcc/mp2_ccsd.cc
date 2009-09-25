@@ -2,7 +2,7 @@
 
 #include <libmoinfo/libmoinfo.h>
 #include <libutil/libutil.h>
-#include <liboptions/liboptions.h>
+#include <liboptions/liboptions.hpp>
 #include <libchkpt/chkpt.hpp>
 
 #include "blas.h"

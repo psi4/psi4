@@ -6,7 +6,7 @@
 
 extern FILE* outfile;
 
-namespace psi{ namespace mcscf{
+namespace psi{ namespace MCSCF{
 
 SBlockVector::SBlockVector()
  : block_vector_(0)

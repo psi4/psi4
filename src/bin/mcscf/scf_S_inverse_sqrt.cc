@@ -2,7 +2,7 @@
 
 #include "scf.h"
 
-namespace psi{ namespace mcscf{
+namespace psi{ namespace MCSCF{
 
 void SCF::construct_S_inverse_sqrt()
 {

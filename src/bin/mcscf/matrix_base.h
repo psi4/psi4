@@ -5,7 +5,7 @@
 
 #include "vector_base.h"
 
-namespace psi{ namespace mcscf{
+namespace psi{ namespace MCSCF{
 
 class MatrixBase
 {

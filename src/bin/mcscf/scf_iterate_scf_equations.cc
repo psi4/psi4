@@ -3,13 +3,13 @@
 #include <cmath>
 #include <cstdio>
 
-#include <liboptions/liboptions.h>
+#include <liboptions/liboptions.hpp>
 
 #include "scf.h"
 
 extern FILE* outfile;
 
-namespace psi{ namespace mcscf{
+namespace psi{ namespace MCSCF{
 
 void SCF::iterate_scf_equations()
 {

@@ -11,7 +11,7 @@
 //#include <ruby.h>
 #include <psiconfig.h>
 #include <libciomr/libciomr.h>
-#include <liboptions/liboptions.hpp>
+#include <liboptions/liboptions.hpppp>
 #include <physconst.h>
 
 #include <molecular_system.h>

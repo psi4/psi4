@@ -12,7 +12,7 @@
 #include<libint/libint.h>
 #include<libciomr/libciomr.h>
 #include <psifiles.h>
-#include <liboptions/liboptions.h>
+#include <liboptions/liboptions.hpp>
 
 #include"defines.h"
 #define EXTERN

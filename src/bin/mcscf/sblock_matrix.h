@@ -7,7 +7,7 @@
 #include "block_matrix.h"
 #include "sblock_vector.h"
 
-namespace psi{ namespace mcscf{
+namespace psi{ namespace MCSCF{
 
 // Smart version of BlockMatrix
 class SBlockMatrix

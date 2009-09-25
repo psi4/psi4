@@ -13,7 +13,7 @@
 #include <libipv1/ip_lib.h>
 #include <libutil/libutil.h>
 
-#include "liboptions.h"
+#include "liboptions.hpp"
 
 #include <psi4-dec.h>
 

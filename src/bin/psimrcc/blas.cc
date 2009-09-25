@@ -1,6 +1,6 @@
 #include <algorithm>
 
-#include <liboptions/liboptions.h>
+#include <liboptions/liboptions.hpp>
 #include <libmoinfo/libmoinfo.h>
 #include <libutil/libutil.h>
 #include <libciomr/libciomr.h>

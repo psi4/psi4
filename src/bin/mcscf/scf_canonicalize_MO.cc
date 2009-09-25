@@ -1,9 +1,9 @@
 #include "scf.h"
 #include <cstdio>
 
-#include <liboptions/liboptions.h>
+#include <liboptions/liboptions.hpp>
 
-namespace psi{ namespace mcscf{
+namespace psi{ namespace MCSCF{
 
 void SCF::canonicalize_MO()
 {

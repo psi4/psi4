@@ -14,9 +14,8 @@
 // PSI libraries
 #include <psifiles.h>
 #include <libciomr/libciomr.h>
-#include <libipv1/ip_lib.h>
 #include <libmoinfo/libmoinfo.h>
-#include <liboptions/liboptions.h>
+#include <liboptions/liboptions.hpp>
 #include <libutil/libutil.h>
 
 // PSI C++ libraries
@@ -28,20 +27,9 @@
 #include "scf.h"
 
 // PSI FILES
-FILE  *infile, *outfile;
-char  *psi_file_prefix;
-extern "C" {
-  const char* gprgid();
-}
 
-namespace psi{
-  MOInfoSCF              *moinfo_scf;
-  MOInfo                 *moinfo;
-  MemoryManager          *_memory_manager_;
-  namespace mcscf{
-    void add_calculation_options();
-  }
-} /* End Namespaces */
+namespace psi{  namespace MCSCF{
+void add_calculation_options();
 
 using namespace std;
 
@@ -51,11 +39,9 @@ using namespace std;
  * @param argv[]
  * @return PSI_RETURN_SUCCESS if the program ran without any problem
  */
-int main(int argc, char *argv[])
+int mcscf(Options& options,int argc, char *argv[])
 {
   using namespace psi;
-  using namespace psi::mcscf;
-
   init_psi(argc,argv);
 
 
@@ -75,9 +61,6 @@ int main(int argc, char *argv[])
   close_psi();
   return PSI_RETURN_SUCCESS;
 }
-
-
-namespace psi{ namespace mcscf{
 
 void add_calculation_options()
 {
@@ -131,19 +114,9 @@ void init_psi(int argc, char *argv[])
     }
 */
   }
-  psi_start(&infile,&outfile,&psi_file_prefix,num_extra_args,extra_args,0);
   delete[] extra_args;
 
-  _default_psio_lib_ = new PSIO();
-  psiopp_ipv1_config(_default_psio_lib_);
-  _default_chkpt_lib_ = new Chkpt(_default_psio_lib_, PSIO_OPEN_OLD);
-
-  ip_cwk_clear();
-  ip_cwk_add(const_cast<char*>(":PSI"));
-  ip_cwk_add(const_cast<char*>(":SCF"));
-  ip_cwk_add(const_cast<char*>(":MCSCF"));
-
-  tstart(outfile);
+  tstart();
 
   fprintf(outfile,"\n         ------------------------------------------");
   fprintf(outfile,"\n           MCSCF: a self-consistent field program");
@@ -183,16 +156,7 @@ void close_psi()
   delete _default_chkpt_lib_;
   delete _default_psio_lib_;
 
-  tstop(outfile);
-  psi_stop(infile,outfile,psi_file_prefix);
+  tstop();
 }
 
 }} /* End Namespaces */
-
-/**
- * @return program ID
- */
-const char* gprgid()
-{
-  return(const_cast<char*>("MCSCF"));
-}

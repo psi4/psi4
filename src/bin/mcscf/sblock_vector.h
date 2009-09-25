@@ -5,7 +5,7 @@
 
 #include "block_vector.h"
 
-namespace psi{ namespace mcscf{
+namespace psi{ namespace MCSCF{
 
 // Smart version of BlockVector
 class SBlockVector

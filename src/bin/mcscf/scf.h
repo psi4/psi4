@@ -7,7 +7,7 @@
 
 #define STORE_TEI 0
 
-namespace psi{ namespace mcscf{
+namespace psi{ namespace MCSCF{
 
 enum ReferenceType {rhf, rohf, uhf, tcscf};
 
