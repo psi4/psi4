@@ -3,7 +3,7 @@
 */
 
 #include <libipv1/ip_lib.h>
-#include <liboptions/liboptions.hpp>
+#include <liboptions/liboptions.h>
 #include <psifiles.h>
 
 namespace psi {

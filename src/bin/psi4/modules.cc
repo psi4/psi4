@@ -1,11 +1,9 @@
 #include <stdio.h>
 #include <ruby.h>
 #include <psiconfig.h>
-#include <liboptions/liboptions.hpppp>
-
+#include <liboptions/liboptions.h>
 #include <psi4-dec.h>
 #include "task.h"
-
   
 namespace psi { 
   namespace input    { int input(); void register_input_options(); }

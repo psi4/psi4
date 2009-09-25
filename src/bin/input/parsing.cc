@@ -21,31 +21,31 @@ void parsing()
   char tmp_label[80];
 
   /*--- read MOs from checkpoint file and project onto new basis ---*/
-  chkpt_mos   = options.get_int("CHKPT_MOS");
+  chkpt_mos   = options.get_bool("CHKPT_MOS");
 
   /*--- read geometry from checkpoint file (in findif calculations) ---*/
   // this keyword may be obseleted in psi4
-  chkpt_geom = options.get_int("CHKPT_GEOM");
+  chkpt_geom = options.get_bool("CHKPT_GEOM");
 
   /*--- don't project MOs but simply keep them ---*/
-  dont_project_mos = options.get_int("NOPROJECT");
+  dont_project_mos = options.get_bool("NOPROJECT");
 
-  geomdat_geom = options.get_int("GEOMDAT");
+  geomdat_geom = options.get_bool("GEOMDAT");
   save_oldcalc = 0;
   overwrite_output = 0;
-  no_comshift = options.get_int("NO_COM_SHIFT");
+  no_comshift = options.get_bool("NO_COM_SHIFT");
   no_reorient = 0;
 			  
   // will not survive psi4
   //if (geomdat_geom) 
   //  geomdat_entry = atoi(argv[i+1]);  i++;
 
-  no_reorient = options.get_int("NO_REORIENT");
+  no_reorient = options.get_bool("NO_REORIENT");
 
   read_chkpt = 0;
 
     /*--- read MOs from checkpoint file and save to a separate file ---*/
-   if (options.get_int("SAVE_MOS")) {
+   if (options.get_bool("SAVE_MOS")) {
       read_chkpt = 1;
       save_oldcalc = 1;
    }
@@ -69,12 +69,12 @@ void parsing()
       overwrite_output = 0;
 
     /* Keep the chkpt file. */
-   keep_chkpt = options.get_int("KEEP_CHKPT");
+   keep_chkpt = options.get_bool("KEEP_CHKPT");
 
    label       = options.get_str("LABEL");
-   shownorm    = options.get_int("SHOWNORM");
-   puream      = options.get_int("PUREAM");
-   expert      = options.get_int("EXPERT");
+   shownorm    = options.get_bool("SHOWNORM");
+   puream      = options.get_bool("PUREAM");
+   expert      = options.get_bool("EXPERT");
    print_lvl   = options.get_int("PRINT");
    subgroup    = options.get_str("SUBGROUP");
    unique_axis = options.get_str("UNIQUE_AXIS");
