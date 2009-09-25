@@ -5,7 +5,7 @@
 
 #include "sblock_matrix.h"
 
-namespace psi{ namespace mcscf{
+namespace psi{ namespace MCSCF{
 
 SBlockMatrix::SBlockMatrix()
  : block_matrix_(0)

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <ruby.h>
 #include <psiconfig.h>
-#include <liboptions/liboptions.hpp>
+#include <liboptions/liboptions.hpppp>
 
 #include <psi4-dec.h>
 #include "task.h"

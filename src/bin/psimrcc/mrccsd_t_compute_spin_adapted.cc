@@ -6,7 +6,7 @@
 
 #include <cstdlib>
 
-#include <liboptions/liboptions.h>
+#include <liboptions/liboptions.hpp>
 #include <libmoinfo/libmoinfo.h>
 #include <libchkpt/chkpt.hpp>
 

@@ -10,7 +10,7 @@
 
 extern FILE* outfile;
 
-namespace psi{ namespace mcscf{
+namespace psi{ namespace MCSCF{
 
 double SCF::energy(int cycle,double old_energy)
 {

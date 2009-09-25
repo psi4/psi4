@@ -9,7 +9,7 @@
 
 extern FILE* outfile;
 
-namespace psi{ namespace mcscf{
+namespace psi{ namespace MCSCF{
 
 MatrixBase::MatrixBase(size_t rows, size_t cols) : rows_(rows),cols_(cols),elements_(rows*cols),matrix_(NULL)
 {

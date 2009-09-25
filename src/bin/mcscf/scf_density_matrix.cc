@@ -1,6 +1,6 @@
 #include "scf.h"
 
-namespace psi{ namespace mcscf{
+namespace psi{ namespace MCSCF{
 
 void SCF::density_matrix()
 {

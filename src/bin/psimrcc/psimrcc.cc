@@ -5,7 +5,7 @@
  *  @brief Contains main() and global variables
 */
 
-#include <liboptions/liboptions.h>
+#include <liboptions/liboptions.hpp>
 #include <libmoinfo/libmoinfo.h>
 #include <libutil/libutil.h>
 

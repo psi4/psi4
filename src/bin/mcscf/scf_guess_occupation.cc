@@ -13,7 +13,7 @@ extern FILE* outfile;
 
 using namespace std;
 
-namespace psi{ namespace mcscf{
+namespace psi{ namespace MCSCF{
 
 void SCF::guess_occupation()
 {

@@ -6,11 +6,11 @@
 
 #include <libchkpt/chkpt.hpp>
 #include <libmoinfo/libmoinfo.h>
-#include <liboptions/liboptions.h>
+#include <liboptions/liboptions.hpp>
 
 #include "scf.h"
 
-namespace psi{ namespace mcscf{
+namespace psi{ namespace MCSCF{
 
 using namespace std;
 

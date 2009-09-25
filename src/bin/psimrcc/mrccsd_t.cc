@@ -1,4 +1,4 @@
-#include <liboptions/liboptions.h>
+#include <liboptions/liboptions.hpp>
 
 #include "mrccsd_t.h"
 

@@ -3,7 +3,7 @@
 #include <cstdio>
 
 #include <libchkpt/chkpt.hpp>
-#include <liboptions/liboptions.h>
+#include <liboptions/liboptions.hpp>
 
 #include "scf.h"
 
@@ -11,7 +11,7 @@ namespace psi{
   extern Chkpt* chkpt;
 }
 
-namespace psi{ namespace mcscf{
+namespace psi{ namespace MCSCF{
 
 void SCF::initial_guess()
 {

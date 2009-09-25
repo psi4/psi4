@@ -2,7 +2,7 @@
 #include <cmath>
 
 #include <psifiles.h>
-#include <liboptions/liboptions.h>
+#include <liboptions/liboptions.hpp>
 #include <libmoinfo/libmoinfo.h>
 #include <libutil/libutil.h>
 #include <libpsio/psio.hpp>
