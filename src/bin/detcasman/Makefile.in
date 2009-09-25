@@ -1,0 +1,23 @@
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+PSILIBS = -lPSI_qt -lPSI_ciomr -lPSI_ipv1 -lPSI_chkpt -lPSI_psio
+
+CSRC = 
+
+CXXSRC = detcasman.cc setup_io.cc
+
+BINOBJ = $(CSRC:%.c=%.o) $(CXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+ifneq ($(DODEPEND),no)
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(BINOBJ:%.o=%.d)
+endif
+
+install_man:: detcasman.1
+	$(MKDIRS) $(DESTDIR)$(mandir)/man1
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(mandir)/man1

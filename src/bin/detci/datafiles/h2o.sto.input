@@ -1,0 +1,57 @@
+% H2O
+% STO C2V
+
+default: (
+  label = "H2O STO"
+  memory = (4.0 MB)
+
+  symmetry = c2v
+  wfn = ci
+  ex_lvl = 2
+  opentype = none
+  dertype = none
+  docc = (3 0 1 1)
+  frozen_docc = (2 0 0 0)
+  frozen_uocc = (0 0 0 0)
+
+files: (
+    default: ( name = "h2osto" nvolume = 1
+      volume1 = "/tmp1/sherrill/"
+      %volume1 = "/tmp/david/"
+      )
+    )
+)
+
+input: (
+  atoms = (oxygen hydrogen) 
+  basis = sto
+  charges = (8 1)
+  units = bohr
+% STO-3G SCF Optimized Geometry for H2O
+  geometry = (
+      (         .0000000000         .0000000000         .0609947951)
+      (         .0000000000        1.4325649220       -1.1404973976)
+  )
+  origin = (0.0 0.0 0.0)
+)
+
+scf: (
+    maxiter = 50
+    convergence = 12
+    delete34 = false
+  )
+
+detci: (
+   icore = 1
+   fci = false
+   print = 3
+   max_det = 5000
+   h0_blocksize = 4
+   maxiter = 10
+   convergence = 7
+   energy_convergence = 2
+   diag_method = SEM
+   % diag_method = Mitrushenkov
+   num_roots = 2
+)
+

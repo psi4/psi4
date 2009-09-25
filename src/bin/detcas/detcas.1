@@ -1,0 +1,231 @@
+.TH detcas 1 " 8 May, 1998" "" ""
+.  \"
+.  \" Notice of Document Modification
+.  \"
+.  \"   man page created by David Sherrill, 8 May 1998
+.  \"   streamlined by CDS, updated        20 Jul 1998
+.  \"   updated with new keywords by JSS   20 Jun 2004
+.  \"   updated with new keywords by CDS   24 Jul 2006
+.  \"
+.  \"
+.SH NAME
+detcas \- Determinant Configuration Interaction / Complete Active
+          Space Self-Consistent-Field Program
+
+.SH DESCRIPTION
+.LP
+The program
+.B detcas
+performs a complete-active-space self-consistent-field
+(CASSCF) optimization of molecular orbitals via a two-step
+procedure in conjunction with the determinant configuration
+interaction program DETCI.  The program is fairly simple
+and currently uses a Newton-Raphson approach
+to update the orbitals, employing a simple approximate
+orbital Hessian.  Convergence is accelerated using
+Pulay's direct inversion of the iterative
+subspace (DIIS) procedure.  The code has been written to allow
+more general wavefunctions that do not necessarily feature a
+full CI treatment of the active space.  In particular, any
+restricted active space (RAS) CI wavefunction supported by DETCI
+can be used, allowing MCSCF wavefunctions of the RASSCF type.
+
+.SH REFERENCES
+.LP
+Approximate Orbital Hessian:
+.IP "1."
+G. Chaban, M. W. Schmidt, and M. S. Gordon, Theor. Chim. Acta
+97, 88-95 (1997).
+.LP
+Restricted Active Space CI:
+.IP "1."
+Determinant Based Configuration Interaction Algorithms for
+Complete and Restricted Configuration Interaction Spaces,
+J. Olsen, B. O. Roos, P. Jorgensen, and H. J. Aa. Jensen,
+J. Chem. Phys. 89, 2185 (1988).
+.LP
+Restricted Active Space SCF:
+.IP "1."
+P.-A. Malmqvist, A. Rendell, and B. O. Roos, J. Phys. Chem.
+94, 5477 (1990).
+.LP
+DETCI Program:
+.IP "1."
+C. D. Sherrill, 
+Computational Algorithms for Large-Scale Full and
+Multi-Reference Configuration Interaction Wavefunctions,
+PhD thesis, University of Georgia, Athens, GA, 1996.
+.IP "2."
+C. D. Sherrill and H. F. Schaefer,
+The Configuration Interaction Method: Advances in Highly
+Correlated Approaches, Adv. Quantum Chem. 34, 143-269 (1999).
+
+.SH FILES REQUIRED
+.nf
+    input.dat          \- Input file
+    file78             \- MO one-electron integrals (fzc operator)
+    file72             \- MO two-electron integrals
+    file73             \- MO one-particle density matrix
+    file74             \- MO two-particle density matrix
+    file75             \- MO Lagrangian
+.fi
+
+.SH FILES UPDATED
+.nf
+    output.dat         \- Output file
+    file14.dat         \- Record of energies and orbital gradients
+.fi
+
+.SH INPUT FORMAT
+.LP
+The following command-line arguments are available:
+.IP "\fI-quiet\fP"
+This gives the same result as \fBPRINT=0\fP.
+
+.IP "\fI-o fname\fP"
+Gives the filename for the output file.  Defaults to output.dat.
+
+.LP
+Additional input for this program is read from the file input.dat.
+The more commonly used keywords are:
+
+.IP "\fBWFN =\fP \fIstring\fP"
+The supported wave function types are CASSCF and RASSCF.
+
+.IP "\fBCONVERGENCE =\fP \fIinteger\fP"
+Convergence desired on the orbital gradient.  Convergence is achieved when the
+RMS of the error in the orbital gradient is less than 10**(-n).  The default 
+is 4 for energy calculations and 7 for gradients.  
+
+.IP "\fBDOCC =\fP \fIinteger_array\fP"
+This vector gives the number of doubly occupied orbitals in each irrep.
+There is no default.
+
+.IP "\fBSOCC =\fP \fIinteger_array\fP"
+This vector gives the number of singly occupied orbitals in each irrep.
+There is no default.
+
+.IP "\fBENERGY_CONVERGENCE =\fP \fIinteger\fP"
+Convergence desired on the total MCSCF energy.  The default is 7.
+
+.IP "\fBFROZEN_DOCC =\fP \fIinteger_array\fP"
+The number of lowest energy doubly occupied orbitals in each irreducible
+representation which will literally be frozen (not updated
+in the MCSCF).
+The Cotton ordering of the irredicible representations is used.
+The default is the zero vector. 
+
+.IP "\fBFROZEN_UOCC =\fP \fIinteger_vector\fP"
+The number of highest energy unoccupied orbitals in each irreducible
+representation which will literally be frozen (not updated
+in the MCSCF).
+The default is the zero vector.
+
+.IP "\fBRESTRICTED_DOCC =\fP \fIinteger_array\fP"
+The number of lowest energy doubly occupied orbitals in each irreducible
+representation which will be optimized but kept doubly occupied
+in the MCSCF.  These orbitals come after the \fBFROZEN_DOCC\fP orbitals.
+The default is the zero vector. 
+
+.IP "\fBRESTRICTED_UOCC =\fP \fIinteger_array\fP"
+The number of highest energy unoccupied orbitals in each irreducible
+representation which will be optimized but kept unoccupied
+in the MCSCF.  These orbitals come before the \fBFROZEN_UOCC\fP orbitals.
+The default is the zero vector. 
+
+.IP "\fBNCASITER =\fP \fIinteger\fP"
+Maximum number of iterations to optimize the orbitals.  This option
+\fBshould be specified in the DEFAULT section of input\fP, because
+it needs to be visible to the control program PSI.  Defaults to 1.
+
+.IP "\fBPRINT =\fP \fIinteger\fP"
+This option determines the verbosity of the output.  A value of 1 or
+2 specifies minimal printing, a value of 3 specifies verbose printing.
+Values of 4 or 5 are used for debugging.  Do not use level 5 unless
+the test case is very small (e.g. STO H2O CISD).
+
+.LP
+The less commonly used keywords are:
+
+.IP "\fBDIIS_FREQ =\fP \fIinteger\fP"
+The DIIS extrapolation procedure will be attempted every \fIn\fP
+iterations.  The default is 1.
+
+.IP "\fBDIIS_MAX_VECS =\fP \fIinteger\fP"
+The maximum number of subspace vectors for the DIIS procedure.  After this 
+number of vectors are reached, older vectors will be dropped from the
+subspace as necessary.  The default is 8.
+
+.IP "\fBDIIS_MIN_VECS =\fP \fIinteger\fP"
+The minimum number of subspace vectors before a DIIS interpolation can
+be performed.  The default is 2.  It doesn't make sense to have values
+less than 2.
+
+.IP "\fBDIIS_START =\fP \fIinteger\fP"
+The iteration number when Pulay's Direct Inversion of the Iterative
+Subspace (DIIS) procedure for acceleration of convergence should be
+turned on.  The default is 3.  Prior to this iteration, vectors are 
+not added to the DIIS subspace.  The first DIIS step will not be taken until 
+\fBDIIS_MIN_VECS\fP vectors are in the DIIS subspace. 
+
+.IP "\fBLAG_FILE =\fP \fIinteger\fP"
+File (unit number) for reading the lagrangian matrix.
+The default value is currently 75.
+
+.IP "\fBOPDM_FILE =\fP \fIinteger\fP"
+File (unit number) for reading the one-particle density matrix.
+The default value is currently 73.
+
+.IP "\fBSCALE_GRAD =\fP \fIboolean\fP"
+Tells whether to scale the orbital gradient by the approximate 
+(diagonal) orbital Hessian.  The default is TRUE.
+
+.IP "\fBSCALE_STEP =\fP \fIreal\fP"
+Scale factor for the orbital rotation step.  Default is 1.0.
+
+.IP "\fBTPDM_FILE =\fP \fIinteger\fP"
+File (unit number) for reading the two-particle density matrix.
+The default value is currently 74.
+
+.IP "\fBLEVEL_SHIFT =\fP \fIboolean\fP"
+Tells whether to allow for level shifting of the hessian matrix.  This can
+be used to ensure that the hessian is positive definite for the beginning
+iterations.  If the hessian is not positive definite near convergence, then
+this may be a sign of numerical instabilities in the MCSCF.  The default
+is TRUE.
+
+.IP "\fBSHIFT =\fP \fIreal\fP"
+Tells how much the diagonal elements of the hessian should be shifted for
+level shifting.  Default is 0.01.
+
+.IP "\fBDETERM_MIN =\fP \fIreal\fP"
+Minimum allowed valued for the determinant of the hessian matrix if
+level shifting is on.  This is not used if LEVEL_SHIFT=FALSE.  
+Default is 0.00001.
+
+.IP "\fBSTEP_MAX =\fP \fIreal\fP"
+This is the maximum allowed single orbital rotation.  Default is 0.30.
+
+.IP "\fBFORCE_STEP =\fP \fIboolean\fP"
+This allows the user to overide the calculated step and to force a step
+in a particular direction.  This can be usefull if trying to force the 
+calculation away from a saddle point.  The default is FALSE.
+
+.IP "\fBFORCE_PAIR =\fP \fIinteger\fP"
+This is the index for the independent pair which is to be rotated if 
+FORCE_STEP=TRUE.  This is ignored otherwise.  There is no default.  
+
+.IP "\fBFORCE_VALUE =\fP \fIreal\fP"
+This is the orbital rotation value for rotating the orbitals specified
+by FORCE_PAIR.  This is only used if FORCE_STEP is set to TRUE.  The 
+default value is 0.0.
+
+.IP "\fBCHECK_HESSIAN =\fP \fIboolean\fP"
+Calculate the eigenvalues of the orbital hessian.  This is good for checking
+for saddle-point solutions.  Should be used without level shifting.  The
+default is FALSE.
+
+.IP "\fBEIGEN_VECTORS =\fP \fIboolean\fP"
+Do you want to calculate the eigenvectors of the orbital hessian as well.
+This is ignored if CHECK_HESSIAN=FALSE.  Default is FALSE.
+

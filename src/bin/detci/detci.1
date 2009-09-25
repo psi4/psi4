@@ -1,0 +1,497 @@
+.TH detci 1 " 9 Feb, 1996" "" ""
+.  \"
+.  \" Notice of Document Modification
+.  \"
+.  \"   man page created by David Sherrill, 9 Feb 96
+.  \"
+.  \"
+.SH NAME
+detci \- Determinant Configuration Interaction Program
+
+.SH DESCRIPTION
+.LP
+The program
+.B detci
+diagonalizes the nonrelativistic electronic Hamiltonian operator
+in a basis of Slater determinants.  The set of determinants used
+(CI space) may be chosen in a variety of ways.  The program can
+handle any CI space which can be formulated as a 
+Restricted Active Space CI.  This includes CISD, CISDT,
+CISDTQ, etc., up to Full CI, as well as multireference CI's
+in which the references are chosen as all determinants in which
+up to n electrons are excited in some MO active space.  This 
+includes CISD[T], CISD[TQ], and second-order CI (SOCI).
+
+.SH REFERENCES
+.LP
+Restricted Active Space CI:
+.IP "1."
+Determinant Based Configuration Interaction Algorithms for
+Complete and Restricted Configuration Interaction Spaces,
+J. Olsen, B. O. Roos, P. Jorgensen, and H. J. Aa. Jensen,
+J. Chem. Phys. 89, 2185 (1988).
+.IP "2."
+Passing the One-Billion Limit in Full Configuration-Interaction
+(FCI) Calculations, J. Olsen, P. Jorgensen, and J. Simons,
+Chem. Phys. Lett. 169, 463 (1990).
+.LP
+Tertiary virtual subspaces (RAS IV):
+.IP "1."
+Compact Variational Wavefunctions Incorporating Limited Triple
+and Quadruple Excitations, C. D. Sherrill and H. F. Schaefer,
+J. Phys. Chem. 100, 6069-6075 (1996).
+.LP
+DETCI Program:
+.IP "1."
+C. D. Sherrill, 
+Computational Algorithms for Large-Scale Full and
+Multi-Reference Configuration Interaction Wavefunctions,
+PhD thesis, University of Georgia, Athens, GA, 1996.
+
+.SH FILES REQUIRED
+.nf
+    input.dat          \- Input file
+    file71             \- Transformed one-electron integrals
+    file72             \- Transformed two-electron integrals
+.fi
+
+.SH TEMPORARY FILES USED
+.nf
+    file50             \- Diagonal of Hamiltonian
+    file51             \- CI vectors
+    file52             \- Sigma vectors
+    file53             \- D file (correction vectors)
+.fi
+
+.SH FILES UPDATED
+.nf
+    output.dat         \- Output file
+.fi
+
+.SH INPUT FORMAT
+.LP
+The following command-line arguments are available:
+.IP "\fI-quiet\fP"
+This gives the same result as \fBPRINT=0\fP.
+
+.IP "\fI-o fname\fP"
+Gives the filename for the output file.  Defaults to output.dat.
+
+.IP "\fI-e\fP"
+This option causes the total CI energy or energies to be written to a file
+called detci_energies.dat.
+
+.IP "\fI-c value\fP"
+Gives a looser convergence on the CI vector, useful in DETCAS calculations.
+The value is a real number, not an integer as in \fBCONVERGENCE\fP.
+The convergence used will be the looser of \fBvalue\fP and
+\fBCONVERGENCE\fP.
+
+Additional input for this program is read from the file
+.pN INPUT .
+The following keywords are valid:
+
+.IP "\fBCONVERGENCE =\fP \fIinteger\fP"
+Convergence desired on the CI vector.  Convergence is achieved when the
+RMS of the error in the CI vector is less than 10**(-n).  The default is 4
+for energies and 7 for gradients. This is not the same CI vector 
+convergence criterion as found in GUGACI.
+
+.IP "\fBDOCC =\fP \fIinteger_array\fP"
+This vector gives the number of doubly occupied orbitals in each irrep.
+There is no default.
+
+.IP "\fBSOCC =\fP \fIinteger_array\fP"
+This vector gives the number of singly occupied orbitals in each irrep.
+There is no default.
+
+.IP "\fBDIAG_METHOD =\fP \fIstring\fP"
+This specifies which method is to be used in diagonalizing the Hamiltonian.
+The valid options are: \fBRSP\fP, to form the entire H matrix and diagonalize
+using libciomr to obtain all eigenvalues (n.b. requires HUGE memory);
+\fBOLSEN\fP, to use Olsen's preconditioned inverse subspace method (1990); 
+\fBMITRUSHENKOV\fP, to use a 2x2 Olsen/Davidson method; and 
+\fBDAVIDSON\fP (or \fBSEM\fP)
+to use Liu's Simultaneous Expansion Method, which is identical to the
+Davidson method if only one root is to be found.  There also exists a
+SEM debugging mode, \fBSEMTEST\fP.  The \fBSEM\fP method is the most robust, 
+but it also requires 2(N*M)+1 CI vectors on disk, where N is the maximum
+number of iterations and M is the number of roots.
+
+.IP "\fBPRECONDITIONER =\fP \fIstring\fP"
+This specifies the type of preconditioner to use in the selected diagonalization
+method.  The valid options are: \fBDAVIDSON\fP which approximates the 
+Hamiltonian matrix by the diagonal elements; \fBH0BLOCK_INV\fP which uses 
+an exact Hamiltonian of H0_BLOCKSIZE and explicitly inverts it; 
+\fBGEN_DAVIDSON\fP which does a spectral decomposition of H0BLOCK; 
+\fBITER_INV\fP using an iterative approach to obtain the 
+correction vector of H0BLOCK.  The H0BLOCK_INV, GEN_DAVIDSON, and 
+ITER_INV approaches are all formally equivalent but the ITER_INV is 
+less computationally expensive.  Default is \fBDAVIDSON\fP.
+
+.IP "\fBREFERENCE =\fP \fIstring\fP"
+This specifies the type of reference function.  This is RHF or ROHF.
+UHF and TWOCON are not supported.
+For ROHF, a multiplicity of 1 implies an open-shell singlet.  The
+program will run for open-shell singlets, but it has not been properly
+adapted to use a correct two-determinant reference in this case, so 
+running with open-shell singlet references is not advised except for
+full CI's.
+
+.IP "\fBUPDATE =\fP \fIstring\fP"
+\fBDAVIDSON\fP employs the standard DAVIDSON update or correction vector 
+formula, while \fBOLSEN\fP uses the OLSEN correction vector.
+Default is \fBDAVIDSON\fP.
+
+.IP "\fBHD_OTF =\fP \fIboolean\fP"
+If TRUE the diagonal elements of the Hamiltonian matrix are computed on-the-fly,
+otherwise a diagonal element vector is written to a separate file on disk.
+Default is TRUE.
+
+.IP "\fBHD_AVE =\fP \fIstring\fP"
+\fBHD_EXACT\fP uses the exact diagonal energies which results in expansion
+vectors which break spin symmetry. \fBHD_KAVE\fP averages the diagonal
+energies over a spin-coupling set yielding spin pure expansion vectors.
+\fBORB_ENER\fP employs the sum of orbital energy approximation giving
+spin pure expansion vectors but usually doubles the number of davidson
+iterations. \fBEVANGELISTI\fP uses the sums and differences of orbital
+energies with the SCF reference energy to produce spin pure expansion
+vectors. \fBLEININGER\fP approximation which subtracts the one-electron
+contribution from the orbital energies, multiplies by 0.5, and adds
+the one-electron contribution back in, producing spin pure expansion
+vectors and developed by yours truly and works as well as
+\fBEVANGELISTI\fP.
+
+.IP "\fBNODFILE =\fP \fIboolean\fP"
+Only possible if NUM_ROOTS = 1.  Uses the last vector space in the BVEC file
+to write scratch DVEC rather than using a separate DVEC file.  
+
+.IP "\fBENERGY_CONVERGENCE =\fP \fIinteger\fP"
+Convergence desired on the CI energy.  The default is 6 for single point
+energies and 8 for gradients or CASSCF.
+
+.IP "\fBEX_LVL =\fP \fIinteger\fP"
+Excitation level for excitations into virtual
+orbitals (default 2, i.e. CISD).
+
+.IP "\fBVAL_EX_LVL =\fP \fIinteger\fP"
+Excitation level for references in orbitals of RAS II.
+Defaults to zero.
+
+.IP "\fBFCI =\fP \fIboolean\fP"
+If this flag is set to \fBTRUE\fP, then the storage of strings is
+simplified for a Full CI and the calculation requires less overhead.  
+However, the final results should be identical to those when 
+\fBFCI = FALSE\fP.  May cause unpredictable results if \fBFCI = TRUE\fP 
+but \fBEX_LVL\fP is not consistent with a Full CI.
+
+.IP "\fBFROZEN_DOCC =\fP \fIinteger_array\fP"
+The number of lowest energy doubly occupied orbitals in each irreducible
+representation from which there will be no excitations.
+The Cotton ordering of the irredicible representations is used.
+The default is the zero vector.
+
+.IP "\fBFROZEN_UOCC =\fP \fIinteger_vector\fP"
+The number of highest energy unoccupied orbitals in each irreducible
+representation into which there will be no excitations.
+The default is the zero vector.
+
+.IP "\fBFREEZE_CORE = \fP \fIboolean\fP"
+This option determines whether the frozen core orbitals are to be
+included implicitly (true) or explicitly (false).  In the former
+case, the energetic contributions from the frozen core orbitals are
+folded into the one-electron integrals and into the "frozen
+core energy" computed by the transformation program.   The default
+is true.
+
+.IP "\fBEXPORT_VECTOR =\fP \fIboolean\fP"
+This specifies whether to store converged vector(s) at the end of the run.
+The vector(s) is(are) stored in a transparent format such that other programs
+can use it easily. The format is specified in \fBsrc/lib/libqt/slaterdset.h\fP.
+The default is false.
+
+.IP "\fBNUM_EXPORT =\fP \fIinteger\fP"
+If \fBEXPORT_VECTOR\fP is set to true, the this determines the number of vectors
+that need to be exported at the end of the run. The default is 1.
+
+.IP "\fBGUESS_VECTOR =\fP \fIstring\fP"
+This specifies which type of guess vector to use in the CI iteration.
+Currently only used by the SEM iteration method.  Accepted values
+are \fBUNIT\fP for a unit vector guess (\fBNUM_ROOTS\fP and 
+\fBNUM_INIT_VECS\fP must both be 1); \fBH0_BLOCK\fP to use eigenvectors 
+from the H0 BLOCK submatrix (default); \fBDFILE\fP to use \fBNUM_ROOTS\fP
+previously converged vectors in the D file; and \fBMP2\fP to use the 
+MP2 wavefunction as a guess (not working at the moment).
+
+.IP "\fBH0_BLOCKSIZE =\fP \fIinteger\fP"
+This parameter specifies the size of the "H0" block of the Hamiltonian
+which is solved exactly.  The n determinants with the lowest SCF
+energy are selected, and a submatrix of the Hamiltonian is formed 
+using these determinants.  This submatrix is used to accelerate
+convergence of the CI iterations in the \fBOLSEN\fP and \fBMITRUSHENKOV\fP
+iteration schemes, and also to find a good starting guess for the
+\fBSEM\fP method if \fBGUESS_VECTOR = H0_BLOCK\fP.  Defaults to 40.
+Note that the program may change the given size for Ms=0 cases
+(\fBMs0 = TRUE\fP) if it determines that the H0 block includes only
+one member of a pair of determinants related by time reversal symmetry.
+For very small block sizes, this could conceivably eliminate the entire 
+H0 block; the program should print warnings if this occurs.
+
+.IP "\fBH0_BLOCK_COUPLING_SIZE = \fP \fIinteger\fP"
+Parameters which specifies the size of the coupling block
+within the generalized davidson preconditioner.  Default value 
+is 1000.
+
+.IP "\fBMAX_DET = \fP \fIinteger\fP"
+Sets the maximum number of determinants; if the CI space is larger
+than this, the program aborts.  This option exists to ensure that
+very large calculations are not run by accident.  During the
+current developmental phase, the default is 10000, but it will
+be raised before long.
+
+.IP "\fBMAXITER =\fP \fIinteger\fP"
+Maximum number of iterations to diagonalize the Hamiltonian.
+Defaults to 12.
+
+.IP "\fBMs0 =\fP \fIboolean\fP"
+If \fBTRUE\fP, use the Ms=0 component of the state.  Defaults to \fBTRUE\fP
+if closed-shell and to \fBFALSE\fP otherwise.  Related to the \fBS\fP
+parameter.
+
+.IP "\fBNPRINT =\fP \fIinteger\fP"
+This value specifies the number of determinants which will be printed,
+along with their coefficients, in the list of most important determinants
+in the final CI vector.  The default is 20.
+
+.IP "\fBNUM_ROOTS =\fP \fIinteger\fP"
+This value gives the number of roots which are to be obtained from
+the secular equations.  The default is one.  If more than one root
+is required, set \fBDIAG_METHOD\fP to \fBSEM\fP (or, for very small cases,
+\fBRSP\fP or \fBSEMTEST\fP).
+
+.IP "\fBNUM_INIT_VECS =\fP \fIinteger\fP"
+The number of initial vectors to use in the CI iterative procedure.
+Defaults to the number of roots.
+
+.IP "\fBOPDM =\fP \fIboolean\fP"
+If \fBTRUE\fP calculate the one-particle density matrix and 
+make \fBOPDM_WRITE\fP default to \fBTRUE\fP.  The default value 
+of \fBOPDM\fP is \fBFALSE\fP.
+
+.IP "\fBOPDM_FILE =\fP \fIinteger\fP"
+File (unit number) for writing the one-particle density matrix if 
+\fBOPDM_WRITE = TRUE\fP.  The default value is currently 73.
+
+.IP "\fBOPDM_WRITE =\fP \fIboolean\fP"
+Flag for whether or not to write the one-particle density matrix
+to disk.
+
+.IP "\fBOPDM_PRINT =\fP \fIboolean\fP"
+Flag for whether or not to print the one-particle density matrix.
+
+.IP "\fBOPDM_DIAG =\fP \fIboolean\fP"
+Flag for whether or not to diagonalize the one-particle density matrix.
+
+.IP "\fBWRTNOS =\fP \fIboolean\fP"
+Flag for whether or not to write the CI natural orbitals to PSIF_CHKPT.
+
+.IP "\fBORBSFILE =\fP \fIinteger\fP"
+File (unit number) for writing various CI natural orbitals.  The 
+default value is 76.   
+
+.IP "\fBOPDM_AVE =\fP \fIboolean\fP"
+Flag for whether or not to average the OPDM over several roots in order
+to obtain a state-average one-particle density matrix.  This density matrix
+can be diagonalized to obtain the CI natural orbitals.
+
+.IP "\fBORBS_ROOT =\fP \fIinteger\fP"
+Flag for setting the root number for which CI natural orbitals are written
+to PSIF_CHKPT.  The default value is 1 (lowest root).
+
+.IP "\fBPRINT =\fP \fIinteger\fP"
+This option determines the verbosity of the output.  A value of 1 or
+2 specifies minimal printing, a value of 3 specifies verbose printing.
+Values of 4 or 5 are used for debugging.  Do not use level 5 unless
+the test case is very small (e.g. STO H2O CISD).
+
+.IP "\fBROOT =\fP \fIinteger\fP"
+The root to write out the two-particle density matrix for
+(the one-particle density matrices are written for all roots).
+Useful for a state-specific CASSCF or CI optimization on an
+excited state.
+
+.IP "\fBS =\fP \fIinteger\fP"
+The value of the spin quantum number S is given by this option.
+The default is 0 (singlet).  The only thing this is actually used for 
+is determining the phase of the redundant half of the CI vector when 
+the Ms=0 component is used (i.e., \fBMs0 = TRUE\fP).  For cases where
+S is not an integer, this parameter need not be entered because such
+a state can't have an Ms=0 component. 
+
+.IP "\fBTPDM =\fP \fIboolean\fP"
+If \fBTRUE\fP calculate the two-particle density matrix and 
+make \fBTPDM_WRITE\fP default to \fBTRUE\fP.  The default value 
+of \fBTPDM\fP is \fBFALSE\fP.
+
+.IP "\fBTPDM_FILE =\fP \fIinteger\fP"
+File (unit number) for writing the two-particle density matrix if 
+\fBTPDM_WRITE = TRUE\fP.  The default value is currently 74.
+
+.IP "\fBTPDM_WRITE =\fP \fIboolean\fP"
+Flag for whether or not to write the two-particle density matrix
+to disk.
+
+.IP "\fBTPDM_PRINT =\fP \fIboolean\fP"
+Flag for whether or not to print the two-particle density matrix.
+Typically a very bad idea except for debugging small cases.
+
+.LP
+There is also some less commonly used input, which novice uses of PSI
+will have no need to use.
+
+.IP "\fBBENDAZZOLI =\fP \fIboolean\fP"
+Use some routines to calculate sigma based on the papers of Bendazzoli
+et al.  Seems to be slower and not worthwhile; may disappear 
+eventually.  Works only for full CI and I don't remember if I could see
+how their clever scheme might be extended to RAS in general.
+
+.IP "\fBCALC_SSQ =\fP \fIboolean\fP"
+If TRUE, calculate the expectation value of the S^2 operator for the
+final CI wavefunction for each root.  In principle, DETCI should yield
+S^2 eigenfunctions.  The default is FALSE.
+
+.IP "\fBCOLLAPSE_SIZE \fP \fIinteger\fP"
+Gives the number of vectors to retain when the Davidson subspace is
+collapsed (see \fBMAXNVECT\fP below).  If greater than one, the
+collapsed subspace retains the best estimate of the CI vector for
+the previous n iterations.   Defaults to 1.
+
+.IP "\fBFIRST_TMP_UNIT =\fP \fIinteger\fP"
+Gives the file (unit) number associated with the first scratch file
+used by DETCI.  Other scratch files are numbered consecutively from
+this point, int the order H(diag), C, S, D.  Each of these logical
+files takes up a number of physical files specified by the even
+more obscure input parameters \fBNUM_HD_TMP_UNITS, NUM_C_TMP_UNITS,
+NUM_S_TMP_UNITS, NUM_D_TMP_UNITS.\fP  The user can also specify
+different starting points for each of these sets using the parameters
+\fBFIRST_HD_TMP_UNIT\fP and so forth.  Splitting a file across several
+units may help avoid the size-of-integer problem in addressing large
+files that is present in DETCI and in PSI I/O libraries; but then again,
+I haven't tested it to see what happens.  The first unit of each
+section is printed out under the heading FILES in the parameter output
+beginning the DETCI run.
+
+.IP "\fBFZC =\fP \fIboolean\fP"
+Determines whether the frozen core orbitals are treated as truly
+frozen (i.e., absent entirely from calculation, \fBFZC = TRUE\fP) 
+or whether they are present but restricted to be doubly occupied
+(\fBFZC = FALSE\fP).  In the GUGA CI program, this is the distinction
+between what it calls FZC and COR orbitals.  Generally, the 
+integrals for frozen core orbitals are not needed by DETCI but they
+may be needed for MCSCF or gradients.
+
+.IP "\fBICORE =\fP \fIinteger\fP"
+Specifies how to handle buffering of CI vectors.  A value of 0
+makes the program perform I/O one RAS subblock at a time; 1 
+uses entire CI vectors at a time; and 2 uses one irrep block
+at a time.  Values of 0 or 2 cause some inefficiency in the I/O
+(requiring multiple reads of the C vector when constructing
+H in the iterative subspace if DIAG_METHOD = SEM), but require
+less core memory.
+
+.IP "\fBISTOP =\fP \fIboolean\fP"
+If \fBTRUE\fP then DETCI will stop after string information is formed
+and before integrals are read.  May eventually change to an integer
+so that the user can select from multiple stopping points.
+
+.IP "\fBMAXNVECT =\fP \fIinteger\fP"
+Gives the maximum number of Davidson subspace vectors which can
+be held on disk for the CI coefficient and sigma vectors.  (There
+is one H(diag) vector and the number of D vectors is equal to the
+number of roots).  When the number of vectors on disk reaches
+the value of \fBMAXNVECT\fP, the Davidson subspace will be 
+collapsed to \fBCOLLAPSE_SIZE\fP vectors for each root.  This is very 
+helpful for saving disk space.  Defaults to \fBMAXITER\fP * \fBNUM_ROOTS\fP
++ \fBNUM_INIT_VECS\fP.
+
+.IP "\fBMIXED =\fP \fIboolean\fP"
+This determines whether "mixed" RAS II/RAS III excitations are allowed 
+into the CI space.  This is useful for placing additional constraints
+on a RAS CI.
+
+.IP "\fBMIXED4 =\fP \fIboolean\fP"
+This is similar to the MIXED keyword, but refers to excitations into
+RAS IV.
+
+.IP "\fBNUNITS =\fP \fIinteger\fP"
+Number of scratch files to be used in storing the C vectors (and
+also for the sigma vectors).
+
+.IP "\fBOEI_ERASE =\fP \fIboolean\fP"
+This determines whether the program erases the one-electron integrals
+file after it has been read.  The default will eventually
+be true, but during development the default is false.
+
+.IP "\fBOEI_FILE =\fP \fIinteger\fP"
+This keyword allows the user to specify the transformed one-electron
+integral file.  The default is 71.
+
+.IP "\fBPRINT_CIBLKS =\fP \fIboolean\fP"
+Specifies whether the program should print out a summary of all the
+blocks in the CI vector (which can be cast into matrix form, see refs.)
+
+.IP "\fBR4S =\fP \fIboolean\fP"
+Restricts the RAS IV strings to the minimal set, saving memory.  If you 
+are concerned about this option, you should write David for advice unless 
+you are a DETCI expert.  
+
+.IP "\fBREF_SYM =\fP \fIinteger\fP"
+This option allows the user to look for CI vectors of a different irrep
+than the reference.  This probably only makes sense for Full CI,
+and it would probably not work with unit vector guesses.  Numbering
+starts from zero for the totally-symmetric irrep.
+
+.IP "\fBREPL_OTF =\fP \fIboolean\fP"
+Tells DETCI whether or not to do string replacements on the fly.  Can
+save a gigantic amount of memory (especially for truncated CI's) but
+is somewhat flaky and hasn't been tested for a while.  As I recall,
+it only works for certain classes of RAS calculations.  Contact
+David for assistance.  Eventually, the on-the-fly replacement stuff
+should be redone in a much smarter way so that it doesn't take eons
+of CPU time.  Work along these lines was once started and may be 
+completed eventually.
+
+.IP "\fBRESTART =\fP \fIboolean\fP"
+This option allows the user to resume a DETCI iteration that terminated
+prematurely.  It assumes that the CI and sigma vectors are on disk; 
+the number of vectors specified by \fBRESTART_VECS\fP is collapsed
+down to one vector per root.
+
+.IP "\fBRESTART_VECS =\fP \fIinteger\fP"
+If \fBRESTART = TRUE\fP this specifies the number of CI (and sigma) 
+vectors to read from disk.  Typically this is the number of successfully
+completed iterations from a previous run times the number of roots
+for that run.
+
+.IP "\fBTEI_ERASE =\fP \fIboolean\fP"
+This determines whether the program erases the two-electron integrals
+file after it has been read.  The default will eventually
+be true, but during development the default is false.
+
+.IP "\fBTEI_FILE =\fP \fIinteger\fP"
+This keyword allows the user to specify the transformed two-electron
+integral file.  The default is 72.
+
+.IP "\fBMPN =\fP \fIboolean\fP"
+When this option is TRUE DETCI will compute the MPn series out to
+kth order where k is determined by maxnvect.  For open-shell systems 
+(REF=ROHF, WFN = ZAPTN), DETCI will compute the ZAPTn series.  
+GUESS_VECTOR must be set to TRUE.  HD_OTF must be set to TRUE.  
+HD_AVE must be set to orb_ener.
+
+.IP "\fBSAVE_MPN2 = \fP \fIinteger\fP"
+When MPN is TRUE and WIGNER is TRUE then this option becomes valid. 
+If set to 1 then MP(2n-1) energy is saved. If set to 2 then MP(2n-2) 
+energy is saved. If any other value MPn energy is saved. 
+The default is 0.
+

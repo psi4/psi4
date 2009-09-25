@@ -1,0 +1,70 @@
+\documentclass[12pt]{article}
+\addtolength{\oddsidemargin}{-0.75in}
+\addtolength{\evensidemargin}{-0.75in}
+\addtolength{\textwidth}{1.50in}
+\addtolength{\textheight}{0.5in}
+\parskip 9pt
+
+\begin{document}
+
+%%%%%%% DEFINITIONS, ETC %%%%%%%%%%%
+\def\ket#1{| #1 \rangle}
+\def\bra#1{\langle #1 |}
+\def\spinor#1{\chi_{#1}}
+\def\creat#1{a_{#1}^{\dagger}}
+\def\annih#1{a_{#1}}
+\def\oeip#1#2{\langle #1 | h | #2 \rangle}
+\def\teip#1#2{\langle #1 | #2 \rangle}
+\def\teia#1#2{\langle #1 || #2 \rangle}
+\def\oeic#1#2{[#1 | h | #2]}
+\def\teic#1#2{[#1 | #2]}
+\def\oei#1#2{(#1 | h | #2)}
+\def\tei#1#2{(#1 | #2)}
+
+
+\begin{center}
+\begin{Large}
+\begin{bf}
+Outline for MCSCF Program
+\end{bf}
+\end{Large}
+
+\vspace{0.1in}
+C. David Sherrill \\
+April 1998
+\end{center}
+
+
+\begin{enumerate}
+  \item Setup
+    \begin{enumerate}
+      \item Open input file, output file, start timers
+      \item Read user-specified input parameters
+      \item Read molecular orbital information
+    \end{enumerate}
+  \item Read Calculation Data
+    \begin{enumerate}
+      \item Read current molecular orbitals
+      \item Read electron repulsion integrals
+      \item Read one- and two-particle density matrices
+      \item Read Lagrangian
+    \end{enumerate}
+  \item Computation
+    \begin{enumerate}
+      \item Identify independent molecular orbital pairs 
+      \item Form orbital gradient
+      \item Form approximate diagonal MO Hessian
+      \item Compute new molecular orbitals
+    \end{enumerate}
+  \item Finish
+    \begin{enumerate}
+      \item Write new MOs
+      \item Write timing information, close input and output files
+      \item Exit
+    \end{enumerate}
+\end{enumerate}
+
+
+
+\end{document}
+

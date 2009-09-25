@@ -1,0 +1,63 @@
+% H2O STO C2V
+%
+% CASSCF calculation with DETCAS.  There should be a total of 5 independent
+% pairs, all of them involving only a1 orbitals.
+%
+
+
+psi: (
+  check = false
+)
+
+default: (
+  label = "H2O STO"
+  memory = (10.0 MB)
+  ncasiter = 30
+
+  symmetry = c2v
+  wfn = detcas
+  ex_lvl = 8
+  opentype = none
+  dertype = none
+  docc = (3 0 1 1)
+  frozen_docc = (1 0 0 0)
+  frozen_uocc = (1 0 0 0)
+
+files: (
+    default: ( name = "h2osto" nvolume = 1
+      volume1 = "/scratch/sherrill/"
+      %volume1 = "/tmp/david/"
+      )
+    file30: (nvolume = 1 volume1 = "./" )
+    )
+)
+
+input: (
+  atoms = (oxygen hydrogen) 
+  basis = sto
+  charges = (8 1)
+  units = bohr
+% STO-3G SCF Optimized Geometry for H2O
+  geometry = (
+      (         .0000000000         .0000000000         .0609947951)
+      (         .0000000000        1.4325649220       -1.1404973976)
+  )
+  origin = (0.0 0.0 0.0)
+)
+
+scf: (
+  maxiter = 50
+  convergence = 12
+  delete34 = false
+)
+
+detci: (
+  fci = true
+%  h0_blocksize = 4
+)
+
+detcas: (
+  print = 3
+)
+
+

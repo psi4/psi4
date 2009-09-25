@@ -1,0 +1,346 @@
+.TH oeprop 1 " March 30, 2001" "\*(]W" "\*(]D"
+.  \"
+.  \" Notice of Document Modification
+.  \"
+.  \"   man page created by Edward Valeev, 15 Jan 98
+.  \"
+.  \"
+.SH NAME
+oeprop \- One-Electron Property Program
+
+.SH DESCRIPTION
+.LP
+The program
+.B oeprop
+computes expectation values of one-electron property operators using
+a one-particle density
+matrix computed from an eigenvector in PSIF_CHKPT or read in from an external file.
+It is currently capable of performing Mulliken population analysis, 
+computing electric multipole moments through octopole, 
+electrostatic properties at atomic centers (electrostatic potential, 
+electric field, electric field gradient, electron and spin density, dipolar anisotropic
+contribution to the hyperfine coupling constants), 
+electron and spin density, electron and spin density gradient,
+Laplacian of electron and spin densities, electrostatic potential 
+over an arbitrary two-dimensional (planar) rectangular grid,
+and molecular orbitals values over an arbitrary three-dimensional
+rectangular grid.
+Miscellaneous capabilities include computation 
+of the relativistic first-order one-electron corrections to the energy
+(mass-velocity and Darwin terms), 
+construction of natural molecular orbitals from one-particle density 
+read from an external file (NOs can be written to PSIF_CHKPT) and 
+computation of spatial
+extents - expectation values of X^2, Y^2, Z^2, and R^2 operators - of
+total electron density and of individual MOs (if \fBREAD_OPDM = \fPfalse)
+or natural (if \fBREAD_OPDM = \fPtrue) orbitals (\fBMPMAX\fP must be set to
+a value greater than 1 for computing these entities). Spatial extents should
+be used cautiously, since they depend on the reference point.
+
+.SH REFERENCES
+.LP
+Mulliken population analysis
+.IP "1."
+Electronic Population Analysis on LCAO-MO Molecular Wave Functions.
+R. S. Mulliken, J. Chem. Phys. 23, 1833 (1955), ibid. 23, 1841 (1955), ibid.
+36, 3428 (1962).
+.LP
+Recurrence relations for one-electron integrals over Cartesian Gaussian
+functions.
+.IP "1."
+Efficient recursive computation of molecular integrals over Cartesian
+Gaussian functions. S. Obara and A. Saika,
+J. Phys. Chem. 84, 3963 (1986).
+.LP
+Fundamental physical constants and conversion factors.
+.IP "1."
+CRC Handbook of chemistry and physics. Edited by D. R. Lide. 73rd edition
+(1992-1993).
+
+.SH FILES REQUIRED
+.nf
+    input.dat        \- Input file
+    PSIF_CHKPT       \- Checkpoint file
+.fi
+
+.SH FILES UPDATED
+
+.nf
+    output.dat         
+    dipmom.dat       \-   Dipole moments
+    esp.dat          \-   Electrostatic potential on a 2D grid
+    edens.dat        \-   Electron density on a 2D grid
+    edgrad.dat       \-   Electron density gradient on a 2D grid
+    edlapl.dat       \-   Laplacian of the electron density on a 2D grid
+    sdens.dat        \-   Spin density on a 2D grid
+    sdgrad.dat       \-   Spin density gradient on a 2D grid
+    sdlapl.dat       \-   Laplacian of the spin density on a 2D grid
+    mo.dat           \-   Molecular orbital/Density values on a 3D grid
+    mo.pov           \-   MegaPov input file for rendering an image of mo.dat
+    mo.cube          \-   Molecular orbital(s) on a 3D grid in Gaussian94 Cube format 
+    dens.cube        \-   Electron/spin density(s) on a 3D grid in Gaussian94 Cube format 
+.fi
+
+.SH INPUT FORMAT
+.LP
+
+Most of the keywords are not neccessary for routine
+tasks. The following keywords are valid:
+
+.IP "\fBWFN =\fP \fIboolean\fP"
+Type of the wavefunction. This keyword is a "macro" that allows user to
+set most of the necessary keywords. The following values are recognized :
+
+\fBWFN = \fPSCF - equivalent to \fBREAD_OPDM = \fPfalse;
+
+\fBWFN = \fPDETCI  - equivalent to \fBREAD_OPDM = \fPtrue, \fBOPDM_FILE = \fP40, 
+\fBOPDM_BASIS = \fPAO, \fBOPDM_FORMAT = \fPTRIANG;
+
+\fBWFN = \fPCCSD - equivalent to \fBEAD_OPDM = \fPtrue,
+\fBOPDM_FILE = \fP79, \fBOPDM_BASIS = \fPAO, \fBOPDM_FORMAT = \fPTRIANG;
+
+\fBWFN = \fPQVCCD - equivalent to \fBREAD_OPDM = \fPtrue, \fBOPDM_FILE = \fP76,
+\fBOPDM_BASIS = \fPSO, \fBOPDM_FORMAT = \fPTRIANG;
+
+
+.IP "\fBREAD_OPDM =\fP \fIboolean\fP"
+This flag specifies if the one-particle density matrix to be read from disk.
+Default is false.
+
+.IP "\fBOPDM_FILE =\fP \fIinteger\fP"
+Specifies one-particle density matrix file number. Default is 40 (master file).
+To provide backward compatibility with the earlier PSI property packages
+(\fBproper\fP, \fBciprop\fP, \fBccprop\fP) special format of the density
+file is assumed when \fBOPDM_FILE = 40\fP (computing properties from CI
+density - \fBciprop\fP compatibility mode) and \fBOPDM_FILE = 79\fP 
+(computing properties from CC density - \fBccprop\fP compatibility mode).
+As of now, in generic case onepdm must be written in the very beginning of 
+the file. In the future PSI will have a standard onepdm file.
+
+.IP "\fBOPDM_BASIS =\fP \fIstring\fP"
+This option may not exist in the future. As of February 1st, 1998, a standard 
+for the onepdm file format has not been set. This keyword should be set to
+either "SO" (read in onepdm matrix in SO basis) or "AO" (in AO
+basis). Default is "SO".
+
+.IP "\fBOPDM_FORMAT = \fP \fIstring\fP"
+This option may not exist in the future. This keyword should be set to
+either "TRIANG" (read in onepdm matrix in lower triangular form) of "SQUARE"
+(in square form). Default is "TRIANG"
+
+.IP "\fBASYMM_OPDM = \fP \fIboolean\fP"
+This flag specifies 
+whether one-particle density matrix has to be symmetrized.
+Must be set to true if generic non-symmetric onepdm to be read 
+(for example, from a coupled-cluster program). This keyword is for
+code development only. Existing PSI CC codes now in use produce 
+symmetric onepdm, therefore there is no need to use this keyword. 
+Default is false.
+
+.IP "\fBROOT =\fP \fIinteger\fP"
+This specifies which root to do the excited state analysis for.  The
+appropriate one particle density matrix will be read from disk.  Currently
+implemented for DETCI and DETCAS wavefunctions.
+
+.IP "\fBMPMAX =\fP \fIinteger\fP"
+This integer between 1 and 3 specifies the highest electric multipole 
+moment to be computed.
+
+\fBMPMAX = \fP1 - only electric dipole moment will be computed (default);
+
+\fBMPMAX = \fP2 - electric dipole and quadrupole moments will be computed;
+\fBMPMAX = \fP3 - electric dipole, quadrupole, and octopole moments will be computed. 
+
+.IP "\fBMP_REF\fP \fIinteger\fP"
+This parameter specifies the reference point for the electric multipole
+moments calculation.
+
+\fBMP_REF = \fP0 (default) or 1 - the center of mass;
+
+\fBMP_REF = \fP2 - the origin of the space coordinate system;
+
+\fBMP_REF = \fP3 - the center of electronic charge;
+
+\fBMP_REF = \fP4 - the center of nuclear charge;
+
+\fBMP_REF = \fP5 - the center of net charge.
+
+\fBCAUTION :\fP According to classical electrodynamics, the electric 2^(n+1)-pole 
+moment is independent of the reference point only if the electric 2^(n)-pole 
+moment is vanishing. It means that the dipole moment will depend on the
+reference point if the total charge of the system is non-zero. By analogy,
+electric quadrupole moment will depend on the reference point if the system 
+possesses non-zero electric dipole moment, etc.
+
+.IP "\fBMP_REF_XYZ =\fP \fIreal_vector\fP"
+This vector specifies the coordinates of the reference point. If this
+keyword is present in the input \fBMP_REF\fP keyword will be disregarded.
+
+.IP "\fBNUC_ESP =\fP \fIboolean\fP"
+This flag specifies if electrostatic properties will be computed at the
+nuclei. Current list includes electrostatic potential, electric field,
+electric field gradient, electron and spin density, and anisotropic
+constribution to the hyperfine coupling constants (the latter two
+require setting \fBSPIN_PROP\fP to true). Default is true.
+
+.IP "\fBGRID =\fP \fIinteger\fP"
+Specifies type of property to be evaluated over a grid.
+
+\fBGRID = \fP0 (default) - compute nothing;
+
+\fBGRID = \fP1 - electrostatic potential on a two-dimensional grid;
+
+\fBGRID = \fP2 - electron density (spin density if \fBSPIN_PROP\fP is set to true) on
+a two-dimensional grid;
+
+\fBGRID = \fP3 - electron density gradient (spin density gradient if \fBSPIN_PROP\fP is set to true) on
+a two-dimensional grid;
+
+\fBGRID = \fP4 - Laplacian of the electron density (Laplacian of the spin density if 
+\fBSPIN_PROP\fP is set to true) on a two-dimensional grid. According to the convention
+used in the field, what actually gets plotted are the Laplacians taken with negative sign.
+
+\fBGRID = \fP5 - values of molecular orbitals on a three-dimensional grid.
+
+\fBGRID = \fP6 - values of the electron density (spin density gradient if \fBSPIN_PROP\fP
+is set to true) on a three-dimensional grid.
+
+.IP "\fBGRID_FORMAT =\fP \fIstring\fP"
+Specifies in which format the grid output will be produced.
+Currently, \fBPLOTMTV\fP (default for 2-d grids), \fBMEGAPOVPLUS\fP (available for 3-d grids),
+and \fBGAUSSCUBE\fP(default for 3-d grids) are supported.
+
+.IP "\fBMO_TO_PLOT =\fP \fIvector\fP"
+Specifies indices of the molecular orbitals to be computed on the 3-d grid. Indices can be specified
+as:
+
+unsigned integer - index in Pitzer ordering (ordered accoring to irreps, not eigenvalues).
+Ranges from 1 to the number of MOs.
+
+signed integer - index with respect to Fermi level. +1 means LUMO, +2 means
+second lowest virtual orbital, -1 means HOMO, etc.
+
+All indices have to be either unsigned or signed, you can't mix and match,
+or you will get unpredictable results.
+Default is to compute HOMO and LUMO.
+
+.IP "\fBGRID_ORIGIN =\fP \fIreal_vector\fP"
+Specifies the origin of the grid. A rectangular grid box which envelops the entire molecule
+will be computed automatically if \fBGRID_ORIGIN\fP is missing, however,
+there is no default for 2-d grids.
+
+.IP "\fBGRID_UNIT_X =\fP \fIreal_vector\fP"
+This vector specifies the direction of the first (x) side of the grid.
+It doesn't have have to be of unit length.
+There is no default for 2-d grids.
+
+.IP "\fBGRID_UNIT_Y =\fP \fIreal_vector\fP"
+The same for the second (y) side. It doesn't have to be of unit length
+or even orthogonal to \fBGRID_UNIT_X\fP.
+There is no default for 2-d grids.
+
+.IP "\fBGRID_XY0 =\fP \fIreal_2d_vector\fP"
+Specifies the coordinates of the lower left corner of the grid rectangle in 
+the 2D coordinate system defined by GRID_ORIGIN, GRID_UNIT_X, and GRID_UNIT_Y. 
+There is no default.
+
+.IP "\fBGRID_XY1 =\fP \fIreal_2d_vector\fP"
+Specifies the coordinates of the upper right corner of the grid rectangle in 
+the 2D coordinate system defined by GRID_ORIGIN, GRID_UNIT_X, and GRID_UNIT_Y. 
+There is no default.
+
+.IP "\fBGRID_XYZ0 =\fP \fIreal_3d_vector\fP"
+Specifies the coordinates of the far lower left corner of the grid box in 
+the 3D coordinate system defined by GRID_ORIGIN, GRID_UNIT_X, GRID_UNIT_Y, and the cross-product of
+the latter two. There is no default.
+
+.IP "\fBGRID_XYZ1 =\fP \fIreal_3d_vector\fP"
+Specifies the coordinates of the near upper right corner of the grid box in 
+the 3D coordinate system defined by GRID_ORIGIN, GRID_UNIT_X, GRID_UNIT_Y, and the cross-product of
+the latter two. There is no default.
+
+.IP "\fBNIX =\fP \fIinteger\fP"
+The number of grid point along x direction. This parameter has to be greater
+than 1. Default is 20.
+
+.IP "\fBNIY =\fP \fIinteger\fP"
+The same as \fBNIX\fP for y direction. Default is 20.
+
+.IP "\fBNIZ =\fP \fIinteger\fP"
+The same as \fBNIX\fP for z direction. Default is 20.
+
+.IP "\fBGRID_ZMIN =\fP \fIdouble\fP"
+Lower limit on displayed z-values for contour plots of electron density and 
+its Laplacian. Default is 0.0
+
+.IP "\fBGRID_ZMAX =\fP \fIdouble\fP"
+Upper limit on displayed z-values for contour plots of electron density and 
+its Laplacian. Default is 3.0
+
+.IP "\fBEDGRAD_LOGSCALE =\fP \fIinteger\fP"
+Controls logarithmic scaling of the produced electron density gradient 
+plot. Turns the scaling off if set to zero, otherwise the higher value - 
+the stronger the gradient field will be scaled.
+Recommended value (default) is 5.
+
+.IP "\fBSPIN_PROP =\fP \fIboolean\fP"
+Flag for computing spin properties (Mulliken population analysis of alpha
+and beta densities, spin densities and anisotropic contributions to the
+hyperfine coupling constants at atomic centers). Default is false.
+
+.IP "\fBPRINT =\fP \fIinteger\fP"
+This is the most important keyword - it determines amount of information
+printed. The following values are currently used :
+
+\fBPRINT = \fP0 - quiet mode - print out essential results only - "compact" results
+of Mulliken population analysis, electric multipole moments, 
+and electrostatic properties;
+
+\fBPRINT = \fP1 (default) - all of the above plus list of tasks to be performed
+and list of caculation parameters;
+
+\fBPRINT = \fP2 - all of the above plus Mulliken AO population matrix and
+electronic and nuclear components of electric dipole moment;
+
+\fBPRINT = \fP3 - all of the above plus density matrix in AO basis and dipole
+moment integrals in AO (and SO) basis;
+
+\fBPRINT = \fP4 - all of the above plus basis set information, natural orbitals
+in terms of symmetry orbitals, overlap matrix;
+
+\fBPRINT >= \fP5 - all of the above plus coupling coefficient vectors, 
+an occupation vector, and a modified Z-vector in MO basis.
+
+.IP "\fBPRINT_NOS =\fP \fIboolean\fP"
+If WRTNOS = TRUE and this option is also TRUE, the natural orbitals will
+be printed to output before they are written to the checkpoint file.
+
+.IP "\fBWRTNOS =\fP \fIboolean\fP"
+If TRUE, the natural orbitals will be written to the checkpoint file.
+
+
+.SH GRID OUTPUT AND PLOTTING
+.LP
+Currently, 
+.B oeprop
+produces output of two-dimensional grids ready for plotting with a program 
+.B PLOTMTV 
+version 1.3.2. The program is written by Kenny Toh (ktoh@td2cad.intel.com), 
+software developer for the Technology CAD Department, Intel Corp, Santa Clara. 
+It is a freeware package, and can be downloaded off the Internet.
+
+Three-dimensional grids are output in format suitable for plotting with a program
+.B MegaPov
+version 0.5. This freeware program is a patched version of POV-Ray. It is developed by a number of people, and
+can be downloaded off the Internet (go to
+.B http://nathan.kopp.com/patched.htm
+to find out more info). To render an MO or density image, edit (if necessary) command file
+.B mo.pov
+created by
+.B oeprop
+, and execute
+.B megapovplus +Imo.pov
+.
+For more options run
+.B megapovplus -h
+.

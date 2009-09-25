@@ -1,0 +1,37 @@
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+LDLIBS += $(LAPACK) $(BLAS) -lpthread
+
+PSILIBS = -lPSI_dpd -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
+
+CXXSRC = \
+FDD.cc        c_clean.cc         get_eom_params.cc     rzero.cc \
+FSD.cc        cache.cc           get_moinfo.cc         schmidt_add.cc \
+WabefDD.cc    cc2_hbar_extra.cc  get_params.cc         sigmaCC3.cc \
+WabejDS.cc    cc2_sigma.cc       hbar_extra.cc         sigmaCC3_RHF.cc \
+WamefSD.cc    cc3_HC1.cc         hbar_norms.cc         sigmaDD.cc \
+WbmfeDS.cc    cc3_HC1ET1.cc      local.cc              sigmaDS.cc \
+WmaijDS.cc    cceom.cc           local_guess.cc        sigmaSD.cc \
+WmbejDD.cc    check_sum.cc       norm.cc               sigmaSS.cc \
+WmnefDD.cc    dgeev_eom.cc       norm_HC1.cc           sigma_full.cc \
+WmnieSD.cc    diag.cc            precondition.cc       sort_C.cc \
+WmnijDD.cc    diagSS.cc          read_guess.cc         sort_amps.cc \
+WnmjeDS.cc    follow_root.cc     restart.cc            write_Rs.cc \
+amp_write.cc  form_diagonal.cc   restart_with_root.cc 
+
+BINOBJ = $(CXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+ifneq ($(DODEPEND),no)
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(BINOBJ:%.o=%.d)
+endif
+
+install_man:: cceom.1
+	$(MKDIRS) $(DESTDIR)$(mandir)/man1
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(mandir)/man1
+

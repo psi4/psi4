@@ -1,0 +1,22 @@
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+LDLIBS += $(LAPACK) $(BLAS)
+
+PSILIBS = -lPSI_qt -lPSI_iwl -lPSI_chkpt -lPSI_psio -lPSI_ciomr -lPSI_ipv1
+
+CXXSRC = giao.cc
+
+BINOBJ = $(CXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+ifneq ($(DODEPEND),no)
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(BINOBJ:%.o=%.d)
+endif
+
+install_man::
+

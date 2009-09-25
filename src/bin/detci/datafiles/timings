@@ -1,0 +1,350 @@
+H2O DZ FZC (2 0 0 0) Hardly any symmetry adaptation: (unoptimized)
+4 iterations only
+   user time   =     602.35 seconds
+   system time =       0.30 seconds
+   total time  =       1033 seconds
+
+H2O DZ FZC (2 0 0 0) Hardly any symmetry adaptation: (optimized -O)
+4 iterations only
+   user time   =     115.60 seconds
+   system time =       0.05 seconds
+   total time  =        196 seconds
+
+H2O DZ FZC (2 0 0 0) Hardly any symmetry adaptation: (optimized -O -qmaf -qfold)
+4 iterations only
+   user time   =     115.57 seconds
+   system time =       0.04 seconds
+   total time  =        196 seconds
+
+H2O DZ FZC (2 0 0 0) Full symmetry adaptation with scatter/gather (unoptimized)
+4 iterations only
+   user time   =     250.63 seconds
+   system time =       0.02 seconds
+   total time  =        427 seconds
+
+H2O DZ FZC (2 0 0 0) Full symm adaptation with scatter/gather (opt -O)
+4 iterations only
+   user time   =      50.38 seconds
+   system time =       0.06 seconds
+   total time  =         81 seconds
+
+H2O DZ FZC (2 0 0 0) Full symm adaptation with scatter/gather (-O -qmaf -qfold)
+4 iterations only
+   user time   =      50.44 seconds
+   system time =       0.01 seconds
+   total time  =         86 seconds
+
+H2O DZ FZC (2 0 0 0) Full symm adaptation with scatter/gather (-O -qmaf -qfold)
+Extra speed enhancements in sigma3 added during December, should be fast now
+FCI convergence set to 1E-7 actually converged to 1E-5 (9 iterations)
+   user time   =      91.70 seconds
+   system time =       0.06 seconds
+   total time  =         96 seconds
+
+Compares to 9 iteration GUGACI with user time = 30.45 seconds
+
+==========================================================================
+More realistic timings 4/21/95 (IBM RS/6000 model 590)
+==========================================================================
+H2O DZ 0fzc 0fzv
+GUGA takes 15650 s for 10 iterations E = -76.1564081972 C0=0.976353
+FCI takes   1768 s for 11 iterations E = -76.1564067058 C0=0.976421
+
+H2O DZ 1fzc 0fzv
+GUGA takes 949 s for 11 iterations E = -76.143084612027 C0=0.976398
+FCI takes  109 s for 11 iterations E = -76.143083248457 C0=0.976421
+
+H2O DZ 2fzc 0fzv
+GUGA takes 30 s for 9 iterations E = -76.1008391981 C0=0.982307
+FCI takes  8 s for 11 iterations E = -76.1008391737 C0=0.982309
+
+(note that maxiter=10 is really 11 iterations for now)
+
+==========================================================================
+Timings using new SEM iterator (IBM RS/6000 model 3CT)
+See NB VIII-17 1/3/96
+==========================================================================
+H2O DZ 0fzc 0fzv
+GUGA takes  17118 s for 11 iterations E = -76.1564081973 C0=0.976353
+256,473 CSFs
+RASCI takes  1825 s for 11 iterations E = -76.1564081972 C0=0.976353
+1,002,708 determinants
+
+H2O DZ 1fzc 0fzv
+GUGA takes  856 s for 11 iterations E = -76.1430846120 C0=0.976398
+37,353 CSFs
+RASCI takes 132 s for 11 iterations E = -76.1430846120 C0=0.976398
+128,829 determinants
+
+H2O DZ 2fzc 0fzv
+GUGA takes  28 s for  9 iterations E = -76.1008391981 C0=0.982307
+4,032 CSFs
+RASCI takes  8 s for 10 iterations E = -76.1008391981 C0=0.982307
+12,536 determinants
+
+RASCI is doing one extra iteration (already counted above) to get 
+the SCF energy and initial sigma vector
+==========================================================================
+
+
+==========================================================================
+Using new SEM iterator IBM RS/6000 model 590
+Convergence = 5, Maxiter = 10, H0block = default(40), NumInitVecs=1
+Init vec is using H0 eigenvector (same for above H20 set I think)
+Report user times again because I think timing routines are now fixed
+==========================================================================
+Ne Jeppe's DZP+ basis, 0fzc 0fzv
+RASCI for 10 (11) iterations E = -128.68519268360 C0=0.985636
+9,185,280 determinants
+user = 24174.85s, system = 779.25s, total  = 30344s
+
+GUGACI for 9 iterations      E = -128.68519268356 C0=0.985636
+2,083,968 CSFs
+user = 124088.36s, system = 245.21s, total = 126059s
+
+DETCI v. 4/25/96 with -O3 and Olsen Sparse Vect
+DETCI Opts: SEM, conv=6, e_conv=10, H0block=40, FCI=true, 
+            GuessVect=H0block, MaxIter=10
+DETCI for 10 (11) iterations E = -128.68519268360 C0=-0.985636 C1=0.040702  
+9,185,280 determinants
+user = 3103s, system = 698s, total = 5852s
+
+==========================================================================
+
+==========================================================================
+Using SEM iterator on IBM RS/6000 3CT
+DZP (5d) FCI C2; 2FZC, 2FZV; expt. geom [cf. NB IX 1-4]
+Convergence = 5, Energy_Convergence = 9, Maxiter = 12, H0block = 100,
+GuessVect = H0block, FCI = true
+
+GUGA for 16 iterations       E = -75.728972446364  C0=0.837483 C1=-0.337678
+6,571,116 CSFs
+user = 519828s, system = 3038s, total = 557296s
+
+DETCI for 12 (13) iterations E = -75.7289063383746 C0=0.829415 C1=-0.328357
+**Does not match energy because GUGA used CISD-NO's**
+27,944,940 determinants
+user = 125241s, system = 4055s, total = 141917s
+
+DETCI for an additional 9 (10) iterations 
+                             E = -75.7289065652565 C0=0.829521 C1=-0.328267
+user = 84040s, system = 3953s, total = 116672s  (time/iter is v. different!)
+
+rerun using new version of code (5/7/96) on IBM RS/6000 3CT
+DETCI for 12 (13) iterations E = -75.7289063383745 C0=0.829415 C1=-0.328357
+**Does not match energy because GUGA used CISD-NO's**
+27,944,940 determinants
+user = 17282s, system = 4007s, total = 41080s
+
+==========================================================================
+
+==========================================================================
+Using new DETCI routine as of 5/7/96 on IBM RS/6000 3CT
+
+H2O DZ 0fzc 0fzv; Geometry of Bauschlicher and Taylor JCP 85, 2779 (1986)
+GUGA Opts : [default] conv=10, MaxIter=16
+DETCI Opts: SEM, conv=6, e_conv=6, H0block=40, FCI=true, 
+            GuessVect=H0block, MaxIter=10
+
+GUGA for 11 iterations       E = -76.156698925642 C0=0.973964 C1=-0.056462
+256 473 CSFs
+user = 15727s, system=28s, total=16113s 
+
+DETCI for 10(11) iterations  E = -76.156698925553 C0=-0.97396 C1=0.05646  
+1002708 determinants
+user = 308s, system = 37s, total = 364s 
+
+fci=false, icore=1
+user = 515s, system = 36s, total = 593s
+
+fci=false, icore=2
+user = 517s, system = 45s, total = 601s
+
+fci=false, icore=0
+user = 524s, system = 41s, total = 621s
+
+-------------------------------------------------------------------------
+H2O DZ 1fzc 0fzv; Same options as above
+
+GUGA for 11 iterations       E = -76.143399207763 C0=0.974008 C1=-0.056491
+37 353 CSFs
+user = 849s, system = 4s, total = 869s 
+
+DETCI for 10(11) iterations  E = -76.143399207701 C0=-0.974007 C1=0.056491  
+128829 determinants
+user = 30s, system = 5s, total = 38s 
+
+fci=false, icore=1
+user = 57s, system = 4s, total = 72s
+
+fci=false, icore=2
+user = 57s, system = 6s, total = 77s
+
+fci=false, icore=0
+user = 60s, system = 5s, total = 67s
+-------------------------------------------------------------------------
+H2O DZ 2fzc 0fzv; Same options as above
+
+GUGA for 9 iterations        E = -76.100906329720 C0=0.979989 C1=-0.057161
+4 302 CSFs
+user = 26.84s, system = 0.45s, total = 29s
+
+DETCI for 10(11) iterations  E = -76.100906329746 C0=0.979989 C1=-0.057162
+12536 determinants
+user = 2.39s, system = 0.51s, total = 4s
+==========================================================================
+
+7 June 1999
+
+Recent timings for my DZ FCI test case.
+N.B. These are now at the DZP SCF Opt Geom in datafiles/h2o.dz.input
+
+DETCI for 10(11) iterations  E = -76.1564081972266 C0=0.976353 C1=-0.056881
+
+These differ from older timings above from around 1996 because the
+h0_blocksize default has gone up to 400 from 40, and the
+H0 block calcluation method default has changed to allow various
+pure-eigenfunction preconditioners now.
+
+------------------------------------------------------------------------
+
+IBM 3CT (scimitar.cchem.berkeley.edu) 256 MB RAM
+2fzc
+regl: 14.190u 0.680s 0:15.46 96.1% 283+6354k 0+0io 71pf+0w
+essl: 15.090u 0.740s 0:17.90 88.4% 287+6385k 0+0io 146pf+0w
+
+0fzc
+regl: 564.700u 57.510s 12:23.81 83.6% 333+22372k 0+0io 7465pf+0w
+essl: 563.810u 51.410s 10:39.56 96.1% 324+22664k 0+0io 613pf+0w
+
+0fzc fci=false icore=1
+regl: 764.680u 50.100s 13:44.51 98.8% 331+23695k 0+0io 350pf+0w
+essl: 857u 55s 994t
+
+Dual Pentium II 350MHz (venabili.ix.netcom.com) 128 MB RAM
+2fzc:
+regular:   14.030u 0.460s 0:14.73 98.3% 0+0k 0+0io 883pf+0w
+dual blas: 19.270u 0.490s 0:20.32 97.2% 0+0k 0+0io 316pf+0w
+
+0fzc:
+regular    472.210u 64.880s 12:27.51 71.8% 0+0k 0+0io 399709pf+2815w
+dual blas: 416.480u 63.270s 11:16.86 70.8% 0+0k 0+0io 328869pf+3367w
+
+------------------------------------------------------------------------
+
+Profiled on scimitar (3CT): The extra time is due to the new average
+diagonal elements routine with
+
+HD_AVE = HD_KAVE (default)
+Final energy = -76.1564081972266  Delta_C = 3.164E-05
+Timings from tstop (regular no-blas version): 553u, 56s, 752t
+
+.s3_block_vdiag       43.6      240.33      240.33     176   1365.51
+.calc_hd_block_ave    36.4      200.62      440.95      44   4559.5
+.s2_block_vfci         9.7       53.44      494.39      44   1214.5
+
+Try other options....(all set to same maxiter=10)
+
+HD_AVE = HD_EXACT (old version?)
+Final energy = -76.1564081972818  Delta_C = 1.422E-05
+regular: 442u, 55s, 571t
+
+.s3_block_vdiag       53.3      235.15      235.15     176   1336.08
+.calc_hd_block        21.7       95.90      331.05      44   2179.5
+.s2_block_vfci        11.8       51.86      382.91      44   1178.6
+
+EVANGELISTI
+Final energy = -76.1564081972673  Delta_C = 1.945E-05
+regular: 347.720u 53.360s 6:56.19 96.3% 352+22472k 0+0io 87pf+0w
+(or 347u, 53s, 416t) [tracks time output, good]
+
+.s3_block_vdiag       67.8      235.14      235.14     176   1336.02
+.s2_block_vfci        15.1       52.42      287.56      44   1191.4
+.memset                3.6       12.40      299.96
+
+LEININGER
+Final energy = -76.1564081966751  Delta_C = 9.823E-05
+regular: 347.820u 53.350s 7:04.54 94.4% 353+22331k 0+0io 74pf+0w
+
+.s3_block_vdiag       67.9      235.33      235.33     176   1337.10
+.s2_block_vfci        15.0       52.09      287.42      44   1183.9
+.memset                3.6       12.44      299.86
+
+These results lead me to believe that the default H0_blocksize of 400
+is too large for CAS calculations, at least in conjunction with
+the default of HD_KAVE.  Changing default down to 100 for wfn=detcas.
+
+======================================================================
+
+H2O FCI 0fzc 1002708 dets
+H0_blocksize = 40 (as in older tests above)
+HD_AVE = HD_KAVE (current default) 
+
+E = -76.1564081968497 C0=-0.976353 C1=0.056880
+
+venabili regular:       463u, 64s, 751t
+venabili dual opt blas: 403u, 64s, 650t
+scimitar regular:       555u, 53s, 677t
+scimitar essl blas:     509u, 53s, 633t
+
+indicates a slight advantage to blas...should run something bigger
+
+======================================================================
+
+H2O FCI 0fzc 1002708 dets
+H0_blocksize = 40 (as in older tests above)
+HD_AVE = EVANGELISTI (new default) for aurelius, KD_AVE for dido
+
+E = -76.1564081972099 C0=-0.976353 C1=0.056881
+
+aurelius (2GB RAM, RedHat Linux 7.3, Dual Athlon MP 2000+, 2 RAID0 OS
+          striped 36GB U160 10k SCSI HDD)
+
+(new) plato (4GB RAM, RedHat Linux 7.3, Dual P4-Xeon 2.4GHz, 2 RAID0 OS
+          striped 36GB U160 10k SCSI HDD)
+
+(new) cicero (4GB RAM, Fedora Core 4, Dual-core Pentium-D EMT-64,
+          2 RAID0 OS striped 80GB SATA 10k HDD)
+
+10 (11) iters as usual (iters start from 0 so really 11).
+
+dido (375MHz PowerIII-2) :  89u, 29s, 132t 
+aurelius                 : 109u, 19s, 130t
+plato                    :  59u, 13s,  73t
+cicero                   :  52u,  5s,  57t
+
+Threaded code as of 6/24/02; 2 threads, was less efficient for 
+aurelius, didn't seem to take for dido (maybe wasn't compiled right?).
+
+======================================================================
+
+Ne custom DZP basis FCI 0fzc
+file ne.dz-fci.input
+
+16,919,232 determinants
+h0_blocksize = 400 convergence = 6
+10 (11) iterations
+
+E = -128.7629007841444 C0=-0.984931 C1=0.037659
+
+dido      : 2899u, 540s, 3820t
+aurelius  : 2396u, 433s, 3147t
+plato     : 1164u, 226s, 1468t
+plato**   : 1092u, 194s, 1289t   (3 disks... above was 2 or 3)
+cicero:   :  966u,  76s, 1048t
+
+======================================================================
+
+BH cc-pVQZ FCI 1fzc
+3,068,596 determinants
+convergence = 6
+8 (9) iterations
+
+E = -25.2351554791625 for R(BH)=1.2
+
+SP2 node (PowerIII-2 375MHz) : 1905u, 60s, 1978t
+cicero*                      : 1087u, 12s, 1103t
+
+*Some defaults must have changed, did not converge in 8 iters.  Terminated
+at 8 iters to allow comparison of timings.
+

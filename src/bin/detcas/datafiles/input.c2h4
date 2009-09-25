@@ -1,0 +1,72 @@
+% dzp c2h4 
+%
+% CASSCF Calculation with DETCAS
+%
+% Note that your file14.dat will not be precisely the same as 
+% file14.c2h4 because I used slightly looser convergence on the
+% CI wavefunction during some of the first iterations (conv=5)
+%
+% Note also the nice, minimal amount of input required :)
+%
+% The final energy is -78.189467951
+%
+
+default: (
+  label = "C2H4 DZP CASSCF"
+  memory = (30.0 MB)
+  ncasiter = 30
+  symmetry = d2
+  wfn = detcas
+  opentype = none
+  dertype = none
+  docc = (3 2 2 1)
+  socc = (0 0 0 0)
+  % val_orb is the active space - frozen core
+  % make it the size of a minimal basis set
+  % val_orb = (3 3 3 3)
+  frozen_docc = (1 1 0 0)
+  frozen_uocc = (11 11 8 8)
+  ex_lvl = 12
+
+files: (
+    default: ( name = "c2h4detcas" 
+      nvolume = 1
+      volume1 = "/scratch/sherrill/"
+      volume2 = "/tmp2/mlleinin/"
+      volume3 = "/tmp3/mlleinin/"
+      volume4 = "/tmp4/mlleinin/"
+      )
+    file30: ( nvolume = 1 volume1 = "./" )
+    )
+)
+
+input: (
+  atoms = (c h)
+  basis = dzp
+  units = bohr
+  % 0 degrees
+   geometry = (
+    (        0.0000000000        0.0000000000       -1.2566677825)
+    (       -0.0000000000       -1.7299926548       -2.3251330230)
+  )
+  origin = (0.0 0.0 0.0)
+)
+
+scf: (
+  maxiter = 50
+  convergence = 12
+)
+
+detci: (
+  guess_vector = DFILE
+  convergence = 6
+  energy_convergence = 9
+)
+
+detcas: (
+  diis_start = 1
+  diis_min_vecs = 2
+  diis_max_vecs = 8
+  diis_freq = 2
+)
+
