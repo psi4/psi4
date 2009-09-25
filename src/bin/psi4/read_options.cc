@@ -87,6 +87,17 @@ int read_options(std::string name, Options & options) {
     options.add_int("ERI_FILE", PSIF_SO_TEI);
 
   }
+  else if(name == "TRANSQT") {
+    options.add_cstr("WFN");
+    options.add_cstr("REFERENCE", "RHF");
+    options.add_cstr("DERTYPE", "NONE");
+    options.add_int("PRINT", 1);
+    options.add_bool("PRINT_TEI", true);
+    options.add_int("TOLERANCE", 14);
+    options.add_int("CACHELEV", 2);
+    options.add_cstr("AO_BASIS", "NONE");
+    options.add_bool("DELETE_TEI", true);
+  }
 
   options.read_options();
   options.print(name);

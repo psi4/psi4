@@ -6,7 +6,6 @@
 #include <cstdlib>
 #include <cmath>
 #include <cstring>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.h>
@@ -163,8 +162,7 @@ namespace psi {
 		      rstr_docc, rstr_uocc,
 		      ras_opi, moinfo.pitz2corr_one, 1, 0))
 	  {
-	    fprintf(outfile, "Error in ras_set().  Aborting.\n");
-	    exit(PSI_RETURN_FAILURE);
+	    throw PsiException("Error in ras_set(). Aborting.", __FILE__, __LINE__);
 	  }
 
 	/* "core" array needed for frozen-core operator */
@@ -393,8 +391,9 @@ namespace psi {
 	}
       }
       else {
-	fprintf(outfile, "WFN %s not yet supported by transqt2.\n", params.wfn);
-	exit(PSI_RETURN_FAILURE);
+        char junk[32];
+	sprintf(junk, "WFN %s not yet supported by transqt2.", params.wfn);
+        throw PsiException(junk, __FILE__, __LINE__);
       }
 
       if(params.print_lvl) {

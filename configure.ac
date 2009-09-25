@@ -763,6 +763,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/cints/Makefile
           src/bin/cscf/Makefile
           src/bin/psiclean/Makefile
+          src/bin/transqt2/Makefile
 ])
 
 AC_OUTPUT

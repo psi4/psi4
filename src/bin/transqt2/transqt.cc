@@ -33,7 +33,6 @@
 #include <cstdlib>
 #include <cmath>
 #include <cstring>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.h>
@@ -60,12 +59,7 @@ void transtwo_rhf(void);
 void transtwo_uhf(void);
 void transone(int,int,double *,double *,double **,int,int *);
 
- }
-}
-
-using namespace psi::transqt2;
-
-int main(int argc, char *argv[])
+int transqt2(Options & options, int argc, char *argv[])
 {
   int nso, nmo, ntri_so, ntri_mo, nirreps;
   int **cachelist, *cachefiles;
@@ -316,13 +310,8 @@ int main(int argc, char *argv[])
 
   cleanup();
   exit_io();
-  exit(PSI_RETURN_SUCCESS);
+  return(PSI_RETURN_SUCCESS);
 }
-
-extern "C" { const char *gprgid(void) { const char *prgid = "TRANSQT"; return (prgid); } }
-
-namespace psi {
-  namespace transqt2 {
 
 void init_io(int argc, char *argv[])
 {
@@ -343,15 +332,7 @@ void init_io(int argc, char *argv[])
       extra_args[num_extra_args++] = argv[i];
   }
 
-  psi_start(&infile,&outfile,&psi_file_prefix,num_extra_args, extra_args, 0);
-
-  progid = (char *) malloc(strlen(gprgid())+2);
-  sprintf(progid, ":%s", gprgid());
-  ip_cwk_add(progid);
-  free(progid);
-
-  if(params.print_lvl) tstart(outfile);
-  psio_init(); psio_ipv1_config();
+  if(params.print_lvl) tstart();
 
   psio_open(CC_INFO, PSIO_OPEN_NEW);
 }
@@ -373,9 +354,7 @@ void title(void)
 void exit_io(void)
 {
   psio_close(CC_INFO,1);
-  psio_done();
-  if(params.print_lvl) tstop(outfile);
-  psi_stop(infile,outfile,psi_file_prefix);
+  if(params.print_lvl) tstop();
 }
 
   } // namespace transqt2

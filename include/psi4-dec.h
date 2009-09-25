@@ -6,16 +6,19 @@
 #include <libpsio/psio.hpp>
 #include <libutil/libutil.h>
 #include <liboptions/liboptions.h>
+#include <exception.h>
 
 namespace psi {
 
   class Module {
     std::string prgid;
+    size_t memory;
 
   public:
     Module(std::string s = "PSI4") { prgid = s; }
     void set_prgid (std::string s) { prgid = s; }
     std::string gprgid(void) const { return prgid; }
+    size_t get_memory(void) const { return memory; }
   };
 
   typedef struct ModuleInformation {

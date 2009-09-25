@@ -8,8 +8,12 @@
 
 #include <psifiles.h>
 #include <ccfiles.h>
+#include <psi4-dec.h>
+
 #include "MOInfo.h"
 #include "Params.h"
+
+using namespace PsiExceptions;
 
 namespace psi {
   namespace transqt2 {
@@ -23,11 +27,6 @@ namespace psi {
 #else
 #define EXTERN
 #endif
-
-extern "C" {
-EXTERN FILE *infile, *outfile;
-EXTERN char *psi_file_prefix;
-}
 
 EXTERN struct MOInfo moinfo;
 EXTERN struct Params params;

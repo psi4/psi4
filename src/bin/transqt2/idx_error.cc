@@ -5,6 +5,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <psifiles.h>
+#define EXTERN
+#include "globals.h"
 
 namespace psi {
   namespace transqt2 {
@@ -20,7 +22,7 @@ void idx_error(const char *message, int p, int q, int r, int s, int pq, int rs,
 	  "\t    p      q      r      s  [   pq]  [   rs] pq_symm rs_symm\n");
   fprintf(outfile,"\t%5d  %5d  %5d  %5d  [%5d]  [%5d]   %1d   %1d\n", p,q,r,s,
           pq,rs,pq_sym,rs_sym);
-  exit(PSI_RETURN_FAILURE);
+  throw PsiException("DPD idx failure.", __FILE__, __LINE__);
 }
 
   } // namespace transqt2
