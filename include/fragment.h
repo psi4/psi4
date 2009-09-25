@@ -36,7 +36,7 @@ class Fragment {
   double **geom;      // cartesian coordinates
 
  public:
-  Fragment(void); //default constructor is empty
+  Fragment(void) {} ; //default constructor is empty
   ~Fragment() {
     delete [] Z;
     delete [] masses;
