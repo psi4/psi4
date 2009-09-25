@@ -13,8 +13,8 @@
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libiwl/iwl.h>
-#include <libipv1/ip_lib.h>
 #include <libchkpt/chkpt.h>
+#include <psi4-dec.h>
 #include <psifiles.h>
 #include <libpsio/psio.h>
 #include <cmath>
@@ -22,11 +22,6 @@
 #include "indpairs.h"
 #include "clag.h"
 
-extern "C" {
-  FILE *outfile;           /* pointer to the output file */
-  FILE *infile;            /* pointer to the input file  */
-  char *psi_file_prefix;   /* pointer to the file prefix string */
-}
 
 namespace psi { namespace clag {
 
@@ -40,14 +35,12 @@ namespace psi { namespace clag {
 int *ioff;               /* the ioff array                 */
 int print_lvl=1;         /* diagnostic info flag           */
 
-}} // end namespace psi::clag
 
 /***************************************************************************/
 /* The main procedure                                                      */
 /***************************************************************************/
-using namespace psi::clag;
 
-int main(int argc, char **argv) 
+int clag(int argc, char **argv) 
 {
 
   double **opdm;                       /* the one particle density matrix */
@@ -88,7 +81,7 @@ int main(int argc, char **argv)
   int cas_opdm_file = 83;              /* CAS interface onepdm file       */
   int cas_tpdm_file = 84;              /* CAS interface twopdm file       */
   int cas_lag_file = 85;               /* CAS interface lagrangian file   */
-  int write_cas_files = 0;             /* write out a files for CASSCF?   */
+  int write_cas_files;             /* write out a files for CASSCF?   */
 
   double *onel_ints, *twoel_ints;      /* 1e and 2e ints                  */
   double enuc = 0.0;                   /* nuclear repulsion energy        */ 
@@ -99,26 +92,14 @@ int main(int argc, char **argv)
   char *dertype;                       /* derivative level: none, first,  */  
   int do_zorb;                         /* do z-orbital computation?       */
 
-  /*
-  ** initialize the io parser
-  */
-  init_io(argc,argv); 
 
-  errcod = ip_data("PRINT","%d", &print_lvl,0);  
-  errcod = ip_boolean("WRITE_CAS_FILES", &write_cas_files,0);
+  print_lvl = option.get_int("PRINT");
+  write_cas_files = options.get_bool("WRITE_CAS_FILES");
 
-   /* need to figure out wheter to filter tei's */
-   errcod = ip_string("DERTYPE", &(dertype),0);
-   if(errcod == IPE_KEY_NOT_FOUND) {
-     dertype = (char *) malloc(sizeof(char)*5);
-     strcpy(dertype, "NONE");
-   }
+   /* need to figure out whether to filter tei's */
+   dertype = options.get_cstr("DERTYPE");
 
-   errcod = ip_string("WFN", &(wfn),0);
-   if(errcod == IPE_KEY_NOT_FOUND) {
-     wfn = (char *) malloc(sizeof(char)*5);
-     strcpy(wfn, "NONE");
-   }
+   wfn = options.get_cstr("WFN");
 
   // later probably need zorb on for any deriv calc in case they have
   // frozen orbitals or something.  For now, keep it off for MCSCF
@@ -197,7 +178,7 @@ int main(int argc, char **argv)
   if (!iwl_rdone(oei_file, PSIF_MO_OEI, onel_ints, ntri, oei_erase,
             (print_lvl>4), outfile)) {
     fprintf(outfile, "Failed to read one-electron integrals\n");
-    exit(1);
+    throw PSIException("CLAG",__FILE__,__LINE__);
   }
 
   if (print_lvl>4) {
@@ -377,10 +358,7 @@ void init_io(int argc, char **argv)
      }
    }
    
-   psi_start(&infile,&outfile,&psi_file_prefix,num_extra_args, extra_args, 0);
-   ip_cwk_add(":CLAG");  
-   if (print_lvl > 0) tstart(outfile);
-   psio_init(); psio_ipv1_config();
+   if (print_lvl > 0) tstart();
 }
 
 /****************************************************************************/
@@ -389,9 +367,7 @@ void init_io(int argc, char **argv)
 
 void close_io(void)
 {
-   psio_done();
-   if (print_lvl > 0) tstop(outfile);
-   psi_stop(infile,outfile,psi_file_prefix);
+   if (print_lvl > 0) tstop();
 }
 
 /****************************************************************************/
@@ -411,13 +387,12 @@ double **rdopdm(int nbf, int print_lvl, int opdm_file)
   opdm = block_matrix(nbf, nbf); 
 
   /* if the user hasn't specified a root, just get "the" onepdm */
-  if (!ip_exist("ROOT",0)) {
+  if (!option["ROOT"].has_changed()) {
     psio_read_entry(opdm_file, "MO-basis OPDM", (char *) opdm[0], 
                     nbf*nbf*sizeof(double));
   }
   else {
-    root = 1;
-    errcod = ip_data("ROOT","%d",&root,0);
+    root = options.get_int("ROOT");
     sprintf(opdm_key, "MO-basis OPDM Root %d", root);
     psio_read_entry(opdm_file, opdm_key, (char *) opdm[0], 
                     nbf*nbf*sizeof(double));
@@ -517,15 +492,4 @@ void trace_tpdm(double *tpdm, int nbf)
 
 }} // end namespace psi::clag
 
-/***************************************************************************/
-/* gpgrid: program id                                                      */
-/***************************************************************************/
-extern "C" {
-  const char *gprgid()
-  {
-   const char *prgid = "CLAG";
-   return(prgid);
-  }
 }
-
-
