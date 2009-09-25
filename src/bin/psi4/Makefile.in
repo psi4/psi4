@@ -5,7 +5,8 @@ include ../MakeVars
 
 LDLIBS += $(LAPACK) $(BLAS)
 
-PSILIBS = -lPSI_qt -lPSI_chkpt -lPSI_psio -lPSI_ciomr -lPSI_ipv1
+PSILIBS = -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1 -lPSI_options \
+-lPSI_input -lPSI_cscf -lPSI_cints -lPSI_int -lPSI_deriv -lPSI_psiclean -lPSI_util
 
 CXXSRC = read_atom_basis.cc fragment.cc  \
 molecular_system.cc  read_atom_basis.cc  \
@@ -14,6 +15,12 @@ fragment.cc  psi4.cc  read_options.cc
 BINOBJ = $(CXXSRC:%.cc=%.o)
 
 include ../MakeRules
+
+$(PSITARGET): $(BINOBJ) $(PSILIBS)
+	$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+
+install_target:: $(PSITARGET)
+	$(INSTALL_PROGRAM) $< $(DESTDIR)$(bindir)
 
 ifneq ($(DODEPEND),no)
 $(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)

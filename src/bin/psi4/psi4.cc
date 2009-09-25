@@ -11,7 +11,7 @@
 //#include <ruby.h>
 #include <psiconfig.h>
 #include <libciomr/libciomr.h>
-#include <liboptions/liboptions.hpppp>
+#include <liboptions/liboptions.h>
 #include <physconst.h>
 
 #include <molecular_system.h>
@@ -24,9 +24,11 @@
   
 namespace psi { 
   namespace input    { int input(Options &, char **atom_basis, Molecular_system & ); }
-  namespace CINTS    { int cints(Options &, int argc, char *argv[]); }
+  namespace CINTS    { PsiReturnType cints(Options &, int argc, char *argv[]); }
   namespace cscf     { int cscf(int argc, char *argv[]); }
   namespace psiclean { int psiclean(int argc, char *argv[]); }
+
+  std::map<std::string, PsiReturnType(*)(Options &, int argc, char *argv[])> dispatch_table;
 
   int read_options(std::string name, Options & options);
   void read_atom_basis(char ** & atom_basis, int num_atoms);
@@ -100,8 +102,15 @@ int main(int argc, char *argv[])
   //  }
   // }
   if (run_modules) {
-    int parsed = 0;
-    psi_start(&infile,&outfile,&psi_file_prefix,argc-parsed,argv+parsed,0);
+
+  int num_unparsed, i;
+  char *argv_unparsed[100];
+
+  for (i=1, num_unparsed=0; i<argc; ++i)
+    argv_unparsed[num_unparsed++] = argv[i];
+
+  psi_start(&infile,&outfile,&psi_file_prefix,num_unparsed, argv_unparsed, 0);
+
     print_version();
 
     //ip_cwk_add(":OPT09");
@@ -113,7 +122,7 @@ int main(int argc, char *argv[])
      read_options("PSI4", options);
 
        // if read from input.dat, scale.  Elsewhere always use au internally
-     std::string units = options["UNITS"].to_string();
+     std::string units = options.get_str("UNITS");
      double conv_factor;
      if (units == "BOHR" || units == "AU")
        conv_factor = 1.0;
@@ -133,18 +142,26 @@ int main(int argc, char *argv[])
    
      //for (int i=0; i<molecules.get_num_atoms(); ++i)
      //  strcpy(atom_basis[i],"DZ");
+
    
      read_options("INPUT", options);
      module.set_prgid("INPUT");
      input::input(options,atom_basis,molecules);
      options.clear();
-   
+
+
+     dispatch_table["CINTS"] = &(psi::CINTS::cints);
+
+     dispatch_table["CINTS"](options, argc, argv);
+
+/*
      read_options("CINTS", options);
      module.set_prgid("CINTS");
      CINTS::cints(options,argc, argv);
    
      module.set_prgid("CSCF");
      cscf::cscf(argc, argv);
+*/
    
      options.clear();
      module.set_prgid("PSICLEAN");
