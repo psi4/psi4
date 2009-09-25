@@ -9,11 +9,11 @@
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libqt/qt.h>
-#include <libipv1/ip_lib.h>
 #include <libchkpt/chkpt.h>
 #include <psifiles.h>
 #include <physconst.h>
 #include <masses.h>
+#include <psi4-dec.h>
 
 /* thermo: Computes thermodynamic quantities given:
  *
@@ -28,15 +28,7 @@ namespace psi { namespace thermo {
   void exit_io(void);
   void title(void);
 
-extern "C" {
-  FILE *infile, *outfile;
-  char *psi_file_prefix;
-  extern const char *gprgid(void);
-}
-
-}}
-
-int main(int argc, char *argv[])
+int thermo(int argc, char *argv[])
 {
   using namespace psi::thermo;
   double tval;
@@ -348,13 +340,10 @@ fprintf(outfile,"\t\t set rot_symm_num = 2 homonuclear diatomics\n");
   free(rotconst);
   free(zvals);
 
-  psio_done();
-  tstop(outfile);
-  psi_stop(infile,outfile,psi_file_prefix);
+  tstop();
 
 }
 
-namespace psi { namespace thermo {
 
 void init_io(int argc, char *argv[]) {
   int i, num_unparsed;
@@ -375,16 +364,9 @@ void init_io(int argc, char *argv[]) {
   for (i=1, num_unparsed=0; i<argc; ++i)
     argv_unparsed[num_unparsed++] = argv[i];
 
-  psi_start(&infile,&outfile,&psi_file_prefix,num_unparsed,argv_unparsed,0);
   ip_cwk_add(progid);
   free(progid);
-  tstart(outfile);
-  psio_init(); psio_ipv1_config();
-}
-
-extern "C" const char *gprgid(void) {
-   const char *prgid = "THERMO";
-   return(prgid);
+  tstart();
 }
 
 void title(void)
@@ -396,8 +378,7 @@ void title(void)
 }
 
 void exit_io(void) {
-  psio_done();
-  tstop(outfile);
+  tstop();
   psi_stop(infile,outfile,psi_file_prefix);
 }
 
