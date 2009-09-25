@@ -7,6 +7,8 @@
 #include <libciomr/libciomr.h>
 #include <ccfiles.h>
 #include <psifiles.h>
+#define EXTERN
+#include "globals.h"
 
 namespace psi {
   namespace transqt2 {
@@ -85,7 +87,8 @@ int **cacheprep_uhf(int level, int *cachefiles)
 
       return cachelist;
     }
-  else { printf("Error: invalid cache level!\n"); exit(PSI_RETURN_FAILURE); }
+  else
+    throw PsiException("Error: invalid cache level!", __FILE__, __LINE__);
 }
 
 int **cacheprep_rhf(int level, int *cachefiles)
@@ -148,7 +151,8 @@ int **cacheprep_rhf(int level, int *cachefiles)
 
       return cachelist;
     }
-  else { printf("Error: invalid cache level!\n"); exit(PSI_RETURN_FAILURE); }
+  else 
+    throw PsiException("Error: invalid cache level!", __FILE__, __LINE__);
 }
 
 void cache_abcd_uhf(int **cachelist)
