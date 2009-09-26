@@ -203,8 +203,8 @@ int cscf(int argc,char* argv[])
   ip_cwk_add(":PSI");
   ip_cwk_add(":SCF");
   tstart();
-  psio_init();
-  psio_ipv1_config();
+  //psio_init();
+  //psio_ipv1_config();
    
   fprintf(outfile,"%13c------------------------------------------\n",' ');
   fprintf(outfile,"\n%16c%s\n",' ',prog_name);
@@ -326,7 +326,7 @@ int cscf(int argc,char* argv[])
     if (mo_print) print_mos("Alpha",scf_info);
     write_scf_matrices();
     chkpt_close();
-    psio_done();
+    //psio_done();
     tstop();
     //psi_stop(infile,outfile,psi_file_prefix);
     //exit(PSI_RETURN_SUCCESS);
@@ -374,7 +374,7 @@ int cscf(int argc,char* argv[])
       fprintf(stderr,"rohf open shell singlet doesn't work direct\n");
       fprintf(stderr,"remove 'direct_scf = true' from input\n");
       chkpt_close();
-      psio_done();
+      //psio_done();
       //exit(PSI_RETURN_FAILURE);
       return(PSI_RETURN_FAILURE);
     }
@@ -509,7 +509,7 @@ printf("refnum %d\n", refnum);
   if (testk != NULL) { free(testk); testk = NULL; }
 
   chkpt_close();
-  psio_done();
+  //psio_done();
   return(PSI_RETURN_SUCCESS);
 }
 
