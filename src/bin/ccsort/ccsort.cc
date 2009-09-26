@@ -51,7 +51,7 @@ void local_init(void);
 void local_done(void);
 void cc_memcheck(void);
 
-int ccsort(int argc, char *argv[])
+int ccsort(Options *options, int argc, char *argv[])
 {
   int i;
   int **cachelist, *cachefiles;

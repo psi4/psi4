@@ -54,7 +54,7 @@ void transpert(const char *pert)
   int alpha;
   int i, j, ij;
   double *scratch, **TMP, **X, **target;
-  const char *name;
+  char *name;
   double prefactor, anti, sign;
 
   nao = moinfo.nao;
