@@ -181,6 +181,49 @@ int read_options(std::string name, Options & options) {
     options.add_int("ROTATION_METHOD",0);
     options.add_double("SCALE",0.5);
   }
+  else if(name == "OEPROP") {
+    options.get_int("NUM_ROOTS");
+    options.get_int("ROOT");
+    options.get_int("GRID");
+    options.get_str("MO_TO_PLOT");
+    options.get_int("GRID_ORIGIN");
+    options.get_int("GRID_UNIT_X");
+    options.get_int_array("GRID_UNIT_Y");
+    options.get_int_array("GRID_XY0");
+    options.get_int_array("GRID_XY1");
+    options.get_int_array("GRID_XYZ0");
+    options.get_int_array("GRID_XYZ1");
+    options.get_int("NIX");
+    options.get_int("NIY");
+    options.get_int("NIZ");
+    options.get_str("GRID_FORMAT");
+    options.get_double("GRID_ZMIN");
+    options.get_double("GRID_ZMAX");
+    options.get_int("EDGRAD_LOGSCALE");
+    options.get_str("WFN");
+    options.get_int("TRANSITION_DENSITY");
+    options.get_str("REFERENCE", "RHF");
+    options.get_int("READ_OPDM");
+    options.get_double("OPDM_FILE");
+    options.get_str("OPDM_BASIS, "MO"");
+    options.get_str("OPDM_FORMAT", "SQUARE");
+    options.get_int("WRTNOS");
+    options.get_int("ASYMM_OPDM");
+    options.get_int("SPIN_PROP");
+    options.get_double("PRINT", 1);
+    options.get_int("PRINT_NOS");
+    options.get_int("CORREL_CORR");
+    options.get_double("ZVEC_FILE");
+    options.get_int("DELETE_ZVEC");
+    options.get_double("MPMAX");
+    options.get_int_array("MP_REF_XYZ");
+    options.get_double("MP_REF");
+    options.get_int_array("LM_REF_XYZ");
+    options.get_int("NUC_ESP");
+    options.get_double("FINE_STRUCTURE_ALPHA");
+    options.get_int("QED_DARWIN");
+    options.get_int("FREEZE_CORE");
+  }
   else if(name == "CCHBAR") {
     options.add_bool("TAMPLITUDE",false);
     options.add_int("CACHELEV",2); 
@@ -257,7 +300,6 @@ int read_options(std::string name, Options & options) {
     options.add_int("ROTATE_MO_IRREP",1);  // IRREP is one-based
     options.add_int("ROTATE_MO_P",1);      // P and Q are one-based
     options.add_int("ROTATE_MO_Q",2);
-
     options.add_bool("CI_DIIS",false);
     options.add_bool("USE_DIIS",true);
     options.add_bool("READ_MOS",true);
