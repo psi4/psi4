@@ -10,7 +10,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace cctriples {
+namespace psi { namespace CCTRIPLES {
 
 double ET_ABB(void)
 {
@@ -601,4 +601,4 @@ double ET_ABB(void)
   return ET_ABB;
 }
 
-}} // namespace psi::cctriples
+}} // namespace psi::CCTRIPLES

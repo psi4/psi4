@@ -3,7 +3,7 @@
     \brief Enter brief description of file here 
 */
 
-namespace psi { namespace cctriples {
+namespace psi { namespace CCTRIPLES {
 
 struct MOInfo {
   int nirreps;        /* no. of irreducible representations */
@@ -43,4 +43,4 @@ struct MOInfo {
   double ecc;         /* CC energy from ccenergy */
 };
 
-}} // namespace psi::cctriples
+}} // namespace psi::CCTRIPLES

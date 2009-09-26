@@ -13,7 +13,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace cctriples {
+namespace psi { namespace CCTRIPLES {
 
     void T3_UHF_AAB(double ***W, double ***V, int disc, int nirreps, 
 		    int I, int Gi, int J, int Gj, int K, int Gk,
@@ -1013,4 +1013,4 @@ namespace psi { namespace cctriples {
       dpd_file2_close(&fia_junk);
     }
 
-  }} // namespace psi::cctriples
+  }} // namespace psi::CCTRIPLES

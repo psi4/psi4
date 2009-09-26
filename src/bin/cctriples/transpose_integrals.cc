@@ -7,7 +7,7 @@
 #include "globals.h"
 
 namespace psi {
-namespace cctriples {
+namespace CCTRIPLES {
 
 // If gradients are needed, the abc driven loops will be called at some point
 // They expect some transposed matrices for efficiency, so here they are.

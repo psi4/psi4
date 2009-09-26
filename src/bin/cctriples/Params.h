@@ -3,7 +3,7 @@
     \brief Enter brief description of file here 
 */
 
-namespace psi { namespace cctriples {
+namespace psi { namespace CCTRIPLES {
 
 struct Params {
   int ref;
@@ -13,4 +13,4 @@ struct Params {
   int dertype;
 };
 
-}} // namespace psi::cctriples
+}} // namespace psi::CCTRIPLES

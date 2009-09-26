@@ -3,7 +3,7 @@
     \brief Enter brief description of file here 
 */
 
-/*! \defgroup CCTRIPLES cctriples: Evaluate triple excitations */
+/*! \defgroup CCTRIPLES CCTRIPLES: Evaluate triple excitations */
 
 #include <cstdio>
 #include <cmath>
@@ -13,7 +13,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace cctriples {
+namespace psi { namespace CCTRIPLES {
 
 double ET_AAA(void)
 {
@@ -648,4 +648,4 @@ double ET_AAA(void)
   return ET_AAA;
 }
 
-}} // namespace psi::cctriples
+}} // namespace psi::CCTRIPLES

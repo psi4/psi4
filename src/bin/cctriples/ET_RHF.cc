@@ -13,7 +13,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace cctriples {
+namespace psi { namespace CCTRIPLES {
 
 pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
 
@@ -886,5 +886,5 @@ void* ET_RHF_thread(void* thread_data_in)
   pthread_exit(NULL);
 }
 
-}} // namespace psi::cctriples
+}} // namespace psi::CCTRIPLES
 

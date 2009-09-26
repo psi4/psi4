@@ -7,7 +7,7 @@
 #include <libdpd/dpd.h>
 #include <psi4-dec.h>
 
-namespace psi { namespace cctriples {
+namespace psi { namespace CCTRIPLES {
 
 /* Global variables */
 #ifdef EXTERN
@@ -20,4 +20,4 @@ namespace psi { namespace cctriples {
 EXTERN struct MOInfo moinfo;
 EXTERN struct Params params;
 
-}} // namespace psi::cctriples
+}} // namespace psi::CCTRIPLES
