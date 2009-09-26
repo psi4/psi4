@@ -150,21 +150,46 @@ int read_options(std::string name, Options & options) {
     options.add_str("REFERENCE","RHF");
     options.add_str("DERTYPE","NONE");
   }
-  else if(name == "CCDENSITY") {
-    options.add_str("WFN", "");
+else if(name == "CCDENSITY") {
+    options.add_str("WFN", "SCF");
     options.add_str("REFERENCE","RHF");
     options.add_str("DERTYPE","NONE");
     options.add_int("TOLERANCE",14);
     options.add_int("CACHELEVEL",2);
     options.add_bool("AO_BASIS",false);
     options.add_bool("AEL",false);
-    options.add_str("GAUGE");
+    options.add_str("GAUGE","");
     options.add_bool("RELAX_OPDM",false);
-    options.add_bool("CONNECT_XI");
+    options.add_bool("CONNECT_XI",false);
     options.add("STATES_PER_IRREP", new ArrayType());
     options.add_bool("PROP_ALL",false);
-    options.add_int("PROP_SYM");
-    options.add_int("PROP_ROOT");
+    options.add_int("PROP_SYM",1);
+    options.add_int("PROP_ROOT",1);
+  }
+  else if(name == "CCLAMBDA") {
+    options.add_str("WFN","SCF");
+    options.add_int("CONVERGENCE",7);
+    options.add_bool("RESTART",false);
+    options.add_int("PRINT",0);
+    options.add_int("CACHELEVEL",2);
+    options.add_bool("SEKINO",false);
+    options.add_bool("DIIS",true);
+    options.add_bool("AO_BASIS",false);
+    options.add_str("ABCD","NEW");
+    options.add_int("NUM_AMPS",10);
+    options.add_str("DERTYPE","NONE");
+    options.add_str("JOBTYPE","");
+    options.add_bool("LOCAL",false);
+    options.add_double("LOCAL_CUTOFF",0.02);
+    options.add_str("LOCAL_METHOD","WERNER");
+    options.add_bool("LOCAL_FILTER_SINGLES",true);
+    options.add_double("LOCAL_CPHF_CUTOFF",0.10);
+    options.add_str("FREEZE_CORE","FALSE");
+    options.add_str("LOCAL_PAIRDEF","");
+    options.add("STATES_PER_IRREP", new ArrayType());
+    options.add_int("PROP_SYM",1);
+    options.add_int("PROP_ROOT",1);
+    options.add_int("MAXITER",50);
   }
   else if(name == "CLAG") {
     options.add_bool("WRITE_CAS_FILES",0);
