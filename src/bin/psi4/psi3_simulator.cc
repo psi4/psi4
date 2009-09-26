@@ -17,16 +17,16 @@ namespace psi {
   namespace transqt2 { PsiReturnType transqt2(Options &, int argc, char *argv[]); }
   namespace psiclean { PsiReturnType psiclean(Options &, int argc, char *argv[]); }
 
-int execut (std::string PsiMethod);
+  int read_options(std::string name, Options & options);
 
 // constructs psi.dat form string for execution
-int psi3_simulator(int argc, char *argv[]) {
+int psi3_simulator(Options & options, int argc, char *argv[]) {
   std::string jobtype, wfn, ref, dertype, PsiMethod;
 
   options.add_str("JOBTYPE", "SP", "SP OPT");
   options.add_str("WFN", "SCF", "SCF MP2 CCSD CCSD_T");
   options.add_str("REF", "RHF", "RHF UHF ROHF TCSCF");
-  options.add_str("DERTYPE", "ENERGY", "ENERGY FIRST SECOND");
+  options.add_str("DERTYPE", "ENERGY", "NONE ENERGY FIRST SECOND");
   options.read_ipv1();
 
   jobtype = options.get_str("JOBTYPE");
@@ -34,15 +34,12 @@ int psi3_simulator(int argc, char *argv[]) {
   ref = options.get_str("REF");
   dertype = options.get_str("DERTYPE");
 
+  if (dertype == "NONE")
+    dertype = "ENERGY";
+
   PsiMethod = wfn + dertype;
 
   fprintf(outfile,"PSI3 simulator method name: %s\n", PsiMethod.c_str());
-
-  execut(PsiMethod);
-}
-
-// execut psi.dat method types
-int execut(std::string PsiMethod) {
 
   int ndisp = 1;
   int nopt = 40;
@@ -82,18 +79,24 @@ int execut(std::string PsiMethod) {
   cis         = "cis"
 */
 
-  int argc = 1;
-  char **argv;
+  fprintf(outfile,"quitting now\n");
 
-  if (PsiMethod == "SCFEnergy") {
+  if (PsiMethod == "SCFENERGY") {
+
+      module.set_prgid("INPUT");
+      read_options("INPUT", options);
       dispatch_table["INPUT"](options, argc, argv);
-      dispatch_table["CINTS"](options, argc, argv);
-      dispatch_table["CSCF"](options, argc, argv);
+      
+
+     // dispatch_table["CINTS"](options, argc, argv);
+     // dispatch_table["CSCF"](options, argc, argv);
   }
   else {
     fprintf(outfile,"Unknown PSI4 method\n");
     abort();
   }
+
+  return 1;
 } 
 
 }
