@@ -64,9 +64,8 @@ void build_dipder(double ***);
 void vibration(double **, double **);
 void cphf_B(double ***, double **);
 
-int cphf(Options & options, int argc, char *argv[])
+PsiReturnType cphf(Options & options, int argc, char *argv[])
 {
-  using namespace psi::cphf;
   int coord = 0;
   double ***F;
   double ***S;
@@ -140,7 +139,7 @@ int cphf(Options & options, int argc, char *argv[])
     timer_off("CPHF Main");
     timer_done();
     exit_io();
-    return 0;
+    return (Success);
   }
   
   UF = (double ***) malloc(3 * sizeof(double **));
@@ -186,7 +185,7 @@ int cphf(Options & options, int argc, char *argv[])
   timer_done();
 
   exit_io();
-  return 0;
+  return (Success);
 }
 
 void init_io(int argc, char *argv[])
