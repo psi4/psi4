@@ -103,9 +103,9 @@ int read_options(std::string name, Options & options) {
     options.add_double("SCALE_OS", 6.0/5.0);
     options.add_double("SCALE_SS", 1.0/3.0);
   }
-  else if(name == "TRANSQT") {
+  else if(name == "TRANSQT2") {
     options.add_str("WFN", "");
-    options.add_str("REFERENCE", "RHF");
+    options.add_str("REFERENCE","RHF");
     options.add_str("DERTYPE", "NONE");
     options.add_int("PRINT", 1);
     options.add_bool("PRINT_TEI", true);
