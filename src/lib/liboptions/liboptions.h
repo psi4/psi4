@@ -659,7 +659,7 @@ namespace psi {
 
     int* get_int_array(std::string key) {
       int *array = new int[get(key).size()];
-      for (int i=0; i<get(key).size(); ++i) {
+      for (unsigned int i=0; i<get(key).size(); ++i) {
         array[i] = get(key)[i].to_integer();
       }
       return array;
@@ -667,7 +667,7 @@ namespace psi {
 
     std::vector<int> get_int_vector(std::string key) {
       std::vector<int> array;
-      for (int i=0; i<get(key).size(); ++i) {
+      for (unsigned int i=0; i<get(key).size(); ++i) {
         array.push_back(get(key)[i].to_integer());
       }
       return array;
@@ -675,7 +675,7 @@ namespace psi {
 
     double* get_double_array(std::string key) {
       double *array = new double[get(key).size()];
-      for (int i=0; i<get(key).size(); ++i) {
+      for (unsigned int i=0; i<get(key).size(); ++i) {
         array[i] = get(key)[i].to_double();
       }
       return array;
@@ -683,7 +683,7 @@ namespace psi {
 
     std::vector<double> get_double_vector(std::string key) {
       std::vector<double> array;
-      for (int i=0; i<get(key).size(); ++i) {
+      for (unsigned int i=0; i<get(key).size(); ++i) {
         array.push_back(get(key)[i].to_double());
       }
       return array;
