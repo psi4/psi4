@@ -3,6 +3,8 @@
     \brief Enter brief description of file here 
 */
 
+#include <string>
+
 namespace psi { namespace cclambda {
 
 struct Local {
@@ -22,12 +24,12 @@ struct Local {
   double *eps_occ;
   double **eps_vir;
   double cutoff;
-  Std::string method;
-  Std::string weakp;
+  std::string method;
+  std::string weakp;
   int filter_singles;
   double cphf_cutoff;
-  Std::string freeze_core;
-  Std::string pairdef;
+  std::string freeze_core;
+  std::string pairdef;
 };
 
 }} // namespace psi::cclambda

@@ -24,7 +24,7 @@ namespace psi { namespace cclambda {
 void init_io(int argc, char *argv[]);
 void title(void);
 void get_moinfo(void);
-void get_params(void);
+void get_params(Options& options);
 void cleanup(void);
 void init_amps(struct L_Params L_params);
 double pseudoenergy(struct L_Params L_params);
@@ -72,7 +72,7 @@ void cc3_l3l1(void);
 void local_init(void);
 void local_done(void);
 
-int cclambda(int argc, char *argv[])
+int cclambda(Options& options, int argc, char *argv[])
 {
   int done=0, i, root_L_irr;
   int **cachelist, *cachefiles;
@@ -82,7 +82,7 @@ int cclambda(int argc, char *argv[])
   title();
   moinfo.iter=0;
   get_moinfo();
-  get_params();
+  get_params(options);
 
   /* throw any existing CC_LAMBDA, CC_DENOM away */
   /* Do this only if we're not running an analytic gradient on the
@@ -256,7 +256,7 @@ int cclambda(int argc, char *argv[])
 
   cleanup(); 
   exit_io();
-  retur PSI_RETURN_SUCCESS;
+  return PSI_RETURN_SUCCESS;
 }
 
 

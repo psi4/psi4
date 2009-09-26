@@ -17,7 +17,7 @@ void cc2_hbar_extra(void) {
 
   /* CC2 W(ME,jb) + W(Me,Jb) is constructed in CCEOM for EOM_CC2 */
 
-  if(!strcmp(params.wfn,"CC2")) {
+  if(params.wfn == "CC2") {
     if(params.ref == 0) { /** RHF **/
       /* 2 W(ME,jb) + W(Me,Jb) */
       dpd_buf4_init(&W1, CC2_HET1, 0, 10, 10, 10, 10, 0, "CC2 WMbeJ (Me,Jb)");
