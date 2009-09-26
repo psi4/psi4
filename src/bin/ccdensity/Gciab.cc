@@ -570,7 +570,7 @@ void Gciab(void)
   }
   else if(params.ref == 2) { /** UHF **/
 
-    if(!strcmp(params.wfn,"CCSD_T") && params.dertype==1) {
+    if(params.wfn == "CCSD_T" && params.dertype==1) {
       /* For CCSD(T) gradients, some density contributions are
 	 calculated in cctriples */
       dpd_buf4_init(&G, CC_GAMMA, 0, 20, 7, 20, 7, 0, "GIDAB");

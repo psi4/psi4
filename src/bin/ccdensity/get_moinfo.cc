@@ -6,7 +6,6 @@
 #include <cstdlib>
 #include <string.h>
 #include <string.h>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.h>
@@ -200,21 +199,21 @@ void get_moinfo(void)
   fprintf(outfile,  "\tSCF energy          (chkpt)   = %20.15f\n",moinfo.escf);
   fprintf(outfile,  "\tReference energy    (file100) = %20.15f\n",moinfo.eref);
 
-  if(!strcmp(params.wfn,"CC2") || !strcmp(params.wfn,"EOM_CC2")) {
+  if(params.wfn == "CC2" || params.wfn == "EOM_CC2") {
     psio_read_entry(CC_INFO, "CC2 Energy", (char *) &(moinfo.ecc),
                     sizeof(double));
     fprintf(outfile,  "\tCC2 energy          (CC_INFO) = %20.15f\n",moinfo.ecc);
     fprintf(outfile,  "\tTotal CC2 energy    (CC_INFO) = %20.15f\n",
             moinfo.eref+moinfo.ecc);
   }
-  else if(!strcmp(params.wfn,"CCSD") || !strcmp(params.wfn,"EOM_CCSD")) {
+  else if( params.wfn == "CCSD" || params.wfn == "EOM_CCSD") {
     psio_read_entry(CC_INFO, "CCSD Energy", (char *) &(moinfo.ecc),
                     sizeof(double));
     fprintf(outfile,  "\tCCSD energy         (CC_INFO) = %20.15f\n",moinfo.ecc);
     fprintf(outfile,  "\tTotal CCSD energy   (CC_INFO) = %20.15f\n",
             moinfo.eref+moinfo.ecc);
   }
-  else if(!strcmp(params.wfn,"CCSD_T")) {
+  else if(params.wfn == "CCSD_T") {
     psio_read_entry(CC_INFO, "CCSD Energy", (char *) &(moinfo.ecc), sizeof(double));
     psio_read_entry(CC_INFO, "(T) Energy", (char *) &(moinfo.et), sizeof(double));
     fprintf(outfile,  "\tCCSD energy         (CC_INFO) = %20.15f\n",moinfo.ecc);
@@ -222,7 +221,7 @@ void get_moinfo(void)
     fprintf(outfile,  "\tTotal CCSD(T) energy(CC_INFO) = %20.15f\n",
             moinfo.eref+moinfo.ecc+moinfo.et);
   }
-  else if(!strcmp(params.wfn,"CC3") || !strcmp(params.wfn,"EOM_CC3")) {
+  else if(params.wfn == "CC3" || params.wfn == "EOM_CC3") {
     psio_read_entry(CC_INFO, "CC3 Energy", (char *) &(moinfo.ecc),
                     sizeof(double));
     fprintf(outfile,  "\tCC3 energy          (CC_INFO) = %20.15f\n",moinfo.ecc);

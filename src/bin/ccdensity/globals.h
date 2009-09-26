@@ -4,6 +4,7 @@
 */
 #include <ccfiles.h>
 #include <libdpd/dpd.h>
+#include <psi4-dec.h>
 
 namespace psi { namespace ccdensity {
 
@@ -17,10 +18,6 @@ namespace psi { namespace ccdensity {
 
 /* #define DEBUG_XI (1)*/
 
-extern "C" {
-EXTERN FILE *infile, *outfile;
-EXTERN char *psi_file_prefix;
-}
 EXTERN struct MOInfo moinfo;
 EXTERN struct Frozen frozen;
 EXTERN struct Params params;

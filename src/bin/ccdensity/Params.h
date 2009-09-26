@@ -21,12 +21,12 @@ struct Params {
   int ground;
   int transition; 
   int dertype;
-  char *wfn;
+  Std::string wfn;
   int nstates;
   int prop_sym;
   int prop_root;
   int prop_all;
-  char *gauge;
+  Std::string gauge;
 
   /* these are used by Xi and twopdm code */
   int G_irr; 

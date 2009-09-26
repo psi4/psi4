@@ -5,7 +5,8 @@ include ../MakeVars
 
 LDLIBS += $(LAPACK) $(BLAS)
 
-PSILIBS = -lPSI_dpd -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
+PSITARGET=$(top_objdir)/lib/libPSI_ccdensity.a
+#PSILIBS = -lPSI_dpd -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
 
 CXXSRC = \
 G.cc              energy.cc                   sortone_UHF.cc \

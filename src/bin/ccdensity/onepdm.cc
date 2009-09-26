@@ -267,7 +267,7 @@ void onepdm(struct RHO_Params rho_params)
   }
   else if(params.ref == 2) { /** UHF **/
 
-    if(!strcmp(params.wfn,"CCSD_T") && params.dertype == 1) {
+    if(params.wfn == "CCSD_T" && params.dertype == 1) {
       /* For CCSD(T) gradients, some density contributions are
 	 calculated in cctriples */
       factor = 1.0;

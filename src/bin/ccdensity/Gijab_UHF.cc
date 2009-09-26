@@ -207,7 +207,7 @@ namespace psi { namespace ccdensity {
       dpd_file2_close(&T1B);
 
       /* L(IJ,AB) */
-      if(!strcmp(params.wfn,"CCSD_T") && params.dertype==1) {
+      if(params.wfn == "CCSD_T" && params.dertype==1) {
 	/* For CCSD(T) gradients, some density contributions are
 	   calculated in cctriples */
 	dpd_buf4_init(&G, CC_GAMMA, 0, 2, 7, 2, 7, 0, "GIJAB");
@@ -457,7 +457,7 @@ namespace psi { namespace ccdensity {
 
 
       /* L(ij,ab) */
-      if(!strcmp(params.wfn,"CCSD_T") && params.dertype==1) {
+      if(params.wfn == "CCSD_T" && params.dertype==1) {
 	/* For CCSD(T) gradients, some density contributions are
 	   calculated in cctriples */
 	dpd_buf4_init(&G, CC_GAMMA, 0, 12, 17, 12, 17, 0, "Gijab");
@@ -707,7 +707,7 @@ namespace psi { namespace ccdensity {
 
 
       /* L(Ij,Ab) */
-      if(!strcmp(params.wfn,"CCSD_T") && params.dertype==1) {
+      if(params.wfn == "CCSD_T" && params.dertype==1) {
 	/* For CCSD(T) gradients, some density contributions are
 	   calculated in cctriples */
 	dpd_buf4_init(&G, CC_GAMMA, 0, 22, 28, 22, 28, 0, "GIjAb");

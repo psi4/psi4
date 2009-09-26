@@ -10,7 +10,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <libipv1/ip_lib.h>
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
 #include <libdpd/dpd.h>
@@ -94,11 +93,7 @@ void x_te_intermediates_rhf(void);
 void x_xi_intermediates(void);
 void V_build(void);
 
-}} // namespace psi::cdensity 
-
-using namespace psi::ccdensity;
-
-int main(int argc, char *argv[])
+int ccdensity(int argc, char *argv[])
 {
   int i;
   int **cachelist, *cachefiles;
@@ -116,7 +111,7 @@ int main(int argc, char *argv[])
 
   if ((moinfo.nfzc || moinfo.nfzv) && params.relax_opdm) {
     fprintf(outfile, "\n\tGradients/orbital relaxation involving frozen orbitals not yet available.\n");
-    exit(PSI_RETURN_FAILURE);
+    throw PsiException("ccdensity: error", __FILE__, __LINE__);
   }
 
   cachefiles = init_int_array(PSIO_MAXUNIT);
@@ -166,7 +161,7 @@ int main(int argc, char *argv[])
       psio_close(EOM_TMP_XI,0); /* delete EOM_TMP_XI */
       psio_open(EOM_TMP_XI,PSIO_OPEN_NEW);
       exit_io();
-      exit(PSI_RETURN_SUCCESS);
+      return PSI_RETURN_SUCCESS;
     }
 
     /* compute ground state parts of onepdm or put zeroes there */
@@ -331,20 +326,14 @@ int main(int argc, char *argv[])
 
   cleanup(); 
   exit_io();
-  exit(PSI_RETURN_SUCCESS);
+  return PSI_RETURN_SUCCESS;
 }
 
-extern "C" {const char *gprgid() { const char *prgid = "CCDENSITY"; return(prgid); }}
-
-namespace psi { namespace ccdensity {
 
 void init_io(int argc, char *argv[])
 {
   int i, num_unparsed;
-  char *progid, *argv_unparsed[100];;
-
-  progid = (char *) malloc(strlen(gprgid())+2);
-  sprintf(progid, ":%s",gprgid());
+  char *argv_unparsed[100];;
 
   params.onepdm = 0;
   params.prop_all = 0;
@@ -380,11 +369,7 @@ void init_io(int argc, char *argv[])
     }
   }
 
-  psi_start(&infile,&outfile,&psi_file_prefix,num_unparsed,argv_unparsed,0);
-  ip_cwk_add(progid);
-  free(progid);
-  tstart(outfile);
-  psio_init(); psio_ipv1_config();
+  tstart();
 
   /* Open all dpd data files here */
   /* erase files for easy debugging */
@@ -433,9 +418,7 @@ void exit_io(void)
   /* Close all dpd data files here */
   for(i=CC_MIN; i <= CC_MAX; i++) psio_close(i,1);
 
-  psio_done();
-  tstop(outfile);
-  psi_stop(infile,outfile,psi_file_prefix);
+  tstop();
 }
 
 }} // namespace psi::ccdensity

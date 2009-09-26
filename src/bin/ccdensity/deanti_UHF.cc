@@ -316,9 +316,9 @@ void deanti_UHF(struct RHO_Params rho_params)
   
   fprintf(outfile, "\tTotal two-electron energy  = %20.15f\n", total_two_energy);
 
-  fprintf(outfile, "\t%-7s correlation energy = %20.15f\n", !strcmp(params.wfn,"CCSD_T") ? "CCSD(T)" : params.wfn,
+  fprintf(outfile, "\t%-7s correlation energy = %20.15f\n", params.wfn == "CCSD_T" ? "CCSD(T)" : params.wfn.c_str(),
 	  one_energy + total_two_energy);
-  fprintf(outfile, "\tTotal %-7s energy       = %20.15f\n", !strcmp(params.wfn,"CCSD_T") ? "CCSD(T)" : params.wfn,
+  fprintf(outfile, "\tTotal %-7s energy       = %20.15f\n", params.wfn == "CCSD_T" ? "CCSD(T)" : params.wfn.c_str(),
 	  one_energy + total_two_energy + moinfo.eref);
 }
 

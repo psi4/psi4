@@ -19,7 +19,7 @@ void idx_error(const char *message, int p, int q, int r, int s, int pq, int rs,
 	  "\t    p      q      r      s  [   pq]  [   rs] pq_symm rs_symm\n");
   fprintf(outfile,"\t%5d  %5d  %5d  %5d  [%5d]  [%5d]   %1d   %1d\n", p,q,r,s,
           pq,rs,pq_sym,rs_sym);
-  exit(PSI_RETURN_FAILURE);
+  throw PsiException("ccdensity: error", __FILE__, __LINE__);
 }
 
 
