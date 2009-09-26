@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <string>
 #include <psifiles.h>
 
 namespace psi {
@@ -41,5 +42,33 @@ int cc_wfn(char *wfn)
   }
 }
 
+/*!
+** cc_wfn(): Checks if the given wavefunction string is a coupled-cluster
+** type and returns 1 if yes and 0 if no.
+**
+** Note: "coupled-cluster type" means it is handled by PSI like the
+** coupled-cluster codes, not necessarily that it is literally a
+** coupled-cluster wavefunction
+**
+** \param wfn = wavefunction string
+**
+** Returns: 1 if the WFN is a CC method, 0 otherwise
+**
+** \ingroup QT
+*/
+int cc_wfn(std::string wfn)
+{
+  if ((wfn =="CCSD")     || (wfn =="CCSD_T") ||
+      (wfn =="BCCD")     || (wfn =="BCCD_T") ||
+      (wfn =="CC2")      || (wfn =="CC3")    ||
+      (wfn =="EOM_CCSD") || (wfn =="LEOM_CCSD") ||
+      (wfn =="EOM_CC2")  || (wfn =="EOM_CC3") ||
+      (wfn =="CIS") ) {
+    return 1;
+  }
+  else {
+    return 0;
+  }
 }
 
+}
