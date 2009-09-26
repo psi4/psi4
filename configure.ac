@@ -779,6 +779,9 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/oeprop/Makefile
           src/bin/geom/Makefile
           src/bin/ccenergy/Makefile
+          src/bin/cctriples/Makefile
+          src/bin/ccresponse/Makefile
+          src/bin/cchbar/Makefile
 ])
 
 AC_OUTPUT
