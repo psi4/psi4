@@ -37,7 +37,7 @@ namespace psi { namespace CINTS {
         // TODO: CHANGE MEMORY CHECK!!!
       // fndcor(&max_bytes, infile, outfile);
       // UserOptions.max_memory = max_bytes / sizeof(double);
-        UserOptions.max_memory = 100;
+        UserOptions.max_memory = 10000000;
     }
     else
       UserOptions.max_memory = MAX_NUM_DOUBLES;

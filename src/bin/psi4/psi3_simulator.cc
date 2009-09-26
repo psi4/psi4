@@ -50,7 +50,7 @@ int psi3_simulator(Options & options, int argc, char *argv[]) {
   std::map<std::string, PsiReturnType(*)(Options &, int argc, char *argv[])> dispatch_table;
 
   dispatch_table["INPUT"] = &(psi::input::input);
-  dispatch_table["SCF"]   = &(psi::cscf::cscf);
+  dispatch_table["CSCF"]   = &(psi::cscf::cscf);
   dispatch_table["CINTS"] = &(psi::CINTS::cints);
   dispatch_table["TRANSQT2"] = &(psi::transqt2::transqt2);
 
@@ -85,9 +85,14 @@ int psi3_simulator(Options & options, int argc, char *argv[]) {
 
       module.set_prgid("INPUT");
       read_options("INPUT", options);
-
       dispatch_table["INPUT"](options, argc, argv);
+
+      module.set_prgid("CINTS");
+      read_options("CINTS", options);
       dispatch_table["CINTS"](options, argc, argv);
+
+      module.set_prgid("CSCF");
+      read_options("CSCF", options);
       dispatch_table["CSCF"](options, argc, argv);
   }
   else {
