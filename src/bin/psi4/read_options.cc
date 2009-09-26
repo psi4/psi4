@@ -222,6 +222,32 @@ int read_options(std::string name, Options & options) {
    options.add("SOCC", new ArrayType());
    options.add("DOCC_VIRT", new ArrayType());
   }
+  else if(name == "MCSCF") {
+    options.add_int("CONVERGENCE",9);
+    options.add_int("LEVELSHIFT",0);
+    options.add_int("DEBUG",0);
+    options.add_int("MAXITER",100);
+    options.add_int("NDIIS",7);
+    options.add_int("ROOT",1);
+    options.add_int("START_FAVG",5);
+    options.add_int("TURN_ON_ACTV",0);
+    options.add_int("ROTATE_MO_ANGLE",0);
+    options.add_int("ROTATE_MO_IRREP",1);  // IRREP is one-based
+    options.add_int("ROTATE_MO_P",1);      // P and Q are one-based
+    options.add_int("ROTATE_MO_Q",2);
+
+    options.add_bool("CI_DIIS",false);
+    options.add_bool("USE_DIIS",true);
+    options.add_bool("READ_MOS",true);
+    options.add_bool("USE_FAVG",false);
+    options.add_bool("CANONICALIZE_ACTIVE_FAVG",false);
+    options.add_bool("CANONICALIZE_INACTIVE_FAVG",false);
+    options.add_bool("INTERNAL_ROTATIONS",true);
+    options.add_bool("FORCE_TWOCON",false);
+
+    options.add_str("REFERENCE","RHF","RHF ROHF UHF TWOCON MCSCF GENERAL");
+    options.add_str("WFN_SYM","1","A AG AU AP APP A1 A2 B BG BU B1 B2 B3 B1G B2G B3G B1U B2U B3U 0 1 2 3 4 5 6 7 8");
+  }
   else if(name == "EXTREMA") {
     options.add_str("COORDINATES","foo");
   }
