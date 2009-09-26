@@ -17,9 +17,11 @@ BINOBJ = $(CXXSRC:%.cc=%.o)
 include ../MakeRules
 
 $(PSITARGET): $(BINOBJ) $(PSILIBS)
+    $(MKDIRS) `dirname $(PSITARGET)`
 	$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 install_target:: $(PSITARGET)
+    $(MKDIRS) $(DESTDIR)$(bindir)
 	$(INSTALL_PROGRAM) $< $(DESTDIR)$(bindir)
 
 ifneq ($(DODEPEND),no)

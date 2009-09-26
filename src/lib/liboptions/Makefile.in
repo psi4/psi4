@@ -10,7 +10,7 @@ TRUECSRC =
 
 TRUECXXSRC = ipv1.cc
 
-INC = liboptions.hpppp
+INC = liboptions.hpp
 
 LIBOBJ = $(TRUECSRC:%.c=%.o) $(TRUECXXSRC:%.cc=%.o)
 
