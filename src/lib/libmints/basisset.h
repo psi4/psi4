@@ -10,7 +10,7 @@
 #include <cstdio>
 #include <libchkpt/chkpt.hpp>
 
-#include <libmints/ref.h>
+#include <libutil/ref.h>
 #include <libmints/molecule.h>
 #include <libmints/gshell.h>
 #include <libmints/sobasis.h>

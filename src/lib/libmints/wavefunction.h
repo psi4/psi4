@@ -7,7 +7,7 @@
 */
 
 #include <libmints/factory.h>
-#include <libmints/ref.h>
+#include <libutil/ref.h>
 #include <libmints/molecule.h>
 #include <libmints/basisset.h>
 #include <libpsio/psio.hpp>

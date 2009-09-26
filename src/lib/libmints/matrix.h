@@ -11,7 +11,7 @@
 #include <cstring>
 
 #include <libmints/vector.h>
-#include <libmints/ref.h>
+#include <libutil/ref.h>
 
 #include <libpsio/psio.hpp>
 

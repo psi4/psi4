@@ -755,6 +755,7 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libr12/libr12_config.h
           src/lib/liboptions/Makefile
           src/lib/libmoinfo/Makefile
+          src/lib/libmints/Makefile
  
           src/util/tocprint/Makefile
           src/util/psiclean/Makefile
