@@ -96,7 +96,7 @@ namespace psi {
 void C_DAXPY(int length, double a, double *x, int inc_x, 
              double *y, int inc_y)
 {
-  F_DAXPY(&length, &a, x, &inc_x, y, &inc_y);
+  ::F_DAXPY(&length, &a, x, &inc_x, y, &inc_y);
 }
 
 
@@ -118,7 +118,7 @@ void C_DAXPY(int length, double a, double *x, int inc_x,
 void C_DCOPY(int length, double *x, int inc_x, 
              double *y, int inc_y)
 {
-  F_DCOPY(&length, x, &inc_x, y, &inc_y);
+  ::F_DCOPY(&length, x, &inc_x, y, &inc_y);
 }
 
 
@@ -136,7 +136,7 @@ void C_DCOPY(int length, double *x, int inc_x,
 */
 void C_DSCAL(int length, double alpha, double *vec, int inc)
 {
-  F_DSCAL(&length, &alpha, vec, &inc);
+  ::F_DSCAL(&length, &alpha, vec, &inc);
 }
 
 
@@ -158,7 +158,7 @@ void C_DROT(int length, double *x, int inc_x, double *y, int inc_y,
             double costheta, double sintheta)
 {
 
-  F_DROT(&length,x,&inc_x,y,&inc_y,&costheta,&sintheta);
+  ::F_DROT(&length,x,&inc_x,y,&inc_y,&costheta,&sintheta);
 }
 
 
@@ -247,7 +247,7 @@ void C_DGEMM(char transa, char transb, int m, int n, int k, double alpha,
   /* also, do nothing if a dimension is 0 */
   if (m == 0 || n == 0 || k == 0) return;
 
-  F_DGEMM(&transb,&transa,&n,&m,&k,&alpha,B,&ncb,A,&nca,&beta,C,&ncc);
+  ::F_DGEMM(&transb,&transa,&n,&m,&k,&alpha,B,&ncb,A,&nca,&beta,C,&ncc);
 
 }
 
@@ -295,7 +295,7 @@ void C_DGEMV(char transa, int m, int n, double alpha, double *A,
   if(transa == 'n') transa = 't';
   else transa = 'n';
 
-  F_DGEMV(&transa,&n,&m,&alpha,A,&nca,X,&inc_x,&beta,Y,&inc_y);
+  ::F_DGEMV(&transa,&n,&m,&alpha,A,&nca,X,&inc_x,&beta,Y,&inc_y);
 
 }
 
@@ -343,7 +343,7 @@ void C_DSPMV(char uplo, int n, double alpha, double *A,
   if (uplo == 'U' || uplo == 'u') uplo = 'L';
   else uplo = 'U';
 
-  F_DSPMV(&uplo,&n,&alpha,A,X,&inc_x,&beta,Y,&inc_y);
+  ::F_DSPMV(&uplo,&n,&alpha,A,X,&inc_x,&beta,Y,&inc_y);
 
 }
 
@@ -369,7 +369,7 @@ double C_DDOT(int n, double *x, int inc_x, double *y, int inc_y)
 {
    if(n == 0) return 0.0;
 
-   return F_DDOT(&n,x,&inc_x,y,&inc_y);
+   return ::F_DDOT(&n,x,&inc_x,y,&inc_y);
 }
 
 }

@@ -17,8 +17,8 @@
     #define __LOCK(l) pthread_mutex_lock(&l);
     #define __UNLOCK(l) pthread_mutex_unlock(&l);
 #else
-    #define __LOCK(l) 0
-    #define __UNLOCK(l) 0
+    #define __LOCK(l) 
+    #define __UNLOCK(l) 
 #endif
 
 namespace psi {
