@@ -18,20 +18,21 @@ namespace psi {
     // Walk through all the options and attempt to read in all the information for it
     // from IPV1.
     for (Options::iterator pos = keyvals_.begin(); pos != keyvals_.end(); ++pos) {
+      fprintf(stderr, "Reading option: %s\n", pos->first.c_str());
 	  try {
-      // Determine the type of the value
-      if (pos->second.type() == "double")
-        read_double(pos->second, pos->first);
-      else if (pos->second.type() == "int")
-        read_int(pos->second, pos->first);
-      else if (pos->second.type() == "boolean")
-        read_boolean(pos->second, pos->first);
-      else if (pos->second.type() == "array")
-        read_array(pos->second, pos->first);
-      else if (pos->second.type() == "string")
-        read_string(pos->second, pos->first);
-      else
-        throw OptionsException("Unknown data type. [type() == " + pos->second.type() + "]");
+        // Determine the type of the value
+        if (pos->second.type() == "double")
+          read_double(pos->second, pos->first);
+        else if (pos->second.type() == "int")
+          read_int(pos->second, pos->first);
+        else if (pos->second.type() == "boolean")
+          read_boolean(pos->second, pos->first);
+        else if (pos->second.type() == "array")
+          read_array(pos->second, pos->first);
+        else if (pos->second.type() == "string")
+          read_string(pos->second, pos->first);
+        else
+          throw OptionsException("Unknown data type. [type() == " + pos->second.type() + "]");
       }
       catch (PsiException e) {
         fprintf(stderr, "Key: %s\n%s\n", pos->first.c_str(), e.what());
