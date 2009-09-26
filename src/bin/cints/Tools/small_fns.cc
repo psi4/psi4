@@ -88,8 +88,8 @@ void start_io(int argc, char *argv[])
   ip_cwk_add(":DEFAULT");
   ip_cwk_add(":PSI");
   ip_cwk_add(":CINTS");
-  psio_init();
-  psio_ipv1_config();
+//  psio_init();
+//  psio_ipv1_config();
   chkpt_init(PSIO_OPEN_OLD);
 
   //free(extra_args);
@@ -101,7 +101,7 @@ void stop_io()
   chkpt_close();
   if(UserOptions.print_lvl)
     tstop();
-  psio_done();
+//  psio_done();
   //psi_stop(infile,outfile,psi_file_prefix);
 }
 

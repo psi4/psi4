@@ -204,9 +204,9 @@ PsiReturnType cscf(Options & options, int argc,char* argv[])
   ip_cwk_add(":PSI");
   ip_cwk_add(":SCF");
   tstart();
-  //psio_init();
-  //psio_ipv1_config();
-   
+//  psio_init();
+//  psio_ipv1_config();
+//
   fprintf(outfile,"%13c------------------------------------------\n",' ');
   fprintf(outfile,"\n%16c%s\n",' ',prog_name);
   fprintf(outfile,"\n%14cWritten by too many people to mention here\n",' ');
