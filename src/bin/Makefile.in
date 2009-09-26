@@ -5,7 +5,7 @@
 include MakeVars
 
 subdirs = \
-transqt2 cscf psiclean input3 cints
+transqt2 cscf psiclean input3 cints psi4
 
 ## Only compile/link psirb if Ruby was found
 #ifeq ($(RUBYLINK),yes)
