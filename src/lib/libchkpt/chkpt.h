@@ -6,7 +6,9 @@
 #include <chkpt_params.h>
 #include <libchkpt/config.h>
 
-namespace psi {
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 int chkpt_init(int status);
 int chkpt_close(void);
@@ -62,10 +64,10 @@ double *chkpt_rd_zvals(void);
 void chkpt_wt_zvals(double *zvals);
 
 double *chkpt_rd_exps(void);
-void chpt_wt_exps(double *);
+void chpt_wt_exps(double *, const char *key2);
 
 int *chkpt_rd_us2s(void);
-void chkpt_wt_us2s(int *);
+void chkpt_wt_us2s(int *, const char *key2);
 
 int *chkpt_rd_orbspi(void);
 void chkpt_wt_orbspi(int *);
@@ -83,35 +85,36 @@ int *chkpt_rd_frzvpi(void);
 void chkpt_wt_frzvpi(int *);
 
 int *chkpt_rd_sopi(void);
-void chkpt_wt_sopi(int *);
+void chkpt_wt_sopi(int *, const char *key2);
 
 char *chkpt_rd_label(void);
-void chkpt_wt_label(const char *);
+void chkpt_wt_label(char *);
 
 char **chkpt_rd_irr_labs(void);
 void chkpt_wt_irr_labs(char **);
+char **chkpt_rd_irr_labs_lowercase(void);
 
 double *chkpt_rd_contr(void);
-void chkpt_wt_contr(double *);
+void chkpt_wt_contr(double *, const char *key2);
 double **chkpt_rd_contr_full(void);
 
 int *chkpt_rd_sprim(void);
-void chkpt_wt_sprim(int *);
+void chkpt_wt_sprim(int *, const char *key2);
 
 int *chkpt_rd_snuc(void);
-void chkpt_wt_snuc(int *);
+void chkpt_wt_snuc(int *, const char *key2);
 
 int *chkpt_rd_stype(void);
-void chkpt_wt_stype(int *);
+void chkpt_wt_stype(int *, const char *key2);
 
 int *chkpt_rd_snumg(void);
-void chkpt_wt_snumg(int *);
+void chkpt_wt_snumg(int *, const char *key2);
 
 int *chkpt_rd_sloc(void);
-void chkpt_wt_sloc(int *);
+void chkpt_wt_sloc(int *, const char *key2);
 
 int **chkpt_rd_shell_transm(void);
-void chkpt_wt_shell_transm(int **);
+void chkpt_wt_shell_transm(int **, const char *key2);
 
 double **chkpt_rd_cartrep();
 void chkpt_wt_cartrep(double **);
@@ -120,16 +123,16 @@ int chkpt_rd_nallatom(void);
 void chkpt_wt_nallatom(int);
 
 char **chkpt_rd_felement(void);
-void chkpt_wt_felement(char **);
+void chkpt_wt_felement(char ** const);
 
 double **chkpt_rd_usotao(void);
-void chkpt_wt_usotao(double **);
+void chkpt_wt_usotao(double **, const char *key2);
 
 double **chkpt_rd_usotbf(void);
-void chkpt_wt_usotbf(double **);
+void chkpt_wt_usotbf(double **, const char *key2);
 
 int *chkpt_rd_sloc_new(void);
-void chkpt_wt_sloc_new(int *);
+void chkpt_wt_sloc_new(int *, const char *key2);
 
 int *chkpt_rd_ua2a(void);
 void chkpt_wt_ua2a(int *);
@@ -138,16 +141,16 @@ int *chkpt_rd_symoper(void);
 void chkpt_wt_symoper(int *);
 
 char *chkpt_rd_sym_label(void);
-void chkpt_wt_sym_label(const char *sym_label);
+void chkpt_wt_sym_label(char *sym_label);
 
 struct z_entry *chkpt_rd_zmat(void);
 void chkpt_wt_zmat(struct z_entry *);
 
 int *chkpt_rd_shells_per_am(void);
-void chkpt_wt_shells_per_am(int *);
+void chkpt_wt_shells_per_am(int *, const char *key2);
 
 int *chkpt_rd_am2canon_shell_order(void);
-void chkpt_wt_am2canon_shell_order(int *);
+void chkpt_wt_am2canon_shell_order(int *, const char *key2);
 
 double **chkpt_rd_rref(void);
 void chkpt_wt_rref(double **);
@@ -165,31 +168,31 @@ int chkpt_rd_num_unique_atom(void);
 void chkpt_wt_num_unique_atom(int);
 
 int chkpt_rd_num_unique_shell(void);
-void chkpt_wt_num_unique_shell(int);
+void chkpt_wt_num_unique_shell(int, const char *key2);
 
 int chkpt_rd_rottype(void);
 void chkpt_wt_rottype(int);
 
 int chkpt_rd_max_am(void);
-void chkpt_wt_max_am(int);
+void chkpt_wt_max_am(int, const char *key2);
 
 int chkpt_rd_puream(void);
-void chkpt_wt_puream(int);
+void chkpt_wt_puream(int, const char *key2);
 
 int chkpt_rd_nso(void);
-void chkpt_wt_nso(int);
+void chkpt_wt_nso(int, const char *key2);
 
 int chkpt_rd_nao(void);
-void chkpt_wt_nao(int);
+void chkpt_wt_nao(int, const char *key2);
 
 int chkpt_rd_nshell(void);
-void chkpt_wt_nshell(int);
+void chkpt_wt_nshell(int, const char *key2);
 
 int chkpt_rd_nirreps(void);
 void chkpt_wt_nirreps(int);
 
 int chkpt_rd_nprim(void);
-void chkpt_wt_nprim(int);
+void chkpt_wt_nprim(int, const char *key2);
 
 int chkpt_rd_natom(void);
 void chkpt_wt_natom(int);
@@ -217,7 +220,7 @@ void chkpt_wt_scf_irrep(double **, int);
 void chkpt_wt_alpha_scf_irrep(double **, int);
 void chkpt_wt_beta_scf_irrep(double **, int);
 
-void chkpt_set_mo_phases(double **coeff, int nrows, int ncols);
+double **chkpt_set_mo_phases(double **coeff, int nrows, int ncols);
 
 double **chkpt_rd_lagr(void);
 double **chkpt_rd_alpha_lagr(void);
@@ -247,8 +250,8 @@ void chkpt_wt_eref(double);
 double chkpt_rd_efzc(void);
 void chkpt_wt_efzc(double);
 
-double chkpt_rd_e_labeled(char *);
-void chkpt_wt_e_labeled(char *, double);
+double chkpt_rd_e_labeled(const char *);
+void chkpt_wt_e_labeled(const char *, double);
 
 int chkpt_rd_disp(void);
 void chkpt_wt_disp(int);
@@ -269,7 +272,7 @@ double** chkpt_rd_cdsalc2cd();
 void chkpt_wt_cdsalc2cd(const double**);
 
 double *chkpt_rd_exps();
-void chkpt_wt_exps(double*);
+void chkpt_wt_exps(double*, const char *key2);
 
 int chkpt_exist(const char *);
 int chkpt_exist_add_prefix(const char *);
@@ -295,6 +298,17 @@ void chkpt_wt_nref_per_fragment(int *);
 double ***chkpt_rd_fragment_coeff(void);
 void chkpt_wt_fragment_coeff(double ***);
 
+double *chkpt_rd_rotconst(void);
+void chkpt_wt_rotconst(double *);
+
+int chkpt_rd_rot_symm_num(void);
+void chkpt_wt_rot_symm_num(int);
+
+double *chkpt_rd_vib_freqs(void);
+void chkpt_wt_vib_freqs(double *);
+
+#ifdef __cplusplus
 }
+#endif
 
 #endif
