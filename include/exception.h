@@ -38,7 +38,7 @@ class PsiException : public std::runtime_error {
 
         const char* file() const throw()
         {
-            return file_._c_str();
+            return file_.c_str();
         }
 
         int line() const throw()
