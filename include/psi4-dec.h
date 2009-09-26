@@ -30,7 +30,6 @@ namespace psi {
   
   extern Module module;
   extern FILE *outfile;
-  extern Options options;
   extern PSIO *psio;
   extern char *psi_file_prefix;
   extern bool g_bVerbose;
