@@ -5,7 +5,8 @@ include ../MakeVars
 
 LDLIBS += $(LAPACK) $(BLAS)
 
-PSILIBS = -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
+PSITARGET = $(top_objdir)/lib/libPSI_cphf.o
+#PSILIBS = -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
 
 CXXSRC = cphf.cc setup.cc out_of_core.cc mohess.cc cphf_X.cc cphf_F.cc \
 polarize.cc build_hessian.cc build_dipder.cc vibration.cc cphf_B.cc \

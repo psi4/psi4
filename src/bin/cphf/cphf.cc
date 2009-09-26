@@ -64,12 +64,9 @@ void build_dipder(double ***);
 void vibration(double **, double **);
 void cphf_B(double ***, double **);
 
-}} // namespace psi::cphf
-
-int main(int argc, char *argv[])
+int cphf(int argc, char *argv[])
 {
   using namespace psi::cphf;
-  int errcod = 0;
   int coord = 0;
   double ***F;
   double ***S;
@@ -90,7 +87,7 @@ int main(int argc, char *argv[])
   timer_on("CPHF Main");
 
   print_lvl = 0;
-  errcod = ip_data("PRINT", "%d", &(print_lvl), 0);
+  print_lvl = options.get_int("PRINT");
 
   setup();
 
@@ -143,7 +140,7 @@ int main(int argc, char *argv[])
     timer_off("CPHF Main");
     timer_done();
     exit_io();
-    exit(PSI_RETURN_SUCCESS);
+    return 0;
   }
   
   UF = (double ***) malloc(3 * sizeof(double **));
@@ -189,15 +186,13 @@ int main(int argc, char *argv[])
   timer_done();
 
   exit_io();
-  exit(PSI_RETURN_SUCCESS);
+  return 0;
 }
-
-namespace psi { namespace cphf {
 
 void init_io(int argc, char *argv[])
 {
   int i, num_unparsed;
-  char *progid, *argv_unparsed[100];
+  char *argv_unparsed[100];
 
   X_only = 0;
   for (i=1, num_unparsed=0; i<argc; ++i) {
@@ -207,10 +202,8 @@ void init_io(int argc, char *argv[])
       argv_unparsed[num_unparsed++] = argv[i];
   }
 
-  psi_start(&infile,&outfile,&psi_file_prefix,num_unparsed,argv_unparsed,0);
-  ip_cwk_add(progid);
-  free(progid);
-  tstart(outfile);
+//  psi_start(&infile,&outfile,&psi_file_prefix,num_unparsed,argv_unparsed,0);
+  tstart();
 
 }
 
@@ -226,9 +219,8 @@ void title(void)
 void exit_io(void)
 {
   int i;
-  psio_done();
-  tstop(outfile);
-  psi_stop(infile,outfile,psi_file_prefix);
+  tstop();
+//  psi_stop(infile,outfile,psi_file_prefix);
 }
 
 void init_ioff(void)
