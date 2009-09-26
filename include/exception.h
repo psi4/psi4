@@ -1,11 +1,15 @@
+#ifndef _psi_include_exception_h
+#define _psi_include_exception_h
+
 #include <exception>
 
 namespace psi {
 
 #define CHARARR_SIZE 100
 
-class PsiException : public std::runtime_error {
+#define PSIEXCEPTION(message) PsiException(message, __FILE__, __LINE__)
 
+class PsiException : public std::runtime_error {
     private:
         std::string msg_;
         std::string file_;
@@ -142,4 +146,6 @@ class ConvergenceError : public MaxIterationsExceeded {
 };
 
 } //end namespace psi exception
+
+#endif
 
