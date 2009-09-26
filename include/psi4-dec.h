@@ -20,7 +20,7 @@ namespace psi {
     size_t get_memory(void) const { return memory; }
   };
 
-  typedef struct ModuleInformation {
+  struct ModuleInformation {
     std::string rubyFunctionName;
     int (*entryPoint)();
     void (*registerOptions)();
