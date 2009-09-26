@@ -16,7 +16,7 @@
 namespace psi {
   namespace transqt2 {
 
-void get_params()
+void get_params(Options & options)
 {
   int tol;
 
