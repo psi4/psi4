@@ -18,6 +18,7 @@ namespace psi {
     // Walk through all the options and attempt to read in all the information for it
     // from IPV1.
     for (Options::iterator pos = keyvals_.begin(); pos != keyvals_.end(); ++pos) {
+	  try {
       // Determine the type of the value
       if (pos->second.type() == "double")
         read_double(pos->second, pos->first);
@@ -31,6 +32,11 @@ namespace psi {
         read_string(pos->second, pos->first);
       else
         throw OptionsException("Unknown data type. [type() == " + pos->second.type() + "]");
+      }
+      catch (PsiException e) {
+        fprintf(stderr, "Key: %s\n%s\n", pos->first, e.what());
+	    abort();
+      }
     }
   }
   
