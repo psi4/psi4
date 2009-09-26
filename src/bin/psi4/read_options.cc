@@ -120,6 +120,23 @@ int read_options(std::string name, Options & options) {
     options.add_double("LOCAL_CUTOFF", 0.02);
     options.add_double("LOCAL_CPHF_CUTOFF", 0.10);
     options.add_double("LOCAL_CORE_CUTOFF",0.05);
+    options.add_cstr("LOCAL_METHOD","WERNER");
+    options.add_cstr("LOCAL_WEAKP");
+    options.add_cstr("FREEZE_CORE");
+    options.add_cstr("LOCAL_PAIRDEF");
+    options.add_bool("LOCAL_DOMAIN_POLAR");
+    options.add_bool("LOCAL_DOMAIN_MAG");
+    options.add_bool("LOCAL_DOMAIN_SEP");
+    options.add_bool("LOCAL_FILTER_SINGLES");
+    options.add_cstr("AO_BASIS");
+    options.add_cstr("EOM_REFERENCE");
+    options.add_int("PRINT");
+    options.add_bool("KEEP_TEIFILE");
+    options.add_bool("KEEP_OEIFILE");
+    options.add_int("TOLERANCE");
+    options.add_int("CACHELEV");
+    options.add_bool("LOCAL");
+    options.add("OMEGA",new ArrayType());
   }
   else if(name == "CCTRIPLES") {
     options.add_str("WFN", "");
