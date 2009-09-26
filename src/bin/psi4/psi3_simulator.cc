@@ -94,6 +94,11 @@ int psi3_simulator(Options & options, int argc, char *argv[]) {
       module.set_prgid("CSCF");
       read_options("CSCF", options);
       dispatch_table["CSCF"](options, argc, argv);
+
+      module.set_prgid("TRANSQT2");
+      read_options("TRANSQT2", options);
+      dispatch_table["TRANSQT2"](options, argc, argv);
+
   }
   else {
     fprintf(outfile,"Unknown PSI4 method\n");
