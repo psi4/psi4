@@ -9,7 +9,7 @@
 #include <string>
 
 #include <libmoinfo/libmoinfo.h>
-#include <liboptions/liboptions.hpp>
+#include <liboptions/liboptions.h>
 
 #include "blas.h"
 #include "heff.h"

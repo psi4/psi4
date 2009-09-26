@@ -1,4 +1,4 @@
-#include <liboptions/liboptions.hpp>
+#include <liboptions/liboptions.h>
 #include <libmoinfo/libmoinfo.h>
 #include <libutil/libutil.h>
 

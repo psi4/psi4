@@ -6,7 +6,7 @@
 //
 //#include <psifiles.h>
 //#include <libmoinfo/libmoinfo.h>
-//#include <liboptions/liboptions.hpp>
+//#include <liboptions/liboptions.h>
 //#include <libpsio/psio.hpp>
 //#include <libutil/libutil.h>
 //

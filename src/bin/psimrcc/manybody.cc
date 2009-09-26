@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-#include <liboptions/liboptions.hpp>
+#include <liboptions/liboptions.h>
 #include <libutil/libutil.h>
 #include <libmoinfo/libmoinfo.h>
 

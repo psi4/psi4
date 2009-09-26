@@ -2,7 +2,7 @@
 
 #include <libmoinfo/libmoinfo.h>
 #include <libutil/libutil.h>
-#include <liboptions/liboptions.hpp>
+#include <liboptions/liboptions.h>
 #include <libchkpt/chkpt.h>
 
 #include "idmrpt2.h"

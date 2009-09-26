@@ -6,7 +6,7 @@
 
 #include <cstdlib>
 
-#include <liboptions/liboptions.hpp>
+#include <liboptions/liboptions.h>
 #include <libmoinfo/libmoinfo.h>
 
 #include "blas.h"
