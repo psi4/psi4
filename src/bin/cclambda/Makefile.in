@@ -6,7 +6,8 @@ include ../MakeVars
 
 LDLIBS += $(LAPACK) $(BLAS)
 
-PSILIBS = -lPSI_dpd -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
+PSITARGET=$(top_objdir)/lib/libPSI_cclambda.a
+#PSILIBS = -lPSI_dpd -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
 
 CXXSRC = \
 BL2_AO.cc  Lamp_write.cc  cache.cc           cclambda.cc     init_amps.cc \

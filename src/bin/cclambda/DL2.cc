@@ -49,7 +49,7 @@ namespace psi { namespace cclambda {
 	  dpd_buf4_close(&D);
 
 	  /* If CCSD(T) gradient, add T3 contributions */
-	  if(!strcmp(params.wfn,"CCSD_T")) {
+	  if(params.wfn == "CCSD_T") {
 	    dpd_buf4_init(&D, CC_MISC, 0, 2, 7, 2, 7, 0, "SIJAB");
 	    dpd_buf4_init(&X2, CC_LAMBDA, 0, 2, 7, 2, 7, 0, "New LIJAB");
 	    dpd_buf4_axpy(&D, &X2, 1);

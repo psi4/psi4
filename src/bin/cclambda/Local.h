@@ -22,12 +22,12 @@ struct Local {
   double *eps_occ;
   double **eps_vir;
   double cutoff;
-  char *method;
-  char *weakp;
+  Std::string method;
+  Std::string weakp;
   int filter_singles;
   double cphf_cutoff;
-  char *freeze_core;
-  char *pairdef;
+  Std::string freeze_core;
+  Std::string pairdef;
 };
 
 }} // namespace psi::cclambda

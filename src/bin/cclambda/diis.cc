@@ -213,7 +213,7 @@ void diis(int iter, int L_irr)
     errcod = C_DGESV(nvector+1, 1, &(B[0][0]), nvector+1, &(ipiv[0]), &(C[0]), nvector+1);
     if(errcod) {
       fprintf(outfile, "\nError in DGESV return in diis.\n");
-      exit(PSI_RETURN_FAILURE);
+      throw PsiException("cclambda: error", __FILE__, __LINE__);
     }
 
     /* Build a new amplitude vector from the old ones */

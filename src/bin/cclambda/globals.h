@@ -17,11 +17,6 @@ namespace psi { namespace cclambda {
 
 /* #define EOM_DEBUG (1) */
 
-extern "C" {
-EXTERN FILE *infile, *outfile;
-EXTERN char *psi_file_prefix;
-}
-
 EXTERN struct MOInfo moinfo;
 EXTERN struct Params params;
 EXTERN struct L_Params *pL_params;
