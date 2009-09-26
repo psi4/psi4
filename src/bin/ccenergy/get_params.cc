@@ -104,10 +104,10 @@ void get_params(Options &options)
   local.freeze_core = options.get_bool("FREEZE_CORE");
 
   local.pairdef = options.get_str("LOCAL_PAIRDEF");
-//  if(params.local && params.dertype == 3)
-//    local.pairdef.assing("RESPONSE");
-//  else if(params.local)
-//    local.pairdef.assign("BP");
+  if(params.local && params.dertype == 3)
+    local.pairdef = "RESPONSE";
+  else if(params.local)
+    local.pairdef = "BP";
 
   params.num_amps = options.get_int("NUM_AMPS");
   iconv = options.get_int("BRUECKNER_CONV");
