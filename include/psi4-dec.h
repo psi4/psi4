@@ -18,7 +18,7 @@ namespace psi {
     void set_prgid (std::string s) { prgid = s; }
     std::string gprgid(void) const { return prgid; }
     size_t get_memory(void) const { return memory; }
-    void set_memory(size_t mem) { memory = mem; }
+    void set_memory(size_t newmem) { memory = newmem; }
   };
 
   struct ModuleInformation {
