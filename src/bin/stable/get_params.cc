@@ -18,25 +18,22 @@ namespace psi { namespace stable {
 void get_params()
 {
   int tol, ref;
-  char *junk;
+  std::string junk;
 
   params.print_lvl = options.get_int("PRINT");
 
-  fndcor(&(params.memory), infile, outfile);
-
+  // TODO find memory from driver
   params.cachelev = options.get_int("CACHELEV"); 
   params.cachelev = 0;
 
   junk = options.get_str("REFERENCE");
 
-  if(!strcmp(junk, "RHF")) ref = 0;
-  else if(!strcmp(junk, "ROHF")) ref = 1;
-  else if(!strcmp(junk, "UHF")) ref = 2;
+  if((junk == "RHF")) ref = 0;
+  else if((junk == "ROHF")) ref = 1;
+  else if((junk == "UHF")) ref = 2;
   else { 
-    printf("Invalid value of input keyword REFERENCE: %s\n", junk);
+    printf("Invalid value of input keyword REFERENCE: %s\n", junk.c_str());
     throw PsiException("stable error", __FILE__, __LINE__);
-  }
-  free(junk);
   }
 
   /* Make sure the value of ref matches that from CC_INFO */
