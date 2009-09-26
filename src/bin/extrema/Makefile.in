@@ -6,7 +6,8 @@ include ../MakeVars
 DIRS = Math_Tools Coord_Base Internals Zmat Deloc
 VPATH += $(DIRS:%=$(srcdir)/%)
 
-PSILIBS = -lPSI_chkpt -lPSI_ciomr -lPSI_ipv1 -lPSI_psio 
+PSITARGET = $(top_objdir)/lib/libPSI_extrema.a
+#PSILIBS = -lPSI_chkpt -lPSI_ciomr -lPSI_ipv1 -lPSI_psio 
 
 CXXSRC = extrema.cc small_functions.cc $(DIRS:%=%/*.cc)
 TRUESRC = $(notdir $(shell echo `ls $(CXXSRC:%=$(srcdir)/%)`))

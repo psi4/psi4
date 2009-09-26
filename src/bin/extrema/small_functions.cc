@@ -14,9 +14,6 @@
 
 namespace psi { namespace extrema {
 
-extern "C" {
-extern FILE *infile, *outfile;
-}
 
 void stop_io();
 void punt(const char *mess);
@@ -27,11 +24,6 @@ double **symm_matrix_invert(double **_A, int dim, int print_det,
 /*! \fn gprgid()
   \brief The obligatory gprgid function. */
 /*---------------------------------------------------------------------------*/
-extern "C" {
-    const char *gprgid() {
-	const char *prgid = "EXTREMA";
-	return(prgid);
-    }    
 }
 
 
@@ -46,7 +38,7 @@ void punt(const char *mess)
   fprintf(outfile, "  error: %s\n", mess);
   fprintf(stderr, "  EXTREMA error: %s\n", mess);
   stop_io();
-  exit(PSI_RETURN_ENDLOOP);
+  throw PsiException("extrema error", __FILE__, __LINE__);
 }
 
 

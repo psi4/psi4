@@ -13,17 +13,17 @@
   ##########################################################################*/
 
 #include "extrema.h"
+#include <psi4-dec.h>
+#include <string>
 
 namespace psi { namespace extrema {
 int get_coord_type();
 void print_intro();
 void start_io(int argc, char *argv[]);
 void stop_io();
-}}
 
 
-int main(int argc, char *argv[]) {
-    using namespace psi::extrema;
+int extrema(int argc, char *argv[]) {
     
     start_io(argc,argv);
     print_intro();
@@ -55,11 +55,10 @@ int main(int argc, char *argv[]) {
     }
     
     stop_io();
-    return 0;
+    return Success;
 }
 
 
-namespace psi { namespace extrema {
 
 /*-----------------------------------------------------------------------------
   get_coord_type
@@ -69,35 +68,34 @@ namespace psi { namespace extrema {
 
 int get_coord_type() {
 
-  char *buffer;
-  
-  if(ip_exist("COORDINATES",0)) {
-      errcod = ip_string("COORDINATES", &buffer,0);
-      if( !strcmp(buffer,"CARTESIANS") ) 
-	  punt("Cartesians not available");
-      else if( !strcmp(buffer,"ZMATRIX") ) {
-	  if( ip_exist("ZMAT",0) ) {
-	      fprintf(outfile,"\n  Using z-matrix coordinates\n");
-	      coord_type = ZMAT_TYPE; }
-	  else
-	      punt("Can't find z-matrix");
-      }
-      else if( !strcmp(buffer,"DELOCALIZED") ) {
-	  fprintf(outfile,"\n Using delocalized internal coordinates\n");
-	  coord_type = DELOC_TYPE; }
-      else 
-	  punt("Problem determining coordinate type");
-      free(buffer);
+  std::string buffer;
+
+  if(options["COORDINATES"].has_changed()) {
+    buffer = options.get_str("COORDINATES");
+    if( (buffer == "CARTESIANS") ) 
+      punt("Cartesians not available");
+    else if( (buffer == "ZMATRIX") ) {
+      if( options["ZMAT"].has_changed() ) {
+        fprintf(outfile,"\n  Using z-matrix coordinates\n");
+        coord_type = ZMAT_TYPE; }
+      else
+        punt("Can't find z-matrix");
+    }
+    else if( (buffer == "DELOCALIZED") ) {
+      fprintf(outfile,"\n Using delocalized internal coordinates\n");
+      coord_type = DELOC_TYPE; }
+    else 
+      punt("Problem determining coordinate type");
   }    
   else {
-      if( ip_exist("ZMAT",0) ) {
-        fprintf(outfile,"\n  Defaulting to z-matrix coordinates\n");
-        coord_type = ZMAT_TYPE; }
-      else if( ip_exist("GEOMETRY",0) ) {
-        fprintf(outfile,"\n  Defaulting to delocalized internal coordinates\n");
-        coord_type = DELOC_TYPE; }
-      else 
-	punt("Problem determining coordinate type");
+    if( options["ZMAT"].has_changed() ) {
+      fprintf(outfile,"\n  Defaulting to z-matrix coordinates\n");
+      coord_type = ZMAT_TYPE; }
+    else if( options["GEOMETRY"].has_changed() ) {
+      fprintf(outfile,"\n  Defaulting to delocalized internal coordinates\n");
+      coord_type = DELOC_TYPE; }
+    else 
+      punt("Problem determining coordinate type");
   }
 
   return coord_type;
@@ -107,7 +105,7 @@ int get_coord_type() {
 
 void print_intro() {
 
-     tstart(outfile);
+     tstart();
      fprintf(outfile,"                  --------------------------------------------\n");
      fprintf(outfile,"                                   EXTREMA \n");
      fprintf(outfile,"                        Joseph P. Kenny and Rollin King \n");
@@ -120,10 +118,6 @@ void print_intro() {
 
 void start_io(int argc, char *argv[]) {
    
-    psi_start(&infile,&outfile,&psi_file_prefix,argc-1,argv+1,0); 
-    ip_cwk_add(":INPUT");
-    ip_cwk_add(":EXTREMA");
-    psio_init(); psio_ipv1_config();
     chkpt_init(PSIO_OPEN_OLD);
 
     return;
@@ -134,8 +128,7 @@ void start_io(int argc, char *argv[]) {
 void stop_io() {
 
     chkpt_close();
-    tstop(outfile);
-    psi_stop(infile,outfile,psi_file_prefix);
+    tstop();
  
     return;
 }
