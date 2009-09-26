@@ -9,7 +9,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libdpd/dpd.h>
 #include <libpsio/psio.h>
@@ -52,11 +51,7 @@ void local_init(void);
 void local_done(void);
 void cc_memcheck(void);
 
-}} //namespace psi::ccsort
-
-using namespace psi::ccsort;
-
-int main(int argc, char *argv[])
+int ccsort(int argc, char *argv[])
 {
   int i;
   int **cachelist, *cachefiles;
@@ -130,17 +125,10 @@ int main(int argc, char *argv[])
   exit(PSI_RETURN_SUCCESS);
 }
 
-extern "C" { const char *gprgid() { const char *prgid = "CCSORT"; return(prgid); } }
-
-namespace psi { namespace ccsort {
-
 void init_io(int argc, char *argv[])
 {
   int i, num_unparsed;
-  char *progid, **argv_unparsed;
-
-  progid = (char *) malloc(strlen(gprgid())+2);
-  sprintf(progid, ":%s",gprgid());
+  char **argv_unparsed;
 
   argv_unparsed = (char **) malloc(argc * sizeof(char *));
   params.reset = 0;
@@ -149,13 +137,9 @@ void init_io(int argc, char *argv[])
     else argv_unparsed[num_unparsed++] = argv[i];
   }
 
-  psi_start(&infile,&outfile,&psi_file_prefix,num_unparsed, argv_unparsed, 0);
   free(argv_unparsed);
 
-  ip_cwk_add(progid);
-  free(progid);
-  tstart(outfile);
-  psio_init(); psio_ipv1_config();
+  tstart();
 
   if(params.reset) for(i=CC_MIN; i <= CC_MAX; i++) psio_open(i,0);
   else for(i=CC_MIN; i <= CC_MAX; i++) psio_open(i,1);
@@ -179,9 +163,7 @@ void exit_io(void)
   for(i=CC_TMP; i <= CC_TMP11; i++) psio_close(i,0);  /* get rid of TMP files */
   for(i=CC_TMP11+1; i <= CC_MAX; i++) psio_close(i,1);
 
-  psio_done();
-  tstop(outfile);
-  psi_stop(infile,outfile,psi_file_prefix);
+  tstop();
 }
 
 void init_ioff(void)
