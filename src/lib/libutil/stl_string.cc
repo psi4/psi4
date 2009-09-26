@@ -1,28 +1,22 @@
 #include <cstdlib>
 #include <cmath>
 #include <iomanip>
-#include <fstream>
 #include <algorithm>
-
-#include <psi4-dec.h>
+#include <cstdio>
 
 #include "libutil.h"
 
 namespace psi {
 
-std::string file_to_string(std::string const& name) {
-  std::ifstream in(name.c_str());
-  return std::string(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>());
-}
-  
+
 /*********************
  String manipulation
  ********************/
 
 std::vector<std::string> split(const std::string& str){
   // Split a string
-  typedef string::const_iterator iter;
-  strvec splitted_string;
+  typedef std::string::const_iterator iter;
+  std::vector<std::string> splitted_string;
   iter i = str.begin();
   while(i != str.end()){
     // Ignore leading blanks
@@ -31,7 +25,7 @@ std::vector<std::string> split(const std::string& str){
     iter j = find_if(i,str.end(),space);
     // Copy the characters in [i,j)
     if(i!=str.end())
-      splitted_string.push_back(string(i,j));
+      splitted_string.push_back(std::string(i,j));
     i = j;
   }
   return(splitted_string);
@@ -52,7 +46,7 @@ std::vector<std::string> split_indices(const std::string& str){
     iter j = find_if(i,str.end(),closing_square_bracket);
     // Copy the characters in [i,j]
     if(i!=str.end())
-      splitted_string.push_back(string(i,j+1));
+      splitted_string.push_back(std::string(i,j+1));
     i = j;
   }
   return(splitted_string);
@@ -154,7 +148,7 @@ int string_to_integer(const std::string inString)
 {
   int i = 0;
   char* end;
-  i = static_cast<int>(std::strtod( inString.c_str(), &end )); 
+  i = static_cast<int>(std::strtod( inString.c_str(), &end ));
   return i;
 }
 
@@ -175,7 +169,7 @@ void append_reference(std::string& str, int reference)
 /**
  * Convert the size of a doubles array in Mb using the definition 1Mb = 1048576 bytes
  * @param n size of the array
- * @return 
+ * @return
  */
 double to_MB(size_t n)
 {
@@ -243,39 +237,50 @@ unsigned long int free_smatrix(short*** matrix, int size1, int size2, int size3)
   return(size*sizeof(short));
 }
 
-
-
-
-void print_error(string message, const char* file, int line)
+void print_error(FILE* output, string message, const char* file, int line)
 {
-  fprintf(outfile,"\n\n%s in file %s, line %d\n",message.c_str(),file,line);
-  fflush(outfile);
+  printf("\n\n!!!!!!!!!!!!!!!!!!!! ERROR !!!!!!!!!!!!!!!!!!!!!\n");
+  printf("\n%s in file %s, line %d\n",message.c_str(),file,line);
+  printf("\n!!!!!!!!!!!!!!!!!!!! ERROR !!!!!!!!!!!!!!!!!!!!!\n");
+  fprintf(output,"\n\n%s in file %s, line %d\n",message.c_str(),file,line);
+  fflush(output);
   exit(1);
 }
 
-void print_error(const char* message, const char* file, int line)
+void print_error(FILE* output, string message, const char* file, int line, int error)
 {
-  print_error(message,file,line,1);
-}
-
-void print_error(const char* message, const char* file, int line, int error)
-{
-  fprintf(outfile,"\n\n%s in file %s, line %d\n",message,file,line);
-  fflush(outfile);
+  printf("\n\n!!!!!!!!!!!!!!!!!!!! ERROR !!!!!!!!!!!!!!!!!!!!!\n");
+  printf("\n%s in file %s, line %d\n",message.c_str(),file,line);
+  printf("\n!!!!!!!!!!!!!!!!!!!! ERROR !!!!!!!!!!!!!!!!!!!!!\n");
+  fprintf(output,"\n\n%s in file %s, line %d\n",message.c_str(),file,line);
+  fflush(output);
   exit(error);
 }
 
-void print_developing(const char* message, const char* file, int line)
+void print_error(FILE* output, const char* message, const char* file, int line)
 {
-  print_developing(message,file,line,1);
+  print_error(output,message,file,line,1);
 }
 
-void print_developing(const char* message, const char* file, int line, int error)
+void print_error(FILE* output, const char* message, const char* file, int line, int error)
 {
-  fprintf(outfile,"\n\n%s: feature not yet implemented in file %s, line %d\n",message,file,line);
-  fflush(outfile);
+  printf("\n\n%s in file %s, line %d\n",message,file,line);
+  fprintf(output,"\n\n%s in file %s, line %d\n",message,file,line);
+  fflush(output);
+  exit(error);
+}
+
+void print_developing(FILE* output, const char* message, const char* file, int line)
+{
+  print_developing(output,message,file,line,1);
+}
+
+void print_developing(FILE* output, const char* message, const char* file, int line, int error)
+{
+  printf("\n\n%s: feature not yet implemented in file %s, line %d\n",message,file,line);
+  fprintf(output,"\n\n%s: feature not yet implemented in file %s, line %d\n",message,file,line);
+  fflush(output);
   exit(error);
 }
 
 }
-

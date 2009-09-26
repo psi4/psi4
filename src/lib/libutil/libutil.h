@@ -9,13 +9,17 @@
 #include <assert.h>
 #include "ref.h"
 
-namespace psi {
+#include "class_macros.h"
+#include "memory_manager.h"
 
 using namespace std;
 
-typedef std::vector<std::string>            strvec;
+namespace psi {
+
+typedef std::vector<std::string> strvec;
 
 std::string file_to_string(std::string const& name);
+
 
 bool space(char c);
 bool not_space(char c);
@@ -23,7 +27,6 @@ std::vector<std::string> split(const std::string& str);
 std::vector<std::string> split_indices(const std::string& str);
 void to_lower(std::string& str);
 void to_upper(std::string& str);
-
 std::string to_string(const int val);
 std::string to_string(const double val);
 
@@ -56,19 +59,15 @@ private:
   double delta_time_days;
 };
 
-double to_MB(size_t n);
-
-unsigned long int init_smatrix(short**& matrix,int size1, int size2);
-unsigned long int free_smatrix(short**& matrix, int size1, int size2);
-unsigned long int init_smatrix(short***& matrix,int size1, int size2, int size3);
-unsigned long int free_smatrix(short*** matrix, int size1, int size2, int size3);
 
 
-void print_error(std::string message, const char* file, int line);
-void print_error(const char* message, const char* file, int line);
-void print_error(const char* message, const char* file, int line,int error);
-void print_developing(const char* message, const char* file, int line);
-void print_developing(const char* message, const char* file, int line,int error);
+
+void print_error(FILE* output, std::string message, const char* file, int line);
+void print_error(FILE* output, std::string message, const char* file, int line, int error);
+void print_error(FILE* output, const char* message, const char* file, int line);
+void print_error(FILE* output, const char* message, const char* file, int line,int error);
+void print_developing(FILE* output, const char* message, const char* file, int line);
+void print_developing(FILE* output, const char* message, const char* file, int line,int error);
 
 void generate_combinations(int n, int k, std::vector<std::vector<int> >& combinations);
 
