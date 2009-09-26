@@ -26,7 +26,3 @@ $(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
 include $(BINOBJ:%.o=%.d)
 endif
 
-install_man:: input.1
-	$(MKDIRS) $(DESTDIR)$(mandir)/man1
-	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(mandir)/man1
-

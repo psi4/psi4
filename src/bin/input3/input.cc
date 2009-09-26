@@ -35,7 +35,7 @@ void cleanup();
 extern void build_cartdisp_salcs();
 void am_i_to_char(int am, char *am_label);
 
-int input(Options & options, int argc, char *argv[])
+PsiReturnType input(Options & options, int argc, char *argv[])
 {
   using namespace psi::input;
    /*variables and arrays*/
@@ -312,8 +312,7 @@ int input(Options & options, int argc, char *argv[])
 
      cleanup();
      stop_io();
-     exit(PSI_RETURN_SUCCESS);
-
+     return(Success);
 }
 
 void print_intro()
