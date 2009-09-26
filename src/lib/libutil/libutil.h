@@ -21,7 +21,9 @@ bool space(char c);
 bool not_space(char c);
 std::vector<std::string> split(const std::string& str);
 std::vector<std::string> split_indices(const std::string& str);
-void to_lower(std::string& sBuffer);
+void to_lower(std::string& str);
+void to_upper(std::string& str);
+
 std::string to_string(const int val);
 std::string to_string(const double val);
 
