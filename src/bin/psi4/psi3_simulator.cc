@@ -81,7 +81,7 @@ int psi3_simulator(Options & options, int argc, char *argv[]) {
 
   fprintf(outfile,"quitting now\n");
 
-  if (PsiMethod == "SCFENERGY") {
+//  if (PsiMethod == "SCFENERGY") {
 
       module.set_prgid("INPUT");
       read_options("INPUT", options);
@@ -98,12 +98,11 @@ int psi3_simulator(Options & options, int argc, char *argv[]) {
       module.set_prgid("TRANSQT2");
       read_options("TRANSQT2", options);
       dispatch_table["TRANSQT2"](options, argc, argv);
-
-  }
-  else {
-    fprintf(outfile,"Unknown PSI4 method\n");
-    abort();
-  }
+//  }
+//  else {
+//    fprintf(outfile,"Unknown PSI4 method\n");
+//    abort();
+//  }
 
   return 1;
 } 
