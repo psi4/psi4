@@ -166,7 +166,7 @@ int read_options(std::string name, Options & options) {
     options.add_double("SCALE",0.5);
   }
   else if(name == "CCHBAR") {
-    options.add_bool("TAMPLITUDE",0);
+    options.add_bool("TAMPLITUDE",false);
     options.add_int("CACHELEV",2); 
     options.add_int("PRINT",0);
     options.add_str("WFN");
