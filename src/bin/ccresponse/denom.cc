@@ -11,7 +11,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 void denom1(dpdfile2 *X1, double omega)
 {
@@ -26,7 +26,7 @@ void denom1(dpdfile2 *X1, double omega)
 
   irrep = X1->my_irrep;
 
-  if((!strcmp(params.wfn,"CC2")) || (!strcmp(params.wfn,"EOM_CC2"))) {
+  if(params.wfn == "CC2" || params.wfn == "EOM_CC2") {
     dpd_file2_init(&FMI, CC_OEI, 0, 0, 0, "fIJ");
     dpd_file2_mat_init(&FMI);
     dpd_file2_mat_rd(&FMI);
@@ -70,7 +70,7 @@ void denom2(dpdbuf4 *X2, double omega)
   nirreps = moinfo.nirreps;
   irrep = X2->file.my_irrep;
 
-  if((!strcmp(params.wfn,"CC2")) || (!strcmp(params.wfn,"EOM_CC2"))) {
+  if(params.wfn == "CC2" || params.wfn == "EOM_CC2") {
     dpd_file2_init(&FMI, CC_OEI, 0, 0, 0, "fIJ");
     dpd_file2_mat_init(&FMI);
     dpd_file2_mat_rd(&FMI);
@@ -127,4 +127,4 @@ void denom2(dpdbuf4 *X2, double omega)
   dpd_file2_close(&FMI);
 }
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

@@ -11,7 +11,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 void print_X(char *pert, int irrep, double omega)
 {
@@ -29,4 +29,4 @@ void print_X(char *pert, int irrep, double omega)
   dpd_buf4_close(&X2);
 }
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

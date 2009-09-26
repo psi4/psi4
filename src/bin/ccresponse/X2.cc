@@ -15,7 +15,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 void denom2(dpdbuf4 *X2, double omega);
 void local_filter_T2(dpdbuf4 *T2);
@@ -211,7 +211,7 @@ void X2_build(const char *pert, int irrep, double omega)
   dpd_contract444(&W, &X2, &X2new, 1, 1, 1, 1);
   dpd_buf4_close(&W);
 
-  if(!strcmp(params.abcd,"OLD")) {
+  if(params.abcd == "OLD") {
     sprintf(lbl, "Z(Ab,Ij) %s", pert);
     dpd_buf4_init(&Z, CC_TMP0, irrep, 5, 0, 5, 0, 0, lbl);
     dpd_buf4_init(&I, CC_BINTS, 0, 5, 5, 5, 5, 0, "B <ab|cd>");
@@ -223,7 +223,7 @@ void X2_build(const char *pert, int irrep, double omega)
     dpd_buf4_init(&X2new, CC_LR, irrep, 0, 5, 0, 5, 0, lbl); /* re-open X2new here */
     dpd_buf4_close(&Z);
   }
-  else if(!strcmp(params.abcd,"NEW")) {
+  else if(params.abcd == "NEW") {
     timer_on("ABCD:new");
 
     dpd_buf4_close(&X2);
@@ -448,4 +448,4 @@ void X2_build(const char *pert, int irrep, double omega)
   dpd_buf4_close(&X2new);
 }
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

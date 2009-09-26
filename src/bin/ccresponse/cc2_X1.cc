@@ -12,7 +12,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 void denom1(dpdfile2 *X1, double omega);
 void local_filter_T1(dpdfile2 *T1);
@@ -136,4 +136,4 @@ void cc2_X1_build(const char *pert, int irrep, double omega)
   dpd_file2_close(&X1new);
 }
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

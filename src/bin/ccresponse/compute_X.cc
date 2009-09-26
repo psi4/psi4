@@ -15,7 +15,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 void init_X(const char *pert, int irrep, double omega);
 void sort_X(const char *pert, int irrep, double omega);
@@ -51,7 +51,7 @@ void compute_X(const char *pert, int irrep, double omega)
   fprintf(outfile, "\t----   --------------------   -----------\n");
   fflush(outfile);
 
-  if (!strcmp(params.wfn,"CC2"))
+  if (params.wfn == "CC2")
     cc2_sort_X(pert, irrep, omega);
   else
     sort_X(pert, irrep, omega);
@@ -61,7 +61,7 @@ void compute_X(const char *pert, int irrep, double omega)
 
   for(iter=1; iter <= params.maxiter; iter++) {
 
-    if (!strcmp(params.wfn,"CC2")) {
+    if (params.wfn == "CC2") {
       cc2_sort_X(pert, irrep, omega);
       cc2_X1_build(pert, irrep, omega);
       cc2_X2_build(pert, irrep, omega);
@@ -76,7 +76,7 @@ void compute_X(const char *pert, int irrep, double omega)
     if(rms <= params.convergence) {
       done = 1;
       save_X(pert, irrep, omega);
-      if (!strcmp(params.wfn,"CC2"))
+      if (params.wfn == "CC2")
 	cc2_sort_X(pert, irrep, omega);
       else
 	sort_X(pert, irrep, omega);
@@ -96,7 +96,7 @@ void compute_X(const char *pert, int irrep, double omega)
     }
     if(params.diis) diis(iter, pert, irrep, omega);
     save_X(pert, irrep, omega);
-    if (!strcmp(params.wfn,"CC2"))
+    if (params.wfn == "CC2")
       cc2_sort_X(pert, irrep, omega);
     else
       sort_X(pert, irrep, omega);
@@ -107,12 +107,11 @@ void compute_X(const char *pert, int irrep, double omega)
 
   }
   if(!done) {
-    fprintf(outfile, "\t *** Failed to Converge Perturbed Wave Function to %2.1e.\n", params.convergence);
     fflush(outfile);
     dpd_close(0);
     cleanup();
     exit_io();
-    exit(PSI_RETURN_FAILURE);
+    throw PsiException("Failed to converge perturbed wavefunction",__FILE__,__LINE__);
   }
 
   /* Clean up disk space */
@@ -134,4 +133,4 @@ void compute_X(const char *pert, int irrep, double omega)
   timer_off("compute_X");
 }
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

@@ -22,7 +22,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 void transpert(const char *pert);
 void sort_pert(const char *pert, double **pertints, int irrep);
@@ -46,9 +46,9 @@ void roa(void)
   double value;
 
   /* Booleans for convenience */
-  if(!strcmp(params.gauge,"LENGTH") || !strcmp(params.gauge,"BOTH")) 
+  if(params.gauge == "LENGTH" || params.gauge == "BOTH") 
     compute_rl=1;
-  if(!strcmp(params.gauge,"VELOCITY") || !strcmp(params.gauge,"BOTH")) 
+  if(params.gauge == "VELOCITY" || params.gauge == "BOTH") 
     compute_pl=1;
 
   cartcomp = (char **) malloc(3 * sizeof(char *));
@@ -122,9 +122,9 @@ void roa(void)
       psio_read_entry(CC_INFO, lbl1, (char *) tensor0[0], 9*sizeof(double));
     }
 
-    if (!strcmp(params.wfn,"CC2"))
+    if (params.wfn == "CC2")
       fprintf(outfile, "\n     CC2 Optical Rotation Tensor (Velocity Gauge): %s\n", lbl1);
-    else if(!strcmp(params.wfn,"CCSD"))
+    else if(params.wfn == "CCSD")
       fprintf(outfile, "\n    CCSD Optical Rotation Tensor (Velocity Gauge): %s\n", lbl1);
 
     fprintf(outfile, "  -------------------------------------------------------------------------\n");
@@ -443,7 +443,7 @@ void roa(void)
         }
       }
 
-    if(!strcmp(params.wfn,"CC2"))
+    if(params.wfn == "CC2")
       fprintf(outfile, "\n                 CC2 Dipole Polarizability [(e^2 a0^2)/E_h]:\n");
     else
       fprintf(outfile, "\n                 CCSD Dipole Polarizability [(e^2 a0^2)/E_h]:\n");
@@ -454,9 +454,9 @@ void roa(void)
     mat_print(tensor_rr[i], 3, 3, outfile);
 
     if(compute_rl) {
-      if (!strcmp(params.wfn,"CC2")) 
+      if (params.wfn == "CC2") 
 	fprintf(outfile, "\n            CC2 Optical Rotation Tensor (Length Gauge):\n");
-      else if(!strcmp(params.wfn,"CCSD"))
+      else if(params.wfn == "CCSD")
 	fprintf(outfile, "\n           CCSD Optical Rotation Tensor (Length Gauge):\n");
 
       fprintf(outfile, "  -------------------------------------------------------------------------\n");
@@ -467,9 +467,9 @@ void roa(void)
 
     if(compute_pl) {
 
-      if (!strcmp(params.wfn,"CC2")) 
+      if (params.wfn == "CC2") 
 	fprintf(outfile, "\n          CC2 Optical Rotation Tensor (Velocity Gauge):\n");
-      else if(!strcmp(params.wfn,"CCSD"))
+      else if(params.wfn == "CCSD")
 	fprintf(outfile, "\n         CCSD Optical Rotation Tensor (Velocity Gauge):\n");
 
       fprintf(outfile, "  -------------------------------------------------------------------------\n");
@@ -482,9 +482,9 @@ void roa(void)
 	for(k=0; k < 3; k++)
 	  tensor_pl[i][j][k] -= tensor0[j][k];
 
-      if (!strcmp(params.wfn,"CC2"))
+      if (params.wfn == "CC2")
 	fprintf(outfile, "\n        CC2 Optical Rotation Tensor (Modified Velocity Gauge):\n");
-      else if(!strcmp(params.wfn,"CCSD"))
+      else if(params.wfn == "CCSD")
 	fprintf(outfile, "\n        CCSD Optical Rotation Tensor (Modified Velocity Gauge):\n");
 
       fprintf(outfile, "  -------------------------------------------------------------------------\n");
@@ -494,7 +494,7 @@ void roa(void)
 
     }
 
-    if(!strcmp(params.wfn,"CC2"))
+    if(params.wfn == "CC2")
       fprintf(outfile, "\n    CC2 Electric-Dipole/Quadrupole Polarizability [(e^2 a0^2)/E_h]:\n");
     else
       fprintf(outfile, "\n    CCSD Electric-Dipole/Quadrupole Polarizability [(e^2 a0^2)/E_h]:\n");
@@ -538,4 +538,4 @@ void roa(void)
   free(cartcomp);
 }
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

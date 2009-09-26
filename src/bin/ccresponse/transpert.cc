@@ -15,7 +15,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 /* transpert(): Transform various one-electron property integrals from
 ** the AO to the MO basis.  In some cases, we must also add
@@ -79,62 +79,62 @@ void transpert(const char *pert)
   X = block_matrix(nao, nao);
   scratch = init_array(noei_ao);
 
-  if(!strcmp(pert,"Mu_X") || !strcmp(pert,"Mu_Y") || !strcmp(pert,"Mu_Z")) { 
+  if(pert == "Mu_X" || pert == "Mu_Y" || pert == "Mu_Z") { 
     prefactor = 1.0; anti = 1.0; sign = 1.0; 
   }
-  if(!strcmp(pert,"L_X") || !strcmp(pert,"L_Y") || !strcmp(pert,"L_Z")) { 
+  if(pert == "L_X" || pert == "L_Y" || pert == "L_Z") { 
     prefactor = -0.5; anti = -1.0; sign = 1.0; 
   }
-  if(!strcmp(pert,"L*_X") || !strcmp(pert,"L*_Y") || !strcmp(pert,"L*_Z")) { 
+  if(pert == "L*_X" || pert == "L*_Y" || pert == "L*_Z") { 
     prefactor = -0.5; anti = -1.0; sign = -1.0; 
   }
-  if(!strcmp(pert,"P_X") || !strcmp(pert,"P_Y") || !strcmp(pert,"P_Z")) { 
+  if(pert == "P_X" || pert == "P_Y" || pert == "P_Z") { 
     prefactor = 1.0; anti = -1.0; sign = 1.0; 
   }
-  if(!strcmp(pert,"P*_X") || !strcmp(pert,"P*_Y") || !strcmp(pert,"P*_Z")) { 
+  if(pert == "P*_X" || pert == "P*_Y" || pert == "P*_Z") { 
     prefactor = 1.0; anti = -1.0; sign = -1.0; 
   }
-  if(!strcmp(pert,"Q_XX") || !strcmp(pert,"Q_XY") || !strcmp(pert,"Q_XZ") || 
-     !strcmp(pert,"Q_YX") || !strcmp(pert,"Q_YY") || !strcmp(pert,"Q_YZ") ||
-     !strcmp(pert,"Q_ZX") || !strcmp(pert,"Q_ZY") || !strcmp(pert,"Q_ZZ")) { 
+  if(pert == "Q_XX" || pert == "Q_XY" || pert == "Q_XZ" || 
+     pert == "Q_YX" || pert == "Q_YY" || pert == "Q_YZ" ||
+     pert == "Q_ZX" || pert == "Q_ZY" || pert == "Q_ZZ") { 
     prefactor = 1.0; anti = 1.0; sign = 1.0; 
   }
 
   target = block_matrix(nmo,nmo);
 
-  if(!strcmp(pert,"Mu_X")) { name = PSIF_AO_MX; moinfo.MU[0] = target; }
-  if(!strcmp(pert,"Mu_Y")) { name = PSIF_AO_MY; moinfo.MU[1] = target; }
-  if(!strcmp(pert,"Mu_Z")) { name = PSIF_AO_MZ; moinfo.MU[2] = target; }
+  if(pert == "Mu_X") { name = PSIF_AO_MX; moinfo.MU[0] = target; }
+  if(pert == "Mu_Y") { name = PSIF_AO_MY; moinfo.MU[1] = target; }
+  if(pert == "Mu_Z") { name = PSIF_AO_MZ; moinfo.MU[2] = target; }
 
-  if(!strcmp(pert,"L_X") || !strcmp(pert, "L*_X")) {
+  if(pert == "L_X" || pert == "L*_X") {
     name = PSIF_AO_LX; moinfo.L[0] = target; 
   }
-  if(!strcmp(pert,"L_Y") || !strcmp(pert, "L*_Y")) {
+  if(pert == "L_Y" || pert == "L*_Y") {
     name = PSIF_AO_LY; moinfo.L[1] = target; 
   }
-  if(!strcmp(pert,"L_Z") || !strcmp(pert, "L*_Z")) {
+  if(pert == "L_Z" || pert == "L*_Z") {
     name = PSIF_AO_LZ; moinfo.L[2] = target;
   }
 
-  if(!strcmp(pert,"P_X") || !strcmp(pert, "P*_X")) {
+  if(pert == "P_X" || pert == "P*_X") {
     name = PSIF_AO_NablaX; moinfo.P[0] = target; 
   }
-  if(!strcmp(pert,"P_Y") || !strcmp(pert, "P*_Y")) {
+  if(pert == "P_Y" || pert == "P*_Y") {
     name = PSIF_AO_NablaY; moinfo.P[1] = target;
   }
-  if(!strcmp(pert,"P_Z") || !strcmp(pert, "P*_Z")) {
+  if(pert == "P_Z" || pert == "P*_Z") {
     name = PSIF_AO_NablaZ; moinfo.P[2] = target;
   }
 
-  if(!strcmp(pert,"Q_XX")) { name = PSIF_AO_TXX; moinfo.Q[0][0] = target; }
-  if(!strcmp(pert,"Q_XY")) { name = PSIF_AO_TXY; moinfo.Q[0][1] = target; }
-  if(!strcmp(pert,"Q_XZ")) { name = PSIF_AO_TXZ; moinfo.Q[0][2] = target; }
-  if(!strcmp(pert,"Q_YX")) { name = PSIF_AO_TXY; moinfo.Q[1][0] = target; }
-  if(!strcmp(pert,"Q_YY")) { name = PSIF_AO_TYY; moinfo.Q[1][1] = target; }
-  if(!strcmp(pert,"Q_YZ")) { name = PSIF_AO_TYZ; moinfo.Q[1][2] = target; }
-  if(!strcmp(pert,"Q_ZX")) { name = PSIF_AO_TXZ; moinfo.Q[2][0] = target; }
-  if(!strcmp(pert,"Q_ZY")) { name = PSIF_AO_TYZ; moinfo.Q[2][1] = target; }
-  if(!strcmp(pert,"Q_ZZ")) { name = PSIF_AO_TZZ; moinfo.Q[2][2] = target; }
+  if(pert == "Q_XX") { name = PSIF_AO_TXX; moinfo.Q[0][0] = target; }
+  if(pert == "Q_XY") { name = PSIF_AO_TXY; moinfo.Q[0][1] = target; }
+  if(pert == "Q_XZ") { name = PSIF_AO_TXZ; moinfo.Q[0][2] = target; }
+  if(pert == "Q_YX") { name = PSIF_AO_TXY; moinfo.Q[1][0] = target; }
+  if(pert == "Q_YY") { name = PSIF_AO_TYY; moinfo.Q[1][1] = target; }
+  if(pert == "Q_YZ") { name = PSIF_AO_TYZ; moinfo.Q[1][2] = target; }
+  if(pert == "Q_ZX") { name = PSIF_AO_TXZ; moinfo.Q[2][0] = target; }
+  if(pert == "Q_ZY") { name = PSIF_AO_TYZ; moinfo.Q[2][1] = target; }
+  if(pert == "Q_ZZ") { name = PSIF_AO_TZZ; moinfo.Q[2][2] = target; }
 
   iwl_rdone(PSIF_OEI, name, scratch, noei_ao, 0, 0, outfile);
   for(i=0,ij=0; i < nao; i++)
@@ -160,4 +160,4 @@ void transpert(const char *pert)
   free_block(X);
 }
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

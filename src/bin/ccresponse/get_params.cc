@@ -4,9 +4,9 @@
 */
 #include <cstdio>
 #include <cstring>
+#include <string>
 #include <cmath>
 #include <cstdlib>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <psifiles.h>
 #include <physconst.h>
@@ -16,42 +16,33 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 void get_params()
 {
   int i, errcod, ref, count, iconv, *tmpi;
-  char *junk, units[20];
+  char units[20];
+  std::string junk;
 
-  errcod = ip_string("WFN", &(params.wfn), 0);
-  if(strcmp(params.wfn, "CCSD") && strcmp(params.wfn, "CC2")) {
-    fprintf(outfile, "Invalid value of input keyword WFN: %s\n", params.wfn);
-    exit(PSI_RETURN_FAILURE);
+  params.wfn = options.get_str("WFN");
+  if(params.wfn != "CCSD" && params.wfn != "CC2") {
+    throw PsiException("Invalid value of input keyword WFN",__FILE__,__LINE__);
   }
 
-  params.print = 1;
-  errcod = ip_data("PRINT","%d",&(params.print),0);
+  params.print = options.get_int("PRINT");
 
   fndcor(&(params.memory), infile, outfile);
 
-  params.cachelev = 2;
-  errcod = ip_data("CACHELEV", "%d", &(params.cachelev),0);
+  params.cachelev = options.get_int("CACHELEV");
   params.cachelev = 0;
 
-  errcod = ip_string("REFERENCE", &(junk),0);
+  junk = options.get_str("REFERENCE");
   /* if no reference is given, assume rhf */
-  if (errcod != IPE_OK) {
-    ref = 0;
-  }
-  else {
-    if(!strcmp(junk, "RHF")) ref = 0;
-    else if(!strcmp(junk, "ROHF")) ref = 1;
-    else if(!strcmp(junk, "UHF")) ref = 2;
-    else { 
-      printf("Invalid value of input keyword REFERENCE: %s\n", junk);
-      exit(PSI_RETURN_FAILURE); 
-    }
-    free(junk);
+  if(junk == "RHF") ref = 0;
+  else if(junk == "ROHF") ref = 1;
+  else if(junk == "UHF") ref = 2;
+  else { 
+    throw PsiException("Invalid value of input keyword REFERENCE",__FILE__,__LINE__);
   }
 
   /* Make sure the value of ref matches that from CC_INFO */
@@ -62,164 +53,107 @@ void get_params()
     params.ref = ref;
   }
 
-  params.dertype = 0;
-  if(ip_exist("DERTYPE",0)) {
-    errcod = ip_string("DERTYPE", &(junk),0);
-    if(errcod != IPE_OK) params.dertype = 0;
-    else if(!strcmp(junk,"NONE")) params.dertype = 0;
-    else if(!strcmp(junk,"FIRST")) params.dertype = 1;
-    else if(!strcmp(junk,"RESPONSE")) params.dertype = 3; /* linear response */
-    else {
-      printf("Invalid value of input keyword DERTYPE: %s\n", junk);
-      exit(PSI_RETURN_FAILURE); 
-    }
-    free(junk);
+  junk = options.get_str("DERTYPE");
+  if(junk == "NONE") params.dertype = 0;
+  else if(junk == "FIRST") params.dertype = 1;
+  else if(junk == "RESPONSE") params.dertype = 3; /* linear response */
+  else {
+    throw PsiException("Invalid value of input keyword DERTYPE",__FILE__,__LINE__);
   }
 
-  if(ip_exist("GAUGE",0)) {
-    errcod = ip_string("GAUGE", &(params.gauge), 0);
-    if(strcmp(params.gauge,"LENGTH") && strcmp(params.gauge,"VELOCITY") &&
-       strcmp(params.gauge,"BOTH")) {
-      printf("Invalid choice of gauge: %s\n", params.gauge);
-      exit(PSI_RETURN_FAILURE);
-    }
+  params.gauge = options.get_str("GAUGE");
+  if(params.gauge != "LENGTH" && params.gauge != "VELOCITY" && params.gauge != "BOTH") {
+    throw PsiException("Invalid choice of gauge",__FILE__,__LINE__);
   }
-  else
-    params.gauge = strdup("LENGTH");
 
   /* grab the field frequencies from input -- a few different units are converted to E_h */
-  if(ip_exist("OMEGA",0)) {
-    errcod = ip_count("OMEGA", &count, 0);
-
-    if(errcod == IPE_NOT_AN_ARRAY || count == 1) { /* assume Hartrees and only one frequency */
-      params.nomega = 1;
-      params.omega = init_array(1);
-      errcod = ip_data("OMEGA", "%lf", &(params.omega[0]), 0);
-    }
-    else if(count >= 2) {
-      params.nomega = count-1;
-      params.omega = init_array(params.nomega);
-
-      errcod = ip_data("OMEGA", "%s", units, 1, count-1);
-      for(junk = units; *junk != '\0'; junk++)
-	if(*junk>='a' && *junk <= 'z') *junk += 'A' - 'a';
-
-      for(i=0; i < count-1; i++) {
-	errcod = ip_data("OMEGA", "%lf", &(params.omega[i]), 1, i);
-
-	if(!strcmp(units, "HZ")) params.omega[i] *= _h / _hartree2J;
-	else if(!strcmp(units, "AU")) 1; /* do nothing */
-	else if(!strcmp(units, "NM")) params.omega[i] = (_c*_h*1e9)/(params.omega[i]*_hartree2J);
-	else if(!strcmp(units, "EV")) params.omega[i] /= _hartree2ev;
-	else {
-	  fprintf(outfile, "\n\tError in unit for input field frequencies.  Must use one of:\n");
-	  fprintf(outfile,   "\tau, hz, nm, or ev.\n");
-	  exit(PSI_RETURN_FAILURE);
-	}
-      }
-    }
-    else {
-      fprintf(outfile, "\n\tError reading input field frequencies.  Please use the format:\n");
-      fprintf(outfile,   "\t  omega = (value1 value2 ... units)\n");
-      fprintf(outfile,   "\twhere units = hartrees, hz, nm, or ev.\n");
-      exit(PSI_RETURN_FAILURE);
-    }
-  }
-  else { /* assume static field by default */
-    params.omega = init_array(1);
-    params.omega[0] = 0.0;
+  count = options["OMEGA"].size();
+  if(count == 1) { /* assume Hartrees and only one frequency */
     params.nomega = 1;
+    params.omega = init_array(1);
+    params.omega[0] = options["OMEGA"][0].to_double();
+  }
+  else if(count >= 2) {
+    params.nomega = count-1;
+    params.omega = init_array(params.nomega);
+
+    units = options["OMEGA"][count-1].to_str();
+    for(junk = units; *junk != '\0'; junk++)
+      if(*junk>='a' && *junk <= 'z') *junk += 'A' - 'a';
+
+    for(i=0; i < count-1; i++) {
+      params.omega[i] = options["OMEGA"][i].to_double();
+
+      if(units == "HZ") params.omega[i] *= _h / _hartree2J;
+      else if(units == "AU") 1; /* do nothing */
+      else if(units == "NM") params.omega[i] = (_c*_h*1e9)/(params.omega[i]*_hartree2J);
+      else if(units == "EV") params.omega[i] /= _hartree2ev;
+      else 
+        throw PsiException("Error in unit for input field frequencies, should be au, hf, nm, or ev", __FILE__,__LINE__);
+    }
+  }
+  else {
+    fprintf(outfile, "\n\tError reading input field frequencies.  Please use the format:\n");
+    fprintf(outfile,   "\t  omega = (value1 value2 ... units)\n");
+    fprintf(outfile,   "\twhere units = hartrees, hz, nm, or ev.\n");
+    throw PsiException("Failure in ccsort.", __FILE__, __LINE__);
   }
 
+  
   moinfo.mu_irreps = init_int_array(3);
-  errcod = ip_int_array("MU_IRREPS", moinfo.mu_irreps, 3);
-  if(errcod != IPE_OK) {
-    fprintf(outfile, "\nYou must supply the irreps of x, y, and z with the MU_IRREPS keyword.\n");
-    exit(PSI_RETURN_FAILURE);
-  }
-
+  moinfo.mu_irreps[0] = options["MU_IRRPES"][0];
+  moinfo.mu_irreps[1] = options["MU_IRRPES"][1];
+  moinfo.mu_irreps[2] = options["MU_IRRPES"][2];
+  
   /* compute the irreps of the angular momentum operator while we're here */
   moinfo.l_irreps = init_int_array(3);
   for(i=0; i < 3; i++)
     moinfo.l_irreps[i] = moinfo.mu_irreps[(int) (i+1)%3] ^ moinfo.mu_irreps[(int) (i+2)%3];
 
-  params.maxiter = 50;
-  errcod = ip_data("MAXITER","%d",&(params.maxiter),0);
-  params.convergence = 1e-7;
-  errcod = ip_data("CONVERGENCE","%d",&(iconv),0);
-  if(errcod == IPE_OK) params.convergence = 1.0*pow(10.0,(double) -iconv);
-  params.diis = 1;
-  errcod = ip_boolean("DIIS", &(params.diis), 0);
+  params.maxiter = options.get_int("MAXITER");
+  params.convergence = 1.0*pow(10.0, (double) -options.get_int("CONVERGENCE"));
+  params.diis = options.get_bool("DIIS");
 
-  if(ip_exist("PROPERTY",0)) {
-    errcod = ip_string("PROPERTY", &(params.prop), 0);
-    if(strcmp(params.prop,"POLARIZABILITY") && strcmp(params.prop,"ROTATION") 
-       && strcmp(params.prop,"ROA") && strcmp(params.prop,"ALL")) {
-      fprintf(outfile, "Invalid choice of resp. property: %s\n", params.prop);
-      exit(PSI_RETURN_FAILURE);
-    }
-  }
-  else params.prop = strdup("POLARIZABILITY");
-
-  if(ip_exist("ABCD",0)) {
-    errcod = ip_string("ABCD", &(params.abcd), 0);
-    if(strcmp(params.abcd,"NEW") && strcmp(params.abcd,"OLD")) {
-      fprintf(outfile, "Invalid ABCD algorithm: %s\n", params.abcd);
-      exit(PSI_RETURN_FAILURE);
-    }
-  }
-  else params.abcd = strdup("NEW");
-
-  params.restart = 1;
-  errcod = ip_boolean("RESTART", &params.restart, 0);
-
-  params.local = 0;
-  errcod = ip_boolean("LOCAL", &(params.local),0);
-  local.cutoff = 0.02;
-  errcod = ip_data("LOCAL_CUTOFF", "%lf", &(local.cutoff), 0);
-
-  if(ip_exist("LOCAL_METHOD",0)) {
-    errcod = ip_string("LOCAL_METHOD", &(local.method), 0);
-    if(strcmp(local.method,"AOBASIS") && strcmp(local.method,"WERNER")) {
-      fprintf(outfile, "Invalid local correlation method: %s\n", local.method);
-      exit(PSI_RETURN_FAILURE);
-    }
-  }
-  else if(params.local) {
-    local.method = (char *) malloc(7 * sizeof(char));
-    sprintf(local.method, "%s", "WERNER");
+  params.prop = options.get_str("PROPERTY");
+  if(params.prop != "POLARIZABILITY" && params.prop != "ROTATION" 
+     && params.prop != "ROA" && params.prop != "ALL") {
+    throw PsiException("Invalid choice of resp. property",__FILE__,__LINE__);
   }
 
-  if(ip_exist("LOCAL_WEAKP",0)) {
-    errcod = ip_string("LOCAL_WEAKP", &(local.weakp), 0);
-    if(strcmp(local.weakp,"MP2") && strcmp(local.weakp,"NEGLECT") && strcmp(local.weakp,"NONE")) {
-      fprintf(outfile, "Invalid method for treating local pairs: %s\n", local.weakp);
-      exit(PSI_RETURN_FAILURE);
-    }
+  params.abcd = options.get_str("ABCD");
+  if(params.abcd != "NEW" && params.abcd != "OLD") {
+    throw PsiException("Invalid ABCD algorith",__FILE__,__LINE__);
   }
-  else if(params.local) {
-    local.weakp = (char *) malloc(4 * sizeof(char));
-    sprintf(local.weakp, "%s", "NONE");
+ 
+
+  params.restart = options.get_bool("RESTART");
+
+  params.local = options.get_bool("LOCAL");
+  local.cutoff = options.get_double("LOCAL_CUTOFF");
+
+  local.method = options.get_str("LOCAL_METHOD");
+  if(local.method != "AOBASIS" && local.method != "WERNER") {
+      throw PsiException("Invalid local correlation method",__FILE__,__LINE__);
+  }
+
+  local.weakp = options.get_str("LOCAL_WEAKP");
+  if(local.weakp != "MP2" && local.weakp != "NEGLECT" && local.weakp != "NONE") {
+    throw PsiException("Invalid method for treating local pairs",__FILE__,__LINE__);
   }
 
   if(params.dertype == 3)
     local.filter_singles = 0;
   else
     local.filter_singles = 1;
-  ip_boolean("LOCAL_FILTER_SINGLES", &(local.filter_singles), 0);
+  local.filter_singles = options.get_bool("LOCAL_FILER_SINGLES");
 
-  local.cphf_cutoff = 0.10;
-  ip_data("LOCAL_CPHF_CUTOFF", "%lf", &(local.cphf_cutoff), 0);
+  local.cphf_cutoff = options.get_double("LOCAL_CPHF_CUTOFF");
+  local.freeze_core = options.get_str("FREEZE_CORE");
 
-  local.freeze_core = NULL;
-  ip_string("FREEZE_CORE", &local.freeze_core, 0);
-  if(local.freeze_core == NULL) local.freeze_core = strdup("FALSE");
-
-  if(ip_exist("LOCAL_PAIRDEF",0)){
-    errcod = ip_string("LOCAL_PAIRDEF", &(local.pairdef), 0);
-    if(strcmp(local.pairdef,"BP") && strcmp(local.pairdef,"RESPONSE")) {
-      fprintf(outfile, "Invalid keyword for strong/weak pair definition: %s\n", local.pairdef);
-      exit(PSI_RETURN_FAILURE);
+  if(options["LOCAL_PAIRDEF"].has_changed()){
+    local.pairdef = options.get_str("LOCAL_PAIRDEF");
+    if(local.pairdef != "BP" && local.pairdef != "RESPONSE") {
+      throw PsiException("Invalid keyword for strong/weak pair definating", __FILE__,__LINE__);
     }
   }
   else if(params.local && params.dertype == 3)
@@ -227,29 +161,14 @@ void get_params()
   else if(params.local)
     local.pairdef = strdup("BP");
 
-  params.analyze = 0;
-  ip_boolean("ANALYZE", &(params.analyze), 0);
-
-  params.num_amps = 5;
-  if(ip_exist("NUM_AMPS", 0)) {
-    errcod = ip_data("NUM_AMPS", "%d", &(params.num_amps),0);
-  }
-
-  params.sekino = 0;
-  if(ip_exist("SEKINO",0)) {
-    errcod = ip_boolean("SEKINO", &params.sekino, 0);
-    if(errcod != IPE_OK) params.sekino = 0;
-  }
-
-  params.linear = 0;
-  if(ip_exist("LINEAR",0)) {
-    errcod = ip_boolean("LINEAR", &params.linear, 0);
-    if(errcod != IPE_OK) params.linear = 0;
-  }
+  params.analyze = options.get_bool("ANALYZE");
+  params.num_amps = options.get_int("NUM_AMPS");
+  params.sekino = options.get_bool("SEKINO");
+  params.linear = options.get_bool("LINEAR");
 
   fprintf(outfile, "\n\tInput parameters:\n");
   fprintf(outfile, "\t-----------------\n");
-  if(!strcmp(params.prop,"ALL"))
+  if(params.prop == "ALL")
     fprintf(outfile, "\tProperty         =    POLARIZABILITY + ROTATION\n");
   else
     fprintf(outfile, "\tProperty         =    %s\n", params.prop);
@@ -294,4 +213,4 @@ void get_params()
 }
 
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

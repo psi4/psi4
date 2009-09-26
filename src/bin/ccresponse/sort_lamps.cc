@@ -9,7 +9,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 void sort_lamps(void)
 {
@@ -22,4 +22,4 @@ void sort_lamps(void)
   dpd_buf4_close(&L);
 }  
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

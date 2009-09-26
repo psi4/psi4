@@ -3,8 +3,9 @@
     \brief Enter brief description of file here 
 */
 #include <ccfiles.h>
+#include <psi4-dec.h>
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 /* Global variables */
 #ifdef EXTERN
@@ -14,10 +15,6 @@ namespace psi { namespace ccresponse {
 #define EXTERN
 #endif
 
-extern "C" {
-EXTERN FILE *infile, *outfile;
-EXTERN char *psi_file_prefix;
-}
 EXTERN int *ioff;
 EXTERN struct MOInfo moinfo;
 EXTERN struct Params params;
@@ -25,4 +22,4 @@ EXTERN struct Local local;
 
 #define MIN0(a,b) (((a)<(b)) ? (a) : (b))
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

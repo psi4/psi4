@@ -7,7 +7,7 @@
 #include <libciomr/libciomr.h>
 #include <ccfiles.h>
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 void cache_abcd_rhf(int **cachelist);
 void cache_iabc_rhf(int **cachelist);
@@ -83,7 +83,7 @@ int **cacheprep_uhf(int level, int *cachefiles)
 
       return cachelist;
     }
-  else { printf("Error: invalid cache level!\n"); exit(1); }
+  else { throw PsiException("Invalid Cache Level",__FILE__,__LINE__);
 }
 
 int **cacheprep_rhf(int level, int *cachefiles)
@@ -146,7 +146,7 @@ int **cacheprep_rhf(int level, int *cachefiles)
 
       return cachelist;
     }
-  else { printf("Error: invalid cache level!\n"); exit(1); }
+  else { throw PsiException("Invalid Cache Level",__FILE__,__LINE__);
 }
 
 void cache_abcd_uhf(int **cachelist)
@@ -718,4 +718,4 @@ void cachedone_rhf(int **cachelist)
   free_int_matrix(cachelist);
 }
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

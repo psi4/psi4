@@ -12,7 +12,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 double converged(const char *pert, int irrep, double omega)
 {
@@ -70,4 +70,4 @@ double converged(const char *pert, int irrep, double omega)
   return sqrt(rms);
 }
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

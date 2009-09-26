@@ -10,7 +10,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 void save_X(const char *pert, int irrep, double omega)
 {
@@ -32,4 +32,4 @@ void save_X(const char *pert, int irrep, double omega)
 
 }
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

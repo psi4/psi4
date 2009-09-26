@@ -14,7 +14,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 double cc2_LHX1Y1(const char *pert_x, int irrep_x, double omega_x,
 		  const char *pert_y, int irrep_y, double omega_y)
@@ -598,4 +598,4 @@ double cc2_LHX1Y1(const char *pert_x, int irrep_x, double omega_x,
   return polar;
 }
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

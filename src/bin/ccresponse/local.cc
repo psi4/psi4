@@ -7,7 +7,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libiwl/iwl.h>
@@ -22,7 +21,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 /*! 
 ** local_init(): Set up parameters of local excitation domains.
@@ -106,8 +105,7 @@ void local_filter_T1(dpdfile2 *T1)
     ii = i * nocc + i;  /* diagonal element of pair matrices */
 
     if(!local.pairdom_len[ii]) {
-      fprintf(outfile, "\n\tlocal_filter_T1: Pair ii = [%d] is zero-length, which makes no sense.\n",ii);
-      exit(PSI_RETURN_FAILURE);
+      throw PsiException("loca_filter_t1: pair is zero laength which makes no sense",__FILE__,__LINE__);
     }
 
     T1tilde = init_array(local.pairdom_len[ii]);
@@ -276,4 +274,4 @@ void local_filter_T2(dpdbuf4 *T2)
   free(local.weak_pairs);
 }
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

@@ -3,7 +3,7 @@
     \brief Enter brief description of file here 
 */
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 struct MOInfo {
   int nirreps;        /* no. of irreducible representations */
@@ -72,4 +72,4 @@ struct MOInfo {
   double ***C;        /* Virtual orbital transformation matrix */
 };
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

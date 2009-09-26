@@ -11,7 +11,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 /* pertbar(): Constructs the components of the similarity-transformed
 ** one-electron property operator. 
@@ -178,4 +178,4 @@ void pertbar(const char *pert, int irrep, int anti)
   dpd_buf4_close(&fbar2);
 }
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

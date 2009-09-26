@@ -10,7 +10,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 double LCX(const char *pert_c, int irrep_c, 
 	   const char *pert_x, int irrep_x, double omega)
@@ -163,4 +163,4 @@ double LCX(const char *pert_c, int irrep_c,
   return polar;
 }
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

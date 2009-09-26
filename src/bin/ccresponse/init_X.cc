@@ -12,7 +12,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 void denom1(dpdfile2 *X1, double omega);
 void denom2(dpdbuf4 *X2, double omega);
@@ -52,4 +52,4 @@ void init_X(const char *pert, int irrep, double omega)
   dpd_buf4_close(&mu2);
 }
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

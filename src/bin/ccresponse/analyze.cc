@@ -14,7 +14,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 double **Build_R(void);
 double **Build_U(void);
@@ -155,4 +155,4 @@ void analyze(const char *pert, int irrep, double omega)
 
 }
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

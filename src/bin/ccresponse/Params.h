@@ -3,7 +3,7 @@
     \brief Enter brief description of file here 
 */
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 struct Params {
   int print;             /* Output level control */
@@ -16,16 +16,16 @@ struct Params {
   double convergence;    /* convergence criterion for perturbed wfns */
   int restart;           /* boolean for allowing a restart from on-disk amps */
   int diis;              /* boolean for using DIIS extrapolation */
-  char *prop;            /* user-selected property */
+  std::string prop;            /* user-selected property */
   int local;             /* boolean for simluation of local correlation */
   int analyze;
   int dertype;
-  char *gauge;           /* choice of gauge for optical rotation */
-  char *wfn;
-  char *abcd;
+  std::string gauge;           /* choice of gauge for optical rotation */
+  std::string wfn;
+  std::string abcd;
   int num_amps;
   int sekino;  /* Sekino-Bartlett size-extensive model-III */
   int linear;  /* Bartlett size-extensive (?) linear model */
 };
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

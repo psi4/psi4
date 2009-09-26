@@ -11,7 +11,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 void sort_X(const char *pert, int irrep, double omega)
 {
@@ -43,7 +43,7 @@ void sort_X(const char *pert, int irrep, double omega)
   dpd_buf4_sort_axpy(&X, CC_LR, rqps, 10, 10, lbl, -1);
   dpd_buf4_close(&X);
 
-  if(params.ref == 0 && !strcmp(params.abcd,"NEW")) {
+  if(params.ref == 0 && params.abcd == "NEW") {
     /* X(-)(ij,ab) (i>j, a>b) = X(ij,ab) - X(ij,ba) */
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
     dpd_buf4_init(&X, CC_LR, irrep, 4, 9, 0, 5, 1, lbl);
@@ -64,4 +64,4 @@ void sort_X(const char *pert, int irrep, double omega)
   }
 }
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

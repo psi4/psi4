@@ -10,7 +10,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
-#include <libipv1/ip_lib.h>
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
 #include <libdpd/dpd.h>
@@ -23,7 +22,7 @@
 #include "Local.h"
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 /* Max length of ioff array */
 #define IOFF_MAX 32641
@@ -52,11 +51,7 @@ void polar(void);
 void optrot(void);
 void roa(void);
 
-}} // namespace psi::ccresponse
-
-using namespace psi::ccresponse;
-
-int main(int argc, char *argv[])
+int CCRESPONSE(int argc, char *argv[])
 {
   int **cachelist, *cachefiles;
 
@@ -87,7 +82,7 @@ int main(int argc, char *argv[])
 
   if(params.local) local_init();
 
-  if (!strcmp(params.wfn,"CC2")) {
+  if (params.wfn == "CC2") {
     cc2_hbar_extra();
   }
   else {
@@ -95,11 +90,11 @@ int main(int argc, char *argv[])
   }
 
   sort_lamps(); /* should be removed sometime - provided by cclambda */
-  if(strcmp(params.wfn,"CC2")) lambda_residuals(); /* don't do this for CC2 */
+  if(params.wfn != "CC2") lambda_residuals(); /* don't do this for CC2 */
 
-  if(!strcmp(params.prop,"POLARIZABILITY")) polar();
-  if(!strcmp(params.prop,"ROTATION")) optrot();
-  if(!strcmp(params.prop,"ROA")) roa();
+  if(params.prop == "POLARIZABILITY") polar();
+  if(params.prop == "ROTATION") optrot();
+  if(params.prop == "ROA") roa();
 
   if(params.local) local_done();
 
@@ -115,27 +110,14 @@ int main(int argc, char *argv[])
   timer_done();
 
   exit_io();
-  exit(PSI_RETURN_SUCCESS);
+  return 0;
 }
-
-extern "C" {const char *gprgid() { const char *prgid = "CCRESPONSE"; return(prgid); }}
-
-namespace psi { namespace ccresponse {
 
 void init_io(int argc, char *argv[])
 {
   int i;
-  char *progid;
 
-  progid = (char *) malloc(strlen(gprgid())+2);
-  sprintf(progid, ":%s",gprgid());
-
-  psi_start(&infile,&outfile,&psi_file_prefix,argc-1,argv+1,0); /* this assumes no cmdline args except filenames */
-  ip_cwk_add(":INPUT");
-  ip_cwk_add(progid);
-  free(progid);
-  tstart(outfile);
-  psio_init(); psio_ipv1_config();
+  tstart();
 
   for(i=CC_MIN; i <= CC_MAX; i++) psio_open(i, 1);
 
@@ -165,9 +147,7 @@ void exit_io(void)
   for(i=CC_TMP; i <= CC_TMP11; i++) psio_close(i,0);  /* get rid of TMP files */
   for(i=CC_TMP11+1; i <= CC_MAX; i++) psio_close(i,1);
 
-  psio_done();
-  tstop(outfile);
-  psi_stop(infile,outfile,psi_file_prefix);
+  tstop();
 }
 
 void init_ioff(void)
@@ -178,4 +158,4 @@ void init_ioff(void)
   for(i=1; i < IOFF_MAX; i++) ioff[i] = ioff[i-1] + i;
 }
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

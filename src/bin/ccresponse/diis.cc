@@ -17,7 +17,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 /*
 ** DIIS: Direct inversion in the iterative subspace routine to
@@ -207,8 +207,7 @@ void diis(int iter, const char *pert, int irrep, double omega)
 
     errcod = C_DGESV(nvector+1, 1, &(B[0][0]), nvector+1, &(ipiv[0]), &(C[0]), nvector+1);
     if(errcod) {
-      fprintf(outfile, "\nError in DGESV return in diis.\n");
-      exit(PSI_RETURN_FAILURE);
+      throw PsiException("Error in DGESV return in diis",__FILE__,__LINE__);
     }
 
     /* Build a new amplitude vector from the old ones */
@@ -264,4 +263,4 @@ void diis(int iter, const char *pert, int irrep, double omega)
   return;
 }
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

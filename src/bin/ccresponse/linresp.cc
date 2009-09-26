@@ -14,7 +14,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 double LCX(const char *pert_c, int irrep_c, 
 	   const char *pert_x, int irrep_x, double omega);
@@ -57,7 +57,7 @@ void linresp(double *tensor, double A, double B,
       timer_off("linear terms");
 
       if(!params.sekino && !params.linear) {
-        if(!strcmp(params.wfn,"CC2")) {
+        if(params.wfn == "CC2") {
           timer_on("quad terms");
           polar_HXY = HXY(pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y);
           polar_LHX1Y1 = cc2_LHX1Y1(pert_x, x_irrep, omega_x, pert_y, y_irrep, omega_y);
@@ -81,7 +81,7 @@ void linresp(double *tensor, double A, double B,
       polar_LCX += LCX(pert_y, y_irrep, pert_x, x_irrep, 0.0);
       timer_off("linear terms");
       if(!params.sekino && !params.linear) {
-        if(!strcmp(params.wfn,"CC2")) {
+        if(params.wfn == "CC2") {
           timer_on("quad terms");
           polar_HXY = HXY(pert_x, x_irrep, 0.0, pert_y, y_irrep, 0.0);
           polar_LHX1Y1 = cc2_LHX1Y1(pert_x, x_irrep, 0.0, pert_y, y_irrep, 0.0);
@@ -108,7 +108,7 @@ void linresp(double *tensor, double A, double B,
     if(params.print & 2) {
       fprintf(outfile, "\n\tLinresp tensor <<%s;%s>>\n", pert_x, pert_y);
       fprintf(outfile, "\tpolar_LCX    = %20.12f\n", polar_LCX);
-      if(!strcmp(params.wfn,"CC2"))
+      if(params.wfn == "CC2")
         fprintf(outfile, "\tpolar_HXY    = %20.12f\n", polar_HXY);
       fprintf(outfile, "\tpolar_LHX1Y1 = %20.12f\n", polar_LHX1Y1);
       fprintf(outfile, "\tpolar_LHX1Y2 = %20.12f\n", polar_LHX1Y2);
@@ -121,4 +121,4 @@ void linresp(double *tensor, double A, double B,
 
 }
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE
