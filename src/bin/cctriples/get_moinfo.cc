@@ -24,7 +24,7 @@ namespace psi { namespace CCTRIPLES {
     ** Modified by TDC, March 1999.
     */
 
-    void get_moinfo(void)
+    void get_moinfo(Options &options)
     {
       int i, h, errcod, nactive, nirreps;
       std::string junk;
@@ -54,24 +54,21 @@ namespace psi { namespace CCTRIPLES {
   params.semicanonical = 0;
   junk = options.get_str("REFERENCE");
   /* if no reference is given, assume rhf */
-  if (errcod != IPE_OK) params.ref = 0;
-  else {
-    if(junk == "RHF") params.ref = 0;
-    else if(junk == "ROHF" && params.wfn == "CCSD_T") {
-      params.ref = 2;
-      params.semicanonical = 1;
-    }
-    else if(junk == "ROHF") params.ref = 1;
-    else if(junk == "UHF") params.ref = 2;
-    else { 
-      throw PsiException("Invalid value of input keyword REFERENCE",__FILE__,__LINE__);
-    }
+  if(junk == "RHF") params.ref = 0;
+  else if(junk == "ROHF" && params.wfn == "CCSD_T") {
+    params.ref = 2;
+    params.semicanonical = 1;
+  }
+  else if(junk == "ROHF") params.ref = 1;
+  else if(junk == "UHF") params.ref = 2;
+  else { 
+    throw PsiException("Invalid value of input keyword REFERENCE",__FILE__,__LINE__);
   }
 
-	junk = options.get_str("DERTYPE");
-	if(junk == "NONE") params.dertype = 0;
-	else if(junk == "FIRST") params.dertype = 1;
-	else {
+  junk = options.get_str("DERTYPE");
+  if(junk == "NONE") params.dertype = 0;
+  else if(junk == "FIRST") params.dertype = 1;
+  else {
 	  throw PsiException("Value of keyword DERTYPE is not applicable to CCSD(T)",__FILE__,__LINE__);
 	}
 
