@@ -6,7 +6,7 @@
     \ingroup MINTS
 */
 
-#include <libmints/ref.h>
+#include <libutil/ref.h>
 
 #include <libmints/basisset.h>
 #include <libmints/gshell.h>

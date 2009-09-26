@@ -10,7 +10,7 @@
 #include <string>
 #include <cstdio>
 
-#include <libmints/ref.h>
+#include <libutil/ref.h>
 #include <libmints/vector3.h>
 #include <libmints/vector.h>
 #include <libmints/matrix.h>

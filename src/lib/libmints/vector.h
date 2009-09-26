@@ -9,7 +9,7 @@
 #include <cstdlib>
 #include <cstdio>
 
-#include <libmints/ref.h>
+#include <libutil/ref.h>
 
 namespace psi {
 

@@ -9,6 +9,7 @@
 #include <libmints/eri.h>
 #include <libmints//wavefunction.h>
 #include <physconst.h>
+#include <exception.h>
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define EPS 1.0e-17
