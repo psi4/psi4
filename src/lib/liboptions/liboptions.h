@@ -609,7 +609,9 @@ namespace psi {
     void add_str(std::string key, std::string s, std::string c = "") {
       add(key,s,c);
     }
-
+    void add_array(std::string key) {
+      add(key, new ArrayType());
+    }
     void set_bool(std::string key, bool b) {
       get(key).assign(b);
     }
