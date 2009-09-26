@@ -33,7 +33,7 @@ void init_io(int argc, char *argv[]);
 void init_ioff(void);
 void title(void);
 void get_moinfo(void);
-void get_params(void);
+void get_params(Options &);
 void init_amps(void);
 void tau_build(void);
 void taut_build(void);
@@ -123,7 +123,7 @@ int ccenergy(Options &options, int argc, char *argv[])
 #endif
   
   get_moinfo();
-  get_params();
+  get_params(options);
 
   cachefiles = init_int_array(PSIO_MAXUNIT);
 
@@ -134,7 +134,7 @@ int ccenergy(Options &options, int argc, char *argv[])
 	     cachelist, NULL, 4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.avirtpi,
 	     moinfo.avir_sym, moinfo.boccpi, moinfo.bocc_sym, moinfo.bvirtpi, moinfo.bvir_sym);
 
-    if(strcmp(params.aobasis,"NONE")) { /* Set up new DPD's for AO-basis algorithm */
+    if( params.aobasis != "NONE" ) { /* Set up new DPD's for AO-basis algorithm */
       dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 
                4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.sopi, moinfo.sosym, 
                moinfo.boccpi, moinfo.bocc_sym, moinfo.sopi, moinfo.sosym);
@@ -151,7 +151,7 @@ int ccenergy(Options &options, int argc, char *argv[])
 	     cachelist, priority, 2, moinfo.occpi, moinfo.occ_sym, 
 	     moinfo.virtpi, moinfo.vir_sym);
    
-    if(strcmp(params.aobasis,"NONE")) { /* Set up new DPD for AO-basis algorithm */
+    if( params.aobasis != "NONE") { /* Set up new DPD for AO-basis algorithm */
       dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 
                2, moinfo.occpi, moinfo.occ_sym, moinfo.sopi, moinfo.sosym);
       dpd_set_default(0);
@@ -170,7 +170,7 @@ int ccenergy(Options &options, int argc, char *argv[])
 
   if(params.local) {
     local_init();
-    if(!strcmp(local.weakp,"MP2")) lmp2();
+    if(local.weakp=="MP2") lmp2();
   }
 
   init_amps();
@@ -213,7 +213,7 @@ int ccenergy(Options &options, int argc, char *argv[])
     t1_build();
     if(params.print & 2) status("T1 amplitudes", outfile);
 
-    if((!strcmp(params.wfn,"CC2")) || (!strcmp(params.wfn,"EOM_CC2"))) {
+    if( params.wfn == "CC2"  || params.wfn == "EOM_CC2" ) {
 
       cc2_Wmnij_build();
       if(params.print & 2) status("Wmnij", outfile);
@@ -272,7 +272,7 @@ int ccenergy(Options &options, int argc, char *argv[])
       timer_off("T2 Build");
 #endif
 
-      if( (!strcmp(params.wfn,"CC3")) || (!strcmp(params.wfn,"EOM_CC3"))) {
+      if( params.wfn == "CC3" || params.wfn == "EOM_CC3" ) {
 
         /* step1: build cc3 intermediates, Wabei, Wmnie, Wmbij, Wamef */
         cc3_Wmnij();
@@ -323,7 +323,7 @@ int ccenergy(Options &options, int argc, char *argv[])
     fprintf(outfile, "\t ** Wave function not converged to %2.1e ** \n",
 	    params.convergence);
     fflush(outfile);
-    if(strcmp(params.aobasis,"NONE")) dpd_close(1);
+    if( params.aobasis != "NONE" ) dpd_close(1);
     dpd_close(0);
     cleanup();
 #ifdef TIME_CCENERGY
@@ -357,14 +357,14 @@ int ccenergy(Options &options, int argc, char *argv[])
     fprintf(outfile, "\tMP2 correlation energy                = %20.15f\n", moinfo.emp2);
     fprintf(outfile, "      * MP2 total energy                      = %20.15f\n", moinfo.eref + moinfo.emp2);
   }
-  if( (!strcmp(params.wfn,"CC3")) || (!strcmp(params.wfn,"EOM_CC3"))) {
+  if( params.wfn == "CC3"  || params.wfn == "EOM_CC3" ) {
     fprintf(outfile, "\tCC3 correlation energy     = %20.15f\n", moinfo.ecc);
     fprintf(outfile, "      * CC3 total energy           = %20.15f\n", moinfo.eref + moinfo.ecc);
   }
-  else if( (!strcmp(params.wfn,"CC2")) || (!strcmp(params.wfn,"EOM_CC2"))) {
+  else if( params.wfn == "CC2" || params.wfn == "EOM_CC2" )  {
     fprintf(outfile, "\tCC2 correlation energy     = %20.15f\n", moinfo.ecc);
     fprintf(outfile, "      * CC2 total energy           = %20.15f\n", moinfo.eref + moinfo.ecc);
-    if(params.local && !strcmp(local.weakp,"MP2")) 
+    if(params.local && local.weakp == "MP2" ) 
       fprintf(outfile, "      * LCC2 (+LMP2) total energy  = %20.15f\n", 
 	      moinfo.eref + moinfo.ecc + local.weak_pair_energy);
   }
@@ -382,7 +382,7 @@ int ccenergy(Options &options, int argc, char *argv[])
     fprintf(outfile, "\tSame-spin CCSD correlation energy     = %20.15f\n", moinfo.ecc_ss);
     fprintf(outfile, "\tCCSD correlation energy               = %20.15f\n", moinfo.ecc);
     fprintf(outfile, "      * CCSD total energy                     = %20.15f\n", moinfo.eref + moinfo.ecc); 
-    if(params.local && !strcmp(local.weakp,"MP2")) 
+    if(params.local && local.weakp == "MP2" ) 
       fprintf(outfile, "      * LCCSD (+LMP2) total energy = %20.15f\n", 
 	      moinfo.eref + moinfo.ecc + local.weak_pair_energy);
   }
@@ -394,7 +394,7 @@ int ccenergy(Options &options, int argc, char *argv[])
   chkpt_close();
 
   /* Write pertinent data to energy.dat for Dr. Yamaguchi */
-  if(!strcmp(params.wfn,"CCSD") || !strcmp(params.wfn, "BCCD")) {
+  if( params.wfn == "CCSD" || params.wfn == "BCCD" ) {
 
     chkpt_init(PSIO_OPEN_OLD);
     natom = chkpt_rd_natom();
@@ -410,9 +410,9 @@ int ccenergy(Options &options, int argc, char *argv[])
     free_block(geom);  free(zvals);
     fprintf(efile, "SCF(30)   %22.12f\n", moinfo.escf);
     fprintf(efile, "REF(100)  %22.12f\n", moinfo.eref);
-    if(!strcmp(params.wfn,"CCSD"))
+    if( params.wfn == "CCSD" )
       fprintf(efile, "CCSD      %22.12f\n", (moinfo.ecc+moinfo.eref));
-    else if(!strcmp(params.wfn,"BCCD"))
+    else if( params.wfn == "BCCD" )
       fprintf(efile, "BCCD      %22.12f\n", (moinfo.ecc+moinfo.eref));
     fclose(efile);
   }
@@ -426,7 +426,7 @@ int ccenergy(Options &options, int argc, char *argv[])
     print_pair_energies(emp2_aa, emp2_ab, ecc_aa, ecc_ab);
   }
 
-  if( ((!strcmp(params.wfn,"CC3")) || (!strcmp(params.wfn,"EOM_CC3")))
+  if( (params.wfn == "CC3" || params.wfn == "EOM_CC3" )
       && (params.dertype == 1 || params.dertype == 3) && params.ref == 0) {
     params.ref = 1;
     /* generate the ROHF versions of the He^T1 intermediates */
@@ -445,7 +445,7 @@ int ccenergy(Options &options, int argc, char *argv[])
 
   if(params.brueckner) brueckner_done = rotate();
   
-  if(strcmp(params.aobasis,"NONE")) dpd_close(1);
+  if( params.aobasis != "NONE" ) dpd_close(1);
   dpd_close(0);
 
   if(params.ref == 2) cachedone_uhf(cachelist);

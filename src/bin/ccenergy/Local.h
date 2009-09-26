@@ -25,13 +25,13 @@ struct Local {
   double *eps_occ;
   double **eps_vir;
   double cutoff;
-  char *method;
-  char *weakp;
+  std::string method;
+  std::string weakp;
   int filter_singles;
   double weak_pair_energy;
   double cphf_cutoff;
   int freeze_core;
-  char *pairdef;
+  std::string pairdef;
 };
 
 }} // namespace psi::ccenergy

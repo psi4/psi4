@@ -27,7 +27,7 @@ double dotval;
   DT2();
   if(params.print & 2) status("<ij||ab> -> T2", outfile);
 
-  if(strcmp(params.wfn,"CC2") || strcmp(params.wfn,"EOM_CC2")) { /* skip all this is wfn=CC2 */
+  if(params.wfn != "CC2" || params.wfn != "EOM_CC2") { /* skip all this is wfn=CC2 */
 
     FaetT2();
     FmitT2();
@@ -39,7 +39,7 @@ double dotval;
 #ifdef TIME_CCENERGY
     timer_on("BT2", outfile);
 #endif
-    if(!strcmp(params.aobasis,"DISK") || !strcmp(params.aobasis,"DIRECT"))
+    if(params.aobasis == "DISK" || params.aobasis == "DIRECT")
       BT2_AO();
     else BT2();
     if(params.print & 2) status("<ab||cd> -> T2", outfile);

@@ -59,7 +59,7 @@ void spinad_amps(void)
     dpd_buf4_copy(&T2AB1, CC_TAMPS, "tijab");
     dpd_buf4_close(&T2AB1);
 
-    if(!(!strcmp(params.wfn,"CC2")) || (!strcmp(params.wfn,"EOM_CC2"))) {
+    if(params.wfn == "CC2" || params.wfn == "EOM_CC2") {
 
       /*** Wmbej intermediates ***/
       dpd_buf4_init(&W, CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbeJ");

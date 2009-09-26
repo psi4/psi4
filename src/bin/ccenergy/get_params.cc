@@ -4,10 +4,8 @@
 */
 #include <cstdio>
 #include <cstdlib>
-#include <cstring>
 #include <string>
 #include <cmath>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <psifiles.h>
 #include "Params.h"
@@ -18,15 +16,15 @@
 
 namespace psi { namespace ccenergy {
 
-void get_params()
+void get_params(Options &options)
 {
   int errcod, iconv, forceit;
   std::string cachetype = "";
-  sdt::string  junk;
+  std::string junk;
 
   params.newtrips = options.get_bool("NEWTRIPS");
 
-  params.wfn = options.get_str("WFN")
+  params.wfn = options.get_str("WFN");
 
   if(params.wfn == "NONE")
      throw PsiException("Invalid value of input keyword WFN", __FILE__, __LINE__);
@@ -54,7 +52,7 @@ void get_params()
   params.analyze = options.get_bool("ANALYZE");
 
   params.dertype = 0;
-  junk = options.get_str("DERTYPE")
+  junk = options.get_str("DERTYPE");
   if(junk == "NONE") params.dertype = 0;
   else if(junk == "FIRST") params.dertype = 1;
   else if(junk == "RESPONSE") params.dertype = 3; /* linear response */
@@ -74,13 +72,7 @@ void get_params()
 
   fndcor(&(params.memory),infile,outfile);
 
-  params.aobasis = options.get_str("AO_BASIS";)
-
-//  if(strcmp(params.aobasis,"DISK") && strcmp(params.aobasis,"DIRECT") &&
-//     strcmp(params.aobasis,"NONE")) 
-//   throw PsiException("Error in input: invalid AO_BASIS", __FILE__, __LINE__);
-  
-
+  params.aobasis = options.get_str("AO_BASIS");
   params.cachelev = options.get_int("CACHELEV");
 
   params.cachetype = 1;
@@ -102,8 +94,8 @@ void get_params()
   params.local = options.get_bool("LOCAL");
   local.cutoff = options.get_double("LOCAL_CUTOFF");
   params.local_mos = options.get_bool("LOCAL_MOS");
-  local.method = options.get_cstr("LOCAL_METHOD");
-  local.weakp = options.get_cstr("LOCAL_WEAKP");
+  local.method = options.get_str("LOCAL_METHOD");
+  local.weakp = options.get_str("LOCAL_WEAKP");
 
   local.filter_singles = options.get_bool("LOCAL_FILTER_SINGLES");
   if(params.dertype == 3) local.filter_singles = 0;
@@ -111,11 +103,11 @@ void get_params()
   local.cphf_cutoff = options.get_double("LOCAL_CPHF_CUTOFF");
   local.freeze_core = options.get_bool("FREEZE_CORE");
 
-  local.pairdef = options.get_cstr("LOCAL_PAIRDEF");
-  if(params.local && params.dertype == 3)
-    local.pairdef = strdup("RESPONSE");
-  else if(params.local)
-    local.pairdef = strdup("BP");
+  local.pairdef = options.get_str("LOCAL_PAIRDEF");
+//  if(params.local && params.dertype == 3)
+//    local.pairdef.assing("RESPONSE");
+//  else if(params.local)
+//    local.pairdef.assign("BP");
 
   params.num_amps = options.get_int("NUM_AMPS");
   iconv = options.get_int("BRUECKNER_CONV");
@@ -148,7 +140,7 @@ void get_params()
 
   fprintf(outfile, "\n\tInput parameters:\n");
   fprintf(outfile, "\t-----------------\n");
-  fprintf(outfile, "\tWave function   =   %6s\n", params.wfn);
+  fprintf(outfile, "\tWave function   =   %6s\n", params.wfn.c_str());
   
   if(params.semicanonical) {
     fprintf(outfile, "\tReference wfn   =     ROHF changed to UHF for Semicanonical Orbitals\n");
@@ -165,8 +157,8 @@ void get_params()
   fprintf(outfile, "\tRestart         =     %s\n", 
 	  params.restart ? "Yes" : "No");
   fprintf(outfile, "\tDIIS            =     %s\n", params.diis ? "Yes" : "No");
-  fprintf(outfile, "\tAO Basis        =     %s\n", params.aobasis);
-  fprintf(outfile, "\tABCD            =     %s\n", params.abcd);
+  fprintf(outfile, "\tAO Basis        =     %s\n", params.aobasis.c_str());
+  fprintf(outfile, "\tABCD            =     %s\n", params.abcd.c_str());
   fprintf(outfile, "\tCache Level     =     %1d\n", params.cachelev);
   fprintf(outfile, "\tCache Type      =    %4s\n", 
 	  params.cachetype ? "LOW" : "LRU");
