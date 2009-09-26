@@ -771,6 +771,8 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/clag/Makefile
           src/bin/stable/Makefile
           src/bin/cphf/Makefile
+          src/bin/mvo/Makefile
+
 ])
 
 AC_OUTPUT

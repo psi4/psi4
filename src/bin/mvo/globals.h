@@ -2,14 +2,11 @@
     \ingroup MVO
     \brief Enter brief description of file here 
 */
+#include <psi4-dec.h>
 #ifndef _psi_src_bin_mvo_globals_h
 #define _psi_src_bin_mvo_globals_h
 
 /* First definitions of globals */
-extern "C" {
-  extern FILE *infile, *outfile;
-  extern char *psi_file_prefix;
-}
 
 namespace psi { namespace mvo {
 

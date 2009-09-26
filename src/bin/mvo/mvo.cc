@@ -19,7 +19,6 @@
 #include <cstdlib>
 #include <cmath>
 #include <cstring>
-#include <libipv1/ip_lib.h>
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
@@ -32,10 +31,6 @@
 
 
 /* First definitions of globals */
-extern "C" {
-  FILE *infile, *outfile;
-  char *psi_file_prefix;
-}
 
 namespace psi { namespace mvo {
 
@@ -67,11 +62,9 @@ void get_mvos(void);
 void get_canonical(void);
 void get_mp2nos(void);
 /* void get_unos(void); */
-}} // end namespace psi::mvo
 
-using namespace psi::mvo;
 
-int main(int argc, char *argv[])
+int mvo(int argc, char *argv[])
 {
   params.print_lvl = 1;
   init_io(argc, argv);
@@ -99,7 +92,6 @@ int main(int argc, char *argv[])
   return(0);
 }
 
-namespace psi { namespace mvo {
 
 void init_io(int argc, char *argv[])
 {
@@ -118,11 +110,8 @@ void init_io(int argc, char *argv[])
      }
    }
  
-  psi_start(&infile,&outfile,&psi_file_prefix,num_extra_args,extra_args,0); 
-  if (params.print_lvl) tstart(outfile);
-  ip_cwk_add(":MVO");
+  if (params.print_lvl) tstart();
 
-  psio_init(); psio_ipv1_config();
   free(extra_args);
 }
 
@@ -147,7 +136,7 @@ void init_ioff(void)
   ioff = (int *) malloc(IOFF_MAX * sizeof(int));
   if(ioff == NULL) {
     fprintf(stderr, "(transqt): error malloc'ing ioff array\n");
-    exit(0);
+    throw PsiException("mvo error", __FILE__, __LINE__);
   }
   ioff[0] = 0;
   for(i=1; i < IOFF_MAX; i++) {
@@ -157,66 +146,48 @@ void init_ioff(void)
 
 void exit_io(void)
 {
-  psio_done();
-  if (params.print_lvl) tstop(outfile);
-  psi_stop(infile,outfile,psi_file_prefix);
+  if (params.print_lvl) tstop();
 }
 
 
 void get_parameters(void)
 {
-  int errcod;
 
-  errcod = ip_string("WFN", &(params.wfn),0);
-  if(errcod == IPE_KEY_NOT_FOUND) {
-    params.wfn = (char *) malloc(sizeof(char)*5);
-    strcpy(params.wfn, "CCSD");
-  }
+  params.wfn = options.get_str("WFN");
 
-  params.h_fzc_file = PSIF_OEI;
-  errcod = ip_data("FZC_FILE","%d",&(params.h_fzc_file),0);
 
-  params.print_mos = 0;
-  errcod = ip_boolean("PRINT_MOS", &(params.print_mos),0);
+  params.h_fzc_file = options.get_int("FZC_FILE");
 
-  params.print_lvl = 1;
-  errcod = ip_data("PRINT", "%d", &(params.print_lvl),0);
+  params.print_mos = options.get_bool("PRINT_MOS");
 
-  params.oei_erase = 0;
-  errcod = ip_boolean("OEI_ERASE",&(params.oei_erase),0); 
+  params.print_lvl = options.get_int("PRINT");
 
-  params.fzc = 1;
-  errcod = ip_boolean("FZC",&(params.fzc),0);
+  params.oei_erase = options.get_bool("OEI_ERASE");
+
+  params.fzc = options.get_bool("FZC");
 
   /* remove restricted docc from RAS 1 ? */
-  params.del_restr_docc = 1;
-  errcod = ip_boolean("DELETE_RESTR_DOCC",&(params.del_restr_docc),0);
+  params.del_restr_docc = options.get_bool("DELETE_RESTR_DOCC");
 
-  params.mp2nos = 0;
-  errcod = ip_boolean("MP2NOS",&(params.mp2nos),0);
+  params.mp2nos = options.get_bool("MP2NOS");
 
-  params.unos = 0;
-  errcod = ip_boolean("UNOS",&(params.unos),0);
+  params.unos = options.get_bool("UNOS");
 
-  if (strcmp(params.wfn, "CI")==0 || strcmp(params.wfn, "DETCAS")==0 ||
-      strcmp(params.wfn, "DETCI")==0) {
+  if ((params.wfn == "CI") || (params.wfn == "DETCAS") ||
+      (params.wfn == "DETCI")) {
     params.ras_type = 1;
   }
   else {
     params.ras_type = 0;
   }
 
-  params.fzc_fock_coeff = 1.0;
-  errcod = ip_data("FZC_FOCK_COEFF", "%lf", &(params.fzc_fock_coeff),0);
+  params.fzc_fock_coeff = options.get_double("FZC_FOCK_COEFF");
 
-  params.fock_coeff = 0.0;
-  errcod = ip_data("FOCK_COEFF", "%lf", &(params.fock_coeff),0);
+  params.fock_coeff = options.get_double("FOCK_COEFF");
 
-  params.ivo = 0;
-  errcod = ip_boolean("IVO", &(params.ivo), 0);
+  params.ivo = options.get_bool("IVO");
 
-  params.canonical = 0;
-  errcod = ip_boolean("CANONICAL", &(params.canonical), 0);
+  params.canonical = options.get_bool("CANONICAL");
   return;
 
 }
@@ -229,7 +200,7 @@ void print_parameters(void)
     fprintf(outfile,"\n");
     fprintf(outfile,"\tInput Parameters:\n");
     fprintf(outfile,"\t-----------------\n");
-    fprintf(outfile,"\tWavefunction           =  %s\n", params.wfn);
+    fprintf(outfile,"\tWavefunction           =  %s\n", params.wfn.c_str());
     fprintf(outfile,"\tPrint MOs              =  %s\n", 
                                 (params.print_mos ? "Yes": "No"));
     fprintf(outfile,"\tErase OEI file         =  %s\n", 
@@ -274,7 +245,7 @@ void get_fzc_operator(void)
 
 void get_moinfo(void)
 {
-  int i,j,k,h,errcod,size,row,col,p,q,offset,first_offset,last_offset,warned;
+  int i,j,k,h,size,row,col,p,q,offset,first_offset,last_offset,warned;
   int *tmpi, nopen;
   double **tmpmat, **so2ao;
   double N; /* number of valence electrons */
@@ -307,15 +278,13 @@ void get_moinfo(void)
     }
   }
 
-  moinfo.frdocc = init_int_array(moinfo.nirreps);
-  moinfo.fruocc = init_int_array(moinfo.nirreps);
-  errcod = ip_int_array("FROZEN_DOCC", moinfo.frdocc, moinfo.nirreps);
-  errcod = ip_int_array("FROZEN_UOCC", moinfo.fruocc, moinfo.nirreps);
+  moinfo.frdocc = options.get_int_array("FROZEN_DOCC");
+  moinfo.fruocc = options.get_int_array("FROZEN_UOCC");
 
   moinfo.rstrdocc = init_int_array(moinfo.nirreps);
   moinfo.rstruocc = init_int_array(moinfo.nirreps);
-  errcod = ip_int_array("RESTRICTED_DOCC",moinfo.rstrdocc,moinfo.nirreps);
-  errcod = ip_int_array("RESTRICTED_UOCC",moinfo.rstruocc,moinfo.nirreps);
+  moinfo.rstrdocc = options.get_int_array("RESTRICTED_DOCC");
+  moinfo.rstruocc = options.get_int_array("RESTRICTED_UOCC");
                                                                                 
   /*
   if (params.treat_cor_as_fzc) {
@@ -341,8 +310,8 @@ void get_moinfo(void)
 
   moinfo.ndocc = 0;
   tmpi = init_int_array(moinfo.nirreps);
-  errcod = ip_int_array("DOCC", tmpi, moinfo.nirreps);
-  if (errcod == IPE_OK) {
+  tmpi = options.get_int_array("DOCC");
+  if (options["DOCC"].has_changed()) {
     for (i=0,warned=0; i<moinfo.nirreps; i++) {
       if (tmpi[i] != moinfo.clsdpi[i] && !warned) {
         fprintf(outfile, "\tWarning: DOCC doesn't match PSIF_CHKPT\n");
@@ -359,8 +328,8 @@ void get_moinfo(void)
   }
 
   moinfo.nsocc = 0;
-  errcod = ip_int_array("SOCC", tmpi, moinfo.nirreps);
-  if (errcod == IPE_OK) {
+  tmpi = options.get_int_array("SOCC");
+  if (options["SOCC"].has_changed()) {
     for (i=0,warned=0; i<moinfo.nirreps; i++) {
       if (tmpi[i] != moinfo.openpi[i] && !warned) {
         fprintf(outfile, "\tWarning: SOCC doesn't match PSIF_CHKPT\n");
@@ -512,17 +481,17 @@ void get_moinfo(void)
 
 void get_reorder_array(void)
 {
-  int i, errcod;
+  int i;
   int j, k, l, fzv_offset;
 
   /* the following will only be set nonzero if it is a CI related WFN */
   moinfo.ras_opi = init_int_matrix(MAX_RAS_SPACES,moinfo.nirreps);
   moinfo.order = init_int_array(moinfo.nmo);
 
-  if (strcmp(params.wfn, "CI") == 0 || strcmp(params.wfn, "DETCI") == 0
-       || strcmp(params.wfn, "QDPT") == 0 
-       || strcmp(params.wfn, "OOCCD") == 0 
-       || strcmp(params.wfn, "DETCAS") == 0) {
+  if ((params.wfn == "CI") || (params.wfn == "DETCI")
+       || (params.wfn == "QDPT") 
+       || (params.wfn == "OOCCD") 
+       || (params.wfn == "DETCAS")) {
     
     moinfo.ras_opi = init_int_matrix(MAX_RAS_SPACES,moinfo.nirreps); 
     
@@ -531,7 +500,7 @@ void get_reorder_array(void)
          moinfo.frdocc, moinfo.fruocc, moinfo.rstrdocc, moinfo.rstruocc,
          moinfo.ras_opi, moinfo.order, params.ras_type, 0)) {
       fprintf(outfile, "Error in ras_set2().  Aborting.\n");
-      exit(1);
+      throw PsiException("mvo error", __FILE__, __LINE__);
     } 
   } 
   else { /* default (CC, MP2, other) */
@@ -562,7 +531,6 @@ void get_mvos(void)
   int h, nirreps, nvir, ntri, offset, row, col;
   int i, j, ij, iabs, jabs, icorr, jcorr, ijcorr, nocc;
   int ndv, ndoccv, *ndvph, k, colv;
-  int errcod;
   double *FCvv, *FC, **evecs, *evals, **Cvv, **Cvvp, **Cnew;
   double *eig_unsrt, **scf_vector;
 
@@ -577,13 +545,12 @@ void get_mvos(void)
   /* read in which of the doccs are to be treated as virtuals */
   ndv = 0;
 
-  if (ip_exist("DOCC_VIRT",0)) {
-     errcod = ip_count("DOCC_VIRT",&ndv,0);
-     params.docc_virt = init_int_array(ndv);
-     for(k=0; k < ndv; k++) {
-       params.docc_virt[k] = 0;
-       errcod = ip_data("DOCC_VIRT","%d",(&(params.docc_virt[k])),1,k);
-     }
+  if (options["DOCC_VIRT"].has_changed()) {
+    ndv = options["DOCC_VIRT"].size();
+    params.docc_virt = init_int_array(ndv);
+    for(k=0; k < ndv; k++) {
+      params.docc_virt[k] = options["DOCC_VIRT"][k].to_integer();
+    }
   }
 
   /* finished reading in which doccs are to be treated as virtuals */
@@ -597,7 +564,7 @@ void get_mvos(void)
     for (k=0;k<moinfo.clsdpi[h];k++) {
       ndvph[k] = 0;
       }
-    if (ip_exist("DOCC_VIRT",0)) {
+    if (options["DOCC_VIRT"].has_changed()) {
       for (k=0;k<(ndv-1);k=(k+2)) {
         if ( (params.docc_virt[k]) == (h+1)) {
           ndoccv++;

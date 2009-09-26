@@ -22,7 +22,7 @@ namespace psi { namespace mvo {
 */
 struct Params {
    char ofname[PARM_OUTFILE_MAX+1]; /* output file name                     */
-   char *wfn;               /* wavefunction name                            */
+   string wfn;               /* wavefunction name                            */
    int print_lvl;           /* print verbosity level                        */ 
    int print_mos;           /* print the molecular orbitals ?               */
    int h_fzc_file;          /* filenum for frozen core operator             */
