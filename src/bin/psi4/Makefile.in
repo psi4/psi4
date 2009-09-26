@@ -6,7 +6,8 @@ include ../MakeVars
 LDLIBS += $(LAPACK) $(BLAS)
 
 PSILIBS = -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1 -lPSI_options \
--lPSI_input -lPSI_cscf -lPSI_cints -lPSI_int -lPSI_deriv -lPSI_psiclean -lPSI_util
+-lPSI_int -lPSI_deriv -lPSI_util \
+-lPSI_input3 -lPSI_cscf -lPSI_cints -lPSI_transqt2 -lPSI_psiclean
 
 CXXSRC = read_atom_basis.cc fragment.cc  \
 molecular_system.cc  read_atom_basis.cc  \

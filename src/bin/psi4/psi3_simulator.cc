@@ -9,11 +9,12 @@
 #include <psi4-dec.h>
 #include "psi4.h"
 
-namespace psi { 
+namespace psi {
 
   namespace input    { PsiReturnType input(Options &, int argc, char *argv[]); }
   namespace CINTS    { PsiReturnType cints(Options &, int argc, char *argv[]); }
   namespace cscf     { PsiReturnType cscf(Options &, int argc, char *argv[]); }
+  namespace transqt2 { PsiReturnType transqt2(Options &, int argc, char *argv[]); }
   namespace psiclean { PsiReturnType psiclean(Options &, int argc, char *argv[]); }
 
 int execut (std::string PsiMethod);
@@ -81,20 +82,18 @@ int execut(std::string PsiMethod) {
   cis         = "cis"
 */
 
-  int argc;
-  char *argv[];
+  int argc = 1;
+  char **argv;
 
-  switch (PsiMethod) {
-    case "SCFEnergy" :
-      argc = 1; 
+  if (PsiMethod == "SCFEnergy") {
       dispatch_table["INPUT"](options, argc, argv);
       dispatch_table["CINTS"](options, argc, argv);
       dispatch_table["CSCF"](options, argc, argv);
-    break;
-    default :
-      fprintf(outfile,"Unknown method\n");
-      exit(PSI_RETURN_FAILURE);
-    break;
+  }
+  else {
+    fprintf(outfile,"Unknown PSI4 method\n");
+    abort();
   }
 } 
 
+}
