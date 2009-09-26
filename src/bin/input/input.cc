@@ -87,7 +87,7 @@ namespace psi { namespace input {
   
   int input() { return 0; }
   
-  int input(Options & options, char **atom_basis, Molecular_system & molecules)
+  PsiReturnType input(Options & options, char **atom_basis, Molecular_system & molecules)
   {
    /*variables and arrays*/
     int argc = 0;
@@ -334,7 +334,7 @@ namespace psi { namespace input {
 
     cleanup();
     stop_io();
-    return(PSI_RETURN_SUCCESS);
+    return(Success);
   }
 
   void print_intro()
