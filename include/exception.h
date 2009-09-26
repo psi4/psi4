@@ -7,8 +7,8 @@ namespace psi {
 class PsiException : public std::runtime_error {
 
     private:
-        const char* msg_;
-        const char* file_;
+        std::string msg_;
+        std::string file_;
         int line_;
 
     public:
@@ -29,12 +29,12 @@ class PsiException : public std::runtime_error {
 
         const char* what() const throw ()
         {
-            return msg_;
+            return msg_.c_str();
         }
 
         const char* file() const throw()
         {
-            return file_;
+            return file_._c_str();
         }
 
         int line() const throw()
