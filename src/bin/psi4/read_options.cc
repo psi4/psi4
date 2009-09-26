@@ -150,6 +150,22 @@ int read_options(std::string name, Options & options) {
     options.add_str("REFERENCE","RHF");
     options.add_str("DERTYPE","NONE");
   }
+  else if(name == "CCDENSITY") {
+    options.add_str("WFN", "");
+    options.add_str("REFERENCE","RHF");
+    options.add_str("DERTYPE","NONE");
+    options.add_int("TOLERANCE",14);
+    options.add_int("CACHELEVEL",2);
+    options.add_bool("AO_BASIS",false);
+    options.add_bool("AEL",false);
+    options.add_str("GAUGE");
+    options.add_bool("RELAX_OPDM",false);
+    options.add_bool("CONNECT_XI");
+    options.add("STATES_PER_IRREP", new ArrayType());
+    options.add_bool("PROP_ALL",false);
+    options.add_int("PROP_SYM");
+    options.add_int("PROP_ROOT");
+  }
   else if(name == "CLAG") {
     options.add_bool("WRITE_CAS_FILES",0);
     options.add_str("DERTYPE","NONE");
