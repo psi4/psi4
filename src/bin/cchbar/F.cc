@@ -7,7 +7,7 @@
 
 #include <cstdio>
 #include <cstdlib>
-#include <cstring>
+#include <string>
 #include <cmath>
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
@@ -488,7 +488,7 @@ void F_build(void) {
     dpd_file2_copy(&fab, CC_OEI, "Fae");
     dpd_file2_close(&fab);
 
-    if((!strcmp(params.wfn,"CC2")) || (!strcmp(params.wfn,"EOM_CC2"))) {
+    if((params.wfn == "CC2") || params.wfn == "EOM_CC2" ) {
       dpd_file2_init(&FAE, CC_OEI, 0, 1, 1, "FAE");
       dpd_file2_init(&Fae, CC_OEI, 0, 3, 3, "Fae");
 
@@ -602,7 +602,7 @@ void F_build(void) {
     dpd_file2_copy(&fij, CC_OEI, "Fmi");
     dpd_file2_close(&fij);
 
-    if((!strcmp(params.wfn,"CC2")) || (!strcmp(params.wfn,"EOM_CC2"))) {
+    if( params.wfn == "CC2" || params.wfn == "EOM_CC2" ) {
       dpd_file2_init(&FMI, CC_OEI, 0, 0, 0, "FMI");
       dpd_file2_init(&Fmi, CC_OEI, 0, 2, 2, "Fmi");
 

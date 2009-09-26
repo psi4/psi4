@@ -4,7 +4,7 @@
 */
 #include <cstdio>
 #include <cstdlib>
-#include <cstring>
+#include <string>
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include "MOInfo.h"
@@ -38,7 +38,7 @@ void Wabij_build(void)
   DT2();
   if(params.print & 2) status("<ij||ab> -> T2", outfile);
 
-  if(strcmp(params.wfn,"CC2")) { /* skip all this is wfn=CC2 */
+  if(params.wfn != "CC2") { /* skip all this is wfn=CC2 */
 
     FaetT2();
     FmitT2();
