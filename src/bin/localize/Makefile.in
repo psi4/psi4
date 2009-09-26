@@ -5,7 +5,8 @@ include ../MakeVars
 
 LDLIBS += $(BLAS)
 
-PSILIBS = -lPSI_dpd -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
+PSITARGET = $(top_objdir)/lib/libPSI_localize.a
+#PSILIBS = -lPSI_dpd -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
 
 CXXSRC = local.cc
 
