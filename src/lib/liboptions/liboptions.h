@@ -365,6 +365,10 @@ namespace psi {
       return ptr_->size();
     }
 
+    bool has_changed() const {
+      return ptr_->has_changed();
+    }
+
     std::string type() const {
       return ptr_->type();
     }
@@ -665,6 +669,22 @@ namespace psi {
       std::vector<int> array;
       for (int i=0; i<get(key).size(); ++i) {
         array.push_back(get(key)[i].to_integer());
+      }
+      return array;
+    }
+
+    double* get_double_array(std::string key) {
+      double *array = new double[get(key).size()];
+      for (int i=0; i<get(key).size(); ++i) {
+        array[i] = get(key)[i].to_double();
+      }
+      return array;
+    }
+
+    std::vector<double> get_double_vector(std::string key) {
+      std::vector<double> array;
+      for (int i=0; i<get(key).size(); ++i) {
+        array.push_back(get(key)[i].to_double());
       }
       return array;
     }
