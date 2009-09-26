@@ -20,15 +20,10 @@
 #define MAIN
 #include "psi4.h"
 
-//FILE *outfile = NULL;
   
 namespace psi { 
-/*
-  namespace input    { int input(Options &, char **atom_basis, Molecular_system & ); }
-  namespace CINTS    { PsiReturnType cints(Options &, int argc, char *argv[]); }
-  namespace cscf     { int cscf(int argc, char *argv[]); }
-  namespace psiclean { int psiclean(int argc, char *argv[]); }
-*/
+
+  void set_memory(FILE *infile, FILE *outfile);
 
   int psi3_simulator(Options & options, int argc, char *argv[]);
 
@@ -113,6 +108,8 @@ int main(int argc, char *argv[])
   psi_start(&infile,&outfile,&psi_file_prefix,num_unparsed, argv_unparsed, 0);
 
     print_version();
+
+    set_memory(infile, outfile);
 
     //ip_cwk_add(":OPT09");
     psio_init();

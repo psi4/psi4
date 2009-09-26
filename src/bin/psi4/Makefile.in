@@ -12,7 +12,7 @@ PSILIBS = \
 -lPSI_int -lPSI_deriv -lPSI_util \
 
 CXXSRC = read_atom_basis.cc fragment.cc  \
-molecular_system.cc  read_atom_basis.cc  \
+molecular_system.cc  read_atom_basis.cc set_memory.cc set_memory.cc \
 fragment.cc  psi4.cc  read_options.cc psi3_simulator.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
