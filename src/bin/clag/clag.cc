@@ -97,9 +97,9 @@ int clag(int argc, char **argv)
   write_cas_files = options.get_bool("WRITE_CAS_FILES");
 
    /* need to figure out whether to filter tei's */
-   dertype = options.get_cstr("DERTYPE");
+   dertype = options.get_str("DERTYPE");
 
-   wfn = options.get_cstr("WFN");
+   wfn = options.get_str("WFN");
 
   // later probably need zorb on for any deriv calc in case they have
   // frozen orbitals or something.  For now, keep it off for MCSCF

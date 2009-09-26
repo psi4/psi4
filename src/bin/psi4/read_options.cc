@@ -154,6 +154,16 @@ int read_options(std::string name, Options & options) {
     options.add_str("WFN","NONE");
     options.add_int("ROOT",1);
   }
+  else if(name == "STABLE") {
+    options.add_int("PRINT",1);
+    options.add_int("CACHELEV",2); 
+    options.add_str("REFERENCE",0);
+    options.add_bool("FOLLOW",false);
+    options.add_int("NUM_EVECS_PRINT",0);
+    options.add_int("ROTATION_METHOD",0);
+    options.add_double("SCALE",0.5);
+  }
+
   options.read_ipv1();
   options.print();
  }

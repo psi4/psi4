@@ -764,6 +764,8 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/cscf/Makefile
           src/bin/psiclean/Makefile
           src/bin/transqt2/Makefile
+          src/bin/clag/Makefile
+          src/bin/stable/Makefile
           src/bin/cphf/Makefile
 ])
 
