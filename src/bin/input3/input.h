@@ -167,7 +167,7 @@ FLOAT** overlap_new_old_float();
 double **overlap();
 void write_scf_to_chkpt();
 
-void parsing();
+void parsing(Options &);
 void freeze_core();
 
 void init_globals();

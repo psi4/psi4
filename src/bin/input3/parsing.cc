@@ -16,7 +16,7 @@
 
 namespace psi { namespace input {
 
-void parsing()
+void parsing(Options & options)
 {
    int errcod, i;
    char *guess, tmp_label[80];
