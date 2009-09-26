@@ -4,7 +4,7 @@ namespace psi {
 
 #define CHARARR_SIZE 100
 
-class PsiException : public std::exception {
+class PsiException : public std::runtime_error {
 
     private:
         const char* msg_;
@@ -16,7 +16,7 @@ class PsiException : public std::exception {
             const char* message,
             const char* file,
             int line
-        ) throw ()
+        ) throw () : std::runtime_error(message)
         {
             msg_ = message;
             file_ = file;
