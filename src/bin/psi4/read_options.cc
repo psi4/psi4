@@ -111,6 +111,13 @@ int read_options(std::string name, Options & options) {
     options.add_cstr("AO_BASIS", "NONE");
     options.add_bool("DELETE_TEI", true);
   }
+  else if(name == "CCTRIPLES") {
+    options.add_cstr("WFN");
+    options.add_int("NTHREADS",1);
+    options.add_cstr("REFERENCE","RHF");
+    options.add_cstr("DERTYPE","NONE");
+  }
+
   else if(name == "CLAG") {
     options.add_bool("WRITE_CAS_FILES",0);
     options.add_cstr("DERTYPE","NONE");
