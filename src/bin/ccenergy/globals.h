@@ -20,11 +20,6 @@ namespace psi { namespace ccenergy {
 #define EXTERN
 #endif
 
-extern "C" {
-EXTERN FILE *infile, *outfile;
-EXTERN char *psi_file_prefix;
-}
-
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
