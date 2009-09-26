@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <string>
 #include <cmath>
 #include <libpsio/psio.h>
 #include <libdpd/dpd.h>
@@ -33,7 +34,7 @@ void BT2(void)
   psio_address next;
 
   if(params.ref == 0) { /** RHF **/
-    if(!strcmp(params.abcd,"OLD")) {
+    if(params.abcd == "OLD") {
 #ifdef TIME_CCENERGY
       timer_on("ABCD:old");
 #endif
@@ -49,7 +50,7 @@ void BT2(void)
       timer_off("ABCD:old");
 #endif
     }
-    else if(!strcmp(params.abcd,"NEW")) {
+    else if(params.abcd == "NEW") {
 
 #ifdef TIME_CCENERGY
       timer_on("ABCD:new");

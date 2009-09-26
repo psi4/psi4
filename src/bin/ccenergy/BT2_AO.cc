@@ -104,7 +104,7 @@ void BT2_AO(void)
 
   if(params.ref == 0) { /** RHF **/
 
-    if(!strcmp(params.aobasis,"DISK")) {
+    if(params.aobasis == "DISK") {
 
       dpd_set_default(1);
       dpd_buf4_init(&tau1_AO, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjPq (1)");
@@ -179,7 +179,7 @@ void BT2_AO(void)
       dpd_buf4_close(&tau2_AO);
 
     }
-    else if(!strcmp(params.aobasis,"DIRECT")) {
+    else if(params.aobasis == "DIRECT") {
       dpd_file4_init(&T, CC_TAMPS, 0, 0, 5, "tauIjAb");
       dpd_file4_cache_del(&T);
       dpd_file4_close(&T);
