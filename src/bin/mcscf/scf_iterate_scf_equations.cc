@@ -3,7 +3,7 @@
 #include <cmath>
 #include <cstdio>
 
-#include <liboptions/liboptions.hpp>
+#include <liboptions/liboptions.h>
 
 #include "scf.h"
 
@@ -71,17 +71,17 @@ void SCF::iterate_scf_equations()
     }
 
 
-    if( fabs(log10(fabs(delta_energy))) > options_get_int("CONVERGENCE") ){
+    if( fabs(log10(fabs(delta_energy))) > options.get_int("CONVERGENCE") ){
       if(reference == tcscf){
-        if(2.0 * fabs(log10(norm_ci_grad)) > options_get_int("CONVERGENCE") )
+        if(2.0 * fabs(log10(norm_ci_grad)) > options.get_int("CONVERGENCE") )
           converged = true;
       }else{
         converged = true;
       }
     }
 
-    if(cycle>options_get_int("MAXITER")){
-      fprintf(outfile,"\n\n  The calculation did not converge in %d cycles",options_get_int("MAXITER"));
+    if(cycle>options.get_int("MAXITER")){
+      fprintf(outfile,"\n\n  The calculation did not converge in %d cycles",options.get_int("MAXITER"));
       fprintf(outfile,"\n  Quitting MCSCF.\n");
       fflush(outfile);
       exit(1);

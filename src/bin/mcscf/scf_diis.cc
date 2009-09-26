@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cstdio>
 
-#include <liboptions/liboptions.hpp>
+#include <liboptions/liboptions.h>
 #include <libutil/libutil.h>
 
 #include "scf.h"
@@ -83,7 +83,7 @@ void SCF::diis(int cycle)
         Feff_oAO += e;
       }
 
-      if(reference == tcscf && options_get_bool("CI_DIIS") ){
+      if(reference == tcscf && options.get_bool("CI_DIIS") ){
         for(int I = 0 ; I < nci; ++I){
           ci[I] = 0.0;
           for(int i=0; i < ndiis;i++){

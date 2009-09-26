@@ -6,7 +6,7 @@
 
 #include <psifiles.h>
 #include <libmoinfo/libmoinfo.h>
-#include <liboptions/liboptions.hpp>
+#include <liboptions/liboptions.h>
 #include <libiwl/iwl.h>
 #include <libutil/libutil.h>
 
@@ -61,7 +61,7 @@ void SCF::read_so_oei()
 
   delete[] buffer;
 
-  if(options_get_int("DEBUG") > 4){
+  if(options.get_int("DEBUG") > 4){
     S->print();
     H->print();
   }
