@@ -11,27 +11,24 @@
 #include <cstring>
 #include <cmath>
 #include <libciomr/libciomr.h>
-#include <libipv1/ip_lib.h>
-#include <libint/libint.h>
+//#include <libint/libint.h>
 #include <libchkpt/chkpt.h>
 #include <libiwl/iwl.h>
 #include <psifiles.h>
 #include <libqt/qt.h>
+#include <psi4-def.h>
+#include <psi4-dec.h>
 
-extern "C" {
-  FILE *infile, *outfile;
-  char *psi_file_prefix;
-}
+//Default
+int LIBINT_MAX_AM = 0;
 
-namespace psi { namespace localize {
-  void init_io(int argc, char *argv[]);
-  void exit_io(void);
+namespace psi { namespace LOCALIZE {
+  using namespace psi;
   void title(void);
-}}
 
-int main(int argc, char *argv[])
+int localize(Options & options, int argc, char *argv[])
 {
-  using namespace psi::localize;
+  using namespace psi::LOCALIZE;
   int iter, s, t, A, k, l, m, p, q, inew, iold, max, max_col, phase_ok, phase_chk;
   int i, j, ij, am, atom, shell_length, offset, stat;
   int nirreps, nao, nmo, nso, natom, nshell, noei, nocc, errcod, nfzc;
@@ -46,8 +43,6 @@ int main(int argc, char *argv[])
   int print;
 
   alphalast = 1.0;
-
-  init_io(argc, argv);
   title();
 
   chkpt_init(PSIO_OPEN_OLD);
@@ -70,12 +65,10 @@ int main(int argc, char *argv[])
 
   /* A couple of error traps */
   if(nirreps != 1) {
-    fprintf(outfile, "\n\tError: localization is only valid in C1 symmetry!\n");
-    exit(PSI_RETURN_FAILURE);
+    throw PsiException("Error: localization is only valid in C1 symmetry!", __FILE__, __LINE__);
   }
   if(openpi[0]) {
-    fprintf(outfile, "\n\tError: localization available for closed-shells only!\n");
-    exit(PSI_RETURN_FAILURE);
+    throw PsiException("Error: localization available for closed-shells only!", __FILE__, __LINE__);
   }
 
   /* Frozen orbital info */
@@ -289,7 +282,7 @@ int main(int argc, char *argv[])
   free_block(Ctmp);
 
   print = 0;
-  errcod = ip_boolean("PRINT_MOS", &(print), 0);
+  print = options.get_bool("PRINT_MOS");
   if(print) {
     fprintf(outfile, "\n\tPipek-Mezey Localized MO's (after sort):\n");
     print_mat(C, nso, nmo, outfile);
@@ -364,31 +357,8 @@ int main(int argc, char *argv[])
 
   fprintf(outfile, "\n\tLocalization of occupied orbitals complete.\n");
 
-  exit_io();
   exit(PSI_RETURN_SUCCESS);
 }
-
-namespace psi { namespace localize {
-
-extern "C" {
-extern const char *gprgid();
-}
-
-void init_io(int argc, char * argv[])
-{
-  char *progid;
-
-  progid = (char *) malloc(strlen(gprgid())+2);
-  sprintf(progid, ":%s",gprgid());
-
-  psi_start(&infile,&outfile,&psi_file_prefix,argc-1,argv+1,0);
-  ip_cwk_add(progid);
-  free(progid);
-  tstart(outfile);
-
-  psio_init(); psio_ipv1_config();
-}
-
 void title(void)
 {
   fprintf(outfile, "\n");
@@ -399,19 +369,7 @@ void title(void)
   fprintf(outfile, "\t\t\t**************************\n");
   fprintf(outfile, "\n");
 }
+}// namespace LOCALIZE
+}// namespace psi 
 
-void exit_io(void)
-{
-  psio_done();
-  tstop(outfile);
-  psi_stop(infile,outfile,psi_file_prefix);
-}
 
-}} // namespace psi::localize
-
-extern "C" const char *gprgid()
-{
-   const char *prgid = "LOCAL";
-
-   return(prgid);
-}
