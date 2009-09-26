@@ -65,8 +65,8 @@ int iwl_buf_rd_all_mp2r12a(struct iwlbuf *Buf, double *ints,
 void iwl_buf_wrt_all(struct iwlbuf *Buf, int nbfso, double *ints, 
       int *ioff, int printflg, FILE *outfile);
 void iwl_buf_wrt(struct iwlbuf *Buf, int p, int q, int pq, int pqsym,
-      double *arr, int rmax, int *active, int *ioff, int *orbsym, int *firsti, 
-      int *lasti, int sortby_rs, int printflag, FILE *outfile);
+      double *arr, int rmax, int *ioff, int *orbsym, int *firsti, 
+      int *lasti, int printflag, FILE *outfile);
 void iwl_buf_wrt_mp2(struct iwlbuf *Buf, int p, int q, int pq,
       int pqsym, double **arr, int rsym, int *firstr, int *lastr, 
       int *firsts, int *lasts, int *occ, int *vir, int *ioff, 

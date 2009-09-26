@@ -76,8 +76,8 @@ namespace psi {
             int *slist, int *size, int *ioff, int printflg, FILE *outfile);
               
         void write(int p, int q, int pq, int pqsym,
-            double *arr, int rmax, int *active, int *ioff, int *orbsym, 
-            int *firsti, int *lasti, int sortby_rs, int printflag, 
+            double *arr, int rmax, int *ioff, int *orbsym, 
+            int *firsti, int *lasti, int printflag, 
             FILE *outfile);
         void write_all(int nbfso, double *ints, int *ioff, int printflg, 
             FILE *outfile);
