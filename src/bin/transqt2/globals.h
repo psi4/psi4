@@ -13,7 +13,7 @@
 #include "MOInfo.h"
 #include "Params.h"
 
-using namespace PsiExceptions;
+using namespace psi;
 
 namespace psi {
   namespace transqt2 {
