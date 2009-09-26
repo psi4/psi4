@@ -47,7 +47,7 @@ int read_options(std::string name, Options & options) {
     /* Don't overwrite the output file. */
     options.add_bool("KEEP_OUTPUT",false);
   
-    options.add_str("WFN", NULL);
+    options.add_str("WFN", "");
 
     options.add_bool("NO_REORIENT",false);
     options.add_str("LABEL","Default PSI3 Label");
@@ -56,8 +56,8 @@ int read_options(std::string name, Options & options) {
     options.add_bool("PUREAM",false);
     options.add_bool("EXPERT",false);
     options.add_int("PRINT",1);
-    options.add_str("SUBGROUP", NULL, "C1 C2 CS CI C2V C2H D2");
-    options.add_str("UNIQUE_AXIS", NULL, "X Y Z");
+    options.add_str("SUBGROUP", "", "C1 C2 CS CI C2V C2H D2");
+    options.add_str("UNIQUE_AXIS", "", "X Y Z");
     options.add_int("NFRAGMENTS",1);
     options.add_bool("KEEP_REF_FRAME",false);
     options.add_bool("FRAGMENT_DISTANCE_INVERSE",false);
@@ -69,7 +69,7 @@ int read_options(std::string name, Options & options) {
   }
   else if (name == "CINTS") {
     ip_cwk_add(":CINTS");
-    options.add_str("WFN", NULL);
+    options.add_str("WFN", "");
     options.add_int("PRINT",1);
     options.add_int("NUM_THREADS",1);
     options.add_int("CUTOFF",15); // cutoff on integrals
@@ -88,20 +88,20 @@ int read_options(std::string name, Options & options) {
 
   }
   else if (name == "MP2") {
-    options.add_cstr("WFN");
-    options.add_cstr("REFERENECE", "RHF");
-    options.add_cstr("JOBTYPE", "SP");
-    options.add_cstr("DERTYPE", "NONE");
+    options.add_str("WFN", "");
+    options.add_str("REFERENECE", "RHF");
+    options.add_str("JOBTYPE", "SP");
+    options.add_str("DERTYPE", "NONE");
     options.add_int("PRINT", 0);
     options.add_int("CACHELEV", 2);
-    options.add_cstr("CACHETYPE", 1);
+    options.add_int("CACHETYPE", 1);
     options.add_bool("SCS","false");
     options.add_bool("SCS_N", "false");
-    options.get_double("SCALE_OS", 6.0/5.0);
-    options.get_double("SCALE_SS", 1.0/3.0);
+    options.add_double("SCALE_OS", 6.0/5.0);
+    options.add_double("SCALE_SS", 1.0/3.0);
   }
   else if(name == "TRANSQT") {
-    options.add_str("WFN");
+    options.add_str("WFN", "");
     options.add_str("REFERENCE", "RHF");
     options.add_str("DERTYPE", "NONE");
     options.add_int("PRINT", 1);
@@ -112,20 +112,20 @@ int read_options(std::string name, Options & options) {
     options.add_bool("DELETE_TEI", true);
   }
   else if(name == "CCSORT") {
-    options.add_cstr("WFN");
-    options.add_cstr("REFERENCE", "RHF");
-    options.add_cstr("DERTYPE", "NONE");
-    options.add_cstr("PROPERTY", "POLARIZABILITY");
+    options.add_str("WFN", "");
+    options.add_str("REFERENCE", "RHF");
+    options.add_str("DERTYPE", "NONE");
+    options.add_str("PROPERTY", "POLARIZABILITY");
     options.add_bool("LOCAL", false);
     options.add_double("LOCAL_CUTOFF", 0.02);
     options.add_double("LOCAL_CPHF_CUTOFF", 0.10);
     options.add_double("LOCAL_CORE_CUTOFF",0.05);
   }
   else if(name == "CCTRIPLES") {
-    options.add_cstr("WFN");
+    options.add_str("WFN", "");
     options.add_int("NTHREADS",1);
-    options.add_cstr("REFERENCE","RHF");
-    options.add_cstr("DERTYPE","NONE");
+    options.add_str("REFERENCE","RHF");
+    options.add_str("DERTYPE","NONE");
   }
   else if(name == "CLAG") {
     options.add_bool("WRITE_CAS_FILES",0);
@@ -134,7 +134,7 @@ int read_options(std::string name, Options & options) {
     options.add_int("ROOT",1);
   }
   options.read_ipv1();
-  options.print(name);
+  options.print();
  }
 
 } //end ::psi
