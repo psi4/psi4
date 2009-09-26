@@ -52,7 +52,6 @@ namespace psi {
   void print_usage();
   void redirect_output(const std::string& szFilename, bool append = true);
   
-  Options options;
   PSIO *psio = NULL;
 }
 
