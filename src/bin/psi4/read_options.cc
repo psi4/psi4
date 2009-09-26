@@ -158,13 +158,13 @@ else if(name == "CCDENSITY") {
     options.add_int("CACHELEVEL",2);
     options.add_bool("AO_BASIS",false);
     options.add_bool("AEL",false);
-    options.add_str("GAUGE","");
+    options.add_str("GAUGE","LENGTH");
     options.add_bool("RELAX_OPDM",false);
     options.add_bool("CONNECT_XI",false);
     options.add("STATES_PER_IRREP", new ArrayType());
     options.add_bool("PROP_ALL",false);
-    options.add_int("PROP_SYM",1);
-    options.add_int("PROP_ROOT",1);
+    options.add_int("PROP_SYM", 0);
+    options.add_int("PROP_ROOT", 0);
   }
   else if(name == "CCLAMBDA") {
     options.add_str("WFN","SCF");
@@ -218,15 +218,15 @@ else if(name == "CCDENSITY") {
     options.get_int_array("GRID_XY1");
     options.get_int_array("GRID_XYZ0");
     options.get_int_array("GRID_XYZ1");
-    options.get_int("NIX");
-    options.get_int("NIY");
-    options.get_int("NIZ");
+    options.get_int("NIX",0);
+    options.get_int("NIY",0);
+    options.get_int("NIZ",0);
     options.get_str("GRID_FORMAT");
     options.get_double("GRID_ZMIN");
     options.get_double("GRID_ZMAX");
     options.get_int("EDGRAD_LOGSCALE");
     options.get_str("WFN");
-    options.get_int("TRANSITION_DENSITY");
+    options.get_int("TRANSITION_DENSITY",0);
     options.get_str("REFERENCE", "RHF");
     options.get_int("READ_OPDM");
     options.get_double("OPDM_FILE");
