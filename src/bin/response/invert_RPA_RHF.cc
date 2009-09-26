@@ -12,6 +12,7 @@
 #include "Params.h"
 #define EXTERN
 #include "globals.h"
+#include <psi4-dec.h>
 
 namespace psi { namespace response {
 

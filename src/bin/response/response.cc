@@ -10,7 +10,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
-#include <libipv1/ip_lib.h>
+#include <psi4-dec.h>
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
 #include <libdpd/dpd.h>
@@ -41,11 +41,8 @@ void polar(void);
 void optrot(void);
 void dipquad(void);
 
-}} // namespace psi::response
 
-using namespace psi::response;
-
-int main(int argc, char *argv[])
+int response(int argc, char *argv[])
 {
   int **cachelist, *cachefiles;
 
@@ -73,7 +70,7 @@ int main(int argc, char *argv[])
   if(params.ref == 0) {
     build_A_RHF();
     build_B_RHF();
-    invert_RPA_RHF(params.omega);
+    invert_RPA_RHF(params.omega[0]);
     polar();
     dipquad();
     optrot();
@@ -85,24 +82,12 @@ int main(int argc, char *argv[])
   exit(0);
 }
 
-extern "C" {const char *gprgid() { const char *prgid = "STABLE"; return(prgid); }}
-
-namespace psi { namespace response {
 
 void init_io(int argc, char *argv[])
 {
   int i;
-  char *progid;
 
-  progid = (char *) malloc(strlen(gprgid())+2);
-  sprintf(progid, ":%s",gprgid());
-
-  psi_start(&infile,&outfile,&psi_file_prefix,argc-1,argv+1,0); /* this assumes no cmdline args except filenames */
-  ip_cwk_add(progid);
-  free(progid);
-  tstart(outfile);
-  psio_init(); psio_ipv1_config();
-
+  tstart();
   psio_open(PSIF_MO_HESS,0);
   psio_open(CC_INFO, PSIO_OPEN_OLD);
   psio_open(CC_OEI, PSIO_OPEN_OLD);
@@ -121,10 +106,8 @@ void exit_io(void)
   psio_close(CC_CINTS, 1);
   psio_close(CC_DINTS, 1);
   psio_close(CC_TMP0, 1);
-
   psio_done();
-  tstop(outfile);
-  psi_stop(infile,outfile,psi_file_prefix);
+  tstop();
 }
 
 void init_ioff(void)

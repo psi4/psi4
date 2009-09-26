@@ -13,6 +13,7 @@
 #include "Params.h"
 #define EXTERN
 #include "globals.h"
+#include <psi4-dec.h>
 
 namespace psi { namespace response {
 
@@ -135,7 +136,7 @@ void transpert(const char *pert)
   if(!strcmp(pert,"Q_ZY")) { name = PSIF_AO_TYZ; moinfo.Q[2][1] = target; }
   if(!strcmp(pert,"Q_ZZ")) { name = PSIF_AO_TZZ; moinfo.Q[2][2] = target; }
 
-  iwl_rdone(PSIF_OEI, name, scratch, noei_ao, 0, 0, outfile);
+  iwl_rdone(PSIF_OEI, const_cast<char*>(name), scratch, noei_ao, 0, 0, outfile);
   for(i=0,ij=0; i < nao; i++)
     for(j=0; j <= i; j++,ij++) {
       TMP[i][j] = prefactor * sign * scratch[ij];
