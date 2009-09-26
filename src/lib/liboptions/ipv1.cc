@@ -93,6 +93,8 @@ namespace psi {
     if (err_code != IPE_OK)
       return;
     
+    data.changed();
+
     if (data.size() < static_cast<unsigned int>(ipv1_size)) {
       // Add enough StringDataTypes until it is the same size.
       unsigned int diff = static_cast<unsigned int>(ipv1_size) - data.size();
