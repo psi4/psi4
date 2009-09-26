@@ -67,7 +67,7 @@ void transpert(const char *pert)
   int alpha;
   int i, j, ij;
   double *scratch, **TMP, **X, **target;
-  const char *name;
+  char *name;
   double prefactor, anti, sign;
 
   nao = moinfo.nao;
@@ -86,8 +86,7 @@ void transpert(const char *pert)
     prefactor = -0.5; anti = -1.0; sign = 1.0; 
   }
   if(pert == "L*_X" || pert == "L*_Y" || pert == "L*_Z") { 
-    prefactor = -0.5; anti = -1.0; sign = -1.0; 
-  }
+    prefactor = -0.5; anti = -1.0; sign = -1.0; }
   if(pert == "P_X" || pert == "P_Y" || pert == "P_Z") { 
     prefactor = 1.0; anti = -1.0; sign = 1.0; 
   }
