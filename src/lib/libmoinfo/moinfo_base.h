@@ -13,6 +13,8 @@
 #define IOFF 5000000
 
 #include <string>
+
+#include <psi4-dec.h>
 #include <libutil/libutil.h>
 #include <liboptions/liboptions.h>
 #include "orbital_space.h"

@@ -297,7 +297,7 @@ void MOInfo::read_mo_spaces()
   }
   if(active_space_problem){
     error_msg = "MOInfo found a problem with the definition of the active space:" + error_msg;
-    print_error(outfile,error_msg.c_str(),__FILE__,__LINE__,PSI_RETURN_FAILURE);
+    throw PSIEXCEPTION(error_msg);
   }
 
 
