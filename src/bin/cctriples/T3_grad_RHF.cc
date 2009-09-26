@@ -14,7 +14,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace cctriples {
+namespace psi { namespace CCTRIPLES {
 
     void T3_grad_RHF(void)
     {

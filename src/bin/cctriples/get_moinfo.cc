@@ -13,7 +13,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace cctriples {
+namespace psi { namespace CCTRIPLES {
 
     /*
     ** get_moinfo():  Routine to obtain basic orbital information from
@@ -228,4 +228,4 @@ namespace psi { namespace cctriples {
     }
 
 
-  }} // namespace psi::cctriples
+  }} // namespace psi::CCTRIPLES

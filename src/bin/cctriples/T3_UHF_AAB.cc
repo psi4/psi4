@@ -81,7 +81,7 @@
 #include <libdpd/dpd.h>
 #include <ccfiles.h>
 
-namespace psi { namespace cctriples {
+namespace psi { namespace CCTRIPLES {
 
     void T3_UHF_AAB(double ***W, double ***V, int disc, int nirreps, 
 		    int I, int Gi, int J, int Gj, int K, int Gk,

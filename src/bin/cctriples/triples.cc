@@ -15,7 +15,7 @@
 #include "MOInfo.h"
 #include "globals.h"
 
-namespace psi { namespace cctriples {
+namespace psi { namespace CCTRIPLES {
 
     
     void init_io(int argc, char *argv[]);
@@ -64,7 +64,7 @@ namespace psi { namespace cctriples {
     void test_abc_loops_BBA();
     void test_abc_loops_BBB();
 
-int cctriples(int argc, char *argv[])
+int CCTRIPLES(int argc, char *argv[])
 {
   double ETAAA, ETAAB, ETABB, ETBBB, ET;
   long int memory;
@@ -256,4 +256,4 @@ void exit_io(void)
 }
 
 
-}} // namespace psi::cctriples
+}} // namespace psi::CCTRIPLES

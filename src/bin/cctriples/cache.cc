@@ -8,7 +8,7 @@
 #include <ccfiles.h>
 #include <psifiles.h>
 
-namespace psi { namespace cctriples {
+namespace psi { namespace CCTRIPLES {
 
 void cache_abcd_rhf(int **cachelist);
 void cache_iabc_rhf(int **cachelist);
@@ -723,4 +723,4 @@ void cachedone_rhf(int **cachelist)
   free_int_matrix(cachelist);
 }
 
-}} // namespace psi::cctriples
+}} // namespace psi::CCTRIPLES

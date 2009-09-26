@@ -8,7 +8,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace cctriples {
+namespace psi { namespace CCTRIPLES {
 
 void count_ijk(void)
 {
@@ -150,4 +150,4 @@ void count_ijk(void)
 
 }
 
-}} // namespace psi::cctriples
+}} // namespace psi::CCTRIPLES
