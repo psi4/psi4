@@ -6,7 +6,7 @@
 
 #include <libchkpt/chkpt.hpp>
 #include <libmoinfo/libmoinfo.h>
-#include <liboptions/liboptions.hpp>
+#include <liboptions/liboptions.h>
 
 #include "scf.h"
 
@@ -79,11 +79,11 @@ void SCF::save_info()
   delete[] frz;
 
   // Save the eigenvectors after rotating them
-  if(options_get_int("ROTATE_MO_ANGLE") != 0){
-    int mo_rotate_angle = options_get_int("ROTATE_MO_ANGLE");
-    int p = options_get_int("ROTATE_MO_P") -1;  // P, Q and IRREPS are one-based
-    int q = options_get_int("ROTATE_MO_Q") -1;
-    int h = options_get_int("ROTATE_MO_IRREP") - 1;
+  if(options.get_int("ROTATE_MO_ANGLE") != 0){
+    int mo_rotate_angle = options.get_int("ROTATE_MO_ANGLE");
+    int p = options.get_int("ROTATE_MO_P") -1;  // P, Q and IRREPS are one-based
+    int q = options.get_int("ROTATE_MO_Q") -1;
+    int h = options.get_int("ROTATE_MO_IRREP") - 1;
 
     fprintf(outfile,"\n\n  Rotating MOs %d and %d of irrep %d by %d degrees",
                     p,q,h,mo_rotate_angle);

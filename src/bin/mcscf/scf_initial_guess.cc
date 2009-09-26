@@ -3,7 +3,7 @@
 #include <cstdio>
 
 #include <libchkpt/chkpt.hpp>
-#include <liboptions/liboptions.hpp>
+#include <liboptions/liboptions.h>
 
 #include "scf.h"
 
@@ -21,7 +21,7 @@ void SCF::initial_guess()
   double** saved_MOs = _default_chkpt_lib_->rd_scf();
   if(saved_MOs != NULL){
     free(saved_MOs);
-    if(options_get_bool("READ_MOS"))
+    if(options.get_bool("READ_MOS"))
       read_MOs = true;
   }
   if(read_MOs){

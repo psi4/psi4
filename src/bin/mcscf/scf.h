@@ -14,10 +14,11 @@ enum ReferenceType {rhf, rohf, uhf, tcscf};
 class SCF
 {
 public:
-  SCF();
+  explicit SCF(Options& options_);
   ~SCF();
   void compute_energy();
 private:
+  Options&      options;
   ReferenceType reference;
   static const int maxci   = 8;
   static const int maxdiis = 10;
