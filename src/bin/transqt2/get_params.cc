@@ -60,7 +60,8 @@ void get_params(Options & options)
   tol = options.get_int("TOLERANCE");
   params.tolerance = 1.0*pow(10.0,(double) -tol);
 
-  params.memory = module.get_memory();
+//  params.memory = module.get_memory();
+  params.memory = 100000000;
 
   params.cachelev = 2;
   params.cachelev = options.get_int("CACHELEV");
