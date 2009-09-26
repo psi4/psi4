@@ -7,6 +7,9 @@
 #define _psi_src_bin_ccenergy_globals_h
 
 #include <ccfiles.h>
+#include <psi4-dec.h>
+#include <string>
+
 namespace psi { namespace ccenergy {
 
 /* Global variables */

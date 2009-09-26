@@ -279,7 +279,7 @@ void cleanup(void)
 
   /* Save the energy to PSIF_CHKPT as well */
   chkpt_init(PSIO_OPEN_OLD);
-  if( (!strcmp(params.wfn,"CC2")) || (!strcmp(params.wfn,"EOM_CC2"))) {
+  if( params.wfn == "CC2" || params.wfn == "EOM_CC2" ) {
     psio_write_entry(CC_INFO, "CC2 Energy", (char *) &(moinfo.ecc),
   		     sizeof(double));
 
@@ -288,7 +288,7 @@ void cleanup(void)
   		     sizeof(double));
     free(keyw);
   }
-  else if( (!strcmp(params.wfn,"CC3")) || (!strcmp(params.wfn,"EOM_CC3"))) {
+  else if( params.wfn == "CC3"  || params.wfn == "EOM_CC3" ) {
     psio_write_entry(CC_INFO, "CC3 Energy", (char *) &(moinfo.ecc),
   		     sizeof(double));
 
