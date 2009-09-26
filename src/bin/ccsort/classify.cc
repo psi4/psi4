@@ -6,7 +6,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <libiwl/iwl.h>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include "MOInfo.h"
 #include "Params.h"

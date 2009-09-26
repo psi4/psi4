@@ -3,6 +3,7 @@
     \brief Enter brief description of file here 
 */
 #include <ccfiles.h>
+#include <psi4-dec.h>
 
 namespace psi { namespace ccsort {
 
@@ -13,11 +14,6 @@ namespace psi { namespace ccsort {
 #else
 #define EXTERN
 #endif
-
-extern "C" {
-EXTERN FILE *infile, *outfile;
-EXTERN char *psi_file_prefix;
-}
 
 EXTERN int *ioff;
 EXTERN struct MOInfo moinfo;

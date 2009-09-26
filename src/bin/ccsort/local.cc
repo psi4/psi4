@@ -7,7 +7,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libiwl/iwl.h>
@@ -721,7 +720,7 @@ void local_init(void)
   free(fR);
 
   print_test = 0;
-  ip_boolean("DOMAIN_PRINT",&(print_test),0);
+  print_test = options.get_bool("DOMAIN_PRINT");
   if(print_test) {
     fprintf(outfile, "Printing of orbital domains requested...exiting.\n\n");
     exit(PSI_RETURN_FAILURE);
