@@ -7,10 +7,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.h>
+extern "C" {
+	#include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 double **Chkpt::rd_lagr(void)
 {
@@ -108,6 +110,7 @@ void Chkpt::wt_beta_lagr(double **lagr)
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_lagr():  Reads in the MO lagrangian matrix for RHF/ROHF.
 **

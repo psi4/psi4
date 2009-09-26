@@ -7,19 +7,21 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.h>
+extern "C" {
+	#include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
-double **Chkpt::rd_contr_full(void)
+double **Chkpt::rd_contr_full(const char *key2)
 {
 	double **contr, *temp_contr;
 	int nprim, i, j, ij = 0;
 	char *keyword;
-	keyword = build_keyword("Contraction coefficients");
+	keyword = build_keyword("Contraction coefficients", key2);
 
-	nprim = rd_nprim();
+	nprim = rd_nprim(key2);
 
 	temp_contr = array<double>(MAXANGMOM*nprim);
 	contr = matrix<double>(nprim,MAXANGMOM);
@@ -38,6 +40,7 @@ double **Chkpt::rd_contr_full(void)
 	return contr;
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_contr_full(): Reads in the normalized contraction coefficients.
 **

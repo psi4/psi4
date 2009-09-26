@@ -7,10 +7,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.h>
+extern "C" {
+	#include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 double **Chkpt::rd_fgeom(void)
 {
@@ -43,6 +45,7 @@ void Chkpt::wt_fgeom(double **fgeom)
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_fgeom():  Reads in full cartesian geometry including dummy atoms
 **

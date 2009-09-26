@@ -8,10 +8,12 @@
 #include <cmath>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.h>
+extern "C" {
+	#include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 double **Chkpt::rd_ccvecs(void)
 {
@@ -55,6 +57,7 @@ void Chkpt::wt_ccvecs(double **ccvecs)
 	}
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_ccvecs()
 **

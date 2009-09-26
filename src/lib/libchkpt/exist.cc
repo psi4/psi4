@@ -7,10 +7,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 int Chkpt::exist(const char *keyword)
 {
@@ -22,6 +24,7 @@ int Chkpt::exist(const char *keyword)
 	return exists;
 }
 
+extern "C" {
 /*!
 ** chkpt_exist(): Checks to see if entry already exists in chkpt file. Note
 ** this function should be called only by functions in the chkpt library, as

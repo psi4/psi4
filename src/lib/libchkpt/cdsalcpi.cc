@@ -7,10 +7,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.h>
+extern "C" {
+	#include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 int *Chkpt::rd_cdsalcpi(void)
 {
@@ -36,6 +38,7 @@ void Chkpt::wt_cdsalcpi(const int *cdsalcpi)
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_cdsalcpi(): Read in number of SALCs per irrep
 **

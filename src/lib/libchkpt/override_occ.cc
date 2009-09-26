@@ -6,14 +6,16 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 int Chkpt::rd_override_occ(void)
 {
-	int override=0, keylen;
+	int override=0, i, keylen;
 	char *keyword;
 /*
 	keyword = chkpt_build_keyword("Override Occupations");
@@ -57,6 +59,7 @@ void Chkpt::wt_override_occ(int override)
 	return;
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_override_occ(): Reads flag which tells cscf to ignore docc/socc
 ** vectors and use occupations in chkpt file instead

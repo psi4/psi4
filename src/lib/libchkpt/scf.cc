@@ -7,10 +7,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.h>
+extern "C" {
+	#include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 double **Chkpt::rd_scf(void)
 {
@@ -336,7 +338,7 @@ void Chkpt::wt_beta_scf_irrep(double **scf, int irrep)
 	free(mopi);
 }
 
-void Chkpt::set_mo_phases(double **coeff, int nrows, int ncols)
+double **Chkpt::set_mo_phases(double **coeff, int nrows, int ncols)
 {
 	int col, row;
 
@@ -386,6 +388,7 @@ void Chkpt::wt_local_scf(double **scf)
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_scf():  Reads in the full SCF eigenvector matrix for RHF/ROHF.
 **  
@@ -667,7 +670,7 @@ void Chkpt::wt_local_scf(double **scf)
 **
 ** returns: none
 */
-	void chkpt_set_mo_phases(double **coeff, int nrows, int ncols)
+	double **chkpt_set_mo_phases(double **coeff, int nrows, int ncols)
 	{
 		return _default_chkpt_lib_->set_mo_phases(coeff, nrows, ncols);
 	}

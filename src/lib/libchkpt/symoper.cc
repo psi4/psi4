@@ -6,10 +6,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.h>
+extern "C" {
+	#include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 int *Chkpt::rd_symoper(void)
 {
@@ -40,6 +42,7 @@ void Chkpt::wt_symoper(int *symoper)
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** int *chkpt_rd_symoper()
 ** Reads in the mapping array between "canonical" ordering of symmetry

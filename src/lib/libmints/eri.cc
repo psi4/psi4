@@ -76,13 +76,13 @@ ERI::ERI(IntegralFactory* integral, BasisSet* bs1, BasisSet *bs2, BasisSet *bs3,
     if (max_am >= LIBINT_MAX_AM) {
         fprintf(stderr, "ERROR: ERI - libint cannot handle angular momentum this high.\n" \
                         "       Recompile libint for higher angular momentum, then recompile this program.\n");
-        throw LimitExceeded("ERI - libint cannot handle angular momentum this high.\nRecompile libint for higher angular momentum, then recompile this program.", LIBINT_MAX_AM, max_am, __FILE__, __LINE__);
+        throw LimitExceeded<int>("ERI - libint cannot handle angular momentum this high.\nRecompile libint for higher angular momentum, then recompile this program.", LIBINT_MAX_AM, max_am, __FILE__, __LINE__);
         //abort();
     }
     if (deriv_ == 1 && max_am >= LIBDERIV_MAX_AM1) {
         fprintf(stderr, "ERROR: ERI - libderiv cannot handle angular momentum this high.\n" \
                         "     Recompile libderiv for higher angular momentum, then recompile this program.\n");
-        throw LimitExceeded("ERI - libderiv cannot handle angular momentum this high.\nRecompile libint for higher angular momentum, then recompile this program.", LIBDERIV_MAX_AM1, max_am, __FILE__, __LINE__);
+        throw LimitExceeded<int>("ERI - libderiv cannot handle angular momentum this high.\nRecompile libint for higher angular momentum, then recompile this program.", LIBDERIV_MAX_AM1, max_am, __FILE__, __LINE__);
         //abort();
     }
 

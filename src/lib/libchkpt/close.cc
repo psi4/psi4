@@ -6,10 +6,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 Chkpt::~Chkpt()
 {
@@ -26,6 +28,7 @@ Chkpt::~Chkpt()
 **  Returns: none
 **  \ingroup CHKPT
 */
+extern "C" {
 	int chkpt_close(void)
 	{
 		if (_default_chkpt_lib_) {

@@ -6,16 +6,18 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
-int Chkpt::rd_max_am(void)
+int Chkpt::rd_max_am(const char *key2)
 {
 	int max_am;
 	char *keyword;
-	keyword = build_keyword("Max. AM");
+	keyword = build_keyword("Max. AM", key2);
 
 	psio->read_entry(PSIF_CHKPT, keyword, (char *) &max_am, sizeof(int));
 
@@ -23,16 +25,17 @@ int Chkpt::rd_max_am(void)
 	return max_am;
 }
 
-void Chkpt::wt_max_am(int max_am)
+void Chkpt::wt_max_am(int max_am, const char *key2)
 {
 	char *keyword;
-	keyword = build_keyword("Max. AM");
+	keyword = build_keyword("Max. AM", key2);
 
 	psio->write_entry(PSIF_CHKPT, keyword, (char *) &max_am, sizeof(int));
 
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** int chkpt_rd_max_am()
 ** Reads in the maximum orbital quantum number 
@@ -60,9 +63,9 @@ void Chkpt::wt_max_am(int max_am)
 ** Returns: none
 ** \ingroup CHKPT
 */
-	void chkpt_wt_max_am(int max_am)
+	void chkpt_wt_max_am(int max_am, const char *key2)
 	{
-		_default_chkpt_lib_->wt_max_am(max_am);
+		_default_chkpt_lib_->wt_max_am(max_am, key2);
 	}
 }
 

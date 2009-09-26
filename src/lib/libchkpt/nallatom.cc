@@ -6,10 +6,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 int Chkpt::rd_nallatom(void)
 {
@@ -35,6 +37,7 @@ void Chkpt::wt_nallatom(int num_allatoms)
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_nallatom()  
 **

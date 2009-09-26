@@ -6,10 +6,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 char **Chkpt::rd_felement(void)
 {
@@ -21,7 +23,7 @@ char **Chkpt::rd_felement(void)
 
 	nallatom = rd_nallatom();
 
-	label = (char **)malloc(nallatom*sizeof(char*));
+	label = (char **)malloc(nallatom*sizeof(const char*));
 	for(i=0; i < nallatom; i++) 
 		label[i] = (char *) malloc(MAX_ELEMNAME*sizeof(char));
 
@@ -31,10 +33,10 @@ char **Chkpt::rd_felement(void)
 					MAX_ELEMNAME*sizeof(char), ptr, &ptr);
 
 	free(keyword);
-	return label;  
+	return label;
 }
 
-void Chkpt::wt_felement(char **label)
+void Chkpt::wt_felement(char ** const label)
 {
 	int nallatom, i;
 	psio_address ptr;
@@ -51,6 +53,7 @@ void Chkpt::wt_felement(char **label)
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_felement():  Reads in element labels including dummy atoms
 **
@@ -73,7 +76,7 @@ void Chkpt::wt_felement(char **label)
 ** returns: none
 ** \ingroup CHKPT
 */
-	void chkpt_wt_felement(char **label)
+	void chkpt_wt_felement(char ** const label)
 	{
 		_default_chkpt_lib_->wt_felement(label);
 	}

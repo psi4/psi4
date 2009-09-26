@@ -7,10 +7,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.h>
+extern "C" {
+	#include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 double *Chkpt::rd_evals(void)
 {
@@ -18,41 +20,49 @@ double *Chkpt::rd_evals(void)
 	char *keyword;
 	keyword = build_keyword("MO energies");
 
-	energies = array<double>(rd_nmo());
+	if (psio->tocscan(PSIF_CHKPT, keyword) != NULL) {
+	  energies = array<double>(rd_nmo());
 
-	psio->read_entry(PSIF_CHKPT, keyword, (char *) energies, 
-		rd_nmo()*sizeof(double));
-
-	free(keyword);
-	return energies;
+	  psio->read_entry(PSIF_CHKPT, keyword, (char *) energies, 
+	                   rd_nmo()*sizeof(double));
+	  free(keyword);
+	  return energies;
+	}
+	else
+	  return rd_alpha_evals();
+	
 }
 
 double *Chkpt::rd_alpha_evals(void)
 {
-	double *energies;
+	double *energies = 0;
 	char *keyword;
 	keyword = build_keyword("Alpha MO energies");
 
-	energies = array<double>(rd_nmo());
+    if (psio->tocscan(PSIF_CHKPT, keyword) != NULL) {
+      energies = array<double>(rd_nmo());
 
-	psio->read_entry(PSIF_CHKPT, keyword, (char *) energies, 
-		rd_nmo()*sizeof(double));
-
+      psio->read_entry(PSIF_CHKPT, keyword, (char *) energies, 
+                       rd_nmo()*sizeof(double));
+    }
+    
 	free(keyword);
 	return energies;
 }
 
 double *Chkpt::rd_beta_evals(void)
 {
-	double *energies;
+	double *energies = 0;
 	char *keyword;
 	keyword = build_keyword("Beta MO energies");
 
-	energies = array<double>(rd_nmo());
-
-	psio->read_entry(PSIF_CHKPT, keyword, (char *) energies, 
-		rd_nmo()*sizeof(double));
-
+    if (psio->tocscan(PSIF_CHKPT, keyword) != NULL) {
+      energies = array<double>(rd_nmo());
+      
+      psio->read_entry(PSIF_CHKPT, keyword, (char *) energies, 
+                       rd_nmo()*sizeof(double));
+    }
+    
 	free(keyword);
 	return energies;
 }
@@ -90,6 +100,7 @@ void Chkpt::wt_beta_evals(double *energies)
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_evals():  Reads in the SCF orbital energies for RHF/ROHF.
 **

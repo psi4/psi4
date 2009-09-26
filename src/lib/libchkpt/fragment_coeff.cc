@@ -7,11 +7,13 @@
 #include <stdlib.h>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.h>
+extern "C" {
+	#include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 #include <libciomr/libciomr.h>
 
-namespace psi {
+using namespace psi;
 
 double ***Chkpt::rd_fragment_coeff(void)
 {
@@ -64,6 +66,7 @@ void Chkpt::wt_fragment_coeff(double ***fragment_coeff)
     return;
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_fragment_coeff():  Reads in the coefficients specifying reference points
 ** for molecular fragments

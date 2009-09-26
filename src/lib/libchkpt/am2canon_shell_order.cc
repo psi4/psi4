@@ -8,10 +8,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.h>
+extern "C" {
+	#include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 /*!
 ** int *Chkpt::rd_am2canon_shell_order()
@@ -23,13 +25,13 @@ namespace psi {
 ** Returns: int *am2can_shell_order
 ** \ingroup CHKPT
 */
-int *Chkpt::rd_am2canon_shell_order(void)
+int *Chkpt::rd_am2canon_shell_order(const char *key2)
 {
 	int *am2can_sh_ord, nshell;
 	char *keyword;
-	keyword = build_keyword("AM -> canonical shell map"); 
+	keyword = build_keyword("AM -> canonical shell map", key2); 
 
-	nshell = rd_nshell();
+	nshell = rd_nshell(key2);
 	am2can_sh_ord = array<int>(nshell);
 
 	psio->read_entry(PSIF_CHKPT, keyword, (char *) am2can_sh_ord,
@@ -51,13 +53,13 @@ int *Chkpt::rd_am2canon_shell_order(void)
 ** Returns: none
 ** \ingroup CHKPT 
 */
-void Chkpt::wt_am2canon_shell_order(int *am2can_sh_ord)
+void Chkpt::wt_am2canon_shell_order(int *am2can_sh_ord, const char *key2)
 {
 	int nshell;
 	char *keyword;
-	keyword = build_keyword("AM -> canonical shell map");
+	keyword = build_keyword("AM -> canonical shell map", key2);
 
-	nshell = rd_nshell();
+	nshell = rd_nshell(key2);
 
 	psio->write_entry(PSIF_CHKPT, keyword, (char *) am2can_sh_ord,
 		nshell*sizeof(int));
@@ -65,6 +67,7 @@ void Chkpt::wt_am2canon_shell_order(int *am2can_sh_ord)
   free(keyword);
 }
 
+extern "C" {
 /*!
 ** int *chkpt_rd_am2canon_shell_order()
 **
@@ -92,9 +95,10 @@ void Chkpt::wt_am2canon_shell_order(int *am2can_sh_ord)
 ** Returns: none
 ** \ingroup CHKPT
 */
-	void chkpt_wt_am2canon_shell_order(int *am2can_sh_ord)
+	void chkpt_wt_am2canon_shell_order(int *am2can_sh_ord, const char *key2)
 	{
-		_default_chkpt_lib_->wt_am2canon_shell_order(am2can_sh_ord);
+		_default_chkpt_lib_->wt_am2canon_shell_order(am2can_sh_ord, 
+                  key2);
 	}
 }
 

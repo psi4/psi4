@@ -7,19 +7,21 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.h>
+extern "C" {
+	#include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
-int *Chkpt::rd_sloc(void)
+int *Chkpt::rd_sloc(const char *key2)
 {
 	int *sloc;
 	int nshell;
 	char *keyword;
-	keyword = build_keyword("First AO per shell");
+	keyword = build_keyword("First AO per shell", key2);
 
-	nshell = rd_nshell();
+	nshell = rd_nshell(key2);
 
 	sloc = array<int>(nshell);
 
@@ -29,19 +31,20 @@ int *Chkpt::rd_sloc(void)
 	return sloc;
 }
 
-void Chkpt::wt_sloc(int *sloc)
+void Chkpt::wt_sloc(int *sloc, const char *key2)
 {
 	int nshell;
 	char *keyword;
-	keyword = build_keyword("First AO per shell");
+	keyword = build_keyword("First AO per shell", key2);
 
-	nshell = rd_nshell();
+	nshell = rd_nshell(key2);
 
 	psio->write_entry(PSIF_CHKPT, keyword, (char *) sloc, nshell*sizeof(int));
 
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_sloc():	Read in an array of the numbers of the first AO 
 **			from the shells.
@@ -68,8 +71,8 @@ void Chkpt::wt_sloc(int *sloc)
 **
 ** \ingroup CHKPT
 */
-	void chkpt_wt_sloc(int *sloc)
+	void chkpt_wt_sloc(int *sloc, const char *key2)
 	{
-		_default_chkpt_lib_->wt_sloc(sloc);
+		_default_chkpt_lib_->wt_sloc(sloc, key2);
 	}
 }

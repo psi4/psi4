@@ -7,10 +7,12 @@
 #include <cstring>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 char *Chkpt::rd_prefix()
 {
@@ -25,7 +27,7 @@ char *Chkpt::rd_prefix()
 
 void Chkpt::wt_prefix(const char *prefix)
 {  
-	psio->write_entry(PSIF_CHKPT, "Default prefix", const_cast<char*>(prefix), CHKPT_PREFIX_LEN*sizeof(char));
+	psio->write_entry(PSIF_CHKPT, "Default prefix", (char *) prefix, CHKPT_PREFIX_LEN*sizeof(char));
 }
 
 void Chkpt::set_prefix(const char *prefix)
@@ -56,6 +58,7 @@ char *Chkpt::get_prefix(void)
 	return prefix;
 }
 
+extern "C" {
 /*!
 	**  char *chkpt_rd_prefix() 
 	**  Reads the global default chkpt prefix keyword stored in the CHKPT file.

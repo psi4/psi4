@@ -8,17 +8,19 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
-char *Chkpt::build_keyword(const char *key)
+char *Chkpt::build_keyword(const char *key, const char *key2)
 {
 	char *keyword;
 	int keylen;
 
-	keylen = strlen(key) + strlen(chkpt_prefix) + 2;
+	keylen = strlen(key) + strlen(key2) + strlen(chkpt_prefix) + 3;
 	if(keylen > PSIO_KEYLEN) {
 		printf("LIBCHKPT: requested key exceeds allowed LIBPSIO length: :%s:%s\n", 
 			chkpt_prefix, key);
@@ -26,12 +28,18 @@ char *Chkpt::build_keyword(const char *key)
 	}
 
 	keyword = (char *) malloc((keylen+1)*sizeof(char));
-	sprintf(keyword, ":%s:%s", chkpt_prefix, key);
+        if (key2[0] != '\0') {
+	  sprintf(keyword, ":%s:%s %s", chkpt_prefix, key, key2);
+        }
+        else {
+	  sprintf(keyword, ":%s:%s", chkpt_prefix, key);
+        }
 	keyword[keylen] = '\0';
 
 	return keyword;
 }
 
+extern "C" {
 	char *chkpt_build_keyword(const char *key)
 	{
 		char *keyword;

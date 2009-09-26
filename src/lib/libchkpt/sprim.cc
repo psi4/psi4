@@ -7,19 +7,21 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.h>
+extern "C" {
+	#include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
-int *Chkpt::rd_sprim(void)
+int *Chkpt::rd_sprim(const char *key2)
 {
 	int *sprim;
 	int nshell;
 	char *keyword;
-	keyword = build_keyword("First primitive per shell");
+	keyword = build_keyword("First primitive per shell", key2);
 
-	nshell = rd_nshell();
+	nshell = rd_nshell(key2);
 
 	sprim = array<int>(nshell);
 
@@ -29,19 +31,20 @@ int *Chkpt::rd_sprim(void)
 	return sprim;
 }
 
-void Chkpt::wt_sprim(int *sprim)
+void Chkpt::wt_sprim(int *sprim, const char *key2)
 {
 	int nshell;
 	char *keyword;
-	keyword = build_keyword("First primitive per shell");
+	keyword = build_keyword("First primitive per shell", key2);
 
-	nshell = rd_nshell();
+	nshell = rd_nshell(key2);
 
 	psio->write_entry(PSIF_CHKPT, keyword, (char *) sprim, nshell*sizeof(int));
 
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_sprim(): Reads in array of the numbers of first primitives 
 **                   from the shells.
@@ -69,8 +72,8 @@ void Chkpt::wt_sprim(int *sprim)
 ** 
 ** \ingroup CHKPT
 */
-	void chkpt_wt_sprim(int *sprim)
+	void chkpt_wt_sprim(int *sprim, const char *key2)
 	{
-		_default_chkpt_lib_->wt_sprim(sprim);
+		_default_chkpt_lib_->wt_sprim(sprim, key2);
 	}
 }

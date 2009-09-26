@@ -6,10 +6,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 double Chkpt::rd_enuc(void)
 {
@@ -33,6 +35,7 @@ void Chkpt::wt_enuc(double enuc)
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_enuc(): Reads in the nuclear repulsion energy
 **

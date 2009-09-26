@@ -6,10 +6,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 double Chkpt::rd_escf(void)
 {
@@ -33,6 +35,7 @@ void Chkpt::wt_escf(double escf)
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_escf(): Reads in the scf energy.
 **

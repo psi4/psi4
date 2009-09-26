@@ -7,20 +7,22 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.h>
+extern "C" {
+	#include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
-int **Chkpt::rd_shell_transm(void)
+int **Chkpt::rd_shell_transm(const char *key2)
 {
 	int i, nshell, nirreps;
 	int **shell_transm;
 	psio_address ptr;
 	char *keyword;
-	keyword = build_keyword("Shell transmat");
+	keyword = build_keyword("Shell transmat", key2);
 
-	nshell = rd_nshell();
+	nshell = rd_nshell(key2);
 	nirreps = rd_nirreps();
 
 	shell_transm = matrix<int>(nshell,nirreps);
@@ -33,14 +35,14 @@ int **Chkpt::rd_shell_transm(void)
 	return shell_transm;
 }
 
-void Chkpt::wt_shell_transm(int **shell_transm)
+void Chkpt::wt_shell_transm(int **shell_transm, const char *key2)
 {
 	int i, nshell, nirreps;
 	psio_address ptr;
 	char *keyword;
-	keyword = build_keyword("Shell transmat");
+	keyword = build_keyword("Shell transmat", key2);
 
-	nshell = rd_nshell();
+	nshell = rd_nshell(key2);
 	nirreps = rd_nirreps();
 
 	ptr = PSIO_ZERO;
@@ -52,6 +54,7 @@ void Chkpt::wt_shell_transm(int **shell_transm)
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_shell_transm():	Read in a matrix of nshell*nirreps integers 
 **			        that contains symmetry information.
@@ -78,8 +81,8 @@ void Chkpt::wt_shell_transm(int **shell_transm)
 **
 ** \ingroup CHKPT
 */
-	void chkpt_wt_shell_transm(int **shell_transm)
+	void chkpt_wt_shell_transm(int **shell_transm, const char *key2)
 	{
-		_default_chkpt_lib_->wt_shell_transm(shell_transm);
+		_default_chkpt_lib_->wt_shell_transm(shell_transm, key2);
 	}
 }

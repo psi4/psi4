@@ -7,10 +7,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.h>
+extern "C" {
+	#include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 int *Chkpt::rd_frzcpi(void)
 {
@@ -43,6 +45,7 @@ void Chkpt::wt_frzcpi(int *frzcpi)
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_frzcpi():  Reads in the number of frozen doubly occupied molecular 
 **   orbitals in each irrep.

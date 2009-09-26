@@ -6,16 +6,18 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
-int Chkpt::rd_nao(void)
+int Chkpt::rd_nao(const char *key2)
 {
 	int nao;
 	char *keyword;
-	keyword = build_keyword("Num. AO");
+	keyword = build_keyword("Num. AO", key2);
 
 	psio->read_entry(PSIF_CHKPT, keyword, (char *) &nao, sizeof(int));
 
@@ -23,16 +25,17 @@ int Chkpt::rd_nao(void)
 	return nao;
 }
 
-void Chkpt::wt_nao(int nao)
+void Chkpt::wt_nao(int nao, const char *key2)
 {
 	char *keyword;
-	keyword = build_keyword("Num. AO");
+	keyword = build_keyword("Num. AO", key2);
 
 	psio->write_entry(PSIF_CHKPT, keyword, (char *) &nao, sizeof(int));
 
 	free(keyword);
 }
 
+extern "C" {
 /*!
 **  int chkpt_rd_nao()
 **  Reads in the total number of atomic orbitals.
@@ -57,9 +60,9 @@ void Chkpt::wt_nao(int nao)
 **  Returns: none
 **  \ingroup CHKPT
 */
-	void chkpt_wt_nao(int nao)
+	void chkpt_wt_nao(int nao, const char *key2)
 	{
-		_default_chkpt_lib_->wt_nao(nao);
+		_default_chkpt_lib_->wt_nao(nao, key2);
 	}
 }
 

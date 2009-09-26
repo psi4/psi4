@@ -6,10 +6,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.h>
+extern "C" {
+	#include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 double *Chkpt::rd_zvals(void)
 {
@@ -42,6 +44,7 @@ void Chkpt::wt_zvals(double *zvals)
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_zvals()
 ** Reads the nuclear charges from the checkpoint file.

@@ -7,10 +7,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 int **Chkpt::rd_ict(void)
 {
@@ -53,6 +55,7 @@ void Chkpt::wt_ict(int **ict)
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_ict():  Reads the transformation properties of the nuclei
 **     under the operations allowed for the particular symmetry point group 

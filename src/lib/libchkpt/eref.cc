@@ -7,10 +7,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 double Chkpt::rd_eref(void)
 {
@@ -35,6 +37,7 @@ void Chkpt::wt_eref(double eref)
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_eref(): Reads in the reference energy.
 **
