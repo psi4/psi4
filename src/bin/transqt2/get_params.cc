@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
+#include <string>
 #include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <psifiles.h>
@@ -17,43 +18,40 @@ namespace psi {
 
 void get_params()
 {
-  int errcod, tol;
+  int tol;
   char *junk;
   int *mu_irreps, tmp;
 
-  params.wfn = const_cast<char*>(options.get_cstr("WFN"));
+  params.wfn = options.get_str("WFN");
 
   /* NB: SCF wfns are allowed because, at present, ccsort is needed for
      RPA-type calculations */
 
   params.semicanonical = 0;
-  junk = const_cast<char*>(options.get_cstr("REFERENCE"));
-  if (errcod != IPE_OK)
-    params.ref = 0; /* if no reference is given, assume rhf */
-  else {
-    if(!strcmp(junk, "RHF")) params.ref = 0;
-    else if(!strcmp(junk,"ROHF") &&
-	    (!strcmp(params.wfn,"MP2") || !strcmp(params.wfn,"CCSD_T") ||
-	     !strcmp(params.wfn,"CC3") || !strcmp(params.wfn, "EOM_CC3") ||
-	     !strcmp(params.wfn,"CC2") || !strcmp(params.wfn, "EOM_CC2"))) {
+  std::string reference = options.get_str("REFERENCE");
+  params.ref = 0; /* if no reference is given, assume rhf */
+
+  if(reference == "RHF"){
+    params.ref = 0;
+  }else if((reference == "ROHF") and
+     (params.wfn == "MP2") or (params.wfn == "CCSD_T") or
+     (params.wfn == "CC3") or (params.wfn == "EOM_CC3") or
+     (params.wfn == "CC2") or (params.wfn == "EOM_CC2")) {
       params.ref = 2;
       params.semicanonical = 1;
     }
-    else if(!strcmp(junk, "ROHF")) params.ref = 1;
-    else if(!strcmp(junk, "UHF")) params.ref = 2;
-    else if(!strcmp(junk, "TWOCON")) params.ref = 1; /* Treat twocon as rhf */
-    else
-      throw PsiException("Invalid value of input keyword REFERENCE", __FILE__, __LINE__);
-    free(junk);
-  }
+  else if(reference == "ROHF") params.ref = 1;
+  else if(reference == "UHF") params.ref = 2;
+  else if(reference == "TWOCON") params.ref = 1; /* Treat twocon as rhf */
+  else
+    throw PsiException("Invalid value of input keyword REFERENCE", __FILE__, __LINE__);
 
   params.dertype = 0;
-  junk = const_cast<char*>(options.get_cstr("DERTYPE"));
-  if(!strcmp(junk,"NONE")) params.dertype = 0;
-  else if(!strcmp(junk,"FIRST")) params.dertype = 1;
-  else if(!strcmp(junk,"SECOND")) params.dertype = 2;
-  else if(!strcmp(junk,"RESPONSE")) params.dertype = 3; /* linear response */
-  free(junk);
+  std::string dertype = options.get_str("DERTYPE");
+  if(dertype == "NONE") params.dertype = 0;
+  else if(dertype == "FIRST") params.dertype = 1;
+  else if(dertype == "SECOND") params.dertype = 2;
+  else if(dertype == "RESPONSE") params.dertype = 3; /* linear response */
 
   params.print_lvl = options.get_int("PRINT");
 
@@ -71,14 +69,14 @@ void get_params()
 
   params.delete_tei = 1;
   /* If AO-basis chosen, keep the SO_TEI file */
-  char* aobasis;
-  aobasis = const_cast<char*>(options.get_cstr("AO_BASIS"));
-  if(!strcmp(aobasis,"DISK")) params.delete_tei = 0;
+  std::string aobasis;
+  aobasis = options.get_str("AO_BASIS");
+  if(aobasis == "DISK") params.delete_tei = 0;
 
   // any MCSCF-type wavefunction needs multiple transforms so don't delete
   // the AO two-electron ints
-  if ((strcmp(params.wfn,"OOCCD")==0 || strcmp(params.wfn,"DETCAS")==0 ||
-       strcmp(params.wfn,"CASSCF")==0|| strcmp(params.wfn,"RASSCF")==0))
+  if ((params.wfn == "OOCCD") || (params.wfn == "DETCAS") ||
+       (params.wfn == "CASSCF") || (params.wfn == "RASSCF"))
     params.delete_tei = 0;
 
   params.delete_tei = options.get_bool("DELETE_TEI");
