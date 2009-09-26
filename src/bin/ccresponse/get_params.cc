@@ -18,10 +18,10 @@
 
 namespace psi { namespace CCRESPONSE {
 
-void get_params()
+void get_params(Options &options)
 {
   int i, errcod, ref, count, iconv, *tmpi;
-  char units[20];
+  std::string units;
   std::string junk;
 
   params.wfn = options.get_str("WFN");
@@ -31,7 +31,7 @@ void get_params()
 
   params.print = options.get_int("PRINT");
 
-  fndcor(&(params.memory), infile, outfile);
+  params.memory = module.get_memory();
 
   params.cachelev = options.get_int("CACHELEV");
   params.cachelev = 0;
@@ -77,9 +77,8 @@ void get_params()
     params.nomega = count-1;
     params.omega = init_array(params.nomega);
 
-    units = options["OMEGA"][count-1].to_str();
-    for(junk = units; *junk != '\0'; junk++)
-      if(*junk>='a' && *junk <= 'z') *junk += 'A' - 'a';
+    units = options["OMEGA"][count-1].to_string();
+    to_upper(units);
 
     for(i=0; i < count-1; i++) {
       params.omega[i] = options["OMEGA"][i].to_double();
@@ -101,9 +100,9 @@ void get_params()
 
   
   moinfo.mu_irreps = init_int_array(3);
-  moinfo.mu_irreps[0] = options["MU_IRRPES"][0];
-  moinfo.mu_irreps[1] = options["MU_IRRPES"][1];
-  moinfo.mu_irreps[2] = options["MU_IRRPES"][2];
+  moinfo.mu_irreps[0] = options["MU_IRRPES"][0].to_integer();
+  moinfo.mu_irreps[1] = options["MU_IRRPES"][1].to_integer();
+  moinfo.mu_irreps[2] = options["MU_IRRPES"][2].to_integer();
   
   /* compute the irreps of the angular momentum operator while we're here */
   moinfo.l_irreps = init_int_array(3);

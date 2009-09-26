@@ -2,6 +2,7 @@
     \ingroup CCRESPONSE
     \brief Enter brief description of file here 
 */
+#include <string>
 
 namespace psi { namespace CCRESPONSE {
 
@@ -24,11 +25,11 @@ struct Local {
   double **eps_vir;
   double cutoff;
   int filter_singles;
-  char *method;
-  char *weakp;
+  std::string method;
+  std::string weakp;
   double cphf_cutoff;
-  char *freeze_core;
-  char *pairdef;
+  std::string freeze_core;
+  std::string pairdef;
 };
 
 }} // namespace psi::CCRESPONSE

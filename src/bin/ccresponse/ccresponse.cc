@@ -51,7 +51,7 @@ void polar(void);
 void optrot(void);
 void roa(void);
 
-int CCRESPONSE(int argc, char *argv[])
+int CCRESPONSE(Options &options, int argc, char *argv[])
 {
   int **cachelist, *cachefiles;
 

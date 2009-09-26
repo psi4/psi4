@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <libciomr/libciomr.h>
 #include <ccfiles.h>
+#include <psi4-dec.h>
 
 namespace psi { namespace CCRESPONSE {
 
@@ -83,7 +84,7 @@ int **cacheprep_uhf(int level, int *cachefiles)
 
       return cachelist;
     }
-  else { throw PsiException("Invalid Cache Level",__FILE__,__LINE__);
+  else { throw PsiException("Invalid Cache Level",__FILE__,__LINE__); }
 }
 
 int **cacheprep_rhf(int level, int *cachefiles)
@@ -146,7 +147,7 @@ int **cacheprep_rhf(int level, int *cachefiles)
 
       return cachelist;
     }
-  else { throw PsiException("Invalid Cache Level",__FILE__,__LINE__);
+  else { throw PsiException("Invalid Cache Level",__FILE__,__LINE__); }
 }
 
 void cache_abcd_uhf(int **cachelist)
