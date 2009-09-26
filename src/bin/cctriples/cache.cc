@@ -84,7 +84,9 @@ int **cacheprep_uhf(int level, int *cachefiles)
 
       return cachelist;
     }
-  else { printf("Error: invalid cache level!\n"); exit(PSI_RETURN_FAILURE); }
+  else { 
+    throw PsiException("CCTRIPLES error", __FILE__, __LINE__);
+  }
 }
 
 int **cacheprep_rhf(int level, int *cachefiles)
@@ -147,7 +149,9 @@ int **cacheprep_rhf(int level, int *cachefiles)
 
       return cachelist;
     }
-  else { printf("Error: invalid cache level!\n"); exit(PSI_RETURN_FAILURE); }
+  else { 
+    throw PsiException("CCTRIPLES error", __FILE__,__LINE__);
+  }
 }
 
 void cache_abcd_uhf(int **cachelist)

@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <ccfiles.h>
 #include <libdpd/dpd.h>
+#include <psi4-dec.h>
 
 namespace psi { namespace cctriples {
 
@@ -15,11 +16,6 @@ namespace psi { namespace cctriples {
 #else
 #define EXTERN
 #endif
-
-extern "C" {
-EXTERN FILE *infile, *outfile;
-EXTERN char *psi_file_prefix;
-}
 
 EXTERN struct MOInfo moinfo;
 EXTERN struct Params params;

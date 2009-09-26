@@ -5,7 +5,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.h>
@@ -43,20 +42,16 @@ namespace psi { namespace cctriples {
 
       nirreps = moinfo.nirreps;
 
-      errcod = ip_string("WFN", &(params.wfn), 0);
+      params.wfn = options.get_cstr("WFN");
       if(strcmp(params.wfn, "CCSD") && strcmp(params.wfn, "CCSD_T") &&
 	 strcmp(params.wfn,"BCCD") && strcmp(params.wfn,"BCCD_T")) {
-	fprintf(outfile, "Invalid value of input keyword WFN: %s\n", params.wfn);
-	exit(PSI_RETURN_FAILURE);
+	throw PsiException("Invalid value of input keyword WFN",__FILE__,__LINE__);
       }
 
-  i=0;
-  params.nthreads = 1;
-  errcod = ip_data("NTHREADS", "%d", &i, 0);
-  if (errcod == IPE_OK) params.nthreads = i;
-
+  params.nthreads = options.get_int("NTHREADS");
+  
   params.semicanonical = 0;
-  errcod = ip_string("REFERENCE", &(junk),0);
+  junk = options.get_cstr("REFERENCE");
   /* if no reference is given, assume rhf */
   if (errcod != IPE_OK) params.ref = 0;
   else {
@@ -68,24 +63,18 @@ namespace psi { namespace cctriples {
     else if(!strcmp(junk, "ROHF")) params.ref = 1;
     else if(!strcmp(junk, "UHF")) params.ref = 2;
     else { 
-      printf("Invalid value of input keyword REFERENCE: %s\n", junk);
-      exit(PSI_RETURN_FAILURE); 
+      throw PsiException("Invalid value of input keyword REFERENCE",__FILE__,__LINE__);
     }
     free(junk);
   }
 
-      params.dertype = 0;
-      if(ip_exist("DERTYPE",0)) {
-	errcod = ip_string("DERTYPE", &junk, 0);
-	if(errcod != IPE_OK) params.dertype = 0;
-	else if(!strcmp(junk,"NONE")) params.dertype = 0;
+	junk = options.get_cstr("DERTYPE");
+	if(!strcmp(junk,"NONE")) params.dertype = 0;
 	else if(!strcmp(junk,"FIRST")) params.dertype = 1;
 	else {
-	  printf("Value of keyword DERTYPE %s not applicable to CCSD(T).\n", junk);
-	  exit(PSI_RETURN_FAILURE);
+	  throw PsiException("Value of keyword DERTYPE is not applicable to CCSD(T)",__FILE__,__LINE__);
 	}
 	free(junk);
-      }
 
       /* Get frozen and active orbital lookups from CC_INFO */
       moinfo.frdocc = init_int_array(moinfo.nirreps);
