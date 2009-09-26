@@ -34,7 +34,7 @@ namespace psi {
         throw OptionsException("Unknown data type. [type() == " + pos->second.type() + "]");
       }
       catch (PsiException e) {
-        fprintf(stderr, "Key: %s\n%s\n", pos->first, e.what());
+        fprintf(stderr, "Key: %s\n%s\n", pos->first.c_str(), e.what());
 	    abort();
       }
     }
