@@ -11,7 +11,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
 #include <libint/libint.h>  /* for the maximum angluar momentum, LIBINT_MAX_AM */
