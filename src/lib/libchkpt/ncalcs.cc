@@ -6,10 +6,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 int Chkpt::rd_ncalcs(void)
 {
@@ -27,6 +29,7 @@ int Chkpt::rd_ncalcs(void)
 	free(keyword_alpha_mo);
 }
 
+extern "C" {
 /*!
 ** int chkpt_rd_ncalcs()  
 ** Reads in the total number of HF wave functions.

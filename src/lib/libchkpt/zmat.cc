@@ -6,10 +6,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 struct z_entry *Chkpt::rd_zmat(void)
 {
@@ -42,6 +44,7 @@ void Chkpt::wt_zmat(struct z_entry *z_geom)
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_zmat():  Reads in the z_matrix.
 **

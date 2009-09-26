@@ -7,14 +7,16 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.h>
+extern "C" {
+	#include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 double **Chkpt::rd_cartrep(void)
 {
-	int nirrep;
+	int i, nirrep;
 	double **cartrep;
 	psio_address ptr;
 	char *keyword;
@@ -48,6 +50,7 @@ void Chkpt::wt_cartrep(double **cartrep)
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_cartrep():  Reads the point group representation in the basis of
 **     cartesian unit vectors.

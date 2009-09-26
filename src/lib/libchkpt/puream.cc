@@ -6,16 +6,18 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
-bool Chkpt::rd_puream(void)
+bool Chkpt::rd_puream(const char *key2)
 {
 	int puream;
 	char *keyword;
-	keyword = build_keyword("Pure Harmonics?");
+	keyword = build_keyword("Pure Harmonics?", key2);
 
 	psio->read_entry(PSIF_CHKPT, keyword, (char *) &puream, sizeof(int));
 
@@ -23,10 +25,10 @@ bool Chkpt::rd_puream(void)
 	return (puream == 1);
 }
 
-void Chkpt::wt_puream(bool puream)
+void Chkpt::wt_puream(bool puream, const char *key2)
 {
 	char *keyword;
-	keyword = build_keyword("Pure Harmonics?");
+	keyword = build_keyword("Pure Harmonics?", key2);
 
 	int p = puream ? 1 : 0;
 	psio->write_entry(PSIF_CHKPT, keyword, (char *) &p, sizeof(int));
@@ -34,6 +36,7 @@ void Chkpt::wt_puream(bool puream)
 	free(keyword);
 }
 
+extern "C" {
 /*!
 **  int chkpt_rd_puream()
 **  Reads whether cartesian or spherical harmonics are used (Psi is currently
@@ -57,8 +60,8 @@ void Chkpt::wt_puream(bool puream)
 **  returns: none
 **  \ingroup CHKPT
 */
-	void chkpt_wt_puream(int puream)
+	void chkpt_wt_puream(int puream, const char *key2)
 	{
-		_default_chkpt_lib_->wt_puream(puream == 1);
+		_default_chkpt_lib_->wt_puream(puream == 1, key2);
 	}
 }

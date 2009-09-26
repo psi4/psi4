@@ -7,21 +7,23 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.h>
+extern "C" {
+	#include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
-double **Chkpt::rd_usotao(void)
+double **Chkpt::rd_usotao(const char *key2)
 {
 	double **usotao;
 	int num_ao, num_so, i;
 	psio_address ptr;
 	char *keyword;
-	keyword = build_keyword("SO->AO transmat");
+	keyword = build_keyword("SO->AO transmat", key2);
 
-	num_ao = rd_nao();
-	num_so = rd_nso();
+	num_ao = rd_nao(key2);
+	num_so = rd_nso(key2);
 
 	usotao = matrix<double>(num_so,num_ao);
 	ptr = PSIO_ZERO;
@@ -33,15 +35,15 @@ double **Chkpt::rd_usotao(void)
 	return usotao;
 }
 
-void Chkpt::wt_usotao(double **usotao)
+void Chkpt::wt_usotao(double **usotao, const char *key2)
 {
 	int num_ao, num_so, i;
 	psio_address ptr;
 	char *keyword;
-	keyword = build_keyword("SO->AO transmat");
+	keyword = build_keyword("SO->AO transmat", key2);
 
-	num_ao = rd_nao();
-	num_so = rd_nso();
+	num_ao = rd_nao(key2);
+	num_so = rd_nso(key2);
 
 	ptr = PSIO_ZERO;
 	for(i=0;i<num_so;i++)
@@ -50,6 +52,7 @@ void Chkpt::wt_usotao(double **usotao)
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_usotao(): Read in the SO to AO transformation matrix 
 **
@@ -73,8 +76,8 @@ void Chkpt::wt_usotao(double **usotao)
 **
 ** \ingroup CHKPT
 */
-	void chkpt_wt_usotao(double **usotao)
+	void chkpt_wt_usotao(double **usotao, const char *key2)
 	{
-		_default_chkpt_lib_->wt_usotao(usotao);
+		_default_chkpt_lib_->wt_usotao(usotao, key2);
 	}
 }

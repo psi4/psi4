@@ -6,10 +6,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 char *Chkpt::rd_label()
 {
@@ -25,16 +27,17 @@ char *Chkpt::rd_label()
 	return label;
 }
 
-void Chkpt::wt_label(const char *label)
+void Chkpt::wt_label(char *label)
 {
 	char *keyword;
 	keyword = build_keyword("Label");
 	
-	psio->write_entry(PSIF_CHKPT, keyword, const_cast<char*>(label), 80*sizeof(char));
+	psio->write_entry(PSIF_CHKPT, keyword, (char*)label, 80*sizeof(char));
 	
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_label():  Reads the main chkpt label.
 **
@@ -46,7 +49,7 @@ void Chkpt::wt_label(const char *label)
 	char *chkpt_rd_label(void)
 	{
   		char *label;
-      label = _default_chkpt_lib_->rd_label();
+		label = _default_chkpt_lib_->rd_label();
   		return label;
 	}
 
@@ -60,7 +63,7 @@ void Chkpt::wt_label(const char *label)
 ** \ingroup CHKPT
 */
 
-	void chkpt_wt_label(const char *label)
+	void chkpt_wt_label(char *label)
 	{
 		_default_chkpt_lib_->wt_label(label);
 	}

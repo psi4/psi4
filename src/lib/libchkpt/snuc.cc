@@ -7,19 +7,21 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.h>
+extern "C" {
+	#include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
-int *Chkpt::rd_snuc(void)
+int *Chkpt::rd_snuc(const char *key2)
 {
 	int *snuc;
 	int nshell;
 	char *keyword;
-	keyword = build_keyword("Shell nucleus");
+	keyword = build_keyword("Shell nucleus", key2);
 
-	nshell = rd_nshell();
+	nshell = rd_nshell(key2);
 
 	snuc = array<int>(nshell);
 
@@ -29,19 +31,20 @@ int *Chkpt::rd_snuc(void)
 	return snuc;
 }
 
-void Chkpt::wt_snuc(int *snuc)
+void Chkpt::wt_snuc(int *snuc, const char *key2)
 {
 	int nshell;
 	char *keyword;
-	keyword = build_keyword("Shell nucleus");
+	keyword = build_keyword("Shell nucleus", key2);
 
-	nshell = rd_nshell();
+	nshell = rd_nshell(key2);
 
 	psio->write_entry(PSIF_CHKPT, keyword, (char *) snuc, nshell*sizeof(int));
 
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_snuc(): Reads in array of the nuclei numbers shells belong to.
 **
@@ -66,8 +69,8 @@ void Chkpt::wt_snuc(int *snuc)
 **
 ** \ingroup CHKPT
 */
-	void chkpt_wt_snuc(int *snuc)
+	void chkpt_wt_snuc(int *snuc, const char *key2)
 	{
-		_default_chkpt_lib_->wt_snuc(snuc);
+		_default_chkpt_lib_->wt_snuc(snuc, key2);
 	}
 }

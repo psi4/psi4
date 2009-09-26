@@ -6,10 +6,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.h>
+extern "C" {
+	#include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 int *Chkpt::rd_atom_position(void)
 {
@@ -41,6 +43,7 @@ void Chkpt::wt_atom_position(int *atom_position)
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** int *chkpt_rd_atom_position() 
 **

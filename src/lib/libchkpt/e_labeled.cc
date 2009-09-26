@@ -8,10 +8,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 double Chkpt::rd_e_labeled(const char *label)
 {
@@ -40,6 +42,7 @@ void Chkpt::wt_e_labeled(const char *label, double E)
 	free(s);
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_e_labeled(): Reads in an energy with a given label
 **

@@ -6,10 +6,12 @@
 #include <stdlib.h>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 int Chkpt::rd_nfragment(void)
 {
@@ -33,6 +35,7 @@ void Chkpt::wt_nfragment(int nfragment)
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** int chkpt_rd_nfragment()  
 ** Reads in the total number of irreducible representations

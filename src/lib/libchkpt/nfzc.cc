@@ -6,10 +6,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 int Chkpt::rd_nfzc(void)
 {
@@ -33,6 +35,7 @@ psio->write_entry(PSIF_CHKPT, keyword, (char *) &nfzc, sizeof(int));
 free(keyword);
 }
 
+extern "C" {
 /*!
 ** int chkpt_rd_nfzc()  
 ** Reads in the total number of frozen doubly occupied molecular orbitals.

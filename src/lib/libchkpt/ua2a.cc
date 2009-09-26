@@ -6,10 +6,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.h>
+extern "C" {
+	#include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 int *Chkpt::rd_ua2a(void)
 {
@@ -40,6 +42,7 @@ void Chkpt::wt_ua2a(int *ua2a)
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** int *chkpt_rd_ua2a()
 ** Reads in a mapping array from the symmetry-unique atom

@@ -7,13 +7,16 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.h>
+extern "C" {
+	#include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 double **Chkpt::rd_rref(void)
 {
+	char *key;
 	double **Rref;
 	char *keyword;
 	keyword = build_keyword("Transmat to reference frame");
@@ -36,6 +39,7 @@ void Chkpt::wt_rref(double **Rref)
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_rref()  
 ** Reads in a 3x3 matrix used to rotate back to the reference frame.

@@ -6,16 +6,18 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
-int Chkpt::rd_nprim(void)
+int Chkpt::rd_nprim(const char *key2)
 {
 	int nprim;
 	char *keyword;
-	keyword = build_keyword("Num. primitives");
+	keyword = build_keyword("Num. primitives", key2);
 
 	psio->read_entry(PSIF_CHKPT, keyword, (char *) &nprim, sizeof(int));
 
@@ -23,16 +25,17 @@ int Chkpt::rd_nprim(void)
 	return nprim;
 }
 
-void Chkpt::wt_nprim(int nprim)
+void Chkpt::wt_nprim(int nprim, const char *key2)
 {
 	char *keyword;
-	keyword = build_keyword("Num. primitives");
+	keyword = build_keyword("Num. primitives", key2);
 
 	psio->write_entry(PSIF_CHKPT, keyword, (char *) &nprim, sizeof(int));
 
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** int chkpt_rd_nprim()  
 ** Reads in the total number of primitive Gaussian functions 
@@ -56,8 +59,8 @@ void Chkpt::wt_nprim(int nprim)
 ** returns: none
 ** \ingroup CHKPT
 */
-	void chkpt_wt_nprim(int nprim)
+	void chkpt_wt_nprim(int nprim, const char *key2)
 	{
-		_default_chkpt_lib_->wt_nprim(nprim);
+		_default_chkpt_lib_->wt_nprim(nprim, key2);
 	}
 }

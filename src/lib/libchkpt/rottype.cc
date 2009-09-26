@@ -6,10 +6,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 int Chkpt::rd_rottype(void)
 {
@@ -33,6 +35,7 @@ void Chkpt::wt_rottype(int rottype)
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** int chkpt_rd_rottype()  
 ** Reads in type of the rigid rotor molecule represents.

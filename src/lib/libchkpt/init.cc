@@ -7,13 +7,15 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 /* Definition of global data */
-Chkpt* _default_chkpt_lib_ = 0;
+Chkpt* psi::_default_chkpt_lib_ = 0;
 
 //extern "C" {
 /* first definition of chkpt_prefix */
@@ -23,6 +25,25 @@ Chkpt* _default_chkpt_lib_ = 0;
 Chkpt::Chkpt(psi::PSIO *psioObject, int status) : psio(psioObject)
 {
 	char *prefix;
+	psio_tocentry *this_entry;
+	
+	psio->open(PSIF_CHKPT, status);
+
+	if(psio->tocscan(PSIF_CHKPT, "Default prefix") != NULL) {
+		prefix = rd_prefix();
+		set_prefix(prefix);
+		free(prefix);
+	}
+	else {
+		set_prefix("");
+		commit_prefix();  /* assume no default prefix existed in PSIF_CHKPT */
+	}
+}
+
+Chkpt::Chkpt(psi::PSIO& psioObject, int status) : psio(&psioObject)
+{
+	char *prefix;
+	psio_tocentry *this_entry;
 	
 	psio->open(PSIF_CHKPT, status);
 
@@ -42,6 +63,7 @@ Chkpt::rehash() {
   psio->rehash(PSIF_CHKPT);
 }
 
+extern "C" {
 /*!
 **  chkpt_init()  Initializes the checkpoint file for other chkpt_
 **    functions to perform their duties.

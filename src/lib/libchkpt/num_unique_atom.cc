@@ -6,10 +6,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 int Chkpt::rd_num_unique_atom(void)
 {
@@ -33,6 +35,7 @@ psio->write_entry(PSIF_CHKPT, keyword, (char *) &nunique, sizeof(int));
 free(keyword);
 }
 
+extern "C" {
 /*!
 ** int chkpt_rd_num_unique_atom()  
 ** Reads in the number of symmetry unique atoms.

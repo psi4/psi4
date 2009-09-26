@@ -7,10 +7,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 double Chkpt::rd_e_t()
 {
@@ -36,6 +38,7 @@ void Chkpt::wt_e_t(double e_t)
 }
 
 
+extern "C" {
 /*!
 ** chkpt_rd_e_t(): Reads in the (T) contribution to total energy.
 **

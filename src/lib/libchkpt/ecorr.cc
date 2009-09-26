@@ -7,10 +7,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 double Chkpt::rd_ecorr(void)
 {
@@ -36,6 +38,7 @@ void Chkpt::wt_ecorr(double ecorr)
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** chkpt_rd_ecorr():  Reads in the correlated energy.
 **

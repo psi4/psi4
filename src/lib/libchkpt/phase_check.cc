@@ -6,10 +6,12 @@
 #include <cstdlib>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
+extern "C" {
 #include <libchkpt/chkpt.h>
+}
 #include <libchkpt/chkpt.hpp>
 
-namespace psi {
+using namespace psi;
 
 int Chkpt::rd_phase_check(void)
 {
@@ -33,6 +35,7 @@ void Chkpt::wt_phase_check(int pcheck)
 	free(keyword);
 }
 
+extern "C" {
 /*!
 ** int chkpt_rd_phase_check()
 **
