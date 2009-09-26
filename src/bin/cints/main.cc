@@ -76,7 +76,7 @@ namespace psi {
     void check_max_am();
 
 //! CINTS main procedure.
-int cints(Options & options, int argc, char *argv[])
+PsiReturnType cints(Options & options, int argc, char *argv[])
 {
   try {
     /*--- Local variables ---*/
@@ -175,7 +175,7 @@ int cints(Options & options, int argc, char *argv[])
     std::cerr << "cints failed due to errors\n";
     punt(const_cast<char*>(e.what()));
   }
-  return(PSI_RETURN_SUCCESS);
+  return(Success);
 }
 
 }}
