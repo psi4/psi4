@@ -359,7 +359,7 @@ int read_options(std::string name, Options & options) {
   }
 
   options.read_ipv1();
-  //  options.print();
+  options.print();
 }
 
 } //end ::psi
