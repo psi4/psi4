@@ -59,16 +59,6 @@ private:
   double delta_time_days;
 };
 
-
-
-
-void print_error(FILE* output, std::string message, const char* file, int line);
-void print_error(FILE* output, std::string message, const char* file, int line, int error);
-void print_error(FILE* output, const char* message, const char* file, int line);
-void print_error(FILE* output, const char* message, const char* file, int line,int error);
-void print_developing(FILE* output, const char* message, const char* file, int line);
-void print_developing(FILE* output, const char* message, const char* file, int line,int error);
-
 void generate_combinations(int n, int k, std::vector<std::vector<int> >& combinations);
 
 }
