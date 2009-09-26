@@ -754,6 +754,7 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libr12/MakeVars
           src/lib/libr12/libr12_config.h
           src/lib/liboptions/Makefile
+          src/lib/libmoinfo/Makefile
  
           src/util/tocprint/Makefile
           src/util/psiclean/Makefile
@@ -762,6 +763,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/input/Makefile
           src/bin/cints/Makefile
           src/bin/cscf/Makefile
+          src/bin/mcscf/Makefile
           src/bin/psiclean/Makefile
           src/bin/transqt2/Makefile
           src/bin/mp2/Makefile
