@@ -2,6 +2,7 @@
     \ingroup CCTRIPLES
     \brief Enter brief description of file here 
 */
+#include <string>
 
 namespace psi { namespace CCTRIPLES {
 
