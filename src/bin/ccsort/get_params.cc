@@ -225,12 +225,6 @@ void get_params()
     throw PsiException("Failure in ccsort.", __FILE__, __LINE__);
   }
 
-  else { /* assume static field by default */
-    params.omega = init_array(1);
-    params.omega[0] = 0.0;
-    params.nomega = 1;
-  }
-
   mu_irreps = init_int_array(3);
   moinfo.irrep_x = options["MU_IRREPS"][0].to_integer();
   moinfo.irrep_y = options["MU_IRREPS"][1].to_integer();
