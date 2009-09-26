@@ -7,9 +7,7 @@
 #include <stdlib.h>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
-extern "C" {
-	#include <libchkpt/chkpt.h>
-}
+#include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 #include <libciomr/libciomr.h>
 
