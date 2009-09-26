@@ -147,7 +147,7 @@ void mp2(void)
 
     if(!conv) {
       fprintf(outfile, "\n\tMP2 iterative procedure failed.\n");
-      exit(PSI_RETURN_FAILURE);
+      throw PsiException("cis MP2 iteration error", __FILE__, __LINE__);
     }
 
     /* spin adapt the final amplitudes */

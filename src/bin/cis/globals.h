@@ -3,6 +3,7 @@
     \brief Enter brief description of file here 
 */
 #include <ccfiles.h>
+#include<psi4-dec.h> 
 
 namespace psi { namespace cis {
 
@@ -14,10 +15,6 @@ namespace psi { namespace cis {
 #define EXTERN
 #endif
 
-extern "C" {
-EXTERN FILE *infile, *outfile;
-EXTERN char *psi_file_prefix;
-}
 EXTERN struct MOInfo moinfo;
 EXTERN struct Params params;
 EXTERN struct Local local;

@@ -2,6 +2,7 @@
     \ingroup CIS
     \brief Enter brief description of file here 
 */
+#include <string> 
 
 namespace psi { namespace cis {
 
@@ -23,8 +24,8 @@ struct Local {
   double *eps_occ;
   double **eps_vir;
   double cutoff;
-  char *method;
-  char *weakp;
+  std::string method;
+  std::string weakp;
   char *precon;
   double weak_pair_energy;
   double **U;

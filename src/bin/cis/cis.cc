@@ -6,7 +6,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libdpd/dpd.h>
 #include <libchkpt/chkpt.h>
@@ -28,20 +27,16 @@ int **cacheprep_rhf(int level, int *cachefiles);
 void cachedone_rhf(int **cachelist);
 void cachedone_uhf(int **cachelist);
 void get_moinfo(void);
-void get_params(void);
+void get_params(Options & options);
 void cleanup(void);
 void build_A(void);
 void d_corr(void);
-void local_init(void);
+void local_init(Options & options);
 void local_done(void);
 void amp_write_T1(dpdfile2 *T1, int length, FILE *outfile);
 void diag(void);
 
-}} // namespace psi::cis
-
-using namespace psi::cis;
-
-int main(int argc, char *argv[])
+PsiReturnType cis(Options & options, int argc, char *argv[])
 {
   char lbl[32];
   int **cachelist, *cachefiles;
@@ -55,7 +50,7 @@ int main(int argc, char *argv[])
   title();
 
   get_moinfo();
-  get_params();
+  get_params(options);
 
   cachefiles = init_int_array(PSIO_MAXUNIT);
 
@@ -81,7 +76,7 @@ int main(int argc, char *argv[])
   diag();
 
   /* moved up with impunity??? */
-  if(params.local) local_init();
+  if(params.local) local_init(options);
 
   /* print eigenvalues and largest components of eigenvectors in ascending order */
   if(params.ref == 0) {
@@ -247,26 +242,12 @@ int main(int argc, char *argv[])
   cleanup();
 
   exit_io();
-  exit(PSI_RETURN_SUCCESS);
+  return(Success);
 }
-
-extern "C" {const char *gprgid() { const char *prgid = "CIS"; return(prgid); }}
-
-namespace psi { namespace cis {
 
 void init_io(int argc, char *argv[])
 {
-  char *progid;
-
-  progid = (char *) malloc(strlen(gprgid())+2);
-  sprintf(progid, ":%s",gprgid());
-
-  psi_start(&infile,&outfile,&psi_file_prefix,argc-1,argv+1,0);
-  ip_cwk_add(progid);
-  free(progid);
-  tstart(outfile);
-
-  psio_init(); psio_ipv1_config();
+  tstart();
 
   psio_open(CC_INFO, 1);
   psio_open(CC_OEI, 1);
@@ -302,9 +283,7 @@ void exit_io(void)
   psio_close(CC_TMP0, 0);
   psio_close(CC_TMP1, 0);
 
-  psio_done();
-  tstop(outfile);
-  psi_stop(infile,outfile,psi_file_prefix);
+  tstop();
 }
 
 }} // namespace psi::cis
