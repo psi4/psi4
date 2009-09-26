@@ -64,7 +64,7 @@ void build_dipder(double ***);
 void vibration(double **, double **);
 void cphf_B(double ***, double **);
 
-int cphf(int argc, char *argv[])
+int cphf(Options & options, int argc, char *argv[])
 {
   using namespace psi::cphf;
   int coord = 0;

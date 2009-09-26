@@ -3,7 +3,8 @@ VPATH = @srcdir@
 
 include ../MakeVars
 
-PSILIBS = libPSI_ciomr.a libPSI_ipv1.a
+#PSILIBS = libPSI_ciomr.a libPSI_ipv1.a
+PSITARGET = $(top_objdir)/lib/libPSI_geom.o
 
 CXXSRC = geom.cc read11.cc read_geom.cc gprgid.cc
 

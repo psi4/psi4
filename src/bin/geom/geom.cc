@@ -45,11 +45,11 @@
 #include <cmath>
 #include <cctype>
 #include <cstring>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <masses.h>
 #include <physconst.h>
-
+#include <psi4-dec.h>
+#include <string>
 
 /* define's */
 #define MAX_LINE 132
@@ -67,11 +67,6 @@ char line2[MAX_LINE];
 int print_all_dist = 0; /* flag for printing all parameters, however far
                          * apart individual pairs of atoms are */
 double print_dist = PRINT_DIST;
-extern "C" {
-FILE *outfile;                 /* output file pointer */
-FILE *infile; 
-char *psi_file_prefix;
-}
 
 /* declare functions in this file */
 void malloc_ck(void *array, const char *mesg);
@@ -113,11 +108,9 @@ void calc_rot_constants(double Ia, double Ib, double Ic, FILE *fpo);
 void calc_mass_analysis(int natom, double *M, double *X, double *Y, 
 			double *Z, FILE *fpo);
 void fill_sym_matrix(double **A, int size);
-}} // namespace psi::geom
 
-int main(int argc, char* argv[])
+PsiReturnType geom(Options & options, int argc, char* argv[])
 {
-  using namespace psi::geom;
   int natom;                     /* number of atoms */
   double energy;                 /* energy from file11 */
   double *X, *Y, *Z;             /* pointers to arrays of Cartesian coords */
@@ -136,11 +129,12 @@ int main(int argc, char* argv[])
   char geom_file[50];            /* filename for geometry file */
   int errcod = 0;                /* necessary for input parsing */
   int num_array;                 /* number of arrays of isotopes */
-  char tmpstr[100];              /* tmp string for geom isotopes array */
+  const char *tmpstr;            /* tmp string for geom isotopes array */
   int tmpi = -1;                 /* tmp stor for casting atomic nums to int */
   int num_unparsed=0;            /* number of unparsed cmd line args */
   char *argv_unparsed[100];      /* pointers to unparsed cmd line args */
   double tval;                   
+  std::string junk; 
   enum GeomFormat { 
     PSI_FILE11,
     PSI_GEOM,
@@ -238,16 +232,31 @@ int main(int argc, char* argv[])
   }
 
   /* open files */
-  errcod = psi_start(&infile,&outfile,&psi_file_prefix,num_unparsed,argv_unparsed,0);
-  ip_cwk_add(":GEOM");
   /* done inside psi_start now
   ffile(&outfile,outfname,0);
   ffile(&infile,"input.dat",2); 
   */
-  tstart(outfile);
+  tstart();
 
   /* check input.dat for running parameters */
-  errcod = ip_boolean("READ_GEOM",&i,0);
+  errcod = 0;
+  errcod = options.get_bool("READ_GEOM");
+
+  if ((errcod == 0) && i==1) InputType = PSI_GEOM;
+  errcod = options.get_bool("ACES");
+  if ((errcod == 0) && i==1) InputType = ACES2;
+  errcod = options.get_bool("QCHEM");
+  if ((errcod == 0) && i==1) InputType = QCHEM;
+  errcod = options.get_bool("XYZ");
+  if ((errcod == 0) && i==1) InputType = XYZ;
+  errcod = options.get_bool("PRINT_ALL_DIST");
+  errcod = options.get_bool("DO_OOP");
+  errcod = options.get_bool("ANGSTROM");
+  errcod = options.get_bool("ANGSTROMS");
+  errcod = options.get_double("PRINT_DIST");
+
+
+/*
   if ((errcod == IPE_OK) && i==1) InputType = PSI_GEOM;
   errcod = ip_boolean("ACES",&i,0);
   if ((errcod == IPE_OK) && i==1) InputType = ACES2;
@@ -260,6 +269,7 @@ int main(int argc, char* argv[])
   errcod = ip_boolean("ANGSTROM",&ang_in,0);
   errcod = ip_boolean("ANGSTROMS",&ang_in,0);
   errcod = ip_data("PRINT_DIST","%lf",&print_dist,0);
+*/
 
   /* print program identification */
   fprintf(outfile, "          ***********************************\n");
@@ -401,8 +411,9 @@ int main(int argc, char* argv[])
   
   M = init_array(natom); 
   
-  errcod = ip_count("ISOTOPES", &num_array, 0);
-  if (errcod != IPE_OK) {
+  num_array = options["ISOTOPES"].size();
+  if (num_array == 0) {
+//  errcod = ip_count("ISOTOPES", &num_array, 0);
     if (InputType != PSI_GEOM && InputType != QCHEM) {
       for (i=0 ; i<natom ; i++) {
 	tmpi = (int)AN[i]; 
@@ -413,8 +424,7 @@ int main(int argc, char* argv[])
     
     /* close files */
     fprintf(outfile, "\n");
-    tstop(outfile);
-    psi_stop(infile,outfile,psi_file_prefix);
+    tstop();
     exit(0);
   }
   
@@ -422,17 +432,25 @@ int main(int argc, char* argv[])
   for (i=0 ; i<num_array ; i++) {
     if (num_array > 1) 
       fprintf(outfile, "\n****** Analysis for isotopomer %d ******\n\n", i);
-    errcod = ip_count("ISOTOPES", &k, 1, i) ; 
+    k = options["ISOTOPES"][i].to_integer(); 
+//    errcod = ip_count("ISOTOPES", &k, 1, i) ; 
+    if (k != natom) {
+      /*
     if (errcod != IPE_OK || k != natom) {
       printf("GEOM: trouble parsing isotopes array %d\n", i) ; 
       fprintf(outfile, "\n") ;
-      tstop(outfile);
-      psi_stop(infile,outfile,psi_file_prefix);
+      tstop();
       exit(0) ;
+      }
+      */  
+      throw InputException("ISOTOPES array wrong length", "ISOTOPES",
+        k, __FILE__, __LINE__);
     } 
     
     for (j=0 ; j<natom ; j++) {
-      errcod = ip_data("ISOTOPES","%s", tmpstr,2,i,j) ;
+      std::string cppstr = options["ISOTOPES"][i][j].to_string();
+      tmpstr = cppstr.c_str();
+//      errcod = ip_data("ISOTOPES","%s", tmpstr,2,i,j) ;
       if (isdigit(tmpstr[0])) {
 	sscanf(tmpstr, "%lf", &M[j]) ;
       }
@@ -455,12 +473,11 @@ int main(int argc, char* argv[])
   
   /* close files */
   fprintf(outfile, "\n");
-  tstop(outfile);
-  psi_stop(infile,outfile,psi_file_prefix);
+  tstop();
+  return(Success);
 }
 
 
-namespace psi { namespace geom {
 
 /*
 ** CALC_MASS_ANALYSIS(): This function reads in an array of the
@@ -480,7 +497,6 @@ void calc_mass_analysis(int natom, double *M, double *X, double *Y,
   double Ia, Ib, Ic ;            /* principal moments of inertia */
   double *XR, *YR, *ZR ;         /* coords relative to C of M */
   double CM[3] ;                 /* center of mass coordinates */
-  
   
   /* allocate the memory */
   I = init_matrix(3, 3) ;
@@ -633,7 +649,7 @@ void calc_bond_angles(int natom, double E[MAXATOM][MAXATOM][3],
      for (j=0; j<natom; j++) {
        for (k=i; k<natom; k++) {
 	 if ( (i != j) && (i != k) && (j != k) ) {
-	   dotprod = dot_vect(E[j][i], E[j][k], 3) ;
+	   dotprod = dot_vect(&E[j][i][0], &E[j][k][0], 3) ;
 	   if (dotprod > 1.00000) angle = 0.0000 ;
 	   else if (dotprod < -1.00000) angle = _pi ;
 	   else angle = acos(dotprod) ;
@@ -747,7 +763,7 @@ void calc_tors_angles(int natom, double E[MAXATOM][MAXATOM][3],
 	    else phi2 = BondAngles[k][j][i] ;
 	    if (j < l) phi3 = BondAngles[j][k][l] ;
 	    else phi3 = BondAngles[l][k][j] ;
-	    tval = dot_vect(cross1, cross2, 3) ;
+	    tval = psi::geom::dot_vect(&cross1[0], &cross2[0], 3) ;
 	    if ((sin(phi2) > 0.00001) && (sin(phi3) > 0.00001)) {
 	      tval /= sin(phi2) ; 
 	      tval /= sin(phi3) ;
