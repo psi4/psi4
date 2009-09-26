@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
+#include <string>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libiwl/iwl.h>
@@ -309,7 +310,7 @@ void local_init(void)
 
   /* Identify and/or remove weak pairs -- using Bougton-Pulay domains */
   weak_pairs = init_int_array(nocc*nocc);
-  if(!strcmp(local.pairdef,"BP")) {
+  if(local.pairdef=="BP") {
     fprintf(outfile, "\n");
     for(i=0,ij=0; i < nocc; i++)
       for(j=0; j < nocc; j++,ij++) {
@@ -317,12 +318,12 @@ void local_init(void)
 	for(k=0; k < natom; k++)
 	  if(domain[i][k] && domain[j][k]) weak = 0;
 
-	if(weak && strcmp(local.weakp,"NONE")) {
+	if(weak && local.weakp!="NONE") {
 	  weak_pairs[ij] = 1;
 
-	  if(!strcmp(local.weakp,"MP2"))
+	  if(local.weakp=="MP2")
 	    fprintf(outfile, "\tPair %d %d [%d] is weak and will be treated with MP2.\n", i, j, ij);
-	  else if(!strcmp(local.weakp,"NEGLECT")) {
+	  else if(local.weakp=="NEGLECT") {
 	    fprintf(outfile, "\tPair %d %d = [%d] is weak and will be deleted.\n", i, j, ij);
 	  }
 	}
@@ -566,21 +567,19 @@ void local_init(void)
   }
 
   /* Allow user input of selected domains */
-  if(ip_exist("DOMAINS",0)) {
-    ip_count("DOMAINS", &num_entries,0);
-    for(i=0; i < num_entries; i++) {
-      ip_count("DOMAINS", &entry_len, 1, i);
-      ip_data("DOMAINS", "%d", &orbital, 2, i, 0);
+  num_entries = options["DOMAINS"].size();
+  for(i=0; i < num_entries; i++) {
+    entry_len = options["DOMAINS"][i].size();
+    orbital = options["DOMAINS"][i][0].to_integer();
 
-      /* Clear out the current domain for this orbital */
-      for(j=0; j < natom; j++) domain[orbital][j] = 0;
-      domain_len[orbital] = 0;
+    /* Clear out the current domain for this orbital */
+    for(j=0; j < natom; j++) domain[orbital][j] = 0;
+    domain_len[orbital] = 0;
 
-      for(j=1; j < entry_len; j++) {
-        errcod = ip_data("DOMAINS","%d", &atom,2,i,j);
-        domain[orbital][atom] = 1;
-        domain_len[orbital]++;
-      }
+    for(j=1; j < entry_len; j++) {
+      atom = options["DOMAINS"][i][j].to_integer();
+      domain[orbital][atom] = 1;
+      domain_len[orbital]++;
     }
   }
 
@@ -649,7 +648,7 @@ void local_init(void)
       }
 
   /* Identify and/or remove weak pairs -- for CPHF "response" domains */
-  if(local.domain_polar || local.domain_mag || ip_exist("DOMAINS",0)) {
+  if(local.domain_polar || local.domain_mag) {
     fprintf(outfile, "\n");
     for(i=0,ij=0; i < nocc; i++)
       for(j=0; j < nocc; j++,ij++) {
@@ -657,12 +656,12 @@ void local_init(void)
 	for(k=0; k < natom; k++)
 	  if(domain[i][k] && domain[j][k]) weak = 0;
 
-	if(weak && strcmp(local.weakp,"NONE")) {
+	if(weak && local.weakp!="NONE") {
 	  weak_pairs[ij] = 1;
 
-	  if(!strcmp(local.weakp,"MP2"))
+	  if(local.weakp=="MP2")
 	    fprintf(outfile, "\tPair %d %d [%d] is weak and will be treated with MP2.\n", i, j, ij);
-	  else if(!strcmp(local.weakp,"NEGLECT")) {
+	  else if(local.weakp=="NEGLECT") {
 	    fprintf(outfile, "\tPair %d %d = [%d] is weak and will be deleted.\n", i, j, ij);
 	  }
 	}
@@ -747,7 +746,7 @@ void local_init(void)
       norm += Rt_full[j][i] * Rt_full[j][i];
     }
     norm = sqrt(norm);
-    if(norm < local.core_cutoff && strcmp(local.freeze_core,"FALSE")) {
+    if(norm < local.core_cutoff && local.freeze_core!="FALSE") {
       fprintf(outfile, "\tNorm of orbital %4d = %20.12f...deleteing\n", i, norm);
       for(j=0; j < nso; j++) Rt_full[j][i] = 0.0; 
     }

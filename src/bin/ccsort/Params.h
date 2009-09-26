@@ -15,17 +15,17 @@ struct Params {
   int ref;
   double *omega;         /* energy of applied field (a.u) for dynamic properties */
   int nomega;            /* number of field energies desired */
-  char *wfn;
+  std::string wfn;
   int make_abcd;
   int make_unpacked_abcd;
   int make_aibc;
   int dertype;
-  char *aobasis;
+  std::string aobasis;
   int reset;            /* cmdline argument; if true, all CC-related files */
                         /* are deleted at the beginning of the run */
   int semicanonical;    /* semicanonical orbitals for perturbation theory */
   int local;
-  char *prop;
+  std::string prop;
 };
 
 }} // namespace psi::ccsort
