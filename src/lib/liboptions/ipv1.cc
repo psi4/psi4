@@ -6,7 +6,7 @@
 #include <libipv1/ip_lib.h>
 #include <libutil/libutil.h>
 
-#include "liboptions.hpppp"
+#include "liboptions.h"
 
 #include <psi4-dec.h>
 
