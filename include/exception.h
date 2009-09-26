@@ -1,6 +1,6 @@
 #include <exception>
 
-namespace PsiExceptions {
+namespace psi {
 
 #define CHARARR_SIZE 100
 
