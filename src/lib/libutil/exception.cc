@@ -1,4 +1,5 @@
 #include <exception.h>
+#include <sstream>
 
 using namespace psi;
 using namespace std;
@@ -13,11 +14,20 @@ PsiException::PsiException(
     file_ = file;
     line_ = line;
 }
+
+void
+PsiException::rewrite_msg(string msg) throw()
+{
+    msg_ = msg;
+}
     
 const char* 
 PsiException::what() const throw()
 {
-    return msg_.c_str();
+    stringstream sstr;
+    sstr << msg_ << "\n";
+    sstr << location();
+    return sstr.str().c_str();
 }
 
 const char* 
@@ -32,6 +42,15 @@ PsiException::line() const throw()
     return line_;
 }
 
+const char*
+PsiException::location() const throw()
+{
+    stringstream sstr;
+    sstr << "file: " << file_ << "\n";
+    sstr << "line: " << line_;
+    return sstr.str().c_str();
+}
+
 PsiException::~PsiException() throw()
 {
 }
@@ -43,6 +62,70 @@ SanityCheckError::SanityCheckError(
     ) throw() 
   : PsiException(message, file, line)
 {
+    stringstream sstr;
+    sstr << "sanity check failed! " << message;
+    rewrite_msg(sstr.str());
+}
+
+SanityCheckError::~SanityCheckError() throw() {}
+
+InputException::InputException(
+    string msg,
+    string param_name,
+    int value,
+    const char* file,
+    int line
+) throw() : PsiException(msg, file, line)
+{
+    write_input_msg<int>(msg, param_name, value);
+}
+
+InputException::InputException(
+    string msg,
+    string param_name,
+    string value,
+    const char* file,
+    int line
+) throw() : PsiException(msg, file, line)
+{
+    write_input_msg<string>(msg, param_name, value);
+}
+
+InputException::InputException(
+    string msg,
+    string param_name,
+    double value,
+    const char* file,
+    int line
+) throw() : PsiException(msg, file, line)
+{
+    write_input_msg<double>(msg, param_name, value);
+}
+
+InputException::InputException(
+    string msg,
+    string param_name,
+    const char* file,
+    int line
+) throw() : PsiException(msg, file, line)
+{
+    write_input_msg<string>(msg, param_name, "in input");
+}
+
+template <
+    class T
+> void
+InputException::write_input_msg(
+    string msg,
+    string param_name,
+    T value
+) throw()
+{
+    stringstream sstr;
+    sstr << msg << "\n";
+    sstr << "value " << value << " is incorrect" << "\n";
+    sstr << "please change " << param_name << " in input";
+    rewrite_msg(sstr.str());
 }
 
 StepSizeError::StepSizeError(
@@ -51,18 +134,22 @@ StepSizeError::StepSizeError(
     double actual,
     const char* file,
     int line) throw()
-    : ParentClass(value_name, max, actual, file, line)
+    : LimitExceeded<double>(value_name + " step size", max, actual, file, line)
 {
 }
+
+StepSizeError::~StepSizeError() throw() {}
 
 MaxIterationsExceeded::MaxIterationsExceeded(
     string routine_name,
     int max,
     const char* file,
     int line)  throw()
-    : ParentClass(routine_name, max, max + 1, file, line)
+    : LimitExceeded<int>(routine_name + " iterations", max, max, file, line)
 {
 }
+
+MaxIterationsExceeded::~MaxIterationsExceeded() throw() {}
 
 ConvergenceError::ConvergenceError(
     string routine_name,
@@ -71,9 +158,15 @@ ConvergenceError::ConvergenceError(
     double actual_accuracy,
     const char* file,
     int line) throw()
-    : MaxIterationsExceeded(routine_name, max, file, line), desired_acc_(desired_accuracy), actual_acc_(actual_accuracy)
+    : MaxIterationsExceeded(routine_name + " iterations", max, file, line), desired_acc_(desired_accuracy), actual_acc_(actual_accuracy)
 {
+    stringstream sstr;
+    sstr << "could not converge " << routine_name << ".  desired " << desired_accuracy << " but got " << actual_accuracy << "\n";
+    sstr << description();
+    rewrite_msg(sstr.str());
 }
+
+ConvergenceError::~ConvergenceError() throw() {}
 
 double 
 ConvergenceError::desired_accuracy() const throw() {return desired_acc_;}
@@ -90,4 +183,23 @@ ResourceAllocationError::ResourceAllocationError(
     : LimitExceeded<size_t>(resource_name, max, actual, file, line)
 {
 }
+
+FeatureNotImplemented::FeatureNotImplemented(
+    string module_name,
+    string feature_name,
+    const char* file,
+    int line
+) throw() 
+ : PsiException("psi exception", file, line)
+{
+    stringstream sstr;
+    sstr << feature_name << " not implemented in " << module_name;
+    rewrite_msg(sstr.str());
+}
+
+FeatureNotImplemented::~FeatureNotImplemented() throw()
+{
+}
+
+ResourceAllocationError::~ResourceAllocationError() throw() {}
 
