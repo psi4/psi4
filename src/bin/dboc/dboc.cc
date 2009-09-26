@@ -1,4 +1,4 @@
-/*! \defgroup DBOC dboc: Diagonal Born-Oppenheimer Correction */
+/*! \defgroup DBOC DBOC: Diagonal Born-Oppenheimer Correction */
 
 /*! \file
     \ingroup DBOC
@@ -26,18 +26,13 @@
 #include "moinfo.h"
 #include "params.h"
 #include "hfwfn.h"
+#include <psi4-dec.h>
 
 #if defined HAVE_DECL_SETENV && !HAVE_DECL_SETENV
   extern int setenv(const char *, const char *, int);
 #endif
 
-extern "C" {
-FILE *infile, *outfile;
-char *psi_file_prefix;
-}
-extern "C" const char *gprgid();
-
-namespace psi { namespace dboc {
+namespace psi { namespace DBOC {
 
 /* Function prototypes */
 static void init_io(int argc, char *argv[]);
@@ -45,7 +40,7 @@ static void exit_io();
 void done(const char * message);
 static void parsing();
 static void read_molecule();
-static double eval_dboc();
+static double eval_DBOC();
 extern void print_intro();
 extern void print_params();
 extern void print_geom();
@@ -69,11 +64,9 @@ const char* CI_Vector_Labels[MAX_NUM_DISP] = {
 
 const int MAX_GEOM_STRING=20;
 
-}} // namespace psi::dboc
-
-int main(int argc, char *argv[])
+int dboc(int argc, char *argv[])
 {
-  using namespace psi::dboc;
+  using namespace psi::DBOC;
   int i,j;
   int natom, num, junk;
   double **geom, *zvals;
@@ -90,14 +83,12 @@ int main(int argc, char *argv[])
   read_moinfo();
 #endif
   setup_geoms();
-  double E_dboc = eval_dboc();
-  fprintf(outfile,"  E(DBOC) = %25.15lf a.u.\n",E_dboc);
-  fprintf(outfile,"  E(DBOC) = %25.5lf cm^{-1}\n\n",E_dboc*_hartree2wavenumbers);
+  double E_DBOC = eval_DBOC();
+  fprintf(outfile,"  E(DBOC) = %25.15lf a.u.\n",E_DBOC);
+  fprintf(outfile,"  E(DBOC) = %25.5lf cm^{-1}\n\n",E_DBOC*_hartree2wavenumbers);
   exit_io();
   exit(0);
 }
-
-namespace psi { namespace dboc {
 
 /*--- parsing ---*/
 void parsing()
@@ -226,7 +217,7 @@ void parsing()
   Params.disp_per_coord = 2;
   errcod = ip_data(":DBOC:DISP_PER_COORD","%d",&Params.disp_per_coord,0);
   if (Params.disp_per_coord != 2 && Params.disp_per_coord != 4)
-    throw std::runtime_error("dboc.cc:parsing() -- disp_per_coord must either be 2 or 4");
+    throw std::runtime_error("DBOC.cc:parsing() -- disp_per_coord must either be 2 or 4");
 
   Params.ref_frame_wfn = false;
   int tmp_int; errcod = ip_boolean(":DBOC:REF_FRAME_WFN",&tmp_int,0);
@@ -345,7 +336,7 @@ void run_psi_firstdisp(int disp)
   if (errcod) {
     done("input failed");
   }
-  errcod = system("psi3 --keepoutput --dboc --noinput --messy");
+  errcod = system("psi3 --keepoutput --DBOC --noinput --messy");
   if (errcod) {
     done("psi3 failed");
   }
@@ -400,7 +391,7 @@ void run_psi_otherdisp(int disp)
     if (errcod) {
       done("input failed");
     }
-    errcod = system("psi3 --keepoutput --dboc --noinput --messy");
+    errcod = system("psi3 --keepoutput --DBOC --noinput --messy");
     if (errcod) {
       done("psi3 failed");
     }
@@ -501,12 +492,12 @@ void delete_hfwfns(Params_t::Coord_t* coord)
   }
 }
 
-double eval_dboc()
+double eval_DBOC()
 {
 
   double* atomic_mass = get_atomic_masses();
   const int ndisp = Params.disp_per_coord * Params.ncoord;
-  double E_dboc = 0.0;
+  double E_DBOC = 0.0;
 
   for(int disp=1; disp<=ndisp;) {
     int current_coord = (disp-1)/Params.disp_per_coord;
@@ -538,7 +529,7 @@ double eval_dboc()
       fprintf(outfile,"  DBOC contribution           = %20.10lf a.u.\n\n", E_i);
       fflush(outfile);
     }
-    E_dboc += E_i;
+    E_DBOC += E_i;
 
     // For CI method purge the file with saved wave functions as the point group may change
     if (!strcmp(Params.wfn,"DETCI") || !strcmp(Params.wfn,"DETCAS")) {
@@ -556,7 +547,7 @@ double eval_dboc()
 
   }
 
-  return E_dboc;
+  return E_DBOC;
 }
 
 static char *orig_psi_output_env;
@@ -564,19 +555,14 @@ static char *orig_psi_output_env;
 void init_io(int argc, char *argv[])
 {
   int i;
-  char *progid;
-
-  progid = (char *) malloc(strlen(gprgid())+2);
-  sprintf(progid, ":%s",gprgid());
 
   int errcod = psi_start(&infile,&outfile,&psi_file_prefix,argc-1,argv+1,0);
   if (errcod != PSI_RETURN_SUCCESS)
     throw std::runtime_error("init_io -- psi_start failed");
   ip_cwk_add(progid);
   tstart(outfile);
-  psio_init(); psio_ipv1_config();
 
-  // Psi modules called by dboc should read from the same input file
+  // Psi modules called by DBOC should read from the same input file
   // set the value of PSI_INPUT for the duration of this run
   char* ifname = psi_ifname();
 #if HAVE_PUTENV
@@ -589,11 +575,11 @@ void init_io(int argc, char *argv[])
 #error "Have neither putenv nor setenv. Something must be very broken on this system."
 #endif
 
-  // Psi modules called by dboc should write to a different output file
+  // Psi modules called by DBOC should write to a different output file
   // reset the value of PSI_OUTPUT for the duration of this run
   orig_psi_output_env = getenv("PSI_OUTPUT");
-  char* ofname = (char*) malloc(strlen(psi_ofname())+2+strlen("dboc.findif.out"));
-  sprintf(ofname, "%s.dboc.findif.out", psi_ofname());
+  char* ofname = (char*) malloc(strlen(psi_ofname())+2+strlen("DBOC.findif.out"));
+  sprintf(ofname, "%s.DBOC.findif.out", psi_ofname());
 #if HAVE_PUTENV
   char* tmpstr2 = (char *) malloc(12+strlen(ofname));
   sprintf(tmpstr2, "PSI_OUTPUT=%s", ofname);
@@ -611,7 +597,6 @@ void exit_io()
 {
   psio_done();
   tstop(outfile);
-  psi_stop(infile,outfile,psi_file_prefix);
 }
 
 void done(const char *message)
@@ -625,11 +610,4 @@ void done(const char *message)
   delete[] errmsg;
 }
 
-}} // namespace psi::dboc
-
-extern "C" const char *gprgid()
-{
-   const char *prgid = "DBOC";
-
-   return(const_cast<char*>(prgid));
-}
+}} // namespace psi::DBOC

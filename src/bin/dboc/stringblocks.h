@@ -3,14 +3,14 @@
     \brief Enter brief description of file here 
 */
 
-#ifndef _psi3_dboc_stringblocks_h_
-#define _psi3_dboc_stringblocks_h_
+#ifndef _psi3_DBOC_stringblocks_h_
+#define _psi3_DBOC_stringblocks_h_
 
 #include <string>
 #include <psifiles.h>
 #include "float.h"
 
-namespace psi { namespace dboc {
+namespace psi { namespace DBOC {
 
 /// Manages logic of arranging strings into blocks of manageble size
 class StringBlocks {
@@ -71,6 +71,6 @@ class StringBlockedMatrix {
   std::string key(int brablk, int ketblk);
 };
 
-}} /* namespace psi::dboc */
+}} /* namespace psi::DBOC */
 
 #endif

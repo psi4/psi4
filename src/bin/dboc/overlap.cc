@@ -12,7 +12,7 @@
 #include "params.h"
 #include "mo_overlap.h"
 
-namespace psi { namespace dboc {
+namespace psi { namespace DBOC {
 
 extern Params_t Params;
 extern "C" FILE *outfile;
@@ -102,4 +102,4 @@ double eval_derwfn_overlap(bool symm)
   return S;
 }  
 
-}} // namespace psi::dboc
+}} // namespace psi::DBOC

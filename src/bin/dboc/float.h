@@ -3,8 +3,8 @@
     \brief Enter brief description of file here 
 */
 
-#ifndef _psi3_dboc_float_h_
-#define _psi3_dboc_float_h_
+#ifndef _psi3_DBOC_float_h_
+#define _psi3_DBOC_float_h_
 
 #include "defines.h"
 

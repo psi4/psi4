@@ -9,7 +9,7 @@
 #include <libqt/qt.h>
 #include "moinfo.h"
 
-namespace psi { namespace dboc {
+namespace psi { namespace DBOC {
 
 extern MOInfo_t MOInfo;
 
@@ -137,4 +137,4 @@ void mo_maps(short int** qt2p_map, short int** act_qt2p_map)
   *act_qt2p_map = aq2pmap;
 }
 
-}} // namespace psi::dboc
+}} // namespace psi::DBOC

@@ -16,11 +16,11 @@
 #include "float.h"
 #include "linalg.h"
 #include "hfwfn.h"
+#include <psi4-dec.h>
 
-namespace psi { namespace dboc {
+namespace psi { namespace DBOC {
 
 extern MOInfo_t MOInfo;
-extern "C" FILE *outfile;
 extern Params_t Params;
 extern HFWavefunction* HFVectors[MAX_NUM_DISP];
 
@@ -68,7 +68,7 @@ double eval_rhf_derwfn_overlap(DisplacementIndex LDisp, DisplacementIndex RDisp)
 
   if (Params.print_lvl > PrintLevels::print_contrib) {
     fprintf(outfile,"  +/- overlap in the basis of doubly-occupied MOs:\n");
-    psi::dboc::print_mat(CSC_occ, ndocc, ndocc, outfile);
+    psi::DBOC::print_mat(CSC_occ, ndocc, ndocc, outfile);
   }
 
   // Compute the determinant
@@ -85,4 +85,4 @@ double eval_rhf_derwfn_overlap(DisplacementIndex LDisp, DisplacementIndex RDisp)
   return (double)deter1*deter1;
 }
 
-}} // namespace psi::dboc
+}} // namespace psi::DBOC

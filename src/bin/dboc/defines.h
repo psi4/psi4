@@ -3,15 +3,15 @@
     \brief Enter brief description of file here 
 */
 
-#ifndef _psi3_dboc_defines_h_
-#define _psi3_dboc_defines_h_
+#ifndef _psi3_DBOC_defines_h_
+#define _psi3_DBOC_defines_h_
 
-namespace psi{ namespace dboc {
+namespace psi{ namespace DBOC {
 
 const int MAX_NUM_DISP=4;
 typedef enum { MinusDelta = 0, PlusDelta = 1, Minus2Delta = 2, Plus2Delta = 3} DisplacementIndex;
 
-}} /* namespace psi::dboc */
+}} /* namespace psi::DBOC */
 
 //#define LONG_DOUBLE 1   // Use long doubles for FLOAT
 

@@ -6,7 +6,7 @@
 #include <pthread.h>
 #include "ci_overlap.h"
 
-using namespace psi::dboc;
+using namespace psi::DBOC;
 
 namespace {
   // Packages ptr to CIOverlap and thread id

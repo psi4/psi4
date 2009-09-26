@@ -3,10 +3,10 @@
     \brief Enter brief description of file here 
 */
 
-#ifndef _psi3_bin_dboc_rhfwfn_h_
-#define _psi3_bin_dboc_rhfwfn_h_
+#ifndef _psi3_bin_DBOC_rhfwfn_h_
+#define _psi3_bin_DBOC_rhfwfn_h_
 
-namespace psi { namespace dboc {
+namespace psi { namespace DBOC {
 
 typedef struct {
   
@@ -14,6 +14,6 @@ typedef struct {
 
 } RHFWFN_t;
 
-}} /* namespace psi::dboc */
+}} /* namespace psi::DBOC */
 
 #endif

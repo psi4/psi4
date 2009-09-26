@@ -3,10 +3,10 @@
     \brief Enter brief description of file here 
 */
 
-#ifndef _psi3_dboc_dets_h_
-#define _psi3_dboc_dets_h_
+#ifndef _psi3_DBOC_dets_h_
+#define _psi3_DBOC_dets_h_
 
-namespace psi{ namespace dboc {
+namespace psi{ namespace DBOC {
 
 /// Det is a determinant to be sorted according to "indices" Ia and Ib (can be string indices, block indices, etc.)
 struct Det {
@@ -27,6 +27,6 @@ inline bool detcomp(DetI i, DetI j)
   return false;
 }
 
-}} /* namespace psi::dboc */
+}} /* namespace psi::DBOC */
 
 #endif

@@ -3,13 +3,13 @@
     \brief Enter brief description of file here 
 */
 
-#ifndef _psi3_bin_dboc_cioverlap_h_
-#define _psi3_bin_dboc_cioverlap_h_
+#ifndef _psi3_bin_DBOC_cioverlap_h_
+#define _psi3_bin_DBOC_cioverlap_h_
 
 #include <libqt/slaterdset.h>
 #include "stringblocks.h"
 
-namespace psi{ namespace dboc {
+namespace psi{ namespace DBOC {
 
 /// Computes overlap between 2 CI vectors. Uses precomputed string overlap matrix for alpha and beta spins.
 class CIOverlap {
@@ -61,6 +61,6 @@ class CIOverlap {
   ThreadGrp threadgrp_;
 };
 
-}} /* namespace psi::dboc */
+}} /* namespace psi::DBOC */
 
 #endif

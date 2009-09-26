@@ -12,7 +12,7 @@
 #include "stringblocks.h"
 #include "linalg.h"
 
-using namespace psi::dboc;
+using namespace psi::DBOC;
 
 StringBlocks::StringBlocks(int nstr, int nstr_per_block) :
   nstr_(nstr), nstr_per_block_(nstr_per_block)

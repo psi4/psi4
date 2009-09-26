@@ -11,7 +11,7 @@
 #include "hfwfn.h"
 
 using namespace std;
-using namespace psi::dboc;
+using namespace psi::DBOC;
 
 HFWavefunction::HFWavefunction()
 {
