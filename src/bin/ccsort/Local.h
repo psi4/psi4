@@ -5,6 +5,8 @@
 
 /*! \defgroup CCSORT ccsort: Sort integrals for Coupled-Cluster Modules */
 
+#include <string>
+
 namespace psi { namespace ccsort {
 
 struct Local {
@@ -28,14 +30,14 @@ struct Local {
   double *eps_occ;
   double **eps_vir;
   double cutoff;
-  char *method;
-  char *weakp;
+  std::string method;
+  std::string weakp;
   int filter_singles;
   double weak_pair_energy;
   double cphf_cutoff;
   double core_cutoff;
-  char *freeze_core;
-  char *pairdef;
+  std::string freeze_core;
+  std::string pairdef;
 };
 
 }} // namespace psi::ccsort
