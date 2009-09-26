@@ -22,6 +22,8 @@ int read_options(std::string name, Options & options) {
   else if (name == "INPUT") {
     ip_cwk_add(":INPUT");
 
+    options.add_str("UNITS", "ANGSTROMS", "BOHR AU ANGSTROMS ANGSTROM");
+
     /* Keep the chkpt file. */
     options.add_bool("KEEP_CHKPT",false);
 
@@ -165,7 +167,7 @@ int read_options(std::string name, Options & options) {
   }
 
   options.read_ipv1();
-  options.print();
+//  options.print();
  }
 
 } //end ::psi

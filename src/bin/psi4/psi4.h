@@ -18,7 +18,7 @@
 
 namespace psi {
 
-// Define Calculation class
+// Define Calculation class - not used for now
 
 class Calculation
 {
