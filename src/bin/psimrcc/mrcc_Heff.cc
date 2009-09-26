@@ -1,5 +1,5 @@
 #include <libmoinfo/libmoinfo.h>
-#include <liboptions/liboptions.hpp>
+#include <liboptions/liboptions.h>
 #include "mrcc.h"
 #include "matrix.h"
 #include "blas.h"

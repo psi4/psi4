@@ -22,7 +22,7 @@
 #include <libipv1/ip_lib.h>
 #include <libchkpt/chkpt.hpp>
 #include <libmoinfo/libmoinfo.h>
-#include <liboptions/liboptions.hpp>
+#include <liboptions/liboptions.h>
 #include <libutil/libutil.h>
 #include <libqt/qt.h>
 

@@ -8,7 +8,7 @@
 #include <cmath>
 #include <algorithm>
 
-#include <liboptions/liboptions.hpp>
+#include <liboptions/liboptions.h>
 #include <libutil/libutil.h>
 #include <libmoinfo/libmoinfo.h>
 

@@ -5,7 +5,7 @@
  *  A multireference coupled cluster code
  ***************************************************************************/
 
-#include <liboptions/liboptions.hpp>
+#include <liboptions/liboptions.h>
 #include "debugging.h"
 
 namespace psi{ namespace psimrcc{
