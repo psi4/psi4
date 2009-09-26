@@ -15,6 +15,7 @@ namespace psi {
   namespace CINTS    { PsiReturnType cints(Options &, int argc, char *argv[]); }
   namespace cscf     { PsiReturnType cscf(Options &, int argc, char *argv[]); }
   namespace transqt2 { PsiReturnType transqt2(Options &, int argc, char *argv[]); }
+  namespace ccsort   { PsiReturnType ccsort(Options &, int argc, char *argv[]); }
   namespace psiclean { PsiReturnType psiclean(Options &, int argc, char *argv[]); }
 
   int read_options(std::string name, Options & options);
@@ -49,10 +50,11 @@ int psi3_simulator(Options & options, int argc, char *argv[]) {
   // make a map of function pointers to the functions
   std::map<std::string, PsiReturnType(*)(Options &, int argc, char *argv[])> dispatch_table;
 
-  dispatch_table["INPUT"] = &(psi::input::input);
-  dispatch_table["CSCF"]   = &(psi::cscf::cscf);
-  dispatch_table["CINTS"] = &(psi::CINTS::cints);
+  dispatch_table["INPUT"]    = &(psi::input::input);
+  dispatch_table["CSCF"]     = &(psi::cscf::cscf);
+  dispatch_table["CINTS"]    = &(psi::CINTS::cints);
   dispatch_table["TRANSQT2"] = &(psi::transqt2::transqt2);
+  dispatch_table["CCSORT"]   = &(psi::ccsort::ccsort);
 
   /* the basic programs that were in psi3
   input      = "input"
@@ -98,6 +100,11 @@ int psi3_simulator(Options & options, int argc, char *argv[]) {
       module.set_prgid("TRANSQT2");
       read_options("TRANSQT2", options);
       dispatch_table["TRANSQT2"](options, argc, argv);
+
+      module.set_prgid("CCSORT");
+      read_options("CCSORT", options);
+      dispatch_table["CCSORT"](options, argc, argv);
+
 //  }
 //  else {
 //    fprintf(outfile,"Unknown PSI4 method\n");
