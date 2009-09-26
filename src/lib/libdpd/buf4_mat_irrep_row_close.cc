@@ -19,5 +19,5 @@ int dpd_buf4_mat_irrep_row_close(dpdbuf4 *Buf, int irrep)
   return 0;
 }
 
-} // namespace psi
+}
 

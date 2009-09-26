@@ -43,4 +43,4 @@ int dpd_file4_mat_irrep_row_wrt(dpdfile4 *File, int irrep, int row)
 
 }
 
-} // namespace psi
+}

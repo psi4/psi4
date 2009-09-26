@@ -8,7 +8,7 @@
 
 namespace psi {
 
-int dpd_file2_mat_print(dpdfile2 *File, FILE *out)
+int dpd_file2_mat_print(dpdfile2 *File, FILE *outfile)
 {
   div_t fraction;
   int i,j;
@@ -23,10 +23,10 @@ int dpd_file2_mat_print(dpdfile2 *File, FILE *out)
 
   for(h=0; h < File->params->nirreps; h++) {
 
-      fprintf(out, "\n\tFile %3d DPD File2: %s\n", File->filenum,
+      fprintf(outfile, "\n\tFile %3d DPD File2: %s\n", File->filenum,
 	      File->label);
-      fprintf(out,   "\tMatrix for Irrep %1d\n", h);
-      fprintf(out,   "\t----------------------------------------\n");
+      fprintf(outfile,   "\tMatrix for Irrep %1d\n", h);
+      fprintf(outfile,   "\t----------------------------------------\n");
       
       rows = Params->rowtot[h];
       cols = Params->coltot[h^my_irrep];
@@ -40,51 +40,51 @@ int dpd_file2_mat_print(dpdfile2 *File, FILE *out)
       for(page=0; page < num_pages; page++) {
 	  first_col = page*cols_per_page;
 
-	  fprintf(out,"\n            ");
+	  fprintf(outfile,"\n            ");
 	  for(i=first_col; i < first_col+cols_per_page; i++) 
-	      fprintf(out,"         %5d     ",i);
+	      fprintf(outfile,"         %5d     ",i);
 
-	  fprintf(out,"\n            ");
+	  fprintf(outfile,"\n            ");
 	  for(i=first_col; i < first_col+cols_per_page; i++) 
-	      fprintf(out,"          (%3d)    ",
+	      fprintf(outfile,"          (%3d)    ",
 		      Params->colorb[h^my_irrep][i]);
 
-	  fprintf (out,"\n");
+	  fprintf (outfile,"\n");
 	  for(i=0; i < rows; i++) {
-	      fprintf(out,"\n%5d  (%3d)",i, Params->roworb[h][i]);
+	      fprintf(outfile,"\n%5d  (%3d)",i, Params->roworb[h][i]);
 
 	      for(j=first_col; j < first_col+cols_per_page; j++)        
-		  fprintf (out,"%19.15f",File->matrix[h][i][j]);
+		  fprintf (outfile,"%19.15f",File->matrix[h][i][j]);
 	    }
 
-	  fprintf (out,"\n");
+	  fprintf (outfile,"\n");
 	}
 
       /* Now print the remaining columns */
       if(last_page) {
 	  first_col = page*cols_per_page;
 	  
-	  fprintf(out,"\n            ");
+	  fprintf(outfile,"\n            ");
 	  for(i=first_col; i < first_col+last_page; i++) 
-	      fprintf(out,"         %5d     ",i);
+	      fprintf(outfile,"         %5d     ",i);
       
-	  fprintf(out,"\n            ");
+	  fprintf(outfile,"\n            ");
 	  for(i=first_col; i < first_col+last_page; i++) 
-	      fprintf(out,"          (%3d)    ",
+	      fprintf(outfile,"          (%3d)    ",
 		      Params->colorb[h^my_irrep][i]);
 	  
-	  fprintf (out,"\n");
+	  fprintf (outfile,"\n");
 	  for(i=0; i < rows; i++) {
-	      fprintf(out,"\n%5d  (%3d)",i, Params->roworb[h][i]);
+	      fprintf(outfile,"\n%5d  (%3d)",i, Params->roworb[h][i]);
 	  
 	      for(j=first_col; j < first_col+last_page; j++)
-		  fprintf (out,"%19.15f", File->matrix[h][i][j]);
+		  fprintf (outfile,"%19.15f", File->matrix[h][i][j]);
 	    }
-	  fprintf (out,"\n");
+	  fprintf (outfile,"\n");
 	}
     }
 
   return 0;
 }
 
-} // namespace psi
+}

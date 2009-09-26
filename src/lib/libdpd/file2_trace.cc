@@ -10,7 +10,7 @@ namespace psi {
 double dpd_file2_trace(dpdfile2 *InFile)
 {
   int h, nirreps;
-  int row;
+  int row, col;
   double trace;
 
   nirreps = InFile->params->nirreps;
@@ -23,11 +23,10 @@ double dpd_file2_trace(dpdfile2 *InFile)
       for(row=0; row < InFile->params->rowtot[h]; row++)
           trace += InFile->matrix[h][row][row];
 
-  dpd_file2_mat_wrt(InFile);
   dpd_file2_mat_close(InFile);
 
   return trace;
 }
 
 
-} // namespace psi
+}

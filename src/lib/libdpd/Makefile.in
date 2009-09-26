@@ -57,10 +57,10 @@ include $(LIBOBJ:%.o=%.d)
 endif
 
 install_inc:: dpd.h
-	$(MKDIRS) $(incdir)/libdpd
-	$(INSTALL_INCLUDE) $^ $(incdir)/libdpd
+	$(MKDIRS) $(DESTDIR)$(incdir)/libdpd
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libdpd
 
 install_man:: libdpd.html
-	$(MKDIRS) $(htmldir)
-	$(INSTALL_INCLUDE) $^ $(htmldir)
+	$(MKDIRS) $(DESTDIR)$(htmldir)
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(htmldir)
 

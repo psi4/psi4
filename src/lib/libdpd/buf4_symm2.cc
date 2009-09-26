@@ -48,4 +48,4 @@ int dpd_buf4_symm2(dpdbuf4 *Buf1, dpdbuf4 *Buf2)
 }
 
 
-} // namespace psi
+}

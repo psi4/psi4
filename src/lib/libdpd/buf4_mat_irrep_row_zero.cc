@@ -8,7 +8,7 @@
 
 namespace psi {
 
-int dpd_buf4_mat_irrep_row_zero(dpdbuf4 *Buf, int irrep, int)
+int dpd_buf4_mat_irrep_row_zero(dpdbuf4 *Buf, int irrep, int row)
 {
   int coltot, all_buf_irrep;
   
@@ -22,4 +22,4 @@ int dpd_buf4_mat_irrep_row_zero(dpdbuf4 *Buf, int irrep, int)
 
 }
 
-} // namespace psi
+}

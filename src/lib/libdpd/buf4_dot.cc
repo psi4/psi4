@@ -101,5 +101,5 @@ double dpd_buf4_dot(dpdbuf4 *BufA, dpdbuf4 *BufB)
   return dot;
 }
       
-} // namespace psi
+}
 

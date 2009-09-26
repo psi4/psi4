@@ -12,8 +12,6 @@
 
 namespace psi {
 
-extern FILE *outfile;
-
 /* dpd_contract424(): Contracts four-index and two-index quantities to
  ** give a product four-index quantity.
  **
@@ -36,15 +34,15 @@ extern FILE *outfile;
 int dpd_contract424(dpdbuf4 *X, dpdfile2 *Y, dpdbuf4 *Z, int sum_X,
     int sum_Y, int Ztrans, double alpha, double beta)
 {
-  int nirreps, GX, GY, GZ, hxbuf, hzbuf, Hx, Hy, Hz, GsX, GsZ;
+  int h, nirreps, GX, GY, GZ, hxbuf, hzbuf, h0, Hx, Hy, Hz, GsX, GsZ;
   int rking=0, symlink;
   int Xtrans,Ytrans;
   int *numlinks, *numrows, *numcols;
   int incore;
-  long int memoryd, core_total, rowtot, coltot, maxrows;
-  int xcount, zcount;
+  long int core, memoryd, core_total, rowtot, coltot, maxrows;
+  int xcount, zcount, scount, Ysym;
   int rowx, rowz, colx, colz;
-  int pq, Gr;
+  int pq, rs, r, s, Gr, Gs;
   dpdtrans4 Xt, Zt;
   double ***Xmat, ***Zmat;
 #ifdef DPD_DEBUG
@@ -356,4 +354,4 @@ int dpd_contract424(dpdbuf4 *X, dpdfile2 *Y, dpdbuf4 *Z, int sum_X,
 
 }
 
-} // namespace psi
+}

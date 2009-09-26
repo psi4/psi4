@@ -36,4 +36,4 @@ int dpd_buf4_close(dpdbuf4 *Buf)
   return 0;
 }
 
-} // namespace psi
+}

@@ -16,7 +16,7 @@ namespace psi {
 **   int print_data: 0 = print buf4 parameters only; 1 = print matrices
 */
 
-int dpd_buf4_print(dpdbuf4 *Buf, FILE *out, int print_data)
+int dpd_buf4_print(dpdbuf4 *Buf, FILE *outfile, int print_data)
 {
   int h, i, all_buf_irrep;
   dpdparams4 *Params;
@@ -24,24 +24,24 @@ int dpd_buf4_print(dpdbuf4 *Buf, FILE *out, int print_data)
   all_buf_irrep = Buf->file.my_irrep;
   Params = Buf->params;
 
-  fprintf(out, "\n\tDPD Buf4 for file4: %s\n", Buf->file.label);
-  fprintf(out, "\n\tDPD Parameters:\n");
-  fprintf(out,   "\t---------------\n");
-  fprintf(out,   "\tpqnum = %d   rsnum = %d\n",
+  fprintf(outfile, "\n\tDPD Buf4 for file4: %s\n", Buf->file.label);
+  fprintf(outfile, "\n\tDPD Parameters:\n");
+  fprintf(outfile,   "\t---------------\n");
+  fprintf(outfile,   "\tpqnum = %d   rsnum = %d\n",
 	  Params->pqnum, Params->rsnum);
-  fprintf(out, "\t   Row and column dimensions for DPD Block:\n");
-  fprintf(out, "\t   ----------------------------------------\n");
+  fprintf(outfile, "\t   Row and column dimensions for DPD Block:\n");
+  fprintf(outfile, "\t   ----------------------------------------\n");
   for(i=0; i < Params->nirreps; i++)
-    fprintf(out,   "\t   Irrep: %1d row = %5d\tcol = %5d\n", i,
+    fprintf(outfile,   "\t   Irrep: %1d row = %5d\tcol = %5d\n", i,
 	    Params->rowtot[i], Params->coltot[i^all_buf_irrep]);
-  fflush(out);
+  fflush(outfile);
 
   if(print_data) {
     for(h=0; h < Buf->params->nirreps; h++) {
-      fprintf(out, "\n\tFile %3d DPD Buf4: %s\n", Buf->file.filenum,
+      fprintf(outfile, "\n\tFile %3d DPD Buf4: %s\n", Buf->file.filenum,
 	      Buf->file.label);
-      fprintf(out,   "\tMatrix for Irrep %1d\n", h);
-      fprintf(out,   "\t----------------------------------------\n");
+      fprintf(outfile,   "\tMatrix for Irrep %1d\n", h);
+      fprintf(outfile,   "\t----------------------------------------\n");
       dpd_buf4_mat_irrep_init(Buf, h);
       dpd_buf4_mat_irrep_rd(Buf, h);
       dpd_4mat_irrep_print(Buf->matrix[h], Buf->params, h, all_buf_irrep, outfile);
@@ -53,4 +53,4 @@ int dpd_buf4_print(dpdbuf4 *Buf, FILE *out, int print_data)
 
 }
 
-} // namespace psi
+}

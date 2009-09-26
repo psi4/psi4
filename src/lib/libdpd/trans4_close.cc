@@ -25,4 +25,4 @@ int dpd_trans4_close(dpdtrans4 *Trans)
 
 }
 
-} // namespace psi
+}

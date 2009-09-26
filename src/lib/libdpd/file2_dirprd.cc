@@ -43,4 +43,4 @@ int dpd_file2_dirprd(dpdfile2 *FileA, dpdfile2 *FileB)
 }
       
 
-} // namespace psi
+}

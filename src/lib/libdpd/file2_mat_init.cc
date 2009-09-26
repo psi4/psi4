@@ -21,4 +21,4 @@ int dpd_file2_mat_init(dpdfile2 *File)
   return 0;
 }
 
-} // namespace psi
+}

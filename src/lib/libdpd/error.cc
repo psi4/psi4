@@ -11,11 +11,11 @@
 namespace psi {
 
 
-void dpd_error(const char *caller, FILE *out)
+void dpd_error(const char *caller, FILE *outfile)
 {
-  fprintf(out, "Error in: %s\n", caller);
+  fprintf(outfile, "Error in: %s\n", caller);
   dpd_close(dpd_default);
   exit(PSI_RETURN_FAILURE);
 }
 
-} // namespace psi
+}

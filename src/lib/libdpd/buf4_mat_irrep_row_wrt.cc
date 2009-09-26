@@ -11,12 +11,14 @@ namespace psi {
 int dpd_buf4_mat_irrep_row_wrt(dpdbuf4 *Buf, int irrep, int pq)
 {
   int method, filerow, all_buf_irrep;
+  int rs;  /* dpdfile row and column indices */
   int p, q, r, s;  /* orbital indices */
-  int bufrs, rs;  /* Input dpdbuf row and column indices */
+  int bufpq, bufrs;  /* Input dpdbuf row and column indices */
   int filepq;
   int rowtot, coltot;  /* dpdfile row and column dimensions */
   int b_perm_pq, b_perm_rs, b_peq, b_res;
   int f_perm_pq, f_perm_rs, f_peq, f_res;
+  int permute;
   double value; 
 
   all_buf_irrep = Buf->file.my_irrep;
@@ -211,4 +213,4 @@ int dpd_buf4_mat_irrep_row_wrt(dpdbuf4 *Buf, int irrep, int pq)
 
 }
 
-} // namespace psi
+}

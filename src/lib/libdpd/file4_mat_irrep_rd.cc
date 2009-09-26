@@ -42,4 +42,4 @@ int dpd_file4_mat_irrep_rd(dpdfile4 *File, int irrep)
 
 }
 
-} // namespace psi
+}

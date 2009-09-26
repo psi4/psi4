@@ -25,4 +25,4 @@ void dpd_memset(long int memory)
   dpd_main.memory = memory;
 }
 
-} // namespace psi
+}

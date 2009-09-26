@@ -30,4 +30,4 @@ int dpd_file2_axpbycz(dpdfile2 *FileA, dpdfile2 *FileB, dpdfile2 *FileC,
 }
 
 
-} // namespace psi
+}

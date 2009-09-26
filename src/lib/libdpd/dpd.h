@@ -11,12 +11,8 @@
 #include <libiwl/iwl.h>
 #include <psifiles.h>
 
-#ifdef USE_DMALLOC
-#include <dmalloc.h>
-#endif
-
 namespace psi {
-	
+
 #define T3_TIMER_ON (0)
 
 #define DPD_BIGNUM 2147483647 /* the four-byte signed int limit */
@@ -200,7 +196,7 @@ int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype,
 int dpd_close(int dpd_num);
 int dpd_set_default(int dpd_num);
 
-void dpd_error(const char *caller, FILE *out);
+void dpd_error(const char *caller, FILE *outfile);
 
 double **dpd_block_matrix(int n, int m);
 void dpd_free_block(double **array, int n, int m);
@@ -239,9 +235,9 @@ int dpd_file2_mat_init(dpdfile2 *File);
 int dpd_file2_mat_close(dpdfile2 *File);
 int dpd_file2_mat_rd(dpdfile2 *File);
 int dpd_file2_mat_wrt(dpdfile2 *File);
-int dpd_file2_print(dpdfile2 *File, FILE *out);
-int dpd_file2_mat_print(dpdfile2 *File, FILE *out);
-int dpd_file2_copy(dpdfile2 *InFile, int outfilenum, char *label);
+int dpd_file2_print(dpdfile2 *File, FILE *outfile);
+int dpd_file2_mat_print(dpdfile2 *File, FILE *outfile);
+int dpd_file2_copy(dpdfile2 *InFile, int outfilenum, const char *label);
 int dpd_file2_dirprd(dpdfile2 *FileA, dpdfile2 *FileB);
 double dpd_file2_dot(dpdfile2 *FileA, dpdfile2 *FileB);
 int dpd_file2_scm(dpdfile2 *InFile, double alpha);
@@ -254,9 +250,9 @@ int dpd_file2_axpbycz(dpdfile2 *FileA, dpdfile2 *FileB, dpdfile2 *FileC,
 
 
 int dpd_file4_init(dpdfile4 *File, int filenum, int irrep, int pqnum,
-		   int rsnum, const char *label);
+		   int rsnum,  const char *label);
 int dpd_file4_init_nocache(dpdfile4 *File, int filenum, int irrep, int pqnum,
-		   int rsnum, const char *label);
+		   int rsnum,  const char *label);
 int dpd_file4_close(dpdfile4 *File);
 int dpd_file4_mat_irrep_init(dpdfile4 *File, int irrep);
 int dpd_file4_mat_irrep_close(dpdfile4 *File, int irrep);
@@ -281,13 +277,13 @@ int dpd_buf4_mat_irrep_close(dpdbuf4 *Buf, int irrep);
 int dpd_buf4_mat_irrep_rd(dpdbuf4 *Buf, int irrep);
 int dpd_buf4_mat_irrep_wrt(dpdbuf4 *Buf, int irrep);
 int dpd_buf4_print(dpdbuf4 *Buf, FILE *outfile, int print_data);
-int dpd_buf4_copy(dpdbuf4 *InBuf, int outfilenum, char *label);
+int dpd_buf4_copy(dpdbuf4 *InBuf, int outfilenum, const char *label);
 int dpd_buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 		  int pqnum, int rsnum, const char *label);
 int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
-		      int pqnum, int rsnum, char *label);
+		      int pqnum, int rsnum, const char *label);
 int dpd_buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
-		       int pqnum, int rsnum, char *label, double alpha);
+		       int pqnum, int rsnum, const char *label, double alpha);
 int dpd_buf4_axpy(dpdbuf4 *BufX, dpdbuf4 *BufY, double alpha);
 int dpd_buf4_axpbycz(dpdbuf4 *FileA, dpdbuf4 *FileB, dpdbuf4 *FileC,
   double a, double b, double c);
@@ -295,7 +291,7 @@ int dpd_buf4_dirprd(dpdbuf4 *BufA, dpdbuf4 *BufB);
 double dpd_buf4_dot(dpdbuf4 *BufA, dpdbuf4 *BufB);
 double dpd_buf4_dot_self(dpdbuf4 *BufX);
 int dpd_buf4_scm(dpdbuf4 *InBuf, double alpha);
-int dpd_buf4_scmcopy(dpdbuf4 *InBuf, int outfilenum, char *label, 
+int dpd_buf4_scmcopy(dpdbuf4 *InBuf, int outfilenum, const char *label, 
                      double alpha);
 int dpd_buf4_symm(dpdbuf4 *Buf);
 int dpd_buf4_symm2(dpdbuf4 *Buf1, dpdbuf4 *Buf2);
@@ -330,7 +326,7 @@ int dpd_4mat_irrep_print(double **matrix, dpdparams4 *Params,
 
 void dpd_file2_cache_init(void);
 void dpd_file2_cache_close(void);
-void dpd_file2_cache_print(FILE *out);
+void dpd_file2_cache_print(FILE *outfile);
 struct dpd_file2_cache_entry
  *dpd_file2_cache_scan(int filenum, int irrep, int pnum, int qnum, const char *label, int dpdnum);
 struct dpd_file2_cache_entry *dpd_file2_cache_last(void);
@@ -383,25 +379,25 @@ void cc3_sigma_RHF(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
     int do_singles, dpdbuf4 *Dints, dpdfile2 *SIA,
     int do_doubles, dpdfile2 *FME, dpdbuf4 *WAmEf, dpdbuf4 *WMnIe,
     dpdbuf4 *SIjAb, int *occpi, int *occ_off, int *virtpi, int *vir_off,
-    double omega, FILE *out);
+    double omega, FILE *outfile, int newtrips);
 
 void cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
     int do_singles, dpdbuf4 *Dints, dpdfile2 *SIA,
     int do_doubles, dpdfile2 *FME, dpdbuf4 *WAmEf, dpdbuf4 *WMnIe,
     dpdbuf4 *SIjAb, int *occpi, int *occ_off, int *virtpi, int *vir_off,
-    double omega, FILE *out, int nthreads);
+    double omega, FILE *outfile, int nthreads, int newtrips);
 
 void cc3_sigma_UHF_AAA(dpdbuf4 *CMNEF, dpdbuf4 *WABEI, dpdbuf4 *WMBIJ,
     int do_singles, dpdbuf4 *Dints_anti, dpdfile2 *SIA, int do_doubles,
     dpdfile2 *FME, dpdbuf4 *WMAFE, dpdbuf4 *WMNIE, dpdbuf4 *SIJAB,
     int *aoccpi, int *aocc_off, int *avirtpi, int *avir_off, double omega,
-    FILE *out);
+    FILE *outfile);
 
 void cc3_sigma_UHF_BBB(dpdbuf4 *Cmnef, dpdbuf4 *Wabei, dpdbuf4 *Wmbij,
      int do_singles, dpdbuf4 *Dijab_anti, dpdfile2 *Sia, int do_doubles,
      dpdfile2 *Fme, dpdbuf4 *Wmafe, dpdbuf4 *Wmnie, dpdbuf4 *Sijab,
      int *boccpi, int *bocc_off, int *bvirtpi, int *bvir_off, double omega,
-     FILE *out);
+     FILE *outfile);
 
 void cc3_sigma_UHF_AAB(dpdbuf4 *C2AA, dpdbuf4 *C2AB, dpdbuf4 *C2BA,
     dpdbuf4 *FAA, dpdbuf4 *FAB, dpdbuf4 *FBA,
@@ -412,7 +408,7 @@ void cc3_sigma_UHF_AAB(dpdbuf4 *C2AA, dpdbuf4 *C2AB, dpdbuf4 *C2BA,
     dpdbuf4 *WMNIE, dpdbuf4 *WMnIe, dpdbuf4 *WmNiE,
     dpdbuf4 *SIJAB, dpdbuf4 *SIjAb, int *aoccpi, int *aocc_off, int *boccpi,
     int *bocc_off, int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off,
-    double omega, FILE *out);
+    double omega, FILE *outfile);
 
 void cc3_sigma_UHF_BBA(dpdbuf4 *C2BB, dpdbuf4 *C2AB, dpdbuf4 *C2BA,
     dpdbuf4 *FBB, dpdbuf4 *FAB, dpdbuf4 *FBA,
@@ -423,7 +419,7 @@ void cc3_sigma_UHF_BBA(dpdbuf4 *C2BB, dpdbuf4 *C2AB, dpdbuf4 *C2BA,
     dpdbuf4 *Wmnie, dpdbuf4 *WMnIe, dpdbuf4 *WmNiE,
     dpdbuf4 *Sijab, dpdbuf4 *SIjAb, int *aoccpi, int *aocc_off, int *boccpi,
     int *bocc_off, int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off,
-    double omega, FILE *out);
+    double omega, FILE *outfile);
 
 }
 

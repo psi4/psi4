@@ -134,4 +134,4 @@ int dpd_contract422(dpdbuf4 *X, dpdfile2 *Y, dpdfile2 *Z, int trans_Y,
   return 0;
 }
 
-} // namespace psi
+}

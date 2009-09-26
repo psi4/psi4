@@ -10,8 +10,6 @@
 
 namespace psi {
 
-extern FILE *outfile;
-
 /* dpd_contract442(): Contracts a four-index quantity with another
  ** four-index quantity to compute the contribution to a
  ** two-index quantity, beta * Z = alpha * X * Y.
@@ -36,10 +34,10 @@ extern FILE *outfile;
 int dpd_contract442(dpdbuf4 *X, dpdbuf4 *Y, dpdfile2 *Z, int target_X,
     int target_Y, double alpha, double beta)
 {
-  int hxbuf,hybuf,nirreps,GX,GY,GZ,Hx,Hy,Hz;
+  int h,hxbuf,hybuf,nirreps,Gtar,GX,GY,GZ,Hx,Hy,Hz,hlinks;
   int rking=0;
   dpdtrans4 Xt, Yt;
-  double ***Xmat, ***Ymat;
+  double ***Xmat, ***Ymat, ***Zmat;
   int Xtrans, Ytrans, *numlinks;
 #ifdef DPD_DEBUG
   int *xrow, *xcol, *yrow, *ycol, *zrow, *zcol;
@@ -299,4 +297,4 @@ int dpd_contract442(dpdbuf4 *X, dpdbuf4 *Y, dpdfile2 *Z, int target_X,
 
 
 
-} // namespace psi
+}

@@ -22,7 +22,7 @@ namespace psi {
 int dpd_buf4_axpy(dpdbuf4 *BufX, dpdbuf4 *BufY, double alpha)
 {
   int h, nirreps, my_irrep;
-  int incore, n, nbuckets;
+  int row, col, incore, n, nbuckets;
   long int length;
   long int memoryd, rows_per_bucket, rows_left;
   double *X, *Y;
@@ -128,4 +128,4 @@ int dpd_buf4_axpy(dpdbuf4 *BufX, dpdbuf4 *BufY, double alpha)
   return 0;
 }
 
-} // namespace psi
+}

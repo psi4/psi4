@@ -15,4 +15,4 @@ int dpd_set_default(int dpd_num)
   return 0;
 }
 
-} // namespace psi
+}
