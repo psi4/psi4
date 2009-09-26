@@ -163,8 +163,7 @@ double ET_RHF(void)
           errcod = pthread_create(&(p_thread[thread]), NULL, ET_RHF_thread,
                    (void *) &thread_data_array[thread]);
           if (errcod) {
-            fprintf(stderr,"pthread_create in ET_RHF() failed\n");
-            exit(PSI_RETURN_FAILURE);
+            throw PsiException("pthread_create in ET_RHF()",__FILE__,__LINE__);
           }
         }
 
@@ -172,8 +171,7 @@ double ET_RHF(void)
           if (!ijk_part[thread]) continue;
           errcod = pthread_join(p_thread[thread], NULL);
           if (errcod) {
-            fprintf(stderr,"pthread_join in ET_RHF() failed\n");
-            exit(PSI_RETURN_FAILURE);
+            throw PsiException("pthread_join in ET_RHF() failed",__FILE__,__LINE__);
           }
         }
 
