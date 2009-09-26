@@ -87,6 +87,19 @@ int read_options(std::string name, Options & options) {
     options.add_int("ERI_FILE", PSIF_SO_TEI);
 
   }
+  else if (name == "MP2") {
+    options.add_cstr("WFN");
+    options.add_cstr("REFERENECE", "RHF");
+    options.add_cstr("JOBTYPE", "SP");
+    options.add_cstr("DERTYPE", "NONE");
+    options.add_int("PRINT", 0);
+    options.add_int("CACHELEV", 2);
+    options.add_cstr("CACHETYPE", 1);
+    options.add_bool("SCS","false");
+    options.add_bool("SCS_N", "false");
+    options.get_double("SCALE_OS", 6.0/5.0);
+    options.get_double("SCALE_SS", 1.0/3.0);
+  }
   else if(name == "TRANSQT") {
     options.add_cstr("WFN");
     options.add_cstr("REFERENCE", "RHF");
