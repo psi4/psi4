@@ -333,10 +333,9 @@ int clag(int argc, char **argv)
   ** close files and end the program
   */
   close_io(); 
-  return(0);
+  return(Success);
 }
 
-namespace psi { namespace clag {
 
 /****************************************************************************/
 /* init_io(): Function opens input and output files                         */
