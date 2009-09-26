@@ -111,6 +111,10 @@ int read_options(std::string name, Options & options) {
     options.add_str("AO_BASIS", "NONE");
     options.add_bool("DELETE_TEI", true);
   }
+  else if(name == "CUSP"){
+    options.add("FROZEN_DOCC", new ArrayType());
+    options.add("FROZEN_UOCC", new ArrayType());
+  }   
   else if(name == "CCSORT") {
     options.add_str("WFN", "");
     options.add_str("REFERENCE", "RHF");
