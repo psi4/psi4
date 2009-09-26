@@ -39,6 +39,7 @@ class PsiException : public std::exception {
 
         int line() const throw()
         {
+            return line_;
         }
 
 
