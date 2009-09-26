@@ -47,7 +47,7 @@ namespace psi {
 
 void init_io(int argc, char *argv[]);
 void title(void);
-void get_params(void);
+void get_params(Options & options);
 void get_moinfo(void);
 void cleanup(void);
 void exit_io(void);
@@ -74,7 +74,7 @@ int transqt2(Options & options, int argc, char *argv[])
 
   init_io(argc,argv);
   title();
-  get_params();
+  get_params(options);
   get_moinfo();
 
   timer_init();
