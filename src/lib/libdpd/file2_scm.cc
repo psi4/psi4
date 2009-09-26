@@ -5,13 +5,13 @@
 #include <cstdio>
 #include "dpd.h"
 #include <libqt/qt.h>
-namespace psi {
 
+namespace psi {
 
 int dpd_file2_scm(dpdfile2 *InFile, double alpha)
 {
   int h, nirreps, new_file2, my_irrep;
-  int length;
+  int row, col, length;
   double *X;
 
   nirreps = InFile->params->nirreps;
@@ -40,4 +40,4 @@ int dpd_file2_scm(dpdfile2 *InFile, double alpha)
   return 0;
 }
 
-} // namespace psi
+}

@@ -37,4 +37,4 @@ double dpd_file2_dot_self(dpdfile2 *BufX)
 
 }
 
-} // namespace psi
+}

@@ -29,4 +29,4 @@ int dpd_buf4_axpbycz(dpdbuf4 *FileA, dpdbuf4 *FileB, dpdbuf4 *FileC,
   return 0;
 }
 
-} // namespace psi
+}

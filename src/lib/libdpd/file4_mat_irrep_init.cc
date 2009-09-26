@@ -35,4 +35,4 @@ int dpd_file4_mat_irrep_init(dpdfile4 *File, int irrep)
   return 0;
 }
 
-} // namespace psi
+}

@@ -35,8 +35,9 @@ namespace psi {
 int dpd_buf4_scm(dpdbuf4 *InBuf, double alpha)
 {
   int pq;
-  long int length, memoryd, core_total, rowtot, coltot, maxrows;
+  long int length, core, memoryd, core_total, rowtot, coltot, maxrows;
   int h, nirreps, new_buf4, all_buf_irrep;
+  int row, col;
   int incore;
   double *X;
 
@@ -120,4 +121,4 @@ int dpd_buf4_scm(dpdbuf4 *InBuf, double alpha)
   return 0;
 }
 
-} // namespace psi
+}

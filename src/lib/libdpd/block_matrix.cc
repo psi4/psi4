@@ -112,7 +112,8 @@ double **dpd_block_matrix(int n, int m)
   }
 
   /*  memset((void *) B, 0, m*n*sizeof(double)); */
-  bzero(B, m*n*sizeof(double));
+  //bzero(B, m*n*sizeof(double));
+  memset(B, '\0', m*n*sizeof(double));
 
   for (i = 0; i < n; i++) A[i] = &(B[i*m]);
 
@@ -137,4 +138,4 @@ void dpd_free_block(double **array, int n, int m)
   dpd_main.memused -= size;
 }
 
-} // namespace psi
+}

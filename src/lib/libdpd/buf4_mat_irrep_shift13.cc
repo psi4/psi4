@@ -82,4 +82,4 @@ int dpd_buf4_mat_irrep_shift13(dpdbuf4 *Buf, int buf_block)
   return 0;
 }
 
-} // namespace psi
+}

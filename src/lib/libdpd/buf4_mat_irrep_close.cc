@@ -50,7 +50,7 @@ int dpd_buf4_mat_irrep_close(dpdbuf4 *Buf, int irrep)
       if(Buf->file.incore && !(Buf->anti) && 
           (Buf->params->pqnum == Buf->file.params->pqnum) &&
           (Buf->params->rsnum == Buf->file.params->rsnum))
-          return 0;
+          1;
       else
           dpd_free_block(Buf->matrix[irrep], rowtot, coltot);
     }
@@ -58,5 +58,5 @@ int dpd_buf4_mat_irrep_close(dpdbuf4 *Buf, int irrep)
   return 0;
 }
 
-} // namespace psi
+}
 

@@ -29,4 +29,4 @@ int dpd_trans4_init(dpdtrans4 *Trans, dpdbuf4 *Buf)
   return 0;
 }
 
-} // namespace psi
+}

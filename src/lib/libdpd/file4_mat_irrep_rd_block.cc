@@ -45,4 +45,4 @@ int dpd_file4_mat_irrep_rd_block(dpdfile4 *File, int irrep, int start_pq,
 
 }
 
-} // namespace psi
+}

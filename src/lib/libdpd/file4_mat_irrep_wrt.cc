@@ -31,4 +31,4 @@ int dpd_file4_mat_irrep_wrt(dpdfile4 *File, int irrep)
 
 }
 
-} // namespace psi
+}

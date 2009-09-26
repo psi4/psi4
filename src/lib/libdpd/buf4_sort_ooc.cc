@@ -22,11 +22,11 @@ namespace psi {
 */
 
 int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
-    		      int pqnum, int rsnum, char *label)
+    		      int pqnum, int rsnum, const char *label)
 {
   int h,nirreps, row, col, all_buf_irrep, r_irrep;
   int p, q, r, s, P, Q, R, S, pq, rs, sr, pr, qs, qp, rq, qr, ps, sp, rp, sq;
-  int Gp, Gq, Gr, Gs, Gpr, Gqs, Grq, Gqr, Gps, Gsp, Grp, Gsq;
+  int Gp, Gq, Gr, Gs, Gpq, Grs, Gpr, Gqs, Grq, Gqr, Gps, Gsp, Grp, Gsq;
   int memoryd, rows_per_bucket, nbuckets, rows_left, incore, n;
   dpdbuf4 OutBuf;
 
@@ -1106,8 +1106,7 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 #ifdef DPD_TIMER
   timer_off("buf4_sort");
 #endif
-  return 0;
 }
 
-} // namespace psi
+}
 

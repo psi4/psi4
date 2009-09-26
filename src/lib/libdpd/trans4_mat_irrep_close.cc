@@ -37,4 +37,4 @@ int dpd_trans4_mat_irrep_close(dpdtrans4 *Trans, int irrep)
   return 0;
 }
 
-} // namespace psi
+}

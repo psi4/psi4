@@ -49,4 +49,4 @@ int dpd_file4_mat_irrep_row_rd(dpdfile4 *File, int irrep, int row)
 
 }
 
-} // namespace psi
+}

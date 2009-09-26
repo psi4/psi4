@@ -280,17 +280,17 @@ void dpd_file4_cache_print_screen(void)
   fprintf(stdout, "Least recent entry = %d\n", dpd_main.file4_cache_least_recent);
 }
 
-void dpd_file4_cache_print(FILE *out)
+void dpd_file4_cache_print(FILE *outfile)
 {
   int total_size=0;
   struct dpd_file4_cache_entry *this_entry;
 
   this_entry = dpd_main.file4_cache;
 
-  fprintf(out, "\n\tDPD File4 Cache Listing:\n\n");
-  fprintf(out,
+  fprintf(outfile, "\n\tDPD File4 Cache Listing:\n\n");
+  fprintf(outfile,
 	  "Cache Label            DPD File symm  pq  rs  use acc clean    pri lock size(kB)\n");
-  fprintf(out,
+  fprintf(outfile,
 	  "--------------------------------------------------------------------------------\n");
   while(this_entry != NULL) {
     fprintf(outfile,
@@ -304,18 +304,18 @@ void dpd_file4_cache_print(FILE *out)
   }
   fprintf(outfile,
 	  "--------------------------------------------------------------------------------\n");
-  fprintf(out, "Total cached: %8.1f kB; MRU = %6d; LRU = %6d\n",
+  fprintf(outfile, "Total cached: %8.1f kB; MRU = %6d; LRU = %6d\n",
 	  (total_size*sizeof(double))/1e3,dpd_main.file4_cache_most_recent,
 	  dpd_main.file4_cache_least_recent);
-  fprintf(out, "#LRU deletions = %6d; #Low-priority deletions = %6d\n", 
+  fprintf(outfile, "#LRU deletions = %6d; #Low-priority deletions = %6d\n", 
           dpd_main.file4_cache_lru_del,dpd_main.file4_cache_low_del);
-  fprintf(out, "Core max size:  %9.1f kB\n", (dpd_main.memory)*sizeof(double)/1e3);
-  fprintf(out, "Core used:      %9.1f kB\n", (dpd_main.memused)*sizeof(double)/1e3);
-  fprintf(out, "Core available: %9.1f kB\n", dpd_memfree()*sizeof(double)/1e3);
-  fprintf(out, "Core cached:    %9.1f kB\n", (dpd_main.memcache)*sizeof(double)/1e3);
-  fprintf(out, "Locked cached:  %9.1f kB\n", (dpd_main.memlocked)*sizeof(double)/1e3);
-  fprintf(out, "Most recent entry  = %d\n", dpd_main.file4_cache_most_recent);
-  fprintf(out, "Least recent entry = %d\n", dpd_main.file4_cache_least_recent);
+  fprintf(outfile, "Core max size:  %9.1f kB\n", (dpd_main.memory)*sizeof(double)/1e3);
+  fprintf(outfile, "Core used:      %9.1f kB\n", (dpd_main.memused)*sizeof(double)/1e3);
+  fprintf(outfile, "Core available: %9.1f kB\n", dpd_memfree()*sizeof(double)/1e3);
+  fprintf(outfile, "Core cached:    %9.1f kB\n", (dpd_main.memcache)*sizeof(double)/1e3);
+  fprintf(outfile, "Locked cached:  %9.1f kB\n", (dpd_main.memlocked)*sizeof(double)/1e3);
+  fprintf(outfile, "Most recent entry  = %d\n", dpd_main.file4_cache_most_recent);
+  fprintf(outfile, "Least recent entry = %d\n", dpd_main.file4_cache_least_recent);
 }
 
 struct dpd_file4_cache_entry *dpd_file4_cache_find_lru(void)
@@ -556,4 +556,4 @@ void dpd_file4_cache_unlock(dpdfile4 *File)
 }
 
 
-} // namespace psi
+}

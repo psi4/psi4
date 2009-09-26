@@ -32,4 +32,4 @@ int dpd_file2_mat_rd(dpdfile2 *File)
   return 0;
 }
 
-} // namespace psi
+}

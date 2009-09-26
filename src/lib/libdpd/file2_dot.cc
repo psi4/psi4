@@ -38,4 +38,4 @@ double dpd_file2_dot(dpdfile2 *FileA, dpdfile2 *FileB)
 
 }
 
-} // namespace psi
+}

@@ -23,9 +23,9 @@ namespace psi {
 ** TDC, September 1999
 */
 
-int dpd_buf4_copy(dpdbuf4 *InBuf, int outfilenum, char *label)
+int dpd_buf4_copy(dpdbuf4 *InBuf, int outfilenum, const char *label)
 {
-  int h, my_irrep;
+  int h, row, col, my_irrep;
   long int rowtot, coltot;
   int nbuckets, incore, n;
   long int memoryd, rows_per_bucket, rows_left, size;
@@ -130,4 +130,4 @@ int dpd_buf4_copy(dpdbuf4 *InBuf, int outfilenum, char *label)
   return 0;
 }
 
-} // namespace psi
+}

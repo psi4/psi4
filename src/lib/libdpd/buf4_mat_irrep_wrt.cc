@@ -343,4 +343,4 @@ int dpd_buf4_mat_irrep_wrt(dpdbuf4 *Buf, int irrep)
 
 }
 
-} // namespace psi
+}

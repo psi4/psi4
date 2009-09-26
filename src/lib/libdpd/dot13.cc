@@ -115,4 +115,4 @@ int dpd_dot13(dpdfile2 *T, dpdbuf4 *I, dpdfile2 *Z,
   return 0;
 }
 
-} // namespace psi
+} 

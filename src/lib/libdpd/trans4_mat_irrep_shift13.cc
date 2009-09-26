@@ -83,4 +83,4 @@ int dpd_trans4_mat_irrep_shift13(dpdtrans4 *Trans, int buf_block)
   return 0;
 }
 
-} // namespace psi
+}

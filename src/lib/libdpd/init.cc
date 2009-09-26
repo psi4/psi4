@@ -600,4 +600,4 @@ int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype,
 }
 
 
-} // namespace psi
+}

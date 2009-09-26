@@ -13,7 +13,7 @@ namespace psi {
 int dpd_contract222(dpdfile2 *X, dpdfile2 *Y, dpdfile2 *Z, int target_X,
     int target_Y, double alpha, double beta)
 {
-  int nirreps, Xtrans, Ytrans, *numlinks;
+  int h, nirreps, Xtrans, Ytrans, *numlinks;
   int GX, GY, GZ;
   int Hx, Hy, Hz;
   int symlink;
@@ -93,4 +93,4 @@ int dpd_contract222(dpdfile2 *X, dpdfile2 *Y, dpdfile2 *Z, int target_X,
   return 0;
 }
 
-} // namespace psi
+}

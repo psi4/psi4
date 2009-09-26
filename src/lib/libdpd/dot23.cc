@@ -140,4 +140,4 @@ int dpd_dot23(dpdfile2 *T, dpdbuf4 *I, dpdfile2 *Z,
   return 0;
 }
 
-} // namespace psi
+}

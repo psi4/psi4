@@ -24,9 +24,9 @@ namespace psi {
 **
 */
 
-int dpd_buf4_scmcopy(dpdbuf4 *InBuf, int outfilenum, char *label, double alpha)
+int dpd_buf4_scmcopy(dpdbuf4 *InBuf, int outfilenum, const char *label, double alpha)
 {
-  int h, rowtot, coltot, all_buf_irrep;
+  int h, row, col, rowtot, coltot, all_buf_irrep;
   int nbuckets, incore, n, size;
   long int memoryd, rows_per_bucket, rows_left;
   dpdbuf4 OutBuf;
@@ -134,4 +134,4 @@ int dpd_buf4_scmcopy(dpdbuf4 *InBuf, int outfilenum, char *label, double alpha)
   return 0;
 }
 
-} // namespace psi
+}

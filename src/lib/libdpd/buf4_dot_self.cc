@@ -38,5 +38,5 @@ double dpd_buf4_dot_self(dpdbuf4 *BufX)
   return alpha;
 }
 
-} // namespace psi
+}
 

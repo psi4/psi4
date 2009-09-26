@@ -98,4 +98,4 @@ int dpd_file4_init(dpdfile4 *File, int filenum, int irrep, int pqnum,
   return 0;
 }
 
-} // namespace psi
+}

@@ -57,5 +57,5 @@ int dpd_buf4_mat_irrep_init(dpdbuf4 *Buf, int irrep)
 
 }
 
-} // namespace psi
+}
 

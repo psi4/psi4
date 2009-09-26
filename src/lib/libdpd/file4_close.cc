@@ -26,4 +26,4 @@ int dpd_file4_close(dpdfile4 *File)
   return 0;
 }
 
-} // namespace psi
+}
