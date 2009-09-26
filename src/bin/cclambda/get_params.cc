@@ -19,12 +19,12 @@
 
 namespace psi { namespace cclambda {
 
-void get_params(void)
+void get_params(Options& options)
 {
   int errcod, iconv,i,j,k,l,prop_sym,prop_root, excited_method=0;
 	int *states_per_irrep, prop_all, lambda_and_Ls = 0;
   char lbl[32];
-  Std::string junk;
+  std::string junk;
 
   /* check WFN keyword in input */
   params.wfn = options.get_str("WFN");
@@ -62,19 +62,19 @@ void get_params(void)
   params.restart = options.get_bool("RESTART");
   if(!moinfo.phase) params.restart = 0;
 
-  fndcor(&(params.memory),infile,outfile);
+  params.memory = module.get_memory();
 
   params.print = 0;
   params.print = options.get_int("PRINT");
 
   params.cachelev = 2;
-  params.cachelevel  = options.get_int("CACHELEV");
+  params.cachelev  = options.get_int("CACHELEV");
 
   params.sekino = 0;
-  param.sekino = options.get_bool("SEKINO");
+  params.sekino = options.get_bool("SEKINO");
 
   params.diis = 1;
-  param.diis = options.get_bool("DIIS");
+  params.diis = options.get_bool("DIIS");
 
   params.aobasis = 0;
   params.aobasis = options.get_bool("AO_BASIS");
@@ -116,7 +116,7 @@ void get_params(void)
   params.local = options.get_bool("LOCAL");
   local.cutoff = 0.02;
   local.cutoff = options.get_double("LOCAL_CUTOFF");
-  if(options["LOCAL_METHOD",0].has_changed()) {
+  if(options["LOCAL_METHOD"].has_changed()) {
     local.method = options.get_str("LOCAL_METHOD");
     if(local.method == "AOBASIS" && local.method == "WERNER") {
       fprintf(outfile, "Invalid local correlation method: %s\n", local.method.c_str());
@@ -440,14 +440,14 @@ void get_params(void)
   fprintf(outfile, "\tDIIS          =     %s\n", params.diis ? "Yes" : "No");
   fprintf(outfile, "\tAO Basis      =     %s\n", 
           params.aobasis ? "Yes" : "No");
-  fprintf(outfile, "\tABCD            =     %s\n", params.abcd);
+  fprintf(outfile, "\tABCD            =     %s\n", params.abcd.c_str());
   fprintf(outfile, "\tLocal CC        =     %s\n", params.local ? "Yes" : "No");
   if(params.local) {
     fprintf(outfile, "\tLocal Cutoff    = %3.1e\n", local.cutoff);
-    fprintf(outfile, "\tLocal Method    =    %s\n", local.method);
-    fprintf(outfile, "\tWeak pairs      =    %s\n", local.weakp);
+    fprintf(outfile, "\tLocal Method    =    %s\n", local.method.c_str());
+    fprintf(outfile, "\tWeak pairs      =    %s\n", local.weakp.c_str());
     fprintf(outfile, "\tFilter singles  =    %s\n", local.filter_singles ? "Yes" : "No");
-    fprintf(outfile, "\tLocal pairs       =    %s\n", local.pairdef);
+    fprintf(outfile, "\tLocal pairs       =    %s\n", local.pairdef.c_str());
     fprintf(outfile, "\tLocal CPHF cutoff =  %3.1e\n", local.cphf_cutoff);
   }
 

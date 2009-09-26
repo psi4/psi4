@@ -3,6 +3,8 @@
     \brief Enter brief description of file here 
 */
 
+#include <string>
+
 namespace psi { namespace cclambda {
 
 /* Input parameters for cclambda */
@@ -13,7 +15,7 @@ struct Params {
   long int memory;
   int cachelev;
   int aobasis;
-  Std::string wfn;
+  std::string wfn;
   int ref;
   int local;  /* boolean for using simulated local-CC framework */
   int nstates; /* total number of L vectors to compute */
@@ -21,7 +23,7 @@ struct Params {
   int print;
   int dertype;
   int diis;
-  Std::string abcd;
+  std::string abcd;
   int sekino;  /* Sekino-Bartlett size-extensive models */
 	/* the following should be obseleted now or soon */
   int all; /* find Ls for all excited states plus ground state */
