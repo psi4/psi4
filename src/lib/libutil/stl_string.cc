@@ -121,6 +121,11 @@ void to_lower(std::string& str)
   std::transform( str.begin(), str.end(), str.begin(),::tolower);
 }
 
+void to_upper(std::string& str)
+{
+  std::transform( str.begin(), str.end(), str.begin(),::toupper);
+}
+
 double ToDouble(const std::string str)
 {
   return std::strtod( str.c_str(), NULL);
