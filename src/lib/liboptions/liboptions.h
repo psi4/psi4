@@ -13,39 +13,40 @@
 #include <algorithm>
 #include <assert.h>
 
+#include <exception.h>
 #include <libutil/libutil.h> // Needed for Ref counting, string splitting, and conversions
 
 namespace psi {
   extern FILE *outfile;
 
-  class DataTypeException : public std::runtime_error
+  class DataTypeException : public PsiException
   {
   public:
-    DataTypeException(const std::string& message) : std::runtime_error(message) { }
+    DataTypeException(const std::string& message) : PSIEXCEPTION(message) { }
   };
 
-  class IndexException : public std::runtime_error
+  class IndexException : public PsiException
   {
   public:
-    IndexException(const std::string& message) : std::runtime_error("unable to find index " + message) { }
+    IndexException(const std::string& message) : PSIEXCEPTION("unable to find index " + message) { }
   };
 
-  class DuplicateKeyException : public std::runtime_error
+  class DuplicateKeyException : public PsiException
   {
   public:
-    DuplicateKeyException() : std::runtime_error("duplicate key found") { }
+    DuplicateKeyException() : PSIEXCEPTION("duplicate key found") { }
   };
 
-  class NotImplementedException : public std::runtime_error
+  class NotImplementedException : public PsiException
   {
   public:
-    NotImplementedException(const std::string& message) : std::runtime_error(message + " function not implemented") { }
+    NotImplementedException(const std::string& message) : PSIEXCEPTION(message + " function not implemented") { }
   };
   
-  class OptionsException : public std::runtime_error
+  class OptionsException : public PsiException
   {
   public:
-    OptionsException(const std::string& message) : std::runtime_error("Options Exception: " + message) { }
+    OptionsException(const std::string& message) : PSIEXCEPTION("Options Exception: " + message) { }
   };
 
   class Data;
