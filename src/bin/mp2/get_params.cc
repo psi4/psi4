@@ -5,7 +5,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-//#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
 #include <libpsio/psio.h>
@@ -19,73 +18,89 @@ namespace psi{ namespace mp2{
 void get_params()
 {
   int errcod;
-  char *cachetype = NULL;
-  char *junk;
+//  char *cachetype = NULL;
+//  char *junk;
+  std::string cachetype = "NULL";
+  std::string ref;
   
-  params.wfn = options.get_cstr("WFN");
-  junk = options.get_cstr("REFERENECE");
+  params.wfn = options.get_str("WFN");
+//  junk = options.get_str("REFERENECE");
+  ref = options.get_str("REFERENECE"); 
 
   /* Default reference is RHF */
   params.ref = 0;
   params.semicanonical = 0;
-  if(!strcmp(junk,"RHF")) params.ref = 0;
-  else if(!strcmp(junk,"ROHF") && !strcmp(params.wfn,"MP2")) {
+//  if(!strcmp(junk,"RHF")) params.ref = 0;
+  if(ref == "RHF") params.ref = 0;
+//  else if(!strcmp(junk,"ROHF") && !strcmp(params.wfn,"MP2")) {
+  else if(ref == "ROHF" && params.wfn == "MP2") {
     params.ref = 2;
     params.semicanonical = 1;
   }
-  else if(!strcmp(junk,"ROHF")) params.ref = 1;
-  else if(!strcmp(junk,"UHF")) params.ref = 2;
+//  else if(!strcmp(junk,"ROHF")) params.ref = 1;
+//  else if(!strcmp(junk,"UHF")) params.ref = 2;
+  else if(ref == "ROHF") params.ref = 1;
+  else if(ref == "UHF") params.ref = 2;
   else {
     throw PsiException("Invalid Reference", __FILE__, __LINE__);
   }
   
   /* Default Jobtype */
-  params.jobtype = options.get_cstr("JOBTYPE");
+  params.jobtype = options.get_str("JOBTYPE");
 
   /* Default Dertype */
-  params.dertype = options.get_cstr("DERTYPE");
+  params.dertype = options.get_str("DERTYPE");
 
-  if(!strcmp(params.jobtype,"SP")) {
+//  if(!strcmp(params.jobtype,"SP")) {
+  if(params.jobtype == "SP") {
     params.opdm = 0;
     params.relax_opdm = 0;
     params.gradient = 0;
   }
-  else if(!strcmp(params.jobtype,"OEPROP") && !strcmp(params.dertype,"NONE")) {
+//  else if(!strcmp(params.jobtype,"OEPROP") && !strcmp(params.dertype,"NONE")) {
+  else if(params.jobtype == "OEPROP" && params.dertype == "NONE") {
     params.opdm = 1;
     params.relax_opdm = 0;
     params.gradient = 0;
   }
-  else if(!strcmp(params.jobtype,"OEPROP") && !strcmp(params.dertype,"FIRST")) {
+//  else if(!strcmp(params.jobtype,"OEPROP") && !strcmp(params.dertype,"FIRST")) {
+  else if(params.jobtype == "OEPROP" && params.dertype == "FIRST") {
     params.opdm = 1;
     params.relax_opdm = 1;
     params.gradient = 0;
   }
-  else if(!strcmp(params.jobtype,"OPT") && !strcmp(params.dertype,"NONE")) {
+//  else if(!strcmp(params.jobtype,"OPT") && !strcmp(params.dertype,"NONE")) {
+  else if(params.jobtype == "OPT" && params.dertype == "NONE") {
     params.opdm = 0;
     params.relax_opdm = 0;
     params.gradient = 0;
   }
-  else if(!strcmp(params.jobtype,"OPT") && !strcmp(params.dertype,"FIRST")) {
+//  else if(!strcmp(params.jobtype,"OPT") && !strcmp(params.dertype,"FIRST")) {
+  else if(params.jobtype == "OPT" && params.dertype == "FIRST") {
     params.opdm = 0;
     params.relax_opdm = 0;
     params.gradient = 1;
   }
-  else if(!strcmp(params.jobtype,"OPT_FC") && !strcmp(params.dertype,"FIRST")) {
+//  else if(!strcmp(params.jobtype,"OPT_FC") && !strcmp(params.dertype,"FIRST")) {
+  else if(params.jobtype == "OPT_FC" && params.dertype == "FIRST") {
     params.opdm = 0;
     params.relax_opdm = 0;
     params.gradient = 1;
   }
-  else if(!strcmp(params.jobtype,"SYMM_FC") && !strcmp(params.dertype,"FIRST")) {
+//  else if(!strcmp(params.jobtype,"SYMM_FC") && !strcmp(params.dertype,"FIRST")) {
+  else if(params.jobtype == "SYMM_FC" && params.dertype == "FIRST") {
     params.opdm = 0;
     params.relax_opdm = 0;
     params.gradient = 1;
   }
-  else if(!strcmp(params.jobtype,"FREQ") && !strcmp(params.dertype,"NONE")) {
+//  else if(!strcmp(params.jobtype,"FREQ") && !strcmp(params.dertype,"NONE")) {
+  else if(params.jobtype == "FREQ" && params.dertype == "NONE") {
     params.opdm = 0;
     params.relax_opdm = 0;
     params.gradient = 0;
   }
-  else if(!strcmp(params.jobtype,"FREQ") && !strcmp(params.dertype,"FIRST")) {
+//  else if(!strcmp(params.jobtype,"FREQ") && !strcmp(params.dertype,"FIRST")) {
+  else if(params.jobtype == "FREQ" && params.dertype == "FIRST") {
     params.opdm = 0;
     params.relax_opdm = 0;
     params.gradient = 1;
@@ -103,11 +118,14 @@ void get_params()
   
   params.cachelev = options.get_int("CACHELEV");
   
-  cachetype = options.get_cstr("CACHETYPE");
-  if (cachetype != NULL && strlen(cachetype)) {
-    if (!strcmp(cachetype,"LOW")) 
+  cachetype = options.get_str("CACHETYPE");
+//  if (cachetype != NULL && strlen(cachetype)) {
+  if(cachetype != "NULL") {
+//    if (!strcmp(cachetype,"LOW")) 
+    if(cachetype == "LOW")
       params.cachetype = 1;
-    else if (!strcmp(cachetype,"LRU")) 
+//    else if (!strcmp(cachetype,"LRU")) 
+    else if(cachetype == "LRU")
       params.cachetype = 0;
     else {
       fprintf(outfile, "Invalide CACHETYPE = %s\n",cachetype);
@@ -129,7 +147,8 @@ void get_params()
     params.scs_scale_ss = options.get_double("SCALE_SS");
   }
 
-  fndcor(&(params.memory),infile,outfile);
+//  fndcor(&(params.memory),infile,outfile);
+  params.memory = module.get_memory();
  
   fprintf(outfile, "\n");
   fprintf(outfile, "\tInput parameters:\n");
@@ -151,7 +170,8 @@ void get_params()
   fprintf(outfile, "\tSCALE_OS      \t=\t%.6f\n",params.scs_scale_os);
   fprintf(outfile, "\tSCALE_SS      \t=\t%.6f\n",params.scs_scale_ss);
 
-  if (params.scs && (strcmp(params.dertype,"NONE")!=0)) {
+//  if (params.scs && (strcmp(params.dertype,"NONE")!=0)) {
+  if (params.scs && params.dertype != "NONE") {
     fprintf(outfile,"\nWarning: SCS-MP2 computation requested but\n");
     fprintf(outfile,"derivative will be evaluated for standard MP2 energy.\n");
   }

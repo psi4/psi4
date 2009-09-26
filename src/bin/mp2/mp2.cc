@@ -192,7 +192,7 @@ void cleanup(void)
 {
   int i;
   
-  free(params.wfn);
+//  free(params.wfn);
   
   free(mo.doccpi);
   free(mo.soccpi);
