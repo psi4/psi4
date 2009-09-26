@@ -86,6 +86,11 @@ void parsing(Options & options)
 	     punt("Both ZMAT and GEOMETRY are missing!");
 
        units = options.get_str("UNITS");
+
+       if ((units == "BOHR") || (units == "AU"))
+         conv_factor = 1.0;
+       else if (units == "ANGSTROMS" || units == "ANGSTROM")
+         conv_factor = 1.0 / _bohr2angstroms;
 	   
 	   /*Set reference frame to be the frame of the input geometry*/
 	   keep_ref_frame = options.get_bool("KEEP_REF_FRAME");
