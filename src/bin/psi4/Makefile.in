@@ -21,7 +21,7 @@ $(PSITARGET): $(BINOBJ) $(PSILIBS)
 	$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 install_target:: $(PSITARGET)
-    $(MKDIRS) $(DESTDIR)$(bindir)
+	$(MKDIRS) $(DESTDIR)$(bindir)
 	$(INSTALL_PROGRAM) $< $(DESTDIR)$(bindir)
 
 ifneq ($(DODEPEND),no)
