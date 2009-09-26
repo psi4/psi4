@@ -782,6 +782,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/cctriples/Makefile
           src/bin/ccresponse/Makefile
           src/bin/cchbar/Makefile
+          src/bin/cis/Makefile
 ])
 
 AC_OUTPUT
