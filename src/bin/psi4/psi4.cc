@@ -23,12 +23,14 @@
 //FILE *outfile = NULL;
   
 namespace psi { 
+/*
   namespace input    { int input(Options &, char **atom_basis, Molecular_system & ); }
   namespace CINTS    { PsiReturnType cints(Options &, int argc, char *argv[]); }
   namespace cscf     { int cscf(int argc, char *argv[]); }
   namespace psiclean { int psiclean(int argc, char *argv[]); }
+*/
 
-  std::map<std::string, PsiReturnType(*)(Options &, int argc, char *argv[])> dispatch_table;
+  int psi3_simulator(void);
 
   int read_options(std::string name, Options & options);
   void read_atom_basis(char ** & atom_basis, int num_atoms);
@@ -121,6 +123,10 @@ int main(int argc, char *argv[])
    
      read_options("PSI4", options);
 
+     psi3_simulator();
+
+/*
+
        // if read from input.dat, scale.  Elsewhere always use au internally
      std::string units = options.get_str("UNITS");
      double conv_factor;
@@ -140,32 +146,22 @@ int main(int argc, char *argv[])
        abort();
      }
    
-     //for (int i=0; i<molecules.get_num_atoms(); ++i)
-     //  strcpy(atom_basis[i],"DZ");
-
-   
+     for (int i=0; i<molecules.get_num_atoms(); ++i)
+       strcpy(atom_basis[i],"DZ");
      read_options("INPUT", options);
      module.set_prgid("INPUT");
      input::input(options,atom_basis,molecules);
      options.clear();
 
-
-     dispatch_table["CINTS"] = &(psi::CINTS::cints);
-
-     dispatch_table["CINTS"](options, argc, argv);
-
-/*
      read_options("CINTS", options);
      module.set_prgid("CINTS");
      CINTS::cints(options,argc, argv);
-   
      module.set_prgid("CSCF");
      cscf::cscf(argc, argv);
-*/
-   
      options.clear();
      module.set_prgid("PSICLEAN");
      psiclean::psiclean(argc, argv);
+*/
 
    }
 
