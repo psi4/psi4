@@ -2,6 +2,7 @@ srcdir = @srcdir@
 VPATH = @srcdir@
 
 include ../MakeVars
+PSITARGET = $(top_objdir)/bin/$(shell basename `pwd`)
 
 LDLIBS += $(LAPACK) $(BLAS)
 

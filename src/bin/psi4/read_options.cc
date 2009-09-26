@@ -277,19 +277,19 @@ int read_options(std::string name, Options & options) {
     options.add_bool("NEWTRIPS", 1);
     options.add_str("WFN", "NONE", "CCSD CCSD_T EOM_CCSD LEOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
     options.add_str("REFERENCE", "RHF");
-    options.add_bool("ANALYZE", 0) ;
-    options.add_cstr("DERTYPE", "NONE", "NONE FIRST RESPONSE");
-    options.add_int("PRINT", 0)
+    options.add_bool("ANALYZE", 0);
+    options.add_str("DERTYPE", "NONE", "NONE FIRST RESPONSE");
+    options.add_int("PRINT", 0);
     options.add_int("MAXITER", 50);
     options.add_int("CONVERGENCE", 7);
     options.add_bool("RESTART",1);
     options.add_bool("FORCE_RESTART", 0);
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
     options.add_int("CACHELEV", 2);
-    options.add_int("CACHETYPE", "LOW", "LOW LRU");
+    options.add_str("CACHETYPE", "LOW", "LOW LRU");
     options.add_int("NTHREADS",1);
-    options.add_bool("DIIS");
-    options.add_bool("T2_COUPLED");
+    options.add_bool("DIIS", true);
+    options.add_bool("T2_COUPLED", false);
     options.add_str("PROPERTY", "POLARIZABILITY", "POLARIZABILITY ROTATION MAGNETIZABILITY ROA ALL");
     options.add_str("ABCD", "NEW", "NEW OLD");
     options.add_bool("LOCAL", 0);
@@ -305,7 +305,7 @@ int read_options(std::string name, Options & options) {
     options.add_int("BRUECKNER_CONV", 5);
     options.add_bool("PRINT_MP2_AMPS", 0);
     options.add_bool("PRINT_PAIR_ENERGIES", 0);
-    options.add_bool("SPINADAPT_ENERGIES");
+    options.add_bool("SPINADAPT_ENERGIES", false);
     options.add_bool("T3_WS_INCORE", 0);
     options.add_bool("SCSN_MP2", 0);
     options.add_bool("SCS_MP2", 0);
