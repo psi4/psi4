@@ -19,8 +19,6 @@ namespace psi {
 void get_params()
 {
   int tol;
-  char *junk;
-  int *mu_irreps, tmp;
 
   params.wfn = options.get_str("WFN");
 
@@ -84,7 +82,7 @@ void get_params()
   if(params.print_lvl) {
     fprintf(outfile, "\n\tInput parameters:\n");
     fprintf(outfile, "\t-----------------\n");
-    fprintf(outfile, "\tWave function   =\t%s\n", params.wfn);
+    fprintf(outfile, "\tWave function   =\t%s\n", params.wfn.c_str());
     fprintf(outfile, "\tBacktransform   =\t%s\n", params.backtr ? "Yes" : "No");
     fprintf(outfile, "\tPrint Level     =\t%d\n", params.print_lvl);
     fprintf(outfile, "\tPrint TEIs      =\t%s\n", params.print_tei ? "Yes" : "No");
