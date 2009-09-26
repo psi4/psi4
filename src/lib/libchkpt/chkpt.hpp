@@ -4,6 +4,7 @@
 #include <libchkpt/config.h>
 #include <cstdlib>
 #include <strings.h>
+#include <cstring>
 
 namespace psi {
 	class PSIO;
@@ -18,7 +19,7 @@ namespace psi {
 	*/
 	class Chkpt {
 		/*! Instance of libpsio to use. */
-		PSIO *psio;
+		PSIO * psio;
 		/*! Active TOC entry prefix. */
 		char chkpt_prefix[CHKPT_PREFIX_LEN];
 	public:
@@ -27,6 +28,8 @@ namespace psi {
 			\param status Either PSIO_OPEN_OLD or PSIO_OPEN_NEW.
 		*/
 		Chkpt(PSIO *psioObject, int status);
+        Chkpt(PSIO& psioObject, int status);
+
 		/*! Destructor. Call PSIO::close to close the checkpoint file.*/
 		~Chkpt();
 		/// update this object. call rehash() if the state of the checkpoint file may have changed
@@ -39,13 +42,13 @@ namespace psi {
 		void reset_prefix();
 		char *get_prefix();
 
-		char *build_keyword(const char *key);
+		char *build_keyword(const char *key, const char *key2 = "");
 
 		int exist(const char *keyword);
 		int exist_add_prefix(const char *keyword);
 
 		char *rd_label();
-		void wt_label(const char *label);
+		void wt_label(char *label);
 
 		double rd_escf();
 		void wt_escf(double escf);
@@ -77,8 +80,8 @@ namespace psi {
 		double rd_emp2();
 		void wt_emp2(double emp2);
 		
-		int *rd_am2canon_shell_order(void);
-		void wt_am2canon_shell_order(int *);
+		int *rd_am2canon_shell_order(const char *key2 = "");
+		void wt_am2canon_shell_order(int *, const char *key2 = "");
 		
 		int* rd_atom_dummy(void);
 		void wt_atom_dummy(int *);
@@ -98,9 +101,9 @@ namespace psi {
 		int *rd_clsdpi(void);
 		void wt_clsdpi(int *);
 
-		double *rd_contr(void);
-		void wt_contr(double *);
-		double **rd_contr_full(void);
+		double *rd_contr(const char *key2 = "");
+		void wt_contr(double *, const char *key2 = "");
+		double **rd_contr_full(const char *key2 = "");
 
 		int rd_disp_irrep(void);
 		void wt_disp_irrep(int);
@@ -115,11 +118,11 @@ namespace psi {
 		void wt_alpha_evals(double *);
 		void wt_beta_evals(double *);
 
-		double *rd_exps(void);
-		void wt_exps(double *);
+		double *rd_exps(const char *key2 = "");
+		void wt_exps(double *, const char *key2 = "");
 
 		char **rd_felement(void);
-		void wt_felement(char **);
+		void wt_felement(char ** const);
 
 		double **rd_fgeom(void);
 		void wt_fgeom(double **);
@@ -143,6 +146,7 @@ namespace psi {
 		void wt_iopen(int);
 
 		char **rd_irr_labs(void);
+		char **rd_irr_labs_lowercase(void);
 		void wt_irr_labs(char **);
 
 		double **rd_lagr(void);
@@ -152,17 +156,17 @@ namespace psi {
 		void wt_alpha_lagr(double **);
 		void wt_beta_lagr(double **);
 
-		int rd_max_am(void);
-		void wt_max_am(int);
+		int rd_max_am(const char *key2 = "");
+		void wt_max_am(int, const char *key2 = "");
 
-		bool rd_puream(void);
-		void wt_puream(bool);
+		bool rd_puream(const char *key2 = "");
+		void wt_puream(bool, const char *key2 = "");
 
 		int rd_nallatom(void);
 		void wt_nallatom(int);
 
-		int rd_nao(void);
-		void wt_nao(int);
+		int rd_nao(const char *key2 = "");
+		void wt_nao(int, const char *key2 = "");
 
 		int rd_natom(void);
 		void wt_natom(int);
@@ -181,14 +185,14 @@ namespace psi {
 		int rd_nmo(void);
 		void wt_nmo(int);
 
-		int rd_nprim(void);
-		void wt_nprim(int);
+		int rd_nprim(const char *key2 = "");
+		void wt_nprim(int, const char *key2 = "");
 
-		int rd_nshell(void);
-		void wt_nshell(int);
+		int rd_nshell(const char *key2 = "");
+		void wt_nshell(int, const char *key2 = "");
 
-		int rd_nso(void);
-		void wt_nso(int);
+		int rd_nso(const char *key2 = "");
+		void wt_nso(int, const char *key2 = "");
 
 		int rd_nsymhf(void);
 		void wt_nsymhf(int);
@@ -196,8 +200,8 @@ namespace psi {
 		int rd_num_unique_atom(void);
 		void wt_num_unique_atom(int);
 
-		int rd_num_unique_shell(void);
-		void wt_num_unique_shell(int);
+		int rd_num_unique_shell(const char *key2 = "");
+		void wt_num_unique_shell(int, const char *key2 = "");
 
 		int *rd_openpi(void);
 		void wt_openpi(int *);
@@ -234,40 +238,40 @@ namespace psi {
 		void wt_scf_irrep(double**, int);
 		void wt_alpha_scf_irrep(double**, int);
 		void wt_beta_scf_irrep(double**, int);
-		void set_mo_phases(double**, int, int);
+		double** set_mo_phases(double**, int, int);
 		
-		int **rd_shell_transm(void);
-		void wt_shell_transm(int **);
+		int **rd_shell_transm(const char *key2 = "");
+		void wt_shell_transm(int **, const char *key2 = "");
 
-		int *rd_sloc(void);
-		void wt_sloc(int *);
+		int *rd_sloc(const char *key2 = "");
+		void wt_sloc(int *, const char *key2 = "");
 
-		int *rd_shells_per_am(void);
-		void wt_shells_per_am(int *);
+		int *rd_shells_per_am(const char *key2 = "");
+		void wt_shells_per_am(int *, const char *key2 = "");
 
-		int *rd_sloc_new(void);
-		void wt_sloc_new(int *);
+		int *rd_sloc_new(const char *key2 = "");
+		void wt_sloc_new(int *, const char *key2 = "");
 
-		int *rd_snuc(void);
-		void wt_snuc(int *);
+		int *rd_snuc(const char *key2 = "");
+		void wt_snuc(int *, const char *key2 = "");
 
-		int *rd_snumg(void);
-		void wt_snumg(int *);
+		int *rd_snumg(const char *key2 = "");
+		void wt_snumg(int *, const char *key2 = "");
 
-		int *rd_sopi(void);
-		void wt_sopi(int *);
+		int *rd_sopi(const char *key2 = "");
+		void wt_sopi(int *, const char *key2 = "");
 
-		int *rd_sprim(void);
-		void wt_sprim(int *);
+		int *rd_sprim(const char *key2 = "");
+		void wt_sprim(int *, const char *key2 = "");
 
 		int *rd_statespi(void);
 		void wt_statespi(int *);
 
-		int *rd_stype(void);
-		void wt_stype(int *);
+		int *rd_stype(const char *key2 = "");
+		void wt_stype(int *, const char *key2 = "");
 
 		char *rd_sym_label(void);
-		void wt_sym_label(const char *sym_label);
+		void wt_sym_label(char *sym_label);
 
 		int *rd_symoper(void);
 		void wt_symoper(int *);
@@ -275,14 +279,14 @@ namespace psi {
 		int *rd_ua2a(void);
 		void wt_ua2a(int *);
 
-		int *rd_us2s(void);
-		void wt_us2s(int *);
+		int *rd_us2s(const char *key2 = "");
+		void wt_us2s(int *, const char *key2 = "");
 
-		double **rd_usotao(void);
-		void wt_usotao(double **);
+		double **rd_usotao(const char *key2 = "");
+		void wt_usotao(double **, const char *key2 = "");
 
-		double **rd_usotbf(void);
-		void wt_usotbf(double **);
+		double **rd_usotbf(const char *key2 = "");
+		void wt_usotbf(double **, const char *key2 = "");
 
 		struct z_entry *rd_zmat(void);
 		void wt_zmat(struct z_entry *);
@@ -307,13 +311,23 @@ namespace psi {
 
         double ***rd_fragment_coeff(void);
         void wt_fragment_coeff(double ***);
+
+        double *rd_rotconst(void);
+        void wt_rotconst(double *);
+
+        int rd_rot_symm_num(void);
+        void wt_rot_symm_num(int);
+
+        double *rd_vib_freqs(void);
+        void wt_vib_freqs(double *);
 		
 		/// allocate a block matrix -- analogous to libciomr's block_matrix
 		template <typename T> static T** matrix(int nrow, int ncol) {
 			T** mat = (T**) malloc(sizeof(T*)*nrow);
 			const size_t size = sizeof(T)*nrow*ncol;
 			mat[0] = (T*) malloc(size);
-			bzero((void*)mat[0],size);
+			//bzero((void*)mat[0],size);
+                        memset((void*)mat[0], '\0', size);
 			for(int r=1; r<nrow; ++r) mat[r] = mat[r-1] + ncol;
 			return mat;
 		}
