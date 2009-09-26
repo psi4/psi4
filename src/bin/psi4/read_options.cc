@@ -4,6 +4,7 @@
 
 #include <libipv1/ip_lib.h>
 #include <liboptions/liboptions.h>
+#include <physconst.h>
 #include <psifiles.h>
 
 namespace psi {
@@ -207,47 +208,46 @@ else if(name == "CCDENSITY") {
     options.add_double("SCALE",0.5);
   }
   else if(name == "OEPROP") {
-    options.get_int("NUM_ROOTS");
-    options.get_int("ROOT");
-    options.get_int("GRID");
-    options.get_str("MO_TO_PLOT");
-    options.get_int("GRID_ORIGIN");
-    options.get_int("GRID_UNIT_X");
-    options.get_int_array("GRID_UNIT_Y");
-    options.get_int_array("GRID_XY0");
-    options.get_int_array("GRID_XY1");
-    options.get_int_array("GRID_XYZ0");
-    options.get_int_array("GRID_XYZ1");
-    options.get_int("NIX",0);
-    options.get_int("NIY",0);
-    options.get_int("NIZ",0);
-    options.get_str("GRID_FORMAT");
-    options.get_double("GRID_ZMIN");
-    options.get_double("GRID_ZMAX");
-    options.get_int("EDGRAD_LOGSCALE");
-    options.get_str("WFN");
-    options.get_int("TRANSITION_DENSITY",0);
-    options.get_str("REFERENCE", "RHF");
-    options.get_int("READ_OPDM");
-    options.get_double("OPDM_FILE");
-    options.get_str("OPDM_BASIS, "MO"");
-    options.get_str("OPDM_FORMAT", "SQUARE");
-    options.get_int("WRTNOS");
-    options.get_int("ASYMM_OPDM");
-    options.get_int("SPIN_PROP");
-    options.get_double("PRINT", 1);
-    options.get_int("PRINT_NOS");
-    options.get_int("CORREL_CORR");
-    options.get_double("ZVEC_FILE");
-    options.get_int("DELETE_ZVEC");
-    options.get_double("MPMAX");
-    options.get_int_array("MP_REF_XYZ");
-    options.get_double("MP_REF");
-    options.get_int_array("LM_REF_XYZ");
-    options.get_int("NUC_ESP");
-    options.get_double("FINE_STRUCTURE_ALPHA");
-    options.get_int("QED_DARWIN");
-    options.get_int("FREEZE_CORE");
+    options.add_int("NUM_ROOTS",0);
+    options.add_int("ROOT",0);
+    options.add_int("GRID",0);
+    options.add_str("MO_TO_PLOT","");
+    options.add_int("GRID_ORIGIN",0);
+    options.add_int("GRID_UNIT_X",0);
+    options.add("GRID_XY0", new ArrayType());
+    options.add("GRID_XY1", new ArrayType());
+    options.add("GRID_XYZ0", new ArrayType());
+    options.add("GRID_XYZ1", new ArrayType());
+    options.add_int("NIX",0);
+    options.add_int("NIY",0);
+    options.add_int("NIZ",0);
+    options.add_str("GRID_FORMAT","");
+    options.add_double("GRID_ZMIN",0);
+    options.add_double("GRID_ZMAX",0);
+    options.add_int("EDGRAD_LOGSCALE",0);
+    options.add_str("WFN","");
+    options.add_int("TRANSITION_DENSITY",0);
+    options.add_str("REFERENCE", "RHF");
+    options.add_int("READ_OPDM", 1);
+    options.add_double("OPDM_FILE", 0.0);
+    options.add_str("OPDM_BASIS", "MO");
+    options.add_str("OPDM_FORMAT", "SQUARE");
+    options.add_int("WRTNOS", 0);
+    options.add_int("ASYMM_OPDM", 0);
+    options.add_int("SPIN_PROP", 0);
+    options.add_double("PRINT", 1);
+    options.add_int("PRINT_NOS", 0);
+    options.add_int("CORREL_CORR", 0);
+    options.add_double("ZVEC_FILE", 0);
+    options.add_int("DELETE_ZVEC", 0);
+    options.add_double("MPMAX", 0.0);
+    options.add("MP_REF_XYZ", new ArrayType());
+    options.add_double("MP_REF", 0.0);
+    options.add("LM_REF_XYZ", new ArrayType());
+    options.add_int("NUC_ESP", 0);
+    options.add_double("FINE_STRUCTURE_ALPHA", 1/(_c_au));
+    options.add_int("QED_DARWIN", 0);
+    options.add_int("FREEZE_CORE", 0);
   }
   else if(name == "CCHBAR") {
     options.add_bool("TAMPLITUDE",false);
@@ -390,7 +390,6 @@ else if(name == "CCDENSITY") {
     options.add_int("MAXITER", 500);
     options.add_int("CONVERGENCE", 7);
     options.add("STATES_PER_IRREP", new ArrayType());
-    options.add_int_array("STATES_PER_IRREP");
     options.add_str("DIAG_METHOD", "DAVIDSON", "DAVIDSON FULL");
     options.add_bool("LOCAL", false);
     options.add_double("LOCAL_CUTOFF", 0.02);
