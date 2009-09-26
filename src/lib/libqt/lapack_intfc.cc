@@ -11,8 +11,6 @@
 ** Written to work similarly to the BLAS C interface in blas_intfc.c
 */
 
-namespace psi {
-	
 #if FC_SYMBOL==2
 #define F_DGEEV dgeev_
 #define F_DGESV dgesv_
@@ -43,6 +41,7 @@ namespace psi {
 #define F_DSYEV DSYEV_
 #endif
 
+extern "C" {
 extern int F_DGEEV(char *, char *, int *, double *, int *, double *, double *,
   double *, int *, double *, int *, double *, int *, int *);
 
@@ -58,7 +57,9 @@ extern int F_DGESVD(char *, char *, int *, int *, double *, int *,
 
 extern int F_DSYEV(char *, char *, int *, double *, int *, double *, 
   double *, int *, int *);
+}
 
+namespace psi {
 /*!
 ** C_DGEEV()
 ** 
@@ -123,7 +124,7 @@ int C_DGEEV(int n, double **a, int lda,
   char jobvl, jobvr;
   jobvl = 'V';
   jobvr = 'V';
-  F_DGEEV(&jobvl, &jobvr, &n, &(a[0][0]), &lda, &(wr[0]), &(wi[0]),
+  ::F_DGEEV(&jobvl, &jobvr, &n, &(a[0][0]), &lda, &(wr[0]), &(wi[0]),
        &(vl[0][0]), &ldvl, &(vr[0][0]), &ldvr, &(work[0]), &lwork, &info);
 
   return info;
@@ -170,7 +171,7 @@ int C_DGESV(int n, int nrhs, double *a, int lda, int *ipiv, double *b, int ldb)
 {
   int info;
 
-  F_DGESV(&n, &nrhs, &(a[0]), &lda, &(ipiv[0]), &(b[0]), &ldb, &info);
+  ::F_DGESV(&n, &nrhs, &(a[0]), &lda, &(ipiv[0]), &(b[0]), &ldb, &info);
 
   return info;
 }
@@ -206,7 +207,7 @@ int C_DGETRF(int nrow, int ncol, double *a, int lda, int *ipiv)
 {
   int info;
 
-  F_DGETRF(&ncol, &nrow, &(a[0]), &lda, &(ipiv[0]), &info);
+  ::F_DGETRF(&ncol, &nrow, &(a[0]), &lda, &(ipiv[0]), &info);
 
   return info;
 }
@@ -247,7 +248,7 @@ int C_DGETRI(int n, double *a, int lda, int *ipiv, double *work, int lwork)
 {
   int info;
 
-  F_DGETRI(&n, &(a[0]), &lda, &(ipiv[0]), &(work[0]), &lwork, &info);
+  ::F_DGETRI(&n, &(a[0]), &lda, &(ipiv[0]), &(work[0]), &lwork, &info);
 
   return info;
 }
@@ -341,7 +342,7 @@ int C_DGESVD(char jobu, char jobvt, int m, int n, double *A, int lda,
 {
   int info;
 
-  F_DGESVD(&jobvt, &jobu, &n, &m, A, &lda, s, vt, &ldvt, u, &ldu, work, 
+  ::F_DGESVD(&jobvt, &jobu, &n, &m, A, &lda, s, vt, &ldvt, u, &ldu, work, 
     &lwork, &info);
 
   return info;
@@ -394,7 +395,7 @@ int C_DSYEV(char jobz, char uplo, int n, double *A, int lda, double *w,
 {
   int info;
 
-  F_DSYEV(&jobz, &uplo, &n, A, &lda, w, work, &lwork, &info);
+  ::F_DSYEV(&jobz, &uplo, &n, A, &lda, w, work, &lwork, &info);
 
   return info;
 }
