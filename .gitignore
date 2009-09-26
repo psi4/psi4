@@ -1,0 +1,5 @@
+autom4te.cache
+configure
+*.o
+*.a
+.cproject
