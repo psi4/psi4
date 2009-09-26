@@ -30,7 +30,7 @@ namespace psi {
   namespace psiclean { int psiclean(int argc, char *argv[]); }
 */
 
-  int psi3_simulator(void);
+  int psi3_simulator(int argc, char *argv[]);
 
   int read_options(std::string name, Options & options);
   void read_atom_basis(char ** & atom_basis, int num_atoms);
@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
    
      read_options("PSI4", options);
 
-     psi3_simulator();
+     psi3_simulator(argc, argv);
 
 /*
 
