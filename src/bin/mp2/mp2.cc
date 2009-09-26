@@ -51,7 +51,7 @@ void cleanup(void);
 void exit_io(void);
 
 
-int mp2(int argc, char *argv[])
+int mp2(Options & options, int argc, char *argv[])
 {
   using namespace psi::mp2;
 
