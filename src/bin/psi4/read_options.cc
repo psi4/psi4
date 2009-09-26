@@ -181,6 +181,28 @@ int read_options(std::string name, Options & options) {
     options.add_int("ROTATION_METHOD",0);
     options.add_double("SCALE",0.5);
   }
+  else if(name == "MVO") {
+   options.add_str("WFN","CCSD");
+   options.add_int("FZC_FILE","PSIF_OEI");
+   options.add_bool("PRINT_MOS",false);
+   options.add_int("PRINT",1);
+   options.add_bool("OEI_ERASE",false);
+   options.add_bool("FZC",true);
+   options.add_bool("DELETE_RESTR_DOCC",true);
+   options.add_bool("MP2NOS",false);
+   options.add_bool("UNOS",false);
+   options.add_double("FZC_FOCK_COEFF",1.0);
+   options.add_double("FOCK_COEFF",0.0);
+   options.add_bool("IVO",false);
+   options.add_bool("CANONICAL",false);
+   options.add("FROZEN_DOCC", new ArrayType());
+   options.add("FROZEN_UOCC", new ArrayType());
+   options.add("RESTRICTED_DOCC", new ArrayType());
+   options.add("RESTRICTED_UOCC", new ArrayType());
+   options.add("DOCC", new ArrayType());
+   options.add("SOCC", new ArrayType());
+   options.add("DOCC_VIRT", new ArrayType());
+  }
 
   options.read_ipv1();
 //  options.print();

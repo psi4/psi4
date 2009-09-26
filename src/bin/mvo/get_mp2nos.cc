@@ -17,7 +17,6 @@
 #include <cstdlib>
 #include <cmath>
 #include <cstring>
-#include <libipv1/ip_lib.h>
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
