@@ -776,6 +776,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/ccsort/Makefile
           src/bin/mvo/Makefile
           src/bin/extrema/Makefile
+          src/bin/geom/Makefile
 ])
 
 AC_OUTPUT
