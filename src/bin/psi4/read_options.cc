@@ -126,23 +126,23 @@ int read_options(std::string name, Options & options) {
     options.add_double("LOCAL_CUTOFF", 0.02);
     options.add_double("LOCAL_CPHF_CUTOFF", 0.10);
     options.add_double("LOCAL_CORE_CUTOFF",0.05);
-    options.add_cstr("LOCAL_METHOD","WERNER");
-    options.add_cstr("LOCAL_WEAKP");
-    options.add_cstr("FREEZE_CORE");
-    options.add_cstr("LOCAL_PAIRDEF");
-    options.add_bool("LOCAL_DOMAIN_POLAR");
-    options.add_bool("LOCAL_DOMAIN_MAG");
-    options.add_bool("LOCAL_DOMAIN_SEP");
-    options.add_bool("LOCAL_FILTER_SINGLES");
-    options.add_cstr("AO_BASIS");
-    options.add_cstr("EOM_REFERENCE");
-    options.add_int("PRINT");
-    options.add_bool("KEEP_TEIFILE");
-    options.add_bool("KEEP_OEIFILE");
-    options.add_int("TOLERANCE");
-    options.add_int("CACHELEV");
-    options.add_bool("LOCAL");
-    options.add("OMEGA",new ArrayType());
+    options.add_str("LOCAL_METHOD","WERNER");
+    options.add_str("LOCAL_WEAKP","NONE");
+    options.add_str("FREEZE_CORE","NONE");
+    options.add_str("LOCAL_PAIRDEF","NONE");
+    options.add_bool("LOCAL_DOMAIN_POLAR", false);
+    options.add_bool("LOCAL_DOMAIN_MAG", false);
+    options.add_bool("LOCAL_DOMAIN_SEP", false);
+    options.add_bool("LOCAL_FILTER_SINGLES", false);
+    options.add_str("AO_BASIS","NONE");
+    options.add_str("EOM_REFERENCE","RHF");
+    options.add_int("PRINT", 0);
+    options.add_bool("KEEP_TEIFILE", false);
+    options.add_bool("KEEP_OEIFILE", false);
+    options.add_int("TOLERANCE", 14);
+    options.add_int("CACHELEV", 2);
+    options.add_bool("LOCAL", false);
+    options.add("OMEGA", new ArrayType());
   }
   else if(name == "CCTRIPLES") {
     options.add_str("WFN", "");
@@ -169,12 +169,12 @@ int read_options(std::string name, Options & options) {
     options.add_bool("TAMPLITUDE",false);
     options.add_int("CACHELEV",2); 
     options.add_int("PRINT",0);
-    options.add_str("WFN");
-    options.add_str("DERTYPE",0);
-    options.add_str("WABEI_LOWDISK",0);
+    options.add_str("WFN", "SCF");
+    options.add_str("DERTYPE", "ENERGY");
+    options.add_bool("WABEI_LOWDISK", false);
   }
   else if(name == "CCRESPONSE") {
-    options.add_str("WFN");
+    options.add_str("WFN", "SCF");
     options.add_int("PRINT",1);
     options.add_int("CACHELEV",2);
     options.add_str("REFERENCE","RHF");
@@ -190,10 +190,10 @@ int read_options(std::string name, Options & options) {
     options.add_double("LOCAL_CUTOFF",0.01);
     options.add_str("LOCAL_METHOD","WERNER");
     options.add_str("LOCAL_WEAKP","NONE");
-    options.add_bool("LOCAL_FILER_SINGLES");
+    options.add_bool("LOCAL_FILER_SINGLES", false);
     options.add_double("LOCAL_CPHF_CUTOFF",0.10);
     options.add_str("FREEZE_CORE","FALSE");
-    options.add_str("LOCAL_PAIRDEF");
+    options.add_str("LOCAL_PAIRDEF","NONE");
     options.add_bool("ANALYZE",0);
     options.add_int("NUM_AMPS",5);
     options.add_bool("SEKINO",0);
@@ -202,7 +202,7 @@ int read_options(std::string name, Options & options) {
   }
   else if(name == "MVO") {
    options.add_str("WFN","CCSD");
-   options.add_int("FZC_FILE","PSIF_OEI");
+   options.add_int("FZC_FILE", PSIF_OEI);
    options.add_bool("PRINT_MOS",false);
    options.add_int("PRINT",1);
    options.add_bool("OEI_ERASE",false);
@@ -224,7 +224,6 @@ int read_options(std::string name, Options & options) {
   }
   else if(name == "EXTREMA") {
     options.add_str("COORDINATES","foo");
-  }
   }
 
   options.read_ipv1();
