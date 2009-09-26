@@ -10,7 +10,7 @@ namespace psi { namespace oeprop {
 
 void start_io(int argc, char *argv[]);
 void stop_io();
-void punt(const char *);
+//void punt(const char *);
 void parsing();
 void grid_unitvec();
 void compute_density();

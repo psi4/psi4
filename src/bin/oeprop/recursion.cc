@@ -305,7 +305,8 @@ void AI_OSrecurs(double pax, double pay, double paz,
         }
       }
       else /* This should and will never happen */
-        punt("There's some error in the AI_OSrecurs algorithm");
+        throw PsiException("There's some error in the AI_OSrecurs algorithm", __FILE__, __LINE__);
+//        punt("There's some error in the AI_OSrecurs algorithm");
     }
  
 
@@ -581,7 +582,8 @@ void AI_OSrecurs(double pax, double pay, double paz,
           }
         }
         else /* This should and will never happen */
-          punt("There's some error in the AI_OSrecurs algorithm");
+          throw PsiException("There's some error in the AI_OSrecurs algorithm", __FILE__, __LINE__);
+//          punt("There's some error in the AI_OSrecurs algorithm");
       }
     }
   free(F);

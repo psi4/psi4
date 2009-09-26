@@ -54,30 +54,28 @@ void read_density()
   double *eval_tmp;
   int ntri;
   int irrep_dim;
-  char *id;
+  std::string id;
   
   Ptot = init_array(natri);
   nso = nbfso;
   ntri = (nmo*(nmo+1))/2;
 
-  if(!strcmp(opdm_basis,"MO") && !strcmp(ref,"RHF")) {
-    id = strdup("RHF");
+  if(opdm_basis == "MO" && ref == "RHF") {
+    id == "RHF";
   }
-  else if(!strcmp(opdm_basis,"MO") && !strcmp(ref,"ROHF")) {
+  else if(opdm_basis == "MO" && ref == "ROHF") {
     /* Methods using semi-canonical orbitals */
-    if(!strcmp(wfn,"MP2") || !strcmp(wfn,"CC2") || !strcmp(wfn,"EOM_CC2") ||
-       !strcmp(wfn,"CCSD(T)") || !strcmp(wfn,"CC3") || !strcmp(wfn,"EOM_CC3")) {
-      id = strdup("UHF");
-    }
-    else id = strdup("RHF");
+    if(wfn == "MP2" || wfn == "CC2" ||wfn == "EOM_CC2" ||wfn == "CCSD(T)" ||wfn == "CC3" ||wfn == "EOM_CC3")
+      id == "UHF";
+    else id == "RHF";
   }
-  else if(!strcmp(opdm_basis,"MO") && !strcmp(ref,"UHF")) {
-    id = strdup("UHF");
+  else if(opdm_basis == "MO" && ref == "UHF") {
+    id == "UHF";
   }
 
   /* Read OPDM in MO-basis */
 
-  if (!strcmp(id,"RHF")) {     
+  if(id == "RHF") {
     psq_so = block_matrix(nbfso,nbfso);
 
     max_opi = 0;
@@ -94,7 +92,7 @@ void read_density()
     rstr_uocc = init_int_array(nirreps);
 
     fzc = 1;
-    errcod = ip_boolean("FREEZE_CORE",&fzc,0);
+    fzc = options.get_int("FREEZE_CORE");
  
     if (ci_wfn(wfn)) {
         frozen_docc = init_int_array(nirreps);
@@ -102,7 +100,7 @@ void read_density()
       if (!ras_set2(nirreps, nmo, fzc, 1, orbspi, docc, socc,
 		   frozen_docc, frozen_uocc, rstr_docc, rstr_uocc,
                    ras_opi, reorder, 1, 0) )
-        punt("Error in ras_set()");
+        throw PsiException("Error in ras_set()", __FILE__, __LINE__);
       /* treat restricted vir as frozen vir for now */
       for (i=0; i<nirreps; i++) {
         frozen_uocc[i] += rstr_uocc[i];
@@ -116,19 +114,25 @@ void read_density()
         frozen_uocc = chkpt_rd_frzvpi();
       }
       else { /* try to read input occupations if you can */
-        errcod = ip_int_array("DOCC",docc,nirreps);
-        if (errcod != IPE_OK) {
+        if(options["DOCC"].has_changed()) 
+          docc = options.get_int_array("DOCC");
+        else {
           free(docc);
           docc = chkpt_rd_clsdpi();
         }
-        errcod = ip_int_array("SOCC",socc,nirreps);
-        if (errcod != IPE_OK) {
+                
+        if(options["SOCC"].has_changed()) 
+          socc = options.get_int_array("SOCC");
+        else {
           free(socc);
-          socc = chkpt_rd_openpi();
+          socc = chkpt_rd_clsdpi();
         }
+
+
+
         frozen_docc = get_frzcpi();
         frozen_uocc = get_frzvpi();
-      }
+        }
 
       reorder_qt(docc, socc, frozen_docc, frozen_uocc,
                reorder, orbspi, nirreps);
@@ -217,7 +221,7 @@ void read_density()
     free_block(psq_so);
 
     /* Symmetrize an Asymmetric OPDM */
-    if(asymm_opdm && strcmp(opdm_format,"SQUARE") == 0) {
+    if(asymm_opdm && opdm_format == "SQUARE") {
       for(i=0;i<nbfao;i++) {
         for(j=0;j<=i;j++) {
           Ptot[ioff[i]+j] = 0.5 * (psq_ao[i][j] + psq_ao[j][i]);
@@ -230,7 +234,7 @@ void read_density()
 
     free_matrix(psq_ao,nbfao);
   } /* end read RHF MO-basis case */
-  else if (!strcmp(id,"UHF")) {
+  else if(id == "UHF") {
     eval_tmp = chkpt_rd_alpha_evals();
     chkpt_wt_evals(eval_tmp);
     free(eval_tmp);
@@ -471,7 +475,7 @@ void read_density()
       free_matrix(tmp_mat,nbfso);
       free_block(P_so_tot);
 
-      if(asymm_opdm && strcmp(opdm_format,"SQUARE") == 0) {
+      if(asymm_opdm && opdm_format == "SQUARE") {
         for(i=0;i<nbfao;i++) {
           for(j=0;j<=i;j++) {
             Ptot[ioff[i]+j] = 0.5 * (psq_ao[i][j] + psq_ao[j][i]);
@@ -487,8 +491,8 @@ void read_density()
   }
 
   /* Read OPDM in SO-basis */
-  if (strcmp(opdm_basis,"SO") == 0) {
-    if (strcmp(opdm_format,"SQUARE") == 0) {
+  if(opdm_basis == "SO") {
+    if(opdm_format == "SQUARE") {
       psq_so = block_matrix(nbfso,nbfso);
       psio_open(opdm_file, PSIO_OPEN_OLD);
       psio_read_entry(opdm_file, "SO-basis OPDM", (char *) psq_so[0],
@@ -512,7 +516,7 @@ void read_density()
     mmult(usotao,1,tmp_mat,0,psq_ao,0,nbfao,nbfso,nbfao,0);
     free_matrix(tmp_mat,nbfso);
 
-    if(asymm_opdm && strcmp(opdm_format,"SQUARE") == 0) {
+    if(asymm_opdm && opdm_format == "SQUARE") {
       for(i=0; i<nbfao; i++) {
         for(j=0; j<=i; j++) {
           Ptot[ioff[i]+j] = 0.5 * (psq_ao[i][j] + psq_ao[j][i]);
@@ -532,8 +536,8 @@ void read_density()
     free_block(psq_so);
   }
   /* Read in OPDM in AO-basis */
-  else if (strcmp(opdm_basis,"AO") == 0) {
-    if (strcmp(opdm_format,"SQUARE") == 0) {
+  else if(opdm_basis == "AO") {
+    if(opdm_format == "SQUARE") {
       psq_ao = block_matrix(nbfao,nbfao);
       psio_open(opdm_file, PSIO_OPEN_OLD);
       psio_read_entry(opdm_file, "AO-basis OPDM", (char *) psq_ao[0],
@@ -566,8 +570,6 @@ void read_density()
     print_array(Ptot,nbfao,outfile);
     fprintf(outfile,"\n\n");
   }
-
-  free(id);
 
   return;
 }

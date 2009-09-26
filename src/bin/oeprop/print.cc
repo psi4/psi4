@@ -28,7 +28,7 @@ void print_tasks()
    
    if (read_opdm) {
      fprintf(outfile,"    $One-particle density in %s basis in %s form will be read from file%d",
-             opdm_basis,opdm_format,opdm_file);
+             opdm_basis.c_str(),opdm_format.c_str(),opdm_file);
      if (asymm_opdm)
        fprintf(outfile," and symmetrized.\n");
      else

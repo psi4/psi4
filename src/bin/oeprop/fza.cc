@@ -56,8 +56,9 @@ double F_Zalpha(double Z_alpha) {
   double x1, x2, y1, y2, tval;
 
   if (Z_alpha < 1.0) {
-    fprintf(outfile,"Error: Z_alpha must be at least 1.\n");
-    exit(PSI_RETURN_FAILURE);
+    throw PsiException("Error: Z_alpha must be at least 1", __FILE__, __LINE__);
+//    fprintf(outfile,"Error: Z_alpha must be at least 1.\n");
+//    exit(PSI_RETURN_FAILURE);
   }
 
   /* check for exact match first */

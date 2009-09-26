@@ -6,7 +6,9 @@
 #include "prototypes.h"
 #include "globals.h"
 
-int main(int argc, char* argv[]) {
+namespace psi { namespace oeprop {
+
+int oeprop(Options & options, int argc, char* argv[]) {
  using namespace psi::oeprop;
  
  int i,j,k,l,count;
@@ -69,7 +71,8 @@ int main(int argc, char* argv[]) {
  /* Parsing */
  parsing();
 
- if (strcmp(ref,"UHF") != 0) {
+// if (strcmp(ref,"UHF") != 0) {
+  if(ref != "UHF") {
    scf_evec_so = chkpt_rd_scf();
    scf_evals = chkpt_rd_evals();
    scf_evec_ao = block_matrix(nbfao,nmo);
@@ -77,7 +80,8 @@ int main(int argc, char* argv[]) {
  }
  
  /* parse the grid information */
- if (ip_exist("GRID",0))
+// if (ip_exist("GRID",0))
+ if(options["GRID"].has_changed())
    grid_parse();
  
  /* Computing total charge of the system */
@@ -201,7 +205,8 @@ for (irho=0;irho<nrho;irho++) {
 	/* Cleaning up */
 
  free_block(usotao);
- if (strcmp(ref,"UHF") != 0) {
+// if (strcmp(ref,"UHF") != 0) {
+  if(ref != "UHF") {
    free_block(scf_evec_so);
    free_block(scf_evec_ao);
  }
@@ -223,14 +228,11 @@ for (irho=0;irho<nrho;irho++) {
  free(S);
 /*}  end non-UHF routines */
  stop_io();
- exit(PSI_RETURN_SUCCESS);
+ return 0;
+// exit(PSI_RETURN_SUCCESS);
  
 }
 
 
-extern "C" const char *gprgid()
-{
- const char *prgid = "OEPROP";
-   
- return(prgid);
-}
+}} // namespace psi::oeprop
+

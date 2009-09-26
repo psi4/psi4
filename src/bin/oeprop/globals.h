@@ -3,6 +3,9 @@
     \brief Enter brief description of file here 
 */
 
+#include <psi4-dec.h>
+#include <cstring>
+
 #ifndef _psi_bin_oeprop_globals_h_
 #define _psi_bin_oeprop_globals_h_
 
@@ -46,10 +49,6 @@
 
 namespace psi { namespace oeprop {
 
-extern "C" {
-  EXTERN FILE *infile,*outfile;
-  EXTERN char *psi_file_prefix;
-}
 EXTERN int *ioff;
 EXTERN double df[MAXFACT*2];
 
@@ -83,8 +82,10 @@ EXTERN double **usotao;				/* SO to AO transformation matrix */
 
 EXTERN int read_opdm;		/* Flag for reading density from disk */
 EXTERN int opdm_file;		/* Density matrix file number */	
-EXTERN char *opdm_basis;	/* In what basis a onepdm to be read */
-EXTERN char *opdm_format;	/* Format of onepdm file (lower triangle or square) */
+//EXTERN char *opdm_basis;	/* In what basis a onepdm to be read */
+EXTERN std::string opdm_basis; /* In what basis a onepdm to be read */
+//EXTERN char *opdm_format;	/* Format of onepdm file (lower triangle or square) */
+EXTERN std::string opdm_format; /* Format of onepdm file (lower triangle or square) */
 EXTERN int transdens;           /* Read transition densities vs reg dens?  */
 EXTERN int asymm_opdm;		/* Flag for symmetrization of opdm read in from a file */
 EXTERN int wrtnos;		/* Flag for writing NOs to file30 */
@@ -94,7 +95,7 @@ EXTERN int spin_prop;		/* Write dipole moment to ASCII file ? */
 EXTERN int corr;		/* Correlation correction to the first-order 
 				   properties flag */
 EXTERN int mpmax;		/* Compute up to electric mpmax-tuple moment */
-EXTERN double mp_ref_xyz[3];	/* Coordinates of the reference point for elec. mult. moment 
+EXTERN double *mp_ref_xyz;	/* Coordinates of the reference point for elec. mult. moment 
 				   calculations */
 EXTERN int mp_ref;		/* Code of the reference point for elec. 
 				   multipole moment calculations :
@@ -106,7 +107,7 @@ EXTERN int mp_ref;		/* Code of the reference point for elec.
 				   5 = center of net charge 
 				   If MP_REF_XYZ is specified - MP_REF
 				   keyword is set to -1 */
-EXTERN double Lm_ref_xyz[3];	/* Coordiantes of the reference point for elec. angular momentum 
+EXTERN double *Lm_ref_xyz;	/* Coordiantes of the reference point for elec. angular momentum 
 				   calculations */
 EXTERN int wrt_dipmom;		/* Flag for writing dipole moments into dipmom.dat */
 EXTERN int nuc_esp;		/* Flag for computing electrostatic properties (such as 
@@ -122,17 +123,18 @@ EXTERN int grid;		/* 0 = compute nothing
 EXTERN int num_mos_to_plot;     /* total number of MOs to plot */
 EXTERN int *mos_to_plot;        /* index of the MOs to plot (in Pitzer order) */
 EXTERN int grid3d;              /* 1 if this is a 3d grid, 0 otherwise */
-EXTERN char *grid_format;       /* output format for the grid data */
-EXTERN double grid_origin[3];   /* Origin of the grid coordinate system as specified by user, then
+//EXTERN char *grid_format;       /* output format for the grid data */
+EXTERN std::string grid_format;       /* output format for the grid data */
+EXTERN double *grid_origin;   /* Origin of the grid coordinate system as specified by user, then
 				   the origin of the grid rectangle/box in the reference system */
-EXTERN double grid_unit_x[3];   /* Unit vectors of an intermediate coordinate system in which the grid
+EXTERN double *grid_unit_x;   /* Unit vectors of an intermediate coordinate system in which the grid
 				   rectangle/box will be defined (expressed in the reference system) */
-EXTERN double grid_unit_y[3];
+EXTERN double *grid_unit_y;
 EXTERN double grid_unit_z[3];   /* Only used if a 3d grid is specified */
-EXTERN double grid_xy0[2];	/* A vertex of the grid rectangle (if a 2d grid is used) */
-EXTERN double grid_xy1[2];	/* A diagonally opposite vertex of the grid rectangle (if a 2d grid is used) */
-EXTERN double grid_xyz0[3];	/* A vertex of the grid box (if a 3d grid is used) */
-EXTERN double grid_xyz1[3];	/* A diagonally opposite vertex of the grid box (if a 3d grid is used) */
+EXTERN double *grid_xy0;	/* A vertex of the grid rectangle (if a 2d grid is used) */
+EXTERN double *grid_xy1;	/* A diagonally opposite vertex of the grid rectangle (if a 2d grid is used) */
+EXTERN double *grid_xyz0;	/* A vertex of the grid box (if a 3d grid is used) */
+EXTERN double *grid_xyz1;	/* A diagonally opposite vertex of the grid box (if a 3d grid is used) */
 EXTERN int nix,niy,niz;		/* Number of intervals along x, y, and z (if 3d grid) axes */
 EXTERN double grid_step_x[3];   /* Unit grid step along the x axis of the grid rectangle/box (in terms of the reference system) */
 EXTERN double grid_step_y[3];
@@ -221,8 +223,10 @@ EXTERN double **nmo_so;		/* Natural orbitals in the SO basis */
 EXTERN double **nmo_ao;		/* Natural orbitals in the AO basis */
 
 EXTERN int **connectivity;    /* A matrix of flags whether a bong exists between two atoms */
-EXTERN char *wfn;             /* wavefunction type */
-EXTERN char *ref;             /* reference type */
+//EXTERN char *wfn;             /* wavefunction type */
+EXTERN std::string wfn;
+//EXTERN char *ref;             /* reference type */
+EXTERN std::string ref;         /* reference type */
 EXTERN int update_energy_with_MVD; /* update energy in file 1? for SCF_MVD optimizations */
 EXTERN double fine_structure_alpha; /* multiply relativisitic terms by this */
 EXTERN int QED_darwin; /* scale atomic contributions to get QED correction */

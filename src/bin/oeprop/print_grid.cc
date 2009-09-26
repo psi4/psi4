@@ -22,20 +22,18 @@ namespace psi { namespace oeprop {
 
 void print_grid()
 {
-  if (!strcmp(grid_format,"MEGAPOVPLUS"))
+//  if (!strcmp(grid_format,"MEGAPOVPLUS"))
+  if(grid_format == "MEGAPOVPLUS")
     print_grid_megapovray();
-  else if (!strcmp(grid_format,"PLOTMTV"))
+//  else if (!strcmp(grid_format,"PLOTMTV"))
+  else if(grid_format == "PLOTMTV")
     print_grid_plotmtv();
-  else if (!strcmp(grid_format,"GAUSSCUBE"))
+//  else if (!strcmp(grid_format,"GAUSSCUBE"))
+  else if(grid_format == "GAUSSCUBE")
     print_grid_gausscube();
 
   return;
 }
-
-}} // namespace psi::oeprop
-
-namespace {
-using namespace psi::oeprop;
 
 void print_2d_summary()
 {
@@ -468,4 +466,4 @@ void print_grid_gausscube()
   return;
 }
 
-} // namespace
+}} // namespace
