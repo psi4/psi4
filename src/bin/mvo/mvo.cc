@@ -19,6 +19,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <cstring>
+#include <string>
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
