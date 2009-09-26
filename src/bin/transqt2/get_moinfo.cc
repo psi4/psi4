@@ -176,8 +176,8 @@ namespace psi {
 
 	/* Definition of nactive, actpi, and actsym varies depending
 	   on the type of CI calculation */
-	if(!strcmp(params.wfn,"MCSCF") || !strcmp(params.wfn,"CASSCF") ||
-	   !strcmp(params.wfn,"RASSCF") || !strcmp(params.wfn,"DETCAS") ||
+	if((params.wfn == "MCSCF") || (params.wfn == "CASSCF") ||
+	   (params.wfn == "RASSCF") || (params.wfn == "DETCAS") ||
 	   params.dertype == 1) {
 
 	  /* Include all orbtials; partial transforms to come later */
@@ -246,7 +246,7 @@ namespace psi {
 	free(rstr_docc);
 	free(rstr_uocc);
       }
-      else if(cc_wfn(params.wfn) || !strcmp(params.wfn,"MP2")) {
+      else if(cc_wfn(params.wfn) || (params.wfn == "MP2")) {
 
 	/* Leave out fzc/fzv */
 	moinfo.nactive = moinfo.nmo - moinfo.nfzc - moinfo.nfzv;
@@ -346,8 +346,8 @@ namespace psi {
 	free(offset);
 
       }
-      else if(!strcmp(params.wfn,"SCF") || !strcmp(params.wfn,"SCF_MVD")
-           || !strcmp(params.wfn,"PSIMRCC") || !strcmp(params.wfn,"PSIMRCC_CSCF")) {  /* psimrcc requires no freezing nor reordering */
+      else if((params.wfn == "SCF") || (params.wfn == "SCF_MVD")
+           || (params.wfn == "PSIMRCC") || (params.wfn == "PSIMRCC_CSCF")) {  /* psimrcc requires no freezing nor reordering */
 
 	/* Note that no frozen orbitals are allowed in this case */
 
@@ -436,8 +436,8 @@ namespace psi {
 	  free_block(moinfo.C[h]);
 	free(moinfo.C);
       }
-      else if(cc_wfn(params.wfn) || !strcmp(params.wfn,"SCF") ||
-	      !strcmp(params.wfn,"SCF_MVD")) {
+      else if(cc_wfn(params.wfn) || (params.wfn == "SCF") ||
+	      (params.wfn == "SCF_MVD")) {
 	if(params.ref == 0 || params.ref == 1) {
 	  free(moinfo.pitz2corr_one);
 	  free(moinfo.pitz2corr_two);
