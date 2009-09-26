@@ -21,13 +21,13 @@ void get_params()
   char *junk;
   int *mu_irreps, tmp;
 
-  params.wfn = options.get_cstr("WFN");
+  params.wfn = const_cast<char*>(options.get_cstr("WFN"));
 
   /* NB: SCF wfns are allowed because, at present, ccsort is needed for
      RPA-type calculations */
 
   params.semicanonical = 0;
-  junk = options.get_cstr("REFERENCE");
+  junk = const_cast<char*>(options.get_cstr("REFERENCE"));
   if (errcod != IPE_OK)
     params.ref = 0; /* if no reference is given, assume rhf */
   else {
@@ -48,7 +48,7 @@ void get_params()
   }
 
   params.dertype = 0;
-  junk = options.get_cstr("DERTYPE");
+  junk = const_cast<char*>(options.get_cstr("DERTYPE"));
   if(!strcmp(junk,"NONE")) params.dertype = 0;
   else if(!strcmp(junk,"FIRST")) params.dertype = 1;
   else if(!strcmp(junk,"SECOND")) params.dertype = 2;
@@ -72,7 +72,7 @@ void get_params()
   params.delete_tei = 1;
   /* If AO-basis chosen, keep the SO_TEI file */
   char* aobasis;
-  aobasis = options.get_cstr("AO_BASIS");
+  aobasis = const_cast<char*>(options.get_cstr("AO_BASIS"));
   if(!strcmp(aobasis,"DISK")) params.delete_tei = 0;
 
   // any MCSCF-type wavefunction needs multiple transforms so don't delete
