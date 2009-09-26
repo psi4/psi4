@@ -6,9 +6,12 @@
 #define _psi_src_bin_mp2_params_h_
 struct params {
   int ref;
-  char *wfn;
-  char *jobtype;
-  char *dertype;
+//  char *wfn;
+//  char *jobtype;
+//  char *dertype;
+  std::string wfn;
+  std::string jobtype;
+  std::string dertype;
   int cachelev;
   int cachetype;
   int print;
