@@ -392,7 +392,7 @@ namespace psi {
       }
       else {
         char junk[32];
-	sprintf(junk, "WFN %s not yet supported by transqt2.", params.wfn);
+	sprintf(junk, "WFN %s not yet supported by transqt2.", params.wfn.c_str());
         throw PsiException(junk, __FILE__, __LINE__);
       }
 
