@@ -25,6 +25,8 @@ namespace psi {
     int (*entryPoint)();
     void (*registerOptions)();
   };
+
+  enum PsiReturnType {Success, Failure, Balk};
   
   extern Module module;
   extern FILE *outfile;
