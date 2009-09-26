@@ -165,6 +165,14 @@ int read_options(std::string name, Options & options) {
     options.add_int("ROTATION_METHOD",0);
     options.add_double("SCALE",0.5);
   }
+  else if(name == "CCHBAR") {
+    options.add_bool("TAMPLITUDE",0);
+    options.add_int("CACHELEV",2); 
+    options.add_int("PRINT",0);
+    options.add_str("WFN");
+    options.add_str("DERTYPE",0);
+    options.add_str("WABEI_LOWDISK",0);
+  }
   else if(name == "CCRESPONSE") {
     options.add_str("WFN");
     options.add_int("PRINT",1);
