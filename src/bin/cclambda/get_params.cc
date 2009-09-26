@@ -5,8 +5,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <string>
 #include <cmath>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <psifiles.h>
 #include <libqt/qt.h>
@@ -24,27 +24,27 @@ void get_params(void)
   int errcod, iconv,i,j,k,l,prop_sym,prop_root, excited_method=0;
 	int *states_per_irrep, prop_all, lambda_and_Ls = 0;
   char lbl[32];
-  char *junk;
+  Std::string junk;
 
   /* check WFN keyword in input */
-  errcod = ip_string("WFN", &(params.wfn), 0);
+  params.wfn = options.get_str("WFN");
 	excited_method = cc_excited(params.wfn);
 
-  if(!strcmp(params.wfn,"CC2") || !strcmp(params.wfn,"EOM_CC2")) {
+  if(params.wfn == "CC2" || params.wfn == "EOM_CC2") {
     psio_read_entry(CC_INFO, "CC2 Energy", (char *) &(moinfo.ecc),
                     sizeof(double));
     fprintf(outfile,  "\tCC2 energy          (CC_INFO) = %20.15f\n",moinfo.ecc);
     fprintf(outfile,  "\tTotal CC2 energy    (CC_INFO) = %20.15f\n",
             moinfo.eref+moinfo.ecc);
   }
-  else if(!strcmp(params.wfn,"CCSD") || !strcmp(params.wfn,"EOM_CCSD")) {
+  else if(params.wfn == "CCSD" || params.wfn == "EOM_CCSD") {
     psio_read_entry(CC_INFO, "CCSD Energy", (char *) &(moinfo.ecc),
                     sizeof(double));
     fprintf(outfile,  "\tCCSD energy         (CC_INFO) = %20.15f\n",moinfo.ecc);
     fprintf(outfile,  "\tTotal CCSD energy   (CC_INFO) = %20.15f\n",
             moinfo.eref+moinfo.ecc);
   }
-  else if(!strcmp(params.wfn,"CC3") || !strcmp(params.wfn,"EOM_CC3")) {
+  else if(params.wfn == "CC3" || params.wfn == "EOM_CC3") {
     psio_read_entry(CC_INFO, "CC3 Energy", (char *) &(moinfo.ecc),
                     sizeof(double));
     fprintf(outfile,  "\tCC3 energy          (CC_INFO) = %20.15f\n",moinfo.ecc);
@@ -55,129 +55,113 @@ void get_params(void)
   /* read in the easy-to-understand parameters */
 
   params.convergence = 1e-7;
-  errcod = ip_data("CONVERGENCE","%d",&(iconv),0);
-  if(errcod == IPE_OK) params.convergence = 1.0*pow(10.0,(double) -iconv);
+  iconv = options.get_int("CONVERGENCE");
+  params.convergence = 1.0*pow(10.0,(double) -iconv);
 
   params.restart = 1;
-  errcod = ip_boolean("RESTART", &(params.restart),0);
+  params.restart = options.get_bool("RESTART");
   if(!moinfo.phase) params.restart = 0;
 
   fndcor(&(params.memory),infile,outfile);
 
   params.print = 0;
-  errcod = ip_data("PRINT", "%d", &(params.print),0);
+  params.print = options.get_int("PRINT");
 
   params.cachelev = 2;
-  errcod = ip_data("CACHELEV", "%d", &(params.cachelev),0);
+  params.cachelevel  = options.get_int("CACHELEV");
 
   params.sekino = 0;
-  if(ip_exist("SEKINO",0)) {
-    errcod = ip_boolean("SEKINO", &params.sekino, 0);
-    if(errcod != IPE_OK) params.sekino = 0;
-  }
+  param.sekino = options.get_bool("SEKINO");
 
   params.diis = 1;
-  errcod = ip_boolean("DIIS", &params.diis, 0);
+  param.diis = options.get_bool("DIIS");
 
   params.aobasis = 0;
-  errcod = ip_boolean("AO_BASIS", &(params.aobasis),0);
+  params.aobasis = options.get_bool("AO_BASIS");
   params.aobasis = 0;  /* AO basis code not yet working for lambda */
 
-  if(ip_exist("ABCD",0)) {
-    errcod = ip_string("ABCD", &(params.abcd), 0);
-    if(strcmp(params.abcd,"NEW") && strcmp(params.abcd,"OLD")) {
-      fprintf(outfile, "Invalid ABCD algorithm: %s\n", params.abcd);
-      exit(PSI_RETURN_FAILURE);
-    }
+  params.abcd = options.get_str("ABCD");
+  if(params.abcd == "NEW" && params.abcd == "OLD") {
+    fprintf(outfile, "Invalid ABCD algorithm: %s\n", params.abcd.c_str());
+    throw PsiException("cclambda: error", __FILE__, __LINE__);
   }
-  else params.abcd = strdup("NEW");
 
   params.num_amps = 10;
-  if(ip_exist("NUM_AMPS",0)) {
-    errcod = ip_data("NUM_AMPS", "%d", &(params.num_amps), 0);
-  }
+   params.num_amps = options.get_int("NUM_AMPS");
 
   /* Determine DERTYPE */
   params.dertype = 0;
-  if(ip_exist("DERTYPE",0)) {
-    errcod = ip_string("DERTYPE", &(junk),0);
-    if(errcod != IPE_OK) {
-      printf("Invalid value of input keyword DERTYPE: %s\n", junk);
-      exit(PSI_RETURN_FAILURE); 
-		}
-    else if(!strcmp(junk,"NONE")) params.dertype = 0;
-    else if(!strcmp(junk,"FIRST")) params.dertype = 1;
-    else if(!strcmp(junk,"RESPONSE")) params.dertype = 3; /* linear response */
+  if(options["DERTYPE"].has_changed()) {
+    junk = options.get_str("DERTYPE");
+    if(junk == "NONE") params.dertype = 0;
+    else if(junk == "FIRST") params.dertype = 1;
+    else if(junk == "RESPONSE") params.dertype = 3; /* linear response */
     else {
-      printf("Invalid value of input keyword DERTYPE: %s\n", junk);
-      exit(PSI_RETURN_FAILURE); 
+      printf("Invalid value of input keyword DERTYPE: %s\n", junk.c_str());
+      throw PsiException("cclambda: error", __FILE__, __LINE__);
     }
-    free(junk);
   }
 	else { /* DERTYPE is absent, assume 1 if jobtype=opt; 0 if jobtype=oeprop */
-    ip_string("JOBTYPE", &(junk),0);
-    if(!strcmp(junk,"OEPROP")) params.dertype = 0;
-    else if(!strcmp(junk,"OPT")) params.dertype = 1;
+    junk = options.get_str("JOBTYPE");
+    if(junk == "OEPROP") params.dertype = 0;
+    else if(junk == "OPT") params.dertype = 1;
     else {
-      printf("Don't know what to do with DERTYPE missing and jobtype: %s\n", junk);
-      exit(PSI_RETURN_FAILURE); 
+      printf("Don't know what to do with DERTYPE missing and jobtype: %s\n", junk.c_str());
+      throw PsiException("cclambda: error", __FILE__, __LINE__);
     }
-    free(junk);
 	}
 
   /* begin local parameters */
   params.local = 0;
-  errcod = ip_boolean("LOCAL", &(params.local),0);
+  params.local = options.get_bool("LOCAL");
   local.cutoff = 0.02;
-  errcod = ip_data("LOCAL_CUTOFF", "%lf", &(local.cutoff), 0);
-  if(ip_exist("LOCAL_METHOD",0)) {
-    errcod = ip_string("LOCAL_METHOD", &(local.method), 0);
-    if(strcmp(local.method,"AOBASIS") && strcmp(local.method,"WERNER")) {
-      fprintf(outfile, "Invalid local correlation method: %s\n", local.method);
-      exit(PSI_RETURN_FAILURE);
+  local.cutoff = options.get_double("LOCAL_CUTOFF");
+  if(options["LOCAL_METHOD",0].has_changed()) {
+    local.method = options.get_str("LOCAL_METHOD");
+    if(local.method == "AOBASIS" && local.method == "WERNER") {
+      fprintf(outfile, "Invalid local correlation method: %s\n", local.method.c_str());
+      throw PsiException("cclambda: error", __FILE__, __LINE__);
     }
   }
   else if(params.local) {
-    local.method = (char *) malloc(7 * sizeof(char));
-    sprintf(local.method, "%s", "WERNER");
+    local.method = "WERNER";
   }
 
-  if(ip_exist("LOCAL_WEAKP",0)) {
-    errcod = ip_string("LOCAL_WEAKP", &(local.weakp), 0);
-    if(strcmp(local.weakp,"MP2") && strcmp(local.weakp,"NEGLECT") && strcmp(local.weakp,"NONE")) {
-      fprintf(outfile, "Invalid method for treating local pairs: %s\n", local.weakp);
-      exit(PSI_RETURN_FAILURE);
+  if(options["LOCAL_WEAKP"].has_changed()) {
+    local.weakp = options.get_str("LOCAL_WEAKP");
+    if(local.weakp != "MP2" && local.weakp != "NEGLECT" && local.weakp != "NONE") {
+      fprintf(outfile, "Invalid method for treating local pairs: %s\n", local.weakp.c_str());
+      throw PsiException("cclambda: error", __FILE__, __LINE__);
     }
   }
   else if(params.local) {
-    local.weakp = (char *) malloc(4 * sizeof(char));
-    sprintf(local.weakp, "%s", "NONE");
+    local.weakp = "NONE";
   }
   
   if(params.dertype == 3)
     local.filter_singles = 0;
   else
     local.filter_singles = 1;
-  ip_boolean("LOCAL_FILTER_SINGLES", &(local.filter_singles), 0);
+
+  local.filter_singles = options.get_bool("LOCAL_FILTER_SINGLES");
 
   local.cphf_cutoff = 0.10;
-  ip_data("LOCAL_CPHF_CUTOFF", "%lf", &(local.cphf_cutoff), 0);
+  local.cphf_cutoff = options.get_double("LOCAL_CPHF_CUTOFF");
 
-  local.freeze_core = NULL;
-  ip_string("FREEZE_CORE", &local.freeze_core, 0);
-  if(local.freeze_core == NULL) local.freeze_core = strdup("FALSE");
+  local.freeze_core = "FALSE";
+  local.freeze_core = options.get_str("FREEZE_CORE");
 
-  if(ip_exist("LOCAL_PAIRDEF",0)){
-    errcod = ip_string("LOCAL_PAIRDEF", &(local.pairdef), 0);
-    if(strcmp(local.pairdef,"BP") && strcmp(local.pairdef,"RESPONSE")) {
-      fprintf(outfile, "Invalid keyword for strong/weak pair definition: %s\n", local.pairdef);
-      exit(PSI_RETURN_FAILURE);
+  if(options["LOCAL_PAIRDEF"].has_changed()){
+    local.pairdef = options.get_str("LOCAL_PAIRDEF");
+    if(local.pairdef != "BP" && local.pairdef != "RESPONSE") {
+      fprintf(outfile, "Invalid keyword for strong/weak pair definition: %s\n", local.pairdef.c_str());
+      throw PsiException("cclambda: error", __FILE__, __LINE__);
     }
   }
   else if(params.local && params.dertype == 3)
-    local.pairdef = strdup("RESPONSE");
+    local.pairdef = "RESPONSE";
   else if(params.local)
-    local.pairdef = strdup("BP");
+    local.pairdef = "BP";
 
 	/* Now setup the structure which determines what will be solved */ 
 	/* if --zeta, use Xi and solve for Zeta */
@@ -207,20 +191,16 @@ void get_params(void)
       states_per_irrep = chkpt_rd_statespi();
     }
     else {
-      ip_count("STATES_PER_IRREP", &i, 0);
-	    states_per_irrep = (int *) malloc(moinfo.nirreps * sizeof(int));
-      for (i=0;i<moinfo.nirreps;++i)
-        errcod = ip_data("STATES_PER_IRREP","%d",&(states_per_irrep[i]),1,i);
-    }
+	    states_per_irrep = options.get_int_array("STATES_PER_IRREP");
     chkpt_close();
 
 	  prop_all = 0;
-	  if (ip_exist("PROP_ALL",0)) ip_boolean("PROP_ALL",&prop_all,0);
+	  prop_all = options.get_bool("PROP_ALL");
 		/* command-line overrides this keyword (at least for now) */
 		if (params.all) prop_all = 1;
 
-	  if (ip_exist("PROP_SYM",0)) {  /* read symmetry of state for properties */
-      ip_data("PROP_SYM","%d",&(prop_sym),0);
+	  if (options["PROP_SYM"].has_changed()) {  /* read symmetry of state for properties */
+      prop_sym = options.get_int("PROP_SYM");
       prop_sym -= 1;
       prop_sym = moinfo.sym^prop_sym;
 	  }
@@ -231,8 +211,8 @@ void get_params(void)
 		  }
     }
 
-    if (ip_exist("PROP_ROOT",0)) { /* read prop_root */
-      ip_data("PROP_ROOT","%d",&(prop_root),0);
+    if (options["PROP_ROOT"].has_changed()) { /* read prop_root */
+      prop_root = options.get_int("PROP_ROOT");
       prop_root -= 1;
 	  }
 	  else { /* just use highest root, if you need only one of them */
@@ -281,19 +261,19 @@ void get_params(void)
       pL_params[0].irrep = prop_sym;
       pL_params[0].root = prop_root;
       pL_params[0].ground = 0;
-      if(!strcmp(params.wfn,"EOM_CC2")) {
+      if(params.wfn == "EOM_CC2") {
         sprintf(lbl,"EOM CC2 Energy for root %d %d", prop_sym, prop_root);
         psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[0].cceom_energy),sizeof(double));
         sprintf(lbl,"EOM CC2 R0 for root %d %d", prop_sym, prop_root);
         psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[0].R0),sizeof(double));
       }
-      else if(!strcmp(params.wfn,"EOM_CCSD")) {
+      else if(params.wfn == "EOM_CCSD") {
         sprintf(lbl,"EOM CCSD Energy for root %d %d", prop_sym, prop_root);
         psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[0].cceom_energy),sizeof(double));
         sprintf(lbl,"EOM CCSD R0 for root %d %d", prop_sym, prop_root);
         psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[0].R0),sizeof(double));
       }
-      else if(!strcmp(params.wfn,"EOM_CC3")) {
+      else if(params.wfn == "EOM_CC3") {
         sprintf(lbl,"EOM CC3 Energy for root %d %d", prop_sym, prop_root);
         psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[0].cceom_energy),sizeof(double));
         sprintf(lbl,"EOM CC3 R0 for root %d %d", prop_sym, prop_root);
@@ -384,19 +364,19 @@ void get_params(void)
             pL_params[k].root = j;
             pL_params[k].ground = 0;
 
-            if(!strcmp(params.wfn,"EOM_CC2")) {
+            if(params.wfn == "EOM_CC2") {
               sprintf(lbl,"EOM CC2 Energy for root %d %d", i, j);
               psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[k].cceom_energy),sizeof(double));
               sprintf(lbl,"EOM CC2 R0 for root %d %d", i, j);
               psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[k].R0),sizeof(double));
             }
-            else if(!strcmp(params.wfn,"EOM_CCSD")) {
+            else if(params.wfn == "EOM_CCSD") {
               sprintf(lbl,"EOM CCSD Energy for root %d %d", i, j);
               psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[k].cceom_energy),sizeof(double));
               sprintf(lbl,"EOM CCSD R0 for root %d %d", i, j);
               psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[k].R0),sizeof(double));
             }
-            else if(!strcmp(params.wfn,"EOM_CC3")) {
+            else if(params.wfn == "EOM_CC3") {
               sprintf(lbl,"EOM CC3 Energy for root %d %d", i, j);
               psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[k].cceom_energy),sizeof(double));
               sprintf(lbl,"EOM CC3 R0 for root %d %d", i, j);
@@ -418,19 +398,19 @@ void get_params(void)
       pL_params[1].root = prop_root;
       pL_params[1].ground = 0;
 
-      if(!strcmp(params.wfn,"EOM_CC2")) {
+      if(params.wfn == "EOM_CC2") {
         sprintf(lbl,"EOM CC2 Energy for root %d %d", prop_sym, prop_root);
         psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[1].cceom_energy),sizeof(double));
         sprintf(lbl,"EOM CC2 R0 for root %d %d", prop_sym, prop_root);
         psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[1].R0),sizeof(double));
       }
-      else if(!strcmp(params.wfn,"EOM_CCSD")) {
+      else if(params.wfn == "EOM_CCSD") {
         sprintf(lbl,"EOM CCSD Energy for root %d %d", prop_sym, prop_root);
         psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[1].cceom_energy),sizeof(double));
         sprintf(lbl,"EOM CCSD R0 for root %d %d", prop_sym, prop_root);
         psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[1].R0),sizeof(double));
       }
-      else if(!strcmp(params.wfn,"EOM_CC3")) {
+      else if(params.wfn == "EOM_CC3") {
         sprintf(lbl,"EOM CC3 Energy for root %d %d", prop_sym, prop_root);
         psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[1].cceom_energy),sizeof(double));
         sprintf(lbl,"EOM CC3 R0 for root %d %d", prop_sym, prop_root);
@@ -448,7 +428,7 @@ void get_params(void)
 
 
   params.maxiter = 50 * params.nstates;
-  errcod = ip_data("MAXITER","%d",&(params.maxiter),0);
+  params.maxiter = options.get_int("MAXITER");
 
   fprintf(outfile, "\n\tInput parameters:\n");
   fprintf(outfile, "\t-----------------\n");

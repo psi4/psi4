@@ -10,7 +10,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libqt/qt.h>
@@ -18,6 +17,7 @@
 #include "Params.h"
 #include "Local.h"
 #include "globals.h"
+#include <psi4-dec.h>
 
 namespace psi { namespace cclambda {
 
@@ -72,11 +72,7 @@ void cc3_l3l1(void);
 void local_init(void);
 void local_done(void);
 
-}} // namespace psi::cclambda
-
-using namespace psi::cclambda;
-
-int main(int argc, char *argv[])
+int cclambda(int argc, char *argv[])
 {
   int done=0, i, root_L_irr;
   int **cachelist, *cachefiles;
@@ -135,14 +131,14 @@ int main(int argc, char *argv[])
   if(params.local) local_init();
 
   if(params.ref == 0) {
-    if (!strcmp(params.wfn,"CC2") || !strcmp(params.wfn,"EOM_CC2"))
+    if (params.wfn == "CC2" || params.wfn == "EOM_CC2")
       cc2_hbar_extra();
     else
       hbar_extra();
   }
 
   /* CC3: Z-build */
-  if(!strcmp(params.wfn,"CC3")) cc3_t3z();
+  if(params.wfn == "CC3") cc3_t3z();
 
   for (i=0; i<params.nstates; ++i) {
 
@@ -181,9 +177,9 @@ int main(int argc, char *argv[])
       /* must zero New L before adding RHS */
       L_zero(pL_params[i].irrep);
 
-      if(!strcmp(params.wfn,"CC3")) cc3_t3x();
+      if(params.wfn == "CC3") cc3_t3x();
 
-      if(!strcmp(params.wfn,"CC2") || !strcmp(params.wfn,"EOM_CC2")) {
+      if(params.wfn == "CC2" || params.wfn == "EOM_CC2") {
 
 	cc2_Gai_build(pL_params[i].irrep);
 	cc2_L1_build(pL_params[i]);
@@ -197,7 +193,7 @@ int main(int argc, char *argv[])
 	if(params.print & 2) status("L1 amplitudes", outfile);
 	L2_build(pL_params[i]);
 
-	if(!strcmp(params.wfn, "CC3")) {
+	if(params.wfn == "CC3") {
 	  cc3_l3l2();
 	  cc3_l3l1();
 	}
@@ -236,7 +232,7 @@ int main(int argc, char *argv[])
       dpd_close(0);
       cleanup();
       exit_io();
-      exit(PSI_RETURN_FAILURE);
+      throw PsiException("cclambda: error", __FILE__, __LINE__);
     }
     if (pL_params[i].ground)
       overlap(pL_params[i].irrep);
@@ -260,21 +256,15 @@ int main(int argc, char *argv[])
 
   cleanup(); 
   exit_io();
-  exit(PSI_RETURN_SUCCESS);
+  retur PSI_RETURN_SUCCESS;
 }
 
-extern "C" {const char *gprgid() { const char *prgid = "CCLAMBDA"; return(prgid); }}
-
-namespace psi { namespace cclambda {
 
 /* parse command line arguments */
 void init_io(int argc, char *argv[])
 {
   int i, num_unparsed;
   char *lbl, *progid, *argv_unparsed[100];
-
-  progid = (char *) malloc(strlen(gprgid())+2);
-  sprintf(progid, ":%s",gprgid());
 
   params.all=0;    /* do all Ls including ground state */
   params.zeta=0; /* only do ground-state L */
@@ -290,15 +280,10 @@ void init_io(int argc, char *argv[])
     }
   }
 
-  psi_start(&infile,&outfile,&psi_file_prefix,num_unparsed, argv_unparsed, 0);
-  ip_cwk_add(":INPUT");
-  ip_cwk_add(":CCEOM");
-  ip_cwk_add(progid);
 /* convergence in CCLAMBDA: will only replace default if this is the last keyword read */
   free(progid);
 
-  tstart(outfile);
-  psio_init(); psio_ipv1_config();
+  tstart();
 
   for(i=CC_MIN; i <= CC_MAX; i++) psio_open(i,1);
 
@@ -329,9 +314,7 @@ void exit_io(void)
   for(i=CC_TMP; i <= CC_TMP11; i++) psio_close(i,0); /* delete CC_TMP files */
   for(i=CC_TMP11+1; i <= CC_MAX; i++) psio_close(i,1);
 
-  psio_done();
-  tstop(outfile);
-  psi_stop(infile,outfile,psi_file_prefix);
+  tstop();
 }
 
 /* put copies of L for excited states in LAMPS with irrep and index label */

@@ -4,6 +4,7 @@
 */
 #include <cstdio>
 #include <cstring>
+#include <string>
 #include <cmath>
 #include <libqt/qt.h>
 #include <libciomr/libciomr.h>
@@ -97,7 +98,7 @@ void WefabL2(int L_irr)
   /* RHS += Wefab*Lijef  */
   if(params.ref == 0) { /** RHF **/
 
-    if(!strcmp(params.abcd,"OLD")) {
+    if(params.abcd == "OLD") {
       dpd_buf4_init(&LIjAb, CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
       dpd_buf4_init(&Z, CC_TMP0, L_irr, 5, 0, 5, 0, 0, "ZAbIj");
       dpd_buf4_init(&B, CC_BINTS, 0, 5, 5, 5, 5, 0, "B <ab|cd>");
@@ -107,7 +108,7 @@ void WefabL2(int L_irr)
       dpd_buf4_close(&Z);
       dpd_buf4_close(&LIjAb);
     }
-    else if(!strcmp(params.abcd,"NEW")) {
+    else if(params.abcd == "NEW") {
       timer_on("ABCD:new");
 
       /* L_a(-)(ij,ab) (i>j, a>b) = L(ij,ab) - L(ij,ba) */

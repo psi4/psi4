@@ -137,7 +137,7 @@ void denom_uhf(struct L_Params L_params)
   avir_off = moinfo.avir_off;
   bvir_off = moinfo.bvir_off;
 
-  if((!strcmp(params.wfn,"CC2")) || (!strcmp(params.wfn,"EOM_CC2"))) {
+  if((params.wfn == "CC2") || (params.wfn == "EOM_CC2")) {
 
     dpd_file2_init(&LFMIt, CC_OEI, 0, 0, 0, "fIJ");
     dpd_file2_mat_init(&LFMIt);

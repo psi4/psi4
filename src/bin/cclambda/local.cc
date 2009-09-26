@@ -107,7 +107,7 @@ void local_filter_T1(dpdfile2 *T1)
 
     if(!local.pairdom_len[ii]) {
       fprintf(outfile, "\n\tlocal_filter_T1: Pair ii = [%d] is zero-length, which makes no sense.\n",ii);
-      exit(PSI_RETURN_FAILURE);
+      throw PsiException("cclambda: error", __FILE__, __LINE__);
     }
 
     T1tilde = init_array(local.pairdom_len[ii]);

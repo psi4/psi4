@@ -4,6 +4,7 @@
 */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
 #include <string.h>
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
@@ -59,7 +60,7 @@ namespace psi { namespace cclambda {
 	  dpd_file2_close(&Fme);
 	  dpd_file2_close(&FME);
 	  /* If CCSD(T) gradient, add T3 contributions */
-	  if(!strcmp(params.wfn, "CCSD_T")) {
+	  if(params.wfn == "CCSD_T") {
 	    dpd_file2_init(&FME,CC_OEI, 0, 0, 1, "SIA");
 	    dpd_file2_init(&LIA, CC_LAMBDA, L_irr, 0, 1, "New LIA");
 	    dpd_file2_axpy(&FME, &LIA, 1, 0);
@@ -569,7 +570,7 @@ namespace psi { namespace cclambda {
       }
 
       /* CC3 T3->L1 */
-      if(!strcmp(params.wfn, "CC3")) {
+      if(params.wfn == "CC3") {
 	if(params.ref == 0) { 
 
 	  dpd_file2_init(&XLD, CC3_MISC, 0, 0, 1, "CC3 XLD");
