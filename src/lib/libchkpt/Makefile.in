@@ -90,7 +90,7 @@ eccsd.cc \
 e_t.cc \
 emp2.cc \
 fragment_coeff.cc natom_per_fragment.cc nref_per_fragment.cc \
-nallatom_per_fragment.cc  nfragment.cc
+nallatom_per_fragment.cc  nfragment.cc rot_symm_num.cc rotconst.cc
 
 DEPENDINCLUDE = chkpt.h chkpt.hpp config.h
 
