@@ -3,10 +3,10 @@
     \brief Enter brief description of file here 
 */
 
-#ifndef _psi3_bin_dboc_moinfo_h_
-#define _psi3_bin_dboc_moinfo_h_
+#ifndef _psi3_bin_DBOC_moinfo_h_
+#define _psi3_bin_DBOC_moinfo_h_
 
-namespace psi { namespace dboc {
+namespace psi { namespace DBOC {
 
 typedef struct {
   int num_so;
@@ -21,7 +21,7 @@ typedef struct {
   short int* QTS_to_pitzer;
 } MOInfo_t;
 
-}} /* namespace psi::dboc */
+}} /* namespace psi::DBOC */
 
 #endif
 

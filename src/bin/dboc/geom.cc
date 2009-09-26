@@ -12,7 +12,7 @@ namespace {
   void append_geom(FILE *geomdat, double **geom, int disp);
 }
 
-namespace psi { namespace dboc {
+namespace psi { namespace DBOC {
 
 extern Molecule_t Molecule;
 extern Params_t Params;
@@ -70,10 +70,10 @@ void setup_geoms()
 
 }
 
-}} // namespace psi::dboc
+}} // namespace psi::DBOC
 
 namespace {
-  using namespace psi::dboc;
+  using namespace psi::DBOC;
   void append_geom(FILE *geomdat, double **geom, int disp)
   {
     fprintf(geomdat,"%% DBOC cartesian displacement %d\n",disp);

@@ -3,12 +3,12 @@
     \brief Enter brief description of file here 
 */
 
-#ifndef _psi3_bin_dboc_hfwfn_h_
-#define _psi3_bin_dboc_hfwfn_h_
+#ifndef _psi3_bin_DBOC_hfwfn_h_
+#define _psi3_bin_DBOC_hfwfn_h_
 
 #include <libchkpt/chkpt.h>
 
-namespace psi { namespace dboc {
+namespace psi { namespace DBOC {
 
 class HFWavefunction {
 
@@ -52,7 +52,7 @@ class HFWavefunction {
   void set_rref(double**);
 };
 
-}} /* namespace psi::dboc */
+}} /* namespace psi::DBOC */
 
 #endif
 

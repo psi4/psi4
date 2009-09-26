@@ -3,10 +3,10 @@
     \brief Enter brief description of file here
 */
 
-#ifndef _psi3_bin_dboc_params_h_
-#define _psi3_bin_dboc_params_h_
+#ifndef _psi3_bin_DBOC_params_h_
+#define _psi3_bin_DBOC_params_h_
 
-namespace psi { namespace dboc {
+namespace psi { namespace DBOC {
 
 namespace PrintLevels {
   static const int print_intro = 1;
@@ -48,6 +48,6 @@ typedef struct {
 
 } Params_t;
 
-}} /* namespace psi::dboc */
+}} /* namespace psi::DBOC */
 
 #endif

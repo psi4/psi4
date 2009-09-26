@@ -15,13 +15,14 @@
 #include "linalg.h"
 #include "mo_overlap.h"
 #include "hfwfn.h"
+#include <psi4-dec.h>
 
 // Set to 1 to try using unit MO overlap between + and - displacements
 #define TRY_UNIT_OVERLAP 0
 
 using namespace std;
 namespace psi {
-  namespace dboc {
+  namespace DBOC {
     
     // Wrap a,b indices into one composite index assuming S2 symmetry
 #define INDEX2(a,b) ((a) > (b)) ? ( (((a)*(a+1)) >> 1) + (b) ) : ( (((b)*(b+1)) >> 1) + (a) )
@@ -30,8 +31,6 @@ namespace psi {
     // Wrap a>=b>=c indices into one composite index assuming S3 symmetry
 #define INDEX3_ORD(a,b,c) ( ((a)*(((a)+4)*((a)-1)+6)/6) + (((b)*(b+1))/2) + (c) )
     
-    extern "C" FILE *outfile;
-
     extern char *CI_Vector_Labels[MAX_NUM_DISP];
     extern HFWavefunction* HFVectors[MAX_NUM_DISP];
     extern void done(const char *);
@@ -197,4 +196,4 @@ namespace psi {
       return fabs(S_tot_double);
     }
 
-  }} // namespace psi::dboc
+  }} // namespace psi::DBOC

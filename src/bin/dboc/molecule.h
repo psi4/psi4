@@ -3,10 +3,10 @@
     \brief Enter brief description of file here 
 */
 
-#ifndef _psi3_bin_dboc_molecule_h_
-#define _psi3_bin_dboc_molecule_h_
+#ifndef _psi3_bin_DBOC_molecule_h_
+#define _psi3_bin_DBOC_molecule_h_
 
-namespace psi { namespace dboc {
+namespace psi { namespace DBOC {
 
 typedef struct {
   int natom;
@@ -21,7 +21,7 @@ typedef struct {
   double **cartrep;   // Group representation in cartesian basis
 } Molecule_t;
 
-}} /* namespace psi::dboc */
+}} /* namespace psi::DBOC */
 
 #endif
 

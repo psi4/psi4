@@ -18,11 +18,11 @@
 #include <libbasis/basisset.h>
 #include <libbasis/overlap.h>
 #include <libbasis/rotation.h>
+#include <psi4-dec.h>
 
-namespace psi { namespace dboc {
+namespace psi { namespace DBOC {
 
 extern void done(const char * message);
-extern "C" FILE *outfile;
 extern BasisSet* BasisSets[MAX_NUM_DISP];
 extern HFWavefunction* HFVectors[MAX_NUM_DISP];
 extern Params_t Params;
@@ -67,10 +67,10 @@ FLOAT **eval_S_alpha(DisplacementIndex LDisp, DisplacementIndex RDisp)
 
   if (Params.print_lvl > PrintLevels::print_contrib) {
     fprintf(outfile, "  -Rotation matrix for AO basis (disp = %d)\n", RDisp);
-    psi::dboc::print_mat(basisRref_r, num_ao, num_ao, outfile);
+    psi::DBOC::print_mat(basisRref_r, num_ao, num_ao, outfile);
     
     fprintf(outfile, "  -Rotation matrix for AO basis (disp = %d)\n", LDisp);
-    psi::dboc::print_mat(basisRref_l, num_ao, num_ao, outfile);
+    psi::DBOC::print_mat(basisRref_l, num_ao, num_ao, outfile);
 
     double** tmp_l1 = block_matrix(num_ao, num_mo);
     double** tmp_l2 = block_matrix(num_ao, num_mo);
@@ -82,14 +82,14 @@ FLOAT **eval_S_alpha(DisplacementIndex LDisp, DisplacementIndex RDisp)
     mmult(basisRref_l,0,tmp_l1,0,tmp_l2,0,num_ao,num_ao,num_mo,0);
     
     fprintf(outfile, "  -Original alpha eigenvector (disp = %d)\n", RDisp);
-    psi::dboc::print_mat(tmp_r1, num_ao, num_mo, outfile);
+    psi::DBOC::print_mat(tmp_r1, num_ao, num_mo, outfile);
     fprintf(outfile, "  -Rotated alpha eigenvector (disp = %d)\n", RDisp);
-    psi::dboc::print_mat(tmp_r2, num_ao, num_mo, outfile);
+    psi::DBOC::print_mat(tmp_r2, num_ao, num_mo, outfile);
     
     fprintf(outfile, "  -Original alpha eigenvector (disp = %d)\n", LDisp);
-    psi::dboc::print_mat(tmp_l1, num_ao, num_mo, outfile);
+    psi::DBOC::print_mat(tmp_l1, num_ao, num_mo, outfile);
     fprintf(outfile, "  -Rotated alpha eigenvector (disp = %d)\n", LDisp);
-    psi::dboc::print_mat(tmp_l2, num_ao, num_mo, outfile);
+    psi::DBOC::print_mat(tmp_l2, num_ao, num_mo, outfile);
   }
 
   double** tmpmat = block_matrix(num_ao,num_ao);
@@ -110,7 +110,7 @@ FLOAT **eval_S_alpha(DisplacementIndex LDisp, DisplacementIndex RDisp)
 
   if (Params.print_lvl > PrintLevels::print_contrib) {
     fprintf(outfile, " (%d/%d) overlap matrix (SO basis)\n", LDisp, RDisp);
-    psi::dboc::print_mat(Slr_FLOAT, num_so, num_so, outfile);
+    psi::DBOC::print_mat(Slr_FLOAT, num_so, num_so, outfile);
   }
 
   FLOAT** tmpmat1 = create_matrix(num_mo,num_so);
@@ -122,7 +122,7 @@ FLOAT **eval_S_alpha(DisplacementIndex LDisp, DisplacementIndex RDisp)
 
   if (Params.print_lvl > PrintLevels::print_contrib) {
     fprintf(outfile, "  (%d/%d) alpha overlap matrix (MO basis)\n", LDisp, RDisp);
-    psi::dboc::print_mat(S, num_mo, num_mo, outfile);
+    psi::DBOC::print_mat(S, num_mo, num_mo, outfile);
   }
 
   delete_matrix(tmpmat1);
@@ -173,10 +173,10 @@ FLOAT **eval_S_beta(DisplacementIndex LDisp, DisplacementIndex RDisp)
 
   if (Params.print_lvl > PrintLevels::print_contrib) {
     fprintf(outfile, "  -Rotation matrix for AO basis (disp = %d)\n", RDisp);
-    psi::dboc::print_mat(basisRref_r, num_ao, num_ao, outfile);
+    psi::DBOC::print_mat(basisRref_r, num_ao, num_ao, outfile);
     
     fprintf(outfile, "  -Rotation matrix for AO basis (disp = %d)\n", LDisp);
-    psi::dboc::print_mat(basisRref_l, num_ao, num_ao, outfile);
+    psi::DBOC::print_mat(basisRref_l, num_ao, num_ao, outfile);
 
     double** tmp_l1 = block_matrix(num_ao, num_mo);
     double** tmp_l2 = block_matrix(num_ao, num_mo);
@@ -188,14 +188,14 @@ FLOAT **eval_S_beta(DisplacementIndex LDisp, DisplacementIndex RDisp)
     mmult(basisRref_l,0,tmp_l1,0,tmp_l2,0,num_ao,num_ao,num_mo,0);
     
     fprintf(outfile, "  -Original beta eigenvector (disp = %d)\n", RDisp);
-    psi::dboc::print_mat(tmp_r1, num_ao, num_mo, outfile);
+    psi::DBOC::print_mat(tmp_r1, num_ao, num_mo, outfile);
     fprintf(outfile, "  -Rotated beta eigenvector (disp = %d)\n", RDisp);
-    psi::dboc::print_mat(tmp_r2, num_ao, num_mo, outfile);
+    psi::DBOC::print_mat(tmp_r2, num_ao, num_mo, outfile);
     
     fprintf(outfile, "  -Original beta eigenvector (disp = %d)\n", LDisp);
-    psi::dboc::print_mat(tmp_l1, num_ao, num_mo, outfile);
+    psi::DBOC::print_mat(tmp_l1, num_ao, num_mo, outfile);
     fprintf(outfile, "  -Rotated beta eigenvector (disp = %d)\n", LDisp);
-    psi::dboc::print_mat(tmp_l2, num_ao, num_mo, outfile);
+    psi::DBOC::print_mat(tmp_l2, num_ao, num_mo, outfile);
   }
 
   double** tmpmat = block_matrix(num_ao,num_ao);
@@ -216,7 +216,7 @@ FLOAT **eval_S_beta(DisplacementIndex LDisp, DisplacementIndex RDisp)
 
   if (Params.print_lvl > PrintLevels::print_contrib) {
     fprintf(outfile, " (%d/%d) overlap matrix (SO basis)\n", LDisp, RDisp);
-    psi::dboc::print_mat(Slr_FLOAT, num_so, num_so, outfile);
+    psi::DBOC::print_mat(Slr_FLOAT, num_so, num_so, outfile);
   }
 
   FLOAT** tmpmat1 = create_matrix(num_mo,num_so);
@@ -228,7 +228,7 @@ FLOAT **eval_S_beta(DisplacementIndex LDisp, DisplacementIndex RDisp)
 
   if (Params.print_lvl > PrintLevels::print_contrib) {
     fprintf(outfile, "  (%d/%d) beta overlap matrix (MO basis)\n", LDisp, RDisp);
-    psi::dboc::print_mat(S, num_mo, num_mo, outfile);
+    psi::DBOC::print_mat(S, num_mo, num_mo, outfile);
   }
 
   delete_matrix(tmpmat1);
@@ -239,4 +239,4 @@ FLOAT **eval_S_beta(DisplacementIndex LDisp, DisplacementIndex RDisp)
   return S;
 }
 
-}} // namespace psi::dboc
+}} // namespace psi::DBOC

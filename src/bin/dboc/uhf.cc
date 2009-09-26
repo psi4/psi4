@@ -15,10 +15,9 @@
 #include "linalg.h"
 #include "hfwfn.h"
 
-namespace psi { namespace dboc {
+namespace psi { namespace DBOC {
 
 extern MOInfo_t MOInfo;
-extern "C" FILE *outfile;
 extern HFWavefunction* HFVectors[MAX_NUM_DISP];
 
 extern void done(const char *);
@@ -119,4 +118,4 @@ double eval_uhf_derwfn_overlap(DisplacementIndex LDisp, DisplacementIndex RDisp)
   return (double)deter_a*deter_b;
 }
 
-}} // namespace psi::dboc
+}} // namespace psi::DBOC

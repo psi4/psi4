@@ -7,16 +7,16 @@
 #include "params.h"
 #include "molecule.h"
 #include "float.h"
+#include <psi4-dec.h>
 
 #define PRINT_INTRO 1
 #define PRINT_PARAMS 1
 #define PRINT_DISP 2
 
-namespace psi { namespace dboc {
+namespace psi { namespace DBOC {
 
 extern Params_t Params;
 extern Molecule_t Molecule;
-extern "C" FILE *outfile;
 
 void print_intro()
 {
@@ -94,4 +94,4 @@ void print_geom()
   }
 }
 
-}} // namespace psi::dboc
+}} // namespace psi::DBOC

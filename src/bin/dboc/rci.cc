@@ -22,9 +22,10 @@
 #include "stringblocks.h"
 #include "dets.h"
 #include "ci_overlap.h"
+#include <psi4-dec.h>
 
 using namespace std;
-using namespace psi::dboc;
+using namespace psi::DBOC;
 
 // Wrap a,b indices into one composite index assuming S2 symmetry
 #define INDEX2(a,b) ((a) > (b)) ? ( (((a)*(a+1)) >> 1) + (b) ) : ( (((b)*(b+1)) >> 1) + (a) )
@@ -38,7 +39,7 @@ using namespace psi::dboc;
 // Set to 1 to reduce I/O at the expense of more computation
 #define LOOP_OVER_BLOCKS 1
 
-namespace psi { namespace dboc {
+namespace psi { namespace DBOC {
 
 extern MOInfo_t MOInfo;
 extern Params_t Params;
@@ -46,7 +47,6 @@ extern char *CI_Vector_Labels[MAX_NUM_DISP];
 extern HFWavefunction* HFVectors[MAX_NUM_DISP];
 extern void done(const char *);
 extern void mo_maps(short int**, short int**);
-extern "C" FILE *outfile;
 
 double eval_rci_derwfn_overlap(DisplacementIndex LDisp, DisplacementIndex RDisp)
 {
@@ -317,4 +317,4 @@ double eval_rci_derwfn_overlap(DisplacementIndex LDisp, DisplacementIndex RDisp)
   return fabs(S_tot_double);
 }
 
-}} // namespace psi::dboc
+}} // namespace psi::DBOC
