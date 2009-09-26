@@ -118,7 +118,7 @@ void MOInfo::build_model_space()
             // Open-shell determinant
             bool add_it = true;
             int  spin_mirror = references.size();
-            if(options_get_bool("USE_SPIN_SYMMETRY")){
+            if(options.get_bool("USE_SPIN_SYMMETRY")){
               // Check if this is a spin-flipped determinant
               for(int ref=0;ref<references.size();ref++){
                 if(references[ref].is_spin_flipped(det)){
@@ -239,33 +239,33 @@ double  MOInfo::get_sign_internal_excitation(int i,int j)
  */
 int MOInfo::get_ref_number(int n, ReferenceType ref_type)
 {
+  int value = 0;
   if(ref_type == AllRefs) // a
-    return(all_refs[n]);
+    value = all_refs[n];
   if(ref_type == UniqueRefs) // u
-    return(unique_refs[n]);
+    value = unique_refs[n];
   if(ref_type == ClosedShellRefs) // c
-    return(closed_shell_refs[n]);
+    value = closed_shell_refs[n];
   if(ref_type == UniqueOpenShellRefs) // o
-    return(unique_open_shell_refs[n]);
-  print_error(outfile,"MOInfo::get_ref_number(string str, int n) undefined space", __FILE__,__LINE__);
-  return(NULL);
+    value = unique_open_shell_refs[n];
+  return(value);
 }
 
 /*!
     \fn MOInfo::get_ref_size(string str)
  */
-int MOInfo::get_ref_size(ReferenceType ref_type)
+size_t MOInfo::get_ref_size(ReferenceType ref_type)
 {
+  size_t value = 0;
   if(ref_type == AllRefs) // a
-    return(all_refs.size());
+    value = all_refs.size();
   if(ref_type == UniqueRefs) // u
-    return(unique_refs.size());
+    value = unique_refs.size();
   if(ref_type == ClosedShellRefs) // c
-    return(closed_shell_refs.size());
+    value = closed_shell_refs.size();
   if(ref_type == UniqueOpenShellRefs) // o
-    return(unique_open_shell_refs.size());
-  print_error(outfile,"MOInfo::get_ref_size(string str) undefined space", __FILE__,__LINE__);
-  return(NULL);
+    value = unique_open_shell_refs.size();
+  return(value);
 }
 
 vector<string> MOInfo::get_matrix_names(std::string str)

@@ -14,7 +14,7 @@
 
 #include <string>
 #include <libutil/libutil.h>
-
+#include <liboptions/liboptions.h>
 #include "orbital_space.h"
 
 typedef std::vector<int>                    intvec;
@@ -26,7 +26,7 @@ class Chkpt;
 
 class MOInfoBase{
 public:
-  MOInfoBase(bool silent_ = false, bool use_liboptions_ = true);
+  MOInfoBase(Options& options_,bool silent_ = false);
   ~MOInfoBase();
 
   double      get_nuclear_energy()               const {return(nuclear_energy);}
@@ -64,6 +64,7 @@ protected:
   void        cleanup();
   void        compute_ioff();
 
+  Options&    options;
   int         nirreps;
   int         wfn_sym;
   int         charge;

@@ -11,7 +11,6 @@ ModelSpace::ModelSpace(MOInfo* moinfo_obj_) : moinfo_obj(moinfo_obj_)
   startup();
   build();
   classify();
-//  print();
 }
 
 ModelSpace::~ModelSpace()

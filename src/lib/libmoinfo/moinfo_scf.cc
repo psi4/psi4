@@ -12,11 +12,9 @@
 
 extern FILE *outfile;
 
-using namespace std;
-
 namespace psi {
 
-MOInfoSCF::MOInfoSCF() : MOInfoBase()
+MOInfoSCF::MOInfoSCF(Options& options_,bool silent_) : MOInfoBase(options_,silent_)
 {
   read_chkpt_data();
 
@@ -24,7 +22,7 @@ MOInfoSCF::MOInfoSCF() : MOInfoBase()
   if(use_liboptions){
     // The first irrep is 0
     wfn_sym = 0;
-    string wavefunction_sym_str = options_get_str("WFN_SYM");
+    std::string wavefunction_sym_str = options.get_str("WFN_SYM");
     to_lower(wavefunction_sym_str);
 
     for(int h = 0; h < nirreps; ++h){
