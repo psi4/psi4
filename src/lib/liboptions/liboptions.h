@@ -369,6 +369,10 @@ namespace psi {
       return ptr_->has_changed();
     }
 
+    void changed() {
+      ptr_->changed();
+    }
+
     std::string type() const {
       return ptr_->type();
     }
