@@ -16,13 +16,11 @@ using namespace std;
 
 namespace psi {
 
-MOInfoBase::MOInfoBase(bool silent_,bool use_liboptions_) : silent(silent_), use_liboptions(use_liboptions_)
+MOInfoBase::MOInfoBase(Options& options_,bool silent_) : silent(silent_), options(options_)
 {
   startup();
-  if(use_liboptions){
-    charge       = options_get_int("CHARGE");
-    multiplicity = options_get_int("MULTP");
-  }
+  charge       = options.get_int("CHARGE");
+  multiplicity = options.get_int("MULTP");
 }
 
 MOInfoBase::~MOInfoBase()
@@ -82,7 +80,7 @@ void MOInfoBase::compute_number_of_electrons()
 
   // Check if the multiplicity makes sense
   if( ((nel+1-multiplicity) % 2) != 0)
-    print_error(outfile,"\n\n  MOInfoBase: Wrong multiplicity.\n\n",__FILE__,__LINE__);
+    print_error("\n\n  MOInfoBase: Wrong multiplicity.\n\n",__FILE__,__LINE__);
 
   nael = (nel + multiplicity -1)/2;
   nbel =  nel - nael;

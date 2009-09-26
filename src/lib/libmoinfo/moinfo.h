@@ -79,14 +79,13 @@ public:
 
 public:
   friend class SlaterDeterminant;
-  MOInfo(bool silent_ = false, bool use_liboptions_ = true);
+  MOInfo(Options& options_,bool silent_ = false);
   ~MOInfo();
 
   // DGEMM timing
   void        set_dgemm_timing(double value)           {dgemm_timing=value;}
   void        add_dgemm_timing(double value)           {dgemm_timing+=value;}
   double      get_dgemm_timing()                 const {return(dgemm_timing);}
-
   // Convergence Options
   double      get_no_damp_convergence()          const {return(no_damp_convergence);}
 
@@ -154,7 +153,7 @@ public:
   int         get_nrefs()                              {return(all_refs.size());};
   int         get_nunique()                            {return(unique_refs.size());};
   int         get_ref_number(int n, ReferenceType ref_type = AllRefs);
-  int         get_ref_size(ReferenceType ref_type);
+  size_t      get_ref_size(ReferenceType ref_type);
   std::string get_determinant_label(int i);
 
   strvec      get_matrix_names(std::string str);

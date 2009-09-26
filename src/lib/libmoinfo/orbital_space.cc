@@ -29,7 +29,7 @@ OrbitalSpace::OrbitalSpace(std::string label_,std::string symbol_)
     std::string message = "Cannot create orbital space \"" + label_
                         + "\" with symbol \"" + symbol_
                         + "\". Please use only one character.";
-    print_error(outfile,message,__FILE__,__LINE__);
+    print_error(message,__FILE__,__LINE__);
   }
 }
 
