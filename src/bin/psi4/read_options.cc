@@ -101,14 +101,14 @@ int read_options(std::string name, Options & options) {
     options.get_double("SCALE_SS", 1.0/3.0);
   }
   else if(name == "TRANSQT") {
-    options.add_cstr("WFN");
-    options.add_cstr("REFERENCE", "RHF");
-    options.add_cstr("DERTYPE", "NONE");
+    options.add_str("WFN");
+    options.add_str("REFERENCE", "RHF");
+    options.add_str("DERTYPE", "NONE");
     options.add_int("PRINT", 1);
     options.add_bool("PRINT_TEI", true);
     options.add_int("TOLERANCE", 14);
     options.add_int("CACHELEV", 2);
-    options.add_cstr("AO_BASIS", "NONE");
+    options.add_str("AO_BASIS", "NONE");
     options.add_bool("DELETE_TEI", true);
   }
   else if(name == "CCSORT") {
@@ -129,11 +129,11 @@ int read_options(std::string name, Options & options) {
   }
   else if(name == "CLAG") {
     options.add_bool("WRITE_CAS_FILES",0);
-    options.add_cstr("DERTYPE","NONE");
-    options.add_cstr("WFN","NONE");
+    options.add_str("DERTYPE","NONE");
+    options.add_str("WFN","NONE");
     options.add_int("ROOT",1);
   }
-  options.read_options();
+  options.read_ipv1();
   options.print(name);
  }
 

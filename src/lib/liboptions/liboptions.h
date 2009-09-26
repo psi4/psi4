@@ -16,6 +16,7 @@
 #include <libutil/libutil.h> // Needed for Ref counting, string splitting, and conversions
 
 namespace psi {
+  extern FILE *outfile;
 
   class DataTypeException : public std::runtime_error
   {
@@ -665,6 +666,13 @@ namespace psi {
         str << "  " << std::setw(12) << pos->first << " => " << pos->second.to_string() << std::endl;
       }
       return str.str();
+    }
+
+    void print() {
+      std::string list = to_string();
+      fprintf(outfile, "\n\n  Options:");
+      fprintf(outfile, "\n  ----------------------------------------------------------------------------");
+      fprintf(outfile, "%s\n", list.c_str());
     }
     
     void read_ipv1();
