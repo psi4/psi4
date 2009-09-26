@@ -4,7 +4,6 @@
 */
 #include <cstdio>
 #include <cstdlib>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.h>
@@ -16,7 +15,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 /* get_moinfo(): Routine to obtain basic orbital information from
 ** CHKPT and CC_INFO.
@@ -302,4 +301,4 @@ void cleanup(void)
   free(moinfo.l_irreps);
 }
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

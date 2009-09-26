@@ -11,7 +11,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 double pseudopolar(const char *pert, int irrep, double omega)
 {
@@ -44,4 +44,4 @@ double pseudopolar(const char *pert, int irrep, double omega)
   return polar1+polar2;
 }
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

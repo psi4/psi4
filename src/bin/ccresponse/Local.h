@@ -3,7 +3,7 @@
     \brief Enter brief description of file here 
 */
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 struct Local {
   int natom;
@@ -31,4 +31,4 @@ struct Local {
   char *pairdef;
 };
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

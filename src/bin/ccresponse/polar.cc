@@ -15,7 +15,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 void transpert(const char *pert);
 void sort_pert(const char *pert, double **pertints, int irrep);
@@ -89,7 +89,7 @@ void polar(void)
         }
       }
 
-    if (!strcmp(params.wfn,"CC2"))
+    if (params.wfn == "CC2")
       fprintf(outfile, "\n                 CC2 Dipole Polarizability [(e^2 a0^2)/E_h]:\n");
     else
       fprintf(outfile, "\n                 CCSD Dipole Polarizability [(e^2 a0^2)/E_h]:\n");
@@ -113,7 +113,7 @@ void polar(void)
   if(params.nomega > 1) {  /* print a summary table for multi-wavelength calcs */
 
     fprintf(outfile, "\n\t-------------------------------\n");
-    if (!strcmp(params.wfn,"CC2"))
+    if (params.wfn == "CC2")
       fprintf(outfile,   "\t      CC2 Polarizability\n");
     else
       fprintf(outfile,   "\t      CCSD Polarizability\n");
@@ -137,4 +137,4 @@ void polar(void)
   free(cartcomp);
 }
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

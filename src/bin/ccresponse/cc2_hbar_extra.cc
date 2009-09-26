@@ -10,7 +10,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 void cc2_hbar_extra(void) {
   dpdfile2 t1, lt;
@@ -78,4 +78,4 @@ void cc2_hbar_extra(void) {
 /*   dpd_file2_close(&t1); */
 }
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

@@ -5,7 +5,8 @@ include ../MakeVars
 
 LDLIBS += $(LAPACK) $(BLAS)
 
-PSILIBS = -lPSI_dpd -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
+PSITARGET = $(top_objdir)/lib/libPSI_ccresponse.a
+#PSILIBS = -lPSI_dpd -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
 
 CXXSRC = \
 HXY.cc         cc2_LHX1Y2.cc      get_moinfo.cc        print_X.cc \
@@ -13,7 +14,7 @@ LCX.cc         cc2_X1.cc          get_params.cc        pseudopolar.cc \
 LHX1Y1.cc      cc2_X2.cc          hbar_extra.cc        save_X.cc \
 LHX1Y2.cc      cc2_hbar_extra.cc  init_X.cc            sort_X.cc \
 LHX2Y2.cc      cc2_sort_X.cc      lambda_residuals.cc  sort_lamps.cc \
-X1.cc          ccresponse.cc      linresp.cc           sort_pert.cc \
+X1.cc          CCRESPONSE.cc      linresp.cc           sort_pert.cc \
 X2.cc          compute_X.cc       local.cc             transpert.cc \
 amp_write.cc   converged.cc       optrot.cc            update_X.cc \
 cache.cc       denom.cc           pertbar.cc           analyze.cc \

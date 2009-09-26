@@ -11,7 +11,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 /* sort_pert(): Sorts the specified MO-basis one-electron property
 ** integrals into CC ordering for use in building the
@@ -87,4 +87,4 @@ void sort_pert(const char *pert, double **pertints, int irrep)
 
 }
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE

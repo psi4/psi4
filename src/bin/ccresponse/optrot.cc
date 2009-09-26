@@ -58,7 +58,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace ccresponse {
+namespace psi { namespace CCRESPONSE {
 
 void transpert(const char *pert);
 void sort_pert(const char *pert, double **pertints, int irrep);
@@ -80,8 +80,8 @@ void optrot(void)
   int compute_rl=0, compute_pl=0;
 
   /* Booleans for convenience */
-  if(!strcmp(params.gauge,"LENGTH") || !strcmp(params.gauge,"BOTH")) compute_rl=1;
-  if(!strcmp(params.gauge,"VELOCITY") || !strcmp(params.gauge,"BOTH")) compute_pl=1;
+  if(params.gauge == "LENGTH" || params.gauge == "BOTH") compute_rl=1;
+  if(params.gauge == "VELOCITY" || params.gauge == "BOTH") compute_pl=1;
 
   cartcomp = (char **) malloc(3 * sizeof(char *));
   cartcomp[0] = strdup("X");
@@ -163,9 +163,9 @@ void optrot(void)
       psio_read_entry(CC_INFO, lbl1, (char *) tensor0[0], 9*sizeof(double));
     }
 
-    if (!strcmp(params.wfn,"CC2")) 
+    if (params.wfn == "CC2") 
       fprintf(outfile, "\n     CC2 Optical Rotation Tensor (Velocity Gauge): %s\n", lbl1);
-    else if(!strcmp(params.wfn,"CCSD"))
+    else if(params.wfn == "CCSD")
       fprintf(outfile, "\n    CCSD Optical Rotation Tensor (Velocity Gauge): %s\n", lbl1);
 
     fprintf(outfile, "  -------------------------------------------------------------------------\n");
@@ -256,7 +256,7 @@ void optrot(void)
       }
 
       /* Clean up disk space */
-      if(strcmp(params.gauge,"BOTH")) { /* don't clean up if we want both gauges */
+      if(params.gauge != "BOTH") { /* don't clean up if we want both gauges */
 	psio_close(CC_LR, 0);
 	psio_open(CC_LR, 0);
       }
@@ -353,7 +353,7 @@ void optrot(void)
 	psio_write_entry(CC_INFO, lbl2, (char *) tensor_pl1[0], 9*sizeof(double));
       }
 
-      if(!strcmp(params.gauge,"BOTH")) {
+      if(params.gauge == "BOTH") {
 	fprintf(outfile, "\tComputing %s tensor.\n", lbl3); fflush(outfile);
         for(alpha=0; alpha < 3; alpha++) {
           for(beta=0; beta < 3; beta++) {
@@ -396,7 +396,7 @@ void optrot(void)
 	fprintf(outfile, "\tUsing %s tensor found on disk.\n", lbl2); fflush(outfile);
 	psio_read_entry(CC_INFO, lbl2, (char *) tensor_pl1[0], 9*sizeof(double));
       }
-      if(!strcmp(params.gauge,"BOTH")) {
+      if(params.gauge == "BOTH") {
 	fprintf(outfile, "\tUsing %s tensor found on disk.\n", lbl3); fflush(outfile);
 	psio_read_entry(CC_INFO, lbl3, (char *) tensor_rp[i][0], 9*sizeof(double));
       }
@@ -420,9 +420,9 @@ void optrot(void)
     prefactor *= 288.0e-30 * _pi * _pi * _na * bohr2a4;
 
     if(compute_rl) {
-      if (!strcmp(params.wfn,"CC2")) 
+      if (params.wfn == "CC2") 
 	fprintf(outfile, "\n            CC2 Optical Rotation Tensor (Length Gauge):\n");
-      else if(!strcmp(params.wfn,"CCSD"))
+      else if(params.wfn == "CCSD")
 	fprintf(outfile, "\n           CCSD Optical Rotation Tensor (Length Gauge):\n");
 
       fprintf(outfile, "  -------------------------------------------------------------------------\n");
@@ -441,9 +441,9 @@ void optrot(void)
 
     if(compute_pl) {
 
-      if (!strcmp(params.wfn,"CC2")) 
+      if (params.wfn == "CC2") 
 	fprintf(outfile, "\n          CC2 Optical Rotation Tensor (Velocity Gauge):\n");
-      else if(!strcmp(params.wfn,"CCSD"))
+      else if(params.wfn == "CCSD")
 	fprintf(outfile, "\n         CCSD Optical Rotation Tensor (Velocity Gauge):\n");
 
       fprintf(outfile, "  -------------------------------------------------------------------------\n");
@@ -465,9 +465,9 @@ void optrot(void)
 	for(k=0; k < 3; k++)
 	  tensor_pl[i][j][k] -= tensor0[j][k];
 
-      if (!strcmp(params.wfn,"CC2"))
+      if (params.wfn == "CC2")
 	fprintf(outfile, "\n        CC2 Optical Rotation Tensor (Modified Velocity Gauge):\n");
-      else if(!strcmp(params.wfn,"CCSD"))
+      else if(params.wfn == "CCSD")
 	fprintf(outfile, "\n        CCSD Optical Rotation Tensor (Modified Velocity Gauge):\n");
 
       fprintf(outfile, "  -------------------------------------------------------------------------\n");
@@ -486,7 +486,7 @@ void optrot(void)
       fprintf(outfile, "\t[alpha]_(%5.3f) = %10.5f deg/[dm (g/cm^3)]\n", params.omega[i], rotation_mod[i]);
     }
 
-    if(!strcmp(params.gauge,"BOTH")) {
+    if(params.gauge == "BOTH") {
       delta[i][0] = prefactor * (tensor_rp[i][1][2] - tensor_rp[i][2][1]) * nu * nu / M;
       delta[i][1] = prefactor * (tensor_rp[i][2][0] - tensor_rp[i][0][2]) * nu * nu / M;
       delta[i][2] = prefactor * (tensor_rp[i][0][1] - tensor_rp[i][1][0]) * nu * nu / M;
@@ -503,13 +503,13 @@ void optrot(void)
 
     if(compute_rl) {
       fprintf(outfile, "\n   ------------------------------------------\n");
-      if (!strcmp(params.wfn,"CC2"))
+      if (params.wfn == "CC2")
 	fprintf(outfile,   "       CC2 Length-Gauge Optical Rotation\n");
       else
 	fprintf(outfile,   "       CCSD Length-Gauge Optical Rotation\n");
       fprintf(outfile,   "   ------------------------------------------\n");
 
-      if(!strcmp(params.gauge,"BOTH")) {
+      if(params.gauge == "BOTH") {
 	fprintf(outfile,   "       Omega           alpha                        Delta\n");
 	fprintf(outfile,   "    E_h      nm   deg/[dm (g/cm^3)]        deg/[dm (g/cm^3)]/bohr\n");
 	fprintf(outfile,   "   -----   ------ ------------------  ----------------------------------\n");
@@ -530,7 +530,7 @@ void optrot(void)
 
     if(compute_pl) {
       fprintf(outfile, "\n   ------------------------------------------------------\n");
-      if (!strcmp(params.wfn,"CC2"))
+      if (params.wfn == "CC2")
 	fprintf(outfile,   "            CC2 Velocity-Gauge Optical Rotation\n");
       else
 	fprintf(outfile,   "            CCSD Velocity-Gauge Optical Rotation\n");
@@ -569,4 +569,4 @@ void optrot(void)
   free(cartcomp);
 }
 
-}} // namespace psi::ccresponse
+}} // namespace psi::CCRESPONSE
