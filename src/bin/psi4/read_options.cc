@@ -257,6 +257,48 @@ int read_options(std::string name, Options & options) {
   else if(name == "EXTREMA") {
     options.add_str("COORDINATES","foo");
   }
+  else if(name == "CCENERGY") {
+    options.add_bool("NEWTRIPS", 1);
+    options.add_str("WFN", "NONE", "CCSD CCSD_T EOM_CCSD LEOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
+    options.add_str("REFERENCE", "RHF");
+    options.add_bool("ANALYZE", 0) ;
+    options.add_cstr("DERTYPE", "NONE", "NONE FIRST RESPONSE");
+    options.add_int("PRINT", 0)
+    options.add_int("MAXITER", 50);
+    options.add_int("CONVERGENCE", 7);
+    options.add_bool("RESTART",1);
+    options.add_bool("FORCE_RESTART", 0);
+    options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
+    options.add_int("CACHELEV", 2);
+    options.add_int("CACHETYPE", "LOW", "LOW LRU");
+    options.add_int("NTHREADS",1);
+    options.add_bool("DIIS");
+    options.add_bool("T2_COUPLED");
+    options.add_str("PROPERTY", "POLARIZABILITY", "POLARIZABILITY ROTATION MAGNETIZABILITY ROA ALL");
+    options.add_str("ABCD", "NEW", "NEW OLD");
+    options.add_bool("LOCAL", 0);
+    options.add_double("LOCAL_CUTOFF", 0.02);
+    options.add_double("LOCAL_MOS", 0);
+    options.add_str("LOCAL_METHOD", "WERNER", "WERNER AOBASIS");
+    options.add_str("LOCAL_WEAKP", "NONE", "NONE NEGLECT MP2");
+    options.add_int("LOCAL_FILTER_SINGLES", 1);
+    options.add_double("LOCAL_CPHF_CUTOFF", 0.10);
+    options.add_bool("FREEZE_CORE", 0);
+    options.add_str("LOCAL_PAIRDEF", "BP", "BP RESPONSE");
+    options.add_int("NUM_AMPS", 10);
+    options.add_int("BRUECKNER_CONV", 5);
+    options.add_bool("PRINT_MP2_AMPS", 0);
+    options.add_bool("PRINT_PAIR_ENERGIES", 0);
+    options.add_bool("SPINADAPT_ENERGIES");
+    options.add_bool("T3_WS_INCORE", 0);
+    options.add_bool("SCSN_MP2", 0);
+    options.add_bool("SCS_MP2", 0);
+    options.add_bool("SCSN_CCSD", 0);
+    options.add_double("MP2_SCALE_OS",1.20);
+    options.add_double("MP2_SCALE_SS",1.0/3.0);
+    options.add_double("CC_SCALE_OS", 1.27);
+    options.add_double("CC_SCALE_SS",1.13);
+  }
 
   options.read_ipv1();
   //  options.print();
