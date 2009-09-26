@@ -3,6 +3,8 @@
     \brief Enter brief description of file here 
 */
 
+#include <string>
+
 namespace psi { namespace ccdensity {
 
 /* Input parameters for cclambda */
@@ -21,12 +23,12 @@ struct Params {
   int ground;
   int transition; 
   int dertype;
-  Std::string wfn;
+  std::string wfn;
   int nstates;
   int prop_sym;
   int prop_root;
   int prop_all;
-  Std::string gauge;
+  std::string gauge;
 
   /* these are used by Xi and twopdm code */
   int G_irr; 

@@ -39,7 +39,8 @@ int file_build(dpdfile4 *File, int inputfile, double tolerance,
 
   nirreps = File->params->nirreps;
 
-  fndcor(&memoryb, infile, outfile);
+  memoryb = module.get_memory();
+  //fndcor(&memoryb, infile, outfile);
   memoryd = memoryb/sizeof(double);
 
   /* It's annoying that I have to compute this here */
