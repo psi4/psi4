@@ -3,6 +3,7 @@
     \brief Enter brief description of file here 
 */
 #include <cstdio>
+#include <string>
 #include <libdpd/dpd.h>
 #include "MOInfo.h"
 #include "Params.h"

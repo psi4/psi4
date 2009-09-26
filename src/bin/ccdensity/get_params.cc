@@ -16,10 +16,10 @@
 
 namespace psi { namespace ccdensity {
 
-void get_params()
+void get_params( Options& options)
 {
   int errcod, tol;
-  Std::string junk;
+  std::string junk;
 
   params.wfn  = options.get_str("WFN");
 
@@ -39,20 +39,21 @@ void get_params()
   tol = options.get_int("TOLERANCE");
   params.tolerance = 1.0*pow(10.0,(double) -tol);
 
-  fndcor(&(params.memory),infile,outfile);
+  params.memory = module.get_memory();
+  //fndcor(&(params.memory),infile,outfile);
 
-  params.cachelev = 2;
-  param.cachelev = options.get_int("CACHELEV");
+//  params.cachelev = 2;
+  params.cachelev = options.get_int("CACHELEV");
 
-  params.aobasis = 0;
+  //params.aobasis = 0;
   params.aobasis = options.get_bool("AO_BASIS");
 
   params.ael = 0;
-  params.ael = opptions.get_bool("AEL");
+  params.ael = options.get_bool("AEL");
 
   params.gauge = options.get_str("GAUGE");
-  if( params.gaugei != "LENGTH" && params.gauge != "VELOCITY") {
-    printf("Invalid choice of gauge: %s\n", params.gauge.c_str);
+  if( params.gauge != "LENGTH" && params.gauge != "VELOCITY") {
+    printf("Invalid choice of gauge: %s\n", params.gauge.c_str());
     throw PsiException("ccdensity: error", __FILE__, __LINE__);
   }
   
@@ -75,7 +76,7 @@ void get_params()
   if(params.transition) 
     params.relax_opdm = 0;
 
-  params.rekax_odpm = options.get_bool("RELAX_OPDM");
+  params.relax_opdm = options.get_bool("RELAX_OPDM");
   if ( (params.onepdm) && (params.relax_opdm) ) { /* can't do relaxation without twopdm */
     fprintf(outfile,"\tTurning orbital relaxation off since only onepdm is requested.\n");
     params.relax_opdm = 0;
@@ -85,7 +86,7 @@ void get_params()
     params.connect_xi = 0;
   else
     params.connect_xi = 1;
-  params.connect = options.get_bool("CONNECT_XI");
+  params.connect_xi = options.get_bool("CONNECT_XI");
 
   
   fprintf(outfile, "\n\tInput parameters:\n");

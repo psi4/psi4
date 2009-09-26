@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <psifiles.h>
+#include <psi4-dec.h>
 
 namespace psi { namespace ccdensity {
 

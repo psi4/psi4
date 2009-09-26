@@ -15,7 +15,7 @@
 
 namespace psi { namespace ccdensity {
 
-void get_td_params(void)
+void get_td_params(Options& options)
 {
   int i,j,k,l;
   char lbl[32];
@@ -24,7 +24,7 @@ void get_td_params(void)
 
   if(options["PROP_SYM"].has_changed() && options["PROP_ROOT"].has_changed()) {
     params.prop_sym = options.get_int("PROP_SYM");
-    params.prop_root = cwoptions.get_int("PROP_ROOT");
+    params.prop_root = options.get_int("PROP_ROOT");
     /*User input counts from 1*/ 
     params.prop_sym -= 1;  
     params.prop_root -= 1; 
@@ -93,7 +93,7 @@ void get_td_params(void)
   }
   else if(options["STATES_PER_IRREP"].has_changed()) {
     for(i=0;i<moinfo.nirreps;++i) {
-      j = optionsr["STATES_PER_IRREP"][i].to_integer();
+      j = options["STATES_PER_IRREP"][i].to_integer();
       for (k=0;k<j;++k) {
         td_params[l].irrep = i^moinfo.sym;
         td_params[l].root = k;

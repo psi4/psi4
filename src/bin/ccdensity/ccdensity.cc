@@ -27,7 +27,7 @@ void init_io(int argc, char *argv[]);
 void title(void);
 void get_moinfo(void);
 void get_frozen(void);
-void get_params(void);
+void get_params(Options& options);
 void exit_io(void);
 void onepdm(struct RHO_Params);
 void sortone(struct RHO_Params);
@@ -78,8 +78,8 @@ void x_xi_oe_intermediates(void);
 void G_norm(void);
 void zero_onepdm(struct RHO_Params rho_params);
 void zero_twopdm(void);
-void get_rho_params(void);
-void get_td_params(void);
+void get_rho_params(Options& options);
+void get_td_params(Options& options);
 void td_setup(struct TD_Params S);
 void tdensity(struct TD_Params S);
 void td_print(void);
@@ -93,7 +93,7 @@ void x_te_intermediates_rhf(void);
 void x_xi_intermediates(void);
 void V_build(void);
 
-int ccdensity(int argc, char *argv[])
+int ccdensity(Options& options, int argc, char *argv[])
 {
   int i;
   int **cachelist, *cachefiles;
@@ -105,9 +105,9 @@ int ccdensity(int argc, char *argv[])
   init_io(argc,argv);
   title();
   /*  get_frozen(); */
-  get_params();
+  get_params( options );
   get_moinfo();
-  get_rho_params();
+  get_rho_params(options);
 
   if ((moinfo.nfzc || moinfo.nfzv) && params.relax_opdm) {
     fprintf(outfile, "\n\tGradients/orbital relaxation involving frozen orbitals not yet available.\n");
@@ -305,7 +305,7 @@ int ccdensity(int argc, char *argv[])
 
   if(params.transition) {
 
-    get_td_params();
+    get_td_params(options);
     for(i=0; i < params.nstates; i++) {
       td_setup(td_params[i]);
       tdensity(td_params[i]);
