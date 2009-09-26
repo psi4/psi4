@@ -3,11 +3,13 @@
     \brief Enter brief description of file here 
 */
 
+#include <string>
+
 namespace psi {
   namespace transqt2 {
 
 struct Params {
-  char *wfn;
+  std::string wfn;
   int ref;
   int cachelev;
   int dertype;
