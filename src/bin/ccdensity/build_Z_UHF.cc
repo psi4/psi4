@@ -86,7 +86,8 @@ void build_Z_UHF(void)
   if(num_ai != dim_A + dim_B) { /* error */
     fprintf(outfile, "Problem: num_ai(%d) != dim_A + dim_b (%d)\n", num_ai,
 	    dim_A + dim_B);
-    exit(PSI_RETURN_FAILURE);
+    throw PsiException("ccenergy: error", __FILE__, __LINE__);
+    exio(PSI_RETURN_FAILURE);
   }
 
   A = block_matrix(num_ai, num_ai);

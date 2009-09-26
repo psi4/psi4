@@ -8,7 +8,6 @@
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include <libchkpt/chkpt.h>
-#include <libipv1/ip_lib.h>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
@@ -24,7 +23,7 @@ void get_rho_params(void)
   int *states_per_irrep;
 
   /* check WFN keyword in input */
-  errcod = ip_string("WFN", &(params.wfn), 0);
+  params.wfn = options.get_str("WFN");
   if ( !cc_excited(params.wfn) ) params.ground = 1;
   else params.ground = 0;
 
@@ -35,22 +34,19 @@ void get_rho_params(void)
       states_per_irrep = chkpt_rd_statespi();
     }
     else {
-      ip_count("STATES_PER_IRREP", &i, 0);
-      states_per_irrep = (int *) malloc(moinfo.nirreps * sizeof(int));
-      for (i=0;i<moinfo.nirreps;++i)
-        errcod = ip_data("STATES_PER_IRREP","%d",&(states_per_irrep[i]),1,i);
+      states_per_irrep = options.get_int_array("STATES_PER_IRREP");
     }
     chkpt_close();
 
     prop_all = 0;
-    if (ip_exist("PROP_ALL",0)) ip_boolean("PROP_ALL",&prop_all,0);
+    prop_all = options.get_bool("PROP_ALL");
     /* can also be turned on by command-line (at least for now) */
     if (params.prop_all) prop_all = 1;
     if (params.dertype == 1) prop_all = 0; /* don't do relaxed, multiple excited states */
     params.prop_all = prop_all;
 
-    if (ip_exist("PROP_SYM",0)) {  /* read symmetry of state for properties */
-      ip_data("PROP_SYM","%d",&(prop_sym),0);
+    if (options["PROP_SYM"].has_changed()) {  /* read symmetry of state for properties */
+      prop_sym = options.get_int("PROP_SYM");
       prop_sym -= 1;
       prop_sym = moinfo.sym^prop_sym;
     }
@@ -60,8 +56,8 @@ void get_rho_params(void)
           prop_sym = i^moinfo.sym;
       }
     }
-    if (ip_exist("PROP_ROOT",0)) { /* read prop_root */
-      ip_data("PROP_ROOT","%d",&(prop_root),0);
+    if (options["PROP_ROOT"].has_changed()) { /* read prop_root */
+      prop_root = options.get_int("PROP_ROOT");
       prop_root -= 1;
     }
     else { /* just use highest root, if you need only one of them */
@@ -147,19 +143,19 @@ void get_rho_params(void)
       rho_params[i].R0 = 1.0;
     }
     else {
-      if(!strcmp(params.wfn,"EOM_CC2")) {
+      if(params.wfn == "EOM_CC2") {
         sprintf(lbl,"EOM CC2 Energy for root %d %d", rho_params[i].R_irr, rho_params[i].R_root);
         psio_read_entry(CC_INFO,lbl,(char*)&(rho_params[i].cceom_energy), sizeof(double));
         sprintf(lbl,"EOM CC2 R0 for root %d %d",rho_params[i].R_irr, rho_params[i].R_root);
         psio_read_entry(CC_INFO,lbl,(char*)&(rho_params[i].R0),sizeof(double));
       }
-      else if(!strcmp(params.wfn,"EOM_CCSD")) {
+      else if(params.wfn == "EOM_CCSD") {
         sprintf(lbl,"EOM CCSD Energy for root %d %d", rho_params[i].R_irr, rho_params[i].R_root);
         psio_read_entry(CC_INFO,lbl,(char*)&(rho_params[i].cceom_energy), sizeof(double));
         sprintf(lbl,"EOM CCSD R0 for root %d %d",rho_params[i].R_irr, rho_params[i].R_root);
         psio_read_entry(CC_INFO,lbl,(char*)&(rho_params[i].R0),sizeof(double));
       }
-      else if(!strcmp(params.wfn,"EOM_CC3")) {
+      else if( params.wfn == "EOM_CC3") {
         sprintf(lbl,"EOM CC3 Energy for root %d %d", rho_params[i].R_irr, rho_params[i].R_root);
         psio_read_entry(CC_INFO,lbl,(char*)&(rho_params[i].cceom_energy), sizeof(double));
         sprintf(lbl,"EOM CC3 R0 for root %d %d",rho_params[i].R_irr, rho_params[i].R_root);
