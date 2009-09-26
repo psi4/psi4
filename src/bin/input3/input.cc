@@ -37,7 +37,6 @@ void am_i_to_char(int am, char *am_label);
 
 PsiReturnType input(Options & options, int argc, char *argv[])
 {
-  using namespace psi::input;
    /*variables and arrays*/
    int i,j,k,l;
    int errcod;
