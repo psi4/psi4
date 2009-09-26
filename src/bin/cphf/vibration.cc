@@ -114,7 +114,7 @@ void vibration(double **hessian, double **lx)
 
   if(stat = C_DSYEV('v','u',natom*3,&(hessian[0][0]),natom*3,&(km[0]),&(work[0]),natom*3*3)) {
     fprintf(outfile, "vibration(): Error in hessian diagonalization. stat = %d\n", stat);
-    exit(PSI_RETURN_FAILURE);
+    throw PsiException("Error", __FILE__, __LINE__);
   }
 
   /*
@@ -223,7 +223,7 @@ void vibration(double **hessian, double **lx)
  
   // chkpt_wt_vib_freqs will only write the first 3n-5/6 frequencies
   chkpt_init(PSIO_OPEN_OLD);
-  chkpt_wt_vib_freqs(vibs);
+ // chkpt_wt_vib_freqs(vibs);
   chkpt_close();
   free(vibs);
 
