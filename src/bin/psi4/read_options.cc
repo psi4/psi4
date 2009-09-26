@@ -150,22 +150,6 @@ int read_options(std::string name, Options & options) {
     options.add_str("REFERENCE","RHF");
     options.add_str("DERTYPE","NONE");
   }
-  else if(name == "CCDENSITY") {
-    options.add_str("WFN", "");
-    options.add_str("REFERENCE","RHF");
-    options.add_str("DERTYPE","NONE");
-    options.add_int("TOLERANCE",14);
-    options.add_int("CACHELEVEL",2);
-    options.add_bool("AO_BASIS",false);
-    options.add_bool("AEL",false);
-    options.add_str("GAUGE");
-    options.add_bool("RELAX_OPDM",false);
-    options.add_bool("CONNECT_XI");
-    options.add("STATES_PER_IRREP", new ArrayType());
-    options.add_bool("PROP_ALL",false);
-    options.add_int("PROP_SYM");
-    options.add_int("PROP_ROOT");
-  }
   else if(name == "CLAG") {
     options.add_bool("WRITE_CAS_FILES",0);
     options.add_str("DERTYPE","NONE");
@@ -180,6 +164,33 @@ int read_options(std::string name, Options & options) {
     options.add_int("NUM_EVECS_PRINT",0);
     options.add_int("ROTATION_METHOD",0);
     options.add_double("SCALE",0.5);
+  }
+  else if(name == "CCRESPONSE") {
+    options.add_str("WFN");
+    options.add_int("PRINT",1);
+    options.add_int("CACHELEV",2);
+    options.add_str("REFERENCE","RHF");
+    options.add_str("DERTYPE",0);
+    options.add_str("GAUGE","LENGTH");
+    options.add_int("MAXITER",50);
+    options.add_int("CONVERGENCE",7);
+    options.add_bool("DIIS",1);
+    options.add_str("PROPERTY","POLARIZABILITY");
+    options.add_str("ABCD","NEW");
+    options.add_bool("RESTART",1);
+    options.add_bool("LOCAL",0);
+    options.add_double("LOCAL_CUTOFF",0.01);
+    options.add_str("LOCAL_METHOD","WERNER");
+    options.add_str("LOCAL_WEAKP","NONE");
+    options.add_bool("LOCAL_FILER_SINGLES");
+    options.add_double("LOCAL_CPHF_CUTOFF",0.10);
+    options.add_str("FREEZE_CORE","FALSE");
+    options.add_str("LOCAL_PAIRDEF");
+    options.add_bool("ANALYZE",0);
+    options.add_int("NUM_AMPS",5);
+    options.add_bool("SEKINO",0);
+    options.add_bool("LINEAR",0);
+    options.add("OMEGA",new ArrayType());
   }
   else if(name == "MVO") {
    options.add_str("WFN","CCSD");
@@ -203,10 +214,9 @@ int read_options(std::string name, Options & options) {
    options.add("SOCC", new ArrayType());
    options.add("DOCC_VIRT", new ArrayType());
   }
-
   options.read_ipv1();
-//  options.print();
- }
+  //  options.print();
+}
 
 } //end ::psi
 
