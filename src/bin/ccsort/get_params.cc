@@ -178,7 +178,7 @@ void get_params()
     params.omega = init_array(params.nomega);
 
     std::string units = options["OMEGA"][count-1].to_string();
-    to_upper(&units);
+    to_upper(units);
 
     for(i=0; i < count-1; i++) {
       params.omega[i] = options["OMEGA"][i].to_double();
