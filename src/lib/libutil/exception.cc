@@ -5,7 +5,7 @@ using namespace std;
 
 PsiException::PsiException(
     string msg,
-    string file,
+    const char* file,
     int line
 ) throw() : runtime_error(msg)
 {
@@ -23,7 +23,7 @@ PsiException::what() const throw()
 const char* 
 PsiException::file() const throw()
 {
-    return file_.c_str();
+    return file_;
 }
 
 int 
@@ -37,71 +37,57 @@ PsiException::~PsiException() throw()
 }
 
 SanityCheckError::SanityCheckError(
-    const char* message,
+    string message,
     const char* file,
     int line
-    ) : PsiException(message, file, line)
+    ) throw() 
+  : PsiException(message, file, line)
 {
 }
-
-template <
-    class T
->
-LimitExceeded<T>::LimitExceeded(
-    const char* msg,
-    T maxval,
-    T errorval,
-    const char* file,
-    int line) : 
-   PsiException(msg, file, line),
-   maxval_(maxval), errorval_(errorval)
-{
-}
-
-
-template <
-    class T
-> T 
-LimitExceeded<T>::max_value(){return maxval_;}
-
-template <
-    class T
-> T 
-LimitExceeded<T>::actual_value(){return errorval_;}
 
 StepSizeError::StepSizeError(
-    const char* msg,
+    string value_name,
     double max,
     double actual,
     const char* file,
-    int line)
-    : ParentClass(msg, max, actual, file, line)
+    int line) throw()
+    : ParentClass(value_name, max, actual, file, line)
 {
 }
 
 MaxIterationsExceeded::MaxIterationsExceeded(
-    const char* msg,
+    string routine_name,
     int max,
     const char* file,
-    int line) :
-    ParentClass(msg, max, max + 1, file, line)
+    int line)  throw()
+    : ParentClass(routine_name, max, max + 1, file, line)
 {
 }
 
 ConvergenceError::ConvergenceError(
-    const char* msg,
+    string routine_name,
     int max,
     double desired_accuracy,
     double actual_accuracy,
     const char* file,
-    int line) : 
-    MaxIterationsExceeded(msg, max, file, line), desired_acc_(desired_accuracy), actual_acc_(actual_accuracy)
+    int line) throw()
+    : MaxIterationsExceeded(routine_name, max, file, line), desired_acc_(desired_accuracy), actual_acc_(actual_accuracy)
 {
 }
 
 double 
-ConvergenceError::desired_accuracy(){return desired_acc_;}
+ConvergenceError::desired_accuracy() const throw() {return desired_acc_;}
 
 double 
-ConvergenceError::actual_accuracy(){return actual_acc_;}
+ConvergenceError::actual_accuracy() const throw() {return actual_acc_;}
+
+ResourceAllocationError::ResourceAllocationError(
+    string resource_name,
+    size_t max,
+    size_t actual,
+    const char* file,
+    int line)  throw()
+    : LimitExceeded<size_t>(resource_name, max, actual, file, line)
+{
+}
 

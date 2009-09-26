@@ -1,51 +1,38 @@
-#ifndef _psi_include_exception_h
-#define _psi_include_exception_h
+#ifndef _psi4_exception_h_
+#define _psi4_exception_h_
 
 #include <exception>
+#include <sstream>
+#include <stdexcept>
 
 namespace psi {
 
 #define CHARARR_SIZE 100
-
 #define PSIEXCEPTION(message) PsiException(message, __FILE__, __LINE__)
 
 class PsiException : public std::runtime_error {
+
     private:
         std::string msg_;
-        std::string file_;
+        const char* file_;
         int line_;
 
     public:
         PsiException(
             std::string message,
-            std::string file,
+            const char* file,
             int line
-        ) throw () : std::runtime_error(message)
-        {
-            msg_ = message;
-            file_ = file;
-            line_ = line;
-        }
+        ) throw ();
 
-        ~PsiException() throw ()
-        {
-        }
+        ~PsiException() throw ();
 
-        const char* what() const throw ()
-        {
-            return msg_.c_str();
-        }
+        const char* what() const throw ();
 
-        const char* file() const throw()
-        {
-            return file_.c_str();
-        }
+        const char* file() const throw();
 
-        int line() const throw()
-        {
-            return line_;
-        }
+        const char* location() const throw();
 
+        int line() const throw();
 
 };
 
@@ -53,12 +40,22 @@ class SanityCheckError : public PsiException {
 
     public:
         SanityCheckError(
-            const char* message,
+            std::string message,
             const char* file,
             int line
-            ) : PsiException(message, file, line)
-        {
-        }
+        ) throw();
+
+};
+
+class FeatureNotImplemented : public PsiException {
+
+    public:
+        FeatureNotImplemented(
+            std::string module, 
+            std::string feature,
+            const char* file,
+            int line
+        ) throw();
 };
 
 template <
@@ -72,19 +69,17 @@ class LimitExceeded : public PsiException {
 
     public:
         LimitExceeded(
-            const char* msg,
+            std::string resource_name,
             T maxval,
             T errorval,
             const char* file,
-            int line) : 
-           PsiException(msg, file, line),
-           maxval_(maxval), errorval_(errorval)
+            int line) throw() : PsiException(resource_name, file, line)
         {
         }
 
-        T max_value(){return maxval_;}
+        T max_value() const throw() {return maxval_;}
 
-        T actual_value(){return errorval_;}
+        T actual_value() const throw() {return errorval_;}
 };
 
 class StepSizeError : public LimitExceeded<double> {
@@ -93,15 +88,11 @@ class StepSizeError : public LimitExceeded<double> {
 
     public:
         StepSizeError(
-            const char* msg,
+            std::string msg,
             double max,
             double actual,
             const char* file,
-            int line)
-            : ParentClass(msg, max, actual, file, line)
-        {
-        }
-
+            int line) throw();
 };
 
 
@@ -111,32 +102,27 @@ class MaxIterationsExceeded : public LimitExceeded<int> {
 
     public:
         MaxIterationsExceeded(
-            const char* msg,
+            std::string routine_name,
             int max,
             const char* file,
-            int line) :
-            ParentClass(msg, max, max + 1, file, line)
-        {
-        }
+            int line) throw();
+
 };
 
 class ConvergenceError : public MaxIterationsExceeded {
 
     public:
         ConvergenceError(
-            const char* msg,
+            std::string routine_name,
             int max,
             double desired_accuracy,
             double actual_accuracy,
             const char* file,
-            int line) : 
-            MaxIterationsExceeded(msg, max, file, line), desired_acc_(desired_accuracy), actual_acc_(actual_accuracy)
-        {
-        }
+            int line) throw();
 
-        double desired_accuracy(){return desired_acc_;}
+        double desired_accuracy() const throw();
 
-        double actual_accuracy(){return actual_acc_;}
+        double actual_accuracy() const throw();
 
     private:
         double desired_acc_;
@@ -145,7 +131,17 @@ class ConvergenceError : public MaxIterationsExceeded {
 
 };
 
+class ResourceAllocationError : public LimitExceeded<size_t> {
+
+    public:
+        ResourceAllocationError(
+            std::string resource_name,
+            size_t max,
+            size_t actual,
+            const char* file,
+            int line) throw ();
+};
+
 } //end namespace psi exception
 
 #endif
-
