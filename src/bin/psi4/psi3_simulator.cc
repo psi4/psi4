@@ -14,8 +14,10 @@ namespace psi {
   namespace input    { PsiReturnType input(Options &, int argc, char *argv[]); }
   namespace CINTS    { PsiReturnType cints(Options &, int argc, char *argv[]); }
   namespace cscf     { PsiReturnType cscf(Options &, int argc, char *argv[]); }
+  namespace ccsort   { PsiReturnType ccsort(Options &, int argc, char *argv[]); }
   namespace transqt2 { PsiReturnType transqt2(Options &, int argc, char *argv[]); }
   namespace ccsort   { PsiReturnType ccsort(Options &, int argc, char *argv[]); }
+  namespace ccenergy { PsiReturnType ccenergy(Options &, int argc, char *argv[]); }
   namespace psiclean { PsiReturnType psiclean(Options &, int argc, char *argv[]); }
 
   int read_options(std::string name, Options & options);
@@ -54,7 +56,8 @@ int psi3_simulator(Options & options, int argc, char *argv[]) {
   dispatch_table["CSCF"]     = &(psi::cscf::cscf);
   dispatch_table["CINTS"]    = &(psi::CINTS::cints);
   dispatch_table["TRANSQT2"] = &(psi::transqt2::transqt2);
-  dispatch_table["CCSORT"]   = &(psi::ccsort::ccsort);
+  dispatch_table["CCSORT"] = &(psi::ccsort::ccsort);
+  dispatch_table["CCENERGY"] = &(psi::ccenergy::ccenergy);
 
   /* the basic programs that were in psi3
   input      = "input"
@@ -105,6 +108,9 @@ int psi3_simulator(Options & options, int argc, char *argv[]) {
       read_options("CCSORT", options);
       dispatch_table["CCSORT"](options, argc, argv);
 
+      module.set_prgid("CCENERGY");
+      read_options("CCENERGY", options);
+      dispatch_table["CCENERGY"](options, argc, argv);
 //  }
 //  else {
 //    fprintf(outfile,"Unknown PSI4 method\n");

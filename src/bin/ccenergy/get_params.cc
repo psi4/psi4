@@ -70,7 +70,7 @@ void get_params(Options &options)
   forceit = options.get_bool("FORCE_RESTART");
   if(forceit) params.restart = 1;
 
-  fndcor(&(params.memory),infile,outfile);
+  params.memory = module.get_memory();
 
   params.aobasis = options.get_str("AO_BASIS");
   params.cachelev = options.get_int("CACHELEV");
@@ -97,8 +97,8 @@ void get_params(Options &options)
   local.method = options.get_str("LOCAL_METHOD");
   local.weakp = options.get_str("LOCAL_WEAKP");
 
-  local.filter_singles = options.get_bool("LOCAL_FILTER_SINGLES");
-  if(params.dertype == 3) local.filter_singles = 0;
+  //local.filter_singles = options.get_bool("LOCAL_FILTER_SINGLES");
+  //if(params.dertype == 3) local.filter_singles = 0;
 
   local.cphf_cutoff = options.get_double("LOCAL_CPHF_CUTOFF");
   local.freeze_core = options.get_bool("FREEZE_CORE");

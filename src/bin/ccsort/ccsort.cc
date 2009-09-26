@@ -123,7 +123,7 @@ int ccsort(Options &options, int argc, char *argv[])
 
   cleanup();
   exit_io();
-  exit(PSI_RETURN_SUCCESS);
+  return (Success);
 }
 
 void init_io(int argc, char *argv[])

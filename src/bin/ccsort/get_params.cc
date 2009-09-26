@@ -167,6 +167,7 @@ void get_params(Options & options)
   params.local = options.get_bool("LOCAL");
 
   /* grab the field frequencies from input -- a few different units are converted to E_h */
+#if 0
   count = options["OMEGA"].size();
   if(count == 1) { /* assume Hartrees and only one frequency */
     params.nomega = 1;
@@ -200,11 +201,11 @@ void get_params(Options & options)
     fprintf(outfile,   "\twhere units = hartrees, hz, nm, or ev.\n");
     throw PsiException("Failure in ccsort.", __FILE__, __LINE__);
   }
-
   mu_irreps = init_int_array(3);
   moinfo.irrep_x = options["MU_IRREPS"][0].to_integer();
   moinfo.irrep_y = options["MU_IRREPS"][1].to_integer();
   moinfo.irrep_z = options["MU_IRREPS"][2].to_integer();
+#endif
 
   fprintf(outfile, "\n\tInput parameters:\n");
   fprintf(outfile, "\t-----------------\n");

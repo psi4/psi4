@@ -17,6 +17,7 @@ int read_options(std::string name, Options & options) {
   ip_cwk_add(":PSI");
   ip_set_uppercase(1);
 
+  options.clear();
   if (name == "PSI4") {
     options.add_str("UNITS", "ANGSTROMS", "BOHR AU ANGSTROMS ANGSTROM");
   }
@@ -130,7 +131,7 @@ int read_options(std::string name, Options & options) {
     options.add_str("LOCAL_METHOD","WERNER");
     options.add_str("LOCAL_WEAKP","NONE");
     options.add_str("FREEZE_CORE","NONE");
-    options.add_str("LOCAL_PAIRDEF","NONE");
+    options.add_str("LOCAL_PAIRDEF","BP");
     options.add_bool("LOCAL_DOMAIN_POLAR", false);
     options.add_bool("LOCAL_DOMAIN_MAG", false);
     options.add_bool("LOCAL_DOMAIN_SEP", false);
@@ -364,7 +365,7 @@ else if(name == "CCDENSITY") {
     options.add_double("LOCAL_MOS", 0);
     options.add_str("LOCAL_METHOD", "WERNER", "WERNER AOBASIS");
     options.add_str("LOCAL_WEAKP", "NONE", "NONE NEGLECT MP2");
-    options.add_int("LOCAL_FILTER_SINGLES", 1);
+    //options.add_int("LOCAL_FILTER_SINGLES", 1);
     options.add_double("LOCAL_CPHF_CUTOFF", 0.10);
     options.add_bool("FREEZE_CORE", 0);
     options.add_str("LOCAL_PAIRDEF", "BP", "BP RESPONSE");
@@ -376,7 +377,7 @@ else if(name == "CCDENSITY") {
     options.add_bool("T3_WS_INCORE", 0);
     options.add_bool("SCSN_MP2", 0);
     options.add_bool("SCS_MP2", 0);
-    options.add_bool("SCSN_CCSD", 0);
+    options.add_bool("SCS_CCSD", 0);
     options.add_double("MP2_SCALE_OS",1.20);
     options.add_double("MP2_SCALE_SS",1.0/3.0);
     options.add_double("CC_SCALE_OS", 1.27);
