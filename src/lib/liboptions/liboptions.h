@@ -652,6 +652,22 @@ namespace psi {
       return(get(key).to_string());
     }
 
+    int* get_int_array(std::string key) {
+      int *array = new int[get(key).size()];
+      for (int i=0; i<get(key).size(); ++i) {
+        array[i] = get(key)[i].to_integer();
+      }
+      return array;
+    }
+
+    std::vector<int> get_int_vector(std::string key) {
+      std::vector<int> array;
+      for (int i=0; i<get(key).size(); ++i) {
+        array.push_back(get(key)[i].to_integer());
+      }
+      return array;
+    }
+
     const char* get_cstr(std::string key) {
       return(get(key).to_string().c_str());
     }
