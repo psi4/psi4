@@ -22,7 +22,6 @@
 #include <cctype>
 #include <psifiles.h>
 #include <libciomr/libciomr.h>
-#include <libipv1/ip_lib.h>
 #include <libchkpt/chkpt.h>
 #include <libpsio/psio.h>
 #include <physconst.h>

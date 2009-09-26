@@ -222,6 +222,11 @@ int read_options(std::string name, Options & options) {
    options.add("SOCC", new ArrayType());
    options.add("DOCC_VIRT", new ArrayType());
   }
+  else if(name == "EXTREMA") {
+    options.add_str("COORDINATES","foo");
+  }
+  }
+
   options.read_ipv1();
   //  options.print();
 }
