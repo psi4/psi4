@@ -13,8 +13,8 @@ class PsiException : public std::runtime_error {
 
     public:
         PsiException(
-            const char* message,
-            const char* file,
+            std::string message,
+            std::string file,
             int line
         ) throw () : std::runtime_error(message)
         {
