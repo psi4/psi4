@@ -4,6 +4,7 @@
 */
 #include <cstdio>
 #include <cstdlib>
+#include <string>
 #include <cstring>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
@@ -26,7 +27,7 @@ namespace psi { namespace CCTRIPLES {
     void get_moinfo(void)
     {
       int i, h, errcod, nactive, nirreps;
-      char *junk;
+      std::string junk;
       chkpt_init(PSIO_OPEN_OLD);
       moinfo.nirreps = chkpt_rd_nirreps();
       moinfo.nmo = chkpt_rd_nmo();
@@ -42,39 +43,37 @@ namespace psi { namespace CCTRIPLES {
 
       nirreps = moinfo.nirreps;
 
-      params.wfn = options.get_cstr("WFN");
-      if(strcmp(params.wfn, "CCSD") && strcmp(params.wfn, "CCSD_T") &&
-	 strcmp(params.wfn,"BCCD") && strcmp(params.wfn,"BCCD_T")) {
+      params.wfn = options.get_str("WFN");
+      if( params.wfn != "CCSD" && params.wfn != "CCSD_T" &&
+	        params.wfn != "BCCD" && params.wfn != "BCCD_T" ) {
 	throw PsiException("Invalid value of input keyword WFN",__FILE__,__LINE__);
       }
 
   params.nthreads = options.get_int("NTHREADS");
   
   params.semicanonical = 0;
-  junk = options.get_cstr("REFERENCE");
+  junk = options.get_str("REFERENCE");
   /* if no reference is given, assume rhf */
   if (errcod != IPE_OK) params.ref = 0;
   else {
-    if(!strcmp(junk, "RHF")) params.ref = 0;
-    else if(!strcmp(junk,"ROHF") && !strcmp(params.wfn,"CCSD_T")) {
+    if(junk == "RHF") params.ref = 0;
+    else if(junk == "ROHF" && params.wfn == "CCSD_T") {
       params.ref = 2;
       params.semicanonical = 1;
     }
-    else if(!strcmp(junk, "ROHF")) params.ref = 1;
-    else if(!strcmp(junk, "UHF")) params.ref = 2;
+    else if(junk == "ROHF") params.ref = 1;
+    else if(junk == "UHF") params.ref = 2;
     else { 
       throw PsiException("Invalid value of input keyword REFERENCE",__FILE__,__LINE__);
     }
-    free(junk);
   }
 
-	junk = options.get_cstr("DERTYPE");
-	if(!strcmp(junk,"NONE")) params.dertype = 0;
-	else if(!strcmp(junk,"FIRST")) params.dertype = 1;
+	junk = options.get_str("DERTYPE");
+	if(junk == "NONE") params.dertype = 0;
+	else if(junk == "FIRST") params.dertype = 1;
 	else {
 	  throw PsiException("Value of keyword DERTYPE is not applicable to CCSD(T)",__FILE__,__LINE__);
 	}
-	free(junk);
 
       /* Get frozen and active orbital lookups from CC_INFO */
       moinfo.frdocc = init_int_array(moinfo.nirreps);
