@@ -60,7 +60,7 @@ int cc_excited(std::string wfn)
     return 1;
   }
   else {
-    printf("Invalid value of input keyword WFN: %s\n", wfn);
+    printf("Invalid value of input keyword WFN: %s\n", wfn.c_str());
     exit(PSI_RETURN_FAILURE);
   }
 }
