@@ -382,6 +382,24 @@ else if(name == "CCDENSITY") {
     options.add_double("CC_SCALE_OS", 1.27);
     options.add_double("CC_SCALE_SS",1.13);
   }
+  else if(name == "CIS") {
+    options.add_str("WFN", "CIS", "CCSD CCSD_T EOM_CCSD CIS");
+    options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
+    options.add_double("LOCAL_AMP_PRINT_CUTOFF", 0.60);
+    options.add_int("PRINT", 0);
+    options.add_int("MAXITER", 500);
+    options.add_int("CONVERGENCE", 7);
+    options.add("STATES_PER_IRREP", new ArrayType());
+    options.add_int_array("STATES_PER_IRREP");
+    options.add_str("DIAG_METHOD", "DAVIDSON", "DAVIDSON FULL");
+    options.add_bool("LOCAL", false);
+    options.add_double("LOCAL_CUTOFF", 0.02);
+    options.add_str("LOCAL_METHOD", "WERNER", "AOBASIS WERNER");
+    options.add_str("LOCAL_WEAKP", "MP2", "MP2 NEGLECT NONE");
+    options.add_int("LOCAL_GHOST", -1);
+    options.add("DOMAINS", new ArrayType());
+    options.add_bool("DOMAIN_PRINT", 0);
+  }
 
   options.read_ipv1();
   options.print();
