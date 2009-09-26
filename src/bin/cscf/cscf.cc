@@ -175,12 +175,13 @@ static char *rcsid = "$Id: cscf.cc 3955 2008-06-07 09:04:04Z rking $";
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.h>
 #include <libqt/qt.h>
+#include <psi4-dec.h>
 
 namespace psi { namespace cscf {
   void print_initial_vec();
   extern void write_scf_matrices(void);
 
-int cscf(int argc,char* argv[])
+PsiReturnType cscf(Options & options, int argc,char* argv[])
 {
   int i,j,nn;
   char *prog_name="CSCF3.0: An SCF program written in C";
@@ -330,7 +331,7 @@ int cscf(int argc,char* argv[])
     tstop();
     //psi_stop(infile,outfile,psi_file_prefix);
     //exit(PSI_RETURN_SUCCESS);
-    return(PSI_RETURN_SUCCESS);
+    return(Success);
   }
 
   if (!twocon){
@@ -376,7 +377,7 @@ int cscf(int argc,char* argv[])
       chkpt_close();
       //psio_done();
       //exit(PSI_RETURN_FAILURE);
-      return(PSI_RETURN_FAILURE);
+      return(Success);
     }
 
     formg_direct();
@@ -510,7 +511,7 @@ printf("refnum %d\n", refnum);
 
   chkpt_close();
   //psio_done();
-  return(PSI_RETURN_SUCCESS);
+  return(Success);
 }
 
 void print_initial_vec()
