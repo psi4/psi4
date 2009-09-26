@@ -8,7 +8,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
-#include <libipv1/ip_lib.h>
+#include <psi4-dec.h>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
 #include <psifiles.h>
@@ -32,11 +32,8 @@ void compute_delta(double **delta, double x, double y, double z);
 int **cacheprep(int level, int *cachefiles);
 void local(void);
 
-}}
 
-using namespace psi::cusp;
-
-int main(int argc, char *argv[])
+int cusp(int argc, char *argv[])
 {
   int n, i, j, h, offset;
   int nmo, nso, natom, nirreps;
@@ -74,7 +71,7 @@ int main(int argc, char *argv[])
   chkpt_close();
 
   /*  local();
-      exit(PSI_RETURN_FAILURE); */
+      throw PsiException("Elvis has left the building", __FILE__, __LINE__) */
 
   /*** Build the QT-ordered SCF density ***/
   /*
@@ -393,24 +390,11 @@ int main(int argc, char *argv[])
   exit(PSI_RETURN_SUCCESS);
 }
 
-extern "C" {const char *gprgid() { const char *prgid = "CCONTOUR"; return(prgid); }}
-
-namespace psi { namespace cusp {
-
 void init_io(int argc, char *argv[])
 {
   int i;
-  char *progid;
-
-  progid = (char *) malloc(strlen(gprgid())+2);
-  sprintf(progid, ":%s",gprgid());
-
-  psi_start(&infile,&outfile,&psi_file_prefix,argc-1,argv+1,0);
-  ip_cwk_add(progid);
-  free(progid);
-  tstart(outfile);
-
-  psio_init(); psio_ipv1_config();
+  
+  tstart();
 
   /* Open all dpd data files here */
   for(i=CC_MIN; i <= CC_MAX; i++) psio_open(i,1);
@@ -422,9 +406,7 @@ void exit_io(void)
   /* Close all dpd data files here */
   for(i=CC_MIN; i <= CC_MAX; i++) psio_close(i,1);
 
-  psio_done();
-  tstop(outfile);
-  psi_stop(infile,outfile,psi_file_prefix);
+  tstop();
 }
 
 }} // namespace psi::cusp
