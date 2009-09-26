@@ -19,6 +19,7 @@
 #include <libpsio/psio.h>
 #include <cmath>
 #include <cstring>
+#include <string>
 #include "indpairs.h"
 #include "clag.h"
 
@@ -88,12 +89,12 @@ int clag(int argc, char **argv)
   double eci_chkpt;                    /* ci energy from checkpoint file  */
   double lagtr;                        /* trace of lagrangian             */
 
-  char *wfn;                           /* wavefunction type: CI, DETCAS,  */
-  char *dertype;                       /* derivative level: none, first,  */  
+  std::string wfn;                           /* wavefunction type: CI, DETCAS,  */
+  std::string dertype;                       /* derivative level: none, first,  */  
   int do_zorb;                         /* do z-orbital computation?       */
 
 
-  print_lvl = option.get_int("PRINT");
+  print_lvl = options.get_int("PRINT");
   write_cas_files = options.get_bool("WRITE_CAS_FILES");
 
    /* need to figure out whether to filter tei's */
@@ -103,10 +104,10 @@ int clag(int argc, char **argv)
 
   // later probably need zorb on for any deriv calc in case they have
   // frozen orbitals or something.  For now, keep it off for MCSCF
-  if (strcmp(dertype, "NONE")!=0 &&
-    strcmp(wfn, "DETCAS")!=0   &&
-    strcmp(wfn, "CASSCF")!=0   &&
-    strcmp(wfn, "RASSCF")!=0) do_zorb = 1;
+  if ((dertype == "NONE") &&
+    (wfn == "DETCAS")   &&
+    (wfn == "CASSCF")   &&
+    (wfn == "RASSCF")) do_zorb = 1;
   else
     do_zorb = 0;
 
@@ -178,7 +179,7 @@ int clag(int argc, char **argv)
   if (!iwl_rdone(oei_file, PSIF_MO_OEI, onel_ints, ntri, oei_erase,
             (print_lvl>4), outfile)) {
     fprintf(outfile, "Failed to read one-electron integrals\n");
-    throw PSIException("CLAG",__FILE__,__LINE__);
+    throw PsiException("CLAG",__FILE__,__LINE__);
   }
 
   if (print_lvl>4) {
@@ -386,7 +387,7 @@ double **rdopdm(int nbf, int print_lvl, int opdm_file)
   opdm = block_matrix(nbf, nbf); 
 
   /* if the user hasn't specified a root, just get "the" onepdm */
-  if (!option["ROOT"].has_changed()) {
+  if (!options["ROOT"].has_changed()) {
     psio_read_entry(opdm_file, "MO-basis OPDM", (char *) opdm[0], 
                     nbf*nbf*sizeof(double));
   }
@@ -491,4 +492,3 @@ void trace_tpdm(double *tpdm, int nbf)
 
 }} // end namespace psi::clag
 
-}
