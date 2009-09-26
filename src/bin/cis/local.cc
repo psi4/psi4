@@ -6,8 +6,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <string>
 #include <cmath>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libiwl/iwl.h>
@@ -38,7 +38,7 @@ namespace psi { namespace cis {
 ** TDC, Jan-June 2002
 */
 
-void local_init(void)
+void local_init(Options & options)
 {
   int i, j, k, ij, stat, a, b, r, l, I, L;
   int nmo, nso, nocc, nocc_all, nvir, noei, nirreps, nfzc;
@@ -94,14 +94,14 @@ void local_init(void)
   nirreps = moinfo.nirreps;
   if(nirreps != 1) {
     fprintf(outfile, "\nError: localization must use C1 symmetry.\n");
-    exit(PSI_RETURN_FAILURE);
+    throw PsiException("cis localization symmetry error", __FILE__, __LINE__);
   }
 
   nso = moinfo.nso;
   nmo = moinfo.nmo; /* should be the same as nso */
   if(nmo != nso) {
     fprintf(outfile, "\nError: NMO != NSO!  %d != %d\n", nmo, nso);
-    exit(PSI_RETURN_FAILURE);
+    throw PsiException("cis number of orbitals error", __FILE__, __LINE__);
   }
 
   nocc = moinfo.occpi[0]; /* active doubly occupied orbitals */
@@ -277,7 +277,7 @@ void local_init(void)
       errcod = C_DGESV(row, 1, &(X[0][0]), nso, &(ipiv[0]), &(Z[0]), nso);
       if(errcod) {
 	fprintf(outfile, "\nError in DGESV return in orbital domain construction.\n");
-	exit(PSI_RETURN_FAILURE);
+        throw PsiException("cis orbital domain construction error", __FILE__, __LINE__);
       }
 
       fR[i-nfzc] = 1.0;
@@ -299,17 +299,26 @@ void local_init(void)
   } /* i */
 
   /* Allow user adjustment of selected domains */
+  if (options["DOMAINS"].size() > 0) {
+    num_entries = options["DOMAINS"].size();
+    for(i=0; i<num_entries; i++) {
+      entry_len = options["DOMAINS"][i].size();
+      orbital = options["DOMAINS"][i][0].to_integer();
+
+      for(j=1; j<entry_len; j++) {
+        atom = options["DOMAINS"][i][j].to_integer();
+        domain[orbital][atom] = 1;
+        domain_len[orbital]++;
+      }
+    }
+  }
+
+/* pre porting
   if(ip_exist("DOMAINS",0)) {
     ip_count("DOMAINS", &num_entries,0);
     for(i=0; i < num_entries; i++) {
       ip_count("DOMAINS", &entry_len, 1, i);
       ip_data("DOMAINS", "%d", &orbital, 2, i, 0);
-
-      /* Clear out the current domain for this orbital */
-      /*
-      for(j=0; j < natom; j++) domain[orbital][j] = 0;
-      domain_len[orbital] = 0;
-      */
 
       for(j=1; j < entry_len; j++) {
         errcod = ip_data("DOMAINS","%d", &atom,2,i,j);
@@ -318,6 +327,7 @@ void local_init(void)
       }
     }
   }
+*/ //end pre porting
 
   /* Print the orbital domains */
   max = 0;
@@ -360,12 +370,12 @@ void local_init(void)
       for(k=0; k < natom; k++)
         if(domain[i][k] && domain[j][k] && local.ghost != k) weak = 0;
 
-      if(weak && strcmp(local.weakp,"NONE")) {
+      if(weak && !(local.weakp == "NONE")) {
 	weak_pairs[ij] = 1;
 
-	if(!strcmp(local.weakp,"MP2"))
+        if(local.weakp == "MP2")
 	  fprintf(outfile, "\tPair %d %d [%d] is weak and will be treated with MP2.\n", i, j, ij);
-	else if(!strcmp(local.weakp,"NEGLECT")) {
+        else if(local.weakp == "NEGLECT") {
 	  fprintf(outfile, "\tPair %d %d = [%d] is weak and will be deleted.\n", i, j, ij);
 	}
       }
@@ -413,11 +423,10 @@ void local_init(void)
   free(ipiv);
   free(fR);
 
-  print_test = 0;
-  ip_boolean("DOMAIN_PRINT",&(print_test),0);
+  print_test = options.get_bool("DOMAIN_PRINT"); //default 0
   if(print_test) {
     fprintf(outfile, "Printing of orbital domains requested...exiting.\n\n");
-    exit(PSI_RETURN_FAILURE);
+    throw PsiException("cis early termination upon request", __FILE__, __LINE__);
   }
 
   /************* Orbital Domains Complete ***************/

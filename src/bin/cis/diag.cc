@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <string>
 #include <libciomr/libciomr.h>
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
@@ -44,9 +45,9 @@ void diag(void)
       dpd_buf4_mat_irrep_init(&A_AA, h);
       dpd_buf4_mat_irrep_rd(&A_AA, h);
 
-      if(!strcmp(params.diag_method,"FULL")) 
+      if(params.diag_method == "FULL")
 	sq_rsp(dim, dim, A_AA.matrix[h], eps, 1, v, 1e-14);
-      else if(!strcmp(params.diag_method,"DAVIDSON")) {
+      else if(params.diag_method == "DAVIDSON") {
         nroot = david(A_AA.matrix[h], dim, params.rpi[h], eps, v, params.convergence, 0);
 
 	if(nroot != params.rpi[h])
@@ -105,9 +106,9 @@ void diag(void)
       dpd_buf4_mat_irrep_init(&A_AA, h);
       dpd_buf4_mat_irrep_rd(&A_AA, h);
 
-      if(!strcmp(params.diag_method, "FULL"))
+      if(params.diag_method == "FULL") 
 	sq_rsp(dim, dim, A_AA.matrix[h], eps, 1, v, 1e-14);
-      else if(!strcmp(params.diag_method,"DAVIDSON")) {
+      else if(params.diag_method == "DAVIDSON") {
 	nroot = david(A_AA.matrix[h], dim, params.rpi[h], eps, v, params.convergence, 0);
 
 	if(nroot != params.rpi[h])
@@ -190,9 +191,9 @@ void diag(void)
 	  A[ai][bj+dim_A] = A[bj+dim_A][ai] = A_AB.matrix[h][ai][bj];
       dpd_buf4_mat_irrep_close(&A_AB, h);
 
-      if(!strcmp(params.diag_method,"FULL"))
+      if(params.diag_method == "FULL")
 	sq_rsp(dim, dim, A, eps, 1, v, 1e-12);
-      else if(!strcmp(params.diag_method,"DAVIDSON")) {
+      else if(params.diag_method == "DAVIDSON") {
 	nroot = david(A, dim, params.rpi[h], eps, v, params.convergence, 0);
 
 	if(nroot != params.rpi[h])
