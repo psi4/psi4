@@ -222,6 +222,12 @@ int read_options(std::string name, Options & options) {
    options.add("SOCC", new ArrayType());
    options.add("DOCC_VIRT", new ArrayType());
   }
+  else if(name == "RESPONSE"){
+    options.add_int("PRINT", 1);
+    options.add_str("REFERENCE", "RHF");
+    options.add("OMEGA", new ArrayType());
+    options.add_str("PROPERTY","POLARIZABILITY");
+  }
   else if(name == "MCSCF") {
     options.add_int("CONVERGENCE",9);
     options.add_int("LEVELSHIFT",0);

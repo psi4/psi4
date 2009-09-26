@@ -4,7 +4,7 @@
 */
 #include <cstdio>
 #include <cstdlib>
-#include <libipv1/ip_lib.h>
+#include <psi4-dec.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.h>

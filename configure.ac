@@ -764,6 +764,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/input3/Makefile
           src/bin/cints/Makefile
           src/bin/cscf/Makefile
+          src/bin/response/Makefile
           src/bin/cusp/Makefile
           src/bin/mcscf/Makefile
           src/bin/psiclean/Makefile
