@@ -7,22 +7,21 @@
 #include "prototypes.h"
 #include "globals.h"
 
-namespace {
-  int* fock_to_pitzer(int, int*);
-}
-
 namespace psi { namespace oeprop {
+
+int* fock_to_pitzer(int, int*);
+
 
 void grid_parse()
 {
   int i, errcod, atom;
   int mo, *fock_mos;
-  char *tmpstring;
+  std::string tmpstring;
   double xmin, ymin, zmin, xmax, ymax, zmax;    /* molecular dimensions */
 
-  errcod = ip_data("GRID","%d",&grid,0);
+  grid = options.get_int("GRID");
   if (grid < 0)
-    punt("GRID type must be positive");
+    throw PsiException("GRID type must be positive", __FILE__, __LINE__);
 
   if (grid == 5 || grid == 6)
     grid3d = 1;
@@ -31,38 +30,27 @@ void grid_parse()
   if (grid == 5) {
 
     if (read_opdm)
-      punt("Correlated WFN but asked to plot orbitals. Use WFN=SCF.");
+      throw PsiException("Correlated WFN but asked to plot orbitals. Use WFN=SCF.", __FILE__, __LINE__);
 
-    if (ip_exist("MO_TO_PLOT",0)) {
-      errcod = ip_count("MO_TO_PLOT",&num_mos_to_plot,0);
-      if (errcod == IPE_NOT_AN_ARRAY)
-	punt("MO_TO_PLOT must be an array. See the manual.");
+    if(options["MO_TO_PLOT"].has_changed()) {
+      num_mos_to_plot = options["MO_TO_PLOT"].size();
 
-      errcod = ip_string("MO_TO_PLOT",&tmpstring,1,0);
+      tmpstring = options.get_str("MO_TO_PLOT");
       /* If signed integers are used - Fock ordering is used, convert indices back to Pitzer ... */
       if (tmpstring[0] == '+' || tmpstring[0] == '-') {
-	fock_mos = init_int_array(num_mos_to_plot);
-	for(mo=0;mo<num_mos_to_plot;mo++) {
-	  errcod = ip_data("MO_TO_PLOT","%d",&fock_mos[mo],1,mo);
-	  if (errcod != IPE_OK)
-	    punt("Problem reading elements of MO_TO_PLOT. See the manual.");
-	}
-	mos_to_plot = fock_to_pitzer(num_mos_to_plot,fock_mos);
-	free(fock_mos);
+        fock_mos = options.get_int_array("MO_TO_PLOT");
+        mos_to_plot = fock_to_pitzer(num_mos_to_plot,fock_mos);
+        free(fock_mos);
       }
       /* ... else indices are already Pitzer indices */
       else {
-	mos_to_plot = init_int_array(num_mos_to_plot);
-	for(mo=0;mo<num_mos_to_plot;mo++) {
-	  errcod = ip_data("MO_TO_PLOT","%d",&mos_to_plot[mo],1,mo);
-	  if (mos_to_plot[mo] <= 0 || mos_to_plot[mo] > nmo)
-	    punt("One of the elements of MO_TO_PLOT out of range");
-	  mos_to_plot[mo]--;
-	  if (errcod != IPE_OK)
-	    punt("Problem reading elements of MO_TO_PLOT. See the manual.");
-	}
+        mos_to_plot = options.get_int_array("MO_TO_PLOT");
+        for(mo=0;mo<num_mos_to_plot;mo++) {
+          if (mos_to_plot[mo] <= 0 || mos_to_plot[mo] > nmo)
+            throw PsiException("One of the elements of MO_TO_PLOT out of range", __FILE__, __LINE__);
+          mos_to_plot[mo]--;
+        }
       }
-      free(tmpstring);
     }
     /* If MO_TO_PLOT is not specified just use HOMO and LUMO */
     else {
@@ -79,100 +67,67 @@ void grid_parse()
     If GRID_ORIGIN is present read in user's specification for the grid
     else create a default grid using molecular dimensions
    --------------------------------------------------------------------*/
-  if (ip_exist("GRID_ORIGIN",0)) {
+  if(options["GRID_ORIGIN"].has_changed()) {
 
-    ip_count("GRID_ORIGIN",&i,0);
+    i = options.get_int("GRID_ORIGIN");
     if (i != 3)
-      punt("GRID_ORIGIN must have 3 components");
-    for (i=0;i<3;i++) {
-      errcod = ip_data("GRID_ORIGIN","%lf",&grid_origin[i],1,i);
-      if (errcod != IPE_OK)
-	punt("Error in the definition of GRID_ORIGIN");
-    }
+      throw PsiException("GRID_ORIGIN must have 3 components", __FILE__, __LINE__);
+    grid_origin = options.get_double_array("GRID_ORIGIN");
 
-    if (ip_exist("GRID_UNIT_X",0)) {
-      ip_count("GRID_UNIT_X",&i,0);
+    if(options["GRID_UNIT_X"].has_changed()) {
+      i = options.get_int("GRID_UNIT_X");
       if (i != 3)
-	punt("GRID_UNIT_X must have 3 components");
-      for (i=0;i<3;i++) {
-	errcod = ip_data("GRID_UNIT_X","%lf",&grid_unit_x[i],1,i);
-	if (errcod != IPE_OK)
-	  punt("Problem in parsing GRID_UNIT_X");
-      }
+        throw PsiException("GRID_UNIT_X must have 3 components", __FILE__, __LINE__);
+      grid_unit_x = options.get_double_array("GRID_UNIT_X");
     }
     else
-      punt("GRID_UNIT_X must be defined when GRID_ORIGIN is given");
+      throw PsiException("GRID_UNIT_X must be defined when GRID_ORIGIN is given", __FILE__, __LINE__);
 
-    if (ip_exist("GRID_UNIT_Y",0)) {
-      ip_count("GRID_UNIT_Y",&i,0);
+    if(options["GRID_UNIT_Y"].has_changed()) {
+      i = options["GRID_UNIT_Y"].size();
       if (i != 3)
-	punt("GRID_UNIT_Y must have 3 components");
-      for (i=0;i<3;i++) {
-	errcod = ip_data("GRID_UNIT_Y","%lf",&grid_unit_y[i],1,i);
-	if (errcod != IPE_OK)
-	  punt("Problem in parsing GRID_UNIT_Y");
-      }
+        throw PsiException("GRID_UNIT_Y must have 3 components", __FILE__, __LINE__);
+      grid_unit_y = options.get_double_array("GRID_UNIT_Y");
     }
     else
-      punt("GRID_UNIT_Y must be defined when GRID_ORIGIN is given");
+      throw PsiException("GRID_UNIT_Y must be defined when GRID_ORIGIN is given", __FILE__, __LINE__);
+  }
 
-    if (grid3d == 0) {
-      if (ip_exist("GRID_XY0",0)) {
-	ip_count("GRID_XY0",&i,0);
-	if (i != 2)
-	  punt("GRID_XY0 must have 2 components");
-	for (i=0;i<2;i++) {
-	  errcod = ip_data("GRID_XY0","%lf",&grid_xy0[i],1,i);
-	  if (errcod != IPE_OK)
-	    punt("Error in the definition of GRID_XY0");
-	}
+  if (grid3d == 0) {
+    if(options["GRID_XY0"].has_changed()) {
+      i = options["GRID_XY0"].size();
+      if (i != 2)
+        throw PsiException("GRID_XY0 must have 2 components", __FILE__, __LINE__);
+      else
+        grid_xy0 = options.get_double_array("GRID_XY0");
+
+      if(options["GRID_XY1"].has_changed()) {
+        i = options["GRID_XY1"].size();
+        if (i != 2)
+          throw PsiException("GRID_XY1 must have 2 components", __FILE__, __LINE__);
+        grid_xy1 = options.get_double_array("GRID_XY1");
       }
       else
-	punt("GRID_XY0 is not defined");
-
-      if (ip_exist("GRID_XY1",0)) {
-	ip_count("GRID_XY1",&i,0);
-	if (i != 2)
-	  punt("GRID_XY1 must have 2 components");
-	for (i=0;i<2;i++) {
-	  errcod = ip_data("GRID_XY1","%lf",&grid_xy1[i],1,i);
-	  if (errcod != IPE_OK)
-	    punt("Error in the definition of GRID_XY1");
-	  else if (grid_xy1[i] <= grid_xy0[i])
-	    punt("GRID_XY1 must point to the upper right corner of the grid");
-	}
-      }
-      else
-	punt("GRID_XY1 is not defined");
+        throw PsiException("GRID_XY1 is not defined", __FILE__, __LINE__);
     }
     else {
-      if (ip_exist("GRID_XYZ0",0)) {
-	ip_count("GRID_XYZ0",&i,0);
+      if(options["GRID_XYZ0"].has_changed()) {
+        i = options["GRID_XYZ0"].size();
 	if (i != 3)
-	  punt("GRID_XYZ0 must have 3 components");
-	for (i=0;i<3;i++) {
-	  errcod = ip_data("GRID_XYZ0","%lf",&grid_xyz0[i],1,i);
-	  if (errcod != IPE_OK)
-	    punt("Error in the definition of GRID_XYZ0");
-	}
+          throw PsiException("GRID_XYZ0 must have 3 components", __FILE__, __LINE__);
+        grid_xyz0 = options.get_double_array("GRID_XYZ0");
       }
       else
-	punt("GRID_XYZ0 is not defined");
+        throw PsiException("GRID_XYZ0 is not defined", __FILE__, __LINE__);
 
-      if (ip_exist("GRID_XYZ1",0)) {
-	ip_count("GRID_XYZ1",&i,0);
-	if (i != 3)
-	  punt("GRID_XYZ1 must have 3 components");
-	for (i=0;i<3;i++) {
-	  errcod = ip_data("GRID_XYZ1","%lf",&grid_xyz1[i],1,i);
-	  if (errcod != IPE_OK)
-	    punt("Error in the definition of GRID_XYZ1");
-	  else if (grid_xyz1[i] <= grid_xyz0[i])
-	    punt("GRID_XYZ1 must point to the upper right corner of the grid parallelepiped");
-	}
+      if(options["GRID_XYZ1"].has_changed()) {
+        i = options["GRID_XYZ1"].size();
+        if (i != 3)
+          throw PsiException("GRID_XYZ1 must have 3 components", __FILE__, __LINE__);
+        grid_xyz1 = options.get_double_array("GRID_XYZ1");
       }
       else
-	punt("GRID_XYZ1 is not defined");
+        throw PsiException("GRID_XYZ1 is not defined", __FILE__, __LINE__);
 
     }
   }
@@ -217,58 +172,62 @@ void grid_parse()
   }
   /* It's a 2D grid and no GRID_ORIGIN is given -- fail */
   else
-    punt("GRID_ORIGIN must be specified for two-dimentional grids");
+    throw PsiException("GRID_ORIGIN must be specified for two-dimentional grids", __FILE__, __LINE__);
 
-  i = 0; errcod = ip_data("NIX","%d",&i,0);
+  i = 0; 
+  i = options.get_int("NIX");
   nix = i - 1;
   if (i <= 1)
-    punt("NIX must be greater than 1");
-  i = 0; errcod = ip_data("NIY","%d",&i,0);
+    throw PsiException("NIX must be greater than 1", __FILE__, __LINE__);
+  i = 0; 
+  i = options.get_int("NIY");
   niy = i - 1;
   if (i <= 1)
-    punt("NIY must be greater than 1");
+    throw PsiException("NIY must be greater than 1", __FILE__, __LINE__);
   if (grid3d) {
-    i = 0; errcod = ip_data("NIZ","%d",&i,0);
+    i = 0; 
+    i = options.get_int("NIZ");
     niz = i - 1;
     if (i <= 1)
-      punt("NIZ must be greater than 1");
+      throw PsiException("NIZ must be greater than 1", __FILE__, __LINE__);
   }
 
   /* orthonormalize grid unit vectors */
   grid_unitvec();
 
   /* Which format to use for the 3D grid */
-  grid_format = NULL;
-  errcod = ip_string("GRID_FORMAT", &grid_format, 0);
-  if (grid_format == NULL) {
+  grid_format = "";
+  if(options["GRID_FORMAT"].has_changed())
+    grid_format = options.get_str("GRID_FORMAT");
+  else {
     if (grid3d)
-      grid_format = strdup("GAUSSCUBE");
+      grid_format = "GAUSSCUBE";
     else
-      grid_format = strdup("PLOTMTV");
+      grid_format = "PLOTMTV";
   }
-  else if (strcmp(grid_format,"GAUSSCUBE") &&
-	   strcmp(grid_format,"PLOTMTV") &&
-	   strcmp(grid_format,"MEGAPOVPLUS"))
-    punt("Invalid value for GRID_FORMAT");
+  if (grid_format != "GAUSSCUBE" && 
+      grid_format != "PLOTMTV" &&
+      grid_format != "MEGAPOVPLUS")
+    throw PsiException("Invalid value for GRID_FORMAT", __FILE__, __LINE__);
 
   /* Check if the grid output format is compatibe with the type of grid */
-  if (!strcmp(grid_format,"PLOTMTV") && grid3d)
-    punt("GRID_FORMAT=PLOTMTV can only be used for 2-d grids");
-  if (strcmp(grid_format,"PLOTMTV") && !grid3d)
-    punt("Only GRID_FORMAT=PLOTMTV can be used for 2-d grids");
+  if(grid_format == "PLOTMTV" && grid3d)
+    throw PsiException("GRID_FORMAT=PLOTMTV can only be used for 2-d grids", __FILE__, __LINE__);
+  if(grid_format == "PLOTMTV" && !grid3d)
+    throw PsiException("Only GRID_FORMAT=PLOTMTV can be used for 2-d grids", __FILE__, __LINE__);
 
   if (grid3d == 0) {
-    errcod = ip_data("GRID_ZMIN","%lf",&grid_zmin,0);
-    errcod = ip_data("GRID_ZMAX","%lf",&grid_zmax,0);
+    grid_zmin = options.get_double("GRID_ZMIN");
+    grid_zmax = options.get_double("GRID_ZMAX");
     if (grid_zmin >= grid_zmax)
-      punt("GRID_ZMIN must be less than GRID_ZMAX");
-    errcod = ip_data("EDGRAD_LOGSCALE","%d",&edgrad_logscale,0);
+      throw PsiException("GRID_ZMIN must be less than GRID_ZMAX", __FILE__, __LINE__);
+    edgrad_logscale = options.get_int("EDGRAD_LOGSCALE");
   }
 }
 
-}} //namespace psi::oeprop
-namespace {
-  using namespace psi::oeprop;
+//}} //namespace psi::oeprop
+//namespace {
+//  using namespace psi::oeprop;
 
 int* fock_to_pitzer(int num_mo, int* fock_mos)
 {
@@ -364,14 +323,16 @@ int* fock_to_pitzer(int num_mo, int* fock_mos)
     if (fock_mos[mo] < 0) {
       o = -fock_mos[mo] - 1;
       if (o >= nocc)
-	punt("MOS_TO_PLOT contains occupied indices outside of allowed range");
+        throw PsiException("MOS_TO_PLOT contains occupied indices outside of allowed range", __FILE__, __LINE__);
+//	punt("MOS_TO_PLOT contains occupied indices outside of allowed range");
       else
 	pitzer_mos[mo] = f2p_occ[o];
     }
     else {
       v = fock_mos[mo] - 1;
       if (v >= nvirt)
-	punt("MOS_TO_PLOT contains unoccupied indices outside of allowed range");
+        throw PsiException("MOS_TO_PLOT contains unoccupied indices outside of allowed range", __FILE__, __LINE__);
+//	punt("MOS_TO_PLOT contains unoccupied indices outside of allowed range");
       else
 	pitzer_mos[mo] = f2p_virt[v];
     }
@@ -384,10 +345,6 @@ int* fock_to_pitzer(int num_mo, int* fock_mos)
 
   return pitzer_mos;
 }
-
-} // namespace
-
-namespace psi { namespace oeprop {
 
 void grid_unitvec()
 {
@@ -412,7 +369,8 @@ void grid_unitvec()
   /* Checking if vectors are parallel */
   dot_arr(grid_unit_x,grid_unit_y,3,&dot);
   if (1.0 - fabs(dot) < ADOTB_ORTHOGONAL) /* Vectors are parallel - abort */
-    punt("Vectors GRID_UNIT_X and GRID_UNIT_Y are parallel");
+    throw PsiException("Vectors GRID_UNIT_X and GRID_UNIT_Y are parallel", __FILE__, __LINE__);
+//    punt("Vectors GRID_UNIT_X and GRID_UNIT_Y are parallel");
   else if (fabs(dot) > ADOTB_ORTHOGONAL) {  /* Vectors are not orthogonal - orthonormalizing */
     for(i=0;i<3;i++)
       grid_unit_y[i] -= dot*grid_unit_x[i];

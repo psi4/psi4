@@ -104,7 +104,8 @@ void compute_density()
           else if ((int)beta[ioff[count]] == -1)
 	    occ_a[i] += openpi[i];
 	  else
-	    punt("Can't assign alpha and beta occupation vectors!\nPossibly, you provided erroneous BETA string");
+            throw PsiException("Can't assign alpha and beta occupation vectors!\nPossibly, you provided erroneous BETA string", __FILE__, __LINE__);
+//	    punt("Can't assign alpha and beta occupation vectors!\nPossibly, you provided erroneous BETA string");
           count++;
         }
     }
