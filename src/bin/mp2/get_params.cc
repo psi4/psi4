@@ -5,7 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <libipv1/ip_lib.h>
+//#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
 #include <libpsio/psio.h>
@@ -22,9 +22,8 @@ void get_params()
   char *cachetype = NULL;
   char *junk;
   
-  errcod = ip_string("WFN", &(params.wfn), 0);
-
-  errcod = ip_string("REFERENCE", &(junk),0);
+  params.wfn = options.get_cstr("WFN");
+  junk = options.get_cstr("REFERENECE");
 
   /* Default reference is RHF */
   params.ref = 0;
@@ -37,26 +36,14 @@ void get_params()
   else if(!strcmp(junk,"ROHF")) params.ref = 1;
   else if(!strcmp(junk,"UHF")) params.ref = 2;
   else {
-    fprintf(outfile,"\nInvalid Reference: %s\n",junk);
-    exit(PSI_RETURN_FAILURE);
+    throw PsiException("Invalid Reference", __FILE__, __LINE__);
   }
-  free(junk);
   
   /* Default Jobtype */
-  if(ip_exist("JOBTYPE",0)) {
-    ip_string("JOBTYPE", &(params.jobtype),0);
-  }
-  else {
-    params.jobtype = strdup("SP");
-  }
-    
+  params.jobtype = options.get_cstr("JOBTYPE");
+
   /* Default Dertype */
-  if(ip_exist("DERTYPE",0)) {
-    ip_string("DERTYPE", &(params.dertype),0);
-  }
-  else {
-    params.dertype = strdup("NONE");
-  }
+  params.dertype = options.get_cstr("DERTYPE");
 
   if(!strcmp(params.jobtype,"SP")) {
     params.opdm = 0;
@@ -104,24 +91,19 @@ void get_params()
     params.gradient = 1;
   }
   else {
-    printf("Invalid combination of JOBTYPE and DERTYPE\n");
-    exit(PSI_RETURN_FAILURE);
+    throw PsiException("Invalid combination of JOBTYPE and DERTYPE", __FILE__, __LINE__);
   }
 
   if((params.relax_opdm || params.gradient) && 
      (mo.nfzdocc != 0 || mo.nfzvirt != 0)) {
-    fprintf(outfile,"\n\tThe Z-vector equations DO NOT work with frozen orbitals ... yet\n");
-    exit(PSI_RETURN_FAILURE);
+    throw PsiException("The Z-vector equations DO NOT work with frozen orbitals ... yet", __FILE__, __LINE__);
   }
 
-  params.print = 0;
-  ip_data("PRINT", "%d", &(params.print),0);
+  params.print = options.get_int("PRINT");
   
-  params.cachelev = 2;
-  ip_data("CACHELEV", "%d", &(params.cachelev),0);
+  params.cachelev = options.get_int("CACHELEV");
   
-  params.cachetype = 1;
-  errcod = ip_string("CACHETYPE", &(cachetype),0);
+  cachetype = options.get_cstr("CACHETYPE");
   if (cachetype != NULL && strlen(cachetype)) {
     if (!strcmp(cachetype,"LOW")) 
       params.cachetype = 1;
@@ -131,24 +113,21 @@ void get_params()
       fprintf(outfile, "Invalide CACHETYPE = %s\n",cachetype);
       abort();
     }
-    free(cachetype);
   }
   
   /* get parameters related to SCS-MP2 or SCS-N-MP2 */
   /* see papers by S. Grimme or J. Platz */
-  params.scs = 0;
-  params.scs_scale_os = 6.0/5.0;
-  params.scs_scale_ss = 1.0/3.0;
-  errcod = ip_boolean("SCS_N",&(params.scs),0);
+  params.scs = options.get_int("SCS_N");
   if (params.scs == 1) {
     params.scs_scale_os = 0.0;
     params.scs_scale_ss = 1.76;
   }
-  errcod = ip_boolean("SCS",&(params.scs),0);
+  if(options.get_int("SCS") == 1) 
+    params.scs = 1;
   if (params.scs == 1) { 
-    errcod = ip_data("SCALE_OS","%lf",&(params.scs_scale_os),0); 
-    errcod = ip_data("SCALE_SS","%lf",&(params.scs_scale_ss),0); 
-    }
+    params.scs_scale_os = options.get_double("SCALE_OS");
+    params.scs_scale_ss = options.get_double("SCALE_SS");
+  }
 
   fndcor(&(params.memory),infile,outfile);
  

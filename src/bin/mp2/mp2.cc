@@ -10,7 +10,6 @@
 #include <cstring>
 #include <cstdlib>
 #include <cmath>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libdpd/dpd.h>
 #include <libchkpt/chkpt.h>
@@ -51,9 +50,8 @@ void sort_twopdm(void);
 void cleanup(void);
 void exit_io(void);
 
-}} /* End namespaces */
 
-int main(int argc, char *argv[])
+int mp2(int argc, char *argv[])
 {
   using namespace psi::mp2;
 
@@ -141,20 +139,14 @@ int main(int argc, char *argv[])
   exit(0);
 }
 
-extern "C"{ const char *gprgid() { const char *prgid = "MP2"; return(prgid); } }
-
-namespace psi{ namespace mp2{
 
 void init_io(int argc, char *argv[])
 {
   int i=0;
   int num_extra_args=0;
   char **extra_args;
-  char *progid;
 
   extra_args = (char **) malloc(argc*sizeof(char *));
-  progid = (char *) malloc(strlen(gprgid())+2);
-  sprintf(progid, ":%s", gprgid());
   params.opdm = 0;
 
   for(i=1; i<argc; i++) {
@@ -166,12 +158,8 @@ void init_io(int argc, char *argv[])
     }
   }
   
-  psi_start(&infile,&outfile,&psi_file_prefix,num_extra_args,extra_args,0);
-  ip_cwk_add(progid);
-  free(progid);
-  tstart(outfile);
+  tstart();
   
-  psio_init(); psio_ipv1_config();
   for(i=CC_MIN; i <= CC_MAX; i++) 
     psio_open(i,1);
 
@@ -250,9 +238,7 @@ void exit_io(void)
 {
   int i;
 
-  psio_done();
-  tstop(outfile);
-  psi_stop(infile,outfile,psi_file_prefix);
+  tstop();
 }
 
 }} /* End namespaces */

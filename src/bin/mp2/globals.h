@@ -7,6 +7,7 @@
 #define _psi_src_bin_mp2_globals_h_
 
 #include <ccfiles.h>
+#include <psi4-dec.h>
 #include "moinfo.h"
 #include "params.h"
 
@@ -20,10 +21,11 @@
 #define MAXIOFF 32641
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
 
-extern "C" {
-  EXTERN FILE *infile, *outfile;
-  EXTERN char *psi_file_prefix;
-}
+// BJM removing the following four lines
+//extern "C" {
+//  EXTERN FILE *infile, *outfile;
+//  EXTERN char *psi_file_prefix;
+//}
 EXTERN struct moinfo mo;
 EXTERN struct params params;
 EXTERN int* ioff;
