@@ -17,7 +17,7 @@ BINOBJ = $(CXXSRC:%.cc=%.o)
 include ../MakeRules
 
 $(PSITARGET): $(BINOBJ) $(PSILIBS)
-    $(MKDIRS) `dirname $(PSITARGET)`
+	$(MKDIRS) `dirname $(PSITARGET)`
 	$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 install_target:: $(PSITARGET)

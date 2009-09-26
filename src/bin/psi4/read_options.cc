@@ -111,13 +111,22 @@ int read_options(std::string name, Options & options) {
     options.add_cstr("AO_BASIS", "NONE");
     options.add_bool("DELETE_TEI", true);
   }
+  else if(name == "CCSORT") {
+    options.add_cstr("WFN");
+    options.add_cstr("REFERENCE", "RHF");
+    options.add_cstr("DERTYPE", "NONE");
+    options.add_cstr("PROPERTY", "POLARIZABILITY");
+    options.add_bool("LOCAL", false);
+    options.add_double("LOCAL_CUTOFF", 0.02);
+    options.add_double("LOCAL_CPHF_CUTOFF", 0.10);
+    options.add_double("LOCAL_CORE_CUTOFF",0.05);
+  }
   else if(name == "CCTRIPLES") {
     options.add_cstr("WFN");
     options.add_int("NTHREADS",1);
     options.add_cstr("REFERENCE","RHF");
     options.add_cstr("DERTYPE","NONE");
   }
-
   else if(name == "CLAG") {
     options.add_bool("WRITE_CAS_FILES",0);
     options.add_cstr("DERTYPE","NONE");
