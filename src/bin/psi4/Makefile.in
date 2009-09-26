@@ -23,7 +23,8 @@ $(PSITARGET): $(BINOBJ) $(PSILIBS)
 	$(MKDIRS) `dirname $(PSITARGET)`
 	$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
-install_target:: $(PSITARGET)
+install: $(PSITARGET)
+	echo "in psi4 dir"
 	$(MKDIRS) $(DESTDIR)$(bindir)
 	$(INSTALL_PROGRAM) $< $(DESTDIR)$(bindir)
 
