@@ -328,7 +328,7 @@ namespace psi {
         bool wrong_input = true;
         for (unsigned int i=0; i<choices_.size(); ++i)
           if (s == choices_[i])
-          wrong_input = false;
+            wrong_input = false;
         if (wrong_input)
           throw DataTypeException(s + " is not a valid choice");
         str_ = s;
