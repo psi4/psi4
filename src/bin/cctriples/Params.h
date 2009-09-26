@@ -7,7 +7,7 @@ namespace psi { namespace CCTRIPLES {
 
 struct Params {
   int ref;
-  char *wfn;
+  std::string wfn;
   int semicanonical;
   int nthreads;
   int dertype;

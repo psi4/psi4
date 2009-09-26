@@ -189,7 +189,7 @@ int CCTRIPLES(int argc, char *argv[])
   chkpt_close();
 
   /* Write pertinent data to energy.dat */
-  if(!strcmp(params.wfn,"CCSD_T") || !strcmp(params.wfn,"BCCD_T")) {
+  if(params.wfn == "CCSD_T" || params.wfn == "BCCD_T") {
     chkpt_init(PSIO_OPEN_OLD);
     natom = chkpt_rd_natom();
     geom = chkpt_rd_geom();
@@ -203,11 +203,11 @@ int CCTRIPLES(int argc, char *argv[])
     free_block(geom);  free(zvals);
     fprintf(efile, "SCF(30)   %22.12f\n", moinfo.escf);
     fprintf(efile, "REF(100)  %22.12f\n", moinfo.eref);
-    if(!strcmp(params.wfn,"CCSD_T")) {
+    if(params.wfn == "CCSD_T") {
       fprintf(efile, "CCSD      %22.12f\n", (moinfo.ecc+moinfo.eref));
       fprintf(efile, "CCSD(T)   %22.12f\n", (ET+ moinfo.ecc+moinfo.eref));
     }
-    else if(!strcmp(params.wfn,"BCCD_T")) {
+    else if(params.wfn == "BCCD_T") {
       fprintf(efile, "BCCD      %22.12f\n", (moinfo.ecc+moinfo.eref));
       fprintf(efile, "BCCD(T)   %22.12f\n", (ET+ moinfo.ecc+moinfo.eref));
     }
