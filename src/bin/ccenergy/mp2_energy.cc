@@ -74,19 +74,6 @@ double rhf_mp2_energy(void)
   moinfo.emp2_ss = ss_energy;
   moinfo.emp2_os = os_energy;
 
-  if (params.scs == 1) {
-    os_energy = params.scsmp2_scale_os * os_energy;
-    ss_energy = params.scsmp2_scale_ss * ss_energy;
-  }
-
-  else {
-    os_energy = (6.0/5.6) * os_energy;
-    ss_energy = (1.0/3.0) * ss_energy;
-  }
-
-  moinfo.escsmp2_ss = ss_energy;
-  moinfo.escsmp2_os = os_energy;
-
   dpd_buf4_close(&T2);
   dpd_buf4_close(&D);
   

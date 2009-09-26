@@ -51,19 +51,6 @@ double rhf_energy(void)
   moinfo.ecc_ss = ss_energy;
   moinfo.ecc_os = os_energy;
  
-  if (params.scs == 1) {
-    os_energy = params.scscc_scale_os * os_energy;
-    ss_energy = params.scscc_scale_ss * ss_energy;
-  }
-
-  else {
-    os_energy = 1.27 * os_energy;
-    ss_energy = 1.13 * ss_energy;
-  }
-
-  moinfo.escscc_os = os_energy;
-  moinfo.escscc_ss = ss_energy;
-
   dpd_buf4_close(&tauIjAb);
   dpd_buf4_close(&D);
   

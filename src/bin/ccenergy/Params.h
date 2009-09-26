@@ -14,12 +14,12 @@ struct Params {
   double convergence;
   int restart;
   long int memory;
-  char *aobasis;
+  std::string aobasis;
   int cachelev;
   int cachetype;
   int ref;
   int diis;
-  char *wfn;
+  std::string wfn;
   int print;
   int local;
   int num_amps;
@@ -33,13 +33,15 @@ struct Params {
   int local_mos;
   int dertype;
   int t2_coupled;
-  char *prop;            /* user-selected property */
+  std::string prop;            /* user-selected property */
   int just_energy; /* just compute energy from T amplitudes on disk and quit */
 	int just_residuals; /* just compute residuals from T amplitudes on disk and quit */
-  char *abcd;
+  std::string abcd;
   int t3_Ws_incore;
   int nthreads;
   int scs;
+  int scsn;
+  int scscc;
   double scsmp2_scale_os;
   double scsmp2_scale_ss;
   double scscc_scale_os;

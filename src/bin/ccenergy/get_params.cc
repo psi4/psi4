@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <string>
 #include <cmath>
 #include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
@@ -20,260 +21,131 @@ namespace psi { namespace ccenergy {
 void get_params()
 {
   int errcod, iconv, forceit;
-  char *cachetype = NULL;
-  char *junk;
-  int *mu_irreps;
+  std::string cachetype = "";
+  sdt::string  junk;
 
-  params.newtrips = 1;
-  errcod = ip_boolean("NEWTRIPS", &params.newtrips, 0);
+  params.newtrips = options.get_bool("NEWTRIPS");
 
-  errcod = ip_string("WFN", &(params.wfn), 0);
-  if(strcmp(params.wfn, "CCSD") && strcmp(params.wfn, "CCSD_T") &&
-     strcmp(params.wfn, "EOM_CCSD") && strcmp(params.wfn, "LEOM_CCSD") &&
-     strcmp(params.wfn, "BCCD") && strcmp(params.wfn,"BCCD_T") &&
-     strcmp(params.wfn, "CC2") && strcmp(params.wfn,"CC3") &&
-     strcmp(params.wfn, "EOM_CC3") && strcmp(params.wfn,"EOM_CC2") &&
-     strcmp(params.wfn, "CCSD_MVD")) {
-    fprintf(outfile, "Invalid value of input keyword WFN: %s\n", params.wfn);
-    exit(PSI_RETURN_FAILURE);
-  }
+  params.wfn = options.get_str("WFN")
 
-  if(!strcmp(params.wfn,"BCCD") || !strcmp(params.wfn,"BCCD_T")) 
+  if(params.wfn == "NONE")
+     throw PsiException("Invalid value of input keyword WFN", __FILE__, __LINE__);
+
+  if(params.wfn == "BCCD" || params.wfn == "BCCD_T") 
     params.brueckner = 1;
   else params.brueckner = 0;
 
   params.semicanonical = 0;
-  errcod = ip_string("REFERENCE", &(junk),0);
+  junk = options.get_str("REFERENCE");
   /* if no reference is given, assume rhf */
-  if (errcod != IPE_OK) {
-    params.ref = 0;
+  if(junk == "RHF") params.ref = 0;
+  else if(junk == "ROHF" && 
+    params.wfn == "MP2" || params.wfn == "CCSD_T" ||
+    params.wfn == "CC3" || params.wfn == "EOM_CC3" ||
+    params.wfn == "CC2" || params.wfn == "EOM_CC2") {
+    params.ref = 2;
+    params.semicanonical = 1;
   }
-  else {
-    if(!strcmp(junk, "RHF")) params.ref = 0;
-    else if(!strcmp(junk,"ROHF") && (!strcmp(params.wfn,"MP2") || !strcmp(params.wfn,"CCSD_T") ||
-				     !strcmp(params.wfn, "CC3") || !strcmp(params.wfn,"EOM_CC3") ||
-				     !strcmp(params.wfn, "CC2") || !strcmp(params.wfn,"EOM_CC2"))) {
-      params.ref = 2;
-      params.semicanonical = 1;
-    }
-    else if(!strcmp(junk, "ROHF")) params.ref = 1;
-    else if(!strcmp(junk, "UHF")) params.ref = 2;
-    else { 
-      printf("Invalid value of input keyword REFERENCE: %s\n", junk);
-      exit(PSI_RETURN_FAILURE); 
-    }
-    free(junk);
-  }
+  else if(junk == "ROHF") params.ref = 1;
+  else if(junk == "UHF" ) params.ref = 2;
+  else  
+   throw PsiException("Invalid value of input keyword REFERENCE", __FILE__, __LINE__);
 
-  errcod = ip_string("ANALYZE", &(junk),0);
-  /* if no analyze parameter assume canonical */
-  if (errcod != IPE_OK) {
-    params.analyze = 0;
-  }
-  else {
-    if(!strcmp(junk, "CANONICAL")) params.analyze = 2;
-    else if(!strcmp(junk, "LOCAL")) params.analyze = 1;
-    else {
-      printf("Invalid value of input keyword ANALYZE: %s\n", junk);
-      exit(PSI_RETURN_FAILURE);
-    }
-    free(junk);
-  }
+  params.analyze = options.get_bool("ANALYZE");
 
   params.dertype = 0;
-  if(ip_exist("DERTYPE",0)) {
-    errcod = ip_string("DERTYPE", &(junk),0);
-    if(errcod != IPE_OK) params.dertype = 0;
-    else if(!strcmp(junk,"NONE")) params.dertype = 0;
-    else if(!strcmp(junk,"FIRST")) params.dertype = 1;
-    else if(!strcmp(junk,"RESPONSE")) params.dertype = 3; /* linear response */
-    else {
-      printf("Invalid value of input keyword DERTYPE: %s\n", junk);
-      exit(PSI_RETURN_FAILURE); 
-    }
-    free(junk);
-  }
+  junk = options.get_str("DERTYPE")
+  if(junk == "NONE") params.dertype = 0;
+  else if(junk == "FIRST") params.dertype = 1;
+  else if(junk == "RESPONSE") params.dertype = 3; /* linear response */
+  else 
+   throw PsiException("Invalid value of input keyword DERTYPE", __FILE__, __LINE__);
 
-  params.print = 0;
-  errcod = ip_data("PRINT", "%d", &(params.print),0);
-  params.maxiter = 50;
-  errcod = ip_data("MAXITER","%d",&(params.maxiter),0);
-  params.convergence = 1e-7;
-  errcod = ip_data("CONVERGENCE","%d",&(iconv),0);
-  if(errcod == IPE_OK) params.convergence = 1.0*pow(10.0,(double) -iconv);
-  params.restart = 1;
-  errcod = ip_boolean("RESTART", &(params.restart),0);
+  params.print = options.get_int("PRINT");
+  params.maxiter = options.get_int("MAXITER");
+  iconv = options.get_int("CONVERGENCE");
+  params.convergence = 1.0*pow(10.0,(double) -iconv);
+  params.restart = options.get_bool("RESTART");
   /* If the MO orbital phases are screwed up, don't restart */
   if(!moinfo.phase) params.restart = 0;
   /* BUT, the user can force an override of the phase problem */
-  forceit = 0;
-  errcod = ip_boolean("FORCE_RESTART", &forceit,0);
+  forceit = options.get_bool("FORCE_RESTART");
   if(forceit) params.restart = 1;
 
   fndcor(&(params.memory),infile,outfile);
 
-  if(ip_exist("AO_BASIS",0)) {
-    errcod = ip_string("AO_BASIS", &(params.aobasis),0);
-  }
-  else params.aobasis = strdup("NONE");
-  if(strcmp(params.aobasis,"DISK") && strcmp(params.aobasis,"DIRECT") &&
-     strcmp(params.aobasis,"NONE")) {
-    fprintf(outfile, "Error in input: invalid AO_BASIS = %s\n",
-	    params.aobasis);
-    exit(PSI_RETURN_FAILURE);
-  }
+  params.aobasis = options.get_str("AO_BASIS";)
 
-  params.cachelev = 2;
-  errcod = ip_data("CACHELEV", "%d", &(params.cachelev),0);
+//  if(strcmp(params.aobasis,"DISK") && strcmp(params.aobasis,"DIRECT") &&
+//     strcmp(params.aobasis,"NONE")) 
+//   throw PsiException("Error in input: invalid AO_BASIS", __FILE__, __LINE__);
+  
+
+  params.cachelev = options.get_int("CACHELEV");
 
   params.cachetype = 1;
-  errcod = ip_string("CACHETYPE", &(cachetype),0);
-  if(cachetype != NULL && strlen(cachetype)) {
-    if(!strcmp(cachetype,"LOW")) params.cachetype = 1;
-    else if(!strcmp(cachetype,"LRU")) params.cachetype = 0;
-    else {
-      fprintf(outfile, "Error in input: invalid CACHETYPE = %s\n",
-	      cachetype);
-      exit(PSI_RETURN_FAILURE);
-    }
-    free(cachetype);
-  }
-  if(params.ref == 2) /* No LOW cacheing yet for UHF references */
+  cachetype = options.get_str("CACHETYPE");
+  if(cachetype == "LOW") params.cachetype = 1;
+  else if(cachetype == "LRU") params.cachetype = 0;
+  else 
+    throw PsiException("Error in input: invalid CACHETYPE", __FILE__, __LINE__);
+ 
+
+ if(params.ref == 2) /* No LOW cacheing yet for UHF references */
     params.cachetype = 0;
 
-  params.nthreads = 1;
-  errcod = ip_data("NTHREADS","%d",&(params.nthreads),0);
+  params.nthreads = options.get_int("NTHREADS");
+  params.diis = options.get_bool("DIIS");
+  params.t2_coupled = options.get_bool("T2_COUPLED");
+  params.prop = options.get_str("PROPERTY");
+  params.abcd = options.get_str("ABCD");
+  params.local = options.get_bool("LOCAL");
+  local.cutoff = options.get_double("LOCAL_CUTOFF");
+  params.local_mos = options.get_bool("LOCAL_MOS");
+  local.method = options.get_cstr("LOCAL_METHOD");
+  local.weakp = options.get_cstr("LOCAL_WEAKP");
 
-  params.diis = 1;
-  errcod = ip_boolean("DIIS", &(params.diis),0);
+  local.filter_singles = options.get_bool("LOCAL_FILTER_SINGLES");
+  if(params.dertype == 3) local.filter_singles = 0;
 
-  params.t2_coupled = 0;
-  errcod = ip_boolean("T2_COUPLED", &(params.t2_coupled),0);
+  local.cphf_cutoff = options.get_double("LOCAL_CPHF_CUTOFF");
+  local.freeze_core = options.get_bool("FREEZE_CORE");
 
-  if(ip_exist("PROPERTY",0)) {
-    errcod = ip_string("PROPERTY", &(params.prop), 0);
-    if(strcmp(params.prop,"POLARIZABILITY") && strcmp(params.prop,"ROTATION") && 
-       strcmp(params.prop,"ALL") && strcmp(params.prop,"MAGNETIZABILITY")
-       && strcmp(params.prop, "ROA")) {
-      fprintf(outfile, "Invalid choice of response property: %s\n", params.prop);
-      exit(PSI_RETURN_FAILURE);
-    }
-  }
-  else params.prop = strdup("POLARIZABILITY");
-
-  if(ip_exist("ABCD",0)) {
-    errcod = ip_string("ABCD", &(params.abcd), 0);
-    if(strcmp(params.abcd,"NEW") && strcmp(params.abcd,"OLD")) {
-      fprintf(outfile, "Invalid ABCD algorithm: %s\n", params.abcd);
-      exit(PSI_RETURN_FAILURE);
-    }
-  }
-  else params.abcd = strdup("NEW");
-
-  params.local = 0;
-  errcod = ip_boolean("LOCAL", &(params.local),0);
-  local.cutoff = 0.02;
-  errcod = ip_data("LOCAL_CUTOFF", "%lf", &(local.cutoff), 0);
-  params.local_mos = 0;
-  errcod = ip_boolean("LOCAL_MOS", &(params.local_mos),0);
-
-  if(ip_exist("LOCAL_METHOD",0)) {
-    errcod = ip_string("LOCAL_METHOD", &(local.method), 0);
-    if(strcmp(local.method,"AOBASIS") && strcmp(local.method,"WERNER")) {
-      fprintf(outfile, "Invalid local correlation method: %s\n", local.method);
-      exit(PSI_RETURN_FAILURE);
-    }
-  }
-  else if(params.local) {
-    local.method = (char *) malloc(7 * sizeof(char));
-    sprintf(local.method, "%s", "WERNER");
-  }
-
-  if(ip_exist("LOCAL_WEAKP",0)) {
-    errcod = ip_string("LOCAL_WEAKP", &(local.weakp), 0);
-    if(strcmp(local.weakp,"MP2") && strcmp(local.weakp,"NEGLECT") && strcmp(local.weakp,"NONE")) {
-      fprintf(outfile, "Invalid method for treating local pairs: %s\n", local.weakp);
-      exit(PSI_RETURN_FAILURE);
-    }
-  }
-  else if(params.local) {
-    local.weakp = (char *) malloc(4 * sizeof(char));
-    sprintf(local.weakp, "%s", "NONE");
-  }
-
-  if(params.dertype == 3)
-    local.filter_singles = 0;
-  else
-    local.filter_singles = 1;
-  ip_boolean("LOCAL_FILTER_SINGLES", &(local.filter_singles), 0);
-
-  local.cphf_cutoff = 0.10;
-  ip_data("LOCAL_CPHF_CUTOFF", "%lf", &(local.cphf_cutoff), 0);
-
-  local.freeze_core = NULL;
-  ip_string("FREEZE_CORE", &local.freeze_core, 0);
-  if(local.freeze_core == NULL) local.freeze_core = strdup("FALSE");
-
-  if(ip_exist("LOCAL_PAIRDEF",0)){
-    errcod = ip_string("LOCAL_PAIRDEF", &(local.pairdef), 0);
-    if(strcmp(local.pairdef,"BP") && strcmp(local.pairdef,"RESPONSE")) {
-      fprintf(outfile, "Invalid keyword for strong/weak pair definition: %s\n", local.pairdef);
-      exit(PSI_RETURN_FAILURE);
-    }
-  }
-  else if(params.local && params.dertype == 3)
+  local.pairdef = options.get_cstr("LOCAL_PAIRDEF");
+  if(params.local && params.dertype == 3)
     local.pairdef = strdup("RESPONSE");
   else if(params.local)
     local.pairdef = strdup("BP");
 
-  params.num_amps = 10;
-  if(ip_exist("NUM_AMPS",0)) {
-    errcod = ip_data("NUM_AMPS", "%d", &(params.num_amps), 0);
-  }
+  params.num_amps = options.get_int("NUM_AMPS");
+  iconv = options.get_int("BRUECKNER_CONV");
+  params.bconv = 1.0*pow(10.0,(double) -iconv);
 
-  params.bconv = 1e-5;
-  errcod = ip_data("BRUECKNER_CONV", "%d", &(iconv), 0);
-  if(errcod == IPE_OK) params.bconv = 1.0*pow(10.0,(double) -iconv);
-
-  params.print_mp2_amps = 0;
-  errcod = ip_boolean("PRINT_MP2_AMPS", &(params.print_mp2_amps), 0);
-
-  params.print_pair_energies = 0;
-  errcod = ip_boolean("PRINT_PAIR_ENERGIES", &(params.print_pair_energies), 0);
-
-  params.spinadapt_energies = 0;
-  errcod = ip_boolean("SPINADAPT_ENERGIES", &(params.spinadapt_energies), 0);
-
-  params.t3_Ws_incore = 0;
-  errcod = ip_boolean("T3_WS_INCORE", &(params.t3_Ws_incore),0);
+  params.print_mp2_amps = options.get_bool("PRINT_MP2_AMPS");
+  params.print_pair_energies = options.get_bool("PRINT_PAIR_ENERGIES");
+  params.spinadapt_energies = options.get_bool("SPINADAPT_ENERGIES");
+  params.t3_Ws_incore = options.get_bool("T3_WS_INCORE");
 
   /* get parameters related to SCS-MP2 or SCS-N-MP2 */
   /* see papers by S. Grimme or J. Platz */
-  params.scs = 0;
-  params.scsmp2_scale_os = 6.0/5.0;
-  params.scsmp2_scale_ss = 1.0/3.0;
-  errcod = ip_boolean("SCS_N_MP2",&(params.scs),0);
-  if (params.scs == 1) {
-    params.scsmp2_scale_os = 0.0;
-    params.scsmp2_scale_ss = 1.76;
-  }
-  errcod = ip_boolean("SCS",&(params.scs),0);
-  if (params.scs == 1) {
-      errcod = ip_data("MP2_SCALE_OS","%lf",&(params.scsmp2_scale_os),0);
-      errcod = ip_data("MP2_SCALE_SS","%lf",&(params.scsmp2_scale_ss),0);
-  }
-
+  params.scsn = options.get_bool("SCSN_MP2");
+  params.scs = options.get_bool("SCS_MP2");
+  params.scscc = options.get_bool("SCS_CCSD");
+  params.scsmp2_scale_os = options.get_double("MP2_SCALE_OS");
+  params.scsmp2_scale_ss = options.get_double("MP2_SCALE_SS");
   /* see paper by T. Takatani*/
-  params.scs = 0;
-  params.scscc_scale_os = 1.27;
-  params.scscc_scale_ss = 1.13;
-  errcod = ip_boolean("SCS",&(params.scs),0);
-  if (params.scs == 1) {
-      errcod = ip_data("CC_SCALE_OS","%lf",&(params.scscc_scale_os),0);
-      errcod = ip_data("CC_SCALE_SS","%lf",&(params.scscc_scale_ss),0);
-  }
+  params.scscc_scale_os = options.get_double("CC_SCALE_OS");
+  params.scscc_scale_ss = options.get_double("CC_SCALE_SS");
 
-  
+  if (options["MP2_SCALE_OS"].has_changed() || options["MP2_SCALE_SS"].has_changed()) {
+    params.scs = 1;
+    }
+
+  if (options["CC_SCALE_OS"].has_changed() || options["CC_SCALE_SS"].has_changed()) {
+    params.scscc = 1;
+    }
+
+
   fprintf(outfile, "\n\tInput parameters:\n");
   fprintf(outfile, "\t-----------------\n");
   fprintf(outfile, "\tWave function   =   %6s\n", params.wfn);
@@ -310,7 +182,7 @@ void get_params()
     fprintf(outfile, "\tSpinadapt Ener. =     %s\n",  params.spinadapt_energies ? "Yes" : "No" );
   fprintf(outfile, "\tLocal CC        =     %s\n", params.local ? "Yes" : "No");
 
-  if ( !strcmp(params.wfn,"CC3") || !strcmp(params.wfn,"EOM_CC3") )
+  if ( params.wfn == "CC3" || params.wfn == "EOM_CC3") 
     fprintf(outfile, "\tT3 Ws incore    =     %s\n", params.t3_Ws_incore ? "Yes" : "No");
 
   if(params.local) {
@@ -321,11 +193,21 @@ void get_params()
     fprintf(outfile, "\tLocal pairs       =     %s\n", local.pairdef);
     fprintf(outfile, "\tLocal CPHF cutoff =     %3.1e\n", local.cphf_cutoff);
   }
-  fprintf(outfile, "\tSCS             =     %s\n", (params.scs == 1) ? "True" : "False");
-  fprintf(outfile, "\tMP2_SCALE_OS    =     %.6f\n",params.scsmp2_scale_os);
-  fprintf(outfile, "\tMP2_SCALE_SS    =     %.6f\n",params.scsmp2_scale_ss);
-  fprintf(outfile, "\tCC_SCALE_OS     =     %.6f\n",params.scscc_scale_os);
-  fprintf(outfile, "\tCC_SCALE_SS     =     %.6f\n",params.scscc_scale_ss);
+  fprintf(outfile, "\tSCS-MP2         =     %s\n", (params.scs == 1) ? "True" : "False");
+  fprintf(outfile, "\tSCSN-MP2        =     %s\n", (params.scsn == 1) ? "True" : "False");
+  fprintf(outfile, "\tSCS-CCSD        =     %s\n", (params.scscc == 1) ? "True" : "False");
+  if (params.scs) {
+    fprintf(outfile, "\tSCS_MP2_SCALE_OS =     %.2f\n",params.scsmp2_scale_os);
+    fprintf(outfile, "\tSCS_MP2_SCALE_SS =     %.2f\n",params.scsmp2_scale_ss);
+  }
+  if (params.scsn) {
+    fprintf(outfile, "\tSCSN_MP2_SCALE_OS =     %.2f\n",0.0);
+    fprintf(outfile, "\tSCSN_MP2_SCALE_SS =     %.2f\n",1.76);
+  }
+  if (params.scscc) {
+    fprintf(outfile, "\tCC_SCALE_OS     =     %.2f\n",params.scscc_scale_os);
+    fprintf(outfile, "\tCC_SCALE_SS     =     %.2f\n",params.scscc_scale_ss);
+  }
 
   fprintf(outfile, "\n");
 

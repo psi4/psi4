@@ -97,9 +97,9 @@ void local_done(void);
 
 }} //namespace psi::ccenergy
 
-using namespace psi::ccenergy;
+namespace psi { namespace ccenergy {
 
-int main(int argc, char *argv[])
+int ccenergy(Options &options, int argc, char *argv[])
 {
   int done=0, brueckner_done=0;
   int h, i, j, a, b, row, col, natom;
@@ -337,12 +337,20 @@ int main(int argc, char *argv[])
   fprintf(outfile, "\tSCF energy       (chkpt)              = %20.15f\n", moinfo.escf);
   fprintf(outfile, "\tReference energy (file100)            = %20.15f\n", moinfo.eref);
   if(params.ref == 0 || params.ref == 2) {
-    fprintf(outfile, "\n\tScaled_OS MP2 correlation energy      = %20.15f\n", moinfo.escsmp2_os);
-    fprintf(outfile, "\tScaled_SS MP2 correlation energy      = %20.15f\n", moinfo.escsmp2_ss);
-    fprintf(outfile, "\tSCS-MP2 correlation energy            = %20.15f\n", moinfo.escsmp2_os 
-          + moinfo.escsmp2_ss);
+    if (params.scs) {
+    fprintf(outfile, "\n\tOS SCS-MP2 correlation energy      = %20.15f\n", moinfo.emp2_os*params.scsmp2_scale_os);
+    fprintf(outfile, "\tSS SCS-MP2 correlation energy      = %20.15f\n", moinfo.emp2_ss*params.scsmp2_scale_ss);
+    fprintf(outfile, "\tSCS-MP2 correlation energy            = %20.15f\n", moinfo.emp2_os*params.scsmp2_scale_os
+          + moinfo.emp2_ss*params.scsmp2_scale_ss);
     fprintf(outfile, "      * SCS-MP2 total energy                  = %20.15f\n", moinfo.eref 
-          + moinfo.escsmp2_os + moinfo.escsmp2_ss);
+          + moinfo.emp2_os*params.scsmp2_scale_os + moinfo.emp2_ss*params.scsmp2_scale_ss);
+    }
+    if (params.scsn) {
+    fprintf(outfile, "\n\tOS SCSN-MP2 correlation energy      = %20.15f\n", 0.0);
+    fprintf(outfile, "\tSS SCSN-MP2 correlation energy      = %20.15f\n", moinfo.emp2_ss*1.76);
+    fprintf(outfile, "\tSCSN-MP2 correlation energy            = %20.15f\n", moinfo.emp2_ss*1.76);
+    fprintf(outfile, "      * SCSN-MP2 total energy                  = %20.15f\n", moinfo.eref + moinfo.emp2_ss*1.76);
+    }
 
     fprintf(outfile, "\n\tOpposite-spin MP2 correlation energy  = %20.15f\n", moinfo.emp2_os);
     fprintf(outfile, "\tSame-spin MP2 correlation energy      = %20.15f\n", moinfo.emp2_ss);
@@ -361,11 +369,14 @@ int main(int argc, char *argv[])
 	      moinfo.eref + moinfo.ecc + local.weak_pair_energy);
   }
   else {
-    fprintf(outfile, "\n\tScaled_OS CCSD correlation energy     = %20.15f\n", moinfo.escscc_os);
-    fprintf(outfile, "\tScaled_SS CCSD correlation energy     = %20.15f\n", moinfo.escscc_ss);
-    fprintf(outfile, "\tSCS-CCSD correlation energy           = %20.15f\n", moinfo.escscc_os + moinfo.escscc_ss);
-    fprintf(outfile, "      * SCS-CCSD total energy                 = %20.15f\n", moinfo.eref 
-          + moinfo.escscc_os + moinfo.escscc_ss);
+    if (params.scscc) {
+    fprintf(outfile, "\n\tOS SCS-CCSD correlation energy      = %20.15f\n", moinfo.ecc_os*params.scscc_scale_os);
+    fprintf(outfile, "\tSS SCS-CCSD correlation energy      = %20.15f\n", moinfo.ecc_ss*params.scscc_scale_ss);
+    fprintf(outfile, "\tSCS-CCSD correlation energy            = %20.15f\n", moinfo.ecc_os*params.scscc_scale_os
+          + moinfo.ecc_ss*params.scscc_scale_ss);
+    fprintf(outfile, "      * SCS-CCSD total energy                  = %20.15f\n", moinfo.eref
+          + moinfo.ecc_os*params.scscc_scale_os + moinfo.ecc_ss*params.scscc_scale_ss);
+    }
 
     fprintf(outfile, "\n\tOpposite-spin CCSD correlation energy = %20.15f\n", moinfo.ecc_os);
     fprintf(outfile, "\tSame-spin CCSD correlation energy     = %20.15f\n", moinfo.ecc_ss);
@@ -454,17 +465,16 @@ int main(int argc, char *argv[])
   else exit(PSI_RETURN_SUCCESS);
 }
 
-extern "C" { const char *gprgid() { const char *prgid = "CCENERGY"; return(prgid); } }
+}} //namespace psi::ccenergy
+
 
 namespace psi { namespace ccenergy {
 
 void init_io(int argc, char *argv[])
 {
   int i, num_unparsed;
-  char *progid, *argv_unparsed[100];
+  char *argv_unparsed[100];
 
-  progid = (char *) malloc(strlen(gprgid())+2);
-  sprintf(progid, ":%s",gprgid());
 
   params.just_energy = 0;
   params.just_residuals = 0;
@@ -482,13 +492,8 @@ void init_io(int argc, char *argv[])
     }
   }
 
-  psi_start(&infile,&outfile,&psi_file_prefix,num_unparsed, argv_unparsed, 0);
-  ip_cwk_add(":INPUT");
-  ip_cwk_add(progid);
-  free(progid);
-  tstart(outfile);
+  tstart();
 
-  psio_init(); psio_ipv1_config();
   for(i=CC_MIN; i <= CC_MAX; i++) psio_open(i,1);
 }
 
@@ -507,10 +512,8 @@ void exit_io(void)
   for(i=CC_MIN; i < CC_TMP; i++) psio_close(i,1);
   for(i=CC_TMP; i <= CC_TMP11; i++) psio_close(i,0); /* delete CC_TMP files */
   for(i=CC_TMP11+1; i <= CC_MAX; i++) psio_close(i,1);
-  psio_done();
-  tstop(outfile);
+  tstop();
 
-  psi_stop(infile,outfile,psi_file_prefix);
 }
 
 void memchk(void)

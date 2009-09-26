@@ -71,15 +71,11 @@ struct MOInfo {
   double emp2;           /* MP2 energy */
   double emp2_ss;        /* Same-spin MP2 correlation energy*/
   double emp2_os;        /* Opposite-spin MP2 correlation energy*/
-  double escsmp2_ss;     /* Scaled-SS MP2 correlation energy*/
-  double escsmp2_os;     /* Scaled-OS MP2 correlation energy*/
   double escf;           /* SCF energy (from chkpt) */
   double eref;           /* Reference energy (file100) */
   double ecc;            /* Current coupled cluster correlation energy */
   double ecc_ss;	 /* Same-spin coupled cluster correlation energy*/
   double ecc_os;         /* Opposite-spin coupled cluster energy*/
-  double escscc_ss;      /* Scaled-SS coupled cluster correlation energy*/
-  double escscc_os;      /* Scaled-OS coupled cluster energy*/
   double t1diag;         /* Standard open- or closed-shell T1 diagnostic */
   double d1diag;         /* Janssen and Nielsen's D1 Diagnostic */
   double new_d1diag;     /* Lee's modified D1 Diagnostic */
