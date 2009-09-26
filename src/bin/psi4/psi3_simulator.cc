@@ -85,11 +85,10 @@ int psi3_simulator(Options & options, int argc, char *argv[]) {
 
       module.set_prgid("INPUT");
       read_options("INPUT", options);
-      dispatch_table["INPUT"](options, argc, argv);
-      
 
-     // dispatch_table["CINTS"](options, argc, argv);
-     // dispatch_table["CSCF"](options, argc, argv);
+      dispatch_table["INPUT"](options, argc, argv);
+      dispatch_table["CINTS"](options, argc, argv);
+      dispatch_table["CSCF"](options, argc, argv);
   }
   else {
     fprintf(outfile,"Unknown PSI4 method\n");
