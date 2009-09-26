@@ -48,7 +48,7 @@ void cphf_B(const char *);
 void local_polar(const char*, int **, int *, int, int *, int *);
 void local_magnetic(const char*, int **, int *, int, int *, int *);
 
-void local_init(void)
+void local_init(Options & options)
 {
   int i, j, k, ij, stat, a, b, l, I, L;
   int nmo, nso, nocc, nocc_all, nvir, noei, nirreps, nfzc;

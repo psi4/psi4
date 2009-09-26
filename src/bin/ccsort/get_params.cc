@@ -19,7 +19,7 @@
 
 namespace psi { namespace ccsort {
 
-void get_params()
+void get_params(Options & options)
 {
   int errcod, tol, count, i;
   int *mu_irreps;

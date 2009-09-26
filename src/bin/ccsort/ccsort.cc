@@ -13,6 +13,7 @@
 #include <libdpd/dpd.h>
 #include <libpsio/psio.h>
 #include <libqt/qt.h>
+#include <liboptions/liboptions.h>
 #include <psifiles.h>
 #include "MOInfo.h"
 #include "Params.h"
@@ -26,7 +27,7 @@ namespace psi { namespace ccsort {
 void init_io(int argc, char *argv[]);
 void init_ioff(void);
 void title(void);
-void get_params(void);
+void get_params(Options & options);
 void get_moinfo(void);
 void sort_oei(void);
 void sort_tei(void);
@@ -47,11 +48,11 @@ int **cacheprep_uhf(int level, int *cachefiles);
 int **cacheprep_rhf(int level, int *cachefiles);
 void cachedone_uhf(int **cachelist);
 void cachedone_rhf(int **cachelist);
-void local_init(void);
+void local_init(Options & options);
 void local_done(void);
 void cc_memcheck(void);
 
-int ccsort(Options *options, int argc, char *argv[])
+int ccsort(Options &options, int argc, char *argv[])
 {
   int i;
   int **cachelist, *cachefiles;
@@ -66,7 +67,7 @@ int ccsort(Options *options, int argc, char *argv[])
 
   timer_init();
 
-  get_params();
+  get_params(options);
   get_moinfo();
 
   cachefiles = init_int_array(PSIO_MAXUNIT);
@@ -108,7 +109,7 @@ int ccsort(Options *options, int argc, char *argv[])
 
   /* CPHF stuff for local correlation tests */
   if(params.local) {
-    local_init();
+    local_init(options);
     local_done();
   }
 
