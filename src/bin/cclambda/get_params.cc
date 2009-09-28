@@ -192,6 +192,7 @@ void get_params(Options& options)
     }
     else {
 	    states_per_irrep = options.get_int_array("STATES_PER_IRREP");
+    }
     chkpt_close();
 
 	  prop_all = 0;
