@@ -1,4 +1,4 @@
-#include <Molecular_system.h>
+#include <molecular_system.h>
 
 namespace psi {
 

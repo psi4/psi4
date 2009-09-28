@@ -41,7 +41,7 @@ all: default
 # do installations
 #
 
-install: install_inc install_target install_man
+install:: install_inc install_target install_man
 
 install_inc::
 
