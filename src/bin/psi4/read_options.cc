@@ -78,7 +78,7 @@ int read_options(std::string name, Options & options) {
     options.add_int("NUM_THREADS",1);
     options.add_int("CUTOFF",15); // cutoff on integrals
     // scaling for counterfactual fine-structure constant
-    options.add_double("FINE_STRUCTURE_ALPHA", 1.0);
+    options.add_double("FINE_STRUCTURE_ALPHA", 1.0/(_c_au));
 
     options.add_bool("MAKE_ERI", 1);
     options.add_bool("EMPIRICAL_DISPERSION", 0);
