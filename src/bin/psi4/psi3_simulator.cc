@@ -42,7 +42,7 @@ int psi3_simulator(Options & options, int argc, char *argv[]) {
 
   PsiMethod = wfn + dertype;
 
-  fprintf(outfile,"PSI3 simulator method name: %s\n", PsiMethod.c_str());
+  fprintf(outfile,"\tPSI3 simulator method name: %s\n", PsiMethod.c_str());
 
   int ndisp = 1;
   int nopt = 40;
@@ -83,8 +83,6 @@ int psi3_simulator(Options & options, int argc, char *argv[]) {
   stable      = "stable"
   cis         = "cis"
 */
-
-  fprintf(outfile,"quitting now\n");
 
 //  if (PsiMethod == "SCFENERGY") {
 
