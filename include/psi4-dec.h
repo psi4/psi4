@@ -11,14 +11,14 @@ namespace psi {
 
   class Module {
     std::string prgid;
-    size_t memory;
+    long int memory;
 
   public:
     Module(std::string s = "PSI4") { prgid = s; }
     void set_prgid (std::string s) { prgid = s; }
     std::string gprgid(void) const { return prgid; }
-    size_t get_memory(void) const { return memory; }
-    void set_memory(size_t newmem) { memory = newmem; }
+    long int get_memory(void) const { return memory; }
+    void set_memory(long int newmem) { memory = newmem; }
   };
 
   struct ModuleInformation {
