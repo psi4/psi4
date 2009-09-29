@@ -12,9 +12,11 @@
 
 using namespace psi;
 
+namespace psi {
 template <class T>
 static void swap(T& x, T& y) {
     T tmp=x; x = y; y = tmp;
+}
 }
 
 /** Initialize IntegralFactory object given a GaussianBasisSet for each center. */

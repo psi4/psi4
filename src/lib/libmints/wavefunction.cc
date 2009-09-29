@@ -13,9 +13,13 @@
 #include "factory.h"
 #include "wavefunction.h"
 
+#include <psi4-dec.h>
+
 using namespace psi;
 
-extern FILE *infile, *outfile;
+namespace psi {
+extern FILE *infile;
+}
 
 // Globals
 int ioff[MAX_IOFF];

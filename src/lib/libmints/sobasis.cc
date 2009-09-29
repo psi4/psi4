@@ -1,10 +1,9 @@
 #include <cstdio>
 
 #include <libmints/sobasis.h>
+#include <psi4-dec.h>
 
 using namespace psi;
-
-extern FILE *outfile;
 
 SOTransformComponent::SOTransformComponent()
 {
