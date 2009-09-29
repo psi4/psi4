@@ -10,13 +10,12 @@
 #include <cstdio>
 #include <libchkpt/chkpt.hpp>
 
-#include <libutil/ref.h>
 #include <libmints/molecule.h>
 #include <libmints/gshell.h>
 #include <libmints/sobasis.h>
 #include <libmints/integral.h>
 
-extern FILE *outfile;
+#include <psi4-dec.h>
 
 namespace psi {
     

@@ -176,6 +176,7 @@ SimpleMatrix* Molecule::nuclear_repulsion_energy_deriv2()
 			hess->add(iz, jz, -pfac*(3*sz*sz-r2));
 		}
 	}
+	return hess;
 }
 
 void Molecule::translate(const Vector3& r)

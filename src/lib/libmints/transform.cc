@@ -8,9 +8,9 @@
 
 #include <psiconfig.h>
 
-using namespace psi;
+#include <psi4-dec.h>
 
-extern FILE *outfile;
+using namespace psi;
 
 #define parity(m) ((m)%2 ? -1 : 1) // returns (-1)^m
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))

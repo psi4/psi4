@@ -5,10 +5,9 @@
 #include <libmints/wavefunction.h>
 
 #include <psiconfig.h>
+#include <psi4-dec.h>
 
 using namespace psi;
-
-extern FILE *outfile;
 
 GaussianShell::GaussianShell(int ncn, int nprm, double* e, int* am, GaussianType pure,
     double** c, int nc, Vector3& center, int start, PrimitiveType pt):

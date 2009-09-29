@@ -14,8 +14,7 @@
 #include <libutil/ref.h>
 
 #include <libpsio/psio.hpp>
-
-extern FILE *outfile;
+#include <psi4-dec.h>
 
 namespace psi {
 

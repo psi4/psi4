@@ -6,6 +6,8 @@
 #include <libutil/libutil.h>
 #include <liboptions/liboptions.h>
 #include <exception.h>
+#include <libutil/ref.h>
+#include <boost/shared_ptr.hpp>
 
 namespace psi {
 
