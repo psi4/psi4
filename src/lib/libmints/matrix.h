@@ -229,42 +229,7 @@ public:
     void gemm(bool transa, bool transb, double alpha, const Matrix& a, const Matrix& b, double beta);
     /// Diagonalize this places eigvectors and eigvalues must be created by caller.
     void diagonalize(Matrix& eigvectors, Vector& eigvalues);
-    
-    const Matrix operator*(const Matrix& rhs) const {
-        Matrix r(*this);
-        r.zero();
-        r.accumulate_product(this, &rhs);
-        return r;
-    }
-
-    const Matrix operator*(const double rhs) const {
-        Matrix r(*this);
-        r.zero();
-        r.scale(rhs);
-        return r;
-    }
-    
-    const Matrix operator-(const Matrix& rhs) const {
-        Matrix r(*this);
-        r.subtract(&rhs);
-        return r;
-    }
-
-    const Matrix operator+(const Matrix& rhs) const {
-        Matrix r(*this);
-        r.add(&rhs);
-        return r;
-    }
-    
-    Matrix& operator=(const Matrix& rhs) {
-        if (this != &rhs) {
-            this->copy(rhs);
-        }
-        
-        return *this;
-    }
 };
-
 
 //! Simple matrix class. Not symmetry blocked.
 class SimpleMatrix
