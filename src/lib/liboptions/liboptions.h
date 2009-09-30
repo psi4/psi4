@@ -714,7 +714,7 @@ namespace psi {
     void print() {
       std::string list = to_string();
       fprintf(outfile, "\n\n  Options:");
-      fprintf(outfile, "\n  ----------------------------------------------------------------------------");
+      fprintf(outfile, "\n  ----------------------------------------------------------------------------\n");
       fprintf(outfile, "%s\n", list.c_str());
     }
     

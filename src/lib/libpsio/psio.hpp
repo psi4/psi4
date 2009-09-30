@@ -1,10 +1,13 @@
 #ifndef _psi_src_lib_libpsio_psio_hpp_
 #define _psi_src_lib_libpsio_psio_hpp_
 
+#include <boost/shared_ptr.hpp>
 #include <string>
 #include <map>
 
 #include <libpsio/config.h>
+
+using namespace boost;
 
 namespace psi {
   
@@ -157,7 +160,8 @@ namespace psi {
 
   };
   
-  extern int psiopp_ipv1_config(PSIO *psio_obj);
+  int psiopp_ipv1_config(shared_ptr<PSIO> psio_obj);
+  int psiopp_ipv1_config(PSIO *psio_obj);
   extern PSIO* _default_psio_lib_;
 }
 

@@ -2,13 +2,13 @@
 #define psi_include_psi4_dec_h
 
 #include <string>
-#include <libpsio/psio.hpp>
 #include <libutil/libutil.h>
 #include <liboptions/liboptions.h>
 #include <exception.h>
 #include <libutil/ref.h>
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>
+#include <libpsio/psio.hpp>
 
 using namespace boost;
 

@@ -131,6 +131,10 @@ namespace psi {
     return 0;
   }
 
+  int psiopp_ipv1_config(shared_ptr<PSIO> psio_obj) {
+      return psiopp_ipv1_config(psio_obj.get());
+  }
+
   int psio_ipv1_config() {
       return psiopp_ipv1_config(_default_psio_lib_);
   }
