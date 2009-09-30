@@ -18,7 +18,7 @@ namespace psi {
     // Walk through all the options and attempt to read in all the information for it
     // from IPV1.
     for (Options::iterator pos = keyvals_.begin(); pos != keyvals_.end(); ++pos) {
-	try {
+      try {
             // Determine the type of the value
             if (pos->second.type() == "double")
               read_double(pos->second, pos->first);

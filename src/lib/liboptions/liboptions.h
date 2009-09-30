@@ -706,7 +706,7 @@ namespace psi {
     std::string to_string() const {
       std::stringstream str;
       for (const_iterator pos = keyvals_.begin(); pos != keyvals_.end(); ++pos) {
-        str << "  " << std::setw(12) << pos->first << " => " << pos->second.to_string() << std::endl;
+        str << "  " << std::setw(20) << pos->first << " => " << pos->second.to_string() << std::endl;
       }
       return str.str();
     }
