@@ -141,7 +141,7 @@ void print_pair_energies(double* emp2_aa, double* emp2_ab, double* ecc_aa, doubl
       double ecc_ab_tot = 0.0;  
 
       fprintf(outfile, "\tAlpha-alpha pair energies\n");
-      fprintf(outfile, "\t    i       j         MP2             %s\n",params.wfn);
+      fprintf(outfile, "\t    i       j         MP2             %s\n",params.wfn.c_str());
       fprintf(outfile, "\t  -----   -----   ------------   ------------\n");
       if (naa) {
         ij = 0;
@@ -156,7 +156,7 @@ void print_pair_energies(double* emp2_aa, double* emp2_ab, double* ecc_aa, doubl
       fprintf(outfile, "\t      Total       %12.9lf   %12.9lf\n\n", emp2_aa_tot, ecc_aa_tot);
 
       fprintf(outfile, "\tAlpha-beta pair energies\n");
-      fprintf(outfile, "\t    i       j         MP2             %s\n",params.wfn);
+      fprintf(outfile, "\t    i       j         MP2             %s\n",params.wfn.c_str());
       fprintf(outfile, "\t  -----   -----   ------------   ------------\n");
       if (nab) {
         ij = 0;
@@ -179,7 +179,7 @@ void print_pair_energies(double* emp2_aa, double* emp2_ab, double* ecc_aa, doubl
       double ecc_t_tot = 0.0;
 
       fprintf(outfile, "\tSinglet pair energies\n");
-      fprintf(outfile, "\t    i       j         MP2             %s\n",params.wfn);
+      fprintf(outfile, "\t    i       j         MP2             %s\n",params.wfn.c_str());
       fprintf(outfile, "\t  -----   -----   ------------   ------------\n");
       ij = 0;
       for(i=0; i<nocc_act; i++)
@@ -213,7 +213,7 @@ void print_pair_energies(double* emp2_aa, double* emp2_ab, double* ecc_aa, doubl
       fprintf(outfile, "\t      Total       %12.9lf   %12.9lf\n\n", emp2_s_tot, ecc_s_tot);
 
       fprintf(outfile, "\tTriplet pair energies\n");
-      fprintf(outfile, "\t    i       j         MP2             %s\n",params.wfn);
+      fprintf(outfile, "\t    i       j         MP2             %s\n",params.wfn.c_str());
       fprintf(outfile, "\t  -----   -----   ------------   ------------\n");
       if (naa) {
         ij = 0;
