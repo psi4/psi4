@@ -56,6 +56,24 @@ Chkpt::Chkpt(psi::PSIO& psioObject, int status) : psio(&psioObject)
 	}
 }
 
+Chkpt::Chkpt(shared_ptr<PSIO> psioObject, int status) : psio(psioObject.get())
+{
+	char *prefix;
+	psio_tocentry *this_entry;
+	
+	psio->open(PSIF_CHKPT, status);
+
+	if(psio->tocscan(PSIF_CHKPT, "Default prefix") != NULL) {
+		prefix = rd_prefix();
+		set_prefix(prefix);
+		free(prefix);
+	}
+	else {
+		set_prefix("");
+		commit_prefix();  /* assume no default prefix existed in PSIF_CHKPT */
+	}
+}
+
 void
 Chkpt::rehash() {
   psio->rehash(PSIF_CHKPT);
