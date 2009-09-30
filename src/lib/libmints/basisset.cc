@@ -77,10 +77,6 @@ void BasisSet::initialize_shells(shared_ptr<Chkpt> chkpt, std::string& basiskey)
     
     // Retrieve exponents of primitive Gaussians
     double *exponents = chkpt->rd_exps(basiskey.c_str());
-    fprintf(outfile, "Exponents:\n");
-    for (int i=0; i<nprimitives_; i++) {
-      fprintf(outfile, "%f\n", exponents[i]);
-    }
  
     // Retrieve coefficients of primitive Gaussian
     double **ccoeffs = chkpt->rd_contr_full(basiskey.c_str());
