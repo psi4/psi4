@@ -1,10 +1,13 @@
 #ifndef _psi_src_lib_libchkpt_chkpt_hpp_
 #define _psi_src_lib_libchkpt_chkpt_hpp_
 
+#include <boost/shared_ptr.hpp>
 #include <libchkpt/config.h>
 #include <cstdlib>
 #include <strings.h>
 #include <cstring>
+
+using namespace boost;
 
 namespace psi {
 	class PSIO;
@@ -29,6 +32,7 @@ namespace psi {
 		*/
 		Chkpt(PSIO *psioObject, int status);
         Chkpt(PSIO& psioObject, int status);
+        Chkpt(shared_ptr<PSIO> psioObject, int status);
 
 		/*! Destructor. Call PSIO::close to close the checkpoint file.*/
 		~Chkpt();
