@@ -2,6 +2,7 @@
 #include <libciomr/libciomr.h>
 #include <libmints/wavefunction.h>   // for df
 #include <libmints/osrecur.h>
+#include <exception.h>
 
 using namespace psi;
 
@@ -40,11 +41,11 @@ ObaraSaikaTwoCenterMIRecursion::ObaraSaikaTwoCenterMIRecursion(int max_am1, int 
     max_am1_(max_am1), max_am2_(max_am2), max_m_(max_m)
 {
     if (max_am1 < 0)
-        throw std::runtime_error("ERROR: ObaraSaikaTwoCenterMIRecursion -- max_am1 must be nonnegative");
+        throw SanityCheckError("ObaraSaikaTwoCenterMIRecursion -- max_am1 must be nonnegative", __FILE__, __LINE__);
     if (max_am2 < 0)
-        throw std::runtime_error("ERROR: ObaraSaikaTwoCenterMIRecursion -- max_am2 must be nonnegative");
+        throw SanityCheckError("ERROR: ObaraSaikaTwoCenterMIRecursion -- max_am2 must be nonnegative", __FILE__, __LINE__);
     if (max_m > 3)
-        throw std::runtime_error("ERROR: ObaraSaikaTwoCenterMIRecursion -- max_m must be nonnegative and less than 4");
+        throw SanityCheckError("ERROR: ObaraSaikaTwoCenterMIRecursion -- max_m must be nonnegative and less than 4", __FILE__, __LINE__);
 
     x_ = init_box(max_am1+3, max_am2+3, max_m+1);
     y_ = init_box(max_am1+3, max_am2+3, max_m+1);
@@ -61,9 +62,9 @@ ObaraSaikaTwoCenterMIRecursion::~ObaraSaikaTwoCenterMIRecursion()
 void ObaraSaikaTwoCenterMIRecursion::compute(double PA[3], double PB[3], double gamma, int am1, int am2)
 {
     if (am1 < 0 || am1 > max_am1_)
-        throw std::runtime_error("ERROR: ObaraSaikaTwoCenterMIRecursion::compute -- am1 out of bounds");
+        throw SanityCheckError("ERROR: ObaraSaikaTwoCenterMIRecursion::compute -- am1 out of bounds", __FILE__, __LINE__);
     if (am2 < 0 || am2 > max_am2_)
-        throw std::runtime_error("ERROR: ObaraSaikaTwoCenterMIRecursion::compute -- am2 out of bounds");
+        throw SanityCheckError("ERROR: ObaraSaikaTwoCenterMIRecursion::compute -- am2 out of bounds", __FILE__, __LINE__);
 
     int i, j, k;
     double oog = 1.0 / (2.0 * gamma);
@@ -125,9 +126,9 @@ ObaraSaikaTwoCenterRecursion::ObaraSaikaTwoCenterRecursion(int max_am1, int max_
     max_am1_(max_am1), max_am2_(max_am2)
 {
     if (max_am1 < 0)
-        throw std::runtime_error("ERROR: ObaraSaikaTwoCenterRecursion -- max_am1 must be nonnegative");
+        throw SanityCheckError("ERROR: ObaraSaikaTwoCenterRecursion -- max_am1 must be nonnegative", __FILE__, __LINE__);
     if (max_am2 < 0)
-        throw std::runtime_error("ERROR: ObaraSaikaTwoCenterRecursion -- max_am2 must be nonnegative");
+        throw SanityCheckError("ERROR: ObaraSaikaTwoCenterRecursion -- max_am2 must be nonnegative", __FILE__, __LINE__);
 
     x_ = block_matrix(max_am1_+1, max_am2_+1);
     y_ = block_matrix(max_am1_+1, max_am2_+1);
@@ -144,9 +145,9 @@ ObaraSaikaTwoCenterRecursion::~ObaraSaikaTwoCenterRecursion()
 void ObaraSaikaTwoCenterRecursion::compute(double PA[3], double PB[3], double gamma, int am1, int am2)
 {
     if (am1 < 0 || am1 > max_am1_)
-        throw std::runtime_error("ERROR: ObaraSaikaTwoCenterRecursion::compute -- am1 out of bounds");
+        throw SanityCheckError("ERROR: ObaraSaikaTwoCenterRecursion::compute -- am1 out of bounds", __FILE__, __LINE__);
     if (am2 < 0 || am2 > max_am2_)
-        throw std::runtime_error("ERROR: ObaraSaikaTwoCenterRecursion::compute -- am2 out of bounds");
+        throw SanityCheckError("ERROR: ObaraSaikaTwoCenterRecursion::compute -- am2 out of bounds", __FILE__, __LINE__);
 
     int i,j;
     double pp = 1/(2*gamma);
@@ -214,9 +215,9 @@ ObaraSaikaTwoCenterVIRecursion::ObaraSaikaTwoCenterVIRecursion(int max_am1, int 
     max_am1_(max_am1), max_am2_(max_am2)
 {
     if (max_am1 < 0)
-        throw std::runtime_error("ERROR: ObaraSaikaTwoCenterVIRecursion -- max_am1 must be nonnegative");
+        throw SanityCheckError("ERROR: ObaraSaikaTwoCenterVIRecursion -- max_am1 must be nonnegative", __FILE__, __LINE__);
     if (max_am2 < 0)
-        throw std::runtime_error("ERROR: ObaraSaikaTwoCenterVIRecursion -- max_am2 must be nonnegative");
+        throw SanityCheckError("ERROR: ObaraSaikaTwoCenterVIRecursion -- max_am2 must be nonnegative", __FILE__, __LINE__);
 
     size_ = max_am1 > max_am2 ? max_am1 : max_am2;
     size_ += 1;

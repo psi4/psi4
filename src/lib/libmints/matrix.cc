@@ -59,6 +59,20 @@ Matrix::Matrix(const Matrix& c)
     copy_from(c.matrix_);
 }
 
+Matrix::Matrix(shared_ptr<Matrix> c)
+{
+    matrix_ = NULL;
+    nirreps_ = c->nirreps_;
+    rowspi_ = new int[nirreps_];
+    colspi_ = new int[nirreps_];
+    for (int i=0; i<nirreps_; ++i) {
+        rowspi_[i] = c->rowspi_[i];
+        colspi_[i] = c->colspi_[i];
+    }
+    alloc();
+    copy_from(c->matrix_);
+}
+
 Matrix::Matrix(Matrix& c)
 {
     matrix_ = NULL;
@@ -183,6 +197,11 @@ void Matrix::copy(Matrix& cp)
     copy(&cp);
 }
 
+void Matrix::copy(shared_ptr<Matrix> cp)
+{
+    copy(cp.get());
+}
+
 void Matrix::copy(const Matrix& cp)
 {
     copy(const_cast<Matrix&>(cp));
@@ -289,6 +308,11 @@ void Matrix::set(SimpleMatrix *sq)
     set(const_cast<const double**>(sq->matrix_));
 }
 
+void Matrix::set(shared_ptr<SimpleMatrix> sq)
+{
+    set(const_cast<const double**>(sq.get()->matrix_));
+}
+
 void Matrix::set(Vector* vec)
 {
     int h, i, size;
@@ -305,6 +329,11 @@ void Matrix::set(Vector* vec)
 void Matrix::set(Vector& vec)
 {
     set(&vec);
+}
+
+void Matrix::set(shared_ptr<Vector> vec)
+{
+    set(vec.get());
 }
 
 double **Matrix::to_block_matrix() const
@@ -408,6 +437,11 @@ void Matrix::eivprint(Vector& values, FILE *out)
     eivprint(&values, out);
 }
 
+void Matrix::eivprint(shared_ptr<Vector> values, FILE *out)
+{
+    eivprint(values.get(), out);
+}
+
 void Matrix::set_to_identity()
 {
     int h;
@@ -499,6 +533,11 @@ void Matrix::add(const Matrix& plus)
     add(&plus);
 }
 
+void Matrix::add(shared_ptr<Matrix> plus)
+{
+    add(plus.get());
+}
+
 void Matrix::subtract(const Matrix* plus)
 {
     double *lhs, *rhs;
@@ -515,7 +554,17 @@ void Matrix::subtract(const Matrix* plus)
     }
 }
 
+void Matrix::subtract(shared_ptr<Matrix> sub)
+{
+    subtract(sub.get());
+}
+
 void Matrix::accumulate_product(const Matrix* a, const Matrix* b)
+{
+    gemm(false, false, 1.0, a, b, 1.0);
+}
+
+void Matrix::accumulate_product(shared_ptr<Matrix> a, shared_ptr<Matrix> b)
 {
     gemm(false, false, 1.0, a, b, 1.0);
 }
@@ -563,12 +612,22 @@ void Matrix::transform(Matrix* a, Matrix* transformer)
     gemm(true, false, 1.0, transformer, &temp, 0.0);
 }
 
+void Matrix::transform(shared_ptr<Matrix> a, shared_ptr<Matrix> transformer)
+{
+    transform(a.get(), transformer.get());
+}
+
 void Matrix::transform(Matrix* transformer)
 {
     Matrix temp(this);
 
     temp.gemm(false, false, 1.0, this, transformer, 0.0);
     gemm(true, false, 1.0, transformer, &temp, 0.0);
+}
+
+void Matrix::transform(shared_ptr<Matrix> transformer)
+{
+    transform(transformer.get());
 }
 
 void Matrix::back_transform(Matrix* a, Matrix* transformer)
@@ -579,12 +638,22 @@ void Matrix::back_transform(Matrix* a, Matrix* transformer)
     gemm(false, false, 1.0, transformer, &temp, 0.0);
 }
 
+void Matrix::back_transform(shared_ptr<Matrix> a, shared_ptr<Matrix> transformer)
+{
+    back_transform(a.get(), transformer.get());
+}
+
 void Matrix::back_transform(Matrix* transformer)
 {
     Matrix temp(this);
 
     temp.gemm(false, true, 1.0, this, transformer, 0.0);
     gemm(false, false, 1.0, transformer, &temp, 0.0);
+}
+
+void Matrix::back_transform(shared_ptr<Matrix> transformer)
+{
+    back_transform(transformer.get());
 }
 
 void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix* a, const Matrix* b, double beta)
@@ -609,6 +678,11 @@ void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix* a, const
     }
 }
 
+void Matrix::gemm(bool transa, bool transb, double alpha, shared_ptr<Matrix> a, shared_ptr<Matrix> b, double beta)
+{
+    gemm(transa, transb, alpha, a.get(), b.get(), beta);
+}
+
 double Matrix::vector_dot(Matrix* rhs)
 {
     double sum = 0.0;
@@ -624,6 +698,11 @@ double Matrix::vector_dot(Matrix* rhs)
     return sum;
 }
 
+double Matrix::vector_dot(shared_ptr<Matrix> rhs)
+{
+    return vector_dot(rhs.get());
+}
+
 void Matrix::diagonalize(Matrix* eigvectors, Vector* eigvalues)
 {
     int h;
@@ -632,6 +711,11 @@ void Matrix::diagonalize(Matrix* eigvectors, Vector* eigvalues)
             sq_rsp(rowspi_[h], colspi_[h], matrix_[h], eigvalues->vector_[h], 1, eigvectors->matrix_[h], 1.0e-14);
         }
     }
+}
+
+void Matrix::diagonalize(shared_ptr<Matrix> eigvectors, shared_ptr<Vector> eigvalues)
+{
+    diagonalize(eigvectors.get(), eigvalues.get());
 }
 
 // Reference versions of the above functions:
@@ -837,6 +921,23 @@ bool Matrix::load(psi::PSIO* psio, unsigned int fileno, char *tocentry, int nso)
     return true;
 }
 
+bool Matrix::load(shared_ptr<psi::PSIO> psio, unsigned int fileno, char *tocentry, int nso)
+{
+    double *integrals = init_array(ioff[nso]);
+
+    // If psi fails to read in the data this will abort out.
+    if (tocentry != NULL)
+        psi::IWL::read_one(psio.get(), fileno, tocentry, integrals, ioff[nso], 0, 0, outfile);
+    else
+        psi::IWL::read_one(psio.get(), fileno, const_cast<char*>(name_.c_str()), integrals, ioff[nso], 0, 0, outfile);
+
+    set(integrals);
+
+    ::free(integrals);
+
+    return true;
+}
+
 void Matrix::save(psi::PSIO* psio, unsigned int fileno, bool saveSubBlocks)
 {
     // Check to see if the file is open
@@ -875,6 +976,11 @@ void Matrix::save(psi::PSIO* psio, unsigned int fileno, bool saveSubBlocks)
         psio->close(fileno, 1);     // Close and keep
 }
 
+void Matrix::save(shared_ptr<psi::PSIO> psio, unsigned int fileno, bool saveSubBlocks)
+{
+    save(psio.get(), fileno, saveSubBlocks);
+}
+
 //
 // SimpleMatrix
 //
@@ -899,6 +1005,15 @@ SimpleMatrix::SimpleMatrix(const SimpleMatrix& c) : matrix_(0)
 }
 
 SimpleMatrix::SimpleMatrix(const SimpleMatrix* c) : matrix_(0)
+{
+    rows_ = c->rows_;
+    cols_ = c->cols_;
+    name_ = c->name_ + " Copy";
+    alloc();
+    copy_from(c->matrix_);
+}
+
+SimpleMatrix::SimpleMatrix(shared_ptr<SimpleMatrix> c) : matrix_(0)
 {
     rows_ = c->rows_;
     cols_ = c->cols_;
@@ -976,6 +1091,11 @@ void SimpleMatrix::copy(SimpleMatrix* cp)
     memcpy(&(matrix_[0][0]), &(cp->matrix_[0][0]), rows_ * cols_ * sizeof(double));
 }
 
+void SimpleMatrix::copy(shared_ptr<SimpleMatrix> cp)
+{
+    copy(cp.get());
+}
+
 void SimpleMatrix::alloc()
 {
     if (matrix_)
@@ -1031,6 +1151,11 @@ void SimpleMatrix::set(SimpleVector* vec)
         matrix_[i][i] = vec->vector_[i];
 }
 
+void SimpleMatrix::set(shared_ptr<SimpleVector> vec)
+{
+    set(vec.get());
+}
+
 double ** SimpleMatrix::to_block_matrix() const
 {
     double **temp = SimpleMatrix::matrix(rows_, cols_);
@@ -1056,6 +1181,11 @@ void SimpleMatrix::eivprint(SimpleVector *values, FILE *out)
 
     eivout(matrix_, values->vector_, rows_, cols_, out);
     fprintf(out, "\n");
+}
+
+void SimpleMatrix::eivprint(shared_ptr<SimpleVector> values, FILE *out)
+{
+    eivprint(values.get(), out);
 }
 
 void SimpleMatrix::set_to_identity()
@@ -1112,6 +1242,11 @@ void SimpleMatrix::add(const SimpleMatrix* plus)
     }
 }
 
+void SimpleMatrix::add(shared_ptr<SimpleMatrix> plus)
+{
+    add(plus.get());
+}
+
 void SimpleMatrix::subtract(const SimpleMatrix* plus)
 {
     double *lhs, *rhs;
@@ -1126,9 +1261,19 @@ void SimpleMatrix::subtract(const SimpleMatrix* plus)
     }
 }
 
+void SimpleMatrix::subtract(shared_ptr<SimpleMatrix> sub)
+{
+    subtract(sub.get());
+}
+
 void SimpleMatrix::accumulate_product(const SimpleMatrix* a, const SimpleMatrix* b)
 {
     gemm(false, false, 1.0, a, b, 1.0);
+}
+ 
+void SimpleMatrix::accumulate_product(shared_ptr<SimpleMatrix> a, shared_ptr<SimpleMatrix> b)
+{
+   gemm(false, false, 1.0, a, b, 1.0);
 }
 
 void SimpleMatrix::scale(double a)
@@ -1169,12 +1314,22 @@ void SimpleMatrix::transform(SimpleMatrix* a, SimpleMatrix* transformer)
     gemm(true, false, 1.0, transformer, &temp, 0.0);
 }
 
+void SimpleMatrix::transform(shared_ptr<SimpleMatrix> a, shared_ptr<SimpleMatrix> transformer)
+{
+    transform(a.get(), transformer.get());
+}
+
 void SimpleMatrix::transform(SimpleMatrix* transformer)
 {
     SimpleMatrix temp(this);
 
     temp.gemm(false, false, 1.0, this, transformer, 0.0);
     gemm(true, false, 1.0, transformer, &temp, 0.0);
+}
+
+void SimpleMatrix::transform(shared_ptr<SimpleMatrix> transformer)
+{
+    transform(transformer.get());
 }
 
 void SimpleMatrix::back_transform(SimpleMatrix* a, SimpleMatrix* transformer)
@@ -1185,12 +1340,22 @@ void SimpleMatrix::back_transform(SimpleMatrix* a, SimpleMatrix* transformer)
     gemm(false, false, 1.0, transformer, &temp, 0.0);
 }
 
+void SimpleMatrix::back_transform(shared_ptr<SimpleMatrix> a, shared_ptr<SimpleMatrix> transformer)
+{
+     back_transform(a.get(), transformer.get());
+}
+
 void SimpleMatrix::back_transform(SimpleMatrix* transformer)
 {
     SimpleMatrix temp(this);
 
     temp.gemm(false, true, 1.0, this, transformer, 0.0);
     gemm(false, false, 1.0, transformer, &temp, 0.0);
+}
+
+void SimpleMatrix::back_transform(shared_ptr<SimpleMatrix> transformer)
+{
+    back_transform(transformer.get());
 }
 
 void SimpleMatrix::gemm(bool transa, bool transb, double alpha, const SimpleMatrix* a, const SimpleMatrix* b, double beta)
@@ -1213,6 +1378,11 @@ void SimpleMatrix::gemm(bool transa, bool transb, double alpha, const SimpleMatr
     }
 }
 
+void SimpleMatrix::gemm(bool transa, bool transb, double alpha, shared_ptr<SimpleMatrix> a, shared_ptr<SimpleMatrix> b, double beta)
+{
+    gemm(transa, transb, alpha, a.get(), b.get(), beta);
+}
+
 double SimpleMatrix::vector_dot(SimpleMatrix* rhs)
 {
     double sum = 0.0;
@@ -1225,11 +1395,21 @@ double SimpleMatrix::vector_dot(SimpleMatrix* rhs)
     return sum;
 }
 
+double SimpleMatrix::vector_dot(shared_ptr<SimpleMatrix> rhs)
+{
+    return vector_dot(rhs.get());
+}
+
 void SimpleMatrix::diagonalize(SimpleMatrix* eigvectors, SimpleVector* eigvalues)
 {
     if (rows_) {
         sq_rsp(rows_, cols_, matrix_, eigvalues->vector_, 1, eigvectors->matrix_, 1.0e-14);
     }
+}
+
+void SimpleMatrix::diagonalize(shared_ptr<SimpleMatrix> eigvectors, shared_ptr<SimpleVector> eigvalues)
+{
+    diagonalize(eigvectors.get(), eigvalues.get());
 }
 
 void SimpleMatrix::save(psi::PSIO* psio, unsigned int fileno)
@@ -1251,6 +1431,11 @@ void SimpleMatrix::save(psi::PSIO* psio, unsigned int fileno)
 void SimpleMatrix::save(psi::PSIO& psio, unsigned int fileno)
 {
     save(&psio, fileno);
+}
+
+void SimpleMatrix::save(shared_ptr<psi::PSIO> psio, unsigned int fileno)
+{
+    save(psio.get(), fileno);
 }
 
 void SimpleMatrix::save(const char *filename, bool append, bool saveLowerTriangle)

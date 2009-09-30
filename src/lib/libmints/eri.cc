@@ -7,7 +7,7 @@
 #include <libmints/gshell.h>
 #include <libmints/overlap.h>
 #include <libmints/eri.h>
-#include <libmints//wavefunction.h>
+#include <libmints/wavefunction.h>
 #include <physconst.h>
 #include <exception.h>
 
