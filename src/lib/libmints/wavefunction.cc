@@ -27,19 +27,19 @@ double df[MAX_DF];
 double bc[MAX_BC][MAX_BC];
 double fac[MAX_FAC];
 
-Wavefunction::Wavefunction(PSIO *psio, Chkpt *chkpt) : psio_(*psio), chkpt_(*chkpt)
+Wavefunction::Wavefunction(shared_ptr<PSIO> psio) : psio_(psio)
 {
+    chkpt_ = shared_ptr<Chkpt>(new Chkpt(psio.get(), PSIO_OPEN_OLD));
     common_init();
 }
 
-Wavefunction::Wavefunction(PSIO& psio, Chkpt& chkpt) : psio_(psio), chkpt_(chkpt)
+Wavefunction::Wavefunction(shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) : psio_(psio), chkpt_(chkpt)
 {
     common_init();
 }
 
 Wavefunction::~Wavefunction()
 {
-    delete basisset_;
 }
 
 void Wavefunction::common_init()
@@ -56,7 +56,7 @@ void Wavefunction::common_init()
     factory_.init_with_chkpt(chkpt_);
 
     // Initialize the basis set object
-    basisset_ = new BasisSet(&chkpt_);
+    basisset_ = shared_ptr<BasisSet>(new BasisSet(chkpt_));
     
     // Basis set object has reference to initialized molecule, grab it
     molecule_ = basisset_->molecule();

@@ -44,7 +44,7 @@ class ERI : public TwoBodyInt
     void compute_quartet_deriv1(int, int, int, int);
 public:
     //! Constructor. Use an IntegralFactory to create this object.
-    ERI(IntegralFactory*, BasisSet*, BasisSet*, BasisSet*, BasisSet*, int deriv=0);
+    ERI(shared_ptr<BasisSet>, shared_ptr<BasisSet>, shared_ptr<BasisSet>, shared_ptr<BasisSet>, int deriv=0);
     ~ERI();
     
     /// Compute ERIs between 4 shells. Result is stored in buffer.

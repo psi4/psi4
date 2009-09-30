@@ -20,8 +20,8 @@ static void swap(T& x, T& y) {
 }
 
 /** Initialize IntegralFactory object given a GaussianBasisSet for each center. */
-IntegralFactory::IntegralFactory(BasisSet*bs1, BasisSet*bs2,
-                BasisSet*bs3, BasisSet*bs4)
+IntegralFactory::IntegralFactory(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2,
+                shared_ptr<BasisSet> bs3, shared_ptr<BasisSet> bs4)
 {
     set_basis(bs1, bs2, bs3, bs4);
 }
@@ -31,8 +31,8 @@ IntegralFactory::~IntegralFactory()
     
 }
 
-void IntegralFactory::set_basis(BasisSet*bs1, BasisSet*bs2,
-    BasisSet*bs3, BasisSet*bs4)
+void IntegralFactory::set_basis(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2,
+                shared_ptr<BasisSet> bs3, shared_ptr<BasisSet> bs4)
 {
     bs1_ = bs1;
     bs2_ = bs2;
@@ -40,41 +40,41 @@ void IntegralFactory::set_basis(BasisSet*bs1, BasisSet*bs2,
     bs4_ = bs4;
     
     // Find the max am
-    BasisSet* max12 = bs1_->max_am() > bs2_->max_am() ? bs1_ : bs2_;
-    BasisSet* max34 = bs3_->max_am() > bs4_->max_am() ? bs3_ : bs4_;
-    BasisSet* max1234 = max12->max_am() > max34->max_am() ? max12 : max34;
+    shared_ptr<BasisSet> max12(bs1_->max_am() > bs2_->max_am() ? bs1_ : bs2_);
+    shared_ptr<BasisSet> max34(bs3_->max_am() > bs4_->max_am() ? bs3_ : bs4_);
+    shared_ptr<BasisSet> max1234(max12->max_am() > max34->max_am() ? max12 : max34);
     
     init_spherical_harmonics(max1234->max_am());
 }
 
 OneBodyInt* IntegralFactory::overlap(int deriv)
 {
-    return new OverlapInt((IntegralFactory*)this, bs1_, bs2_, deriv);
+    return new OverlapInt(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
 OneBodyInt* IntegralFactory::kinetic(int deriv)
 {
-    return new KineticInt((IntegralFactory*)this, bs1_, bs2_, deriv);
+    return new KineticInt(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
 OneBodyInt* IntegralFactory::potential(int deriv)
 {
-    return new PotentialInt((IntegralFactory*)this, bs1_, bs2_, deriv);
+    return new PotentialInt(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
 OneBodyInt* IntegralFactory::dipole(int deriv)
 {
-    return new DipoleInt((IntegralFactory*)this, bs1_, bs2_, deriv);
+    return new DipoleInt(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
 OneBodyInt* IntegralFactory::quadrupole()
 {
-    return new QuadrupoleInt((IntegralFactory*)this, bs1_, bs2_);
+    return new QuadrupoleInt(spherical_transforms_, bs1_, bs2_);
 }
 
 TwoBodyInt* IntegralFactory::eri(int deriv)
 {
-    return new ERI((IntegralFactory*)this, bs1_, bs2_, bs3_, bs4_, deriv);
+    return new ERI(bs1_, bs2_, bs3_, bs4_, deriv);
 }
 
 void IntegralFactory::init_spherical_harmonics(int max_am)

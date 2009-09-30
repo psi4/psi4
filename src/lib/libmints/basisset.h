@@ -49,19 +49,19 @@ class BasisSet
     int max_stability_index_;
     //! Unique symmetry orbitals to atomic orbitals.
     double **uso2ao_;
-    SimpleMatrix *simple_mat_uso2ao_;
+    shared_ptr<SimpleMatrix> simple_mat_uso2ao_;
     double **uso2bf_;
-    SimpleMatrix *simple_mat_uso2bf_;
+    shared_ptr<SimpleMatrix> simple_mat_uso2bf_;
     
     //! Does the loaded basis set contain pure angular momentum functions?
     bool puream_;
     
     //! Array of gaussian shells
-    GaussianShell** shells_;
+    std::vector<shared_ptr<GaussianShell> > shells_;
     //! Molecule object.
-    Molecule *molecule_;
+    shared_ptr<Molecule> molecule_;
     //! Symmetry orbital transformation (used in one-electron integrals)
-    SOTransform *sotransform_;
+    shared_ptr<SOTransform> sotransform_;
     //! Spherical transfromation (used in two-electron integrals)
     std::vector<SphericalTransform> sphericaltransforms_;
     
@@ -71,18 +71,13 @@ class BasisSet
     BasisSet& operator=(const BasisSet&);
     
     //! Initialize shells based on information found in checkpoint
-    void initialize_shells(psi::Chkpt* chkpt, std::string& basiskey);
-    
-    //! Initialize shells based on information found in GENBAS file
-    void initialize_shells_via_genbas(std::string& genbas_filename, std::string& genbas_basis);
+    void initialize_shells(shared_ptr<psi::Chkpt> chkpt, std::string& basiskey);
     
 public:
 
     /// Constructor, reads in the basis set from the checkpoint file using basiskey
-    BasisSet(psi::Chkpt* chkpt, std::string basiskey = "");
+    BasisSet(shared_ptr<psi::Chkpt> chkpt, std::string basiskey = "");
     
-    /// Constructor, reads in the basis set from the checkpoint file
-    BasisSet(psi::Chkpt* chkpt, std::string genbas_filename, std::string genbas_basis);
     /// Copy constructor, currently errors if used
     BasisSet(const BasisSet&);
     /// Destructor
@@ -103,7 +98,7 @@ public:
     /// Spherical harmonics?
     bool has_puream() const            { return puream_;      }
     /// Molecule this basis is for
-    Molecule* molecule() const         { return molecule_;    }
+    shared_ptr<Molecule> molecule() const         { return molecule_;    }
     /// Maximum stabilizer index
     int max_stability_index() const    { return max_stability_index_; }
     /// Given a shell what is its first AO function
@@ -111,25 +106,25 @@ public:
     int shell_to_basis_function(int i) const { return shell_first_basis_function_[i]; }
     
     /// Return the si'th Gaussian shell
-    GaussianShell* shell(int si) const;
+    shared_ptr<GaussianShell> shell(int si) const;
     
     /// Returns i'th shell's transform
     SOTransformShell* so_transform(int i) { return sotransform_->aoshell(i); }
     
     /// Returns the transformation object for a given angular momentum. Used in ERIs.
-    SphericalTransform* spherical_transform(int am) { return &sphericaltransforms_[am]; }
+    SphericalTransform& spherical_transform(int am) { return sphericaltransforms_[am]; }
     
     /// Print the basis set
     void print(FILE *out = outfile) const;
     
     /// Returns the uso2ao_ matrix.
-    const SimpleMatrix* uso_to_ao() const { return simple_mat_uso2ao_; }
+    const shared_ptr<SimpleMatrix> uso_to_ao() const { return simple_mat_uso2ao_; }
 
     /// Returns the uso2bf_ matrix.
-    const SimpleMatrix* uso_to_bf() const { return simple_mat_uso2bf_; }
+    const shared_ptr<SimpleMatrix> uso_to_bf() const { return simple_mat_uso2bf_; }
     
     /// Returns an empty basis set object
-    static BasisSet* zero_basis_set();
+    static shared_ptr<BasisSet> zero_basis_set();
 };
 
 }

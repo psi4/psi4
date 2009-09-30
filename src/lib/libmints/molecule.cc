@@ -194,15 +194,14 @@ void Molecule::move_to_com()
     translate(com);
 }
 
-void Molecule::init_with_chkpt(PSIO* psio)
+void Molecule::init_with_chkpt(shared_ptr<PSIO> psio)
 {
     // User sent a psio object. Create a chkpt object based on it.
-    Chkpt* chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
+    shared_ptr<Chkpt> chkpt(new Chkpt(psio.get(), PSIO_OPEN_OLD));
     init_with_chkpt(chkpt);
-    delete chkpt;
 }
 
-void Molecule::init_with_chkpt(Chkpt *chkpt)
+void Molecule::init_with_chkpt(shared_ptr<Chkpt> chkpt)
 {
     int atoms = chkpt->rd_natom();
     double *zvals = chkpt->rd_zvals();

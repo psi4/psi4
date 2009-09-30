@@ -9,10 +9,15 @@
 
 using namespace psi;
 
-GaussianShell::GaussianShell(int ncn, int nprm, double* e, int* am, GaussianType pure,
-    double** c, int nc, Vector3& center, int start, PrimitiveType pt):
-    nprimitives_(nprm), ncontractions_(ncn), nc_(nc), center_(center), start_(start)
+void GaussianShell::init(int ncn, int nprm, double* e, int* am, GaussianType pure,
+    double** c, int nc, Vector3& center, int start, PrimitiveType pt)
 {
+    nprimitives_ = nprm;
+    ncontractions_ = ncn;
+    nc_ = nc;
+    center_ = center;
+    start_ = start;
+
     puream_ = new int[ncontraction()];
     for (int i=0; i<ncontraction(); ++i) {
         puream_[i] = (pure == Pure);

@@ -59,11 +59,12 @@ private:
     static const char *AMTYPES;
 
 public:
-    GaussianShell(int ncn, int nprm, double* e, int* am, GaussianType pure,
-        double** c, int nc, Vector3& center, int start, PrimitiveType pt = GaussianShell::Normalized);
-        
+    GaussianShell() {};
     ~GaussianShell();
     
+    void init(int ncn, int nprm, double* e, int* am, GaussianType pure,
+        double** c, int nc, Vector3& center, int start, PrimitiveType pt = GaussianShell::Normalized);
+
     /// The number of primitive Gaussians
     int nprimitive() const          { return nprimitives_; }
     /// The number of contractions formed from the primitives

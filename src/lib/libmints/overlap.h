@@ -24,13 +24,13 @@ class OverlapInt : public OneBodyInt
     ObaraSaikaTwoCenterRecursion overlap_recur_;
     
     /// Computes the overlap between a given shell pair.
-    void compute_pair(GaussianShell* , GaussianShell*);
-    void compute_pair_deriv1(GaussianShell*, GaussianShell*);
-    void compute_pair_deriv2(GaussianShell*, GaussianShell*);
+    void compute_pair(shared_ptr<GaussianShell> , shared_ptr<GaussianShell>);
+    void compute_pair_deriv1(shared_ptr<GaussianShell>, shared_ptr<GaussianShell>);
+    void compute_pair_deriv2(shared_ptr<GaussianShell>, shared_ptr<GaussianShell>);
     
 public:
     /// Constructor, it assumes you are not computing derivatives by default
-    OverlapInt(IntegralFactory*, BasisSet*, BasisSet*, int deriv=0);
+    OverlapInt(std::vector<SphericalTransform>&, shared_ptr<BasisSet>, shared_ptr<BasisSet>, int deriv=0);
     ~OverlapInt();
     
     /// Compute overlap between 2 shells. Result is stored in buffer.

@@ -10,8 +10,8 @@
 
 using namespace psi;
 
-OverlapInt::OverlapInt(IntegralFactory* integral, BasisSet* bs1, BasisSet* bs2, int deriv) :
-    OneBodyInt(integral, bs1, bs2, deriv), overlap_recur_(bs1->max_am()+deriv, bs2->max_am()+deriv)
+OverlapInt::OverlapInt(std::vector<SphericalTransform>& st, shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2, int deriv) :
+    OneBodyInt(st, bs1, bs2, deriv), overlap_recur_(bs1->max_am()+deriv, bs2->max_am()+deriv)
 {
     int maxam1 = bs1_->max_am();
     int maxam2 = bs2_->max_am();
@@ -42,7 +42,7 @@ void OverlapInt::compute_shell(int sh1, int sh2)
 }
 
 // The engine only supports segmented basis sets
-void OverlapInt::compute_pair(GaussianShell* s1, GaussianShell* s2)
+void OverlapInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2)
 {
     int ao12;
     int am1 = s1->am(0);
@@ -133,7 +133,7 @@ void OverlapInt::compute_shell_deriv1(int sh1, int sh2)
     compute_pair_deriv1(bs1_->shell(sh1), bs2_->shell(sh2));
 }
 
-void OverlapInt::compute_pair_deriv1(GaussianShell* s1, GaussianShell* s2)
+void OverlapInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2)
 {
     int ao12;
     int am1 = s1->am(0);

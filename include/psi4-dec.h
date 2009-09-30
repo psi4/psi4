@@ -8,6 +8,9 @@
 #include <exception.h>
 #include <libutil/ref.h>
 #include <boost/shared_ptr.hpp>
+#include <boost/shared_array.hpp>
+
+using namespace boost;
 
 namespace psi {
 
