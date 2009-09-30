@@ -11,8 +11,8 @@
 using namespace psi;
 
 // Initialize overlap_recur_ to +2 basis set angular momentum
-QuadrupoleInt::QuadrupoleInt(IntegralFactory* integral, BasisSet* bs1, BasisSet* bs2) :
-    OneBodyInt(integral, bs1, bs2), overlap_recur_(bs1->max_am()+2, bs2->max_am()+2)
+QuadrupoleInt::QuadrupoleInt(std::vector<SphericalTransform>& st, shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2) :
+    OneBodyInt(st, bs1, bs2), overlap_recur_(bs1->max_am()+2, bs2->max_am()+2)
 {
     int maxam1 = bs1_->max_am();
     int maxam2 = bs2_->max_am();
@@ -35,7 +35,7 @@ void QuadrupoleInt::compute_shell(int sh1, int sh2)
 }
 
 // The engine only supports segmented basis sets
-void QuadrupoleInt::compute_pair(GaussianShell* s1, GaussianShell* s2)
+void QuadrupoleInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2)
 {
     int ao12;
     int am1 = s1->am(0);
@@ -147,12 +147,12 @@ void QuadrupoleInt::compute_pair(GaussianShell* s1, GaussianShell* s2)
     normalize_am(s1, s2, 6);
 }
 
-void QuadrupoleInt::spherical_transform(GaussianShell* s1, GaussianShell* s2)
+void QuadrupoleInt::spherical_transform(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2)
 {
     do_transform(s1, s2, 6);
 }
 
-void QuadrupoleInt::compute(Matrix** result)
+void QuadrupoleInt::compute(std::vector<shared_ptr<Matrix> > & result)
 {
     // Do not worry about zeroing out result
     int ns1 = bs1_->nshell();
@@ -173,7 +173,7 @@ void QuadrupoleInt::compute(Matrix** result)
     }
 }
 
-void QuadrupoleInt::compute(SimpleMatrix** result)
+void QuadrupoleInt::compute(std::vector<shared_ptr<SimpleMatrix> > & result)
 {
     // Do not worry about zeroing out result
     int ns1 = bs1_->nshell();

@@ -57,8 +57,8 @@ void calc_f(double *F, int n, double t)
     }
 }
 
-ERI::ERI(IntegralFactory* integral, BasisSet* bs1, BasisSet *bs2, BasisSet *bs3, BasisSet *bs4, int deriv)
-    : TwoBodyInt(integral, bs1, bs2, bs3, bs4, deriv)
+ERI::ERI(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet>bs2, shared_ptr<BasisSet>bs3, shared_ptr<BasisSet>bs4, int deriv)
+    : TwoBodyInt(bs1, bs2, bs3, bs4, deriv)
 {
     // Initialize libint static data
     init_libint_base();
@@ -315,7 +315,7 @@ void ERI::compute_shell(int sh1, int sh2, int sh3, int sh4)
     // is not guaranteed.
     int s1, s2, s3, s4;
     int am1, am2, am3, am4, temp;
-    BasisSet* bs_temp;
+    shared_ptr<BasisSet> bs_temp;
     
     bool p13p24 = false, p12 = false, p34 = false;
 
@@ -408,7 +408,7 @@ void ERI::compute_shell(int sh1, int sh2, int sh3, int sh4)
 
 void ERI::compute_quartet(int sh1, int sh2, int sh3, int sh4)
 {
-    GaussianShell *s1, *s2, *s3, *s4;
+    shared_ptr<GaussianShell> s1, s2, s3, s4;
 
     s1 = bs1_->shell(sh1);
     s2 = bs2_->shell(sh2);
@@ -625,7 +625,7 @@ void ERI::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
     // is not guaranteed.
     int s1, s2, s3, s4;
     int am1, am2, am3, am4, temp;
-    BasisSet* bs_temp;
+    shared_ptr<BasisSet> bs_temp;
     bool p13p24 = false, p12 = false, p34 = false;
 
     // AM used for ordering
@@ -712,7 +712,7 @@ void ERI::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
 
 void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
 {
-    GaussianShell *s1, *s2, *s3, *s4;
+    shared_ptr<GaussianShell> s1, s2, s3, s4;
 
     s1 = bs1_->shell(sh1);
     s2 = bs2_->shell(sh2);

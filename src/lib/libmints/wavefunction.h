@@ -33,12 +33,12 @@ namespace psi {
 class Wavefunction {
 protected:
 
-    BasisSet* basisset_;
-    Molecule* molecule_;
+    shared_ptr<BasisSet> basisset_;
+    shared_ptr<Molecule> molecule_;
 
     // PSI file access variables
-    psi::PSIO& psio_;
-    psi::Chkpt& chkpt_;
+    shared_ptr<PSIO> psio_;
+    shared_ptr<Chkpt> chkpt_;
 
     MatrixFactory factory_;
     long int memory_;
@@ -52,8 +52,8 @@ private:
 
 public:
     /// Set the PSIO object. Note: Wavefunction assumes ownership of the object. DO NOT DELETE!
-    Wavefunction(psi::PSIO *psio, psi::Chkpt *chkpt = 0);
-    Wavefunction(psi::PSIO& psio, psi::Chkpt& chkpt);
+    Wavefunction(shared_ptr<PSIO> psio);
+    Wavefunction(shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
     
     virtual ~Wavefunction();
 
@@ -63,7 +63,7 @@ public:
     /// Initialize internal variables from checkpoint file.
     void init_with_chkpt();
 
-    Molecule* molecule() { return molecule_; }
+    shared_ptr<Molecule> molecule() { return molecule_; }
 
     static void initialize_singletons();
 };

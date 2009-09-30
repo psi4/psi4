@@ -91,28 +91,28 @@ public:
 class SphericalTransformIter
 {
 private:
-    SphericalTransform *trans_;
+    SphericalTransform& trans_;
     int i_;
     
 public:
-    SphericalTransformIter(SphericalTransform* trans) { trans_ = trans; i_ = 0; }
+    SphericalTransformIter(SphericalTransform& trans) : trans_(trans) { i_ = 0; }
     
     void first() { i_ = 0; }
     void next()  { i_++;   }
-    bool is_done() { return i_ < trans_->n() ? true : false; }
+    bool is_done() { return i_ < trans_.n() ? true : false; }
     
     /// Returns the Cartesian basis function index of component i
-    int cartindex() const { return trans_->cartindex(i_); }
+    int cartindex() const { return trans_.cartindex(i_); }
     /// Returns the spherical harmonic basis index of component i
-    int pureindex() const { return trans_->pureindex(i_); }
+    int pureindex() const { return trans_.pureindex(i_); }
     /// Returns the transformation coefficient of component i
-    double coef()   const { return trans_->coef(i_); }
+    double coef()   const { return trans_.coef(i_); }
     /// Returns the Cartesian basis function's x exponent of component i
-    int a()         const { return trans_->a(i_); }
+    int a()         const { return trans_.a(i_); }
     /// Returns the Cartesian basis function's y exponent of component i
-    int b()         const { return trans_->b(i_); }
+    int b()         const { return trans_.b(i_); }
     /// Returns the Cartesian basis function's z exponent of component i
-    int c()         const { return trans_->c(i_); }
+    int c()         const { return trans_.c(i_); }
 };
 
 class IntegralsIterator
@@ -127,7 +127,7 @@ private:
     };
 
     Integral current;
-    GaussianShell *usi, *usj, *usk, *usl;
+    shared_ptr<GaussianShell> usi, usj, usk, usl;
 
     bool done;
 
@@ -136,8 +136,8 @@ private:
     int ni, nj, nk, nl, fii, fij, fik, fil;
         
 public:
-    IntegralsIterator(GaussianShell*s1, GaussianShell*s2,
-                     GaussianShell*s3, GaussianShell*s4) {
+    IntegralsIterator(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2,
+                      shared_ptr<GaussianShell> s3, shared_ptr<GaussianShell> s4) {
         done = false;
         usi = s1;
         usj = s2;
@@ -207,17 +207,18 @@ private:
 
     bool done;
     
-    BasisSet* bs1_;
-    BasisSet* bs2_;
-    BasisSet* bs3_;
-    BasisSet* bs4_;
+    shared_ptr<BasisSet> bs1_;
+    shared_ptr<BasisSet> bs2_;
+    shared_ptr<BasisSet> bs3_;
+    shared_ptr<BasisSet> bs4_;
     
 //    void generate_combinations(BasisSet*bs1, BasisSet*bs2,
 //        BasisSet*bs3, BasisSet*bs4);
         
 public:
-    ShellCombinationsIterator(BasisSet*bs1, BasisSet*bs2,
-                              BasisSet*bs3, BasisSet*bs4) : bs1_(bs1), bs2_(bs2), bs3_(bs3), bs4_(bs4) {    }
+    ShellCombinationsIterator(shared_ptr<BasisSet>bs1, shared_ptr<BasisSet>bs2,
+                              shared_ptr<BasisSet>bs3, shared_ptr<BasisSet>bs4) :
+                       bs1_(bs1), bs2_(bs2), bs3_(bs3), bs4_(bs4) {    }
                  
     void first();
     void next();
@@ -236,27 +237,27 @@ class IntegralFactory
 {
 protected:
     /// Center 1 basis set
-    BasisSet* bs1_;
+    shared_ptr<BasisSet> bs1_;
     /// Center 2 basis set
-    BasisSet* bs2_;
+    shared_ptr<BasisSet> bs2_;
     /// Center 3 basis set
-    BasisSet* bs3_;
+    shared_ptr<BasisSet> bs3_;
     /// Center 4 basis set
-    BasisSet* bs4_;
+    shared_ptr<BasisSet> bs4_;
     
     /// Provides ability to transform to and from sphericals (d=0, f=1, g=2)
     std::vector<SphericalTransform> spherical_transforms_;
     
 public:
     /** Initialize IntegralFactory object given a GaussianBasisSet for each center. */
-    IntegralFactory(BasisSet*bs1, BasisSet*bs2,
-                    BasisSet*bs3 =0, BasisSet*bs4 =0);
+    IntegralFactory(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2,
+                    shared_ptr<BasisSet> bs3, shared_ptr<BasisSet> bs4);
     
     virtual ~IntegralFactory();
     
     /// Set the basis set for each center.
-    virtual void set_basis(BasisSet*bs1, BasisSet*bs2 = 0,
-        BasisSet*bs3 = 0, BasisSet*bs4 = 0);
+    virtual void set_basis(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2,
+        shared_ptr<BasisSet> bs3, shared_ptr<BasisSet> bs4);
         
     /// Returns an OneBodyInt that computes the overlap integral.
     virtual OneBodyInt* overlap(int deriv=0);

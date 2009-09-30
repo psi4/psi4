@@ -11,8 +11,8 @@
 using namespace psi;
 
 // Initialize overlap_recur_ to +1 basis set angular momentum
-KineticInt::KineticInt(IntegralFactory* integral, BasisSet* bs1, BasisSet* bs2, int deriv) :
-    OneBodyInt(integral, bs1, bs2, deriv), overlap_recur_(bs1->max_am()+1+deriv, bs2->max_am()+1+deriv)
+KineticInt::KineticInt(std::vector<SphericalTransform>& st, shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2, int deriv) :
+    OneBodyInt(st, bs1, bs2, deriv), overlap_recur_(bs1->max_am()+1+deriv, bs2->max_am()+1+deriv)
 {
     int maxam1 = bs1_->max_am();
     int maxam2 = bs2_->max_am();
@@ -43,7 +43,7 @@ void KineticInt::compute_shell_deriv1(int sh1, int sh2)
 }
 
 // The engine only supports segmented basis sets
-void KineticInt::compute_pair(GaussianShell* s1, GaussianShell* s2)
+void KineticInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2)
 {
     int ao12;
     int am1 = s1->am(0);
@@ -169,7 +169,7 @@ static double ke_int(double **x, double **y, double **z, double a1, int l1, int 
 }
 
 // The engine only supports segmented basis sets
-void KineticInt::compute_pair_deriv1(GaussianShell* s1, GaussianShell* s2)
+void KineticInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2)
 {
     int ao12;
     int am1 = s1->am(0);

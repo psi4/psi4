@@ -49,9 +49,9 @@ public:
     virtual ~Molecule();
 
     /// Pull information from a chkpt object created from psio
-    void init_with_chkpt(psi::PSIO* psio);
+    void init_with_chkpt(shared_ptr<PSIO> psio);
     /// Pull information from the chkpt object passed
-    void init_with_chkpt(psi::Chkpt* chkpt);
+    void init_with_chkpt(shared_ptr<Chkpt> chkpt);
 
     /// Add an atom to the molecule
     void add_atom(int Z, double x, double y, double z,

@@ -14,13 +14,13 @@ static void transform2e_2(int, SphericalTransformIter&, double*, double*, int, i
 static void transform2e_3(int, SphericalTransformIter&, double*, double*, int, int, int);
 static void transform2e_4(int, SphericalTransformIter&, double*, double*, int, int);
 
-TwoBodyInt::TwoBodyInt(IntegralFactory *integral,
-                       BasisSet* bs1,
-                       BasisSet* bs2,
-                       BasisSet* bs3,
-                       BasisSet* bs4,
+TwoBodyInt::TwoBodyInt(
+                       shared_ptr<BasisSet> bs1,
+                       shared_ptr<BasisSet> bs2,
+                       shared_ptr<BasisSet> bs3,
+                       shared_ptr<BasisSet> bs4,
                        int deriv)
-    : integral_(integral), original_bs1_(bs1), original_bs2_(bs2), original_bs3_(bs3),
+    : original_bs1_(bs1), original_bs2_(bs2), original_bs3_(bs3),
       original_bs4_(bs4), deriv_(deriv)
 {
     target_ = 0;
@@ -38,27 +38,27 @@ TwoBodyInt::~TwoBodyInt()
 
 }
 
-BasisSet* TwoBodyInt::basis()
+shared_ptr<BasisSet> TwoBodyInt::basis()
 {
     return original_bs1_;
 }
 
-BasisSet* TwoBodyInt::basis1()
+shared_ptr<BasisSet> TwoBodyInt::basis1()
 {
     return original_bs1_;
 }
 
-BasisSet* TwoBodyInt::basis2()
+shared_ptr<BasisSet> TwoBodyInt::basis2()
 {
     return original_bs2_;
 }
 
-BasisSet* TwoBodyInt::basis3()
+shared_ptr<BasisSet> TwoBodyInt::basis3()
 {
     return original_bs3_;
 }
 
-BasisSet* TwoBodyInt::basis4()
+shared_ptr<BasisSet> TwoBodyInt::basis4()
 {
     return original_bs4_;
 }
@@ -73,7 +73,7 @@ TwoBodyInt* TwoBodyInt::clone()
     throw std::runtime_error("TwoBodyInt::clone() not implemented");
 }
 
-void TwoBodyInt::normalize_am(GaussianShell* s1, GaussianShell* s2, GaussianShell* s3, GaussianShell* s4, int nchunk)
+void TwoBodyInt::normalize_am(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2, shared_ptr<GaussianShell> s3, shared_ptr<GaussianShell> s4, int nchunk)
 {
 #ifdef MINTS_TIMER
     timer_on("Angular momentum normalization");
@@ -138,7 +138,7 @@ void TwoBodyInt::permute_target(double *s, double *t, int sh1, int sh2, int sh3,
 #ifdef MINTS_TIMER
     timer_on("Permute target");
 #endif
-    GaussianShell *s1, *s2, *s3, *s4;
+    shared_ptr<GaussianShell> s1, s2, s3, s4;
 
     s1 = bs1_->shell(sh1);
     s2 = bs2_->shell(sh2);
@@ -311,7 +311,7 @@ void TwoBodyInt::pure_transform(int sh1, int sh2, int sh3, int sh4, int nchunk)
 #ifdef MINTS_TIMER
     timer_on("Pure transformation");
 #endif
-    GaussianShell *s1, *s2, *s3, *s4;
+    shared_ptr<GaussianShell> s1, s2, s3, s4;
     
     s1 = bs1_->shell(sh1);
     s2 = bs2_->shell(sh2);

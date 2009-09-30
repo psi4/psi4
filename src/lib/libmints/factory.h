@@ -35,12 +35,10 @@ public:
     ~MatrixFactory();
     
     /// Initializes the matrix factory by creating a chkpt object with a psio reference.
-    bool init_with_chkpt(psi::PSIO* psio);
-    bool init_with_chkpt(psi::PSIO& psio);
+    bool init_with_chkpt(shared_ptr<psi::PSIO> psio);
     
     /// Initializes the matrix factory using the given chkpt object.
-    bool init_with_chkpt(psi::Chkpt* chkpt);
-    bool init_with_chkpt(psi::Chkpt& chkpt);
+    bool init_with_chkpt(shared_ptr<psi::Chkpt> chkpt);
     
     /// Manually initialize the matrix factory
     bool init_with(int nirreps, int *rowspi, int *colspi);
