@@ -70,7 +70,7 @@ bool TwoBodyInt::cloneable()
 
 TwoBodyInt* TwoBodyInt::clone()
 {
-    throw std::runtime_error("TwoBodyInt::clone() not implemented");
+    throw FeatureNotImplemented("libmints", "TwoBodyInt::clone()", __FILE__, __LINE__);
 }
 
 void TwoBodyInt::normalize_am(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2, shared_ptr<GaussianShell> s3, shared_ptr<GaussianShell> s4, int nchunk)

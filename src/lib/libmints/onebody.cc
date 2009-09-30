@@ -4,6 +4,7 @@
 #include <libmints/basisset.h>
 #include <libmints/gshell.h>
 #include <libmints/integral.h>
+#include <exception.h>
 
 using namespace psi;
 
@@ -102,7 +103,7 @@ bool OneBodyInt::cloneable()
 
 OneBodyInt* OneBodyInt::clone()
 {
-    throw std::runtime_error("OneBodyInt::clone() not implemented");
+    throw FeatureNotImplemented("libmints", "OneBodyInt::clone()", __FILE__, __LINE__);
 }
 
 void OneBodyInt::normalize_am(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2, int nchunk)
@@ -319,17 +320,17 @@ void OneBodyInt::compute(shared_ptr<Matrix> result)
 
 void OneBodyInt::compute(std::vector<shared_ptr<Matrix> > &result)
 {
-    throw std::runtime_error("OneBodyInt::compute(Array) not implemented");
+    throw FeatureNotImplemented("libmints", "OneBodyInt::compute(Array)", __FILE__, __LINE__);
 }
 
 void OneBodyInt::compute(std::vector<shared_ptr<SimpleMatrix> > &result)
 {
-    throw std::runtime_error("OneBodyInt::compute(SimpleArray) not implemented");
+    throw FeatureNotImplemented("libmints", "OneBodyInt::compute(SimpleArray)", __FILE__, __LINE__);
 }
 
 void OneBodyInt::compute_deriv1(std::vector<shared_ptr<Matrix> > &result)
 {
-    throw std::runtime_error("OneBodyInt::deriv1(Array) not implemented");
+    throw FeatureNotImplemented("libmints", "OneBodyInt::compute_deriv1(Array)", __FILE__, __LINE__);
 }
 
 void OneBodyInt::compute_deriv1(std::vector<shared_ptr<SimpleMatrix> > &result)
@@ -351,7 +352,7 @@ void OneBodyInt::compute_deriv1(std::vector<shared_ptr<SimpleMatrix> > &result)
 
 void OneBodyInt::compute_shell_deriv1(int, int)
 {
-    throw std::runtime_error("OneBodyInt::compute_shell_deriv1(Array) not implemented");   
+    throw FeatureNotImplemented("libmints", "OneBodyInt::compute_shell_deriv1(Array)", __FILE__, __LINE__);   
 }
 
 void OneBodyInt::compute_deriv2(std::vector<shared_ptr<SimpleMatrix> > &result)
@@ -373,6 +374,6 @@ void OneBodyInt::compute_deriv2(std::vector<shared_ptr<SimpleMatrix> > &result)
 
 void OneBodyInt::compute_shell_deriv2(int, int)
 {
-    throw std::runtime_error("OneBodyInt::compute_shell_deriv2(Array) not implemented");
+    throw FeatureNotImplemented("libmints", "OneBodyInt::compute_shell_deriv2(Array)", __FILE__, __LINE__);
 }
 
