@@ -1,0 +1,22 @@
+
+srcdir = @srcdir@
+
+MAN = progman
+
+include ../MakeVars
+
+TEX = progman.tex
+
+SUBTEX = \
+svn/svn.tex \
+introduction/introduction.tex \
+introduction/history.tex \
+introduction/license.tex \
+testing/testing.tex \
+sample-codes/sample-codes.tex
+
+DVI = $(TEX:%.tex=%.dvi)
+PS = $(DVI:%.dvi=%.ps)
+HTML = $(TEX:%.tex=%.html)
+
+include ../MakeRules

@@ -1,0 +1,119 @@
+
+\newcommand{\PSI}{{\tt PSI}}
+\newcommand{\PSItwo}{{\tt PSI2}}
+\newcommand{\PSIthree}{{\tt PSI3}}
+\newcommand{\PSIfour}{{\tt PSI4}}
+\newcommand{\PSIversion}{@PSI_VERSION@}
+\newcommand{\PSImmmversion}{@PSI_VERSION@}
+\newcommand{\PSIemail}{@PSI_BUGREPORT@}
+
+%
+% Psi Modules
+%
+\def\module#1{{\tt #1}}
+\newcommand{\PSIdriver}{\module{psi4}}
+\newcommand{\PSIinput}{\module{input}}
+\newcommand{\PSIcints}{\module{cints}}
+\newcommand{\PSIcderiv}{\module{cints --deriv1}}
+\newcommand{\PSIdetci}{\module{detci}}
+\newcommand{\PSIdetcas}{\module{detcas}}
+\newcommand{\PSIdetcasman}{\module{detcasman}}
+\newcommand{\PSIclag}{\module{clag}}
+\newcommand{\PSIccenergy}{\module{ccenergy}}
+\newcommand{\PSIccsort}{\module{ccsort}}
+\newcommand{\PSIpsi}{\module{psi}}
+\newcommand{\PSIcscf}{\module{cscf}}
+\newcommand{\PSIoptking}{\module{optking}}
+\newcommand{\PSItransqt}{\module{transqt}}
+\newcommand{\PSInormco}{\module{normco}}
+\newcommand{\PSIintder}{\module{intder95}}
+\newcommand{\PSIgeom}{\module{geom}}
+\newcommand{\PSIoeprop}{\module{oeprop}}
+\newcommand{\PSIstable}{\module{stable}}
+
+%
+% Psi Library
+%
+\def\library#1{{\tt #1}}
+
+%
+% Psi and Unix Files
+%
+\def\FILE#1{{\tt file#1}}
+\def\file#1{{\tt #1}}
+\newcommand{\chkptfile}{\file{file32}}
+\newcommand{\inputdat}{\file{input.dat}}
+\newcommand{\outputdat}{\file{output.dat}}
+\newcommand{\fconstdat}{\file{fconst.dat}}
+\newcommand{\intcodat}{\file{intco.dat}}
+\newcommand{\optaux}{\file{opt.aux}}
+\newcommand{\basisdat}{\file{basis.dat}}
+\newcommand{\pbasisdat}{\file{pbasis.dat}}
+\newcommand{\geomdat}{\file{geom.dat}}
+\newcommand{\geomout}{\file{geom.out}}
+
+%
+% Psi Keywords
+%
+\def\keyword#1{{\tt #1}}
+
+%
+% Psi C and Fortran Language elements
+%
+\def\celem#1{{\tt #1}}
+\def\felem#1{{\tt #1}}
+
+%
+% Unix stuff
+%
+\def\unixid#1{{\em #1}} % names of groups and users
+\def\shellvar#1{{\tt #1}}
+
+%
+% Nice output for function description
+%
+% Needs 4 arguments: function declaration,
+%  description, arguments, and return values
+%
+% Call \initfuncdesc before using \funcdesc
+%
+\newcommand{\initfuncdesc}
+{\newlength{\lcwidth}
+\settowidth{\lcwidth}{Arguments:}
+\newlength{\rcwidth}
+\setlength{\rcwidth}{\linewidth}
+\addtolength{\rcwidth}{-1.0\lcwidth}
+\addtolength{\rcwidth}{-6.0\tabcolsep}
+}
+
+\newcommand{\funcdesc}[4]{
+\celem{#1} \\
+#2
+
+\begin{tabular}{lp{\rcwidth}}
+Arguments: & #3\\
+Returns: & #4
+\end{tabular}}
+
+% This allows us to read in a sample file, needs the listings package
+\newcommand \includesource[2] {
+   \definecolor{XCodeComment}{rgb}{0.0, 0.4531, 0.0}
+   \definecolor{XCodeKeyword}{rgb}{0.6641, 0.0508, 0.5664}
+   \definecolor{XCodeString}{rgb}{0.7656, 0.1016, 0.0859}
+   \lstset{
+      language={#2}, basicstyle= \slshape \footnotesize \ttfamily,
+      keywordstyle= \color{XCodeKeyword}, identifierstyle= \slshape \footnotesize,
+      commentstyle= \color{XCodeComment},
+      stringstyle=\ttfamily \color{XCodeString},
+      showstringspaces=false,
+      numbers=left,
+      tabsize=4,
+      title=\textit{#1},
+      breaklines=true,
+      showspaces=false,
+      showtabs=false, frame=tb, framerule=0.5mm,
+      aboveskip=5mm, belowskip=5mm,
+   }
+   \lstinputlisting{#1}
+}
+

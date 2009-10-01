@@ -1,0 +1,191 @@
+\subsection{Coupled Cluster Methods} \label{cc}
+
+The coupled cluster approach is one of the most accurate and reliable quantum
+chemical techniques for including the effects of electron correlation.
+\PSIthree\ is capable of computing energies, analytic gradients, and
+linear response properties using a number of coupled cluster models.
+Table \ref{table:ccsummary} summarizes these capabilities.  This section
+describes how to carry out coupled cluster calculations within \PSIthree.
+\begin{table}[h]
+\begin{center}
+\caption{Current coupled cluster capabilities of \PSIthree.}
+\label{table:ccsummary}
+\begin{tabular}{cccccc}
+\hline
+\hline
+Reference & Method & Energy    & Gradient  &  Exc. Energies & LR Props \\
+\hline
+RHF       & CC2     & Y & N & Y & Y  \\
+UHF       & CC2     & Y & N & Y & N  \\
+ROHF      & CC2     & Y & N & Y & N  \\
+RHF       & CCSD    & Y & Y & Y & Y  \\
+RHF       & CCSD(T) & Y & N & --& -- \\
+ROHF      & CCSD    & Y & Y & Y & N  \\
+ROHF      & CCSD(T) & N & N & --& -- \\
+UHF       & CCSD    & Y & Y & Y & N  \\
+UHF       & CCSD(T) & Y & Y$^*$ & --& -- \\
+Brueckner & CCD     & Y & N & N & N  \\
+Brueckner & CCD(T)  & Y & N & --& -- \\
+\hline
+\hline
+\end{tabular}
+\end{center}
+{\footnotesize $^*$CCSD(T) gradients implemented via an experimental code.
+A more efficient and robust implementation will appear in the next
+release.}
+\end{table}
+
+\subsubsection{Basic Keywords}
+
+To compute a ground-state CCSD or CCSD(T) energy at a fixed geometry,
+the following keywords are common:
+\begin{description}
+\item[WFN = string]\mbox{}\\
+Acceptable values are {\tt ccsd}, {\tt ccsd\_t} [for CCSD(T)], {\tt bccd} 
+(for Brueckner-orbital-based CCD), or {\tt bccd\_t} [for 
+Brueckner-orbital-based CCSD(T)] There is no default.
+\item[REFERENCE = string]\mbox{}\\
+Acceptable values are {\tt reference = rhf}, {\tt rohf}, or {\tt uhf}.
+There is no default.
+\item[JOBTYPE = string]\mbox{}\\
+Acceptable values are {\tt sp}, {\tt opt}, {\tt freq}, {\tt oeprop}, or 
+{\tt response}.  There is no default. 
+\item[CONVERGENCE = integer]\mbox{}\\
+Sets the order of magnitude on the convergence of the CC wave function,
+perturbed wave function, and/or lambda parameters.  The root-mean-square of
+the difference in amplitude vectors from consecutive iterations is used to
+determine the convergence.  The default is 7.
+\item[MAXITER = integer]\mbox{}\\
+The maximum number of iterations allowed for solving the CC amplitude or
+lambda amplitude equations.  Defaults to 50.
+\item[MEMORY = (real MB)]\mbox{}\\
+Specified the amount of core memory to be used, in MB.  Defaults to 256.
+Other units (e.g., KB or GB) are also allowed.
+\item[BRUECKNER\_CONV = integer]\mbox{}\\
+Specifies the order of magnitude convergence required for the Brueckner
+orbitals.  The convergence is determined based on the largest T1
+amplitude.
+\item[AO\_BASIS = string]\mbox{}\\
+Specifies the algorithm to be used in computing the contribution of the
+four-virtual-index integrals ($\langle ab||cd\rangle$) to the CC amplitude
+equations.  If {\tt AO\_BASIS=NONE}, the MO-basis integrals will be used;
+if {\tt AO\_BASIS=DISK}, the AO-basis integrals, stored on disk, will be
+used; if {\tt AO\_BASIS=DIRECT}, the AO-basis integrals will be computed on
+the fly as necessary.  NB: The {\tt AO\_BASIS=DIRECT} option is not fully
+implemented and should only be used by experts.  Default is {\tt NONE}.
+Note: The developers recommend use of this keyword only as a last resort
+because it significantly slows the calculation. The current algorithms for
+handling the MO-basis four-virtual-index integrals have been significantly
+improved and are preferable to the AO-based approach.
+\item[FREEZE\_CORE = boolean]\mbox{}\\
+Specifies whether core orbitals (which are determined automatically) are to
+be excluded from the correlated calculations.  Default is {\tt FALSE}.
+\item[RESTART = boolean]\mbox{}\\ Determine whether previous amplitude
+vectors may be used as guesses in a given CC calculation.  Defaults to
+{\tt TRUE}. For geometry optimizations, Brueckner calculations, etc. the
+iterative solution of the CC amplitude equations may benefit considerably
+by reusing old vectors as initial guesses.  Assuming that the MO phases
+remain the same between updates, the CC codes will, by default, re-use
+old vectors, unless the user sets {\tt RESTART = false}.
+\item[PRINT = integer]\mbox{}\\
+The desired print level for detailed output.  Setting this to 2 is a good
+idea for larger calculations so that the progress of the calculation may be
+easily followed.  Defaults to 0.
+\item[CACHELEV = integer]\mbox{}\\
+Sets the level of automated cacheing of four-index quantities in the CC
+modules.   These modules are capable of keeping in core as much as
+possible, various four-index quantities categorized by the number of
+virtual/unoccupied-orbital indices they contain.  Setting {\tt CACHELEV=0}
+will cache nothing (wise and sometimes necessary for very large CC 
+calculations), {\tt CACHELEV=1} will keep quantities with up to one virtual
+index in core (e.g., integrals of the form $\langle ij||ka\rangle$), {\tt
+CACHELEV=2} will keep quantities with up two two virtual indices in core
+(e.g., integrals of the form $\langle ij||ab \rangle$ or $\hat{T}_2$
+amplitudes), {\tt CACHELEV=3} will keep three-virtual-index quantities in
+core, and {\tt CACHELEV=4} will keep everything in core.  Note that the
+cache behavior is tempered by the {\tt MEMORY} keyword, and items will be
+deleted from the cache (in an order determined based on the {\tt CACHETYEP}
+keyword) as additional memory is required in a given calculation.
+\item[CACHETYPE = string]\mbox{}\\
+Specifies the type of cache to be used, either {\tt LOW} or {\tt LRU}.  If
+{\tt CACHETYPE=LOW}, then elements are deleted from the cache based on a
+predefined order of priority.  If {\tt CACHETYPE=LRU}, then elements are
+deleted from the cache based on a ``least recently used'' criterion: the
+least recently used item is the first to be deleted.  The {\tt LOW}
+criterion has been developed only ccenergy codes.  The default is {\tt LRU}
+for all CC modules except {\tt ccenergy}.
+\item[NUM\_AMPS = integer]\mbox{}\\
+Specifies the number of wave function amplitudes to print at the end of the
+energy calculation.  Defaults to 10.
+\item[PRINT\_MP2\_AMPS = boolean]\mbox{}\\
+Specifies if the initial guess (MP2) amplitudes should be printed in the
+output file.  Defaults to {\tt FALSE}.
+\end{description}
+
+\subsubsection{Larger Calculations}
+
+Here are a few recommendations for carrying out large-basis-set coupled cluster calculations with \PSIthree: 
+\begin{enumerate}
+\item Set the {\tt MEMORY} keyword to 90\% of the available physical
+memory, at most.  There is a small amount of overhead associated with the
+coupled cluster modules that is not accounted for by the internal CC memory
+handling routines.  Thus, the user should {\em not} sepcify the entire
+physical memory of the system, or swapping is likely.
+\item Set the {\tt CACHELEV} keyword to 0.  This will turn off cacheing,
+which, for very large calculations, can lead to heap fragmentation and
+memory faults, even when sufficient physical memory exists.
+\item Set the {\tt PRINT} keyword to 2.  This will help narrow where
+memory bottlenecks or other errors exist in the event of a crash.
+\end{enumerate}
+
+\subsubsection{Excited State Coupled Cluster Calculations}
+
+The most important keywords associated with EOM-CC calculations are:
+\begin{description}
+\item[STATES\_PER\_IRREP = (integer array)]\mbox{}\\
+Specifies the desired number of excited states per irreducible representation 
+for both EOM-CC and CC-LR calculations.  Note that the irreps in this
+keyword denote the final state symmetry, not the symmetry of the transition.  
+\item[PRINT\_SINGLES = boolean]\mbox{}\\
+Specifies whether information regarding the iterative solution to the
+single-excitation EOM-CC problem (normally used to obtain guesses for a
+ful EOM-CCSD calculation) will be printed.
+\item[RESIDUAL\_TOL = integer]\mbox{}\\
+Specifies the order of magnitude cutoff used to determine the convergence of 
+the Davidson algorithm residuals in the EOM-CC iterative procedure.
+\item[EVAL\_TOL = integer]\mbox{}\\
+Specifies the order of magnitude cutoff used to determine the convergence
+of the final eigenvalues in the EOM-CC iterative procedure.
+\item[EOM\_GUESS = (mixed array)]\mbox{}\\ Specifies a set
+of single-excitation guess vectors for the EOM-CC procedure.  This is
+especially useful for converging to difficult states.  The {\tt EOM\_GUESS}
+keyword is an array, each element of which includes an occupied orbital
+index (in coupled cluster ordering), a virtual orbital index, a weighting
+factor, and a spin (0 for $\alpha$ and 1 for $\beta$).  The guess vector
+will be normalized after it is read, so only the relative magnitudes of the
+weight factors are important.
+\item[JOBTYPE = string]\mbox{}\\
+A value of {\tt oeprop} will result in the calculation of oscillator 
+strengths, rotational strengths, and dipole moments for an RHF reference
+and all but the rotational strengths for an ROHF or UHF reference.
+\end{description}
+
+\subsubsection{Linear Response (CCLR) Calculations}
+The most important keywords associated with CC-LR calculations are:
+\begin{description}
+\item[JOBTYPE = string]\mbox{}\\
+A value of {\tt RESPONSE} will invoke the linear-response programs.
+\item[PROPERTY = string]\mbox{}\\
+This leyword specifies the type or response
+property desired.  Acceptable values are {\tt POLARIZABILITY} (default) for
+dipole-polarizabilities and {\tt ROTATION} for specific rotations.
+\item[OMEGA = real or (real UNITS)]\mbox{}
+Specifies the desired frequency of the incident radiation field in CCLR
+calculations.  Acceptable units are {\tt HZ}, {\tt NM}, and {\tt EV}.  If
+given without units, atomic units (Hartrees) are assumed.
+\item[MU\_IRREPS = (integer array)]\mbox{}\\
+Specifies the irreducible representations associated with the $x$-, $y$-,
+and $z$-axes.  This may be determined from the standard Cotton tables. 
+Eventually this will be determined automatically by the program, so this
+keyword will go away.
+\end{description}

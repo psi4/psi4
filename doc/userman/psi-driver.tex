@@ -1,0 +1,116 @@
+\section{\PSIthree\ Driver} \label{psi-driver}
+
+The \PSIthree\ suite of programs is built around a modular design. Any module
+can be run independently or the driver module, {\tt psi3}, can parse the
+input file, recognize the calculation desired, and run all the necessary
+modules in the correct order. {\tt psi3} reads the file {\tt psi.dat} by
+default. {\tt psi.dat} contains macros for several standard calculations, 
+however, anything in {\tt psi.dat} can be overriden by the user.  
+
+\subsection{Environment Variables}
+
+\begin{description}
+
+\item[PSIDATADIR]\mbox{}\\
+This flag is used to specify an alternate location for platform-independent
+read-only files such as {\tt psi.dat} and {\tt pbasis.dat}.
+By default, \PSIthree\ will look for these files under {\tt \$psipath/share}.
+
+\end{description}
+
+\subsection{Command-Line Options}
+
+\begin{description}
+
+\item[-i or -f]\mbox{}\\
+This flag is used to specify the input file name, e.g. {\tt psi3 -i
+h2o.in} where {\tt h2o.in} is the name of the input file. By default,
+{\tt psi3} and the other \PSIthree\ modules look for {\tt input.dat}.
+
+\item[-o]\mbox{}\\
+This flag is used to specify the output file name, e.g. {\tt psi3 -o
+h2o.out} where {\tt h2o.out} is the name of the output file. By default,
+{\tt psi3} and the other \PSIthree\ modules look for {\tt output.dat}.
+
+\item[-p]\mbox{}\\
+This flag is used to specify the \PSIthree\ file prefix, e.g. {\tt psi3 -p
+h2o.dzp} where {\tt h2o.dzp} is the prefix that will be used for all
+\PSIthree\ files. By default, {\tt psi3} and the other \PSIthree\ modules 
+use {\tt psi} for the file prefix. Hence, the checkpoint file is by 
+default called {\tt psi.32}.
+
+\item[-n]\mbox{}\\
+This flag tells {\tt psi3} not to run the {\tt input} module. This
+flag is useful for scripting and debugging.
+
+\item[-c]\mbox{}\\
+This flag tells {\tt psi3} to check the input and print out the list
+of programs which would be executed to STDOUT. Equivalent to 
+{\tt check = true} in the input file.
+
+\item[-m]\mbox{}\\
+This flag tells {\tt psi3} not to run the cleanup module {\tt psiclean}.
+Usually, {\tt psiclean} is invoked by the {\tt \$done} macro in 
+{\tt psi.dat}. This flag is useful for scripting and debugging.
+
+\end{description}
+
+\subsection{Input Format}
+
+The {\tt psi3} module searches through the default keyword path 
+(first {\tt PSI} then {\tt DEFAULT}) for the following keywords:
+
+\begin{description}
+
+\item[JOBTYPE = string]\mbox{}\\
+This keyword specifies what kind of calculation to run.
+
+\item[WFN = string]\mbox{}\\
+This keyword specifies the type of wave function.
+
+\item[REFERENCE = string]\mbox{}\\
+This keyword specifies the spin-reference.
+
+\item[DERTYPE = string]\mbox{}\\
+This keyword specifies the order of the derivative to be used.
+The default is {\tt none}.
+
+\item[OPT = boolean]\mbox{}\\
+Set equal to {\tt true} if performing a geometry optimization.
+The default is {\tt false}.
+
+\item[CHECK = boolean]\mbox{}\\
+If {\tt true}, {\tt psi3} will parse your input file and print
+the sequence of programs to be executed to STDOUT. The default is 
+{\tt false}.
+
+\item[EXEC = string vector]\mbox{}\\
+The {\tt EXEC} vector contains a list of commands to be executed by
+{\tt psi3}. Explicit commands can be entered in double quotes, or
+preset variables can be entered using the convention \$variable, 
+e.g.
+\begin{verbatim}
+psi: (
+  exec = ("ints")
+)
+\end{verbatim}
+or
+\begin{verbatim}
+psi: (
+  ints = "ints"
+  exec = ($ints)
+)
+\end{verbatim}
+
+\end{description}
+
+\subsection{Loop Control}
+
+Loop control is handled with the {\tt repeat} and {\tt end} commands.
+The syntax is:
+\begin{verbatim}
+repeat n [commands to be executed] end
+\end{verbatim}
+where {\tt n} is the number of times to repeat the loop. An inspection
+of the {\tt psi.dat} file will show that this is how geometry optimizations
+and finite displacements are performed.

@@ -1,0 +1,233 @@
+\section{A \PSIthree\ Tutorial} \label{tutorial}
+
+\subsection{Before Getting Started: A Warning about Scratch Files}
+Generally, electronic structure programs like \PSIthree\ make
+significant use of disk drives.  Therefore, it is very important
+to ensure that PSI3 is writing its temporary files to a disk drive
+phsyically attached to the computer running the computation.  If it
+is not, it will significantly slow down the program and the network.
+By default, PSI3 will write temporary files to \file{/tmp}, but you
+will want to set up a default scratch path (as described in sections
+\ref{scratchfiles} and \ref{psirc}) because the \file{/tmp} directory
+is usually not large enough except for small test cases.  In any 
+event, you want to be very careful that you are not writing scratch
+files to an NFS-mounted directory that is physically attached to a 
+fileserver elsewhere on the network.
+
+\subsection{Basic Input File Structure} 
+
+PSI3 reads input from a text file, which can be prepared in any standard
+text editor.  The default input file name is \file{input.dat} and the
+default output file name is \file{output.dat}.  So that you can give your
+files meaningful names, these defaults can be changed by specifying
+the input file name and output file name on the the command line.
+The syntax is:
+
+{\tt psi3 input-name output-name}
+
+PSI3 is a modular program, with each module performing specific tasks
+and computations.  Which modules are run for a particular computation
+depends on the type of computation and the particular keywords specified
+in the input file.  All keywords in PSI3 use the structure {\tt keyword =
+value}, where values may be strings, booleans, integers, or real numbers.
+If the value is a string which contains a special character (such as a
+space or a dash) you must enclose the string in double quotation marks.
+You can give keywords in the input file for specific modules; however,
+in the first few examples, we will place all our keywords in one section
+of our input file called {\tt psi}.  Generally, every module you run
+during your computation will read the keywords in {\tt psi}, so you
+can place all your keywords in this section if you choose to do so.
+
+\subsection{Running a basic SCF calculation}
+In our first example, we will consider a Hartree-Fock SCF computation
+for the water molecule using a cc-pVDZ basis set.  We will specify the
+geometry of our water molecule using a standard z-matrix.
+
+\begin{verbatim}
+psi:(
+ label = "cc-pVDZ SCF H2O"
+ jobtype = sp
+ wfn = scf
+ reference = rhf
+ basis = "cc-pVDZ"
+ zmat = (
+   o
+   h 1 0.957
+   h 1 0.957 2 104.5
+  )
+ )
+
+\end{verbatim}
+
+In each computation, you can specify the type of wavefunction (keyword
+{\tt wfn}), the reference wavefunction for post-Hartree-Fock computations
+(keyword {\tt reference}), and the type of computation you want to
+perform (keyword {\tt jobtype}).  In the example above, we used a
+restricted Hartree-Fock (RHF) reference in an SCF computation of a
+single-point energy.  To change the level of electron correlation, one
+would specify a different wavefunction type using the keyword {\tt wfn}.
+In the example above, to perform an MP2 computation, simply set {\tt
+wfn = mp2}.
+
+\subsection{Geometry Optimization and Vibrational Frequency Analysis}
+The above example was a simple single-point energy computation.
+To perform a different type of computation, change the keyword {\tt
+jobtype}.  In the example below, we will set up
+a CCSD geometry optimization.  To illustrate a more flexible z-matrix
+input, we will now define variables for the bond length and bond angle
+(in the {\tt zvars} section).
+
+\begin{verbatim}
+% 6-31G** H2O Test optimization calculation
+
+psi: (
+  label = "6-31G** SCF H2O"
+  jobtype = opt
+  wfn = ccsd
+  reference = rhf
+  dertype = first
+  basis = "6-31G**"
+  zmat = (
+    o
+    h 1 roh
+    h 1 roh 2 ahoh
+  )
+  zvars = (
+    roh     0.96031231
+    ahoh  104.09437511
+  )
+)
+\end{verbatim}
+
+Once you have optimized the geometry of a molecule, you might wish to
+perform a frequency analysis to determine the nature of the stationary
+point.  To do this, change the value of {\tt jobtype} to {\tt freq}.
+For an SCF frequeny calculation, you would also set {\tt dertype =
+second} to compute the second derivatives analytically.  Unfortunately,
+analytical second derivitives are not available in \PSIthree\ for
+wavefunctions beyond SCF, so instead use the highest order analytical
+derivitives that are available for the type of wavefunction you
+have chosen.  This information is given in Table \ref{table:methods}.
+For our CCSD example, the highest-order derivitives available are first,
+so {\tt dertype = first}.
+
+\begin{verbatim}
+% 6-31G** H2O Test computation of frequencies
+
+psi: (
+  label = "6-31G** SCF H2O"
+  jobtype = freq
+  wfn = ccsd
+  reference = rhf
+  dertype = first
+  basis = "6-31G**"
+  zmat = (
+    o
+    h 1 roh
+    h 1 roh 2 ahoh
+  )
+  zvars = (
+    roh     0.96031231
+    ahoh  104.09437511
+  )
+)
+\end{verbatim}
+
+\subsection{More Advanced Input Options}
+If you wish to add comments to your input file, you can start any line
+with \% and the line will be a comment line.  This can make the input
+file easier to understand because you can provide explainations about
+each keyword.  Another way to make the input file more organized is
+to seperate it into sections that correspond to particular modules
+the calculation will use.  This can be particularly helpful for more
+complicated computations which can utilize many of keywords.  In the example
+below, a CCSD(T) computation for the BH molecule is performed using a
+cc-pVDZ basis set.  The keywords are divided into sections and several
+new keywords are introduced, including ones to specify symmetry and
+orbital occupations.  Orbitial occupations are specified by
+a list of integers enclosed in parentheses.  These integers give the
+number of orbitials which belong to each irreducible representation in
+the point group.  The ordering of the irreps are those given by Cotton
+in {\em Chemical Applications of Group Theory}.  In this example,
+comment lines will be included to explain the new keywords used.
+
+\begin{verbatim}
+psi: (
+  wfn = ccsd_t
+  reference = rhf
+)
+
+default: (
+  label = "BH cc-pVDZ CCSD(T)"
+
+% Allocating memory for the calculation
+  memory = (600.0 MB)
+
+% charge and multiplicity (2S+1) default to values of 0 and 1, respectively
+  charge = 0
+  multp = 1
+
+% The program will generally guess the symmetry of the molecule, but
+% it can be overridden.  Here we specify C2V because only D2H and its
+% subgroups can be used by the program.
+  symmetry = c2v
+
+% Number of doubly-occupied orbitals per irrep can be specified manually
+% if desired
+  docc = (3 0 0 0)
+
+% Freeze the 1A1 orbital (Boron 1s-like) in the CCSD(T) computation
+  frozen_docc = (1 0 0 0)
+)
+
+% The input section contains information about the molecule and the basis
+% set.  The geometry here is specified by cartesian coordinates.
+input: (
+  basis = "cc-pVDZ"
+  units = angstroms
+  geometry = (
+    ( b      0.0000        0.0000        0.0000)
+    ( h      0.0000        0.0000        0.8000)
+      )
+  origin = (0.0 0.0 0.0)
+)
+% The modular input structure lets you specify convergence criteria for
+% each part of the computation separately
+scf: (
+  maxiter = 100
+  convergence = 11
+)
+\end{verbatim}
+
+The final example of this tutorial demonstrates an example of a
+complete-active-space self-consistent-field (CASSCF)
+computation.  CAS computations require specification of several additional
+keywords because you must specify which orbitals you wish to be in the
+active space.  The notation and ordering for specifying CAS orbitals is the
+same as for occupied orbitals.
+
+\begin{verbatim}
+
+% 6-31G** H2O Test CASSCF Energy Point
+
+psi: (
+  label = "6-31G** CASSCF H2O"
+  jobtype = sp
+  wfn = casscf
+  reference = rhf
+% The restricted_docc orbitals are those which are optimized, but are not
+% in the active space.
+  restricted_docc = (1 0 0 0)
+
+% The active space orbitals; here, the valence orbitals are chosen
+  active          = (3 0 1 2)
+
+  basis = "6-31G**"
+  zmat = (
+    o
+    h 1 1.00
+    h 1 1.00 2 103.1
+  )
+)
+\end{verbatim}
+

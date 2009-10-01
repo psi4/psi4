@@ -1,0 +1,65 @@
+\subsection{Overview of modules of \PSIthree}
+Below is a very brief list of some of the modules available in the
+\PSIthree\ program.  For more information, consult the individual
+manual pages.
+\subsubsection{input}
+This program prepares the checkpoint file (\chkptfile).  Errors will
+result if the \PSIpsi\ program is run before \PSIinput.  This program
+reads the \keyword{default}, \keyword{psi}, \keyword{input}, and (if given)
+\keyword{basis} sections of the input file and places molecule,
+geometry, and basis information into the checkpoint file.  The
+molecule may be reoriented to a standard reference frame, and the
+molecular point-group symmetry is identified.  It is possible to tell
+\PSIinput\ to re-use orbitals from a previous calculation ({\tt input
+--chkptmos}), although presently this only works if the point group has
+not changed.
+
+\subsubsection{cints}
+This program computes one- and two-electron integrals and derivative
+integrals.  It is multithreaded and has some advanced capabilities
+related to integrals-direct computations.
+
+\subsubsection{cscf}
+This program carries out the Hartree-Fock procedure.  It can handle
+RHF, ROHF, UHF, and TCSCF.  It can also simply re-orthogonalize
+previously existing MO's.
+
+\subsubsection{transqt}
+This module transforms one- and two-electron integrals from the
+symmetry-adapted atomic orbital (SO) basis to the molecular orbital
+(MO) basis for use in correlated computations by program such as
+\PSIdetci\ or \PSIccenergy.  It can also back-transform one- and
+two-particle density matrices to the AO basis for contraction with the
+derivative integrals to obtain energy gradients.
+
+\subsubsection{ccsort}
+This module sorts the one- and two-electron integrals for use by the
+\PSIthree\ coupled-cluster programs.
+
+\subsubsection{ccenergy}
+This module computes the CCSD energy.
+
+\subsubsection{cctriples}
+This module computes the (T) correction to CCSD to give the CCSD(T)
+energy.
+
+\subsubsection{detci}
+This module performs many different types of CI computation, including
+CI's truncated according to substitution level (e.g., CISD, CISDT,
+CISDTQ, etc), full CI, and any CI which can be formulated as a
+restricted active space (RAS) CI, including second-order configuration
+interaction (SOCI) and other types of multi-reference CI's.  It can
+compute one- and two-particle density matrices and can obtain CI
+natural orbitals.
+
+\subsubsection{detcas}
+This program works together with the \PSIdetci\ program to do CASSCF
+calculations in a two-step procedure.  It obtains the orbital gradient
+and rotates the orbitals to optimize them.
+
+\subsubsection{detcasman}
+This is a driver program that controls \PSIdetci\ and \PSIdetcas\ to
+perform CASSCF computations.
+
+\subsubsection{clag}
+This forms the CI lagrangian, which is needed for CASSCF and CI gradients.

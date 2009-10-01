@@ -1,0 +1,19 @@
+
+srcdir = @srcdir@
+
+MAN = userman
+
+include ../MakeVars
+
+TEX = userman.tex
+
+SUBTEX = \
+additional-docs.tex appendix.tex cc.tex detcas.tex detci.tex input.tex \
+introduction.tex methods.tex modules.tex mp2.tex oeprop.tex opt.tex \
+psi-driver.tex scf.tex tutorial.tex bibliography.bib
+
+DVI = $(TEX:%.tex=%.dvi)
+PS = $(DVI:%.dvi=%.ps)
+HTML = $(TEX:%.tex=%.html)
+
+include ../MakeRules

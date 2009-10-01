@@ -1,0 +1,126 @@
+\section{Introduction} \label{introduction}
+
+\subsection{Overview} 
+
+This manual explains how to use the \PSIthree\ suite of {\em ab initio}
+quantum chemical programs.  In this section, we provide an overview of
+some of the features of \PSIthree\ along with the prerequisite steps for
+running calculations.  Section \ref{tutorial} provides a brief tutorial to
+help new users get started.  Section \ref{input} offers further details
+into the structure of \PSIthree\ input files and a discussion of some of
+the most important options.  Later sections deal with the different types
+of computations which can be done using \PSIthree\ (e.g., Hartree-Fock,
+MP2, coupled-cluster) and general procedures such as geometry optimization
+and vibrational frequency analysis.  The appendix will eventually include a
+description of the input keywords and command-line options for each module,
+as well as numerous examples of \PSIthree\ input and basis set files.
+For the latest \PSIthree\ documentation, check \htmladdnormallink{{\tt
+www.psicode.org}} {http://www.psicode.org/}.
+
+The \PSIthree\ package was developed to perform high-accuracy quantum
+mechanical computations on challenging chemical species and to provide an
+infrastructure for the development of new theoretical techniques.  Hence,
+it has a very flexible input scheme which allows non-standard computations,
+and it is easily adapted to enable new capabilities.
+
+The following citation should be used in any publication utilizing the
+\PSIthree\ program package:
+
+\begin{quotation}
+\noindent
+\input{reference}
+\end{quotation}
+
+\subsection{Obtaining and Installing \PSIthree}
+\label{installation}
+
+The latest version of the \PSIthree\ program package may be obtained at
+\htmladdnormallink{{\tt www.psicode.org}}{http://www.psicode.org}.  The
+source code is available as a gzipped tar archive (named, for example, {\tt
+psi3.X.tar.gz}), and binaries may be available for certain architectures.
+For detailed installation and testing instructions, please refer to the
+the \PSIthree\ Installation Manual, available as part of the package or
+at the \PSIthree\ website above.
+
+\subsection{Supported Architectures}
+The majority of \PSIthree\ was developed on IBM RS/6000/AIX
+and x86/GNU Linux workstations. The complete list of
+tested architectures to which \PSIthree\ has
+been ported is shown in Table \ref{table:ports}.
+\begin{table}[h]
+\caption{Platforms on which \PSIthree\ has been installed successfully.}
+\label{table:ports}
+\begin{center}
+\begin{tabular}{ll} \hline\hline
+Architecture              &  Notes \\ \hline
+Compaq Alpha Tru64 UNIX   & 64-bit mode \\
+IBM AIX 4.3.3, 5.x on PowerPC & 64-bit mode \\
+Linux on Intel/AMD x86 and x86-64  & 32 and 64-bit\\
+Apple OS X (Darwin) on PowerPC and Intel & \\
+SGI IRIX64 ($>$6.5.15)    & 64-bit \\ \hline\hline
+\end{tabular}
+\end{center}
+\end{table}
+If you don't find your system in the Table, there's a good chance
+that you will be able to install \PSIthree\ on your system
+if you have the prerequisite tools and math and utility libraries described 
+in the installation manual.
+
+\subsection{Capabilities}
+\PSIthree\ can perform {\em ab initio} computations employing
+basis sets of up to 32768 contracted Gaussian-type functions of
+virtually arbitrary orbital quantum number.
+\PSIthree\ can recognize and exploit the largest Abelian subgroup of the
+point group describing the full symmetry of the molecule.
+Table \ref{table:methods} displays the range of theoretical
+methods available in \PSIthree .
+
+\begin{table}
+\caption{Summary of theoretical methods available in \PSIthree.} \label{table:methods}
+\parsep 10pt
+\begin{center}
+\begin{tabular}{lccc} \hline\hline
+Method                & Energy & Gradient & Hessian \\ \hline
+RHF SCF               & Y & Y & Y \\
+ROHF SCF              & Y & Y & N \\
+UHF SCF               & Y & N & N \\
+HF DBOC               & Y & N & N \\
+CIS/RPA/TDHF          & Y & N & N \\
+TCSCF                 & Y & Y & N \\
+CASSCF                & Y & Y & N \\
+RASSCF                & Y & Y & N \\
+RAS-CI                & Y & N & N \\
+RAS-CI DBOC           & Y & N & N \\
+RHF MP2               & Y & Y & N \\
+UHF/ROHF MP2          & Y & N & N \\
+RHF MP2-R12           & Y & N & N \\
+RHF/UHF/ROHF CCSD     & Y & Y & N \\
+RHF/UHF/ROHF CCSD(T)  & Y & Y$^*$ & N \\
+RHF/UHF/ROHF EOM-CCSD & Y & Y & N \\
+\hline\hline
+\end{tabular}
+\end{center}
+\footnotesize{$^*$ CCSD(T) gradients implemented only via an experimental
+code.  A more efficient and robust implementation will appear in the next
+release.}
+\end{table}
+Geometry optimization (currently restricted to true minima on the potential
+energy surface) can be performed using either analytic gradients
+or energy points.  Likewise, vibrational frequencies can be 
+computed using analytic second derivatives, by finite
+differences of analytic gradients, or finite differences of energies.
+\PSIthree\ can also compute an extensive list of one-electron properties.
+
+\subsection{Technical Support} The \PSIthree\ package is
+distributed for free and without any guarantee of reliability,
+accuracy, suitability for any particular purpose.  No obligation
+to provide technical support is expressed or implied.  As time
+allows, the developers will attempt to answer inquiries directed to
+\htmladdnormallink{{\tt crawdad@vt.edu}}{mailto:crawdad@vt.edu}.
+For bug reports, specific and detailed information, with example
+inputs, would be appreciated.  Questions or comments regarding
+this user's manual may be sent to \htmladdnormallink{{\tt
+sherrill@gatech.edu}}{mailto:sherrill@gatech.edu}.
+
+
+

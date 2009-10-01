@@ -1,0 +1,54 @@
+
+SHELL = /bin/sh
+
+#
+# Initialize variables that have been figured out by configure.
+#
+target = @target@
+prefix = @prefix@
+docdir = @docdir@
+datarootdir = @datarootdir@
+datadir = @datadir@
+dvidir = $(docdir)/dvi
+psdir = $(docdir)/ps
+htmldir = $(docdir)/html
+top_srcdir = @top_srcdir@
+# this file is used by the subdirectories, so top_objdir is relative to those
+top_objdir = ../..
+currdir = $(shell echo `pwd`)
+
+LATEX = @LATEX@
+BIBTEX = @BIBTEX@
+DVIPS = @DVIPS@
+LATEX2HTML = @LATEX2HTML@
+DOXYGEN = @DOXYGEN@
+HAVE_DOT = @HAVE_DOT@
+DOT_PATH = @DOT_PATH@
+MKDIRS = @MKDIRS@
+INSTALL = @INSTALL@
+INSTALL_DATA = @INSTALL_DATA@
+
+TEXINPUTS = :$(srcdir):$(srcdir)/..:..:
+
+TARGET_DVI  = $(MAN).dvi
+TARGET_PS = $(MAN).ps
+TARGET_HTML = $(MAN).html
+
+ifndef LATEX2HTML
+  TARGET_HTML =
+endif
+
+ifndef DVIPS
+  TARGET_PS =
+  TARGET_HTML =
+endif
+
+ifndef LATEX
+  TARGET_DVI =
+  TARGET_PS =
+  TARGET_HTML =
+endif
+
+vpath %.html $(currdir)/html:
+vpath %.tex $(srcdir):$(srcdir)/..
+vpath %.bib $(srcdir):
