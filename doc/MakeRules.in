@@ -1,0 +1,95 @@
+
+#
+# Targets which don't generate files should be listed as dependencies
+# of the special target .PHONY
+#
+
+.PHONY:	install install_dvi install_ps install_html
+.PHONY:	clean
+
+#
+# This should be the first rule.  It will create a document without
+# installing it.
+#
+
+default:: install
+
+# Note that LaTeX should be run three times to resolve references
+$(TARGET_DVI): $(TEX) $(SUBTEX)
+	echo $(srcdir)
+	TEXINPUTS=$(TEXINPUTS);  export TEXINPUTS; \
+	BIBINPUTS=$(TEXINPUTS);  export BIBINPUTS; \
+	$(LATEX) $<; $(BIBTEX) $(MAN); $(LATEX) $<; $(LATEX) $<
+
+$(TARGET_PS): $(DVI)
+	$(DVIPS) -o $@ $<
+
+$(TARGET_HTML): $(TEX) $(SUBTEX)
+	TEXINPUTS=$(TEXINPUTS); export TEXINPUTS; \
+$(LATEX2HTML) -tmp /tmp -dir $(currdir)/html -external_file $(currdir)/$(<F:%.tex=%) -mkdir -local_icons -split 0 $<; \
+$(LATEX2HTML) -tmp /tmp -dir $(currdir)/html_sectioned -external_file $(currdir)/$(<F:%.tex=%) -mkdir -local_icons $<; \
+
+#
+# do installations
+#
+
+
+install:: install_dvi install_ps install_html
+
+ifdef TARGET_DVI
+install_dvi:: $(TARGET_DVI)
+	$(MKDIRS) $(dvidir)
+	$(INSTALL_DATA) $(TARGET_DVI) $(dvidir)
+endif
+
+ifdef TARGET_PS
+install_ps:: $(TARGET_PS)
+	$(MKDIRS) $(psdir)
+	$(INSTALL_DATA) $(TARGET_PS) $(psdir)
+endif
+
+ifdef TARGET_HTML
+install_html:: $(TARGET_HTML)
+	$(?F:%.html=$(MKDIRS) $(htmldir)/%;)
+	$(?F:%.html= CDIR=%; $(INSTALL_DATA) $(currdir)/html/* $(htmldir)/$$CDIR;)
+	$(?F:%.html=$(MKDIRS) $(htmldir)/%_sectioned;)
+	$(?F:%.html= CDIR=%_sectioned; $(INSTALL_DATA) $(currdir)/html_sectioned/* $(htmldir)/$$CDIR;)
+endif
+
+#
+# clean up
+#
+
+realclean:: dviclean psclean htmlclean
+	-rm -f *.aux *.log *.toc *.bbl
+	-rm -rf html
+
+clean:: dviclean psclean htmlclean
+
+dviclean:
+	-rm -f *.dvi
+
+psclean:
+	-rm -f *.ps
+
+htmlclean:
+	-rm -rf $(TARGET_HTML:%.html=%)
+
+#
+# keep the configuration information and makefiles up-to-date
+#
+
+$(top_srcdir)/configure: $(top_srcdir)/configure.ac $(top_srcdir)/aclocal.m4
+	cd $(top_srcdir) && autoconf
+
+$(top_objdir)/config.status: $(top_srcdir)/configure
+	cd $(top_objdir) && ./config.status --recheck
+
+Makefile: $(srcdir)/Makefile.in $(top_objdir)/config.status
+	cd $(top_objdir) && CONFIG_FILES=doc/`basename $(srcdir)`/Makefile ./config.status
+
+../MakeVars: $(top_srcdir)/doc/MakeVars.in $(top_objdir)/config.status
+	cd $(top_objdir) && CONFIG_FILES=doc/MakeVars ./config.status
+
+../MakeRules: $(top_srcdir)/doc/MakeRules.in $(top_objdir)/config.status
+	cd $(top_objdir) && CONFIG_FILES=doc/MakeRules ./config.status

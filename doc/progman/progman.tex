@@ -1,0 +1,92 @@
+
+%
+% The PSI Programmer's Manual
+%
+
+\documentclass[12pt]{article}
+% Use this if you need to include PostScript figures or such.
+%\usepackage{epsfig}
+\usepackage{html}
+\usepackage{color}
+\usepackage{epsfig}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{fancyvrb}
+\setlength{\textheight}{9in}
+\setlength{\textwidth}{6.5in}
+\setlength{\hoffset}{0in}
+\setlength{\voffset}{0in}
+\setlength{\headheight}{0in}
+\setlength{\headsep}{0in}
+\setlength{\topmargin}{0in}
+\setlength{\oddsidemargin}{-0.05in}
+\setlength{\evensidemargin}{-0.05in}
+\setlength{\marginparsep}{0in}
+\setlength{\marginparwidth}{0in}
+\setlength{\parsep}{0.8ex}
+\setlength{\parskip}{1ex plus \fill}
+\baselineskip 18pt
+\renewcommand{\topfraction}{.8}
+\renewcommand{\bottomfraction}{.2}
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%
+% Definitions
+%%%%%%%%%%%%%%%%%%%%%%%
+\include{macros}
+
+% We can enter verbatim mode by simply entering text as @text@.  No more escaping funny characters!
+% \DefineShortVerb{\@}
+\initfuncdesc
+
+\begin{center}
+\ \\
+\vspace{2.0in}
+{\bf {\Large The \PSIfour\ Programmer's Manual}} \\
+\vspace{0.5in} 
+T. Daniel Crawford,$^a$ C. David Sherrill,$^b$ Edward F.\ Valeev,$^{a}$ \\
+Justin T. Fermann,$^c$ C. Brian Kellogg,$^c$ and Andrew C. Simmonett$^c$ \\ 
+\ \\ 
+{\em $^a$Department of Chemistry, Virginia Tech, Blacksburg, Virginia 24061} \\
+\vspace{0.1in}
+{\em $^b$Center for Computational Molecular Science and Technology, 
+\mbox{Georgia Institute of Technology,} Atlanta, Georgia 30332-0400} \\
+\vspace{0.1in}
+{\em $^c$Center for Computational Quantum Chemistry, \\ 
+\mbox{University of Georgia,} Athens, Georgia 30602-2525} \\
+\ \\
+\vspace{0.3in}
+\PSIfour\ Version: \PSIversion \\
+Created on: \today \\
+Report bugs to: \PSIemail \\
+\end{center}
+
+\thispagestyle{empty}
+
+\newpage
+\tableofcontents
+
+\newpage
+
+\section{Introduction}
+    \subsection{introduction} \label{introduction}
+    \input{introduction/introduction}
+    \subsection{History} \label{history}
+    \input{introduction/history}
+    \subsection{License} \label{license}
+    \input{introduction/license}
+\section{Obtaining \PSIfour} \label{svn}
+    \input{svn/svn}
+\section{Testing} \label{testing}
+    \input{testing/testing}
+\section{Sample Codes} \label{sample-codes}
+    \input{sample-codes/sample-codes}
+    \subsection{Integrals} \label{integrals}
+    \input{sample-codes/integrals/integrals}
+
+\newpage
+\appendix
+
+
+\end{document}
