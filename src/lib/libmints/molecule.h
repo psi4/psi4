@@ -18,9 +18,10 @@
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>
 
-extern FILE *outfile;
 
 namespace psi {
+
+extern FILE *outfile;
 
 //! Molecule information class.
 class Molecule

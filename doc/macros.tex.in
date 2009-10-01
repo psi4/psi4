@@ -11,6 +11,7 @@
 % Psi Modules
 %
 \def\module#1{{\tt #1}}
+\newcommand{\libmints}{\module{libmints}}
 \newcommand{\PSIdriver}{\module{psi4}}
 \newcommand{\PSIinput}{\module{input}}
 \newcommand{\PSIcints}{\module{cints}}
@@ -101,8 +102,8 @@ Returns: & #4
    \definecolor{XCodeKeyword}{rgb}{0.6641, 0.0508, 0.5664}
    \definecolor{XCodeString}{rgb}{0.7656, 0.1016, 0.0859}
    \lstset{
-      language={#2}, basicstyle= \slshape \footnotesize \ttfamily,
-      keywordstyle= \color{XCodeKeyword}, identifierstyle= \slshape \footnotesize,
+      language={#2}, basicstyle= \slshape \scriptsize \ttfamily,
+      keywordstyle= \color{XCodeKeyword}, identifierstyle= \slshape \scriptsize,
       commentstyle= \color{XCodeComment},
       stringstyle=\ttfamily \color{XCodeString},
       showstringspaces=false,
@@ -117,3 +118,13 @@ Returns: & #4
    \lstinputlisting{#1}
 }
 
+\newcommand \includeinput[1]{
+   \lstdefinelanguage{psi}{
+           morekeywords={geometry,label,wfn,refernce,subgroup,basis,docc,
+                         print,do\_tei,ri\_basis,zmat,psi, reference,
+                         df-mp2},
+           sensitive=false,
+           morecomment=[l]{\%}
+   }
+   \includesource{#1}{psi}
+}

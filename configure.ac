@@ -736,7 +736,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/Makefile src/bin/MakeRules src/bin/MakeVars
 
           doc/MakeVars doc/MakeRules doc/Makefile
-          doc/macros.tex doc/progman/svn.eps
+          doc/macros.tex doc/progman/svn/svn.eps
           doc/installation/Makefile
           doc/progman/Makefile doc/userman/Makefile
           doc/userman/prsty.bst
