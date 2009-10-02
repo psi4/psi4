@@ -17,6 +17,7 @@ top_srcdir = @top_srcdir@
 prefix = @prefix@
 srcdir = @srcdir@
 datadir = @datadir@
+datarootdir = @datarootdir@
 pkgdatadir = @pkgdatadir@
 VPATH = @srcdir@
 top_objdir = ..

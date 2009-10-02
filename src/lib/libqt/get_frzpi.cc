@@ -14,22 +14,6 @@
 
 namespace psi {
 
-#define PSIO_INIT if (!psio_state()) { \
-    psio_init(); psio_ipv1_config(); \
-    need_to_init_psio = 1; \
-  }
-
-#define CHKPT_INIT(n) if (!psio_open_check(PSIF_CHKPT)) { \
-    chkpt_init(n); \
-    need_to_init_chkpt = 1; \
-  }
-
-#define PSIO_DONE if (need_to_init_psio) \
-    psio_done();
-
-#define CHKPT_DONE if (need_to_init_chkpt) \
-    chkpt_close();
-
 /*!
 ** get_frzcpi(): Get frozen core per irrep array.
 **
@@ -48,8 +32,6 @@ int* get_frzcpi()
   int if_exists;
   int* frzcpi;
 
-PSIO_INIT
-CHKPT_INIT(PSIO_OPEN_OLD);
   nirreps = chkpt_rd_nirreps();
   
   frzcpi = init_int_array(nirreps);
@@ -62,9 +44,6 @@ CHKPT_INIT(PSIO_OPEN_OLD);
     free(frzcpi);
     frzcpi = chkpt_rd_frzcpi();
   }
-
-CHKPT_DONE
-PSIO_DONE
 
   return frzcpi;
 }
@@ -88,8 +67,6 @@ int* get_frzvpi()
   int if_exists;
   int* frzvpi;
 
-PSIO_INIT
-CHKPT_INIT(PSIO_OPEN_OLD);
   nirreps = chkpt_rd_nirreps();
   
   frzvpi = init_int_array(nirreps);
@@ -102,9 +79,6 @@ CHKPT_INIT(PSIO_OPEN_OLD);
     free(frzvpi);
     frzvpi = chkpt_rd_frzvpi();
   }
-
-CHKPT_DONE
-PSIO_DONE
 
   return frzvpi;
 }

@@ -18,6 +18,7 @@ mandir = @mandir@
 htmldir = @htmldir@
 txtdir = @txtdir@
 datadir = @datadir@
+datarootdir = @datarootdir@
 pkgdatadir=@pkgdatadir@
 top_srcdir = @top_srcdir@
 # this file is used by the subdirectories, so top_objdir is relative to those
