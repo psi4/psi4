@@ -4,7 +4,7 @@ VPATH = @srcdir@
 include ../MakeVars
 PSITARGET = $(top_objdir)/bin/$(shell basename `pwd`)
 
-LDLIBS += $(LAPACK) $(BLAS)
+LDLIBS += $(LAPACK) $(BLAS) -lpthread
 
 PSILIBS = \
 -lPSI_ccenergy -lPSI_ccsort -lPSI_input3 -lPSI_cscf -lPSI_cints -lPSI_transqt2 -lPSI_psiclean \
