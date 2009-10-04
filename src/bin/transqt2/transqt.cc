@@ -59,7 +59,7 @@ void transtwo_rhf(void);
 void transtwo_uhf(void);
 void transone(int,int,double *,double *,double **,int,int *);
 
-int transqt2(Options & options, int argc, char *argv[])
+PsiReturnType transqt2(Options & options, int argc, char *argv[])
 {
   int nso, nmo, ntri_so, ntri_mo, nirreps;
   int **cachelist, *cachefiles;
@@ -310,7 +310,7 @@ int transqt2(Options & options, int argc, char *argv[])
 
   cleanup();
   exit_io();
-  return(PSI_RETURN_SUCCESS);
+  return(Success);
 }
 
 void init_io(int argc, char *argv[])
