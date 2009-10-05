@@ -30,17 +30,15 @@
 #include <libmints/integral.h>
 #include <libmints/molecule.h>
 
-extern FILE *outfile;
-
 using namespace std;
 using namespace psi;
 
-HF::HF(PSIO *psio, Chkpt *chkpt) : Wavefunction(psio, chkpt), nuclear_dipole_contribution_(3), nuclear_quadrupole_contribution_(6)
-{
-    common_init();
-}
-
-HF::HF(PSIO &psio, Chkpt &chkpt) : Wavefunction(psio, chkpt), nuclear_dipole_contribution_(3), nuclear_quadrupole_contribution_(6)
+namespace psi { namespace scf {
+    
+HF::HF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) 
+    : Wavefunction(options, psio, chkpt),
+      nuclear_dipole_contribution_(3),
+      nuclear_quadrupole_contribution_(6)
 {
     common_init();
 }
@@ -50,46 +48,39 @@ HF::~HF()
     delete[] so2symblk_;
     delete[] so2index_;
     delete[] pk_symoffset_;
-    free(zvals_);
-    
-    for (int i=0; i<3; ++i)
-        delete Dipole_[i];
-    delete[] Dipole_;
-    for (int i=0; i<6; ++i)
-        delete Quadrupole_[i];
-    delete[] Quadrupole_;
+    free(zvals_);    
 }
 
 void HF::common_init()
 {
-    factory_.create_matrix(S_,      "S");
-    factory_.create_matrix(Shalf_,  "S^-1/2");
-    factory_.create_matrix(Sphalf_, "S^+1/2");
-    factory_.create_matrix(H_,      "One-electron Hamiltonion");
+    S_.reset(factory_.create_matrix("S"));
+    Shalf_.reset(factory_.create_matrix("S^-1/2"));
+    Sphalf_.reset(factory_.create_matrix("S^+1/2"));
+    H_.reset(factory_.create_matrix("One-electron Hamiltonion"));
     
     Eold_    = 0.0;
     E_       = 0.0;
     maxiter_ = 40;
     
     // Read information from input file
-    ip_data(const_cast<char*>("MAXITER"), const_cast<char*>("%d"), &(maxiter_), 0);
+    maxiter_ = options_.get_int("MAXITER");
     
-    // Read in DOCC and socc from memory
+    // Read in DOCC and SOCC from memory
 	int nirreps = factory_.nirreps();
 	input_docc_ = false;
-	if (ip_exist(const_cast<char*>("DOCC"), 0)) {
+	if (options_["DOCC"].has_changed()) {
 		input_docc_ = true;
 		for (int i=0; i<nirreps; ++i)
-			ip_data(const_cast<char*>("DOCC"), const_cast<char*>("%d"), &(doccpi_[i]), 1, i);
+            doccpi_[i] = options_["DOCC"][i].to_integer();
 	} else {
 		for (int i=0; i<nirreps; ++i)
 			doccpi_[i] = 0;
 	}
 	input_socc_ = false;
-	if (ip_exist(const_cast<char*>("SOCC"), 0)) {
+	if (options_["SOCC"].has_changed()) {
 		input_socc_ = true;
 		for (int i=0; i<nirreps; ++i)
-			ip_data(const_cast<char*>("SOCC"), const_cast<char*>("%d"), &(soccpi_[i]), 1, i);
+			soccpi_[i] = options_["SOCC"][i].to_integer();
 	} else {
 		for (int i=0; i<nirreps; ++i)
 			soccpi_[i] = 0;
@@ -105,27 +96,25 @@ void HF::common_init()
 	}
 	
     perturb_h_ = false;
-    ip_boolean(const_cast<char*>("PERTURB_H"), &perturb_h_, 0);
+    perturb_h_ = options_.get_bool("PERTURB_H");
     perturb_ = nothing;
     lambda_ = 0.0;
     if (perturb_h_) {
-        char *perturb_with;
+        string perturb_with;
         
-        ip_data(const_cast<char*>("LAMBDA"), const_cast<char*>("%lf"), &lambda_, 0);
+        lambda_ = options_.get_double("LAMBDA");
         
-        if (ip_exist(const_cast<char*>("PERTURB_WITH"), 0)) {
-            ip_string(const_cast<char*>("PERTURB_WITH"), &perturb_with, 0);
+        if (options_["PERTURB_WITH"].has_changed()) {
+            perturb_with = options_.get_str("PERTURB_WITH");
             // Do checks to see what perturb_with is.
-            if (strcmp(perturb_with, "DIPOLE_X") == 0)
+            if (perturb_with == "DIPOLE_X")
                 perturb_ = dipole_x;
-            else if (strcmp(perturb_with, "DIPOLE_Y") == 0)
+            else if (perturb_with == "DIPOLE_Y")
                 perturb_ = dipole_y;
-            else if (strcmp(perturb_with, "DIPOLE_Z") == 0)
+            else if (perturb_with == "DIPOLE_Z")
                 perturb_ = dipole_z;
             else
-                fprintf(outfile, "Unknown PERTURB_WITH. Applying no perturbation.\n");
-                
-            free(perturb_with);
+                fprintf(outfile, "Unknown PERTURB_WITH. Applying no perturbation.\n");                
         } else {
             fprintf(outfile, "PERTURB_H is true, but PERTURB_WITH not found, applying no perturbation.\n");
         }
@@ -133,25 +122,23 @@ void HF::common_init()
 	
 	// Run integral direct? default no
 	direct_integrals_ = false;
-    ip_boolean(const_cast<char*>("DIRECT"), &direct_integrals_, 0);
+    direct_integrals_ = options_.get_bool("DIRECT");
     
     // Read information from checkpoint
-    nuclearrep_ = chkpt_.rd_enuc();
-    natom_ = chkpt_.rd_natom();
-    zvals_ = chkpt_.rd_zvals();
+    nuclearrep_ = chkpt_->rd_enuc();
+    natom_ = chkpt_->rd_natom();
+    zvals_ = chkpt_->rd_zvals();
     
     // Alloc memory for multipoles
-    Dipole_ = new SimpleMatrix*[3];
-    Dipole_[0] = factory_.create_simple_matrix("Dipole X SO-basis");
-    Dipole_[1] = factory_.create_simple_matrix("Dipole Y SO-basis");
-    Dipole_[2] = factory_.create_simple_matrix("Dipole Z SO-basis");
-    Quadrupole_ = new SimpleMatrix*[6];
-    Quadrupole_[0] = factory_.create_simple_matrix("Quadrupole XX");
-    Quadrupole_[1] = factory_.create_simple_matrix("Quadrupole XY");
-    Quadrupole_[2] = factory_.create_simple_matrix("Quadrupole XZ");
-    Quadrupole_[3] = factory_.create_simple_matrix("Quadrupole YY");
-    Quadrupole_[4] = factory_.create_simple_matrix("Quadrupole YZ");
-    Quadrupole_[5] = factory_.create_simple_matrix("Quadrupole ZZ");
+    Dipole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Dipole X SO-basis")));
+    Dipole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Dipole Y SO-basis")));
+    Dipole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Dipole Z SO-basis")));
+    Quadrupole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Quadrupole XX")));
+    Quadrupole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Quadrupole XY")));
+    Quadrupole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Quadrupole XZ")));
+    Quadrupole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Quadrupole YY")));
+    Quadrupole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Quadrupole YZ")));
+    Quadrupole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Quadrupole ZZ")));
     
     print_header();
     
@@ -172,11 +159,11 @@ void HF::print_header()
 #else
     fprintf(outfile, "  Release version.\n");
 #endif
-    temp = chkpt_.rd_sym_label();
+    temp = chkpt_->rd_sym_label();
     fprintf(outfile, "  Running in %s symmetry.\n", temp);
     free(temp);
     
-	temp2 = chkpt_.rd_irr_labs();
+	temp2 = chkpt_->rd_irr_labs();
 	fprintf(outfile, "  Input DOCC vector = (");
 	for (int h=0; h<factory_.nirreps(); ++h) {
 		fprintf(outfile, "%2d %3s ", doccpi_[h], temp2[h]);
@@ -204,7 +191,7 @@ void HF::form_indexing()
     int *opi = factory_.rowspi();
     int nso;
     
-    nso = chkpt_.rd_nso();
+    nso = chkpt_->rd_nso();
     so2symblk_ = new int[nso];
     so2index_  = new int[nso];
     
@@ -240,48 +227,43 @@ void HF::form_indexing()
 
 void HF::form_H()
 {
-    Matrix kinetic;
-    Matrix potential;
-    factory_.create_matrix(kinetic, "Kinetic Integrals");
-    factory_.create_matrix(potential, "Potential Integrals");
+    SharedMatrix kinetic(factory_.create_matrix("Kinetic Integrals"));
+    SharedMatrix potential(factory_.create_matrix("Potential Integrals"));
     
     // Form the multipole integrals
     form_multipole_integrals();
     
     // Load in kinetic and potential matrices
-    int nso = chkpt_.rd_nso();
+    int nso = chkpt_->rd_nso();
     double *integrals = init_array(ioff[nso]);
     
     // Kinetic
     if (!direct_integrals_) {
-        IWL::read_one(&psio_, PSIF_OEI, const_cast<char*>(PSIF_SO_T), integrals, ioff[nso], 0, 0, outfile);
-        kinetic.set(integrals);
-        IWL::read_one(&psio_, PSIF_OEI, const_cast<char*>(PSIF_SO_V), integrals, ioff[nso], 0, 0, outfile);
-        potential.set(integrals);
+        IWL::read_one(psio_.get(), PSIF_OEI, const_cast<char*>(PSIF_SO_T), integrals, ioff[nso], 0, 0, outfile);
+        kinetic->set(integrals);
+        IWL::read_one(psio_.get(), PSIF_OEI, const_cast<char*>(PSIF_SO_V), integrals, ioff[nso], 0, 0, outfile);
+        potential->set(integrals);
     }
     else {
         IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
-        OneBodyInt* T = integral.kinetic();
-        OneBodyInt* V = integral.potential();
+        shared_ptr<OneBodyInt> T(integral.kinetic());
+        shared_ptr<OneBodyInt> V(integral.potential());
         
         T->compute(kinetic);
-        V->compute(potential);
-        
-        delete T;
-        delete V;
+        V->compute(potential);        
     }
     
     if (debug_ > 2)
-        kinetic.print(outfile);
+        kinetic->print(outfile);
     
     if (debug_ > 2)
-        potential.print(outfile);
+        potential->print(outfile);
     
-    H_.copy(kinetic);
-    H_.add(potential);
+    H_->copy(kinetic);
+    H_->add(potential);
     
     if (debug_ > 2)
-        H_.print(outfile);
+        H_->print(outfile);
     
     free(integrals);
     
@@ -302,13 +284,13 @@ void HF::form_H()
 
 void HF::form_Shalf()
 {
-    int nso = chkpt_.rd_nso();
+    int nso = chkpt_->rd_nso();
     
     // Overlap
     if (!direct_integrals_) {
         double *integrals = init_array(ioff[nso]);
-        IWL::read_one(&psio_, PSIF_OEI, const_cast<char*>(PSIF_SO_S), integrals, ioff[nso], 0, 0, outfile);
-        S_.set(integrals);
+        IWL::read_one(psio_.get(), PSIF_OEI, const_cast<char*>(PSIF_SO_S), integrals, ioff[nso], 0, 0, outfile);
+        S_->set(integrals);
         free(integrals);
     }
     else {
@@ -327,7 +309,7 @@ void HF::form_Shalf()
     factory_.create_matrix(eigtemp2);
     factory_.create_vector(eigval);
     
-    S_.diagonalize(eigvec, eigval);    
+    S_->diagonalize(eigvec, eigval);    
     
     // Convert the eigenvales to 1/sqrt(eigenvalues)
     int *dimpi = eigval.dimpi();
@@ -341,7 +323,7 @@ void HF::form_Shalf()
     eigtemp2.set(eigval);
     
     eigtemp.gemm(false, true, 1.0, eigtemp2, eigvec, 0.0);
-    Shalf_.gemm(false, false, 1.0, eigvec, eigtemp, 0.0);
+    Shalf_->gemm(false, false, 1.0, eigvec, eigtemp, 0.0);
     
     // Convert the eigenvalues to sqrt(eigenvalues)
 	for (int h=0; h<eigval.nirreps(); ++h) {
@@ -355,11 +337,11 @@ void HF::form_Shalf()
 	
 	// Works for diagonalize:
 	eigtemp.gemm(false, true, 1.0, eigtemp2, eigvec, 0.0);
-	Sphalf_.gemm(false, false, 1.0, eigvec, eigtemp, 0.0);
+	Sphalf_->gemm(false, false, 1.0, eigvec, eigtemp, 0.0);
 	
     if (debug_ > 3) {
-        Shalf_.print(outfile);
-        Sphalf_.print(outfile);
+        Shalf_->print(outfile);
+        Sphalf_->print(outfile);
     }
 }
 
@@ -451,3 +433,5 @@ void HF::form_multipole_integrals()
 //  Quadrupole_[5]->save("multipoles.dat", "Quadrupole ZZ SO-basis");
     Quadrupole_[5]->save(psio_, PSIF_OEI);
 }
+
+}}

@@ -7,8 +7,8 @@ PSITARGET = $(top_objdir)/bin/$(shell basename `pwd`)
 LDLIBS += $(LAPACK) $(BLAS) -lpthread
 
 PSILIBS = \
--lPSI_ccenergy -lPSI_ccsort -lPSI_input3 -lPSI_cscf -lPSI_cints -lPSI_transqt2 -lPSI_psiclean \
--lPSI_dpd -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_qt -lPSI_ciomr -lPSI_ipv1 -lPSI_options \
+-lPSI_scf -lPSI_ccenergy -lPSI_ccsort -lPSI_input3 -lPSI_cscf -lPSI_cints -lPSI_transqt2 -lPSI_psiclean \
+-lPSI_mints -lPSI_dpd -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_qt -lPSI_ciomr -lPSI_ipv1 -lPSI_options \
 -lPSI_deriv -lPSI_int -lPSI_util
 
 CXXSRC = read_atom_basis.cc fragment.cc  \

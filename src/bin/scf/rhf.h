@@ -13,19 +13,21 @@
 #include <libpsio/psio.hpp>
 #include "hf.h"
 
- using namespace psi;
- 
+using namespace psi;
+
+namespace psi { namespace scf {
+     
 class RHF : public HF {
 protected:
-    Matrix F_;
-    Matrix C_;
-    Matrix D_;
-    Matrix Dold_;
-    Matrix G_;
+    SharedMatrix F_;
+    SharedMatrix C_;
+    SharedMatrix D_;
+    SharedMatrix Dold_;
+    SharedMatrix G_;
         
-    Matrix** diis_F_;
-    Matrix** diis_E_;
-        
+    std::vector<SharedMatrix> diis_F_;
+    std::vector<SharedMatrix> diis_E_;
+    
     int num_diis_vectors_;
     double **diis_B_;
     int current_diis_fock_;
@@ -49,7 +51,7 @@ protected:
     void form_PK();
     void form_F();
     
-    void find_occupation(Matrix&);
+    void find_occupation(SharedMatrix);
     void save_fock();
     void diis();
     void allocate_PK();
@@ -59,11 +61,12 @@ protected:
     
     void common_init();
 public:
-    RHF(psi::PSIO *psio, psi::Chkpt *chkpt = 0);
-    RHF(psi::PSIO &psio, psi::Chkpt &chkpt);
+    RHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
     virtual ~RHF();
     
     double compute_energy();
 };
+
+}}
 
 #endif

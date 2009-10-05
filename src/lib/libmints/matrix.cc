@@ -683,6 +683,16 @@ void Matrix::gemm(bool transa, bool transb, double alpha, shared_ptr<Matrix> a, 
     gemm(transa, transb, alpha, a.get(), b.get(), beta);
 }
 
+void Matrix::gemm(bool transa, bool transb, double alpha, Matrix& a, shared_ptr<Matrix> b, double beta)
+{
+    gemm(transa, transb, alpha, const_cast<const Matrix*>(&a), b.get(), beta);
+}
+
+void Matrix::gemm(bool transa, bool transb, double alpha, shared_ptr<Matrix> a, Matrix& b, double beta)
+{
+    gemm(transa, transb, alpha, a.get(), const_cast<const Matrix*>(&b), beta);
+}
+
 double Matrix::vector_dot(Matrix* rhs)
 {
     double sum = 0.0;
