@@ -325,15 +325,13 @@ void RHF::save_information()
     fprintf(outfile, ")\n");
     
     // Needed for a couple of places.
-    Matrix eigvector;
-    Vector eigvalues;
-    factory_.create_matrix(eigvector);
-    factory_.create_vector(eigvalues);
+    SharedMatrix eigvector(factory_.create_matrix());
+    SharedVector eigvalues(factory_.create_vector());
     
     F_->diagonalize(eigvector, eigvalues);
     
     int print_mos = false;
-    ip_boolean(const_cast<char*>("PRINT_MOS"), &(print_mos), 0);
+    print_mos = options_.get_bool("PRINT_MOS");
     if (print_mos) {
         fprintf(outfile, "\n  Molecular orbitals:\n");
         
@@ -342,13 +340,13 @@ void RHF::save_information()
     
     // Print out orbital energies.
     std::vector<std::pair<double, int> > pairs;
-    for (int h=0; h<eigvalues.nirreps(); ++h) {
-        for (int i=0; i<eigvalues.dimpi()[h]; ++i)
-            pairs.push_back(make_pair(eigvalues.get(h, i), h));
+    for (int h=0; h<eigvalues->nirreps(); ++h) {
+        for (int i=0; i<eigvalues->dimpi()[h]; ++i)
+            pairs.push_back(make_pair(eigvalues->get(h, i), h));
     }
     sort(pairs.begin(),pairs.end());
     int ndocc = 0;
-    for (int i=0; i<eigvalues.nirreps(); ++i)
+    for (int i=0; i<eigvalues->nirreps(); ++i)
         ndocc += doccpi_[i];
     
     fprintf(outfile, "\n  Orbital energies (a.u.):\n    Doubly occupied orbitals\n      ");
@@ -366,12 +364,12 @@ void RHF::save_information()
     }
     fprintf(outfile, "\n");
     
-    for (int i=0; i<eigvalues.nirreps(); ++i)
+    for (int i=0; i<eigvalues->nirreps(); ++i)
         free(temp2[i]);
     free(temp2);
     
-    int *vec = new int[eigvalues.nirreps()];
-    for (int i=0; i<eigvalues.nirreps(); ++i)
+    int *vec = new int[eigvalues->nirreps()];
+    for (int i=0; i<eigvalues->nirreps(); ++i)
         vec[i] = 0;
     
     chkpt_->wt_nmo(nso);
@@ -380,7 +378,7 @@ void RHF::save_information()
     chkpt_->wt_escf(E_);
     chkpt_->wt_eref(E_);
     chkpt_->wt_clsdpi(doccpi_);
-    chkpt_->wt_orbspi(eigvalues.dimpi());
+    chkpt_->wt_orbspi(eigvalues->dimpi());
     chkpt_->wt_openpi(vec);
     chkpt_->wt_phase_check(0);
     
@@ -398,7 +396,7 @@ void RHF::save_information()
     chkpt_->wt_iopen(0);
     
     // Write eigenvectors and eigenvalue to checkpoint 
-    double *values = eigvalues.to_block_vector();
+    double *values = eigvalues->to_block_vector();
     chkpt_->wt_evals(values);
     free(values);
     double **vectors = C_->to_block_matrix();

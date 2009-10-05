@@ -16,17 +16,13 @@
 #include <libmints/matrix.h>
 #include "rohf.h"
 
-extern FILE *outfile;
-
 using namespace std;
 using namespace psi;
 
-ROHF::ROHF(PSIO *psio, Chkpt *chkpt) : HF(psio, chkpt)
-{
-    common_init();
-}
+namespace psi { namespace scf {
 
-ROHF::ROHF(Ref<PSIO> &psio, Ref<Chkpt> &chkpt) : HF(psio, chkpt)
+ROHF::ROHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) 
+    : HF(options, psio, chkpt)
 {
     common_init();
 }
@@ -41,21 +37,17 @@ ROHF::~ROHF() {
 
 void ROHF::common_init()
 {
-    diis_enabled_ = true;
-	use_out_of_core_ = false;
-    num_diis_vectors_ = 6;
-
-	Fc_     = factory_.create_matrix("F closed");
-	Fo_     = factory_.create_matrix("F open");
-	Feff_   = factory_.create_matrix("F effective (MO basis)");
-	C_      = factory_.create_matrix("C");
-	Dc_     = factory_.create_matrix("D closed");
-	Do_     = factory_.create_matrix("D open");
-	Dc_old_ = factory_.create_matrix("D closed old");
-	Do_old_ = factory_.create_matrix("D open old");
-	Gc_     = factory_.create_matrix("G closed");
-	Go_     = factory_.create_matrix("G open");
-	epsilon_ = factory_.create_vector();
+	Fc_     = SharedMatrix(factory_.create_matrix("F closed"));
+	Fo_     = SharedMatrix(factory_.create_matrix("F open"));
+	Feff_   = SharedMatrix(factory_.create_matrix("F effective (MO basis)"));
+	C_      = SharedMatrix(factory_.create_matrix("C"));
+	Dc_     = SharedMatrix(factory_.create_matrix("D closed"));
+	Do_     = SharedMatrix(factory_.create_matrix("D open"));
+	Dc_old_ = SharedMatrix(factory_.create_matrix("D closed old"));
+	Do_old_ = SharedMatrix(factory_.create_matrix("D open old"));
+	Gc_     = SharedMatrix(factory_.create_matrix("G closed"));
+	Go_     = SharedMatrix(factory_.create_matrix("G open"));
+	epsilon_ = SharedVector(factory_.create_vector());
 	
 	pk_ = NULL;
 	k_ = NULL;
@@ -63,8 +55,9 @@ void ROHF::common_init()
     diis_B_ = NULL;
 	current_diis_fock_ = 0;
 	
-	ip_data(const_cast<char*>("DIIS_VECTORS"), const_cast<char*>("%d"), &num_diis_vectors_, 0);
-    ip_boolean(const_cast<char*>("DIIS"), &diis_enabled_, 0);
+    num_diis_vectors_ = options_.get_int("DIIS_VECTORS");
+    diis_enabled_ = options_.get_bool("DIIS");
+    diis_enabled_ = false;      // DIIS doesn't work, so don't bother.
     
     // Don't perform DIIS is less than 2 vectors requested, or user requested a negative number
     if (num_diis_vectors_ < 2) {
@@ -77,21 +70,15 @@ void ROHF::common_init()
         diis_B_ = block_matrix(num_diis_vectors_, num_diis_vectors_);
         
         // Allocate space for diis_F_ and diis_E_
-        diis_F_ = new RefMatrix[num_diis_vectors_];
-        diis_E_ = new RefMatrix[num_diis_vectors_];
-        
         for (int i=0; i < num_diis_vectors_; ++i) {
-            diis_F_[i] = factory_.create_matrix();
-            diis_E_[i] = factory_.create_matrix();
+            diis_F_.push_back(SharedMatrix(factory_.create_matrix()));
+            diis_E_.push_back(SharedMatrix(factory_.create_matrix()));
         }
     }
 
-	charge_ = 0;
-	ip_data(const_cast<char*>("CHARGE"), const_cast<char*>("%d"), &(charge_), 0);
-	multiplicity_ = 0;
-	
-	ip_data(const_cast<char*>("MULTP"), const_cast<char*>("%d"), &(multiplicity_), 0);
-	ip_boolean(const_cast<char*>("OUT_OF_CORE"), &(use_out_of_core_), 0);
+    charge_ = options_.get_int("CHARGE");
+    multiplicity_ = options_.get_int("MULTP");
+    use_out_of_core_ = options_.get_bool("OUT_OF_CORE");
 
 	// Disable the use of the out of core algorithm. Hasn't been modified for ROHF
 	use_out_of_core_ = false;
@@ -103,16 +90,16 @@ void ROHF::common_init()
 
 void ROHF::initial_guess()
 {
-    RefMatrix temp   = factory_.create_matrix("Temporary Matrix");
-	RefVector values = factory_.create_vector();
+    SharedMatrix temp(factory_.create_matrix("Temporary Matrix"));
+	SharedVector values(factory_.create_vector());
 	
     // In ROHF the creation of the C matrix depends on the previous iteration's C
 	// matrix. Here we use H to generate the first C.
-	temp.copy(H_);
-	temp.transform(Shalf_);
-	temp.diagonalize(C_, values);
-	temp.gemm(false, false, 1.0, Shalf_, C_, 0.0);
-	C_.copy(temp);
+	temp->copy(H_);
+	temp->transform(Shalf_);
+	temp->diagonalize(C_, values);
+	temp->gemm(false, false, 1.0, Shalf_, C_, 0.0);
+	C_->copy(temp);
 }
 
 double ROHF::compute_energy() {
@@ -136,8 +123,8 @@ double ROHF::compute_energy() {
 	do {
 		iter++;
 
-		Dc_old_ = Dc_; // save previous density
-		Do_old_ = Do_; // save previous density
+		Dc_old_->copy(Dc_); // save previous density
+		Do_old_->copy(Do_); // save previous density
 		Eold_ = E_; // save previous energy
 
 		if (use_out_of_core_ == false)
@@ -200,23 +187,21 @@ void ROHF::save_information()
 	}
 	fprintf(outfile, ")\n");
 
-	int print_mos = false;
-	ip_boolean(const_cast<char*>("PRINT_MOS"), &(print_mos), 0);
+    int print_mos = options_.get_bool("PRINT_MOS");
 	if (print_mos) {
 		fprintf(outfile, "\n  Molecular orbitals:\n");
-
-		C_.eivprint(epsilon_);
+		C_->eivprint(epsilon_);
 	}
 
 	// Print out orbital energies.
 	std::vector<std::pair<double, int> > pairs;
-	for (int h=0; h<epsilon_.nirreps(); ++h) {
-		for (int i=0; i<epsilon_.dimpi()[h]; ++i)
-			pairs.push_back(make_pair(epsilon_.get(h, i), h));
+	for (int h=0; h<epsilon_->nirreps(); ++h) {
+		for (int i=0; i<epsilon_->dimpi()[h]; ++i)
+			pairs.push_back(make_pair(epsilon_->get(h, i), h));
 	}
 	sort(pairs.begin(), pairs.end());
 	int ndocc = 0, nsocc = 0;
-	for (int i=0; i<epsilon_.nirreps(); ++i) {
+	for (int i=0; i<epsilon_->nirreps(); ++i) {
 		ndocc += doccpi_[i];
 		nsocc += soccpi_[i];
 	}
@@ -247,7 +232,7 @@ void ROHF::save_information()
 	}
 	fprintf(outfile, "\n");
 
-	for (int i=0; i<epsilon_.nirreps(); ++i)
+	for (int i=0; i<epsilon_->nirreps(); ++i)
 		free(temp2[i]);
 	free(temp2);
 
@@ -257,7 +242,7 @@ void ROHF::save_information()
 	chkpt_->wt_escf(E_);
 	chkpt_->wt_eref(E_);
 	chkpt_->wt_clsdpi(doccpi_);
-	chkpt_->wt_orbspi(epsilon_.dimpi());
+	chkpt_->wt_orbspi(epsilon_->dimpi());
 	chkpt_->wt_openpi(soccpi_);
 	chkpt_->wt_phase_check(0);
 
@@ -272,7 +257,7 @@ void ROHF::save_information()
 	delete[](frzvpi);
 
 	int nopenirreps = 0;
-	for (int i=0; i<epsilon_.nirreps(); ++i)
+	for (int i=0; i<epsilon_->nirreps(); ++i)
 		if (soccpi_[i])
 			nopenirreps++;
 	
@@ -280,10 +265,10 @@ void ROHF::save_information()
 	chkpt_->wt_iopen(nopenirreps * (nopenirreps + 1));
 
 	// Write eigenvectors and eigenvalue to checkpoint 
-	double *values = epsilon_.to_block_vector();
+	double *values = epsilon_->to_block_vector();
 	chkpt_->wt_evals(values);
 	free(values);
-	double **vectors = C_.to_block_matrix();
+	double **vectors = C_->to_block_matrix();
 	chkpt_->wt_scf(vectors);
 	free_block(vectors);
 }
@@ -296,20 +281,20 @@ void ROHF::save_fock() {
 #endif
 
     // Save the effective Fock, back transform to AO, and orthonormalize
-	diis_F_[current_diis_fock_].copy(Feff_);
-	diis_F_[current_diis_fock_].back_transform(C_);
-	diis_F_[current_diis_fock_].transform(Sphalf_);
+	diis_F_[current_diis_fock_]->copy(Feff_);
+	diis_F_[current_diis_fock_]->back_transform(C_);
+	diis_F_[current_diis_fock_]->transform(Sphalf_);
 	
 	// Determine error matrix for this Fock
-	diis_E_[current_diis_fock_].copy(Feff_);
-    diis_E_[current_diis_fock_].zero_diagonal();
-	diis_E_[current_diis_fock_].back_transform(C_);
-	diis_E_[current_diis_fock_].transform(Sphalf_);
+	diis_E_[current_diis_fock_]->copy(Feff_);
+    diis_E_[current_diis_fock_]->zero_diagonal();
+	diis_E_[current_diis_fock_]->back_transform(C_);
+	diis_E_[current_diis_fock_]->transform(Sphalf_);
 
 #ifdef _DEBUG
 	if (debug_) {
 		fprintf(outfile, "  New error matrix:\n");
-		diis_E_[current_diis_fock_].print(outfile);
+		diis_E_[current_diis_fock_]->print(outfile);
 	}
 #endif
 	current_diis_fock_++;
@@ -324,13 +309,13 @@ void ROHF::diis() {
     
 	// Construct the B matrix
 	// Assumes all the error matrices are available
-	RefMatrix temp = factory_.create_matrix();
+	SharedMatrix temp(factory_.create_matrix());
 	for (i=0; i<num_diis_vectors_; ++i) {
         // diis_E_[i].print(outfile);
 		for (j=0; j<num_diis_vectors_; ++j) {
 //			temp.gemm(false, true, 1.0, diis_E_[i], diis_E_[j], 0.0);
 //			diis_B_[i][j] = temp.trace();
-            diis_B_[i][j] = diis_E_[i].vector_dot(diis_E_[j]);
+            diis_B_[i][j] = diis_E_[i]->vector_dot(diis_E_[j]);
 		}
 	}
 
@@ -378,14 +363,18 @@ void ROHF::diis() {
 
 	// Extrapolate a new Fock matrix.
     if (errcode == 0) {
-    	Feff_.zero();
-    	for (i=0; i<num_diis_vectors_; ++i)
-    		Feff_.add(diis_F_[i] * b[i+1]);
-    		
+    	Feff_->zero();
+    	for (i=0; i<num_diis_vectors_; ++i) {
+    	    Matrix scaled;
+            scaled.copy(diis_F_[i]);
+            scaled.scale(b[i+1]);
+    		Feff_->add(scaled);
+		}
+		
 		// Feff_ is now in the orthogonal AO basis
     	// Transform back to MO basis for C construction
-    	Feff_.back_transform(Sphalf_);
-    	Feff_.transform(C_);
+    	Feff_->back_transform(Sphalf_);
+    	Feff_->transform(C_);
 
         #ifdef _DEBUG
         	if (debug_) {
@@ -448,7 +437,7 @@ void ROHF::allocate_PK() {
 	}
 }
 
-void ROHF::find_occupation(RefMatrix& mat) {
+void ROHF::find_occupation(SharedMatrix mat) {
 	if (input_docc_ && input_socc_)
 		return;
 	else {
@@ -456,18 +445,18 @@ void ROHF::find_occupation(RefMatrix& mat) {
 		abort();
 		return;
 	}
-	RefMatrix eigvector = factory_.create_matrix();
-	RefVector eigvalues = factory_.create_vector();
+	SharedMatrix eigvector(factory_.create_matrix());
+	SharedVector eigvalues(factory_.create_vector());
 
-	mat.diagonalize(eigvector, eigvalues);
+	mat->diagonalize(eigvector, eigvalues);
 	std::vector<std::pair<double, int> > pairs;
-	for (int h=0; h<eigvalues.nirreps(); ++h) {
-		for (int i=0; i<eigvalues.dimpi()[h]; ++i)
-			pairs.push_back(make_pair(eigvalues.get(h, i), h));
+	for (int h=0; h<eigvalues->nirreps(); ++h) {
+		for (int i=0; i<eigvalues->dimpi()[h]; ++i)
+			pairs.push_back(make_pair(eigvalues->get(h, i), h));
 	}
 	sort(pairs.begin(), pairs.end());
 
-	memset(doccpi_, 0, sizeof(int) * eigvalues.nirreps());
+	memset(doccpi_, 0, sizeof(int) * eigvalues->nirreps());
 	int n2elec = 0, n1elec;
 	for (int i=0; i<natom_; ++i)
 		n2elec += (int)zvals_[i];
@@ -480,34 +469,38 @@ void ROHF::find_occupation(RefMatrix& mat) {
 
 void ROHF::form_initialF() {
 	// Form the initial Fock matrix, closed and open variants
-	Fc_.copy(H_);
-	Fo_.copy(0.5 * H_);
+	Fc_->copy(H_);
+    Fo_->copy(H_);
+	Fo_->scale(0.5);
 
 	// Transform the Focks
-	Fc_.transform(Shalf_);
-	Fo_.transform(Shalf_);
+	Fc_->transform(Shalf_);
+	Fo_->transform(Shalf_);
 	
 #ifdef _DEBUG
 	if (debug_) {
 		fprintf(outfile, "Initial closed Fock matrix:\n");
-		Fc_.print(outfile);
+		Fc_->print(outfile);
 		fprintf(outfile, "Initial open Fock matrix:\n");
-		Fo_.print(outfile);
+		Fo_->print(outfile);
 	}
 #endif
 }
 
 void ROHF::form_F() {
-	RefMatrix Fct = factory_.create_matrix("Fock closed transformed");
-	RefMatrix Fot = factory_.create_matrix("Fock open transformed");
+	SharedMatrix Fct(factory_.create_matrix("Fock closed transformed"));
+	SharedMatrix Fot(factory_.create_matrix("Fock open transformed"));
 
 	// Form Fc_ and Fo_. See derivation notebook for equations.
-	Fc_.copy(H_ + Gc_);
-	Fo_.copy(0.5 * H_ + Go_);
+	Fc_->copy(H_);
+    Fc_->add(Gc_);
+    Fo_->copy(H_);
+    Fo_->scale(0.5);
+    Fo_->add(Go_);
 
 	// Transform Fc_ and Fo_ to MO basis
-	Fct.transform(Fc_, C_);
-	Fot.transform(Fo_, C_);
+	Fct->transform(Fc_, C_);
+	Fot->transform(Fo_, C_);
 	
 	// Form the effective Fock matrix, too
 	// The effective Fock matrix has the following structure
@@ -515,21 +508,21 @@ void ROHF::form_F() {
 	//  Fc         2(Fc-Fo)   Fc
 	//  2(Fc-Fo)   Fc         2Fo
 	//  Fc         2Fo         Fc
-	int *opi = Fc_.rowspi();
-	Feff_.copy(Fct);
-	for (int h=0; h<Feff_.nirreps(); ++h) {
+	int *opi = Fc_->rowspi();
+	Feff_->copy(Fct);
+	for (int h=0; h<Feff_->nirreps(); ++h) {
 		for (int i=doccpi_[h]; i<doccpi_[h]+soccpi_[h]; ++i) {
 			// Set the open/closed portion
 			for (int j=0; j<doccpi_[h]; ++j) {
-				double val = 2.0 * (Fct.get(h, i, j) - Fot.get(h, i, j));
-				Feff_.set(h, i, j, val);
-				Feff_.set(h, j, i, val);
+				double val = 2.0 * (Fct->get(h, i, j) - Fot->get(h, i, j));
+				Feff_->set(h, i, j, val);
+				Feff_->set(h, j, i, val);
 			}
 			// Set the open/virtual portion
 			for (int j=doccpi_[h]+soccpi_[h]; j<opi[h]; ++j) {
-				double val = 2.0 * Fot.get(h, i, j);
-				Feff_.set(h, i, j, val);
-				Feff_.set(h, j, i, val);
+				double val = 2.0 * Fot->get(h, i, j);
+				Feff_->set(h, i, j, val);
+				Feff_->set(h, j, i, val);
 			}
 			// Set the open/open portion
 //			for (int j=doccpi_[h]; j<doccpi_[h]+soccpi_[h]; ++j) {
@@ -541,80 +534,87 @@ void ROHF::form_F() {
 	}
 #ifdef _DEBUG
 	if (debug_) {
-		Fc_.print(outfile);
-		Fo_.print(outfile);
-		Fct.print(outfile);
-		Fot.print(outfile);
-		Feff_.print(outfile);
+		Fc_->print(outfile);
+		Fo_->print(outfile);
+		Fct->print(outfile);
+		Fot->print(outfile);
+		Feff_->print(outfile);
 	}
 #endif
 }
 
 void ROHF::form_C() {
-	RefMatrix temp   = factory_.create_matrix("temp matrix");
-	RefMatrix eigvec = factory_.create_matrix("Effective Fock Eigenvectors");
+	SharedMatrix temp(factory_.create_matrix("temp matrix"));
+	SharedMatrix eigvec(factory_.create_matrix("Effective Fock Eigenvectors"));
 	
 	// Obtain new eigenvectors
-	Feff_.diagonalize(eigvec, epsilon_);
+	Feff_->diagonalize(eigvec, epsilon_);
 
 #ifdef _DEBUG
 	if (debug_) {
-		eigvec.eivprint(epsilon_);
+		eigvec->eivprint(epsilon_);
 	}
 #endif
 	// Perform a half-transform using the previous iteration's C
-	temp.gemm(false, false, 1.0, C_, eigvec, 0.0);
-	C_.copy(temp);
+	temp->gemm(false, false, 1.0, C_, eigvec, 0.0);
+	C_->copy(temp);
 	
 #ifdef _DEBUG
 	if (debug_) {
-		C_.print(outfile);
+		C_->print(outfile);
 	}
 #endif
 }
 
 void ROHF::form_D() {
 	int h, i, j, m;
-	int *opi = Dc_.rowspi();
-	int nirreps = Dc_.nirreps();
+	int *opi = Dc_->rowspi();
+	int nirreps = Dc_->nirreps();
 	double val;
 	for (h=0; h<nirreps; ++h) {
 		for (i=0; i<opi[h]; ++i) {
 			for (j=0; j<opi[h]; ++j) {
 				val = 0.0;
 				for (m=0; m<doccpi_[h]; ++m)
-					val += C_.get(h, i, m) * C_.get(h, j, m);
-				Dc_.set(h, i, j, val);
+					val += C_->get(h, i, m) * C_->get(h, j, m);
+				Dc_->set(h, i, j, val);
 
 				val = 0.0;
 				for (m=doccpi_[h]; m<doccpi_[h]+soccpi_[h]; ++m)
-					val += C_.get(h, i, m) * C_.get(h, j, m);
-				Do_.set(h, i, j, val);
+					val += C_->get(h, i, m) * C_->get(h, j, m);
+				Do_->set(h, i, j, val);
 			}
 		}
 	}
 
 #ifdef _DEBUG
 	if (debug_) {
-		Dc_.print(outfile);
-		Do_.print(outfile);
+		Dc_->print(outfile);
+		Do_->print(outfile);
 	}
 #endif
 }
 
 double ROHF::compute_initial_E() {
-	RefMatrix Ho = 0.5 * H_;
-
-	double Etotal = nuclearrep_ + Dc_.vector_dot(H_) + Do_.vector_dot(Ho);
+    SharedMatrix Ho(factory_.create_matrix());
+    Ho->copy(H_);
+    Ho->scale(0.5);
+    
+	double Etotal = nuclearrep_ + Dc_->vector_dot(H_) + Do_->vector_dot(Ho);
 	fprintf(outfile, "\n  Initial ROHF energy: %20.14f\n\n", Etotal);
 	fflush(outfile);
 	return Etotal;
 }
 
 double ROHF::compute_E() {
-	RefMatrix HFc = H_ + Fc_;
-	RefMatrix HFo = 0.5 * H_ + Fo_;
-	double Etotal = nuclearrep_ + Dc_.vector_dot(HFc) + Do_.vector_dot(HFo);
+    SharedMatrix HFc(factory_.create_matrix());
+    HFc->copy(H_);
+    HFc->add(Fc_);
+    SharedMatrix HFo(factory_.create_matrix());
+    HFo->copy(H_);
+    HFo->scale(0.5);
+    HFo->add(Fo_);
+	double Etotal = nuclearrep_ + Dc_->vector_dot(HFc) + Do_->vector_dot(HFo);
 	return Etotal;
 }
 
@@ -634,7 +634,7 @@ void ROHF::form_PK() {
 	fprintf(outfile, "  Forming PK and K matrices.\n");
 	fflush(outfile);
 
-	IWL ERIIN(psio_.pointer(), PSIF_SO_TEI, 0.0, 1, 1);
+	IWL ERIIN(psio_.get(), PSIF_SO_TEI, 0.0, 1, 1);
 
 	do {
 		ilsti = ERIIN.last_buffer();
@@ -735,8 +735,8 @@ void ROHF::form_G_from_PK() {
 	double *Gc_vector = new double[pk_pairs_];
 	double *Go_vector = new double[pk_pairs_];
 
-	Gc_.zero();
-	Go_.zero();
+	Gc_->zero();
+	Go_->zero();
 
 	memset(Do_vector, 0, sizeof(double) * pk_pairs_);
 	memset(Dc_vector, 0, sizeof(double) * pk_pairs_);
@@ -748,11 +748,11 @@ void ROHF::form_G_from_PK() {
 		for (int p=0; p<opi[h]; ++p) {
 			for (int q=0; q<=p; ++q) {
 				if (p != q) {
-					Dc_vector[ij] = 2.0 * Dc_.get(h, p, q);
-					Do_vector[ij] = 2.0 * Do_.get(h, p, q);
+					Dc_vector[ij] = 2.0 * Dc_->get(h, p, q);
+					Do_vector[ij] = 2.0 * Do_->get(h, p, q);
 				} else {
-					Dc_vector[ij] = Dc_.get(h, p, q);
-					Do_vector[ij] = Do_.get(h, p, q);
+					Dc_vector[ij] = Dc_->get(h, p, q);
+					Do_vector[ij] = Do_->get(h, p, q);
 				}
 				ij++;
 			}
@@ -763,11 +763,11 @@ void ROHF::form_G_from_PK() {
 	if (debug_) {
 		fprintf(outfile, "PK: ij = %lu\n", (unsigned long)ij);
 		fflush(outfile);
-		Dc_.print(outfile);
+		Dc_->print(outfile);
 		fprintf(outfile, "PK: Dc vector:\n");
 		for (ij=0; ij<pk_pairs_; ++ij)
 			fprintf(outfile, "PK: Dc vector [%lu] = %20.14f\n", (unsigned long)ij, Dc_vector[ij]);
-		Do_.print(outfile);
+		Do_->print(outfile);
 		fprintf(outfile, "PK: Do vector:\n");
 		for (ij=0; ij<pk_pairs_; ++ij)
 			fprintf(outfile, "PK: Do vector [%lu] = %20.14f\n", (unsigned long)ij, Do_vector[ij]);
@@ -827,10 +827,10 @@ void ROHF::form_G_from_PK() {
 	for (int h = 0; h < nirreps; ++h) {
 		for (int p = 0; p < opi[h]; ++p) {
 			for (int q = 0; q <= p; ++q) {
-				Gc_.set(h, p, q, 2.0 * Gc_vector[ij]);
-				Gc_.set(h, q, p, 2.0 * Gc_vector[ij]);
-				Go_.set(h, p, q, 2.0 * Go_vector[ij]);
-				Go_.set(h, q, p, 2.0 * Go_vector[ij]);
+				Gc_->set(h, p, q, 2.0 * Gc_vector[ij]);
+				Gc_->set(h, q, p, 2.0 * Gc_vector[ij]);
+				Go_->set(h, p, q, 2.0 * Go_vector[ij]);
+				Go_->set(h, q, p, 2.0 * Go_vector[ij]);
 				ij++;
 			}
 		}
@@ -839,9 +839,9 @@ void ROHF::form_G_from_PK() {
 #ifdef _DEBUG
 	if (debug_) {
 		fprintf(outfile, "Gc from PK:\n");
-		Gc_.print(outfile);
+		Gc_->print(outfile);
 		fprintf(outfile, "Go from PK:\n");
-		Go_.print(outfile);
+		Go_->print(outfile);
 	}
 #endif
 
@@ -1324,3 +1324,5 @@ void ROHF::form_G() {
 	
 #endif // 0
 }
+
+}}

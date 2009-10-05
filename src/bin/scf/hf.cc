@@ -345,14 +345,14 @@ void HF::form_Shalf()
     }
 }
 
-int *HF::compute_fcpi(int nfzc, Vector& eigvalues)
+int *HF::compute_fcpi(int nfzc, SharedVector eigvalues)
 {
-    int *frzcpi = new int[eigvalues.nirreps()];
+    int *frzcpi = new int[eigvalues->nirreps()];
     // Print out orbital energies.
     std::vector<std::pair<double, int> > pairs;
-    for (int h=0; h<eigvalues.nirreps(); ++h) {
-        for (int i=0; i<eigvalues.dimpi()[h]; ++i)
-            pairs.push_back(make_pair(eigvalues.get(h, i), h));
+    for (int h=0; h<eigvalues->nirreps(); ++h) {
+        for (int i=0; i<eigvalues->dimpi()[h]; ++i)
+            pairs.push_back(make_pair(eigvalues->get(h, i), h));
         frzcpi[h] = 0;
     }
     sort(pairs.begin(),pairs.end());
@@ -363,14 +363,14 @@ int *HF::compute_fcpi(int nfzc, Vector& eigvalues)
     return frzcpi;
 }
 
-int *HF::compute_fvpi(int nfzv, Vector& eigvalues)
+int *HF::compute_fvpi(int nfzv, SharedVector eigvalues)
 {
-    int *frzvpi = new int[eigvalues.nirreps()];
+    int *frzvpi = new int[eigvalues->nirreps()];
     // Print out orbital energies.
     std::vector<std::pair<double, int> > pairs;
-    for (int h=0; h<eigvalues.nirreps(); ++h) {
-        for (int i=0; i<eigvalues.dimpi()[h]; ++i)
-            pairs.push_back(make_pair(eigvalues.get(h, i), h));
+    for (int h=0; h<eigvalues->nirreps(); ++h) {
+        for (int i=0; i<eigvalues->dimpi()[h]; ++i)
+            pairs.push_back(make_pair(eigvalues->get(h, i), h));
         frzvpi[h] = 0;
     }
     sort(pairs.begin(),pairs.end(), greater<std::pair<double, int> >());
