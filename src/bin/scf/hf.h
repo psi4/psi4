@@ -95,8 +95,8 @@ protected:
     void form_multipole_integrals();
     
     // Determine how many core and virtual orbitals to freeze
-    int *compute_fcpi(int nfzc, Vector& eigvalues);
-    int *compute_fvpi(int nfvc, Vector& eigvalues);
+    int *compute_fcpi(int nfzc, SharedVector eigvalues);
+    int *compute_fvpi(int nfvc, SharedVector eigvalues);
     
     // Forms the _so2* mapping arrays and determines _pk_pairs
     void form_indexing();

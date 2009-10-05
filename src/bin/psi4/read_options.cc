@@ -103,6 +103,9 @@ int read_options(std::string name, Options & options) {
     options.add_int("DIIS_VECTORS", 4);
     options.add_bool("DIIS", true);
     options.add_bool("OUT_OF_CORE", false);
+    options.add_int("CHARGE", 0);
+    options.add_int("MULTP", 0);
+    options.add_bool("PRINT_MOS", false);
   }
   else if (name == "MP2") {
     options.add_str("WFN", "");

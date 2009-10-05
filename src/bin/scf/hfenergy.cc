@@ -15,7 +15,7 @@
 
 #include "hfenergy.h"
 #include "rhf.h"
-// #include "rohf.h"
+#include "rohf.h"
 // #include "uhf.h"
 
 using namespace std;
@@ -41,10 +41,10 @@ double HFEnergy::compute_energy()
         RHF rhf_energy(options_, psio_, chkpt_);
         energy = rhf_energy.compute_energy();
     }
-    // else if (strcmp(reference, "ROHF") == 0) {
-    //     ROHF rohf_energy(psio_, chkpt_);
-    //     energy = rohf_energy.compute_energy();
-    // }
+    else if (reference == "ROHF") {
+        ROHF rohf_energy(options_, psio_, chkpt_);
+        energy = rohf_energy.compute_energy();
+    }
     // else if (strcmp(reference, "UHF") == 0) {
     //  UHF uhf_energy(psio_, chkpt_);
     //  energy = uhf_energy.compute_energy();

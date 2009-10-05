@@ -1,28 +1,33 @@
 #ifndef __rohf_psi_h__
 #define __rohf_psi_h__
 
+#include <vector>
 #include <libpsio/psio.hpp>
 #include "hf.h"
 
+#include <psi4-dec.h>
+
 using namespace psi;
 
+namespace psi { namespace scf {
+  
 class ROHF : public HF {
 protected:
-    RefMatrix S_;
-    RefMatrix Fc_;
-    RefMatrix Fo_;
-    RefMatrix Feff_;
-    RefMatrix C_;
-    RefMatrix Dc_;
-    RefMatrix Do_;
-    RefMatrix Dc_old_;
-    RefMatrix Do_old_;
-    RefMatrix Gc_;
-    RefMatrix Go_;
-    RefVector epsilon_;
+    SharedMatrix S_;
+    SharedMatrix Fc_;
+    SharedMatrix Fo_;
+    SharedMatrix Feff_;
+    SharedMatrix C_;
+    SharedMatrix Dc_;
+    SharedMatrix Do_;
+    SharedMatrix Dc_old_;
+    SharedMatrix Do_old_;
+    SharedMatrix Gc_;
+    SharedMatrix Go_;
+    SharedVector epsilon_;
     
-    Ref<RefMatrix, SimpleReferenceCount, StandardArrayPolicy> diis_F_;
-    Ref<RefMatrix, SimpleReferenceCount, StandardArrayPolicy> diis_E_;
+    std::vector<SharedMatrix> diis_F_;
+    std::vector<SharedMatrix> diis_E_;
 
     int num_diis_vectors_;
     double **diis_B_;
@@ -48,7 +53,7 @@ protected:
     void form_PK();
     void form_F();
 
-    void find_occupation(RefMatrix &);
+    void find_occupation(SharedMatrix);
     void save_fock();
     void diis();
     void allocate_PK();
@@ -59,11 +64,12 @@ protected:
     
     void common_init();
 public:
-    ROHF(psi::PSIO *psio, psi::Chkpt *chkpt = 0);
-    ROHF(Ref<psi::PSIO> &psio, Ref<psi::Chkpt> &chkpt);
+    ROHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
     ~ROHF();
 
     double compute_energy();    
 };
+
+}}
 
 #endif
