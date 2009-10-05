@@ -27,13 +27,15 @@ double df[MAX_DF];
 double bc[MAX_BC][MAX_BC];
 double fac[MAX_FAC];
 
-Wavefunction::Wavefunction(shared_ptr<PSIO> psio) : psio_(psio)
+Wavefunction::Wavefunction(Options & options, shared_ptr<PSIO> psio) : 
+	options_(options), psio_(psio)
 {
     chkpt_ = shared_ptr<Chkpt>(new Chkpt(psio.get(), PSIO_OPEN_OLD));
     common_init();
 }
 
-Wavefunction::Wavefunction(shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) : psio_(psio), chkpt_(chkpt)
+Wavefunction::Wavefunction(Options & options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) : 
+	options_(options), psio_(psio), chkpt_(chkpt)
 {
     common_init();
 }

@@ -12,15 +12,18 @@
 
 #include <libpsio/psio.hpp>
 #include <libmints/wavefunction.h>
+#include <psi4-dec.h>
 
- using namespace psi;
- 
+using namespace psi;
+
+namespace psi { namespace scf {
+     
 class HF : public Wavefunction {
 protected:
-    Matrix H_;
-    Matrix S_;
-    Matrix Shalf_;
-    Matrix Sphalf_;
+    SharedMatrix H_;
+    SharedMatrix S_;
+    SharedMatrix Shalf_;
+    SharedMatrix Sphalf_;
     
     // Previous iteration's energy and current energy
     double Eold_;
@@ -71,8 +74,8 @@ protected:
 
 public:    
     // Exactly what their name says
-    SimpleMatrix** Dipole_;
-    SimpleMatrix** Quadrupole_;
+    vector<SharedSimpleMatrix> Dipole_;
+    vector<SharedSimpleMatrix> Quadrupole_;
     
     // Nuclear contributions
     SimpleVector nuclear_dipole_contribution_;
@@ -137,10 +140,11 @@ protected:
         return type;
     }
 public:
-    HF(psi::PSIO *psio, psi::Chkpt *chkpt = 0);
-    HF(psi::PSIO &psio, psi::Chkpt &chkpt);
+    HF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
     
     virtual ~HF();
 };
+
+}}
 
 #endif

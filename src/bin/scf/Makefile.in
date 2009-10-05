@@ -3,9 +3,7 @@ VPATH = @srcdir@
 
 include ../MakeVars
 
-LDLIBS += $(LAPACK) $(BLAS)
-
-PSILIBS = -lPSI_mints -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1 -lPSI_deriv -lPSI_int
+PSITARGET = $(top_objdir)/lib/libPSI_scf.a
 
 CXXSRC = main.cc hfenergy.cc hf.cc rhf.cc
 
@@ -17,3 +15,7 @@ ifneq ($(DODEPEND),no)
 $(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
 include $(BINOBJ:%.o=%.d)
 endif
+
+install_man:: scf.1
+	$(MKDIRS) $(DESTDIR)$(mandir)/man1
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(mandir)/man1

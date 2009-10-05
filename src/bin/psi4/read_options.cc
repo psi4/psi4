@@ -91,6 +91,19 @@ int read_options(std::string name, Options & options) {
     options.add_int("ERI_FILE", PSIF_SO_TEI);
 
   }
+  else if (name == "SCF") {
+    options.add_str("REFERENCE", "RHF");
+    options.add_int("MAXITER", 40);
+    options.add("DOCC", new ArrayType());
+    options.add("SOCC", new ArrayType());
+    options.add_bool("PERTURB_H", false);
+    options.add_double("LAMBDA", 0.0);
+    options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z");
+    options.add_bool("DIRECT", false);
+    options.add_int("DIIS_VECTORS", 4);
+    options.add_bool("DIIS", true);
+    options.add_bool("OUT_OF_CORE", false);
+  }
   else if (name == "MP2") {
     options.add_str("WFN", "");
     options.add_str("REFERENECE", "RHF");

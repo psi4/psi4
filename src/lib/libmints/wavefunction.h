@@ -11,6 +11,7 @@
 #include <libmints/molecule.h>
 #include <libmints/basisset.h>
 #include <libpsio/psio.hpp>
+#include <psi4-dec.h>
 
 #define MAX_IOFF 30000
 extern int ioff[MAX_IOFF];
@@ -35,6 +36,7 @@ protected:
 
     shared_ptr<BasisSet> basisset_;
     shared_ptr<Molecule> molecule_;
+	Options & options_;
 
     // PSI file access variables
     shared_ptr<PSIO> psio_;
@@ -52,8 +54,8 @@ private:
 
 public:
     /// Set the PSIO object. Note: Wavefunction assumes ownership of the object. DO NOT DELETE!
-    Wavefunction(shared_ptr<PSIO> psio);
-    Wavefunction(shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
+    Wavefunction(Options & options, shared_ptr<PSIO> psio);
+    Wavefunction(Options & options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
     
     virtual ~Wavefunction();
 

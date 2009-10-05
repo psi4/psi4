@@ -14,63 +14,39 @@
 #include <libiwl/iwl.h>
 #include <libqt/qt.h>
 
-#include <libmints/basisset.h>
-#include <libmints/onebody.h>
-#include <libmints/twobody.h>
-#include <libmints/integral.h>
-#include <libmints/factory.h>
-#include <libmints/symmetry.h>
+#include <libmints/mints.h>
 #include "hfenergy.h"
 
-using namespace psi;
+#include <psi4-dec.h>
 
-extern "C" {
-    char *gprgid();
-}
-
-FILE *infile = NULL,
-     *outfile = NULL;
-char *psi_file_prefix = NULL;
-
-char *gprgid()
-{
-    const char *prgid = "SCF";
-    return const_cast<char*>(prgid);
-}
+namespace psi { namespace scf {
 
 std::string to_string(const int val);   // In matrix.cpp
-// {
-//     std::stringstream strm;
-//     strm <<  val;
-//     return strm.str();
-// }
 
-int main (int argc, char * argv[]) 
+PsiReturnType scf(Options & options, int argc, char * argv[]) 
 {
-    psi_start(&infile,&outfile,&psi_file_prefix,argc-1,argv+1,0);
-    tstart(outfile);
+    tstart();
     
     Wavefunction::initialize_singletons();
     
-    // psio_init();
-    // psio_ipv1_config();
-    PSIO psio;
-    psiopp_ipv1_config(&psio);
+    shared_ptr<PSIO> psio(new PSIO);
+    psiopp_ipv1_config(psio);
     
-    // chkpt_init(PSIO_OPEN_OLD);
-    Chkpt chkpt(psio, PSIO_OPEN_OLD);
+    shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
     
     // Initialize the psi3 timer library.
     timer_init();
 
     // Compute the Hartree-Fock energy
-    HFEnergy hf(psio, chkpt);
+    HFEnergy hf(options, psio, chkpt);
     double hf_energy = hf.compute_energy();
     
     // Shut down psi. 
     timer_done();
-    tstop(outfile);
-    psi_stop(infile, outfile, psi_file_prefix);
+
+    tstop();
     
-    return EXIT_SUCCESS;
+    return Success;
 }
+
+}}

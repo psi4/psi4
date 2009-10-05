@@ -791,6 +791,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/ccresponse/Makefile
           src/bin/cchbar/Makefile
           src/bin/cis/Makefile
+          src/bin/scf/Makefile
 ])
 
 AC_OUTPUT

@@ -12,16 +12,18 @@
 
 #include <libpsio/psio.hpp>
 #include <libmints/wavefunction.h>
+#include <psi4-dec.h>
 
- using namespace psi;
+namespace psi { namespace scf {
  
 class HFEnergy : public Wavefunction {
 public:
-    HFEnergy(PSIO *psio, Chkpt *chkpt = 0);
-    HFEnergy(PSIO &psio, Chkpt &chkpt);
+    HFEnergy(Options & options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
     virtual ~HFEnergy() {}
     
     double compute_energy();
 };
+
+}}
 
 #endif

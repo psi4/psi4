@@ -9,7 +9,7 @@
 
 #include <cstdio>
 #include <cstdlib>
-#include <cstring>
+#include <string>
 
 #include <libipv1/ip_lib.h>
 
@@ -18,16 +18,13 @@
 // #include "rohf.h"
 // #include "uhf.h"
 
+using namespace std;
 using namespace psi;
- 
-extern FILE *outfile;
 
-HFEnergy::HFEnergy(PSIO *psio, Chkpt *chkpt) : Wavefunction(psio, chkpt)
-{
-    
-}
-
-HFEnergy::HFEnergy(PSIO &psio, Chkpt &chkpt) : Wavefunction(psio, chkpt)
+namespace psi { namespace scf {
+     
+HFEnergy::HFEnergy(Options & options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) 
+    : Wavefunction(options, psio, chkpt)
 {
     
 }
@@ -35,13 +32,13 @@ HFEnergy::HFEnergy(PSIO &psio, Chkpt &chkpt) : Wavefunction(psio, chkpt)
 double HFEnergy::compute_energy()
 {
     // Check the requested reference in the input file
-    char *reference;
+    string reference;
     double energy;
     
-    ip_string(const_cast<char*>("REFERENCE"), &reference, 0);
+    reference = options_.get_str("REFERENCE");
     
-    if (strcmp(reference, "RHF") == 0) {
-        RHF rhf_energy(psio_, chkpt_);
+    if (reference == "RHF") {
+        RHF rhf_energy(options_, psio_, chkpt_);
         energy = rhf_energy.compute_energy();
     }
     // else if (strcmp(reference, "ROHF") == 0) {
@@ -53,11 +50,11 @@ double HFEnergy::compute_energy()
     //  energy = uhf_energy.compute_energy();
     // }
     else {
-    	fprintf(outfile, "ERROR: Unrecognized reference wavefunction.\n");
+        throw InputException("Unknown reference " + reference, "REFERENCE", __FILE__, __LINE__);
     	energy = 0.0;
     }
-    // Free the memory allocated by ip_string
-    free(reference);
     
     return energy;
 }
+
+}}

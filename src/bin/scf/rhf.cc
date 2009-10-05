@@ -30,20 +30,17 @@
 #include <libmints/symmetry.h>
 #include <libmints/wavefunction.h>
 #include "rhf.h"
-
-extern FILE *outfile;
+#include <psi4-dec.h>
 
 #define _DEBUG
 
 using namespace psi;
 using namespace std;
 
-RHF::RHF(PSIO *psio, Chkpt *chkpt) : HF(psio, chkpt)
-{
-    common_init();
-}
-
-RHF::RHF(PSIO &psio, Chkpt &chkpt) : HF(psio, chkpt)
+namespace psi { namespace scf {
+    
+RHF::RHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) 
+    : HF(options, psio, chkpt)
 {
     common_init();
 }
@@ -54,14 +51,6 @@ RHF::~RHF()
         free_block(diis_B_);
     if (pk_)
         delete[] pk_;
-    if (diis_enabled_ == true) {
-        for (int i=0; i<num_diis_vectors_; ++i) {
-            delete diis_F_[i];
-            delete diis_E_[i];
-        }
-        delete[] diis_F_;
-        delete[] diis_E_;
-    }
 }
 
 void RHF::common_init()
@@ -72,19 +61,19 @@ void RHF::common_init()
     use_out_of_core_ = false;
     
     // Allocate matrix memory
-    factory_.create_matrix(F_, "F");
-    factory_.create_matrix(C_, "C");
-    factory_.create_matrix(D_, "D");
-    factory_.create_matrix(Dold_, "D old");
-    factory_.create_matrix(G_, "G");
+    F_    = SharedMatrix(factory_.create_matrix("F"));
+    C_    = SharedMatrix(factory_.create_matrix("C"));
+    D_    = SharedMatrix(factory_.create_matrix("D"));
+    Dold_ = SharedMatrix(factory_.create_matrix("D old"));
+    G_    = SharedMatrix(factory_.create_matrix("G"));
     
     // PK super matrix for fast G
     pk_ = NULL;
     
     // Allocate memory for DIISnum_diis_vectors_
     //  First, did the user request a different number of diis vectors?
-    ip_data(const_cast<char*>("DIIS_VECTORS"), const_cast<char*>("%d"), &num_diis_vectors_, 0);
-    ip_boolean(const_cast<char*>("DIIS"), &diis_enabled_, 0);
+    num_diis_vectors_ = options_.get_int("DIIS_VECTORS");
+    diis_enabled_ = options_.get_bool("DIIS");
     
     // Don't perform DIIS if less than 2 vectors requested, or user requested a negative number
     if (num_diis_vectors_ < 2) {
@@ -98,18 +87,15 @@ void RHF::common_init()
         diis_B_ = block_matrix(num_diis_vectors_, num_diis_vectors_);
         
         // Allocate space for diis_F_ and diis_E_
-        diis_F_ = new Matrix*[num_diis_vectors_];
-        diis_E_ = new Matrix*[num_diis_vectors_];
-        
         for (int i=0; i < num_diis_vectors_; ++i) {
-            diis_F_[i] = factory_.create_matrix();
-            diis_E_[i] = factory_.create_matrix();
+            diis_F_.push_back(SharedMatrix(factory_.create_matrix()));
+            diis_E_.push_back(SharedMatrix(factory_.create_matrix()));
         }
         current_diis_fock_ = 0;
     }
     
     // Check out of core
-    ip_boolean(const_cast<char*>("OUT_OF_CORE"), &use_out_of_core_, 0);
+    use_out_of_core_ = options_.get_bool("OUT_OF_CORE");
     
     // Print DIIS status
     fprintf(outfile, "  DIIS %s.\n", diis_enabled_ ? "enabled" : "disabled");
@@ -137,19 +123,19 @@ double RHF::compute_energy()
     form_initialF();
     // Check to see if there are MOs already in the checkpoint file.
     // If so, read them in instead of forming them.
-    string prefix(chkpt_.build_keyword(const_cast<char*>("MO coefficients")));
-    if (chkpt_.exist(const_cast<char*>(prefix.c_str()))) {
+    string prefix(chkpt_->build_keyword(const_cast<char*>("MO coefficients")));
+    if (chkpt_->exist(const_cast<char*>(prefix.c_str()))) {
         fprintf(outfile, "  Reading previous MOs from file32.\n\n");
         
         // Read MOs from checkpoint and set C_ to them
-        double **vectors = chkpt_.rd_scf();
-        C_.set(const_cast<const double**>(vectors));
+        double **vectors = chkpt_->rd_scf();
+        C_->set(const_cast<const double**>(vectors));
         free_block(vectors);
         
         form_D();
         
         // Read SCF energy from checkpoint file.
-        E_ = chkpt_.rd_escf();
+        E_ = chkpt_->rd_escf();
     } else {
         form_C();
         form_D();
@@ -161,7 +147,7 @@ double RHF::compute_energy()
     do {
         iteration++;
         
-        Dold_.copy(D_);  // Save previous density
+        Dold_->copy(D_);  // Save previous density
         Eold_ = E_;      // Save previous energy
         
         if (use_out_of_core_ == false && direct_integrals_ == false)
@@ -219,7 +205,7 @@ void RHF::compute_multipole()
     // Begin dipole
     double dex, dey, dez, dx, dy, dz;
     // Convert blocked density to a full block
-    SimpleMatrix D(D_.to_simple_matrix());
+    SimpleMatrix D(D_->to_simple_matrix());
     
     dex = D.vector_dot(Dipole_[0]) * 2.0;
     dey = D.vector_dot(Dipole_[1]) * 2.0;
@@ -311,7 +297,7 @@ void RHF::compute_multipole()
     // Compute orbital extents
     fprintf(outfile, "\n  Orbital extents (a.u.):\n");
     fprintf(outfile, "\t%3s%15s  %15s  %15s  %15s\n", "MO", "<x^2>", "<y^2>", "<z^2>", "<r^2>");
-    SimpleMatrix C(C_.to_simple_matrix());
+    SimpleMatrix C(C_->to_simple_matrix());
     for (int i=0; i<C.rows(); ++i) {
         double sumx=0.0, sumy=0.0, sumz=0.0;
         for (int k=0; k<C.cols(); ++k) {
@@ -329,8 +315,8 @@ void RHF::compute_multipole()
 void RHF::save_information()
 {
     // Print the final docc vector
-    char **temp2 = chkpt_.rd_irr_labs();
-    int nso = chkpt_.rd_nso();
+    char **temp2 = chkpt_->rd_irr_labs();
+    int nso = chkpt_->rd_nso();
     
     fprintf(outfile, "\n  Final occupation vector = (");
     for (int h=0; h<factory_.nirreps(); ++h) {
@@ -344,14 +330,14 @@ void RHF::save_information()
     factory_.create_matrix(eigvector);
     factory_.create_vector(eigvalues);
     
-    F_.diagonalize(eigvector, eigvalues);
+    F_->diagonalize(eigvector, eigvalues);
     
     int print_mos = false;
     ip_boolean(const_cast<char*>("PRINT_MOS"), &(print_mos), 0);
     if (print_mos) {
         fprintf(outfile, "\n  Molecular orbitals:\n");
         
-        C_.eivprint(eigvalues);
+        C_->eivprint(eigvalues);
     }
     
     // Print out orbital energies.
@@ -388,35 +374,35 @@ void RHF::save_information()
     for (int i=0; i<eigvalues.nirreps(); ++i)
         vec[i] = 0;
     
-    chkpt_.wt_nmo(nso);
-    chkpt_.wt_ref(0);        // Only RHF right now
-    chkpt_.wt_etot(E_);
-    chkpt_.wt_escf(E_);
-    chkpt_.wt_eref(E_);
-    chkpt_.wt_clsdpi(doccpi_);
-    chkpt_.wt_orbspi(eigvalues.dimpi());
-    chkpt_.wt_openpi(vec);
-    chkpt_.wt_phase_check(0);
+    chkpt_->wt_nmo(nso);
+    chkpt_->wt_ref(0);        // Only RHF right now
+    chkpt_->wt_etot(E_);
+    chkpt_->wt_escf(E_);
+    chkpt_->wt_eref(E_);
+    chkpt_->wt_clsdpi(doccpi_);
+    chkpt_->wt_orbspi(eigvalues.dimpi());
+    chkpt_->wt_openpi(vec);
+    chkpt_->wt_phase_check(0);
     
     // Figure out frozen core orbitals
-    int nfzc = chkpt_.rd_nfzc();
-    int nfzv = chkpt_.rd_nfzv();
+    int nfzc = chkpt_->rd_nfzc();
+    int nfzv = chkpt_->rd_nfzv();
     int *frzcpi = compute_fcpi(nfzc, eigvalues);
     int *frzvpi = compute_fvpi(nfzv, eigvalues);
-    chkpt_.wt_frzcpi(frzcpi);
-    chkpt_.wt_frzvpi(frzvpi);
+    chkpt_->wt_frzcpi(frzcpi);
+    chkpt_->wt_frzvpi(frzvpi);
     delete[](frzcpi);
     delete[](frzvpi);
     
     // This code currently only handles RHF
-    chkpt_.wt_iopen(0);
+    chkpt_->wt_iopen(0);
     
     // Write eigenvectors and eigenvalue to checkpoint 
     double *values = eigvalues.to_block_vector();
-    chkpt_.wt_evals(values);
+    chkpt_->wt_evals(values);
     free(values);
-    double **vectors = C_.to_block_matrix();
-    chkpt_.wt_scf(vectors);
+    double **vectors = C_->to_block_matrix();
+    chkpt_->wt_scf(vectors);
     free_block(vectors);
 }
 
@@ -432,22 +418,19 @@ void RHF::save_fock()
     diis_F_[current_diis_fock_]->copy(F_);
     
     // Determine error matrix for this Fock
-    Matrix FDS, DS;
-    Matrix SDF, DF;
-    factory_.create_matrix(FDS);
-    factory_.create_matrix(SDF);
-    factory_.create_matrix(DS);
-    factory_.create_matrix(DF);
+    SharedMatrix FDS(factory_.create_matrix()), DS(factory_.create_matrix());
+    SharedMatrix SDF(factory_.create_matrix()), DF(factory_.create_matrix());
     
     // FDS = F_ * D_ * S_;
-    DS.gemm(false, false, 1.0, D_, S_, 0.0);
-    FDS.gemm(false, false, 1.0, F_, DS, 0.0);
+    DS->gemm(false, false, 1.0, D_, S_, 0.0);
+    FDS->gemm(false, false, 1.0, F_, DS, 0.0);
     // SDF = S_ * D_ * F_;
-    DF.gemm(false, false, 1.0, D_, F_, 0.0);
-    SDF.gemm(false, false, 1.0, S_, DF, 0.0);
+    DF->gemm(false, false, 1.0, D_, F_, 0.0);
+    SDF->gemm(false, false, 1.0, S_, DF, 0.0);
     
     Matrix FDSmSDF;
-    FDSmSDF.copy(&(FDS-SDF));
+    FDSmSDF.copy(FDS);
+    FDSmSDF.subtract(SDF);
     diis_E_[current_diis_fock_]->copy(&FDSmSDF);
     
     // Orthonormalize the error matrix
@@ -522,9 +505,13 @@ void RHF::diis()
     
     // Extrapolate a new Fock matrix.
     if (errcode == 0) {
-    	F_.zero();
-    	for (i=0; i<num_diis_vectors_; ++i)
-    		F_.add(&((*diis_F_[i]) * b[i+1]));
+    	F_->zero();
+    	for (i=0; i<num_diis_vectors_; ++i) {
+            Matrix scaled;
+            scaled.copy(diis_F_[i]);
+            scaled.scale(b[i+1]);
+    		F_->add(scaled);
+		}
     } else if (errcode > 0) {
     	fprintf(outfile, "  DIIS: singularity detected, DIIS skipped this iteration.\n");
     } else {
@@ -532,7 +519,7 @@ void RHF::diis()
     }
 #ifdef _DEBUG
     if (debug_) {
-        F_.print(outfile);
+        F_->print(outfile);
     }
 #endif
     
@@ -578,7 +565,7 @@ void RHF::allocate_PK()
     }
 }
 
-void RHF::find_occupation(Matrix& mat)
+void RHF::find_occupation(SharedMatrix mat)
 {
     if (input_docc_)
         return;
@@ -588,7 +575,7 @@ void RHF::find_occupation(Matrix& mat)
     factory_.create_matrix(eigvector);
     factory_.create_vector(eigvalues);
     
-    mat.diagonalize(eigvector, eigvalues);
+    mat->diagonalize(eigvector, eigvalues);
     std::vector<std::pair<double, int> > pairs;
     for (int h=0; h<eigvalues.nirreps(); ++h) {
         for (int i=0; i<eigvalues.dimpi()[h]; ++i)
@@ -609,23 +596,24 @@ void RHF::find_occupation(Matrix& mat)
 void RHF::form_initialF()
 {
     // Form the initial Fock matrix
-    F_.copy(H_);    
+    F_->copy(H_);    
     
 #ifdef _DEBUG
     if (debug_) {
         fprintf(outfile, "Initial Fock matrix (NOTE: NOT ORTHONORMALIZED!!!):\n");
-        F_.print(outfile);
+        F_->print(outfile);
     }
 #endif
 }
 
 void RHF::form_F()
 {
-    F_.copy(&(H_ + G_));
+    F_->copy(H_);
+    F_->add(G_);
     
 #ifdef _DEBUG
     if (debug_) {
-        F_.print(outfile);
+        F_->print(outfile);
     }
 #endif
 }
@@ -637,13 +625,13 @@ void RHF::form_C()
     factory_.create_matrix(eigvec);
     factory_.create_vector(eigval);
     
-    F_.transform(Shalf_);
-    F_.diagonalize(eigvec, eigval);
-    C_.gemm(false, false, 1.0, Shalf_, eigvec, 0.0);
+    F_->transform(Shalf_);
+    F_->diagonalize(eigvec, eigval);
+    C_->gemm(false, false, 1.0, Shalf_, eigvec, 0.0);
     
 #ifdef _DEBUG
     if (debug_) {
-        C_.eivprint(eigval);
+        C_->eivprint(eigval);
     }
 #endif
 }
@@ -651,30 +639,30 @@ void RHF::form_C()
 void RHF::form_D()
 {
     int h, i, j, m;
-    int *opi = D_.rowspi();
-    int nirreps = D_.nirreps();
+    int *opi = D_->rowspi();
+    int nirreps = D_->nirreps();
     double val;
     for (h=0; h<nirreps; ++h) {
         for (i=0; i<opi[h]; ++i) {
             for (j=0; j<opi[h]; ++j) {
                 val = 0.0;
                 for (m=0; m<doccpi_[h]; ++m)
-                    val += C_.get(h, i, m) * C_.get(h, j, m);
-                D_.set(h, i, j, val);
+                    val += C_->get(h, i, m) * C_->get(h, j, m);
+                D_->set(h, i, j, val);
             }
         }
     }
     
 #ifdef _DEBUG
     if (debug_) {
-        D_.print(outfile);
+        D_->print(outfile);
     }
 #endif
 }
 
 double RHF::compute_initial_E()
 {
-    double Etotal = nuclearrep_ + D_.vector_dot(&H_);
+    double Etotal = nuclearrep_ + D_->vector_dot(H_);
     fprintf(outfile, "\n  Initial RHF energy: %20.14f\n\n", Etotal);
     fflush(outfile);
     return Etotal;
@@ -683,8 +671,9 @@ double RHF::compute_initial_E()
 double RHF::compute_E()
 {
     Matrix HF;
-    HF.copy(&(H_ + F_));
-    double Etotal = nuclearrep_ + D_.vector_dot(HF);
+    HF.copy(H_);
+    HF.add(F_);
+    double Etotal = nuclearrep_ + D_->vector_dot(HF);
     return Etotal;
 }
 
@@ -707,8 +696,7 @@ void RHF::form_PK()
     fprintf(outfile, "  Forming PK matrix.\n");
     fflush(outfile);
     
-    IWL ERIIN(&psio_, PSIF_SO_TEI, 0.0, 1, 1);
-    // iwl_buf_init(&ERIIN, PSIF_SO_TEI, 0.0, 1, 1);
+    IWL ERIIN(psio_.get(), PSIF_SO_TEI, 0.0, 1, 1);
     
     do {
         ilsti = ERIIN.last_buffer();
@@ -830,7 +818,7 @@ void RHF::form_G_from_PK()
     double *D_vector = new double[pk_pairs_];
     double *G_vector = new double[pk_pairs_];
     
-    G_.zero();
+    G_->zero();
     memset(D_vector, 0, sizeof(double) * pk_pairs_);
     memset(G_vector, 0, sizeof(double) * pk_pairs_);
     
@@ -839,9 +827,9 @@ void RHF::form_G_from_PK()
         for (int p=0; p<opi[h]; ++p) {
             for (int q=0; q<=p; ++q) {
                 if (p != q)
-                    D_vector[ij] = 2.0 * D_.get(h, p, q);
+                    D_vector[ij] = 2.0 * D_->get(h, p, q);
                 else
-                    D_vector[ij] = D_.get(h, p, q);
+                    D_vector[ij] = D_->get(h, p, q);
                 ij++;
             }
         }
@@ -852,7 +840,7 @@ void RHF::form_G_from_PK()
         fprintf(outfile, "PK: ij = %lu\n", (unsigned long)ij);
         fflush(outfile);
         fprintf(outfile, "PK: D matrix:\n");
-        D_.print(outfile);
+        D_->print(outfile);
         fprintf(outfile, "PK: D vector (appears to be OK):\n");
         for (ij=0; ij<pk_pairs_; ++ij)
             fprintf(outfile, "PK: D vector [%lu] = %20.14f\n", (unsigned long)ij, D_vector[ij]);
@@ -888,8 +876,8 @@ void RHF::form_G_from_PK()
     for(int h = 0; h < nirreps; ++h){
         for(int p = 0; p < opi[h]; ++p){
             for(int q = 0; q <= p; ++q){
-                G_.set(h,p,q, 2.0 * G_vector[ij]);
-                G_.set(h,q,p, 2.0 * G_vector[ij]);
+                G_->set(h,p,q, 2.0 * G_vector[ij]);
+                G_->set(h,q,p, 2.0 * G_vector[ij]);
                 ij++;
             }
         }
@@ -897,7 +885,7 @@ void RHF::form_G_from_PK()
     
 #ifdef _DEBUG
     if (debug_) {
-        G_.print(outfile);
+        G_->print(outfile);
     }
 #endif
     
@@ -911,10 +899,10 @@ void RHF::form_G_from_direct_integrals()
     int itype;
     
     // Zero out the G matrix
-    G_.zero();
+    G_->zero();
     
     // Need to back-transform the density from SO to AO basis
-    SimpleMatrix *D = D_.to_simple_matrix();
+    SimpleMatrix *D = D_->to_simple_matrix();
     
     // D->set_name("D (AO basis) pre-transform");
     // D->print();
@@ -1246,9 +1234,9 @@ void RHF::form_G_from_direct_integrals()
     // Transform G back to symmetry blocking
     // G.transform(basisset_->uso_to_bf()); 
     // G.print();
-    G_.set(&G);
+    G_->set(&G);
     delete D;
-    // G_.print();
+    // G_->print();
 }
 
 void RHF::form_G()
@@ -1266,9 +1254,9 @@ void RHF::form_G()
     int counter = 0;
     
     // Zero out the G matrix
-    G_.zero();
+    G_->zero();
     
-    IWL ERIIN(&psio_, PSIF_SO_TEI, 0.0, 1, 1);
+    IWL ERIIN(psio_.get(), PSIF_SO_TEI, 0.0, 1, 1);
     
     do {
         ilsti = ERIIN.last_buffer();
@@ -1288,14 +1276,14 @@ void RHF::form_G()
                 case 1:
                     ii = so2index_[i];
                     is = so2symblk_[i];
-                    temp1 = D_.get(is, ii, ii) * value;
+                    temp1 = D_->get(is, ii, ii) * value;
                     
-                    G_.add(is, ii, ii, temp1);
+                    G_->add(is, ii, ii, temp1);
                     
 // #ifdef _DEBUG
 //                     if (debug_) {
 //                         fprintf(outfile, "INTEGRAL CASE 1:\n");
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, ii, G_.get(is, ii,ii));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, ii, G_->get(is, ii,ii));
 //                     }
 // #endif
                     break;
@@ -1306,24 +1294,24 @@ void RHF::form_G()
                     is = so2symblk_[i];
                     ks = so2symblk_[k];
                     
-                    temp1 = D_.get(ks, kk, kk) * 2.0 * value;
+                    temp1 = D_->get(ks, kk, kk) * 2.0 * value;
                     temp2 = 0.0;
-                    temp3 = D_.get(is, ii, ii) * 2.0 * value;
+                    temp3 = D_->get(is, ii, ii) * 2.0 * value;
                     
-                    G_.add(is, ii, ii, temp1);
-                    G_.add(ks, kk, kk, temp3);
+                    G_->add(is, ii, ii, temp1);
+                    G_->add(ks, kk, kk, temp3);
                     
                     if (is == ks) {
-                        temp2 = D_.get(is, ii, kk) * value;
-                        G_.add(is, ii, kk, -temp2);
-                        G_.add(is, kk, ii, -temp2);
+                        temp2 = D_->get(is, ii, kk) * value;
+                        G_->add(is, ii, kk, -temp2);
+                        G_->add(is, kk, ii, -temp2);
                     }
 // #ifdef _DEBUG
 //                     if (debug_) {
 //                         fprintf(outfile, "INTEGRAL CASE 2:\n");
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, ii, G_.get(is,ii,ii));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, kk, G_.get(is,ii,kk));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", ks, kk, kk, G_.get(ks,kk,kk));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, ii, G_->get(is,ii,ii));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, kk, G_->get(is,ii,kk));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", ks, kk, kk, G_->get(ks,kk,kk));
 //                     }
 // #endif
                     break;
@@ -1336,18 +1324,18 @@ void RHF::form_G()
                     
                     temp1 = temp2 = 0.0;
                     if (is == ls) {
-                        temp1 = D_.get(is, ii, ii) * value;
-                        temp2 = D_.get(is, ii, ll) * value * 2.0;
+                        temp1 = D_->get(is, ii, ii) * value;
+                        temp2 = D_->get(is, ii, ll) * value * 2.0;
                         
-                        G_.add(is, ii, ll, temp1);
-                        G_.add(is, ll, ii, temp1);
-                        G_.add(is, ii, ii, temp2);
+                        G_->add(is, ii, ll, temp1);
+                        G_->add(is, ll, ii, temp1);
+                        G_->add(is, ii, ii, temp2);
                     }
 // #ifdef _DEBUG
 //                     if (debug_) {
 //                         fprintf(outfile, "INTEGRAL CASE 3:\n");
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, ll, G_.get(is,ii,ll));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, ii, G_.get(is,ii,ii));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, ll, G_->get(is,ii,ll));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, ii, G_->get(is,ii,ii));
 //                     }
 // #endif
                     break;
@@ -1361,18 +1349,18 @@ void RHF::form_G()
                     
                     temp1 = temp2 = 0.0;
                     if (is == js) {
-                        temp1 = D_.get(js, jj, jj) * value;
-                        temp2 = D_.get(is, ii, jj) * value * 2.0;
+                        temp1 = D_->get(js, jj, jj) * value;
+                        temp2 = D_->get(is, ii, jj) * value * 2.0;
                         
-                        G_.add(is, ii, jj, temp1);
-                        G_.add(is, jj, ii, temp1);
-                        G_.add(js, jj, jj, temp2);
+                        G_->add(is, ii, jj, temp1);
+                        G_->add(is, jj, ii, temp1);
+                        G_->add(js, jj, jj, temp2);
                     }
 // #ifdef _DEBUG
 //                     if (debug_) {
 //                         fprintf(outfile, "INTEGRAL CASE 4:\n");
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, jj, G_.get(is,ii,jj));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", js, jj, jj, G_.get(js,jj,jj));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, jj, G_->get(is,ii,jj));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", js, jj, jj, G_->get(js,jj,jj));
 //                     }
 // #endif
                     break;
@@ -1384,21 +1372,21 @@ void RHF::form_G()
                     js = so2symblk_[j];
                     
                     if (is == js) {
-                        temp1 = D_.get(is, ii, jj) * value * 3.0;
-                        G_.add(is, ii, jj, temp1);
-                        G_.add(is, jj, ii, temp1);
+                        temp1 = D_->get(is, ii, jj) * value * 3.0;
+                        G_->add(is, ii, jj, temp1);
+                        G_->add(is, jj, ii, temp1);
                     }
                     
-                    temp2 = D_.get(is, ii, ii) * value;
-                    temp3 = D_.get(js, jj, jj) * value;
-                    G_.add(js, jj, jj, -temp2);
-                    G_.add(is, ii, ii, -temp3);
+                    temp2 = D_->get(is, ii, ii) * value;
+                    temp3 = D_->get(js, jj, jj) * value;
+                    G_->add(js, jj, jj, -temp2);
+                    G_->add(is, ii, ii, -temp3);
 // #ifdef _DEBUG
 //                     if (debug_) {
 //                         fprintf(outfile, "INTEGRAL CASE 5:\n");
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, jj, G_.get(is,ii,jj));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", js, jj, jj, G_.get(js,jj,jj));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, ii, G_.get(is,ii,ii));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, jj, G_->get(is,ii,jj));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", js, jj, jj, G_->get(js,jj,jj));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, ii, G_->get(is,ii,ii));
 //                     }
 // #endif
                     break;
@@ -1413,33 +1401,33 @@ void RHF::form_G()
                     
                     temp1 = temp2 = temp3 = temp4 = 0.0;
                     if (ks == ls)
-                        temp1 = D_.get(ks, kk, ll) * value * 4.0;
+                        temp1 = D_->get(ks, kk, ll) * value * 4.0;
                     if (is == ls)
-                        temp2 = D_.get(is, ii, ll) * value;
-                    temp3 = D_.get(is, ii, ii) * value * 2.0;
+                        temp2 = D_->get(is, ii, ll) * value;
+                    temp3 = D_->get(is, ii, ii) * value * 2.0;
                     if (is == ks)
-                        temp4 = D_.get(is, ii, kk) * value;
+                        temp4 = D_->get(is, ii, kk) * value;
                     
-                    G_.add(is, ii, ii, temp1);
+                    G_->add(is, ii, ii, temp1);
                     if (is == ks) {
-                        G_.add(is, ii, kk, -temp2);
-                        G_.add(is, kk, ii, -temp2);
+                        G_->add(is, ii, kk, -temp2);
+                        G_->add(is, kk, ii, -temp2);
                     }
                     if (ks == ls) {
-                        G_.add(ks, kk, ll, temp3);
-                        G_.add(ks, ll, kk, temp3);
+                        G_->add(ks, kk, ll, temp3);
+                        G_->add(ks, ll, kk, temp3);
                     }
                     if (is == ls) {
-                        G_.add(is, ii, ll, -temp4);
-                        G_.add(is, ll, ii, -temp4);
+                        G_->add(is, ii, ll, -temp4);
+                        G_->add(is, ll, ii, -temp4);
                     }
 // #ifdef _DEBUG
 //                     if (debug_) {
 //                         fprintf(outfile, "INTEGRAL CASE 6:\n");
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, ii, G_.get(is,ii,ii));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, kk, G_.get(is,ii,kk));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", ks, kk, ll, G_.get(ks,kk,ll));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, ll, G_.get(is,ii,ll));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, ii, G_->get(is,ii,ii));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, kk, G_->get(is,ii,kk));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", ks, kk, ll, G_->get(ks,kk,ll));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, ll, G_->get(is,ii,ll));
 //                     }
 // #endif
                     break;
@@ -1454,33 +1442,33 @@ void RHF::form_G()
                     
                     temp1 = temp2 = temp3 = temp4 = 0.0;
                     if (is == js) 
-                        temp1 = D_.get(is, ii, jj) * value * 4.0;
+                        temp1 = D_->get(is, ii, jj) * value * 4.0;
                     if (js == ks) 
-                        temp2 = D_.get(js, jj, kk) * value;
+                        temp2 = D_->get(js, jj, kk) * value;
                     if (is == ks)
-                        temp3 = D_.get(is, ii, kk) * value;
-                    temp4 = D_.get(ks, kk, kk) * value * 2.0;
+                        temp3 = D_->get(is, ii, kk) * value;
+                    temp4 = D_->get(ks, kk, kk) * value * 2.0;
                     
-                    G_.add(ks, kk, kk, temp1);
+                    G_->add(ks, kk, kk, temp1);
                     if (is == ks) {
-                        G_.add(is, ii, kk, -temp2);
-                        G_.add(is, kk, ii, -temp2);
+                        G_->add(is, ii, kk, -temp2);
+                        G_->add(is, kk, ii, -temp2);
                     }
                     if (js == ks) {
-                        G_.add(js, jj, kk, -temp3);
-                        G_.add(js, kk, jj, -temp3);
+                        G_->add(js, jj, kk, -temp3);
+                        G_->add(js, kk, jj, -temp3);
                     }
                     if (is == js) {
-                        G_.add(is, ii, jj, temp4);
-                        G_.add(is, jj, ii, temp4);
+                        G_->add(is, ii, jj, temp4);
+                        G_->add(is, jj, ii, temp4);
                     }
 // #ifdef _DEBUG
 //                     if (debug_) {
 //                         fprintf(outfile, "INTEGRAL CASE 7:\n");
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", ks, kk, kk, G_.get(ks,kk,kk));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, kk, G_.get(is,ii,kk));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", js, jj, kk, G_.get(js,jj,kk));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, jj, G_.get(is,ii,jj));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", ks, kk, kk, G_->get(ks,kk,kk));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, kk, G_->get(is,ii,kk));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", js, jj, kk, G_->get(js,jj,kk));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, jj, G_->get(is,ii,jj));
 //                     }
 // #endif
                     break;
@@ -1494,34 +1482,34 @@ void RHF::form_G()
                     js = so2symblk_[j];
                     
                     temp1 = temp2 = temp3 = temp4 = 0.0;
-                    temp1 = D_.get(ks, kk, kk) * value * 2.0;
+                    temp1 = D_->get(ks, kk, kk) * value * 2.0;
                     if (is == js) 
-                        temp2 = D_.get(is, ii, jj) * value * 4.0;
+                        temp2 = D_->get(is, ii, jj) * value * 4.0;
                     if (js == ks) 
-                        temp3 = D_.get(js, jj, kk) * value;
+                        temp3 = D_->get(js, jj, kk) * value;
                     if (is == ks)
-                        temp4 = D_.get(is, ii, kk) * value;
+                        temp4 = D_->get(is, ii, kk) * value;
                     
                     if (is == js) {
-                        G_.add(is, ii, jj, temp1);
-                        G_.add(is, jj, ii, temp1);
+                        G_->add(is, ii, jj, temp1);
+                        G_->add(is, jj, ii, temp1);
                     }
-                    G_.add(ks, kk, kk, temp2);
+                    G_->add(ks, kk, kk, temp2);
                     if (is == ks) {
-                        G_.add(is, ii, kk, -temp3);
-                        G_.add(is, kk, ii, -temp3);
+                        G_->add(is, ii, kk, -temp3);
+                        G_->add(is, kk, ii, -temp3);
                     }
                     if (js == ks) {
-                        G_.add(js, jj, kk, -temp4);
-                        G_.add(js, kk, jj, -temp4);
+                        G_->add(js, jj, kk, -temp4);
+                        G_->add(js, kk, jj, -temp4);
                     }
 // #ifdef _DEBUG
 //                     if (debug_) {
 //                         fprintf(outfile, "INTEGRAL CASE 8:\n");
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, jj, G_.get(is,ii,jj));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", ks, kk, kk, G_.get(ks,kk,kk));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, kk, G_.get(is,ii,kk));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", js, jj, kk, G_.get(js,jj,kk));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, jj, G_->get(is,ii,jj));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", ks, kk, kk, G_->get(ks,kk,kk));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, kk, G_->get(is,ii,kk));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", js, jj, kk, G_->get(js,jj,kk));
 //                     }
 // #endif
                     break;
@@ -1536,33 +1524,33 @@ void RHF::form_G()
                     
                     temp1 = temp2 = temp3 = temp4 = 0.0;
                     if (is == ls)
-                        temp1 = D_.get(is, ii, ll) * value * 3.0;
+                        temp1 = D_->get(is, ii, ll) * value * 3.0;
                     if (is == js)
-                        temp2 = D_.get(is, ii, jj) * value * 3.0;
+                        temp2 = D_->get(is, ii, jj) * value * 3.0;
                     if (js == ls)
-                        temp3 = D_.get(js, jj, ll) * value * 2.0;
-                    temp4 = D_.get(is, ii, ii) * value;
+                        temp3 = D_->get(js, jj, ll) * value * 2.0;
+                    temp4 = D_->get(is, ii, ii) * value;
                     
                     if (is == js) {
-                        G_.add(is, ii, jj, temp1);
-                        G_.add(is, jj, ii, temp1);
+                        G_->add(is, ii, jj, temp1);
+                        G_->add(is, jj, ii, temp1);
                     }
                     if (is == ls) {
-                        G_.add(is, ii, ll, temp2);
-                        G_.add(is, ll, ii, temp2);
+                        G_->add(is, ii, ll, temp2);
+                        G_->add(is, ll, ii, temp2);
                     }
-                    G_.add(is, ii, ii, -temp3);
+                    G_->add(is, ii, ii, -temp3);
                     if (js == ls) {
-                        G_.add(js, jj, ll, -temp4);
-                        G_.add(js, ll, jj, -temp4);
+                        G_->add(js, jj, ll, -temp4);
+                        G_->add(js, ll, jj, -temp4);
                     }
 // #ifdef _DEBUG
 //                     if (debug_) {
 //                         fprintf(outfile, "INTEGRAL CASE 9:\n");
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, jj, G_.get(is,ii,jj));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, ll, G_.get(is,ii,ll));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, ii, G_.get(is,ii,ii));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", js, jj, ll, G_.get(js,jj,ll));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, jj, G_->get(is,ii,jj));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, ll, G_->get(is,ii,ll));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, ii, G_->get(is,ii,ii));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", js, jj, ll, G_->get(js,jj,ll));
 //                     }
 // #endif
                     break;
@@ -1577,33 +1565,33 @@ void RHF::form_G()
                     
                     temp1 = temp2 = temp3 = temp4 = 0.0;
                     if (js == ls)
-                        temp1 = D_.get(js, jj, ll) * value * 3.0;
+                        temp1 = D_->get(js, jj, ll) * value * 3.0;
                     if (is == js)
-                        temp2 = D_.get(is, ii, jj) * value * 3.0;
-                    temp3 = D_.get(js, jj, jj) * value;
+                        temp2 = D_->get(is, ii, jj) * value * 3.0;
+                    temp3 = D_->get(js, jj, jj) * value;
                     if (is == ls)
-                        temp4 = D_.get(is, ii, ll) * value * 2.0;
+                        temp4 = D_->get(is, ii, ll) * value * 2.0;
                     
                     if (is == js) {
-                        G_.add(is, ii, jj, temp1);
-                        G_.add(is, jj, ii, temp1);
+                        G_->add(is, ii, jj, temp1);
+                        G_->add(is, jj, ii, temp1);
                     }
                     if (js == ls) {
-                        G_.add(js, jj, ll, temp2);
-                        G_.add(js, ll, jj, temp2);
+                        G_->add(js, jj, ll, temp2);
+                        G_->add(js, ll, jj, temp2);
                     }
                     if (is == ls) {
-                        G_.add(is, ii, ll, -temp3);
-                        G_.add(is, ll, ii, -temp3);
+                        G_->add(is, ii, ll, -temp3);
+                        G_->add(is, ll, ii, -temp3);
                     }
-                    G_.add(js, jj, jj, -temp4);
+                    G_->add(js, jj, jj, -temp4);
 // #ifdef _DEBUG
 //                     if (debug_) {
 //                         fprintf(outfile, "INTEGRAL CASE 10:\n");
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, jj, G_.get(is,ii,jj));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", js, jj, ll, G_.get(js,jj,ll));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, ll, G_.get(is,ii,ll));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", js, jj, jj, G_.get(js,jj,jj));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, jj, G_->get(is,ii,jj));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", js, jj, ll, G_->get(js,jj,ll));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, ll, G_->get(is,ii,ll));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", js, jj, jj, G_->get(js,jj,jj));
 //                     }
 // #endif
                     break;
@@ -1618,33 +1606,33 @@ void RHF::form_G()
                     
                     temp1 = temp2 = temp3 = temp4 = 0.0;
                     if (ks == js)
-                        temp1 = D_.get(ks, kk, jj) * value * 3.0;
+                        temp1 = D_->get(ks, kk, jj) * value * 3.0;
                     if (is == js)
-                        temp2 = D_.get(is, ii, jj) * value * 3.0;
-                    temp3 = D_.get(js, jj, jj) * value;
+                        temp2 = D_->get(is, ii, jj) * value * 3.0;
+                    temp3 = D_->get(js, jj, jj) * value;
                     if (is == ks)
-                        temp4 = D_.get(is, ii, kk) * value * 2.0;
+                        temp4 = D_->get(is, ii, kk) * value * 2.0;
                     
                     if (is == js) {
-                        G_.add(is, ii, jj, temp1);
-                        G_.add(is, jj, ii, temp1);
+                        G_->add(is, ii, jj, temp1);
+                        G_->add(is, jj, ii, temp1);
                     }
                     if (ks == js) {
-                        G_.add(ks, kk, jj, temp2);
-                        G_.add(ks, jj, kk, temp2);
+                        G_->add(ks, kk, jj, temp2);
+                        G_->add(ks, jj, kk, temp2);
                     }
                     if (is == ks) {
-                        G_.add(is, ii, kk, -temp3);
-                        G_.add(is, kk, ii, -temp3);
+                        G_->add(is, ii, kk, -temp3);
+                        G_->add(is, kk, ii, -temp3);
                     }
-                    G_.add(js, jj, jj, -temp4);
+                    G_->add(js, jj, jj, -temp4);
 // #ifdef _DEBUG
 //                     if (debug_) {
 //                         fprintf(outfile, "INTEGRAL CASE 11:\n");
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, jj, G_.get(is,ii,jj));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", ks, kk, jj, G_.get(ks,kk,jj));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, kk, G_.get(is,ii,kk));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", js, jj, jj, G_.get(js,jj,jj));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, jj, G_->get(is,ii,jj));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", ks, kk, jj, G_->get(ks,kk,jj));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, kk, G_->get(is,ii,kk));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", js, jj, jj, G_->get(js,jj,jj));
 //                     }
 // #endif
                     break;
@@ -1663,51 +1651,51 @@ void RHF::form_G()
                     
                     temp1 = temp2 = temp3 = temp4 = temp5 = temp6 = 0.0;
                     if (ks == ls)
-                        temp1 = D_.get(ks, kk, ll) * value * 4.0;
+                        temp1 = D_->get(ks, kk, ll) * value * 4.0;
                     if (is == js)
-                        temp2 = D_.get(is, ii, jj) * value * 4.0;
+                        temp2 = D_->get(is, ii, jj) * value * 4.0;
                     if (js == ls)
-                        temp3 = D_.get(js, jj, ll) * value;
+                        temp3 = D_->get(js, jj, ll) * value;
                     if (is == ks)
-                        temp4 = D_.get(is, ii, kk) * value;
+                        temp4 = D_->get(is, ii, kk) * value;
                     if (js == ks)
-                        temp5 = D_.get(js, jj, kk) * value;
+                        temp5 = D_->get(js, jj, kk) * value;
                     if (is == ls)
-                        temp6 = D_.get(is, ii, ll) * value;
+                        temp6 = D_->get(is, ii, ll) * value;
                     
                     if (is == js) {
-                        G_.add(is, ii, jj, temp1);
-                        G_.add(is, jj, ii, temp1);
+                        G_->add(is, ii, jj, temp1);
+                        G_->add(is, jj, ii, temp1);
                     }
                     if (ks == ls) {
-                        G_.add(ks, kk, ll, temp2);
-                        G_.add(ks, ll, kk, temp2);
+                        G_->add(ks, kk, ll, temp2);
+                        G_->add(ks, ll, kk, temp2);
                     }
                     if (is == ks) {
-                        G_.add(is, ii, kk, -temp3);
-                        G_.add(is, kk, ii, -temp3);
+                        G_->add(is, ii, kk, -temp3);
+                        G_->add(is, kk, ii, -temp3);
                     }
                     if (js == ls) {
-                        G_.add(js, jj, ll, -temp4);
-                        G_.add(js, ll, jj, -temp4);
+                        G_->add(js, jj, ll, -temp4);
+                        G_->add(js, ll, jj, -temp4);
                     }
                     if (is == ls) {
-                        G_.add(is, ii, ll, -temp5);
-                        G_.add(is, ll, ii, -temp5);
+                        G_->add(is, ii, ll, -temp5);
+                        G_->add(is, ll, ii, -temp5);
                     }
                     if (js == ks) {
-                        G_.add(js, jj, kk, -temp6);
-                        G_.add(js, kk, jj, -temp6);
+                        G_->add(js, jj, kk, -temp6);
+                        G_->add(js, kk, jj, -temp6);
                     }
 // #ifdef _DEBUG
 //                     if (debug_) {
 //                         fprintf(outfile, "INTEGRAL CASE 12,13,14:\n");
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, jj, G_.get(is,ii,jj));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", ks, kk, ll, G_.get(ks,kk,ll));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, kk, G_.get(is,ii,kk));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", js, jj, ll, G_.get(js,jj,ll));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, ll, G_.get(is,ii,ll));
-//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", js, jj, kk, G_.get(js,jj,kk));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, jj, G_->get(is,ii,jj));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", ks, kk, ll, G_->get(ks,kk,ll));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, kk, G_->get(is,ii,kk));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", js, jj, ll, G_->get(js,jj,ll));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", is, ii, ll, G_->get(is,ii,ll));
+//                         fprintf(outfile, "G[%d][%d][%d] %.11f\n", js, jj, kk, G_->get(js,jj,kk));
 //                     }
 // #endif
                     break;
@@ -1723,3 +1711,5 @@ void RHF::form_G()
     // iwl_buf_close(&ERIIN, 1);
     fprintf(outfile, "  Processed %6d two-electron integrals.\n", counter);
 }
+
+}}

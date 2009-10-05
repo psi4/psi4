@@ -19,6 +19,7 @@ namespace psi {
   namespace ccsort   { PsiReturnType ccsort(Options &, int argc, char *argv[]); }
   namespace ccenergy { PsiReturnType ccenergy(Options &, int argc, char *argv[]); }
   namespace psiclean { PsiReturnType psiclean(Options &, int argc, char *argv[]); }
+  namespace scf      { PsiReturnType scf(Options&, int, char**); }
 
   int read_options(std::string name, Options & options);
 
@@ -53,6 +54,7 @@ int psi3_simulator(Options & options, int argc, char *argv[]) {
   std::map<std::string, PsiReturnType(*)(Options &, int argc, char *argv[])> dispatch_table;
 
   dispatch_table["INPUT"]    = &(psi::input::input);
+  dispatch_table["SCF"]      = &(psi::scf::scf);
   dispatch_table["CSCF"]     = &(psi::cscf::cscf);
   dispatch_table["CINTS"]    = &(psi::CINTS::cints);
   dispatch_table["TRANSQT2"] = &(psi::transqt2::transqt2);
@@ -98,14 +100,19 @@ int psi3_simulator(Options & options, int argc, char *argv[]) {
       read_options("CSCF", options);
       dispatch_table["CSCF"](options, argc, argv);
 
+      // The new SCF code is still a work in progress.
+      // module.set_prgid("SCF");
+      // read_options("SCF", options);
+      // dispatch_table["SCF"](options, argc, argv);
+
       module.set_prgid("TRANSQT2");
       read_options("TRANSQT2", options);
       dispatch_table["TRANSQT2"](options, argc, argv);
-
+      
       module.set_prgid("CCSORT");
       read_options("CCSORT", options);
       dispatch_table["CCSORT"](options, argc, argv);
-
+      
       module.set_prgid("CCENERGY");
       read_options("CCENERGY", options);
       dispatch_table["CCENERGY"](options, argc, argv);

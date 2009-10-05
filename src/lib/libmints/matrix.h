@@ -207,6 +207,8 @@ public:
     /// General matrix multiply, saves result to this
     void gemm(bool transa, bool transb, double alpha, const Matrix* a, const Matrix* b, double beta);
     void gemm(bool transa, bool transb, double alpha, shared_ptr<Matrix> a, shared_ptr<Matrix> b, double beta);
+    void gemm(bool transa, bool transb, double alpha, shared_ptr<Matrix> a, Matrix& b, double beta);
+    void gemm(bool transa, bool transb, double alpha, Matrix& a, shared_ptr<Matrix> b, double beta);
     /// Diagonalize this places eigvectors and eigvalues must be created by caller.
     void diagonalize(Matrix* eigvectors, Vector* eigvalues);
     void diagonalize(shared_ptr<Matrix> eigvectors, shared_ptr<Vector> eigvalues);
@@ -389,6 +391,11 @@ public:
     
     friend class Matrix;
 };
+
+typedef shared_ptr<Matrix> SharedMatrix;
+typedef shared_ptr<SimpleMatrix> SharedSimpleMatrix;
+typedef shared_ptr<Vector> SharedVector;
+typedef shared_ptr<SimpleVector> SharedSimpleVector;
 
 #include "matrix_i.cc"
 
