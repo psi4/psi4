@@ -67,17 +67,14 @@ void Wavefunction::common_init()
     fndcor(&(memory_), infile, outfile);
     
     // Read in the debug flag
-    debug_ = 0;
-    ip_data(const_cast<char*>("DEBUG"), const_cast<char*>("%d"), &(debug_), 0);
+    debug_ = options_.get_int("DEBUG");
     
     // Read in energy convergence threshold
-    int thresh = 8;
-    ip_data(const_cast<char*>("E_CONVERGE"), const_cast<char*>("%d"), &(thresh), 0);
+    int thresh = options_.get_int("E_CONVERGE");
     energy_threshold_ = pow(10.0, (double)-thresh);
     
     // Read in density convergence threshold
-    thresh = 8;
-    ip_data(const_cast<char*>("D_CONVERGE"), const_cast<char*>("%d"), &(thresh), 0);
+    thresh = options_.get_int("D_CONVERGE");
     density_threshold_ = pow(10.0, (double)-thresh);
 }
 

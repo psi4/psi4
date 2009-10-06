@@ -5,7 +5,7 @@ include ../MakeVars
 
 PSITARGET = $(top_objdir)/lib/libPSI_scf.a
 
-CXXSRC = main.cc hfenergy.cc hf.cc rhf.cc rohf.cc
+CXXSRC = main.cc hfenergy.cc hf.cc rhf.cc rohf.cc uhf.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 

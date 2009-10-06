@@ -89,9 +89,9 @@ void HF::common_init()
 	// TODO: Make the follow work for general cases!
 	nalpha_ = nbeta_ = 0;
 	for (int i=0; i<nirreps; ++i) {
-		nalphapi_[i] = doccpi_[i];
+		nalphapi_[i] = doccpi_[i] + soccpi_[i];
 		nbetapi_[i]  = doccpi_[i];
-		nalpha_ += doccpi_[i];
+		nalpha_ += doccpi_[i] + soccpi_[i];
 		nbeta_  += doccpi_[i];
 	}
 	
@@ -400,37 +400,17 @@ void HF::form_multipole_integrals()
     // Get the nuclear contribution to the dipole
     nuclear_dipole_contribution_ = molecule_->nuclear_dipole_contribution();
     nuclear_quadrupole_contribution_ = molecule_->nuclear_quadrupole_contribution();
-    
-//  FILE *multi = fopen("multipoles.dat", "w");
-//  fprintf(multi, "Dipole Nuclear Contributions\n");
-//  fprintf(multi, "%15.10f %15.10f %15.10f\n", nuclear_dipole_contribution_[0], nuclear_dipole_contribution_[1], nuclear_dipole_contribution_[2]);
-//  fclose(multi);
-    
+        
     // Save the dipole integrals
-//  Dipole_[0]->save("multipoles.dat");
     Dipole_[0]->save(psio_, PSIF_OEI);
-//  Dipole_[1]->save("multipoles.dat");
     Dipole_[1]->save(psio_, PSIF_OEI);
-//  Dipole_[2]->save("multipoles.dat");
     Dipole_[2]->save(psio_, PSIF_OEI);
     
-//  multi = fopen("multipoles.dat", "a");
-//  fprintf(multi, "Quadrupole Nuclear Contributions\n");
-//  fprintf(multi, "%15.10f %15.10f %15.10f\n", nuclear_quadrupole_contribution_[0], nuclear_quadrupole_contribution_[1], nuclear_quadrupole_contribution_[2]);
-//  fprintf(multi, "%15.10f %15.10f %15.10f\n", nuclear_quadrupole_contribution_[3], nuclear_quadrupole_contribution_[4], nuclear_quadrupole_contribution_[5]);
-//  fclose(multi);
-    
-//  Quadrupole_[0]->save("multipoles.dat", "Quadrupole XX SO-basis");
     Quadrupole_[0]->save(psio_, PSIF_OEI);
-//  Quadrupole_[1]->save("multipoles.dat", "Quadrupole XY SO-basis");
     Quadrupole_[1]->save(psio_, PSIF_OEI);
-//  Quadrupole_[2]->save("multipoles.dat", "Quadrupole XZ SO-basis");
     Quadrupole_[2]->save(psio_, PSIF_OEI);
-//  Quadrupole_[3]->save("multipoles.dat", "Quadrupole YY SO-basis");
     Quadrupole_[3]->save(psio_, PSIF_OEI);
-//  Quadrupole_[4]->save("multipoles.dat", "Quadrupole YZ SO-basis");
     Quadrupole_[4]->save(psio_, PSIF_OEI);
-//  Quadrupole_[5]->save("multipoles.dat", "Quadrupole ZZ SO-basis");
     Quadrupole_[5]->save(psio_, PSIF_OEI);
 }
 

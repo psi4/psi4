@@ -16,7 +16,7 @@
 #include "hfenergy.h"
 #include "rhf.h"
 #include "rohf.h"
-// #include "uhf.h"
+#include "uhf.h"
 
 using namespace std;
 using namespace psi;
@@ -45,10 +45,10 @@ double HFEnergy::compute_energy()
         ROHF rohf_energy(options_, psio_, chkpt_);
         energy = rohf_energy.compute_energy();
     }
-    // else if (strcmp(reference, "UHF") == 0) {
-    //  UHF uhf_energy(psio_, chkpt_);
-    //  energy = uhf_energy.compute_energy();
-    // }
+    else if (reference == "UHF") {
+        UHF uhf_energy(options_, psio_, chkpt_);
+        energy = uhf_energy.compute_energy();
+    }
     else {
         throw InputException("Unknown reference " + reference, "REFERENCE", __FILE__, __LINE__);
     	energy = 0.0;

@@ -4,17 +4,21 @@
 #include <libpsio/psio.hpp>
 #include "hf.h"
 
+#include <psi4-dec.h>
+
 using namespace psi;
 
+namespace psi { namespace scf {
+    
 class UHF : public HF {
 protected:
-	RefMatrix Fa_, Fb_;
-	RefMatrix Da_, Db_, Dt_;
-	RefMatrix Ca_, Cb_;
-	RefMatrix Ga_, Gb_;
+	SharedMatrix Fa_, Fb_;
+	SharedMatrix Da_, Db_, Dt_;
+	SharedMatrix Ca_, Cb_;
+	SharedMatrix Ga_, Gb_;
 	int use_out_of_core_;
 	
-	double *p_j_;
+	double *p_jk_;
 	double *p_k_;
 	
 	void allocate_PK();
@@ -33,12 +37,15 @@ protected:
 	void save_information();
 	
     void common_init();
+    
+    void compute_multipole();
 public:
-	UHF(psi::PSIO *psio, psi::Chkpt *chkpt = 0);
-    UHF(Ref<psi::PSIO> &psio, Ref<psi::Chkpt> &chkpt);
+	UHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
 	virtual ~UHF();
 	
 	double compute_energy();
 };
+
+}}
 
 #endif
