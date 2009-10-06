@@ -106,6 +106,9 @@ int read_options(std::string name, Options & options) {
     options.add_int("CHARGE", 0);
     options.add_int("MULTP", 0);
     options.add_bool("PRINT_MOS", false);
+    options.add_int("DEBUG", 0);
+    options.add_int("E_CONVERGE", 8);
+    options.add_int("D_CONVERGE", 8);
   }
   else if (name == "MP2") {
     options.add_str("WFN", "");

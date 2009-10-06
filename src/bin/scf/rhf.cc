@@ -736,11 +736,6 @@ void RHF::form_PK()
                 // _pk_symoffset corrects for the symmetry offset in the _pk vector
                 braket = INDEX2(bra, ket);
                 pk_[braket] += value;
-#ifdef _DEBUG
-                if (debug_) {
-                	fprintf(outfile, "A %d %d %d %d bra = %lu ket = %lu braket = %lu\n", i, j, k, l, (unsigned long)bra, (unsigned long)ket, (unsigned long)braket);
-                }
-#endif
                 // K/2 (2nd sort)
                 if ((ii != jj) && (kk != ll)) {
                     if ((is == ls) && (js == ks)) {
@@ -751,11 +746,6 @@ void RHF::form_PK()
                             pk_[braket] -= 0.5 * value;
                         else
                             pk_[braket] -= 0.25 * value;
-#ifdef _DEBUG
-                        if (debug_) {           
-                        	fprintf(outfile, "B %d %d %d %d bra = %lu ket = %lu braket = %lu\n", i, j, k, l, (unsigned long)bra, (unsigned long)ket, (unsigned long)braket);
-                        }
-#endif
                     }
                 }
             }
@@ -769,21 +759,11 @@ void RHF::form_PK()
                     pk_[braket] -= 0.5 * value;
                 else
                     pk_[braket] -= 0.25 * value;
-#ifdef _DEBUG
-                if (debug_) {   
-                	fprintf(outfile, "C %d %d %d %d bra = %lu ket = %lu braket = %lu\n", i, j, k, l, (unsigned long)bra, (unsigned long)ket, (unsigned long)braket);
-                }
-#endif
             }
             pk_counter++;
             counter++;
             
             if (pk_flag) {
-#ifdef _DEBUG
-            	if (debug_) {
-            		fprintf(outfile, "# %d %d %d %d PK! pk_counter = %d\n", i, j, k, l, pk_counter);
-            	}
-#endif
             	pk_counter = 0;
             }
         }
@@ -1708,6 +1688,19 @@ void RHF::form_G()
     // Going out of scope will close the buffer
     // iwl_buf_close(&ERIIN, 1);
     fprintf(outfile, "  Processed %6d two-electron integrals.\n", counter);
+}
+
+void RHF::form_G_from_J_and_K(double scale_K_by)
+{
+    form_J_and_K();
+    G_->copy(K_);
+    G_->scale(scale_K_by);
+    G_->add(J_);
+}
+
+void RHF::form_J_and_K()
+{
+    
 }
 
 }}

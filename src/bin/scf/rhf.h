@@ -24,6 +24,8 @@ protected:
     SharedMatrix D_;
     SharedMatrix Dold_;
     SharedMatrix G_;
+    SharedMatrix J_;
+    SharedMatrix K_;
         
     std::vector<SharedMatrix> diis_F_;
     std::vector<SharedMatrix> diis_E_;
@@ -47,6 +49,8 @@ protected:
     void form_G(); // Out of core (i think there is a bug here)
     void form_G_from_PK(); // In core PK
     void form_G_from_direct_integrals(); // Computes all ERIs each iteration.
+    void form_G_from_J_and_K(double scale_K_by = 1.0); // Computes G from J and K
+    void form_J_and_K();    // Computes J and K matrices from the ERIs
     
     void form_PK();
     void form_F();
