@@ -29,6 +29,7 @@ protected:
         
     std::vector<SharedMatrix> diis_F_;
     std::vector<SharedMatrix> diis_E_;
+    double Drms_;
     
     int num_diis_vectors_;
     double **diis_B_;

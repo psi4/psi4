@@ -37,6 +37,7 @@ UHF::~UHF()
 
 void UHF::common_init()
 {
+    Drms_ = 0.0;
     use_out_of_core_ = false;
 	
 	Fa_ = SharedMatrix(factory_.create_matrix("F alpha"));
@@ -44,6 +45,7 @@ void UHF::common_init()
 	Da_ = SharedMatrix(factory_.create_matrix("D alpha"));
 	Db_ = SharedMatrix(factory_.create_matrix("D beta"));
 	Dt_ = SharedMatrix(factory_.create_matrix("D total"));
+	Dtold_ = SharedMatrix(factory_.create_matrix("D total old"));
 	Ca_ = SharedMatrix(factory_.create_matrix("C alpha"));
 	Cb_ = SharedMatrix(factory_.create_matrix("C beta"));
 	Ga_ = SharedMatrix(factory_.create_matrix("G alpha"));
@@ -79,9 +81,11 @@ double UHF::compute_energy()
 	// Compute an initial energy using H and D
 	E_ = compute_initial_E();
 	
+	fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
 	do {
 		iter++;
 		
+        Dtold_->copy(Dt_);
 		Eold_ = E_;
 		
 		if (use_out_of_core_ == false)
@@ -92,7 +96,7 @@ double UHF::compute_energy()
 		form_F();
 		
 		E_ = compute_E();
-		fprintf(outfile, "  @UHF iteration %3d energy: %20.14f    %20.14f\n", iter, E_, E_ - Eold_);
+		fprintf(outfile, "  @UHF iteration %3d energy: %20.14f    %20.14f %20.14f\n", iter, E_, E_ - Eold_, Drms_);
 		fflush(outfile);
 		
 		form_C();
@@ -230,7 +234,7 @@ void UHF::compute_multipole()
     }
     
     // Compute orbital extents
-    fprintf(outfile, "\n  Alpha Orbital extents (a.u.):\n");
+    fprintf(outfile, "\n  Beta Orbital extents (a.u.):\n");
     fprintf(outfile, "\t%3s%15s  %15s  %15s  %15s\n", "MO", "<x^2>", "<y^2>", "<z^2>", "<r^2>");
     SimpleMatrix Cb(Cb_->to_simple_matrix());
     for (int i=0; i<Cb.rows(); ++i) {
@@ -253,9 +257,14 @@ void UHF::save_information()
     char **temp2 = chkpt_->rd_irr_labs();
     int nso = chkpt_->rd_nso();
     
-    fprintf(outfile, "\n  Final occupation vector = (");
+    fprintf(outfile, "\n  Final doubly occupation vector = (");
     for (int h=0; h<factory_.nirreps(); ++h) {
         fprintf(outfile, "%2d %3s ", doccpi_[h], temp2[h]);
+    }
+    fprintf(outfile, ")\n");
+    fprintf(outfile, "  Final singly occupied vector =   (");
+    for (int h=0; h<factory_.nirreps(); ++h) {
+        fprintf(outfile, "%2d %3s ", soccpi_[h], temp2[h]);
     }
     fprintf(outfile, ")\n");
     
@@ -365,7 +374,14 @@ void UHF::save_information()
 bool UHF::test_convergency()
 {
 	double ediff = E_ - Eold_;
-	if (fabs(ediff) < energy_threshold_)
+	
+	// RMS of the density
+    Matrix Drms;
+    Drms.copy(Dt_);
+    Drms.subtract(Dtold_);
+    Drms_ = sqrt(Drms.sum_of_squares());
+    
+	if (fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_)
 		return true;
 	else
 		return false;
