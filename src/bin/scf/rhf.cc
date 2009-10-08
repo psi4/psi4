@@ -59,6 +59,7 @@ void RHF::common_init()
     diis_enabled_ = true;
     num_diis_vectors_ = 4;
     use_out_of_core_ = false;
+    Drms_ = 0.0;
     
     // Allocate matrix memory
     F_    = SharedMatrix(factory_.create_matrix("F"));
@@ -143,6 +144,7 @@ double RHF::compute_energy()
         E_ = compute_initial_E();
     }
     
+    fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
     // SCF iterations
     do {
         iteration++;
@@ -171,7 +173,7 @@ double RHF::compute_energy()
             diis_iter = false;
         }
         
-        fprintf(outfile, "  @RHF iteration %3d energy: %20.14f    %20.14f %s\n", iteration, E_, E_ - Eold_, diis_iter == false ? " " : "DIIS");
+        fprintf(outfile, "  @RHF iteration %3d energy: %20.14f    %20.14f %20.14f %s\n", iteration, E_, E_ - Eold_, Drms_, diis_iter == false ? " " : "DIIS");
         fflush(outfile);
         
         form_C();
@@ -504,8 +506,8 @@ void RHF::diis()
     // Extrapolate a new Fock matrix.
     if (errcode == 0) {
     	F_->zero();
+        Matrix scaled;
     	for (i=0; i<num_diis_vectors_; ++i) {
-            Matrix scaled;
             scaled.copy(diis_F_[i]);
             scaled.scale(b[i+1]);
     		F_->add(scaled);
@@ -528,8 +530,16 @@ void RHF::diis()
 
 bool RHF::test_convergency()
 {
+    // energy difference
     double ediff = E_ - Eold_;
-    if (fabs(ediff) < energy_threshold_)
+    
+    // RMS of the density
+    Matrix D_rms;
+    D_rms.copy(D_);
+    D_rms.subtract(Dold_);
+    Drms_ = sqrt(D_rms.sum_of_squares());
+    
+    if (fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_)
         return true;
     else
         return false;
