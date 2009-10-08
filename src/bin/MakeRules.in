@@ -47,6 +47,7 @@ install_inc::
 
 install_man::
 
+ifeq ($(MODULE),true)
 $(PSITARGET): $(BINOBJ)
 	$(MKDIRS) `dirname $(PSITARGET)`
 	rm -f $(PSITARGET)
@@ -54,10 +55,18 @@ $(PSITARGET): $(BINOBJ)
 	$(RANLIB) $(PSITARGET)
 
 install_target:: $(PSITARGET)
-	echo "in bin dir"
 	$(MKDIRS) $(libdir)
 	$(INSTALL_DATA) $< $(libdir)
 	$(RANLIB) $(libdir)/`basename $(PSITARGET)`
+else
+$(PSITARGET): $(BINOBJ) $(PSILIBS)
+	$(MKDIRS) `dirname $(PSITARGET)`
+	$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+
+install_target:: $(PSITARGET)
+	$(MKDIRS) $(DESTDIR)$(bindir)
+	$(INSTALL_PROGRAM) $< $(DESTDIR)$(bindir)
+endif
 
 #
 # clean up
