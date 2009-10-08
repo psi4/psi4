@@ -3,6 +3,7 @@ VPATH = @srcdir@
 
 include ../MakeVars
 PSITARGET = $(top_objdir)/bin/$(shell basename `pwd`)
+MODULE = false
 
 LDLIBS += $(LAPACK) $(BLAS) -lpthread
 
@@ -17,16 +18,7 @@ fragment.cc  psi4.cc  read_options.cc psi3_simulator.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 
-#include ../MakeRules
-
-$(PSITARGET): $(BINOBJ) $(PSILIBS)
-	$(MKDIRS) `dirname $(PSITARGET)`
-	$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
-
-install: $(PSITARGET)
-	echo "in psi4 dir"
-	$(MKDIRS) $(DESTDIR)$(bindir)
-	$(INSTALL_PROGRAM) $< $(DESTDIR)$(bindir)
+include ../MakeRules
 
 ifneq ($(DODEPEND),no)
 $(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)

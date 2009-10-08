@@ -130,3 +130,4 @@ PSITARGET = $(top_objdir)/lib/$(shell basename `pwd`)
 # Force -lx to only look for libx.a.
 .LIBPATTERNS = lib%.a
 
+MODULE = true
