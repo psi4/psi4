@@ -71,6 +71,13 @@ protected:
 
     // Using direct integrals?
     int direct_integrals_;
+    
+    // Using schwarz sieving?
+    int schwarz_;
+    double SCHWARZ_CUTOFF_; //Schwarz cutoff value
+    // Using ri integrals?
+    int ri_integrals_;
+    shared_ptr<BasisSet> ribasis_;
 
 public:    
     // Exactly what their name says

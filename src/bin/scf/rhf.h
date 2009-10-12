@@ -39,6 +39,13 @@ protected:
     int use_out_of_core_;
     double *pk_;
     
+    int mind_; //minimum sorted compound index
+    int* sieve_ind_; //permutation matrix for sort
+    int* cut_ind_; //critical sorted index for schwarz sieve
+    double* norm_;
+    
+    double **B_ia_P_; //Three Index tensor for DF-SCF
+    
     void compute_multipole();
     
     void form_initialF();
@@ -47,9 +54,15 @@ protected:
     double compute_initial_E();
     double compute_E();
     
+    void schwarz_sieve();
+    void form_B(); 
+    
+    
     void form_G(); // Out of core (i think there is a bug here)
     void form_G_from_PK(); // In core PK
     void form_G_from_direct_integrals(); // Computes all ERIs each iteration.
+    void form_G_from_direct_integrals_schwarz(); // Computes all ERIs  with schwarz seive each iteration.
+    void form_G_from_RI(); //Uses two- and three- index integrals
     void form_G_from_J_and_K(double scale_K_by = 1.0); // Computes G from J and K
     void form_J_and_K();    // Computes J and K matrices from the ERIs
     
