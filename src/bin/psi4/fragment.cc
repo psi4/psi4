@@ -1,5 +1,5 @@
 #include <fragment.h>
-
+#include <string.h>
 namespace psi {
 
 // deep copy constructor
