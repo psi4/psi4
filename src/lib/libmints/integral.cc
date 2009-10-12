@@ -92,6 +92,10 @@ IntegralsIterator ShellCombinationsIterator::integrals_iterator()
 {
     return IntegralsIterator(bs1_->shell(p()), bs2_->shell(q()), bs3_->shell(r()), bs4_->shell(s()));
 }
+IntegralsIterator IntegralFactory::integrals_iterator(int p, int q, int r, int s) 
+{
+    return IntegralsIterator(bs1_->shell(p), bs2_->shell(q), bs3_->shell(r), bs4_->shell(s));
+}
 
 /*
 void ShellCombinationsIterator::generate_combinations(BasisSet*bs1, BasisSet*bs2, BasisSet*bs3, BasisSet*bs4)

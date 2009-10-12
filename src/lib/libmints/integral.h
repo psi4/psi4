@@ -276,6 +276,9 @@ public:
     
     /// Returns an ERI integral object
     virtual TwoBodyInt* eri(int deriv=0);
+    
+    //Returns a general ERI iterator object for any (P Q | R S) in shells
+    IntegralsIterator integrals_iterator(int p, int q, int r, int s);
 
     /// Returns an ERI iterator object, only coded for standard ERIs
     ShellCombinationsIterator shells_iterator();
