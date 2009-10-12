@@ -120,9 +120,27 @@ void HF::common_init()
         }
     }
 	
-	// Run integral direct? default no
-	direct_integrals_ = false;
+		// Run integral direct? default no
+		direct_integrals_ = false;
     direct_integrals_ = options_.get_bool("DIRECT");
+    
+    //Run density fitting? default no
+    ri_integrals_ = false;
+    
+    if (options_["RI_BASIS"].has_changed())
+    {
+    	ri_integrals_ = true;
+    	direct_integrals_ = false;
+    }
+    
+    //Run schwarz sieve? default no
+    schwarz_ = false;
+    SCHWARZ_CUTOFF_ = 0.0;
+    if (options_["SCHWARZ_CUTOFF"].has_changed()) {
+      SCHWARZ_CUTOFF_ = options_.get_double("SCHWARZ_CUTOFF");
+			schwarz_ = true;
+    }
+    
     
     // Read information from checkpoint
     nuclearrep_ = chkpt_->rd_enuc();
