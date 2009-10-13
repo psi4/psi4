@@ -77,7 +77,7 @@ protected:
     double SCHWARZ_CUTOFF_; //Schwarz cutoff value
     // Using ri integrals?
     int ri_integrals_;
-    shared_ptr<BasisSet> ribasis_;
+    int ri_nbf_;
 
 public:    
     // Exactly what their name says
