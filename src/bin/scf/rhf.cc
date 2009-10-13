@@ -161,8 +161,9 @@ double RHF::compute_energy()
         }
         else if (direct_integrals_ == true && schwarz_ == false)
         		form_G_from_direct_integrals();
-       	else if (ri_integrals_ == true && schwarz_ == false)
-       			{/* Nothing Yet*/}
+       	else if (ri_integrals_ == true && schwarz_ == true) { 
+       	/* Nothing Yet*/
+       	}
        	else if (ri_integrals_ == true && schwarz_ == false) {
        			if (iteration == 1)
         			form_B();
@@ -903,7 +904,8 @@ void RHF::form_B()
 		} 
 		int norbs = basisset_->nbf(); 
 		
-  	ribasis_ = shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS"));
+  	shared_ptr<BasisSet> ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS"));
+  	ri_nbf_ = ribasis_->nbf();
   	//ribasis_->print();
 
   	shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
@@ -911,8 +913,8 @@ void RHF::form_B()
   	
   	IntegralFactory rifactory_J(ribasis_, zero, ribasis_, zero);
   	TwoBodyInt* Jint = rifactory_J.eri();
-  	double **J = block_matrix(ribasis_->nbf(), ribasis_->nbf());
-  	double **J_mhalf = block_matrix(ribasis_->nbf(), ribasis_->nbf());
+  	double **J = block_matrix(ri_nbf_, ri_nbf_);
+  	double **J_mhalf = block_matrix(ri_nbf_, ri_nbf_);
   	const double *Jbuffer = Jint->buffer();
 
 #ifdef TIME_SCF
@@ -946,15 +948,15 @@ void RHF::form_B()
     }
   }
   //fprintf(outfile,"\nJ:\n");
-  //print_mat(J,ribasis_->nbf(),ribasis_->nbf(),outfile);
+  //print_mat(J,ri_nbf_,ri_nbf_,outfile);
 
   // Form J^-1/2
   // First, diagonalize J
   // the C_DSYEV call replaces the original matrix J with its eigenvectors
-  double* eigval = init_array(ribasis_->nbf());
-  int lwork = ribasis_->nbf() * 3;
+  double* eigval = init_array(ri_nbf_);
+  int lwork = ri_nbf_ * 3;
   double* work = init_array(lwork);
-  int stat = C_DSYEV('v','u',ribasis_->nbf(),J[0],ribasis_->nbf(),eigval,
+  int stat = C_DSYEV('v','u',ri_nbf_,J[0],ri_nbf_,eigval,
     work,lwork);
   if (stat != 0) {
     fprintf(outfile, "C_DSYEV failed\n");
@@ -964,32 +966,32 @@ void RHF::form_B()
 
   // Now J contains the eigenvectors of the original J
   // Copy J to J_copy
-  double **J_copy = block_matrix(ribasis_->nbf(), ribasis_->nbf());
-  C_DCOPY(ribasis_->nbf()*ribasis_->nbf(),J[0],1,J_copy[0],1); 
+  double **J_copy = block_matrix(ri_nbf_, ri_nbf_);
+  C_DCOPY(ri_nbf_*ri_nbf_,J[0],1,J_copy[0],1); 
   
   // Now form J^{-1/2} = U(T)*j^{-1/2}*U,
   // where j^{-1/2} is the diagonal matrix of the inverse square roots
   // of the eigenvalues, and U is the matrix of eigenvectors of J
-  for (int i=0; i<ribasis_->nbf(); i++) {
+  for (int i=0; i<ri_nbf_; i++) {
     if (eigval[i] < 1.0E-10)
       eigval[i] = 0.0;
     else {
       eigval[i] = 1.0 / sqrt(eigval[i]);
     }
     // scale one set of eigenvectors by the diagonal elements j^{-1/2}
-    C_DSCAL(ribasis_->nbf(), eigval[i], J[i], 1);
+    C_DSCAL(ri_nbf_, eigval[i], J[i], 1);
   }
   free(eigval);
 
   // J_mhalf = J_copy(T) * J
-  C_DGEMM('t','n',ribasis_->nbf(),ribasis_->nbf(),ribasis_->nbf(),1.0,
-    J_copy[0],ribasis_->nbf(),J[0],ribasis_->nbf(),0.0,J_mhalf[0],ribasis_->nbf());
+  C_DGEMM('t','n',ri_nbf_,ri_nbf_,ri_nbf_,1.0,
+    J_copy[0],ri_nbf_,J[0],ri_nbf_,0.0,J_mhalf[0],ri_nbf_);
 
   free_block(J);
   free_block(J_copy);
   
   //fprintf(outfile,"\nJmhalf:\n");
-  //print_mat(J_mhalf,ribasis_->nbf(),ribasis_->nbf(),outfile);
+  //print_mat(J_mhalf,ri_nbf_,ri_nbf_,outfile);
 
 #ifdef TIME_SCF
   timer_off("Form J");
@@ -1001,7 +1003,7 @@ void RHF::form_B()
 	IntegralFactory rifactory(ribasis_, zero, basisset_, basisset_);
   	TwoBodyInt* eri = rifactory.eri();
 	const double *buffer = eri->buffer();
-	double **ao_p_ia = block_matrix(ribasis_->nbf(),basisset_->nbf()*(basisset_->nbf()+1)/2); 
+	double **ao_p_ia = block_matrix(ri_nbf_,basisset_->nbf()*(basisset_->nbf()+1)/2); 
 
 	int numPshell,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu;
 	#ifdef OMP
@@ -1031,7 +1033,7 @@ void RHF::form_B()
   } // end loop over P shells; done with forming MO basis (P|ia)'s
   
   //fprintf(outfile,"\nao_p_ia:\n");
-  //print_mat(ao_p_ia, ribasis_->nbf(),norbs*(norbs+1)/2 ,outfile);
+  //print_mat(ao_p_ia, ri_nbf_,norbs*(norbs+1)/2 ,outfile);
 
 #ifdef TIME_SCF
   timer_off("Form ao_p_ia");
@@ -1042,13 +1044,13 @@ void RHF::form_B()
 
   // ao_p_ia has integrals
   // B_ia^P = Sum_Q (i a | Q) (J^-1/2)_QP
-  B_ia_P_ = block_matrix(ribasis_->nbf(),norbs*(norbs+1)/2);
+  B_ia_P_ = block_matrix(ri_nbf_,norbs*(norbs+1)/2);
 
-  C_DGEMM('N','N',ribasis_->nbf(),norbs*(norbs+1)/2,ribasis_->nbf(),
-    1.0, J_mhalf[0], ribasis_->nbf(), ao_p_ia[0], norbs*(norbs+1)/2,
+  C_DGEMM('N','N',ri_nbf_,norbs*(norbs+1)/2,ri_nbf_,
+    1.0, J_mhalf[0], ri_nbf_, ao_p_ia[0], norbs*(norbs+1)/2,
     0.0, B_ia_P_[0], norbs*(norbs+1)/2);
 	//fprintf(outfile,"\nB_p_ia:\n");
-  //print_mat(B_ia_P_, ribasis_->nbf(),norbs*(norbs+1)/2 ,outfile);
+  //print_mat(B_ia_P_, ri_nbf_,norbs*(norbs+1)/2 ,outfile);
   free_block(ao_p_ia);
   free_block(J_mhalf);
 
@@ -1085,16 +1087,16 @@ void RHF::form_G_from_RI()
 			D2[ij] = (i==j?1.0:2.0)*D[i][j];
 		}
 					
-	double *L = init_array(ribasis_->nbf());
-	for (int i=0; i<ribasis_->nbf(); i++) {
+	double *L = init_array(ri_nbf_);
+	for (int i=0; i<ri_nbf_; i++) {
 		L[i]=C_DDOT(norbs*(norbs+1)/2,D2,1,B_ia_P_[i],1);
 	}
-	//for (int i=0; i<ribasis_->nbf(); i++)
+	//for (int i=0; i<ri_nbf_; i++)
 		//fprintf(outfile,"%s%20.10f\n",((i==0)?"L:\n":""),L[i]);
 	
 	double *Gtemp = init_array(norbs*(norbs+1)/2);
 
-	C_DGEMM('T','N',1,norbs*(norbs+1)/2,ribasis_->nbf(),1.0,L,1,B_ia_P_[0],norbs*(norbs+1)/2, 0.0, Gtemp, norbs*(norbs+1)/2);
+	C_DGEMM('T','N',1,norbs*(norbs+1)/2,ri_nbf_,1.0,L,1,B_ia_P_[0],norbs*(norbs+1)/2, 0.0, Gtemp, norbs*(norbs+1)/2);
 	
 	for (int i = 0, ij=0; i<norbs; i++)
 		for (int j = 0; j<=i; ij++,j++)	
@@ -1121,14 +1123,14 @@ void RHF::form_G_from_RI()
 			Cocc[j][i] = C_->get(0,i,j);
 	
 	double **K = block_matrix(norbs, norbs);
-	double** B_im_Q = block_matrix(norbs, ndocc*ribasis_->nbf());
+	double** B_im_Q = block_matrix(norbs, ndocc*ri_nbf_);
 	register double result;
 	register int ind;
 	#ifdef OMP
 	#pragma omp parallel for
 	#endif
 	for (int m = 0; m<norbs; m++)
-		for (int Q = 0; Q<ribasis_->nbf(); Q++)
+		for (int Q = 0; Q<ri_nbf_; Q++)
 			for (int i = 0; i<ndocc; i++)
 			{
 				result = 0.0;
@@ -1147,7 +1149,7 @@ void RHF::form_G_from_RI()
 	#ifdef OMP
 	#pragma omp parallel for
 	#endif
-	C_DGEMM('N','T',norbs,norbs,ribasis_->nbf()*ndocc,1.0,B_im_Q[0],ribasis_->nbf()*ndocc,B_im_Q[0],ribasis_->nbf()*ndocc, 0.0, K[0], norbs);
+	C_DGEMM('N','T',norbs,norbs,ri_nbf_*ndocc,1.0,B_im_Q[0],ri_nbf_*ndocc,B_im_Q[0],ri_nbf_*ndocc, 0.0, K[0], norbs);
 
 	//fprintf(outfile, "\nK:\n");
 	//print_mat(K,norbs,norbs,outfile);
