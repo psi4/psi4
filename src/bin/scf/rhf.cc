@@ -903,7 +903,7 @@ void RHF::form_B()
 		} 
 		int norbs = basisset_->nbf(); 
 		
-  	ribasis_ = BasisSet::zero_basis_set();//new BasisSet(&chkpt_, "DF_BASIS"); //find pbasis via the prefx
+  	ribasis_ = shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS"));
   	//ribasis_->print();
 
   	shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
