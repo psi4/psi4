@@ -98,6 +98,7 @@ int read_options(std::string name, Options & options) {
     options.add("SOCC", new ArrayType());
     options.add_bool("PERTURB_H", false);
     options.add_double("LAMBDA", 0.0);
+    options.add_str("RI_BASIS", "");
     options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z");
     options.add_bool("DIRECT", false);
     options.add_int("DIIS_VECTORS", 4);
@@ -109,6 +110,7 @@ int read_options(std::string name, Options & options) {
     options.add_int("DEBUG", 0);
     options.add_int("E_CONVERGE", 8);
     options.add_int("D_CONVERGE", 8);
+    options.add_double("SCHWARZ_CUTOFF", 0.0);
   }
   else if (name == "MP2") {
     options.add_str("WFN", "");
