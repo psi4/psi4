@@ -138,7 +138,7 @@ void HF::common_init()
     SCHWARZ_CUTOFF_ = 0.0;
     if (options_["SCHWARZ_CUTOFF"].has_changed()) {
       SCHWARZ_CUTOFF_ = options_.get_double("SCHWARZ_CUTOFF");
-			schwarz_ = true;
+      schwarz_ = true;
     }
     
     
@@ -197,7 +197,8 @@ void HF::print_header()
     fprintf(outfile, ")\n");
     fprintf(outfile, "  Nuclear repulsion = %20.15f\n", nuclearrep_);
     
-    fprintf(outfile, "  Energy threshold  = %3.2e\n\n", energy_threshold_);
+    fprintf(outfile, "  Energy threshold  = %3.2e\n", energy_threshold_);
+    fprintf(outfile, "  Density threshold = %3.2e\n\n", density_threshold_);
     fflush(outfile);
     free(reference);
 }
