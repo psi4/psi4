@@ -57,9 +57,9 @@ namespace psi {
     double double_value = 0.0;
     int err_code;
     if (m == 0)
-      err_code = ip_data(const_cast<char*>(key.c_str()), const_cast<char*>("%f"), &double_value, m);
+      err_code = ip_data(const_cast<char*>(key.c_str()), const_cast<char*>("%lf"), &double_value, m);
     else
-      err_code = ip_data(const_cast<char*>(key.c_str()), const_cast<char*>("%f"), &double_value, m, n);
+      err_code = ip_data(const_cast<char*>(key.c_str()), const_cast<char*>("%lf"), &double_value, m, n);
     if (err_code == IPE_OK)
       data.assign(double_value);
   }

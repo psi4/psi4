@@ -23,7 +23,7 @@ namespace psi { namespace scf {
 
 std::string to_string(const int val);   // In matrix.cpp
 
-PsiReturnType scf(Options & options, int argc, char * argv[]) 
+PsiReturnType scf(Options & options, int /* argc */, char * /* argv */[])
 {
     tstart();
     
@@ -39,7 +39,7 @@ PsiReturnType scf(Options & options, int argc, char * argv[])
 
     // Compute the Hartree-Fock energy
     HFEnergy hf(options, psio, chkpt);
-    double hf_energy = hf.compute_energy();
+    /* double hf_energy = */ hf.compute_energy();
     
     // Shut down psi. 
     timer_done();

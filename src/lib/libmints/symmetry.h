@@ -9,51 +9,35 @@
 #include <cstdio>
 #include <libchkpt/chkpt.hpp>
 
-#include <libutil/ref.h>
 #include <libmints/molecule.h>
 
 namespace psi {
     
-/// Not used. Use at your own risk.
-class Symmetry
-{
-    int nirreps_;               // number of irreps
-    int max_stabilizer_index_;  // maximum stabilizer index
-    int nunique_atoms_;         // number of symmetry unique atoms
-    int nunique_shells_;        // number of symmetry unique shells
-    int nso_;                   // number of SO's
-    int *atom_position_;       // symmetry positions/stabilizers of atoms
-    int **ict_;                 // transformation properties of nuclei under symmetry operations
-    int *unique_atom_2_atom_;   // unique atom number to full atom number mapping
-    int *unique_shell_2_shell_; // unique shell number to full shell number mapping array
-    int *sopi_;                 // number of SO per irrep
-    int *sym_operation_;        // mapping array between "canonical" and symmetry.h-defined ordering
-    int *so2symblk_;            // SO number to symmetry block mapping array
-    char *symlabel_;            // symmetry label
-    char **irr_labels_;         // labels of irreps
-    int **trans_vec_;           // a matrix of nshell*nirreps integers that contains symmetry information
-    int nshells_;               // number of shells
+class SymmOp {
+private:
+    double rep_[3][3];
 public:
-    Symmetry(psi::Chkpt* chkpt);
-    Symmetry(const Symmetry&);
-    ~Symmetry();
+    // default constructor
+    SymmOp();
+    // copy constructor
+    SymmOp(const SymmOp &);
+    // destructor
+    ~SymmOp();
+
+    double trace() const { return rep_[0][0] + rep_[1][1] + rep_[2][2]; }
     
-    int nirreps() const { return nirreps_; }
-    int max_stabilizer_index() const { return max_stabilizer_index_; }
-    int nunique_atoms() const { return nunique_atoms_; }
-    int nunique_shells() const { return nunique_shells_; }
-    int nso() const { return nso_; }
-    int atom_position(int i) const { return atom_position_[i]; }
-    int ict(int i, int j) const { return ict_[i][j]; }
-    int unique_atom_2_atom(int i) const { return unique_atom_2_atom_[i]; }
-    int unique_shell_2_shell(int i) const { return unique_shell_2_shell_[i]; }
-    int sopi(int i) const { return sopi_[i]; }
-    int sym_operation(int i) const { return sym_operation_[i]; }
-    int so2symblk(int i) const { return so2symblk_[i]; }
-    char* symlabel() const { return symlabel_; }
-    char* irr_label(int i) const { return irr_labels_[i]; }
-    int trans_vec(int i, int j) const { return trans_vec_[i][j]; }
-    int nshells() const { return nshells_; }
+    double*       operator[](int a)       { return rep_[a]; }
+    const double* operator[](int a) const { return rep_[a]; }
+
+    double& operator()(int a, int b)       { return rep_[a][b]; }
+    double  operator()(int a, int b) const { return rep_[a][b]; }
+
+    void zero()     { memset(rep_, 0, sizeof(double)*9); }
+    void E()        { zero(); rep_[0][0] = rep_[1][1] = rep_[2][2] =  1.0; }
+    void i()        { zero(); rep_[0][0] = rep_[1][1] = rep_[2][2] = -1.0; }
+    void sigma_h()  { E(); rep_[2][2] = -1.0; }
+    void sigma_xz() { E(); rep_[1][1] = -1.0; }
+    void sigma_yz() { E(); rep_[0][0] = -1.0; }
 };
 
 }

@@ -92,30 +92,30 @@ int psi3_simulator(Options & options, int argc, char *argv[]) {
       read_options("INPUT", options);
       dispatch_table["INPUT"](options, argc, argv);
 
-      module.set_prgid("CINTS");
-      read_options("CINTS", options);
-      dispatch_table["CINTS"](options, argc, argv);
+      // module.set_prgid("CINTS");
+      // read_options("CINTS", options);
+      // dispatch_table["CINTS"](options, argc, argv);
 
       // The new SCF code is still a work in progress.
-      // module.set_prgid("SCF");
-      // read_options("SCF", options);
-      // dispatch_table["SCF"](options, argc, argv);
+      module.set_prgid("SCF");
+      read_options("SCF", options);
+      dispatch_table["SCF"](options, argc, argv);
 
-      module.set_prgid("CSCF");
-      read_options("CSCF", options);
-      dispatch_table["CSCF"](options, argc, argv);
-      
-      module.set_prgid("TRANSQT2");
-      read_options("TRANSQT2", options);
-      dispatch_table["TRANSQT2"](options, argc, argv);
-      
-      module.set_prgid("CCSORT");
-      read_options("CCSORT", options);
-      dispatch_table["CCSORT"](options, argc, argv);
-      
-      module.set_prgid("CCENERGY");
-      read_options("CCENERGY", options);
-      dispatch_table["CCENERGY"](options, argc, argv);
+      // module.set_prgid("CSCF");
+      // read_options("CSCF", options);
+      // dispatch_table["CSCF"](options, argc, argv);
+      // 
+      // module.set_prgid("TRANSQT2");
+      // read_options("TRANSQT2", options);
+      // dispatch_table["TRANSQT2"](options, argc, argv);
+      // 
+      // module.set_prgid("CCSORT");
+      // read_options("CCSORT", options);
+      // dispatch_table["CCSORT"](options, argc, argv);
+      // 
+      // module.set_prgid("CCENERGY");
+      // read_options("CCENERGY", options);
+      // dispatch_table["CCENERGY"](options, argc, argv);
 //  }
 //  else {
 //    fprintf(outfile,"Unknown PSI4 method\n");
