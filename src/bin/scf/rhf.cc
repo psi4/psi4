@@ -695,10 +695,10 @@ double RHF::compute_initial_E()
 
 double RHF::compute_E()
 {
-    Matrix HF;
-    HF.copy(H_);
-    HF.add(F_);
-    double Etotal = nuclearrep_ + D_->vector_dot(HF);
+    Matrix HplusF;
+    HplusF.copy(H_);
+    HplusF.add(F_);
+    double Etotal = nuclearrep_ + D_->vector_dot(HplusF);
     return Etotal;
 }
 
@@ -1317,16 +1317,12 @@ void RHF::form_G_from_direct_integrals_schwarz()
     // Begin factor out
     IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
     TwoBodyInt* eri = integral.eri();
-    ShellCombinationsIterator iter = integral.shells_iterator();
     const double *buffer = eri->buffer();
     // End factor out
     int nshell = basisset_->nshell();
-    int NP, NQ, NR, NS;
-    int oP, oQ, oR, oS;
     int P, Q, R, S;
     int i, j, k, l;
     register double value;
-    int index;
     
     int* backind = init_int_array(nshell*(nshell+1)/2);
     for (int I = 0, index = 0; I<nshell; I++)

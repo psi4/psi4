@@ -148,15 +148,15 @@ class LimitExceeded : public PsiException {
         * @param resource_name The name of the value that was exceeded (e.g. memory or scf max iterations)
         * @param maxval The max (or min) value allowed
         * @param errorval The actual value obtained
-        * @param file The file that threw the exception (use __FILE__ macro)
-        * @param line The line number that threw the exception (use __LINE__ macro)
+        * @param f The file that threw the exception (use __FILE__ macro)
+        * @param l The line number that threw the exception (use __LINE__ macro)
         */
         LimitExceeded(
             std::string resource_name,
             T maxval,
             T errorval,
-            const char* file,
-            int line) throw() : PsiException(resource_name, file, line), maxval_(maxval), errorval_(errorval), resource_name_(resource_name)
+            const char* f,
+            int l) throw() : PsiException(resource_name, f, l), maxval_(maxval), errorval_(errorval), resource_name_(resource_name)
         {
             rewrite_msg(description());
         }

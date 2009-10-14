@@ -706,6 +706,10 @@ namespace psi {
     std::string to_string() const {
       std::stringstream str;
       for (const_iterator pos = keyvals_.begin(); pos != keyvals_.end(); ++pos) {
+        std::string tmp = pos->second.to_string();
+        if (tmp.length() == 0) {
+          tmp = "(empty)";
+        }
         str << "  " << std::setw(20) << pos->first << " => " << pos->second.to_string();
         if (pos->second.has_changed()) 
           str << " !";
