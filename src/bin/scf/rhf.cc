@@ -896,21 +896,21 @@ void RHF::form_G_from_PK()
 
 void RHF::form_B()
 {   
-		fprintf(outfile, "  Computing Integrals using RI Basis");
-		if (factory_.nirreps() != 1)
-		{
-			fprintf(outfile,"Must run in C1 for now.\n");
-			abort();
-		} 
-		int norbs = basisset_->nbf(); 
+    fprintf(outfile, "  Computing Integrals using RI Basis");
+    if (factory_.nirreps() != 1)
+    {
+        fprintf(outfile,"Must run in C1 for now.\n");
+        abort();
+    } 
+    int norbs = basisset_->nbf(); 
 		
   	shared_ptr<BasisSet> ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS"));
   	ri_nbf_ = ribasis_->nbf();
   	//ribasis_->print();
 
-  	shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
-		// Create integral factory
-  	
+    shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
+
+    // Create integral factory
   	IntegralFactory rifactory_J(ribasis_, zero, ribasis_, zero);
   	TwoBodyInt* Jint = rifactory_J.eri();
   	double **J = block_matrix(ri_nbf_, ri_nbf_);

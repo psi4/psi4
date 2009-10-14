@@ -120,8 +120,8 @@ void HF::common_init()
         }
     }
 	
-		// Run integral direct? default no
-		direct_integrals_ = false;
+    // Run integral direct? default no
+	direct_integrals_ = false;
     direct_integrals_ = options_.get_bool("DIRECT");
     
     //Run density fitting? default no
