@@ -39,24 +39,13 @@ protected:
     int use_out_of_core_;
     double *pk_;
     
-    int mind_; //minimum sorted compound index
-    int* sieve_ind_; //permutation matrix for sort
-    int* cut_ind_; //critical sorted index for schwarz sieve
-    double* norm_;
-    
-    double **B_ia_P_; //Three Index tensor for DF-SCF
-    
     void compute_multipole();
     
     void form_initialF();
     void form_C();
     void form_D();
     double compute_initial_E();
-    double compute_E();
-    
-    void schwarz_sieve();
-    void form_B(); 
-    
+    double compute_E(); 
     
     void form_G(); // Out of core (i think there is a bug here)
     void form_G_from_PK(); // In core PK

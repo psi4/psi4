@@ -40,7 +40,7 @@ using namespace std;
 namespace psi { namespace scf {
     
 RHF::RHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) 
-    : HF(options, psio, chkpt), sieve_ind_(NULL), cut_ind_(NULL)
+    : HF(options, psio, chkpt)
 {
     common_init();
 }
@@ -51,10 +51,6 @@ RHF::~RHF()
         free_block(diis_B_);
     if (pk_)
         delete[] pk_;
-    if (sieve_ind_)
-        delete[] sieve_ind_;
-    if (cut_ind_)
-        delete[] cut_ind_;
 }
 
 void RHF::common_init()
@@ -106,6 +102,8 @@ void RHF::common_init()
     fprintf(outfile, "  DIIS %s.\n", diis_enabled_ ? "enabled" : "disabled");
     fprintf(outfile, "  Out of core %s.\n", use_out_of_core_ ? "enabled" : "disabled");
     fprintf(outfile, "  Direct %s.\n", direct_integrals_ ? "enabled": "disabled");
+    fprintf(outfile, "  Density Fitting %s.\n", ri_integrals_ ? "enabled": "disabled");
+    fprintf(outfile, "  Schwarz Sieving %s.\n", schwarz_ ? "enabled": "disabled");
     
     // Allocate memory for PK matrix
     allocate_PK();
@@ -212,7 +210,14 @@ double RHF::compute_energy()
         fprintf(outfile, "\n  Failed to converged.\n");
         E_ = 0.0;
     }
-    
+    if (schwarz_)
+    {
+    	free(sieve_ind_);
+    }
+    if (ri_integrals_)
+    {
+    	free(B_ia_P_);
+    }
     // Compute the final dipole.
     compute_multipole();
 
@@ -898,170 +903,6 @@ void RHF::form_G_from_PK()
     delete[](G_vector);
 }
 
-void RHF::form_B()
-{   
-    fprintf(outfile, "\n  Computing Integrals using RI Basis\n");
-    if (factory_.nirreps() != 1)
-    {
-        fprintf(outfile,"Must run in C1 for now.\n");
-        abort();
-    } 
-    int norbs = basisset_->nbf(); 
-        
-    shared_ptr<BasisSet> ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS"));
-    ri_nbf_ = ribasis_->nbf();
-    //ribasis_->print();
-
-    shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
-
-    // Create integral factory
-    IntegralFactory rifactory_J(ribasis_, zero, ribasis_, zero);
-    TwoBodyInt* Jint = rifactory_J.eri();
-    double **J = block_matrix(ri_nbf_, ri_nbf_);
-    double **J_mhalf = block_matrix(ri_nbf_, ri_nbf_);
-    const double *Jbuffer = Jint->buffer();
-
-#ifdef TIME_SCF
-    timer_init();
-    timer_on("Form J");
-#endif
-
-    int index = 0;
-  
-    #ifdef OMP
-    #pragma omp parallel for 
-    #endif
-    for (int MU=0; MU < ribasis_->nshell(); ++MU) {
-        int nummu = ribasis_->shell(MU)->nfunction();
-        
-        for (int NU=0; NU < ribasis_->nshell(); ++NU) {
-            int numnu = ribasis_->shell(NU)->nfunction();
-    
-            Jint->compute_shell(MU, 0, NU, 0);
-            
-            index = 0;
-            for (int mu=0; mu < nummu; ++mu) {
-                int omu = ribasis_->shell(MU)->function_index() + mu;
-                
-                for (int nu=0; nu < numnu; ++nu, ++index) {
-                    int onu = ribasis_->shell(NU)->function_index() + nu;
-
-                    J[omu][onu] = Jbuffer[index];
-                }
-            }
-        }
-    }
-    //fprintf(outfile,"\nJ:\n");
-    //print_mat(J,ri_nbf_,ri_nbf_,outfile);
-
-    // Form J^-1/2
-    // First, diagonalize J
-    // the C_DSYEV call replaces the original matrix J with its eigenvectors
-    double* eigval = init_array(ri_nbf_);
-    int lwork = ri_nbf_ * 3;
-    double* work = init_array(lwork);
-    int stat = C_DSYEV('v','u',ri_nbf_,J[0],ri_nbf_,eigval, work,lwork);
-    if (stat != 0) {
-        fprintf(outfile, "C_DSYEV failed\n");
-        exit(PSI_RETURN_FAILURE);
-    }
-    free(work);
-
-    // Now J contains the eigenvectors of the original J
-    // Copy J to J_copy
-    double **J_copy = block_matrix(ri_nbf_, ri_nbf_);
-    C_DCOPY(ri_nbf_*ri_nbf_,J[0],1,J_copy[0],1); 
-  
-    // Now form J^{-1/2} = U(T)*j^{-1/2}*U,
-    // where j^{-1/2} is the diagonal matrix of the inverse square roots
-    // of the eigenvalues, and U is the matrix of eigenvectors of J
-    for (int i=0; i<ri_nbf_; i++) {
-        if (eigval[i] < 1.0E-10)
-            eigval[i] = 0.0;
-        else 
-            eigval[i] = 1.0 / sqrt(eigval[i]);
-        
-        // scale one set of eigenvectors by the diagonal elements j^{-1/2}
-        C_DSCAL(ri_nbf_, eigval[i], J[i], 1);
-    }
-    free(eigval);
-
-    // J_mhalf = J_copy(T) * J
-    C_DGEMM('t','n',ri_nbf_,ri_nbf_,ri_nbf_,1.0,
-    J_copy[0],ri_nbf_,J[0],ri_nbf_,0.0,J_mhalf[0],ri_nbf_);
-
-    free_block(J);
-    free_block(J_copy);
-  
-    //fprintf(outfile,"\nJmhalf:\n");
-    //print_mat(J_mhalf,ri_nbf_,ri_nbf_,outfile);
-
-#ifdef TIME_SCF
-    timer_off("Form J");
-#endif
-#ifdef TIME_SCF
-    timer_on("Form ao_p_ia");
-#endif
-
-    IntegralFactory rifactory(ribasis_, zero, basisset_, basisset_);
-    TwoBodyInt* eri = rifactory.eri();
-    const double *buffer = eri->buffer();
-    double **ao_p_ia = block_matrix(ri_nbf_,basisset_->nbf()*(basisset_->nbf()+1)/2); 
-
-    int numPshell,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu;
-    #ifdef OMP
-    #pragma omp parallel for private (numPshell,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu)
-    #endif
-    for (Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
-      numPshell = ribasis_->shell(Pshell)->nfunction();
-      for (MU=0; MU < basisset_->nshell(); ++MU) {
-        nummu = basisset_->shell(MU)->nfunction();
-        for (NU=0; NU <= MU; ++NU) {
-          numnu = basisset_->shell(NU)->nfunction();
-          eri->compute_shell(Pshell, 0, MU, NU);
-          for (P=0, index=0; P < numPshell; ++P) {
-            PHI = ribasis_->shell(Pshell)->function_index() + P;
-            for (mu=0; mu < nummu; ++mu) {
-              omu = basisset_->shell(MU)->function_index() + mu;
-              for (nu=0; nu < numnu; ++nu, ++index) {
-                onu = basisset_->shell(NU)->function_index() + nu;
-                if(omu>=onu)
-                  ao_p_ia[PHI][ioff[omu]+onu]= buffer[index];
-              } 
-            }
-          } // end loop over P in Pshell
-        } // end loop over NU shell
-      } // end loop over MU shell
-      // now we've gone through all P, mu, nu for a given Pshell
-    } // end loop over P shells; done with forming MO basis (P|ia)'s
-  
-    //fprintf(outfile,"\nao_p_ia:\n");
-    //print_mat(ao_p_ia, ri_nbf_,norbs*(norbs+1)/2 ,outfile);
-
-#ifdef TIME_SCF
-    timer_off("Form ao_p_ia");
-#endif
-#ifdef TIME_SCF
-    timer_on("Form B_ia^P");
-#endif
-
-    // ao_p_ia has integrals
-    // B_ia^P = Sum_Q (i a | Q) (J^-1/2)_QP
-    B_ia_P_ = block_matrix(ri_nbf_,norbs*(norbs+1)/2);
-
-    C_DGEMM('N','N',ri_nbf_,norbs*(norbs+1)/2,ri_nbf_,
-        1.0, J_mhalf[0], ri_nbf_, ao_p_ia[0], norbs*(norbs+1)/2,
-        0.0, B_ia_P_[0], norbs*(norbs+1)/2);
-    //fprintf(outfile,"\nB_p_ia:\n");
-    //print_mat(B_ia_P_, ri_nbf_,norbs*(norbs+1)/2 ,outfile);
-    free_block(ao_p_ia);
-    free_block(J_mhalf);
-
-#ifdef TIME_SCF
-    timer_off("Form B_ia^P");
-#endif 
-}
-
 void RHF::form_G_from_RI()
 {
     int norbs = basisset_->nbf(); 
@@ -1168,132 +1009,6 @@ void RHF::form_G_from_RI()
 #ifdef TIME_SCF
     timer_off("Form Exchange");
 #endif
-}
-
-void RHF::schwarz_sieve()
-{
-    // Create integral object
-    IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
-    TwoBodyInt* eri = integral.eri();
-    //ShellCombinationsIterator iter = integral.shells_iterator();
-    const double *buffer = eri->buffer();
-    
-    fprintf(outfile, "\n      Sieving..."); fflush(outfile);
-    //Superdiagonal computation
-    int nshell = basisset_->nshell();
-    norm_ = init_array(nshell*(nshell+1)/2);
-    sieve_ind_ = new int[nshell*(nshell+1)/2];
-    #ifdef OMP
-    #pragma omp parallel for
-    #endif
-    for (int i = 0, ij = 0; i<nshell; i++) {
-        for (int j = 0; j<=i; j++, ij++)
-        {
-            eri->compute_shell(i, j, i, j);
-            double mnorm = 0.0;
-            int index = 0;
-            int NI = basisset_->shell(i)->nfunction();
-            int NJ = basisset_->shell(j)->nfunction();
-            for (int ii = 0; ii<NI; ii++)
-                for (int jj = 0; jj<NJ; jj++)
-                    for (int k = 0; k<NI; k++)
-                        for (int l = 0; l<NJ; l++, index++)
-                            if (fabs(buffer[index])>mnorm)
-                                mnorm = fabs(buffer[index]);
-            norm_[ij] = mnorm;
-            sieve_ind_[ij] = ij;
-        }
-    }
-#ifdef DEBUG
-    fprintf(outfile,"\nUnsorted Vals:\n"); fflush(outfile);
-    for (int i = 0; i<nshell*(nshell+1)/2; i++)
-        fprintf(outfile,"\t%d\t%d\t%f\n",i,sieve_ind_[i],norm[i]);
-    fflush(outfile);
-#endif
-    
-    //Quicksort by norm
-#ifdef DEBUG
-    fprintf(outfile, "\n      Quicksort..."); fflush(outfile);
-#endif
-    //In-place quicksort, max elements = 2^MAX_LEVELS
-    #define  MAX_LEVELS  300
-    int elements = nshell*(nshell+1)/2;
-    int swap, pivind, beg[MAX_LEVELS], end[MAX_LEVELS], i=0, L, R; 
-    double  piv;
-
-    beg[0]=0; end[0]=elements;
-    while (i>=0) {
-        L=beg[i]; R=end[i]-1;
-        if (L<R) {
-            piv=norm_[L];
-            pivind=sieve_ind_[L];
-            while (L<R) {
-                while (norm_[R]>=piv && L<R) R--; 
-                if (L<R) { 
-                    norm_[L]=norm_[R]; 
-                    sieve_ind_[L]=sieve_ind_[R];
-                    L++;
-                }
-                while (norm_[L]<=piv && L<R) L++; 
-                if (L<R) {
-                    norm_[R]=norm_[L];
-                    sieve_ind_[R]=sieve_ind_[L]; 
-                    R--;
-                }
-            }
-            norm_[L]=piv; 
-            sieve_ind_[L] = pivind; 
-            beg[i+1]=L+1; 
-            end[i+1]=end[i]; 
-            end[i++]=L;
-            if (end[i]-beg[i]>end[i-1]-beg[i-1]) {
-                swap=beg[i]; beg[i]=beg[i-1]; beg[i-1]=swap;
-                swap=end[i]; end[i]=end[i-1]; end[i-1]=swap;
-            }
-        }
-        else {
-          i--; 
-        }
-    }
-    //Quicksort finished
-#ifdef DEBUG
-    fprintf(outfile,"\nSorted Vals:\n"); fflush(outfile);
-    for (int i = 0; i<nshell*(nshell+1)/2; i++)
-        fprintf(outfile,"\t%d\t%d\t%f\n",i,sieve_ind_[i],norm_[i]);
-    fflush(outfile);
-#endif
-    cut_ind_ = new int[nshell*(nshell+1)/2];
-    int crit_ind = nshell*(nshell+1)/2-1;
-    mind_ = 0;
-    int flag = false;
-#ifdef DEBUG
-    fprintf(outfile, "\n      Cutoff..."); fflush(outfile);
-#endif 
-
-    for (int ij = 0; ij<nshell*(nshell+1)/2; ij++)
-    {
-        while (crit_ind>=0)
-        {
-            if (norm_[ij]*norm_[crit_ind]>=SCHWARZ_CUTOFF_*SCHWARZ_CUTOFF_)
-                crit_ind--;
-            else
-                break;
-        } 
-        if (!flag&&crit_ind<nshell*(nshell+1)/2-1)
-        {
-            mind_ = ij;
-            flag = true;
-        }
-        cut_ind_[ij] = crit_ind;                
-    }
-    fprintf(outfile,"\n  %d of %d shell pairings eliminated using schwarz cutoff of %f",mind_,nshell*(nshell+1)/2,SCHWARZ_CUTOFF_); 
-#ifdef DEBUG
-    fprintf(outfile,"\nCritical indicies:\n"); fflush(outfile);
-    for (int i = 0; i<nshell*(nshell+1)/2; i++)
-        fprintf(outfile,"\t%d\t%d\n",i,cut_ind_[i]);
-    fflush(outfile);
-#endif
-    //SIEVE READY
 }
 
 void RHF::form_G_from_direct_integrals_schwarz()
