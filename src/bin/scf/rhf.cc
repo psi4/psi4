@@ -32,6 +32,7 @@
 #include "rhf.h"
 #include <psi4-dec.h>
 
+#define TIME_SCF
 #define _DEBUG
 
 using namespace psi;
@@ -106,7 +107,8 @@ void RHF::common_init()
     fprintf(outfile, "  Schwarz Sieving %s.\n", schwarz_ ? "enabled": "disabled");
     
     // Allocate memory for PK matrix
-    allocate_PK();
+    if (direct_integrals_ == false && ri_integrals_ == false)
+    	allocate_PK();
 }
 
 double RHF::compute_energy()
@@ -118,13 +120,16 @@ double RHF::compute_energy()
     //form_multipole_integrals();  // handled by HF class
     form_H();
     find_occupation(H_);
+    if (schwarz_)
+    	schwarz_sieve();
     
     if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
         form_PK();
-    else if (ri_integrals_ == false && direct_integrals_ == true && schwarz_ == true)
-        schwarz_sieve();
-    else if (ri_integrals_ == true)
+    else if (ri_integrals_ == true && schwarz_ == false)
         form_B();
+    else if (ri_integrals_ == true && schwarz_ == true)
+    		form_B_schwarz();
+    
     
     form_Shalf();
     form_initialF();
@@ -166,7 +171,7 @@ double RHF::compute_energy()
         else if (ri_integrals_ == false && direct_integrals_ == true && schwarz_ == false)
                 form_G_from_direct_integrals();
         else if (ri_integrals_ == true && schwarz_ == true) { 
-           /* Nothing Yet*/
+           form_G_from_RI_schwarz();
         }
         else if (ri_integrals_ == true && schwarz_ == false) {
             form_G_from_RI();
@@ -1010,13 +1015,121 @@ void RHF::form_G_from_RI()
     timer_off("Form Exchange");
 #endif
 }
+void RHF::form_G_from_RI_schwarz()
+{
+    int norbs = basisset_->nbf(); 
+    double** D = D_->to_block_matrix();
+
+    G_->zero();
+
+    //print_mat(D, norbs, norbs,outfile);
+      
+#ifdef TIME_SCF
+    timer_on("Form Coulomb");
+#endif
+
+    double **J = block_matrix(norbs, norbs);
+    
+    double* D2 = init_array(norbs*(norbs+1)/2);
+    for (int i = 0, ij = 0; i<norbs; i++) {
+        for (int j = 0; j<=i; ij++, j++)
+        {
+            D2[ij] = (i==j?1.0:2.0)*D[i][j];
+        }
+    }
+                    
+    double *L = init_array(ri_nbf_);
+    for (int i=0; i<ri_nbf_; i++) {
+        L[i]=C_DDOT(norbs*(norbs+1)/2,D2,1,B_ia_P_[i],1);
+    }
+    
+    double *Gtemp = init_array(norbs*(norbs+1)/2);
+    C_DGEMM('T','N',1,norbs*(norbs+1)/2,ri_nbf_,1.0,L,1,B_ia_P_[0],norbs*(norbs+1)/2, 0.0, Gtemp, norbs*(norbs+1)/2);
+    
+    for (int i = 0, ij=0; i<norbs; i++) {
+        for (int j = 0; j<=i; ij++,j++)    
+        {
+            J[i][j] = 2.0*Gtemp[ij];
+            J[j][i] = 2.0*Gtemp[ij];
+        }
+    }
+    //fprintf(outfile, "\nJ:\n");
+    //print_mat(J,norbs,norbs,outfile);    
+    free(L);
+    free(D2);
+    free(Gtemp);
+    
+#ifdef TIME_SCF
+    timer_off("Form Coulomb");
+#endif
+#ifdef TIME_SCF
+    timer_on("Form Exchange");
+#endif
+    int ndocc = doccpi_[0];
+    double** Cocc = block_matrix(ndocc,norbs);
+    for (int i=0; i<norbs; i++) {
+        for (int j=0; j<ndocc; j++)
+            Cocc[j][i] = C_->get(0,i,j);
+    }
+    double **K = block_matrix(norbs, norbs);
+    double** B_im_Q = block_matrix(norbs, ndocc*ri_nbf_);
+    register double result;
+    register int ind;
+    #ifdef OMP
+    #pragma omp parallel for
+    #endif
+    for (int m = 0; m<norbs; m++) {
+        for (int Q = 0; Q<ri_nbf_; Q++) {
+            for (int i = 0; i<ndocc; i++)
+            {
+                result = 0.0;
+                for (int n = 0; n<norbs; n++)
+                {
+                    if (n>=m)
+                        ind = ioff[n]+m;
+                    else
+                        ind = ioff[m]+n;
+                    result+=Cocc[i][n]*B_ia_P_[Q][ind];                    
+                }
+                B_im_Q[m][i+Q*ndocc] = result;
+            }
+        }
+    }
+    free_block(Cocc);
+    #ifdef OMP
+    #pragma omp parallel for
+    #endif
+    C_DGEMM('N','T',norbs,norbs,ri_nbf_*ndocc,1.0,B_im_Q[0],ri_nbf_*ndocc,B_im_Q[0],ri_nbf_*ndocc, 0.0, K[0], norbs);
+
+    //fprintf(outfile, "\nK:\n");
+    //print_mat(K,norbs,norbs,outfile);
+            
+    for (int i=0; i<norbs; i++) {
+        for (int j=0; j<=i; j++) {
+            G_->add(0,i,j,J[i][j]-K[i][j]);
+            if (i!= j)
+                G_->add(0,j,i,J[i][j]-K[i][j]);
+        }
+    }
+    //fprintf(outfile,"\n");
+    //G_.print();
+    free_block(J);
+    free_block(K);
+    free_block(B_im_Q);
+    free_block(D);
+
+#ifdef TIME_SCF
+    timer_off("Form Exchange");
+#endif
+}
+
 
 void RHF::form_G_from_direct_integrals_schwarz()
 {
     double temp1, temp2, temp3, temp4, temp5, temp6;
     int itype;
     int count=0;
-    fprintf(outfile, "\n      Computing integrals..."); fflush(outfile);
+    //fprintf(outfile, "\n      Computing integrals..."); fflush(outfile);
     
     // Zero out the G matrix
     G_->zero();
@@ -1251,7 +1364,7 @@ void RHF::form_G_from_direct_integrals_schwarz()
             }
         }
     }
-    fprintf(outfile, "done. %d two-electron integrals.\n", count); fflush(outfile);
+    //fprintf(outfile, "done. %d two-electron integrals.\n", count); fflush(outfile);
     delete eri;
     
     // Set RefMatrix to RefSimpleMatrix handling symmetry blocking, if needed
@@ -1294,7 +1407,7 @@ void RHF::form_G_from_direct_integrals()
     const double *buffer = eri->buffer();
     // End factor out
     
-    fprintf(outfile, "\n      Computing integrals..."); fflush(outfile);
+    //fprintf(outfile, "\n      Computing integrals..."); fflush(outfile);
     int P, Q, R, S;
     int i, j, k, l;
     int index;
@@ -1598,7 +1711,7 @@ void RHF::form_G_from_direct_integrals()
             }
         }
     }
-    fprintf(outfile, "done. %d two-electron integrals.\n", count); fflush(outfile);
+    //fprintf(outfile, "done. %d two-electron integrals.\n", count); fflush(outfile);
     delete eri;
     
     // Set RefMatrix to RefSimpleMatrix handling symmetry blocking, if needed
