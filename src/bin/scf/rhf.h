@@ -52,6 +52,7 @@ protected:
     void form_G_from_direct_integrals(); // Computes all ERIs each iteration.
     void form_G_from_direct_integrals_schwarz(); // Computes all ERIs  with schwarz seive each iteration.
     void form_G_from_RI(); //Uses two- and three- index integrals
+    void form_G_from_RI_schwarz();
     void form_G_from_J_and_K(double scale_K_by = 1.0); // Computes G from J and K
     void form_J_and_K();    // Computes J and K matrices from the ERIs
     
