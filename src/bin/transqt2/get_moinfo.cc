@@ -81,10 +81,9 @@ namespace psi {
       moinfo.mopi = chkpt_rd_orbspi();
       moinfo.clsdpi = chkpt_rd_clsdpi();
       moinfo.openpi = chkpt_rd_openpi();
-      chkpt_close();
-
       moinfo.frdocc = get_frzcpi();
       moinfo.fruocc = get_frzvpi();
+      chkpt_close();
 
       moinfo.nfzc = moinfo.nfzv = 0;
       for(i=0; i < moinfo.nirreps; i++) {
