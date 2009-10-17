@@ -60,7 +60,6 @@ void get_moinfo(void)
   moinfo.openpi = chkpt_rd_openpi();
   moinfo.usotao = chkpt_rd_usotao();
   if(params.ref == 0) moinfo.scf = chkpt_rd_scf();
-  chkpt_close();
 
   /* Dump the reference wave function ID to CC_INFO */
   psio_write_entry(CC_INFO, "Reference Wavefunction",
@@ -68,6 +67,7 @@ void get_moinfo(void)
 
   moinfo.frdocc = get_frzcpi();
   moinfo.fruocc = get_frzvpi();
+  chkpt_close();
 
   moinfo.nfzc = moinfo.nfzv = 0;
   for(i=0; i < moinfo.nirreps; i++) {
