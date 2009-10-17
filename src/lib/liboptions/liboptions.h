@@ -705,16 +705,29 @@ namespace psi {
 
     std::string to_string() const {
       std::stringstream str;
+      int linewidth = 0;
       for (const_iterator pos = keyvals_.begin(); pos != keyvals_.end(); ++pos) {
-        std::string tmp = pos->second.to_string();
-        if (tmp.length() == 0) {
-          tmp = "(empty)";
+        std::stringstream line;
+        std::string second_tmp = pos->second.to_string();
+        if (second_tmp.length() == 0) {
+          second_tmp = "(empty)";
         }
-        str << "  " << std::setw(20) << pos->first << " => " << pos->second.to_string();
+        line << "  " << std::left << std::setw(15) << pos->first << " => " << std::setw(15) << second_tmp;
         if (pos->second.has_changed()) 
-          str << " !";
-        str << std::endl;
+          line << " !";
+        else
+          line << "  ";
+
+        str << line.str();
+
+        linewidth += line.str().size();
+        if (linewidth + 38 > 80) {
+            str << std::endl;
+            linewidth = 0;
+        }
       }
+      
+
       return str.str();
     }
 
