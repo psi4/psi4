@@ -18,10 +18,21 @@ namespace psi {
   namespace transqt2 { PsiReturnType transqt2(Options &, int argc, char *argv[]); }
   namespace ccsort   { PsiReturnType ccsort(Options &, int argc, char *argv[]); }
   namespace ccenergy { PsiReturnType ccenergy(Options &, int argc, char *argv[]); }
-  namespace psiclean { PsiReturnType psiclean(Options &, int argc, char *argv[]); }
   namespace scf      { PsiReturnType scf(Options&, int, char**); }
 
   int read_options(std::string name, Options & options);
+
+void launch_module(std::string modname, 
+  Options &options, int argc, char* argv[], 
+  std::map<std::string, PsiReturnType(*)(Options &, int argc, char *argv[])> 
+  dispatch_table);
+
+void execute_sequence(std::string sequence[],
+  Options &options, int argc, char* argv[], 
+  std::map<std::string, PsiReturnType(*)(Options &, int argc, char *argv[])> 
+  dispatch_table);
+
+void psiclean(void);
 
 // constructs psi.dat form string for execution
 int psi3_simulator(Options & options, int argc, char *argv[]) {
@@ -53,13 +64,14 @@ int psi3_simulator(Options & options, int argc, char *argv[]) {
   // make a map of function pointers to the functions
   std::map<std::string, PsiReturnType(*)(Options &, int argc, char *argv[])> dispatch_table;
 
-  dispatch_table["INPUT"]    = &(psi::input::input);
-  dispatch_table["SCF"]      = &(psi::scf::scf);
-  dispatch_table["CSCF"]     = &(psi::cscf::cscf);
-  dispatch_table["CINTS"]    = &(psi::CINTS::cints);
-  dispatch_table["TRANSQT2"] = &(psi::transqt2::transqt2);
-  dispatch_table["CCSORT"] = &(psi::ccsort::ccsort);
-  dispatch_table["CCENERGY"] = &(psi::ccenergy::ccenergy);
+  dispatch_table["INPUT"]     = &(psi::input::input);
+  dispatch_table["SCF"]       = &(psi::scf::scf);
+  dispatch_table["CSCF"]      = &(psi::cscf::cscf);
+  dispatch_table["CINTS"]     = &(psi::CINTS::cints);
+  dispatch_table["TRANSQT2"]  = &(psi::transqt2::transqt2);
+  dispatch_table["CCSORT"]    = &(psi::ccsort::ccsort);
+  dispatch_table["CCENERGY"]  = &(psi::ccenergy::ccenergy);
+//  dispatch_table["CCTRIPLES"] = &(psi::CCTRIPLES::CCTRIPLES);
 
   /* the basic programs that were in psi3
   input      = "input"
@@ -86,43 +98,83 @@ int psi3_simulator(Options & options, int argc, char *argv[]) {
   cis         = "cis"
 */
 
-//  if (PsiMethod == "SCFENERGY") {
+  string seq_scf_energy[]    = {"CINTS", "CSCF", "END"};
+  string seq_ccsd_energy[]   = {"CINTS", "CSCF", "TRANSQT2", "CCSORT",
+                                "CCENERGY", "END"};
+  string seq_ccsd_t_energy[] = {"CINTS", "CSCF", "TRANSQT2", "CCSORT",
+                                "CCENERGY", "CCTRIPLES", "END"};
 
-      module.set_prgid("INPUT");
-      read_options("INPUT", options);
-      dispatch_table["INPUT"](options, argc, argv);
 
-      module.set_prgid("CINTS");
-      read_options("CINTS", options);
-      dispatch_table["CINTS"](options, argc, argv);
+  launch_module("INPUT", options, argc, argv, dispatch_table);
 
-      // The new SCF code is still a work in progress.
-      // module.set_prgid("SCF");
-      // read_options("SCF", options);
-      // dispatch_table["SCF"](options, argc, argv);
-
-      module.set_prgid("CSCF");
-      read_options("CSCF", options);
-      dispatch_table["CSCF"](options, argc, argv);
-      
-      module.set_prgid("TRANSQT2");
-      read_options("TRANSQT2", options);
-      dispatch_table["TRANSQT2"](options, argc, argv);
-      
-      module.set_prgid("CCSORT");
-      read_options("CCSORT", options);
-      dispatch_table["CCSORT"](options, argc, argv);
-      
-      module.set_prgid("CCENERGY");
-      read_options("CCENERGY", options);
-      dispatch_table["CCENERGY"](options, argc, argv);
-//  }
-//  else {
-//    fprintf(outfile,"Unknown PSI4 method\n");
-//    abort();
-//  }
-
+  if (PsiMethod == "SCFENERGY") {
+    execute_sequence(seq_scf_energy, options, argc, argv, dispatch_table);
+  }
+  else if (PsiMethod == "CCSDENERGY") {
+    execute_sequence(seq_ccsd_energy, options, argc, argv, dispatch_table);
+  }
+  else if (PsiMethod == "CCSD_TENERGY") {
+    fprintf(outfile, "EXECUTING CCSD_T ENERGY 123\n");
+    execute_sequence(seq_ccsd_t_energy, options, argc, argv, dispatch_table);
+  }
+  else {
+    fprintf(outfile,"Unknown PSI4 method\n");
+    abort();
+  }
+ 
+  psiclean();
   return 1;
 } 
+
+void execute_sequence(std::string sequence[],
+  Options &options, int argc, char* argv[], 
+  std::map<std::string, PsiReturnType(*)(Options &, int argc, char *argv[])> 
+  dispatch_table) 
+{
+  int i=0; 
+  while (sequence[i] != "END") {
+    launch_module(sequence[i], options, argc, argv, dispatch_table);
+    i++;
+  } 
+}
+
+void launch_module(std::string modname, 
+  Options &options, int argc, char* argv[], 
+  std::map<std::string, PsiReturnType(*)(Options &, int argc, char *argv[])> 
+  dispatch_table) 
+{
+  module.set_prgid(modname);
+  read_options(modname, options); 
+  dispatch_table[modname](options, argc, argv);
+}
+
+void psiclean(void)
+{
+  ULI i, nvol;
+  int errcod;
+  char *vpath;
+  char *basename;
+  const int MAX_STRING = 300;
+  char fileslist[MAX_STRING];
+  char cmdstring[MAX_STRING];
+
+  nvol = psio_get_numvols_default();
+
+  errcod = psio_get_filename_default(&basename);
+
+  for (i=0; i<nvol; i++) {
+    errcod = psio_get_volpath_default(i, &vpath);
+
+    sprintf(fileslist,"%s%s.*",vpath,basename);
+    sprintf(cmdstring,"echo Removing files %s%s",vpath,basename);
+    system(cmdstring);
+    sprintf(cmdstring,"ls -l %s",fileslist);
+    system(cmdstring);
+    sprintf(cmdstring,"/bin/rm %s",fileslist);
+    system(cmdstring);
+    free(vpath);
+  }
+  free(basename);
+}
 
 }
