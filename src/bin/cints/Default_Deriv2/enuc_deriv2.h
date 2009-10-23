@@ -3,7 +3,7 @@
 
 /*! \file enuc_deriv2.h
     \ingroup CINTS
-*/namespace psi { namespace CINTS {
+*/namespace psi { namespace cints {
 
 void enuc_deriv2();
 

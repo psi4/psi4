@@ -19,7 +19,7 @@
 #endif
 
 namespace psi {
-  namespace CINTS {
+  namespace cints {
     
     /*--- Expensive/frequently-used quantities ---*/
 EXTERN int ioff[IOFFMAX];             /* Offset array */

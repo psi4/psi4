@@ -13,7 +13,7 @@
 
 #define MAX_ITER 100
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 /*!------------------------------------------------------
   Use Newton-Raphson method to find maximum r for which

@@ -25,7 +25,7 @@
 #include <Tools/prints.h>
 
 namespace psi {
-  namespace CINTS {
+  namespace cints {
 void te_deriv1_print(void)
 {
   Libderiv_t Libderiv;                    /* Integrals library object */

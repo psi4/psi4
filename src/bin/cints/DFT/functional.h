@@ -7,7 +7,7 @@
 */
 #include "data_structs.h"
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
   struct fun_info_s slater_e(struct den_info_s den_info);
   struct fun_info_s slater_ed(struct den_info_s den_info);
   struct fun_info_s no_funct(struct den_info_s den_info);

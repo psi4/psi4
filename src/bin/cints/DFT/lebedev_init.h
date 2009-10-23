@@ -6,7 +6,7 @@
     \brief Enter brief description of file here 
 */
 #include "data_structs.h"
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 leb_sphere_t lebedev_init(int degree);
 }}
 #endif

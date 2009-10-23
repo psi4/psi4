@@ -6,7 +6,7 @@
     \brief Enter brief description of file here 
 */
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 void calc_close_basis_u(int atom_num, int chunk_num);
 

@@ -5,7 +5,7 @@
     \ingroup CINTS
 */
 namespace psi { 
-  namespace CINTS {
+  namespace cints {
     //  void oe_deriv1(FILE *fpo, double **grad, double **Dens, double **WDens, int nirreps,
     //	int num_shells, struct shell_def *shells, struct shell_pair **shell_pairs, struct gaussian_function *cgtos,
     //	int num_atoms, struct coordinates *centers, double **bf_norm, int max_am);

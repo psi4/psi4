@@ -21,7 +21,7 @@
 #endif
 
 namespace psi {
-  namespace CINTS {
+  namespace cints {
 /*!--------------------------------------------------------------------------------
   This function computes constants used in OSRR for a given quartet of primitives
  --------------------------------------------------------------------------------*/

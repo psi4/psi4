@@ -20,7 +20,7 @@
 #include"global.h"
 #include <stdexcept>
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
   
   struct den_info_s calc_density_new(struct coordinates geom){
     

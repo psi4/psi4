@@ -30,7 +30,7 @@
 #include"calc_close_basis_u.h"
 #include"pade.h"
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
  
 void xc_fock_u(void){
   int i,j,k,l,m,n,q,s,t,u;

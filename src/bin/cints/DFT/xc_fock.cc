@@ -31,7 +31,7 @@
 #include"calc_close_basis.h"
 
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 void xc_fock(void){
   int i,j,k,l,m,n,q,s,t,u;
   int ua, atom, ua_deg;

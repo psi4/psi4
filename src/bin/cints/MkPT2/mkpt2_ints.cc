@@ -34,7 +34,7 @@
 
 
 namespace psi { 
-  namespace CINTS {
+  namespace cints {
     namespace mkpt2 {
     
     /*-------------------------------

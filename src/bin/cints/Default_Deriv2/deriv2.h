@@ -5,7 +5,7 @@
     \ingroup CINTS
 */
 namespace psi {
-  namespace CINTS {
+  namespace cints {
     void deriv2();
   }
 }

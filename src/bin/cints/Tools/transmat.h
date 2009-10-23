@@ -3,7 +3,7 @@
 
 /*! \file transmat.h
     \ingroup CINTS
-*/namespace psi { namespace CINTS {
+*/namespace psi { namespace cints {
 
 double*** build_transmat(int *sym_oper, int nirreps, int max_am);
 }}

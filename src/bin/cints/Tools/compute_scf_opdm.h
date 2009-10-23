@@ -3,7 +3,7 @@
 
 /*! \file compute_scf_opdm.h
     \ingroup CINTS
-*/namespace psi { namespace CINTS {
+*/namespace psi { namespace cints {
 
 void compute_scf_opdm(void);
 

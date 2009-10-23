@@ -15,7 +15,7 @@
 #include <stdexcept>
 
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
   double calc_exp_basis(int shell_num, double rr){
     

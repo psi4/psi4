@@ -6,7 +6,7 @@
     \brief Static variables.
 */
 //namespace psi {
-//  namespace CINTS {
+//  namespace cints {
   /*------------------------------------------------
     \internal Useful definitions for some arrays which should
     be static to make functions work well

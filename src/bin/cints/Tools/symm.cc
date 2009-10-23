@@ -14,7 +14,7 @@
 #include"global.h"
 #include <stdexcept>
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 /*-------------------------------
   Explicit function declarations

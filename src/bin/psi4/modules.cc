@@ -9,7 +9,7 @@
   
 namespace psi { 
 //  namespace input    { int input(); void register_input_options(); }
-  // namespace CINTS    { int cints(Options &, int argc, char *argv[]); }
+  // namespace cints    { int cints(Options &, int argc, char *argv[]); }
   // namespace cscf     { int cscf(int argc, char *argv[]); }
   // namespace psiclean { int psiclean(int argc, char *argv[]); }
   

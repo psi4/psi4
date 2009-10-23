@@ -5,7 +5,7 @@
     \ingroup CINTS
 */
 namespace psi { 
-  namespace CINTS {
+  namespace cints {
 
 void AI_Deriv2_OSrecurs(double ***AI0, double ***AIX, double ***AIY, double ***AIZ,
 			double ***AIXX, double ***AIXY, double ***AIXZ,

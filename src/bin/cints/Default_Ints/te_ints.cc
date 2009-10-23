@@ -26,7 +26,7 @@
   #include"int_fjt.h"
 #endif
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
   //! Two-electron integral computation.
 void te_ints()
 {

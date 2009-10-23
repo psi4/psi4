@@ -7,7 +7,7 @@
 */
 #include "data_structs.h"
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
   void cleanup_sphere(leb_sphere_t sphere);
   void cleanup_prim_chunk(prim_leb_chunk_t chunk);

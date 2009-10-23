@@ -8,7 +8,7 @@
  These are the first Partitioning parameters for the SG-1 Grid
  It is in this format so that I don't have to use if statements */
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
   double SG1alpha1[] = 
     { 0.25, 0.1667, 0.10};
   

@@ -14,7 +14,7 @@
 
 /* ---- Cleanup the primitive classes ---- */
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
   void cleanup_sphere(leb_sphere_t sphere){
     
     free(sphere.points);

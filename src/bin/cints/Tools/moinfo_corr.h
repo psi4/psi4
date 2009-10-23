@@ -3,7 +3,7 @@
 
 /*! \file moinfo_corr.h
     \ingroup CINTS
-*/namespace psi { namespace CINTS {
+*/namespace psi { namespace cints {
 
 void init_moinfo_corr();
 void cleanup_moinfo_corr();

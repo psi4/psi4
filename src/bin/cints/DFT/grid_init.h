@@ -6,7 +6,7 @@
     \brief Enter brief description of file here 
 */
 #include "data_structs.h"
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
   void grid_init();
 }}
 #endif

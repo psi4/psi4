@@ -3,7 +3,7 @@
 
 /*! \file read_scf_occ_evec.h
     \ingroup CINTS
-*/namespace psi { namespace CINTS {
+*/namespace psi { namespace cints {
 void read_scf_occ_evec(void);
 }}
 #endif

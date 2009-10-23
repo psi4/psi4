@@ -31,7 +31,7 @@
 #define DO_OE 1
 #define DO_TE 1
 namespace psi {
-  namespace CINTS {
+  namespace cints {
   //! Driver for integral second derivatives.
   void deriv2(void)
   {

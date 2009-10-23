@@ -8,7 +8,7 @@
 #define LOCK_RS_SHELL 0      /*--- When updating (js|ia) and (jr|ia) in (JS|IA) lock blocks corresponding to the entire shell
 			       blocks or just the appropriate basis functions (more fine-grained in the second case) ---*/
 namespace psi { 
-  namespace CINTS {
+  namespace cints {
     namespace mkpt2 {
       void correlate(char *ptgrp, int irrep, int& nirreps_old, int& nirreps_new,int*& correlation);
       void read_mo_space(int nirreps_ref,int& n, int* mo, char* label);

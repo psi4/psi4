@@ -4,7 +4,7 @@
 /*! \file prints.h
     \ingroup CINTS
 */
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 void print_intro();
 void print_scalars();
 void print_basisset();

@@ -21,7 +21,7 @@
 #include"small_fns.h"
 
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 /*!-----------------------------------------------------------------------------------------
   This function computes some derivatives of integrals over GIAO Gaussians with respect to

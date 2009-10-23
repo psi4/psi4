@@ -25,7 +25,7 @@
 #include "small_fns.h"
 
 namespace psi { 
-  namespace CINTS {
+  namespace cints {
     
     static void inline switch_ij(int& a, int& b) {int dum = a; a = b; b = dum;}
     

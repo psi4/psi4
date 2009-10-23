@@ -4,7 +4,7 @@
 /*! \file
     \ingroup CINTS
 */
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 void oe_ints(void);
 }}

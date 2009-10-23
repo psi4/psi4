@@ -3,7 +3,7 @@
 
 /*! \file symm.h
     \ingroup CINTS
-*/namespace psi { namespace CINTS {
+*/namespace psi { namespace cints {
 
 void init_symmetry();
 void cleanup_symmetry();

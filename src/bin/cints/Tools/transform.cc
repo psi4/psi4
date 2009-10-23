@@ -16,7 +16,7 @@
 #include"global.h"
 #include <stdexcept>
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 #if !USE_MM
 void transform_i(double *data, double *puream_data, double **c2p, int am_i, int nj, int nk, int nl)

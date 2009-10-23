@@ -5,7 +5,7 @@
     \ingroup CINTS
 */
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 void setup();
 void start_io(int argc, char *argv[]);

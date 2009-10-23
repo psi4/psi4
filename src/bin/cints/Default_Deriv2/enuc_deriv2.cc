@@ -15,7 +15,7 @@
 #include"symmetrize.h"
 #include<Tools/prints.h>
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
   //! Second derivatives of the nuclear repulsion
 void enuc_deriv2()
 {

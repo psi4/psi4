@@ -15,7 +15,7 @@
 
 #define OFFDIAG_DENS_FACTOR 0.5
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 void read_scf_opdm()
 { 

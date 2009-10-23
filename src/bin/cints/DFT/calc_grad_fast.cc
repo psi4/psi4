@@ -22,7 +22,7 @@
 #include"bas_comp_functions.h"
 
 namespace psi {
-  namespace CINTS {
+  namespace cints {
 
 struct den_info_s calc_grad_fast(struct coordinates geom, int atom_num){
     

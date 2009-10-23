@@ -19,7 +19,7 @@
 #endif
 
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 /*! Recurrence relation are from the same paper - pp. 3971-3972 */
 
 void AI_OSrecurs(double ***AI0, struct coordinates PA, struct coordinates PB,

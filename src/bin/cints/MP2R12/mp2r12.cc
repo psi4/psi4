@@ -19,7 +19,7 @@
 #include"moinfo_corr.h"
 #include"rmp2r12_energy.h"
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 void mp2r12()
 {

@@ -22,7 +22,7 @@
  #include"scf_parsing.h"
 #endif
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
   //! Main parsing routine for input.
   void parsing(Options & options)
   {

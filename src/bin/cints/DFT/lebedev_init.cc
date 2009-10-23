@@ -13,7 +13,7 @@
 #include"global.h"
 #include <stdexcept>
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 int generate_points(int type, int start, double a, double b, double v);
 

@@ -3,7 +3,7 @@
 
 /*! \file rad_extent.h
     \ingroup CINTS
-*/namespace psi { namespace CINTS {
+*/namespace psi { namespace cints {
 
 void init_rad_extent(double thresh)
 }}

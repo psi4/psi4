@@ -26,7 +26,7 @@
 #include <Tools/prints.h>
 
 namespace psi {
-  namespace CINTS {
+  namespace cints {
 
 void te_deriv1_corr()
 {

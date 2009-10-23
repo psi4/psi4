@@ -22,7 +22,7 @@
 #include"int_fjt.h"
 
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 void r12_te_ints()
 {
   const double toler = UserOptions.cutoff;

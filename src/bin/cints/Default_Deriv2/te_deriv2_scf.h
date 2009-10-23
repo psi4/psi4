@@ -3,7 +3,7 @@
 
 /*! \file te_deriv2_scf.h
     \ingroup CINTS
-*/namespace psi { namespace CINTS {
+*/namespace psi { namespace cints {
 void te_deriv2_scf(void);
 }}
 #endif

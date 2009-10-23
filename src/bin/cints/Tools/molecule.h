@@ -5,7 +5,7 @@
     \ingroup CINTS
 */
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 void init_molecule();
 void cleanup_molecule();
 void compute_enuc(void);

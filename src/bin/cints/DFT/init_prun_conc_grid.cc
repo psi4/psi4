@@ -14,7 +14,7 @@
 #include <stdexcept>
 #include"physconst.h"
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 void init_pruned_con_grid(void){
     int i,j;
     int u_atom_num;

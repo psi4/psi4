@@ -24,7 +24,7 @@
 #include <Tools/prints.h>
 
 namespace psi {
-  namespace CINTS {
+  namespace cints {
 /*--- These frequently used numbers are to avoid costs of passing parameters ---*/
 static double oo2g, oog, gam;
 

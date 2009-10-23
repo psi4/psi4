@@ -16,7 +16,7 @@
 #include"shell_pairs.h"
 #include"small_fns.h"
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 /*--------------------------------
   Explicit functions declarations

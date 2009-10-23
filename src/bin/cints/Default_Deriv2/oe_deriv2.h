@@ -3,7 +3,7 @@
 
 /*! \file oe_deriv2.h
     \ingroup CINTS
-*/namespace psi { namespace CINTS {
+*/namespace psi { namespace cints {
 void oe_deriv2();
 }}
 #endif

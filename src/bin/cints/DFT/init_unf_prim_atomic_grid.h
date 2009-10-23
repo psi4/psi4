@@ -7,7 +7,7 @@
 */
 #include"data_structs.h"
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
   prim_atomic_grid_t init_uniform_prim_atomic_grid(int n_rpoints,int n_angpoints,int num_chunks);
 }}
 #endif

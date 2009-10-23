@@ -20,7 +20,7 @@
 #include"quartet_permutations.h"
 #include"rmp2r12_energy.h"
 
-namespace psi{ namespace CINTS{
+namespace psi{ namespace cints{
 
 extern void make_transqt_arrays_uhf(int **first, int **last, int **fstocc_alpha, int **fstocc_beta, int **lstocc_alpha, 
                          int **lstocc_beta, int **occ_alpha, int **occ_beta, int **act2fullQTS_alpha,
@@ -413,4 +413,4 @@ void make_transqt_arrays_uhf(int **first, int **last, int **fstocc_alpha, int **
 }
 
 
-}} /* End psi::CINTS namespaces */
+}} /* End psi::cints namespaces */

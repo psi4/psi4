@@ -14,7 +14,7 @@
 
 #define hashing_function(a) (a)%htable->size   /* division method */
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 /*-------------------------
   Initialize hashing table
  -------------------------*/

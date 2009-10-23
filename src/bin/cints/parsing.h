@@ -7,7 +7,7 @@
 */
 #include <liboptions/liboptions.h>
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 void parsing(Options &);
 void parsing_cmdline(int argc, char *argv[]);
 }}

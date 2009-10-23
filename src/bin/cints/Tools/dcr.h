@@ -3,7 +3,7 @@
 
 /*! \file dcr.h
     \ingroup CINTS
-*/namespace psi { namespace CINTS {
+*/namespace psi { namespace cints {
 
 void init_dcr();
 void cleanup_dcr();

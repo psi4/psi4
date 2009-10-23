@@ -36,7 +36,7 @@ using std::vector;
 using std::min;
 
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
   // For a set of SALCs, we need to be able to select coefficients of all nonzero derivatives
   // of a given shell quartet. It is best done when the relevant subset of the (sparse) SALC coefficient
   // matrix is pre-arranged in an array

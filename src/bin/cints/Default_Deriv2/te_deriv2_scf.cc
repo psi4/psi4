@@ -33,7 +33,7 @@
 #define INCLUDE_1ST 1
 #define INCLUDE_2ND 1
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 void te_deriv2_scf(void)
 {

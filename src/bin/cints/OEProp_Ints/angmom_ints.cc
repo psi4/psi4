@@ -17,7 +17,7 @@
 #include"global.h"
 #include <stdexcept>
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 static double overlap_int(double a1, int l1, int m1, int n1, double norm1,
 			  double a2, int l2, int m2, int n2, double norm2,

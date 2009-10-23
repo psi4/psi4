@@ -5,7 +5,7 @@
     \ingroup CINTS
 */
 namespace psi { 
-  namespace CINTS {
+  namespace cints {
 
     /*!* Permute bra and ket in s and put into t */
     void ijkl_to_klij(double *s, double *t, int nbra, int nket);

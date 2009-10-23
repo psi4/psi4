@@ -16,7 +16,7 @@
 #include <stdexcept>
 #include"int_fjt.h"
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 /*!--------------------------------------------------------------------------------
   This function computes constants used in OSRR for a given quartet of primitives

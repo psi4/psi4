@@ -10,7 +10,7 @@
 #include"defines.h"
 
 namespace psi {
-  namespace CINTS {
+  namespace cints {
     /*-----------------------
       structure declarations
       -----------------------*/

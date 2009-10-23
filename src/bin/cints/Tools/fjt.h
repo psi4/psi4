@@ -3,7 +3,7 @@
 
 /*! \file fjt.h
     \ingroup CINTS
-*/namespace psi { namespace CINTS {
+*/namespace psi { namespace cints {
 
 void calc_f(double *F, int n, double t);
 }}

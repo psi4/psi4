@@ -3,7 +3,7 @@
 
 /*! \file gto.h
     \ingroup CINTS
-*/namespace psi { namespace CINTS {
+*/namespace psi { namespace cints {
 
 void init_gto();
 void cleanup_gto();

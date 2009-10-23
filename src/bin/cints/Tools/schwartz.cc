@@ -26,7 +26,7 @@
 #endif
 #include"schwartz.h"
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 void schwartz_eri()
 {

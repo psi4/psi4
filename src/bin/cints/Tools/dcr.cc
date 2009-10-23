@@ -15,7 +15,7 @@
 #include <stdexcept>
 #include"small_fns.h"
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 /*!------------------------------------------------------------------------------------------
   Generate sets of Double Coset Representatives for each combination of nuclear stabilizers

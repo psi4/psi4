@@ -17,7 +17,7 @@
 #include"small_fns.h"
 #include<Tools/prints.h>
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 /*!-------------------------------------------------------------
   For correlated calculations form scf_e(vec/vals)_(u)occ, and

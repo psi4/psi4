@@ -13,7 +13,7 @@
 #include"global.h"
 #include <stdexcept>
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 /*!-------------------------------------
   Swap ket and bra of a 4-index buffer

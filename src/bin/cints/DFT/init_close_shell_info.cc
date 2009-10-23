@@ -11,7 +11,7 @@
 #define EXTERN
 #include"global.h"
 #include <stdexcept>
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 struct close_shell_info_s init_close_shell_info(void){
     
     struct close_shell_info_s close;
