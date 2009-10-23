@@ -30,7 +30,7 @@
 pthread_mutex_t fock_mutex;            /* Lock on the global AO matrix */
 
 namespace psi {
-  namespace CINTS {
+  namespace cints {
     
     void fock()
     {

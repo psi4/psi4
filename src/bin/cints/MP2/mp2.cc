@@ -15,7 +15,7 @@
 #include"rmp2_energy.h"
 
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 void mp2()
 {
   

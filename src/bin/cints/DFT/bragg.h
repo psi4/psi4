@@ -6,7 +6,7 @@
     \brief Enter brief description of file here 
 
     These are the Slater-Bragg Radii in Angstoms */
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
   double Bragg_radii[] =
     { 1.00, /* No Value*/ 
       1.00 /*0.50*/ , /* H */

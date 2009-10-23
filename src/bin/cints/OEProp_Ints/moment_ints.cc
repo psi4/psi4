@@ -19,7 +19,7 @@
 #include"oe_osrr.h"
 
 namespace psi {
-  namespace CINTS {
+  namespace cints {
 
 /*!---------------------------------------------------------------------------
   This function computes AO overlap, dipole and quadrupole moment integrals,

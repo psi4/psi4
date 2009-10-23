@@ -25,7 +25,7 @@
 
 using namespace std;
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
   /*!---------------------------------------------------
     This function checks if requested angular momentum

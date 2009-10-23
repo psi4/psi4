@@ -4,7 +4,7 @@
 /*! \file norm_quartet.h
     \ingroup CINTS
 */
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 double* norm_quartet(double *data, double *puream_data, int am[4], int puream);
 }}

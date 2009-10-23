@@ -16,7 +16,7 @@
 #include "global.h"
 using namespace std;
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 void symmetrize_deriv1()
 {

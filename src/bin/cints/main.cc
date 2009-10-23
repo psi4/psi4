@@ -67,7 +67,7 @@ void deriv1_fock(void);
 #include <Tools/cdsalc.h>
 
 namespace psi { 
-  namespace CINTS {
+  namespace cints {
   
   /*-------------------------------
     External functions declaration

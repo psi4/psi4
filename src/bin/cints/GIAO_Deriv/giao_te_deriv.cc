@@ -29,7 +29,7 @@
 #include "small_fns.h"
 #include "compute_eri.h"
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 static inline int hash(int L, int M, int N);
 
 void giao_te_deriv(void)

@@ -27,7 +27,7 @@
 /*-------------------------------
   Explicit function declarations
  -------------------------------*/
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 /*--- These frequently used numbers are to avoid costs of passing parameters ---*/
 static double oo2g, oog, gam;
 inline double overlap_int(double a1, int l1, int m1, int n1, double norm1,

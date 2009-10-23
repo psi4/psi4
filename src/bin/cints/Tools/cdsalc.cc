@@ -13,7 +13,7 @@
 
 #include "cdsalc.h"
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 void init_cdsalc()
 {

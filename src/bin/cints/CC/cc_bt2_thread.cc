@@ -23,7 +23,7 @@
 #include"Tools/int_fjt.h"
 #endif
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
   void *cc_bt2_thread(void *tnum_ptr)
   {
     const long int thread_num = (long int) tnum_ptr;

@@ -23,7 +23,7 @@
 #include "global.h"
 
 namespace psi {
-  namespace CINTS {
+  namespace cints {
 
     static const int use_cca_integrals_standard = (PSI_INTEGRALS_STANDARD == 1);
 

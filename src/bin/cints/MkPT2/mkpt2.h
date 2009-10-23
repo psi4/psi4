@@ -6,7 +6,7 @@
 */
 
 namespace psi { 
-  namespace CINTS {
+  namespace cints {
 
     void run_mkpt2();
 

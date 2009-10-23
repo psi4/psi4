@@ -22,7 +22,7 @@
 #include"SG1.h"
 #include"physconst.h"
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
   void grid_init(){
     int errcod,i,j;
     int depth;

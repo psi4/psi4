@@ -12,7 +12,7 @@
 namespace psi {
 
   namespace input    { PsiReturnType input(Options &, int argc, char *argv[]); }
-  namespace CINTS    { PsiReturnType cints(Options &, int argc, char *argv[]); }
+  namespace cints    { PsiReturnType cints(Options &, int argc, char *argv[]); }
   namespace cscf     { PsiReturnType cscf(Options &, int argc, char *argv[]); }
   namespace ccsort   { PsiReturnType ccsort(Options &, int argc, char *argv[]); }
   namespace transqt2 { PsiReturnType transqt2(Options &, int argc, char *argv[]); }
@@ -67,7 +67,7 @@ int psi3_simulator(Options & options, int argc, char *argv[]) {
   dispatch_table["INPUT"]     = &(psi::input::input);
   dispatch_table["SCF"]       = &(psi::scf::scf);
   dispatch_table["CSCF"]      = &(psi::cscf::cscf);
-  dispatch_table["CINTS"]     = &(psi::CINTS::cints);
+  dispatch_table["CINTS"]     = &(psi::cints::cints);
   dispatch_table["TRANSQT2"]  = &(psi::transqt2::transqt2);
   dispatch_table["CCSORT"]    = &(psi::ccsort::ccsort);
   dispatch_table["CCENERGY"]  = &(psi::ccenergy::ccenergy);

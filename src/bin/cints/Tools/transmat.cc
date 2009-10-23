@@ -14,7 +14,7 @@
 #include"global.h"
 #include <stdexcept>
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 /*!------------------------------------------------------------------------------------
   This function builds matrices of transformation coefficients for basis functions of

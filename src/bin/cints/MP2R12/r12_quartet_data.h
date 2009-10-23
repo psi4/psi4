@@ -3,7 +3,7 @@
 
 /*! \file
     \ingroup CINTS
-*/namespace psi { namespace CINTS {
+*/namespace psi { namespace cints {
 
 void r12_quartet_data(prim_data* Data, double_array_t *fjt_table, double AB2, double CD2,
 		      struct shell_pair* sp1, struct shell_pair* sp2, 

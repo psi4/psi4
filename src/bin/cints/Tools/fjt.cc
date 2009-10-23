@@ -13,7 +13,7 @@
 #include"fjt.h"
 
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 /*!-------------------------
   Compute F_m, 0 <= m <= n

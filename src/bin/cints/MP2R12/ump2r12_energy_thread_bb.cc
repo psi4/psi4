@@ -20,7 +20,7 @@
 #include"quartet_permutations.h"
 #include"rmp2r12_energy.h"
 
-namespace psi{ namespace CINTS{ namespace ump2r12_bb{
+namespace psi{ namespace cints{ namespace ump2r12_bb{
 
 /*-------------------------------------------------------
   Algorithm

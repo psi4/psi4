@@ -31,7 +31,7 @@
 #define SWAP1 1
 
 namespace psi { 
-  namespace CINTS {
+  namespace cints {
 
 void *rmp2_energy_thread(void *tnum_ptr)
 {

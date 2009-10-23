@@ -28,7 +28,7 @@
 #include"free_grid_structs.h"
 
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
   void dft_init(void){
     
     int errcod;

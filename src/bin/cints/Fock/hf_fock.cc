@@ -35,7 +35,7 @@ using namespace std;
 extern pthread_mutex_t fock_mutex;
 
 namespace psi { 
-  namespace CINTS {
+  namespace cints {
 extern void *hf_fock_thread(void *);
 
 /*--- To be accessed by all HF Fock threads ---*/

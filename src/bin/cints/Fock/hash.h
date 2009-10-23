@@ -8,7 +8,7 @@
  -----------------------------------*/
 #include <psitypes.h>
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 typedef struct {
     PSI_INT_LEAST64 key;

@@ -3,7 +3,7 @@
 
 /*! \file
     \ingroup CINTS
-*/namespace psi { namespace CINTS {
+*/namespace psi { namespace cints {
 void angmom_ints(void);
 }}
 #endif

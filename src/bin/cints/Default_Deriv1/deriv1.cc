@@ -32,7 +32,7 @@
 
 
 namespace psi {
-  namespace CINTS {
+  namespace cints {
 pthread_mutex_t deriv1_mutex;
 double **grad_te;
 

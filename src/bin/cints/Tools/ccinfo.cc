@@ -23,7 +23,7 @@
 #include <stdexcept>
 #include"small_fns.h"
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 static int *cachefiles, **cachelist;
 

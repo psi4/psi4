@@ -39,7 +39,7 @@ extern pthread_mutex_t fock_mutex;    /* Used to lock Fock matrices during updat
 
 
 namespace psi {
-  namespace CINTS {
+  namespace cints {
 
     extern double ****Gskel, ****Gskel_o;   /* Global skeleton Fock matrices, updated in critical sections */
 void *hf_fock_thread(void *tnum_ptr)

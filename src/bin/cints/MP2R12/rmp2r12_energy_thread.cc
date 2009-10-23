@@ -26,7 +26,7 @@
 
 
 namespace psi { 
-  namespace CINTS {
+  namespace cints {
 /*!-------------------------------------------------------
   Algorithm
 

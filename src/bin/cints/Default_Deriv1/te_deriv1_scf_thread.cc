@@ -25,7 +25,7 @@
 #include "deriv1_quartet_data.h"
 #include "small_fns.h"
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 void *te_deriv1_scf_thread(void *tnum_ptr)
 {
   const long int thread_num = (long int) tnum_ptr;

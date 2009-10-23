@@ -14,7 +14,7 @@
 #define EXTERN
 #include "global.h"
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 void check_rot_inv()
 {
   int atom;

@@ -4,7 +4,7 @@
 /*! \file
     \ingroup CINTS
     \brief deriv1 header
-*/namespace psi { namespace CINTS {
+*/namespace psi { namespace cints {
 
 void deriv1(void);
 }}

@@ -22,7 +22,7 @@
 #include <stdexcept>
 #include"bas_comp_functions.h"
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
   
   struct den_info_s calc_density(struct coordinates geom){
     

@@ -14,7 +14,7 @@
 #include <stdexcept>
 #include"prints.h"
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 void read_gen_opdm()
 { 

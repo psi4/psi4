@@ -7,7 +7,7 @@
 #include <libint/libint.h>
 
 namespace psi { 
-  namespace CINTS {
+  namespace cints {
 #ifndef __cplusplus
 #error "Tools/compute_eri.h cannot be used in C programs"
 #endif

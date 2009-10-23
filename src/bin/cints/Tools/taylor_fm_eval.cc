@@ -13,7 +13,7 @@
 #include"global.h"
 #include <stdexcept>
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 void free_Taylor_Fm_Eval();
 

@@ -22,7 +22,7 @@
 #include"int_fjt.h"
 
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 static int maxj;
 static double_matrix_t gtable;

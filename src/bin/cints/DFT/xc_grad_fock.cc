@@ -31,7 +31,7 @@
 #include"init_close_shell_info.h"
 #include"calc_close_basis.h"
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 void xc_grad_fock(void){
   int i,j,k,l,m,n,q,s,t,u;

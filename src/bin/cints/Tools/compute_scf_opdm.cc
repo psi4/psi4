@@ -19,7 +19,7 @@
 
 #define VIRT_SHELL -1000000       /* This should cause program to segfault if arrays are overrun */
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 void compute_scf_opdm()
 {

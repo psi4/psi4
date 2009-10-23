@@ -3,7 +3,7 @@
 
 /*! \file
     \ingroup CINTS
-*/namespace psi { namespace CINTS {
+*/namespace psi { namespace cints {
 void moment_deriv1(void);
 }}
 #endif

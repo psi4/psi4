@@ -24,7 +24,7 @@
 #include"physconst.h"
 #include"pade.h"
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
   struct fun_info_s slater_e(struct den_info_s den_info){
     double Cx; /*= -0.930525736349100;*/
     struct fun_info_s exch_info;

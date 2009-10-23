@@ -15,7 +15,7 @@
 #include "global.h"
 #include <Tools/prints.h>
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 void file11()
 {
   int i;

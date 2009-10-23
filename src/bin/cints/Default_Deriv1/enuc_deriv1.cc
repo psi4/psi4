@@ -14,7 +14,7 @@
 #include <stdexcept>
 #include <Tools/prints.h>
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
   //! Energy derivative of the nuclear repulsion.
 void enuc_deriv1()
 {

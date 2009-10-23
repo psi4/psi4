@@ -9,7 +9,7 @@
 #define DO_OEI 1
 #define DO_TEI 1
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 void giao_deriv()
 {
 #if DO_OEI

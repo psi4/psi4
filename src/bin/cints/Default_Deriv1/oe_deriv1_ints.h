@@ -6,7 +6,7 @@
     \brief Enter brief description of file here 
 */
 namespace psi {
-  namespace CINTS {
+  namespace cints {
     void oe_deriv1_ints();
   }
 }

@@ -35,7 +35,7 @@
 #define SWAP1 1
 
 namespace psi { 
-  namespace CINTS {
+  namespace cints {
     namespace mkpt2  {
 
 void *mkpt2_ints_thread(void *tnum_ptr)

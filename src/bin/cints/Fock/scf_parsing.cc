@@ -14,7 +14,7 @@
 #include <stdexcept>
 #include"dft_init.h"
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 void scf_parsing(void)
 {

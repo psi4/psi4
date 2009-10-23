@@ -16,7 +16,7 @@
 #include <stdexcept>
 
 namespace psi {
-  namespace CINTS {
+  namespace cints {
 
 void print_intro()
 {

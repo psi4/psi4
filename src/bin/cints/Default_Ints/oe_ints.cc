@@ -33,7 +33,7 @@ namespace {
   double* ao_to_so(double*);
 }
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 /*--- These frequently used numbers are to avoid costs of passing parameters ---*/
 static double oo2g, oog, gam;
 
@@ -486,7 +486,7 @@ void oe_ints()
 
 namespace {
   using namespace psi;
-  using namespace psi::CINTS;
+  using namespace psi::cints;
   // takes a lower triangle of a AO matrix and returns an allocated lower triangle of an SO matrix
   double* ao_to_so(double* M_ao_tri) {
     double** M_ao_sq = block_matrix(BasisSet.num_ao,BasisSet.num_ao);

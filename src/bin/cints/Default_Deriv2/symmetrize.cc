@@ -9,7 +9,7 @@
 #define EXTERN
 #include"global.h"
 #include <stdexcept>
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 void symmetrize_hessian(double **hess)
 {
   int i, j;

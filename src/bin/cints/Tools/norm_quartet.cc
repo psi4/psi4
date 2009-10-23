@@ -14,7 +14,7 @@
 #include <stdexcept>
 #include"transform.h"
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 /*!------------------------------------------------------------------------------------
   This functions processes the computed integrals quartet:

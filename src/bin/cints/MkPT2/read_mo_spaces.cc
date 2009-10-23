@@ -7,7 +7,7 @@
 
 extern FILE* outfile;
 
-namespace psi{ namespace CINTS{ namespace mkpt2{
+namespace psi{ namespace cints{ namespace mkpt2{
 
 void correlate(char *ptgrp, int irrep, int& nirreps_old, int& nirreps_new,int*& arr)
 { /* This is a hack from input!!! (ACS) */

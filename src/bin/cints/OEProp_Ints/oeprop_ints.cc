@@ -14,7 +14,7 @@
 #include"moment_deriv1.h"
 #include"angmom_ints.h"
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 void oeprop_ints()
 {
   moment_ints();

@@ -3,7 +3,7 @@
 
 /*! \file symmetrize.h
     \ingroup CINTS
-*/namespace psi { namespace CINTS {
+*/namespace psi { namespace cints {
 
 void symmetrize_hessian(double **hess);
 }}

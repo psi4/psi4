@@ -5,7 +5,7 @@
     \ingroup CINTS
 */
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 void transform_i(double *data, double *puream_data, double **c2p, int am_i, int nj, int nk, int nl);
 void transform_j(double *data, double *puream_data, double **c2p, int am_j, int ni, int nk, int nl);
 void transform_k(double *data, double *puream_data, double **c2p, int am_k, int ni, int nj, int nl);

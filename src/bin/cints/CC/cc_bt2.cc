@@ -19,7 +19,7 @@
 #include <stdexcept>
 #include"Tools/int_fjt.h"
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
   /*-------------------------------
     Explicit function declarations
     -------------------------------*/

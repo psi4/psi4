@@ -4,7 +4,7 @@
 /*! \file xc_fock_u.h
     \ingroup CINTS
     \brief Enter brief description of file here 
-*/namespace psi { namespace CINTS {
+*/namespace psi { namespace cints {
 void xc_fock_u(void);
 }}
 #endif

@@ -5,7 +5,7 @@
     \ingroup CINTS
     \brief Enter brief description of file here 
 */
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 double weight_calc(int atomn,struct coordinates  geom,int k_order);
 }}
 #endif

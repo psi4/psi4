@@ -13,7 +13,7 @@
 #define EXTERN
 #include "global.h"
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 void read_scf_occ_evec(void)
 { 

@@ -5,6 +5,6 @@
     \ingroup CINTS
 */
 
-void psi::CINTS::r12_te_ints();
+void psi::cints::r12_te_ints();
 
 #endif

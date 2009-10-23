@@ -3,7 +3,7 @@
 
 /*! \file
     \ingroup CINTS
-*/namespace psi { namespace CINTS {
+*/namespace psi { namespace cints {
 
 
 void giao_oe_deriv(void);

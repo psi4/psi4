@@ -13,7 +13,7 @@
 #include"ccinfo.h"
 
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
   extern void cc_bt2();
   
   void direct_cc()

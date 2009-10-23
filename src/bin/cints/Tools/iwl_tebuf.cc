@@ -9,7 +9,7 @@
 #include"data_structs.h"
 
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 /*!
 ** IWL_BUF_WRT_STRUCT_nocut()

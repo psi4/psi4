@@ -14,7 +14,7 @@
 #include"physconst.h"
 
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 /*! Implementation of the VWN functional extrapolation
   functions as given in Can J. Phys., 58, 1980

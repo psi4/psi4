@@ -25,7 +25,7 @@
 #define TEST_OE_DERIV1_MVC_DISP (0.00001)
 
 namespace psi {
-  namespace CINTS {
+  namespace cints {
 
     static const int use_cca_integrals_standard = (PSI_INTEGRALS_STANDARD == 1);
 

@@ -3,7 +3,7 @@
 
 /*! \file basisset.h
     \ingroup CINTS
-*/namespace psi { namespace CINTS {
+*/namespace psi { namespace cints {
 
 void init_basisset();
 void cleanup_basisset();

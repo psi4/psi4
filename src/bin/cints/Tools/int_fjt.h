@@ -5,7 +5,7 @@
     \ingroup CINTS
 */
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 void init_fjt(int max);
 void free_fjt();
 void init_fjt_table(double_array_t *table);

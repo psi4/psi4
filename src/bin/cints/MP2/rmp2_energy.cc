@@ -30,7 +30,7 @@
 #include"rmp2_energy.h"
 
 namespace psi { 
-  namespace CINTS {
+  namespace cints {
 
     /*-------------------------------
       Explicit function declarations

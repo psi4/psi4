@@ -22,11 +22,11 @@
 #include"mkpt2_ints.h"
 
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
 void run_mkpt2()
 {
-  using namespace psi::CINTS::mkpt2;
+  using namespace psi::cints::mkpt2;
 
   init_moinfo();
 

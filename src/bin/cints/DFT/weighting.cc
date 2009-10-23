@@ -25,7 +25,7 @@
 
 /* Declare functions in this code */
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 double u_calc(int i, int j, struct coordinates geom); 
 double v_calc(int i, int j, double uij);
 double f_u(double vij);

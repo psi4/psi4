@@ -19,7 +19,7 @@
 #include"bas_comp_functions.h"
 #define TOL 1E-50
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 
   void calc_close_basis(int atom_num, int chunk_num){
     int i,j,k,l,m;

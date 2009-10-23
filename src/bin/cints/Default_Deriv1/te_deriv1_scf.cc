@@ -26,7 +26,7 @@
 
 #define USE_SYM 1
 
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 extern void *te_deriv1_scf_thread(void *);
 extern void *te_deriv1_scf_thread_symm(void *);
 extern pthread_mutex_t deriv1_mutex;

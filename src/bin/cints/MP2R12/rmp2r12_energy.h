@@ -6,7 +6,7 @@
 */
 #define LOCK_RS_SHELL 0      /*--- When updating (js|ia) and (jr|ia) in (JS|IA) lock blocks corresponding to the entire shell
 			       blocks or just the appropriate basis functions (more fine-grained in the second case) ---*/
-namespace psi { namespace CINTS {
+namespace psi { namespace cints {
 void rmp2r12_energy();
 namespace ump2r12_aa{
   void ump2r12_energy_aa();
