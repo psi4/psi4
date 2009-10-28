@@ -120,15 +120,12 @@ double RHF::compute_energy()
     //form_multipole_integrals();  // handled by HF class
     form_H();
     find_occupation(H_);
-    if (schwarz_)
-    	schwarz_sieve();
     
     if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
         form_PK();
-    else if (ri_integrals_ == true && schwarz_ == false)
+    else if (ri_integrals_ == true)
         form_B();
-    else if (ri_integrals_ == true && schwarz_ == true)
-    		form_B_schwarz();
+
     
     
     form_Shalf();
@@ -165,17 +162,10 @@ double RHF::compute_energy()
         
         if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
             form_G_from_PK();
-        else if (ri_integrals_ == false && direct_integrals_ == true && schwarz_ == true) {
-            form_G_from_direct_integrals_schwarz();
-        }
-        else if (ri_integrals_ == false && direct_integrals_ == true && schwarz_ == false)
-                form_G_from_direct_integrals();
-        else if (ri_integrals_ == true && schwarz_ == true) { 
-           form_G_from_RI_schwarz();
-        }
-        else if (ri_integrals_ == true && schwarz_ == false) {
-            form_G_from_RI();
-        }
+        else if (ri_integrals_ == false && direct_integrals_ == true)
+            form_G_from_direct_integrals();
+        else if (ri_integrals_ == true)  
+           form_G_from_RI();
         else
             form_G();
         
@@ -215,17 +205,16 @@ double RHF::compute_energy()
         fprintf(outfile, "\n  Failed to converged.\n");
         E_ = 0.0;
     }
-    if (schwarz_)
-    {
-    	free(sieve_ind_);
-    }
+
     if (ri_integrals_)
     {
     	free(B_ia_P_);
     }
     // Compute the final dipole.
     compute_multipole();
-
+		
+		//fprintf(outfile,"\nComputation Completed\n");
+		fflush(outfile);
     return E_;
 }
 
@@ -338,6 +327,7 @@ void RHF::compute_multipole()
             }
         }
         fprintf(outfile, "\t%3d%15.10f  %15.10f  %15.10f  %15.10f\n", i+1, fabs(sumx), fabs(sumy), fabs(sumz), fabs(sumx + sumy + sumz));
+        //fflush(outfile);
     }
 }
 
@@ -966,28 +956,32 @@ void RHF::form_G_from_RI()
     }
     double **K = block_matrix(norbs, norbs);
     double** B_im_Q = block_matrix(norbs, ndocc*ri_nbf_);
+    double** QS = block_matrix(ri_nbf_,norbs);
+    double** Temp = block_matrix(ndocc,ri_nbf_);
     register double result;
     register int ind;
     #ifdef OMP
     #pragma omp parallel for
     #endif
+    //print_mat(B_ia_P_,ri_nbf_,norbs*(norbs+1)/2,outfile);
+    //fprintf(outfile,"\nYo\n");
+    //print_mat(Cocc,ndocc,norbs,outfile);
     for (int m = 0; m<norbs; m++) {
-        for (int Q = 0; Q<ri_nbf_; Q++) {
-            for (int i = 0; i<ndocc; i++)
-            {
-                result = 0.0;
-                for (int n = 0; n<norbs; n++)
-                {
-                    if (n>=m)
-                        ind = ioff[n]+m;
-                    else
-                        ind = ioff[m]+n;
-                    result+=Cocc[i][n]*B_ia_P_[Q][ind];                    
-                }
-                B_im_Q[m][i+Q*ndocc] = result;
-            }
-        }
+    		for (int Q = 0; Q<ri_nbf_; Q++) {
+    			for (int s = 0; s<norbs; s++) {
+    				QS[Q][s] = B_ia_P_[Q][((s>=m)?ioff[s]+m:ioff[m]+s)];
+    			}
+    		}
+    		C_DGEMM('N','T',ndocc,ri_nbf_,norbs,1.0,Cocc[0],norbs,QS[0],norbs, 0.0, Temp[0], ri_nbf_);
+    		//print_mat(Temp,ndocc,ri_nbf_,outfile);
+    		for (int Q = 0; Q<ri_nbf_; Q++) {
+    			for (int i = 0; i<ndocc; i++) {
+    				B_im_Q[m][i+Q*ndocc] = Temp[i][Q];
+    			}
+    		}
     }
+    free_block(QS);
+    free_block(Temp);
     free_block(Cocc);
     #ifdef OMP
     #pragma omp parallel for
@@ -1015,367 +1009,6 @@ void RHF::form_G_from_RI()
     timer_off("Form Exchange");
 #endif
 }
-void RHF::form_G_from_RI_schwarz()
-{
-    int norbs = basisset_->nbf(); 
-    double** D = D_->to_block_matrix();
-
-    G_->zero();
-
-    //print_mat(D, norbs, norbs,outfile);
-      
-#ifdef TIME_SCF
-    timer_on("Form Coulomb");
-#endif
-
-    double **J = block_matrix(norbs, norbs);
-    
-    double* D2 = init_array(norbs*(norbs+1)/2);
-    for (int i = 0, ij = 0; i<norbs; i++) {
-        for (int j = 0; j<=i; ij++, j++)
-        {
-            D2[ij] = (i==j?1.0:2.0)*D[i][j];
-        }
-    }
-                    
-    double *L = init_array(ri_nbf_);
-    for (int i=0; i<ri_nbf_; i++) {
-        L[i]=C_DDOT(norbs*(norbs+1)/2,D2,1,B_ia_P_[i],1);
-    }
-    
-    double *Gtemp = init_array(norbs*(norbs+1)/2);
-    C_DGEMM('T','N',1,norbs*(norbs+1)/2,ri_nbf_,1.0,L,1,B_ia_P_[0],norbs*(norbs+1)/2, 0.0, Gtemp, norbs*(norbs+1)/2);
-    
-    for (int i = 0, ij=0; i<norbs; i++) {
-        for (int j = 0; j<=i; ij++,j++)    
-        {
-            J[i][j] = 2.0*Gtemp[ij];
-            J[j][i] = 2.0*Gtemp[ij];
-        }
-    }
-    //fprintf(outfile, "\nJ:\n");
-    //print_mat(J,norbs,norbs,outfile);    
-    free(L);
-    free(D2);
-    free(Gtemp);
-    
-#ifdef TIME_SCF
-    timer_off("Form Coulomb");
-#endif
-#ifdef TIME_SCF
-    timer_on("Form Exchange");
-#endif
-    int ndocc = doccpi_[0];
-    double** Cocc = block_matrix(ndocc,norbs);
-    for (int i=0; i<norbs; i++) {
-        for (int j=0; j<ndocc; j++)
-            Cocc[j][i] = C_->get(0,i,j);
-    }
-    double **K = block_matrix(norbs, norbs);
-    double** B_im_Q = block_matrix(norbs, ndocc*ri_nbf_);
-    register double result;
-    register int ind;
-    #ifdef OMP
-    #pragma omp parallel for
-    #endif
-    for (int m = 0; m<norbs; m++) {
-        for (int Q = 0; Q<ri_nbf_; Q++) {
-            for (int i = 0; i<ndocc; i++)
-            {
-                result = 0.0;
-                for (int n = 0; n<norbs; n++)
-                {
-                    if (n>=m)
-                        ind = ioff[n]+m;
-                    else
-                        ind = ioff[m]+n;
-                    result+=Cocc[i][n]*B_ia_P_[Q][ind];                    
-                }
-                B_im_Q[m][i+Q*ndocc] = result;
-            }
-        }
-    }
-    free_block(Cocc);
-    #ifdef OMP
-    #pragma omp parallel for
-    #endif
-    C_DGEMM('N','T',norbs,norbs,ri_nbf_*ndocc,1.0,B_im_Q[0],ri_nbf_*ndocc,B_im_Q[0],ri_nbf_*ndocc, 0.0, K[0], norbs);
-
-    //fprintf(outfile, "\nK:\n");
-    //print_mat(K,norbs,norbs,outfile);
-            
-    for (int i=0; i<norbs; i++) {
-        for (int j=0; j<=i; j++) {
-            G_->add(0,i,j,J[i][j]-K[i][j]);
-            if (i!= j)
-                G_->add(0,j,i,J[i][j]-K[i][j]);
-        }
-    }
-    //fprintf(outfile,"\n");
-    //G_.print();
-    free_block(J);
-    free_block(K);
-    free_block(B_im_Q);
-    free_block(D);
-
-#ifdef TIME_SCF
-    timer_off("Form Exchange");
-#endif
-}
-
-
-void RHF::form_G_from_direct_integrals_schwarz()
-{
-    double temp1, temp2, temp3, temp4, temp5, temp6;
-    int itype;
-    int count=0;
-    //fprintf(outfile, "\n      Computing integrals..."); fflush(outfile);
-    
-    // Zero out the G matrix
-    G_->zero();
-    
-    // Need to back-transform the density from SO to AO basis
-    SimpleMatrix *D = D_->to_simple_matrix();
-    
-    // Need a temporary G in the AO basis
-    SimpleMatrix G;
-    factory_.create_simple_matrix(G, "G (AO basis)");
-    G.zero();
-    
-    // Begin factor out
-    IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
-    TwoBodyInt* eri = integral.eri();
-    const double *buffer = eri->buffer();
-    // End factor out
-    int nshell = basisset_->nshell();
-    int P, Q, R, S;
-    int i, j, k, l;
-    register double value;
-    
-    int* backind = init_int_array(nshell*(nshell+1)/2);
-    for (int I = 0, index = 0; I<nshell; I++)
-        for (int J = 0; J<=I; J++, index++)
-            backind[index] = I;
-    
-    #ifdef OMP
-    #pragma omp parallel for
-    #endif
-    for (int PQ = mind_; PQ<nshell*(nshell+1)/2; PQ++)
-    {
-        for (int RS = nshell*(nshell+1)/2-1; RS>cut_ind_[PQ]&&RS>=PQ; RS--)
-        {
-            int PQ2 = sieve_ind_[PQ];
-            int RS2 = sieve_ind_[RS];
-            if (PQ2<RS2)
-            {
-                int temp = RS2;
-                RS2 = PQ2;
-                PQ2 = temp;
-            }
-                       
-            P = backind[PQ2];
-            Q = PQ2-P*(P+1)/2;
-            R = backind[RS2];
-            S = RS2-R*(R+1)/2;
-            
-            //if (fabs(norm_[P*(P+1)/2+R]*norm_[Q*(Q+1)/2+S]<SCHWARZ_CUTOFF_*SCHWARZ_CUTOFF_))
-                //continue;
-            
-            eri->compute_shell(P, Q, R, S);
-
-            IntegralsIterator iter = integral.integrals_iterator(P,Q,R,S);
-            
-            for (iter.first(); !iter.is_done(); iter.next())
-            {
-                i = iter.i();
-                j = iter.j();
-                k = iter.k();
-                l = iter.l();
-                value = buffer[iter.index()];
-            
-                #ifdef DEBUG
-                //fprintf(outfile, "\tDoing integral ( %d %d | %d %d )\t Quartet (%d %d | %d %d )\t Compound (%d | %d )\n", i, j, k, l,P,Q,R,S,P*(P+1)/2+Q,R*(R+1)/2+S); 
-                #endif
-                count++;
-                if (fabs(value) > SCHWARZ_CUTOFF_) {
-                    itype = integral_type(i, j, k, l);
-                    switch(itype) {
-                        case 1:
-                        temp1 = D->get(i, i) * value;
-     
-                        G.add(i, i, temp1);
-                        break;
-     
-                        case 2:
-                        temp1 = D->get(k, k) * 2.0 * value;
-                        temp2 = D->get(i, k) * value;
-                        temp3 = D->get(i, i) * 2.0 * value;
-     
-                        G.add(i, i, temp1);
-                        G.add(k, k, temp3);
-                        G.add(i, k, -temp2);
-                        G.add(k, i, -temp2);
-                        break;
-     
-                        case 3:
-                        temp1 = D->get(i, i) * value;
-                        temp2 = D->get(i, l) * value * 2.0;
-     
-                        G.add(i, l, temp1);
-                        G.add(l, i, temp1);
-                        G.add(i, i, temp2);
-                        break;
-     
-                        case 4:
-                        temp1 = D->get(j, j) * value;
-                        temp2 = D->get(i, j) * value * 2.0;
-     
-                        G.add(i, j, temp1);
-                        G.add(j, i, temp1);
-                        G.add(j, j, temp2);
-                        break;
-     
-                        case 5:
-                        temp1 = D->get(i, j) * value * 3.0;
-                        G.add(i, j, temp1);
-                        G.add(j, i, temp1);
-     
-                        temp2 = D->get(i, i) * value;
-                        temp3 = D->get(j, j) * value;
-                        G.add(j, j, -temp2);
-                        G.add(i, i, -temp3);                
-                        break;
-     
-                        case 6:
-                        temp1 = D->get(k, l) * value * 4.0;
-                        temp2 = D->get(i, l) * value;
-                        temp3 = D->get(i, i) * value * 2.0;
-                        temp4 = D->get(i, k) * value;
-     
-                        G.add(i, i, temp1);
-                        G.add(i, k, -temp2);
-                        G.add(k, i, -temp2);
-                        G.add(k, l, temp3);
-                        G.add(l, k, temp3);
-                        G.add(i, l, -temp4);
-                        G.add(l, i, -temp4);
-                        break;
-     
-                        case 7:
-                        temp1 = D->get(i, j) * value * 4.0;
-                        temp2 = D->get(j, k) * value;
-                        temp3 = D->get(i, k) * value;
-                        temp4 = D->get(k, k) * value * 2.0;
-     
-                        G.add(k, k,  temp1);
-                        G.add(i, k, -temp2);
-                        G.add(k, i, -temp2);
-                        G.add(j, k, -temp3);
-                        G.add(k, j, -temp3);
-                        G.add(i, j,  temp4);
-                        G.add(j, i,  temp4);
-                        break;
-     
-                        case 8:
-                        temp1 = D->get(k, k) * value * 2.0;
-                        temp2 = D->get(i, j) * value * 4.0;
-                        temp3 = D->get(j, k) * value;
-                        temp4 = D->get(i, k) * value;
-     
-                        G.add(i, j, temp1);
-                        G.add(j, i, temp1);
-                        G.add(k, k, temp2);
-                        G.add(i, k, -temp3);
-                        G.add(k, i, -temp3);
-                        G.add(j, k, -temp4);
-                        G.add(k, j, -temp4);
-                        break;
-     
-                        case 9:
-                        temp1 = D->get(i, l) * value * 3.0;
-                        temp2 = D->get(i, j) * value * 3.0;
-                        temp3 = D->get(j, l) * value * 2.0;
-                        temp4 = D->get(i, i) * value;
-     
-                        G.add(i, j, temp1);
-                        G.add(j, i, temp1);
-                        G.add(i, l, temp2);
-                        G.add(l, i, temp2);
-                        G.add(i, i, -temp3);
-                        G.add(j, l, -temp4);
-                        G.add(l, j, -temp4);
-                        break;
-     
-                        case 10:
-                        temp1 = D->get(j, l) * value * 3.0;
-                        temp2 = D->get(i, j) * value * 3.0;
-                        temp3 = D->get(j, j) * value;
-                        temp4 = D->get(i, l) * value * 2.0;
-     
-                        G.add(i, j, temp1);
-                        G.add(j, i, temp1);
-                        G.add(j, l, temp2);
-                        G.add(l, j, temp2);
-                        G.add(i, l, -temp3);
-                        G.add(l, i, -temp3);
-                        G.add(j, j, -temp4);
-                        break;
-     
-                        case 11:
-                        temp1 = D->get(k, j) * value * 3.0;
-                        temp2 = D->get(i, j) * value * 3.0;
-                        temp3 = D->get(j, j) * value;
-                        temp4 = D->get(i, k) * value * 2.0;
-     
-                        G.add(i, j, temp1);
-                        G.add(j, i, temp1);
-                        G.add(k, j, temp2);
-                        G.add(j, k, temp2);
-                        G.add(i, k, -temp3);
-                        G.add(k, i, -temp3);
-                        G.add(j, j, -temp4);
-                        break;
-     
-                        case 12:
-                        case 13:
-                        case 14:
-                        temp1 = D->get(k, l) * value * 4.0;
-                        temp2 = D->get(i, j) * value * 4.0;
-                        temp3 = D->get(j, l) * value;
-                        temp4 = D->get(i, k) * value;
-                        temp5 = D->get(j, k) * value;
-                        temp6 = D->get(i, l) * value;
-     
-                        G.add(i, j, temp1);
-                        G.add(j, i, temp1);
-                        G.add(k, l, temp2);
-                        G.add(l, k, temp2);
-                        G.add(i, k, -temp3);
-                        G.add(k, i, -temp3);
-                        G.add(j, l, -temp4);
-                        G.add(l, j, -temp4);
-                        G.add(i, l, -temp5);
-                        G.add(l, i, -temp5);
-                        G.add(j, k, -temp6);
-                        G.add(k, j, -temp6);
-                        break;
-                    };
-                }
-            }
-        }
-    }
-    //fprintf(outfile, "done. %d two-electron integrals.\n", count); fflush(outfile);
-    delete eri;
-    
-    // Set RefMatrix to RefSimpleMatrix handling symmetry blocking, if needed
-    // Transform G back to symmetry blocking
-    // G.transform(basisset_->uso_to_bf()); 
-    //G.print();
-    G_->set(&G);
-    delete D;
-    // G_.print();
-}
-
 
 void RHF::form_G_from_direct_integrals()
 {
