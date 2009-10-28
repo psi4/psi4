@@ -78,11 +78,7 @@ protected:
     // Using ri integrals?
     int ri_integrals_;
     int ri_nbf_;
-    
-    int mind_; //minimum sorted compound index
-    int* sieve_ind_; //permutation matrix for sort
-    int* cut_ind_;
-    
+       
     double **B_ia_P_; //Three Index tensor for DF-SCF
 
 public:    
@@ -117,9 +113,7 @@ protected:
     // Prints some opening information
     void print_header();
     
-    void schwarz_sieve();
     void form_B(); 
-    void form_B_schwarz();
     
     inline int integral_type(int i, int j, int k, int l)
     {
