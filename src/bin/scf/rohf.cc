@@ -246,6 +246,8 @@ void ROHF::save_information()
 	chkpt_->wt_openpi(soccpi_);
 	chkpt_->wt_phase_check(0);
 
+        Feff_->save(psio_, 32, true);
+
 	// Figure out frozen core orbitals
 	int nfzc = chkpt_->rd_nfzc();
 	int nfzv = chkpt_->rd_nfzv();
