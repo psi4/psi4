@@ -77,8 +77,13 @@
 #define PSIF_SO_PKSUPER2    93
 
 #define PSIF_SO_D1OEI       200  /* Derivative OEIs are stored in file 199 */
-#define PSIF_SO_D1ERI       200  /* Derivative ERIs are stored in files 200, 201, 202, etc. File 200 contains
+#define PSIF_SO_D1ERI       200  /* Derivative ERIs are stored in files 200, 201, 202, etc. File 200
+ contains
                                     integrals with respect to SALC derivative 0, etc. */
+                                    
+#define PSIF_DFSCF_B				94   /*B Matrix containing 3-index tensor in AOs for use with DF-SCF*/
+#define PSIF_DFSCF_BJ				95 	 /*B Matrix containing 3-index tensor in AOs with J^-1/2 for use with DF-SCF*/
+#define PSIF_DFSCF_K				96   /*Exchange tensor for DF-SCF*/
 
 
 
