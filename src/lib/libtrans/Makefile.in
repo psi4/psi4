@@ -1,0 +1,31 @@
+
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+PSITARGET = $(top_objdir)/lib/libPSI_trans.a
+
+TRUECXXSRC = \
+integraltransform.cc \
+integraltransform_dpd_id.cc \
+integraltransform_moinfo.cc \
+integraltransform_oei.cc \
+integraltransform_sort_so_tei.cc \
+integraltransform_tei.cc \
+mospace.cc
+
+DEPENDINCLUDE = integraltransform.h mospace.h spaceinfo.h
+
+LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+install_inc:: $(DEPENDINCLUDE)
+	$(MKDIRS) $(incdir)/libtrans
+	$(INSTALL_INCLUDE) $^ $(incdir)/libtrans
+
+ifneq ($(DODEPEND),no)
+include $(LIBOBJ:%.o=%.d)
+endif
+

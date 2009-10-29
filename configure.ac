@@ -764,6 +764,7 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/liboptions/Makefile
           src/lib/libmoinfo/Makefile
           src/lib/libmints/Makefile
+          src/lib/libtrans/Makefile
  
           src/util/tocprint/Makefile
           src/util/psiclean/Makefile
