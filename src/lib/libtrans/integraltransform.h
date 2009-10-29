@@ -2,8 +2,8 @@
 #define _PSI_SRC_LIB_LIBTRANS_INTEGRALTRANSFORM_H_
 
 #include <psi4-dec.h>
-#include <Map>
-#include <Vector>
+#include <map>
+#include <vector>
 #include <libdpd/dpd.h>
 
 #define INDEX(i,j) ((i>j) ? ((i*(i+1)/2)+j) : ((j*(j+1)/2)+i))

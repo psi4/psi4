@@ -7,7 +7,6 @@
 #include <cstdarg>
 #include <vector>
 #include <libciomr/libciomr.h>
-#include <c++/4.2.1/bits/stl_vector.h>
 #include "dpd.h"
 #include "dpd.gbl"
 #include "exception.h"
