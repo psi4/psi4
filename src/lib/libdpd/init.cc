@@ -5,9 +5,12 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstdarg>
+#include <vector>
 #include <libciomr/libciomr.h>
+#include <c++/4.2.1/bits/stl_vector.h>
 #include "dpd.h"
 #include "dpd.gbl"
+#include "exception.h"
 
 namespace psi {
 
@@ -22,9 +25,34 @@ typedef struct {
     int ler;
 } dpdpair;
 
+/* This is the original function call, but is now just a wrapper to the same function
+ * that takes the spaces in a vector instead of using variable argument lists */
 int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype,
              int *cachefiles, int **cachelist, 
              struct dpd_file4_cache_entry *priority, int num_subspaces, ...)
+{
+  std::vector<int*> spaceArrays;
+  va_list ap;
+  int *tmparray;
+
+  va_start(ap, num_subspaces);
+  for(int i=0; i < num_subspaces; i++) {
+    tmparray = va_arg(ap, int *);
+    spaceArrays.push_back(tmparray);
+    tmparray = va_arg(ap, int *);
+    spaceArrays.push_back(tmparray);
+  }
+  va_end(ap);
+  return dpd_init(dpd_num, nirreps, memory, cachetype, cachefiles,
+                    cachelist, priority, num_subspaces, spaceArrays);
+}
+
+/* This is the original function code, but modified to take a vector of the orbital
+ * space information arrays, rather than a variable argument list; the former is
+ * easier to construct for some code that creates an arbitrary number of spaces */
+int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype,
+             int *cachefiles, int **cachelist, struct dpd_file4_cache_entry *priority, 
+             int num_subspaces, std::vector<int*> &spaceArrays)
 {
   int h,h0,h1,cnt,***dp,l_irrep,r_irrep,p,q;
   int i,j,k,l,*count,offset1,offset2;
@@ -33,7 +61,6 @@ int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype,
   int **orbidx2, ***orbs2;
   int *tmparray;
   dpdpair *pairs;
-  va_list ap;
   dpd_data *this_dpd;
   int nump, nrows, Gp, offset;
 
@@ -68,13 +95,12 @@ int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype,
   }
 
   /* Grab the irrep population and orbital symmetry arrays from the arg list */
-  va_start(ap, num_subspaces);
   orbspi = (int **) malloc(sizeof(int *) * num_subspaces);
   orbsym = (int **) malloc(sizeof(int *) * num_subspaces);
   numorbs = (int *) malloc(num_subspaces * sizeof(int));
   for(i=0; i < num_subspaces; i++) {
     orbspi[i] = (int *) malloc(sizeof(int) * nirreps);
-    tmparray = va_arg(ap, int *);
+    tmparray = spaceArrays[2*i];
     for(j=0; j < nirreps; j++) orbspi[i][j] = tmparray[j];
 
     /* Compute the number of orbitals in this subspace */
@@ -83,10 +109,9 @@ int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype,
       numorbs[i] += orbspi[i][h];
 
     orbsym[i] = (int *) malloc(sizeof(int) * numorbs[i]);
-    tmparray = va_arg(ap, int *);
+    tmparray = spaceArrays[2*i+1];
     for(j=0; j < numorbs[i]; j++) orbsym[i][j] = tmparray[j];
   }
-  va_end(ap);
   this_dpd->orbspi = orbspi;
   this_dpd->orbsym = orbsym;
   this_dpd->numorbs = numorbs;

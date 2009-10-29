@@ -191,8 +191,11 @@ enum indices {pqrs, pqsr, prqs, prsq, psqr, psrq,
 enum pattern {abc, acb, cab, cba, bca, bac};
 
 int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype,
-             int *cachefiles, int **cachelist, 
+             int *cachefiles, int **cachelist,
              struct dpd_file4_cache_entry *priority, int num_subspaces, ...);
+int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype,
+             int *cachefiles, int **cachelist, struct dpd_file4_cache_entry *priority,
+             int num_subspaces, std::vector<int*> &spaceArrays);
 int dpd_close(int dpd_num);
 int dpd_set_default(int dpd_num);
 
