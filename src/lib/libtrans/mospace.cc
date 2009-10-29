@@ -1,5 +1,3 @@
-#include <c++/4.2.1/bits/stringfwd.h>
-
 #include "mospace.h"
 #include "spaceinfo.h"
 
