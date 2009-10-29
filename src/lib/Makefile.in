@@ -3,7 +3,7 @@
 
 subdirs = libipv1 libciomr libchkpt libqt libpsio libiwl libdpd \
           libint libderiv libr12 libbasis libutil liboptions libmoinfo \
-          libmints
+          libmints libtrans
 
 all: default
 

@@ -33,8 +33,6 @@ EXTERN struct Params params;
 
 #define INDEX(i,j) ((i>j) ? ((i*(i+1)/2)+j) : ((j*(j+1)/2)+i))
 
-#define PSIF_HALFT0 91
-#define PSIF_HALFT1 92
 
   } //namespace transqt2
 } //namespace psi
