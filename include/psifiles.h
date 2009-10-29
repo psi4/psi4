@@ -76,6 +76,10 @@
 #define PSIF_SO_PKSUPER1    92
 #define PSIF_SO_PKSUPER2    93
 
+// The half-transformed integrals
+#define PSIF_HALFT0 94
+#define PSIF_HALFT1 95
+
 #define PSIF_SO_D1OEI       200  /* Derivative OEIs are stored in file 199 */
 #define PSIF_SO_D1ERI       200  /* Derivative ERIs are stored in files 200, 201, 202, etc. File 200
  contains
