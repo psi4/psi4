@@ -73,6 +73,7 @@ IntegralTransform::transform_tei(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
 
     psio_open(PSIF_SO_PRESORT, PSIO_OPEN_OLD);
     psio_open(PSIF_HALFT0, PSIO_OPEN_NEW);
+    psio_open(CC_MISC, PSIO_OPEN_NEW);
     dpdbuf4 J, K;
     dpd_buf4_init(&J, PSIF_SO_PRESORT, 0, 3, 0, 3, 3, 0, "SO Ints (nn,nn)");
 
@@ -87,7 +88,7 @@ IntegralTransform::transform_tei(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
                             label, braCore, ketCore, braDisk, ketDisk);
     
     for(int h=0; h < _nirreps; h++) {
-        if(J.params->coltot[h]) {
+        if(J.params->coltot[h] && J.params->rowtot[h]) {
             memFree = static_cast<size_t>(dpd_memfree() - J.params->coltot[h] - K.params->coltot[h]);
             rowsPerBucket = memFree/(2 * J.params->coltot[h]);
             if(rowsPerBucket > J.params->rowtot[h]) rowsPerBucket = (size_t) J.params->rowtot[h];
@@ -163,7 +164,7 @@ IntegralTransform::transform_tei(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
     psio_open(PSIF_HALFT1, PSIO_OPEN_NEW);
 
     braCore = braDisk = 3;
-    ketCore = braDisk = DPD_ID(s1, s2, Alpha, true);
+    ketCore = ketDisk = DPD_ID(s1, s2, Alpha, true);
     sprintf(label, "Half-Transformed Ints (nn,%c%c)", toupper(s1->label()), toupper(s2->label()));
     dpd_buf4_init(&K, PSIF_HALFT0, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
     if(_print > 5)
@@ -183,7 +184,6 @@ IntegralTransform::transform_tei(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
         }
         fflush(outfile);
     }
-    // TODO check this..
     iwl_buf_init(&MBuff, PSIF_MO_AA_TEI, _tolerance, 0, 0);
 
     braCore = braDisk = DPD_ID(s1, s2, Alpha, true);
@@ -207,7 +207,7 @@ IntegralTransform::transform_tei(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
                             label, braCore, ketCore, braDisk, ketDisk);
 
     for(int h=0; h < _nirreps; h++) {
-        if(J.params->coltot[h]) {
+        if(J.params->coltot[h] && J.params->rowtot[h]) {
             memFree = static_cast<size_t>(dpd_memfree() - J.params->coltot[h] - K.params->coltot[h]);
             rowsPerBucket = memFree/(2 * J.params->coltot[h]);
             if(rowsPerBucket > J.params->rowtot[h])
@@ -271,6 +271,7 @@ IntegralTransform::transform_tei(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
                                             _printTei, outfile, 0);
                 } /* rs */
             } /* pq */
+            dpd_buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
         }
         dpd_buf4_mat_irrep_close_block(&J, h, rowsPerBucket);
         dpd_buf4_mat_irrep_close_block(&K, h, rowsPerBucket);
@@ -312,7 +313,7 @@ IntegralTransform::transform_tei(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
                                 label, braCore, ketCore, braDisk, ketDisk);
         
         for(int h=0; h < _nirreps; h++) {
-            if(J.params->coltot[h]){
+            if(J.params->coltot[h] && J.params->rowtot[h]) {
                 static_cast<size_t>(dpd_memfree() - J.params->coltot[h] - K.params->coltot[h]);
                 rowsPerBucket = memFree/(2 * J.params->coltot[h]);
                 if(rowsPerBucket > J.params->rowtot[h])
@@ -376,6 +377,7 @@ IntegralTransform::transform_tei(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
                                              _printTei, outfile, 0);
                     } /* rs */
                 } /* pq */
+                dpd_buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
             }
             dpd_buf4_mat_irrep_close_block(&J, h, rowsPerBucket);
             dpd_buf4_mat_irrep_close_block(&K, h, rowsPerBucket);
@@ -413,7 +415,7 @@ IntegralTransform::transform_tei(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
                                 label, braCore, ketCore, braDisk, ketDisk);
 
         for(int h=0; h < _nirreps; h++) {
-            if(J.params->coltot[h]){
+            if(J.params->coltot[h] && J.params->rowtot[h]) {
                 memFree = static_cast<size_t>(dpd_memfree() - J.params->coltot[h] - K.params->coltot[h]);
                 rowsPerBucket = memFree/(2 * J.params->coltot[h]);
                 if(rowsPerBucket > J.params->rowtot[h])
@@ -474,7 +476,7 @@ IntegralTransform::transform_tei(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
         dpd_buf4_close(&K);
         dpd_buf4_close(&J);
 
-        psio_close(PSIF_SO_PRESORT, 0);
+        psio_close(PSIF_SO_PRESORT, 1);
 
         if(_print) {
             fprintf(outfile, "\tSorting BB half-transformed integrals.\n");
@@ -528,7 +530,7 @@ IntegralTransform::transform_tei(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
                                 label, braCore, ketCore, braDisk, ketDisk);
 
         for(int h=0; h < _nirreps; h++) {
-            if (J.params->coltot[h]) {
+            if (J.params->coltot[h] && J.params->rowtot[h]) {
                 memFree = static_cast<size_t>(dpd_memfree() - J.params->coltot[h] - K.params->coltot[h]);
                 rowsPerBucket = memFree/(2 * J.params->coltot[h]);
                 if(rowsPerBucket > J.params->rowtot[h])
@@ -592,6 +594,7 @@ IntegralTransform::transform_tei(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
                             iwl_buf_wrt_val(&MBuff, p, q, r, s, K.matrix[h][pq][rs], _printTei, outfile, 0);
                     } /* rs */
                 } /* pq */
+                dpd_buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
             }
             dpd_buf4_mat_irrep_close_block(&J, h, rowsPerBucket);
             dpd_buf4_mat_irrep_close_block(&K, h, rowsPerBucket);
@@ -604,6 +607,8 @@ IntegralTransform::transform_tei(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
         /*** BB two-electron integral transformation complete ***/
     } // End "if not restricted transformation"
 
+
+    psio_close(CC_MISC, 1);
 
     free_block(TMP);
     delete [] label;

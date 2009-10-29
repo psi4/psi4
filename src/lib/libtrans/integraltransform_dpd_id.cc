@@ -33,7 +33,7 @@ IntegralTransform::DPD_ID(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
     int pos2 = spin == Alpha ? _aSpaceNum[s2->label()] : _bSpaceNum[s2->label()];
 
     // Now we know where these things are in the list of spaces, go ahead and compute the pair number
-    int numSpaces = _spacesUsed.size();
+    int numSpaces = _spaceArrays.size()/2;
     if(s1 == s2){
         if(pack){
             // Pack the indices for p>=q
