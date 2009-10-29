@@ -134,10 +134,10 @@ IntegralTransform::process_spaces(std::vector<shared_ptr<MOSpace> > spaces)
             if(_moOrdering == PitzerOrder){
                 for(int h = 0; h < _nirreps; ++h){
                     aPitzerCount = bPitzerCount = pitzerOffset + _frzcpi[h];
-                    for(int n = 0; n < _clsdpi[h] + _openpi[h]; ++n)
+                    for(int n = 0; n < aOrbsPI[h]; ++n)
                         aIndex[aOrbCount++] = aPitzerCount++;
                     if(_transformationType != Restricted)
-                        for(int n = 0; n < _clsdpi[h]; ++n)
+                        for(int n = 0; n < bOrbsPI[h]; ++n)
                             bIndex[bOrbCount++] = bPitzerCount++;
                     pitzerOffset += _mopi[h];
                 }

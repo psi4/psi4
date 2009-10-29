@@ -29,10 +29,10 @@ IntegralTransform::IntegralTransform(Options &options,
     _print   = options.get_int("Print");
     _memory  = options.get_int("MEMORY") * 1024 * 1024;
     _tolerance = 1.0E-14;
-
     // For now, just assume that the tei are to be kept
     _deleteIwlSoTei = false;
-    _printTei = true;
+    _printTei = _print > 5;
+    
     // TODO implement semicanonicalization
     std::vector<shared_ptr<MOSpace> > spaces;
     spaces.push_back(s1);

@@ -175,6 +175,12 @@ class IntegralTransform{
         double *_bFzcD;
         // The amount of memory, in bytes
         size_t _memory;
+        // The PSI file number for the alpha-alpha integrals
+        int _moIntFileAA;
+        // The PSI file number for the alpha-beta integrals
+        int _moIntFileAB;
+        // The PSI file number for the beta-beta integrals
+        int _moIntFileBB;
         // The amount of information to print
         int _print;
         // The number of symmetrized orbitals per irrep
