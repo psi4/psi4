@@ -16,11 +16,12 @@
 
 #include <psifiles.h>
 #include <libciomr/libciomr.h>
-#include <libpsio/psio.hpp>
+#include <libpsio/psio.h>
 #include <libchkpt/chkpt.hpp>
 #include <libipv1/ip_lib.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
+#include <psifiles.h>
 
 #include "hf.h"
 
@@ -29,6 +30,8 @@
 #include <libmints/twobody.h>
 #include <libmints/integral.h>
 #include <libmints/molecule.h>
+
+
 
 using namespace std;
 using namespace psi;
@@ -457,8 +460,34 @@ void HF::form_B()
     int ndocc = doccpi_[0];
     int memC = norbs*ndocc*ri_nbf_;
     fprintf(outfile, "\n  Doubles:          %14d %14d      %14d    %14d %14d",memA,memB,memC,memA+memB,memA+memC);
-    fprintf(outfile, "\n  MB:               %14d %14d      %14d    %14d %14d",memA*8/1000000,memB*8/1000000,memC*8/1000000,(memA+memB)*8/1000000,(memA+memC)*8/1000000);
+    fprintf(outfile, "\n  MiB:               %14d %14d      %14d    %14d %14d",memA*8/1000000,memB*8/1000000,memC*8/1000000,(memA+memB)*8/1000000,(memA+memC)*8/1000000);
 		fflush(outfile);
+		
+		//set df_storage_ based on available memory
+		if (((int)((memA+memB)*(1.0+MEMORY_SAFETY_FACTOR)))<(memory_/sizeof(double)))
+			df_storage_ = full; //Full in-core, including both (ab|P) tensors
+		else if (((int)((memC)*(1.0+MEMORY_SAFETY_FACTOR)))<(memory_/sizeof(double)))
+			df_storage_ = k_incore; //K only in-core
+		else
+			df_storage_ = disk;
+		
+		//fprintf(outfile,"\n Memory required in bytes: %f\n",(memA+memB)*(1.0+MEMORY_SAFETY_FACTOR));
+		//fprintf(outfile,"\n Memory required in bytes: %d\n",(int)((memA+memB)*(1.0+MEMORY_SAFETY_FACTOR)));
+		//fprintf(outfile,"\n Memory available in doubles: %d\n",memory_/sizeof(double));
+		//fprintf(outfile,"\n Memory available in bytes: %d\n",memory_);
+		//fprintf(outfile,"\n Memory safety factor: %f\n",MEMORY_SAFETY_FACTOR);
+		df_storage_ = full;
+		
+		if (df_storage_ == full)
+			fprintf(outfile,"\n\n  Density Fitting Algorithm proceeding In Core\n"); 
+		else if (df_storage_ == k_incore)
+			fprintf(outfile,"\n\n  Density Fitting Algorithm proceeding with K In Core, B on disk\n");
+		else if (df_storage_ == disk)
+			fprintf(outfile,"\n\n  Density Fitting Algorithm proceeding on Disk\n"); 
+		fflush(outfile);
+			
+		//TODO: Add cases for [(ab|P) on memory, (ab|Q) on disk->(ab|Q) on memory (ij|K) on disk] and 
+		//[(ab|P) on memory, (ab|Q) on disk->(ab|Q) on memory (ij|K) on memory]
 		
     shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
 
@@ -550,42 +579,130 @@ void HF::form_B()
 #ifdef TIME_SCF
     timer_on("Form ao_p_ia");
 #endif
-		
+		double **ao_p_ia;
+		if (df_storage_ == full)
+		{
 
-    IntegralFactory rifactory(ribasis_, zero, basisset_, basisset_);
-    TwoBodyInt* eri = rifactory.eri();
-    const double *buffer = eri->buffer();
-    double **ao_p_ia = block_matrix(ri_nbf_,basisset_->nbf()*(basisset_->nbf()+1)/2); 
+    	IntegralFactory rifactory(ribasis_, zero,basisset_, basisset_);
+    	TwoBodyInt* eri = rifactory.eri();
+    	const double *buffer = eri->buffer();
+    	ao_p_ia = block_matrix(ri_nbf_,basisset_->nbf()*(basisset_->nbf()+1)/2); 
 
-    int numPshell,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu;
-    #ifdef OMP
-    #pragma omp parallel for private (numPshell,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu)
-    #endif
-    for (Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
-      numPshell = ribasis_->shell(Pshell)->nfunction();
-      for (MU=0; MU < basisset_->nshell(); ++MU) {
-        nummu = basisset_->shell(MU)->nfunction();
-        for (NU=0; NU <= MU; ++NU) {
-          numnu = basisset_->shell(NU)->nfunction();
-          eri->compute_shell(Pshell, 0, MU, NU);
-          for (P=0, index=0; P < numPshell; ++P) {
-            PHI = ribasis_->shell(Pshell)->function_index() + P;
-            for (mu=0; mu < nummu; ++mu) {
-              omu = basisset_->shell(MU)->function_index() + mu;
-              for (nu=0; nu < numnu; ++nu, ++index) {
-                onu = basisset_->shell(NU)->function_index() + nu;
-                if(omu>=onu)
-                  ao_p_ia[PHI][ioff[omu]+onu]= buffer[index];
-              } 
-            }
-          } // end loop over P in Pshell
-        } // end loop over NU shell
-      } // end loop over MU shell
+    	int numPshell,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu;
+    	for (Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
+      	numPshell = ribasis_->shell(Pshell)->nfunction();
+      	for (MU=0; MU < basisset_->nshell(); ++MU) {
+        	nummu = basisset_->shell(MU)->nfunction();
+        	for (NU=0; NU <= MU; ++NU) {
+        	  numnu = basisset_->shell(NU)->nfunction();
+        	  eri->compute_shell(Pshell, 0, MU, NU);
+          	for (P=0, index=0; P < numPshell; ++P) {
+            	PHI = ribasis_->shell(Pshell)->function_index() + P;
+            	for (mu=0; mu < nummu; ++mu) {
+            	  omu = basisset_->shell(MU)->function_index() + mu;
+            	  for (nu=0; nu < numnu; ++nu, ++index) {
+            	    onu = basisset_->shell(NU)->function_index() + nu;
+            	    if(omu>=onu)
+            	      ao_p_ia[PHI][ioff[omu]+onu]= buffer[index];
+            	  } 
+            	}
+          	} // end loop over P in Pshell
+        	} // end loop over NU shell
+      	} // end loop over MU shell
       // now we've gone through all P, mu, nu for a given Pshell
-    } // end loop over P shells; done with forming MO basis (P|ia)'s
-  
+    	} // end loop over P shells; done with forming MO basis (P|ia)'s*/
+  		fprintf(outfile,"\n  Through ao_p_ia in core\n"); fflush(outfile);
     //fprintf(outfile,"\nao_p_ia:\n");
     //print_mat(ao_p_ia, ri_nbf_,norbs*(norbs+1)/2 ,outfile);
+    }
+    else
+    {
+    	psio_open(PSIF_DFSCF_B,PSIO_OPEN_NEW);
+    	
+    	IntegralFactory rifactory(ribasis_, zero, basisset_, basisset_);
+    	TwoBodyInt* eri = rifactory.eri();
+    	const double *buffer = eri->buffer();
+    	ao_p_ia = block_matrix(ri_nbf_,1); 
+    	double **storage;
+    	ri_pair_nu_ = init_int_array(basisset_->nbf()*(basisset_->nbf()+1)/2);
+    	ri_pair_mu_ = init_int_array(basisset_->nbf()*(basisset_->nbf()+1)/2);
+    	int row, npairs;
+    	
+    	psio_address next_PSIF_DFSCF_B = PSIO_ZERO;
+    	
+    	int pair_index = 0;
+
+    	int numPshell,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu;
+    	for (MU=0; MU < basisset_->nshell(); ++MU) {
+        nummu = basisset_->shell(MU)->nfunction();
+        for (NU=0; NU <= MU; ++NU) {
+        	 numnu = basisset_->shell(NU)->nfunction();
+        	 
+        	 if (MU != NU)
+        	 	 npairs = nummu*numnu;
+        	 else
+        	   npairs = nummu*(nummu+1)/2;
+        	 //fprintf(outfile,"\n  Starting Computing Quartet (%d %d| P)",MU,NU); fflush(outfile);
+        	 if (MU != 0 || NU !=0)
+        	 	free_block(storage);
+        	 storage = block_matrix(ri_nbf_,npairs);
+        	 //fprintf(outfile,"\n  Memory Allocated for Quartet (%d %d| P)",MU,NU); fflush(outfile);
+        	 
+        	 for (Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
+      			 numPshell = ribasis_->shell(Pshell)->nfunction();
+      			 
+      			 eri->compute_shell(Pshell, 0, MU, NU);
+      			 
+      			 for (P=0, index=0; P < numPshell; ++P) {
+            	PHI = ribasis_->shell(Pshell)->function_index() + P;
+            	row = 0;
+            	for (mu=0; mu < nummu; ++mu) {
+            	  omu = basisset_->shell(MU)->function_index() + mu;
+            	  for (nu=0; nu < numnu; ++nu, ++index) {
+            	    onu = basisset_->shell(NU)->function_index() + nu;
+            	    if(omu>=onu)
+            	    {
+            	      storage[PHI][row++]= buffer[index];
+            	      if (Pshell == 0)
+            	      {
+            	      	ri_pair_nu_[pair_index] = onu;
+            	      	ri_pair_mu_[pair_index++] = omu;
+            	      }
+            	    } 
+            	   } 
+            	 }
+          	 } // end loop over P in Pshell
+      			 
+      		 }
+      		 //fprintf(outfile,"\n  Finished Computing Quartet (%d %d| P)",MU,NU); fflush(outfile);
+      		 //print_mat(storage,ri_nbf_,npairs,outfile);
+      		 
+      		 row = 0;
+      		 for (mu=0; mu < nummu; ++mu) {
+             omu = basisset_->shell(MU)->function_index() + mu;
+             for (nu=0; nu < numnu; ++nu) {
+            	 onu = basisset_->shell(NU)->function_index() + nu;
+            	 if(omu>=onu)
+            	 {
+            	 	 //fprintf(outfile,"\n  WE here!"); fflush(outfile);
+            	   for (P = 0; P<ri_nbf_; P++)
+            	   	ao_p_ia[P][0] = storage[P][row];
+            	   //fprintf(outfile,"\n  Finished Transposing Quartet (%d %d| P)\n",MU,NU); fflush(outfile);
+            	   int errcod = psio_write(PSIF_DFSCF_B,"B Three-Index Integrals",(char *) &(ao_p_ia[0][0]),sizeof(double)*ri_nbf_,next_PSIF_DFSCF_B,&next_PSIF_DFSCF_B);
+            	   row++;
+            	 }
+             }
+           }
+          //fprintf(outfile,"\n  Finished Writing Quartet (%d %d| P)\n",MU,NU); fflush(outfile);
+      		 
+    	  }
+    	}
+    	
+    	free(storage);
+    	free(ao_p_ia);
+  		fprintf(outfile,"\n  Through B on disk."); fflush(outfile);
+			psio_close(PSIF_DFSCF_B,1);
+    }
 
 #ifdef TIME_SCF
     timer_off("Form ao_p_ia");
@@ -593,7 +710,8 @@ void HF::form_B()
 #ifdef TIME_SCF
     timer_on("Form B_ia^P");
 #endif
-
+		if (df_storage_ == full)
+		{
     // ao_p_ia has integrals
     // B_ia^P = Sum_Q (i a | Q) (J^-1/2)_QP
     B_ia_P_ = block_matrix(ri_nbf_,norbs*(norbs+1)/2);
@@ -605,6 +723,32 @@ void HF::form_B()
     //print_mat(B_ia_P_, ri_nbf_,norbs*(norbs+1)/2 ,outfile);
     free_block(ao_p_ia);
     free_block(J_mhalf);
+    }
+    else 
+    {
+    	psio_open(PSIF_DFSCF_B,PSIO_OPEN_OLD);
+    	psio_open(PSIF_DFSCF_BJ,PSIO_OPEN_NEW);
+    	psio_address next_PSIF_DFSCF_B = PSIO_ZERO;
+    	psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
+    	
+    	double **in_buffer = block_matrix(ri_nbf_,1);
+    	double **out_buffer = block_matrix(ri_nbf_,1);
+    	
+    	for (int ij = 0; ij<norbs*(norbs+1)/2; ij++)
+    	{
+    		int errcode = psio_read(PSIF_DFSCF_B,"B Three-Index Integrals",(char *) &(in_buffer[0][0]),sizeof(double)*ri_nbf_,next_PSIF_DFSCF_B,&next_PSIF_DFSCF_B);
+    		
+    		C_DGEMM('N','N',ri_nbf_,1,ri_nbf_,1.0, J_mhalf[0], ri_nbf_, in_buffer[0], 1,0.0, out_buffer[0], 1);
+    		
+    		errcode = psio_write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(out_buffer[0][0]),sizeof(double)*ri_nbf_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+    	}
+    	free(in_buffer);
+    	free(out_buffer);
+    	
+    	psio_close(PSIF_DFSCF_BJ,1);
+    	psio_close(PSIF_DFSCF_B,0);
+    	fprintf(outfile,"\n  Through BJ on disk."); fflush(outfile);
+    }
 
 #ifdef TIME_SCF
     timer_off("Form B_ia^P");

@@ -14,6 +14,9 @@
 #include <libmints/wavefunction.h>
 #include <psi4-dec.h>
 
+//#ifndef MEMORY_SAFETY_FACTOR
+#define MEMORY_SAFETY_FACTOR 0.20
+
 using namespace psi;
 
 namespace psi { namespace scf {
@@ -76,8 +79,12 @@ protected:
     int schwarz_;
     double SCHWARZ_CUTOFF_; //Schwarz cutoff value
     // Using ri integrals?
+    enum df_storage { full, k_incore, disk};
+    df_storage df_storage_;
     int ri_integrals_;
     int ri_nbf_;
+    int *ri_pair_nu_;
+    int *ri_pair_mu_;
        
     double **B_ia_P_; //Three Index tensor for DF-SCF
 
