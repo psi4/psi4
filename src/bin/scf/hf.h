@@ -71,21 +71,16 @@ protected:
     // With what...
     enum perturb { nothing, dipole_x, dipole_y, dipole_z };
     perturb perturb_;
-
-    // Using direct integrals?
-    int direct_integrals_;
     
-    // Using schwarz sieving?
-    int schwarz_;
-    double SCHWARZ_CUTOFF_; //Schwarz cutoff value
-    // Using ri integrals?
-    enum df_storage { full, k_incore, disk};
+    // Using direct integrals?
+  	int direct_integrals_;
+  	//DF Storage Scheme
+    enum df_storage { full, flip_B_core, flip_B_disk, k_incore, disk};
     df_storage df_storage_;
     int ri_integrals_;
     int ri_nbf_;
     int *ri_pair_nu_;
     int *ri_pair_mu_;
-       
     double **B_ia_P_; //Three Index tensor for DF-SCF
 
 public:    
