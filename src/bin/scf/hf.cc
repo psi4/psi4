@@ -138,7 +138,14 @@ void HF::common_init()
     	direct_integrals_ = false;
     }
     
+    //Use schwarz sieve? default no
+    schwarz_ = 0.0;
+    if (options_["SCHWARZ_CUTOFF"].has_changed())
+    {
+    	schwarz_ = options_.get_double("SCHWARZ_CUTOFF");
+    }
     
+    fprintf(outfile,"\nSchwarz Cutoff = %f\n",schwarz_);
     
     // Read information from checkpoint
     nuclearrep_ = chkpt_->rd_enuc();

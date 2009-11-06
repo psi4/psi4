@@ -923,9 +923,11 @@ void RHF::form_G_from_direct_integrals()
     G.zero();
     
     // Initialize an integral object 
-    // Begin factor out
+    // Begin factor ou
+    
+    
     IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
-    TwoBodyInt* eri = integral.eri();
+    TwoBodyInt* eri = integral.eri(0,schwarz_);
     ShellCombinationsIterator iter = integral.shells_iterator();
     const double *buffer = eri->buffer();
     // End factor out
@@ -959,12 +961,12 @@ void RHF::form_G_from_direct_integrals()
             value = buffer[index];
         
             // fprintf(outfile, "\tDoing integral ( %d %d | %d %d )\n", i, j, k, l); fflush(outfile);
-            
+            //fprintf(outfile, "\n (%d, %d| %d, %d) = %20.10f", i, j, k, l, value); fflush(outfile);
             // We only care about those greater that 1.0e-14
             if (fabs(value) > 1.0e-14) {
 // #ifdef _DEBUG
 //                 if (debug_)
-//                     fprintf(outfile, "Integral: %d %d %d %d %.11f\n", i, j, k, l, value);
+                   
 // #endif   
                 itype = integral_type(i, j, k, l);
                 switch(itype) {
