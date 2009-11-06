@@ -927,7 +927,7 @@ void RHF::form_G_from_direct_integrals()
     
     
     IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
-    TwoBodyInt* eri = integral.eri(0,schwarz_);
+    TwoBodyInt* eri = integral.eri();
     ShellCombinationsIterator iter = integral.shells_iterator();
     const double *buffer = eri->buffer();
     // End factor out
