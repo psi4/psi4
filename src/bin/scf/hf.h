@@ -82,6 +82,8 @@ protected:
     int *ri_pair_nu_;
     int *ri_pair_mu_;
     double **B_ia_P_; //Three Index tensor for DF-SCF
+    
+    double schwarz_;
 
 public:    
     // Exactly what their name says
