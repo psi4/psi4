@@ -10,6 +10,8 @@
 #include "ccfiles.h"
 #include "mospace.h"
 #include "spaceinfo.h"
+#define EXTERN
+#include <libdpd/dpd.gbl>
 
 namespace psi{ namespace libtrans{
 
@@ -50,13 +52,16 @@ IntegralTransform::transform_tei(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
     int *aIndex4 = _aIndices[s4->label()];
     int *bIndex4 = _bIndices[s4->label()];
 
+    // Grab control of DPD for now, but store the active number to restore it later
+    int currentActiveDPD = psi::dpd_default;
+    dpd_set_default(_myDPDNum);
+
     struct iwlbuf MBuff;
     int nBuckets;
     int thisBucketRows;
     size_t rowsPerBucket;
     size_t rowsLeft;
     size_t memFree;
-    bool doIWL = _outputType == IWLAndDPD;
     
     double **TMP = block_matrix(_nso, _nso);
 
@@ -70,7 +75,7 @@ IntegralTransform::transform_tei(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
         }
         fflush(outfile);
     }
-
+//TODO implement checks for null spaces, and avoid transformation if detected
     psio_open(PSIF_SO_PRESORT, PSIO_OPEN_OLD);
     psio_open(PSIF_HALFT0, PSIO_OPEN_NEW);
     psio_open(CC_MISC, PSIO_OPEN_NEW);
@@ -617,6 +622,9 @@ IntegralTransform::transform_tei(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
         fprintf(outfile, "\tTwo-electron integral transformation complete.\n");
         fflush(outfile);
     }
+    
+    // Hand DPD control back to the user
+    dpd_set_default(currentActiveDPD);
 }
 
 }} // End namespaces

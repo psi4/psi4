@@ -5,6 +5,7 @@
 #include <map>
 #include <vector>
 #include <libdpd/dpd.h>
+#include <libchkpt/chkpt.hpp>
 
 #define INDEX(i,j) ((i>j) ? ((i*(i+1)/2)+j) : ((j*(j+1)/2)+i))
 
@@ -44,13 +45,17 @@ class IntegralTransform{
         /**
          * Output format for the resulting integrals:-
          *
-         * DPDOnly   - Write the integrals to a DPD structure(s)
+         * DPDOnly   - Write the integrals to (a) DPD structure(s)
+         * IWLOnly   - Write the integrals to (an) IWL structure(s)
          * IWLAndDPD - Write the integrals to an IWL-formatted file in addition to the
          *           - DPD buffer
          */
-        enum OutputType {DPDOnly, IWLAndDPD};
+        enum OutputType {DPDOnly, IWLOnly, IWLAndDPD};
         /**
-         * Which orbitals are to be "frozen" i.e. excluded from the transformation:-
+         * Which orbitals are to be "frozen" i.e. excluded from the transformation.
+         * N.B. Orbitals are only frozen if input detected a request to do so.  That
+         * means that requesting a frozen-core transformation will result in an
+         * all-electron transformation, unless some orbitals were actually frozen.
          *
          * None      - No orbitals are excluded
          * OccOnly   - Only the frozen occupied orbitals are excluded
@@ -68,6 +73,7 @@ class IntegralTransform{
         enum SpinType {Alpha, Beta};
         /**
          * Set up a transformation involving four MO spaces
+         * 
          * @param options            An Options object, passed by reference
          * @param s1                 An MOSpace object describing one of the spaces to transform.
          * @param s2                 An MOSpace object describing one of the spaces to transform.
@@ -94,16 +100,19 @@ class IntegralTransform{
         ~IntegralTransform();
 
         void presort_so_tei();
-        void transform_oei(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2);
+        void transform_oei(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2, const char *label);
         void transform_tei(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
                            shared_ptr<MOSpace> s3, shared_ptr<MOSpace> s4);
 
     protected:
-        void process_spaces(std::vector<shared_ptr<MOSpace> >);
+        void semicanonicalize(shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
+        void process_spaces(std::vector<shared_ptr<MOSpace> > &spaces,
+                            shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
 
-        void trans_one(int m, int n, double *input, double *output,
-                                double **C, int nc, int *order);
-        void frozen_core(int p, int q, int r, int s, double value);
+        void trans_one(int m, int n, double *input, double *output, double **C, int soOffset, int *order);
+        void build_fzc_and_fock(int p, int q, int r, int s, double value,
+                          double *aFzcD, double *bFzcD, double *aFzcOp, double *bFzcOp,
+                          double *aD, double *bD, double *aFock, double *bFock);
         void idx_permute_presort(dpdfile4 *File, int &thisBucket, int **&bucketMap,
                                  int **&bucketOffset, int &p, int &q, int &r, int &s,
                                  double &value);
@@ -149,6 +158,8 @@ class IntegralTransform{
         int _nso;
         // The number of pairs of symmetrized atomic orbitals
         int _nTriSo;
+        // The number of pairs of molecular orbitals
+        int _nTriMo;
         // The number of atomic orbitals
         int _nao;
         // The number of frozen doubly occupied orbitals
@@ -165,14 +176,6 @@ class IntegralTransform{
         double _escf;
         // The definition of zero
         double _tolerance;
-        // The alpha frozen core operator
-        double *_aFzcOp;
-        // The beta frozen core operator
-        double *_bFzcOp;
-        // The alpha frozen core density operator
-        double *_aFzcD;
-        // The beta frozen core density operator
-        double *_bFzcD;
         // The amount of memory, in bytes
         size_t _memory;
         // The PSI file number for the alpha-alpha integrals
@@ -181,6 +184,8 @@ class IntegralTransform{
         int _moIntFileAB;
         // The PSI file number for the beta-beta integrals
         int _moIntFileBB;
+        // The DPD id to use internally
+        int _myDPDNum;
         // The amount of information to print
         int _print;
         // The number of symmetrized orbitals per irrep
@@ -199,14 +204,6 @@ class IntegralTransform{
         int *_frzvpi;
         // The cache files used by libDPD
         int *_cacheFiles, **_cacheList;
-        // The alpha frozen core operator
-        double *_aFzcOperator;
-        // The beta frozen core operator
-        double *_bFzcOperator;
-        // The full alpha MO coefficients
-        double **_fullCa;
-        // The full beta MO coefficients
-        double **_fullCb;
         // The alpha MO coefficients for each irrep
         double ***_Ca;
         // The alpha MO coefficients for each irrep
@@ -217,6 +214,10 @@ class IntegralTransform{
         bool _deleteIwlSoTei;
         // Whether to print the two-electron integrals or not
         bool _printTei;
+        // Whether to output the results to an IWL buffer
+        bool _useIWL;
+        // Whether to output the results to a DPD buffer
+        bool _useDPD;
 };
 
 }} // End namespaces

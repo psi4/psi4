@@ -150,8 +150,11 @@ integrals out (i.e. multiply by i=sqrt(-1) to get the integrals) */
 #define PSIF_MO_A_OEI       "MO-basis Alpha One-electron Ints"
 #define PSIF_MO_B_OEI       "MO-basis Beta One-electron Ints"
 #define PSIF_MO_FZC         "MO-basis Frozen-Core Operator"
+#define PSIF_MO_FOCK        "MO-basis Fock Matrix"
 #define PSIF_MO_A_FZC       "MO-basis Alpha Frozen-Core Oper"
 #define PSIF_MO_B_FZC       "MO-basis Beta Frozen-Core Oper"
+#define PSIF_MO_A_FOCK      "MO-basis Alpha Fock Matrix"
+#define PSIF_MO_B_FOCK      "MO-basis Beta Fock Matrix"
 
 /* More macros */
 #define PSIF_AO_OPDM_TRIANG "AO-basis OPDM triang"

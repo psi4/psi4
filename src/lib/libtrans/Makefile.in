@@ -12,6 +12,7 @@ integraltransform_dpd_id.cc \
 integraltransform_moinfo.cc \
 integraltransform_oei.cc \
 integraltransform_sort_so_tei.cc \
+integraltransform_semicanonicalize.cc \
 integraltransform_tei.cc \
 mospace.cc
 

@@ -3,18 +3,15 @@
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
-#include <algorithm>
 #include "mospace.h"
 #include "spaceinfo.h"
 
 namespace psi{ namespace libtrans{
 
 void
-IntegralTransform::process_spaces(std::vector<shared_ptr<MOSpace> > spaces)
+IntegralTransform::process_spaces(std::vector<shared_ptr<MOSpace> > &spaces,
+        shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
 {
-    shared_ptr<PSIO> psio(new PSIO); psiopp_ipv1_config(psio);
-    shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
-
     std::vector<shared_ptr<MOSpace> >::iterator space;
 
     _nirreps = chkpt->rd_nirreps();
@@ -31,6 +28,7 @@ IntegralTransform::process_spaces(std::vector<shared_ptr<MOSpace> > spaces)
     _frzcpi  = chkpt->rd_frzcpi();
     _frzvpi  = chkpt->rd_frzvpi();
     _nTriSo  = _nso * (_nso + 1) / 2;
+    _nTriMo  = _nmo * (_nmo + 1) / 2;
 
     _sosym = init_int_array(_nso);
     int count = 0;
@@ -39,7 +37,7 @@ IntegralTransform::process_spaces(std::vector<shared_ptr<MOSpace> > spaces)
             _sosym[count] = h;
         }
     }
-
+    
     _nfzc = _nfzv = 0;
     for(int h = 0; h < _nirreps; ++h){
         if(_frozenOrbitals == VirOnly || _frozenOrbitals == None){
@@ -52,10 +50,10 @@ IntegralTransform::process_spaces(std::vector<shared_ptr<MOSpace> > spaces)
         _nfzv += _frzvpi[h];
     }
 
+
     // Read the eigenvectors from the checkpoint file
-    if(_transformationType == Restricted){
+    if(_transformationType == Restricted || _transformationType == SemiCanonical){
         // Set up for a restricted transformation
-        _fullCb = _fullCa = chkpt->rd_scf();
         _Ca = new double**[_nirreps];
         for(int h = 0; h < _nirreps; ++h){
             _Ca[h] = chkpt->rd_scf_irrep(h);
@@ -63,13 +61,21 @@ IntegralTransform::process_spaces(std::vector<shared_ptr<MOSpace> > spaces)
         _Cb = _Ca;
     }else{
         // Set up for an unrestricted transformation
-        _fullCa = chkpt->rd_alpha_scf();
-        _fullCb = chkpt->rd_beta_scf();
+        // The semicanonical case is not handled here, but below
         _Ca = new double**[_nirreps];
         _Cb = new double**[_nirreps];
         for(int h = 0; h < _nirreps; ++h){
             _Ca[h] = chkpt->rd_alpha_scf_irrep(h);
             _Cb[h] = chkpt->rd_beta_scf_irrep(h);
+        }
+    }
+    
+    if(_print > 5){
+        for(int h = 0; h < _nirreps; ++h){
+            fprintf(outfile, "Alpha MO Coefficients for irrep %d\n",h);
+            print_mat(_Ca[h], _sopi[h], _mopi[h], outfile);
+            fprintf(outfile, "Beta MO Coefficients for irrep %d\n",h);
+            print_mat(_Cb[h], _sopi[h], _mopi[h], outfile);
         }
     }
 
@@ -265,10 +271,6 @@ IntegralTransform::process_spaces(std::vector<shared_ptr<MOSpace> > spaces)
 
 
         if(_print > 5){
-            fprintf(outfile, "The full Alpha SCF Eigenvectors\n");
-            print_mat(_fullCa, _nso, _nmo, outfile);
-            fprintf(outfile, "The full Beta SCF Eigenvectors\n");
-            print_mat(_fullCb, _nso, _nmo, outfile);
             int nAOrbs = 0, nBOrbs = 0;
             fprintf(outfile, "Adding arrays for space %c:-\n",moSpace->label());
             fprintf(outfile, "\talpha orbsPI = ");

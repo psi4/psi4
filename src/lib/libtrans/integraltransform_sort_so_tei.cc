@@ -3,9 +3,12 @@
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
+#include <libiwl/iwl.h>
 #include "psifiles.h"
 #include "mospace.h"
 #include "spaceinfo.h"
+#define EXTERN
+#include <libdpd/dpd.gbl>
 
 namespace psi{ namespace libtrans{
 
@@ -28,17 +31,62 @@ IntegralTransform::presort_so_tei()
     }
 
     // Set aside some memory for the frozen core density and frozen core operator
-    _aFzcD  = init_array(_nTriSo);
-    _aFzcOp = init_array(_nTriSo);
+    double *aFzcD  = init_array(_nTriSo);
+    double *aFzcOp = init_array(_nTriSo);
+    double *aD     = init_array(_nTriSo);
+    double *aFock  = init_array(_nTriSo);
+    double *aoH    = init_array(_nTriSo);
+    double *bFzcD  = aFzcD;
+    double *bFzcOp = aFzcOp;
+    double *bD     = aD;
+    double *bFock  = aFock;
     if(_transformationType != Restricted){
-        _bFzcD  = init_array(_nTriSo);
-        _bFzcOp = init_array(_nTriSo);
-    }else{
-        _bFzcD  = _aFzcD;
-        _bFzcOp = _aFzcOp;
+        bFzcD  = init_array(_nTriSo);
+        bFzcOp = init_array(_nTriSo);
+        bD     = init_array(_nTriSo);
+        bFock  = init_array(_nTriSo);
     }
-//TODO form frozen core density
 
+    // Form the Density matrices
+    for(int h = 0, soOffset = 0; h < _nirreps; ++h){
+        for(int p = 0; p < _sopi[h]; ++p){
+            for(int q = 0; q <= p; ++q){
+                int pq = INDEX((p + soOffset), (q + soOffset));
+                for(int i = 0; i < _frzcpi[h]; ++i)
+                    aFzcD[pq] += _Ca[h][p][i] * _Ca[h][q][i];
+                for(int i = 0; i < _clsdpi[h] + _openpi[h]; ++i)
+                    aD[pq] += _Ca[h][p][i] * _Ca[h][q][i];
+                if(_transformationType != Restricted){
+                    for(int i = 0; i < _frzcpi[h]; ++i)
+                        bFzcD[pq] += _Cb[h][p][i] * _Cb[h][q][i];
+                    for(int i = 0; i < _clsdpi[h]; ++i)
+                        bD[pq] += _Cb[h][p][i] * _Cb[h][q][i];
+                }
+            }
+        }
+        soOffset += _sopi[h];
+    }
+    
+    double *T = init_array(_nTriSo);
+    int stat = iwl_rdone(PSIF_OEI, PSIF_SO_T, T, _nTriSo, 0, 0, outfile);
+    if(stat != 1) throw PsiException("Problem reading Kinetic Energy Integrals",
+                                       __FILE__, __LINE__);
+    stat = iwl_rdone(PSIF_OEI, PSIF_SO_V, aoH, _nTriSo, 0, 0, outfile);
+    if(stat != 1) throw PsiException("Problem reading Potential Energy Integrals",
+                                       __FILE__, __LINE__);
+    for(int pq=0; pq < _nTriSo; ++pq){
+        aoH[pq] += T[pq];
+        aFzcOp[pq] = aoH[pq];
+        aFock[pq]  = aoH[pq];
+        if(_transformationType != Restricted){
+            bFock[pq]  = aoH[pq];
+            bFzcOp[pq] = aoH[pq];
+        }
+    }
+    free(T);
+    
+    int currentActiveDPD = psi::dpd_default;
+    dpd_set_default(_myDPDNum);
 
     timer_on("presort");
     if(_print){
@@ -54,8 +102,7 @@ IntegralTransform::presort_so_tei()
 
     size_t memoryd = _memory / sizeof(double);
 
-    int nump = 0;
-    int numq = 0;
+    int nump = 0, numq = 0;
     for(int h=0; h < _nirreps; ++h){
         nump += I.params->ppi[h];
         numq += I.params->qpi[h];
@@ -134,7 +181,8 @@ IntegralTransform::presort_so_tei()
             double value = (double) valptr[InBuf.idx];
             idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value);
             if(_nfzc && !n) /* build frozen-core operator only on first pass*/
-                frozen_core(p,q,r,s,value);
+                build_fzc_and_fock(p, q, r, s, value, aFzcD, bFzcD,
+                                   aFzcOp, bFzcOp, aD, bD, aFock, bFock);
         } /* end loop through current buffer */
 
         /* Now run through the rest of the buffers in the file */
@@ -149,7 +197,8 @@ IntegralTransform::presort_so_tei()
                 double value = (double) valptr[InBuf.idx];
                 idx_permute_presort(&I, n, bucketMap, bucketOffset, p, q, r, s, value);
                 if(_nfzc && !n) /* build frozen-core operator only on first pass */
-                    frozen_core(p,q,r,s,value);
+                     build_fzc_and_fock(p, q, r, s, value, aFzcD, bFzcD,
+                                        aFzcOp, bFzcOp, aD, bD, aFock, bFock);
             } /* end loop through current buffer */
         } /* end loop over reading buffers */
 
@@ -178,6 +227,99 @@ IntegralTransform::presort_so_tei()
     free(bucketRowDim);
     free(bucketSize);
 
+    double *moInts = init_array(_nTriMo);
+    int *order = init_int_array(_nmo);
+    // We want to keep Pitzer ordering, so this is just an identity mapping
+    for(int n = 0; n < _nmo; ++n) order[n] = n;
+    if(_transformationType == Restricted){
+        for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
+        for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
+            trans_one(_sopi[h], _mopi[h], aoH, moInts, _Ca[h], soOffset, &(order[moOffset]));
+            soOffset += _sopi[h];
+            moOffset += _mopi[h];
+        }
+        iwl_wrtone(PSIF_OEI, PSIF_MO_OEI, _nTriMo, moInts);
+
+        for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
+        for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
+            trans_one(_sopi[h], _mopi[h], aFzcOp, moInts, _Ca[h], soOffset, &(order[moOffset]));
+            soOffset += _sopi[h];
+            moOffset += _mopi[h];
+        }
+        iwl_wrtone(PSIF_OEI, PSIF_MO_FZC, _nTriMo, moInts);
+
+        for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
+        for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
+            trans_one(_sopi[h], _mopi[h], aFock, moInts, _Ca[h], soOffset, &(order[moOffset]));
+            soOffset += _sopi[h];
+            moOffset += _mopi[h];
+        }
+        iwl_wrtone(PSIF_OEI, PSIF_MO_FOCK, _nTriMo, aFock);
+    }else{
+        for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
+        for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
+            trans_one(_sopi[h], _mopi[h], aoH, moInts, _Ca[h], soOffset, &(order[moOffset]));
+            soOffset += _sopi[h];
+            moOffset += _mopi[h];
+        }
+        iwl_wrtone(PSIF_OEI, PSIF_MO_A_OEI, _nTriMo, moInts);
+
+        for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
+        for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
+            trans_one(_sopi[h], _mopi[h], aoH, moInts, _Cb[h], soOffset, &(order[moOffset]));
+            soOffset += _sopi[h];
+            moOffset += _mopi[h];
+        }
+        iwl_wrtone(PSIF_OEI, PSIF_MO_B_OEI, _nTriMo, moInts);
+
+        for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
+        for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
+            trans_one(_sopi[h], _mopi[h], aFzcOp, moInts, _Ca[h], soOffset, &(order[moOffset]));
+            soOffset += _sopi[h];
+            moOffset += _mopi[h];
+        }
+        iwl_wrtone(PSIF_OEI, PSIF_MO_A_FZC, _nTriMo, moInts);
+
+        for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
+        for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
+            trans_one(_sopi[h], _mopi[h], bFzcOp, moInts, _Cb[h], soOffset, &(order[moOffset]));
+            soOffset += _sopi[h];
+            moOffset += _mopi[h];
+        }
+        iwl_wrtone(PSIF_OEI, PSIF_MO_B_FZC, _nTriMo, moInts);
+
+        for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
+        for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
+            trans_one(_sopi[h], _mopi[h], aFock, moInts, _Ca[h], soOffset, &(order[moOffset]));
+            soOffset += _sopi[h];
+            moOffset += _mopi[h];
+        }
+        iwl_wrtone(PSIF_OEI, PSIF_MO_A_FOCK, _nTriMo, moInts);
+
+        for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
+        for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
+            trans_one(_sopi[h], _mopi[h], bFock, moInts, _Cb[h], soOffset, &(order[moOffset]));
+            soOffset += _sopi[h];
+            moOffset += _mopi[h];
+        }
+        iwl_wrtone(PSIF_OEI, PSIF_MO_B_FOCK, _nTriMo, moInts);
+    }
+    free(order);
+    free(moInts);
+    free(aFzcD);
+    free(aFzcOp);
+    free(aD);
+    free(aoH);
+    free(aFock);
+    if(_transformationType != Restricted){
+        free(bFzcD);
+        free(bFzcOp);
+        free(bD);
+        free(bFock);
+    }
+
+    dpd_set_default(currentActiveDPD);
+
     alreadyPresorted = true;
     
     dpd_file4_close(&I);
@@ -186,15 +328,27 @@ IntegralTransform::presort_so_tei()
 }
 
 /**
- * Builds the frozen core operator using the integral currently in memory
+ * Builds the frozen core operator and Fock matrix using the integral currently
+ * in memory. N.B. all matrices are passed in lower triangular array form.
+ * 
  * @param p - the first index in the integral
  * @param q - the second index in the integral
  * @param r - the third index in the integral
  * @param s - the fourth index in the integral
  * @param value - the integral (pq|rs)
+ * @param aFzcD - the alpha frozen core density
+ * @param bFzcD - the beta frozen core density
+ * @param aFzcOp - the alpha frozen core operator
+ * @param bFzcOp - the beta frozen core operator
+ * @param aD - the alpha density
+ * @param bD - the beta density
+ * @param aFock - the alpha Fock matrix
+ * @param bFock - the beta Fock matrix
  */
 void
-IntegralTransform::frozen_core(int p, int q, int r, int s, double value)
+IntegralTransform::build_fzc_and_fock(int p, int q, int r, int s, double value,
+                  double *aFzcD, double *bFzcD, double *aFzcOp, double *bFzcOp,
+                  double *aD, double *bD, double *aFock, double *bFock)
 {
     int al[8], bl[8], cl[8], dl[8];
     int dum, found;
@@ -208,8 +362,12 @@ IntegralTransform::frozen_core(int p, int q, int r, int s, double value)
         int cd = INDEX(c,d);
         int bc = INDEX(b,c);
         int ad = INDEX(a,d);
-        _aFzcOp[cd] += 2.0 * _aFzcD[ab] * value;
-        if(b >= c) _aFzcOp[bc] -= _aFzcD[ad] * value;
+        aFzcOp[cd] += 2.0 * aFzcD[ab] * value;
+        aFock[cd]  += 2.0 * aD[ab] * value;
+        if(b >= c){
+            aFzcOp[bc] -= aFzcD[ad] * value;
+            aFock[bc]  -= aD[ad] * value;
+        }
 
         a = al[1] = q;
         b = bl[1] = p;
@@ -220,8 +378,14 @@ IntegralTransform::frozen_core(int p, int q, int r, int s, double value)
             cd = INDEX(c,d);
             bc = INDEX(b,c);
             ad = INDEX(a,d);
-            if(c >= d) _aFzcOp[cd] += 2.0 * _aFzcD[ab] * value;
-            if(b >= c) _aFzcOp[bc] -= _aFzcD[ad] * value;
+            if(c >= d){
+                aFzcOp[cd] += 2.0 * aFzcD[ab] * value;
+                aFock[cd]  += 2.0 * aD[ab] * value;
+            }
+            if(b >= c){
+                aFzcOp[bc] -= aFzcD[ad] * value;
+                aFock[bc]  -= aD[ad] * value;
+            }
         }
 
         a = al[2] = p;
@@ -235,8 +399,14 @@ IntegralTransform::frozen_core(int p, int q, int r, int s, double value)
             cd = INDEX(c,d);
             bc = INDEX(b,c);
             ad = INDEX(a,d);
-            if(c >= d) _aFzcOp[cd] += 2.0 * _aFzcD[ab] * value;
-            if(b >= c) _aFzcOp[bc] -= _aFzcD[ad] * value;
+            if(c >= d){
+                aFzcOp[cd] += 2.0 * aFzcD[ab] * value;
+                aFock[cd]  += 2.0 * aD[ab] * value;
+            }
+            if(b >= c){
+                aFzcOp[bc] -= aFzcD[ad] * value;
+                aFock[bc]  -= aD[ad] * value;
+            }
         }
 
         a = al[3] = q;
@@ -250,8 +420,14 @@ IntegralTransform::frozen_core(int p, int q, int r, int s, double value)
             cd = INDEX(c,d);
             bc = INDEX(b,c);
             ad = INDEX(a,d);
-            if(c >= d) _aFzcOp[cd] += 2.0 * _aFzcD[ab] * value;
-            if(b >= c) _aFzcOp[bc] -= _aFzcD[ad] * value;
+            if(c >= d){
+                aFzcOp[cd] += 2.0 * aFzcD[ab] * value;
+                aFock[cd]  += 2.0 * aD[ab] * value;
+            }
+            if(b >= c){
+                aFzcOp[bc] -= aFzcD[ad] * value;
+                aFock[bc]  -= aD[ad] * value;
+            }
         }
 
         a = al[4] = r;
@@ -265,8 +441,14 @@ IntegralTransform::frozen_core(int p, int q, int r, int s, double value)
             cd = INDEX(c,d);
             bc = INDEX(b,c);
             ad = INDEX(a,d);
-            if(c >= d) _aFzcOp[cd] += 2.0 * _aFzcD[ab] * value;
-            if(b >= c) _aFzcOp[bc] -= _aFzcD[ad] * value;
+            if(c >= d){
+                aFzcOp[cd] += 2.0 * aFzcD[ab] * value;
+                aFock[cd]  += 2.0 * aD[ab] * value;
+            }
+            if(b >= c){
+                aFzcOp[bc] -= aFzcD[ad] * value;
+                aFock[bc]  -= aD[ad] * value;
+            }
         }
 
         a = al[5] = r;
@@ -280,8 +462,14 @@ IntegralTransform::frozen_core(int p, int q, int r, int s, double value)
             cd = INDEX(c,d);
             bc = INDEX(b,c);
             ad = INDEX(a,d);
-            if(c >= d) _aFzcOp[cd] += 2.0 * _aFzcD[ab] * value;
-            if(b >= c) _aFzcOp[bc] -= _aFzcD[ad] * value;
+            if(c >= d){
+                aFzcOp[cd] += 2.0 * aFzcD[ab] * value;
+                aFock[cd]  += 2.0 * aD[ab] * value;
+            }
+            if(b >= c){
+                aFzcOp[bc] -= aFzcD[ad] * value;
+                aFock[bc]  -= aD[ad] * value;
+            }
         }
 
         a = al[6] = s;
@@ -295,8 +483,14 @@ IntegralTransform::frozen_core(int p, int q, int r, int s, double value)
             cd = INDEX(c,d);
             bc = INDEX(b,c);
             ad = INDEX(a,d);
-            if(c >= d) _aFzcOp[cd] += 2.0 * _aFzcD[ab] * value;
-            if(b >= c) _aFzcOp[bc] -= _aFzcD[ad] * value;
+            if(c >= d){
+                aFzcOp[cd] += 2.0 * aFzcD[ab] * value;
+                aFock[cd]  += 2.0 * aD[ab] * value;
+            }
+            if(b >= c){
+                aFzcOp[bc] -= aFzcD[ad] * value;
+                aFock[bc]  -= aD[ad] * value;
+            }
         }
 
         a = al[7] = s;
@@ -310,8 +504,14 @@ IntegralTransform::frozen_core(int p, int q, int r, int s, double value)
             cd = INDEX(c,d);
             bc = INDEX(b,c);
             ad = INDEX(a,d);
-            if(c >= d) _aFzcOp[cd] += 2.0 * _aFzcD[ab] * value;
-            if(b >= c) _aFzcOp[bc] -= _aFzcD[ad] * value;
+            if(c >= d){
+                aFzcOp[cd] += 2.0 * aFzcD[ab] * value;
+                aFock[cd]  += 2.0 * aD[ab] * value;
+            }
+            if(b >= c){
+                aFzcOp[bc] -= aFzcD[ad] * value;
+                aFock[bc]  -= aD[ad] * value;
+            }
         }
     }else {
         /* Unrestricted */
@@ -323,11 +523,15 @@ IntegralTransform::frozen_core(int p, int q, int r, int s, double value)
         int cd = INDEX(c,d);
         int bc = INDEX(b,c);
         int ad = INDEX(a,d);
-        _aFzcOp[cd] += (_aFzcD[ab] + _bFzcD[ab]) * value;
-        _bFzcOp[cd] += (_aFzcD[ab] + _bFzcD[ab]) * value;
+        aFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
+        bFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
+        aFock[cd]  += (aD[ab] + bD[ab]) * value;
+        bFock[cd]  += (aD[ab] + bD[ab]) * value;
         if(b >= c) {
-            _aFzcOp[bc] -= _aFzcD[ad] * value;
-            _bFzcOp[bc] -= _bFzcD[ad] * value;
+            aFzcOp[bc] -= aFzcD[ad] * value;
+            aFock[bc]  -= aD[ad] * value;
+            bFzcOp[bc] -= bFzcD[ad] * value;
+            bFock[bc]  -= bD[ad] * value;
         }
 
         a = al[1] = q;
@@ -340,12 +544,16 @@ IntegralTransform::frozen_core(int p, int q, int r, int s, double value)
             bc = INDEX(b,c);
             ad = INDEX(a,d);
             if(c >= d){
-                _aFzcOp[cd] += (_aFzcD[ab] + _bFzcD[ab]) * value;
-                _bFzcOp[cd] += (_aFzcD[ab] + _bFzcD[ab]) * value;
+                aFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
+                aFock[cd] += (aD[ab] + bD[ab]) * value;
+                bFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
+                bFock[cd] += (aD[ab] + bD[ab]) * value;
             }
             if(b >= c){
-                _aFzcOp[bc] -= _aFzcD[ad] * value;
-                _bFzcOp[bc] -= _bFzcD[ad] * value;
+                aFzcOp[bc] -= aFzcD[ad] * value;
+                aFock[bc]  -= aD[ad] * value;
+                bFzcOp[bc] -= bFzcD[ad] * value;
+                bFock[bc]  -= bD[ad] * value;
             }
         }
 
@@ -361,12 +569,16 @@ IntegralTransform::frozen_core(int p, int q, int r, int s, double value)
             bc = INDEX(b,c);
             ad = INDEX(a,d);
             if(c >= d){
-                _aFzcOp[cd] += (_aFzcD[ab] + _bFzcD[ab]) * value;
-                _bFzcOp[cd] += (_aFzcD[ab] + _bFzcD[ab]) * value;
+                aFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
+                aFock[cd] += (aD[ab] + bD[ab]) * value;
+                bFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
+                bFock[cd] += (aD[ab] + bD[ab]) * value;
             }
             if(b >= c){
-                _aFzcOp[bc] -= _aFzcD[ad] * value;
-                _bFzcOp[bc] -= _bFzcD[ad] * value;
+                aFzcOp[bc] -= aFzcD[ad] * value;
+                aFock[bc]  -= aD[ad] * value;
+                bFzcOp[bc] -= bFzcD[ad] * value;
+                bFock[bc]  -= bD[ad] * value;
             }
         }
 
@@ -382,12 +594,16 @@ IntegralTransform::frozen_core(int p, int q, int r, int s, double value)
             bc = INDEX(b,c);
             ad = INDEX(a,d);
             if(c >= d){
-                _aFzcOp[cd] += (_aFzcD[ab] + _bFzcD[ab]) * value;
-                _bFzcOp[cd] += (_aFzcD[ab] + _bFzcD[ab]) * value;
+                aFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
+                aFock[cd]  += (aD[ab] + bD[ab]) * value;
+                bFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
+                bFock[cd]  += (aD[ab] + bD[ab]) * value;
             }
             if(b >= c){
-                _aFzcOp[bc] -= _aFzcD[ad] * value;
-                _bFzcOp[bc] -= _bFzcD[ad] * value;
+                aFzcOp[bc] -= aFzcD[ad] * value;
+                aFock[bc]  -= aD[ad] * value;
+                bFzcOp[bc] -= bFzcD[ad] * value;
+                bFock[bc]  -= bD[ad] * value;
             }
         }
 
@@ -403,12 +619,16 @@ IntegralTransform::frozen_core(int p, int q, int r, int s, double value)
             bc = INDEX(b,c);
             ad = INDEX(a,d);
             if(c >= d){
-                _aFzcOp[cd] += (_aFzcD[ab] + _bFzcD[ab]) * value;
-                _bFzcOp[cd] += (_aFzcD[ab] + _bFzcD[ab]) * value;
+                aFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
+                aFock[cd]  += (aD[ab] + bD[ab]) * value;
+                bFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
+                bFock[cd]  += (aD[ab] + bD[ab]) * value;
             }
             if(b >= c){
-                _aFzcOp[bc] -= _aFzcD[ad] * value;
-                _bFzcOp[bc] -= _bFzcD[ad] * value;
+                aFzcOp[bc] -= aFzcD[ad] * value;
+                aFock[bc]  -= aD[ad] * value;
+                bFzcOp[bc] -= bFzcD[ad] * value;
+                bFock[bc]  -= bD[ad] * value;
             }
         }
 
@@ -424,12 +644,16 @@ IntegralTransform::frozen_core(int p, int q, int r, int s, double value)
             bc = INDEX(b,c);
             ad = INDEX(a,d);
             if(c >= d){
-                _aFzcOp[cd] += (_aFzcD[ab] + _bFzcD[ab]) * value;
-                _bFzcOp[cd] += (_aFzcD[ab] + _bFzcD[ab]) * value;
+                aFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
+                aFock[cd]  += (aD[ab] + bD[ab]) * value;
+                bFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
+                bFock[cd]  += (aD[ab] + bD[ab]) * value;
             }
             if(b >= c){
-                _aFzcOp[bc] -= _aFzcD[ad] * value;
-                _bFzcOp[bc] -= _bFzcD[ad] * value;
+                aFzcOp[bc] -= aFzcD[ad] * value;
+                aFock[bc]  -= aD[ad] * value;
+                bFzcOp[bc] -= bFzcD[ad] * value;
+                bFock[bc]  -= bD[ad] * value;
             }
         }
 
@@ -445,12 +669,16 @@ IntegralTransform::frozen_core(int p, int q, int r, int s, double value)
             bc = INDEX(b,c);
             ad = INDEX(a,d);
             if(c >= d){
-                _aFzcOp[cd] += (_aFzcD[ab] + _bFzcD[ab]) * value;
-                _bFzcOp[cd] += (_aFzcD[ab] + _bFzcD[ab]) * value;
+                aFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
+                aFock[cd]  += (aD[ab] + bD[ab]) * value;
+                bFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
+                bFock[cd]  += (aD[ab] + bD[ab]) * value;
             }
             if(b >= c){
-                _aFzcOp[bc] -= _aFzcD[ad] * value;
-                _bFzcOp[bc] -= _bFzcD[ad] * value;
+                aFzcOp[bc] -= aFzcD[ad] * value;
+                aFock[bc]  -= aD[ad] * value;
+                bFzcOp[bc] -= bFzcD[ad] * value;
+                bFock[bc]  -= bD[ad] * value;
             }
         }
 
@@ -466,12 +694,16 @@ IntegralTransform::frozen_core(int p, int q, int r, int s, double value)
             bc = INDEX(b,c);
             ad = INDEX(a,d);
             if(c >= d){
-                _aFzcOp[cd] += (_aFzcD[ab] + _bFzcD[ab]) * value;
-                _bFzcOp[cd] += (_aFzcD[ab] + _bFzcD[ab]) * value;
+                aFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
+                aFock[cd]  += (aD[ab] + bD[ab]) * value;
+                bFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
+                bFock[cd]  += (aD[ab] + bD[ab]) * value;
             }
-            if(b >= c) {
-                _aFzcOp[bc] -= _aFzcD[ad] * value;
-                _bFzcOp[bc] -= _bFzcD[ad] * value;
+            if(b >= c){
+                aFzcOp[bc] -= aFzcD[ad] * value;
+                aFock[bc]  -= aD[ad] * value;
+                bFzcOp[bc] -= bFzcD[ad] * value;
+                bFock[bc]  -= bD[ad] * value;
             }
         }
     }
