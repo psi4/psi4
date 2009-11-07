@@ -10,36 +10,40 @@ namespace psi{ namespace libtrans{
 * @param s2 - the MOSpace for the ket
 */
 void
-IntegralTransform::transform_oei(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2)
+IntegralTransform::transform_oei(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
+                                 const char *label)
 {
     return;
 }
 
 
 /**
-* trans_one(): Transform a packed symmetric matrix.
+* Transforms a packed symmetric matrix.
 *
-* int m: input matrix row dimension
-* int n: output matrix row dimension
-* double *input: pointer to input integrals (the lower-triange of a symmetric matrix)
-* double *output: pointer to output integrals (the lower-triangle of a symmetric matrix)
-* double **C: transformation matrix (rectangular)
-* int nc: column dimension of C
-* int *order: reordering array for transformed indices
-*
-* Stolen, by ACS, from the transqt2 code written by TDC, 7/06
+* @param m - input matrix row dimension
+* @param n - output matrix row dimension
+* @param input - pointer to input integrals (the lower-triangle of a symmetric matrix)
+* @param pointer to output integrals (the lower-triangle of a symmetric matrix)
+* @param C transformation matrix (rectangular, m X n)
+* @param soOffset - the point in the full list of SOs where we want to start.  This is
+*                   useful for transforming integrals one irrep at a time and in this
+*                   case the offset would correspond to the position of the first
+*                   orbital in the current irrep.
+* @param order - a reordering array to change the order of the output
 */
 
 void
-IntegralTransform::trans_one(int m, int n, double *input, double *output,
-                                double **C, int nc, int *order)
+IntegralTransform::trans_one(int m, int n, double *input, double *output, 
+                             double **C, int soOffset, int* order)
 {
     int dim = (m > n) ? m : n;
+    int nc  = n;
     double **TMP0 = block_matrix(dim,dim);
     double **TMP1 = block_matrix(dim,dim);
 
-    for(int p = 0, pq = 0; p < m; ++p){
-        for(int q = 0; q <= p; ++q,++pq){
+    for(int p = 0; p < m; ++p){
+        for(int q = 0; q <= p; ++q){
+            unsigned long int pq = INDEX((p + soOffset), (q + soOffset));
             TMP0[p][q] = TMP0[q][p] = input[pq];
         }
     }
