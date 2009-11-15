@@ -38,6 +38,11 @@
 #define PSIF_AO_DGDBZ       46
 #define PSIF_DETCAS         60
 
+// The integral files used by libtrans
+#define PSIF_LIBTRANS_DPD   61 // All transformed integrals in DPD format are sent here by default
+#define PSIF_LIBTRANS_A_HT  62 // The Alpha half-transformed integrals in DPD format
+#define PSIF_LIBTRANS_B_HT  63 // The Beta half-tranformed integrals in DPD format
+
 #define PSIF_MO_TEI         72
 #define PSIF_MO_OPDM        73
 #define PSIF_MO_TPDM        74
@@ -155,6 +160,8 @@ integrals out (i.e. multiply by i=sqrt(-1) to get the integrals) */
 #define PSIF_MO_B_FZC       "MO-basis Beta Frozen-Core Oper"
 #define PSIF_MO_A_FOCK      "MO-basis Alpha Fock Matrix"
 #define PSIF_MO_B_FOCK      "MO-basis Beta Fock Matrix"
+#define PSIF_SC_A_FOCK      "Semicanonical Alpha Fock Matrix"
+#define PSIF_SC_B_FOCK      "Semicanonical Beta Fock Matrix"
 
 /* More macros */
 #define PSIF_AO_OPDM_TRIANG "AO-basis OPDM triang"

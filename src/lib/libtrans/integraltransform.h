@@ -4,6 +4,7 @@
 #include <psi4-dec.h>
 #include <map>
 #include <vector>
+#include <string>
 #include <libdpd/dpd.h>
 #include <libchkpt/chkpt.hpp>
 
@@ -75,39 +76,78 @@ class IntegralTransform{
          * Set up a transformation involving four MO spaces
          * 
          * @param options            An Options object, passed by reference
-         * @param s1                 An MOSpace object describing one of the spaces to transform.
-         * @param s2                 An MOSpace object describing one of the spaces to transform.
-         * @param s3                 An MOSpace object describing one of the spaces to transform.
-         * @param s4                 An MOSpace object describing one of the spaces to transform.
+         * @param spaces             A vector containing smart pointers to the unique space(s) involved
+         *                           in any transformations that this object will perform
          * @param transformationType The type of transformation, described by the
          *                           enum TransformationType
          * @param moOrdering         The ordering convention of the resulting integrals, see
-         *                           enum MOOrdering
+         *                           enum MOOrdering.  This only affects IWL output.
          * @param outputType         The storage format of the transformed integrals, see
          *                           enum OutputType
          * @param frozenOrbitals     Which orbitals are to be excluded from the transformation, see
          *                           enum FrozenOrbitals
+         * @param initialize         Whether to initialize during construction or not.  Useful if some
+         *                           options need to be tweaked before initialization.
          */
         IntegralTransform(Options &options,
-                          shared_ptr<MOSpace> s1,
-                          shared_ptr<MOSpace> s2,
-                          shared_ptr<MOSpace> s3,
-                          shared_ptr<MOSpace> s4,
+                          std::vector<shared_ptr<MOSpace> > &spaces,
                           TransformationType transformationType = Restricted,
+                          OutputType outputType = DPDOnly,
                           MOOrdering moOrdering = QTOrder,
-                          OutputType outputType = IWLAndDPD,
-                          FrozenOrbitals frozenOrbitals = None);
+                          FrozenOrbitals frozenOrbitals = OccAndVir,
+                          bool initialize = true);
         ~IntegralTransform();
 
+        void initialize();
         void presort_so_tei();
         void transform_oei(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2, const char *label);
         void transform_tei(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
                            shared_ptr<MOSpace> s3, shared_ptr<MOSpace> s4);
+        void transform_tei_first_half(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2);
+        void transform_tei_second_half(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
+                                       shared_ptr<MOSpace> s3, shared_ptr<MOSpace> s4);
+        void print_dpd_lookup();
+        
+        int DPD_ID(char *str);
+        int DPD_ID(const char *str);
+        int DPD_ID(std::string &str);
+        int DPD_ID(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2, SpinType spin, bool pack);
 
+        /*===== The set/get accessor functions =====*/
+
+        /// Set the level of printing used during transformations (0 -> 6)
+        void set_print(int n) {_print = n;}
+        /// The level of printing used during transformations
+        int get_print() const {return _print;}
+
+        /// Set the library to keep or delete the half-transformed integrals in DPD form after processing
+        void set_keep_ht_ints(bool val) {_keepHtInts = val;}
+        /// Whether the library will keep or delete the half-transformed integrals in DPD form after processing
+        bool get_keep_ht_ints() const {return _keepHtInts;}
+
+        /// Set the library to keep or delete the SO integrals in DPD form after processing
+        void set_keep_dpd_so_ints(bool val) {_keepDpdSoInts = val;}
+        /// Whether the library will keep or delete the SO integrals in DPD form after processing
+        bool get_keep_dpd_so_ints() const {return _keepDpdSoInts;}
+
+        /// Set the library to keep or delete the SO integrals in IWL form after processing
+        void set_keep_iwl_so_ints(bool val) {_keepIwlSoInts = val;}
+        /// Whether the library will keep or delete the SO integrals in IWL form after processing
+        bool get_keep_iwl_so_ints() const {return _keepIwlSoInts;}
+
+        /// Set the memory (in MB) available to the library
+        void set_memory(size_t memory) {_memory = memory;}
+        /// The amount of memory (in MB) available to the library
+        size_t get_memory() const {return _memory;}
+
+        /// Set the number of the DPD instance to be used in the transformation
+        void set_dpd_id(int n) {_myDPDNum = n;}
+        /// The number of the DPD instance used in the transformation
+        int get_dpd_id() const {return _myDPDNum;}
+        
     protected:
-        void semicanonicalize(shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
-        void process_spaces(std::vector<shared_ptr<MOSpace> > &spaces,
-                            shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
+        void semicanonicalize();
+        void process_spaces(std::vector<shared_ptr<MOSpace> > &spaces);
 
         void trans_one(int m, int n, double *input, double *output, double **C, int soOffset, int *order);
         void build_fzc_and_fock(int p, int q, int r, int s, double value,
@@ -118,8 +158,11 @@ class IntegralTransform{
                                  double &value);
         void idx_error(const char *message, int p, int q, int r, int s,
                        int pq, int rs, int pq_sym, int rs_sym);
-        int DPD_ID(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2, SpinType spin, bool pack);
 
+        // Pointer to the PSIO object to use for file I/O
+        PSIO *_psio;
+        // Pointer to the checkpoint object to use
+        Chkpt *_chkpt;
         // The options object
         Options _options;
         // The type of transformation
@@ -131,7 +174,7 @@ class IntegralTransform{
         // How to handle frozen orbitals
         FrozenOrbitals _frozenOrbitals;
         // The unique orbital spaces involved in this transformation
-        std::vector <shared_ptr<MOSpace> > _spacesUsed;
+        std::vector <char> _spacesUsed;
         // A list of the arrays to pass into libDPD
         std::vector<int*> _spaceArrays;
         // The alpha orbitals per irrep for each space
@@ -150,6 +193,20 @@ class IntegralTransform{
         std::map<char, int> _aSpaceNum;
         // The order in which each beta space was added
         std::map<char, int> _bSpaceNum;
+        // The lookup table for DPD indexing
+        std::map<std::string, int> _dpdLookup;
+        // The file to which DPD formatted integrals are written
+        int _dpdIntFile;
+        // The file containing alpha half-transformed integrals in DPD format
+        int _aHtIntFile;
+        // The file containing beta half-transformed integrals in DPD format
+        int _bHtIntFile;
+        // The file containing alpha-alpha IWL formatted integrals
+        int _iwlAAIntFile;
+        // The file containing alpha-beta IWL formatted integrals
+        int _iwlABIntFile;
+        // The file containing beta-beta IWL formatted integrals
+        int _iwlBBIntFile;
         // The number of irreps
         int _nirreps;
         // The number of molecular orbitals
@@ -176,7 +233,7 @@ class IntegralTransform{
         double _escf;
         // The definition of zero
         double _tolerance;
-        // The amount of memory, in bytes
+        // The amount of memory, in MB
         size_t _memory;
         // The PSI file number for the alpha-alpha integrals
         int _moIntFileAA;
@@ -208,10 +265,12 @@ class IntegralTransform{
         double ***_Ca;
         // The alpha MO coefficients for each irrep
         double ***_Cb;
-        // Whether the moinfo routine has already been called
-        bool _moinfo_initialized;
         // Whether to keep the IWL SO integral file after processing
-        bool _deleteIwlSoTei;
+        bool _keepIwlSoInts;
+        // Whether to keep the DPD SO integral file after processing
+        bool _keepDpdSoInts;
+        // Whether to keep the half-transformed two electron integrals
+        bool _keepHtInts;
         // Whether to print the two-electron integrals or not
         bool _printTei;
         // Whether to output the results to an IWL buffer

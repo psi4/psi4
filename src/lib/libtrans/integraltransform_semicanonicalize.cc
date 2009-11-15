@@ -1,6 +1,5 @@
 #include "integraltransform.h"
 #include <libchkpt/chkpt.hpp>
-#include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libiwl/iwl.hpp>
@@ -16,7 +15,7 @@ namespace psi{ namespace libtrans{
 * is set to Semicanonical.  The resulting integral transformation is then unrestricted.
 */
 void
-IntegralTransform::semicanonicalize(shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
+IntegralTransform::semicanonicalize()
 {
     // Right now Ca holds the ROHF eigenvector, so we need to copy it to rotate it later
     double ***C = new double**[_nirreps];
@@ -27,7 +26,7 @@ IntegralTransform::semicanonicalize(shared_ptr<PSIO> psio, shared_ptr<Chkpt> chk
 
     // The alpha MOs - the Fock matrix is on disk from the so TEI sort routine
     if(_print > 3) fprintf(outfile, "The alpha Fock matrix before semicanonicalization\n");
-    IWL::read_one(psio.get(), PSIF_OEI, PSIF_MO_A_FOCK, temp, _nTriMo, _print > 3, 0, outfile);
+    IWL::read_one(_psio, PSIF_OEI, PSIF_MO_A_FOCK, temp, _nTriMo, _print > 3, 0, outfile);
     for(int h = 0, moOffset = 0; h < _nirreps; ++h){
         if(_mopi[h] == 0) continue;
         C[h] = block_matrix(_sopi[h], _mopi[h]);
@@ -99,7 +98,7 @@ IntegralTransform::semicanonicalize(shared_ptr<PSIO> psio, shared_ptr<Chkpt> chk
         fprintf(outfile, "The alpha Fock matrix in the semicanonical basis\n");
         print_array(temp, _nmo, outfile);
     }
-//    iwl_wrtone(PSIF_OEI, PSIF_MO_A_FOCK, _nTriMo, temp);
+    IWL::write_one(_psio, PSIF_OEI, PSIF_SC_A_FOCK, _nTriMo, temp);
 
     // Cb was never allocated in the moinfo routine, time to fix that
     _Cb = new double**[_nirreps];
@@ -107,7 +106,7 @@ IntegralTransform::semicanonicalize(shared_ptr<PSIO> psio, shared_ptr<Chkpt> chk
     for(int n = 0; n < _nTriMo; ++n) temp[n] = 0.0;
     // The beta MOs - the Fock matrix is on disk from the so TEI sort routine
     if(_print > 3) fprintf(outfile, "The beta Fock matrix before semicanonicalization\n");
-    IWL::read_one(psio.get(), PSIF_OEI, PSIF_MO_B_FOCK, temp, _nTriMo, _print > 3, 0, outfile);
+    IWL::read_one(_psio, PSIF_OEI, PSIF_MO_B_FOCK, temp, _nTriMo, _print > 3, 0, outfile);
     for(int h = 0, moOffset = 0; h < _nirreps; ++h){
         if(_mopi[h] == 0) continue;
         _Cb[h] = block_matrix(_sopi[h], _mopi[h]);
@@ -179,7 +178,7 @@ IntegralTransform::semicanonicalize(shared_ptr<PSIO> psio, shared_ptr<Chkpt> chk
         fprintf(outfile, "The beta Fock matrix in the semicanonical basis\n");
         print_array(temp, _nmo, outfile);
     }
-//    iwl_wrtone(PSIF_OEI, PSIF_MO_B_FOCK, _nTriMo, temp);
+    IWL::write_one(_psio, PSIF_OEI, PSIF_SC_B_FOCK, _nTriMo, temp);
 
     delete [] C;
     free(work);

@@ -3,30 +3,30 @@
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
+#include <sstream>
 #include "mospace.h"
 #include "spaceinfo.h"
 
 namespace psi{ namespace libtrans{
 
 void
-IntegralTransform::process_spaces(std::vector<shared_ptr<MOSpace> > &spaces,
-        shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
+IntegralTransform::process_spaces(std::vector<shared_ptr<MOSpace> > &spaces)
 {
     std::vector<shared_ptr<MOSpace> >::iterator space;
 
-    _nirreps = chkpt->rd_nirreps();
-    _nmo     = chkpt->rd_nmo();
-    _nso     = chkpt->rd_nso();
-    _nao     = chkpt->rd_nao();
-    _labels  = chkpt->rd_irr_labs();
-    _enuc    = chkpt->rd_enuc();
-    _escf    = chkpt->rd_escf();
-    _sopi    = chkpt->rd_sopi();
-    _mopi    = chkpt->rd_orbspi();
-    _clsdpi  = chkpt->rd_clsdpi();
-    _openpi  = chkpt->rd_openpi();
-    _frzcpi  = chkpt->rd_frzcpi();
-    _frzvpi  = chkpt->rd_frzvpi();
+    _nirreps = _chkpt->rd_nirreps();
+    _nmo     = _chkpt->rd_nmo();
+    _nso     = _chkpt->rd_nso();
+    _nao     = _chkpt->rd_nao();
+    _labels  = _chkpt->rd_irr_labs();
+    _enuc    = _chkpt->rd_enuc();
+    _escf    = _chkpt->rd_escf();
+    _sopi    = _chkpt->rd_sopi();
+    _mopi    = _chkpt->rd_orbspi();
+    _clsdpi  = _chkpt->rd_clsdpi();
+    _openpi  = _chkpt->rd_openpi();
+    _frzcpi  = _chkpt->rd_frzcpi();
+    _frzvpi  = _chkpt->rd_frzvpi();
     _nTriSo  = _nso * (_nso + 1) / 2;
     _nTriMo  = _nmo * (_nmo + 1) / 2;
 
@@ -37,7 +37,19 @@ IntegralTransform::process_spaces(std::vector<shared_ptr<MOSpace> > &spaces,
             _sosym[count] = h;
         }
     }
-    
+
+    // Build the Pitzer -> Qt lookup, if needed
+    int *aQT, *bQT;
+    if(_moOrdering == QTOrder){
+        aQT = init_int_array(_nmo);
+        if(_transformationType == Restricted){
+            reorder_qt(_clsdpi, _openpi, _frzcpi, _frzvpi, aQT, _mopi, _nirreps);
+        }else{
+            bQT = init_int_array(_nmo);
+            reorder_qt_uhf(_clsdpi, _openpi, _frzcpi, _frzvpi, aQT, bQT, _mopi, _nirreps);
+        }
+    }
+
     _nfzc = _nfzv = 0;
     for(int h = 0; h < _nirreps; ++h){
         if(_frozenOrbitals == VirOnly || _frozenOrbitals == None){
@@ -56,7 +68,7 @@ IntegralTransform::process_spaces(std::vector<shared_ptr<MOSpace> > &spaces,
         // Set up for a restricted transformation
         _Ca = new double**[_nirreps];
         for(int h = 0; h < _nirreps; ++h){
-            _Ca[h] = chkpt->rd_scf_irrep(h);
+            _Ca[h] = _chkpt->rd_scf_irrep(h);
         }
         _Cb = _Ca;
     }else{
@@ -65,8 +77,8 @@ IntegralTransform::process_spaces(std::vector<shared_ptr<MOSpace> > &spaces,
         _Ca = new double**[_nirreps];
         _Cb = new double**[_nirreps];
         for(int h = 0; h < _nirreps; ++h){
-            _Ca[h] = chkpt->rd_alpha_scf_irrep(h);
-            _Cb[h] = chkpt->rd_beta_scf_irrep(h);
+            _Ca[h] = _chkpt->rd_alpha_scf_irrep(h);
+            _Cb[h] = _chkpt->rd_beta_scf_irrep(h);
         }
     }
     
@@ -80,7 +92,7 @@ IntegralTransform::process_spaces(std::vector<shared_ptr<MOSpace> > &spaces,
     }
 
     // Start by adding the AO orbital space - this is always needed
-    _spacesUsed.push_back(MOSpace::nil);
+    _spacesUsed.push_back(MOSPACE_NIL);
     _spaceArrays.push_back(_sopi);
     _spaceArrays.push_back(_sosym);
     int spaceNumber = 0;
@@ -134,20 +146,23 @@ IntegralTransform::process_spaces(std::vector<shared_ptr<MOSpace> > &spaces,
                 bOrbSym = new int[numBOcc];
                 bIndex  = new int[numBOcc];
             }
-            // Build the reindexing arrays
+            // Build the reindexing arrays for Pitzer ordering
             int aPitzerCount = 0, bPitzerCount = 0, aOrbCount = 0, bOrbCount = 0;
             int pitzerOffset = 0;
-            if(_moOrdering == PitzerOrder){
-                for(int h = 0; h < _nirreps; ++h){
-                    aPitzerCount = bPitzerCount = pitzerOffset + _frzcpi[h];
-                    for(int n = 0; n < aOrbsPI[h]; ++n)
-                        aIndex[aOrbCount++] = aPitzerCount++;
-                    if(_transformationType != Restricted)
-                        for(int n = 0; n < bOrbsPI[h]; ++n)
-                            bIndex[bOrbCount++] = bPitzerCount++;
-                    pitzerOffset += _mopi[h];
-                }
+            for(int h = 0; h < _nirreps; ++h){
+                aPitzerCount = bPitzerCount = pitzerOffset + _frzcpi[h];
+                for(int n = 0; n < aOrbsPI[h]; ++n)
+                    aIndex[aOrbCount++] = aPitzerCount++;
+                if(_transformationType != Restricted)
+                    for(int n = 0; n < bOrbsPI[h]; ++n)
+                        bIndex[bOrbCount++] = bPitzerCount++;
+                pitzerOffset += _mopi[h];
             }
+            if(_moOrdering == QTOrder){
+                for(int n = 0; n < numAOcc; ++n) aIndex[n] = aQT[aIndex[n]];
+                if(_transformationType != Restricted)
+                    for(int n = 0; n < numBOcc; ++n) bIndex[n] = bQT[bIndex[n]];
+            };
             // Compute the orbital symmetries
             for(int h = 0; h < _nirreps; ++h){
                 for(int n = 0; n < aOrbsPI[h]; ++n)  aOrbSym[aOccCount++] = h;
@@ -183,16 +198,18 @@ IntegralTransform::process_spaces(std::vector<shared_ptr<MOSpace> > &spaces,
             bIndex  = aIndex  = new int[numActMO];
             // Build the reindexing arrays and orbital symmetries
             int actMOCount = 0, pitzerCount = 0, pitzerOffset = 0;
-            if(_moOrdering == PitzerOrder){
-                for(int h = 0; h < _nirreps; ++h){
-                    pitzerCount = pitzerOffset + _frzcpi[h];
-                    for(int n = 0; n < aOrbsPI[h]; ++n){
-                        aIndex[actMOCount] = pitzerCount++;
-                        aOrbSym[actMOCount++] = h;
-                    }
-                    pitzerOffset += _mopi[h];
+            for(int h = 0; h < _nirreps; ++h){
+                pitzerCount = pitzerOffset + _frzcpi[h];
+                for(int n = 0; n < aOrbsPI[h]; ++n){
+                    aIndex[actMOCount] = pitzerCount++;
+                    aOrbSym[actMOCount++] = h;
                 }
+                pitzerOffset += _mopi[h];
             }
+            if(_moOrdering == QTOrder){
+                for(int n = 0; n < numActMO; ++n) aIndex[n] = aQT[aIndex[n]];
+            };
+
         }else if(moSpace->label() == MOSPACE_VIR){
             // This is the virtual space
             int numAVir = 0, numBVir = 0, aVirCount = 0, bVirCount = 0;
@@ -243,22 +260,26 @@ IntegralTransform::process_spaces(std::vector<shared_ptr<MOSpace> > &spaces,
             // Build the reindexing arrays
             int aPitzerCount = 0, bPitzerCount = 0, aOrbCount = 0, bOrbCount = 0;
             int pitzerOffset = 0;
-            if(_moOrdering == PitzerOrder){
-                for(int h = 0; h < _nirreps; ++h){
-                    if(_transformationType == Restricted){
-                        aPitzerCount = bPitzerCount = pitzerOffset + _clsdpi[h];
-                    }else{
-                        aPitzerCount = pitzerOffset + _clsdpi[h];
-                        bPitzerCount = pitzerOffset + _clsdpi[h] + _openpi[h];
-                    }
-                    for(int n = 0; n < aOrbsPI[h]; ++n)
-                        aIndex[aOrbCount++] = aPitzerCount++;
-                    if(_transformationType != Restricted)
-                        for(int n = 0; n < bOrbsPI[h]; ++n)
-                            bIndex[bOrbCount++] = bPitzerCount++;
-                    pitzerOffset += _mopi[h];
+            for(int h = 0; h < _nirreps; ++h){
+                if(_transformationType == Restricted){
+                    aPitzerCount = bPitzerCount = pitzerOffset + _clsdpi[h];
+                }else{
+                    aPitzerCount = pitzerOffset + _clsdpi[h];
+                    bPitzerCount = pitzerOffset + _clsdpi[h] + _openpi[h];
                 }
+                for(int n = 0; n < aOrbsPI[h]; ++n)
+                    aIndex[aOrbCount++] = aPitzerCount++;
+                if(_transformationType != Restricted)
+                    for(int n = 0; n < bOrbsPI[h]; ++n)
+                        bIndex[bOrbCount++] = bPitzerCount++;
+                pitzerOffset += _mopi[h];
             }
+            if(_moOrdering == QTOrder){
+                for(int n = 0; n < numAVir; ++n) aIndex[n] = aQT[aIndex[n]];
+                if(_transformationType != Restricted)
+                    for(int n = 0; n < numBVir; ++n) bIndex[n] = bQT[bIndex[n]];
+            };
+
             // Compute the orbital symmetries
             for(int h = 0; h < _nirreps; ++h){
                 for(int n = 0; n < aOrbsPI[h]; ++n)  aOrbSym[aVirCount++] = h;
@@ -266,9 +287,6 @@ IntegralTransform::process_spaces(std::vector<shared_ptr<MOSpace> > &spaces,
                     for(int n = 0; n < bOrbsPI[h]; ++n)  bOrbSym[bVirCount++] = h;
             }
         }
-
-
-
 
         if(_print > 5){
             int nAOrbs = 0, nBOrbs = 0;
@@ -301,26 +319,67 @@ IntegralTransform::process_spaces(std::vector<shared_ptr<MOSpace> > &spaces,
             }
             fprintf(outfile, "\n\n");
         }
-        _spacesUsed.push_back(moSpace);
+        _spacesUsed.push_back(toupper(moSpace->label()));
         _aSpaceNum[moSpace->label()] = spaceNumber;
         // This is about to be overridden if it's not a restricted transformation
         _bSpaceNum[moSpace->label()] = spaceNumber++;
         _spaceArrays.push_back(aOrbsPI);
         _spaceArrays.push_back(aOrbSym);
         if(_transformationType != Restricted){
+            _spacesUsed.push_back(tolower(moSpace->label()));
             _bSpaceNum[moSpace->label()] = spaceNumber++;
             _spaceArrays.push_back(bOrbsPI);
             _spaceArrays.push_back(bOrbSym);
         }
         _aMOCoefficients[moSpace->label()] = Ca;
         _bMOCoefficients[moSpace->label()] = Cb;
-        _aOrbsPI[moSpace->label()] = aOrbsPI;
-        _bOrbsPI[moSpace->label()] = bOrbsPI;
-        _aIndices[moSpace->label()]  = aIndex;
-        _bIndices[moSpace->label()]  = bIndex;
+        _aOrbsPI[moSpace->label()]         = aOrbsPI;
+        _bOrbsPI[moSpace->label()]         = bOrbsPI;
+        _aIndices[moSpace->label()]        = aIndex;
+        _bIndices[moSpace->label()]        = bIndex;
+    }// End loop over spaces
+
+    /* Populate the DPD indexing map.  The string class is used instead of a char*
+     * because I can't be bothered to roll my own char* container with comparison
+     * operators, which are needed for maps.  The memory overhead of this approach
+     * is negligible and it's leak-free*/
+    int pairCount = 0;
+    for(int a = 0; a < _spacesUsed.size(); ++a){
+        std::stringstream stream;
+        char s = _spacesUsed[a];
+        stream << "[" << s << "," << s << "]";
+        _dpdLookup[stream.str()] = pairCount++;
+        stream.str("");
+        stream << "[" << s << ">" << s << "]+";
+        _dpdLookup[stream.str()] = pairCount++;
+        stream.str("");
+        stream << "[" << s << ">" << s << "]-";
+        _dpdLookup[stream.str()] = pairCount++;
+        stream.str("");
+        stream << "[" << s << ">=" << s << "]+";
+        _dpdLookup[stream.str()] = pairCount++;
+        stream.str("");
+        stream << "[" << s << ">=" << s << "]-";
+        _dpdLookup[stream.str()] = pairCount++;
     }
-   
-    // Test the DPD indexing lookup...
+
+    for(int a = 0; a < _spacesUsed.size(); ++a){
+        for(int b = a+1; b < _spacesUsed.size(); ++b){
+            std::stringstream stream;
+            stream << "[" << _spacesUsed[a] << "," << _spacesUsed[b] << "]";
+            _dpdLookup[stream.str()] = pairCount++;
+            stream.str("");
+            stream << "[" << _spacesUsed[b] << "," << _spacesUsed[a] << "]";
+            _dpdLookup[stream.str()] = pairCount++;
+        }
+    }
+
+    if(_print > 5){
+        print_dpd_lookup();
+    }
+
+    // Test the old, analytic DPD indexing lookup...
+/*
     if(_print > 5){
         std::vector<shared_ptr<MOSpace> >::iterator it1;
         std::vector<shared_ptr<MOSpace> >::iterator it2;
@@ -335,6 +394,25 @@ IntegralTransform::process_spaces(std::vector<shared_ptr<MOSpace> > &spaces,
                     a->label(), b->label(), DPD_ID(a, b, Beta, 0), DPD_ID(a, b, Beta, 1));
             }
         }
+    }
+*/
+
+    if(_moOrdering == QTOrder){
+        free(aQT);
+        if(_transformationType != Restricted) free(bQT);
+    }
+}
+
+/**
+ * Prints the dpd index for each pair type used in this object
+ */
+void
+IntegralTransform::print_dpd_lookup()
+{
+    std::map<std::string, int>::iterator iter;
+    fprintf(outfile, "The DPD mappings used in this transformation:-\n");
+    for(iter = _dpdLookup.begin(); iter != _dpdLookup.end(); ++iter){
+        fprintf(outfile, "Pair %-10s ID = %d\n", iter->first.c_str(), iter->second);
     }
 }
 
