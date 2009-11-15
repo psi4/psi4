@@ -19,82 +19,93 @@
 
 #define PSI_DEFAULT_FILE_PREFIX "psi"
 
-#define PSIF_CHKPT          32 /* new libpsio checkpoint file number */
+#define PSIF_CHKPT             32 /* new libpsio checkpoint file number */
 
-#define PSIF_OPTKING        1
-#define PSIF_DSCF           31
-#define PSIF_SO_TEI         33
-#define PSIF_OEI            35
-#define PSIF_SO_R12         38
-#define PSIF_SO_R12T1       39
-#define PSIF_DERINFO        40
-#define PSIF_SO_PRESORT     41
-#define PSIF_OLD_CHKPT      42   /* Until we have flexible PSIF_CHKPT this will store previous calculation info */
-#define PSIF_CIVECT         43   /* CI vector from DETCI along with string and determinant info */
+#define PSIF_OPTKING           1
+#define PSIF_DSCF              31
+#define PSIF_SO_TEI            33
+#define PSIF_OEI               35
+#define PSIF_SO_R12            38
+#define PSIF_SO_R12T1          39
+#define PSIF_DERINFO           40
+#define PSIF_SO_PRESORT        41
+#define PSIF_OLD_CHKPT         42   /* Until we have flexible PSIF_CHKPT this will store previous calculation info */
+#define PSIF_CIVECT            43   /* CI vector from DETCI along with string and determinant info */
 
-#define PSIF_AO_DGDBX       44   /* B-field derivative AO integrals over GIAO Gaussians -- only bra-ket
+#define PSIF_AO_DGDBX          44   /* B-field derivative AO integrals over GIAO Gaussians -- only bra-ket
                                     permutational symmetry holds */
-#define PSIF_AO_DGDBY       45
-#define PSIF_AO_DGDBZ       46
-#define PSIF_DETCAS         60
-
+#define PSIF_AO_DGDBY          45
+#define PSIF_AO_DGDBZ          46
+/* PSIMRCC files */
+#define PSIF_PSIMRCC_INTEGRALS 50
+#define PSIF_PSIMRCC_RESTART   51
+/* MCSCF files */
+#define PSIF_MCSCF             52
+#define PSIF_DETCAS            60
 // The integral files used by libtrans
-#define PSIF_LIBTRANS_DPD   61 // All transformed integrals in DPD format are sent here by default
-#define PSIF_LIBTRANS_A_HT  62 // The Alpha half-transformed integrals in DPD format
-#define PSIF_LIBTRANS_B_HT  63 // The Beta half-tranformed integrals in DPD format
+#define PSIF_LIBTRANS_DPD      61 // All transformed integrals in DPD format are sent here by default
+#define PSIF_LIBTRANS_A_HT     62 // The Alpha half-transformed integrals in DPD format
+#define PSIF_LIBTRANS_B_HT     63 // The Beta half-tranformed integrals in DPD format
 
-#define PSIF_MO_TEI         72
-#define PSIF_MO_OPDM        73
-#define PSIF_MO_TPDM        74
-#define PSIF_MO_LAG         75
-#define PSIF_AO_OPDM        76   /* PSIF_AO_OPDM also contains AO Lagrangian */
-#define PSIF_AO_TPDM        77
+#define PSIF_MO_TEI            72
+#define PSIF_MO_OPDM           73
+#define PSIF_MO_TPDM           74
+#define PSIF_MO_LAG            75
+#define PSIF_AO_OPDM           76   /* PSIF_AO_OPDM also contains AO Lagrangian */
+#define PSIF_AO_TPDM           77
+/* Use for DBOC calculations */
+#define PSIF_DBOC              78
 
-/*
-** MO Hessian File (also contains specialized integral and Fock lists.
-** See programs STABLE and CPHF for more info.
-** -TDC, 7/00
-*/
-#define PSIF_MO_HESS        78
-#define PSIF_CPHF           78
-
-#define PSIF_MO_R12         79
-#define PSIF_MO_R12T2       80
+#define PSIF_MO_R12            79
+#define PSIF_MO_R12T2          80
 
 /*
 ** Additions for UHF-based transformations.
 ** -TDC, 6/01
 */
-#define PSIF_MO_AA_TEI      81
-#define PSIF_MO_BB_TEI      82
-#define PSIF_MO_AB_TEI      83
-#define PSIF_MO_AA_TPDM     84
-#define PSIF_MO_BB_TPDM     85
-#define PSIF_MO_AB_TPDM     86
-#define PSIF_AA_PRESORT     87   /* AA UHF twopdm presort file */
-#define PSIF_BB_PRESORT     88   /* BB UHF twopdm presort file */
-#define PSIF_AB_PRESORT     89   /* AB UHF twopdm presort file */
+#define PSIF_MO_AA_TEI         81
+#define PSIF_MO_BB_TEI         82
+#define PSIF_MO_AB_TEI         83
+#define PSIF_MO_AA_TPDM        84
+#define PSIF_MO_BB_TPDM        85
+#define PSIF_MO_AB_TPDM        86
+#define PSIF_AA_PRESORT        87   /* AA UHF twopdm presort file */
+#define PSIF_BB_PRESORT        88   /* BB UHF twopdm presort file */
+#define PSIF_AB_PRESORT        89   /* AB UHF twopdm presort file */
+/*
+** MO Hessian File (also contains specialized integral and Fock lists.
+** See programs STABLE and CPHF for more info.
+** -TDC, 7/00
+*/
+#define PSIF_MO_HESS           90
+#define PSIF_CPHF              91
 
-/* Use for DBOC calculations */
-#define PSIF_DBOC           90
-
-#define PSIF_SO_PKSUPER1    92
-#define PSIF_SO_PKSUPER2    93
+#define PSIF_SO_PKSUPER1       92
+#define PSIF_SO_PKSUPER2       93
 
 // The half-transformed integrals
-#define PSIF_HALFT0 94
-#define PSIF_HALFT1 95
+#define PSIF_HALFT0            94
+#define PSIF_HALFT1            95
 
-#define PSIF_SO_D1OEI       200  /* Derivative OEIs are stored in file 199 */
-#define PSIF_SO_D1ERI       200  /* Derivative ERIs are stored in files 200, 201, 202, etc. File 200
- contains
-                                    integrals with respect to SALC derivative 0, etc. */
-                                    
-#define PSIF_DFSCF_B				94   /*B Matrix containing 3-index tensor in AOs for use with DF-SCF*/
-#define PSIF_DFSCF_BJ				95 	 /*B Matrix containing 3-index tensor in AOs with J^-1/2 for use with DF-SCF*/
-#define PSIF_DFSCF_K				96   /*Exchange tensor for DF-SCF*/
+#define PSIF_DFSCF_B           96   /* B Matrix containing 3-index tensor in AOs for use with DF-SCF*/
+#define PSIF_DFSCF_BJ          97   /* B Matrix containing 3-index tensor in AOs with J^-1/2 for use with DF-SCF*/
+#define PSIF_DFSCF_K           98   /* Exchange tensor for DF-SCF*/
+#define PSIF_DFSCF_BJI         99   /* The three-center integrals for DF-SCF */
 
+#define PSIF_SO_D1OEI          199  /* Derivative OEIs are stored in file 199 */
+#define PSIF_SO_D1ERI          200  /* Derivative ERIs are stored in files 200, 201, 202, etc. File 200*/
 
+#define PSIF_MO_AA_R12         210
+#define PSIF_MO_BB_R12         211
+#define PSIF_MO_AB_R12         212
+#define PSIF_MO_AA_R12T1       213
+#define PSIF_MO_BB_R12T1       214
+#define PSIF_MO_AB_R12T1       215
+#define PSIF_MO_BA_R12T1       216
+#define PSIF_MO_AA_R12SQ       217
+#define PSIF_MO_BB_R12SQ       218
+#define PSIF_MO_AB_R12SQ       219
+#define PSIF_MO_R12SQ          220                                    
 
 /* All of these one-electron quantities have been moved into PSIF_OEI
    Most integrals are real Hermitian hence only lower triangle of the matrix is written out */
@@ -177,17 +188,6 @@ integrals out (i.e. multiply by i=sqrt(-1) to get the integrals) */
 #define PSI_RETURN_BALK         3
 
 //Added by ACS (01/06) for the UMP2R12 routines
-#define PSIF_MO_AA_R12      54
-#define PSIF_MO_BB_R12      55
-#define PSIF_MO_AB_R12      56
-#define PSIF_MO_AA_R12T1    57
-#define PSIF_MO_BB_R12T1    58
-#define PSIF_MO_AB_R12T1    59
-#define PSIF_MO_BA_R12T1    61
-#define PSIF_MO_AA_R12SQ    62
-#define PSIF_MO_BB_R12SQ    63
-#define PSIF_MO_AB_R12SQ    64
-#define PSIF_MO_R12SQ       65
 #define PSIF_MO_A_MX        "MO-basis Alpha Mu-X Ints"
 #define PSIF_MO_A_MY        "MO-basis Alpha Mu-Y Ints"
 #define PSIF_MO_A_MZ        "MO-basis Alpha Mu-Z Ints"
@@ -205,12 +205,5 @@ integrals out (i.e. multiply by i=sqrt(-1) to get the integrals) */
 #define PSIF_MO_A_QRR       "MO-basis Alpha Q-XX + Q-YY + Q-ZZ Ints"
 #define PSIF_MO_B_QRR       "MO-basis Beta Q-XX + Q-YY + Q-ZZ Ints"
 // end ACS additions
-
-/* PSIMRCC files */
-#define PSIF_PSIMRCC_INTEGRALS        50
-#define PSIF_PSIMRCC_RESTART          51
-
-/* MCSCF files */
-#define PSIF_MCSCF                    52
 
 #endif /* header guard */
