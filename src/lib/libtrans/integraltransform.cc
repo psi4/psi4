@@ -8,42 +8,50 @@
 namespace psi{ namespace libtrans{
 
 IntegralTransform::IntegralTransform(Options &options,
-                                     shared_ptr<MOSpace> s1,
-                                     shared_ptr<MOSpace> s2,
-                                     shared_ptr<MOSpace> s3,
-                                     shared_ptr<MOSpace> s4,
+                                     std::vector<shared_ptr<MOSpace> > &spaces,
                                      TransformationType transformationType,
-                                     MOOrdering moOrdering,
                                      OutputType outputType,
-                                     FrozenOrbitals frozenOrbitals):
+                                     MOOrdering moOrdering,
+                                     FrozenOrbitals frozenOrbitals,
+                                     bool init):
             _transformationType(transformationType),
-            _moinfo_initialized(false),
             _moOrdering(moOrdering),
             _outputType(outputType),
-            _frozenOrbitals(frozenOrbitals),
-            _myDPDNum(1)
+            _frozenOrbitals(frozenOrbitals)
 {
-    _options = options;
-    // TODO make sure that these options can be parsed correctly
-    _print   = options.get_int("PRINT");
-    _memory  = options.get_int("MEMORY") * 1024 * 1024;
-    _tolerance = 1.0E-14;
-    // For now, just assume that the tei are to be kept
-    _deleteIwlSoTei = false;
-    _printTei = _print > 5;
-    _useIWL    = _outputType == IWLAndDPD || _outputType == IWLOnly;
-    _useDPD    = _outputType == IWLAndDPD || _outputType == DPDOnly;
+    // Implement set/get functions to customize any of this stuff.  Delayed initialization
+    // is possible in case any of these variables need to be changed before setup.
+    _myDPDNum      = 1;
+    _chkpt         = _default_chkpt_lib_;
+    _psio          = _default_psio_lib_;
+    _options       = options;
+    _print         = options.get_int("PRINT");
+    _memory        = options.get_int("MEMORY") * 1024 * 1024;
+    _tolerance     = 1.0E-14;
+    _keepDpdSoInts = false;
+    _keepIwlSoInts = false;
+    _keepHtInts    = true;
+    _printTei      = _print > 5;
+    _useIWL        = _outputType == IWLAndDPD || _outputType == IWLOnly;
+    _useDPD        = _outputType == IWLAndDPD || _outputType == DPDOnly;
+    _dpdIntFile    = PSIF_LIBTRANS_DPD;
+    _aHtIntFile    = PSIF_LIBTRANS_A_HT;
+    _bHtIntFile    = PSIF_LIBTRANS_B_HT;
+    _iwlAAIntFile  = _transformationType == Restricted ? PSIF_MO_TEI : PSIF_MO_AA_TEI;
+    _iwlABIntFile  = _transformationType == Restricted ? PSIF_MO_TEI : PSIF_MO_AB_TEI;
+    _iwlBBIntFile  = _transformationType == Restricted ? PSIF_MO_TEI : PSIF_MO_BB_TEI;
+    
+    process_spaces(spaces);
 
-    std::vector<shared_ptr<MOSpace> > spaces;
-    spaces.push_back(s1);
-    spaces.push_back(s2);
-    spaces.push_back(s3);
-    spaces.push_back(s4);
-    shared_ptr<PSIO> psio(new PSIO); psiopp_ipv1_config(psio);
-    shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
+    if(init) initialize();
+}
 
-    process_spaces(spaces, psio, chkpt);
-
+/**
+ * Sets up the DPD buffers and performs semicanonicalization, if necessary.
+ */
+void
+IntegralTransform::initialize()
+{
     timer_init();
 
     // Set up the DPD library
@@ -62,10 +70,8 @@ IntegralTransform::IntegralTransform(Options &options,
     if(_transformationType == SemiCanonical){
         // This will also build the UHF Fock matrix, which we need
         presort_so_tei();
-        semicanonicalize(psio, chkpt);
+        semicanonicalize();
     }
-
-
 }
 
 

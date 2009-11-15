@@ -1,9 +1,9 @@
 #include "integraltransform.h"
 #include <libchkpt/chkpt.hpp>
-#include <libpsio/psio.h>
+#include <libpsio/psio.hpp>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
-#include <libiwl/iwl.h>
+#include <libiwl/iwl.hpp>
 #include "psifiles.h"
 #include "mospace.h"
 #include "spaceinfo.h"
@@ -68,12 +68,11 @@ IntegralTransform::presort_so_tei()
     }
     
     double *T = init_array(_nTriSo);
-    int stat = iwl_rdone(PSIF_OEI, PSIF_SO_T, T, _nTriSo, 0, 0, outfile);
-    if(stat != 1) throw PsiException("Problem reading Kinetic Energy Integrals",
-                                       __FILE__, __LINE__);
-    stat = iwl_rdone(PSIF_OEI, PSIF_SO_V, aoH, _nTriSo, 0, 0, outfile);
-    if(stat != 1) throw PsiException("Problem reading Potential Energy Integrals",
-                                       __FILE__, __LINE__);
+    if(_print>4) fprintf(outfile, "The SO basis kinetic energy integrals\n");
+    IWL::read_one(_psio, PSIF_OEI, PSIF_SO_T,   T, _nTriSo, 0, _print > 4, outfile);
+    if(_print>4) fprintf(outfile, "The SO basis nuclear attraction integrals\n");
+    IWL::read_one(_psio, PSIF_OEI, PSIF_SO_V, aoH, _nTriSo, 0, _print > 4, outfile);
+
     for(int pq=0; pq < _nTriSo; ++pq){
         aoH[pq] += T[pq];
         aFzcOp[pq] = aoH[pq];
@@ -97,7 +96,7 @@ IntegralTransform::presort_so_tei()
     int soIntFile = PSIF_SO_TEI;
     
     dpdfile4 I;
-    psio_open(PSIF_SO_PRESORT, 0);
+    _psio->open(PSIF_SO_PRESORT, PSIO_OPEN_NEW);
     dpd_file4_init(&I, PSIF_SO_PRESORT, 0, 3, 3, "SO Ints (nn,nn)");
 
     size_t memoryd = _memory / sizeof(double);
@@ -166,19 +165,19 @@ IntegralTransform::presort_so_tei()
             I.matrix[h] = block_matrix(bucketRowDim[n][h], I.params->coltot[h]);
         }
 
-        struct iwlbuf InBuf;
-        iwl_buf_init(&InBuf, soIntFile, _tolerance, 1, 1);
+        IWL *iwl = new IWL(_psio, soIntFile, _tolerance, 1, 1);
 
-        Label *lblptr = InBuf.labels;
-        Value *valptr = InBuf.values;
-        int lastbuf   = InBuf.lastbuf;
+        Label *lblptr = iwl->labels();
+        Value *valptr = iwl->values();
+        int lastbuf   = iwl->last_buffer();
 
-        for(int idx=4*InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
-            int p = abs((int) lblptr[idx++]);
-            int q = (int) lblptr[idx++];
-            int r = (int) lblptr[idx++];
-            int s = (int) lblptr[idx++];
-            double value = (double) valptr[InBuf.idx];
+        for(int index = iwl->index(); index < iwl->buffer_count(); ++index){
+            int labelIndex = 4*index;
+            int p = abs((int) lblptr[labelIndex++]);
+            int q = (int) lblptr[labelIndex++];
+            int r = (int) lblptr[labelIndex++];
+            int s = (int) lblptr[labelIndex++];
+            double value = (double) valptr[index];
             idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value);
             if(_nfzc && !n) /* build frozen-core operator only on first pass*/
                 build_fzc_and_fock(p, q, r, s, value, aFzcD, bFzcD,
@@ -187,34 +186,37 @@ IntegralTransform::presort_so_tei()
 
         /* Now run through the rest of the buffers in the file */
         while(!lastbuf){
-            iwl_buf_fetch(&InBuf);
-            lastbuf = InBuf.lastbuf;
-            for(int idx=4*InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
-                int p = abs((int) lblptr[idx++]);
-                int q = (int) lblptr[idx++];
-                int r = (int) lblptr[idx++];
-                int s = (int) lblptr[idx++];
-                double value = (double) valptr[InBuf.idx];
-                idx_permute_presort(&I, n, bucketMap, bucketOffset, p, q, r, s, value);
-                if(_nfzc && !n) /* build frozen-core operator only on first pass */
-                     build_fzc_and_fock(p, q, r, s, value, aFzcD, bFzcD,
-                                        aFzcOp, bFzcOp, aD, bD, aFock, bFock);
+            iwl->fetch();
+            lastbuf = iwl->last_buffer();
+            for(int index = iwl->index(); index < iwl->buffer_count(); ++index){
+                int labelIndex = 4*index;
+                int p = abs((int) lblptr[labelIndex++]);
+                int q = (int) lblptr[labelIndex++];
+                int r = (int) lblptr[labelIndex++];
+                int s = (int) lblptr[labelIndex++];
+                double value = (double) valptr[index];
+                idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value);
+                if(_nfzc && !n) /* build frozen-core operator only on first pass*/
+                    build_fzc_and_fock(p, q, r, s, value, aFzcD, bFzcD,
+                                       aFzcOp, bFzcOp, aD, bD, aFock, bFock);
             } /* end loop through current buffer */
         } /* end loop over reading buffers */
 
-        iwl_buf_close(&InBuf, 1); /* close buffer for next pass */
+        iwl->set_keep_flag(1);
+//        iwl->close();
+        delete iwl;
 
         for(int h=0; h < _nirreps; ++h) {
             if(bucketSize[n][h])
-                psio_write(I.filenum, I.label, (char *) I.matrix[h][0],
+                _psio->write(I.filenum, I.label, (char *) I.matrix[h][0],
                 bucketSize[n][h]*((long int) sizeof(double)), next, &next);
             free_block(I.matrix[h]);
         }
     } /* end loop over buckets/passes */
 
     /* Get rid of the input integral file */
-    psio_open(soIntFile, PSIO_OPEN_OLD);
-    psio_close(soIntFile, !_deleteIwlSoTei);
+    _psio->open(soIntFile, PSIO_OPEN_OLD);
+    _psio->close(soIntFile, _keepIwlSoInts);
 
     free_int_matrix(bucketMap);
 
@@ -231,6 +233,8 @@ IntegralTransform::presort_so_tei()
     int *order = init_int_array(_nmo);
     // We want to keep Pitzer ordering, so this is just an identity mapping
     for(int n = 0; n < _nmo; ++n) order[n] = n;
+    if(_print)
+        fprintf(outfile, "Transforming the one-electron integrals and constructing Fock matrices\n");
     if(_transformationType == Restricted){
         for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
@@ -238,7 +242,11 @@ IntegralTransform::presort_so_tei()
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
-        iwl_wrtone(PSIF_OEI, PSIF_MO_OEI, _nTriMo, moInts);
+        if(_print>4){
+            fprintf(outfile, "The MO basis one-electron integrals\n");
+            print_array(moInts, _nmo, outfile);
+        }
+        IWL::write_one(_psio, PSIF_OEI, PSIF_MO_OEI, _nTriMo, moInts);
 
         for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
@@ -246,7 +254,11 @@ IntegralTransform::presort_so_tei()
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
-        iwl_wrtone(PSIF_OEI, PSIF_MO_FZC, _nTriMo, moInts);
+        if(_print>4){
+            fprintf(outfile, "The MO basis frozen core operator\n");
+            print_array(moInts, _nmo, outfile);
+        }
+        IWL::write_one(_psio, PSIF_OEI, PSIF_MO_FZC, _nTriMo, moInts);
 
         for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
@@ -254,7 +266,12 @@ IntegralTransform::presort_so_tei()
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
-        iwl_wrtone(PSIF_OEI, PSIF_MO_FOCK, _nTriMo, aFock);
+        if(_print>4){
+            fprintf(outfile, "The MO basis Fock operator\n");
+            print_array(moInts, _nmo, outfile);
+        }
+
+        IWL::write_one(_psio, PSIF_OEI, PSIF_MO_FOCK, _nTriMo, aFock);
     }else{
         for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
@@ -262,7 +279,11 @@ IntegralTransform::presort_so_tei()
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
-        iwl_wrtone(PSIF_OEI, PSIF_MO_A_OEI, _nTriMo, moInts);
+        if(_print>4){
+            fprintf(outfile, "The MO basis alpha one-electron integrals\n");
+            print_array(moInts, _nmo, outfile);
+        }
+        IWL::write_one(_psio, PSIF_OEI, PSIF_MO_A_OEI, _nTriMo, moInts);
 
         for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
@@ -270,7 +291,11 @@ IntegralTransform::presort_so_tei()
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
-        iwl_wrtone(PSIF_OEI, PSIF_MO_B_OEI, _nTriMo, moInts);
+        if(_print>4){
+            fprintf(outfile, "The MO basis beta one-electron integrals\n");
+            print_array(moInts, _nmo, outfile);
+        }
+        IWL::write_one(_psio, PSIF_OEI, PSIF_MO_B_OEI, _nTriMo, moInts);
 
         for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
@@ -278,7 +303,11 @@ IntegralTransform::presort_so_tei()
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
-        iwl_wrtone(PSIF_OEI, PSIF_MO_A_FZC, _nTriMo, moInts);
+        if(_print>4){
+            fprintf(outfile, "The MO basis alpha frozen core operator\n");
+            print_array(moInts, _nmo, outfile);
+        }
+        IWL::write_one(_psio, PSIF_OEI, PSIF_MO_A_FZC, _nTriMo, moInts);
 
         for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
@@ -286,7 +315,11 @@ IntegralTransform::presort_so_tei()
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
-        iwl_wrtone(PSIF_OEI, PSIF_MO_B_FZC, _nTriMo, moInts);
+        if(_print>4){
+            fprintf(outfile, "The MO basis beta frozen core operator\n");
+            print_array(moInts, _nmo, outfile);
+        }
+        IWL::write_one(_psio, PSIF_OEI, PSIF_MO_B_FZC, _nTriMo, moInts);
 
         for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
@@ -294,7 +327,11 @@ IntegralTransform::presort_so_tei()
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
-        iwl_wrtone(PSIF_OEI, PSIF_MO_A_FOCK, _nTriMo, moInts);
+        if(_print>4){
+            fprintf(outfile, "The MO basis alpha Fock operator\n");
+            print_array(moInts, _nmo, outfile);
+        }
+        IWL::write_one(_psio, PSIF_OEI, PSIF_MO_A_FOCK, _nTriMo, moInts);
 
         for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
@@ -302,7 +339,11 @@ IntegralTransform::presort_so_tei()
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
-        iwl_wrtone(PSIF_OEI, PSIF_MO_B_FOCK, _nTriMo, moInts);
+        if(_print>4){
+            fprintf(outfile, "The MO basis beta Fock operator\n");
+            print_array(moInts, _nmo, outfile);
+        }
+        IWL::write_one(_psio, PSIF_OEI, PSIF_MO_B_FOCK, _nTriMo, moInts);
     }
     free(order);
     free(moInts);
@@ -323,7 +364,7 @@ IntegralTransform::presort_so_tei()
     alreadyPresorted = true;
     
     dpd_file4_close(&I);
-    psio_close(PSIF_SO_PRESORT, 1);
+    _psio->close(PSIF_SO_PRESORT, 1);
     timer_off("presort");
 }
 
