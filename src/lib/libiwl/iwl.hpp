@@ -50,9 +50,9 @@ namespace psi {
         void fetch();
         void put();
         
-        static void read_one(PSIO *psio, int itap, char *label, double *ints, 
+        static void read_one(PSIO *psio, int itap, const char *label, double *ints,
             int ntri, int erase, int printflg, FILE *outfile);
-        static void write_one(PSIO *psio, int itap, char *label, int ntri, 
+        static void write_one(PSIO *psio, int itap, const char *label, int ntri,
             double *onel_ints);
         static void read_two(PSIO *psio, int itap, double *ints, int *ioff, 
             int norbs, int nfzc, int nfzv, int printflg, FILE *outfile);
