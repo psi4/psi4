@@ -24,12 +24,12 @@ namespace psi {
 
 void launch_module(std::string modname, 
   Options &options, int argc, char* argv[], 
-  std::map<std::string, PsiReturnType(*)(Options &, int argc, char *argv[])> 
+  std::map<std::string, PsiReturnType(*)(Options &, int argc, char *argv[])>&
   dispatch_table);
 
 void execute_sequence(std::string sequence[],
   Options &options, int argc, char* argv[], 
-  std::map<std::string, PsiReturnType(*)(Options &, int argc, char *argv[])> 
+  std::map<std::string, PsiReturnType(*)(Options &, int argc, char *argv[])>&
   dispatch_table);
 
 void psiclean(void);
@@ -128,7 +128,7 @@ int psi3_simulator(Options & options, int argc, char *argv[]) {
 
 void execute_sequence(std::string sequence[],
   Options &options, int argc, char* argv[], 
-  std::map<std::string, PsiReturnType(*)(Options &, int argc, char *argv[])> 
+  std::map<std::string, PsiReturnType(*)(Options &, int argc, char *argv[])>&
   dispatch_table) 
 {
   int i=0; 
@@ -140,7 +140,7 @@ void execute_sequence(std::string sequence[],
 
 void launch_module(std::string modname, 
   Options &options, int argc, char* argv[], 
-  std::map<std::string, PsiReturnType(*)(Options &, int argc, char *argv[])> 
+  std::map<std::string, PsiReturnType(*)(Options &, int argc, char *argv[])>&
   dispatch_table) 
 {
   module.set_prgid(modname);
