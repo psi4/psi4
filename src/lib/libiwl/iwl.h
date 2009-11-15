@@ -33,10 +33,10 @@ struct iwlbuf {
 void iwl_buf_fetch(struct iwlbuf *Buf);
 void iwl_buf_put(struct iwlbuf *Buf);
 
-int iwl_rdone(int itap, char *label, double *ints, int ntri, int erase,
+int iwl_rdone(int itap, const char *label, double *ints, int ntri, int erase,
               int printflg, FILE *outfile);
 
-void iwl_wrtone(int itap, char *label, int ntri, double *onel_ints);
+void iwl_wrtone(int itap, const char *label, int ntri, double *onel_ints);
 
 void iwl_rdtwo(int itap, double *ints, int *ioff, int norbs,
                       int nfzc, int nfzv, int printflg, FILE *outfile);
