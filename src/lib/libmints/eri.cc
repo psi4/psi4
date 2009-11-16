@@ -57,7 +57,7 @@ void calc_f(double *F, int n, double t)
     }
 }
 
-ERI::ERI(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet>bs2, shared_ptr<BasisSet>bs3, shared_ptr<BasisSet>bs4, int deriv)
+ERI::ERI(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet>bs2, shared_ptr<BasisSet>bs3, shared_ptr<BasisSet>bs4, int deriv, double schwarz)
     : TwoBodyInt(bs1, bs2, bs3, bs4, deriv)
 {
     // Initialize libint static data
@@ -133,6 +133,15 @@ ERI::ERI(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet>bs2, shared_ptr<BasisSet>
     memset(source_, 0, sizeof(double)*size);
 
     init_fjt(4*max_am + DERIV_LVL);
+    
+    screen_ = false;
+    if (schwarz != 0.0)
+    	schwarz2_ = schwarz*schwarz;
+    else
+    	schwarz2_ = 0.0;
+    
+    //fprintf(outfile,"Schwarz^2 = %20.10f\n",schwarz2_);
+    	
 }
 
 ERI::~ERI()
@@ -145,6 +154,8 @@ ERI::~ERI()
     free_libint(&libint_);
     if (deriv_)
         free_libderiv(&libderiv_);
+    if (screen_)
+    		free(schwarz_norm_);
 }
 
 // Taken from CINTS
@@ -307,6 +318,31 @@ void ERI::int_fjt(double *F, int J, double wval)
 
 void ERI::compute_shell(int sh1, int sh2, int sh3, int sh4)
 {
+		//SCHWARZ SIEVE
+		//Determines if shell needs to be computed. 
+		//If false, places zeros in target_
+		//If true, standard algorithm continues
+		//
+		//NOTE: Schwarz Sieve only holds if all indices correspond to the same basis.
+		//A calling code may only access the schwarz screening functionality by literally 
+		//specifying a cutoff index. This should only be done for ERIs all based on the same basis set
+		if (schwarz2_ != 0.0)
+		{
+			if (screen_ == false)
+				form_sieve();
+			
+			if (schwarz_norm_[ioff[((sh1>sh2)?sh1:sh2)]+((sh1>sh2)?sh2:sh1)]*schwarz_norm_[ioff[((sh3>sh4)?sh3:sh4)]+((sh3>sh4)?sh4:sh3)]<schwarz2_)
+			{
+				size_t nfill = bs1_->shell(sh1)->nfunction();
+				nfill*=     bs2_->shell(sh2)->nfunction();
+				nfill*=     bs3_->shell(sh3)->nfunction();
+				nfill*=     bs4_->shell(sh4)->nfunction();
+				memset(target_, 0, sizeof(double)*nfill);
+				return;
+			}
+		}
+		//END OF SCHWARZ SIEVE
+		
 #ifdef MINTS_TIMER
     timer_on("ERI::compute_shell");
 #endif
@@ -907,5 +943,66 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
     pure_transform(sh1, sh2, sh3, sh4, 3*natom_);
 
     // Results are in source_
+}
+int ERI::shell_is_zero(int sh1, int sh2, int sh3, int sh4)
+{
+		
+		if (schwarz2_ != 0.0)
+			if (screen_ == false)
+				form_sieve();
+				
+		//fprintf(outfile,"\nSchwarz val is %f",schwarz_norm_[ioff[((sh1>sh2)?sh1:sh2)]+((sh1>sh2)?sh2:sh1)]*schwarz_norm_[ioff[((sh3>sh4)?sh3:sh4)]+((sh3>sh4)?sh4:sh3)]);
+		if (screen_ == true)
+		{
+			if (schwarz_norm_[ioff[((sh1>sh2)?sh1:sh2)]+((sh1>sh2)?sh2:sh1)]*schwarz_norm_[ioff[((sh3>sh4)?sh3:sh4)]+((sh3>sh4)?sh4:sh3)]<schwarz2_)
+			{
+				//fprintf(outfile," Shell (%d,%d|%d,%d) is zero",sh1,sh2,sh3,sh4);
+				return true;
+			}
+			else
+			{
+				//fprintf(outfile," Shell (%d,%d|%d,%d) is nonzero",sh1,sh2,sh3,sh4);
+				return false;
+			}
+		}
+		return false;
+}
+
+void ERI::form_sieve()
+{
+	//fprintf(outfile,"Starting Sieve"); fflush(outfile);
+	
+  int nshell = original_bs1_->nshell();
+  //fprintf(outfile,"Read"); fflush(outfile);
+  schwarz_norm_ = init_array(nshell*(nshell+1)/2);
+  
+  double cut = schwarz2_;
+  schwarz2_ = 0.0;
+  
+  double max;
+  int MU,NU,numMU,numNU,N,M, MN, ind;
+  for (MU = 0, MN = 0; MU < nshell; MU++)
+  	for (NU = 0; NU <= MU; NU++, MN++)
+  	{
+  		compute_shell(MU,NU,MU,NU);
+  		numMU = original_bs1_->shell(MU)->nfunction();
+  		numNU = original_bs1_->shell(NU)->nfunction();
+  		max = 0.0;
+  		
+  		for (M = 0, ind = 0; M<numMU*numMU; M++)
+  			for (N = 0; N<numNU*numNU; N++, ind++)
+  				if (fabs(target_[ind])>max)
+  					max = fabs(target_[ind]);
+  		
+  		schwarz_norm_[ioff[MU]+NU] = max;
+  	} 
+  schwarz2_ = cut;
+  screen_ = true;
+  
+  //fprintf(outfile,"Norm:\n");
+  //for (int ij = 0; ij<nshell*(nshell+1)/2; ij++)
+  	//fprintf(outfile,"%20.10f\n",schwarz_norm_[ij]);
+  
+  //fprintf(outfile,"Iterations done\n"); fflush(outfile);
 }
 

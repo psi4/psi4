@@ -72,9 +72,9 @@ OneBodyInt* IntegralFactory::quadrupole()
     return new QuadrupoleInt(spherical_transforms_, bs1_, bs2_);
 }
 
-TwoBodyInt* IntegralFactory::eri(int deriv)
+TwoBodyInt* IntegralFactory::eri(int deriv, double schwarz)
 {
-    return new ERI(bs1_, bs2_, bs3_, bs4_, deriv);
+    return new ERI(bs1_, bs2_, bs3_, bs4_, deriv, schwarz);
 }
 
 void IntegralFactory::init_spherical_harmonics(int max_am)
