@@ -34,6 +34,10 @@ class ERI : public TwoBodyInt
     double wval_infinity_;
     int itable_infinity_;
     
+    int screen_; //to screen or not to screen
+    double schwarz2_; //square of schwarz cutoff value;
+    double *schwarz_norm_;
+    
     void init_fjt(int);
     void int_fjt(double *, int, double);
 
@@ -42,16 +46,27 @@ class ERI : public TwoBodyInt
 
     //! Computes the ERI derivatives between four shells.
     void compute_quartet_deriv1(int, int, int, int);
+    
 public:
     //! Constructor. Use an IntegralFactory to create this object.
-    ERI(shared_ptr<BasisSet>, shared_ptr<BasisSet>, shared_ptr<BasisSet>, shared_ptr<BasisSet>, int deriv=0);
+    ERI(shared_ptr<BasisSet>, shared_ptr<BasisSet>, shared_ptr<BasisSet>, shared_ptr<BasisSet>, int deriv=0, double schwarz = 0.0);
+    
     ~ERI();
+    
+    //! Performs integral screening calculations
+    void form_sieve();
     
     /// Compute ERIs between 4 shells. Result is stored in buffer.
     void compute_shell(int, int, int, int);
 
     /// Compute ERI derivatives between 4 shells. Result is stored in buffer.
     void compute_shell_deriv1(int, int, int, int);
+    
+    //! Determine if a shell is zero based on schwarz sieve
+    //Case No Sieve: false
+    //Case Sieve, non-negligible integrals: false
+    //Case Sieve, negligible integrals: true
+    int shell_is_zero(int,int,int,int);
 };
 
 }

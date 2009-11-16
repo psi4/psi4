@@ -275,7 +275,7 @@ public:
     virtual OneBodyInt* quadrupole();
     
     /// Returns an ERI integral object
-    virtual TwoBodyInt* eri(int deriv=0);
+    virtual TwoBodyInt* eri(int deriv=0, double schwarz = 0.0);
     
     //Returns a general ERI iterator object for any (P Q | R S) in shells
     IntegralsIterator integrals_iterator(int p, int q, int r, int s);
