@@ -10,14 +10,13 @@
 #include "psifiles.h"
 #include "ccfiles.h"
 #include "mospace.h"
-#include "spaceinfo.h"
 #define EXTERN
 #include <libdpd/dpd.gbl>
 
 namespace psi{ namespace libtrans{
 
 void
-IntegralTransform::transform_tei_first_half(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2)
+IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace> s2)
 {
     // This can be safely called - it returns immediately if the SO ints are already sorted
     presort_so_tei();

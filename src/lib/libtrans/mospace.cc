@@ -1,5 +1,4 @@
 #include "mospace.h"
-#include "spaceinfo.h"
 
 namespace psi{ namespace libtrans{
 
@@ -32,15 +31,10 @@ MOSpace::MOSpace(char label):
  * @param aOrbsPI - an array containing the the number of alpha orbitals in this space, per irrep
  * @param bOrbsPI - the corresponding array for the beta orbitals
  */
-MOSpace::MOSpace(char label, int *aFOrbPI, int *bFOrbPI, int *aOrbsPI, int *bOrbsPI):
-        _label(label),
-        _spaceInfo(new SpaceInfo())
-{
-    _spaceInfo->aFOrbPI = aFOrbPI;
-    _spaceInfo->bFOrbPI = bFOrbPI;
-    _spaceInfo->aOrbsPI = aOrbsPI;
-    _spaceInfo->bOrbsPI = bOrbsPI;
-    
+MOSpace::MOSpace(char label, const int *aFOrbPI, const int *bFOrbPI,
+                 const int *aOrbsPI, const int *bOrbsPI):
+        _label(label)
+{    
     // TODO check that it doesn't exist already..
     ++labelsUsed[label];
 }

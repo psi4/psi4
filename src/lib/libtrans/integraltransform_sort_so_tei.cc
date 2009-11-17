@@ -26,7 +26,7 @@ IntegralTransform::presort_so_tei()
 
     if(alreadyPresorted){
         if(_print>5)
-            fprintf(outfile, "SO integrals are already sorted, moving on...\n");
+            fprintf(outfile, "\tSO integrals are already sorted, moving on...\n");
             return;
     }
 
@@ -89,7 +89,7 @@ IntegralTransform::presort_so_tei()
 
     timer_on("presort");
     if(_print){
-        fprintf(outfile, "\n\tPresorting SO-basis two-electron integrals.\n");
+        fprintf(outfile, "\tPresorting SO-basis two-electron integrals.\n");
         fflush(outfile);
     }
     
@@ -179,7 +179,7 @@ IntegralTransform::presort_so_tei()
             int s = (int) lblptr[labelIndex++];
             double value = (double) valptr[index];
             idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value);
-            if(_nfzc && !n) /* build frozen-core operator only on first pass*/
+            if(!n) /* build frozen-core operator and Fock matrix only on first pass*/
                 build_fzc_and_fock(p, q, r, s, value, aFzcD, bFzcD,
                                    aFzcOp, bFzcOp, aD, bD, aFock, bFock);
         } /* end loop through current buffer */
@@ -196,14 +196,12 @@ IntegralTransform::presort_so_tei()
                 int s = (int) lblptr[labelIndex++];
                 double value = (double) valptr[index];
                 idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value);
-                if(_nfzc && !n) /* build frozen-core operator only on first pass*/
+                if(!n) /* build frozen-core operator and Fock matrix only on first pass*/
                     build_fzc_and_fock(p, q, r, s, value, aFzcD, bFzcD,
                                        aFzcOp, bFzcOp, aD, bD, aFock, bFock);
             } /* end loop through current buffer */
         } /* end loop over reading buffers */
-
         iwl->set_keep_flag(1);
-//        iwl->close();
         delete iwl;
 
         for(int h=0; h < _nirreps; ++h) {
@@ -234,7 +232,7 @@ IntegralTransform::presort_so_tei()
     // We want to keep Pitzer ordering, so this is just an identity mapping
     for(int n = 0; n < _nmo; ++n) order[n] = n;
     if(_print)
-        fprintf(outfile, "Transforming the one-electron integrals and constructing Fock matrices\n");
+        fprintf(outfile, "\tTransforming the one-electron integrals and constructing Fock matrices\n");
     if(_transformationType == Restricted){
         for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
@@ -320,7 +318,6 @@ IntegralTransform::presort_so_tei()
             print_array(moInts, _nmo, outfile);
         }
         IWL::write_one(_psio, PSIF_OEI, PSIF_MO_B_FZC, _nTriMo, moInts);
-
         for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
             trans_one(_sopi[h], _mopi[h], aFock, moInts, _Ca[h], soOffset, &(order[moOffset]));

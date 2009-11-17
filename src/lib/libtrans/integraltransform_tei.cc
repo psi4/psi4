@@ -25,8 +25,8 @@ namespace psi{ namespace libtrans{
  * @param s4 - the MO space for the fourth index
  */
 void
-IntegralTransform::transform_tei(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
-                                 shared_ptr<MOSpace> s3, shared_ptr<MOSpace> s4)
+IntegralTransform::transform_tei(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace> s2,
+                                 const shared_ptr<MOSpace> s3, const shared_ptr<MOSpace> s4)
 {
     /* The only difficulty here is that we have to figure out which integrals are unique,
      * which requires knowing the allowed permutations.  This is easy - it's just a bunch of
