@@ -1,5 +1,6 @@
 #include "integraltransform.h"
 #include "mospace.h"
+#include "exception.h"
 
 namespace psi{ namespace libtrans{
 /**
@@ -18,7 +19,7 @@ namespace psi{ namespace libtrans{
  * @return the DPD number to use for disk storage
  */
 int
-IntegralTransform::DPD_ID(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
+IntegralTransform::DPD_ID(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace> s2,
                             SpinType spin, bool pack)
 {
 
@@ -53,6 +54,27 @@ IntegralTransform::DPD_ID(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
 }
 
 /**
+ * Computes the DPD number of the space corresponding to a given MO space label
+ *
+ * @param c - the label of the MO space
+ * @returns the number associated with the MO space in the transformation object's DPD instance
+ */
+int
+IntegralTransform::DPD_ID(const char c)
+{
+    std::vector<char>::iterator iter;
+    std::vector<char>::iterator pos = find(_spacesUsed.begin(), _spacesUsed.end(), c);
+    if(pos == _spacesUsed.end()){
+        std::string str = "Space ";
+        str += c;
+        str += " was not defined in this transformation object";
+        throw SanityCheckError(str, __FILE__, __LINE__);
+    }
+    return distance(_spacesUsed.begin(), pos);
+}
+
+
+/**
  * Computes the DPD number that gives the most packing for a given pair of spaces
  * 
  * @param str - a string describing the pair packing scheme
@@ -70,7 +92,7 @@ IntegralTransform::DPD_ID(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
  *  [a,b]     - One index belongs to space 'a', the other to 'b'.  No packing is possible.
  */
 int
-IntegralTransform::DPD_ID(std::string &str)
+IntegralTransform::DPD_ID(const std::string &str)
 {
     if(_dpdLookup.count(str)==0){
         std::string s = "Pair ";

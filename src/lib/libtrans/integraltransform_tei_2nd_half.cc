@@ -10,15 +10,14 @@
 #include "psifiles.h"
 #include "ccfiles.h"
 #include "mospace.h"
-#include "spaceinfo.h"
 #define EXTERN
 #include <libdpd/dpd.gbl>
 
 namespace psi{ namespace libtrans{
 
 void
-IntegralTransform::transform_tei_second_half(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
-                                             shared_ptr<MOSpace> s3, shared_ptr<MOSpace> s4)
+IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace> s2,
+                                             const shared_ptr<MOSpace> s3, const shared_ptr<MOSpace> s4)
 {
     char *label = new char[100];
 

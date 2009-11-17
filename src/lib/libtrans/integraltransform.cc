@@ -17,7 +17,8 @@ IntegralTransform::IntegralTransform(Options &options,
             _transformationType(transformationType),
             _moOrdering(moOrdering),
             _outputType(outputType),
-            _frozenOrbitals(frozenOrbitals)
+            _frozenOrbitals(frozenOrbitals),
+            _uniqueSpaces(spaces)
 {
     // Implement set/get functions to customize any of this stuff.  Delayed initialization
     // is possible in case any of these variables need to be changed before setup.
@@ -40,8 +41,6 @@ IntegralTransform::IntegralTransform(Options &options,
     _iwlAAIntFile  = _transformationType == Restricted ? PSIF_MO_TEI : PSIF_MO_AA_TEI;
     _iwlABIntFile  = _transformationType == Restricted ? PSIF_MO_TEI : PSIF_MO_AB_TEI;
     _iwlBBIntFile  = _transformationType == Restricted ? PSIF_MO_TEI : PSIF_MO_BB_TEI;
-    
-    process_spaces(spaces);
 
     if(init) initialize();
 }
@@ -54,24 +53,39 @@ IntegralTransform::initialize()
 {
     timer_init();
 
+    raid_checkpoint();
+    process_spaces();
+    
     // Set up the DPD library
     // TODO implement cacheing of files
-    int numSpaces = _spaceArrays.size()/2;
+    int numSpaces = _spacesUsed.size();
     int numIndexArrays = numSpaces * (numSpaces - 1) + 5 * numSpaces;
     _cacheFiles = init_int_array(PSIO_MAXUNIT);
     _cacheList  = init_int_matrix(numIndexArrays, numIndexArrays);
     int currentActiveDPD = psi::dpd_default;
     dpd_init(_myDPDNum, _nirreps, _memory, 0, _cacheFiles,
             _cacheList, NULL, numSpaces, _spaceArrays);
-    // Return DPD control to the user
-    dpd_set_default(currentActiveDPD);
 
     // We have to redefine the MO coefficients for a UHF-like treatment
     if(_transformationType == SemiCanonical){
+        _Ca = new double**[_nirreps];
+        _Cb = _Ca;
+        for(int h = 0; h < _nirreps; ++h){
+            _Ca[h] = _chkpt->rd_scf_irrep(h);
+        }
         // This will also build the UHF Fock matrix, which we need
-        presort_so_tei();
+        generate_oei();
         semicanonicalize();
+        // This second call does everything that generate_oei() does, but also
+        // sorts the two electron integrals for the transformation, which saves
+        // us a pass through the SO integral file.
+        presort_so_tei();
     }
+    process_eigenvectors();
+
+    // Return DPD control to the user
+    dpd_set_default(currentActiveDPD);
+
 }
 
 

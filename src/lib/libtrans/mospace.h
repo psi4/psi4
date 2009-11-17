@@ -18,7 +18,8 @@ class MOSpace{
 
     public:
         ~MOSpace();
-        MOSpace(const char label, int *aFOrbPI, int *bFOrbPI, int *aOrbsPI, int *bOrbsPI);
+        MOSpace(const char label, const int *aFOrbPI, const int *bFOrbPI,
+                const int *aOrbsPI, const int *bOrbsPI);
         /**
          * The MOSpace::occ space can be used to define the occupied space.  Frozen
          * orbitals are handled consistently with how the transformation object is
@@ -59,33 +60,33 @@ class MOSpace{
         static shared_ptr<MOSpace> nil;
         
         // Returns the unique identifier for this space
-        const char label() {return _label;}
+        char label() {return _label;}
 
         // These are to allow the map to be used
-        friend bool operator==(MOSpace &lhs, MOSpace &rhs)
-                                { return lhs.label() == rhs.label(); }
-        friend bool operator>=(MOSpace &lhs, MOSpace &rhs)
-                                { return lhs.label() >= rhs.label(); }
-        friend bool operator!=(MOSpace &lhs, MOSpace &rhs)
-                                { return lhs.label() != rhs.label(); }
-        friend bool operator<=(MOSpace &lhs, MOSpace &rhs)
-                                { return lhs.label() <= rhs.label(); }
-        friend bool operator<(MOSpace &lhs, MOSpace &rhs)
-                                { return lhs.label() < rhs.label(); }
-        friend bool operator>(MOSpace &lhs, MOSpace &rhs)
-                                { return lhs.label() > rhs.label(); }
-        friend bool operator==(MOSpace &lhs, char c)
-                                { return lhs.label() == c; }
-        friend bool operator>=(MOSpace &lhs, char c)
-                                { return lhs.label() >= c; }
-        friend bool operator!=(MOSpace &lhs, char c)
-                                { return lhs.label() != c; }
-        friend bool operator<=(MOSpace &lhs, char c)
-                                { return lhs.label() <= c; }
-        friend bool operator<(MOSpace &lhs, char c)
-                                { return lhs.label() < c; }
-        friend bool operator>(MOSpace &lhs, char c)
-                                { return lhs.label() > c; }
+        friend bool operator==(const MOSpace &lhs, const MOSpace &rhs)
+                                { return lhs._label == rhs._label; }
+        friend bool operator>=(const MOSpace &lhs, const MOSpace &rhs)
+                                { return lhs._label >= rhs._label; }
+        friend bool operator!=(const MOSpace &lhs, const MOSpace &rhs)
+                                { return lhs._label != rhs._label; }
+        friend bool operator<=(const MOSpace &lhs, const MOSpace &rhs)
+                                { return lhs._label <= rhs._label; }
+        friend bool operator<(const MOSpace &lhs, const MOSpace &rhs)
+                                { return lhs._label < rhs._label; }
+        friend bool operator>(const MOSpace &lhs, const MOSpace &rhs)
+                                { return lhs._label > rhs._label; }
+        friend bool operator==(const MOSpace &lhs, const char c)
+                                { return lhs._label == c; }
+        friend bool operator>=(const MOSpace &lhs, const char c)
+                                { return lhs._label >= c; }
+        friend bool operator!=(const MOSpace &lhs, const char c)
+                                { return lhs._label != c; }
+        friend bool operator<=(const MOSpace &lhs, const char c)
+                                { return lhs._label <= c; }
+        friend bool operator<(const MOSpace &lhs, const char c)
+                                { return lhs._label < c; }
+        friend bool operator>(const MOSpace &lhs, const char c)
+                                { return lhs._label > c; }
     protected:
         MOSpace(const char label);
         /**
@@ -96,8 +97,6 @@ class MOSpace{
         const char _label;
         // This keeps track of which labels have been assigned by other spaces
         static std::map<char, int> labelsUsed;
-        // The indexing and orbitals for this spaces
-        shared_ptr<SpaceInfo> _spaceInfo;
 };
 
 }} // End namespaces

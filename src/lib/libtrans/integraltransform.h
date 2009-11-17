@@ -7,6 +7,7 @@
 #include <string>
 #include <libdpd/dpd.h>
 #include <libchkpt/chkpt.hpp>
+#include "psifiles.h"
 
 #define INDEX(i,j) ((i>j) ? ((i*(i+1)/2)+j) : ((j*(j+1)/2)+i))
 
@@ -100,18 +101,21 @@ class IntegralTransform{
 
         void initialize();
         void presort_so_tei();
-        void transform_oei(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2, const char *label);
-        void transform_tei(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
-                           shared_ptr<MOSpace> s3, shared_ptr<MOSpace> s4);
-        void transform_tei_first_half(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2);
-        void transform_tei_second_half(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2,
-                                       shared_ptr<MOSpace> s3, shared_ptr<MOSpace> s4);
+        void generate_oei();
+        void transform_oei(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace> s2, const char *label);
+        void transform_tei(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace> s2,
+                           const shared_ptr<MOSpace> s3, const shared_ptr<MOSpace> s4);
+        void transform_tei_first_half(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace> s2);
+        void transform_tei_second_half(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace> s2,
+                                       const shared_ptr<MOSpace> s3, const shared_ptr<MOSpace> s4);
+
         void print_dpd_lookup();
-        
+
+        int DPD_ID(const char c);
         int DPD_ID(char *str);
         int DPD_ID(const char *str);
-        int DPD_ID(std::string &str);
-        int DPD_ID(shared_ptr<MOSpace> s1, shared_ptr<MOSpace> s2, SpinType spin, bool pack);
+        int DPD_ID(const std::string &str);
+        int DPD_ID(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace> s2, SpinType spin, bool pack);
 
         /*===== The set/get accessor functions =====*/
 
@@ -147,7 +151,9 @@ class IntegralTransform{
         
     protected:
         void semicanonicalize();
-        void process_spaces(std::vector<shared_ptr<MOSpace> > &spaces);
+        void raid_checkpoint();
+        void process_eigenvectors();
+        void process_spaces();
 
         void trans_one(int m, int n, double *input, double *output, double **C, int soOffset, int *order);
         void build_fzc_and_fock(int p, int q, int r, int s, double value,
@@ -167,6 +173,8 @@ class IntegralTransform{
         Options _options;
         // The type of transformation
         TransformationType _transformationType;
+        // The unique MO spaces provided to this object's constructor
+        const std::vector<shared_ptr<MOSpace> >& _uniqueSpaces;
         // The ordering of the resulting integrals
         MOOrdering _moOrdering;
         // The format of the outputted integrals
@@ -189,10 +197,6 @@ class IntegralTransform{
         std::map<char, int* > _aIndices;
         // The beta orbital indexing arrays
         std::map<char, int* > _bIndices;
-        // The order in which each alpha space was added
-        std::map<char, int> _aSpaceNum;
-        // The order in which each beta space was added
-        std::map<char, int> _bSpaceNum;
         // The lookup table for DPD indexing
         std::map<std::string, int> _dpdLookup;
         // The file to which DPD formatted integrals are written
