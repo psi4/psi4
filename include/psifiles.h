@@ -171,8 +171,6 @@ integrals out (i.e. multiply by i=sqrt(-1) to get the integrals) */
 #define PSIF_MO_B_FZC       "MO-basis Beta Frozen-Core Oper"
 #define PSIF_MO_A_FOCK      "MO-basis Alpha Fock Matrix"
 #define PSIF_MO_B_FOCK      "MO-basis Beta Fock Matrix"
-#define PSIF_SC_A_FOCK      "Semicanonical Alpha Fock Matrix"
-#define PSIF_SC_B_FOCK      "Semicanonical Beta Fock Matrix"
 
 /* More macros */
 #define PSIF_AO_OPDM_TRIANG "AO-basis OPDM triang"
