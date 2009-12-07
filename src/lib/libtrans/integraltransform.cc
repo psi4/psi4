@@ -17,8 +17,8 @@ IntegralTransform::IntegralTransform(Options &options,
             _transformationType(transformationType),
             _moOrdering(moOrdering),
             _outputType(outputType),
-            _frozenOrbitals(frozenOrbitals),
-            _uniqueSpaces(spaces)
+            _uniqueSpaces(spaces),
+            _frozenOrbitals(frozenOrbitals)
 {
     // Implement set/get functions to customize any of this stuff.  Delayed initialization
     // is possible in case any of these variables need to be changed before setup.

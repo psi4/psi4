@@ -490,12 +490,6 @@ CXXDEF="$CXXDEF -DHAVE_CSTDDEF=$HAVE_CSTDDEF"
 
 /bin/rm -f a.out
 
-####################
-#  Check for Ruby  #
-####################
-m4_include(ruby.ac)
-RB_INIT_RUBY
-
 ########
 ## Check for types
 ########
@@ -797,11 +791,3 @@ AC_CONFIG_FILES([include/Makefile
 
 AC_OUTPUT
 
-dnl if test $RUBYLINK = no; then
-dnl 	if test -z $RUBYLIB; then
-dnl 		AC_MSG_NOTICE([Unable to locate libruby-static.a will not link the psirb module.])
-dnl 	fi
-dnl 	if test -z $RUBYINC; then
-dnl 		AC_MSG_NOTICE([Unable to locate ruby.h will not link the psirb module.])
-dnl 	fi
-dnl fi
