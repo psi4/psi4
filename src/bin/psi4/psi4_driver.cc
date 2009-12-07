@@ -30,7 +30,7 @@ psi4_driver(Options & options, int argc, char *argv[])
     // unless the user provided an exec array in the input
     std::string psiDatDirName(getenv("PSIDATADIR"));
     std::string psiDatFileName;
-    if (psiDatDirName.empty()) {
+    if (!psiDatDirName.empty()) {
         psiDatFileName = psiDatDirName;
     }else{
         psiDatFileName = INSTALLEDPSIDATADIR;
