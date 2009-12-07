@@ -279,7 +279,7 @@ void HF::form_B()
                             for (P = 0; P<ri_nbf_; P++)
                                 ao_p_ia[P][0] = storage[P][row];
                             //fprintf(outfile,"\n  Finished Transposing Quartet (%d %d| P)\n",MU,NU); fflush(outfile);
-                            int errcod = psio_->write(PSIF_DFSCF_B,"B Three-Index Integrals",(char *) &(ao_p_ia[0][0]),sizeof(double)*ri_nbf_,next_PSIF_DFSCF_B,&next_PSIF_DFSCF_B);
+                            psio_->write(PSIF_DFSCF_B,"B Three-Index Integrals",(char *) &(ao_p_ia[0][0]),sizeof(double)*ri_nbf_,next_PSIF_DFSCF_B,&next_PSIF_DFSCF_B);
                             row++;
                         }
                     }
@@ -328,7 +328,7 @@ void HF::form_B()
 
             C_DGEMM('N','N',ri_nbf_,1,ri_nbf_,1.0, J_mhalf[0], ri_nbf_, &(temp[0][0]), 1,0.0, &(buffer[0][0]), 1);
 
-            int errcode = psio_->write(PSIF_DFSCF_BJI,"BJ Three-Index Integrals",(char *) &(buffer[0][0]),sizeof(double)*ri_nbf_,next_PSIF_DFSCF_BJI,&next_PSIF_DFSCF_BJI);
+            psio_->write(PSIF_DFSCF_BJI,"BJ Three-Index Integrals",(char *) &(buffer[0][0]),sizeof(double)*ri_nbf_,next_PSIF_DFSCF_BJI,&next_PSIF_DFSCF_BJI);
         }
         psio_->close(PSIF_DFSCF_BJI,1);
         free(ao_p_ia);
@@ -339,7 +339,7 @@ void HF::form_B()
         next_PSIF_DFSCF_BJI = PSIO_ZERO;
         for (int ij = 0 ; ij < norbs*(norbs+1)/2; ij++)
         {
-            int errcode = psio_->read(PSIF_DFSCF_BJI,"BJ Three-Index Integrals",(char *) &(buffer[0][0]),sizeof(double)*ri_nbf_,next_PSIF_DFSCF_BJI,&next_PSIF_DFSCF_BJI);
+            psio_->read(PSIF_DFSCF_BJI,"BJ Three-Index Integrals",(char *) &(buffer[0][0]),sizeof(double)*ri_nbf_,next_PSIF_DFSCF_BJI,&next_PSIF_DFSCF_BJI);
 
             for (int Q = 0; Q<ri_nbf_; Q++)
                 B_ia_P_[Q][ij] = buffer[Q][0];
@@ -362,7 +362,7 @@ void HF::form_B()
 
             C_DGEMM('N','N',ri_nbf_,1,ri_nbf_,1.0, J_mhalf[0], ri_nbf_, &(temp[0][0]), 1,0.0, &(buffer[0][0]), 1);
 
-            int errcode = psio_->write(PSIF_DFSCF_BJI,"BJ Three-Index Integrals",(char *) &(buffer[0][0]),sizeof(double)*ri_nbf_,next_PSIF_DFSCF_BJI,&next_PSIF_DFSCF_BJI);
+            psio_->write(PSIF_DFSCF_BJI,"BJ Three-Index Integrals",(char *) &(buffer[0][0]),sizeof(double)*ri_nbf_,next_PSIF_DFSCF_BJI,&next_PSIF_DFSCF_BJI);
         }
         psio_->close(PSIF_DFSCF_BJI,1);
         free(ao_p_ia);
@@ -373,7 +373,7 @@ void HF::form_B()
         next_PSIF_DFSCF_BJI = PSIO_ZERO;
         for (int ij = 0 ; ij < norbs*(norbs+1)/2; ij++)
         {
-            int errcode = psio_->read(PSIF_DFSCF_BJI,"BJ Three-Index Integrals",(char *) &(buffer[0][0]),sizeof(double)*ri_nbf_,next_PSIF_DFSCF_BJI,&next_PSIF_DFSCF_BJI);
+            psio_->read(PSIF_DFSCF_BJI,"BJ Three-Index Integrals",(char *) &(buffer[0][0]),sizeof(double)*ri_nbf_,next_PSIF_DFSCF_BJI,&next_PSIF_DFSCF_BJI);
 
             for (int Q = 0; Q<ri_nbf_; Q++)
                 B_ia_P_[Q][ij] = buffer[Q][0];
@@ -386,7 +386,7 @@ void HF::form_B()
         psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
         for (int Q = 0; Q<ri_nbf_; Q++)
         {
-            int errcode = psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(B_ia_P_[Q][0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+            psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(B_ia_P_[Q][0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
         }
         psio_->close(PSIF_DFSCF_BJ,1);
         free(B_ia_P_);
@@ -414,11 +414,11 @@ void HF::form_B()
 
         for (int ij = 0; ij<norbs*(norbs+1)/2; ij++)
         {
-            int errcode = psio_->read(PSIF_DFSCF_B,"B Three-Index Integrals",(char *) &(in_buffer[0][0]),sizeof(double)*ri_nbf_,next_PSIF_DFSCF_B,&next_PSIF_DFSCF_B);
+            psio_->read(PSIF_DFSCF_B,"B Three-Index Integrals",(char *) &(in_buffer[0][0]),sizeof(double)*ri_nbf_,next_PSIF_DFSCF_B,&next_PSIF_DFSCF_B);
 
             C_DGEMM('N','N',ri_nbf_,1,ri_nbf_,1.0, J_mhalf[0], ri_nbf_, in_buffer[0], 1,0.0, &(out_buffer[0][0]), 1);
 
-            errcode = psio_->write(PSIF_DFSCF_BJI,"BJ Three-Index Integrals",(char *) &(out_buffer[0][0]),sizeof(double)*ri_nbf_,next_PSIF_DFSCF_BJI,&next_PSIF_DFSCF_BJI);
+            psio_->write(PSIF_DFSCF_BJI,"BJ Three-Index Integrals",(char *) &(out_buffer[0][0]),sizeof(double)*ri_nbf_,next_PSIF_DFSCF_BJI,&next_PSIF_DFSCF_BJI);
         }
         free(out_buffer);
 
@@ -443,7 +443,7 @@ void HF::form_B()
         ULI global_offset = 0;
         for (int ij = 0; ij < norbs*(norbs+1)/2; ij++)
         {
-            int errcode = psio_->read(PSIF_DFSCF_BJI,"BJ Three-Index Integrals",(char *) &(in_buffer[0][0]),sizeof(double)*ri_nbf_,next_PSIF_DFSCF_BJI,&next_PSIF_DFSCF_BJI);
+            psio_->read(PSIF_DFSCF_BJI,"BJ Three-Index Integrals",(char *) &(in_buffer[0][0]),sizeof(double)*ri_nbf_,next_PSIF_DFSCF_BJI,&next_PSIF_DFSCF_BJI);
             //fprintf(outfile,"\n  Read in pair %d",ij); fflush(outfile);
             for (int Q = 0; Q<ri_nbf_; Q++)
             {
@@ -457,13 +457,13 @@ void HF::form_B()
                 for (int Q = 0; Q<ri_nbf_; Q++)
                 {
                     //fprintf(outfile,"\n  Working on Q %d",Q); fflush(outfile);
-                    next_PSIF_DFSCF_BJ = psio_->get_address(PSIO_ZERO,(ULI)(Q*norbs*(ULI)(norbs+1)/2*sizeof(double)+global_offset*sizeof(double)));
+                    next_PSIF_DFSCF_BJ = psio_get_address(PSIO_ZERO,(ULI)(Q*norbs*(ULI)(norbs+1)/2*sizeof(double)+global_offset*sizeof(double)));
                     //fprintf(outfile,"\n  Address Acquired"); fflush(outfile);
                     //for (int K = 0; K<buf_ind; K++)
                         //out_buffer[K][0] = buffer[Q][K];
                     //fprintf(outfile,"\n  out_buffer transposed"); fflush(outfile);
                     //errcode = psio_write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(out_buffer[0][0]),sizeof(double)*buf_ind,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
-                    errcode = psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(buffer[Q][0]),sizeof(double)*buf_ind,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+                    psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(buffer[Q][0]),sizeof(double)*buf_ind,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
                     //fprintf(outfile,"\n  Entry Written"); fflush(outfile);
                 }
                 global_offset+=buf_ind;
@@ -531,7 +531,7 @@ void RHF::form_G_from_RI()
         psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
         double *in_buffer = init_array(norbs*(norbs+1)/2);
         for (int i=0; i<ri_nbf_; i++) {
-            int errcode = psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+            psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
             L[i]=C_DDOT(norbs*(norbs+1)/2,DD,1,in_buffer,1);
         }
 
@@ -544,7 +544,7 @@ void RHF::form_G_from_RI()
         register double LL;
         for (int Q = 0; Q<ri_nbf_; Q++)
         {
-            int errcode = psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+            psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
             LL = L[Q];
             for (int ij = 0; ij<norbs*(norbs+1)/2; ij++)
                 G2[ij]+=LL*in_buffer[ij];
@@ -621,7 +621,7 @@ void RHF::form_G_from_RI()
 
         for (int Q = 0; Q<ri_nbf_; Q++)
         {
-            int errcode = psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+            psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
             for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
             {
                 mu = ri_pair_mu_[ij];
@@ -653,7 +653,7 @@ void RHF::form_G_from_RI()
             for (int im = 0; im<ndocc*norbs; im++)
                 out_buffer[im] = 0.0;
 
-            int errcode = psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+            psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
             for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
             {
                 mu = ri_pair_mu_[ij];
@@ -665,7 +665,7 @@ void RHF::form_G_from_RI()
                         out_buffer[nu*ndocc+i]+=Cocc[i][mu]*in_buffer[ij];
                 }
             }
-            errcode = psio_->write(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(out_buffer[0]),sizeof(double)*norbs*ndocc,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
+            psio_->write(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(out_buffer[0]),sizeof(double)*norbs*ndocc,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
         }
 
         free(in_buffer);
@@ -691,7 +691,7 @@ void RHF::form_G_from_RI()
 
         for (int Q = 0; Q<ri_nbf_; Q++)
         {
-            int errcode = psio_->read(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(in_buffer[0]),sizeof(double)*norbs*ndocc,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
+            psio_->read(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(in_buffer[0]),sizeof(double)*norbs*ndocc,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
 
             for (int m = 0; m<norbs; m++)
                 for (int n = 0; n<=m; n++)

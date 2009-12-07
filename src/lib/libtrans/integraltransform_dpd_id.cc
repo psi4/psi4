@@ -112,7 +112,7 @@ IntegralTransform::DPD_ID(const char *str)
 {
     std::string s(str);
     return DPD_ID(s);
-};
+}
 
 
 /**
@@ -123,7 +123,7 @@ IntegralTransform::DPD_ID(char *str)
 {
     std::string s(str);
     return DPD_ID(s);
-};
+}
 
 
 }} // Namespaces
