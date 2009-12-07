@@ -52,6 +52,7 @@ void PSIO::close(unsigned int unit, int keep) {
   /* Reset the global page stats to zero */
   this_unit->numvols = 0;
   this_unit->toclen = 0;
+  this_unit->toc = NULL;
 }
 
 int psio_close(unsigned int unit, int keep) {

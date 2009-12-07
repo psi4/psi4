@@ -40,6 +40,10 @@ void PSIO::tocread(unsigned int unit) {
     }
     this_entry->next = NULL;
   }
+  else {
+    this_unit->toclen = 0;
+    this_unit->toc = NULL;
+  }
   
   /* Read the TOC entry-by-entry */
   this_entry = this_unit->toc;
