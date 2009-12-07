@@ -7,8 +7,7 @@
 
 namespace psi{ namespace libtrans{
 
-IntegralTransform::IntegralTransform(Options &options,
-                                     std::vector<shared_ptr<MOSpace> > &spaces,
+IntegralTransform::IntegralTransform(const SpaceVec &spaces,
                                      TransformationType transformationType,
                                      OutputType outputType,
                                      MOOrdering moOrdering,
@@ -25,9 +24,8 @@ IntegralTransform::IntegralTransform(Options &options,
     _myDPDNum      = 1;
     _chkpt         = _default_chkpt_lib_;
     _psio          = _default_psio_lib_;
-    _options       = options;
-    _print         = options.get_int("PRINT");
-    _memory        = options.get_int("MEMORY") * 1024 * 1024;
+    _print         = 1;
+    _memory        = 2000 * 1024 * 1024;
     _tolerance     = 1.0E-14;
     _keepDpdSoInts = false;
     _keepIwlSoInts = false;

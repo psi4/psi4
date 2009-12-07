@@ -197,6 +197,20 @@ IntegralTransform::process_spaces()
                 if(_transformationType != Restricted)
                     for(int n = 0; n < bOrbsPI[h]; ++n)  bOrbSym[bVirCount++] = h;
             }
+        }else{
+            // This must be a custom MOSpace that the user provided
+            aOrbsPI = const_cast<int*>(moSpace->aOrbsPI());
+            bOrbsPI = const_cast<int*>(moSpace->bOrbsPI());
+            aOrbSym = const_cast<int*>(moSpace->aOrbSym());
+            bOrbSym = const_cast<int*>(moSpace->bOrbSym());
+            aIndex  = const_cast<int*>(moSpace->aIndex());
+            bIndex  = const_cast<int*>(moSpace->bIndex());
+            if(_useIWL && aIndex == NULL){
+                std::string error("You must provide an indexing array for space ");
+                error += moSpace->label();
+                error += " or disable IWL output by changing OutputType.";
+                throw SanityCheckError(error, __FILE__, __LINE__);
+            }
         }
 
         if(_print > 5){

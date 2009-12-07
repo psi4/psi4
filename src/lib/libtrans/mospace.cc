@@ -1,5 +1,5 @@
 #include "mospace.h"
-
+#include "libciomr/libciomr.h"
 namespace psi{ namespace libtrans{
 
 /// Keeps track of which labels have been assigned, for safety
@@ -11,7 +11,8 @@ shared_ptr<MOSpace> MOSpace::nil(new MOSpace(MOSPACE_NIL));
 
 /**
  * This creates an empty MOSpace with just a label.  This is solely for the
- * construction of the pre-defined spaces
+ * construction of the pre-defined spaces; use the longer form of the constructor
+ * for custom spaces.
  */
 MOSpace::MOSpace(char label):
         _label(label)
@@ -25,24 +26,67 @@ MOSpace::MOSpace(char label):
  * @param label   - a single character to label this space.  This must be unique to this
  *                  space, so see the MOSpace static member variables for a list of the
  *                  labels already used.  The uniqueness is checked internally.
- * @param aForbPI - an array containing the first orbital in this space, per irrep for the
- *                  alpha orbitals.  These numbers are the absolute numbers in Pitzer ordering.
- * @param bForbPI - the corresponding array for the beta orbitals
- * @param aOrbsPI - an array containing the the number of alpha orbitals in this space, per irrep
- * @param bOrbsPI - the corresponding array for the beta orbitals
+ * @param nirreps - the number of irreducible representations in the Abelian point group of the molecule.
+ * @param aOrbsPI - an array of dimension #irreps, describing the number of alpha orbitals per irrep
+ * @param bOrbsPI - an array of dimension #irreps, describing the number of beta orbitals per irrep.
+ *                  This is assumed to be the same as a aOrbsPI for restricted transformations, so
+ *                  in this case it can be passed in a NULL.
+ * @param aEvecs  - an array of matrices of dimension #irreps.  For each irrep h, aEvecs[h] should be an
+ *                  NSO[h] X aOrbsPI[h] block matrix containing the alpha MO coefficients for this space.
+ * @param bEvecs  - an array of matrices of dimension #irreps.  For each irrep h, bEvecs[h] should be an
+ *                  NSO[h] X bOrbsPI[h] block matrix containing the beta MO coefficients for this space.
+ *                  Pass in as NULL for restricted transformations; the alpha coefficients will be used
+ *                  in this case.
+ * @param aIndex  - an array of dimension #orbitals describing the number of each alpha orbital in
+ *                  the space. This is only for the purposes of IWL output, so it can be passed as
+ *                  NULL for DPD output.
+ * @param bIndex  - an array of dimension #orbitals describing the number of each beta orbital in
+ *                  the space. For restricted transformations or for DPD output only, this can be
+ *                  passed as NULL.
  */
-MOSpace::MOSpace(char label, const int *aFOrbPI, const int *bFOrbPI,
-                 const int *aOrbsPI, const int *bOrbsPI):
-        _label(label)
+MOSpace::MOSpace(const char label, const int nirreps, const int *aOrbsPI,
+                 const int *bOrbsPI, const double ***aEvecs, const double ***bEvecs,
+                 const int *aIndex, const int *bIndex):
+        _label(label),
+        _aOrbSym(NULL),
+        _bOrbSym(NULL),
+        _aOrbsPI(aOrbsPI),
+        _bOrbsPI(bOrbsPI),
+        _aEvecs(aEvecs),
+        _bEvecs(bEvecs),
+        _aIndex(aIndex),
+        _bIndex(bIndex)
 {    
-    // TODO check that it doesn't exist already..
+    if(labelsUsed.count(label)){
+        std::string error("Space ");
+        error += label;
+        error += " is already in use.  Choose a unique name for the custom MOSpace.";
+        throw SanityCheckError(error, __FILE__, __LINE__);
+    }
     ++labelsUsed[label];
+    
+    // Count the number of alpha orbitals
+    int nAOrbs = 0;
+    for(int h = 0; h < nirreps; ++h) nAOrbs += aOrbsPI[h];
+    // Define the alpha orbital symmetries
+    _aOrbSym = init_int_array(nAOrbs);
+    for(int h = 0, count = 0; h < nirreps; ++h) _aOrbSym[count++] = h;
+    if(bOrbsPI != NULL){
+        // Count the number of beta orbitals
+        int nBOrbs = 0;
+        for(int h = 0; h < nirreps; ++h) nBOrbs += bOrbsPI[h];
+        // Define the beta orbital symmetries
+        _bOrbSym = init_int_array(nBOrbs);
+        for(int h = 0, count = 0; h < nirreps; ++h) _bOrbSym[count++] = h;
+    }
 }
 
 
 MOSpace::~MOSpace()
 {
     --labelsUsed[_label];
+    if(_aOrbSym != NULL) free(_aOrbSym);
+    if(_bOrbSym != NULL) free(_bOrbSym);
 }
 
 

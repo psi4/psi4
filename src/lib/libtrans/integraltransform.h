@@ -8,6 +8,7 @@
 #include <libdpd/dpd.h>
 #include <libchkpt/chkpt.hpp>
 #include "psifiles.h"
+#include "mospace.h";
 
 #define INDEX(i,j) ((i>j) ? ((i*(i+1)/2)+j) : ((j*(j+1)/2)+i))
 
@@ -15,8 +16,8 @@ using namespace psi;
 
 namespace psi{ namespace libtrans{
 
-class SpaceInfo;
-class MOSpace;
+
+typedef std::vector<shared_ptr< MOSpace> > SpaceVec;
 
   /**
      The IntegralTransform class transforms one- and two-electron integrals
@@ -76,7 +77,6 @@ class IntegralTransform{
         /**
          * Set up a transformation involving four MO spaces
          * 
-         * @param options            An Options object, passed by reference
          * @param spaces             A vector containing smart pointers to the unique space(s) involved
          *                           in any transformations that this object will perform
          * @param transformationType The type of transformation, described by the
@@ -90,8 +90,7 @@ class IntegralTransform{
          * @param initialize         Whether to initialize during construction or not.  Useful if some
          *                           options need to be tweaked before initialization.
          */
-        IntegralTransform(Options &options,
-                          std::vector<shared_ptr<MOSpace> > &spaces,
+        IntegralTransform(const SpaceVec &spaces,
                           TransformationType transformationType = Restricted,
                           OutputType outputType = DPDOnly,
                           MOOrdering moOrdering = QTOrder,
@@ -169,12 +168,10 @@ class IntegralTransform{
         PSIO *_psio;
         // Pointer to the checkpoint object to use
         Chkpt *_chkpt;
-        // The options object
-        Options _options;
         // The type of transformation
         TransformationType _transformationType;
         // The unique MO spaces provided to this object's constructor
-        const std::vector<shared_ptr<MOSpace> >& _uniqueSpaces;
+        const SpaceVec& _uniqueSpaces;
         // The ordering of the resulting integrals
         MOOrdering _moOrdering;
         // The format of the outputted integrals
