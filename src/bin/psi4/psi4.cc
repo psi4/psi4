@@ -25,9 +25,10 @@ namespace psi {
 
   void set_memory(FILE *infile, FILE *outfile);
 
-  int psi3_simulator(Options & options, int argc, char *argv[]);
+  int psi4_driver(Options & options, int argc, char *argv[]);
+  //int psi3_simulator(Options & options, int argc, char *argv[]);
 
-  int read_options(std::string name, Options & options);
+  int read_options(const std::string &name, Options & options);
   void read_atom_basis(char ** & atom_basis, int num_atoms);
 }
 
@@ -48,6 +49,7 @@ namespace psi {
   void redirect_output(const std::string& szFilename, bool append = true);
   
   PSIO *psio = NULL;
+  std::map<std::string, PsiReturnType(*)(Options &, int argc, char *argv[])> dispatch_table;
 }
 
 // This is the ONLY main function in PSI
@@ -76,8 +78,8 @@ int main(int argc, char *argv[])
    
      Options options;
    
-     psi3_simulator(options, argc, argv);
-
+     //psi3_simulator(options, argc, argv);
+    psi4_driver(options, argc, argv);
 /*
 
        // if read from input.dat, scale.  Elsewhere always use au internally

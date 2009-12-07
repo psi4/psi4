@@ -5,7 +5,7 @@ include ../MakeVars
                                                                                 
 LDLIBS += $(LAPACK) $(BLAS)
 
-PSITARGET = $(top_objdir)/lib/libPSI_mp2.o
+PSITARGET = $(top_objdir)/lib/libPSI_mp2.a
 #PSILIBS = -lPSI_dpd -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
 
 CXXSRC = cache.cc get_moinfo.cc get_params.cc amps.cc \

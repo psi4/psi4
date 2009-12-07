@@ -24,7 +24,7 @@ namespace psi{ namespace mp2{
 void init_io(int argc, char *argv[]);
 void title(void);
 void get_moinfo(void);
-void get_params(void);
+void get_params(Options &options);
 void init_ioff(void);
 int **cacheprep_rhf(int level, int *cachefiles);
 int **cacheprep_uhf(int level, int *cachefiles);
@@ -51,7 +51,8 @@ void cleanup(void);
 void exit_io(void);
 
 
-int mp2(Options & options, int argc, char *argv[])
+PsiReturnType
+mp2(Options & options, int argc, char **argv)
 {
   using namespace psi::mp2;
 
@@ -62,7 +63,7 @@ int mp2(Options & options, int argc, char *argv[])
   title();
 
   get_moinfo();
-  get_params();
+  get_params(options);
   init_ioff();
   
   cachefiles = init_int_array(PSIO_MAXUNIT);
@@ -136,7 +137,7 @@ int mp2(Options & options, int argc, char *argv[])
 
   exit_io();
   
-  exit(0);
+  return Success;
 }
 
 

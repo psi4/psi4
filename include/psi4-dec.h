@@ -39,6 +39,7 @@ namespace psi {
   extern PSIO *psio;
   extern char *psi_file_prefix;
   extern bool g_bVerbose;
+  extern std::map<std::string, PsiReturnType(*)(Options &, int argc, char *argv[])> dispatch_table;
   
   #ifndef NDEBUG
     #ifdef __GNUC__

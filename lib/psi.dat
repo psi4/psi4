@@ -968,7 +968,7 @@ psi: (
 
   % Procedures for the conventional MP2 energy
   MP2Energy = ($ints $scf $transqt $ccsort $mp2)
-  MP2RHFEnergy = ($MP2Energy $done)
+  MP2:RHF:ENERGY:SP = ("input" "cints" "cscf" "transqt2" "ccsort" "mp2")
   MP2ROHFEnergy = ($MP2Energy $done) 
   MP2UHFEnergy =  ($MP2Energy $done)
   MP2TwoConEnergy = ERROR

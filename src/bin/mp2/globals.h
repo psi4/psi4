@@ -21,6 +21,7 @@
 #define MAXIOFF 32641
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
 
+namespace psi{ namespace mp2{
 // BJM removing the following four lines
 //extern "C" {
 //  EXTERN FILE *infile, *outfile;
@@ -30,4 +31,5 @@ EXTERN struct moinfo mo;
 EXTERN struct params params;
 EXTERN int* ioff;
 
+}} // namespaces
 #endif /* Header guard */
