@@ -16,7 +16,7 @@ using namespace std;
 
 namespace psi {
 
-MOInfoBase::MOInfoBase(Options& options_,bool silent_) : silent(silent_), options(options_)
+MOInfoBase::MOInfoBase(Options& options_,bool silent_) : options(options_), silent(silent_)
 {
   startup();
   charge       = options.get_int("CHARGE");
@@ -101,7 +101,7 @@ void MOInfoBase::read_mo_space(int nirreps_ref, int& n, intvec& mo, string label
   bool read = false;
 
   vector<string> label_vec = split(labels);
-  for(int k = 0; k < label_vec.size(); ++k){
+  for(unsigned int k = 0; k < label_vec.size(); ++k){
     int size;
     int stat = ip_count(const_cast<char *>(label_vec[k].c_str()),&size,0); // Cast to avoid warnings
     if(stat == IPE_OK){

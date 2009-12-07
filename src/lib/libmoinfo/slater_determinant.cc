@@ -22,8 +22,8 @@ namespace psi {
 
 SlaterDeterminant::SlaterDeterminant(int alfa_sym_,int beta_sym_,std::vector<bool> alfa_bits_,std::vector<bool> beta_bits_)
 : alfa_sym(alfa_sym_),beta_sym(beta_sym_),
-  alfa_bits(alfa_bits_), beta_bits(beta_bits_),
-  alfa_string(-1),beta_string(-1)
+  alfa_string(-1),beta_string(-1),
+  alfa_bits(alfa_bits_), beta_bits(beta_bits_)
 {
   startup();
 }
