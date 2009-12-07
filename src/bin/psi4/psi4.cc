@@ -56,47 +56,6 @@ int main(int argc, char *argv[])
   using namespace psi;
   bool run_modules = true;
 
-  // int overwrite_output = 1;
-  // int num_extra_args = 0;
-  // char **extra_args; 
-  // extra_args = (char **) malloc(argc*sizeof(char *));
-  // for (int i=1; i<argc; i++)
-  //   extra_args[num_extra_args++] = argv[i];
-
-  // No need for psi_start to be in a library, as NO module should be calling it 
-  // in a single-executable. It's functionality has been moved to
-  // psi_start_and_parse_command_line
-  // errcod = psi_start(&infile,&outfile,&psi_file_prefix,num_extra_args, 
-  //   extra_args,overwrite_output);
-  
-  // Parse the command-line arguments
-  //psi_start_and_parse_command_line(argc, argv);
-  
-  // Sends version information to outfile.
-  // Initialize the interpreter
-  //initialize_ruby();
-  
-  // At this point the following has happened:
-  //  1. Where output goes has been decided.
-  //  2. Input filename has been determined.
-  //  3. Ruby has been initialized
-
-  // Create the global task object that is responsible for interfacing Ruby and Psi4.
-  //   The call sets the global variables g_rbTask and g_cTask to their initialized values.
-  //   g_rbTask is the Ruby object that refers to the C++ object g_cTask.
-  //   This also loads the input file (either input.dat or the one determined by 
-  //   psi_start_and_parse_command_line). If the file contains IPV1 data it is loaded
-  //   into the global task's options_ variable.
-  //if (create_global_task()) {
-    // enable_modules();
-    
-  //  if (g_bIRB == false) { // Are running Interactive Ruby?
-  //    process_input_file();
-  //  }
-  //  else {
-  //    run_interactive_ruby();
-  //  }
-  // }
   if (run_modules) {
 
   int num_unparsed, i;
@@ -160,9 +119,6 @@ int main(int argc, char *argv[])
    }
 
    psi_stop(infile, outfile, psi_file_prefix);
-
-  // Close the interpreter
-  //finalize_ruby();
 
   // This needs to be changed a return value from the processed script
   return EXIT_SUCCESS;
