@@ -31,15 +31,15 @@ void ModelSpace::print()
 {
   fprintf(outfile,"\n\n  Model space:");
   fprintf(outfile,"\n  ------------------------------------------------------------------------------");
-  for(int mu = 0; mu < determinants.size(); ++mu){
+  for(unsigned int mu = 0; mu < determinants.size(); ++mu){
     fprintf(outfile,"\n  %2d %s",mu,determinants[mu].get_label().c_str());
   }
   fprintf(outfile,"\n\n  Closed-shell to model space mapping");
-  for(int mu = 0; mu < closed_to_all.size(); ++mu){
+  for(unsigned int mu = 0; mu < closed_to_all.size(); ++mu){
     fprintf(outfile,"\n  %d -> %d",mu,closed_to_all[mu]);
   }
   fprintf(outfile,"\n\n  Open-shell to model space mapping");
-  for(int mu = 0; mu < opensh_to_all.size(); ++mu){
+  for(unsigned int mu = 0; mu < opensh_to_all.size(); ++mu){
     fprintf(outfile,"\n  %d -> %d",mu,opensh_to_all[mu]);
   }
 
