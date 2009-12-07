@@ -51,11 +51,7 @@ psi4_driver(Options & options, int argc, char *argv[])
     // Join the job descriptors into one label
     std::string calcType = options.get_str("WFN");
     calcType += ":";
-    calcType += options.get_str("REF");
-    calcType += ":";
     calcType += options.get_str("DERTYPE");
-    calcType += ":";
-    calcType += options.get_str("JOBTYPE");
 
     fprintf(outfile, "The jobtype string is...\n%s\n",calcType.c_str());
 

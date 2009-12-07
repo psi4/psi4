@@ -27,7 +27,7 @@
 
 namespace psi { namespace psiclean {
 
-int psiclean(int argc, char *argv[])
+int psiclean(Options & options, int argc, char *argv[])
 {
   ULI i, nvol;
   int errcod;
