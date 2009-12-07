@@ -18,8 +18,9 @@ class MOSpace{
 
     public:
         ~MOSpace();
-        MOSpace(const char label, const int *aFOrbPI, const int *bFOrbPI,
-                const int *aOrbsPI, const int *bOrbsPI);
+        MOSpace(const char label, const int nirreps, const int *aOrbsPI,
+                const int *bOrbsPI, const double ***aEvecs, const double ***bEvecs,
+                const int *aIndex, const int *bIndex);
         /**
          * The MOSpace::occ space can be used to define the occupied space.  Frozen
          * orbitals are handled consistently with how the transformation object is
@@ -59,9 +60,6 @@ class MOSpace{
         #define MOSPACE_NIL 'n'
         static shared_ptr<MOSpace> nil;
         
-        // Returns the unique identifier for this space
-        char label() {return _label;}
-
         // These are to allow the map to be used
         friend bool operator==(const MOSpace &lhs, const MOSpace &rhs)
                                 { return lhs._label == rhs._label; }
@@ -87,6 +85,34 @@ class MOSpace{
                                 { return lhs._label < c; }
         friend bool operator>(const MOSpace &lhs, const char c)
                                 { return lhs._label > c; }
+
+        /// Get the unique identifier for this space
+        char label() {return _label;}
+
+        /// Get the number of alpha orbitals per irrep
+        const int* aOrbsPI() {return _aOrbsPI;}
+
+        /// Get the number of beta orbitals per irrep
+        const int* bOrbsPI() {return _bOrbsPI == NULL ? _aOrbsPI : _bOrbsPI;}
+
+        /// Get the alpha orbital symmetries
+        const int* aOrbSym() {return _aOrbSym;}
+
+        /// Get the beta orbital symmetries
+        const int* bOrbSym() {return _bOrbSym == NULL ? _aOrbSym : _bOrbSym;}
+
+        /// Get the alpha orbital indexing array for IWL
+        const int* aIndex() {return _aIndex;}
+
+        /// Get the beta orbital indexing array for IWL
+        const int* bIndex() {return _bIndex == NULL ? _aIndex : _bIndex;}
+
+        /// Get the alpha MO coefficients for this space
+        const double*** aEvecs() {return _aEvecs;}
+
+        /// Get the beta MO coefficients for this space
+        const double*** bEvecs() {return _bEvecs == NULL ? _aEvecs : _bEvecs;}
+
     protected:
         MOSpace(const char label);
         /**
@@ -97,6 +123,22 @@ class MOSpace{
         const char _label;
         // This keeps track of which labels have been assigned by other spaces
         static std::map<char, int> labelsUsed;
+        // The number of alpha orbitals per irrep
+        const int *_aOrbsPI;
+        // The number of beta orbitals per irrep
+        const int *_bOrbsPI;
+        // The alpha indexing array
+        const int *_aIndex;
+        // The beta indexing array
+        const int *_bIndex;
+        // The symmetry of each alpha orbital
+        int *_aOrbSym;
+        // The symmetry of each beta orbital
+        int *_bOrbSym;
+        // The alpha eigenvector for this space
+        const double ***_aEvecs;
+        // The beta eigenvector for this space
+        const double ***_bEvecs;
 };
 
 }} // End namespaces
