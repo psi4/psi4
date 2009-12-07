@@ -9,7 +9,14 @@
 
 namespace psi {
 
-int read_options(std::string name, Options & options) {
+/**
+ * This is called immediately before a module is run.  Any options
+ * expected by that module must be added here
+ *
+ * @param name    - the name of the module.
+ * @param options - the liboptions module used in the computations.
+ */
+int read_options(const std::string &name, Options & options) {
 
   ip_cwk_clear();
   ip_cwk_add(":BASIS");
@@ -119,7 +126,7 @@ int read_options(std::string name, Options & options) {
     options.add_str("DERTYPE", "NONE");
     options.add_int("PRINT", 0);
     options.add_int("CACHELEV", 2);
-    options.add_int("CACHETYPE", 1);
+    options.add_str("CACHETYPE", "LRU", "LRU LOW");
     options.add_bool("SCS","false");
     options.add_bool("SCS_N", "false");
     options.add_double("SCALE_OS", 6.0/5.0);

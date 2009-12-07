@@ -15,7 +15,7 @@
 
 namespace psi{ namespace mp2{
 
-void get_params()
+void get_params(Options &options)
 {
   int errcod;
   std::string cachetype = "NULL";
@@ -133,14 +133,14 @@ void get_params()
   fprintf(outfile, "\n");
   fprintf(outfile, "\tInput parameters:\n");
   fprintf(outfile, "\t-----------------\n");
-  fprintf(outfile, "\tWave function \t=\t%s\n", params.wfn);
+  fprintf(outfile, "\tWave function \t=\t%s\n", params.wfn.c_str());
   if(params.semicanonical) {
   fprintf(outfile, "\tReference WFN \t=\tROHF changed to UHF for Semicanonical Orbitals\n");
   }
   else {
   fprintf(outfile, "\tReference WFN \t=\t%s\n", (params.ref==0)?"RHF":((params.ref==1)?"ROHF":"UHF"));
   } 
-  fprintf(outfile, "\tDerivative    \t=\t%s\n", params.dertype);
+  fprintf(outfile, "\tDerivative    \t=\t%s\n", params.dertype.c_str());
   fprintf(outfile, "\tCache Level   \t=\t%d\n", params.cachelev);
   fprintf(outfile, "\tCache Type    \t=\t%s\n", params.cachetype ? "LOW":"LRU");
   fprintf(outfile, "\tMemory (MB)   \t=\t%.1f\n",params.memory/1e6);
