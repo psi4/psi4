@@ -1,4 +1,4 @@
- 
+
 .PHONY:	default all install depend clean dclean targetclean
 
 # Needed in order for $(RUBYLINK) to work below
