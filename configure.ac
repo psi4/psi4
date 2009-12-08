@@ -236,6 +236,8 @@ fi
 fi
 AC_SUBST(FC_SYMBOL)
 
+#ACX_MPI()
+
 AC_PROG_RANLIB
 AC_PROG_CPP
 AC_PROG_CXXCPP
@@ -773,6 +775,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/psiclean/Makefile
           src/bin/transqt2/Makefile
           src/bin/mp2/Makefile
+          src/bin/lmp2/Makefile
           src/bin/clag/Makefile
           src/bin/stable/Makefile
           src/bin/cphf/Makefile
