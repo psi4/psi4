@@ -398,7 +398,6 @@ PsiReturnType cscf(Options & options, int argc,char* argv[])
   free(btemp); btemp = NULL;
   free_block(bold); bold = NULL;
   free_block(bmat);  bmat = NULL;
-printf("refnum %d\n", refnum);
   if (refnum == 0) { //RHF 
     for (i=0; i<ndiis; ++i) {
       for(j=0; j<num_ir; ++j) {

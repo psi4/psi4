@@ -137,7 +137,7 @@ int read_options(const std::string &name, Options & options) {
     options.add_str("REFERENCE","RHF");
     options.add_str("DERTYPE", "NONE");
     options.add_int("PRINT", 1);
-    options.add_bool("PRINT_TEI", true);
+    options.add_bool("PRINT_TEI", false);
     options.add_int("TOLERANCE", 14);
     options.add_int("CACHELEV", 2);
     options.add_str("AO_BASIS", "NONE");
