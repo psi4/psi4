@@ -39,6 +39,7 @@ PsiReturnType lmp2(Options &options, int argc, char * argv[]) {
   MPI_Comm_rank(MPI_COMM_WORLD, &myid);
 
   shared_ptr<PSIO> psio_obj(new PSIO);
+  psiopp_ipv1_config(psio_obj);
   shared_ptr<Chkpt> chkpt_obj(new Chkpt(psio_obj, PSIO_OPEN_OLD));
 
   if(myid == 0) {

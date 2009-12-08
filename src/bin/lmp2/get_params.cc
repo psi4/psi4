@@ -64,6 +64,7 @@ void LMP2::get_params(Options &options) {
   cutoff = options.get_double("LOCAL_CUTOFF");
 
   memory = options.get_int("MEMORY");
+  wfn = const_cast<char*>(options.get_cstr("WFN"));
 
   if(myid == 0)
     print_params();
