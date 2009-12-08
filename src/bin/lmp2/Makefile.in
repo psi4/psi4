@@ -1,0 +1,27 @@
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+CXXDBG = -g
+CXXOPT =
+                                                                                
+LDLIBS += $(LAPACK) $(BLAS)
+
+PSITARGET = $(top_objdir)/lib/libPSI_lmp2.a
+#PSILIBS = -lPSI_dpd -lPSI_mints -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1 -lPSI_deriv -lPSI_int
+
+CXXSRC = class.cc get_params.cc get_moinfo.cc localize.cc\
+	domains.cc domains_print.cc projection.cc\
+	sort.cc direct_transf.cc allocate_T.cc\
+	get_diis_params.cc iterate.cc amplitudes.cc\
+	diis.cc energy.cc check_conv.cc lmp2.cc
+
+BINOBJ = $(CXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+ifneq ($(DODEPEND),no)
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(BINOBJ:%.o=%.d)
+endif
+
