@@ -353,6 +353,16 @@ int cleanup()
   chkpt_wt_frzcpi(frzcpi);
   chkpt_wt_frzvpi(frzvpi);
 
+    for(m=0; m < num_ir ; m++) {
+    s = &scf_info[m];
+    if (nn=s->num_so) {
+      fprintf(outfile,
+              "\nFock Matrix for irrep %s",s->irrep_label);
+      print_array(s->fock_pac,nn,outfile);
+      chkpt_wt_fock(s->fock_pac);
+    }
+  }
+
   /* Write eigenvectors and eigenvalues to new PSIF_CHKPT */
   scr_arr = init_array(nmo);
 
