@@ -6,6 +6,7 @@
 //  Justin Turney
 //  Rollin King
 
+#include <mpi.h>
 #include <getopt.h>
 #include <stdio.h>
 //#include <ruby.h>
@@ -56,6 +57,20 @@ namespace psi {
 int main(int argc, char *argv[])
 {
   using namespace psi;
+
+  int err = MPI_Init(&argc, &argv);
+  printf("MPI_INIT = %d", err);
+  fflush(stdout);
+
+    int nprocs, myid;
+    MPI_Comm_rank(MPI_COMM_WORLD, &myid);
+    MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
+
+
+//  const int nproc = MPI::COMM_WORLD.Get_size();
+//  const int rank = MPI::COMM_WORLD.Get_rank();
+
+
   bool run_modules = true;
 
   if (run_modules) {
@@ -121,6 +136,8 @@ int main(int argc, char *argv[])
    }
 
    psi_stop(infile, outfile, psi_file_prefix);
+
+   MPI_Finalize();
 
   // This needs to be changed a return value from the processed script
   return EXIT_SUCCESS;
