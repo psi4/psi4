@@ -204,6 +204,9 @@ void chkpt_wt_evals(double *);
 void chkpt_wt_alpha_evals(double *);
 void chkpt_wt_beta_evals(double *);
 
+double *chkpt_rd_fock(void);
+void chkpt_wt_fock(double *);
+
 double **chkpt_rd_scf(void);
 double **chkpt_rd_alpha_scf(void);
 double **chkpt_rd_beta_scf(void);

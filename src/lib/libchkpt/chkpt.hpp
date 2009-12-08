@@ -122,6 +122,9 @@ namespace psi {
 		void wt_alpha_evals(double *);
 		void wt_beta_evals(double *);
 
+                double *rd_fock(void);
+                void wt_fock(double *);
+
 		double *rd_exps(const char *key2 = "");
 		void wt_exps(double *, const char *key2 = "");
 

@@ -64,6 +64,7 @@ natom.cc \
 escf.cc \
 etot.cc \
 evals.cc \
+fock.cc \
 scf.cc \
 lagr.cc \
 ccvecs.cc \
