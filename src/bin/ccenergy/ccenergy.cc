@@ -165,7 +165,7 @@ int ccenergy(Options &options, int argc, char *argv[])
     free(cachefiles);
     cleanup();
     exit_io();
-    exit(PSI_RETURN_SUCCESS);
+    return Success;
   }
 
   if(params.local) {
@@ -331,7 +331,7 @@ int ccenergy(Options &options, int argc, char *argv[])
     timer_done();
 #endif
     exit_io();
-    exit(PSI_RETURN_FAILURE);
+    return Failure;
   }
 
   fprintf(outfile, "\tSCF energy       (chkpt)              = %20.15f\n", moinfo.escf);
@@ -460,9 +460,10 @@ int ccenergy(Options &options, int argc, char *argv[])
 #endif
   
   exit_io();
-  if(params.brueckner && brueckner_done) 
-    exit(PSI_RETURN_ENDLOOP);
-  else exit(PSI_RETURN_SUCCESS);
+  if(params.brueckner && brueckner_done)
+      throw FeatureNotImplemented("CCENERGY", "Brueckner end loop", __FILE__, __LINE__);
+  else 
+      return Success;
 }
 
 }} //namespace psi::ccenergy

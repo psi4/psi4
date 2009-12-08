@@ -160,7 +160,7 @@ int rotate(void)
     work = init_array(nmo*3);
     if((stat = C_DSYEV('v','u', nmo,&(MO_S[0][0]),nmo,evals,work,nmo*3))) {
       fprintf(outfile, "rotate(): Error in overlap diagonalization. stat = %d\n", stat);
-      exit(PSI_RETURN_FAILURE);
+      throw PsiException("rotate(): Error in overlap diagonalization.", __FILE__, __LINE__);
     }
     S = block_matrix(nmo, nmo);
     for(i=0; i < nmo; i++) {
@@ -250,7 +250,7 @@ int rotate(void)
 			  moinfo.occpi[h], evals, work, moinfo.occpi[h]*3))) {
 	  fprintf(outfile, "rotate(): Error in Foo[%1d] diagonalization. stat = %d\n", 
 		  h, stat);
-	  exit(PSI_RETURN_FAILURE);
+      throw PsiException("rotate(): Error in Foo diagonalization.", __FILE__, __LINE__);
 	}
 	free(evals);
 	free(work);
@@ -272,7 +272,7 @@ int rotate(void)
 			  evals, work, moinfo.virtpi[h]*3))) {
 	  fprintf(outfile, "rotate(): Error in Fvv[%1d] diagonalization. stat = %d\n", 
 		  h, stat);
-	  exit(PSI_RETURN_FAILURE);
+      throw PsiException("rotate(): Error in Foo diagonalization.", __FILE__, __LINE__);
 	}
 	free(evals);
 	free(work);
@@ -400,7 +400,7 @@ int rotate(void)
     work = init_array(nmo*3);
     if((stat = C_DSYEV('v','u', nmo,&(MO_S[0][0]),nmo,evals,work,nmo*3))) {
       fprintf(outfile, "rotate(): Error in overlap diagonalization. stat = %d\n", stat);
-      exit(PSI_RETURN_FAILURE);
+      throw PsiException("rotate(): Error in overlap diagonalization.", __FILE__, __LINE__);
     }
 
     /* build S^-1/2 for this basis */
@@ -470,7 +470,7 @@ int rotate(void)
     work = init_array(nmo*3);
     if((stat = C_DSYEV('v','u', nmo,&(MO_S[0][0]),nmo,evals,work,nmo*3))) {
       fprintf(outfile, "rotate(): Error in overlap diagonalization. stat = %d\n", stat);
-      exit(PSI_RETURN_FAILURE);
+      throw PsiException("rotate(): Error in Foo diagonalization.", __FILE__, __LINE__);
     }
 
     /* build S^-1/2 for this basis */
@@ -555,7 +555,7 @@ int rotate(void)
 			  moinfo.aoccpi[h], evals, work, moinfo.aoccpi[h]*3))) {
 	  fprintf(outfile, "rotate(): Error in alpha Foo[%1d] diagonalization. stat = %d\n", 
 		  h, stat);
-	  exit(PSI_RETURN_FAILURE);
+      throw PsiException("rotate(): Error in Foo diagonalization.", __FILE__, __LINE__);
 	}
 	free(evals);
 	free(work);
@@ -572,7 +572,7 @@ int rotate(void)
 			  evals, work, moinfo.avirtpi[h]*3))) {
 	  fprintf(outfile, "rotate(): Error in alpha Fvv[%1d] diagonalization. stat = %d\n", 
 		  h, stat);
-	  exit(PSI_RETURN_FAILURE);
+      throw PsiException("rotate(): Error in alpha Fvv diagonalization.", __FILE__, __LINE__);
 	}
 	free(evals);
 	free(work);
@@ -656,7 +656,7 @@ int rotate(void)
 			  moinfo.boccpi[h], evals, work, moinfo.boccpi[h]*3))) {
 	  fprintf(outfile, "rotate(): Error in alpha Foo[%1d] diagonalization. stat = %d\n", 
 		  h, stat);
-	  exit(PSI_RETURN_FAILURE);
+      throw PsiException("rotate(): Error in alpha Foo diagonalization.", __FILE__, __LINE__);
 	}
 	free(evals);
 	free(work);
@@ -673,7 +673,7 @@ int rotate(void)
 			  evals, work, moinfo.bvirtpi[h]*3))) {
 	  fprintf(outfile, "rotate(): Error in alpha Fvv[%1d] diagonalization. stat = %d\n", 
 		  h, stat);
-	  exit(PSI_RETURN_FAILURE);
+      throw PsiException("rotate(): Error in alpha Fvv diagonalization.", __FILE__, __LINE__);
 	}
 	free(evals);
 	free(work);
