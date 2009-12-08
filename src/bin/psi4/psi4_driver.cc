@@ -82,7 +82,6 @@ psi4_driver(Options & options, int argc, char *argv[])
         }
     }
     
-    printf("numTask = %d\n", numTasks);
     fprintf(outfile, "  The list of tasks to execute:\n");
     for(int n = 0; n < numTasks; ++n) {
         char *thisJob;
