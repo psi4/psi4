@@ -3,7 +3,7 @@
     \brief Enter brief description of file here 
 */
 
-namespace psi { namespace CCTRIPLES {
+namespace psi { namespace cctriples {
 
 struct MOInfo {
   int nirreps;        /* no. of irreducible representations */

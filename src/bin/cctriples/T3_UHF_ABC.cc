@@ -7,7 +7,7 @@
 #include <ccfiles.h>
 
 namespace psi {
-namespace CCTRIPLES {
+namespace cctriples {
 
 /* T3_UHF_AAA_abc(): Computes all connected and disconnected
  * T3(IJK,ABC) * amplitudes for a given A, B, C combination for input

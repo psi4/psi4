@@ -3,7 +3,6 @@ psi: (
   MP2:ENERGY  = ("input" "cints" "cscf" "transqt2" "ccsort" "mp2" "psiclean")
   CCSD:ENERGY = ("input" "cints" "cscf" "transqt2" "ccsort" "ccenergy" "psiclean")
   CCSD_T:ENERGY = ("input" "cints" "cscf" "transqt2" "ccsort" "ccenergy" "cctriples" "psiclean")
-  
   SCF:FIRST = ("cints" "cscf" "cints --deriv1")
 ) 
 

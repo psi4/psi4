@@ -7,7 +7,7 @@
 #include <libdpd/dpd.h>
 #include <psi4-dec.h>
 
-namespace psi { namespace CCTRIPLES {
+namespace psi { namespace cctriples {
 
 /* Global variables */
 #ifdef EXTERN

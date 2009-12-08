@@ -9,7 +9,7 @@
 #include <psifiles.h>
 #include <psi4-dec.h>
 
-namespace psi { namespace CCTRIPLES {
+namespace psi { namespace cctriples {
 
 void cache_abcd_rhf(int **cachelist);
 void cache_iabc_rhf(int **cachelist);
