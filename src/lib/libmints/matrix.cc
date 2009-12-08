@@ -336,6 +336,23 @@ void Matrix::set(shared_ptr<Vector> vec)
     set(vec.get());
 }
 
+double *Matrix::to_lower_triangle() const
+{
+    int sizer=0, sizec=0;
+    for (int h=0; h<nirreps_; ++h) {
+        sizer += rowspi_[h];
+        sizec += colspi_[h];
+    }
+    if (sizer != sizec)
+        return NULL;
+
+    double *tri = new double[ioff[sizer]];
+    double **temp = to_block_matrix();
+    sq_to_tri(temp, tri, sizer);
+    Matrix::free(temp);
+    return tri;
+}
+
 double **Matrix::to_block_matrix() const
 {
     int sizer=0, sizec=0;

@@ -413,6 +413,11 @@ void RHF::save_information()
     delete[](frzcpi);
     delete[](frzvpi);
     
+    // Save the Fock matrix
+    double *ftmp = F_->to_lower_triangle();
+    chkpt_->wt_fock(ftmp);
+    delete[](ftmp);
+
     // This code currently only handles RHF
     chkpt_->wt_iopen(0);
     

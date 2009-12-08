@@ -126,6 +126,7 @@ public:
     double get(int h, int m, int n) { return matrix_[h][m][n]; }
     /// Returns matrix_
     double **to_block_matrix() const;
+    double *to_lower_triangle() const;
     /// Converts this to a full non-symmetry-block matrix
     SimpleMatrix *to_simple_matrix();
 
