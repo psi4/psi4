@@ -103,7 +103,13 @@ psi4_driver(Options & options, int argc, char *argv[])
             err += " is not known to PSI4.  Please update the driver\n";
             throw PsiException(err, __FILE__, __LINE__);
         }
-        dispatch_table[thisJob](options, argc, argv);
+        if (dispatch_table[thisJob](options, argc, argv) != Success) {
+            // Good chance at this time that an error occurred.
+            // Report it to the user.
+            fprintf(stderr, "%s did not return a Success code.\n", thisJob);
+            throw PsiException("Module failed.", __FILE__, __LINE__);
+        }
+        fflush(outfile);
         free(thisJob);
     }
 
