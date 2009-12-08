@@ -428,6 +428,22 @@ else if(name == "CCDENSITY") {
     options.add("DOMAINS", new ArrayType());
     options.add_bool("DOMAIN_PRINT", 0);
   }
+    else if(name == "LMP2") {
+    /*--- read the wavefunction ---*/
+    options.add_str("WFN", "LMP2");
+    options.add_str("REFERENCE", "RHF", "RHF");
+    options.add_int("PRINT", 0);
+    options.add_int("MAXITER", 50);
+    options.add_int("ENERGY_CONV", 7);
+    options.add_int("RMS_CONV", 5);
+    options.add_int("FSKIP", 2);
+    options.add_bool("USE_DIIS", 1);
+    options.add_int("DIISSTART", 3);
+    options.add_int("NDIIS", 6);
+    options.add_double("LOCAL_CUTOFF", 0.02);
+    options.add_int("MEMORY", 2000);
+  }
+
 
   options.read_ipv1();
   options.print();
