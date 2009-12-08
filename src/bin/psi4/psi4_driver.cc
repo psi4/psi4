@@ -61,24 +61,25 @@ psi4_driver(Options & options, int argc, char *argv[])
     // This version assumes that the array contains only module names, not
     // macros for other job types, like $SCF
     int numTasks = 0;
-    int errcod = ip_count(jobList, &numTasks, 0);
-    if (!ip_exist(jobList, 0)){
-        std::string err("Error: jobtype ");
-        err += jobList;
-        err += " is not defined in psi.dat";
-        throw PsiException(err, __FILE__, __LINE__);
-    }
-    if (errcod != IPE_OK){
-        std::string err("Error: trouble reading ");
-        err += jobList;
-        err += " array from psi.dat";
-        throw PsiException(err, __FILE__, __LINE__);
-    }
-
+    int errcod;
     if(ip_exist("EXEC", 0)){
         // Override psi.dat with the commands in the exec array in input
         errcod = ip_count("EXEC", &numTasks, 0);
         jobList = "EXEC";
+    }else{
+        errcod = ip_count(jobList, &numTasks, 0);
+        if (!ip_exist(jobList, 0)){
+            std::string err("Error: jobtype ");
+            err += jobList;
+            err += " is not defined in psi.dat";
+            throw PsiException(err, __FILE__, __LINE__);
+        }
+        if (errcod != IPE_OK){
+            std::string err("Error: trouble reading ");
+            err += jobList;
+            err += " array from psi.dat";
+            throw PsiException(err, __FILE__, __LINE__);
+        }
     }
     
     printf("numTask = %d\n", numTasks);
