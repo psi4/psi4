@@ -28,11 +28,7 @@ setup_driver(Options &options)
     // make a map of function pointers to the functions
     dispatch_table["CCENERGY"]  = &(psi::ccenergy::ccenergy);
     dispatch_table["CCSORT"]    = &(psi::ccsort::ccsort);
-<<<<<<< HEAD
-    dispatch_table["CCTRIPLES"] = &(psi::cints::cints);
-=======
-    dispatch_table["CCTRIPLES"] = &(psi::CCTRIPLES::CCTRIPLES);
->>>>>>> moved CCTRIPLES to cctriples
+    dispatch_table["CCTRIPLES"] = &(psi::cctriples::cctriples);
     dispatch_table["CINTS"]     = &(psi::cints::cints);
     dispatch_table["CSCF"]      = &(psi::cscf::cscf);
     dispatch_table["INPUT"]     = &(psi::input::input);
