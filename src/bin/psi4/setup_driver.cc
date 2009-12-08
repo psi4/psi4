@@ -3,6 +3,7 @@
 namespace psi{
     namespace ccsort   { PsiReturnType ccsort(Options &, int argc, char *argv[]); }
     namespace ccenergy { PsiReturnType ccenergy(Options &, int argc, char *argv[]); }
+    namespace cctriples { PsiReturnType cctriples(Options &, int argc, char *argv[]); }
     namespace cints    { PsiReturnType cints(Options &, int argc, char *argv[]); }
     namespace cscf     { PsiReturnType cscf(Options &, int argc, char *argv[]); }
     namespace input    { PsiReturnType input(Options &, int argc, char *argv[]); }
@@ -27,6 +28,7 @@ setup_driver(Options &options)
     // make a map of function pointers to the functions
     dispatch_table["CCENERGY"]  = &(psi::ccenergy::ccenergy);
     dispatch_table["CCSORT"]    = &(psi::ccsort::ccsort);
+    dispatch_table["CCTRIPLES"] = &(psi::cints::cints);
     dispatch_table["CINTS"]     = &(psi::cints::cints);
     dispatch_table["CSCF"]      = &(psi::cscf::cscf);
     dispatch_table["INPUT"]     = &(psi::input::input);

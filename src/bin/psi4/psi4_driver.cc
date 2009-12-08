@@ -55,6 +55,7 @@ psi4_driver(Options & options, int argc, char *argv[])
 
     fprintf(outfile, "The jobtype string is...\n%s\n",calcType.c_str());
 
+
     char *jobList = const_cast<char*>(calcType.c_str());
     // This version assumes that the array contains only module names, not
     // macros for other job types, like $SCF
@@ -73,19 +74,24 @@ psi4_driver(Options & options, int argc, char *argv[])
         throw PsiException(err, __FILE__, __LINE__);
     }
 
-    if(ip_exist("EXEC", 0)){
-        // Override psi.dat with the commands in the exec array in input
-        errcod = ip_count("EXEC", &numTasks, 0);
-        jobList = "EXEC";
-    }
-    
+    fprintf(outfile, "numTasks = %d", numTasks);
+
+//    if(ip_exist("EXEC", 0)){
+//        // Override psi.dat with the commands in the exec array in input
+//        errcod = ip_count("EXEC", &numTasks, 0);
+//        jobList = "EXEC";
+//    }
+
+
+
     for(int n = 0; n < numTasks; ++n){
         char *thisJob;
-        errcod = ip_string(jobList, &thisJob, 1, n);
+        int m = n;
+        errcod = ip_string(jobList, &thisJob, 1, m);
         // Make sure the job name is all upper case
         int length = strlen(thisJob);
         std::transform(thisJob, thisJob + length, thisJob, ::toupper);
-        fprintf(outfile, "Job %d is %s\n", n, thisJob);
+        fprintf(outfile, "Job %d is --\n", m);//, thisJob);
         read_options(thisJob, options);
         if(dispatch_table.count(thisJob) == 0){
             std::string err = "Module ";
