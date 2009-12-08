@@ -20,7 +20,7 @@ namespace psi { namespace cctriples {
     
     void init_io(int argc, char *argv[]);
     void title(void);
-    void get_moinfo(void);
+    void get_moinfo(Options&);
     void exit_io(void);
     void cleanup(void);
     double ET_RHF(void);
@@ -64,7 +64,7 @@ namespace psi { namespace cctriples {
     void test_abc_loops_BBA();
     void test_abc_loops_BBB();
 
-PsiReturnType CCTRIPLES(Options &options, int argc, char *argv[])
+PsiReturnType cctriples(Options &options, int argc, char *argv[])
 {
   double ETAAA, ETAAB, ETABB, ETBBB, ET;
   long int memory;
@@ -81,7 +81,7 @@ PsiReturnType CCTRIPLES(Options &options, int argc, char *argv[])
   timer_init();
   timer_on("CCtriples");
 
-  get_moinfo();
+  get_moinfo(options);
   memory = module.get_memory();
 
   cachefiles = init_int_array(PSIO_MAXUNIT);
