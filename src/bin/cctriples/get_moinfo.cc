@@ -168,7 +168,7 @@ namespace psi { namespace cctriples {
 	  moinfo.frdocc[i];
   
       fprintf(outfile,"\n\n");
-      fprintf(outfile, "\tWave function   =    %6s\n",params.wfn);
+      fprintf(outfile, "\tWave function   =    %6s\n",params.wfn.c_str());
       if(params.semicanonical) {
 	fprintf(outfile, "\tReference wfn   =    ROHF changed to UHF for Semicanonical Orbitals\n");
       }

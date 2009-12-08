@@ -53,8 +53,7 @@ psi4_driver(Options & options, int argc, char *argv[])
     calcType += ":";
     calcType += options.get_str("DERTYPE");
 
-    fprintf(outfile, "The jobtype string is...\n%s\n",calcType.c_str());
-
+    fprintf(outfile, "The jobtype string is...\n%s\n",calcType.c_str()); fflush(outfile);
 
     char *jobList = const_cast<char*>(calcType.c_str());
     // This version assumes that the array contains only module names, not
@@ -81,15 +80,20 @@ psi4_driver(Options & options, int argc, char *argv[])
     }
     
     printf("numTask = %d\n", numTasks);
-
+    fprintf(outfile, "  The list of tasks to execute:\n");
+    for(int n = 0; n < numTasks; ++n) {
+        char *thisJob;
+        ip_string(jobList, &thisJob, 1, n);
+        fprintf(outfile, "    %s\n", thisJob);
+        free(thisJob);
+    }
     for(int n = 0; n < numTasks; ++n){
         char *thisJob;
-        int m = n;
-        errcod = ip_string(jobList, &thisJob, 1, m);
+        errcod = ip_string(jobList, &thisJob, 1, n);
         // Make sure the job name is all upper case
         int length = strlen(thisJob);
         std::transform(thisJob, thisJob + length, thisJob, ::toupper);
-        fprintf(outfile, "Job %d is --\n", m);//, thisJob);
+        fprintf(outfile, "Job %d is %s\n", n, thisJob); fflush(outfile);
         read_options(thisJob, options);
         if(dispatch_table.find(thisJob) == dispatch_table.end()){
             std::string err = "Module ";

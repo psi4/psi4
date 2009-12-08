@@ -7,6 +7,7 @@
 #include <libciomr/libciomr.h>
 #include <ccfiles.h>
 #include <psifiles.h>
+#include <psi4-dec.h>
 
 namespace psi { namespace ccenergy {
 
@@ -84,7 +85,10 @@ int **cacheprep_uhf(int level, int *cachefiles)
 
       return cachelist;
     }
-  else { printf("Error: invalid cache level!\n"); exit(PSI_RETURN_FAILURE); }
+  else {
+    printf("Error: invalid cache level!\n"); 
+    throw InputException("Invalid cache level!", "CACHELEV", level, __FILE__, __LINE__);
+  }
 }
 
 int **cacheprep_rhf(int level, int *cachefiles)
@@ -147,7 +151,10 @@ int **cacheprep_rhf(int level, int *cachefiles)
 
       return cachelist;
     }
-  else { printf("Error: invalid cache level!\n"); exit(PSI_RETURN_FAILURE); }
+  else { 
+    printf("Error: invalid cache level!\n");
+    throw InputException("Invalid cache level!", "CACHELEV", level, __FILE__, __LINE__);
+  }
 }
 
 void cache_abcd_uhf(int **cachelist)

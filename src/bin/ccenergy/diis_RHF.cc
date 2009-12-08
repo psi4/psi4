@@ -201,7 +201,7 @@ void diis_RHF(int iter)
   errcod = C_DGESV(nvector+1, 1, &(B[0][0]), nvector+1, &(ipiv[0]), &(C[0]), nvector+1);
   if(errcod) {
     fprintf(outfile, "\nError in DGESV return in diis.\n");
-    exit(PSI_RETURN_FAILURE);
+    throw PsiException("Error in DGESV return in diis.", __FILE__, __LINE__);
   }
 
   /* Build a new amplitude vector from the old ones */
