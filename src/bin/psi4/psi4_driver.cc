@@ -46,8 +46,8 @@ psi4_driver(Options & options, int argc, char *argv[])
     ip_set_uppercase(1);
     ip_append(psidat, stdout);
     ip_cwk_clear();
-    ip_cwk_add(":DEFAULT");
-    ip_cwk_add(":PSI");
+    ip_cwk_add(const_cast<char*>(":DEFAULT"));
+    ip_cwk_add(const_cast<char*>(":PSI"));
     fclose(psidat);
 
     // Join the job descriptors into one label
@@ -113,7 +113,7 @@ psi4_driver(Options & options, int argc, char *argv[])
         fflush(outfile);
         free(thisJob);
     }
-
+    return Success;
 }
 
 } // Namespace
