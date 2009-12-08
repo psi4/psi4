@@ -4,7 +4,7 @@
 */
 #include <string>
 
-namespace psi { namespace CCTRIPLES {
+namespace psi { namespace cctriples {
 
 struct Params {
   int ref;

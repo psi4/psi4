@@ -13,7 +13,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace CCTRIPLES {
+namespace psi { namespace cctriples {
 
 double ET_AAA(void)
 {

@@ -13,7 +13,7 @@
 #include "globals.h"
 
 namespace psi {
-namespace CCTRIPLES {
+namespace cctriples {
 
 extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
     int A, int Ga, int B, int Gb, int C, int Gc, dpdbuf4 *C2, dpdbuf4 *F,

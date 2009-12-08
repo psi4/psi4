@@ -14,7 +14,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace CCTRIPLES {
+namespace psi { namespace cctriples {
 
     /*
     ** get_moinfo():  Routine to obtain basic orbital information from

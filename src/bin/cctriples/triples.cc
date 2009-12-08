@@ -15,7 +15,7 @@
 #include "MOInfo.h"
 #include "globals.h"
 
-namespace psi { namespace CCTRIPLES {
+namespace psi { namespace cctriples {
 
     
     void init_io(int argc, char *argv[]);

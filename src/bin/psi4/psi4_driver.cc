@@ -74,15 +74,13 @@ psi4_driver(Options & options, int argc, char *argv[])
         throw PsiException(err, __FILE__, __LINE__);
     }
 
-    fprintf(outfile, "numTasks = %d", numTasks);
-
-//    if(ip_exist("EXEC", 0)){
-//        // Override psi.dat with the commands in the exec array in input
-//        errcod = ip_count("EXEC", &numTasks, 0);
-//        jobList = "EXEC";
-//    }
-
-
+    if(ip_exist("EXEC", 0)){
+        // Override psi.dat with the commands in the exec array in input
+        errcod = ip_count("EXEC", &numTasks, 0);
+        jobList = "EXEC";
+    }
+    
+    printf("numTask = %d\n", numTasks);
 
     for(int n = 0; n < numTasks; ++n){
         char *thisJob;
@@ -93,7 +91,7 @@ psi4_driver(Options & options, int argc, char *argv[])
         std::transform(thisJob, thisJob + length, thisJob, ::toupper);
         fprintf(outfile, "Job %d is --\n", m);//, thisJob);
         read_options(thisJob, options);
-        if(dispatch_table.count(thisJob) == 0){
+        if(dispatch_table.find(thisJob) == dispatch_table.end()){
             std::string err = "Module ";
             err += thisJob;
             err += " is not known to PSI4.  Please update the driver\n";
