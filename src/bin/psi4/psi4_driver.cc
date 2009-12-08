@@ -28,8 +28,10 @@ psi4_driver(Options & options, int argc, char *argv[])
 
     // Track down the psi.dat file and set up ipv1 to read it
     // unless the user provided an exec array in the input
-    std::string psiDatDirName(getenv("PSIDATADIR"));
+    std::string psiDatDirName;
     std::string psiDatFileName;
+    if (getenv("PSIDATADIR"))
+        psiDatDirName = getenv("PSIDATADIR");
     if (!psiDatDirName.empty()) {
         psiDatFileName = psiDatDirName;
     }else{
