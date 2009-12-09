@@ -29,6 +29,10 @@
 namespace psi{ namespace lmp2{
 
 void LMP2::direct_transformation() {
+
+  extern int myid;
+  extern int nprocs;
+
   using namespace std;
 
   int i, j, a, b, ab, t, ij;

@@ -38,6 +38,9 @@ namespace psi{ namespace lmp2{
 
 void LMP2::domains() {
 
+  extern int myid;
+  extern int nprocs;
+
   int i, j, k, l, ij;
   int next_atom, row, col, m, errcod;
   int max, nvir, nfzc;

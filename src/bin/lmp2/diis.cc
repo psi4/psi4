@@ -17,8 +17,11 @@
 #include "globals.h"
 
 namespace psi{ namespace lmp2{
-
+    
 void LMP2::diis_ext() {
+
+  extern int myid;
+  extern int nprocs;
 
   int i, j, k, p, q, a, b, v, ij;
   double **Bmat, **co;

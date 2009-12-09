@@ -21,23 +21,31 @@
 //#include <libmints/matrix.h>
 #include "globals.h"
 
-using namespace std;
-using namespace psi;
+//using namespace std;
+//using namespace psi;
 
 //std::string to_string(const int val); // In libmints/matrix.cc
 
-namespace psi{ namespace lmp2{
+namespace psi{
+
+extern int myid;
+extern int nprocs;
+
+namespace lmp2{
+
+    int myid = psi::myid;
+    int nprocs = psi::nprocs;
 
 PsiReturnType lmp2(Options &options, int argc, char * argv[]) {
 
-  using namespace psi::lmp2;
+//  using namespace psi::lmp2;
 
 //  MPI_Init(&argc, &argv);
 
-  int nprocs, myid;
-  MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
-  MPI_Comm_rank(MPI_COMM_WORLD, &myid);
-
+//  int nprocs, myid;
+//  MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
+//  MPI_Comm_rank(MPI_COMM_WORLD, &myid);
+  
   shared_ptr<PSIO> psio_obj(new PSIO);
   psiopp_ipv1_config(psio_obj);
   shared_ptr<Chkpt> chkpt_obj(new Chkpt(psio_obj, PSIO_OPEN_OLD));

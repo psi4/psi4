@@ -20,15 +20,15 @@
 
 namespace psi{ namespace lmp2{
 
+extern int myid;
+extern int nprocs;
+
 void LMP2::get_params(Options &options) {
 
   int errcod, iconv, rconv, fs;
   long int max_bytes;
   char *cachetype = NULL;
   char *junk;
-
-  MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
-  MPI_Comm_rank(MPI_COMM_WORLD, &myid);
 
 
   /* Default reference is RHF */

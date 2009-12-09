@@ -22,6 +22,9 @@ namespace psi{ namespace lmp2{
 
 void LMP2::amplitudes() {
 
+  extern int myid;
+  extern int nprocs;
+
   int i, j, v, kj, ik, l, k, m, n, K;
   int a, b, c, d, r, s, ij, L, M;
   int t, N, u, o, O;

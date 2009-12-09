@@ -21,8 +21,11 @@
 #include "globals.h"
 
 namespace psi{ namespace lmp2{
-
+    
 void LMP2::iterate() {
+
+  extern int myid;
+  extern int nprocs;
 
   iter = 0;
   conv = 0;

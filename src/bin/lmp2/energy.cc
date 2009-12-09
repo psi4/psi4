@@ -19,8 +19,11 @@
 #include "globals.h"
 
 namespace psi{ namespace lmp2{
-
+    
 void LMP2::energy() {
+    
+  extern int myid;
+  extern int nprocs;
 
   int i, j, a, b, v, ij;
   double Emp2_sum;
