@@ -13,6 +13,7 @@
 namespace psi {
 
 #define DEF_MAXCRR (256000000)  // default maxcor 256 M bytes
+  extern int myid;
 
 void set_memory(FILE *infile, FILE *outfile)
 {
@@ -72,10 +73,15 @@ void set_memory(FILE *infile, FILE *outfile)
     }
   }
 
-  if (maxcrr < 1e9)
-    fprintf(outfile,"\tMemory for module set to %.3lf MB\n", maxcrr / 1e6 );
-  else
+  if (maxcrr < 1e9) {
+    if(myid == 0)
+        fprintf(outfile,"\tMemory for module set to %.3lf MB\n", maxcrr / 1e6 );
+
+  }
+  else {
+    if(myid == 0)
     fprintf(outfile,"\tMemory for module set to %.3lf GB\n", maxcrr / 1e9 );
+  }
 
   module.set_memory(maxcrr);
 

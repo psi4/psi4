@@ -6,7 +6,7 @@
 //  Justin Turney
 //  Rollin King
 
-#include <mpi.h>
+#include "mpi.h"
 #include <getopt.h>
 #include <stdio.h>
 //#include <ruby.h>
@@ -21,7 +21,7 @@
 #define MAIN
 #include "psi4.h"
 
-  
+
 namespace psi { 
 
   void set_memory(FILE *infile, FILE *outfile);
@@ -31,9 +31,7 @@ namespace psi {
 
   int read_options(const std::string &name, Options & options);
   void read_atom_basis(char ** & atom_basis, int num_atoms);
-}
 
-namespace psi {
   // Functions defined in ruby.c that are only needed here
   extern bool initialize_ruby();
   extern void load_input_file_into_ruby();
@@ -43,7 +41,7 @@ namespace psi {
   extern bool create_global_task();
   extern void enable_modules();
 
-    // Functions defined here
+  // Functions defined here
   void psi_start_and_parse_command_line(int argc, char *argv[]);
   void print_version();
   void print_usage();
@@ -51,39 +49,37 @@ namespace psi {
   
   PSIO *psio = NULL;
   std::map<std::string, PsiReturnType(*)(Options &, int argc, char *argv[])> dispatch_table;
+
+  // These are global variable for the number of processes and
+  // id for each process
+  int nprocs;
+  int myid;
 }
 
 // This is the ONLY main function in PSI
 int main(int argc, char *argv[])
 {
-  using namespace psi;
+    MPI_Init(&argc, &argv);
 
-  int err = MPI_Init(&argc, &argv);
-//printf("MPI_INIT = %d", err);
-  fflush(stdout);
+    using namespace psi;
 
-    int nprocs, myid;
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);
     MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 
+    bool run_modules = true;
 
-//  const int nproc = MPI::COMM_WORLD.Get_size();
-//  const int rank = MPI::COMM_WORLD.Get_rank();
+    if (run_modules) {
 
+    int num_unparsed, i;
+    char *argv_unparsed[100];
 
-  bool run_modules = true;
-
-  if (run_modules) {
-
-  int num_unparsed, i;
-  char *argv_unparsed[100];
-
-  for (i=1, num_unparsed=0; i<argc; ++i)
+    for (i=1, num_unparsed=0; i<argc; ++i)
     argv_unparsed[num_unparsed++] = argv[i];
 
-  psi_start(&infile,&outfile,&psi_file_prefix,num_unparsed, argv_unparsed, 0);
+    psi_start(&infile,&outfile,&psi_file_prefix,num_unparsed, argv_unparsed, 0);
 
-    print_version();
+    if(myid == 0)
+      print_version();
 
     set_memory(infile, outfile);
 
@@ -91,7 +87,7 @@ int main(int argc, char *argv[])
     psio_init();
     psio_ipv1_config();
    
-     Options options;
+    Options options;
    
      //psi3_simulator(options, argc, argv);
     psi4_driver(options, argc, argv);
@@ -255,8 +251,8 @@ namespace psi {
 
       // Error?
       if (outfile == NULL) {
-        fprintf(stderr, "Unable to open: %s\n", szFilename.c_str());
-        exit(EXIT_FAILURE);
+          fprintf(stderr, "Unable to open: %s\n", szFilename.c_str());
+          exit(EXIT_FAILURE);
       }
     }
     else {
@@ -305,11 +301,11 @@ namespace psi {
 
   void psi_abort(void)
   {
-    if (outfile)
-      fprintf(outfile,"\nPSI4 aborting.\n");
-    else
-      fprintf(stderr, "\nPSI4 aborting.\n");
-
+    if (outfile) 
+        fprintf(outfile,"\nPSI4 aborting.\n");
+    else 
+        fprintf(stderr, "\nPSI4 aborting.\n");
+    
     abort();
   }
 } // end namespace psi::psi4
