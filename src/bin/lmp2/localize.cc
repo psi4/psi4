@@ -26,6 +26,9 @@ void LMP2::localize() {
 
   using namespace psi;
 
+  extern int myid;
+  extern int nprocs;
+
   if(myid == 0) {
     fprintf(outfile, "\n********************* Entering Localization Scope ********************************\n");
   }

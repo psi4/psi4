@@ -41,8 +41,6 @@ class LMP2 {
 //    double *fR;
     double **Rt_full;		/* Full AO to PO matrix */
     double ***W;
-    int myid;
-    int nprocs;
     shared_ptr<PSIO> psio;
     shared_ptr<Chkpt> chkpt;    
     int ref;

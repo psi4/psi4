@@ -21,6 +21,9 @@
 
 namespace psi{ namespace lmp2{
 
+    extern int myid;
+    extern int nprocs;
+    
 LMP2::LMP2() {
   fprintf(outfile, "Do not use the default constructor for LMP2");
 }

@@ -20,6 +20,9 @@
 namespace psi{ namespace lmp2{
 
 void LMP2::projection() {
+
+  extern int myid;
+  extern int nprocs;
   int i, j, ij, cnt, v, K, L, I;
   int r, s, k, l;
   int *ij_owner, *ij_local, count;

@@ -21,6 +21,9 @@
 
 namespace psi{ namespace lmp2{
 
+    extern int myid;
+    extern int nprocs;
+
 int LMP2::get_nso() {
   int nso_;
 

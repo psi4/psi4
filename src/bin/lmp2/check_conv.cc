@@ -31,6 +31,9 @@ namespace psi{ namespace lmp2{
 
 void LMP2::check_conv() {
 
+  extern int myid;
+  extern int nprocs;
+
   int i, j, a, b, v, ij;
   int *ij_owner, *ij_local, count;
   double rms, rms_sum;

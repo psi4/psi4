@@ -20,6 +20,9 @@ namespace psi{ namespace lmp2{
 
 void LMP2::allocate_T() {
 
+  extern int myid;
+  extern int nprocs;
+
   int i, j, ij;
   int *ij_local, *ij_owner;
 
