@@ -16,6 +16,8 @@ namespace psi {
  * @param name    - the name of the module.
  * @param options - the liboptions module used in the computations.
  */
+extern int myid;
+
 int read_options(const std::string &name, Options & options) {
 
   ip_cwk_clear();
@@ -446,7 +448,8 @@ else if(name == "CCDENSITY") {
 
 
   options.read_ipv1();
-  options.print();
+  if(myid == 0)
+    options.print();
 }
 
 } //end ::psi

@@ -1,7 +1,9 @@
 /*! \file psi4_driver.cc
 \defgroup PSI4 The new PSI4 driver.
 */
-
+#include "mpi.h"
+#include <iostream>
+#include <fstream>              // file I/O support
 #include "libipv1/ip_lib.h"
 #include <psi4-dec.h>
 #include <string.h>
@@ -14,7 +16,7 @@ namespace psi {
 extern FILE *infile;
 extern void setup_driver(Options &options);
 extern int read_options(const std::string &jobName, Options &options);
-
+extern int myid;
 
 int
 psi4_driver(Options & options, int argc, char *argv[])
@@ -55,7 +57,8 @@ psi4_driver(Options & options, int argc, char *argv[])
     calcType += ":";
     calcType += options.get_str("DERTYPE");
 
-    fprintf(outfile, "The jobtype string is...\n%s\n",calcType.c_str()); fflush(outfile);
+    if(myid == 0)
+      fprintf(outfile, "The jobtype string is...\n%s\n",calcType.c_str()); fflush(outfile);
 
     char *jobList = const_cast<char*>(calcType.c_str());
     // This version assumes that the array contains only module names, not
@@ -81,34 +84,59 @@ psi4_driver(Options & options, int argc, char *argv[])
             throw PsiException(err, __FILE__, __LINE__);
         }
     }
-    
-    fprintf(outfile, "  The list of tasks to execute:\n");
+
+    if(myid == 0)
+      fprintf(outfile, "  The list of tasks to execute:\n");
     for(int n = 0; n < numTasks; ++n) {
         char *thisJob;
         ip_string(jobList, &thisJob, 1, n);
-        fprintf(outfile, "    %s\n", thisJob);
+        if(myid == 0)
+          fprintf(outfile, "    %s\n", thisJob);
         free(thisJob);
     }
+
     for(int n = 0; n < numTasks; ++n){
         char *thisJob;
         errcod = ip_string(jobList, &thisJob, 1, n);
         // Make sure the job name is all upper case
         int length = strlen(thisJob);
         std::transform(thisJob, thisJob + length, thisJob, ::toupper);
-        fprintf(outfile, "Job %d is %s\n", n, thisJob); fflush(outfile);
+        if(myid == 0)
+          fprintf(outfile, "Job %d is %s\n", n, thisJob); fflush(outfile);
         read_options(thisJob, options);
+
         if(dispatch_table.find(thisJob) == dispatch_table.end()){
             std::string err = "Module ";
             err += thisJob;
             err += " is not known to PSI4.  Please update the driver\n";
             throw PsiException(err, __FILE__, __LINE__);
         }
-        if (dispatch_table[thisJob](options, argc, argv) != Success) {
-            // Good chance at this time that an error occurred.
-            // Report it to the user.
-            fprintf(stderr, "%s did not return a Success code.\n", thisJob);
-            throw PsiException("Module failed.", __FILE__, __LINE__);
+
+        // If the function call is LMP2, run in parallel
+        if(strcmp(thisJob, "LMP2") == 0) {
+            // Needed a barrier before the functions are called
+            MPI_Barrier(MPI_COMM_WORLD);
+            if (dispatch_table[thisJob](options, argc, argv) != Success) {
+                // Good chance at this time that an error occurred.
+                // Report it to the user.
+                fprintf(stderr, "%s did not return a Success code.\n", thisJob);
+                throw PsiException("Module failed.", __FILE__, __LINE__);
+            }
         }
+        // If any other functions are called only process 0 runs the function
+        else {
+            // Needed a barrier before the functions are called
+            MPI_Barrier(MPI_COMM_WORLD);
+            if(myid == 0) {
+                if (dispatch_table[thisJob](options, argc, argv) != Success) {
+                // Good chance at this time that an error occurred.
+                // Report it to the user.
+                    fprintf(stderr, "%s did not return a Success code.\n", thisJob);
+                    throw PsiException("Module failed.", __FILE__, __LINE__);
+                }
+            }
+        }
+
         fflush(outfile);
         free(thisJob);
     }
