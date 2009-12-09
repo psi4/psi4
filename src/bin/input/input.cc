@@ -116,8 +116,8 @@ namespace psi { namespace input {
     wfn = options.get_str("WFN");
     parsing();
     print_intro();
-     //if (options.get_int_option("PRINT"));
-     //print_options();
+   //if (options.get_int_option("PRINT"));
+   //print_options();
 
      /* To find default basis set file first check the environment, then its location after installation */
     pbasis_dirname = getenv("PSIDATADIR");
@@ -260,14 +260,14 @@ namespace psi { namespace input {
     Print geometries etc.
       ----------------------*/
 
-      print_basis_info();
+    print_basis_info();
     fprintf(outfile,"\n  -Unique atoms in the canonical coordinate system (a.u.):\n");
     print_unique_geometry(1.0);
     fprintf(outfile,"\n  -Geometry in the canonical coordinate system (a.u.):\n");
     print_geometry(1.0);
     fprintf(outfile,"\n  -Geometry in the canonical coordinate system (Angstrom):\n");
     print_geometry(_bohr2angstroms);
-     /* Print geometry including dummy atoms, if necessary */
+   /* Print geometry including dummy atoms, if necessary */
     is_dummy = 0;
     for(i=0;i<num_allatoms;++i) 
       if(!strncmp(full_element[i],"X\0",2) )
