@@ -68,7 +68,7 @@ void LMP2::amplitudes() {
           if(i>k) ik = (i*(i+1))/2 + k;
           else ik = (k*(k+1))/2 + i;
 
-          MPI_Barrier(MPI_COMM_WORLD);
+//          MPI_Barrier(MPI_COMM_WORLD);
 
           if((myid == ij_owner[ij]) && (myid == ij_owner[kj])) {
             Tempkj[k] = block_matrix(pairdom_len[kj],pairdom_len[kj]);
