@@ -20,12 +20,18 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi{ namespace lmp2{
-    
-void LMP2::iterate() {
+namespace psi{
 
-  extern int myid;
-  extern int nprocs;
+extern int myid;
+extern int nprocs;
+
+namespace lmp2{
+
+extern int myid_lmp2;
+extern int nprocs_lmp2;
+
+
+void LMP2::iterate() {
 
   iter = 0;
   conv = 0;
@@ -37,7 +43,7 @@ void LMP2::iterate() {
     energy();
       if(iter > 0)
         check_conv();
-    if(myid == 0) 
+    if(myid == 0)
       print_iteration();
     iter++;
   }

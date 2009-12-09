@@ -18,12 +18,17 @@
 #include "globals.h"
 extern pthread_mutex_t compute_mutex;
 
-namespace psi{ namespace lmp2{
+namespace psi{
+
+extern int myid;
+extern int nprocs;
+
+namespace lmp2{
+
+extern int myid_lmp2;
+extern int nprocs_lmp2;
 
 void LMP2::amplitudes() {
-
-  extern int myid;
-  extern int nprocs;
 
   int i, j, v, kj, ik, l, k, m, n, K;
   int a, b, c, d, r, s, ij, L, M;
@@ -77,7 +82,7 @@ void LMP2::amplitudes() {
             MPI::COMM_WORLD.Send(&(T[dmat1][ij_local[kj]][0][0]), pairdom_len[kj]*pairdom_len[kj], MPI::DOUBLE, ij_owner[ij], kj);
           }
    
-          MPI_Barrier(MPI_COMM_WORLD);
+//          MPI_Barrier(MPI_COMM_WORLD);
 
           if((myid == ij_owner[ij]) && (myid == ij_owner[ik])) {
             Tempik[k] = block_matrix(pairdom_len[ik],pairdom_len[ik]);
@@ -93,13 +98,11 @@ void LMP2::amplitudes() {
 //std::cout << "procid = " << myid << "   made it here in iter = " << iter << "   for ij = " << ij << "   k = " << k <<
 //"       kj = " << kj <<"       ik = " << ik << std::endl;
 
-          MPI_Barrier(MPI_COMM_WORLD);
+//          MPI_Barrier(MPI_COMM_WORLD);
 
         }
       }
 
-
-//      if(v%nprocs != myid) 
       if(myid != ij_owner[ij])
         continue;
 
