@@ -47,7 +47,7 @@ void LMP2::get_params(Options &options) {
   iconv = options.get_int("ENERGY_CONV");
   econv = 1.0*pow(10.0,(double) -iconv);
 
-  iconv = options.get_int("RMS_CONV");
+  rconv = options.get_int("RMS_CONV");
   rmsconv = 1.0*pow(10.0,(double) -rconv);
 
   fs = options.get_int("FSKIP");
