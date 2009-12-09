@@ -20,14 +20,20 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi{ namespace lmp2{
+namespace psi{
+
+extern int myid;
+extern int nprocs;
+
+namespace lmp2{
+
+extern int myid_lmp2;
+extern int nprocs_lmp2;
+
 
 void LMP2::localize() {
 
   using namespace psi;
-
-  extern int myid;
-  extern int nprocs;
 
   if(myid == 0) {
     fprintf(outfile, "\n********************* Entering Localization Scope ********************************\n");

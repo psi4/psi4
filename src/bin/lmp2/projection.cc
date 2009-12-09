@@ -17,12 +17,18 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi{ namespace lmp2{
+namespace psi{
+
+extern int myid;
+extern int nprocs;
+
+namespace lmp2{
+
+extern int myid_lmp2;
+extern int nprocs_lmp2;
 
 void LMP2::projection() {
 
-  extern int myid;
-  extern int nprocs;
   int i, j, ij, cnt, v, K, L, I;
   int r, s, k, l;
   int *ij_owner, *ij_local, count;
@@ -231,7 +237,7 @@ void LMP2::projection() {
         W[ij_local[ij]] = block_matrix(pairdom_len[ij],pairdom_nrlen[ij]);
       }
       else {
-        if(myid < ij_pairs%nprocs) 
+        if(myid < ij_pairs%nprocs)
             W[ij_local[ij]] = block_matrix(pairdom_len[ij],pairdom_nrlen[ij]);
         else 
             W[ij_local[ij]] = block_matrix(pairdom_len[ij],pairdom_nrlen[ij]);

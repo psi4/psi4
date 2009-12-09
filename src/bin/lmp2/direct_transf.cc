@@ -26,12 +26,18 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi{ namespace lmp2{
+namespace psi{
+
+extern int myid;
+extern int nprocs;
+
+namespace lmp2{
+
+extern int myid_lmp2;
+extern int nprocs_lmp2;
+
 
 void LMP2::direct_transformation() {
-
-  extern int myid;
-  extern int nprocs;
 
   using namespace std;
 
@@ -232,7 +238,7 @@ void LMP2::direct_transformation() {
             }
           }
         }
-        else if ((myid != ij_owner[ij]) && (myid == mn_owner[count])) 
+        else if ((myid != ij_owner[ij]) && (myid == mn_owner[count]))
           MPI::COMM_WORLD.Send(&(eri_2_mn[ij][0][0]), (MN_shell[1][0])*(MN_shell[1][0]), MPI::DOUBLE, ij_owner[ij], ij);
       }
 

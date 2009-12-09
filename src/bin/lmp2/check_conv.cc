@@ -27,12 +27,17 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi{ namespace lmp2{
+namespace psi{
+
+extern int myid;
+extern int nprocs;
+
+namespace lmp2{
+
+extern int myid_lmp2;
+extern int nprocs_lmp2;
 
 void LMP2::check_conv() {
-
-  extern int myid;
-  extern int nprocs;
 
   int i, j, a, b, v, ij;
   int *ij_owner, *ij_local, count;
@@ -105,7 +110,7 @@ void LMP2::check_conv() {
   if(fabs(DEmp2) < econv && fabs(Drms) < rmsconv || iter >= maxiter) {
     conv = 1;
     if(iter >= maxiter)
-      if(myid == 0) 
+      if(myid == 0)
         fprintf(outfile, "LMP2 has not converged in the maximum number of iterations.\n maxiter = %d\n", maxiter);
   }
   else conv = 0;

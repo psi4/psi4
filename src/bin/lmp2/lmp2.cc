@@ -33,19 +33,11 @@ extern int nprocs;
 
 namespace lmp2{
 
-    int myid = psi::myid;
-    int nprocs = psi::nprocs;
+int myid_lmp2 = myid;
+int nprocs_lmp2 = nprocs;
 
 PsiReturnType lmp2(Options &options, int argc, char * argv[]) {
 
-//  using namespace psi::lmp2;
-
-//  MPI_Init(&argc, &argv);
-
-//  int nprocs, myid;
-//  MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
-//  MPI_Comm_rank(MPI_COMM_WORLD, &myid);
-  
   shared_ptr<PSIO> psio_obj(new PSIO);
   psiopp_ipv1_config(psio_obj);
   shared_ptr<Chkpt> chkpt_obj(new Chkpt(psio_obj, PSIO_OPEN_OLD));

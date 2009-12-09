@@ -20,7 +20,12 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi{ namespace lmp2{
+namespace psi{
+
+extern int myid;
+extern int nprocs;
+
+namespace lmp2{
 
 /*!
 ** domain(): Set up parameters of localization domains.
@@ -36,10 +41,10 @@ namespace psi{ namespace lmp2{
 ** TDC, Jan-June 2002
 */
 
-void LMP2::domains() {
+extern int myid_lmp2;
+extern int nprocs_lmp2;
 
-  extern int myid;
-  extern int nprocs;
+void LMP2::domains() {
 
   int i, j, k, l, ij;
   int next_atom, row, col, m, errcod;
@@ -158,7 +163,7 @@ void LMP2::domains() {
 
       errcod = C_DGESV(row, 1, &(X[0][0]), nso, &(ipiv[0]), &(Z[0]), nso);
       if(errcod) {
-        if(myid == 0) 
+        if(myid == 0)
           fprintf(outfile, "\nError in DGESV return in orbital domain construction.\n");
         exit(PSI_RETURN_FAILURE);
       }
@@ -241,7 +246,7 @@ void LMP2::domains() {
 
     errcod = C_DGESV(row, 1, &(X[0][0]), nso, &(ipiv[0]), &(Z[0]), nso);
     if(errcod) {
-      if(myid == 0) 
+      if(myid == 0)
         fprintf(outfile, "\nError in DGESV return in orbital domain construction.\n");
       exit(PSI_RETURN_FAILURE);
     }

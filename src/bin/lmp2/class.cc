@@ -19,10 +19,16 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi{ namespace lmp2{
+namespace psi{
 
-    extern int myid;
-    extern int nprocs;
+extern int myid;
+extern int nprocs;
+
+namespace lmp2{
+
+extern int myid_lmp2;
+extern int nprocs_lmp2;
+
     
 LMP2::LMP2() {
   fprintf(outfile, "Do not use the default constructor for LMP2");
@@ -33,8 +39,6 @@ LMP2::~LMP2() {
 }
 
 LMP2::LMP2(shared_ptr<PSIO> psio_o, shared_ptr<Chkpt> chkpt_o) {
-  MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
-  MPI_Comm_rank(MPI_COMM_WORLD, &myid);
 
   psio = psio_o;
   chkpt = chkpt_o;

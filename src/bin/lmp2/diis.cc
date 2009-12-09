@@ -16,12 +16,18 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi{ namespace lmp2{
+namespace psi{
+
+extern int myid;
+extern int nprocs;
+
+namespace lmp2{
+
+extern int myid_lmp2;
+extern int nprocs_lmp2;
+
     
 void LMP2::diis_ext() {
-
-  extern int myid;
-  extern int nprocs;
 
   int i, j, k, p, q, a, b, v, ij;
   double **Bmat, **co;
@@ -109,7 +115,7 @@ void LMP2::diis_ext() {
     v=0;
     for(i=0, ij=0; i < nocc; i++) {
       for(j=0; j <= i; j++, ij++, v++) {
-        if(v%nprocs != myid) 
+        if(v%nprocs != myid)
           continue;
         for(a=0; a < pairdom_len[ij]; a++) {
           for(b=0; b < pairdom_len[ij]; b++) {

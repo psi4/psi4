@@ -16,12 +16,19 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi{ namespace lmp2{
+namespace psi{
+
+extern int myid;
+extern int nprocs;
+
+namespace lmp2{
+
+extern int myid_lmp2;
+extern int nprocs_lmp2;
 
 void LMP2::allocate_T() {
 
-  extern int myid;
-  extern int nprocs;
+
 
   int i, j, ij;
   int *ij_local, *ij_owner;

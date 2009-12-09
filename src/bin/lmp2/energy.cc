@@ -18,13 +18,19 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi{ namespace lmp2{
-    
+namespace psi{
+
+extern int myid;
+extern int nprocs;
+
+namespace lmp2{
+
+extern int myid_lmp2;
+extern int nprocs_lmp2;
+
+
 void LMP2::energy() {
     
-  extern int myid;
-  extern int nprocs;
-
   int i, j, a, b, v, ij;
   double Emp2_sum;
   int *ij_owner, *ij_local;
@@ -43,7 +49,7 @@ void LMP2::energy() {
     v=0;
     for(i=0, ij=0; i < nocc; i++) {
       for(j=0; j <= i; j++, ij++, v++) {
-        if(v%nprocs != myid) 
+        if(v%nprocs != myid)
           continue;
 
         if (i!=j) {
@@ -74,7 +80,7 @@ void LMP2::energy() {
     v=0;
     for(i=0, ij=0; i < nocc; i++) {
       for(j=0; j <= i; j++, ij++, v++) {
-        if(v%nprocs != myid) 
+        if(v%nprocs != myid)
           continue;
 
         if (i!=j) {
