@@ -17,10 +17,11 @@
 
 namespace psi{ namespace lmp2{
 
+extern int myid_lmp2;
+
 void print() {
 
-
-  if(params.myid == 0) {
+  if(myid_lmp2 == 0) {
     if(lo.iter > 0) {
       fprintf(outfile, "%d\t %20.12f\t %20.12f %20.12f\n", lo.iter, lo.Emp2, lo.DEmp2, lo.Drms);
     }
