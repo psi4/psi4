@@ -414,6 +414,8 @@ void RHF::save_information()
     delete[](frzvpi);
     
     // Save the Fock matrix
+    // Need to recompute the Fock matrix as F_ is modified during the SCF interation
+    form_F();
     double *ftmp = F_->to_lower_triangle();
     chkpt_->wt_fock(ftmp);
     delete[](ftmp);
