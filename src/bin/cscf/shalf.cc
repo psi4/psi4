@@ -90,9 +90,6 @@ void shalf(void)
   eig_vecs = (double **) init_matrix(nsfmax,nsfmax);
   shalf = block_matrix(nsfmax,nsfmax);
 
-#if !USE_LIBCHKPT
-  mxcoef = 0;
-#endif
   mxcoef2 = 0;
   nmo = 0;
      
@@ -123,9 +120,6 @@ void shalf(void)
 	  num_mo++;
 	}
       s->num_mo = num_mo;
-#if !USE_LIBCHKPT
-      mxcoef += num_mo * nn;
-#endif
       mxcoef2 += ioff[nn];
       nmo += num_mo;
       if (num_mo < nn)

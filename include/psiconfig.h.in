@@ -8,5 +8,16 @@
 /* Which integrals standard is used? */
 #undef PSI_INTEGRALS_STANDARD
 
+#undef HAVE_CMATH
+#undef HAVE_CSTDIO
+#undef HAVE_CSTDLIB
+#undef HAVE_CSTRING
+#undef HAVE_CSTDDEF
+#undef HAVE_DECL_PUTENV
+#undef HAVE_PUTENV
+#undef HAVE_DECL_SETENV
+#undef HAVE_SETENV
+#undef HAVE_FUNC_ISINF
+
 #endif /* _psi_src_psiconfig_h */
 

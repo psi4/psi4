@@ -480,15 +480,20 @@ LIBS=$SAVE_LIBS
 AC_CHECK_HEADERS([errno.h fcntl.h unistd.h stdint.h sys/types.h sys/param.h sys/times.h sys/time.h utime.h time.h])
 # check for C++ headers
 AC_CXX_PROCESS_CHECK([cmath],[#include <cmath>],,[HAVE_CMATH=1],[HAVE_CMATH=0]) 
-CXXDEF="$CXXDEF -DHAVE_CMATH=$HAVE_CMATH"
+#CXXDEF="$CXXDEF -DHAVE_CMATH=$HAVE_CMATH"
+AC_DEFINE_UNQUOTED(HAVE_CMATH,$HAVE_CMATH)
 AC_CXX_PROCESS_CHECK([cstdio],[#include <cstdio>],,[HAVE_CSTDIO=1],[HAVE_CSTDIO=0]) 
-CXXDEF="$CXXDEF -DHAVE_CSTDIO=$HAVE_CSTDIO"
+#CXXDEF="$CXXDEF -DHAVE_CSTDIO=$HAVE_CSTDIO"
+AC_DEFINE_UNQUOTED(HAVE_CSTDIO,$HAVE_CSTDIO)
 AC_CXX_PROCESS_CHECK([cstdlib],[#include <cstdlib>],,[HAVE_CSTDLIB=1],[HAVE_CSTDLIB=0]) 
-CXXDEF="$CXXDEF -DHAVE_CSTDLIB=$HAVE_CSTDLIB"
+#CXXDEF="$CXXDEF -DHAVE_CSTDLIB=$HAVE_CSTDLIB"
+AC_DEFINE_UNQUOTED(HAVE_CSTDLIB,$HAVE_CSTDLIB)
 AC_CXX_PROCESS_CHECK([cstring],[#include <cstring>],,[HAVE_CSTRING=1],[HAVE_CSTRING=0]) 
-CXXDEF="$CXXDEF -DHAVE_CSTRING=$HAVE_CSTRING"
+#CXXDEF="$CXXDEF -DHAVE_CSTRING=$HAVE_CSTRING"
+AC_DEFINE_UNQUOTED(HAVE_CSTRING,$HAVE_CSTRING)
 AC_CXX_PROCESS_CHECK([cstddef],[#include <cstddef>],,[HAVE_CSTDDEF=1],[HAVE_CSTDDEF=0]) 
-CXXDEF="$CXXDEF -DHAVE_CSTDDEF=$HAVE_CSTDDEF"
+#CXXDEF="$CXXDEF -DHAVE_CSTDDEF=$HAVE_CSTDDEF"
+AC_DEFINE_UNQUOTED(HAVE_CSTDDEF,$HAVE_CSTDDEF)
 
 /bin/rm -f a.out
 
@@ -557,30 +562,39 @@ PSICPPFLAGS='-I. -I$(objincdir) -I$(top_srcdir)/include -I$(top_srcdir)/src/lib 
 
 AC_C_CONST
 
-AC_CHECK_DECLS([putenv],[extradef="-DHAVE_DECL_PUTENV=1"])
-CDEF="$CDEF $extradef"
-CXXDEF="$CXXDEF $extradef"
-AC_CHECK_FUNC(putenv,[extradef="-DHAVE_PUTENV=1"])
-CDEF="$CDEF $extradef"
-CXXDEF="$CXXDEF $extradef"
+#AC_CHECK_DECLS([putenv],[extradef="-DHAVE_DECL_PUTENV=1"])
+AC_CHECK_DECLS([putenv],[AC_DEFINE_UNQUOTED(HAVE_DECL_PUTENV,1)])
+#CDEF="$CDEF $extradef"
+#CXXDEF="$CXXDEF $extradef"
+#AC_CHECK_FUNC(putenv,[extradef="-DHAVE_PUTENV=1"])
+AC_CHECK_FUNC(putenv,[AC_DEFINE_UNQUOTED(HAVE_PUTENV,1)])
+#CDEF="$CDEF $extradef"
+#CXXDEF="$CXXDEF $extradef"
 
-AC_CHECK_DECLS([setenv],[extradef="-DHAVE_DECL_SETENV=1"])
-CDEF="$CDEF $extradef"
-CXXDEF="$CXXDEF $extradef"
-AC_CHECK_FUNC(setenv,[extradef="-DHAVE_SETENV=1"])
-CDEF="$CDEF $extradef"
-CXXDEF="$CXXDEF $extradef"
+#AC_CHECK_DECLS([setenv],[extradef="-DHAVE_DECL_SETENV=1"])
+AC_CHECK_DECLS([setenv],[AC_DEFINE_UNQUOTED(HAVE_DECL_SETENV,1)])
+#CDEF="$CDEF $extradef"
+#CXXDEF="$CXXDEF $extradef"
+#AC_CHECK_FUNC(setenv,[extradef="-DHAVE_SETENV=1"])
+AC_CHECK_FUNC(setenv,[AC_DEFINE_UNQUOTED(HAVE_SETENV,1)])
+#CDEF="$CDEF $extradef"
+#CXXDEF="$CXXDEF $extradef"
 
-AC_CHECK_LIB(m,isinf,[extradef="-DHAVE_FUNC_ISINF=1"],[extradef=""])
-if test X$extradef = X; then
-  AC_CHECK_LIB(m,finite,[extradef="-DHAVE_FUNC_FINITE=1"],[extradef=""])
-fi
-if test X$extradef = X; then
-  AC_MSG_ERROR([Did not find isinf() or finite() functions.])
-else
-  CDEF="$CDEF $extradef"
-  CXXDEF="$CXXDEF $extradef"
-fi
+#AC_CHECK_LIB(m,isinf,[extradef="-DHAVE_FUNC_ISINF=1"],[extradef=""])
+#if test X$extradef = X; then
+#  AC_CHECK_LIB(m,finite,[extradef="-DHAVE_FUNC_FINITE=1"],[extradef=""])
+#fi
+#if test X$extradef = X; then
+#  AC_MSG_ERROR([Did not find isinf() or finite() functions.])
+#else
+#  CDEF="$CDEF $extradef"
+#  CXXDEF="$CXXDEF $extradef"
+#fi
+AC_CHECK_LIB(m,isinf,[AC_DEFINE_UNQUOTED(HAVE_FUNC_ISINF,1)],[
+  AC_CHECK_LIB(m,finite,[AC_DEFINE_UNQUOTED(HAVE_FUNC_FINITE,1)],[
+    AC_MSG_ERROR([Did not find isinf() or finite() functions.])
+  ])
+])
 
 # set up cpu specific flags
 AC_MSG_CHECKING([for architecture/compiler specific optimization flags])
@@ -687,8 +701,7 @@ esac
 ])
 
 # Adjust the flags dealing with strictness of the compilers.
-# The default is to disable strict language checks.  --with-opt=no or 
-# --without-opt will turn off optimization.
+# The default is to disable strict language checks.
 AC_ARG_WITH(strict,[  --with-strict           --with-strict=yes to turn on strict compiler warnings],[
 case $withval in
   yes)
@@ -793,4 +806,3 @@ AC_CONFIG_FILES([include/Makefile
 ])
 
 AC_OUTPUT
-

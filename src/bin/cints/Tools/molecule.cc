@@ -12,6 +12,7 @@
 #define EXTERN
 #include"global.h"
 #include <stdexcept>
+#include <psiconfig.h>
 
 namespace psi { namespace cints {
 

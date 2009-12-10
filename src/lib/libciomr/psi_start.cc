@@ -10,6 +10,7 @@
 #include <psifiles.h>
 #include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
+#include <psiconfig.h>
 
 #if defined HAVE_DECL_SETENV && !HAVE_DECL_SETENV
   extern int setenv(const char *, const char *, int);
