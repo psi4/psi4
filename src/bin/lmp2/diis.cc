@@ -3,14 +3,14 @@
     \brief compute the lmp2 energy
 */
 #include "mpi.h"
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <cmath>
-#include <libipv1/ip_lib.h>
+//#include <cstdio>
+//#include <cstdlib>
+//#include <cstring>
+//#include <cmath>
+//#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
-#include <libchkpt/chkpt.h>
-#include <libpsio/psio.h>
+//#include <libchkpt/chkpt.h>
+//#include <libpsio/psio.h>
 #include <libqt/qt.h>
 //#include <psifiles.h>
 #define EXTERN

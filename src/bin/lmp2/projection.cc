@@ -2,18 +2,18 @@
     \ingroup LMP2
     \brief compute the projection matrix 
 */
-#include <iostream>
-#include <fstream>              // file I/O support
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+//#include <iostream>
+//#include <fstream>              // file I/O support
+//#include <cstdio>
+//#include <cstdlib>
+//#include <cstring>
 #include <cmath>
-#include <libipv1/ip_lib.h>
+//#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
-#include <libchkpt/chkpt.h>
-#include <libpsio/psio.h>
+//#include <libchkpt/chkpt.h>
+//#include <libpsio/psio.h>
 #include <libqt/qt.h>
-#include <psifiles.h>
+//#include <psifiles.h>
 #define EXTERN
 #include "globals.h"
 

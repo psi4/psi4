@@ -6,7 +6,7 @@
 #define _psi_src_bin_lmp2_h_
 
 #include <libchkpt/chkpt.hpp>
-#include <libpsio/psio.hpp>
+//#include <libpsio/psio.hpp>
 #include "psi4-dec.h"
 
 

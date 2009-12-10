@@ -3,15 +3,15 @@
     \brief compute the mp2 amplitudes
 */
 #include "mpi.h"
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <cmath>
-#include <pthread.h>
-#include <libipv1/ip_lib.h>
+//#include <cstdio>
+//#include <cstdlib>
+//#include <cstring>
+//#include <cmath>
+//#include <pthread.h>
+//#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
-#include <libchkpt/chkpt.h>
-#include <libpsio/psio.h>
+//#include <libchkpt/chkpt.h>
+//#include <libpsio/psio.h>
 #include <libqt/qt.h>
 //#include <psifiles.h>
 #define EXTERN

@@ -3,18 +3,18 @@
     \brief localized the SCF MO's
 */
 
-#include <iostream>
-#include <fstream>              // file I/O support
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+//#include <iostream>
+//#include <fstream>              // file I/O support
+//#include <cstdio>
+//#include <cstdlib>
+//#include <cstring>
 #include <cmath>
 #include <libiwl/iwl.hpp>
-#include <libipv1/ip_lib.h>
+//#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.hpp>
-#include <libpsio/psio.hpp>
-#include <libqt/qt.h>
+//#include <libpsio/psio.hpp>
+//#include <libqt/qt.h>
 #include <libint/libint.h>
 #include <psifiles.h>
 #define EXTERN
@@ -74,18 +74,21 @@ void LMP2::localize() {
 //  print_mat(aoovlp, nso, nso, outfile);
 
   // A couple of error traps
-  if(nirreps != 1) {
-    if(myid == 0) {
-      fprintf(outfile, "\n\tError: localization is only valid in C1 symmetry!\n");
-    }
-    exit(PSI_RETURN_FAILURE);
-  }
+//  if(nirreps != 1) {
+//    if(myid == 0) {
+//      fprintf(outfile, "\n\tError: localization is only valid in C1 symmetry!\n");
+//    }
+//    exit(PSI_RETURN_FAILURE);
+//    char *symm_label = chkpt->rd_sym_label();
+//    throw InputException("Local MP2 is only valid in C1 symmetry", symm_label, __FILE__, __LINE__);
+//  }
   soccpi = get_soccpi();
   if(soccpi[0]) {
-    if(myid == 0) {
-      fprintf(outfile, "\n\tError: localization available for closed-shells only!\n");
-    }
-    exit(PSI_RETURN_FAILURE);
+//    if(myid == 0) {
+//      fprintf(outfile, "\n\tError: localization available for closed-shells only!\n");
+//    }
+//    exit(PSI_RETURN_FAILURE);
+    throw PsiException("Local MP2 is only valid for closed-shell molecules.", __FILE__, __LINE__);
   }
   free(soccpi);
 

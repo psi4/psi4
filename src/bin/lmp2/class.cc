@@ -6,16 +6,16 @@
 #include "mpi.h"
 #include <iostream>
 #include <fstream>              // file I/O support
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <cmath>
-#include <libipv1/ip_lib.h>
+//#include <cstdio>
+//#include <cstdlib>
+//#include <cstring>
+//#include <cmath>
+//#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
-#include <libchkpt/chkpt.hpp>
-#include <libpsio/psio.h>
+//#include <libchkpt/chkpt.hpp>
+//#include <libpsio/psio.h>
 #include <libqt/qt.h>
-#include <psifiles.h>
+//#include <psifiles.h>
 #define EXTERN
 #include "globals.h"
 
@@ -83,10 +83,12 @@ void LMP2::print_moinfo(){
 
   // A couple of error traps
   if(nirreps != 1) {
-    if(myid == 0) {
-      fprintf(outfile, "\n\tError: localization is only valid in C1 symmetry!\n");
-    }
-    exit(PSI_RETURN_FAILURE);
+//    if(myid == 0) {
+//      fprintf(outfile, "\n\tError: localization is only valid in C1 symmetry!\n");
+//    }
+    char *symm_label = chkpt->rd_sym_label();
+    throw InputException("Local MP2 is only valid in C1 symmetry", symm_label, __FILE__, __LINE__);
+//    exit(PSI_RETURN_FAILURE);
   }
 
 
