@@ -114,7 +114,14 @@ void LMP2::energy() {
 void LMP2::print_iteration() {
 
     if(iter != 0) {
-      fprintf(outfile, "%d\t %20.12f\t %20.12f %20.12f\n", iter, Emp2, DEmp2, Drms);
+      if(iter > it_diis && diis != 0) {
+        fprintf(outfile, "%d\t %20.12f\t %20.12f %20.12f DIIS\n", iter, Emp2, DEmp2, Drms);
+        fflush(outfile);
+      }
+      else  {
+        fprintf(outfile, "%d\t %20.12f\t %20.12f %20.12f\n", iter, Emp2, DEmp2, Drms);
+        fflush(outfile);
+      }
     }
     else {
       fprintf(outfile, "\nBegin LMP2 Iterations\n");
