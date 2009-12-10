@@ -2,17 +2,17 @@
     \ingroup LMP2
     \brief localized the SCF MO's
 */
-#include <iostream>
-#include <fstream>              // file I/O support
-#include <cstdlib>              // support for exit()
-#include <cstring>
-#include <memory.h>
-#include <assert.h>
-#include <libipv1/ip_lib.h>
+//#include <iostream>
+//#include <fstream>              // file I/O support
+//#include <cstdlib>              // support for exit()
+//#include <cstring>
+//#include <memory.h>
+//#include <assert.h>
+//#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
-#include <libchkpt/chkpt.h>
-#include <libpsio/psio.h>
-#include <libqt/qt.h>
+//#include <libchkpt/chkpt.h>
+//#include <libpsio/psio.h>
+//#include <libqt/qt.h>
 #define EXTERN
 #include "globals.h"
 

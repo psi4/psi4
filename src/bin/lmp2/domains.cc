@@ -2,21 +2,21 @@
     \ingroup LMP2
     \brief localized the SCF MO's
 */
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+//#include <cstdio>
+//#include <cstdlib>
+//#include <cstring>
 #include <cmath>
-#include <iostream>
-#include <fstream>              // file I/O support
+//#include <iostream>
+//#include <fstream>              // file I/O support
 #include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
-#include <libchkpt/chkpt.h>
-#include <libpsio/psio.h>
+//#include <libchkpt/chkpt.h>
+//#include <libpsio/psio.h>
 #include <libqt/qt.h>
-#include <psifiles.h>
-#include <libiwl/iwl.h>
-#include <libint/libint.h>
-#include <libdpd/dpd.h>
+//#include <psifiles.h>
+//#include <libiwl/iwl.h>
+//#include <libint/libint.h>
+//#include <libdpd/dpd.h>
 #define EXTERN
 #include "globals.h"
 
@@ -163,9 +163,10 @@ void LMP2::domains() {
 
       errcod = C_DGESV(row, 1, &(X[0][0]), nso, &(ipiv[0]), &(Z[0]), nso);
       if(errcod) {
-        if(myid == 0)
-          fprintf(outfile, "\nError in DGESV return in orbital domain construction.\n");
-        exit(PSI_RETURN_FAILURE);
+//        if(myid == 0)
+//          fprintf(outfile, "\nError in DGESV return in orbital domain construction.\n");
+//        exit(PSI_RETURN_FAILURE);
+          throw PsiException("Error in DGESV in LMP2 orbital domain construction", __FILE__, __LINE__);
       }
       fR[i-nfzc] = 1.0;
       for(j=0,row=0; j < natom; j++) {
@@ -246,9 +247,10 @@ void LMP2::domains() {
 
     errcod = C_DGESV(row, 1, &(X[0][0]), nso, &(ipiv[0]), &(Z[0]), nso);
     if(errcod) {
-      if(myid == 0)
-        fprintf(outfile, "\nError in DGESV return in orbital domain construction.\n");
-      exit(PSI_RETURN_FAILURE);
+//        if(myid == 0)
+//          fprintf(outfile, "\nError in DGESV return in orbital domain construction.\n");
+//        exit(PSI_RETURN_FAILURE);
+          throw PsiException("Error in DGESV in LMP2 orbital domain construction", __FILE__, __LINE__);
     }
 
 /*    fR[i-nfzc] = 1.0;
@@ -328,9 +330,10 @@ void LMP2::domains() {
   print_test = 0;
   ip_boolean("DOMAIN_PRINT",&(print_test),0);
   if(print_test) {
-    if(myid == 0);
-    fprintf(outfile, "Printing of orbital domains requested...exiting.\n\n");
-    exit(PSI_RETURN_FAILURE);
+//    if(myid == 0);
+//    fprintf(outfile, "Printing of orbital domains requested...exiting.\n\n");
+//    exit(PSI_RETURN_FAILURE);
+    throw PsiException("Printing of orbital domains requested...exiting", __FILE__, __LINE__);
   }
 
   /************* Orbital Domains Complete ***************/

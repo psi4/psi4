@@ -7,15 +7,15 @@
 */
 
 #include "mpi.h"
-#include <iostream>
-#include <fstream>              // file I/O support
-#include <cstdlib>              // support for exit()
-#include <cstring>
-#include <memory.h>
-#include <assert.h>
-#include <pthread.h>
-#include <libipv1/ip_lib.h>
-#include <libpsio/psio.hpp>
+//#include <iostream>
+//#include <fstream>              // file I/O support
+//#include <cstdlib>              // support for exit()
+//#include <cstring>
+//#include <memory.h>
+//#include <assert.h>
+//#include <pthread.h>
+//#include <libipv1/ip_lib.h>
+//#include <libpsio/psio.hpp>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 //#include <libmints/matrix.h>
