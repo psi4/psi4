@@ -126,7 +126,7 @@ void HF::common_init()
     }
 	
     // Run integral direct? default no
-	direct_integrals_ = false;
+    direct_integrals_ = false;
     direct_integrals_ = options_.get_bool("DIRECT");
     
     //Run density fitting? default no
@@ -142,10 +142,8 @@ void HF::common_init()
     schwarz_ = 0.0;
     if (options_["SCHWARZ_CUTOFF"].has_changed())
     {
-    	schwarz_ = options_.get_double("SCHWARZ_CUTOFF");
+        schwarz_ = options_.get_double("SCHWARZ_CUTOFF");
     }
-    
-    fprintf(outfile,"\nSchwarz Cutoff = %f\n",schwarz_);
     
     // Read information from checkpoint
     nuclearrep_ = chkpt_->rd_enuc();
@@ -166,8 +164,6 @@ void HF::common_init()
     print_header();
     if (direct_integrals_ == false && ri_integrals_ == false)
     	form_indexing();
-    
-    fprintf(outfile,"Finished Common Init"); fflush(outfile);
 }
 
 void HF::print_header()
@@ -188,18 +184,18 @@ void HF::print_header()
     fprintf(outfile, "  Running in %s symmetry.\n", temp);
     free(temp);
     
-	temp2 = chkpt_->rd_irr_labs();
-	fprintf(outfile, "  Input DOCC vector = (");
-	for (int h=0; h<factory_.nirreps(); ++h) {
-		fprintf(outfile, "%2d %3s ", doccpi_[h], temp2[h]);
-	}
-	fprintf(outfile, ")\n");
-	fprintf(outfile, "  Input SOCC vector = (");
-	for (int h=0; h<factory_.nirreps(); ++h) {
-		fprintf(outfile, "%2d %3s ", soccpi_[h], temp2[h]);
-		free(temp2[h]);
-	}
-	free(temp2);
+    temp2 = chkpt_->rd_irr_labs();
+    fprintf(outfile, "  Input DOCC vector = (");
+    for (int h=0; h<factory_.nirreps(); ++h) {
+        fprintf(outfile, "%2d %3s ", doccpi_[h], temp2[h]);
+    }
+    fprintf(outfile, ")\n");
+    fprintf(outfile, "  Input SOCC vector = (");
+    for (int h=0; h<factory_.nirreps(); ++h) {
+        fprintf(outfile, "%2d %3s ", soccpi_[h], temp2[h]);
+        free(temp2[h]);
+    }
+    free(temp2);
 	
     fprintf(outfile, ")\n");
     fprintf(outfile, "  Nuclear repulsion = %20.15f\n", nuclearrep_);
@@ -242,13 +238,13 @@ void HF::form_indexing()
     pk_size_ = INDEX2(pk_pairs_-1, pk_pairs_-1) + 1;
     
     // Compute PK symmetry mapping
-   	pk_symoffset_ = new int[nirreps];
+    pk_symoffset_ = new int[nirreps];
     
    	// Compute an offset in the PK matrix telling where a given symmetry block starts.
     pk_symoffset_[0] = 0;
-	for (h=1; h<nirreps; ++h) {
-		pk_symoffset_[h] = pk_symoffset_[h-1] + ioff[opi[h-1]];
-	}
+    for (h=1; h<nirreps; ++h) {
+        pk_symoffset_[h] = pk_symoffset_[h-1] + ioff[opi[h-1]];
+    }
 }
 
 void HF::form_H()
@@ -352,18 +348,18 @@ void HF::form_Shalf()
     Shalf_->gemm(false, false, 1.0, eigvec, eigtemp, 0.0);
     
     // Convert the eigenvalues to sqrt(eigenvalues)
-	for (int h=0; h<eigval.nirreps(); ++h) {
-		for (int i=0; i<dimpi[h]; ++i) {
-			double scale = sqrt(eigval.get(h, i));
-			eigval.set(h, i, scale);
-		}
-	}
-	// Create a vector matrix from the converted eigenvalues
-	eigtemp2.set(eigval);
+    for (int h=0; h<eigval.nirreps(); ++h) {
+        for (int i=0; i<dimpi[h]; ++i) {
+            double scale = sqrt(eigval.get(h, i));
+            eigval.set(h, i, scale);
+        }
+    }
+    // Create a vector matrix from the converted eigenvalues
+    eigtemp2.set(eigval);
 	
-	// Works for diagonalize:
-	eigtemp.gemm(false, true, 1.0, eigtemp2, eigvec, 0.0);
-	Sphalf_->gemm(false, false, 1.0, eigvec, eigtemp, 0.0);
+    // Works for diagonalize:
+    eigtemp.gemm(false, true, 1.0, eigtemp2, eigvec, 0.0);
+    Sphalf_->gemm(false, false, 1.0, eigvec, eigtemp, 0.0);
 	
     if (debug_ > 3) {
         Shalf_->print(outfile);
