@@ -1,0 +1,102 @@
+
+.PHONY: tests quicktests cc_tests psirb_tests clean quicktestsclean
+
+cc_subdirs = cc4 cc8 cc8a 
+
+rb_subdirs = 
+
+ci_subdirs = 
+
+mcscf_subdirs = 
+
+psimrcc_subdirs = 
+
+scf_subdirs = 
+
+subdirs = \
+$(cc_subdirs) \
+
+# the bare minimum
+quicktestdirs = 
+
+# Only test if psirb was compiled
+HAVE_RUBY = @HAVE_RUBY@
+ifeq ($(HAVE_RUBY),yes)
+subdirs += $(rb_subdirs)
+endif
+
+tests:
+	for dir in $(subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+quicktests:
+	for dir in $(quicktestdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+cc_tests:
+	for dir in $(cc_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+ci_tests:
+	for dir in $(ci_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+mcscf_tests:
+	for dir in $(mcscf_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+scf_tests:
+	for dir in $(scf_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+psimrcc_tests:
+	for dir in $(psimrcc_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+psirb_tests:
+	for dir in $(rb_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+clean:
+	for dir in $(subdirs); \
+	do \
+	 (cd $${dir} && echo ...Cleaning $${dir}... && $(MAKE) clean) || exit 1; \
+	done
+	rm -f ../test-case-results
+
+quicktestsclean:
+	for dir in $(quicktestdirs); \
+	do \
+	 (cd $${dir} && echo ...Cleaning $${dir}... && $(MAKE) clean) || exit 1; \
+	done
+	rm -f ../test-case-results
+
+top_srcdir = @top_srcdir@
+srcdir = @srcdir@
+top_objdir = ..
+
+$(top_srcdir)/configure: $(top_srcdir)/configure.ac $(top_srcdir)/aclocal.m4
+	cd $(top_srcdir) && autoconf
+
+$(top_objdir)/config.status: $(top_srcdir)/configure
+	cd $(top_objdir) && ./config.status --recheck
+
+Makefile: $(srcdir)/Makefile.in $(top_objdir)/config.status
+	cd $(top_objdir) && CONFIG_FILES=tests/Makefile ./config.status
+

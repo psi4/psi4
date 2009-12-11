@@ -1,0 +1,3 @@
+# get Perl utility functions for testing PSI4
+require("@top_srcdir@/tests/psitest.pl");
+do_tests(@ARGV);
