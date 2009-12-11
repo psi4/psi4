@@ -1,0 +1,15 @@
+psi: (
+  label = "BH cc-pVQZ CCSD(T)"
+  jobtype = sp
+  wfn = ccsd_t
+  reference = rhf
+  dertype = none
+  docc = (3 0 0 0)
+  freeze_core = true
+  basis = "cc-pVQZ"
+  geometry = (
+    b      0.0000        0.0000        0.0000
+    h      0.0000        0.0000        1.0000
+      )
+)
+

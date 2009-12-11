@@ -1,0 +1,18 @@
+psi: (
+  label = "ROHF-CCSD(T)/cc-pVDZ 2Sigma+ CN"
+  jobtype = sp
+  wfn = ccsd_t
+  reference = rohf
+  multi = 2
+  dertype = none
+  docc = (4 0 1 1)
+  socc = (1 0 0 0)
+  freeze_core = true
+  maxiter = 100
+  basis = "cc-pVDZ"
+  units = bohr
+  geometry = (
+     C  0.000000000000      0.000000000000      1.195736583480
+     N  0.000000000000      0.000000000000     -1.024692078304
+  )
+)

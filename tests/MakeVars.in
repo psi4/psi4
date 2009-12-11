@@ -1,0 +1,13 @@
+test_srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+top_objdir = ../..
+SRC_PSIDATADIR = $(top_srcdir)/lib
+TARGET_DIR = $(shell basename `pwd`)
+TARGET = $(TARGET_DIR).test
+
+PERL = @PERL@
+TESTFLAGS = -q
+TEST_SCRIPT = ../runtest.pl
+
+GARBAGE = output.dat psi.* timer.dat file14.dat *dboc.findif.out
+

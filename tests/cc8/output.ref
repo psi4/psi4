@@ -1,0 +1,734 @@
+******************************************************************************
+PSI3 started on augustus.chemistry.gatech.edu at Wed Mar 12 18:27:12 2008
+
+    -----------------------------------------------------------------------    
+            PSI3: An Open-Source Ab Initio Electronic Structure Package 
+                                Version 3.4 Alpha
+
+    T. D. Crawford, C. D. Sherrill, E. F. Valeev, J. T. Fermann, R. A. King,
+    M. L. Leininger, S. T. Brown, C. L. Janssen, E. T. Seidl, J. P. Kenny,
+    and W. D. Allen, J. Comput. Chem. 28, 1610-1616 (2007)
+    -----------------------------------------------------------------------    
+
+PSI3 will perform a UHF CCSD_T energy computation.
+
+The following programs will be executed:
+
+ input
+ cints
+ cscf
+ transqt2
+ ccsort
+ ccenergy
+ cctriples
+ psiclean
+
+******************************************************************************
+tstart called on augustus.chemistry.gatech.edu
+Wed Mar 12 18:27:12 2008
+
+                                --------------
+                                    INPUT
+                                --------------
+
+  LABEL       =	UHF-CCSD(T)/cc-pVDZ 2Sigma+ CN
+  SHOWNORM    =	0
+  PUREAM      =	0
+  PRINT_LVL   =	1
+
+  Parsed basis sets from /theoryfs/ds/home/ashley/psi3/lib/pbasis.dat
+Coordinates after reading z-matrices
+
+           1           2           3
+
+    1   0.0000000   0.0000000   0.0000000
+    2   0.0000000   0.0000000   2.2204280
+
+  -Geometry before Center-of-Mass shift (a.u.):
+       Center              X                  Y                   Z
+    ------------   -----------------  -----------------  -----------------
+          CARBON      0.000000000000     0.000000000000     0.000000000000
+        NITROGEN      0.000000000000     0.000000000000     2.220428036580
+
+
+  -Rotational constants (cm-1) :
+    A = **********  B =    1.88947  C =    1.88947
+    It is a linear molecule.
+
+  -Geometry after Center-of-Mass shift and reorientation (a.u.):
+       Center              X                  Y                   Z
+    ------------   -----------------  -----------------  -----------------
+          CARBON      0.000000000000     0.000000000000    -1.195736246907
+        NITROGEN      0.000000000000     0.000000000000     1.024691789673
+
+
+  -SYMMETRY INFORMATION:
+    Computational point group is C2v 
+    Number of irr. rep.      = 4
+    Number of atoms          = 2
+    Number of unique atoms   = 2
+
+
+  -BASIS SETS:
+
+   -Basis set on unique center 1:
+      ( (S (  6665.00000000     0.00069200)
+           (  1000.00000000     0.00532900)
+           (   228.00000000     0.02707700)
+           (    64.71000000     0.10171800)
+           (    21.06000000     0.27474000)
+           (     7.49500000     0.44856400)
+           (     2.79700000     0.28507400)
+           (     0.52150000     0.01520400)
+           (     0.15960000    -0.00319100) )
+        (S (  6665.00000000    -0.00014600)
+           (  1000.00000000    -0.00115400)
+           (   228.00000000    -0.00572500)
+           (    64.71000000    -0.02331200)
+           (    21.06000000    -0.06395500)
+           (     7.49500000    -0.14998100)
+           (     2.79700000    -0.12726200)
+           (     0.52150000     0.54452900)
+           (     0.15960000     0.58049600) )
+        (S (     0.15960000     1.00000000) )
+        (P (     9.43900000     0.03810900)
+           (     2.00200000     0.20948000)
+           (     0.54560000     0.50855700)
+           (     0.15170000     0.46884200) )
+        (P (     0.15170000     1.00000000) )
+        (D (     0.55000000     1.00000000) )
+       )
+
+   -Basis set on unique center 2:
+      ( (S (  9046.00000000     0.00070000)
+           (  1357.00000000     0.00538900)
+           (   309.30000000     0.02740600)
+           (    87.73000000     0.10320700)
+           (    28.56000000     0.27872300)
+           (    10.21000000     0.44854000)
+           (     3.83800000     0.27823800)
+           (     0.74660000     0.01544000)
+           (     0.22480000    -0.00286400) )
+        (S (  9046.00000000    -0.00015300)
+           (  1357.00000000    -0.00120800)
+           (   309.30000000    -0.00599200)
+           (    87.73000000    -0.02454400)
+           (    28.56000000    -0.06745900)
+           (    10.21000000    -0.15807800)
+           (     3.83800000    -0.12183100)
+           (     0.74660000     0.54900300)
+           (     0.22480000     0.57881500) )
+        (S (     0.22480000     1.00000000) )
+        (P (    13.55000000     0.03991900)
+           (     2.91700000     0.21716900)
+           (     0.79730000     0.51031900)
+           (     0.21850000     0.46221400) )
+        (P (     0.21850000     1.00000000) )
+        (D (     0.81700000     1.00000000) )
+       )
+
+
+  -BASIS SET INFORMATION:
+    Total number of shells = 12
+    Number of primitives   = 50
+    Number of AO           = 30
+    Number of SO           = 28
+
+    Irrep    Number of SO
+    -----    ------------
+      1           14
+      2            2
+      3            6
+      4            6
+
+
+  -Unique atoms in the canonical coordinate system (a.u.):
+       Center              X                  Y                   Z
+    ------------   -----------------  -----------------  -----------------
+          CARBON      0.000000000000     0.000000000000    -1.195736246907
+        NITROGEN      0.000000000000     0.000000000000     1.024691789673
+
+
+  -Geometry in the canonical coordinate system (a.u.):
+       Center              X                  Y                   Z
+    ------------   -----------------  -----------------  -----------------
+          CARBON      0.000000000000     0.000000000000    -1.195736246907
+        NITROGEN      0.000000000000     0.000000000000     1.024691789673
+
+
+  -Geometry in the canonical coordinate system (Angstrom):
+       Center              X                  Y                   Z
+    ------------   -----------------  -----------------  -----------------
+          CARBON      0.000000000000     0.000000000000    -0.632756417668
+        NITROGEN      0.000000000000     0.000000000000     0.542243582332
+
+
+  -Geometry in the reference coordinate system (a.u.):
+       Center              X                  Y                   Z
+    ------------   -----------------  -----------------  -----------------
+          CARBON      0.000000000000     0.000000000000    -1.195736246907
+        NITROGEN      0.000000000000     0.000000000000     1.024691789673
+
+
+  --------------------------------------------------------------------------
+
+    Nuclear Repulsion Energy (a.u.) =      18.915271879149
+
+  -The Interatomic Distances in angstroms:
+
+           1           2
+
+    1   0.0000000
+    2   1.1750000   0.0000000
+
+    Note: To print *all* bond angles, out-of-plane
+          angles, and torsion angles set print = 3
+
+
+******************************************************************************
+tstop called on augustus.chemistry.gatech.edu
+Wed Mar 12 18:27:12 2008
+
+user time   =       0.03 seconds =       0.00 minutes
+system time =       0.01 seconds =       0.00 minutes
+total time  =          0 seconds =       0.00 minutes
+******************************************************************************
+tstart called on augustus.chemistry.gatech.edu
+Wed Mar 12 18:27:13 2008
+
+                  --------------------------------------------
+                    CINTS: An integrals program written in C
+                     Justin T. Fermann and Edward F. Valeev
+                  --------------------------------------------
+
+
+  -OPTIONS:
+    Print level                 = 1
+    Integral tolerance          = 1e-15
+    Max. memory to use          = 2500000 double words
+    Number of threads           = 1
+    LIBINT's real type length   = 64 bit
+
+  -CALCULATION CONSTANTS:
+    Label                       = UHF-CCSD(T)/cc-pVDZ 2Sigma+ CN
+    Number of atoms             = 2
+    Number of atomic orbitals   = 30
+    Number of symmetry orbitals = 28
+    Maximum AM in the basis     = 2
+
+  -SYMMETRY INFORMATION;
+    Computational point group        = C2v
+    Number of irreps                 = 4
+
+    Wrote 19125 two-electron integrals to IWL file 33
+
+******************************************************************************
+tstop called on augustus.chemistry.gatech.edu
+Wed Mar 12 18:27:13 2008
+
+user time   =       0.23 seconds =       0.00 minutes
+system time =       0.00 seconds =       0.00 minutes
+total time  =          0 seconds =       0.00 minutes
+******************************************************************************
+tstart called on augustus.chemistry.gatech.edu
+Wed Mar 12 18:27:13 2008
+
+
+             ------------------------------------------
+
+                CSCF3.0: An SCF program written in C
+
+              Written by too many people to mention here
+
+             ------------------------------------------
+
+Cannot check consistency of the multiplicity
+
+and number of electrons, double check
+your occupations
+
+  label        = UHF-CCSD(T)/cc-pVDZ 2Sigma+ CN
+  wfn          = CCSD_T
+  reference    = UHF
+  multiplicity = 2
+  charge       = 0
+  direct       = false
+  dertype      = NONE
+  convergence  = 10
+  maxiter      = 100
+  guess        = AUTO
+
+  nuclear repulsion energy       18.9152718791489
+  first run, so defaulting to core-hamiltonian guess
+
+  level shift                      = 0.100000
+
+  level shifting will stop after 10 cycles
+  diis scale factor                = 1.000000
+  iterations before extrapolation  = 0
+  6 error matrices will be kept
+
+  keeping integrals in 181280 bytes of core
+
+  The lowest eigenvalue of the overlap matrix was 8.124725e-03
+
+
+  Using DOCC and SOCC to 
+  determine occupations
+
+
+  Symmetry block:   A1    A2    B1    B2   
+  DOCC:              4     0     1     1   
+  SOCC:              1     0     0     0   
+
+  reading integrals in the IWL format from files 33,35,36,37
+
+      8641 integrals written to file92 in   1 buffers
+         0 integrals written to file93 in   1 buffers
+  wrote 0 integrals to file92
+
+  iter       total energy        delta E         delta P          diiser
+    1       -83.1984135320    1.021137e+02    0.000000e+00    0.000000e+00
+    2       -83.9760925125    7.776790e-01    1.780265e-01    1.095783e+00
+    3       -91.8523824828    7.876290e+00    1.150826e-01    1.110631e+00
+    4       -92.1882265825    3.358441e-01    1.111967e-02    2.200720e-01
+    5       -92.2013333077    1.310673e-02    2.843735e-03    7.976069e-02
+    6       -92.2037546954    2.421388e-03    1.160480e-03    3.057112e-02
+    7       -92.2057673831    2.012688e-03    5.565023e-04    1.568942e-02
+    8       -92.2072975509    1.530168e-03    4.621990e-04    9.878179e-03
+    9       -92.2114385932    4.141042e-03    1.652666e-03    7.501955e-03
+   10       -92.2125459618    1.107369e-03    1.921422e-03    4.804305e-03
+   11       -92.2126100639    6.410214e-05    1.005466e-03    2.700578e-03
+   12       -92.2127746937    1.646298e-04    4.200627e-04    1.859135e-03
+   13       -92.2127767274    2.033703e-06    7.096045e-05    2.154885e-04
+   14       -92.2127769326    2.051847e-07    2.223667e-05    7.056458e-05
+   15       -92.2127769530    2.043662e-08    5.112697e-06    2.139741e-05
+   16       -92.2127769532    1.200675e-10    4.128490e-07    3.846194e-06
+   17       -92.2127769533    1.086278e-10    4.416916e-07    1.660665e-06
+   18       -92.2127769533    3.367973e-12    6.414477e-08    3.270629e-07
+   19       -92.2127769533    1.421085e-14    3.839843e-09    6.435897e-08
+   20       -92.2127769533    4.263256e-14    1.247031e-09    2.422997e-08
+   21       -92.2127769533    2.842171e-14    8.102440e-10    4.385097e-09
+   22       -92.2127769533   -4.263256e-14    1.700438e-10    1.394594e-09
+   23       -92.2127769533    0.000000e+00    2.488103e-11    2.189964e-10
+
+Orbital energies (a.u.):
+
+  Alpha Occupied orbitals
+   1A1    -15.609649     2A1    -11.361901     3A1     -1.240450  
+   4A1     -0.739642     5A1     -0.563366     1B1     -0.515486  
+   1B2     -0.515486  
+
+  Alpha Unoccupied orbitals
+   2B2      0.185545     2B1      0.185545     6A1      0.371294  
+   3B2      0.618208     3B1      0.618208     7A1      0.647664  
+   8A1      0.874611     9A1      1.016318     4B1      1.069923  
+   4B2      1.069923    10A1      1.276314     1A2      1.276314  
+   5B1      1.477267     5B2      1.477267    11A1      1.568138  
+  12A1      2.197372     2A2      2.197372    13A1      2.235884  
+   6B1      2.682841     6B2      2.682841    14A1      3.102221  
+
+  Beta Occupied orbitals
+   1A1    -15.635827     2A1    -11.306231     3A1     -1.254501  
+   4A1     -0.616935     1B2     -0.533650     1B1     -0.533650  
+
+  Beta Unoccupied orbitals
+   5A1     -0.011000     2B1      0.210416     2B2      0.210416  
+   6A1      0.399783     3B2      0.708996     3B1      0.708996  
+   7A1      0.800256     8A1      0.870942     4B2      1.008070  
+   4B1      1.008070     9A1      1.090983     1A2      1.361267  
+  10A1      1.361267     5B1      1.541385     5B2      1.541385  
+  11A1      1.563544    12A1      2.124491     2A2      2.124491  
+  13A1      2.286372     6B1      2.677621     6B2      2.677621  
+  14A1      3.100604  
+
+
+      * SCF total energy   =     -92.212776953277
+        kinetic energy     =      92.114935697525
+        nuc. attr. energy  =    -253.944261261468
+        elec. rep. energy  =      69.616548610666
+        potential energy   =    -184.327712650802
+        virial theorem     =       1.998938962051
+        wavefunction norm  =       1.000000000000
+        <S^2>              =       1.162337170555
+******************************************************************************
+tstop called on augustus.chemistry.gatech.edu
+Wed Mar 12 18:27:13 2008
+
+user time   =       0.02 seconds =       0.00 minutes
+system time =       0.00 seconds =       0.00 minutes
+total time  =          0 seconds =       0.00 minutes
+******************************************************************************
+tstart called on augustus.chemistry.gatech.edu
+Wed Mar 12 18:27:13 2008
+
+
+	**************************************************
+	* TRANSQT2: Program to transform integrals from  *
+	*           the SO basis to the MO basis.        *
+	*                                                *
+	*            Daniel, David, & Justin             *
+	**************************************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	CCSD_T
+	Backtransform   =	No
+	Print Level     =	1
+	Print TEIs      =	No
+	Reference wfn   =	UHF
+	Derivative      =	None
+	Delete TEI File =	Yes
+	Memory (Mbytes) =	256.0
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of SOs        = 28
+	Number of MOs        = 28
+	Number of active MOs = 26
+
+	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1 	   14	    2	    2	    1	    9	    0
+	 A2 	   2	    0	    0	    0	    2	    0
+	 B1 	   6	    0	    1	    0	    5	    0
+	 B2 	   6	    0	    1	    0	    5	    0
+
+	Nuclear Rep. energy (chkpt) =     18.91527187914894
+	SCF energy          (chkpt) =    -92.21277695327687
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (pq,rs) nbuckets = 1
+	Frozen-core energy =  -86.999353710957280
+	Starting AA/AB first half-transformation.
+	Sorting AA/AB half-transformed integrals.
+	Starting AA second half-transformation.
+	Starting AB second half-transformation.
+	Starting BB first half-transformation.
+	Sorting BB half-transformed integrals.
+	Starting BB second half-transformation.
+	Two-electron integral transformation complete.
+******************************************************************************
+tstop called on augustus.chemistry.gatech.edu
+Wed Mar 12 18:27:13 2008
+
+user time   =       0.05 seconds =       0.00 minutes
+system time =       0.02 seconds =       0.00 minutes
+total time  =          0 seconds =       0.00 minutes
+******************************************************************************
+tstart called on augustus.chemistry.gatech.edu
+Wed Mar 12 18:27:13 2008
+
+
+			**************************
+			*                        *
+			*         CCSORT         *
+			*                        *
+			**************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	CCSD_T
+	Reference wfn   =	UHF
+	Derivative      =	None
+	Memory (Mbytes) =	256.0
+	AO Basis        =	NONE
+	Make (ab|cd)    =	True
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Local CC        =     No
+
+
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of MOs        = 28
+	Number of active MOs = 26
+
+	Label	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1 	   14	    2	    2	    1	    9	    0
+	 A2 	   2	    0	    0	    0	    2	    0
+	 B1 	   6	    0	    1	    0	    5	    0
+	 B2 	   6	    0	    1	    0	    5	    0
+
+	Nuclear Rep. energy (chkpt) =     18.91527187914894
+	SCF energy          (chkpt) =    -92.21277695327687
+
+	Size of irrep 0 of <AB|CD> integrals:      0.003 (MW) /      0.026 (MB)
+	Size of irrep 1 of <AB|CD> integrals:      0.002 (MW) /      0.015 (MB)
+	Size of irrep 2 of <AB|CD> integrals:      0.003 (MW) /      0.024 (MB)
+	Size of irrep 3 of <AB|CD> integrals:      0.003 (MW) /      0.024 (MB)
+	Total:                                     0.011 (MW) /      0.089 (MB)
+
+	Size of irrep 0 of <ab|cd> integrals:      0.004 (MW) /      0.035 (MB)
+	Size of irrep 1 of <ab|cd> integrals:      0.002 (MW) /      0.016 (MB)
+	Size of irrep 2 of <ab|cd> integrals:      0.004 (MW) /      0.029 (MB)
+	Size of irrep 3 of <ab|cd> integrals:      0.004 (MW) /      0.029 (MB)
+	Total:                                     0.014 (MW) /      0.109 (MB)
+
+	Size of irrep 0 of <Ab|Cd> integrals:      0.021 (MW) /      0.166 (MB)
+	Size of irrep 1 of <Ab|Cd> integrals:      0.008 (MW) /      0.062 (MB)
+	Size of irrep 2 of <Ab|Cd> integrals:      0.013 (MW) /      0.106 (MB)
+	Size of irrep 3 of <Ab|Cd> integrals:      0.013 (MW) /      0.106 (MB)
+	Total:                                     0.055 (MW) /      0.439 (MB)
+
+	Size of irrep 0 of <IA|BC> integrals:      0.005 (MW) /      0.040 (MB)
+	Size of irrep 1 of <IA|BC> integrals:      0.001 (MW) /      0.011 (MB)
+	Size of irrep 2 of <IA|BC> integrals:      0.003 (MW) /      0.023 (MB)
+	Size of irrep 3 of <IA|BC> integrals:      0.003 (MW) /      0.023 (MB)
+	Total:                                     0.012 (MW) /      0.097 (MB)
+
+	Size of irrep 0 of <ia|bc> integrals:      0.005 (MW) /      0.037 (MB)
+	Size of irrep 1 of <ia|bc> integrals:      0.001 (MW) /      0.010 (MB)
+	Size of irrep 2 of <ia|bc> integrals:      0.003 (MW) /      0.021 (MB)
+	Size of irrep 3 of <ia|bc> integrals:      0.003 (MW) /      0.021 (MB)
+	Total:                                     0.011 (MW) /      0.089 (MB)
+
+	Size of irrep 0 of <Ia|Bc> integrals:      0.006 (MW) /      0.046 (MB)
+	Size of irrep 1 of <Ia|Bc> integrals:      0.001 (MW) /      0.011 (MB)
+	Size of irrep 2 of <Ia|Bc> integrals:      0.003 (MW) /      0.025 (MB)
+	Size of irrep 3 of <Ia|Bc> integrals:      0.003 (MW) /      0.025 (MB)
+	Total:                                     0.013 (MW) /      0.107 (MB)
+
+	Size of irrep 0 of <iA|bC> integrals:      0.004 (MW) /      0.032 (MB)
+	Size of irrep 1 of <iA|bC> integrals:      0.001 (MW) /      0.010 (MB)
+	Size of irrep 2 of <iA|bC> integrals:      0.002 (MW) /      0.019 (MB)
+	Size of irrep 3 of <iA|bC> integrals:      0.002 (MW) /      0.019 (MB)
+	Total:                                     0.010 (MW) /      0.081 (MB)
+
+	Size of irrep 0 of tIjAb amplitudes:       0.001 (MW) /      0.009 (MB)
+	Size of irrep 1 of tIjAb amplitudes:       0.000 (MW) /      0.001 (MB)
+	Size of irrep 2 of tIjAb amplitudes:       0.001 (MW) /      0.005 (MB)
+	Size of irrep 3 of tIjAb amplitudes:       0.001 (MW) /      0.005 (MB)
+	Total:                                     0.002 (MW) /      0.020 (MB)
+
+
+	Sorting File: A <IJ|KL> nbuckets = 1
+	Sorting File: B <AB|CD> nbuckets = 1
+	Sorting File: C <IA|JB> nbuckets = 1
+	Sorting File: D <IJ|AB> nbuckets = 1
+	Sorting File: E <AI|JK> nbuckets = 1
+	Sorting File: F <IA|BC> nbuckets = 1
+	Sorting File: F <AI|BC> nbuckets = 1
+	Sorting File: A <ij|kl> nbuckets = 1
+	Sorting File: B <ab|cd> nbuckets = 1
+	Sorting File: C <ia|jb> nbuckets = 1
+	Sorting File: D <ij|ab> nbuckets = 1
+	Sorting File: E <ai|jk> nbuckets = 1
+	Sorting File: F <ia|bc> nbuckets = 1
+	Sorting File: F <ai|bc> nbuckets = 1
+	Sorting File: A <Ij|Kl> nbuckets = 1
+	Sorting File: B <Ab|Cd> nbuckets = 1
+	Sorting File: C <Ia|Jb> nbuckets = 1
+	Sorting File: C <Ai|Bj> nbuckets = 1
+	Sorting File: D <Ij|Ab> nbuckets = 1
+	Sorting File: E <Ai|Jk> nbuckets = 1
+	Sorting File: E <Ij|Ka> nbuckets = 1
+	Sorting File: F <Ia|Bc> nbuckets = 1
+	Sorting File: F <aI|bC> nbuckets = 1
+	Sorting File: F <Ab|Ci> nbuckets = 1
+	Sorting File: F <Ai|Bc> nbuckets = 1
+	One-electron energy          =    -41.74422543998276
+	Two-electron (AA) energy     =      4.27920498095097
+	Two-electron (BB) energy     =      3.03649990582880
+	Two-electron (AB) energy     =     10.29982543173440
+	Two-electron energy          =     17.61553031851418
+	Frozen-core energy (transqt) =    -86.99935371095728
+	Reference energy             =    -92.21277695327693
+******************************************************************************
+tstop called on augustus.chemistry.gatech.edu
+Wed Mar 12 18:27:14 2008
+
+user time   =       0.06 seconds =       0.00 minutes
+system time =       0.05 seconds =       0.00 minutes
+total time  =          1 seconds =       0.02 minutes
+******************************************************************************
+tstart called on augustus.chemistry.gatech.edu
+Wed Mar 12 18:27:14 2008
+
+			**************************
+			*                        *
+			*        CCENERGY        *
+			*                        *
+			**************************
+
+	Nuclear Rep. energy (chkpt)   =   18.915271879148936
+	SCF energy          (chkpt)   =  -92.212776953276872
+	Reference energy    (file100) =  -92.212776953276929
+
+	Input parameters:
+	-----------------
+	Wave function   =    CCSD_T
+	Reference wfn   =      UHF
+	Memory (Mbytes) =  256.0
+	Maxiter         =     50
+	Convergence     = 1.0e-07
+	Restart         =     Yes
+	DIIS            =     Yes
+	AO Basis        =     NONE
+	ABCD            =     NEW
+	Cache Level     =    2
+	Cache Type      =     LRU
+	Print Level     =    0
+	Num. of threads =     1
+	# Amps to Print =    10
+	Print MP2 Amps? =    No
+	Analyze T2 Amps =    No
+	Print Pair Ener =    No
+	Local CC        =     No
+
+	            Solving CC Amplitude Equations
+	            ------------------------------
+  Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
+  ----     ---------------------    ---------   ----------  ----------  ----------
+     0        -0.221996162039334    0.000e+00    0.000000    0.000000    0.000000
+     1        -0.227318464219428    1.127e-01    0.034203    0.000000    0.000000
+     2        -0.244460944217420    6.180e-02    0.055516    0.000000    0.000000
+     3        -0.258959222772609    5.026e-02    0.096674    0.000000    0.000000
+     4        -0.262343389801254    2.205e-02    0.117471    0.000000    0.000000
+     5        -0.262908618782770    1.243e-02    0.122443    0.000000    0.000000
+     6        -0.263757853185719    8.177e-03    0.126445    0.000000    0.000000
+     7        -0.263879206931523    3.817e-03    0.128184    0.000000    0.000000
+     8        -0.264014615769719    1.695e-03    0.128964    0.000000    0.000000
+     9        -0.264066152204511    8.614e-04    0.129290    0.000000    0.000000
+    10        -0.264071940159055    4.297e-04    0.129464    0.000000    0.000000
+    11        -0.264057387679070    1.444e-04    0.129427    0.000000    0.000000
+    12        -0.264050052603691    4.714e-05    0.129438    0.000000    0.000000
+    13        -0.264053142861150    1.551e-05    0.129448    0.000000    0.000000
+    14        -0.264053075202525    4.850e-06    0.129447    0.000000    0.000000
+    15        -0.264053285138731    1.185e-06    0.129448    0.000000    0.000000
+    16        -0.264053237701658    4.821e-07    0.129447    0.000000    0.000000
+    17        -0.264053218485145    1.513e-07    0.129447    0.000000    0.000000
+    18        -0.264053215584695    5.776e-08    0.129447    0.000000    0.000000
+
+	Iterations converged.
+
+
+	Largest TIA Amplitudes:
+	          3  11        -0.1562916163
+	          4  16        -0.1562916163
+	          3  13        -0.0386836946
+	          4  18        -0.0386836946
+	          3  14         0.0217614506
+	          4  19         0.0217614506
+	          0   3         0.0109229431
+	          1   1        -0.0077761785
+	          3  12         0.0076150464
+	          4  17         0.0076150464
+
+	Largest Tia Amplitudes:
+	          1   0        -0.2352610532
+	          2  12         0.1325985244
+	          3  17         0.1325985244
+	          2  13        -0.0459911424
+	          3  18        -0.0459911424
+	          1   2         0.0413568502
+	          2  15         0.0134656317
+	          3  20         0.0134656317
+	          2  14         0.0119131155
+	          3  19         0.0119131155
+
+	Largest TIJAB Amplitudes:
+	  4   3  16  11        -0.0398171077
+	  3   2  11   3         0.0234853049
+	  4   2  16   3         0.0234853049
+	  4   3  17  12        -0.0206385167
+	  4   3   9   4         0.0188072525
+	  3   1  12   1         0.0168567614
+	  4   1  17   1         0.0168567614
+	  3   1  11   1        -0.0140526571
+	  4   1  16   1        -0.0140526571
+	  3   1  11   4        -0.0120691042
+
+	Largest Tijab Amplitudes:
+	  3   2  17  12        -0.0346069235
+	  2   1  12   0         0.0310243388
+	  3   1  17   0         0.0310243388
+	  3   2  19  14        -0.0150424494
+	  3   2  17  14        -0.0147208180
+	  3   2  19  12        -0.0147208180
+	  2   1  12   4         0.0144836211
+	  3   1  17   4         0.0144836211
+	  3   2  10   5        -0.0138482903
+	  3   2  18  13        -0.0135177462
+
+	Largest TIjAb Amplitudes:
+	  3   2  11  12        -0.1090709675
+	  4   3  16  17        -0.1090709675
+	  3   1  11   0         0.0876053180
+	  4   1  16   0         0.0876053180
+	  3   3  11  17        -0.0648698392
+	  4   2  16  12        -0.0648698392
+	  1   2  11   0        -0.0593336799
+	  1   3  16   0        -0.0593336799
+	  1   1  11  12         0.0462409359
+	  1   1  16  17         0.0462409359
+
+	SCF energy       (chkpt)   =  -92.212776953276872
+	Reference energy (file100) =  -92.212776953276929
+	MP2 correlation energy     =   -0.221996162039334
+      * MP2 total energy           =  -92.434773115316261
+	CCSD correlation energy    =   -0.264053215584695
+      * CCSD total energy          =  -92.476830168861625
+
+******************************************************************************
+tstop called on augustus.chemistry.gatech.edu
+Wed Mar 12 18:27:15 2008
+
+user time   =       0.52 seconds =       0.01 minutes
+system time =       0.34 seconds =       0.01 minutes
+total time  =          1 seconds =       0.02 minutes
+******************************************************************************
+tstart called on augustus.chemistry.gatech.edu
+Wed Mar 12 18:27:15 2008
+
+			**************************
+			*                        *
+			*        CCTRIPLES       *
+			*                        *
+			**************************
+
+
+	Wave function   =    CCSD_T
+	Reference wfn   =      UHF
+
+	Nuclear Rep. energy (chkpt)   =   18.915271879148936
+	SCF energy          (chkpt)   =  -92.212776953276872
+	Reference energy    (file100) =  -92.212776953276929
+	CCSD energy         (file100) =   -0.264053215584695
+	Total CCSD energy   (file100) =  -92.476830168861625
+
+	Number of ijk index combinations:
+	Spin Case AAA: 10
+	Spin Case BBB: 4
+	Spin Case AAB: 40
+	Spin Case ABB: 30
+
+	AAA (T) energy                =   -0.000105841401815
+	BBB (T) energy                =   -0.000012376486006
+	AAB (T) energy                =   -0.007108813870652
+	ABB (T) energy                =   -0.005234214893376
+	(T) energy                    =   -0.012461246651850
+      * CCSD(T) total energy          =  -92.489291415513478
+
+******************************************************************************
+tstop called on augustus.chemistry.gatech.edu
+Wed Mar 12 18:27:15 2008
+
+user time   =       0.09 seconds =       0.00 minutes
+system time =       0.03 seconds =       0.00 minutes
+total time  =          0 seconds =       0.00 minutes
+
+                          --------------------------
+                          PSI3 Computation Completed
+                          --------------------------
+
+PSI3 stopped on augustus.chemistry.gatech.edu at Wed Mar 12 18:27:15 2008
+
+Total PSI3 wall time          3 seconds =       0.05 minutes
+******************************************************************************

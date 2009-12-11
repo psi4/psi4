@@ -803,6 +803,14 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/cchbar/Makefile
           src/bin/cis/Makefile
           src/bin/scf/Makefile
+
+          tests/Makefile
+          tests/MakeVars
+          tests/MakeRules
+          tests/runtest.pl
+          tests/cc4/Makefile
+          tests/cc8/Makefile
+          tests/cc8a/Makefile
 ])
 
 AC_OUTPUT
