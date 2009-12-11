@@ -720,6 +720,21 @@ case $withval in
     ;;
 esac
 ])
+
+# Adjust the flags dealing with strictness of the compilers.
+# The default is to disable strict language checks.
+AC_ARG_WITH(insanely-strict,[  --with-insanely-strict  --with-insanely-strict=yes to turn on strict compiler warnings (cover your eyes, it ain't pretty, for now)],[
+case $withval in
+  yes)
+    # "Strict" flags only known for GNU compilers
+    if test "$GXX" = yes ; then
+      CXXOTH="$CXXOTH -pipe -Wall -ansi -pedantic -W -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings -Wno-long-long -Wctor-dtor-privacy -Woverloaded-virtual -Weffc++ -Wextra -Wwrite-strings -Winit-self -Wold-style-cast -Wstrict-aliasing -Wformat=2 -Wuninitialized -Wnon-virtual-dtor"
+    fi
+    ;;
+  no)
+    ;;
+esac
+])
 AC_MSG_RESULT([C extra flags: $COTH])
 AC_MSG_RESULT([C++ extra flags: $CXXOTH])
 
@@ -774,6 +789,7 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libmoinfo/Makefile
           src/lib/libmints/Makefile
           src/lib/libtrans/Makefile
+          src/lib/libparallel/Makefile
  
           src/util/tocprint/Makefile
           src/util/psiclean/Makefile

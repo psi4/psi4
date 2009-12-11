@@ -87,7 +87,7 @@ void MemoryManager::allocate(const char *type, T*& matrix, size_t size, const ch
     newEntry.fileName = fileName;
     newEntry.lineNumber = lineNumber;
     newEntry.argumentList.push_back(size);
-    RegisterMemory((void*)matrix, newEntry, size*sizeof(T));
+    RegisterMemory(static_cast<void*>(matrix), newEntry, size*sizeof(T));
   }
 }
 
@@ -97,9 +97,9 @@ void MemoryManager::release_one(T*& matrix, const char *fileName, size_t lineNum
   if(matrix == NULL)
     return;
 
-  size_t size = AllocationTable[(void*)matrix].argumentList[0];
+  size_t size = AllocationTable[static_cast<void*>(matrix)].argumentList[0];
 
-  UnregisterMemory((void*)matrix, size*sizeof(T),fileName,lineNumber);
+  UnregisterMemory(static_cast<void*>(matrix), size*sizeof(T),fileName,lineNumber);
 
   delete[] matrix;
   matrix = NULL;
@@ -129,7 +129,7 @@ void MemoryManager::allocate(const char *type, T**& matrix, size_t size1, size_t
     newEntry.lineNumber = lineNumber;
     newEntry.argumentList.push_back(size1);
     newEntry.argumentList.push_back(size2);
-    RegisterMemory((void*)matrix, newEntry, size*sizeof(T));
+    RegisterMemory(static_cast<void*>(matrix), newEntry, size*sizeof(T));
   }
 }
 
@@ -139,9 +139,9 @@ void MemoryManager::release_two(T**& matrix, const char *fileName, size_t lineNu
   if(matrix == NULL)
     return;
 
-  size_t size = AllocationTable[(void*)matrix].argumentList[0] * AllocationTable[(void*)matrix].argumentList[1];
+  size_t size = AllocationTable[static_cast<void*>(matrix)].argumentList[0] * AllocationTable[static_cast<void*>(matrix)].argumentList[1];
 
-  UnregisterMemory((void*)matrix, size*sizeof(T),fileName,lineNumber);
+  UnregisterMemory(static_cast<void*>(matrix), size*sizeof(T),fileName,lineNumber);
 
   delete[] matrix[0];
   delete[] matrix;
@@ -174,7 +174,7 @@ void MemoryManager::allocate(const char *type, T***& matrix,size_t size1,size_t 
     newEntry.argumentList.push_back(size1);
     newEntry.argumentList.push_back(size2);
     newEntry.argumentList.push_back(size3);
-    RegisterMemory((void*)matrix, newEntry, size*sizeof(T));
+    RegisterMemory(static_cast<void*>(matrix), newEntry, size*sizeof(T));
   }
 }
 
@@ -184,11 +184,11 @@ void MemoryManager::release_three(T***& matrix, const char *fileName, size_t lin
   if(matrix == NULL)
     return;
 
-  size_t size1 = AllocationTable[(void*)matrix].argumentList[0];
-  size_t size = AllocationTable[(void*)matrix].argumentList[0] * AllocationTable[(void*)matrix].argumentList[1]
-              * AllocationTable[(void*)matrix].argumentList[2];
+  size_t size1 = AllocationTable[static_cast<void*>(matrix)].argumentList[0];
+  size_t size = AllocationTable[static_cast<void*>(matrix)].argumentList[0] * AllocationTable[static_cast<void*>(matrix)].argumentList[1]
+              * AllocationTable[static_cast<void*>(matrix)].argumentList[2];
 
-  UnregisterMemory((void*)matrix, size*sizeof(T),fileName,lineNumber);
+  UnregisterMemory(static_cast<void*>(matrix), size*sizeof(T),fileName,lineNumber);
 
   delete[] matrix[0][0];
   for(size_t i=0;i<size1;i++)

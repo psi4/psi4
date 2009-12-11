@@ -39,9 +39,18 @@ class PsiException : public std::runtime_error {
             const char* file,
             int line
         ) throw ();
-
+        PsiException(const PsiException& copy) throw();
         ~PsiException() throw ();
 
+        PsiException& operator=(const PsiException& other) {
+            if (this != &other) {
+                msg_ = other.msg_;
+                file_ = strdup(other.file_);
+                line_ = other.line_;
+            }
+            return *this;
+        }
+        
         /**
         * Override of runtime_error's virtual what method
         * @return Description of exception
