@@ -15,6 +15,12 @@ PsiException::PsiException(
     line_ = line;
 }
 
+PsiException::PsiException(const PsiException& copy) throw()
+    : runtime_error(copy.msg_), msg_(copy.msg_), file_(strdup(copy.file_)),
+        line_(copy.line_)
+{
+}
+
 void
 PsiException::rewrite_msg(string msg) throw()
 {

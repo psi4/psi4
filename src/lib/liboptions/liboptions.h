@@ -15,6 +15,7 @@
 
 #include <exception.h>
 #include <libutil/libutil.h> // Needed for Ref counting, string splitting, and conversions
+#include <boost/shared_ptr.hpp>
 
 namespace psi {
   extern FILE *outfile;
@@ -269,9 +270,9 @@ namespace psi {
     std::string str_;
     std::vector<std::string> choices_;
   public:
-    StringDataType() : DataType() { }
-    StringDataType(std::string s) : DataType(), str_(s) { to_upper(str_); }
-    StringDataType(std::string s, std::string c) : DataType(), str_(s) { to_upper(str_); to_upper(c); choices_ = split(c); }
+    StringDataType() : DataType(), str_(), choices_() { }
+    StringDataType(std::string s) : DataType(), str_(s), choices_() { to_upper(str_); }
+    StringDataType(std::string s, std::string c) : DataType(), str_(s), choices_() { to_upper(str_); to_upper(c); choices_ = split(c); }
     virtual ~StringDataType() { }
 
     virtual std::string type() const {

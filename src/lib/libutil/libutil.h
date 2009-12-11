@@ -45,7 +45,9 @@ void trim_spaces(std::string& str);
 class Timer
 {
 public:
-    Timer() {gettimeofday(&___start,&___dummy);}
+    Timer() : ___start(), ___end(), ___dummy(),
+              delta_time_seconds(0), delta_time_hours(0), delta_time_days(0)
+        {gettimeofday(&___start,&___dummy);}
     double get() {gettimeofday(&___end,&___dummy);
       delta_time_seconds=(___end.tv_sec - ___start.tv_sec) + (___end.tv_usec - ___start.tv_usec)/1000000.0;
       delta_time_hours=delta_time_seconds/3600.0;
