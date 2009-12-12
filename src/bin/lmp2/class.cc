@@ -15,10 +15,13 @@
 //#include <libchkpt/chkpt.hpp>
 //#include <libpsio/psio.h>
 #include <libqt/qt.h>
+#include <libparallel/parallel.h>
 //#include <psifiles.h>
 #define EXTERN
 #include "globals.h"
 
+    using namespace psi;
+    
 namespace psi{
 
 extern int myid;
@@ -95,7 +98,7 @@ void LMP2::print_moinfo(){
   double Enuc = get_enuc();
   double Escf = get_escf();
 
-  if(myid == 0) {
+  if(Communicator::world->me() == 0) {
     fprintf(outfile,"\n");
     fprintf(outfile,"\tChkpt Parameters:\n");
     fprintf(outfile,"\t--------------------\n");

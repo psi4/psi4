@@ -66,6 +66,11 @@ void Communicator::bcast(type *data, int ndata, int broadcaster) \
     raw_bcast(static_cast<void *>(data), ndata * sizeof(type), broadcaster); \
 }
 
+void Communicator::raw_bcast(void*, int, int)
+{
+    
+}
+
 BCASTMEMBER(double)
 BCASTMEMBER(unsigned int)
 BCASTMEMBER(int)

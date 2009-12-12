@@ -15,6 +15,7 @@
 //#include <libpsio/psio.h>
 //#include <libqt/qt.h>
 //#include <psifiles.h>
+#include <libparallel/parallel.h>
 #define EXTERN
 #include "globals.h"
 
@@ -107,7 +108,9 @@ void LMP2::energy() {
     }
   }
 
-  MPI_Allreduce(&Emp2_sum, &Emp2, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+  // MPI_Allreduce(&Emp2_sum, &Emp2, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+  Communicator::world->sum(Emp2_sum);
+  Emp2 = Emp2_sum;
 
 }
 
