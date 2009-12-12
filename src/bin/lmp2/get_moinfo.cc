@@ -4,8 +4,8 @@
 */
 
 #include "mpi.h"
-//#include <iostream>
-//#include <fstream>              // file I/O support
+#include <iostream>
+#include <fstream>              // file I/O support
 //#include <cstdio>
 //#include <cstdlib>
 //#include <cstring>
@@ -38,7 +38,8 @@ int LMP2::get_nso() {
     nso_ = chkpt->rd_nso();
 
   // This version of bcast sends a single value from master
-  Communicator::world->bcast(nso_);
+  if(nprocs > 1)
+    Communicator::world->bcast(nso_);
 
   return nso_;
 
@@ -47,12 +48,12 @@ int LMP2::get_nso() {
 int LMP2::get_natom() {
   int natom_;
 
-  if(myid == 0) {
+  if(Communicator::world->me() == 0)
     natom_ = chkpt->rd_natom();
-    MPI_Bcast(&natom_, 1, MPI_INT, 0, MPI_COMM_WORLD);
-  }
-  else
-    MPI_Bcast(&natom_, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+  // This version of bcast sends a single value from master
+  if(nprocs > 1)
+    Communicator::world->bcast(natom_);
 
   return natom_;
 
@@ -61,12 +62,11 @@ int LMP2::get_natom() {
 int LMP2::get_nirreps() {
   int nirreps_;
 
-  if(myid == 0) {
+  if(Communicator::world->me() == 0)
     nirreps_ = chkpt->rd_nirreps();
-    MPI_Bcast(&nirreps_, 1, MPI_INT, 0, MPI_COMM_WORLD);
-  }
-  else
-    MPI_Bcast(&nirreps_, 1, MPI_INT, 0, MPI_COMM_WORLD);
+  
+  if(nprocs > 1)
+    Communicator::world->bcast(nirreps_);
 
   return nirreps_;
 
@@ -75,12 +75,11 @@ int LMP2::get_nirreps() {
 int LMP2::get_nshell() {
   int nshell_;
 
-  if(myid == 0) {
+  if(Communicator::world->me() == 0)
     nshell_ = chkpt->rd_nshell();
-    MPI_Bcast(&nshell_, 1, MPI_INT, 0, MPI_COMM_WORLD);
-  }
-  else 
-    MPI_Bcast(&nshell_, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+  if(nprocs > 1)
+    Communicator::world->bcast(nshell_);
 
   return nshell_;
 
@@ -89,12 +88,11 @@ int LMP2::get_nshell() {
 int LMP2::get_puream() {
   int puream_;
 
-  if(myid == 0) {
+  if(Communicator::world->me() == 0)
     puream_ = chkpt->rd_puream();
-    MPI_Bcast(&puream_, 1, MPI_INT, 0, MPI_COMM_WORLD);
-  }
-  else 
-    MPI_Bcast(&puream_, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+  if(nprocs > 1)
+    Communicator::world->bcast(puream_);
 
   return puream_;
 
@@ -103,14 +101,13 @@ int LMP2::get_puream() {
 int* LMP2::get_doccpi() {
   int *docc;
 
-  if(myid == 0) {
+  if(Communicator::world->me() == 0)
     docc = chkpt->rd_clsdpi();
-    MPI_Bcast(&(docc[0]), nirreps, MPI_INT, 0, MPI_COMM_WORLD);
-  }
-  else {
+  else
     docc = init_int_array(nirreps);
-    MPI_Bcast(&(docc[0]), nirreps, MPI_INT, 0, MPI_COMM_WORLD);
-  }
+
+  if(nprocs > 1)
+    Communicator::world->bcast(docc, nirreps, 0);
 
   return docc;
 
@@ -119,15 +116,14 @@ int* LMP2::get_doccpi() {
 int* LMP2::get_soccpi() {
   int *socc;
 
-  if(myid == 0) {
+  if(Communicator::world->me() == 0)
     socc = chkpt->rd_openpi();
-    MPI_Bcast(&(socc[0]), nirreps, MPI_INT, 0, MPI_COMM_WORLD);
-  }
-  else {
+  else
     socc = init_int_array(nirreps);
-    MPI_Bcast(&(socc[0]), nirreps, MPI_INT, 0, MPI_COMM_WORLD);
-  }
 
+  if(nprocs > 1)
+    Communicator::world->bcast(socc, nirreps, 0);
+  
   return socc;
 
 }
@@ -135,15 +131,14 @@ int* LMP2::get_soccpi() {
 int LMP2::get_frdocc() {
   int *frd;
 
-  if(myid == 0) {
-    frd = chkpt->rd_openpi();
-    MPI_Bcast(&(frd[0]), nirreps, MPI_INT, 0, MPI_COMM_WORLD);
-  }
-  else {
+  if(Communicator::world->me() == 0)
+    frd = chkpt->rd_frzcpi();
+  else
     frd = init_int_array(nirreps);
-    MPI_Bcast(&(frd[0]), nirreps, MPI_INT, 0, MPI_COMM_WORLD);
-  }
 
+  if(nprocs > 1)
+    Communicator::world->bcast(frd, nirreps, 0);
+  
   return frd[0];
 
 }
@@ -152,14 +147,13 @@ int LMP2::get_frdocc() {
 int* LMP2::get_stype() {
   int *sty;
 
-  if(myid == 0) {
+  if(Communicator::world->me() == 0)
     sty = chkpt->rd_stype();
-    MPI_Bcast(&(sty[0]), nshell, MPI_INT, 0, MPI_COMM_WORLD);
-  }
-  else  {
+  else
     sty = init_int_array(nshell);
-    MPI_Bcast(&(sty[0]), nshell, MPI_INT, 0, MPI_COMM_WORLD);
-  }
+
+  if(nprocs > 1)
+    Communicator::world->bcast(sty, nshell, 0);
 
   return sty;
 
@@ -168,14 +162,13 @@ int* LMP2::get_stype() {
 int* LMP2::get_snuc() {
   int *snu;
 
-  if(myid == 0) {
+  if(Communicator::world->me() == 0)
     snu = chkpt->rd_snuc();
-    MPI_Bcast(&(snu[0]), nshell, MPI_INT, 0, MPI_COMM_WORLD);
-  }
-  else {
+  else
     snu = init_int_array(nshell);
-    MPI_Bcast(&(snu[0]), nshell, MPI_INT, 0, MPI_COMM_WORLD);
-  }
+
+  if(nprocs > 1)
+    Communicator::world->bcast(snu, nshell, 0);
 
   return snu;
 
@@ -184,13 +177,12 @@ int* LMP2::get_snuc() {
 double LMP2::get_enuc() {
   double enuc_;
 
-  if(myid == 0) {
+  if(Communicator::world->me() == 0)
     enuc_ = chkpt->rd_enuc();
-    MPI_Bcast(&enuc_, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-  }
-  else 
-    MPI_Bcast(&enuc_, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
+  if(nprocs > 1)
+    Communicator::world->bcast(enuc_);
+  
   return enuc_;
 
 }
@@ -198,12 +190,11 @@ double LMP2::get_enuc() {
 double LMP2::get_escf() {
   double escf_;
 
-  if(myid == 0) {
+  if(Communicator::world->me() == 0)
     escf_ = chkpt->rd_escf();
-    MPI_Bcast(&escf_, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-  }
-  else 
-    MPI_Bcast(&escf_, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+  if(nprocs > 1)
+    Communicator::world->bcast(escf_);
 
   return escf_;
 
@@ -213,15 +204,14 @@ double* LMP2::get_evals() {
 
   double *evals_;
 
-  if(myid == 0) {
+  if(Communicator::world->me() == 0)
     evals_ = chkpt->rd_evals();
-    MPI_Bcast(&(evals_[0]), nso, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-  }
-  else {
+  else
     evals_ = init_array(nso);
-    MPI_Bcast(&(evals_[0]), nso, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-  }
 
+  if(nprocs > 1)
+    Communicator::world->bcast(evals_, nso, 0);
+  
   return evals_;
 
 }
@@ -230,14 +220,13 @@ double** LMP2::get_MOC() {
 
   double **C_;
 
-  if(myid == 0) {
+  if(Communicator::world->me() == 0)
     C_ = chkpt->rd_scf();
-    MPI_Bcast(&(C_[0][0]), nso*nso, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-  }
-  else {
+  else
     C_ = block_matrix(nso,nso);
-    MPI_Bcast(&(C_[0][0]), nso*nso, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-  }
+
+  if(nprocs > 1)
+    Communicator::world->bcast(C_[0], nso*nso, 0);
 
   return C_;
 
