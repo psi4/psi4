@@ -118,6 +118,16 @@ namespace psi {
         virtual void raw_recv(int sender, void *data, int nbyte);
         virtual void raw_bcast(void *data, int nbyte, int broadcaster=0);
 
+        /**
+         * Performs element-by-element sum of all data from all nodes.  The sum will either appear
+         * in a new buffer or will overwrite the original data. If target == -1 then the sum is performed
+         * on the master node and the result is broadcasted to the others.
+         * @param data The array of data to be summed.  If no receive buffer is given, this is overwritten with summed data.
+         * @param n The size of the array. This is the number of elements, not the number of bytes.
+         * @param receive_buffer Optional receive buffer. If given, summed data is placed in this array.
+         *                       If used, this must be allocated before entering method.
+         * @param target Data is summed on target. By default all nodes receive data.
+         */
         virtual void sum(double *data, int n, double *receive_buffer=0, int target=-1);
         virtual void sum(unsigned int *data, int n, unsigned int *receive_buffer=0, int target=-1);
         virtual void sum(int *data, int n, int *receive_buffer=0, int target=-1);

@@ -13,6 +13,7 @@
 #include <psiconfig.h>
 #include <libciomr/libciomr.h>
 #include <liboptions/liboptions.h>
+#include <libparallel/parallel.h>
 #include <physconst.h>
 
 #include <molecular_system.h>
@@ -59,10 +60,15 @@ namespace psi {
 // This is the ONLY main function in PSI
 int main(int argc, char *argv[])
 {
-    MPI_Init(&argc, &argv);
-
     using namespace psi;
 
+    // Initialize MPI
+    MPI_Init(&argc, &argv);
+
+    // Create the global world communicator
+    Communicator::world = shared_ptr<Communicator>(new MPICommunicator(MPI_COMM_WORLD));
+    
+    // Needed until codes are converted to using Communicator::world
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);
     MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 
