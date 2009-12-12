@@ -50,13 +50,6 @@ LMP2::LMP2(shared_ptr<PSIO> psio_o, shared_ptr<Chkpt> chkpt_o) {
 
 void LMP2::get_moinfo() {
 
-/*  nso = chkpt->rd_nso();
-  natom = chkpt->rd_natom();
-  nirreps = chkpt->rd_nirreps();
-  nshell = get_nshell();
-  C = chkpt->rd_scf();
-*/
-
   nso = get_nso();
   natom = get_natom();
   nirreps = get_nirreps();
@@ -86,12 +79,8 @@ void LMP2::print_moinfo(){
 
   // A couple of error traps
   if(nirreps != 1) {
-//    if(myid == 0) {
-//      fprintf(outfile, "\n\tError: localization is only valid in C1 symmetry!\n");
-//    }
     char *symm_label = chkpt->rd_sym_label();
     throw InputException("Local MP2 is only valid in C1 symmetry", symm_label, __FILE__, __LINE__);
-//    exit(PSI_RETURN_FAILURE);
   }
 
 
