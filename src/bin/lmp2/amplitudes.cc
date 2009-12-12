@@ -13,6 +13,7 @@
 //#include <libchkpt/chkpt.h>
 //#include <libpsio/psio.h>
 #include <libqt/qt.h>
+#include <libparallel/parallel.h>
 //#include <psifiles.h>
 #define EXTERN
 #include "globals.h"
@@ -76,10 +77,12 @@ void LMP2::amplitudes() {
           }
           else if ((myid == ij_owner[ij]) && (myid != ij_owner[kj])) {
             Tempkj[k] = block_matrix(pairdom_len[kj],pairdom_len[kj]);
-            MPI::COMM_WORLD.Recv(&(Tempkj[k][0][0]), pairdom_len[kj]*pairdom_len[kj], MPI::DOUBLE, ij_owner[kj], kj);
+            Communicator::world->recv(ij_owner[kj], Tempkj[k][0], pairdom_len[kj]*pairdom_len[kj]);
+            //MPI::COMM_WORLD.Recv(&(Tempkj[k][0][0]), pairdom_len[kj]*pairdom_len[kj], MPI::DOUBLE, ij_owner[kj], kj);
           }
           else if ((myid != ij_owner[ij]) && (myid == ij_owner[kj])) {
-            MPI::COMM_WORLD.Send(&(T[dmat1][ij_local[kj]][0][0]), pairdom_len[kj]*pairdom_len[kj], MPI::DOUBLE, ij_owner[ij], kj);
+            Communicator::world->send(ij_owner[ij], T[dmat1][ij_local[kj]][0], pairdom_len[kj]*pairdom_len[kj]);
+            //MPI::COMM_WORLD.Send(&(T[dmat1][ij_local[kj]][0][0]), pairdom_len[kj]*pairdom_len[kj], MPI::DOUBLE, ij_owner[ij], kj);
           }
    
 //          MPI_Barrier(MPI_COMM_WORLD);
@@ -90,10 +93,12 @@ void LMP2::amplitudes() {
           }
           else if ((myid == ij_owner[ij]) && (myid != ij_owner[ik])) {
             Tempik[k] = block_matrix(pairdom_len[ik],pairdom_len[ik]);
-            MPI::COMM_WORLD.Recv(&(Tempik[k][0][0]), pairdom_len[ik]*pairdom_len[ik], MPI::DOUBLE, ij_owner[ik], ik);
+            Communicator::world->recv(ij_owner[ik], Tempik[k][0], pairdom_len[ik]*pairdom_len[ik]);
+            //MPI::COMM_WORLD.Recv(&(Tempik[k][0][0]), pairdom_len[ik]*pairdom_len[ik], MPI::DOUBLE, ij_owner[ik], ik);
           }
           else if ((myid != ij_owner[ij]) && (myid == ij_owner[ik])) {
-            MPI::COMM_WORLD.Send(&(T[dmat1][ij_local[ik]][0][0]), pairdom_len[ik]*pairdom_len[ik], MPI::DOUBLE, ij_owner[ij], ik);
+            Communicator::world->send(ij_owner[ij], T[dmat1][ij_local[ik]][0], pairdom_len[ik]*pairdom_len[ik]);
+            //MPI::COMM_WORLD.Send(&(T[dmat1][ij_local[ik]][0][0]), pairdom_len[ik]*pairdom_len[ik], MPI::DOUBLE, ij_owner[ij], ik);
           }
 //std::cout << "procid = " << myid << "   made it here in iter = " << iter << "   for ij = " << ij << "   k = " << k <<
 //"       kj = " << kj <<"       ik = " << ik << std::endl;

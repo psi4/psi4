@@ -12,6 +12,7 @@
 //#include <libchkpt/chkpt.h>
 //#include <libpsio/psio.h>
 #include <libqt/qt.h>
+#include <libparallel/parallel.h>
 //#include <psifiles.h>
 #define EXTERN
 #include "globals.h"
