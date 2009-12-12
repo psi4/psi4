@@ -79,12 +79,12 @@ BCASTMEMBER(long)
 
 void Communicator::bcast(double& data, int broadcaster)
 {
-    raw_bcast(&data, 1, broadcaster);
+    raw_bcast(&data, sizeof(double), broadcaster);
 }
 
 void Communicator::bcast(int& data, int broadcaster)
 {
-    raw_bcast(&data, 1, broadcaster);
+    raw_bcast(&data, sizeof(int), broadcaster);
 }
 
 #define SUMMEMBER(type) \
