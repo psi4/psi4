@@ -22,6 +22,8 @@
 #include <libmints/factory.h>
 #include <libmints/symmetry.h>
 #include <libmints/wavefunction.h>
+#include <libparallel/parallel.h>
+
 //#include <psifiles.h>
 #define EXTERN
 #include "globals.h"
@@ -48,7 +50,7 @@ void LMP2::direct_transformation() {
   int **MN_shell;
   int M, R, N, S;
   double ****eri_1, ***eri_2, ***eri_2_mn, ***eri_3, ***eri_4;
-  MPI_Status stat;
+  // MPI_Status stat;
 
   //  ****  These are required to utilize libmints  ****
 
@@ -226,7 +228,8 @@ void LMP2::direct_transformation() {
           }
         }
         else if ((myid == ij_owner[ij]) && (myid != mn_owner[count])) {
-          MPI::COMM_WORLD.Recv(&(rec[0][0]), (MN_shell[1][0])*(MN_shell[1][0]), MPI::DOUBLE, mn_owner[count], ij);
+          // MPI::COMM_WORLD.Recv(&(rec[0][0]), (MN_shell[1][0])*(MN_shell[1][0]), MPI::DOUBLE, mn_owner[count], ij);
+          Communicator::world->recv(mn_owner[count], rec[0],  (MN_shell[1][0])*(MN_shell[1][0]));
           for(int m=0; m < numm; m++) {
             int om = basis->shell(M)->function_index()+m;
             for(int n=0; n < numn; n++) {
@@ -238,8 +241,10 @@ void LMP2::direct_transformation() {
             }
           }
         }
-        else if ((myid != ij_owner[ij]) && (myid == mn_owner[count]))
-          MPI::COMM_WORLD.Send(&(eri_2_mn[ij][0][0]), (MN_shell[1][0])*(MN_shell[1][0]), MPI::DOUBLE, ij_owner[ij], ij);
+        else if ((myid != ij_owner[ij]) && (myid == mn_owner[count])) {
+          // MPI::COMM_WORLD.Send(&(eri_2_mn[ij][0][0]), (MN_shell[1][0])*(MN_shell[1][0]), MPI::DOUBLE, ij_owner[ij], ij);
+          Communicator::world->send(ij_owner[ij], eri_2_mn[ij][0], (MN_shell[1][0])*(MN_shell[1][0]));
+        }
       }
 
       v++;

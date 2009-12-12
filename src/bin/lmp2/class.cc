@@ -98,7 +98,7 @@ void LMP2::print_moinfo(){
   double Enuc = get_enuc();
   double Escf = get_escf();
 
-  if(Communicator::world->me() == 0) {
+  if(myid == 0) {
     fprintf(outfile,"\n");
     fprintf(outfile,"\tChkpt Parameters:\n");
     fprintf(outfile,"\t--------------------\n");
