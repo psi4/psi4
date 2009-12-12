@@ -3,14 +3,32 @@
 using namespace psi;
 using namespace boost;
 
-MPICommunicator::MPICommunicator(MPI_Comm comm) : comm_(comm)
+MPICommunicator::MPICommunicator(MPI_Comm comm)
+    : Communicator(), comm_(comm)
 {
     MPI_Comm_rank(comm_, &me_);
     MPI_Comm_size(comm_, &nproc_);
 }
 
+MPICommunicator::MPICommunicator(const MPICommunicator &copy)
+    : Communicator(), comm_(copy.comm_)
+{
+    me_ = copy.me_;
+    nproc_ = copy.nproc_;
+}
+
 MPICommunicator::~MPICommunicator()
 {
+}
+
+MPICommunicator& MPICommunicator::operator =(const MPICommunicator& other)
+{
+    if (this != &other) {
+        comm_ = other.comm_;
+        me_   = other.me_;
+        nproc_ = other.nproc_;
+    }
+    return *this;
 }
 
 void MPICommunicator::sync()
@@ -31,7 +49,7 @@ void MPICommunicator::raw_recv(int sender, void* data, int nbyte)
 
 void MPICommunicator::raw_bcast(void* data, int nbyte, int broadcaster)
 {
-    MPI_Bcast(data, nbyte, MPI_BYTE, me_, comm_);
+    MPI_Bcast(data, nbyte, MPI_BYTE, broadcaster, comm_);
 }
 
 #define SUMMEMBER(T, M) \
@@ -43,7 +61,7 @@ void MPICommunicator::sum(T* data, int n, T* receive_buffer, int target) \
         receive_buffer = new T[n]; \
     } \
  \
-    MPI_Reduce(static_cast<void*>(data), static_cast<void*>(receive_buffer), n, M, MPI_SUM, me_, comm_); \
+    MPI_Reduce(static_cast<void*>(data), static_cast<void*>(receive_buffer), n, M, MPI_SUM, target, comm_); \
  \
     if (alloc) { \
         ::memcpy(static_cast<void*>(data), static_cast<void*>(receive_buffer), sizeof(T)*n); \

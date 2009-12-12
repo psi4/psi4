@@ -6,13 +6,13 @@ using namespace std;
 
 PsiException::PsiException(
     string msg,
-    const char* file,
-    int line
+    const char* _file,
+    int _line
 ) throw() : runtime_error(msg)
 {
     msg_ = msg;
-    file_ = file;
-    line_ = line;
+    file_ = _file;
+    line_ = _line;
 }
 
 PsiException::PsiException(const PsiException& copy) throw()
@@ -63,10 +63,10 @@ PsiException::~PsiException() throw()
 
 SanityCheckError::SanityCheckError(
     string message,
-    const char* file,
-    int line
+    const char* _file,
+    int _line
     ) throw() 
-  : PsiException(message, file, line)
+  : PsiException(message, _file, _line)
 {
     stringstream sstr;
     sstr << "sanity check failed! " << message;
@@ -79,9 +79,9 @@ InputException::InputException(
     string msg,
     string param_name,
     int value,
-    const char* file,
-    int line
-) throw() : PsiException(msg, file, line)
+    const char* _file,
+    int _line
+) throw() : PsiException(msg, _file, _line)
 {
     write_input_msg<int>(msg, param_name, value);
 }
@@ -90,9 +90,9 @@ InputException::InputException(
     string msg,
     string param_name,
     string value,
-    const char* file,
-    int line
-) throw() : PsiException(msg, file, line)
+    const char* _file,
+    int _line
+) throw() : PsiException(msg, _file, _line)
 {
     write_input_msg<string>(msg, param_name, value);
 }
@@ -101,9 +101,9 @@ InputException::InputException(
     string msg,
     string param_name,
     double value,
-    const char* file,
-    int line
-) throw() : PsiException(msg, file, line)
+    const char* _file,
+    int _line
+) throw() : PsiException(msg, _file, _line)
 {
     write_input_msg<double>(msg, param_name, value);
 }
@@ -111,9 +111,9 @@ InputException::InputException(
 InputException::InputException(
     string msg,
     string param_name,
-    const char* file,
-    int line
-) throw() : PsiException(msg, file, line)
+    const char* _file,
+    int _line
+) throw() : PsiException(msg, _file, _line)
 {
     write_input_msg<string>(msg, param_name, "in input");
 }
@@ -138,9 +138,9 @@ StepSizeError::StepSizeError(
     string value_name,
     double max,
     double actual,
-    const char* file,
-    int line) throw()
-    : LimitExceeded<double>(value_name + " step size", max, actual, file, line)
+    const char* _file,
+    int _line) throw()
+    : LimitExceeded<double>(value_name + " step size", max, actual, _file, _line)
 {
 }
 
@@ -149,9 +149,9 @@ StepSizeError::~StepSizeError() throw() {}
 MaxIterationsExceeded::MaxIterationsExceeded(
     string routine_name,
     int max,
-    const char* file,
-    int line)  throw()
-    : LimitExceeded<int>(routine_name + " iterations", max, max, file, line)
+    const char* _file,
+    int _line)  throw()
+    : LimitExceeded<int>(routine_name + " iterations", max, max, _file, _line)
 {
 }
 
@@ -160,14 +160,14 @@ MaxIterationsExceeded::~MaxIterationsExceeded() throw() {}
 ConvergenceError::ConvergenceError(
     string routine_name,
     int max,
-    double desired_accuracy,
-    double actual_accuracy,
-    const char* file,
-    int line) throw()
-    : MaxIterationsExceeded(routine_name + " iterations", max, file, line), desired_acc_(desired_accuracy), actual_acc_(actual_accuracy)
+    double _desired_accuracy,
+    double _actual_accuracy,
+    const char* _file,
+    int _line) throw()
+    : MaxIterationsExceeded(routine_name + " iterations", max, _file, _line), desired_acc_(_desired_accuracy), actual_acc_(_actual_accuracy)
 {
     stringstream sstr;
-    sstr << "could not converge " << routine_name << ".  desired " << desired_accuracy << " but got " << actual_accuracy << "\n";
+    sstr << "could not converge " << routine_name << ".  desired " << _desired_accuracy << " but got " << _actual_accuracy << "\n";
     sstr << description();
     rewrite_msg(sstr.str());
 }
@@ -184,19 +184,19 @@ ResourceAllocationError::ResourceAllocationError(
     string resource_name,
     size_t max,
     size_t actual,
-    const char* file,
-    int line)  throw()
-    : LimitExceeded<size_t>(resource_name, max, actual, file, line)
+    const char* _file,
+    int _line)  throw()
+    : LimitExceeded<size_t>(resource_name, max, actual, _file, _line)
 {
 }
 
 FeatureNotImplemented::FeatureNotImplemented(
     string module_name,
     string feature_name,
-    const char* file,
-    int line
+    const char* _file,
+    int _line
 ) throw() 
- : PsiException("psi exception", file, line)
+ : PsiException("psi exception", _file, _line)
 {
     stringstream sstr;
     sstr << feature_name << " not implemented in " << module_name;

@@ -83,7 +83,7 @@ void Communicator::bcast(int& data, int broadcaster)
 }
 
 #define SUMMEMBER(type) \
-void Communicator::sum(type *data, int n, type *receive_buffer, int target) \
+void Communicator::sum(type *data, int n, type *receive_buffer, int) \
 { \
     if (receive_buffer) \
         ::memcpy(static_cast<void *>(data), static_cast<void *>(receive_buffer), n * sizeof(type)); \

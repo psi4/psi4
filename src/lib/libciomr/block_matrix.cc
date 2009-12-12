@@ -1,7 +1,7 @@
 /*!
-  \file
-  \brief Allocate a blocked (memory-contiguous) 2D matrix of doubles
-  \ingroup CIOMR
+\file
+\brief Allocate a blocked (memory-contiguous) 2D matrix of doubles
+\ingroup CIOMR
 */
 
 #include <cstdio>
@@ -37,33 +37,37 @@ namespace psi {
 */
 
 double ** block_matrix(unsigned long int n, unsigned long int m)
-   {
+{
     double **A=NULL;
     double *B=NULL;
     unsigned long int i;
 
-    if(!m || !n) return((double **) NULL);
+    if(!m || !n) return(static_cast<double **>(0));
 
-    if ((A = (double **) malloc(n * (unsigned long int)sizeof(double *)))==NULL) {
-         fprintf(stderr,"block_matrix: trouble allocating memory \n");
-         fprintf(stderr,"n = %ld\n",n);
-         exit(PSI_RETURN_FAILURE);
-         }
+//  if ((A = (double **) malloc(n * (unsigned long int)sizeof(double *)))==NULL) {
+    if ((A = new double*[n])==NULL) {
+        fprintf(stderr,"block_matrix: trouble allocating memory \n");
+        fprintf(stderr,"n = %ld\n",n);
+        exit(PSI_RETURN_FAILURE);
+    }
 
-    if ((B = (double *) malloc(m*n * (unsigned long int)sizeof(double)))==NULL) {
-         fprintf(stderr,"block_matrix: trouble allocating memory \n");
-         fprintf(stderr,"m = %ld\n",m);
-         exit(PSI_RETURN_FAILURE);
-         }
+//  if ((B = (double *) malloc(m*n * (unsigned long int)sizeof(double)))==NULL) {
+    if ((B = new double[n*m])==NULL) {
+        fprintf(stderr,"block_matrix: trouble allocating memory \n");
+        fprintf(stderr,"m = %ld\n",m);
+        exit(PSI_RETURN_FAILURE);
+    }
 
-    bzero(B, m*n*(unsigned long int)sizeof(double));
-
+    // bzero is not in the C standard, use memset instead.
+    //bzero(B, m*n*(unsigned long int)sizeof(double));
+    memset(static_cast<void*>(B), 0, m*n*sizeof(double));
+    
     for (i = 0; i < n; i++) {
-         A[i] = &(B[i*m]);
-         }
+        A[i] = &(B[i*m]);
+    }
 
     return(A);
-   }
+}
 
 
 /*!
@@ -76,10 +80,10 @@ double ** block_matrix(unsigned long int n, unsigned long int m)
 ** \ingroup CIOMR
 */
 void free_block(double **array)
-   {
-     if(array == NULL) return;
-      free(array[0]);
-      free(array);
-   }
+{
+    if(array == NULL) return;
+    free(array[0]);
+    free(array);
+}
 
 }

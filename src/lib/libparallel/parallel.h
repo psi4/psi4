@@ -1,18 +1,17 @@
 /* 
  * File:   parallel.h
- * Author: jturney
+ * Author: jturney, jjwilke
  *
  * Created on December 11, 2009, 3:34 PM
  */
 
-#ifndef _psi_src_lib_libutil_parallel_h_
-#define	_psi_src_lib_libutil_parallel_h_
+#ifndef _psi_src_lib_libparallel_parallel_h_
+#define	_psi_src_lib_libparaellel_parallel_h_
 
 #include <boost/shared_ptr.hpp>
 #include <mpi.h>
 
 namespace psi {
-
 
     class Communicator {
     protected:
@@ -108,8 +107,11 @@ namespace psi {
 
     public:
         MPICommunicator(MPI_Comm comm);
+        MPICommunicator(const MPICommunicator &copy);
         virtual ~MPICommunicator();
 
+        MPICommunicator& operator=(const MPICommunicator& other);
+        
         virtual void sync();
         
         virtual void raw_send(int target, const void *data, int nbyte);
