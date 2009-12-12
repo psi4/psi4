@@ -16,6 +16,7 @@
 //#include <libpsio/psio.h>
 //#include <libqt/qt.h>
 //#include <psifiles.h>
+#include <libparallel/parallel.h>
 #define EXTERN
 #include "globals.h"
 
@@ -33,12 +34,11 @@ extern int nprocs_lmp2;
 int LMP2::get_nso() {
   int nso_;
 
-  if(myid == 0) {
+  if(Communicator::world->me() == 0)
     nso_ = chkpt->rd_nso();
-    MPI_Bcast(&nso_, 1, MPI_INT, 0, MPI_COMM_WORLD);
-  }
-  else
-    MPI_Bcast(&nso_, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+  // This version of bcast sends a single value from master
+  Communicator::world->bcast(nso_);
 
   return nso_;
 

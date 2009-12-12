@@ -6,7 +6,7 @@
  */
 
 #ifndef _psi_src_lib_libparallel_parallel_h_
-#define	_psi_src_lib_libparaellel_parallel_h_
+#define	_psi_src_lib_libparallel_parallel_h_
 
 #include <boost/shared_ptr.hpp>
 #include <mpi.h>
