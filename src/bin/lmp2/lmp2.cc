@@ -6,7 +6,7 @@
 ** \LMP2 evaluation of energy
 */
 
-#include "mpi.h"
+//#include "mpi.h"
 //#include <iostream>
 //#include <fstream>              // file I/O support
 //#include <cstdlib>              // support for exit()
@@ -60,9 +60,6 @@ PsiReturnType lmp2(Options &options, int argc, char * argv[]) {
   {
   LMP2 lmp2_obj(psio_obj, chkpt_obj);
   timer_init();
-
-//  MPIMessageGrp(&argc, &argv);
-
 
   lmp2_obj.get_params(options);
   lmp2_obj.get_moinfo();

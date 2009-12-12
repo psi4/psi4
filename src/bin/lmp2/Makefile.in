@@ -2,8 +2,8 @@ srcdir = @srcdir@
 VPATH = @srcdir@
 
 include ../MakeVars
-CXXDBG = -g
-CXXOPT =
+#CXXDBG = -g
+#CXXOPT =
                                                                                 
 LDLIBS += $(LAPACK) $(BLAS)
 
