@@ -175,7 +175,7 @@ class LMP2 {
     // and determines the absolute ij value of the local proc
     int *get_ij_local();
     int *get_ij_owner();
-    int *get_mn_owner(int n);
+    int *get_mr_owner(int n);
 
 };
 

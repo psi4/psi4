@@ -173,22 +173,22 @@ int* LMP2::get_ij_local() {
 
 }
 
-int* LMP2::get_mn_owner(int n) {
+int* LMP2::get_mr_owner(int n) {
 
   int count, v, num_unique_shells;
-  int *mn_owner;
+  int *mr_owner;
 
   num_unique_shells = n;
 
-  mn_owner = init_int_array(n);
+  mr_owner = init_int_array(n);
 
   v = 0;
   for(count=0; count < num_unique_shells; count++) {
-    mn_owner[count] = v%nprocs;
+    mr_owner[count] = v%nprocs;
     v++;
   }
 
-  return &(mn_owner[0]);
+  return &(mr_owner[0]);
 
 }
 
