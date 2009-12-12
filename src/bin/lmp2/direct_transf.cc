@@ -2,7 +2,7 @@
     \ingroup LMP2
     \brief localized the SCF MO's
  */
-#include "mpi.h"
+//#include "mpi.h"
 #include <iostream>
 #include <fstream>              // file I/O support
 //#include <cstdio>
