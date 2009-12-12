@@ -65,10 +65,10 @@ psi4_driver(Options & options, int argc, char *argv[])
     // macros for other job types, like $SCF
     int numTasks = 0;
     int errcod;
-    if(ip_exist("EXEC", 0)){
+    if(ip_exist(const_cast<char*>("EXEC"), 0)){
         // Override psi.dat with the commands in the exec array in input
-        errcod = ip_count("EXEC", &numTasks, 0);
-        jobList = "EXEC";
+        errcod = ip_count(const_cast<char*>("EXEC"), &numTasks, 0);
+        jobList = const_cast<char*>("EXEC");
     }else{
         errcod = ip_count(jobList, &numTasks, 0);
         if (!ip_exist(jobList, 0)){
