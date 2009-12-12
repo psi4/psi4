@@ -121,7 +121,7 @@ public:
     //     init(p);
     // }
 
-    Ref(Ref<T, CP, OP> const& cp) : CP((CP const&) cp), OP((OP const&)cp), _managed(cp._managed) {
+    Ref(Ref<T, CP, OP> const& cp) : CP(static_cast<CP const&>(cp)), OP(static_cast<OP const&>(cp)), _managed(cp._managed) {
         _object_pointed_to = NULL;
         attach(cp);
     }
@@ -140,8 +140,8 @@ public:
     Ref<T,CP,OP>& operator= (Ref<T,CP,OP> const& cp) {
         if (_object_pointed_to != cp._object_pointed_to) {
             detach();
-            CP::operator=((CP const&)cp);
-            OP::operator=((OP const&)cp);
+            CP::operator=(static_cast<CP const&>(cp));
+            OP::operator=(static_cast<OP const&>(cp));
             attach(cp);
         }
         return *this;

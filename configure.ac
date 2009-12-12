@@ -728,7 +728,7 @@ case $withval in
   yes)
     # "Strict" flags only known for GNU compilers
     if test "$GXX" = yes ; then
-      CXXOTH="$CXXOTH -pipe -Wall -ansi -pedantic -W -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings -Wno-long-long -Wctor-dtor-privacy -Woverloaded-virtual -Weffc++ -Wextra -Wwrite-strings -Winit-self -Wold-style-cast -Wstrict-aliasing -Wformat=2 -Wuninitialized -Wnon-virtual-dtor"
+      CXXOTH="$CXXOTH -pipe -Wall -ansi -pedantic -W -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings -Wno-long-long -Wctor-dtor-privacy -Woverloaded-virtual -Wextra -Wwrite-strings -Winit-self -Wold-style-cast -Wstrict-aliasing -Wformat=2 -Wuninitialized -Wnon-virtual-dtor"
     fi
     ;;
   no)

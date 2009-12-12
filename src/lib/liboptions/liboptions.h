@@ -467,7 +467,7 @@ namespace psi {
         throw IndexException("out of range");
       return array_[i];
     }
-    virtual bool is_array() {
+    virtual bool is_array() const {
       return true;
     }
 
@@ -534,7 +534,7 @@ namespace psi {
         throw IndexException(s);
       return keyvals_[s];
     }
-    virtual bool is_array() {
+    virtual bool is_array() const {
       return true;
     }
 

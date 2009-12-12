@@ -180,8 +180,8 @@ double to_MB(size_t n)
 unsigned long int init_smatrix(short**& matrix,int size1, int size2)
 {
   unsigned long int size,uli_size1,uli_size2;
-  uli_size1 = (unsigned long int)size1;
-  uli_size2 = (unsigned long int)size2;
+  uli_size1 = static_cast<unsigned long int>(size1);
+  uli_size2 = static_cast<unsigned long int>(size2);
   size=uli_size1*uli_size2;
   if(!uli_size1 || !uli_size2){
     matrix=NULL;
@@ -198,8 +198,8 @@ unsigned long int init_smatrix(short**& matrix,int size1, int size2)
 unsigned long int free_smatrix(short**& matrix, int size1, int size2)
 {
   unsigned long int size,uli_size1,uli_size2;
-  uli_size1 = (unsigned long int)size1;
-  uli_size2 = (unsigned long int)size2;
+  uli_size1 = static_cast<unsigned long int>(size1);
+  uli_size2 = static_cast<unsigned long int>(size2);
   size=uli_size1*uli_size2;
   if(matrix == NULL) return(0);
   delete[] matrix[0];
@@ -209,7 +209,7 @@ unsigned long int free_smatrix(short**& matrix, int size1, int size2)
 
 unsigned long int init_smatrix(short***& matrix,int size1, int size2, int size3)
 {
-  unsigned long int size = (unsigned long int)size1*size2*size3;
+  unsigned long int size = static_cast<unsigned long int>(size1*size2*size3);
   matrix = new short**[size1];
   for(int i=0;i<size1;i++){
       matrix[i] = new short*[size2];
@@ -224,7 +224,7 @@ unsigned long int init_smatrix(short***& matrix,int size1, int size2, int size3)
 
 unsigned long int free_smatrix(short*** matrix, int size1, int size2, int size3)
 {
-  unsigned long int size = (unsigned long int)size1*size2*size3;
+  unsigned long int size = static_cast<unsigned long int>(size1*size2*size3);
   for(int i=0;i<size1;i++){
       for(int j=0;j<size2;j++){
           delete[] matrix[i][j];
