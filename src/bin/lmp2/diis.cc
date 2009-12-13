@@ -58,7 +58,8 @@ void LMP2::diis_ext() {
   }
 
   for(ij=0; ij < ij_pairs; ij++) {
-    MPI_Allreduce(&(temp[ij][0][0]), &(error[dmat2][ij][0][0]), pairdom_len[ij]*pairdom_len[ij], MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    // MPI_Allreduce(&(temp[ij][0][0]), &(error[dmat2][ij][0][0]), pairdom_len[ij]*pairdom_len[ij], MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    Communicator::world->sum(temp[ij][0], pairdom_len[ij]*pairdom_len[ij], error[dmat2][ij][0]);
   }
 
   for(ij=0; ij < ij_pairs; ij++) {

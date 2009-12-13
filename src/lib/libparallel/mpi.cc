@@ -61,11 +61,10 @@ void MPICommunicator::sum(T* data, int n, T* receive_buffer, int target) \
         receive_buffer = new T[n]; \
     } \
  \
-    MPI_Reduce(static_cast<void*>(data), static_cast<void*>(receive_buffer), n, M, MPI_SUM, target == -1 ? 0 : target, comm_); \
- \
-    if (target == -1) { \
-        bcast(receive_buffer, n, 0); \
-    } \
+    if (target >= 0) \
+        MPI_Reduce(static_cast<void*>(data), static_cast<void*>(receive_buffer), n, M, MPI_SUM, target, comm_); \
+    else \
+        MPI_Allreduce(static_cast<void*>(data), static_cast<void*>(receive_buffer), n, M, MPI_SUM, comm_); \
  \
     if (alloc) { \
         ::memcpy(static_cast<void*>(data), static_cast<void*>(receive_buffer), sizeof(T)*n); \
