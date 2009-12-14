@@ -6,7 +6,7 @@
 #include <libdpd/dpd.h>
 #include <psi4-dec.h>
 
-namespace psi { namespace ccdensity {
+namespace psi { namespace CCDENSITY {
 
 /* Global variables */
 #ifdef EXTERN
