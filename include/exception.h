@@ -4,6 +4,7 @@
 #include <exception>
 #include <stdexcept>
 #include <sstream>
+#include <string.h>
 
 namespace psi {
 
