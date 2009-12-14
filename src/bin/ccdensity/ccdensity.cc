@@ -21,7 +21,7 @@
 #include "Frozen.h"
 #include "globals.h"
 
-namespace psi { namespace ccdensity {
+namespace psi { namespace CCDENSITY {
 
 void init_io(int argc, char *argv[]);
 void title(void);
