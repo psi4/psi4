@@ -69,7 +69,7 @@ void get_mo_info(void)
                 CalcInfo.ras_opi, CalcInfo.pitz2ci, 1, 0)) 
    { 
      fprintf(outfile, "Error in ras_set().  Aborting.\n");
-     exit(1);
+     throw PsiException("detcas: error", __FILE__, __LINE__);
    }
    
 

@@ -63,7 +63,7 @@ void test_bfgs(void)
 
     if (fabs(E - E_last) < 0.00001) {
       printf("Converged\n");
-      exit(1);
+      exit(PSI_RETURN_SUCCESS);
     }
 
     for (i=0; i<ndim; i++) {
@@ -119,7 +119,7 @@ void test_bfgs(void)
   free(x_cur);  free(x_last);  free(g_cur);  free(g_last);
   free(dx);  free(dg);  free(hdg);
   free_block(hessin);
-  exit(0); 
+  exit(PSI_RETURN_FAILURE); 
 }
 
 double dfunc(double *x, double *g)

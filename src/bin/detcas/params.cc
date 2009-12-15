@@ -26,123 +26,88 @@ namespace psi { namespace detcas {
 ** get_parameters(): Function gets the program running parameters such
 **   as convergence.  These are stored in the Parameters data structure.
 */
-void get_parameters(void)
+void get_parameters(Options& options)
 {
   int i, errcod;
   char line1[133];
    
-  errcod = ip_string("DERTYPE", &(Params.dertype),0);
-  if(errcod == IPE_KEY_NOT_FOUND) {
-    Params.dertype = (char *) malloc(sizeof(char)*5);
-    strcpy(Params.dertype, "NONE");
-  }
+  params.dertype = options.get_str("DERTYPE");
 
-  if (strcmp(Params.dertype, "NONE")==0) {
-    Params.rms_grad_convergence = 4;
-    Params.energy_convergence = 7;
-  }
-  else {
-    Params.rms_grad_convergence = 7;
-    Params.energy_convergence = 11;
-  }
 
-  errcod = ip_string("WFN", &(Params.wfn),0);
-  if (errcod == IPE_KEY_NOT_FOUND) {
-    Params.wfn = (char *) malloc(sizeof(char)*5);
-    strcpy(Params.wfn, "NONE");
-  }
+  params.wfn = options.get_str("WFN");
 
   /* Params.print_lvl is set in detcas.cc */
-  Params.print_mos = 0;
   Params.filter_ints = 0;  /* assume we need all for MCSCF */
-  Params.oei_file = PSIF_OEI;  /* contains frozen core operator */
-  Params.oei_erase = 0;
-  Params.tei_file = PSIF_MO_TEI;
-  Params.tei_erase = 0;
-  Params.opdm_file = PSIF_MO_OPDM;
-  Params.opdm_erase = 0;
-  Params.tpdm_file = PSIF_MO_TPDM;
-  Params.tpdm_erase = 0;
-  Params.lag_file = PSIF_MO_LAG;
-  Params.lag_erase = 0;
 
-  Params.ignore_fz = 1;        /* ignore frozen orbitals for ind pairs? */
-  
-  if (strcmp(Params.wfn, "CASSCF")==0 || strcmp(Params.wfn, "DETCAS")==0)
-    Params.ignore_ras_ras = 1;   /* ignore RAS/RAS independent pairs? */
-  else
-    Params.ignore_ras_ras = 0;
+  params.print_lvl = options.get_int("PRINT");
+  Params.print_mos = options.get_bool("PRINT_MOS");
 
-  Params.scale_grad = 1;       /* scale the orbital gradient? */
-  Params.diis_start = 3;       /* iteration to turn on DIIS */
-  Params.diis_freq  = 1;       /* how often to do a DIIS extrapolation */
-  Params.diis_min_vecs = 2;
-  Params.diis_max_vecs = 8;
-  Params.scale_step = 1.0;
-  Params.use_fzc_h = 1;
-  Params.level_shift = 1;      /* levelshift by default */
-  Params.shift = 0.01;         /* default shift value if level_shift=1 */
-  Params.determ_min = 0.00001; /* lowest allowed MO Hess before levelshift */
-  Params.step_max = 0.30;      /* max allowed theta step */
-  Params.use_thetas = 1;       /* Use thetas by default */
-  Params.invert_hessian = 1;   /* directly invert MO Hessian instead
-                                  of solving system of linear equations for
-                                  orbital step if full Hessian available */
-  Params.force_step = 0;       /* ignore usual step and force user-given */
-  Params.force_pair = 0;       /* which pair to force a step along */
-  Params.force_value = 0.0;    /* how far to step along forced direction */
-  Params.scale_act_act = 1.0;  /* scale act/act Hessian elements by this */
-  Params.bfgs = 0;             /* BFGS update of Hessian? */
-  Params.ds_hessian = 0;       /* Do a DS update of the Hessian? */
-
-  errcod = ip_data("PRINT","%d",&(Params.print_lvl),0);
-  errcod = ip_boolean("PRINT_MOS",&(Params.print_mos),0);
-  errcod = ip_data("CONVERGENCE","%d",
-                   &(Params.rms_grad_convergence),0);
-  errcod = ip_data("ENERGY_CONVERGENCE","%d",
-                   &(Params.energy_convergence),0);
-  errcod = ip_data("OEI_FILE","%d",&(Params.oei_file),0);
-  errcod = ip_boolean("OEI_ERASE",&(Params.oei_erase),0);
-  errcod = ip_data("TEI_FILE","%d",&(Params.tei_file),0);
-  errcod = ip_data("LAG_FILE","%d",&(Params.lag_file),0);
-  errcod = ip_boolean("TEI_ERASE",&(Params.tei_erase),0);
-  errcod = ip_boolean("IGNORE_FZ",&(Params.ignore_fz),0);
-  errcod = ip_boolean("IGNORE_RAS_RAS",&(Params.ignore_ras_ras),0);
-  errcod = ip_data("OPDM_FILE","%d",&(Params.opdm_file),0);
-  errcod = ip_data("TPDM_FILE","%d",&(Params.tpdm_file),0);
-  errcod = ip_boolean("SCALE_GRAD",&(Params.scale_grad),0);
-  errcod = ip_data("DIIS_START","%d",&(Params.diis_start),0);
-  errcod = ip_data("DIIS_FREQ","%d",&(Params.diis_freq),0);
-  errcod = ip_data("DIIS_MIN_VECS","%d",&(Params.diis_min_vecs),0);
-  errcod = ip_data("DIIS_MAX_VECS","%d",&(Params.diis_max_vecs),0);
-  errcod = ip_data("SCALE_STEP","%lf",&(Params.scale_step),0);
-  errcod = ip_boolean("USE_FZC_H",&(Params.use_fzc_h),0);
-  errcod = ip_boolean("INVERT_HESSIAN",&(Params.invert_hessian),0);
-  errcod = ip_string("HESSIAN",&(Params.hessian),0);
-  if (errcod == IPE_KEY_NOT_FOUND) {
-    Params.hessian = (char *) malloc(sizeof(char)*12);
-    strcpy(Params.hessian, "APPROX_DIAG");
+  if(options["CONVERGENCE"].has_changed())
+    Params_rms_grad_convergence = options.get_int("CONVERGENCE");
+  else {
+    if (Params.dertype == "NONE")
+      Params.rms_grad_convergence = 4;
+    else
+      Params.rms_grad_convergence = 7;
   }
-  if ((strcmp(Params.hessian, "FULL")!=0) && 
-      (strcmp(Params.hessian, "DIAG")!=0) &&
-      (strcmp(Params.hessian, "APPROX_DIAG")!=0)) {
+  if(options["ENERGY_CONVERGENCE"].has_changed())
+    Params.energy_convergence = options.get_int("ENERGY_CONVERGENCE");
+  else {
+    if (Params.dertype == "NONE")
+      Params.energy_convergence = 7;
+    else
+      Params.energy_convergence = 11;
+  }
+
+  Params.oei_file = options.get_int("OEI_FILE");
+  Params.oei_erase = options.get_bool("OEI_ERASE");
+  Params.tei_file = options.get_int("TEI_FILE");
+  Params.tei_erase = options.get_bool("TEI_ERASE");
+  Params.lag_file = options.get_int("LAG_FILE");
+  Params.lag_erase = options.get_bool("LAG_ERASE");
+  Params.opdm_file = options.get_int("OPDM_FILE");
+  Params.opdm_erase = options.get_bool("OPDM_ERASE");
+  Params.tpdm_file = options.get_int("TPDM_FILE");
+  Params.tpdm_erase = options.get_bool("TPDM_ERASE");
+  Params.ignore_fz = options.get_bool("IGNORE_FZ");
+
+  if(options["IGNORE_RAS_RAS"].has_changed())
+    Params.ignore_ras_ras = options.get_bool("IGNORE_RAS_RAS");
+  else {
+    if (Params.wfn == "CASSCF" || Params.wfn == "DETCAS")
+      Params.ignore_ras_ras = 1;   /* ignore RAS/RAS independent pairs? */
+    else
+      Params.ignore_ras_ras = 0;
+  }
+
+  Params.scale_grad = options.get_bool("SCALE_GRAD");
+  Params.diis_start = options.get_int("DIIS_START");
+  Params.diis_freq = options.get_int("DIIS_FREQ");
+  Params.diis_min_vecs = options.get_int("DIIS_MIN_VECS");
+  Params.diis_max_vecs = options.get_int("DIIS_MAX_VECS");
+  Params.scale_step = options.get_double("SCALE_STEP");
+  Params.use_fzc_h = options.get_bool("USE_FZC_H");
+  Params.invert_hessian = options.get_bool("INVERT_HESSIAN");
+
+  Params.hessian = options.get_str("HESSIAN");
+  if (Params.hessian != "FULL" && 
+      Params.hessian != "DIAG" &&
+      Params.hessian !=  "APPROX_DIAG") {
     fprintf(outfile, "(detcas): Unrecognized Hessian option %s\n", 
       Params.hessian);
-    exit(0);
+    throw PsiException("detcas: error", __FILE__, __LINE__);
   }
 
-  errcod = ip_boolean("LEVEL_SHIFT",&(Params.level_shift),0);
-  errcod = ip_data("SHIFT","%lf",&(Params.shift),0);
-  errcod = ip_data("DETERM_MIN","%lf",&(Params.determ_min),0);
-  errcod = ip_data("MAX_STEP","%lf",&(Params.step_max),0);
-  errcod = ip_boolean("USE_THETAS",&(Params.use_thetas),0);
-  errcod = ip_boolean("FORCE_STEP",&(Params.force_step),0);
-  errcod = ip_data("FORCE_PAIR","%d",&(Params.force_pair),0);
-  errcod = ip_data("FORCE_VALUE","%lf",&(Params.force_value),0);
+  Params.level_shift = options_get_bool("LEVEL_SHIFT");
+  Params.shift = options.get_double("SHIFT");
+  Params.determ_min = options.get_double("DETERM_MIN");
+  Params.step_max = options.get_double("MAX_STEP");
+  Params.use_thetas = options.get_bool("USE_THETAS");
+  Params.force_step = options.get_bool("FORCE_STEP");
+  Params.force_pair = options.get_int("FORCE_PAIR");
+  Params.force_value = options.get_double("FORCE_VALUE");
   /* at the moment, the following only work for diagonal (non-YY) Hessians */
-  errcod = ip_data("SCALE_ACT_ACT","%lf",&(Params.scale_act_act),0);
-  errcod = ip_boolean("BFGS",&(Params.bfgs),0);
-  errcod = ip_boolean("DS_HESSIAN",&(Params.ds_hessian),0);
+  Params.scale_act_act = options.get_double("SCALE_ACT_ACT");
 
 }
 

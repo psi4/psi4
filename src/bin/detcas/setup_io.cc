@@ -42,8 +42,6 @@ void init_io(int argc, char *argv[])
     }
   }
  
-  psi_start(&infile,&outfile,&psi_file_prefix,num_extra_args, extra_args, 0); 
-
   /*
   init_in_out(argc-parsed,argv+parsed);
   ip_set_uppercase(1);
@@ -52,9 +50,7 @@ void init_io(int argc, char *argv[])
   ip_cwk_add(":DEFAULT");
   */
 
-  if (Params.print_lvl) tstart(outfile);
-  ip_cwk_add(":DETCAS");
-  psio_init(); psio_ipv1_config();
+  if (Params.print_lvl) tstart();
 
   free(extra_args);
 }
@@ -66,9 +62,7 @@ void init_io(int argc, char *argv[])
 */
 void close_io(void)
 {
-   psio_done();
-   if (Params.print_lvl) tstop(outfile);
-   psi_stop(infile,outfile,psi_file_prefix);
+   if (Params.print_lvl) tstop();
 }
 
 
@@ -82,7 +76,7 @@ void check(int a, const char *errmsg)
   if (!a) {
     fprintf(outfile, "%s\n", errmsg);
     close_io();
-    exit(1);
+    throw PsiException("detcas: error", __FILE__, __LINE__);
   }
 }
 
