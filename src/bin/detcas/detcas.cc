@@ -32,6 +32,8 @@
 
 namespace psi { namespace detcas {
 
+using namespace psi;
+
 extern void get_mo_info(void);
 extern void get_parameters(void);
 extern void print_parameters(void);
@@ -101,17 +103,7 @@ IndepPairs IndPairs;
 
 #define MO_HESS_MIN 1.0E-1
 
-}} // end namespace psi::detcas
-
-/* GLOBAL VARIABLES (other modules load these via globals.h) */
-extern "C" {
-  FILE *infile, *outfile;
-  char *psi_file_prefix;
-}
-
-using namespace psi::detcas;
-
-int main(int argc, char *argv[])
+int detcas(Options &options, int argc, char *argv[])
 {
   int converged = 0;
   int num_pairs = 0;

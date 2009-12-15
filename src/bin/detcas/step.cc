@@ -141,7 +141,7 @@ void calc_orb_step_full(int npairs, double *grad, double **hess, double *theta)
     else {
       fprintf(outfile,"FAILED TO SOLVE FOR THETA VALUES\n");
       fprintf(outfile,"DGESV returned error %5d \n",solved);
-      exit(0);
+      exit(PSI_RETURN_FAILURE);
     }
     free(BVector);
     free(pivots);

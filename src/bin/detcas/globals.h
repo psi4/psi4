@@ -19,11 +19,8 @@
 
 #include "calcinfo.h"
 #include "params.h"
+#include <psi4-dec.h>
 
-extern "C" {
-  extern FILE *infile, *outfile;
-  extern char *psi_file_prefix;
-}
 
 namespace psi { namespace detcas {
 
