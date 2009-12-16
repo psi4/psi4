@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <libciomr/libciomr.h>
+#include <psifiles.h>
 
 namespace psi { namespace detcas {
 

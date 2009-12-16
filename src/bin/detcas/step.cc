@@ -12,6 +12,7 @@
 #include <cmath>
 #include "globaldefs.h"
 #include "globals.h"
+#include <psifiles.h>
 
 namespace psi { namespace detcas {
 
@@ -141,7 +142,7 @@ void calc_orb_step_full(int npairs, double *grad, double **hess, double *theta)
     else {
       fprintf(outfile,"FAILED TO SOLVE FOR THETA VALUES\n");
       fprintf(outfile,"DGESV returned error %5d \n",solved);
-      exit(PSI_RETURN_FAILURE);
+      exit( PSI_RETURN_SUCCESS );
     }
     free(BVector);
     free(pivots);

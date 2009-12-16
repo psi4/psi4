@@ -31,19 +31,19 @@ void get_parameters(Options& options)
   int i, errcod;
   char line1[133];
    
-  params.dertype = options.get_str("DERTYPE");
+  Params.dertype = options.get_str("DERTYPE");
 
 
-  params.wfn = options.get_str("WFN");
+  Params.wfn = options.get_str("WFN");
 
   /* Params.print_lvl is set in detcas.cc */
   Params.filter_ints = 0;  /* assume we need all for MCSCF */
 
-  params.print_lvl = options.get_int("PRINT");
+  Params.print_lvl = options.get_int("PRINT");
   Params.print_mos = options.get_bool("PRINT_MOS");
 
   if(options["CONVERGENCE"].has_changed())
-    Params_rms_grad_convergence = options.get_int("CONVERGENCE");
+    Params.rms_grad_convergence = options.get_int("CONVERGENCE");
   else {
     if (Params.dertype == "NONE")
       Params.rms_grad_convergence = 4;
@@ -94,11 +94,11 @@ void get_parameters(Options& options)
       Params.hessian != "DIAG" &&
       Params.hessian !=  "APPROX_DIAG") {
     fprintf(outfile, "(detcas): Unrecognized Hessian option %s\n", 
-      Params.hessian);
+      Params.hessian.c_str());
     throw PsiException("detcas: error", __FILE__, __LINE__);
   }
 
-  Params.level_shift = options_get_bool("LEVEL_SHIFT");
+  Params.level_shift = options.get_bool("LEVEL_SHIFT");
   Params.shift = options.get_double("SHIFT");
   Params.determ_min = options.get_double("DETERM_MIN");
   Params.step_max = options.get_double("MAX_STEP");
@@ -145,7 +145,7 @@ void print_parameters(void)
   fprintf(outfile, "   LEVEL SHIFT   =   %6s      SHIFT         =   %6.2lf\n",
       Params.level_shift ? "yes" : "no", Params.shift);
   fprintf(outfile, "   USE FZC H     =   %6s      HESSIAN       = %-12s\n",
-      Params.use_fzc_h ? "yes" : "no", Params.hessian);
+      Params.use_fzc_h ? "yes" : "no", Params.hessian.c_str());
   fprintf(outfile, "\n") ;
   fflush(outfile) ;
 }
