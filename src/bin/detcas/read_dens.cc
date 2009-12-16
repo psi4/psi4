@@ -24,16 +24,16 @@
 
 namespace psi { namespace detcas {
 
-double **rdopdm(int nbf, int print_lvl, int opdm_file, int erase);
+double **rdopdm(int nbf, int print_lvl, int opdm_file, int erase, Options &options);
 double *rdtpdm(int nbf, int print_lvl, int tpdm_file, int erase);
 
 
-void read_density_matrices(void)
+void read_density_matrices(Options &options)
 {
 
   /* read the one-particle density matrix */
   CalcInfo.opdm = rdopdm(CalcInfo.npop, Params.print_lvl, Params.opdm_file,
-                         Params.opdm_erase);
+                         Params.opdm_erase, options);
 
   /* read the two-particle density matrix */
   CalcInfo.tpdm = rdtpdm(CalcInfo.npop, Params.print_lvl, Params.tpdm_file,
@@ -52,7 +52,7 @@ void read_density_matrices(void)
 ** Taken from CLAG, April 1998
 ** upgraded to libpsio 6/03 by CDS
 */
-double **rdopdm(int nbf, int print_lvl, int opdm_file, int erase)
+double **rdopdm(int nbf, int print_lvl, int opdm_file, int erase, Options &options)
 {
 
   int i, root, errcod;
@@ -65,7 +65,7 @@ double **rdopdm(int nbf, int print_lvl, int opdm_file, int erase)
 
   /* if the user hasn't specified a root, just get "the" onepdm */
   if(options["ROOT"].has_changed()) {
-    root =  options_.get_int("ROOT");
+    root =  options.get_int("ROOT");
     sprintf(opdm_key, "MO-basis OPDM Root %d", root);
     psio_read_entry(opdm_file, opdm_key, (char *) opdm[0], 
                     nbf*nbf*sizeof(double));

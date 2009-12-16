@@ -38,7 +38,7 @@ extern void get_mo_info(void);
 extern void get_parameters(void);
 extern void print_parameters(void);
 extern void read_integrals(void);
-extern void read_density_matrices(void);
+extern void read_density_matrices(Options &options);
 extern void read_lagrangian(void);
 extern void form_independent_pairs(void);
 extern void read_thetas(int npairs);
@@ -122,7 +122,7 @@ int detcas(Options &options, int argc, char *argv[])
 
   get_mo_info();               /* read DOCC, SOCC, frozen, nbfso, etc      */
   read_integrals();            /* get the 1 and 2 elec MO integrals        */
-  read_density_matrices();
+  read_density_matrices(options);
   read_lagrangian();
 
   form_independent_pairs();
@@ -167,8 +167,6 @@ int detcas(Options &options, int argc, char *argv[])
   close_io();
   return(converged);
 }
-
-namespace psi { namespace detcas {
 
 /*
 ** init_ioff(): Set up the ioff array for quick indexing
@@ -362,7 +360,7 @@ void bfgs_hessian(void)
   /* If no Hessian in the file */
   if (psio_tocscan(PSIF_DETCAS, "Hessian Inverse") == NULL) {
     calc_hessian();
-    if (strcmp(Params.hessian, "FULL") != 0) {
+    if (Params.hessian == "FULL") {
       CalcInfo.mo_hess = block_matrix(npairs,npairs);
       for (i=0; i<npairs; i++) {
         CalcInfo.mo_hess[i][i] = 1.0 / CalcInfo.mo_hess_diag[i];
@@ -617,7 +615,7 @@ void ds_hessian(void)
   /* If no Hessian in the file */
   if (psio_tocscan(PSIF_DETCAS, "Hessian") == NULL) {
     calc_hessian();
-    if (strcmp(Params.hessian, "FULL") == 0) {
+    if (Params.hessian == "FULL") {
       CalcInfo.mo_hess_diag = init_array(npairs);
       for (i=0; i<npairs; i++) {
         CalcInfo.mo_hess_diag[i] = CalcInfo.mo_hess[i][i];
@@ -738,7 +736,7 @@ void calc_hessian(void)
   /* Now calculate the approximate diagonal MO Hessian */
   ncore = CalcInfo.num_fzc_orbs + CalcInfo.num_cor_orbs;
 
-  if (strcmp(Params.hessian, "DIAG") == 0) {
+  if (Params.hessian == "DIAG") {
     CalcInfo.mo_hess_diag = init_array(npairs);
     
     if (Params.use_fzc_h == 1) 
@@ -754,7 +752,7 @@ void calc_hessian(void)
       IndPairs.print_vec(CalcInfo.mo_hess_diag,"\n\tDiagonal MO Hessian:", 
         outfile);
   }
-  else if (strcmp(Params.hessian, "APPROX_DIAG") == 0) {
+  else if (Params.hessian == "APPROX_DIAG") {
     CalcInfo.mo_hess_diag = init_array(npairs);
     form_appx_diag_mo_hess(npairs, ppair, qpair, CalcInfo.onel_ints, 
                       CalcInfo.twoel_ints, CalcInfo.opdm, CalcInfo.tpdm, 
@@ -764,7 +762,7 @@ void calc_hessian(void)
       IndPairs.print_vec(CalcInfo.mo_hess_diag,"\n\tAppx Diagonal MO Hessian:", 
         outfile);
   }
-  else if (strcmp(Params.hessian, "FULL") == 0) {
+  else if (Params.hessian == "FULL") {
     CalcInfo.mo_hess = block_matrix(npairs,npairs);
     form_full_mo_hess(npairs, ppair, qpair, CalcInfo.onel_ints, 
       CalcInfo.twoel_ints, CalcInfo.opdm, CalcInfo.tpdm, CalcInfo.lag,
@@ -777,7 +775,7 @@ void calc_hessian(void)
   }
   else {
     fprintf(outfile, "(detcas): Unrecognized Hessian option %s\n", 
-      Params.hessian);
+      Params.hessian.c_str());
   }
  
 
@@ -810,13 +808,13 @@ void scale_gradient(void)
       CalcInfo.theta_step);
   }
   // non-BFGS diagonal Hessian
-  else if (Params.scale_grad && (strcmp(Params.hessian,"DIAG")==0 || 
-       strcmp(Params.hessian,"APPROX_DIAG")==0)) {
+  else if (Params.scale_grad && (Params.hessian == "DIAG" || 
+       Params.hessian == "APPROX_DIAG")) {
     calc_orb_step(npairs, CalcInfo.mo_grad, CalcInfo.mo_hess_diag,
       CalcInfo.theta_step);
   }
   // non-BFGS full Hessian
-  else if ((Params.scale_grad && strcmp(Params.hessian,"FULL")==0) ||
+  else if ((Params.scale_grad && Params.hessian == "FULL") ||
     Params.bfgs) {
     calc_orb_step_full(npairs, CalcInfo.mo_grad, CalcInfo.mo_hess,
       CalcInfo.theta_step);

@@ -46,7 +46,7 @@ struct params {
    int diis_min_vecs;       /* how many vectors required before do diis?    */
    int diis_max_vecs;       /* how many vectors maximum to hold?            */
    double scale_step;       /* stepsize scaling factor                      */
-   std::str hessian;        /* string describing type of MO Hessian         */
+   std::string hessian;     /* string describing type of MO Hessian         */
                             /* DIAG, APPROX_DIAG, or FULL                   */
    int use_fzc_h;           /* Use frozen-core operator h?(1) Or bare h?(0) */
                             /* this determines which onel ints are read     */ 
