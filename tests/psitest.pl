@@ -49,7 +49,7 @@ $PSITEST_SUMMARY_FILE = "../../test-case-results";
 "EOM_CC2", "LEOM_CC2", "EOM_CCSD", "LEOM_CCSD", "OOCCD", "CIS", "EOM_CC3",
 "SCF_MVD","PSIMRCC","SCF+D","MCSCF","IDMKPT2");
 @PSITEST_REFTYPES = ("RHF", "ROHF", "UHF", "TWOCON");
-@PSITEST_DERTYPES = ("NONE", "FIRST", "SECOND", "RESPONSE");
+@PSITEST_DERTYPES = ("NONE", "ENERGY", "FIRST", "SECOND", "RESPONSE");
 
 $PSITEST_DEFAULT_NSTAB = 5;       # number of eigenvalues STABLE prints out
 
@@ -81,11 +81,9 @@ sub do_tests
   # Figure out what calculation has been run -- run "psi3 -c" and get the calculation type string
   my $calctype;
   my $wfn;
-  my $direct;
-  my $ref;
   my $dertype;
   my $jobtype;
-  ($calctype, $wfn, $ref, $jobtype, $dertype, $direct) = get_calctype_string();
+  ($calctype, $wfn, $jobtype, $dertype) = get_calctype_string();
 
   my $item;
   my $ok = 0;
@@ -115,23 +113,13 @@ sub do_tests
     test_finished(1,$interrupted);
   }
 
-  $ok = 0;
-  foreach $item (@PSITEST_REFTYPES) {
-    if ($item eq $ref) {$ok = 1;}
-  }
-  if ($ok != 1) {
-    fail_test("Default Psi tester do_tests does not recognize reference $ref");
-    test_finished(1,$interrupted);
-  }
-
-
   my $fail = 0;
     
   SWITCH1: {
 
     if ($jobtype eq "OPT") {
       
-      if ($dertype eq "NONE" || $dertype eq "FIRST") {
+      if ($dertype eq "NONE" || $dertype eq "ENERGY" || $dertype eq "FIRST") {
         $fail |= compare_energy_file11($wfn);
         $fail |= compare_geom_file11($wfn);
         $fail |= compare_grad_file11($wfn);
@@ -196,7 +184,7 @@ sub do_tests
         $fail |= compare_findif_freq($wfn);
       }
 
-      if ($jobtype eq "FREQ" && $dertype eq "NONE") {
+      if ($jobtype eq "FREQ" && ($dertype eq "NONE" || $dertype eq "ENERGY")) {
         $fail |= compare_findif_freq($wfn);
       }
 
@@ -2944,7 +2932,7 @@ sub build_psi_cmd
   }
 
   if($SRC_PATH ne "") {
-      $PSICMD = $PSICMD . " -f $SRC_PATH/$PSITEST_INPUT";
+      $PSICMD = $PSICMD . " -i $SRC_PATH/$PSITEST_INPUT";
   }
 
   if($QUIET == 1) {
@@ -3016,12 +3004,10 @@ sub get_calctype_string
   my $calctype;
   my $wfn;
   my $jobtype;
-  my $reftype;
   my $dertype;
-  my $direct;
   seek(RE,0,0);
   while(<RE>) {
-    if (/Calculation type string = /) {
+    if (/Calculation type = /) {
       @data = split(/ +/, $_);
       $calctype = $data[4];
       $calctype =~ s/\n//;
@@ -3029,54 +3015,37 @@ sub get_calctype_string
   }
   seek(RE,0,0);
   while(<RE>) {
-    if (/Wavefunction            = /) {
+    if (/Wavefunction     = /) {
       @data = split(/ +/, $_);
-      $wfn = $data[2];
+      $wfn = $data[3];
       $wfn =~ s/\n//;
     }
   }
   seek(RE,0,0);
   while(<RE>) {
-    if (/Reference               = /) {
+    if (/Job type         = /) {
       @data = split(/ +/, $_);
-      $reftype = $data[2];
-      $reftype =~ s/\n//;
-    }
-  }
-  seek(RE,0,0);
-  while(<RE>) {
-    if (/Jobtype                 = /) {
-      @data = split(/ +/, $_);
-      $jobtype = $data[2];
+      $jobtype = $data[4];
       $jobtype =~ s/\n//;
     }
   }
   seek(RE,0,0);
   while(<RE>) {
-    if (/Dertype                 = /) {
+    if (/Derivative type  = /) {
       @data = split(/ +/, $_);
-      $dertype = $data[2];
+      $dertype = $data[4];
       $dertype =~ s/\n//;
-    }
-  }
-  seek(RE,0,0);
-  while(<RE>) {
-    if (/Direct                  = /) {
-      @data = split(/ +/, $_);
-      my $tmp = $data[2];
-      $tmp =~ s/\n//;
-      if ($tmp eq "true") {
-        $direct = 1;
-      }
-      elsif ($tmp eq "false") {
-        $direct = 0;
-      }
     }
   }
   close (RE);
   system("rm -f $tempfile");
+
+  print "Calctype = ", $calctype, "\n";
+  print "wfn = ", $wfn, "\n";
+  print "Jobtype = ", $jobtype, "\n";
+  print "dertype = ", $dertype, "\n";
   
-  return ($calctype, $wfn, $reftype, $jobtype, $dertype, $direct);
+  return ($calctype, $wfn, $jobtype, $dertype);
 }
 
 1;

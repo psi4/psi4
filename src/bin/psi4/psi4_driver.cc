@@ -24,7 +24,6 @@ psi4_driver(Options & options, int argc, char *argv[])
     // Initialize the list of function pointers for each module
     setup_driver(options);
     
-
     if (options.get_str("DERTYPE") == "NONE")
         options.set_str("DERTYPE", "ENERGY");
 
@@ -57,8 +56,20 @@ psi4_driver(Options & options, int argc, char *argv[])
     calcType += ":";
     calcType += options.get_str("DERTYPE");
 
-    if(myid == 0)
-      fprintf(outfile, "The jobtype string is...\n%s\n",calcType.c_str()); fflush(outfile);
+    if(myid == 0) {
+      std::string wfn = options.get_str("WFN");
+      std::string reference = options.get_str("REFERENCE");
+      std::string jobtype = options.get_str("JOBTYPE");
+      std::string dertype = options.get_str("DERTYPE");
+      fprintf(outfile, "    Calculation type = %s\n",calcType.c_str()); fflush(outfile);
+      fprintf(outfile, "    Wavefunction     = %s\n",wfn.c_str()); fflush(outfile);
+      fprintf(outfile, "    Reference        = %s\n",reference.c_str()); fflush(outfile);
+      fprintf(outfile, "    Job type         = %s\n",jobtype.c_str()); fflush(outfile);
+      fprintf(outfile, "    Derivative type  = %s\n", dertype.c_str()); fflush(outfile);
+    }
+
+    if(check_only)
+      fprintf(outfile, "\n    Sanity check requested. Exiting without execution.\n\n");
 
     char *jobList = const_cast<char*>(calcType.c_str());
     // This version assumes that the array contains only module names, not
@@ -85,15 +96,15 @@ psi4_driver(Options & options, int argc, char *argv[])
         }
     }
 
-    if(myid == 0)
-      fprintf(outfile, "  The list of tasks to execute:\n");
+    if(myid == 0) fprintf(outfile, "    List of tasks to execute:\n");
     for(int n = 0; n < numTasks; ++n) {
         char *thisJob;
         ip_string(jobList, &thisJob, 1, n);
-        if(myid == 0)
-          fprintf(outfile, "    %s\n", thisJob);
+        if(myid == 0) fprintf(outfile, "    %s\n", thisJob);
         free(thisJob);
     }
+
+    if(check_only) return Success;
 
     for(int n = 0; n < numTasks; ++n){
         char *thisJob;

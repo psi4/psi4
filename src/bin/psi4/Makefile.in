@@ -17,7 +17,7 @@ PSILIBS = \
 CXXSRC = read_atom_basis.cc fragment.cc  \
 molecular_system.cc  read_atom_basis.cc set_memory.cc \
 fragment.cc  psi4.cc  read_options.cc \
-psi4_driver.cc setup_driver.cc
+psi4_driver.cc setup_driver.cc psi_start.cc psi_stop.cc version.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 
