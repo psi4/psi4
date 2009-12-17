@@ -25,10 +25,11 @@
 
 namespace psi { 
 
+  int psi_start(int argc, char *argv[]);
+  int psi_stop(FILE* infile, FILE* outfile, char* psi_file_prefix);
+  void print_version(FILE *);
   void set_memory(FILE *infile, FILE *outfile);
-
   int psi4_driver(Options & options, int argc, char *argv[]);
-  //int psi3_simulator(Options & options, int argc, char *argv[]);
 
   int read_options(const std::string &name, Options & options);
   void read_atom_basis(char ** & atom_basis, int num_atoms);
@@ -42,12 +43,6 @@ namespace psi {
   extern bool create_global_task();
   extern void enable_modules();
 
-  // Functions defined here
-  void psi_start_and_parse_command_line(int argc, char *argv[]);
-  void print_version();
-  void print_usage();
-  void redirect_output(const std::string& szFilename, bool append = true);
-  
   PSIO *psio = NULL;
   std::map<std::string, PsiReturnType(*)(Options &, int argc, char *argv[])> dispatch_table;
 
@@ -72,24 +67,12 @@ int main(int argc, char *argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);
     MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 
-    bool run_modules = true;
+    psi_start(argc, argv);
 
-    if (run_modules) {
-
-    int num_unparsed, i;
-    char *argv_unparsed[100];
-
-    for (i=1, num_unparsed=0; i<argc; ++i)
-    argv_unparsed[num_unparsed++] = argv[i];
-
-    psi_start(&infile,&outfile,&psi_file_prefix,num_unparsed, argv_unparsed, 0);
-
-    if(myid == 0)
-      print_version();
+    if(myid==0) print_version(outfile);
 
     set_memory(infile, outfile);
 
-    //ip_cwk_add(":OPT09");
     psio_init();
     psio_ipv1_config();
    
@@ -135,8 +118,6 @@ int main(int argc, char *argv[])
      psiclean::psiclean(argc, argv);
 */
 
-   }
-
    psi_stop(infile, outfile, psi_file_prefix);
 
    MPI_Finalize();
@@ -144,175 +125,3 @@ int main(int argc, char *argv[])
   // This needs to be changed a return value from the processed script
   return EXIT_SUCCESS;
 }
-
-namespace psi {
-  /*! Handles the command line arguments and stores them in 
-      global variables. In some cases default globals variables 
-      are set. Handles the routine that psi_start would have
-      done in individual modules.
-        \param argc Number of command-line arguments received.
-        \param argv Value of the command-line arguments.
-  */
-  void psi_start_and_parse_command_line(int argc, char *argv[])
-  {
-    int next_option;
-    // Defaults:
-    std::string output_filename = "output.dat";
-    std::string input_filename  = "input.dat";
-    std::string file_prefix     = "psi";
-    bool append                 = false;
-    
-    // Set the default verbosity value
-    g_bVerbose = false;
-
-    // A string listing of valid short option letters
-    const char* const short_options = "aIhvVo:p:i:";
-    const struct option long_options[] = {
-      { "append",  0, NULL, 'a' },
-      { "irb",     0, NULL, 'I' },
-      { "help",    0, NULL, 'h' },
-      { "verbose", 0, NULL, 'v' },
-      { "version", 0, NULL, 'V' },
-      { "output",  1, NULL, 'o' },
-      { "prefix",  1, NULL, 'p' },
-      { "input",   1, NULL, 'i' },
-      { NULL,      0, NULL,  0  }
-    };
-
-    // Check the command line arguments
-    do {
-      next_option = getopt_long(argc, argv, short_options, long_options, NULL);
-
-      switch (next_option) {
-        case 'a': // -a or --append
-        append = true;
-        break;
-        
-        case 'h': // -h or --help
-        print_usage();
-        exit(EXIT_SUCCESS);
-        break;
-
-        case 'I': // -I or --irb
-        g_bIRB = true;
-        break;
-
-        case 'i': // -i or --input
-        input_filename = optarg;
-        break;
-        
-        case 'o': // -o or --output
-        output_filename = optarg;
-        break;
-
-        case 'v': // -v or --verbose
-        g_bVerbose = true;
-        break;
-
-        case 'p': // -p or --prefix
-        file_prefix = optarg;
-        break;
-        
-        case 'V': // -V or --version
-        outfile = stdout;
-        print_version();
-        exit(EXIT_SUCCESS);
-        break;
-
-        case -1: // done with options
-        break;
-
-        default: // Something else, unexpected
-        exit(EXIT_FAILURE);
-        break;
-      }
-    } while (next_option != -1);
-
-    // Where the output from the modules are to go
-    redirect_output(output_filename, append);
-    if (!output_filename.empty())
-      g_szOutputFilename = output_filename;
-
-    // Check the input file name now
-    // Default to input.dat if not given
-    if (optind == argc) {
-      g_szInputFile = input_filename;
-    }
-    else {
-      g_szInputFile = argv[optind];
-    }
-  }
-
-  /*! Redirects the screen output from the input file and this module to the file given 
-    in the argument otherwise it is sent to the screen. This doesn't quite work right 
-    in practice.
-    \param szFilename File to redirect to.
-    \param append Append to it? default false
-  */
-  void redirect_output(const std::string& szFilename, bool append)
-  {
-    if (!szFilename.empty()) {
-      // Create the file, truncate if necessary
-      outfile = fopen(szFilename.c_str(), append ? "w+" : "w");
-
-      // Error?
-      if (outfile == NULL) {
-          fprintf(stderr, "Unable to open: %s\n", szFilename.c_str());
-          exit(EXIT_FAILURE);
-      }
-    }
-    else {
-      // Redirect to the screen
-      outfile = stdout;
-    }
-  }
-
-  /*! Print PSI version information that is was set in configure.ac */
-  void print_version()
-  {
-    const char *PSI_VERSION = "0.1";
-    fprintf(outfile,
-      "    -----------------------------------------------------------------------    \n");
-    fprintf(outfile,
-      "            PSI4: An Open-Source Ab Initio Electronic Structure Package \n");
-    fprintf(outfile,
-      "                            PSI %s Driver\n", PSI_VERSION);
-    //fprintf(outfile,
-    //  "                      Using Ruby %d.%d.%d interpreter.\n", RUBY_MAJOR, RUBY_MINOR, RUBY_TEENY);
-    fprintf(outfile,
-      "    T. D. Crawford, C. D. Sherrill, E. F. Valeev, J. T. Fermann, R. A. King,\n");
-    fprintf(outfile,
-      "    M. L. Leininger, S. T. Brown, C. L. Janssen, E. T. Seidl, J. P. Kenny,\n");
-    fprintf(outfile,
-      "    and W. D. Allen, J. Comput. Chem. 28, 1610-1616 (2007)\n");
-    fprintf(outfile,
-      "    -----------------------------------------------------------------------    \n\n");
-  }
-
-  /*! Print command-line usage information. */
-  void print_usage()
-  {
-    printf("Usage:  psi4 [options] inputfile\n");
-    printf(" -h  --help               Display this usage information.\n");
-    printf(" -v  --verbose            Print a lot of information.\n");
-    printf(" -V  --version            Print version information.\n");
-    printf(" -o  --output filename    Redirect output elsewhere. Default: output.dat\n");
-    printf(" -i  --input filename     Input file name. Default: input.dat\n");
-    printf(" -p  --prefix prefix      Prefix name for psi files. Default: psi\n");
-    printf(" -a  --append             Append results to output file. Default: Truncate first\n");
-    printf(" -I  --irb                Run psi4 in interactive mode.\n");
-
-    exit(EXIT_FAILURE);
-  }
-
-  void psi_abort(void)
-  {
-    if (outfile) 
-        fprintf(outfile,"\nPSI4 aborting.\n");
-    else 
-        fprintf(stderr, "\nPSI4 aborting.\n");
-    
-    abort();
-  }
-} // end namespace psi::psi4
-

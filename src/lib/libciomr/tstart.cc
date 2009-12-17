@@ -75,8 +75,7 @@ void tstop()
   //for (i=0; i < 78 ; i++) { fprintf(outfile,"*"); }
   std::string module_name = module.gprgid();
   fprintf(outfile,"\n*** %s ", module_name.c_str());
-  fprintf(outfile,"called tstop() on %s\n", name);
-  fprintf(outfile,"*** at %s\n",ctime(&time_end));
+  fprintf(outfile,"called tstop() on %s at %s", name, ctime(&time_end));
   fprintf(outfile,"\tuser time   = %10.2f seconds = %10.2f minutes\n",
 	  user_s, user_s/60.0);
   fprintf(outfile,"\tsystem time = %10.2f seconds = %10.2f minutes\n",

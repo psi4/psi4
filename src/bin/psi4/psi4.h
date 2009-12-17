@@ -90,6 +90,9 @@ EXT std::string g_szOutputFilename;
 /*! Verbosity */
 EXT bool g_bVerbose;
 
+/*! sanity check boolean */
+EXT bool check_only;
+
 /*! Global task object */
 //EXT Task *g_cTask;
 //EXT VALUE g_rbTask;

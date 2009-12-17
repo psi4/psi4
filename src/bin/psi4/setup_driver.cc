@@ -21,7 +21,7 @@ setup_driver(Options &options)
     // The list of valid wavefunction types
     options.add_str("WFN", "SCF", "CCSD CCSD_T MP2 LMP2 SCF");
     // The list of valid reference types
-    options.add_str("REF", "RHF", "RHF ROHF MCSCF TCSCF UHF");
+    options.add_str("REFERENCE", "RHF", "RHF ROHF MCSCF TCSCF UHF");
     // The list of valid derivative types
     options.add_str("DERTYPE", "ENERGY", "NONE ENERGY FIRST SECOND");
     options.read_ipv1();

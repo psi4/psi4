@@ -74,13 +74,10 @@ void set_memory(FILE *infile, FILE *outfile)
   }
 
   if (maxcrr < 1e9) {
-    if(myid == 0)
-        fprintf(outfile,"\tMemory for module set to %.3lf MB\n", maxcrr / 1e6 );
-
+    if(myid == 0) fprintf(outfile,"    Memory level set to %.3lf MB\n", maxcrr / 1e6 );
   }
   else {
-    if(myid == 0)
-    fprintf(outfile,"\tMemory for module set to %.3lf GB\n", maxcrr / 1e9 );
+    if(myid == 0) fprintf(outfile,"    Memory level set to %.3lf GB\n", maxcrr / 1e9 );
   }
 
   module.set_memory(maxcrr);
