@@ -30,6 +30,7 @@ namespace psi {
   void print_version(FILE *);
   void set_memory(FILE *infile, FILE *outfile);
   int psi4_driver(Options & options, int argc, char *argv[]);
+  void psiclean(void);
 
   int read_options(const std::string &name, Options & options);
   void read_atom_basis(char ** & atom_basis, int num_atoms);
@@ -75,10 +76,14 @@ int main(int argc, char *argv[])
 
     psio_init();
     psio_ipv1_config();
+
+    if(clean_only) {
+      psiclean();
+      exit(EXIT_SUCCESS);
+    }
    
     Options options;
    
-     //psi3_simulator(options, argc, argv);
     psi4_driver(options, argc, argv);
 /*
 

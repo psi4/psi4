@@ -18,6 +18,8 @@ extern void setup_driver(Options &options);
 extern int read_options(const std::string &jobName, Options &options);
 extern int myid;
 
+void psiclean(void);
+
 int
 psi4_driver(Options & options, int argc, char *argv[])
 {
@@ -151,6 +153,9 @@ psi4_driver(Options & options, int argc, char *argv[])
         fflush(outfile);
         free(thisJob);
     }
+
+    psiclean();
+    
     return Success;
 }
 

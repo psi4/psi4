@@ -93,6 +93,9 @@ EXT bool g_bVerbose;
 /*! sanity check boolean */
 EXT bool check_only;
 
+/* clean-up */
+EXT bool clean_only;
+
 /*! Global task object */
 //EXT Task *g_cTask;
 //EXT VALUE g_rbTask;

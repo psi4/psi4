@@ -78,7 +78,7 @@ sub do_tests
   my $interrupted;
   ($interrupted) = run_psi_command(@_);
 
-  # Figure out what calculation has been run -- run "psi3 -c" and get the calculation type string
+  # Figure out what calculation has been run -- run "psi4 -c" and get the calculation type string
   my $calctype;
   my $wfn;
   my $dertype;
@@ -3040,11 +3040,6 @@ sub get_calctype_string
   close (RE);
   system("rm -f $tempfile");
 
-  print "Calctype = ", $calctype, "\n";
-  print "wfn = ", $wfn, "\n";
-  print "Jobtype = ", $jobtype, "\n";
-  print "dertype = ", $dertype, "\n";
-  
   return ($calctype, $wfn, $jobtype, $dertype);
 }
 
