@@ -16,6 +16,7 @@
 //#include <libpsio/psio.h>
 #include <libqt/qt.h>
 #include <libparallel/parallel.h>
+#include <libmints/basisset.h>
 //#include <psifiles.h>
 #define EXTERN
 #include "globals.h"
@@ -162,23 +163,74 @@ int* LMP2::get_ij_local() {
 
 }
 
-int* LMP2::get_mr_owner(int n) {
+int* LMP2::get_mn_owner(int n) {
 
   int count, v, num_unique_shells;
-  int *mr_owner;
+  int *mn_owner, mn_pairs;
 
   num_unique_shells = n;
 
-  mr_owner = init_int_array(n);
+  mn_owner = init_int_array(n);
 
   v = 0;
   for(count=0; count < num_unique_shells; count++) {
-    mr_owner[count] = v%nprocs;
+    mn_owner[count] = v%nprocs;
     v++;
   }
 
-  return &(mr_owner[0]);
+  return &(mn_owner[0]);
 
+}
+
+int LMP2::get_mn_pairs(int n) {
+
+  int count, v, num_unique_shells;
+  int mn_pairs;
+
+  num_unique_shells = n;
+
+  v = 0;
+  for(count=0; count < num_unique_shells; count++) {
+    if(myid == v%nprocs) mn_pairs++;
+    v++;
+  }
+
+  return mn_pairs;
+}
+
+int LMP2::get_num_unique_shells() {
+
+  int num_unique_shells = 0;
+  for (int M = 0; M < nshell; M++) {
+    for (int N = 0; N <= M; N++) {
+      num_unique_shells++;
+    }
+  }
+
+  return num_unique_shells;
+}
+
+int** LMP2::get_MN_shell(shared_ptr<BasisSet> basisset) {
+
+  int **MN_shell;
+
+  MN_shell = init_int_matrix(4, num_unique_shells);
+
+  int count = 0;
+  for (int M = 0; M < nshell; M++) {
+    int numm = basisset->shell(M)->nfunction();
+    for (int N = 0; N <= M; N++, count++) {
+      int numn = basisset->shell(N)->nfunction();
+      MN_shell[0][count] = M;
+      MN_shell[1][count] = numm;
+      MN_shell[2][count] = N;
+      MN_shell[3][count] = numn;
+    }
+  }
+
+  sort_shell(MN_shell, num_unique_shells);
+
+  return MN_shell;
 }
 
 
