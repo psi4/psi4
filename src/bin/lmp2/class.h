@@ -6,6 +6,7 @@
 #define _psi_src_bin_lmp2_h_
 
 #include <libchkpt/chkpt.hpp>
+#include <libmints/basisset.h>
 //#include <libpsio/psio.hpp>
 #include "psi4-dec.h"
 
@@ -175,7 +176,10 @@ class LMP2 {
     // and determines the absolute ij value of the local proc
     int *get_ij_local();
     int *get_ij_owner();
-    int *get_mr_owner(int n);
+    int *get_mn_owner(int n);
+    int get_mn_pairs(int n);
+    int get_num_unique_shells();
+    int **get_MN_shell(shared_ptr<BasisSet> basisset);
 
 };
 
