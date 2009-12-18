@@ -2964,7 +2964,7 @@ sub run_psi_command
 
   my $exec = "";
   if($clean_only == 1) {
-    $exec = "psiclean";
+    $exec = "psi4 -w";
   }
   else {
     $exec = "psi4";
@@ -2982,7 +2982,7 @@ sub run_psi_command
     printf RE "Psi4 failed!\n";
     close (RE);
     printf STDOUT "Psi4 failed!\n";
-    my $psicmd = build_psi_cmd("psiclean", 1, $SRC_PATH, $PSITEST_EXEC_PATH, "");
+    my $psicmd = build_psi_cmd("psi4 -w", 1, $SRC_PATH, $PSITEST_EXEC_PATH, "");
     system("$psicmd");
     exit($interrupted);
   }

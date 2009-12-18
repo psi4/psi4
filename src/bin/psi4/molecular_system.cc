@@ -20,13 +20,14 @@ Molecular_system::Molecular_system(double conv_factor) {
   int nfragments = 1, i, errcod = 0;
   string geom_label;
 
-  errcod = ip_data("NUM_FRAGMENTS","%d",&i,0);
+  errcod = ip_data(const_cast<char*>("NUM_FRAGMENTS"),
+                   const_cast<char*>("%d"),&i,0);
   if (errcod == IPE_OK) nfragments = i;
 
   bool cart = false;
-  if (ip_exist("GEOMETRY",0))
+  if (ip_exist(const_cast<char*>("GEOMETRY"),0))
     cart = true;
-  else if (ip_exist("ZMAT",0))
+  else if (ip_exist(const_cast<char*>("ZMAT"),0))
     throw("zmatrix not yet implemented");
   else
     throw("could not find GEOMETRY or ZMAT in input!");
