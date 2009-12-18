@@ -18,8 +18,8 @@ namespace psi {
 void psiclean(void) {
 
   ip_cwk_clear();
-  ip_cwk_add(":DEFAULT");
-  ip_cwk_add(":PSI");
+  ip_cwk_add(const_cast<char*>(":DEFAULT"));
+  ip_cwk_add(const_cast<char*>(":PSI"));
   ip_set_uppercase(1);
 
   for(int i=0; i < PSIO_MAXUNIT; i++) {
