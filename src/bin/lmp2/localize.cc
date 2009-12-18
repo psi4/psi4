@@ -3,8 +3,8 @@
     \brief localized the SCF MO's
 */
 
-//#include <iostream>
-//#include <fstream>              // file I/O support
+#include <iostream>
+#include <fstream>              // file I/O support
 //#include <cstdio>
 //#include <cstdlib>
 //#include <cstring>
@@ -70,24 +70,13 @@ void LMP2::localize() {
 
   free(scratch);
 
-//  fprintf(outfile, "Overlap Matrix");
-//  print_mat(aoovlp, nso, nso, outfile);
+  if(print > 2 && myid == 0) {
+    fprintf(outfile, "Overlap Matrix");
+    print_mat(aoovlp, nso, nso, outfile);
+  }
 
-  // A couple of error traps
-//  if(nirreps != 1) {
-//    if(myid == 0) {
-//      fprintf(outfile, "\n\tError: localization is only valid in C1 symmetry!\n");
-//    }
-//    exit(PSI_RETURN_FAILURE);
-//    char *symm_label = chkpt->rd_sym_label();
-//    throw InputException("Local MP2 is only valid in C1 symmetry", symm_label, __FILE__, __LINE__);
-//  }
   soccpi = get_soccpi();
   if(soccpi[0]) {
-//    if(myid == 0) {
-//      fprintf(outfile, "\n\tError: localization available for closed-shells only!\n");
-//    }
-//    exit(PSI_RETURN_FAILURE);
     throw PsiException("Local MP2 is only valid for closed-shell molecules.", __FILE__, __LINE__);
   }
   free(soccpi);
@@ -184,6 +173,7 @@ void LMP2::localize() {
 
       // Compute the rotation angle
       AB = Ast * Ast + Bst * Bst;
+
         if(fabs(AB) > 0.0) {
           cos4a = -Ast/sqrt(AB);                                     // Eqn 13b (JCP 90, 4916)
           alpha = 0.25 * acos(cos4a) * (Bst > 0 ? 1 : -1);
@@ -230,7 +220,6 @@ void LMP2::localize() {
 
       } // t-loop
     } // s-loop
-
 
     conv = fabs(alphamax) - fabs(alphalast);
     if(myid == 0) {
