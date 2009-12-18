@@ -353,13 +353,21 @@ int cleanup()
   chkpt_wt_frzcpi(frzcpi);
   chkpt_wt_frzvpi(frzvpi);
 
+  if(uhf) {
+  //  for(m=0; m<2; m++) {
+  //    for(k=0,i=0; k < num_ir; k++) {
+  //      s=&scf_info[k];
+  //
+  }
+  else {
     for(m=0; m < num_ir ; m++) {
-    s = &scf_info[m];
-    if (nn=s->num_so) {
-      fprintf(outfile,
-              "\nFock Matrix for irrep %s",s->irrep_label);
-      print_array(s->fock_pac,nn,outfile);
-      chkpt_wt_fock(s->fock_pac);
+        s = &scf_info[m];
+        if (nn=s->num_so) {
+            //fprintf(outfile,
+            //        "\nFock Matrix for irrep %s",s->irrep_label);
+            //print_array(s->fock_pac,nn,outfile);
+            chkpt_wt_fock(s->fock_pac);
+        }
     }
   }
 
