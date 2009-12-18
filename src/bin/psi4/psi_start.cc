@@ -40,10 +40,11 @@ int psi_start(int argc, char *argv[])
   std::string fprefix;
   bool append         = false;
   check_only          = false;
+  clean_only          = false;
   g_bVerbose          = false;
 
   // A string listing of valid short option letters
-  const char* const short_options = "aIhvVco:p:i:";
+  const char* const short_options = "aIhvVcwo:p:i:";
   const struct option long_options[] = {
     { "append",  0, NULL, 'a' },
     { "irb",     0, NULL, 'I' },
@@ -51,6 +52,7 @@ int psi_start(int argc, char *argv[])
     { "verbose", 0, NULL, 'v' },
     { "version", 0, NULL, 'V' },
     { "check",   0, NULL, 'c' },
+    { "wipe",    0, NULL, 'w' },
     { "output",  1, NULL, 'o' },
     { "prefix",  1, NULL, 'p' },
     { "input",   1, NULL, 'i' },
@@ -92,9 +94,14 @@ int psi_start(int argc, char *argv[])
       exit(EXIT_SUCCESS);
       break;
 
-      case 'c': // -C or --check
+      case 'c': // -c or --check
       check_only = true;
       outfile = stdout;
+      append = true;
+      break;
+
+      case 'w': // -w or --wipe
+      clean_only = true;
       break;
 
       case 'I': // -I or --irb
@@ -117,21 +124,9 @@ int psi_start(int argc, char *argv[])
   char *tmpstr1;
 
   /* if some args were not specified on command-line - check the environment */
-  if (ifname.empty()) {
-    char *tmp_prefix = NULL;
-    tmp_prefix = getenv("PSI_INPUT");
-    if(tmp_prefix != NULL) ifname = tmp_prefix;
-  }
-  if (ofname.empty()) {
-    char *tmp_prefix = NULL;
-    tmp_prefix = getenv("PSI_INPUT");
-    if(tmp_prefix != NULL) ofname = tmp_prefix;
-  }
-  if (fprefix.empty()) {
-    char *tmp_prefix = NULL;
-    tmp_prefix = getenv("PSI_INPUT");
-    if(tmp_prefix != NULL) fprefix = tmp_prefix;
-  }
+  if (ifname.empty() && getenv("PSI_INPUT")) ifname = getenv("PSI_INPUT");
+  if (ofname.empty() && getenv("PSI_OUTPUT")) ofname = getenv("PSI_OUTPUT");
+  if (fprefix.empty() && getenv("PSI_PREFIX")) fprefix = getenv("PSI_PREFIX");
 
   /* if some arguments still not defined - assign default values */
   if (ifname.empty()) ifname = "input.dat";
