@@ -297,6 +297,7 @@ AC_MSG_RESULT([Using extra library directories: $withval])
 AC_SUBST(LDFLAGS)
 
 AC_CHECK_PROGS(PERL,perl,perl) AC_SUBST(PERL)
+AC_PYTHON([2.4])
 
 AC_PROG_LATEX
 AC_PROG_LATEX2HTML
@@ -417,7 +418,6 @@ if test -z "$BLAS"; then
   LIBS=$SAVE_LIBS2
 fi  
 if test -z "$BLAS"; then
-  echo "$LD_LIBRARY_PATH"
   AC_CHECK_LIB(mkl, $DGEMM_SYMBOL, BLAS="-lmkl")
 fi
 if test -z "$BLAS"; then
