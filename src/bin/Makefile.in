@@ -7,11 +7,6 @@ include MakeVars
 subdirs = \
 transqt2 cscf psiclean input3 cints ccenergy cctriples ccsort scf lmp2 mp2 psiclean psi4
 
-## Only compile/link psirb if Ruby was found
-#ifeq ($(RUBYLINK),yes)
-#subdirs += psirb
-#endif
-
 all: default
 
 default:
