@@ -139,7 +139,9 @@ public:
     void print(FILE *out = outfile, char *extra=NULL);
     /// Print the matrix with corresponding eigenvalues below each column
     void eivprint(Vector *values, FILE *out = outfile);
+    /// Print the matrix with corresponding eigenvalues below each column
     void eivprint(Vector &values, FILE *out = outfile);
+    /// Print the matrix with corresponding eigenvalues below each column
     void eivprint(shared_ptr<Vector> values, FILE *out = outfile);
     
     /// Returns the rows per irrep array
@@ -169,11 +171,14 @@ public:
 
     /// Adds a matrix to this
     void add(const Matrix*);
+    /// Adds a matrix to this
     void add(const Matrix&);
+    /// Adds a matrix to this
     void add(shared_ptr<Matrix>);
     
     /// Subtracts a matrix from this
     void subtract(const Matrix*);
+    /// Subtracts a matrix from this
     void subtract(shared_ptr<Matrix>);
     /// Multiplies the two arguments and adds their result to this
     void accumulate_product(const Matrix*, const Matrix*);
