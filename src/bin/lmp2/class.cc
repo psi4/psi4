@@ -182,56 +182,23 @@ int* LMP2::get_mn_owner(int n) {
 
 }
 
-int LMP2::get_mn_pairs(int n) {
+int LMP2::get_mr_pairs(int n) {
 
   int count, v, num_unique_shells;
-  int mn_pairs;
+  int mr_pairs;
 
   num_unique_shells = n;
 
   v = 0;
   for(count=0; count < num_unique_shells; count++) {
-    if(myid == v%nprocs) mn_pairs++;
+    if(myid == v%nprocs) mr_pairs++;
     v++;
   }
 
-  return mn_pairs;
+  return mr_pairs;
 }
 
-int LMP2::get_num_unique_shells() {
 
-  int num_unique_shells = 0;
-  for (int M = 0; M < nshell; M++) {
-    for (int N = 0; N <= M; N++) {
-      num_unique_shells++;
-    }
-  }
-
-  return num_unique_shells;
-}
-
-int** LMP2::get_MN_shell(shared_ptr<BasisSet> basisset) {
-
-  int **MN_shell;
-
-  MN_shell = init_int_matrix(4, num_unique_shells);
-
-  int count = 0;
-  for (int M = 0; M < nshell; M++) {
-    int numm = basisset->shell(M)->nfunction();
-    for (int N = 0; N <= M; N++, count++) {
-      int numn = basisset->shell(N)->nfunction();
-      MN_shell[0][count] = M;
-      MN_shell[1][count] = numm;
-      MN_shell[2][count] = N;
-      MN_shell[3][count] = numn;
-    }
-  }
-
-  sort_shell(MN_shell, num_unique_shells);
-
-  return MN_shell;
-}
 
 
 }} /* End namespace */
