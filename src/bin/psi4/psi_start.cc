@@ -188,7 +188,9 @@ int psi_start(int argc, char *argv[])
     if(tmp_prefix == NULL)
       errcod = ip_string(const_cast<char*>(":PSI:NAME"),&tmp_prefix,0);
     if(tmp_prefix == NULL) 
-      fprefix = PSI_DEFAULT_FILE_PREFIX;
+      tmp_prefix = PSI_DEFAULT_FILE_PREFIX;
+
+    fprefix = tmp_prefix;
   }
 
   /* copy over file prefix, etc. into their appropriate variables */
