@@ -1,15 +1,11 @@
 #ifndef _psi_src_lib_libmints_sobasis_h_
 #define _psi_src_lib_libmints_sobasis_h_
 
-/*!
-    \file libmints/sobasis.h
-    \ingroup MINTS
-*/
-
 #include <vector>
 
 namespace psi {
-    
+
+/*! \ingroup MINTS */    
 class SOTransformComponent
 {
 protected:
@@ -41,6 +37,7 @@ public:
     void init(int aofunc, int sofunc, int sofuncirrep, int irrep, double coef);
 };
 
+/*! \ingroup MINTS */    
 class SOTransformShell
 {
 protected:
@@ -60,6 +57,7 @@ public:
     SOTransformComponent* func(int i) { return &(funcs_[i]); }
 };
 
+/*! \ingroup MINTS */    
 class SOTransformIter
 {
 private:
@@ -85,6 +83,7 @@ public:
     int sofuncirrep() const { return trans_->func(i_)->sofuncirrep(); }
 };
 
+/*! \ingroup MINTS */    
 class SOTransform
 {
 protected:

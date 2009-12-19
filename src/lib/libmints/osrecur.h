@@ -1,14 +1,12 @@
 #ifndef _psi_src_lib_libmints_osrecur_h
 #define _psi_src_lib_libmints_osrecur_h
 
-/*!
-    \file libmints/osrecur.h
-    \ingroup MINTS
-*/
-
 namespace psi {
-    
-/// Generic Obara and Saika recursion object.
+
+/*! \ingroup MINTS
+ *  \class ObaraSaikaTwoCenterRecursion
+ *  \brief Generic Obara and Saika recursion object.
+ */
 class ObaraSaikaTwoCenterRecursion
 {
     int max_am1_;
@@ -40,8 +38,11 @@ public:
     void compute(double PA[3], double PB[3], double gamma, int am1, int am2);
 };
 
-/// Obara and Saika recursion object for moment integrals. Currently not used by DipoleInt, hopefully soon.
-/// THIS CLASS HAS NOT BEEN TESTED!!!
+/*! \ingroup MINTS
+ *  \class ObaraSaikaTwoCenterMIRecursion
+ *  \brief Obara and Saika recursion object for moment integrals. Currently not used by DipoleInt, hopefully soon.
+ *  THIS CLASS HAS NOT BEEN TESTED!!!
+ */
 class ObaraSaikaTwoCenterMIRecursion
 {
     int max_am1_;
@@ -67,7 +68,10 @@ public:
     void compute(double PA[3], double PB[3], double gamma, int am1, int am2);
 };
 
-/// Obara and Saika recursion object for potential integrals.
+/*! \ingroup MINTS
+ *  \class ObaraSaikaTwoCenterVIRecursion
+ *  \brief Obara and Saika recursion object for potential integrals.
+ */
 class ObaraSaikaTwoCenterVIRecursion
 {
 protected:
@@ -99,7 +103,10 @@ public:
     virtual void compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2);
 };
 
-//! Obara and Saika recursion object for computing potential derivatives.
+/*! \ingroup MINTS
+ *  \class ObaraSaikaTwoCenterVIDerivRecursion
+ *  \brief Obara and Saika recursion object for computing potential derivatives.
+ */
 class ObaraSaikaTwoCenterVIDerivRecursion : public ObaraSaikaTwoCenterVIRecursion
 {
 protected:

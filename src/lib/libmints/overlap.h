@@ -1,11 +1,6 @@
 #ifndef _psi_src_lib_libmints_overlap_h_
 #define _psi_src_lib_libmints_overlap_h_
 
-/*!
-    \file libmints/overlap.h
-    \ingroup MINTS
-*/
-
 #include <libutil/ref.h>
 
 #include <libmints/basisset.h>
@@ -15,9 +10,12 @@
 #include <libmints/integral.h>
 
 namespace psi {
-    
-/// This class computes overlap integrals and soon overlap integral derivatives.
-/// Use an IntegralFactory to create this object.
+
+/*! \ingroup MINTS
+ *  \class OverlapInt
+ *  \brief This class computes overlap integrals and soon overlap integral derivatives.
+ *  Use an IntegralFactory to create this object.
+ */
 class OverlapInt : public OneBodyInt
 {
     /// Generic Obara Saika recursion object.

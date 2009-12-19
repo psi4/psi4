@@ -1,18 +1,14 @@
 #ifndef _psi_src_lib_libmints_symmetry_h_
 #define _psi_src_lib_libmints_symmetry_h_
 
-/*!
-    \file libmints/symmetry.h
-    \ingroup MINTS
-*/
-
 #include <cstdio>
 #include <libchkpt/chkpt.hpp>
 
 #include <libmints/molecule.h>
 
 namespace psi {
-    
+
+/*! \ingroup MINTS */
 class SymmOp {
 private:
     double rep_[3][3];
