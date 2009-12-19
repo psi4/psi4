@@ -1,11 +1,6 @@
 #ifndef _psi_src_lib_libmints_vector_h
 #define _psi_src_lib_libmints_vector_h
 
-/*!
-    \file libmints/vector.h
-    \ingroup MINTS
-*/
-
 #include <cstdlib>
 #include <cstdio>
 
@@ -13,6 +8,7 @@
 
 namespace psi {
 
+/*! \ingroup MINTS */
 class Vector {
 protected:
     /// Vector data
@@ -73,6 +69,7 @@ public:
     friend class Matrix;
 };
 
+/*! \ingroup MINTS */
 class SimpleVector
 {
 protected:

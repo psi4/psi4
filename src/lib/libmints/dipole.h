@@ -1,11 +1,6 @@
 #ifndef _psi_src_lib_libmints_dipole_h_
 #define _psi_src_lib_libmints_dipole_h_
 
-/*!
-    \file libmints/dipole.h
-    \ingroup MINTS
-*/
-
 #include <libutil/ref.h>
 
 #include <libmints/basisset.h>
@@ -16,8 +11,11 @@
 
 namespace psi {
     
-//! Computes dipole integrals.
-/*! Use an IntegralFactory to create this object. */
+/*! \ingroup MINTS
+ *  \class DipoleInt
+ *  \brief Computes dipole integrals.
+ *
+ * Use an IntegralFactory to create this object. */
 class DipoleInt : public OneBodyInt
 {
     //! Obara and Saika recursion object to be used.

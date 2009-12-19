@@ -1,11 +1,6 @@
 #ifndef _psi_src_lib_libmints_integral_h_
 #define _psi_src_lib_libmints_integral_h_
 
-/*!
-    \file libmints/integral.h
-    \ingroup MINTS
-*/
-
 #include <libutil/ref.h>
 #include <libmints/basisset.h>
 #include <vector>
@@ -34,6 +29,7 @@ class OneBodyInt;
 class TwoBodyInt;
 class Symmetry;
 
+/*! \ingroup MINTS */
 class SphericalTransformComponent
 {
 protected:
@@ -59,6 +55,7 @@ public:
     void init(int a, int b, int c, double coef, int cartindex, int pureindex);
 };
 
+/*! \ingroup MINTS */
 class SphericalTransform
 {
 protected:
@@ -88,6 +85,7 @@ public:
     int l() const { return l_; }
 };
 
+/*! \ingroup MINTS */
 class SphericalTransformIter
 {
 private:
@@ -115,6 +113,7 @@ public:
     int c()         const { return trans_.c(i_); }
 };
 
+/*! \ingroup MINTS */
 class IntegralsIterator
 {
 private:
@@ -188,6 +187,7 @@ public:
     int index() const { return current.index;}
 };
 
+/*! \ingroup MINTS */
 class ShellCombinationsIterator
 {
 private:
@@ -233,6 +233,7 @@ public:
     IntegralsIterator integrals_iterator();
 };
 
+/*! \ingroup MINTS */
 class IntegralFactory
 {
 protected:

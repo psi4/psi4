@@ -1,17 +1,15 @@
 #ifndef _psi_src_lib_libmints_gshell_h_
 #define _psi_src_lib_libmints_gshell_h_
 
-/*!
-    \file libmints/gshell.h
-    \ingroup MINTS
-*/
-
 #include <cstdio>
 #include <libmints/vector3.h>
 
 namespace psi {
     
-/// A Gaussian orbital shell.
+/*! \ingroup MINTS
+ *  \class GaussianShell
+ *  \brief Gaussian orbital shell.
+ */
 class GaussianShell
 {
 public:

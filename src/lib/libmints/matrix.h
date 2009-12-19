@@ -1,11 +1,6 @@
 #ifndef _psi_src_lib_libmints_matrix_h_
 #define _psi_src_lib_libmints_matrix_h_
 
-/*!
-    \file libmints/matrix.h
-    \ingroup MINTS
-*/
-
 #include <cstdio>
 #include <string>
 #include <cstring>
@@ -21,8 +16,12 @@ namespace psi {
 class MatrixFactory;
 class SimpleMatrix;
 
-//! Makes using matrices just a little earlier.
-//! Using a matrix factory makes creating these a breeze.
+/*! \ingroup MINTS
+ *  \class Matrix
+ *  \brief Makes using matrices just a little earlier.
+ *
+ * Using a matrix factory makes creating these a breeze.
+ */
 class Matrix {
 protected:
     /// Matrix data
@@ -239,7 +238,10 @@ public:
     void diagonalize(Matrix& eigvectors, Vector& eigvalues);
 };
 
-//! Simple matrix class. Not symmetry blocked.
+/*! \ingroup MINTS
+ *  \class SimpleMatrix
+ *  \brief Simple matrix class. Not symmetry blocked.
+ */
 class SimpleMatrix
 {
 protected:

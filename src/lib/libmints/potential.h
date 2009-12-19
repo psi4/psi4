@@ -1,11 +1,6 @@
 #ifndef _psi_src_lib_libmints_potential_h_
 #define _psi_src_lib_libmints_potential_h_
 
-/*!
-    \file libmints/potential.h
-    \ingroup MINTS
-*/
-
 #include <libutil/ref.h>
 
 #include <libmints/basisset.h>
@@ -15,9 +10,12 @@
 #include <libmints/integral.h>
 
 namespace psi {
-    
-/// Computes potential integrals.
-/// Use an IntegralFactory to create this object.
+
+/*! \ingroup MINTS
+ *  \class PotentialInt
+ *  \brief Computes potential integrals.
+ * Use an IntegralFactory to create this object.
+ */
 class PotentialInt : public OneBodyInt
 {
     /// Recursion object that does the heavy lifting.

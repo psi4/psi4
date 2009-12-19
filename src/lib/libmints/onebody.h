@@ -1,11 +1,6 @@
 #ifndef _psi_src_lib_libmints_onebody_h_
 #define _psi_src_lib_libmints_onebody_h_
 
-/*!
-    \file libmints/onebody.h
-    \ingroup MINTS
-*/
-
 #include <libutil/ref.h>
 #include <libmints/matrix.h>
 
@@ -16,7 +11,10 @@ class BasisSet;
 class GaussianShell;
 class SphericalTransform;
 
-/// Basis class for all one-electron integrals.
+/*! \ingroup MINTS
+ *  \class OneBodyInt
+ *  \brief Basis class for all one-electron integrals.
+ */
 class OneBodyInt
 {
 protected:

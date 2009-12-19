@@ -1,11 +1,6 @@
 #ifndef _psi_src_lib_libmints_eri_h
 #define _psi_src_lib_libmints_eri_h
 
-/*!
-    \file libmints/eri.h
-    \ingroup MINTS
-*/
-
 #include <libutil/ref.h>
 
 #include <libmints/basisset.h>
@@ -19,7 +14,11 @@
 #include <libderiv/libderiv.h>
 
 namespace psi {
-    
+
+/*! \ingroup MINTS
+ *  \class ERI
+ *  \brief Capable of computing two-electron repulsion integrals.
+ */    
 class ERI : public TwoBodyInt
 {
     //! Libint object.

@@ -1,11 +1,6 @@
 #ifndef _psi_src_lib_libmints_twobody_h
 #define _psi_src_lib_libmints_twobody_h
 
-/*!
-    \file libmints/twobody.h
-    \ingroup MINTS
-*/
-
 #include <libutil/ref.h>
 #include <libmints/matrix.h>
 
@@ -15,7 +10,10 @@ class IntegralFactory;
 class BasisSet;
 class GaussianShell;
 
-//! Two body integral base class.
+/*! \ingroup MINTS
+ *  \class TwoBodyInt
+ *  \brief Two body integral base class.
+ */
 class TwoBodyInt
 {
 protected:

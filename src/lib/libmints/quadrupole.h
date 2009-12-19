@@ -1,11 +1,6 @@
 #ifndef _psi_src_lib_libmints_quadrupole_h_
 #define _psi_src_lib_libmints_quadrupole_h_
 
-/*!
-    \file libmints/quadrupole.h
-    \ingroup MINTS
-*/
-
 #include <libutil/ref.h>
 
 #include <libmints/basisset.h>
@@ -15,9 +10,12 @@
 #include <libmints/integral.h>
 
 namespace psi {
-    
-/// Computes quadrupole integrals. At last check this may not be working.
-/// Use an IntegralFactory to create this object.
+
+/*! \ingroup MINTS
+ *  \class QuadrupoleInt
+ *  \brief Computes quadrupole integrals. At last check this may not be working.
+ *  Use an IntegralFactory to create this object.
+ */
 class QuadrupoleInt : public OneBodyInt
 {
     ObaraSaikaTwoCenterRecursion overlap_recur_;
