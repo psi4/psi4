@@ -109,35 +109,64 @@ public:
      *  @return Maximum angular momentum.
      */
     int max_am() const                 { return max_am_;      }
-    /// Spherical harmonics?
+    /** Spherical harmonics?
+     *  @return true if using spherical harmonics
+     */
     bool has_puream() const            { return puream_;      }
-    /// Molecule this basis is for
+    /** Molecule this basis is for.
+     *  @return Shared pointer to the molecule for this basis set.
+     */
     shared_ptr<Molecule> molecule() const         { return molecule_;    }
     /// Maximum stabilizer index
     int max_stability_index() const    { return max_stability_index_; }
-    /// Given a shell what is its first AO function
+    /** Given a shell what is its first AO function
+     *  @param i Shell number
+     *  @return The function number for the first function for the i'th shell.
+     */
     int shell_to_function(int i) const { return shell_first_ao_[i]; }
+    /** Given a shell what is its first basis function (spherical) function
+     *  @param i Shell number
+     *  @return The function number for the first function for the i'th shell.
+     */
     int shell_to_basis_function(int i) const { return shell_first_basis_function_[i]; }
     
-    /// Return the si'th Gaussian shell
+    /** Return the si'th Gaussian shell
+     *  @param i Shell number
+     *  @return A shared pointer to the GaussianShell object for the i'th shell.
+     */
     shared_ptr<GaussianShell> shell(int si) const;
     
-    /// Returns i'th shell's transform
+    /** Returns i'th shell's transform object.
+     *  @param i Shell number
+     *  @return A SOTransformShell object that details how to transform from AO to SO.
+     */
     SOTransformShell* so_transform(int i) { return sotransform_->aoshell(i); }
     
-    /// Returns the transformation object for a given angular momentum. Used in ERIs.
+    /** Returns the transformation object for a given angular momentum. Used in ERIs.
+     *  @param am Angular momentum
+     *  @return A SphericalTransform object that details how to transfrom from AO to BF.
+     */
     SphericalTransform& spherical_transform(int am) { return sphericaltransforms_[am]; }
     
     /// Print the basis set
     void print(FILE *out = outfile) const;
     
-    /// Returns the uso2ao_ matrix.
+    /** Returns the uso2ao_ matrix.
+     *  @return The transformation matrix for USO to AO.
+     */
     const shared_ptr<SimpleMatrix> uso_to_ao() const { return simple_mat_uso2ao_; }
 
-    /// Returns the uso2bf_ matrix.
+    /** Returns the uso2bf_ matrix.
+     *  @return The transformation matrix for USO to BF.
+     */
     const shared_ptr<SimpleMatrix> uso_to_bf() const { return simple_mat_uso2bf_; }
     
-    /// Returns an empty basis set object
+    /** Returns an empty basis set object.
+     *
+     *  Returns a BasisSet object that actually has a single s-function
+     *  at the origin with an exponent of 0.0 and contraction of 1.0.
+     *  @return A new empty BasisSet object.
+     */ 
     static shared_ptr<BasisSet> zero_basis_set();
 };
 
