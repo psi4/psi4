@@ -1,12 +1,6 @@
 #ifndef _psi_src_lib_libmints_basisset_h_
 #define _psi_src_lib_libmints_basisset_h_
 
-/*!
-    \defgroup MINTS libmints: Integral library
-    \file libmints/basisset.h
-    \ingroup MINTS
-*/
-
 #include <cstdio>
 #include <libchkpt/chkpt.hpp>
 
@@ -18,9 +12,11 @@
 #include <psi4-dec.h>
 
 namespace psi {
+
+/*! \ingroup MINTS
+    \class BasisSet
+    \brief Basis set container class
     
-//! Basis set container class
-/*!
     Reads the basis set from a checkpoint file object. Also reads the molecule
     from the checkpoint file storing the information in an internal Molecule class
     which can be accessed using molecule().
@@ -75,25 +71,43 @@ class BasisSet
     
 public:
 
-    /// Constructor, reads in the basis set from the checkpoint file using basiskey
+    /** Constructor, reads in the basis set from the checkpoint file using basiskey
+     *  @param chkpt Checkpoint library object that contains the basis set information.
+     *  @param basiskey To load the default basis set leave this parameter empty.
+     *                  If an RI-basis is wanted pass "DF"
+     */
     BasisSet(shared_ptr<psi::Chkpt> chkpt, std::string basiskey = "");
     
-    /// Copy constructor, currently errors if used
+    /** Copy constructor, currently errors if used. */
     BasisSet(const BasisSet&);
     /// Destructor
     ~BasisSet();
     
-    /// Total number of primitives
+    /** Number of primitives.
+     *  @return The total number of primitives in all contractions.
+     */
     int nprimitive() const             { return nprimitives_; }
-    /// Maximum number of primitives in a shell
+    /** Maximum number of primitives in a shell.
+     *  Examines each shell and find the shell with the maximum number of primitives returns that
+     *  number of primitives.
+     *  @return Maximum number of primitives.
+     */
     int max_nprimitive() const         { return max_nprimitives_; }
-    /// Number of shells
+    /** Number of shells.
+     *  @return Number of shells.
+     */
     int nshell() const                 { return nshells_;     }
-    /// Number of atomic orbitals
+    /** Number of atomic orbitals (Cartesian).
+     * @return The number of atomic orbitals (Cartesian orbitals).
+     */
     int nao() const                    { return nao_;         }
-    /// Number of basis functions
+    /** Number of basis functions (Spherical).
+     *  @return The number of basis functions (Spherical).
+     */
     int nbf() const                    { return nbf_;         }
-    /// Maximum angular momentum
+    /** Maximum angular momentum used in the basis set.
+     *  @return Maximum angular momentum.
+     */
     int max_am() const                 { return max_am_;      }
     /// Spherical harmonics?
     bool has_puream() const            { return puream_;      }

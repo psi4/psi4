@@ -1,3 +1,8 @@
+/*!
+    \defgroup MINTS libmints: Integral library
+    \ingroup MINTS
+*/
+
 #include <stdexcept>
 #include <cstdio>
 #include <cstdlib>
