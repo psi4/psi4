@@ -14,9 +14,9 @@
 #include <libipv1/ip_lib.h>
 
 #include "hfenergy.h"
-#include "rhf.h"
-#include "rohf.h"
-#include "uhf.h"
+#include "libscf_solver/rhf.cc"
+#include "libscf_solver/rohf.h" 
+#include "libscf_solver/uhf.h"
 
 using namespace std;
 using namespace psi;
