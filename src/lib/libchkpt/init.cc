@@ -9,11 +9,12 @@
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
+#include <boost/shared_ptr.hpp>
 
 using namespace psi;
 
 /* Definition of global data */
-Chkpt* psi::_default_chkpt_lib_ = 0;
+shared_ptr<Chkpt> psi::_default_chkpt_lib_;
 
 //extern "C" {
 /* first definition of chkpt_prefix */
@@ -92,8 +93,9 @@ extern "C" {
 */
 	int chkpt_init(int status)
 	{
-		if (!_default_chkpt_lib_) {
-			_default_chkpt_lib_ = new Chkpt(_default_psio_lib_, status);
+		if (_default_chkpt_lib_.get() == 0) {
+                        shared_ptr<Chkpt> temp(new Chkpt(_default_psio_lib_, status));
+			_default_chkpt_lib_ = temp;
 			if (_default_chkpt_lib_ == 0) {
 				fprintf(stderr, "LIBCHKPT::init() -- failed to allocate memory\n");
 				exit(PSI_RETURN_FAILURE);

@@ -7,11 +7,12 @@
 #include <cstdlib>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace psi {
 
 /* Definition of global data */
-PSIO* _default_psio_lib_ = 0;
+shared_ptr<PSIO> _default_psio_lib_;
 
 int PSIO::_error_exit_code_ = 1;
 psio_address PSIO_ZERO = { 0, 0 };
@@ -46,8 +47,9 @@ PSIO::PSIO() {
 }
 
   int psio_init(void) {
-    if (!_default_psio_lib_) {
-      _default_psio_lib_ = new PSIO;
+    if (_default_psio_lib_.get() == 0) {
+      shared_ptr<PSIO> temp(new PSIO);
+      _default_psio_lib_ = temp;
       if (_default_psio_lib_ == 0) {
         fprintf(stderr,"LIBPSIO::init() -- failed to allocate the memory");
         exit(PSIO::_error_exit_code_);

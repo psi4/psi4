@@ -49,8 +49,11 @@ PSIO::~PSIO() {
 }
 
 int psio_done(void) {
-  delete _default_psio_lib_;
-  _default_psio_lib_ = 0; //must be assigned 0 for test in psio_init()
+  if(_default_psio_lib_){
+      // The old pointer implementation of this used to set the pointer to zero for
+      // the test used in psio_init.  This is not necessary with smart pointers
+      _default_psio_lib_.reset();
+  }
   return true;
 }
 

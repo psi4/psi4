@@ -162,7 +162,7 @@ namespace psi {
   
   int psiopp_ipv1_config(shared_ptr<PSIO> psio_obj);
   int psiopp_ipv1_config(PSIO *psio_obj);
-  extern PSIO* _default_psio_lib_;
+  extern shared_ptr<PSIO> _default_psio_lib_;
 }
 
 #endif /* header guard */

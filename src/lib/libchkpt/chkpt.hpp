@@ -354,7 +354,7 @@ namespace psi {
 		}
 	};
 	
-	extern Chkpt* _default_chkpt_lib_;
+	extern shared_ptr<Chkpt> _default_chkpt_lib_;
 }
 
 #endif

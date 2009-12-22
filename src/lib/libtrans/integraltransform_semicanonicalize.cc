@@ -26,7 +26,7 @@ IntegralTransform::semicanonicalize()
 
     // The alpha MOs - the Fock matrix is on disk from the so TEI sort routine
     if(_print > 3) fprintf(outfile, "The alpha Fock matrix before semicanonicalization\n");
-    IWL::read_one(_psio, PSIF_OEI, PSIF_MO_A_FOCK, temp, _nTriMo, 0, _print > 3, outfile);
+    IWL::read_one(_psio.get(), PSIF_OEI, PSIF_MO_A_FOCK, temp, _nTriMo, 0, _print > 3, outfile);
     for(int h = 0, moOffset = 0; h < _nirreps; ++h){
         if(_mopi[h] == 0) continue;
         C[h] = block_matrix(_sopi[h], _mopi[h]);
@@ -111,7 +111,7 @@ IntegralTransform::semicanonicalize()
     for(int n = 0; n < _nTriMo; ++n) temp[n] = 0.0;
     // The beta MOs - the Fock matrix is on disk from the so TEI sort routine
     if(_print > 3) fprintf(outfile, "The beta Fock matrix before semicanonicalization\n");
-    IWL::read_one(_psio, PSIF_OEI, PSIF_MO_B_FOCK, temp, _nTriMo, 0, _print > 3, outfile);
+    IWL::read_one(_psio.get(), PSIF_OEI, PSIF_MO_B_FOCK, temp, _nTriMo, 0, _print > 3, outfile);
     for(int h = 0, moOffset = 0; h < _nirreps; ++h){
         if(_mopi[h] == 0) continue;
         _Cb[h] = block_matrix(_sopi[h], _mopi[h]);

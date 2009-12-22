@@ -27,9 +27,9 @@ IntegralTransform::transform_oei(const shared_ptr<MOSpace> s1, const shared_ptr<
     double *moInts = init_array(_nTriMo);
     double *T = init_array(_nTriSo);
     if(_print>4) fprintf(outfile, "The SO basis kinetic energy integrals\n");
-    IWL::read_one(_psio, PSIF_OEI, PSIF_SO_T,   T, _nTriSo, 0, _print > 4, outfile);
+    IWL::read_one(_psio.get(), PSIF_OEI, PSIF_SO_T,   T, _nTriSo, 0, _print > 4, outfile);
     if(_print>4) fprintf(outfile, "The SO basis nuclear attraction integrals\n");
-    IWL::read_one(_psio, PSIF_OEI, PSIF_SO_V, soInts, _nTriSo, 0, _print > 4, outfile);
+    IWL::read_one(_psio.get(), PSIF_OEI, PSIF_SO_V, soInts, _nTriSo, 0, _print > 4, outfile);
 
     // Add the nuclear and kinetic energy integrals
     for(int n = 0; n < _nTriSo; ++n) soInts[n] += T[n];
@@ -50,7 +50,7 @@ IntegralTransform::transform_oei(const shared_ptr<MOSpace> s1, const shared_ptr<
             fprintf(outfile, "The MO basis one-electron integrals\n");
             print_array(moInts, _nmo, outfile);
         }
-        IWL::write_one(_psio, PSIF_OEI, PSIF_MO_OEI, _nTriMo, moInts);
+        IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_OEI, _nTriMo, moInts);
     }else{
         for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
@@ -62,7 +62,7 @@ IntegralTransform::transform_oei(const shared_ptr<MOSpace> s1, const shared_ptr<
             fprintf(outfile, "The MO basis alpha one-electron integrals\n");
             print_array(moInts, _nmo, outfile);
         }
-        IWL::write_one(_psio, PSIF_OEI, PSIF_MO_A_OEI, _nTriMo, moInts);
+        IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_A_OEI, _nTriMo, moInts);
 
         for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
@@ -74,7 +74,7 @@ IntegralTransform::transform_oei(const shared_ptr<MOSpace> s1, const shared_ptr<
             fprintf(outfile, "The MO basis beta one-electron integrals\n");
             print_array(moInts, _nmo, outfile);
         }
-        IWL::write_one(_psio, PSIF_OEI, PSIF_MO_B_OEI, _nTriMo, moInts);
+        IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_B_OEI, _nTriMo, moInts);
     }
     free(order);
     free(order);
@@ -182,9 +182,9 @@ IntegralTransform::generate_oei()
 
     double *T = init_array(_nTriSo);
     if(_print>4) fprintf(outfile, "The SO basis kinetic energy integrals\n");
-    IWL::read_one(_psio, PSIF_OEI, PSIF_SO_T,   T, _nTriSo, 0, _print > 4, outfile);
+    IWL::read_one(_psio.get(), PSIF_OEI, PSIF_SO_T,   T, _nTriSo, 0, _print > 4, outfile);
     if(_print>4) fprintf(outfile, "The SO basis nuclear attraction integrals\n");
-    IWL::read_one(_psio, PSIF_OEI, PSIF_SO_V, aoH, _nTriSo, 0, _print > 4, outfile);
+    IWL::read_one(_psio.get(), PSIF_OEI, PSIF_SO_V, aoH, _nTriSo, 0, _print > 4, outfile);
 
     for(int pq=0; pq < _nTriSo; ++pq){
         aoH[pq] += T[pq];
@@ -203,7 +203,7 @@ IntegralTransform::generate_oei()
     timer_on("generate oei");
     int soIntFile = PSIF_SO_TEI;
 
-    IWL *iwl = new IWL(_psio, soIntFile, _tolerance, 1, 1);
+    IWL *iwl = new IWL(_psio.get(), soIntFile, _tolerance, 1, 1);
     Label *lblptr = iwl->labels();
     Value *valptr = iwl->values();
     int lastbuf   = iwl->last_buffer();
@@ -253,7 +253,7 @@ IntegralTransform::generate_oei()
             fprintf(outfile, "The MO basis one-electron integrals\n");
             print_array(moInts, _nmo, outfile);
         }
-        IWL::write_one(_psio, PSIF_OEI, PSIF_MO_OEI, _nTriMo, moInts);
+        IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_OEI, _nTriMo, moInts);
 
         for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
@@ -265,7 +265,7 @@ IntegralTransform::generate_oei()
             fprintf(outfile, "The MO basis frozen core operator\n");
             print_array(moInts, _nmo, outfile);
         }
-        IWL::write_one(_psio, PSIF_OEI, PSIF_MO_FZC, _nTriMo, moInts);
+        IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_FZC, _nTriMo, moInts);
 
         for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
@@ -278,7 +278,7 @@ IntegralTransform::generate_oei()
             print_array(moInts, _nmo, outfile);
         }
 
-        IWL::write_one(_psio, PSIF_OEI, PSIF_MO_FOCK, _nTriMo, aFock);
+        IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_FOCK, _nTriMo, aFock);
     }else{
         for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
@@ -290,7 +290,7 @@ IntegralTransform::generate_oei()
             fprintf(outfile, "The MO basis alpha one-electron integrals\n");
             print_array(moInts, _nmo, outfile);
         }
-        IWL::write_one(_psio, PSIF_OEI, PSIF_MO_A_OEI, _nTriMo, moInts);
+        IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_A_OEI, _nTriMo, moInts);
 
         for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
@@ -302,7 +302,7 @@ IntegralTransform::generate_oei()
             fprintf(outfile, "The MO basis beta one-electron integrals\n");
             print_array(moInts, _nmo, outfile);
         }
-        IWL::write_one(_psio, PSIF_OEI, PSIF_MO_B_OEI, _nTriMo, moInts);
+        IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_B_OEI, _nTriMo, moInts);
 
         for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
@@ -314,7 +314,7 @@ IntegralTransform::generate_oei()
             fprintf(outfile, "The MO basis alpha frozen core operator\n");
             print_array(moInts, _nmo, outfile);
         }
-        IWL::write_one(_psio, PSIF_OEI, PSIF_MO_A_FZC, _nTriMo, moInts);
+        IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_A_FZC, _nTriMo, moInts);
 
         for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
@@ -326,7 +326,7 @@ IntegralTransform::generate_oei()
             fprintf(outfile, "The MO basis beta frozen core operator\n");
             print_array(moInts, _nmo, outfile);
         }
-        IWL::write_one(_psio, PSIF_OEI, PSIF_MO_B_FZC, _nTriMo, moInts);
+        IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_B_FZC, _nTriMo, moInts);
         for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
             trans_one(_sopi[h], _mopi[h], aFock, moInts, _Ca[h], soOffset, &(order[moOffset]));
@@ -337,7 +337,7 @@ IntegralTransform::generate_oei()
             fprintf(outfile, "The MO basis alpha Fock operator\n");
             print_array(moInts, _nmo, outfile);
         }
-        IWL::write_one(_psio, PSIF_OEI, PSIF_MO_A_FOCK, _nTriMo, moInts);
+        IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_A_FOCK, _nTriMo, moInts);
 
         for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
@@ -349,7 +349,7 @@ IntegralTransform::generate_oei()
             fprintf(outfile, "The MO basis beta Fock operator\n");
             print_array(moInts, _nmo, outfile);
         }
-        IWL::write_one(_psio, PSIF_OEI, PSIF_MO_B_FOCK, _nTriMo, moInts);
+        IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_B_FOCK, _nTriMo, moInts);
     }
     free(order);
     free(moInts);

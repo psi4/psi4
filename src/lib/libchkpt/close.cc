@@ -30,8 +30,7 @@ extern "C" {
 	int chkpt_close(void)
 	{
 		if (_default_chkpt_lib_) {
-			delete _default_chkpt_lib_;
-			_default_chkpt_lib_ = 0;
+			_default_chkpt_lib_.reset();
 		}
 		return 0;
 	}
