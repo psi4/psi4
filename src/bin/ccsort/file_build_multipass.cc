@@ -16,7 +16,7 @@
 namespace psi { namespace ccsort {
 
 void idx_permute_multipass(dpdfile4 *File, int this_bucket,
-			   int **bucket_map, int **bucket_offset,
+			   int **bucket_map, unsigned long int **bucket_offset,
 			   int p, int q, int r, int s,
 			   int perm_pr, int perm_qs, int perm_prqs,
 			   double value, FILE *outfile);
@@ -27,9 +27,9 @@ int file_build_multipass(dpdfile4 *File, int inputfile, double tolerance,
   struct iwlbuf InBuf;
   int lastbuf;
   long int memoryb, memoryd, core_left, row_length;
-  int h, nirreps, n, row, nump, numq, nbuckets;
-  int **bucket_map, **bucket_offset, **bucket_rowdim;
-  int **bucket_size;
+  unsigned int h, nirreps, n, row, nump, numq, nbuckets;
+  int **bucket_map;
+  unsigned long int **bucket_offset, **bucket_rowdim, **bucket_size;
   Value *valptr;
   Label *lblptr;
   int idx, p, q, r, s;
@@ -39,7 +39,7 @@ int file_build_multipass(dpdfile4 *File, int inputfile, double tolerance,
 
   nirreps = File->params->nirreps;
 
-  memoryb = module.get_memory();
+  fndcor(&memoryb, infile, outfile);
   memoryd = memoryb/sizeof(double);
 
   /* It's annoying that I have to compute this here */
@@ -50,12 +50,20 @@ int file_build_multipass(dpdfile4 *File, int inputfile, double tolerance,
   bucket_map = init_int_matrix(nump,numq);
 
   /* Room for one bucket to begin with */
-  bucket_offset = (int **) malloc(sizeof(int *));
-  bucket_offset[0] = init_int_array(nirreps);
-  bucket_rowdim = (int **) malloc(sizeof(int *));
-  bucket_rowdim[0] = init_int_array(nirreps);
-  bucket_size = (int **) malloc(sizeof(int *));
-  bucket_size[0] = init_int_array(nirreps);
+  bucket_offset = (unsigned long int **) malloc(sizeof(unsigned long int *));
+  bucket_offset[0] = 
+             (unsigned long int *) malloc(sizeof(unsigned long int)*nirreps);
+  for(int hh=0; hh < nirreps; hh++) bucket_offset[0][hh] = 0;
+
+  bucket_rowdim = (unsigned long int **) malloc(sizeof(unsigned long int *));
+  bucket_rowdim[0] = 
+             (unsigned long int *) malloc(sizeof(unsigned long int)*nirreps);
+  for(int hh=0; hh < nirreps; hh++) bucket_rowdim[0][hh] = 0;
+
+  bucket_size = (unsigned long int **) malloc(sizeof(unsigned long int *));
+  bucket_size[0] = 
+             (unsigned long int *) malloc(sizeof(unsigned long int)*nirreps);
+  for(int hh=0; hh < nirreps; hh++) bucket_size[0][hh] = 0;
     
   /* Figure out how many passes we need and where each p,q goes */
   for(h=0,core_left=memoryd,nbuckets=1; h < nirreps; h++) {
@@ -67,26 +75,32 @@ int file_build_multipass(dpdfile4 *File, int inputfile, double tolerance,
       if((core_left - row_length) >= 0) {
 	core_left -= row_length;
 	bucket_rowdim[nbuckets-1][h]++;
-	bucket_size[nbuckets-1][h] += row_length;
+	bucket_size[nbuckets-1][h] += row_length; // overflow is possible here
       }
       else {
 	nbuckets++;
 	core_left = memoryd - row_length;
 
 	/* Make room for another bucket */
-	bucket_offset = (int **) realloc((void *) bucket_offset,
-					 nbuckets * sizeof(int *));
-	bucket_offset[nbuckets-1] = init_int_array(nirreps);
+	bucket_offset = (unsigned long int **) realloc((void *) bucket_offset,
+			 nbuckets * sizeof(unsigned long int *));
+	bucket_offset[nbuckets-1] = 
+             (unsigned long int *) malloc(sizeof(unsigned long int)*nirreps);
+        for(int hh=0; hh < nirreps; hh++) bucket_offset[nbuckets-1][hh] = 0;
 	bucket_offset[nbuckets-1][h] = row;
 
-	bucket_rowdim = (int **) realloc((void *) bucket_rowdim,
-					 nbuckets * sizeof(int *));
-	bucket_rowdim[nbuckets-1] = init_int_array(nirreps);
+	bucket_rowdim = (unsigned long int **) realloc((void *) bucket_rowdim,
+			 nbuckets * sizeof(unsigned long int *));
+	bucket_rowdim[nbuckets-1] = 
+             (unsigned long int *) malloc(sizeof(unsigned long int)*nirreps);
+        for(int hh=0; hh < nirreps; hh++) bucket_rowdim[nbuckets-1][hh] = 0;
 	bucket_rowdim[nbuckets-1][h] = 1;
 
-	bucket_size = (int **) realloc((void *) bucket_size,
-					    nbuckets * sizeof(int *));
-	bucket_size[nbuckets-1] = init_int_array(nirreps);
+	bucket_size = (unsigned long int **) realloc((void *) bucket_size,
+			 nbuckets * sizeof(unsigned long int *));
+	bucket_size[nbuckets-1] = 
+             (unsigned long int *) malloc(sizeof(unsigned long int)*nirreps);
+        for(int hh=0; hh < nirreps; hh++) bucket_size[nbuckets-1][hh] = 0;
 	bucket_size[nbuckets-1][h] = row_length;
       }
 
