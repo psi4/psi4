@@ -31,10 +31,11 @@ void get_params(Options & options)
 
   if(reference == "RHF"){
     params.ref = 0;
-  }else if((reference == "ROHF") and
-     (params.wfn == "MP2") or (params.wfn == "CCSD_T") or
+  }
+  else if((reference == "ROHF") and
+     ((params.wfn == "MP2") or (params.wfn == "CCSD_T") or
      (params.wfn == "CC3") or (params.wfn == "EOM_CC3") or
-     (params.wfn == "CC2") or (params.wfn == "EOM_CC2")) {
+     (params.wfn == "CC2") or (params.wfn == "EOM_CC2"))) {
       params.ref = 2;
       params.semicanonical = 1;
     }
