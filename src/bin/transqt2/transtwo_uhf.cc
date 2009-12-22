@@ -460,6 +460,8 @@ void transtwo_uhf(void)
   iwl_buf_flush(&MBuff, 1);
   iwl_buf_close(&MBuff, 1);
 
+  psio_close(PSIF_HALFT1, 0);
+
   /*** BB two-electron integral transformation complete ***/
 
   free_block(TMP);

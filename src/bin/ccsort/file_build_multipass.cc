@@ -39,7 +39,7 @@ int file_build_multipass(dpdfile4 *File, int inputfile, double tolerance,
 
   nirreps = File->params->nirreps;
 
-  fndcor(&memoryb, infile, outfile);
+  memoryb = module.get_memory();
   memoryd = memoryb/sizeof(double);
 
   /* It's annoying that I have to compute this here */

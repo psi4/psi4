@@ -53,7 +53,7 @@ int build_abcd_packed(int inputfile, double tolerance, int keep)
 
   nirreps = B.params->nirreps;
 
-  fndcor(&memoryb, infile, outfile);
+  memoryb = module.get_memory();
   memoryd = memoryb/sizeof(double);
 
   /* It's annoying that I have to compute this here */

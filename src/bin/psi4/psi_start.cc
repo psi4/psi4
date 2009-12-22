@@ -102,6 +102,7 @@ int psi_start(int argc, char *argv[])
 
       case 'w': // -w or --wipe
       clean_only = true;
+      append = true; // to avoid deletion of an existing output file
       break;
 
       case 'I': // -I or --irb
@@ -140,6 +141,7 @@ int psi_start(int argc, char *argv[])
     fprintf(stderr, "Error: could not open input file %s\n",ifname.c_str());
     return(PSI_RETURN_FAILURE);
   }
+
   if(append) {
     if(ofname == "stdout") outfile=stdout;
     else outfile = fopen(ofname.c_str(), "a");

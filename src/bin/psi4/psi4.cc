@@ -70,9 +70,7 @@ int main(int argc, char *argv[])
 
     psi_start(argc, argv);
 
-    if(myid==0) print_version(outfile);
-
-    set_memory(infile, outfile);
+    if(myid==0 && !clean_only) print_version(outfile);
 
     psio_init();
     psio_ipv1_config();
@@ -82,6 +80,8 @@ int main(int argc, char *argv[])
       exit(EXIT_SUCCESS);
     }
    
+    set_memory(infile, outfile);
+
     Options options;
    
     psi4_driver(options, argc, argv);
