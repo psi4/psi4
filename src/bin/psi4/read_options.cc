@@ -32,92 +32,122 @@ int read_options(const std::string &name, Options & options) {
   }
   else if (name == "INPUT") {
     ip_cwk_add(":INPUT");
-
+    /*- The units used for the geometry -*/
     options.add_str("UNITS", "ANGSTROMS", "BOHR AU ANGSTROMS ANGSTROM");
-
-    /* Keep the chkpt file. */
+    /*- Whether to keep the checkpoint file. -*/
     options.add_bool("KEEP_CHKPT",false);
-
-    /* read MOs from checkpoint file and project onto new basis */
+    /*- Read MOs from the checkpoint file and project onto new basis -*/
     options.add_bool("CHKPT_MOS",false);
-
   // these may be obseleted in psi4
-    /*--- read geometry from checkpoint file (in findif calculations) ---*/
+    /*- Read geometry from checkpoint file (in findif calculations) -*/
     options.add_bool("CHKPT_GEOM",false);
-
-    /*--- don't project MOs but simply keep them ---*/
+    /*- Don't project MOs but simply keep them -*/
     options.add_bool("NOPROJECT",false);
-
-    /*--- read geometry from geom.dat file (in findif calculations) ---*/
+    /*- Read geometry from geom.dat file (in findif calculations) -*/
     options.add_bool("GEOMDAT",false);
-
-    /* No center of mass shift */
+    /*- No center of mass shift -*/
     options.add_bool("NO_COM_SHIFT",false);
-
-    /*--- read MOs from checkpoint file and save to a separate file ---*/
+    /*- Read MOs from checkpoint file and save to a separate file -*/
     options.add_bool("SAVE_MOS",false);
-
-    /* Don't overwrite the output file. */
+    /*- Don't overwrite the output file. -*/
     options.add_bool("KEEP_OUTPUT",false);
-  
+    /*- The wavefunction desired -*/
     options.add_str("WFN", "");
-
+    /*- Whether to skip the orientation of the molecule to make its principle
+        axes cooincide with the Cartesian axes -*/
     options.add_bool("NO_REORIENT",false);
+    /*- The label used when storing job information -*/
     options.add_str("LABEL","Default PSI3 Label");
     options.add_bool("SHOWNORM",false);
     options.add_bool("NORMALIZE",true);
+    /*- Whether pure (spherical) angular momentum functions are to be used -*/
     options.add_bool("PUREAM",false);
+    /*- Override some safety checks -*/
     options.add_bool("EXPERT",false);
+    /*- The amount of information to print to the output -*/
     options.add_int("PRINT",1);
+    /*- The Schoenflies symbol for the computational point group to be used -*/
     options.add_str("SUBGROUP", "", "C1 C2 CS CI C2V C2H D2");
+    /*- The axis to treat as the main Cn axis in the point group used, if not
+        unambiguously determined -*/
     options.add_str("UNIQUE_AXIS", "", "X Y Z");
+    /*- The number of fragments to consider in the inter-fragment optimization code -*/
     options.add_int("NFRAGMENTS",1);
     options.add_bool("KEEP_REF_FRAME",false);
     options.add_bool("FRAGMENT_DISTANCE_INVERSE",false);
     // input also does ip calls to read basis, geometry
-    
+    /*- How many of the innermost orbitals to keep doubly-occupied in correlated computations -*/
     options.add_str("FREEZE_CORE","FALSE", \
       "FALSE NO TRUE YES SMALL LARGE");
+    /* The number of virtual orbitals to freeze in correlated computations -*/
     options.add_int("FREEZE_VIRT",0);
   }
   else if (name == "CINTS") {
     ip_cwk_add(":CINTS");
+    /*- The wavefunction desired -*/
     options.add_str("WFN", "");
+    /*- The amount of information to pring to the output -*/
     options.add_int("PRINT",1);
+    /*- The number of CPU cores to use on each node -*/
     options.add_int("NUM_THREADS",1);
+    /*- -Log10 of the threshold below which integrals are assumed to be zero -*/
     options.add_int("CUTOFF",15); // cutoff on integrals
-    // scaling for counterfactual fine-structure constant
+    /*- The fine-structure constant -*/
     options.add_double("FINE_STRUCTURE_ALPHA", 1.0/(_c_au));
-
+    /*- Whether to compute two electron repusion integrals -*/
     options.add_bool("MAKE_ERI", 1);
+    /*- Whether empirical dispersion terms will be used -*/
     options.add_bool("EMPIRICAL_DISPERSION", 0);
+    /*- Whether this computation is a restart from a previous run -*/
     options.add_bool("RESTART", 0);
     options.add_int("RESTART_TASK", 0);
-
+    /*- The file to which the SO overlap integral will be written -*/
     options.add_int("S_FILE", PSIF_OEI);
+    /*- The file to which the SO kinetic energy integrals will be written -*/
     options.add_int("T_FILE", PSIF_OEI);
+    /*- The file to which the SO potential energy integrals will be written -*/
     options.add_int("V_FILE", PSIF_OEI);
+    /*- The file to which the SO two electron repulsion integrals will be written -*/
     options.add_int("ERI_FILE", PSIF_SO_TEI);
 
   }
   else if (name == "SCF") {
+    /*- The reference wavefunction used in the computation -*/
     options.add_str("REFERENCE", "RHF");
+    /*- The maximum number of iterations -*/
     options.add_int("MAXITER", 40);
+    /*- An array containing the number of doubly-occupied orbitals per irrep (in Cotton order) -*/
     options.add("DOCC", new ArrayType());
+    /*- An array containing the number of singly-occupied orbitals per irrep (in Cotton order) -*/
     options.add("SOCC", new ArrayType());
+    /*- The amount of information to print to the output -*/
+    options.add_int("PRINT",1);
+    /*- Whether to perturb the Hamiltonian or not -*/
     options.add_bool("PERTURB_H", false);
     options.add_double("LAMBDA", 0.0);
+    /*- The name of the auxilliary basis to be used in RI computations -*/
     options.add_str("RI_BASIS", "");
+    /*- The operator used to perturb the Hamiltonian, if requested -*/
     options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z");
+    /*- Whether the computation is to be performed without disk-based storage of integrals -*/
     options.add_bool("DIRECT", false);
+    /*- The maximum number of error vectors stored for DIIS extrapolation -*/
     options.add_int("DIIS_VECTORS", 4);
+    /*- Whether DIIS extrapolation is used to accelerate convergence -*/
     options.add_bool("DIIS", true);
+    /*- Whether to use hard disk based storage in the computation -*/
     options.add_bool("OUT_OF_CORE", false);
+    /*- The molecular charge -*/
     options.add_int("CHARGE", 0);
+    /*- (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
     options.add_int("MULTP", 0);
+    /*- Whether to print the molecular orbitals -*/
     options.add_bool("PRINT_MOS", false);
+    /*- The amount of debugging information to print -*/
     options.add_int("DEBUG", 0);
+    /*- -Log10 of the energy convergence criterion -*/
     options.add_int("E_CONVERGE", 8);
+    /*- -Log10 of the density convergence criterion -*/
     options.add_int("D_CONVERGE", 8);
     options.add_double("SCHWARZ_CUTOFF", 0.0);
   }
@@ -431,7 +461,7 @@ else if(name == "CCDENSITY") {
     options.add_bool("DOMAIN_PRINT", 0);
   }
     else if(name == "LMP2") {
-    /*--- read the wavefunction ---*/
+    /*- The wavefunction desired -*/
     options.add_str("WFN", "LMP2");
     options.add_str("REFERENCE", "RHF", "RHF");
     options.add_int("PRINT", 0);

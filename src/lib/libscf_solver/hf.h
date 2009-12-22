@@ -81,6 +81,9 @@ protected:
     int ri_nbf_;
     int *ri_pair_nu_;
     int *ri_pair_mu_;
+    
+    // The amount of information to print
+    int print_;
     double **B_ia_P_; //Three Index tensor for DF-SCF
     
     double schwarz_;

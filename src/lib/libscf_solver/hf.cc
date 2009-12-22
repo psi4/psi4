@@ -128,6 +128,8 @@ void HF::common_init()
     // Run integral direct? default no
     direct_integrals_ = false;
     direct_integrals_ = options_.get_bool("DIRECT");
+    // How much stuff shall we echo to the user?
+    print_ = options.get_int("PRINT");
     
     //Run density fitting? default no
     ri_integrals_ = false;
