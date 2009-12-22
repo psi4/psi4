@@ -17,13 +17,13 @@ IntegralTransform::IntegralTransform(const SpaceVec &spaces,
             _moOrdering(moOrdering),
             _outputType(outputType),
             _uniqueSpaces(spaces),
-            _frozenOrbitals(frozenOrbitals)
+            _frozenOrbitals(frozenOrbitals),
+            _chkpt(_default_chkpt_lib_),
+            _psio(_default_psio_lib_)
 {
     // Implement set/get functions to customize any of this stuff.  Delayed initialization
     // is possible in case any of these variables need to be changed before setup.
     _myDPDNum      = 1;
-    _chkpt         = _default_chkpt_lib_;
-    _psio          = _default_psio_lib_;
     _print         = 1;
     _memory        = 2000 * 1024 * 1024;
     _tolerance     = 1.0E-14;

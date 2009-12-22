@@ -165,9 +165,9 @@ class IntegralTransform{
                        int pq, int rs, int pq_sym, int rs_sym);
 
         // Pointer to the PSIO object to use for file I/O
-        PSIO *_psio;
+        shared_ptr<PSIO>  _psio;
         // Pointer to the checkpoint object to use
-        Chkpt *_chkpt;
+        shared_ptr<Chkpt> _chkpt;
         // The type of transformation
         TransformationType _transformationType;
         // The unique MO spaces provided to this object's constructor
