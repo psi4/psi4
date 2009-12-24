@@ -34,6 +34,7 @@
 #define _amu2kg 1.6605402E-27
 #define _au2amu 5.485799110E-4 
 #define _hartree2J 4.35974381E-18
+#define _hartree2aJ 4.35974381
 #define _cal2J 4.184
 #define _dipmom_au2si    8.47835791E-30
 #define _dipmom_au2debye 2.54175
