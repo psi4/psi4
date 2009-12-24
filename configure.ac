@@ -820,6 +820,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/cchbar/Makefile
           src/bin/cis/Makefile
           src/bin/scf/Makefile
+          src/bin/optking/Makefile
 
           tests/Makefile
           tests/MakeVars

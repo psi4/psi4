@@ -4,7 +4,7 @@ psi: (
   LMP2:ENERGY = ("input" "cints" "scf" "lmp2")
   CCSD:ENERGY = ("input" "cints" "cscf" "transqt2" "ccsort" "ccenergy")
   CCSD_T:ENERGY = ("input" "cints" "cscf" "transqt2" "ccsort" "ccenergy" "cctriples")
-  SCF:FIRST = ("cints" "cscf" "cints --deriv1")
+  SCF:FIRST = ("input" "cints" "cscf" "cints --deriv1")
 ) 
 
 junk: (
