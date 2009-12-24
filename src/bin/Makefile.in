@@ -5,7 +5,7 @@
 include MakeVars
 
 subdirs = \
-transqt2 cscf psiclean input3 cints ccenergy cctriples ccsort scf lmp2 mp2 psiclean psi4
+transqt2 cscf psiclean input3 cints ccenergy cctriples ccsort scf lmp2 mp2 psi4 optking
 
 all: default
 
