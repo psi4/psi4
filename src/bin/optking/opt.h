@@ -6,6 +6,8 @@
 #ifndef _psi3_bin_optking_opt_h_
 #define _psi3_bin_optking_opt_h_
 
+#include <psi4-dec.h>
+
 namespace psi { namespace optking {
 
 void open_PSIF(void);

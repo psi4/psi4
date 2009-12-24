@@ -640,7 +640,7 @@ int opt_step(cartesians &carts, simples_class &simples, const salc_set &symm) {
 
       fprintf(outfile,"\nAnalytically doing interfragment displacements\n");
       // move fragment B and put result back into main geometry matrix
-      i = orient_fragment(a, b, simples.frag[sub_index].get_A_P(), simples.frag[sub_index].get_B_P(),
+      orient_fragment(a, b, simples.frag[sub_index].get_A_P(), simples.frag[sub_index].get_B_P(),
         geom_A, geom_B, weight_A, weight_B, inter_q[0], inter_q[1], inter_q[2], inter_q[3],
         inter_q[4], inter_q[5], outfile);
 
