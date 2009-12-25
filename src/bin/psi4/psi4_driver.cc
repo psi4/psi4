@@ -11,6 +11,8 @@
 #include <ctype.h>
 #include "psi4.h"
 
+#define MAX_ARGS (20)
+
 namespace psi {
 
 extern FILE *infile;
@@ -108,14 +110,48 @@ psi4_driver(Options & options, int argc, char *argv[])
 
     if(check_only) return Success;
 
+    // remove command-line-like arguments from psi.dat string
+    // at this point argv[0] is still "psi4" - which we will remove
+    int i, argc_new;
+    char *argv_new[MAX_ARGS];
+    for (i=1; i<argc; ++i) {
+      argv_new[i-1] = new char [strlen(argv[i])];
+      strcpy(argv_new[i-1],argv[i]);
+    }
+    --argc;
+
+    // variables to parse string in psi.dat
+    string thisJobWithArguments; 
+    stringstream ss;
+    vector<string> tokens; 
+    string buf; 
+
     for(int n = 0; n < numTasks; ++n){
         char *thisJob;
         errcod = ip_string(jobList, &thisJob, 1, n);
+
+        // tokenize string in psi.dat
+        thisJobWithArguments.assign(thisJob); 
+        ss.clear();
+        ss << thisJobWithArguments;
+        while (ss >> buf)
+          tokens.push_back(buf);
+
+        free(thisJob);
+        thisJob = const_cast<char *>(tokens[0].c_str()); // module name for dispatch table
+
+        argc_new = argc + tokens.size();
+        for (i=0; i<tokens.size(); ++i)
+          argv_new[argc+i] = const_cast<char *>(tokens[i].c_str());
+        
         // Make sure the job name is all upper case
         int length = strlen(thisJob);
         std::transform(thisJob, thisJob + length, thisJob, ::toupper);
-        if(myid == 0)
+        if(myid == 0) {
           fprintf(outfile, "Job %d is %s\n", n, thisJob); fflush(outfile);
+          fprintf(outfile, "with command-like argument: ");
+          for (i=0; i<argc_new; ++i) fprintf(outfile," %s ", argv_new[i]); 
+        }
         read_options(thisJob, options);
 
         if(dispatch_table.find(thisJob) == dispatch_table.end()){
@@ -129,7 +165,7 @@ psi4_driver(Options & options, int argc, char *argv[])
         if(strcmp(thisJob, "LMP2") == 0) {
             // Needed a barrier before the functions are called
             MPI_Barrier(MPI_COMM_WORLD);
-            if (dispatch_table[thisJob](options, argc, argv) != Success) {
+            if (dispatch_table[thisJob](options, argc_new, argv_new) != Success) {
                 // Good chance at this time that an error occurred.
                 // Report it to the user.
                 fprintf(stderr, "%s did not return a Success code.\n", thisJob);
@@ -141,7 +177,7 @@ psi4_driver(Options & options, int argc, char *argv[])
             // Needed a barrier before the functions are called
             MPI_Barrier(MPI_COMM_WORLD);
             if(myid == 0) {
-                if (dispatch_table[thisJob](options, argc, argv) != Success) {
+                if (dispatch_table[thisJob](options, argc_new, argv_new) != Success) {
                 // Good chance at this time that an error occurred.
                 // Report it to the user.
                     fprintf(stderr, "%s did not return a Success code.\n", thisJob);
@@ -150,8 +186,9 @@ psi4_driver(Options & options, int argc, char *argv[])
             }
         }
 
+        tokens.clear();
+
         fflush(outfile);
-        free(thisJob);
     }
 
     psiclean();
