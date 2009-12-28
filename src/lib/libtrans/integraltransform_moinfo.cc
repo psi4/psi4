@@ -29,7 +29,7 @@ IntegralTransform::raid_checkpoint()
     _frzvpi  = _chkpt->rd_frzvpi();
     _nTriSo  = _nso * (_nso + 1) / 2;
     _nTriMo  = _nmo * (_nmo + 1) / 2;
-    _sosym = init_int_array(_nso);
+    _sosym   = init_int_array(_nso);
     
     int count = 0;
     for(int h = 0; h < _nirreps; ++h){
@@ -288,6 +288,21 @@ IntegralTransform::process_spaces()
         free(aQT);
         if(_transformationType != Restricted) free(bQT);
     }
+}
+
+
+/**
+ * Re-reads the MO coeffiecients from the checkpoint file and sets up
+ * the computation
+ */
+void
+IntegralTransform::update_orbitals()
+{
+  if(_transformationType == SemiCanonical){
+      throw FeatureNotImplemented("Libtrans", " update of semicanonical orbitals",
+              __FILE__, __LINE__);
+      process_eigenvectors();
+  }
 }
 
 
