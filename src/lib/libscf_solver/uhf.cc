@@ -39,26 +39,26 @@ void UHF::common_init()
 {
     Drms_ = 0.0;
     use_out_of_core_ = false;
-	
-	Fa_ = SharedMatrix(factory_.create_matrix("F alpha"));
-	Fb_ = SharedMatrix(factory_.create_matrix("F beta"));
-	Da_ = SharedMatrix(factory_.create_matrix("D alpha"));
-	Db_ = SharedMatrix(factory_.create_matrix("D beta"));
-	Dt_ = SharedMatrix(factory_.create_matrix("D total"));
-	Dtold_ = SharedMatrix(factory_.create_matrix("D total old"));
-	Ca_ = SharedMatrix(factory_.create_matrix("C alpha"));
-	Cb_ = SharedMatrix(factory_.create_matrix("C beta"));
-	Ga_ = SharedMatrix(factory_.create_matrix("G alpha"));
-	Gb_ = SharedMatrix(factory_.create_matrix("G beta"));
-	
-	p_jk_ = NULL;
-	p_k_ = NULL;
-	
+
+    Fa_ = SharedMatrix(factory_.create_matrix("F alpha"));
+    Fb_ = SharedMatrix(factory_.create_matrix("F beta"));
+    Da_ = SharedMatrix(factory_.create_matrix("D alpha"));
+    Db_ = SharedMatrix(factory_.create_matrix("D beta"));
+    Dt_ = SharedMatrix(factory_.create_matrix("D total"));
+    Dtold_ = SharedMatrix(factory_.create_matrix("D total old"));
+    Ca_ = SharedMatrix(factory_.create_matrix("C alpha"));
+    Cb_ = SharedMatrix(factory_.create_matrix("C beta"));
+    Ga_ = SharedMatrix(factory_.create_matrix("G alpha"));
+    Gb_ = SharedMatrix(factory_.create_matrix("G beta"));
+
+    p_jk_ = NULL;
+    p_k_ = NULL;
+
     use_out_of_core_ = options_.get_bool("OUT_OF_CORE");
-	
-	fprintf(outfile, "  DIIS not implemented for UHF, yet.\n\n");
-	
-	allocate_PK();
+
+    if(print_ > 1) fprintf(outfile, "  DIIS not implemented for UHF, yet.\n\n");
+
+    allocate_PK();
 }
 
 double UHF::compute_energy()
@@ -80,11 +80,11 @@ double UHF::compute_energy()
 	
 	// Compute an initial energy using H and D
 	E_ = compute_initial_E();
-	
-	fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
+        if(print_)
+            fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
 	do {
 		iter++;
-		
+		iterationsNeeded_ = iter;
         Dtold_->copy(Dt_);
 		Eold_ = E_;
 		
@@ -96,7 +96,8 @@ double UHF::compute_energy()
 		form_F();
 		
 		E_ = compute_E();
-		fprintf(outfile, "  @UHF iteration %3d energy: %20.14f    %20.14f %20.14f\n", iter, E_, E_ - Eold_, Drms_);
+                if(print_)
+                    fprintf(outfile, "  @UHF iteration %3d energy: %20.14f    %20.14f %20.14f\n", iter, E_, E_ - Eold_, Drms_);
 		fflush(outfile);
 		
 		form_C();
@@ -108,16 +109,17 @@ double UHF::compute_energy()
 	
     // Return the final RHF energy
     if (converged) {
-        fprintf(outfile, "\n  Energy converged.\n");
+        if(print_ > 1)
+            fprintf(outfile, "\n  Energy converged.\n");
         save_information();
     }
     else {
-        fprintf(outfile, "\n  Failed to converge.\n");
+        fprintf(outfile, "\n  SCF Failed to converge.\n");
         E_ = 0.0;
     }
     
     // Compute the final dipole.
-    compute_multipole();
+    if(print_ > 2) compute_multipole();
     
     return E_;
 }
@@ -256,17 +258,18 @@ void UHF::save_information()
     // Print the final docc vector
     char **temp2 = chkpt_->rd_irr_labs();
     int nso = chkpt_->rd_nso();
-    
-    fprintf(outfile, "\n  Final doubly occupation vector = (");
-    for (int h=0; h<factory_.nirreps(); ++h) {
-        fprintf(outfile, "%2d %3s ", doccpi_[h], temp2[h]);
+    if(print_ > 1){
+        fprintf(outfile, "\n  Final doubly occupied vector = (");
+        for (int h=0; h<factory_.nirreps(); ++h) {
+            fprintf(outfile, "%2d %3s ", doccpi_[h], temp2[h]);
+        }
+        fprintf(outfile, ")\n");
+        fprintf(outfile, "  Final singly occupied vector = (");
+        for (int h=0; h<factory_.nirreps(); ++h) {
+            fprintf(outfile, "%2d %3s ", soccpi_[h], temp2[h]);
+        }
+        fprintf(outfile, ")\n");
     }
-    fprintf(outfile, ")\n");
-    fprintf(outfile, "  Final singly occupied vector =   (");
-    for (int h=0; h<factory_.nirreps(); ++h) {
-        fprintf(outfile, "%2d %3s ", soccpi_[h], temp2[h]);
-    }
-    fprintf(outfile, ")\n");
     
     // Needed for a couple of places.
     SharedMatrix eigvectora(factory_.create_matrix());
@@ -295,36 +298,37 @@ void UHF::save_information()
     }
     sort(pairsa.begin(),pairsa.end());
     sort(pairsb.begin(),pairsb.end());
-        
-    fprintf(outfile, "\n  Orbital energies (a.u.):\n    Alpha occupied\n      ");
-    for (int i=1; i<=nalpha_; ++i) {
-        fprintf(outfile, "%12.6f %3s  ", pairsa[i-1].first, temp2[pairsa[i-1].second]);
-        if (i % 4 == 0)
-            fprintf(outfile, "\n      ");
+    if(print_ > 1){
+        fprintf(outfile, "\n  Orbital energies (a.u.):\n    Alpha occupied\n      ");
+        for (int i=1; i<=nalpha_; ++i) {
+            fprintf(outfile, "%12.6f %3s  ", pairsa[i-1].first, temp2[pairsa[i-1].second]);
+            if (i % 4 == 0)
+                fprintf(outfile, "\n      ");
+        }
+        fprintf(outfile, "\n");
+        fprintf(outfile, "\n    Alpha unoccupied\n      ");
+        for (int i=nalpha_+1; i<=nso; ++i) {
+            fprintf(outfile, "%12.6f %3s  ", pairsa[i-1].first, temp2[pairsa[i-1].second]);
+            if ((i-nalpha_) % 4 == 0)
+                fprintf(outfile, "\n      ");
+        }
+        fprintf(outfile, "\n");
+
+        fprintf(outfile, "\n    Beta occupied\n      ");
+        for (int i=1; i<=nbeta_; ++i) {
+            fprintf(outfile, "%12.6f %3s  ", pairsb[i-1].first, temp2[pairsb[i-1].second]);
+            if (i % 4 == 0)
+                fprintf(outfile, "\n      ");
+        }
+        fprintf(outfile, "\n");
+        fprintf(outfile, "\n    Beta unoccupied\n      ");
+        for (int i=nalpha_+1; i<=nso; ++i) {
+            fprintf(outfile, "%12.6f %3s  ", pairsb[i-1].first, temp2[pairsb[i-1].second]);
+            if ((i-nbeta_) % 4 == 0)
+                fprintf(outfile, "\n      ");
+        }
+        fprintf(outfile, "\n");
     }
-    fprintf(outfile, "\n");
-    fprintf(outfile, "\n    Alpha unoccupied\n      ");
-    for (int i=nalpha_+1; i<=nso; ++i) {
-        fprintf(outfile, "%12.6f %3s  ", pairsa[i-1].first, temp2[pairsa[i-1].second]);
-        if ((i-nalpha_) % 4 == 0)
-            fprintf(outfile, "\n      ");
-    }
-    fprintf(outfile, "\n");
-    
-    fprintf(outfile, "\n    Beta occupied\n      ");
-    for (int i=1; i<=nbeta_; ++i) {
-        fprintf(outfile, "%12.6f %3s  ", pairsb[i-1].first, temp2[pairsb[i-1].second]);
-        if (i % 4 == 0)
-            fprintf(outfile, "\n      ");
-    }
-    fprintf(outfile, "\n");
-    fprintf(outfile, "\n    Beta unoccupied\n      ");
-    for (int i=nalpha_+1; i<=nso; ++i) {
-        fprintf(outfile, "%12.6f %3s  ", pairsb[i-1].first, temp2[pairsb[i-1].second]);
-        if ((i-nbeta_) % 4 == 0)
-            fprintf(outfile, "\n      ");
-    }
-    fprintf(outfile, "\n");
     for (int i=0; i<eigvaluesa->nirreps(); ++i)
         free(temp2[i]);
     free(temp2);
@@ -388,38 +392,39 @@ bool UHF::test_convergency()
 }
 
 void UHF::allocate_PK() {
-	// Figure out how many pair combinations yield A1 symmetry (done in above loop)
-	//   num_pair_combinations_of_A1 = ioff[_opi[0]] + ioff[_opi[1]] + ioff[_opi[2]] + ...
-	// Allocate memory for the PK matrix (using a vector)
-	if (pk_size_ < (memory_ / sizeof(double) / 2)) {
-		p_jk_ = new double[pk_size_];
-		p_k_ = new double[pk_size_];
+    // Figure out how many pair combinations yield A1 symmetry (done in above loop)
+    //   num_pair_combinations_of_A1 = ioff[_opi[0]] + ioff[_opi[1]] + ioff[_opi[2]] + ...
+    // Allocate memory for the PK matrix (using a vector)
+    if (pk_size_ < (memory_ / sizeof(double) / 2)) {
+        p_jk_ = new double[pk_size_];
+        p_k_ = new double[pk_size_];
 
-		if (p_jk_ == NULL || p_k_ == NULL) {
-			fprintf(outfile, "  Insufficient free system memory for in-core PK implementation.\n");
-			fprintf(outfile, "  Switching to out-of-core algorithm.\n");
-			use_out_of_core_ = true;
-		} else {
-			// Zero out PK and K
-			memset(p_jk_, 0, pk_size_*sizeof(double));
-			memset(p_k_, 0, pk_size_*sizeof(double));
-
-			fprintf(outfile,
-				"  Allocated %lu elements (%lu pairs) for PJ. (%5f MiB)\n",
-				(unsigned long)pk_size_, (unsigned long)pk_pairs_, pk_size_ * 8.0 / 1048576.0);
-			fprintf(outfile,
-				"  Allocated %lu elements (%lu pairs) for PK. (%5f MiB)\n\n",
-				(unsigned long)pk_size_, (unsigned long)pk_pairs_, pk_size_ * 8.0 / 1048576.0);
-		}
-	} else {
-		fprintf(outfile,
-				"  Insufficient memory for in-core PK implementation.\n");
-		fprintf(outfile,
-				"  Would need %lu elements of double memory. (%5f MiB)\n",
-				(unsigned long)pk_size_*2, pk_size_ * 8.0 / 1048576.0 * 2.0);
-		fprintf(outfile, "  Switching to out-of-core algorithm.\n");
-		use_out_of_core_ = true;
-	}
+        if (p_jk_ == NULL || p_k_ == NULL) {
+            fprintf(outfile, "  Insufficient free system memory for in-core PK implementation.\n");
+            fprintf(outfile, "  Switching to out-of-core algorithm.\n");
+            use_out_of_core_ = true;
+        } else {
+            // Zero out PK and K
+            memset(p_jk_, 0, pk_size_*sizeof(double));
+            memset(p_k_, 0, pk_size_*sizeof(double));
+            if(print_ > 2){
+                fprintf(outfile,
+                "  Allocated %lu elements (%lu pairs) for PJ. (%5f MiB)\n",
+                (unsigned long)pk_size_, (unsigned long)pk_pairs_, pk_size_ * 8.0 / 1048576.0);
+                fprintf(outfile,
+                "  Allocated %lu elements (%lu pairs) for PK. (%5f MiB)\n\n",
+                (unsigned long)pk_size_, (unsigned long)pk_pairs_, pk_size_ * 8.0 / 1048576.0);
+            }
+        }
+    } else {
+        fprintf(outfile,
+                        "  Insufficient memory for in-core PK implementation.\n");
+        fprintf(outfile,
+                        "  Would need %lu elements of double memory. (%5f MiB)\n",
+                        (unsigned long)pk_size_*2, pk_size_ * 8.0 / 1048576.0 * 2.0);
+        fprintf(outfile, "  Switching to out-of-core algorithm.\n");
+        use_out_of_core_ = true;
+    }
 }
 
 void UHF::form_initialF()
@@ -518,21 +523,21 @@ void UHF::form_D()
 
 double UHF::compute_initial_E()
 {
-	double Etotal = nuclearrep_ + 0.5 * (Dt_->vector_dot(H_));
-    fprintf(outfile, "\n  Initial UHF energy: %20.14f\n\n", Etotal);
+    double Etotal = nuclearrep_ + 0.5 * (Dt_->vector_dot(H_));
+    if(print_ > 2) fprintf(outfile, "\n  Initial UHF energy: %20.14f\n\n", Etotal);
     fflush(outfile);
     return Etotal;
 }
 
 double UHF::compute_E()
 {
-	double DH  = Dt_->vector_dot(H_);
-	double DFa = Da_->vector_dot(Fa_);
-	double DFb = Db_->vector_dot(Fb_);
-	double Eelec = 0.5 * (DH + DFa + DFb);
+    double DH  = Dt_->vector_dot(H_);
+    double DFa = Da_->vector_dot(Fa_);
+    double DFb = Db_->vector_dot(Fb_);
+    double Eelec = 0.5 * (DH + DFa + DFb);
     // fprintf(outfile, "electronic energy = %20.14f\n", Eelec);
-	double Etotal = nuclearrep_ + Eelec;
-	return Etotal;
+    double Etotal = nuclearrep_ + Eelec;
+    return Etotal;
 }
 
 void UHF::form_PK()
@@ -549,8 +554,10 @@ void UHF::form_PK()
     double value;
     
     // PK zeroed out during allocation
-    fprintf(outfile, "  Forming PJ and PK matrices.\n");
-    fflush(outfile);
+    if(print_ > 2){
+        fprintf(outfile, "  Forming PJ and PK matrices.\n");
+        fflush(outfile);
+    }
     
     IWL ERIIN(psio_.get(), PSIF_SO_TEI, 0.0, 1, 1);
     
@@ -640,7 +647,7 @@ void UHF::form_PK()
         p_k_[INDEX2(ij,ij)] *= 0.5;
     }
     
-    fprintf(outfile, "  Processed %d two-electron integrals.\n", counter);
+    if(print_ > 2) fprintf(outfile, "  Processed %d two-electron integrals.\n", counter);
     #ifdef _DEBUG
     if (debug_) {
         fprintf(outfile, "p_jk_:\n");
@@ -671,18 +678,18 @@ void UHF::form_G_from_PK()
 
 	ij=0;
 	for (int h=0; h<nirreps; ++h) {
-		for (int p=0; p<opi[h]; ++p) {
-			for (int q=0; q<=p; ++q) {
-				if (p != q) {
-					Da_vector[ij] = 2.0 * Da_->get(h, p, q);
-					Db_vector[ij] = 2.0 * Db_->get(h, p, q);
-				} else {
-					Da_vector[ij] = Da_->get(h, p, q);
-					Db_vector[ij] = Db_->get(h, p, q);
-				}
-				ij++;
-			}
-		}
+            for (int p=0; p<opi[h]; ++p) {
+                for (int q=0; q<=p; ++q) {
+                    if (p != q) {
+                        Da_vector[ij] = 2.0 * Da_->get(h, p, q);
+                        Db_vector[ij] = 2.0 * Db_->get(h, p, q);
+                    } else {
+                        Da_vector[ij] = Da_->get(h, p, q);
+                        Db_vector[ij] = Db_->get(h, p, q);
+                    }
+                    ij++;
+                }
+            }
 	}
 
 #ifdef _DEBUG
@@ -718,46 +725,46 @@ void UHF::form_G_from_PK()
 	double* K_block = p_k_;
 	int ts_pairs = pk_pairs_;
 	for (pq = 0; pq < ts_pairs; ++pq) {
-		Ga_pq = 0.0;
-		Da_pq = Da_vector[pq];
-		Da_rs = &Da_vector[0];
-		Ga_rs = &Ga_vector[0];
-		Gb_pq = 0.0;
-		Db_pq = Db_vector[pq];
-		Db_rs = &Db_vector[0];
-		Gb_rs = &Gb_vector[0];
-		for (rs = 0; rs <= pq; ++rs) {
-			// D_{rs}^{c} * PK_{pqrs}         Also found in RHF
-			// Doing F_mn_a about to add the K term
-			Ga_pq  += (*JK_block + *K_block) * (*Da_rs) + (*JK_block - *K_block) * (*Db_rs);
-			*Ga_rs += (*JK_block + *K_block) * Da_pq    + (*JK_block - *K_block) * Db_pq;
-			
-			Gb_pq  += (*JK_block + *K_block) * (*Db_rs) + (*JK_block - *K_block) * (*Da_rs);
-			*Gb_rs += (*JK_block + *K_block) * Db_pq    + (*JK_block - *K_block) * Da_pq;
-			
-			++Da_rs;
-			++Ga_rs;
-			++Db_rs;
-			++Gb_rs;
-			++JK_block;
-			++K_block;
-		}
-		Ga_vector[pq] += Ga_pq;
-		Gb_vector[pq] += Gb_pq;
+            Ga_pq = 0.0;
+            Da_pq = Da_vector[pq];
+            Da_rs = &Da_vector[0];
+            Ga_rs = &Ga_vector[0];
+            Gb_pq = 0.0;
+            Db_pq = Db_vector[pq];
+            Db_rs = &Db_vector[0];
+            Gb_rs = &Gb_vector[0];
+            for (rs = 0; rs <= pq; ++rs) {
+                // D_{rs}^{c} * PK_{pqrs}         Also found in RHF
+                // Doing F_mn_a about to add the K term
+                Ga_pq  += (*JK_block + *K_block) * (*Da_rs) + (*JK_block - *K_block) * (*Db_rs);
+                *Ga_rs += (*JK_block + *K_block) * Da_pq    + (*JK_block - *K_block) * Db_pq;
+
+                Gb_pq  += (*JK_block + *K_block) * (*Db_rs) + (*JK_block - *K_block) * (*Da_rs);
+                *Gb_rs += (*JK_block + *K_block) * Db_pq    + (*JK_block - *K_block) * Da_pq;
+
+                ++Da_rs;
+                ++Ga_rs;
+                ++Db_rs;
+                ++Gb_rs;
+                ++JK_block;
+                ++K_block;
+            }
+            Ga_vector[pq] += Ga_pq;
+            Gb_vector[pq] += Gb_pq;
 	}
 
 	// Convert G to a matrix
 	ij = 0;
 	for (int h = 0; h < nirreps; ++h) {
-		for (int p = 0; p < opi[h]; ++p) {
-			for (int q = 0; q <= p; ++q) {
-				Ga_->set(h, p, q, Ga_vector[ij]);
-				Ga_->set(h, q, p, Ga_vector[ij]);
-				Gb_->set(h, p, q, Gb_vector[ij]);
-				Gb_->set(h, q, p, Gb_vector[ij]);
-				ij++;
-			}
-		}
+            for (int p = 0; p < opi[h]; ++p) {
+                for (int q = 0; q <= p; ++q) {
+                    Ga_->set(h, p, q, Ga_vector[ij]);
+                    Ga_->set(h, q, p, Ga_vector[ij]);
+                    Gb_->set(h, p, q, Gb_vector[ij]);
+                    Gb_->set(h, q, p, Gb_vector[ij]);
+                    ij++;
+                }
+            }
 	}
 
 #ifdef _DEBUG
