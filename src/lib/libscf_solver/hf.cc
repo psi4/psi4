@@ -41,19 +41,20 @@ namespace psi { namespace scf {
 HF::HF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) 
     : Wavefunction(options, psio, chkpt),
       nuclear_dipole_contribution_(3),
-      nuclear_quadrupole_contribution_(6)
+      nuclear_quadrupole_contribution_(6),
+      print_(3)
 {
     common_init();
 }
 
 HF::~HF()
 {	
-		if (direct_integrals_ == false && ri_integrals_ == false) {
-    	delete[] so2symblk_;
-    	delete[] so2index_;
-    	delete[] pk_symoffset_;
+    if (direct_integrals_ == false && ri_integrals_ == false) {
+        delete[] so2symblk_;
+        delete[] so2index_;
+        delete[] pk_symoffset_;
     }
-    free(zvals_);   
+    free(zvals_);
 }
 
 void HF::common_init()
@@ -71,35 +72,35 @@ void HF::common_init()
     maxiter_ = options_.get_int("MAXITER");
     
     // Read in DOCC and SOCC from memory
-	int nirreps = factory_.nirreps();
-	input_docc_ = false;
-	if (options_["DOCC"].has_changed()) {
-		input_docc_ = true;
-		for (int i=0; i<nirreps; ++i)
+    int nirreps = factory_.nirreps();
+    input_docc_ = false;
+    if (options_["DOCC"].has_changed()) {
+        input_docc_ = true;
+        for (int i=0; i<nirreps; ++i)
             doccpi_[i] = options_["DOCC"][i].to_integer();
-	} else {
-		for (int i=0; i<nirreps; ++i)
-			doccpi_[i] = 0;
-	}
-	input_socc_ = false;
-	if (options_["SOCC"].has_changed()) {
-		input_socc_ = true;
-		for (int i=0; i<nirreps; ++i)
-			soccpi_[i] = options_["SOCC"][i].to_integer();
-	} else {
-		for (int i=0; i<nirreps; ++i)
-			soccpi_[i] = 0;
-	}
-	
-	// TODO: Make the follow work for general cases!
-	nalpha_ = nbeta_ = 0;
-	for (int i=0; i<nirreps; ++i) {
-		nalphapi_[i] = doccpi_[i] + soccpi_[i];
-		nbetapi_[i]  = doccpi_[i];
-		nalpha_ += doccpi_[i] + soccpi_[i];
-		nbeta_  += doccpi_[i];
-	}
-	
+    } else {
+        for (int i=0; i<nirreps; ++i)
+            doccpi_[i] = 0;
+    }
+    input_socc_ = false;
+    if (options_["SOCC"].has_changed()) {
+        input_socc_ = true;
+        for (int i=0; i<nirreps; ++i)
+            soccpi_[i] = options_["SOCC"][i].to_integer();
+    } else {
+        for (int i=0; i<nirreps; ++i)
+            soccpi_[i] = 0;
+    }
+
+    // TODO: Make the follow work for general cases!
+    nalpha_ = nbeta_ = 0;
+    for (int i=0; i<nirreps; ++i) {
+        nalphapi_[i] = doccpi_[i] + soccpi_[i];
+        nbetapi_[i]  = doccpi_[i];
+        nalpha_ += doccpi_[i] + soccpi_[i];
+        nbeta_  += doccpi_[i];
+    }
+
     perturb_h_ = false;
     perturb_h_ = options_.get_bool("PERTURB_H");
     perturb_ = nothing;
@@ -136,8 +137,8 @@ void HF::common_init()
     
     if (options_["RI_BASIS"].has_changed())
     {
-    	ri_integrals_ = true;
-    	direct_integrals_ = false;
+        ri_integrals_ = true;
+        direct_integrals_ = false;
     }
     
     //Use schwarz sieve? default no
@@ -162,10 +163,10 @@ void HF::common_init()
     Quadrupole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Quadrupole YY")));
     Quadrupole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Quadrupole YZ")));
     Quadrupole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Quadrupole ZZ")));
-    
-    print_header();
+
+    if(print_ > 1) print_header();
     if (direct_integrals_ == false && ri_integrals_ == false)
-    	form_indexing();
+        form_indexing();
 }
 
 void HF::print_header()

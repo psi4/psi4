@@ -73,17 +73,17 @@ protected:
     perturb perturb_;
     
     // Using direct integrals?
-  	int direct_integrals_;
-  	//DF Storage Scheme
+    int direct_integrals_;
+
+    //DF Storage Scheme
     enum df_storage { full, flip_B_core, flip_B_disk, k_incore, disk};
     df_storage df_storage_;
+
     int ri_integrals_;
     int ri_nbf_;
     int *ri_pair_nu_;
     int *ri_pair_mu_;
     
-    // The amount of information to print
-    int print_;
     double **B_ia_P_; //Three Index tensor for DF-SCF
     
     double schwarz_;
@@ -103,6 +103,12 @@ public:
     // Formation of S^+1/2 and S^-1/2 are the same
     void form_Shalf();
 
+
+    // Set the amount of information to print
+    void set_print(const int n) {print_ = n;}
+
+    // The number of iterations needed to reach convergence
+    int iterations_needed() {return iterationsNeeded_;}
 protected:
     // Common initializer
     void common_init();
@@ -119,6 +125,12 @@ protected:
     
     // Prints some opening information
     void print_header();
+
+    // The amout of information to print
+    int print_;
+    
+    // The number of iterations need to reach convergence
+    int iterationsNeeded_;
     
     void form_B(); 
     
