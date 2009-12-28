@@ -101,6 +101,7 @@ class IntegralTransform{
         void initialize();
         void presort_so_tei();
         void generate_oei();
+        void update_orbitals();
         void transform_oei(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace> s2, const char *label);
         void transform_tei(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace> s2,
                            const shared_ptr<MOSpace> s3, const shared_ptr<MOSpace> s4);
