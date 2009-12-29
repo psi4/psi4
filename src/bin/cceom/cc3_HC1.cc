@@ -4,6 +4,7 @@
 */
 #include <cstdio>
 #include <cstdlib>
+#include <libqt/qt.h>
 #include <libdpd/dpd.h>
 #include "MOInfo.h"
 #include "Params.h"
@@ -1008,27 +1009,123 @@ void HC1_Wmbej(int i, int C_irr) {
 void HC1_Wabei(int i, int C_irr) { 
   dpdbuf4 Z, Z1, Z2, Z3;
   dpdbuf4 B, C, D, E, F, W;
-  dpdfile2 Cme, CME;
+  dpdfile2 Cme, CME, T1;
   char CME_lbl[32], Cme_lbl[32];
+  int Gef, Gei, Gab, Ge, Gf, Gi;
+  int EE, e;
+  int nrows, ncols, nlinks;
 
   sprintf(CME_lbl, "%s %d", "CME", i);
   sprintf(Cme_lbl, "%s %d", "Cme", i);
 
   if(params.ref == 0) { /** RHF **/
 
-    dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, CME_lbl);
-
-    dpd_buf4_init(&Z1, CC_TMP0, C_irr, 5, 11, 5, 11, 0, "CC3 Z(Ab,Ei)");
-    dpd_buf4_init(&Z2, CC_TMP0, C_irr, 11, 5, 11, 5, 0, "CC3 Z(Ei,Ab)");
 
     /* Z1(Ab,Ei) <-- <Ab|Ef> * C(i,f) */
+/*
+    dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, CME_lbl);
+    dpd_buf4_init(&Z1, CC_TMP0, C_irr, 5, 11, 5, 11, 0, "CC3 Z(Ab,Ei)");
+    dpd_buf4_init(&Z2, CC_TMP0, C_irr, 11, 5, 11, 5, 0, "CC3 Z(Ei,Ab)");
     dpd_buf4_init(&B, CC_BINTS, 0, 5, 5, 5, 5, 0, "B <ab|cd>");
     dpd_contract424(&B, &CME, &Z1, 3, 1, 0, 1, 0);
     dpd_buf4_close(&B);
+    dpd_buf4_close(&Z1);
+    dpd_buf4_close(&Z2);
+    dpd_file2_close(&CME);
+*/
+
+    // Added new B(+)/B(-) code from cchbar 12/29/09, -TDC
+    dpd_buf4_init(&B, CC_BINTS, 0, 5, 8, 8, 8, 0, "B(+) <ab|cd> + <ab|dc>");
+    dpd_file2_init(&T1, EOM_CME, C_irr, 0, 1, CME_lbl);
+    dpd_file2_mat_init(&T1);
+    dpd_file2_mat_rd(&T1);  
+    dpd_buf4_init(&Z1, CC_TMP0, C_irr, 11, 8, 11, 8, 0, "Z1(ei,a>=b)");
+    dpd_buf4_scm(&Z1, 0.0); /* needed for empty occpi or virtpi irreps */
+    for(Gef=0; Gef < moinfo.nirreps; Gef++) {    
+      Gab = Gef; /* B is totally symmetric */
+      for(Ge=0; Ge < moinfo.nirreps; Ge++) {      
+        Gf = Ge ^ Gef;
+        Gi = Gf ^ C_irr;  /* T1 is not necessarily totally symmetric */
+        Gei = Ge ^ Gi;
+        if((Gei^Gab) != C_irr) printf("CC3 HC1 Error: C_irr = %d; Gef = %d; Ge = %d; Gi = %d\n", C_irr, Gef, Ge, Gi);
+        B.matrix[Gef] = dpd_block_matrix(moinfo.virtpi[Gf],B.params->coltot[Gab]);
+        Z1.matrix[Gei] = dpd_block_matrix(moinfo.occpi[Gi],Z1.params->coltot[Gab])
+;
+        nrows = moinfo.occpi[Gi]; 
+        ncols = Z1.params->coltot[Gab]; 
+        nlinks = moinfo.virtpi[Gf];
+        if(nrows && ncols && nlinks) {        
+          for(EE=0; EE < moinfo.virtpi[Ge]; EE++) {
+            e = moinfo.vir_off[Ge] + EE;
+            dpd_buf4_mat_irrep_rd_block(&B, Gef, B.row_offset[Gef][e], moinfo.virtpi[Gf]);
+            C_DGEMM('n','n',nrows,ncols,nlinks,0.5,T1.matrix[Gi][0],nlinks,
+                    B.matrix[Gef][0],ncols,0.0,Z1.matrix[Gei][0],ncols);
+            dpd_buf4_mat_irrep_wrt_block(&Z1,Gei,Z1.row_offset[Gei][e],moinfo.occpi[Gi]);
+          }
+        }
+        dpd_free_block(B.matrix[Gef], moinfo.virtpi[Gf], B.params->coltot[Gab]);
+        dpd_free_block(Z1.matrix[Gei], moinfo.occpi[Gi], Z1.params->coltot[Gab]);
+      }
+    }
+    dpd_buf4_close(&Z1);
+    dpd_file2_mat_close(&T1);
+    dpd_file2_close(&T1);
+    dpd_buf4_close(&B);
+
+    dpd_buf4_init(&B, CC_BINTS, 0, 5, 9, 9, 9, 0, "B(-) <ab|cd> - <ab|dc>");
+    dpd_file2_init(&T1, EOM_CME, C_irr, 0, 1, CME_lbl);
+    dpd_file2_mat_init(&T1);
+    dpd_file2_mat_rd(&T1);
+    dpd_buf4_init(&Z2, CC_TMP0, C_irr, 11, 9, 11, 9, 0, "Z2(ei,a>=b)");
+    dpd_buf4_scm(&Z2, 0.0); /* needed for empty occpi or virtpi irreps */
+    for(Gef=0; Gef < moinfo.nirreps; Gef++) {
+      Gab = Gef; /* W and B are totally symmetric */
+      for(Ge=0; Ge < moinfo.nirreps; Ge++) {
+        Gf = Ge ^ Gef; 
+        Gi = Gf ^ C_irr;  /* T1 is not necessarily totally symmetric */
+        Gei = Ge ^ Gi;
+        if((Gei^Gab) != C_irr) printf("CC3 HC1 Error: C_irr = %d; Gef = %d; Ge = %d; Gi = %d\n", C_irr, Gef, Ge, Gi);
+        B.matrix[Gef] = dpd_block_matrix(moinfo.virtpi[Gf],B.params->coltot[Gab]);
+        Z2.matrix[Gei] = dpd_block_matrix(moinfo.occpi[Gi],Z2.params->coltot[Gab]);
+
+        nrows = moinfo.occpi[Gi]; 
+        ncols = Z2.params->coltot[Gab]; 
+        nlinks = moinfo.virtpi[Gf];
+        if(nrows && ncols && nlinks) {
+          for(EE=0; EE < moinfo.virtpi[Ge]; EE++) {
+            e = moinfo.vir_off[Ge] + EE;
+            dpd_buf4_mat_irrep_rd_block(&B, Gef, B.row_offset[Gef][e], moinfo.virtpi[Gf]);
+            C_DGEMM('n','n',nrows,ncols,nlinks,0.5,T1.matrix[Gi][0],nlinks,
+                    B.matrix[Gef][0],ncols,0.0,Z2.matrix[Gei][0],ncols);
+            dpd_buf4_mat_irrep_wrt_block(&Z2, Gei, Z2.row_offset[Gei][e], moinfo.occpi[Gi]);
+          }
+        }
+        dpd_free_block(B.matrix[Gef], moinfo.virtpi[Gf], B.params->coltot[Gab]);
+        dpd_free_block(Z2.matrix[Gei], moinfo.occpi[Gi], Z2.params->coltot[Gab]);
+      }
+    }
+    dpd_buf4_close(&Z2);
+    dpd_file2_mat_close(&T1);
+    dpd_file2_close(&T1);
+    dpd_buf4_close(&B);
+
+    dpd_buf4_init(&Z1, CC_TMP0, C_irr, 11, 5, 11, 8, 0, "Z1(ei,a>=b)");
+    dpd_buf4_init(&Z2, CC_TMP0, C_irr, 11, 5, 11, 9, 0, "Z2(ei,a>=b)");
+    dpd_buf4_init(&W, CC_TMP0, C_irr, 11, 5, 11, 5, 0, "CC3 Z(Ei,Ab)");
+    dpd_buf4_scm(&W, 0);
+    dpd_buf4_axpy(&Z1, &W, 1);
+    dpd_buf4_axpy(&Z2, &W, 1);
+    dpd_buf4_close(&W);
+    dpd_buf4_close(&Z2);
+    dpd_buf4_close(&Z1);
+
+    dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, CME_lbl);
+    dpd_buf4_init(&Z1, CC_TMP0, C_irr, 5, 11, 5, 11, 0, "CC3 Z(Ab,Ei)");
+    dpd_buf4_init(&Z2, CC_TMP0, C_irr, 11, 5, 11, 5, 0, "CC3 Z(Ei,Ab)");
 
     /* Z1(Ab,Ei) <--  - C(M,A) * <Mb|Ei> */
     dpd_buf4_init(&D, CC_DINTS, 0, 10, 11, 10, 11, 0, "D <ij|ab> (ib,aj)");
-    dpd_contract244(&CME, &D, &Z1, 0, 0, 0, -1, 1);
+    dpd_contract244(&CME, &D, &Z1, 0, 0, 0, -1, 0);
     dpd_buf4_close(&D);
 
     /* Z2(Ei,Ab) <-- - <mA,iE> C(m,b) */
@@ -1037,7 +1134,7 @@ void HC1_Wabei(int i, int C_irr) {
     dpd_buf4_close(&C);
 
     dpd_buf4_init(&Z, CC_TMP0, 0, 11, 11, 11, 11, 0, "CC3 Z(Ei,Am)");
-    dpd_contract424(&Z, &CME, &Z2, 3, 0, 0, -1, 0);
+    dpd_contract424(&Z, &CME, &Z2, 3, 0, 0, -1, 1);
     dpd_buf4_close(&Z);
 
     dpd_buf4_close(&Z2);

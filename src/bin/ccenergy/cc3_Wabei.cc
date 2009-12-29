@@ -2,6 +2,7 @@
     \ingroup CCENERGY
     \brief Enter brief description of file here 
 */
+#include <libqt/qt.h>
 #include <libdpd/dpd.h>
 #include "Params.h"
 #include "MOInfo.h"
@@ -30,9 +31,12 @@ void purge_Wabei(void);
 void cc3_Wabei(void)
 {
   int omit = 0;
-  dpdfile2 t1, tIA, tia;
+  dpdfile2 T1, t1, tIA, tia;
   dpdbuf4 Z, Z1, Z2, Z3;
   dpdbuf4 B, C, D, E, F, W;
+  int Gef, Gei, Gab, Ge, Gf, Gi;
+  int EE, e;
+  int nrows, ncols, nlinks;
 
   if(params.ref == 0) { /** RHF **/
 
@@ -40,15 +44,98 @@ void cc3_Wabei(void)
     dpd_buf4_copy(&F, CC_TMP0, "CC3 Z(Ei,Ab)");
     dpd_buf4_close(&F);
 
+    /* Z1(Ab,Ei) <-- <Ab|Ef> * t(i,f) */
+/*
     dpd_file2_init(&t1, CC_OEI, 0, 0, 1, "tIA");
-
     dpd_buf4_init(&Z1, CC_TMP0, 0, 5, 11, 5, 11, 0, "CC3 Z(Ab,Ei)");
     dpd_buf4_init(&Z2, CC_TMP0, 0, 11, 5, 11, 5, 0, "CC3 Z(Ei,Ab)");
-
-    /* Z1(Ab,Ei) <-- <Ab|Ef> * t(i,f) */
     dpd_buf4_init(&B, CC_BINTS, 0, 5, 5, 5, 5, 0, "B <ab|cd>");
     dpd_contract424(&B, &t1, &Z1, 3, 1, 0, 1, 0);
     dpd_buf4_close(&B);
+    dpd_buf4_close(&Z1);
+    dpd_buf4_close(&Z2);
+    dpd_file2_close(&t1);
+*/
+    // Added new B(+)/B(-) code from cchbar 12/29/09, -TDC
+    dpd_buf4_init(&B, CC_BINTS, 0, 5, 8, 8, 8, 0, "B(+) <ab|cd> + <ab|dc>");
+    dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tIA");
+    dpd_file2_mat_init(&T1);
+    dpd_file2_mat_rd(&T1);  
+    dpd_buf4_init(&Z1, CC_TMP0, 0, 11, 8, 11, 8, 0, "Z1(ei,a>=b)");
+    dpd_buf4_scm(&Z1, 0.0); /* this scm is necessary for cases with empty occpi or virtpi irreps */
+    for(Gef=0; Gef < moinfo.nirreps; Gef++) {    
+      Gei = Gab = Gef; /* W and B are totally symmetric */
+      for(Ge=0; Ge < moinfo.nirreps; Ge++) {      
+        Gf = Ge ^ Gef; Gi = Gf;  /* T1 is totally symmetric */
+        B.matrix[Gef] = dpd_block_matrix(moinfo.virtpi[Gf],B.params->coltot[Gef]);
+        Z1.matrix[Gef] = dpd_block_matrix(moinfo.occpi[Gi],Z1.params->coltot[Gei])
+;
+        nrows = moinfo.occpi[Gi]; 
+        ncols = Z1.params->coltot[Gef]; 
+        nlinks = moinfo.virtpi[Gf];
+        if(nrows && ncols && nlinks) {        
+          for(EE=0; EE < moinfo.virtpi[Ge]; EE++) {
+            e = moinfo.vir_off[Ge] + EE;
+            dpd_buf4_mat_irrep_rd_block(&B, Gef, B.row_offset[Gef][e], moinfo.virtpi[Gf]);
+            C_DGEMM('n','n',nrows,ncols,nlinks,0.5,T1.matrix[Gi][0],nlinks,
+                    B.matrix[Gef][0],ncols,0.0,Z1.matrix[Gei][0],ncols);
+            dpd_buf4_mat_irrep_wrt_block(&Z1,Gei,Z1.row_offset[Gei][e],moinfo.occpi[Gi]);
+          }
+        }
+        dpd_free_block(B.matrix[Gef], moinfo.virtpi[Gf], B.params->coltot[Gef]);
+        dpd_free_block(Z1.matrix[Gef], moinfo.occpi[Gi], Z1.params->coltot[Gei]);
+      }
+    }
+    dpd_buf4_close(&Z1);
+    dpd_file2_mat_close(&T1);
+    dpd_file2_close(&T1);
+    dpd_buf4_close(&B);
+
+    dpd_buf4_init(&B, CC_BINTS, 0, 5, 9, 9, 9, 0, "B(-) <ab|cd> - <ab|dc>");
+    dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tIA");
+    dpd_file2_mat_init(&T1);
+    dpd_file2_mat_rd(&T1);
+    dpd_buf4_init(&Z2, CC_TMP0, 0, 11, 9, 11, 9, 0, "Z2(ei,a>=b)");
+    dpd_buf4_scm(&Z2, 0.0); /* this scm is necessary for cases with empty occpi or virtpi irreps */
+    for(Gef=0; Gef < moinfo.nirreps; Gef++) {
+      Gei = Gab = Gef; /* W and B are totally symmetric */
+      for(Ge=0; Ge < moinfo.nirreps; Ge++) {
+        Gf = Ge ^ Gef; Gi = Gf;  /* T1 is totally symmetric */
+        B.matrix[Gef] = dpd_block_matrix(moinfo.virtpi[Gf],B.params->coltot[Gef]);
+        Z2.matrix[Gef] = dpd_block_matrix(moinfo.occpi[Gi],Z2.params->coltot[Gei]);
+        nrows = moinfo.occpi[Gi]; 
+        ncols = Z2.params->coltot[Gef]; 
+        nlinks = moinfo.virtpi[Gf];
+        if(nrows && ncols && nlinks) {
+          for(EE=0; EE < moinfo.virtpi[Ge]; EE++) {
+            e = moinfo.vir_off[Ge] + EE;
+            dpd_buf4_mat_irrep_rd_block(&B, Gef, B.row_offset[Gef][e], moinfo.virtpi[Gf]);
+            C_DGEMM('n','n',nrows,ncols,nlinks,0.5,T1.matrix[Gi][0],nlinks,
+                    B.matrix[Gef][0],ncols,0.0,Z2.matrix[Gei][0],ncols);
+            dpd_buf4_mat_irrep_wrt_block(&Z2, Gei, Z2.row_offset[Gei][e], moinfo.occpi[Gi]);
+          }
+        }
+        dpd_free_block(B.matrix[Gef], moinfo.virtpi[Gf], B.params->coltot[Gef]);
+        dpd_free_block(Z2.matrix[Gef], moinfo.occpi[Gi], Z2.params->coltot[Gei]);
+      }
+    }
+    dpd_buf4_close(&Z2);
+    dpd_file2_mat_close(&T1);
+    dpd_file2_close(&T1);
+    dpd_buf4_close(&B);
+
+    dpd_buf4_init(&Z1, CC_TMP0, 0, 11, 5, 11, 8, 0, "Z1(ei,a>=b)");
+    dpd_buf4_init(&Z2, CC_TMP0, 0, 11, 5, 11, 9, 0, "Z2(ei,a>=b)");
+    dpd_buf4_init(&W, CC_TMP0, 0, 11, 5, 11, 5, 0, "CC3 Z(Ei,Ab)");
+    dpd_buf4_axpy(&Z1, &W, 1);
+    dpd_buf4_axpy(&Z2, &W, 1);
+    dpd_buf4_close(&W);
+    dpd_buf4_close(&Z2);
+    dpd_buf4_close(&Z1);
+
+    dpd_file2_init(&t1, CC_OEI, 0, 0, 1, "tIA");
+    dpd_buf4_init(&Z1, CC_TMP0, 0, 5, 11, 5, 11, 0, "CC3 Z(Ab,Ei)");
+    dpd_buf4_init(&Z2, CC_TMP0, 0, 11, 5, 11, 5, 0, "CC3 Z(Ei,Ab)");
 
     /* Z(Mb,Ei) <-- <Mb|Ei> + <Mb|Ef> t(i,f) */
     dpd_buf4_init(&D, CC_DINTS, 0, 10, 11, 10, 11, 0, "D <ij|ab> (ib,aj)");
@@ -59,7 +146,7 @@ void cc3_Wabei(void)
     dpd_contract424(&F, &t1, &Z, 3, 1, 0, 1, 1);
     dpd_buf4_close(&F);
     /* Z1(Ab,Ei) <-- - t(M,A) * Z(Mb,Ei) */
-    dpd_contract244(&t1, &Z, &Z1, 0, 0, 0, -1, 1);
+    dpd_contract244(&t1, &Z, &Z1, 0, 0, 0, -1, 0);
     dpd_buf4_close(&Z);
 
     /* Z(Ei,Am) <-- <Ei|Am> + <Am|Ef> t(i,f) */
