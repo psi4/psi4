@@ -21,6 +21,10 @@ protected:
     double *p_jk_;
     double *p_k_;
     double Drms_;
+    
+    // The alpha and beta external potentials
+    double ***Va_;
+    double ***Vb_;
 
     void allocate_PK();
     void form_initialF();
@@ -43,6 +47,10 @@ protected:
 public:
     UHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
     virtual ~UHF();
+
+    /// Add an external potential to the alpha and beta Fock matrices
+    void set_external_potential(double ***Va, double ***Vb)
+                               {Va_ = Va;  Vb_ = Vb;}
 
     double compute_energy();
 };

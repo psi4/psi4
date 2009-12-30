@@ -53,6 +53,8 @@ void UHF::common_init()
 
     p_jk_ = NULL;
     p_k_ = NULL;
+    Va_  = NULL;
+    Vb_  = NULL;
 
     use_out_of_core_ = options_.get_bool("OUT_OF_CORE");
 
@@ -385,10 +387,10 @@ bool UHF::test_convergency()
     Drms.subtract(Dtold_);
     Drms_ = sqrt(Drms.sum_of_squares());
     
-	if (fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_)
-		return true;
-	else
-		return false;
+    if (fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_)
+        return true;
+    else
+        return false;
 }
 
 void UHF::allocate_PK() {
@@ -404,9 +406,7 @@ void UHF::allocate_PK() {
             fprintf(outfile, "  Switching to out-of-core algorithm.\n");
             use_out_of_core_ = true;
         } else {
-            // Zero out PK and K
-            memset(p_jk_, 0, pk_size_*sizeof(double));
-            memset(p_k_, 0, pk_size_*sizeof(double));
+            // PK and K are zeroed out just before filling, not here
             if(print_ > 2){
                 fprintf(outfile,
                 "  Allocated %lu elements (%lu pairs) for PJ. (%5f MiB)\n",
@@ -488,26 +488,26 @@ void UHF::form_C()
 
 void UHF::form_D()
 {
-	int h, i, j, m;
-	int *opi = Da_->rowspi();
-	int nirreps = Da_->nirreps();
-	double val;
-	for (h=0; h<nirreps; ++h) {
-        // fprintf(outfile, "irrep %d: nalpha = %d nbeta = %d\n", h, nalphapi_[h], nbetapi_[h]);
-		for (i=0; i<opi[h]; ++i) {
-			for (j=0; j<opi[h]; ++j) {
-				val = 0.0;
-				for (m=0; m<nalphapi_[h]; ++m)
-					val += Ca_->get(h, i, m) * Ca_->get(h, j, m);
-				Da_->set(h, i, j, val);
-				
-				val = 0.0;
-				for (m=0; m<nbetapi_[h]; ++m)
-					val += Cb_->get(h, i, m) * Cb_->get(h, j, m);
-				Db_->set(h, i, j, val);
-			}
-		}
-	}
+    int h, i, j, m;
+    int *opi = Da_->rowspi();
+    int nirreps = Da_->nirreps();
+    double val;
+    for (h=0; h<nirreps; ++h) {
+    // fprintf(outfile, "irrep %d: nalpha = %d nbeta = %d\n", h, nalphapi_[h], nbetapi_[h]);
+        for (i=0; i<opi[h]; ++i) {
+            for (j=0; j<opi[h]; ++j) {
+                val = 0.0;
+                for (m=0; m<nalphapi_[h]; ++m)
+                    val += Ca_->get(h, i, m) * Ca_->get(h, j, m);
+                Da_->set(h, i, j, val);
+
+                val = 0.0;
+                for (m=0; m<nbetapi_[h]; ++m)
+                    val += Cb_->get(h, i, m) * Cb_->get(h, j, m);
+                Db_->set(h, i, j, val);
+            }
+        }
+    }
 
 	// Form total density
     Dt_->copy(Da_);
@@ -553,7 +553,11 @@ void UHF::form_PK()
     int counter = 0;
     double value;
     
-    // PK zeroed out during allocation
+    // PK is zeroed out here, not during allocation
+    // to prevent issues with multiple SCF calls
+    memset(p_jk_, 0, pk_size_*sizeof(double));
+    memset(p_k_, 0, pk_size_*sizeof(double));
+
     if(print_ > 2){
         fprintf(outfile, "  Forming PJ and PK matrices.\n");
         fflush(outfile);
@@ -567,12 +571,12 @@ void UHF::form_PK()
         
         fi = 0;
         for (idx=0; idx<nbuf; ++idx) {
-        	if (ERIIN.labels()[fi] >= 0) {
-        		i = ERIIN.labels()[fi];
-        	}
-        	else {
-        		i = -ERIIN.labels()[fi];
-        	}
+            if (ERIIN.labels()[fi] >= 0) {
+                i = ERIIN.labels()[fi];
+            }
+            else {
+                i = -ERIIN.labels()[fi];
+            }
             i = ERIIN.labels()[fi] >= 0 ? ERIIN.labels()[fi] : -ERIIN.labels()[fi];
             j = ERIIN.labels()[fi+1];
             k = ERIIN.labels()[fi+2];
@@ -633,7 +637,6 @@ void UHF::form_PK()
             }
             counter++;
         }
-
         if (!ilsti)
             ERIIN.fetch();
     } while (!ilsti);
@@ -660,130 +663,133 @@ void UHF::form_PK()
 
 void UHF::form_G_from_PK()
 {
-	int nirreps = factory_.nirreps();
-	int *opi = factory_.rowspi();
-	size_t ij;
-	double *Da_vector = new double[pk_pairs_];
-	double *Db_vector = new double[pk_pairs_];
-	double *Ga_vector = new double[pk_pairs_];
-	double *Gb_vector = new double[pk_pairs_];
+    int nirreps = factory_.nirreps();
+    int *opi = factory_.rowspi();
+    size_t ij;
+    double *Da_vector = new double[pk_pairs_];
+    double *Db_vector = new double[pk_pairs_];
+    double *Ga_vector = new double[pk_pairs_];
+    double *Gb_vector = new double[pk_pairs_];
 
-	Ga_->zero();
-	Gb_->zero();
+    Ga_->zero();
+    Gb_->zero();
 
-	memset(Da_vector, 0, sizeof(double) * pk_pairs_);
-	memset(Db_vector, 0, sizeof(double) * pk_pairs_);
-	memset(Ga_vector, 0, sizeof(double) * pk_pairs_);
-	memset(Gb_vector, 0, sizeof(double) * pk_pairs_);
+    memset(Da_vector, 0, sizeof(double) * pk_pairs_);
+    memset(Db_vector, 0, sizeof(double) * pk_pairs_);
+    memset(Ga_vector, 0, sizeof(double) * pk_pairs_);
+    memset(Gb_vector, 0, sizeof(double) * pk_pairs_);
 
-	ij=0;
-	for (int h=0; h<nirreps; ++h) {
-            for (int p=0; p<opi[h]; ++p) {
-                for (int q=0; q<=p; ++q) {
-                    if (p != q) {
-                        Da_vector[ij] = 2.0 * Da_->get(h, p, q);
-                        Db_vector[ij] = 2.0 * Db_->get(h, p, q);
-                    } else {
-                        Da_vector[ij] = Da_->get(h, p, q);
-                        Db_vector[ij] = Db_->get(h, p, q);
-                    }
-                    ij++;
+    ij=0;
+    for (int h=0; h<nirreps; ++h) {
+        for (int p=0; p<opi[h]; ++p) {
+            for (int q=0; q<=p; ++q) {
+                if (p != q) {
+                    Da_vector[ij] = 2.0 * Da_->get(h, p, q);
+                    Db_vector[ij] = 2.0 * Db_->get(h, p, q);
+                } else {
+                    Da_vector[ij] = Da_->get(h, p, q);
+                    Db_vector[ij] = Db_->get(h, p, q);
                 }
+                ij++;
             }
-	}
+        }
+    }
 
 #ifdef _DEBUG
-	if (debug_) {
-		fprintf(outfile, "PK: ij = %lu\n", (unsigned long)ij);
-		fflush(outfile);
-		fprintf(outfile, "PK: Da matrix:\n");
-		Da_->print(outfile);
-		fprintf(outfile, "PK: Da vector (appears to be OK):\n");
-		for (ij=0; ij<pk_pairs_; ++ij)
-			fprintf(outfile, "PK: Da vector [%lu] = %20.14f\n", (unsigned long)ij, Da_vector[ij]);
-		fprintf(outfile, "PK: Db matrix:\n");
-		Db_->print(outfile);
-		fprintf(outfile, "PK: Db vector (appears to be OK):\n");
-		for (ij=0; ij<pk_pairs_; ++ij)
-			fprintf(outfile, "PK: Db vector [%lu] = %20.14f\n", (unsigned long)ij, Db_vector[ij]);
-	}
+    if (debug_) {
+            fprintf(outfile, "PK: ij = %lu\n", (unsigned long)ij);
+            fflush(outfile);
+            fprintf(outfile, "PK: Da matrix:\n");
+            Da_->print(outfile);
+            fprintf(outfile, "PK: Da vector (appears to be OK):\n");
+            for (ij=0; ij<pk_pairs_; ++ij)
+                    fprintf(outfile, "PK: Da vector [%lu] = %20.14f\n", (unsigned long)ij, Da_vector[ij]);
+            fprintf(outfile, "PK: Db matrix:\n");
+            Db_->print(outfile);
+            fprintf(outfile, "PK: Db vector (appears to be OK):\n");
+            for (ij=0; ij<pk_pairs_; ++ij)
+                    fprintf(outfile, "PK: Db vector [%lu] = %20.14f\n", (unsigned long)ij, Db_vector[ij]);
+    }
 #endif
 
-	/* 
-	 * This code goes through the densities (Da_ and Db_), J, and K to form
-	 * two G matrices. One G matrix is for Fa_ and the other for Fb_.
-	 * See derivation notebook for equations.
-	 */
-	double Ga_pq, Da_pq;
-	double Gb_pq, Db_pq;
-	double* Da_rs;
-	double* Ga_rs;
-	double* Db_rs;
-	double* Gb_rs;
-	int pq, rs;
-	double* JK_block = p_jk_;
-	double* K_block = p_k_;
-	int ts_pairs = pk_pairs_;
-	for (pq = 0; pq < ts_pairs; ++pq) {
-            Ga_pq = 0.0;
-            Da_pq = Da_vector[pq];
-            Da_rs = &Da_vector[0];
-            Ga_rs = &Ga_vector[0];
-            Gb_pq = 0.0;
-            Db_pq = Db_vector[pq];
-            Db_rs = &Db_vector[0];
-            Gb_rs = &Gb_vector[0];
-            for (rs = 0; rs <= pq; ++rs) {
-                // D_{rs}^{c} * PK_{pqrs}         Also found in RHF
-                // Doing F_mn_a about to add the K term
-                Ga_pq  += (*JK_block + *K_block) * (*Da_rs) + (*JK_block - *K_block) * (*Db_rs);
-                *Ga_rs += (*JK_block + *K_block) * Da_pq    + (*JK_block - *K_block) * Db_pq;
+    /*
+     * This code goes through the densities (Da_ and Db_), J, and K to form
+     * two G matrices. One G matrix is for Fa_ and the other for Fb_.
+     * See derivation notebook for equations.
+     */
+    double Ga_pq, Da_pq;
+    double Gb_pq, Db_pq;
+    double* Da_rs;
+    double* Ga_rs;
+    double* Db_rs;
+    double* Gb_rs;
+    int pq, rs;
+    double* JK_block = p_jk_;
+    double* K_block = p_k_;
+    int ts_pairs = pk_pairs_;
+    for (pq = 0; pq < ts_pairs; ++pq) {
+        Ga_pq = 0.0;
+        Da_pq = Da_vector[pq];
+        Da_rs = &Da_vector[0];
+        Ga_rs = &Ga_vector[0];
+        Gb_pq = 0.0;
+        Db_pq = Db_vector[pq];
+        Db_rs = &Db_vector[0];
+        Gb_rs = &Gb_vector[0];
+        for (rs = 0; rs <= pq; ++rs) {
+            // D_{rs}^{c} * PK_{pqrs}         Also found in RHF
+            // Doing F_mn_a about to add the K term
+            Ga_pq  += (*JK_block + *K_block) * (*Da_rs) + (*JK_block - *K_block) * (*Db_rs);
+            *Ga_rs += (*JK_block + *K_block) * Da_pq    + (*JK_block - *K_block) * Db_pq;
 
-                Gb_pq  += (*JK_block + *K_block) * (*Db_rs) + (*JK_block - *K_block) * (*Da_rs);
-                *Gb_rs += (*JK_block + *K_block) * Db_pq    + (*JK_block - *K_block) * Da_pq;
+            Gb_pq  += (*JK_block + *K_block) * (*Db_rs) + (*JK_block - *K_block) * (*Da_rs);
+            *Gb_rs += (*JK_block + *K_block) * Db_pq    + (*JK_block - *K_block) * Da_pq;
 
-                ++Da_rs;
-                ++Ga_rs;
-                ++Db_rs;
-                ++Gb_rs;
-                ++JK_block;
-                ++K_block;
+            ++Da_rs;
+            ++Ga_rs;
+            ++Db_rs;
+            ++Gb_rs;
+            ++JK_block;
+            ++K_block;
+        }
+        Ga_vector[pq] += Ga_pq;
+        Gb_vector[pq] += Gb_pq;
+    }
+
+    // Convert G to a matrix
+    ij = 0;
+    for (int h = 0; h < nirreps; ++h) {
+        for (int p = 0; p < opi[h]; ++p) {
+            for (int q = 0; q <= p; ++q) {
+                // Add in the external potential, if requested
+                if(Va_ != NULL) Ga_vector[ij] += Va_[h][p][q];
+                if(Vb_ != NULL) Gb_vector[ij] += Vb_[h][p][q];
+                Ga_->set(h, p, q, Ga_vector[ij]);
+                Ga_->set(h, q, p, Ga_vector[ij]);
+                Gb_->set(h, p, q, Gb_vector[ij]);
+                Gb_->set(h, q, p, Gb_vector[ij]);
+                ij++;
             }
-            Ga_vector[pq] += Ga_pq;
-            Gb_vector[pq] += Gb_pq;
-	}
-
-	// Convert G to a matrix
-	ij = 0;
-	for (int h = 0; h < nirreps; ++h) {
-            for (int p = 0; p < opi[h]; ++p) {
-                for (int q = 0; q <= p; ++q) {
-                    Ga_->set(h, p, q, Ga_vector[ij]);
-                    Ga_->set(h, q, p, Ga_vector[ij]);
-                    Gb_->set(h, p, q, Gb_vector[ij]);
-                    Gb_->set(h, q, p, Gb_vector[ij]);
-                    ij++;
-                }
-            }
-	}
+        }
+    }
 
 #ifdef _DEBUG
-	if (debug_) {
-		Ga_->print(outfile);
-		Gb_->print(outfile);
-	}
+    if (debug_) {
+            Ga_->print(outfile);
+            Gb_->print(outfile);
+    }
 #endif
 
-	delete[](Da_vector);
-	delete[](Db_vector);
-	delete[](Ga_vector);
-	delete[](Gb_vector);
+    delete[](Da_vector);
+    delete[](Db_vector);
+    delete[](Ga_vector);
+    delete[](Gb_vector);
 }
 
 void UHF::form_G()
 {
-	fprintf(stderr, "UHF out-of-core algorithm is not implemented yet!\n");
-	abort();
+    fprintf(stderr, "UHF out-of-core algorithm is not implemented yet!\n");
+    abort();
 }
 
 }}
