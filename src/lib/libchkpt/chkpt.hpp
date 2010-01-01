@@ -330,26 +330,29 @@ namespace psi {
 		
 		/// allocate a block matrix -- analogous to libciomr's block_matrix
 		template <typename T> static T** matrix(int nrow, int ncol) {
+                        if (nrow == 0 || ncol == 0) return NULL;
 			T** mat = new T*[nrow];
 			const size_t size = nrow*ncol;
 			mat[0] = new T[size];
-			//bzero((void*)mat[0],size);
                         memset((void*)mat[0], '\0', size*sizeof(T));
 			for(int r=1; r<nrow; ++r) mat[r] = mat[r-1] + ncol;
 			return mat;
 		}
 		/// free a (block) matrix -- analogous to libciomr's free_block
 		template <typename T> static void free(T** Block) {
-			::delete [] Block[0];  ::delete [] Block;
+                        if (Block != NULL) { 
+			    ::delete [] Block[0];  ::delete [] Block;
+			}
 		}
 		/// allocate an array -- analogous to libciomr's array<double>
 		template <typename T> static T* array(int n) {
+			if (n == 0) return NULL;
 			T* arr = new T[n];
 			return arr;
 		}
 		/// free an array -- just for the hell of it
 		template <typename T> static void free(T* Array) {
-			::delete [] Array;
+			if (Array != NULL) ::delete [] Array;
 		}
 	};
 	
