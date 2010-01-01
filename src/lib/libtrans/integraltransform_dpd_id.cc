@@ -62,15 +62,13 @@ IntegralTransform::DPD_ID(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace
 int
 IntegralTransform::DPD_ID(const char c)
 {
-    std::vector<char>::iterator iter;
-    std::vector<char>::iterator pos = find(_spacesUsed.begin(), _spacesUsed.end(), c);
-    if(pos == _spacesUsed.end()){
-        std::string str = "Space ";
-        str += c;
-        str += " was not defined in this transformation object";
-        throw SanityCheckError(str, __FILE__, __LINE__);
+    for(int i = 0; i < _spacesUsed.size(); ++i){
+        if(_spacesUsed[i] == c) return(i);
     }
-    return distance(_spacesUsed.begin(), pos);
+    std::string str("MOSpace ");
+    str += c;
+    str += " is not known to this transformation object";
+    throw SanityCheckError(str, __FILE__, __LINE__);
 }
 
 

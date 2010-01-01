@@ -293,7 +293,9 @@ IntegralTransform::process_spaces()
 
 /**
  * Re-reads the MO coeffiecients from the checkpoint file and sets up
- * the computation
+ * the computation.  For default spaces, it is sufficient to call this.  For
+ * custom MOSpaces, the MOSpace objects' MO coefficients should be updated first.
+ * All one-electron integrals are generate in the new basis, including the Fock matrix.
  */
 void
 IntegralTransform::update_orbitals()
@@ -302,6 +304,7 @@ IntegralTransform::update_orbitals()
       throw FeatureNotImplemented("Libtrans", " update of semicanonical orbitals",
               __FILE__, __LINE__);
       process_eigenvectors();
+      generate_oei();
   }
 }
 
