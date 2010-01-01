@@ -82,8 +82,8 @@ double ** block_matrix(unsigned long int n, unsigned long int m)
 void free_block(double **array)
 {
     if(array == NULL) return;
-    free(array[0]);
-    free(array);
+    delete [] array[0];
+    delete [] array;
 }
 
 }
