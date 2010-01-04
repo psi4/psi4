@@ -7,7 +7,7 @@
 
 namespace psi{ namespace libtrans{
 
-IntegralTransform::IntegralTransform(const SpaceVec &spaces,
+IntegralTransform::IntegralTransform(SpaceVec spaces,
                                      TransformationType transformationType,
                                      OutputType outputType,
                                      MOOrdering moOrdering,
@@ -19,7 +19,9 @@ IntegralTransform::IntegralTransform(const SpaceVec &spaces,
             _uniqueSpaces(spaces),
             _frozenOrbitals(frozenOrbitals),
             _chkpt(_default_chkpt_lib_),
-            _psio(_default_psio_lib_)
+            _psio(_default_psio_lib_),
+            _Ca(NULL),
+            _Cb(NULL)
 {
     // Implement set/get functions to customize any of this stuff.  Delayed initialization
     // is possible in case any of these variables need to be changed before setup.

@@ -65,64 +65,78 @@ void UHF::common_init()
 
 double UHF::compute_energy()
 {
-	bool converged = false;
-	int iter = 0;
-	
-	// Do the initial work to give the iterations a starting point
-	form_H();
-	// find_occupation(_H, _H);
-	
-	if (use_out_of_core_ == false)
-		form_PK();
-	
-	form_Shalf();
-	form_initialF();
-	form_C();
-	form_D();
-	
-	// Compute an initial energy using H and D
-	E_ = compute_initial_E();
-        if(print_)
-            fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
-	do {
-		iter++;
-		iterationsNeeded_ = iter;
+    bool converged = false;
+    int iter = 0;
+
+    // Do the initial work to give the iterations a starting point
+    form_H();
+    // find_occupation(_H, _H);
+
+    if (use_out_of_core_ == false) form_PK();
+
+    form_Shalf();
+    form_initialF();
+
+    // Look to see if there are some MOs in the checkpoint file
+    std::string prefix(chkpt_->build_keyword(const_cast<char*>("Alpha MO coefficients")));
+    if(chkpt_->exist(const_cast<char*>(prefix.c_str()))) {
+        if(print_ > 1) fprintf(outfile, "  Reading the molecular orbitals from the checkpoint file\n");
+        // Read MOs from checkpoint and set C_ to them
+        double **vectors = chkpt_->rd_alpha_scf();
+        Ca_->set(const_cast<const double**>(vectors));
+        free_block(vectors);
+        vectors = chkpt_->rd_beta_scf();
+        Cb_->set(const_cast<const double**>(vectors));
+        free_block(vectors);
+        form_D();
+        E_ = chkpt_->rd_escf();
+    } else {
+        form_C();
+        form_D();
+        // Compute an initial energy using H and D
+        E_ = compute_initial_E();
+    }
+
+    if(print_)
+        fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
+    do {
+        iter++;
+        iterationsNeeded_ = iter;
         Dtold_->copy(Dt_);
-		Eold_ = E_;
-		
-		if (use_out_of_core_ == false)
-			form_G_from_PK();
-		else
-			form_G();
-		
-		form_F();
-		
-		E_ = compute_E();
-                if(print_)
-                    fprintf(outfile, "  @UHF iteration %3d energy: %20.14f    %20.14f %20.14f\n", iter, E_, E_ - Eold_, Drms_);
-		fflush(outfile);
-		
-		form_C();
-		//find_occupation(Fa_, Fb_);
-		form_D();
-		
-		converged = test_convergency();
-	} while (!converged && iter < maxiter_);
-	
+        Eold_ = E_;
+
+        if (use_out_of_core_ == false)
+            form_G_from_PK();
+        else
+            form_G();
+
+        form_F();
+
+        E_ = compute_E();
+        if(print_)
+            fprintf(outfile, "  @UHF iteration %3d energy: %20.14f    %20.14f %20.14f\n", iter, E_, E_ - Eold_, Drms_);
+        fflush(outfile);
+
+        form_C();
+        //find_occupation(Fa_, Fb_);
+        form_D();
+
+        converged = test_convergency();
+    } while (!converged && iter < maxiter_);
+
     // Return the final RHF energy
     if (converged) {
         if(print_ > 1)
-            fprintf(outfile, "\n  Energy converged.\n");
+        fprintf(outfile, "\n  Energy converged.\n");
         save_information();
-    }
-    else {
+    } else {
         fprintf(outfile, "\n  SCF Failed to converge.\n");
         E_ = 0.0;
     }
-    
+
     // Compute the final dipole.
     if(print_ > 2) compute_multipole();
-    
+
     return E_;
 }
 
@@ -686,9 +700,15 @@ void UHF::form_G_from_PK()
                 if (p != q) {
                     Da_vector[ij] = 2.0 * Da_->get(h, p, q);
                     Db_vector[ij] = 2.0 * Db_->get(h, p, q);
+                    // Add in the external potential, if requested
+                    if(Va_ != NULL) Da_vector[ij] += 2.0 * Va_[h][p][q];
+                    if(Vb_ != NULL) Db_vector[ij] += 2.0 * Vb_[h][p][q];
+
                 } else {
                     Da_vector[ij] = Da_->get(h, p, q);
                     Db_vector[ij] = Db_->get(h, p, q);
+                    if(Va_ != NULL) Da_vector[ij] += Va_[h][p][q];
+                    if(Vb_ != NULL) Db_vector[ij] += Vb_[h][p][q];
                 }
                 ij++;
             }
@@ -761,9 +781,6 @@ void UHF::form_G_from_PK()
     for (int h = 0; h < nirreps; ++h) {
         for (int p = 0; p < opi[h]; ++p) {
             for (int q = 0; q <= p; ++q) {
-                // Add in the external potential, if requested
-                if(Va_ != NULL) Ga_vector[ij] += Va_[h][p][q];
-                if(Vb_ != NULL) Gb_vector[ij] += Vb_[h][p][q];
                 Ga_->set(h, p, q, Ga_vector[ij]);
                 Ga_->set(h, q, p, Ga_vector[ij]);
                 Gb_->set(h, p, q, Gb_vector[ij]);

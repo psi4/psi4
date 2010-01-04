@@ -90,7 +90,7 @@ class IntegralTransform{
          * @param initialize         Whether to initialize during construction or not.  Useful if some
          *                           options need to be tweaked before initialization.
          */
-        IntegralTransform(const SpaceVec &spaces,
+        IntegralTransform(SpaceVec spaces,
                           TransformationType transformationType = Restricted,
                           OutputType outputType = DPDOnly,
                           MOOrdering moOrdering = QTOrder,
@@ -172,7 +172,7 @@ class IntegralTransform{
         // The type of transformation
         TransformationType _transformationType;
         // The unique MO spaces provided to this object's constructor
-        const SpaceVec& _uniqueSpaces;
+        SpaceVec _uniqueSpaces;
         // The ordering of the resulting integrals
         MOOrdering _moOrdering;
         // The format of the outputted integrals

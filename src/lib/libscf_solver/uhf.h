@@ -20,7 +20,6 @@ protected:
 
     double *p_jk_;
     double *p_k_;
-    double Drms_;
     
     // The alpha and beta external potentials
     double ***Va_;

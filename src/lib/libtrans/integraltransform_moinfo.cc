@@ -303,9 +303,9 @@ IntegralTransform::update_orbitals()
   if(_transformationType == SemiCanonical){
       throw FeatureNotImplemented("Libtrans", " update of semicanonical orbitals",
               __FILE__, __LINE__);
-      process_eigenvectors();
-      generate_oei();
   }
+  process_eigenvectors();
+  generate_oei();
 }
 
 
@@ -322,7 +322,7 @@ IntegralTransform::process_eigenvectors()
     // Read the eigenvectors from the checkpoint file
     if(_transformationType == Restricted){
         // Set up for a restricted transformation
-        _Ca = new double**[_nirreps];
+        if(_Ca == NULL) _Ca = new double**[_nirreps];
         for(int h = 0; h < _nirreps; ++h){
             _Ca[h] = _chkpt->rd_scf_irrep(h);
         }
@@ -330,15 +330,15 @@ IntegralTransform::process_eigenvectors()
     }else if(_transformationType == Unrestricted){
         // Set up for an unrestricted transformation
         // The semicanonical evecs are already in _Ca and _Cb if needed.
-        _Ca = new double**[_nirreps];
-        _Cb = new double**[_nirreps];
+        if(_Ca == NULL) _Ca = new double**[_nirreps];
+        if(_Cb == NULL) _Cb = new double**[_nirreps];
         for(int h = 0; h < _nirreps; ++h){
             _Ca[h] = _chkpt->rd_alpha_scf_irrep(h);
             _Cb[h] = _chkpt->rd_beta_scf_irrep(h);
         }
     }
 
-    if(_print > 5){
+    if(_print > 4){
         for(int h = 0; h < _nirreps; ++h){
             fprintf(outfile, "All alpha MO Coefficients for irrep %d\n",h);
             print_mat(_Ca[h], _sopi[h], _mopi[h], outfile);
