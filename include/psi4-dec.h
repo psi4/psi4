@@ -38,14 +38,14 @@ namespace psi {
   extern FILE *outfile;
   extern PSIO *psio;
   extern char *psi_file_prefix;
-  extern bool g_bVerbose;
+  extern bool verbose;
   extern std::map<std::string, PsiReturnType(*)(Options &, int argc, char *argv[])> dispatch_table;
   
   #ifndef NDEBUG
     #ifdef __GNUC__
-      #define WHEREAMI() if (g_bVerbose) { fprintf(stderr, "@:%s:%-6d\t-> %s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ ); }
+      #define WHEREAMI() if (verbose) { fprintf(stderr, "@:%s:%-6d\t-> %s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ ); }
     #else
-      #define WHEREAMI() if (g_bVerbose) { fprintf(stderr, "@:%s:%-6d\n", __FILE__, __LINE__); }
+      #define WHEREAMI() if (verbose) { fprintf(stderr, "@:%s:%-6d\n", __FILE__, __LINE__); }
     #endif
   #else
     #define WHEREAMI()
