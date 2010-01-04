@@ -88,7 +88,7 @@ EXT std::string g_szInputFile;
 EXT std::string g_szOutputFilename;
 
 /*! Verbosity */
-EXT bool g_bVerbose;
+EXT bool verbose;
 
 /*! sanity check boolean */
 EXT bool check_only;

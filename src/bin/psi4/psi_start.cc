@@ -28,7 +28,7 @@ void print_usage();
 ** \param argv       = command-line arguments
 **
 ** Returns: one of standard PSI error codes
-** \ingroup CIOMR
+** \ingroup PSI4
 */
 int psi_start(int argc, char *argv[])
 {
@@ -41,13 +41,12 @@ int psi_start(int argc, char *argv[])
   bool append         = false;
   check_only          = false;
   clean_only          = false;
-  g_bVerbose          = false;
+  verbose             = false;
 
   // A string listing of valid short option letters
-  const char* const short_options = "aIhvVcwo:p:i:";
+  const char* const short_options = "ahvVcwo:p:i:";
   const struct option long_options[] = {
     { "append",  0, NULL, 'a' },
-    { "irb",     0, NULL, 'I' },
     { "help",    0, NULL, 'h' },
     { "verbose", 0, NULL, 'v' },
     { "version", 0, NULL, 'V' },
@@ -86,7 +85,7 @@ int psi_start(int argc, char *argv[])
       break;
 
       case 'v': // -v or --verbose
-      g_bVerbose = true;
+      verbose = true;
       break;
 
       case 'V': // -V or --version
@@ -103,10 +102,6 @@ int psi_start(int argc, char *argv[])
       case 'w': // -w or --wipe
       clean_only = true;
       append = true; // to avoid deletion of an existing output file
-      break;
-
-      case 'I': // -I or --irb
-      g_bIRB = true;
       break;
 
       case -1: // done with options

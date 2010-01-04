@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 
     psi_start(argc, argv);
 
-    if(myid==0 && !clean_only) print_version(outfile);
+    if(Communicator::world->me() && !clean_only) print_version(outfile);
 
     psio_init();
     psio_ipv1_config();
