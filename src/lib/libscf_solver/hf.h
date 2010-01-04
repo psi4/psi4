@@ -31,7 +31,10 @@ protected:
     // Previous iteration's energy and current energy
     double Eold_;
     double E_;
-    
+
+    // The RMS error in the density
+    double Drms_;
+
     // Max number of iterations for HF
     int maxiter_;
     
@@ -109,6 +112,9 @@ public:
 
     // The number of iterations needed to reach convergence
     int iterations_needed() {return iterationsNeeded_;}
+
+    // The RMS error in the density
+    int rms_density_error() {return Drms_;}
 protected:
     // Common initializer
     void common_init();
