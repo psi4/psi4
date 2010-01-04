@@ -18,6 +18,7 @@ namespace psi {
   namespace transqt2 { PsiReturnType transqt2(Options &, int argc, char *argv[]); }
   namespace ccsort   { PsiReturnType ccsort(Options &, int argc, char *argv[]); }
   namespace ccenergy { PsiReturnType ccenergy(Options &, int argc, char *argv[]); }
+  namespace CCTRIPLES { PsiReturnType CCTRIPLES(Options &, int argc, char *argv[]); }
   namespace scf      { PsiReturnType scf(Options&, int, char**); }
 
   int read_options(std::string name, Options & options);
@@ -71,7 +72,7 @@ int psi3_simulator(Options & options, int argc, char *argv[]) {
   dispatch_table["TRANSQT2"]  = &(psi::transqt2::transqt2);
   dispatch_table["CCSORT"]    = &(psi::ccsort::ccsort);
   dispatch_table["CCENERGY"]  = &(psi::ccenergy::ccenergy);
-//  dispatch_table["CCTRIPLES"] = &(psi::CCTRIPLES::CCTRIPLES);
+  dispatch_table["CCTRIPLES"] = &(psi::CCTRIPLES::CCTRIPLES);
 
   /* the basic programs that were in psi3
   input      = "input"

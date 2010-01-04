@@ -802,7 +802,6 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/response/Makefile
           src/bin/cusp/Makefile
           src/bin/mcscf/Makefile
-          src/bin/psiclean/Makefile
           src/bin/transqt2/Makefile
           src/bin/mp2/Makefile
           src/bin/lmp2/Makefile
