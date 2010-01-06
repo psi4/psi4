@@ -281,7 +281,7 @@ public:
     /// Constructor, zeros everything out, sets name_
     SimpleMatrix(std::string name);
     /// Explicit copy reference constructor
-    explicit SimpleMatrix(const SimpleMatrix& copy);
+    SimpleMatrix(const SimpleMatrix& copy);
     /// Explicit copy pointer constructor
     explicit SimpleMatrix(const SimpleMatrix* copy);
     explicit SimpleMatrix(shared_ptr<SimpleMatrix> copy);
@@ -397,6 +397,11 @@ public:
     /// Saves the matrix in ASCII format to filename
     void save(std::string filename, bool append=true, bool saveLowerTriangle = true);
     
+    /// Retrieves the i'th row
+    double* operator[](int i) { return matrix_[i]; }
+    double& operator()(int i, int j) { return matrix_[i][j]; }
+    const double& operator()(int i, int j) const { return matrix_[i][j]; }
+
     friend class Matrix;
 };
 
