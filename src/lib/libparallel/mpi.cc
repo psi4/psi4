@@ -1,5 +1,5 @@
 #include "parallel.h"
-
+#include <cstring>
 using namespace psi;
 using namespace boost;
 
