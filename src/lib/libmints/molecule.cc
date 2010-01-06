@@ -10,6 +10,49 @@
 using namespace std;
 using namespace psi;
 
+#define ZERO_MOMENT_INERTIA 1.0E-10     /*Tolerance for degenerate rotational constants*/
+#define ZERO 1.0E-14
+
+namespace psi {
+    void if_to_invert_axis(const Vector3& v1, int& must_invert, int& should_invert, double& maxproj)
+    {
+        int xyz, nzero;
+        double vabs;
+
+        maxproj = 0.0;
+        must_invert = 0;
+        should_invert = 0;
+
+        nzero = 0;
+
+        for(xyz=0; xyz<3; xyz++) {
+
+            vabs = fabs(v1[xyz]);
+
+            if (vabs < ZERO)
+                nzero++;
+
+            if (vabs > fabs(maxproj)) {
+                maxproj = v1[xyz];
+            }
+
+        }
+
+        if (nzero == 2) {
+            if (maxproj < 0.0)
+                must_invert = 1;
+            else
+                must_invert = 0;
+        }
+        else if (nzero < 2) {
+            if (maxproj < 0.0)
+                should_invert = 1;
+            else
+                should_invert = 0;
+        }
+    }
+}
+
 Molecule::Molecule():
     natoms_(0), nirreps_(0)
 {
@@ -194,17 +237,246 @@ void Molecule::move_to_com()
     translate(com);
 }
 
+SimpleMatrix Molecule::geometry()
+{
+    SimpleMatrix geom(natom(), 3);
+    for (int i=0; i<natom(); ++i) {
+        geom[i][0] = x(i);
+        geom[i][1] = y(i);
+        geom[i][2] = z(i);
+    }
+
+    return geom;
+}
+
+void Molecule::set_geometry(SimpleMatrix& geom)
+{
+    for (int i=0; i<natom(); ++i) {
+        atoms_[i].x = geom[i][0];
+        atoms_[i].y = geom[i][1];
+        atoms_[i].z = geom[i][2];
+    }
+}
+
+void Molecule::rotate(SimpleMatrix& R)
+{
+    SimpleMatrix new_geom(natom(), 3);
+    SimpleMatrix geom = geometry();
+
+    // Multiple the geometry by the rotation matrix.
+    new_geom.gemm(false, false, 1.0, &geom, &R, 0.0);
+
+    set_geometry(new_geom);
+}
+
 void Molecule::reorient()
 {
+    // If no atoms are present throw
+    if (natom() <= 0) {
+        throw PSIEXCEPTION("Molecule::reorient called with no atoms.");
+    }
+
+    // Nothing for us to do.
+    if (natom() == 1)
+        return;
+
+    // Otherwise, do something.
     // Retrieve the inertia tensor.
     SimpleMatrix *itensor = inertia_tensor();
     SimpleMatrix itensor_axes(3, 3);
-    SimpleVecotr itensor_moments(3);
+    SimpleVector itensor_moments(3);
 
     // Diagonalize the tensor matrix
     itensor->diagonalize(&itensor_axes, &itensor_moments);
 
+    // Locate degeneracies
+    int degen=0, deg_IM1=0, deg_IM2=0;
+    int i, j;
+    double abs, rel;
+    for (i=0; i<2; ++i) {
+        for (j=i+1; j<3; ++j) {
+            abs = fabs(itensor_moments[i] - itensor_moments[j]);
+            double tmp = (itensor_moments[i] > itensor_moments[j]) ? itensor_moments[i] : itensor_moments[j];
+            if (abs > 1.0e-14)
+                rel = abs / tmp;
+            else
+                rel = 0.0;
+            if (rel < ZERO_MOMENT_INERTIA) {
+                degen++;
+                deg_IM1 = i;
+                deg_IM2 = j;
+            }
+        }
+    }
 
+    Vector3 v1(itensor_axes(0, 1), itensor_axes(1, 1), itensor_axes(2, 1));
+    Vector3 v2(itensor_axes(0, 2), itensor_axes(1, 2), itensor_axes(2, 2));
+    Vector3 v3 = v1.cross(v2);
+    itensor_axes(0, 0) = v3[0];
+    itensor_axes(1, 0) = v3[1];
+    itensor_axes(2, 0) = v3[2];
+
+    int nmust = 0, nshould = 0, must_invert[3], should_invert[3];
+    int axis;
+    double maxproj[3];
+    for (axis=0; axis<3; ++axis) {
+        v1[0] = itensor_axes(0, axis);
+        v1[1] = itensor_axes(1, axis);
+        v1[2] = itensor_axes(2, axis);
+
+        if_to_invert_axis(v1, must_invert[axis], should_invert[axis], maxproj[axis]);
+        nmust += must_invert[axis];
+        nshould += should_invert[axis];
+    }
+
+    SimpleMatrix R(3, 3);
+    if (nmust == 2) {
+        for (axis=0; axis<3; ++axis) {
+            if (must_invert[axis])
+                R[axis][axis] = -1.0;
+            else
+                R[axis][axis] = 1.0;
+        }
+    }
+    else if (nmust == 1 && nshould > 0) {
+        int axis1, axis2;
+        if (nshould == 2) {
+            for (axis=0; axis<3; ++axis) {
+                if (should_invert[axis]) {
+                    axis1 = axis;
+                    axis++;
+                    break;
+                }
+            }
+            for (; axis<3; ++axis) {
+                if (should_invert[axis]) {
+                    axis2 = axis;
+                    break;
+                }
+            }
+            if (fabs(maxproj[axis1]) > fabs(maxproj[axis2])) {
+                nshould = 1;
+                should_invert[axis2] = 0;
+            }
+            else {
+                nshould = 1;
+                should_invert[axis1] = 0;
+            }
+        }
+        for (axis=0; axis<3; ++axis) {
+            if (must_invert[axis])
+                R[axis][axis] = -1.0;
+            else if (should_invert[axis])
+                R[axis][axis] = -1.0;
+            else
+                R[axis][axis] = 1.0;
+        }
+    }
+    else if (nmust == 3) {
+        R[0][0] = -1.0;
+        R[1][1] = -1.0;
+        R[2][2] = 1.0;
+    }
+    else if (nmust == 0 && nshould > 1) {
+        if (nshould == 3) {
+            double tmp = fabs(maxproj[0]);
+            i=0;
+            for (axis=1; axis<3; ++axis) {
+                if (fabs(maxproj[axis]) < fabs(tmp)) {
+                    i = axis;
+                    tmp = fabs(maxproj[axis]);
+                }
+            }
+            should_invert[i] = 0;
+            nshould = 2;
+        }
+        for (axis=0; axis<3; ++axis) {
+            if (should_invert[axis])
+                R[axis][axis] = -1.0;
+            else
+                R[axis][axis] = 1.0;
+        }
+    }
+    else {
+        R[0][0] = 1.0;
+        R[1][1] = 1.0;
+        R[2][2] = 1.0;
+    }
+
+    if (degen == 0) {
+        rotate(itensor_axes);
+        rotate(R);
+    }
+
+    if (degen == 1) {
+        int must_invert, should_invert, unique_axis;
+        double maxproj, invert_pfac;
+
+        if (deg_IM1 + deg_IM2 == 3)
+            unique_axis = 0;
+        else
+            unique_axis = 2;
+
+        v1[0] = itensor_axes[0][unique_axis];
+        v1[1] = itensor_axes[1][unique_axis];
+        v1[2] = itensor_axes[2][unique_axis];
+
+        if_to_invert_axis(v1, must_invert, should_invert, maxproj);
+        if (must_invert || should_invert)
+            invert_pfac = 1.0;
+        else
+            invert_pfac = -1.0;
+
+        v1 *= invert_pfac;
+
+        double cos_theta = v1[2];
+        double theta, sin_theta, v2norm, cos_phix, cos_phiy, phix;
+        double sin_phix;
+        if ( (1.0 - fabs(cos_theta)) > ZERO_MOMENT_INERTIA) {
+            theta = acos(cos_theta);
+            sin_theta = sin(theta);
+
+            v3[0] = 0.0; v3[1] = 0.0; v3[2] = 1.0;
+            v2 = v1.cross(v3);
+            v2.normalize();
+
+            cos_phix = v2[0];
+            cos_phiy = v2[1];
+            phix = acos(cos_phix);
+
+            if (cos_phiy > 0.0) {
+                phix *= -1.0;
+            }
+            sin_phix = sin(phix);
+
+            R.zero();
+            R[2][2] = 1.0;
+            R[0][0] = cos_phix;
+            R[1][1] = cos_phix;
+            R[0][1] = sin_phix;
+            R[1][0] = -sin_phix;
+            rotate(R);
+
+            R.zero();
+            R[0][0] = 1.0;
+            R[1][1] = cos_theta;
+            R[2][2] = cos_theta;
+            R[1][2] = sin_theta;
+            R[2][1] = -sin_theta;
+            rotate(R);
+
+            R.zero();
+            R[2][2] = 1.0;
+            R[0][0] = cos_phix;
+            R[1][1] = cos_phix;
+            R[0][1] = -sin_phix;
+            R[1][0] = sin_phix;
+            rotate(R);
+        }
+    }
+
+    // Delete the tensor matrix
+    delete itensor;
 }
 
 void Molecule::init_with_chkpt(shared_ptr<PSIO> psio)

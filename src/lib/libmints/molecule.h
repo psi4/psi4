@@ -83,6 +83,10 @@ public:
     /// Tests to see of an atom is at the passed position with a given tolerance
     int atom_at_position(double *, double tol = 0.05) const;
 
+    SimpleMatrix geometry();
+    void set_geometry(SimpleMatrix& geom);
+    void rotate(SimpleMatrix& R);
+
     /// Computes center of mass of molecule (does not translate molecule)
     Vector3 center_of_mass() const;
     /// Computes nuclear repulsion energy
