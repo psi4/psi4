@@ -101,6 +101,11 @@ public:
     void translate(const Vector3& r);
     /// Moves molecule to center of mass
     void move_to_com();
+    /** Reorient molecule to standard frame. See input/reorient.cc
+     *  If you want the molecule to be reoriented about the center of mass
+     *  make sure you call move_to_com() prior to calling reorient()
+     */
+    void reorient();
 
     /// Compute inertia tensor.
     SimpleMatrix* inertia_tensor();

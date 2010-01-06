@@ -194,6 +194,19 @@ void Molecule::move_to_com()
     translate(com);
 }
 
+void Molecule::reorient()
+{
+    // Retrieve the inertia tensor.
+    SimpleMatrix *itensor = inertia_tensor();
+    SimpleMatrix itensor_axes(3, 3);
+    SimpleVecotr itensor_moments(3);
+
+    // Diagonalize the tensor matrix
+    itensor->diagonalize(&itensor_axes, &itensor_moments);
+
+
+}
+
 void Molecule::init_with_chkpt(shared_ptr<PSIO> psio)
 {
     // User sent a psio object. Create a chkpt object based on it.
