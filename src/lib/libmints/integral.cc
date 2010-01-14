@@ -7,7 +7,6 @@
 #include <libmints/integral.h>
 #include <libmints/dipole.h>
 #include <libmints/quadrupole.h>
-#include <libmints/symmetry.h>
 #include <libmints/eri.h>
 
 using namespace psi;
