@@ -1,5 +1,6 @@
 // Include Python's header file.
 // Use "python-config --includes" to determine this location.
+#include <cstdio>
 #include <Python.h>
 #include <psiconfig.h>
 #include "script.h"
@@ -7,7 +8,10 @@
 using namespace psi;
 using namespace boost;
 
-extern void psiclean();
+namespace psi {
+    extern void psiclean(void);
+    extern FILE *outfile;
+}
 
 static PyObject *
 py_psi_version(PyObject *self, PyObject *args)
@@ -25,7 +29,7 @@ py_psi_input(PyObject *self, PyObject *args)
 static PyObject *
 py_psi_clean(PyObject *self, PyObject *args)
 {
-//    psiclean();
+    psiclean();
     return Py_BuildValue("i", 0);
 }
 
