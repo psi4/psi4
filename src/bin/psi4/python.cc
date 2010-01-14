@@ -2,7 +2,6 @@
 // Use "python-config --includes" to determine this location.
 #include <cstdio>
 #include <boost/python.hpp>
-//#include <Python.h>
 #include <psiconfig.h>
 #include <sstream>
 #include "script.h"
@@ -159,11 +158,19 @@ void Python::run(FILE *input)
         Py_SetProgramName(s);
         #endif
         
+	// Track down the location of PSI4's python script directory.
+	std::string psiDataDirName;
+	if (getenv("PSIDATADIR"))
+	    psiDataDirName = getenv("PSIDATADIR");
+	if (psiDataDirName.empty())
+	    psiDataDirName = INSTALLEDPSIDATADIR;
+	psiDataDirName += "/python";
+
         // Add PSI library python path
         PyObject *path, *sysmod, *str;
         sysmod = PyImport_ImportModule("sys");
         path = PyObject_GetAttrString(sysmod, "path");
-        str = PyString_FromString("/Users/jturney/Code/psi4/source/lib/python");
+        str = PyString_FromString(psiDataDirName.c_str());
         PyList_Append(path, str);
         Py_DECREF(str);
         Py_DECREF(path);

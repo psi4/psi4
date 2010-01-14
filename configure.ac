@@ -306,8 +306,8 @@ AC_PYTHON([2.6])
 
 # Okay I added some Boost checks -Jet
 # 1.41 is the latest version of boost as of Dec 20, 2009
-BOOST_REQUIRE([1.41])
-BOOST_FIND_HEADER([boost/python.hpp])
+#BOOST_REQUIRE([1.41])
+#BOOST_FIND_HEADER([boost/python.hpp])
 #BOOST_FIND_LIB([python],[],[boost/python.hpp],[],[])
 
 AC_PROG_LATEX
@@ -802,7 +802,7 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libscf_solver/Makefile
           src/lib/libtrans/Makefile
           src/lib/libparallel/Makefile
-          src/lib/libscript/Makefile
+          src/lib/libboost_python/Makefile
  
           src/util/tocprint/Makefile
           src/util/psiclean/Makefile
