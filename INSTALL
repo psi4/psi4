@@ -31,6 +31,7 @@ I. Compilation Prerequisites:
    * Optimized LAPACK library (see recommendations below)
    * POSIX threads (Pthreads) library (optional)
    * Perl interpreter (5.005 or higher; needed for running test cases)
+   * Python interpreter (2.6 or higher; needed for input files)
    * GNU utilities: (see http://www.gnu.org)
       ** make
       ** flex
