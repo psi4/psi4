@@ -2,6 +2,7 @@
 #define _psi_src_lib_libmints__vector3_h
 
 #include <cmath>
+#include <sstream>
 
 namespace psi {
     
@@ -83,6 +84,12 @@ public:
     double norm() const { return sqrt(this->dot(*this)); }
     
     Vector3 cross(const Vector3&) const;
+
+    std::string to_string() { 
+        std::stringstream s;
+        s << "[ " << v_[0] << ", " << v_[1] << ", " << v_[2] << " ]";
+        return s.str();
+    }
 };
 
 Vector3 operator*(double, const Vector3&);
