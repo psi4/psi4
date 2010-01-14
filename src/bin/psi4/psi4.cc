@@ -13,6 +13,7 @@
 #include <libciomr/libciomr.h>
 #include <liboptions/liboptions.h>
 #include <libparallel/parallel.h>
+#include <libscript/script.h>
 #include <physconst.h>
 
 #include <molecular_system.h>
@@ -34,7 +35,6 @@ namespace psi {
 
     int read_options(const std::string &name, Options & options);
     void read_atom_basis(char ** & atom_basis, int num_atoms);
-
     PSIO *psio = NULL;
     std::map<std::string, PsiReturnType(*)(Options &, int, char *[])> dispatch_table;
     Options options;
@@ -85,6 +85,7 @@ int main(int argc, char *argv[])
 
     // Shut things down:
     psi_stop(infile, outfile, psi_file_prefix);
+
     Script::language->finalize();
     MPI_Finalize();
 
