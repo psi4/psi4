@@ -522,8 +522,13 @@ void Molecule::init_with_chkpt(shared_ptr<Chkpt> chkpt)
 
 void Molecule::save_to_chkpt(shared_ptr<Chkpt> chkpt, std::string prefix)
 {
+    // Save the current prefix
+    string pre = chkpt->get_prefix();
     // If needed switch the prefix in the chkpt file.
-    if (prefix.
+    if (!prefix.empty()) {
+        chkpt->set_prefix(prefix.c_str());
+    }
+
     // Need to save natom, zvals, geom
     chkpt->wt_natom(natom());
 
@@ -538,6 +543,11 @@ void Molecule::save_to_chkpt(shared_ptr<Chkpt> chkpt, std::string prefix)
     chkpt->wt_zvals(zvals);
     // This is probably not the only place it needs to be saved to
     chkpt->wt_geom(geom);
+
+    // Reset the prefix
+    if (!prefix.empty()) {
+        chkpt->set_prefix(pre.c_str());
+    }
 
     delete[]zvals;
     free_block(geom);

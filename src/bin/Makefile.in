@@ -1,9 +1,6 @@
 
 .PHONY:	default all install depend clean dclean targetclean
 
-# Needed in order for $(RUBYLINK) to work below
-include MakeVars
-
 subdirs = \
 transqt2 cscf input3 cints ccenergy cctriples ccsort scf lmp2 mp2 optking psi4
 
