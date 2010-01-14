@@ -34,8 +34,6 @@ public:
     };
 
 protected:
-    /// Number of atoms.
-    int natoms_;
     /// Atom info vector
     std::vector<atom_info> atoms_;
     /// Symmetry information about the molecule
@@ -45,7 +43,12 @@ protected:
 
 public:
     Molecule();
+    /// Copy constructor.
+    Molecule(const Molecule& other);
     virtual ~Molecule();
+
+    /// Assignment operator.
+    Molecule& operator=(const Molecule& other);
 
     /// Pull information from a chkpt object created from psio
     void init_with_psio(shared_ptr<PSIO> psio);
@@ -58,7 +61,7 @@ public:
                   int have_charge = 0, double charge = 0.0);
 
     /// Number of atoms
-    int natom() const { return natoms_; }
+    int natom() const { return atoms_.size(); }
     /// Nuclear charge of atom
     int Z(int atom) const { return atoms_[atom].Z; }
     // x position of atom
@@ -123,7 +126,7 @@ public:
     void print();
 
     /// Save information to checkpoint file.
-    void save_to_chkpt(boost::shared_ptr<Chkpt> chkpt);
+    void save_to_chkpt(boost::shared_ptr<Chkpt> chkpt, std::string prefix = "");
 };
 
 }

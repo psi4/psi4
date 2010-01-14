@@ -16,6 +16,7 @@ using std::string;
 
 namespace psi {
 
+/* Throw an InputException instead of this.
 class bad_masses_io {
   std::string keyword;
   int row;
@@ -26,7 +27,9 @@ public:
      " entry row " << row << std::endl;
   }
 };
+*/
 
+/* Use the Molecule class in libmints instead
 class Fragment {
   friend class Molecular_system;
   int natoms;         // number of atoms in fragment
@@ -61,5 +64,6 @@ class Fragment {
   void print(void) const ;
   };
 }
+*/
 
 #endif

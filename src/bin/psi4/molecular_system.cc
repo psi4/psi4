@@ -2,21 +2,8 @@
 
 namespace psi {
 
-int Molecular_system::get_natoms(void) const {
-  int i, num=0;
-  for (i=0; i<fragment.size(); ++i)
-    num += fragment.at(i).get_natoms();
-  return num;
-}
-
-// copy constructor
-Molecular_system::Molecular_system(const Molecular_system & sys) {
-  fragment = sys.fragment;
-  charge = sys.charge;
-}
-
 // default constructor: get molecule from input file
-Molecular_system::Molecular_system(double conv_factor) {
+MolecularSystem::MolecularSystem(double conv_factor) {
   int nfragments = 1, i, errcod = 0;
   string geom_label;
 
@@ -51,7 +38,20 @@ Molecular_system::Molecular_system(double conv_factor) {
   }
 }
 
-double **Molecular_system::get_geom(void) const {
+// copy constructor
+MolecularSystem::MolecularSystem(const MolecularSystem & sys) {
+  fragment = sys.fragment;
+  charge = sys.charge;
+}
+
+int MolecularSystem::natom(void) const {
+  int i, num=0;
+  for (i=0; i<fragment.size(); ++i)
+    num += fragment.at(i).get_natoms();
+  return num;
+}
+
+double **MolecularSystem::get_geom(void) const {
   int j,xyz,cnt=0;
   double **lgeom = block_matrix(get_natoms(),3);
   vector<Fragment>::const_iterator it;
@@ -67,7 +67,7 @@ double **Molecular_system::get_geom(void) const {
   return lgeom;
 }
 
-double *Molecular_system::get_Z(void) const {
+double *MolecularSystem::get_Z(void) const {
   int f, j, cnt=0;
   double *lZ = new double [get_natoms()];
   vector<Fragment>::const_iterator it;
@@ -79,7 +79,7 @@ double *Molecular_system::get_Z(void) const {
   return lZ;
 }
 
-string *Molecular_system::get_atom_label(void) const {
+string *MolecularSystem::get_atom_label(void) const {
   int j,cnt=0;
   string *latom_label = new string [get_natoms()];
   vector<Fragment>::const_iterator it;
@@ -91,7 +91,7 @@ string *Molecular_system::get_atom_label(void) const {
   return latom_label;
 }
 
-void Molecular_system::print(void) const {
+void MolecularSystem::print(void) const {
   int j,xyz,i=0;
 
   vector<Fragment>::const_iterator it;
