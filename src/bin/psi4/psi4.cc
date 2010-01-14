@@ -13,7 +13,6 @@
 #include <libciomr/libciomr.h>
 #include <liboptions/liboptions.h>
 #include <libparallel/parallel.h>
-#include <libscript/script.h>
 #include <physconst.h>
 
 #include <molecular_system.h>
@@ -21,6 +20,7 @@
 #include <psi4-def.h>
 #define MAIN
 #include "psi4.h"
+#include "script.h"
 
 
 namespace psi { 
