@@ -30,6 +30,7 @@
 
 #include <cmath>
 
+#include <libciomr/libciomr.h>
 #include <libmints/pointgrp.h>
 
 using namespace std;
@@ -134,23 +135,11 @@ SymmetryOperation::transpose()
   }
 }
 
-// void
-// SymmetryOperation::print(ostream& os) const
-// {
-//   os << indent << "        1          2          3\n"
-//      << indent << "  1  "
-//      << scprintf("%10.7f ", d[0][0])
-//      << scprintf("%10.7f ", d[0][1])
-//      << scprintf("%10.7f ", d[0][2]) << endl
-//      << indent << "  2  "
-//      << scprintf("%10.7f ", d[1][0])
-//      << scprintf("%10.7f ", d[1][1])
-//      << scprintf("%10.7f ", d[1][2]) << endl
-//      << indent << "  3  "
-//      << scprintf("%10.7f ", d[2][0])
-//      << scprintf("%10.7f ", d[2][1])
-//      << scprintf("%10.7f ", d[2][2]) << endl << endl;
-// }
+void
+SymmetryOperation::print(FILE *out)
+{
+    print_mat((double**)d, 3, 3, out);
+}
 
 /////////////////////////////////////////////////////////////////////////////
 

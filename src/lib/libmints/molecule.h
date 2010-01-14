@@ -9,6 +9,7 @@
 #include <libmints/vector3.h>
 #include <libmints/vector.h>
 #include <libmints/matrix.h>
+#include <libmints/pointgrp.h>
 
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>
@@ -150,6 +151,11 @@ public:
     bool is_plane(Vector3& origin, Vector3& uperp, double tol = 0.05) const;
     /// Is an axis?
     bool is_axis(Vector3& origin, Vector3& axis, int order, double tol=0.05) const;
+
+    void is_linear_planar(bool& linear, bool& planar, double tol) const;
+
+    /// Find highest molecular point group
+    boost::shared_ptr<PointGroup> find_point_group(double tol=1.0e-8) const;
 };
 
 }

@@ -136,7 +136,7 @@ class SymmetryOperation {
     void transpose();
 
     /// print the matrix 
-    // void print(std::ostream& =ExEnv::out0()) const;
+    void print(FILE *out);
 };
 
 // //////////////////////////////////////////////////////////////////
