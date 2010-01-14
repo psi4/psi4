@@ -397,7 +397,7 @@ AC_DEFUN([BOOST_FIND_HEADER],
 [AC_REQUIRE([BOOST_REQUIRE])dnl
 AC_LANG_PUSH([C++])dnl
 boost_save_CPPFLAGS=$CPPFLAGS
-CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS $PYTHON_INCLUDE"
 AC_CHECK_HEADER([$1],
   [m4_default([$3], [AC_DEFINE(AS_TR_CPP([HAVE_$1]), [1],
                                [Define to 1 if you have <$1>])])],
