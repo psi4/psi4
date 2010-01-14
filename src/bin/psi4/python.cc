@@ -43,48 +43,6 @@ BOOST_PYTHON_MODULE(psi)
     def("input",py_psi_input);
 }
 
-//static PyObject *
-//py_psi_version(PyObject *self, PyObject *args)
-//{
-//    return Py_BuildValue("s", PSI_VERSION);
-//}
-//
-//static PyObject *
-//py_psi_input(PyObject *self, PyObject *args)
-//{
-////    int result = input::input(options, 0, NULL);
-//    return Py_BuildValue("i", 0);
-//}
-//
-//static PyObject *
-//py_psi_clean(PyObject *self, PyObject *args)
-//{
-//    psiclean();
-//    return Py_BuildValue("i", 0);
-//}
-//
-//static PyMethodDef PsiMethods[] = {
-//    { "version", py_psi_version, METH_NOARGS, "Obtain version information from PSI."},
-//    { "input",   py_psi_input,   METH_NOARGS, "Run the input module."},
-//    { "clean",   py_psi_clean,   METH_NOARGS, "Run the psiclean module."},
-//    { NULL, NULL, 0, NULL } /* Sentinel */
-//};
-//
-//static struct PyModuleDef PsiModule = {
-//    PyModuleDef_HEAD_INIT,
-//    "psi",   /* name of the module */
-//    NULL,    /* something with documentation */
-//    -1,      /* size of the per-interpreter state of the module,
-//                or -1 if the module keeps state in global variables. */
-//    PsiMethods
-//};
-//
-//PyMODINIT_FUNC
-//PyInit_psi()
-//{
-//    return PyModule_Create(&PsiModule);
-//}
-
 Python::Python() : Script()
 {
     
