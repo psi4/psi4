@@ -9,13 +9,15 @@
 #include <libmints/vector3.h>
 #include <libmints/vector.h>
 #include <libmints/matrix.h>
-#include <libmints/pointgrp.h>
+//#include <libmints/pointgrp.h>
 
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>
 
 
 namespace psi {
+
+class PointGroup;
 
 extern FILE *outfile;
 
@@ -97,8 +99,8 @@ public:
     double charge(int atom) const { return atoms_[atom].charge; }
 
     /// Tests to see of an atom is at the passed position with a given tolerance
-    int atom_at_position(double *, double tol = 0.05) const;
-    int atom_at_position(Vector3&, double tol = 0.05) const;
+    int atom_at_position1(double *, double tol = 0.05) const;
+    int atom_at_position2(Vector3&, double tol = 0.05) const;
 
     SimpleMatrix geometry();
     void set_geometry(SimpleMatrix& geom);

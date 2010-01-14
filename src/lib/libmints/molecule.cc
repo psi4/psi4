@@ -127,7 +127,7 @@ const std::string Molecule::label(int atom) const
     return atoms_[atom].label;
 }
 
-int Molecule::atom_at_position(double *xyz, double tol) const
+int Molecule::atom_at_position1(double *xyz, double tol) const
 {
     Vector3 b(xyz);
     for (int i=0; i < natom(); ++i) {
@@ -138,7 +138,7 @@ int Molecule::atom_at_position(double *xyz, double tol) const
     return -1;
 }
 
-int Molecule::atom_at_position(Vector3& b, double tol) const
+int Molecule::atom_at_position2(Vector3& b, double tol) const
 {
     for (int i=0; i < natom(); ++i) {
         Vector3 a(atoms_[i].x, atoms_[i].y, atoms_[i].z);
@@ -662,7 +662,7 @@ bool Molecule::has_inversion(Vector3& origin, double tol) const
 {
     for (int i=0; i<natom(); ++i) {
         Vector3 inverted = origin-(xyz(i) - origin);
-        int atom = atom_at_position(inverted, tol);
+        int atom = atom_at_position2(inverted, tol);
         if (atom < 0 || Z(atom) != Z(i)) {
             return false;
         }
@@ -677,7 +677,7 @@ bool Molecule::is_plane(Vector3& origin, Vector3& uperp, double tol) const
         Vector3 Apar = uperp.dot(A)*origin;
         Vector3 Aperp = A - Apar;
         A = (Aperp- Apar) + origin;
-        int atom = atom_at_position(A, tol);
+        int atom = atom_at_position2(A, tol);
         if (atom < 0 || Z(atom) != Z(i)) {
             return false;
         }
@@ -693,7 +693,7 @@ bool Molecule::is_axis(Vector3& origin, Vector3& axis, int order, double tol) co
             Vector3 R = A;
             R.rotate(j*2.0*M_PI/order, axis);
             R += origin;
-            int atom = atom_at_position(R, tol);
+            int atom = atom_at_position2(R, tol);
             if (atom < 0 || Z(atom) != Z(i)) {
                 return false;
             }
