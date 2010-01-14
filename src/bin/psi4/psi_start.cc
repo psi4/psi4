@@ -42,9 +42,10 @@ int psi_start(int argc, char *argv[])
   check_only          = false;
   clean_only          = false;
   verbose             = false;
+  script              = false;
 
   // A string listing of valid short option letters
-  const char* const short_options = "ahvVcwo:p:i:";
+  const char* const short_options = "ahvVcwo:p:i:s";
   const struct option long_options[] = {
     { "append",  0, NULL, 'a' },
     { "help",    0, NULL, 'h' },
@@ -55,6 +56,7 @@ int psi_start(int argc, char *argv[])
     { "output",  1, NULL, 'o' },
     { "prefix",  1, NULL, 'p' },
     { "input",   1, NULL, 'i' },
+    { "script",  0, NULL, 's' },
     { NULL,      0, NULL,  0  }
   };
 
@@ -97,6 +99,10 @@ int psi_start(int argc, char *argv[])
       check_only = true;
       outfile = stdout;
       append = true;
+      break;
+
+      case 's': // -s or --script
+      script = true;
       break;
 
       case 'w': // -w or --wipe
@@ -152,7 +158,9 @@ int psi_start(int argc, char *argv[])
 
   /* initialize libipv1 */
   ip_set_uppercase(1);
-  // ip_initialize(infile, outfile);
+  // initialize ipv1 only if we're not using a script
+  if (!script)
+    ip_initialize(infile, outfile);
   ip_cwk_clear();
 
   /* open user's PSI configuration file (default, $HOME/.psirc) */
@@ -210,6 +218,7 @@ void print_usage(void)
   printf(" -i  --input filename     Input file name. Default: input.dat\n");
   printf(" -p  --prefix prefix      Prefix name for psi files. Default: psi\n");
   printf(" -a  --append             Append results to output file. Default: Truncate first\n");
+  printf(" -s  --script             Assume input file is a Python script to execute\n");
 
   exit(EXIT_FAILURE);
 }

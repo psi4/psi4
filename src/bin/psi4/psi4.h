@@ -29,6 +29,9 @@ EXT bool check_only;
 /* clean-up */
 EXT bool clean_only;
 
+/* Run python script? */
+EXT bool script;
+
 }
   
 #endif

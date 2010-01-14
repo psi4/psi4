@@ -150,8 +150,7 @@ char *init_char_array(int B);
 char **init_char_matrix(int A, int B);
 void free_char_matrix(char** mat, int A);
 
-//void start_io(int argc, char *argv[]);
-void start_io();
+void start_io(int argc, char *argv[]);
 void stop_io();
 
 void init_oldcalc();
