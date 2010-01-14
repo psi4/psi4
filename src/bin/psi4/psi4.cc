@@ -83,9 +83,12 @@ int main(int argc, char *argv[])
     // psi4_driver(options, argc, argv);
     Script::language->run(infile);
 
+    // Okay, we might only need to make this function call if we're using IPV1
+    // psi4_driver(options, argc, argv);
+    Script::language->run(infile);
+
     // Shut things down:
     psi_stop(infile, outfile, psi_file_prefix);
-
     Script::language->finalize();
     MPI_Finalize();
 
