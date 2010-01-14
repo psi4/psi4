@@ -6,15 +6,32 @@
 using namespace psi;
 using namespace boost;
 
+extern void psiclean();
+
 static PyObject *
 py_psi_version(PyObject *self, PyObject *args)
 {
     return Py_BuildValue("i", 400);
 }
 
+static PyObject *
+py_psi_input(PyObject *self, PyObject *args)
+{
+//    int result = input::input(options, 0, NULL);
+    return Py_BuildValue("i", 0);
+}
+
+static PyObject *
+py_psi_clean(PyObject *self, PyObject *args)
+{
+    psiclean();
+    return Py_BuildValue("i", 0);
+}
+
 static PyMethodDef PsiMethods[] = {
-    { "version", py_psi_version, 0,
-      "Obtain version information from PSI."},
+    { "version", py_psi_version, METH_NOARGS, "Obtain version information from PSI."},
+    { "input",   py_psi_input,   METH_NOARGS, "Run the input module."},
+    { "clean",   py_psi_clean,   METH_NOARGS, "Run the psiclean module."},
     { NULL, NULL, 0, NULL } /* Sentinel */
 };
 
@@ -54,4 +71,19 @@ void Python::initialize()
 void Python::finalize()
 {
     Py_Finalize();
+}
+
+void Python::run(FILE *input)
+{
+    if (input == NULL)
+        return;
+    if (!Py_IsInitialized()) {
+        initialize();
+    }
+    if (Py_IsInitialized()) {
+        PyRun_AnyFile(input, "User Input File");
+    } else {
+        fprintf(stderr, "Unable to run Python input file.\n");
+        return;
+    }
 }

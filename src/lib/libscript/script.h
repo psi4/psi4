@@ -23,6 +23,9 @@ namespace psi {
          * that may have been allocated by the scripting language.
          */
         virtual void finalize() = 0;
+
+        /** Run the input file script */
+        virtual void run(FILE *input) = 0;
         
         static boost::shared_ptr<Script> language;
     };
@@ -34,6 +37,7 @@ namespace psi {
         
         virtual void initialize();
         virtual void finalize();
+        virtual void run(FILE *input);
     };
 }
 

@@ -152,7 +152,7 @@ int psi_start(int argc, char *argv[])
 
   /* initialize libipv1 */
   ip_set_uppercase(1);
-  ip_initialize(infile, outfile);
+  // ip_initialize(infile, outfile);
   ip_cwk_clear();
 
   /* open user's PSI configuration file (default, $HOME/.psirc) */
