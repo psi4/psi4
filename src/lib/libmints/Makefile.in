@@ -10,7 +10,7 @@ TRUECXXSRC = basisset.cc dipole.cc eri.cc gshell.cc integral.cc kinetic.cc \
              molecule.cc onebody.cc osrecur.cc overlap.cc potential.cc quadrupole.cc \
              sobasis.cc transform.cc twobody.cc factory.cc matrix.cc \
              vector.cc wavefunction.cc \
-             chartab.cc corrtab.cc ico.cc maketab.cc pointgrp.cc rep.cc symop.cc tetra.cc
+             irrep.cc chartab.cc corrtab.cc ico.cc maketab.cc pointgrp.cc rep.cc symop.cc tetra.cc
 
 DEPENDINCLUDE = basisset.h dipole.h eri.h gshell.h integral.h kinetic.h molecule.h \
                 onebody.h osrecur.h overlap.h potential.h quadrupole.h sobasis.h \

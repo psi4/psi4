@@ -49,12 +49,12 @@
 
 #include <stdlib.h>
 
-#include <util/misc/newstring.h>
-#include <math/symmetry/pointgrp.h>
-#include <util/misc/formio.h>
+//#include <util/misc/newstring.h>
+#include <libmints/pointgrp.h>
+//#include <util/misc/formio.h>
 
 using namespace std;
-using namespace sc;
+using namespace psi;
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -107,10 +107,10 @@ IrreducibleRepresentation::init(int order, int d, const char *lab,
   ntrans_=nrot_=complex_=0;
 
   delete[] symb;
-  symb = new_string(lab);
+  symb = strdup(lab);
 
   delete[] csymb;
-  if (clab) csymb = new_string(clab);
+  if (clab) csymb = strdup(clab);
   else csymb = 0;
 
   if (rep) {
@@ -125,27 +125,27 @@ IrreducibleRepresentation::init(int order, int d, const char *lab,
   }
 }
 
-void
-IrreducibleRepresentation::print(ostream& os) const
-{
-  if (!g)
-    return;
-
-  int i,d;
-  
-  os << indent << scprintf("%-5s",symb);
-
-  for (i=0; i < g; i++)
-    os << scprintf(" %6.3f",character(i));
-  os << " | " << ntrans_ << " t, " << nrot_ << " R\n";
-
-  for (d=0; d < nproj(); d++) {
-    os << indent << "     ";
-    for (i=0; i < g; i++)
-      os << scprintf(" %6.3f",p(d,i));
-    os << endl;
-  }
-}
+//void
+//IrreducibleRepresentation::print(ostream& os) const
+//{
+//  if (!g)
+//    return;
+//
+//  int i,d;
+//  
+//  os << indent << scprintf("%-5s",symb);
+//
+//  for (i=0; i < g; i++)
+//    os << scprintf(" %6.3f",character(i));
+//  os << " | " << ntrans_ << " t, " << nrot_ << " R\n";
+//
+//  for (d=0; d < nproj(); d++) {
+//    os << indent << "     ";
+//    for (i=0; i < g; i++)
+//      os << scprintf(" %6.3f",p(d,i));
+//    os << endl;
+//  }
+//}
 
 /////////////////////////////////////////////////////////////////////////////
 

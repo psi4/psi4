@@ -118,7 +118,7 @@ BOOST_PYTHON_MODULE(PsiMod)
         def("mass", &Molecule::mass).
         def("label", &Molecule::label).
         def("charge", &Molecule::charge).
-        def("atomAtPosition", &Molecule::atom_at_position).
+        def("atomAtPosition", &Molecule::atom_at_position1).
         def("printToOutput", &Molecule::print).
         def("nuclearRepulsionEnergy", &Molecule::nuclear_repulsion_energy).
         def("reorient", &Molecule::reorient);
