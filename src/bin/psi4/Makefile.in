@@ -5,14 +5,14 @@ include ../MakeVars
 PSITARGET = $(top_objdir)/bin/$(shell basename `pwd`)
 MODULE = false
 
-LDLIBS += $(LAPACK) $(BLAS) -lpthread
+LDLIBS += $(LAPACK) $(BLAS) $(PYTHON_LDFLAGS) -lpthread
 CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"
 
 PSILIBS = \
 -lPSI_scf -lPSI_ccenergy -lPSI_ccsort -lPSI_input3 -lPSI_cscf -lPSI_cints -lPSI_transqt2 -lPSI_cctriples \
 -lPSI_mp2 -lPSI_lmp2 -lPSI_optking -lPSI_scf_solver \
 -lPSI_mints -lPSI_dpd -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_qt -lPSI_ciomr -lPSI_ipv1 -lPSI_options \
--lPSI_deriv -lPSI_int -lPSI_util -lPSI_parallel
+-lPSI_deriv -lPSI_int -lPSI_util -lPSI_parallel -lPSI_script
 
 CXXSRC = read_atom_basis.cc fragment.cc  \
 molecular_system.cc  read_atom_basis.cc set_memory.cc \

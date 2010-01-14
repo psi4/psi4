@@ -1,6 +1,8 @@
 #ifndef _psi_src_lib_libscript_script_h_
 #define _psi_src_lib_libscript_script_h_
 
+#include <boost/shared_ptr.hpp>
+
 namespace psi {
     
     /* 
@@ -21,6 +23,8 @@ namespace psi {
          * that may have been allocated by the scripting language.
          */
         virtual void finalize() = 0;
+        
+        static boost::shared_ptr<Script> language;
     };
 
     class Python : public Script {
