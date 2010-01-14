@@ -20,7 +20,7 @@ AC_SUBST(PSI_BUILDID)
 AC_SUBST(PSI_BUGREPORT)
 
 AC_DEFINE(PSI_VERSION,"psi_version")
-AC_DEFINE(PSI_BUILDID,"psi_buildid)
+AC_DEFINE(PSI_BUILDID,"psi_buildid")
 AC_DEFINE(PSI_BUGREPORT,"psi_bugreport")
 
 AC_CONFIG_AUX_DIR(bin)
@@ -802,7 +802,6 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libscf_solver/Makefile
           src/lib/libtrans/Makefile
           src/lib/libparallel/Makefile
-          src/lib/libscript/Makefile
  
           src/util/tocprint/Makefile
           src/util/psiclean/Makefile
