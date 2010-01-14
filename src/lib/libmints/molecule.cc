@@ -107,7 +107,9 @@ void Molecule::add_atom(int Z, double x, double y, double z,
         info.label = "Gh";
     info.mass = mass;
 
-    atoms_.push_back(info);
+    if (Z > 0)
+        atoms_.push_back(info);
+    full_atoms_.push_back(info);
 }
 
 double Molecule::mass(int atom) const
@@ -531,27 +533,38 @@ void Molecule::save_to_chkpt(shared_ptr<Chkpt> chkpt, std::string prefix)
 
     // Need to save natom, zvals, geom
     chkpt->wt_natom(natom());
-    chkpt->wt_nallatom(natom());
+    chkpt->wt_nallatom(nallatom());
 
     double *zvals = new double[natom()];
     double **geom = block_matrix(natom(), 3);
+    double **fgeom = block_matrix(nallatom(), 3);
+    int *dummyflags = new int[nallatom()];
 
     for (int i=0; i<natom(); ++i) {
         zvals[i] = static_cast<double>(Z(i));
         geom[i][0] = x(i); geom[i][1] = y(i); geom[i][2] = z(i);
     }
 
+    for (int i=0; i<nallatom(); ++i) {
+	fgeom[i][0] = fx(i); geom[i][1] = fy(i); geom[i][2] = fz(i);
+	dummyflags[i] = fZ(i) > 0 ? 0 : 1;
+    }
+
     chkpt->wt_zvals(zvals);
-    // This is probably not the only place it needs to be saved to
-    chkpt->wt_geom(geom);
+    chkpt->wt_atom_dummy(dummyflags);
+    chkpt->wt_fgeom(fgeom);
+
+    chkpt->wt_enuc(nuclear_repulsion_energy());
 
     // Reset the prefix
     if (!prefix.empty()) {
         chkpt->set_prefix(pre.c_str());
     }
 
+    delete[]dummyflags;
     delete[]zvals;
     free_block(geom);
+    free_block(fgeom);
 }
 
 void Molecule::print()

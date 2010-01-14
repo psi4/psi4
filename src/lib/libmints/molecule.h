@@ -27,15 +27,17 @@ class Molecule
 public:
     typedef struct atom_info {
         double x, y, z;
-        int Z;
+        int Z;				// if Z == dummy atom
         double charge;
         double mass;
         std::string label;
     };
 
 protected:
-    /// Atom info vector
+    /// Atom info vector (no knowledge of dummy atoms)
     std::vector<atom_info> atoms_;
+    /// Atom info vector (includes dummy atoms)
+    std::vector<atom_info> full_atoms_;
     /// Symmetry information about the molecule
     int nirreps_;
     /// Zero it out
@@ -62,15 +64,25 @@ public:
 
     /// Number of atoms
     int natom() const { return atoms_.size(); }
+    /// Number of all atoms (includes dummies)
+    int nallatom() const { return full_atoms_.size(); }
     /// Nuclear charge of atom
     int Z(int atom) const { return atoms_[atom].Z; }
+    /// Nuclear charge of atom
+    int fZ(int atom) const { return full_atoms_[atom].Z; }
     // x position of atom
     double x(int atom) const { return atoms_[atom].x; }
     // y position of atom
     double y(int atom) const { return atoms_[atom].y; }
     // z position of atom
     double z(int atom) const { return atoms_[atom].z; }
-    /// Return reference to atom_info struct for atom
+     // x position of atom
+    double fx(int atom) const { return full_atoms_[atom].x; }
+    // y position of atom
+    double fy(int atom) const { return full_atoms_[atom].y; }
+    // z position of atom
+    double fz(int atom) const { return full_atoms_[atom].z; }
+   /// Return reference to atom_info struct for atom
     const atom_info &r(int atom) const { return atoms_[atom]; }
     /// Return copy of atom_info for atom
     atom_info r(int atom) { return atoms_[atom]; }
