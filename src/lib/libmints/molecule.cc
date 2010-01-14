@@ -531,6 +531,7 @@ void Molecule::save_to_chkpt(shared_ptr<Chkpt> chkpt, std::string prefix)
 
     // Need to save natom, zvals, geom
     chkpt->wt_natom(natom());
+    chkpt->wt_nallatom(natom());
 
     double *zvals = new double[natom()];
     double **geom = block_matrix(natom(), 3);

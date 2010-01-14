@@ -3,3 +3,4 @@ configure
 *.o
 *.a
 .*
+*.pyc
