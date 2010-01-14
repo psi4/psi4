@@ -8,14 +8,14 @@
 #include <cstdlib>
 #include <cstring>
 #include <libipv1/ip_lib.h>
+#include <libparallel/parallel.h>
 #include <psi4-dec.h>
 
 namespace psi {
 
 #define DEF_MAXCRR (256000000)  // default maxcor 256 M bytes
-  extern int myid;
 
-void set_memory(FILE *infile, FILE *outfile)
+void set_memory(FILE *outfile)
 {
   char type[20];
   char *s;
@@ -66,18 +66,18 @@ void set_memory(FILE *infile, FILE *outfile)
       else if ((strcmp(type, "GB")==0) || (strcmp(type, "GBYTES")==0))
         maxcrr = (long int) (1000000000.0 * size);
       else {
-   	    fprintf(outfile, "bad data type, specify one of: \n") ;
-	    fprintf(outfile, "REAL, INTEGER, BYTES, KBYTES, MBYTES, or GBYTES\n");
+   	    fprintf(stderr, "bad data type, specify one of: \n") ;
+	    fprintf(stderr, "REAL, INTEGER, BYTES, KBYTES, MBYTES, or GBYTES\n");
 	    throw("Cannot read memory");
       }
     }
   }
 
   if (maxcrr < 1e9) {
-    if(myid == 0) fprintf(outfile,"    Memory level set to %.3lf MB\n", maxcrr / 1e6 );
+    if(Communicator::world->me() == 0) fprintf(outfile,"    Memory level set to %.3lf MB\n", maxcrr / 1e6 );
   }
   else {
-    if(myid == 0) fprintf(outfile,"    Memory level set to %.3lf GB\n", maxcrr / 1e9 );
+    if(Communicator::world->me() == 0) fprintf(outfile,"    Memory level set to %.3lf GB\n", maxcrr / 1e9 );
   }
 
   module.set_memory(maxcrr);

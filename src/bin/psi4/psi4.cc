@@ -6,7 +6,7 @@
 //  Justin Turney
 //  Rollin King
 
-#include "mpi.h"
+#include <mpi.h>
 #include <getopt.h>
 #include <stdio.h>
 #include <psiconfig.h>
@@ -28,7 +28,7 @@ namespace psi {
     int psi_start(int argc, char *argv[]);
     int psi_stop(FILE* infile, FILE* outfile, char* psi_file_prefix);
     void print_version(FILE *);
-    void set_memory(FILE *infile, FILE *outfile);
+    void set_memory(FILE *outfile);
     int psi4_driver(Options & options, int argc, char *argv[]);
     void psiclean(void);
 
@@ -36,7 +36,7 @@ namespace psi {
     void read_atom_basis(char ** & atom_basis, int num_atoms);
 
     PSIO *psio = NULL;
-    std::map<std::string, PsiReturnType(*)(Options &, int argc, char *argv[])> dispatch_table;
+    std::map<std::string, PsiReturnType(*)(Options &, int, char *[])> dispatch_table;
 
   // These are global variable for the number of processes and
   // id for each process
@@ -57,6 +57,7 @@ int main(int argc, char *argv[])
 
     // Create the scripting object
     Script::language = shared_ptr<Script>(new Python());
+    // Create base objects in the scripting language and initialize the language
     Script::language->initialize();
     
     // Needed until codes are converted to using Communicator::world
@@ -67,7 +68,7 @@ int main(int argc, char *argv[])
 
     if(Communicator::world->me()==0 && !clean_only) print_version(outfile);
 
-    set_memory(infile, outfile);
+    set_memory(outfile);
 
     psio_init();
     psio_ipv1_config();
@@ -79,9 +80,12 @@ int main(int argc, char *argv[])
 
     Options options;
 
-    psi4_driver(options, argc, argv);
-    psi_stop(infile, outfile, psi_file_prefix);
+    // Okay, we might only need to make this function call if we're using IPV1
+    // psi4_driver(options, argc, argv);
+    Script::language->run(infile);
 
+    // Shut things down:
+    psi_stop(infile, outfile, psi_file_prefix);
     Script::language->finalize();
     MPI_Finalize();
 
