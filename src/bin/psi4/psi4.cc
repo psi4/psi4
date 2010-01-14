@@ -37,7 +37,8 @@ namespace psi {
 
     PSIO *psio = NULL;
     std::map<std::string, PsiReturnType(*)(Options &, int, char *[])> dispatch_table;
-
+    Options options;
+    
   // These are global variable for the number of processes and
   // id for each process
     int nprocs;
@@ -77,8 +78,6 @@ int main(int argc, char *argv[])
         psiclean();
         exit(EXIT_SUCCESS);
     }
-
-    Options options;
 
     // Okay, we might only need to make this function call if we're using IPV1
     // psi4_driver(options, argc, argv);

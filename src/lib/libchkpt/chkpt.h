@@ -87,8 +87,8 @@ void chkpt_wt_frzvpi(int *);
 int *chkpt_rd_sopi(void);
 void chkpt_wt_sopi(int *, const char *key2);
 
-char *chkpt_rd_label(void);
-void chkpt_wt_label(char *);
+const char *chkpt_rd_label(void);
+void chkpt_wt_label(const char *);
 
 char **chkpt_rd_irr_labs(void);
 void chkpt_wt_irr_labs(char **);

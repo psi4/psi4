@@ -10,7 +10,12 @@
 using namespace boost;
 
 namespace psi {
-  
+
+  extern FILE *outfile;
+
+  class PSIO;
+  extern shared_ptr<PSIO> _default_psio_lib_;
+
   /**
    PSIO is an instance of libpsio library. Multiple instances of PSIO are supported.
 
@@ -102,7 +107,7 @@ namespace psi {
       /// Delete all TOC entries after the given key. If a blank key is given, the entire TOC will be wiped.
       void tocclean(unsigned int unit, const char *key);
       /// Print the table of contents for the given unit
-      void tocprint(unsigned int unit, FILE *output);
+      void tocprint(unsigned int unit);
       /// Scans the TOC for a particular keyword and returns either a pointer to the entry or NULL to the caller.
       psio_tocentry* tocscan(unsigned int unit, const char *key);
       ///  Write the table of contents for file number 'unit'. NB: This function should NOT call psio_error because the latter calls it!
@@ -111,6 +116,8 @@ namespace psi {
       /// Upon catastrophic failure, the library will exit() with this code. The default is 1, but can be overridden.
       static int _error_exit_code_;
 
+      /// Return the global shared object
+      static shared_ptr<PSIO> shared_object() { return _default_psio_lib_; }
     private:
       /// vector of units
       psio_ud *psio_unit;

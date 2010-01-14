@@ -11,9 +11,9 @@
 
 using namespace psi;
 
-char *Chkpt::rd_label()
+const char *Chkpt::rd_label()
 {
-	char *label;
+	const char *label;
 	char *keyword;
 	keyword = build_keyword("Label");
 
@@ -25,7 +25,7 @@ char *Chkpt::rd_label()
 	return label;
 }
 
-void Chkpt::wt_label(char *label)
+void Chkpt::wt_label(const char *label)
 {
 	char *keyword;
 	keyword = build_keyword("Label");
@@ -44,9 +44,9 @@ extern "C" {
 **   returns: pointer to the checkpoint label
 ** \ingroup CHKPT
 */
-	char *chkpt_rd_label(void)
+	const char *chkpt_rd_label(void)
 	{
-  		char *label;
+  		const char *label;
 		label = _default_chkpt_lib_->rd_label();
   		return label;
 	}
@@ -61,7 +61,7 @@ extern "C" {
 ** \ingroup CHKPT
 */
 
-	void chkpt_wt_label(char *label)
+	void chkpt_wt_label(const char *label)
 	{
 		_default_chkpt_lib_->wt_label(label);
 	}
