@@ -8,6 +8,7 @@
 #include "script.h"
 #include "libchkpt/chkpt.hpp"
 #include "liboptions/liboptions.h"
+#include "libmints/molecule.h"
 
 #include <libpsio/psio.hpp>
 
@@ -115,6 +116,45 @@ BOOST_PYTHON_MODULE(psi)
         add_property( "emp2", &Chkpt::rd_emp2, &Chkpt::wt_emp2).
         def( "sharedObject", &Chkpt::shared_object).
         staticmethod("sharedObject");
+
+    class_<Vector3>("Vector3").
+        def(init<double>()).
+        def(init<double, double, double>()).
+        def(init<const Vector3&>()).
+//      def(self = other<double>()).
+        def(self += self).
+        def(self -= self).
+        def(self *= other<double>()).
+        def(self + self).
+        def(self - self).
+        def(-self).
+        def("dot", &Vector3::dot).
+        def("distance", &Vector3::distance).
+        def("normalize", &Vector3::normalize).
+        def("norm", &Vector3::norm).
+        def("cross", &Vector3::cross).
+        def("__str__", &Vector3::to_string);
+
+    class_<Molecule, shared_ptr<Molecule> >("Molecule").
+        def("initWithCheckpoint", &Molecule::init_with_chkpt).
+        def("initWithIO", &Molecule::init_with_psio).
+        def("addAtom", &Molecule::add_atom).
+        def("natom", &Molecule::natom).
+        def("Z", &Molecule::Z).
+        def("x", &Molecule::x).
+        def("y", &Molecule::y).
+        def("z", &Molecule::z).
+        def("xyz", &Molecule::xyz).
+        def("centerOfMass", &Molecule::center_of_mass).
+        def("translate", &Molecule::translate).
+        def("moveToCOM", &Molecule::move_to_com).
+        def("mass", &Molecule::mass).
+        def("label", &Molecule::label).
+        def("charge", &Molecule::charge).
+        def("atomAtPosition", &Molecule::atom_at_position).
+        def("printToOutput", &Molecule::print).
+        def("nuclearRepulsionEnergy", &Molecule::nuclear_repulsion_energy);
+
 }
 
 Python::Python() : Script()

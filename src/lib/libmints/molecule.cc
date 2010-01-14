@@ -51,6 +51,7 @@ namespace psi {
                 should_invert = 0;
         }
     }
+    extern FILE *outfile;
 }
 
 Molecule::Molecule():
@@ -479,7 +480,7 @@ void Molecule::reorient()
     delete itensor;
 }
 
-void Molecule::init_with_chkpt(shared_ptr<PSIO> psio)
+void Molecule::init_with_psio(shared_ptr<PSIO> psio)
 {
     // User sent a psio object. Create a chkpt object based on it.
     shared_ptr<Chkpt> chkpt(new Chkpt(psio.get(), PSIO_OPEN_OLD));
@@ -502,21 +503,21 @@ void Molecule::init_with_chkpt(shared_ptr<Chkpt> chkpt)
     Chkpt::free(geom);
 }
 
-void Molecule::print(FILE *out)
+void Molecule::print()
 {
     if (natom()) {
-        fprintf(out,"       Center              X                  Y                   Z\n");
-        fprintf(out,"    ------------   -----------------  -----------------  -----------------\n");
+        fprintf(outfile,"       Center              X                  Y                   Z\n");
+        fprintf(outfile,"    ------------   -----------------  -----------------  -----------------\n");
 
         for(int i = 0; i < natom(); ++i){
             Vector3 geom = xyz(i);
-            fprintf(out, "    %12s ",label(i).c_str()); fflush(out);
+            fprintf(outfile, "    %12s ",label(i).c_str()); fflush(outfile);
             for(int j = 0; j < 3; j++)
-                fprintf(out, "  %17.12f", geom[j]);
-            fprintf(out,"\n");
+                fprintf(outfile, "  %17.12f", geom[j]);
+            fprintf(outfile,"\n");
         }
-        fprintf(out,"\n");
-        fflush(out);
+        fprintf(outfile,"\n");
+        fflush(outfile);
     }
 }
 

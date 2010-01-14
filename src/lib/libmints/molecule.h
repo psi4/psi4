@@ -48,7 +48,7 @@ public:
     virtual ~Molecule();
 
     /// Pull information from a chkpt object created from psio
-    void init_with_chkpt(shared_ptr<PSIO> psio);
+    void init_with_psio(shared_ptr<PSIO> psio);
     /// Pull information from the chkpt object passed
     void init_with_chkpt(shared_ptr<Chkpt> chkpt);
 
@@ -120,7 +120,7 @@ public:
     void nirrep(int nirreps) { nirreps_ = nirreps; }
 
     /// Print the molecule
-    void print(FILE *out = outfile);
+    void print();
 };
 
 }
