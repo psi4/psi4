@@ -80,6 +80,7 @@ class LMP2 {
     double Emp2_old;       /* LMP2 energy from previous iteration */
     double DEmp2;
     double Drms;
+//    char *ri_basis, *orbital_basis;
 
   public:
     /* Default constructr/destructor, does nothing */
@@ -155,6 +156,9 @@ class LMP2 {
 
     // Checks to see if the energy and Amplitudes are converged
     void check_conv();
+
+    // Construct MO integrals from density-fitted 3-center quantities
+    void direct_df_transformation();
 
     // These member functions read data from the checkpoint file
     int  get_nso();

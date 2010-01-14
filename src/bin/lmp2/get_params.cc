@@ -72,6 +72,9 @@ void LMP2::get_params(Options &options) {
   memory = options.get_int("MEMORY");
   wfn = const_cast<char*>(options.get_cstr("WFN"));
 
+//  ri_basis = options.get_str("RI_BASIS");
+//  basis = options.get_str("BASIS");
+
   if(myid == 0)
     print_params();
 }
