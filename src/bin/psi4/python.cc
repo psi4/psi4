@@ -133,10 +133,12 @@ BOOST_PYTHON_MODULE(psi)
         def("normalize", &Vector3::normalize).
         def("norm", &Vector3::norm).
         def("cross", &Vector3::cross).
-        def("__str__", &Vector3::to_string);
+        def("__str__", &Vector3::to_string).
+        def("__getitem__", &Vector3::get);
 
     class_<Molecule, shared_ptr<Molecule> >("Molecule").
         def("initWithCheckpoint", &Molecule::init_with_chkpt).
+        def("saveToCheckpoint", &Molecule::save_to_chkpt).
         def("initWithIO", &Molecule::init_with_psio).
         def("addAtom", &Molecule::add_atom).
         def("natom", &Molecule::natom).

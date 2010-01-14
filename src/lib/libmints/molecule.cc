@@ -3,6 +3,7 @@
 
 #include <libmints/molecule.h>
 #include <libmints/matrix.h>
+#include <libciomr/libciomr.h>
 
 #include <masses.h>
 #include <physconst.h>
@@ -501,6 +502,27 @@ void Molecule::init_with_chkpt(shared_ptr<Chkpt> chkpt)
 
     Chkpt::free(zvals);
     Chkpt::free(geom);
+}
+
+void Molecule::save_to_chkpt(shared_ptr<Chkpt> chkpt)
+{
+    // Need to save natom, zvals, geom
+    chkpt->wt_natom(natom());
+
+    double *zvals = new double[natom()];
+    double **geom = block_matrix(natom(), 3);
+
+    for (int i=0; i<natom(); ++i) {
+        zvals[i] = static_cast<double>(Z(i));
+        geom[i][0] = x(i); geom[i][1] = y(i); geom[i][2] = z(i);
+    }
+
+    chkpt->wt_zvals(zvals);
+    // This is probably not the only place it needs to be saved to
+    chkpt->wt_geom(geom);
+
+    delete[]zvals;
+    free_block(geom);
 }
 
 void Molecule::print()

@@ -24,6 +24,8 @@
 
 namespace psi { namespace input {
 
+extern Options options;
+
 void print_intro();
 void print_options();
 void print_geometry(double);
@@ -35,7 +37,8 @@ void cleanup();
 extern void build_cartdisp_salcs();
 void am_i_to_char(int am, char *am_label);
 
-PsiReturnType input(Options & options, int argc, char *argv[])
+//PsiReturnType input(Options & options, int argc, char *argv[])
+PsiReturnType input()
 {
    /*variables and arrays*/
    int i,j,k,l;
@@ -60,7 +63,8 @@ PsiReturnType input(Options & options, int argc, char *argv[])
      /*-------------------------------------
        Initialize files and parsing library
       -------------------------------------*/
-     start_io(argc, argv);
+     //start_io(argc, argv);
+     start_io();
 
      init_globals();
      parsing(options);

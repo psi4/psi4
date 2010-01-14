@@ -121,6 +121,9 @@ public:
 
     /// Print the molecule
     void print();
+
+    /// Save information to checkpoint file.
+    void save_to_chkpt(boost::shared_ptr<Chkpt> chkpt);
 };
 
 }
