@@ -4,11 +4,11 @@ VPATH = @srcdir@
 
 include ../MakeVars
 
-PSITARGET = $(top_objdir)/lib/libPSI_parallel.a
+PSITARGET = $(top_objdir)/lib/libPSI_script.a
 
-TRUECXXSRC = communicator.cc mpi.cc
+TRUECXXSRC = script.cc python.cc
 
-INC = parallel.h
+INC = script.h
 
 LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
 
