@@ -10,14 +10,14 @@ CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\" $(PYTHON_INCLUDE) $(BOOST_CPPF
 
 PSILIBS = \
 -lPSI_scf -lPSI_ccenergy -lPSI_ccsort -lPSI_input3 -lPSI_cscf -lPSI_cints -lPSI_transqt2 -lPSI_cctriples \
--lPSI_mp2 -lPSI_lmp2 -lPSI_optking -lPSI_scf_solver \
+-lPSI_mp2 -lPSI_lmp2 -lPSI_scf_solver \
 -lPSI_mints -lPSI_dpd -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_qt -lPSI_ciomr -lPSI_ipv1 -lPSI_options \
--lPSI_deriv -lPSI_int -lPSI_util -lPSI_parallel -lPSI_script
+-lPSI_deriv -lPSI_int -lPSI_util -lPSI_parallel
 
 CXXSRC = read_atom_basis.cc \
-molecular_system.cc  read_atom_basis.cc set_memory.cc \
-fragment.cc  psi4.cc  read_options.cc clean.cc \
-psi4_driver.cc setup_driver.cc psi_start.cc psi_stop.cc version.cc \
+read_atom_basis.cc set_memory.cc \
+psi4.cc  read_options.cc clean.cc \
+psi_start.cc psi_stop.cc version.cc \
 script.cc python.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)

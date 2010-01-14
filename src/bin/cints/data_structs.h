@@ -207,7 +207,7 @@ namespace psi {
     typedef struct {
       int num_atoms;                     /* number of atoms */
       double Enuc;                       /* nuclear repulsion energy */
-      char *label;                       /* calculation label */
+      const char *label;                       /* calculation label */
       struct coordinates *centers;       /* nuclear centers */
       double **Rref;                     /* rotation back to reference frame */
     } Molecule_t;
