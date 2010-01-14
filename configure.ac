@@ -802,6 +802,7 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libscf_solver/Makefile
           src/lib/libtrans/Makefile
           src/lib/libparallel/Makefile
+          src/lib/libscript/Makefile
  
           src/util/tocprint/Makefile
           src/util/psiclean/Makefile
