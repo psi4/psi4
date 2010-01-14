@@ -12,7 +12,7 @@ using std::string;
 using std::ostringstream;
 
 class MolecularSystem {
-  vector<Fragment> fragment_;
+  vector<Molecule> fragment_;
   int charge_;
 
  public:
@@ -21,7 +21,7 @@ class MolecularSystem {
   MolecularSystem(const MolecularSystem & sys);
 
   int natom() const;
-  int nfragment() const { return fragment.size(); }
+  int nfragment() const { return fragment_.size(); }
   double **get_geom() const;
   double *get_Z() const;
   string* get_atom_label() const;

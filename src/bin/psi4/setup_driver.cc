@@ -11,7 +11,7 @@ namespace psi{
     namespace mp2      { PsiReturnType mp2(Options &, int argc, char *argv[]); }
     namespace scf      { PsiReturnType scf(Options&, int argc, char *argv[]); }
     namespace transqt2 { PsiReturnType transqt2(Options &, int argc, char *argv[]); }
-    namespace optking  { PsiReturnType optking(Options &, int argc, char *argv[]); }
+    // namespace optking  { PsiReturnType optking(Options &, int argc, char *argv[]); }
 //    namespace psiclean { PsiReturnType psiclean(Options &, int argc, char *argv[]); }
 
 void
@@ -38,7 +38,7 @@ setup_driver(Options &options)
     dispatch_table["MP2"]       = &(psi::mp2::mp2);
     dispatch_table["SCF"]       = &(psi::scf::scf);
     dispatch_table["TRANSQT2"]  = &(psi::transqt2::transqt2);
-    dispatch_table["OPTKING"]   = &(psi::optking::optking);
+    // dispatch_table["OPTKING"]   = &(psi::optking::optking);
 }
 
 } // Namespaces

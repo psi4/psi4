@@ -131,10 +131,10 @@ for (i=0;i<symm.get_num();++i)
   if (errcod != IPE_OK)
     dertype = strdup("NONE");
   chkpt_init(PSIO_OPEN_OLD);
-  char* label = chkpt_rd_label();
+  const char* label = chkpt_rd_label();
   chkpt_close();
   sprintf(disp_label,"%-59.59s %-10.10s%-8.8s",label,wfn,dertype);
-  free(label); free(wfn); free(dertype);
+  free(const_cast<char*>(label)); free(wfn); free(dertype);
   carts.set_energy(energy);
   carts.set_coord(geom);
   carts.set_grad(f);
