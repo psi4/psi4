@@ -14,7 +14,7 @@ PSILIBS = \
 -lPSI_mints -lPSI_dpd -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_qt -lPSI_ciomr -lPSI_ipv1 -lPSI_options \
 -lPSI_deriv -lPSI_int -lPSI_util -lPSI_parallel
 
-CXXSRC = read_atom_basis.cc fragment.cc  \
+CXXSRC = read_atom_basis.cc \
 molecular_system.cc  read_atom_basis.cc set_memory.cc \
 fragment.cc  psi4.cc  read_options.cc clean.cc \
 psi4_driver.cc setup_driver.cc psi_start.cc psi_stop.cc version.cc \

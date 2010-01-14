@@ -56,9 +56,15 @@ namespace psi {
 }
 
 Molecule::Molecule():
-    natoms_(0), nirreps_(0)
+    nirreps_(0)
 {
 
+}
+
+Molecule::Molecule(const Molecule& other)
+{
+    atoms_ = other.atoms_;
+    nirreps_ = other.nirreps_;
 }
 
 Molecule::~Molecule()
@@ -66,9 +72,20 @@ Molecule::~Molecule()
     clear();
 }
 
+Molecule& Molecule::operator=(const Molecule& other)
+{
+    // Self assignment is bad
+    if (this == &other)
+        return *this;
+
+    atoms_ = other.atoms_;
+    nirreps_ = other.nirreps_;
+
+    return *this;
+}
+
 void Molecule::clear()
 {
-    natoms_ = 0;
     nirreps_ = 0;
     atoms_.empty();
 }
@@ -90,7 +107,6 @@ void Molecule::add_atom(int Z, double x, double y, double z,
         info.label = "Gh";
     info.mass = mass;
 
-    natoms_++;
     atoms_.push_back(info);
 }
 
@@ -504,8 +520,10 @@ void Molecule::init_with_chkpt(shared_ptr<Chkpt> chkpt)
     Chkpt::free(geom);
 }
 
-void Molecule::save_to_chkpt(shared_ptr<Chkpt> chkpt)
+void Molecule::save_to_chkpt(shared_ptr<Chkpt> chkpt, std::string prefix)
 {
+    // If needed switch the prefix in the chkpt file.
+    if (prefix.
     // Need to save natom, zvals, geom
     chkpt->wt_natom(natom());
 
