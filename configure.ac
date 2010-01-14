@@ -304,12 +304,6 @@ AC_SUBST(LDFLAGS)
 AC_CHECK_PROGS(PERL,perl,perl) AC_SUBST(PERL)
 AC_PYTHON([2.6])
 
-# Okay I added some Boost checks -Jet
-# 1.41 is the latest version of boost as of Dec 20, 2009
-#BOOST_REQUIRE([1.41])
-#BOOST_FIND_HEADER([boost/python.hpp])
-#BOOST_FIND_LIB([python],[],[boost/python.hpp],[],[])
-
 AC_PROG_LATEX
 AC_PROG_LATEX2HTML
 AC_PROG_DVIPS
