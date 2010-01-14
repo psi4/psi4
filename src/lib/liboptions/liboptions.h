@@ -137,6 +137,10 @@ namespace psi {
       throw DataTypeException("assign(std:string) failure");
     }
 
+    virtual void reset() {
+      throw DataTypeException("reset() failure");
+    }
+    
     virtual Data& operator[](std::string) {
       throw NotImplementedException("Data& [string]");
     }    
@@ -422,6 +426,10 @@ namespace psi {
       ptr_->assign(s);
     }
 
+    void reset() {
+      ptr_->reset();
+    }
+
     Data& operator[](int i) {
       return (*(ptr_.pointer()))[i];
     }
@@ -484,7 +492,11 @@ namespace psi {
       }
       str += " ]";
       return str;
-    }    
+    }
+
+    virtual void reset() {
+        array_.clear();
+    }
   };
 
   class MapType : public DataType

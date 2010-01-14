@@ -44,7 +44,7 @@ void PSIO::open(unsigned int unit, int status) {
   
   /* Get the file name prefix */
   get_filename(unit, &name);
-
+  
   // Check if any files will have the same name
   {
     using std::string;

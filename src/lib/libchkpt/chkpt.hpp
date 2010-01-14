@@ -12,6 +12,9 @@ using namespace boost;
 namespace psi {
 	class PSIO;
 	
+        class Chkpt;
+	extern shared_ptr<Chkpt> _default_chkpt_lib_;
+
 	/**
 		Chkpt is an instance of the libchkpt library. 
                 Multiple instances are supported by having multiple 
@@ -51,8 +54,8 @@ namespace psi {
 		int exist(const char *keyword);
 		int exist_add_prefix(const char *keyword);
 
-		char *rd_label();
-		void wt_label(char *label);
+		const char *rd_label();
+		void wt_label(const char *label);
 
 		double rd_escf();
 		void wt_escf(double escf);
@@ -327,7 +330,9 @@ namespace psi {
 
         double *rd_vib_freqs(void);
         void wt_vib_freqs(double *);
-		
+
+        static shared_ptr<Chkpt> shared_object() { return _default_chkpt_lib_; }
+        
 		/// allocate a block matrix -- analogous to libciomr's block_matrix
 		template <typename T> static T** matrix(int nrow, int ncol) {
                         if (nrow == 0 || ncol == 0) return NULL;
@@ -356,7 +361,6 @@ namespace psi {
 		}
 	};
 	
-	extern shared_ptr<Chkpt> _default_chkpt_lib_;
 }
 
 #endif
