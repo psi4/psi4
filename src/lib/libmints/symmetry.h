@@ -8,34 +8,75 @@
 
 namespace psi {
 
-/*! \ingroup MINTS */
-class SymmOp {
-private:
-    double rep_[3][3];
-public:
-    // default constructor
-    SymmOp();
-    // copy constructor
-    SymmOp(const SymmOp &);
-    // destructor
-    ~SymmOp();
+    class SymmetryOperation {
+    private:
+	double d_[3][3];
 
-    double trace() const { return rep_[0][0] + rep_[1][1] + rep_[2][2]; }
-    
-    double*       operator[](int a)       { return rep_[a]; }
-    const double* operator[](int a) const { return rep_[a]; }
+    public:
+	SymmetryOperation();
+	SymmetryOperation(const SymmetryOperation &);
+	virtual ~SymmetryOperation();
 
-    double& operator()(int a, int b)       { return rep_[a][b]; }
-    double  operator()(int a, int b) const { return rep_[a][b]; }
+	double trace() const { return d_[0][0] + d_[1][1] + d_[2][2]; }
 
-    void zero()     { memset(rep_, 0, sizeof(double)*9); }
-    void E()        { zero(); rep_[0][0] = rep_[1][1] = rep_[2][2] =  1.0; }
-    void i()        { zero(); rep_[0][0] = rep_[1][1] = rep_[2][2] = -1.0; }
-    void sigma_h()  { E(); rep_[2][2] = -1.0; }
-    void sigma_xz() { E(); rep_[1][1] = -1.0; }
-    void sigma_yz() { E(); rep_[0][0] = -1.0; }
-};
+	double* operator[](int i) { return d_[i]; }
 
+	const double* operator[](int i) const { return d_[i]; }
+
+	double& operator()(int i, int j) { return d_[i][j]; }
+
+	double operator()(int i, int j) const { return d_[i][j]; }
+
+	void zero() { memset(d_, 0, sizeof(double) * 9); }
+
+	SymmetryOperation operate(const SymmetryOperation& r) const;
+
+	SymmetryOperation transform(const SymmetryOperation& r) const;
+
+	void unit() { zero(); d_[0][0] = d_[1][1] = d_[2][2] = 1.0; }
+
+	void E() { unit(); }
+
+	void i() { zero(); d_[0][0] = d_[1][1] = d_[2][2] = -1.0; }
+
+	void sigma_h() { unit(); d_[2][2] = -1.0; }
+	void sigma_xz() { unit(); d_[1][1] = -1.0; }
+	void sigma_yz() { unit(); d_[0][0] = -1.0; }
+
+	void rotation(int n);
+	void rotation(double theta);
+
+	void c2_x() { i(); d_[0][0] = 1.0; }
+	void c2_y() { i(); d_[1][1] = 1.0; }
+
+	void transpose();
+    };
+
+    class SymRep {
+    private:
+	int n_;
+	double d_[5][5];
+
+    public:
+	SymRep(int =0);
+	SymRep(const SymmetryOperation&);
+	virtual ~SymRep();
+
+	operator SymmetryOperation() const;
+
+	inline double trace() const;
+
+	void set_dim(int i) { n_ = i; }
+
+	double* operator[](int i) { return d_[i]; }
+	const double* operator[](int i) const { return d_[i]; }
+
+	double& operator()(int i, int j) { return d_[i][j]; }
+	double operator()(int i, int j) const { return d_[i][j]; }
+
+	void zero() memset(d_, 0, sizeof(double) * 25); }
+
+	SymRep operate(const SymRep& r) const;
 }
 
 #endif // _basis_symmetry_h_
