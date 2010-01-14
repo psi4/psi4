@@ -308,7 +308,7 @@ AC_PYTHON([2.6])
 # 1.41 is the latest version of boost as of Dec 20, 2009
 BOOST_REQUIRE([1.41])
 BOOST_FIND_HEADER([boost/python.hpp])
-BOOST_FIND_LIB([python],[],[boost/python.hpp],[],[])
+#BOOST_FIND_LIB([python],[],[boost/python.hpp],[],[])
 
 AC_PROG_LATEX
 AC_PROG_LATEX2HTML
