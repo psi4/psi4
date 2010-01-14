@@ -302,7 +302,7 @@ AC_MSG_RESULT([Using extra library directories: $withval])
 AC_SUBST(LDFLAGS)
 
 AC_CHECK_PROGS(PERL,perl,perl) AC_SUBST(PERL)
-AC_PYTHON([2.6])
+AC_PYTHON([2.4])
 
 AC_PROG_LATEX
 AC_PROG_LATEX2HTML
