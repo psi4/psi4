@@ -5,6 +5,11 @@
 /* Define if you have <stdint.h>.  */
 #undef HAVE_STDINT_H
 
+/* PSI version information */
+#undef PSI_VERSION
+#undef PSI_BUILDID
+#undef PSI_BUGREPORT
+
 /* Which integrals standard is used? */
 #undef PSI_INTEGRALS_STANDARD
 
