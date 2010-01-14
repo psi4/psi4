@@ -87,7 +87,7 @@ public:
     /// Return copy of atom_info for atom
     atom_info r(int atom) { return atoms_[atom]; }
     /// Returns a Vector3 with x, y, z position of atom
-    const Vector3 xyz(int atom) const { return Vector3(atoms_[atom].x, atoms_[atom].y, atoms_[atom].z); }
+    Vector3 xyz(int atom) const { return Vector3(atoms_[atom].x, atoms_[atom].y, atoms_[atom].z); }
     /// Returns mass atom atom
     double mass(int atom) const;
     /// Returns label of atom
@@ -97,6 +97,7 @@ public:
 
     /// Tests to see of an atom is at the passed position with a given tolerance
     int atom_at_position(double *, double tol = 0.05) const;
+    int atom_at_position(Vector3&, double tol = 0.05) const;
 
     SimpleMatrix geometry();
     void set_geometry(SimpleMatrix& geom);
@@ -139,6 +140,16 @@ public:
 
     /// Save information to checkpoint file.
     void save_to_chkpt(boost::shared_ptr<Chkpt> chkpt, std::string prefix = "");
+    
+    //
+    // Symmetry
+    //
+    /// Does the molecule have an inversion center at origin
+    bool has_inversion(Vector3& origin, double tol = 0.05) const;
+    /// Is a plane?
+    bool is_plane(Vector3& origin, Vector3& uperp, double tol = 0.05) const;
+    /// Is an axis?
+    bool is_axis(Vector3& origin, Vector3& axis, int order, double tol=0.05) const;
 };
 
 }

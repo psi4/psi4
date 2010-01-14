@@ -56,6 +56,7 @@ public:
         v_[1] *= m;
         v_[2] *= m;
     }
+    Vector3 operator*(double d) const;
     Vector3 operator+(const Vector3& x) {
         Vector3 result;
         result.v_[0] = v_[0] + x.v_[0];
@@ -63,7 +64,7 @@ public:
         result.v_[2] = v_[2] + x.v_[2];
         return result;
     }
-    Vector3 operator-(const Vector3& x) {
+    Vector3 operator-(const Vector3& x) const {
         Vector3 result;
         result.v_[0] = v_[0] - x.v_[0];
         result.v_[1] = v_[1] - x.v_[1];
@@ -87,6 +88,8 @@ public:
     double distance(const Vector3&) const;
     void normalize();
     double norm() const { return sqrt(this->dot(*this)); }
+    void rotate(double theta, Vector3& v);
+    Vector3 perp_unit(const Vector3& v) const;
     
     Vector3 cross(const Vector3&) const;
 

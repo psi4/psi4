@@ -14,7 +14,7 @@
 #include <libmints/quadrupole.h>
 #include <libutil/ref.h>
 #include <libmints/sobasis.h>
-#include <libmints/symmetry.h>
+#include <libmints/pointgrp.h>
 #include <libmints/twobody.h>
 #include <libmints/vector.h>
 #include <libmints/vector3.h>

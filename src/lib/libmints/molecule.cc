@@ -136,6 +136,16 @@ int Molecule::atom_at_position(double *xyz, double tol) const
     return -1;
 }
 
+int Molecule::atom_at_position(Vector3& b, double tol) const
+{
+    for (int i=0; i < natom(); ++i) {
+        Vector3 a(atoms_[i].x, atoms_[i].y, atoms_[i].z);
+        if (b.distance(a) < tol)
+            return i;
+    }
+    return -1;
+}
+
 Vector3 Molecule::center_of_mass() const
 {
     Vector3 ret;
@@ -641,4 +651,51 @@ SimpleMatrix* Molecule::inertia_tensor()
     }
     
     return tensor;
+}
+
+//
+// Symmetry
+//
+bool Molecule::has_inversion(Vector3& origin, double tol) const
+{
+    for (int i=0; i<natom(); ++i) {
+        Vector3 inverted = origin-(xyz(i) - origin);
+        int atom = atom_at_position(inverted, tol);
+        if (atom < 0 || Z(atom) != Z(i)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Molecule::is_plane(Vector3& origin, Vector3& uperp, double tol) const
+{
+    for (int i=0; i<natom(); ++i) {
+        Vector3 A = xyz(i)-origin;
+        Vector3 Apar = uperp.dot(A)*origin;
+        Vector3 Aperp = A - Apar;
+        A = (Aperp- Apar) + origin;
+        int atom = atom_at_position(A, tol);
+        if (atom < 0 || Z(atom) != Z(i)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Molecule::is_axis(Vector3& origin, Vector3& axis, int order, double tol) const
+{
+    for (int i=0; i<natom(); ++i) {
+        Vector3 A = xyz(i) - origin;
+        for (int j=1; j<order; ++j) {
+            Vector3 R = A;
+            R.rotate(j*2.0*M_PI/order, axis);
+            R += origin;
+            int atom = atom_at_position(R, tol);
+            if (atom < 0 || Z(atom) != Z(i)) {
+                return false;
+            }
+        }
+    }
+    return true;
 }
