@@ -126,7 +126,8 @@ int read_options(const std::string &name, Options & options) {
     options.add_bool("PERTURB_H", false);
     options.add_double("LAMBDA", 0.0);
     /*- The name of the auxilliary basis to be used in RI computations -*/
-    options.add_str("RI_BASIS", "");
+    options.add_str("RI_BASIS", " ");
+    options.add_bool("DF-HF", false);
     /*- The operator used to perturb the Hamiltonian, if requested -*/
     options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z");
     /*- Whether the computation is to be performed without disk-based storage of integrals -*/
@@ -460,8 +461,14 @@ else if(name == "CCDENSITY") {
     options.add("DOMAINS", new ArrayType());
     options.add_bool("DOMAIN_PRINT", 0);
   }
-    else if(name == "LMP2") {
+  else if(name == "LMP2") {
     /*- The wavefunction desired -*/
+    options.add_str("RI_BASIS","NONE");
+    options.read_ipv1();
+    if(options.get_str("RI_BASIS") != "NONE")
+      options.add_bool("DF-LMP2", true);
+    else
+      options.add_bool("DF-LMP2", false);
     options.add_str("WFN", "LMP2");
     options.add_str("REFERENCE", "RHF", "RHF");
     options.add_int("PRINT", 0);
@@ -474,6 +481,22 @@ else if(name == "CCDENSITY") {
     options.add_int("NDIIS", 6);
     options.add_double("LOCAL_CUTOFF", 0.02);
     options.add_int("MEMORY", 2000);
+    options.add_bool("SCS","false");
+    options.add_bool("SCS_N", "false");
+    options.add_double("SCALE_OS", 6.0/5.0);
+    options.add_double("SCALE_SS", 1.0/3.0);
+//    options.add_bool("DF-LMP2", false);
+//    options.add_str("BASIS","NONE");
+//    options.add_str("RI_BASIS","NONE");
+   }
+  else if(name=="DF-MP2") {
+    options.add_str("WFN", "DF-MP2");
+    options.add_str("RI_BASIS","NONE");
+    options.add_str("BASIS","NONE");
+    options.add_bool("SCS","false");
+    options.add_bool("SCS_N", "false");
+    options.add_double("SCALE_OS", 6.0/5.0);
+    options.add_double("SCALE_SS", 1.0/3.0);
   }
 
 
