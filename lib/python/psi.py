@@ -10,7 +10,7 @@ import PsiMod
 def geometry(geom, reorient = True, prefix = "", chkpt = None):
     # Make sure the user passed in what we expect
     if isinstance(geom, list) == False:
-        raise TypeError("geometry given must be a List")
+        raise TypeError("geometry must be a list")
 
     # Create a Molecule object from PSI4 C++
     molecule = PsiMod.Molecule()
@@ -29,9 +29,14 @@ def geometry(geom, reorient = True, prefix = "", chkpt = None):
 
         molecule.addAtom(1, atom[1], atom[2], atom[3], atom[0], 1.0, 0, 0.0)
 
+    # Print the molecule:
+    molecule.printToOutput()
+
     # If requested, reorient the molecule.
     if reorient == True:
         molecule.reorient()
+
+	molecule.printToOutput()
 
     # Save the molecule to the checkpoint file using prefix
     if chkpt == None:
