@@ -46,45 +46,11 @@ bool py_psi_configure_psio(PSIO* obj)
     return psiopp_ipv1_config(obj);
 }
 
-/* Sets the content of the options keyword GEOMETRY
- *
- * This assumes the user is inputing geometry with the following list format
- * geometry([
- *    [ "H", 0.0, 0.0, 0.0],
- *    [ "H", 0.0, 0.0, 1.0]
- * ])
- */
-void py_psi_geometry(list geometry)
-{
-    // Check to see that the geometry keyword exists.
-    if (!options.exists("GEOMETRY")) {
-        printf("GEOMETRY keyword does not exist in options.\nCreating it.\n");
-        options.add_array("GEOMETRY");
-    }
-
-    // Rest the contents of the GEOEMTRY array
-    options["GEOMETRY"].reset();
-    
-    size_t length = len(geometry);
-    printf("length of the geometry: %d\n", length);
-    for (size_t i=0; i<length; ++i) {
-        object atom = geometry[i];
-
-        size_t atom_length = len(atom);
-        printf("Atom %d is of length %d\n", i, atom_length);
-
-        if (atom_length != 4) {
-            printf("Atom %d is of wrong length (expected 4, given %d)\n", i, atom_length);
-        }
-    }
-}
-
-BOOST_PYTHON_MODULE(psi)
+BOOST_PYTHON_MODULE(PsiMod)
 {
     def("version", py_psi_version);
     def("clean", py_psi_clean);
     def("configure_io", py_psi_configure_psio);
-    def("geometry", py_psi_geometry);
     
     // modules
     def("input",py_psi_input);
@@ -116,7 +82,7 @@ BOOST_PYTHON_MODULE(psi)
         add_property( "emp2", &Chkpt::rd_emp2, &Chkpt::wt_emp2).
         def( "sharedObject", &Chkpt::shared_object).
         staticmethod("sharedObject");
-
+        
     class_<Vector3>("Vector3").
         def(init<double>()).
         def(init<double, double, double>()).
@@ -186,13 +152,22 @@ void Python::run(FILE *input)
         return;
     if (!Py_IsInitialized()) {
         s = strdup("psi");
-//        PyImport_AppendInittab(s, initpsi);
         Py_Initialize();
         #if PY_VERSION_HEX >= 0x03000000
         Py_SetProgramName(L"psi");
         #else
         Py_SetProgramName(s);
         #endif
+        
+        // Add PSI library python path
+        PyObject *path, *sysmod, *str;
+        sysmod = PyImport_ImportModule("sys");
+        path = PyObject_GetAttrString(sysmod, "path");
+        str = PyString_FromString("/Users/jturney/Code/psi4/source/lib/python");
+        PyList_Append(path, str);
+        Py_DECREF(str);
+        Py_DECREF(path);
+        Py_DECREF(sysmod);
     }
     if (Py_IsInitialized()) {
         char line[256];
@@ -200,14 +175,13 @@ void Python::run(FILE *input)
         while(fgets(line, sizeof(line), input)) {
             file << line;
         }
-//        printf("Input file:\n%s", file.str().c_str());
         str strStartScript(file.str().c_str());
-
+        printf(file.str().c_str());
         try {
-            PyImport_AppendInittab(s, initpsi);
+            PyImport_AppendInittab(strdup("PsiMod"), initPsiMod);
             object objectMain(handle<>(borrowed(PyImport_AddModule("__main__"))));
             object objectDict = objectMain.attr("__dict__");
-            s = strdup("import psi; from psi import *;");
+            s = strdup("import PsiMod");
             PyRun_SimpleString(s);
             
             object objectScriptInit = exec( strStartScript, objectDict, objectDict );
@@ -217,7 +191,7 @@ void Python::run(FILE *input)
             PyErr_Print();
         }
     } else {
-        fprintf(stderr, "Unable to run Python input file.\n");
-        return;
+            fprintf(stderr, "Unable to run Python input file.\n");
+            return;
     }
 }
