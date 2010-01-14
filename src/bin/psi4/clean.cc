@@ -7,6 +7,8 @@
 
 namespace psi {
 
+    extern FILE *outfile;
+    
 /*!
 ** psiclean():
 **
@@ -17,6 +19,7 @@ namespace psi {
 
 void psiclean(void) {
 
+  fprintf(outfile, "psiclean: Cleaning up files.\n");
   ip_cwk_clear();
   ip_cwk_add(const_cast<char*>(":DEFAULT"));
   ip_cwk_add(const_cast<char*>(":PSI"));
