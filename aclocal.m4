@@ -439,7 +439,7 @@ AS_VAR_PUSHDEF([Boost_lib_LDFLAGS], [boost_cv_lib_$1_LDFLAGS])dnl
 AS_VAR_PUSHDEF([Boost_lib_LIBS], [boost_cv_lib_$1_LIBS])dnl
 BOOST_FIND_HEADER([$3])
 boost_save_CPPFLAGS=$CPPFLAGS
-CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS $PYTHON_INCLUDE"
 # Now let's try to find the library.  The algorithm is as follows: first look
 # for a given library name according to the user's PREFERRED-RT-OPT.  For each
 # library name, we prefer to use the ones that carry the tag (toolset name).
