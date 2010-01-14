@@ -1,0 +1,53 @@
+
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+PSITARGET = $(top_objdir)/lib/libboost_python.a
+
+CXXINC += $(PYTHON_INCLUDE)
+
+TRUECXXSRC = \
+        numeric.cc \
+        list.cc    \
+        long.cc    \
+        dict.cc    \
+        tuple.cc   \
+        str.cc     \
+        slice.cc   \
+\
+        from_python.cc \
+        registry.cc \
+        type_id.cc \
+        enum.cc \
+        class.cc \
+        function.cc \
+        inheritance.cc \
+        life_support.cc \
+        pickle_support.cc \
+        errors.cc \
+        module.cc \
+        builtin_converters.cc \
+        arg_to_python_base.cc \
+        iterator.cc \
+        stl_iterator.cc \
+        object_protocol.cc \
+        object_operators.cc \
+        wrapper.cc \
+        import.cc \
+        exec.cc \
+        function_doc_signature.cc 
+
+
+LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+install_inc:: $(DEPENDINCLUDE)
+	$(MKDIRS) $(DESTDIR)$(incdir)/libboost_python
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libboost_python
+
+ifneq ($(DODEPEND),no)
+include $(LIBOBJ:%.o=%.d)
+endif
