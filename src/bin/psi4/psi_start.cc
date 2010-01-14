@@ -210,7 +210,6 @@ void print_usage(void)
   printf(" -i  --input filename     Input file name. Default: input.dat\n");
   printf(" -p  --prefix prefix      Prefix name for psi files. Default: psi\n");
   printf(" -a  --append             Append results to output file. Default: Truncate first\n");
-  printf(" -I  --irb                Run psi4 in interactive mode.\n");
 
   exit(EXIT_FAILURE);
 }

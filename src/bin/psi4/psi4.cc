@@ -9,7 +9,6 @@
 #include "mpi.h"
 #include <getopt.h>
 #include <stdio.h>
-//#include <ruby.h>
 #include <psiconfig.h>
 #include <libciomr/libciomr.h>
 #include <liboptions/liboptions.h>
@@ -34,15 +33,6 @@ namespace psi {
 
   int read_options(const std::string &name, Options & options);
   void read_atom_basis(char ** & atom_basis, int num_atoms);
-
-  // Functions defined in ruby.c that are only needed here
-  extern bool initialize_ruby();
-  extern void load_input_file_into_ruby();
-  extern void process_input_file();
-  extern void finalize_ruby();
-  extern int run_interactive_ruby();
-  extern bool create_global_task();
-  extern void enable_modules();
 
   PSIO *psio = NULL;
   std::map<std::string, PsiReturnType(*)(Options &, int argc, char *argv[])> dispatch_table;

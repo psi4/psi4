@@ -3,12 +3,10 @@
 
 #include <stdio.h>
 #include <string>
-//#include <ruby.h>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>
 #include <libipv1/ip_lib.h>
 #include <libpsio/psio.h>
-//#include "task.h"
 
 #ifdef MAIN
 #define EXT
@@ -81,12 +79,6 @@ EXT char **atom_basis; // basis set label for each atom
   
 EXT FILE* infile;
 
-/*! The name of the input file, could be useful for something */
-EXT std::string g_szInputFile;
-
-/*! Name of the output file */
-EXT std::string g_szOutputFilename;
-
 /*! Verbosity */
 EXT bool verbose;
 
@@ -96,40 +88,6 @@ EXT bool check_only;
 /* clean-up */
 EXT bool clean_only;
 
-/*! Global task object */
-//EXT Task *g_cTask;
-//EXT VALUE g_rbTask;
-
-# ifdef MAIN
-  /*! All classes that provide a Ruby interface need this to say which module they belong to */
-//  EXT VALUE g_rbPsi = Qnil;
-  /*! How much to indent the Ruby puts output by. */
-  EXT int g_iPutsIndent = 0;
-  EXT bool g_bQuietRuby = false;
-  EXT bool g_bIRB = false;
-  EXT void *g_rbExecNode = NULL;  // Only used in Ruby 1.9+
-# else
-//  extern VALUE g_rbPsi;
-  extern int g_iPutsIndent;
-  extern bool g_bQuietRuby;
-  extern bool g_bIRB;
-  extern void *g_rbExecNode;
-# endif
-  
-// Ruby Pre-1.9 string access
-#if !defined(RSTRING_LEN)
-#  define RSTRING_LEN(x) (RSTRING(x)->len)
-#endif
-#if !defined(RSTRING_PTR)
-#  define RSTRING_PTR(x) (RSTRING(x)->ptr)
-#endif
-  
-// Helper macros
-/*! Cast a C/++ function to a Ruby acceptable form */
-#define RUBYCAST(x) (VALUE (*)(...))(x)
-
-/*! Help the user get the Psi object from Ruby. */
-#define RUBYPSIDATA(RObj, OType, OPtr) \
-	Data_Get_Object(RObj, OType, OPtr);
 }
+  
 #endif
