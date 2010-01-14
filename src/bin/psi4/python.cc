@@ -155,7 +155,8 @@ BOOST_PYTHON_MODULE(psi)
         def("charge", &Molecule::charge).
         def("atomAtPosition", &Molecule::atom_at_position).
         def("printToOutput", &Molecule::print).
-        def("nuclearRepulsionEnergy", &Molecule::nuclear_repulsion_energy);
+        def("nuclearRepulsionEnergy", &Molecule::nuclear_repulsion_energy).
+        def("reorient", &Molecule::reorient);
 
 }
 
