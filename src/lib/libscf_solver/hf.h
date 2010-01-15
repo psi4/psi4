@@ -137,7 +137,11 @@ protected:
     
     // The number of iterations need to reach convergence
     int iterationsNeeded_;
-    
+
+    // Whether to add in an external potential to the fock matrix
+    bool addExternalPotential_;
+
+
     void form_B(); 
     
     inline int integral_type(int i, int j, int k, int l)
