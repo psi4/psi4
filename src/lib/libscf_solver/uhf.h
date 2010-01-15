@@ -13,6 +13,7 @@ namespace psi { namespace scf {
 class UHF : public HF {
 protected:
     SharedMatrix Fa_, Fb_;
+    SharedMatrix pertFa_, pertFb_;
     SharedMatrix Da_, Db_, Dt_, Dtold_;
     SharedMatrix Ca_, Cb_;
     SharedMatrix Ga_, Gb_;
@@ -49,7 +50,7 @@ public:
 
     /// Add an external potential to the alpha and beta Fock matrices
     void set_external_potential(double ***Va, double ***Vb)
-                               {Va_ = Va;  Vb_ = Vb;}
+                               {addExternalPotential_ = true; Va_ = Va;  Vb_ = Vb;}
 
     double compute_energy();
 };

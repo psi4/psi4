@@ -42,7 +42,8 @@ HF::HF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
     : Wavefunction(options, psio, chkpt),
       nuclear_dipole_contribution_(3),
       nuclear_quadrupole_contribution_(6),
-      print_(3)
+      print_(3),
+      addExternalPotential_(false)
 {
     common_init();
 }

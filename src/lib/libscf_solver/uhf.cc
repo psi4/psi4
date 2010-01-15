@@ -42,6 +42,8 @@ void UHF::common_init()
 
     Fa_ = SharedMatrix(factory_.create_matrix("F alpha"));
     Fb_ = SharedMatrix(factory_.create_matrix("F beta"));
+    pertFa_ = SharedMatrix(factory_.create_matrix("Perturbed Alpha Fock Matrix"));
+    pertFb_ = SharedMatrix(factory_.create_matrix("Perturbed Beta Fock Matrix"));
     Da_ = SharedMatrix(factory_.create_matrix("D alpha"));
     Db_ = SharedMatrix(factory_.create_matrix("D beta"));
     Dt_ = SharedMatrix(factory_.create_matrix("D total"));
@@ -466,12 +468,20 @@ void UHF::form_F() {
     
     Fb_->copy(H_);
     Fb_->add(Gb_);
+
+    if(addExternalPotential_){
+        // If there's an external potential, its contribution has already been computed
+        // in the form G routine and stored in pertF.  Now we need to add the rest of the
+        // Fock matrix contribution
+        pertFa_->add(Fa_);
+        pertFb_->add(Fb_);
+    }
 	
 #ifdef _DEBUG
-	if (debug_) {
-		Fa_->print(outfile);
-		Fb_->print(outfile);
-	}
+    if (debug_) {
+        Fa_->print(outfile);
+        Fb_->print(outfile);
+    }
 #endif
 }
 
@@ -479,15 +489,25 @@ void UHF::form_C()
 {
 	SharedMatrix eigvec(factory_.create_matrix());
 	SharedVector eigval(factory_.create_vector());
-	
-	Fa_->transform(Shalf_);
-	Fa_->diagonalize(eigvec, eigval);
+
+        if(addExternalPotential_){
+            pertFa_->transform(Shalf_);
+            pertFa_->diagonalize(eigvec, eigval);
+        }else{
+            Fa_->transform(Shalf_);
+            Fa_->diagonalize(eigvec, eigval);
+        }
     // fprintf(outfile, "Fa eigenvectors/values:\n");
     // eigvec->eivprint(eigval);
 	Ca_->gemm(false, false, 1.0, Shalf_, eigvec, 0.0);
-	
-	Fb_->transform(Shalf_);
-	Fb_->diagonalize(eigvec, eigval);
+
+        if(addExternalPotential_){
+            pertFb_->transform(Shalf_);
+            pertFb_->diagonalize(eigvec, eigval);
+        }else{
+            Fb_->transform(Shalf_);
+            Fb_->diagonalize(eigvec, eigval);
+        }
     // fprintf(outfile, "Fb eigenvectors/values:\n");
     // eigvec->eivprint(eigval);
 	Cb_->gemm(false, false, 1.0, Shalf_, eigvec, 0.0);
@@ -684,6 +704,20 @@ void UHF::form_G_from_PK()
     double *Db_vector = new double[pk_pairs_];
     double *Ga_vector = new double[pk_pairs_];
     double *Gb_vector = new double[pk_pairs_];
+    double *Va_vector = NULL;
+    double *Vb_vector = NULL;
+    double *Fa_vector = NULL;
+    double *Fb_vector = NULL;
+    if(addExternalPotential_){
+        Va_vector = new double[pk_pairs_];
+        Vb_vector = new double[pk_pairs_];
+        Fa_vector = new double[pk_pairs_];
+        Fb_vector = new double[pk_pairs_];
+        memset(Va_vector, 0, sizeof(double) * pk_pairs_);
+        memset(Vb_vector, 0, sizeof(double) * pk_pairs_);
+        memset(Fa_vector, 0, sizeof(double) * pk_pairs_);
+        memset(Fb_vector, 0, sizeof(double) * pk_pairs_);
+    }
 
     Ga_->zero();
     Gb_->zero();
@@ -701,14 +735,14 @@ void UHF::form_G_from_PK()
                     Da_vector[ij] = 2.0 * Da_->get(h, p, q);
                     Db_vector[ij] = 2.0 * Db_->get(h, p, q);
                     // Add in the external potential, if requested
-                    if(Va_ != NULL) Da_vector[ij] += 2.0 * Va_[h][p][q];
-                    if(Vb_ != NULL) Db_vector[ij] += 2.0 * Vb_[h][p][q];
+                    if(addExternalPotential_) Va_vector[ij] = 2.0 * Va_[h][p][q];
+                    if(addExternalPotential_) Vb_vector[ij] = 2.0 * Vb_[h][p][q];
 
                 } else {
                     Da_vector[ij] = Da_->get(h, p, q);
                     Db_vector[ij] = Db_->get(h, p, q);
-                    if(Va_ != NULL) Da_vector[ij] += Va_[h][p][q];
-                    if(Vb_ != NULL) Db_vector[ij] += Vb_[h][p][q];
+                    if(addExternalPotential_) Va_vector[ij] = Va_[h][p][q];
+                    if(addExternalPotential_) Vb_vector[ij] = Vb_[h][p][q];
                 }
                 ij++;
             }
@@ -737,12 +771,16 @@ void UHF::form_G_from_PK()
      * two G matrices. One G matrix is for Fa_ and the other for Fb_.
      * See derivation notebook for equations.
      */
-    double Ga_pq, Da_pq;
-    double Gb_pq, Db_pq;
+    double Ga_pq, Da_pq, Fa_pq, Va_pq;
+    double Gb_pq, Db_pq, Fb_pq, Vb_pq;
     double* Da_rs;
     double* Ga_rs;
     double* Db_rs;
     double* Gb_rs;
+    double* Fa_rs;
+    double* Fb_rs;
+    double* Va_rs;
+    double* Vb_rs;
     int pq, rs;
     double* JK_block = p_jk_;
     double* K_block = p_k_;
@@ -756,6 +794,16 @@ void UHF::form_G_from_PK()
         Db_pq = Db_vector[pq];
         Db_rs = &Db_vector[0];
         Gb_rs = &Gb_vector[0];
+        if(addExternalPotential_){
+            Fa_pq = 0.0;
+            Va_pq = Va_vector[pq];
+            Va_rs = &Va_vector[0];
+            Fa_rs = &Fa_vector[0];
+            Fb_pq = 0.0;
+            Vb_pq = Vb_vector[pq];
+            Vb_rs = &Vb_vector[0];
+            Fb_rs = &Fb_vector[0];
+        }
         for (rs = 0; rs <= pq; ++rs) {
             // D_{rs}^{c} * PK_{pqrs}         Also found in RHF
             // Doing F_mn_a about to add the K term
@@ -764,7 +812,17 @@ void UHF::form_G_from_PK()
 
             Gb_pq  += (*JK_block + *K_block) * (*Db_rs) + (*JK_block - *K_block) * (*Da_rs);
             *Gb_rs += (*JK_block + *K_block) * Db_pq    + (*JK_block - *K_block) * Da_pq;
+            if(addExternalPotential_){
+                Fa_pq  += (*JK_block + *K_block) * (*Va_rs) + (*JK_block - *K_block) * (*Vb_rs);
+                *Fa_rs += (*JK_block + *K_block) * Va_pq    + (*JK_block - *K_block) * Vb_pq;
 
+                Fb_pq  += (*JK_block + *K_block) * (*Vb_rs) + (*JK_block - *K_block) * (*Va_rs);
+                *Fb_rs += (*JK_block + *K_block) * Vb_pq    + (*JK_block - *K_block) * Va_pq;
+                ++Fa_rs;
+                ++Fb_rs;
+                ++Va_rs;
+                ++Vb_rs;
+            }
             ++Da_rs;
             ++Ga_rs;
             ++Db_rs;
@@ -774,6 +832,10 @@ void UHF::form_G_from_PK()
         }
         Ga_vector[pq] += Ga_pq;
         Gb_vector[pq] += Gb_pq;
+        if(addExternalPotential_){
+            Fa_vector[pq] += Fa_pq;
+            Fb_vector[pq] += Fb_pq;
+        }
     }
 
     // Convert G to a matrix
@@ -785,6 +847,12 @@ void UHF::form_G_from_PK()
                 Ga_->set(h, q, p, Ga_vector[ij]);
                 Gb_->set(h, p, q, Gb_vector[ij]);
                 Gb_->set(h, q, p, Gb_vector[ij]);
+                if(addExternalPotential_){
+                    pertFa_->set(h, p, q, Fa_vector[ij]);
+                    pertFa_->set(h, q, p, Fa_vector[ij]);
+                    pertFb_->set(h, p, q, Fb_vector[ij]);
+                    pertFb_->set(h, q, p, Fb_vector[ij]);
+                }
                 ij++;
             }
         }
@@ -797,6 +865,10 @@ void UHF::form_G_from_PK()
     }
 #endif
 
+    if(Va_vector != NULL) delete[](Va_vector);
+    if(Vb_vector != NULL) delete[](Vb_vector);
+    if(Fa_vector != NULL) delete[](Fa_vector);
+    if(Fb_vector != NULL) delete[](Fb_vector);
     delete[](Da_vector);
     delete[](Db_vector);
     delete[](Ga_vector);
