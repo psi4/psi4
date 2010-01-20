@@ -1,10 +1,12 @@
-Recent Changes (12/09)
+Recent Changes (1/10)
 ----------------------------------
 * Run aclocal before running configure
 * The code (temporarily) requires MPI.  Make sure you've installed a
 version of MPI (mpich2 recommended for Linux) and added the binaries
 to your path.  Then, when running configure, use the 
 --with-cxx=mpicxx option.  
+* The code now requires Python.  You must have the Python developer's
+package installed, in addition to the base Python package
 
 
 Installation Instructions for PSI4
