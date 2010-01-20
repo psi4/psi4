@@ -186,7 +186,7 @@ python2.5 python2.4 python2.3 python2.2 python2.1 python2.0])
   ])
  
   if test "$PYTHON" = :; then
-    dnl RUun any user-specific action, or abort.
+    dnl Run any user-specific action, or abort.
     m4_default([$3], [AC_MSG_ERROR([no suitable Python interpreter found])])
   else      
     dnl Query Python for its version number.
@@ -203,6 +203,41 @@ python2.5 python2.4 python2.3 python2.2 python2.1 python2.0])
     AC_CACHE_CHECK([for $am_display_PYTHON linker flags], [am_cv_python_ldflags],
       [am_cv_python_ldflags=`${PYTHON}-config --ldflags`])
     AC_SUBST([PYTHON_LDFLAGS], [$am_cv_python_ldflags])
+
+    #
+    # final check to see if everything compiles alright
+    #
+    AC_MSG_CHECKING([consistency of all components of python development environment])
+    AC_LANG_PUSH([C])
+    # save current global flags
+    LIBS="$ac_save_LIBS $PYTHON_LDFLAGS"
+    CPPFLAGS="$ac_save_CPPFLAGS $PYTHON_INCLUDE"
+    AC_TRY_LINK([
+        #include <Python.h>
+    ],[
+        Py_Initialize();
+    ],[pythonexists=yes],[pythonexists=no])
+
+    AC_MSG_RESULT([$pythonexists])
+
+        if test ! "$pythonexists" = "yes"; then
+       AC_MSG_ERROR([
+  Could not link test program to Python. Maybe the main Python library has been
+  installed in some non-standard library path. If so, pass it to configure,
+  via the LDFLAGS environment variable.
+  Example: ./configure LDFLAGS="-L/usr/non-standard-path/python/lib"
+  ============================================================================
+   ERROR!
+   You probably have to install the development version of the Python package
+   for your distribution.  The exact name of this package varies among them.
+  ============================================================================
+       ])
+      PYTHON_VERSION=""
+    fi
+    AC_LANG_POP
+    # turn back to default flags
+    CPPFLAGS="$ac_save_CPPFLAGS"
+    LIBS="$ac_save_LIBS"
 
     dnl This is the end of all things
     $2
