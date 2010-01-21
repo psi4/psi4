@@ -136,7 +136,7 @@ void HF::common_init()
     //Run density fitting? default no
     ri_integrals_ = false;
     
-    if (options_.get_bool("DF-HF"))
+    if (options_.get_bool("RI_HF"))
     {
         ri_integrals_ = true;
         direct_integrals_ = false;
