@@ -91,6 +91,7 @@ public:
     atom_info r(int atom) { return atoms_[atom]; }
     /// Returns a Vector3 with x, y, z position of atom
     Vector3 xyz(int atom) const { return Vector3(atoms_[atom].x, atoms_[atom].y, atoms_[atom].z); }
+    Vector3 fxyz(int atom) const { return Vector3(full_atoms_[atom].x, full_atoms_[atom].y, full_atoms_[atom].z); }
     /// Returns mass atom atom
     double mass(int atom) const;
     /// Returns label of atom

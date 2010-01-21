@@ -223,8 +223,10 @@ shared_ptr<BasisSet> BasisSet::zero_basis_set()
 
     // Add "ghost" atom to the molecule for this basis
     new_basis->molecule_ = shared_ptr<Molecule>(new Molecule);
+    // Ghost atoms are now handled differently, they are not added to the normal xyz information array,
+    // but to the fxyz array.
     new_basis->molecule_->add_atom(0, 0.0, 0.0, 0.0);
-    Vector3 center = new_basis->molecule_->xyz(0);
+    Vector3 center = new_basis->molecule_->fxyz(0);
 
     new_basis->nshells_ = 1;
     new_basis->nprimitives_ = 1;
