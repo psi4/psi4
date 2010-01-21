@@ -66,7 +66,7 @@ void HF::form_B()
     //fprintf(outfile,"\n Memory available in doubles: %d\n",memory_/sizeof(double));
     //fprintf(outfile,"\n Memory available in bytes: %d\n",memory_);
     //fprintf(outfile,"\n Memory safety factor: %f\n",MEMORY_SAFETY_FACTOR);
-    df_storage_ = flip_B_disk;
+    //df_storage_ = flip_B_disk;
 
     if (df_storage_ == full)
         fprintf(outfile,"\n\n  Density Fitting Algorithm proceeding In Core\n"); 
@@ -79,19 +79,18 @@ void HF::form_B()
     else if (df_storage_ == disk)
         fprintf(outfile,"\n\n  Density Fitting Algorithm proceeding on Disk\n"); 
     fflush(outfile);
-
-    //TODO: Add cases for [(ab|P) on memory, (ab|Q) on disk->(ab|Q) on memory (ij|K) on disk] and 
-    //[(ab|P) on memory, (ab|Q) on disk->(ab|Q) on memory (ij|K) on memory]
-
+    
+    fprintf(outfile,"\n0:\n"); fflush(outfile);
     shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
-
+    fprintf(outfile,"\n1:\n"); fflush(outfile);
+    
     // Create integral factory
     IntegralFactory rifactory_J(ribasis_, zero, ribasis_, zero);
     TwoBodyInt* Jint = rifactory_J.eri();
     double **J = block_matrix(ri_nbf_, ri_nbf_);
     double **J_mhalf = block_matrix(ri_nbf_, ri_nbf_);
     const double *Jbuffer = Jint->buffer();
-
+    
 #ifdef TIME_SCF
     timer_init();
     timer_on("Form J");
@@ -122,7 +121,7 @@ void HF::form_B()
             }
         }
     }
-    //fprintf(outfile,"\nJ:\n");
+    fprintf(outfile,"\nJ:\n"); fflush(outfile);
     //print_mat(J,ri_nbf_,ri_nbf_,outfile);
 
     // Form J^-1/2
@@ -164,7 +163,7 @@ void HF::form_B()
     free_block(J);
     free_block(J_copy);
 
-    //fprintf(outfile,"\nJmhalf:\n");
+    fprintf(outfile,"\nJmhalf:\n"); fflush(outfile);
     //print_mat(J_mhalf,ri_nbf_,ri_nbf_,outfile);
 
 #ifdef TIME_SCF

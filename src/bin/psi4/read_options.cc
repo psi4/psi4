@@ -127,7 +127,7 @@ int read_options(const std::string &name, Options & options) {
     options.add_double("LAMBDA", 0.0);
     /*- The name of the auxilliary basis to be used in RI computations -*/
     options.add_str("RI_BASIS", " ");
-    options.add_bool("DF-HF", false);
+    options.add_bool("RI_HF", false);
     /*- The operator used to perturb the Hamiltonian, if requested -*/
     options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z");
     /*- Whether the computation is to be performed without disk-based storage of integrals -*/
