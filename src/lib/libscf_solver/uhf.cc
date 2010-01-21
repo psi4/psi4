@@ -61,8 +61,9 @@ void UHF::common_init()
     use_out_of_core_ = options_.get_bool("OUT_OF_CORE");
 
     if(print_ > 1) fprintf(outfile, "  DIIS not implemented for UHF, yet.\n\n");
-
-    allocate_PK();
+	
+	if (direct_integrals_ == false && ri_integrals_ == false)
+    	allocate_PK();
 }
 
 double UHF::compute_energy()
@@ -74,7 +75,10 @@ double UHF::compute_energy()
     form_H();
     // find_occupation(_H, _H);
 
-    if (use_out_of_core_ == false) form_PK();
+    if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
+        form_PK();
+    else if (ri_integrals_ == true)
+        form_B();
 
     form_Shalf();
     form_initialF();
@@ -107,10 +111,14 @@ double UHF::compute_energy()
         Dtold_->copy(Dt_);
         Eold_ = E_;
 
-        if (use_out_of_core_ == false)
+        if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
             form_G_from_PK();
+        else if (ri_integrals_ == false && direct_integrals_ == true)
+           form_G_from_direct_integrals(); 
+        else if (ri_integrals_ == true)  
+           form_G_from_RI();
         else
-            form_G();
+           form_G();
 
         form_F();
 
@@ -125,7 +133,12 @@ double UHF::compute_energy()
 
         converged = test_convergency();
     } while (!converged && iter < maxiter_);
-
+	
+	if (ri_integrals_)
+    {
+    	if (df_storage_ == full||df_storage_ == flip_B_core)
+    		free(B_ia_P_);
+    }
     // Return the final RHF energy
     if (converged) {
         if(print_ > 1)
@@ -878,6 +891,11 @@ void UHF::form_G_from_PK()
 void UHF::form_G()
 {
     fprintf(stderr, "UHF out-of-core algorithm is not implemented yet!\n");
+    abort();
+}
+void UHF::form_G_from_direct_integrals()
+{
+    fprintf(stderr, "UHF integral direct algorithm is not implemented yet!\n");
     abort();
 }
 

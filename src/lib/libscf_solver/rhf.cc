@@ -167,7 +167,7 @@ double RHF::compute_energy()
         else if (ri_integrals_ == true)  
            form_G_from_RI();
         else
-            form_G();
+           form_G();
         
         form_F();
         
@@ -208,7 +208,7 @@ double RHF::compute_energy()
 
     if (ri_integrals_)
     {
-    	if (df_storage_ == full)
+    	if (df_storage_ == full||df_storage_ == flip_B_core)
     		free(B_ia_P_);
     }
     // Compute the final dipole.
