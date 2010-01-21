@@ -17,6 +17,8 @@
 #include "libscf_solver/rhf.cc"
 #include "libscf_solver/rohf.h" 
 #include "libscf_solver/uhf.h"
+#include "libscf_solver/rks.h"
+#include "libscf_solver/uks.h"
 
 using namespace std;
 using namespace psi;
@@ -48,6 +50,14 @@ double HFEnergy::compute_energy()
     else if (reference == "UHF") {
         UHF uhf_energy(options_, psio_, chkpt_);
         energy = uhf_energy.compute_energy();
+    }
+    else if (reference == "RKS") {
+        RKS rks_energy(options_, psio_, chkpt_);
+        energy = rks_energy.compute_energy();
+    }
+    else if (reference == "UKS") {
+        UKS uks_energy(options_, psio_, chkpt_);
+        energy = uks_energy.compute_energy();
     }
     else {
         throw InputException("Unknown reference " + reference, "REFERENCE", __FILE__, __LINE__);
