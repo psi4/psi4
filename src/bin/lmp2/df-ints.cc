@@ -188,25 +188,6 @@ void LMP2::direct_df_transformation() {
   //Allocating the memory needed by Ktilde
   int i,j,ij,l,k,a,b,t,u,v;
 
-  double ***B_ir_p = (double ***) malloc(sizeof(double **) * nocc);
-  for(i=0; i < nocc; i++)
-    B_ir_p[i] = (double **) malloc(sizeof(double *) * nso );
-  for(i=0; i< nocc; i++)
-    for(j=0; j < nso; j++) {
-      B_ir_p[i][j] = (double *) malloc(sizeof(double) * ribasis->nbf() );
-      memset(B_ir_p[i][j], '\0', sizeof(double) * ribasis->nbf() );
-    }
-
-  double ***mo_p_ir = (double ***) malloc(sizeof(double **) * nocc);
-  for(i=0; i < nocc; i++)
-    mo_p_ir[i] = (double **) malloc(sizeof(double *) * nso);
-  for(i=0; i< nocc; i++)
-    for(j=0; j < nso; j++) {
-      mo_p_ir[i][j] = (double *) malloc(sizeof(double) * ribasis->nbf() );
-      memset(mo_p_ir[i][j], '\0', sizeof(double) * ribasis->nbf() );
-    }
-
-
   /* Build the "united pair domains" (Werner JCP 118, 8149 (2003) */
   /* This will only work for now, where we have assumed that all
      pairs are strong pairs.  This assumption will change, then
@@ -226,6 +207,36 @@ void LMP2::direct_df_transformation() {
     }
   }
 
+  int **uniteddomain_abs2rel = init_int_matrix(nocc,nso);
+  for(i=0; i < nocc; i++) {
+    for(k=0, a=0; k < natom; k++){
+      if(uniteddomain[i][k]) {
+        for(t=aostart[k]; t <= aostop[k]; t++, a++) {
+          uniteddomain_abs2rel[i][t] = a;
+        }
+      }
+    }
+  }
+
+  double ***mo_p_ir = (double ***) malloc(sizeof(double **) * nocc);
+  for(i=0; i < nocc; i++)
+    mo_p_ir[i] = (double **) malloc(sizeof(double *) * uniteddomain_len[i]);
+  for(i=0; i< nocc; i++){
+    for(j=0; j < uniteddomain_len[i]; j++) {
+      mo_p_ir[i][j] = (double *) malloc(sizeof(double) * ribasis->nbf() );
+      memset(mo_p_ir[i][j], '\0', sizeof(double) * ribasis->nbf() );
+    }
+  }
+
+
+  double ***B_ir_p = (double ***) malloc(sizeof(double **) * nocc);
+  for(i=0; i < nocc; i++)
+    B_ir_p[i] = (double **) malloc(sizeof(double *) * uniteddomain_len[i]);
+  for(i=0; i< nocc; i++)
+    for(j=0; j < uniteddomain_len[i]; j++) {
+      B_ir_p[i][j] = (double *) malloc(sizeof(double) * ribasis->nbf() );
+      memset(B_ir_p[i][j], '\0', sizeof(double) * ribasis->nbf() );
+    }
 
   double **half = block_matrix(nocc,norbs);
 
@@ -280,7 +291,7 @@ void LMP2::direct_df_transformation() {
         if(uniteddomain[i][k]) {
           for(t=aostart[k]; t <= aostop[k]; t++, a++) {
             for(mu = 0; mu < norbs; ++mu) {
-              mo_p_ir[i][t][oP] += Rt_full[mu][t] * half[i][mu]; 
+              mo_p_ir[i][a][oP] += Rt_full[mu][t] * half[i][mu]; 
             }
           }
         }
@@ -311,7 +322,7 @@ void LMP2::direct_df_transformation() {
 // B_ir^P = Sum_Q (i r | Q) (J^-1/2)_QP
      
   for(i=0; i < nocc; i++) {
-    for(a = 0; a < nso; a++) {
+    for(a = 0; a < uniteddomain_len[i]; a++) {
       for(oP=0; oP < ribasis->nbf(); ++oP){
         B_ir_p[i][a][oP] = C_DDOT(ribasis->nbf(),&(mo_p_ir[i][a][0]),1,&(J_mhalf[oP][0]),1);
       }
@@ -319,7 +330,7 @@ void LMP2::direct_df_transformation() {
   }
   
   for(i=0;i<nocc;i++)
-    for(j=0;j<nso;j++)
+    for(j=0;j<uniteddomain_len[i];j++)
       free(mo_p_ir[i][j]);
   for(i=0;i<nocc;i++)
     free(mo_p_ir[i]);
@@ -356,6 +367,7 @@ void LMP2::direct_df_transformation() {
   }
 
    v = 0;
+   int a2,b2; 
     for(i = 0, ij = 0; i < nocc; i++) {
       for(j = 0; j <= i; j++, ij++) {
         if(v % nprocs == myid) {
@@ -365,7 +377,9 @@ void LMP2::direct_df_transformation() {
                 for(l=0, b=0; l < natom; l++) {
                   if(pairdomain[ij][l]) {
                     for(u=aostart[l]; u <= aostop[l]; u++, b++) {
-                      Ktilde[ij_local[ij]][a][b] = C_DDOT(ribasis->nbf(),&(B_ir_p[i][t][0]),1,&(B_ir_p[j][u][0]),1);
+                      a2 = uniteddomain_abs2rel[i][t];
+                      b2 = uniteddomain_abs2rel[j][u];
+                      Ktilde[ij_local[ij]][a][b] = C_DDOT(ribasis->nbf(),&(B_ir_p[i][a2][0]),1,&(B_ir_p[j][b2][0]),1);
                     }
                   }  
                 }   
@@ -382,7 +396,7 @@ void LMP2::direct_df_transformation() {
 
 
   for(i=0;i<nocc;i++)
-    for(j=0;j<nso;j++)
+    for(j=0;j<uniteddomain_len[i];j++)
       free(B_ir_p[i][j]);
   for(i=0;i<nocc;i++)
     free(B_ir_p[i]);
