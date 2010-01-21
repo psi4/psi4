@@ -6,9 +6,9 @@ include ../MakeVars
 
 PSITARGET = $(top_objdir)/lib/libPSI_scf_solver.a
 
-TRUECXXSRC = hf.cc   rhf.cc  rohf.cc uhf.cc df.cc
+TRUECXXSRC = hf.cc   rhf.cc  rohf.cc uhf.cc df.cc rks.cc uks.cc
 
-DEPENDINCLUDE = hf.h   rhf.h  rohf.h uhf.h
+DEPENDINCLUDE = hf.h   rhf.h  rohf.h uhf.h rks.h uks.h
 
 LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
 
