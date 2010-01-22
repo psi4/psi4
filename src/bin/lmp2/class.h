@@ -1,6 +1,6 @@
 /*! \file
     \ingroup LMP2
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #ifndef _psi_src_bin_lmp2_h_
 #define _psi_src_bin_lmp2_h_
@@ -17,7 +17,7 @@ class LMP2 {
 
   private:
     int nso;			/* no. of symmetry adapted atomic orbitals */
-    int natom;			/* no. of atoms */		
+    int natom;			/* no. of atoms */
     int nocc;			/* no. of occupied orbitals */
     int nshell; 		/* no. of angular momentum shells */
     int nirreps;		/* no. of irreducible representations */
@@ -36,14 +36,14 @@ class LMP2 {
     int **domain;		/* Orbital domains */
     int *domain_len;		/* Size of each domain */
     int **pairdomain;		/* Pair domains */
-    int *pairdom_len;		/* Size of each pair domain */ 
+    int *pairdom_len;		/* Size of each pair domain */
     int *pairdom_nrlen;		/* Size of each pair domain after orthogonalization */
     int ij_pairs;		/* no. of ij pairs */
 //    double *fR;
     double **Rt_full;		/* Full AO to PO matrix */
     double ***W;
     shared_ptr<PSIO> psio;
-    shared_ptr<Chkpt> chkpt;    
+    shared_ptr<Chkpt> chkpt;
     int ref;
     char *wfn;
     char *jobtype;
