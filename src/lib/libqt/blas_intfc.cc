@@ -292,7 +292,7 @@ void C_DGEMV(char transa, int m, int n, double alpha, double *A,
 {
   if (m == 0 || n == 0) return;
 
-  if(transa == 'n') transa = 't';
+  if(transa == 'n' || transa == 'N') transa = 't';
   else transa = 'n';
 
   ::F_DGEMV(&transa,&n,&m,&alpha,A,&nca,X,&inc_x,&beta,Y,&inc_y);
