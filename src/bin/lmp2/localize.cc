@@ -49,7 +49,7 @@ void LMP2::localize() {
   double Uss, Utt, Ust, Uts, LCks, LCkt, **U, **V, **VV;
   double cos4a, alpha, alphamax, alphalast, conv;
 
-  if(print > 0 && myid == 0) {
+  if(print > 2 && myid == 0) {
     fprintf(outfile, "\nC Matrix in the AO basis:\n");
     print_mat(C, nso, nso, outfile);
   }
@@ -269,7 +269,7 @@ void LMP2::localize() {
   }
   free_block(LCtmp);
 
-  if(print > 0 && myid == 0) {
+  if(print > 3 && myid == 0) {
     fprintf(outfile, "\nC Matrix in the LO basis:\n");
     print_mat(C, nso, nso, outfile);
   }
