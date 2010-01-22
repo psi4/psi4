@@ -66,13 +66,13 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
     _psio->open(PSIF_HALFT0, PSIO_OPEN_NEW);
 
     dpdbuf4 J, K;
-    dpd_buf4_init(&J, PSIF_SO_PRESORT, 0, 3, 0, 3, 3, 0, "SO Ints (nn,nn)");
+    dpd_buf4_init(&J, PSIF_SO_PRESORT, 0, 3, 0, 3, 3, 0, "SO Ints (nn|nn)");
 
     int braCore = 3;
     int ketCore = DPD_ID(s1, s2, Alpha, false);
     int braDisk = 3;
     int ketDisk = DPD_ID(s1, s2, Alpha, true);
-    sprintf(label, "Half-Transformed Ints (nn,%c%c)", toupper(s1->label()), toupper(s2->label()));
+    sprintf(label, "Half-Transformed Ints (nn|%c%c)", toupper(s1->label()), toupper(s2->label()));
     dpd_buf4_init(&K, PSIF_HALFT0, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
     if(_print > 5)
         fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
@@ -152,12 +152,12 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
 
     braCore = braDisk = 3;
     ketCore = ketDisk = DPD_ID(s1, s2, Alpha, true);
-    sprintf(label, "Half-Transformed Ints (nn,%c%c)", toupper(s1->label()), toupper(s2->label()));
+    sprintf(label, "Half-Transformed Ints (nn|%c%c)", toupper(s1->label()), toupper(s2->label()));
     dpd_buf4_init(&K, PSIF_HALFT0, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
     if(_print > 5)
         fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
                             label, braCore, ketCore, braDisk, ketDisk);
-    sprintf(label, "Half-Transformed Ints (%c%c,nn)", toupper(s1->label()), toupper(s2->label()));
+    sprintf(label, "Half-Transformed Ints (%c%c|nn)", toupper(s1->label()), toupper(s2->label()));
     dpd_buf4_sort(&K, _aHtIntFile, rspq, ketCore, braCore, label);
     dpd_buf4_close(&K);
 
@@ -173,13 +173,13 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
 
         _psio->open(PSIF_HALFT0, PSIO_OPEN_NEW);
 
-        dpd_buf4_init(&J, PSIF_SO_PRESORT, 0, 3, 0, 3, 3, 0, "SO Ints (nn,nn)");
+        dpd_buf4_init(&J, PSIF_SO_PRESORT, 0, 3, 0, 3, 3, 0, "SO Ints (nn|nn)");
 
         braCore = 3;
         ketCore = DPD_ID(s1, s2, Beta, false);
         braDisk = 3;
         ketDisk = DPD_ID(s1, s2, Beta, true);
-        sprintf(label, "Half-Transformed Ints (nn,%c%c)", tolower(s1->label()), tolower(s2->label()));
+        sprintf(label, "Half-Transformed Ints (nn|%c%c)", tolower(s1->label()), tolower(s2->label()));
         dpd_buf4_init(&K, PSIF_HALFT0, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
         if(_print > 5)
             fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
@@ -258,13 +258,13 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
         ketCore = DPD_ID(s1, s2, Beta, true);
         braDisk = 3;
         ketDisk = DPD_ID(s1, s2, Beta, true);
-        sprintf(label, "Half-Transformed Ints (nn,%c%c)", tolower(s1->label()), tolower(s2->label()));
+        sprintf(label, "Half-Transformed Ints (nn|%c%c)", tolower(s1->label()), tolower(s2->label()));
         dpd_buf4_init(&K, PSIF_HALFT0, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
         if(_print > 5)
             fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
                                 label, braCore, ketCore, braDisk, ketDisk);
 
-        sprintf(label, "Half-Transformed Ints (%c%c,nn)", tolower(s1->label()), tolower(s2->label()));
+        sprintf(label, "Half-Transformed Ints (%c%c|nn)", tolower(s1->label()), tolower(s2->label()));
         dpd_buf4_sort(&K, _bHtIntFile, rspq, ketCore, braCore, label);
         dpd_buf4_close(&K);
 
