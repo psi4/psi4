@@ -198,7 +198,34 @@ int LMP2::get_mn_pairs(int n) {
   return mn_pairs;
 }
 
+int LMP2::get_num_unique_shells() {
 
+    int count = 0;
+    for (int M = 0; M < nshell; M++) {
+        for (int N = 0; N <= M; N++, count++) {
+        }
+    }
+
+    return count;
+}
+
+int** LMP2::get_MN_shell(shared_ptr<BasisSet> basisset) {
+
+    int ** MN_shell = init_int_matrix(4, num_unique_shells);
+    int count = 0;
+    for (int M = 0; M < nshell; M++) {
+        int numm = basisset->shell(M)->nfunction();
+        for (int N = 0; N <= M; N++, count++) {
+            int numn = basisset->shell(N)->nfunction();
+            MN_shell[0][count] = M;
+            MN_shell[1][count] = numm;
+            MN_shell[2][count] = N;
+            MN_shell[3][count] = numn;
+        }
+    }
+
+    return MN_shell;
+}
 
 
 }} /* End namespace */
