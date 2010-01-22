@@ -97,7 +97,7 @@ IntegralTransform::presort_so_tei()
     
     dpdfile4 I;
     _psio->open(PSIF_SO_PRESORT, PSIO_OPEN_NEW);
-    dpd_file4_init(&I, PSIF_SO_PRESORT, 0, 3, 3, "SO Ints (nn,nn)");
+    dpd_file4_init(&I, PSIF_SO_PRESORT, 0, 3, 3, "SO Ints (nn|nn)");
 
     size_t memoryd = _memory / sizeof(double);
 
