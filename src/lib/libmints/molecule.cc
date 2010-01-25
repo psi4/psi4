@@ -13,6 +13,7 @@ using namespace std;
 using namespace psi;
 using namespace boost;
 
+// TODO: These should probably be moved to psi4-def.h
 #define ZERO_MOMENT_INERTIA 1.0E-10     /*Tolerance for degenerate rotational constants*/
 #define ZERO 1.0E-14
 
@@ -579,7 +580,7 @@ void Molecule::save_to_chkpt(shared_ptr<Chkpt> chkpt, std::string prefix)
     free_block(fgeom);
 }
 
-void Molecule::print()
+void Molecule::print() const
 {
     if (natom()) {
         fprintf(outfile,"       Center              X                  Y                   Z\n");
@@ -785,6 +786,10 @@ boost::shared_ptr<PointGroup> Molecule::find_point_group(double tol) const
     Vector3 worldyaxis(0.0, 1.0, 0.0);
     Vector3 worldzaxis(0.0, 0.0, 1.0);
 
+    // Print the molecule we're working with
+    fprintf(outfile, "natom() = %d\n", natom());
+    print();
+
     bool linear, planar;
     is_linear_planar(linear, planar, tol);
 
@@ -871,9 +876,9 @@ found_c2axis:
             for (i=0; i<natom(); ++i) {
                 Vector3 A = xyz(i) - com;
                 double AdotA = A.dot(A);
-                for (j=0; j<i; ++i) {
+                for (j=0; j<i; ++j) {
                     // the atoms must be identical
-                    if (Z(i) != Z(i)) continue;
+                    if (Z(i) != Z(j) || fabs(mass(i) - mass(j)) > tol) continue;
                     Vector3 B = xyz(i) - com;
                     // the atoms must be the same distance from the com
                     if (fabs(AdotA - B.dot(B)) > tol) continue;
@@ -1150,3 +1155,36 @@ found_sigma:
     return pg;
 }
 
+void Molecule::release_symmetry_information()
+{
+    for (int i=0; i<nunique_; ++i) {
+	delete[] equiv_[i];
+    }
+    delete[] equiv_;
+    delete[] nequiv_;
+    delete[] atom_to_unique_;
+    nunique_ = 0;
+    equiv_   = 0;
+    nequiv_  = 0;
+    atom_to_unique_ = 0;
+}
+
+void Molecule::form_symmetry_information(double tol)
+{
+    if (equiv_)
+	release_symmetry_information();
+
+    if (natom() == 0) {
+        nunique_ = 0;
+        equiv_   = 0;
+        nequiv_  = 0;
+        atom_to_unique_ = 0;
+        return;
+    }
+
+    nequiv_         = new int[natom()];
+    atom_to_unique_ = new int[natom()];
+    equiv_          = new int*[natom()];
+
+    if (!strcmp(point_group))
+}

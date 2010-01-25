@@ -47,3 +47,4 @@ def geometry(geom, reorient = True, prefix = "", chkpt = None):
 
     molecule.saveToCheckpoint(chkpt, prefix)
 
+    return molecule
