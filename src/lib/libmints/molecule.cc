@@ -59,7 +59,11 @@ namespace psi {
 }
 
 Molecule::Molecule():
-    nirreps_(0)
+    nirreps_(0),
+    nunique_(0),
+    nequiv_(0),
+    equiv_(0),
+    atom_to_unique_(0)
 {
 
 }
@@ -595,6 +599,21 @@ void Molecule::print() const
         }
         fprintf(outfile,"\n");
         fflush(outfile);
+
+	// Print symmetry information, if available
+	if (nunique_) {
+	    fprintf(outfile, "    Number of unique atoms: %d\n\n", nunique_);
+	    fprintf(outfile, "    Atoms equivalency:\n");
+	    for (int i=0; i<nunique_; ++i) {
+		fprintf(outfile, "       unique atom %d: ");
+		for (int j=0; j<nequiv_[i]; ++j) {
+		fprintf(outfile, "%d ", equiv_[i][j]);
+		}
+		fprintf(outfile, "\n");
+	    }
+	    fprintf(outfile, "\n");
+	    fflush(outfile);
+	}
     }
 }
 
@@ -654,6 +673,16 @@ SimpleMatrix* Molecule::inertia_tensor()
     }
     
     return tensor;
+}
+
+double Molecule::xyz(int atom, int _xyz)
+{
+    if (_xyz == 0)
+        return atoms_[atom].x;
+    else if (_xyz == 1)
+        return atoms_[atom].y;
+    else
+        return atoms_[atom].z;
 }
 
 //
@@ -785,10 +814,6 @@ boost::shared_ptr<PointGroup> Molecule::find_point_group(double tol) const
     Vector3 worldxaxis(1.0, 0.0, 0.0);
     Vector3 worldyaxis(0.0, 1.0, 0.0);
     Vector3 worldzaxis(0.0, 0.0, 1.0);
-
-    // Print the molecule we're working with
-    fprintf(outfile, "natom() = %d\n", natom());
-    print();
 
     bool linear, planar;
     is_linear_planar(linear, planar, tol);
@@ -1110,10 +1135,6 @@ found_sigma:
         origin[i] = com[i];
     }
 
-    fprintf(outfile, "frame:\n");
-    frame.print(outfile);
-    fprintf(outfile, "origin: %s\n", origin.to_string().c_str());
-
     boost::shared_ptr<PointGroup> pg;
     if (have_inversion) {
         if (have_c2axis) {
@@ -1186,5 +1207,98 @@ void Molecule::form_symmetry_information(double tol)
     atom_to_unique_ = new int[natom()];
     equiv_          = new int*[natom()];
 
-    if (!strcmp(point_group))
+    if (!strcmp(point_group()->symbol(), "c1")) {
+        nunique_ = natom();
+        for (int i=0; i<natom(); ++i) {
+            nequiv_[i] = 1;
+            equiv_[i] = new int[1];
+            equiv_[i][0] = i;
+            atom_to_unique_[i] = i;
+        }
+        return;
+    }
+
+    // The first atom is always unique
+    nunique_           = 1;
+    nequiv_[0]         = 1;
+    equiv_[0]          = new int[1];
+    equiv_[0][0]       = 0;
+    atom_to_unique_[0] = 0;
+
+    CharacterTable ct  = point_group()->char_table();
+
+    Vector3 ac;
+    SymmetryOperation so;
+    Vector3 np;
+
+    // Find the equivalent atoms
+    int i;
+    for (i=1; i<natom(); ++i) {
+        ac = xyz(i);
+        int i_is_unique = 1;
+        int i_equiv = 0;
+
+        // Apply all symmetry ops in the group to the atom
+        for (int g=0; g<ct.order(); ++g) {
+            so = ct.symm_operation(g);
+            for (int ii=0; ii<3; ++ii) {
+                np[ii] = 0;
+                for (int jj=0; jj<3; ++jj)
+                    np[ii] += so(ii, jj) * ac[jj];
+            }
+
+            // See if the transformed atom is equivalent to a
+            // unique atom
+            for (int j=0; j<nunique_; ++j) {
+                int unique = equiv_[j][0];
+                Vector3 aj(xyz(unique));
+                if (np.distance(aj) < tol
+                        && Z(unique) == Z(i)
+                        && fabs(mass(unique)-mass(i)) < tol) {
+                    i_is_unique = 0;
+                    i_equiv = j;
+                    break;
+                }
+            }
+        }
+        if (i_is_unique) {
+            nequiv_[nunique_] = 1;
+            equiv_[nunique_] = new int[1];
+            equiv_[nunique_][0] = i;
+            atom_to_unique_[i] = nunique_;
+            nunique_++;
+        }
+        else {
+            int *tmp = new int[nequiv_[i_equiv]+1];
+            memcpy(tmp, equiv_[i_equiv],nequiv_[i_equiv]*sizeof(int));
+            delete[] equiv_[i_equiv];
+            equiv_[i_equiv] = tmp;
+            equiv_[i_equiv][nequiv_[i_equiv]] = i;
+            nequiv_[i_equiv]++;
+            atom_to_unique_[i] = i_equiv;
+        }
+    }
+
+    // The first atom in the equiv list is considered the primary
+    // unique atom. Just to make things look pretty, amek the
+    // atom with the most zeros in its x, y, z coordinate the
+    // unique atom. Nothing else should rely on this being done.
+    double ztol=1.0e-5;
+    for (i=0; i<nunique_; ++i) {
+        int maxzero = 0;
+        int jmaxzero = 0;
+        for (int j=0; j<nequiv_[i]; ++j) {
+            int nzero = 0;
+            for (int k=0; k<3; ++k)
+                if (fabs(xyz(equiv_[i][j], k)) < ztol)
+                    nzero++;
+            if (nzero > maxzero) {
+                maxzero = nzero;
+                jmaxzero = j;
+            }
+        }
+        int tmp = equiv_[i][jmaxzero];
+        equiv_[i][jmaxzero] = equiv_[i][0];
+        equiv_[i][0] = tmp;
+    }
 }
