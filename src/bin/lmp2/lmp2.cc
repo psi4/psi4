@@ -69,7 +69,7 @@ PsiReturnType lmp2(Options &options, int argc, char * argv[]) {
   lmp2_obj.domains();
   lmp2_obj.projection();
 
-  if(options.get_bool("DF-LMP2")){ 
+  if(options.get_bool("RI_LMP2")){ 
     lmp2_obj.direct_df_transformation();
   }
   else {

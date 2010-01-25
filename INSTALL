@@ -4,9 +4,12 @@ Recent Changes (1/10)
 * The code (temporarily) requires MPI.  Make sure you've installed a
 version of MPI (mpich2 recommended for Linux) and added the binaries
 to your path.  Then, when running configure, use the 
---with-cxx=mpicxx option.  
+--with-cxx=mpicxx option.  Note: we have had trouble with header files
+when using mpich2-1.1.0.  Using mpich2-1.2.1 seems to fix it.
 * The code now requires Python.  You must have the Python developer's
 package installed, in addition to the base Python package
+
+Potential Problems (1/10)
 
 
 Installation Instructions for PSI4
