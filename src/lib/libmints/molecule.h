@@ -46,6 +46,12 @@ protected:
     /// Zero it out
     void clear();
 
+    /// Number of unique atoms
+    int nunique_;
+    int *nequiv_;
+    int **equiv_;
+    int *atom_to_unique_;
+
 public:
     Molecule();
     /// Copy constructor.
@@ -140,7 +146,7 @@ public:
     void nirrep(int nirreps) { nirreps_ = nirreps; }
 
     /// Print the molecule
-    void print();
+    void print() const;
 
     /// Save information to checkpoint file.
     void save_to_chkpt(boost::shared_ptr<Chkpt> chkpt, std::string prefix = "");
@@ -154,11 +160,14 @@ public:
     bool is_plane(Vector3& origin, Vector3& uperp, double tol = 0.05) const;
     /// Is an axis?
     bool is_axis(Vector3& origin, Vector3& axis, int order, double tol=0.05) const;
-
+    /// Is the molecule linear, or planar?
     void is_linear_planar(bool& linear, bool& planar, double tol) const;
-
     /// Find highest molecular point group
     boost::shared_ptr<PointGroup> find_point_group(double tol=1.0e-8) const;
+    /// Release symmetry information
+    void release_symmetry_information();
+    /// Initialize molecular specific symemtry information
+    void form_symmetry_information(double tol=1.0e-8);
 };
 
 }

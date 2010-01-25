@@ -7,7 +7,8 @@
 #include "script.h"
 #include "libchkpt/chkpt.hpp"
 #include "liboptions/liboptions.h"
-#include "libmints/molecule.h"
+#include <libmints/molecule.h>
+#include <libmints/pointgrp.h>
 
 #include <libpsio/psio.hpp>
 
@@ -101,6 +102,33 @@ BOOST_PYTHON_MODULE(PsiMod)
         def("__str__", &Vector3::to_string).
         def("__getitem__", &Vector3::get);
 
+    typedef void (SymmetryOperation::*intFunction)(int);
+    typedef void (SymmetryOperation::*doubleFunction)(double);
+
+    class_<SymmetryOperation>("SymmetryOperation").
+        def(init<const SymmetryOperation& >()).
+        def("trace", &SymmetryOperation::trace).
+        def("zero", &SymmetryOperation::zero).
+        def("operate", &SymmetryOperation::operate).
+        def("transform", &SymmetryOperation::transform).
+        def("unit", &SymmetryOperation::unit).
+        def("E", &SymmetryOperation::E).
+        def("i", &SymmetryOperation::i).
+        def("sigma_h", &SymmetryOperation::sigma_h).
+        def("sigma_xz", &SymmetryOperation::sigma_xz).
+        def("sigma_yz", &SymmetryOperation::sigma_yz).
+        def("rotateN", intFunction(&SymmetryOperation::rotation)).
+        def("rotateTheta", doubleFunction(&SymmetryOperation::rotation)).
+        def("c2_x", &SymmetryOperation::c2_x).
+        def("c2_y", &SymmetryOperation::c2_y).
+        def("transpose", &SymmetryOperation::transpose);
+
+    class_<PointGroup, shared_ptr<PointGroup> >("PointGroup").
+	def(init<const char*>()).
+	def("symbol", &PointGroup::symbol).
+	//def("origin", &PointGroup::origin).
+	def("setSymbol", &PointGroup::set_symbol);
+
     class_<Molecule, shared_ptr<Molecule> >("Molecule").
         def("initWithCheckpoint", &Molecule::init_with_chkpt).
         def("saveToCheckpoint", &Molecule::save_to_chkpt).
@@ -121,8 +149,8 @@ BOOST_PYTHON_MODULE(PsiMod)
         def("atomAtPosition", &Molecule::atom_at_position1).
         def("printToOutput", &Molecule::print).
         def("nuclearRepulsionEnergy", &Molecule::nuclear_repulsion_energy).
-        def("reorient", &Molecule::reorient);
-
+        def("reorient", &Molecule::reorient).
+	def("findPointGroup", &Molecule::find_point_group);
 }
 
 Python::Python() : Script()
@@ -183,7 +211,7 @@ void Python::run(FILE *input)
             file << line;
         }
         str strStartScript(file.str().c_str());
-        printf(file.str().c_str());
+        //printf(file.str().c_str());
         try {
             PyImport_AppendInittab(strdup("PsiMod"), initPsiMod);
             object objectMain(handle<>(borrowed(PyImport_AddModule("__main__"))));
