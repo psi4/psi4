@@ -47,7 +47,7 @@ protected:
     void clear();
 
     // Point group to use with this molecule.
-    boost::shared_ptr<PoingGroup> pg_;
+    boost::shared_ptr<PointGroup> pg_;
     
     /// Number of unique atoms
     int nunique_;
@@ -101,6 +101,8 @@ public:
     /// Returns a Vector3 with x, y, z position of atom
     Vector3 xyz(int atom) const { return Vector3(atoms_[atom].x, atoms_[atom].y, atoms_[atom].z); }
     Vector3 fxyz(int atom) const { return Vector3(full_atoms_[atom].x, full_atoms_[atom].y, full_atoms_[atom].z); }
+    /// Returns x, y, or z component of 'atom'
+    double xyz(int atom, int _xyz);
     /// Returns mass atom atom
     double mass(int atom) const;
     /// Returns label of atom
@@ -157,6 +159,8 @@ public:
     //
     // Symmetry
     //
+    boost::shared_ptr<PointGroup> point_group() const { return pg_; }
+    void set_point_group(boost::shared_ptr<PointGroup> pg) { pg_ = pg; }
     /// Does the molecule have an inversion center at origin
     bool has_inversion(Vector3& origin, double tol = 0.05) const;
     /// Is a plane?

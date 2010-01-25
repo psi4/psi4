@@ -56,7 +56,7 @@ SymmetryOperation::SymmetryOperation(const SymmetryOperation &so)
 
 SymmetryOperation::~SymmetryOperation()
 {
-    free_block(d);
+    if (d) free_block(d);
 }
 
 SymmetryOperation

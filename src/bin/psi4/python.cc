@@ -139,7 +139,7 @@ BOOST_PYTHON_MODULE(PsiMod)
         def("x", &Molecule::x).
         def("y", &Molecule::y).
         def("z", &Molecule::z).
-        def("xyz", &Molecule::xyz).
+        //def("xyz", &Molecule::xyz).
         def("centerOfMass", &Molecule::center_of_mass).
         def("translate", &Molecule::translate).
         def("moveToCOM", &Molecule::move_to_com).
@@ -150,7 +150,9 @@ BOOST_PYTHON_MODULE(PsiMod)
         def("printToOutput", &Molecule::print).
         def("nuclearRepulsionEnergy", &Molecule::nuclear_repulsion_energy).
         def("reorient", &Molecule::reorient).
-	def("findPointGroup", &Molecule::find_point_group);
+	    def("findPointGroup", &Molecule::find_point_group).
+        def("setPointGroup", &Molecule::set_point_group).
+        def("formSymmetryInformation", &Molecule::form_symmetry_information);
 }
 
 Python::Python() : Script()
