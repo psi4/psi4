@@ -13,7 +13,7 @@
 #include <libciomr/libciomr.h>
 #include <liboptions/liboptions.h>
 #include <libparallel/parallel.h>
-#include <libscript/script.h>
+#include "script.h"
 #include <physconst.h>
 
 #include <molecular_system.h>

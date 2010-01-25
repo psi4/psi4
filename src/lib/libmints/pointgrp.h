@@ -74,7 +74,7 @@ namespace psi {
 */
 class SymmetryOperation {
   private:
-    double **d;
+    double d[3][3];
 
   public:
     SymmetryOperation();
@@ -98,7 +98,7 @@ class SymmetryOperation {
     double operator()(int i, int j) const { return d[i][j]; }
 
     /// zero out the symop
-    void zero() { memset(&(d[0][0]),0,sizeof(double)*9); }
+    void zero() { memset(d,0,sizeof(double)*9); }
 
     /// This operates on this with r (i.e. return r * this).
     SymmetryOperation operate(const SymmetryOperation& r) const;
