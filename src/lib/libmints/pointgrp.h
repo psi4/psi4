@@ -63,6 +63,7 @@
 // #include <util/keyval/keyval.h>
 #include <psi4-dec.h>
 #include <libmints/vector3.h>
+#include <string>
 
 namespace psi {
 

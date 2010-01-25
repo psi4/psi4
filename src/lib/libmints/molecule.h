@@ -46,6 +46,9 @@ protected:
     /// Zero it out
     void clear();
 
+    // Point group to use with this molecule.
+    boost::shared_ptr<PoingGroup> pg_;
+    
     /// Number of unique atoms
     int nunique_;
     int *nequiv_;
@@ -167,6 +170,7 @@ public:
     /// Release symmetry information
     void release_symmetry_information();
     /// Initialize molecular specific symemtry information
+    /// Uses the point group object obtain by calling point_group()
     void form_symmetry_information(double tol=1.0e-8);
 };
 
