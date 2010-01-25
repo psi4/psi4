@@ -107,7 +107,10 @@ IrreducibleRepresentation::init(int order, int d, const char *lab,
   ntrans_=nrot_=complex_=0;
 
   delete[] symb;
-  symb = strdup(lab);
+  if (lab)
+    symb = strdup(lab);
+  else
+    symb = NULL;
 
   delete[] csymb;
   if (clab) csymb = strdup(clab);

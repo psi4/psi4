@@ -7,7 +7,7 @@ import PsiMod
 # geometry( [[ "O", 0.0, 0.0, 0.0 ],
 #            [ "H", 1.0, 0.0, 0.0 ]] )
 #
-def geometry(geom, reorient = True, prefix = "", chkpt = None):
+def geometry(geom, reorient = True, prefix = "", chkpt = None, shiftToCOM = True):
     # Make sure the user passed in what we expect
     if isinstance(geom, list) == False:
         raise TypeError("geometry must be a list")
@@ -31,6 +31,10 @@ def geometry(geom, reorient = True, prefix = "", chkpt = None):
 
     # Print the molecule:
     molecule.printToOutput()
+
+    # If requested, shift molecule to center of mass
+    if shiftToCOM == True:
+        molecule.moveToCOM()
 
     # If requested, reorient the molecule.
     if reorient == True:

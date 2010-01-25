@@ -605,7 +605,7 @@ void Molecule::print() const
 	    fprintf(outfile, "    Number of unique atoms: %d\n\n", nunique_);
 	    fprintf(outfile, "    Atoms equivalency:\n");
 	    for (int i=0; i<nunique_; ++i) {
-		fprintf(outfile, "       unique atom %d: ");
+		fprintf(outfile, "       unique atom %d: ", i);
 		for (int j=0; j<nequiv_[i]; ++j) {
 		fprintf(outfile, "%d ", equiv_[i][j]);
 		}
@@ -1122,9 +1122,9 @@ found_sigma:
     // the y is then -x cross z
     yaxis = -xaxis.cross(zaxis);
 
-    fprintf(outfile, "X: %s\n", xaxis.to_string().c_str());
-    fprintf(outfile, "Y: %s\n", yaxis.to_string().c_str());
-    fprintf(outfile, "Z: %s\n", zaxis.to_string().c_str());
+    fprintf(outfile, "  X: %s\n", xaxis.to_string().c_str());
+    fprintf(outfile, "  Y: %s\n", yaxis.to_string().c_str());
+    fprintf(outfile, "  Z: %s\n", zaxis.to_string().c_str());
 
     SymmetryOperation frame;
     Vector3 origin;
@@ -1173,6 +1173,8 @@ found_sigma:
         }
     }
 
+    fprintf(outfile, "\n  Molecular point group: %s\n\n", pg->symbol());
+    
     return pg;
 }
 

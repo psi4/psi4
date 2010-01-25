@@ -40,13 +40,11 @@ using namespace psi;
 
 SymmetryOperation::SymmetryOperation()
 {
-    d = block_matrix(3, 3);
   zero();
 }
 
 SymmetryOperation::SymmetryOperation(const SymmetryOperation &so)
 {
-    d = block_matrix(3, 3);
   for (int i=0; i<3; i++) {
     for (int j=0; j<3; j++) {
       d[i][j] = so.d[i][j];
@@ -56,7 +54,6 @@ SymmetryOperation::SymmetryOperation(const SymmetryOperation &so)
 
 SymmetryOperation::~SymmetryOperation()
 {
-    if (d) free_block(d);
 }
 
 SymmetryOperation
@@ -141,7 +138,19 @@ SymmetryOperation::transpose()
 void
 SymmetryOperation::print(FILE *out)
 {
-    print_mat(d, 3, 3, out);
+     fprintf(out, "        1          2          3\n");
+     fprintf(out, "  1  ");
+     fprintf(out, "%10.7f ", d[0][0]);
+     fprintf(out, "%10.7f ", d[0][1]);
+     fprintf(out, "%10.7f \n", d[0][2]);
+     fprintf(out, "  2  ");
+     fprintf(out, "%10.7f ", d[1][0]);
+     fprintf(out, "%10.7f ", d[1][1]);
+     fprintf(out, "%10.7f \n", d[1][2]);
+     fprintf(out, "  3  ");
+     fprintf(out, "%10.7f ", d[2][0]);
+     fprintf(out, "%10.7f ", d[2][1]);
+     fprintf(out, "%10.7f \n", d[2][2]);
 }
 
 /////////////////////////////////////////////////////////////////////////////
