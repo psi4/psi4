@@ -112,6 +112,16 @@ int read_options(const std::string &name, Options & options) {
 
   }
   else if (name == "SCF") {
+    /*- The name of the auxilliary basis to be used in RI computations -*/
+    options.add_str("RI_BASIS", " ");
+    options.read_ipv1();
+
+    /*- Whether to use density fitting or not -*/
+    if(options.get_str("RI_BASIS") != "NONE")
+      options.add_bool("RI_HF", true);
+    else
+      options.add_bool("RI_HF", false);
+
     /*- The reference wavefunction used in the computation -*/
     options.add_str("REFERENCE", "RHF");
     /*- The maximum number of iterations -*/
@@ -125,10 +135,6 @@ int read_options(const std::string &name, Options & options) {
     /*- Whether to perturb the Hamiltonian or not -*/
     options.add_bool("PERTURB_H", false);
     options.add_double("LAMBDA", 0.0);
-    /*- The name of the auxilliary basis to be used in RI computations -*/
-    options.add_str("RI_BASIS", " ");
-    /*- Whether to use density fitting or not -*/
-    options.add_bool("RI_HF", false);
     /*- The storage scheme for the three index tensors in density fitting -*/
     options.add_str("RI_STORAGE", "DEFAULT", "DEFAULT IN_CORE FLIP_B_CORE FLIP_B_DISK K_IN_CORE DISK");
     /*- The operator used to perturb the Hamiltonian, if requested -*/
@@ -469,9 +475,9 @@ else if(name == "CCDENSITY") {
     options.add_str("RI_BASIS","NONE");
     options.read_ipv1();
     if(options.get_str("RI_BASIS") != "NONE")
-      options.add_bool("DF-LMP2", true);
+      options.add_bool("RI_LMP2", true);
     else
-      options.add_bool("DF-LMP2", false);
+      options.add_bool("RI_LMP2", false);
     options.add_str("WFN", "LMP2");
     options.add_str("REFERENCE", "RHF", "RHF");
     options.add_int("PRINT", 0);

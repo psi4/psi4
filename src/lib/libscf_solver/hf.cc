@@ -139,7 +139,7 @@ void HF::common_init()
     if (options_.get_bool("RI_HF"))
     {
         ri_integrals_ = true;
-        direct_integrals_ = false;
+        direct_integrals_ = false;  // direct 4-index ints
     }
     
     //Use schwarz sieve? default no
