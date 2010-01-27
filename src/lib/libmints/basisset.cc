@@ -17,6 +17,7 @@
 #include "symmetry.h"
 #include "factory.h"
 #include "vector3.h"
+#include "basisset_parser.h"
 
 using namespace psi;
 using namespace boost;
@@ -310,7 +311,9 @@ shared_ptr<BasisSet> BasisSet::zero_basis_set()
     return new_basis;
 }
 
-shared_ptr<BasisSet> BasisSet::construct(shared_ptr<Molecule> mol, string basisname)
+shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parser, 
+        const shared_ptr<Molecule>& mol,
+        const std::string& basisname)
 {
     // Construct vector with the same basis name for each element and pass to
     // the other version of construct
@@ -319,10 +322,12 @@ shared_ptr<BasisSet> BasisSet::construct(shared_ptr<Molecule> mol, string basisn
     for (int i=0; i<mol->natom(); ++i)
 	basisnames.push_back(basisname);
 
-    return construct(mol, basisnames);
+    return construct(parser, mol, basisnames);
 }
 
-shared_ptr<BasisSet> BasisSet::construct(shared_ptr<Molecule> mol, std::vector<std::string>& basisnames)
+shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parser, 
+        const shared_ptr<Molecule>& mol,
+        const std::vector<std::string>& basisnames)
 {
 
 }

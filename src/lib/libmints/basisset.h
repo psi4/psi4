@@ -16,6 +16,8 @@
 
 namespace psi {
 
+    class BasisSetParser;
+
 /*! \ingroup MINTS
     \class BasisSet
     \brief Basis set container class
@@ -185,7 +187,9 @@ public:
      * @param mol Molecule to construct basis set for.
      * @param basisname Name of the basis set to search for in pbasis.dat
      */
-    static shared_ptr<BasisSet> construct(shared_ptr<Molecule> mol, const std::string basisname);
+    static shared_ptr<BasisSet> construct(const shared_ptr<BasisSetParser>& parser,
+        const shared_ptr<Molecule>& mol,
+        const std::string &basisname);
 
     /** Returns a new BasisSet object.
      *
@@ -193,7 +197,9 @@ public:
      * @param mol Molecule to construct basis set for.
      * @param basisnames Name of the basis set for each atom in molecule to search for in pbasis.dat
      */
-    static shared_ptr<BasisSet> construct(shared_ptr<Molecule> mol, const std::vector<std::string> &basisnames);
+    static shared_ptr<BasisSet> construct(const shared_ptr<BasisSetParser>& parser, 
+        const shared_ptr<Molecule>& mol,
+        const std::vector<std::string> &basisnames);
 };
 
 }

@@ -3,7 +3,8 @@
 
 subdirs = libipv1 libciomr libchkpt libqt libpsio libiwl libdpd \
           libint libderiv libr12 libbasis libutil liboptions libmoinfo \
-          libmints libtrans libparallel libscf_solver libboost_python
+          libmints libtrans libparallel libscf_solver libboost_python \
+          libboost_regex libboost_thread
 
 all: default
 
