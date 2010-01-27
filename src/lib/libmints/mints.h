@@ -19,4 +19,4 @@
 #include <libmints/vector.h>
 #include <libmints/vector3.h>
 #include <libmints/wavefunction.h>
-
+#include <libmints/basisset_parser.h>

@@ -1,5 +1,7 @@
 #include <cmath>
 #include <cstdio>
+#include <fstream>
+#include <algorithm>
 
 #include <libmints/molecule.h>
 #include <libmints/matrix.h>
@@ -8,10 +10,29 @@
 
 #include <masses.h>
 #include <physconst.h>
+#include <element_to_Z.h>
+
+#include <boost/regex.hpp>
+#include <boost/algorithm/string.hpp>
 
 using namespace std;
 using namespace psi;
 using namespace boost;
+
+#include <string>
+#include <sstream>
+#include <iostream>
+
+// the third parameter of from_string() should be
+// one of std::hex, std::dec or std::oct
+template <class T>
+bool from_string(T& t,
+                 const std::string& s,
+                 std::ios_base& (*f)(std::ios_base&))
+{
+    std::istringstream iss(s);
+    return !(iss >> f >> t).fail();
+}
 
 // TODO: These should probably be moved to psi4-def.h
 #define ZERO_MOMENT_INERTIA 1.0E-10     /*Tolerance for degenerate rotational constants*/
@@ -537,6 +558,90 @@ void Molecule::init_with_chkpt(shared_ptr<Chkpt> chkpt)
 
     Chkpt::free(zvals);
     Chkpt::free(geom);
+}
+
+void Molecule::init_with_xyz(const std::string& xyzfilename)
+{
+    Element_to_Z Z;
+    Z.load_values();
+    
+    if (xyzfilename.empty())
+        throw PSIEXCEPTION("Molecule::init_with_xyz: given filename is blank.");
+    
+    ifstream infile(xyzfilename.c_str());
+    string line, natom_str;
+    const string bohr("bohr"), au("au");
+    bool angstrom_in_file = true;
+    
+    if (!infile)
+        throw PSIEXCEPTION("Molecule::init_with_xyz: Unable to open xyz file.");
+
+    // Read in first line
+    getline(infile, line);
+
+    // This is what we should match on the first line
+    boost::regex rx("(\\d+)(?:\\s*)(bohr|au)?", boost::regbase::normal | boost::regbase::icase);
+    boost::smatch what;
+
+    int natom;
+    // Try to match the first line
+    if (regex_match(line, what, rx)) {
+        // matched
+        // Convert the matches to what we need.
+        if (!from_string<int>(natom, what[1], std::dec))
+            throw PSIEXCEPTION("Molecule::init_with_xyz: Unable to convert number of atoms from xyz file.");
+
+        if (what.size() == 3) {
+            string s(what[2].first, what[2].second);
+            if (boost::iequals(bohr, s) || boost::iequals(au, s)) {
+                angstrom_in_file = false;
+            }
+        }
+    }
+    else
+        throw PSIEXCEPTION("Molecule::init_with_xyz: Malformed first line\n"+line);
+    
+    // Next line is a comment line, ignore it
+    getline(infile, line);
+    
+    // Next line begins the useful information.
+    // This is the regex for the remaining lines
+    rx.assign("(?:\\s*)([A-Z](?:[a-z])?)(?:\\s+)(-?\\d+\\.\\d+)(?:\\s+)(-?\\d+\\.\\d+)(?:\\s+)(-?\\d+\\.\\d+)(?:\\s*)",
+        boost::regbase::normal | boost::regbase::icase);
+    for (int i=0; i<natom; ++i) {
+        // Get an atom info line.
+        getline(infile, line);
+        
+        // Try to match it
+        if (regex_match(line, what, rx))
+        {
+            // First is a string
+            string atomSym(what[1].first, what[1].second);
+            transform(atomSym.begin(), atomSym.end(), atomSym.begin(), ::toupper);
+            
+            // Then the coordinates:
+            double x, y, z;
+            if (!from_string<double>(x, what[2], std::dec))
+                throw PSIEXCEPTION("Molecule::init_with_xyz: Unable to convert x coordinate.\n" + line);
+            if (!from_string<double>(y, what[3], std::dec))
+                throw PSIEXCEPTION("Molecule::init_with_xyz: Unable to convert y coordinate.\n" + line);
+            if (!from_string<double>(z, what[4], std::dec))
+                throw PSIEXCEPTION("Molecule::init_with_xyz: Unable to convert z coordinate.\n" + line);
+                
+            if (angstrom_in_file) {
+                // Coordinates in Molecule must be bohr.
+                x /= _bohr2angstroms;
+                y /= _bohr2angstroms;
+                z /= _bohr2angstroms;
+            }
+            
+            // Add it to the molecule.
+            add_atom((int)Z[atomSym], x, y, z, atomSym.c_str(), atomic_masses[(int)Z[atomSym]]);
+        }
+        else {
+            throw PSIEXCEPTION("Molecule::init_with_xyz: Malformed atom information line.\n"+line);
+        }
+    }
 }
 
 void Molecule::save_to_chkpt(shared_ptr<Chkpt> chkpt, std::string prefix)

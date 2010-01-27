@@ -68,7 +68,9 @@ public:
     void init_with_psio(shared_ptr<PSIO> psio);
     /// Pull information from the chkpt object passed
     void init_with_chkpt(shared_ptr<Chkpt> chkpt);
-
+    /// Pull information from an XYZ file
+    void init_with_xyz(const std::string& xyzfilename);
+    
     /// Add an atom to the molecule
     void add_atom(int Z, double x, double y, double z,
                   const char * = 0, double mass = 0.0,
