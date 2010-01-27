@@ -16,25 +16,40 @@
 #include "integral.h"
 #include "symmetry.h"
 #include "factory.h"
+#include "vector3.h"
 
 using namespace psi;
+using namespace boost;
+
+once_flag BasisSet::initialized_shared_ = BOOST_ONCE_INIT;
+
+std::vector<Vector3> BasisSet::exp_ao[LIBINT_MAX_AM];
 
 BasisSet::BasisSet() :
     max_nprimitives_(0), shell_first_basis_function_(NULL), shell_first_ao_(NULL), shell_center_(NULL), 
     max_stability_index_(0), uso2ao_(NULL), uso2bf_(NULL) 
-{ }
+{
+    call_once(initialize_singletons, initialized_shared_);
+}
 
 BasisSet::BasisSet(shared_ptr<Chkpt> chkpt, std::string basiskey) :
     max_nprimitives_(0), shell_first_basis_function_(NULL), shell_first_ao_(NULL), shell_center_(NULL), 
     max_stability_index_(0), uso2ao_(NULL), uso2bf_(NULL), 
     molecule_(new Molecule)
 {
+    call_once(initialize_singletons, initialized_shared_);
+
     // This requirement holds no matter what.
     puream_ = chkpt->rd_puream(basiskey.c_str()) ? true : false;
 
     // Initialize molecule, retrieves number of center and geometry
     molecule_->init_with_chkpt(chkpt);
 
+    // Obtain symmetry information from the molecule.
+    shared_ptr<PointGroup> pg = molecule_->find_point_group();
+    molecule_->set_point_group(pg);
+    molecule_->form_symmetry_information();
+    
     // Initialize the shells
     initialize_shells(chkpt, basiskey);
 }
@@ -51,6 +66,30 @@ BasisSet::~BasisSet()
         Chkpt::free(uso2ao_);
     if (uso2bf_)
         Chkpt::free(uso2bf_);
+}
+
+void BasisSet::initialize_singletons()
+{
+    fprintf(outfile, "In BasisSet::initialize_singletons:\n");
+    // Populate the exp_ao arrays
+    int ao;
+    for (int l=0; l<LIBINT_MAX_AM; ++l) {
+	fprintf(outfile, "  l = %d\n", l);
+	ao = 0;
+	for (int i=0; i<=l; ++i) {
+	    int x = l-i;
+	    for (int j=0; j<=i; ++j) {
+		int y = i-j;
+		int z = j;
+
+		Vector3 xyz_ao(x, y, z);
+		BasisSet::exp_ao[l].push_back(xyz_ao);
+
+		fprintf(outfile, "    ao = %d %s\n", ao, xyz_ao.to_string().c_str());
+		ao++;
+	    }
+	}
+    }
 }
 
 void BasisSet::initialize_shells(shared_ptr<Chkpt> chkpt, std::string& basiskey)
@@ -271,3 +310,19 @@ shared_ptr<BasisSet> BasisSet::zero_basis_set()
     return new_basis;
 }
 
+shared_ptr<BasisSet> BasisSet::construct(shared_ptr<Molecule> mol, string basisname)
+{
+    // Construct vector with the same basis name for each element and pass to
+    // the other version of construct
+    vector<string> basisnames;
+
+    for (int i=0; i<mol->natom(); ++i)
+	basisnames.push_back(basisname);
+
+    return construct(mol, basisnames);
+}
+
+shared_ptr<BasisSet> BasisSet::construct(shared_ptr<Molecule> mol, std::vector<std::string>& basisnames)
+{
+
+}

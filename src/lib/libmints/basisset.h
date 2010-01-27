@@ -8,8 +8,11 @@
 #include <libmints/gshell.h>
 #include <libmints/sobasis.h>
 #include <libmints/integral.h>
-
+// Need libint for maximum angular momentum
+#include <libint/libint.h>
 #include <psi4-dec.h>
+
+#include <boost/thread/once.hpp>
 
 namespace psi {
 
@@ -68,6 +71,11 @@ class BasisSet
     
     //! Initialize shells based on information found in checkpoint
     void initialize_shells(shared_ptr<psi::Chkpt> chkpt, std::string& basiskey);
+
+    // Has static information been initialized?
+    static boost::once_flag initialized_shared_;
+    // Global arrays of x, y, z exponents
+    static std::vector<Vector3> exp_ao[];
     
 public:
 
@@ -83,6 +91,8 @@ public:
     /// Destructor
     ~BasisSet();
     
+    static void initialize_singletons();
+
     /** Number of primitives.
      *  @return The total number of primitives in all contractions.
      */
@@ -168,6 +178,22 @@ public:
      *  @return A new empty BasisSet object.
      */ 
     static shared_ptr<BasisSet> zero_basis_set();
+
+    /** Returns a new BasisSet object.
+     *
+     * Returns a new BasisSet object configured with the provided Molecule object.
+     * @param mol Molecule to construct basis set for.
+     * @param basisname Name of the basis set to search for in pbasis.dat
+     */
+    static shared_ptr<BasisSet> construct(shared_ptr<Molecule> mol, const std::string basisname);
+
+    /** Returns a new BasisSet object.
+     *
+     * Returns a new BasisSet object configured with the provided Molecule object.
+     * @param mol Molecule to construct basis set for.
+     * @param basisnames Name of the basis set for each atom in molecule to search for in pbasis.dat
+     */
+    static shared_ptr<BasisSet> construct(shared_ptr<Molecule> mol, const std::vector<std::string> &basisnames);
 };
 
 }
