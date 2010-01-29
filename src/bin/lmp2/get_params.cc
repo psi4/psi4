@@ -68,6 +68,8 @@ void LMP2::get_params(Options &options) {
   ndiis = options.get_int("NDIIS");
 
   cutoff = options.get_double("LOCAL_CUTOFF");
+  neglectdp = options.get_bool("NEGLECT_DP");
+  dpcutoff = options.get_double("DISTANT_PAIR");
 
   memory = options.get_int("MEMORY");
   wfn = const_cast<char*>(options.get_cstr("WFN"));
@@ -94,6 +96,9 @@ void LMP2::print_params(){
     fprintf(outfile, "\tF-Skip   \t\t= %3.1e\n", fskip);
     fprintf(outfile, "\tPrint Level   \t\t= %d\n", print);
     fprintf(outfile, "\tLocal Cutoff  \t\t= %3.1e\n", cutoff);
+    fprintf(outfile, "\tNeglect Distant Pairs \t= %s\n", neglectdp ? "Yes" : "No");
+    if(neglectdp)
+        fprintf(outfile, "\tDistace Pair Cutoff \t= %2.1f\n", dpcutoff);
     fprintf(outfile, "\n\tUse DIIS extrapolation = %s\n", diis ? "Yes" : "No");
     if(diis == 1) {
       fprintf(outfile, "\titerations before DIIS extrapolation = %d\n", it_diis);

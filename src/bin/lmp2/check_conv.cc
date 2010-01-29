@@ -42,10 +42,14 @@ void LMP2::check_conv() {
 
   int i, j, a, b, v, ij;
   int *ij_owner, *ij_local, count;
+  int **ij_map;
+  int **pairdomain, *pairdom_len;
 
   ij_owner = get_ij_owner();
   ij_local = get_ij_local();
-
+  ij_map = get_ij_map();
+  pairdomain = compute_pairdomain(ij_map);
+  pairdom_len = compute_pairdomlen(ij_map);
 
   //   ****  Compute the Energy Difference ****
   DEmp2 = Emp2 - Emp2_old;
@@ -55,10 +59,13 @@ void LMP2::check_conv() {
     Drms = 0.0;
     v=0;
     count = 0;
-    for(i=0, ij=0; i < nocc; i++) {
-      for(j=0; j <= i; j++, ij++, v++) {
+    for(int ij=0; ij < ij_pairs; ij++, v++) {
+
         if(v%nprocs != myid)
           continue;
+
+        i = ij_map[ij][0];
+        j = ij_map[ij][1];
 
         for(a=0; a < pairdom_len[ij]; a++) {
           for(b=0; b < pairdom_len[ij]; b++) {
@@ -73,7 +80,7 @@ void LMP2::check_conv() {
             count++;
           }
         }
-      }
+      //}
     }
   }
   else {
@@ -81,11 +88,13 @@ void LMP2::check_conv() {
     Drms = 0.0;
     v=0;
     count = 0;
-    for(i=0, ij=0; i < nocc; i++) {
-      for(j=0; j <= i; j++, ij++, v++) {
+    for(int ij=0; ij < ij_pairs; ij++, v++) {
         if(v%nprocs != myid)
           continue;
 
+        i = ij_map[ij][0];
+        j = ij_map[ij][1];
+        
         for(a=0; a < pairdom_len[ij]; a++) {
           for(b=0; b < pairdom_len[ij]; b++) {
             if(fabs(T[div][ij_local[ij]][a][b]) > 1e-14 && fabs(T[dmat1][ij_local[ij]][a][b]) > 1e-14) {
@@ -99,7 +108,7 @@ void LMP2::check_conv() {
             count++;
           }
         }
-      }
+      //}
     }
   }
 

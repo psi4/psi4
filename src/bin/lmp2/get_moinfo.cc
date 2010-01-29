@@ -174,6 +174,36 @@ int* LMP2::get_snuc() {
 
 }
 
+int* LMP2::get_orbspi() {
+    int *orb;
+
+    if(Communicator::world->me() == 0)
+        orb = chkpt->rd_orbspi();
+    else
+        orb = init_int_array(nirreps);
+
+    if(nprocs > 1)
+        Communicator::world->bcast(orb, nirreps, 0);
+
+    return orb;
+
+}
+
+int* LMP2::get_frzvpi() {
+    int *frzv;
+
+    if(Communicator::world->me() == 0)
+        frzv = chkpt->rd_orbspi();
+    else
+        frzv = init_int_array(nirreps);
+
+    if(nprocs > 1)
+        Communicator::world->bcast(frzv, nirreps, 0);
+
+    return frzv;
+
+}
+
 double LMP2::get_enuc() {
   double enuc_;
 
@@ -229,6 +259,22 @@ double** LMP2::get_MOC() {
     Communicator::world->bcast(C_[0], nso*nso, 0);
 
   return C_;
+
+}
+
+double** LMP2::get_geom() {
+
+  double **geom_;
+
+  if(Communicator::world->me() == 0)
+    geom_ = chkpt->rd_fgeom();
+  else
+    geom_ = block_matrix(natom,3);
+
+  if(nprocs > 1)
+    Communicator::world->bcast(geom_[0], natom*3, 0);
+
+  return geom_;
 
 }
 

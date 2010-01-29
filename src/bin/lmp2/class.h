@@ -35,8 +35,7 @@ class LMP2 {
     int *l_length;
     int **domain;		/* Orbital domains */
     int *domain_len;		/* Size of each domain */
-    int **pairdomain;		/* Pair domains */
-    int *pairdom_len;		/* Size of each pair domain */
+    int *pairdom_exist;          /* Wether or not the pairdomain exists */
     int *pairdom_nrlen;		/* Size of each pair domain after orthogonalization */
     int ij_pairs;		/* no. of ij pairs */
 //    double *fR;
@@ -59,6 +58,8 @@ class LMP2 {
     int conv;
     int diis;
     int ndiis;
+    int neglectdp;
+    double dpcutoff;
     int it_diis;
     double cutoff;
     double fskip;
@@ -171,11 +172,14 @@ class LMP2 {
     int  get_frdocc();
     int* get_stype();
     int* get_snuc();
+    int* get_orbspi();
+    int* get_frzvpi();
     double  get_enuc();
     double  get_escf();
     double* get_evals();
     double** get_MOC();
-
+    double** get_geom();
+   
     // These member function compute which proc owns each ij pair
     // and determines the absolute ij value of the local proc
     int *get_ij_local();
@@ -184,6 +188,12 @@ class LMP2 {
     int get_mn_pairs(int n);
     int get_num_unique_shells();
     int **get_MN_shell(shared_ptr<BasisSet> basisset);
+    int **get_ij_map();
+    int *original_ij_map();
+    
+    // Theses member functions get the pairdomain and pairdomain lengths
+    int **compute_pairdomain(int **ij_map_);
+    int *compute_pairdomlen(int **ij_map_);
 
 };
 

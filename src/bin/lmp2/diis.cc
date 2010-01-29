@@ -36,6 +36,12 @@ void LMP2::diis_ext() {
   int c_ext;
   double ***temp;
   int *ij_local, *ij_owner;
+  int **ij_map;
+  int **pairdomain, *pairdom_len;
+
+  ij_map = get_ij_map();
+  pairdomain = compute_pairdomain(ij_map);
+  pairdom_len = compute_pairdomlen(ij_map);
 
   temp = (double ***) malloc(ij_pairs * sizeof(double **));
   for(ij=0; ij < ij_pairs; ij++) {
@@ -45,8 +51,7 @@ void LMP2::diis_ext() {
   ij_local = get_ij_local();
   ij_owner = get_ij_owner();
 
-  for(i=0, ij=0; i < nocc; i++) {
-    for(j=0; j <= i; j++, ij++) {
+    for (ij = 0; ij < ij_pairs; ij++) {
       if(myid != ij_owner[ij])
         continue;
       for(a=0; a < pairdom_len[ij]; a++) {
@@ -54,7 +59,7 @@ void LMP2::diis_ext() {
           temp[ij][a][b] = T[div][ij_local[ij]][a][b] - T[dmat1][ij_local[ij]][a][b];
         }
       }
-    }
+    //}
   }
 
   for(ij=0; ij < ij_pairs; ij++) {
@@ -85,14 +90,13 @@ void LMP2::diis_ext() {
           Bmat[p][q] = -1.0;
         else {
           Bmat[p][q] = 0.0;
-          for(i=0, ij=0; i < nocc; i++) {
-            for(j=0; j <= i; j++, ij++) {
+            for (ij = 0; ij < ij_pairs; ij++) {
               for(a=0; a < pairdom_len[ij]; a++) {
                 for(b=0; b < pairdom_len[ij]; b++) {
                   Bmat[p][q] += error[p][ij][a][b] * error[q][ij][a][b];
                 }
               }
-            }
+            //}
           }
         }
       }
@@ -114,8 +118,7 @@ void LMP2::diis_ext() {
 
                                                      // compute the new MP2 coefficients
     v=0;
-    for(i=0, ij=0; i < nocc; i++) {
-      for(j=0; j <= i; j++, ij++, v++) {
+    for (ij = 0; ij < ij_pairs; ij++, v++) {
         if(v%nprocs != myid)
           continue;
         for(a=0; a < pairdom_len[ij]; a++) {
@@ -129,7 +132,7 @@ void LMP2::diis_ext() {
             }
           }
         }
-      }
+      //}
     }
 
 /*    v=0;

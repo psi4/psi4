@@ -33,6 +33,8 @@ void LMP2::projection() {
   int r, s, k, l;
   int *ij_owner, *ij_local, count;
   int num_zero;
+  int **ij_map;
+  int **pairdomain, *pairdom_len;
   double **Xt;
   double **St;
   double **Ft;
@@ -43,29 +45,9 @@ void LMP2::projection() {
   /* Set up ij_owner and ij_local */
   ij_owner = get_ij_owner();
   ij_local = get_ij_local();
-
-/*  ij_owner = init_int_array(ij_pairs);
-  ij_local = init_int_array(ij_pairs);
-
-
-  v=0;
-  for(i=0, ij=0; i < nocc; i++) {
-    for(j=0; j <= i; j++, ij++) {
-      ij_owner[ij] = v%nprocs;
-      v++;
-    }
-  }
-
-  v=0;
-  count=0;
-  for(i=0, ij=0; i < nocc; i++) {
-    for(j=0; j <= i; j++, ij++) {
-      ij_local[ij] = count;
-      if(v%nprocs == nprocs-1) count++;
-      v++;
-    }
-  }
-*/
+  ij_map = get_ij_map();
+  pairdomain = compute_pairdomain(ij_map);
+  pairdom_len = compute_pairdomlen(ij_map);
 
   /* Compute the complete virtual space projector */
   Rt_full = block_matrix(nso,nso);
@@ -109,11 +91,16 @@ void LMP2::projection() {
   num_zero = 0;
 
   v=0;
-  for(i=0, ij=0; i < nocc; i++) {
-    for(j=0; j <= i; j++, ij++, v++) {
+//  for(i=0, ij=0; i < nocc; i++) {
+//    for(j=0; j <= i; j++, ij++, v++) {
+
+  for(int ij=0; ij < ij_pairs; ij++, v++) {
 
       if(v%nprocs != myid)
         continue;
+
+    i = ij_map[ij][0];
+    j = ij_map[ij][1];
 
     /* Build the virtual space overlap matrix for this pair */
     St = block_matrix(pairdom_len[ij],pairdom_len[ij]);
@@ -269,7 +256,7 @@ void LMP2::projection() {
     free_block(Xt);
     free_block(Fbar);
 
-    } // j loop
+    //} // j loop
   } // i loop
 
   fflush(outfile);

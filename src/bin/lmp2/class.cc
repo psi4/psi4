@@ -131,11 +131,9 @@ int* LMP2::get_ij_owner() {
   ij_owner = init_int_array(ij_pairs);
 
   v=0;
-  for(i=0, ij=0; i < nocc; i++) {
-    for(j=0; j <= i; j++, ij++) {
-      ij_owner[ij] = v%nprocs;
-      v++;
-    }
+  for(ij=0; ij < ij_pairs; ij++) {
+    ij_owner[ij] = v%nprocs;
+    v++;
   }
 
   return &(ij_owner[0]);
@@ -151,12 +149,10 @@ int* LMP2::get_ij_local() {
 
   v=0;
   count=0;
-  for(i=0, ij=0; i < nocc; i++) {
-    for(j=0; j <= i; j++, ij++) {
+  for(ij=0; ij < ij_pairs; ij++) {
       ij_local[ij] = count;
       if(v%nprocs == nprocs-1) count++;
       v++;
-    }
   }
 
   return &(ij_local[0]);
@@ -227,6 +223,93 @@ int** LMP2::get_MN_shell(shared_ptr<BasisSet> basisset) {
     return MN_shell;
 }
 
+int** LMP2::get_ij_map() {
+
+    int i, j, ij;
+    int **ij_map_ = init_int_matrix(ij_pairs,2);
+    int counter;
+
+
+    counter = 0;
+    for (i = 0, ij=0 ; i < nocc; i++) {
+        for (j = 0; j <= i; j++, ij++) {
+            if (pairdom_exist[ij]) {
+                ij_map_[counter][0] = i;
+                ij_map_[counter][1] = j;
+                counter++;
+            }
+        }
+    }
+
+    return ij_map_;
+
+}
+
+int* LMP2::original_ij_map() {
+
+    int pairs = (nocc * (nocc + 1)) / 2;
+    int i, j, ij;
+    int *map_ = init_int_array(pairs);
+    int counter;
+
+
+    counter = 0;
+    for (i = 0, ij=0 ; i < nocc; i++) {
+        for (j = 0; j <= i; j++, ij++) {
+            map_[ij] = counter;
+            if (pairdom_exist[ij]) {
+                counter++;
+            }
+        }
+    }
+
+    return map_;
+
+}
+
+int **LMP2::compute_pairdomain(int **ij_map_) {
+
+    int m, i, j, ij, a;
+    //int **ij_map_ = get_ij_map(&(pairdom_exist_[0]));
+    int **pairdomain_ = init_int_matrix(ij_pairs, natom);
+
+    for(m=0; m < ij_pairs; m++) {
+        i = ij_map_[m][0];
+        j = ij_map_[m][1];
+        ij = (i * (i + 1)) / 2 + j;
+        if (pairdom_exist[ij]) {
+            for (a=0; a < natom; a++) {
+                if (domain[i][a] || domain[j][a]) {
+                    pairdomain_[m][a] = 1;
+                }
+            }
+        }
+    }
+
+    return pairdomain_;
+}
+
+int *LMP2::compute_pairdomlen(int **ij_map_) {
+
+    int m, i, j, ij, a;
+    //int **ij_map_ = get_ij_map(&(pairdom_exist_[0]));
+    int *pairdom_len_ = init_int_array(ij_pairs);
+
+    for(m=0; m < ij_pairs; m++) {
+        i = ij_map_[m][0];
+        j = ij_map_[m][1];
+        ij = (i * (i + 1)) / 2 + j;
+        if (pairdom_exist[ij]) {
+            for (a=0; a < natom; a++) {
+                if (domain[i][a] || domain[j][a]) {
+                    pairdom_len_[m] += aostop[a] - aostart[a] + 1;
+                }
+            }
+        }
+    }
+
+    return pairdom_len_;
+}
 
 }} /* End namespace */
 
