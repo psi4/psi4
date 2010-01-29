@@ -32,9 +32,13 @@ void LMP2::allocate_T() {
 
   int i, j, ij;
   int *ij_local, *ij_owner;
+  int **ij_map, *pairdom_len;
 
   ij_owner = get_ij_owner();
   ij_local = get_ij_local();
+  ij_map = get_ij_map();
+  pairdom_len = compute_pairdomlen(ij_map);
+
 
   if(diis == 1) {
     // Allocate memory for the amplitudes

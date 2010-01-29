@@ -80,6 +80,7 @@ PsiReturnType lmp2(Options &options, int argc, char * argv[]) {
   lmp2_obj.allocate_T();
 
   lmp2_obj.iterate();
+
   }
   /** LMP2 complete **/
 

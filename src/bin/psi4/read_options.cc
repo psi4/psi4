@@ -486,6 +486,8 @@ else if(name == "CCDENSITY") {
     options.add_int("RMS_CONV", 5);
     options.add_int("FSKIP", 2);
     options.add_bool("USE_DIIS", 1);
+    options.add_bool("NEGLECT_DP", 1);
+    options.add_double("DISTANT_PAIR", 2.0);
     options.add_int("DIISSTART", 3);
     options.add_int("NDIIS", 6);
     options.add_double("LOCAL_CUTOFF", 0.02);

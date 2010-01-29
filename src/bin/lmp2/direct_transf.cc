@@ -47,6 +47,8 @@ void LMP2::direct_transformation() {
     int *ij_owner, *ij_local, *mr_owner;
     int **MR_shell;
     int M, R, N, S;
+    int **ij_map;
+    int **pairdomain, *pairdom_len;
     double ****eri_1, ***eri_2, ***eri_2_mn, ***eri_3, ***eri_4;
     // MPI_Status stat;
 
@@ -75,6 +77,10 @@ void LMP2::direct_transformation() {
 
     ij_owner = get_ij_owner();
     ij_local = get_ij_local();
+    ij_map = get_ij_map();
+    pairdomain = compute_pairdomain(ij_map);
+    pairdom_len = compute_pairdomlen(ij_map);
+
 
     if (ij_pairs % nprocs == 0) {
         eri_2 = (double ***) malloc((ij_pairs / nprocs) * sizeof (double **));
@@ -204,8 +210,11 @@ void LMP2::direct_transformation() {
             }
 
             //  **** Second quarter integral transformation ****
-            for (i = 0, ij = 0; i < nocc; i++) {
-                for (j = 0; j <= i; j++, ij++) {
+            //for (i = 0, ij = 0; i < nocc; i++) {
+            //    for (j = 0; j <= i; j++, ij++) {
+            for(ij=0; ij < ij_pairs; ij++) {
+                i = ij_map[ij][0];
+                j = ij_map[ij][1];
                     for (int m = 0; m < numm; m++) {
                         int om = basis->shell(M)->function_index() + m;
                         for (int r = 0; r < numr; r++) {
@@ -243,7 +252,7 @@ void LMP2::direct_transformation() {
                         } // End of r loop
                     } // End of m loop
                 } // End of j loop
-            } // End of i loop
+            //} // End of i loop
         } // End if myid loop
 
         for (ij = 0; ij < ij_pairs; ij++) {
@@ -273,7 +282,7 @@ void LMP2::direct_transformation() {
         }
 
         v++;
-    } // End of M loop
+    } // End of MN loop
 
     //  **** Free the memory used for the first quarter integral transformation ****
     for (i = 0; i < maxshell; i++) {
@@ -319,8 +328,9 @@ void LMP2::direct_transformation() {
 
     //  **** Third quarter integral transformation ****
     v = 0;
-    for (i = 0, ij = 0; i < nocc; i++) {
-        for (j = 0; j <= i; j++, ij++) {
+    for(ij=0; ij < ij_pairs; ij++, v++) {
+        i = ij_map[ij][0];
+        j = ij_map[ij][1];
             if (v % nprocs == myid) {
                 for (k = 0, b = 0; k < natom; k++) {
                     if (pairdomain[ij][k]) {
@@ -347,8 +357,8 @@ void LMP2::direct_transformation() {
                     } // End of if pairdomain
                 } // End of k loop
             } // End of if myid loop
-            v++;
-        } // End of j loop
+            //v++;
+        //} // End of j loop
     } // End of i loop
 
     // Freeing the memory used by eri_2
@@ -395,8 +405,9 @@ void LMP2::direct_transformation() {
 
     //  **** Fourth quarter integral transformation ****
     v = 0;
-    for (i = 0, ij = 0; i < nocc; i++) {
-        for (j = 0; j <= i; j++, ij++) {
+    for(ij=0; ij < ij_pairs; ij++, v++) {
+        i = ij_map[ij][0];
+        j = ij_map[ij][1];
             if (v % nprocs == myid) {
                 for (k = 0, a = 0; k < natom; k++) {
                     if (pairdomain[ij][k]) {
@@ -420,21 +431,22 @@ void LMP2::direct_transformation() {
                     } // End of if pairdomain
                 } // End of k loop
             } // End of if myid loop
-            v++;
-        } // End of j loop
+            //v++;
+        //} // End of j loop
     } // End of i loop
 
     if (print > 2) {
         v = 0;
-        for (i = 0, ij = 0; i < nocc; i++) {
-            for (j = 0; j <= i; j++, ij++) {
+        for(ij=0; ij < ij_pairs; ij++, v++) {
+            i = ij_map[ij][0];
+            j = ij_map[ij][1];
                 if (v % nprocs == myid) {
                     fprintf(outfile, "Ktilde[%d] matrix", ij);
                     print_mat(Ktilde[ij_local[ij]], pairdom_len[ij], pairdom_len[ij], outfile);
                 }
-                v++;
+                //v++;
             }
-        }
+        //}
     }
 
     if (ij_pairs % nprocs == 0) {

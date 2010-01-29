@@ -46,6 +46,7 @@ void LMP2::iterate() {
     if(myid == 0)
       print_iteration();
     iter++;
+
   }
 
 }
