@@ -509,8 +509,51 @@ else if(name == "CCDENSITY") {
     options.add_double("SCALE_OS", 6.0/5.0);
     options.add_double("SCALE_SS", 1.0/3.0);
   }
+  else if(name == "PSIMRCC") {
+    options.add_int("CORR_CHARGE",0);
+    options.add_int("DEBUG",0);
+    options.add_int("DAMPING_FACTOR",0);
+    options.add_int("MAXDIIS",7);
+    options.add_int("NUM_THREADS",1);
+    options.add_int("NEL",0);
+    options.add_int("ROOT",1);
+    options.add_int("CONVERGENCE",9);
+    options.add_int("MAXITER",100);
+    options.add_int("DENOMINATOR_SHIFT",0);
+    options.add_int("START_DIIS",2);
+    options.add_int("TIKHONOW_OMEGA",0);  // Omega = TIKHONOW_OMEGA / 1000
+    options.add_int("TIKHONOW_MAX",5);
 
+    options.add_bool("DIIS_TRIPLES",false);
+    options.add_bool("LOCK_SINGLET",false);
+    options.add_bool("MP2_GUESS",true);
+    options.add_bool("FAVG_CCSD_T",false);
+    options.add_bool("HEFF4",true);
+    options.add_bool("OFFDIAGONAL_CCSD_T",true);
+    options.add_bool("DIAGONAL_CCSD_T",true);
+    options.add_bool("DIAGONALIZE_HEFF",false);
+    options.add_bool("ONLY_CLOSED_SHELL",false);
+    options.add_bool("USE_DIIS",true);
+    options.add_bool("USE_SPIN_SYMMETRY",true);
+    options.add_bool("ZERO_INTERNAL_AMPS",true);
+    options.add_bool("COUPLING_TERMS",true);
+    options.add_bool("PRINT_HEFF",false);
+    options.add_bool("PERT_CBS",false);
+    options.add_bool("PERT_CBS_COUPLING",true);
+    options.add_bool("RESTRICTED_TRIPLES",false);
+    options.add_bool("TIKHONOW_TRIPLES",false);
 
+    options.add_str("WFN","MRCCSD","MRCCSD");
+    options.add_str("PT_ENERGY","SECOND_ORDER","SECOND_ORDER SCS_SECOND_ORDER PSEUDO_SECOND_ORDER SCS_PSEUDO_SECOND_ORDER");
+    options.add_str("CORR_WFN","CCSD","PT2 CCSD MP2-CCSD CCSD_T");
+    options.add_str("CORR_CCSD_T","STANDARD","STANDARD PITTNER");
+    options.add_str("CORR_REFERENCE","GENERAL","RHF ROHF TCSCF MCSCF GENERAL");
+    options.add_str("CORR_ANSATZ","MK","SR MK BW APBW");
+    options.add_str("COUPLING","CUBIC","NONE LINEAR QUADRATIC CUBIC");
+    options.add_str("WFN_SYM","1","A AG AU AP APP A1 A2 B BG BU B1 B2 B3 B1G B2G B3G B1U B2U B3U 0 1 2 3 4 5 6 7 8");
+    options.add_str("TRIPLES_ALGORITHM","RESTRICTED","SPIN_ADAPTED RESTRICTED UNRESTRICTED");
+    options.add_str("MP2_CCSD_METHOD","II","I IA II");
+  }
   options.read_ipv1();
   if(myid == 0)
     options.print();
