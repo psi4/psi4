@@ -2,7 +2,7 @@
 .PHONY:	default all install depend clean dclean targetclean
 
 subdirs = \
-transqt2 cscf input3 cints ccenergy cctriples ccsort scf lmp2 mp2 optking psi4
+transqt2 cscf input3 cints ccenergy cctriples ccsort scf lmp2 mp2 optking psimrcc psi4
 
 all: default
 

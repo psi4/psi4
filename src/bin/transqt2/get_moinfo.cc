@@ -346,7 +346,7 @@ namespace psi {
 
       }
       else if((params.wfn == "SCF") || (params.wfn == "SCF_MVD")
-           || (params.wfn == "PSIMRCC") || (params.wfn == "PSIMRCC_CSCF")) {  /* psimrcc requires no freezing nor reordering */
+           || (params.wfn == "MRCCSD")) {  /* psimrcc requires no freezing nor reordering */
 
 	/* Note that no frozen orbitals are allowed in this case */
 

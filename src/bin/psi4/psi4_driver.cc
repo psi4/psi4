@@ -148,8 +148,8 @@ psi4_driver(Options & options, int argc, char *argv[])
         int length = strlen(thisJob);
         std::transform(thisJob, thisJob + length, thisJob, ::toupper);
         if(myid == 0) {
-          fprintf(outfile, "Job %d is %s\n", n, thisJob); fflush(outfile);
-          fprintf(outfile, "with command-like argument: ");
+          fprintf(outfile, "\n  Job %d is %s\n", n, thisJob); fflush(outfile);
+          fprintf(outfile, "  with command-like argument: ");
           for (i=0; i<argc_new; ++i) fprintf(outfile," %s ", argv_new[i]); 
         }
         read_options(thisJob, options);
