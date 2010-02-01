@@ -136,7 +136,7 @@ int read_options(const std::string &name, Options & options) {
     options.add_bool("PERTURB_H", false);
     options.add_double("LAMBDA", 0.0);
     /*- The storage scheme for the three index tensors in density fitting -*/
-    options.add_str("RI_STORAGE", "DEFAULT", "DEFAULT IN_CORE FLIP_B_CORE FLIP_B_DISK K_IN_CORE DISK");
+    options.add_str("RI_STORAGE", "DEFAULT", "DEFAULT IN_CORE FLIP_B_DISK K_IN_CORE DISK");
     /*- The operator used to perturb the Hamiltonian, if requested -*/
     options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z");
     /*- Whether the computation is to be performed without disk-based storage of integrals -*/
