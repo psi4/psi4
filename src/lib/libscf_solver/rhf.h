@@ -54,6 +54,10 @@ protected:
     void form_G_from_J_and_K(double scale_K_by = 1.0); // Computes G from J and K
     void form_J_and_K();    // Computes J and K matrices from the ERIs
     
+    void form_J_and_K_from_direct_integrals();
+    void form_J_from_RI();
+    void form_K_from_RI();
+    
     void form_PK();
     void form_F();
     

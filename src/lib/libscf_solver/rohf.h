@@ -50,6 +50,8 @@ protected:
 
     void form_G();
     void form_G_from_PK();
+    void form_G_from_RI();
+    void form_G_from_direct_integrals();
     void form_PK();
     void form_F();
 
