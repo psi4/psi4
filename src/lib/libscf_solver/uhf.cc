@@ -136,8 +136,7 @@ double UHF::compute_energy()
 	
 	if (ri_integrals_)
     {
-    	if (df_storage_ == full||df_storage_ == flip_B_core)
-    		free(B_ia_P_);
+    	free_B();
     }
     // Return the final RHF energy
     if (converged) {

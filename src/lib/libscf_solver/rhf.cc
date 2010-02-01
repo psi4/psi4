@@ -67,6 +67,8 @@ void RHF::common_init()
     D_    = SharedMatrix(factory_.create_matrix("D"));
     Dold_ = SharedMatrix(factory_.create_matrix("D old"));
     G_    = SharedMatrix(factory_.create_matrix("G"));
+    J_    = SharedMatrix(factory_.create_matrix("J"));
+    K_    = SharedMatrix(factory_.create_matrix("K"));
     
     // PK super matrix for fast G
     pk_ = NULL;
@@ -160,6 +162,8 @@ double RHF::compute_energy()
         Dold_->copy(D_);  // Save previous density
         Eold_ = E_;       // Save previous energy
         
+        //form_G_from_J_and_K(1.0);
+        
         if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
             form_G_from_PK();
         else if (ri_integrals_ == false && direct_integrals_ == true)
@@ -208,8 +212,7 @@ double RHF::compute_energy()
 
     if (ri_integrals_)
     {
-    	if (df_storage_ == full||df_storage_ == flip_B_core)
-    		free(B_ia_P_);
+    	free_B();
     }
     // Compute the final dipole.
     compute_multipole();
@@ -966,7 +969,7 @@ void RHF::form_G_from_direct_integrals()
             index = int_iter.index();
             value = buffer[index];
         
-            // fprintf(outfile, "\tDoing integral ( %d %d | %d %d )\n", i, j, k, l); fflush(outfile);
+            //fprintf(outfile, "\tDoing integral ( %d %d | %d %d )\n", i, j, k, l); fflush(outfile);
             //fprintf(outfile, "\n (%d, %d| %d, %d) = %20.10f", i, j, k, l, value); fflush(outfile);
             // We only care about those greater that 1.0e-14
             if (fabs(value) > 1.0e-14) {
@@ -1730,14 +1733,412 @@ void RHF::form_G()
 void RHF::form_G_from_J_and_K(double scale_K_by)
 {
     form_J_and_K();
+    //J_->print();
+    //K_->print();
+    J_->scale(2.0);
+    K_->scale(-1.0);
     G_->copy(K_);
     G_->scale(scale_K_by);
     G_->add(J_);
+    //G_->print();
 }
 
 void RHF::form_J_and_K()
 {
+    if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false) {
+        //form_J_from_PK();
+        //form_K_from_PK();
+    }
+    else if (ri_integrals_ == false && direct_integrals_ == true) {
+    	form_J_and_K_from_direct_integrals();
+    }   
+    else if (ri_integrals_ == true) {
+    	form_J_from_RI();
+    	form_K_from_RI();
+    }
+    else {
+    	//form_J();
+    	//form_K();
+    }
+        
+}
+
+void RHF::form_J_and_K_from_direct_integrals()
+{
+	double temp1, temp2, temp3, temp4, temp5, temp6;
+    int itype;
     
+    // Zero out the J and K matrices
+    J_->zero();
+    K_->zero();
+    
+    
+    // Need to back-transform the density from SO to AO basis
+    SimpleMatrix *D = D_->to_simple_matrix();
+    
+    // D->set_name("D (AO basis) pre-transform");
+    // D->print();
+    // D->back_transform(basisset_->uso_to_bf());
+    // D->set_name("D (AO basis) post-transform");
+    // D->print();
+    
+    // Need a temporary J in the AO basis
+    SimpleMatrix J;
+    factory_.create_simple_matrix(J, "J (AO basis)");
+    J.zero();
+    // Need a temporary K in the AO basis
+    SimpleMatrix K;
+    factory_.create_simple_matrix(K, "K (AO basis)");
+    K.zero();
+    
+    // Initialize an integral object 
+    // Begin factor out
+    
+    
+    IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
+    TwoBodyInt* eri = integral.eri();
+    ShellCombinationsIterator iter = integral.shells_iterator();
+    const double *buffer = eri->buffer();
+    // End factor out
+    
+    //fprintf(outfile, "\n      Computing integrals..."); fflush(outfile);
+    int P, Q, R, S;
+    int i, j, k, l;
+    int index;
+    double value;
+    
+    int count=0;
+    for (iter.first(); !iter.is_done(); iter.next()) {
+        P = iter.p();
+        Q = iter.q();
+        R = iter.r();
+        S = iter.s();
+        
+        // Compute quartet
+        eri->compute_shell(P, Q, R, S);
+        
+        // fprintf(outfile, "Doing shell ( %d %d | %d %d )\n", P, Q, R, S); fflush(outfile);
+        
+        // From the quartet get all the integrals
+        IntegralsIterator int_iter = iter.integrals_iterator();
+        for (int_iter.first(); !int_iter.is_done(); int_iter.next()) {
+            i = int_iter.i();
+            j = int_iter.j();
+            k = int_iter.k();
+            l = int_iter.l();
+            index = int_iter.index();
+            value = buffer[index];
+        
+            //fprintf(outfile, "\tDoing integral ( %d %d | %d %d )\n", i, j, k, l); fflush(outfile);
+            //fprintf(outfile, "\n (%d, %d| %d, %d) = %20.10f", i, j, k, l, value); fflush(outfile);
+            // We only care about those greater that 1.0e-14
+            if (fabs(value) > 1.0e-14) {
+// #ifdef _DEBUG
+//                 if (debug_)
+                   
+// #endif   
+                itype = integral_type(i, j, k, l);
+                switch(itype) {
+                    case 1:
+                    temp1 = D->get(i, i) * value;
+
+                    J.add(i, i, 1.0*temp1);
+                    K.add(i, i, -1.0*temp1);
+// #ifdef _DEBUG
+//                     if (debug_) {
+//                         fprintf(outfile, "INTEGRAL CASE 1:\n");
+//                         fprintf(outfile, "G[%d][%d] %.11f %.11f\n", i, i, G.get(i,i), D->get(i, i));
+//                     }
+// #endif
+                    break;
+
+                    case 2:
+                    temp1 = D->get(k, k) * 1.0 * value;
+                    temp2 = D->get(i, k) * value;
+                    temp3 = D->get(i, i) * 1.0 * value;
+
+                    J.add(i, i, temp1);
+                    J.add(k, k, temp3);
+                    K.add(i, k, -temp2);
+                    K.add(k, i, -temp2);
+// #ifdef _DEBUG
+//                     if (debug_) {
+//                         fprintf(outfile, "INTEGRAL CASE 2:\n");
+//                         fprintf(outfile, "G[%d][%d] %.11f %.11f\n", i, i, G.get(i,i), D->get(k, k));
+//                         fprintf(outfile, "G[%d][%d] %.11f %.11f\n", i, k, G.get(i,k), D->get(i, k));
+//                         fprintf(outfile, "G[%d][%d] %.11f %.11f\n", k, k, G.get(k,k), D->get(i, i));
+//                     }
+// #endif
+                    break;
+
+                    case 3:
+                    temp1 = D->get(i, i) * value;
+                    temp2 = D->get(i, l) * value * 2.0;
+
+                    J.add(i, l, 1.0*temp1);
+                    J.add(l, i, 1.0*temp1);
+                    K.add(i, l, -temp1);
+                    K.add(l, i, -temp1);
+                    J.add(i, i, 1.0*temp2);
+                    K.add(i, i, -temp2);
+// #ifdef _DEBUG
+//                     if (debug_) {
+//                         fprintf(outfile, "INTEGRAL CASE 3:\n");
+//                         fprintf(outfile, "G[%d][%d] %.11f %.11f\n", i, l, G.get(i,l), D->get(i, i));
+//                         fprintf(outfile, "G[%d][%d] %.11f %.11f\n", i, i, G.get(i,i), D->get(i, l));
+//                     }
+// #endif
+                    break;
+
+                    case 4:
+                    temp1 = D->get(j, j) * value;
+                    temp2 = D->get(i, j) * value * 2.0;
+
+                    J.add(i, j, 1.0*temp1);
+                    J.add(j, i, 1.0*temp1);
+                    K.add(i, j, -temp1);
+                    K.add(j, i, -temp1);
+                    J.add(j, j, 1.0*temp2);
+                    K.add(j, j, -temp2);
+// #ifdef _DEBUG
+//                     if (debug_) {
+//                         fprintf(outfile, "INTEGRAL CASE 4:\n");
+//                         fprintf(outfile, "G[%d][%d] %.11f %.11f\n", i, j, G.get(i,j), D->get(j, j));
+//                         fprintf(outfile, "G[%d][%d] %.11f %.11f\n", j, j, G.get(j,j), D->get(i, j));
+//                     }
+// #endif
+                    break;
+
+                    case 5:
+                    temp1 = D->get(i, j) * value;
+                    J.add(i, j, 2.0*temp1);
+                    J.add(j, i, 2.0*temp1);
+                    K.add(i, j, -temp1);
+                    K.add(j, i, -temp1);
+
+                    temp2 = D->get(i, i) * value;
+                    temp3 = D->get(j, j) * value;
+                    K.add(j, j, -temp2);
+                    K.add(i, i, -temp3);                
+// #ifdef _DEBUG
+//                     if (debug_) {
+//                         fprintf(outfile, "INTEGRAL CASE 5:\n");
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", i, j, G.get(i,j));
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", j, j, G.get(j,j));
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", i, i, G.get(i,i));
+//                     }
+// #endif
+                    break;
+
+                    case 6:
+                    temp1 = D->get(k, l) * value * 2.0;
+                    temp2 = D->get(i, l) * value;
+                    temp3 = D->get(i, i) * value * 1.0;
+                    temp4 = D->get(i, k) * value;
+
+                    J.add(i, i, temp1);
+                    K.add(i, k, -temp2);
+                    K.add(k, i, -temp2);
+                    J.add(k, l, temp3);
+                    J.add(l, k, temp3);
+                    K.add(i, l, -temp4);
+                    K.add(l, i, -temp4);
+// #ifdef _DEBUG
+//                     if (debug_) {
+//                         fprintf(outfile, "INTEGRAL CASE 6:\n");
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", i, i, G.get(i,i));
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", i, k, G.get(i,k));
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", k, l, G.get(k,l));
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", i, l, G.get(i,l));
+//                     }
+// #endif
+                    break;
+
+                    case 7:
+                    temp1 = D->get(i, j) * value * 2.0;
+                    temp2 = D->get(j, k) * value;
+                    temp3 = D->get(i, k) * value;
+                    temp4 = D->get(k, k) * value * 1.0;
+
+                    J.add(k, k,  temp1);
+                    K.add(i, k, -temp2);
+                    K.add(k, i, -temp2);
+                    K.add(j, k, -temp3);
+                    K.add(k, j, -temp3);
+                    J.add(i, j,  temp4);
+                    J.add(j, i,  temp4);
+// #ifdef _DEBUG
+//                     if (debug_) {
+//                         fprintf(outfile, "INTEGRAL CASE 7:\n");
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", k, k, G.get(k,k));
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", i, k, G.get(i,k));
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", j, k, G.get(j,k));
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", i, j, G.get(i,j));
+//                     }
+// #endif
+                    break;
+
+                    case 8:
+                    temp1 = D->get(k, k) * value * 1.0;
+                    temp2 = D->get(i, j) * value * 2.0;
+                    temp3 = D->get(j, k) * value;
+                    temp4 = D->get(i, k) * value;
+
+                    J.add(i, j, temp1);
+                    J.add(j, i, temp1);
+                    J.add(k, k, temp2);
+                    K.add(i, k, -temp3);
+                    K.add(k, i, -temp3);
+                    K.add(j, k, -temp4);
+                    K.add(k, j, -temp4);
+// #ifdef _DEBUG
+//                     if (debug_) {
+//                         fprintf(outfile, "INTEGRAL CASE 8:\n");
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", i, j, G.get(i,j));
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", k, k, G.get(k,k));
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", i, k, G.get(i,k));
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", j, k, G.get(j,k));
+//                     }
+// #endif
+                    break;
+
+                    case 9:
+                    temp1 = D->get(i, l) * value;
+                    temp2 = D->get(i, j) * value;
+                    temp3 = D->get(j, l) * value * 2.0;
+                    temp4 = D->get(i, i) * value;
+
+                    J.add(i, j, 2.0*temp1);
+                    J.add(j, i, 2.0*temp1);
+                    J.add(i, l, 2.0*temp2);
+                    J.add(l, i, 2.0*temp2);
+                    K.add(i, j, -temp1);
+                    K.add(j, i, -temp1);
+                    K.add(i, l, -temp2);
+                    K.add(l, i, -temp2);
+                    K.add(i, i, -temp3);
+                    K.add(j, l, -temp4);
+                    K.add(l, j, -temp4);
+// #ifdef _DEBUG
+//                     if (debug_) {
+//                         fprintf(outfile, "INTEGRAL CASE 9:\n");
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", i, j, G.get(i,j));
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", i, l, G.get(i,l));
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", i, i, G.get(i,i));
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", j, l, G.get(j,l));
+//                     }
+// #endif
+                    break;
+
+                    case 10:
+                    temp1 = D->get(j, l) * value;
+                    temp2 = D->get(i, j) * value;
+                    temp3 = D->get(j, j) * value;
+                    temp4 = D->get(i, l) * value * 2.0;
+
+                    J.add(i, j, 2.0*temp1);
+                    J.add(j, i, 2.0*temp1);
+                    J.add(j, l, 2.0*temp2);
+                    J.add(l, j, 2.0*temp2);
+                    K.add(i, j, -temp1);
+                    K.add(j, i, -temp1);
+                    K.add(j, l, -temp2);
+                    K.add(l, j, -temp2);
+                    K.add(i, l, -temp3);
+                    K.add(l, i, -temp3);
+                    K.add(j, j, -temp4);
+// #ifdef _DEBUG
+//                     if (debug_) {
+//                         fprintf(outfile, "INTEGRAL CASE 10:\n");
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", i, j, G.get(i,j));
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", j, l, G.get(j,l));
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", i, l, G.get(i,l));
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", j, j, G.get(j,j));
+//                     }
+// #endif
+                    break;
+
+                    case 11:
+                    temp1 = D->get(k, j) * value;
+                    temp2 = D->get(i, j) * value;
+                    temp3 = D->get(j, j) * value;
+                    temp4 = D->get(i, k) * value * 2.0;
+
+                    J.add(i, j, 2.0*temp1);
+                    J.add(j, i, 2.0*temp1);
+                    J.add(k, j, 2.0*temp2);
+                    J.add(j, k, 2.0*temp2);
+                    K.add(i, j, -temp1);
+                    K.add(j, i, -temp1);
+                    K.add(k, j, -temp2);
+                    K.add(j, k, -temp2);
+                    K.add(i, k, -temp3);
+                    K.add(k, i, -temp3);
+                    K.add(j, j, -temp4);
+// #ifdef _DEBUG
+//                     if (debug_) {
+//                         fprintf(outfile, "INTEGRAL CASE 11:\n");
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", i, j, G.get(i,j));
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", k, j, G.get(k,j));
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", i, k, G.get(i,k));
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", j, j, G.get(j,j));
+//                     }
+// #endif
+                    break;
+
+                    case 12:
+                    case 13:
+                    case 14:
+                    temp1 = D->get(k, l) * value * 2.0;
+                    temp2 = D->get(i, j) * value * 2.0;
+                    temp3 = D->get(j, l) * value;
+                    temp4 = D->get(i, k) * value;
+                    temp5 = D->get(j, k) * value;
+                    temp6 = D->get(i, l) * value;
+
+                    J.add(i, j, temp1);
+                    J.add(j, i, temp1);
+                    J.add(k, l, temp2);
+                    J.add(l, k, temp2);
+                    K.add(i, k, -temp3);
+                    K.add(k, i, -temp3);
+                    K.add(j, l, -temp4);
+                    K.add(l, j, -temp4);
+                    K.add(i, l, -temp5);
+                    K.add(l, i, -temp5);
+                    K.add(j, k, -temp6);
+                    K.add(k, j, -temp6);
+// #ifdef _DEBUG
+//                     if (debug_) {
+//                         fprintf(outfile, "INTEGRAL CASE 12,13,14:\n");
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", i, j, G.get(i,j));
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", k, l, G.get(k,l));
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", i, k, G.get(i,k));
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", j, l, G.get(j,l));
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", i, l, G.get(i,l));
+//                         fprintf(outfile, "G[%d][%d] %.11f\n", j, k, G.get(j,k));
+//                     }
+// #endif
+                    break;
+                };
+
+                count++;
+            }
+        }
+    }
+    //fprintf(outfile, "done. %d two-electron integrals.\n", count); fflush(outfile);
+    delete eri;
+    
+    // Set RefMatrix to RefSimpleMatrix handling symmetry blocking, if needed
+    // Transform G back to symmetry blocking
+    // G.transform(basisset_->uso_to_bf()); 
+    // G.print();
+    J_->set(&J);
+    K_->set(&K);
+    J_->scale(1.0);
+    K_->scale(-1.0);
+    delete D;
+    // G_->print();
 }
 
 }}

@@ -84,8 +84,9 @@ void ROHF::common_init()
 	use_out_of_core_ = false;
 
 	fprintf(outfile, "  DIIS %s.\n\n", diis_enabled_ ? "enabled" : "disabled");
-
-	allocate_PK();
+	
+	if (direct_integrals_ == false && ri_integrals_ == false)
+    	allocate_PK();
 }
 
 void ROHF::initial_guess()
@@ -110,8 +111,10 @@ double ROHF::compute_energy() {
 	form_H();
 	find_occupation(H_);
 
-	if (use_out_of_core_ == false)
-		form_PK();
+	if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
+        form_PK();
+    else if (ri_integrals_ == true)
+        form_B();
 
 	form_Shalf();
     initial_guess();
@@ -127,10 +130,14 @@ double ROHF::compute_energy() {
 		Do_old_->copy(Do_); // save previous density
 		Eold_ = E_; // save previous energy
 
-		if (use_out_of_core_ == false)
-			form_G_from_PK();
-		else
-			form_G();
+		if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
+            form_G_from_PK();
+        else if (ri_integrals_ == false && direct_integrals_ == true)
+           form_G_from_direct_integrals(); 
+        else if (ri_integrals_ == true)  
+           form_G_from_RI();
+        else
+           form_G();
 
 		form_F(); // Forms: Fc_, Fo_, Feff_
 		
@@ -157,7 +164,10 @@ double ROHF::compute_energy() {
 
 		converged = test_convergency();
 	} while (!converged && iter < maxiter_);
-
+	if (ri_integrals_)
+    {
+    	free_B();
+    }
 	// Return the final ROHF energy
 	if (converged) {
 		fprintf(outfile, "\n  Energy converged.\n");
@@ -1325,6 +1335,11 @@ void ROHF::form_G() {
 #endif
 	
 #endif // 0
+}
+void ROHF::form_G_from_direct_integrals()
+{
+    fprintf(stderr, "ROHF integral direct algorithm is not implemented yet!\n");
+    abort();
 }
 
 }}

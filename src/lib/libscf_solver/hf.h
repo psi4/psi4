@@ -143,6 +143,8 @@ protected:
 
 
     void form_B(); 
+    void write_B();
+    void free_B();
     
     inline int integral_type(int i, int j, int k, int l)
     {
