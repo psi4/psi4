@@ -496,6 +496,7 @@ else if(name == "CCDENSITY") {
     options.add_bool("SCS_N", "false");
     options.add_double("SCALE_OS", 6.0/5.0);
     options.add_double("SCALE_SS", 1.0/3.0);
+    options.add_int("SCHWARTZ_TOL", 12);
 //    options.add_bool("DF-LMP2", false);
 //    options.add_str("BASIS","NONE");
 //    options.add_str("RI_BASIS","NONE");
