@@ -61,7 +61,6 @@ protected:
     void form_PK();
     void form_F();
     
-    void find_occupation(SharedMatrix);
     void save_fock();
     void diis();
     void allocate_PK();

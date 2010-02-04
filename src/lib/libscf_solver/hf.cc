@@ -93,14 +93,56 @@ void HF::common_init()
             soccpi_[i] = 0;
     }
 
-    // TODO: Make the follow work for general cases!
-    nalpha_ = nbeta_ = 0;
-    for (int i=0; i<nirreps; ++i) {
-        nalphapi_[i] = doccpi_[i] + soccpi_[i];
-        nbetapi_[i]  = doccpi_[i];
-        nalpha_ += doccpi_[i] + soccpi_[i];
-        nbeta_  += doccpi_[i];
+    // Read information from checkpoint
+    nuclearrep_ = chkpt_->rd_enuc();
+    natom_ = chkpt_->rd_natom();
+    zvals_ = chkpt_->rd_zvals();
+
+
+    // Determine the number of electrons in the system
+    charge_ = options_.get_int("CHARGE");
+    nElec_  = 0;
+    for (int i=0; i<natom_; ++i)
+        nElec_ += (int)zvals_[i];
+    nElec_ -= charge_;
+
+    // If the user told us the multiplicity, read it from the input
+    if(options_["MULTP"].has_changed()){
+        multiplicity_ = options_.get_int("MULTP");
+    }else{
+        if(nElec_%2){
+            multiplicity_ = 2;
+            // There are an odd number of electrons
+            fprintf(outfile,"\tThere are an odd number of electrons - assuming doublet.\n"
+                            "\tSpecify the multiplicity with the MULTP option in the\n"
+                            "\tinput if this is incorrect\n\n");
+        }else{
+            multiplicity_ = 1;
+            // There are an even number of electrons
+            fprintf(outfile,"\tThere are an even number of electrons - assuming singlet.\n"
+                            "\tSpecify the multiplicity with the MULTP option in the\n"
+                            "\tinput if this is incorrect\n\n");
+        }
     }
+    // Make sure that the multiplicity is reasonable
+    if(multiplicity_ - 1 > nElec_){
+        char *str = new char[100];
+        sprintf(str, "There are not enough electrons for multiplicity = %d, \n"
+                     "please check your input and use the MULTP keyword", multiplicity_);
+        throw SanityCheckError(str, __FILE__, __LINE__);
+        delete [] str;
+    }
+    if(multiplicity_%2 == nElec_%2){
+        char *str = new char[100];
+        sprintf(str, "A multiplicity of %d with %d electrons is impossible.\n"
+                     "Please check your input and use the MULTP and/or CHARGE keywords",
+                     multiplicity_, nElec_);
+        throw SanityCheckError(str, __FILE__, __LINE__);
+        delete [] str;
+    }
+
+    nbeta_  = (nElec_ - multiplicity_ + 1)/2;
+    nalpha_ = nbeta_ + multiplicity_ - 1;
 
     perturb_h_ = false;
     perturb_h_ = options_.get_bool("PERTURB_H");
@@ -149,11 +191,6 @@ void HF::common_init()
         schwarz_ = options_.get_double("SCHWARZ_CUTOFF");
     }
     
-    // Read information from checkpoint
-    nuclearrep_ = chkpt_->rd_enuc();
-    natom_ = chkpt_->rd_natom();
-    zvals_ = chkpt_->rd_zvals();
-    
     // Alloc memory for multipoles
     Dipole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Dipole X SO-basis")));
     Dipole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Dipole Y SO-basis")));
@@ -169,6 +206,47 @@ void HF::common_init()
     if (direct_integrals_ == false && ri_integrals_ == false)
         form_indexing();
 }
+
+void HF::find_occupation(Vector & evals)
+{
+    std::vector<std::pair<double, int> > pairs;
+    for (int h=0; h<evals.nirreps(); ++h) {
+        for (int i=0; i<evals.dimpi()[h]; ++i)
+            pairs.push_back(make_pair(evals.get(h, i), h));
+    }
+    sort(pairs.begin(),pairs.end());
+
+    memset(doccpi_, 0, sizeof(int) * evals.nirreps());
+    memset(soccpi_, 0, sizeof(int) * evals.nirreps());
+
+    if(!input_docc_){
+        for (int i=0; i<nbeta_; ++i)
+            doccpi_[pairs[i].second]++;
+    }
+    if(!input_socc_){
+        for (int i=nbeta_; i<nalpha_; ++i)
+            soccpi_[pairs[i].second]++;
+    }
+
+    if(print_>1){
+        fprintf(outfile, "\tDOCC: [");
+        for (int h=0; h<evals.nirreps(); ++h){
+            fprintf(outfile, "%3d ", doccpi_[h]);
+        }
+        fprintf(outfile, "]\n");
+        fprintf(outfile, "\tSOCC: [");
+        for (int h=0; h<evals.nirreps(); ++h){
+            fprintf(outfile, "%3d ", soccpi_[h]);
+        }
+        fprintf(outfile, "]\n");
+    }
+    
+    for (int i=0; i<evals.nirreps(); ++i) {
+        nalphapi_[i] = doccpi_[i] + soccpi_[i];
+        nbetapi_[i]  = doccpi_[i];
+    }
+}
+
 
 void HF::print_header()
 {
@@ -371,14 +449,14 @@ void HF::form_Shalf()
     }
 }
 
-int *HF::compute_fcpi(int nfzc, SharedVector eigvalues)
+int *HF::compute_fcpi(int nfzc, Vector &eigvalues)
 {
-    int *frzcpi = new int[eigvalues->nirreps()];
+    int *frzcpi = new int[eigvalues.nirreps()];
     // Print out orbital energies.
     std::vector<std::pair<double, int> > pairs;
-    for (int h=0; h<eigvalues->nirreps(); ++h) {
-        for (int i=0; i<eigvalues->dimpi()[h]; ++i)
-            pairs.push_back(make_pair(eigvalues->get(h, i), h));
+    for (int h=0; h<eigvalues.nirreps(); ++h) {
+        for (int i=0; i<eigvalues.dimpi()[h]; ++i)
+            pairs.push_back(make_pair(eigvalues.get(h, i), h));
         frzcpi[h] = 0;
     }
     sort(pairs.begin(),pairs.end());
@@ -389,14 +467,14 @@ int *HF::compute_fcpi(int nfzc, SharedVector eigvalues)
     return frzcpi;
 }
 
-int *HF::compute_fvpi(int nfzv, SharedVector eigvalues)
+int *HF::compute_fvpi(int nfzv, Vector &eigvalues)
 {
-    int *frzvpi = new int[eigvalues->nirreps()];
+    int *frzvpi = new int[eigvalues.nirreps()];
     // Print out orbital energies.
     std::vector<std::pair<double, int> > pairs;
-    for (int h=0; h<eigvalues->nirreps(); ++h) {
-        for (int i=0; i<eigvalues->dimpi()[h]; ++i)
-            pairs.push_back(make_pair(eigvalues->get(h, i), h));
+    for (int h=0; h<eigvalues.nirreps(); ++h) {
+        for (int i=0; i<eigvalues.dimpi()[h]; ++i)
+            pairs.push_back(make_pair(eigvalues.get(h, i), h));
         frzvpi[h] = 0;
     }
     sort(pairs.begin(),pairs.end(), greater<std::pair<double, int> >());

@@ -114,17 +114,20 @@ public:
     int iterations_needed() {return iterationsNeeded_;}
 
     // The RMS error in the density
-    int rms_density_error() {return Drms_;}
+    double rms_density_error() {return Drms_;}
 protected:
     // Common initializer
     void common_init();
     
     // Compute multipole integrals
     void form_multipole_integrals();
-    
+
+    // Figure out how to occupy the orbitals in the absence of DOCC and SOCC
+    void find_occupation(Vector& evals);
+
     // Determine how many core and virtual orbitals to freeze
-    int *compute_fcpi(int nfzc, SharedVector eigvalues);
-    int *compute_fvpi(int nfvc, SharedVector eigvalues);
+    int *compute_fcpi(int nfzc, Vector &eigvalues);
+    int *compute_fvpi(int nfvc, Vector &eigvalues);
     
     // Forms the _so2* mapping arrays and determines _pk_pairs
     void form_indexing();
@@ -134,6 +137,15 @@ protected:
 
     // The amout of information to print
     int print_;
+
+    // The number of electrons
+    int nElec_;
+
+    // The charge of the system
+    int charge_;
+
+    // The multiplicity of the systems (specified as 2 Ms + 1)
+    int multiplicity_;
     
     // The number of iterations need to reach convergence
     int iterationsNeeded_;
