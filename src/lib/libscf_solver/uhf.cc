@@ -302,10 +302,14 @@ void UHF::save_information()
     }
     
     // Needed for a couple of places.
-    SharedMatrix eigvectora(factory_.create_matrix());
-    SharedVector eigvaluesa(factory_.create_vector());
-    SharedMatrix eigvectorb(factory_.create_matrix());
-    SharedVector eigvaluesb(factory_.create_vector());
+    Matrix eigvectora;
+    Matrix eigvectorb;
+    Vector eigvaluesa;
+    Vector eigvaluesb;
+    factory_.create_matrix(eigvectora);
+    factory_.create_matrix(eigvectorb);
+    factory_.create_vector(eigvaluesa);
+    factory_.create_vector(eigvaluesb);
     Fa_->diagonalize(eigvectora, eigvaluesa);
     Fb_->diagonalize(eigvectorb, eigvaluesb);
     
@@ -320,10 +324,10 @@ void UHF::save_information()
     
     // Print out orbital energies.
     std::vector<std::pair<double, int> > pairsa, pairsb;
-    for (int h=0; h<eigvaluesa->nirreps(); ++h) {
-        for (int i=0; i<eigvaluesa->dimpi()[h]; ++i) {
-            pairsa.push_back(make_pair(eigvaluesa->get(h, i), h));
-            pairsb.push_back(make_pair(eigvaluesb->get(h, i), h));
+    for (int h=0; h<eigvaluesa.nirreps(); ++h) {
+        for (int i=0; i<eigvaluesa.dimpi()[h]; ++i) {
+            pairsa.push_back(make_pair(eigvaluesa.get(h, i), h));
+            pairsb.push_back(make_pair(eigvaluesb.get(h, i), h));
         }
     }
     sort(pairsa.begin(),pairsa.end());
@@ -359,12 +363,12 @@ void UHF::save_information()
         }
         fprintf(outfile, "\n");
     }
-    for (int i=0; i<eigvaluesa->nirreps(); ++i)
+    for (int i=0; i<eigvaluesa.nirreps(); ++i)
         free(temp2[i]);
     free(temp2);
     
-    int *vec = new int[eigvaluesa->nirreps()];
-    for (int i=0; i<eigvaluesa->nirreps(); ++i)
+    int *vec = new int[eigvaluesa.nirreps()];
+    for (int i=0; i<eigvaluesa.nirreps(); ++i)
         vec[i] = 0;
         
     chkpt_->wt_nmo(nso);
@@ -373,7 +377,7 @@ void UHF::save_information()
     chkpt_->wt_escf(E_);
     chkpt_->wt_eref(E_);
     chkpt_->wt_clsdpi(doccpi_);
-    chkpt_->wt_orbspi(eigvaluesa->dimpi());
+    chkpt_->wt_orbspi(eigvaluesa.dimpi());
     chkpt_->wt_openpi(vec);
     chkpt_->wt_phase_check(0);
     
@@ -391,13 +395,13 @@ void UHF::save_information()
     chkpt_->wt_iopen(0);
     
     // Write eigenvectors and eigenvalue to checkpoint 
-    double *values = eigvaluesa->to_block_vector();
+    double *values = eigvaluesa.to_block_vector();
     chkpt_->wt_alpha_evals(values);
     free(values);
     double **vectors = Ca_->to_block_matrix();
     chkpt_->wt_alpha_scf(vectors);
     free_block(vectors);
-    values = eigvaluesb->to_block_vector();
+    values = eigvaluesb.to_block_vector();
     chkpt_->wt_beta_evals(values);
     free(values);
     vectors = Cb_->to_block_matrix();
@@ -499,8 +503,10 @@ void UHF::form_F() {
 
 void UHF::form_C()
 {
-	SharedMatrix eigvec(factory_.create_matrix());
-	SharedVector eigval(factory_.create_vector());
+	Matrix eigvec;
+	Vector eigval;
+        factory_.create_matrix(eigvec);
+        factory_.create_vector(eigval);
 
         if(addExternalPotential_){
             pertFa_->transform(Shalf_);
@@ -509,6 +515,8 @@ void UHF::form_C()
             Fa_->transform(Shalf_);
             Fa_->diagonalize(eigvec, eigval);
         }
+
+        find_occupation(eigval);
     // fprintf(outfile, "Fa eigenvectors/values:\n");
     // eigvec->eivprint(eigval);
 	Ca_->gemm(false, false, 1.0, Shalf_, eigvec, 0.0);

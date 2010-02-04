@@ -13,18 +13,18 @@ namespace psi { namespace scf {
   
 class ROHF : public HF {
 protected:
-    SharedMatrix S_;
-    SharedMatrix Fc_;
-    SharedMatrix Fo_;
-    SharedMatrix Feff_;
-    SharedMatrix C_;
-    SharedMatrix Dc_;
-    SharedMatrix Do_;
-    SharedMatrix Dc_old_;
-    SharedMatrix Do_old_;
-    SharedMatrix Gc_;
-    SharedMatrix Go_;
-    SharedVector epsilon_;
+    Matrix S_;
+    Matrix Fc_;
+    Matrix Fo_;
+    Matrix Feff_;
+    Matrix C_;
+    Matrix Dc_;
+    Matrix Do_;
+    Matrix Dc_old_;
+    Matrix Do_old_;
+    Matrix Gc_;
+    Matrix Go_;
+    Vector epsilon_;
     
     std::vector<SharedMatrix> diis_F_;
     std::vector<SharedMatrix> diis_E_;
@@ -55,7 +55,7 @@ protected:
     void form_PK();
     void form_F();
 
-    void find_occupation(SharedMatrix);
+//    void find_occupation(SharedMatrix);
     void save_fock();
     void diis();
     void allocate_PK();
