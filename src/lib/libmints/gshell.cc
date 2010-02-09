@@ -22,7 +22,7 @@ void GaussianShell::init(int ncn, int nprm, double* e, int* am, GaussianType pur
     for (int i=0; i<ncontraction(); ++i) {
         puream_[i] = (pure == Pure);
     }
- 
+
     copy_data(am, e, c);
     // Compute the number of basis functions in this shell
     init_data();
@@ -37,10 +37,11 @@ GaussianShell::~GaussianShell()
     delete[] l_;
     delete[] puream_;
     delete[] exp_;
-    
+
     for (int i=0; i<ncontractions_; ++i)
         delete[] coef_[i];
-    
+
+
     delete[] coef_;
 }
 
@@ -50,7 +51,7 @@ void GaussianShell::copy_data(int *l, double *exp, double **coef)
     l_ = new int[ncontraction()];
     for (int c=0; c<ncontraction(); ++c)
         l_[c] = l[c];
-    
+
     exp_ = new double[nprimitive()];
     coef_ = new double*[ncontraction()];
     for (int p=0; p<nprimitive(); ++p) {
@@ -79,7 +80,7 @@ void GaussianShell::contraction_normalization(int gs)
 {
     int i, j;
     double e_sum = 0.0, g, z;
-    
+
     for (i=0; i<nprimitives_; ++i) {
         for (j=0; j<nprimitives_; ++j) {
             g = exp_[i] + exp_[j];
@@ -87,14 +88,14 @@ void GaussianShell::contraction_normalization(int gs)
             e_sum += coef_[gs][i] * coef_[gs][j] / z;
         }
     }
-    
+
     double tmp = ((2.0*M_PI/M_2_SQRTPI) * df[2*l_[0]])/pow(2.0, l_[0]);
     double norm = sqrt(1.0 / (tmp*e_sum));
-    
+
     // Set the normalization
     for (i=0; i<nprimitives_; ++i)
         coef_[gs][i] *= norm;
-        
+
     if (std::isnan(norm))
         for (i=0; i<nprimitives_; ++i)
             coef_[gs][i] = 1.0;
@@ -103,7 +104,7 @@ void GaussianShell::contraction_normalization(int gs)
 void GaussianShell::normalize_shell()
 {
     int i, gs;
-    
+
     for (gs = 0; gs < ncontractions_; ++gs) {
         for (i = 0; i < nprimitives_; ++i) {
             double normalization = primitive_normalization(i);
@@ -125,23 +126,23 @@ void GaussianShell::init_data()
     int nc = 0;
     int nf = 0;
     has_pure_ = false;
-    
+
     for (int i=0; i<ncontraction(); ++i) {
         int maxi = l_[i];
         if (max < maxi)
             max = maxi;
-            
+
         int mini = l_[i];
         if (min > mini || i == 0)
             min = mini;
-            
+
         nc += ncartesian(i);
         nf += nfunction(i);
-        
+
         if (is_pure(i))
             has_pure_ = true;
     }
-    
+
     max_am_ = max;
     min_am_ = min;
     ncartesians_ = nc;
@@ -186,7 +187,7 @@ double GaussianShell::normalize(int l, int m, int n)
         double numer = df[2*l_[0]];
         double denom = df[2*l] * df[2*m] * df[2*n];
         // printf("l_=%d, l=%d, m=%d, n=%d, norm=%15.10f\n", l_[0], l, m, n, sqrt(numer/denom));
-        return sqrt(numer/denom);        
+        return sqrt(numer/denom);
     }
 }
 
