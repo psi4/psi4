@@ -21,13 +21,15 @@ namespace psi {
 /*! \ingroup MINTS
     \class BasisSet
     \brief Basis set container class
-    
+
     Reads the basis set from a checkpoint file object. Also reads the molecule
     from the checkpoint file storing the information in an internal Molecule class
     which can be accessed using molecule().
 */
 class BasisSet
 {
+    friend class BasisSetParser;
+
     //! Number of primitives.
     int nprimitives_;
     //! Number of shells.
@@ -53,10 +55,10 @@ class BasisSet
     shared_ptr<SimpleMatrix> simple_mat_uso2ao_;
     double **uso2bf_;
     shared_ptr<SimpleMatrix> simple_mat_uso2bf_;
-    
+
     //! Does the loaded basis set contain pure angular momentum functions?
     bool puream_;
-    
+
     //! Array of gaussian shells
     std::vector<shared_ptr<GaussianShell> > shells_;
     //! Molecule object.
@@ -65,12 +67,12 @@ class BasisSet
     shared_ptr<SOTransform> sotransform_;
     //! Spherical transfromation (used in two-electron integrals)
     std::vector<SphericalTransform> sphericaltransforms_;
-    
+
     //! No default constructor
     BasisSet();
     //! No assignment
     BasisSet& operator=(const BasisSet&);
-    
+
     //! Initialize shells based on information found in checkpoint
     void initialize_shells(shared_ptr<psi::Chkpt> chkpt, std::string& basiskey);
 
@@ -78,7 +80,7 @@ class BasisSet
     static boost::once_flag initialized_shared_;
     // Global arrays of x, y, z exponents
     static std::vector<Vector3> exp_ao[];
-    
+
 public:
 
     /** Constructor, reads in the basis set from the checkpoint file using basiskey
@@ -87,12 +89,12 @@ public:
      *                  If an RI-basis is wanted pass "DF"
      */
     BasisSet(shared_ptr<psi::Chkpt> chkpt, std::string basiskey = "");
-    
+
     /** Copy constructor, currently errors if used. */
     BasisSet(const BasisSet&);
     /// Destructor
     ~BasisSet();
-    
+
     static void initialize_singletons();
 
     /** Number of primitives.
@@ -141,28 +143,28 @@ public:
      *  @return The function number for the first function for the i'th shell.
      */
     int shell_to_basis_function(int i) const { return shell_first_basis_function_[i]; }
-    
+
     /** Return the si'th Gaussian shell
      *  @param i Shell number
      *  @return A shared pointer to the GaussianShell object for the i'th shell.
      */
     shared_ptr<GaussianShell> shell(int si) const;
-    
+
     /** Returns i'th shell's transform object.
      *  @param i Shell number
      *  @return A SOTransformShell object that details how to transform from AO to SO.
      */
     SOTransformShell* so_transform(int i) { return sotransform_->aoshell(i); }
-    
+
     /** Returns the transformation object for a given angular momentum. Used in ERIs.
      *  @param am Angular momentum
      *  @return A SphericalTransform object that details how to transfrom from AO to BF.
      */
     SphericalTransform& spherical_transform(int am) { return sphericaltransforms_[am]; }
-    
+
     /// Print the basis set
     void print(FILE *out = outfile) const;
-    
+
     /** Returns the uso2ao_ matrix.
      *  @return The transformation matrix for USO to AO.
      */
@@ -172,13 +174,13 @@ public:
      *  @return The transformation matrix for USO to BF.
      */
     const shared_ptr<SimpleMatrix> uso_to_bf() const { return simple_mat_uso2bf_; }
-    
+
     /** Returns an empty basis set object.
      *
      *  Returns a BasisSet object that actually has a single s-function
      *  at the origin with an exponent of 0.0 and contraction of 1.0.
      *  @return A new empty BasisSet object.
-     */ 
+     */
     static shared_ptr<BasisSet> zero_basis_set();
 
     /** Returns a new BasisSet object.
@@ -197,7 +199,7 @@ public:
      * @param mol Molecule to construct basis set for.
      * @param basisnames Name of the basis set for each atom in molecule to search for in pbasis.dat
      */
-    static shared_ptr<BasisSet> construct(const shared_ptr<BasisSetParser>& parser, 
+    static shared_ptr<BasisSet> construct(const shared_ptr<BasisSetParser>& parser,
         const shared_ptr<Molecule>& mol,
         const std::vector<std::string> &basisnames);
 };

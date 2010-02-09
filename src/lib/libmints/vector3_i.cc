@@ -9,9 +9,18 @@ inline Vector3 operator*(double d, const Vector3& x)
     return result;
 }
 
-inline Vector3 Vector3::operator*(double d) const 
+inline Vector3 Vector3::operator*(double d) const
 {
     return d*(*this);
+}
+
+inline Vector3 Vector3::operator/(double d) const
+{
+    Vector3 result;
+    result[0] = v_[0] / d;
+    result[1] = v_[1] / d;
+    result[2] = v_[2] / d;
+    return result;
 }
 
 inline double Vector3::distance(const Vector3& s) const
@@ -26,7 +35,7 @@ inline void Vector3::normalize()
 {
     double temp=0.0;
     int i;
-    
+
     for (i=0; i<3; ++i)
         temp += v_[i] * v_[i];
     temp = 1.0 / sqrt(temp);
@@ -47,15 +56,15 @@ inline void Vector3::rotate(double theta, Vector3& axis)
     Vector3 result;
     Vector3 unitaxis = axis;
     unitaxis.normalize();
-    
+
     // split into parallel and perpendicular components along axis
     Vector3 parallel = axis * (this->dot(axis) / axis.dot(axis));
     Vector3 perpendicular = (*this) - parallel;
-    
+
     // form unit vector perpendicular to parallel and perpendicular
     Vector3 third_axis = axis.perp_unit(perpendicular);
     third_axis = third_axis * perpendicular.norm();
-    
+
     result = parallel + cos(theta) * perpendicular + sin(theta) * third_axis;
     (*this) = result;
 }
@@ -65,7 +74,7 @@ inline Vector3 Vector3::perp_unit(const Vector3& v) const
     // try cross product
     Vector3 result = cross(v);
     double resultdotresult = result.dot(result);
-    
+
     if (resultdotresult < 1.e-16) {
         // cross product is too small to normalize
         // find the largest of this and v
@@ -81,7 +90,7 @@ inline Vector3 Vector3::perp_unit(const Vector3& v) const
             d = this;
             dotprodd = dotprodt;
         }
-        
+
         // see if d is big enough
         if (dotprodd < 1.e-16) {
             // choose an arbitrary vector, since the biggest vector is small
@@ -118,7 +127,7 @@ inline Vector3 Vector3::perp_unit(const Vector3& v) const
                     axis1 = 1;
                 }
             }
-            
+
             result[0] = 0.0;
             result[1] = 0.0;
             result[2] = 0.0;

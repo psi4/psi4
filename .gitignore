@@ -1,5 +1,10 @@
 autom4te.cache
 configure
+psi.config
+psi.creator
+psi.creator.user
+psi.files
+psi.includes
 *.o
 *.a
 .*

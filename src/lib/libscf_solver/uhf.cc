@@ -21,7 +21,7 @@ using namespace std;
 using namespace psi;
 
 namespace psi { namespace scf {
-    
+
 UHF::UHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) : HF(options, psio, chkpt)
 {
     common_init();
@@ -29,10 +29,10 @@ UHF::UHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) : HF(
 
 UHF::~UHF()
 {
-	if (p_jk_)
-		delete[](p_jk_);
-	if (p_k_)
-		delete[](p_k_);
+    if (p_jk_)
+        delete[](p_jk_);
+    if (p_k_)
+        delete[](p_k_);
 }
 
 void UHF::common_init()
@@ -61,9 +61,9 @@ void UHF::common_init()
     use_out_of_core_ = options_.get_bool("OUT_OF_CORE");
 
     if(print_ > 1) fprintf(outfile, "  DIIS not implemented for UHF, yet.\n\n");
-	
-	if (direct_integrals_ == false && ri_integrals_ == false)
-    	allocate_PK();
+
+    if (direct_integrals_ == false && ri_integrals_ == false)
+        allocate_PK();
 }
 
 double UHF::compute_energy()
@@ -114,8 +114,8 @@ double UHF::compute_energy()
         if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
             form_G_from_PK();
         else if (ri_integrals_ == false && direct_integrals_ == true)
-           form_G_from_direct_integrals(); 
-        else if (ri_integrals_ == true)  
+           form_G_from_direct_integrals();
+        else if (ri_integrals_ == true)
            form_G_from_RI();
         else
            form_G();
@@ -133,10 +133,10 @@ double UHF::compute_energy()
 
         converged = test_convergency();
     } while (!converged && iter < maxiter_);
-	
-	if (ri_integrals_)
+
+    if (ri_integrals_)
     {
-    	free_B();
+        free_B();
     }
     // Return the final RHF energy
     if (converged) {
@@ -160,11 +160,11 @@ void UHF::compute_multipole()
     double dex, dey, dez, dx, dy, dz;
     // Convert blocked density to a full block
     SimpleMatrix D(Dt_->to_simple_matrix());
-    
+
     dex = D.vector_dot(Dipole_[0]);
     dey = D.vector_dot(Dipole_[1]);
     dez = D.vector_dot(Dipole_[2]);
-        
+
     dx = dex + nuclear_dipole_contribution_[0];
     dy = dey + nuclear_dipole_contribution_[1];
     dz = dez + nuclear_dipole_contribution_[2];
@@ -172,36 +172,36 @@ void UHF::compute_multipole()
     double d;
     d = sqrt(dx * dx + dy * dy + dz * dz);
     // End dipole
-    
+
     // Begin quadrupole
     double qexx, qexy, qexz, qeyy, qeyz, qezz;
     double mexx, mexy, mexz, meyy, meyz, mezz;
     double texx, texy, texz, teyy, teyz, tezz;
-    
+
     mexx = D.vector_dot(Quadrupole_[0]) * 2.0;
     mexy = D.vector_dot(Quadrupole_[1]) * 2.0;
     mexz = D.vector_dot(Quadrupole_[2]) * 2.0;
     meyy = D.vector_dot(Quadrupole_[3]) * 2.0;
     meyz = D.vector_dot(Quadrupole_[4]) * 2.0;
     mezz = D.vector_dot(Quadrupole_[5]) * 2.0;
-    
+
     texx = mexx + nuclear_quadrupole_contribution_[0];
     texy = mexy + nuclear_quadrupole_contribution_[1];
     texz = mexz + nuclear_quadrupole_contribution_[2];
     teyy = meyy + nuclear_quadrupole_contribution_[3];
     teyz = meyz + nuclear_quadrupole_contribution_[4];
     tezz = mezz + nuclear_quadrupole_contribution_[5];
-    
+
     qexx = texx - (teyy+tezz)/2.0;
     qeyy = teyy - (texx+tezz)/2.0;
     qezz = tezz - (texx+teyy)/2.0;
     qexy = 1.5 * texy;
     qexz = 1.5 * texz;
     qeyz = 1.5 * teyz;
-    
+
     SimpleVector evals(3);
     SimpleMatrix evecs(3, 3), temp(3, 3);
-    
+
     temp.set(0, 0, qexx);
     temp.set(1, 1, qeyy);
     temp.set(2, 2, qezz);
@@ -213,26 +213,26 @@ void UHF::compute_multipole()
     temp.set(2, 1, qeyz);
     temp.diagonalize(&evecs, &evals);
     // End Quadrupole
-    
+
     fprintf(outfile, "\n  Electric dipole (a.u.):\n");
     fprintf(outfile, "\t%15s\t%15s\t%15s", "X", "Y", "Z");
     fprintf(outfile, "\n    Nuclear part:\n");
     fprintf(outfile, "\t%15.10f\t%15.10f\t%15.10f\n", nuclear_dipole_contribution_[0], nuclear_dipole_contribution_[1], nuclear_dipole_contribution_[2]);
-        
+
     fprintf(outfile, "\n    Electronic part:\n");
     fprintf(outfile, "\t%15.10f\t%15.10f\t%15.10f\n", dex, dey, dez);
-        
+
     fprintf(outfile, "\n    Dipole moments:\n");
     fprintf(outfile, "\t%15.10f\t%15.10f\t%15.10f\n", dx, dy, dz);
-        
+
     fprintf(outfile, "\n    Total dipole: %15.10f a.u.  %15.10f Debye\n", d, d*_dipmom_au2debye);
     fprintf(outfile, "    Conversion: 1.0 a.u. = %15.10f Debye\n", _dipmom_au2debye);
-    
+
     // fprintf(outfile, "\n    Orbital contributions (a.u.)\n");
     // fprintf(outfile, "\t%6s %3s%15s  %15s  %15s\n", "Irrep", "MO", "X", "Y", "Z");
     // for (int h=0; h<Dipole_[0].nirreps(); ++h) {
     //   for (int i=0; i<doccpi_[h]; ++i) {
-    //     fprintf(outfile, "\t%6d %3d%15.10f  %15.10f  %15.10f\n", h+1, i+1, 
+    //     fprintf(outfile, "\t%6d %3d%15.10f  %15.10f  %15.10f\n", h+1, i+1,
     //         Dipole_[0].get(h, i, i) * -2.0, Dipole_[1].get(h, i, i) * -2.0, Dipole_[2].get(h, i, i) * -2.0);
     //   }
     // }
@@ -247,7 +247,7 @@ void UHF::compute_multipole()
     // fprintf(outfile, "\tQ1=%15.10f\tV1=(%15.10f %15.10f %15.10f)\n", evals.get(0), evecs.get(0, 0), evecs.get(1, 0), evecs.get(2, 0));
     // fprintf(outfile, "\tQ2=%15.10f\tV2=(%15.10f %15.10f %15.10f)\n", evals.get(1), evecs.get(0, 1), evecs.get(1, 1), evecs.get(2, 1));
     // fprintf(outfile, "\tQ3=%15.10f\tV3=(%15.10f %15.10f %15.10f)\n", evals.get(2), evecs.get(0, 2), evecs.get(1, 2), evecs.get(2, 2));
-    
+
     // Compute orbital extents
     fprintf(outfile, "\n  Alpha Orbital extents (a.u.):\n");
     fprintf(outfile, "\t%3s%15s  %15s  %15s  %15s\n", "MO", "<x^2>", "<y^2>", "<z^2>", "<r^2>");
@@ -264,7 +264,7 @@ void UHF::compute_multipole()
         }
         fprintf(outfile, "\t%3d%15.10f  %15.10f  %15.10f  %15.10f\n", i+1, fabs(sumx), fabs(sumy), fabs(sumz), fabs(sumx + sumy + sumz));
     }
-    
+
     // Compute orbital extents
     fprintf(outfile, "\n  Beta Orbital extents (a.u.):\n");
     fprintf(outfile, "\t%3s%15s  %15s  %15s  %15s\n", "MO", "<x^2>", "<y^2>", "<z^2>", "<r^2>");
@@ -300,7 +300,7 @@ void UHF::save_information()
         }
         fprintf(outfile, ")\n");
     }
-    
+
     // Needed for a couple of places.
     Matrix eigvectora;
     Matrix eigvectorb;
@@ -312,16 +312,16 @@ void UHF::save_information()
     factory_.create_vector(eigvaluesb);
     Fa_->diagonalize(eigvectora, eigvaluesa);
     Fb_->diagonalize(eigvectorb, eigvaluesb);
-    
+
     bool print_mos = options_.get_bool("PRINT_MOS");
     if (print_mos) {
         fprintf(outfile, "\n  Alpha Molecular orbitals:\n");
         Ca_->eivprint(eigvaluesa);
-        
+
         fprintf(outfile, "\n  Beta Molecular orbitals:\n");
         Cb_->eivprint(eigvaluesb);
     }
-    
+
     // Print out orbital energies.
     std::vector<std::pair<double, int> > pairsa, pairsb;
     for (int h=0; h<eigvaluesa.nirreps(); ++h) {
@@ -370,7 +370,7 @@ void UHF::save_information()
     int *vec = new int[eigvaluesa.nirreps()];
     for (int i=0; i<eigvaluesa.nirreps(); ++i)
         vec[i] = 0;
-        
+
     chkpt_->wt_nmo(nso);
     chkpt_->wt_ref(1);        // UHF
     chkpt_->wt_etot(E_);
@@ -380,7 +380,7 @@ void UHF::save_information()
     chkpt_->wt_orbspi(eigvaluesa.dimpi());
     chkpt_->wt_openpi(vec);
     chkpt_->wt_phase_check(0);
-    
+
     // Figure out frozen core orbitals
     int nfzc = chkpt_->rd_nfzc();
     int nfzv = chkpt_->rd_nfzv();
@@ -390,7 +390,7 @@ void UHF::save_information()
     chkpt_->wt_frzvpi(frzvpi);
     delete[](frzcpi);
     delete[](frzvpi);
-    
+
     // TODO: Figure out what chkpt_wt_iopen means for UHF
     chkpt_->wt_iopen(0);
     
@@ -411,14 +411,14 @@ void UHF::save_information()
 
 bool UHF::test_convergency()
 {
-	double ediff = E_ - Eold_;
-	
-	// RMS of the density
+    double ediff = E_ - Eold_;
+
+    // RMS of the density
     Matrix Drms;
     Drms.copy(Dt_);
     Drms.subtract(Dtold_);
     Drms_ = sqrt(Drms.sum_of_squares());
-    
+
     if (fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_)
         return true;
     else
@@ -461,27 +461,27 @@ void UHF::allocate_PK() {
 
 void UHF::form_initialF()
 {
-	Fa_->copy(H_);
-	Fb_->copy(H_);
-	
-	// Transform the Focks
+    Fa_->copy(H_);
+    Fb_->copy(H_);
+
+    // Transform the Focks
     // Fa_->transform(Shalf_);
     // Fb_->transform(Shalf_);
-	
+
 #ifdef _DEBUG
-	if (debug_) {
-		fprintf(outfile, "Initial Fock alpha matrix:\n");
-		Fa_->print(outfile);
-		fprintf(outfile, "Initial Fock beta matrix:\n");
-		Fb_->print(outfile);
-	}
+    if (debug_) {
+        fprintf(outfile, "Initial Fock alpha matrix:\n");
+        Fa_->print(outfile);
+        fprintf(outfile, "Initial Fock beta matrix:\n");
+        Fb_->print(outfile);
+    }
 #endif
 }
 
 void UHF::form_F() {
     Fa_->copy(H_);
     Fa_->add(Ga_);
-    
+
     Fb_->copy(H_);
     Fb_->add(Gb_);
 
@@ -492,7 +492,7 @@ void UHF::form_F() {
         pertFa_->add(Fa_);
         pertFb_->add(Fb_);
     }
-	
+
 #ifdef _DEBUG
     if (debug_) {
         Fa_->print(outfile);
@@ -519,7 +519,7 @@ void UHF::form_C()
         find_occupation(eigval);
     // fprintf(outfile, "Fa eigenvectors/values:\n");
     // eigvec->eivprint(eigval);
-	Ca_->gemm(false, false, 1.0, Shalf_, eigvec, 0.0);
+    Ca_->gemm(false, false, 1.0, Shalf_, eigvec, 0.0);
 
         if(addExternalPotential_){
             pertFb_->transform(Shalf_);
@@ -530,13 +530,13 @@ void UHF::form_C()
         }
     // fprintf(outfile, "Fb eigenvectors/values:\n");
     // eigvec->eivprint(eigval);
-	Cb_->gemm(false, false, 1.0, Shalf_, eigvec, 0.0);
-	
+    Cb_->gemm(false, false, 1.0, Shalf_, eigvec, 0.0);
+
 #ifdef _DEBUG
-	if (debug_) {
-		Ca_->print(outfile);
-		Cb_->print(outfile);
-	}
+    if (debug_) {
+        Ca_->print(outfile);
+        Cb_->print(outfile);
+    }
 #endif
 }
 
@@ -563,15 +563,15 @@ void UHF::form_D()
         }
     }
 
-	// Form total density
+    // Form total density
     Dt_->copy(Da_);
     Dt_->add(Db_);
-	
+
 #ifdef _DEBUG
-	if (debug_) {
-		Da_->print(outfile);
-		Db_->print(outfile);
-	}
+    if (debug_) {
+        Da_->print(outfile);
+        Db_->print(outfile);
+    }
 #endif
 }
 
@@ -606,7 +606,7 @@ void UHF::form_PK()
     int idx;
     int counter = 0;
     double value;
-    
+
     // PK is zeroed out here, not during allocation
     // to prevent issues with multiple SCF calls
     memset(p_jk_, 0, pk_size_*sizeof(double));
@@ -616,13 +616,13 @@ void UHF::form_PK()
         fprintf(outfile, "  Forming PJ and PK matrices.\n");
         fflush(outfile);
     }
-    
+
     IWL ERIIN(psio_.get(), PSIF_SO_TEI, 0.0, 1, 1);
-    
+
     do {
         ilsti = ERIIN.last_buffer();
         nbuf  = ERIIN.buffer_count();
-        
+
         fi = 0;
         for (idx=0; idx<nbuf; ++idx) {
             if (ERIIN.labels()[fi] >= 0) {
@@ -637,19 +637,19 @@ void UHF::form_PK()
             l = ERIIN.labels()[fi+3];
             value = ERIIN.values()[idx];
             fi += 4;
-            
+
             // Get the symmetries
             is = so2symblk_[i];
             js = so2symblk_[j];
             ks = so2symblk_[k];
             ls = so2symblk_[l];
-            
+
             // Get the offset of the SO index in its symblock
             ii = so2index_[i];
             jj = so2index_[j];
             kk = so2index_[k];
             ll = so2index_[l];
-            
+
             // J
             if ((is == js) && (ks == ls)) {
                 bra = INDEX2(ii, jj) + pk_symoffset_[is];
@@ -674,7 +674,7 @@ void UHF::form_PK()
                     }
                 }
             }
-            
+
             // K/2 (1st sort)
             if ((is == ks) && (js == ls)) {
                 bra = INDEX2(ii, kk) + pk_symoffset_[is];
@@ -697,13 +697,13 @@ void UHF::form_PK()
 
     // Going out of scope will close the buffer
     // iwl_buf_close(&ERIIN, 1);
-    
+
     // After stage two is complete, the elements of P must be halved for the case IJ=KL.
     for (size_t ij=0; ij < pk_pairs_; ++ij) {
         p_jk_[INDEX2(ij,ij)] *= 0.5;
         p_k_[INDEX2(ij,ij)] *= 0.5;
     }
-    
+
     if(print_ > 2) fprintf(outfile, "  Processed %d two-electron integrals.\n", counter);
     #ifdef _DEBUG
     if (debug_) {

@@ -21,18 +21,18 @@ using namespace psi;
 
 namespace psi { namespace scf {
 
-ROHF::ROHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) 
+ROHF::ROHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
     : HF(options, psio, chkpt)
 {
     common_init();
 }
 
 ROHF::~ROHF() {
-	free_block(diis_B_);
-	if (pk_)
-		delete[](pk_);
-	if (k_)
-		delete[](k_);
+    free_block(diis_B_);
+    if (pk_)
+        delete[](pk_);
+    if (k_)
+        delete[](k_);
 }
 
 void ROHF::common_init()
@@ -53,22 +53,22 @@ void ROHF::common_init()
     k_ = NULL;
 	
     diis_B_ = NULL;
-	current_diis_fock_ = 0;
-	
+    current_diis_fock_ = 0;
+
     num_diis_vectors_ = options_.get_int("DIIS_VECTORS");
     diis_enabled_ = options_.get_bool("DIIS");
     diis_enabled_ = false;      // DIIS doesn't work, so don't bother.
-    
+
     // Don't perform DIIS is less than 2 vectors requested, or user requested a negative number
     if (num_diis_vectors_ < 2) {
         // disable diis
         diis_enabled_ = false;
     }
-    
+
     if (diis_enabled_ == true) {
         // Allocate the memory
         diis_B_ = block_matrix(num_diis_vectors_, num_diis_vectors_);
-        
+
         // Allocate space for diis_F_ and diis_E_
         for (int i=0; i < num_diis_vectors_; ++i) {
             diis_F_.push_back(SharedMatrix(factory_.create_matrix()));
@@ -80,13 +80,13 @@ void ROHF::common_init()
     multiplicity_ = options_.get_int("MULTP");
     use_out_of_core_ = options_.get_bool("OUT_OF_CORE");
 
-	// Disable the use of the out of core algorithm. Hasn't been modified for ROHF
-	use_out_of_core_ = false;
+    // Disable the use of the out of core algorithm. Hasn't been modified for ROHF
+    use_out_of_core_ = false;
 
-	fprintf(outfile, "  DIIS %s.\n\n", diis_enabled_ ? "enabled" : "disabled");
-	
-	if (direct_integrals_ == false && ri_integrals_ == false)
-    	allocate_PK();
+    fprintf(outfile, "  DIIS %s.\n\n", diis_enabled_ ? "enabled" : "disabled");
+
+    if (direct_integrals_ == false && ri_integrals_ == false)
+        allocate_PK();
 }
 
 void ROHF::initial_guess()
@@ -118,86 +118,89 @@ double ROHF::compute_energy() {
     else if (ri_integrals_ == true)
         form_B();
 
-	form_Shalf();
-    initial_guess();
-	form_D();
-	
-	// Compute an initial energy using H and D
-	E_ = compute_initial_E();
+    if (use_out_of_core_ == false)
+        form_PK();
 
-	do {
-		iter++;
+    form_Shalf();
+    initial_guess();
+    form_D();
+
+    // Compute an initial energy using H and D
+    E_ = compute_initial_E();
+
+    do {
+        iter++;
 
 		Dc_old_.copy(Dc_); // save previous density
 		Do_old_.copy(Do_); // save previous density
 		Eold_ = E_; // save previous energy
 
-		if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
+        if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
             form_G_from_PK();
         else if (ri_integrals_ == false && direct_integrals_ == true)
-           form_G_from_direct_integrals(); 
-        else if (ri_integrals_ == true)  
+           form_G_from_direct_integrals();
+        else if (ri_integrals_ == true)
            form_G_from_RI();
         else
            form_G();
 
-		form_F(); // Forms: Fc_, Fo_, Feff_
-		
-		if (diis_enabled_)
-			save_fock(); // Save the effective Fock for diis
-		
-		// Compute total energy
-		E_ = compute_E();
+        form_F(); // Forms: Fc_, Fo_, Feff_
 
-		if (diis_enabled_ == true && iter >= num_diis_vectors_ && iter % 6 == 0) {
-			diis();
-			diis_iter = true;
-		} else {
-			diis_iter = false;
-		}
-		fprintf(outfile,
-				"  @ROHF iteration %3d energy: %20.14f    %20.14f %s\n",
-				iter, E_, E_ - Eold_, diis_iter == false ? " " : "DIIS");
-		fflush(outfile);
+        if (diis_enabled_)
+            save_fock(); // Save the effective Fock for diis
 
-		form_C(); 	// Uses Feff_ to form C_.
-		//	find_occupation(_F);
-		form_D();
+        // Compute total energy
+        E_ = compute_E();
 
-		converged = test_convergency();
-	} while (!converged && iter < maxiter_);
-	if (ri_integrals_)
+        if (diis_enabled_ == true && iter >= num_diis_vectors_ && iter % 6 == 0) {
+            diis();
+            diis_iter = true;
+        } else {
+            diis_iter = false;
+        }
+        fprintf(outfile,
+                "  @ROHF iteration %3d energy: %20.14f    %20.14f %s\n",
+                iter, E_, E_ - Eold_, diis_iter == false ? " " : "DIIS");
+        fflush(outfile);
+
+        form_C(); 	// Uses Feff_ to form C_.
+        //	find_occupation(_F);
+        form_D();
+
+        converged = test_convergency();
+    } while (!converged && iter < maxiter_);
+    if (ri_integrals_)
     {
-    	free_B();
+        free_B();
     }
-	// Return the final ROHF energy
-	if (converged) {
-		fprintf(outfile, "\n  Energy converged.\n");
-		save_information();
-		return E_;
-	} else {
-		fprintf(outfile, "\n  Failed to converge.\n");
-		return 0.0;
-	}
+    // Return the final ROHF energy
+    if (converged) {
+        fprintf(outfile, "\n  Energy converged.\n");
+        save_information();
+        return E_;
+    } else {
+        fprintf(outfile, "\n  Failed to converge.\n");
+        return 0.0;
+    }
 }
 
 void ROHF::save_information()
 {
-	// Print the final docc vector
-	char **temp2 = chkpt_->rd_irr_labs();
-	int nso = chkpt_->rd_nso();
+    // Print the final docc vector
+    char **temp2 = chkpt_->rd_irr_labs();
+    int nso = chkpt_->rd_nso();
 
-	fprintf(outfile, "\n  Final DOCC vector = (");
-	for (int h=0; h<factory_.nirreps(); ++h) {
-		fprintf(outfile, "%2d %3s ", doccpi_[h], temp2[h]);
-	}
-	fprintf(outfile, ")\n");
-	
-	fprintf(outfile, "  Final SOCC vector = (");
-	for (int h=0; h<factory_.nirreps(); ++h) {
-		fprintf(outfile, "%2d %3s ", soccpi_[h], temp2[h]);
-	}
-	fprintf(outfile, ")\n");
+    fprintf(outfile, "\n  Final DOCC vector = (");
+    for (int h=0; h<factory_.nirreps(); ++h) {
+        fprintf(outfile, "%2d %3s ", doccpi_[h], temp2[h]);
+    }
+    fprintf(outfile, ")\n");
+
+    fprintf(outfile, "  Final SOCC vector = (");
+    for (int h=0; h<factory_.nirreps(); ++h) {
+        fprintf(outfile, "%2d %3s ", soccpi_[h], temp2[h]);
+    }
+    fprintf(outfile, ")\n");
 
     int print_mos = options_.get_bool("PRINT_MOS");
 	if (print_mos) {
@@ -258,7 +261,7 @@ void ROHF::save_information()
 	chkpt_->wt_openpi(soccpi_);
 	chkpt_->wt_phase_check(0);
 
-        Feff_.save(psio_, 32, true);
+    Feff_.save(psio_, 32, true);
 
 	// Figure out frozen core orbitals
 	int nfzc = chkpt_->rd_nfzc();
@@ -289,9 +292,9 @@ void ROHF::save_information()
 
 void ROHF::save_fock() {
 #ifdef _DEBUG
-	if (debug_) {
-		fprintf(outfile, "  Saving current Fock matrix to %d.\n", current_diis_fock_);
-	}
+    if (debug_) {
+        fprintf(outfile, "  Saving current Fock matrix to %d.\n", current_diis_fock_);
+    }
 #endif
 
     // Save the effective Fock, back transform to AO, and orthonormalize
@@ -306,76 +309,76 @@ void ROHF::save_fock() {
     diis_E_[current_diis_fock_]->transform(Sphalf_);
 
 #ifdef _DEBUG
-	if (debug_) {
-		fprintf(outfile, "  New error matrix:\n");
-		diis_E_[current_diis_fock_]->print(outfile);
-	}
+    if (debug_) {
+        fprintf(outfile, "  New error matrix:\n");
+        diis_E_[current_diis_fock_]->print(outfile);
+    }
 #endif
-	current_diis_fock_++;
-	if (current_diis_fock_ == num_diis_vectors_)
-		current_diis_fock_ = 0;
+    current_diis_fock_++;
+    if (current_diis_fock_ == num_diis_vectors_)
+        current_diis_fock_ = 0;
 }
 
 void ROHF::diis() {
-	int i, j, matrix_size;
-	
+    int i, j, matrix_size;
+
     matrix_size = num_diis_vectors_ + 1;
-    
-	// Construct the B matrix
-	// Assumes all the error matrices are available
-	SharedMatrix temp(factory_.create_matrix());
-	for (i=0; i<num_diis_vectors_; ++i) {
+
+    // Construct the B matrix
+    // Assumes all the error matrices are available
+    SharedMatrix temp(factory_.create_matrix());
+    for (i=0; i<num_diis_vectors_; ++i) {
         // diis_E_[i].print(outfile);
-		for (j=0; j<num_diis_vectors_; ++j) {
+        for (j=0; j<num_diis_vectors_; ++j) {
 //			temp.gemm(false, true, 1.0, diis_E_[i], diis_E_[j], 0.0);
 //			diis_B_[i][j] = temp.trace();
             diis_B_[i][j] = diis_E_[i]->vector_dot(diis_E_[j]);
-		}
-	}
+        }
+    }
 
 #ifdef _DEBUG
-	if (debug_) {
-		fprintf(outfile, "  B matrix:\n");
-		print_mat(diis_B_, num_diis_vectors_, num_diis_vectors_, outfile);
-	}
+    if (debug_) {
+        fprintf(outfile, "  B matrix:\n");
+        print_mat(diis_B_, num_diis_vectors_, num_diis_vectors_, outfile);
+    }
 #endif
 
-	double **A = block_matrix(matrix_size, matrix_size);
-	double *b = init_array(matrix_size);
-	int *ipiv = init_int_array(matrix_size);
+    double **A = block_matrix(matrix_size, matrix_size);
+    double *b = init_array(matrix_size);
+    int *ipiv = init_int_array(matrix_size);
 
-	A[0][0] = 0.0;
-	b[0] = -1.0;
-	for (i=1; i<matrix_size; ++i) {
-		A[0][i] = -1.0;
-		A[i][0] = -1.0;
-		b[i] = 0.0;
-		for (j=1; j<matrix_size; ++j) {
-			A[i][j] = diis_B_[i-1][j-1];
-		}
-	}
+    A[0][0] = 0.0;
+    b[0] = -1.0;
+    for (i=1; i<matrix_size; ++i) {
+        A[0][i] = -1.0;
+        A[i][0] = -1.0;
+        b[i] = 0.0;
+        for (j=1; j<matrix_size; ++j) {
+            A[i][j] = diis_B_[i-1][j-1];
+        }
+    }
 
 #ifdef _DEBUG
-	if (debug_) {
-		fprintf(outfile, "  A:\n");
-		print_mat(A, matrix_size, matrix_size, outfile);
-	}
+    if (debug_) {
+        fprintf(outfile, "  A:\n");
+        print_mat(A, matrix_size, matrix_size, outfile);
+    }
 #endif
 
-	// Solve A * x = b
-	int errcode = C_DGESV(matrix_size, 1, &(A[0][0]), matrix_size, ipiv, b, matrix_size);
+    // Solve A * x = b
+    int errcode = C_DGESV(matrix_size, 1, &(A[0][0]), matrix_size, ipiv, b, matrix_size);
 
 #ifdef _DEBUG
-	if (debug_) {
-		fprintf(outfile, "  A:\n");
-		print_mat(A, matrix_size, matrix_size, outfile);
-		fprintf(outfile, "  x:\n");
-		for (i=0; i<matrix_size; ++i)
-		fprintf(outfile, "    %d: %20.16f\n", i, b[i]);
-	}
+    if (debug_) {
+        fprintf(outfile, "  A:\n");
+        print_mat(A, matrix_size, matrix_size, outfile);
+        fprintf(outfile, "  x:\n");
+        for (i=0; i<matrix_size; ++i)
+        fprintf(outfile, "    %d: %20.16f\n", i, b[i]);
+    }
 #endif
 
-	// Extrapolate a new Fock matrix.
+    // Extrapolate a new Fock matrix.
     if (errcode == 0) {
     	Feff_.zero();
     	for (i=0; i<num_diis_vectors_; ++i) {
@@ -391,15 +394,15 @@ void ROHF::diis() {
     	Feff_.transform(C_);
 
         #ifdef _DEBUG
-        	if (debug_) {
-        		fprintf(outfile, "  Extrapolated Fock:\n");
-        		Feff_.print(outfile);
-        	}
+            if (debug_) {
+                fprintf(outfile, "  Extrapolated Fock:\n");
+                Feff_.print(outfile);
+            }
         #endif
     } else if (errcode > 0) {
-    	fprintf(outfile, "  DIIS: singularity detected, DIIS skipped this iteration (errcode = %d).\n", errcode);
+        fprintf(outfile, "  DIIS: singularity detected, DIIS skipped this iteration (errcode = %d).\n", errcode);
     } else {
-    	fprintf(outfile, "  DIIS: DGESV argument #%d is illegal, DIIS skipped this iteration.\n", -errcode);
+        fprintf(outfile, "  DIIS: DGESV argument #%d is illegal, DIIS skipped this iteration.\n", -errcode);
     }
 
     free_block(A);
@@ -408,47 +411,47 @@ void ROHF::diis() {
 }
 
 bool ROHF::test_convergency() {
-	double ediff = E_ - Eold_;
+    double ediff = E_ - Eold_;
 
-	if (fabs(ediff) < energy_threshold_)
-		return true;
-	else
-		return false;
+    if (fabs(ediff) < energy_threshold_)
+        return true;
+    else
+        return false;
 }
 
 void ROHF::allocate_PK() {
-	// Figure out how many pair combinations yield A1 symmetry (done in above loop)
-	//   num_pair_combinations_of_A1 = ioff[_opi[0]] + ioff[_opi[1]] + ioff[_opi[2]] + ...
-	// Allocate memory for the PK matrix (using a vector)
-	if (pk_size_ < (memory_ / sizeof(double) / 2)) {
-		pk_ = new double[pk_size_];
-		k_ = new double[pk_size_];
+    // Figure out how many pair combinations yield A1 symmetry (done in above loop)
+    //   num_pair_combinations_of_A1 = ioff[_opi[0]] + ioff[_opi[1]] + ioff[_opi[2]] + ...
+    // Allocate memory for the PK matrix (using a vector)
+    if (pk_size_ < (memory_ / sizeof(double) / 2)) {
+        pk_ = new double[pk_size_];
+        k_ = new double[pk_size_];
 
-		if (pk_ == NULL || k_ == NULL) {
-			fprintf(outfile, "  Insufficient free system memory for in-core PK implementation.\n");
-			fprintf(outfile, "  Switching to out-of-core algorithm.\n");
-			use_out_of_core_ = true;
-		} else {
-			// Zero out PK and K
-			memset(pk_, 0, pk_size_*sizeof(double));
-			memset(k_, 0, pk_size_*sizeof(double));
+        if (pk_ == NULL || k_ == NULL) {
+            fprintf(outfile, "  Insufficient free system memory for in-core PK implementation.\n");
+            fprintf(outfile, "  Switching to out-of-core algorithm.\n");
+            use_out_of_core_ = true;
+        } else {
+            // Zero out PK and K
+            memset(pk_, 0, pk_size_*sizeof(double));
+            memset(k_, 0, pk_size_*sizeof(double));
 
-			fprintf(outfile,
-				"  Allocated %lu elements (%lu pairs) for PK. (%5f MiB)\n",
-				(unsigned long)pk_size_, (unsigned long)pk_pairs_, pk_size_ * 8.0 / 1048576.0);
-			fprintf(outfile,
-				"  Allocated %lu elements (%lu pairs) for K.  (%5f MiB)\n\n",
-				(unsigned long)pk_size_, (unsigned long)pk_pairs_, pk_size_ * 8.0 / 1048576.0);
-		}
-	} else {
-		fprintf(outfile,
-				"  Insufficient memory for in-core PK implementation.\n");
-		fprintf(outfile,
-				"  Would need %lu elements of double memory. (%5f MiB)\n",
-				(unsigned long)pk_size_*2, pk_size_ * 8.0 / 1048576.0 * 2.0);
-		fprintf(outfile, "  Switching to out-of-core algorithm.\n");
-		use_out_of_core_ = true;
-	}
+            fprintf(outfile,
+                "  Allocated %lu elements (%lu pairs) for PK. (%5f MiB)\n",
+                (unsigned long)pk_size_, (unsigned long)pk_pairs_, pk_size_ * 8.0 / 1048576.0);
+            fprintf(outfile,
+                "  Allocated %lu elements (%lu pairs) for K.  (%5f MiB)\n\n",
+                (unsigned long)pk_size_, (unsigned long)pk_pairs_, pk_size_ * 8.0 / 1048576.0);
+        }
+    } else {
+        fprintf(outfile,
+                "  Insufficient memory for in-core PK implementation.\n");
+        fprintf(outfile,
+                "  Would need %lu elements of double memory. (%5f MiB)\n",
+                (unsigned long)pk_size_*2, pk_size_ * 8.0 / 1048576.0 * 2.0);
+        fprintf(outfile, "  Switching to out-of-core algorithm.\n");
+        use_out_of_core_ = true;
+    }
 }
 
 //void ROHF::find_occupation(SharedMatrix mat) {
@@ -492,12 +495,12 @@ void ROHF::form_initialF() {
     Fo_.transform(Shalf_);
 	
 #ifdef _DEBUG
-	if (debug_) {
-		fprintf(outfile, "Initial closed Fock matrix:\n");
-		Fc_->print(outfile);
-		fprintf(outfile, "Initial open Fock matrix:\n");
-		Fo_->print(outfile);
-	}
+    if (debug_) {
+        fprintf(outfile, "Initial closed Fock matrix:\n");
+        Fc_->print(outfile);
+        fprintf(outfile, "Initial open Fock matrix:\n");
+        Fo_->print(outfile);
+    }
 #endif
 }
 
@@ -544,16 +547,16 @@ void ROHF::form_F() {
 //				Feff_.set(h, i, j, val);
 //				Feff_.set(h, j, i, val);
 //			}
-		}
-	}
+        }
+    }
 #ifdef _DEBUG
-	if (debug_) {
-		Fc_->print(outfile);
-		Fo_->print(outfile);
-		Fct->print(outfile);
-		Fot->print(outfile);
-		Feff_->print(outfile);
-	}
+    if (debug_) {
+        Fc_->print(outfile);
+        Fo_->print(outfile);
+        Fct->print(outfile);
+        Fot->print(outfile);
+        Feff_->print(outfile);
+    }
 #endif
 }
 
@@ -568,18 +571,17 @@ void ROHF::form_C() {
         find_occupation(epsilon_);
 
 #ifdef _DEBUG
-	if (debug_) {
-		eigvec->eivprint(epsilon_);
-	}
+    if (debug_) {
+        eigvec->eivprint(epsilon_);
+    }
 #endif
-	// Perform a half-transform using the previous iteration's C
 	temp.gemm(false, false, 1.0, C_, eigvec, 0.0);
 	C_.copy(temp);
 	
 #ifdef _DEBUG
-	if (debug_) {
-		C_->print(outfile);
-	}
+    if (debug_) {
+        C_->print(outfile);
+    }
 #endif
 }
 
@@ -605,10 +607,10 @@ void ROHF::form_D() {
 	}
 
 #ifdef _DEBUG
-	if (debug_) {
-		Dc_->print(outfile);
-		Do_->print(outfile);
-	}
+    if (debug_) {
+        Dc_->print(outfile);
+        Do_->print(outfile);
+    }
 #endif
 }
 
@@ -637,109 +639,109 @@ double ROHF::compute_E() {
 
 void ROHF::form_PK() {
     // struct iwlbuf ERIIN;
-	int ilsti, nbuf;
-	int i, j, k, l;
-	int ii, jj, kk, ll;
-	int is, js, ks, ls;
-	int fi;
-	size_t bra, ket, braket;
-	int idx;
-	int counter = 0;
-	double value;
+    int ilsti, nbuf;
+    int i, j, k, l;
+    int ii, jj, kk, ll;
+    int is, js, ks, ls;
+    int fi;
+    size_t bra, ket, braket;
+    int idx;
+    int counter = 0;
+    double value;
 
-	// PK zeroed out during allocation
-	fprintf(outfile, "  Forming PK and K matrices.\n");
-	fflush(outfile);
+    // PK zeroed out during allocation
+    fprintf(outfile, "  Forming PK and K matrices.\n");
+    fflush(outfile);
 
-	IWL ERIIN(psio_.get(), PSIF_SO_TEI, 0.0, 1, 1);
+    IWL ERIIN(psio_.get(), PSIF_SO_TEI, 0.0, 1, 1);
 
-	do {
-		ilsti = ERIIN.last_buffer();
-		nbuf = ERIIN.buffer_count();
+    do {
+        ilsti = ERIIN.last_buffer();
+        nbuf = ERIIN.buffer_count();
 
-		fi = 0;
-		for (idx=0; idx<nbuf; ++idx) {
-			i = ERIIN.labels()[fi] > 0 ? ERIIN.labels()[fi] : -ERIIN.labels()[fi];
-			j = ERIIN.labels()[fi+1];
-			k = ERIIN.labels()[fi+2];
-			l = ERIIN.labels()[fi+3];
-			value = ERIIN.values()[idx];
-			fi += 4;
+        fi = 0;
+        for (idx=0; idx<nbuf; ++idx) {
+            i = ERIIN.labels()[fi] > 0 ? ERIIN.labels()[fi] : -ERIIN.labels()[fi];
+            j = ERIIN.labels()[fi+1];
+            k = ERIIN.labels()[fi+2];
+            l = ERIIN.labels()[fi+3];
+            value = ERIIN.values()[idx];
+            fi += 4;
 
-			// Get the symmetries
-			is = so2symblk_[i];
-			js = so2symblk_[j];
-			ks = so2symblk_[k];
-			ls = so2symblk_[l];
+            // Get the symmetries
+            is = so2symblk_[i];
+            js = so2symblk_[j];
+            ks = so2symblk_[k];
+            ls = so2symblk_[l];
 
-			// Get the offset of the SO index in its symblock
-			ii = so2index_[i];
-			jj = so2index_[j];
-			kk = so2index_[k];
-			ll = so2index_[l];
+            // Get the offset of the SO index in its symblock
+            ii = so2index_[i];
+            jj = so2index_[j];
+            kk = so2index_[k];
+            ll = so2index_[l];
 
-			// J
-			if ((is == js) && (ks == ls)) {
-				bra = INDEX2(ii, jj);
-				ket = INDEX2(kk, ll);
-				// pk_symoffset_ corrects for the symmetry offset in the pk_ vector
-				braket = INDEX2(bra + pk_symoffset_[is], ket + pk_symoffset_[ks]);
-				pk_[braket] += value;
+            // J
+            if ((is == js) && (ks == ls)) {
+                bra = INDEX2(ii, jj);
+                ket = INDEX2(kk, ll);
+                // pk_symoffset_ corrects for the symmetry offset in the pk_ vector
+                braket = INDEX2(bra + pk_symoffset_[is], ket + pk_symoffset_[ks]);
+                pk_[braket] += value;
 
-				// K/2 (2nd sort)
-				if ((ii != jj) && (kk != ll)) {
-					if ((is == ls) && (js == ks)) {
-						bra = INDEX2(ii, ll);
-						ket = INDEX2(jj, kk);
-						braket = INDEX2(bra + pk_symoffset_[is], ket + pk_symoffset_[js]);
-						if ((ii == ll) || (jj == kk)) {
-							pk_[braket] -= 0.5 * value;
-							k_[braket] -= 0.5 * value;
-						} else {
-							pk_[braket] -= 0.25 * value;
-							k_[braket] -= 0.25 * value;
-						}
-					}
-				}
-			}
+                // K/2 (2nd sort)
+                if ((ii != jj) && (kk != ll)) {
+                    if ((is == ls) && (js == ks)) {
+                        bra = INDEX2(ii, ll);
+                        ket = INDEX2(jj, kk);
+                        braket = INDEX2(bra + pk_symoffset_[is], ket + pk_symoffset_[js]);
+                        if ((ii == ll) || (jj == kk)) {
+                            pk_[braket] -= 0.5 * value;
+                            k_[braket] -= 0.5 * value;
+                        } else {
+                            pk_[braket] -= 0.25 * value;
+                            k_[braket] -= 0.25 * value;
+                        }
+                    }
+                }
+            }
 
-			// K/2 (1st sort)
-			if ((is == ks) && (js == ls)) {
-				bra = INDEX2(ii, kk);
-				ket = INDEX2(jj, ll);
-				braket = INDEX2(bra + pk_symoffset_[is], ket + pk_symoffset_[js]);
-				if ((ii == kk) || (jj == ll)) {
-					pk_[braket] -= 0.5 * value;
-					k_[braket] -= 0.5 * value;
-				} else {
-					pk_[braket] -= 0.25 * value;
-					k_[braket] -= 0.25 * value;
-				}
-			}
-			counter++;
-		}
+            // K/2 (1st sort)
+            if ((is == ks) && (js == ls)) {
+                bra = INDEX2(ii, kk);
+                ket = INDEX2(jj, ll);
+                braket = INDEX2(bra + pk_symoffset_[is], ket + pk_symoffset_[js]);
+                if ((ii == kk) || (jj == ll)) {
+                    pk_[braket] -= 0.5 * value;
+                    k_[braket] -= 0.5 * value;
+                } else {
+                    pk_[braket] -= 0.25 * value;
+                    k_[braket] -= 0.25 * value;
+                }
+            }
+            counter++;
+        }
 
-		if (!ilsti)
-			ERIIN.fetch();
-	} while (!ilsti);
+        if (!ilsti)
+            ERIIN.fetch();
+    } while (!ilsti);
 
     // Going out of scope will close the buffer
     // iwl_buf_close(&ERIIN, 1);
 
-	// After stage two is complete, the elements of P must be halved for the case IJ=KL.
-	for (size_t ij=0; ij < pk_pairs_; ++ij) {
-		pk_[INDEX2(ij,ij)] *= 0.5;
-		k_[INDEX2(ij,ij)] *= 0.5;
-	}
-	
-	fprintf(outfile, "  Processed %d two-electron integrals.\n", counter);
+    // After stage two is complete, the elements of P must be halved for the case IJ=KL.
+    for (size_t ij=0; ij < pk_pairs_; ++ij) {
+        pk_[INDEX2(ij,ij)] *= 0.5;
+        k_[INDEX2(ij,ij)] *= 0.5;
+    }
+
+    fprintf(outfile, "  Processed %d two-electron integrals.\n", counter);
 #ifdef _DEBUG
-	if (debug_) {
-		fprintf(outfile, "pk_:\n");
-		print_array(pk_, pk_pairs_, outfile);
-		fprintf(outfile, "k_:\n");
-		print_array(k_, pk_pairs_, outfile);
-	}
+    if (debug_) {
+        fprintf(outfile, "pk_:\n");
+        print_array(pk_, pk_pairs_, outfile);
+        fprintf(outfile, "k_:\n");
+        print_array(k_, pk_pairs_, outfile);
+    }
 #endif
 }
 
@@ -777,18 +779,18 @@ void ROHF::form_G_from_PK() {
 	}
 
 #ifdef _DEBUG
-	if (debug_) {
-		fprintf(outfile, "PK: ij = %lu\n", (unsigned long)ij);
-		fflush(outfile);
-		Dc_->print(outfile);
-		fprintf(outfile, "PK: Dc vector:\n");
-		for (ij=0; ij<pk_pairs_; ++ij)
-			fprintf(outfile, "PK: Dc vector [%lu] = %20.14f\n", (unsigned long)ij, Dc_vector[ij]);
-		Do_->print(outfile);
-		fprintf(outfile, "PK: Do vector:\n");
-		for (ij=0; ij<pk_pairs_; ++ij)
-			fprintf(outfile, "PK: Do vector [%lu] = %20.14f\n", (unsigned long)ij, Do_vector[ij]);
-	}
+    if (debug_) {
+        fprintf(outfile, "PK: ij = %lu\n", (unsigned long)ij);
+        fflush(outfile);
+        Dc_->print(outfile);
+        fprintf(outfile, "PK: Dc vector:\n");
+        for (ij=0; ij<pk_pairs_; ++ij)
+            fprintf(outfile, "PK: Dc vector [%lu] = %20.14f\n", (unsigned long)ij, Dc_vector[ij]);
+        Do_->print(outfile);
+        fprintf(outfile, "PK: Do vector:\n");
+        for (ij=0; ij<pk_pairs_; ++ij)
+            fprintf(outfile, "PK: Do vector [%lu] = %20.14f\n", (unsigned long)ij, Do_vector[ij]);
+    }
 #endif
 
 	/* 
@@ -854,491 +856,491 @@ void ROHF::form_G_from_PK() {
 	}
 
 #ifdef _DEBUG
-	if (debug_) {
-		fprintf(outfile, "Gc from PK:\n");
-		Gc_->print(outfile);
-		fprintf(outfile, "Go from PK:\n");
-		Go_->print(outfile);
-	}
+    if (debug_) {
+        fprintf(outfile, "Gc from PK:\n");
+        Gc_->print(outfile);
+        fprintf(outfile, "Go from PK:\n");
+        Go_->print(outfile);
+    }
 #endif
 
-	delete[](Dc_vector);
-	delete[](Do_vector);
-	delete[](Gc_vector);
-	delete[](Go_vector);
+    delete[](Dc_vector);
+    delete[](Do_vector);
+    delete[](Gc_vector);
+    delete[](Go_vector);
 }
 
 void ROHF::form_G() {
 #if 0
-	struct iwlbuf ERIIN;
-	int ilsti, nbuf;
-	int i, j, k, l;
-	int ii, jj, kk, ll;
-	int is, js, ks, ls;
-	int fi;
-	double value;
-	double temp1, temp2, temp3, temp4, temp5, temp6;
-	int idx;
-	int itype;
-	int counter = 0;
+    struct iwlbuf ERIIN;
+    int ilsti, nbuf;
+    int i, j, k, l;
+    int ii, jj, kk, ll;
+    int is, js, ks, ls;
+    int fi;
+    double value;
+    double temp1, temp2, temp3, temp4, temp5, temp6;
+    int idx;
+    int itype;
+    int counter = 0;
 #endif
-	
-	fprintf(stderr, "ROHF out-of-core algorithm is not implemented yet!\n");
-	abort();
-	
+
+    fprintf(stderr, "ROHF out-of-core algorithm is not implemented yet!\n");
+    abort();
+
 #if 0
-	// Zero out the G matrix
-	G_.zero();
+    // Zero out the G matrix
+    G_.zero();
 
-	iwl_buf_init(&ERIIN, PSIF_SO_TEI, 0.0, 1, 1);
+    iwl_buf_init(&ERIIN, PSIF_SO_TEI, 0.0, 1, 1);
 
-	do {
-		ilsti = ERIIN.lastbuf;
-		nbuf = ERIIN.inbuf;
+    do {
+        ilsti = ERIIN.lastbuf;
+        nbuf = ERIIN.inbuf;
 
-		fi = 0;
-		for (idx=0; idx<nbuf; ++idx) {
-			i = ERIIN.labels[fi] > 0 ? ERIIN.labels[fi] : -ERIIN.labels[fi];
-			j = ERIIN.labels[fi+1];
-			k = ERIIN.labels[fi+2];
-			l = ERIIN.labels[fi+3];
-			value = ERIIN.values[idx];
-			fi += 4;
+        fi = 0;
+        for (idx=0; idx<nbuf; ++idx) {
+            i = ERIIN.labels[fi] > 0 ? ERIIN.labels[fi] : -ERIIN.labels[fi];
+            j = ERIIN.labels[fi+1];
+            k = ERIIN.labels[fi+2];
+            l = ERIIN.labels[fi+3];
+            value = ERIIN.values[idx];
+            fi += 4;
 
-			//fprintf(outfile, "  (%4d,%4d|%4d,%4d) = %20.16lf\n", i, j, k, l, value);
+            //fprintf(outfile, "  (%4d,%4d|%4d,%4d) = %20.16lf\n", i, j, k, l, value);
 
-			itype = integral_type(i, j, k, l);
-			switch (itype) {
-			case 1:
-				ii = so2index_[i];
-				is = so2symblock_[i];
-				temp1 = D_.get(is, ii, ii) * value;
+            itype = integral_type(i, j, k, l);
+            switch (itype) {
+            case 1:
+                ii = so2index_[i];
+                is = so2symblock_[i];
+                temp1 = D_.get(is, ii, ii) * value;
 
-				G_.add(is, ii, ii, temp1);
+                G_.add(is, ii, ii, temp1);
 
 #ifdef _DEBUG
-				if (debug_) {
-					fprintf(outfile, "INTEGRAL CASE 1:\n\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, ii, temp1);
-				}
+                if (debug_) {
+                    fprintf(outfile, "INTEGRAL CASE 1:\n\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, ii, temp1);
+                }
 #endif
-				break;
+                break;
 
-			case 2:
-				ii = so2index_[i];
-				kk = so2index_[k];
-				is = so2symblock_[i];
-				ks = so2symblock_[k];
+            case 2:
+                ii = so2index_[i];
+                kk = so2index_[k];
+                is = so2symblock_[i];
+                ks = so2symblock_[k];
 
-				temp1 = D_.get(ks, kk, kk) * 2.0 * value;
-				temp2 = 0.0;
-				temp3 = D_.get(is, ii, ii) * 2.0 * value;
+                temp1 = D_.get(ks, kk, kk) * 2.0 * value;
+                temp2 = 0.0;
+                temp3 = D_.get(is, ii, ii) * 2.0 * value;
 
-				G_.add(is, ii, ii, temp1);
-				G_.add(ks, kk, kk, temp3);
+                G_.add(is, ii, ii, temp1);
+                G_.add(ks, kk, kk, temp3);
 
-				if (is == ks) {
-					temp2 = D_.get(is, ii, kk) * value;
-					G_.add(is, ii, kk, -temp2);
-					G_.add(is, kk, ii, -temp2);
-				}
+                if (is == ks) {
+                    temp2 = D_.get(is, ii, kk) * value;
+                    G_.add(is, ii, kk, -temp2);
+                    G_.add(is, kk, ii, -temp2);
+                }
 #ifdef _DEBUG
-				if (debug_) {
-					fprintf(outfile, "INTEGRAL CASE 2:\n\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, ii, temp1);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", is, ii, kk, temp2);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by +%20.15lf\n", ks, kk, kk, temp3);
-				}
+                if (debug_) {
+                    fprintf(outfile, "INTEGRAL CASE 2:\n\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, ii, temp1);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", is, ii, kk, temp2);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by +%20.15lf\n", ks, kk, kk, temp3);
+                }
 #endif
-				break;
+                break;
 
-			case 3:
-				ii = so2index_[i];
-				ll = so2index_[l];
-				is = so2symblock_[i];
-				ls = so2symblock_[l];
+            case 3:
+                ii = so2index_[i];
+                ll = so2index_[l];
+                is = so2symblock_[i];
+                ls = so2symblock_[l];
 
-				temp1 = temp2 = 0.0;
-				if (is == ls) {
-					temp1 = D_.get(is, ii, ii) * value;
-					temp2 = D_.get(is, ii, ll) * value * 2.0;
+                temp1 = temp2 = 0.0;
+                if (is == ls) {
+                    temp1 = D_.get(is, ii, ii) * value;
+                    temp2 = D_.get(is, ii, ll) * value * 2.0;
 
-					G_.add(is, ii, ll, temp1);
-					G_.add(is, ll, ii, temp1);
-					G_.add(is, ii, ii, temp2);
-				}
+                    G_.add(is, ii, ll, temp1);
+                    G_.add(is, ll, ii, temp1);
+                    G_.add(is, ii, ii, temp2);
+                }
 #ifdef _DEBUG
-				if (debug_) {
-					fprintf(outfile, "INTEGRAL CASE 3:\n\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, ll, temp1);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, ii, temp2);
-				}
+                if (debug_) {
+                    fprintf(outfile, "INTEGRAL CASE 3:\n\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, ll, temp1);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, ii, temp2);
+                }
 #endif
-				break;
+                break;
 
-			case 4:
-				ii = so2index_[i];
-				jj = so2index_[j];
-				is = so2symblock_[i];
-				js = so2symblock_[j];
+            case 4:
+                ii = so2index_[i];
+                jj = so2index_[j];
+                is = so2symblock_[i];
+                js = so2symblock_[j];
 
-				temp1 = temp2 = 0.0;
-				if (is == js) {
-					temp1 = D_.get(js, jj, jj) * value;
-					temp2 = D_.get(is, ii, jj) * value * 2.0;
+                temp1 = temp2 = 0.0;
+                if (is == js) {
+                    temp1 = D_.get(js, jj, jj) * value;
+                    temp2 = D_.get(is, ii, jj) * value * 2.0;
 
-					G_.add(is, ii, jj, temp1);
-					G_.add(is, jj, ii, temp1);
-					G_.add(js, jj, jj, temp2);
-				}
+                    G_.add(is, ii, jj, temp1);
+                    G_.add(is, jj, ii, temp1);
+                    G_.add(js, jj, jj, temp2);
+                }
 #ifdef _DEBUG
-				if (debug_) {
-					fprintf(outfile, "INTEGRAL CASE 4:\n\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, jj, temp1);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by +%20.15lf\n", js, jj, jj, temp2);
-				}
+                if (debug_) {
+                    fprintf(outfile, "INTEGRAL CASE 4:\n\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, jj, temp1);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by +%20.15lf\n", js, jj, jj, temp2);
+                }
 #endif
-				break;
+                break;
 
-			case 5:
-				ii = so2index_[i];
-				jj = so2index_[j];
-				is = so2symblock_[i];
-				js = so2symblock_[j];
+            case 5:
+                ii = so2index_[i];
+                jj = so2index_[j];
+                is = so2symblock_[i];
+                js = so2symblock_[j];
 
-				if (is == js) {
-					temp1 = D_.get(is, ii, jj) * value * 3.0;
-					G_.add(is, ii, jj, temp1);
-					G_.add(is, jj, ii, temp1);
-				}
+                if (is == js) {
+                    temp1 = D_.get(is, ii, jj) * value * 3.0;
+                    G_.add(is, ii, jj, temp1);
+                    G_.add(is, jj, ii, temp1);
+                }
 
-				temp2 = D_.get(is, ii, ii) * value;
-				temp3 = D_.get(js, jj, jj) * value;
-				G_.add(js, jj, jj, -temp2);
-				G_.add(is, ii, ii, -temp3);
+                temp2 = D_.get(is, ii, ii) * value;
+                temp3 = D_.get(js, jj, jj) * value;
+                G_.add(js, jj, jj, -temp2);
+                G_.add(is, ii, ii, -temp3);
 #ifdef _DEBUG
-				if (debug_) {
-					fprintf(outfile, "INTEGRAL CASE 5:\n\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, jj, temp1);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", js, jj, jj, temp2);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", is, ii, ii, temp3);
-				}
+                if (debug_) {
+                    fprintf(outfile, "INTEGRAL CASE 5:\n\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, jj, temp1);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", js, jj, jj, temp2);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", is, ii, ii, temp3);
+                }
 #endif
-				break;
+                break;
 
-			case 6:
-				ii = so2index_[i];
-				kk = so2index_[k];
-				ll = so2index_[l];
-				is = so2symblock_[i];
-				ks = so2symblock_[k];
-				ls = so2symblock_[l];
+            case 6:
+                ii = so2index_[i];
+                kk = so2index_[k];
+                ll = so2index_[l];
+                is = so2symblock_[i];
+                ks = so2symblock_[k];
+                ls = so2symblock_[l];
 
-				temp1 = temp2 = temp3 = temp4 = 0.0;
-				if (ks == ls)
-					temp1 = D_.get(ks, kk, ll) * value * 4.0;
-				if (is == ls)
-					temp2 = D_.get(is, ii, ll) * value;
-				temp3 = D_.get(is, ii, ii) * value * 2.0;
-				if (is == ks)
-					temp4 = D_.get(is, ii, kk) * value;
+                temp1 = temp2 = temp3 = temp4 = 0.0;
+                if (ks == ls)
+                    temp1 = D_.get(ks, kk, ll) * value * 4.0;
+                if (is == ls)
+                    temp2 = D_.get(is, ii, ll) * value;
+                temp3 = D_.get(is, ii, ii) * value * 2.0;
+                if (is == ks)
+                    temp4 = D_.get(is, ii, kk) * value;
 
-				G_.add(is, ii, ii, temp1);
-				if (is == ks) {
-					G_.add(is, ii, kk, -temp2);
-					G_.add(is, kk, ii, -temp2);
-				}
-				if (ks == ls) {
-					G_.add(ks, kk, ll, temp3);
-					G_.add(ks, ll, kk, temp3);
-				}
-				if (is == ls) {
-					G_.add(is, ii, ll, -temp4);
-					G_.add(is, ll, ii, -temp4);
-				}
+                G_.add(is, ii, ii, temp1);
+                if (is == ks) {
+                    G_.add(is, ii, kk, -temp2);
+                    G_.add(is, kk, ii, -temp2);
+                }
+                if (ks == ls) {
+                    G_.add(ks, kk, ll, temp3);
+                    G_.add(ks, ll, kk, temp3);
+                }
+                if (is == ls) {
+                    G_.add(is, ii, ll, -temp4);
+                    G_.add(is, ll, ii, -temp4);
+                }
 #ifdef _DEBUG
-				if (debug_) {
-					fprintf(outfile, "INTEGRAL CASE 6:\n\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, ii, temp1);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", is, ii, kk, temp2);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by +%20.15lf\n", ks, kk, ll, temp3);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", is, ii, ll, temp4);
-				}
+                if (debug_) {
+                    fprintf(outfile, "INTEGRAL CASE 6:\n\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, ii, temp1);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", is, ii, kk, temp2);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by +%20.15lf\n", ks, kk, ll, temp3);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", is, ii, ll, temp4);
+                }
 #endif
-				break;
+                break;
 
-			case 7:
-				kk = so2index_[k];
-				ii = so2index_[i];
-				jj = so2index_[j];
-				ks = so2symblock_[k];
-				is = so2symblock_[i];
-				js = so2symblock_[j];
+            case 7:
+                kk = so2index_[k];
+                ii = so2index_[i];
+                jj = so2index_[j];
+                ks = so2symblock_[k];
+                is = so2symblock_[i];
+                js = so2symblock_[j];
 
-				temp1 = temp2 = temp3 = temp4 = 0.0;
-				if (is == js)
-					temp1 = D_.get(is, ii, jj) * value * 4.0;
-				if (js == ks)
-					temp2 = D_.get(js, jj, kk) * value;
-				if (is == ks)
-					temp3 = D_.get(is, ii, kk) * value;
-				temp4 = D_.get(ks, kk, kk) * value * 2.0;
+                temp1 = temp2 = temp3 = temp4 = 0.0;
+                if (is == js)
+                    temp1 = D_.get(is, ii, jj) * value * 4.0;
+                if (js == ks)
+                    temp2 = D_.get(js, jj, kk) * value;
+                if (is == ks)
+                    temp3 = D_.get(is, ii, kk) * value;
+                temp4 = D_.get(ks, kk, kk) * value * 2.0;
 
-				G_.add(ks, kk, kk, temp1);
-				if (is == ks) {
-					G_.add(is, ii, kk, -temp2);
-					G_.add(is, kk, ii, -temp2);
-				}
-				if (js == ks) {
-					G_.add(js, jj, kk, -temp3);
-					G_.add(js, kk, jj, -temp3);
-				}
-				if (is == js) {
-					G_.add(is, ii, jj, temp4);
-					G_.add(is, jj, ii, temp4);
-				}
+                G_.add(ks, kk, kk, temp1);
+                if (is == ks) {
+                    G_.add(is, ii, kk, -temp2);
+                    G_.add(is, kk, ii, -temp2);
+                }
+                if (js == ks) {
+                    G_.add(js, jj, kk, -temp3);
+                    G_.add(js, kk, jj, -temp3);
+                }
+                if (is == js) {
+                    G_.add(is, ii, jj, temp4);
+                    G_.add(is, jj, ii, temp4);
+                }
 #ifdef _DEBUG
-				if (debug_) {
-					fprintf(outfile, "INTEGRAL CASE 7:\n\tModifying G[%d][%d][%d] by +%20.15lf\n", ks, kk, kk, temp1);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", is, ii, kk, temp2);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", js, jj, kk, temp3);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, jj, temp4);
-				}
+                if (debug_) {
+                    fprintf(outfile, "INTEGRAL CASE 7:\n\tModifying G[%d][%d][%d] by +%20.15lf\n", ks, kk, kk, temp1);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", is, ii, kk, temp2);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", js, jj, kk, temp3);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, jj, temp4);
+                }
 #endif
-				break;
+                break;
 
-			case 8:
-				kk = so2index_[k];
-				ii = so2index_[i];
-				jj = so2index_[j];
-				ks = so2symblock_[k];
-				is = so2symblock_[i];
-				js = so2symblock_[j];
+            case 8:
+                kk = so2index_[k];
+                ii = so2index_[i];
+                jj = so2index_[j];
+                ks = so2symblock_[k];
+                is = so2symblock_[i];
+                js = so2symblock_[j];
 
-				temp1 = temp2 = temp3 = temp4 = 0.0;
-				temp1 = D_.get(ks, kk, kk) * value * 2.0;
-				if (is == js)
-					temp2 = D_.get(is, ii, jj) * value * 4.0;
-				if (js == ks)
-					temp3 = D_.get(js, jj, kk) * value;
-				if (is == ks)
-					temp4 = D_.get(is, ii, kk) * value;
+                temp1 = temp2 = temp3 = temp4 = 0.0;
+                temp1 = D_.get(ks, kk, kk) * value * 2.0;
+                if (is == js)
+                    temp2 = D_.get(is, ii, jj) * value * 4.0;
+                if (js == ks)
+                    temp3 = D_.get(js, jj, kk) * value;
+                if (is == ks)
+                    temp4 = D_.get(is, ii, kk) * value;
 
-				if (is == js) {
-					G_.add(is, ii, jj, temp1);
-					G_.add(is, jj, ii, temp1);
-				}
-				G_.add(ks, kk, kk, temp2);
-				if (is == ks) {
-					G_.add(is, ii, kk, -temp3);
-					G_.add(is, kk, ii, -temp3);
-				}
-				if (js == ks) {
-					G_.add(js, jj, kk, -temp4);
-					G_.add(js, kk, jj, -temp4);
-				}
+                if (is == js) {
+                    G_.add(is, ii, jj, temp1);
+                    G_.add(is, jj, ii, temp1);
+                }
+                G_.add(ks, kk, kk, temp2);
+                if (is == ks) {
+                    G_.add(is, ii, kk, -temp3);
+                    G_.add(is, kk, ii, -temp3);
+                }
+                if (js == ks) {
+                    G_.add(js, jj, kk, -temp4);
+                    G_.add(js, kk, jj, -temp4);
+                }
 #ifdef _DEBUG
-				if (debug_) {
-					fprintf(outfile, "INTEGRAL CASE 8:\n\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, jj, temp1);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by +%20.15lf\n", ks, kk, kk, temp2);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", is, ii, kk, temp3);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", js, jj, kk, temp4);
-				}
+                if (debug_) {
+                    fprintf(outfile, "INTEGRAL CASE 8:\n\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, jj, temp1);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by +%20.15lf\n", ks, kk, kk, temp2);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", is, ii, kk, temp3);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", js, jj, kk, temp4);
+                }
 #endif
-				break;
+                break;
 
-			case 9:
-				ii = so2index_[i];
-				jj = so2index_[j];
-				ll = so2index_[l];
-				is = so2symblock_[i];
-				js = so2symblock_[j];
-				ls = so2symblock_[l];
+            case 9:
+                ii = so2index_[i];
+                jj = so2index_[j];
+                ll = so2index_[l];
+                is = so2symblock_[i];
+                js = so2symblock_[j];
+                ls = so2symblock_[l];
 
-				temp1 = temp2 = temp3 = temp4 = 0.0;
-				if (is == ls)
-					temp1 = D_.get(is, ii, ll) * value * 3.0;
-				if (is == js)
-					temp2 = D_.get(is, ii, jj) * value * 3.0;
-				if (js == ls)
-					temp3 = D_.get(js, jj, ll) * value * 2.0;
-				temp4 = D_.get(is, ii, ii) * value;
+                temp1 = temp2 = temp3 = temp4 = 0.0;
+                if (is == ls)
+                    temp1 = D_.get(is, ii, ll) * value * 3.0;
+                if (is == js)
+                    temp2 = D_.get(is, ii, jj) * value * 3.0;
+                if (js == ls)
+                    temp3 = D_.get(js, jj, ll) * value * 2.0;
+                temp4 = D_.get(is, ii, ii) * value;
 
-				if (is == js) {
-					G_.add(is, ii, jj, temp1);
-					G_.add(is, jj, ii, temp1);
-				}
-				if (is == ls) {
-					G_.add(is, ii, ll, temp2);
-					G_.add(is, ll, ii, temp2);
-				}
-				G_.add(is, ii, ii, -temp3);
-				if (js == ls) {
-					G_.add(js, jj, ll, -temp4);
-					G_.add(js, ll, jj, -temp4);
-				}
+                if (is == js) {
+                    G_.add(is, ii, jj, temp1);
+                    G_.add(is, jj, ii, temp1);
+                }
+                if (is == ls) {
+                    G_.add(is, ii, ll, temp2);
+                    G_.add(is, ll, ii, temp2);
+                }
+                G_.add(is, ii, ii, -temp3);
+                if (js == ls) {
+                    G_.add(js, jj, ll, -temp4);
+                    G_.add(js, ll, jj, -temp4);
+                }
 #ifdef _DEBUG
-				if (debug_) {
-					fprintf(outfile, "INTEGRAL CASE 9:\n\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, jj, temp1);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, ll, temp2);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", is, ii, ii, temp3);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", js, jj, ll, temp4);
-				}
+                if (debug_) {
+                    fprintf(outfile, "INTEGRAL CASE 9:\n\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, jj, temp1);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, ll, temp2);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", is, ii, ii, temp3);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", js, jj, ll, temp4);
+                }
 #endif
-				break;
+                break;
 
-			case 10:
-				ii = so2index_[i];
-				jj = so2index_[j];
-				ll = so2index_[l];
-				is = so2symblock_[i];
-				js = so2symblock_[j];
-				ls = so2symblock_[l];
+            case 10:
+                ii = so2index_[i];
+                jj = so2index_[j];
+                ll = so2index_[l];
+                is = so2symblock_[i];
+                js = so2symblock_[j];
+                ls = so2symblock_[l];
 
-				temp1 = temp2 = temp3 = temp4 = 0.0;
-				if (js == ls)
-					temp1 = D_.get(js, jj, ll) * value * 3.0;
-				if (is == js)
-					temp2 = D_.get(is, ii, jj) * value * 3.0;
-				temp3 = D_.get(js, jj, jj) * value;
-				if (is == ls)
-					temp4 = D_.get(is, ii, ll) * value * 2.0;
+                temp1 = temp2 = temp3 = temp4 = 0.0;
+                if (js == ls)
+                    temp1 = D_.get(js, jj, ll) * value * 3.0;
+                if (is == js)
+                    temp2 = D_.get(is, ii, jj) * value * 3.0;
+                temp3 = D_.get(js, jj, jj) * value;
+                if (is == ls)
+                    temp4 = D_.get(is, ii, ll) * value * 2.0;
 
-				if (is == js) {
-					G_.add(is, ii, jj, temp1);
-					G_.add(is, jj, ii, temp1);
-				}
-				if (js == ls) {
-					G_.add(js, jj, ll, temp2);
-					G_.add(js, ll, jj, temp2);
-				}
-				if (is == ls) {
-					G_.add(is, ii, ll, -temp3);
-					G_.add(is, ll, ii, -temp3);
-				}
-				G_.add(js, jj, jj, -temp4);
+                if (is == js) {
+                    G_.add(is, ii, jj, temp1);
+                    G_.add(is, jj, ii, temp1);
+                }
+                if (js == ls) {
+                    G_.add(js, jj, ll, temp2);
+                    G_.add(js, ll, jj, temp2);
+                }
+                if (is == ls) {
+                    G_.add(is, ii, ll, -temp3);
+                    G_.add(is, ll, ii, -temp3);
+                }
+                G_.add(js, jj, jj, -temp4);
 #ifdef _DEBUG
-				if (debug_) {
-					fprintf(outfile, "INTEGRAL CASE 10:\n\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, jj, temp1);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by +%20.15lf\n", js, jj, ll, temp2);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", is, ii, ll, temp3);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", js, jj, jj, temp4);
-				}
+                if (debug_) {
+                    fprintf(outfile, "INTEGRAL CASE 10:\n\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, jj, temp1);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by +%20.15lf\n", js, jj, ll, temp2);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", is, ii, ll, temp3);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", js, jj, jj, temp4);
+                }
 #endif
-				break;
+                break;
 
-			case 11:
-				ii = so2index_[i];
-				kk = so2index_[k];
-				jj = so2index_[j];
-				is = so2symblock_[i];
-				ks = so2symblock_[k];
-				js = so2symblock_[j];
+            case 11:
+                ii = so2index_[i];
+                kk = so2index_[k];
+                jj = so2index_[j];
+                is = so2symblock_[i];
+                ks = so2symblock_[k];
+                js = so2symblock_[j];
 
-				temp1 = temp2 = temp3 = temp4 = 0.0;
-				if (ks == js)
-					temp1 = D_.get(ks, kk, jj) * value * 3.0;
-				if (is == js)
-					temp2 = D_.get(is, ii, jj) * value * 3.0;
-				temp3 = D_.get(js, jj, jj) * value;
-				if (is == ks)
-					temp4 = D_.get(is, ii, kk) * value * 2.0;
+                temp1 = temp2 = temp3 = temp4 = 0.0;
+                if (ks == js)
+                    temp1 = D_.get(ks, kk, jj) * value * 3.0;
+                if (is == js)
+                    temp2 = D_.get(is, ii, jj) * value * 3.0;
+                temp3 = D_.get(js, jj, jj) * value;
+                if (is == ks)
+                    temp4 = D_.get(is, ii, kk) * value * 2.0;
 
-				if (is == js) {
-					G_.add(is, ii, jj, temp1);
-					G_.add(is, jj, ii, temp1);
-				}
-				if (ks == js) {
-					G_.add(ks, kk, jj, temp2);
-					G_.add(ks, jj, kk, temp2);
-				}
-				if (is == ks) {
-					G_.add(is, ii, kk, -temp3);
-					G_.add(is, kk, ii, -temp3);
-				}
-				G_.add(js, jj, jj, -temp4);
+                if (is == js) {
+                    G_.add(is, ii, jj, temp1);
+                    G_.add(is, jj, ii, temp1);
+                }
+                if (ks == js) {
+                    G_.add(ks, kk, jj, temp2);
+                    G_.add(ks, jj, kk, temp2);
+                }
+                if (is == ks) {
+                    G_.add(is, ii, kk, -temp3);
+                    G_.add(is, kk, ii, -temp3);
+                }
+                G_.add(js, jj, jj, -temp4);
 #ifdef _DEBUG
-				if (debug_) {
-					fprintf(outfile, "INTEGRAL CASE 11:\n\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, jj, temp1);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by +%20.15lf\n", ks, kk, jj, temp2);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", is, ii, kk, temp3);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", js, jj, jj, temp4);
-				}
+                if (debug_) {
+                    fprintf(outfile, "INTEGRAL CASE 11:\n\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, jj, temp1);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by +%20.15lf\n", ks, kk, jj, temp2);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", is, ii, kk, temp3);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", js, jj, jj, temp4);
+                }
 #endif
-				break;
+                break;
 
-			case 12:
-			case 13:
-			case 14:
-				ii = so2index_[i];
-				jj = so2index_[j];
-				kk = so2index_[k];
-				ll = so2index_[l];
-				is = so2symblock_[i];
-				js = so2symblock_[j];
-				ks = so2symblock_[k];
-				ls = so2symblock_[l];
+            case 12:
+            case 13:
+            case 14:
+                ii = so2index_[i];
+                jj = so2index_[j];
+                kk = so2index_[k];
+                ll = so2index_[l];
+                is = so2symblock_[i];
+                js = so2symblock_[j];
+                ks = so2symblock_[k];
+                ls = so2symblock_[l];
 
-				temp1 = temp2 = temp3 = temp4 = temp5 = temp6 = 0.0;
-				if (ks == ls)
-					temp1 = D_.get(ks, kk, ll) * value * 4.0;
-				if (is == js)
-					temp2 = D_.get(is, ii, jj) * value * 4.0;
-				if (js == ls)
-					temp3 = D_.get(js, jj, ll) * value;
-				if (is == ks)
-					temp4 = D_.get(is, ii, kk) * value;
-				if (js == ks)
-					temp5 = D_.get(js, jj, kk) * value;
-				if (is == ls)
-					temp6 = D_.get(is, ii, ll) * value;
+                temp1 = temp2 = temp3 = temp4 = temp5 = temp6 = 0.0;
+                if (ks == ls)
+                    temp1 = D_.get(ks, kk, ll) * value * 4.0;
+                if (is == js)
+                    temp2 = D_.get(is, ii, jj) * value * 4.0;
+                if (js == ls)
+                    temp3 = D_.get(js, jj, ll) * value;
+                if (is == ks)
+                    temp4 = D_.get(is, ii, kk) * value;
+                if (js == ks)
+                    temp5 = D_.get(js, jj, kk) * value;
+                if (is == ls)
+                    temp6 = D_.get(is, ii, ll) * value;
 
-				if (is == js) {
-					G_.add(is, ii, jj, temp1);
-					G_.add(is, jj, ii, temp1);
-				}
-				if (ks == ls) {
-					G_.add(ks, kk, ll, temp2);
-					G_.add(ks, ll, kk, temp2);
-				}
-				if (is == ks) {
-					G_.add(is, ii, kk, -temp3);
-					G_.add(is, kk, ii, -temp3);
-				}
-				if (js == ls) {
-					G_.add(js, jj, ll, -temp4);
-					G_.add(js, ll, jj, -temp4);
-				}
-				if (is == ls) {
-					G_.add(is, ii, ll, -temp5);
-					G_.add(is, ll, ii, -temp5);
-				}
-				if (js == ks) {
-					G_.add(js, jj, kk, -temp6);
-					G_.add(js, kk, jj, -temp6);
-				}
+                if (is == js) {
+                    G_.add(is, ii, jj, temp1);
+                    G_.add(is, jj, ii, temp1);
+                }
+                if (ks == ls) {
+                    G_.add(ks, kk, ll, temp2);
+                    G_.add(ks, ll, kk, temp2);
+                }
+                if (is == ks) {
+                    G_.add(is, ii, kk, -temp3);
+                    G_.add(is, kk, ii, -temp3);
+                }
+                if (js == ls) {
+                    G_.add(js, jj, ll, -temp4);
+                    G_.add(js, ll, jj, -temp4);
+                }
+                if (is == ls) {
+                    G_.add(is, ii, ll, -temp5);
+                    G_.add(is, ll, ii, -temp5);
+                }
+                if (js == ks) {
+                    G_.add(js, jj, kk, -temp6);
+                    G_.add(js, kk, jj, -temp6);
+                }
 #ifdef _DEBUG
-				if (debug_) {
-					fprintf(outfile, "INTEGRAL CASE 12,13,14:\n\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, jj, temp1);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by +%20.15lf\n", ks, kk, ll, temp2);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", is, ii, kk, temp3);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", js, jj, ll, temp4);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", is, ii, ll, temp5);
-					fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", js, jj, kk, temp6);
-				}
+                if (debug_) {
+                    fprintf(outfile, "INTEGRAL CASE 12,13,14:\n\tModifying G[%d][%d][%d] by +%20.15lf\n", is, ii, jj, temp1);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by +%20.15lf\n", ks, kk, ll, temp2);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", is, ii, kk, temp3);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", js, jj, ll, temp4);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", is, ii, ll, temp5);
+                    fprintf(outfile, "\tModifying G[%d][%d][%d] by -%20.15lf\n", js, jj, kk, temp6);
+                }
 #endif
-				break;
-			};
-			counter++;
-		}
+                break;
+            };
+            counter++;
+        }
 
-		if (!ilsti)
-			iwl_buf_fetch(&ERIIN);
-	} while (!ilsti);
+        if (!ilsti)
+            iwl_buf_fetch(&ERIIN);
+    } while (!ilsti);
 
-	iwl_buf_close(&ERIIN, 1);
+    iwl_buf_close(&ERIIN, 1);
 #ifdef _DEBUG
-	if (debug_) {
-		fprintf(outfile, "  Processed %6d two-electron integrals.\n", counter);
-		fprintf(outfile, "G:\n");
-		G_.print(outfile);
-	}
+    if (debug_) {
+        fprintf(outfile, "  Processed %6d two-electron integrals.\n", counter);
+        fprintf(outfile, "G:\n");
+        G_.print(outfile);
+    }
 #endif
-	
+
 #endif // 0
 }
 void ROHF::form_G_from_direct_integrals()
