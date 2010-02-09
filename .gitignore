@@ -1,8 +1,7 @@
 autom4te.cache
 configure
 psi.config
-psi.creator
-psi.creator.user
+psi.creator*
 psi.files
 psi.includes
 *.o

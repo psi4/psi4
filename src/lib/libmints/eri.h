@@ -88,6 +88,12 @@ class ERI : public TwoBodyInt
     //! Evaluates how much memory (in doubles) is needed to store shell pair data
     size_t memory_to_store_shell_pairs(const shared_ptr<BasisSet>&, const shared_ptr<BasisSet>&);
 
+    //! Original shell index requested
+    int osh1_, osh2_, osh3_, osh4_;
+
+    //! Were the indices permuted?
+    bool p13p24_, p12_, p34_;
+
 public:
     //! Constructor. Use an IntegralFactory to create this object.
     ERI(shared_ptr<BasisSet>, shared_ptr<BasisSet>, shared_ptr<BasisSet>, shared_ptr<BasisSet>, int deriv=0, double schwarz = 0.0);

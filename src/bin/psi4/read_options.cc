@@ -113,14 +113,14 @@ int read_options(const std::string &name, Options & options) {
   }
   else if (name == "SCF") {
     /*- The name of the auxilliary basis to be used in RI computations -*/
-    options.add_str("RI_BASIS", " ");
+    options.add_str("RI_BASIS", "");
     options.read_ipv1();
 
     /*- Whether to use density fitting or not -*/
-    if(options.get_str("RI_BASIS") != "NONE")
-      options.add_bool("RI_HF", true);
-    else
+    if(options.get_str("RI_BASIS").empty())
       options.add_bool("RI_HF", false);
+    else
+      options.add_bool("RI_HF", true);
 
     /*- The reference wavefunction used in the computation -*/
     options.add_str("REFERENCE", "RHF");
@@ -188,7 +188,7 @@ int read_options(const std::string &name, Options & options) {
   else if(name == "CUSP"){
     options.add("FROZEN_DOCC", new ArrayType());
     options.add("FROZEN_UOCC", new ArrayType());
-  }   
+  }
   else if(name == "CCSORT") {
     options.add_str("WFN", "");
     options.add_str("REFERENCE", "RHF");
@@ -271,7 +271,7 @@ else if(name == "CCDENSITY") {
   }
   else if(name == "STABLE") {
     options.add_int("PRINT",1);
-    options.add_int("CACHELEV",2); 
+    options.add_int("CACHELEV",2);
     options.add_str("REFERENCE",0);
     options.add_bool("FOLLOW",false);
     options.add_int("NUM_EVECS_PRINT",0);
@@ -322,7 +322,7 @@ else if(name == "CCDENSITY") {
   }
   else if(name == "CCHBAR") {
     options.add_bool("TAMPLITUDE",false);
-    options.add_int("CACHELEV",2); 
+    options.add_int("CACHELEV",2);
     options.add_int("PRINT",0);
     options.add_str("WFN", "SCF");
     options.add_str("DERTYPE", "ENERGY");

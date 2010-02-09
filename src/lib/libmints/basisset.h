@@ -18,11 +18,10 @@ namespace psi {
 
     class BasisSetParser;
 
-/*! \ingroup MINTS
-    \class BasisSet
-    \brief Basis set container class
+/*! \ingroup MINTS */
 
-    Reads the basis set from a checkpoint file object. Also reads the molecule
+//! Basis set container class
+/*! Reads the basis set from a checkpoint file object. Also reads the molecule
     from the checkpoint file storing the information in an internal Molecule class
     which can be accessed using molecule().
 */
@@ -74,6 +73,12 @@ class BasisSet
     BasisSet& operator=(const BasisSet&);
 
     //! Initialize shells based on information found in checkpoint
+    /*! Reads in information from the checkpoint file constructing GaussianShells
+        as it goes. If set, basiskey is passed along to libchkpt when reading to
+        read in the non-default basis set information.
+        @param chkpt Checkpoint library object to read from.
+        @param basiskey If reading non-default basis set information then this is set to the suffix of the TOC entries.
+      */
     void initialize_shells(shared_ptr<psi::Chkpt> chkpt, std::string& basiskey);
 
     // Has static information been initialized?
@@ -95,6 +100,7 @@ public:
     /// Destructor
     ~BasisSet();
 
+    /** Initialize singleton values that are shared by all basis set objects. */
     static void initialize_singletons();
 
     /** Number of primitives.
@@ -162,7 +168,9 @@ public:
      */
     SphericalTransform& spherical_transform(int am) { return sphericaltransforms_[am]; }
 
-    /// Print the basis set
+    /** Print the basis set.
+     *  @param out The file stream to use for printing. Defaults to outfile.
+     */
     void print(FILE *out = outfile) const;
 
     /** Returns the uso2ao_ matrix.
@@ -186,8 +194,10 @@ public:
     /** Returns a new BasisSet object.
      *
      * Returns a new BasisSet object configured with the provided Molecule object.
+     * @param parser The basis set parser object that will be used to interpret the basis set file.
      * @param mol Molecule to construct basis set for.
      * @param basisname Name of the basis set to search for in pbasis.dat
+     * @return A new basis set object constructed from the information passed in.
      */
     static shared_ptr<BasisSet> construct(const shared_ptr<BasisSetParser>& parser,
         const shared_ptr<Molecule>& mol,
@@ -196,8 +206,10 @@ public:
     /** Returns a new BasisSet object.
      *
      * Returns a new BasisSet object configured with the provided Molecule object.
+     * @param parser The basis set parser object that will be used to interpret the basis set file.
      * @param mol Molecule to construct basis set for.
      * @param basisnames Name of the basis set for each atom in molecule to search for in pbasis.dat
+     * @return A new basis set object constructed from the information passed in.
      */
     static shared_ptr<BasisSet> construct(const shared_ptr<BasisSetParser>& parser,
         const shared_ptr<Molecule>& mol,

@@ -5,7 +5,7 @@
 #include <libmints/vector3.h>
 
 namespace psi {
-    
+
 /*! \ingroup MINTS
  *  \class GaussianShell
  *  \brief Gaussian orbital shell.
@@ -35,7 +35,7 @@ private:
     /// Atomic center number in the Molecule
     Vector3 center_;
     int start_;
-    
+
     /// How many cartesian functions? (1=s, 3=p, 6=d, ...)
     int ncartesians_;
     /// How many functions? (1=s, 3=p, 6=d, ...)
@@ -45,21 +45,53 @@ private:
 
     int max_am_;
     int min_am_;
-    
+
+    /** Initializes some basic data about the GaussianShell
+     *
+     *  Determines maximum and minimum AM and totall number of Cartesian and functions.
+     */
     void init_data();
+    /** Makes a copy of the data for the Gaussian shell.
+     *  @param l Array of angular momentum
+     *  @param exp Array of exponents
+     *  @param coef Matrix of contraction coefficients. nprimitive x ncontraction
+     */
     void copy_data(int *l, double *exp, double **coef);
 
-    double primitive_normalization(int);
-    void contraction_normalization(int);
+    /** Normalizes a single primitive.
+     *  @param p The primitive index to normalize.
+     *  @return Normalization constant to be applied to the primitive.
+     */
+    double primitive_normalization(int p);
+    /** Normalizes an entire contraction set. Applies the normalization to the coefficients
+     *  @param gs The contraction set to normalize.
+     */
+    void contraction_normalization(int gs);
+    /** Handles calling primitive_normalization and contraction_normalization for you. */
     void normalize_shell();
-    
+
+    /** Lookup array that when you index the angular momentum it returns the lowercase letter corresponding to it. */
     static const char *amtypes;
+    /** Lookup array that when you index the angular momentum it returns the uppercase letter corresponding to it. */
     static const char *AMTYPES;
 
 public:
+    /** Constructor, does nothing. */
     GaussianShell() {};
     ~GaussianShell();
-    
+
+    /** Initializes the GaussianShell with the data provided.
+     *  @param ncn The number of contractions for the shell (most likely you'll say 1).
+     *  @param nprm The number of primitives in each contraction.
+     *  @param e An array of exponent values.
+     *  @param am An array of angular momentum of each contraction (most likely of length 1).
+     *  @param pure Pure spherical harmonics, or Cartesian.
+     *  @param c A matrix of contraction coefficients (most likely of dimensions nprm x 1).
+     *  @param nc The atomic center that this shell is located on. Must map back to the correct atom in the owning BasisSet molecule_. Used in integral derivatives for indexing.
+     *  @param center The x, y, z position of the shell. This is passed to reduce the number of calls to the molecule.
+     *  @param start The starting index of the first function this shell provides. Used to provide starting positions in matrices.
+     *  @param pt Is the shell already normalized?
+     */
     void init(int ncn, int nprm, double* e, int* am, GaussianType pure,
         double** c, int nc, Vector3& center, int start, PrimitiveType pt = GaussianShell::Normalized);
 
@@ -89,23 +121,23 @@ public:
     bool is_pure(int c) const       { return puream_[c]; }
     /// Return true if any contraction is pure
     bool has_pure() const           { return has_pure_; }
-    
+
     /// Returns the center of the Molecule this shell is on
     Vector3 center() const          { return center_; }
     /// Returns the atom number this shell is on. Used by integral derivatives for indexing.
     int ncenter() const             { return nc_; }
-    
+
     /// Returns the exponent of the given primitive
     double exp(int prim) const { return exp_[prim]; }
     /// Return coefficient of pi'th primitive and ci'th contraction
     double coef(int ci, int pi) const { return coef_[ci][pi]; }
-    
+
     /// Print out the shell
     void print(FILE *out) const;
-    
+
     /// Normalize the angular momentum component
     double normalize(int l, int m, int n);
-    
+
     /// Basis function index where this shell starts.
     int function_index() const { return start_; }
 };

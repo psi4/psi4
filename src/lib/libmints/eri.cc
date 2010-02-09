@@ -704,7 +704,7 @@ void ERI::compute_shell(int sh1, int sh2, int sh3, int sh4)
     int am1, am2, am3, am4, temp;
     shared_ptr<BasisSet> bs_temp;
 
-    bool p13p24 = false, p12 = false, p34 = false;
+    p13p24_ = false; p12_ = false; p34_ = false;
 
     // AM used for ordering
     am1 = original_bs1_->shell(sh1)->am(0);
@@ -716,6 +716,13 @@ void ERI::compute_shell(int sh1, int sh2, int sh3, int sh4)
     int n2 = original_bs2_->shell(sh2)->nfunction(0);
     int n3 = original_bs3_->shell(sh3)->nfunction(0);
     int n4 = original_bs4_->shell(sh4)->nfunction(0);
+
+    // Save the original requested shell ordering. The pre-computed shell pair information
+    // requires the original ordering.
+    osh1_ = sh1;
+    osh2_ = sh2;
+    osh3_ = sh3;
+    osh4_ = sh4;
 
     // l(a) >= l(b), l(c) >= l(d), and l(c) + l(d) >= l(a) + l(b).
     if (am1 >= am2) {
@@ -731,7 +738,7 @@ void ERI::compute_shell(int sh1, int sh2, int sh3, int sh4)
         bs1_ = original_bs2_;
         bs2_ = original_bs1_;
 
-        p12 = true;
+        p12_ = true;
     }
 
     if (am3 >= am4) {
@@ -748,7 +755,7 @@ void ERI::compute_shell(int sh1, int sh2, int sh3, int sh4)
         bs3_ = original_bs4_;
         bs4_ = original_bs3_;
 
-        p34 = true;
+        p34_ = true;
     }
 
     if ((am1 + am2) > (am3 + am4)) {
@@ -769,7 +776,7 @@ void ERI::compute_shell(int sh1, int sh2, int sh3, int sh4)
         bs2_ = bs4_;
         bs4_ = bs_temp;
 
-        p13p24 = true;
+        p13p24_ = true;
     }
 #ifdef MINTS_TIMER
     timer_off("reorder");
@@ -779,11 +786,11 @@ void ERI::compute_shell(int sh1, int sh2, int sh3, int sh4)
     compute_quartet(s1, s2, s3, s4);
 
     // Permute integrals back, if needed
-    if (p12 || p34 || p13p24) {
+    if (p12_ || p34_ || p13p24_) {
 #ifdef MINTS_TIMER
         timer_on("permute_target");
 #endif
-        permute_target(source_, target_, s1, s2, s3, s4, p12, p34, p13p24);
+        permute_target(source_, target_, s1, s2, s3, s4, p12_, p34_, p13p24_);
 #ifdef MINTS_TIMER
         timer_off("permute_target");
 #endif
@@ -868,8 +875,84 @@ void ERI::compute_quartet(int sh1, int sh2, int sh3, int sh4)
     // Prepare all the data needed by libint
     nprim = 0;
     // New version - with ShellPair
-    ShellPair *p12 = &(pairs12_[sh1][sh2]);
-    ShellPair *p34 = &(pairs12_[sh3][sh4]);
+    ShellPair *p12, *p34;
+    if (!p13p24_) {
+        if (p12_) {
+            if (p34_) {
+                // 1234 -> 2143
+                p12 = &(pairs12_[sh2][sh1]);
+                p34 = &(pairs34_[sh4][sh3]);
+                nprim1 = s2->nprimitive();
+                nprim2 = s1->nprimitive();
+                nprim3 = s4->nprimitive();
+                nprim4 = s3->nprimitive();
+            } else {
+                // 1234 -> 2134
+                p12 = &(pairs12_[sh2][sh1]);
+                p34 = &(pairs34_[sh3][sh4]);
+                nprim1 = s2->nprimitive();
+                nprim2 = s1->nprimitive();
+                nprim3 = s3->nprimitive();
+                nprim4 = s4->nprimitive();
+            }
+        } else {
+            if (p34_) {
+                // 1234 -> 1243
+                p12 = &(pairs12_[sh1][sh2]);
+                p34 = &(pairs34_[sh4][sh3]);
+                nprim1 = s1->nprimitive();
+                nprim2 = s2->nprimitive();
+                nprim3 = s4->nprimitive();
+                nprim4 = s3->nprimitive();
+            } else {
+                // 1234 -> 1234 no change
+                p12 = &(pairs12_[sh1][sh2]);
+                p34 = &(pairs34_[sh3][sh4]);
+                nprim1 = s1->nprimitive();
+                nprim2 = s2->nprimitive();
+                nprim3 = s3->nprimitive();
+                nprim4 = s4->nprimitive();
+            }
+        }
+    } else {
+        if (p12_) {
+            if (p34_) {
+                // 1234 -> 4321
+                p12 = &(pairs34_[sh2][sh1]);
+                p34 = &(pairs12_[sh4][sh3]);
+                nprim1 = s2->nprimitive();
+                nprim2 = s1->nprimitive();
+                nprim3 = s4->nprimitive();
+                nprim4 = s3->nprimitive();
+            } else {
+                // 1234 -> 3421
+                p12 = &(pairs34_[sh1][sh2]);
+                p34 = &(pairs12_[sh3][sh4]);
+                nprim1 = s1->nprimitive();
+                nprim2 = s2->nprimitive();
+                nprim3 = s3->nprimitive();
+                nprim4 = s4->nprimitive();
+            }
+        } else {
+            if (p34_) {
+                // 1234 -> 4312
+                p12 = &(pairs34_[sh2][sh1]);
+                p34 = &(pairs12_[sh3][sh4]);
+                nprim1 = s2->nprimitive();
+                nprim2 = s1->nprimitive();
+                nprim3 = s3->nprimitive();
+                nprim4 = s4->nprimitive();
+            } else {
+                // 1234 -> 3412
+                p12 = &(pairs34_[sh1][sh2]);
+                p34 = &(pairs12_[sh3][sh4]);
+                nprim1 = s1->nprimitive();
+                nprim2 = s2->nprimitive();
+                nprim3 = s3->nprimitive();
+                nprim4 = s4->nprimitive();
+            }
+        }
+    }
 
     for (int p1=0; p1<nprim1; ++p1) {
         for (int p2=0; p2<nprim2; ++p2) {
