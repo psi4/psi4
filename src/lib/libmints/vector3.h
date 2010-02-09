@@ -5,12 +5,12 @@
 #include <sstream>
 
 namespace psi {
-    
+
 class Vector3
 {
 private:
     double v_[3];
-    
+
 public:
     Vector3() { v_[0] = v_[1] = v_[2] = 0.0; }
     Vector3(const double p[3]) {
@@ -25,7 +25,7 @@ public:
     Vector3(const Vector3& p) {
         v_[0] = p.v_[0]; v_[1] = p.v_[1]; v_[2] = p.v_[2];
     }
-    
+
     void operator=(const double *x) {
         v_[0] = x[0];
         v_[1] = x[1];
@@ -57,6 +57,7 @@ public:
         v_[2] *= m;
     }
     Vector3 operator*(double d) const;
+    Vector3 operator/(double d) const;
     Vector3 operator+(const Vector3& x) {
         Vector3 result;
         result.v_[0] = v_[0] + x.v_[0];
@@ -72,28 +73,28 @@ public:
         return result;
     }
     Vector3 operator-() { return Vector3(-v_[0], -v_[1], -v_[2]); }
-    
+
     double& operator[](int i) { return v_[i]; }
     const double& operator[](int i) const { return v_[i]; }
-    
-    double get(int i) { 
-        if (i >= 0 && i <= 2) return v_[i]; 
-        else return 0.0; 
+
+    double get(int i) {
+        if (i >= 0 && i <= 2) return v_[i];
+        else return 0.0;
     }
 
     double dot(const Vector3& x) const {
         return v_[0]*x.v_[0] + v_[1]*x.v_[1] + v_[2]*x.v_[2];
     }
-    
+
     double distance(const Vector3&) const;
     void normalize();
     double norm() const { return sqrt(this->dot(*this)); }
     void rotate(double theta, Vector3& v);
     Vector3 perp_unit(const Vector3& v) const;
-    
+
     Vector3 cross(const Vector3&) const;
 
-    std::string to_string() { 
+    std::string to_string() {
         std::stringstream s;
         s << "[ " << v_[0] << ", " << v_[1] << ", " << v_[2] << " ]";
         return s.str();

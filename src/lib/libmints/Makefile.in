@@ -5,6 +5,7 @@ VPATH = @srcdir@
 include ../MakeVars
 
 PSITARGET = $(top_objdir)/lib/libPSI_mints.a
+CXXDEF += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"
 
 TRUECXXSRC = basisset.cc dipole.cc eri.cc gshell.cc integral.cc kinetic.cc \
              molecule.cc onebody.cc osrecur.cc overlap.cc potential.cc quadrupole.cc \

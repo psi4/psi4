@@ -34,7 +34,7 @@ IntegralTransform::transform_oei(const shared_ptr<MOSpace> s1, const shared_ptr<
     // Add the nuclear and kinetic energy integrals
     for(int n = 0; n < _nTriSo; ++n) soInts[n] += T[n];
     free(T);
-    
+
     int *order = init_int_array(_nmo);
     // We want to keep Pitzer ordering, so this is just an identity mapping
     for(int n = 0; n < _nmo; ++n) order[n] = n;
@@ -99,7 +99,7 @@ IntegralTransform::transform_oei(const shared_ptr<MOSpace> s1, const shared_ptr<
 */
 
 void
-IntegralTransform::trans_one(int m, int n, double *input, double *output, 
+IntegralTransform::trans_one(int m, int n, double *input, double *output,
                              double **C, int soOffset, int* order)
 {
     int dim = (m > n) ? m : n;
@@ -128,7 +128,7 @@ IntegralTransform::trans_one(int m, int n, double *input, double *output,
 
     free_block(TMP0);
     free_block(TMP1);
-    
+
     return;
 }
 

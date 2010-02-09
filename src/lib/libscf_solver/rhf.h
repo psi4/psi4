@@ -16,7 +16,7 @@
 using namespace psi;
 
 namespace psi { namespace scf {
-     
+
 class RHF : public HF {
 protected:
     SharedMatrix F_;
@@ -26,53 +26,55 @@ protected:
     SharedMatrix G_;
     SharedMatrix J_;
     SharedMatrix K_;
-        
+
     std::vector<SharedMatrix> diis_F_;
     std::vector<SharedMatrix> diis_E_;
+    boost::shared_ptr<TwoBodyInt> eri_;
+
     double Drms_;
-    
+
     int num_diis_vectors_;
     double **diis_B_;
     int current_diis_fock_;
     int diis_enabled_;
-        
+
     int use_out_of_core_;
     double *pk_;
-    
+
     void compute_multipole();
-    
+
     void form_initialF();
     void form_C();
     void form_D();
     double compute_initial_E();
-    double compute_E(); 
-    
+    double compute_E();
+
     void form_G(); // Out of core (i think there is a bug here)
     void form_G_from_PK(); // In core PK
     void form_G_from_direct_integrals(); // Computes all ERIs each iteration.
     void form_G_from_RI(); //Uses two- and three- index integrals
     void form_G_from_J_and_K(double scale_K_by = 1.0); // Computes G from J and K
     void form_J_and_K();    // Computes J and K matrices from the ERIs
-    
+
     void form_J_and_K_from_direct_integrals();
     void form_J_from_RI();
     void form_K_from_RI();
-    
+
     void form_PK();
     void form_F();
     
     void save_fock();
     void diis();
     void allocate_PK();
-    
+
     bool test_convergency();
     void save_information();
-    
+
     void common_init();
 public:
     RHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
     virtual ~RHF();
-    
+
     double compute_energy();
 };
 

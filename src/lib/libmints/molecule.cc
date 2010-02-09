@@ -229,55 +229,55 @@ SimpleVector Molecule::nuclear_repulsion_energy_deriv1()
 */
 SimpleMatrix* Molecule::nuclear_repulsion_energy_deriv2()
 {
-	SimpleMatrix *hess = new SimpleMatrix("Nuclear Repulsion Energy 2nd Derivatives", 3*natom(), 3*natom());
-	double sx, sy, sz, x2, y2, z2, r2, r, r5, pfac;
+    SimpleMatrix *hess = new SimpleMatrix("Nuclear Repulsion Energy 2nd Derivatives", 3*natom(), 3*natom());
+    double sx, sy, sz, x2, y2, z2, r2, r, r5, pfac;
 
-	for (int i=1; i<natom(); ++i) {
-		int ix = 3*i;
-		int iy = ix+1;
-		int iz = iy+1;
+    for (int i=1; i<natom(); ++i) {
+        int ix = 3*i;
+        int iy = ix+1;
+        int iz = iy+1;
 
-		for (int j=0; j<i; ++j) {
-			int jx = 3*j;
-			int jy = jx+j;
-			int jz = jy+j;
+        for (int j=0; j<i; ++j) {
+            int jx = 3*j;
+            int jy = jx+j;
+            int jz = jy+j;
 
-			sx = x(i) - x(j);
-			sy = y(i) - y(j);
-			sz = z(i) - z(j);
+            sx = x(i) - x(j);
+            sy = y(i) - y(j);
+            sz = z(i) - z(j);
 
-			x2 = sx*sx; y2 = sy*sy; z2 = sz*sz;
-			r2 = x2 + y2 + z2;
-			r = sqrt(r2);
-			r5 = r2*r2*r;
-			pfac = Z(i) * Z(j) / r5;
+            x2 = sx*sx; y2 = sy*sy; z2 = sz*sz;
+            r2 = x2 + y2 + z2;
+            r = sqrt(r2);
+            r5 = r2*r2*r;
+            pfac = Z(i) * Z(j) / r5;
 
-			hess->add(ix, ix, pfac * (3*x2 - r2));
-			hess->add(iy, iy, pfac * (3*y2 - r2));
-			hess->add(iz, iz, pfac * (3*z2 - r2));
-			hess->add(ix, iy, pfac*3*sx*sy);
-			hess->add(ix, iz, pfac*3*sx*sz);
-			hess->add(iy, iz, pfac*3*sy*sz);
+            hess->add(ix, ix, pfac * (3*x2 - r2));
+            hess->add(iy, iy, pfac * (3*y2 - r2));
+            hess->add(iz, iz, pfac * (3*z2 - r2));
+            hess->add(ix, iy, pfac*3*sx*sy);
+            hess->add(ix, iz, pfac*3*sx*sz);
+            hess->add(iy, iz, pfac*3*sy*sz);
 
-			hess->add(jx, jx, pfac * (3*x2 - r2));
-			hess->add(jy, jy, pfac * (3*y2 - r2));
-			hess->add(jz, jz, pfac * (3*z2 - r2));
-			hess->add(jx, jy, pfac*3*sx*sy);
-			hess->add(jx, jz, pfac*3*sx*sz);
-			hess->add(jy, jz, pfac*3*sy*sz);
+            hess->add(jx, jx, pfac * (3*x2 - r2));
+            hess->add(jy, jy, pfac * (3*y2 - r2));
+            hess->add(jz, jz, pfac * (3*z2 - r2));
+            hess->add(jx, jy, pfac*3*sx*sy);
+            hess->add(jx, jz, pfac*3*sx*sz);
+            hess->add(jy, jz, pfac*3*sy*sz);
 
-			hess->add(ix, jx, -pfac*(3*sx*sx-r2));
-			hess->add(ix, jy, -pfac*(3*sx*sy));
-			hess->add(ix, jz, -pfac*(3*sx*sz));
-			hess->add(iy, jx, -pfac*(3*sy*sx));
-			hess->add(iy, jy, -pfac*(3*sy*sy-r2));
-			hess->add(iy, jz, -pfac*3*sy*sz);
-			hess->add(iz, jx, -pfac*3*sz*sx);
-			hess->add(iz, jy, -pfac*3*sz*sy);
-			hess->add(iz, jz, -pfac*(3*sz*sz-r2));
-		}
-	}
-	return hess;
+            hess->add(ix, jx, -pfac*(3*sx*sx-r2));
+            hess->add(ix, jy, -pfac*(3*sx*sy));
+            hess->add(ix, jz, -pfac*(3*sx*sz));
+            hess->add(iy, jx, -pfac*(3*sy*sx));
+            hess->add(iy, jy, -pfac*(3*sy*sy-r2));
+            hess->add(iy, jz, -pfac*3*sy*sz);
+            hess->add(iz, jx, -pfac*3*sz*sx);
+            hess->add(iz, jy, -pfac*3*sz*sy);
+            hess->add(iz, jz, -pfac*(3*sz*sz-r2));
+        }
+    }
+    return hess;
 }
 
 void Molecule::translate(const Vector3& r)
@@ -564,15 +564,15 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
 {
     Element_to_Z Z;
     Z.load_values();
-    
+
     if (xyzfilename.empty())
         throw PSIEXCEPTION("Molecule::init_with_xyz: given filename is blank.");
-    
+
     ifstream infile(xyzfilename.c_str());
     string line, natom_str;
     const string bohr("bohr"), au("au");
     bool angstrom_in_file = true;
-    
+
     if (!infile)
         throw PSIEXCEPTION("Molecule::init_with_xyz: Unable to open xyz file.");
 
@@ -580,7 +580,7 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
     getline(infile, line);
 
     // This is what we should match on the first line
-    boost::regex rx("(\\d+)(?:\\s*)(bohr|au)?", boost::regbase::normal | boost::regbase::icase);
+    boost::regex rx("(\\d+)\\s*(bohr|au)?", boost::regbase::normal | boost::regbase::icase);
     boost::smatch what;
 
     int natom;
@@ -591,6 +591,7 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
         if (!from_string<int>(natom, what[1], std::dec))
             throw PSIEXCEPTION("Molecule::init_with_xyz: Unable to convert number of atoms from xyz file.");
 
+        cout << "init_with_xyz: " << what.size() << endl;
         if (what.size() == 3) {
             string s(what[2].first, what[2].second);
             if (boost::iequals(bohr, s) || boost::iequals(au, s)) {
@@ -600,10 +601,10 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
     }
     else
         throw PSIEXCEPTION("Molecule::init_with_xyz: Malformed first line\n"+line);
-    
+
     // Next line is a comment line, ignore it
     getline(infile, line);
-    
+
     // Next line begins the useful information.
     // This is the regex for the remaining lines
     rx.assign("(?:\\s*)([A-Z](?:[a-z])?)(?:\\s+)(-?\\d+\\.\\d+)(?:\\s+)(-?\\d+\\.\\d+)(?:\\s+)(-?\\d+\\.\\d+)(?:\\s*)",
@@ -611,14 +612,14 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
     for (int i=0; i<natom; ++i) {
         // Get an atom info line.
         getline(infile, line);
-        
+
         // Try to match it
         if (regex_match(line, what, rx))
         {
             // First is a string
             string atomSym(what[1].first, what[1].second);
             transform(atomSym.begin(), atomSym.end(), atomSym.begin(), ::toupper);
-            
+
             // Then the coordinates:
             double x, y, z;
             if (!from_string<double>(x, what[2], std::dec))
@@ -627,14 +628,14 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
                 throw PSIEXCEPTION("Molecule::init_with_xyz: Unable to convert y coordinate.\n" + line);
             if (!from_string<double>(z, what[4], std::dec))
                 throw PSIEXCEPTION("Molecule::init_with_xyz: Unable to convert z coordinate.\n" + line);
-                
+
             if (angstrom_in_file) {
                 // Coordinates in Molecule must be bohr.
                 x /= _bohr2angstroms;
                 y /= _bohr2angstroms;
                 z /= _bohr2angstroms;
             }
-            
+
             // Add it to the molecule.
             add_atom((int)Z[atomSym], x, y, z, atomSym.c_str(), atomic_masses[(int)Z[atomSym]]);
         }
@@ -668,8 +669,8 @@ void Molecule::save_to_chkpt(shared_ptr<Chkpt> chkpt, std::string prefix)
     }
 
     for (int i=0; i<nallatom(); ++i) {
-	fgeom[i][0] = fx(i); geom[i][1] = fy(i); geom[i][2] = fz(i);
-	dummyflags[i] = fZ(i) > 0 ? 0 : 1;
+    fgeom[i][0] = fx(i); geom[i][1] = fy(i); geom[i][2] = fz(i);
+    dummyflags[i] = fZ(i) > 0 ? 0 : 1;
     }
 
     chkpt->wt_zvals(zvals);
@@ -705,20 +706,20 @@ void Molecule::print() const
         fprintf(outfile,"\n");
         fflush(outfile);
 
-	// Print symmetry information, if available
-	if (nunique_) {
-	    fprintf(outfile, "    Number of unique atoms: %d\n\n", nunique_);
-	    fprintf(outfile, "    Atoms equivalency:\n");
-	    for (int i=0; i<nunique_; ++i) {
-		fprintf(outfile, "       unique atom %d: ", i);
-		for (int j=0; j<nequiv_[i]; ++j) {
-		fprintf(outfile, "%d ", equiv_[i][j]);
-		}
-		fprintf(outfile, "\n");
-	    }
-	    fprintf(outfile, "\n");
-	    fflush(outfile);
-	}
+        // Print symmetry information, if available
+        if (nunique_) {
+            fprintf(outfile, "    Number of unique atoms: %d\n\n", nunique_);
+            fprintf(outfile, "    Atoms equivalency:\n");
+            for (int i=0; i<nunique_; ++i) {
+                fprintf(outfile, "       unique atom %d: ", i);
+                for (int j=0; j<nequiv_[i]; ++j) {
+                    fprintf(outfile, "%d ", equiv_[i][j]);
+                }
+                fprintf(outfile, "\n");
+            }
+            fprintf(outfile, "\n");
+            fflush(outfile);
+        }
     }
 }
 
@@ -776,7 +777,7 @@ SimpleMatrix* Molecule::inertia_tensor()
         tensor->add(2, 0, -mass(i) * x(i) * z(i));
         tensor->add(2, 1, -mass(i) * y(i) * z(i));
     }
-    
+
     return tensor;
 }
 
@@ -1185,23 +1186,23 @@ found_sigma:
         }
     }
 
-    fprintf(outfile, "find point group:\n");
-    fprintf(outfile, "  linear          = %s\n", linear          ? "true" : "false");
-    fprintf(outfile, "  planar          = %s\n", planar          ? "true" : "false");
-    fprintf(outfile, "  have_inversion  = %s\n", have_inversion  ? "true" : "false");
-    fprintf(outfile, "  have_c2axis     = %s\n", have_c2axis     ? "true" : "false");
-    fprintf(outfile, "  have_c2axisperp = %s\n", have_c2axisperp ? "true" : "false");
-    fprintf(outfile, "  have_sigmav     = %s\n", have_sigmav     ? "true" : "false");
-    fprintf(outfile, "  have_sigma      = %s\n", have_sigma      ? "true" : "false");
-
-    if (have_c2axis)
-        fprintf(outfile, "  c2axis          = %s\n", c2axis.to_string().c_str());
-    if (have_c2axisperp)
-        fprintf(outfile, "  c2axisperp      = %s\n", c2axisperp.to_string().c_str());
-    if (have_sigmav)
-        fprintf(outfile, "  sigmav          = %s\n", sigmav.to_string().c_str());
-    if (have_sigma)
-        fprintf(outfile, "  sigma           = %s\n", sigma.to_string().c_str());
+//    fprintf(outfile, "find point group:\n");
+//    fprintf(outfile, "  linear          = %s\n", linear          ? "true" : "false");
+//    fprintf(outfile, "  planar          = %s\n", planar          ? "true" : "false");
+//    fprintf(outfile, "  have_inversion  = %s\n", have_inversion  ? "true" : "false");
+//    fprintf(outfile, "  have_c2axis     = %s\n", have_c2axis     ? "true" : "false");
+//    fprintf(outfile, "  have_c2axisperp = %s\n", have_c2axisperp ? "true" : "false");
+//    fprintf(outfile, "  have_sigmav     = %s\n", have_sigmav     ? "true" : "false");
+//    fprintf(outfile, "  have_sigma      = %s\n", have_sigma      ? "true" : "false");
+//
+//    if (have_c2axis)
+//        fprintf(outfile, "  c2axis          = %s\n", c2axis.to_string().c_str());
+//    if (have_c2axisperp)
+//        fprintf(outfile, "  c2axisperp      = %s\n", c2axisperp.to_string().c_str());
+//    if (have_sigmav)
+//        fprintf(outfile, "  sigmav          = %s\n", sigmav.to_string().c_str());
+//    if (have_sigma)
+//        fprintf(outfile, "  sigma           = %s\n", sigma.to_string().c_str());
 
     // Find the three axes for the symmetry frame
     Vector3 xaxis = worldxaxis;
@@ -1227,9 +1228,9 @@ found_sigma:
     // the y is then -x cross z
     yaxis = -xaxis.cross(zaxis);
 
-    fprintf(outfile, "  X: %s\n", xaxis.to_string().c_str());
-    fprintf(outfile, "  Y: %s\n", yaxis.to_string().c_str());
-    fprintf(outfile, "  Z: %s\n", zaxis.to_string().c_str());
+//    fprintf(outfile, "  X: %s\n", xaxis.to_string().c_str());
+//    fprintf(outfile, "  Y: %s\n", yaxis.to_string().c_str());
+//    fprintf(outfile, "  Z: %s\n", zaxis.to_string().c_str());
 
     SymmetryOperation frame;
     Vector3 origin;
@@ -1278,15 +1279,15 @@ found_sigma:
         }
     }
 
-    fprintf(outfile, "\n  Molecular point group: %s\n\n", pg->symbol());
-    
+    //fprintf(outfile, "\n  Molecular point group: %s\n\n", pg->symbol());
+
     return pg;
 }
 
 void Molecule::release_symmetry_information()
 {
     for (int i=0; i<nunique_; ++i) {
-	delete[] equiv_[i];
+    delete[] equiv_[i];
     }
     delete[] equiv_;
     delete[] nequiv_;
@@ -1300,7 +1301,7 @@ void Molecule::release_symmetry_information()
 void Molecule::form_symmetry_information(double tol)
 {
     if (equiv_)
-	release_symmetry_information();
+    release_symmetry_information();
 
     if (natom() == 0) {
         nunique_ = 0;
