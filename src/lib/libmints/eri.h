@@ -79,6 +79,9 @@ class ERI : public TwoBodyInt
     void free_shell_pairs12();
     void free_shell_pairs34();
 
+    //! Should we use shell pair information?
+    bool use_shell_pairs_;
+
     //! Stack memory pointer, used in init_shell_pairs, freed in destructor
     double *stack12_, *stack34_;
 

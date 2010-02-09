@@ -142,6 +142,9 @@ ERI::ERI(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet>bs2, shared_ptr<BasisSet>
     else
         schwarz2_ = 0.0;
 
+    // Default to use shell pairs
+    use_shell_pairs_ = true;
+
     // Precompute a bunch of information
     init_shell_pairs12();
     // If basis3 and basis4 equals basis1 and basis2, then the following function will do nothing,
@@ -292,11 +295,16 @@ void ERI::init_shell_pairs34()
     // If basis1 == basis3 && basis2 == basis4, then we don't need to do anything except use the pointer
     // of pairs12_.
     if (basis1() == basis3() && basis2() == basis4()) {
+        use_shell_pairs_ = true;
         pairs34_ = pairs12_;
         stack34_ = NULL;
         return;
     }
-
+    else {
+        use_shell_pairs_ = false;
+        return;
+    }
+#if 0
     fprintf(outfile, "  Pre-computing additional values for two-electron integrals. [ |34) does not equal (12| ]\n");
 
     // Estimate memory needed by allocated space for the dynamically allocated parts of ShellPair structure
@@ -401,6 +409,7 @@ void ERI::init_shell_pairs34()
             }
         }
     }
+#endif
 }
 
 void ERI::free_shell_pairs12()
@@ -848,14 +857,14 @@ void ERI::compute_quartet(int sh1, int sh2, int sh3, int sh4)
     D[2] = s4->center()[2];
 
     // compute intermediates
-//    double AB2 = 0.0;
-//    AB2 += (A[0] - B[0]) * (A[0] - B[0]);
-//    AB2 += (A[1] - B[1]) * (A[1] - B[1]);
-//    AB2 += (A[2] - B[2]) * (A[2] - B[2]);
-//    double CD2 = 0.0;
-//    CD2 += (C[0] - D[0]) * (C[0] - D[0]);
-//    CD2 += (C[1] - D[1]) * (C[1] - D[1]);
-//    CD2 += (C[2] - D[2]) * (C[2] - D[2]);
+    double AB2 = 0.0;
+    AB2 += (A[0] - B[0]) * (A[0] - B[0]);
+    AB2 += (A[1] - B[1]) * (A[1] - B[1]);
+    AB2 += (A[2] - B[2]) * (A[2] - B[2]);
+    double CD2 = 0.0;
+    CD2 += (C[0] - D[0]) * (C[0] - D[0]);
+    CD2 += (C[1] - D[1]) * (C[1] - D[1]);
+    CD2 += (C[2] - D[2]) * (C[2] - D[2]);
 
     libint_.AB[0] = A[0] - B[0];
     libint_.AB[1] = A[1] - B[1];
@@ -874,280 +883,213 @@ void ERI::compute_quartet(int sh1, int sh2, int sh3, int sh4)
 
     // Prepare all the data needed by libint
     nprim = 0;
-    // New version - with ShellPair
-    ShellPair *p12, *p34;
-    if (!p13p24_) {
-        if (p12_) {
-            if (p34_) {
-                // 1234 -> 2143
-                p12 = &(pairs12_[sh2][sh1]);
-                p34 = &(pairs34_[sh4][sh3]);
-                nprim1 = s2->nprimitive();
-                nprim2 = s1->nprimitive();
-                nprim3 = s4->nprimitive();
-                nprim4 = s3->nprimitive();
-            } else {
-                // 1234 -> 2134
-                p12 = &(pairs12_[sh2][sh1]);
-                p34 = &(pairs34_[sh3][sh4]);
-                nprim1 = s2->nprimitive();
-                nprim2 = s1->nprimitive();
-                nprim3 = s3->nprimitive();
-                nprim4 = s4->nprimitive();
-            }
-        } else {
-            if (p34_) {
-                // 1234 -> 1243
-                p12 = &(pairs12_[sh1][sh2]);
-                p34 = &(pairs34_[sh4][sh3]);
-                nprim1 = s1->nprimitive();
-                nprim2 = s2->nprimitive();
-                nprim3 = s4->nprimitive();
-                nprim4 = s3->nprimitive();
-            } else {
-                // 1234 -> 1234 no change
-                p12 = &(pairs12_[sh1][sh2]);
-                p34 = &(pairs34_[sh3][sh4]);
-                nprim1 = s1->nprimitive();
-                nprim2 = s2->nprimitive();
-                nprim3 = s3->nprimitive();
-                nprim4 = s4->nprimitive();
-            }
-        }
-    } else {
-        if (p12_) {
-            if (p34_) {
-                // 1234 -> 4321
-                p12 = &(pairs34_[sh2][sh1]);
-                p34 = &(pairs12_[sh4][sh3]);
-                nprim1 = s2->nprimitive();
-                nprim2 = s1->nprimitive();
-                nprim3 = s4->nprimitive();
-                nprim4 = s3->nprimitive();
-            } else {
-                // 1234 -> 3421
-                p12 = &(pairs34_[sh1][sh2]);
-                p34 = &(pairs12_[sh3][sh4]);
-                nprim1 = s1->nprimitive();
-                nprim2 = s2->nprimitive();
-                nprim3 = s3->nprimitive();
-                nprim4 = s4->nprimitive();
-            }
-        } else {
-            if (p34_) {
-                // 1234 -> 4312
-                p12 = &(pairs34_[sh2][sh1]);
-                p34 = &(pairs12_[sh3][sh4]);
-                nprim1 = s2->nprimitive();
-                nprim2 = s1->nprimitive();
-                nprim3 = s3->nprimitive();
-                nprim4 = s4->nprimitive();
-            } else {
-                // 1234 -> 3412
-                p12 = &(pairs34_[sh1][sh2]);
-                p34 = &(pairs12_[sh3][sh4]);
-                nprim1 = s1->nprimitive();
-                nprim2 = s2->nprimitive();
-                nprim3 = s3->nprimitive();
-                nprim4 = s4->nprimitive();
-            }
-        }
-    }
+    if (use_shell_pairs_) {
+        // New version - with ShellPair
+        ShellPair *p12, *p34;
+        // 1234 -> 1234 no change
+        p12 = &(pairs12_[sh1][sh2]);
+        p34 = &(pairs34_[sh3][sh4]);
+        nprim1 = s1->nprimitive();
+        nprim2 = s2->nprimitive();
+        nprim3 = s3->nprimitive();
+        nprim4 = s4->nprimitive();
 
-    for (int p1=0; p1<nprim1; ++p1) {
-        for (int p2=0; p2<nprim2; ++p2) {
-            double zeta = p12->gamma[p1][p2];
-            double overlap12 = p12->overlap[p1][p2];
-            for (int p3=0; p3<nprim3; ++p3) {
-                for (int p4=0; p4<nprim4; ++p4) {
-                    double eta  = p34->gamma[p3][p4];
-                    double oozn = 1.0 / (zeta+eta);
-                    libint_.PrimQuartet[nprim].poz = eta * oozn;
-                    double rho = zeta * libint_.PrimQuartet[nprim].poz;
-//                    double rho = (zeta*eta) * oozn;
-                    double coef1 = 2.0 * sqrt(rho*M_1_PI) * overlap12 * p34->overlap[p3][p4];
-                    double PQ[3];
-                    PQ[0] = p12->P[p1][p2][0] - p34->P[p3][p4][0];
-                    PQ[1] = p12->P[p1][p2][1] - p34->P[p3][p4][1];
-                    PQ[2] = p12->P[p1][p2][2] - p34->P[p3][p4][2];
-                    double PQ2 = PQ[0]*PQ[0] + PQ[1]*PQ[1] + PQ[2]*PQ[2];
-                    double T = rho*PQ2;
+        for (int p1=0; p1<nprim1; ++p1) {
+            for (int p2=0; p2<nprim2; ++p2) {
+                double zeta = p12->gamma[p1][p2];
+                double overlap12 = p12->overlap[p1][p2];
+                for (int p3=0; p3<nprim3; ++p3) {
+                    for (int p4=0; p4<nprim4; ++p4) {
+                        double eta  = p34->gamma[p3][p4];
+                        double oozn = 1.0 / (zeta+eta);
+                        libint_.PrimQuartet[nprim].poz = eta * oozn;
+                        double rho = zeta * libint_.PrimQuartet[nprim].poz;
+                        //                    double rho = (zeta*eta) * oozn;
+                        double coef1 = 2.0 * sqrt(rho*M_1_PI) * overlap12 * p34->overlap[p3][p4];
+                        double PQ[3];
+                        PQ[0] = p12->P[p1][p2][0] - p34->P[p3][p4][0];
+                        PQ[1] = p12->P[p1][p2][1] - p34->P[p3][p4][1];
+                        PQ[2] = p12->P[p1][p2][2] - p34->P[p3][p4][2];
+                        double PQ2 = PQ[0]*PQ[0] + PQ[1]*PQ[1] + PQ[2]*PQ[2];
+                        double T = rho*PQ2;
 
-                    calc_f(libint_.PrimQuartet[nprim].F, am+1, T);
+                        calc_f(libint_.PrimQuartet[nprim].F, am+1, T);
 
-                    // Modify F to include overlap of ab and cd, eqs 14, 15, 16 of libint manual
-                    for (int i=0; i<=am; ++i) {
-                        libint_.PrimQuartet[nprim].F[i] *= coef1;
+                        // Modify F to include overlap of ab and cd, eqs 14, 15, 16 of libint manual
+                        for (int i=0; i<=am; ++i) {
+                            libint_.PrimQuartet[nprim].F[i] *= coef1;
+                        }
+
+                        libint_.PrimQuartet[nprim].oo2zn = 0.5 * oozn;
+                        libint_.PrimQuartet[nprim].pon   = zeta * oozn;
+                        libint_.PrimQuartet[nprim].oo2z  = 0.5 / zeta;
+                        libint_.PrimQuartet[nprim].oo2n  = 0.5 / eta;
+                        double W[3];
+                        W[0] = (p12->P[p1][p2][0] * zeta + p34->P[p3][p4][0] * eta) * oozn;
+                        W[1] = (p12->P[p1][p2][1] * zeta + p34->P[p3][p4][1] * eta) * oozn;
+                        W[2] = (p12->P[p1][p2][2] * zeta + p34->P[p3][p4][2] * eta) * oozn;
+
+                        // PA
+                        libint_.PrimQuartet[nprim].U[0][0] = p12->PA[p1][p2][0];
+                        libint_.PrimQuartet[nprim].U[0][1] = p12->PA[p1][p2][1];
+                        libint_.PrimQuartet[nprim].U[0][2] = p12->PA[p1][p2][2];
+                        // QC
+                        libint_.PrimQuartet[nprim].U[2][0] = p34->PA[p3][p4][0];
+                        libint_.PrimQuartet[nprim].U[2][1] = p34->PA[p3][p4][1];
+                        libint_.PrimQuartet[nprim].U[2][2] = p34->PA[p3][p4][2];
+                        // WP
+                        libint_.PrimQuartet[nprim].U[4][0] = W[0] - p12->P[p1][p2][0];
+                        libint_.PrimQuartet[nprim].U[4][1] = W[1] - p12->P[p1][p2][1];
+                        libint_.PrimQuartet[nprim].U[4][2] = W[2] - p12->P[p1][p2][2];
+                        // WQ
+                        libint_.PrimQuartet[nprim].U[5][0] = W[0] - p34->P[p3][p4][0];
+                        libint_.PrimQuartet[nprim].U[5][1] = W[1] - p34->P[p3][p4][1];
+                        libint_.PrimQuartet[nprim].U[5][2] = W[2] - p34->P[p3][p4][2];
+
+                        //                    fprintf(outfile, "----- %d\n", nprim);
+                        //                    fprintf(outfile, "poz = %lf\n", libint_.PrimQuartet[nprim].poz);
+                        //                    fprintf(outfile, "T   = %lf\n", T);
+                        //                    fprintf(outfile, "oo2zn = %lf\n", libint_.PrimQuartet[nprim].oo2zn);
+                        //                    fprintf(outfile, "pon = %lf\n", libint_.PrimQuartet[nprim].pon);
+                        //                    fprintf(outfile, "oo2z = %lf\n", libint_.PrimQuartet[nprim].oo2z);
+                        //                    fprintf(outfile, "oo2n = %lf\n", libint_.PrimQuartet[nprim].oo2n);
+                        //                    fprintf(outfile, "U[0] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[0][0], libint_.PrimQuartet[nprim].U[0][1], libint_.PrimQuartet[nprim].U[0][2]);
+                        //                    fprintf(outfile, "U[2] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[2][0], libint_.PrimQuartet[nprim].U[2][1], libint_.PrimQuartet[nprim].U[2][2]);
+                        //                    fprintf(outfile, "U[4] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[4][0], libint_.PrimQuartet[nprim].U[4][1], libint_.PrimQuartet[nprim].U[4][2]);
+                        //                    fprintf(outfile, "U[5] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[5][0], libint_.PrimQuartet[nprim].U[5][1], libint_.PrimQuartet[nprim].U[5][2]);
+                        //                    fprintf(outfile, "W = %lf %lf %lf\n", W[0], W[1], W[2]);
+                        //                    fprintf(outfile, "Q = %lf %lf %lf\n", Q[0], Q[1], Q[2]);
+                        nprim++;
                     }
-
-                    libint_.PrimQuartet[nprim].oo2zn = 0.5 * oozn;
-                    libint_.PrimQuartet[nprim].pon   = zeta * oozn;
-                    libint_.PrimQuartet[nprim].oo2z  = 0.5 / zeta;
-                    libint_.PrimQuartet[nprim].oo2n  = 0.5 / eta;
-                    double W[3];
-                    W[0] = (p12->P[p1][p2][0] * zeta + p34->P[p3][p4][0] * eta) * oozn;
-                    W[1] = (p12->P[p1][p2][1] * zeta + p34->P[p3][p4][1] * eta) * oozn;
-                    W[2] = (p12->P[p1][p2][2] * zeta + p34->P[p3][p4][2] * eta) * oozn;
-
-                    // PA
-                    libint_.PrimQuartet[nprim].U[0][0] = p12->PA[p1][p2][0];
-                    libint_.PrimQuartet[nprim].U[0][1] = p12->PA[p1][p2][1];
-                    libint_.PrimQuartet[nprim].U[0][2] = p12->PA[p1][p2][2];
-                    // QC
-                    libint_.PrimQuartet[nprim].U[2][0] = p34->PA[p3][p4][0];
-                    libint_.PrimQuartet[nprim].U[2][1] = p34->PA[p3][p4][1];
-                    libint_.PrimQuartet[nprim].U[2][2] = p34->PA[p3][p4][2];
-                    // WP
-                    libint_.PrimQuartet[nprim].U[4][0] = W[0] - p12->P[p1][p2][0];
-                    libint_.PrimQuartet[nprim].U[4][1] = W[1] - p12->P[p1][p2][1];
-                    libint_.PrimQuartet[nprim].U[4][2] = W[2] - p12->P[p1][p2][2];
-                    // WQ
-                    libint_.PrimQuartet[nprim].U[5][0] = W[0] - p34->P[p3][p4][0];
-                    libint_.PrimQuartet[nprim].U[5][1] = W[1] - p34->P[p3][p4][1];
-                    libint_.PrimQuartet[nprim].U[5][2] = W[2] - p34->P[p3][p4][2];
-
-//                    fprintf(outfile, "----- %d\n", nprim);
-//                    fprintf(outfile, "poz = %lf\n", libint_.PrimQuartet[nprim].poz);
-//                    fprintf(outfile, "T   = %lf\n", T);
-//                    fprintf(outfile, "oo2zn = %lf\n", libint_.PrimQuartet[nprim].oo2zn);
-//                    fprintf(outfile, "pon = %lf\n", libint_.PrimQuartet[nprim].pon);
-//                    fprintf(outfile, "oo2z = %lf\n", libint_.PrimQuartet[nprim].oo2z);
-//                    fprintf(outfile, "oo2n = %lf\n", libint_.PrimQuartet[nprim].oo2n);
-//                    fprintf(outfile, "U[0] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[0][0], libint_.PrimQuartet[nprim].U[0][1], libint_.PrimQuartet[nprim].U[0][2]);
-//                    fprintf(outfile, "U[2] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[2][0], libint_.PrimQuartet[nprim].U[2][1], libint_.PrimQuartet[nprim].U[2][2]);
-//                    fprintf(outfile, "U[4] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[4][0], libint_.PrimQuartet[nprim].U[4][1], libint_.PrimQuartet[nprim].U[4][2]);
-//                    fprintf(outfile, "U[5] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[5][0], libint_.PrimQuartet[nprim].U[5][1], libint_.PrimQuartet[nprim].U[5][2]);
-//                    fprintf(outfile, "W = %lf %lf %lf\n", W[0], W[1], W[2]);
-//                    fprintf(outfile, "Q = %lf %lf %lf\n", Q[0], Q[1], Q[2]);
-                    nprim++;
                 }
             }
         }
     }
-    // Old version - without ShellPair
-//    for (int p1=0; p1<nprim1; ++p1) {
-//        double a1 = s1->exp(p1);
-//        double c1 = s1->coef(0, p1);
-//        for (int p2=0; p2<nprim2; ++p2) {
-//            double a2 = s2->exp(p2);
-//            double c2 = s2->coef(0, p2);
-//            double zeta = a1 + a2;
-//            double ooz = 1.0/zeta;
-//            double oo2z = 1.0/(2.0 * zeta);
-//
-//            double PA[3], PB[3];
-//            double P[3];
-//
-//            P[0] = (a1*A[0] + a2*B[0])*ooz;
-//            P[1] = (a1*A[1] + a2*B[1])*ooz;
-//            P[2] = (a1*A[2] + a2*B[2])*ooz;
-//            PA[0] = P[0] - A[0];
-//            PA[1] = P[1] - A[1];
-//            PA[2] = P[2] - A[2];
-//            PB[0] = P[0] - B[0];
-//            PB[1] = P[1] - B[1];
-//            PB[2] = P[2] - B[2];
-//
-//            double Sab = pow(M_PI*ooz, 3.0/2.0) * exp(-a1*a2*ooz*AB2) * c1 * c2;
-//
-//            for (int p3=0; p3<nprim3; ++p3) {
-//                double a3 = s3->exp(p3);
-//                double c3 = s3->coef(0, p3);
-//                for (int p4=0; p4<nprim4; ++p4) {
-//                    double a4 = s4->exp(p4);
-//                    double c4 = s4->coef(0, p4);
-//                    double nu = a3 + a4;
-//                    double oon = 1.0/nu;
-//                    double oo2n = 1.0/(2.0*nu);
-//                    double oo2zn = 1.0/(2.0*(zeta+nu));
-//                    double rho = (zeta*nu)/(zeta+nu);
-//                    double oo2rho = 1.0 / (2.0*rho);
-//
-//                    double QC[3], QD[3], WP[3], WQ[3], PQ[3];
-//                    double Q[3], W[3], a3C[3], a4D[3];
-//
-//                    a3C[0] = a3*C[0];
-//                    a3C[1] = a3*C[1];
-//                    a3C[2] = a3*C[2];
-//
-//                    a4D[0] = a4*D[0];
-//                    a4D[1] = a4*D[1];
-//                    a4D[2] = a4*D[2];
-//
-////                  Q[0] = (a3*C[0] + a4*D[0])*oon;
-////                  Q[1] = (a3*C[1] + a4*D[1])*oon;
-////                  Q[2] = (a3*C[2] + a4*D[2])*oon;
-//
-//                    Q[0] = (a3C[0] + a4D[0])*oon;
-//                    Q[1] = (a3C[1] + a4D[1])*oon;
-//                    Q[2] = (a3C[2] + a4D[2])*oon;
-//
-//                    QC[0] = Q[0] - C[0];
-//                    QC[1] = Q[1] - C[1];
-//                    QC[2] = Q[2] - C[2];
-//                    QD[0] = Q[0] - D[0];
-//                    QD[1] = Q[1] - D[1];
-//                    QD[2] = Q[2] - D[2];
-//                    PQ[0] = P[0] - Q[0];
-//                    PQ[1] = P[1] - Q[1];
-//                    PQ[2] = P[2] - Q[2];
-//
-//                    double PQ2 = 0.0;
-//                    PQ2 += (P[0] - Q[0]) * (P[0] - Q[0]);
-//                    PQ2 += (P[1] - Q[1]) * (P[1] - Q[1]);
-//                    PQ2 += (P[2] - Q[2]) * (P[2] - Q[2]);
-//
-//                    W[0] = (zeta*P[0] + nu*Q[0]) / (zeta + nu);
-//                    W[1] = (zeta*P[1] + nu*Q[1]) / (zeta + nu);
-//                    W[2] = (zeta*P[2] + nu*Q[2]) / (zeta + nu);
-//                    WP[0] = W[0] - P[0];
-//                    WP[1] = W[1] - P[1];
-//                    WP[2] = W[2] - P[2];
-//                    WQ[0] = W[0] - Q[0];
-//                    WQ[1] = W[1] - Q[1];
-//                    WQ[2] = W[2] - Q[2];
-//
-//                    for (int i=0; i<3; ++i) {
-//                        libint_.PrimQuartet[nprim].U[0][i] = PA[i];
-//                        libint_.PrimQuartet[nprim].U[2][i] = QC[i];
-//                        libint_.PrimQuartet[nprim].U[4][i] = WP[i];
-//                        libint_.PrimQuartet[nprim].U[5][i] = WQ[i];
-//                    }
-//                    libint_.PrimQuartet[nprim].oo2z = oo2z;
-//                    libint_.PrimQuartet[nprim].oo2n = oo2n;
-//                    libint_.PrimQuartet[nprim].oo2zn = oo2zn;
-//                    libint_.PrimQuartet[nprim].poz = rho * ooz;
-//                    libint_.PrimQuartet[nprim].pon = rho * oon;
-//                    libint_.PrimQuartet[nprim].oo2p = oo2rho;
-//
-//                    double T = rho * PQ2;
-//                    calc_f(libint_.PrimQuartet[nprim].F, am+1, T);
-//
-//                    // Modify F to include overlap of ab and cd, eqs 14, 15, 16 of libint manual
-//                    double Scd = pow(M_PI*oon, 3.0/2.0) * exp(-a3*a4*oon*CD2) * c3 * c4;
-//                    double val = 2.0 * sqrt(rho * M_1_PI) * Sab * Scd;
-//                    for (int i=0; i<=am; ++i) {
-//                        libint_.PrimQuartet[nprim].F[i] *= val;
-//                    }
-//                    fprintf(outfile, "----- %d\n", nprim);
-//                    fprintf(outfile, "poz = %lf\n", libint_.PrimQuartet[nprim].poz);
-//                    fprintf(outfile, "T   = %lf\n", T);
-//                    fprintf(outfile, "oo2zn = %lf\n", libint_.PrimQuartet[nprim].oo2zn);
-//                    fprintf(outfile, "pon = %lf\n", libint_.PrimQuartet[nprim].pon);
-//                    fprintf(outfile, "oo2z = %lf\n", libint_.PrimQuartet[nprim].oo2z);
-//                    fprintf(outfile, "oo2n = %lf\n", libint_.PrimQuartet[nprim].oo2n);
-//                    fprintf(outfile, "U[0] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[0][0], libint_.PrimQuartet[nprim].U[0][1], libint_.PrimQuartet[nprim].U[0][2]);
-//                    fprintf(outfile, "U[2] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[2][0], libint_.PrimQuartet[nprim].U[2][1], libint_.PrimQuartet[nprim].U[2][2]);
-//                    fprintf(outfile, "U[4] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[4][0], libint_.PrimQuartet[nprim].U[4][1], libint_.PrimQuartet[nprim].U[4][2]);
-//                    fprintf(outfile, "U[5] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[5][0], libint_.PrimQuartet[nprim].U[5][1], libint_.PrimQuartet[nprim].U[5][2]);
-//                    fprintf(outfile, "W = %lf %lf %lf\n", W[0], W[1], W[2]);
-//                    fprintf(outfile, "Q = %lf %lf %lf\n", Q[0], Q[1], Q[2]);
-//                    nprim++;
-//                }
-//            }
-//        }
-//    }
+    else {
+        // Old version - without ShellPair
+        for (int p1=0; p1<nprim1; ++p1) {
+            double a1 = s1->exp(p1);
+            double c1 = s1->coef(0, p1);
+            for (int p2=0; p2<nprim2; ++p2) {
+                double a2 = s2->exp(p2);
+                double c2 = s2->coef(0, p2);
+                double zeta = a1 + a2;
+                double ooz = 1.0/zeta;
+                double oo2z = 1.0/(2.0 * zeta);
 
+                double PA[3], PB[3];
+                double P[3];
+
+                P[0] = (a1*A[0] + a2*B[0])*ooz;
+                P[1] = (a1*A[1] + a2*B[1])*ooz;
+                P[2] = (a1*A[2] + a2*B[2])*ooz;
+                PA[0] = P[0] - A[0];
+                PA[1] = P[1] - A[1];
+                PA[2] = P[2] - A[2];
+                PB[0] = P[0] - B[0];
+                PB[1] = P[1] - B[1];
+                PB[2] = P[2] - B[2];
+
+                double Sab = pow(M_PI*ooz, 3.0/2.0) * exp(-a1*a2*ooz*AB2) * c1 * c2;
+
+                for (int p3=0; p3<nprim3; ++p3) {
+                    double a3 = s3->exp(p3);
+                    double c3 = s3->coef(0, p3);
+                    for (int p4=0; p4<nprim4; ++p4) {
+                        double a4 = s4->exp(p4);
+                        double c4 = s4->coef(0, p4);
+                        double nu = a3 + a4;
+                        double oon = 1.0/nu;
+                        double oo2n = 1.0/(2.0*nu);
+                        double oo2zn = 1.0/(2.0*(zeta+nu));
+                        double rho = (zeta*nu)/(zeta+nu);
+                        double oo2rho = 1.0 / (2.0*rho);
+
+                        double QC[3], QD[3], WP[3], WQ[3], PQ[3];
+                        double Q[3], W[3], a3C[3], a4D[3];
+
+                        a3C[0] = a3*C[0];
+                        a3C[1] = a3*C[1];
+                        a3C[2] = a3*C[2];
+
+                        a4D[0] = a4*D[0];
+                        a4D[1] = a4*D[1];
+                        a4D[2] = a4*D[2];
+
+                        //                  Q[0] = (a3*C[0] + a4*D[0])*oon;
+                        //                  Q[1] = (a3*C[1] + a4*D[1])*oon;
+                        //                  Q[2] = (a3*C[2] + a4*D[2])*oon;
+
+                        Q[0] = (a3C[0] + a4D[0])*oon;
+                        Q[1] = (a3C[1] + a4D[1])*oon;
+                        Q[2] = (a3C[2] + a4D[2])*oon;
+
+                        QC[0] = Q[0] - C[0];
+                        QC[1] = Q[1] - C[1];
+                        QC[2] = Q[2] - C[2];
+                        QD[0] = Q[0] - D[0];
+                        QD[1] = Q[1] - D[1];
+                        QD[2] = Q[2] - D[2];
+                        PQ[0] = P[0] - Q[0];
+                        PQ[1] = P[1] - Q[1];
+                        PQ[2] = P[2] - Q[2];
+
+                        double PQ2 = 0.0;
+                        PQ2 += (P[0] - Q[0]) * (P[0] - Q[0]);
+                        PQ2 += (P[1] - Q[1]) * (P[1] - Q[1]);
+                        PQ2 += (P[2] - Q[2]) * (P[2] - Q[2]);
+
+                        W[0] = (zeta*P[0] + nu*Q[0]) / (zeta + nu);
+                        W[1] = (zeta*P[1] + nu*Q[1]) / (zeta + nu);
+                        W[2] = (zeta*P[2] + nu*Q[2]) / (zeta + nu);
+                        WP[0] = W[0] - P[0];
+                        WP[1] = W[1] - P[1];
+                        WP[2] = W[2] - P[2];
+                        WQ[0] = W[0] - Q[0];
+                        WQ[1] = W[1] - Q[1];
+                        WQ[2] = W[2] - Q[2];
+
+                        for (int i=0; i<3; ++i) {
+                            libint_.PrimQuartet[nprim].U[0][i] = PA[i];
+                            libint_.PrimQuartet[nprim].U[2][i] = QC[i];
+                            libint_.PrimQuartet[nprim].U[4][i] = WP[i];
+                            libint_.PrimQuartet[nprim].U[5][i] = WQ[i];
+                        }
+                        libint_.PrimQuartet[nprim].oo2z = oo2z;
+                        libint_.PrimQuartet[nprim].oo2n = oo2n;
+                        libint_.PrimQuartet[nprim].oo2zn = oo2zn;
+                        libint_.PrimQuartet[nprim].poz = rho * ooz;
+                        libint_.PrimQuartet[nprim].pon = rho * oon;
+                        libint_.PrimQuartet[nprim].oo2p = oo2rho;
+
+                        double T = rho * PQ2;
+                        calc_f(libint_.PrimQuartet[nprim].F, am+1, T);
+
+                        // Modify F to include overlap of ab and cd, eqs 14, 15, 16 of libint manual
+                        double Scd = pow(M_PI*oon, 3.0/2.0) * exp(-a3*a4*oon*CD2) * c3 * c4;
+                        double val = 2.0 * sqrt(rho * M_1_PI) * Sab * Scd;
+                        for (int i=0; i<=am; ++i) {
+                            libint_.PrimQuartet[nprim].F[i] *= val;
+                        }
+//                        fprintf(outfile, "----- %d\n", nprim);
+//                        fprintf(outfile, "poz = %lf\n", libint_.PrimQuartet[nprim].poz);
+//                        fprintf(outfile, "T   = %lf\n", T);
+//                        fprintf(outfile, "oo2zn = %lf\n", libint_.PrimQuartet[nprim].oo2zn);
+//                        fprintf(outfile, "pon = %lf\n", libint_.PrimQuartet[nprim].pon);
+//                        fprintf(outfile, "oo2z = %lf\n", libint_.PrimQuartet[nprim].oo2z);
+//                        fprintf(outfile, "oo2n = %lf\n", libint_.PrimQuartet[nprim].oo2n);
+//                        fprintf(outfile, "U[0] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[0][0], libint_.PrimQuartet[nprim].U[0][1], libint_.PrimQuartet[nprim].U[0][2]);
+//                        fprintf(outfile, "U[2] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[2][0], libint_.PrimQuartet[nprim].U[2][1], libint_.PrimQuartet[nprim].U[2][2]);
+//                        fprintf(outfile, "U[4] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[4][0], libint_.PrimQuartet[nprim].U[4][1], libint_.PrimQuartet[nprim].U[4][2]);
+//                        fprintf(outfile, "U[5] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[5][0], libint_.PrimQuartet[nprim].U[5][1], libint_.PrimQuartet[nprim].U[5][2]);
+//                        fprintf(outfile, "W = %lf %lf %lf\n", W[0], W[1], W[2]);
+//                        fprintf(outfile, "Q = %lf %lf %lf\n", Q[0], Q[1], Q[2]);
+                        nprim++;
+                    }
+                }
+            }
+        }
+    }
 #ifdef MINTS_TIMER
     timer_off("Primitive setup");
 #endif
