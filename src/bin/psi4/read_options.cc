@@ -21,9 +21,9 @@ extern int myid;
 int read_options(const std::string &name, Options & options) {
 
   ip_cwk_clear();
-  ip_cwk_add(":BASIS");
-  ip_cwk_add(":DEFAULT");
-  ip_cwk_add(":PSI");
+  ip_cwk_add(const_cast<char*>(":BASIS"));
+  ip_cwk_add(const_cast<char*>(":DEFAULT"));
+  ip_cwk_add(const_cast<char*>(":PSI"));
   ip_set_uppercase(1);
 
   options.clear();
@@ -31,7 +31,7 @@ int read_options(const std::string &name, Options & options) {
     options.add_str("UNITS", "ANGSTROMS", "BOHR AU ANGSTROMS ANGSTROM");
   }
   else if (name == "INPUT") {
-    ip_cwk_add(":INPUT");
+    ip_cwk_add(const_cast<char*>(":INPUT"));
     /*- The units used for the geometry -*/
     options.add_str("UNITS", "ANGSTROMS", "BOHR AU ANGSTROMS ANGSTROM");
     /*- Whether to keep the checkpoint file. -*/
@@ -83,7 +83,7 @@ int read_options(const std::string &name, Options & options) {
     options.add_int("FREEZE_VIRT",0);
   }
   else if (name == "CINTS") {
-    ip_cwk_add(":CINTS");
+    ip_cwk_add(const_cast<char*>(":CINTS"));
     /*- The wavefunction desired -*/
     options.add_str("WFN", "");
     /*- The amount of information to pring to the output -*/
