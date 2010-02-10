@@ -71,6 +71,9 @@ void LMP2::get_params(Options &options) {
   neglectdp = options.get_bool("NEGLECT_DP");
   dpcutoff = options.get_double("DISTANT_PAIR");
 
+  schwarz_tol = options.get_int("SCHWARZ_CUTOFF");
+  tol = 1.0*pow(10.0,(double) -schwarz_tol);
+
   memory = options.get_int("MEMORY");
   wfn = const_cast<char*>(options.get_cstr("WFN"));
 

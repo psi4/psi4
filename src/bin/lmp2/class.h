@@ -72,6 +72,9 @@ class LMP2 {
     int dmat2;
     int omat;
     int nmat;
+    int schwarz_tol;
+    double tol;
+
     double ****error;
     double ****T_ext;
     double ****T;
