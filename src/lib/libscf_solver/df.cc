@@ -249,7 +249,6 @@ void HF::form_B()
     else if (df_storage_ == k_incore||df_storage_ == disk)
     {
         psio_->open(PSIF_DFSCF_BJI,PSIO_OPEN_NEW);
-
         IntegralFactory rifactory(ribasis_, zero, basisset_, basisset_);
         TwoBodyInt* eri = rifactory.eri();
         const double *buffer = eri->buffer();
@@ -337,19 +336,21 @@ void HF::form_B()
         //fprintf(outfile,"\n  Through B on disk."); fflush(outfile);
         psio_->close(PSIF_DFSCF_BJI,1);
         
-        
-
     	//RESTRIPE
         psio_->open(PSIF_DFSCF_BJI,PSIO_OPEN_OLD);
         psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_NEW);
-        next_PSIF_DFSCF_BJI = PSIO_ZERO;
-        psio_address next_PSIF_DFSCF_BJ;
+	next_PSIF_DFSCF_BJI = PSIO_ZERO;
+	psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
+	
+	double *Temp = init_array(norbs*(norbs+1)/2);
+	for (int Q = 0; Q < ri_nbf_; Q++)
+		psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(Temp[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+	free(Temp);	
 
         int max_cols = (memory_/sizeof(double))/((1.0+MEMORY_SAFETY_FACTOR)*ri_nbf_);
         if (max_cols > norbs*(norbs+1)/2)
             max_cols = norbs*(norbs+1)/2;
-
-		double **in_buffer = block_matrix(ri_nbf_,1);
+	double **in_buffer = block_matrix(ri_nbf_,1);
         //max_cols = 100;
         double **buffer2 = block_matrix(ri_nbf_,max_cols);
 
@@ -373,10 +374,6 @@ void HF::form_B()
                     //fprintf(outfile,"\n  Working on Q %d",Q); fflush(outfile);
                     next_PSIF_DFSCF_BJ = psio_get_address(PSIO_ZERO,(ULI)(Q*norbs*(ULI)(norbs+1)/2*sizeof(double)+global_offset*sizeof(double)));
                     //fprintf(outfile,"\n  Address Acquired"); fflush(outfile);
-                    //for (int K = 0; K<buf_ind; K++)
-                        //out_buffer[K][0] = buffer[Q][K];
-                    //fprintf(outfile,"\n  out_buffer transposed"); fflush(outfile);
-                    //errcode = psio_write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(out_buffer[0][0]),sizeof(double)*buf_ind,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
                     psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(buffer2[Q][0]),sizeof(double)*buf_ind,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
                     //fprintf(outfile,"\n  Entry Written"); fflush(outfile);
                 }
