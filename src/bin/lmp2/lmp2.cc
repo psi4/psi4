@@ -47,7 +47,12 @@ PsiReturnType lmp2(Options &options, int argc, char * argv[]) {
 
     fprintf(outfile, "\t\t\t*************************\n");
     fprintf(outfile, "\t\t\t*                       *\n");
+  if(options.get_bool("RI_LMP2")){
+    fprintf(outfile, "\t\t\t*       DF-LMP2         *\n");
+  }
+  else {
     fprintf(outfile, "\t\t\t*         LMP2          *\n");
+  }
     fprintf(outfile, "\t\t\t*                       *\n");
     fprintf(outfile, "\t\t\t*************************\n");
     fprintf(outfile, "\t\t\tRunning on %d processors\n", nprocs);

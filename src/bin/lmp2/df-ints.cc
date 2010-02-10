@@ -46,29 +46,6 @@ void LMP2::direct_df_transformation() {
   // ioff, fac, df, bc
   Wavefunction::initialize_singletons();
 
-/*  int nirreps = chkpt->rd_nirreps();
-  int *clsdpi = chkpt->rd_clsdpi();
-  int *orbspi = chkpt->rd_orbspi();
-  int *frzcpi = chkpt->rd_frzcpi();
-  int *frzvpi = chkpt->rd_frzvpi();
-  int ndocc = 0;
-   int nvirt = 0;
-   int nfocc = 0;
-   int nfvir = 0;
-   int nso = 0;
-   int nact_docc = 0;
-   int nact_virt = 0;
-   for (int h = 0; h < nirreps; ++h) {
-       nfocc += frzcpi[h];
-       nfvir += frzvpi[h];
-       ndocc += clsdpi[h];
-       nact_docc += clsdpi[h] - frzcpi[h];
-       nvirt += orbspi[h] - clsdpi[h];
-       nact_virt += orbspi[h] - frzvpi[h] - clsdpi[h];
-       nso += orbspi[h];
-   }
-*/
-
   // Create a basis set object and initialize it using the checkpoint file.
   shared_ptr<BasisSet>basis = shared_ptr<BasisSet > (new BasisSet(chkpt));
   shared_ptr<BasisSet>ribasis = shared_ptr<BasisSet > (new BasisSet(chkpt, "DF_BASIS"));
@@ -101,13 +78,6 @@ void LMP2::direct_df_transformation() {
   pairdomain = compute_pairdomain(ij_map);
   pairdom_len = compute_pairdomlen(ij_map);
 
-/*  fprintf(outfile, "\n\t\t==============================================\n");
-    fprintf(outfile, "\t\t #ORBITALS #RI  FOCC DOCC AOCC AVIR VIRT FVIR \n");
-    fprintf(outfile, "\t\t----------------------------------------------\n");
-    fprintf(outfile, "\t\t  %5d  %5d  %4d %4d %4d %4d %4d %4d\n",
-            nso, ribasis->nbf(), nfocc, ndocc, nact_docc, nact_virt, nvirt, nfvir);
-    fprintf(outfile, "\t\t==============================================\n");
-*/
 #ifdef TIME_DF_MP2
   timer_init();
   timer_on("Form J");
@@ -211,6 +181,22 @@ void LMP2::direct_df_transformation() {
     }
   }
 
+  int *i_local = init_int_array(nocc);
+  int *j_local = init_int_array(nocc);
+
+  v=0;
+  int count=0;
+  for(ij=0; ij < ij_pairs; ij++) {
+      i = ij_map[ij][0];
+      j = ij_map[ij][1];
+      //ij_local[ij] = count;
+      if(v%nprocs == nprocs-1) count++;
+      v++;
+  }
+
+
+
+
   double ***mo_p_ir = (double ***) malloc(sizeof (double **) * nocc);
   for(i = 0; i < nocc; i++)
     mo_p_ir[i] = (double **) malloc(sizeof (double *) * uniteddomain_len[i]);
@@ -232,11 +218,54 @@ void LMP2::direct_df_transformation() {
   }
 
 
+  IntegralFactory ao_eri_factory(basis, basis, basis, basis);
+  TwoBodyInt* ao_eri = ao_eri_factory.eri();
+  const double *ao_buffer = ao_eri->buffer();
+
+  double *Schwartz = init_array(basis->nshell() * (basis->nshell()+1) / 2);
+  double *DFSchwartz = init_array(ribasis->nshell());
+
+  for(int P=0,PQ=0;P<basis->nshell();P++) {
+    int numw = basis->shell(P)->nfunction();
+    for(int Q=0;Q<=P;Q++,PQ++) {
+      int numx = basis->shell(Q)->nfunction();
+      double tei, max=0.0;
+
+      ao_eri->compute_shell(P, Q, P, Q);
+
+      for(int w=0;w<numw;w++) {
+        for(int x=0;x<numx;x++) {
+          index = ( ( (w*numx + x) * numw + w) * numx + x);
+          tei = ao_buffer[index];
+          if(fabs(tei) > max) max = fabs(tei);
+        }
+      }
+      Schwartz[PQ] = max;
+    }
+  }
+
+  for(int P=0;P<ribasis->nshell();P++) {
+    int numw = ribasis->shell(P)->nfunction();
+    double tei, max=0.0;
+
+    Jint->compute_shell(P, 0, P, 0);
+
+    for(int w=0;w<numw;w++) {
+      tei = Jbuffer[w];
+      if(fabs(tei) > max) max = fabs(tei);
+    }
+    DFSchwartz[P] = max;
+  }
+
+
+
+
   double **half = block_matrix(nocc, nso);
 
-  int numPshell, Pshell, MU, NU, P, oP, Q, oQ, mu, nu, nummu, numnu, omu, onu;
+  int numPshell, Pshell, MU, NU, P, oP, Q, oQ, mu, nu, nummu, numnu, omu, onu, mn;
 
   // find out the max number of P's in a P shell
+  int screened=0;
   int maxPshell = 0;
   for(Pshell = 0; Pshell < ribasis->nshell(); ++Pshell) {
     numPshell = ribasis->shell(Pshell)->nfunction();
@@ -254,14 +283,19 @@ void LMP2::direct_df_transformation() {
   const double *buffer = eri->buffer();
   for(Pshell = 0; Pshell < ribasis->nshell(); ++Pshell) {
     numPshell = ribasis->shell(Pshell)->nfunction();
+
     for(P = 0; P < numPshell; ++P) {
       zero_mat(temp[P], nso, nso);
     }
-    for(MU = 0; MU < basis->nshell(); ++MU) {
+
+    for(MU = 0, mn=0; MU < basis->nshell(); ++MU) {
       nummu = basis->shell(MU)->nfunction();
-      for(NU = 0; NU <= MU; ++NU) {
+      for(NU = 0; NU <= MU; ++NU,++mn) {
         numnu = basis->shell(NU)->nfunction();
+
+        if (sqrt(Schwartz[mn]*DFSchwartz[Pshell])>tol) {
         eri->compute_shell(Pshell, 0, MU, NU);
+
         for(P = 0, index = 0; P < numPshell; ++P) {
           for(mu = 0; mu < nummu; ++mu) {
             omu = basis->shell(MU)->function_index() + mu;
@@ -272,6 +306,11 @@ void LMP2::direct_df_transformation() {
             }
           }
         } // end loop over P in Pshell
+
+        } // end Schwartz inequality
+        else screened++;
+
+
       } // end loop over NU shell
     } // end loop over MU shell
     // now we've gone through all P, mu, nu for a given Pshell
@@ -298,6 +337,10 @@ void LMP2::direct_df_transformation() {
       }
     } // loop over the functions within the P shell
   } // end loop over P shells; done with forming MO basis (P|ia)'s
+
+  fprintf(outfile,"  %d shell triplets screened via Schwartz inequality\n\n",
+    screened);
+
 
   // should free temp here
   for(P = 0; P < maxPshell; P++) free_block(temp[P]);
