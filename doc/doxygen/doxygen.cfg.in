@@ -307,7 +307,8 @@ RECURSIVE              = YES
 # subdirectory from a directory tree whose root is specified with the INPUT tag. 
 
 EXCLUDE                = @top_srcdir@/src/lib/libmathtools \
-			 @top_srcdir@/src/bin/psiclean
+			 @top_srcdir@/src/bin/psiclean \
+                         @top_srcdir@/include/boost
 
 # If the value of the INPUT tag contains directories, you can use the 
 # EXCLUDE_PATTERNS tag to specify one or more wildcard patterns to exclude 
