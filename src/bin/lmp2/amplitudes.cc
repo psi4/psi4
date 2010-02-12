@@ -31,7 +31,7 @@ extern int nprocs_lmp2;
 
 void LMP2::amplitudes() {
 
-    int i, j, v, kj, ik, kj_, ik_, l, k, m, n, K;
+    int i, j, kj, ik, kj_, ik_, l, k, m, n, K;
     int a, b, c, d, r, s, ij, L, M;
     int t, N, u, o, O;
     int nvir;
@@ -59,8 +59,7 @@ void LMP2::amplitudes() {
      * after the removal of distant pairs */
     abs_ij_map = original_ij_map();
 
-    v = 0;
-    for (ij = 0; ij < ij_pairs; ij++, v++) {
+    for (ij = 0; ij < ij_pairs; ij++) {
         i = ij_map[ij][0];
         j = ij_map[ij][1];
 
@@ -320,9 +319,6 @@ void LMP2::amplitudes() {
         free_block(Tbar);
         free_block(temp);
 
-        //      }
-        //      v++;
-        //}
     }
     free(abs_ij_map);
 

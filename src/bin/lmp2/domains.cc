@@ -306,7 +306,7 @@ void LMP2::domains() {
                     if (pairdom_exist[ij] == 0) {
                         if(neglectdp) {
                             if (domain[i][m] && domain[j][n]) {
-                                if(m == n) {
+                                if(m == n || i == j) {
                                     pairdom_exist[ij] = 1;
                                     ij_pairs++;
                                 }
@@ -334,7 +334,7 @@ void LMP2::domains() {
 
     int **ij_map = get_ij_map();
     if(myid == 0) {
-        if(neglectdp && print > 3) {
+        if(neglectdp) {
             fprintf(outfile, "\n   The following ij pairs are distant and will be negleted\n");
             for(ij=0; ij < ij_pairs; ij++) {
                 if(pairdom_exist[ij] == 0)

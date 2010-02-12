@@ -47,6 +47,11 @@ void LMP2::get_params(Options &options) {
   iconv = options.get_int("ENERGY_CONV");
   econv = 1.0*pow(10.0,(double) -iconv);
 
+  iconv = options.get_int("SCREENING");
+  escreen = 1.0*pow(10, (double) -iconv);
+
+  screen_int = options.get_bool("SCREEN_INTS");
+
   rconv = options.get_int("RMS_CONV");
   rmsconv = 1.0*pow(10.0,(double) -rconv);
 
@@ -71,7 +76,7 @@ void LMP2::get_params(Options &options) {
   neglectdp = options.get_bool("NEGLECT_DP");
   dpcutoff = options.get_double("DISTANT_PAIR");
 
-  schwarz_tol = options.get_int("SCHWARZ_CUTOFF");
+  schwarz_tol = options.get_int("SCHWARTZ_TOL");
   tol = 1.0*pow(10.0,(double) -schwarz_tol);
 
   memory = options.get_int("MEMORY");
@@ -96,6 +101,7 @@ void LMP2::print_params(){
     fprintf(outfile, "\tMaxiter       \t\t= %d\n", maxiter);
     fprintf(outfile, "\tEnergy Convergence   \t= %3.1e\n", econv);
     fprintf(outfile, "\tRMS Convergence   \t= %3.1e\n", rmsconv);
+    fprintf(outfile, "\tIntegral Prescreen \t= %3.1e\n", escreen);
     fprintf(outfile, "\tF-Skip   \t\t= %3.1e\n", fskip);
     fprintf(outfile, "\tPrint Level   \t\t= %d\n", print);
     fprintf(outfile, "\tLocal Cutoff  \t\t= %3.1e\n", cutoff);

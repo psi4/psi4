@@ -42,7 +42,18 @@ void LMP2::allocate_T() {
 
   if(diis == 1) {
     // Allocate memory for the amplitudes
-    T = (double ****) malloc(ndiis * sizeof(double ***));
+
+      T = (double ****) malloc(ndiis * sizeof(double ***));
+      for(i=0; i < ndiis; i++) {
+          T[i] = (double ***) malloc(pairs_per_proc * sizeof(double **));
+          for(ij=0; ij < ij_pairs; ij++) {
+              if(myid == ij_owner[ij])
+                  T[i][ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
+          }
+
+      }
+
+/*    T = (double ****) malloc(ndiis * sizeof(double ***));
     for(i=0; i < ndiis; i++) {
       if(ij_pairs%nprocs == 0) {
         T[i] = (double ***) malloc((ij_pairs/nprocs) * sizeof(double **));
@@ -68,6 +79,7 @@ void LMP2::allocate_T() {
         }
       }
     }
+ */
 
     // Allocate memory for the error matrices
     error = (double ****) malloc(ndiis * sizeof(double ***));
@@ -82,7 +94,14 @@ void LMP2::allocate_T() {
     T_ext = (double ****) malloc(2 * sizeof(double ***));
     for(i=0; i < 2; i++) {
 
-      if(ij_pairs%nprocs == 0) {
+        T_ext[i] = (double ***) malloc(pairs_per_proc * sizeof(double **));
+        for(ij=0; ij < ij_pairs; ij++) {
+            if(myid == ij_owner[ij])
+                T_ext[i][ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
+        }
+    }
+
+/*      if(ij_pairs%nprocs == 0) {
         T_ext[i] = (double ***) malloc((ij_pairs/nprocs) * sizeof(double **));
         for(ij=0; ij < ij_pairs; ij++) {
           if(myid == ij_owner[ij])
@@ -107,13 +126,22 @@ void LMP2::allocate_T() {
       }
 
     }
+ */
   }
   else {
     // Allocate memory for the amplitudes
     T = (double ****) malloc(2 * sizeof(double ***));
     for(i=0; i < 2; i++) {
 
-      if(ij_pairs%nprocs == 0) {
+        T[i] = (double ***) malloc(pairs_per_proc * sizeof(double **));
+        for(ij=0; ij < ij_pairs; ij++) {
+            if(myid == ij_owner[ij])
+                T[i][ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
+        }
+    }
+
+
+/*      if(ij_pairs%nprocs == 0) {
         T[i] = (double ***) malloc((ij_pairs/nprocs) * sizeof(double **));
         for(ij=0; ij < ij_pairs; ij++) {
           if(myid == ij_owner[ij])
@@ -137,6 +165,7 @@ void LMP2::allocate_T() {
         }
       }
     }
+*/
   }
 
 

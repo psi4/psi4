@@ -49,6 +49,12 @@ void LMP2::projection() {
   pairdomain = compute_pairdomain(ij_map);
   pairdom_len = compute_pairdomlen(ij_map);
 
+  /* Set the number or ij_pairs that each process owns */
+  pairs_per_proc = 0;
+  for(ij=0; ij < ij_pairs; ij++) {
+      if(ij_owner[ij] == myid) pairs_per_proc++;
+  }
+
   /* Compute the complete virtual space projector */
   Rt_full = block_matrix(nso,nso);
   for(i=0; i < nso; i++) Rt_full[i][i] = 1.0;
@@ -73,17 +79,7 @@ void LMP2::projection() {
   free_block(aoF);
 
   /* Build the virtual metric and W transforms for each pair domain */
-  if(ij_pairs%nprocs == 0) {
-    W = (double ***) malloc((ij_pairs/nprocs) * sizeof(double **));
-  }
-  else {
-    if(myid < ij_pairs%nprocs) {
-      W = (double ***) malloc(((ij_pairs/nprocs) + 1) * sizeof(double **));
-    }
-    else {
-      W = (double ***) malloc(ij_pairs/nprocs * sizeof(double **));
-    }
-  }
+  W = (double ***) malloc(pairs_per_proc * sizeof(double **));
 
 //  W = (double ***) malloc(ij_pairs * sizeof(double **));
   loevals = (double **) malloc(ij_pairs * sizeof(double*));
@@ -91,13 +87,11 @@ void LMP2::projection() {
   num_zero = 0;
 
   v=0;
-//  for(i=0, ij=0; i < nocc; i++) {
-//    for(j=0; j <= i; j++, ij++, v++) {
-
   for(int ij=0; ij < ij_pairs; ij++, v++) {
 
-      if(v%nprocs != myid)
-        continue;
+      if(ij_owner[ij] != myid) {
+          continue;
+      }
 
     i = ij_map[ij][0];
     j = ij_map[ij][1];
@@ -218,8 +212,10 @@ void LMP2::projection() {
 //    print_mat(evecs,pairdom_nrlen[ij],pairdom_nrlen[ij],outfile);
     
 
-    // Finally, build the W matrix 
-    if(myid == ij_owner[ij]) {
+    // Finally, build the W matrix
+    if(myid == ij_owner[ij])
+        W[ij_local[ij]] = block_matrix(pairdom_len[ij],pairdom_nrlen[ij]);
+/*    if(myid == ij_owner[ij]) {
       if(ij_pairs%nprocs == 0) {
         W[ij_local[ij]] = block_matrix(pairdom_len[ij],pairdom_nrlen[ij]);
       }
@@ -230,6 +226,7 @@ void LMP2::projection() {
             W[ij_local[ij]] = block_matrix(pairdom_len[ij],pairdom_nrlen[ij]);
       }
     }
+*/
 
 //    W[ij] = block_matrix(pairdom_len[ij],pairdom_nrlen[ij]);
    

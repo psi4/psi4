@@ -34,7 +34,7 @@ extern int nprocs_lmp2;
 int LMP2::get_nso() {
   int nso_;
 
-  if(Communicator::world->me() == 0)
+  if(myid == 0)
     nso_ = chkpt->rd_nso();
 
   // This version of bcast sends a single value from master
@@ -48,7 +48,7 @@ int LMP2::get_nso() {
 int LMP2::get_natom() {
   int natom_;
 
-  if(Communicator::world->me() == 0)
+  if(myid == 0)
     natom_ = chkpt->rd_natom();
 
   // This version of bcast sends a single value from master
@@ -62,7 +62,7 @@ int LMP2::get_natom() {
 int LMP2::get_nirreps() {
   int nirreps_;
 
-  if(Communicator::world->me() == 0)
+  if(myid == 0)
     nirreps_ = chkpt->rd_nirreps();
   
   if(nprocs > 1)
@@ -75,7 +75,7 @@ int LMP2::get_nirreps() {
 int LMP2::get_nshell() {
   int nshell_;
 
-  if(Communicator::world->me() == 0)
+  if(myid == 0)
     nshell_ = chkpt->rd_nshell();
 
   if(nprocs > 1)
@@ -88,7 +88,7 @@ int LMP2::get_nshell() {
 int LMP2::get_puream() {
   int puream_;
 
-  if(Communicator::world->me() == 0)
+  if(myid == 0)
     puream_ = chkpt->rd_puream();
 
   if(nprocs > 1)
@@ -101,7 +101,7 @@ int LMP2::get_puream() {
 int* LMP2::get_doccpi() {
   int *docc;
 
-  if(Communicator::world->me() == 0)
+  if(myid == 0)
     docc = chkpt->rd_clsdpi();
   else
     docc = init_int_array(nirreps);
@@ -116,7 +116,7 @@ int* LMP2::get_doccpi() {
 int* LMP2::get_soccpi() {
   int *socc;
 
-  if(Communicator::world->me() == 0)
+  if(myid == 0)
     socc = chkpt->rd_openpi();
   else
     socc = init_int_array(nirreps);
@@ -131,7 +131,7 @@ int* LMP2::get_soccpi() {
 int LMP2::get_frdocc() {
   int *frd;
 
-  if(Communicator::world->me() == 0)
+  if(myid == 0)
     frd = chkpt->rd_frzcpi();
   else
     frd = init_int_array(nirreps);
@@ -147,7 +147,7 @@ int LMP2::get_frdocc() {
 int* LMP2::get_stype() {
   int *sty;
 
-  if(Communicator::world->me() == 0)
+  if(myid == 0)
     sty = chkpt->rd_stype();
   else
     sty = init_int_array(nshell);
@@ -162,7 +162,7 @@ int* LMP2::get_stype() {
 int* LMP2::get_snuc() {
   int *snu;
 
-  if(Communicator::world->me() == 0)
+  if(myid == 0)
     snu = chkpt->rd_snuc();
   else
     snu = init_int_array(nshell);
@@ -177,7 +177,7 @@ int* LMP2::get_snuc() {
 int* LMP2::get_orbspi() {
     int *orb;
 
-    if(Communicator::world->me() == 0)
+    if(myid == 0)
         orb = chkpt->rd_orbspi();
     else
         orb = init_int_array(nirreps);
@@ -192,7 +192,7 @@ int* LMP2::get_orbspi() {
 int* LMP2::get_frzvpi() {
     int *frzv;
 
-    if(Communicator::world->me() == 0)
+    if(myid == 0)
         frzv = chkpt->rd_orbspi();
     else
         frzv = init_int_array(nirreps);
@@ -207,7 +207,7 @@ int* LMP2::get_frzvpi() {
 double LMP2::get_enuc() {
   double enuc_;
 
-  if(Communicator::world->me() == 0)
+  if(myid == 0)
     enuc_ = chkpt->rd_enuc();
 
   if(nprocs > 1)
@@ -220,7 +220,7 @@ double LMP2::get_enuc() {
 double LMP2::get_escf() {
   double escf_;
 
-  if(Communicator::world->me() == 0)
+  if(myid == 0)
     escf_ = chkpt->rd_escf();
 
   if(nprocs > 1)
@@ -234,7 +234,7 @@ double* LMP2::get_evals() {
 
   double *evals_;
 
-  if(Communicator::world->me() == 0)
+  if(myid == 0)
     evals_ = chkpt->rd_evals();
   else
     evals_ = init_array(nso);
@@ -250,7 +250,7 @@ double** LMP2::get_MOC() {
 
   double **C_;
 
-  if(Communicator::world->me() == 0)
+  if(myid == 0)
     C_ = chkpt->rd_scf();
   else
     C_ = block_matrix(nso,nso);
@@ -266,7 +266,7 @@ double** LMP2::get_geom() {
 
   double **geom_;
 
-  if(Communicator::world->me() == 0)
+  if(myid == 0)
     geom_ = chkpt->rd_fgeom();
   else
     geom_ = block_matrix(natom,3);

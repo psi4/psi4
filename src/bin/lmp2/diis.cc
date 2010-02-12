@@ -30,7 +30,7 @@ extern int nprocs_lmp2;
     
 void LMP2::diis_ext() {
 
-  int i, j, k, p, q, a, b, v, ij;
+  int i, j, k, p, q, a, b, ij;
   double **Bmat, **co;
   int *work;
   int c_ext;
@@ -59,7 +59,6 @@ void LMP2::diis_ext() {
           temp[ij][a][b] = T[div][ij_local[ij]][a][b] - T[dmat1][ij_local[ij]][a][b];
         }
       }
-    //}
   }
 
   for(ij=0; ij < ij_pairs; ij++) {
@@ -116,10 +115,9 @@ void LMP2::diis_ext() {
                                                   // use DGESV to compute the solution to Ax=B
     C_DGESV(matsize+1, 1, Bmat[0], matsize+1, work, co[0], matsize+1);
 
-                                                     // compute the new MP2 coefficients
-    v=0;
-    for (ij = 0; ij < ij_pairs; ij++, v++) {
-        if(v%nprocs != myid)
+     // compute the new MP2 coefficients
+    for (ij = 0; ij < ij_pairs; ij++) {
+        if(myid != ij_owner[ij])
           continue;
         for(a=0; a < pairdom_len[ij]; a++) {
           for(b=0; b < pairdom_len[ij]; b++) {
@@ -135,10 +133,10 @@ void LMP2::diis_ext() {
       //}
     }
 
-/*    v=0;
+/*  
     for(i=0, ij=0; i < nocc; i++) {
-      for(j=0; j <= i; j++, ij++, v++) {
-        if(v%nprocs != myid)
+      for(j=0; j <= i; j++, ij++) {
+        if(myid != ij_owner[ij])
           continue;
         fprintf(outfile, "Tdiis[%d] Matrix :\n", ij);
         print_mat(T_ext[nmat][ij], pairdom_len[ij], pairdom_len[ij], outfile);

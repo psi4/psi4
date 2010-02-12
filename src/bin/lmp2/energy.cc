@@ -32,7 +32,7 @@ extern int nprocs_lmp2;
 
 void LMP2::energy() {
     
-  int i, j, a, b, v, ij;
+  int i, j, a, b, ij;
   int *ij_owner, *ij_local;
   int **ij_map;
   int **pairdomain, *pairdom_len;
@@ -52,9 +52,8 @@ void LMP2::energy() {
 
   if (iter < it_diis || diis == 0) {
     // *** Compute the new MP2 energy ***
-    v=0;
-  for(int ij=0; ij < ij_pairs; ij++, v++) {
-        if(v%nprocs != myid)
+  for(int ij=0; ij < ij_pairs; ij++) {
+        if(myid != ij_owner[ij])
           continue;
         i = ij_map[ij][0];
         j = ij_map[ij][1];
@@ -77,16 +76,12 @@ void LMP2::energy() {
             }
           }
         }
-
-
-      //}
     }
   }
   else {
     // *** Compute the new MP2 energy ***
-    v=0;
-  for(int ij=0; ij < ij_pairs; ij++, v++) {
-        if(v%nprocs != myid)
+  for(int ij=0; ij < ij_pairs; ij++) {
+        if(myid != ij_owner[ij])
           continue;
 
         i = ij_map[ij][0];
@@ -110,9 +105,6 @@ void LMP2::energy() {
             }
           }
         }
-
-
-      //}
     }
   }
 

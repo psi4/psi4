@@ -44,6 +44,8 @@ PsiReturnType lmp2(Options &options, int argc, char * argv[]) {
 
   if(myid == 0) {
     tstart();
+    fprintf(outfile, "\n**************************** Begin LMP2 *********************************\n\n\n");
+
 
     fprintf(outfile, "\t\t\t*************************\n");
     fprintf(outfile, "\t\t\t*                       *\n");
@@ -74,7 +76,7 @@ PsiReturnType lmp2(Options &options, int argc, char * argv[]) {
   lmp2_obj.domains();
   lmp2_obj.projection();
 
-  if(options.get_bool("RI_LMP2")){ 
+  if(options.get_bool("RI_LMP2")){
     lmp2_obj.direct_df_transformation();
   }
   else {
@@ -91,6 +93,8 @@ PsiReturnType lmp2(Options &options, int argc, char * argv[]) {
 
   timer_done();
   if(myid == 0) {
+    fprintf(outfile, "\n**************************** End of LMP2 *********************************\n");
+
     tstop();
   }
   

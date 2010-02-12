@@ -38,6 +38,7 @@ class LMP2 {
     int *pairdom_exist;          /* Wether or not the pairdomain exists */
     int *pairdom_nrlen;		/* Size of each pair domain after orthogonalization */
     int ij_pairs;		/* no. of ij pairs */
+    int pairs_per_proc;         /* no. of ij pairs owned by each process */
 //    double *fR;
     double **Rt_full;		/* Full AO to PO matrix */
     double ***W;
@@ -53,6 +54,8 @@ class LMP2 {
     int num_threads;
     double rmsconv;
     double econv;
+    double escreen;
+    int screen_int;
     int maxiter;
     int iter;
     int conv;
@@ -134,6 +137,9 @@ class LMP2 {
     // Sorts the integral shells into decending order
     void sort_shell(int **A, int n);
 
+    // Sorts the Schwarz integrals into decending order
+    int *sort_schwarz_MN(double **A, int M_, int n_);
+
     // Get the maximum angular momentum shell
     int get_max_shell();
 
@@ -187,16 +193,19 @@ class LMP2 {
     // and determines the absolute ij value of the local proc
     int *get_ij_local();
     int *get_ij_owner();
-    int *get_mr_owner(int n);
+    int *get_mn_owner(int n);
     int get_mn_pairs(int n);
     int get_num_unique_shells();
     int **get_MN_shell(shared_ptr<BasisSet> basisset);
     int **get_ij_map();
     int *original_ij_map();
     
-    // Theses member functions get the pairdomain and pairdomain lengths
+    // These member functions get the pairdomain and pairdomain lengths
     int **compute_pairdomain(int **ij_map_);
     int *compute_pairdomlen(int **ij_map_);
+
+    // These member functions compute the required prescreening quantities
+    double **get_T_Schwarz_NS(int num_unique_shells_);
 
 };
 
