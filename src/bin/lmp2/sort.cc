@@ -7,7 +7,7 @@
 //#include <cstring>
 //#include <cmath>
 //#include <libipv1/ip_lib.h>
-//#include <libciomr/libciomr.h>
+#include <libciomr/libciomr.h>
 //#include <libchkpt/chkpt.h>
 //#include <libpsio/psio.h>
 //#include <libqt/qt.h>
@@ -84,6 +84,39 @@ void LMP2::sort_shell(int **A, int n) {
   }
 
   free(val);
+}
+
+int *LMP2::sort_schwarz_MN(double **A, int M_, int n_) {
+   int i, j, k;
+   int *R_;
+   int valR;
+   double val;
+
+   R_ = init_int_array(nshell);
+   for(i=0; i < nshell; i++) {
+       R_[i] = i;
+   }
+
+   for(i=0; i < n_-1; i++) {
+     val = A[M_][k=i];
+     valR = R_[k=i];
+
+     for(j=i+1; j < n_; j++)
+       if(A[M_][j] > val) {
+           val = A[M_][k=j];
+           valR = R_[k=j];
+       }
+
+     if(k != i) {
+       A[M_][k] = A[M_][i];
+       A[M_][i] = val;
+       R_[k] = R_[i];
+       R_[i] = valR;
+     }
+   }
+
+  return R_;
+
 }
 
 

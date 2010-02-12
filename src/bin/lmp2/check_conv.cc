@@ -40,7 +40,7 @@ extern int nprocs_lmp2;
 
 void LMP2::check_conv() {
 
-  int i, j, a, b, v, ij;
+  int i, j, a, b, ij;
   int *ij_owner, *ij_local, count;
   int **ij_map;
   int **pairdomain, *pairdom_len;
@@ -57,11 +57,10 @@ void LMP2::check_conv() {
   if (iter <= it_diis || diis == 0) {
     //   ****  Compute the RMS for the New and Old Amplitudes  ****
     Drms = 0.0;
-    v=0;
     count = 0;
-    for(int ij=0; ij < ij_pairs; ij++, v++) {
+    for(int ij=0; ij < ij_pairs; ij++) {
 
-        if(v%nprocs != myid)
+        if(myid != ij_owner[ij])
           continue;
 
         i = ij_map[ij][0];
@@ -86,10 +85,9 @@ void LMP2::check_conv() {
   else {
     //   ****  Compute the RMS for the New and Old Amplitudes  ****
     Drms = 0.0;
-    v=0;
     count = 0;
-    for(int ij=0; ij < ij_pairs; ij++, v++) {
-        if(v%nprocs != myid)
+    for(int ij=0; ij < ij_pairs; ij++) {
+        if(myid != ij_owner[ij])
           continue;
 
         i = ij_map[ij][0];

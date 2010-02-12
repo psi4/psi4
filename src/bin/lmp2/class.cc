@@ -22,7 +22,7 @@
 #include "globals.h"
 
     using namespace psi;
-    
+
 namespace psi{
 
 extern int myid;
@@ -33,7 +33,7 @@ namespace lmp2{
 extern int myid_lmp2;
 extern int nprocs_lmp2;
 
-    
+
 LMP2::LMP2() {
   fprintf(outfile, "Do not use the default constructor for LMP2");
 }
@@ -159,39 +159,39 @@ int* LMP2::get_ij_local() {
 
 }
 
-int* LMP2::get_mr_owner(int n) {
+int* LMP2::get_mn_owner(int n) {
 
   int count, v, num_unique_shells;
-  int *mr_owner;
+  int *mn_owner_;
 
   num_unique_shells = n;
 
-  mr_owner = init_int_array(n);
+  mn_owner_ = init_int_array(n);
 
   v = 0;
   for(count=0; count < num_unique_shells; count++) {
-    mr_owner[count] = v%nprocs;
+    mn_owner_[count] = v%nprocs;
     v++;
   }
 
-  return &(mr_owner[0]);
+  return &(mn_owner_[0]);
 
 }
 
 int LMP2::get_mn_pairs(int n) {
 
   int count, v, num_unique_shells;
-  int mn_pairs;
+  int mn_pairs_;
 
   num_unique_shells = n;
 
   v = 0;
   for(count=0; count < num_unique_shells; count++) {
-    if(myid == v%nprocs) mn_pairs++;
+    if(myid == v%nprocs) mn_pairs_++;
     v++;
   }
 
-  return mn_pairs;
+  return mn_pairs_;
 }
 
 int LMP2::get_num_unique_shells() {
