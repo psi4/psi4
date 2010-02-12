@@ -472,7 +472,7 @@ else if(name == "CCDENSITY") {
   }
   else if(name == "LMP2") {
     /*- The wavefunction desired -*/
-    options.add_str("RI_BASIS","NONE");
+    options.add_str("RI_BASIS", "NONE");
     options.read_ipv1();
     if(options.get_str("RI_BASIS") != "NONE")
       options.add_bool("RI_LMP2", true);
@@ -487,7 +487,7 @@ else if(name == "CCDENSITY") {
     options.add_int("FSKIP", 2);
     options.add_bool("USE_DIIS", 1);
     options.add_bool("NEGLECT_DP", 1);
-    options.add_double("DISTANT_PAIR", 2.0);
+    options.add_double("DISTANT_PAIR", 8.0);
     options.add_int("DIISSTART", 3);
     options.add_int("NDIIS", 6);
     options.add_double("LOCAL_CUTOFF", 0.02);
@@ -496,6 +496,8 @@ else if(name == "CCDENSITY") {
     options.add_bool("SCS_N", "false");
     options.add_double("SCALE_OS", 6.0/5.0);
     options.add_double("SCALE_SS", 1.0/3.0);
+    options.add_int("SCREENING", 7);
+    options.add_bool("SCREEN_INTS", false);
     options.add_int("SCHWARTZ_TOL", 12);
 //    options.add_bool("DF-LMP2", false);
 //    options.add_str("BASIS","NONE");
