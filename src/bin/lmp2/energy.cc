@@ -48,7 +48,8 @@ void LMP2::energy() {
     Emp2_old = Emp2;
 
   Emp2 = 0.0;
-  Emp2 = 0.0;
+  E_SS = 0.0;
+  E_OS = 0.0;
 
   if (iter < it_diis || diis == 0) {
     // *** Compute the new MP2 energy ***
@@ -62,6 +63,8 @@ void LMP2::energy() {
           for(a=0; a < pairdom_len[ij]; a++) {
             for(b=0; b < pairdom_len[ij]; b++) {
               if(fabs(Ktilde[ij_local[ij]][a][b]) > 1e-14) {
+                E_OS += 2 * Ktilde[ij_local[ij]][a][b] * ( T[div][ij_local[ij]][a][b] );
+                E_SS += 2 * Ktilde[ij_local[ij]][a][b] * ( T[div][ij_local[ij]][a][b] - T[div][ij_local[ij]][b][a]);
                 Emp2 += 2 * Ktilde[ij_local[ij]][a][b] * (2 * T[div][ij_local[ij]][a][b] - T[div][ij_local[ij]][b][a]);
               }
             }
@@ -71,6 +74,8 @@ void LMP2::energy() {
           for(a=0; a < pairdom_len[ij]; a++) {
             for(b=0; b < pairdom_len[ij]; b++) {
               if(fabs(Ktilde[ij_local[ij]][a][b]) > 1e-14) {
+                E_OS += 2 * Ktilde[ij_local[ij]][a][b] * ( T[div][ij_local[ij]][a][b] );
+                E_SS += 2 * Ktilde[ij_local[ij]][a][b] * ( T[div][ij_local[ij]][a][b] - T[div][ij_local[ij]][b][a]);
                 Emp2 += Ktilde[ij_local[ij]][a][b] * (2 * T[div][ij_local[ij]][a][b] - T[div][ij_local[ij]][b][a]);
               }
             }
@@ -91,6 +96,9 @@ void LMP2::energy() {
           for(a=0; a < pairdom_len[ij]; a++) {
             for(b=0; b < pairdom_len[ij]; b++) {
               if(fabs(Ktilde[ij_local[ij]][a][b]) > 1e-14) 
+                E_OS += 2 * Ktilde[ij_local[ij]][a][b] * ( T_ext[nmat][ij_local[ij]][a][b] );
+                E_SS += 2 * Ktilde[ij_local[ij]][a][b] * ( T_ext[nmat][ij_local[ij]][a][b] -
+                            T_ext[nmat][ij_local[ij]][b][a]);
                 Emp2 += 2 * Ktilde[ij_local[ij]][a][b] * (2 * T_ext[nmat][ij_local[ij]][a][b] -
                             T_ext[nmat][ij_local[ij]][b][a]);
             }
@@ -100,6 +108,9 @@ void LMP2::energy() {
           for(a=0; a < pairdom_len[ij]; a++) {
             for(b=0; b < pairdom_len[ij]; b++) {
               if(fabs(Ktilde[ij_local[ij]][a][b]) > 1e-14) 
+                E_OS += 2 * Ktilde[ij_local[ij]][a][b] * ( T_ext[nmat][ij_local[ij]][a][b] );
+                E_SS += 2 * Ktilde[ij_local[ij]][a][b] * ( T_ext[nmat][ij_local[ij]][a][b] -
+                            T_ext[nmat][ij_local[ij]][b][a]);
                 Emp2 += Ktilde[ij_local[ij]][a][b] * (2 * T_ext[nmat][ij_local[ij]][a][b] -
                             T_ext[nmat][ij_local[ij]][b][a]);
             }

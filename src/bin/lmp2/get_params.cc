@@ -72,6 +72,9 @@ void LMP2::get_params(Options &options) {
   }
   ndiis = options.get_int("NDIIS");
 
+  memory = options.get_int("MEMORY");
+  wfn = const_cast<char*>(options.get_cstr("WFN"));
+
   cutoff = options.get_double("LOCAL_CUTOFF");
   neglectdp = options.get_bool("NEGLECT_DP");
   dpcutoff = options.get_double("DISTANT_PAIR");
@@ -79,11 +82,12 @@ void LMP2::get_params(Options &options) {
   schwarz_tol = options.get_int("SCHWARTZ_TOL");
   tol = 1.0*pow(10.0,(double) -schwarz_tol);
 
-  memory = options.get_int("MEMORY");
-  wfn = const_cast<char*>(options.get_cstr("WFN"));
+  if(options.get_bool("RI_LMP2"))
+    RILMP2 = true;
+  
 
-//  ri_basis = options.get_str("RI_BASIS");
-//  basis = options.get_str("BASIS");
+  scs_scale_os = options.get_double("SCALE_OS");
+  scs_scale_ss = options.get_double("SCALE_SS");
 
   if(myid == 0)
     print_params();
@@ -108,6 +112,8 @@ void LMP2::print_params(){
     fprintf(outfile, "\tNeglect Distant Pairs \t= %s\n", neglectdp ? "Yes" : "No");
     if(neglectdp)
         fprintf(outfile, "\tDistace Pair Cutoff \t= %2.1f\n", dpcutoff);
+    fprintf(outfile,"\tOpposite-spin scaled by %10.4lf\n",scs_scale_os);
+    fprintf(outfile,"\tSame-spin scaled by     %10.4lf\n",scs_scale_ss);
     fprintf(outfile, "\n\tUse DIIS extrapolation = %s\n", diis ? "Yes" : "No");
     if(diis == 1) {
       fprintf(outfile, "\titerations before DIIS extrapolation = %d\n", it_diis);

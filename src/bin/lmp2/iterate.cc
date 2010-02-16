@@ -49,6 +49,15 @@ void LMP2::iterate() {
 
   }
 
-}
+  if(RILMP2){
+    fprintf(outfile,"\tRI-LMP2 correlation energy         = %20.15f\n",Emp2);
+    fprintf(outfile,"      * RI-LMP2 total energy               = %20.15f\n\n",
+      Escf + Emp2);
+    fprintf(outfile,"\tOpposite-Spin correlation energy  = %20.15f\n",E_OS);
+    fprintf(outfile,"\tSame-Spin correlation energy      = %20.15f\n\n",E_SS);
+    fprintf(outfile,"      * SCS-RI-LMP2 total energy           = %20.15f\n\n",
+      Escf + scs_scale_os*E_OS + scs_scale_ss*E_SS);
+  }
 
+}
 }}
