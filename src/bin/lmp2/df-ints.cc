@@ -12,7 +12,6 @@
 #include <libiwl/iwl.h>
 #include <libqt/qt.h>
 
-
 #include <iostream>
 #include <fstream>              // file I/O support
 #include <libciomr/libciomr.h>
@@ -28,6 +27,8 @@
 #define EXTERN
 #include "globals.h"
 
+#define TIME_DF_LMP2 1
+
 namespace psi {
 
 extern int myid;
@@ -39,6 +40,12 @@ extern int myid_lmp2;
 extern int nprocs_lmp2;
 
 void LMP2::direct_df_transformation() {
+#ifdef TIME_DF_LMP2
+if(myid == 0){
+  timer_init();
+  timer_on("Compute DF-LMP2");
+}
+#endif
 
   using namespace std;
 
@@ -65,22 +72,8 @@ void LMP2::direct_df_transformation() {
   double **J_mhalf = block_matrix(ribasis->nbf(), ribasis->nbf());
   const double *Jbuffer = Jint->buffer();
 
-  int *ij_owner, *ij_local;
-  int **ij_map, *abs_ij_map;
-  int **pairdomain, *pairdom_len;
-
-  ij_owner = get_ij_owner();
-  ij_local = get_ij_local();
- 
-  ij_map = get_ij_map();
-  abs_ij_map = original_ij_map();
-
-  pairdomain = compute_pairdomain(ij_map);
-  pairdom_len = compute_pairdomlen(ij_map);
-
-#ifdef TIME_DF_MP2
-  timer_init();
-  timer_on("Form J");
+#ifdef TIME_DF_LMP2
+if(myid == 0)  timer_on("Form J");
 #endif
 
   int index = 0;
@@ -144,11 +137,24 @@ void LMP2::direct_df_transformation() {
   free_block(J);
   free_block(J_copy);
 
-#ifdef TIME_DF_MP2
-  timer_off("Form J");
+#ifdef TIME_DF_LMP2
+if(myid == 0)  timer_off("Form J");
 #endif
 
   int i, j, ij, l, k, a, b, t, u, v;
+
+  int *ij_owner, *ij_local;
+  int **ij_map, *abs_ij_map;
+  int **pairdomain, *pairdom_len;
+
+  ij_owner = get_ij_owner();
+  ij_local = get_ij_local();
+ 
+  ij_map = get_ij_map();
+  abs_ij_map = original_ij_map();
+
+  pairdomain = compute_pairdomain(ij_map);
+  pairdom_len = compute_pairdomlen(ij_map);
 
   /* Build the "united pair domains" (Werner JCP 118, 8149 (2003) */
   /* This will only work for now, where we have assumed that all
@@ -161,7 +167,7 @@ void LMP2::direct_df_transformation() {
     for(k = 0; k < natom; k++) {
       for(j = 0; j < nocc; j++) {
         ij = INDEX(i, j);
-        ij = abs_ij_map[ij];
+        ij = abs_ij_map[ij]; // map org ij to new ij
         if(pairdomain[ij][k] && uniteddomain[i][k] == 0) {
           uniteddomain[i][k] = 1;
           uniteddomain_len[i] += aostop[k] - aostart[k] + 1;
@@ -181,19 +187,32 @@ void LMP2::direct_df_transformation() {
     }
   }
 
-  int *i_local = init_int_array(nocc);
-  int *j_local = init_int_array(nocc);
+  /* This suppose to map local i and j for given local ij
+   * Here *local* mean local to the given node 
+   */
 
-  v=0;
-  int count=0;
-  for(ij=0; ij < ij_pairs; ij++) {
-      i = ij_map[ij][0];
-      j = ij_map[ij][1];
-      //ij_local[ij] = count;
-      if(v%nprocs == nprocs-1) count++;
-      v++;
+  int **proc_has_i = init_int_matrix(nprocs,nocc);
+  int **i_local = init_int_matrix(nprocs,nocc); 
+  int *i_local_count = init_int_array(nprocs);
+  int proc, count;
+
+  for(ij = 0; ij < ij_pairs; ij++) {
+    proc = ij_owner[ij]; 
+    i = ij_map[ij][0];
+    j = ij_map[ij][1];
+    proc_has_i[proc][i] = 1;
+    proc_has_i[proc][j] = 1;
+  } 
+
+  for(proc = 0; proc < nprocs; proc++) {
+    for(i = 0, count = 0; i < nocc; i++, count++) {
+      if(proc_has_i[proc][i]) {
+        //i_list[proc][count] = i;
+        i_local[proc][i] = count;
+      }
+    }
+    i_local_count[proc] = count;
   }
-
 
 
 
@@ -216,7 +235,6 @@ void LMP2::direct_df_transformation() {
       memset(B_ir_p[i][j], '\0', sizeof (double) * ribasis->nbf());
     }
   }
-
 
   IntegralFactory ao_eri_factory(basis, basis, basis, basis);
   TwoBodyInt* ao_eri = ao_eri_factory.eri();
@@ -257,9 +275,6 @@ void LMP2::direct_df_transformation() {
     DFSchwartz[P] = max;
   }
 
-
-
-
   double **half = block_matrix(nocc, nso);
 
   int numPshell, Pshell, MU, NU, P, oP, Q, oQ, mu, nu, nummu, numnu, omu, onu, mn;
@@ -275,9 +290,8 @@ void LMP2::direct_df_transformation() {
   double*** temp = new double**[maxPshell];
   for (P = 0; P < maxPshell; P++) temp[P] = block_matrix(nso, nso);
 
-
-#ifdef TIME_DF_MP2
-  timer_on("Form mo_p_ir");
+#ifdef TIME_DF_LMP2
+if(myid == 0) timer_on("Form mo_p_ir");
 #endif
 
   const double *buffer = eri->buffer();
@@ -309,8 +323,6 @@ void LMP2::direct_df_transformation() {
 
         } // end Schwartz inequality
         else screened++;
-
-
       } // end loop over NU shell
     } // end loop over MU shell
     // now we've gone through all P, mu, nu for a given Pshell
@@ -341,20 +353,19 @@ void LMP2::direct_df_transformation() {
   fprintf(outfile,"  %d shell triplets screened via Schwartz inequality\n\n",
     screened);
 
-
   // should free temp here
   for(P = 0; P < maxPshell; P++) free_block(temp[P]);
   // destruct temp[] itself?
 
-#ifdef TIME_DF_MP2
-  timer_off("Form mo_p_ir");
+#ifdef TIME_DF_LMP2
+if(myid == 0) timer_off("Form mo_p_ir");
 #endif
 
 // fprintf(outfile, "mo_p_ia:\n");
 // print_mat(mo_p_ia, ribasis->nbf(), nact_docc*nact_virt, outfile);
 
-#ifdef TIME_DF_MP2
-  timer_on("Form B_ir^P");
+#ifdef TIME_DF_LMP2
+if(myid == 0) timer_on("Form B_ir^P");
 #endif
 
 // mo_p_ir has integrals
@@ -375,10 +386,9 @@ void LMP2::direct_df_transformation() {
     free(mo_p_ir[i]);
   free(mo_p_ir);
 
-#ifdef TIME_DF_MP2
-  timer_off("Form B_ir^P");
+#ifdef TIME_DF_LMP2
+if(myid == 0) timer_off("Form B_ir^P");
 #endif
-
 
   //Allocating the memory needed by Ktilde
   if(ij_pairs % nprocs == 0) {
@@ -439,6 +449,10 @@ void LMP2::direct_df_transformation() {
   for (i = 0; i < nocc; i++)
       free(B_ir_p[i]);
   free(B_ir_p);
+
+#ifdef TIME_DF_LMP2
+if(myid == 0) timer_off("Compute DF-LMP2");
+#endif
 
 }
 

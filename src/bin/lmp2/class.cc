@@ -86,7 +86,7 @@ void LMP2::print_moinfo(){
 
 
   double Enuc = get_enuc();
-  double Escf = get_escf();
+  Escf = get_escf();
 
   if(myid == 0) {
     fprintf(outfile,"\n");

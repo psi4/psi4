@@ -75,8 +75,12 @@ class LMP2 {
     int dmat2;
     int omat;
     int nmat;
+    bool RILMP2;
     int schwarz_tol;
     double tol;
+    double scs_scale_os;
+    double scs_scale_ss;
+
 
     double ****error;
     double ****T_ext;
@@ -84,7 +88,10 @@ class LMP2 {
     double ***Ktilde;      /* ERI transformed to (ai|bj) where ij are occupied localized orbitals and ab are projected ao's */
     int num_unique_shells;
     double Emp2;           /* LMP2 energy */
+    double E_OS;           /* Opposite spin MP2 energy */
+    double E_SS;           /* Same spin MP2 energy */
     double Emp2_old;       /* LMP2 energy from previous iteration */
+    double Escf;
     double DEmp2;
     double Drms;
 //    char *ri_basis, *orbital_basis;
