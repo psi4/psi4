@@ -174,6 +174,36 @@ int* LMP2::get_snuc() {
 
 }
 
+int* LMP2::get_aux_stype(char *basisname) {
+  int *sty;
+
+  if(myid == 0)
+    sty = chkpt->rd_stype(basisname);
+  else
+    sty = init_int_array(nshell);
+
+  if(nprocs > 1)
+    Communicator::world->bcast(sty, nshell, 0);
+
+  return sty;
+
+}
+
+int* LMP2::get_aux_snuc(char *basisname) {
+  int *snu;
+
+  if(myid == 0)
+    snu = chkpt->rd_snuc(basisname);
+  else
+    snu = init_int_array(nshell);
+
+  if(nprocs > 1)
+    Communicator::world->bcast(snu, nshell, 0);
+
+  return snu;
+
+}
+
 int* LMP2::get_orbspi() {
     int *orb;
 

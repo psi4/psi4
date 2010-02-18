@@ -187,7 +187,9 @@ class LMP2 {
     int* get_soccpi();
     int  get_frdocc();
     int* get_stype();
+    int* get_aux_stype(char *basisname);
     int* get_snuc();
+    int* get_aux_snuc(char *basisname);
     int* get_orbspi();
     int* get_frzvpi();
     double  get_enuc();

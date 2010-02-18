@@ -270,6 +270,7 @@ int** LMP2::get_ij_map() {
 
 }
 
+// don't try to use this for ij's which have been neglected
 int* LMP2::original_ij_map() {
 
     int pairs = (nocc * (nocc + 1)) / 2;
