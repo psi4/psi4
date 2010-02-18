@@ -68,9 +68,46 @@ if(myid == 0){
 
   TwoBodyInt* eri = rifactory.eri();
   TwoBodyInt* Jint = rifactory_J.eri();
+  /*
   double **J = block_matrix(ribasis->nbf(), ribasis->nbf());
   double **J_mhalf = block_matrix(ribasis->nbf(), ribasis->nbf());
   const double *Jbuffer = Jint->buffer();
+  */
+
+  // Set up the indexing arrays
+  // auxstart[atom] = the AO number for the first aux bf on this atom
+  // auxstop[atom]  = the AO number for the last aux bf on this atom
+  int *auxstart = init_int_array(natom);
+  int *auxstop = init_int_array(natom);
+  int *auxsize = init_int_array(natom);
+  int *aux_stype = get_aux_stype("DF_BASIS");
+  int *aux_snuc = get_aux_snuc("DF_BASIS");
+  int offset;
+  for(i=0,atom=-1,offset=0; i < nshell; i++) {
+    am = aux_stype[i] - 1;    // am is the angular momentum of the orbital
+    // shell_length is the number of obritals in each shell
+    int shell_length = l_length[am];        
+    // aux_snuc is the nucleus that the shell belongs to
+    if(atom != aux_snuc[i]-1) {             
+      if(atom != -1) auxstop[atom] = offset-1;
+      atom = aux_snuc[i]-1;
+      auxstart[atom] = offset;
+    }
+    offset += shell_length;
+  }
+  auxstop[atom] = offset-1;
+
+  for (i=0; i<natom; i++) {
+    auxsize[i] = auxstop[i] - auxstart[i] + 1;
+  }
+
+  // aux2atom[i] = the atom number which aux bf i is on
+  int* aux2atom = init_int_array(ribasis->nbf());
+  for(i=0; i < natom; i++) {
+    for(j=auxstart[i]; j <= auxstop[i]; j++) {
+      aux2atom[j] = i;
+    }
+  }
 
 #ifdef TIME_DF_LMP2
 if(myid == 0)  timer_on("Form J");
@@ -156,13 +193,19 @@ if(myid == 0)  timer_off("Form J");
   pairdomain = compute_pairdomain(ij_map);
   pairdom_len = compute_pairdomlen(ij_map);
 
+  // if we use "method 1" for the fitting, we'll need to get an 
+  // aux_pairdom_len here...
+
   /* Build the "united pair domains" (Werner JCP 118, 8149 (2003) */
   /* This will only work for now, where we have assumed that all
      pairs are strong pairs.  This assumption will change, then
      we may need to change this code --CDS 12/09
    */
-  int **uniteddomain = init_int_matrix(nocc, natom);
-  int *uniteddomain_len = init_int_array(nocc);
+  int** uniteddomain = init_int_matrix(nocc, natom);
+  int* uniteddomain_len = init_int_array(nocc);
+  int* fit_len = init_int_array(nocc);
+  int* fit_atoms = init_int_array(nocc);
+  int** fit_atom_id = init_int_matrix(nocc, natom);
   for(i = 0; i < nocc; i++) {
     for(k = 0; k < natom; k++) {
       for(j = 0; j < nocc; j++) {
@@ -171,7 +214,36 @@ if(myid == 0)  timer_off("Form J");
         if(pairdomain[ij][k] && uniteddomain[i][k] == 0) {
           uniteddomain[i][k] = 1;
           uniteddomain_len[i] += aostop[k] - aostart[k] + 1;
+          // method 2 fit domains, not extended (Rd=0)
+          fit_len[i] += auxsize[k];
+          fit_atom_id[i][fit_atoms[i]] = k;
+          fit_atoms[i]++;
         }
+      }
+    }
+  }
+
+  for (i=0,ij=0; i<nocc; i++) {
+    for (j=0; j<=i; j++, ij++) {
+      if (pairdom_exist[ij]) {
+        for (k=0; k<natom; k++) {
+          if (uniteddomain[i][k] || uniteddomain[j][k]) {
+            unitedfitdomain[i][k] = 1;
+            unitedfitdomain[j][k] = 1;
+        }
+      }
+    }
+  }
+ 
+  int** unitedfit_start = init_int_matrix(nocc, natom);
+  for (i=0; i<nocc; i++) {
+    int counter = 0;
+    for (k=0; k<natom; k++) {
+      unitedfit_start[i][k] = -1;
+      if (unitedfitdomain[i][k]) {
+        unitedfit_start[i][k] = counter;
+        unitedfit_len[i] += auxsize[k];
+        counter += auxsize[k];
       }
     }
   }
