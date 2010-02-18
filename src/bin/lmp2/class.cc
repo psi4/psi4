@@ -140,6 +140,31 @@ int* LMP2::get_ij_owner() {
 
 }
 
+/* 
+** we distribute ij's among processes as follows...
+**
+** ij0 -> proc0
+** ij1 -> proc1
+** ij2 -> proc2
+** ...
+** ij(nprocs-1) -> proc(nprocs-1)
+** ij(nprocs)   -> proc0     (start going back around)
+** ij(nprocs+1) -> proc1
+** ...
+** ..
+** This routine creates a mapping array to get us from a global ij idex
+** to the corresponding local index on a particular process, so we
+** know where in local memory to find it.
+**
+** From the above mapping, we see that 
+** ij_local[0] = 0
+** ij_local[1] = 0
+** ..
+** ij_local[nprocs-1] = 0
+** ij_local[nprocs]   = 1
+** ij_local[nprocs+1] = 1
+** ...
+*/
 int* LMP2::get_ij_local() {
 
   int i, j, ij, v, count;
