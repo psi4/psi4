@@ -487,10 +487,13 @@ if(myid == 0) timer_off("Form B_ir^P");
     }
   }
 
+  //
+  // construct Ktilde[ij][a][b] = (ia|jb)
+  //
   v = 0;
   int a2, b2;
   /* This now loops over all ij_pairs even if we are neglecting
-   * distant pairs */
+   * distant pairs ... um, no, ij_pairs would subtract distant ones, yes? */
   for(ij = 0; ij < ij_pairs; ij++, v++) {
     i = ij_map[ij][0];
     j = ij_map[ij][1];
@@ -498,12 +501,25 @@ if(myid == 0) timer_off("Form B_ir^P");
       for(k = 0, a = 0; k < natom; k++) {
         if(pairdomain[ij][k]) {
           for(t = aostart[k]; t <= aostop[k]; t++, a++) {
+            a2 = uniteddomain_abs2rel[i][t];
             for(l = 0, b = 0; l < natom; l++) {
               if(pairdomain[ij][l]) {
                 for(u = aostart[l]; u <= aostop[l]; u++, b++) {
-                  a2 = uniteddomain_abs2rel[i][t];
                   b2 = uniteddomain_abs2rel[j][u];
-                  Ktilde[ij_local[ij]][a][b] = C_DDOT(ribasis->nbf(), &(B_ir_p[i][a2][0]), 1, &(B_ir_p[j][b2][0]), 1);
+                  // fit_atoms[i] returns the number of atoms in the
+                  // fitting basis i_{fit}
+                  for (int m=0, q=0; m<fit_atoms[i]; m++) {
+                    // fit_atom_id[i][m] returns the absolute atom number
+                    // for the mth atom belonging to the [i]fit list for
+                    // atom i
+                    m2 = fit_atom_id[i][m];
+                    // auxsize[m2] returns the number of aux fns on atom m2
+                    // ufitstart[j][m2] returns the starting location in
+                    // the united orbital fit domain [j]_{fit}^u for
+                    // auxiliary functions belonging to atom m2
+                    Ktilde[ij_local[ij]][a][b] = 
+                      C_DDOT(auxsize[m2], &(d[i][a2][q]),
+                      &(I[j][b2][ufitstart[j][m2]]), 1);
                 }
               }
             }
