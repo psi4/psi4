@@ -784,6 +784,7 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libderiv/Makefile
           src/lib/libderiv/MakeVars
           src/lib/libderiv/libderiv_config.h
+          src/lib/libdiis/Makefile
           src/lib/libint/Makefile
           src/lib/libint/MakeVars
           src/lib/libint/libint_config.h
