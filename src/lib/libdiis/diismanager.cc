@@ -9,6 +9,7 @@
 namespace psi{ namespace libdiis{
 
 DIISManager::DIISManager(int maxSubspaceSize,
+                         std::string label,
                          RemovalPolicy removalPolicy,
                          StoragePolicy storagePolicy):
             _maxSubspaceSize(maxSubspaceSize),
@@ -16,8 +17,8 @@ DIISManager::DIISManager(int maxSubspaceSize,
             _storagePolicy(storagePolicy),
             _errorVectorSize(0),
             _vectorSize(0),
-            _entryCount(0)
-
+            _entryCount(0),
+            _label(label)
 {
 }
 
@@ -152,10 +153,12 @@ DIISManager::set_error_vector_size(int numQuantities, ...)
  * functions, the types of each component should not be specified here.  If the component
  * is an array, the pointer to the start of that array should be passed, in contranst to the
  * set_size functions, which takes only the size of that array.
+ * @return Whether the subspace was updated
  */
-void
+bool
 DIISManager::add_entry(int numQuantities, ...)
 {
+    if(!_maxSubspaceSize) return false;
     if(_componentSizes.size() != numQuantities)
         throw SanityCheckError("The number of parameters passed to the set_size routines"
                                " and add_entry are inconsistent", __FILE__, __LINE__);
@@ -231,12 +234,12 @@ DIISManager::add_entry(int numQuantities, ...)
 
     int entryID = get_next_entry_id();
     if(_subspace.size() < _maxSubspaceSize){
-        _subspace.push_back(new DIISEntry(_entryCount++, entryID,
+        _subspace.push_back(new DIISEntry(_label, _entryCount++, entryID,
                             _errorVectorSize, errorVectorPtr,
                             _vectorSize, vectorPtr));
     }else{
         delete _subspace[entryID];
-        _subspace[entryID] = new DIISEntry(_entryCount++, entryID,
+        _subspace[entryID] = new DIISEntry(_label, _entryCount++, entryID,
                                            _errorVectorSize, errorVectorPtr,
                                            _vectorSize, vectorPtr);
     }
@@ -246,6 +249,8 @@ DIISManager::add_entry(int numQuantities, ...)
     // Make we don't know any inner products involving this new entry
     for(int i = 0; i < _subspace.size(); ++i)
         if(i != entryID) _subspace[i]->invalidate_dot(entryID);
+
+    return true;
 }
 
 /**
@@ -293,6 +298,7 @@ DIISManager::get_next_entry_id()
 void
 DIISManager::extrapolate(int numQuantities, ...)
 {
+    if(!_subspace.size()) return;
     int dimension = _subspace.size() + 1;
     double **bMatrix = block_matrix(dimension, dimension);
     double *coefficients = init_array(dimension);
@@ -322,23 +328,9 @@ DIISManager::extrapolate(int numQuantities, ...)
     }
     coefficients[_subspace.size()] = 1.0;
     bMatrix[_subspace.size()][_subspace.size()] = 0.0;
-#if DEBUG_DIIS
-    fprintf(outfile, "B matrix\n");
-    print_mat(bMatrix, dimension, dimension, outfile);
-    fprintf(outfile, "coefficients array before inversion\n");
-    for(int n = 0; n < dimension; ++n)
-        fprintf(outfile, "%12.6f ", coefficients[n]);
-    fprintf(outfile, "\n");
-#endif
     
     C_DGESV(dimension, 1, bMatrix[0], dimension, pivots, coefficients, dimension);
 
-#if DEBUG_DIIS
-    fprintf(outfile, "coefficients\n");
-    for(int n = 0; n < dimension; ++n)
-        fprintf(outfile, "%12.6f ", coefficients[n]);
-    fprintf(outfile, "\n");
-#endif
     dpdfile2 *file2;
     dpdbuf4 *buf4;
     Vector *vector;
@@ -397,7 +389,7 @@ DIISManager::extrapolate(int numQuantities, ...)
                     for(int h = 0; h < matrix->nirreps(); ++h){
                         for(int row = 0; row < matrix->rowspi()[h]; ++row){
                             for(int col = 0; col < matrix->colspi()[h]; ++col){
-                                matrix->add(h, row, col, *arrayPtr++);
+                                matrix->add(h, row, col, coefficient * *arrayPtr++);
                             }
                         }
                     }
