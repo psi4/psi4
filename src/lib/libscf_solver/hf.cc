@@ -217,14 +217,13 @@ void HF::find_occupation(Vector & evals)
     }
     sort(pairs.begin(),pairs.end());
 
-    memset(doccpi_, 0, sizeof(int) * evals.nirreps());
-    memset(soccpi_, 0, sizeof(int) * evals.nirreps());
-
     if(!input_docc_){
+        memset(doccpi_, 0, sizeof(int) * evals.nirreps());
         for (int i=0; i<nbeta_; ++i)
             doccpi_[pairs[i].second]++;
     }
     if(!input_socc_){
+        memset(soccpi_, 0, sizeof(int) * evals.nirreps());
         for (int i=nbeta_; i<nalpha_; ++i)
             soccpi_[pairs[i].second]++;
     }
