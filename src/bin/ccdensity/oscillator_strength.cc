@@ -33,6 +33,7 @@ void oscillator_strength(struct TD_Params *S)
   double *mu_x_ints, *mu_y_ints, *mu_z_ints;
   double **MUX_AO, **MUY_AO, **MUZ_AO;
   double **MUX_MO, **MUY_MO, **MUZ_MO;
+  double **MUX_SO, **MUY_SO, **MUZ_SO;
   double **MUX_MO_A, **MUY_MO_A, **MUZ_MO_A;
   double **MUX_MO_B, **MUY_MO_B, **MUZ_MO_B;
   double lt_x, lt_y, lt_z;
@@ -145,9 +146,9 @@ void oscillator_strength(struct TD_Params *S)
 /*   fprintf(outfile, "MUZ_AOs\n"); */
 /*   print_mat(MUZ_AO, nao, nao, outfile); */
 
-  MUX_MO = block_matrix(nso,nso);
-  MUY_MO = block_matrix(nso,nso);
-  MUZ_MO = block_matrix(nso,nso);
+  MUX_SO = block_matrix(nso,nso);
+  MUY_SO = block_matrix(nso,nso);
+  MUZ_SO = block_matrix(nso,nso);
 
   /*** Transform the AO dipole integrals to the SO basis ***/
   X = block_matrix(nso,nao); /* just a temporary matrix */
@@ -155,17 +156,17 @@ void oscillator_strength(struct TD_Params *S)
   C_DGEMM('n','n',nso,nao,nao,1,&(usotao[0][0]),nao,&(MUX_AO[0][0]),nao,
 	  0,&(X[0][0]),nao);
   C_DGEMM('n','t',nso,nso,nao,1,&(X[0][0]),nao,&(usotao[0][0]),nao,
-	  0,&(MUX_MO[0][0]),nso);
+	  0,&(MUX_SO[0][0]),nso);
 
   C_DGEMM('n','n',nso,nao,nao,1,&(usotao[0][0]),nao,&(MUY_AO[0][0]),nao,
 	  0,&(X[0][0]),nao);
   C_DGEMM('n','t',nso,nso,nao,1,&(X[0][0]),nao,&(usotao[0][0]),nao,
-	  0,&(MUY_MO[0][0]),nso);
+	  0,&(MUY_SO[0][0]),nso);
 
   C_DGEMM('n','n',nso,nao,nao,1,&(usotao[0][0]),nao,&(MUZ_AO[0][0]),nao,
 	  0,&(X[0][0]),nao);
   C_DGEMM('n','t',nso,nso,nao,1,&(X[0][0]),nao,&(usotao[0][0]),nao,
-	  0,&(MUZ_MO[0][0]),nso);
+	  0,&(MUZ_SO[0][0]),nso);
 
   free(mu_x_ints); free(mu_y_ints); free(mu_z_ints);
   free_block(X);
@@ -176,74 +177,78 @@ void oscillator_strength(struct TD_Params *S)
 
   /*** Transform the SO dipole integrals to the MO basis ***/
 
-  X = block_matrix(nmo,nmo); /* just a temporary matrix */
+  X = block_matrix(nmo,nso); /* just a temporary matrix */
 
   if((params.ref == 0) || (params.ref == 1)) {
 
-    C_DGEMM('t','n',nmo,nmo,nmo,1,&(scf_qt[0][0]),nmo,&(MUX_MO[0][0]),nmo,
-  	    0,&(X[0][0]),nmo);
-    C_DGEMM('n','n',nmo,nmo,nmo,1,&(X[0][0]),nmo,&(scf_qt[0][0]),nmo,
+    MUX_MO=block_matrix(nmo,nmo);
+    MUY_MO=block_matrix(nmo,nmo);
+    MUZ_MO=block_matrix(nmo,nmo);
+
+    C_DGEMM('t','n',nmo,nso,nso,1,&(scf_qt[0][0]),nmo,&(MUX_SO[0][0]),nso,
+  	    0,&(X[0][0]),nso);
+    C_DGEMM('n','n',nmo,nmo,nso,1,&(X[0][0]),nso,&(scf_qt[0][0]),nmo,
 	    0,&(MUX_MO[0][0]),nmo);
 
-    C_DGEMM('t','n',nmo,nmo,nmo,1,&(scf_qt[0][0]),nmo,&(MUY_MO[0][0]),nmo,
-	    0,&(X[0][0]),nmo);
-    C_DGEMM('n','n',nmo,nmo,nmo,1,&(X[0][0]),nmo,&(scf_qt[0][0]),nmo,
+    C_DGEMM('t','n',nmo,nso,nso,1,&(scf_qt[0][0]),nmo,&(MUY_SO[0][0]),nso,
+	    0,&(X[0][0]),nso);
+    C_DGEMM('n','n',nmo,nmo,nso,1,&(X[0][0]),nso,&(scf_qt[0][0]),nmo,
 	    0,&(MUY_MO[0][0]),nmo);
 
-    C_DGEMM('t','n',nmo,nmo,nmo,1,&(scf_qt[0][0]),nmo,&(MUZ_MO[0][0]),nmo,
-	    0,&(X[0][0]),nmo);
-    C_DGEMM('n','n',nmo,nmo,nmo,1,&(X[0][0]),nmo,&(scf_qt[0][0]),nmo,
+    C_DGEMM('t','n',nmo,nso,nso,1,&(scf_qt[0][0]),nmo,&(MUZ_SO[0][0]),nso,
+	    0,&(X[0][0]),nso);
+    C_DGEMM('n','n',nmo,nmo,nso,1,&(X[0][0]),nso,&(scf_qt[0][0]),nmo,
 	    0,&(MUZ_MO[0][0]),nmo);
 
     free_block(scf_qt);
   }
   else if((params.ref == 2)) {
 
-    MUX_MO_A = block_matrix(nso,nso);
-    MUY_MO_A = block_matrix(nso,nso);
-    MUZ_MO_A = block_matrix(nso,nso);
-    MUX_MO_B = block_matrix(nso,nso);
-    MUY_MO_B = block_matrix(nso,nso);
-    MUZ_MO_B = block_matrix(nso,nso);
+    MUX_MO_A = block_matrix(nmo,nmo);
+    MUY_MO_A = block_matrix(nmo,nmo);
+    MUZ_MO_A = block_matrix(nmo,nmo);
+    MUX_MO_B = block_matrix(nmo,nmo);
+    MUY_MO_B = block_matrix(nmo,nmo);
+    MUZ_MO_B = block_matrix(nmo,nmo);
 
-    C_DGEMM('t','n',nmo,nmo,nmo,1,&(scf_qt_A[0][0]),nmo,&(MUX_MO[0][0]),nmo,
-  	    0,&(X[0][0]),nmo);
-    C_DGEMM('n','n',nmo,nmo,nmo,1,&(X[0][0]),nmo,&(scf_qt_A[0][0]),nmo,
+    C_DGEMM('t','n',nmo,nso,nso,1,&(scf_qt_A[0][0]),nmo,&(MUX_SO[0][0]),nso,
+  	    0,&(X[0][0]),nso);
+    C_DGEMM('n','n',nmo,nmo,nso,1,&(X[0][0]),nso,&(scf_qt_A[0][0]),nmo,
 	    0,&(MUX_MO_A[0][0]),nmo);
 
-    C_DGEMM('t','n',nmo,nmo,nmo,1,&(scf_qt_B[0][0]),nmo,&(MUX_MO[0][0]),nmo,
-  	    0,&(X[0][0]),nmo);
-    C_DGEMM('n','n',nmo,nmo,nmo,1,&(X[0][0]),nmo,&(scf_qt_B[0][0]),nmo,
+    C_DGEMM('t','n',nmo,nso,nso,1,&(scf_qt_B[0][0]),nmo,&(MUX_SO[0][0]),nso,
+  	    0,&(X[0][0]),nso);
+    C_DGEMM('n','n',nmo,nmo,nso,1,&(X[0][0]),nso,&(scf_qt_B[0][0]),nmo,
 	    0,&(MUX_MO_B[0][0]),nmo);
 
-    C_DGEMM('t','n',nmo,nmo,nmo,1,&(scf_qt_A[0][0]),nmo,&(MUY_MO[0][0]),nmo,
-  	    0,&(X[0][0]),nmo);
-    C_DGEMM('n','n',nmo,nmo,nmo,1,&(X[0][0]),nmo,&(scf_qt_A[0][0]),nmo,
+    C_DGEMM('t','n',nmo,nso,nso,1,&(scf_qt_A[0][0]),nmo,&(MUY_SO[0][0]),nso,
+  	    0,&(X[0][0]),nso);
+    C_DGEMM('n','n',nmo,nmo,nso,1,&(X[0][0]),nso,&(scf_qt_A[0][0]),nmo,
 	    0,&(MUY_MO_A[0][0]),nmo);
 
-    C_DGEMM('t','n',nmo,nmo,nmo,1,&(scf_qt_B[0][0]),nmo,&(MUY_MO[0][0]),nmo,
-  	    0,&(X[0][0]),nmo);
-    C_DGEMM('n','n',nmo,nmo,nmo,1,&(X[0][0]),nmo,&(scf_qt_B[0][0]),nmo,
+    C_DGEMM('t','n',nmo,nso,nso,1,&(scf_qt_B[0][0]),nmo,&(MUY_SO[0][0]),nso,
+  	    0,&(X[0][0]),nso);
+    C_DGEMM('n','n',nmo,nmo,nso,1,&(X[0][0]),nso,&(scf_qt_B[0][0]),nmo,
 	    0,&(MUY_MO_B[0][0]),nmo);
 
-    C_DGEMM('t','n',nmo,nmo,nmo,1,&(scf_qt_A[0][0]),nmo,&(MUZ_MO[0][0]),nmo,
-  	    0,&(X[0][0]),nmo);
-    C_DGEMM('n','n',nmo,nmo,nmo,1,&(X[0][0]),nmo,&(scf_qt_A[0][0]),nmo,
+    C_DGEMM('t','n',nmo,nso,nso,1,&(scf_qt_A[0][0]),nmo,&(MUZ_SO[0][0]),nso,
+  	    0,&(X[0][0]),nso);
+    C_DGEMM('n','n',nmo,nmo,nso,1,&(X[0][0]),nso,&(scf_qt_A[0][0]),nmo,
 	    0,&(MUZ_MO_A[0][0]),nmo);
 
-    C_DGEMM('t','n',nmo,nmo,nmo,1,&(scf_qt_B[0][0]),nmo,&(MUZ_MO[0][0]),nmo,
-  	    0,&(X[0][0]),nmo);
-    C_DGEMM('n','n',nmo,nmo,nmo,1,&(X[0][0]),nmo,&(scf_qt_B[0][0]),nmo,
+    C_DGEMM('t','n',nmo,nso,nso,1,&(scf_qt_B[0][0]),nmo,&(MUZ_SO[0][0]),nso,
+  	    0,&(X[0][0]),nso);
+    C_DGEMM('n','n',nmo,nmo,nso,1,&(X[0][0]),nso,&(scf_qt_B[0][0]),nmo,
 	    0,&(MUZ_MO_B[0][0]),nmo);
 
-    free_block(MUX_MO);
-    free_block(MUY_MO);
-    free_block(MUZ_MO);
     free_block(scf_qt_A);
     free_block(scf_qt_B);
   }
 
   free_block(X);
+  free_block(MUX_SO);
+  free_block(MUY_SO);
+  free_block(MUZ_SO);
 
 /*   fprintf(outfile, "MUX_MOs\n"); */
 /*   print_mat(MUX_MO, nmo, nmo, outfile); */
