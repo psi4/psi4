@@ -28,7 +28,7 @@ IntegralTransform::IntegralTransform(SpaceVec spaces,
     _myDPDNum      = 1;
     _print         = 1;
     _memory        = 2000 * 1024 * 1024;
-    _tolerance     = 1.0E-14;
+    _tolerance     = 1.0E-16;
     _keepDpdSoInts = false;
     _keepIwlSoInts = false;
     _keepHtInts    = true;

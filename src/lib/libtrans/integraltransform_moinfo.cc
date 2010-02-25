@@ -216,7 +216,7 @@ IntegralTransform::process_spaces()
         if(_print > 5){
             int nAOrbs = 0, nBOrbs = 0;
             fprintf(outfile, "Adding arrays for space %c:-\n",moSpace->label());
-            fprintf(outfile, "\n\talpha orsPI = ");
+            fprintf(outfile, "\n\talpha orbsPI = ");
             for(int h = 0; h < _nirreps; nAOrbs += aOrbsPI[h], ++h)
                 fprintf(outfile, "%d ", aOrbsPI[h]);
             fprintf(outfile, "\n\tbeta orbsPI = ");
