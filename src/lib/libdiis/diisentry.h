@@ -30,7 +30,7 @@ class DIISEntry{
          *            set_size.. routines should be the number of elements to read.
          */
         enum InputType {DPDBuf4, DPDFile2, Matrix, Vector, Pointer};
-        DIISEntry(int ID, int count, int vectorSize, double *vector,
+        DIISEntry(std::string label, int ID, int count, int vectorSize, double *vector,
                   int errorVectorSize, double *errorVector);
         ~DIISEntry();
         /// Whether the dot product of this entry's and the nth entry's error vector is known
@@ -76,6 +76,8 @@ class DIISEntry{
         double *_errorVector;
         /// The error vector
         double *_vector;
+        /// The label used for disk storage
+        std::string _label;
 };
 
 }} // End namespaces

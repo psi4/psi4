@@ -4,19 +4,23 @@
 
 namespace psi{ namespace libdiis{
 
-DIISEntry::DIISEntry(int ID, int orderAdded, int errorVectorSize, double *errorVector,
+DIISEntry::DIISEntry(std::string label, int ID, int orderAdded,
+                     int errorVectorSize, double *errorVector,
                      int vectorSize, double *vector):
         _vectorSize(vectorSize),
         _errorVectorSize(errorVectorSize),
         _vector(vector),
         _errorVector(errorVector),
         _ID(ID),
-        _orderAdded(orderAdded)
+        _orderAdded(orderAdded),
+        _label(label)
 {
     double sumSQ = C_DDOT(_errorVectorSize, _errorVector, 1, _errorVector, 1);
     _rmsError = sqrt(sumSQ / _errorVectorSize);
     _dotProducts[_ID] = sumSQ;
     _knownDotProducts[_ID] = true;
+    _label += ":entry ";
+    _label += ID;
 }
 
 

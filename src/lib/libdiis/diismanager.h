@@ -34,15 +34,16 @@ class DIISManager{
          */
         enum RemovalPolicy {LargestError, OldestAdded};
         
-        DIISManager(int maxSubspaceSize, RemovalPolicy = LargestError,
+        DIISManager(int maxSubspaceSize, std::string label,
+                    RemovalPolicy = LargestError,
                     StoragePolicy = InCore);
         DIISManager() {_maxSubspaceSize = 0;}
         ~DIISManager();
 
         void set_error_vector_size(int numQuantities, ...);
         void set_vector_size(int numQuantities, ...);
-        void add_entry(int numQuatities, ...);
         void extrapolate(int numQuatities, ...);
+        bool add_entry(int numQuatities, ...);
         int remove_entry();
         /// The number of vectors currently in the subspace
         int subspace_size() {return _subspace.size();}
@@ -71,6 +72,8 @@ class DIISManager{
         std::vector<DIISEntry::InputType> _componentTypes;
         /// The types used in the vector
         std::vector<size_t> _componentSizes;
+        /// The label used in disk storage of the DIISEntry objects
+        std::string _label;
 };
 
 }} // End namespaces
