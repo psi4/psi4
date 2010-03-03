@@ -1,13 +1,13 @@
-#include <cstdio>
 #include "basisset_parser.h"
-
-#include <fstream>
-#include <algorithm>
 
 #include <boost/regex.hpp>
 #include <boost/xpressive/xpressive.hpp>
 #include <boost/xpressive/regex_actions.hpp>
 #include <boost/algorithm/string.hpp>
+
+#include <cstdio>
+#include <fstream>
+#include <algorithm>
 
 using namespace psi;
 using namespace boost;
@@ -26,7 +26,7 @@ bool from_string(T& t,
 BasisSetParser::BasisSetParser(const std::string& searchpath)
    : searchpath_(searchpath)
 {
-    // If the search path is empty use either PSIDATADIR or INSTALLPSIDATADIR
+    // If the search path is empty use either PSIDATADIR or INSTALLEDPSIDATADIR
     if (searchpath_.empty()) {
         std::string psiDataDirName;
         if (getenv("PSIDATADIR"))
@@ -44,7 +44,7 @@ BasisSetParser::~BasisSetParser()
 
 void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vector<string> &basisnames)
 {
-    // Obtain hold of molecule object from the basis set, we'l need to walk throught this
+    // Obtain hold of molecule object from the basis set, we'll need to walk through this
     shared_ptr<Molecule> molecule = basisSet->molecule();
 
     // Ensure that the number of atoms match the number of basis names
@@ -145,6 +145,7 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
 
                     // Match shell information
                     if (regex_match(line, what, shell)) {
+                        // TODO: Ensure shell_type is a capital letter
                         string shell_type(what[1].first, what[1].second);
                         int nprimitive;
                         double scale;
@@ -167,7 +168,7 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
                             for (int p=0; p<nprimitive; ++p) {
                                 getline(infile, line);
 
-                                // Must match primitives1;
+                                // Must match primitives1; will work on the others later
                                 if (!regex_match(line, what, primitives1))
                                     throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to match an exponent with one contraction:\n" + line);
 
@@ -185,17 +186,23 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
                             }
 
                             // We have a full shell, push it to the basis set
-//                            shared_ptr<GaussianShell> new_shell(new GaussianShel);
-//                            new_shell->init(1, nprimitive, exponents, am, GaussianShell::Pure, contractions, atom, molecule->xyz(atom), puream);
-//                            basisSet->shells_.push_back(new_shell);
+                            shared_ptr<GaussianShell> new_shell(new GaussianShell);
+                            // TODO: the last argument must NOT be 0
+                            new_shell->init(1,
+                                            nprimitive,
+                                            exponents,
+                                            am,
+                                            GaussianShell::Pure,
+                                            contractions,
+                                            atom,
+                                            molecule->xyz(atom),
+                                            0);
+                            basisSet->shells_.push_back(new_shell);
                         }
                     } else {
                         throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Expected shell information, but got:\n" + line);
                     }
                 }
-            }
-            if (regex_match(line, what, shell)) {
-                cout << " matched a function line.\n";
             }
         }
     }
