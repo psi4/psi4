@@ -99,8 +99,8 @@ int GaussianShell::nfunction() const
 
 void GaussianShell::init_data()
 {
-    ncartesians_ = ncartesian();
-    nfunctions_ = nfunction();
+    ncartesians_ = INT_NCART(l_);
+    nfunctions_ = INT_NFUNC(puream_, l_);
 }
 
 void GaussianShell::print(FILE *out) const
