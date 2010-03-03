@@ -186,18 +186,18 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
                             }
 
                             // We have a full shell, push it to the basis set
-                            shared_ptr<GaussianShell> new_shell(new GaussianShell);
+//                            shared_ptr<GaussianShell> new_shell(new GaussianShell);
                             // TODO: the last argument must NOT be 0
-                            new_shell->init(1,
-                                            nprimitive,
-                                            exponents,
-                                            am,
-                                            GaussianShell::Pure,
-                                            contractions,
-                                            atom,
-                                            molecule->xyz(atom),
-                                            0);
-                            basisSet->shells_.push_back(new_shell);
+//                            new_shell->init(1,
+//                                            nprimitive,
+//                                            exponents,
+//                                            am,
+//                                            GaussianShell::Pure,
+//                                            contractions,
+//                                            atom,
+//                                            molecule->xyz(atom),
+//                                            0);
+//                            basisSet->shells_.push_back(new_shell);
                         }
                     } else {
                         throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Expected shell information, but got:\n" + line);

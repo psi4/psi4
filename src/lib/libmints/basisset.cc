@@ -166,40 +166,35 @@ void BasisSet::initialize_shells(shared_ptr<Chkpt> chkpt, std::string& basiskey)
 
     // Currently all basis sets are treated as segmented contractions
     // even though GaussianShell is generalized (well not really).
-    int ncontr = 1;
     int ao_start = 0;
     int puream_start = 0;
 
     for (int i=0; i<nshells_; ++i) {
-        int *am = new int[ncontr];
-        am[0] = shell_am[i] - 1;
+        int am;
+        am = shell_am[i] - 1;
         int fprim = shell_fprim[i] - 1;
         int nprims = shell_num_prims[i];
         Vector3 center = molecule_->xyz(shell_center_[i] - 1);
-        double **cc = new double*[nprims];
+        double *cc = new double[nprims];
         for (int p=0; p<nprims; ++p) {
-            cc[p] = new double[ncontr];
-            cc[p][0] = ccoeffs[fprim+p][am[0]];
+            cc[p] = ccoeffs[fprim+p][am];
         }
 
         // Construct a new shell. GaussianShell copies the data to new memory
         shells_.push_back(shared_ptr<GaussianShell>(new GaussianShell));
-        shells_[i]->init(ncontr, nprims, &(exponents[fprim]), am,
+        shells_[i]->init(nprims, &(exponents[fprim]), am,
             puream_ ? GaussianShell::Pure : GaussianShell::Cartesian, cc, shell_center_[i]-1, center,
             puream_start);
 
         if (nprims > max_nprimitives_)
             max_nprimitives_ = nprims;
 
-        for (int p=0; p<nprims; p++) {
-            delete[] cc[p];
-        }
         delete[] cc;
 
         // OK, for a given number of AO functions in a shell INT_NCART(am)
         // beginning at column ao_start go through all rows finding where this
         // AO function contributes to an SO.
-        for (int ao = 0; ao < INT_NCART(am[0]); ++ao) {
+        for (int ao = 0; ao < INT_NCART(am); ++ao) {
             int aooffset = ao_start + ao;
             for (int so = 0; so < nbf_; ++so) {
                 if (fabs(uso2ao_[so][aooffset]) >= 1.0e-14)
@@ -208,9 +203,8 @@ void BasisSet::initialize_shells(shared_ptr<Chkpt> chkpt, std::string& basiskey)
         }
 
         // Shift the ao starting index over to the next shell
-        ao_start += INT_NCART(am[0]);
-        puream_start += INT_NFUNC(puream_, am[0]);
-        delete[] am;
+        ao_start += INT_NCART(am);
+        puream_start += INT_NFUNC(puream_, am);
     }
 
     delete[] so2symblk;
@@ -286,24 +280,13 @@ shared_ptr<BasisSet> BasisSet::zero_basis_set()
     new_basis->sotransform_->init(1);
 
     // Create out basis set arrays
-    int *am = new int[1];
-    double *e = new double[1];
-    double **c = new double*[1];
-    c[0] = new double[1];
-
     // null basis set
-    am[0] = 0;
-    e[0] = 0.0;
-    c[0][0] = 1.0;
+    int am   = 0;
+    double e = 0.0;
+    double c = 1.0;
 
     // Add the null-s-function
-    new_basis->shells_[0]->init(1, 1, e, am, GaussianShell::Cartesian, c, 0, center, 0, GaussianShell::Normalized);
-
-    // Delete the basis set arrays, GaussianShell makes internal copies of everything
-    delete[] am;
-    delete[] e;
-    delete[] c[0];
-    delete[] c;
+    new_basis->shells_[0]->init(1, &e, am, GaussianShell::Cartesian, &c, 0, center, 0, GaussianShell::Normalized);
 
     // Add s-function SO transform.
     new_basis->sotransform_->add_transform(0, 0, 0, 1.0, 0, 0);

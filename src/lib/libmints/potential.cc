@@ -47,8 +47,8 @@ void PotentialInt::compute_shell_deriv1(int sh1, int sh2)
 void PotentialInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2)
 {
     int ao12;
-    int am1 = s1->am(0);
-    int am2 = s2->am(0);
+    int am1 = s1->am();
+    int am2 = s2->am();
     int nprim1 = s1->nprimitive();
     int nprim2 = s2->nprimitive();
     double A[3], B[3];
@@ -78,10 +78,10 @@ void PotentialInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<Gaussia
 
     for (int p1=0; p1<nprim1; ++p1) {
         double a1 = s1->exp(p1);
-        double c1 = s1->coef(0, p1);
+        double c1 = s1->coef(p1);
         for (int p2=0; p2<nprim2; ++p2) {
             double a2 = s2->exp(p2);
-            double c2 = s2->coef(0, p2);
+            double c2 = s2->coef(p2);
             double gamma = a1 + a2;
             double oog = 1.0/gamma;
 
@@ -153,8 +153,8 @@ void PotentialInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<Gaussia
 void PotentialInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2)
 {
     int ao12;
-    int am1 = s1->am(0);
-    int am2 = s2->am(0);
+    int am1 = s1->am();
+    int am2 = s2->am();
     int nprim1 = s1->nprimitive();
     int nprim2 = s2->nprimitive();
     double A[3], B[3];
@@ -191,10 +191,10 @@ void PotentialInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<
 
     for (int p1=0; p1<nprim1; ++p1) {
         double a1 = s1->exp(p1);
-        double c1 = s1->coef(0, p1);
+        double c1 = s1->coef(p1);
         for (int p2=0; p2<nprim2; ++p2) {
             double a2 = s2->exp(p2);
-            double c2 = s2->coef(0, p2);
+            double c2 = s2->coef(p2);
             double gamma = a1 + a2;
             double oog = 1.0/gamma;
 
