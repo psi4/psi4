@@ -252,7 +252,7 @@ void ERI::init_shell_pairs12()
             // Pre-compute all data that we can:
             for (i=0; i<np_i; ++i) {
                 a1 = basis1()->shell(si)->exp(i);
-                c1 = basis1()->shell(si)->coef(0, i);
+                c1 = basis1()->shell(si)->coef(i);
 
                 // Save some information
                 sp->ai[i] = a1;
@@ -260,7 +260,7 @@ void ERI::init_shell_pairs12()
 
                 for (j=0; j<np_j; ++j) {
                     a2 = basis2()->shell(sj)->exp(j);
-                    c2 = basis2()->shell(sj)->coef(0, j);
+                    c2 = basis2()->shell(sj)->coef(j);
 
                     gam = a1 + a2;
 
@@ -380,7 +380,7 @@ void ERI::init_shell_pairs34()
             // Pre-compute all data that we can:
             for (i=0; i<np_i; ++i) {
                 a1 = basis3()->shell(si)->exp(i);
-                c1 = basis3()->shell(si)->coef(0, i);
+                c1 = basis3()->shell(si)->coef(i);
 
                 // Save some information
                 sp->ai[i] = a1;
@@ -388,7 +388,7 @@ void ERI::init_shell_pairs34()
 
                 for (j=0; j<np_j; ++j) {
                     a2 = basis4()->shell(sj)->exp(j);
-                    c2 = basis4()->shell(sj)->coef(0, j);
+                    c2 = basis4()->shell(sj)->coef(j);
 
                     gam = a1 + a2;
 
@@ -716,15 +716,15 @@ void ERI::compute_shell(int sh1, int sh2, int sh3, int sh4)
     p13p24_ = false; p12_ = false; p34_ = false;
 
     // AM used for ordering
-    am1 = original_bs1_->shell(sh1)->am(0);
-    am2 = original_bs2_->shell(sh2)->am(0);
-    am3 = original_bs3_->shell(sh3)->am(0);
-    am4 = original_bs4_->shell(sh4)->am(0);
+    am1 = original_bs1_->shell(sh1)->am();
+    am2 = original_bs2_->shell(sh2)->am();
+    am3 = original_bs3_->shell(sh3)->am();
+    am4 = original_bs4_->shell(sh4)->am();
 
-    int n1 = original_bs1_->shell(sh1)->nfunction(0);
-    int n2 = original_bs2_->shell(sh2)->nfunction(0);
-    int n3 = original_bs3_->shell(sh3)->nfunction(0);
-    int n4 = original_bs4_->shell(sh4)->nfunction(0);
+    int n1 = original_bs1_->shell(sh1)->nfunction();
+    int n2 = original_bs2_->shell(sh2)->nfunction();
+    int n3 = original_bs3_->shell(sh3)->nfunction();
+    int n4 = original_bs4_->shell(sh4)->nfunction();
 
     // Save the original requested shell ordering. The pre-computed shell pair information
     // requires the original ordering.
@@ -831,10 +831,10 @@ void ERI::compute_quartet(int sh1, int sh2, int sh3, int sh4)
     s3 = bs3_->shell(sh3);
     s4 = bs4_->shell(sh4);
 
-    int am1 = s1->am(0);
-    int am2 = s2->am(0);
-    int am3 = s3->am(0);
-    int am4 = s4->am(0);
+    int am1 = s1->am();
+    int am2 = s2->am();
+    int am3 = s3->am();
+    int am4 = s4->am();
     int am = am1 + am2 + am3 + am4; // total am
     int nprim1 = s1->nprimitive();
     int nprim2 = s2->nprimitive();
@@ -969,10 +969,10 @@ void ERI::compute_quartet(int sh1, int sh2, int sh3, int sh4)
         // Old version - without ShellPair
         for (int p1=0; p1<nprim1; ++p1) {
             double a1 = s1->exp(p1);
-            double c1 = s1->coef(0, p1);
+            double c1 = s1->coef(p1);
             for (int p2=0; p2<nprim2; ++p2) {
                 double a2 = s2->exp(p2);
-                double c2 = s2->coef(0, p2);
+                double c2 = s2->coef(p2);
                 double zeta = a1 + a2;
                 double ooz = 1.0/zeta;
                 double oo2z = 1.0/(2.0 * zeta);
@@ -994,10 +994,10 @@ void ERI::compute_quartet(int sh1, int sh2, int sh3, int sh4)
 
                 for (int p3=0; p3<nprim3; ++p3) {
                     double a3 = s3->exp(p3);
-                    double c3 = s3->coef(0, p3);
+                    double c3 = s3->coef(p3);
                     for (int p4=0; p4<nprim4; ++p4) {
                         double a4 = s4->exp(p4);
-                        double c4 = s4->coef(0, p4);
+                        double c4 = s4->coef(p4);
                         double nu = a3 + a4;
                         double oon = 1.0/nu;
                         double oo2n = 1.0/(2.0*nu);
@@ -1146,15 +1146,15 @@ void ERI::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
     bool p13p24 = false, p12 = false, p34 = false;
 
     // AM used for ordering
-    am1 = original_bs1_->shell(sh1)->am(0);
-    am2 = original_bs2_->shell(sh2)->am(0);
-    am3 = original_bs3_->shell(sh3)->am(0);
-    am4 = original_bs4_->shell(sh4)->am(0);
+    am1 = original_bs1_->shell(sh1)->am();
+    am2 = original_bs2_->shell(sh2)->am();
+    am3 = original_bs3_->shell(sh3)->am();
+    am4 = original_bs4_->shell(sh4)->am();
 
-    int n1 = original_bs1_->shell(sh1)->nfunction(0);
-    int n2 = original_bs2_->shell(sh2)->nfunction(0);
-    int n3 = original_bs3_->shell(sh3)->nfunction(0);
-    int n4 = original_bs4_->shell(sh4)->nfunction(0);
+    int n1 = original_bs1_->shell(sh1)->nfunction();
+    int n2 = original_bs2_->shell(sh2)->nfunction();
+    int n3 = original_bs3_->shell(sh3)->nfunction();
+    int n4 = original_bs4_->shell(sh4)->nfunction();
 
     // l(a) >= l(b), l(c) >= l(d), and l(c) + l(d) >= l(a) + l(b).
     if (am1 >= am2) {
@@ -1236,10 +1236,10 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
     s3 = bs3_->shell(sh3);
     s4 = bs4_->shell(sh4);
 
-    int am1 = s1->am(0);
-    int am2 = s2->am(0);
-    int am3 = s3->am(0);
-    int am4 = s4->am(0);
+    int am1 = s1->am();
+    int am2 = s2->am();
+    int am3 = s3->am();
+    int am4 = s4->am();
     int am = am1 + am2 + am3 + am4; // total am
     int nprim1 = s1->nprimitive();
     int nprim2 = s2->nprimitive();
@@ -1281,10 +1281,10 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
     nprim = 0;
     for (int p1=0; p1<nprim1; ++p1) {
         double a1 = s1->exp(p1);
-        double c1 = s1->coef(0, p1);
+        double c1 = s1->coef(p1);
         for (int p2=0; p2<nprim2; ++p2) {
             double a2 = s2->exp(p2);
-            double c2 = s2->coef(0, p2);
+            double c2 = s2->coef(p2);
             double zeta = a1 + a2;
             double ooz = 1.0/zeta;
             double oo2z = 1.0/(2.0 * zeta);
@@ -1306,10 +1306,10 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
 
             for (int p3=0; p3<nprim3; ++p3) {
                 double a3 = s3->exp(p3);
-                double c3 = s3->coef(0, p3);
+                double c3 = s3->coef(p3);
                 for (int p4=0; p4<nprim4; ++p4) {
                     double a4 = s4->exp(p4);
-                    double c4 = s4->coef(0, p4);
+                    double c4 = s4->coef(p4);
                     double nu = a3 + a4;
                     double oon = 1.0/nu;
                     double oo2n = 1.0/(2.0*nu);
