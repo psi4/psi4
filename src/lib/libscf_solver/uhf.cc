@@ -40,27 +40,32 @@ void UHF::common_init()
     Drms_ = 0.0;
     use_out_of_core_ = false;
 
-    Fa_ = SharedMatrix(factory_.create_matrix("F alpha"));
-    Fb_ = SharedMatrix(factory_.create_matrix("F beta"));
+    Fa_     = SharedMatrix(factory_.create_matrix("F alpha"));
+    Fb_     = SharedMatrix(factory_.create_matrix("F beta"));
     pertFa_ = SharedMatrix(factory_.create_matrix("Perturbed Alpha Fock Matrix"));
     pertFb_ = SharedMatrix(factory_.create_matrix("Perturbed Beta Fock Matrix"));
-    Da_ = SharedMatrix(factory_.create_matrix("D alpha"));
-    Db_ = SharedMatrix(factory_.create_matrix("D beta"));
-    Dt_ = SharedMatrix(factory_.create_matrix("D total"));
-    Dtold_ = SharedMatrix(factory_.create_matrix("D total old"));
-    Ca_ = SharedMatrix(factory_.create_matrix("C alpha"));
-    Cb_ = SharedMatrix(factory_.create_matrix("C beta"));
-    Ga_ = SharedMatrix(factory_.create_matrix("G alpha"));
-    Gb_ = SharedMatrix(factory_.create_matrix("G beta"));
+    Da_     = SharedMatrix(factory_.create_matrix("D alpha"));
+    Db_     = SharedMatrix(factory_.create_matrix("D beta"));
+    Dt_     = SharedMatrix(factory_.create_matrix("D total"));
+    Dtold_  = SharedMatrix(factory_.create_matrix("D total old"));
+    Ca_     = SharedMatrix(factory_.create_matrix("C alpha"));
+    Cb_     = SharedMatrix(factory_.create_matrix("C beta"));
+    Ga_     = SharedMatrix(factory_.create_matrix("G alpha"));
+    Gb_     = SharedMatrix(factory_.create_matrix("G beta"));
 
     p_jk_ = NULL;
-    p_k_ = NULL;
-    Va_  = NULL;
-    Vb_  = NULL;
+    p_k_  = NULL;
+    Va_   = NULL;
+    Vb_   = NULL;
 
     use_out_of_core_ = options_.get_bool("OUT_OF_CORE");
 
-    if(print_ > 1) fprintf(outfile, "  DIIS not implemented for UHF, yet.\n\n");
+//    if(print_ > 1) fprintf(outfile, "  DIIS not implemented for UHF, yet.\n\n");
+
+    fprintf(outfile, "  DIIS %s.\n", diis_enabled_ ? "enabled" : "disabled");
+    fprintf(outfile, "  Out of core %s.\n", use_out_of_core_ ? "enabled" : "disabled");
+    fprintf(outfile, "  Direct %s.\n", direct_integrals_ ? "enabled": "disabled");
+    fprintf(outfile, "  Density Fitting %s.\n", ri_integrals_ ? "enabled": "disabled");
 
     if (direct_integrals_ == false && ri_integrals_ == false)
         allocate_PK();
@@ -68,7 +73,7 @@ void UHF::common_init()
 
 double UHF::compute_energy()
 {
-    bool converged = false;
+    bool converged = false, diis_iter = false;
     int iter = 0;
 
     // Do the initial work to give the iterations a starting point
@@ -122,9 +127,20 @@ double UHF::compute_energy()
 
         form_F();
 
+        if (diis_enabled_)
+            save_fock();
+
         E_ = compute_E();
+
+        if (diis_enabled_ == true && iter >= num_diis_vectors_) {
+            diis();
+            diis_iter = true;
+        } else {
+            diis_iter = false;
+        }
+
         if(print_)
-            fprintf(outfile, "  @UHF iteration %3d energy: %20.14f    %20.14f %20.14f\n", iter, E_, E_ - Eold_, Drms_);
+            fprintf(outfile, "  @UHF iteration %3d energy: %20.14f    %20.14f %20.14f %s\n", iter, E_, E_ - Eold_, Drms_, diis_iter == false ? " " : "DIIS");
         fflush(outfile);
 
         form_C();
@@ -366,7 +382,7 @@ void UHF::save_information()
     for (int i=0; i<eigvaluesa.nirreps(); ++i)
         free(temp2[i]);
     free(temp2);
-    
+
     int *vec = new int[eigvaluesa.nirreps()];
     for (int i=0; i<eigvaluesa.nirreps(); ++i)
         vec[i] = 0;
@@ -393,8 +409,8 @@ void UHF::save_information()
 
     // TODO: Figure out what chkpt_wt_iopen means for UHF
     chkpt_->wt_iopen(0);
-    
-    // Write eigenvectors and eigenvalue to checkpoint 
+
+    // Write eigenvectors and eigenvalue to checkpoint
     double *values = eigvaluesa.to_block_vector();
     chkpt_->wt_alpha_evals(values);
     free(values);
@@ -503,8 +519,8 @@ void UHF::form_F() {
 
 void UHF::form_C()
 {
-	Matrix eigvec;
-	Vector eigval;
+    Matrix eigvec;
+    Vector eigval;
         factory_.create_matrix(eigvec);
         factory_.create_vector(eigval);
 
@@ -904,6 +920,61 @@ void UHF::form_G_from_direct_integrals()
 {
     fprintf(stderr, "UHF integral direct algorithm is not implemented yet!\n");
     abort();
+}
+
+void UHF::save_fock()
+{
+    static bool initialized_diis_manager = false;
+    if (initialized_diis_manager == false) {
+        diis_manager_->set_error_vector_size(2,
+                                             DIISEntry::Matrix, Fa_.get(),
+                                             DIISEntry::Matrix, Fb_.get());
+        diis_manager_->set_vector_size(2,
+                                       DIISEntry::Matrix, Fa_.get(),
+                                       DIISEntry::Matrix, Fb_.get());
+        initialized_diis_manager = true;
+    }
+
+    // Save the current Fock matrix
+//    diis_F_[current_diis_fock_]->copy(F_);
+
+    // Determine error matrix for this Fock
+    SharedMatrix FaDaS(factory_.create_matrix()), DaS(factory_.create_matrix());
+    SharedMatrix SDaFa(factory_.create_matrix()), DaFa(factory_.create_matrix());
+    SharedMatrix FbDbS(factory_.create_matrix()), DbS(factory_.create_matrix());
+    SharedMatrix SDbFb(factory_.create_matrix()), DbFb(factory_.create_matrix());
+
+    // FDS = F_ * D_ * S_; Alpha
+    DaS->gemm(false, false, 1.0, Da_, S_, 0.0);
+    FaDaS->gemm(false, false, 1.0, Fa_, DaS, 0.0);
+    // SDF = S_ * D_ * F_;
+    DaFa->gemm(false, false, 1.0, Da_, Fa_, 0.0);
+    SDaFa->gemm(false, false, 1.0, S_, DaFa, 0.0);
+
+    // FDS = F_ * D_ * S_; Beta
+    DbS->gemm(false, false, 1.0, Db_, S_, 0.0);
+    FbDbS->gemm(false, false, 1.0, Fb_, DbS, 0.0);
+    // SDF = S_ * D_ * F_;
+    DbFb->gemm(false, false, 1.0, Db_, Fb_, 0.0);
+    SDbFb->gemm(false, false, 1.0, S_, DbFb, 0.0);
+
+    Matrix FaDaSmSDaFa;
+    FaDaSmSDaFa.copy(FaDaS);
+    FaDaSmSDaFa.subtract(SDaFa);
+    FaDaSmSDaFa.transform(Shalf_);
+
+    Matrix FbDbSmSDbFb;
+    FbDbSmSDbFb.copy(FbDbS);
+    FbDbSmSDbFb.subtract(SDbFb);
+    FbDbSmSDbFb.transform(Shalf_);
+
+    diis_manager_->add_entry(4, &FaDaSmSDaFa, &FbDbSmSDbFb, Fa_.get(), Fb_.get());
+}
+
+void UHF::diis()
+{
+    diis_manager_->extrapolate(2, Fa_.get(), Fb_.get());
+
 }
 
 }}

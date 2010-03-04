@@ -47,17 +47,13 @@ RHF::RHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
 
 RHF::~RHF()
 {
-    if (diis_B_)
-        free_block(diis_B_);
     if (pk_)
         delete[] pk_;
 }
 
 void RHF::common_init()
 {
-    // Defaults: DIIS on, attempt in core algorithm
-    diis_enabled_ = true;
-    num_diis_vectors_ = 4;
+    // Defaults: attempt in core algorithm
     use_out_of_core_ = false;
     Drms_ = 0.0;
 
@@ -72,30 +68,6 @@ void RHF::common_init()
 
     // PK super matrix for fast G
     pk_ = NULL;
-
-    // Allocate memory for DIISnum_diis_vectors_
-    //  First, did the user request a different number of diis vectors?
-    num_diis_vectors_ = options_.get_int("DIIS_VECTORS");
-    diis_enabled_ = options_.get_bool("DIIS");
-
-    // Don't perform DIIS if less than 2 vectors requested, or user requested a negative number
-    if (num_diis_vectors_ < 2) {
-        // disable diis
-        diis_enabled_ = false;
-    }
-
-    diis_B_ = NULL;
-    if (diis_enabled_ == true) {
-        // Allocate the memory
-        diis_B_ = block_matrix(num_diis_vectors_, num_diis_vectors_);
-
-        // Allocate space for diis_F_ and diis_E_
-        for (int i=0; i < num_diis_vectors_; ++i) {
-            diis_F_.push_back(SharedMatrix(factory_.create_matrix()));
-            diis_E_.push_back(SharedMatrix(factory_.create_matrix()));
-        }
-        current_diis_fock_ = 0;
-    }
 
     // Check out of core
     use_out_of_core_ = options_.get_bool("OUT_OF_CORE");
@@ -123,16 +95,15 @@ double RHF::compute_energy()
     // Do the initial work to get the iterations started.
     //form_multipole_integrals();  // handled by HF class
     form_H();
-    
+
     if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
         form_PK();
     else if (ri_integrals_ == true)
         form_B();
 
-
-
     form_Shalf();
     form_initialF();
+
     // Check to see if there are MOs already in the checkpoint file.
     // If so, read them in instead of forming them.
     string prefix(chkpt_->build_keyword(const_cast<char*>("MO coefficients")));
@@ -352,7 +323,7 @@ void RHF::save_information()
     Vector eigvalues;
     factory_.create_matrix(eigvector);
     factory_.create_vector(eigvalues);
-    
+
     F_->diagonalize(eigvector, eigvalues);
 
     int print_mos = false;
@@ -388,11 +359,11 @@ void RHF::save_information()
             fprintf(outfile, "\n      ");
     }
     fprintf(outfile, "\n");
-    
+
     for (int i=0; i<eigvalues.nirreps(); ++i)
         free(temp2[i]);
     free(temp2);
-    
+
     int *vec = new int[eigvalues.nirreps()];
     for (int i=0; i<eigvalues.nirreps(); ++i)
         vec[i] = 0;
@@ -426,8 +397,8 @@ void RHF::save_information()
 
     // This code currently only handles RHF
     chkpt_->wt_iopen(0);
-    
-    // Write eigenvectors and eigenvalue to checkpoint 
+
+    // Write eigenvectors and eigenvalue to checkpoint
     double *values = eigvalues.to_block_vector();
     chkpt_->wt_evals(values);
     free(values);
@@ -438,14 +409,15 @@ void RHF::save_information()
 
 void RHF::save_fock()
 {
-#ifdef _DEBUG
-    if (debug_) {
-        fprintf(outfile, "  Saving current Fock matrix to %d.\n", current_diis_fock_);
+    static bool initialized_diis_manager = false;
+    if (initialized_diis_manager == false) {
+        diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, F_.get());
+        diis_manager_->set_vector_size(1, DIISEntry::Matrix, F_.get());
+        initialized_diis_manager = true;
     }
-#endif
 
     // Save the current Fock matrix
-    diis_F_[current_diis_fock_]->copy(F_);
+//    diis_F_[current_diis_fock_]->copy(F_);
 
     // Determine error matrix for this Fock
     SharedMatrix FDS(factory_.create_matrix()), DS(factory_.create_matrix());
@@ -461,101 +433,18 @@ void RHF::save_fock()
     Matrix FDSmSDF;
     FDSmSDF.copy(FDS);
     FDSmSDF.subtract(SDF);
-    diis_E_[current_diis_fock_]->copy(&FDSmSDF);
+//    diis_E_[current_diis_fock_]->copy(&FDSmSDF);
 
     // Orthonormalize the error matrix
-    diis_E_[current_diis_fock_]->transform(Shalf_);
+//    diis_E_[current_diis_fock_]->transform(Shalf_);
+    FDSmSDF.transform(Shalf_);
 
-#ifdef _DEBUG
-    if (debug_) {
-        fprintf(outfile, "  New error matrix:\n");
-        diis_E_[current_diis_fock_]->print(outfile);
-    }
-#endif
-    current_diis_fock_++;
-    if (current_diis_fock_ == num_diis_vectors_)
-        current_diis_fock_ = 0;
+    diis_manager_->add_entry(2, &FDSmSDF, F_.get());
 }
 
 void RHF::diis()
 {
-    int i, j;
-    // Construct the B matrix
-    // Assumes all the error matrices are available
-    Matrix temp;
-    factory_.create_matrix(temp);
-    for (i=0; i<num_diis_vectors_; ++i) {
-        for (j=0; j<num_diis_vectors_; ++j) {
-            temp.gemm(false, true, 1.0, diis_E_[i], diis_E_[j], 0.0);
-            diis_B_[i][j] = temp.trace();
-        }
-    }
-
-#ifdef _DEBUG
-    if (debug_) {
-        fprintf(outfile, "  B matrix:\n");
-        print_mat(diis_B_, num_diis_vectors_, num_diis_vectors_, outfile);
-    }
-#endif
-
-    double **A = block_matrix(num_diis_vectors_+1, num_diis_vectors_+1);
-    double *b  = init_array(num_diis_vectors_+1);
-    int *ipiv  = init_int_array(num_diis_vectors_+1);
-
-    A[0][0] = 0.0;
-    b[0]    = -1.0;
-    for (i=1; i<num_diis_vectors_+1; ++i) {
-        A[0][i] = -1.0;
-        A[i][0] = -1.0;
-        b[i]    = 0.0;
-        for (j=1; j<num_diis_vectors_+1; ++j) {
-            A[i][j] = diis_B_[i-1][j-1];
-        }
-    }
-
-#ifdef _DEBUG
-    if (debug_) {
-        fprintf(outfile, "  A:\n");
-        print_mat(A, num_diis_vectors_+1, num_diis_vectors_+1, outfile);
-    }
-#endif
-
-    // Solve A * x = b
-    int errcode = C_DGESV(num_diis_vectors_+1, 1, &(A[0][0]), num_diis_vectors_+1, ipiv, b, num_diis_vectors_+1);
-
-#ifdef _DEBUG
-    if (debug_) {
-        fprintf(outfile, "  A:\n");
-        print_mat(A, num_diis_vectors_+1, num_diis_vectors_+1, outfile);
-        fprintf(outfile, "  x:\n");
-        for (i=0; i<num_diis_vectors_+1; ++i)
-            fprintf(outfile, "    %d: %20.16f\n", i, b[i]);
-    }
-#endif
-
-    // Extrapolate a new Fock matrix.
-    if (errcode == 0) {
-        F_->zero();
-        Matrix scaled;
-        for (i=0; i<num_diis_vectors_; ++i) {
-            scaled.copy(diis_F_[i]);
-            scaled.scale(b[i+1]);
-            F_->add(scaled);
-        }
-    } else if (errcode > 0) {
-        fprintf(outfile, "  DIIS: singularity detected, DIIS skipped this iteration.\n");
-    } else {
-        fprintf(outfile, "  DIIS: DGESV argument #%d is illegal, DIIS skipped this iteration.\n", -errcode);
-    }
-#ifdef _DEBUG
-    if (debug_) {
-        F_->print(outfile);
-    }
-#endif
-
-    free_block(A);
-    free(b);
-    free(ipiv);
+    diis_manager_->extrapolate(1, F_.get());
 }
 
 bool RHF::test_convergency()
@@ -640,7 +529,7 @@ void RHF::form_C()
     C_->gemm(false, false, 1.0, Shalf_, eigvec, 0.0);
 
     find_occupation(eigval);
-    
+
 #ifdef _DEBUG
     if (debug_) {
         C_->eivprint(eigval);

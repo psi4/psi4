@@ -27,16 +27,9 @@ protected:
     SharedMatrix J_;
     SharedMatrix K_;
 
-    std::vector<SharedMatrix> diis_F_;
-    std::vector<SharedMatrix> diis_E_;
     boost::shared_ptr<TwoBodyInt> eri_;
 
     double Drms_;
-
-    int num_diis_vectors_;
-    double **diis_B_;
-    int current_diis_fock_;
-    int diis_enabled_;
 
     int use_out_of_core_;
     double *pk_;
@@ -62,7 +55,7 @@ protected:
 
     void form_PK();
     void form_F();
-    
+
     void save_fock();
     void diis();
     void allocate_PK();

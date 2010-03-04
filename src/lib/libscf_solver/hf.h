@@ -12,6 +12,7 @@
 
 #include <libpsio/psio.hpp>
 #include <libmints/wavefunction.h>
+#include <libdiis/diismanager.h>
 #include <psi4-dec.h>
 
 //#ifndef MEMORY_SAFETY_FACTOR
@@ -20,14 +21,14 @@
 using namespace psi;
 
 namespace psi { namespace scf {
-     
+
 class HF : public Wavefunction {
 protected:
     SharedMatrix H_;
     SharedMatrix S_;
     SharedMatrix Shalf_;
     SharedMatrix Sphalf_;
-    
+
     // Previous iteration's energy and current energy
     double Eold_;
     double E_;
@@ -37,36 +38,36 @@ protected:
 
     // Max number of iterations for HF
     int maxiter_;
-    
+
     // Nuclear repulsion energy
     double nuclearrep_;
-    
+
     // Number of atoms and their Z value (used in find_occupation)
     int natom_;
     double *zvals_;
-    
+
     // DOCC vector from input (if found)
     int doccpi_[8];
     bool input_docc_;
-    
+
     // SOCC vector from input (if found)
     int soccpi_[8];
     bool input_socc_;
-    
+
     // Number of alpha and beta electrons
     int nalpha_, nbeta_;
     // Number of alpha and beta electrons per irrep
     int nalphapi_[8], nbetapi_[8];
-    
+
     // Mapping arrays
     int *so2symblk_;
     int *so2index_;
-    
+
     // Pairs needed for PK supermatrix
     size_t pk_pairs_;
     size_t pk_size_;
     int *pk_symoffset_;
-    
+
     // Perturb the Hamiltonian?
     int perturb_h_;
     // How big of a perturbation
@@ -74,7 +75,7 @@ protected:
     // With what...
     enum perturb { nothing, dipole_x, dipole_y, dipole_z };
     perturb perturb_;
-    
+
     // Using direct integrals?
     int direct_integrals_;
 
@@ -86,23 +87,31 @@ protected:
     int ri_nbf_;
     int *ri_pair_nu_;
     int *ri_pair_mu_;
-    
+
     double **B_ia_P_; //Three Index tensor for DF-SCF
-    
+
     double schwarz_;
 
-public:    
+    /// DIIS manager for all SCF wavefunctions
+    boost::shared_ptr<DIISManager> diis_manager_;
+
+    /// How many vectors for DIIS
+    int num_diis_vectors_;
+    /// Are we even using DIIS?
+    int diis_enabled_;
+
+public:
     // Exactly what their name says
     vector<SharedSimpleMatrix> Dipole_;
     vector<SharedSimpleMatrix> Quadrupole_;
-    
+
     // Nuclear contributions
     SimpleVector nuclear_dipole_contribution_;
     SimpleVector nuclear_quadrupole_contribution_;
-    
+
     // Formation of H is the same regardless of RHF, ROHF, UHF
     void form_H();
-    
+
     // Formation of S^+1/2 and S^-1/2 are the same
     void form_Shalf();
 
@@ -118,7 +127,7 @@ public:
 protected:
     // Common initializer
     void common_init();
-    
+
     // Compute multipole integrals
     void form_multipole_integrals();
 
@@ -128,10 +137,10 @@ protected:
     // Determine how many core and virtual orbitals to freeze
     int *compute_fcpi(int nfzc, Vector &eigvalues);
     int *compute_fvpi(int nfvc, Vector &eigvalues);
-    
+
     // Forms the _so2* mapping arrays and determines _pk_pairs
     void form_indexing();
-    
+
     // Prints some opening information
     void print_header();
 
@@ -146,7 +155,7 @@ protected:
 
     // The multiplicity of the systems (specified as 2 Ms + 1)
     int multiplicity_;
-    
+
     // The number of iterations need to reach convergence
     int iterationsNeeded_;
 
@@ -154,14 +163,14 @@ protected:
     bool addExternalPotential_;
 
 
-    void form_B(); 
+    void form_B();
     void write_B();
     void free_B();
-    
+
     inline int integral_type(int i, int j, int k, int l)
     {
         int type;
-        
+
         if (i == j && i == k && i == l)     // (ij|kl)  (11|11)
             type = 1;
         else if (i == j && k == l && i > k) // (ij|kl)  (22|11)
@@ -190,12 +199,12 @@ protected:
             type = 13;
         else                                // (ij|kl)  (41|32)
             type = 14;
-        
+
         return type;
     }
 public:
     HF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
-    
+
     virtual ~HF();
 };
 

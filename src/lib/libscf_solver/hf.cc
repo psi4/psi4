@@ -31,8 +31,7 @@
 #include <libmints/integral.h>
 #include <libmints/molecule.h>
 
-
-
+using namespace boost;
 using namespace std;
 using namespace psi;
 
@@ -190,6 +189,25 @@ void HF::common_init()
     {
         schwarz_ = options_.get_double("SCHWARZ_CUTOFF");
     }
+
+    // Handle common diis info
+    diis_enabled_ = true;
+    num_diis_vectors_ = 4;
+
+    // Allocate memory for DIISnum_diis_vectors_
+    //  First, did the user request a different number of diis vectors?
+    num_diis_vectors_ = options_.get_int("DIIS_VECTORS");
+    diis_enabled_ = options_.get_bool("DIIS");
+
+    // Don't perform DIIS if less than 2 vectors requested, or user requested a negative number
+    if (num_diis_vectors_ < 2) {
+        // disable diis
+        diis_enabled_ = false;
+    }
+
+    // Initialize DIIS manager
+    if (diis_enabled_)
+        diis_manager_ = shared_ptr<DIISManager>(new DIISManager(num_diis_vectors_, "HF DIIS vector"));
 
     // Alloc memory for multipoles
     Dipole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Dipole X SO-basis")));

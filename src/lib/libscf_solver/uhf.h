@@ -9,7 +9,7 @@
 using namespace psi;
 
 namespace psi { namespace scf {
-    
+
 class UHF : public HF {
 protected:
     SharedMatrix Fa_, Fb_;
@@ -21,7 +21,7 @@ protected:
 
     double *p_jk_;
     double *p_k_;
-    
+
     // The alpha and beta external potentials
     double ***Va_;
     double ***Vb_;
@@ -40,11 +40,14 @@ protected:
     void form_PK();
     virtual void form_F();
 
+    void save_fock();
+    void diis();
+
     bool test_convergency();
     void save_information();
-	
+
     void common_init();
-    
+
     void compute_multipole();
 public:
     UHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
