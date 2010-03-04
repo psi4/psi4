@@ -21,7 +21,7 @@ void print_usage();
 /*!
 ** psi_start():
 ** This function initializes the input, output files, file prefix, etc.,
-** by checking command line arguments and environmental variables. It also 
+** by checking command line arguments and environmental variables. It also
 ** initializes the input parsing library.
 **
 ** \param argc       = number of command-line arguments passed
@@ -45,7 +45,7 @@ int psi_start(int argc, char *argv[])
   script              = false;
 
   // A string listing of valid short option letters
-  const char* const short_options = "ahvVcwo:p:i:s";
+  const char* const short_options = "ahvVcwo:p:i:sm";
   const struct option long_options[] = {
     { "append",  0, NULL, 'a' },
     { "help",    0, NULL, 'h' },
@@ -57,6 +57,7 @@ int psi_start(int argc, char *argv[])
     { "prefix",  1, NULL, 'p' },
     { "input",   1, NULL, 'i' },
     { "script",  0, NULL, 's' },
+    { "messy",   0, NULL, 'm' },
     { NULL,      0, NULL,  0  }
   };
 
@@ -88,6 +89,10 @@ int psi_start(int argc, char *argv[])
 
       case 'v': // -v or --verbose
       verbose = true;
+      break;
+
+      case 'm': // -m or --messy
+      messy = true;
       break;
 
       case 'V': // -V or --version
@@ -176,7 +181,7 @@ int psi_start(int argc, char *argv[])
   if(psirc != NULL) {
     ip_append(psirc, stderr);
     fclose(psirc);
-  }  
+  }
 
   /* lastly, everybody needs DEFAULT and PSI sections */
   ip_cwk_add(const_cast<char*>(":DEFAULT"));
@@ -192,7 +197,7 @@ int psi_start(int argc, char *argv[])
       errcod = ip_string(const_cast<char*>(":PSI:FILES:DEFAULT:NAME"),&tmp_prefix,0);
     if(tmp_prefix == NULL)
       errcod = ip_string(const_cast<char*>(":PSI:NAME"),&tmp_prefix,0);
-    if(tmp_prefix == NULL) 
+    if(tmp_prefix == NULL)
       tmp_prefix = PSI_DEFAULT_FILE_PREFIX;
 
     fprefix = tmp_prefix;

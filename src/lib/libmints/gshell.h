@@ -128,6 +128,7 @@ public:
 
     /// Basis function index where this shell starts.
     int function_index() const { return start_; }
+    void set_function_index(int i) { start_ = i; }
 };
 
 }

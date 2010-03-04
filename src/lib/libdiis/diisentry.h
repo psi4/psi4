@@ -13,7 +13,7 @@ namespace psi{ namespace libdiis{
    * @Brief The DIISManager class is used to manage DIIS quantities and
    * their corresponding error vectors.
    */
-  
+
 class DIISEntry{
     public:
         /**
@@ -49,14 +49,24 @@ class DIISEntry{
         void set_vector(double *vec) {_vector = vec;}
         /// set the error vector
         void set_error_vector(double *vec) {_errorVector = vec;}
-        /// Put this entry on disk and free the memory
-        void dump_to_disk();
-        /// Allocate memory and read from disk
-        void read_from_disk();
+        /// Put this vector entry on disk and free the memory
+        void dump_vector_to_disk();
+        /// Allocate vector memory and read from disk
+        void read_vector_from_disk();
+        /// Put this error vector entry on disk and free the memory
+        void dump_error_vector_to_disk();
+        /// Allocate error vector memory and read from disk
+        void read_error_vector_from_disk();
+        /// Free vector memory
+        void free_vector_memory();
+        /// Free error vector memory
+        void free_error_vector_memory();
         /// Returns the error vector
-        const double *errorVector() {read_from_disk(); return _errorVector;}
+        const double *errorVector() {read_error_vector_from_disk(); return _errorVector;}
         /// Returns the vector
-        const double *vector() {read_from_disk(); return _vector;}
+        const double *vector() {read_vector_from_disk(); return _vector;}
+        /// Open the psi file, if needed.
+        void open_psi_file();
     protected:
         /// The list of which dot products, with other DIISEntries, are known
         std::map<int, bool> _knownDotProducts;
@@ -78,6 +88,8 @@ class DIISEntry{
         double *_vector;
         /// The label used for disk storage
         std::string _label;
+        /// PSIO object
+        shared_ptr<PSIO> _psio;
 };
 
 }} // End namespaces

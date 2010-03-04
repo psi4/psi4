@@ -27,7 +27,7 @@ psi4_driver(Options & options, int argc, char *argv[])
 {
     // Initialize the list of function pointers for each module
     setup_driver(options);
-    
+
     if (options.get_str("DERTYPE") == "NONE")
         options.set_str("DERTYPE", "ENERGY");
 
@@ -121,17 +121,17 @@ psi4_driver(Options & options, int argc, char *argv[])
     --argc;
 
     // variables to parse string in psi.dat
-    string thisJobWithArguments; 
+    string thisJobWithArguments;
     stringstream ss;
-    vector<string> tokens; 
-    string buf; 
+    vector<string> tokens;
+    string buf;
 
     for(int n = 0; n < numTasks; ++n){
         char *thisJob;
         errcod = ip_string(jobList, &thisJob, 1, n);
 
         // tokenize string in psi.dat
-        thisJobWithArguments.assign(thisJob); 
+        thisJobWithArguments.assign(thisJob);
         ss.clear();
         ss << thisJobWithArguments;
         while (ss >> buf)
@@ -143,14 +143,14 @@ psi4_driver(Options & options, int argc, char *argv[])
         argc_new = argc + tokens.size();
         for (i=0; i<tokens.size(); ++i)
           argv_new[argc+i] = const_cast<char *>(tokens[i].c_str());
-        
+
         // Make sure the job name is all upper case
         int length = strlen(thisJob);
         std::transform(thisJob, thisJob + length, thisJob, ::toupper);
         if(myid == 0) {
           fprintf(outfile, "\n  Job %d is %s\n", n, thisJob); fflush(outfile);
           fprintf(outfile, "  with command-like argument: ");
-          for (i=0; i<argc_new; ++i) fprintf(outfile," %s ", argv_new[i]); 
+          for (i=0; i<argc_new; ++i) fprintf(outfile," %s ", argv_new[i]);
         }
         read_options(thisJob, options);
 
@@ -191,8 +191,9 @@ psi4_driver(Options & options, int argc, char *argv[])
         fflush(outfile);
     }
 
-    psiclean();
-    
+    if (!messy)
+        psiclean();
+
     return Success;
 }
 

@@ -16,7 +16,7 @@ namespace psi{ namespace libdiis{
   /**
      @Brief The DIISManager class handles DIIS extrapolations.
    */
-  
+
 class DIISManager{
     public:
         /**
@@ -33,10 +33,10 @@ class DIISManager{
          * OldestFirst - A first-in-first-out policy is used
          */
         enum RemovalPolicy {LargestError, OldestAdded};
-        
+
         DIISManager(int maxSubspaceSize, std::string label,
                     RemovalPolicy = LargestError,
-                    StoragePolicy = InCore);
+                    StoragePolicy = OnDisk);
         DIISManager() {_maxSubspaceSize = 0;}
         ~DIISManager();
 

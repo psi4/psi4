@@ -5,6 +5,8 @@
 #include <libmints/vector.h>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
+#include <libpsio/psio.hpp>
+#include <psifiles.h>
 
 namespace psi{ namespace libdiis{
 
@@ -234,17 +236,20 @@ DIISManager::add_entry(int numQuantities, ...)
 
     int entryID = get_next_entry_id();
     if(_subspace.size() < _maxSubspaceSize){
-        _subspace.push_back(new DIISEntry(_label, _entryCount++, entryID,
+        _subspace.push_back(new DIISEntry(_label, entryID, _entryCount++,
                             _errorVectorSize, errorVectorPtr,
                             _vectorSize, vectorPtr));
     }else{
         delete _subspace[entryID];
-        _subspace[entryID] = new DIISEntry(_label, _entryCount++, entryID,
+        _subspace[entryID] = new DIISEntry(_label, entryID, _entryCount++,
                                            _errorVectorSize, errorVectorPtr,
                                            _vectorSize, vectorPtr);
     }
 
-    if(_storagePolicy == OnDisk) _subspace[entryID]->dump_to_disk();
+    if(_storagePolicy == OnDisk) {
+        _subspace[entryID]->dump_vector_to_disk();
+        _subspace[entryID]->dump_error_vector_to_disk();
+    }
 
     // Make we don't know any inner products involving this new entry
     for(int i = 0; i < _subspace.size(); ++i)
@@ -313,22 +318,22 @@ DIISManager::extrapolate(int numQuantities, ...)
             if(entryI->dot_is_known_with(j)){
                 bMatrix[i][j] = entryI->dot_with(j);
             }else{
-                double dot = C_DDOT(_errorVectorSize, 
+                double dot = C_DDOT(_errorVectorSize,
                                     const_cast<double*>(entryI->errorVector()), 1,
                                     const_cast<double*>(entryJ->errorVector()), 1);
                 bMatrix[i][j] = dot;
                 entryI->set_dot_with(j, dot);
                 entryJ->set_dot_with(i, dot);
                 if(_storagePolicy == OnDisk){
-                    entryI->dump_to_disk();
-                    entryJ->dump_to_disk();
+                    entryI->free_error_vector_memory();
+                    entryJ->free_error_vector_memory();
                 }
             }
         }
     }
     coefficients[_subspace.size()] = 1.0;
     bMatrix[_subspace.size()][_subspace.size()] = 0.0;
-    
+
     C_DGESV(dimension, 1, bMatrix[0], dimension, pivots, coefficients, dimension);
 
     dpdfile2 *file2;
@@ -413,7 +418,7 @@ DIISManager::extrapolate(int numQuantities, ...)
                 default:
                     throw SanityCheckError("Unknown input type", __FILE__, __LINE__);
             }
-            if(_storagePolicy == OnDisk) _subspace[i]->dump_to_disk();
+            if(_storagePolicy == OnDisk) _subspace[i]->free_vector_memory();
         }
         va_end(args);
     }
@@ -422,7 +427,8 @@ DIISManager::extrapolate(int numQuantities, ...)
 
 DIISManager::~DIISManager()
 {
-    
+    if (_default_psio_lib_->open_check(PSIF_LIBDIIS))
+        _default_psio_lib_->close(PSIF_LIBDIIS, 1);
 }
 
 }} // Namespaces
