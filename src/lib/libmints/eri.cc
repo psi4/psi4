@@ -13,7 +13,6 @@
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define EPS 1.0e-17
-#define TABLESIZE 121
 
 using namespace psi;
 
@@ -134,7 +133,7 @@ ERI::ERI(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet>bs2, shared_ptr<BasisSet>
     }
     memset(source_, 0, sizeof(double)*size);
 
-    init_fjt(4*max_am + DERIV_LVL);
+//    init_fjt(4*max_am + DERIV_LVL);
 
     screen_ = false;
     if (schwarz != 0.0)
@@ -157,8 +156,8 @@ ERI::~ERI()
     delete[] tformbuf_;
     delete[] target_;
     delete[] source_;
-    delete[] denom_;
-    free_block(d_);
+//    delete[] denom_;
+//    free_block(d_);
     free_libint(&libint_);
     if (deriv_)
         free_libderiv(&libderiv_);
@@ -505,164 +504,6 @@ size_t ERI::memory_to_store_shell_pairs(const shared_ptr<BasisSet> &bs1, const s
         }
     }
     return mem;
-}
-
-// Taken from CINTS
-void ERI::init_fjt(int max)
-{
-    int i,j;
-    double denom,d2jmax1,r2jmax1,wval,d2wval,sum,term,rexpw;
-
-    int n1 = max+7;
-    int n2 = TABLESIZE;
-    d_ = block_matrix(n1, n2);
-
-    /* Tabulate the gamma function for t(=wval)=0.0. */
-    denom = 1.0;
-    for (i=0; i<n1; i++) {
-        d_[i][0] = 1.0/denom;
-        denom += 2.0;
-    }
-
-    /* Tabulate the gamma function from t(=wval)=0.1, to 12.0. */
-    d2jmax1 = 2.0*(n1-1) + 1.0;
-    r2jmax1 = 1.0/d2jmax1;
-    for (i=1; i<TABLESIZE; i++) {
-        wval = 0.1 * i;
-        d2wval = 2.0 * wval;
-        term = r2jmax1;
-        sum = term;
-        denom = d2jmax1;
-        for (j=2; j<=200; j++) {
-            denom = denom + 2.0;
-            term = term * d2wval / denom;
-            sum = sum + term;
-            if (term <= 1.0e-15) break;
-        }
-        rexpw = exp(-wval);
-
-      /* Fill in the values for the highest j gtable entries (top row). */
-        d_[n1-1][i] = rexpw * sum;
-
-      /* Work down the table filling in the rest of the column. */
-        denom = d2jmax1;
-        for (j=n1 - 2; j>=0; j--) {
-            denom = denom - 2.0;
-            d_[j][i] = (d_[j+1][i]*d2wval + rexpw)/denom;
-        }
-    }
-
-    /* Form some denominators, so divisions can be eliminated below. */
-    denom_ = new double[max+1];
-    denom_[0] = 0.0;
-    for (i=1; i<=max; i++) {
-        denom_[i] = 1.0/(2*i - 1);
-    }
-
-    wval_infinity_ = 2*max + 37.0;
-    itable_infinity_ = (int) (10 * wval_infinity_);
-}
-
-void ERI::int_fjt(double *F, int J, double wval)
-{
-    const double sqrpih =  0.886226925452758;
-    const double coef2 =  0.5000000000000000;
-    const double coef3 = -0.1666666666666667;
-    const double coef4 =  0.0416666666666667;
-    const double coef5 = -0.0083333333333333;
-    const double coef6 =  0.0013888888888889;
-    const double gfac30 =  0.4999489092;
-    const double gfac31 = -0.2473631686;
-    const double gfac32 =  0.321180909;
-    const double gfac33 = -0.3811559346;
-    const double gfac20 =  0.4998436875;
-    const double gfac21 = -0.24249438;
-    const double gfac22 =  0.24642845;
-    const double gfac10 =  0.499093162;
-    const double gfac11 = -0.2152832;
-    const double gfac00 = -0.490;
-
-    double wdif, d2wal, rexpw, /* denom, */ gval, factor, rwval, term;
-    int i, itable, irange;
-
-    /* Compute an index into the table. */
-    /* The test is needed to avoid floating point exceptions for
-    * large values of wval. */
-    if (wval > wval_infinity_) {
-        itable = itable_infinity_;
-    }
-    else {
-        itable = (int) (10.0 * wval);
-    }
-
-    /* If itable is small enough use the table to compute int_fjttable. */
-    if (itable < TABLESIZE) {
-
-        wdif = wval - 0.1 * itable;
-
-      /* Compute fjt for J. */
-        F[J] = (((((coef6 * d_[J+6][itable]*wdif
-            + coef5 * d_[J+5][itable])*wdif
-            + coef4 * d_[J+4][itable])*wdif
-            + coef3 * d_[J+3][itable])*wdif
-            + coef2 * d_[J+2][itable])*wdif
-            -  d_[J+1][itable])*wdif
-            +  d_[J][itable];
-
-      /* Compute the rest of the fjt. */
-        d2wal = 2.0 * wval;
-        rexpw = exp(-wval);
-      /* denom = 2*J + 1; */
-        for (i=J; i>0; i--) {
-        /* denom = denom - 2.0; */
-            F[i-1] = (d2wal*F[i] + rexpw)*denom_[i];
-        }
-    }
-    /* If wval <= 2*J + 36.0, use the following formula. */
-    else if (itable <= 20*J + 360) {
-        rwval = 1.0/wval;
-        rexpw = exp(-wval);
-
-      /* Subdivide wval into 6 ranges. */
-        irange = itable/30 - 3;
-        if (irange == 1) {
-            gval = gfac30 + rwval*(gfac31 + rwval*(gfac32 + rwval*gfac33));
-            F[0] = sqrpih*sqrt(rwval) - rexpw*gval*rwval;
-        }
-        else if (irange == 2) {
-            gval = gfac20 + rwval*(gfac21 + rwval*gfac22);
-            F[0] = sqrpih*sqrt(rwval) - rexpw*gval*rwval;
-        }
-        else if (irange == 3 || irange == 4) {
-            gval = gfac10 + rwval*gfac11;
-            F[0] = sqrpih*sqrt(rwval) - rexpw*gval*rwval;
-        }
-        else if (irange == 5 || irange == 6) {
-            gval = gfac00;
-            F[0] = sqrpih*sqrt(rwval) - rexpw*gval*rwval;
-        }
-        else {
-            F[0] = sqrpih*sqrt(rwval);
-        }
-
-      /* Compute the rest of the int_fjttable from table->d[0]. */
-        factor = 0.5 * rwval;
-        term = factor * rexpw;
-        for (i=1; i<=J; i++) {
-            F[i] = factor * F[i-1] - term;
-            factor = rwval + factor;
-        }
-    }
-    /* For large values of wval use this algorithm: */
-    else {
-        rwval = 1.0/wval;
-        F[0] = sqrpih*sqrt(rwval);
-        factor = 0.5 * rwval;
-        for (i=1; i<=J; i++) {
-            F[i] = factor * F[i-1];
-            factor = rwval + factor;
-        }
-    }
 }
 
 void ERI::compute_shell(int sh1, int sh2, int sh3, int sh4)
@@ -1368,7 +1209,7 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
                     libderiv_.PrimQuartet[nprim].twozeta_d = 2.0 * a4;
 
                     double T = rho * PQ2;
-                    int_fjt(libderiv_.PrimQuartet[nprim].F, am+DERIV_LVL, T);
+                    calc_f(libint_.PrimQuartet[nprim].F, am+1, T);
 
                     // Modify F to include overlap of ab and cd, eqs 14, 15, 16 of libint manual
                     double Scd = pow(M_PI*oon, 3.0/2.0) * exp(-a3*a4*oon*CD2) * c3 * c4;

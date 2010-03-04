@@ -53,17 +53,10 @@ class ERI : public TwoBodyInt
 
     //! Maximum cartesian class size.
     int max_cart_;
-    double **d_;
-    double *denom_;
-    double wval_infinity_;
-    int itable_infinity_;
 
     int screen_; //to screen or not to screen, that is the question
     double schwarz2_; //square of schwarz cutoff value;
     double *schwarz_norm_;
-
-    void init_fjt(int);
-    void int_fjt(double *, int, double);
 
     //! Computes the ERIs between four shells.
     void compute_quartet(int, int, int, int);
