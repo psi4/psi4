@@ -591,7 +591,7 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
         if (!from_string<int>(natom, what[1], std::dec))
             throw PSIEXCEPTION("Molecule::init_with_xyz: Unable to convert number of atoms from xyz file.");
 
-        cout << "init_with_xyz: " << what.size() << endl;
+//        cout << "init_with_xyz: " << what.size() << endl;
         if (what.size() == 3) {
             string s(what[2].first, what[2].second);
             if (boost::iequals(bohr, s) || boost::iequals(au, s)) {

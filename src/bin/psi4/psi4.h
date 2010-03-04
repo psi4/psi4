@@ -26,6 +26,9 @@ EXT bool verbose;
 /*! sanity check boolean */
 EXT bool check_only;
 
+/*! Leave psi temp file */
+EXT bool messy;
+
 /* clean-up */
 EXT bool clean_only;
 
@@ -33,5 +36,5 @@ EXT bool clean_only;
 EXT bool script;
 
 }
-  
+
 #endif

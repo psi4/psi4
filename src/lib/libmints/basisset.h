@@ -183,6 +183,12 @@ public:
      */
     const shared_ptr<SimpleMatrix> uso_to_bf() const { return simple_mat_uso2bf_; }
 
+    /** Refresh internal basis set data. Useful if someone has pushed to shells_.
+     *  Pushing to shells_ happens in the BasisSetParsers, so the parsers will
+     *  call refresh().
+     */
+    void refresh();
+
     /** Returns an empty basis set object.
      *
      *  Returns a BasisSet object that actually has a single s-function
@@ -214,6 +220,8 @@ public:
     static shared_ptr<BasisSet> construct(const shared_ptr<BasisSetParser>& parser,
         const shared_ptr<Molecule>& mol,
         const std::vector<std::string> &basisnames);
+
+    friend class Gaussian94BasisSetParser;
 };
 
 }

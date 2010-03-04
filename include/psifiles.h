@@ -2,13 +2,13 @@
 ** PSIFILES.H
 **
 ** This header file contains the definitions of the numbers assigned
-**  to various binary files in PSI.  This was created primarily to 
+**  to various binary files in PSI.  This was created primarily to
 **  help avoid conflicts in the numbering of new PSI files in developmental
 **  programs but will grow to encompass some older binary files.
 **
 ** This additional level of abstraction will aid in the maintenance of
 **  code.  You are strongly encouraged to refer to files using these
-**  definitions rather than the actual numbers; the numbers may change 
+**  definitions rather than the actual numbers; the numbers may change
 **  in the future but the names will not.
 **
 ** Created by C. David Sherrill on 29 April 1998
@@ -46,6 +46,9 @@
 #define PSIF_LIBTRANS_DPD      61 // All transformed integrals in DPD format are sent here by default
 #define PSIF_LIBTRANS_A_HT     62 // The Alpha half-transformed integrals in DPD format
 #define PSIF_LIBTRANS_B_HT     63 // The Beta half-tranformed integrals in DPD format
+
+// Storage file for libdiis
+#define PSIF_LIBDIIS           64
 
 #define PSIF_MO_TEI            72
 #define PSIF_MO_OPDM           73
@@ -105,7 +108,7 @@
 #define PSIF_MO_AA_R12SQ       217
 #define PSIF_MO_BB_R12SQ       218
 #define PSIF_MO_AB_R12SQ       219
-#define PSIF_MO_R12SQ          220                                    
+#define PSIF_MO_R12SQ          220
 
 /* All of these one-electron quantities have been moved into PSIF_OEI
    Most integrals are real Hermitian hence only lower triangle of the matrix is written out */

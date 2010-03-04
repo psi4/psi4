@@ -318,3 +318,47 @@ shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parse
 
     return basisset;
 }
+
+void BasisSet::refresh()
+{
+    // Reset data to initial values
+    nshells_ = shells_.size();
+    nprimitives_ = 0;
+    nao_ = 0;
+    nbf_ = 0;
+    max_am_ = 0;
+    max_nprimitives_ = 0;
+    puream_ = false;
+
+    if (shell_first_basis_function_)
+        delete[] shell_first_basis_function_;
+    if (shell_first_ao_)
+        delete[] shell_first_ao_;
+    if (shell_center_)
+        delete[] shell_center_;
+
+    shell_first_basis_function_ = new int[nshells_];
+    shell_first_ao_             = new int[nshells_];
+    shell_center_               = new int[nshells_];
+
+    for (int i=0; i<nshells_; ++i) {
+        shell_center_[i]   = shells_[i]->ncenter();
+        shell_first_ao_[i] = nao_;
+        shell_first_basis_function_[i] = nbf_;
+        shells_[i]->set_function_index(nbf_);
+
+        nprimitives_ += shells_[i]->nprimitive();
+        nao_         += shells_[i]->ncartesian();
+        nbf_         += shells_[i]->nfunction();
+
+        if (max_am_ < shells_[i]->am())
+            max_am_ = shells_[i]->am();
+
+        if (max_nprimitives_ < shells_[i]->nprimitive())
+            max_nprimitives_ = shells_[i]->nprimitive();
+
+        if (puream_ == false && shells_[i]->is_pure())
+            puream_ = true;
+
+    }
+}

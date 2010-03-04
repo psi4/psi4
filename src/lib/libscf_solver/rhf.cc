@@ -416,9 +416,6 @@ void RHF::save_fock()
         initialized_diis_manager = true;
     }
 
-    // Save the current Fock matrix
-//    diis_F_[current_diis_fock_]->copy(F_);
-
     // Determine error matrix for this Fock
     SharedMatrix FDS(factory_.create_matrix()), DS(factory_.create_matrix());
     SharedMatrix SDF(factory_.create_matrix()), DF(factory_.create_matrix());
@@ -433,10 +430,8 @@ void RHF::save_fock()
     Matrix FDSmSDF;
     FDSmSDF.copy(FDS);
     FDSmSDF.subtract(SDF);
-//    diis_E_[current_diis_fock_]->copy(&FDSmSDF);
 
     // Orthonormalize the error matrix
-//    diis_E_[current_diis_fock_]->transform(Shalf_);
     FDSmSDF.transform(Shalf_);
 
     diis_manager_->add_entry(2, &FDSmSDF, F_.get());
