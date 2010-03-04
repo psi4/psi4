@@ -9,6 +9,7 @@
 #include <libmints/onebody.h>
 #include <libmints/twobody.h>
 #include <libmints/integral.h>
+#include <libmints/fjt.h>
 
 #include <libint/libint.h>
 #include <libderiv/libderiv.h>
@@ -57,6 +58,9 @@ class ERI : public TwoBodyInt
     int screen_; //to screen or not to screen, that is the question
     double schwarz2_; //square of schwarz cutoff value;
     double *schwarz_norm_;
+
+    //! Fj(T)
+    Fjt *fjt_;
 
     //! Computes the ERIs between four shells.
     void compute_quartet(int, int, int, int);

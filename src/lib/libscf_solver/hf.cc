@@ -202,7 +202,6 @@ void HF::common_init()
     Quadrupole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Quadrupole YZ")));
     Quadrupole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Quadrupole ZZ")));
 
-    printf("print_ = %d\n", print_);
     if(print_ > 1) print_header();
     if (direct_integrals_ == false && ri_integrals_ == false)
         form_indexing();

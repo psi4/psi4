@@ -133,7 +133,8 @@ ERI::ERI(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet>bs2, shared_ptr<BasisSet>
     }
     memset(source_, 0, sizeof(double)*size);
 
-//    init_fjt(4*max_am + DERIV_LVL);
+    fjt_ = new Taylor_Fjt(bs1->max_am() + bs2->max_am() + bs3->max_am() + bs4->max_am() + deriv_,
+                          1e-15);
 
     screen_ = false;
     if (schwarz != 0.0)
@@ -156,8 +157,7 @@ ERI::~ERI()
     delete[] tformbuf_;
     delete[] target_;
     delete[] source_;
-//    delete[] denom_;
-//    free_block(d_);
+    delete fjt_;
     free_libint(&libint_);
     if (deriv_)
         free_libderiv(&libderiv_);
@@ -754,11 +754,11 @@ void ERI::compute_quartet(int sh1, int sh2, int sh3, int sh4)
                         double PQ2 = PQ[0]*PQ[0] + PQ[1]*PQ[1] + PQ[2]*PQ[2];
                         double T = rho*PQ2;
 
-                        calc_f(libint_.PrimQuartet[nprim].F, am+1, T);
+                        double *F = fjt_->values(am, T);
 
                         // Modify F to include overlap of ab and cd, eqs 14, 15, 16 of libint manual
                         for (int i=0; i<=am; ++i) {
-                            libint_.PrimQuartet[nprim].F[i] *= coef1;
+                            libint_.PrimQuartet[nprim].F[i] = F[i] * coef1;
                         }
 
                         libint_.PrimQuartet[nprim].oo2zn = 0.5 * oozn;
@@ -904,13 +904,14 @@ void ERI::compute_quartet(int sh1, int sh2, int sh3, int sh4)
                         libint_.PrimQuartet[nprim].oo2p = oo2rho;
 
                         double T = rho * PQ2;
-                        calc_f(libint_.PrimQuartet[nprim].F, am+1, T);
+                        double *F = fjt_->values(am, T);
+//                        calc_f(libint_.PrimQuartet[nprim].F, am+1, T);
 
                         // Modify F to include overlap of ab and cd, eqs 14, 15, 16 of libint manual
                         double Scd = pow(M_PI*oon, 3.0/2.0) * exp(-a3*a4*oon*CD2) * c3 * c4;
                         double val = 2.0 * sqrt(rho * M_1_PI) * Sab * Scd;
                         for (int i=0; i<=am; ++i) {
-                            libint_.PrimQuartet[nprim].F[i] *= val;
+                            libint_.PrimQuartet[nprim].F[i] = F[i] * val;
                         }
 //                        fprintf(outfile, "----- %d\n", nprim);
 //                        fprintf(outfile, "poz = %lf\n", libint_.PrimQuartet[nprim].poz);
@@ -1209,13 +1210,15 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
                     libderiv_.PrimQuartet[nprim].twozeta_d = 2.0 * a4;
 
                     double T = rho * PQ2;
-                    calc_f(libint_.PrimQuartet[nprim].F, am+1, T);
+                    double *F = fjt_->values(am, T);
+
+//                    calc_f(libint_.PrimQuartet[nprim].F, am+1, T);
 
                     // Modify F to include overlap of ab and cd, eqs 14, 15, 16 of libint manual
                     double Scd = pow(M_PI*oon, 3.0/2.0) * exp(-a3*a4*oon*CD2) * c3 * c4;
                     double val = 2.0 * sqrt(rho * M_1_PI) * Sab * Scd;
                     for (int i=0; i<=am+DERIV_LVL; ++i) {
-                        libderiv_.PrimQuartet[nprim].F[i] *= val;
+                        libderiv_.PrimQuartet[nprim].F[i] = F[i] * val;
                     }
 
                     nprim++;
@@ -1266,65 +1269,66 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
 
     // Results are in source_
 }
+
 int ERI::shell_is_zero(int sh1, int sh2, int sh3, int sh4)
 {
+    if (schwarz2_ != 0.0)
+        if (screen_ == false)
+            form_sieve();
 
-        if (schwarz2_ != 0.0)
-            if (screen_ == false)
-                form_sieve();
-
-        //fprintf(outfile,"\nSchwarz val is %f",schwarz_norm_[ioff[((sh1>sh2)?sh1:sh2)]+((sh1>sh2)?sh2:sh1)]*schwarz_norm_[ioff[((sh3>sh4)?sh3:sh4)]+((sh3>sh4)?sh4:sh3)]);
-        if (screen_ == true)
+    //fprintf(outfile,"\nSchwarz val is %f",schwarz_norm_[ioff[((sh1>sh2)?sh1:sh2)]+((sh1>sh2)?sh2:sh1)]*schwarz_norm_[ioff[((sh3>sh4)?sh3:sh4)]+((sh3>sh4)?sh4:sh3)]);
+    if (screen_ == true)
+    {
+        if (schwarz_norm_[ioff[((sh1>sh2)?sh1:sh2)]+((sh1>sh2)?sh2:sh1)]*schwarz_norm_[ioff[((sh3>sh4)?sh3:sh4)]+((sh3>sh4)?sh4:sh3)]<schwarz2_)
         {
-            if (schwarz_norm_[ioff[((sh1>sh2)?sh1:sh2)]+((sh1>sh2)?sh2:sh1)]*schwarz_norm_[ioff[((sh3>sh4)?sh3:sh4)]+((sh3>sh4)?sh4:sh3)]<schwarz2_)
-            {
-                //fprintf(outfile," Shell (%d,%d|%d,%d) is zero",sh1,sh2,sh3,sh4);
-                return true;
-            }
-            else
-            {
-                //fprintf(outfile," Shell (%d,%d|%d,%d) is nonzero",sh1,sh2,sh3,sh4);
-                return false;
-            }
+            //fprintf(outfile," Shell (%d,%d|%d,%d) is zero",sh1,sh2,sh3,sh4);
+            return true;
         }
-        return false;
+        else
+        {
+            //fprintf(outfile," Shell (%d,%d|%d,%d) is nonzero",sh1,sh2,sh3,sh4);
+            return false;
+        }
+    }
+    return false;
 }
 
 void ERI::form_sieve()
 {
     //fprintf(outfile,"Starting Sieve"); fflush(outfile);
 
-  int nshell = original_bs1_->nshell();
-  //fprintf(outfile,"Read"); fflush(outfile);
-  schwarz_norm_ = init_array(nshell*(nshell+1)/2);
+    int nshell = original_bs1_->nshell();
+    //fprintf(outfile,"Read"); fflush(outfile);
+    schwarz_norm_ = init_array(nshell*(nshell+1)/2);
 
-  double cut = schwarz2_;
-  schwarz2_ = 0.0;
+    double cut = schwarz2_;
+    schwarz2_ = 0.0;
 
-  double max;
-  int MU,NU,numMU,numNU,N,M, MN, ind;
-  for (MU = 0, MN = 0; MU < nshell; MU++)
-    for (NU = 0; NU <= MU; NU++, MN++)
-    {
-        compute_shell(MU,NU,MU,NU);
-        numMU = original_bs1_->shell(MU)->nfunction();
-        numNU = original_bs1_->shell(NU)->nfunction();
-        max = 0.0;
+    double max;
+    int MU,NU,numMU,numNU,N,M, MN, ind;
+    for (MU = 0, MN = 0; MU < nshell; MU++) {
+        for (NU = 0; NU <= MU; NU++, MN++)
+        {
+            compute_shell(MU,NU,MU,NU);
+            numMU = original_bs1_->shell(MU)->nfunction();
+            numNU = original_bs1_->shell(NU)->nfunction();
+            max = 0.0;
 
-        for (M = 0, ind = 0; M<numMU*numMU; M++)
-            for (N = 0; N<numNU*numNU; N++, ind++)
-                if (fabs(target_[ind])>max)
-                    max = fabs(target_[ind]);
+            for (M = 0, ind = 0; M<numMU*numMU; M++)
+                for (N = 0; N<numNU*numNU; N++, ind++)
+                    if (fabs(target_[ind])>max)
+                        max = fabs(target_[ind]);
 
-        schwarz_norm_[ioff[MU]+NU] = max;
+            schwarz_norm_[ioff[MU]+NU] = max;
+        }
     }
-  schwarz2_ = cut;
-  screen_ = true;
+    schwarz2_ = cut;
+    screen_ = true;
 
-  //fprintf(outfile,"Norm:\n");
-  //for (int ij = 0; ij<nshell*(nshell+1)/2; ij++)
+    //fprintf(outfile,"Norm:\n");
+    //for (int ij = 0; ij<nshell*(nshell+1)/2; ij++)
     //fprintf(outfile,"%20.10f\n",schwarz_norm_[ij]);
 
-  //fprintf(outfile,"Iterations done\n"); fflush(outfile);
+    //fprintf(outfile,"Iterations done\n"); fflush(outfile);
 }
 
