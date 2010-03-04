@@ -12,7 +12,7 @@ PSILIBS = \
 -lPSI_scf -lPSI_ccenergy -lPSI_ccsort -lPSI_input3 -lPSI_cscf -lPSI_cints -lPSI_transqt2 -lPSI_cctriples \
 -lPSI_mp2 -lPSI_lmp2 -lPSI_scf_solver -lPSI_psimrcc \
 -lPSI_mints -lPSI_dpd -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_qt -lPSI_ciomr -lPSI_ipv1 -lPSI_options \
--lPSI_deriv -lPSI_int -lPSI_util -lPSI_parallel -lboost_python -lboost_regex -lboost_thread
+-lPSI_deriv -lPSI_int -lPSI_util -lPSI_parallel -lPSI_diis -lboost_python -lboost_regex -lboost_thread
 
 CXXSRC = read_atom_basis.cc \
 read_atom_basis.cc set_memory.cc \
