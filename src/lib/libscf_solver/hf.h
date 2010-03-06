@@ -80,7 +80,7 @@ protected:
     int direct_integrals_;
 
     //DF Storage Scheme
-    enum df_storage { full, flip_B_core, flip_B_disk, k_incore, disk};
+    enum df_storage { double_full, full, flip_B_core, flip_B_disk, k_incore, disk};
     df_storage df_storage_;
 
     int ri_integrals_;
