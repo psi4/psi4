@@ -57,7 +57,9 @@ void HF::form_B()
 	string storage_type;
 	storage_type = options_.get_str("RI_STORAGE");
 	
-	if (storage_type == "IN_CORE")
+	if (storage_type == "IN_CORE_DOUBLE")
+		df_storage_ = double_full;
+	else if (storage_type == "IN_CORE")
 		df_storage_ = full;
 	else if (storage_type == "FLIP_B_DISK")
 		df_storage_ = flip_B_disk;
@@ -68,7 +70,9 @@ void HF::form_B()
 	else if (storage_type == "DEFAULT")
 	{
     	//set df_storage_ semi-heuristically based on available memory
-    	if (((long)((memA+memC)*(1.0+MEMORY_SAFETY_FACTOR)))<(memory_/sizeof(double)))
+    	if (((long)((memA+memA)*(1.0+MEMORY_SAFETY_FACTOR)))<(memory_/sizeof(double)))
+        	df_storage_ = double_full; //Double in-core, including both (ab|P) tensors
+    	else if (((long)((memA+memC)*(1.0+MEMORY_SAFETY_FACTOR)))<(memory_/sizeof(double)))
         	df_storage_ = full; //Full in-core, including both (ab|P) tensors
         else if (((long)((memA)*(1.0+MEMORY_SAFETY_FACTOR)))<(memory_/sizeof(double)))
         	df_storage_ = flip_B_disk;	//Transpose B using disk scratch and core, leave it on disk
@@ -78,8 +82,10 @@ void HF::form_B()
         	df_storage_ = disk;
     }	
 
+    if (df_storage_ == double_full)
+        fprintf(outfile,"\n  Density Fitting Algorithm proceeding In Core, Fast transform.\n"); 
     if (df_storage_ == full)
-        fprintf(outfile,"\n  Density Fitting Algorithm proceeding In Core\n"); 
+        fprintf(outfile,"\n  Density Fitting Algorithm proceeding In Core, Slow Transform.\n"); 
     else if (df_storage_ == flip_B_disk)
         fprintf(outfile,"\n  Density Fitting Algorithm proceeding with K In Core, B On Disk, Transpose in core.\n");
     else if (df_storage_ == k_incore)
@@ -97,7 +103,7 @@ void HF::form_B()
     double **J_mhalf = block_matrix(ri_nbf_, ri_nbf_);
     const double *Jbuffer = Jint->buffer();
     
-
+timer_on("Form J Matrix;");
 
     int index = 0;
 
@@ -124,6 +130,8 @@ void HF::form_B()
     }
     //fprintf(outfile,"\nJ:\n"); fflush(outfile);
     //print_mat(J,ri_nbf_,ri_nbf_,outfile);
+timer_off("Form J Matrix;");
+timer_on("Form J^-1/2;");
 
     // Form J^-1/2
     // First, diagonalize J
@@ -163,10 +171,54 @@ void HF::form_B()
 
     free_block(J);
     free_block(J_copy);
+timer_off("Form J^-1/2;");
 
     //fprintf(outfile,"\nJmhalf:\n"); fflush(outfile);
     //print_mat(J_mhalf,ri_nbf_,ri_nbf_,outfile);
-
+timer_on("Overall (B|mn)");
+    if (df_storage_ == double_full)
+    {
+    	IntegralFactory rifactory(basisset_, basisset_, ribasis_, zero);
+        TwoBodyInt* eri = rifactory.eri();
+        const double *buffer = eri->buffer();
+        double** A_ia_P = block_matrix(ri_nbf_,basisset_->nbf()*(basisset_->nbf()+1)/2); 
+        int numPshell,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu, npairs, start;
+        
+        for (MU=0; MU < basisset_->nshell(); ++MU) {
+            nummu = basisset_->shell(MU)->nfunction();
+            for (NU=0; NU <= MU; ++NU) {
+                numnu = basisset_->shell(NU)->nfunction();
+                for (Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
+            		numPshell = ribasis_->shell(Pshell)->nfunction();
+timer_on("(B|mn) Integrals");
+                    eri->compute_shell(MU, NU, Pshell, 0);
+timer_off("(B|mn) Integrals");
+                    for (mu=0, index=0; mu < nummu; ++mu) {
+                        omu = basisset_->shell(MU)->function_index() + mu;
+                        for (nu=0; nu < numnu; ++nu) {
+                            onu = basisset_->shell(NU)->function_index() + nu;
+                            for (P=0; P < numPshell; ++P, ++index) {
+                            	if(omu>=onu)
+                            	{	
+                        			PHI = ribasis_->shell(Pshell)->function_index() + P;
+                                    A_ia_P[PHI][ioff[omu]+onu]= buffer[index];
+                                }
+                            } 
+                        }
+                    } // end loop over P in Pshell
+                } // end loop over NU shell
+            } // end loop over MU shell
+            // now we've gone through all P, mu, nu for a given Pshell
+        } // end loop over P shells; done with forming MO basis (P|ia)'s
+        B_ia_P_ = block_matrix(ri_nbf_,basisset_->nbf()*(basisset_->nbf()+1)/2); 
+timer_on("(B|mn) Transform");
+        C_DGEMM('N','N',ri_nbf_,basisset_->nbf()*(basisset_->nbf()+1)/2,ri_nbf_,1.0, J_mhalf[0], ri_nbf_, A_ia_P[0], basisset_->nbf()*(basisset_->nbf()+1)/2,
+             0.0, B_ia_P_[0], basisset_->nbf()*(basisset_->nbf()+1)/2);
+timer_off("(B|mn) Transform");
+        
+	free(A_ia_P);
+        //print_mat(B_ia_P_, ri_nbf_,norbs*(norbs+1)/2 ,outfile);
+    } //HERE
     if (df_storage_ == full||df_storage_ == flip_B_disk)
     {	
     	IntegralFactory rifactory(basisset_, basisset_, ribasis_, zero);
@@ -183,7 +235,9 @@ void HF::form_B()
                 numnu = basisset_->shell(NU)->nfunction();
                 for (Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
             		numPshell = ribasis_->shell(Pshell)->nfunction();
+timer_on("(B|mn) Integrals");
                     eri->compute_shell(MU, NU, Pshell, 0);
+timer_off("(B|mn) Integrals");
                     for (mu=0, index=0; mu < nummu; ++mu) {
                         omu = basisset_->shell(MU)->function_index() + mu;
                         for (nu=0; nu < numnu; ++nu) {
@@ -207,10 +261,12 @@ void HF::form_B()
                         {
                         	for (int Q = 0; Q<ri_nbf_; Q++)
                         		Temp1[Q][0] = B_ia_P_[Q][ioff[omu]+onu];
+timer_on("(B|mn) Transform");
                         		
                         	C_DGEMM('N','N',ri_nbf_,1,ri_nbf_,
                 			1.0, J_mhalf[0], ri_nbf_, Temp1[0], 1,
                 			0.0, Temp2[0], 1);
+timer_off("(B|mn) Transform");
                         		
                         	for (int Q = 0; Q<ri_nbf_; Q++)
                         		B_ia_P_[Q][ioff[omu]+onu]=Temp2[Q][0];	
@@ -281,8 +337,10 @@ void HF::form_B()
 
                 for (Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
                     numPshell = ribasis_->shell(Pshell)->nfunction();
+timer_on("(B|mn) integrals");
 
                     eri->compute_shell(Pshell, 0, MU, NU);
+timer_off("(B|mn) integrals");
 
                     for (P=0, index=0; P < numPshell; ++P) {
                         PHI = ribasis_->shell(Pshell)->function_index() + P;
@@ -318,10 +376,14 @@ void HF::form_B()
                             //fprintf(outfile,"\n  WE here!"); fflush(outfile);
                             for (P = 0; P<ri_nbf_; P++)
                                 Temp1[P][0] = storage[P][row];
+timer_on("(B|mn) transform");
                                 
                             C_DGEMM('N','N',ri_nbf_,1,ri_nbf_,1.0, J_mhalf[0], ri_nbf_, Temp1[0], 1,0.0, &(Temp2[0][0]), 1);
+timer_off("(B|mn) transform");
                             //fprintf(outfile,"\n  Finished Transposing Quartet (%d %d| P)\n",MU,NU); fflush(outfile);
+timer_on("(B|mn) disk");
                             psio_->write(PSIF_DFSCF_BJI,"BJ Three-Index Integrals",(char *) &(Temp2[0][0]),sizeof(double)*ri_nbf_,next_PSIF_DFSCF_BJI,&next_PSIF_DFSCF_BJI);
+timer_off("(B|mn) disk");
                             row++;
                         }
                     }
@@ -335,6 +397,7 @@ void HF::form_B()
         free(Temp2);
         //fprintf(outfile,"\n  Through B on disk."); fflush(outfile);
         psio_->close(PSIF_DFSCF_BJI,1);
+timer_on("(B|mn) restripe");
         
     	//RESTRIPE
         psio_->open(PSIF_DFSCF_BJI,PSIO_OPEN_OLD);
@@ -386,9 +449,11 @@ void HF::form_B()
         free(buffer2);
         psio_->close(PSIF_DFSCF_BJI,0);
         psio_->close(PSIF_DFSCF_BJ,1);
+timer_off("(B|mn) restripe");
 
         //fprintf(outfile,"\n  BJ Restriped on disk.\n"); fflush(outfile);
     }
+timer_off("Overall (B|mn)");
 
 }
 void HF::write_B()
@@ -404,7 +469,7 @@ void HF::write_B()
 }
 void HF::free_B()
 {
-	if (df_storage_ == full)
+	if (df_storage_ == full||df_storage_ == double_full)
     		free(B_ia_P_);
     else 
     {
@@ -417,6 +482,7 @@ void RHF::form_G_from_RI()
     int norbs = basisset_->nbf(); 
     
     G_->zero();
+timer_on("Overall Coulomb");
     
 	double** D = D_->to_block_matrix();
 	//print_mat(D, norbs, norbs,outfile);
@@ -434,14 +500,18 @@ void RHF::form_G_from_RI()
     double *Gtemp = init_array(norbs*(norbs+1)/2);
 
     //B_ia_P_ in core
-    if (df_storage_ == full)
+    if (df_storage_ == full||df_storage_ == double_full)
     {
+timer_on("Coulomb DDOT");
         for (int i=0; i<ri_nbf_; i++) {
             L[i]=C_DDOT(norbs*(norbs+1)/2,D2,1,B_ia_P_[i],1);
         }
+timer_off("Coulomb DDOT");
+timer_on("Coulomb DGEMM");
 
         C_DGEMM('T','N',1,norbs*(norbs+1)/2,ri_nbf_,1.0,L,1,B_ia_P_[0],norbs*(norbs+1)/2, 0.0, Gtemp, norbs*(norbs+1)/2);    
         free(D2);
+timer_off("Coulomb DGEMM");
     } 
     //B_ia_P_ on disk
     else 
@@ -450,6 +520,7 @@ void RHF::form_G_from_RI()
         for (int ij = 0; ij<norbs*(norbs+1)/2; ij++)
             DD[ij] = D2[ioff[ri_pair_mu_[ij]]+ri_pair_nu_[ij]];
         free(D2);
+timer_on("Coulomb DDOT");
 
         psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
         psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
@@ -458,9 +529,11 @@ void RHF::form_G_from_RI()
             psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
             L[i]=C_DDOT(norbs*(norbs+1)/2,DD,1,in_buffer,1);
         }
+timer_off("Coulomb DDOT");
 
         free(DD);
         psio_->close(PSIF_DFSCF_BJ,1);
+timer_on("Coulomb DGEMM");
 
         psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
         next_PSIF_DFSCF_BJ = PSIO_ZERO;
@@ -479,6 +552,7 @@ void RHF::form_G_from_RI()
         for (int ij = 0; ij<norbs*(norbs+1)/2; ij++)
             Gtemp[ioff[ri_pair_mu_[ij]]+ri_pair_nu_[ij]] = G2[ij];
         free(G2);
+timer_off("Coulomb DGEMM");
     }
 
     free(L);
@@ -494,6 +568,8 @@ void RHF::form_G_from_RI()
     //print_mat(J,norbs,norbs,outfile); fflush(outfile);
     free(Gtemp);
     free_block(D);
+timer_off("Overall Coulomb");
+timer_on("Overall Exchange");
 
     int ndocc = doccpi_[0];
     double** Cocc = block_matrix(ndocc,norbs);
@@ -503,11 +579,12 @@ void RHF::form_G_from_RI()
     }
     double** B_im_Q;
     //B_ia_P in core, B_im_Q in core
-    if (df_storage_ == full)
+    if (df_storage_ == full||df_storage_ == double_full)
     {
         B_im_Q = block_matrix(norbs, ndocc*ri_nbf_);
         double** QS = block_matrix(ri_nbf_,norbs);
         double** Temp = block_matrix(ndocc,ri_nbf_);
+timer_on("Exchange Tensor Formation");
 
         //print_mat(B_ia_P_,ri_nbf_,norbs*(norbs+1)/2,outfile);
         //fprintf(outfile,"\nYo\n");
@@ -526,6 +603,7 @@ void RHF::form_G_from_RI()
                 }
             }
         }
+timer_off("Exchange Tensor Formation");
         //print_mat(B_im_Q,norbs,ndocc*ri_nbf_,outfile);
         free_block(QS);
         free_block(Temp);
@@ -539,6 +617,7 @@ void RHF::form_G_from_RI()
         B_im_Q = block_matrix(norbs, ndocc*ri_nbf_);
 
         int mu, nu;
+timer_on("Exchange Tensor Formation");
 
         for (int Q = 0; Q<ri_nbf_; Q++)
         {
@@ -555,6 +634,7 @@ void RHF::form_G_from_RI()
                 }
             }
         }
+timer_off("Exchange Tensor Formation");
 
         psio_->close(PSIF_DFSCF_BJ,1);
         free(in_buffer);
@@ -564,6 +644,7 @@ void RHF::form_G_from_RI()
         psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
         psio_->open(PSIF_DFSCF_K,PSIO_OPEN_NEW);
         psio_address next_PSIF_DFSCF_K = PSIO_ZERO;
+timer_on("Exchange Tensor Formation");
 
         double *in_buffer = init_array(norbs*(norbs+1)/2);
         double *out_buffer = init_array(norbs*ndocc);
@@ -594,19 +675,23 @@ void RHF::form_G_from_RI()
 
         psio_->close(PSIF_DFSCF_BJ,1);
         psio_->close(PSIF_DFSCF_K,1);
+timer_off("Exchange Tensor Formation");
     }
 
     free_block(Cocc);
 
     double **K = block_matrix(norbs, norbs);
 
-    if (df_storage_ == full || df_storage_ == flip_B_disk || df_storage_ == k_incore)
+    if (df_storage_ == full ||df_storage_ == double_full|| df_storage_ == flip_B_disk || df_storage_ == k_incore)
     {
+timer_on("Exchange Tensor DGEMM");
         C_DGEMM('N','T',norbs,norbs,ri_nbf_*ndocc,1.0,B_im_Q[0],ri_nbf_*ndocc,B_im_Q[0],ri_nbf_*ndocc, 0.0, K[0], norbs);
+timer_off("Exchange Tensor DGEMM");
         free_block(B_im_Q);
     } else {
         psio_->open(PSIF_DFSCF_K,PSIO_OPEN_OLD);
         psio_address next_PSIF_DFSCF_K = PSIO_ZERO;
+timer_on("Exchange Tensor DGEMM");
 
         double *in_buffer = init_array(norbs*ndocc);
 
@@ -622,6 +707,7 @@ void RHF::form_G_from_RI()
                 K[n][m] = K[m][n];
             }
         }
+timer_off("Exchange Tensor DGEMM");
 
         free(in_buffer);
         psio_->close(PSIF_DFSCF_K,1);
@@ -629,6 +715,7 @@ void RHF::form_G_from_RI()
 
     //fprintf(outfile, "\nK:\n");
     //print_mat(K,norbs,norbs,outfile);
+timer_off("Overall Exchange");
 
     for (int i=0; i<norbs; i++) {
         for (int j=0; j<=i; j++) {
@@ -663,7 +750,7 @@ void RHF::form_J_from_RI()
     double *Gtemp = init_array(norbs*(norbs+1)/2);
 
     //B_ia_P_ in core
-    if (df_storage_ == full)
+    if (df_storage_ == full||df_storage_ == double_full)
     {
         for (int i=0; i<ri_nbf_; i++) {
             L[i]=C_DDOT(norbs*(norbs+1)/2,D2,1,B_ia_P_[i],1);
@@ -750,7 +837,7 @@ void RHF::form_K_from_RI()
     //print_mat(Cocc,ndocc,norbs,outfile);
     double** B_im_Q;
     //B_ia_P in core, B_im_Q in core
-    if (df_storage_ == full)
+    if (df_storage_ == full||df_storage_ == double_full)
     {
         B_im_Q = block_matrix(norbs, ndocc*ri_nbf_);
         double** QS = block_matrix(ri_nbf_,norbs);
@@ -845,7 +932,7 @@ void RHF::form_K_from_RI()
 
     free_block(Cocc);
 
-    if (df_storage_ == full || df_storage_ == flip_B_disk || df_storage_ == k_incore)
+    if (df_storage_ == full ||df_storage_ == double_full|| df_storage_ == flip_B_disk || df_storage_ == k_incore)
     {
         C_DGEMM('N','T',norbs,norbs,ri_nbf_*ndocc,1.0,B_im_Q[0],ri_nbf_*ndocc,B_im_Q[0],ri_nbf_*ndocc, 0.0, K[0], norbs);
         free_block(B_im_Q);
@@ -915,7 +1002,7 @@ void UHF::form_G_from_RI()
     double *Gtemp = init_array(norbs*(norbs+1)/2);
     
     //B_ia_P_ in core
-    if (df_storage_ == full)
+    if (df_storage_ == full||df_storage_ == double_full)
     {                
       
       for (int i=0; i<ri_nbf_; i++) {
@@ -995,7 +1082,7 @@ void UHF::form_G_from_RI()
             Cocc[j][i] = Ca_->get(0,i,j);
     }
     //B_ia_P in core, B_im_Q in core
-    if (df_storage_ == full)
+    if (df_storage_ == full||df_storage_ == double_full)
     {
     	B_im_Q = block_matrix(norbs, nalpha*ri_nbf_);
     	double** QS = block_matrix(ri_nbf_,norbs);
@@ -1092,7 +1179,7 @@ void UHF::form_G_from_RI()
     //fprintf(outfile,"  3-Index A Formed \n"); fflush(outfile);
  	double **Ka = block_matrix(norbs, norbs);
  		
- 	if (df_storage_ == full || df_storage_ == flip_B_disk || df_storage_ == k_incore)
+ 	if (df_storage_ == full ||df_storage_ == double_full|| df_storage_ == flip_B_disk || df_storage_ == k_incore)
  		{
     	C_DGEMM('N','T',norbs,norbs,ri_nbf_*nalpha,1.0,B_im_Q[0],ri_nbf_*nalpha,B_im_Q[0],ri_nbf_*nalpha, 0.0, Ka[0], norbs);
     	free_block(B_im_Q);
@@ -1133,7 +1220,7 @@ void UHF::form_G_from_RI()
     }
     
     //B_ia_P in core, B_im_Q in core
-    if (df_storage_ == full)
+    if (df_storage_ == full||df_storage_ == double_full)
     {
     	B_im_Q = block_matrix(norbs, nbeta_*ri_nbf_);
     	double** QS = block_matrix(ri_nbf_,norbs);
@@ -1230,7 +1317,7 @@ void UHF::form_G_from_RI()
     //fprintf(outfile,"  3-Index B Formed \n"); fflush(outfile);
  	Kb = block_matrix(norbs, norbs);
  		
- 	if (df_storage_ == full || df_storage_ == flip_B_disk || df_storage_ == k_incore)
+ 	if (df_storage_ == full ||df_storage_ == double_full|| df_storage_ == flip_B_disk || df_storage_ == k_incore)
  		{
     	C_DGEMM('N','T',norbs,norbs,ri_nbf_*nbeta_,1.0,B_im_Q[0],ri_nbf_*nbeta_,B_im_Q[0],ri_nbf_*nbeta_, 0.0, Kb[0], norbs);
     	free_block(B_im_Q);
