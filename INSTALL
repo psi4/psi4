@@ -36,7 +36,8 @@ I. Compilation Prerequisites:
    * Optimized LAPACK library (see recommendations below)
    * POSIX threads (Pthreads) library (optional)
    * Perl interpreter (5.005 or higher; needed for running test cases)
-   * Python interpreter (2.6 or higher; needed for input files)
+   * Python interpreter (2.4 or higher; needed for input files)
+   * Python developer libraries corresponding to your interpreter.
    * GNU utilities: (see http://www.gnu.org)
       ** make
       ** flex
@@ -48,6 +49,13 @@ I. Compilation Prerequisites:
       ** latex2html 
            (for generating web-based documentation only; either v0.99_1 or 
             1.62, but you must apply the patch supplied in psi4/misc)
+
+   To check to see if you have the Python developer libraries installed look
+   for the Python config program. If you Python interpreter is named `python'
+   look for the config program `python-config', likewise if your interpreter
+   is named `python2.6' your config program is named `python2.6-config'. If
+   you cannot find the config program the developer libraries will not be
+   detected and the PSI4 configure script will fail.
 
 II. Brief Summary of Configruation, Compilation, and Installation
 
@@ -164,6 +172,25 @@ the configure script:
    This is set to yes by default.
 
    * --with-strict=yes -- Turns on strict compiler warnings.
+
+ Python interpreter:
+
+   * PYTHON -- The full path name of the Python interpreter to use.
+   Defaults to the `python' in your path. For example, if you want to use
+   `python2.6' located in /usr/bin set the environmental variable to be:
+
+      PYTHON=/usr/bin/python2.6
+
+   Please note if set the variable the config program must be present with
+   a similar name. For instance, in the above example the following must
+   exist:
+
+      /usr/bin/python2.6-config
+
+   You either set the environmental variable before you call configure, or
+   tell configure about it:
+
+      ./configure PYTHON=/usr/bin/python2.6
 
 III. Detailed Installation Instructions
 
