@@ -147,10 +147,14 @@ sys.exit(sys.hexversion < minverhex)"
 # user sets the PYTHON environmental variable.
 AC_DEFUN([AC_PYTHON],
 [
+  AC_ARG_VAR(PYTHON,
+[The `Python' interpreter to use. Defaults to the first program found
+out of: `python', `python2', `python2.6', `python2.5', `python2.4'.
+Make sure you have installed the developer libraries, too.])
   dnl Find a Python interpreter and its matching config program.
   m4_define_default([_AM_PYTHON_INTERPRETER_LIST],
                     [python python2 python2.6 dnl
-python2.5 python2.4 python2.3 python2.2 python2.1 python2.0])
+python2.5 python2.4])
 
   m4_if([$1],[],[
     dnl No version check is needed

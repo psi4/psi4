@@ -302,6 +302,7 @@ AC_MSG_RESULT([Using extra library directories: $withval])
 AC_SUBST(LDFLAGS)
 
 AC_CHECK_PROGS(PERL,perl,perl) AC_SUBST(PERL)
+# Check for python interpreter and libraries
 AC_PYTHON([2.4])
 
 AC_PROG_LATEX
