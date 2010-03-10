@@ -1,8 +1,10 @@
 /*! \file
     \ingroup LMP2
     \brief compute the mp2 amplitudes
- */
+*/
+
 #include "mpi.h"
+#include <iostream>
 //#include <cstdio>
 //#include <cstdlib>
 //#include <cstring>
@@ -42,7 +44,7 @@ void LMP2::amplitudes() {
     double **Rtilde;
     double **Rbar, **Tbar;
     double **St, **Ft;
-    double ***Tempkj, ***Tempik;
+    double ****Tempkj, ****Tempik;
     MPI_Win *T2win;
     MPI_Status stat;
 
@@ -55,27 +57,25 @@ void LMP2::amplitudes() {
     pairdomain = compute_pairdomain(ij_map);
     pairdom_len = compute_pairdomlen(ij_map);
 
-
-    // I need to replicate the amplitudes that each process will need to 
-    // compute the new amplitudes if iter > 0
-    // I will need to work out a memory allocation scheme for a Temp array to hold the old amplitudes
-
-
-
     /* This maps the absolute ij value to the value corresponding ij value
      * after the removal of distant pairs */
     abs_ij_map = original_ij_map();
 
-    for (ij = 0; ij < ij_pairs; ij++) {
-        i = ij_map[ij][0];
-        j = ij_map[ij][1];
+    
+    // Replicate the amplitudes that each process will need to
+    // compute the new amplitudes if iter > 0
+    if(iter > 0) {
 
-        if (iter > 0) {
-            if (myid == ij_owner[ij]) {
-                Tempkj = (double ***) malloc(nocc * sizeof (double **));
-                Tempik = (double ***) malloc(nocc * sizeof (double **));
-            }
+        Tempkj = (double ****) malloc(pairs_per_proc * sizeof (double ***));
+        Tempik = (double ****) malloc(pairs_per_proc * sizeof (double ***));
+        for(ij=0; ij < ij_pairs; ij++) {
+            Tempkj[ij_local[ij]] = (double ***) malloc(nocc * sizeof (double **));
+            Tempik[ij_local[ij]] = (double ***) malloc(nocc * sizeof (double **));
+        }
 
+        for (ij = 0; ij < ij_pairs; ij++) {
+            i = ij_map[ij][0];
+            j = ij_map[ij][1];
 
             // Get the required amplitudes from their respective proc and put them in a temporary array
             // If ij == ik or kj then do simple DCOPY
@@ -93,13 +93,15 @@ void LMP2::amplitudes() {
 
                 if (pairdom_exist[kj_]) {
                     if ((myid == ij_owner[ij]) && (myid == ij_owner[kj])) {
-                        Tempkj[k] = block_matrix(pairdom_len[kj], pairdom_len[kj]);
-                        C_DCOPY(pairdom_len[kj] * pairdom_len[kj], &(T[dmat1][ij_local[kj]][0][0]), 1, &(Tempkj[k][0][0]), 1);
-                    } else if ((myid == ij_owner[ij]) && (myid != ij_owner[kj])) {
-                        Tempkj[k] = block_matrix(pairdom_len[kj], pairdom_len[kj]);
-                        Communicator::world->recv(ij_owner[kj], Tempkj[k][0], pairdom_len[kj] * pairdom_len[kj]);
+                        Tempkj[ij_local[ij]][k] = block_matrix(pairdom_len[kj], pairdom_len[kj]);
+                        C_DCOPY(pairdom_len[kj] * pairdom_len[kj], &(T[dmat1][ij_local[kj]][0][0]), 1, &(Tempkj[ij_local[ij]][k][0][0]), 1);
+                    }
+                    else if ((myid == ij_owner[ij]) && (myid != ij_owner[kj])) {
+                        Tempkj[ij_local[ij]][k] = block_matrix(pairdom_len[kj], pairdom_len[kj]);
+                        Communicator::world->recv(ij_owner[kj], Tempkj[ij_local[ij]][k][0], pairdom_len[kj] * pairdom_len[kj]);
                         //MPI::COMM_WORLD.Recv(&(Tempkj[k][0][0]), pairdom_len[kj]*pairdom_len[kj], MPI::DOUBLE, ij_owner[kj], kj);
-                    } else if ((myid != ij_owner[ij]) && (myid == ij_owner[kj])) {
+                    }
+                    else if ((myid != ij_owner[ij]) && (myid == ij_owner[kj])) {
                         Communicator::world->send(ij_owner[ij], T[dmat1][ij_local[kj]][0], pairdom_len[kj] * pairdom_len[kj]);
                         //MPI::COMM_WORLD.Send(&(T[dmat1][ij_local[kj]][0][0]), pairdom_len[kj]*pairdom_len[kj], MPI::DOUBLE, ij_owner[ij], kj);
                     }
@@ -107,19 +109,26 @@ void LMP2::amplitudes() {
 
                 if (pairdom_exist[ik_]) {
                     if ((myid == ij_owner[ij]) && (myid == ij_owner[ik])) {
-                        Tempik[k] = block_matrix(pairdom_len[ik], pairdom_len[ik]);
-                        C_DCOPY(pairdom_len[ik] * pairdom_len[ik], &(T[dmat1][ij_local[ik]][0][0]), 1, &(Tempik[k][0][0]), 1);
-                    } else if ((myid == ij_owner[ij]) && (myid != ij_owner[ik])) {
-                        Tempik[k] = block_matrix(pairdom_len[ik], pairdom_len[ik]);
-                        Communicator::world->recv(ij_owner[ik], Tempik[k][0], pairdom_len[ik] * pairdom_len[ik]);
+                        Tempik[ij_local[ij]][k] = block_matrix(pairdom_len[ik], pairdom_len[ik]);
+                        C_DCOPY(pairdom_len[ik] * pairdom_len[ik], &(T[dmat1][ij_local[ik]][0][0]), 1, &(Tempik[ij_local[ij]][k][0][0]), 1);
+                    }
+                    else if ((myid == ij_owner[ij]) && (myid != ij_owner[ik])) {
+                        Tempik[ij_local[ij]][k] = block_matrix(pairdom_len[ik], pairdom_len[ik]);
+                        Communicator::world->recv(ij_owner[ik], Tempik[ij_local[ij]][k][0], pairdom_len[ik] * pairdom_len[ik]);
                         //MPI::COMM_WORLD.Recv(&(Tempik[k][0][0]), pairdom_len[ik]*pairdom_len[ik], MPI::DOUBLE, ij_owner[ik], ik);
-                    } else if ((myid != ij_owner[ij]) && (myid == ij_owner[ik])) {
+                    }
+                    else if ((myid != ij_owner[ij]) && (myid == ij_owner[ik])) {
                         Communicator::world->send(ij_owner[ij], T[dmat1][ij_local[ik]][0], pairdom_len[ik] * pairdom_len[ik]);
                         //MPI::COMM_WORLD.Send(&(T[dmat1][ij_local[ik]][0][0]), pairdom_len[ik]*pairdom_len[ik], MPI::DOUBLE, ij_owner[ij], ik);
                     }
                 }
             }
         }
+    }
+
+    for (ij = 0; ij < ij_pairs; ij++) {
+        i = ij_map[ij][0];
+        j = ij_map[ij][1];
 
         if (myid != ij_owner[ij])
             continue;
@@ -190,9 +199,9 @@ void LMP2::amplitudes() {
                                     if (pairdomain[kj][s]) {
                                         for (m = aostart[s]; m <= aostop[s]; m++, M++) {
                                             if (k <= j)
-                                                F_sum[l][m] -= loF[i][k] * Tempkj[k][M][L];
+                                                F_sum[l][m] -= loF[i][k] * Tempkj[ij_local[ij]][k][M][L];
                                             else
-                                                F_sum[l][m] -= loF[i][k] * Tempkj[k][L][M];
+                                                F_sum[l][m] -= loF[i][k] * Tempkj[ij_local[ij]][k][L][M];
                                         }
                                     }
                                 }
@@ -208,9 +217,9 @@ void LMP2::amplitudes() {
                                     if (pairdomain[ik][s]) {
                                         for (m = aostart[s]; m <= aostop[s]; m++, M++) {
                                             if (k >= i)
-                                                F_sum[l][m] -= loF[k][j] * Tempik[k][M][L];
+                                                F_sum[l][m] -= loF[k][j] * Tempik[ij_local[ij]][k][M][L];
                                             else
-                                                F_sum[l][m] -= loF[k][j] * Tempik[k][L][M];
+                                                F_sum[l][m] -= loF[k][j] * Tempik[ij_local[ij]][k][L][M];
                                         }
                                     }
                                 }
@@ -219,13 +228,7 @@ void LMP2::amplitudes() {
                     }
                 }
 
-                if (pairdom_exist[kj_])
-                    free_block(Tempkj[k]);
-                if (pairdom_exist[ik_])
-                    free_block(Tempik[k]);
             }
-            free(Tempkj);
-            free(Tempik);
 
             temp1 = block_matrix(pairdom_len[ij], nso);
             Sij = block_matrix(pairdom_len[ij], nso);
@@ -259,7 +262,8 @@ void LMP2::amplitudes() {
             free_block(X);
             free_block(St);
             free_block(Ft);
-        } else {
+        }
+        else {
             C_DCOPY(pairdom_len[ij] * pairdom_len[ij], &(Ktilde[ij_local[ij]][0][0]), 1, &(Rtilde[0][0]), 1);
         }
 
@@ -329,7 +333,24 @@ void LMP2::amplitudes() {
     }
     free(abs_ij_map);
 
+    // Free the memory used by Temp amplitudes
+    if(iter > 0) {
+
+        for (ij = 0; ij < ij_pairs; ij++) {
+            if (myid == ij_owner[ij]) {
+                for (k = 0; k < nocc; k++) {
+                    free_block(Tempkj[ij_local[ij]][k]);
+                    free_block(Tempik[ij_local[ij]][k]);
+                }
+                free(Tempkj[ij_local[ij]]);
+                free(Tempik[ij_local[ij]]);
+            }
+        }
+        free(Tempkj);
+        free(Tempik);
+    }
+
 }
 
 
-} // namespace psi::lmp2
+}} // namespace psi::lmp2
