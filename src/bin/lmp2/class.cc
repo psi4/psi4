@@ -21,7 +21,7 @@
 #define EXTERN
 #include "globals.h"
 
-    using namespace psi;
+using namespace psi;
 
 namespace psi{
 
@@ -80,8 +80,10 @@ void LMP2::print_moinfo(){
 
   // A couple of error traps
   if(nirreps != 1) {
-    char *symm_label = chkpt->rd_sym_label();
-    throw InputException("Local MP2 is only valid in C1 symmetry", symm_label, __FILE__, __LINE__);
+    if(myid == 0) {
+        char *symm_label = chkpt->rd_sym_label();
+        throw InputException("Local MP2 is only valid in C1 symmetry", symm_label, __FILE__, __LINE__);
+    }
   }
 
 
@@ -111,8 +113,12 @@ void LMP2::get_fock() {
   X = init_array((nso*nso+nso)/2);
   temp = block_matrix(nso, nso);
 
-  X = chkpt->rd_fock();
+  if(myid == 0)
+    X = chkpt->rd_fock();
 
+  if(nprocs > 1)
+    Communicator::world->bcast(X, (nso*nso+nso)/2, 0);
+  
   tri_to_sq(X, aoF, nso);
   free(X);
 
