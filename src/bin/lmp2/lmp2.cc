@@ -38,9 +38,9 @@ int nprocs_lmp2 = nprocs;
 
 PsiReturnType lmp2(Options &options, int argc, char * argv[]) {
 
-  shared_ptr<PSIO> psio_obj(new PSIO);
-  psiopp_ipv1_config(psio_obj);
-  shared_ptr<Chkpt> chkpt_obj(new Chkpt(psio_obj, PSIO_OPEN_OLD));
+    shared_ptr<PSIO> psio_obj(new PSIO);
+    psiopp_ipv1_config(psio_obj);
+    shared_ptr<Chkpt> chkpt_obj(new Chkpt(psio_obj, PSIO_OPEN_OLD));
 
   if(myid == 0) {
     tstart();
@@ -69,66 +69,66 @@ PsiReturnType lmp2(Options &options, int argc, char * argv[]) {
   timer_init();
 
   if(myid == 0)
-  timer_on("GETPARAMS");
+    timer_on("GETPARAMS");
   lmp2_obj.get_params(options);
   if(myid == 0)
-  timer_off("GETPARAMS");
+    timer_off("GETPARAMS");
 
   if(myid == 0)
-  timer_on("GETMOINFO");
+    timer_on("GETMOINFO");
   lmp2_obj.get_moinfo();
   if(myid == 0)
-  timer_off("GETMOINFO");
+    timer_off("GETMOINFO");
 
   if(myid == 0)
-  timer_on("OPDM");
+    timer_on("OPDM");
   lmp2_obj.opdm();
   if(myid == 0)
-  timer_off("OPDM");
+    timer_off("OPDM");
 
   if(myid == 0)
-  timer_on("LOCALIZE");
+    timer_on("LOCALIZE");
   lmp2_obj.localize();
   if(myid == 0)
-  timer_off("LOCALIZE");
+    timer_off("LOCALIZE");
 
   if(myid == 0)
-  timer_on("GETFOCK");
+    timer_on("GETFOCK");
   lmp2_obj.get_fock();
   if(myid == 0)
-  timer_off("GETFOCK");
+    timer_off("GETFOCK");
 
   if(myid == 0)
-  timer_on("DOMAIN");
+    timer_on("DOMAIN");
   lmp2_obj.domains();
   if(myid == 0)
-  timer_off("DOMAIN");
+    timer_off("DOMAIN");
 
   if(myid == 0)
-  timer_on("PROJECT");
+    timer_on("PROJECT");
   lmp2_obj.projection();
   if(myid == 0)
-  timer_off("PROJECT");
+    timer_off("PROJECT");
 
   if(options.get_bool("RI_LMP2")){
     lmp2_obj.direct_df_transformation();
   }
   else {
-  if(myid == 0)
-  timer_on("TRANS");
+    if(myid == 0)
+        timer_on("TRANS");
     lmp2_obj.direct_transformation();
-  if(myid == 0)
-  timer_off("TRANS");
+    if(myid == 0)
+        timer_off("TRANS");
   }
 
 
   lmp2_obj.allocate_T();
 
   if(myid == 0)
-  timer_on("ITERATE");
+    timer_on("ITERATE");
   lmp2_obj.iterate();
   if(myid == 0)
-  timer_off("ITERATE");
+    timer_off("ITERATE");
 
 
   }
