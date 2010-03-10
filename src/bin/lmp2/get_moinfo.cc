@@ -308,4 +308,12 @@ double** LMP2::get_geom() {
 
 }
 
+void LMP2::send_overlap(double **ovlp) {
+
+  if(nprocs > 1)
+    Communicator::world->bcast(ovlp[0], nso*nso, 0);
+
+  return;
+} 
+
 }}

@@ -75,7 +75,7 @@ class LMP2 {
     int dmat2;
     int omat;
     int nmat;
-    bool RILMP2;
+    int RILMP2;
     int schwarz_tol;
     double tol;
     double scs_scale_os;
@@ -149,6 +149,9 @@ class LMP2 {
 
     // Get the maximum angular momentum shell
     int get_max_shell();
+
+    // Send the overlap matrix to all of the nodes
+    void send_overlap(double **ovlp);
 
     // allocate the arrays for the amplitudes and the error matrices
     void allocate_T();

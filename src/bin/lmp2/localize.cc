@@ -15,6 +15,13 @@
 #include <libchkpt/chkpt.hpp>
 //#include <libpsio/psio.hpp>
 //#include <libqt/qt.h>
+#include <libmints/basisset.h>
+#include <libmints/onebody.h>
+#include <libmints/twobody.h>
+#include <libmints/integral.h>
+#include <libmints/molecule.h>
+#include <libmints/wavefunction.h>
+#include <libparallel/parallel.h>
 #include <libint/libint.h>
 #include <psifiles.h>
 #define EXTERN
@@ -63,10 +70,21 @@ void LMP2::localize() {
 
   // **** Read in the overlap matrix ****
   aoovlp = block_matrix(nso, nso);
+
+//  shared_ptr<BasisSet> basis(new BasisSet(chkpt));
+//  shared_ptr<IntegralFactory> integral(new IntegralFactory(basis, basis, basis, basis));
+//  shared_ptr<OneBodyInt> S(integral->overlap());
+//  shared_ptr<Matrix> overlap(factory->create_matrix("Overlap"));
+
+//  S->compute(overlap);
+
+  if(myid == 0) {
   IWL::read_one(psio.get(), PSIF_OEI, PSIF_SO_S, scratch, ntri, 0, 0, outfile);
   for(i=0, ij=0; i < nso; i++)
      for(j=0; j <= i; j++, ij++)
         aoovlp[i][j] = aoovlp[j][i] = scratch[ij];
+  }
+  send_overlap(aoovlp);
 
   free(scratch);
 
