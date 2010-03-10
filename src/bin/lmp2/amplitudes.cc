@@ -55,6 +55,13 @@ void LMP2::amplitudes() {
     pairdomain = compute_pairdomain(ij_map);
     pairdom_len = compute_pairdomlen(ij_map);
 
+
+    // I need to replicate the amplitudes that each process will need to 
+    // compute the new amplitudes if iter > 0
+    // I will need to work out a memory allocation scheme for a Temp array to hold the old amplitudes
+
+
+
     /* This maps the absolute ij value to the value corresponding ij value
      * after the removal of distant pairs */
     abs_ij_map = original_ij_map();
@@ -324,5 +331,5 @@ void LMP2::amplitudes() {
 
 }
 
-}
+
 } // namespace psi::lmp2

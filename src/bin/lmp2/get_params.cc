@@ -82,9 +82,9 @@ void LMP2::get_params(Options &options) {
   schwarz_tol = options.get_int("SCHWARTZ_TOL");
   tol = 1.0*pow(10.0,(double) -schwarz_tol);
 
+  RILMP2 = 0;
   if(options.get_bool("RI_LMP2"))
-    RILMP2 = true;
-  
+    RILMP2 = 1;
 
   scs_scale_os = options.get_double("SCALE_OS");
   scs_scale_ss = options.get_double("SCALE_SS");
@@ -109,6 +109,7 @@ void LMP2::print_params(){
     fprintf(outfile, "\tF-Skip   \t\t= %3.1e\n", fskip);
     fprintf(outfile, "\tPrint Level   \t\t= %d\n", print);
     fprintf(outfile, "\tLocal Cutoff  \t\t= %3.1e\n", cutoff);
+    fprintf(outfile, "\tUse RI Approximation \t= %s\n", RILMP2 ? "Yes" : "No");
     fprintf(outfile, "\tNeglect Distant Pairs \t= %s\n", neglectdp ? "Yes" : "No");
     if(neglectdp)
         fprintf(outfile, "\tDistace Pair Cutoff \t= %2.1f\n", dpcutoff);
