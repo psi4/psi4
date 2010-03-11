@@ -5,9 +5,7 @@
 #include <libpsio/psio.hpp>
 #include "psifiles.h"
 
-using namespace psi;
-
-namespace psi{ namespace libdiis{
+namespace psi{
 
   /**
    * @Brief The DIISManager class is used to manage DIIS quantities and
@@ -92,9 +90,9 @@ class DIISEntry{
         shared_ptr<PSIO> _psio;
 };
 
-}} // End namespaces
+} // End namespace
 
 // This is here so that files including this have clean(er) syntax
-using namespace psi::libdiis;
+using namespace psi;
 
 #endif // Header guard

@@ -5,7 +5,7 @@
 #include <psifiles.h>
 #include <sstream>
 
-namespace psi{ namespace libdiis{
+namespace psi{
 
 DIISEntry::DIISEntry(std::string label, int ID, int orderAdded,
                      int errorVectorSize, double *errorVector,
@@ -61,7 +61,7 @@ DIISEntry::read_vector_from_disk()
 void
 DIISEntry::dump_error_vector_to_disk()
 {
-    string label = _label + " error vector";
+    string label = _label + " error";
     open_psi_file();
     _psio->write_entry(PSIF_LIBDIIS, label.c_str(), (char*)_errorVector, _errorVectorSize*sizeof(double));
     free_error_vector_memory();
@@ -73,7 +73,7 @@ DIISEntry::read_error_vector_from_disk()
 {
     if (_errorVector == NULL) {
         _errorVector = new double[_errorVectorSize];
-        string label = _label + " error vector";
+        string label = _label + " error";
         open_psi_file();
         _psio->read_entry(PSIF_LIBDIIS, label.c_str(), (char*)_errorVector, _errorVectorSize*sizeof(double));
     }
@@ -105,4 +105,4 @@ DIISEntry::~DIISEntry()
         delete[] _errorVector;
 }
 
-}} // Namespaces
+} // Namespace

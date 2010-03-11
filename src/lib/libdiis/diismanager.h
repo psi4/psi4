@@ -9,9 +9,7 @@
 #include "psifiles.h"
 #include "diisentry.h"
 
-using namespace psi;
-
-namespace psi{ namespace libdiis{
+namespace psi{
 
   /**
      @Brief The DIISManager class handles DIIS extrapolations.
@@ -76,9 +74,9 @@ class DIISManager{
         std::string _label;
 };
 
-}} // End namespaces
+} // End namespace
 
 // This is here so that files including this have clean(er) syntax
-using namespace psi::libdiis;
+using namespace psi;
 
 #endif // Header guard

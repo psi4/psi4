@@ -25,7 +25,7 @@ char *Chkpt::build_keyword(const char *key, const char *key2)
 		exit(PSI_RETURN_FAILURE);
 	}
 
-	keyword = (char *) malloc((keylen+1)*sizeof(char));
+	keyword = new char[keylen+1];
         if (key2[0] != '\0') {
 	  sprintf(keyword, ":%s:%s %s", chkpt_prefix, key, key2);
         }
