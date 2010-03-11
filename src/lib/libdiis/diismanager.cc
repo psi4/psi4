@@ -8,7 +8,7 @@
 #include <libpsio/psio.hpp>
 #include <psifiles.h>
 
-namespace psi{ namespace libdiis{
+namespace psi{
 
 DIISManager::DIISManager(int maxSubspaceSize,
                          std::string label,
@@ -418,8 +418,8 @@ DIISManager::extrapolate(int numQuantities, ...)
                 default:
                     throw SanityCheckError("Unknown input type", __FILE__, __LINE__);
             }
-            if(_storagePolicy == OnDisk) _subspace[i]->free_vector_memory();
         }
+        if(_storagePolicy == OnDisk) _subspace[n]->free_vector_memory();
         va_end(args);
     }
 }
@@ -431,4 +431,4 @@ DIISManager::~DIISManager()
         _default_psio_lib_->close(PSIF_LIBDIIS, 1);
 }
 
-}} // Namespaces
+} // Namespace

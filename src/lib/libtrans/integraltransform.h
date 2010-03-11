@@ -8,7 +8,7 @@
 #include <libdpd/dpd.h>
 #include <libchkpt/chkpt.hpp>
 #include "psifiles.h"
-#include "mospace.h";
+#include "mospace.h"
 
 #define INDEX(i,j) ((i>j) ? ((i*(i+1)/2)+j) : ((j*(j+1)/2)+i))
 
