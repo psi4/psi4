@@ -65,17 +65,19 @@ void LMP2::amplitudes() {
     // Replicate the amplitudes that each process will need to
     // compute the new amplitudes if iter > 0
     if(iter > 0) {
+        //MPI_Barrier(MPI_COMM_WORLD);
 
         Tempkj = (double ****) malloc(pairs_per_proc * sizeof (double ***));
         Tempik = (double ****) malloc(pairs_per_proc * sizeof (double ***));
-        for(ij=0; ij < ij_pairs; ij++) {
-            Tempkj[ij_local[ij]] = (double ***) malloc(nocc * sizeof (double **));
-            Tempik[ij_local[ij]] = (double ***) malloc(nocc * sizeof (double **));
-        }
 
         for (ij = 0; ij < ij_pairs; ij++) {
             i = ij_map[ij][0];
             j = ij_map[ij][1];
+
+            if (myid == ij_owner[ij]) {
+                Tempkj[ij_local[ij]] = (double ***) malloc(nocc * sizeof (double **));
+                Tempik[ij_local[ij]] = (double ***) malloc(nocc * sizeof (double **));
+            }
 
             // Get the required amplitudes from their respective proc and put them in a temporary array
             // If ij == ik or kj then do simple DCOPY
@@ -124,7 +126,11 @@ void LMP2::amplitudes() {
                 }
             }
         }
+        //MPI_Barrier(MPI_COMM_WORLD);
+
     }
+
+
 
     for (ij = 0; ij < ij_pairs; ij++) {
         i = ij_map[ij][0];
@@ -335,20 +341,33 @@ void LMP2::amplitudes() {
 
     // Free the memory used by Temp amplitudes
     if(iter > 0) {
+        //MPI_Barrier(MPI_COMM_WORLD);
 
+        //std::cout << "Made it before free Tempkj for proc " << myid << " for iter = " << iter << std::endl;
         for (ij = 0; ij < ij_pairs; ij++) {
             if (myid == ij_owner[ij]) {
                 for (k = 0; k < nocc; k++) {
-                    free_block(Tempkj[ij_local[ij]][k]);
-                    free_block(Tempik[ij_local[ij]][k]);
+                    if (k > j) kj_ = (k * (k + 1)) / 2 + j;
+                    else kj_ = (j * (j + 1)) / 2 + k;
+
+                    if (i > k) ik_ = (i * (i + 1)) / 2 + k;
+                    else ik_ = (k * (k + 1)) / 2 + i;
+
+                    if (pairdom_exist[kj_])
+                        free_block(Tempkj[ij_local[ij]][k]);
+                    if (pairdom_exist[ik_])
+                        free_block(Tempik[ij_local[ij]][k]);
                 }
                 free(Tempkj[ij_local[ij]]);
                 free(Tempik[ij_local[ij]]);
-            }
+            }            
         }
         free(Tempkj);
         free(Tempik);
+
+        //std::cout << "Made it after free Tempkj for proc " << myid << " for iter = " << iter << std::endl;
     }
+   
 
 }
 
