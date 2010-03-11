@@ -218,15 +218,15 @@ timer_off("(B|mn) Transform");
         
 	free(A_ia_P);
         //print_mat(B_ia_P_, ri_nbf_,norbs*(norbs+1)/2 ,outfile);
-    } //HERE
+    } 
     if (df_storage_ == full||df_storage_ == flip_B_disk)
     {	
     	IntegralFactory rifactory(basisset_, basisset_, ribasis_, zero);
         TwoBodyInt* eri = rifactory.eri();
         const double *buffer = eri->buffer();
         B_ia_P_ = block_matrix(ri_nbf_,basisset_->nbf()*(basisset_->nbf()+1)/2); 
-		double **Temp1 = block_matrix(ri_nbf_,1);
-        double **Temp2 = block_matrix(ri_nbf_,1);
+	double *Temp1 = init_array(ri_nbf_);
+        double *Temp2 = init_array(ri_nbf_);
         int numPshell,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu, npairs, start;
         
         for (MU=0; MU < basisset_->nshell(); ++MU) {
@@ -260,16 +260,16 @@ timer_off("(B|mn) Integrals");
                         if(omu>=onu)
                         {
                         	for (int Q = 0; Q<ri_nbf_; Q++)
-                        		Temp1[Q][0] = B_ia_P_[Q][ioff[omu]+onu];
+                        		Temp1[Q] = B_ia_P_[Q][ioff[omu]+onu];
 timer_on("(B|mn) Transform");
                         		
-                        	C_DGEMM('N','N',ri_nbf_,1,ri_nbf_,
-                			1.0, J_mhalf[0], ri_nbf_, Temp1[0], 1,
-                			0.0, Temp2[0], 1);
+                        	C_DGEMV('N',ri_nbf_,ri_nbf_,
+                			1.0, J_mhalf[0], ri_nbf_, Temp1, 1,
+                			0.0, Temp2, 1);
 timer_off("(B|mn) Transform");
                         		
                         	for (int Q = 0; Q<ri_nbf_; Q++)
-                        		B_ia_P_[Q][ioff[omu]+onu]=Temp2[Q][0];	
+                        		B_ia_P_[Q][ioff[omu]+onu]=Temp2[Q];	
                         	
                         	//fprintf(outfile, "Temp 1\n");
                 			//print_mat(Temp1, ri_nbf_,1,outfile);
@@ -308,8 +308,8 @@ timer_off("(B|mn) Transform");
         IntegralFactory rifactory(ribasis_, zero, basisset_, basisset_);
         TwoBodyInt* eri = rifactory.eri();
         const double *buffer = eri->buffer();
-        double **Temp1 = block_matrix(ri_nbf_,1);
-        double **Temp2 = block_matrix(ri_nbf_,1); 
+        double *Temp1 = init_array(ri_nbf_);
+        double *Temp2 = init_array(ri_nbf_); 
         double **storage;
         ri_pair_nu_ = init_int_array(basisset_->nbf()*(basisset_->nbf()+1)/2);
         ri_pair_mu_ = init_int_array(basisset_->nbf()*(basisset_->nbf()+1)/2);
@@ -375,14 +375,14 @@ timer_off("(B|mn) integrals");
                         {
                             //fprintf(outfile,"\n  WE here!"); fflush(outfile);
                             for (P = 0; P<ri_nbf_; P++)
-                                Temp1[P][0] = storage[P][row];
+                                Temp1[P] = storage[P][row];
 timer_on("(B|mn) transform");
                                 
-                            C_DGEMM('N','N',ri_nbf_,1,ri_nbf_,1.0, J_mhalf[0], ri_nbf_, Temp1[0], 1,0.0, &(Temp2[0][0]), 1);
+                            C_DGEMV('N',ri_nbf_,ri_nbf_,1.0, J_mhalf[0], ri_nbf_, Temp1, 1,0.0, Temp2, 1);
 timer_off("(B|mn) transform");
                             //fprintf(outfile,"\n  Finished Transposing Quartet (%d %d| P)\n",MU,NU); fflush(outfile);
 timer_on("(B|mn) disk");
-                            psio_->write(PSIF_DFSCF_BJI,"BJ Three-Index Integrals",(char *) &(Temp2[0][0]),sizeof(double)*ri_nbf_,next_PSIF_DFSCF_BJI,&next_PSIF_DFSCF_BJI);
+                            psio_->write(PSIF_DFSCF_BJI,"BJ Three-Index Integrals",(char *) Temp2,sizeof(double)*ri_nbf_,next_PSIF_DFSCF_BJI,&next_PSIF_DFSCF_BJI);
 timer_off("(B|mn) disk");
                             row++;
                         }
