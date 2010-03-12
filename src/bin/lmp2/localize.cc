@@ -78,13 +78,15 @@ void LMP2::localize() {
 
 //  S->compute(overlap);
 
-  if(myid == 0) {
-  IWL::read_one(psio.get(), PSIF_OEI, PSIF_SO_S, scratch, ntri, 0, 0, outfile);
-  for(i=0, ij=0; i < nso; i++)
-     for(j=0; j <= i; j++, ij++)
-        aoovlp[i][j] = aoovlp[j][i] = scratch[ij];
-  }
-  send_overlap(aoovlp);
+    if(myid == 0) {
+        IWL::read_one(psio.get(), PSIF_OEI, PSIF_SO_S, scratch, ntri, 0, 0, outfile);
+    }
+    Communicator::world->bcast(scratch, ntri, 0);
+    for(i=0, ij=0; i < nso; i++)
+        for(j=0; j <= i; j++, ij++)
+            aoovlp[i][j] = aoovlp[j][i] = scratch[ij];
+  
+  //send_overlap(aoovlp);
 
   free(scratch);
 
