@@ -156,11 +156,11 @@ double UHF::compute_energy()
     }
     // Return the final RHF energy
     if (converged) {
-        if(print_ > 1)
         fprintf(outfile, "\n  Energy converged.\n");
+        fprintf(outfile, "\n  @UHF Final Energy: %20.14f\n", E_);
         save_information();
     } else {
-        fprintf(outfile, "\n  SCF Failed to converge.\n");
+        fprintf(outfile, "\n  Failed to converge.\n");
         E_ = 0.0;
     }
 

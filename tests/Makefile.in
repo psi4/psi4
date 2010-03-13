@@ -11,19 +11,14 @@ mcscf_subdirs =
 
 psimrcc_subdirs = 
 
-scf_subdirs = 
+scf_subdirs = scf1 scf2 scf3
 
 subdirs = \
+$(scf_subdirs) \
 $(cc_subdirs) \
 
 # the bare minimum
 quicktestdirs = 
-
-# Only test if psirb was compiled
-HAVE_RUBY = @HAVE_RUBY@
-ifeq ($(HAVE_RUBY),yes)
-subdirs += $(rb_subdirs)
-endif
 
 tests:
 	for dir in $(subdirs); \

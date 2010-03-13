@@ -841,6 +841,9 @@ AC_CONFIG_FILES([include/Makefile
           tests/MakeVars
           tests/MakeRules
           tests/runtest.pl
+          tests/scf1/Makefile
+          tests/scf2/Makefile
+          tests/scf3/Makefile
           tests/cc4/Makefile
           tests/cc8/Makefile
           tests/cc8a/Makefile

@@ -1,0 +1,20 @@
+psi: (
+  exec = (input scf)
+  label = "H2O cc-pVQZ SCF"
+  jobtype = sp
+  wfn = scf
+  reference = rhf
+  dertype = none
+
+  subgroup = c1  
+  basis = "cc-pVTZ"
+  ri_hf = true
+  ri_basis = "cc-pVTZ-RI"
+
+  zmat= (
+    O
+    H 1 1.0
+    H 1 1.0 2 104.5
+  )
+)
+

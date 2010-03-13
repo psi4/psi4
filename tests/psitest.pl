@@ -1492,10 +1492,11 @@ sub seek_scf
   open(OUT, "$_[0]") || die "cannot open $_[0] $!";
   seek(OUT,0,0);
   while(<OUT>) {
-    if (/\* SCF total energy/) {
-      @data = split(/ +/, $_);
-      $scf = $data[5];
-      return $scf;
+    if (/  \@(?:R|U|RO)HF Final Energy:\s+(-\d+\.\d+)/) {
+      return $1;
+    }
+    elsif (/\* SCF total energy\s+=\s+(-\d+\.\d+)/) {
+      return $1;
     }
   }
   close(OUT);

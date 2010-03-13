@@ -1,0 +1,15 @@
+psi: (
+  exec = (input cints scf)
+  label = "BH cc-pVQZ SCF"
+  jobtype = sp
+  wfn = scf
+  reference = rhf
+  dertype = none
+  docc = (3 0 0 0)
+  basis = "cc-pVQZ"
+  geometry = (
+    b      0.0000        0.0000        0.0000
+    h      0.0000        0.0000        1.0000
+  )
+)
+
