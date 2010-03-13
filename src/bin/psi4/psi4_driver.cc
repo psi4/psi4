@@ -1,10 +1,10 @@
 /*! \file psi4_driver.cc
 \defgroup PSI4 The new PSI4 driver.
 */
-#include "mpi.h"
 #include <iostream>
 #include <fstream>              // file I/O support
-#include "libipv1/ip_lib.h"
+#include <libipv1/ip_lib.h>
+#include <libparallel/parallel.h>
 #include <psi4-dec.h>
 #include <string.h>
 #include <algorithm>
@@ -18,7 +18,6 @@ namespace psi {
 extern FILE *infile;
 extern void setup_driver(Options &options);
 extern int read_options(const std::string &jobName, Options &options);
-extern int myid;
 
 void psiclean(void);
 
@@ -60,7 +59,7 @@ psi4_driver(Options & options, int argc, char *argv[])
     calcType += ":";
     calcType += options.get_str("DERTYPE");
 
-    if(myid == 0) {
+    if(Communicator::world->me() == 0) {
       std::string wfn = options.get_str("WFN");
       std::string reference = options.get_str("REFERENCE");
       std::string jobtype = options.get_str("JOBTYPE");
@@ -100,11 +99,11 @@ psi4_driver(Options & options, int argc, char *argv[])
         }
     }
 
-    if(myid == 0) fprintf(outfile, "    List of tasks to execute:\n");
+    if(Communicator::world->me() == 0) fprintf(outfile, "    List of tasks to execute:\n");
     for(int n = 0; n < numTasks; ++n) {
         char *thisJob;
         ip_string(jobList, &thisJob, 1, n);
-        if(myid == 0) fprintf(outfile, "    %s\n", thisJob);
+        if(Communicator::world->me() == 0) fprintf(outfile, "    %s\n", thisJob);
         free(thisJob);
     }
 
@@ -147,7 +146,7 @@ psi4_driver(Options & options, int argc, char *argv[])
         // Make sure the job name is all upper case
         int length = strlen(thisJob);
         std::transform(thisJob, thisJob + length, thisJob, ::toupper);
-        if(myid == 0) {
+        if(Communicator::world->me() == 0) {
           fprintf(outfile, "\n  Job %d is %s\n", n, thisJob); fflush(outfile);
           fprintf(outfile, "  with command-like argument: ");
           for (i=0; i<argc_new; ++i) fprintf(outfile," %s ", argv_new[i]);
@@ -164,7 +163,7 @@ psi4_driver(Options & options, int argc, char *argv[])
         // If the function call is LMP2, run in parallel
         if(strcmp(thisJob, "LMP2") == 0) {
             // Needed a barrier before the functions are called
-            MPI_Barrier(MPI_COMM_WORLD);
+            Communicator::world->sync();
             if (dispatch_table[thisJob](options, argc_new, argv_new) != Success) {
                 // Good chance at this time that an error occurred.
                 // Report it to the user.
@@ -175,8 +174,8 @@ psi4_driver(Options & options, int argc, char *argv[])
         // If any other functions are called only process 0 runs the function
         else {
             // Needed a barrier before the functions are called
-            MPI_Barrier(MPI_COMM_WORLD);
-            if(myid == 0) {
+            Communicator::world->sync();
+            if(Communicator::world->me() == 0) {
                 if (dispatch_table[thisJob](options, argc_new, argv_new) != Success) {
                 // Good chance at this time that an error occurred.
                 // Report it to the user.

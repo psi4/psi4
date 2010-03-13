@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   parallel.h
  * Author: jturney, jjwilke
  *
@@ -9,7 +9,11 @@
 #define	_psi_src_lib_libparallel_parallel_h_
 
 #include <boost/shared_ptr.hpp>
+#include <psiconfig.h>
+
+#if HAVE_MPI == 1
 #include <mpi.h>
+#endif
 
 namespace psi {
 
@@ -102,6 +106,7 @@ namespace psi {
 
     };
 
+#if HAVE_MPI == 1
     class MPICommunicator : public Communicator {
         MPI_Comm comm_;
 
@@ -111,9 +116,9 @@ namespace psi {
         virtual ~MPICommunicator();
 
         MPICommunicator& operator=(const MPICommunicator& other);
-        
+
         virtual void sync();
-        
+
         virtual void raw_send(int target, const void *data, int nbyte);
         virtual void raw_recv(int sender, void *data, int nbyte);
         virtual void raw_bcast(void *data, int nbyte, int broadcaster=0);
@@ -134,8 +139,26 @@ namespace psi {
         virtual void sum(char *data, int n, char *receive_buffer=0, int target=-1);
         virtual void sum(long *data, int n, long *receive_buffer=0, int target=-1);
     };
+#endif
 
     class LocalCommunicator : public Communicator {
+    public:
+        LocalCommunicator();
+        LocalCommunicator(const LocalCommunicator &copy);
+        virtual ~LocalCommunicator();
+
+        LocalCommunicator& operator=(const LocalCommunicator& other);
+
+        virtual void sync();
+
+        virtual void raw_send(int target, const void *data, int nbyte);
+        virtual void raw_recv(int sender, void *data, int nbyte);
+
+        virtual void sum(double *data, int n, double *receive_buffer=0, int target=-1);
+        virtual void sum(unsigned int *data, int n, unsigned int *receive_buffer=0, int target=-1);
+        virtual void sum(int *data, int n, int *receive_buffer=0, int target=-1);
+        virtual void sum(char *data, int n, char *receive_buffer=0, int target=-1);
+        virtual void sum(long *data, int n, long *receive_buffer=0, int target=-1);
     };
 
 }

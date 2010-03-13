@@ -4,6 +4,7 @@
 
 #include <libipv1/ip_lib.h>
 #include <liboptions/liboptions.h>
+#include <libparallel/parallel.h>
 #include <physconst.h>
 #include <psifiles.h>
 
@@ -16,7 +17,6 @@ namespace psi {
  * @param name    - the name of the module.
  * @param options - the liboptions module used in the computations.
  */
-extern int myid;
 
 int read_options(const std::string &name, Options & options) {
 
@@ -558,7 +558,7 @@ else if(name == "CCDENSITY") {
     options.add_str("MP2_CCSD_METHOD","II","I IA II");
   }
   options.read_ipv1();
-  if(myid == 0)
+  if(Communicator::world->me() == 0)
     options.print();
 }
 

@@ -17,19 +17,13 @@
 //#include <libqt/qt.h>
 //#include <libint/libint.h>
 //#include <psifiles.h>
+#include <libparallel/parallel.h>
 #define EXTERN
 #include "globals.h"
 
 namespace psi{
 
-extern int myid;
-extern int nprocs;
-
 namespace lmp2{
-
-extern int myid_lmp2;
-extern int nprocs_lmp2;
-
 
 void LMP2::iterate() {
 
@@ -43,7 +37,7 @@ void LMP2::iterate() {
     energy();
       if(iter > 0)
         check_conv();
-    if(myid == 0)
+    if(Communicator::world->me() == 0)
       print_iteration();
     iter++;
 

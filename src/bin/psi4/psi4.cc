@@ -6,7 +6,9 @@
 //  Justin Turney
 //  Rollin King
 
+#if HAVE_MPI == 1
 #include <mpi.h>
+#endif
 #include <getopt.h>
 #include <stdio.h>
 #include <psiconfig.h>
@@ -23,9 +25,7 @@
 #include "psi4.h"
 #include "script.h"
 
-
-namespace psi { 
-
+namespace psi {
     int psi_start(int argc, char *argv[]);
     int psi_stop(FILE* infile, FILE* outfile, char* psi_file_prefix);
     void print_version(FILE *);
@@ -38,11 +38,6 @@ namespace psi {
     PSIO *psio = NULL;
     std::map<std::string, PsiReturnType(*)(Options &, int, char *[])> dispatch_table;
     Options options;
-    
-  // These are global variable for the number of processes and
-  // id for each process
-    int nprocs;
-    int myid;
 }
 
 // This is the ONLY main function in PSI
@@ -50,20 +45,21 @@ int main(int argc, char *argv[])
 {
     using namespace psi;
 
+#if HAVE_MPI == 1
     // Initialize MPI
     MPI_Init(&argc, &argv);
 
     // Create the global world communicator
     Communicator::world = shared_ptr<Communicator>(new MPICommunicator(MPI_COMM_WORLD));
+#else
+    // Initialize local communicator
+    Communicator::world = shared_ptr<Communicator>(new LocalCommunicator);
+#endif
 
     // Create the scripting object
     Script::language = shared_ptr<Script>(new Python());
     // Create base objects in the scripting language and initialize the language
     Script::language->initialize();
-    
-    // Needed until codes are converted to using Communicator::world
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);
-    MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 
     psi_start(argc, argv);
 
@@ -90,8 +86,11 @@ int main(int argc, char *argv[])
     // Shut things down:
     psi_stop(infile, outfile, psi_file_prefix);
     Script::language->finalize();
-    MPI_Finalize();
 
-    // This needs to be changed a return value from the processed script
+#if HAVE_MPI == 1
+    MPI_Finalize();
+#endif
+
+    // This needs to be changed to a return value from the processed script
     return EXIT_SUCCESS;
 }

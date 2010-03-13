@@ -21,14 +21,7 @@
 
 namespace psi{
 
-extern int myid;
-extern int nprocs;
-
 namespace lmp2{
-
-extern int myid_lmp2;
-extern int nprocs_lmp2;
-
 
 void LMP2::energy() {
     
@@ -54,7 +47,7 @@ void LMP2::energy() {
   if (iter < it_diis || diis == 0) {
     // *** Compute the new MP2 energy ***
   for(int ij=0; ij < ij_pairs; ij++) {
-        if(myid != ij_owner[ij])
+        if(Communicator::world->me() != ij_owner[ij])
           continue;
         i = ij_map[ij][0];
         j = ij_map[ij][1];
@@ -86,7 +79,7 @@ void LMP2::energy() {
   else {
     // *** Compute the new MP2 energy ***
   for(int ij=0; ij < ij_pairs; ij++) {
-        if(myid != ij_owner[ij])
+        if(Communicator::world->me() != ij_owner[ij])
           continue;
 
         i = ij_map[ij][0];

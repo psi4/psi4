@@ -31,13 +31,7 @@
 
 namespace psi {
 
-extern int myid;
-extern int nprocs;
-
 namespace lmp2 {
-
-extern int myid_lmp2;
-extern int nprocs_lmp2;
 
 void LMP2::direct_df_transformation2() {
 #ifdef TIME_DF_LMP2

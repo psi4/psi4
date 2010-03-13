@@ -30,13 +30,7 @@
 
 namespace psi{
 
-extern int myid;
-extern int nprocs;
-
 namespace lmp2{
-
-extern int myid_lmp2;
-extern int nprocs_lmp2;
 
 void LMP2::check_conv() {
 
@@ -60,7 +54,7 @@ void LMP2::check_conv() {
     count = 0;
     for(int ij=0; ij < ij_pairs; ij++) {
 
-        if(myid != ij_owner[ij])
+        if(Communicator::world->me() != ij_owner[ij])
           continue;
 
         i = ij_map[ij][0];
@@ -87,7 +81,7 @@ void LMP2::check_conv() {
     Drms = 0.0;
     count = 0;
     for(int ij=0; ij < ij_pairs; ij++) {
-        if(myid != ij_owner[ij])
+        if(Communicator::world->me() != ij_owner[ij])
           continue;
 
         i = ij_map[ij][0];
@@ -116,7 +110,7 @@ void LMP2::check_conv() {
   if(fabs(DEmp2) < econv && fabs(Drms) < rmsconv || iter >= maxiter) {
     conv = 1;
     if(iter >= maxiter)
-      if(myid == 0)
+      if(Communicator::world->me() == 0)
         fprintf(outfile, "LMP2 has not converged in the maximum number of iterations.\n maxiter = %d\n", maxiter);
   }
   else conv = 0;

@@ -10,6 +10,7 @@
 //#include <assert.h>
 //#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
+#include <libparallel/parallel.h>
 //#include <libchkpt/chkpt.h>
 //#include <libpsio/psio.h>
 //#include <libqt/qt.h>
@@ -18,13 +19,7 @@
 
 namespace psi{
 
-extern int myid;
-extern int nprocs;
-
 namespace lmp2{
-
-extern int myid_lmp2;
-extern int nprocs_lmp2;
 
 void LMP2::allocate_T() {
 
@@ -47,7 +42,7 @@ void LMP2::allocate_T() {
       for(i=0; i < ndiis; i++) {
           T[i] = (double ***) malloc(pairs_per_proc * sizeof(double **));
           for(ij=0; ij < ij_pairs; ij++) {
-              if(myid == ij_owner[ij])
+              if(Communicator::world->me() == ij_owner[ij])
                   T[i][ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
           }
 
@@ -58,22 +53,22 @@ void LMP2::allocate_T() {
       if(ij_pairs%nprocs == 0) {
         T[i] = (double ***) malloc((ij_pairs/nprocs) * sizeof(double **));
         for(ij=0; ij < ij_pairs; ij++) {
-          if(myid == ij_owner[ij])
+          if(Communicator::world->me() == ij_owner[ij])
             T[i][ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
         }
       }
       else {
-        if(myid < ij_pairs%nprocs) {
+        if(Communicator::world->me() < ij_pairs%nprocs) {
           T[i] = (double ***) malloc(((ij_pairs/nprocs) + 1) * sizeof(double **));
           for(ij=0; ij < ij_pairs; ij++) {
-            if(myid == ij_owner[ij])
+            if(Communicator::world->me() == ij_owner[ij])
               T[i][ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
           }
         }
         else {
           T[i] = (double ***) malloc(ij_pairs/nprocs * sizeof(double **));
           for(ij=0; ij < ij_pairs; ij++) {
-            if(myid == ij_owner[ij])
+            if(Communicator::world->me() == ij_owner[ij])
               T[i][ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
           }
         }
@@ -96,7 +91,7 @@ void LMP2::allocate_T() {
 
         T_ext[i] = (double ***) malloc(pairs_per_proc * sizeof(double **));
         for(ij=0; ij < ij_pairs; ij++) {
-            if(myid == ij_owner[ij])
+            if(Communicator::world->me() == ij_owner[ij])
                 T_ext[i][ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
         }
     }
@@ -104,22 +99,22 @@ void LMP2::allocate_T() {
 /*      if(ij_pairs%nprocs == 0) {
         T_ext[i] = (double ***) malloc((ij_pairs/nprocs) * sizeof(double **));
         for(ij=0; ij < ij_pairs; ij++) {
-          if(myid == ij_owner[ij])
+          if(Communicator::world->me() == ij_owner[ij])
             T_ext[i][ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
         }
       }
       else {
-        if(myid < ij_pairs%nprocs) {
+        if(Communicator::world->me() < ij_pairs%nprocs) {
           T_ext[i] = (double ***) malloc(((ij_pairs/nprocs) + 1) * sizeof(double **));
           for(ij=0; ij < ij_pairs; ij++) {
-            if(myid == ij_owner[ij])
+            if(Communicator::world->me() == ij_owner[ij])
               T_ext[i][ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
           }
         }
         else {
           T_ext[i] = (double ***) malloc(ij_pairs/nprocs * sizeof(double **));
           for(ij=0; ij < ij_pairs; ij++) {
-            if(myid == ij_owner[ij])
+            if(Communicator::world->me() == ij_owner[ij])
               T_ext[i][ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
           }
         }
@@ -135,7 +130,7 @@ void LMP2::allocate_T() {
 
         T[i] = (double ***) malloc(pairs_per_proc * sizeof(double **));
         for(ij=0; ij < ij_pairs; ij++) {
-            if(myid == ij_owner[ij])
+            if(Communicator::world->me() == ij_owner[ij])
                 T[i][ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
         }
     }
@@ -144,22 +139,22 @@ void LMP2::allocate_T() {
 /*      if(ij_pairs%nprocs == 0) {
         T[i] = (double ***) malloc((ij_pairs/nprocs) * sizeof(double **));
         for(ij=0; ij < ij_pairs; ij++) {
-          if(myid == ij_owner[ij])
+          if(Communicator::world->me() == ij_owner[ij])
             T[i][ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
         }
       }
       else {
-        if(myid < ij_pairs%nprocs) {
+        if(Communicator::world->me() < ij_pairs%nprocs) {
           T[i] = (double ***) malloc(((ij_pairs/nprocs) + 1) * sizeof(double **));
           for(ij=0; ij < ij_pairs; ij++) {
-            if(myid == ij_owner[ij])
+            if(Communicator::world->me() == ij_owner[ij])
               T[i][ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
           }
         }
         else {
           T[i] = (double ***) malloc(ij_pairs/nprocs * sizeof(double **));
           for(ij=0; ij < ij_pairs; ij++) {
-            if(myid == ij_owner[ij])
+            if(Communicator::world->me() == ij_owner[ij])
               T[i][ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
           }
         }

@@ -257,6 +257,8 @@ AR=$withval
 )
 AC_SUBST(AR)
 
+# AC_CHECK_LIB(, MPI_Finialize, AC_DEFINE_UNQUOTED(MPI))
+
 ARFLAGS=r
 AC_ARG_WITH(ar-flags,
 [  --with-ar-flags         Flags for the the archive creator.],
@@ -500,6 +502,9 @@ AC_DEFINE_UNQUOTED(HAVE_CSTRING,$HAVE_CSTRING)
 AC_CXX_PROCESS_CHECK([cstddef],[#include <cstddef>],,[HAVE_CSTDDEF=1],[HAVE_CSTDDEF=0]) 
 #CXXDEF="$CXXDEF -DHAVE_CSTDDEF=$HAVE_CSTDDEF"
 AC_DEFINE_UNQUOTED(HAVE_CSTDDEF,$HAVE_CSTDDEF)
+
+AC_CXX_PROCESS_CHECK([mpi],[#include <mpi.h>],,[HAVE_MPI=1],[HAVE_MPI=0])
+AC_DEFINE_UNQUOTED(HAVE_MPI,$HAVE_MPI)
 
 /bin/rm -f a.out
 

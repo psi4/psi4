@@ -10,6 +10,7 @@
 #include <cmath>
 //#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
+#include <libparallel/parallel.h>
 //#include <libchkpt/chkpt.h>
 //#include <libpsio/psio.h>
 #include <libqt/qt.h>
@@ -19,13 +20,7 @@
 
 namespace psi{
 
-extern int myid;
-extern int nprocs;
-
 namespace lmp2{
-
-extern int myid_lmp2;
-extern int nprocs_lmp2;
 
 void LMP2::projection() {
 
@@ -52,7 +47,7 @@ void LMP2::projection() {
   /* Set the number or ij_pairs that each process owns */
   pairs_per_proc = 0;
   for(ij=0; ij < ij_pairs; ij++) {
-      if(ij_owner[ij] == myid) pairs_per_proc++;
+      if(ij_owner[ij] == Communicator::world->me()) pairs_per_proc++;
   }
 
   /* Compute the complete virtual space projector */
@@ -89,7 +84,7 @@ void LMP2::projection() {
   v=0;
   for(int ij=0; ij < ij_pairs; ij++, v++) {
 
-      if(ij_owner[ij] != myid) {
+      if(ij_owner[ij] != Communicator::world->me()) {
           continue;
       }
 
@@ -213,14 +208,14 @@ void LMP2::projection() {
     
 
     // Finally, build the W matrix
-    if(myid == ij_owner[ij])
+    if(Communicator::world->me() == ij_owner[ij])
         W[ij_local[ij]] = block_matrix(pairdom_len[ij],pairdom_nrlen[ij]);
-/*    if(myid == ij_owner[ij]) {
+/*    if(Communicator::world->me() == ij_owner[ij]) {
       if(ij_pairs%nprocs == 0) {
         W[ij_local[ij]] = block_matrix(pairdom_len[ij],pairdom_nrlen[ij]);
       }
       else {
-        if(myid < ij_pairs%nprocs)
+        if(Communicator::world->me() < ij_pairs%nprocs)
             W[ij_local[ij]] = block_matrix(pairdom_len[ij],pairdom_nrlen[ij]);
         else 
             W[ij_local[ij]] = block_matrix(pairdom_len[ij],pairdom_nrlen[ij]);
