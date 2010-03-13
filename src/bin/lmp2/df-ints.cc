@@ -31,17 +31,11 @@
 
 namespace psi {
 
-extern int myid;
-extern int nprocs;
-
 namespace lmp2 {
-
-extern int myid_lmp2;
-extern int nprocs_lmp2;
 
 void LMP2::direct_df_transformation() {
 #ifdef TIME_DF_LMP2
-if(myid == 0){
+if(Communicator::world->me() == 0){
   timer_init();
   timer_on("Compute DF-LMP2");
 }
@@ -73,7 +67,7 @@ if(myid == 0){
   const double *Jbuffer = Jint->buffer();
 
 #ifdef TIME_DF_LMP2
-if(myid == 0)  timer_on("Form J");
+if(Communicator::world->me() == 0)  timer_on("Form J");
 #endif
 
   int index = 0;
@@ -138,7 +132,7 @@ if(myid == 0)  timer_on("Form J");
   free_block(J_copy);
 
 #ifdef TIME_DF_LMP2
-if(myid == 0)  timer_off("Form J");
+if(Communicator::world->me() == 0)  timer_off("Form J");
 #endif
 
   int i, j, ij, l, k, a, b, t, u, v;
@@ -191,9 +185,9 @@ if(myid == 0)  timer_off("Form J");
    * Here *local* mean local to the given node 
    */
 
-  int **proc_has_i = init_int_matrix(nprocs,nocc);
-  int **i_local = init_int_matrix(nprocs,nocc); 
-  int *i_local_count = init_int_array(nprocs);
+  int **proc_has_i = init_int_matrix(Communicator::world->nproc(),nocc);
+  int **i_local = init_int_matrix(Communicator::world->nproc(),nocc); 
+  int *i_local_count = init_int_array(Communicator::world->nproc());
   int proc, count;
 
   for(ij = 0; ij < ij_pairs; ij++) {
@@ -204,7 +198,7 @@ if(myid == 0)  timer_off("Form J");
     proc_has_i[proc][j] = 1;
   } 
 
-  for(proc = 0; proc < nprocs; proc++) {
+  for(proc = 0; proc < Communicator::world->nproc(); proc++) {
     for(i = 0, count = 0; i < nocc; i++, count++) {
       if(proc_has_i[proc][i]) {
         //i_list[proc][count] = i;
@@ -291,7 +285,7 @@ if(myid == 0)  timer_off("Form J");
   for (P = 0; P < maxPshell; P++) temp[P] = block_matrix(nso, nso);
 
 #ifdef TIME_DF_LMP2
-if(myid == 0) timer_on("Form mo_p_ir");
+if(Communicator::world->me() == 0) timer_on("Form mo_p_ir");
 #endif
 
   const double *buffer = eri->buffer();
@@ -358,14 +352,14 @@ if(myid == 0) timer_on("Form mo_p_ir");
   // destruct temp[] itself?
 
 #ifdef TIME_DF_LMP2
-if(myid == 0) timer_off("Form mo_p_ir");
+if(Communicator::world->me() == 0) timer_off("Form mo_p_ir");
 #endif
 
 // fprintf(outfile, "mo_p_ia:\n");
 // print_mat(mo_p_ia, ribasis->nbf(), nact_docc*nact_virt, outfile);
 
 #ifdef TIME_DF_LMP2
-if(myid == 0) timer_on("Form B_ir^P");
+if(Communicator::world->me() == 0) timer_on("Form B_ir^P");
 #endif
 
 // mo_p_ir has integrals
@@ -387,29 +381,29 @@ if(myid == 0) timer_on("Form B_ir^P");
   free(mo_p_ir);
 
 #ifdef TIME_DF_LMP2
-if(myid == 0) timer_off("Form B_ir^P");
+if(Communicator::world->me() == 0) timer_off("Form B_ir^P");
 #endif
 
   //Allocating the memory needed by Ktilde
-  if(ij_pairs % nprocs == 0) {
-    Ktilde = (double ***) malloc((ij_pairs / nprocs) * sizeof (double **));
+  if(ij_pairs % Communicator::world->nproc() == 0) {
+    Ktilde = (double ***) malloc((ij_pairs / Communicator::world->nproc()) * sizeof (double **));
     for(ij = 0; ij < ij_pairs; ij++) {
-      if(myid == ij_owner[ij])
+      if(Communicator::world->me() == ij_owner[ij])
         Ktilde[ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
     }
   } 
   else {
-    if(myid < ij_pairs % nprocs) {
-      Ktilde = (double ***) malloc(((ij_pairs / nprocs) + 1) * sizeof (double **));
+    if(Communicator::world->me() < ij_pairs % Communicator::world->nproc()) {
+      Ktilde = (double ***) malloc(((ij_pairs / Communicator::world->nproc()) + 1) * sizeof (double **));
       for(ij = 0; ij < ij_pairs; ij++) {
-        if(myid == ij_owner[ij])
+        if(Communicator::world->me() == ij_owner[ij])
           Ktilde[ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
       }
     } 
     else {
-      Ktilde = (double ***) malloc(ij_pairs / nprocs * sizeof (double **));
+      Ktilde = (double ***) malloc(ij_pairs / Communicator::world->nproc() * sizeof (double **));
       for(ij = 0; ij < ij_pairs; ij++) {
-        if(myid == ij_owner[ij])
+        if(Communicator::world->me() == ij_owner[ij])
           Ktilde[ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
       }
     }
@@ -422,7 +416,7 @@ if(myid == 0) timer_off("Form B_ir^P");
   for(ij = 0; ij < ij_pairs; ij++, v++) {
     i = ij_map[ij][0];
     j = ij_map[ij][1];
-    if(v % nprocs == myid) {
+    if(v % Communicator::world->nproc() == Communicator::world->me()) {
       for(k = 0, a = 0; k < natom; k++) {
         if(pairdomain[ij][k]) {
           for(t = aostart[k]; t <= aostop[k]; t++, a++) {
@@ -451,7 +445,7 @@ if(myid == 0) timer_off("Form B_ir^P");
   free(B_ir_p);
 
 #ifdef TIME_DF_LMP2
-if(myid == 0) timer_off("Compute DF-LMP2");
+if(Communicator::world->me() == 0) timer_off("Compute DF-LMP2");
 #endif
 
 }

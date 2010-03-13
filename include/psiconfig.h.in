@@ -13,6 +13,9 @@
 /* Which integrals standard is used? */
 #undef PSI_INTEGRALS_STANDARD
 
+/* MPI? */
+#undef HAVE_MPI
+
 #undef HAVE_CMATH
 #undef HAVE_CSTDIO
 #undef HAVE_CSTDLIB

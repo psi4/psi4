@@ -29,13 +29,7 @@
 
 namespace psi {
 
-extern int myid;
-extern int nprocs;
-
 namespace lmp2 {
-
-extern int myid_lmp2;
-extern int nprocs_lmp2;
 
 void LMP2::direct_transformation() {
 
@@ -91,27 +85,27 @@ void LMP2::direct_transformation() {
 
     eri_2 = (double ***) malloc(pairs_per_proc * sizeof (double **));
     for(ij=0; ij < ij_pairs; ij++) {
-        if(myid == ij_owner[ij])
+        if(Communicator::world->me() == ij_owner[ij])
             eri_2[ij_local[ij]] = block_matrix(nso, nso);
     }
 
 /*    if (ij_pairs % nprocs == 0) {
         eri_2 = (double ***) malloc((ij_pairs / nprocs) * sizeof (double **));
         for (ij = 0; ij < ij_pairs; ij++) {
-            if (myid == ij_owner[ij])
+            if (Communicator::world->me() == ij_owner[ij])
                 eri_2[ij_local[ij]] = block_matrix(nso, nso);
         }
     } else {
-        if (myid < ij_pairs % nprocs) {
+        if (Communicator::world->me() < ij_pairs % nprocs) {
             eri_2 = (double ***) malloc(((ij_pairs / nprocs) + 1) * sizeof (double **));
             for (ij = 0; ij < ij_pairs; ij++) {
-                if (myid == ij_owner[ij])
+                if (Communicator::world->me() == ij_owner[ij])
                     eri_2[ij_local[ij]] = block_matrix(nso, nso);
             }
         } else {
             eri_2 = (double ***) malloc(ij_pairs / nprocs * sizeof (double **));
             for (ij = 0; ij < ij_pairs; ij++) {
-                if (myid == ij_owner[ij])
+                if (Communicator::world->me() == ij_owner[ij])
                     eri_2[ij_local[ij]] = block_matrix(nso, nso);
             }
         }
@@ -326,7 +320,7 @@ void LMP2::direct_transformation() {
         N = MN_shell[2][count];
         int numn = MN_shell[3][count];
 
-        if (myid == mn_owner[count]) {
+        if (Communicator::world->me() == mn_owner[count]) {
 
             if(screen_int)
                 if(T_N[M] * T_N[N] * PP_max[M][N] * LLmax < escreen) continue;
@@ -408,7 +402,7 @@ void LMP2::direct_transformation() {
 
                                 if (fabs(eri_1[m][oor][n][j]) > 1.0e-14) {
 
-                                    if ((myid == ij_owner[ij]) && (myid == mn_owner[count])) {
+                                    if ((Communicator::world->me() == ij_owner[ij]) && (Communicator::world->me() == mn_owner[count])) {
                                         eri_2[ij_local[ij]][om][oon] += C[oor][i] * eri_1[m][oor][n][j];
                                     }
                                     else {
@@ -420,7 +414,7 @@ void LMP2::direct_transformation() {
                     } // End of r loop
                 } // End of m loop
             } // End of ij loop
-        } // End if myid loop
+        } // End if Communicator::world->me() loop
     } // End of MN loop
 
     //  **** Free the memory used for the first quarter integral transformation ****
@@ -440,7 +434,7 @@ void LMP2::direct_transformation() {
         int numn = MN_shell[3][count];
 
         for (ij = 0; ij < ij_pairs; ij++) {
-            if ((myid == ij_owner[ij]) && (myid != mn_owner[count])) {
+            if ((Communicator::world->me() == ij_owner[ij]) && (Communicator::world->me() != mn_owner[count])) {
                 zero_mat(rec, nso, nso);
                 Communicator::world->recv(mn_owner[count], rec[0], nso * nso);
                 for (int m = 0; m < numm; m++) {
@@ -454,7 +448,7 @@ void LMP2::direct_transformation() {
                     }
                 }
             }
-            else if ((myid != ij_owner[ij]) && (myid == mn_owner[count])) {
+            else if ((Communicator::world->me() != ij_owner[ij]) && (Communicator::world->me() == mn_owner[count])) {
                 Communicator::world->send(ij_owner[ij], eri_2_mn[ij][0], nso * nso);
             }
         }
@@ -469,27 +463,27 @@ void LMP2::direct_transformation() {
     // Allocating the memory need by eri_3
     eri_3 = (double ***) malloc(pairs_per_proc * sizeof (double **));
     for (ij = 0; ij < ij_pairs; ij++) {
-        if (myid == ij_owner[ij])
+        if (Communicator::world->me() == ij_owner[ij])
             eri_3[ij_local[ij]] = block_matrix(nso, pairdom_len[ij]);
     }
 
 /*    if (ij_pairs % nprocs == 0) {
         eri_3 = (double ***) malloc((ij_pairs / nprocs) * sizeof (double **));
         for (ij = 0; ij < ij_pairs; ij++) {
-            if (myid == ij_owner[ij])
+            if (Communicator::world->me() == ij_owner[ij])
                 eri_3[ij_local[ij]] = block_matrix(nso, pairdom_len[ij]);
         }
     } else {
-        if (myid < ij_pairs % nprocs) {
+        if (Communicator::world->me() < ij_pairs % nprocs) {
             eri_3 = (double ***) malloc(((ij_pairs / nprocs) + 1) * sizeof (double **));
             for (ij = 0; ij < ij_pairs; ij++) {
-                if (myid == ij_owner[ij])
+                if (Communicator::world->me() == ij_owner[ij])
                     eri_3[ij_local[ij]] = block_matrix(nso, pairdom_len[ij]);
             }
         } else {
             eri_3 = (double ***) malloc(ij_pairs / nprocs * sizeof (double **));
             for (ij = 0; ij < ij_pairs; ij++) {
-                if (myid == ij_owner[ij])
+                if (Communicator::world->me() == ij_owner[ij])
                     eri_3[ij_local[ij]] = block_matrix(nso, pairdom_len[ij]);
             }
         }
@@ -500,7 +494,7 @@ void LMP2::direct_transformation() {
     for (ij = 0; ij < ij_pairs; ij++) {
         i = ij_map[ij][0];
         j = ij_map[ij][1];
-        if (myid == ij_owner[ij]) {
+        if (Communicator::world->me() == ij_owner[ij]) {
             for (k = 0, b = 0; k < natom; k++) {
                 if (pairdomain[ij][k]) {
                     for (t = aostart[k]; t <= aostop[k]; t++, b++) {
@@ -525,7 +519,7 @@ void LMP2::direct_transformation() {
                     } // End of b loop
                 } // End of if pairdomain
             } // End of k loop
-        } // End of if myid loop
+        } // End of if Communicator::world->me() loop
     } // End of i loop
 
     // Freeing the memory used by eri_2
@@ -536,7 +530,7 @@ void LMP2::direct_transformation() {
         for (ij = 0; ij < ij_pairs / nprocs; ij++)
             free_block(eri_2[ij]);
     } else {
-        if (myid < ij_pairs % nprocs) {
+        if (Communicator::world->me() < ij_pairs % nprocs) {
             for (ij = 0; ij < (ij_pairs / nprocs) + 1; ij++)
                 free_block(eri_2[ij]);
         } else {
@@ -550,27 +544,27 @@ void LMP2::direct_transformation() {
     // Allocating the memory needed by Ktilde
     Ktilde = (double ***) malloc(pairs_per_proc * sizeof (double **));
     for (ij = 0; ij < ij_pairs; ij++) {
-        if (myid == ij_owner[ij])
+        if (Communicator::world->me() == ij_owner[ij])
             Ktilde[ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
     }
 
 /*    if (ij_pairs % nprocs == 0) {
         Ktilde = (double ***) malloc((ij_pairs / nprocs) * sizeof (double **));
         for (ij = 0; ij < ij_pairs; ij++) {
-            if (myid == ij_owner[ij])
+            if (Communicator::world->me() == ij_owner[ij])
                 Ktilde[ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
         }
     } else {
-        if (myid < ij_pairs % nprocs) {
+        if (Communicator::world->me() < ij_pairs % nprocs) {
             Ktilde = (double ***) malloc(((ij_pairs / nprocs) + 1) * sizeof (double **));
             for (ij = 0; ij < ij_pairs; ij++) {
-                if (myid == ij_owner[ij])
+                if (Communicator::world->me() == ij_owner[ij])
                     Ktilde[ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
             }
         } else {
             Ktilde = (double ***) malloc(ij_pairs / nprocs * sizeof (double **));
             for (ij = 0; ij < ij_pairs; ij++) {
-                if (myid == ij_owner[ij])
+                if (Communicator::world->me() == ij_owner[ij])
                     Ktilde[ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
             }
         }
@@ -581,7 +575,7 @@ void LMP2::direct_transformation() {
     for (ij = 0; ij < ij_pairs; ij++) {
         i = ij_map[ij][0];
         j = ij_map[ij][1];
-        if (myid == ij_owner[ij]) {
+        if (Communicator::world->me() == ij_owner[ij]) {
             for (k = 0, a = 0; k < natom; k++) {
                 if (pairdomain[ij][k]) {
                     for (t = aostart[k]; t <= aostop[k]; t++, a++) {
@@ -603,14 +597,14 @@ void LMP2::direct_transformation() {
                     } // End of a loop
                 } // End of if pairdomain
             } // End of k loop
-        } // End of if myid loop
+        } // End of if Communicator::world->me() loop
     } // End of i loop
 
     if (print > 2) {
         for (ij = 0; ij < ij_pairs; ij++) {
             i = ij_map[ij][0];
             j = ij_map[ij][1];
-            if (myid == ij_owner[ij]) {
+            if (Communicator::world->me() == ij_owner[ij]) {
                 fprintf(outfile, "Ktilde[%d] matrix", ij);
                 print_mat(Ktilde[ij_local[ij]], pairdom_len[ij], pairdom_len[ij], outfile);
             }
@@ -625,7 +619,7 @@ void LMP2::direct_transformation() {
         for (ij = 0; ij < ij_pairs / nprocs; ij++)
             free_block(eri_3[ij]);
     } else {
-        if (myid < ij_pairs % nprocs) {
+        if (Communicator::world->me() < ij_pairs % nprocs) {
             for (ij = 0; ij < (ij_pairs / nprocs) + 1; ij++)
                 free_block(eri_3[ij]);
         } else {

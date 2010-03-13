@@ -1,7 +1,10 @@
 #include "parallel.h"
 #include <cstring>
+
 using namespace psi;
 using namespace boost;
+
+#if HAVE_MPI == 1
 
 MPICommunicator::MPICommunicator(MPI_Comm comm)
     : Communicator(), comm_(comm)
@@ -77,3 +80,5 @@ SUMMEMBER(unsigned int, MPI_INT)
 SUMMEMBER(int, MPI_INT)
 SUMMEMBER(char, MPI_CHAR)
 SUMMEMBER(long, MPI_LONG)
+
+#endif

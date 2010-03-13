@@ -10,6 +10,7 @@
 //#include <fstream>              // file I/O support
 #include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
+#include <libparallel/parallel.h>
 //#include <libchkpt/chkpt.h>
 //#include <libpsio/psio.h>
 #include <libqt/qt.h>
@@ -21,9 +22,6 @@
 #include "globals.h"
 
 namespace psi {
-
-extern int myid;
-extern int nprocs;
 
 namespace lmp2 {
 
@@ -40,9 +38,6 @@ namespace lmp2 {
  **
  ** TDC, Jan-June 2002
  */
-
-extern int myid_lmp2;
-extern int nprocs_lmp2;
 
 void LMP2::domains() {
 
@@ -177,7 +172,7 @@ void LMP2::domains() {
 
             errcod = C_DGESV(row, 1, &(X[0][0]), nso, &(ipiv[0]), &(Z[0]), nso);
             if (errcod) {
-                //        if(myid == 0)
+                //        if(Communicator::world->me() == 0)
                 //          fprintf(outfile, "\nError in DGESV return in orbital domain construction.\n");
                 //        exit(PSI_RETURN_FAILURE);
                 throw PsiException("Error in DGESV in LMP2 orbital domain construction", __FILE__, __LINE__);
@@ -205,7 +200,7 @@ void LMP2::domains() {
             domain_bp[i][k] = domain[i][k];
     }
     /* Print the orbital domains */
-    if (myid == 0) {
+    if (Communicator::world->me() == 0) {
         fprintf(outfile, "\n   ****** Boughton-Pulay Occupied Orbital Domains ******\n");
         //    domain_print(nocc, natom, domain_len_bp, domain_bp, fR);
         print_domains(fR);
@@ -261,7 +256,7 @@ void LMP2::domains() {
 
         errcod = C_DGESV(row, 1, &(X[0][0]), nso, &(ipiv[0]), &(Z[0]), nso);
         if (errcod) {
-            //        if(myid == 0)
+            //        if(Communicator::world->me() == 0)
             //          fprintf(outfile, "\nError in DGESV return in orbital domain construction.\n");
             //        exit(PSI_RETURN_FAILURE);
             throw PsiException("Error in DGESV in LMP2 orbital domain construction", __FILE__, __LINE__);
@@ -279,7 +274,7 @@ void LMP2::domains() {
     } /* i */
 
     /* Print the orbital domains */
-    if (myid == 0) {
+    if (Communicator::world->me() == 0) {
         fprintf(outfile, "\n   ****** Final Occupied Orbital Domains ******\n");
         //    if(!domain_sep)
         //    domain_print(nocc, natom, domain_len, domain, fR);
@@ -333,7 +328,7 @@ void LMP2::domains() {
     }
 
     int **ij_map = get_ij_map();
-    if(myid == 0) {
+    if(Communicator::world->me() == 0) {
         if(neglectdp) {
             fprintf(outfile, "\n   The following ij pairs are distant and will be negleted\n");
             for(ij=0; ij < ij_pairs; ij++) {
@@ -360,7 +355,7 @@ void LMP2::domains() {
     print_test = 0;
     ip_boolean("DOMAIN_PRINT", &(print_test), 0);
     if (print_test) {
-        //    if(myid == 0);
+        //    if(Communicator::world->me() == 0);
         //    fprintf(outfile, "Printing of orbital domains requested...exiting.\n\n");
         //    exit(PSI_RETURN_FAILURE);
         throw PsiException("Printing of orbital domains requested...exiting", __FILE__, __LINE__);

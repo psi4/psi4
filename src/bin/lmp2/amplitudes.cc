@@ -3,7 +3,6 @@
     \brief compute the mp2 amplitudes
 */
 
-#include "mpi.h"
 #include <iostream>
 //#include <cstdio>
 //#include <cstdlib>
@@ -23,13 +22,7 @@ extern pthread_mutex_t compute_mutex;
 
 namespace psi {
 
-extern int myid;
-extern int nprocs;
-
 namespace lmp2 {
-
-extern int myid_lmp2;
-extern int nprocs_lmp2;
 
 void LMP2::amplitudes() {
 
@@ -45,8 +38,6 @@ void LMP2::amplitudes() {
     double **Rbar, **Tbar;
     double **St, **Ft;
     double ****Tempkj, ****Tempik;
-    MPI_Win *T2win;
-    MPI_Status stat;
 
     nvir = nso - nocc;
 
@@ -74,7 +65,7 @@ void LMP2::amplitudes() {
             i = ij_map[ij][0];
             j = ij_map[ij][1];
 
-            if (myid == ij_owner[ij]) {
+            if (Communicator::world->me() == ij_owner[ij]) {
                 Tempkj[ij_local[ij]] = (double ***) malloc(nocc * sizeof (double **));
                 Tempik[ij_local[ij]] = (double ***) malloc(nocc * sizeof (double **));
             }
@@ -94,32 +85,32 @@ void LMP2::amplitudes() {
                 ik = abs_ij_map[ik_];
 
                 if (pairdom_exist[kj_]) {
-                    if ((myid == ij_owner[ij]) && (myid == ij_owner[kj])) {
+                    if ((Communicator::world->me() == ij_owner[ij]) && (Communicator::world->me() == ij_owner[kj])) {
                         Tempkj[ij_local[ij]][k] = block_matrix(pairdom_len[kj], pairdom_len[kj]);
                         C_DCOPY(pairdom_len[kj] * pairdom_len[kj], &(T[dmat1][ij_local[kj]][0][0]), 1, &(Tempkj[ij_local[ij]][k][0][0]), 1);
                     }
-                    else if ((myid == ij_owner[ij]) && (myid != ij_owner[kj])) {
+                    else if ((Communicator::world->me() == ij_owner[ij]) && (Communicator::world->me() != ij_owner[kj])) {
                         Tempkj[ij_local[ij]][k] = block_matrix(pairdom_len[kj], pairdom_len[kj]);
                         Communicator::world->recv(ij_owner[kj], Tempkj[ij_local[ij]][k][0], pairdom_len[kj] * pairdom_len[kj]);
                         //MPI::COMM_WORLD.Recv(&(Tempkj[k][0][0]), pairdom_len[kj]*pairdom_len[kj], MPI::DOUBLE, ij_owner[kj], kj);
                     }
-                    else if ((myid != ij_owner[ij]) && (myid == ij_owner[kj])) {
+                    else if ((Communicator::world->me() != ij_owner[ij]) && (Communicator::world->me() == ij_owner[kj])) {
                         Communicator::world->send(ij_owner[ij], T[dmat1][ij_local[kj]][0], pairdom_len[kj] * pairdom_len[kj]);
                         //MPI::COMM_WORLD.Send(&(T[dmat1][ij_local[kj]][0][0]), pairdom_len[kj]*pairdom_len[kj], MPI::DOUBLE, ij_owner[ij], kj);
                     }
                 }
 
                 if (pairdom_exist[ik_]) {
-                    if ((myid == ij_owner[ij]) && (myid == ij_owner[ik])) {
+                    if ((Communicator::world->me() == ij_owner[ij]) && (Communicator::world->me() == ij_owner[ik])) {
                         Tempik[ij_local[ij]][k] = block_matrix(pairdom_len[ik], pairdom_len[ik]);
                         C_DCOPY(pairdom_len[ik] * pairdom_len[ik], &(T[dmat1][ij_local[ik]][0][0]), 1, &(Tempik[ij_local[ij]][k][0][0]), 1);
                     }
-                    else if ((myid == ij_owner[ij]) && (myid != ij_owner[ik])) {
+                    else if ((Communicator::world->me() == ij_owner[ij]) && (Communicator::world->me() != ij_owner[ik])) {
                         Tempik[ij_local[ij]][k] = block_matrix(pairdom_len[ik], pairdom_len[ik]);
                         Communicator::world->recv(ij_owner[ik], Tempik[ij_local[ij]][k][0], pairdom_len[ik] * pairdom_len[ik]);
                         //MPI::COMM_WORLD.Recv(&(Tempik[k][0][0]), pairdom_len[ik]*pairdom_len[ik], MPI::DOUBLE, ij_owner[ik], ik);
                     }
-                    else if ((myid != ij_owner[ij]) && (myid == ij_owner[ik])) {
+                    else if ((Communicator::world->me() != ij_owner[ij]) && (Communicator::world->me() == ij_owner[ik])) {
                         Communicator::world->send(ij_owner[ij], T[dmat1][ij_local[ik]][0], pairdom_len[ik] * pairdom_len[ik]);
                         //MPI::COMM_WORLD.Send(&(T[dmat1][ij_local[ik]][0][0]), pairdom_len[ik]*pairdom_len[ik], MPI::DOUBLE, ij_owner[ij], ik);
                     }
@@ -136,7 +127,7 @@ void LMP2::amplitudes() {
         i = ij_map[ij][0];
         j = ij_map[ij][1];
 
-        if (myid != ij_owner[ij])
+        if (Communicator::world->me() != ij_owner[ij])
             continue;
 
         zero_mat(T[div][ij_local[ij]], pairdom_len[ij], pairdom_len[ij]);
@@ -175,7 +166,7 @@ void LMP2::amplitudes() {
             C_DGEMM('n', 'n', pairdom_len[ij], pairdom_len[ij], pairdom_len[ij], 1, &(temp[0][0]),
                     pairdom_len[ij], &(St[0][0]), pairdom_len[ij], 1, &(Rtilde[0][0]), pairdom_len[ij]);
 
-            //std::cout << "procid = " << myid << "   made it here in iter = " << iter << "   for ij = " << ij <<
+            //std::cout << "procid = " << Communicator::world->me() << "   made it here in iter = " << iter << "   for ij = " << ij <<
             //"       ij_local[" << ij << "] = " << ij_local[ij] << " pairdom_len[" << ij << "] = " << pairdom_len[ij] << std::endl;
 
 
@@ -343,9 +334,9 @@ void LMP2::amplitudes() {
     if(iter > 0) {
         //MPI_Barrier(MPI_COMM_WORLD);
 
-        //std::cout << "Made it before free Tempkj for proc " << myid << " for iter = " << iter << std::endl;
+        //std::cout << "Made it before free Tempkj for proc " << Communicator::world->me() << " for iter = " << iter << std::endl;
         for (ij = 0; ij < ij_pairs; ij++) {
-            if (myid == ij_owner[ij]) {
+            if (Communicator::world->me() == ij_owner[ij]) {
                 for (k = 0; k < nocc; k++) {
                     if (k > j) kj_ = (k * (k + 1)) / 2 + j;
                     else kj_ = (j * (j + 1)) / 2 + k;
@@ -365,7 +356,7 @@ void LMP2::amplitudes() {
         free(Tempkj);
         free(Tempik);
 
-        //std::cout << "Made it after free Tempkj for proc " << myid << " for iter = " << iter << std::endl;
+        //std::cout << "Made it after free Tempkj for proc " << Communicator::world->me() << " for iter = " << iter << std::endl;
     }
    
 

@@ -29,20 +29,13 @@
 
 namespace psi{
 
-extern int myid;
-extern int nprocs;
-
 namespace lmp2{
-
-extern int myid_lmp2;
-extern int nprocs_lmp2;
-
 
 void LMP2::localize() {
 
   using namespace psi;
 
-  if(myid == 0) {
+  if(Communicator::world->me() == 0) {
     fprintf(outfile, "\n********************* Entering Localization Scope ********************************\n");
   }
 
@@ -56,7 +49,7 @@ void LMP2::localize() {
   double Uss, Utt, Ust, Uts, LCks, LCkt, **U, **V, **VV;
   double cos4a, alpha, alphamax, alphalast, conv;
 
-  if(print > 2 && myid == 0) {
+  if(print > 2 && Communicator::world->me() == 0) {
     fprintf(outfile, "\nC Matrix in the AO basis:\n");
     print_mat(C, nso, nso, outfile);
   }
@@ -78,7 +71,7 @@ void LMP2::localize() {
 
 //  S->compute(overlap);
 
-    if(myid == 0) {
+    if(Communicator::world->me() == 0) {
         IWL::read_one(psio.get(), PSIF_OEI, PSIF_SO_S, scratch, ntri, 0, 0, outfile);
     }
     Communicator::world->bcast(scratch, ntri, 0);
@@ -90,7 +83,7 @@ void LMP2::localize() {
 
   free(scratch);
 
-  if(print > 2 && myid == 0) {
+  if(print > 2 && Communicator::world->me() == 0) {
     fprintf(outfile, "Overlap Matrix");
     print_mat(aoovlp, nso, nso, outfile);
   }
@@ -136,7 +129,7 @@ void LMP2::localize() {
       ao2atom[j] = i;                   // ao2atom is the atom number that the AO is located on
     }
 
-  if(myid == 0) {
+  if(Communicator::world->me() == 0) {
     fprintf(outfile, "\tNumber of doubly occupied orbitals: %d\n\n", nocc);
 
     fprintf(outfile, "\tIter     Pop. Localization   Max. Rotation Angle       Conv\n");
@@ -242,7 +235,7 @@ void LMP2::localize() {
     } // s-loop
 
     conv = fabs(alphamax) - fabs(alphalast);
-    if(myid == 0) {
+    if(Communicator::world->me() == 0) {
       fprintf(outfile, "\t%4d  %20.10f  %20.10f  %4.3e\n", iter, P, alphamax, conv);
     }
     if((iter > 2) && ((fabs(conv) < 1e-12) || alphamax == 0.0)) break;
@@ -289,14 +282,14 @@ void LMP2::localize() {
   }
   free_block(LCtmp);
 
-  if(print > 3 && myid == 0) {
+  if(print > 3 && Communicator::world->me() == 0) {
     fprintf(outfile, "\nC Matrix in the LO basis:\n");
     print_mat(C, nso, nso, outfile);
   }
 
   free(evals);
 
-  if(myid == 0) {
+  if(Communicator::world->me() == 0) {
     fprintf(outfile, "\n********************* Exiting Localization Scope ********************************\n");
   }
 }

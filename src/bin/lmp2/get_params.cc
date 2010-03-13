@@ -8,6 +8,7 @@
 //#include <cstdio>
 //#include <cstdlib>
 //#include <cstring>
+#include <libparallel/parallel.h>
 #include <cmath>
 //#include <libipv1/ip_lib.h>
 //#include <libciomr/libciomr.h>
@@ -20,14 +21,7 @@
 
 namespace psi{
 
-extern int myid;
-extern int nprocs;
-
 namespace lmp2{
-
-extern int myid_lmp2;
-extern int nprocs_lmp2;
-
 
 void LMP2::get_params(Options &options) {
 
@@ -62,7 +56,7 @@ void LMP2::get_params(Options &options) {
 
   it_diis = options.get_int("DIISSTART");
   if(it_diis < 3) {
-    if(myid == 0) {
+    if(Communicator::world->me() == 0) {
       fprintf(outfile, "\n\t*** WARNING ***\n");
       fprintf(outfile, "\tDIISSTART can not be less than 3\n");
       fprintf(outfile, "\tReseting DIISSTART to 3\n");
@@ -89,7 +83,7 @@ void LMP2::get_params(Options &options) {
   scs_scale_os = options.get_double("SCALE_OS");
   scs_scale_ss = options.get_double("SCALE_SS");
 
-  if(myid == 0)
+  if(Communicator::world->me() == 0)
     print_params();
 }
 
@@ -101,7 +95,7 @@ void LMP2::print_params(){
     fprintf(outfile, "\tWave function \t\t= %s\n", wfn);
     fprintf(outfile, "\tReference WFN \t\t= %s\n", (ref==0)?"RHF":((ref==1)?"ROHF":"UHF"));
     fprintf(outfile, "\tMemory (MB)   \t\t= %.1f\n",memory/1e6);
-    fprintf(outfile, "\tNum Procs     \t\t= %d\n", nprocs);
+    fprintf(outfile, "\tNum Procs     \t\t= %d\n", Communicator::world->nproc());
     fprintf(outfile, "\tMaxiter       \t\t= %d\n", maxiter);
     fprintf(outfile, "\tEnergy Convergence   \t= %3.1e\n", econv);
     fprintf(outfile, "\tRMS Convergence   \t= %3.1e\n", rmsconv);

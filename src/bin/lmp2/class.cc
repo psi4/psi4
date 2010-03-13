@@ -3,7 +3,6 @@
     \brief Enter brief description of file here
 */
 
-#include "mpi.h"
 #include <iostream>
 #include <fstream>              // file I/O support
 //#include <cstdio>
@@ -25,14 +24,7 @@ using namespace psi;
 
 namespace psi{
 
-extern int myid;
-extern int nprocs;
-
 namespace lmp2{
-
-extern int myid_lmp2;
-extern int nprocs_lmp2;
-
 
 LMP2::LMP2() {
   fprintf(outfile, "Do not use the default constructor for LMP2");
@@ -80,7 +72,7 @@ void LMP2::print_moinfo(){
 
   // A couple of error traps
   if(nirreps != 1) {
-    if(myid == 0) {
+    if(Communicator::world->me() == 0) {
         char *symm_label = chkpt->rd_sym_label();
         throw InputException("Local MP2 is only valid in C1 symmetry", symm_label, __FILE__, __LINE__);
     }
@@ -90,7 +82,7 @@ void LMP2::print_moinfo(){
   double Enuc = get_enuc();
   Escf = get_escf();
 
-  if(myid == 0) {
+  if(Communicator::world->me() == 0) {
     fprintf(outfile,"\n");
     fprintf(outfile,"\tChkpt Parameters:\n");
     fprintf(outfile,"\t--------------------\n");
@@ -113,10 +105,10 @@ void LMP2::get_fock() {
   X = init_array((nso*nso+nso)/2);
   temp = block_matrix(nso, nso);
 
-  if(myid == 0)
+  if(Communicator::world->me() == 0)
     X = chkpt->rd_fock();
 
-  if(nprocs > 1)
+  if(Communicator::world->nproc() > 1)
     Communicator::world->bcast(X, (nso*nso+nso)/2, 0);
   
   tri_to_sq(X, aoF, nso);
@@ -138,7 +130,7 @@ int* LMP2::get_ij_owner() {
 
   v=0;
   for(ij=0; ij < ij_pairs; ij++) {
-    ij_owner[ij] = v%nprocs;
+    ij_owner[ij] = v % Communicator::world->nproc();
     v++;
   }
 
@@ -182,7 +174,7 @@ int* LMP2::get_ij_local() {
   count=0;
   for(ij=0; ij < ij_pairs; ij++) {
       ij_local[ij] = count;
-      if(v%nprocs == nprocs-1) count++;
+      if(v%Communicator::world->nproc() == Communicator::world->nproc()-1) count++;
       v++;
   }
 
@@ -201,7 +193,7 @@ int* LMP2::get_mn_owner(int n) {
 
   v = 0;
   for(count=0; count < num_unique_shells; count++) {
-    mn_owner_[count] = v%nprocs;
+    mn_owner_[count] = v%Communicator::world->nproc();
     v++;
   }
 
@@ -218,7 +210,7 @@ int LMP2::get_mn_pairs(int n) {
 
   v = 0;
   for(count=0; count < num_unique_shells; count++) {
-    if(myid == v%nprocs) mn_pairs_++;
+    if(Communicator::world->me()== v% Communicator::world->nproc()) mn_pairs_++;
     v++;
   }
 
