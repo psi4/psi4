@@ -1,4 +1,5 @@
 #include "parallel.h"
+#include <psi4-dec.h>
 #include <cstring>
 
 using namespace psi;
@@ -7,12 +8,14 @@ using namespace boost;
 LocalCommunicator::LocalCommunicator()
     : Communicator()
 {
+    me_ = 0;
     nproc_ = 1;
 }
 
 LocalCommunicator::LocalCommunicator(const LocalCommunicator &copy)
     : Communicator()
 {
+    me_ = 0;
     nproc_ = 1;
 }
 
@@ -78,3 +81,9 @@ void LocalCommunicator::sync()
 {
 
 }
+
+void LocalCommunicator::print(FILE *out) const
+{
+    fprintf(out, "\n  Using LocalCommunicator (Number of processes = 1)\n\n");
+}
+
