@@ -1,3 +1,4 @@
+#include <libparallel/parallel.h>
 #include <cstdio>
 
 namespace psi {
@@ -5,7 +6,6 @@ namespace psi {
 /*! Print PSI version information that was set in configure.ac */
 void print_version(FILE *myout)
 {
-  const char *PSI_VERSION = "0.1";
   fprintf(myout, "    -----------------------------------------------------------------------\n");
   fprintf(myout, "          PSI4: An Open-Source Ab Initio Electronic Structure Package\n");
   fprintf(myout, "                              PSI %s Driver\n", PSI_VERSION);
@@ -16,6 +16,7 @@ void print_version(FILE *myout)
   fprintf(myout, "                         Additional Contributions by\n");
   fprintf(myout, "    Francesco Evangelista, Andrew Simmonett, Justin Turney, Jeremy Wilke\n");
   fprintf(myout, "    -----------------------------------------------------------------------\n\n");
+  Communicator::world->print(myout);
 }
 
 }
