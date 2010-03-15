@@ -10,12 +10,15 @@
 
 #include <boost/shared_ptr.hpp>
 #include <psiconfig.h>
+#include <cstdio>
 
 #if HAVE_MPI == 1
 #include <mpi.h>
 #endif
 
 namespace psi {
+
+    extern FILE *outfile;
 
     class Communicator {
     protected:
@@ -104,6 +107,7 @@ namespace psi {
         void sum(double &data);
         void sum(int &data);
 
+        virtual void print(FILE *out=outfile) const = 0;
     };
 
 #if HAVE_MPI == 1
@@ -138,6 +142,8 @@ namespace psi {
         virtual void sum(int *data, int n, int *receive_buffer=0, int target=-1);
         virtual void sum(char *data, int n, char *receive_buffer=0, int target=-1);
         virtual void sum(long *data, int n, long *receive_buffer=0, int target=-1);
+
+        virtual void print(FILE *out=outfile) const;
     };
 #endif
 
@@ -159,6 +165,8 @@ namespace psi {
         virtual void sum(int *data, int n, int *receive_buffer=0, int target=-1);
         virtual void sum(char *data, int n, char *receive_buffer=0, int target=-1);
         virtual void sum(long *data, int n, long *receive_buffer=0, int target=-1);
+
+        virtual void print(FILE *out=outfile) const;
     };
 
 }
