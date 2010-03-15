@@ -257,7 +257,7 @@ AR=$withval
 )
 AC_SUBST(AR)
 
-# AC_CHECK_LIB(, MPI_Finialize, AC_DEFINE_UNQUOTED(MPI))
+AC_LANG([C++])
 
 ARFLAGS=r
 AC_ARG_WITH(ar-flags,
@@ -503,7 +503,13 @@ AC_CXX_PROCESS_CHECK([cstddef],[#include <cstddef>],,[HAVE_CSTDDEF=1],[HAVE_CSTD
 #CXXDEF="$CXXDEF -DHAVE_CSTDDEF=$HAVE_CSTDDEF"
 AC_DEFINE_UNQUOTED(HAVE_CSTDDEF,$HAVE_CSTDDEF)
 
-AC_CXX_PROCESS_CHECK([mpi],[#include <mpi.h>],,[HAVE_MPI=1],[HAVE_MPI=0])
+# Check for mpi.h
+AC_CXX_PROCESS_CHECK([mpi.h],[#include <mpi.h>],,[HAVE_MPI=1],[HAVE_MPI=0])
+# Check if we can link against mpi
+AC_MSG_CHECKING([if we can link to MPI])
+AC_TRY_LINK([#include <mpi.h>], [ MPI_Finalize(); ], [HAVE_MPI=1
+AC_MSG_RESULT([yes])],[HAVE_MPI=0
+AC_MSG_RESULT([no])])
 AC_DEFINE_UNQUOTED(HAVE_MPI,$HAVE_MPI)
 
 /bin/rm -f a.out
