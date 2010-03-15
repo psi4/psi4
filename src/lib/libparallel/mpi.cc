@@ -84,7 +84,7 @@ SUMMEMBER(long, MPI_LONG)
 void MPICommunicator::print(FILE *out) const
 {
     if (me() == 0) {
-        fprintf(out, "\n  Using MPICommunicator (Number of processes = %d\n)\n\n", nproc());
+        fprintf(out, "\n    Using MPICommunicator (Number of processes = %d)\n\n", nproc());
     }
 }
 
