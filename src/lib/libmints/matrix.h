@@ -236,6 +236,8 @@ public:
     void gemm(bool transa, bool transb, double alpha, const Matrix& a, const Matrix& b, double beta);
     /// Diagonalize this places eigvectors and eigvalues must be created by caller.
     void diagonalize(Matrix& eigvectors, Vector& eigvalues);
+
+    friend class Vector;
 };
 
 /*! \ingroup MINTS
