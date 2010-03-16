@@ -1,5 +1,7 @@
 #include <cstdlib>
 #include <string.h>
+#include <libqt/qt.h>
+#include "matrix.h"
 #include "vector.h"
 
 using namespace psi;
@@ -127,6 +129,33 @@ double *Vector::to_block_vector() {
     }
     
     return temp;
+}
+
+void Vector::gemv(bool transa, double alpha, Matrix* A, Vector* X, double beta)
+{
+    char trans = transa ? 't' : 'n';
+
+    for (int h =0; h < nirreps_; ++h) {
+        C_DGEMV(trans, A->rowspi_[h], A->colspi_[h], alpha, &(A->matrix_[h][0][0]),
+                A->rowspi_[h], &(X->vector_[h][0]), 1, beta, &(vector_[h][0]), 1);
+    }
+}
+
+double Vector::dot(Vector* X)
+{
+    double tmp = 0.0;
+
+    for (int h=0; h<nirreps_; ++h) {
+        if (dimpi_[h] != X->dimpi_[h]) {
+            printf("Vector::dot: Vectors are not of the same size.\n");
+            return 0.0;
+        }
+        for (int i=0; i<dimpi_[h]; ++i) {
+            tmp += vector_[h][i] * X->vector_[h][i];
+        }
+    }
+
+    return tmp;
 }
 
 //

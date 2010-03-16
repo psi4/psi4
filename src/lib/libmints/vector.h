@@ -8,6 +8,8 @@
 
 namespace psi {
 
+class Matrix;
+
 /*! \ingroup MINTS */
 class Vector {
 protected:
@@ -65,6 +67,12 @@ public:
     void print(FILE *);
     /// Copies rhs to this
     void copy(const Vector* rhs);
+
+    /// General matrix vector multiplication
+    void gemv(bool transa, double alpha, Matrix* A, Vector* X, double beta);
+
+    /// Vector dot product
+    double dot(Vector* X);
 
     friend class Matrix;
 };
