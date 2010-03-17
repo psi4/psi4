@@ -20,3 +20,5 @@
 #include <libmints/vector3.h>
 #include <libmints/wavefunction.h>
 #include <libmints/basisset_parser.h>
+#include <libmints/properties.h>
+#include <libmints/basispoints.h>
