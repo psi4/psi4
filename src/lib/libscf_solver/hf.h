@@ -91,6 +91,8 @@ protected:
     double **B_ia_P_; //Three Index tensor for DF-SCF
 
     double schwarz_;
+    
+    bool save_grid_; //save SCF Cartesian Grid
 
     /// DIIS manager for all SCF wavefunctions
     boost::shared_ptr<DIISManager> diis_manager_;

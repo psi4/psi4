@@ -209,6 +209,11 @@ void HF::common_init()
     if (diis_enabled_)
         diis_manager_ = shared_ptr<DIISManager>(new DIISManager(num_diis_vectors_, "HF DIIS vector"));
 
+    // Save cartesian grid? Temporary until OEPROP is fully redone
+    save_grid_ = false;
+    if (options_.get_bool("SAVE_CARTESIAN_GRID")) {
+        save_grid_ = true;
+    }
     // Alloc memory for multipoles
     Dipole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Dipole X SO-basis")));
     Dipole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Dipole Y SO-basis")));

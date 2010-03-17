@@ -112,7 +112,49 @@ int read_options(const std::string &name, Options & options) {
 
   }
   else if (name == "SCF") {
-    /*- The name of the auxilliary basis to be used in RI computations -*/
+    /*- The DFT grid specification, such as SG1 -*/
+    options.add_str("GRID_STRING","","SG1");
+    /*- The number of radial points in the DFT grid -*/
+    options.add_int("N_RADIAL",99);
+    /*- The number of spherical points in the DFT grid -*/
+    options.add_int("N_SPHERICAL",590);  
+    /*- The spherical quadrature type for DFT, usually Lebedev-*/
+    options.add_str("SPHERICAL_TYPE","LEBEDEV","LEBEDEV");
+    /*- The radial quadrature type for DFT, Treutler is best -*/
+    options.add_str("RADIAL_TYPE","TREUTLER","TREUTLER BECKE EULER-MACLAURIN");
+    /*- The nuclear partition type for DFT, Treutler is best  -*/
+    options.add_str("NUCLEAR_TYPE","TREUTLER","NAIVE BECKE TREUTLER");
+    /*- The functional name or alias  -*/
+    options.add_str("FUNCTIONAL","");
+     
+    /*- Save a grid or not?  -*/
+    options.add_bool("SAVE_CARTESIAN_GRID",false);
+    /*- Grid filename  -*/
+    options.add_str("CARTESIAN_FILENAME","Grid.out");
+    /*- Grid global resolution (npoints)  -*/
+    options.add_int("CARTESIAN_RESOLUTION",30);
+    /*- Grid x resolution (npoints)  -*/
+    options.add_int("CARTESIAN_RESOLUTION_X",1);
+    /*- Grid y resolution (npoints)  -*/
+    options.add_int("CARTESIAN_RESOLUTION_Y",1);
+    /*- Grid z resolution (npoints)  -*/
+    options.add_int("CARTESIAN_RESOLUTION_Z",1);
+    /*- Grid MO indices  -*/
+    options.add("CARTESIAN_MO_INDICES",new ArrayType());
+    /*- Number MO indices  -*/
+    options.add_int("N_CARTESIAN_MOS",0);
+
+    
+    /*- Save a grid or not?  -*/
+    options.add_bool("SAVE_NUMERICAL_GRID",false);
+    /*- Grid filename  -*/
+    options.add_str("NUMERICAL_GRID_FILENAME","ngrid.out");
+
+    /*- Grid overage at sides  -*/
+    options.add_double("CARTESIAN_OVERAGE",2.00);
+    /*- Grid extents [xl, xr, yl, yr, zl, zr]  -*/
+    options.add("CARTESIAN_EXTENTS",new ArrayType());
+    /*- The name of the auxiliary basis to be used in RI computations -*/
     options.add_str("RI_BASIS", "");
     options.read_ipv1();
 
