@@ -147,11 +147,13 @@ double RKS::compute_energy()
         }
         fprintf(outfile, "\n");
         fprintf(outfile,"\n  @RKS Numerical Density: %14.10f\n",densityCheck_);
+        fprintf(outfile,"  @RKS Numerical Dipole: <%14.10f,%14.10f,%14.10f>\n",dipoleCheckX_,dipoleCheckY_,dipoleCheckZ_);
 	
         save_information();
     } else {
         fprintf(outfile, "\n  Failed to converged.\n");
         fprintf(outfile,"\n  @RKS Numerical Density: %14.10f\n",densityCheck_);
+        fprintf(outfile,"  @RKS Numerical Dipole: <%14.10f,%14.10f,%14.10f>\n",dipoleCheckX_,dipoleCheckY_,dipoleCheckZ_);
         E_ = 0.0;
     }
     if (options_.get_bool("SAVE_NUMERICAL_GRID"))
@@ -227,11 +229,15 @@ void RKS::form_V()
 {
 	V_->zero();
 	densityCheck_ = 0.0;
+	dipoleCheckX_ = 0.0;
+	dipoleCheckY_ = 0.0;
+	dipoleCheckZ_ = 0.0;
 	IntegrationPoint q;
 	double fun,val;
 	int nirreps = V_->nirreps();
 	int* opi = V_->rowspi();
 	double fudge = 1.0/(1.0*PI); 
+	double check;
 	for (integrator_->reset(); !integrator_->isDone(); ) {
 		q = integrator_->getNextPoint();
 		properties_->computeProperties(q.point,D_,C_);
@@ -251,7 +257,11 @@ void RKS::form_V()
 			}
 		}
 		//Check Numerical Density (Gives an idea of grid error)
-		densityCheck_+=q.weight*properties_->getDensity();
+		check = q.weight*properties_->getDensity();
+		densityCheck_+=2.0*check;
+		dipoleCheckX_+=-2.0*check*q.point[0];
+		dipoleCheckY_+=-2.0*check*q.point[1];
+		dipoleCheckZ_+=-2.0*check*q.point[2];
 	}
 	V_->print(outfile);
 	
