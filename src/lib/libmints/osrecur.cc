@@ -130,9 +130,16 @@ ObaraSaikaTwoCenterRecursion::ObaraSaikaTwoCenterRecursion(int max_am1, int max_
     if (max_am2 < 0)
         throw SanityCheckError("ERROR: ObaraSaikaTwoCenterRecursion -- max_am2 must be nonnegative", __FILE__, __LINE__);
 
-    x_ = block_matrix(max_am1_+1, max_am2_+1);
-    y_ = block_matrix(max_am1_+1, max_am2_+1);
-    z_ = block_matrix(max_am1_+1, max_am2_+1);
+    int am1 = max_am1;
+    int am2 = max_am2;
+    if (max_am1_ == 0)
+        am1 = 1;
+    if (max_am2_ == 0)
+        am2 = 1;
+
+    x_ = block_matrix(am1+1, am2+1);
+    y_ = block_matrix(am1+1, am2+1);
+    z_ = block_matrix(am1+1, am2+1);
 }
 
 ObaraSaikaTwoCenterRecursion::~ObaraSaikaTwoCenterRecursion()
