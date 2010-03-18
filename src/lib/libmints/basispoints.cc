@@ -20,11 +20,11 @@ BasisPoints::BasisPoints(shared_ptr<BasisSet> b)
 	basis_ = b;
 	have_points_ = false;
 	have_gradients_ = false;
-	have_jacobians_ = false;
+	have_hessians_ = false;
 	have_laplacians_ = false;
 	do_points_ = true;
 	do_gradients_ = false;
-	do_jacobians_ = false;
+	do_hessians_ = false;
 	do_laplacians_ = false;
 	allocate();
 }
@@ -32,7 +32,7 @@ BasisPoints::~BasisPoints()
 {
 	do_points_ = false;
 	do_gradients_ = false;
-	do_jacobians_ = false;
+	do_hessians_ = false;
 	do_laplacians_ = false;	
 	release();
 }
@@ -48,14 +48,14 @@ void BasisPoints::allocate()
 		gradientsZ_ = init_array(basis_->nbf());
 		have_gradients_ = true;
 	}
-	if (do_jacobians_ && !have_jacobians_) {
-		jacobiansXY_ = init_array(basis_->nbf());
-		jacobiansXZ_ = init_array(basis_->nbf());
-		jacobiansYZ_ = init_array(basis_->nbf());
-		jacobiansXX_ = init_array(basis_->nbf());
-		jacobiansYY_ = init_array(basis_->nbf());
-		jacobiansZZ_ = init_array(basis_->nbf());
-		have_jacobians_ = true;
+	if (do_hessians_ && !have_hessians_) {
+		hessiansXY_ = init_array(basis_->nbf());
+		hessiansXZ_ = init_array(basis_->nbf());
+		hessiansYZ_ = init_array(basis_->nbf());
+		hessiansXX_ = init_array(basis_->nbf());
+		hessiansYY_ = init_array(basis_->nbf());
+		hessiansZZ_ = init_array(basis_->nbf());
+		have_hessians_ = true;
 	}
 	if (do_laplacians_ && !have_laplacians_) {
 		laplacians_ = init_array(basis_->nbf());
@@ -74,14 +74,14 @@ void BasisPoints::release()
 		free(gradientsZ_);
 		have_gradients_ = false;
 	}
-	if (have_jacobians_ && !do_jacobians_) {
-		free(jacobiansXY_);
-		free(jacobiansXZ_);
-		free(jacobiansYZ_);
-		free(jacobiansXX_);
-		free(jacobiansYY_);
-		free(jacobiansZZ_);
-		have_jacobians_ = false;
+	if (have_hessians_ && !do_hessians_) {
+		free(hessiansXY_);
+		free(hessiansXZ_);
+		free(hessiansYZ_);
+		free(hessiansXX_);
+		free(hessiansYY_);
+		free(hessiansZZ_);
+		have_hessians_ = false;
 	}
 	if (have_laplacians_ && !do_laplacians_) {
 		free(laplacians_);
@@ -98,13 +98,13 @@ void BasisPoints::computePoints(Vector3 point)
 		memset(gradientsY_, 0.0, sizeof(double)*basis_->nbf());
 		memset(gradientsZ_, 0.0, sizeof(double)*basis_->nbf());
 	}
-	if (do_jacobians_) {
-		memset(jacobiansXY_, 0.0, sizeof(double)*basis_->nbf());
-		memset(jacobiansXZ_, 0.0, sizeof(double)*basis_->nbf());
-		memset(jacobiansYZ_, 0.0, sizeof(double)*basis_->nbf());
-		memset(jacobiansXX_, 0.0, sizeof(double)*basis_->nbf());
-		memset(jacobiansYY_, 0.0, sizeof(double)*basis_->nbf());
-		memset(jacobiansZZ_, 0.0, sizeof(double)*basis_->nbf());
+	if (do_hessians_) {
+		memset(hessiansXY_, 0.0, sizeof(double)*basis_->nbf());
+		memset(hessiansXZ_, 0.0, sizeof(double)*basis_->nbf());
+		memset(hessiansYZ_, 0.0, sizeof(double)*basis_->nbf());
+		memset(hessiansXX_, 0.0, sizeof(double)*basis_->nbf());
+		memset(hessiansYY_, 0.0, sizeof(double)*basis_->nbf());
+		memset(hessiansZZ_, 0.0, sizeof(double)*basis_->nbf());
 	}
 	if (do_laplacians_) {
 		memset(laplacians_, 0.0, sizeof(double)*basis_->nbf());
@@ -130,7 +130,7 @@ void BasisPoints::computePoints(Vector3 point)
 		int l = shell->am();
 
 		double* ao_points, *ao_gradX, *ao_gradY, *ao_gradZ;
-		double* ao_jacobXY, *ao_jacobXZ, *ao_jacobYZ, *ao_jacobXX, *ao_jacobYY, *ao_jacobZZ, *ao_laplac; 
+		double* ao_hessXY, *ao_hessXZ, *ao_hessYZ, *ao_hessXX, *ao_hessYY, *ao_hessZZ, *ao_laplac; 
 		if (do_points_)
 			ao_points = init_array((l+1)*(l+2)>>1);
 		if (do_gradients_) {
@@ -138,13 +138,13 @@ void BasisPoints::computePoints(Vector3 point)
 			ao_gradY = init_array((l+1)*(l+2)>>1);
 			ao_gradZ = init_array((l+1)*(l+2)>>1);
 		}
-		if (do_jacobians_) {
-			ao_jacobXY = init_array((l+1)*(l+2)>>1);
-			ao_jacobXZ = init_array((l+1)*(l+2)>>1);
-			ao_jacobYZ = init_array((l+1)*(l+2)>>1);
-			ao_jacobXX = init_array((l+1)*(l+2)>>1);
-			ao_jacobYY = init_array((l+1)*(l+2)>>1);
-			ao_jacobZZ = init_array((l+1)*(l+2)>>1);
+		if (do_hessians_) {
+			ao_hessXY = init_array((l+1)*(l+2)>>1);
+			ao_hessXZ = init_array((l+1)*(l+2)>>1);
+			ao_hessYZ = init_array((l+1)*(l+2)>>1);
+			ao_hessXX = init_array((l+1)*(l+2)>>1);
+			ao_hessYY = init_array((l+1)*(l+2)>>1);
+			ao_hessZZ = init_array((l+1)*(l+2)>>1);
 			}
 		if (do_laplacians_) 
 			ao_laplac = init_array((l+1)*(l+2)>>1);
@@ -201,7 +201,7 @@ void BasisPoints::computePoints(Vector3 point)
 					ao_gradZ[mc] *= Nam[mc];
 					//fprintf(outfile, "AO basis gradient %d = <%14.10f,%14.10f,%14.10f>\n",mc,ao_gradX[mc],ao_gradY[mc],ao_gradZ[mc]);
 				}
-				if (do_jacobians_) {
+				if (do_hessians_) {
 					for (int k = 0; k<shell->nprimitive(); k++) {
 						double q;
 						q = 0.0;
@@ -212,7 +212,7 @@ void BasisPoints::computePoints(Vector3 point)
 						if (b[mc]>0)
 							q+= -2.0*shell->exp(k)*r[0]*b[mc]*pow(r[0],a[mc])*pow(r[1],b[mc]-1)*pow(r[2],c[mc]);
 						q+= 4.0*(shell->exp(k))*(shell->exp(k))*r[0]*r[1]*ang[mc];
-						ao_jacobXY[mc] += prims[k]*q;
+						ao_hessXY[mc] += prims[k]*q;
 					
 						q = 0.0;
 						if (a[mc]>0 && c[mc]>0)
@@ -222,7 +222,7 @@ void BasisPoints::computePoints(Vector3 point)
 						if (c[mc]>0)
 							q+= -2.0*shell->exp(k)*r[0]*c[mc]*pow(r[0],a[mc])*pow(r[1],b[mc])*pow(r[2],c[mc]-1);
 						q+= 4.0*(shell->exp(k))*(shell->exp(k))*r[0]*r[2]*ang[mc];
-						ao_jacobXZ[mc] += prims[k]*q;
+						ao_hessXZ[mc] += prims[k]*q;
 					
 						q = 0.0;
 						if (b[mc]>0 && c[mc]>0)
@@ -232,7 +232,7 @@ void BasisPoints::computePoints(Vector3 point)
 						if (c[mc]>0)
 							q+= -2.0*shell->exp(k)*r[1]*c[mc]*pow(r[0],a[mc])*pow(r[1],b[mc])*pow(r[2],c[mc]-1);
 						q+= 4.0*(shell->exp(k))*(shell->exp(k))*r[1]*r[2]*ang[mc];
-						ao_jacobYZ[mc] += prims[k]*q;
+						ao_hessYZ[mc] += prims[k]*q;
 					
 						q = 0;
 						if (a[mc]>1)
@@ -240,7 +240,7 @@ void BasisPoints::computePoints(Vector3 point)
 						if (a[mc]>0)
 							q+= -2.0*a[mc]*shell->exp(k)*ang[mc];
 						q+= -2.0*shell->exp(k)*(a[mc]+1)*ang[mc]+4.0*(shell->exp(k))*(shell->exp(k))*r[0]*r[0]*ang[mc];
-						ao_jacobXX[mc] += prims[k]*q;
+						ao_hessXX[mc] += prims[k]*q;
 					
 						q = 0;
 						if (b[mc]>1)
@@ -248,7 +248,7 @@ void BasisPoints::computePoints(Vector3 point)
 						if (b[mc]>0)
 							q+= -2.0*b[mc]*shell->exp(k)*ang[mc];
 						q+= -2.0*shell->exp(k)*(b[mc]+1)*ang[mc]+4.0*(shell->exp(k))*(shell->exp(k))*r[1]*r[1]*ang[mc];
-						ao_jacobYY[mc] += prims[k]*q;
+						ao_hessYY[mc] += prims[k]*q;
 				
 						q = 0;
 						if (c[mc]>1)
@@ -256,21 +256,21 @@ void BasisPoints::computePoints(Vector3 point)
 						if (a[mc]>0)
 							q+= -2.0*c[mc]*shell->exp(k)*ang[mc];
 						q+= -2.0*shell->exp(k)*(c[mc]+1)*ang[mc]+4.0*(shell->exp(k))*(shell->exp(k))*r[2]*r[2]*ang[mc];
-						ao_jacobZZ[mc] += prims[k]*q;
+						ao_hessZZ[mc] += prims[k]*q;
 						
 					}
-					ao_jacobXY[mc] *= Nam[mc];
-					ao_jacobXZ[mc] *= Nam[mc];
-					ao_jacobYZ[mc] *= Nam[mc];
-					ao_jacobXX[mc] *= Nam[mc];
-					ao_jacobYY[mc] *= Nam[mc];
-					ao_jacobZZ[mc] *= Nam[mc];
-					//fprintf(outfile, "AO basis Jacobian %d = <%14.10f,%14.10f,%14.10f,%14.10f,%14.10f,%14.10f>\n",mc,ao_jacobXY[mc],ao_jacobXZ[mc],ao_jacobYZ[mc],ao_jacobXX[mc],ao_jacobYY[mc],ao_jacobZZ[mc]);
+					ao_hessXY[mc] *= Nam[mc];
+					ao_hessXZ[mc] *= Nam[mc];
+					ao_hessYZ[mc] *= Nam[mc];
+					ao_hessXX[mc] *= Nam[mc];
+					ao_hessYY[mc] *= Nam[mc];
+					ao_hessZZ[mc] *= Nam[mc];
+					//fprintf(outfile, "AO basis Hessian %d = <%14.10f,%14.10f,%14.10f,%14.10f,%14.10f,%14.10f>\n",mc,ao_hessXY[mc],ao_hessXZ[mc],ao_jacobYZ[mc],ao_jacobXX[mc],ao_jacobYY[mc],ao_jacobZZ[mc]);
 				}
 			
 				if (do_laplacians_) {
-					if (do_jacobians_)
-						ao_laplac[mc] = ao_jacobXX[mc]+ao_jacobYY[mc]+ao_jacobZZ[mc];
+					if (do_hessians_)
+						ao_laplac[mc] = ao_hessXX[mc]+ao_hessYY[mc]+ao_hessZZ[mc];
 					else {
 						for (int k = 0; k<shell->nprimitive(); k++) {
 							ao_laplac[mc] += prims[k]*((((a[mc]==0||r[0]==0.0)?0.0:-a[mc]/(r[0]*r[0]))-2.0*shell->exp(k))+(((a[mc]==0||r[0]==0.0)?0.0:a[mc]/r[0])-2.0*shell->exp(k)*r[0])*(((a[mc]==0||r[0]==0.0)?0.0:a[mc]/r[0])-2.0*shell->exp(k)*r[0]));
@@ -283,37 +283,65 @@ void BasisPoints::computePoints(Vector3 point)
 					//fprintf(outfile, "AO basis Laplacian %d = %14.10f\n",mc,ao_laplac[mc]); 
 				}
 			} 
-			//TODO: Spherical Transformation	
+			//TODO: AO Transformation	
 			int start = shell->function_index();
 			double trans_coef;
 			int ind_ao;
 			int ind_so;
-			SphericalTransformIter trans(basis_->spherical_transform(shell->am()));
-			for (trans.first(); trans.is_done();trans.next()) {
-				trans_coef = trans.coef();
-				ind_ao = trans.cartindex();
-				ind_so = trans.pureindex();
-				if (do_points_) {
-					points_[ind_so+start] += trans_coef*ao_points[ind_ao];
+			if (shell->is_pure()) {
+				//AO -> SO (fairly easy)
+				SphericalTransformIter trans(basis_->spherical_transform(shell->am()));
+				for (trans.first(); trans.is_done();trans.next()) {
+					trans_coef = trans.coef();
+					ind_ao = trans.cartindex();
+					ind_so = trans.pureindex();
+					if (do_points_) {
+						points_[ind_so+start] += trans_coef*ao_points[ind_ao];
+					}
+					if (do_gradients_) {
+						gradientsX_[ind_so+start] += trans_coef*ao_gradX[ind_ao];
+						gradientsY_[ind_so+start] += trans_coef*ao_gradY[ind_ao];
+						gradientsZ_[ind_so+start] += trans_coef*ao_gradZ[ind_ao];
+					}
+					if (do_hessians_) {
+						hessiansXY_[ind_so+start] += trans_coef*ao_hessXY[ind_ao];
+						hessiansXZ_[ind_so+start] += trans_coef*ao_hessXZ[ind_ao];
+						hessiansYZ_[ind_so+start] += trans_coef*ao_hessYZ[ind_ao];
+						hessiansXX_[ind_so+start] += trans_coef*ao_hessXX[ind_ao];
+						hessiansYY_[ind_so+start] += trans_coef*ao_hessYY[ind_ao];
+						hessiansZZ_[ind_so+start] += trans_coef*ao_hessZZ[ind_ao];
+					}
+					if (do_laplacians_) {
+						laplacians_[ind_so+start] += trans_coef*ao_laplac[ind_ao];
+					}
+					//fprintf(out,"Transforming AO shell index %d to SO total index %d, c = %14.10f\n",ind_ao,ind_so+start,trans_coef); fflush(outfile);
+				}			
+			}
+			else {
+				//AO -> AO (Easy)
+				for (int i = 0; i<(l+1)*(l+2)>>2; i++) {
+					if (do_points_) {
+						points_[i+start] += trans_coef*ao_points[i];
+					}
+					if (do_gradients_) {
+						gradientsX_[i+start] += trans_coef*ao_gradX[i];
+						gradientsY_[i+start] += trans_coef*ao_gradY[i];
+						gradientsZ_[i+start] += trans_coef*ao_gradZ[i];
+					}
+					if (do_hessians_) {
+						hessiansXY_[i+start] += trans_coef*ao_hessXY[i];
+						hessiansXZ_[i+start] += trans_coef*ao_hessXZ[i];
+						hessiansYZ_[i+start] += trans_coef*ao_hessYZ[i];
+						hessiansXX_[i+start] += trans_coef*ao_hessXX[i];
+						hessiansYY_[i+start] += trans_coef*ao_hessYY[i];
+						hessiansZZ_[i+start] += trans_coef*ao_hessZZ[i];
+					}
+					if (do_hessians_) {
+						laplacians_[i+start] += trans_coef*ao_laplac[i];
+					}
 				}
-				if (do_gradients_) {
-					gradientsX_[ind_so+start] += trans_coef*ao_gradX[ind_ao];
-					gradientsY_[ind_so+start] += trans_coef*ao_gradY[ind_ao];
-					gradientsZ_[ind_so+start] += trans_coef*ao_gradZ[ind_ao];
-				}
-				if (do_jacobians_) {
-					jacobiansXY_[ind_so+start] += trans_coef*ao_jacobXY[ind_ao];
-					jacobiansXZ_[ind_so+start] += trans_coef*ao_jacobXZ[ind_ao];
-					jacobiansYZ_[ind_so+start] += trans_coef*ao_jacobYZ[ind_ao];
-					jacobiansXX_[ind_so+start] += trans_coef*ao_jacobXX[ind_ao];
-					jacobiansYY_[ind_so+start] += trans_coef*ao_jacobYY[ind_ao];
-					jacobiansZZ_[ind_so+start] += trans_coef*ao_jacobZZ[ind_ao];
-				}
-				if (do_laplacians_) {
-					laplacians_[ind_so+start] += trans_coef*ao_laplac[ind_ao];
-				}
-				//fprintf(outfile,"Transforming AO shell index %d to SO total index %d, c = %14.10f\n",ind_ao,ind_so+start,trans_coef); fflush(outfile);
-			}			
+			}
+
 	
 			//Free ao_buffers
 			if (do_points_)
@@ -323,13 +351,13 @@ void BasisPoints::computePoints(Vector3 point)
 				free(ao_gradY);
 				free(ao_gradZ);
 			}
-			if (do_jacobians_) {
-				free(ao_jacobXY);
-				free(ao_jacobXZ);
-				free(ao_jacobYZ);
-				free(ao_jacobXX);
-				free(ao_jacobYY);
-				free(ao_jacobZZ);
+			if (do_hessians_) {
+				free(ao_hessXY);
+				free(ao_hessXZ);
+				free(ao_hessYZ);
+				free(ao_hessXX);
+				free(ao_hessYY);
+				free(ao_hessZZ);
 			}
 			if (do_laplacians_)
 				free(ao_laplac);

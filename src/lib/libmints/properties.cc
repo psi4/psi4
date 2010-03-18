@@ -21,7 +21,7 @@ Properties::Properties(shared_ptr<BasisSet> b): BasisPoints(b)
 	do_mos_ = false;
 	do_density_ = true;
 	do_density_gradient_ = false;
-	do_density_jacobian_ = false;
+	do_density_hessian_ = false;
 	do_density_laplacian_ = false;
 	do_ke_density_ = false;
 }
@@ -79,7 +79,7 @@ void Properties::computeProperties(Vector3 v, SharedMatrix D, SharedMatrix C)
 			densityZ_ = tempZ;
 		} 
 	}
-	if (do_density_jacobian_){
+	if (do_density_hessian_){
 		//TODO
 	}
 	if (do_density_laplacian_){
@@ -119,11 +119,11 @@ void Properties::setToComputeDensityGradient(bool v)
 		setToComputePoints(true);
 	}
 }
-void Properties::setToComputeDensityJacobian(bool v)
+void Properties::setToComputeDensityHessian(bool v)
 {
-	do_density_jacobian_ = v;
+	do_density_hessian_ = v;
 	if (v) {
-		setToComputeJacobians(true);
+		setToComputeHessians(true);
 		setToComputeGradients(true);
 		setToComputePoints(true);
 	}

@@ -29,7 +29,7 @@ namespace psi {
 			bool do_mos_;
 			bool do_density_;
 			bool do_density_gradient_;
-			bool do_density_jacobian_;
+			bool do_density_hessian_;
 			bool do_density_laplacian_;
 			bool do_ke_density_;
 		public:
@@ -57,7 +57,7 @@ namespace psi {
 			void setToComputeMOs(bool v, int* indices, int n);
 			void setToComputeDensity(bool v);
 			void setToComputeDensityGradient(bool v);	
-			void setToComputeDensityJacobian(bool v);	
+			void setToComputeDensityHessian(bool v);	
 			void setToComputeDensityLaplacian(bool v);	
 			void setToComputeKEDensity(bool v);	
 	};
