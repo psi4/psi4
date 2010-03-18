@@ -32,8 +32,11 @@ protected:
     SharedIntegrator integrator_;
     /// Properties evaluator
     SharedProperties properties_;
-    /// Density check value
+    /// Density check values
     double densityCheck_;   
+    double dipoleCheckX_;   
+    double dipoleCheckY_;   
+    double dipoleCheckZ_;   
 public:
     /// Constructor, same as RHF, which it derives from
     RKS(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
