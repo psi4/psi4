@@ -60,7 +60,7 @@ void RHF::common_init()
 
     // Allocate matrix memory
     F_    = SharedMatrix(factory_.create_matrix("F"));
-    C_    = SharedMatrix(factory_.create_matrix("C"));
+    C_    = SharedMatrix(factory_.create_matrix("MO coefficients"));
     D_    = SharedMatrix(factory_.create_matrix("D"));
     Dold_ = SharedMatrix(factory_.create_matrix("D old"));
     G_    = SharedMatrix(factory_.create_matrix("G"));
@@ -658,6 +658,11 @@ void RHF::form_C()
     C_->gemm(false, false, 1.0, Shalf_, eigvec, 0.0);
 
     find_occupation(eigval);
+
+    // Save C to checkpoint file.
+    double **vectors = C_->to_block_matrix();
+    chkpt_->wt_scf(vectors);
+    free_block(vectors);
 
 #ifdef _DEBUG
     if (debug_) {
