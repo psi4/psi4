@@ -34,12 +34,6 @@ namespace psi {
 namespace lmp2 {
 
 void LMP2::direct_df_transformation2() {
-#ifdef TIME_DF_LMP2
-if(myid == 0){
-  timer_init();
-  timer_on("Compute DF-LMP2");
-}
-#endif
 
   using namespace std;
 
@@ -50,129 +44,18 @@ if(myid == 0){
   // Create a basis set object and initialize it using the checkpoint file.
   shared_ptr<BasisSet>basis = shared_ptr<BasisSet > (new BasisSet(chkpt));
   shared_ptr<BasisSet>ribasis = shared_ptr<BasisSet > (new BasisSet(chkpt, "DF_BASIS"));
-  //ribasis->print();
-
-  shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
+  shared_ptr<BasisSet>zero = BasisSet::zero_basis_set();
 
   // Create integral factory
   IntegralFactory rifactory(ribasis, zero, basis, basis);
   IntegralFactory rifactory_J(ribasis, zero, ribasis, zero);
 
   // Create an integral object for ERIs
-
+  
   TwoBodyInt* eri = rifactory.eri();
   TwoBodyInt* Jint = rifactory_J.eri();
-  /*
-  double **J = block_matrix(ribasis->nbf(), ribasis->nbf());
-  double **J_mhalf = block_matrix(ribasis->nbf(), ribasis->nbf());
-  const double *Jbuffer = Jint->buffer();
-  */
 
-  // Set up the indexing arrays
-  // auxstart[atom] = the AO number for the first aux bf on this atom
-  // auxstop[atom]  = the AO number for the last aux bf on this atom
-  int *auxstart = init_int_array(natom);
-  int *auxstop = init_int_array(natom);
-  int *auxsize = init_int_array(natom);
-  int *aux_stype = get_aux_stype("DF_BASIS");
-  int *aux_snuc = get_aux_snuc("DF_BASIS");
-  int offset;
-  for(i=0,atom=-1,offset=0; i < nshell; i++) {
-    am = aux_stype[i] - 1;    // am is the angular momentum of the orbital
-    // shell_length is the number of obritals in each shell
-    int shell_length = l_length[am];        
-    // aux_snuc is the nucleus that the shell belongs to
-    if(atom != aux_snuc[i]-1) {             
-      if(atom != -1) auxstop[atom] = offset-1;
-      atom = aux_snuc[i]-1;
-      auxstart[atom] = offset;
-    }
-    offset += shell_length;
-  }
-  auxstop[atom] = offset-1;
-
-  for (i=0; i<natom; i++) {
-    auxsize[i] = auxstop[i] - auxstart[i] + 1;
-  }
-
-  // aux2atom[i] = the atom number which aux bf i is on
-  int* aux2atom = init_int_array(ribasis->nbf());
-  for(i=0; i < natom; i++) {
-    for(j=auxstart[i]; j <= auxstop[i]; j++) {
-      aux2atom[j] = i;
-    }
-  }
-
-#ifdef TIME_DF_LMP2
-if(myid == 0)  timer_on("Form J");
-#endif
-
-  int index = 0;
-  for(int MU = 0; MU < ribasis->nshell(); ++MU) {
-    int nummu = ribasis->shell(MU)->nfunction();
-
-    for(int NU = 0; NU < ribasis->nshell(); ++NU) {
-      int numnu = ribasis->shell(NU)->nfunction();
-
-      Jint->compute_shell(MU, 0, NU, 0);
-
-      for(int mu = 0, index=0; mu < nummu; ++mu) {
-        int omu = ribasis->shell(MU)->function_index() + mu;
-
-        for(int nu = 0; nu < numnu; ++nu, ++index) {
-          int onu = ribasis->shell(NU)->function_index() + nu;
-
-          J[omu][onu] = Jbuffer[index];
-        }
-      }
-    }
-  }
-
-  // Form J^-1/2
-  // First, diagonalize J
-  // the C_DSYEV call replaces the original matrix J with its eigenvectors
-  double* eigval = init_array(ribasis->nbf());
-  int lwork = ribasis->nbf() * 3;
-  double* work = init_array(lwork);
-  int stat = C_DSYEV('v', 'u', ribasis->nbf(), J[0], ribasis->nbf(), eigval,
-          work, lwork);
-  if(stat != 0) {
-    fprintf(outfile, "C_DSYEV failed\n");
-    exit(PSI_RETURN_FAILURE);
-  }
-  free(work);
-
-  // Now J contains the eigenvectors of the original J
-  // Copy J to J_copy
-  double **J_copy = block_matrix(ribasis->nbf(), ribasis->nbf());
-  C_DCOPY(ribasis->nbf() * ribasis->nbf(), J[0], 1, J_copy[0], 1);
-
-  // Now form J^{-1/2} = U(T)*j^{-1/2}*U,
-  // where j^{-1/2} is the diagonal matrix of the inverse square roots
-  // of the eigenvalues, and U is the matrix of eigenvectors of J
-  for(int i = 0; i < ribasis->nbf(); i++) {
-    if(eigval[i] < 1.0E-10)
-      eigval[i] = 0.0;
-    else {
-      eigval[i] = 1.0 / sqrt(eigval[i]);
-      }
-    // scale one set of eigenvectors by the diagonal elements j^{-1/2}
-    C_DSCAL(ribasis->nbf(), eigval[i], J[i], 1);
-  }
-  free(eigval);
-
-  // J_mhalf = J_copy(T) * J
-  C_DGEMM('t', 'n', ribasis->nbf(), ribasis->nbf(), ribasis->nbf(), 1.0,
-          J_copy[0], ribasis->nbf(), J[0], ribasis->nbf(), 0.0, J_mhalf[0], ribasis->nbf());
-
-  free_block(J);
-  free_block(J_copy);
-
-#ifdef TIME_DF_LMP2
-if(myid == 0)  timer_off("Form J");
-#endif
-
-  int i, j, ij, l, k, a, b, t, u, v;
+  int i, j, ij, k, l, m, n, a, b, s, t, u, v;
 
   int *ij_owner, *ij_local;
   int **ij_map, *abs_ij_map;
@@ -187,6 +70,54 @@ if(myid == 0)  timer_off("Form J");
   pairdomain = compute_pairdomain(ij_map);
   pairdom_len = compute_pairdomlen(ij_map);
 
+  // Set up the indexing arrays
+  // auxstart[atom] = the AO number for the first aux bf on this atom
+  // auxstop[atom]  = the AO number for the last aux bf on this atom
+  int *auxstart = init_int_array(natom);
+  int *auxstop = init_int_array(natom);
+  int *auxstart_shell = init_int_array(natom);
+  int *auxstop_shell = init_int_array(natom);
+  int rinshell = ribasis->nshell();
+  int *aux_stype = get_aux_stype("DF_BASIS",rinshell);
+  int *aux_snuc = get_aux_snuc("DF_BASIS",rinshell);
+  int atom, offset, am, shell_length;
+  for(i=0,atom=-1,offset=0; i < ribasis->nshell(); i++) {
+    am = aux_stype[i] - 1;    // am is the angular momentum of the orbital
+    // shell_length is the number of obritals in each shell
+    shell_length = l_length[am];        
+    // aux_snuc is the nucleus that the shell belongs to
+    if(atom != aux_snuc[i]-1) {             
+      if(atom != -1) {
+        auxstop[atom] = offset-1;
+        auxstop_shell[atom] = i-1;
+      }
+      atom = aux_snuc[i]-1;
+      auxstart[atom] = offset;
+      auxstart_shell[atom] = i;
+    }
+    offset += shell_length;
+  }
+  auxstop[atom] = offset-1;
+  auxstop_shell[atom] = i-1;
+
+  int *auxsize = init_int_array(natom);
+  for (i=0; i<natom; i++) {
+    auxsize[i] = auxstop[i] - auxstart[i] + 1;
+  }
+
+  int *aosize = init_int_array(natom);
+  for (i=0; i<natom; i++) {
+    aosize[i] = aostop[i] - aostart[i] + 1;
+  }
+
+  // aux2atom[i] = the atom number which aux bf i is on
+  int* aux2atom = init_int_array(ribasis->nbf());
+  for(i=0; i < natom; i++) {
+    for(j=auxstart[i]; j <= auxstop[i]; j++) {
+      aux2atom[j] = i;
+    }
+  }
+
   // if we use "method 1" for the fitting, we'll need to get an 
   // aux_pairdom_len here...
 
@@ -196,6 +127,7 @@ if(myid == 0)  timer_off("Form J");
      we may need to change this code --CDS 12/09
    */
   int** uniteddomain = init_int_matrix(nocc, natom);
+  int** uniteddomain_len2 = init_int_matrix(nocc, natom);
   int* uniteddomain_len = init_int_array(nocc);
   int* fit_len = init_int_array(nocc);
   int* fit_atoms = init_int_array(nocc);
@@ -217,6 +149,7 @@ if(myid == 0)  timer_off("Form J");
     }
   }
 
+  int** unitedfitdomain = init_int_matrix(nocc, natom);
   for (i=0,ij=0; i<nocc; i++) {
     for (j=0; j<=i; j++, ij++) {
       if (pairdom_exist[ij]) {
@@ -230,8 +163,9 @@ if(myid == 0)  timer_off("Form J");
   }
  
   int** unitedfit_start = init_int_matrix(nocc, natom);
+  int counter;
   for (i=0; i<nocc; i++) {
-    int counter = 0;
+    counter = 0;
     for (k=0; k<natom; k++) {
       unitedfit_start[i][k] = -1;
       if (unitedfitdomain[i][k]) {
@@ -253,55 +187,9 @@ if(myid == 0)  timer_off("Form J");
     }
   }
 
-  /* This suppose to map local i and j for given local ij
-   * Here *local* mean local to the given node 
-   */
 
-  int **proc_has_i = init_int_matrix(nprocs,nocc);
-  int **i_local = init_int_matrix(nprocs,nocc); 
-  int *i_local_count = init_int_array(nprocs);
-  int proc, count;
-
-  for(ij = 0; ij < ij_pairs; ij++) {
-    proc = ij_owner[ij]; 
-    i = ij_map[ij][0];
-    j = ij_map[ij][1];
-    proc_has_i[proc][i] = 1;
-    proc_has_i[proc][j] = 1;
-  } 
-
-  for(proc = 0; proc < nprocs; proc++) {
-    for(i = 0, count = 0; i < nocc; i++, count++) {
-      if(proc_has_i[proc][i]) {
-        //i_list[proc][count] = i;
-        i_local[proc][i] = count;
-      }
-    }
-    i_local_count[proc] = count;
-  }
-
-
-
-  double ***mo_p_ir = (double ***) malloc(sizeof (double **) * nocc);
-  for(i = 0; i < nocc; i++)
-    mo_p_ir[i] = (double **) malloc(sizeof (double *) * uniteddomain_len[i]);
-  for(i = 0; i < nocc; i++) {
-    for(j = 0; j < uniteddomain_len[i]; j++) {
-      mo_p_ir[i][j] = (double *) malloc(sizeof (double) * ribasis->nbf());
-      memset(mo_p_ir[i][j], '\0', sizeof (double) * ribasis->nbf());
-    }
-  }
-
-  double ***B_ir_p = (double ***) malloc(sizeof (double **) * nocc);
-  for(i = 0; i < nocc; i++)
-    B_ir_p[i] = (double **) malloc(sizeof (double *) * uniteddomain_len[i]);
-  for(i = 0; i < nocc; i++){
-    for(j = 0; j < uniteddomain_len[i]; j++) {
-      B_ir_p[i][j] = (double *) malloc(sizeof (double) * ribasis->nbf());
-      memset(B_ir_p[i][j], '\0', sizeof (double) * ribasis->nbf());
-    }
-  }
-
+  // Schwartz Screening 
+ 
   IntegralFactory ao_eri_factory(basis, basis, basis, basis);
   TwoBodyInt* ao_eri = ao_eri_factory.eri();
   const double *ao_buffer = ao_eri->buffer();
@@ -309,16 +197,18 @@ if(myid == 0)  timer_off("Form J");
   double *Schwartz = init_array(basis->nshell() * (basis->nshell()+1) / 2);
   double *DFSchwartz = init_array(ribasis->nshell());
 
-  for(int P=0,PQ=0;P<basis->nshell();P++) {
-    int numw = basis->shell(P)->nfunction();
+  int numw, numx, P,Q,PQ,w,x,index;
+  double tei, max;
+  for(P=0,PQ=0;P<basis->nshell();P++) {
+    numw = basis->shell(P)->nfunction();
     for(int Q=0;Q<=P;Q++,PQ++) {
-      int numx = basis->shell(Q)->nfunction();
-      double tei, max=0.0;
+      numx = basis->shell(Q)->nfunction();
+      max=0.0;
 
       ao_eri->compute_shell(P, Q, P, Q);
 
-      for(int w=0;w<numw;w++) {
-        for(int x=0;x<numx;x++) {
+      for(w=0;w<numw;w++) {
+        for(x=0;x<numx;x++) {
           index = ( ( (w*numx + x) * numw + w) * numx + x);
           tei = ao_buffer[index];
           if(fabs(tei) > max) max = fabs(tei);
@@ -328,133 +218,271 @@ if(myid == 0)  timer_off("Form J");
     }
   }
 
-  for(int P=0;P<ribasis->nshell();P++) {
-    int numw = ribasis->shell(P)->nfunction();
-    double tei, max=0.0;
+  for(P=0;P<ribasis->nshell();P++) {
+    numw = ribasis->shell(P)->nfunction();
+    max=0.0;
 
     Jint->compute_shell(P, 0, P, 0);
 
-    for(int w=0;w<numw;w++) {
+    for(w=0;w<numw;w++) {
       tei = Jbuffer[w];
       if(fabs(tei) > max) max = fabs(tei);
     }
     DFSchwartz[P] = max;
   }
 
-  double **half = block_matrix(nocc, nso);
+  double **SchwartzBlock = block_matrix(natom,natom);
+  for(m = 0; m < natom; m++) {
+    for(n = 0; n < natom; n++) { // NU block
+      max = 0.0;
+      for(MU = aostart_shell[m]; MU <= aostop_shell[m]; ++MU) {
+        for(NU = aostart_shell[n]; NU <= aostop_shell[n]; ++NU) {
+
+        if (NU>MU) continue;
+        mn = INDEX(MU,NU); 
+ 
+        MUNUmax = Schwartz[mn];
+        if(fabs(MUNUmax) > max) max = fabs(MUNUmax);
+        } 
+      }
+      SchwartzBlock[m][n] = max;
+    }
+  }
+
+  double *DFSchwartzBlock = init_array(natom);
+  for(k = 0; k < natom; k++) {
+    max = 0.0;
+    for(Pshell = auxstart_shell[k]; Pshell <= auxstop_shell[k]; ++Pshell){ 
+      MUNUmax = DFSchwartz[Pshell];
+      if(fabs(MUNUmax) > max) max = fabs(MUNUmax);
+    }
+    DFSchwartzBlock[k] = max;
+  }
+
+  double **Cmax = block_matrix(natom, nocc);
+  double Cval, max1;
+  for(i=0; i < nocc; i++) {
+    for(k=0; k < natom; k++) {
+      max1 = 0.0;
+      for(t=aostart[k]; l <= aostop[k]; t++) {
+        Cval = C[t][i];
+        if(fabs(Cval) > max1) max1 = fabs(Cval);
+      }
+      Cmax[k][i] = max1;
+    }
+  }
+
+  // this is really unefficient 
+  double **C_t = block_matrix(nocc, nso);
+  for(i=0; i < nocc; i++)
+    for(t=0; r < nso; t++)
+       C_t[i][t] = C[t][i];
+
 
   int numPshell, Pshell, MU, NU, P, oP, Q, oQ, mu, nu, nummu, numnu, omu, onu, mn;
 
   // find out the max number of P's in a P shell
   int screened=0;
-  int maxPshell = 0;
-  for(Pshell = 0; Pshell < ribasis->nshell(); ++Pshell) {
-    numPshell = ribasis->shell(Pshell)->nfunction();
-    if (numPshell > maxPshell) maxPshell = numPshell;
+  int max_aoblock_len  = 0;
+  int max_auxblock_len = 0;
+  for(k = 0; k < natom; k++){
+    if (auxsize[k] > max_auxblock_len) max_auxblock_len = auxsize[k];
+    if (aosize[k] > max_aoblock_len) max_aoblock_len = aosize[k];
   }
 
-  double*** temp = new double**[maxPshell];
-  for (P = 0; P < maxPshell; P++) temp[P] = block_matrix(nso, nso);
+  double** temp = block_matrix(max_auxblock_len*max_aoblock_len,max_aoblock_len);
+  double*  I1 = init_array(max_auxblock_len*max_aoblock_len);
+  double** I2 = block_matrix(max_auxblock_len,max_aoblock_len);
 
-#ifdef TIME_DF_LMP2
-if(myid == 0) timer_on("Form mo_p_ir");
-#endif
-
-  const double *buffer = eri->buffer();
-  for(Pshell = 0; Pshell < ribasis->nshell(); ++Pshell) {
-    numPshell = ribasis->shell(Pshell)->nfunction();
-
-    for(P = 0; P < numPshell; ++P) {
-      zero_mat(temp[P], nso, nso);
+  double ***I3 = (double ***) malloc(sizeof (double **) * nocc);
+  for(i = 0; i < nocc; i++)
+    I3[i] = (double **) malloc(sizeof (double *) * max_auxblock_len);
+  for(i = 0; i < nocc; i++) {
+    for(j = 0; j < max_auxblock_len; j++) {
+      I3[i][j] = (double *) malloc(sizeof (double) * max_aoblock_len);
+      memset(I3[i][j], '\0', sizeof (double) * max_aoblock_len);
     }
+  }
+           
+  double* eigval = init_array(max_auxblock_len);
+  int lwork = max_auxblock_len * 3;
+  double* work = init_array(lwork);
+  int stat, p;
 
-    for(MU = 0, mn=0; MU < basis->nshell(); ++MU) {
-      nummu = basis->shell(MU)->nfunction();
-      for(NU = 0; NU <= MU; ++NU,++mn) {
-        numnu = basis->shell(NU)->nfunction();
+  double Imax = 0.0;
+  const double *buffer = eri->buffer();
+  for(k = 0; k < natom; k++) { // Pshell block
+    for(m = 0; m < natom; m++) { // MU block
+      for(n = 0; n < natom; n++) { // NU block
 
-        if (sqrt(Schwartz[mn]*DFSchwartz[Pshell])>tol) {
-        eri->compute_shell(Pshell, 0, MU, NU);
+        for(Pshell = auxstart_shell[k]; Pshell <= auxstop_shell[k]; ++Pshell) {
+          numPshell = ribasis->shell(Pshell)->nfunction();
 
-        for(P = 0, index = 0; P < numPshell; ++P) {
-          for(mu = 0; mu < nummu; ++mu) {
-            omu = basis->shell(MU)->function_index() + mu;
-            for(nu = 0; nu < numnu; ++nu, ++index) {
-              onu = basis->shell(NU)->function_index() + nu;
-              temp[P][omu][onu] = buffer[index]; // (oP | omu onu) integral
-              temp[P][onu][omu] = buffer[index]; // (oP | onu omu) integral
-            }
-          }
-        } // end loop over P in Pshell
+          for(MU = aostart_shell[m]; MU <= aostop_shell[m]; ++MU) {
+            //mu_block_len = aostop[l]-aostart[l]+1; 
+            nummu = basis->shell(MU)->nfunction();
 
-        } // end Schwartz inequality
-        else screened++;
-      } // end loop over NU shell
-    } // end loop over MU shell
-    // now we've gone through all P, mu, nu for a given Pshell
-    // transform the integrals for all P in the given P shell
+            for(NU = aostart_shell[n]; NU <= aostop_shell[n]; ++NU) {
+              //nu_block_len = aostop[m]-aostart[m]+1; 
+              numnu = basis->shell(NU)->nfunction();
 
-    for(P = 0; P < numPshell; ++P) {
-      oP = ribasis->shell(Pshell)->function_index() + P;
+              if (NU>MU) continue;
+              mn = INDEX(MU,NU);
 
-      // Do transform
-      // (inu|A) = sum_mu (munu|A)C_mui
-      C_DGEMM('T', 'N', nocc, nso, nso, 1.0, &(C[0][0]),
-              nso, &(temp[P][0][0]), nso, 0.0, &(half[0][0]), nso);
+              Imax = sqrt(Schwartz[mn]*DFSchwartz[Pshell]); 
+              if( Imax > tol) {
+                eri->compute_shell(Pshell, 0, MU, NU);
 
-      for(i = 0; i < nocc; i++) {
-        for(k = 0, a = 0; k < natom; k++) {
-          if(uniteddomain[i][k]) {
-            for(t = aostart[k]; t <= aostop[k]; t++, a++) {
-              for(mu = 0; mu < nso; ++mu) {
-                 mo_p_ir[i][a][oP] += Rt_full[mu][t] * half[i][mu];
+                for(P = 0, index = 0; P < numPshell; ++P) { 
+                  oP = ribasis->shell(Pshell)->function_index() + P - auxstart[k];
+
+                  for(mu = 0; mu < nummu; ++mu) {
+                    omu = basis->shell(MU)->function_index() + mu - aostart[m];
+
+                    for(nu = 0; nu < numnu; ++nu, ++index) {
+                      onu = basis->shell(NU)->function_index() + nu - aostart[n];
+
+                      temp[oP*aosize[n]+onu][omu] = buffer[index]; // (oP | omu onu) integral
+                      temp[oP*aosize[n]+omu][onu] = buffer[index]; // (oP | omu onu) integral
+                    }
+                  }
+                } // end loop over P in Pshell
+              } // end Schwartz inequality
+              else screened++;
+            } // end loop over NU
+          } // end lopp over MU
+        } // end loop over Pshell
+   
+        Imax = sqrt(SchwartzBlock[l][m]*DFSchwartzBlock[k]);
+
+        for(i = 0, ij=0; i < nocc; i++) {
+
+          if( Cmax[l][i] * Imax > 1.0E-7 ) {
+            if ( unitedfit_start[i][k] >= 0 ) {
+
+            // first transformation (1/3 rd done)
+            C_DGEMV('n',auxsize[k]*aosize[n],aosize[m],1.0,&temp[0][0],max_aoblock_len, 
+                    C_t[i]+aostart[m],1,0.0,&I1[0],1);
+            
+            for ( p=0; p<auxsize[k]; p++) { 
+              for (nu=0; nu<aosize[n]; nu++){
+                 I2[p][nu] = I1[p * aosize[n] + nu];  
               }
             }
-          }
+
+            // Second Transformation (2/3 rd done)
+            for(l = 0; l < natom; l++) {
+              if(uniteddomain[i][n]) {
+                for(p=0;p<auxsize[k];p++) {              
+                  for(t = aostart[l], a = 0; t <= aostop[l]; t++, a++) {
+                    for(u = aostart[n], nu=0; u <= aostop[n]; u++, nu++) { 
+                      I3[i][p][a] += Rt_full[u][t] * I2[p][nu];
+                    }
+                  }
+                }
+              }
+            }
+            
+            } // end if ( unitedfit_start[i][k] >=0 )
+          } // if Cmax[l][i] * Imax
+        } // end loop over i
+
+      }  // end loop over NUblock
+    }  // end loop over MUblock
+  } // end loop over Pblock
+
+
+  double **J = block_matrix(max_auxblock_len,max_auxblock_len);
+  double **J_inv = block_matrix(max_auxblock_len,max_auxblock_len);
+
+//  double ***J_inv = (double ***) malloc(sizeof (double **) * nocc);
+//  for(i = 0; i < nocc; i++)
+//    J_inv[i] = (double **) malloc(sizeof (double *) * max_auxblock_len);
+//  for(i = 0; i < nocc; i++) {
+//    for(j = 0; j < max_auxblock_len; j++) {
+//      J_inv[i][j] = (double *) malloc(sizeof (double) * max_auxblock_len);
+//      memset(J_inv[i][j], '\0', sizeof (double) * max_auxblock_len);
+//    }
+//  }
+
+
+  const double *Jbuffer = Jint->buffer();
+  int m2, n2;
+  for(i = 0; i < nocc; i++) {  
+
+    for(m = 0; m < fit_atoms[i]; m++) { // MU block
+      m2 = fit_atom_id[i][m];
+      for(n = 0; n < fit_atoms[i]; n++) { // NU block
+        n2 = fit_atom_id[i][n];      
+
+        for(MU = auxstart_shell[m2]; MU <= auxstop_shell[m2]; ++MU) {
+          nummu = ribasis->shell(MU)->nfunction();
+
+          for(NU = auxstart_shell[n2]; NU <= auxstop_shell[n2]; ++NU) {
+            numnu = ribasis->shell(NU)->nfunction();
+
+            Jint->compute_shell(MU, 0, NU, 0);
+
+            for(mu = 0, index=0; mu < nummu; ++mu) {
+              omu = ribasis->shell(MU)->function_index() + mu - auxstart[m2];
+
+              for(nu = 0; nu < numnu; ++nu, ++index) {
+                onu = ribasis->shell(NU)->function_index() + nu - auxstart[n2];
+
+                J[omu][onu] = Jbuffer[index];
+
+              }
+            }
+          }  
         }
       }
-    } // loop over the functions within the P shell
-  } // end loop over P shells; done with forming MO basis (P|ia)'s
+    } 
+    // Form J^-1/2
+    // First, diagonalize J
+    // the C_DSYEV call replaces the original matrix J with its eigenvectors
+    //
+    //
+    //fprintf(outfile, "\n\tJ_mat\n");
+    //print_mat(J,omu+1,onu+1, outfile);
+    //fflush(outfile);              
 
-  fprintf(outfile,"  %d shell triplets screened via Schwartz inequality\n\n",
-    screened);
+    m2 = fit_atom_id[i][fit_atoms[i]];
+ 
+    stat = C_DSYEV('v', 'u', m2, &J[0],max_auxblock_len, eigval, work, lwork);
+    if(stat != 0) {
+      throw PsiException("Error in DGESV in RI-LMP2 J-matrix construction", __FILE__, __LINE__);
+    }
 
-  // should free temp here
-  for(P = 0; P < maxPshell; P++) free_block(temp[P]);
-  // destruct temp[] itself?
+    // Now J contains the eigenvectors of the original J
+    // Copy J to J_copy
+    //J_copy = block_matrix(omu, omu);
+    C_DCOPY(max_auxblock_len * max_auxblock_len, J[0], 1, J_copy[0], 1);
 
-#ifdef TIME_DF_LMP2
-if(myid == 0) timer_off("Form mo_p_ir");
-#endif
-
-// fprintf(outfile, "mo_p_ia:\n");
-// print_mat(mo_p_ia, ribasis->nbf(), nact_docc*nact_virt, outfile);
-
-#ifdef TIME_DF_LMP2
-if(myid == 0) timer_on("Form B_ir^P");
-#endif
-
-// mo_p_ir has integrals
-// B_ir^P = Sum_Q (i r | Q) (J^-1/2)_QP
-
-  for (i = 0; i < nocc; i++) {
-      for (a = 0; a < uniteddomain_len[i]; a++) {
-          for (oP = 0; oP < ribasis->nbf(); ++oP) {
-              B_ir_p[i][a][oP] = C_DDOT(ribasis->nbf(), &(mo_p_ir[i][a][0]), 1, &(J_mhalf[oP][0]), 1);
-          }
+    // Now form J^-1 = U(T)*j^-1*U,
+    // where j^-1 is the diagonal matrix of the inverse 
+    // of the eigenvalues, and U is the matrix of eigenvectors of J
+    for(int j = 0; j < m2; j++) {
+      if(eigval[j] < 1.0E-10)
+        eigval[j] = 0.0;
+      else {
+        eigval[j] = 1.0 / eigval[j];
       }
-  }
+      // scale one set of eigenvectors by the diagonal elements j^{-1}
+      C_DSCAL(m2, eigval[j], J[j], 1);
+    }
+        //free(eigval);
 
-  for(i = 0; i < nocc; i++)
-    for(j = 0; j < uniteddomain_len[i]; j++)
-      free(mo_p_ir[i][j]);
-  for(i = 0; i < nocc; i++)
-    free(mo_p_ir[i]);
-  free(mo_p_ir);
+    // J_inv = J_copy(T) * J
+    C_DGEMM('t', 'n', auxsize[k],auxsize[k],auxsize[k],
+             1.0, J_copy[0],max_auxblock_len,,J[0],max_auxblock_len, 
+             0.0, J_inv,,max_auxblock_len,);
 
-#ifdef TIME_DF_LMP2
-if(myid == 0) timer_off("Form B_ir^P");
-#endif
+    // D[i][a][p] = I[i][a][q] * J_inv[q][p]  
+    C_DGEMM('n', 'n', auxsize[k],aosize[k],auxsize[k],
+             1.0, I3[i],max_aoblock_len,,J_inv[0],max_auxblock_len, 
+             0.0, d[i],max_aoblock_len,);
+ 
+  } // end loop over i
 
   //Allocating the memory needed by Ktilde
   if(ij_pairs % nprocs == 0) {
@@ -523,14 +551,6 @@ if(myid == 0) timer_off("Form B_ir^P");
     }
   } // End of ij_pair loop
 
-  free_block(J_mhalf);
-
-  for (i = 0; i < nocc; i++)
-      for (j = 0; j < uniteddomain_len[i]; j++)
-          free(B_ir_p[i][j]);
-  for (i = 0; i < nocc; i++)
-      free(B_ir_p[i]);
-  free(B_ir_p);
 
 #ifdef TIME_DF_LMP2
 if(myid == 0) timer_off("Compute DF-LMP2");

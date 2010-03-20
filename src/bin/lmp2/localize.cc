@@ -108,20 +108,27 @@ void LMP2::localize() {
   // Set up the atom->AO and AO->atom lookup arrays
   aostart = init_int_array(natom);
   aostop = init_int_array(natom);
+  aostart_shell = init_int_array(natom);
+  aostop_shell = init_int_array(natom);
   stype = get_stype();
   for(i=0,atom=-1,offset=0; i < nshell; i++) {
     am = stype[i] - 1;                  // am is the angular momentum of the orbital
     shell_length = l_length[am];        // shell_length is the number of obritals in each shell
 
     if(atom != snuc[i]-1) {             // snuc is the nucleus that the shell belongs to
-      if(atom != -1) aostop[atom] = offset-1;
+      if(atom != -1) {
+        aostop[atom] = offset-1;
+        aostop_shell[atom] = i-1;
+      }
       atom = snuc[i]-1;
       aostart[atom] = offset;
+      aostart_shell[atom] = i;
     }
 
     offset += shell_length;
   }
   aostop[atom] = offset-1;
+  aostop_shell[atom] = i-1;
 
   ao2atom = init_int_array(nso);
   for(i=0; i < natom; i++)

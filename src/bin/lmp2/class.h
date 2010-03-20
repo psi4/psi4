@@ -31,6 +31,8 @@ class LMP2 {
     double **paoF;		/* Fock Matrix in the PAO basis */
     int *aostart;
     int *aostop;
+    int *aostart_shell;
+    int *aostop_shell;
     int *ao2atom;
     int *l_length;
     int **domain;		/* Orbital domains */
@@ -80,7 +82,7 @@ class LMP2 {
     double tol;
     double scs_scale_os;
     double scs_scale_ss;
-
+    int rinshell;
 
     double ****error;
     double ****T_ext;
@@ -190,9 +192,9 @@ class LMP2 {
     int* get_soccpi();
     int  get_frdocc();
     int* get_stype();
-    int* get_aux_stype(char *basisname);
+    int* get_aux_stype(char *basisname, int rinshell);
     int* get_snuc();
-    int* get_aux_snuc(char *basisname);
+    int* get_aux_snuc(char *basisname, int rishell);
     int* get_orbspi();
     int* get_frzvpi();
     double  get_enuc();
