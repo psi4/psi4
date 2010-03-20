@@ -182,7 +182,11 @@ void HF::common_init()
         ri_integrals_ = true;
         direct_integrals_ = false;  // direct 4-index ints
     }
-
+    
+    //For HF algorithms, J and K are both required always.
+    J_is_required_ = true;
+    K_is_required_ = true;
+    
     //Use schwarz sieve? default no
     schwarz_ = 0.0;
     if (options_["SCHWARZ_CUTOFF"].has_changed())

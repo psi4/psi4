@@ -476,255 +476,340 @@ void HF::free_B()
 }
 void RHF::form_G_from_RI()
 {
-    int norbs = basisset_->nbf(); 
+    //Get norbs
+    int norbs = basisset_->nbf();     
+    //Zero the J matrix
+    J_->zero();
+    //Zero the K matrix
+    K_->zero();
+
+    //D_->print(outfile);
+    //C_->print(outfile);
     
-    G_->zero();
-timer_on("Overall Coulomb");
+    //Rearrange the D matix as a vector in terms of ri_pair indices
+    //Off diagonal elements get 2x weight due to permutational symmetry
+    double* DD = init_array(norbs*(norbs+1)/2);
     
-	double** D = D_->to_block_matrix();
-	//print_mat(D, norbs, norbs,outfile);
-    double **J = block_matrix(norbs, norbs);
-
-    double* D2 = init_array(norbs*(norbs+1)/2);
-    for (int i = 0, ij = 0; i<norbs; i++) {
-        for (int j = 0; j<=i; ij++, j++)
-        {
-            D2[ij] = (i==j?1.0:2.0)*D[i][j];
+    if (df_storage_ == full || df_storage_ == double_full) {
+        for (int i = 0, ij = 0; i < norbs; i++)
+            for (int j = 0; j<=i; j++, ij++) {
+            DD[ij] = (i!=j?2.0:1.0)*D_->get(0,i,j); 
+            //only A irrep at the moment!!
+        }
+    } else {
+        for (int ij = 0; ij<norbs*(norbs+1)/2; ij++) {
+            DD[ij] = D_->get(0,ri_pair_mu_[ij],ri_pair_nu_[ij]); 
+            if (ri_pair_mu_[ij] != ri_pair_nu_[ij])
+                DD[ij] *= 2.0;
+                //only A irrep at the moment!!
         }
     }
-
-    double *L = init_array(ri_nbf_);
-    double *Gtemp = init_array(norbs*(norbs+1)/2);
-
-    //B_ia_P_ in core
-    if (df_storage_ == full||df_storage_ == double_full)
-    {
-timer_on("Coulomb DDOT");
-        for (int i=0; i<ri_nbf_; i++) {
-            L[i]=C_DDOT(norbs*(norbs+1)/2,D2,1,B_ia_P_[i],1);
-        }
-timer_off("Coulomb DDOT");
-timer_on("Coulomb DGEMM");
-
-        C_DGEMM('T','N',1,norbs*(norbs+1)/2,ri_nbf_,1.0,L,1,B_ia_P_[0],norbs*(norbs+1)/2, 0.0, Gtemp, norbs*(norbs+1)/2);    
-        free(D2);
-timer_off("Coulomb DGEMM");
-    } 
-    //B_ia_P_ on disk
-    else 
-    {
-        double *DD = init_array(norbs*(norbs+1)/2);
-        for (int ij = 0; ij<norbs*(norbs+1)/2; ij++)
-            DD[ij] = D2[ioff[ri_pair_mu_[ij]]+ri_pair_nu_[ij]];
-        free(D2);
-timer_on("Coulomb DDOT");
-
-        psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
-        psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
-        double *in_buffer = init_array(norbs*(norbs+1)/2);
-        for (int i=0; i<ri_nbf_; i++) {
-            psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
-            L[i]=C_DDOT(norbs*(norbs+1)/2,DD,1,in_buffer,1);
-        }
-timer_off("Coulomb DDOT");
-
-        free(DD);
-        psio_->close(PSIF_DFSCF_BJ,1);
-timer_on("Coulomb DGEMM");
-
-        psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
-        next_PSIF_DFSCF_BJ = PSIO_ZERO;
-        double *G2 = init_array(norbs*(norbs+1)/2);
-        register double LL;
-        for (int Q = 0; Q<ri_nbf_; Q++)
-        {
-            psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
-            LL = L[Q];
-            for (int ij = 0; ij<norbs*(norbs+1)/2; ij++)
-                G2[ij]+=LL*in_buffer[ij];
-        }
-        free(in_buffer);
-        psio_->close(PSIF_DFSCF_BJ,1);
-
-        for (int ij = 0; ij<norbs*(norbs+1)/2; ij++)
-            Gtemp[ioff[ri_pair_mu_[ij]]+ri_pair_nu_[ij]] = G2[ij];
-        free(G2);
-timer_off("Coulomb DGEMM");
-    }
-
-    free(L);
-
-    for (int i = 0, ij=0; i<norbs; i++) {
-        for (int j = 0; j<=i; ij++,j++)    
-        {
-            J[i][j] = Gtemp[ij];
-            J[j][i] = Gtemp[ij];
-        }
-    }
-    //fprintf(outfile, "\nJ:\n");
-    //print_mat(J,norbs,norbs,outfile); fflush(outfile);
-    free(Gtemp);
-    free_block(D);
-timer_off("Overall Coulomb");
-timer_on("Overall Exchange");
-
     int ndocc = doccpi_[0];
     double** Cocc = block_matrix(ndocc,norbs);
     for (int i=0; i<norbs; i++) {
         for (int j=0; j<ndocc; j++)
             Cocc[j][i] = C_->get(0,i,j);
+            //only A irrep at the moment!!
     }
-    double** B_im_Q;
-    //B_ia_P in core, B_im_Q in core
-    if (df_storage_ == full||df_storage_ == double_full)
-    {
-        B_im_Q = block_matrix(norbs, ndocc*ri_nbf_);
-        double** QS = block_matrix(ri_nbf_,norbs);
-        double** Temp = block_matrix(ndocc,ri_nbf_);
-timer_on("Exchange Tensor Formation");
+    
 
-        //print_mat(B_ia_P_,ri_nbf_,norbs*(norbs+1)/2,outfile);
-        //fprintf(outfile,"\nYo\n");
-        //print_mat(Cocc,ndocc,norbs,outfile);
-        for (int m = 0; m<norbs; m++) {
-            for (int Q = 0; Q<ri_nbf_; Q++) {
-                for (int s = 0; s<norbs; s++) {
-                    QS[Q][s] = B_ia_P_[Q][((s>=m)?ioff[s]+m:ioff[m]+s)];
+    if (df_storage_ == full || df_storage_ == double_full) {
+        //B is in core, E will be in core, DGEMM everything
+        if (J_is_required_) {
+            /* COULOMB PART */
+            //Coulomb convolution vector
+            double *L = init_array(ri_nbf_);
+            //Temporary J matrix
+            double *J = init_array(norbs*(norbs+1)/2);
+            //DGEMV -> L:
+            //L_Q = (Q|ls)*D_{ls}
+            C_DGEMV('N',ri_nbf_,norbs*(norbs+1)/2,1.0,B_ia_P_[0],norbs*(norbs+1)/2,DD,1,0.0,L,1);
+            //DGEMV -> J:
+            //J_{mn} = L_Q(Q|mn)
+            C_DGEMV('T',ri_nbf_,norbs*(norbs+1)/2,1.0,B_ia_P_[0],norbs*(norbs+1)/2,L,1,0.0,J,1);
+            //Put everything in J_
+            for (int i = 0, ij = 0; i < norbs; i++)
+                for (int j = 0; j<=i; j++, ij++) {
+                    J_->set(0,i,j,J[ij]);
+                    J_->set(0,j,i,J[ij]);
                 }
-            }
-            C_DGEMM('N','T',ndocc,ri_nbf_,norbs,1.0,Cocc[0],norbs,QS[0],norbs, 0.0, Temp[0], ri_nbf_);
-            //print_mat(Temp,ndocc,ri_nbf_,outfile);
-            for (int Q = 0; Q<ri_nbf_; Q++) {
-                for (int i = 0; i<ndocc; i++) {
-                    B_im_Q[m][i+Q*ndocc] = Temp[i][Q];
-                }
-            }
+            //fprintf(outfile,"  B:\n");
+            //print_mat(B_ia_P_,ri_nbf_,norbs*(norbs+1)/2,outfile);
+            //fprintf(outfile,"  DD:\n");
+            //for (int ij = 0; ij<norbs*(norbs+1)/2; ij++)
+            //    fprintf(outfile,"  %14.10f\n",DD[ij]);
+            //fprintf(outfile,"  L:\n");
+            //for (int ij = 0; ij<ri_nbf_; ij++)
+            //    fprintf(outfile,"  %14.10f\n",L[ij]);
+
+            free(L);
+            free(J);
+            //J_->print(outfile);
         }
-timer_off("Exchange Tensor Formation");
-        //print_mat(B_im_Q,norbs,ndocc*ri_nbf_,outfile);
-        free_block(QS);
-        free_block(Temp);
+        if (K_is_required_) {
+            /* EXCHANGE PART */
+            //E exchange matrix
+            double** E = block_matrix(norbs, ndocc*ri_nbf_);
+            //QS temp matrix for DGEMM
+            double** QS = block_matrix(ri_nbf_,norbs);
+            //Temp matrix for DGEMM
+            double** Temp = block_matrix(ndocc,ri_nbf_);
+            //Temporary K matrix
+            double** K = block_matrix(norbs,norbs);
+
+            //Exchange tensor E
+            for (int m = 0; m<norbs; m++) {
+                for (int Q = 0; Q<ri_nbf_; Q++) {
+                    for (int s = 0; s<norbs; s++) {
+                        QS[Q][s] = B_ia_P_[Q][((s>=m)?ioff[s]+m:ioff[m]+s)];
+                    }
+                }
+                //E_{il}^Q = (Q|ln) C_{in}
+                C_DGEMM('N','T',ndocc,ri_nbf_,norbs,1.0,Cocc[0],norbs,QS[0],norbs, 0.0, Temp[0], ri_nbf_);
+                //print_mat(Temp,ndocc,ri_nbf_,outfile);
+                //TODO Use DCOPY
+                int offset;
+                for (int Q = 0; Q<ri_nbf_; Q++) {
+                    offset = Q*ndocc;
+                    for (int i = 0; i<ndocc; i++) {
+                        E[m][i+offset] = Temp[i][Q];
+                    }
+                }
+            }
+            free_block(Temp);
+            free_block(QS);
+
+            //K_{mn} = E_{im}^QE_{in}^Q
+            C_DGEMM('N','T',norbs,norbs,ri_nbf_*ndocc,1.0,E[0],ri_nbf_*ndocc,E[0],ri_nbf_*ndocc, 0.0, K[0], norbs);
+            free_block(E);
+            for (int i = 0; i < norbs; i++)
+                for (int j = 0; j<=i; j++) {
+                    K_->set(0,j,i,K[i][j]);
+                    K_->set(0,i,j,K[i][j]);
+            }
+            free_block(K);
+            //K_->print(outfile);
+        }
     }
-    //B_ia_P in disk, B_im_Q in core
-    else if (df_storage_ == flip_B_disk || df_storage_ == k_incore)
-    {
+    else if (df_storage_ == flip_B_disk || df_storage_ == k_incore) {
+        //B is on disk, E will be in core, Single disk pass
+        //in_buffer stores single aux basis function rows of 
+        //the three index tensor
+        //TODO use larger blocks
         double *in_buffer = init_array(norbs*(norbs+1)/2);
+        //Transformed integrals are stored in PSIF_DFSCF_BJ
+        //Which better exist at this point
         psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
         psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
-        B_im_Q = block_matrix(norbs, ndocc*ri_nbf_);
+
+        //Coulomb convolution vector, done element by element
+        double L;
+        double *J;
+        if (J_is_required_){
+            J = init_array(norbs*(norbs+1)/2);
+        }
+
+        //Three index tensor, in core
+        double **E;
+        double **K;
+        if (K_is_required_){
+            E = block_matrix(norbs, ndocc*ri_nbf_);
+        }
 
         int mu, nu;
-timer_on("Exchange Tensor Formation");
-
         for (int Q = 0; Q<ri_nbf_; Q++)
         {
+            //Read a single row of the (B|mn) tensor in, place in in_buffer
             psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
-            for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
-            {
-                mu = ri_pair_mu_[ij];
-                nu = ri_pair_nu_[ij];
-                for (int i = 0; i<ndocc; i++)
+            
+            if (J_is_required_) {
+                /* COULOMB PART */
+                //L_Q = (Q|ls)D_{ls}
+                L = C_DDOT(norbs*(norbs+1)/2,in_buffer,1,DD,1);
+                //J_{mn} += (Q|mn)L_Q
+                C_DAXPY(norbs*(norbs+1)/2,L,in_buffer,1,J,1);
+            } 
+            if (K_is_required_) {
+                /* EXCHANGE TENSOR */
+                for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
                 {
-                    B_im_Q[mu][i+Q*ndocc]+=Cocc[i][nu]*in_buffer[ij];
-                    if (mu != nu)
-                        B_im_Q[nu][i+Q*ndocc]+=Cocc[i][mu]*in_buffer[ij];
+                    mu = ri_pair_mu_[ij];
+                    nu = ri_pair_nu_[ij];
+                    for (int i = 0; i<ndocc; i++)
+                    {
+                        E[mu][i+Q*ndocc]+=Cocc[i][nu]*in_buffer[ij];
+                        if (mu != nu)
+                            E[nu][i+Q*ndocc]+=Cocc[i][mu]*in_buffer[ij];
+                    }
                 }
             }
         }
-timer_off("Exchange Tensor Formation");
-
-        psio_->close(PSIF_DFSCF_BJ,1);
         free(in_buffer);
-    //B_ia_P in disk, B_im_Q in disk
-    } else {
+        psio_->close(PSIF_DFSCF_BJ,1);
+
+        /* Exchange Tensor DGEMM */
+        if (K_is_required_) {
+            K = block_matrix(norbs,norbs);
+            C_DGEMM('N','T',norbs,norbs,ri_nbf_*ndocc,1.0,E[0],ri_nbf_*ndocc,E[0],ri_nbf_*ndocc, 0.0, K[0], norbs);
+            free_block(E);
+        }
+
+        /* Form J and K */
+        if (J_is_required_) {
+            for (int i = 0, ij = 0; i < norbs; i++)
+                for (int j = 0; j<=i; j++, ij++) {
+                    J_->set(0,ri_pair_mu_[ij],ri_pair_nu_[ij],J[ij]);
+                    J_->set(0,ri_pair_nu_[ij],ri_pair_mu_[ij],J[ij]);
+                }
+        }
+        if (K_is_required_) {
+            for (int i = 0; i < norbs; i++)
+                for (int j = 0; j <=i; j++) {
+                    K_->set(0,i,j,K[i][j]);
+                    K_->set(0,j,i,K[i][j]);
+                }
+        }
+
+        /* Frees */
+        if (J_is_required_) {
+            free(J);
+        }
+        if (K_is_required_) {
+            free_block(K);
+        }
+    }
+    else {
+        //B is on disk, K will be in disk, Single disk pass
+        //B is on disk, E will be in core, Single disk pass
+        //in_buffer stores single aux basis function rows of 
+        //the three ndex tensor
+        //TODO use larger blocks
+        double *in_buffer = init_array(norbs*(norbs+1)/2);
+        //Transformed integrals are stored in PSIF_DFSCF_BJ
+        //Which better exist at this point
         psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
         psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
-        psio_->open(PSIF_DFSCF_K,PSIO_OPEN_NEW);
-        psio_address next_PSIF_DFSCF_K = PSIO_ZERO;
-timer_on("Exchange Tensor Formation");
+        
+        psio_address next_PSIF_DFSCF_K;
+        if (K_is_required_) {
+            //Exchange matrix is stored in PSIF_DFSCF_K
+            //Which is created and destroyed in each iteration
+            psio_->open(PSIF_DFSCF_K,PSIO_OPEN_NEW);
+            next_PSIF_DFSCF_K = PSIO_ZERO;
+        }
+        //Coulomb convolution vector, done element by element
+        double L;
+        double *J;
+        if (J_is_required_){
+            J = init_array(norbs*(norbs+1)/2);
+        }
 
-        double *in_buffer = init_array(norbs*(norbs+1)/2);
-        double *out_buffer = init_array(norbs*ndocc);
+        //Three index tensor, buffered to disk
+        double *out_buffer;
+        double **K;
+        if (K_is_required_){
+            out_buffer = init_array(norbs*ndocc);
+        }
 
         int mu, nu;
         for (int Q = 0; Q<ri_nbf_; Q++)
         {
-            for (int im = 0; im<ndocc*norbs; im++)
-                out_buffer[im] = 0.0;
-
+            //Read a single row of the (B|mn) tensor in, place in in_buffer
             psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
-            for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
-            {
-                mu = ri_pair_mu_[ij];
-                nu = ri_pair_nu_[ij];
-                for (int i = 0; i<ndocc; i++)
+            
+            if (J_is_required_) {
+                /* COULOMB PART */
+                //L_Q = (Q|ls)D_{ls}
+                L = C_DDOT(norbs*(norbs+1)/2,in_buffer,1,DD,1);
+                //J_{mn} += (Q|mn)L_Q
+                C_DAXPY(norbs*(norbs+1)/2,L,in_buffer,1,J,1);
+            } 
+            if (K_is_required_) {
+                /* EXCHANGE TENSOR */
+                memset(out_buffer,0,norbs*ndocc*sizeof(double));
+                for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
                 {
-                    out_buffer[mu*ndocc+i]+=Cocc[i][nu]*in_buffer[ij];
-                    if (mu != nu)
-                        out_buffer[nu*ndocc+i]+=Cocc[i][mu]*in_buffer[ij];
+                    mu = ri_pair_mu_[ij];
+                    nu = ri_pair_nu_[ij];
+                    for (int i = 0; i<ndocc; i++)
+                    {
+                        out_buffer[mu*ndocc+i]+=Cocc[i][nu]*in_buffer[ij];
+                        if (mu != nu)
+                            out_buffer[nu*ndocc+i]+=Cocc[i][mu]*in_buffer[ij];
+                    }
                 }
+                psio_->write(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(out_buffer[0]),sizeof(double)*norbs*ndocc,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
             }
-            psio_->write(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(out_buffer[0]),sizeof(double)*norbs*ndocc,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
+        }
+        if (K_is_required_) {
+            free(out_buffer);
+            psio_->close(PSIF_DFSCF_K,1);
+        }
+        free(in_buffer);
+        psio_->close(PSIF_DFSCF_BJ,1);
+
+        /* Exchange Tensor DGEMM */
+        if (K_is_required_) {
+            psio_->open(PSIF_DFSCF_K,PSIO_OPEN_OLD);
+            next_PSIF_DFSCF_K = PSIO_ZERO;
+
+            K = block_matrix(norbs,norbs);
+            in_buffer = init_array(norbs*ndocc);
+
+            for (int Q = 0; Q<ri_nbf_; Q++) {
+                psio_->read(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(in_buffer[0]),sizeof(double)*norbs*ndocc,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
+
+                for (int m = 0; m<norbs; m++)
+                    for (int n = 0; n<=m; n++)
+                        for (int i = 0; i<ndocc; i++) {
+                            K[m][n]+=in_buffer[m*ndocc+i]*in_buffer[n*ndocc+i];
+                            K[n][m] = K[m][n];
+                        }
+            }
+            free(in_buffer);
+            psio_->close(PSIF_DFSCF_K,0);
+        } 
+        /* Form J and K */
+        if (J_is_required_) {
+            for (int i = 0, ij = 0; i < norbs; i++)
+                for (int j = 0; j<=i; j++, ij++) {
+                    J_->set(0,ri_pair_mu_[ij],ri_pair_nu_[ij],J[ij]);
+                    J_->set(0,ri_pair_nu_[ij],ri_pair_mu_[ij],J[ij]);
+                }
+        }
+        if (K_is_required_) {
+            for (int i = 0; i < norbs; i++)
+                for (int j = 0; j <=i; j++) {
+                    K_->set(0,i,j,K[i][j]);
+                    K_->set(0,j,i,K[i][j]);
+                }
         }
 
-        free(in_buffer);
-        free(out_buffer);
-
-        psio_->close(PSIF_DFSCF_BJ,1);
-        psio_->close(PSIF_DFSCF_K,1);
-timer_off("Exchange Tensor Formation");
+        /* Frees */
+        if (J_is_required_) {
+            free(J);
+        }
+        if (K_is_required_) {
+            free_block(K);
+        }
     }
 
+    free(DD);
     free_block(Cocc);
+    
+    //J_->print(outfile);
+    //K_->print(outfile);
 
-    double **K = block_matrix(norbs, norbs);
+    /* FORM G_ */
+    //This method takes one extra O(N^2) scale,
+    //but preserves J and K in place
+    G_->zero();
+    G_->add(J_);
+    G_->scale(-2.0);
+    G_->add(K_);
+    G_->scale(-1.0);
+    //G_->print(outfile);
 
-    if (df_storage_ == full ||df_storage_ == double_full|| df_storage_ == flip_B_disk || df_storage_ == k_incore)
-    {
-timer_on("Exchange Tensor DGEMM");
-        C_DGEMM('N','T',norbs,norbs,ri_nbf_*ndocc,1.0,B_im_Q[0],ri_nbf_*ndocc,B_im_Q[0],ri_nbf_*ndocc, 0.0, K[0], norbs);
-timer_off("Exchange Tensor DGEMM");
-        free_block(B_im_Q);
-    } else {
-        psio_->open(PSIF_DFSCF_K,PSIO_OPEN_OLD);
-        psio_address next_PSIF_DFSCF_K = PSIO_ZERO;
-timer_on("Exchange Tensor DGEMM");
-
-        double *in_buffer = init_array(norbs*ndocc);
-
-        for (int Q = 0; Q<ri_nbf_; Q++)
-        {
-            psio_->read(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(in_buffer[0]),sizeof(double)*norbs*ndocc,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
-
-            for (int m = 0; m<norbs; m++)
-                for (int n = 0; n<=m; n++)
-                for (int i = 0; i<ndocc; i++)
-            {
-                K[m][n]+=in_buffer[m*ndocc+i]*in_buffer[n*ndocc+i];
-                K[n][m] = K[m][n];
-            }
-        }
-timer_off("Exchange Tensor DGEMM");
-
-        free(in_buffer);
-        psio_->close(PSIF_DFSCF_K,1);
-    }
-
-    //fprintf(outfile, "\nK:\n");
-    //print_mat(K,norbs,norbs,outfile);
-timer_off("Overall Exchange");
-
-    for (int i=0; i<norbs; i++) {
-        for (int j=0; j<=i; j++) {
-            G_->set(0,i,j,2.0*J[i][j]-K[i][j]);
-            if (i!= j)
-                G_->set(0,j,i,2.0*J[i][j]-K[i][j]);
-        }
-    }
-    //fprintf(outfile,"\n");
-    //G_->print();
-    free_block(J);
-    free_block(K);
 }
 void RHF::form_J_from_RI()
 {

@@ -88,6 +88,11 @@ protected:
     int *ri_pair_nu_;
     int *ri_pair_mu_;
 
+    //do we need Coulomb?
+    bool J_is_required_;
+    //do we need Exchange?
+    bool K_is_required_;
+
     double **B_ia_P_; //Three Index tensor for DF-SCF
 
     double schwarz_;
