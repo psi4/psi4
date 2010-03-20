@@ -14,7 +14,8 @@ CXXSRC = class.cc get_params.cc get_moinfo.cc localize.cc\
 	domains.cc domains_print.cc projection.cc\
 	sort.cc direct_transf.cc allocate_T.cc\
 	get_diis_params.cc iterate.cc amplitudes.cc\
-	diis.cc energy.cc check_conv.cc lmp2.cc df-ints.cc df-ints-2.cc
+	diis.cc energy.cc check_conv.cc lmp2.cc df-ints.cc 
+#        df-ints-2.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 
