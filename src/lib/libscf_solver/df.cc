@@ -476,6 +476,7 @@ void HF::free_B()
 }
 void RHF::form_G_from_RI()
 {
+timer_on("Overall G");
     //Get norbs
     int norbs = basisset_->nbf();     
     //Zero the J matrix
@@ -533,14 +534,6 @@ void RHF::form_G_from_RI()
                     J_->set(0,i,j,J[ij]);
                     J_->set(0,j,i,J[ij]);
                 }
-            //fprintf(outfile,"  B:\n");
-            //print_mat(B_ia_P_,ri_nbf_,norbs*(norbs+1)/2,outfile);
-            //fprintf(outfile,"  DD:\n");
-            //for (int ij = 0; ij<norbs*(norbs+1)/2; ij++)
-            //    fprintf(outfile,"  %14.10f\n",DD[ij]);
-            //fprintf(outfile,"  L:\n");
-            //for (int ij = 0; ij<ri_nbf_; ij++)
-            //    fprintf(outfile,"  %14.10f\n",L[ij]);
 
             free(L);
             free(J);
@@ -567,7 +560,6 @@ void RHF::form_G_from_RI()
                 //E_{il}^Q = (Q|ln) C_{in}
                 C_DGEMM('N','T',ndocc,ri_nbf_,norbs,1.0,Cocc[0],norbs,QS[0],norbs, 0.0, Temp[0], ri_nbf_);
                 //print_mat(Temp,ndocc,ri_nbf_,outfile);
-                //TODO Use DCOPY
                 int offset;
                 for (int Q = 0; Q<ri_nbf_; Q++) {
                     offset = Q*ndocc;
@@ -687,7 +679,9 @@ void RHF::form_G_from_RI()
         double *in_buffer = init_array(norbs*(norbs+1)/2);
         //Transformed integrals are stored in PSIF_DFSCF_BJ
         //Which better exist at this point
+timer_on("Open B");
         psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
+timer_off("Open B");
         psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
         
         psio_address next_PSIF_DFSCF_K;
@@ -715,15 +709,22 @@ void RHF::form_G_from_RI()
         for (int Q = 0; Q<ri_nbf_; Q++)
         {
             //Read a single row of the (B|mn) tensor in, place in in_buffer
+timer_on("Read B");
             psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+timer_off("Read B");
             
             if (J_is_required_) {
                 /* COULOMB PART */
                 //L_Q = (Q|ls)D_{ls}
+timer_on("J DDOT");
                 L = C_DDOT(norbs*(norbs+1)/2,in_buffer,1,DD,1);
+timer_off("J DDOT");
                 //J_{mn} += (Q|mn)L_Q
+timer_on("J DAPXY");
                 C_DAXPY(norbs*(norbs+1)/2,L,in_buffer,1,J,1);
+timer_off("J DAPXY");
             } 
+timer_on("Form E");
             if (K_is_required_) {
                 /* EXCHANGE TENSOR */
                 memset(out_buffer,0,norbs*ndocc*sizeof(double));
@@ -738,8 +739,11 @@ void RHF::form_G_from_RI()
                             out_buffer[nu*ndocc+i]+=Cocc[i][mu]*in_buffer[ij];
                     }
                 }
+timer_on("Write E");
                 psio_->write(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(out_buffer[0]),sizeof(double)*norbs*ndocc,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
+timer_off("Write E");
             }
+timer_off("Form E");
         }
         if (K_is_required_) {
             free(out_buffer);
@@ -747,6 +751,7 @@ void RHF::form_G_from_RI()
         }
         free(in_buffer);
         psio_->close(PSIF_DFSCF_BJ,1);
+timer_on("Exchange DGEMM");
 
         /* Exchange Tensor DGEMM */
         if (K_is_required_) {
@@ -757,7 +762,9 @@ void RHF::form_G_from_RI()
             in_buffer = init_array(norbs*ndocc);
 
             for (int Q = 0; Q<ri_nbf_; Q++) {
+timer_on("E Read");
                 psio_->read(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(in_buffer[0]),sizeof(double)*norbs*ndocc,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
+timer_off("E Read");
 
                 for (int m = 0; m<norbs; m++)
                     for (int n = 0; n<=m; n++)
@@ -769,6 +776,7 @@ void RHF::form_G_from_RI()
             free(in_buffer);
             psio_->close(PSIF_DFSCF_K,0);
         } 
+timer_off("Exchange DGEMM");
         /* Form J and K */
         if (J_is_required_) {
             for (int i = 0, ij = 0; i < norbs; i++)
@@ -809,6 +817,7 @@ void RHF::form_G_from_RI()
     G_->add(K_);
     G_->scale(-1.0);
     //G_->print(outfile);
+timer_off("Overall G");
 
 }
 void RHF::form_J_from_RI()
