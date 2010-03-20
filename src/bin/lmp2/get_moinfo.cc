@@ -167,31 +167,31 @@ int* LMP2::get_snuc() {
 
 }
 
-int* LMP2::get_aux_stype(char *basisname) {
+int* LMP2::get_aux_stype(char *basisname, int rinshell) {
   int *sty;
 
   if(Communicator::world->me() == 0)
     sty = chkpt->rd_stype(basisname);
   else
-    sty = init_int_array(nshell);
+    sty = init_int_array(rinshell);
 
   if(Communicator::world->nproc() > 1)
-    Communicator::world->bcast(sty, nshell, 0);
+    Communicator::world->bcast(sty, rinshell, 0);
 
   return sty;
 
 }
 
-int* LMP2::get_aux_snuc(char *basisname) {
+int* LMP2::get_aux_snuc(char *basisname, int rinshell) {
   int *snu;
 
   if(Communicator::world->me() == 0)
     snu = chkpt->rd_snuc(basisname);
   else
-    snu = init_int_array(nshell);
+    snu = init_int_array(rinshell);
 
   if(Communicator::world->nproc() > 1)
-    Communicator::world->bcast(snu, nshell, 0);
+    Communicator::world->bcast(snu, rinshell, 0);
 
   return snu;
 

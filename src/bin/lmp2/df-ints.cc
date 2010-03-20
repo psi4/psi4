@@ -269,6 +269,21 @@ if(Communicator::world->me() == 0)  timer_off("Form J");
     DFSchwartz[P] = max;
   }
 
+  double **Cmax = block_matrix(natom, nocc);
+  double Cval, max1;
+  for(i=0; i < nocc; i++) {
+    for(k=0; k < natom; k++) {
+      max1 = 0.0;
+      for(t=aostart[k]; l <= aostop[k]; t++) {
+        Cval = C[t][i];
+        if(fabs(Cval) > max1) max1 = fabs(Cval);
+      }
+      Cmax[k][i] = max1;
+    }
+  }
+               
+
+
   double **half = block_matrix(nocc, nso);
 
   int numPshell, Pshell, MU, NU, P, oP, Q, oQ, mu, nu, nummu, numnu, omu, onu, mn;
