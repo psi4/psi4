@@ -67,6 +67,9 @@ void RHF::common_init()
     J_    = SharedMatrix(factory_.create_matrix("J"));
     K_    = SharedMatrix(factory_.create_matrix("K"));
 
+    int nao = chkpt_->rd_nao();
+    chkpt_->wt_nmo(nao);
+
     // PK super matrix for fast G
     pk_ = NULL;
 
