@@ -25,9 +25,8 @@
 #include <libmints/integral.h>
 #include <libmints/molecule.h>
 
-#include <boost/shared_ptr.hpp>
 
-using namespace boost;
+
 using namespace std;
 using namespace psi;
 
@@ -459,16 +458,13 @@ void HF::write_B()
     int norbs = basisset_->nbf();
     psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_NEW);
     psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
-    for (int Q = 0; Q<ri_nbf_; Q++)
-    {
-        psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(B_ia_P_[Q][0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
-    }
+    psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(B_ia_P_[0][0]),sizeof(double)*norbs*(norbs+1)/2*ri_nbf_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
     psio_->close(PSIF_DFSCF_BJ,1);
 }
 void HF::free_B()
 {
 	if (df_storage_ == full||df_storage_ == double_full)
-    		free_block(B_ia_P_);
+    		free(B_ia_P_);
     else 
     {
     	free(ri_pair_mu_);
@@ -488,7 +484,7 @@ timer_on("Overall G");
     //D_->print(outfile);
     //C_->print(outfile);
     
-    //Rearrange the D matix as a vector in terms of ri_pair indices
+    //Rearrange the D matrix as a vector in terms of ri_pair indices
     //Off diagonal elements get 2x weight due to permutational symmetry
     double* DD = init_array(norbs*(norbs+1)/2);
     
@@ -525,10 +521,14 @@ timer_on("Overall G");
             double *J = init_array(norbs*(norbs+1)/2);
             //DGEMV -> L:
             //L_Q = (Q|ls)*D_{ls}
+timer_on("J DDOT");
             C_DGEMV('N',ri_nbf_,norbs*(norbs+1)/2,1.0,B_ia_P_[0],norbs*(norbs+1)/2,DD,1,0.0,L,1);
+timer_off("J DDOT");
             //DGEMV -> J:
             //J_{mn} = L_Q(Q|mn)
+timer_on("J DAXPY");
             C_DGEMV('T',ri_nbf_,norbs*(norbs+1)/2,1.0,B_ia_P_[0],norbs*(norbs+1)/2,L,1,0.0,J,1);
+timer_off("J DAXPY");
             //Put everything in J_
             for (int i = 0, ij = 0; i < norbs; i++)
                 for (int j = 0; j<=i; j++, ij++) {
@@ -541,6 +541,7 @@ timer_on("Overall G");
             //J_->print(outfile);
         }
         if (K_is_required_) {
+timer_on("Form E");
             /* EXCHANGE PART */
             //E exchange matrix
             double** E = block_matrix(norbs, ndocc*ri_nbf_);
@@ -569,8 +570,10 @@ timer_on("Overall G");
                     }
                 }
             }
+timer_off("Form E");
             free_block(Temp);
             free_block(QS);
+timer_on("E DGEMM");
 
             //K_{mn} = E_{im}^QE_{in}^Q
             C_DGEMM('N','T',norbs,norbs,ri_nbf_*ndocc,1.0,E[0],ri_nbf_*ndocc,E[0],ri_nbf_*ndocc, 0.0, K[0], norbs);
@@ -581,18 +584,24 @@ timer_on("Overall G");
                     K_->set(0,i,j,K[i][j]);
             }
             free_block(K);
+timer_off("E DGEMM");
             //K_->print(outfile);
         }
     }
     else if (df_storage_ == flip_B_disk || df_storage_ == k_incore) {
         //B is on disk, E will be in core, Single disk pass
-        //in_buffer stores single aux basis function rows of 
+        //in_buffer stores multiple aux basis function rows of 
         //the three index tensor
-        //TODO use larger blocks
-        double *in_buffer = init_array(norbs*(norbs+1)/2);
+        int max_rows = floor(((memory_/sizeof(double))-norbs*ndocc*ri_nbf_)/((1.0+MEMORY_SAFETY_FACTOR)*norbs*(norbs+1)/2));
+	if (max_rows>ri_nbf_)
+            max_rows = ri_nbf_;
+
+        double *in_buffer = init_array(max_rows*norbs*(norbs+1)/2);
         //Transformed integrals are stored in PSIF_DFSCF_BJ
         //Which better exist at this point
+timer_on("Open B");
         psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
+timer_off("Open B");
         psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
 
         //Coulomb convolution vector, done element by element
@@ -610,42 +619,58 @@ timer_on("Overall G");
         }
 
         int mu, nu;
-        for (int Q = 0; Q<ri_nbf_; Q++)
+        int current_rows,offset;
+        for (int row = 0; row <ri_nbf_; row+=max_rows)
         {
-            //Read a single row of the (B|mn) tensor in, place in in_buffer
-            psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
-            
-            if (J_is_required_) {
-                /* COULOMB PART */
-                //L_Q = (Q|ls)D_{ls}
-                L = C_DDOT(norbs*(norbs+1)/2,in_buffer,1,DD,1);
-                //J_{mn} += (Q|mn)L_Q
-                C_DAXPY(norbs*(norbs+1)/2,L,in_buffer,1,J,1);
-            } 
-            if (K_is_required_) {
-                /* EXCHANGE TENSOR */
-                for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
-                {
-                    mu = ri_pair_mu_[ij];
-                    nu = ri_pair_nu_[ij];
-                    for (int i = 0; i<ndocc; i++)
+	    current_rows = max_rows;
+	    if (row+max_rows>ri_nbf_)
+		current_rows = ri_nbf_-row;
+            //Read max_rows of the (B|mn) tensor in, place in in_buffer
+timer_on("Read B");
+            psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2*current_rows,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+timer_off("Read B");
+            for (int Q = row; Q< row+current_rows; Q++) {
+		int offset = (Q-row)*norbs*(norbs+1)/2;
+                if (J_is_required_) {
+                    /* COULOMB PART */
+                    //L_Q = (Q|ls)D_{ls}
+timer_on("J DDOT");
+                    L = C_DDOT(norbs*(norbs+1)/2,&in_buffer[offset],1,DD,1);
+timer_off("J DDOT");
+                    //J_{mn} += (Q|mn)L_Q
+timer_on("J DAXPY");
+                    C_DAXPY(norbs*(norbs+1)/2,L,&in_buffer[offset],1,J,1);
+timer_off("J DAXPY");
+                } 
+timer_on("Form E");
+                if (K_is_required_) {
+                    /* EXCHANGE TENSOR */
+                    for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
                     {
-                        E[mu][i+Q*ndocc]+=Cocc[i][nu]*in_buffer[ij];
-                        if (mu != nu)
-                            E[nu][i+Q*ndocc]+=Cocc[i][mu]*in_buffer[ij];
+                        mu = ri_pair_mu_[ij];
+                        nu = ri_pair_nu_[ij];
+                        for (int i = 0; i<ndocc; i++)
+                        {
+                            E[mu][i+Q*ndocc]+=Cocc[i][nu]*in_buffer[ij+offset];
+                            if (mu != nu)
+                                E[nu][i+Q*ndocc]+=Cocc[i][mu]*in_buffer[ij+offset];
+                        }
                     }
                 }
+timer_off("Form E");
             }
         }
-        delete(in_buffer);
+        free(in_buffer);
         psio_->close(PSIF_DFSCF_BJ,1);
 
+timer_on("E DGEMM");
         /* Exchange Tensor DGEMM */
         if (K_is_required_) {
             K = block_matrix(norbs,norbs);
             C_DGEMM('N','T',norbs,norbs,ri_nbf_*ndocc,1.0,E[0],ri_nbf_*ndocc,E[0],ri_nbf_*ndocc, 0.0, K[0], norbs);
             free_block(E);
         }
+timer_off("E DGEMM");
 
         /* Form J and K */
         if (J_is_required_) {
@@ -674,10 +699,13 @@ timer_on("Overall G");
     else {
         //B is on disk, K will be in disk, Single disk pass
         //B is on disk, E will be in core, Single disk pass
-        //in_buffer stores single aux basis function rows of 
-        //the three ndex tensor
-        //TODO use larger blocks
-        double *in_buffer = init_array(norbs*(norbs+1)/2);
+        //in_buffer stores multiple aux basis function rows of 
+        //the three index tensor
+        int max_rows = floor(((memory_/sizeof(double)))/((1.0+MEMORY_SAFETY_FACTOR)*(norbs*(norbs+1)/2+ndocc*norbs)));
+	if (max_rows>ri_nbf_)
+            max_rows = ri_nbf_;
+
+        double *in_buffer = init_array(max_rows*norbs*(norbs+1)/2);
         //Transformed integrals are stored in PSIF_DFSCF_BJ
         //Which better exist at this point
 timer_on("Open B");
@@ -703,56 +731,70 @@ timer_off("Open B");
         double *out_buffer;
         double **K;
         if (K_is_required_){
-            out_buffer = init_array(norbs*ndocc);
+            out_buffer = init_array(norbs*ndocc*max_rows);
         }
 
         int mu, nu;
-        for (int Q = 0; Q<ri_nbf_; Q++)
+        int current_rows,offset;
+        for (int row = 0; row <ri_nbf_; row+=max_rows)
         {
-            //Read a single row of the (B|mn) tensor in, place in in_buffer
+	    current_rows = max_rows;
+	    if (row+max_rows>ri_nbf_)
+		current_rows = ri_nbf_-row;
+            //Read a max_rows of the (B|mn) tensor in, place in in_buffer
 timer_on("Read B");
-            psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+            psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2*current_rows,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
 timer_off("Read B");
-            
-            if (J_is_required_) {
-                /* COULOMB PART */
-                //L_Q = (Q|ls)D_{ls}
+            for (int Q = row; Q< row+current_rows; Q++) {
+		//offset in three-index tensor
+		int offset_B = (Q-row)*norbs*(norbs+1)/2;
+		//offset in E tensor
+		int offset_E = (Q-row)*norbs*ndocc;
+    
+                if (J_is_required_) {
+                    /* COULOMB PART */
+                    //L_Q = (Q|ls)D_{ls}
 timer_on("J DDOT");
-                L = C_DDOT(norbs*(norbs+1)/2,in_buffer,1,DD,1);
+                    L = C_DDOT(norbs*(norbs+1)/2,&in_buffer[offset_B],1,DD,1);
 timer_off("J DDOT");
-                //J_{mn} += (Q|mn)L_Q
+                    //J_{mn} += (Q|mn)L_Q
 timer_on("J DAPXY");
-                C_DAXPY(norbs*(norbs+1)/2,L,in_buffer,1,J,1);
+                    C_DAXPY(norbs*(norbs+1)/2,L,&in_buffer[offset_B],1,J,1);
 timer_off("J DAPXY");
-            } 
+                } 
 timer_on("Form E");
-            if (K_is_required_) {
-                /* EXCHANGE TENSOR */
-                memset(out_buffer,0,norbs*ndocc*sizeof(double));
-                for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
-                {
-                    mu = ri_pair_mu_[ij];
-                    nu = ri_pair_nu_[ij];
-                    for (int i = 0; i<ndocc; i++)
+                if (K_is_required_) {
+                    /* EXCHANGE TENSOR */
+                    memset(&out_buffer[offset_E],0,norbs*ndocc*sizeof(double));
+                    for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
                     {
-                        out_buffer[mu*ndocc+i]+=Cocc[i][nu]*in_buffer[ij];
-                        if (mu != nu)
-                            out_buffer[nu*ndocc+i]+=Cocc[i][mu]*in_buffer[ij];
+                        mu = ri_pair_mu_[ij];
+                        nu = ri_pair_nu_[ij];
+                        for (int i = 0; i<ndocc; i++)
+                        {
+                            out_buffer[mu*ndocc+i+offset_E]+=Cocc[i][nu]*in_buffer[ij+offset_B];
+                            if (mu != nu)
+                                out_buffer[nu*ndocc+i+offset_E]+=Cocc[i][mu]*in_buffer[ij+offset_B];
+                        }
                     }
                 }
-timer_on("Write E");
-                psio_->write(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(out_buffer[0]),sizeof(double)*norbs*ndocc,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
-timer_off("Write E");
-            }
 timer_off("Form E");
+            }
+            if (K_is_required_) {
+timer_on("Form E");
+timer_on("Write E");
+                psio_->write(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(out_buffer[0]),sizeof(double)*norbs*ndocc*current_rows,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
+timer_off("Write E");
+timer_off("Form E");
+            }
         }
+        free(in_buffer);
+        psio_->close(PSIF_DFSCF_BJ,1);
         if (K_is_required_) {
             free(out_buffer);
             psio_->close(PSIF_DFSCF_K,1);
         }
-        free(in_buffer);
-        psio_->close(PSIF_DFSCF_BJ,1);
-timer_on("Exchange DGEMM");
+timer_on("E DGEMM");
 
         /* Exchange Tensor DGEMM */
         if (K_is_required_) {
@@ -760,24 +802,36 @@ timer_on("Exchange DGEMM");
             next_PSIF_DFSCF_K = PSIO_ZERO;
 
             K = block_matrix(norbs,norbs);
-            in_buffer = init_array(norbs*ndocc);
+            //Large blocks implemented
+            max_rows = floor(((memory_/sizeof(double)))/((1.0+MEMORY_SAFETY_FACTOR)*(ndocc*norbs)));
+	    if (max_rows>ri_nbf_)
+                max_rows = ri_nbf_;
 
-            for (int Q = 0; Q<ri_nbf_; Q++) {
+            in_buffer = init_array(norbs*(norbs+1)/2*max_rows);
+            for (int row = 0; row <ri_nbf_; row+=max_rows)
+            {
+	        current_rows = max_rows;
+	        if (row+max_rows>ri_nbf_)
+		    current_rows = ri_nbf_-row;
+                //Read max_rows of the exchange tensor in, place in in_buffer
 timer_on("E Read");
-                psio_->read(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(in_buffer[0]),sizeof(double)*norbs*ndocc,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
+                psio_->read(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(in_buffer[0]),sizeof(double)*norbs*ndocc*current_rows,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
 timer_off("E Read");
+                for (int Q = row; Q< row+current_rows; Q++) {
+		    int offset = (Q-row)*norbs*ndocc;
 
-                for (int m = 0; m<norbs; m++)
-                    for (int n = 0; n<=m; n++)
-                        for (int i = 0; i<ndocc; i++) {
-                            K[m][n]+=in_buffer[m*ndocc+i]*in_buffer[n*ndocc+i];
-                            K[n][m] = K[m][n];
-                        }
+                    for (int m = 0; m<norbs; m++)
+                        for (int n = 0; n<=m; n++)
+                            for (int i = 0; i<ndocc; i++) {
+                                K[m][n]+=in_buffer[m*ndocc+i+offset]*in_buffer[n*ndocc+i+offset];
+                                K[n][m] = K[m][n];
+                            }
+                }
             }
             free(in_buffer);
             psio_->close(PSIF_DFSCF_K,0);
         } 
-timer_off("Exchange DGEMM");
+timer_off("E DGEMM");
         /* Form J and K */
         if (J_is_required_) {
             for (int i = 0, ij = 0; i < norbs; i++)
