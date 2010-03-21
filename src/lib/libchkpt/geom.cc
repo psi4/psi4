@@ -35,8 +35,8 @@ double **Chkpt::rd_geom(void)
 		}
 	}
 
-	free(full_geom);
-	free(atom_dummy);
+	delete[] (full_geom);
+	delete[] (atom_dummy);
 
 	return geom;
 }

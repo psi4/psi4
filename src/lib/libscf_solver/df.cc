@@ -25,8 +25,9 @@
 #include <libmints/integral.h>
 #include <libmints/molecule.h>
 
+#include <boost/shared_ptr.hpp>
 
-
+using namespace boost;
 using namespace std;
 using namespace psi;
 
@@ -98,7 +99,7 @@ void HF::form_B()
     
     // Create integral factory
     IntegralFactory rifactory_J(ribasis_, zero, ribasis_, zero);
-    TwoBodyInt* Jint = rifactory_J.eri();
+    shared_ptr<TwoBodyInt> Jint = shared_ptr<TwoBodyInt>(rifactory_J.eri());
     double **J = block_matrix(ri_nbf_, ri_nbf_);
     double **J_mhalf = block_matrix(ri_nbf_, ri_nbf_);
     const double *Jbuffer = Jint->buffer();
@@ -179,7 +180,7 @@ timer_on("Overall (B|mn)");
     if (df_storage_ == double_full)
     {
     	IntegralFactory rifactory(basisset_, basisset_, ribasis_, zero);
-        TwoBodyInt* eri = rifactory.eri();
+        shared_ptr<TwoBodyInt> eri = shared_ptr<TwoBodyInt>(rifactory.eri());
         const double *buffer = eri->buffer();
         double** A_ia_P = block_matrix(ri_nbf_,basisset_->nbf()*(basisset_->nbf()+1)/2); 
         int numPshell,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu, npairs, start;
@@ -216,13 +217,13 @@ timer_on("(B|mn) Transform");
              0.0, B_ia_P_[0], basisset_->nbf()*(basisset_->nbf()+1)/2);
 timer_off("(B|mn) Transform");
         
-	free(A_ia_P);
+	free_block(A_ia_P);
         //print_mat(B_ia_P_, ri_nbf_,norbs*(norbs+1)/2 ,outfile);
     } 
     if (df_storage_ == full||df_storage_ == flip_B_disk)
     {	
     	IntegralFactory rifactory(basisset_, basisset_, ribasis_, zero);
-        TwoBodyInt* eri = rifactory.eri();
+        shared_ptr<TwoBodyInt> eri = shared_ptr<TwoBodyInt>(rifactory.eri());
         const double *buffer = eri->buffer();
         B_ia_P_ = block_matrix(ri_nbf_,basisset_->nbf()*(basisset_->nbf()+1)/2); 
         int numPshell,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu, npairs, start;
@@ -264,8 +265,8 @@ timer_off("(B|mn) Integrals");
 		if (index+unit>=norbs*(norbs+1)/2) {
 			cols = norbs*(norbs+1)/2-index;
 			if (allocated) {
-				free(Temp1);
-				free(Temp2);
+				free_block(Temp1);
+				free_block(Temp2);
 				allocated = false;
 			}
 		}
@@ -295,7 +296,7 @@ timer_off("(B|mn) Transform");
         if (df_storage_ == flip_B_disk)
         {
         	write_B();
-        	free(B_ia_P_);
+        	free_block(B_ia_P_);
         	ri_pair_nu_ = init_int_array(norbs*(norbs+1)/2);
         	ri_pair_mu_ = init_int_array(norbs*(norbs+1)/2);
         	for (int i=0, ij=0; i<norbs; i++)
@@ -312,7 +313,7 @@ timer_off("(B|mn) Transform");
     {
         psio_->open(PSIF_DFSCF_BJI,PSIO_OPEN_NEW);
         IntegralFactory rifactory(ribasis_, zero, basisset_, basisset_);
-        TwoBodyInt* eri = rifactory.eri();
+        shared_ptr<TwoBodyInt> eri = shared_ptr<TwoBodyInt>(rifactory.eri());
         const double *buffer = eri->buffer();
         double **Temp1;
 	double *Temp2 = init_array(ri_nbf_);
@@ -442,8 +443,8 @@ timer_on("(B|mn) restripe");
             } 
         }
 
-        free(in_buffer);
-        free(buffer2);
+        free_block(in_buffer);
+        free_block(buffer2);
         psio_->close(PSIF_DFSCF_BJI,0);
         psio_->close(PSIF_DFSCF_BJ,1);
 timer_off("(B|mn) restripe");
@@ -467,7 +468,7 @@ void HF::write_B()
 void HF::free_B()
 {
 	if (df_storage_ == full||df_storage_ == double_full)
-    		free(B_ia_P_);
+    		free_block(B_ia_P_);
     else 
     {
     	free(ri_pair_mu_);
@@ -636,7 +637,7 @@ timer_on("Overall G");
                 }
             }
         }
-        free(in_buffer);
+        delete(in_buffer);
         psio_->close(PSIF_DFSCF_BJ,1);
 
         /* Exchange Tensor DGEMM */
