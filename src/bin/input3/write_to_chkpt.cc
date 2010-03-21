@@ -167,7 +167,7 @@ void write_to_chkpt(double repulsion, const char *basiskey)
     mat_double[symop][8] = ao_type_transmat[1][symop][2];
   }
   chkpt_wt_cartrep(mat_double);
-  free(mat_double);
+  free_block(mat_double);
 
   /* Transformation matrix for shells */
   shell_transm = init_int_matrix(num_shells,nirreps);;

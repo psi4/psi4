@@ -19,7 +19,8 @@ int* Chkpt::rd_atom_dummy(void)
 	keyword = build_keyword("Dummy atom flags");
 
 	num_allatoms = rd_nallatom();
-	atom_dummy = (int *) malloc(sizeof(int)*num_allatoms);
+	atom_dummy = new int[num_allatoms];
+	//atom_dummy = (int *) malloc(sizeof(int)*num_allatoms);
 
 	psio->read_entry(PSIF_CHKPT, keyword, (char *) atom_dummy, 
 		num_allatoms*sizeof(int));

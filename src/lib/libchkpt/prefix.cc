@@ -16,7 +16,8 @@ char *Chkpt::rd_prefix()
 {
 	char *prefix;
 	
-	prefix = (char *) malloc(CHKPT_PREFIX_LEN*sizeof(char));
+	//prefix = (char *) malloc(CHKPT_PREFIX_LEN*sizeof(char));
+	prefix = new char[CHKPT_PREFIX_LEN];
 	
 	psio->read_entry(PSIF_CHKPT, "Default prefix", prefix, CHKPT_PREFIX_LEN*sizeof(char));
 	
