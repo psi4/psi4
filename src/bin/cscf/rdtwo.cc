@@ -137,7 +137,8 @@ void rdtwo()
 	pk_flush = 0;
 	/* If the first index is negative - it's the last integral necessary for a pk-block
 	   Set the flushing flag.. Hey, and we need the positive index back */
-	if (ii < 0) {
+        /* check nbasis == 1 for He STO-3G bug, TDC 3/22/10 */
+	if (ii < 0 || nbasis == 1) {
 	  pk_flush = 1;
 	  ii = abs(ii);
 	}
