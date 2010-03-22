@@ -35,24 +35,21 @@ namespace psi { namespace scf {
 void HF::form_B()
 {
     fprintf(outfile, "\n  Computing Integrals using Density Fitting");
+    //TODO: Add support for molecular symmetry
     if (factory_.nirreps() != 1)
     {
         fprintf(outfile,"Must run in C1 for now.\n"); fflush(outfile);
         abort();
     } 
     int norbs = basisset_->nbf(); 
-    shared_ptr<BasisSet> ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS"));
+    shared_ptr<BasisSet> ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_SCF"));
     ri_nbf_ = ribasis_->nbf();
-    //ribasis_->print();
-	/*
-    fprintf(outfile, "\n  Memory Requirements:    (ab|P)    (ab|P)(PQ)^(-1/2)    Exchange Tensor    Max in Form B    Max in Form G");
-    fprintf(outfile, "\n  --------------------------------------------------------------------------------------------------------"); */
+    
+    //Size of the three-index tensor
     unsigned long memA = norbs*(norbs+1)/2*(long)ri_nbf_;
     int ndocc = doccpi_[0];
+    //Size of the exchange tensor
     unsigned long memC = norbs*ndocc*(long)ri_nbf_;
-    //fprintf(outfile, "\n  Doubles:          %14ld %14ld      %14ld    %14ld %14ld",memA,memB,memC,memA+memB,memA+memC);
-    //fprintf(outfile, "\n  MiB:               %14ld %14ld      %14ld    %14ld %14ld",memA*8/1000000,memB*8/1000000,memC*8/1000000,(memA+memB)*8/1000000,(memA+memC)*8/1000000);
-    //fflush(outfile);
 
 	string storage_type;
 	storage_type = options_.get_str("RI_STORAGE");
@@ -75,11 +72,11 @@ void HF::form_B()
     	else if (((long)((memA+memC)*(1.0+MEMORY_SAFETY_FACTOR)))<(memory_/sizeof(double)))
         	df_storage_ = full; //Full in-core, including both (ab|P) tensors
         else if (((long)((memA)*(1.0+MEMORY_SAFETY_FACTOR)))<(memory_/sizeof(double)))
-        	df_storage_ = flip_B_disk;	//Transpose B using disk scratch and core, leave it on disk
+        	df_storage_ = flip_B_disk; //Transpose B using disk scratch and core, leave it on disk
     	else if (((long)((memC)*(1.0+MEMORY_SAFETY_FACTOR)))<(memory_/sizeof(double)))
        		df_storage_ = k_incore; //K only in-core
     	else
-        	df_storage_ = disk;
+        	df_storage_ = disk; //Disk
     }	
 
     if (df_storage_ == double_full)
@@ -93,18 +90,23 @@ void HF::form_B()
     else if (df_storage_ == disk)
         fprintf(outfile,"\n  Density Fitting Algorithm proceeding on Disk\n"); 
     fflush(outfile);
-    
+   
+    //It takes a lot of work to get a null basis with Psi4 
     shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
     
-    // Create integral factory
+    // Create integral factory for J (Fitting Matrix in form_B)
     IntegralFactory rifactory_J(ribasis_, zero, ribasis_, zero);
     shared_ptr<TwoBodyInt> Jint = shared_ptr<TwoBodyInt>(rifactory_J.eri());
-    double **J = block_matrix(ri_nbf_, ri_nbf_);
-    double **J_mhalf = block_matrix(ri_nbf_, ri_nbf_);
+    // Integral buffer
     const double *Jbuffer = Jint->buffer();
+
+    // J Matrix
+    double **J = block_matrix(ri_nbf_, ri_nbf_);
+    // J^{-1/2}
+    double **J_mhalf = block_matrix(ri_nbf_, ri_nbf_);
     
 timer_on("Form J Matrix;");
-
+    // J_{MN} = (0M|N0)
     int index = 0;
 
     for (int MU=0; MU < ribasis_->nshell(); ++MU) {
@@ -410,7 +412,7 @@ timer_on("(B|mn) restripe");
         int max_cols = (memory_/sizeof(double))/((1.0+MEMORY_SAFETY_FACTOR)*ri_nbf_);
         if (max_cols > norbs*(norbs+1)/2)
             max_cols = norbs*(norbs+1)/2;
-	double **in_buffer = block_matrix(ri_nbf_,1);
+	double *in_buffer = init_array(ri_nbf_);
         //max_cols = 100;
         double **buffer2 = block_matrix(ri_nbf_,max_cols);
 
@@ -418,11 +420,11 @@ timer_on("(B|mn) restripe");
         ULI global_offset = 0;
         for (int ij = 0; ij < norbs*(norbs+1)/2; ij++)
         {
-            psio_->read(PSIF_DFSCF_BJI,"BJ Three-Index Integrals",(char *) &(in_buffer[0][0]),sizeof(double)*ri_nbf_,next_PSIF_DFSCF_BJI,&next_PSIF_DFSCF_BJI);
+            psio_->read(PSIF_DFSCF_BJI,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*ri_nbf_,next_PSIF_DFSCF_BJI,&next_PSIF_DFSCF_BJI);
             //fprintf(outfile,"\n  Read in pair %d",ij); fflush(outfile);
             for (int Q = 0; Q<ri_nbf_; Q++)
             {
-                buffer2[Q][buf_ind] = in_buffer[Q][0];
+                buffer2[Q][buf_ind] = in_buffer[Q];
             }
             buf_ind++;
             //fprintf(outfile,"\n  Moved Pair to position %d in buffer",buf_ind); fflush(outfile);
@@ -442,7 +444,7 @@ timer_on("(B|mn) restripe");
             } 
         }
 
-        free_block(in_buffer);
+        free(in_buffer);
         free_block(buffer2);
         psio_->close(PSIF_DFSCF_BJI,0);
         psio_->close(PSIF_DFSCF_BJ,1);
