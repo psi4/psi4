@@ -225,20 +225,35 @@ PsiReturnType input(Options & options, int argc, char *argv[])
 
      print_basis_info();
 
-     // RI basis?
-     if (ip_exist("DF_BASIS",0) || ip_exist("RI_BASIS",0)) {
+     // SCF RI basis?
+     if (ip_exist("DF_BASIS_SCF",0) || ip_exist("RI_BASIS_SCF",0)) {
        for(i=0;i<num_atoms;i++)
          atom_basis[i] = NULL;
-       if (ip_exist("DF_BASIS",0)) read_basis("DF_BASIS");
-       else if (ip_exist("RI_BASIS",0)) read_basis("RI_BASIS");
+       if (ip_exist("DF_BASIS_SCF",0)) read_basis("DF_BASIS_SCF");
+       else if (ip_exist("RI_BASIS_SCF",0)) read_basis("RI_BASIS_SCF");
        build_transmat();
        if (puream)
          build_cart2pureang();
        build_so_classes();
        build_usotao();
-       write_to_chkpt(repulsion, "DF_BASIS");
+       write_to_chkpt(repulsion, "DF_BASIS_SCF");
        print_basis_info();
      }
+     // MP2 RI basis?
+     if (ip_exist("DF_BASIS_MP2",0) || ip_exist("RI_BASIS_MP2",0)) {
+       for(i=0;i<num_atoms;i++)
+         atom_basis[i] = NULL;
+       if (ip_exist("DF_BASIS_MP2",0)) read_basis("DF_BASIS_MP2");
+       else if (ip_exist("RI_BASIS_MP2",0)) read_basis("RI_BASIS_MP2");
+       build_transmat();
+       if (puream)
+         build_cart2pureang();
+       build_so_classes();
+       build_usotao();
+       write_to_chkpt(repulsion, "DF_BASIS_MP2");
+       print_basis_info();
+     }
+
 
      fprintf(outfile,"\n  -Unique atoms in the canonical coordinate system (a.u.):\n");
      print_unique_geometry(1.0);
