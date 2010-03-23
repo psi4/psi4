@@ -9,7 +9,7 @@ psi: (
   subgroup = c1  
   basis = "cc-pVTZ"
   ri_hf = true
-  ri_basis = "cc-pVTZ-RI"
+  ri_basis_scf = "cc-pVTZ-RI"
 
   zmat= (
     O
