@@ -155,11 +155,11 @@ int read_options(const std::string &name, Options & options) {
     /*- Grid extents [xl, xr, yl, yr, zl, zr]  -*/
     options.add("CARTESIAN_EXTENTS",new ArrayType());
     /*- The name of the auxiliary basis to be used in RI computations -*/
-    options.add_str("RI_BASIS", "");
+    options.add_str("RI_BASIS_SCF", "");
     options.read_ipv1();
 
     /*- Whether to use density fitting or not -*/
-    if(options.get_str("RI_BASIS").empty())
+    if(options.get_str("RI_BASIS_SCF").empty())
       options.add_bool("RI_HF", false);
     else
       options.add_bool("RI_HF", true);
@@ -514,9 +514,9 @@ else if(name == "CCDENSITY") {
   }
   else if(name == "LMP2") {
     /*- The wavefunction desired -*/
-    options.add_str("RI_BASIS", "NONE");
+    options.add_str("RI_BASIS_MP2", "NONE");
     options.read_ipv1();
-    if(options.get_str("RI_BASIS") != "NONE")
+    if(options.get_str("RI_BASIS_MP2") != "NONE")
       options.add_bool("RI_LMP2", true);
     else
       options.add_bool("RI_LMP2", false);
@@ -541,13 +541,10 @@ else if(name == "CCDENSITY") {
     options.add_int("SCREENING", 7);
     options.add_bool("SCREEN_INTS", false);
     options.add_int("SCHWARTZ_TOL", 12);
-//    options.add_bool("DF-LMP2", false);
-//    options.add_str("BASIS","NONE");
-//    options.add_str("RI_BASIS","NONE");
    }
   else if(name=="DF-MP2") {
-    options.add_str("WFN", "DF-MP2");
-    options.add_str("RI_BASIS","NONE");
+    options.add_str("WFN", "RI-MP2");
+    options.add_str("RI_BASIS_MP2","NONE");
     options.add_str("BASIS","NONE");
     options.add_bool("SCS","false");
     options.add_bool("SCS_N", "false");
