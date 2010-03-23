@@ -34,6 +34,7 @@ class LMP2 {
     int *aostart_shell;
     int *aostop_shell;
     int *ao2atom;
+    int puream;
     int *l_length;
     int **domain;		/* Orbital domains */
     int *domain_len;		/* Size of each domain */
@@ -181,6 +182,7 @@ class LMP2 {
 
     // Construct MO integrals from density-fitted 3-center quantities
     void direct_df_transformation();
+    void direct_df_transformation2();
 
     // These member functions read data from the checkpoint file
     int  get_nso();

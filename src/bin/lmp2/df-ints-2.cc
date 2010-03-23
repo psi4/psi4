@@ -43,7 +43,7 @@ void LMP2::direct_df_transformation2() {
 
   // Create a basis set object and initialize it using the checkpoint file.
   shared_ptr<BasisSet>basis = shared_ptr<BasisSet > (new BasisSet(chkpt));
-  shared_ptr<BasisSet>ribasis = shared_ptr<BasisSet > (new BasisSet(chkpt, "DF_BASIS"));
+  shared_ptr<BasisSet>ribasis = shared_ptr<BasisSet > (new BasisSet(chkpt, "DF_BASIS_MP2"));
   shared_ptr<BasisSet>zero = BasisSet::zero_basis_set();
 
   // Create integral factory
@@ -54,9 +54,11 @@ void LMP2::direct_df_transformation2() {
   
   TwoBodyInt* eri = rifactory.eri();
   TwoBodyInt* Jint = rifactory_J.eri();
+  const double *Jbuffer = Jint->buffer();
 
-  int i, j, ij, k, l, m, n, a, b, s, t, u, v;
-
+  int i, j, ij, k, l, m, n, p, a, b, s, t, u, v;
+  int MU, NU, P, oP, Q, oQ, mu, nu, nummu, numnu, omu, onu, mn;
+  int numPshell, Pshell, index,stat;
   int *ij_owner, *ij_local;
   int **ij_map, *abs_ij_map;
   int **pairdomain, *pairdom_len;
@@ -78,9 +80,18 @@ void LMP2::direct_df_transformation2() {
   int *auxstart_shell = init_int_array(natom);
   int *auxstop_shell = init_int_array(natom);
   int rinshell = ribasis->nshell();
-  int *aux_stype = get_aux_stype("DF_BASIS",rinshell);
-  int *aux_snuc = get_aux_snuc("DF_BASIS",rinshell);
+  int *aux_stype = get_aux_stype("DF_BASIS_MP2",rinshell);
+  int *aux_snuc = get_aux_snuc("DF_BASIS_MP2",rinshell);
   int atom, offset, am, shell_length;
+
+  // Compute the length of each AM block
+  l_length = init_int_array(LIBINT_MAX_AM);
+  l_length[0] = 1;
+  for(l=1; l < (LIBINT_MAX_AM); l++) {
+    if(puream) l_length[l] = 2 * l + 1;
+    else l_length[l] = l_length[l-1] + l + 1;
+  }
+
   for(i=0,atom=-1,offset=0; i < ribasis->nshell(); i++) {
     am = aux_stype[i] - 1;    // am is the angular momentum of the orbital
     // shell_length is the number of obritals in each shell
@@ -99,18 +110,30 @@ void LMP2::direct_df_transformation2() {
   }
   auxstop[atom] = offset-1;
   auxstop_shell[atom] = i-1;
-
+  
   int *auxsize = init_int_array(natom);
   for (i=0; i<natom; i++) {
     auxsize[i] = auxstop[i] - auxstart[i] + 1;
   }
-
+  
   int *aosize = init_int_array(natom);
   for (i=0; i<natom; i++) {
     aosize[i] = aostop[i] - aostart[i] + 1;
   }
+  
+  fprintf(outfile, "\n\n\t\t NATOM aostart aostop aosize\n");
+  fprintf(outfile, "\t\t===============\n");
+  for(i=0;i<natom;i++)
+    fprintf(outfile,"\t\t  %5d  %5d  %5d  %5d\n",i,aostart[i], aostop[i], aosize[i]);
+
+  fprintf(outfile, "\n\n\t\t NATOM auxstart auxstop auxsize\n");
+  fprintf(outfile, "\t\t================\n");
+  for(i=0;i<natom;i++)
+    fprintf(outfile,"\t\t  %5d  %5d  %5d  %5d\n",i,auxstart[i], auxstop[i], auxsize[i]);
+  fflush(outfile);
 
   // aux2atom[i] = the atom number which aux bf i is on
+  int nribasis = ribasis->nbf();
   int* aux2atom = init_int_array(ribasis->nbf());
   for(i=0; i < natom; i++) {
     for(j=auxstart[i]; j <= auxstop[i]; j++) {
@@ -120,12 +143,12 @@ void LMP2::direct_df_transformation2() {
 
   // if we use "method 1" for the fitting, we'll need to get an 
   // aux_pairdom_len here...
-
+  
   /* Build the "united pair domains" (Werner JCP 118, 8149 (2003) */
   /* This will only work for now, where we have assumed that all
      pairs are strong pairs.  This assumption will change, then
      we may need to change this code --CDS 12/09
-   */
+  */
   int** uniteddomain = init_int_matrix(nocc, natom);
   int** uniteddomain_len2 = init_int_matrix(nocc, natom);
   int* uniteddomain_len = init_int_array(nocc);
@@ -148,7 +171,7 @@ void LMP2::direct_df_transformation2() {
       }
     }
   }
-
+  
   int** unitedfitdomain = init_int_matrix(nocc, natom);
   for (i=0,ij=0; i<nocc; i++) {
     for (j=0; j<=i; j++, ij++) {
@@ -157,12 +180,14 @@ void LMP2::direct_df_transformation2() {
           if (uniteddomain[i][k] || uniteddomain[j][k]) {
             unitedfitdomain[i][k] = 1;
             unitedfitdomain[j][k] = 1;
-        }
+	  }
+	}
       }
     }
   }
- 
+    
   int** unitedfit_start = init_int_matrix(nocc, natom);
+  int* unitedfit_len = init_int_array(nocc);
   int counter;
   for (i=0; i<nocc; i++) {
     counter = 0;
@@ -175,7 +200,7 @@ void LMP2::direct_df_transformation2() {
       }
     }
   }
-
+  
   int **uniteddomain_abs2rel = init_int_matrix(nocc, nso);
   for(i = 0; i < nocc; i++) {
     for(k = 0, a = 0; k < natom; k++) {
@@ -186,27 +211,50 @@ void LMP2::direct_df_transformation2() {
       }
     }
   }
+  
+
+fprintf(outfile, "\n\n NOCC NATOM uniteddomain_len[i] fit_len[i] fit_atom_id fit_atoms\n");
+fprintf(outfile, "\t\t================\n");
+
+for(i = 0; i < nocc; i++) {
+  for(k = 0; k < natom; k++) {
+    fprintf(outfile,"\t\t  %5d  %5d  %5d  %5d  %5d  %5d\n",
+    i,k,uniteddomain_len[i],fit_len[i],
+    fit_atom_id[i][fit_atoms[i]], fit_atoms[i]);
+  }
+}
+fflush(outfile);
+
+fprintf(outfile, "\n\n NOCC NATOM unitedfitdomain[i][k] unitedfit_start[i][k] unitedfit_len[i]\n");
+fprintf(outfile, "\t\t================\n");
+for(i = 0; i < nocc; i++) {
+  for(k = 0; k < natom; k++) {
+    fprintf(outfile,"\t\t  %5d  %5d  %5d  %5d  %5d \n",
+           i,k,unitedfitdomain[i][k],unitedfit_start[i][k],unitedfit_len[i]);
+  }
+}
+
 
 
   // Schwartz Screening 
- 
+  
   IntegralFactory ao_eri_factory(basis, basis, basis, basis);
   TwoBodyInt* ao_eri = ao_eri_factory.eri();
   const double *ao_buffer = ao_eri->buffer();
-
+  
   double *Schwartz = init_array(basis->nshell() * (basis->nshell()+1) / 2);
   double *DFSchwartz = init_array(ribasis->nshell());
-
-  int numw, numx, P,Q,PQ,w,x,index;
+  
+  int numw, numx, PQ,w,x;
   double tei, max;
   for(P=0,PQ=0;P<basis->nshell();P++) {
     numw = basis->shell(P)->nfunction();
     for(int Q=0;Q<=P;Q++,PQ++) {
       numx = basis->shell(Q)->nfunction();
       max=0.0;
-
+      
       ao_eri->compute_shell(P, Q, P, Q);
-
+      
       for(w=0;w<numw;w++) {
         for(x=0;x<numx;x++) {
           index = ( ( (w*numx + x) * numw + w) * numx + x);
@@ -217,38 +265,39 @@ void LMP2::direct_df_transformation2() {
       Schwartz[PQ] = max;
     }
   }
-
+  
   for(P=0;P<ribasis->nshell();P++) {
     numw = ribasis->shell(P)->nfunction();
     max=0.0;
-
+    
     Jint->compute_shell(P, 0, P, 0);
-
+    
     for(w=0;w<numw;w++) {
       tei = Jbuffer[w];
       if(fabs(tei) > max) max = fabs(tei);
     }
     DFSchwartz[P] = max;
   }
-
+  
   double **SchwartzBlock = block_matrix(natom,natom);
+  double MUNUmax;
   for(m = 0; m < natom; m++) {
     for(n = 0; n < natom; n++) { // NU block
       max = 0.0;
       for(MU = aostart_shell[m]; MU <= aostop_shell[m]; ++MU) {
         for(NU = aostart_shell[n]; NU <= aostop_shell[n]; ++NU) {
-
-        if (NU>MU) continue;
-        mn = INDEX(MU,NU); 
- 
-        MUNUmax = Schwartz[mn];
-        if(fabs(MUNUmax) > max) max = fabs(MUNUmax);
+	  
+	  if (NU>MU) continue;
+	  mn = INDEX(MU,NU); 
+	  
+	  MUNUmax = Schwartz[mn];
+	  if(fabs(MUNUmax) > max) max = fabs(MUNUmax);
         } 
       }
       SchwartzBlock[m][n] = max;
     }
   }
-
+  
   double *DFSchwartzBlock = init_array(natom);
   for(k = 0; k < natom; k++) {
     max = 0.0;
@@ -258,7 +307,7 @@ void LMP2::direct_df_transformation2() {
     }
     DFSchwartzBlock[k] = max;
   }
-
+  
   double **Cmax = block_matrix(natom, nocc);
   double Cval, max1;
   for(i=0; i < nocc; i++) {
@@ -271,16 +320,18 @@ void LMP2::direct_df_transformation2() {
       Cmax[k][i] = max1;
     }
   }
-
+  
+   fprintf(outfile, "\nBook keeping done...\n");
+   fflush(outfile);
+  
   // this is really unefficient 
   double **C_t = block_matrix(nocc, nso);
   for(i=0; i < nocc; i++)
-    for(t=0; r < nso; t++)
-       C_t[i][t] = C[t][i];
-
-
-  int numPshell, Pshell, MU, NU, P, oP, Q, oQ, mu, nu, nummu, numnu, omu, onu, mn;
-
+    for(t=0; t < nso; t++)
+      C_t[i][t] = C[t][i];
+  
+  
+  
   // find out the max number of P's in a P shell
   int screened=0;
   int max_aoblock_len  = 0;
@@ -289,11 +340,11 @@ void LMP2::direct_df_transformation2() {
     if (auxsize[k] > max_auxblock_len) max_auxblock_len = auxsize[k];
     if (aosize[k] > max_aoblock_len) max_aoblock_len = aosize[k];
   }
-
+  
   double** temp = block_matrix(max_auxblock_len*max_aoblock_len,max_aoblock_len);
   double*  I1 = init_array(max_auxblock_len*max_aoblock_len);
   double** I2 = block_matrix(max_auxblock_len,max_aoblock_len);
-
+  
   double ***I3 = (double ***) malloc(sizeof (double **) * nocc);
   for(i = 0; i < nocc; i++)
     I3[i] = (double **) malloc(sizeof (double *) * max_auxblock_len);
@@ -303,45 +354,45 @@ void LMP2::direct_df_transformation2() {
       memset(I3[i][j], '\0', sizeof (double) * max_aoblock_len);
     }
   }
-           
+  
+
   double* eigval = init_array(max_auxblock_len);
   int lwork = max_auxblock_len * 3;
   double* work = init_array(lwork);
-  int stat, p;
-
+  
   double Imax = 0.0;
   const double *buffer = eri->buffer();
   for(k = 0; k < natom; k++) { // Pshell block
     for(m = 0; m < natom; m++) { // MU block
       for(n = 0; n < natom; n++) { // NU block
-
+	
         for(Pshell = auxstart_shell[k]; Pshell <= auxstop_shell[k]; ++Pshell) {
           numPshell = ribasis->shell(Pshell)->nfunction();
-
+	  
           for(MU = aostart_shell[m]; MU <= aostop_shell[m]; ++MU) {
             //mu_block_len = aostop[l]-aostart[l]+1; 
             nummu = basis->shell(MU)->nfunction();
-
+	    
             for(NU = aostart_shell[n]; NU <= aostop_shell[n]; ++NU) {
               //nu_block_len = aostop[m]-aostart[m]+1; 
               numnu = basis->shell(NU)->nfunction();
-
+	      
               if (NU>MU) continue;
               mn = INDEX(MU,NU);
-
+	      
               Imax = sqrt(Schwartz[mn]*DFSchwartz[Pshell]); 
               if( Imax > tol) {
                 eri->compute_shell(Pshell, 0, MU, NU);
-
+		
                 for(P = 0, index = 0; P < numPshell; ++P) { 
                   oP = ribasis->shell(Pshell)->function_index() + P - auxstart[k];
-
+		  
                   for(mu = 0; mu < nummu; ++mu) {
                     omu = basis->shell(MU)->function_index() + mu - aostart[m];
-
+		    
                     for(nu = 0; nu < numnu; ++nu, ++index) {
                       onu = basis->shell(NU)->function_index() + nu - aostart[n];
-
+		      
                       temp[oP*aosize[n]+onu][omu] = buffer[index]; // (oP | omu onu) integral
                       temp[oP*aosize[n]+omu][onu] = buffer[index]; // (oP | omu onu) integral
                     }
@@ -352,163 +403,130 @@ void LMP2::direct_df_transformation2() {
             } // end loop over NU
           } // end lopp over MU
         } // end loop over Pshell
-   
+	
         Imax = sqrt(SchwartzBlock[l][m]*DFSchwartzBlock[k]);
-
+	
         for(i = 0, ij=0; i < nocc; i++) {
-
+	  
           if( Cmax[l][i] * Imax > 1.0E-7 ) {
             if ( unitedfit_start[i][k] >= 0 ) {
-
-            // first transformation (1/3 rd done)
-            C_DGEMV('n',auxsize[k]*aosize[n],aosize[m],1.0,&temp[0][0],max_aoblock_len, 
-                    C_t[i]+aostart[m],1,0.0,&I1[0],1);
-            
-            for ( p=0; p<auxsize[k]; p++) { 
-              for (nu=0; nu<aosize[n]; nu++){
-                 I2[p][nu] = I1[p * aosize[n] + nu];  
-              }
-            }
-
-            // Second Transformation (2/3 rd done)
-            for(l = 0; l < natom; l++) {
-              if(uniteddomain[i][n]) {
-                for(p=0;p<auxsize[k];p++) {              
-                  for(t = aostart[l], a = 0; t <= aostop[l]; t++, a++) {
-                    for(u = aostart[n], nu=0; u <= aostop[n]; u++, nu++) { 
-                      I3[i][p][a] += Rt_full[u][t] * I2[p][nu];
-                    }
-                  }
-                }
-              }
-            }
-            
+	      
+	      // first transformation (1/3 rd done)
+	      C_DGEMV('n',auxsize[k]*aosize[n],aosize[m],1.0,&temp[0][0],max_aoblock_len, 
+		      C_t[i]+aostart[m],1,0.0,&I1[0],1);
+	      
+	      for ( p=0; p<auxsize[k]; p++) { 
+		for (nu=0; nu<aosize[n]; nu++){
+		  I2[p][nu] = I1[p * aosize[n] + nu];  
+		}
+	      }
+	      
+	      // Second Transformation (2/3 rd done)
+	      for(l = 0; l < natom; l++) {
+		if(uniteddomain[i][n]) {
+		  for(p=0;p<auxsize[k];p++) {              
+		    for(t = aostart[l], a = 0; t <= aostop[l]; t++, a++) {
+		      for(u = aostart[n], nu=0; u <= aostop[n]; u++, nu++) { 
+			I3[i][p][a] += Rt_full[u][t] * I2[p][nu];
+		      }
+		    }
+		  }
+		}
+	      }
+	      
             } // end if ( unitedfit_start[i][k] >=0 )
           } // if Cmax[l][i] * Imax
         } // end loop over i
-
+	
       }  // end loop over NUblock
     }  // end loop over MUblock
   } // end loop over Pblock
-
-
+  
+  
   double **J = block_matrix(max_auxblock_len,max_auxblock_len);
   double **J_inv = block_matrix(max_auxblock_len,max_auxblock_len);
-
-//  double ***J_inv = (double ***) malloc(sizeof (double **) * nocc);
-//  for(i = 0; i < nocc; i++)
-//    J_inv[i] = (double **) malloc(sizeof (double *) * max_auxblock_len);
-//  for(i = 0; i < nocc; i++) {
-//    for(j = 0; j < max_auxblock_len; j++) {
-//      J_inv[i][j] = (double *) malloc(sizeof (double) * max_auxblock_len);
-//      memset(J_inv[i][j], '\0', sizeof (double) * max_auxblock_len);
-//    }
-//  }
-
-
-  const double *Jbuffer = Jint->buffer();
-  int m2, n2;
+  
+  double ***D = (double ***) malloc(sizeof (double **) * nocc);
+  for(i = 0; i < nocc; i++)
+    D[i] = (double **) malloc(sizeof (double *) * max_auxblock_len);
+  for(i = 0; i < nocc; i++) {
+    for(j = 0; j < max_auxblock_len; j++) {
+      D[i][j] = (double *) malloc(sizeof (double) * max_aoblock_len);
+      memset(D[i][j], '\0', sizeof (double) * max_aoblock_len);
+    }
+  }
+  
+  int m2, n2, Jsize;
   for(i = 0; i < nocc; i++) {  
-
+    
     for(m = 0; m < fit_atoms[i]; m++) { // MU block
       m2 = fit_atom_id[i][m];
       for(n = 0; n < fit_atoms[i]; n++) { // NU block
         n2 = fit_atom_id[i][n];      
-
+	
         for(MU = auxstart_shell[m2]; MU <= auxstop_shell[m2]; ++MU) {
           nummu = ribasis->shell(MU)->nfunction();
-
+	  
           for(NU = auxstart_shell[n2]; NU <= auxstop_shell[n2]; ++NU) {
             numnu = ribasis->shell(NU)->nfunction();
-
+	    
             Jint->compute_shell(MU, 0, NU, 0);
-
+	    
             for(mu = 0, index=0; mu < nummu; ++mu) {
               omu = ribasis->shell(MU)->function_index() + mu - auxstart[m2];
-
+	      
               for(nu = 0; nu < numnu; ++nu, ++index) {
                 onu = ribasis->shell(NU)->function_index() + nu - auxstart[n2];
-
+		
                 J[omu][onu] = Jbuffer[index];
-
+		
               }
             }
           }  
         }
       }
     } 
-    // Form J^-1/2
-    // First, diagonalize J
-    // the C_DSYEV call replaces the original matrix J with its eigenvectors
-    //
-    //
-    //fprintf(outfile, "\n\tJ_mat\n");
-    //print_mat(J,omu+1,onu+1, outfile);
-    //fflush(outfile);              
+    
 
+
+    // Form J^-1
+    // The plan is to perform an LU decomposition via dgetrf
+    // and them calculate the inverse via dgetri
     m2 = fit_atom_id[i][fit_atoms[i]];
- 
-    stat = C_DSYEV('v', 'u', m2, &J[0],max_auxblock_len, eigval, work, lwork);
+    Jsize = auxsize[m2];
+    int N = max_auxblock_len;
+    int* ipiv = init_int_array(N);
+    //memset(ipiv, '\0', sizeof (int) * N);
+    stat = C_DGETRF(Jsize,Jsize,&J[0][0],N,ipiv);
     if(stat != 0) {
-      throw PsiException("Error in DGESV in RI-LMP2 J-matrix construction", __FILE__, __LINE__);
+      fflush(outfile);
+      throw PsiException("Error in DGESV in RI-LMP2 J-matrix at C_DGETRF() ",
+			 __FILE__, __LINE__);
     }
-
-    // Now J contains the eigenvectors of the original J
-    // Copy J to J_copy
-    //J_copy = block_matrix(omu, omu);
-    C_DCOPY(max_auxblock_len * max_auxblock_len, J[0], 1, J_copy[0], 1);
-
-    // Now form J^-1 = U(T)*j^-1*U,
-    // where j^-1 is the diagonal matrix of the inverse 
-    // of the eigenvalues, and U is the matrix of eigenvectors of J
-    for(int j = 0; j < m2; j++) {
-      if(eigval[j] < 1.0E-10)
-        eigval[j] = 0.0;
-      else {
-        eigval[j] = 1.0 / eigval[j];
-      }
-      // scale one set of eigenvectors by the diagonal elements j^{-1}
-      C_DSCAL(m2, eigval[j], J[j], 1);
+    
+    int lwork =4 * N;
+    double* work = init_array(lwork);
+    stat = C_DGETRI(Jsize,&J[0][0],N,ipiv,work,lwork);
+    if(stat != 0) {
+      fflush(outfile);
+      throw PsiException("Error in DGESV in RI-LMP2 J-matrix atC_DGETRI() ",
+			 __FILE__, __LINE__);
     }
-        //free(eigval);
-
-    // J_inv = J_copy(T) * J
-    C_DGEMM('t', 'n', auxsize[k],auxsize[k],auxsize[k],
-             1.0, J_copy[0],max_auxblock_len,,J[0],max_auxblock_len, 
-             0.0, J_inv,,max_auxblock_len,);
-
+    
     // D[i][a][p] = I[i][a][q] * J_inv[q][p]  
     C_DGEMM('n', 'n', auxsize[k],aosize[k],auxsize[k],
-             1.0, I3[i],max_aoblock_len,,J_inv[0],max_auxblock_len, 
-             0.0, d[i],max_aoblock_len,);
- 
+	    1.0, &I3[i][0][0],max_aoblock_len,&J[0][0],max_auxblock_len, 
+	    0.0, &D[i][0][0],max_aoblock_len);
+    
   } // end loop over i
-
+  
   //Allocating the memory needed by Ktilde
-  if(ij_pairs % nprocs == 0) {
-    Ktilde = (double ***) malloc((ij_pairs / nprocs) * sizeof (double **));
-    for(ij = 0; ij < ij_pairs; ij++) {
-      if(myid == ij_owner[ij])
-        Ktilde[ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
-    }
-  } 
-  else {
-    if(myid < ij_pairs % nprocs) {
-      Ktilde = (double ***) malloc(((ij_pairs / nprocs) + 1) * sizeof (double **));
-      for(ij = 0; ij < ij_pairs; ij++) {
-        if(myid == ij_owner[ij])
-          Ktilde[ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
-      }
-    } 
-    else {
-      Ktilde = (double ***) malloc(ij_pairs / nprocs * sizeof (double **));
-      for(ij = 0; ij < ij_pairs; ij++) {
-        if(myid == ij_owner[ij])
-          Ktilde[ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
-      }
-    }
+  Ktilde = (double ***) malloc(pairs_per_proc * sizeof (double **));
+  for(ij = 0; ij < ij_pairs; ij++) {
+    if (Communicator::world->me() == ij_owner[ij])
+      Ktilde[ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
   }
-
+  
   //
   // construct Ktilde[ij][a][b] = (ia|jb)
   //
@@ -519,7 +537,7 @@ void LMP2::direct_df_transformation2() {
   for(ij = 0; ij < ij_pairs; ij++, v++) {
     i = ij_map[ij][0];
     j = ij_map[ij][1];
-    if(v % nprocs == myid) {
+    if (Communicator::world->me() == ij_owner[ij]) {
       for(k = 0, a = 0; k < natom; k++) {
         if(pairdomain[ij][k]) {
           for(t = aostart[k]; t <= aostop[k]; t++, a++) {
@@ -540,20 +558,22 @@ void LMP2::direct_df_transformation2() {
                     // the united orbital fit domain [j]_{fit}^u for
                     // auxiliary functions belonging to atom m2
                     Ktilde[ij_local[ij]][a][b] = 
-                      C_DDOT(auxsize[m2], &(d[i][a2][q]),
-                      &(I[j][b2][ufitstart[j][m2]]), 1);
-                }
-              }
-            }
-          }
-        }
+                      C_DDOT(auxsize[m2], &(D[i][a2][q]),1,
+			     &(I3[j][b2][unitedfit_start[j][m2]]), 1);
+		  }
+		}
+	      }
+	    }
+	  }
+	}
       }
     }
   } // End of ij_pair loop
-
-
+  
+  
 #ifdef TIME_DF_LMP2
-if(myid == 0) timer_off("Compute DF-LMP2");
+  if(Communicator::world->me() == 0) 
+    timer_off("Compute DF-LMP2");
 #endif
 
 }

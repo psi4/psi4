@@ -41,7 +41,7 @@ void LMP2::localize() {
 
   int iter, s, t, A, k, l, iold, max;
   int i, j, ij, am, atom, shell_length, offset;
-  int ntri, puream, *soccpi, *stype, *snuc, nfzc;;
+  int ntri, *soccpi, *stype, *snuc, nfzc;;
   double  **LCtmp, **F_occ;
   double *scratch, *evals;
   int *orb_order, *orb_boolean;
