@@ -119,7 +119,7 @@ int main(int argc, char * argv[]) {
   }
 
   BasisSet* ribasis;
-  ribasis = new BasisSet(chkpt, "DF_BASIS"); //find pbasis via the prefx
+  ribasis = new BasisSet(chkpt, "DF_BASIS_MP2"); //find pbasis via the prefx
   //ribasis->print();
 
   BasisSet* zero = BasisSet::zero_basis_set();
