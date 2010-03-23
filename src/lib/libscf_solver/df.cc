@@ -54,7 +54,7 @@ void HF::form_B()
 	string storage_type;
 	storage_type = options_.get_str("RI_STORAGE");
 	
-	if (storage_type == "IN_CORE_DOUBLE")
+	if (storage_type == "DOUBLE_IN_CORE")
 		df_storage_ = double_full;
 	else if (storage_type == "IN_CORE")
 		df_storage_ = full;
