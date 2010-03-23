@@ -663,9 +663,9 @@ void RHF::form_C()
     find_occupation(eigval);
 
     // Save C to checkpoint file.
-    double **vectors = C_->to_block_matrix();
-    chkpt_->wt_scf(vectors);
-    free_block(vectors);
+    //double **vectors = C_->to_block_matrix();
+    //chkpt_->wt_scf(vectors);
+    //free_block(vectors);
 
 #ifdef _DEBUG
     if (debug_) {
