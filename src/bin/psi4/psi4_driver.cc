@@ -114,7 +114,7 @@ psi4_driver(Options & options, int argc, char *argv[])
     int i, argc_new;
     char *argv_new[MAX_ARGS];
     for (i=1; i<argc; ++i) {
-      argv_new[i-1] = new char [strlen(argv[i])];
+      argv_new[i-1] = new char [strlen(argv[i])+1];
       strcpy(argv_new[i-1],argv[i]);
     }
     --argc;
