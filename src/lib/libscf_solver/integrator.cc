@@ -611,7 +611,14 @@ LebedevSphere Integrator::getLebedevSphere(int degree)
     leb_tmp.w = init_array(degree);
     
     switch (degree){
-	
+
+    case 1:
+        leb_tmp.x[0] = 1.0;
+        leb_tmp.y[0] = 0.0;
+        leb_tmp.z[0] = 0.0;
+        leb_tmp.w[0] = 1.0;
+        break;
+    	
     case 6:
 
 	v=0.1666666666666667E+0;
