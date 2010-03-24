@@ -180,6 +180,8 @@ public:
     void form_symmetry_information(double tol=1.0e-8);
 };
 
+typedef boost::shared_ptr<Molecule> SharedMolecule;
+
 }
 
 #endif
