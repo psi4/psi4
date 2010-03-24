@@ -236,7 +236,7 @@ void RKS::form_V()
 	double fun,val;
 	int nirreps = V_->nirreps();
 	int* opi = V_->rowspi();
-	double fudge = 1.0/(1.0*PI); 
+        double fudge = 1.0/(1.0*M_PI);
 	double check;
 	for (integrator_->reset(); !integrator_->isDone(); ) {
 		q = integrator_->getNextPoint();

@@ -226,12 +226,6 @@ enum special_grid {SG1, NONE};
 /*! \ingroup SCF */
 //! Declaration of 1/ln(2)
 const double INVLN2 = 1.0/log(2.0);
-/*! \ingroup SCF */
-//! Declaration of PI
-const double PI = 3.141592653589793115997963468544185161590576171875;
-
-
-
 
 /*! \ingroup SCF */
 //! Integration Points/Weights container class
