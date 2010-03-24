@@ -781,7 +781,17 @@ SimpleMatrix* Molecule::inertia_tensor()
     return tensor;
 }
 
-double Molecule::xyz(int atom, int _xyz)
+double& Molecule::xyz(int atom, int _xyz)
+{
+    if (_xyz == 0)
+        return atoms_[atom].x;
+    else if (_xyz == 1)
+        return atoms_[atom].y;
+    else
+        return atoms_[atom].z;
+}
+
+const double& Molecule::xyz(int atom, int _xyz) const
 {
     if (_xyz == 0)
         return atoms_[atom].x;

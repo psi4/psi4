@@ -104,7 +104,8 @@ public:
     Vector3 xyz(int atom) const { return Vector3(atoms_[atom].x, atoms_[atom].y, atoms_[atom].z); }
     Vector3 fxyz(int atom) const { return Vector3(full_atoms_[atom].x, full_atoms_[atom].y, full_atoms_[atom].z); }
     /// Returns x, y, or z component of 'atom'
-    double xyz(int atom, int _xyz);
+    double& xyz(int atom, int _xyz);
+    const double& xyz(int atom, int _xyz) const;
     /// Returns mass atom atom
     double mass(int atom) const;
     /// Returns label of atom
