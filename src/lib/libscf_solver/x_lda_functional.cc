@@ -24,7 +24,7 @@ double X_LDA_Functional::getValue(shared_ptr<Properties> prop)
 	double rho = 1.0*prop->getDensity();
 	if (rho<tol)
 		return 0.0;
-	double c = 3.0/8.0*pow(3.0,1.0/3.0)*pow(4.0,2.0/3.0)*pow(PI,-1.0/3.0);  
+        double c = 3.0/8.0*pow(3.0,1.0/3.0)*pow(4.0,2.0/3.0)*pow(M_PI,-1.0/3.0);
 	double val = -c*pow(rho,4.0/3.0);
 	return val;
 }
