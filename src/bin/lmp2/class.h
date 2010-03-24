@@ -182,7 +182,7 @@ class LMP2 {
 
     // Construct MO integrals from density-fitted 3-center quantities
     void direct_df_transformation();
-    void direct_df_transformation2();
+    void direct_df_transformation3();
 
     // These member functions read data from the checkpoint file
     int  get_nso();

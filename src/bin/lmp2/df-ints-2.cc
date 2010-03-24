@@ -147,10 +147,9 @@ void LMP2::direct_df_transformation2() {
   /* Build the "united pair domains" (Werner JCP 118, 8149 (2003) */
   /* This will only work for now, where we have assumed that all
      pairs are strong pairs.  This assumption will change, then
-     we may need to change this code --CDS 12/09
+     we may need to change this code 
   */
   int** uniteddomain = init_int_matrix(nocc, natom);
-  int** uniteddomain_len2 = init_int_matrix(nocc, natom);
   int* uniteddomain_len = init_int_array(nocc);
   int* fit_len = init_int_array(nocc);
   int* fit_atoms = init_int_array(nocc);
@@ -158,7 +157,7 @@ void LMP2::direct_df_transformation2() {
   for(i = 0; i < nocc; i++) {
     for(k = 0; k < natom; k++) {
       for(j = 0; j < nocc; j++) {
-        ij = INDEX(i, j);
+        ij = INDEX(i,j);
         ij = abs_ij_map[ij]; // map org ij to new ij
         if(pairdomain[ij][k] && uniteddomain[i][k] == 0) {
           uniteddomain[i][k] = 1;
