@@ -108,67 +108,69 @@ protected:
     int diis_enabled_;
 
 public:
-    // Exactly what their name says
+    /// Exactly what their name says
     vector<SharedSimpleMatrix> Dipole_;
     vector<SharedSimpleMatrix> Quadrupole_;
 
-    // Nuclear contributions
+    /// Nuclear contributions
     SimpleVector nuclear_dipole_contribution_;
     SimpleVector nuclear_quadrupole_contribution_;
 
-    // Formation of H is the same regardless of RHF, ROHF, UHF
+    /// Formation of H is the same regardless of RHF, ROHF, UHF
     void form_H();
 
-    // Formation of S^+1/2 and S^-1/2 are the same
+    /// Formation of S^+1/2 and S^-1/2 are the same
     void form_Shalf();
 
 
-    // Set the amount of information to print
+    /// Set the amount of information to print
     void set_print(const int n) {print_ = n;}
 
-    // The number of iterations needed to reach convergence
+    /// The number of iterations needed to reach convergence
     int iterations_needed() {return iterationsNeeded_;}
 
-    // The RMS error in the density
+    /// The RMS error in the density
     double rms_density_error() {return Drms_;}
 protected:
-    // Common initializer
+    /// Common initializer
     void common_init();
 
-    // Compute multipole integrals
+    /// Compute multipole integrals
     void form_multipole_integrals();
 
-    // Figure out how to occupy the orbitals in the absence of DOCC and SOCC
+    /// Figure out how to occupy the orbitals in the absence of DOCC and SOCC
     void find_occupation(Vector& evals);
 
-    // Determine how many core and virtual orbitals to freeze
+    /// Determine how many core and virtual orbitals to freeze
     int *compute_fcpi(int nfzc, Vector &eigvalues);
     int *compute_fvpi(int nfvc, Vector &eigvalues);
 
-    // Forms the _so2* mapping arrays and determines _pk_pairs
+    /// Forms the _so2* mapping arrays and determines _pk_pairs
     void form_indexing();
 
-    // Prints some opening information
+    /// Prints some opening information
     void print_header();
 
-    // The amout of information to print
+    /// The amout of information to print
     int print_;
 
-    // The number of electrons
+    /// The number of electrons
     int nElec_;
 
-    // The charge of the system
+    /// The charge of the system
     int charge_;
 
-    // The multiplicity of the systems (specified as 2 Ms + 1)
+    /// The multiplicity of the systems (specified as 2 Ms + 1)
     int multiplicity_;
 
-    // The number of iterations need to reach convergence
+    /// The number of iterations need to reach convergence
     int iterationsNeeded_;
 
-    // Whether to add in an external potential to the fock matrix
+    /// Whether to add in an external potential to the fock matrix
     bool addExternalPotential_;
 
+    /// Compute energy for the iteration.
+    virtual double compute_E() = 0;
 
     void form_B();
     void write_B();
