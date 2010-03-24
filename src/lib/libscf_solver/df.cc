@@ -25,8 +25,6 @@
 #include <libmints/integral.h>
 #include <libmints/molecule.h>
 
-
-
 using namespace std;
 using namespace psi;
 
@@ -51,32 +49,32 @@ void HF::form_B()
     //Size of the exchange tensor
     unsigned long memC = norbs*ndocc*(long)ri_nbf_;
 
-	string storage_type;
-	storage_type = options_.get_str("RI_STORAGE");
-	
-	if (storage_type == "DOUBLE_IN_CORE")
-		df_storage_ = double_full;
-	else if (storage_type == "IN_CORE")
-		df_storage_ = full;
-	else if (storage_type == "FLIP_B_DISK")
-		df_storage_ = flip_B_disk;
-	else if (storage_type == "K_IN_CORE")
-		df_storage_ = k_incore;	
-	else if (storage_type == "DISK")
-		df_storage_ = disk;
-	else if (storage_type == "DEFAULT")
-	{
+    string storage_type;
+    storage_type = options_.get_str("RI_STORAGE");
+
+    if (storage_type == "DOUBLE_IN_CORE")
+        df_storage_ = double_full;
+    else if (storage_type == "IN_CORE")
+        df_storage_ = full;
+    else if (storage_type == "FLIP_B_DISK")
+        df_storage_ = flip_B_disk;
+    else if (storage_type == "K_IN_CORE")
+        df_storage_ = k_incore;
+    else if (storage_type == "DISK")
+        df_storage_ = disk;
+    else if (storage_type == "DEFAULT")
+    {
     	//set df_storage_ semi-heuristically based on available memory
     	if (((long)((memA+memA)*(1.0+MEMORY_SAFETY_FACTOR)))<(memory_/sizeof(double)))
-        	df_storage_ = double_full; //Double in-core, including both (ab|P) tensors
+            df_storage_ = double_full; //Double in-core, including both (ab|P) tensors
     	else if (((long)((memA+memC)*(1.0+MEMORY_SAFETY_FACTOR)))<(memory_/sizeof(double)))
-        	df_storage_ = full; //Full in-core, including both (ab|P) tensors
+            df_storage_ = full; //Full in-core, including both (ab|P) tensors
         else if (((long)((memA)*(1.0+MEMORY_SAFETY_FACTOR)))<(memory_/sizeof(double)))
-        	df_storage_ = flip_B_disk; //Transpose B using disk scratch and core, leave it on disk
+            df_storage_ = flip_B_disk; //Transpose B using disk scratch and core, leave it on disk
     	else if (((long)((memC)*(1.0+MEMORY_SAFETY_FACTOR)))<(memory_/sizeof(double)))
-       		df_storage_ = k_incore; //K only in-core
+            df_storage_ = k_incore; //K only in-core
     	else
-        	df_storage_ = disk; //Disk
+            df_storage_ = disk; //Disk
     }	
 
     if (df_storage_ == double_full)
@@ -90,7 +88,7 @@ void HF::form_B()
     else if (df_storage_ == disk)
         fprintf(outfile,"\n  Density Fitting Algorithm proceeding on Disk\n"); 
     fflush(outfile);
-   
+
     //It takes a lot of work to get a null basis with Psi4 
     shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
     
@@ -105,7 +103,7 @@ void HF::form_B()
     // J^{-1/2}
     double **J_mhalf = block_matrix(ri_nbf_, ri_nbf_);
     
-timer_on("Form J Matrix;");
+    timer_on("Form J Matrix;");
     // J_{MN} = (0M|N0)
     int index = 0;
 
@@ -132,8 +130,8 @@ timer_on("Form J Matrix;");
     }
     //fprintf(outfile,"\nJ:\n"); fflush(outfile);
     //print_mat(J,ri_nbf_,ri_nbf_,outfile);
-timer_off("Form J Matrix;");
-timer_on("Form J^-1/2;");
+    timer_off("Form J Matrix;");
+    timer_on("Form J^-1/2;");
 
     // Form J^-1/2
     // First, diagonalize J
@@ -169,15 +167,15 @@ timer_on("Form J^-1/2;");
 
     // J_mhalf = J_copy(T) * J
     C_DGEMM('t','n',ri_nbf_,ri_nbf_,ri_nbf_,1.0,
-        J_copy[0],ri_nbf_,J[0],ri_nbf_,0.0,J_mhalf[0],ri_nbf_);
+            J_copy[0],ri_nbf_,J[0],ri_nbf_,0.0,J_mhalf[0],ri_nbf_);
 
     free_block(J);
     free_block(J_copy);
-timer_off("Form J^-1/2;");
+    timer_off("Form J^-1/2;");
 
     //fprintf(outfile,"\nJmhalf:\n"); fflush(outfile);
     //print_mat(J_mhalf,ri_nbf_,ri_nbf_,outfile);
-timer_on("Overall (B|mn)");
+    timer_on("Overall (B|mn)");
     if (df_storage_ == double_full)
     {
     	IntegralFactory rifactory(basisset_, basisset_, ribasis_, zero);
@@ -191,10 +189,10 @@ timer_on("Overall (B|mn)");
             for (NU=0; NU <= MU; ++NU) {
                 numnu = basisset_->shell(NU)->nfunction();
                 for (Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
-            		numPshell = ribasis_->shell(Pshell)->nfunction();
-timer_on("(B|mn) Integrals");
+                    numPshell = ribasis_->shell(Pshell)->nfunction();
+                    timer_on("(B|mn) Integrals");
                     eri->compute_shell(MU, NU, Pshell, 0);
-timer_off("(B|mn) Integrals");
+                    timer_off("(B|mn) Integrals");
                     for (mu=0, index=0; mu < nummu; ++mu) {
                         omu = basisset_->shell(MU)->function_index() + mu;
                         for (nu=0; nu < numnu; ++nu) {
@@ -202,7 +200,7 @@ timer_off("(B|mn) Integrals");
                             for (P=0; P < numPshell; ++P, ++index) {
                             	if(omu>=onu)
                             	{	
-                        			PHI = ribasis_->shell(Pshell)->function_index() + P;
+                                    PHI = ribasis_->shell(Pshell)->function_index() + P;
                                     A_ia_P[PHI][ioff[omu]+onu]= buffer[index];
                                 }
                             } 
@@ -213,10 +211,10 @@ timer_off("(B|mn) Integrals");
             // now we've gone through all P, mu, nu for a given Pshell
         } // end loop over P shells; done with forming MO basis (P|ia)'s
         B_ia_P_ = block_matrix(ri_nbf_,basisset_->nbf()*(basisset_->nbf()+1)/2); 
-timer_on("(B|mn) Transform");
+        timer_on("(B|mn) Transform");
         C_DGEMM('N','N',ri_nbf_,basisset_->nbf()*(basisset_->nbf()+1)/2,ri_nbf_,1.0, J_mhalf[0], ri_nbf_, A_ia_P[0], basisset_->nbf()*(basisset_->nbf()+1)/2,
-             0.0, B_ia_P_[0], basisset_->nbf()*(basisset_->nbf()+1)/2);
-timer_off("(B|mn) Transform");
+                0.0, B_ia_P_[0], basisset_->nbf()*(basisset_->nbf()+1)/2);
+        timer_off("(B|mn) Transform");
         
 	free_block(A_ia_P);
         //print_mat(B_ia_P_, ri_nbf_,norbs*(norbs+1)/2 ,outfile);
@@ -234,10 +232,10 @@ timer_off("(B|mn) Transform");
             for (NU=0; NU <= MU; ++NU) {
                 numnu = basisset_->shell(NU)->nfunction();
                 for (Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
-            		numPshell = ribasis_->shell(Pshell)->nfunction();
-timer_on("(B|mn) Integrals");
+                    numPshell = ribasis_->shell(Pshell)->nfunction();
+                    timer_on("(B|mn) Integrals");
                     eri->compute_shell(MU, NU, Pshell, 0);
-timer_off("(B|mn) Integrals");
+                    timer_off("(B|mn) Integrals");
                     for (mu=0, index=0; mu < nummu; ++mu) {
                         omu = basisset_->shell(MU)->function_index() + mu;
                         for (nu=0; nu < numnu; ++nu) {
@@ -245,7 +243,7 @@ timer_off("(B|mn) Integrals");
                             for (P=0; P < numPshell; ++P, ++index) {
                             	if(omu>=onu)
                             	{	
-                        			PHI = ribasis_->shell(Pshell)->function_index() + P;
+                                    PHI = ribasis_->shell(Pshell)->function_index() + P;
                                     B_ia_P_[PHI][ioff[omu]+onu]= buffer[index];
                                 }
                             } 
@@ -262,50 +260,50 @@ timer_off("(B|mn) Integrals");
 	int unit = ri_nbf_; //May want to make this smaller for memory!!
 	for (int index = 0; index<norbs*(norbs+1)/2; index+=ri_nbf_)
 	{
-		int cols = unit;
-		if (index+unit>=norbs*(norbs+1)/2) {
-			cols = norbs*(norbs+1)/2-index;
-			if (allocated) {
-				free_block(Temp1);
-				free_block(Temp2);
-				allocated = false;
-			}
-		}
+            int cols = unit;
+            if (index+unit>=norbs*(norbs+1)/2) {
+                cols = norbs*(norbs+1)/2-index;
+                if (allocated) {
+                    free_block(Temp1);
+                    free_block(Temp2);
+                    allocated = false;
+                }
+            }
 
-		if (!allocated) {
-			Temp1 = block_matrix(ri_nbf_,cols);
-			Temp2 = block_matrix(ri_nbf_,cols);
-		}
-		for (int r = 0; r<ri_nbf_; r++)
-			for (int c = index; c<index+cols; c++)
-				Temp1[r][c-index] = B_ia_P_[r][c];
+            if (!allocated) {
+                Temp1 = block_matrix(ri_nbf_,cols);
+                Temp2 = block_matrix(ri_nbf_,cols);
+            }
+            for (int r = 0; r<ri_nbf_; r++)
+                for (int c = index; c<index+cols; c++)
+                    Temp1[r][c-index] = B_ia_P_[r][c];
 
-timer_on("(B|mn) Transform");
+            timer_on("(B|mn) Transform");
 
-	       C_DGEMM('N','N',ri_nbf_,cols,ri_nbf_,1.0, J_mhalf[0], ri_nbf_, Temp1[0], cols,0.0, Temp2[0],cols);
-timer_off("(B|mn) Transform");
+            C_DGEMM('N','N',ri_nbf_,cols,ri_nbf_,1.0, J_mhalf[0], ri_nbf_, Temp1[0], cols,0.0, Temp2[0],cols);
+            timer_off("(B|mn) Transform");
 
-		for (int r = 0; r<ri_nbf_; r++)
-			for (int c = index; c<index+cols; c++)
-				 B_ia_P_[r][c] = Temp2[r][c-index];
+            for (int r = 0; r<ri_nbf_; r++)
+                for (int c = index; c<index+cols; c++)
+                    B_ia_P_[r][c] = Temp2[r][c-index];
 
-			
+
 	}
 	free_block(Temp1);
 	free_block(Temp2);
 
         if (df_storage_ == flip_B_disk)
         {
-        	write_B();
-        	free_block(B_ia_P_);
-        	ri_pair_nu_ = init_int_array(norbs*(norbs+1)/2);
-        	ri_pair_mu_ = init_int_array(norbs*(norbs+1)/2);
-        	for (int i=0, ij=0; i<norbs; i++)
-        		for (int j=0; j<=i; j++, ij++)
-        		{
-        			ri_pair_mu_[ij] = i;
-        			ri_pair_nu_[ij] = j;
-        		}
+            write_B();
+            free_block(B_ia_P_);
+            ri_pair_nu_ = init_int_array(norbs*(norbs+1)/2);
+            ri_pair_mu_ = init_int_array(norbs*(norbs+1)/2);
+            for (int i=0, ij=0; i<norbs; i++)
+                for (int j=0; j<=i; j++, ij++)
+                {
+                ri_pair_mu_[ij] = i;
+                ri_pair_nu_[ij] = j;
+            }
         }
     	
         //print_mat(B_ia_P_, ri_nbf_,norbs*(norbs+1)/2 ,outfile);
@@ -346,10 +344,10 @@ timer_off("(B|mn) Transform");
 
                 for (Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
                     numPshell = ribasis_->shell(Pshell)->nfunction();
-timer_on("(B|mn) integrals");
+                    timer_on("(B|mn) integrals");
 
                     eri->compute_shell(Pshell, 0, MU, NU);
-timer_off("(B|mn) integrals");
+                    timer_off("(B|mn) integrals");
 
                     for (P=0, index=0; P < numPshell; ++P) {
                         PHI = ribasis_->shell(Pshell)->function_index() + P;
@@ -375,16 +373,16 @@ timer_off("(B|mn) integrals");
                 //fprintf(outfile,"\n  Finished Computing Quartet (%d %d| P)",MU,NU); fflush(outfile);
                 //print_mat(storage,ri_nbf_,npairs,outfile);
 	        for (int c = 0; c<npairs; c++) {	
-timer_on("(B|mn) Transform");
-			for (int r=0; r<ri_nbf_; r++)
-				Temp2[r] = Temp1[r][c];	
-	        	C_DGEMV('N',ri_nbf_,ri_nbf_,1.0, J_mhalf[0], ri_nbf_, Temp2,1,0.0, Temp3,1);
-timer_off("(B|mn) Transform");
+                    timer_on("(B|mn) Transform");
+                    for (int r=0; r<ri_nbf_; r++)
+                        Temp2[r] = Temp1[r][c];
+                    C_DGEMV('N',ri_nbf_,ri_nbf_,1.0, J_mhalf[0], ri_nbf_, Temp2,1,0.0, Temp3,1);
+                    timer_off("(B|mn) Transform");
 
-timer_on("(B|mn) disk");
-               		psio_->write(PSIF_DFSCF_BJI,"BJ Three-Index Integrals",(char *) Temp3,sizeof(double)*ri_nbf_,next_PSIF_DFSCF_BJI,&next_PSIF_DFSCF_BJI);
-timer_off("(B|mn) disk");
-			
+                    timer_on("(B|mn) disk");
+                    psio_->write(PSIF_DFSCF_BJI,"BJ Three-Index Integrals",(char *) Temp3,sizeof(double)*ri_nbf_,next_PSIF_DFSCF_BJI,&next_PSIF_DFSCF_BJI);
+                    timer_off("(B|mn) disk");
+
 		}
 		
                 //fprintf(outfile,"\n  Finished Writing Quartet (%d %d| P)\n",MU,NU); fflush(outfile);
@@ -396,7 +394,7 @@ timer_off("(B|mn) disk");
 	free(Temp3);
         //fprintf(outfile,"\n  Through B on disk."); fflush(outfile);
         psio_->close(PSIF_DFSCF_BJI,1);
-timer_on("(B|mn) restripe");
+        timer_on("(B|mn) restripe");
         
     	//RESTRIPE
         psio_->open(PSIF_DFSCF_BJI,PSIO_OPEN_OLD);
@@ -406,7 +404,7 @@ timer_on("(B|mn) restripe");
 	
 	double *Temp = init_array(norbs*(norbs+1)/2);
 	for (int Q = 0; Q < ri_nbf_; Q++)
-		psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(Temp[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+            psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(Temp[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
 	free(Temp);	
 
         int max_cols = (memory_/sizeof(double))/((1.0+MEMORY_SAFETY_FACTOR)*ri_nbf_);
@@ -448,11 +446,11 @@ timer_on("(B|mn) restripe");
         free_block(buffer2);
         psio_->close(PSIF_DFSCF_BJI,0);
         psio_->close(PSIF_DFSCF_BJ,1);
-timer_off("(B|mn) restripe");
+        timer_off("(B|mn) restripe");
 
         //fprintf(outfile,"\n  BJ Restriped on disk.\n"); fflush(outfile);
     }
-timer_off("Overall (B|mn)");
+    timer_off("Overall (B|mn)");
 
 }
 void HF::write_B()
@@ -465,8 +463,8 @@ void HF::write_B()
 }
 void HF::free_B()
 {
-	if (df_storage_ == full||df_storage_ == double_full)
-    		free(B_ia_P_);
+    if (df_storage_ == full||df_storage_ == double_full)
+        free(B_ia_P_);
     else 
     {
     	free(ri_pair_mu_);
@@ -475,7 +473,7 @@ void HF::free_B()
 }
 void RHF::form_G_from_RI()
 {
-timer_on("Overall G");
+    timer_on("Overall G");
     //Get norbs
     int norbs = basisset_->nbf();     
     //Zero the J matrix
@@ -501,7 +499,7 @@ timer_on("Overall G");
             DD[ij] = D_->get(0,ri_pair_mu_[ij],ri_pair_nu_[ij]); 
             if (ri_pair_mu_[ij] != ri_pair_nu_[ij])
                 DD[ij] *= 2.0;
-                //only A irrep at the moment!!
+            //only A irrep at the moment!!
         }
     }
     int ndocc = doccpi_[0];
@@ -509,7 +507,7 @@ timer_on("Overall G");
     for (int i=0; i<norbs; i++) {
         for (int j=0; j<ndocc; j++)
             Cocc[j][i] = C_->get(0,i,j);
-            //only A irrep at the moment!!
+        //only A irrep at the moment!!
     }
     
 
@@ -523,27 +521,27 @@ timer_on("Overall G");
             double *J = init_array(norbs*(norbs+1)/2);
             //DGEMV -> L:
             //L_Q = (Q|ls)*D_{ls}
-timer_on("J DDOT");
+            timer_on("J DDOT");
             C_DGEMV('N',ri_nbf_,norbs*(norbs+1)/2,1.0,B_ia_P_[0],norbs*(norbs+1)/2,DD,1,0.0,L,1);
-timer_off("J DDOT");
+            timer_off("J DDOT");
             //DGEMV -> J:
             //J_{mn} = L_Q(Q|mn)
-timer_on("J DAXPY");
+            timer_on("J DAXPY");
             C_DGEMV('T',ri_nbf_,norbs*(norbs+1)/2,1.0,B_ia_P_[0],norbs*(norbs+1)/2,L,1,0.0,J,1);
-timer_off("J DAXPY");
+            timer_off("J DAXPY");
             //Put everything in J_
             for (int i = 0, ij = 0; i < norbs; i++)
                 for (int j = 0; j<=i; j++, ij++) {
-                    J_->set(0,i,j,J[ij]);
-                    J_->set(0,j,i,J[ij]);
-                }
+                J_->set(0,i,j,J[ij]);
+                J_->set(0,j,i,J[ij]);
+            }
 
             free(L);
             free(J);
             //J_->print(outfile);
         }
         if (K_is_required_) {
-timer_on("Form E");
+            timer_on("Form E");
             /* EXCHANGE PART */
             //E exchange matrix
             double** E = block_matrix(norbs, ndocc*ri_nbf_);
@@ -572,21 +570,21 @@ timer_on("Form E");
                     }
                 }
             }
-timer_off("Form E");
+            timer_off("Form E");
             free_block(Temp);
             free_block(QS);
-timer_on("E DGEMM");
+            timer_on("E DGEMM");
 
             //K_{mn} = E_{im}^QE_{in}^Q
             C_DGEMM('N','T',norbs,norbs,ri_nbf_*ndocc,1.0,E[0],ri_nbf_*ndocc,E[0],ri_nbf_*ndocc, 0.0, K[0], norbs);
             free_block(E);
             for (int i = 0; i < norbs; i++)
                 for (int j = 0; j<=i; j++) {
-                    K_->set(0,j,i,K[i][j]);
-                    K_->set(0,i,j,K[i][j]);
+                K_->set(0,j,i,K[i][j]);
+                K_->set(0,i,j,K[i][j]);
             }
             free_block(K);
-timer_off("E DGEMM");
+            timer_off("E DGEMM");
             //K_->print(outfile);
         }
     }
@@ -601,9 +599,9 @@ timer_off("E DGEMM");
         double *in_buffer = init_array(max_rows*norbs*(norbs+1)/2);
         //Transformed integrals are stored in PSIF_DFSCF_BJ
         //Which better exist at this point
-timer_on("Open B");
+        timer_on("Open B");
         psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
-timer_off("Open B");
+        timer_off("Open B");
         psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
 
         //Coulomb convolution vector, done element by element
@@ -628,23 +626,23 @@ timer_off("Open B");
 	    if (row+max_rows>ri_nbf_)
 		current_rows = ri_nbf_-row;
             //Read max_rows of the (B|mn) tensor in, place in in_buffer
-timer_on("Read B");
+            timer_on("Read B");
             psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2*current_rows,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
-timer_off("Read B");
+            timer_off("Read B");
             for (int Q = row; Q< row+current_rows; Q++) {
 		int offset = (Q-row)*norbs*(norbs+1)/2;
                 if (J_is_required_) {
                     /* COULOMB PART */
                     //L_Q = (Q|ls)D_{ls}
-timer_on("J DDOT");
+                    timer_on("J DDOT");
                     L = C_DDOT(norbs*(norbs+1)/2,&in_buffer[offset],1,DD,1);
-timer_off("J DDOT");
+                    timer_off("J DDOT");
                     //J_{mn} += (Q|mn)L_Q
-timer_on("J DAXPY");
+                    timer_on("J DAXPY");
                     C_DAXPY(norbs*(norbs+1)/2,L,&in_buffer[offset],1,J,1);
-timer_off("J DAXPY");
+                    timer_off("J DAXPY");
                 } 
-timer_on("Form E");
+                timer_on("Form E");
                 if (K_is_required_) {
                     /* EXCHANGE TENSOR */
                     for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
@@ -659,35 +657,35 @@ timer_on("Form E");
                         }
                     }
                 }
-timer_off("Form E");
+                timer_off("Form E");
             }
         }
         free(in_buffer);
         psio_->close(PSIF_DFSCF_BJ,1);
 
-timer_on("E DGEMM");
+        timer_on("E DGEMM");
         /* Exchange Tensor DGEMM */
         if (K_is_required_) {
             K = block_matrix(norbs,norbs);
             C_DGEMM('N','T',norbs,norbs,ri_nbf_*ndocc,1.0,E[0],ri_nbf_*ndocc,E[0],ri_nbf_*ndocc, 0.0, K[0], norbs);
             free_block(E);
         }
-timer_off("E DGEMM");
+        timer_off("E DGEMM");
 
         /* Form J and K */
         if (J_is_required_) {
             for (int i = 0, ij = 0; i < norbs; i++)
                 for (int j = 0; j<=i; j++, ij++) {
-                    J_->set(0,ri_pair_mu_[ij],ri_pair_nu_[ij],J[ij]);
-                    J_->set(0,ri_pair_nu_[ij],ri_pair_mu_[ij],J[ij]);
-                }
+                J_->set(0,ri_pair_mu_[ij],ri_pair_nu_[ij],J[ij]);
+                J_->set(0,ri_pair_nu_[ij],ri_pair_mu_[ij],J[ij]);
+            }
         }
         if (K_is_required_) {
             for (int i = 0; i < norbs; i++)
                 for (int j = 0; j <=i; j++) {
-                    K_->set(0,i,j,K[i][j]);
-                    K_->set(0,j,i,K[i][j]);
-                }
+                K_->set(0,i,j,K[i][j]);
+                K_->set(0,j,i,K[i][j]);
+            }
         }
 
         /* Frees */
@@ -710,9 +708,9 @@ timer_off("E DGEMM");
         double *in_buffer = init_array(max_rows*norbs*(norbs+1)/2);
         //Transformed integrals are stored in PSIF_DFSCF_BJ
         //Which better exist at this point
-timer_on("Open B");
+        timer_on("Open B");
         psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
-timer_off("Open B");
+        timer_off("Open B");
         psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
         
         psio_address next_PSIF_DFSCF_K;
@@ -744,27 +742,27 @@ timer_off("Open B");
 	    if (row+max_rows>ri_nbf_)
 		current_rows = ri_nbf_-row;
             //Read a max_rows of the (B|mn) tensor in, place in in_buffer
-timer_on("Read B");
+            timer_on("Read B");
             psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2*current_rows,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
-timer_off("Read B");
+            timer_off("Read B");
             for (int Q = row; Q< row+current_rows; Q++) {
 		//offset in three-index tensor
 		int offset_B = (Q-row)*norbs*(norbs+1)/2;
 		//offset in E tensor
 		int offset_E = (Q-row)*norbs*ndocc;
-    
+
                 if (J_is_required_) {
                     /* COULOMB PART */
                     //L_Q = (Q|ls)D_{ls}
-timer_on("J DDOT");
+                    timer_on("J DDOT");
                     L = C_DDOT(norbs*(norbs+1)/2,&in_buffer[offset_B],1,DD,1);
-timer_off("J DDOT");
+                    timer_off("J DDOT");
                     //J_{mn} += (Q|mn)L_Q
-timer_on("J DAPXY");
+                    timer_on("J DAPXY");
                     C_DAXPY(norbs*(norbs+1)/2,L,&in_buffer[offset_B],1,J,1);
-timer_off("J DAPXY");
+                    timer_off("J DAPXY");
                 } 
-timer_on("Form E");
+                timer_on("Form E");
                 if (K_is_required_) {
                     /* EXCHANGE TENSOR */
                     memset(&out_buffer[offset_E],0,norbs*ndocc*sizeof(double));
@@ -780,14 +778,14 @@ timer_on("Form E");
                         }
                     }
                 }
-timer_off("Form E");
+                timer_off("Form E");
             }
             if (K_is_required_) {
-timer_on("Form E");
-timer_on("Write E");
+                timer_on("Form E");
+                timer_on("Write E");
                 psio_->write(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(out_buffer[0]),sizeof(double)*norbs*ndocc*current_rows,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
-timer_off("Write E");
-timer_off("Form E");
+                timer_off("Write E");
+                timer_off("Form E");
             }
         }
         free(in_buffer);
@@ -796,7 +794,7 @@ timer_off("Form E");
             free(out_buffer);
             psio_->close(PSIF_DFSCF_K,1);
         }
-timer_on("E DGEMM");
+        timer_on("E DGEMM");
 
         /* Exchange Tensor DGEMM */
         if (K_is_required_) {
@@ -816,38 +814,38 @@ timer_on("E DGEMM");
 	        if (row+max_rows>ri_nbf_)
 		    current_rows = ri_nbf_-row;
                 //Read max_rows of the exchange tensor in, place in in_buffer
-timer_on("E Read");
+                timer_on("E Read");
                 psio_->read(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(in_buffer[0]),sizeof(double)*norbs*ndocc*current_rows,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
-timer_off("E Read");
+                timer_off("E Read");
                 for (int Q = row; Q< row+current_rows; Q++) {
 		    int offset = (Q-row)*norbs*ndocc;
 
                     for (int m = 0; m<norbs; m++)
                         for (int n = 0; n<=m; n++)
                             for (int i = 0; i<ndocc; i++) {
-                                K[m][n]+=in_buffer[m*ndocc+i+offset]*in_buffer[n*ndocc+i+offset];
-                                K[n][m] = K[m][n];
-                            }
+                        K[m][n]+=in_buffer[m*ndocc+i+offset]*in_buffer[n*ndocc+i+offset];
+                        K[n][m] = K[m][n];
+                    }
                 }
             }
             free(in_buffer);
             psio_->close(PSIF_DFSCF_K,0);
         } 
-timer_off("E DGEMM");
+        timer_off("E DGEMM");
         /* Form J and K */
         if (J_is_required_) {
             for (int i = 0, ij = 0; i < norbs; i++)
                 for (int j = 0; j<=i; j++, ij++) {
-                    J_->set(0,ri_pair_mu_[ij],ri_pair_nu_[ij],J[ij]);
-                    J_->set(0,ri_pair_nu_[ij],ri_pair_mu_[ij],J[ij]);
-                }
+                J_->set(0,ri_pair_mu_[ij],ri_pair_nu_[ij],J[ij]);
+                J_->set(0,ri_pair_nu_[ij],ri_pair_mu_[ij],J[ij]);
+            }
         }
         if (K_is_required_) {
             for (int i = 0; i < norbs; i++)
                 for (int j = 0; j <=i; j++) {
-                    K_->set(0,i,j,K[i][j]);
-                    K_->set(0,j,i,K[i][j]);
-                }
+                K_->set(0,i,j,K[i][j]);
+                K_->set(0,j,i,K[i][j]);
+            }
         }
 
         /* Frees */
@@ -874,16 +872,16 @@ timer_off("E DGEMM");
     G_->add(K_);
     G_->scale(-1.0);
     //G_->print(outfile);
-timer_off("Overall G");
+    timer_off("Overall G");
 
 }
 void RHF::form_J_from_RI()
 {
-	J_->zero();
-	int norbs = basisset_->nbf(); 
-	double** D = D_->to_block_matrix();
-	//print_mat(D, norbs, norbs,outfile);
-	
+    J_->zero();
+    int norbs = basisset_->nbf();
+    double** D = D_->to_block_matrix();
+    //print_mat(D, norbs, norbs,outfile);
+
     double **J = block_matrix(norbs, norbs);
 
     double* D2 = init_array(norbs*(norbs+1)/2);
@@ -972,10 +970,10 @@ void RHF::form_J_from_RI()
 }
 void RHF::form_K_from_RI()
 {
-	K_->zero();
-	int norbs = basisset_->nbf(); 
-	int ndocc = doccpi_[0];
-	double **K = block_matrix(norbs, norbs);
+    K_->zero();
+    int norbs = basisset_->nbf();
+    int ndocc = doccpi_[0];
+    double **K = block_matrix(norbs, norbs);
     double** Cocc = block_matrix(ndocc,norbs);
     for (int i=0; i<norbs; i++) {
         for (int j=0; j<ndocc; j++)
@@ -1040,7 +1038,7 @@ void RHF::form_K_from_RI()
 
         psio_->close(PSIF_DFSCF_BJ,1);
         free(in_buffer);
-    //B_ia_P in disk, B_im_Q in disk
+        //B_ia_P in disk, B_im_Q in disk
     } else {
         psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
         psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
@@ -1096,8 +1094,8 @@ void RHF::form_K_from_RI()
 
             for (int m = 0; m<norbs; m++)
                 for (int n = 0; n<=m; n++)
-                for (int i = 0; i<ndocc; i++)
-            {
+                    for (int i = 0; i<ndocc; i++)
+                    {
                 K[m][n]+=in_buffer[m*ndocc+i]*in_buffer[n*ndocc+i];
                 K[n][m] = K[m][n];
             }
@@ -1123,63 +1121,63 @@ void RHF::form_K_from_RI()
 }
 void UHF::form_G_from_RI()
 {
-	int norbs = basisset_->nbf(); 
-	int nalpha = nalphapi_[0];
-	int nbeta = nbetapi_[0];
-	
+    int norbs = basisset_->nbf();
+    int nalpha = nalphapi_[0];
+    int nbeta = nbetapi_[0];
+
     double** Da = Da_->to_block_matrix();
-	double** Db = Db_->to_block_matrix();
+    double** Db = Db_->to_block_matrix();
 
     Ga_->zero();	
-	Gb_->zero();
+    Gb_->zero();
     
-	//fprintf(outfile,"  Arrival in form G from RI \n");fflush(outfile);
+    //fprintf(outfile,"  Arrival in form G from RI \n");fflush(outfile);
 
     double **J = block_matrix(norbs, norbs);
     
     double* D2 = init_array(norbs*(norbs+1)/2);
     for (int i = 0, ij = 0; i<norbs; i++) {
-      for (int j = 0; j<=i; ij++, j++)
-      {
-          D2[ij] = (i==j?1.0:2.0)*Da[i][j];
-		  D2[ij] += (i==j?1.0:2.0)*Db[i][j];
-      }
+        for (int j = 0; j<=i; ij++, j++)
+        {
+            D2[ij] = (i==j?1.0:2.0)*Da[i][j];
+            D2[ij] += (i==j?1.0:2.0)*Db[i][j];
+        }
     }
-   
+
     double *L = init_array(ri_nbf_);
     double *Gtemp = init_array(norbs*(norbs+1)/2);
     
     //B_ia_P_ in core
     if (df_storage_ == full||df_storage_ == double_full)
     {                
-      
-      for (int i=0; i<ri_nbf_; i++) {
-          L[i]=C_DDOT(norbs*(norbs+1)/2,D2,1,B_ia_P_[i],1);
-      }
-    
-      
-      C_DGEMM('T','N',1,norbs*(norbs+1)/2,ri_nbf_,1.0,L,1,B_ia_P_[0],norbs*(norbs+1)/2, 0.0, Gtemp, norbs*(norbs+1)/2);    
-		free(D2);
+
+        for (int i=0; i<ri_nbf_; i++) {
+            L[i]=C_DDOT(norbs*(norbs+1)/2,D2,1,B_ia_P_[i],1);
+        }
+
+
+        C_DGEMM('T','N',1,norbs*(norbs+1)/2,ri_nbf_,1.0,L,1,B_ia_P_[0],norbs*(norbs+1)/2, 0.0, Gtemp, norbs*(norbs+1)/2);
+        free(D2);
     } 
     //B_ia_P_ on disk
     else 
     {
     	double *DD = init_array(norbs*(norbs+1)/2);
     	for (int ij = 0; ij<norbs*(norbs+1)/2; ij++)
-		{
-    		DD[ij] = D2[ioff[ri_pair_mu_[ij]]+ri_pair_nu_[ij]];
-			//DD[ij] += D2[ioff[ri_pair_mu_[ij]]+ri_pair_nu_[ij]];
-		}
+        {
+            DD[ij] = D2[ioff[ri_pair_mu_[ij]]+ri_pair_nu_[ij]];
+            //DD[ij] += D2[ioff[ri_pair_mu_[ij]]+ri_pair_nu_[ij]];
+        }
     	free(D2);
     	
     	psio_open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
     	psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
     	double *in_buffer = init_array(norbs*(norbs+1)/2);
     	for (int i=0; i<ri_nbf_; i++) {
-    			int errcode = psio_read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
-          L[i]=C_DDOT(norbs*(norbs+1)/2,DD,1,in_buffer,1);
+            int errcode = psio_read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+            L[i]=C_DDOT(norbs*(norbs+1)/2,DD,1,in_buffer,1);
       	}
-      
+
     	free(DD);
     	psio_close(PSIF_DFSCF_BJ,1);
     	
@@ -1189,20 +1187,20 @@ void UHF::form_G_from_RI()
     	register double LL;
     	for (int Q = 0; Q<ri_nbf_; Q++)
     	{
-    		int errcode = psio_read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
-    		LL = L[Q];
-    		for (int ij = 0; ij<norbs*(norbs+1)/2; ij++)
-			{
-    			G2[ij]+=LL*in_buffer[ij];
-			}
+            int errcode = psio_read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+            LL = L[Q];
+            for (int ij = 0; ij<norbs*(norbs+1)/2; ij++)
+            {
+                G2[ij]+=LL*in_buffer[ij];
+            }
     	}
     	free(in_buffer);
     	psio_close(PSIF_DFSCF_BJ,1);
     	
     	for (int ij = 0; ij<norbs*(norbs+1)/2; ij++)
-		{
-    		Gtemp[ioff[ri_pair_mu_[ij]]+ri_pair_nu_[ij]] = G2[ij];
-		}
+        {
+            Gtemp[ioff[ri_pair_mu_[ij]]+ri_pair_nu_[ij]] = G2[ij];
+        }
     	free(G2);
     }
     
@@ -1214,17 +1212,17 @@ void UHF::form_G_from_RI()
             J[i][j] = Gtemp[ij];
             J[j][i] = Gtemp[ij];
         }
-      }
+    }
     //fprintf(outfile, "\nJ:\n");
     //print_mat(J,norbs,norbs,outfile); fflush(outfile);
-	free(Gtemp);
+    free(Gtemp);
     free_block(Da);
-	free_block(Db);
+    free_block(Db);
     
-	double** B_im_Q;
-	double** Cocc = block_matrix(nalpha,norbs);
+    double** B_im_Q;
+    double** Cocc = block_matrix(nalpha,norbs);
     
-	//First Pass: Ca_
+    //First Pass: Ca_
     for (int i=0; i<norbs; i++) {
         for (int j=0; j<nalpha; j++)
             Cocc[j][i] = Ca_->get(0,i,j);
@@ -1236,22 +1234,22 @@ void UHF::form_G_from_RI()
     	double** QS = block_matrix(ri_nbf_,norbs);
     	double** Temp = block_matrix(nalpha,ri_nbf_);
 
-   		//print_mat(B_ia_P_,ri_nbf_,norbs*(norbs+1)/2,outfile);
-   	 	//fprintf(outfile,"\nYo\n");
-   	 	//print_mat(Cocc,nalpha,norbs,outfile);
-   	 	for (int m = 0; m<norbs; m++) {
-    			for (int Q = 0; Q<ri_nbf_; Q++) {
-    				for (int s = 0; s<norbs; s++) {
-    					QS[Q][s] = B_ia_P_[Q][((s>=m)?ioff[s]+m:ioff[m]+s)];
-    				}
-    			}
-				//C_DGEMM('N','T',ndocc,ri_nbf_,norbs,1.0,Cocc[0],norbs,QS[0],norbs, 0.0, Temp[0], ri_nbf_);
-    			C_DGEMM('N','T',nalpha,ri_nbf_,norbs,1.0,Cocc[0],norbs,QS[0],norbs, 0.0, Temp[0], ri_nbf_);
-    			for (int Q = 0; Q<ri_nbf_; Q++) {
-    				for (int i = 0; i<nalpha; i++) {
-    					B_im_Q[m][i+Q*nalpha] = Temp[i][Q];
-    				}
-    			}
+        //print_mat(B_ia_P_,ri_nbf_,norbs*(norbs+1)/2,outfile);
+        //fprintf(outfile,"\nYo\n");
+        //print_mat(Cocc,nalpha,norbs,outfile);
+        for (int m = 0; m<norbs; m++) {
+            for (int Q = 0; Q<ri_nbf_; Q++) {
+                for (int s = 0; s<norbs; s++) {
+                    QS[Q][s] = B_ia_P_[Q][((s>=m)?ioff[s]+m:ioff[m]+s)];
+                }
+            }
+            //C_DGEMM('N','T',ndocc,ri_nbf_,norbs,1.0,Cocc[0],norbs,QS[0],norbs, 0.0, Temp[0], ri_nbf_);
+            C_DGEMM('N','T',nalpha,ri_nbf_,norbs,1.0,Cocc[0],norbs,QS[0],norbs, 0.0, Temp[0], ri_nbf_);
+            for (int Q = 0; Q<ri_nbf_; Q++) {
+                for (int i = 0; i<nalpha; i++) {
+                    B_im_Q[m][i+Q*nalpha] = Temp[i][Q];
+                }
+            }
     	}
     	free_block(QS);
     	free_block(Temp);
@@ -1261,7 +1259,7 @@ void UHF::form_G_from_RI()
     //B_ia_P in disk, B_im_Q in core
     else if (df_storage_ == flip_B_disk || df_storage_ == k_incore)
     {
-      double *in_buffer = init_array(norbs*(norbs+1)/2);
+        double *in_buffer = init_array(norbs*(norbs+1)/2);
     	psio_open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
     	psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
     	B_im_Q = block_matrix(norbs, nalpha*ri_nbf_);
@@ -1270,23 +1268,23 @@ void UHF::form_G_from_RI()
     	
     	for (int Q = 0; Q<ri_nbf_; Q++)
     	{
-    		int errcode = psio_read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
-    		for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
-    		{
-    			mu = ri_pair_mu_[ij];
-    			nu = ri_pair_nu_[ij];
-    			for (int i = 0; i<nalpha; i++)
-    			{
-    				B_im_Q[mu][i+Q*nalpha]+=Cocc[i][nu]*in_buffer[ij];
-    				if (mu != nu)
-    					B_im_Q[nu][i+Q*nalpha]+=Cocc[i][mu]*in_buffer[ij];
-    			}
-    		}
+            int errcode = psio_read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+            for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
+            {
+                mu = ri_pair_mu_[ij];
+                nu = ri_pair_nu_[ij];
+                for (int i = 0; i<nalpha; i++)
+                {
+                    B_im_Q[mu][i+Q*nalpha]+=Cocc[i][nu]*in_buffer[ij];
+                    if (mu != nu)
+                        B_im_Q[nu][i+Q*nalpha]+=Cocc[i][mu]*in_buffer[ij];
+                }
+            }
     	}
-    		
+
     	psio_close(PSIF_DFSCF_BJ,1);
     	free(in_buffer);
-    //B_ia_P in disk, B_im_Q in disk
+        //B_ia_P in disk, B_im_Q in disk
     } else {
     	psio_open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
     	psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
@@ -1299,22 +1297,22 @@ void UHF::form_G_from_RI()
     	int mu, nu;
     	for (int Q = 0; Q<ri_nbf_; Q++)
     	{
-    		for (int im = 0; im<nalpha*norbs; im++)
-    			out_buffer[im] = 0.0;
-    			
-    		int errcode = psio_read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
-    		for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
-    		{
-    			mu = ri_pair_mu_[ij];
-    			nu = ri_pair_nu_[ij];
-    			for (int i = 0; i<nalpha; i++)
-    			{
-    				out_buffer[mu*nalpha+i]+=Cocc[i][nu]*in_buffer[ij];
-    				if (mu != nu)
-    					out_buffer[nu*nalpha+i]+=Cocc[i][mu]*in_buffer[ij];
-    			}
-    		}
-    		errcode = psio_write(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(out_buffer[0]),sizeof(double)*norbs*nalpha,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
+            for (int im = 0; im<nalpha*norbs; im++)
+                out_buffer[im] = 0.0;
+
+            int errcode = psio_read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+            for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
+            {
+                mu = ri_pair_mu_[ij];
+                nu = ri_pair_nu_[ij];
+                for (int i = 0; i<nalpha; i++)
+                {
+                    out_buffer[mu*nalpha+i]+=Cocc[i][nu]*in_buffer[ij];
+                    if (mu != nu)
+                        out_buffer[nu*nalpha+i]+=Cocc[i][mu]*in_buffer[ij];
+                }
+            }
+            errcode = psio_write(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(out_buffer[0]),sizeof(double)*norbs*nalpha,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
     	}
     	
     	free(in_buffer);
@@ -1323,12 +1321,12 @@ void UHF::form_G_from_RI()
     	psio_close(PSIF_DFSCF_BJ,1);
     	psio_close(PSIF_DFSCF_K,1);
     }
-	free_block(Cocc);
+    free_block(Cocc);
     //fprintf(outfile,"  3-Index A Formed \n"); fflush(outfile);
- 	double **Ka = block_matrix(norbs, norbs);
- 		
- 	if (df_storage_ == full ||df_storage_ == double_full|| df_storage_ == flip_B_disk || df_storage_ == k_incore)
- 		{
+    double **Ka = block_matrix(norbs, norbs);
+
+    if (df_storage_ == full ||df_storage_ == double_full|| df_storage_ == flip_B_disk || df_storage_ == k_incore)
+    {
     	C_DGEMM('N','T',norbs,norbs,ri_nbf_*nalpha,1.0,B_im_Q[0],ri_nbf_*nalpha,B_im_Q[0],ri_nbf_*nalpha, 0.0, Ka[0], norbs);
     	free_block(B_im_Q);
     } else {
@@ -1339,181 +1337,181 @@ void UHF::form_G_from_RI()
     	
     	for (int Q = 0; Q<ri_nbf_; Q++)
     	{
-    		int errcode = psio_read(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(in_buffer[0]),sizeof(double)*norbs*nalpha,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
-    		
-    		for (int m = 0; m<norbs; m++)
-    			for (int n = 0; n<=m; n++)
-    				for (int i = 0; i<nalpha; i++)
-    				{
-    					Ka[m][n]+=in_buffer[m*nalpha+i]*in_buffer[n*nalpha+i];
-    					Ka[n][m] = Ka[m][n];
-    				}
+            int errcode = psio_read(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(in_buffer[0]),sizeof(double)*norbs*nalpha,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
+
+            for (int m = 0; m<norbs; m++)
+                for (int n = 0; n<=m; n++)
+                    for (int i = 0; i<nalpha; i++)
+                    {
+                Ka[m][n]+=in_buffer[m*nalpha+i]*in_buffer[n*nalpha+i];
+                Ka[n][m] = Ka[m][n];
+            }
     	}
     	
     	free(in_buffer);
     	psio_close(PSIF_DFSCF_K,0);
     }
-	//fprintf(outfile,"  3-Index A Used \n"); fflush(outfile);
+    //fprintf(outfile,"  3-Index A Used \n"); fflush(outfile);
 
-	//Second Pass: Cb_
-	double **Kb; //Has to be defined outside the no work group
-	if (nbeta_ > 0)
-	{//Do work! 
+    //Second Pass: Cb_
+    double **Kb; //Has to be defined outside the no work group
+    if (nbeta_ > 0)
+    {//Do work!
 
 	
 	Cocc = block_matrix(nbeta_,norbs);
 	for (int i=0; i<norbs; i++) {
-        for (int j=0; j<nbeta_; j++)
-            Cocc[j][i] = Cb_->get(0,i,j);
-    }
-    
-    //B_ia_P in core, B_im_Q in core
-    if (df_storage_ == full||df_storage_ == double_full)
-    {
-    	B_im_Q = block_matrix(norbs, nbeta_*ri_nbf_);
-    	double** QS = block_matrix(ri_nbf_,norbs);
-    	double** Temp = block_matrix(nbeta_,ri_nbf_);
+            for (int j=0; j<nbeta_; j++)
+                Cocc[j][i] = Cb_->get(0,i,j);
+        }
 
-   	 //print_mat(B_ia_P_,ri_nbf_,norbs*(norbs+1)/2,outfile);
-   	 //fprintf(outfile,"\nYo\n");
-   	 //print_mat(Cocc,nbeta_,norbs,outfile);
-   	 for (int m = 0; m<norbs; m++) {
-    			for (int Q = 0; Q<ri_nbf_; Q++) {
-    				for (int s = 0; s<norbs; s++) {
-    					QS[Q][s] = B_ia_P_[Q][((s>=m)?ioff[s]+m:ioff[m]+s)];
-    				}
-    			}
-    			C_DGEMM('N','T',nbeta_,ri_nbf_,norbs,1.0,Cocc[0],norbs,QS[0],norbs, 0.0, Temp[0], ri_nbf_);
-    			//print_mat(Temp,nbeta_,ri_nbf_,outfile);
-    			for (int Q = 0; Q<ri_nbf_; Q++) {
-    				for (int i = 0; i<nbeta_; i++) {
-    					B_im_Q[m][i+Q*nbeta_] = Temp[i][Q];
-    				}
-    			}
-    	}
-    	free_block(QS);
-    	free_block(Temp);
-    }
-    
-    //B_ia_P in disk, B_im_Q in core
-    else if (df_storage_ == flip_B_disk || df_storage_ == k_incore)
-    {
-      double *in_buffer = init_array(norbs*(norbs+1)/2);
-    	psio_open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
-    	psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
-    	B_im_Q = block_matrix(norbs, nbeta_*ri_nbf_);
-    	
-    	int mu, nu;
-    	
-    	for (int Q = 0; Q<ri_nbf_; Q++)
-    	{
+        //B_ia_P in core, B_im_Q in core
+        if (df_storage_ == full||df_storage_ == double_full)
+        {
+            B_im_Q = block_matrix(norbs, nbeta_*ri_nbf_);
+            double** QS = block_matrix(ri_nbf_,norbs);
+            double** Temp = block_matrix(nbeta_,ri_nbf_);
+
+            //print_mat(B_ia_P_,ri_nbf_,norbs*(norbs+1)/2,outfile);
+            //fprintf(outfile,"\nYo\n");
+            //print_mat(Cocc,nbeta_,norbs,outfile);
+            for (int m = 0; m<norbs; m++) {
+                for (int Q = 0; Q<ri_nbf_; Q++) {
+                    for (int s = 0; s<norbs; s++) {
+                        QS[Q][s] = B_ia_P_[Q][((s>=m)?ioff[s]+m:ioff[m]+s)];
+                    }
+                }
+                C_DGEMM('N','T',nbeta_,ri_nbf_,norbs,1.0,Cocc[0],norbs,QS[0],norbs, 0.0, Temp[0], ri_nbf_);
+                //print_mat(Temp,nbeta_,ri_nbf_,outfile);
+                for (int Q = 0; Q<ri_nbf_; Q++) {
+                    for (int i = 0; i<nbeta_; i++) {
+                        B_im_Q[m][i+Q*nbeta_] = Temp[i][Q];
+                    }
+                }
+            }
+            free_block(QS);
+            free_block(Temp);
+        }
+
+        //B_ia_P in disk, B_im_Q in core
+        else if (df_storage_ == flip_B_disk || df_storage_ == k_incore)
+        {
+            double *in_buffer = init_array(norbs*(norbs+1)/2);
+            psio_open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
+            psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
+            B_im_Q = block_matrix(norbs, nbeta_*ri_nbf_);
+
+            int mu, nu;
+
+            for (int Q = 0; Q<ri_nbf_; Q++)
+            {
     		int errcode = psio_read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
     		for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
     		{
-    			mu = ri_pair_mu_[ij];
-    			nu = ri_pair_nu_[ij];
-    			for (int i = 0; i<nbeta_; i++)
-    			{
-    				B_im_Q[mu][i+Q*nbeta_]+=Cocc[i][nu]*in_buffer[ij];
-    				if (mu != nu)
-    					B_im_Q[nu][i+Q*nbeta_]+=Cocc[i][mu]*in_buffer[ij];
-    			}
+                    mu = ri_pair_mu_[ij];
+                    nu = ri_pair_nu_[ij];
+                    for (int i = 0; i<nbeta_; i++)
+                    {
+                        B_im_Q[mu][i+Q*nbeta_]+=Cocc[i][nu]*in_buffer[ij];
+                        if (mu != nu)
+                            B_im_Q[nu][i+Q*nbeta_]+=Cocc[i][mu]*in_buffer[ij];
+                    }
     		}
-    	}
-    		
-    	psio_close(PSIF_DFSCF_BJ,1);
-    	free(in_buffer);
-    //B_ia_P in disk, B_im_Q in disk
-    } else {
-    	psio_open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
-    	psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
-    	psio_open(PSIF_DFSCF_K,PSIO_OPEN_NEW);
-    	psio_address next_PSIF_DFSCF_K = PSIO_ZERO;
-    	
-    	double *in_buffer = init_array(norbs*(norbs+1)/2);
-    	double *out_buffer = init_array(norbs*nbeta_);
-    	
-    	int mu, nu;
-    	for (int Q = 0; Q<ri_nbf_; Q++)
-    	{
+            }
+
+            psio_close(PSIF_DFSCF_BJ,1);
+            free(in_buffer);
+            //B_ia_P in disk, B_im_Q in disk
+        } else {
+            psio_open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
+            psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
+            psio_open(PSIF_DFSCF_K,PSIO_OPEN_NEW);
+            psio_address next_PSIF_DFSCF_K = PSIO_ZERO;
+
+            double *in_buffer = init_array(norbs*(norbs+1)/2);
+            double *out_buffer = init_array(norbs*nbeta_);
+
+            int mu, nu;
+            for (int Q = 0; Q<ri_nbf_; Q++)
+            {
     		for (int im = 0; im<nbeta_*norbs; im++)
-    			out_buffer[im] = 0.0;
-    			
+                    out_buffer[im] = 0.0;
+
     		int errcode = psio_read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
     		for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
     		{
-    			mu = ri_pair_mu_[ij];
-    			nu = ri_pair_nu_[ij];
-    			for (int i = 0; i<nbeta_; i++)
-    			{
-    				out_buffer[mu*nbeta_+i]+=Cocc[i][nu]*in_buffer[ij];
-    				if (mu != nu)
-    					out_buffer[nu*nbeta_+i]+=Cocc[i][mu]*in_buffer[ij];
-    			}
+                    mu = ri_pair_mu_[ij];
+                    nu = ri_pair_nu_[ij];
+                    for (int i = 0; i<nbeta_; i++)
+                    {
+                        out_buffer[mu*nbeta_+i]+=Cocc[i][nu]*in_buffer[ij];
+                        if (mu != nu)
+                            out_buffer[nu*nbeta_+i]+=Cocc[i][mu]*in_buffer[ij];
+                    }
     		}
     		errcode = psio_write(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(out_buffer[0]),sizeof(double)*norbs*nbeta_,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
-    	}
-    	
-    	free(in_buffer);
-    	free(out_buffer);
-    	
-    	psio_close(PSIF_DFSCF_BJ,1);
-    	psio_close(PSIF_DFSCF_K,1);
-    }
-     
-    free_block(Cocc);
-    //fprintf(outfile,"  3-Index B Formed \n"); fflush(outfile);
+            }
+
+            free(in_buffer);
+            free(out_buffer);
+
+            psio_close(PSIF_DFSCF_BJ,1);
+            psio_close(PSIF_DFSCF_K,1);
+        }
+
+        free_block(Cocc);
+        //fprintf(outfile,"  3-Index B Formed \n"); fflush(outfile);
  	Kb = block_matrix(norbs, norbs);
- 		
+
  	if (df_storage_ == full ||df_storage_ == double_full|| df_storage_ == flip_B_disk || df_storage_ == k_incore)
- 		{
-    	C_DGEMM('N','T',norbs,norbs,ri_nbf_*nbeta_,1.0,B_im_Q[0],ri_nbf_*nbeta_,B_im_Q[0],ri_nbf_*nbeta_, 0.0, Kb[0], norbs);
-    	free_block(B_im_Q);
-    } else {
-    	psio_open(PSIF_DFSCF_K,PSIO_OPEN_OLD);
-    	psio_address next_PSIF_DFSCF_K = PSIO_ZERO;
-    	
-    	double *in_buffer = init_array(norbs*nbeta_);
-    	
-    	for (int Q = 0; Q<ri_nbf_; Q++)
-    	{
+        {
+            C_DGEMM('N','T',norbs,norbs,ri_nbf_*nbeta_,1.0,B_im_Q[0],ri_nbf_*nbeta_,B_im_Q[0],ri_nbf_*nbeta_, 0.0, Kb[0], norbs);
+            free_block(B_im_Q);
+        } else {
+            psio_open(PSIF_DFSCF_K,PSIO_OPEN_OLD);
+            psio_address next_PSIF_DFSCF_K = PSIO_ZERO;
+
+            double *in_buffer = init_array(norbs*nbeta_);
+
+            for (int Q = 0; Q<ri_nbf_; Q++)
+            {
     		int errcode = psio_read(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(in_buffer[0]),sizeof(double)*norbs*nbeta_,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
     		
     		for (int m = 0; m<norbs; m++)
-    			for (int n = 0; n<=m; n++)
-    				for (int i = 0; i<nbeta_; i++)
-    				{
-    					Kb[m][n]+=in_buffer[m*nbeta_+i]*in_buffer[n*nbeta_+i];
-    					Kb[n][m] = Kb[m][n];
-    				}
-    	}
-    	
-    	free(in_buffer);
-    	psio_close(PSIF_DFSCF_K,0);
-    }
-	} //Stop Work!
+                    for (int n = 0; n<=m; n++)
+                        for (int i = 0; i<nbeta_; i++)
+                        {
+                    Kb[m][n]+=in_buffer[m*nbeta_+i]*in_buffer[n*nbeta_+i];
+                    Kb[n][m] = Kb[m][n];
+                }
+            }
 
-            
+            free(in_buffer);
+            psio_close(PSIF_DFSCF_K,0);
+        }
+    } //Stop Work!
+
+
     for (int i=0; i<norbs; i++) {
         for (int j=0; j<=i; j++) {
             Ga_->set(0,i,j,J[i][j]-Ka[i][j]);
-			if (nbeta_ > 0)
-				Gb_->set(0,i,j,J[i][j]-Kb[i][j]);
+            if (nbeta_ > 0)
+                Gb_->set(0,i,j,J[i][j]-Kb[i][j]);
             if (i!= j)
-			{		
+            {
                 Ga_->set(0,j,i,J[i][j]-Ka[i][j]);
-				if (nbeta_ > 0)				
-					Gb_->set(0,j,i,J[i][j]-Kb[i][j]);
-			}
+                if (nbeta_ > 0)
+                    Gb_->set(0,j,i,J[i][j]-Kb[i][j]);
+            }
         }
     }
-	//Ga_->print();
-	//Gb_->print();
+    //Ga_->print();
+    //Gb_->print();
     //fprintf(outfile,"\n");
     //G_.print();
-	free_block(J);
+    free_block(J);
     free_block(Ka);
-	if (nbeta_ > 0)
+    if (nbeta_ > 0)
     	free_block(Kb);
 
 }
