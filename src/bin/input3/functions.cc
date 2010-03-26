@@ -364,6 +364,10 @@ char *init_char_array(int B) {
   char *A;
   int i;
   A = (char *)malloc((B+1)*sizeof(char));
+  if (A == NULL) {
+    fprintf(outfile, "Unable to allocate memory: init_char_array\n");
+    abort();
+  }
   for (i=0; i<B; i++) {
     A[i] = ' ';
   }
@@ -376,6 +380,10 @@ char **init_char_matrix(int A, int B) {
   int i, j;
   
   mat = (char **)malloc(A*sizeof(char *));
+  if (mat == NULL) {
+    fprintf(outfile, "Unable to allocate memory: init_char_array\n");
+    abort();
+  }
   
   for (i=0; i<A; i++)
     mat[i] = init_char_array(B);
