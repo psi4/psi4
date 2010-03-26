@@ -153,13 +153,6 @@ psi4_driver(Options & options, int argc, char *argv[])
         }
         read_options(thisJob, options);
 
-        if(dispatch_table.find(thisJob) == dispatch_table.end()){
-            std::string err = "Module ";
-            err += thisJob;
-            err += " is not known to PSI4.  Please update the driver\n";
-            throw PsiException(err, __FILE__, __LINE__);
-        }
-
         // If the function call is LMP2, run in parallel
         if(strcmp(thisJob, "LMP2") == 0) {
             // Needed a barrier before the functions are called
@@ -173,18 +166,30 @@ psi4_driver(Options & options, int argc, char *argv[])
         }
         // If any other functions are called only process 0 runs the function
         else {
-            // Needed a barrier before the functions are called
-            Communicator::world->sync();
-            if(Communicator::world->me() == 0) {
-                if (dispatch_table[thisJob](options, argc_new, argv_new) != Success) {
-                // Good chance at this time that an error occurred.
-                // Report it to the user.
-                    fprintf(stderr, "%s did not return a Success code.\n", thisJob);
-                    throw PsiException("Module failed.", __FILE__, __LINE__);
+            if (dispatch_table.find(thisJob) != dispatch_table.end()) {
+                // Needed a barrier before the functions are called
+                Communicator::world->sync();
+                if(Communicator::world->me() == 0) {
+                    if (dispatch_table[thisJob](options, argc_new, argv_new) != Success) {
+                        // Good chance at this time that an error occurred.
+                        // Report it to the user.
+                        fprintf(stderr, "%s did not return a Success code.\n", thisJob);
+                        throw PsiException("Module failed.", __FILE__, __LINE__);
+                    }
+                }
+            }
+            else {
+                std::transform(thisJob, thisJob + length, thisJob, ::tolower);
+                // Attempt to run the external program
+                int ret = ::system(thisJob);
+                if (ret == -1 || ret == 127) {
+                    std::string err = "Module ";
+                    err += thisJob;
+                    err += " is not known to PSI4.  Please update the driver\n";
+                    throw PsiException(err, __FILE__, __LINE__);
                 }
             }
         }
-
         tokens.clear();
 
         fflush(outfile);
