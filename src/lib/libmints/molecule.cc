@@ -1420,3 +1420,166 @@ void Molecule::form_symmetry_information(double tol)
         equiv_[i][0] = tmp;
     }
 }
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Atomic Radii
+//
+//////////////////////////////////////////////////////////////////////////////
+
+AtomicRadii::AtomicRadii()
+    : count_(0), radii_(0)
+{
+
+}
+
+AtomicRadii::~AtomicRadii()
+{
+    if (radii_)
+        delete[] radii_;
+    radii_ = 0;
+    count_ = 0;
+}
+
+TreutlerAtomicRadii::TreutlerAtomicRadii()
+    : AtomicRadii()
+{
+    count_ = 37;
+    radii_ = new double[count_];
+
+    radii_[0]  = 1.0; /* Ghost Atom */
+    radii_[1]  = 0.8; /* H */
+    radii_[2]  = 0.9; /* He */
+    radii_[3]  = 1.8; /* Li */
+    radii_[4]  = 1.4; /* Be */
+    radii_[5]  = 1.3; /* B */
+    radii_[6]  = 1.1; /* C */
+    radii_[7]  = 0.9; /* N */
+    radii_[8]  = 0.9; /* O */
+    radii_[9]  = 0.9; /* F */
+    radii_[10] = 0.9; /* Ne */
+    radii_[11] = 1.4; /* Na */
+    radii_[12] = 1.3; /* Mg */
+    radii_[13] = 1.3; /* Al */
+    radii_[14] = 1.2; /* Si */
+    radii_[15] = 1.1; /* P */
+    radii_[16] = 1.0; /* S */
+    radii_[17] = 1.0; /* Cl */
+    radii_[18] = 1.0; /* Ar */
+    radii_[19] = 1.5; /* K */
+    radii_[20] = 1.4; /* Ca */
+    radii_[21] = 1.3; /* Sc */
+    radii_[22] = 1.2; /* Ti */
+    radii_[23] = 1.2; /* V */
+    radii_[24] = 1.2; /* Cr */
+    radii_[25] = 1.2; /* Mn */
+    radii_[26] = 1.2; /* Fe */
+    radii_[27] = 1.2; /* Co */
+    radii_[28] = 1.1; /* Ni */
+    radii_[29] = 1.1; /* Cu */
+    radii_[30] = 1.1; /* Zn */
+    radii_[31] = 1.1; /* Ga */
+    radii_[32] = 1.0; /* Ge */
+    radii_[33] = 0.9; /* As */
+    radii_[34] = 0.9; /* Se */
+    radii_[35] = 0.9; /* Br */
+    radii_[36] = 0.9; /* Kr */
+}
+
+AdjustedVanDerWaalsAtomicRadii::AdjustedVanDerWaalsAtomicRadii()
+{
+    count_ = 55;
+    radii_ = new double[count_];
+
+    radii_[0]  = 1.000; /* Default element or ghost */
+    radii_[1]  = 1.001; /* H  (untouched) */
+    radii_[2]  = 0.5*1.012; /* He */
+    radii_[3]  = 0.5*0.825; /* Li */
+    radii_[4]  = 0.5*1.408; /* Be */
+    radii_[5]  = 0.5*1.485; /* B  */
+    radii_[6]  = 0.5*1.452; /* C  */
+    radii_[7]  = 0.5*1.397; /* N  */
+    radii_[8]  = 0.5*1.342; /* O  */
+    radii_[9]  = 0.5*1.287; /* F  */
+    radii_[10] = 0.5*1.243; /* Ne */
+    radii_[11] = 0.5*1.144; /* Na */
+    radii_[12] = 0.5*1.364; /* Mg */
+    radii_[13] = 0.5*1.639; /* Al */
+    radii_[14] = 0.5*1.716; /* Si */
+    radii_[15] = 0.5*1.705; /* P  */
+    radii_[16] = 0.5*1.683; /* S  */
+    radii_[17] = 0.5*1.639; /* Cl */
+    radii_[18] = 0.5*1.595; /* Ar */
+    radii_[19] = 0.5*1.485; /* K  */
+    radii_[20] = 0.5*1.474; /* Ca */
+    radii_[21] = 0.5*1.562; /* Sc */
+    radii_[22] = 0.5*1.562; /* Ti */
+    radii_[23] = 0.5*1.562; /* V  */
+    radii_[24] = 0.5*1.562; /* Cr */
+    radii_[25] = 0.5*1.562; /* Mn */
+    radii_[26] = 0.5*1.562; /* Fe */
+    radii_[27] = 0.5*1.562; /* Co */
+    radii_[28] = 0.5*1.562; /* Ni */
+    radii_[29] = 0.5*1.562; /* Cu */
+    radii_[30] = 0.5*1.562; /* Zn */
+    radii_[31] = 0.5*1.650; /* Ga */
+    radii_[32] = 0.5*1.727; /* Ge */
+    radii_[33] = 0.5*1.760; /* As */
+    radii_[34] = 0.5*1.771; /* Se */
+    radii_[35] = 0.5*1.749; /* Br */
+    radii_[36] = 0.5*1.727; /* Kr */
+    radii_[37] = 0.5*1.628; /* Rb */
+    radii_[38] = 0.5*1.606; /* Sr */
+    radii_[39] = 0.5*1.639; /* Y  */
+    radii_[40] = 0.5*1.639; /* Zr */
+    radii_[41] = 0.5*1.639; /* Nb */
+    radii_[42] = 0.5*1.639; /* Mo */
+    radii_[43] = 0.5*1.639; /* Tc */
+    radii_[44] = 0.5*1.639; /* Ru */
+    radii_[45] = 0.5*1.639; /* Rh */
+    radii_[46] = 0.5*1.639; /* Pd */
+    radii_[47] = 0.5*1.639; /* Ag */
+    radii_[48] = 0.5*1.639; /* Cd */
+    radii_[49] = 0.5*1.672; /* In */
+    radii_[50] = 0.5*1.804; /* Sn */
+    radii_[51] = 0.5*1.881; /* Sb */
+    radii_[52] = 0.5*1.892; /* Te */
+    radii_[53] = 0.5*1.892; /* I  */
+    radii_[54] = 0.5*1.881; /* Xe */
+}
+
+BraggSlaterAtomicRadii::BraggSlaterAtomicRadii()
+    : AtomicRadii()
+{
+    count_ = 0;
+    radii_ = new double[count_];
+
+}
+
+SG1AtomicRadii::SG1AtomicRadii()
+    : AtomicRadii()
+{
+    count_ = 19;
+    radii_ = new double[count_];
+
+    radii_[0]  = 2.0000; /* Ghost */
+    radii_[1]  = 1.0000; /* H */
+    radii_[2]  = 0.5882; /* He */
+    radii_[3]  = 3.0769; /* Li */
+    radii_[4]  = 2.0513; /* Be */
+    radii_[5]  = 1.5385; /* B */
+    radii_[6]  = 1.2308; /* C */
+    radii_[7]  = 1.0256; /* N */
+    radii_[8]  = 0.8791; /* O */
+    radii_[9]  = 0.7692; /* F */
+    radii_[10] = 0.6838; /* Ne */
+    radii_[11] = 4.0909; /* Na */
+    radii_[12] = 3.1579; /* Mg */
+    radii_[13] = 2.5714; /* Al */
+    radii_[14] = 2.1687; /* Si */
+    radii_[15] = 1.8750; /* P */
+    radii_[16] = 1.6514; /* S */
+    radii_[17] = 1.4754; /* Cl */
+    radii_[18] = 1.3333; /* Ar */
+}
+

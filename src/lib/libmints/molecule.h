@@ -5,15 +5,12 @@
 #include <string>
 #include <cstdio>
 
-#include <libutil/ref.h>
 #include <libmints/vector3.h>
 #include <libmints/vector.h>
 #include <libmints/matrix.h>
-//#include <libmints/pointgrp.h>
 
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>
-
 
 namespace psi {
 
@@ -182,6 +179,71 @@ public:
 };
 
 typedef boost::shared_ptr<Molecule> SharedMolecule;
+
+class AtomicRadii
+{
+protected:
+    int count_;
+    double *radii_;
+public:
+    AtomicRadii();
+    virtual ~AtomicRadii();
+
+    /** Get the atomic radii.
+     *  @param Z atomic number of interest
+     *  @returns the atomic radii, or 0 if not found.
+     */
+    double radii(int Z) const {
+        if (Z < 0 || Z >= count_)
+            return 0.0;
+        return radii_[Z];
+    }
+
+    /** Modify the atomic radii. You can only change an existing radii
+     *  you cannot add a new one.
+     *  @param Z atomic number to modify
+     *  @param val new value to use
+     */
+    void modify_radii(int Z, double val) {
+        if (Z < 0 || Z >= count_)
+            return;
+        radii_[Z] = val;
+    }
+};
+
+/// Treutler radial mapping radii (see Treutler 1995, Table 1, p. 348).
+class TreutlerAtomicRadii : public AtomicRadii
+{
+public:
+    TreutlerAtomicRadii();
+};
+
+/** Adjusted van der Waals radii (Angstrom) from atomic ROHF/TZV
+ *  computations.
+ *  S. Grimme, J. Comput. Chem. 27, 1787-799 (2006)
+ */
+class AdjustedVanDerWaalsAtomicRadii : public AtomicRadii
+{
+public:
+    AdjustedVanDerWaalsAtomicRadii();
+};
+
+/// Bragg-Slater atomic radii
+class BraggSlaterAtomicRadii : public AtomicRadii
+{
+public:
+    BraggSlaterAtomicRadii();
+};
+
+/** SG1 atomic radii (for use with SG1 grid).
+ *  P. M. W. Gill, B. G. Johnson, J. A. Pople, Chem. Phys. Lett.
+ *  209, 506 (1993).
+ */
+class SG1AtomicRadii : public AtomicRadii
+{
+public:
+    SG1AtomicRadii();
+};
 
 }
 
