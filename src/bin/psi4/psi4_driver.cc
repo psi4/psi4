@@ -180,8 +180,14 @@ psi4_driver(Options & options, int argc, char *argv[])
             }
             else {
                 std::transform(thisJob, thisJob + length, thisJob, ::tolower);
+                // Close the output file.
+                if (!outfile_name.empty())
+                    fclose(outfile);
                 // Attempt to run the external program
                 int ret = ::system(thisJob);
+                if (!outfile_name.empty())
+                    fopen(outfile_name.c_str(), "w+");
+
                 if (ret == -1 || ret == 127) {
                     std::string err = "Module ";
                     err += thisJob;
