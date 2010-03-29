@@ -186,7 +186,7 @@ psi4_driver(Options & options, int argc, char *argv[])
                 // Attempt to run the external program
                 int ret = ::system(thisJob);
                 if (!outfile_name.empty())
-                    fopen(outfile_name.c_str(), "w+");
+                    fopen(outfile_name.c_str(), "a");
 
                 if (ret == -1 || ret == 127) {
                     std::string err = "Module ";
