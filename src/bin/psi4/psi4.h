@@ -19,6 +19,7 @@ namespace psi {
 EXT char **atom_basis; // basis set label for each atom
 
 EXT FILE* infile;
+EXT std::string outfile_name;
 
 /*! Verbosity */
 EXT bool verbose;

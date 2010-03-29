@@ -209,6 +209,8 @@ int psi_start(int argc, char *argv[])
   // If check_only, force output to stdout because we don't need anything more
   if(check_only) outfile = stdout;
 
+  outfile_name = ofname;
+
   return(PSI_RETURN_SUCCESS);
 }
 
