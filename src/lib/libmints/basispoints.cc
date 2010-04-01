@@ -124,9 +124,10 @@ void BasisPoints::computePoints(Vector3 point)
 		//Evaluate the Gaussian part (gaussian normalization, coef and exponent) 
 		//for each primitive
 		double* prims = init_array(shell->nprimitive());
-		for (int k = 0; k<shell->nprimitive(); k++)
+		for (int k = 0; k<shell->nprimitive(); k++) {
 			prims[k] = shell->coef(k)*exp(-shell->exp(k)*R2);
-	
+			//printf("  Shell %d, Prim %d, Coef %14.10f, Alpha %14.10f, Val%14.10f\n",P,k,shell->coef(k),shell->exp(k),prims[k]);
+		}
 		int l = shell->am();
 
 		double* ao_points, *ao_gradX, *ao_gradY, *ao_gradZ;
@@ -282,7 +283,7 @@ void BasisPoints::computePoints(Vector3 point)
 					}
 					//fprintf(outfile, "AO basis Laplacian %d = %14.10f\n",mc,ao_laplac[mc]); 
 				}
-			} 
+			}
 			//TODO: AO Transformation	
 			int start = shell->function_index();
 			double trans_coef;
@@ -318,10 +319,11 @@ void BasisPoints::computePoints(Vector3 point)
 				}			
 			}
 			else {
+				//fprintf(outfile,"  AO -> AO transform\n");
 				//AO -> AO (Easy)
-				for (int i = 0; i<(l+1)*(l+2)>>2; i++) {
+				for (int i = 0; i<(l+1)*(l+2)>>1; i++) {
 					if (do_points_) {
-						points_[i+start] += trans_coef*ao_points[i];
+						points_[i+start] = ao_points[i];
 					}
 					if (do_gradients_) {
 						gradientsX_[i+start] += trans_coef*ao_gradX[i];
