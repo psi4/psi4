@@ -65,6 +65,8 @@ double RKS::compute_energy()
     // Do the initial work to get the iterations started.
     //form_multipole_integrals();  // handled by HF class
     form_H();
+
+    //H_->print(outfile);
     
     if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
         form_PK();
@@ -107,16 +109,16 @@ double RKS::compute_energy()
 
         form_J(); //J is always needed, and sometimes you get 
                   //K for free-ish with that
-        J_->print(outfile);
-        if (true||functional_->hasExactExchange()) {
+        //J_->print(outfile);
+        if (functional_->hasExactExchange()) {
             form_K(); //Sometimes, you really need K too
-            K_->print(outfile);
+            //K_->print(outfile);
         }
 
         form_V(); //Whoa, there's that Kohn-Sham stuff
 
         form_F();
-        F_->print(outfile);
+        //F_->print(outfile);
 
         if (diis_enabled_)
             save_fock();
@@ -136,6 +138,9 @@ double RKS::compute_energy()
         form_C();
         form_D();
 
+        //C_->print(outfile);
+        //D_->print(outfile);
+	        
         converged = test_convergency();
     } while (!converged && iteration < maxiter_);
 
@@ -208,22 +213,41 @@ void RKS::form_K()
         //Already formed
     }
 }
+double RKS::compute_E()
+{
+	double one_electron_energy = 2.0*D_->vector_dot(H_);
+	double J_energy = D_->vector_dot(J_);
+	double Etotal = 0.0;
+	Etotal += nuclearrep_;
+	Etotal += one_electron_energy;
+	Etotal += J_energy;
+	Etotal += functional_energy_;
+	
+	//fprintf(outfile,"  One Electron Energy: %14.10f\n",one_electron_energy);
+	//fprintf(outfile,"  Classical Coulomb Energy: %14.10f\n",J_energy);
+	//fprintf(outfile,"  Functional Energy: %14.10f\n",functional_energy_);
+
+	return Etotal;
+		
+}
 void RKS::form_F()
 {
 	F_->copy(H_);
-	J_->scale(2.0*functional_->getExactCoulombCoefficient());
-	F_->add(J_);
-	if (functional_->hasExactExchange()) {
-		K_->scale(-functional_->getExactExchangeCoefficient());
-		F_->add(K_);
-	}
-	V_->scale(0.5);
+	J_->scale(2.0);
+        F_->add(J_);
+	//J_->scale(0.5);
+	//if (functional_->hasExactExchange()) {
+	//	K_->scale(-functional_->getExactExchangeCoefficient());
+	//	F_->add(K_);
+	//}
+	//V_->scale(1.0);
 	F_->add(V_);
 	#ifdef _DEBUG
 	if (debug_){
 		F_->print(outfile);
 	}
 	#endif
+	F_->scale(2.0);
 }
 void RKS::form_V()
 {
@@ -233,23 +257,25 @@ void RKS::form_V()
 	dipoleCheckY_ = 0.0;
 	dipoleCheckZ_ = 0.0;
 	IntegrationPoint q;
-	double fun,val;
+	double fun,funGrad,val;
 	int nirreps = V_->nirreps();
 	int* opi = V_->rowspi();
-        double fudge = 1.0/(1.0*M_PI);
 	double check;
+        functional_energy_ = 0.0;
 	for (integrator_->reset(); !integrator_->isDone(); ) {
 		q = integrator_->getNextPoint();
 		properties_->computeProperties(q.point,D_,C_);
 		const double *basis_points = properties_->getPoints();
 		fun = 2.0*functional_->getValue(properties_);
-		//fprintf(outfile,"  Point: <%14.10f,%14.10f,%14.10f>, w = %14.10f, functional = %14.10f\n",q.point[0],q.point[1],q.point[2],q.weight,fun);
-		int h_offset = 0;
+		funGrad = 1.0*functional_->getGradientA(properties_);
+	        functional_energy_ += fun*q.weight;
+		//fprintf(outfile,"  Point: <%14.10f,%14.10f,%14.10f>, w = %14.10f, rho = %14.10f, f = %14.10f\n",q.point[0],q.point[1],q.point[2],q.weight,properties_->getDensity(),fun);
+                int h_offset = 0;
 		for (int h = 0; h<nirreps; h_offset+=opi[h],h++) {
 			for (int i = 0; i<opi[h];i++) {
 				for (int j = 0; j<=i; j++) {
 				 //fprintf(outfile,"   (%4d,%4d), phi_a = %14.10f, phi_b = %14.10f\n",i,j,basis_points[i],basis_points[j]);
-					val = fudge*q.weight*basis_points[i+h_offset]*fun*basis_points[j+h_offset];
+					val = q.weight*basis_points[i+h_offset]*funGrad*basis_points[j+h_offset];
 					V_->add(h,i,j,val);
 					if (i!=j)
 						V_->add(h,j,i,val);
@@ -263,7 +289,10 @@ void RKS::form_V()
 		dipoleCheckY_+=-2.0*check*q.point[1];
 		dipoleCheckZ_+=-2.0*check*q.point[2];
 	}
-	V_->print(outfile);
+	//V_->print(outfile);
+	//fprintf(outfile, "  Density Check: %14.10f\n",densityCheck_);
+	//fprintf(outfile, "  Dipole  Check: <%14.10f,%14.10f,%14.10f>\n",dipoleCheckX_,dipoleCheckY_,dipoleCheckZ_);
+	//fprintf(outfile, "  Functional Check: %14.10f\n",check_functional);
 	
 }
 void RKS::save_DFT_grid()

@@ -65,10 +65,15 @@ public:
 	* @return true if so, false otherwise
 	*/
 	const bool needsKEDensity() const {return false; }
-	/** Does this functional depend on spin?
-	* @return true if so, false otherwise
+	/** Functional Value at specified point properties 
+	* @return functional value
 	*/
 	double getValue(shared_ptr<Properties> prop);
+	/** Functional Gradient w.r.t. spin up denisty
+	*  at specified point properties 
+	* @return functional gradient
+	*/
+	double getGradientA(shared_ptr<Properties> prop);
 	/** Functional name
 	* @return functional or alias name ie: 'B3LYP'
 	*/

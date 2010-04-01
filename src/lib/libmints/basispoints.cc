@@ -284,7 +284,6 @@ void BasisPoints::computePoints(Vector3 point)
 					//fprintf(outfile, "AO basis Laplacian %d = %14.10f\n",mc,ao_laplac[mc]); 
 				}
 			}
-			//TODO: AO Transformation	
 			int start = shell->function_index();
 			double trans_coef;
 			int ind_ao;

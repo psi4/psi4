@@ -28,6 +28,16 @@ double X_LDA_Functional::getValue(shared_ptr<Properties> prop)
 	double val = -c*pow(rho,4.0/3.0);
 	return val;
 }
+double X_LDA_Functional::getGradientA(shared_ptr<Properties> prop)
+{
+	double tol = 1.0E-20;
+	double rho = 1.0*prop->getDensity();
+	if (rho<tol)
+		return 0.0;
+        double c = 3.0/8.0*pow(3.0,1.0/3.0)*pow(4.0,2.0/3.0)*pow(M_PI,-1.0/3.0);
+	double val = -4.0/3.0*c*pow(rho,1.0/3.0);
+	return val;
+}
 string X_LDA_Functional::getName()
 {
 	string s("");
