@@ -77,6 +77,7 @@ void Properties::computeProperties(Vector3 v, SharedMatrix D, SharedMatrix C)
 			densityX_ = tempX;
 			densityY_ = tempY;
 			densityZ_ = tempZ;
+			density_gradient_2_ = densityX_*densityX_+densityY_*densityY_+densityZ_*densityZ_;
 		} 
 	}
 	if (do_density_hessian_){

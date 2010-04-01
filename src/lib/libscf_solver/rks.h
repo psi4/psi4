@@ -36,7 +36,11 @@ protected:
     double densityCheck_;   
     double dipoleCheckX_;   
     double dipoleCheckY_;   
-    double dipoleCheckZ_;   
+    double dipoleCheckZ_;  
+
+    /// Functional Energy
+    double functional_energy_;
+ 
 public:
     /// Constructor, same as RHF, which it derives from
     RKS(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
@@ -49,6 +53,8 @@ public:
     void form_F();
     void form_J();
     void form_K();
+    
+    double compute_E();
     /// Save DFT grid points and weights
     void save_DFT_grid();
 };

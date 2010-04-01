@@ -23,7 +23,7 @@ namespace psi {
 			double densityXX_;
 			double densityYY_;
 			double densityZZ_;
-			double density_gradient_;
+			double density_gradient_2_;
 			double density_laplacian_;
 			double ke_density_;
 			bool do_mos_;
@@ -44,7 +44,7 @@ namespace psi {
 			const double getDensityX() const { return densityX_; }		
 			const double getDensityY() const { return densityY_; }		
 			const double getDensityZ() const { return densityZ_; }		
-			const double getDensityGradientMagnitude() const { return density_gradient_; }
+			const double getDensityGradientSquared() const { return density_gradient_2_; }
 			const double getDensityXY() const { return densityXY_; }		
 			const double getDensityXZ() const { return densityXZ_; }		
 			const double getDensityYZ() const { return densityYZ_; }		
