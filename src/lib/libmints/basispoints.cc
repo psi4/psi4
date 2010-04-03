@@ -15,9 +15,9 @@
 
 using namespace psi;
 
-BasisPoints::BasisPoints(shared_ptr<BasisSet> b)
+BasisPoints::BasisPoints(shared_ptr<BasisSet> bas)
 {
-	basis_ = b;
+	basis_ = bas;
 	have_points_ = false;
 	have_gradients_ = false;
 	have_hessians_ = false;
@@ -27,6 +27,16 @@ BasisPoints::BasisPoints(shared_ptr<BasisSet> b)
 	do_hessians_ = false;
 	do_laplacians_ = false;
 	allocate();
+
+	int lmax = basis_->max_am();
+	Nam = init_array((lmax+1)*(lmax+2)>>1);
+	ang = init_array((lmax+1)*(lmax+2)>>1);
+	a = init_int_array((lmax+1)*(lmax+2)>>1);
+	b = init_int_array((lmax+1)*(lmax+2)>>1);
+	c = init_int_array((lmax+1)*(lmax+2)>>1);
+		
+	prims = init_array(basis_->max_nprimitive());
+
 }
 BasisPoints::~BasisPoints()
 {
@@ -35,20 +45,39 @@ BasisPoints::~BasisPoints()
 	do_hessians_ = false;
 	do_laplacians_ = false;	
 	release();
+
+	free(Nam);
+	free(ang);
+	free(a);
+	free(b);
+	free(c);
+
+	free(prims);
 }
 void BasisPoints::allocate()
 {
+	int lmax = basis_->max_am();
 	if (do_points_ && !have_points_) {
+		ao_points_ = init_array((lmax+1)*(lmax+2)>>1);
 		points_ = init_array(basis_->nbf());
 		have_points_ = true;
 	}
 	if (do_gradients_ && !have_gradients_)	{
+		ao_gradX_ = init_array((lmax+1)*(lmax+2)>>1);
+		ao_gradY_ = init_array((lmax+1)*(lmax+2)>>1);
+		ao_gradZ_ = init_array((lmax+1)*(lmax+2)>>1);
 		gradientsX_ = init_array(basis_->nbf());
 		gradientsY_ = init_array(basis_->nbf());
 		gradientsZ_ = init_array(basis_->nbf());
 		have_gradients_ = true;
 	}
 	if (do_hessians_ && !have_hessians_) {
+		ao_hessXY_ = init_array((lmax+1)*(lmax+2)>>1);
+		ao_hessXZ_ = init_array((lmax+1)*(lmax+2)>>1);
+		ao_hessYZ_ = init_array((lmax+1)*(lmax+2)>>1);
+		ao_hessXX_ = init_array((lmax+1)*(lmax+2)>>1);
+		ao_hessYY_ = init_array((lmax+1)*(lmax+2)>>1);
+		ao_hessZZ_ = init_array((lmax+1)*(lmax+2)>>1);
 		hessiansXY_ = init_array(basis_->nbf());
 		hessiansXZ_ = init_array(basis_->nbf());
 		hessiansYZ_ = init_array(basis_->nbf());
@@ -58,23 +87,35 @@ void BasisPoints::allocate()
 		have_hessians_ = true;
 	}
 	if (do_laplacians_ && !have_laplacians_) {
+		ao_laplac_ = init_array((lmax+1)*(lmax+2)>>1);
 		laplacians_ = init_array(basis_->nbf());
 		have_laplacians_ = true;
 	}
+		
 }
 void BasisPoints::release()
 {
 	if (have_points_ && !do_points_) {
+		free(ao_points_);
 		free(points_);
 		have_points_ = false;
 	}
 	if (have_gradients_ && !do_gradients_) {
+		free(ao_gradX_);
+		free(ao_gradY_);
+		free(ao_gradZ_);
 		free(gradientsX_);
 		free(gradientsY_);
 		free(gradientsZ_);
 		have_gradients_ = false;
 	}
 	if (have_hessians_ && !do_hessians_) {
+		free(ao_hessXY_);
+		free(ao_hessXZ_);
+		free(ao_hessYZ_);
+		free(ao_hessXX_);
+		free(ao_hessYY_);
+		free(ao_hessZZ_);
 		free(hessiansXY_);
 		free(hessiansXZ_);
 		free(hessiansYZ_);
@@ -84,6 +125,7 @@ void BasisPoints::release()
 		have_hessians_ = false;
 	}
 	if (have_laplacians_ && !do_laplacians_) {
+		free(ao_laplac_);
 		free(laplacians_);
 		have_laplacians_ = false;
 	}
@@ -91,27 +133,49 @@ void BasisPoints::release()
 void BasisPoints::computePoints(Vector3 point)
 {
 	if (do_points_) {
-		memset(points_, 0.0, sizeof(double)*basis_->nbf());
+		memset((void*)points_, 0, sizeof(double)*basis_->nbf());
 	}
 	if (do_gradients_) {
-		memset(gradientsX_, 0.0, sizeof(double)*basis_->nbf());
-		memset(gradientsY_, 0.0, sizeof(double)*basis_->nbf());
-		memset(gradientsZ_, 0.0, sizeof(double)*basis_->nbf());
+		memset((void*)gradientsX_, 0, sizeof(double)*basis_->nbf());
+		memset((void*)gradientsY_, 0, sizeof(double)*basis_->nbf());
+		memset((void*)gradientsZ_, 0, sizeof(double)*basis_->nbf());
 	}
 	if (do_hessians_) {
-		memset(hessiansXY_, 0.0, sizeof(double)*basis_->nbf());
-		memset(hessiansXZ_, 0.0, sizeof(double)*basis_->nbf());
-		memset(hessiansYZ_, 0.0, sizeof(double)*basis_->nbf());
-		memset(hessiansXX_, 0.0, sizeof(double)*basis_->nbf());
-		memset(hessiansYY_, 0.0, sizeof(double)*basis_->nbf());
-		memset(hessiansZZ_, 0.0, sizeof(double)*basis_->nbf());
+		memset((void*)hessiansXY_, 0, sizeof(double)*basis_->nbf());
+		memset((void*)hessiansXZ_, 0, sizeof(double)*basis_->nbf());
+		memset((void*)hessiansYZ_, 0, sizeof(double)*basis_->nbf());
+		memset((void*)hessiansXX_, 0, sizeof(double)*basis_->nbf());
+		memset((void*)hessiansYY_, 0, sizeof(double)*basis_->nbf());
+		memset((void*)hessiansZZ_, 0, sizeof(double)*basis_->nbf());
 	}
 	if (do_laplacians_) {
-		memset(laplacians_, 0.0, sizeof(double)*basis_->nbf());
+		memset((void*)laplacians_, 0, sizeof(double)*basis_->nbf());
 	}
+	int lmax = basis_->max_am();
+		
+
 	//Run across all shells in the basis
 	for (int P = 0; P<basis_->nshell(); P++)
 	{
+		if (do_points_) {
+			memset((void*)ao_points_,0,sizeof(double)*(lmax+1)*(lmax+2)>>1);
+		}
+		if (do_gradients_) {
+			memset((void*)ao_gradX_,0,sizeof(double)*(lmax+1)*(lmax+2)>>1);
+			memset((void*)ao_gradY_,0,sizeof(double)*(lmax+1)*(lmax+2)>>1);
+			memset((void*)ao_gradZ_,0,sizeof(double)*(lmax+1)*(lmax+2)>>1);
+		}
+		if (do_hessians_) {
+			memset((void*)ao_hessXY_,0,sizeof(double)*(lmax+1)*(lmax+2)>>1);
+			memset((void*)ao_hessXZ_,0,sizeof(double)*(lmax+1)*(lmax+2)>>1);
+			memset((void*)ao_hessYZ_,0,sizeof(double)*(lmax+1)*(lmax+2)>>1);
+			memset((void*)ao_hessXX_,0,sizeof(double)*(lmax+1)*(lmax+2)>>1);
+			memset((void*)ao_hessYY_,0,sizeof(double)*(lmax+1)*(lmax+2)>>1);
+			memset((void*)ao_hessZZ_,0,sizeof(double)*(lmax+1)*(lmax+2)>>1);
+		}
+		if (do_laplacians_) {
+			memset((void*)ao_laplac_,0,sizeof(double)*(lmax+1)*(lmax+2)>>1);
+		}
 		//Get a reference to the current Gaussian Shell object
 		shared_ptr<GaussianShell> shell = basis_->shell(P);
 		//Get center of current shell
@@ -123,41 +187,16 @@ void BasisPoints::computePoints(Vector3 point)
 		
 		//Evaluate the Gaussian part (gaussian normalization, coef and exponent) 
 		//for each primitive
-		double* prims = init_array(shell->nprimitive());
 		for (int k = 0; k<shell->nprimitive(); k++) {
 			prims[k] = shell->coef(k)*exp(-shell->exp(k)*R2);
 			//printf("  Shell %d, Prim %d, Coef %14.10f, Alpha %14.10f, Val%14.10f\n",P,k,shell->coef(k),shell->exp(k),prims[k]);
 		}
 		int l = shell->am();
 
-		double* ao_points, *ao_gradX, *ao_gradY, *ao_gradZ;
-		double* ao_hessXY, *ao_hessXZ, *ao_hessYZ, *ao_hessXX, *ao_hessYY, *ao_hessZZ, *ao_laplac; 
-		if (do_points_)
-			ao_points = init_array((l+1)*(l+2)>>1);
-		if (do_gradients_) {
-			ao_gradX = init_array((l+1)*(l+2)>>1);
-			ao_gradY = init_array((l+1)*(l+2)>>1);
-			ao_gradZ = init_array((l+1)*(l+2)>>1);
-		}
-		if (do_hessians_) {
-			ao_hessXY = init_array((l+1)*(l+2)>>1);
-			ao_hessXZ = init_array((l+1)*(l+2)>>1);
-			ao_hessYZ = init_array((l+1)*(l+2)>>1);
-			ao_hessXX = init_array((l+1)*(l+2)>>1);
-			ao_hessYY = init_array((l+1)*(l+2)>>1);
-			ao_hessZZ = init_array((l+1)*(l+2)>>1);
-			}
-		if (do_laplacians_) 
-			ao_laplac = init_array((l+1)*(l+2)>>1);
-		
+
 			//Get the AO exponents and angular norms for this shell
 			//Multiply the angular part against the angular norm by m_c
 			//TODO: Use the exp_ao array in BasisSet instead.
-			double* Nam = init_array((l+1)*(l+2)>>1);
-			double* ang = init_array((l+1)*(l+2)>>1);
-			int* a = init_int_array((l+1)*(l+2)>>1);
-			int* b = init_int_array((l+1)*(l+2)>>1);
-			int* c = init_int_array((l+1)*(l+2)>>1);
 		
 			int ao = 0;
 			for (int i=0; i<=l; ++i) {
@@ -177,30 +216,30 @@ void BasisPoints::computePoints(Vector3 point)
 			for (int mc = 0; mc<(l+1)*(l+2)>>1; mc++) {
 				if (do_points_) {
 					for (int k = 0; k<shell->nprimitive(); k++) {
-						ao_points[mc] += prims[k]; 	
+						ao_points_[mc] += prims[k]; 	
 					}
-					ao_points[mc] *= Nam[mc]*ang[mc];
-					//fprintf(outfile, "AO basis function %d = %14.10f\n",mc,ao_points[mc]); 				
+					ao_points_[mc] *= Nam[mc]*ang[mc];
+					//fprintf(outfile, "AO basis function %d = %14.10f\n",mc,ao_points_[mc]); 				
 				}
 				if (do_gradients_) {
 					for (int k = 0; k<shell->nprimitive(); k++) {
 						if (a[mc] == 0)
-							ao_gradX[mc] += prims[k]*(-2.0*shell->exp(k)*r[0]*ang[mc]);
+							ao_gradX_[mc] += prims[k]*(-2.0*shell->exp(k)*r[0]*ang[mc]);
 						else
-							ao_gradX[mc] += prims[k]*(a[mc]*pow(r[0],a[mc]-1)*pow(r[1],b[mc])*pow(r[2],c[mc])-2.0*shell->exp(k)*r[0]*ang[mc]);
+							ao_gradX_[mc] += prims[k]*(a[mc]*pow(r[0],a[mc]-1)*pow(r[1],b[mc])*pow(r[2],c[mc])-2.0*shell->exp(k)*r[0]*ang[mc]);
 						if (b[mc] == 0)
-							ao_gradY[mc] += prims[k]*(-2.0*shell->exp(k)*r[1]*ang[mc]);
+							ao_gradY_[mc] += prims[k]*(-2.0*shell->exp(k)*r[1]*ang[mc]);
 						else
-							ao_gradY[mc] += prims[k]*(b[mc]*pow(r[0],a[mc])*pow(r[1],b[mc]-1)*pow(r[2],c[mc])-2.0*shell->exp(k)*r[1]*ang[mc]);
+							ao_gradY_[mc] += prims[k]*(b[mc]*pow(r[0],a[mc])*pow(r[1],b[mc]-1)*pow(r[2],c[mc])-2.0*shell->exp(k)*r[1]*ang[mc]);
 						if (c[mc] == 0)
-							ao_gradZ[mc] += prims[k]*(-2.0*shell->exp(k)*r[2]*ang[mc]);
+							ao_gradZ_[mc] += prims[k]*(-2.0*shell->exp(k)*r[2]*ang[mc]);
 						else
-							ao_gradZ[mc] += prims[k]*(c[mc]*pow(r[0],a[mc])*pow(r[1],b[mc])*pow(r[2],c[mc]-1)-2.0*shell->exp(k)*r[2]*ang[mc]);
+							ao_gradZ_[mc] += prims[k]*(c[mc]*pow(r[0],a[mc])*pow(r[1],b[mc])*pow(r[2],c[mc]-1)-2.0*shell->exp(k)*r[2]*ang[mc]);
 					}
-					ao_gradX[mc] *= Nam[mc];
-					ao_gradY[mc] *= Nam[mc];
-					ao_gradZ[mc] *= Nam[mc];
-					//fprintf(outfile, "AO basis gradient %d = <%14.10f,%14.10f,%14.10f>\n",mc,ao_gradX[mc],ao_gradY[mc],ao_gradZ[mc]);
+					ao_gradX_[mc] *= Nam[mc];
+					ao_gradY_[mc] *= Nam[mc];
+					ao_gradZ_[mc] *= Nam[mc];
+					//fprintf(outfile, "AO basis gradient %d = <%14.10f,%14.10f,%14.10f>\n",mc,ao_gradX_[mc],ao_gradY_[mc],ao_gradZ_[mc]);
 				}
 				if (do_hessians_) {
 					for (int k = 0; k<shell->nprimitive(); k++) {
@@ -213,7 +252,7 @@ void BasisPoints::computePoints(Vector3 point)
 						if (b[mc]>0)
 							q+= -2.0*shell->exp(k)*r[0]*b[mc]*pow(r[0],a[mc])*pow(r[1],b[mc]-1)*pow(r[2],c[mc]);
 						q+= 4.0*(shell->exp(k))*(shell->exp(k))*r[0]*r[1]*ang[mc];
-						ao_hessXY[mc] += prims[k]*q;
+						ao_hessXY_[mc] += prims[k]*q;
 					
 						q = 0.0;
 						if (a[mc]>0 && c[mc]>0)
@@ -223,7 +262,7 @@ void BasisPoints::computePoints(Vector3 point)
 						if (c[mc]>0)
 							q+= -2.0*shell->exp(k)*r[0]*c[mc]*pow(r[0],a[mc])*pow(r[1],b[mc])*pow(r[2],c[mc]-1);
 						q+= 4.0*(shell->exp(k))*(shell->exp(k))*r[0]*r[2]*ang[mc];
-						ao_hessXZ[mc] += prims[k]*q;
+						ao_hessXZ_[mc] += prims[k]*q;
 					
 						q = 0.0;
 						if (b[mc]>0 && c[mc]>0)
@@ -233,7 +272,7 @@ void BasisPoints::computePoints(Vector3 point)
 						if (c[mc]>0)
 							q+= -2.0*shell->exp(k)*r[1]*c[mc]*pow(r[0],a[mc])*pow(r[1],b[mc])*pow(r[2],c[mc]-1);
 						q+= 4.0*(shell->exp(k))*(shell->exp(k))*r[1]*r[2]*ang[mc];
-						ao_hessYZ[mc] += prims[k]*q;
+						ao_hessYZ_[mc] += prims[k]*q;
 					
 						q = 0;
 						if (a[mc]>1)
@@ -241,7 +280,7 @@ void BasisPoints::computePoints(Vector3 point)
 						if (a[mc]>0)
 							q+= -2.0*a[mc]*shell->exp(k)*ang[mc];
 						q+= -2.0*shell->exp(k)*(a[mc]+1)*ang[mc]+4.0*(shell->exp(k))*(shell->exp(k))*r[0]*r[0]*ang[mc];
-						ao_hessXX[mc] += prims[k]*q;
+						ao_hessXX_[mc] += prims[k]*q;
 					
 						q = 0;
 						if (b[mc]>1)
@@ -249,7 +288,7 @@ void BasisPoints::computePoints(Vector3 point)
 						if (b[mc]>0)
 							q+= -2.0*b[mc]*shell->exp(k)*ang[mc];
 						q+= -2.0*shell->exp(k)*(b[mc]+1)*ang[mc]+4.0*(shell->exp(k))*(shell->exp(k))*r[1]*r[1]*ang[mc];
-						ao_hessYY[mc] += prims[k]*q;
+						ao_hessYY_[mc] += prims[k]*q;
 				
 						q = 0;
 						if (c[mc]>1)
@@ -257,31 +296,31 @@ void BasisPoints::computePoints(Vector3 point)
 						if (a[mc]>0)
 							q+= -2.0*c[mc]*shell->exp(k)*ang[mc];
 						q+= -2.0*shell->exp(k)*(c[mc]+1)*ang[mc]+4.0*(shell->exp(k))*(shell->exp(k))*r[2]*r[2]*ang[mc];
-						ao_hessZZ[mc] += prims[k]*q;
+						ao_hessZZ_[mc] += prims[k]*q;
 						
 					}
-					ao_hessXY[mc] *= Nam[mc];
-					ao_hessXZ[mc] *= Nam[mc];
-					ao_hessYZ[mc] *= Nam[mc];
-					ao_hessXX[mc] *= Nam[mc];
-					ao_hessYY[mc] *= Nam[mc];
-					ao_hessZZ[mc] *= Nam[mc];
-					//fprintf(outfile, "AO basis Hessian %d = <%14.10f,%14.10f,%14.10f,%14.10f,%14.10f,%14.10f>\n",mc,ao_hessXY[mc],ao_hessXZ[mc],ao_jacobYZ[mc],ao_jacobXX[mc],ao_jacobYY[mc],ao_jacobZZ[mc]);
+					ao_hessXY_[mc] *= Nam[mc];
+					ao_hessXZ_[mc] *= Nam[mc];
+					ao_hessYZ_[mc] *= Nam[mc];
+					ao_hessXX_[mc] *= Nam[mc];
+					ao_hessYY_[mc] *= Nam[mc];
+					ao_hessZZ_[mc] *= Nam[mc];
+					//fprintf(outfile, "AO basis Hessian %d = <%14.10f,%14.10f,%14.10f,%14.10f,%14.10f,%14.10f>\n",mc,ao_hessXY_[mc],ao_hessXZ_[mc],ao_jacobYZ[mc],ao_jacobXX[mc],ao_jacobYY[mc],ao_jacobZZ[mc]);
 				}
 			
 				if (do_laplacians_) {
 					if (do_hessians_)
-						ao_laplac[mc] = ao_hessXX[mc]+ao_hessYY[mc]+ao_hessZZ[mc];
+						ao_laplac_[mc] = ao_hessXX_[mc]+ao_hessYY_[mc]+ao_hessZZ_[mc];
 					else {
 						for (int k = 0; k<shell->nprimitive(); k++) {
-							ao_laplac[mc] += prims[k]*((((a[mc]==0||r[0]==0.0)?0.0:-a[mc]/(r[0]*r[0]))-2.0*shell->exp(k))+(((a[mc]==0||r[0]==0.0)?0.0:a[mc]/r[0])-2.0*shell->exp(k)*r[0])*(((a[mc]==0||r[0]==0.0)?0.0:a[mc]/r[0])-2.0*shell->exp(k)*r[0]));
-							ao_laplac[mc] += prims[k]*((((b[mc]==0||r[1]==0.0)?0.0:-b[mc]/(r[1]*r[1]))-2.0*shell->exp(k))+(((b[mc]==0||r[1]==0.0)?0.0:b[mc]/r[1])-2.0*shell->exp(k)*r[1])*(((b[mc]==0||r[1]==0.0)?0.0:b[mc]/r[1])-2.0*shell->exp(k)*r[1]));
- 	      						ao_laplac[mc] += prims[k]*((((c[mc]==0||r[2]==0.0)?0.0:-c[mc]/(r[2]*r[2]))-2.0*shell->exp(k))+(((c[mc]==0||r[2]==0.0)?0.0:c[mc]/r[2])-2.0*shell->exp(k)*r[2])*(((c[mc]==0||r[2]==0.0)?0.0:c[mc]/r[2])-2.0*shell->exp(k)*r[2]));
+							ao_laplac_[mc] += prims[k]*((((a[mc]==0||r[0]==0.0)?0.0:-a[mc]/(r[0]*r[0]))-2.0*shell->exp(k))+(((a[mc]==0||r[0]==0.0)?0.0:a[mc]/r[0])-2.0*shell->exp(k)*r[0])*(((a[mc]==0||r[0]==0.0)?0.0:a[mc]/r[0])-2.0*shell->exp(k)*r[0]));
+							ao_laplac_[mc] += prims[k]*((((b[mc]==0||r[1]==0.0)?0.0:-b[mc]/(r[1]*r[1]))-2.0*shell->exp(k))+(((b[mc]==0||r[1]==0.0)?0.0:b[mc]/r[1])-2.0*shell->exp(k)*r[1])*(((b[mc]==0||r[1]==0.0)?0.0:b[mc]/r[1])-2.0*shell->exp(k)*r[1]));
+ 	      						ao_laplac_[mc] += prims[k]*((((c[mc]==0||r[2]==0.0)?0.0:-c[mc]/(r[2]*r[2]))-2.0*shell->exp(k))+(((c[mc]==0||r[2]==0.0)?0.0:c[mc]/r[2])-2.0*shell->exp(k)*r[2])*(((c[mc]==0||r[2]==0.0)?0.0:c[mc]/r[2])-2.0*shell->exp(k)*r[2]));
 
 						}
-						ao_laplac[mc] *= Nam[mc]*ang[mc];
+						ao_laplac_[mc] *= Nam[mc]*ang[mc];
 					}
-					//fprintf(outfile, "AO basis Laplacian %d = %14.10f\n",mc,ao_laplac[mc]); 
+					//fprintf(outfile, "AO basis Laplacian %d = %14.10f\n",mc,ao_laplac_[mc]); 
 				}
 			}
 			int start = shell->function_index();
@@ -296,23 +335,23 @@ void BasisPoints::computePoints(Vector3 point)
 					ind_ao = trans.cartindex();
 					ind_so = trans.pureindex();
 					if (do_points_) {
-						points_[ind_so+start] += trans_coef*ao_points[ind_ao];
+						points_[ind_so+start] += trans_coef*ao_points_[ind_ao];
 					}
 					if (do_gradients_) {
-						gradientsX_[ind_so+start] += trans_coef*ao_gradX[ind_ao];
-						gradientsY_[ind_so+start] += trans_coef*ao_gradY[ind_ao];
-						gradientsZ_[ind_so+start] += trans_coef*ao_gradZ[ind_ao];
+						gradientsX_[ind_so+start] += trans_coef*ao_gradX_[ind_ao];
+						gradientsY_[ind_so+start] += trans_coef*ao_gradY_[ind_ao];
+						gradientsZ_[ind_so+start] += trans_coef*ao_gradZ_[ind_ao];
 					}
 					if (do_hessians_) {
-						hessiansXY_[ind_so+start] += trans_coef*ao_hessXY[ind_ao];
-						hessiansXZ_[ind_so+start] += trans_coef*ao_hessXZ[ind_ao];
-						hessiansYZ_[ind_so+start] += trans_coef*ao_hessYZ[ind_ao];
-						hessiansXX_[ind_so+start] += trans_coef*ao_hessXX[ind_ao];
-						hessiansYY_[ind_so+start] += trans_coef*ao_hessYY[ind_ao];
-						hessiansZZ_[ind_so+start] += trans_coef*ao_hessZZ[ind_ao];
+						hessiansXY_[ind_so+start] += trans_coef*ao_hessXY_[ind_ao];
+						hessiansXZ_[ind_so+start] += trans_coef*ao_hessXZ_[ind_ao];
+						hessiansYZ_[ind_so+start] += trans_coef*ao_hessYZ_[ind_ao];
+						hessiansXX_[ind_so+start] += trans_coef*ao_hessXX_[ind_ao];
+						hessiansYY_[ind_so+start] += trans_coef*ao_hessYY_[ind_ao];
+						hessiansZZ_[ind_so+start] += trans_coef*ao_hessZZ_[ind_ao];
 					}
 					if (do_laplacians_) {
-						laplacians_[ind_so+start] += trans_coef*ao_laplac[ind_ao];
+						laplacians_[ind_so+start] += trans_coef*ao_laplac_[ind_ao];
 					}
 					//fprintf(out,"Transforming AO shell index %d to SO total index %d, c = %14.10f\n",ind_ao,ind_so+start,trans_coef); fflush(outfile);
 				}			
@@ -322,56 +361,26 @@ void BasisPoints::computePoints(Vector3 point)
 				//AO -> AO (Easy)
 				for (int i = 0; i<(l+1)*(l+2)>>1; i++) {
 					if (do_points_) {
-						points_[i+start] = ao_points[i];
+						points_[i+start] = ao_points_[i];
 					}
 					if (do_gradients_) {
-						gradientsX_[i+start] += trans_coef*ao_gradX[i];
-						gradientsY_[i+start] += trans_coef*ao_gradY[i];
-						gradientsZ_[i+start] += trans_coef*ao_gradZ[i];
+						gradientsX_[i+start] += trans_coef*ao_gradX_[i];
+						gradientsY_[i+start] += trans_coef*ao_gradY_[i];
+						gradientsZ_[i+start] += trans_coef*ao_gradZ_[i];
 					}
 					if (do_hessians_) {
-						hessiansXY_[i+start] += trans_coef*ao_hessXY[i];
-						hessiansXZ_[i+start] += trans_coef*ao_hessXZ[i];
-						hessiansYZ_[i+start] += trans_coef*ao_hessYZ[i];
-						hessiansXX_[i+start] += trans_coef*ao_hessXX[i];
-						hessiansYY_[i+start] += trans_coef*ao_hessYY[i];
-						hessiansZZ_[i+start] += trans_coef*ao_hessZZ[i];
+						hessiansXY_[i+start] += trans_coef*ao_hessXY_[i];
+						hessiansXZ_[i+start] += trans_coef*ao_hessXZ_[i];
+						hessiansYZ_[i+start] += trans_coef*ao_hessYZ_[i];
+						hessiansXX_[i+start] += trans_coef*ao_hessXX_[i];
+						hessiansYY_[i+start] += trans_coef*ao_hessYY_[i];
+						hessiansZZ_[i+start] += trans_coef*ao_hessZZ_[i];
 					}
 					if (do_hessians_) {
-						laplacians_[i+start] += trans_coef*ao_laplac[i];
+						laplacians_[i+start] += trans_coef*ao_laplac_[i];
 					}
 				}
 			}
-
-	
-			//Free ao_buffers
-			if (do_points_)
-				free(ao_points);
-			if (do_gradients_) {
-				free(ao_gradX);
-				free(ao_gradY);
-				free(ao_gradZ);
-			}
-			if (do_hessians_) {
-				free(ao_hessXY);
-				free(ao_hessXZ);
-				free(ao_hessYZ);
-				free(ao_hessXX);
-				free(ao_hessYY);
-				free(ao_hessZZ);
-			}
-			if (do_laplacians_)
-				free(ao_laplac);
-
-
-		//Free AO angular exponents and norms
-		free(a);
-		free(b);
-		free(c);
-		free(Nam);
-		free(ang);
-
 		
-		free(prims);
 	}
 }

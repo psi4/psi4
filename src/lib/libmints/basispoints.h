@@ -9,6 +9,18 @@ namespace psi {
 	{
 		protected:
 			shared_ptr<BasisSet> basis_;
+			double* ao_points_; 
+			double* ao_gradX_, *ao_gradY_, *ao_gradZ_;
+			double* ao_hessXY_, *ao_hessXZ_, *ao_hessYZ_, *ao_hessXX_, *ao_hessYY_, *ao_hessZZ_;
+			double *ao_laplac_; 
+			
+			double *prims;
+			double *ang;
+			double *Nam;
+			int *a;
+			int *b;
+			int *c;
+
 			double* points_;
 			double* gradientsX_;
 			double* gradientsY_;
