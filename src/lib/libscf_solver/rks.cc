@@ -32,23 +32,23 @@ using namespace std;
 using namespace psi;
 
 namespace psi { namespace scf {
-    
+
 RKS::RKS(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) : RHF(options, psio, chkpt)
 {
-	FunctionalFactory fact;
-	functional_ = SharedFunctional(fact.getFunctional(options.get_str("FUNCTIONAL")));
-	integrator_ = SharedIntegrator(Integrator::createIntegrator(molecule_,options));
-	V_ = SharedMatrix (factory_.create_matrix("V")); 
-	properties_ = SharedProperties(Properties::constructProperties(basisset_));
+    FunctionalFactory fact;
+    functional_ = SharedFunctional(fact.getFunctional(options.get_str("FUNCTIONAL")));
+    integrator_ = SharedIntegrator(Integrator::createIntegrator(molecule_,options));
+    V_ = SharedMatrix (factory_.create_matrix("V"));
+    properties_ = SharedProperties(Properties::constructProperties(basisset_));
 
-	fprintf(outfile,"  \n");
-	fprintf(outfile,"  In RKS by Rob Parrish\n");
-	fprintf(outfile,"  \n");
-	fprintf(outfile,"  Functional Name: %s\n",functional_->getName().c_str());
-	fprintf(outfile,"  Functional Description:\n%s\n",functional_->getDescription().c_str());
-	fprintf(outfile,"  Functional Citation:\n%s\n",functional_->getCitation().c_str());
-	fprintf(outfile,"  \n");
-	fprintf(outfile,"%s",(integrator_->getString()).c_str());
+    fprintf(outfile,"  \n");
+    fprintf(outfile,"  In RKS by Rob Parrish\n");
+    fprintf(outfile,"  \n");
+    fprintf(outfile,"  Functional Name: %s\n",functional_->getName().c_str());
+    fprintf(outfile,"  Functional Description:\n%s\n",functional_->getDescription().c_str());
+    fprintf(outfile,"  Functional Citation:\n%s\n",functional_->getCitation().c_str());
+    fprintf(outfile,"  \n");
+    fprintf(outfile,"%s",(integrator_->getString()).c_str());
 
 }
 
@@ -67,7 +67,7 @@ double RKS::compute_energy()
     form_H();
 
     //H_->print(outfile);
-    
+
     if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
         form_PK();
     else if (ri_integrals_ == true)
@@ -107,7 +107,7 @@ double RKS::compute_energy()
         Dold_->copy(D_);  // Save previous density
         Eold_ = E_;       // Save previous energy
 
-        form_J(); //J is always needed, and sometimes you get 
+        form_J(); //J is always needed, and sometimes you get
                   //K for free-ish with that
         //J_->print(outfile);
         if (functional_->hasExactExchange()) {
@@ -132,16 +132,12 @@ double RKS::compute_energy()
             diis_iter = false;
         }
 
-        fprintf(outfile, "  @RKS iteration %3d energy: %20.14f    %20.14f %20.14f %s\n", iteration, E_, E_ - Eold_, Drms_, diis_iter == false ? " " : "DIIS");
-        fflush(outfile);
-
         form_C();
         form_D();
 
-        //C_->print(outfile);
-        //D_->print(outfile);
-	        
         converged = test_convergency();
+        fprintf(outfile, "  @RKS iteration %3d energy: %20.14f    %20.14f %20.14f %s\n", iteration, E_, E_ - Eold_, Drms_, diis_iter == false ? " " : "DIIS");
+        fflush(outfile);
     } while (!converged && iteration < maxiter_);
 
     if (converged) {
@@ -153,7 +149,7 @@ double RKS::compute_energy()
         fprintf(outfile, "\n");
         fprintf(outfile,"\n  @RKS Numerical Density: %14.10f\n",densityCheck_);
         fprintf(outfile,"  @RKS Numerical Dipole: <%14.10f,%14.10f,%14.10f>\n",dipoleCheckX_,dipoleCheckY_,dipoleCheckZ_);
-	
+
         save_information();
     } else {
         fprintf(outfile, "\n  Failed to converged.\n");
@@ -204,7 +200,7 @@ void RKS::form_K()
         //form_K_from_PK();
     }
     else if (ri_integrals_ == false && direct_integrals_ == true) {
-        //Already formed 
+        //Already formed
     }
     else if (ri_integrals_ == true) {
         form_K_from_RI();
@@ -215,105 +211,105 @@ void RKS::form_K()
 }
 double RKS::compute_E()
 {
-	double one_electron_energy = 2.0*D_->vector_dot(H_);
-	double J_energy = D_->vector_dot(J_);
-	double Etotal = 0.0;
-	Etotal += nuclearrep_;
-	Etotal += one_electron_energy;
-	Etotal += J_energy;
-	Etotal += functional_energy_;
-	
-	//fprintf(outfile,"  One Electron Energy: %14.10f\n",one_electron_energy);
-	//fprintf(outfile,"  Classical Coulomb Energy: %14.10f\n",J_energy);
-	//fprintf(outfile,"  Functional Energy: %14.10f\n",functional_energy_);
+    double one_electron_energy = 2.0*D_->vector_dot(H_);
+    double J_energy = D_->vector_dot(J_);
+    double Etotal = 0.0;
+    Etotal += nuclearrep_;
+    Etotal += one_electron_energy;
+    Etotal += J_energy;
+    Etotal += functional_energy_;
 
-	return Etotal;
-		
+    //fprintf(outfile,"  One Electron Energy: %14.10f\n",one_electron_energy);
+    //fprintf(outfile,"  Classical Coulomb Energy: %14.10f\n",J_energy);
+    //fprintf(outfile,"  Functional Energy: %14.10f\n",functional_energy_);
+
+    return Etotal;
+
 }
 void RKS::form_F()
 {
-	F_->copy(H_);
-	J_->scale(2.0);
+    F_->copy(H_);
+    J_->scale(2.0);
         F_->add(J_);
-	//J_->scale(0.5);
-	//if (functional_->hasExactExchange()) {
-	//	K_->scale(-functional_->getExactExchangeCoefficient());
-	//	F_->add(K_);
-	//}
-	//V_->scale(1.0);
-	F_->add(V_);
-	#ifdef _DEBUG
-	if (debug_){
-		F_->print(outfile);
-	}
-	#endif
-	F_->scale(2.0);
+    //J_->scale(0.5);
+    //if (functional_->hasExactExchange()) {
+    //	K_->scale(-functional_->getExactExchangeCoefficient());
+    //	F_->add(K_);
+    //}
+    //V_->scale(1.0);
+    F_->add(V_);
+    #ifdef _DEBUG
+    if (debug_){
+        F_->print(outfile);
+    }
+    #endif
+    F_->scale(2.0);
 }
 void RKS::form_V()
 {
-	V_->zero();
-	densityCheck_ = 0.0;
-	dipoleCheckX_ = 0.0;
-	dipoleCheckY_ = 0.0;
-	dipoleCheckZ_ = 0.0;
-	IntegrationPoint q;
-	double fun,funGrad,val;
-	int nirreps = V_->nirreps();
-	int* opi = V_->rowspi();
-	double check;
+    V_->zero();
+    densityCheck_ = 0.0;
+    dipoleCheckX_ = 0.0;
+    dipoleCheckY_ = 0.0;
+    dipoleCheckZ_ = 0.0;
+    IntegrationPoint q;
+    double fun,funGrad,val;
+    int nirreps = V_->nirreps();
+    int* opi = V_->rowspi();
+    double check;
         functional_energy_ = 0.0;
-	for (integrator_->reset(); !integrator_->isDone(); ) {
-		q = integrator_->getNextPoint();
-		properties_->computeProperties(q.point,D_,C_);
-		const double *basis_points = properties_->getPoints();
-		fun = 2.0*functional_->getValue(properties_);
-		funGrad = 1.0*functional_->getGradientA(properties_);
-	        functional_energy_ += fun*q.weight;
-		//fprintf(outfile,"  Point: <%14.10f,%14.10f,%14.10f>, w = %14.10f, rho = %14.10f, f = %14.10f\n",q.point[0],q.point[1],q.point[2],q.weight,properties_->getDensity(),fun);
+    for (integrator_->reset(); !integrator_->isDone(); ) {
+        q = integrator_->getNextPoint();
+        properties_->computeProperties(q.point,D_,C_);
+        const double *basis_points = properties_->getPoints();
+        fun = 2.0*functional_->getValue(properties_);
+        funGrad = 1.0*functional_->getGradientA(properties_);
+            functional_energy_ += fun*q.weight;
+        //fprintf(outfile,"  Point: <%14.10f,%14.10f,%14.10f>, w = %14.10f, rho = %14.10f, f = %14.10f\n",q.point[0],q.point[1],q.point[2],q.weight,properties_->getDensity(),fun);
                 int h_offset = 0;
-		for (int h = 0; h<nirreps; h_offset+=opi[h],h++) {
-			for (int i = 0; i<opi[h];i++) {
-				for (int j = 0; j<=i; j++) {
-				 //fprintf(outfile,"   (%4d,%4d), phi_a = %14.10f, phi_b = %14.10f\n",i,j,basis_points[i],basis_points[j]);
-					val = q.weight*basis_points[i+h_offset]*funGrad*basis_points[j+h_offset];
-					V_->add(h,i,j,val);
-					if (i!=j)
-						V_->add(h,j,i,val);
-				}
-			}
-		}
-		//Check Numerical Density (Gives an idea of grid error)
-		check = q.weight*properties_->getDensity();
-		densityCheck_+=2.0*check;
-		dipoleCheckX_+=-2.0*check*q.point[0];
-		dipoleCheckY_+=-2.0*check*q.point[1];
-		dipoleCheckZ_+=-2.0*check*q.point[2];
-	}
-	//V_->print(outfile);
-	//fprintf(outfile, "  Density Check: %14.10f\n",densityCheck_);
-	//fprintf(outfile, "  Dipole  Check: <%14.10f,%14.10f,%14.10f>\n",dipoleCheckX_,dipoleCheckY_,dipoleCheckZ_);
-	//fprintf(outfile, "  Functional Check: %14.10f\n",check_functional);
-	
+        for (int h = 0; h<nirreps; h_offset+=opi[h],h++) {
+            for (int i = 0; i<opi[h];i++) {
+                for (int j = 0; j<=i; j++) {
+                 //fprintf(outfile,"   (%4d,%4d), phi_a = %14.10f, phi_b = %14.10f\n",i,j,basis_points[i],basis_points[j]);
+                    val = q.weight*basis_points[i+h_offset]*funGrad*basis_points[j+h_offset];
+                    V_->add(h,i,j,val);
+                    if (i!=j)
+                        V_->add(h,j,i,val);
+                }
+            }
+        }
+        //Check Numerical Density (Gives an idea of grid error)
+        check = q.weight*properties_->getDensity();
+        densityCheck_+=2.0*check;
+        dipoleCheckX_+=-2.0*check*q.point[0];
+        dipoleCheckY_+=-2.0*check*q.point[1];
+        dipoleCheckZ_+=-2.0*check*q.point[2];
+    }
+    //V_->print(outfile);
+    //fprintf(outfile, "  Density Check: %14.10f\n",densityCheck_);
+    //fprintf(outfile, "  Dipole  Check: <%14.10f,%14.10f,%14.10f>\n",dipoleCheckX_,dipoleCheckY_,dipoleCheckZ_);
+    //fprintf(outfile, "  Functional Check: %14.10f\n",check_functional);
+
 }
 void RKS::save_DFT_grid()
 {
  FILE * grid_file = fopen((options_.get_str("NUMERICAL_GRID_FILENAME")).c_str(),"w");
  shared_ptr<Molecule> mol = basisset_->molecule();
-	fprintf(grid_file,"%d\n",mol->natom());
-	fprintf(grid_file,"x,y,z,Z\n");
-	for (int i=0; i<mol->natom(); i++)
-		fprintf(grid_file,"%14.10f,%14.10f,%14.10f,%d\n",mol->x(i),mol->y(i), mol->z(i), mol->Z(i));
+    fprintf(grid_file,"%d\n",mol->natom());
+    fprintf(grid_file,"x,y,z,Z\n");
+    for (int i=0; i<mol->natom(); i++)
+        fprintf(grid_file,"%14.10f,%14.10f,%14.10f,%d\n",mol->x(i),mol->y(i), mol->z(i), mol->Z(i));
 
-	IntegrationPoint q;	
-	for (integrator_->reset(); !integrator_->isDone(); )
-	{
-		q = integrator_->getNextPoint();
-		Vector3 v = q.point;
-		double w = q.weight;
-		fprintf(grid_file,"%14.10f, %14.10f, %14.10f, %14.10f\n",v[0],v[1], v[2], w);
-	}
+    IntegrationPoint q;
+    for (integrator_->reset(); !integrator_->isDone(); )
+    {
+        q = integrator_->getNextPoint();
+        Vector3 v = q.point;
+        double w = q.weight;
+        fprintf(grid_file,"%14.10f, %14.10f, %14.10f, %14.10f\n",v[0],v[1], v[2], w);
+    }
 
 
-	fclose(grid_file);
+    fclose(grid_file);
 }
 }}
