@@ -185,9 +185,9 @@ double RHF::compute_energy()
         E_ = 0.0;
     }
     if (save_grid_) {
-	fprintf(outfile,"\n  Saving Cartesian Grid\n");
+    fprintf(outfile,"\n  Saving Cartesian Grid\n");
         save_RHF_grid(options_, basisset_, D_, C_);
-    }   
+    }
 
     if (ri_integrals_)
     {
@@ -315,133 +315,133 @@ void RHF::compute_multipole()
 }
 void RHF::save_RHF_grid(Options& opts, shared_ptr<BasisSet> basis, SharedMatrix D, SharedMatrix C)
 {
-	SharedProperties prop = SharedProperties(Properties::constructProperties(basis));
-	int nmo_c;
-	int* mo_inds_c;
-	if (opts.get_int("N_CARTESIAN_MOS") != 0)
-	{
-		nmo_c = opts.get_int("N_CARTESIAN_MOS");
-		mo_inds_c = init_int_array(nmo_c);
-		for (int k = 0; k<nmo_c; k++)
-		{
-			mo_inds_c[k] = opts["CARTESIAN_MO_INDICES"][k].to_integer();
-		}
-		prop->setToComputeMOs(true,mo_inds_c,nmo_c);
-	}	
-	double * extents = getCartesianGridExtents(opts, basis->molecule());
-	double xmin = extents[0];
-	double xmax = extents[1];
-	double ymin = extents[2];
-	double ymax = extents[3];
-	double zmin = extents[4];
-	double zmax = extents[5];
-	free(extents);
+    SharedProperties prop = SharedProperties(Properties::constructProperties(basis));
+    int nmo_c;
+    int* mo_inds_c;
+    if (opts.get_int("N_CARTESIAN_MOS") != 0)
+    {
+        nmo_c = opts.get_int("N_CARTESIAN_MOS");
+        mo_inds_c = init_int_array(nmo_c);
+        for (int k = 0; k<nmo_c; k++)
+        {
+            mo_inds_c[k] = opts["CARTESIAN_MO_INDICES"][k].to_integer();
+        }
+        prop->setToComputeMOs(true,mo_inds_c,nmo_c);
+    }
+    double * extents = getCartesianGridExtents(opts, basis->molecule());
+    double xmin = extents[0];
+    double xmax = extents[1];
+    double ymin = extents[2];
+    double ymax = extents[3];
+    double zmin = extents[4];
+    double zmax = extents[5];
+    free(extents);
 
-	int * npoints = getCartesianGridResolution(opts);
-	int npointsx = npoints[0];
-	int npointsy = npoints[1];
-	int npointsz = npoints[2];
-	free(npoints);
-	FILE * grid_file = fopen((opts.get_str("CARTESIAN_FILENAME")).c_str(),"w");
-	shared_ptr<Molecule> mol = basisset_->molecule();
-	fprintf(grid_file,"%d\n",mol->natom());
-	fprintf(grid_file,"x,y,z,Z\n");
-	for (int i=0; i<mol->natom(); i++)
-		fprintf(grid_file,"%14.10f,%14.10f,%14.10f,%d\n",mol->x(i),mol->y(i), mol->z(i), mol->Z(i));
-	fprintf(grid_file,"%10d,%10d,%10d\n",npointsx,npointsy,npointsz);
-	fprintf(grid_file,"x,y,z,\\rho");
-	if (nmo_c>0){
-		for (int m=0; m<nmo_c; m++)
-			fprintf(grid_file,",MO%d",mo_inds_c[m]);
-	}
-	fprintf(grid_file,"\n");
-	double x,y,z,val;
-	for (int i = 0; i<npointsx; i++) {
-		if (npointsx == 1)
-			x = (xmax+xmin)/2.0;
-		else
-			x = i*(xmax-xmin)/(npointsx-1.0)+xmin;
-		for (int j = 0; j<npointsy; j++) {
-			if (npointsy == 1)
-				y = (ymax+ymin)/2.0;
-			else
-				y = j*(ymax-ymin)/(npointsy-1.0)+ymin;
-			for (int k = 0; k<npointsz; k++) {
-				if (npointsz == 1)
-					z = (zmax+zmin)/2.0;
-				else
-					z = k*(zmax-zmin)/(npointsz-1.0)+zmin;
-				Vector3 v(x,y,z);
-				prop->computeProperties(v,D,C); //Needs to be updated as props changes
-				val = prop->getDensity();
-				fprintf(grid_file, "%14.10f,%14.10f,%14.10f,%14.10f",x,y,z,val);
-				if (nmo_c>0) { 
-					for (int m = 0; m<nmo_c; m++)
-						fprintf(grid_file,",%14.10f",prop->getMO(m));
-				}	
-				fprintf(grid_file, "\n");
-			}
-		}
-	}
-	fclose(grid_file);
+    int * npoints = getCartesianGridResolution(opts);
+    int npointsx = npoints[0];
+    int npointsy = npoints[1];
+    int npointsz = npoints[2];
+    free(npoints);
+    FILE * grid_file = fopen((opts.get_str("CARTESIAN_FILENAME")).c_str(),"w");
+    shared_ptr<Molecule> mol = basisset_->molecule();
+    fprintf(grid_file,"%d\n",mol->natom());
+    fprintf(grid_file,"x,y,z,Z\n");
+    for (int i=0; i<mol->natom(); i++)
+        fprintf(grid_file,"%14.10f,%14.10f,%14.10f,%d\n",mol->x(i),mol->y(i), mol->z(i), mol->Z(i));
+    fprintf(grid_file,"%10d,%10d,%10d\n",npointsx,npointsy,npointsz);
+    fprintf(grid_file,"x,y,z,\\rho");
+    if (nmo_c>0){
+        for (int m=0; m<nmo_c; m++)
+            fprintf(grid_file,",MO%d",mo_inds_c[m]);
+    }
+    fprintf(grid_file,"\n");
+    double x,y,z,val;
+    for (int i = 0; i<npointsx; i++) {
+        if (npointsx == 1)
+            x = (xmax+xmin)/2.0;
+        else
+            x = i*(xmax-xmin)/(npointsx-1.0)+xmin;
+        for (int j = 0; j<npointsy; j++) {
+            if (npointsy == 1)
+                y = (ymax+ymin)/2.0;
+            else
+                y = j*(ymax-ymin)/(npointsy-1.0)+ymin;
+            for (int k = 0; k<npointsz; k++) {
+                if (npointsz == 1)
+                    z = (zmax+zmin)/2.0;
+                else
+                    z = k*(zmax-zmin)/(npointsz-1.0)+zmin;
+                Vector3 v(x,y,z);
+                prop->computeProperties(v,D,C); //Needs to be updated as props changes
+                val = prop->getDensity();
+                fprintf(grid_file, "%14.10f,%14.10f,%14.10f,%14.10f",x,y,z,val);
+                if (nmo_c>0) {
+                    for (int m = 0; m<nmo_c; m++)
+                        fprintf(grid_file,",%14.10f",prop->getMO(m));
+                }
+                fprintf(grid_file, "\n");
+            }
+        }
+    }
+    fclose(grid_file);
 
-	if (opts.get_int("N_CARTESIAN_MOS") != 0)
-		free(mo_inds_c);
+    if (opts.get_int("N_CARTESIAN_MOS") != 0)
+        free(mo_inds_c);
 
 }
 int* RHF::getCartesianGridResolution(Options &opts)
 {
-	int *npoints = init_int_array(3);
-	//Use individual resolutions
-	if (opts["CARTESIAN_RESOLUTION_X"].has_changed()) {
-	 npoints[0] = opts.get_int("CARTESIAN_RESOLUTION_X");
-	 npoints[1] = opts.get_int("CARTESIAN_RESOLUTION_Y");
-	 npoints[2] = opts.get_int("CARTESIAN_RESOLUTION_Z");
-	} else { //Use global or default resolutions
-	 npoints[0] = opts.get_int("CARTESIAN_RESOLUTION");
-	 npoints[1] = npoints[0];
-	 npoints[2] = npoints[0];
-	}
-	return npoints;
+    int *npoints = init_int_array(3);
+    //Use individual resolutions
+    if (opts["CARTESIAN_RESOLUTION_X"].has_changed()) {
+     npoints[0] = opts.get_int("CARTESIAN_RESOLUTION_X");
+     npoints[1] = opts.get_int("CARTESIAN_RESOLUTION_Y");
+     npoints[2] = opts.get_int("CARTESIAN_RESOLUTION_Z");
+    } else { //Use global or default resolutions
+     npoints[0] = opts.get_int("CARTESIAN_RESOLUTION");
+     npoints[1] = npoints[0];
+     npoints[2] = npoints[0];
+    }
+    return npoints;
 }
 double* RHF::getCartesianGridExtents(Options &opts, shared_ptr<Molecule> mol)
 {
-	double *ext = init_array(6);
-	if (opts["CARTESIAN_EXTENTS"].has_changed()) {
-	//Use defined extents
-	for (int i=0; i<6; i++)
-		ext[i] = opts["CARTESIAN_EXTENTS"][i].to_double();
-	} else {
-		//Use molecule size plus overage
-		double xmin = mol->x(0);
-		double xmax = mol->x(0);
-		double ymin = mol->y(0);
-		double ymax = mol->y(0);
-		double zmin = mol->z(0);
-		double zmax = mol->z(0);
-		for (int i=1;i<mol->natom(); i++) {
-			if (xmin>mol->x(i))
-				xmin = mol->x(i);
-			if (ymin>mol->y(i))
-				ymin = mol->y(i);
-			if (zmin>mol->z(i))
-				zmin = mol->z(i);
-			if (xmax<mol->x(i))
-				xmax = mol->x(i);
-			if (ymax<mol->y(i))
-				ymax = mol->y(i);
-			if (zmax<mol->z(i))
-				zmax = mol->z(i);
-		}
-  		double overage = opts.get_double("CARTESIAN_OVERAGE");
-		ext[0] = xmin - overage;
-		ext[1] = xmax + overage;
-		ext[2] = ymin - overage;
-		ext[3] = ymax + overage;
-		ext[4] = zmin - overage;
-		ext[5] = zmax + overage;
-	}
-	return ext;
+    double *ext = init_array(6);
+    if (opts["CARTESIAN_EXTENTS"].has_changed()) {
+    //Use defined extents
+    for (int i=0; i<6; i++)
+        ext[i] = opts["CARTESIAN_EXTENTS"][i].to_double();
+    } else {
+        //Use molecule size plus overage
+        double xmin = mol->x(0);
+        double xmax = mol->x(0);
+        double ymin = mol->y(0);
+        double ymax = mol->y(0);
+        double zmin = mol->z(0);
+        double zmax = mol->z(0);
+        for (int i=1;i<mol->natom(); i++) {
+            if (xmin>mol->x(i))
+                xmin = mol->x(i);
+            if (ymin>mol->y(i))
+                ymin = mol->y(i);
+            if (zmin>mol->z(i))
+                zmin = mol->z(i);
+            if (xmax<mol->x(i))
+                xmax = mol->x(i);
+            if (ymax<mol->y(i))
+                ymax = mol->y(i);
+            if (zmax<mol->z(i))
+                zmax = mol->z(i);
+        }
+        double overage = opts.get_double("CARTESIAN_OVERAGE");
+        ext[0] = xmin - overage;
+        ext[1] = xmax + overage;
+        ext[2] = ymin - overage;
+        ext[3] = ymax + overage;
+        ext[4] = zmin - overage;
+        ext[5] = zmax + overage;
+    }
+    return ext;
 }
 void RHF::save_information()
 {
@@ -1691,12 +1691,12 @@ void RHF::form_J_and_K_from_direct_integrals()
 
     // Initialize an integral object
     // Begin factor out
-
-
     IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
-    TwoBodyInt* eri = integral.eri();
+    if (eri_.get() == NULL) {
+        eri_ = shared_ptr<TwoBodyInt>(integral.eri());
+    }
     ShellCombinationsIterator iter = integral.shells_iterator();
-    const double *buffer = eri->buffer();
+    const double *buffer = eri_->buffer();
     // End factor out
 
     //fprintf(outfile, "\n      Computing integrals..."); fflush(outfile);
@@ -1713,7 +1713,7 @@ void RHF::form_J_and_K_from_direct_integrals()
         S = iter.s();
 
         // Compute quartet
-        eri->compute_shell(P, Q, R, S);
+        eri_->compute_shell(P, Q, R, S);
 
         // fprintf(outfile, "Doing shell ( %d %d | %d %d )\n", P, Q, R, S); fflush(outfile);
 
@@ -2025,7 +2025,7 @@ void RHF::form_J_and_K_from_direct_integrals()
         }
     }
     //fprintf(outfile, "done. %d two-electron integrals.\n", count); fflush(outfile);
-    delete eri;
+//    delete eri;
 
     // Set RefMatrix to RefSimpleMatrix handling symmetry blocking, if needed
     // Transform G back to symmetry blocking
