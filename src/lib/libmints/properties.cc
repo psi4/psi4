@@ -16,7 +16,7 @@
 
 using namespace psi;
 
-Properties::Properties(shared_ptr<BasisSet> b): BasisPoints(b)
+Properties::Properties(shared_ptr<BasisSet> _b): BasisPoints(_b)
 {
 	do_mos_ = false;
 	do_density_ = true;
