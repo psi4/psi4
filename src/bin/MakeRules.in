@@ -84,7 +84,7 @@ uclean:
 	-rm -f *.u
 
 targetclean:
-	-rm -f `basename $(PSITARGET)`
+	-rm -f basename $(PSITARGET)
 
 #
 # dependencies

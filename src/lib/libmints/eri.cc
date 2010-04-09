@@ -18,12 +18,12 @@ using namespace psi;
 
 inline void calc_f(double *F, int n, double t)
 {
-    int i, m, k;
+    int i, m;
     int m2;
     double t2;
     double num;
     double sum;
-    double term1, term2;
+    double term1;
     static double K = 1.0/M_2_SQRTPI;
     double et;
 
@@ -169,7 +169,7 @@ ERI::~ERI()
 
 void ERI::init_shell_pairs12()
 {
-    ShellPair **pairs, *sp;
+    ShellPair *sp;
     Vector3 P, PA, PB, AB, A, B;
     int i, j, si, sj, np_i, np_j;
     size_t memd;
@@ -284,13 +284,6 @@ void ERI::init_shell_pairs12()
 
 void ERI::init_shell_pairs34()
 {
-    ShellPair **pairs, *sp;
-    Vector3 P, PA, PB, AB, A, B;
-    int i, j, si, sj, np_i, np_j;
-    size_t memd;
-    double a1, a2, ab2, gam, c1, c2;
-    double *curr_stack_ptr;
-
     // If basis1 == basis3 && basis2 == basis4, then we don't need to do anything except use the pointer
     // of pairs12_.
     if (basis1() == basis3() && basis2() == basis4()) {
@@ -1157,7 +1150,6 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
                     double oo2n = 1.0/(2.0*nu);
                     double oo2zn = 1.0/(2.0*(zeta+nu));
                     double rho = (zeta*nu)/(zeta+nu);
-                    double oo2rho = 1 / (2.0*rho);
 
                     double QC[3], QD[3], WP[3], WQ[3], PQ[3];
                     double Q[3], W[3];

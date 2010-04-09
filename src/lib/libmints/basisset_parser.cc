@@ -24,8 +24,8 @@ bool from_string(T& t,
     return !(iss >> f >> t).fail();
 }
 
-BasisSetParser::BasisSetParser(const std::string& searchpath)
-   : searchpath_(searchpath)
+BasisSetParser::BasisSetParser(const std::string& _searchpath)
+   : searchpath_(_searchpath)
 {
     // If the search path is empty use either PSIDATADIR or INSTALLEDPSIDATADIR
     if (searchpath_.empty()) {

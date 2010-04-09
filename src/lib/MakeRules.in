@@ -73,7 +73,7 @@ dclean:
 	-rm -f *.d
 
 targetclean:
-	-rm -f `basename $(PSITARGET)`
+	-rm -f basename $(PSITARGET)
 
 #
 # dependencies
