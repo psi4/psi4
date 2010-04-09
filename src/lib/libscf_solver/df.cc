@@ -182,7 +182,7 @@ void HF::form_B()
         shared_ptr<TwoBodyInt> eri = shared_ptr<TwoBodyInt>(rifactory.eri());
         const double *buffer = eri->buffer();
         double** A_ia_P = block_matrix(ri_nbf_,basisset_->nbf()*(basisset_->nbf()+1)/2); 
-        int numPshell,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu, npairs, start;
+        int numPshell,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu;
         
         for (MU=0; MU < basisset_->nshell(); ++MU) {
             nummu = basisset_->shell(MU)->nfunction();
@@ -225,7 +225,7 @@ void HF::form_B()
         shared_ptr<TwoBodyInt> eri = shared_ptr<TwoBodyInt>(rifactory.eri());
         const double *buffer = eri->buffer();
         B_ia_P_ = block_matrix(ri_nbf_,basisset_->nbf()*(basisset_->nbf()+1)/2); 
-        int numPshell,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu, npairs, start;
+        int numPshell,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu;
         
         for (MU=0; MU < basisset_->nshell(); ++MU) {
             nummu = basisset_->shell(MU)->nfunction();
@@ -253,12 +253,11 @@ void HF::form_B()
             } // end loop over MU shell
             // now we've gone through all P, mu, nu for a given Pshell
         } // end loop over P shells; done with forming MO basis (P|ia)'s
-	int start_index = 0;
         double **Temp1;
 	double **Temp2;
 	bool allocated = false;
 	int unit = ri_nbf_; //May want to make this smaller for memory!!
-	for (int index = 0; index<norbs*(norbs+1)/2; index+=ri_nbf_)
+	for (index = 0; index<norbs*(norbs+1)/2; index+=ri_nbf_)
 	{
             int cols = unit;
             if (index+unit>=norbs*(norbs+1)/2) {
@@ -630,7 +629,7 @@ void RHF::form_G_from_RI()
             psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2*current_rows,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
             timer_off("Read B");
             for (int Q = row; Q< row+current_rows; Q++) {
-		int offset = (Q-row)*norbs*(norbs+1)/2;
+		offset = (Q-row)*norbs*(norbs+1)/2;
                 if (J_is_required_) {
                     /* COULOMB PART */
                     //L_Q = (Q|ls)D_{ls}
@@ -818,7 +817,7 @@ void RHF::form_G_from_RI()
                 psio_->read(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(in_buffer[0]),sizeof(double)*norbs*ndocc*current_rows,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
                 timer_off("E Read");
                 for (int Q = row; Q< row+current_rows; Q++) {
-		    int offset = (Q-row)*norbs*ndocc;
+		    offset = (Q-row)*norbs*ndocc;
 
                     for (int m = 0; m<norbs; m++)
                         for (int n = 0; n<=m; n++)
@@ -1123,7 +1122,7 @@ void UHF::form_G_from_RI()
 {
     int norbs = basisset_->nbf();
     int nalpha = nalphapi_[0];
-    int nbeta = nbetapi_[0];
+    //int nbeta = nbetapi_[0];
 
     double** Da = Da_->to_block_matrix();
     double** Db = Db_->to_block_matrix();
@@ -1174,7 +1173,7 @@ void UHF::form_G_from_RI()
     	psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
     	double *in_buffer = init_array(norbs*(norbs+1)/2);
     	for (int i=0; i<ri_nbf_; i++) {
-            int errcode = psio_read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+            psio_read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
             L[i]=C_DDOT(norbs*(norbs+1)/2,DD,1,in_buffer,1);
       	}
 
@@ -1187,7 +1186,7 @@ void UHF::form_G_from_RI()
     	register double LL;
     	for (int Q = 0; Q<ri_nbf_; Q++)
     	{
-            int errcode = psio_read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+            psio_read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
             LL = L[Q];
             for (int ij = 0; ij<norbs*(norbs+1)/2; ij++)
             {
@@ -1268,7 +1267,7 @@ void UHF::form_G_from_RI()
     	
     	for (int Q = 0; Q<ri_nbf_; Q++)
     	{
-            int errcode = psio_read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+            psio_read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
             for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
             {
                 mu = ri_pair_mu_[ij];
@@ -1300,7 +1299,7 @@ void UHF::form_G_from_RI()
             for (int im = 0; im<nalpha*norbs; im++)
                 out_buffer[im] = 0.0;
 
-            int errcode = psio_read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+            psio_read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
             for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
             {
                 mu = ri_pair_mu_[ij];
@@ -1312,7 +1311,7 @@ void UHF::form_G_from_RI()
                         out_buffer[nu*nalpha+i]+=Cocc[i][mu]*in_buffer[ij];
                 }
             }
-            errcode = psio_write(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(out_buffer[0]),sizeof(double)*norbs*nalpha,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
+            psio_write(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(out_buffer[0]),sizeof(double)*norbs*nalpha,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
     	}
     	
     	free(in_buffer);
@@ -1337,7 +1336,7 @@ void UHF::form_G_from_RI()
     	
     	for (int Q = 0; Q<ri_nbf_; Q++)
     	{
-            int errcode = psio_read(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(in_buffer[0]),sizeof(double)*norbs*nalpha,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
+            psio_read(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(in_buffer[0]),sizeof(double)*norbs*nalpha,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
 
             for (int m = 0; m<norbs; m++)
                 for (int n = 0; n<=m; n++)
@@ -1405,7 +1404,7 @@ void UHF::form_G_from_RI()
 
             for (int Q = 0; Q<ri_nbf_; Q++)
             {
-    		int errcode = psio_read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+    		psio_read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
     		for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
     		{
                     mu = ri_pair_mu_[ij];
@@ -1437,7 +1436,7 @@ void UHF::form_G_from_RI()
     		for (int im = 0; im<nbeta_*norbs; im++)
                     out_buffer[im] = 0.0;
 
-    		int errcode = psio_read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+    		psio_read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
     		for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
     		{
                     mu = ri_pair_mu_[ij];
@@ -1449,7 +1448,7 @@ void UHF::form_G_from_RI()
                             out_buffer[nu*nbeta_+i]+=Cocc[i][mu]*in_buffer[ij];
                     }
     		}
-    		errcode = psio_write(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(out_buffer[0]),sizeof(double)*norbs*nbeta_,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
+    		psio_write(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(out_buffer[0]),sizeof(double)*norbs*nbeta_,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
             }
 
             free(in_buffer);
@@ -1475,7 +1474,7 @@ void UHF::form_G_from_RI()
 
             for (int Q = 0; Q<ri_nbf_; Q++)
             {
-    		int errcode = psio_read(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(in_buffer[0]),sizeof(double)*norbs*nbeta_,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
+    		psio_read(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(in_buffer[0]),sizeof(double)*norbs*nbeta_,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
     		
     		for (int m = 0; m<norbs; m++)
                     for (int n = 0; n<=m; n++)

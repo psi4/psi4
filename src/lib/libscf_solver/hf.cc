@@ -39,11 +39,11 @@ namespace psi { namespace scf {
 
 HF::HF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
     : Wavefunction(options, psio, chkpt),
+      df_storage_(disk),
       nuclear_dipole_contribution_(3),
       nuclear_quadrupole_contribution_(6),
       print_(3),
-      addExternalPotential_(false),
-      df_storage_(disk)
+      addExternalPotential_(false)
 {
     common_init();
 }

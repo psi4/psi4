@@ -43,7 +43,7 @@ double Integrator::getNuclearWeightNaive(Vector3 v, int nuc)
 				//Yo
 				mu = (v.distance(molecule_->xyz(i))-v.distance(molecule_->xyz(j)))/(molecule_->xyz(i)).distance(molecule_->xyz(j));
 				s = mu;
-			 	for (int i = 1; i<= order; i++)
+			 	for (int k = 1; k<= order; k++)
   					s = 1.5*s-0.5*s*s*s;
 			 	s = 0.5*(1.0-s);
 				prod *= s;
@@ -82,7 +82,7 @@ double Integrator::getNuclearWeightBecke(Vector3 v, int nuc)
 				a = (a>0.5?0.5:a);
 				nu = mu+a*(1.0-mu*mu); 
 				s = nu;
-			 for (int i = 1; i<= order; i++)
+			 for (int k = 1; k<= order; k++)
   				s = 1.5*s-0.5*s*s*s;
 				s = 0.5*(1.0-s);
 				prod *= s;
@@ -121,7 +121,7 @@ double Integrator::getNuclearWeightTreutler(Vector3 v, int nuc)
 				a = (a>0.5?0.5:a);
 				nu = mu+a*(1.0-mu*mu); 
 				s = nu;
-			 for (int i = 1; i<= order; i++)
+			 for (int k = 1; k<= order; k++)
   			s = 1.5*s-0.5*s*s*s;
 				s = 0.5*(1.0-s);
 				prod *= s;
@@ -587,10 +587,10 @@ void Integrator::printAvailableLebedevGrids(FILE* out)
 	int orders[] = { 6, 14, 26, 38, 50, 74, 86, 110, 146, 170, 194, 230, 266, 302, 350, 434, 590, 770, 974, 1202, 1454, 1730, 2030, 2354, 2702, 3074, 3470, 3890, 4334, 4802, 5294, 5810 };
 	int ls[] = {3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,35,41,47,53,59,65,71,77,83,89,95,101,107,113,119,125,131};
 	int norders = 32;
-	fprintf(outfile,"  Available Lebedev Grids:\n");
+	fprintf(out,"  Available Lebedev Grids:\n");
 	for (int k = 0; k<norders; k++)
-		fprintf(outfile,"  Lebedev Grid %2d, l = %3d, n = %4d\n",k+1,ls[k],orders[k]);
-	fprintf(outfile,"\n  Citation: V.I. Lebedev, and D.N. Laikov \n  \"A quadrature formula for the sphere of the 131st algebraic order of accuracy\"\n  Doklady Mathematics, Vol. 59, No. 3, 1999, pp. 477-481.\n");
+		fprintf(out,"  Lebedev Grid %2d, l = %3d, n = %4d\n",k+1,ls[k],orders[k]);
+	fprintf(out,"\n  Citation: V.I. Lebedev, and D.N. Laikov \n  \"A quadrature formula for the sphere of the 131st algebraic order of accuracy\"\n  Doklady Mathematics, Vol. 59, No. 3, 1999, pp. 477-481.\n");
 
 	
 }
@@ -600,9 +600,8 @@ LebedevSphere Integrator::getLebedevSphere(int degree)
     //Translated from FORTRAN code
     //This one requires a bit of faith
     //The Soviets did their job
-    int i;
     int start=0;
-    double a,b,c,v;
+    double a,b,v;
     LebedevSphere leb_tmp;
     
     leb_tmp.x = init_array(degree);

@@ -71,11 +71,11 @@ public:
 	/** Does this functional depend on spin?
 	* @return true if so, false otherwise
 	*/
-	virtual double getValue(shared_ptr<Properties> prop)  {return 0.0;}
+	virtual double getValue(shared_ptr<Properties>)  {return 0.0;}
 	/** Does this functional depend on spin?
 	* @return true if so, false otherwise
 	*/
-	virtual double getGradientA(shared_ptr<Properties> prop)  {return 0.0;}
+	virtual double getGradientA(shared_ptr<Properties>)  {return 0.0;}
 	/** Functional name
 	* @return functional or alias name ie: 'B3LYP'
 	*/
