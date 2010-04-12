@@ -47,6 +47,8 @@ int main(int argc, char *argv[])
 
 #if HAVE_MPI == 1
     // Initialize MPI
+    // Since we allow multiple MPICommunicators to be created and MPI_Init needs to be
+    // as soon as possible, main takes care of call MPI_Init and not the communicator itself.
     MPI_Init(&argc, &argv);
 
     // Create the global world communicator
@@ -57,7 +59,7 @@ int main(int argc, char *argv[])
 #endif
 
     // Create the scripting object
-    Script::language = shared_ptr<Script>(new Python());
+    Script::language = shared_ptr<Script>(new Python);
     // Create base objects in the scripting language and initialize the language
     Script::language->initialize();
 
