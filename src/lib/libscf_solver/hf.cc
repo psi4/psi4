@@ -172,6 +172,7 @@ void HF::common_init()
     // Run integral direct? default no
     direct_integrals_ = false;
     direct_integrals_ = options_.get_bool("DIRECT");
+
     // How much stuff shall we echo to the user?
     print_ = options_.get_int("PRINT");
 
@@ -282,7 +283,7 @@ void HF::print_header()
 
     ip_string(const_cast<char*>("REFERENCE"), &reference, 0);
 
-    fprintf(outfile, " %s: by Justin Turney\n\n", reference);
+    fprintf(outfile, " %s: by Justin Turney and Rob Parrish\n\n", reference);
 #ifdef _DEBUG
     fprintf(outfile, "  Debug version.\n");
 #else
@@ -332,7 +333,7 @@ void HF::form_indexing()
             so2index_[ij] = ij-offset;
 
             if (debug_ > 3)
-                fprintf(outfile, "_so2symblk[%3d] = %3d, _so2index[%3d] = %3d\n", ij, so2symblk_[ij], ij, so2index_[ij]);
+                fprintf(outfile, "so2symblk_[%3d] = %3d, so2index_[%3d] = %3d\n", ij, so2symblk_[ij], ij, so2index_[ij]);
 
             ij++;
         }
