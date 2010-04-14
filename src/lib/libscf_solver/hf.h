@@ -29,57 +29,57 @@ protected:
     SharedMatrix Shalf_;
     SharedMatrix Sphalf_;
 
-    // Previous iteration's energy and current energy
+    /// Previous iteration's energy and current energy
     double Eold_;
     double E_;
 
-    // The RMS error in the density
+    /// The RMS error in the density
     double Drms_;
 
-    // Max number of iterations for HF
+    /// Max number of iterations for HF
     int maxiter_;
 
-    // Nuclear repulsion energy
+    /// Nuclear repulsion energy
     double nuclearrep_;
 
-    // Number of atoms and their Z value (used in find_occupation)
+    /// Number of atoms and their Z value (used in find_occupation)
     int natom_;
     double *zvals_;
 
-    // DOCC vector from input (if found)
+    /// DOCC vector from input (if found)
     int doccpi_[8];
     bool input_docc_;
 
-    // SOCC vector from input (if found)
+    /// SOCC vector from input (if found)
     int soccpi_[8];
     bool input_socc_;
 
-    // Number of alpha and beta electrons
+    /// Number of alpha and beta electrons
     int nalpha_, nbeta_;
-    // Number of alpha and beta electrons per irrep
+    /// Number of alpha and beta electrons per irrep
     int nalphapi_[8], nbetapi_[8];
 
-    // Mapping arrays
+    /// Mapping arrays
     int *so2symblk_;
     int *so2index_;
 
-    // Pairs needed for PK supermatrix
+    /// Pairs needed for PK supermatrix
     size_t pk_pairs_;
     size_t pk_size_;
     int *pk_symoffset_;
 
-    // Perturb the Hamiltonian?
+    /// Perturb the Hamiltonian?
     int perturb_h_;
-    // How big of a perturbation
+    /// How big of a perturbation
     double lambda_;
-    // With what...
+    /// With what...
     enum perturb { nothing, dipole_x, dipole_y, dipole_z };
     perturb perturb_;
 
-    // Using direct integrals?
+    /// Using direct integrals?
     int direct_integrals_;
 
-    //DF Storage Scheme
+    /// DF Storage Scheme
     enum df_storage { double_full, full, flip_B_core, flip_B_disk, k_incore, disk};
     df_storage df_storage_;
 
@@ -88,16 +88,18 @@ protected:
     int *ri_pair_nu_;
     int *ri_pair_mu_;
 
-    //do we need Coulomb?
+    /// do we need Coulomb?
     bool J_is_required_;
-    //do we need Exchange?
+    /// do we need Exchange?
     bool K_is_required_;
 
-    double **B_ia_P_; //Three Index tensor for DF-SCF
+    /// Three Index tensor for DF-SCF
+    double **B_ia_P_;
 
     double schwarz_;
     
-    bool save_grid_; //save SCF Cartesian Grid
+    /// save SCF Cartesian Grid
+    bool save_grid_;
 
     /// DIIS manager for all SCF wavefunctions
     boost::shared_ptr<DIISManager> diis_manager_;
@@ -160,7 +162,7 @@ protected:
     /// The charge of the system
     int charge_;
 
-    /// The multiplicity of the systems (specified as 2 Ms + 1)
+    /// The multiplicity of the system (specified as 2 Ms + 1)
     int multiplicity_;
 
     /// The number of iterations need to reach convergence

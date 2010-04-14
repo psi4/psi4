@@ -184,8 +184,9 @@ double RHF::compute_energy()
         fprintf(outfile, "\n  Failed to converged.\n");
         E_ = 0.0;
     }
+
     if (save_grid_) {
-    fprintf(outfile,"\n  Saving Cartesian Grid\n");
+        fprintf(outfile,"\n  Saving Cartesian Grid\n");
         save_RHF_grid(options_, basisset_, D_, C_);
     }
 
@@ -196,8 +197,8 @@ double RHF::compute_energy()
     // Compute the final dipole.
     compute_multipole();
 
-        //fprintf(outfile,"\nComputation Completed\n");
-        fflush(outfile);
+    //fprintf(outfile,"\nComputation Completed\n");
+    fflush(outfile);
     return E_;
 }
 

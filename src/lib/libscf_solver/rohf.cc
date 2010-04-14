@@ -106,14 +106,15 @@ void ROHF::initial_guess()
     C_.copy(temp);
 }
 
-double ROHF::compute_energy() {
-	bool converged = false, diis_iter=false;
-	int iter = 0;
-	
-	// Do the initial work to give the iterations a starting point.
-	form_H();
-        
-	if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
+double ROHF::compute_energy()
+{
+    bool converged = false, diis_iter=false;
+    int iter = 0;
+
+    // Do the initial work to give the iterations a starting point.
+    form_H();
+
+    if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
         form_PK();
     else if (ri_integrals_ == true)
         form_B();
@@ -131,18 +132,18 @@ double ROHF::compute_energy() {
     do {
         iter++;
 
-		Dc_old_.copy(Dc_); // save previous density
-		Do_old_.copy(Do_); // save previous density
-		Eold_ = E_; // save previous energy
+        Dc_old_.copy(Dc_); // save previous density
+        Do_old_.copy(Do_); // save previous density
+        Eold_ = E_; // save previous energy
 
         if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
             form_G_from_PK();
         else if (ri_integrals_ == false && direct_integrals_ == true)
-           form_G_from_direct_integrals();
+            form_G_from_direct_integrals();
         else if (ri_integrals_ == true)
-           form_G_from_RI();
+            form_G_from_RI();
         else
-           form_G();
+            form_G();
 
         form_F(); // Forms: Fc_, Fo_, Feff_
 
