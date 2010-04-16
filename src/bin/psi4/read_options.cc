@@ -118,6 +118,8 @@ int read_options(const std::string &name, Options & options) {
     options.add_int("N_RADIAL",99);
     /*- The number of spherical points in the DFT grid -*/
     options.add_int("N_SPHERICAL",590);  
+    /*- The number of grid points per evaluation block -*/
+    options.add_int("N_BLOCK",5000);  
     /*- The spherical quadrature type for DFT, usually Lebedev-*/
     options.add_str("SPHERICAL_TYPE","LEBEDEV","LEBEDEV");
     /*- The radial quadrature type for DFT, Treutler is best -*/
