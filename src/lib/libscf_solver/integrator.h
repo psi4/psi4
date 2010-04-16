@@ -382,5 +382,30 @@ public:
 
 typedef shared_ptr<Integrator> SharedIntegrator;
 
+class GridBlock {
+protected:
+    double* w_;
+    double* x_;
+    double* y_;
+    double* z_;
+    int max_points_;
+    int true_points_; 
+public:
+    GridBlock(int max_points);
+    ~GridBlock();
+    static GridBlock * createGridBlock(int max_points) {
+        return new GridBlock(max_points);
+    }
+    const int getMaxPoints() const {return max_points_; }
+    const int getTruePoints() const {return true_points_; }
+    const double* getWeights() const {return w_; }
+    const double* getX() const {return x_; }
+    const double* getY() const {return y_; }
+    const double* getZ() const {return z_; }
+    void setGrid(double* x, double* y, double* z, double* w, int n);
+
+};
+typedef shared_ptr<GridBlock> SharedGridBlock;
+
 }}
 #endif
