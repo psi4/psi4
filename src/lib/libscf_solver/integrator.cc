@@ -231,11 +231,6 @@ double Integrator::getSG1Alpha(int n, int index)
 		row = 2;
 	return SG1Alpha_[row*4+index];
 }
-Vector3 Integrator::getCurrentPoint()
-{
-	Vector3 v(0.0,0.0,0.0);
-	return v;
-}
 Integrator::Integrator(shared_ptr<Molecule> m, Options & opt)
 {
 	started_ = false;
@@ -256,7 +251,7 @@ Integrator::Integrator(shared_ptr<Molecule> m, Options & opt)
 		radial_scheme_ = em_r;
 		nuclear_scheme_ = becke_n;
 		for (int k = 0; k<5; k++)
-			sphere_.push_back(getLebedevSphere(nspherical_[k]));
+			sphere_.push_back(getSphericalQuadrature(nspherical_[k]));
 	}
 	else if (spec == "") {
 		//Setup grid manually
@@ -294,11 +289,15 @@ Integrator::Integrator(shared_ptr<Molecule> m, Options & opt)
 			throw std::domain_error("Error: Nuclear Scheme not recognized");
 
 		if (spherical_scheme_ == lebedev_s)
-			sphere_.push_back(getLebedevSphere(nspherical_[0]));
+			sphere_.push_back(getSphericalQuadrature(nspherical_[0]));
 	}
 	else {
 		throw std::domain_error("Error: Special Grid String not recognized");
 	}
+
+        block_size_ = opt.get_int("N_BLOCK");
+        grid_block_ = SharedGridBlock(GridBlock::createGridBlock(block_size_));
+
 	reset();
 }
 Integrator::~Integrator()
@@ -402,6 +401,113 @@ IntegrationPoint Integrator::getNextPoint()
 	}
 	return p;	
 }
+SharedGridBlock Integrator::getNextBlock()
+{
+    //Whoops, you messed up, we're already through. Call reset()!
+    if (done_)
+	throw std::domain_error("Error: all integration points already traversed");
+    
+    double * grid_x = grid_block_->getX();
+    double * grid_y = grid_block_->getY();
+    double * grid_z = grid_block_->getZ();
+    double * grid_w = grid_block_->getWeights();
+
+    //How many points were we able to assign?
+    int ntrue = 0;
+
+    //True to traverse through block_size_ number of points
+    // Break out of loop if end of quadrature is reached.
+    for (int i = 0; i < block_size_; i++) {
+        //Assign i-th point:
+    
+        //Line things up if new atom reached
+        if (radialIndex_ == 0 && sphericalIndex_ == 0 && sphereIndex_ == 0) {
+            if (started_) {
+                free(rad_.r);
+                free(rad_.w);
+            }
+	    if (radial_scheme_ == becke_r)
+                rad_ = getRadialQuadratureBecke(nradial_,getBraggSlaterRadius(molecule_->Z(nuclearIndex_)));
+            else if (radial_scheme_ == treutler_r)
+                rad_ = getRadialQuadratureTreutler(nradial_,getTreutlerRadius(molecule_->Z(nuclearIndex_)));
+            else if (radial_scheme_ == em_r)
+                rad_ = getRadialQuadratureEulerMaclaurin(nradial_,getSG1Radius(molecule_->Z(nuclearIndex_)));
+        }
+
+	//Where exactly are we operating?
+        //I hate to break this to you, but Starfleet operates in space. 
+        Vector3 v(sphere_[sphereIndex_].x[sphericalIndex_],sphere_[sphereIndex_].y[sphericalIndex_],sphere_[sphereIndex_].z[sphericalIndex_]);
+        v *= rad_.r[radialIndex_];
+        v += molecule_->xyz(nuclearIndex_);
+
+        //What's the nuclear weight look like out here?
+        //Maybe could be vectorized, difficult as the block could go over
+        //multiple atoms
+        double wnuc;
+        if (nuclear_scheme_ == naive_n)
+            wnuc = getNuclearWeightNaive(v,nuclearIndex_);
+        if (nuclear_scheme_ == becke_n)
+            wnuc = getNuclearWeightBecke(v,nuclearIndex_);
+        else if (nuclear_scheme_ == treutler_n)
+            wnuc = getNuclearWeightTreutler(v,nuclearIndex_);
+	
+        grid_x[i] = v[0];
+        grid_y[i] = v[1];
+        grid_z[i] = v[2];
+        grid_w[i] = sphere_[sphereIndex_].w[sphericalIndex_]*rad_.w[radialIndex_]*wnuc;
+
+        //Finished assigning i-th point, increment ntrue
+        ntrue++;
+        
+        //Increment quadrature, check if done
+	started_ = true;
+	if (special_grid_ == SG1) {
+		sphericalIndex_++;
+		if (sphericalIndex_>=nspherical_[sphereIndex_]){
+			sphericalIndex_ = 0;
+			radialIndex_++;
+			if (radialIndex_ >= nradial_) {
+				radialIndex_ = 0;
+				nuclearIndex_++;
+				if (nuclearIndex_ >= nnuclei_) {
+					done_ = true;
+				}
+			}
+			if (! done_) {
+				//Set the sphereIndex_ to the correct pruned grid
+				double rr = rad_.r[radialIndex_];
+				sphereIndex_ = 0;
+				for (int k=0; k<nspheres_-1; k++) {
+					if (rr>getSG1Alpha(molecule_->Z(nuclearIndex_),k)*getSG1Radius(molecule_->Z(nuclearIndex_)))
+						sphereIndex_ = k+1;
+				}	
+			}
+		}
+	}
+        else if (special_grid_ == NONE) {
+		sphericalIndex_++;
+		if (sphericalIndex_>=nspherical_[sphereIndex_]){
+			sphericalIndex_ = 0;
+			radialIndex_++;
+			if (radialIndex_ >= nradial_) {
+				radialIndex_ = 0;
+				nuclearIndex_++;
+				if (nuclearIndex_ >= nnuclei_) {
+					done_ = true;
+				}
+			}
+		}
+	}
+
+        //If done, leave block assignment early
+        if (done_)
+            break;
+
+    }
+
+    grid_block_->setTruePoints(ntrue);
+    return grid_block_;
+}
 string Integrator::getString()
 {
 	string s("");
@@ -452,7 +558,7 @@ void Integrator::checkSphericalIntegrators(FILE* out)
 	//Check Becke Integrators
 	fprintf(out,"\n  Checking Becke Integrators (Integrating Nx^4exp(-r^2) = 3.0):\n");
 	for (int k=0; k<norders; k++) {
-		LebedevSphere leb = getLebedevSphere(orders[k]);
+		SphericalQuadrature leb = getSphericalQuadrature(orders[k]);
 		for (int l=0; l<nradiis; l++) {
 			RadialQuadrature becke = getRadialQuadratureBecke(nradii[l],xi);
 			double v = 0.0;
@@ -476,7 +582,7 @@ void Integrator::checkSphericalIntegrators(FILE* out)
 	//Check Euler-Maclaurin Integrators
 	fprintf(out,"\n  Checking Euler-Maclaurin Integrators (Integrating Nx^4exp(-r^2) = 3.0):\n");
 	for (int k=0; k<norders; k++) {
-		LebedevSphere leb = getLebedevSphere(orders[k]);
+		SphericalQuadrature leb = getSphericalQuadrature(orders[k]);
 		for (int l=0; l<nradiis; l++) {
 			RadialQuadrature becke = getRadialQuadratureEulerMaclaurin(nradii[l],xi);
 			double v = 0.0;
@@ -500,7 +606,7 @@ void Integrator::checkSphericalIntegrators(FILE* out)
 	//Check Treutler Integrators
 	fprintf(out,"\n  Checking Treutler Integrators (Integrating Nx^4exp(-r^2) = 3.0):\n");
 	for (int k=0; k<norders; k++) {
-		LebedevSphere leb = getLebedevSphere(orders[k]);
+		SphericalQuadrature leb = getSphericalQuadrature(orders[k]);
 		for (int l=0; l<nradiis; l++) {
 			RadialQuadrature treutler = getRadialQuadratureTreutler(nradii[l],xi);
 			double v = 0.0;
@@ -526,7 +632,7 @@ void Integrator::checkMolecularIntegrators(FILE* out)
         double norm = 1.0/pow(2.0*M_PI*sigma*sigma,1.5);
 	double fun;
 
-	LebedevSphere leb = getLebedevSphere(nspherical_[0]);
+	SphericalQuadrature leb = getSphericalQuadrature(nspherical_[0]);
 	RadialQuadrature becke;
 	double v1 = 0.0;
 	double v2 = 0.0;
@@ -571,7 +677,7 @@ void Integrator::checkLebedev(FILE* out)
 	int norders = 32;
 	fprintf(out,"  Checking Lebedev Grids (All Integrals should be 1.0):\n");
 	for (int k = 0; k<norders; k++){
-		LebedevSphere leb = getLebedevSphere(orders[k]);
+		SphericalQuadrature leb = getSphericalQuadrature(orders[k]);
 		double v = 0.0;
 		for (int l=0; l<leb.n; l++)
 			v+=leb.w[l];
@@ -594,7 +700,7 @@ void Integrator::printAvailableLebedevGrids(FILE* out)
 
 	
 }
-LebedevSphere Integrator::getLebedevSphere(int degree)
+SphericalQuadrature Integrator::getSphericalQuadrature(int degree)
 {
     //Get Lebedev sphere of number of points degree
     //Translated from FORTRAN code
@@ -602,7 +708,7 @@ LebedevSphere Integrator::getLebedevSphere(int degree)
     //The Soviets did their job
     int start=0;
     double a,b,v;
-    LebedevSphere leb_tmp;
+    SphericalQuadrature leb_tmp;
     
     leb_tmp.x = init_array(degree);
     leb_tmp.y = init_array(degree);
@@ -5258,7 +5364,7 @@ LebedevSphere Integrator::getLebedevSphere(int degree)
     leb_tmp.n = degree;
     return leb_tmp;
 }
-int Integrator::getLebedevReccurencePoints(int type, int start, double a, double b, double v, LebedevSphere leb)
+int Integrator::getLebedevReccurencePoints(int type, int start, double a, double b, double v, SphericalQuadrature leb)
 {
 
     int end;
