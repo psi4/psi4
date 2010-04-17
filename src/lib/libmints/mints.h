@@ -22,3 +22,4 @@
 #include <libmints/basisset_parser.h>
 #include <libmints/properties.h>
 #include <libmints/basispoints.h>
+#include <libmints/gridblock.h>
