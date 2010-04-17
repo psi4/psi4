@@ -18,15 +18,15 @@ using namespace psi;
 
 namespace psi { namespace scf {
 
-Functional * FunctionalFactory::getFunctional(string id)
+Functional * FunctionalFactory::getFunctional(string id, int block_size)
 {
 	if (id == "X_LDA") {
 		//X_LDA_Functional f(1);
 		//printf("%s",f.getName().c_str());
-		return new X_LDA_Functional;
+		return new X_LDA_Functional(block_size);
 	}
 	else {
-		
+            throw std::domain_error("Requested Functional does not exist!");		
 	}
 }
 

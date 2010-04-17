@@ -17,6 +17,7 @@
 #include <libqt/qt.h>
 
 #include <libmints/vector3.h>
+#include <libmints/gridblock.h>
 #include <libmints/basisset.h>
 #include <libmints/twobody.h>
 #include <libmints/basispoints.h>
@@ -36,10 +37,10 @@ namespace psi { namespace scf {
 RKS::RKS(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) : RHF(options, psio, chkpt)
 {
     FunctionalFactory fact;
-    functional_ = SharedFunctional(fact.getFunctional(options.get_str("FUNCTIONAL")));
+    functional_ = SharedFunctional(fact.getFunctional(options.get_str("FUNCTIONAL"),options.get_int("N_BLOCK")));
     integrator_ = SharedIntegrator(Integrator::createIntegrator(molecule_,options));
     V_ = SharedMatrix (factory_.create_matrix("V"));
-    properties_ = SharedProperties(Properties::constructProperties(basisset_));
+    properties_ = SharedProperties(Properties::constructProperties(basisset_,options.get_int("N_BLOCK")));
 
     fprintf(outfile,"  \n");
     fprintf(outfile,"  In RKS by Rob Parrish\n");
@@ -164,8 +165,9 @@ double RKS::compute_energy()
     }
     if (save_grid_)
     {
-        fprintf(outfile,"  Saving Cartesian Grid\n");
-        save_RHF_grid(options_, basisset_, D_, C_);
+        //DOWN FOR MAINTENANCE
+        //fprintf(outfile,"  Saving Cartesian Grid\n");
+        //save_RHF_grid(options_, basisset_, D_, C_);
     }
     if (ri_integrals_)
     {
@@ -248,30 +250,44 @@ void RKS::form_F()
 void RKS::form_V()
 {
     V_->zero();
+
+    functional_energy_ = 0.0;
     densityCheck_ = 0.0;
     dipoleCheckX_ = 0.0;
     dipoleCheckY_ = 0.0;
     dipoleCheckZ_ = 0.0;
-    IntegrationPoint q;
-    double fun,funGrad,val;
+
+    double val;
+    double *fun = functional_->getValue();
+    double *funGrad = functional_->getGradientA();
+    double **basis_points = properties_->getPoints();
+
     int nirreps = V_->nirreps();
     int* opi = V_->rowspi();
     double check;
-        functional_energy_ = 0.0;
     for (integrator_->reset(); !integrator_->isDone(); ) {
-        q = integrator_->getNextPoint();
-        properties_->computeProperties(q.point,D_,C_);
-        const double *basis_points = properties_->getPoints();
-        fun = 2.0*functional_->getValue(properties_);
-        funGrad = 1.0*functional_->getGradientA(properties_);
-            functional_energy_ += fun*q.weight;
+        SharedGridBlock q = integrator_->getNextBlock();
+        int ntrue = q->getTruePoints();
+        double* xg = q->getX();
+        double* yg = q->getY();
+        double* zg = q->getZ();
+        double* wg = q->getWeights();
+
+        properties_->computeProperties(q,D_,C_);
+        const double* rhog = properties_->getDensity();
+        functional_->computeFunctional(properties_);
+
+        for (int grid_index = 0; grid_index<ntrue; grid_index++) {
+        //<<BEGIN LOOP OVER GRID POINTS
+
+        functional_energy_ += 2.0*fun[grid_index]*wg[grid_index];
         //fprintf(outfile,"  Point: <%14.10f,%14.10f,%14.10f>, w = %14.10f, rho = %14.10f, f = %14.10f\n",q.point[0],q.point[1],q.point[2],q.weight,properties_->getDensity(),fun);
-                int h_offset = 0;
+        int h_offset = 0;
         for (int h = 0; h<nirreps; h_offset+=opi[h],h++) {
             for (int i = 0; i<opi[h];i++) {
                 for (int j = 0; j<=i; j++) {
                  //fprintf(outfile,"   (%4d,%4d), phi_a = %14.10f, phi_b = %14.10f\n",i,j,basis_points[i],basis_points[j]);
-                    val = q.weight*basis_points[i+h_offset]*funGrad*basis_points[j+h_offset];
+                    val = wg[grid_index]*basis_points[grid_index][i+h_offset]*funGrad[grid_index]*basis_points[grid_index][j+h_offset];
                     V_->add(h,i,j,val);
                     if (i!=j)
                         V_->add(h,j,i,val);
@@ -279,11 +295,13 @@ void RKS::form_V()
             }
         }
         //Check Numerical Density (Gives an idea of grid error)
-        check = q.weight*properties_->getDensity();
+        check = wg[grid_index]*rhog[grid_index];
         densityCheck_+=2.0*check;
-        dipoleCheckX_+=-2.0*check*q.point[0];
-        dipoleCheckY_+=-2.0*check*q.point[1];
-        dipoleCheckZ_+=-2.0*check*q.point[2];
+        dipoleCheckX_+=-2.0*check*xg[grid_index];
+        dipoleCheckY_+=-2.0*check*yg[grid_index];
+        dipoleCheckZ_+=-2.0*check*zg[grid_index];
+        // << END LOOP OVER GRID POINTS
+        }
     }
     //V_->print(outfile);
     //fprintf(outfile, "  Density Check: %14.10f\n",densityCheck_);

@@ -3,6 +3,7 @@
 #include <libmints/properties.h>
 #include <libmints/matrix.h>
 #include <libmints/vector3.h>
+#include <libmints/gridblock.h>
 #include <cstdio>
 #include <cmath>
 //#include <psifiles.h>
@@ -16,39 +17,53 @@
 
 using namespace psi;
 
-Properties::Properties(shared_ptr<BasisSet> _b): BasisPoints(_b)
+Properties::Properties(shared_ptr<BasisSet> _b, int _block_size): BasisPoints(_b, _block_size)
 {
 	do_mos_ = false;
-	do_density_ = true;
+	do_density_ = false;
 	do_density_gradient_ = false;
 	do_density_hessian_ = false;
 	do_density_laplacian_ = false;
 	do_ke_density_ = false;
+        setToComputeDensity(true);
 }
 Properties::~Properties()
 {
-	//Any frees
-	if (do_mos_) {
-		free(mos_);
-		free(mo_inds_);
-	}
+	setToComputeDensity(false);
+        setToComputeDensityGradient(false);
+        setToComputeDensityHessian(false);
+        setToComputeDensityLaplacian(false);
+        setToComputeKEDensity(false);
+        int m[1];
+        setToComputeMOs(false, m,0);
 }
-void Properties::computeProperties(Vector3 v, SharedMatrix D, SharedMatrix C)
+void Properties::computeProperties(SharedGridBlock grid, SharedMatrix D, SharedMatrix C)
 {
 	int* rows = D->rowspi();
 	int nirreps = D->nirreps();
-	computePoints(v);
- //fprintf(oufile,"\nPoint:  <%14.10f,%14.10f,%14.10f>\n",v[0],v[1],v[2]);
+	computePoints(grid);
+    
+        //double *xg = grid->getX();
+        //double *yg = grid->getY();
+        //double *zg = grid->getZ();
+        int ntrue = grid->getTruePoints();
+
+        for (int grid_index = 0; grid_index<ntrue; grid_index++) {
+        // << BEGIN OUTER LOOP OVER POINTS
+        
+        //Vector3 v(xg[grid_index],yg[grid_index],zg[grid_index]); 
+        
+         //fprintf(oufile,"\nPoint:  <%14.10f,%14.10f,%14.10f>\n",v[0],v[1],v[2]);
 	//for (int i=0; i<basis_->nbf(); i++)
 	//{
 		//fprintf(outfile,"Basis Function %d is %14.10f\n",i,points_[i]);
 	//}
 	if (do_mos_) {
-		memset(mos_,0,nmo_*sizeof(double));
+		memset(mos_[grid_index],0,nmo_*sizeof(double));
 		for (int index = 0 ; index<nmo_; index++)
 		{
 			for (int k = 0; k<rows[0]; k++)
-				mos_[index] += C->get(0,k,index)*points_[k];
+				mos_[grid_index][index] += C->get(0,k,index)*points_[grid_index][k];
 		}
 		//TODO: Symmetrize
 	}
@@ -58,8 +73,8 @@ void Properties::computeProperties(Vector3 v, SharedMatrix D, SharedMatrix C)
 			double temp = 0.0;
 			for (int i = 0; i<rows[h]; i++)
 				for (int j = 0; j<=i; j++)
-					temp+=((i==j)?1.0:2.0)*D->get(h,i,j)*points_[i]*points_[j];
-			density_ = temp;
+					temp+=((i==j)?1.0:2.0)*D->get(h,i,j)*points_[grid_index][i]*points_[grid_index][j];
+			density_[grid_index] = temp;
 			//fprintf(oufile, "Density at <%14.10f,%14.10f,%14.10f> is %14.10f\n",v[0],v[1],v[2],density_);
 		} 
 	}
@@ -70,14 +85,14 @@ void Properties::computeProperties(Vector3 v, SharedMatrix D, SharedMatrix C)
 			double tempZ = 0.0;
 			for (int i = 0; i<rows[h]; i++)
 				for (int j = 0; j<=i; j++) {
-					tempX+=((i==j)?1.0:2.0)*D->get(h,i,j)*(gradientsX_[i]*points_[j]+points_[i]*gradientsX_[j]);
-					tempY+=((i==j)?1.0:2.0)*D->get(h,i,j)*(gradientsY_[i]*points_[j]+points_[i]*gradientsY_[j]);
-					tempZ+=((i==j)?1.0:2.0)*D->get(h,i,j)*(gradientsZ_[i]*points_[j]+points_[i]*gradientsZ_[j]);
+					tempX+=((i==j)?1.0:2.0)*D->get(h,i,j)*(gradientsX_[grid_index][i]*points_[grid_index][j]+points_[grid_index][i]*gradientsX_[grid_index][j]);
+					tempY+=((i==j)?1.0:2.0)*D->get(h,i,j)*(gradientsY_[grid_index][i]*points_[grid_index][j]+points_[grid_index][i]*gradientsY_[grid_index][j]);
+					tempZ+=((i==j)?1.0:2.0)*D->get(h,i,j)*(gradientsZ_[grid_index][i]*points_[grid_index][j]+points_[grid_index][i]*gradientsZ_[grid_index][j]);
 				}
-			densityX_ = tempX;
-			densityY_ = tempY;
-			densityZ_ = tempZ;
-			density_gradient_2_ = densityX_*densityX_+densityY_*densityY_+densityZ_*densityZ_;
+			densityX_[grid_index] = tempX;
+			densityY_[grid_index] = tempY;
+			densityZ_[grid_index] = tempZ;
+			density_gradient_2_[grid_index] = tempX*tempX+tempY*tempY+tempZ*tempZ;
 		} 
 	}
 	if (do_density_hessian_){
@@ -89,16 +104,18 @@ void Properties::computeProperties(Vector3 v, SharedMatrix D, SharedMatrix C)
 	if (do_ke_density_){
 		//TODO
 	}
-}
+        // <<END OUTER LOOP OVER POINTS
+        }
+} 
 void Properties::setToComputeMOs(bool v, int* inds, int nmo)
 {
 	if (v == false && do_mos_ == true) {
-		free(mos_);
+		free_block(mos_);
 		free(mo_inds_);
 	}
 	if (v == true && do_mos_ == false) {
 		nmo_ = nmo;
-		mos_ = init_array(nmo);
+		mos_ = block_matrix(block_size_,nmo);
 		mo_inds_ = init_int_array(nmo);
 		for (int k = 0; k< nmo; k++)
 			mo_inds_[k] = inds[k];
@@ -108,38 +125,85 @@ void Properties::setToComputeMOs(bool v, int* inds, int nmo)
 }
 void Properties::setToComputeDensity(bool v)
 {
-	do_density_ = v;
+	if (!do_density_ && v) {
+            density_ = init_array(block_size_);
+        }
+        if (do_density_ && !v) {
+            free(density_);
+        }
+
+        do_density_ = v;
 	if (v)
 		setToComputePoints(true);
 }
 void Properties::setToComputeDensityGradient(bool v)
 {
+	if (!do_density_gradient_ && v) {
+            densityX_ = init_array(block_size_);
+            densityY_ = init_array(block_size_);
+            densityZ_ = init_array(block_size_);
+            density_gradient_2_ = init_array(block_size_);
+        }
+        if (do_density_gradient_ && !v) {
+            free(densityX_);
+            free(densityY_);
+            free(densityZ_);
+            free(density_gradient_2_);
+        }
 	do_density_gradient_ = v;
 	if (v) {
 		setToComputeGradients(true);
 		setToComputePoints(true);
 	}
-}
+} 
 void Properties::setToComputeDensityHessian(bool v)
 {
+	if (!do_density_hessian_ && v) {
+            densityXX_ = init_array(block_size_);
+            densityYY_ = init_array(block_size_);
+            densityZZ_ = init_array(block_size_);
+            densityXY_ = init_array(block_size_);
+            densityXZ_ = init_array(block_size_);
+            densityYZ_ = init_array(block_size_);
+        }
+        if (do_density_hessian_ && !v) {
+            free(densityXX_);
+            free(densityYY_);
+            free(densityZZ_);
+            free(densityXY_);
+            free(densityXZ_);
+            free(densityYZ_);
+        }
 	do_density_hessian_ = v;
 	if (v) {
 		setToComputeHessians(true);
 		setToComputeGradients(true);
 		setToComputePoints(true);
 	}
-}
+} 
 void Properties::setToComputeDensityLaplacian(bool v)
 {
+	if (!do_density_laplacian_ && v) {
+            density_laplacian_ = init_array(block_size_);
+        }
+        if (do_density_laplacian_ && !v) {
+            free(density_laplacian_);
+        }
 	do_density_laplacian_ = v;
 	if (v) {
 		setToComputeGradients(true);
 		setToComputeLaplacians(true);
 		setToComputePoints(true);
 	}
-}
+} 
 void Properties::setToComputeKEDensity(bool v)
 {
+	if (!do_ke_density_ && v) {
+            ke_density_ = init_array(block_size_);
+        }
+        if (do_ke_density_ && !v) {
+            free(ke_density_);
+        }
 	do_ke_density_ = v;
 	if (v)
 		setToComputeGradients(true);

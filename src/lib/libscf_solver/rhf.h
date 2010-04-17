@@ -60,9 +60,10 @@ protected:
     void diis();
     void allocate_PK();
 
-    void save_RHF_grid(Options &options, shared_ptr<BasisSet>  bas, SharedMatrix D, SharedMatrix C);    
-    double *getCartesianGridExtents(Options &options, shared_ptr<Molecule> m);
-    int* getCartesianGridResolution(Options &options);    
+    //DOWN FOR MAINTENANCE
+    //void save_RHF_grid(Options &options, shared_ptr<BasisSet>  bas, SharedMatrix D, SharedMatrix C);    
+    //double *getCartesianGridExtents(Options &options, shared_ptr<Molecule> m);
+    //int* getCartesianGridResolution(Options &options);    
     
     bool test_convergency();
     void save_information();

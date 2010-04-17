@@ -1,9 +1,11 @@
 #include <libutil/ref.h>
 #include <libmints/basisset.h>
 #include <libmints/basispoints.h>
+#include <libmints/gridblock.h>
 #include <libmints/gshell.h>
 #include <cstdio>
 #include <cmath>
+
 //#include <psifiles.h>
 #include <libciomr/libciomr.h>
 //#include <libpsio/psio.h>
@@ -15,9 +17,10 @@
 
 using namespace psi;
 
-BasisPoints::BasisPoints(shared_ptr<BasisSet> bas)
+BasisPoints::BasisPoints(shared_ptr<BasisSet> bas, int block_size)
 {
     basis_ = bas;
+    block_size_ = block_size;
     have_points_ = false;
     have_gradients_ = false;
     have_hessians_ = false;
@@ -59,16 +62,16 @@ void BasisPoints::allocate()
     int lmax = basis_->max_am();
     if (do_points_ && !have_points_) {
         ao_points_ = init_array((lmax+1)*(lmax+2)>>1);
-        points_ = init_array(basis_->nbf());
+        points_ = block_matrix(block_size_,basis_->nbf());
         have_points_ = true;
     }
     if (do_gradients_ && !have_gradients_)	{
         ao_gradX_ = init_array((lmax+1)*(lmax+2)>>1);
         ao_gradY_ = init_array((lmax+1)*(lmax+2)>>1);
         ao_gradZ_ = init_array((lmax+1)*(lmax+2)>>1);
-        gradientsX_ = init_array(basis_->nbf());
-        gradientsY_ = init_array(basis_->nbf());
-        gradientsZ_ = init_array(basis_->nbf());
+        gradientsX_ = block_matrix(block_size_,basis_->nbf());
+        gradientsY_ = block_matrix(block_size_,basis_->nbf());
+        gradientsZ_ = block_matrix(block_size_,basis_->nbf());
         have_gradients_ = true;
     }
     if (do_hessians_ && !have_hessians_) {
@@ -78,17 +81,17 @@ void BasisPoints::allocate()
         ao_hessXX_ = init_array((lmax+1)*(lmax+2)>>1);
         ao_hessYY_ = init_array((lmax+1)*(lmax+2)>>1);
         ao_hessZZ_ = init_array((lmax+1)*(lmax+2)>>1);
-        hessiansXY_ = init_array(basis_->nbf());
-        hessiansXZ_ = init_array(basis_->nbf());
-        hessiansYZ_ = init_array(basis_->nbf());
-        hessiansXX_ = init_array(basis_->nbf());
-        hessiansYY_ = init_array(basis_->nbf());
-        hessiansZZ_ = init_array(basis_->nbf());
+        hessiansXY_ = block_matrix(block_size_,basis_->nbf());
+        hessiansXZ_ = block_matrix(block_size_,basis_->nbf());
+        hessiansYZ_ = block_matrix(block_size_,basis_->nbf());
+        hessiansXX_ = block_matrix(block_size_,basis_->nbf());
+        hessiansYY_ = block_matrix(block_size_,basis_->nbf());
+        hessiansZZ_ = block_matrix(block_size_,basis_->nbf());
         have_hessians_ = true;
     }
     if (do_laplacians_ && !have_laplacians_) {
         ao_laplac_ = init_array((lmax+1)*(lmax+2)>>1);
-        laplacians_ = init_array(basis_->nbf());
+        laplacians_ = block_matrix(block_size_,basis_->nbf());
         have_laplacians_ = true;
     }
 
@@ -97,16 +100,16 @@ void BasisPoints::release()
 {
     if (have_points_ && !do_points_) {
         free(ao_points_);
-        free(points_);
+        free_block(points_);
         have_points_ = false;
     }
     if (have_gradients_ && !do_gradients_) {
         free(ao_gradX_);
         free(ao_gradY_);
         free(ao_gradZ_);
-        free(gradientsX_);
-        free(gradientsY_);
-        free(gradientsZ_);
+        free_block(gradientsX_);
+        free_block(gradientsY_);
+        free_block(gradientsZ_);
         have_gradients_ = false;
     }
     if (have_hessians_ && !do_hessians_) {
@@ -116,40 +119,52 @@ void BasisPoints::release()
         free(ao_hessXX_);
         free(ao_hessYY_);
         free(ao_hessZZ_);
-        free(hessiansXY_);
-        free(hessiansXZ_);
-        free(hessiansYZ_);
-        free(hessiansXX_);
-        free(hessiansYY_);
-        free(hessiansZZ_);
+        free_block(hessiansXY_);
+        free_block(hessiansXZ_);
+        free_block(hessiansYZ_);
+        free_block(hessiansXX_);
+        free_block(hessiansYY_);
+        free_block(hessiansZZ_);
         have_hessians_ = false;
     }
     if (have_laplacians_ && !do_laplacians_) {
         free(ao_laplac_);
-        free(laplacians_);
+        free_block(laplacians_);
         have_laplacians_ = false;
     }
 }
-void BasisPoints::computePoints(Vector3 point)
+void BasisPoints::computePoints(SharedGridBlock grid)
 {
+    double *xg = grid->getX();
+    double *yg = grid->getY();
+    double *zg = grid->getZ();
+    int ntrue = grid->getTruePoints();
+    
+    true_size_ = ntrue;    
+
+    for (int grid_index = 0; grid_index<ntrue; grid_index++) {
+    // << OPEN MAIN LOOP OVER GRID POINTS
+
+    Vector3 point(xg[grid_index],yg[grid_index],zg[grid_index]);
+
     if (do_points_) {
-        memset((void*)points_, 0, sizeof(double)*basis_->nbf());
+        memset((void*)points_[grid_index], 0, sizeof(double)*basis_->nbf());
     }
     if (do_gradients_) {
-        memset((void*)gradientsX_, 0, sizeof(double)*basis_->nbf());
-        memset((void*)gradientsY_, 0, sizeof(double)*basis_->nbf());
-        memset((void*)gradientsZ_, 0, sizeof(double)*basis_->nbf());
+        memset((void*)gradientsX_[grid_index], 0, sizeof(double)*basis_->nbf());
+        memset((void*)gradientsY_[grid_index], 0, sizeof(double)*basis_->nbf());
+        memset((void*)gradientsZ_[grid_index], 0, sizeof(double)*basis_->nbf());
     }
     if (do_hessians_) {
-        memset((void*)hessiansXY_, 0, sizeof(double)*basis_->nbf());
-        memset((void*)hessiansXZ_, 0, sizeof(double)*basis_->nbf());
-        memset((void*)hessiansYZ_, 0, sizeof(double)*basis_->nbf());
-        memset((void*)hessiansXX_, 0, sizeof(double)*basis_->nbf());
-        memset((void*)hessiansYY_, 0, sizeof(double)*basis_->nbf());
-        memset((void*)hessiansZZ_, 0, sizeof(double)*basis_->nbf());
+        memset((void*)hessiansXY_[grid_index], 0, sizeof(double)*basis_->nbf());
+        memset((void*)hessiansXZ_[grid_index], 0, sizeof(double)*basis_->nbf());
+        memset((void*)hessiansYZ_[grid_index], 0, sizeof(double)*basis_->nbf());
+        memset((void*)hessiansXX_[grid_index], 0, sizeof(double)*basis_->nbf());
+        memset((void*)hessiansYY_[grid_index], 0, sizeof(double)*basis_->nbf());
+        memset((void*)hessiansZZ_[grid_index], 0, sizeof(double)*basis_->nbf());
     }
     if (do_laplacians_) {
-        memset((void*)laplacians_, 0, sizeof(double)*basis_->nbf());
+        memset((void*)laplacians_[grid_index], 0, sizeof(double)*basis_->nbf());
     }
     int lmax = basis_->max_am();
     int lmax_size = sizeof(double)*(lmax+1)*(lmax+2)>>1;
@@ -196,6 +211,7 @@ void BasisPoints::computePoints(Vector3 point)
 
         //Get the AO exponents and angular norms for this shell
         //Multiply the angular part against the angular norm by m_c
+        //
         int ao = 0;
         for (int i=0; i<=l; ++i) {
             int x = l-i;
@@ -333,71 +349,50 @@ void BasisPoints::computePoints(Vector3 point)
                 ind_ao = trans.cartindex();
                 ind_so = trans.pureindex();
                 if (do_points_) {
-                    points_[ind_so+start] += trans_coef*ao_points_[ind_ao];
+                    points_[grid_index][ind_so+start] += trans_coef*ao_points_[ind_ao];
                 }
                 if (do_gradients_) {
-                    gradientsX_[ind_so+start] += trans_coef*ao_gradX_[ind_ao];
-                    gradientsY_[ind_so+start] += trans_coef*ao_gradY_[ind_ao];
-                    gradientsZ_[ind_so+start] += trans_coef*ao_gradZ_[ind_ao];
+                    gradientsX_[grid_index][ind_so+start] += trans_coef*ao_gradX_[ind_ao];
+                    gradientsY_[grid_index][ind_so+start] += trans_coef*ao_gradY_[ind_ao];
+                    gradientsZ_[grid_index][ind_so+start] += trans_coef*ao_gradZ_[ind_ao];
                 }
                 if (do_hessians_) {
-                    hessiansXY_[ind_so+start] += trans_coef*ao_hessXY_[ind_ao];
-                    hessiansXZ_[ind_so+start] += trans_coef*ao_hessXZ_[ind_ao];
-                    hessiansYZ_[ind_so+start] += trans_coef*ao_hessYZ_[ind_ao];
-                    hessiansXX_[ind_so+start] += trans_coef*ao_hessXX_[ind_ao];
-                    hessiansYY_[ind_so+start] += trans_coef*ao_hessYY_[ind_ao];
-                    hessiansZZ_[ind_so+start] += trans_coef*ao_hessZZ_[ind_ao];
+                    hessiansXY_[grid_index][ind_so+start] += trans_coef*ao_hessXY_[ind_ao];
+                    hessiansXZ_[grid_index][ind_so+start] += trans_coef*ao_hessXZ_[ind_ao];
+                    hessiansYZ_[grid_index][ind_so+start] += trans_coef*ao_hessYZ_[ind_ao];
+                    hessiansXX_[grid_index][ind_so+start] += trans_coef*ao_hessXX_[ind_ao];
+                    hessiansYY_[grid_index][ind_so+start] += trans_coef*ao_hessYY_[ind_ao];
+                    hessiansZZ_[grid_index][ind_so+start] += trans_coef*ao_hessZZ_[ind_ao];
                 }
                 if (do_laplacians_) {
-                    laplacians_[ind_so+start] += trans_coef*ao_laplac_[ind_ao];
+                    laplacians_[grid_index][ind_so+start] += trans_coef*ao_laplac_[ind_ao];
                 }
                 //fprintf(out,"Transforming AO shell index %d to SO total index %d, c = %14.10f\n",ind_ao,ind_so+start,trans_coef); fflush(outfile);
             }
         }
         else {
-            //fprintf(outfile,"  AO -> AO transform\n");
-            //AO -> AO (Easy)
-            // It's actually much easier than this: see below
-            //                for (int i = 0; i<(l+1)*(l+2)>>1; i++) {
-            //                    if (do_points_) {
-            //                        points_[i+start] = ao_points_[i];
-            //                    }
-            //                    if (do_gradients_) {
-            //                        gradientsX_[i+start] += trans_coef*ao_gradX_[i];
-            //                        gradientsY_[i+start] += trans_coef*ao_gradY_[i];
-            //                        gradientsZ_[i+start] += trans_coef*ao_gradZ_[i];
-            //                    }
-            //                    if (do_hessians_) {
-            //                        hessiansXY_[i+start] += trans_coef*ao_hessXY_[i];
-            //                        hessiansXZ_[i+start] += trans_coef*ao_hessXZ_[i];
-            //                        hessiansYZ_[i+start] += trans_coef*ao_hessYZ_[i];
-            //                        hessiansXX_[i+start] += trans_coef*ao_hessXX_[i];
-            //                        hessiansYY_[i+start] += trans_coef*ao_hessYY_[i];
-            //                        hessiansZZ_[i+start] += trans_coef*ao_hessZZ_[i];
-            //                    }
-            //                    if (do_hessians_) {
-            //                        laplacians_[i+start] += trans_coef*ao_laplac_[i];
-            //                    }
-            //                }
+            //AO -> AO (Easy) Thanks Jet!
             if (do_points_) {
-                memcpy(points_+start, ao_points_, l_size);
+                memcpy(points_[grid_index]+start, ao_points_, l_size);
             }
             if (do_gradients_) {
-                memcpy(gradientsX_+start, ao_gradX_, l_size);
-                memcpy(gradientsY_+start, ao_gradY_, l_size);
-                memcpy(gradientsZ_+start, ao_gradZ_, l_size);
+                memcpy(gradientsX_[grid_index]+start, ao_gradX_, l_size);
+                memcpy(gradientsY_[grid_index]+start, ao_gradY_, l_size);
+                memcpy(gradientsZ_[grid_index]+start, ao_gradZ_, l_size);
             }
             if (do_hessians_) {
-                memcpy(hessiansXY_+start, ao_hessXY_, l_size);
-                memcpy(hessiansXZ_+start, ao_hessXZ_, l_size);
-                memcpy(hessiansYZ_+start, ao_hessYZ_, l_size);
-                memcpy(hessiansXX_+start, ao_hessXX_, l_size);
-                memcpy(hessiansYY_+start, ao_hessYY_, l_size);
-                memcpy(hessiansZZ_+start, ao_hessZZ_, l_size);
+                memcpy(hessiansXY_[grid_index]+start, ao_hessXY_, l_size);
+                memcpy(hessiansXZ_[grid_index]+start, ao_hessXZ_, l_size);
+                memcpy(hessiansYZ_[grid_index]+start, ao_hessYZ_, l_size);
+                memcpy(hessiansXX_[grid_index]+start, ao_hessXX_, l_size);
+                memcpy(hessiansYY_[grid_index]+start, ao_hessYY_, l_size);
+                memcpy(hessiansZZ_[grid_index]+start, ao_hessZZ_, l_size);
             }
             if (do_laplacians_) {
-                memcpy(laplacians_+start, ao_laplac_, l_size);
+                memcpy(laplacians_[grid_index]+start, ao_laplac_, l_size);
             }
         }
+    }
+    // << CLOSE OUTER LOOP OVER GRID POINTS
     }
 }

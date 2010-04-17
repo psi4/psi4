@@ -31,7 +31,7 @@ public:
 	*  ie: 'B3LYP'
 	* @return functional object pointer corresponding to id
 	*/
-	Functional * getFunctional(string id);
+	Functional * getFunctional(string id, int block_size);
 };
 
 }}
