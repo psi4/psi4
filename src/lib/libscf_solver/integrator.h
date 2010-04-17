@@ -24,15 +24,53 @@ using namespace psi;
 namespace psi { namespace scf {
 
 /*! \ingroup SCF */
-//! Integration Point/Weight container struct 
+//! Integration Point/Weight container struct
+// DEPRACATED 
 typedef struct IntegrationPoint {
     Vector3 point;
     double weight;
 };
+/*! \ingroup SCF */
+//! Integration Point/Weight container class (blocks, not individual) 
+class GridBlock {
+protected:
+    /// Weight vector [max_points_]
+    double* w_;
+    /// x vector [max_points_]
+    double* x_;
+    /// y vector [max_points_]
+    double* y_;
+    /// z vector [max_points_]
+    double* z_;
+    /// Maximum number of points in block at the moment
+    int max_points_;
+    /// Actual number of valid points
+    int true_points_; 
+public:
+    /** Constructor, allocates block object with max_points size **/
+    GridBlock(int max_points);
+    /** Destructor, deallocates arrays **/
+    ~GridBlock();
+    /** Factory Constructor **/
+    static GridBlock * createGridBlock(int max_points) {
+        return new GridBlock(max_points);
+    }
+    int getMaxPoints() const {return max_points_; }
+    int getTruePoints() const {return true_points_; }
+    double* getWeights() const {return w_; }
+    double* getX() const {return x_; }
+    double* getY() const {return y_; }
+    double* getZ() const {return z_; }
+    void setGrid(double* x, double* y, double* z, double* w, int n);
+    void setTruePoints(int n) { true_points_ = n; }
+    void setMaxPoints(int n) { max_points_ = n; }
+};
+typedef shared_ptr<GridBlock> SharedGridBlock;
+
 
 /*! \ingroup SCF */
 //! Lebedev Unit Sphere
-typedef struct LebedevSphere {
+typedef struct SphericalQuadrature {
     int n;
     double *x;
     double *y;
@@ -236,10 +274,12 @@ const double INVLN2 = 1.0/log(2.0);
 */
 class Integrator {
 private:
+    /// Grid Block
+    SharedGridBlock grid_block_;
     /// Current Radial Quadrature
     RadialQuadrature rad_;
     /// Vector of Spherical Quadratures
-    std::vector<LebedevSphere> sphere_;
+    std::vector<SphericalQuadrature> sphere_;
     /// Current Atom
     int nuclearIndex_;
     /// Current Sphere
@@ -259,6 +299,8 @@ protected:
     int nnuclei_;
     /// Number of spherical grids for pruned grids
     int nspheres_;
+    /// Maximum number of grid points in a block
+    int block_size_; 
     /// Selected nuclear weight scheme
     nuclear_scheme nuclear_scheme_;
     /// Selected spherical weight scheme
@@ -284,11 +326,9 @@ protected:
     /// The radial quadrature, with the Euler-Maclaurin weights (see Gill 1993)
     RadialQuadrature getRadialQuadratureEulerMaclaurin(int n, double xi);
     /// Compute the Lebedev Sphere for the desired number of spherical points
-    LebedevSphere getLebedevSphere(int deg);
-    /// Compute the Lebedev reccurence points (used by getLebedevSphere)
-    int getLebedevReccurencePoints(int type, int start, double a, double b, double v, LebedevSphere l);
-    /// The current grid point
-    Vector3 getCurrentPoint();
+    SphericalQuadrature getSphericalQuadrature(int deg);
+    /// Compute the Lebedev reccurence points (used by getSphericalQuadrature)
+    int getLebedevReccurencePoints(int type, int start, double a, double b, double v, SphericalQuadrature l);
     /// The adjusted Bragg-Slater radius of nucleus with charge n (See Becke 1988, etc)
     double getBraggSlaterRadius(int n);
     /// The optimized Treutler radius of nucleus with charge n (See Treutler 1995)
@@ -336,9 +376,15 @@ public:
 	* @return true if all points have been asked for by getNextPoints, false otherwise
 	*/
     bool isDone() {return done_; }
+    /** The next integration grid block
+    * @ return the GridBlock object containing up to the next block_size_
+        points
+	*/
+    SharedGridBlock getNextBlock();
     /** The next integration point and weight
 	* @ return The IntegrationPoint struct corresponding to the next point and weight
-	*/
+    * DEPRECATED	
+    */
     IntegrationPoint getNextPoint();
     /** The molecule associated with this Integrator
 	* @return The molecule associated with this Integrator
@@ -381,31 +427,6 @@ public:
 };
 
 typedef shared_ptr<Integrator> SharedIntegrator;
-
-class GridBlock {
-protected:
-    double* w_;
-    double* x_;
-    double* y_;
-    double* z_;
-    int max_points_;
-    int true_points_; 
-public:
-    GridBlock(int max_points);
-    ~GridBlock();
-    static GridBlock * createGridBlock(int max_points) {
-        return new GridBlock(max_points);
-    }
-    const int getMaxPoints() const {return max_points_; }
-    const int getTruePoints() const {return true_points_; }
-    const double* getWeights() const {return w_; }
-    const double* getX() const {return x_; }
-    const double* getY() const {return y_; }
-    const double* getZ() const {return z_; }
-    void setGrid(double* x, double* y, double* z, double* w, int n);
-
-};
-typedef shared_ptr<GridBlock> SharedGridBlock;
 
 }}
 #endif
