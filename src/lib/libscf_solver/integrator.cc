@@ -13,6 +13,7 @@
 #include <libmints/basisset.h>
 #include <libmints/molecule.h>
 #include <libmints/vector3.h>
+#include <libmints/gridblock.h>
 #include "hf.h"
 #include <cmath>
 #include <math.h>
