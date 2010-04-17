@@ -4,6 +4,7 @@
 #include <libmints/basispoints.h>
 #include <libmints/matrix.h>
 #include <libmints/vector3.h>
+#include <libmints/gridblock.h>
 #include <libutil/ref.h>
 #include <psi4-dec.h>
 namespace psi {
@@ -11,22 +12,22 @@ namespace psi {
 	class Properties:public BasisPoints
 	{
 		protected:
-			double* mos_;
+			double** mos_;
 			int* mo_inds_;
 			int nmo_;
-			double density_;
-			double densityX_;
-			double densityY_;
-			double densityZ_;
-			double densityXY_;
-			double densityXZ_;
-			double densityYZ_;
-			double densityXX_;
-			double densityYY_;
-			double densityZZ_;
-			double density_gradient_2_;
-			double density_laplacian_;
-			double ke_density_;
+			double* density_;
+			double* densityX_;
+			double* densityY_;
+			double* densityZ_;
+			double* densityXY_;
+			double* densityXZ_;
+			double* densityYZ_;
+			double* densityXX_;
+			double* densityYY_;
+			double* densityZZ_;
+			double* density_gradient_2_;
+			double* density_laplacian_;
+			double* ke_density_;
 			bool do_mos_;
 			bool do_density_;
 			bool do_density_gradient_;
@@ -34,27 +35,27 @@ namespace psi {
 			bool do_density_laplacian_;
 			bool do_ke_density_;
 		public:
-			static Properties * constructProperties(shared_ptr<BasisSet> b)
+			static Properties * constructProperties(shared_ptr<BasisSet> b, int block_size)
 			{
-				return new Properties(b);
+				return new Properties(b,block_size);
 			}
-			Properties(shared_ptr<BasisSet> b);
+			Properties(shared_ptr<BasisSet> b, int block_size);
 			~Properties();
-			void computeProperties(Vector3 v, SharedMatrix D, SharedMatrix C = SharedMatrix() );
-			const double getDensity() const { return density_; }		
-			const double getDensityX() const { return densityX_; }		
-			const double getDensityY() const { return densityY_; }		
-			const double getDensityZ() const { return densityZ_; }		
-			const double getDensityGradientSquared() const { return density_gradient_2_; }
-			const double getDensityXY() const { return densityXY_; }		
-			const double getDensityXZ() const { return densityXZ_; }		
-			const double getDensityYZ() const { return densityYZ_; }		
-			const double getDensityXX() const { return densityXX_; }		
-			const double getDensityYY() const { return densityYY_; }		
-			const double getDensityZZ() const { return densityZZ_; }		
-			const double getDensityLaplacian() const { return density_laplacian_; }
-			const double getKEDensity() const { return ke_density_; }	
-			const double getMO(int i) const {return mos_[i]; }
+			void computeProperties(SharedGridBlock grid, SharedMatrix D, SharedMatrix C = SharedMatrix() );
+			const double* getDensity() const { return density_; }		
+			const double* getDensityX() const { return densityX_; }		
+			const double* getDensityY() const { return densityY_; }		
+			const double* getDensityZ() const { return densityZ_; }		
+			const double* getDensityGradientSquared() const { return density_gradient_2_; }
+			const double* getDensityXY() const { return densityXY_; }		
+			const double* getDensityXZ() const { return densityXZ_; }		
+			const double* getDensityYZ() const { return densityYZ_; }		
+			const double* getDensityXX() const { return densityXX_; }		
+			const double* getDensityYY() const { return densityYY_; }		
+			const double* getDensityZZ() const { return densityZZ_; }		
+			const double* getDensityLaplacian() const { return density_laplacian_; }
+			const double* getKEDensity() const { return ke_density_; }	
+			double** getMOs() {return mos_; }
 			void setToComputeMOs(bool v, int* indices, int n);
 			void setToComputeDensity(bool v);
 			void setToComputeDensityGradient(bool v);	

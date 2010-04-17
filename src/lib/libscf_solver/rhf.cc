@@ -186,8 +186,9 @@ double RHF::compute_energy()
     }
 
     if (save_grid_) {
-        fprintf(outfile,"\n  Saving Cartesian Grid\n");
-        save_RHF_grid(options_, basisset_, D_, C_);
+        // DOWN FOR MAINTENANCE
+        //fprintf(outfile,"\n  Saving Cartesian Grid\n");
+        //save_RHF_grid(options_, basisset_, D_, C_);
     }
 
     if (ri_integrals_)
@@ -314,6 +315,7 @@ void RHF::compute_multipole()
         //fflush(outfile);
     }
 }
+/** CURRENTLY DOWN FOR MAINTENANCE
 void RHF::save_RHF_grid(Options& opts, shared_ptr<BasisSet> basis, SharedMatrix D, SharedMatrix C)
 {
     SharedProperties prop = SharedProperties(Properties::constructProperties(basis));
@@ -443,7 +445,7 @@ double* RHF::getCartesianGridExtents(Options &opts, shared_ptr<Molecule> mol)
         ext[5] = zmax + overage;
     }
     return ext;
-}
+}**/
 void RHF::save_information()
 {
     // Print the final docc vector

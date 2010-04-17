@@ -19,19 +19,20 @@ class FunctionalFactory;
 /*! \ingroup SCF */
 //! Functional Interface definition 
 class Functional {
+protected:
+        double *value_;
+        double *gradA_;
+        int block_size_;
 public:
 	/** Constructor
-	* Does nothing, returns NO object
+	* Allocates memory
 	*/
-	Functional() {/* Does nothing */}
-	/** Constructor
-	* Does nothing, returns object
-	*/
-	Functional(int) {/* Does nothing */}
+	Functional(int block_size) {block_size_ = block_size; }
 	/** Destructor
-	* Does nothing
+	* Cleans up memory
 	*/
-	~Functional() {/* Does nothing */}
+	~Functional() { }
+
 	/** Does this functional depend on spin?
 	* @return true if so, false otherwise
 	*/
@@ -56,10 +57,10 @@ public:
 	* @return true if so, false otherwise
 	*/
 	virtual bool needsDensityGradient() {return false; }
-	/** Does this functional need electron density jacobians?
+	/** Does this functional need electron density hessians?
 	* @return true if so, false otherwise
 	*/
-	virtual bool needsDensityJacobian() {return false; } 
+	virtual bool needsDensityHessian() {return false; } 
 	/** Does this functional need electron density laplacians?
 	* @return true if so, false otherwise
 	*/
@@ -68,14 +69,18 @@ public:
 	* @return true if so, false otherwise
 	*/
 	virtual bool needsKEDensity()  {return false; } 
-	/** Does this functional depend on spin?
-	* @return true if so, false otherwise
+        /** Compute the functional value based on the given properties
+        * object over npoints (garanteed to be in the Properties object)
+        */	
+        virtual void computeFunctional(shared_ptr<Properties>){}
+        /*
+	* Functional Value
 	*/
-	virtual double getValue(shared_ptr<Properties>)  {return 0.0;}
-	/** Does this functional depend on spin?
-	* @return true if so, false otherwise
+	virtual double *getValue()  {return value_;}
+	/** 
+	* Functional Gradient
 	*/
-	virtual double getGradientA(shared_ptr<Properties>)  {return 0.0;}
+	virtual double *getGradientA()  {return gradA_;}
 	/** Functional name
 	* @return functional or alias name ie: 'B3LYP'
 	*/

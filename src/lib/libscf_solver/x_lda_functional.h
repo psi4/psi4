@@ -18,17 +18,13 @@ namespace psi { namespace scf {
 class X_LDA_Functional: public Functional {
 public:
 	/** Constructor
-	* Does nothing, returns object
+	* Allocates required arrays, returns object
 	*/
-	X_LDA_Functional() {/* Does nothing */}
-	/** Constructor
-	* Does nothing, returns object
-	*/
-	X_LDA_Functional(int) {/* Does nothing */}
+	X_LDA_Functional(int); 
 	/** Destructor
-	* Does nothing
+	* Frees arrays
 	*/
-	~X_LDA_Functional() {/* Does nothing */}
+	~X_LDA_Functional();
 	/** 
 	* @return false, no spin dependence
 	*/
@@ -56,7 +52,7 @@ public:
 	/** Does this functional need electron density jacobians?
 	* @return true if so, false otherwise
 	*/
-	const bool needsDensityJacobian() const {return false; }
+	const bool needsDensityHessian() const {return false; }
 	/** Does this functional need electron density laplacians?
 	* @return true if so, false otherwise
 	*/
@@ -66,14 +62,9 @@ public:
 	*/
 	const bool needsKEDensity() const {return false; }
 	/** Functional Value at specified point properties 
-	* @return functional value
+	* 
 	*/
-	double getValue(shared_ptr<Properties> prop);
-	/** Functional Gradient w.r.t. spin up denisty
-	*  at specified point properties 
-	* @return functional gradient
-	*/
-	double getGradientA(shared_ptr<Properties> prop);
+	void computeFunctional(shared_ptr<Properties> prop);
 	/** Functional name
 	* @return functional or alias name ie: 'B3LYP'
 	*/

@@ -17,26 +17,27 @@
 using namespace psi;
 
 namespace psi { namespace scf {
-
-double X_LDA_Functional::getValue(shared_ptr<Properties> prop)
+X_LDA_Functional::X_LDA_Functional(int _block_size): Functional(_block_size)
 {
-	double tol = 1.0E-20;
-	double rho = 1.0*prop->getDensity();
-	if (rho<tol)
-		return 0.0;
-        double c = 3.0/8.0*pow(3.0,1.0/3.0)*pow(4.0,2.0/3.0)*pow(M_PI,-1.0/3.0);
-	double val = -c*pow(rho,4.0/3.0);
-	return val;
+    value_ = init_array(_block_size);
+    gradA_ = init_array(_block_size);
 }
-double X_LDA_Functional::getGradientA(shared_ptr<Properties> prop)
+X_LDA_Functional::~X_LDA_Functional()
+{
+    free(value_);
+    free(gradA_);
+}
+void X_LDA_Functional::computeFunctional(shared_ptr<Properties> prop)
 {
 	double tol = 1.0E-20;
-	double rho = 1.0*prop->getDensity();
-	if (rho<tol)
-		return 0.0;
+	const double *rho = prop->getDensity();
+        int ntrue = prop->getTrueSize();
         double c = 3.0/8.0*pow(3.0,1.0/3.0)*pow(4.0,2.0/3.0)*pow(M_PI,-1.0/3.0);
-	double val = -4.0/3.0*c*pow(rho,1.0/3.0);
-	return val;
+
+        for (int grid_index = 0; grid_index<ntrue; grid_index++) {
+	    value_[grid_index] = -c*pow(rho[grid_index],4.0/3.0);
+	    gradA_[grid_index] = -4.0/3.0*c*pow(rho[grid_index],1.0/3.0);
+        }
 }
 string X_LDA_Functional::getName()
 {
