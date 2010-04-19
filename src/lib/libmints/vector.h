@@ -135,6 +135,9 @@ public:
     /// Copy rhs to this
     void copy(const SimpleVector* rhs);
 
+    /// Scale the vector
+    void scale(double a);
+    
     friend class SimpleMatrix;
 };
 

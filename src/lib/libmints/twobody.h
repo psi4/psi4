@@ -75,6 +75,9 @@ public:
     
     /// Compute the integrals
     virtual void compute_shell(int, int, int, int) = 0;
+
+    /// Compute the integrals
+    virtual void compute_shell_deriv1(int, int, int, int) = 0;
     
     /// Normalize Cartesian functions based on angular momentum
     void normalize_am(shared_ptr<GaussianShell>, shared_ptr<GaussianShell>, shared_ptr<GaussianShell>, shared_ptr<GaussianShell>, int nchunk=1);
