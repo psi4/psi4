@@ -235,3 +235,9 @@ double *SimpleVector::to_block_vector() {
     
     return temp;
 }
+
+void SimpleVector::scale(double a) {
+    for (int i=0; i<dim_; ++i) {
+        vector_[i] *= a;
+    }
+}

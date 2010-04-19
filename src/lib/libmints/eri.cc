@@ -968,7 +968,7 @@ void ERI::compute_quartet(int sh1, int sh2, int sh3, int sh4)
 
 void ERI::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
 {
-    if (deriv_ >= 1) {
+    if (deriv_ < 1) {
         fprintf(stderr, "ERROR - ERI: ERI object not initialized to handle derivatives.\n");
         abort();
     }
@@ -1266,7 +1266,7 @@ int ERI::shell_is_zero(int sh1, int sh2, int sh3, int sh4)
 {
     if (schwarz2_ != 0.0)
         if (screen_ == false)
-            form_sieve();
+        form_sieve();
 
     //fprintf(outfile,"\nSchwarz val is %f",schwarz_norm_[ioff[((sh1>sh2)?sh1:sh2)]+((sh1>sh2)?sh2:sh1)]*schwarz_norm_[ioff[((sh3>sh4)?sh3:sh4)]+((sh3>sh4)?sh4:sh3)]);
     if (screen_ == true)
