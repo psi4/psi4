@@ -853,7 +853,7 @@ AC_CONFIG_FILES([include/Makefile
           tests/cc4/Makefile
           tests/cc8/Makefile
           tests/cc8a/Makefile
-          tests/mcscf-rhf1/Makefile
+          tests/mcscf1-rhf/Makefile
 ])
 
 AC_OUTPUT
