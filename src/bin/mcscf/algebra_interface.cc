@@ -3,7 +3,7 @@
 
 extern FILE *infile, *outfile;
 
-namespace psi{ namespace MCSCF{
+namespace psi{ namespace mcscf{
 
 /*
 ** C_DGEMM_12()

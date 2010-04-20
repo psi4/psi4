@@ -54,6 +54,9 @@ psi4_driver(Options & options, int argc, char *argv[])
     ip_cwk_add(const_cast<char*>(":PSI"));
     fclose(psidat);
 
+    fprintf(outfile, "[Debug]"); fflush(outfile);
+
+
     // Join the job descriptors into one label
     std::string calcType = options.get_str("WFN");
     calcType += ":";

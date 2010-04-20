@@ -8,7 +8,7 @@
 
 typedef std::vector<int> vecint;
 
-namespace psi{ namespace MCSCF{
+namespace psi{ namespace mcscf{
 
 class BlockVector
 {

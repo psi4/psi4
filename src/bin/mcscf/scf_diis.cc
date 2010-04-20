@@ -9,7 +9,7 @@
 
 extern FILE* outfile;
 
-namespace psi{ namespace MCSCF{
+namespace psi{ namespace mcscf{
 
 void SCF::diis(int cycle)
 {
@@ -83,7 +83,7 @@ void SCF::diis(int cycle)
         Feff_oAO += e;
       }
 
-      if(reference == tcscf && options.get_bool("CI_DIIS") ){
+      if(reference == tcscf && options_.get_bool("CI_DIIS") ){
         for(int I = 0 ; I < nci; ++I){
           ci[I] = 0.0;
           for(int i=0; i < ndiis;i++){

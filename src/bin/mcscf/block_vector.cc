@@ -1,12 +1,13 @@
-#include <libutil/libutil.h>
 #include <cstdio>
+
+#include <libutil/libutil.h>
 
 #include "block_vector.h"
 #include "vector_base.h"
 
-extern FILE* outfile;
+#include <psi4-dec.h>
 
-namespace psi{ namespace MCSCF{
+namespace psi{ namespace mcscf{
 
 BlockVector::BlockVector()
  : nirreps_(0) ,ref_(0), vector_base_(0), rows_size_(0), rows_offset_(0)

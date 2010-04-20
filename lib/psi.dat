@@ -1,5 +1,7 @@
 psi: (
   SCF:ENERGY  = ("input" "cints" "cscf")
+  MCSCF:ENERGY = ("input" "cints" "mcscf")
+  MRCCSD:ENERGY = ("input" "cints" "cscf" "transqt2" "psimrcc")
   MP2:ENERGY  = ("input" "cints" "cscf" "transqt2" "ccsort" "mp2")
   LMP2:ENERGY = ("input" "cints" "scf" "lmp2")
   CCSD:ENERGY = ("input" "cints" "cscf" "transqt2" "ccsort" "ccenergy")

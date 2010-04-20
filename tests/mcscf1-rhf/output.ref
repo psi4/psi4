@@ -1,0 +1,299 @@
+******************************************************************************
+PSI3 started on fscoe at Mon Apr 21 12:11:37 2008
+
+    -----------------------------------------------------------------------    
+            PSI3: An Open-Source Ab Initio Electronic Structure Package 
+                                Version 3.4 Alpha
+
+    T. D. Crawford, C. D. Sherrill, E. F. Valeev, J. T. Fermann, R. A. King,
+    M. L. Leininger, S. T. Brown, C. L. Janssen, E. T. Seidl, J. P. Kenny,
+    and W. D. Allen, J. Comput. Chem. 28, 1610-1616 (2007)
+    -----------------------------------------------------------------------    
+
+PSI3 will perform a RHF MCSCF energy computation.
+
+The following programs will be executed:
+
+ input
+ cints
+ mcscf
+ psiclean
+
+******************************************************************************
+INPUT tstart called on fscoe
+Mon Apr 21 12:11:37 2008
+
+                                --------------
+                                    INPUT
+                                --------------
+
+  LABEL       =	6-31G** RHF H2O Single Point
+  SHOWNORM    =	0
+  PUREAM      =	0
+  PRINT_LVL   =	1
+
+  Parsed basis sets from /home/frank/src/psi3-install/share/psi/pbasis.dat
+Coordinates after reading z-matrices
+
+           1           2           3
+
+    1   0.0000000   0.0000000   0.0000000
+    2   0.0000000   0.0000000   1.7821250
+    3   1.7133560   0.0000000  -0.4902864
+
+  -Geometry before Center-of-Mass shift (a.u.):
+       Center              X                  Y                   Z
+    ------------   -----------------  -----------------  -----------------
+          OXYGEN      0.000000000000     0.000000000000     0.000000000000
+        HYDROGEN      0.000000000000     0.000000000000     1.782124990789
+        HYDROGEN      1.713355984130     0.000000000000    -0.490286400424
+
+
+  -Rotational constants (cm-1) :
+    A =   29.21515  B =   14.74973  C =    9.80136
+    It is an asymmetric top.
+
+  -Geometry after Center-of-Mass shift and reorientation (a.u.):
+       Center              X                  Y                   Z
+    ------------   -----------------  -----------------  -----------------
+          OXYGEN      0.000000000000    -0.120073181095     0.000000000000
+        HYDROGEN      1.422975953703     0.952824259473    -0.000000000000
+        HYDROGEN     -1.422975953703     0.952824259473    -0.000000000000
+
+
+  -SYMMETRY INFORMATION:
+    Computational point group is C2v 
+    Number of irr. rep.      = 4
+    Number of atoms          = 3
+    Number of unique atoms   = 2
+
+
+  -BASIS SETS:
+
+   -Basis set on unique center 1:
+      ( (S (  5484.67166000     0.00183107)
+           (   825.23494600     0.01395017)
+           (   188.04695800     0.06844508)
+           (    52.96450000     0.23271434)
+           (    16.89757040     0.47019290)
+           (     5.79963534     0.35852085) )
+        (S (    15.53961625    -0.11077755)
+           (     3.59993359    -0.14802626)
+           (     1.01376175     1.13076701) )
+        (S (     0.27000582     1.00000000) )
+        (P (    15.53961625     0.07087427)
+           (     3.59993359     0.33975284)
+           (     1.01376175     0.72715858) )
+        (P (     0.27000582     1.00000000) )
+        (D (     0.80000000     1.00000000) )
+       )
+
+   -Basis set on unique center 2:
+      ( (S (    18.73113696     0.03349460)
+           (     2.82539437     0.23472695)
+           (     0.64012169     0.81375733) )
+        (S (     0.16127776     1.00000000) )
+        (P (     1.10000000     1.00000000) )
+       )
+
+
+  -BASIS SET INFORMATION:
+    Total number of shells = 12
+    Number of primitives   = 20
+    Number of AO           = 25
+    Number of SO           = 25
+
+    Irrep    Number of SO
+    -----    ------------
+      1           12
+      2            2
+      3            4
+      4            7
+
+
+  -Unique atoms in the canonical coordinate system (a.u.):
+       Center              X                  Y                   Z
+    ------------   -----------------  -----------------  -----------------
+          OXYGEN      0.000000000000     0.000000000000    -0.120073181095
+        HYDROGEN     -0.000000000000     1.422975953703     0.952824259473
+
+
+  -Geometry in the canonical coordinate system (a.u.):
+       Center              X                  Y                   Z
+    ------------   -----------------  -----------------  -----------------
+          OXYGEN      0.000000000000     0.000000000000    -0.120073181095
+        HYDROGEN     -0.000000000000     1.422975953703     0.952824259473
+        HYDROGEN     -0.000000000000    -1.422975953703     0.952824259473
+
+
+  -Geometry in the canonical coordinate system (Angstrom):
+       Center              X                  Y                   Z
+    ------------   -----------------  -----------------  -----------------
+          OXYGEN      0.000000000000     0.000000000000    -0.063539995651
+        HYDROGEN     -0.000000000000     0.753006500574     0.504212920408
+        HYDROGEN     -0.000000000000    -0.753006500574     0.504212920408
+
+
+  -Geometry in the reference coordinate system (a.u.):
+       Center              X                  Y                   Z
+    ------------   -----------------  -----------------  -----------------
+          OXYGEN      0.000000000000     0.000000000000    -0.120073181095
+        HYDROGEN     -0.000000000000     1.422975953703     0.952824259473
+        HYDROGEN     -0.000000000000    -1.422975953703     0.952824259473
+
+
+  --------------------------------------------------------------------------
+
+    Nuclear Repulsion Energy (a.u.) =       9.329422200614
+
+  -The Interatomic Distances in angstroms:
+
+           1           2           3
+
+    1   0.0000000
+    2   0.9430600   0.0000000
+    3   0.9430600   1.5060130   0.0000000
+
+    Note: To print *all* bond angles, out-of-plane
+          angles, and torsion angles set print = 3
+
+
+******************************************************************************
+INPUT tstop called on fscoe
+Mon Apr 21 12:11:37 2008
+
+user time   =       0.05 seconds =       0.00 minutes
+system time =       0.00 seconds =       0.00 minutes
+total time  =          0 seconds =       0.00 minutes
+******************************************************************************
+cints tstart called on fscoe
+Mon Apr 21 12:11:37 2008
+
+                  --------------------------------------------
+                    CINTS: An integrals program written in C
+                     Justin T. Fermann and Edward F. Valeev
+                  --------------------------------------------
+
+
+  -OPTIONS:
+    Print level                 = 1
+    Integral tolerance          = 1e-15
+    Max. memory to use          = 2500000 double words
+    Number of threads           = 1
+    LIBINT's real type length   = 64 bit
+
+  -CALCULATION CONSTANTS:
+    Label                       = 6-31G** RHF H2O Single Point
+    Number of atoms             = 3
+    Number of atomic orbitals   = 25
+    Number of symmetry orbitals = 25
+    Maximum AM in the basis     = 2
+
+  -SYMMETRY INFORMATION;
+    Computational point group        = C2v
+    Number of irreps                 = 4
+
+    Wrote 13617 two-electron integrals to IWL file 33
+
+******************************************************************************
+cints tstop called on fscoe
+Mon Apr 21 12:11:37 2008
+
+user time   =       0.04 seconds =       0.00 minutes
+system time =       0.00 seconds =       0.00 minutes
+total time  =          0 seconds =       0.00 minutes
+
+  MCSCF Version 0.1.0, April, 2008
+  Francesco Evangelista
+  Compiled on Apr 21 2008 at 12:08:30
+  id = 26bb1843c4275e527ceccaf6c370c0a2d79ac875 
+
+  Options:
+  ----------------------------------------------------------------------------
+  CI_DIIS           = TRUE
+  READ_MOS          = TRUE
+  USE_DIIS          = TRUE
+  USE_FAVG          = FALSE
+  CHARGE            = 0
+  CONVERGENCE       = 12
+  DAMPING_FACTOR    = 0
+  DEBUG             = 0
+  DENOMINATOR_SHIFT = 0
+  MAX_ITERATIONS    = 100
+  MEMORY            = 1800
+  MULTP             = 1
+  NDIIS             = 7
+  ROOT              = 1
+  START_FAVG        = 5
+  TURN_ON_ACTV      = 5
+  REFERENCE         = RHF
+  WFN_SYM           = 1
+  ----------------------------------------------------------------------------
+
+  MOs per irrep:                                      A1   A2   B1   B2  Total
+  ----------------------------------------------------------------------------
+  Total                                               12    2    4    7    25
+  Doubly Occupied                                      3    0    1    1     5
+  Active                                               0    0    0    0     0
+  ----------------------------------------------------------------------------
+
+  Running an SCF calculation
+
+  Generated 325 pairs
+  Distributed as [119 A1 ][52 A2 ][62 B1 ][92 B2 ]
+  batch  0 pq = [     0,   119] index = [           0,        7140]
+
+  Allocated the PK matrix (7140 elements) 
+  Reading the two-electron integrals to form PK ... done.
+
+  ===========================================================================
+         Cycle          Energy               D(Energy)            DIIS
+  ===========================================================================
+  @SCF    0      -68.240427068744      -68.240427068744 S
+  @SCF    1      -71.349113315574       -3.108686246830 S
+  @SCF    2      -73.947179586888       -2.598066271314 S
+  @SCF    3      -75.031501496726       -1.084321909838 S
+  @SCF    4      -75.651828218442       -0.620326721716 S
+  @SCF    5      -75.892242739911       -0.240414521469 S
+  @SCF    6      -75.979527752194       -0.087285012283 S
+  @SCF    7      -76.008855941458       -0.029328189264 S/E
+  @SCF    8      -76.023612841098       -0.014756899640 S/E
+  @SCF    9      -76.023614672432       -0.000001831334 S/E
+  @SCF   10      -76.023615005331       -0.000000332900 S/E
+  @SCF   11      -76.023615019127       -0.000000013796 S/E
+  @SCF   12      -76.023615019279       -0.000000000152 S/E
+  @SCF   13      -76.023615019286       -0.000000000006 S/E
+  @SCF   14      -76.023615019286       -0.000000000000 S/E
+  ===========================================================================
+
+     * SCF total energy   =     -76.02361501928
+
+  End of SCF
+  MOs orthonormality check passed.
+
+  =========================================================================
+  Eigenvalues (Eh)
+  -------------------------------------------------------------------------
+  Doubly occupied orbitals
+      1    -20.557269 A1       2     -1.346465 A1       3     -0.713891 B2 
+      4     -0.568283 A1       5     -0.497607 B1 
+  Unoccupied orbitals
+      6      0.215331 A1       7      0.308436 B2       8      1.016900 B2 
+      9      1.093012 A1      10      1.134579 A1      11      1.168985 B1 
+     12      1.295523 B2      13      1.411677 A1      14      1.802541 A2 
+     15      1.829512 A1      16      1.931474 B1      17      2.582658 B2 
+     18      2.588835 A1      19      2.841667 B2      20      2.997531 B1 
+     21      3.006365 A2      22      3.406553 A1      23      3.745701 A1 
+     24      3.945213 B2      25      4.128457 A1 
+  =========================================================================
+
+
+  MCSCF Execution Completed.
+                          --------------------------
+                          PSI3 Computation Completed
+                          --------------------------
+
+PSI3 stopped on fscoe at Mon Apr 21 12:11:37 2008
+
+Total PSI3 wall time          0 seconds =       0.00 minutes
+******************************************************************************

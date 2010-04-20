@@ -9,7 +9,7 @@ typedef std::vector<int> vecint;
 
 extern FILE* outfile;
 
-namespace psi{ namespace MCSCF{
+namespace psi{ namespace mcscf{
 
 class BlockMatrix
 {

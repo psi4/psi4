@@ -3,15 +3,15 @@
 
 #include "scf.h"
 
-namespace psi{ namespace MCSCF{
+namespace psi{ namespace mcscf{
 
 void SCF::construct_Feff(int cycle)
 {
   Feff_t_old = Feff_t;
   Feff_t = Fc_t;
  
-  if(options.get_bool("USE_FAVG")){
-    if(cycle >= options.get_int("START_FAVG")){
+  if(options_.get_bool("USE_FAVG")){
+    if(cycle >= options_.get_int("START_FAVG")){
       // Set the diagonal blocks Fock 
       for(int h =0; h < nirreps; ++h){
         // Set the (closed,closed) blocks
@@ -34,7 +34,7 @@ void SCF::construct_Feff(int cycle)
         }        
       }
     }
-    if(cycle == options.get_int("START_FAVG")){
+    if(cycle == options_.get_int("START_FAVG")){
       fprintf(outfile,"\n  *** Switching from Fc to F_avg ***");
     }
   }
@@ -78,7 +78,7 @@ void SCF::construct_Feff(int cycle)
       }
     }
     // Orbitals of the same symmetry
-    if(options.get_bool("INTERNAL_ROTATIONS")){
+    if(options_.get_bool("INTERNAL_ROTATIONS")){
       for(int I = 0 ; I < nci; ++I){
         for(int J = I + 1 ; J < nci; ++J){
     	  if(tcscf_sym[I] == tcscf_sym[J]){
@@ -109,7 +109,7 @@ void SCF::construct_Feff(int cycle)
     }
   }
 //  // Level shift
-//  double shift = static_cast<double>(options.get_int("LEVELSHIFT")) / 1000.0;
+//  double shift = static_cast<double>(options_.get_int("LEVELSHIFT")) / 1000.0;
 //  fprintf(outfile,"\n  Setting level shift to %.3f",shift);
 //  for(int h =0; h < nirreps; ++h){
 //    for(int i = docc[h] + actv[h]; i < sopi[h]; ++i){
@@ -117,7 +117,7 @@ void SCF::construct_Feff(int cycle)
 //    }
 //  }
 //
-//  double dumping = static_cast<double>(options.get_int("DUMPING")) / 100.0;
+//  double dumping = static_cast<double>(options_.get_int("DUMPING")) / 100.0;
 //  fprintf(outfile,"\n  Setting dumping to %.3f",dumping);
 //  // Dumping
 //  for(int h =0; h < nirreps; ++h){

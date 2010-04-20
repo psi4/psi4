@@ -13,6 +13,7 @@ namespace psi{
     namespace transqt2 { PsiReturnType transqt2(Options &, int argc, char *argv[]); }
     // namespace optking  { PsiReturnType optking(Options &, int argc, char *argv[]); }
     namespace psimrcc  { PsiReturnType psimrcc(Options &, int argc, char *argv[]); }
+    namespace mcscf    { PsiReturnType mcscf(Options &, int argc, char *argv[]); }
 
 void
 setup_driver(Options &options)
@@ -20,7 +21,7 @@ setup_driver(Options &options)
     // The list of valid job types
     options.add_str("JOBTYPE", "SP", "SP OPT");
     // The list of valid wavefunction types
-    options.add_str("WFN", "SCF", "CCSD CCSD_T MP2 MRCCSD LMP2 SCF");
+    options.add_str("WFN", "SCF", "CCSD CCSD_T MP2 MRCCSD LMP2 SCF MCSCF");
     // The list of valid reference types
     options.add_str("REFERENCE", "RHF", "RHF ROHF MCSCF TCSCF UHF RKS UKS");
     // The list of valid derivative types
@@ -38,7 +39,7 @@ setup_driver(Options &options)
     dispatch_table["MP2"]       = &(psi::mp2::mp2);
     dispatch_table["SCF"]       = &(psi::scf::scf);
     dispatch_table["TRANSQT2"]  = &(psi::transqt2::transqt2);
-    // dispatch_table["OPTKING"]   = &(psi::optking::optking);
+    dispatch_table["MCSCF"]     = &(psi::mcscf::mcscf);
     dispatch_table["PSIMRCC"]   = &(psi::psimrcc::psimrcc);
 }
 

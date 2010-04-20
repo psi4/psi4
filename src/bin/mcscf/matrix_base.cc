@@ -7,9 +7,11 @@
 
 #include "matrix_base.h"
 
+#include <psi4-dec.h>
+
 extern FILE* outfile;
 
-namespace psi{ namespace MCSCF{
+namespace psi{ namespace mcscf{
 
 MatrixBase::MatrixBase(size_t rows, size_t cols) : rows_(rows),cols_(cols),elements_(rows*cols),matrix_(NULL)
 {

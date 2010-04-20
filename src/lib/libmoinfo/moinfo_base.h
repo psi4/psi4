@@ -28,7 +28,7 @@ class Chkpt;
 
 class MOInfoBase{
 public:
-  MOInfoBase(Options& options_,bool silent_ = false);
+  MOInfoBase(Options& options_,shared_ptr<Chkpt> chkpt_,bool silent_ = false);
   ~MOInfoBase();
 
   double      get_nuclear_energy()               const {return(nuclear_energy);}
@@ -67,6 +67,7 @@ protected:
   void        compute_ioff();
 
   Options&    options;
+  shared_ptr<Chkpt> chkpt;
   int         nirreps;
   int         wfn_sym;
   int         charge;
