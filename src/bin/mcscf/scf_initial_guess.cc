@@ -8,26 +8,26 @@
 #include "scf.h"
 
 namespace psi{
-  extern Chkpt* chkpt;
+  extern Chkpt* chkpt_;
 }
 
-namespace psi{ namespace MCSCF{
+namespace psi{ namespace mcscf{
 
 void SCF::initial_guess()
 {
   using namespace psi;
 
   bool read_MOs = false;
-  double** saved_MOs = _default_chkpt_lib_->rd_scf();
+  double** saved_MOs = chkpt_->rd_scf();
   if(saved_MOs != NULL){
     free(saved_MOs);
-    if(options.get_bool("READ_MOS"))
+    if(options_.get_bool("READ_MOS"))
       read_MOs = true;
   }
   if(read_MOs){
     for(int h = 0; h < nirreps; ++h){
       if(sopi[h] > 0){
-        double** block = _default_chkpt_lib_->rd_scf_irrep(h);
+        double** block = chkpt_->rd_scf_irrep(h);
         for(int i = 0; i < sopi[h]; ++i){
           for(int j = 0; j < sopi[h]; ++j){
             C->set(h,i,j,block[i][j]);

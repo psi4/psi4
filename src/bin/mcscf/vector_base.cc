@@ -6,9 +6,11 @@
 
 #include "vector_base.h"
 
+#include <psi4-dec.h>
+
 extern FILE* outfile;
 
-namespace psi{ namespace MCSCF{
+namespace psi{ namespace mcscf{
 
 VectorBase::VectorBase(int elements) : elements_(elements),vector_(NULL)
 {

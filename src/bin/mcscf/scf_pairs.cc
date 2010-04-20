@@ -8,7 +8,7 @@
 
 extern FILE* outfile;
 
-namespace psi{ namespace MCSCF{
+namespace psi{ namespace mcscf{
 
 void SCF::generate_pairs()
 {

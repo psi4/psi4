@@ -197,22 +197,22 @@ void MemoryManager::release_three(T***& matrix, const char *fileName, size_t lin
   matrix = NULL;
 }
 
-extern MemoryManager* _memory_manager_;
+extern MemoryManager* memory_manager;
 
 #define allocate1(type, variable, size) \
-  _memory_manager_->allocate(#type, variable, size, #variable, __FILE__, __LINE__);
+  memory_manager->allocate(#type, variable, size, #variable, __FILE__, __LINE__);
 #define release1(variable) \
-  _memory_manager_->release_one(variable, __FILE__, __LINE__);
+  memory_manager->release_one(variable, __FILE__, __LINE__);
 
 #define allocate2(type, variable, size1, size2) \
-  _memory_manager_->allocate(#type, variable, size1, size2, #variable, __FILE__, __LINE__);
+  memory_manager->allocate(#type, variable, size1, size2, #variable, __FILE__, __LINE__);
 #define release2(variable) \
-  _memory_manager_->release_two(variable, __FILE__, __LINE__);
+  memory_manager->release_two(variable, __FILE__, __LINE__);
 
 #define allocate3(type, variable, size1, size2, size3) \
-  _memory_manager_->allocate(#type, variable, size1, size2, size3, #variable, __FILE__, __LINE__);
+  memory_manager->allocate(#type, variable, size1, size2, size3, #variable, __FILE__, __LINE__);
 #define release3(variable) \
-  _memory_manager_->release_three(variable, __FILE__, __LINE__);
+  memory_manager->release_three(variable, __FILE__, __LINE__);
 
 } /* End Namespaces */
 

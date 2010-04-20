@@ -8,7 +8,7 @@
 
 extern FILE* outfile;
 
-namespace psi{ namespace MCSCF{
+namespace psi{ namespace mcscf{
 
 void SCF::construct_G(SBlockMatrix& density,
                       SBlockMatrix& G,
@@ -89,7 +89,7 @@ void SCF::read_Raffanetti(const char* integral_type, double* integrals, int batc
   char data_label[80];
   sprintf(data_label,"%s_%d",integral_type,batch);
   size_t buffer_size = batch_size[batch] * sizeof(double);
-  psio_read_entry(PSIF_MCSCF,data_label,(char*)integrals,buffer_size);
+  psio_->read_entry(PSIF_MCSCF,data_label,(char*)integrals,buffer_size);
 }
 
 void SCF::write_Raffanetti(const char* integral_type, double* integrals, int batch)
@@ -98,7 +98,7 @@ void SCF::write_Raffanetti(const char* integral_type, double* integrals, int bat
   char data_label[80];
   sprintf(data_label,"%s_%d",integral_type,batch);
   size_t buffer_size = batch_size[batch] * sizeof(double);
-  psio_write_entry(PSIF_MCSCF,data_label,(char*)integrals,buffer_size);
+  psio_->write_entry(PSIF_MCSCF,data_label,(char*)integrals,buffer_size);
 }
 
 

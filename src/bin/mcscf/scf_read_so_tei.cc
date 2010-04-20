@@ -2,7 +2,7 @@
 #include <cmath>
 
 #include <psifiles.h>
-#include <libiwl/iwl.h>
+#include <libiwl/iwl.hpp>
 #include <libciomr/libciomr.h>
 #include <libmoinfo/libmoinfo.h>
 #include <libutil/libutil.h>
@@ -15,7 +15,7 @@
 
 extern FILE* outfile;
 
-namespace psi{ namespace MCSCF{
+namespace psi{ namespace mcscf{
 
 void SCF::read_so_tei()
 {
@@ -23,7 +23,7 @@ void SCF::read_so_tei()
 
   total_symmetric_block_size = INDEX(pairpi[0]-1,pairpi[0]-1)+1;
 
-  size_t free_memory = _memory_manager_->get_FreeMemory();
+  size_t free_memory = memory_manager->get_FreeMemory();
 
   // Determine the number of matrix elements of the PK (and K) matrix to hold in core
   if(reference == rhf){
@@ -69,9 +69,9 @@ void SCF::read_so_tei()
   for(int batch = 0; batch < nbatch; ++batch){
     batch_size[batch] = batch_index_max[ batch] - batch_index_min[batch];
     fprintf(outfile,"\n  batch %3d pq = [%8ld,%8ld] index = [%16ld,%16ld]",
-                     batch,
-                     batch_pq_min[batch],batch_pq_max[batch],
-                     batch_index_min[batch],batch_index_max[batch]);
+        batch,
+        batch_pq_min[batch],batch_pq_max[batch],
+        batch_index_min[batch],batch_index_max[batch]);
   }
   fflush(outfile);
 
@@ -79,7 +79,7 @@ void SCF::read_so_tei()
   allocate1(double,PK,nin_core);
   for(size_t i=0; i < nin_core; i++)
     PK[i]    =0.0;
-  fprintf(outfile,"\n\n  Allocated the PK matrix (%d elements) ",nin_core);
+  fprintf(outfile,"\n\n  Allocated the PK matrix (%ld elements) ",(long int)nin_core);
   fflush(outfile);
 
   if(reference != rhf){
@@ -87,7 +87,7 @@ void SCF::read_so_tei()
     allocate1(double,K,nin_core);
     for(size_t i=0; i < nin_core; i++)
       K[i]    =0.0;
-    fprintf(outfile,"\n  Allocated the  K matrix (%d elements) ",nin_core);
+    fprintf(outfile,"\n  Allocated the  K matrix (%ld elements) ",(long int)nin_core);
     fflush(outfile);
   }
 
@@ -103,8 +103,8 @@ void SCF::read_so_tei_form_PK()
   fflush(outfile);
 
   for(int batch = 0; batch < nbatch; ++batch){
-	fprintf(outfile,"\n  batch %3d ... ",batch);
-	fflush(outfile);
+    fprintf(outfile,"\n  batch %3d ... ",batch);
+    fflush(outfile);
     // Compute the minimum and maximum indices
     size_t min_index   = batch_index_min[batch];
     size_t max_index   = batch_index_max[batch];
@@ -116,25 +116,25 @@ void SCF::read_so_tei_form_PK()
     double value;
     size_t p,q,r,s,four_index;
     int ilsti,nbuf,fi,index;
-    struct iwlbuf ERIIN;
-    iwl_buf_init(&ERIIN,PSIF_SO_TEI,0.0,1,1);
-    do{
-      ilsti = ERIIN.lastbuf;
-      nbuf  = ERIIN.inbuf;
-      fi=0;
-      for(index=0;index<nbuf;index++){
-        // Compute the [pq] index for this pqrs combination
-        p = (short int)abs((float)ERIIN.labels[fi]);
-        q = ERIIN.labels[fi+1];
-        r = ERIIN.labels[fi+2];
-        s = ERIIN.labels[fi+3];
-        value = ERIIN.values[index];
+
+    IWL ERIIN(psio_.get(), PSIF_SO_TEI, 0.0, 1, 1);
+    do {
+      ilsti = ERIIN.last_buffer();
+      nbuf  = ERIIN.buffer_count();
+
+      fi = 0;
+      for (index = 0; index < nbuf; ++index) {
+        p = (ERIIN.labels()[fi] >= 0 ? ERIIN.labels()[fi] : -ERIIN.labels()[fi]);
+        q = ERIIN.labels()[fi+1];
+        r = ERIIN.labels()[fi+2];
+        s = ERIIN.labels()[fi+3];
+        value = ERIIN.values()[index];
 
         if(pair_sym[p][q] == 0)
         {
           four_index = INDEX(pair[p][q],pair[r][s]);
           if((four_index >= min_index) && (four_index < max_index)){
-             PK[four_index - min_index]    += value;
+            PK[four_index - min_index]    += value;
           }
         }
         if(pair_sym[p][r] == 0)
@@ -158,15 +158,14 @@ void SCF::read_so_tei_form_PK()
             }
           }
         }
-        fi+=4;
+        fi += 4;
       }
-      if(!ilsti)
-        iwl_buf_fetch(&ERIIN);
-    } while(!ilsti);
-    iwl_buf_close(&ERIIN,1);
+      if (!ilsti)
+        ERIIN.fetch();
+    } while (!ilsti);
 
     // Half the diagonal elements held in core
-    for(int pq = batch_pq_min[batch]; pq < batch_pq_max[batch]; ++pq){
+    for(size_t pq = batch_pq_min[batch]; pq < batch_pq_max[batch]; ++pq){
       PK[INDEX(pq,pq) - min_index] *= 0.5;
     }
 
@@ -186,8 +185,8 @@ void SCF::read_so_tei_form_PK_and_K()
   fflush(outfile);
 
   for(int batch = 0; batch < nbatch; ++batch){
-	fprintf(outfile,"\n  batch %3d ... ",batch);
-	fflush(outfile);
+    fprintf(outfile,"\n  batch %3d ... ",batch);
+    fflush(outfile);
     // Compute the minimum and maximum indices
     size_t min_index   = batch_index_min[batch];
     size_t max_index   = batch_index_max[batch];
@@ -201,25 +200,25 @@ void SCF::read_so_tei_form_PK_and_K()
     size_t p,q,r,s,four_index;
     int ilsti,nbuf,fi,index;
 
-    struct iwlbuf ERIIN;
-    iwl_buf_init(&ERIIN,PSIF_SO_TEI,0.0,1,1);
-    do{
-      ilsti = ERIIN.lastbuf;
-      nbuf  = ERIIN.inbuf;
-      fi=0;
-      for(index=0;index<nbuf;index++){
-        // Compute the [pq] index for this pqrs combination
-        p = (short int)abs((float)ERIIN.labels[fi]);
-        q = ERIIN.labels[fi+1];
-        r = ERIIN.labels[fi+2];
-        s = ERIIN.labels[fi+3];
-        value = ERIIN.values[index];
+    IWL ERIIN(psio_.get(), PSIF_SO_TEI, 0.0, 1, 1);
+
+    do {
+      ilsti = ERIIN.last_buffer();
+      nbuf  = ERIIN.buffer_count();
+
+      fi = 0;
+      for (index = 0; index < nbuf; ++index) {
+        p = (ERIIN.labels()[fi] >= 0 ? ERIIN.labels()[fi] : -ERIIN.labels()[fi]);
+        q = ERIIN.labels()[fi+1];
+        r = ERIIN.labels()[fi+2];
+        s = ERIIN.labels()[fi+3];
+        value = ERIIN.values()[index];
 
         if(pair_sym[p][q] == 0)
         {
           four_index = INDEX(pair[p][q],pair[r][s]);
           if((four_index >= min_index) && (four_index < max_index)){
-             PK[four_index - min_index]    += value;
+            PK[four_index - min_index]    += value;
           }
         }
         if(pair_sym[p][r] == 0)
@@ -228,10 +227,10 @@ void SCF::read_so_tei_form_PK_and_K()
           if((four_index >= min_index) && (four_index < max_index)){
             if((p == r) || (q == s)){
               PK[four_index - min_index]   -= 0.5 * value;
-               K[four_index - min_index]   -= 0.5 * value;
+              K[four_index - min_index]   -= 0.5 * value;
             }else{
               PK[four_index - min_index]   -= 0.25 * value;
-               K[four_index - min_index]   -= 0.25 * value;
+              K[four_index - min_index]   -= 0.25 * value;
             }
           }
         }
@@ -241,25 +240,24 @@ void SCF::read_so_tei_form_PK_and_K()
             if((p != q) && (r != s)){
               if((p == s) || (q == r)){
                 PK[four_index - min_index] -= 0.5 * value;
-                 K[four_index - min_index] -= 0.5 * value;
+                K[four_index - min_index] -= 0.5 * value;
               }else{
                 PK[four_index - min_index] -= 0.25 * value;
-                 K[four_index - min_index] -= 0.25 * value;
+                K[four_index - min_index] -= 0.25 * value;
               }
             }
           }
         }
-        fi+=4;
+        fi += 4;
       }
-      if(!ilsti)
-        iwl_buf_fetch(&ERIIN);
-    } while(!ilsti);
-    iwl_buf_close(&ERIIN,1);
+      if (!ilsti)
+        ERIIN.fetch();
+    } while (!ilsti);
 
     // Half the diagonal elements held in core
-    for(int pq = batch_pq_min[batch]; pq < batch_pq_max[batch]; ++pq){
+    for(size_t pq = batch_pq_min[batch]; pq < batch_pq_max[batch]; ++pq){
       PK[INDEX(pq,pq) - min_index] *= 0.5;
-       K[INDEX(pq,pq) - min_index] *= 0.5;
+      K[INDEX(pq,pq) - min_index] *= 0.5;
     }
 
     // Write the PK matrix to disk

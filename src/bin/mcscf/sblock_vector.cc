@@ -4,9 +4,9 @@
 
 #include "sblock_vector.h"
 
-extern FILE* outfile;
+#include <psi4-dec.h>
 
-namespace psi{ namespace MCSCF{
+namespace psi{ namespace mcscf{
 
 SBlockVector::SBlockVector()
  : block_vector_(0)

@@ -3,13 +3,13 @@
 
 #include <liboptions/liboptions.h>
 
-namespace psi{ namespace MCSCF{
+namespace psi{ namespace mcscf{
 
 void SCF::canonicalize_MO()
 {
   if(reference == tcscf){
-    bool canonicalize_active_favg   = options.get_bool("CANONICALIZE_ACTIVE_FAVG"); 
-    bool canonicalize_inactive_favg = options.get_bool("CANONICALIZE_INACTIVE_FAVG");
+    bool canonicalize_active_favg   = options_.get_bool("CANONICALIZE_ACTIVE_FAVG"); 
+    bool canonicalize_inactive_favg = options_.get_bool("CANONICALIZE_INACTIVE_FAVG");
     if(canonicalize_active_favg || canonicalize_inactive_favg){
       fprintf(outfile,"\n\n  Forming Favg for final canonicalization");
       construct_Favg();
@@ -64,12 +64,12 @@ void SCF::canonicalize_MO()
   }
   
   fprintf(outfile,"\n\n  Orbitals are canonicalized as:");
-  if(options.get_bool("USE_FAVG") || options.get_bool("CANONICALIZE_INACTIVE_FAVG"))
+  if(options_.get_bool("USE_FAVG") || options_.get_bool("CANONICALIZE_INACTIVE_FAVG"))
     fprintf(outfile,"\n  inactive (docc + uocc) : Fock(avg)");
   else
     fprintf(outfile,"\n  inactive (docc + uocc) : Fock(core)");
   
-  if(options.get_bool("CANONICALIZE_ACTIVE_FAVG"))
+  if(options_.get_bool("CANONICALIZE_ACTIVE_FAVG"))
     fprintf(outfile,"\n  active   (actv)        : Fock(avg)");
   else
     fprintf(outfile,"\n  active   (actv)        : Fock(core)");

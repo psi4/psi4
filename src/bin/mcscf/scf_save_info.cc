@@ -10,7 +10,7 @@
 
 #include "scf.h"
 
-namespace psi{ namespace MCSCF{
+namespace psi{ namespace mcscf{
 
 using namespace std;
 
@@ -21,15 +21,15 @@ void SCF::save_info()
   for(int h = 0; h < nirreps; ++h){
     if( docc[h] + actv[h] > 0 ) n_so_typs++;
   }
-  _default_chkpt_lib_->wt_nsymhf(n_so_typs);
+  chkpt_->wt_nsymhf(n_so_typs);
 
   // Write out the total number of molecular orbitals.
-  _default_chkpt_lib_->wt_nmo(nso); // TODO: find nmo
+  chkpt_->wt_nmo(nso); // TODO: find nmo
 
   // Write out the dimensionality of ALPHA and BETA vectors of two-electron coupling coefficients for open shells.
   int tmp_iopen = ioff[moinfo_scf->get_nactv()];
   if(reference == tcscf) tmp_iopen = -tmp_iopen;
-  _default_chkpt_lib_->wt_iopen(tmp_iopen);
+  chkpt_->wt_iopen(tmp_iopen);
 
   // Write open-shell coupling coefficients
   if(moinfo_scf->get_nactv() > 0){
@@ -39,27 +39,27 @@ void SCF::save_info()
       ccvecs[0][i] = 0.0;
       ccvecs[1][i] = 0.0;
     }
-    _default_chkpt_lib_->wt_ccvecs(ccvecs);
+    chkpt_->wt_ccvecs(ccvecs);
     release2(ccvecs);
   }
 
   // Writes out the total energy.
-  _default_chkpt_lib_->wt_etot(total_energy);
-  _default_chkpt_lib_->wt_escf(total_energy);
-  _default_chkpt_lib_->wt_eref(total_energy);
+  chkpt_->wt_etot(total_energy);
+  chkpt_->wt_escf(total_energy);
+  chkpt_->wt_eref(total_energy);
 
   // Write the orbitals per irreps arrays
-  _default_chkpt_lib_->wt_orbspi(&sopi[0]);
-  _default_chkpt_lib_->wt_clsdpi(&docc[0]);
-  _default_chkpt_lib_->wt_openpi(&actv[0]);
+  chkpt_->wt_orbspi(&sopi[0]);
+  chkpt_->wt_clsdpi(&docc[0]);
+  chkpt_->wt_openpi(&actv[0]);
 
 
   // Read the number of frozen MOs
-  int nfrzc = _default_chkpt_lib_->rd_nfzc();
+  int nfrzc = chkpt_->rd_nfzc();
 
   int* frz = new int[nirreps];
   for(int h = 0; h < nirreps; ++h) frz[h] = 0;
-  _default_chkpt_lib_->wt_frzvpi(frz);
+  chkpt_->wt_frzvpi(frz);
 
   vector<std::pair<double, int> > sorted_evals;
 
@@ -74,16 +74,16 @@ void SCF::save_info()
     frz[sorted_evals[i].second]++;
   }
 
-  _default_chkpt_lib_->wt_frzcpi(frz);
+  chkpt_->wt_frzcpi(frz);
 
   delete[] frz;
 
   // Save the eigenvectors after rotating them
-  if(options.get_int("ROTATE_MO_ANGLE") != 0){
-    int mo_rotate_angle = options.get_int("ROTATE_MO_ANGLE");
-    int p = options.get_int("ROTATE_MO_P") -1;  // P, Q and IRREPS are one-based
-    int q = options.get_int("ROTATE_MO_Q") -1;
-    int h = options.get_int("ROTATE_MO_IRREP") - 1;
+  if(options_.get_int("ROTATE_MO_ANGLE") != 0){
+    int mo_rotate_angle = options_.get_int("ROTATE_MO_ANGLE");
+    int p = options_.get_int("ROTATE_MO_P") -1;  // P, Q and IRREPS are one-based
+    int q = options_.get_int("ROTATE_MO_Q") -1;
+    int h = options_.get_int("ROTATE_MO_IRREP") - 1;
 
     fprintf(outfile,"\n\n  Rotating MOs %d and %d of irrep %d by %d degrees",
                     p,q,h,mo_rotate_angle);
@@ -103,7 +103,7 @@ void SCF::save_info()
     for(int i = 0; i < sopi[h]; ++i)
       for(int j = 0; j < sopi[h]; ++j)
         C_save[i + block_offset[h]][j + block_offset[h]] = C->get(h,i,j);
-  _default_chkpt_lib_->wt_scf(C_save);
+  chkpt_->wt_scf(C_save);
 
   release2(C_save);
 
@@ -115,7 +115,7 @@ void SCF::save_info()
       k++;
     }
   }
-  _default_chkpt_lib_->wt_evals(evals);
+  chkpt_->wt_evals(evals);
   delete[] evals;
 }
 

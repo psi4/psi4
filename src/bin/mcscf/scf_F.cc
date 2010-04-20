@@ -2,7 +2,7 @@
 
 #include <libmoinfo/libmoinfo.h>
 
-namespace psi{ namespace MCSCF{
+namespace psi{ namespace mcscf{
 
 void SCF::construct_F()
 {

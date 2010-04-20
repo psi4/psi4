@@ -1,10 +1,10 @@
 #ifndef _psi_src_bin_mcscf_main_h_
 #define _psi_src_bin_mcscf_main_h_
 
-namespace psi{ namespace MCSCF{
+namespace psi{ namespace mcscf{
 
-void init_psi(int argc, char *argv[]);
-void close_psi();
+void init_psi(Options& options_);
+void close_psi(Options& options_);
 
 }} /* End Namespaces */
 

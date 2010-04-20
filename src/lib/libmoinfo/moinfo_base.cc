@@ -16,7 +16,8 @@ using namespace std;
 
 namespace psi {
 
-MOInfoBase::MOInfoBase(Options& options_,bool silent_) : options(options_), silent(silent_)
+MOInfoBase::MOInfoBase(Options& options_,shared_ptr<Chkpt> chkpt_,bool silent_)
+: options(options_), chkpt(chkpt_), silent(silent_)
 {
   startup();
   charge       = options.get_int("CHARGE");
@@ -56,22 +57,22 @@ void MOInfoBase::cleanup()
 
 void MOInfoBase::read_chkpt_data()
 {
-  nirreps  = _default_chkpt_lib_->rd_nirreps();
-  nso      = _default_chkpt_lib_->rd_nso();
+  nirreps  = chkpt->rd_nirreps();
+  nso      = chkpt->rd_nso();
 
   // Read sopi from the chkpt and save as a STL vector
-  sopi = read_chkpt_intvec(nirreps,_default_chkpt_lib_->rd_sopi());
+  sopi = read_chkpt_intvec(nirreps,chkpt->rd_sopi());
 
-  irr_labs = _default_chkpt_lib_->rd_irr_labs();
+  irr_labs = chkpt->rd_irr_labs();
 
-  nuclear_energy = _default_chkpt_lib_->rd_enuc();
+  nuclear_energy = chkpt->rd_enuc();
 }
 
 void MOInfoBase::compute_number_of_electrons()
 {
   int     nel   = 0;
-  int     natom = _default_chkpt_lib_->rd_natom();
-  double* zvals = _default_chkpt_lib_->rd_zvals();
+  int     natom = chkpt->rd_natom();
+  double* zvals = chkpt->rd_zvals();
 
   for(int i=0; i < natom;i++){
     nel += static_cast<int>(zvals[i]);
@@ -142,7 +143,7 @@ void MOInfoBase::print_mo_space(int& n, intvec& mo, std::string labels)
 
 void MOInfoBase::write_chkpt_mos()
 {
-  _default_chkpt_lib_->wt_scf(scf);
+  chkpt->wt_scf(scf);
 }
 
 void MOInfoBase::correlate(char *ptgrp, int irrep, int& nirreps_old, int& nirreps_new,int*& arr)

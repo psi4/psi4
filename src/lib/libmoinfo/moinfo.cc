@@ -25,7 +25,8 @@ using namespace std;
 
 namespace psi {
 
-MOInfo::MOInfo(Options& options_,bool silent_) : MOInfoBase(options_,silent_)
+MOInfo::MOInfo(Options& options_,shared_ptr<Chkpt> chkpt_,bool silent_)
+: MOInfoBase(options_,chkpt_,silent_)
 {
   /***************
     Set defaults
@@ -86,14 +87,14 @@ void MOInfo::read_info()
     Read Nuclear,SCF and other stuff
   ***********************************/
   read_chkpt_data();
-  nmo            = _default_chkpt_lib_->rd_nmo();
+  nmo            = chkpt->rd_nmo();
   compute_number_of_electrons();
-  scf_energy     = _default_chkpt_lib_->rd_escf();
-  mopi           = read_chkpt_intvec(nirreps,_default_chkpt_lib_->rd_orbspi());
-  scf            = _default_chkpt_lib_->rd_scf();
+  scf_energy     = chkpt->rd_escf();
+  mopi           = read_chkpt_intvec(nirreps,chkpt->rd_orbspi());
+  scf            = chkpt->rd_scf();
   scf_irrep      = new double**[nirreps];
   for(int i=0;i<nirreps;i++)
-    scf_irrep[i] = _default_chkpt_lib_->rd_scf_irrep(i);
+    scf_irrep[i] = chkpt->rd_scf_irrep(i);
 
   // Determine the wave function irrep
   if(use_liboptions){
@@ -186,19 +187,19 @@ void MOInfo::read_mo_spaces()
   actv_docc.assign(nirreps,0);
 
   // For single-point geometry optimizations and frequencies
-  char* keyword = _default_chkpt_lib_->build_keyword(const_cast<char *>("Current Displacement Irrep"));
+  char* keyword = chkpt->build_keyword(const_cast<char *>("Current Displacement Irrep"));
 
-  if(_default_chkpt_lib_->exist(keyword)){
-    int   disp_irrep  = _default_chkpt_lib_->rd_disp_irrep();
-    char *save_prefix = _default_chkpt_lib_->rd_prefix();
+  if(chkpt->exist(keyword)){
+    int   disp_irrep  = chkpt->rd_disp_irrep();
+    char *save_prefix = chkpt->rd_prefix();
     int nirreps_ref;
 
     // read symmetry info and MOs for undisplaced geometry from
     // root section of checkpoint file
-    _default_chkpt_lib_->reset_prefix();
-    _default_chkpt_lib_->commit_prefix();
+    chkpt->reset_prefix();
+    chkpt->commit_prefix();
 
-    char *ptgrp_ref = _default_chkpt_lib_->rd_sym_label();
+    char *ptgrp_ref = chkpt->rd_sym_label();
 
     // Lookup irrep correlation table
     int* correlation;
@@ -213,9 +214,9 @@ void MOInfo::read_mo_spaces()
     // build orbital information for current point group
     // Read the values stored in the chkpt
     // override if the user defines values
-    focc_ref = read_chkpt_intvec(nirreps_ref,_default_chkpt_lib_->rd_frzcpi());
-    docc_ref = read_chkpt_intvec(nirreps_ref,_default_chkpt_lib_->rd_clsdpi());
-    actv_ref = read_chkpt_intvec(nirreps_ref,_default_chkpt_lib_->rd_openpi());
+    focc_ref = read_chkpt_intvec(nirreps_ref,chkpt->rd_frzcpi());
+    docc_ref = read_chkpt_intvec(nirreps_ref,chkpt->rd_clsdpi());
+    actv_ref = read_chkpt_intvec(nirreps_ref,chkpt->rd_openpi());
     fvir_ref.assign(nirreps_ref,0); 
     actv_docc_ref.assign(nirreps_ref,0); 
 
@@ -241,16 +242,16 @@ void MOInfo::read_mo_spaces()
       actv_docc[ correlation[h] ] += actv_docc_ref[h];
     }
     wfn_sym = correlation[wfn_sym];
-    _default_chkpt_lib_->set_prefix(save_prefix);
-    _default_chkpt_lib_->commit_prefix();
+    chkpt->set_prefix(save_prefix);
+    chkpt->commit_prefix();
     free(save_prefix);
     free(ptgrp_ref);
     delete [] correlation;
   }else{
     // For a single-point only
-    focc = read_chkpt_intvec(nirreps,_default_chkpt_lib_->rd_frzcpi());
-    docc = read_chkpt_intvec(nirreps,_default_chkpt_lib_->rd_clsdpi());
-    actv = read_chkpt_intvec(nirreps,_default_chkpt_lib_->rd_openpi());
+    focc = read_chkpt_intvec(nirreps,chkpt->rd_frzcpi());
+    docc = read_chkpt_intvec(nirreps,chkpt->rd_clsdpi());
+    actv = read_chkpt_intvec(nirreps,chkpt->rd_openpi());
 
     for (int h = 0; h < nirreps; h++)
       docc[h] -= focc[h];

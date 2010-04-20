@@ -79,7 +79,7 @@ public:
 
 public:
   friend class SlaterDeterminant;
-  MOInfo(Options& options_,bool silent_ = false);
+  MOInfo(Options& options_,shared_ptr<Chkpt> chkpt_,bool silent_ = false);
   ~MOInfo();
 
   // DGEMM timing

@@ -9,8 +9,6 @@
 
 #include "memory_manager.h"
 
-extern FILE *infile, *outfile;
-
 namespace psi{
 
 using namespace std;
@@ -22,8 +20,7 @@ double bytes_to_MiB(size_t n)
 }
 
 MemoryManager::MemoryManager(){
-  long int maxcor = 0;
-  fndcor(&maxcor,infile,outfile);
+  long int maxcor     = 1000000;
   CurrentAllocated    = 0;
   MaximumAllocated    = 0;
   MaximumAllowed      = static_cast<size_t>(maxcor);

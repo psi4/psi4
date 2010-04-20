@@ -1,0 +1,17 @@
+%  @SCF@     E(SCF) =      -76.023615019286
+
+psi: (
+  label     = "6-31G** RHF H2O Single Point"
+  jobtype   = sp
+  wfn       = mcscf
+  reference = rhf 
+  basis     = "6-31G**"
+  zmat = (
+    O
+    H  1  0.94306
+    H  1  0.94306 2  105.96877
+  )
+  docc = (3 0 1 1)
+  convergence = 12
+)
+

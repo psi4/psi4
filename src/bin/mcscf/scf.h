@@ -4,21 +4,21 @@
 #include "sblock_vector.h"
 #include "sblock_matrix.h"
 #include <libmoinfo/libmoinfo.h>
+#include <libmints/wavefunction.h>
 
 #define STORE_TEI 0
 
-namespace psi{ namespace MCSCF{
+namespace psi{ namespace mcscf{
 
 enum ReferenceType {rhf, rohf, uhf, tcscf};
 
-class SCF
+class SCF  : public Wavefunction
 {
 public:
-  explicit SCF(Options& options_);
+  explicit SCF(Options& options_, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt_);
   ~SCF();
-  void compute_energy();
+  double compute_energy();
 private:
-  Options&      options;
   ReferenceType reference;
   static const int maxci   = 8;
   static const int maxdiis = 10;

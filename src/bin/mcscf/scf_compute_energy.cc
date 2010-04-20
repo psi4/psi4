@@ -5,9 +5,9 @@
 
 extern FILE* outfile;
 
-namespace psi{ namespace MCSCF{
+namespace psi{ namespace mcscf{
 
-void SCF::compute_energy()
+double SCF::compute_energy()
 {
   fprintf(outfile,"\n\n  Running an SCF calculation");
 
@@ -38,6 +38,8 @@ void SCF::compute_energy()
 
   // Canonicalize MOs
   save_info();
+
+  return(0.0);
 }
 
 }} /* End Namespaces */

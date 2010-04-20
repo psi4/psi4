@@ -8,7 +8,7 @@ PSITARGET = $(top_objdir)/lib/libPSI_util.a
 
 TRUECSRC = 
 
-TRUECXXSRC = stl_string.cc combinations.cc exception.cc
+TRUECXXSRC = stl_string.cc combinations.cc exception.cc memory_manager.cc
 
 INC = libutil.h ref.h class_macros.h memory_manager.h
 

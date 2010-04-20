@@ -4,9 +4,9 @@
 #include "block_matrix.h"
 #include "matrix_base.h"
 
-extern FILE* outfile;
+#include <psi4-dec.h>
 
-namespace psi{ namespace MCSCF{
+namespace psi{ namespace mcscf{
 
 BlockMatrix::BlockMatrix()
  : nirreps_(0) ,ref_(0), matrix_base_(0), rows_size_(0), cols_size_(0), rows_offset_(0), cols_offset_(0)

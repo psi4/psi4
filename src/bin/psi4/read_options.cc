@@ -428,9 +428,18 @@ else if(name == "CCDENSITY") {
     options.add_str("PROPERTY","POLARIZABILITY");
   }
   else if(name == "MCSCF") {
+    /*- The molecular charge -*/
+    options.add_int("CHARGE", 0);
+    /*- (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
+    options.add_int("MULTP", 1);
     options.add_int("CONVERGENCE",9);
     options.add_int("LEVELSHIFT",0);
-    options.add_int("DEBUG",0);
+    /*- The amount of debugging information to print -*/
+    options.add_int("DEBUG", 0);
+    /*- -Log10 of the energy convergence criterion -*/
+    options.add_int("E_CONVERGE", 12);
+    /*- -Log10 of the density convergence criterion -*/
+    options.add_int("D_CONVERGE", 12);
     options.add_int("MAXITER",100);
     options.add_int("NDIIS",7);
     options.add_int("ROOT",1);

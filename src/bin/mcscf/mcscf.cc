@@ -26,10 +26,11 @@
 #include "git.h"
 #include "scf.h"
 
-// PSI FILES
+namespace psi{
+MemoryManager* memory_manager;
+MOInfoSCF*     moinfo_scf;
 
-namespace psi{  namespace MCSCF{
-void add_calculation_options();
+namespace mcscf{
 
 using namespace std;
 
@@ -39,29 +40,35 @@ using namespace std;
  * @param argv[]
  * @return PSI_RETURN_SUCCESS if the program ran without any problem
  */
-int mcscf(Options& options,int argc, char *argv[])
+PsiReturnType mcscf(Options& options,int argc, char *argv[])
 {
   using namespace psi;
-  init_psi(argc,argv);
+  shared_ptr<PSIO> psio(new PSIO);
+  psiopp_ipv1_config(psio);
+  shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
+
+  psio->open(PSIF_MCSCF,PSIO_OPEN_NEW);
+  init_psi(options);
+
+  memory_manager  = new psi::MemoryManager();
+  moinfo_scf      = new psi::MOInfoSCF(options,chkpt);
 
   if(options.get_str("REFERENCE") == "RHF"  ||
      options.get_str("REFERENCE") == "ROHF" ||
      options.get_str("REFERENCE") == "UHF"  ||
      options.get_str("REFERENCE") == "TWOCON"){
-    SCF scf(options);
+    SCF scf(options,psio,chkpt);
     scf.compute_energy();
   }else if(options.get_str("REFERENCE") == "MCSCF"){
     fprintf(outfile,"\n\nREFERENCE = MCSCF not implemented yet");
     fflush(outfile);
-    return PSI_RETURN_FAILURE;
+    return Failure;
   }
-
-  close_psi();
-  return PSI_RETURN_SUCCESS;
-}
-
-void add_calculation_options()
-{
+  delete moinfo_scf;
+  delete memory_manager;
+  close_psi(options);
+  psio->close(PSIF_MCSCF,1);
+  return Success;
 }
 
 /**
@@ -69,43 +76,21 @@ void add_calculation_options()
  * @param argc
  * @param argv[]
  */
-void init_psi(Options& options)
+void init_psi(Options& options_)
 {
-  tstart();
-
   fprintf(outfile,"\n         ------------------------------------------");
   fprintf(outfile,"\n           MCSCF: a self-consistent field program");
   fprintf(outfile,"\n            written by Francesco A. Evangelista");
   fprintf(outfile,"\n         ------------------------------------------");
-
-  fprintf(outfile,"\n\n\n  Compiled on %s at %s",__DATE__,__TIME__);
-
-  add_calculation_options();
-
-  _default_psio_lib_->open(PSIF_MCSCF,PSIO_OPEN_NEW);
-
-  psi::_memory_manager_   = new MemoryManager();
-  moinfo_scf = new MOInfoSCF(options);
 }
 
 /**
  * Close psi by calling psio_done() and psi_stop()
  */
-void close_psi(Options& options)
+void close_psi(Options& options_)
 {
-  if(options.get_int("DEBUG") > 0)
-    psi::_memory_manager_->MemCheck(outfile);
-  delete moinfo_scf;
-  delete _memory_manager_;
-
   fprintf(outfile,"\n\n  MCSCF Execution Completed.\n\n");
   fflush(outfile);
-
-  _default_psio_lib_->close(PSIF_MCSCF,1);
-
-  delete _default_chkpt_lib_;
-  delete _default_psio_lib_;
-
   tstop();
 }
 

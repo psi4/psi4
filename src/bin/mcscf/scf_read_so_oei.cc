@@ -7,14 +7,14 @@
 #include <psifiles.h>
 #include <libmoinfo/libmoinfo.h>
 #include <liboptions/liboptions.h>
-#include <libiwl/iwl.h>
+#include <libiwl/iwl.hpp>
 #include <libutil/libutil.h>
 
 #include "scf.h"
 
 extern FILE* outfile;
 
-namespace psi{ namespace MCSCF{
+namespace psi{ namespace mcscf{
 
 void SCF::read_so_oei()
 {
@@ -23,7 +23,8 @@ void SCF::read_so_oei()
 
   // Read the kinetic energy integrals
   for(int k=0; k<nso*(nso+1)/2;++k) buffer[k] = 0.0;
-  iwl_rdone(PSIF_OEI,const_cast<char*>(PSIF_SO_T),buffer,nso*(nso+1)/2,0,0,outfile);
+
+  IWL::read_one(psio_.get(),PSIF_OEI, const_cast<char*>(PSIF_SO_T),buffer,nso*(nso+1)/2,0,0,outfile);
 
   for(int h=0;h<nirreps;h++){
     for(int i=0; i < H->get_rows(h); i++){
@@ -35,7 +36,9 @@ void SCF::read_so_oei()
   }
   // Read the potential energy integrals
   for(int k=0; k<nso*(nso+1)/2;++k) buffer[k] = 0.0;
-  iwl_rdone(PSIF_OEI,const_cast<char*>(PSIF_SO_V),buffer,nso*(nso+1)/2,0,0,outfile);
+
+  IWL::read_one(psio_.get(),PSIF_OEI, const_cast<char*>(PSIF_SO_V),buffer,nso*(nso+1)/2,0,0,outfile);
+//  iwl_rdone(PSIF_OEI,const_cast<char*>(PSIF_SO_V),buffer,nso*(nso+1)/2,0,0,outfile);
 
   for(int h=0;h<nirreps;h++){
     for(int i=0; i < H->get_rows(h); i++){
@@ -48,7 +51,9 @@ void SCF::read_so_oei()
 
   // Read the overlap integrals
   for(int k=0; k<nso*(nso+1)/2;++k) buffer[k] = 0.0;
-  iwl_rdone(PSIF_OEI,const_cast<char*>(PSIF_SO_S),buffer,nso*(nso+1)/2,0,0,outfile);
+
+  //  iwl_rdone(PSIF_OEI,const_cast<char*>(PSIF_SO_S),buffer,nso*(nso+1)/2,0,0,outfile);
+  IWL::read_one(psio_.get(),PSIF_OEI, const_cast<char*>(PSIF_SO_S),buffer,nso*(nso+1)/2,0,0,outfile);
 
   for(int h=0;h<nirreps;h++){
     for(int i=0; i < S->get_rows(h); i++){
@@ -61,7 +66,7 @@ void SCF::read_so_oei()
 
   delete[] buffer;
 
-  if(options.get_int("DEBUG") > 4){
+  if(options_.get_int("DEBUG") > 4){
     S->print();
     H->print();
   }

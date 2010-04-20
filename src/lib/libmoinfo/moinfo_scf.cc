@@ -14,7 +14,8 @@ extern FILE *outfile;
 
 namespace psi {
 
-MOInfoSCF::MOInfoSCF(Options& options_,bool silent_) : MOInfoBase(options_,silent_)
+MOInfoSCF::MOInfoSCF(Options& options_,shared_ptr<Chkpt> chkpt_,bool silent_)
+: MOInfoBase(options_,chkpt_,silent_)
 {
   read_chkpt_data();
 
@@ -61,18 +62,18 @@ void MOInfoSCF::read_mo_spaces()
   actv.resize(nirreps,0);
 
   // For single-point geometry optimizations and frequencies
-  char *current_displacement_label = _default_chkpt_lib_->build_keyword(const_cast<char*>("Current Displacement Irrep"));
-  if(_default_chkpt_lib_->exist(current_displacement_label)){
-    int   disp_irrep  = _default_chkpt_lib_->rd_disp_irrep();
-    char *save_prefix = _default_chkpt_lib_->rd_prefix();
+  char *current_displacement_label = chkpt->build_keyword(const_cast<char*>("Current Displacement Irrep"));
+  if(chkpt->exist(current_displacement_label)){
+    int   disp_irrep  = chkpt->rd_disp_irrep();
+    char *save_prefix = chkpt->rd_prefix();
     int nirreps_ref;
 
     // read symmetry info and MOs for undisplaced geometry from
     // root section of checkpoint file
-    _default_chkpt_lib_->reset_prefix();
-    _default_chkpt_lib_->commit_prefix();
+    chkpt->reset_prefix();
+    chkpt->commit_prefix();
 
-    char *ptgrp_ref = _default_chkpt_lib_->rd_sym_label();
+    char *ptgrp_ref = chkpt->rd_sym_label();
 
     // Lookup irrep correlation table
     int* correlation;
@@ -91,8 +92,8 @@ void MOInfoSCF::read_mo_spaces()
     }
 
     wfn_sym = correlation[wfn_sym];
-    _default_chkpt_lib_->set_prefix(save_prefix);
-    _default_chkpt_lib_->commit_prefix();
+    chkpt->set_prefix(save_prefix);
+    chkpt->commit_prefix();
     free(save_prefix);
     free(ptgrp_ref);
     delete [] correlation;
