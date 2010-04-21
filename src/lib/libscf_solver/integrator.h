@@ -15,7 +15,6 @@
 #include <libmints/molecule.h>
 #include <libmints/gridblock.h> 
 #include <libmints/vector3.h>
-#include <libutil/ref.h>
 #include "hf.h"
 #include <stdlib.h>
 #include <vector>

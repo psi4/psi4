@@ -2,7 +2,6 @@
 #define _psi_src_lib_libmints_wavefunction_h
 
 #include <libmints/factory.h>
-#include <libutil/ref.h>
 #include <libmints/molecule.h>
 #include <libmints/basisset.h>
 #include <libpsio/psio.hpp>

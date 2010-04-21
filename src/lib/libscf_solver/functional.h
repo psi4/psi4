@@ -8,7 +8,6 @@
  *
  */
 #include <libmints/properties.h>
-#include <libutil/ref.h>
 #include <stdlib.h>
 #include <string>
 using namespace psi;

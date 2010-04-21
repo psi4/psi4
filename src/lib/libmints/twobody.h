@@ -1,7 +1,6 @@
 #ifndef _psi_src_lib_libmints_twobody_h
 #define _psi_src_lib_libmints_twobody_h
 
-#include <libutil/ref.h>
 #include <libmints/matrix.h>
 
 namespace psi {

@@ -7,7 +7,6 @@
 *
 * Created by Robert Parrish on 04/15/2010
 */
-#include <libutil/ref.h>
 #include <psi4-dec.h>
 using namespace std;
 

@@ -5,7 +5,6 @@
 #include <libmints/matrix.h>
 #include <libmints/vector3.h>
 #include <libmints/gridblock.h>
-#include <libutil/ref.h>
 #include <psi4-dec.h>
 namespace psi {
 

@@ -6,7 +6,6 @@
 #include <cstring>
 
 #include <libmints/vector.h>
-#include <libutil/ref.h>
 
 #include <libpsio/psio.hpp>
 #include <psi4-dec.h>

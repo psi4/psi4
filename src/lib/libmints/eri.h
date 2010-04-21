@@ -1,8 +1,6 @@
 #ifndef _psi_src_lib_libmints_eri_h
 #define _psi_src_lib_libmints_eri_h
 
-#include <libutil/ref.h>
-
 #include <libmints/basisset.h>
 #include <libmints/gshell.h>
 #include <libmints/osrecur.h>
