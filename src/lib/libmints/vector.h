@@ -4,8 +4,6 @@
 #include <cstdlib>
 #include <cstdio>
 
-#include <libutil/ref.h>
-
 namespace psi {
 
 class Matrix;

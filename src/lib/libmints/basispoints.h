@@ -3,7 +3,6 @@
 #include <libmints/basisset.h>
 #include <libmints/vector3.h>
 #include <libmints/gridblock.h>
-#include <libutil/ref.h>
 namespace psi {
 
 	class BasisPoints

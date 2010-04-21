@@ -12,7 +12,6 @@
 #include <libmints/overlap.h>
 #include <libmints/potential.h>
 #include <libmints/quadrupole.h>
-//#include <libutil/ref.h>
 #include <libmints/sobasis.h>
 #include <libmints/pointgrp.h>
 #include <libmints/twobody.h>

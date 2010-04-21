@@ -1,8 +1,6 @@
 #ifndef _psi_src_lib_libmints_kinetic_h_
 #define _psi_src_lib_libmints_kinetic_h_
 
-#include <libutil/ref.h>
-
 #include <libmints/basisset.h>
 #include <libmints/gshell.h>
 #include <libmints/osrecur.h>
