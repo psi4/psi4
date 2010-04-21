@@ -1,5 +1,6 @@
 #include "gridblock.h"
 #include "string.h"
+#include <exception.h>
 #include <libciomr/libciomr.h>
 #include <stdlib.h>
 
@@ -23,11 +24,15 @@ GridBlock::~GridBlock()
 }
 void GridBlock::setGrid(double *x, double *y, double *z, double* w, int n)
 {
+    if (n > max_points_) {
+        throw SanityCheckError("GridBlock::setGrid: n > max_points_", __FILE__, __LINE__);
+    }
+    size_t length = n * sizeof(double);
     true_points_ = n;
-    memcpy((void*) x_, (void*) x, n);
-    memcpy((void*) y_, (void*) y, n);
-    memcpy((void*) z_, (void*) z, n);
-    memcpy((void*) w_, (void*) w, n);
+    memcpy((void*) x_, (void*) x, length);
+    memcpy((void*) y_, (void*) y, length);
+    memcpy((void*) z_, (void*) z, length);
+    memcpy((void*) w_, (void*) w, length);
 }
 
 
