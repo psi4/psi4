@@ -19,8 +19,12 @@ class FunctionalFactory;
 //! Functional Interface definition 
 class Functional {
 protected:
-        double *value_;
-        double *gradA_;
+        double *value_; //LSDA
+        double *gradA_; //LSDA
+        double *gradB_; //LSDA
+        double *gradAA_; //GGA
+        double *gradAB_; //GGA
+        double *gradBB_; //GGA
         int block_size_;
 public:
 	/** Constructor
@@ -32,10 +36,10 @@ public:
 	*/
 	~Functional() { }
 
-	/** Does this functional depend on spin?
+	/** Is this function a GGA? 
 	* @return true if so, false otherwise
 	*/
-	virtual bool hasSpinDependence() {return false; }
+	virtual bool isGGA() {return false; }
 	/** Does this functional have exact exchange?
 	* @return true if so, false otherwise
 	*/
@@ -68,18 +72,41 @@ public:
 	* @return true if so, false otherwise
 	*/
 	virtual bool needsKEDensity()  {return false; } 
-        /** Compute the functional value based on the given properties
+        /** Compute the RKS functional value based on the given properties
         * object over npoints (garanteed to be in the Properties object)
         */	
-        virtual void computeFunctional(shared_ptr<Properties>){}
+        virtual void computeFunctionalRKS(shared_ptr<Properties>){}
+        /** Compute the UKS functional value based on the given properties
+        * object over npoints (garanteed to be in the Properties object)
+        */	
+        virtual void computeFunctionalUKS(shared_ptr<Properties>){}
         /*
 	* Functional Value
 	*/
 	virtual double *getValue()  {return value_;}
 	/** 
-	* Functional Gradient
+	* Functional Gradient w.r.t. alpha density
 	*/
 	virtual double *getGradientA()  {return gradA_;}
+	/** 
+	* Functional Gradient w.r.t. beta density
+	*/
+	virtual double *getGradientB()  {return gradB_;}
+	/** 
+	* Functional Gradient w.r.t. sigma_{AB}
+        * Needed for GGAs only!
+	*/
+	virtual double *getGradientAB()  {return gradAB_;}
+	/** 
+	* Functional Gradient w.r.t. sigma_{BB}
+        * Needed for GGAs only!
+	*/
+	virtual double *getGradientBB()  {return gradBB_;}
+	/** 
+	* Functional Gradient w.r.t. sigma_{AA}
+        * Needed for GGAs only!
+	*/
+	virtual double *getGradientAA()  {return gradAA_;}
 	/** Functional name
 	* @return functional or alias name ie: 'B3LYP'
 	*/
