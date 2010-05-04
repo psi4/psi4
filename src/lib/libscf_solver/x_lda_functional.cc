@@ -21,13 +21,15 @@ X_LDA_Functional::X_LDA_Functional(int _block_size): Functional(_block_size)
 {
     value_ = init_array(_block_size);
     gradA_ = init_array(_block_size);
+    gradB_ = init_array(_block_size);
 }
 X_LDA_Functional::~X_LDA_Functional()
 {
     free(value_);
     free(gradA_);
+    free(gradB_);
 }
-void X_LDA_Functional::computeFunctional(shared_ptr<Properties> prop)
+void X_LDA_Functional::computeFunctionalRKS(shared_ptr<Properties> prop)
 {
 	double tol = 1.0E-20;
 	const double *rho = prop->getDensity();
@@ -37,7 +39,12 @@ void X_LDA_Functional::computeFunctional(shared_ptr<Properties> prop)
         for (int grid_index = 0; grid_index<ntrue; grid_index++) {
 	    value_[grid_index] = -c*pow(rho[grid_index],4.0/3.0);
 	    gradA_[grid_index] = -4.0/3.0*c*pow(rho[grid_index],1.0/3.0);
+	    gradB_[grid_index] = gradA_[grid_index];
         }
+}
+void X_LDA_Functional::computeFunctionalUKS(shared_ptr<Properties> prop)
+{
+    //TODO
 }
 string X_LDA_Functional::getName()
 {

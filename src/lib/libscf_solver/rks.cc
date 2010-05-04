@@ -37,20 +37,28 @@ namespace psi { namespace scf {
 RKS::RKS(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) : RHF(options, psio, chkpt)
 {
     FunctionalFactory fact;
-    functional_ = SharedFunctional(fact.getFunctional(options.get_str("FUNCTIONAL"),options.get_int("N_BLOCK")));
+    x_functional_ = SharedFunctional(fact.getExchangeFunctional(options.get_str("X_FUNCTIONAL"),options.get_str("C_FUNCTIONAL"),options.get_int("N_BLOCK")));
+    c_functional_ = SharedFunctional(fact.getCorrelationFunctional(options.get_str("X_FUNCTIONAL"),options.get_str("C_FUNCTIONAL"),options.get_int("N_BLOCK")));
     integrator_ = SharedIntegrator(Integrator::createIntegrator(molecule_,options));
     V_ = SharedMatrix (factory_.create_matrix("V"));
     properties_ = SharedProperties(Properties::constructProperties(basisset_,options.get_int("N_BLOCK")));
 
+    if (x_functional_->isGGA() || c_functional_-> isGGA())
+    {
+        properties_->setToComputeDensityGradient(true); //Need this to be able to get to \nabla \rho
+    }
+
     fprintf(outfile,"  \n");
-    fprintf(outfile,"  In RKS by Rob Parrish\n");
+    fprintf(outfile,"  Exchange Functional Name: %s\n",x_functional_->getName().c_str());
+    fprintf(outfile,"  Exchange Functional Description:\n%s\n",x_functional_->getDescription().c_str());
+    fprintf(outfile,"  Exchange Functional Citation:\n%s\n",x_functional_->getCitation().c_str());
     fprintf(outfile,"  \n");
-    fprintf(outfile,"  Functional Name: %s\n",functional_->getName().c_str());
-    fprintf(outfile,"  Functional Description:\n%s\n",functional_->getDescription().c_str());
-    fprintf(outfile,"  Functional Citation:\n%s\n",functional_->getCitation().c_str());
+    fprintf(outfile,"  Correlation Functional Name: %s\n",c_functional_->getName().c_str());
+    fprintf(outfile,"  Correlation Functional Description:\n%s\n",c_functional_->getDescription().c_str());
+    fprintf(outfile,"  Correlation Functional Citation:\n%s\n",c_functional_->getCitation().c_str());
     fprintf(outfile,"  \n");
     fprintf(outfile,"%s",(integrator_->getString()).c_str());
-
+        
 }
 
 RKS::~RKS()
@@ -111,7 +119,7 @@ double RKS::compute_energy()
         form_J(); //J is always needed, and sometimes you get
                   //K for free-ish with that
         //J_->print(outfile);
-        if (functional_->hasExactExchange()) {
+        if (x_functional_->hasExactExchange()) {
             form_K(); //Sometimes, you really need K too
             //K_->print(outfile);
         }
@@ -219,11 +227,13 @@ double RKS::compute_E()
     Etotal += nuclearrep_;
     Etotal += one_electron_energy;
     Etotal += J_energy;
-    Etotal += functional_energy_;
+    Etotal += x_functional_energy_;
+    Etotal += c_functional_energy_;
 
     //fprintf(outfile,"  One Electron Energy: %14.10f\n",one_electron_energy);
     //fprintf(outfile,"  Classical Coulomb Energy: %14.10f\n",J_energy);
-    //fprintf(outfile,"  Functional Energy: %14.10f\n",functional_energy_);
+    //fprintf(outfile,"  Exchange Functional Energy: %14.10f\n",x_functional_energy_);
+    //fprintf(outfile,"  Correlation Functional Energy: %14.10f\n",c_functional_energy_);
 
     return Etotal;
 
@@ -234,8 +244,8 @@ void RKS::form_F()
     J_->scale(2.0);
         F_->add(J_);
     //J_->scale(0.5);
-    //if (functional_->hasExactExchange()) {
-    //	K_->scale(-functional_->getExactExchangeCoefficient());
+    //if (x_functional_->hasExactExchange()) {
+    //	K_->scale(-x_functional_->getExactExchangeCoefficient());
     //	F_->add(K_);
     //}
     //V_->scale(1.0);
@@ -251,20 +261,53 @@ void RKS::form_V()
 {
     V_->zero();
 
-    functional_energy_ = 0.0;
+    bool x_GGA = x_functional_->isGGA();
+    bool c_GGA = c_functional_->isGGA();
+    bool GGA = x_GGA | c_GGA;
+
+    x_functional_energy_ = 0.0;
+    c_functional_energy_ = 0.0;
     densityCheck_ = 0.0;
     dipoleCheckX_ = 0.0;
     dipoleCheckY_ = 0.0;
     dipoleCheckZ_ = 0.0;
 
-    double val;
-    double *fun = functional_->getValue();
-    double *funGrad = functional_->getGradientA();
-    double **basis_points = properties_->getPoints();
 
+    //LSDA Setup
+    double val;
+
+    double *x_fun = x_functional_->getValue();
+    double *x_funGrad = x_functional_->getGradientA();
+    double *c_fun = c_functional_->getValue();
+    double *c_funGrad = c_functional_->getGradientA();
+
+    const double* rhog = properties_->getDensity();
+   
+    double **basis_points = properties_->getPoints();
+    //End LSDA Setup    
+
+    //GGA Setup (Pointer will only be accessed if functional is GGA)
+    double GGA_val;
+    double fun_x, fun_y, fun_z;
+
+    double *x_funGradAA = x_functional_->getGradientAA();
+    double *x_funGradAB = x_functional_->getGradientAB();
+    double *c_funGradAA = c_functional_->getGradientAA();
+    double *c_funGradAB = c_functional_->getGradientAB();
+
+    const double *rho_x = properties_->getDensityX();
+    const double *rho_y = properties_->getDensityY();
+    const double *rho_z = properties_->getDensityZ();
+
+    double **basis_points_x = properties_->getGradientsX();
+    double **basis_points_y = properties_->getGradientsY();
+    double **basis_points_z = properties_->getGradientsZ();
+    //End of GGA setup    
+ 
     int nirreps = V_->nirreps();
     int* opi = V_->rowspi();
     double check;
+    
     for (integrator_->reset(); !integrator_->isDone(); ) {
         SharedGridBlock q = integrator_->getNextBlock();
         int ntrue = q->getTruePoints();
@@ -274,33 +317,62 @@ void RKS::form_V()
         double* wg = q->getWeights();
 
         properties_->computeProperties(q,D_,C_);
-        const double* rhog = properties_->getDensity();
-        functional_->computeFunctional(properties_);
+        x_functional_->computeFunctionalRKS(properties_);
+        c_functional_->computeFunctionalRKS(properties_);
 
         for (int grid_index = 0; grid_index<ntrue; grid_index++) {
-        //<<BEGIN LOOP OVER GRID POINTS
+        //BEGIN LOOP OVER GRID POINTS
 
-        functional_energy_ += 2.0*fun[grid_index]*wg[grid_index];
-        //fprintf(outfile,"  Point: <%14.10f,%14.10f,%14.10f>, w = %14.10f, rho = %14.10f, f = %14.10f\n",q.point[0],q.point[1],q.point[2],q.weight,properties_->getDensity(),fun);
-        int h_offset = 0;
-        for (int h = 0; h<nirreps; h_offset+=opi[h],h++) {
-            for (int i = 0; i<opi[h];i++) {
-                for (int j = 0; j<=i; j++) {
-                 //fprintf(outfile,"   (%4d,%4d), phi_a = %14.10f, phi_b = %14.10f\n",i,j,basis_points[i],basis_points[j]);
-                    val = wg[grid_index]*basis_points[grid_index][i+h_offset]*funGrad[grid_index]*basis_points[grid_index][j+h_offset];
-                    V_->add(h,i,j,val);
-                    if (i!=j)
-                        V_->add(h,j,i,val);
+            x_functional_energy_ += 2.0*x_fun[grid_index]*wg[grid_index];
+            c_functional_energy_ += 2.0*c_fun[grid_index]*wg[grid_index];
+
+            //GGA contribution (2 \diff f / \diff s_aa \nabla \rho + \diff f / \diff s_ab \nabla \rho)
+            fun_x = 0.0;            
+            fun_y = 0.0;            
+            fun_z = 0.0;            
+            if (x_GGA) {
+                fun_x += (2.0*x_funGradAA[grid_index]+x_funGradAB[grid_index])*rho_x[grid_index];
+                fun_y += (2.0*x_funGradAA[grid_index]+x_funGradAB[grid_index])*rho_y[grid_index];
+                fun_z += (2.0*x_funGradAA[grid_index]+x_funGradAB[grid_index])*rho_z[grid_index];
+            }
+            if (c_GGA) {
+                fun_x += (2.0*c_funGradAA[grid_index]+c_funGradAB[grid_index])*rho_x[grid_index];
+                fun_y += (2.0*c_funGradAA[grid_index]+c_funGradAB[grid_index])*rho_y[grid_index];
+                fun_z += (2.0*c_funGradAA[grid_index]+c_funGradAB[grid_index])*rho_z[grid_index];
+           } 
+        
+            //fprintf(outfile,"  Point: <%14.10f,%14.10f,%14.10f>, w = %14.10f, rho = %14.10f, f = %14.10f\n",q.point[0],q.point[1],q.point[2],q.weight,properties_->getDensity(),fun);
+            int h_offset = 0;
+            for (int h = 0; h<nirreps; h_offset+=opi[h],h++) {
+                for (int i = 0; i<opi[h];i++) {
+                    for (int j = 0; j<=i; j++) {
+                        //fprintf(outfile,"   (%4d,%4d), phi_a = %14.10f, phi_b = %14.10f\n",i,j,basis_points[i],basis_points[j]);
+                        val = wg[grid_index]*basis_points[grid_index][i+h_offset]*(x_funGrad[grid_index]+c_funGrad[grid_index])*basis_points[grid_index][j+h_offset];
+                        V_->add(h,i,j,val);
+                        
+                        //GGA Contribution
+                        if (GGA) {
+                            GGA_val = 0.0;
+                            GGA_val += fun_x*(basis_points_x[grid_index][i+h_offset]*basis_points[grid_index][j+h_offset]+basis_points[grid_index][i+h_offset]*basis_points_x[grid_index][j+h_offset]);    
+                            GGA_val += fun_y*(basis_points_y[grid_index][i+h_offset]*basis_points[grid_index][j+h_offset]+basis_points[grid_index][i+h_offset]*basis_points_y[grid_index][j+h_offset]);    
+                            GGA_val += fun_x*(basis_points_z[grid_index][i+h_offset]*basis_points[grid_index][j+h_offset]+basis_points[grid_index][i+h_offset]*basis_points_z[grid_index][j+h_offset]);    
+                            GGA_val *= wg[grid_index];
+                            V_->add(h,i,j,GGA_val);
+                        }
+
+
+                        if (i!=j)
+                            V_->add(h,j,i,val);
+                    }
                 }
             }
-        }
-        //Check Numerical Density (Gives an idea of grid error)
-        check = wg[grid_index]*rhog[grid_index];
-        densityCheck_+=2.0*check;
-        dipoleCheckX_+=-2.0*check*xg[grid_index];
-        dipoleCheckY_+=-2.0*check*yg[grid_index];
-        dipoleCheckZ_+=-2.0*check*zg[grid_index];
-        // << END LOOP OVER GRID POINTS
+            //Check Numerical Density (Gives an idea of grid error)
+            check = wg[grid_index]*rhog[grid_index];
+            densityCheck_+=2.0*check;
+            dipoleCheckX_+=-2.0*check*xg[grid_index];
+            dipoleCheckY_+=-2.0*check*yg[grid_index];
+            dipoleCheckZ_+=-2.0*check*zg[grid_index];
+        //END LOOP OVER GRID POINTS
         }
     }
     //V_->print(outfile);

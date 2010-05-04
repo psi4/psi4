@@ -1,8 +1,9 @@
-#ifndef LIBSCF_X_LDA_FUNCTIONAL
-#define LIBSCF_X_LDA_FUNCTIONAL
+#ifndef LIBSCF_NULL_FUNCTIONAL
+#define LIBSCF_NULL_FUNCTIONAL
+
 /*
- *  X_LDA_Functional.h
- *  Definition of class X_LDA_Functional for use in KS-DFT
+ *  NULL_Functional.h
+ *  Definition of class NULL_Functional for use in KS-DFT
  *
  *  Created by Robert Parrish on 02/24/10.
  *
@@ -16,17 +17,17 @@ using namespace psi;
 
 namespace psi { namespace scf {
 /*! \ingroup SCF */
-//! X_LDA_Functional definition 
-class X_LDA_Functional: public Functional {
+//! NULL_Functional definition 
+class NULL_Functional: public Functional {
 public:
 	/** Constructor
 	* Allocates required arrays, returns object
 	*/
-	X_LDA_Functional(int); 
+	NULL_Functional(int); 
 	/** Destructor
 	* Frees arrays
 	*/
-	~X_LDA_Functional();
+	~NULL_Functional();
 	/** Is this functional a GGA?
 	* @return false, LSDA
 	*/

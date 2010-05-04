@@ -126,8 +126,10 @@ int read_options(const std::string &name, Options & options) {
     options.add_str("RADIAL_TYPE","TREUTLER","TREUTLER BECKE EULER-MACLAURIN");
     /*- The nuclear partition type for DFT, Treutler is best  -*/
     options.add_str("NUCLEAR_TYPE","TREUTLER","NAIVE BECKE TREUTLER");
-    /*- The functional name or alias  -*/
-    options.add_str("FUNCTIONAL","");
+    /*- The exchange functional name or alias  -*/
+    options.add_str("X_FUNCTIONAL","");
+    /*- The correlation functional name  -*/
+    options.add_str("C_FUNCTIONAL","");
      
     /*- Save a grid or not?  -*/
     options.add_bool("SAVE_CARTESIAN_GRID",false);

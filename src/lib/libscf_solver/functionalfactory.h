@@ -26,12 +26,20 @@ public:
 	* Does nothing
 	*/
 	~FunctionalFactory() {/* Does nothing */}
-	/** getFunctional 
-	* @param id string for given functional or alias
-	*  ie: 'B3LYP'
+	/** getExchangeFunctional 
+	* @param x_id string for given exchange functional or alias
+	* @param c_id string for given correlation functional 
+	*  ie: 'B88' or 'B3LYP' would both return the B88 Exchange functional
 	* @return functional object pointer corresponding to id
 	*/
-	Functional * getFunctional(string id, int block_size);
+	Functional * getExchangeFunctional(string x_id,string c_id, int block_size);
+	/** getCorrelationFunctional 
+	* @param x_id string for given exchange functional or alias
+	* @param c_id string for given correlation functional 
+	*  ie: 'LYP' or 'B3LYP' would both return the LYP Correlation functional
+	* @return functional object pointer corresponding to id
+	*/
+	Functional * getCorrelationFunctional(string x_id,string c_id, int block_size);
 };
 
 }}
