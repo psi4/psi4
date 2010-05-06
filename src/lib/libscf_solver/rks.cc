@@ -43,8 +43,9 @@ RKS::RKS(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) : RHF
     V_ = SharedMatrix (factory_.create_matrix("V"));
     properties_ = SharedProperties(Properties::constructProperties(basisset_,options.get_int("N_BLOCK")));
 
-    if (x_functional_->isGGA() || c_functional_-> isGGA())
+    if (x_functional_->isGGA() || c_functional_-> isGGA() )
     {
+        fprintf(outfile,"\n  Computing Gradients, X is %s, C is %s",(x_functional_->isGGA())?"GGA":"Not GGA",(c_functional_->isGGA())?"GGA":"Not GGA");
         properties_->setToComputeDensityGradient(true); //Need this to be able to get to \nabla \rho
     }
 
@@ -223,10 +224,15 @@ double RKS::compute_E()
 {
     double one_electron_energy = 2.0*D_->vector_dot(H_);
     double J_energy = D_->vector_dot(J_);
+    double K_energy = 0.0;
+    if (x_functional_->hasExactExchange()) {
+        K_energy = x_functional_->getExactExchangeCoefficient()*D_->vector_dot(K_);
+    }
     double Etotal = 0.0;
     Etotal += nuclearrep_;
     Etotal += one_electron_energy;
     Etotal += J_energy;
+    Etotal += K_energy;
     Etotal += x_functional_energy_;
     Etotal += c_functional_energy_;
 
@@ -244,10 +250,10 @@ void RKS::form_F()
     J_->scale(2.0);
         F_->add(J_);
     //J_->scale(0.5);
-    //if (x_functional_->hasExactExchange()) {
-    //	K_->scale(-x_functional_->getExactExchangeCoefficient());
-    //	F_->add(K_);
-    //}
+    if (x_functional_->hasExactExchange()) {
+    	K_->scale(-x_functional_->getExactExchangeCoefficient());
+    	F_->add(K_);
+    }
     //V_->scale(1.0);
     F_->add(V_);
     #ifdef _DEBUG

@@ -1,8 +1,8 @@
-#ifndef LIBSCF_X_LDA_FUNCTIONAL
-#define LIBSCF_X_LDA_FUNCTIONAL
+#ifndef LIBSCF_X_B88_FUNCTIONAL
+#define LIBSCF_X_B88_FUNCTIONAL
 /*
- *  X_LDA_Functional.h
- *  Definition of class X_LDA_Functional for use in KS-DFT
+ *  X_B88_Functional.h
+ *  Definition of class X_B88_Functional for use in KS-DFT
  *
  *  Created by Robert Parrish on 02/24/10.
  *
@@ -16,23 +16,23 @@ using namespace psi;
 
 namespace psi { namespace scf {
 /*! \ingroup SCF */
-//! X_LDA_Functional definition 
-class X_LDA_Functional: public Functional {
+//! X_B88_Functional definition 
+class X_B88_Functional: public Functional {
 public:
 	/** Constructor
 	* Allocates required arrays, returns object
 	*/
-	X_LDA_Functional(int); 
+	X_B88_Functional(int); 
 	/** Destructor
 	* Frees arrays
 	*/
-	~X_LDA_Functional();
+	~X_B88_Functional();
 	/** Is this functional a GGA?
-	* @return false, LSDA
+	* @return true, it's the first GGA 
 	*/
-	bool isGGA() {return false;}
+	bool isGGA() {return true;}
 	/** Does this functional have exact exchange?
-	* @return false, no exact exchange
+	* @return false, no exact exchange (until B3)
 	*/
 	bool hasExactExchange() {return false;}
 	/** Exact exchange coefficient (0.0 if no exact exchange)
@@ -50,7 +50,7 @@ public:
 	/** Does this functional need electron density gradients?
 	* @return true if so, false otherwise
 	*/
-	bool needsDensityGradient() {return false; }
+	bool needsDensityGradient() {return true; }
 	/** Does this functional need electron density jacobians?
 	* @return true if so, false otherwise
 	*/
