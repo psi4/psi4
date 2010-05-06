@@ -26,6 +26,8 @@ protected:
         double *gradAB_; //GGA
         double *gradBB_; //GGA
         int block_size_;
+        const static double tol = 1E-20;
+
 public:
 	/** Constructor
 	* Allocates memory

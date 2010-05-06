@@ -31,39 +31,39 @@ public:
 	/** Is this functional a GGA?
 	* @return false, LSDA
 	*/
-	const bool isGGA() const {return false;}
+	bool isGGA() {return false;}
 	/** Does this functional have exact exchange?
 	* @return false, no exact exchange
 	*/
-	const bool hasExactExchange() const {return false;}
+	bool hasExactExchange() {return false;}
 	/** Exact exchange coefficient (0.0 if no exact exchange)
 	* @return 0.0
 	*/
-	const double getExactExchangeCoefficient() const {return 0.0;}
+	double getExactExchangeCoefficient() {return 0.0;}
 	/** Exact Coulomb coefficient (1.0 if usual)
 	* @return 1.0
 	*/
-	const double getExactCoulombCoefficient() const {return 1.0;}
+	double getExactCoulombCoefficient() {return 1.0;}
 	/** Does this functional need electron density?
 	* @return true, needs density
 	*/
-	const bool needsDensity() const {return true; }
+	bool needsDensity() {return true; }
 	/** Does this functional need electron density gradients?
 	* @return true if so, false otherwise
 	*/
-	const bool needsDensityGradient() const {return false; }
+	bool needsDensityGradient() {return false; }
 	/** Does this functional need electron density jacobians?
 	* @return true if so, false otherwise
 	*/
-	const bool needsDensityHessian() const {return false; }
+	bool needsDensityHessian() {return false; }
 	/** Does this functional need electron density laplacians?
 	* @return true if so, false otherwise
 	*/
-	const bool needsDensityLaplacian() const {return false; }
+	bool needsDensityLaplacian() {return false; }
 	/** Does this functional need kinetic energy density?
 	* @return true if so, false otherwise
 	*/
-	const bool needsKEDensity() const {return false; }
+	bool needsKEDensity() {return false; }
 	/** Functional Value at specified point properties
         * for RKS type SCF 
 	* 

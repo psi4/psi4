@@ -31,7 +31,6 @@ X_LDA_Functional::~X_LDA_Functional()
 }
 void X_LDA_Functional::computeFunctionalRKS(shared_ptr<Properties> prop)
 {
-	double tol = 1.0E-20;
 	const double *rho = prop->getDensity();
         int ntrue = prop->getTrueSize();
         double c = 3.0/8.0*pow(3.0,1.0/3.0)*pow(4.0,2.0/3.0)*pow(M_PI,-1.0/3.0);

@@ -12,6 +12,8 @@
 #include "functional.h"
 #include "functionalfactory.h"
 #include "x_lda_functional.h"
+#include "x_b88_functional.h"
+#include "x_b3_functional.h"
 #include "null_functional.h"
 #include <string>
 #include <cstring>
@@ -22,9 +24,13 @@ namespace psi { namespace scf {
 Functional * FunctionalFactory::getExchangeFunctional(string x_id,string c_id, int block_size)
 {
     if (x_id == "X_LDA") {
-        //X_LDA_Functional f(1);
-        //printf("%s",f.getName().c_str());
         return new X_LDA_Functional(block_size);
+    }
+    if (x_id == "X_B88") {
+        return new X_B88_Functional(block_size);
+    }
+    if (x_id == "X_B3") {
+        return new X_B3_Functional(block_size);
     }
     else {
         throw std::domain_error("Requested Exchange Functional does not exist!");		
