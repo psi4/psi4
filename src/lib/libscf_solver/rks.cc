@@ -75,39 +75,13 @@ double RKS::compute_energy()
     // Do the initial work to get the iterations started.
     //form_multipole_integrals();  // handled by HF class
     form_H();
-
-    //H_->print(outfile);
+    form_Shalf();
+    form_guess();
 
     if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
         form_PK();
     else if (ri_integrals_ == true)
         form_B();
-
-
-
-    form_Shalf();
-    form_initialF();
-    // Check to see if there are MOs already in the checkpoint file.
-    // If so, read them in instead of forming them.
-    string prefix(chkpt_->build_keyword(const_cast<char*>("MO coefficients")));
-    if (chkpt_->exist(const_cast<char*>(prefix.c_str()))) {
-        fprintf(outfile, "  Reading previous MOs from file32.\n\n");
-
-        // Read MOs from checkpoint and set C_ to them
-        double **vectors = chkpt_->rd_scf();
-        C_->set(const_cast<const double**>(vectors));
-        free_block(vectors);
-
-        form_D();
-
-        // Read SCF energy from checkpoint file.
-        E_ = chkpt_->rd_escf();
-    } else {
-        form_C();
-        form_D();
-        // Compute an initial energy using H and D
-        E_ = compute_initial_E();
-    }
 
     fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
     // SCF iterations

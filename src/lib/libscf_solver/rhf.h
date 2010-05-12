@@ -36,7 +36,7 @@ protected:
 
     void compute_multipole();
 
-    void form_initialF();
+    void form_guess();
     void form_C();
     void form_D();
     double compute_initial_E();

@@ -168,6 +168,8 @@ int read_options(const std::string &name, Options & options) {
     else
       options.add_bool("RI_HF", true);
 
+    /*- The guess type to be used in the computation -*/
+    options.add_str("GUESS", "", "CORE GWH SAD READ BASIS2");
     /*- The reference wavefunction used in the computation -*/
     options.add_str("REFERENCE", "RHF");
     /*- The maximum number of iterations -*/

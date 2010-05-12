@@ -98,38 +98,16 @@ double RHF::compute_energy()
 
     // Do the initial work to get the iterations started.
     //form_multipole_integrals();  // handled by HF class
-    form_H();
+    form_H(); //Core Hamiltonian
+    form_Shalf(); //Shalf Matrix
+    //Form initial MO guess by user specified method
+    form_guess(); 
 
     if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
         form_PK();
     else if (ri_integrals_ == true)
         form_B();
-
-    form_Shalf();
-    form_initialF();
-
-    // Check to see if there are MOs already in the checkpoint file.
-    // If so, read them in instead of forming them.
-    string prefix(chkpt_->build_keyword(const_cast<char*>("MO coefficients")));
-    if (chkpt_->exist(const_cast<char*>(prefix.c_str()))) {
-        fprintf(outfile, "  Reading previous MOs from file32.\n\n");
-
-        // Read MOs from checkpoint and set C_ to them
-        double **vectors = chkpt_->rd_scf();
-        C_->set(const_cast<const double**>(vectors));
-        free_block(vectors);
-
-        form_D();
-
-        // Read SCF energy from checkpoint file.
-        E_ = chkpt_->rd_escf();
-    } else {
-        form_C();
-        form_D();
-        // Compute an initial energy using H and D
-        E_ = compute_initial_E();
-    }
-
+    
     fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
     // SCF iterations
     do {
@@ -202,7 +180,68 @@ double RHF::compute_energy()
     fflush(outfile);
     return E_;
 }
+void RHF::form_guess()
+{    
+    // Check to see if there are MOs already in the checkpoint file.
+    // If so, read them in instead of forming them.
+    string prefix(chkpt_->build_keyword(const_cast<char*>("MO coefficients")));
+    //What does the user want?
+    //Options will be:
+    // ""-Either READ or CORE (try READ first)
+    // "READ"-try to read MOs from checkpoint
+    // "BASIS2"-try to read MOs from checkpoint after basis cast up (in INPUT)
+    // "CORE"-CORE Hamiltonain
+    // "GWH"-Generalized Wolfsberg-Helmholtz
+    // "SAD"-Superposition of Atomic Denisties TODO
+    string guess_type = options_.get_str("GUESS");
+    if ((guess_type == "" || guess_type == "READ"||guess_type == "BASIS2")&&chkpt_->exist(const_cast<char*>(prefix.c_str()))) {
+        //Try for existing MOs already. Deuces of loaded spades
+        fprintf(outfile, "  SCF Guess: Reading previous MOs.\n\n");
 
+        // Read MOs from checkpoint and set C_ to them
+        double **vectors = chkpt_->rd_scf();
+        C_->set(const_cast<const double**>(vectors));
+        free_block(vectors);
+
+        form_D();
+
+        // Read SCF energy from checkpoint file.
+        E_ = chkpt_->rd_escf();
+    } else if (guess_type == "CORE" || guess_type == "") {
+        //CORE is an old Psi standby, so we'll play this as spades
+        fprintf(outfile, "  SCF Guess: Core (One-Electron) Hamiltonian.\n\n");
+        F_->copy(H_); //Try the core Hamiltonian as the Fock Matrix
+        form_C();
+        form_D();
+        // Compute an initial energy using H and D
+        E_ = compute_initial_E();
+    } else if (guess_type == "SAD") {
+        //Superposition of Atomic Density (will be preferred when we can figure it out)
+        fprintf(outfile, "  SCF Guess: Superposition of Atomic Density.\n\n");
+        throw std::domain_error("SAD is not implemented for RHF/RKS yet!");
+    } else if (guess_type == "GWH") {
+        //Generalized Wolfsberg Helmholtz (Sounds cool, easy to code)
+        fprintf(outfile, "  SCF Guess: Generalized Wolfsberg-Helmholtz.\n\n");
+        F_->zero(); //Try F_{mn} = S_{mn} (H_{mm} + H_{nn})/2
+        int h, i, j;
+        int *opi = S_->rowspi();
+        int nirreps = S_->nirreps();
+        for (h=0; h<nirreps; ++h) {
+            for (i=0; i<opi[h]; ++i) {
+                for (j=0; j<opi[h]; ++j) {
+                    F_->set(h,i,j,0.5*S_->get(h,i,j)*(H_->get(h,i,i)+H_->get(h,j,j)));
+                }
+            }
+        }
+        form_C();
+        form_D();
+        // Compute an initial energy using H and D
+        E_ = compute_initial_E();
+    } else if (guess_type == "READ" || guess_type == "BASIS2") {
+        throw std::invalid_argument("Checkpoint MOs requested, but do not exist!");
+    }   
+    
+}
 void RHF::compute_multipole()
 {
     // Begin dipole
@@ -626,20 +665,6 @@ void RHF::allocate_PK()
         use_out_of_core_ = true;
     }
 }
-
-void RHF::form_initialF()
-{
-    // Form the initial Fock matrix
-    F_->copy(H_);
-
-#ifdef _DEBUG
-    if (debug_) {
-        fprintf(outfile, "Initial Fock matrix (NOTE: NOT ORTHONORMALIZED!!!):\n");
-        F_->print(outfile);
-    }
-#endif
-}
-
 void RHF::form_F()
 {
     F_->copy(H_);
@@ -651,7 +676,6 @@ void RHF::form_F()
     }
 #endif
 }
-
 void RHF::form_C()
 {
     Matrix eigvec;
