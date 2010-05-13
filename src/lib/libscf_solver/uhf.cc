@@ -88,27 +88,10 @@ double UHF::compute_energy()
     form_Shalf();
     form_initialF();
 
-    // Look to see if there are some MOs in the checkpoint file
-    std::string prefix(chkpt_->build_keyword(const_cast<char*>("Alpha MO coefficients")));
-    if(chkpt_->exist(const_cast<char*>(prefix.c_str()))) {
-        if(print_ > 1) fprintf(outfile, "  Reading the molecular orbitals from the checkpoint file\n");
-        // Read MOs from checkpoint and set C_ to them
-        double **vectors = chkpt_->rd_alpha_scf();
-        Ca_->set(const_cast<const double**>(vectors));
-        free_block(vectors);
-        vectors = chkpt_->rd_beta_scf();
-        Cb_->set(const_cast<const double**>(vectors));
-        free_block(vectors);
-        form_D();
-        E_ = chkpt_->rd_escf();
-    } else {
-        form_C();
-        form_D();
-        // Compute an initial energy using H and D
-        E_ = compute_initial_E();
-    }
+    if (load_or_compute_initial_C())
+        fprintf(outfile, "  Read in previous MOs from file32.\n\n");
 
-    if(print_)
+    if (print_)
         fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
     do {
         iter++;
@@ -299,6 +282,41 @@ void UHF::compute_multipole()
     }
 }
 
+bool UHF::load_or_compute_initial_C()
+{
+    bool ret = false;
+    string alpha(chkpt_->build_keyword(const_cast<char*>("Alpha MO coefficients")));
+    string beta(chkpt_->build_keyword(const_cast<char*>("Beta MO coefficients")));
+    if (chkpt_->exist(const_cast<char*>(alpha.c_str())) &&
+        chkpt_->exist(const_cast<char*>(beta.c_str()))) {
+        // Read alpha MOs from checkpoint and set C_ to them
+        double **vectors = chkpt_->rd_alpha_scf();
+        Ca_->set(const_cast<const double**>(vectors));
+        free_block(vectors);
+
+        // Read beta MOs from checkpoint and set C_ to them
+        vectors = chkpt_->rd_beta_scf();
+        Cb_->set(const_cast<const double**>(vectors));
+        free_block(vectors);
+
+        form_D();
+
+        // Read SCF energy from checkpoint file.
+        E_ = chkpt_->rd_escf();
+
+        ret = true;
+    } else {
+        form_initial_C();
+        form_D();
+        // Compute an initial energy using H and D
+        E_ = compute_initial_E();
+
+        ret = false;
+    }
+
+    return ret;
+}
+
 void UHF::save_information()
 {
     // Print the final docc vector
@@ -318,14 +336,10 @@ void UHF::save_information()
     }
 
     // Needed for a couple of places.
-    Matrix eigvectora;
-    Matrix eigvectorb;
-    Vector eigvaluesa;
-    Vector eigvaluesb;
-    factory_.create_matrix(eigvectora);
-    factory_.create_matrix(eigvectorb);
-    factory_.create_vector(eigvaluesa);
-    factory_.create_vector(eigvaluesb);
+    SharedMatrix eigvectora(factory_.create_matrix());
+    SharedMatrix eigvectorb(factory_.create_matrix());
+    SharedVector eigvaluesa(factory_.create_vector());
+    SharedVector eigvaluesb(factory_.create_vector());
     Fa_->diagonalize(eigvectora, eigvaluesa);
     Fb_->diagonalize(eigvectorb, eigvaluesb);
 
@@ -340,10 +354,10 @@ void UHF::save_information()
 
     // Print out orbital energies.
     std::vector<std::pair<double, int> > pairsa, pairsb;
-    for (int h=0; h<eigvaluesa.nirreps(); ++h) {
-        for (int i=0; i<eigvaluesa.dimpi()[h]; ++i) {
-            pairsa.push_back(make_pair(eigvaluesa.get(h, i), h));
-            pairsb.push_back(make_pair(eigvaluesb.get(h, i), h));
+    for (int h=0; h<eigvaluesa->nirreps(); ++h) {
+        for (int i=0; i<eigvaluesa->dimpi()[h]; ++i) {
+            pairsa.push_back(make_pair(eigvaluesa->get(h, i), h));
+            pairsb.push_back(make_pair(eigvaluesb->get(h, i), h));
         }
     }
     sort(pairsa.begin(),pairsa.end());
@@ -379,12 +393,12 @@ void UHF::save_information()
         }
         fprintf(outfile, "\n");
     }
-    for (int i=0; i<eigvaluesa.nirreps(); ++i)
+    for (int i=0; i<eigvaluesa->nirreps(); ++i)
         free(temp2[i]);
     free(temp2);
 
-    int *vec = new int[eigvaluesa.nirreps()];
-    for (int i=0; i<eigvaluesa.nirreps(); ++i)
+    int *vec = new int[eigvaluesa->nirreps()];
+    for (int i=0; i<eigvaluesa->nirreps(); ++i)
         vec[i] = 0;
 
     chkpt_->wt_nmo(nso);
@@ -393,7 +407,7 @@ void UHF::save_information()
     chkpt_->wt_escf(E_);
     chkpt_->wt_eref(E_);
     chkpt_->wt_clsdpi(doccpi_);
-    chkpt_->wt_orbspi(eigvaluesa.dimpi());
+    chkpt_->wt_orbspi(eigvaluesa->dimpi());
     chkpt_->wt_openpi(vec);
     chkpt_->wt_phase_check(0);
 
@@ -411,13 +425,13 @@ void UHF::save_information()
     chkpt_->wt_iopen(0);
 
     // Write eigenvectors and eigenvalue to checkpoint
-    double *values = eigvaluesa.to_block_vector();
+    double *values = eigvaluesa->to_block_vector();
     chkpt_->wt_alpha_evals(values);
     free(values);
     double **vectors = Ca_->to_block_matrix();
     chkpt_->wt_alpha_scf(vectors);
     free_block(vectors);
-    values = eigvaluesb.to_block_vector();
+    values = eigvaluesb->to_block_vector();
     chkpt_->wt_beta_evals(values);
     free(values);
     vectors = Cb_->to_block_matrix();
@@ -580,6 +594,7 @@ void UHF::form_D()
     }
 
     // Form total density
+    // TODO: Refactor Dt_ to D_ (found in HF)
     Dt_->copy(Da_);
     Dt_->add(Db_);
 
@@ -591,6 +606,7 @@ void UHF::form_D()
 #endif
 }
 
+// TODO: Once Dt_ is refactored to D_ the only difference between this and RHF::compute_initial_E is a factor of 0.5
 double UHF::compute_initial_E()
 {
     double Etotal = nuclearrep_ + 0.5 * (Dt_->vector_dot(H_));
@@ -974,7 +990,6 @@ void UHF::save_fock()
 void UHF::diis()
 {
     diis_manager_->extrapolate(2, Fa_.get(), Fb_.get());
-
 }
 
 }}

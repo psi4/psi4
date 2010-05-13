@@ -13,18 +13,18 @@ namespace psi { namespace scf {
   
 class ROHF : public HF {
 protected:
-    Matrix S_;
-    Matrix Fc_;
-    Matrix Fo_;
-    Matrix Feff_;
-    Matrix C_;
-    Matrix Dc_;
-    Matrix Do_;
-    Matrix Dc_old_;
-    Matrix Do_old_;
-    Matrix Gc_;
-    Matrix Go_;
-    Vector epsilon_;
+    SharedMatrix S_;
+    SharedMatrix Fc_;
+    SharedMatrix Fo_;
+    SharedMatrix Feff_;
+//    Matrix C_;
+    SharedMatrix Dc_;
+    SharedMatrix Do_;
+    SharedMatrix Dc_old_;
+    SharedMatrix Do_old_;
+    SharedMatrix Gc_;
+    SharedMatrix Go_;
+    SharedVector epsilon_;
     
     std::vector<SharedMatrix> diis_F_;
     std::vector<SharedMatrix> diis_E_;
@@ -42,7 +42,7 @@ protected:
     int multiplicity_;
     
     void form_initialF();
-    void initial_guess();
+    void form_initial_C();
     void form_C();
     void form_D();
     double compute_initial_E();

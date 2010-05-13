@@ -41,7 +41,7 @@ class PsiException : public std::runtime_error {
             int line
         ) throw ();
         PsiException(const PsiException& copy) throw();
-        ~PsiException() throw ();
+        virtual ~PsiException() throw ();
 
         PsiException& operator=(const PsiException& other) {
             if (this != &other) {
@@ -97,7 +97,7 @@ class SanityCheckError : public PsiException {
             int line
         ) throw();
 
-        ~SanityCheckError() throw();
+        virtual ~SanityCheckError() throw();
 
 };
 
@@ -116,22 +116,20 @@ class FeatureNotImplemented : public PsiException {
         * @param line The line number that threw the exception (use __LINE__ macro)
         */
         FeatureNotImplemented(
-            std::string module, 
+            std::string module,
             std::string feature,
             const char* file,
             int line
         ) throw();
 
-        ~FeatureNotImplemented() throw();
+        virtual ~FeatureNotImplemented() throw();
 };
 
 
 /**
 * A generic template class for exceptions in which a min or max value is exceed
 */
-template <
-    class T
->
+template <class T>
 class LimitExceeded : public PsiException {
 
     private:
@@ -175,15 +173,16 @@ class LimitExceeded : public PsiException {
 
         T actual_value() const throw() {return errorval_;}
 
-        ~LimitExceeded() throw(){}
+        virtual ~LimitExceeded<T>() throw() {};
 };
 
 /**
 * Error in a step size
 */
-class StepSizeError : public LimitExceeded<double> {
+template <class T=double>
+class StepSizeError : public LimitExceeded<T> {
 
-    typedef LimitExceeded<double> ParentClass;
+    typedef LimitExceeded<T> ParentClass;
 
     public:
         /**
@@ -196,20 +195,21 @@ class StepSizeError : public LimitExceeded<double> {
         */
         StepSizeError(
             std::string resource_name,
-            double max,
-            double actual,
+            T max,
+            T actual,
             const char* file,
             int line) throw();
 
-        ~StepSizeError() throw();
+        virtual ~StepSizeError() throw();
 };
 
 /**
 * Maximum number of iterations exceeded
 */
-class MaxIterationsExceeded : public LimitExceeded<int> {
+template <class T=int>
+class MaxIterationsExceeded : public LimitExceeded<T> {
 
-    typedef LimitExceeded<int> ParentClass;
+    typedef LimitExceeded<T> ParentClass;
 
     public:
         /**
@@ -221,19 +221,19 @@ class MaxIterationsExceeded : public LimitExceeded<int> {
         */
         MaxIterationsExceeded(
             std::string routine_name,
-            int max,
+            T max,
             const char* file,
             int line) throw();
 
-        ~MaxIterationsExceeded() throw();
+        virtual ~MaxIterationsExceeded() throw();
 
 };
 
 /**
 * Convergence error for routines
 */
-class ConvergenceError : public MaxIterationsExceeded {
-
+template <class T=int>
+class ConvergenceError : public MaxIterationsExceeded<T> {
     public:
         /**
         * Constructor
@@ -246,7 +246,7 @@ class ConvergenceError : public MaxIterationsExceeded {
         */
         ConvergenceError(
             std::string routine_name,
-            int max,
+            T max,
             double desired_accuracy,
             double actual_accuracy,
             const char* file,
@@ -262,19 +262,18 @@ class ConvergenceError : public MaxIterationsExceeded {
         */
         double actual_accuracy() const throw();
 
-        ~ConvergenceError() throw();
+        virtual ~ConvergenceError() throw();
 
     private:
         double desired_acc_;
         double actual_acc_;
-
-
 };
 
 /**
 * Convergence error for routines
 */
-class ResourceAllocationError : public LimitExceeded<size_t> {
+template<class T=size_t>
+class ResourceAllocationError : public LimitExceeded<T> {
 
     public:
         /**
@@ -286,12 +285,12 @@ class ResourceAllocationError : public LimitExceeded<size_t> {
         */
         ResourceAllocationError(
             std::string resource_name,
-            size_t max,
-            size_t actual,
+            T max,
+            T actual,
             const char* file,
             int line) throw ();
 
-        ~ResourceAllocationError() throw();
+        virtual ~ResourceAllocationError() throw();
 };
 
 /**
@@ -319,7 +318,7 @@ class InputException : public PsiException {
             std::string msg,
             std::string param_name,
             int value,
-            const char* file, 
+            const char* file,
             int line
         ) throw();
 
@@ -335,7 +334,7 @@ class InputException : public PsiException {
             std::string msg,
             std::string param_name,
             double value,
-            const char* file, 
+            const char* file,
             int line
         ) throw();
 
@@ -351,7 +350,7 @@ class InputException : public PsiException {
             std::string msg,
             std::string param_name,
             std::string value,
-            const char* file, 
+            const char* file,
             int line
         ) throw();
 
@@ -365,7 +364,7 @@ class InputException : public PsiException {
         InputException(
             std::string msg,
             std::string param_name,
-            const char* file, 
+            const char* file,
             int line
         ) throw();
 };

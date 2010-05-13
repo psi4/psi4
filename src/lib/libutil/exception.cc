@@ -1,9 +1,9 @@
 #include <exception.h>
 #include <sstream>
 
-using namespace psi;
 using namespace std;
 
+namespace psi {
 PsiException::PsiException(
     string msg,
     const char* _file,
@@ -134,61 +134,100 @@ InputException::write_input_msg(
     rewrite_msg(sstr.str());
 }
 
-StepSizeError::StepSizeError(
+template<class T>
+StepSizeError<T>::StepSizeError(
     string value_name,
-    double max,
-    double actual,
+    T max,
+    T actual,
     const char* _file,
     int _line) throw()
-    : LimitExceeded<double>(value_name + " step size", max, actual, _file, _line)
+    : LimitExceeded<T>(value_name + " step size", max, actual, _file, _line)
 {
 }
 
-StepSizeError::~StepSizeError() throw() {}
+template<class T>
+StepSizeError<T>::~StepSizeError() throw() {}
 
-MaxIterationsExceeded::MaxIterationsExceeded(
+template<class T>
+MaxIterationsExceeded<T>::MaxIterationsExceeded(
     string routine_name,
-    int max,
+    T max,
     const char* _file,
     int _line)  throw()
-    : LimitExceeded<int>(routine_name + " iterations", max, max, _file, _line)
+    : LimitExceeded<T>(routine_name + " iterations", max, max, _file, _line)
 {
 }
 
-MaxIterationsExceeded::~MaxIterationsExceeded() throw() {}
+template<class T>
+MaxIterationsExceeded<T>::~MaxIterationsExceeded() throw() {}
 
-ConvergenceError::ConvergenceError(
+template<class T>
+ConvergenceError<T>::ConvergenceError(
+    string routine_name,
+    T max,
+    double _desired_accuracy,
+    double _actual_accuracy,
+    const char* _file,
+    int _line) throw()
+    : MaxIterationsExceeded<T>(routine_name + " iterations", max, _file, _line), desired_acc_(_desired_accuracy), actual_acc_(_actual_accuracy)
+{
+    stringstream sstr;
+    sstr << "could not converge " << routine_name << ".  desired " << _desired_accuracy << " but got " << _actual_accuracy << "\n";
+    sstr << LimitExceeded<T>::description();
+    PsiException::rewrite_msg(sstr.str());
+}
+
+template<class T>
+ConvergenceError<T>::~ConvergenceError() throw() {}
+
+template<class T>
+double 
+ConvergenceError<T>::desired_accuracy() const throw() {return desired_acc_;}
+
+template<class T>
+double 
+ConvergenceError<T>::actual_accuracy() const throw() {return actual_acc_;}
+
+template<>
+ConvergenceError<int>::ConvergenceError(
     string routine_name,
     int max,
     double _desired_accuracy,
     double _actual_accuracy,
     const char* _file,
     int _line) throw()
-    : MaxIterationsExceeded(routine_name + " iterations", max, _file, _line), desired_acc_(_desired_accuracy), actual_acc_(_actual_accuracy)
+    : MaxIterationsExceeded<int>(routine_name + " iterations", max, _file, _line), desired_acc_(_desired_accuracy), actual_acc_(_actual_accuracy)
 {
     stringstream sstr;
     sstr << "could not converge " << routine_name << ".  desired " << _desired_accuracy << " but got " << _actual_accuracy << "\n";
-    sstr << description();
-    rewrite_msg(sstr.str());
+    sstr << LimitExceeded<int>::description();
+    PsiException::rewrite_msg(sstr.str());
 }
 
-ConvergenceError::~ConvergenceError() throw() {}
+template<>
+ConvergenceError<int>::~ConvergenceError() throw() {}
 
-double 
-ConvergenceError::desired_accuracy() const throw() {return desired_acc_;}
+template<>
+double
+ConvergenceError<int>::desired_accuracy() const throw() {return desired_acc_;}
 
-double 
-ConvergenceError::actual_accuracy() const throw() {return actual_acc_;}
+template<>
+double
+ConvergenceError<int>::actual_accuracy() const throw() {return actual_acc_;}
 
-ResourceAllocationError::ResourceAllocationError(
+template<class T>
+ResourceAllocationError<T>::ResourceAllocationError(
     string resource_name,
-    size_t max,
-    size_t actual,
+    T max,
+    T actual,
     const char* _file,
     int _line)  throw()
     : LimitExceeded<size_t>(resource_name, max, actual, _file, _line)
 {
 }
+
+template<class T>
+ResourceAllocationError<T>::~ResourceAllocationError() throw() {}
 
 FeatureNotImplemented::FeatureNotImplemented(
     string module_name,
@@ -207,5 +246,4 @@ FeatureNotImplemented::~FeatureNotImplemented() throw()
 {
 }
 
-ResourceAllocationError::~ResourceAllocationError() throw() {}
-
+}

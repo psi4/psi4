@@ -216,6 +216,7 @@ public:
     /// Diagonalize this places eigvectors and eigvalues must be created by caller.
     void diagonalize(Matrix* eigvectors, Vector* eigvalues);
     void diagonalize(shared_ptr<Matrix> eigvectors, shared_ptr<Vector> eigvalues);
+    void diagonalize(shared_ptr<Matrix> eigvectors, Vector& eigvalues);
     
     // Reference versions of the above functions:
     

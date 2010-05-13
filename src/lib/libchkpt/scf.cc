@@ -348,6 +348,7 @@ double **Chkpt::set_mo_phases(double **coeff, int nrows, int ncols)
 	}
 
 	wt_phase_check(1);
+        return coeff;
 }
 
 double **Chkpt::rd_local_scf(void)

@@ -64,6 +64,7 @@ void HF::common_init()
     Shalf_.reset(factory_.create_matrix("S^-1/2"));
     Sphalf_.reset(factory_.create_matrix("S^+1/2"));
     H_.reset(factory_.create_matrix("One-electron Hamiltonion"));
+    C_.reset(factory_.create_matrix("MO coefficients"));
 
     Eold_    = 0.0;
     E_       = 0.0;
@@ -476,14 +477,14 @@ void HF::form_Shalf()
     }
 }
 
-int *HF::compute_fcpi(int nfzc, Vector &eigvalues)
+int *HF::compute_fcpi(int nfzc, SharedVector &eigvalues)
 {
-    int *frzcpi = new int[eigvalues.nirreps()];
+    int *frzcpi = new int[eigvalues->nirreps()];
     // Print out orbital energies.
     std::vector<std::pair<double, int> > pairs;
-    for (int h=0; h<eigvalues.nirreps(); ++h) {
-        for (int i=0; i<eigvalues.dimpi()[h]; ++i)
-            pairs.push_back(make_pair(eigvalues.get(h, i), h));
+    for (int h=0; h<eigvalues->nirreps(); ++h) {
+        for (int i=0; i<eigvalues->dimpi()[h]; ++i)
+            pairs.push_back(make_pair(eigvalues->get(h, i), h));
         frzcpi[h] = 0;
     }
     sort(pairs.begin(),pairs.end());
@@ -494,14 +495,14 @@ int *HF::compute_fcpi(int nfzc, Vector &eigvalues)
     return frzcpi;
 }
 
-int *HF::compute_fvpi(int nfzv, Vector &eigvalues)
+int *HF::compute_fvpi(int nfzv, SharedVector &eigvalues)
 {
-    int *frzvpi = new int[eigvalues.nirreps()];
+    int *frzvpi = new int[eigvalues->nirreps()];
     // Print out orbital energies.
     std::vector<std::pair<double, int> > pairs;
-    for (int h=0; h<eigvalues.nirreps(); ++h) {
-        for (int i=0; i<eigvalues.dimpi()[h]; ++i)
-            pairs.push_back(make_pair(eigvalues.get(h, i), h));
+    for (int h=0; h<eigvalues->nirreps(); ++h) {
+        for (int i=0; i<eigvalues->dimpi()[h]; ++i)
+            pairs.push_back(make_pair(eigvalues->get(h, i), h));
         frzvpi[h] = 0;
     }
     sort(pairs.begin(),pairs.end(), greater<std::pair<double, int> >());
@@ -543,6 +544,34 @@ void HF::form_multipole_integrals()
     Quadrupole_[3]->save(psio_, PSIF_OEI);
     Quadrupole_[4]->save(psio_, PSIF_OEI);
     Quadrupole_[5]->save(psio_, PSIF_OEI);
+}
+
+bool HF::load_or_compute_initial_C()
+{
+    bool ret = false;
+    string prefix(chkpt_->build_keyword(const_cast<char*>("MO coefficients")));
+    if (chkpt_->exist(const_cast<char*>(prefix.c_str()))) {
+        // Read MOs from checkpoint and set C_ to them
+        double **vectors = chkpt_->rd_scf();
+        C_->set(const_cast<const double**>(vectors));
+        free_block(vectors);
+
+        form_D();
+
+        // Read SCF energy from checkpoint file.
+        E_ = chkpt_->rd_escf();
+
+        ret = true;
+    } else {
+        form_initial_C();
+        form_D();
+        // Compute an initial energy using H and D
+        E_ = compute_initial_E();
+
+        ret = false;
+    }
+
+    return ret;
 }
 
 }}
