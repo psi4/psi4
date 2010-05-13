@@ -108,9 +108,6 @@ double RHF::compute_energy()
     else if (ri_integrals_ == true)
         form_B();
 
-    form_Shalf();
-    form_initialF();
-
     // Check to see if there are MOs already in the checkpoint file.
     // If so, read them in instead of forming them.
     if (load_or_compute_initial_C())
