@@ -37,17 +37,16 @@ ROHF::~ROHF() {
 
 void ROHF::common_init()
 {
-    factory_.create_matrix(Fc_, "F closed");
-    factory_.create_matrix(Fo_, "F open");
-    factory_.create_matrix(Feff_, "F effective (MO basis)");
-    factory_.create_matrix(C_, "C");
-    factory_.create_matrix(Dc_, "D closed");
-    factory_.create_matrix(Do_, "D open");
-    factory_.create_matrix(Dc_old_, "D closed old");
-    factory_.create_matrix(Do_old_, "D open old");
-    factory_.create_matrix(Gc_, "G closed");
-    factory_.create_matrix(Go_, "G open");
-    factory_.create_vector(epsilon_);
+    Fc_      = SharedMatrix(factory_.create_matrix("F closed"));
+    Fo_      = SharedMatrix(factory_.create_matrix("F open"));
+    Feff_    = SharedMatrix(factory_.create_matrix("F effective (MO basis)"));
+    Dc_      = SharedMatrix(factory_.create_matrix("D closed"));
+    Do_      = SharedMatrix(factory_.create_matrix("D open"));
+    Dc_old_  = SharedMatrix(factory_.create_matrix("D closed old"));
+    Do_old_  = SharedMatrix(factory_.create_matrix("D open old"));
+    Gc_      = SharedMatrix(factory_.create_matrix("G closed"));
+    Go_      = SharedMatrix(factory_.create_matrix("G open"));
+    epsilon_ = SharedVector(factory_.create_vector());
 
     pk_ = NULL;
     k_ = NULL;
@@ -89,7 +88,7 @@ void ROHF::common_init()
         allocate_PK();
 }
 
-void ROHF::initial_guess()
+void ROHF::form_initial_C()
 {
     Matrix temp;
     Vector values;
@@ -103,7 +102,7 @@ void ROHF::initial_guess()
     temp.diagonalize(C_, values);
     find_occupation(values);
     temp.gemm(false, false, 1.0, Shalf_, C_, 0.0);
-    C_.copy(temp);
+    C_->copy(temp);
 }
 
 double ROHF::compute_energy()
@@ -123,17 +122,17 @@ double ROHF::compute_energy()
         form_PK();
 
     form_Shalf();
-    initial_guess();
-    form_D();
+    // Check to see if there are MOs already in the checkpoint file.
+    // If so, read them in instead of forming them.
+    if (load_or_compute_initial_C())
+        fprintf(outfile, "  Read in previous MOs from file32.\n\n");
 
-    // Compute an initial energy using H and D
-    E_ = compute_initial_E();
-
+    fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
     do {
         iter++;
 
-        Dc_old_.copy(Dc_); // save previous density
-        Do_old_.copy(Do_); // save previous density
+        Dc_old_->copy(Dc_); // save previous density
+        Do_old_->copy(Do_); // save previous density
         Eold_ = E_; // save previous energy
 
         if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
@@ -204,91 +203,91 @@ void ROHF::save_information()
     fprintf(outfile, ")\n");
 
     int print_mos = options_.get_bool("PRINT_MOS");
-	if (print_mos) {
-		fprintf(outfile, "\n  Molecular orbitals:\n");
-		C_.eivprint(epsilon_);
-	}
+    if (print_mos) {
+        fprintf(outfile, "\n  Molecular orbitals:\n");
+        C_->eivprint(epsilon_);
+    }
 
-	// Print out orbital energies.
-	std::vector<std::pair<double, int> > pairs;
-	for (int h=0; h<epsilon_.nirreps(); ++h) {
-		for (int i=0; i<epsilon_.dimpi()[h]; ++i)
-			pairs.push_back(make_pair(epsilon_.get(h, i), h));
-	}
-	sort(pairs.begin(), pairs.end());
-	int ndocc = 0, nsocc = 0;
-	for (int i=0; i<epsilon_.nirreps(); ++i) {
-		ndocc += doccpi_[i];
-		nsocc += soccpi_[i];
-	}
+    // Print out orbital energies.
+    std::vector<std::pair<double, int> > pairs;
+    for (int h=0; h<epsilon_->nirreps(); ++h) {
+        for (int i=0; i<epsilon_->dimpi()[h]; ++i)
+            pairs.push_back(make_pair(epsilon_->get(h, i), h));
+    }
+    sort(pairs.begin(), pairs.end());
+    int ndocc = 0, nsocc = 0;
+    for (int i=0; i<epsilon_->nirreps(); ++i) {
+        ndocc += doccpi_[i];
+        nsocc += soccpi_[i];
+    }
 
-	fprintf(outfile,
-			"\n  Orbital energies (a.u.):\n    Doubly occupied orbitals\n      ");
-	for (int i=1; i<=ndocc; ++i) {
-		fprintf(outfile, "%12.6f %3s  ", pairs[i-1].first,
-				temp2[pairs[i-1].second]);
-		if (i % 4 == 0)
-			fprintf(outfile, "\n      ");
-	}
-	fprintf(outfile, "\n");
-	fprintf(outfile, "\n    Singly occupied orbitals\n      ");
-	for (int i=ndocc+1; i<=ndocc+nsocc; ++i) {
-		fprintf(outfile, "%12.6f %3s  ", pairs[i-1].first,
-			temp2[pairs[i-1].second]);
-		if ((i-ndocc) % 4 == 0)
-			fprintf(outfile, "\n      ");
-	}
-	fprintf(outfile, "\n");
-	fprintf(outfile, "\n    Unoccupied orbitals\n      ");
-	for (int i=ndocc+nsocc+1; i<=nso; ++i) {
-		fprintf(outfile, "%12.6f %3s  ", pairs[i-1].first,
-				temp2[pairs[i-1].second]);
-		if ((i-ndocc-nsocc) % 4 == 0)
-			fprintf(outfile, "\n      ");
-	}
-	fprintf(outfile, "\n");
+    fprintf(outfile,
+            "\n  Orbital energies (a.u.):\n    Doubly occupied orbitals\n      ");
+    for (int i=1; i<=ndocc; ++i) {
+        fprintf(outfile, "%12.6f %3s  ", pairs[i-1].first,
+                temp2[pairs[i-1].second]);
+        if (i % 4 == 0)
+            fprintf(outfile, "\n      ");
+    }
+    fprintf(outfile, "\n");
+    fprintf(outfile, "\n    Singly occupied orbitals\n      ");
+    for (int i=ndocc+1; i<=ndocc+nsocc; ++i) {
+        fprintf(outfile, "%12.6f %3s  ", pairs[i-1].first,
+                temp2[pairs[i-1].second]);
+        if ((i-ndocc) % 4 == 0)
+            fprintf(outfile, "\n      ");
+    }
+    fprintf(outfile, "\n");
+    fprintf(outfile, "\n    Unoccupied orbitals\n      ");
+    for (int i=ndocc+nsocc+1; i<=nso; ++i) {
+        fprintf(outfile, "%12.6f %3s  ", pairs[i-1].first,
+                temp2[pairs[i-1].second]);
+        if ((i-ndocc-nsocc) % 4 == 0)
+            fprintf(outfile, "\n      ");
+    }
+    fprintf(outfile, "\n");
 
-	for (int i=0; i<epsilon_.nirreps(); ++i)
-		free(temp2[i]);
-	free(temp2);
+    for (int i=0; i<epsilon_->nirreps(); ++i)
+        free(temp2[i]);
+    free(temp2);
 
-	chkpt_->wt_nmo(nso);
-	chkpt_->wt_ref(2); // ROHF
-	chkpt_->wt_etot(E_);
-	chkpt_->wt_escf(E_);
-	chkpt_->wt_eref(E_);
-	chkpt_->wt_clsdpi(doccpi_);
-	chkpt_->wt_orbspi(epsilon_.dimpi());
-	chkpt_->wt_openpi(soccpi_);
-	chkpt_->wt_phase_check(0);
+    chkpt_->wt_nmo(nso);
+    chkpt_->wt_ref(2); // ROHF
+    chkpt_->wt_etot(E_);
+    chkpt_->wt_escf(E_);
+    chkpt_->wt_eref(E_);
+    chkpt_->wt_clsdpi(doccpi_);
+    chkpt_->wt_orbspi(epsilon_->dimpi());
+    chkpt_->wt_openpi(soccpi_);
+    chkpt_->wt_phase_check(0);
 
-    Feff_.save(psio_, 32, true);
+    Feff_->save(psio_, 32, true);
 
-	// Figure out frozen core orbitals
-	int nfzc = chkpt_->rd_nfzc();
-	int nfzv = chkpt_->rd_nfzv();
-	int *frzcpi = compute_fcpi(nfzc, epsilon_);
-	int *frzvpi = compute_fvpi(nfzv, epsilon_);
-	chkpt_->wt_frzcpi(frzcpi);
-	chkpt_->wt_frzvpi(frzvpi);
-	delete[](frzcpi);
-	delete[](frzvpi);
+    // Figure out frozen core orbitals
+    int nfzc = chkpt_->rd_nfzc();
+    int nfzv = chkpt_->rd_nfzv();
+    int *frzcpi = compute_fcpi(nfzc, epsilon_);
+    int *frzvpi = compute_fvpi(nfzv, epsilon_);
+    chkpt_->wt_frzcpi(frzcpi);
+    chkpt_->wt_frzvpi(frzvpi);
+    delete[](frzcpi);
+    delete[](frzvpi);
 
-	int nopenirreps = 0;
-	for (int i=0; i<epsilon_.nirreps(); ++i)
-		if (soccpi_[i])
-			nopenirreps++;
-	
-	// This code currently only handles ROHF
-	chkpt_->wt_iopen(nopenirreps * (nopenirreps + 1));
+    int nopenirreps = 0;
+    for (int i=0; i<epsilon_->nirreps(); ++i)
+        if (soccpi_[i])
+            nopenirreps++;
 
-	// Write eigenvectors and eigenvalue to checkpoint 
-	double *values = epsilon_.to_block_vector();
-	chkpt_->wt_evals(values);
-	free(values);
-	double **vectors = C_.to_block_matrix();
-	chkpt_->wt_scf(vectors);
-	free_block(vectors);
+    // This code currently only handles ROHF
+    chkpt_->wt_iopen(nopenirreps * (nopenirreps + 1));
+
+    // Write eigenvectors and eigenvalue to checkpoint
+    double *values = epsilon_->to_block_vector();
+    chkpt_->wt_evals(values);
+    free(values);
+    double **vectors = C_->to_block_matrix();
+    chkpt_->wt_scf(vectors);
+    free_block(vectors);
 }
 
 void ROHF::save_fock() {
@@ -381,23 +380,23 @@ void ROHF::diis() {
 
     // Extrapolate a new Fock matrix.
     if (errcode == 0) {
-    	Feff_.zero();
+        Feff_->zero();
     	for (i=0; i<num_diis_vectors_; ++i) {
     	    Matrix scaled;
             scaled.copy(diis_F_[i]);
             scaled.scale(b[i+1]);
-            Feff_.add(scaled);
+            Feff_->add(scaled);
         }
 		
         // Feff_ is now in the orthogonal AO basis
     	// Transform back to MO basis for C construction
-    	Feff_.back_transform(Sphalf_);
-    	Feff_.transform(C_);
+        Feff_->back_transform(Sphalf_);
+        Feff_->transform(C_);
 
         #ifdef _DEBUG
             if (debug_) {
                 fprintf(outfile, "  Extrapolated Fock:\n");
-                Feff_.print(outfile);
+                Feff_->print(outfile);
             }
         #endif
     } else if (errcode > 0) {
@@ -455,45 +454,15 @@ void ROHF::allocate_PK() {
     }
 }
 
-//void ROHF::find_occupation(SharedMatrix mat) {
-//	if (input_docc_ && input_socc_)
-//		return;
-//	else {
-//		fprintf(stderr, "ROHF: Occupation guessing not implemented yet.\n");
-//		abort();
-//		return;
-//	}
-//	SharedMatrix eigvector(factory_.create_matrix());
-//	SharedVector eigvalues(factory_.create_vector());
-//
-//	mat->diagonalize(eigvector, eigvalues);
-//	std::vector<std::pair<double, int> > pairs;
-//	for (int h=0; h<eigvalues->nirreps(); ++h) {
-//		for (int i=0; i<eigvalues->dimpi()[h]; ++i)
-//			pairs.push_back(make_pair(eigvalues->get(h, i), h));
-//	}
-//	sort(pairs.begin(), pairs.end());
-//
-//	memset(doccpi_, 0, sizeof(int) * eigvalues->nirreps());
-//	int n2elec = 0, n1elec;
-//	for (int i=0; i<natom_; ++i)
-//		n2elec += (int)zvals_[i];
-//	n2elec /= 2;
-//	n1elec = n2elec % 2;
-//
-//	for (int i=0; i<n2elec; ++i)
-//		doccpi_[pairs[i].second]++;
-//}
-
 void ROHF::form_initialF() {
     // Form the initial Fock matrix, closed and open variants
-    Fc_.copy(H_);
-    Fo_.copy(H_);
-    Fo_.scale(0.5);
+    Fc_->copy(H_);
+    Fo_->copy(H_);
+    Fo_->scale(0.5);
 
     // Transform the Focks
-    Fc_.transform(Shalf_);
-    Fo_.transform(Shalf_);
+    Fc_->transform(Shalf_);
+    Fo_->transform(Shalf_);
 	
 #ifdef _DEBUG
     if (debug_) {
@@ -510,44 +479,44 @@ void ROHF::form_F() {
     SharedMatrix Fot(factory_.create_matrix("Fock open transformed"));
 
     // Form Fc_ and Fo_. See derivation notebook for equations.
-    Fc_.copy(H_);
-    Fc_.add(Gc_);
-    Fo_.copy(H_);
-    Fo_.scale(0.5);
-    Fo_.add(Go_);
+    Fc_->copy(H_);
+    Fc_->add(Gc_);
+    Fo_->copy(H_);
+    Fo_->scale(0.5);
+    Fo_->add(Go_);
 
-	// Transform Fc_ and Fo_ to MO basis
-	Fct->transform(Fc_, C_);
-	Fot->transform(Fo_, C_);
-	
-	// Form the effective Fock matrix, too
-	// The effective Fock matrix has the following structure
-	//  closed   | open     | virtual
-	//  Fc         2(Fc-Fo)   Fc
-	//  2(Fc-Fo)   Fc         2Fo
-	//  Fc         2Fo         Fc
-	int *opi = Fc_.rowspi();
-	Feff_.copy(Fct);
-	for (int h=0; h<Feff_.nirreps(); ++h) {
-		for (int i=doccpi_[h]; i<doccpi_[h]+soccpi_[h]; ++i) {
-			// Set the open/closed portion
-			for (int j=0; j<doccpi_[h]; ++j) {
-				double val = 2.0 * (Fct->get(h, i, j) - Fot->get(h, i, j));
-				Feff_.set(h, i, j, val);
-				Feff_.set(h, j, i, val);
-			}
-			// Set the open/virtual portion
-			for (int j=doccpi_[h]+soccpi_[h]; j<opi[h]; ++j) {
-				double val = 2.0 * Fot->get(h, i, j);
-				Feff_.set(h, i, j, val);
-				Feff_.set(h, j, i, val);
-			}
-			// Set the open/open portion
-//			for (int j=doccpi_[h]; j<doccpi_[h]+soccpi_[h]; ++j) {
-//				double val = Fot.get(h, i, j);
-//				Feff_.set(h, i, j, val);
-//				Feff_.set(h, j, i, val);
-//			}
+    // Transform Fc_ and Fo_ to MO basis
+    Fct->transform(Fc_, C_);
+    Fot->transform(Fo_, C_);
+
+    // Form the effective Fock matrix, too
+    // The effective Fock matrix has the following structure
+    //  closed   | open     | virtual
+    //  Fc         2(Fc-Fo)   Fc
+    //  2(Fc-Fo)   Fc         2Fo
+    //  Fc         2Fo         Fc
+    int *opi = Fc_->rowspi();
+    Feff_->copy(Fct);
+    for (int h=0; h<Feff_->nirreps(); ++h) {
+        for (int i=doccpi_[h]; i<doccpi_[h]+soccpi_[h]; ++i) {
+            // Set the open/closed portion
+            for (int j=0; j<doccpi_[h]; ++j) {
+                double val = 2.0 * (Fct->get(h, i, j) - Fot->get(h, i, j));
+                Feff_->set(h, i, j, val);
+                Feff_->set(h, j, i, val);
+            }
+            // Set the open/virtual portion
+            for (int j=doccpi_[h]+soccpi_[h]; j<opi[h]; ++j) {
+                double val = 2.0 * Fot->get(h, i, j);
+                Feff_->set(h, i, j, val);
+                Feff_->set(h, j, i, val);
+            }
+            // Set the open/open portion
+//          for (int j=doccpi_[h]; j<doccpi_[h]+soccpi_[h]; ++j) {
+//              double val = Fot.get(h, i, j);
+//              Feff_.set(h, i, j, val);
+//              Feff_.set(h, j, i, val);
+//          }
         }
     }
 #ifdef _DEBUG
@@ -562,23 +531,21 @@ void ROHF::form_F() {
 }
 
 void ROHF::form_C() {
-	Matrix temp;
-	Matrix eigvec;
-        factory_.create_matrix(temp);
-        factory_.create_matrix(eigvec);
-	
-	// Obtain new eigenvectors
-	Feff_.diagonalize(eigvec, epsilon_);
-        find_occupation(epsilon_);
+    SharedMatrix temp(factory_.create_matrix());
+    SharedMatrix eigvec(factory_.create_matrix());
+
+    // Obtain new eigenvectors
+    Feff_->diagonalize(eigvec, epsilon_);
+    find_occupation(*epsilon_.get());
 
 #ifdef _DEBUG
     if (debug_) {
         eigvec->eivprint(epsilon_);
     }
 #endif
-	temp.gemm(false, false, 1.0, C_, eigvec, 0.0);
-	C_.copy(temp);
-	
+    temp->gemm(false, false, 1.0, C_, eigvec, 0.0);
+    C_->copy(temp);
+
 #ifdef _DEBUG
     if (debug_) {
         C_->print(outfile);
@@ -587,25 +554,25 @@ void ROHF::form_C() {
 }
 
 void ROHF::form_D() {
-	int h, i, j, m;
-	int *opi = Dc_.rowspi();
-	int nirreps = Dc_.nirreps();
-	double val;
-	for (h=0; h<nirreps; ++h) {
-		for (i=0; i<opi[h]; ++i) {
-			for (j=0; j<opi[h]; ++j) {
-				val = 0.0;
-				for (m=0; m<doccpi_[h]; ++m)
-					val += C_.get(h, i, m) * C_.get(h, j, m);
-				Dc_.set(h, i, j, val);
+    int h, i, j, m;
+    int *opi = Dc_->rowspi();
+    int nirreps = Dc_->nirreps();
+    double val;
+    for (h=0; h<nirreps; ++h) {
+        for (i=0; i<opi[h]; ++i) {
+            for (j=0; j<opi[h]; ++j) {
+                val = 0.0;
+                for (m=0; m<doccpi_[h]; ++m)
+                    val += C_->get(h, i, m) * C_->get(h, j, m);
+                Dc_->set(h, i, j, val);
 
-				val = 0.0;
-				for (m=doccpi_[h]; m<doccpi_[h]+soccpi_[h]; ++m)
-					val += C_.get(h, i, m) * C_.get(h, j, m);
-				Do_.set(h, i, j, val);
-			}
-		}
-	}
+                val = 0.0;
+                for (m=doccpi_[h]; m<doccpi_[h]+soccpi_[h]; ++m)
+                    val += C_->get(h, i, m) * C_->get(h, j, m);
+                Do_->set(h, i, j, val);
+            }
+        }
+    }
 
 #ifdef _DEBUG
     if (debug_) {
@@ -620,10 +587,10 @@ double ROHF::compute_initial_E() {
     Ho->copy(H_);
     Ho->scale(0.5);
     
-	double Etotal = nuclearrep_ + Dc_.vector_dot(H_) + Do_.vector_dot(Ho);
-	fprintf(outfile, "\n  Initial ROHF energy: %20.14f\n\n", Etotal);
-	fflush(outfile);
-	return Etotal;
+    double Etotal = nuclearrep_ + Dc_->vector_dot(H_) + Do_->vector_dot(Ho);
+    fprintf(outfile, "\n  Initial ROHF energy: %20.14f\n\n", Etotal);
+    fflush(outfile);
+    return Etotal;
 }
 
 double ROHF::compute_E() {
@@ -634,8 +601,8 @@ double ROHF::compute_E() {
     HFo->copy(H_);
     HFo->scale(0.5);
     HFo->add(Fo_);
-	double Etotal = nuclearrep_ + Dc_.vector_dot(HFc) + Do_.vector_dot(HFo);
-	return Etotal;
+    double Etotal = nuclearrep_ + Dc_->vector_dot(HFc) + Do_->vector_dot(HFo);
+    return Etotal;
 }
 
 void ROHF::form_PK() {
@@ -747,37 +714,37 @@ void ROHF::form_PK() {
 }
 
 void ROHF::form_G_from_PK() {
-	int nirreps = factory_.nirreps();
-	int *opi = factory_.rowspi();
-	size_t ij;
-	double *Do_vector = new double[pk_pairs_];
-	double *Dc_vector = new double[pk_pairs_];
-	double *Gc_vector = new double[pk_pairs_];
-	double *Go_vector = new double[pk_pairs_];
+    int nirreps = factory_.nirreps();
+    int *opi = factory_.rowspi();
+    size_t ij;
+    double *Do_vector = new double[pk_pairs_];
+    double *Dc_vector = new double[pk_pairs_];
+    double *Gc_vector = new double[pk_pairs_];
+    double *Go_vector = new double[pk_pairs_];
 
-	Gc_.zero();
-	Go_.zero();
+    Gc_->zero();
+    Go_->zero();
 
-	memset(Do_vector, 0, sizeof(double) * pk_pairs_);
-	memset(Dc_vector, 0, sizeof(double) * pk_pairs_);
-	memset(Gc_vector, 0, sizeof(double) * pk_pairs_);
-	memset(Go_vector, 0, sizeof(double) * pk_pairs_);
+    memset(Do_vector, 0, sizeof(double) * pk_pairs_);
+    memset(Dc_vector, 0, sizeof(double) * pk_pairs_);
+    memset(Gc_vector, 0, sizeof(double) * pk_pairs_);
+    memset(Go_vector, 0, sizeof(double) * pk_pairs_);
 
-	ij=0;
-	for (int h=0; h<nirreps; ++h) {
-		for (int p=0; p<opi[h]; ++p) {
-			for (int q=0; q<=p; ++q) {
-				if (p != q) {
-					Dc_vector[ij] = 2.0 * Dc_.get(h, p, q);
-					Do_vector[ij] = 2.0 * Do_.get(h, p, q);
-				} else {
-					Dc_vector[ij] = Dc_.get(h, p, q);
-					Do_vector[ij] = Do_.get(h, p, q);
-				}
-				ij++;
-			}
-		}
-	}
+    ij=0;
+    for (int h=0; h<nirreps; ++h) {
+        for (int p=0; p<opi[h]; ++p) {
+            for (int q=0; q<=p; ++q) {
+                if (p != q) {
+                    Dc_vector[ij] = 2.0 * Dc_->get(h, p, q);
+                    Do_vector[ij] = 2.0 * Do_->get(h, p, q);
+                } else {
+                    Dc_vector[ij] = Dc_->get(h, p, q);
+                    Do_vector[ij] = Do_->get(h, p, q);
+                }
+                ij++;
+            }
+        }
+    }
 
 #ifdef _DEBUG
     if (debug_) {
@@ -794,67 +761,67 @@ void ROHF::form_G_from_PK() {
     }
 #endif
 
-	/* 
-	 * This code goes through the densities (Dc_ and Do_), PK, and K to form
-	 * two G matrices. One G matrix is for Fc_ and the other for Fo_.
-	 * See derivation notebook for equations.
-	 */
-	double Gc_pq, Dc_pq;
-	double Go_pq, Do_pq;
-	double* Dc_rs;
-	double* Gc_rs;
-	double* Do_rs;
-	double* Go_rs;
-	int pq, rs;
-	double* PK_block = pk_;
-	double* K_block = k_;
-	int ts_pairs = pk_pairs_;
-	for (pq = 0; pq < ts_pairs; ++pq) {
-		Gc_pq = 0.0;
-		Dc_pq = Dc_vector[pq];
-		Dc_rs = &Dc_vector[0];
-		Gc_rs = &Gc_vector[0];
-		Go_pq = 0.0;
-		Do_pq = Do_vector[pq];
-		Do_rs = &Do_vector[0];
-		Go_rs = &Go_vector[0];
-		for (rs = 0; rs <= pq; ++rs) {
-			// D_{rs}^{c} * PK_{pqrs}         Also found in RHF
-			Gc_pq  += *PK_block * (*Dc_rs);
-			*Gc_rs += *PK_block * Dc_pq;
-			// D_{rs}^{o} * PK_{pqrs} / 2     Yes, open D adds to closed G
-			Gc_pq  += *PK_block * (*Do_rs) * 0.5;
-			*Gc_rs += *PK_block * Do_pq    * 0.5;
-			// D_{rs}^{c} * PK_{pqrs} / 2     Yes, closed D adds to open G
-			Go_pq  += *PK_block * (*Dc_rs) * 0.5;
-			*Go_rs += *PK_block * Dc_pq    * 0.5;
-			// D_{rs}^{o} * (PK_{pqrs} + K_{pqrs}) / 4
-			Go_pq  += (*PK_block + *K_block) * (*Do_rs) * 0.25;
-			*Go_rs += (*PK_block + *K_block) * Do_pq    * 0.25;
-			++Dc_rs;
-			++Gc_rs;
-			++Do_rs;
-			++Go_rs;
-			++PK_block;
-			++K_block;
-		}
-		Gc_vector[pq] += Gc_pq;
-		Go_vector[pq] += Go_pq;
-	}
+    /*
+     * This code goes through the densities (Dc_ and Do_), PK, and K to form
+     * two G matrices. One G matrix is for Fc_ and the other for Fo_.
+     * See derivation notebook for equations.
+     */
+    double Gc_pq, Dc_pq;
+    double Go_pq, Do_pq;
+    double* Dc_rs;
+    double* Gc_rs;
+    double* Do_rs;
+    double* Go_rs;
+    int pq, rs;
+    double* PK_block = pk_;
+    double* K_block = k_;
+    int ts_pairs = pk_pairs_;
+    for (pq = 0; pq < ts_pairs; ++pq) {
+        Gc_pq = 0.0;
+        Dc_pq = Dc_vector[pq];
+        Dc_rs = &Dc_vector[0];
+        Gc_rs = &Gc_vector[0];
+        Go_pq = 0.0;
+        Do_pq = Do_vector[pq];
+        Do_rs = &Do_vector[0];
+        Go_rs = &Go_vector[0];
+        for (rs = 0; rs <= pq; ++rs) {
+            // D_{rs}^{c} * PK_{pqrs}         Also found in RHF
+            Gc_pq  += *PK_block * (*Dc_rs);
+            *Gc_rs += *PK_block * Dc_pq;
+            // D_{rs}^{o} * PK_{pqrs} / 2     Yes, open D adds to closed G
+            Gc_pq  += *PK_block * (*Do_rs) * 0.5;
+            *Gc_rs += *PK_block * Do_pq    * 0.5;
+            // D_{rs}^{c} * PK_{pqrs} / 2     Yes, closed D adds to open G
+            Go_pq  += *PK_block * (*Dc_rs) * 0.5;
+            *Go_rs += *PK_block * Dc_pq    * 0.5;
+            // D_{rs}^{o} * (PK_{pqrs} + K_{pqrs}) / 4
+            Go_pq  += (*PK_block + *K_block) * (*Do_rs) * 0.25;
+            *Go_rs += (*PK_block + *K_block) * Do_pq    * 0.25;
+            ++Dc_rs;
+            ++Gc_rs;
+            ++Do_rs;
+            ++Go_rs;
+            ++PK_block;
+            ++K_block;
+        }
+        Gc_vector[pq] += Gc_pq;
+        Go_vector[pq] += Go_pq;
+    }
 
-	// Convert G to a matrix
-	ij = 0;
-	for (int h = 0; h < nirreps; ++h) {
-		for (int p = 0; p < opi[h]; ++p) {
-			for (int q = 0; q <= p; ++q) {
-				Gc_.set(h, p, q, 2.0 * Gc_vector[ij]);
-				Gc_.set(h, q, p, 2.0 * Gc_vector[ij]);
-				Go_.set(h, p, q, 2.0 * Go_vector[ij]);
-				Go_.set(h, q, p, 2.0 * Go_vector[ij]);
-				ij++;
-			}
-		}
-	}
+    // Convert G to a matrix
+    ij = 0;
+    for (int h = 0; h < nirreps; ++h) {
+        for (int p = 0; p < opi[h]; ++p) {
+            for (int q = 0; q <= p; ++q) {
+                Gc_->set(h, p, q, 2.0 * Gc_vector[ij]);
+                Gc_->set(h, q, p, 2.0 * Gc_vector[ij]);
+                Go_->set(h, p, q, 2.0 * Go_vector[ij]);
+                Go_->set(h, q, p, 2.0 * Go_vector[ij]);
+                ij++;
+            }
+        }
+    }
 
 #ifdef _DEBUG
     if (debug_) {

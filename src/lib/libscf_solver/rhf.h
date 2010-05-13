@@ -20,7 +20,7 @@ namespace psi { namespace scf {
 class RHF : public HF {
 protected:
     SharedMatrix F_;
-    SharedMatrix C_;
+//    SharedMatrix C_;
     SharedMatrix D_;
     SharedMatrix Dold_;
     SharedMatrix G_;

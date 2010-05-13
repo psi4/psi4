@@ -745,6 +745,11 @@ void Matrix::diagonalize(shared_ptr<Matrix> eigvectors, shared_ptr<Vector> eigva
     diagonalize(eigvectors.get(), eigvalues.get());
 }
 
+void Matrix::diagonalize(shared_ptr<Matrix> eigvectors, Vector& eigvalues)
+{
+    diagonalize(eigvectors.get(), &eigvalues);
+}
+
 // Reference versions of the above functions:
 
 void Matrix::transform(Matrix& a, Matrix& transformer)

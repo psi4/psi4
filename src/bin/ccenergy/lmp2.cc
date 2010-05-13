@@ -105,7 +105,8 @@ void lmp2(void)
   fprintf(outfile, "\titer = %d    LMP2 Energy = %20.14f\n", 0, energy);
 
   conv = 0;
-  for(iter=1; iter < 1000; iter++) {
+  int lmp2_maxiter=1000;
+  for(iter=1; iter < lmp2_maxiter; iter++) {
 
     dpd_buf4_init(&D, CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
     dpd_buf4_copy(&D, CC_TAMPS, "New LMP2 tIjAb Increment");
@@ -186,7 +187,7 @@ void lmp2(void)
 
   if(!conv) {
     fprintf(outfile, "\n\tLMP2 Iterative procedure failed.\n");
-    throw ConvergenceError("LMP2 interative procedure failed.", 1000, params.convergence, rms, __FILE__, __LINE__);
+    throw ConvergenceError<int>("LMP2 interative procedure failed.", lmp2_maxiter, params.convergence, rms, __FILE__, __LINE__);
   }
 
   /* Turn off weak pairs again for the LCCSD */

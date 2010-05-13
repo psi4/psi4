@@ -28,6 +28,7 @@ protected:
     SharedMatrix S_;
     SharedMatrix Shalf_;
     SharedMatrix Sphalf_;
+    SharedMatrix C_;
 
     /// Previous iteration's energy and current energy
     double Eold_;
@@ -144,8 +145,8 @@ protected:
     void find_occupation(Vector& evals);
 
     /// Determine how many core and virtual orbitals to freeze
-    int *compute_fcpi(int nfzc, Vector &eigvalues);
-    int *compute_fvpi(int nfvc, Vector &eigvalues);
+    int *compute_fcpi(int nfzc, SharedVector &eigvalues);
+    int *compute_fvpi(int nfvc, SharedVector &eigvalues);
 
     /// Forms the _so2* mapping arrays and determines _pk_pairs
     void form_indexing();
@@ -173,6 +174,25 @@ protected:
 
     /// Compute energy for the iteration.
     virtual double compute_E() = 0;
+
+    /** Read in C from checkpoint. Default implementation works for RHF and ROHF. UHF needs to read in additional C.
+     *  If unable to load C from checkpoint, will call form_C to compute the value.
+     *  If unable to load call compute_initial_E(), else loads SCF energy from checkpoint.
+     * @returns true if successfully loaded from checkpoint, else false.
+     */
+    virtual bool load_or_compute_initial_C();
+
+    /** Computes the density matrix (D_) */
+    virtual void form_D() {}
+
+    /** Compute the MO coefficients (C_) */
+    virtual void form_C() {}
+
+    /** Computes the initial MO coefficients (default is to call form_C) */
+    virtual void form_initial_C() { form_C(); }
+
+    /** Computes the initial energy. */
+    virtual double compute_initial_E() {}
 
     void form_B();
     void write_B();
