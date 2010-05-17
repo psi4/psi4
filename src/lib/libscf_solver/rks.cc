@@ -45,7 +45,7 @@ RKS::RKS(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) : RHF
 
     if (x_functional_->isGGA() || c_functional_-> isGGA() )
     {
-        fprintf(outfile,"\n  Computing Gradients, X is %s, C is %s",(x_functional_->isGGA())?"GGA":"Not GGA",(c_functional_->isGGA())?"GGA":"Not GGA");
+        fprintf(outfile,"\n  Computing Point Gradients, X is %s, C is %s\n",(x_functional_->isGGA())?"GGA":"Not GGA",(c_functional_->isGGA())?"GGA":"Not GGA");
         properties_->setToComputeDensityGradient(true); //Need this to be able to get to \nabla \rho
     }
 
@@ -58,7 +58,7 @@ RKS::RKS(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) : RHF
     fprintf(outfile,"  Correlation Functional Description:\n%s\n",c_functional_->getDescription().c_str());
     fprintf(outfile,"  Correlation Functional Citation:\n%s\n",c_functional_->getCitation().c_str());
     fprintf(outfile,"  \n");
-    fprintf(outfile,"%s",(integrator_->getString()).c_str());
+    fprintf(outfile,"%s\n",(integrator_->getString()).c_str());
         
 }
 
@@ -75,8 +75,17 @@ double RKS::compute_energy()
     // Do the initial work to get the iterations started.
     //form_multipole_integrals();  // handled by HF class
     form_H();
+
+    H_->print(outfile);
+
     form_Shalf();
+
+    S_->print(outfile);
+
     form_guess();
+
+    C_->print(outfile);
+    D_->print(outfile);
 
     if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
         form_PK();
@@ -93,16 +102,17 @@ double RKS::compute_energy()
 
         form_J(); //J is always needed, and sometimes you get
                   //K for free-ish with that
-        //J_->print(outfile);
+        J_->print(outfile);
         if (x_functional_->hasExactExchange()) {
             form_K(); //Sometimes, you really need K too
-            //K_->print(outfile);
+            K_->print(outfile);
         }
 
         form_V(); //Whoa, there's that Kohn-Sham stuff
-
+        V_->print(outfile);
+    
         form_F();
-        //F_->print(outfile);
+        F_->print(outfile);
 
         if (diis_enabled_)
             save_fock();
@@ -118,6 +128,9 @@ double RKS::compute_energy()
 
         form_C();
         form_D();
+
+        C_->print(outfile);
+        D_->print(outfile);
 
         converged = test_convergency();
         fprintf(outfile, "  @RKS iteration %3d energy: %20.14f    %20.14f %20.14f %s\n", iteration, E_, E_ - Eold_, Drms_, diis_iter == false ? " " : "DIIS");
@@ -252,7 +265,6 @@ void RKS::form_V()
     dipoleCheckY_ = 0.0;
     dipoleCheckZ_ = 0.0;
 
-
     //LSDA Setup
     double val;
 
@@ -266,7 +278,7 @@ void RKS::form_V()
     double **basis_points = properties_->getPoints();
     //End LSDA Setup    
 
-    //GGA Setup (Pointer will only be accessed if functional is GGA)
+    //GGA Setup (Pointers will only be accessed if functional is GGA)
     double GGA_val;
     double fun_x, fun_y, fun_z;
 
@@ -286,7 +298,7 @@ void RKS::form_V()
  
     int nirreps = V_->nirreps();
     int* opi = V_->rowspi();
-    double check;
+    double check; //numerical density contribution
     
     for (integrator_->reset(); !integrator_->isDone(); ) {
         SharedGridBlock q = integrator_->getNextBlock();
@@ -321,28 +333,36 @@ void RKS::form_V()
                 fun_z += (2.0*c_funGradAA[grid_index]+c_funGradAB[grid_index])*rho_z[grid_index];
            } 
         
-            //fprintf(outfile,"  Point: <%14.10f,%14.10f,%14.10f>, w = %14.10f, rho = %14.10f, f = %14.10f\n",q.point[0],q.point[1],q.point[2],q.weight,properties_->getDensity(),fun);
+            fprintf(outfile,"  Point: <%14.10f,%14.10f,%14.10f>, w = %14.10f, rho = %14.10f\n",xg[grid_index],yg[grid_index],zg[grid_index],wg[grid_index],rhog[grid_index]);
+            fprintf(outfile,"    x_fun = %14.10f, c_fun = %14.10f, d_x_fun = %14.10f, d_c_fun = %14.10f\n",x_fun[grid_index],c_fun[grid_index],x_funGrad[grid_index],c_funGrad[grid_index]);
+            if (GGA) {
+                fprintf(outfile,"    del_rho: <%14.10f,%14.10f,%14.10f>\n",rho_x[grid_index],rho_y[grid_index],rho_z[grid_index]);
+                fprintf(outfile,"    del_fun: <%14.10f,%14.10f,%14.10f>\n",fun_x,fun_y,fun_z);
+            }
             int h_offset = 0;
             for (int h = 0; h<nirreps; h_offset+=opi[h],h++) {
                 for (int i = 0; i<opi[h];i++) {
                     for (int j = 0; j<=i; j++) {
                         //fprintf(outfile,"   (%4d,%4d), phi_a = %14.10f, phi_b = %14.10f\n",i,j,basis_points[i],basis_points[j]);
+                        //LSDA Contribution
                         val = wg[grid_index]*basis_points[grid_index][i+h_offset]*(x_funGrad[grid_index]+c_funGrad[grid_index])*basis_points[grid_index][j+h_offset];
                         V_->add(h,i,j,val);
+
+                        if (i!=j)
+                            V_->add(h,j,i,val);
                         
                         //GGA Contribution
                         if (GGA) {
                             GGA_val = 0.0;
                             GGA_val += fun_x*(basis_points_x[grid_index][i+h_offset]*basis_points[grid_index][j+h_offset]+basis_points[grid_index][i+h_offset]*basis_points_x[grid_index][j+h_offset]);    
                             GGA_val += fun_y*(basis_points_y[grid_index][i+h_offset]*basis_points[grid_index][j+h_offset]+basis_points[grid_index][i+h_offset]*basis_points_y[grid_index][j+h_offset]);    
-                            GGA_val += fun_x*(basis_points_z[grid_index][i+h_offset]*basis_points[grid_index][j+h_offset]+basis_points[grid_index][i+h_offset]*basis_points_z[grid_index][j+h_offset]);    
+                            GGA_val += fun_z*(basis_points_z[grid_index][i+h_offset]*basis_points[grid_index][j+h_offset]+basis_points[grid_index][i+h_offset]*basis_points_z[grid_index][j+h_offset]);    
                             GGA_val *= wg[grid_index];
                             V_->add(h,i,j,GGA_val);
+                            if (i!=j)
+                                V_->add(h,j,i,GGA_val);
                         }
 
-
-                        if (i!=j)
-                            V_->add(h,j,i,val);
                     }
                 }
             }

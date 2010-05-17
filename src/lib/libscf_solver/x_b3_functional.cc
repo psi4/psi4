@@ -50,6 +50,17 @@ void X_B3_Functional::computeFunctionalRKS(shared_ptr<Properties> prop)
 
             //LDA Contribution:
             rho1 = rho[grid_index];
+            if (rho1<tol) {
+                //Negligible density, don't want numerical problems.
+                value_[grid_index] = 0.0;
+                gradA_[grid_index] = 0.0;
+                gradA_[grid_index] = 0.0;
+                gradB_[grid_index] = 0.0;
+                gradAA_[grid_index] = 0.0;
+                gradAB_[grid_index] = 0.0;
+                gradBB_[grid_index] = 0.0;
+                continue;
+            }
             //rho1 = 1.7;
             rho13 = pow(rho1,1.0/3.0);
             rho83 = rho1*rho1*rho13*rho13;	    
