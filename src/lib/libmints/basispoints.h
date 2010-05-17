@@ -66,6 +66,7 @@ namespace psi {
 			int nbf() { return basis_->nbf();  }
                         int getBlockSize() { return block_size_;}  
 			int getTrueSize() {return true_size_; }
+                        void setTrueSize(int size) {true_size_ = size; }
 	};
 }
 #endif

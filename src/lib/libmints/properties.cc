@@ -36,6 +36,24 @@ Properties::~Properties()
         int m[1];
         setToComputeMOs(false, m,0);
 }
+void Properties::get_RKS_GGA_Testbed()
+{
+    setToComputeDensity(true);
+    setToComputeDensityGradient(true);
+
+    density_[0] = 0.17E1; density_gradient_2_[0] = 0.81E-11; 
+    density_[1] = 0.17E1; density_gradient_2_[1] = 0.17E1; 
+    density_[2] = 0.15E1; density_gradient_2_[2] = 0.36E2; 
+    density_[3] = 0.88E-1; density_gradient_2_[3]= 0.87E-1; 
+    density_[4] = 0.18E4; density_gradient_2_[4] = 0.18E4; 
+    density_[5] = 0.18E4; density_gradient_2_[5] = 0.86E4; 
+    density_[6] = 0.16E4; density_gradient_2_[6] = 0.37E10; 
+    density_[7] = 0.53E5; density_gradient_2_[7] = 0.96E5; 
+    density_[8] = 0.47E5; density_gradient_2_[8] = 0.29E14;
+
+    setTrueSize(RKS_GGA_TESTBED_SIZE_); 
+    
+}
 void Properties::computeProperties(SharedGridBlock grid, SharedMatrix D, SharedMatrix C)
 {
 	int* rows = D->rowspi();

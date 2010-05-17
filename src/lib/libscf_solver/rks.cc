@@ -54,12 +54,57 @@ RKS::RKS(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) : RHF
     fprintf(outfile,"  Exchange Functional Description:\n%s\n",x_functional_->getDescription().c_str());
     fprintf(outfile,"  Exchange Functional Citation:\n%s\n",x_functional_->getCitation().c_str());
     fprintf(outfile,"  \n");
+    
+    if (options.get_bool("TEST_FUNCTIONAL") && x_functional_->isGGA()) {
+        int n_test = properties_->get_RKS_GGA_Testbed_Size();
+        properties_->get_RKS_GGA_Testbed(); //Please set block size bigger than 9 or risk a segfault!
+        x_functional_->computeFunctionalRKS(properties_);
+        
+        const double* rhoa = properties_->getDensity(); 
+        const double* sigmaa = properties_->getDensityGradientSquared();
+
+        double *zk = x_functional_->getValue(); 
+        double *vrhoa = x_functional_->getGradientA(); 
+        double *vsigmaaa = x_functional_->getGradientAA(); 
+
+        fprintf(outfile, "  Testing Exchange Functional:");
+        for (int k = 0; k<n_test; k++) {
+            fprintf(outfile, "  -rhoa = %8.2E, sigmaa = %8.2E\n", rhoa[k], sigmaa[k]);
+            fprintf(outfile, "   zk = %15.11E\n",zk[k]);
+            fprintf(outfile, "   vrhoa = %15.11E\n",vrhoa[k]);
+            fprintf(outfile, "   vsimgaaa = %15.11E\n",vsigmaaa[k]);
+        }
+        fprintf(outfile, "  \n");
+    }
+
     fprintf(outfile,"  Correlation Functional Name: %s\n",c_functional_->getName().c_str());
     fprintf(outfile,"  Correlation Functional Description:\n%s\n",c_functional_->getDescription().c_str());
     fprintf(outfile,"  Correlation Functional Citation:\n%s\n",c_functional_->getCitation().c_str());
     fprintf(outfile,"  \n");
     fprintf(outfile,"%s\n",(integrator_->getString()).c_str());
+    
+    if (options.get_bool("TEST_FUNCTIONAL") && c_functional_->isGGA()) {
+        int n_test = properties_->get_RKS_GGA_Testbed_Size();
+        properties_->get_RKS_GGA_Testbed(); //Please set block size bigger than 9 or risk a segfault!
+        c_functional_->computeFunctionalRKS(properties_);
         
+        const double* rhoa = properties_->getDensity(); 
+        const double* sigmaa = properties_->getDensityGradientSquared();
+
+        double *zk = c_functional_->getValue(); 
+        double *vrhoa = c_functional_->getGradientA(); 
+        double *vsigmaaa = c_functional_->getGradientAA(); 
+
+        fprintf(outfile, "  Testing Correlation Functional:");
+        for (int k = 0; k<n_test; k++) {
+            fprintf(outfile, "  -rhoa = %8.2E, sigmaa = %8.2E\n", rhoa[k], sigmaa[k]);
+            fprintf(outfile, "   zk = %15.11E\n",zk[k]);
+            fprintf(outfile, "   vrhoa = %15.11E\n",vrhoa[k]);
+            fprintf(outfile, "   vsimgaaa = %15.11E\n",vsigmaaa[k]);
+        }
+        fprintf(outfile, "  \n");
+    }
+    
 }
 
 RKS::~RKS()
