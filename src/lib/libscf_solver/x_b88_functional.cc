@@ -37,10 +37,12 @@ X_B88_Functional::~X_B88_Functional()
 }
 void X_B88_Functional::computeFunctionalRKS(shared_ptr<Properties> prop)
 {
-	//double tol = 1.0E-20;
+        
+        //double tol = 1.0E-20;
 	const double *rho = prop->getDensity();
         const double *del_rho_2 = prop->getDensityGradientSquared();
         int ntrue = prop->getTrueSize();
+	//fprintf(outfile,"YO! %d",ntrue);
         double c = 3.0/8.0*pow(3.0,1.0/3.0)*pow(4.0,2.0/3.0)*pow(M_PI,-1.0/3.0);
         double d = 0.0042;
         double xs, rho13, rho1, rho83, sqrt_deal, drho2, arcsinhxs, den;

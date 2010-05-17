@@ -130,6 +130,8 @@ int read_options(const std::string &name, Options & options) {
     options.add_str("X_FUNCTIONAL","");
     /*- The correlation functional name  -*/
     options.add_str("C_FUNCTIONAL","");
+    /*- Print Functional Test Data?  -*/
+    options.add_bool("TEST_FUNCTIONAL",false);
      
     /*- Save a grid or not?  -*/
     options.add_bool("SAVE_CARTESIAN_GRID",false);

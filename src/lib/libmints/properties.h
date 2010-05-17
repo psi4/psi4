@@ -33,6 +33,7 @@ namespace psi {
 			bool do_density_hessian_;
 			bool do_density_laplacian_;
 			bool do_ke_density_;
+                        #define RKS_GGA_TESTBED_SIZE_  9
 		public:
 			static Properties * constructProperties(shared_ptr<BasisSet> b, int block_size)
 			{
@@ -41,6 +42,8 @@ namespace psi {
 			Properties(shared_ptr<BasisSet> b, int block_size);
 			~Properties();
 			void computeProperties(SharedGridBlock grid, SharedMatrix D, SharedMatrix C = SharedMatrix() );
+                        void get_RKS_GGA_Testbed();
+                        int get_RKS_GGA_Testbed_Size() const {return RKS_GGA_TESTBED_SIZE_; }
 			const double* getDensity() const { return density_; }		
 			const double* getDensityX() const { return densityX_; }		
 			const double* getDensityY() const { return densityY_; }		
