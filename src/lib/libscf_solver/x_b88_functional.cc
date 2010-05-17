@@ -37,7 +37,7 @@ X_B88_Functional::~X_B88_Functional()
 }
 void X_B88_Functional::computeFunctionalRKS(shared_ptr<Properties> prop)
 {
-	double tol = 1.0E-20;
+	//double tol = 1.0E-20;
 	const double *rho = prop->getDensity();
         const double *del_rho_2 = prop->getDensityGradientSquared();
         int ntrue = prop->getTrueSize();
@@ -49,6 +49,19 @@ void X_B88_Functional::computeFunctionalRKS(shared_ptr<Properties> prop)
 
             //LDA Contribution:
             rho1 = rho[grid_index];
+            
+            if (rho1<tol) {
+                //Negligible density, don't want numerical problems.
+                value_[grid_index] = 0.0;
+                gradA_[grid_index] = 0.0;
+                gradA_[grid_index] = 0.0;
+                gradB_[grid_index] = 0.0;
+                gradAA_[grid_index] = 0.0;
+                gradAB_[grid_index] = 0.0;
+                gradBB_[grid_index] = 0.0;
+                continue;
+            }
+
             rho13 = pow(rho[grid_index],1.0/3.0);
             rho83 = rho1*rho1*rho13*rho13;	    
 

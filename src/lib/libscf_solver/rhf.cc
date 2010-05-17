@@ -229,6 +229,7 @@ void RHF::form_guess()
         fprintf(outfile, "  SCF Guess: Generalized Wolfsberg-Helmholtz.\n\n");
         F_->zero(); //Try F_{mn} = S_{mn} (H_{mm} + H_{nn})/2
         int h, i, j;
+        S_->print(outfile);
         int *opi = S_->rowspi();
         int nirreps = S_->nirreps();
         for (h=0; h<nirreps; ++h) {
