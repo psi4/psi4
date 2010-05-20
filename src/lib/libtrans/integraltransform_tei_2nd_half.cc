@@ -202,7 +202,7 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
 
         for(int h=0; h < _nirreps; h++) {
             if(J.params->coltot[h] && J.params->rowtot[h]) {
-                static_cast<size_t>(dpd_memfree() - J.params->coltot[h] - K.params->coltot[h]);
+                memFree = static_cast<size_t>(dpd_memfree() - J.params->coltot[h] - K.params->coltot[h]);
                 rowsPerBucket = memFree/(2 * J.params->coltot[h]);
                 if(rowsPerBucket > J.params->rowtot[h])
                     rowsPerBucket = static_cast<size_t>(J.params->rowtot[h]);
