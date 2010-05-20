@@ -218,6 +218,14 @@ void HF::form_B()
         
 	free_block(A_ia_P);
         //print_mat(B_ia_P_, ri_nbf_,norbs*(norbs+1)/2 ,outfile);
+        ri_pair_nu_ = init_int_array(norbs*(norbs+1)/2);
+        ri_pair_mu_ = init_int_array(norbs*(norbs+1)/2);
+        for (int i=0, ij=0; i<norbs; i++)
+            for (int j=0; j<=i; j++, ij++)
+            {
+                ri_pair_mu_[ij] = i;
+                ri_pair_nu_[ij] = j;
+            }
     } 
     if (df_storage_ == full||df_storage_ == flip_B_disk)
     {	
@@ -295,15 +303,16 @@ void HF::form_B()
         {
             write_B();
             free_block(B_ia_P_);
-            ri_pair_nu_ = init_int_array(norbs*(norbs+1)/2);
-            ri_pair_mu_ = init_int_array(norbs*(norbs+1)/2);
-            for (int i=0, ij=0; i<norbs; i++)
-                for (int j=0; j<=i; j++, ij++)
-                {
+        }
+        ri_pair_nu_ = init_int_array(norbs*(norbs+1)/2);
+        ri_pair_mu_ = init_int_array(norbs*(norbs+1)/2);
+        for (int i=0, ij=0; i<norbs; i++)
+            for (int j=0; j<=i; j++, ij++)
+            {
                 ri_pair_mu_[ij] = i;
                 ri_pair_nu_[ij] = j;
             }
-        }
+        
     	
         //print_mat(B_ia_P_, ri_nbf_,norbs*(norbs+1)/2 ,outfile);
     }
@@ -464,11 +473,8 @@ void HF::free_B()
 {
     if (df_storage_ == full||df_storage_ == double_full)
         free(B_ia_P_);
-    else 
-    {
-    	free(ri_pair_mu_);
-    	free(ri_pair_nu_);
-    }
+    free(ri_pair_mu_);
+    free(ri_pair_nu_);
 }
 void RHF::form_G_from_RI()
 {
@@ -487,20 +493,13 @@ void RHF::form_G_from_RI()
     //Off diagonal elements get 2x weight due to permutational symmetry
     double* DD = init_array(norbs*(norbs+1)/2);
     
-    if (df_storage_ == full || df_storage_ == double_full) {
-        for (int i = 0, ij = 0; i < norbs; i++)
-            for (int j = 0; j<=i; j++, ij++) {
-            DD[ij] = (i!=j?2.0:1.0)*D_->get(0,i,j); 
+    for (int ij = 0; ij<norbs*(norbs+1)/2; ij++) {
+        DD[ij] = D_->get(0,ri_pair_mu_[ij],ri_pair_nu_[ij]); 
+        if (ri_pair_mu_[ij] != ri_pair_nu_[ij])
+            DD[ij] *= 2.0;
             //only A irrep at the moment!!
-        }
-    } else {
-        for (int ij = 0; ij<norbs*(norbs+1)/2; ij++) {
-            DD[ij] = D_->get(0,ri_pair_mu_[ij],ri_pair_nu_[ij]); 
-            if (ri_pair_mu_[ij] != ri_pair_nu_[ij])
-                DD[ij] *= 2.0;
-            //only A irrep at the moment!!
-        }
     }
+    //Get the C matrix (exchange messes things up)
     int ndocc = doccpi_[0];
     double** Cocc = block_matrix(ndocc,norbs);
     for (int i=0; i<norbs; i++) {
@@ -559,7 +558,17 @@ void RHF::form_G_from_RI()
                     }
                 }
                 //E_{il}^Q = (Q|ln) C_{in}
+                
                 C_DGEMM('N','T',ndocc,ri_nbf_,norbs,1.0,Cocc[0],norbs,QS[0],norbs, 0.0, Temp[0], ri_nbf_);
+                
+                /**
+                fprintf(outfile,"\n Cocc: \n");
+                print_mat(Cocc,ndocc,norbs,outfile);
+                fprintf(outfile,"\n QS: \n");
+                print_mat(QS,ri_nbf_,norbs,outfile);
+                fprintf(outfile,"\n Temp: \n");
+                print_mat(Temp,ndocc,ri_nbf_,outfile);
+                **/
                 //print_mat(Temp,ndocc,ri_nbf_,outfile);
                 int offset;
                 for (int Q = 0; Q<ri_nbf_; Q++) {
@@ -570,6 +579,10 @@ void RHF::form_G_from_RI()
                 }
             }
             timer_off("Form E");
+            /**
+            fprintf(outfile,"\n E: \n");
+            print_mat(E,norbs,ndocc*ri_nbf_,outfile);
+            **/
             free_block(Temp);
             free_block(QS);
             timer_on("E DGEMM");
@@ -612,9 +625,15 @@ void RHF::form_G_from_RI()
 
         //Three index tensor, in core
         double **E;
+        double **QS;
+        int *nu_indices;
+        double **Temp; 
         double **K;
         if (K_is_required_){
             E = block_matrix(norbs, ndocc*ri_nbf_);
+            QS = block_matrix(max_rows,norbs);
+            nu_indices = init_int_array(norbs);
+            Temp = block_matrix(ndocc,max_rows);
         }
 
         int mu, nu;
@@ -628,6 +647,18 @@ void RHF::form_G_from_RI()
             timer_on("Read B");
             psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2*current_rows,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
             timer_off("Read B");
+            /**
+            double** tempB = block_matrix(current_rows,norbs*(norbs+1)>>1);
+            C_DCOPY(current_rows*norbs*(norbs+1)>>1,&in_buffer[0],1,&tempB[0][0],1);
+            fprintf(outfile,"\n  B Temp: \n");
+            print_mat(tempB,current_rows,norbs*(norbs+1)>>1,outfile);
+            free_block(tempB);
+            fprintf(outfile,"\n  Block indices are: ",nu);
+            for (int k = 0; k<norbs*(norbs+1)>>1; k++)
+                fprintf(outfile,"(%d, %d) ",ri_pair_mu_[k],ri_pair_nu_[k]);
+            fprintf(outfile,"\n");
+            **/
+
             for (int Q = row; Q< row+current_rows; Q++) {
 		offset = (Q-row)*norbs*(norbs+1)/2;
                 if (J_is_required_) {
@@ -640,10 +671,12 @@ void RHF::form_G_from_RI()
                     timer_on("J DAXPY");
                     C_DAXPY(norbs*(norbs+1)/2,L,&in_buffer[offset],1,J,1);
                     timer_off("J DAXPY");
-                } 
+                }
+                /* 
                 timer_on("Form E");
                 if (K_is_required_) {
-                    /* EXCHANGE TENSOR */
+                     EXCHANGE TENSOR */
+                    /*
                     for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
                     {
                         mu = ri_pair_mu_[ij];
@@ -656,8 +689,61 @@ void RHF::form_G_from_RI()
                         }
                     }
                 }
-                timer_off("Form E");
+                timer_off("Form E");*/
             }
+            timer_on("Form E");
+            if (K_is_required_) {
+                for (int nu = 0; nu<norbs; nu++) { 
+                    int index = 0;
+                    for (int ij = 0; ij<norbs*(norbs+1)>>1; ij++) {
+                        if (ri_pair_mu_[ij] == nu || ri_pair_nu_[ij] == nu) 
+                            nu_indices[index++] = ij; //mus where the current nu hits
+                    }
+                    /**
+                    fprintf(outfile,"\n  nu = %d, ij indices are: ",nu);
+                    for (int k = 0; k<norbs; k++)
+                        fprintf(outfile,"%d ",nu_indices[k]);
+                    fprintf(outfile,"\n");
+                    **/
+                    int mu, ij;
+                    for (int index = 0; index<norbs; index++) {
+                        ij = nu_indices[index];
+                        if (ri_pair_nu_[ij] == nu)
+                            mu = ri_pair_mu_[ij];
+                        else
+                            mu = ri_pair_nu_[ij];
+                
+                        //fprintf(outfile,"(ij, mu) = (%d, %d)\n",ij,mu);
+                
+                        for (int Q = 0; Q<current_rows; Q++) {
+                             QS[Q][mu] = in_buffer[ij+Q*norbs*(norbs+1)/2];
+                            //fprintf(outfile," ij = %d, mu = %d, Q = %d, val = %14.10f\n",ij,mu,Q,QS[Q][mu]);
+                        }
+                    }
+                    C_DGEMM('N','T',ndocc,current_rows,norbs,1.0,Cocc[0],norbs,QS[0],norbs, 0.0, Temp[0], max_rows);
+                /**
+                fprintf(outfile,"\n Cocc: \n");
+                print_mat(Cocc,ndocc,norbs,outfile);
+                fprintf(outfile,"\n QS: \n");
+                print_mat(QS,current_rows,norbs,outfile);
+                fprintf(outfile,"\n Temp: \n");
+                print_mat(Temp,ndocc,max_rows,outfile);
+                **/
+                    int delta;
+                    for (int Q = row; Q<row+current_rows; Q++) {
+                        delta = Q*ndocc;
+                        for (int i = 0; i<ndocc; i++) {
+                            E[nu][i+delta] = Temp[i][Q-row];
+                        }
+                    }
+                }
+            }
+            timer_off("Form E");
+            /**    
+            fprintf(outfile,"\n E: \n");
+            print_mat(E,norbs,ndocc*max_rows,outfile);
+            **/
+            
         }
         free(in_buffer);
         psio_->close(PSIF_DFSCF_BJ,1);
@@ -668,6 +754,9 @@ void RHF::form_G_from_RI()
             K = block_matrix(norbs,norbs);
             C_DGEMM('N','T',norbs,norbs,ri_nbf_*ndocc,1.0,E[0],ri_nbf_*ndocc,E[0],ri_nbf_*ndocc, 0.0, K[0], norbs);
             free_block(E);
+            free_block(QS);
+            free(nu_indices);
+            free_block(Temp);
         }
         timer_off("E DGEMM");
 
@@ -697,7 +786,7 @@ void RHF::form_G_from_RI()
     }
     else {
         //B is on disk, K will be in disk, Single disk pass
-        //B is on disk, E will be in core, Single disk pass
+        //B is on disk, E will be in disk, Single disk pass
         //in_buffer stores multiple aux basis function rows of 
         //the three index tensor
         int max_rows = floor(((memory_/sizeof(double)))/((1.0+MEMORY_SAFETY_FACTOR)*(norbs*(norbs+1)/2+ndocc*norbs)));
@@ -728,9 +817,15 @@ void RHF::form_G_from_RI()
 
         //Three index tensor, buffered to disk
         double *out_buffer;
+        double **QS;
+        int *nu_indices;
+        double **Temp;
         double **K;
         if (K_is_required_){
             out_buffer = init_array(norbs*ndocc*max_rows);
+            QS = block_matrix(max_rows,norbs);
+            nu_indices = init_int_array(norbs);
+            Temp = block_matrix(ndocc,max_rows);
         }
 
         int mu, nu;
@@ -761,9 +856,10 @@ void RHF::form_G_from_RI()
                     C_DAXPY(norbs*(norbs+1)/2,L,&in_buffer[offset_B],1,J,1);
                     timer_off("J DAPXY");
                 } 
+                /*
                 timer_on("Form E");
                 if (K_is_required_) {
-                    /* EXCHANGE TENSOR */
+                    // EXCHANGE TENSOR 
                     memset(&out_buffer[offset_E],0,norbs*ndocc*sizeof(double));
                     for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
                     {
@@ -777,23 +873,80 @@ void RHF::form_G_from_RI()
                         }
                     }
                 }
-                timer_off("Form E");
+                timer_off("Form E");**/
             }
+            
+            timer_on("Form E");
             if (K_is_required_) {
-                timer_on("Form E");
+                for (int nu = 0; nu<norbs; nu++) { 
+                    int index = 0;
+                    for (int ij = 0; ij<norbs*(norbs+1)>>1; ij++) {
+                        if (ri_pair_mu_[ij] == nu || ri_pair_nu_[ij] == nu) 
+                            nu_indices[index++] = ij; //mus where the current nu hits
+                    }
+                    /**
+                    fprintf(outfile,"\n  nu = %d, ij indices are: ",nu);
+                    for (int k = 0; k<norbs; k++)
+                        fprintf(outfile,"%d ",nu_indices[k]);
+                    fprintf(outfile,"\n");
+                    **/
+                    int mu, ij;
+                    for (int index = 0; index<norbs; index++) {
+                        ij = nu_indices[index];
+                        if (ri_pair_nu_[ij] == nu)
+                            mu = ri_pair_mu_[ij];
+                        else
+                            mu = ri_pair_nu_[ij];
+                
+                        //fprintf(outfile,"(ij, mu) = (%d, %d)\n",ij,mu);
+                
+                        for (int Q = 0; Q<current_rows; Q++) {
+                             QS[Q][mu] = in_buffer[ij+Q*norbs*(norbs+1)/2];
+                            //fprintf(outfile," ij = %d, mu = %d, Q = %d, val = %14.10f\n",ij,mu,Q,QS[Q][mu]);
+                        }
+                    }
+                    C_DGEMM('N','T',ndocc,current_rows,norbs,1.0,Cocc[0],norbs,QS[0],norbs, 0.0, Temp[0], max_rows);
+                /**
+                fprintf(outfile,"\n Cocc: \n");
+                print_mat(Cocc,ndocc,norbs,outfile);
+                fprintf(outfile,"\n QS: \n");
+                print_mat(QS,current_rows,norbs,outfile);
+                fprintf(outfile,"\n Temp: \n");
+                print_mat(Temp,ndocc,max_rows,outfile);
+                **/
+                    int delta;
+                    for (int Q = row; Q<row+current_rows; Q++) {
+                        delta = (Q-row)*ndocc*norbs;
+                        C_DCOPY(ndocc,&Temp[0][Q-row],max_rows,&out_buffer[delta+nu*ndocc],1);
+                        //for (int i = 0; i<ndocc; i++) {
+                            //out_buffer[delta+nu*ndocc+i] = Temp[i][Q-row];
+                            //E[nu][i+delta] = Temp[i][Q-row];
+                        //}
+                    }
+                }
+            }
+            timer_off("Form E");
+                
+            //fprintf(outfile,"\n E: \n");
+            //print_mat(E,outfile);
+
+            if (K_is_required_) {
+                //timer_on("Form E");
                 timer_on("Write E");
                 psio_->write(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(out_buffer[0]),sizeof(double)*norbs*ndocc*current_rows,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
                 timer_off("Write E");
-                timer_off("Form E");
+                //timer_off("Form E");
             }
         }
         free(in_buffer);
         psio_->close(PSIF_DFSCF_BJ,1);
         if (K_is_required_) {
             free(out_buffer);
+            free_block(QS);
+            free(nu_indices);
+            free_block(Temp);
             psio_->close(PSIF_DFSCF_K,1);
         }
-        timer_on("E DGEMM");
 
         /* Exchange Tensor DGEMM */
         if (K_is_required_) {
@@ -802,11 +955,13 @@ void RHF::form_G_from_RI()
 
             K = block_matrix(norbs,norbs);
             //Large blocks implemented
-            max_rows = floor(((memory_/sizeof(double)))/((1.0+MEMORY_SAFETY_FACTOR)*(ndocc*norbs)));
+            max_rows = floor(((memory_/sizeof(double)))/((1.0+MEMORY_SAFETY_FACTOR)*(2.0*ndocc*norbs)));
 	    if (max_rows>ri_nbf_)
                 max_rows = ri_nbf_;
 
             in_buffer = init_array(norbs*(norbs+1)/2*max_rows);
+            double **E = block_matrix(norbs,max_rows*ndocc);
+            double **Ktemp = block_matrix(norbs,norbs);
             for (int row = 0; row <ri_nbf_; row+=max_rows)
             {
 	        current_rows = max_rows;
@@ -816,6 +971,38 @@ void RHF::form_G_from_RI()
                 timer_on("E Read");
                 psio_->read(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(in_buffer[0]),sizeof(double)*norbs*ndocc*current_rows,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
                 timer_off("E Read");
+                
+                timer_on("E DGEMM");
+
+                /**
+                double** tempB = block_matrix(current_rows,norbs*ndocc);
+                C_DCOPY(current_rows*norbs*ndocc,&in_buffer[0],1,&tempB[0][0],1);
+                fprintf(outfile,"\n  E Temp: \n");
+                print_mat(tempB,current_rows,norbs*ndocc,outfile);
+                free_block(tempB);
+                **/
+
+                for (int m = 0; m<norbs; m++) 
+                    for (int Q = 0; Q<current_rows; Q++)
+                        C_DCOPY(ndocc,&(in_buffer[Q*ndocc*norbs+m*ndocc]),1,&(E[m][Q*ndocc]),1);
+
+                //fprintf(outfile, "  E:\n");
+                //print_mat(E,norbs,ndocc*ri_nbf_,outfile);                
+
+                C_DGEMM('N','T',norbs,norbs,current_rows*ndocc,1.0,E[0],ri_nbf_*ndocc,E[0],ri_nbf_*ndocc, 0.0, Ktemp[0], norbs);
+
+                C_DAXPY(norbs*norbs,1.0,&Ktemp[0][0],1,&K[0][0],1);
+                                
+                timer_off("E DGEMM"); 
+
+                /**
+                for (int i = 0; i<norbs; i++)
+                    for (int j = 0; j<=i; j++) {
+                        K[i][j] += C_DDOT(current_rows*ndocc,&(in_buffer[i]),norbs,&(in_buffer[j]),norbs);
+                        if (i!=j)
+                            K[j][i] += K[i][j];
+                    }**/
+                /**
                 for (int Q = row; Q< row+current_rows; Q++) {
 		    offset = (Q-row)*norbs*ndocc;
 
@@ -825,12 +1012,13 @@ void RHF::form_G_from_RI()
                         K[m][n]+=in_buffer[m*ndocc+i+offset]*in_buffer[n*ndocc+i+offset];
                         K[n][m] = K[m][n];
                     }
-                }
+                }**/
             }
             free(in_buffer);
+            free_block(E);
+            free_block(Ktemp);
             psio_->close(PSIF_DFSCF_K,0);
         } 
-        timer_off("E DGEMM");
         /* Form J and K */
         if (J_is_required_) {
             for (int i = 0, ij = 0; i < norbs; i++)
