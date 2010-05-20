@@ -192,7 +192,7 @@ protected:
     virtual void form_initial_C() { form_C(); }
 
     /** Computes the initial energy. */
-    virtual double compute_initial_E() {}
+    virtual double compute_initial_E() { return 0.0; }
 
     void form_B();
     void write_B();

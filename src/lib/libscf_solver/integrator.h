@@ -26,14 +26,14 @@ namespace psi { namespace scf {
 /*! \ingroup SCF */
 //! Integration Point/Weight container struct
 // DEPRECATED 
-typedef struct IntegrationPoint {
+struct IntegrationPoint {
     Vector3 point;
     double weight;
 };
 
 /*! \ingroup SCF */
 //! Lebedev Unit Sphere
-typedef struct SphericalQuadrature {
+struct SphericalQuadrature {
     int n;
     double *x;
     double *y;
@@ -43,7 +43,7 @@ typedef struct SphericalQuadrature {
 
 /*! \ingroup SCF */
 //! Radial Quadrature
-typedef struct RadialQuadrature {
+struct RadialQuadrature {
     int n;
     double *r;
     double *w;
