@@ -26,7 +26,8 @@ protected:
         double *gradAB_; //GGA
         double *gradBB_; //GGA
         int block_size_;
-        const static double tol = 1E-20;
+        // Assignment of this variable moved to functionalfactory.cc to be standards compliant
+        const static double tol;
 
 public:
 	/** Constructor

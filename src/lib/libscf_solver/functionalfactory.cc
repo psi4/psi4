@@ -21,6 +21,8 @@ using namespace psi;
 
 namespace psi { namespace scf {
 
+const double Functional::tol = 1.0e-20;
+
 Functional * FunctionalFactory::getExchangeFunctional(string x_id,string c_id, int block_size)
 {
     if (x_id == "X_LDA") {
