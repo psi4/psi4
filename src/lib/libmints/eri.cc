@@ -93,7 +93,7 @@ ERI::ERI(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet>bs2, shared_ptr<BasisSet>
         init_libint(&libint_, max_am, max_nprim);
         // and libderiv, if needed
         if (deriv_)
-            init_libderiv1(&libderiv_, max_am, max_nprim, max_cart_-1);
+            init_libderiv1(&libderiv_, max_am, max_nprim, max_cart_);
     }
     catch (std::bad_alloc& e) {
         fprintf(stderr, "Error allocating memory for libint/libderiv.\n");
