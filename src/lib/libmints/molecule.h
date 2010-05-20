@@ -25,7 +25,7 @@ extern FILE *outfile;
 class Molecule
 {
 public:
-    typedef struct atom_info {
+    struct atom_info {
         double x, y, z;
         int Z;				// if Z == dummy atom
         double charge;
