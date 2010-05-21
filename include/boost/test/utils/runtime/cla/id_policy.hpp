@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2005-2008.
+//  (C) Copyright Gennadiy Rozental 2005-2010.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,7 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 54633 $
+//  Version     : $Revision: 62016 $
 //
 //  Description : some generic identification policies definition
 // ***************************************************************************
@@ -62,7 +62,7 @@ public:
     }
 
 protected:
-    explicit basic_naming_policy( call_traits<rtti::id_t>::param_type dyn_type )
+    explicit basic_naming_policy( rtti::id_t dyn_type )
     : identification_policy( dyn_type )
     {}
     BOOST_RT_PARAM_UNNEEDED_VIRTUAL ~basic_naming_policy() {}

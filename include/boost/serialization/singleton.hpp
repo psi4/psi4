@@ -35,8 +35,14 @@
 #endif 
 
 #include <cassert>
+#include <boost/config.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/serialization/force_include.hpp>
+
+#ifdef BOOST_MSVC
+#  pragma warning(push)
+#  pragma warning(disable : 4511 4512)
+#endif
 
 namespace boost { 
 namespace serialization { 
@@ -71,7 +77,8 @@ namespace serialization {
 // attempt to retieve a mutable instances while locked will
 // generate a assertion if compiled for debug.
 
-class singleton_module  : public boost::noncopyable
+class singleton_module : 
+    public boost::noncopyable
 {
 private:
     static bool & get_lock(){
@@ -143,5 +150,9 @@ BOOST_DLLEXPORT T & singleton<T>::instance = singleton<T>::get_instance();
 
 } // namespace serialization
 } // namespace boost
+
+#ifdef BOOST_MSVC
+#pragma warning(pop)
+#endif
 
 #endif // BOOST_SERIALIZATION_SINGLETON_HPP

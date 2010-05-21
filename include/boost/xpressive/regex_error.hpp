@@ -17,7 +17,9 @@
 #include <string>
 #include <stdexcept>
 #include <boost/throw_exception.hpp>
+#include <boost/current_function.hpp>
 #include <boost/exception/exception.hpp>
+#include <boost/exception/info.hpp>
 #include <boost/xpressive/regex_constants.hpp>
 
 //{{AFX_DOC_COMMENT
@@ -90,7 +92,7 @@ namespace detail
         {
             #ifndef BOOST_EXCEPTION_DISABLE
             boost::throw_exception(
-                boost::enable_error_info(boost::xpressive::regex_error(code, msg))
+                boost::xpressive::regex_error(code, msg)
                     << boost::throw_function(fun)
                     << boost::throw_file(file)
                     << boost::throw_line((int)line)

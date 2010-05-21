@@ -81,7 +81,7 @@ namespace detail
 
     #ifndef BOOST_XPRESSIVE_BUGGY_CTYPE_FACET
     // an unsigned integer with the highest bit set
-    umaskex_t const highest_bit = 1 << (sizeof(umaskex_t) * CHAR_BIT - 1);
+    umaskex_t const highest_bit = static_cast<umaskex_t>(1) << (sizeof(umaskex_t) * CHAR_BIT - 1);
 
     ///////////////////////////////////////////////////////////////////////////////
     // unused_mask

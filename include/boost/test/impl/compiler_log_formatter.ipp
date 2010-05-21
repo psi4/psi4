@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2005-2008.
+//  (C) Copyright Gennadiy Rozental 2005-2010.
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at 
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,7 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 49312 $
+//  Version     : $Revision: 62016 $
 //
 //  Description : implements compiler like Log formatter
 // ***************************************************************************
@@ -21,6 +21,8 @@
 #include <boost/test/framework.hpp>
 #include <boost/test/utils/basic_cstring/io.hpp>
 #include <boost/test/utils/lazy_ostream.hpp>
+#include <boost/test/utils/setcolor.hpp>
+#include <boost/test/detail/unit_test_parameters.hpp>
 
 // Boost
 #include <boost/version.hpp>
@@ -41,6 +43,20 @@ namespace output {
 // ************************************************************************** //
 // **************            compiler_log_formatter            ************** //
 // ************************************************************************** //
+
+namespace {
+
+const_string
+test_phase_identifier()
+{
+    return framework::is_initialized() 
+            ? const_string( framework::current_test_case().p_name.get() )
+            : BOOST_TEST_L( "Test setup" );
+}
+
+} // local namespace
+
+//____________________________________________________________________________//
 
 void
 compiler_log_formatter::log_start( std::ostream& output, counter_t test_cases_amount )
@@ -76,6 +92,8 @@ compiler_log_formatter::log_build_info( std::ostream& output )
 void
 compiler_log_formatter::test_unit_start( std::ostream& output, test_unit const& tu )
 {
+    BOOST_TEST_SCOPE_SETCOLOR( output, term_attr::BRIGHT, term_color::BLUE );
+
     output << "Entering test " << tu.p_type_name << " \"" << tu.p_name << "\"" << std::endl;
 }
 
@@ -84,6 +102,8 @@ compiler_log_formatter::test_unit_start( std::ostream& output, test_unit const& 
 void
 compiler_log_formatter::test_unit_finish( std::ostream& output, test_unit const& tu, unsigned long elapsed )
 {
+    BOOST_TEST_SCOPE_SETCOLOR( output, term_attr::BRIGHT, term_color::BLUE );
+
     output << "Leaving test " << tu.p_type_name << " \"" << tu.p_name << "\"";
 
     if( elapsed > 0 ) {
@@ -102,26 +122,32 @@ compiler_log_formatter::test_unit_finish( std::ostream& output, test_unit const&
 void
 compiler_log_formatter::test_unit_skipped( std::ostream& output, test_unit const& tu )
 {
+    BOOST_TEST_SCOPE_SETCOLOR( output, term_attr::BRIGHT, term_color::YELLOW );
+
     output  << "Test " << tu.p_type_name << " \"" << tu.p_name << "\"" << "is skipped" << std::endl;
 }
     
 //____________________________________________________________________________//
 
 void
-compiler_log_formatter::log_exception( std::ostream& output, log_checkpoint_data const& checkpoint_data, const_string explanation )
+compiler_log_formatter::log_exception( std::ostream& output, log_checkpoint_data const& checkpoint_data, execution_exception const& ex )
 {
-    print_prefix( output, BOOST_TEST_L( "unknown location" ), 0 );
-    output << "fatal error in \"" << framework::current_test_case().p_name << "\": ";
+    execution_exception::location const& loc = ex.where();
+    print_prefix( output, loc.m_file_name, loc.m_line_num );
 
-    if( !explanation.is_empty() )
-        output << explanation;
-    else
-        output << "uncaught exception, system error or abort requested";
+    {
+        BOOST_TEST_SCOPE_SETCOLOR( output, term_attr::BLINK, term_color::RED );
 
+        output << "fatal error in \"" << (loc.m_function.is_empty() ? test_phase_identifier() : loc.m_function ) << "\": "
+               << ex.what();
+    }
 
     if( !checkpoint_data.m_file_name.is_empty() ) {
         output << '\n';
         print_prefix( output, checkpoint_data.m_file_name, checkpoint_data.m_line_num );
+
+        BOOST_TEST_SCOPE_SETCOLOR( output, term_attr::BRIGHT, term_color::CYAN );
+
         output << "last checkpoint";
         if( !checkpoint_data.m_message.empty() )
             output << ": " << checkpoint_data.m_message;
@@ -138,21 +164,31 @@ compiler_log_formatter::log_entry_start( std::ostream& output, log_entry_data co
     switch( let ) {
         case BOOST_UTL_ET_INFO:
             print_prefix( output, entry_data.m_file_name, entry_data.m_line_num );
+            if( runtime_config::color_output() )
+                output << setcolor( term_attr::BRIGHT, term_color::GREEN );
             output << "info: ";
             break;
         case BOOST_UTL_ET_MESSAGE:
+            if( runtime_config::color_output() )
+                output << setcolor( term_attr::BRIGHT, term_color::CYAN );
             break;
         case BOOST_UTL_ET_WARNING:
             print_prefix( output, entry_data.m_file_name, entry_data.m_line_num );
-            output << "warning in \"" << framework::current_test_case().p_name << "\": ";
+            if( runtime_config::color_output() )
+                output << setcolor( term_attr::BRIGHT, term_color::YELLOW );
+            output << "warning in \"" << test_phase_identifier() << "\": ";
             break;
         case BOOST_UTL_ET_ERROR:
             print_prefix( output, entry_data.m_file_name, entry_data.m_line_num );
-            output << "error in \"" << framework::current_test_case().p_name << "\": ";
+            if( runtime_config::color_output() )
+                output << setcolor( term_attr::BRIGHT, term_color::RED );
+            output << "error in \"" << test_phase_identifier() << "\": ";
             break;
         case BOOST_UTL_ET_FATAL_ERROR:
             print_prefix( output, entry_data.m_file_name, entry_data.m_line_num );
-            output << "fatal error in \"" << framework::current_test_case().p_name << "\": ";
+            if( runtime_config::color_output() )
+                output << setcolor( term_attr::BLINK, term_color::RED );
+            output << "fatal error in \"" << test_phase_identifier() << "\": ";
             break;
     }
 }
@@ -178,8 +214,11 @@ compiler_log_formatter::log_entry_value( std::ostream& output, lazy_ostream cons
 void
 compiler_log_formatter::log_entry_finish( std::ostream& output )
 {
+    if( runtime_config::color_output() )
+        output << setcolor();
     output << std::endl;
 }
+
 
 //____________________________________________________________________________//
 

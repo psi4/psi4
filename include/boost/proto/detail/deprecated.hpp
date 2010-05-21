@@ -10,7 +10,6 @@
 #ifndef BOOST_PROTO_DETAIL_DEPRECATED_HPP_EAN_11_25_2008
 #define BOOST_PROTO_DETAIL_DEPRECATED_HPP_EAN_11_25_2008
 
-#include <boost/proto/detail/prefix.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/facilities/intercept.hpp>
 #include <boost/preprocessor/arithmetic/inc.hpp>
@@ -37,7 +36,6 @@
 #include <boost/preprocessor/repetition/enum_binary_params.hpp>
 #include <boost/preprocessor/repetition/enum_trailing_binary_params.hpp>
 #include <boost/proto/proto_fwd.hpp>
-#include <boost/proto/detail/suffix.hpp>
 
 /// INTERNAL ONLY
 ///

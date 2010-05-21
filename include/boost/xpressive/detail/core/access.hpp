@@ -15,6 +15,7 @@
 
 #include <vector>
 #include <boost/shared_ptr.hpp>
+#include <boost/proto/traits.hpp>
 #include <boost/xpressive/detail/detail_fwd.hpp>
 #include <boost/xpressive/detail/dynamic/matchable.hpp>
 #include <boost/xpressive/match_results.hpp> // for type_info_less
@@ -118,6 +119,11 @@ struct core_access
     static void set_base(match_results<BidiIter> &what, BidiIter base)
     {
         what.set_base_(base);
+    }
+
+    static BidiIter get_base(match_results<BidiIter> &what)
+    {
+        return *what.base_;
     }
 };
 

@@ -20,6 +20,8 @@
 // #include <boost/scoped_ptr.hpp>
 
 #include <boost/config.hpp>
+#include <boost/noncopyable.hpp>
+
 #include <boost/type_traits/broken_compiler_spec.hpp>
 #include <boost/serialization/tracking_enum.hpp>
 #include <boost/archive/basic_archive.hpp>
@@ -39,7 +41,8 @@ class BOOST_ARCHIVE_DECL(BOOST_PP_EMPTY()) basic_iserializer;
 class BOOST_ARCHIVE_DECL(BOOST_PP_EMPTY()) basic_pointer_iserializer;
 //////////////////////////////////////////////////////////////////////
 // class basic_iarchive - read serialized objects from a input stream
-class BOOST_ARCHIVE_DECL(BOOST_PP_EMPTY()) basic_iarchive 
+class BOOST_ARCHIVE_DECL(BOOST_PP_EMPTY()) basic_iarchive :
+    private boost::noncopyable
 {
     friend class basic_iarchive_impl;
     // hide implementation of this class to minimize header conclusion
@@ -53,9 +56,6 @@ class BOOST_ARCHIVE_DECL(BOOST_PP_EMPTY()) basic_iarchive
     virtual void vload(class_id_optional_type &t) = 0;
     virtual void vload(class_name_type &t) = 0;
     virtual void vload(tracking_type &t) = 0;
-
-    virtual const basic_pointer_iserializer * 
-    find(const boost::serialization::extended_type_info & eti) const = 0;
 protected:
     basic_iarchive(unsigned int flags);
     // account for bogus gcc warning
@@ -76,11 +76,15 @@ public:
     const basic_pointer_iserializer * 
     load_pointer(
         void * & t, 
-        const basic_pointer_iserializer * bpis_ptr
+        const basic_pointer_iserializer * bpis_ptr,
+        const basic_pointer_iserializer * (*finder)(
+            const boost::serialization::extended_type_info & eti
+        )
+
     );
     // real public API starts here
     void 
-    set_library_version(unsigned int archive_library_version);
+    set_library_version(version_type archive_library_version);
     unsigned int 
     get_library_version() const;
     unsigned int

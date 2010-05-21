@@ -19,6 +19,9 @@
 #include <boost/mpl/if.hpp>
 #include <boost/mpl/plus.hpp>
 #include <boost/mpl/bool.hpp>
+#include <boost/mpl/eval_if.hpp>
+#include <boost/mpl/inherit.hpp>
+#include <boost/mpl/identity.hpp>
 
 namespace boost { namespace fusion
 {
@@ -31,7 +34,16 @@ namespace boost { namespace fusion
     {
         typedef joint_view_tag fusion_tag;
         typedef fusion_sequence_tag tag; // this gets picked up by MPL
-        typedef forward_traversal_tag category;
+        typedef typename
+            mpl::eval_if<
+                mpl::and_<
+                    traits::is_associative<Sequence1>
+                  , traits::is_associative<Sequence2>
+                >
+              , mpl::inherit2<forward_traversal_tag,associative_tag>
+              , mpl::identity<forward_traversal_tag>
+            >::type
+        category;
         typedef mpl::true_ is_view;
 
         typedef typename result_of::begin<Sequence1>::type first_type;

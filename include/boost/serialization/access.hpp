@@ -106,6 +106,15 @@ public:
         T & t, 
         const unsigned int file_version
     ){
+        // note: if you get a compile time error here with a
+        // message something like:
+        // cannot convert parameter 1 from <file type 1> to <file type 2 &>
+        // a likely possible cause is that the class T contains a 
+        // serialize function - but that serialize function isn't 
+        // a template and corresponds to a file type different than
+        // the class Archive.  To resolve this, don't include an
+        // archive type other than that for which the serialization
+        // function is defined!!!
         t.serialize(ar, file_version);
     }
     template<class T>

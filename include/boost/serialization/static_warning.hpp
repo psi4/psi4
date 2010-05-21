@@ -77,7 +77,7 @@ namespace boost {
 namespace serialization {
 
 template<int L> 
-struct STATIC_WARNING_LINE{};
+struct BOOST_SERIALIZATION_STATIC_WARNING_LINE{};
 
 template<bool B, int L>
 struct static_warning_test{
@@ -86,23 +86,23 @@ struct static_warning_test{
         boost::mpl::true_,
         typename boost::mpl::identity<
             boost::mpl::print<
-                STATIC_WARNING_LINE<L>
+                BOOST_SERIALIZATION_STATIC_WARNING_LINE<L>
             >
         >
     >::type type;
 };
 
 template<int i>
-struct SS {};
+struct BOOST_SERIALIZATION_SS {};
 
 } // serialization
 } // boost
 
-#define BSW(B, L) \
-    typedef boost::serialization::SS< \
+#define BOOST_SERIALIZATION_BSW(B, L) \
+    typedef boost::serialization::BOOST_SERIALIZATION_SS< \
         sizeof( boost::serialization::static_warning_test< B, L > ) \
     > BOOST_JOIN(STATIC_WARNING_LINE, L);
 
-#define BOOST_STATIC_WARNING(B) BSW(B, __LINE__)
+#define BOOST_STATIC_WARNING(B) BOOST_SERIALIZATION_BSW(B, __LINE__)
 
 #endif // BOOST_SERIALIZATION_STATIC_WARNING_HPP

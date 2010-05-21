@@ -1,6 +1,7 @@
 //=======================================================================
 // Copyright 1997, 1998, 1999, 2000 University of Notre Dame.
-// Authors: Andrew Lumsdaine, Lie-Quan Lee, Jeremy G. Siek
+// Copyright 2010 Thomas Claveirole
+// Authors: Andrew Lumsdaine, Lie-Quan Lee, Jeremy G. Siek, Thomas Claveirole
 //
 // Distributed under the Boost Software License, Version 1.0. (See
 // accompanying file LICENSE_1_0.txt or copy at
@@ -17,16 +18,7 @@
 #include <list>
 #include <set>
 
-// TODO: Deprecating this requires some cooperation from Boost.Config. It's not
-// a good idea to just refuse the inclusion because it could break otherwise
-// functioning code.
-#if !defined BOOST_NO_HASH
-#  ifdef BOOST_HASH_SET_HEADER
-#    include BOOST_HASH_SET_HEADER
-#  else
-#    include <hash_set>
-#  endif
-#endif
+#include <boost/unordered_set.hpp>
 
 #if !defined BOOST_NO_SLIST
 #  ifdef BOOST_SLIST_HEADER
@@ -73,12 +65,10 @@ namespace boost {
   struct mapS  { };
   struct multisetS { };
   struct multimapS { };
-#if !defined BOOST_NO_HASH
   struct hash_setS { };
   struct hash_mapS { };
   struct hash_multisetS { };
   struct hash_multimapS { };
-#endif
 
   template <class Selector, class ValueType>
   struct container_gen { };
@@ -118,27 +108,25 @@ namespace boost {
     typedef std::multiset<ValueType> type;
   };
 
-#if !defined BOOST_NO_HASH
   template <class ValueType>
   struct container_gen<hash_setS, ValueType> {
-    typedef BOOST_STD_EXTENSION_NAMESPACE::hash_set<ValueType> type;
+    typedef boost::unordered_set<ValueType> type;
   };
 
   template <class ValueType>
   struct container_gen<hash_mapS, ValueType> {
-    typedef BOOST_STD_EXTENSION_NAMESPACE::hash_set<ValueType> type;
+    typedef boost::unordered_set<ValueType> type;
   };
 
   template <class ValueType>
   struct container_gen<hash_multisetS, ValueType> {
-    typedef BOOST_STD_EXTENSION_NAMESPACE::hash_multiset<ValueType> type;
+    typedef boost::unordered_multiset<ValueType> type;
   };
 
   template <class ValueType>
   struct container_gen<hash_multimapS, ValueType> {
-    typedef BOOST_STD_EXTENSION_NAMESPACE::hash_multiset<ValueType> type;
+    typedef boost::unordered_multiset<ValueType> type;
   };
-#endif
 
 #else // !defined BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 
@@ -180,27 +168,25 @@ namespace boost {
     struct bind_ { typedef std::multiset<T, std::less<T> > type; };
   };
 
-#if !defined BOOST_NO_HASH
   struct hash_setS {
     template <class T>
-    struct bind_ { typedef BOOST_STD_EXTENSION_NAMESPACE::hash_set<T, std::less<T> > type; };
+    struct bind_ { typedef boost::unordered_set<T> type; };
   };
 
   struct hash_mapS {
     template <class T>
-    struct bind_ { typedef BOOST_STD_EXTENSION_NAMESPACE::hash_set<T, std::less<T> > type; };
+    struct bind_ { typedef boost::unordered_set<T> type; };
   };
 
   struct hash_multisetS {
     template <class T>
-    struct bind_ { typedef BOOST_STD_EXTENSION_NAMESPACE::hash_multiset<T, std::less<T> > type; };
+    struct bind_ { typedef boost::unordered_multiset<T> type; };
   };
 
   struct hash_multimapS {
     template <class T>
-    struct bind_ { typedef BOOST_STD_EXTENSION_NAMESPACE::hash_multiset<T, std::less<T> > type; };
+    struct bind_ { typedef boost::unordered_multiset<T> type; };
   };
-#endif
 
   template <class Selector> struct container_selector {
     typedef vecS type;
@@ -216,9 +202,7 @@ namespace boost {
   BOOST_CONTAINER_SELECTOR(mapS);
   BOOST_CONTAINER_SELECTOR(setS);
   BOOST_CONTAINER_SELECTOR(multisetS);
-#if !defined BOOST_NO_HASH
   BOOST_CONTAINER_SELECTOR(hash_mapS);
-#endif
 #if !defined BOOST_NO_SLIST
   BOOST_CONTAINER_SELECTOR(slistS);
 #endif
@@ -256,24 +240,30 @@ namespace boost {
   struct parallel_edge_traits<multisetS> {
     typedef allow_parallel_edge_tag type; };
 
-#if !defined BOOST_NO_HASH
   template <>
   struct parallel_edge_traits<hash_setS> {
     typedef disallow_parallel_edge_tag type;
   };
-#endif
 
   // mapS is obsolete, replaced with setS
   template <>
   struct parallel_edge_traits<mapS> {
     typedef disallow_parallel_edge_tag type; };
 
-#if !defined BOOST_NO_HASH
   template <>
   struct parallel_edge_traits<hash_mapS> {
     typedef disallow_parallel_edge_tag type;
   };
-#endif
+
+  template <>
+  struct parallel_edge_traits<hash_multisetS> {
+    typedef allow_parallel_edge_tag type;
+  };
+
+  template <>
+  struct parallel_edge_traits<hash_multimapS> {
+    typedef allow_parallel_edge_tag type;
+  };
 
   namespace detail {
     template <class Directed> struct is_random_access {

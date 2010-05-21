@@ -109,7 +109,7 @@ void get_params(Options &options)
     else if(cachetype == "LRU")
       params.cachetype = 0;
     else {
-      fprintf(outfile, "Invalide CACHETYPE = %s\n",cachetype);
+      fprintf(outfile, "Invalide CACHETYPE = %s\n",cachetype.c_str());
       abort();
     }
   }

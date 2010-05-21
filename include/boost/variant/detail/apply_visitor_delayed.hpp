@@ -72,6 +72,9 @@ public: // binary visitor interface
         return apply_visitor(visitor_, visitable1, visitable2);
     }
 
+private:
+    apply_visitor_delayed_t& operator=(const apply_visitor_delayed_t&);
+
 };
 
 template <typename Visitor>

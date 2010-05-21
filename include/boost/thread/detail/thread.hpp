@@ -39,9 +39,12 @@ namespace boost
             public detail::thread_data_base
         {
         public:
-#ifdef BOOST_HAS_RVALUE_REFS
+#ifndef BOOST_NO_RVALUE_REFERENCES
             thread_data(F&& f_):
                 f(static_cast<F&&>(f_))
+            {}
+            thread_data(F& f_):
+                f(f_)
             {}
 #else
             thread_data(F f_):
@@ -119,7 +122,7 @@ namespace boost
 
         detail::thread_data_ptr get_thread_info() const;
 
-#ifdef BOOST_HAS_RVALUE_REFS
+#ifndef BOOST_NO_RVALUE_REFERENCES
         template<typename F>
         static inline detail::thread_data_ptr make_thread_info(F&& f)
         {
@@ -127,7 +130,7 @@ namespace boost
         }
         static inline detail::thread_data_ptr make_thread_info(void (*f)())
         {
-            return detail::thread_data_ptr(detail::heap_new<detail::thread_data<void(*)()> >(f));
+            return detail::thread_data_ptr(detail::heap_new<detail::thread_data<void(*)()> >(static_cast<void(*&&)()>(f)));
         }
 #else
         template<typename F>
@@ -141,8 +144,8 @@ namespace boost
             return detail::thread_data_ptr(detail::heap_new<detail::thread_data<F> >(f));
         }
 
-        struct dummy;
 #endif
+        struct dummy;
     public:
 #ifdef __SUNPRO_CC 
         thread(const volatile thread&); 
@@ -150,13 +153,22 @@ namespace boost
         thread();
         ~thread();
 
-#ifdef BOOST_HAS_RVALUE_REFS
+#ifndef BOOST_NO_RVALUE_REFERENCES
+#ifdef BOOST_MSVC
+        template <class F>
+        explicit thread(F f,typename disable_if<boost::is_convertible<F&,detail::thread_move_t<F> >, dummy* >::type=0):
+            thread_info(make_thread_info(f))
+        {
+            start_thread();
+        }
+#else
         template <class F>
         thread(F&& f):
             thread_info(make_thread_info(static_cast<F&&>(f)))
         {
             start_thread();
         }
+#endif
 
         thread(thread&& other)
         {
@@ -343,10 +355,14 @@ namespace boost
         return lhs.swap(rhs);
     }
     
-#ifdef BOOST_HAS_RVALUE_REFS
+#ifndef BOOST_NO_RVALUE_REFERENCES
+    inline thread&& move(thread& t)
+    {
+        return static_cast<thread&&>(t);
+    }
     inline thread&& move(thread&& t)
     {
-        return t;
+        return static_cast<thread&&>(t);
     }
 #else
     inline detail::thread_move_t<thread> move(detail::thread_move_t<thread> t)
@@ -445,7 +461,7 @@ namespace boost
         {
             virtual ~thread_exit_function_base()
             {}
-            virtual void operator()() const=0;
+            virtual void operator()()=0;
         };
         
         template<typename F>
@@ -458,13 +474,13 @@ namespace boost
                 f(f_)
             {}
             
-            void operator()() const
+            void operator()()
             {
                 f();
             }
         };
         
-        void add_thread_exit_function(thread_exit_function_base*);
+        void BOOST_THREAD_DECL add_thread_exit_function(thread_exit_function_base*);
     }
     
     namespace this_thread

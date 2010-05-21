@@ -50,8 +50,7 @@ namespace boost { namespace fusion
         template <typename First, typename Last>
         struct distance :
             distance_detail::linear_distance<First, Last>
-        {
-        };
+        {};
     };
 }}
 

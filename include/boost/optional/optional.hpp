@@ -1,4 +1,4 @@
-// Copyright (C) 2003, Fernando Luis Cacciola Carballal.
+// Copyright (C) 2003, 2008 Fernando Luis Cacciola Carballal.
 //
 // Use, modification, and distribution is subject to the Boost Software
 // License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
@@ -9,6 +9,9 @@
 // You are welcome to contact the author at:
 //  fernando_cacciola@hotmail.com
 //
+// Revisions:
+// 27 Apr 2008 (improved swap) Fernando Cacciola, Niels Dekker, Thorsten Ottosen
+// 
 #ifndef BOOST_OPTIONAL_OPTIONAL_FLC_19NOV2002_HPP
 #define BOOST_OPTIONAL_OPTIONAL_FLC_19NOV2002_HPP
 
@@ -19,6 +22,7 @@
 #include "boost/assert.hpp"
 #include "boost/type.hpp"
 #include "boost/type_traits/alignment_of.hpp"
+#include "boost/type_traits/has_nothrow_constructor.hpp"
 #include "boost/type_traits/type_with_alignment.hpp"
 #include "boost/type_traits/remove_reference.hpp"
 #include "boost/type_traits/is_reference.hpp"
@@ -28,6 +32,7 @@
 #include "boost/detail/reference_content.hpp"
 #include "boost/none.hpp"
 #include "boost/utility/compare_pointees.hpp"
+#include "boost/utility/in_place_factory.hpp"
 
 #include "boost/optional/optional_fwd.hpp"
 
@@ -168,8 +173,10 @@ class optional_base : public optional_tag
 
     typedef BOOST_DEDUCED_TYPENAME is_reference<T>::type is_reference_predicate ;
 
+  public:
     typedef BOOST_DEDUCED_TYPENAME mpl::if_<is_reference_predicate,types_when_ref,types_when_not_ref>::type types ;
 
+  protected:
     typedef bool (this_type::*unspecified_bool_type)() const;
 
     typedef BOOST_DEDUCED_TYPENAME types::reference_type       reference_type ;
@@ -516,7 +523,7 @@ class optional : public optional_detail::optional_base<T>
 
     // Creates a deep copy of another optional<T>
     // Can throw if T::T(T const&) does
-    optional ( optional const& rhs ) : base(rhs) {}
+    optional ( optional const& rhs ) : base( static_cast<base const&>(rhs) ) {}
 
    // No-throw (assuming T::~T() doesn't)
     ~optional() {}
@@ -550,7 +557,7 @@ class optional : public optional_detail::optional_base<T>
     //  (NOTE: On BCB, this operator is not actually called and left is left UNMODIFIED in case of a throw)
     optional& operator= ( optional const& rhs )
       {
-        this->assign( rhs ) ;
+        this->assign( static_cast<base const&>(rhs) ) ;
         return *this ;
       }
 
@@ -570,6 +577,14 @@ class optional : public optional_detail::optional_base<T>
         this->assign( none_ ) ;
         return *this ;
       }
+
+    void swap( optional & arg )
+      {
+        // allow for Koenig lookup
+        using boost::swap ;
+        swap(*this, arg);
+      }
+
 
     // Returns a reference to the value if this is initialized, otherwise,
     // the behaviour is UNDEFINED
@@ -878,43 +893,76 @@ namespace optional_detail {
 #define BOOST_OPTIONAL_STD_SWAP_INTRODUCED_AT_NS_SCOPE
 #endif
 
-// optional's swap:
-// If both are initialized, calls swap(T&, T&). If this swap throws, both will remain initialized but their values are now unspecified.
-// If only one is initialized, calls U.reset(*I), THEN I.reset().
-// If U.reset(*I) throws, both are left UNCHANGED (U is kept uinitialized and I is never reset)
-// If both are uninitialized, do nothing (no-throw)
-template<class T>
-inline
-void optional_swap ( optional<T>& x, optional<T>& y )
-{
-  if ( !x && !!y )
+  template<bool use_default_constructor> struct swap_selector;
+
+  template<>
+  struct swap_selector<true>
   {
-    x.reset(*y);
-    y.reset();
-  }
-  else if ( !!x && !y )
-  {
-    y.reset(*x);
-    x.reset();
-  }
-  else if ( !!x && !!y )
-  {
-// GCC > 3.2 and all other compilers have the using declaration at function scope (FLC)
+    template<class T>
+    static void optional_swap ( optional<T>& x, optional<T>& y )
+    {
+     bool hasX = x;
+     bool hasY = y;
+
+     if ( !hasX && !hasY )
+       return;
+
+     if( !hasX )
+         x = boost::in_place();
+     else if ( !hasY )
+         y = boost::in_place();
+
+   // GCC > 3.2 and all other compilers have the using declaration at function scope (FLC)
 #ifndef BOOST_OPTIONAL_STD_SWAP_INTRODUCED_AT_NS_SCOPE
-    // allow for Koenig lookup
-    using std::swap ;
+     // allow for Koenig lookup
+     using std::swap ;
 #endif
-    swap(*x,*y);
-  }
-}
+     swap(*x,*y);
+
+     if( !hasX )
+         y = boost::none ;
+     else if( !hasY )
+         x = boost::none ;
+    }
+  };
+
+  template<>
+  struct swap_selector<false>
+  {
+    template<class T>
+    static void optional_swap ( optional<T>& x, optional<T>& y )
+    {
+      if ( !x && !!y )
+      {
+        x = *y;
+        y = boost::none ;
+      }
+      else if ( !!x && !y )
+      {
+        y = *x ;
+        x = boost::none ;
+      }
+      else if ( !!x && !!y )
+      {
+    // GCC > 3.2 and all other compilers have the using declaration at function scope (FLC)
+    #ifndef BOOST_OPTIONAL_STD_SWAP_INTRODUCED_AT_NS_SCOPE
+        // allow for Koenig lookup
+        using std::swap ;
+    #endif
+        swap(*x,*y);
+      }
+    }
+  };
 
 } // namespace optional_detail
 
+template<class T>
+struct optional_swap_should_use_default_constructor : has_nothrow_default_constructor<T> {} ;
+
 template<class T> inline void swap ( optional<T>& x, optional<T>& y )
 {
-  optional_detail::optional_swap(x,y);
+  optional_detail::swap_selector<optional_swap_should_use_default_constructor<T>::value>::optional_swap(x, y);
 }
-
 
 } // namespace boost
 

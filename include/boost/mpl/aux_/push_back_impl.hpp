@@ -10,9 +10,9 @@
 //
 // See http://www.boost.org/libs/mpl for documentation.
 
-// $Id: push_back_impl.hpp 55679 2009-08-20 07:50:16Z agurtovoy $
-// $Date: 2009-08-20 03:50:16 -0400 (Thu, 20 Aug 2009) $
-// $Revision: 55679 $
+// $Id: push_back_impl.hpp 55672 2009-08-19 22:52:27Z steven_watanabe $
+// $Date: 2009-08-19 18:52:27 -0400 (Wed, 19 Aug 2009) $
+// $Revision: 55672 $
 
 #include <boost/mpl/push_back_fwd.hpp>
 #include <boost/mpl/assert.hpp>

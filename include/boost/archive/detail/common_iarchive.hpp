@@ -16,11 +16,18 @@
 
 //  See http://www.boost.org for updates, documentation, and revision history.
 
+#include <boost/config.hpp>
+
 #include <boost/archive/detail/basic_iarchive.hpp>
 #include <boost/archive/detail/basic_pointer_iserializer.hpp>
 #include <boost/archive/detail/interface_iarchive.hpp>
 #include <boost/archive/detail/archive_serializer_map.hpp>
 #include <boost/serialization/singleton.hpp>
+
+#ifdef BOOST_MSVC
+#  pragma warning(push)
+#  pragma warning(disable : 4511 4512)
+#endif
 
 namespace boost {
 namespace archive {
@@ -69,18 +76,15 @@ protected:
         basic_iarchive(flags),
         interface_iarchive<Archive>()
     {}
-public:
-    virtual const basic_pointer_iserializer * 
-    find(const boost::serialization::extended_type_info & eti) const {
-    	return static_cast<const basic_pointer_iserializer *>(
-            archive_serializer_map<Archive>::find(eti)
-        );
-    }
 };
 
 } // namespace detail
 } // namespace archive
 } // namespace boost
+
+#ifdef BOOST_MSVC
+#pragma warning(pop)
+#endif
 
 #endif // BOOST_ARCHIVE_DETAIL_COMMON_IARCHIVE_HPP
 

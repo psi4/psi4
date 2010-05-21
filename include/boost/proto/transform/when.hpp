@@ -10,7 +10,6 @@
     #ifndef BOOST_PROTO_TRANSFORM_WHEN_HPP_EAN_10_29_2007
     #define BOOST_PROTO_TRANSFORM_WHEN_HPP_EAN_10_29_2007
 
-    #include <boost/proto/detail/prefix.hpp>
     #include <boost/preprocessor/cat.hpp>
     #include <boost/preprocessor/repetition/enum_params.hpp>
     #include <boost/preprocessor/repetition/enum_trailing_params.hpp>
@@ -21,7 +20,6 @@
     #include <boost/proto/transform/call.hpp>
     #include <boost/proto/transform/make.hpp>
     #include <boost/proto/transform/impl.hpp>
-    #include <boost/proto/detail/suffix.hpp>
 
     namespace boost { namespace proto
     {
@@ -51,9 +49,9 @@
         /// <tt>boost::result_of\<when\<G,T\>(E,S,V)\>::::type</tt> is the same as
         /// <tt>boost::result_of\<T(E,S,V)\>::::type</tt>.
         ///
-        /// <tt>when\<G,T\>()(e,s,v)</tt> is the same as
-        /// <tt>T()(e,s,v)</tt>.
-        template<typename Grammar, typename PrimitiveTransform BOOST_PROTO_WHEN_BUILDING_DOCS(= Grammar)>
+        /// <tt>when\<G,T\>()(e,s,d)</tt> is the same as
+        /// <tt>T()(e,s,d)</tt>.
+        template<typename Grammar, typename PrimitiveTransform /*= Grammar*/>
         struct when
           : PrimitiveTransform
         {
@@ -148,16 +146,12 @@
             template<typename Expr, typename State, typename Data>
             struct impl : transform_impl<Expr, State, Data>
             {
-                typedef call<R(BOOST_PP_ENUM_PARAMS(N, A))> call_;
-                typedef make<R(BOOST_PP_ENUM_PARAMS(N, A))> make_;
-
+                // OK to evaluate is_callable<R> here. R should be compete by now.
                 typedef
                     typename mpl::if_c<
-                        // OK to evaluate is_callable<R> here.
-                        // R should be compete by now.
                         is_callable<R>::value
-                      , call_                       // "R" is a function to call
-                      , make_                       // "R" is an object to construct
+                      , call<R(BOOST_PP_ENUM_PARAMS(N, A))> // "R" is a function to call
+                      , make<R(BOOST_PP_ENUM_PARAMS(N, A))> // "R" is an object to construct
                     >::type
                 which;
 

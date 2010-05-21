@@ -51,7 +51,6 @@
 #endif
 
 #include <boost/proto/proto_fwd.hpp>
-#include <boost/proto/traits.hpp>
 
 namespace boost { namespace xpressive
 {
@@ -78,7 +77,9 @@ namespace boost { namespace xpressive
         };
 
         struct mark_placeholder;
-        typedef proto::terminal<mark_placeholder>::type basic_mark_tag;
+        typedef proto::expr<proto::tag::terminal, proto::term<mark_placeholder>, 0> basic_mark_tag;
+
+        struct regex_domain;
 
     } // namespace detail
 

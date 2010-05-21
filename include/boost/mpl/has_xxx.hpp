@@ -11,9 +11,9 @@
 //
 // See http://www.boost.org/libs/mpl for documentation.
 
-// $Id: has_xxx.hpp 49273 2008-10-11 06:54:06Z agurtovoy $
-// $Date: 2008-10-11 02:54:06 -0400 (Sat, 11 Oct 2008) $
-// $Revision: 49273 $
+// $Id: has_xxx.hpp 49260 2008-10-10 21:59:29Z agurtovoy $
+// $Date: 2008-10-10 17:59:29 -0400 (Fri, 10 Oct 2008) $
+// $Revision: 49260 $
 
 #include <boost/mpl/bool.hpp>
 #include <boost/mpl/aux_/type_wrapper.hpp>

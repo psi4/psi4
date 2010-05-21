@@ -63,6 +63,9 @@ public: // visitor interfaces
         return visitor_(value1_, value2);
     }
 
+private:
+    apply_visitor_binary_invoke& operator=(const apply_visitor_binary_invoke&);
+
 };
 
 template <typename Visitor, typename Visitable2>
@@ -99,6 +102,9 @@ public: // visitor interfaces
 
         return boost::apply_visitor(invoker, visitable2_);
     }
+
+private:
+    apply_visitor_binary_unwrap& operator=(const apply_visitor_binary_unwrap&);
 
 };
 

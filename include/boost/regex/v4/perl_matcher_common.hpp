@@ -98,23 +98,23 @@ void perl_matcher<BidiIterator, Allocator, traits>::estimate_max_state_count(std
    //
    // Calculate NS^2 first:
    //
-   static const boost::uintmax_t k = 100000;
-   boost::uintmax_t dist = boost::re_detail::distance(base, last);
+   static const std::ptrdiff_t k = 100000;
+   std::ptrdiff_t dist = boost::re_detail::distance(base, last);
    if(dist == 0)
       dist = 1;
-   boost::uintmax_t states = re.size();
+   std::ptrdiff_t states = re.size();
    if(states == 0)
       states = 1;
    states *= states;
-   if((std::numeric_limits<boost::uintmax_t>::max)() / dist < states)
+   if((std::numeric_limits<std::ptrdiff_t>::max)() / dist < states)
    {
-      max_state_count = (std::numeric_limits<boost::uintmax_t>::max)() - 2;
+      max_state_count = (std::min)((std::ptrdiff_t)BOOST_REGEX_MAX_STATE_COUNT, (std::numeric_limits<std::ptrdiff_t>::max)() - 2);
       return;
    }
    states *= dist;
-   if((std::numeric_limits<boost::uintmax_t>::max)() - k < states)
+   if((std::numeric_limits<std::ptrdiff_t>::max)() - k < states)
    {
-      max_state_count = (std::numeric_limits<boost::uintmax_t>::max)() - 2;
+      max_state_count = (std::min)((std::ptrdiff_t)BOOST_REGEX_MAX_STATE_COUNT, (std::numeric_limits<std::ptrdiff_t>::max)() - 2);
       return;
    }
    states += k;
@@ -125,15 +125,15 @@ void perl_matcher<BidiIterator, Allocator, traits>::estimate_max_state_count(std
    // Now calculate N^2:
    //
    states = dist;
-   if((std::numeric_limits<boost::uintmax_t>::max)() / dist < states)
+   if((std::numeric_limits<std::ptrdiff_t>::max)() / dist < states)
    {
-      max_state_count = (std::numeric_limits<boost::uintmax_t>::max)() - 2;
+      max_state_count = (std::min)((std::ptrdiff_t)BOOST_REGEX_MAX_STATE_COUNT, (std::numeric_limits<std::ptrdiff_t>::max)() - 2);
       return;
    }
    states *= dist;
-   if((std::numeric_limits<boost::uintmax_t>::max)() - k < states)
+   if((std::numeric_limits<std::ptrdiff_t>::max)() - k < states)
    {
-      max_state_count = (std::numeric_limits<boost::uintmax_t>::max)() - 2;
+      max_state_count = (std::min)((std::ptrdiff_t)BOOST_REGEX_MAX_STATE_COUNT, (std::numeric_limits<std::ptrdiff_t>::max)() - 2);
       return;
    }
    states += k;
@@ -732,10 +732,10 @@ inline bool perl_matcher<BidiIterator, Allocator, traits>::match_assert_backref(
    {
       // Have we recursed into subexpression "index"?
       // If index == 0 then check for any recursion at all, otherwise for recursion to -index-1.
-      int id = -index-1;
-      if(id >= 10000)
-         id = re.get_data().get_id(id);
-      result = recursion_stack_position && ((recursion_stack[recursion_stack_position-1].id == id) || (index == 0));
+      int idx = -index-1;
+      if(idx >= 10000)
+         idx = re.get_data().get_id(idx);
+      result = !recursion_stack.empty() && ((recursion_stack.back().idx == idx) || (index == 0));
       pstate = pstate->next.p;
    }
    return result;

@@ -173,12 +173,15 @@
             #include BOOST_PP_ITERATE()
         };
 
+        template<typename T>
+        struct wrap_t;
+
         typedef char poly_function_t;
         typedef char (&mono_function_t)[2];
         typedef char (&unknown_function_t)[3];
-        
-        template<typename T> poly_function_t test_poly_function(T *, typename T::is_poly_function_base_ * = 0);
-        template<typename T> mono_function_t test_poly_function(T *, typename T::result_type * = 0);
+
+        template<typename T> poly_function_t test_poly_function(T *, wrap_t<typename T::is_poly_function_base_> * = 0);
+        template<typename T> mono_function_t test_poly_function(T *, wrap_t<typename T::result_type> * = 0);
         template<typename T> unknown_function_t test_poly_function(T *, ...);
 
         ////////////////////////////////////////////////////////////////////////////////////////////////

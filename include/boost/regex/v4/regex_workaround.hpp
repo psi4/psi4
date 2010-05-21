@@ -149,7 +149,37 @@ namespace boost{ namespace re_detail{
    {
       return stdext::unchecked_equal(first, last, with);
    }
-
+#elif BOOST_WORKAROUND(BOOST_MSVC, > 1500)
+   //
+   // MSVC 10 will either emit warnings or else refuse to compile
+   // code that makes perfectly legitimate use of std::copy, when
+   // the OutputIterator type is a user-defined class (apparently all user 
+   // defined iterators are "unsafe").  What's more Microsoft have removed their
+   // non-standard "unchecked" versions, even though their still in the MS
+   // documentation!! Work around this as best we can: 
+   //
+   template<class InputIterator, class OutputIterator>
+   inline OutputIterator copy(
+      InputIterator first, 
+      InputIterator last, 
+      OutputIterator dest
+   )
+   {
+      while(first != last)
+         *dest++ = *first++;
+      return dest;
+   }
+   template<class InputIterator1, class InputIterator2>
+   inline bool equal(
+      InputIterator1 first, 
+      InputIterator1 last, 
+      InputIterator2 with
+   )
+   {
+      while(first != last)
+         if(*first++ != *with++) return false;
+      return true;
+   }
 #else 
    using std::copy; 
    using std::equal; 

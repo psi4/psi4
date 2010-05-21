@@ -9,6 +9,7 @@
 // 23 May 2008 (Fixed operator= const issue, added initialized_value) Niels Dekker, Fernando Cacciola
 // 21 Ago 2008 (Added swap) Niels Dekker, Fernando Cacciola
 // 20 Feb 2009 (Fixed logical const-ness issues) Niels Dekker, Fernando Cacciola
+// 03 Apr 2010 (Added initialized<T>, suggested by Jeffrey Hellrung, fixing #3472) Niels Dekker
 //
 #ifndef BOOST_UTILITY_VALUE_INIT_21AGO2002_HPP
 #define BOOST_UTILITY_VALUE_INIT_21AGO2002_HPP
@@ -28,10 +29,22 @@
 #include <cstring>
 #include <new>
 
+#ifdef BOOST_MSVC
+#pragma warning(push)
+#if _MSC_VER >= 1310
+// It is safe to ignore the following warning from MSVC 7.1 or higher:
+// "warning C4351: new behavior: elements of array will be default initialized"
+#pragma warning(disable: 4351)
+// It is safe to ignore the following MSVC warning, which may pop up when T is 
+// a const type: "warning C4512: assignment operator could not be generated".
+#pragma warning(disable: 4512)
+#endif
+#endif
+
 namespace boost {
 
 template<class T>
-class value_initialized
+class initialized
 {
   private :
     struct wrapper
@@ -40,6 +53,18 @@ class value_initialized
       typename
 #endif 
       remove_const<T>::type data;
+
+      wrapper()
+      :
+      data()
+      {
+      }
+
+      wrapper(T const & arg)
+      :
+      data(arg)
+      {
+      }
     };
 
     mutable
@@ -55,30 +80,26 @@ class value_initialized
 
   public :
 
-    value_initialized()
+    initialized()
     {
+      // Note: the following memset call will become conditional when ticket #3869 is fixed:
+      // https://svn.boost.org/trac/boost/ticket/3869 reported by Aleksey Gurtovoy.
       std::memset(&x, 0, sizeof(x));
-#ifdef BOOST_MSVC
-#pragma warning(push)
-#if _MSC_VER >= 1310
-// When using MSVC 7.1 or higher, the following placement new expression may trigger warning C4345:
-// "behavior change: an object of POD type constructed with an initializer of the form ()
-// will be default-initialized".  It is safe to ignore this warning when using value_initialized.
-#pragma warning(disable: 4345)
-#endif
-#endif
+
       new (wrapper_address()) wrapper();
-#ifdef BOOST_MSVC
-#pragma warning(pop)
-#endif
     }
 
-    value_initialized(value_initialized const & arg)
+    initialized(initialized const & arg)
     {
       new (wrapper_address()) wrapper( static_cast<wrapper const &>(*(arg.wrapper_address())));
     }
 
-    value_initialized & operator=(value_initialized const & arg)
+    explicit initialized(T const & arg)
+    {
+      new (wrapper_address()) wrapper(arg);
+    }
+
+    initialized & operator=(initialized const & arg)
     {
       // Assignment is only allowed when T is non-const.
       BOOST_STATIC_ASSERT( ! is_const<T>::value );
@@ -86,7 +107,7 @@ class value_initialized
       return *this;
     }
 
-    ~value_initialized()
+    ~initialized()
     {
       wrapper_address()->wrapper::~wrapper();
     }
@@ -101,19 +122,81 @@ class value_initialized
       return wrapper_address()->data;
     }
 
-    void swap(value_initialized & arg)
+    void swap(initialized & arg)
     {
       ::boost::swap( this->data(), arg.data() );
     }
 
-    operator T const &() const { return this->data(); }
+    operator T const &() const
+    {
+      return wrapper_address()->data;
+    }
 
-    operator T&() { return this->data(); }
+    operator T&()
+    {
+      return wrapper_address()->data;
+    }
 
 } ;
 
+template<class T>
+T const& get ( initialized<T> const& x )
+{
+  return x.data() ;
+}
 
+template<class T>
+T& get ( initialized<T>& x )
+{
+  return x.data() ;
+}
 
+template<class T>
+void swap ( initialized<T> & lhs, initialized<T> & rhs )
+{
+  lhs.swap(rhs) ;
+}
+
+template<class T>
+class value_initialized
+{
+  private :
+
+    // initialized<T> does value-initialization by default.
+    initialized<T> m_data;
+
+  public :
+    
+    value_initialized()
+    :
+    m_data()
+    { }
+    
+    T const & data() const
+    {
+      return m_data.data();
+    }
+
+    T& data()
+    {
+      return m_data.data();
+    }
+
+    void swap(value_initialized & arg)
+    {
+      m_data.swap(arg.m_data);
+    }
+
+    operator T const &() const
+    {
+      return m_data;
+    }
+
+    operator T&()
+    {
+      return m_data;
+    }
+} ;
 
 
 template<class T>
@@ -121,6 +204,7 @@ T const& get ( value_initialized<T> const& x )
 {
   return x.data() ;
 }
+
 template<class T>
 T& get ( value_initialized<T>& x )
 {
@@ -140,7 +224,7 @@ class initialized_value_t
     
     template <class T> operator T() const
     {
-      return get( value_initialized<T>() );
+      return initialized<T>().data();
     }
 };
 
@@ -149,5 +233,8 @@ initialized_value_t const initialized_value = {} ;
 
 } // namespace boost
 
+#ifdef BOOST_MSVC
+#pragma warning(pop)
+#endif
 
 #endif

@@ -14,7 +14,6 @@
     #ifndef BOOST_PROTO_CONTEXT_CALLABLE_HPP_EAN_06_23_2007
     #define BOOST_PROTO_CONTEXT_CALLABLE_HPP_EAN_06_23_2007
 
-    #include <boost/proto/detail/prefix.hpp> // must be first include
     #include <boost/config.hpp>
     #include <boost/detail/workaround.hpp>
     #include <boost/preprocessor/cat.hpp>
@@ -32,19 +31,26 @@
     #include <boost/type_traits/remove_cv.hpp>
     #include <boost/proto/proto_fwd.hpp>
     #include <boost/proto/traits.hpp> // for child_c
-    #include <boost/proto/detail/suffix.hpp> // must be last include
 
     namespace boost { namespace proto
     {
         namespace detail
         {
+            template<typename Context>
+            struct callable_context_wrapper
+              : remove_cv<Context>::type
+            {
+                callable_context_wrapper();
+                typedef private_type_ fun_type(...);
+                operator fun_type *() const;
+            private:
+                callable_context_wrapper &operator =(callable_context_wrapper const &);
+            };
+
             template<typename T>
             yes_type check_is_expr_handled(T const &);
 
             no_type check_is_expr_handled(private_type_ const &);
-
-            template<typename Context, long Arity>
-            struct callable_context_wrapper;
 
             template<typename Expr, typename Context, long Arity = Expr::proto_arity_c>
             struct is_expr_handled;
@@ -52,7 +58,7 @@
             template<typename Expr, typename Context>
             struct is_expr_handled<Expr, Context, 0>
             {
-                static callable_context_wrapper<Context, 1> &sctx_;
+                static callable_context_wrapper<Context> &sctx_;
                 static Expr &sexpr_;
                 static typename Expr::proto_tag &stag_;
 
@@ -86,7 +92,7 @@
             template<
                 typename Expr
               , typename Context
-              , long Arity          BOOST_PROTO_WHEN_BUILDING_DOCS(= Expr::proto_arity_c)
+              , long Arity          // = Expr::proto_arity_c
             >
             struct callable_eval
             {};
@@ -191,7 +197,7 @@
             /// \endcode
             template<
                 typename Context
-              , typename DefaultCtx BOOST_PROTO_WHEN_BUILDING_DOCS(= default_context)
+              , typename DefaultCtx // = default_context
             >
             struct callable_context
             {
@@ -245,28 +251,10 @@
 
         namespace detail
         {
-            template<typename Context>
-            struct callable_context_wrapper<Context, N>
-              : remove_cv<Context>::type
-            {
-                callable_context_wrapper();
-                typedef
-                    private_type_ const &fun_type(
-                        BOOST_PP_ENUM_PARAMS(
-                            BOOST_PP_INC(N)
-                          , detail::dont_care BOOST_PP_INTERCEPT
-                        )
-                    );
-                operator fun_type *() const;
-
-            private:
-                callable_context_wrapper &operator =(callable_context_wrapper const &);
-            };
-
             template<typename Expr, typename Context>
             struct is_expr_handled<Expr, Context, N>
             {
-                static callable_context_wrapper<Context, N> &sctx_;
+                static callable_context_wrapper<Context> &sctx_;
                 static Expr &sexpr_;
                 static typename Expr::proto_tag &stag_;
 

@@ -19,6 +19,8 @@
 #include <boost/concept_archetype.hpp>
 #include <boost/mpl/assert.hpp>
 #include <boost/mpl/or.hpp>
+#include <boost/mpl/and.hpp>
+#include <boost/mpl/has_xxx.hpp>
 #include <boost/type_traits/is_same.hpp>
 
 namespace boost {
@@ -26,6 +28,39 @@ namespace boost {
   //=========================================================================
   // property_traits class
 
+  BOOST_MPL_HAS_XXX_TRAIT_DEF(key_type)
+  BOOST_MPL_HAS_XXX_TRAIT_DEF(value_type)
+  BOOST_MPL_HAS_XXX_TRAIT_DEF(reference)
+  BOOST_MPL_HAS_XXX_TRAIT_DEF(category)
+ 
+  template<class PA>
+  struct is_property_map :
+    boost::mpl::and_<
+      has_key_type<PA>,
+      has_value_type<PA>,
+      has_reference<PA>,
+      has_category<PA>
+    >
+  {};
+ 
+  template <typename PA>
+  struct default_property_traits {
+    typedef typename PA::key_type key_type;
+    typedef typename PA::value_type value_type;
+    typedef typename PA::reference reference;
+    typedef typename PA::category   category;
+  };
+ 
+  struct null_property_traits {};
+ 
+  template <typename PA>
+  struct property_traits :
+    boost::mpl::if_<is_property_map<PA>,
+      default_property_traits<PA>,
+      null_property_traits>::type
+  {};
+
+#if 0
   template <typename PA>
   struct property_traits {
     typedef typename PA::key_type key_type;
@@ -33,6 +68,7 @@ namespace boost {
     typedef typename PA::reference reference;
     typedef typename PA::category   category;
   };
+#endif
 
   //=========================================================================
   // property_traits category tags
@@ -302,7 +338,8 @@ namespace boost {
     }
   };
 
-  struct identity_property_map;
+  template <typename T>
+  struct typed_identity_property_map;
 
   // A helper class for constructing a property map
   // from a class that implements operator[]
@@ -539,18 +576,22 @@ namespace boost {
   };
 
   //=========================================================================
-  // A property map that applies the identity function to integers
-  struct identity_property_map
-    : public boost::put_get_helper<std::size_t, 
-        identity_property_map>
+  // A generalized identity property map
+  template <typename T>
+  struct typed_identity_property_map
+    : public boost::put_get_helper<T, typed_identity_property_map<T> >
   {
-    typedef std::size_t key_type;
-    typedef std::size_t value_type;
-    typedef std::size_t reference;
+    typedef T key_type;
+    typedef T value_type;
+    typedef T reference;
     typedef boost::readable_property_map_tag category;
 
     inline value_type operator[](const key_type& v) const { return v; }
   };
+
+//=========================================================================
+  // A property map that applies the identity function to integers
+  typedef typed_identity_property_map<std::size_t> identity_property_map;
 
   //=========================================================================
   // A property map that does not do anything, for

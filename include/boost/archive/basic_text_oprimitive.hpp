@@ -29,6 +29,7 @@
 #include <boost/config/no_tr1/cmath.hpp> // isnan
 #include <cassert>
 #include <cstddef> // size_t
+#include <boost/serialization/collection_size_type.hpp>
 
 #include <boost/config.hpp>
 #include <boost/detail/workaround.hpp>
@@ -49,9 +50,8 @@ namespace std{
 #include <boost/io/ios_state.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/serialization/throw_exception.hpp>
-
 #include <boost/archive/archive_exception.hpp>
-
+#include <boost/archive/basic_streambuf_locale_saver.hpp>
 #include <boost/archive/detail/abi_prefix.hpp> // must be the last header
 
 namespace boost {
@@ -75,8 +75,9 @@ public:
 
     #ifndef BOOST_NO_STD_LOCALE
     boost::scoped_ptr<std::locale> archive_locale;
-    io::basic_ios_locale_saver<
-        BOOST_DEDUCED_TYPENAME OStream::char_type, BOOST_DEDUCED_TYPENAME OStream::traits_type
+    basic_streambuf_locale_saver<
+        BOOST_DEDUCED_TYPENAME OStream::char_type, 
+        BOOST_DEDUCED_TYPENAME OStream::traits_type
     > locale_saver;
     #endif
 
@@ -162,7 +163,7 @@ public:
     ~basic_text_oprimitive();
 public:
     // unformatted append of one character
-    void put(int c){
+    void put(BOOST_DEDUCED_TYPENAME OStream::char_type c){
         if(os.fail())
             boost::serialization::throw_exception(
                 archive_exception(archive_exception::stream_error)

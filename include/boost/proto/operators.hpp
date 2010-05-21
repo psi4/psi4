@@ -10,7 +10,6 @@
 #ifndef BOOST_PROTO_OPERATORS_HPP_EAN_04_01_2005
 #define BOOST_PROTO_OPERATORS_HPP_EAN_04_01_2005
 
-#include <boost/proto/detail/prefix.hpp>
 #include <boost/preprocessor/punctuation/comma.hpp>
 #include <boost/preprocessor/seq/seq.hpp>
 #include <boost/mpl/or.hpp>
@@ -19,10 +18,10 @@
 #include <boost/proto/proto_fwd.hpp>
 #include <boost/proto/tags.hpp>
 #include <boost/proto/expr.hpp>
+#include <boost/proto/domain.hpp>
 #include <boost/proto/matches.hpp>
 #include <boost/proto/generate.hpp>
 #include <boost/proto/make_expr.hpp>
-#include <boost/proto/detail/suffix.hpp>
 
 namespace boost { namespace proto
 {
@@ -97,8 +96,8 @@ namespace boost { namespace proto
             static typename proto_domain::template result<proto_domain(expr_type)>::type
             make(Left &left, Right &right)
             {
-                term_type term = {right};
-                expr_type that = {left, proto_domain()(term)};
+                term_type const term = {right};
+                expr_type const that = {left, proto_domain()(term)};
                 return proto_domain()(that);
             }
         };
@@ -119,8 +118,8 @@ namespace boost { namespace proto
             static typename proto_domain::template result<proto_domain(expr_type)>::type
             make(Left &left, Right &right)
             {
-                term_type term = {left};
-                expr_type that = {proto_domain()(term), right};
+                term_type const term = {left};
+                expr_type const that = {proto_domain()(term), right};
                 return proto_domain()(that);
             }
         };
@@ -133,18 +132,17 @@ namespace boost { namespace proto
         template<typename Tag, typename Left, typename Right>
         struct as_expr_if<Tag, Left, Right, typename Left::proto_is_expr_, typename Right::proto_is_expr_>
           : generate_if<
-                typename Left::proto_domain
+                typename common_domain2<typename Left::proto_domain, typename Right::proto_domain>::type
               , proto::expr<Tag, list2<Left &, Right &>, 2>
             >
         {
             typedef proto::expr<Tag, list2<Left &, Right &>, 2> expr_type;
-            typedef typename Left::proto_domain proto_domain;
-            BOOST_MPL_ASSERT((is_same<proto_domain, typename Right::proto_domain>));
+            typedef typename common_domain2<typename Left::proto_domain, typename Right::proto_domain>::type proto_domain;
 
             static typename proto_domain::template result<proto_domain(expr_type)>::type
             make(Left &left, Right &right)
             {
-                expr_type that = {left, right};
+                expr_type const that = {left, right};
                 return proto_domain()(that);
             }
         };
@@ -230,7 +228,7 @@ namespace boost { namespace proto
     operator OP(Arg &arg BOOST_PROTO_UNARY_OP_IS_POSTFIX_ ## POST)                                  \
     {                                                                                               \
         typedef proto::expr<TAG, list1<Arg &>, 1> that_type;                                        \
-        that_type that = {arg};                                                                     \
+        that_type const that = {arg};                                                               \
         return typename Arg::proto_domain()(that);                                                  \
     }                                                                                               \
     template<typename Arg>                                                                          \
@@ -242,7 +240,7 @@ namespace boost { namespace proto
     operator OP(Arg const &arg BOOST_PROTO_UNARY_OP_IS_POSTFIX_ ## POST)                            \
     {                                                                                               \
         typedef proto::expr<TAG, list1<Arg const &>, 1> that_type;                                  \
-        that_type that = {arg};                                                                     \
+        that_type const that = {arg};                                                               \
         return typename Arg::proto_domain()(that);                                                  \
     }                                                                                               \
     /**/
@@ -274,63 +272,63 @@ namespace boost { namespace proto
     }                                                                                               \
     /**/
 
-    BOOST_PROTO_BEGIN_ADL_NAMESPACE(exprns_)
-
-    BOOST_PROTO_DEFINE_UNARY_OPERATOR(+, tag::unary_plus, 0)
-    BOOST_PROTO_DEFINE_UNARY_OPERATOR(-, tag::negate, 0)
-    BOOST_PROTO_DEFINE_UNARY_OPERATOR(*, tag::dereference, 0)
-    BOOST_PROTO_DEFINE_UNARY_OPERATOR(~, tag::complement, 0)
-    BOOST_PROTO_DEFINE_UNARY_OPERATOR(&, tag::address_of, 0)
-    BOOST_PROTO_DEFINE_UNARY_OPERATOR(!, tag::logical_not, 0)
-    BOOST_PROTO_DEFINE_UNARY_OPERATOR(++, tag::pre_inc, 0)
-    BOOST_PROTO_DEFINE_UNARY_OPERATOR(--, tag::pre_dec, 0)
-    BOOST_PROTO_DEFINE_UNARY_OPERATOR(++, tag::post_inc, 1)
-    BOOST_PROTO_DEFINE_UNARY_OPERATOR(--, tag::post_dec, 1)
-
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(<<, tag::shift_left)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(>>, tag::shift_right)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(*, tag::multiplies)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(/, tag::divides)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(%, tag::modulus)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(+, tag::plus)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(-, tag::minus)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(<, tag::less)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(>, tag::greater)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(<=, tag::less_equal)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(>=, tag::greater_equal)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(==, tag::equal_to)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(!=, tag::not_equal_to)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(||, tag::logical_or)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(&&, tag::logical_and)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(&, tag::bitwise_and)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(|, tag::bitwise_or)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(^, tag::bitwise_xor)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(BOOST_PP_COMMA(), tag::comma)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(->*, tag::mem_ptr)
-
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(<<=, tag::shift_left_assign)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(>>=, tag::shift_right_assign)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(*=, tag::multiplies_assign)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(/=, tag::divides_assign)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(%=, tag::modulus_assign)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(+=, tag::plus_assign)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(-=, tag::minus_assign)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(&=, tag::bitwise_and_assign)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(|=, tag::bitwise_or_assign)
-    BOOST_PROTO_DEFINE_BINARY_OPERATOR(^=, tag::bitwise_xor_assign)
-
-    /// if_else
-    ///
-    template<typename A0, typename A1, typename A2>
-    typename functional::make_expr<tag::if_else_>::impl<A0 const &, A1 const &, A2 const &>::result_type const
-    if_else(A0 const &a0, A1 const &a1, A2 const &a2)
+    namespace exprns_
     {
-        return functional::make_expr<tag::if_else_>::impl<A0 const &, A1 const &, A2 const &>()(a0, a1, a2);
+
+        BOOST_PROTO_DEFINE_UNARY_OPERATOR(+, tag::unary_plus, 0)
+        BOOST_PROTO_DEFINE_UNARY_OPERATOR(-, tag::negate, 0)
+        BOOST_PROTO_DEFINE_UNARY_OPERATOR(*, tag::dereference, 0)
+        BOOST_PROTO_DEFINE_UNARY_OPERATOR(~, tag::complement, 0)
+        BOOST_PROTO_DEFINE_UNARY_OPERATOR(&, tag::address_of, 0)
+        BOOST_PROTO_DEFINE_UNARY_OPERATOR(!, tag::logical_not, 0)
+        BOOST_PROTO_DEFINE_UNARY_OPERATOR(++, tag::pre_inc, 0)
+        BOOST_PROTO_DEFINE_UNARY_OPERATOR(--, tag::pre_dec, 0)
+        BOOST_PROTO_DEFINE_UNARY_OPERATOR(++, tag::post_inc, 1)
+        BOOST_PROTO_DEFINE_UNARY_OPERATOR(--, tag::post_dec, 1)
+
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(<<, tag::shift_left)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(>>, tag::shift_right)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(*, tag::multiplies)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(/, tag::divides)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(%, tag::modulus)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(+, tag::plus)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(-, tag::minus)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(<, tag::less)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(>, tag::greater)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(<=, tag::less_equal)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(>=, tag::greater_equal)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(==, tag::equal_to)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(!=, tag::not_equal_to)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(||, tag::logical_or)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(&&, tag::logical_and)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(&, tag::bitwise_and)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(|, tag::bitwise_or)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(^, tag::bitwise_xor)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(BOOST_PP_COMMA(), tag::comma)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(->*, tag::mem_ptr)
+
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(<<=, tag::shift_left_assign)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(>>=, tag::shift_right_assign)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(*=, tag::multiplies_assign)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(/=, tag::divides_assign)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(%=, tag::modulus_assign)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(+=, tag::plus_assign)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(-=, tag::minus_assign)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(&=, tag::bitwise_and_assign)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(|=, tag::bitwise_or_assign)
+        BOOST_PROTO_DEFINE_BINARY_OPERATOR(^=, tag::bitwise_xor_assign)
+
+        /// if_else
+        ///
+        template<typename A0, typename A1, typename A2>
+        typename functional::make_expr<tag::if_else_>::impl<A0 const &, A1 const &, A2 const &>::result_type const
+        if_else(A0 const &a0, A1 const &a1, A2 const &a2)
+        {
+            return functional::make_expr<tag::if_else_>::impl<A0 const &, A1 const &, A2 const &>()(a0, a1, a2);
+        }
     }
 
-    BOOST_PROTO_END_ADL_NAMESPACE(exprns_)
-
-    BOOST_PROTO_WHEN_NOT_BUILDING_DOCS(using exprns_::if_else;)
+    using exprns_::if_else;
 
 #undef BOOST_PROTO_DEFINE_UNARY_OPERATOR
 #undef BOOST_PROTO_DEFINE_BINARY_OPERATOR
@@ -437,13 +435,11 @@ namespace boost { namespace proto
       : mpl::false_
     {};
 
-    #ifndef BOOST_PROTO_BUILDING_DOCS
     namespace exops
     {
         BOOST_PROTO_DEFINE_OPERATORS(is_extension, default_domain)
         using proto::if_else;
     }
-    #endif
 
 }}
 

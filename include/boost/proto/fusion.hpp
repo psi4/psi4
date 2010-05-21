@@ -9,14 +9,10 @@
 #ifndef BOOST_PROTO_FUSION_HPP_EAN_11_04_2006
 #define BOOST_PROTO_FUSION_HPP_EAN_11_04_2006
 
-#include <boost/proto/detail/prefix.hpp>
 #include <boost/config.hpp>
-#include <boost/version.hpp>
-#include <boost/type_traits/remove_reference.hpp>
 #include <boost/mpl/if.hpp>
 #include <boost/mpl/long.hpp>
 #include <boost/mpl/sequence_tag_fwd.hpp>
-#if BOOST_VERSION >= 103500
 #include <boost/fusion/include/is_view.hpp>
 #include <boost/fusion/include/tag_of_fwd.hpp>
 #include <boost/fusion/include/category_of.hpp>
@@ -30,21 +26,9 @@
 #include <boost/fusion/sequence/intrinsic/ext_/segments.hpp>
 #include <boost/fusion/sequence/intrinsic/ext_/size_s.hpp>
 #include <boost/fusion/view/ext_/segmented_iterator.hpp>
-#else
-#include <boost/spirit/fusion/sequence/is_sequence.hpp>
-#include <boost/spirit/fusion/sequence/begin.hpp>
-#include <boost/spirit/fusion/sequence/end.hpp>
-#include <boost/spirit/fusion/sequence/at.hpp>
-#include <boost/spirit/fusion/sequence/value_at.hpp>
-#include <boost/spirit/fusion/sequence/single_view.hpp>
-#include <boost/spirit/fusion/sequence/transform_view.hpp>
-#include <boost/proto/detail/reverse.hpp>
-#include <boost/proto/detail/pop_front.hpp>
-#endif
 #include <boost/proto/proto_fwd.hpp>
 #include <boost/proto/traits.hpp>
 #include <boost/proto/eval.hpp>
-#include <boost/proto/detail/suffix.hpp>
 
 #if BOOST_MSVC
 #pragma warning(push)
@@ -56,10 +40,6 @@
 namespace boost { namespace proto
 {
 
-/// INTERNAL ONLY
-///
-#define UNREF(x) typename boost::remove_reference<x>::type
-
     namespace detail
     {
 
@@ -70,14 +50,14 @@ namespace boost { namespace proto
             typedef Expr expr_type;
             typedef typename Expr::proto_tag proto_tag;
             BOOST_STATIC_CONSTANT(long, index = Pos);
-            BOOST_PROTO_FUSION_DEFINE_CATEGORY(fusion::random_access_traversal_tag)
-            BOOST_PROTO_FUSION_DEFINE_TAG(tag::proto_expr_iterator)
+            typedef fusion::random_access_traversal_tag category;
+            typedef tag::proto_expr_iterator fusion_tag;
 
-            expr_iterator(Expr const &e)
+            expr_iterator(Expr &e)
               : expr(e)
             {}
 
-            Expr const &expr;
+            Expr &expr;
         };
 
         template<typename Expr>
@@ -85,8 +65,8 @@ namespace boost { namespace proto
         {
             typedef Expr expr_type;
             typedef typename Expr::proto_tag proto_tag;
-            BOOST_PROTO_FUSION_DEFINE_CATEGORY(fusion::forward_traversal_tag)
-            BOOST_PROTO_FUSION_DEFINE_TAG(tag::proto_flat_view)
+            typedef fusion::forward_traversal_tag category;
+            typedef tag::proto_flat_view fusion_tag;
 
             explicit flat_view(Expr &e)
               : expr_(e)
@@ -103,15 +83,27 @@ namespace boost { namespace proto
 
             template<typename This, typename Expr>
             struct result<This(Expr)>
+              : result<This(Expr const &)>
+            {};
+
+            template<typename This, typename Expr>
+            struct result<This(Expr &)>
               : mpl::if_c<
-                    is_same<Tag, UNREF(Expr)::proto_tag>::value
-                  , flat_view<UNREF(Expr) const>
-                  , fusion::single_view<UNREF(Expr) const &>
+                    is_same<Tag, typename Expr::proto_tag>::value
+                  , flat_view<Expr>
+                  , fusion::single_view<Expr &>
                 >
             {};
 
             template<typename Expr>
-            typename result<as_element(Expr const &)>::type
+            typename result<as_element(Expr &)>::type const
+            operator ()(Expr &e) const
+            {
+                return typename result<as_element(Expr &)>::type(e);
+            }
+
+            template<typename Expr>
+            typename result<as_element(Expr const &)>::type const
             operator ()(Expr const &e) const
             {
                 return typename result<as_element(Expr const &)>::type(e);
@@ -123,14 +115,13 @@ namespace boost { namespace proto
     {
         template<typename Expr>
         struct flatten
-        {
-            typedef detail::flat_view<Expr const> type;
-        };
+          : flatten<Expr const &>
+        {};
 
         template<typename Expr>
         struct flatten<Expr &>
         {
-            typedef detail::flat_view<Expr const> type;
+            typedef detail::flat_view<Expr> type;
         };
     }
 
@@ -157,12 +148,24 @@ namespace boost { namespace proto
 
             template<typename This, typename Expr>
             struct result<This(Expr)>
+              : result<This(Expr const &)>
+            {};
+
+            template<typename This, typename Expr>
+            struct result<This(Expr &)>
             {
-                typedef proto::detail::flat_view<UNREF(Expr) const> type;
+                typedef proto::detail::flat_view<Expr> type;
             };
 
             template<typename Expr>
-            proto::detail::flat_view<Expr const>
+            proto::detail::flat_view<Expr> const
+            operator ()(Expr &e) const
+            {
+                return proto::detail::flat_view<Expr>(e);
+            }
+
+            template<typename Expr>
+            proto::detail::flat_view<Expr const> const
             operator ()(Expr const &e) const
             {
                 return proto::detail::flat_view<Expr const>(e);
@@ -188,14 +191,25 @@ namespace boost { namespace proto
 
             template<typename This, typename Expr>
             struct result<This(Expr)>
-            {
-                typedef
-                    typename fusion::BOOST_PROTO_FUSION_RESULT_OF::pop_front<UNREF(Expr) const>::type
-                type;
-            };
+              : result<This(Expr const &)>
+            {};
+
+            template<typename This, typename Expr>
+            struct result<This(Expr &)>
+              : fusion::result_of::pop_front<Expr>
+            {};
 
             template<typename Expr>
-            typename fusion::BOOST_PROTO_FUSION_RESULT_OF::pop_front<Expr const>::type
+            typename fusion::result_of::pop_front<Expr>::type
+            operator ()(Expr &e) const
+            {
+                // Work around a const-correctness issue in Fusion
+                typedef typename fusion::result_of::pop_front<Expr>::type result_type;
+                return result_type(fusion::next(fusion::begin(e)), fusion::end(e));
+            }
+
+            template<typename Expr>
+            typename fusion::result_of::pop_front<Expr const>::type
             operator ()(Expr const &e) const
             {
                 return fusion::pop_front(e);
@@ -219,14 +233,25 @@ namespace boost { namespace proto
 
             template<typename This, typename Expr>
             struct result<This(Expr)>
-            {
-                typedef
-                    typename fusion::BOOST_PROTO_FUSION_RESULT_OF::reverse<UNREF(Expr) const>::type
-                type;
-            };
+              : result<This(Expr const &)>
+            {};
+
+            template<typename This, typename Expr>
+            struct result<This(Expr &)>
+              : fusion::result_of::reverse<Expr>
+            {};
 
             template<typename Expr>
-            typename fusion::BOOST_PROTO_FUSION_RESULT_OF::reverse<Expr const>::type
+            typename fusion::result_of::reverse<Expr>::type
+            operator ()(Expr &e) const
+            {
+                // Work around a const-correctness issue in Fusion
+                typedef typename fusion::result_of::reverse<Expr>::type result_type;
+                return result_type(e);
+            }
+
+            template<typename Expr>
+            typename fusion::result_of::reverse<Expr const>::type
             operator ()(Expr const &e) const
             {
                 return fusion::reverse(e);
@@ -246,7 +271,16 @@ namespace boost { namespace proto
     /// [a, b, c], even though the tree is grouped as
     /// <tt>((a | b) | c)</tt>.
     template<typename Expr>
-    proto::detail::flat_view<Expr const>
+    proto::detail::flat_view<Expr> const
+    flatten(Expr &e)
+    {
+        return proto::detail::flat_view<Expr>(e);
+    }
+
+    /// \overload
+    ///
+    template<typename Expr>
+    proto::detail::flat_view<Expr const> const
     flatten(Expr const &e)
     {
         return proto::detail::flat_view<Expr const>(e);
@@ -287,15 +321,24 @@ namespace boost { namespace proto
 
         template<typename This, typename Expr>
         struct result<This(Expr)>
-        {
-            typedef
-                typename proto::result_of::eval<UNREF(Expr), Context>::type
-            type;
-        };
+          : result<This(Expr const &)>
+        {};
+
+        template<typename This, typename Expr>
+        struct result<This(Expr &)>
+          : proto::result_of::eval<Expr, Context>
+        {};
 
         template<typename Expr>
         typename proto::result_of::eval<Expr, Context>::type
         operator ()(Expr &e) const
+        {
+            return proto::eval(e, this->ctx_);
+        }
+
+        template<typename Expr>
+        typename proto::result_of::eval<Expr const, Context>::type
+        operator ()(Expr const &e) const
         {
             return proto::eval(e, this->ctx_);
         }
@@ -305,26 +348,9 @@ namespace boost { namespace proto
     };
 }}
 
-// Don't bother emitting all this into the Doxygen-generated
-// reference section. It's enough to say that Proto expressions
-// are valid Fusion sequence without showing all this gunk.
-#ifndef BOOST_PROTO_BUILDING_DOCS
-
 namespace boost { namespace fusion
 {
-    #if BOOST_VERSION < 103500
-    template<typename Tag, typename Args, long Arity>
-    struct is_sequence<proto::expr<Tag, Args, Arity> >
-      : mpl::true_
-    {};
-
-    template<typename Tag, typename Args, long Arity>
-    struct is_sequence<proto::expr<Tag, Args, Arity> const>
-      : mpl::true_
-    {};
-    #endif
-
-    namespace BOOST_PROTO_FUSION_EXTENSION
+    namespace extension
     {
 
         template<typename Tag>
@@ -379,16 +405,6 @@ namespace boost { namespace fusion
             };
         };
 
-        #if BOOST_VERSION < 103500
-        template<typename Tag>
-        struct value_impl;
-
-        template<>
-        struct value_impl<proto::tag::proto_expr_iterator>
-          : value_of_impl<proto::tag::proto_expr_iterator>
-        {};
-        #endif
-
         template<typename Tag>
         struct deref_impl;
 
@@ -403,7 +419,7 @@ namespace boost { namespace fusion
             {
                 typedef
                     typename proto::result_of::child_c<
-                        typename Iterator::expr_type const &
+                        typename Iterator::expr_type &
                       , Iterator::index
                     >::type
                 type;
@@ -419,7 +435,7 @@ namespace boost { namespace fusion
             {
                 typedef
                     typename proto::result_of::value<
-                        typename Iterator::expr_type const &
+                        typename Iterator::expr_type &
                     >::type
                 type;
 
@@ -489,7 +505,6 @@ namespace boost { namespace fusion
             {};
         };
 
-        #if BOOST_VERSION >= 103500
         template<typename Tag>
         struct category_of_impl;
 
@@ -502,7 +517,6 @@ namespace boost { namespace fusion
                 typedef random_access_traversal_tag type;
             };
         };
-        #endif
 
         template<typename Tag>
         struct size_impl;
@@ -527,7 +541,7 @@ namespace boost { namespace fusion
             {
                 typedef proto::detail::expr_iterator<Sequence, 0> type;
 
-                static type call(Sequence const &seq)
+                static type call(Sequence &seq)
                 {
                     return type(seq);
                 }
@@ -550,7 +564,7 @@ namespace boost { namespace fusion
                     >
                 type;
 
-                static type call(Sequence const &seq)
+                static type call(Sequence &seq)
                 {
                     return type(seq);
                 }
@@ -631,7 +645,6 @@ namespace boost { namespace fusion
             };
         };
 
-        #if BOOST_VERSION >= 103500
         template<typename Tag>
         struct is_segmented_impl;
 
@@ -703,7 +716,6 @@ namespace boost { namespace fusion
               : fusion::segmented_size<Sequence>
             {};
         };
-        #endif
 
     }
 
@@ -717,10 +729,6 @@ namespace boost { namespace mpl
         typedef fusion::fusion_sequence_tag type;
     };
 }} 
-
-#endif // BOOST_PROTO_BUILDING_DOCS
-
-#undef UNREF
 
 #if BOOST_MSVC
 #pragma warning(pop)

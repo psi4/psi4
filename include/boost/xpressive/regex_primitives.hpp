@@ -20,6 +20,7 @@
 #include <boost/preprocessor/cat.hpp>
 #include <boost/xpressive/detail/detail_fwd.hpp>
 #include <boost/xpressive/detail/core/matchers.hpp>
+#include <boost/xpressive/detail/core/regex_domain.hpp>
 #include <boost/xpressive/detail/utility/ignore_unused.hpp>
 
 // Doxygen can't handle proto :-(
@@ -536,16 +537,24 @@ detail::set_initializer_type const set = {{}};
 /// can be used to index into the <tt>match_results\<\></tt> object to retrieve the
 /// corresponding sub-match.
 struct mark_tag
-  : proto::extends<detail::basic_mark_tag, mark_tag>
+  : proto::extends<detail::basic_mark_tag, mark_tag, detail::regex_domain>
 {
+private:
+    typedef proto::extends<detail::basic_mark_tag, mark_tag, detail::regex_domain> base_type;
+
+    static detail::basic_mark_tag make_tag(int mark_nbr)
+    {
+        detail::basic_mark_tag mark = {{mark_nbr}};
+        return mark;
+    }
+
+public:
     /// \brief Initialize a mark_tag placeholder
     /// \param mark_nbr An integer that uniquely identifies this \c mark_tag
     /// within the static regexes in which this \c mark_tag will be used.
     /// \pre <tt>mark_nbr \> 0</tt>
     mark_tag(int mark_nbr)
-      : proto::extends<detail::basic_mark_tag, mark_tag>(
-            detail::basic_mark_tag::make(mark_nbr)
-        )
+      : base_type(mark_tag::make_tag(mark_nbr))
     {
         // Marks numbers must be integers greater than 0.
         BOOST_ASSERT(mark_nbr > 0);
@@ -557,7 +566,7 @@ struct mark_tag
         return this->proto_base();
     }
 
-    using proto::extends<detail::basic_mark_tag, mark_tag>::operator =;
+    BOOST_PROTO_EXTENDS_USING_ASSIGN_NON_DEPENDENT(mark_tag)
 };
 
 // This macro is used when declaring mark_tags that are global because

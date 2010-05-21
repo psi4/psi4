@@ -16,8 +16,15 @@
 
 //  See http://www.boost.org for updates, documentation, and revision history.
 
+#include <boost/config.hpp>
+
 #include <boost/archive/detail/basic_oarchive.hpp>
 #include <boost/archive/detail/interface_oarchive.hpp>
+
+#ifdef BOOST_MSVC
+#  pragma warning(push)
+#  pragma warning(disable : 4511 4512)
+#endif
 
 namespace boost {
 namespace archive {
@@ -72,5 +79,9 @@ protected:
 } // namespace detail
 } // namespace archive
 } // namespace boost
+
+#ifdef BOOST_MSVC
+#pragma warning(pop)
+#endif
 
 #endif // BOOST_ARCHIVE_DETAIL_COMMON_OARCHIVE_HPP

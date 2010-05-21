@@ -57,10 +57,12 @@ namespace boost { namespace property_tree
         {
             return s;
         }
+#ifndef BOOST_NO_STD_WSTRING
         inline std::string dump_sequence(const std::wstring &s)
         {
             return narrow(s.c_str());
         }
+#endif
     }
 
     /// Default path class. A path is a sequence of values. Groups of values

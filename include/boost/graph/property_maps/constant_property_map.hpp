@@ -43,7 +43,7 @@ struct constant_property_map
         : m_value(copy.m_value)
     { }
 
-    inline reference operator [](const key_type& v) const
+    inline reference operator [](const key_type&) const
     { return m_value; }
 
     value_type m_value;

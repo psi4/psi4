@@ -175,10 +175,22 @@ namespace boost {
 
   namespace detail {
 
+    template <typename A> struct return_void {typedef void type;};
+
+    template <typename Graph, typename Enable = void>
+    struct graph_tag_or_void {
+      typedef void type;
+    };
+
+    template <typename Graph>
+    struct graph_tag_or_void<Graph, typename return_void<typename Graph::graph_tag>::type> {
+      typedef typename Graph::graph_tag type;
+    };
+
     template <class Graph, class PropertyTag>
     struct edge_property_map {
-      typedef typename Graph::edge_property_type Property;
-      typedef typename Graph::graph_tag graph_tag;
+      typedef typename edge_property_type<Graph>::type Property;
+      typedef typename graph_tag_or_void<Graph>::type graph_tag;
       typedef typename edge_property_selector<graph_tag>::type Selector;
       typedef typename Selector::template bind_<Graph,Property,PropertyTag>
         Bind;
@@ -187,8 +199,8 @@ namespace boost {
     };
     template <class Graph, class PropertyTag>
     class vertex_property_map {
-      typedef typename Graph::vertex_property_type Property;
-      typedef typename Graph::graph_tag graph_tag;
+      typedef typename vertex_property_type<Graph>::type Property;
+      typedef typename graph_tag_or_void<Graph>::type graph_tag;
       typedef typename vertex_property_selector<graph_tag>::type Selector;
       typedef typename Selector::template bind_<Graph,Property,PropertyTag>
         Bind;

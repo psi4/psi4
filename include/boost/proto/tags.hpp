@@ -9,9 +9,7 @@
 #ifndef BOOST_PROTO_TAGS_HPP_EAN_04_01_2005
 #define BOOST_PROTO_TAGS_HPP_EAN_04_01_2005
 
-#include <boost/proto/detail/prefix.hpp>
 #include <boost/proto/proto_fwd.hpp>
-#include <boost/proto/detail/suffix.hpp>
 
 namespace boost { namespace proto { namespace tag
 {

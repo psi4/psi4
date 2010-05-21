@@ -388,14 +388,14 @@ icu_regex_traits::char_class_type icu_regex_traits::lookup_classname(const char_
       char_class_type(U_GC_ND_MASK) | mask_xdigit,
    };
 
-   int id = ::boost::re_detail::get_default_class_id(p1, p2);
-   if(id >= 0)
-      return masks[id+1];
+   int idx = ::boost::re_detail::get_default_class_id(p1, p2);
+   if(idx >= 0)
+      return masks[idx+1];
    char_class_type result = lookup_icu_mask(p1, p2);
    if(result != 0)
       return result;
 
-   if(id < 0)
+   if(idx < 0)
    {
       string_type s(p1, p2);
       string_type::size_type i = 0;
@@ -411,16 +411,16 @@ icu_regex_traits::char_class_type icu_regex_traits::lookup_classname(const char_
          }
       }
       if(s.size())
-         id = ::boost::re_detail::get_default_class_id(&*s.begin(), &*s.begin() + s.size());
-      if(id >= 0)
-         return masks[id+1];
+         idx = ::boost::re_detail::get_default_class_id(&*s.begin(), &*s.begin() + s.size());
+      if(idx >= 0)
+         return masks[idx+1];
       if(s.size())
          result = lookup_icu_mask(&*s.begin(), &*s.begin() + s.size());
       if(result != 0)
          return result;
    }
-   BOOST_ASSERT(std::size_t(id+1) < sizeof(masks) / sizeof(masks[0]));
-   return masks[id+1];
+   BOOST_ASSERT(std::size_t(idx+1) < sizeof(masks) / sizeof(masks[0]));
+   return masks[idx+1];
 }
 
 icu_regex_traits::string_type icu_regex_traits::lookup_collatename(const char_type* p1, const char_type* p2) const

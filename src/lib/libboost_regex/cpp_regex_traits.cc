@@ -42,7 +42,7 @@ void cpp_regex_traits_char_layer<char>::init()
    std::messages<char>::catalog cat = reinterpret_cast<std::messages<char>::catalog>(-1);
 #endif
    std::string cat_name(cpp_regex_traits<char>::get_catalog_name());
-   if(cat_name.size())
+   if(cat_name.size() && (m_pmessages != 0))
    {
       cat = this->m_pmessages->open(
          cat_name, 

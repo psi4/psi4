@@ -62,8 +62,8 @@ protected:
     // common functionality for all type_info replacement
     // systems.  Hence, make these protected
     extended_type_info(
-    	const unsigned int type_info_key,
-    	const char * key
+        const unsigned int type_info_key,
+        const char * key
     );
     // account for bogus gcc warning
     #if defined(__GNUC__)
@@ -82,13 +82,8 @@ public:
     }
     static const extended_type_info * find(const char *key);
     // for plugins
-    virtual void * construct(unsigned int /*count*/ = 0, ...) const {
-        assert(false); // must be implemented if used
-        return NULL;
-    };
-    virtual void destroy(void const * const /*p*/) const {
-        assert(false); // must be implemented if used
-    }
+    virtual void * construct(unsigned int /*count*/ = 0, ...) const = 0;
+    virtual void destroy(void const * const /*p*/) const = 0;
 };
 
 template<class T>

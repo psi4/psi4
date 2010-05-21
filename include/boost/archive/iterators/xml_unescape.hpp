@@ -19,6 +19,7 @@
 #include <cassert>
 
 #include <boost/config.hpp> // for BOOST_DEDUCED_TYPENAME
+
 #include <boost/serialization/throw_exception.hpp>
 #include <boost/serialization/pfto.hpp>
 
@@ -44,8 +45,15 @@ class xml_unescape
         return unescape<xml_unescape<Base>, Base>::dereference();
     }
 public:
+    // workaround msvc 7.1 ICU crash
+    #if defined(BOOST_MSVC)
+        typedef int value_type;
+    #else
+        typedef BOOST_DEDUCED_TYPENAME this_t::value_type value_type;
+    #endif
+
     void drain_residue(const char *literal);
-    int drain();
+    value_type drain();
 
     template<class T>
     xml_unescape(BOOST_PFTO_WRAPPER(T) start) : 
@@ -75,8 +83,10 @@ void xml_unescape<Base>::drain_residue(const char * literal){
 // iterator refenence which would make subsequent iterator comparisons
 // incorrect and thereby break the composiblity of iterators.
 template<class Base>
-int xml_unescape<Base>::drain(){
-    int retval = * this->base_reference();
+BOOST_DEDUCED_TYPENAME xml_unescape<Base>::value_type 
+//int 
+xml_unescape<Base>::drain(){
+    value_type retval = * this->base_reference();
     if('&' != retval){
         return retval;
     }

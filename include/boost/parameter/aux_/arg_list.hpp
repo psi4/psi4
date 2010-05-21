@@ -24,6 +24,7 @@
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/is_base_and_derived.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
+#include <boost/preprocessor/repetition/enum_binary_params.hpp>
 #include <boost/preprocessor/facilities/intercept.hpp>
 
 namespace boost { namespace parameter { 
@@ -211,9 +212,9 @@ struct arg_list : Next
     // Create a new list by prepending arg to a copy of tail.  Used
     // when incrementally building this structure with the comma
     // operator.
-    arg_list(TaggedArg arg, Next const& tail)
+    arg_list(TaggedArg head, Next const& tail)
       : Next(tail)
-      , arg(arg)
+      , arg(head)
     {}
 
     // A metafunction class that, given a keyword and a default

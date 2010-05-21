@@ -12,9 +12,11 @@
     #ifndef BOOST_PROTO_CONTEXT_DEFAULT_HPP_EAN_01_08_2007
     #define BOOST_PROTO_CONTEXT_DEFAULT_HPP_EAN_01_08_2007
 
-    #include <boost/proto/detail/prefix.hpp> // must be first include
     #include <boost/config.hpp>
+    #include <boost/preprocessor/arithmetic/add.hpp>
+    #include <boost/preprocessor/arithmetic/sub.hpp>
     #include <boost/preprocessor/iteration/iterate.hpp>
+    #include <boost/preprocessor/repetition/enum.hpp>
     #include <boost/preprocessor/repetition/enum_shifted.hpp>
     #include <boost/utility/result_of.hpp>
     #include <boost/type_traits/is_const.hpp>
@@ -28,7 +30,6 @@
     #include <boost/proto/eval.hpp>
     #include <boost/proto/traits.hpp> // for proto::child_c()
     #include <boost/proto/detail/decltype.hpp>
-    #include <boost/proto/detail/suffix.hpp> // must be last include
 
     namespace boost { namespace proto
     {
@@ -41,15 +42,28 @@
             template<
                 typename Expr
               , typename Context
-              , typename Tag        BOOST_PROTO_WHEN_BUILDING_DOCS(= typename Expr::proto_tag)
-              , long Arity          BOOST_PROTO_WHEN_BUILDING_DOCS(= Expr::proto_arity_c)
+              , typename Tag        // = typename Expr::proto_tag
+              , long Arity          // = Expr::proto_arity_c
             >
             struct default_eval
             {};
 
+            template<typename Expr, typename Context>
+            struct default_eval<Expr, Context, tag::terminal, 0>
+            {
+                typedef
+                    typename proto::result_of::value<Expr &>::type
+                result_type;
+
+                result_type operator ()(Expr &expr, Context &) const
+                {
+                    return proto::value(expr);
+                }
+            };
+
             /// INTERNAL ONLY
             ///
-        #define BOOST_PROTO_UNARY_OP_RESULT(OP, TAG, MAKE)                                          \
+        #define BOOST_PROTO_UNARY_DEFAULT_EVAL(OP, TAG, MAKE)                                       \
             template<typename Expr, typename Context>                                               \
             struct default_eval<Expr, Context, TAG, 1>                                              \
             {                                                                                       \
@@ -67,7 +81,7 @@
 
             /// INTERNAL ONLY
             ///
-        #define BOOST_PROTO_BINARY_OP_RESULT(OP, TAG, LMAKE, RMAKE)                                 \
+        #define BOOST_PROTO_BINARY_DEFAULT_EVAL(OP, TAG, LMAKE, RMAKE)                              \
             template<typename Expr, typename Context>                                               \
             struct default_eval<Expr, Context, TAG, 2>                                              \
             {                                                                                       \
@@ -91,48 +105,48 @@
             };                                                                                      \
             /**/
 
-            BOOST_PROTO_UNARY_OP_RESULT(+, proto::tag::unary_plus, make)
-            BOOST_PROTO_UNARY_OP_RESULT(-, proto::tag::negate, make)
-            BOOST_PROTO_UNARY_OP_RESULT(*, proto::tag::dereference, make)
-            BOOST_PROTO_UNARY_OP_RESULT(~, proto::tag::complement, make)
-            BOOST_PROTO_UNARY_OP_RESULT(&, proto::tag::address_of, make)
-            BOOST_PROTO_UNARY_OP_RESULT(!, proto::tag::logical_not, make)
-            BOOST_PROTO_UNARY_OP_RESULT(++, proto::tag::pre_inc, make_mutable)
-            BOOST_PROTO_UNARY_OP_RESULT(--, proto::tag::pre_dec, make_mutable)
+            BOOST_PROTO_UNARY_DEFAULT_EVAL(+, proto::tag::unary_plus, make)
+            BOOST_PROTO_UNARY_DEFAULT_EVAL(-, proto::tag::negate, make)
+            BOOST_PROTO_UNARY_DEFAULT_EVAL(*, proto::tag::dereference, make)
+            BOOST_PROTO_UNARY_DEFAULT_EVAL(~, proto::tag::complement, make)
+            BOOST_PROTO_UNARY_DEFAULT_EVAL(&, proto::tag::address_of, make)
+            BOOST_PROTO_UNARY_DEFAULT_EVAL(!, proto::tag::logical_not, make)
+            BOOST_PROTO_UNARY_DEFAULT_EVAL(++, proto::tag::pre_inc, make_mutable)
+            BOOST_PROTO_UNARY_DEFAULT_EVAL(--, proto::tag::pre_dec, make_mutable)
 
-            BOOST_PROTO_BINARY_OP_RESULT(<<, proto::tag::shift_left, make_mutable, make)
-            BOOST_PROTO_BINARY_OP_RESULT(>>, proto::tag::shift_right, make_mutable, make)
-            BOOST_PROTO_BINARY_OP_RESULT(*, proto::tag::multiplies, make, make)
-            BOOST_PROTO_BINARY_OP_RESULT(/, proto::tag::divides, make, make)
-            BOOST_PROTO_BINARY_OP_RESULT(%, proto::tag::modulus, make, make)
-            BOOST_PROTO_BINARY_OP_RESULT(+, proto::tag::plus, make, make)
-            BOOST_PROTO_BINARY_OP_RESULT(-, proto::tag::minus, make, make)
-            BOOST_PROTO_BINARY_OP_RESULT(<, proto::tag::less, make, make)
-            BOOST_PROTO_BINARY_OP_RESULT(>, proto::tag::greater, make, make)
-            BOOST_PROTO_BINARY_OP_RESULT(<=, proto::tag::less_equal, make, make)
-            BOOST_PROTO_BINARY_OP_RESULT(>=, proto::tag::greater_equal, make, make)
-            BOOST_PROTO_BINARY_OP_RESULT(==, proto::tag::equal_to, make, make)
-            BOOST_PROTO_BINARY_OP_RESULT(!=, proto::tag::not_equal_to, make, make)
-            BOOST_PROTO_BINARY_OP_RESULT(||, proto::tag::logical_or, make, make)
-            BOOST_PROTO_BINARY_OP_RESULT(&&, proto::tag::logical_and, make, make)
-            BOOST_PROTO_BINARY_OP_RESULT(&, proto::tag::bitwise_and, make, make)
-            BOOST_PROTO_BINARY_OP_RESULT(|, proto::tag::bitwise_or, make, make)
-            BOOST_PROTO_BINARY_OP_RESULT(^, proto::tag::bitwise_xor, make, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(<<, proto::tag::shift_left, make_mutable, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(>>, proto::tag::shift_right, make_mutable, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(*, proto::tag::multiplies, make, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(/, proto::tag::divides, make, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(%, proto::tag::modulus, make, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(+, proto::tag::plus, make, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(-, proto::tag::minus, make, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(<, proto::tag::less, make, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(>, proto::tag::greater, make, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(<=, proto::tag::less_equal, make, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(>=, proto::tag::greater_equal, make, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(==, proto::tag::equal_to, make, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(!=, proto::tag::not_equal_to, make, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(||, proto::tag::logical_or, make, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(&&, proto::tag::logical_and, make, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(&, proto::tag::bitwise_and, make, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(|, proto::tag::bitwise_or, make, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(^, proto::tag::bitwise_xor, make, make)
 
-            BOOST_PROTO_BINARY_OP_RESULT(=, proto::tag::assign, make_mutable, make)
-            BOOST_PROTO_BINARY_OP_RESULT(<<=, proto::tag::shift_left_assign, make_mutable, make)
-            BOOST_PROTO_BINARY_OP_RESULT(>>=, proto::tag::shift_right_assign, make_mutable, make)
-            BOOST_PROTO_BINARY_OP_RESULT(*=, proto::tag::multiplies_assign, make_mutable, make)
-            BOOST_PROTO_BINARY_OP_RESULT(/=, proto::tag::divides_assign, make_mutable, make)
-            BOOST_PROTO_BINARY_OP_RESULT(%=, proto::tag::modulus_assign, make_mutable, make)
-            BOOST_PROTO_BINARY_OP_RESULT(+=, proto::tag::plus_assign, make_mutable, make)
-            BOOST_PROTO_BINARY_OP_RESULT(-=, proto::tag::minus_assign, make_mutable, make)
-            BOOST_PROTO_BINARY_OP_RESULT(&=, proto::tag::bitwise_and_assign, make_mutable, make)
-            BOOST_PROTO_BINARY_OP_RESULT(|=, proto::tag::bitwise_or_assign, make_mutable, make)
-            BOOST_PROTO_BINARY_OP_RESULT(^=, proto::tag::bitwise_xor_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(=, proto::tag::assign, make_mutable, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(<<=, proto::tag::shift_left_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(>>=, proto::tag::shift_right_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(*=, proto::tag::multiplies_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(/=, proto::tag::divides_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(%=, proto::tag::modulus_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(+=, proto::tag::plus_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(-=, proto::tag::minus_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(&=, proto::tag::bitwise_and_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(|=, proto::tag::bitwise_or_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_DEFAULT_EVAL(^=, proto::tag::bitwise_xor_assign, make_mutable, make)
 
-        #undef BOOST_PROTO_UNARY_OP_RESULT
-        #undef BOOST_PROTO_BINARY_OP_RESULT
+        #undef BOOST_PROTO_UNARY_DEFAULT_EVAL
+        #undef BOOST_PROTO_BINARY_DEFAULT_EVAL
 
             /// INTERNAL ONLY
             template<typename Expr, typename Context>
@@ -195,19 +209,6 @@
             struct default_eval<Expr, Context, tag::mem_ptr, 2>
               : memfun_eval<Expr, Context, is_member_function_eval<Expr, Context>::value>
             {};
-
-            template<typename Expr, typename Context, typename Tag>
-            struct default_eval<Expr, Context, Tag, 0>
-            {
-                typedef
-                    typename proto::result_of::value<Expr &>::type
-                result_type;
-
-                result_type operator ()(Expr &expr, Context &) const
-                {
-                    return proto::value(expr);
-                }
-            };
 
             // Handle post-increment specially.
             template<typename Expr, typename Context>
@@ -300,7 +301,7 @@
             };
 
             // Handle function specially
-            #define EVAL_TYPE(Z, N, DATA)                                                           \
+            #define BOOST_PROTO_DEFAULT_EVAL_TYPE(Z, N, DATA)                                       \
                 typename proto::result_of::eval<                                                    \
                     typename remove_reference<                                                      \
                         typename proto::result_of::child_c<DATA, N>::type                           \
@@ -309,7 +310,7 @@
                 >::type                                                                             \
                 /**/
 
-            #define EVAL(Z, N, DATA)                                                                \
+            #define BOOST_PROTO_DEFAULT_EVAL(Z, N, DATA)                                            \
                 proto::eval(proto::child_c<N>(DATA), context)                                       \
                 /**/
 
@@ -317,7 +318,9 @@
             struct default_eval<Expr, Context, proto::tag::function, 1>
             {
                 typedef
-                    typename proto::detail::result_of_fixup<EVAL_TYPE(~, 0, Expr)>::type
+                    typename proto::detail::result_of_fixup<
+                        BOOST_PROTO_DEFAULT_EVAL_TYPE(~, 0, Expr)
+                    >::type
                 function_type;
 
                 typedef
@@ -326,7 +329,7 @@
 
                 result_type operator ()(Expr &expr, Context &context) const
                 {
-                    return EVAL(~, 0, expr)();
+                    return BOOST_PROTO_DEFAULT_EVAL(~, 0, expr)();
                 }
             };
 
@@ -334,11 +337,15 @@
             struct default_eval<Expr, Context, proto::tag::function, 2>
             {
                 typedef
-                    typename proto::detail::result_of_fixup<EVAL_TYPE(~, 0, Expr)>::type
+                    typename proto::detail::result_of_fixup<
+                        BOOST_PROTO_DEFAULT_EVAL_TYPE(~, 0, Expr)
+                    >::type
                 function_type;
 
                 typedef
-                    typename detail::result_of_<function_type(EVAL_TYPE(~, 1, Expr))>::type
+                    typename detail::result_of_<
+                        function_type(BOOST_PROTO_DEFAULT_EVAL_TYPE(~, 1, Expr))
+                    >::type
                 result_type;
 
                 result_type operator ()(Expr &expr, Context &context) const
@@ -354,29 +361,35 @@
             private:
                 result_type invoke(Expr &expr, Context &context, mpl::false_, mpl::false_) const
                 {
-                    return EVAL(~, 0, expr)(EVAL(~, 1, expr));
+                    return BOOST_PROTO_DEFAULT_EVAL(~, 0, expr)(BOOST_PROTO_DEFAULT_EVAL(~, 1, expr));
                 }
 
                 result_type invoke(Expr &expr, Context &context, mpl::true_, mpl::false_) const
                 {
                     BOOST_PROTO_USE_GET_POINTER();
                     typedef typename detail::classtypeof<function_type>::type class_type;
-                    return (BOOST_PROTO_GET_POINTER(class_type, EVAL(~, 1, expr)) ->* EVAL(~, 0, expr))();
+                    return (
+                        BOOST_PROTO_GET_POINTER(class_type, BOOST_PROTO_DEFAULT_EVAL(~, 1, expr)) ->* 
+                        BOOST_PROTO_DEFAULT_EVAL(~, 0, expr)
+                    )();
                 }
 
                 result_type invoke(Expr &expr, Context &context, mpl::false_, mpl::true_) const
                 {
                     BOOST_PROTO_USE_GET_POINTER();
                     typedef typename detail::classtypeof<function_type>::type class_type;
-                    return (BOOST_PROTO_GET_POINTER(class_type, EVAL(~, 1, expr)) ->* EVAL(~, 0, expr));
+                    return (
+                        BOOST_PROTO_GET_POINTER(class_type, BOOST_PROTO_DEFAULT_EVAL(~, 1, expr)) ->*
+                        BOOST_PROTO_DEFAULT_EVAL(~, 0, expr)
+                    );
                 }
             };
 
             #define BOOST_PP_ITERATION_PARAMS_1 (3, (3, BOOST_PROTO_MAX_ARITY, <boost/proto/context/default.hpp>))
             #include BOOST_PP_ITERATE()
 
-            #undef EVAL_TYPE
-            #undef EVAL
+            #undef BOOST_PROTO_DEFAULT_EVAL_TYPE
+            #undef BOOST_PROTO_DEFAULT_EVAL
 
             /// default_context
             ///
@@ -406,12 +419,14 @@
         struct default_eval<Expr, Context, proto::tag::function, N>
         {
             typedef
-                typename proto::detail::result_of_fixup<EVAL_TYPE(~, 0, Expr)>::type
+                typename proto::detail::result_of_fixup<
+                    BOOST_PROTO_DEFAULT_EVAL_TYPE(~, 0, Expr)
+                >::type
             function_type;
 
             typedef
                 typename boost::result_of<
-                    function_type(BOOST_PP_ENUM_SHIFTED(N, EVAL_TYPE, Expr))
+                    function_type(BOOST_PP_ENUM_SHIFTED(N, BOOST_PROTO_DEFAULT_EVAL_TYPE, Expr))
                 >::type
             result_type;
 
@@ -423,17 +438,24 @@
         private:
             result_type invoke(Expr &expr, Context &context, mpl::false_) const
             {
-                return EVAL(~, 0, expr)(BOOST_PP_ENUM_SHIFTED(N, EVAL, expr));
+                return BOOST_PROTO_DEFAULT_EVAL(~, 0, expr)(
+                    BOOST_PP_ENUM_SHIFTED(N, BOOST_PROTO_DEFAULT_EVAL, expr)
+                );
             }
 
             result_type invoke(Expr &expr, Context &context, mpl::true_) const
             {
-                #define M0(Z, M, expr) BOOST_PP_COMMA_IF(BOOST_PP_SUB(M, 2)) EVAL(Z, M, expr)
+                #define M0(Z, M, DATA)                                                              \
+                    BOOST_PROTO_DEFAULT_EVAL(Z, BOOST_PP_ADD(M, 2), DATA)                           \
+                    /**/
+
                 BOOST_PROTO_USE_GET_POINTER();
                 typedef typename detail::classtypeof<function_type>::type class_type;
-                return (BOOST_PROTO_GET_POINTER(class_type, EVAL(~, 1, expr)) ->* EVAL(~, 0, expr))(
-                    BOOST_PP_REPEAT_FROM_TO(2, N, M0, expr)
-                );
+                return (
+                    BOOST_PROTO_GET_POINTER(class_type, BOOST_PROTO_DEFAULT_EVAL(~, 1, expr)) ->*
+                    BOOST_PROTO_DEFAULT_EVAL(~, 0, expr)
+                )(BOOST_PP_ENUM(BOOST_PP_SUB(N, 2), M0, expr));
+
                 #undef M0
             }
         };

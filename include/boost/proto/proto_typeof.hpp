@@ -10,13 +10,11 @@
 #ifndef BOOST_XPRESSIVE_PROTO_PROTO_TYPEOF_H
 #define BOOST_XPRESSIVE_PROTO_PROTO_TYPEOF_H
 
-#include <boost/proto/detail/prefix.hpp>
 #include <boost/config.hpp>
 #include <boost/typeof/typeof.hpp>
 #include <boost/proto/proto_fwd.hpp>
 #include <boost/proto/deep_copy.hpp>
 #include BOOST_TYPEOF_INCREMENT_REGISTRATION_GROUP()
-#include <boost/proto/detail/suffix.hpp>
 
 BOOST_TYPEOF_REGISTER_TYPE(boost::proto::tag::terminal)
 BOOST_TYPEOF_REGISTER_TYPE(boost::proto::tag::unary_plus)
@@ -68,6 +66,11 @@ BOOST_TYPEOF_REGISTER_TYPE(boost::proto::tag::function)
 BOOST_TYPEOF_REGISTER_TYPE(boost::proto::exprns_::is_proto_expr)
 BOOST_TYPEOF_REGISTER_TEMPLATE(boost::proto::exprns_::expr, (typename)(typename)(long))
 BOOST_TYPEOF_REGISTER_TEMPLATE(boost::proto::utility::literal, (typename)(typename))
+
+BOOST_TYPEOF_REGISTER_TYPE(boost::proto::detail::not_a_generator)
+BOOST_TYPEOF_REGISTER_TYPE(boost::proto::detail::not_a_grammar)
+BOOST_TYPEOF_REGISTER_TYPE(boost::proto::detail::not_a_domain)
+BOOST_TYPEOF_REGISTER_TEMPLATE(boost::proto::domainns_::domain, 3)
 
 BOOST_TYPEOF_REGISTER_TEMPLATE(boost::proto::argsns_::term, 1)
 BOOST_TYPEOF_REGISTER_TEMPLATE(boost::proto::argsns_::list1, 1)

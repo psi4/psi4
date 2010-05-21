@@ -20,7 +20,6 @@ namespace std{
 } // namespace std
 #endif
 
-
 #ifndef BOOST_NO_CWCHAR
 #include <cwchar>
 #ifdef BOOST_NO_STDC_NAMESPACE
@@ -30,9 +29,6 @@ namespace std{ using ::wcslen; }
 
 #include <boost/detail/workaround.hpp>
 
-#include <boost/serialization/throw_exception.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/archive/archive_exception.hpp>
 #include <boost/archive/add_facet.hpp>
 #include <boost/archive/codecvt_null.hpp>
 

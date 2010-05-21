@@ -47,7 +47,7 @@ inline void save_collection(Archive & ar, const Container &s)
         ar << BOOST_SERIALIZATION_NVP(item_version);
     }
     BOOST_DEDUCED_TYPENAME Container::const_iterator it = s.begin();
-    std::size_t c=count;
+    collection_size_type c=count;
     while(c-- > 0){
             // note borland emits a no-op without the explicit namespace
             boost::serialization::save_construct_data_adl(

@@ -182,8 +182,8 @@ typedef int pid_t;
 # define Py_REFCNT(o)  (((PyObject*)(o))->ob_refcnt)
 # define Py_SIZE(o)    (((PyVarObject*)(o))->ob_size)
 
-# define PyVarObject_HEAD_INIT(type, size)	\
-  	PyObject_HEAD_INIT(type) size,
+# define PyVarObject_HEAD_INIT(type, size) \
+        PyObject_HEAD_INIT(type) size,
 
 #endif
 

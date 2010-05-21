@@ -24,20 +24,8 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/property_map/dynamic_property_map.hpp>
 #include <boost/graph/overloading.hpp>
-
-#ifdef BOOST_HAS_DECLSPEC
-#  if defined(BOOST_ALL_DYN_LINK) || defined(BOOST_GRAPH_DYN_LINK)
-#    ifdef BOOST_GRAPH_SOURCE
-#      define BOOST_GRAPH_DECL __declspec(dllexport)
-#    else
-#      define BOOST_GRAPH_DECL __declspec(dllimport)
-#    endif  // BOOST_GRAPH_SOURCE
-#  endif  // DYN_LINK
-#endif  // BOOST_HAS_DECLSPEC
-
-#ifndef BOOST_GRAPH_DECL
-#  define BOOST_GRAPH_DECL
-#endif
+#include <boost/graph/dll_import_export.hpp>
+#include <boost/spirit/include/classic_multi_pass.hpp>
 
 namespace boost {
 
@@ -784,26 +772,7 @@ class mutate_graph_impl : public mutate_graph
   std::map<edge_t, bgl_edge_t> bgl_edges;
 };
 
-BOOST_GRAPH_DECL
-bool read_graphviz(std::istream& in, mutate_graph& graph);
-
-} } // end namespace detail::graph
-
-// Parse the passed stream as a GraphViz dot file.
-template <typename MutableGraph>
-bool read_graphviz(std::istream& in, MutableGraph& graph,
-                   dynamic_properties& dp,
-                   std::string const& node_id = "node_id")
-{
-  std::string data;
-  in >> std::noskipws;
-  std::copy(std::istream_iterator<char>(in),
-            std::istream_iterator<char>(),
-            std::back_inserter(data));
-  return read_graphviz(data,graph,dp,node_id);
-}
-
-} // namespace boost
+} } } // end namespace boost::detail::graph
 
 #ifdef BOOST_GRAPH_USE_SPIRIT_PARSER
 #  ifndef BOOST_GRAPH_READ_GRAPHVIZ_ITERATORS
@@ -813,6 +782,54 @@ bool read_graphviz(std::istream& in, MutableGraph& graph,
 #else // New default parser
 #  include <boost/graph/detail/read_graphviz_new.hpp>
 #endif // BOOST_GRAPH_USE_SPIRIT_PARSER
+
+namespace boost {
+
+// Parse the passed string as a GraphViz dot file.
+template <typename MutableGraph>
+bool read_graphviz(const std::string& data,
+                   MutableGraph& graph,
+                   dynamic_properties& dp,
+                   std::string const& node_id = "node_id") {
+#ifdef BOOST_GRAPH_USE_SPIRIT_PARSER
+  return read_graphviz_spirit(data.begin(), data.end(), graph, dp, node_id);
+#else // Non-Spirit parser
+  return read_graphviz_new(data,graph,dp,node_id);
+#endif
+}
+
+// Parse the passed iterator range as a GraphViz dot file.
+template <typename InputIterator, typename MutableGraph>
+bool read_graphviz(InputIterator user_first,
+                   InputIterator user_last,
+                   MutableGraph& graph,
+                   dynamic_properties& dp,
+                   std::string const& node_id = "node_id") {
+#ifdef BOOST_GRAPH_USE_SPIRIT_PARSER
+  typedef InputIterator is_t;
+  typedef boost::spirit::classic::multi_pass<is_t> iterator_t;
+
+  iterator_t first(boost::spirit::classic::make_multi_pass(user_first));
+  iterator_t last(boost::spirit::classic::make_multi_pass(user_last));
+
+  return read_graphviz_spirit(first, last, graph, dp, node_id);
+#else // Non-Spirit parser
+  return read_graphviz_new(std::string(user_first, user_last), graph, dp, node_id);
+#endif
+}
+
+// Parse the passed stream as a GraphViz dot file.
+template <typename MutableGraph>
+bool read_graphviz(std::istream& in, MutableGraph& graph,
+                   dynamic_properties& dp,
+                   std::string const& node_id = "node_id")
+{
+  typedef std::istream_iterator<char> is_t;
+  in >> std::noskipws;
+  return read_graphviz(is_t(in), is_t(), graph, dp, node_id);
+}
+
+} // namespace boost
 
 #ifdef BOOST_GRAPH_USE_MPI
 #  include <boost/graph/distributed/graphviz.hpp>

@@ -7,6 +7,7 @@
 
 #include <pthread.h>
 #include <boost/utility.hpp>
+#include <boost/throw_exception.hpp>
 #include <boost/thread/exceptions.hpp>
 #include <boost/thread/locks.hpp>
 #include <boost/thread/thread_time.hpp>
@@ -37,7 +38,7 @@ namespace boost
             int const res=pthread_mutex_init(&m,NULL);
             if(res)
             {
-                throw thread_resource_error();
+                boost::throw_exception(thread_resource_error());
             }
         }
         ~mutex()
@@ -89,14 +90,14 @@ namespace boost
             int const res=pthread_mutex_init(&m,NULL);
             if(res)
             {
-                throw thread_resource_error();
+                boost::throw_exception(thread_resource_error());
             }
 #ifndef BOOST_PTHREAD_HAS_TIMEDLOCK
             int const res2=pthread_cond_init(&cond,NULL);
             if(res2)
             {
                 BOOST_VERIFY(!pthread_mutex_destroy(&m));
-                throw thread_resource_error();
+                boost::throw_exception(thread_resource_error());
             }
             is_locked=false;
 #endif

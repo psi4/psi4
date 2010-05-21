@@ -17,6 +17,9 @@
   */
 
 #define BOOST_REGEX_SOURCE
+#ifdef _MSC_VER
+#pragma warning(disable:4506) // 'no definition for inline function'
+#endif
 
 #include <boost/detail/workaround.hpp>
 #include <memory>

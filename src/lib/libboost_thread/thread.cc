@@ -13,6 +13,7 @@
 #include <boost/thread/locks.hpp>
 #include <boost/thread/once.hpp>
 #include <boost/thread/tss.hpp>
+#include <boost/throw_exception.hpp>
 #ifdef __linux__
 #include <sys/sysinfo.h>
 #elif defined(__APPLE__) || defined(__FreeBSD__)
@@ -74,7 +75,7 @@ namespace boost
                             {
                                 current=next;
                                 ++next;
-                                if(current->second.func && current->second.value)
+                                if(current->second.func && (current->second.value!=0))
                                 {
                                     (*current->second.func)(current->second.value);
                                 }
@@ -186,7 +187,7 @@ namespace boost
         if (res != 0)
         {
             thread_info->self.reset();
-            throw thread_resource_error();
+            boost::throw_exception(thread_resource_error());
         }
     }
 
@@ -380,12 +381,12 @@ namespace boost
     {
 #if defined(PTW32_VERSION) || defined(__hpux)
         return pthread_num_processors_np();
-#elif defined(_GNU_SOURCE)
-        return get_nprocs();
 #elif defined(__APPLE__) || defined(__FreeBSD__)
         int count;
         size_t size=sizeof(count);
         return sysctlbyname("hw.ncpu",&count,&size,NULL,0)?0:count;
+#elif defined(_GNU_SOURCE)
+        return get_nprocs();
 #elif defined(BOOST_HAS_UNISTD_H) && defined(_SC_NPROCESSORS_ONLN)
         int const count=sysconf(_SC_NPROCESSORS_ONLN);
         return (count>0)?count:0;
@@ -581,11 +582,11 @@ namespace boost
         {
             if(tss_data_node* const current_node=find_tss_data(key))
             {
-                if(cleanup_existing && current_node->func && current_node->value)
+                if(cleanup_existing && current_node->func && (current_node->value!=0))
                 {
                     (*current_node->func)(current_node->value);
                 }
-                if(func || tss_data)
+                if(func || (tss_data!=0))
                 {
                     current_node->func=func;
                     current_node->value=tss_data;

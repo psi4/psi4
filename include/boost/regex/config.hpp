@@ -92,6 +92,12 @@
 #if defined(_MSC_VER) && !defined(_MSC_EXTENSIONS)
 #  define BOOST_REGEX_NO_EXTERNAL_TEMPLATES
 #endif
+/*
+ * Shared regex lib will crash without this, frankly it looks a lot like a gcc bug:
+ */
+#if defined(__MINGW32__)
+#  define BOOST_REGEX_NO_EXTERNAL_TEMPLATES
+#endif
 
 /*
  * If there isn't good enough wide character support then there will
