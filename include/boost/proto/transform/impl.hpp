@@ -9,9 +9,7 @@
 #ifndef BOOST_PROTO_TRANSFORM_IMPL_HPP_EAN_04_03_2008
 #define BOOST_PROTO_TRANSFORM_IMPL_HPP_EAN_04_03_2008
 
-#include <boost/proto/detail/prefix.hpp>
 #include <boost/proto/proto_fwd.hpp>
-#include <boost/proto/detail/suffix.hpp>
 
 namespace boost { namespace proto
 {

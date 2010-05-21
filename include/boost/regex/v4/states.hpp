@@ -248,6 +248,14 @@ struct re_repeat : public re_alt
    bool          greedy;    // True if this is a greedy repeat
 };
 
+/*** struct re_recurse ************************************************
+Recurse to a particular subexpression.
+**********************************************************************/
+struct re_recurse : public re_jump
+{
+   int state_id;             // identifier of first nested repeat within the recursion.
+};
+
 /*** enum re_jump_size_type *******************************************
 Provides compiled size of re_jump structure (allowing for trailing alignment).
 We provide this so we know how manybytes to insert when constructing the machine

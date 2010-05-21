@@ -10,7 +10,6 @@
     #ifndef BOOST_PROTO_DEEP_COPY_HPP_EAN_11_21_2006
     #define BOOST_PROTO_DEEP_COPY_HPP_EAN_11_21_2006
 
-    #include <boost/proto/detail/prefix.hpp>
     #include <boost/preprocessor/cat.hpp>
     #include <boost/preprocessor/repetition/enum.hpp>
     #include <boost/preprocessor/iteration/iterate.hpp>
@@ -19,7 +18,6 @@
     #include <boost/type_traits/remove_reference.hpp>
     #include <boost/proto/proto_fwd.hpp>
     #include <boost/proto/expr.hpp>
-    #include <boost/proto/detail/suffix.hpp>
 
     namespace boost { namespace proto
     {
@@ -206,7 +204,7 @@
                 template<typename Expr2, typename S, typename D>
                 result_type operator()(Expr2 const &e, S const &, D const &) const
                 {
-                    expr_type that = {
+                    expr_type const that = {
                         BOOST_PP_ENUM(N, BOOST_PROTO_DEFINE_DEEP_COPY_FUN, ~)
                     };
 

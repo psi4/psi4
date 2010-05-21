@@ -58,6 +58,7 @@ const char* names[] = {
       "REG_EMPTY",
       "REG_ECOMPLEXITY",
       "REG_ESTACK",
+      "REG_E_PERL",
       "REG_E_UNKNOWN",
 };
 } // namespace

@@ -38,8 +38,8 @@ namespace std{
 #endif
 
 #include <boost/cstdint.hpp>
-//#include <boost/limits.hpp>
-//#include <boost/io/ios_state.hpp>
+#include <boost/integer.hpp>
+#include <boost/integer_traits.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/serialization/throw_exception.hpp>
 
@@ -160,9 +160,10 @@ basic_binary_oprimitive<Archive, Elem, Tr>::save_binary(
     // figure number of elements to output - round up
     count = ( count + sizeof(Elem) - 1) 
         / sizeof(Elem);
+    assert(count <= std::size_t(boost::integer_traits<std::streamsize>::const_max));
     std::streamsize scount = m_sb.sputn(
         static_cast<const Elem *>(address), 
-        count
+        static_cast<std::streamsize>(count)
     );
     if(count != static_cast<std::size_t>(scount))
         boost::serialization::throw_exception(

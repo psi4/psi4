@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2001-2008.
+//  (C) Copyright Gennadiy Rozental 2001-2010.
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at 
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,7 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 49312 $
+//  Version     : $Revision: 62016 $
 //
 //  Description : as a central place for global configuration switches
 // ***************************************************************************
@@ -18,6 +18,12 @@
 // Boost
 #include <boost/config.hpp> // compilers workarounds
 #include <boost/detail/workaround.hpp>
+
+#if defined(_WIN32) && !defined(BOOST_DISABLE_WIN32) &&                  \
+    (!defined(__COMO__) && !defined(__MWERKS__) && !defined(__GNUC__) || \
+    BOOST_WORKAROUND(__MWERKS__, >= 0x3000))
+#  define BOOST_SEH_BASED_SIGNAL_HANDLING
+#endif
 
 //____________________________________________________________________________//
 

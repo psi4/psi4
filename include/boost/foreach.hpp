@@ -705,7 +705,7 @@ end(auto_any_t col, type2type<T, const_> *, bool *)
 #ifndef BOOST_NO_FUNCTION_TEMPLATE_ORDERING
 template<typename T, typename C>
 inline auto_any<int>
-end(auto_any_t col, type2type<T *, C> *, boost::mpl::true_ *) // null-terminated C-style strings
+end(auto_any_t, type2type<T *, C> *, boost::mpl::true_ *) // null-terminated C-style strings
 {
     return 0; // not used
 }

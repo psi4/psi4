@@ -10,13 +10,11 @@
 #ifndef BOOST_PROTO_LITERAL_HPP_EAN_01_03_2007
 #define BOOST_PROTO_LITERAL_HPP_EAN_01_03_2007
 
-#include <boost/proto/detail/prefix.hpp>
 #include <boost/config.hpp>
 #include <boost/proto/proto_fwd.hpp>
 #include <boost/proto/expr.hpp>
 #include <boost/proto/traits.hpp>
 #include <boost/proto/extends.hpp>
-#include <boost/proto/detail/suffix.hpp>
 
 namespace boost { namespace proto
 {
@@ -33,7 +31,7 @@ namespace boost { namespace proto
         /// \c proto::default_domain.
         template<
             typename T
-          , typename Domain BOOST_PROTO_WHEN_BUILDING_DOCS(= default_domain)
+          , typename Domain // = default_domain
         >
         struct literal
           : extends<expr<tag::terminal, term<T>, 0>, literal<T, Domain>, Domain>
@@ -46,6 +44,10 @@ namespace boost { namespace proto
             typedef typename detail::term_traits<T>::value_type       value_type;
             typedef typename detail::term_traits<T>::reference        reference;
             typedef typename detail::term_traits<T>::const_reference  const_reference;
+
+            literal()
+              : base_type(terminal_type::make(T()))
+            {}
 
             template<typename U>
             literal(U &u)
@@ -62,7 +64,7 @@ namespace boost { namespace proto
               : base_type(terminal_type::make(u.get()))
             {}
 
-            using base_type::operator =;
+            BOOST_PROTO_EXTENDS_USING_ASSIGN(literal)
 
             reference get()
             {

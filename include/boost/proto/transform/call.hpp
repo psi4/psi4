@@ -10,7 +10,6 @@
     #ifndef BOOST_PROTO_TRANSFORM_CALL_HPP_EAN_11_02_2007
     #define BOOST_PROTO_TRANSFORM_CALL_HPP_EAN_11_02_2007
 
-    #include <boost/proto/detail/prefix.hpp>
     #include <boost/preprocessor/cat.hpp>
     #include <boost/preprocessor/facilities/intercept.hpp>
     #include <boost/preprocessor/iteration/iterate.hpp>
@@ -24,10 +23,8 @@
     #include <boost/proto/proto_fwd.hpp>
     #include <boost/proto/traits.hpp>
     #include <boost/proto/transform/impl.hpp>
-    #include <boost/proto/detail/dont_care.hpp>
     #include <boost/proto/detail/as_lvalue.hpp>
     #include <boost/proto/detail/poly_function.hpp>
-    #include <boost/proto/detail/suffix.hpp>
 
     namespace boost { namespace proto
     {

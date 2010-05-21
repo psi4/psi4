@@ -251,6 +251,52 @@ namespace boost {
     return property_writer<PA, OutputIterator, Tag>(pa, out);
   }
 
+  //========================================================================
+  // property_put
+
+    /**
+     * Functor which just sets a given value to a vertex or edge in a property map.
+     */
+
+  template <typename PropertyMap, typename EventTag>
+  struct property_put
+  {
+    typedef EventTag event_filter;
+    
+    property_put (PropertyMap property_map,
+                  typename property_traits <PropertyMap>::value_type value) :
+      property_map_ (property_map), value_ (value)
+    {}
+
+    template <typename VertexOrEdge, typename Graph>
+    void operator() (VertexOrEdge v, const Graph& g)
+    {
+      put (property_map_, v, value_);
+    }
+
+  private:
+    PropertyMap property_map_;
+    typename property_traits <PropertyMap>::value_type value_;
+  };
+
+  /**
+   * Creates a property_put functor which just sets a given value to a vertex or edge.
+   * 
+   * @param property_map Given writeable property map 
+   * @param value Fixed value of the map
+   * @param tag Event Filter
+   * @return The functor.
+   */
+
+    template <typename PropertyMap, typename EventTag>
+    inline property_put <PropertyMap, EventTag>
+    put_property (PropertyMap property_map,
+                  typename property_traits <PropertyMap>::value_type value,
+                  EventTag tag)
+    {
+      return property_put <PropertyMap, EventTag> (property_map, value);
+    }
+
 #define BOOST_GRAPH_EVENT_STUB(Event,Kind)                                 \
     typedef ::boost::Event Event##_type;                                   \
     template<typename Visitor>                                             \

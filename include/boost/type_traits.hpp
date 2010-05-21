@@ -16,6 +16,9 @@
 #include "boost/type_traits/add_reference.hpp"
 #include "boost/type_traits/add_volatile.hpp"
 #include "boost/type_traits/alignment_of.hpp"
+#if !defined(__BORLANDC__) && !defined(__CUDACC__)
+#include "boost/type_traits/has_new_operator.hpp"
+#endif
 #include "boost/type_traits/has_nothrow_assign.hpp"
 #include "boost/type_traits/has_nothrow_constructor.hpp"
 #include "boost/type_traits/has_nothrow_copy.hpp"
@@ -56,6 +59,7 @@
 #include "boost/type_traits/is_stateless.hpp"
 #include "boost/type_traits/is_union.hpp"
 #include "boost/type_traits/is_void.hpp"
+#include "boost/type_traits/is_virtual_base_of.hpp"
 #include "boost/type_traits/is_volatile.hpp"
 #include "boost/type_traits/rank.hpp"
 #include "boost/type_traits/extent.hpp"

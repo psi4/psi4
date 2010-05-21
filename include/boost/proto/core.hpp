@@ -10,7 +10,6 @@
 #ifndef BOOST_PROTO_CORE_HPP_EAN_04_01_2005
 #define BOOST_PROTO_CORE_HPP_EAN_04_01_2005
 
-#include <boost/proto/detail/prefix.hpp>
 #include <boost/proto/proto_fwd.hpp>
 #include <boost/proto/args.hpp>
 #include <boost/proto/tags.hpp>
@@ -27,6 +26,5 @@
 #include <boost/proto/operators.hpp>
 #include <boost/proto/deep_copy.hpp>
 #include <boost/proto/make_expr.hpp>
-#include <boost/proto/detail/suffix.hpp>
 
 #endif

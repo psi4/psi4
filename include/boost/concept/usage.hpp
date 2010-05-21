@@ -6,8 +6,9 @@
 
 # include <boost/concept/assert.hpp>
 # include <boost/detail/workaround.hpp>
+# include <boost/concept/detail/backward_compatibility.hpp>
 
-namespace boost { namespace concept { 
+namespace boost { namespace concepts { 
 
 # if BOOST_WORKAROUND(__GNUC__, == 2)
 
@@ -25,13 +26,13 @@ struct usage_requirements
 
 #   define BOOST_CONCEPT_USAGE(model)                                    \
       model(); /* at least 2.96 and 3.4.3 both need this :( */           \
-      BOOST_CONCEPT_ASSERT((boost::concept::usage_requirements<model>)); \
+      BOOST_CONCEPT_ASSERT((boost::concepts::usage_requirements<model>)); \
       ~model()
 
 #  else
 
 #   define BOOST_CONCEPT_USAGE(model)                                    \
-      BOOST_CONCEPT_ASSERT((boost::concept::usage_requirements<model>)); \
+      BOOST_CONCEPT_ASSERT((boost::concepts::usage_requirements<model>)); \
       ~model()
 
 #  endif

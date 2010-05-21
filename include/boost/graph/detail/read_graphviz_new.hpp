@@ -89,26 +89,18 @@ namespace read_graphviz_detail {
 
 } // namespace read_graphviz_detail
 
-// This is also in boost/graph/graphviz.hpp
 namespace detail {
   namespace graph {
-    BOOST_GRAPH_DECL bool read_graphviz(const std::string& str, boost::detail::graph::mutate_graph* mg);
+    BOOST_GRAPH_DECL bool read_graphviz_new(const std::string& str, boost::detail::graph::mutate_graph* mg);
   } // end namespace graph
 } // end namespace detail
 
 template <typename MutableGraph>
-bool read_graphviz(const std::string& str,
-                   MutableGraph& graph, boost::dynamic_properties& dp,
-                   std::string const& node_id = "node_id") {
+bool read_graphviz_new(const std::string& str,
+                       MutableGraph& graph, boost::dynamic_properties& dp,
+                       std::string const& node_id = "node_id") {
   boost::detail::graph::mutate_graph_impl<MutableGraph> mg(graph, dp, node_id);
-  return detail::graph::read_graphviz(str, &mg);
-}
-
-template <typename InputIter, typename MutableGraph>
-bool read_graphviz(InputIter begin, InputIter end,
-                   MutableGraph& graph, boost::dynamic_properties& dp,
-                   std::string const& node_id = "node_id") {
-  return read_graphviz(std::string(begin, end), graph, dp, node_id);
+  return detail::graph::read_graphviz_new(str, &mg);
 }
 
 } // namespace boost

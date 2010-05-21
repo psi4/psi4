@@ -448,6 +448,7 @@ typename T::ThereReallyIsNoMemberByThisNameInT vertices(T const&);
             typedef unsigned Index; // This could be Graph::vertex_index_type
             Map m = get(vertex_index, g);
             Index x = get(vertex_index, g, Vertex());
+            ignore_unused_variable_warning(m);
             ignore_unused_variable_warning(x);
 
             // This is relaxed
@@ -474,6 +475,7 @@ typename T::ThereReallyIsNoMemberByThisNameInT vertices(T const&);
             typedef unsigned Index; // This could be Graph::vertex_index_type
             Map m = get(edge_index, g);
             Index x = get(edge_index, g, Edge());
+            ignore_unused_variable_warning(m);
             ignore_unused_variable_warning(x);
 
             // This is relaxed

@@ -26,6 +26,11 @@
 
 #include <boost/archive/detail/abi_prefix.hpp> // must be the last header
 
+#ifdef BOOST_MSVC
+#  pragma warning(push)
+#  pragma warning(disable : 4511 4512)
+#endif
+
 namespace boost { 
 namespace archive {
 
@@ -102,6 +107,10 @@ public:
 } // namespace archive
 } // namespace boost
 
+#ifdef BOOST_MSVC
+#pragma warning(pop)
+#endif
+
 #include <boost/archive/detail/abi_suffix.hpp> // pops abi_suffix.hpp pragmas
 
 // note special treatment of shared_ptr. This type needs a special
@@ -109,6 +118,11 @@ public:
 // class to provide this functionality.  Since shared_ptr holds a
 // special esteem in the boost library - we included it here by default.
 #include <boost/archive/shared_ptr_helper.hpp>
+
+#ifdef BOOST_MSVC
+#  pragma warning(push)
+#  pragma warning(disable : 4511 4512)
+#endif
 
 namespace boost { 
 namespace archive {
@@ -129,5 +143,9 @@ public:
 
 // required by export
 BOOST_SERIALIZATION_REGISTER_ARCHIVE(boost::archive::xml_iarchive)
+
+#ifdef BOOST_MSVC
+#pragma warning(pop)
+#endif
 
 #endif // BOOST_ARCHIVE_XML_IARCHIVE_HPP

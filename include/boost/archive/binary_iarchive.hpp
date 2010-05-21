@@ -20,6 +20,11 @@
 #include <boost/archive/binary_iarchive_impl.hpp>
 #include <boost/archive/detail/register_archive.hpp>
 
+#ifdef BOOST_MSVC
+#  pragma warning(push)
+#  pragma warning(disable : 4511 4512)
+#endif
+
 namespace boost { 
 namespace archive {
 
@@ -90,5 +95,9 @@ public:
 // required by export
 BOOST_SERIALIZATION_REGISTER_ARCHIVE(boost::archive::binary_iarchive)
 BOOST_SERIALIZATION_USE_ARRAY_OPTIMIZATION(boost::archive::binary_iarchive)
+
+#ifdef BOOST_MSVC
+#pragma warning(pop)
+#endif
 
 #endif // BOOST_ARCHIVE_BINARY_IARCHIVE_HPP

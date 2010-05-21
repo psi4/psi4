@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2001-2008.
+//  (C) Copyright Gennadiy Rozental 2001-2010.
 //  (C) Copyright Beman Dawes and Ullrich Koethe 1995-2001.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
@@ -8,7 +8,7 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 54633 $
+//  Version     : $Revision: 62068 $
 //
 //  Description : provides execution monitor implementation for all supported
 //  configurations, including Microsoft structured exception based, unix signals
@@ -33,6 +33,8 @@
 // Boost
 #include <boost/cstdlib.hpp>    // for exit codes
 #include <boost/config.hpp>     // for workarounds
+#include <boost/exception/get_error_info.hpp> // for get_error_info
+#include <boost/exception/current_exception_cast.hpp> // for current_exception_cast
 
 // STL
 #include <string>               // for std::string
@@ -62,12 +64,7 @@ using std::va_list;
 #  include <stdio.h> 
 #endif
 
-#if defined(_WIN32) && !defined(BOOST_DISABLE_WIN32) &&                  \
-    (!defined(__COMO__) && !defined(__MWERKS__) && !defined(__GNUC__) || \
-     BOOST_WORKAROUND(__MWERKS__, >= 0x3000))
-
-#  define BOOST_SEH_BASED_SIGNAL_HANDLING
-
+#ifdef BOOST_SEH_BASED_SIGNAL_HANDLING
 #  include <windows.h>
 
 #  if defined(__MWERKS__) || (defined(_MSC_VER) && !defined(UNDER_CE))
@@ -85,33 +82,6 @@ using std::va_list;
 #  if BOOST_WORKAROUND(_MSC_VER,  < 1300 ) || defined(UNDER_CE)
 typedef void* uintptr_t;
 #  endif
-
-// for the FP control routines
-#include <float.h>
-
-#ifndef EM_INVALID
-#define EM_INVALID _EM_INVALID
-#endif
-
-#ifndef EM_DENORMAL
-#define EM_DENORMAL _EM_DENORMAL
-#endif
-
-#ifndef EM_ZERODIVIDE
-#define EM_ZERODIVIDE _EM_ZERODIVIDE
-#endif
-
-#ifndef EM_OVERFLOW
-#define EM_OVERFLOW _EM_OVERFLOW
-#endif
-
-#ifndef EM_UNDERFLOW
-#define EM_UNDERFLOW _EM_UNDERFLOW
-#endif
-
-#ifndef MCW_EM
-#define MCW_EM _MCW_EM
-#endif
 
 #  if !defined(NDEBUG) && defined(_MSC_VER) && !defined(UNDER_CE)
 #    include <crtdbg.h>
@@ -166,7 +136,6 @@ namespace { void _set_se_translator( void* ) {} }
 #      define ILL_COPROC ILL_FPOP_FAULT
 
 #      define BOOST_TEST_LIMITED_SIGNAL_DETAILS
-#      define BOOST_TEST_IGNORE_SIGCHLD
 
 #    endif 
 #  endif 
@@ -218,21 +187,56 @@ namespace detail {
 #  define BOOST_TEST_VSNPRINTF( a1, a2, a3, a4 ) vsnprintf( (a1), (a2), (a3), (a4) )
 #endif
 
+template <typename ErrorInfo>
+typename ErrorInfo::value_type
+extract( boost::exception const* ex )
+{
+    if( !ex )
+        return 0;
+
+    typename ErrorInfo::value_type const * val = boost::get_error_info<ErrorInfo>( *ex );
+
+    return val ? *val : 0;
+}
+
+//____________________________________________________________________________//
+
 static void
-report_error( execution_exception::error_code ec, char const* format, ... )
+report_error( execution_exception::error_code ec, boost::exception const* be, char const* format, va_list* args )
 {
     static const int REPORT_ERROR_BUFFER_SIZE = 512;
     static char buf[REPORT_ERROR_BUFFER_SIZE];
 
+    BOOST_TEST_VSNPRINTF( buf, sizeof(buf)-1, format, *args ); 
+    buf[sizeof(buf)-1] = 0;
+
+    va_end( *args );
+
+    throw execution_exception( ec, buf, execution_exception::location( extract<throw_file>( be ), 
+                                                                       extract<throw_line>( be ),
+                                                                       extract<throw_function>( be ) ) );
+}
+
+//____________________________________________________________________________//
+
+static void
+report_error( execution_exception::error_code ec, char const* format, ... )
+{
     va_list args;
     va_start( args, format );
 
-    BOOST_TEST_VSNPRINTF( buf, sizeof(buf)-1, format, args ); 
-    buf[sizeof(buf)-1] = 0;
+    report_error( ec, 0, format, &args );
+}
 
-    va_end( args );
+//____________________________________________________________________________//
 
-    throw execution_exception( ec, buf );
+static void
+report_error( execution_exception::error_code ec, boost::exception const* be, char const* format, ... )
+{
+    va_list args;
+    va_start( args, format );
+
+    report_error( ec, be, format, &args );
 }
 
 //____________________________________________________________________________//
@@ -245,6 +249,27 @@ do_invoke( Tr const& tr, Functor const& F )
 }
 
 //____________________________________________________________________________//
+
+struct fpe_except_guard {
+    explicit fpe_except_guard( unsigned detect_fpe )
+	: m_detect_fpe( detect_fpe )
+    {
+        // prepare fp exceptions control
+        m_previosly_enabled = fpe::disable( fpe::BOOST_FPE_ALL );
+		if( m_previosly_enabled != fpe::BOOST_FPE_INV && detect_fpe != fpe::BOOST_FPE_OFF )
+            fpe::enable( detect_fpe );
+    }
+    ~fpe_except_guard()
+    {
+        if( m_detect_fpe != fpe::BOOST_FPE_OFF )
+            fpe::disable( m_detect_fpe );
+		if( m_previosly_enabled != fpe::BOOST_FPE_INV )
+			fpe::enable( m_previosly_enabled );
+    }
+
+    unsigned m_detect_fpe;
+    unsigned m_previosly_enabled;
+};
 
 } // namespace detail
 
@@ -468,48 +493,6 @@ system_signal_exception::report() const
         }
         break;
 
-    case SIGCHLD:
-        switch( m_sig_info->si_code ) {
-#ifndef BOOST_TEST_LIMITED_SIGNAL_DETAILS
-        case CLD_EXITED:
-            report_error( execution_exception::system_error,
-                          "child has exited; pid: %d; uid: %d; exit value: %d",
-                          (int)m_sig_info->si_pid, (int)m_sig_info->si_uid, (int)m_sig_info->si_status );
-            break;
-        case CLD_KILLED:
-            report_error( execution_exception::system_error,
-                          "child was killed; pid: %d; uid: %d; exit value: %d",
-                          (int)m_sig_info->si_pid, (int)m_sig_info->si_uid, (int)m_sig_info->si_status );
-            break;
-        case CLD_DUMPED:
-            report_error( execution_exception::system_error,
-                          "child terminated abnormally; pid: %d; uid: %d; exit value: %d",
-                          (int)m_sig_info->si_pid, (int)m_sig_info->si_uid, (int)m_sig_info->si_status );
-            break;
-        case CLD_TRAPPED:
-            report_error( execution_exception::system_error,
-                          "traced child has trapped; pid: %d; uid: %d; exit value: %d",
-                          (int)m_sig_info->si_pid, (int)m_sig_info->si_uid, (int)m_sig_info->si_status );
-            break;
-        case CLD_STOPPED:
-            report_error( execution_exception::system_error,
-                          "child has stopped; pid: %d; uid: %d; exit value: %d",
-                          (int)m_sig_info->si_pid, (int)m_sig_info->si_uid, (int)m_sig_info->si_status );
-            break;
-        case CLD_CONTINUED:
-            report_error( execution_exception::system_error,
-                          "stopped child had continued; pid: %d; uid: %d; exit value: %d",
-                          (int)m_sig_info->si_pid, (int)m_sig_info->si_uid, (int)m_sig_info->si_status );
-            break;
-#endif
-        default:
-            report_error( execution_exception::system_error,
-                          "signal: SIGCHLD, si_code: %d (child process has terminated; pid: %d; uid: %d; exit value: %d)",
-                          (int)m_sig_info->si_pid, (int)m_sig_info->si_uid, (int)m_sig_info->si_status, m_sig_info->si_code );
-            break;
-        }
-        break;
-
 #if defined(BOOST_TEST_CATCH_SIGPOLL)
 
     case SIGPOLL:
@@ -655,7 +638,7 @@ signal_action::~signal_action()
 class signal_handler {
 public:
     // Constructor
-    explicit signal_handler( bool catch_system_errors, int timeout, bool attach_dbg, char* alt_stack );
+    explicit signal_handler( bool catch_system_errors, bool detect_fpe, int timeout, bool attach_dbg, char* alt_stack );
 
     // Destructor
     ~signal_handler();
@@ -680,6 +663,7 @@ private:
     signal_handler*         m_prev_handler;
     int                     m_timeout;
 
+    // Note: We intentionality do not catch SIGCHLD. Users have to deal with it themselves
     signal_action           m_ILL_action;
     signal_action           m_FPE_action;
     signal_action           m_SEGV_action;
@@ -701,16 +685,13 @@ signal_handler* signal_handler::s_active_handler = signal_handler_ptr();
 
 //____________________________________________________________________________//
 
-signal_handler::signal_handler( bool catch_system_errors, int timeout, bool attach_dbg, char* alt_stack )
+signal_handler::signal_handler( bool catch_system_errors, bool detect_fpe, int timeout, bool attach_dbg, char* alt_stack )
 : m_prev_handler( s_active_handler )
 , m_timeout( timeout )
 , m_ILL_action ( SIGILL , catch_system_errors, attach_dbg, alt_stack )
-, m_FPE_action ( SIGFPE , catch_system_errors, attach_dbg, alt_stack )
+, m_FPE_action ( SIGFPE , detect_fpe         , attach_dbg, alt_stack )
 , m_SEGV_action( SIGSEGV, catch_system_errors, attach_dbg, alt_stack )
 , m_BUS_action ( SIGBUS , catch_system_errors, attach_dbg, alt_stack )
-#ifndef BOOST_TEST_IGNORE_SIGCHLD
-, m_CHLD_action( SIGCHLD, catch_system_errors, attach_dbg, alt_stack )
-#endif
 #ifdef BOOST_TEST_CATCH_SIGPOLL
 , m_POLL_action( SIGPOLL, catch_system_errors, attach_dbg, alt_stack )
 #endif
@@ -751,7 +732,14 @@ signal_handler::~signal_handler()
         ::alarm( 0 );
 
 #ifdef BOOST_TEST_USE_ALT_STACK
-    stack_t sigstk = {};
+#ifdef __GNUC__
+    // We shouldn't need to explicitly initialize all the members here,
+    // but gcc warns if we don't, so add initializers for each of the
+    // members specified in the POSIX std:
+    stack_t sigstk = { 0, 0, 0 };
+#else
+    stack_t sigstk = { };
+#endif
 
     sigstk.ss_size  = MINSIGSTKSZ;
     sigstk.ss_flags = SS_DISABLE;
@@ -769,26 +757,8 @@ signal_handler::~signal_handler()
 
 extern "C" {
 
-static bool ignore_sigchild( siginfo_t* info )
-{
-    return info->si_signo == SIGCHLD
-#ifndef BOOST_TEST_LIMITED_SIGNAL_DETAILS
-            && info->si_code == CLD_EXITED 
-#endif
-#ifdef BOOST_TEST_IGNORE_NON_ZERO_CHILD_CODE
-            ;
-#else
-            && (int)info->si_status == 0;
-#endif
-}
-
-//____________________________________________________________________________//
-
 static void execution_monitor_jumping_signal_handler( int sig, siginfo_t* info, void* context )
 {
-    if( ignore_sigchild( info ) )
-        return;
-
     signal_handler::sys_sig()( info, context );
 
     siglongjmp( signal_handler::jump_buffer(), sig );
@@ -798,9 +768,6 @@ static void execution_monitor_jumping_signal_handler( int sig, siginfo_t* info, 
 
 static void execution_monitor_attaching_signal_handler( int sig, siginfo_t* info, void* context )
 {
-    if( ignore_sigchild( info ) )
-        return;
-
     if( !debug::attach_debugger( false ) )
         execution_monitor_jumping_signal_handler( sig, info, context );
 
@@ -834,7 +801,10 @@ execution_monitor::catch_signals( unit_test::callback0<int> const& F )
     p_use_alt_stack.value = false;
 #endif
 
-    signal_handler local_signal_handler( p_catch_system_errors, p_timeout, p_auto_start_dbg, 
+    signal_handler local_signal_handler( p_catch_system_errors, 
+                                         p_catch_system_errors || (p_detect_fp_exceptions != fpe::BOOST_FPE_OFF),
+                                         p_timeout, 
+                                         p_auto_start_dbg, 
                                          !p_use_alt_stack ? 0 : m_alt_stack.get() );
 
     if( !sigsetjmp( signal_handler::jump_buffer(), 1 ) )
@@ -883,11 +853,15 @@ private:
     bool                m_dir;
 };
 
+//____________________________________________________________________________//
+
+#if BOOST_WORKAROUND( BOOST_MSVC, <= 1310)
 static void
 seh_catch_preventer( unsigned int /* id */, _EXCEPTION_POINTERS* /* exps */ )
 {
     throw;
 }
+#endif
 
 //____________________________________________________________________________//
 
@@ -896,13 +870,36 @@ system_signal_exception::operator()( unsigned int id, _EXCEPTION_POINTERS* exps 
 {
     const unsigned int MSFT_CPP_EXCEPT = 0xE06d7363; // EMSC
 
-    if( !m_em->p_catch_system_errors || (id == MSFT_CPP_EXCEPT) )
+    // C++ exception - allow to go through
+    if( id == MSFT_CPP_EXCEPT )
         return EXCEPTION_CONTINUE_SEARCH;
+
+    // FPE detection is enabled, while system exception detection is not - check if this is actually FPE
+    if( !m_em->p_catch_system_errors ) {
+        if( !m_em->p_detect_fp_exceptions )
+            return EXCEPTION_CONTINUE_SEARCH;
+
+        switch( id ) {
+        case EXCEPTION_FLT_DIVIDE_BY_ZERO:
+        case EXCEPTION_FLT_STACK_CHECK:
+        case EXCEPTION_FLT_DENORMAL_OPERAND:
+        case EXCEPTION_FLT_INEXACT_RESULT:
+        case EXCEPTION_FLT_OVERFLOW:
+        case EXCEPTION_FLT_UNDERFLOW:
+        case EXCEPTION_FLT_INVALID_OPERATION:
+        case STATUS_FLOAT_MULTIPLE_FAULTS:
+        case STATUS_FLOAT_MULTIPLE_TRAPS:
+            break;
+        default:
+            return EXCEPTION_CONTINUE_SEARCH;
+        }
+    }
 
     if( !!m_em->p_auto_start_dbg && debug::attach_debugger( false ) ) {
         m_em->p_catch_system_errors.value = false;
+#if BOOST_WORKAROUND( BOOST_MSVC, <= 1310)
         _set_se_translator( &seh_catch_preventer );
-
+#endif
         return EXCEPTION_CONTINUE_EXECUTION;
     }
 
@@ -987,12 +984,10 @@ system_signal_exception::report() const
                               "operand of floating point operation is denormal" );
         break;
 
-# if 0 // !! ?? 
     case EXCEPTION_FLT_INEXACT_RESULT:
         detail::report_error( execution_exception::system_error,
                               "result of a floating-point operation cannot be represented exactly" );
         break;
-#endif
 
     case EXCEPTION_FLT_OVERFLOW:
         detail::report_error( execution_exception::system_error,
@@ -1006,6 +1001,14 @@ system_signal_exception::report() const
 
     case EXCEPTION_FLT_INVALID_OPERATION:
         detail::report_error( execution_exception::system_error, "floating point error" );
+        break;
+
+    case STATUS_FLOAT_MULTIPLE_FAULTS:
+        detail::report_error( execution_exception::system_error, "multiple floating point errors" );
+        break;
+
+    case STATUS_FLOAT_MULTIPLE_TRAPS:
+        detail::report_error( execution_exception::system_error, "multiple floating point errors" );
         break;
 
     case EXCEPTION_BREAKPOINT:
@@ -1056,30 +1059,6 @@ invalid_param_handler( wchar_t const* /* expr */,
 
 //____________________________________________________________________________//
 
-void BOOST_TEST_CALL_DECL
-switch_fp_exceptions( bool on_off )
-{
-    if( !on_off )
-        _clearfp();
-
-    int cw = ::_controlfp( 0, 0 );
-
-    int exceptions_mask = EM_INVALID|EM_DENORMAL|EM_ZERODIVIDE|EM_OVERFLOW|EM_UNDERFLOW;
-
-    if( on_off )
-        cw &= ~exceptions_mask; // Set the exception masks on, turn exceptions off
-    else
-        cw |= exceptions_mask;  // Set the exception masks off, turn exceptions on
-
-    if( on_off )
-        _clearfp();
-        
-    // Set the control word
-    ::_controlfp( cw, MCW_EM );
-}
-
-//____________________________________________________________________________//
-
 } // namespace detail
 
 // ************************************************************************** //
@@ -1090,44 +1069,36 @@ int
 execution_monitor::catch_signals( unit_test::callback0<int> const& F )
 {
     _invalid_parameter_handler old_iph = _invalid_parameter_handler();
-    BOOST_TEST_CRT_HOOK_TYPE old_crt_hook;
+    BOOST_TEST_CRT_HOOK_TYPE old_crt_hook = 0;
 
-    if( !p_catch_system_errors )
-        _set_se_translator( &detail::seh_catch_preventer );
-    else {
-        if( !!p_detect_fp_exceptions )
-            detail::switch_fp_exceptions( true );
+    if( p_catch_system_errors ) {
+        old_crt_hook = BOOST_TEST_CRT_SET_HOOK( &detail::assert_reporting_function );
 
-       old_crt_hook = BOOST_TEST_CRT_SET_HOOK( &detail::assert_reporting_function );
-
-       old_iph = _set_invalid_parameter_handler( 
-           reinterpret_cast<_invalid_parameter_handler>( &detail::invalid_param_handler ) );
+        old_iph = _set_invalid_parameter_handler( 
+            reinterpret_cast<_invalid_parameter_handler>( &detail::invalid_param_handler ) );
+    } else if( !p_detect_fp_exceptions ) {
+#if BOOST_WORKAROUND( BOOST_MSVC, <= 1310)
+        _set_se_translator( &seh_catch_preventer );
+#endif
     }
 
     detail::system_signal_exception SSE( this );
     
-    int ret_val = 0;
-
     __try {
         __try {
-            ret_val = detail::do_invoke( m_custom_translators, F );
+            return detail::do_invoke( m_custom_translators, F );
         }
         __except( SSE( GetExceptionCode(), GetExceptionInformation() ) ) {
             throw SSE;
         }
     }
     __finally {
-        if( !!p_catch_system_errors ) {
-            if( !!p_detect_fp_exceptions )
-                detail::switch_fp_exceptions( false );
-
+        if( p_catch_system_errors ) {
             BOOST_TEST_CRT_SET_HOOK( old_crt_hook );
 
            _set_invalid_parameter_handler( old_iph );
         }
     }
-
-    return ret_val;
 }
 
 //____________________________________________________________________________//
@@ -1154,8 +1125,18 @@ execution_monitor::catch_signals( unit_test::callback0<int> const& F )
 #endif  // choose signal handler
 
 // ************************************************************************** //
-// **************          execution_monitor::execute          ************** //
+// **************              execution_monitor               ************** //
 // ************************************************************************** //
+
+execution_monitor::execution_monitor()
+: p_catch_system_errors( true )
+, p_auto_start_dbg( false )
+, p_timeout( 0 )
+, p_use_alt_stack( true )
+, p_detect_fp_exceptions( fpe::BOOST_FPE_OFF )
+{}
+
+//____________________________________________________________________________//
 
 int
 execution_monitor::execute( unit_test::callback0<int> const& F )
@@ -1164,6 +1145,9 @@ execution_monitor::execute( unit_test::callback0<int> const& F )
         p_catch_system_errors.value = false;
 
     try {
+        detail::fpe_except_guard G( p_detect_fp_exceptions );
+        unit_test::ut_detail::ignore_unused_variable_warning( G );
+
         return catch_signals( F );
     }
 
@@ -1173,60 +1157,105 @@ execution_monitor::execute( unit_test::callback0<int> const& F )
     //  easier than answering questions about non-const usage.
 
     catch( char const* ex )
-      { detail::report_error( execution_exception::cpp_exception_error, "C string: %s", ex ); }
+      { detail::report_error( execution_exception::cpp_exception_error,
+                              "C string: %s", ex ); }
     catch( std::string const& ex )
-      { detail::report_error( execution_exception::cpp_exception_error, "std::string: %s", ex.c_str() ); }
+      { detail::report_error( execution_exception::cpp_exception_error, 
+                              "std::string: %s", ex.c_str() ); }
 
     //  std:: exceptions
 
     catch( std::bad_alloc const& ex )
-      { detail::report_error( execution_exception::cpp_exception_error, "std::bad_alloc: %s", ex.what() ); }
+      { detail::report_error( execution_exception::cpp_exception_error, 
+                              current_exception_cast<boost::exception const>(),
+                              "std::bad_alloc: %s", ex.what() ); }
 
 #if BOOST_WORKAROUND(__BORLANDC__, <= 0x0551)
     catch( std::bad_cast const& ex )
-      { detail::report_error( execution_exception::cpp_exception_error, "std::bad_cast" ); }
+      { detail::report_error( execution_exception::cpp_exception_error, 
+                              current_exception_cast<boost::exception const>(),
+                              "std::bad_cast" ); }
     catch( std::bad_typeid const& ex )
-      { detail::report_error( execution_exception::cpp_exception_error, "std::bad_typeid" ); }
+      { detail::report_error( execution_exception::cpp_exception_error, 
+                              current_exception_cast<boost::exception const>(),
+                              "std::bad_typeid" ); }
 #else
     catch( std::bad_cast const& ex )
-      { detail::report_error( execution_exception::cpp_exception_error, "std::bad_cast: %s", ex.what() ); }
+      { detail::report_error( execution_exception::cpp_exception_error, 
+                              current_exception_cast<boost::exception const>(),
+                              "std::bad_cast: %s", ex.what() ); }
     catch( std::bad_typeid const& ex )
-      { detail::report_error( execution_exception::cpp_exception_error, "std::bad_typeid: %s", ex.what() ); }
+      { detail::report_error( execution_exception::cpp_exception_error, 
+                              current_exception_cast<boost::exception const>(),
+                              "std::bad_typeid: %s", ex.what() ); }
 #endif
 
     catch( std::bad_exception const& ex )
-      { detail::report_error( execution_exception::cpp_exception_error, "std::bad_exception: %s", ex.what() ); }
+      { detail::report_error( execution_exception::cpp_exception_error, 
+                              current_exception_cast<boost::exception const>(),
+                              "std::bad_exception: %s", ex.what() ); }
     catch( std::domain_error const& ex )
-      { detail::report_error( execution_exception::cpp_exception_error, "std::domain_error: %s", ex.what() ); }
+      { detail::report_error( execution_exception::cpp_exception_error, 
+                              current_exception_cast<boost::exception const>(),
+                              "std::domain_error: %s", ex.what() ); }
     catch( std::invalid_argument const& ex )
-      { detail::report_error( execution_exception::cpp_exception_error, "std::invalid_argument: %s", ex.what() ); }
+      { detail::report_error( execution_exception::cpp_exception_error, 
+                              current_exception_cast<boost::exception const>(),
+                              "std::invalid_argument: %s", ex.what() ); }
     catch( std::length_error const& ex )
-      { detail::report_error( execution_exception::cpp_exception_error, "std::length_error: %s", ex.what() ); }
+      { detail::report_error( execution_exception::cpp_exception_error, 
+                              current_exception_cast<boost::exception const>(),
+                              "std::length_error: %s", ex.what() ); }
     catch( std::out_of_range const& ex )
-      { detail::report_error( execution_exception::cpp_exception_error, "std::out_of_range: %s", ex.what() ); }
+      { detail::report_error( execution_exception::cpp_exception_error, 
+                              current_exception_cast<boost::exception const>(),
+                              "std::out_of_range: %s", ex.what() ); }
     catch( std::range_error const& ex )
-      { detail::report_error( execution_exception::cpp_exception_error, "std::range_error: %s", ex.what() ); }
+      { detail::report_error( execution_exception::cpp_exception_error, 
+                              current_exception_cast<boost::exception const>(),
+                              "std::range_error: %s", ex.what() ); }
     catch( std::overflow_error const& ex )
-      { detail::report_error( execution_exception::cpp_exception_error, "std::overflow_error: %s", ex.what() ); }
+      { detail::report_error( execution_exception::cpp_exception_error, 
+                              current_exception_cast<boost::exception const>(),
+                              "std::overflow_error: %s", ex.what() ); }
     catch( std::underflow_error const& ex )
-      { detail::report_error( execution_exception::cpp_exception_error, "std::underflow_error: %s", ex.what() ); }
+      { detail::report_error( execution_exception::cpp_exception_error, 
+                              current_exception_cast<boost::exception const>(),
+                              "std::underflow_error: %s", ex.what() ); }
     catch( std::logic_error const& ex )
-      { detail::report_error( execution_exception::cpp_exception_error, "std::logic_error: %s", ex.what() ); }
+      { detail::report_error( execution_exception::cpp_exception_error, 
+                              current_exception_cast<boost::exception const>(),
+                              "std::logic_error: %s", ex.what() ); }
     catch( std::runtime_error const& ex )
-      { detail::report_error( execution_exception::cpp_exception_error, "std::runtime_error: %s", ex.what() ); }
+      { detail::report_error( execution_exception::cpp_exception_error, 
+                              current_exception_cast<boost::exception const>(),
+                              "std::runtime_error: %s", ex.what() ); }
     catch( std::exception const& ex )
-      { detail::report_error( execution_exception::cpp_exception_error, "std::exception: %s", ex.what() ); }
+      { detail::report_error( execution_exception::cpp_exception_error, 
+                              current_exception_cast<boost::exception const>(),
+                              "std::exception: %s", ex.what() ); }
+
+    catch( boost::exception const& ex )
+    { detail::report_error( execution_exception::cpp_exception_error, 
+                            &ex,
+                            "unknown boost::exception" ); }
+
+    // system errors
     catch( system_error const& ex )
-      { detail::report_error( execution_exception::cpp_exception_error, "system_error produced by: %s: %s", 
-                              ex.p_failed_exp.get(), 
-                              std::strerror( ex.p_errno ) ); }
+      { detail::report_error( execution_exception::cpp_exception_error, 
+                              "system_error produced by: %s: %s", ex.p_failed_exp.get(), std::strerror( ex.p_errno ) ); }
     catch( detail::system_signal_exception const& ex )
       { ex.report(); }
+
+    // not an error
     catch( execution_aborted const& )
       { return 0; }
+
+    // just forward
     catch( execution_exception const& )
       { throw; }
 
+    // unknown error
     catch( ... )
       { detail::report_error( execution_exception::cpp_exception_error, "unknown type" ); }
 
@@ -1248,12 +1277,91 @@ system_error::system_error( char const* exp )
 , p_failed_exp( exp )
 {}
 
+//____________________________________________________________________________//
+
+// ************************************************************************** //
+// **************              execution_exception             ************** //
+// ************************************************************************** //
+
+execution_exception::execution_exception( error_code ec_, const_string what_msg_, location const& location_ )
+: m_error_code( ec_ )
+, m_what( what_msg_.empty() ? BOOST_TEST_L( "uncaught exception, system error or abort requested" ) : what_msg_ )
+, m_location( location_ )
+{}
 
 //____________________________________________________________________________//
+
+execution_exception::location::location( char const* file_name, size_t line_num, char const* func )
+: m_file_name( file_name ? file_name : "unknown location" )
+, m_line_num( line_num )
+, m_function( func )
+{}
+
+//____________________________________________________________________________//
+
+// ************************************************************************** //
+// **************Floating point exception management interface ************** //
+// ************************************************************************** //
+
+namespace fpe {
+
+unsigned
+enable( unsigned mask )
+{
+#ifdef BOOST_SEH_BASED_SIGNAL_HANDLING
+    _clearfp();
+
+    unsigned old_cw;
+    if( ::_controlfp_s( &old_cw, 0, 0 ) != 0 )
+		return BOOST_FPE_INV;
+
+    // Set the control word
+    if( ::_controlfp_s( 0, old_cw & ~mask, BOOST_FPE_ALL ) != 0 )
+		return BOOST_FPE_INV;
+
+	return ~old_cw & BOOST_FPE_ALL;
+#elif defined(__CYGWIN__) || defined(__APPLE__)
+    /* Not Implemented in cygwin or apple */
+    return 0;
+#else
+    ::feclearexcept(BOOST_FPE_ALL);
+	int res = ::feenableexcept( mask );
+	return res == -1 ? BOOST_FPE_INV : (unsigned)res;
+#endif
+}
+
+//____________________________________________________________________________//
+
+unsigned
+disable( unsigned mask )
+{
+#ifdef BOOST_SEH_BASED_SIGNAL_HANDLING
+    _clearfp();
+
+    unsigned old_cw;
+    if( ::_controlfp_s( &old_cw, 0, 0 ) != 0 )
+		return BOOST_FPE_INV;
+
+    // Set the control word
+    if( ::_controlfp_s( 0, old_cw | mask, BOOST_FPE_ALL ) != 0 )
+		return BOOST_FPE_INV;
+
+    return ~old_cw & BOOST_FPE_ALL;
+#elif defined(__CYGWIN__) || defined(__APPLE__)
+    /* Not Implemented in cygwin or apple */
+    return BOOST_FPE_INV;
+#else
+    ::feclearexcept(BOOST_FPE_ALL);
+	int res = ::fedisableexcept( mask );
+	return res == -1 ? BOOST_FPE_INV : (unsigned)res;
+#endif
+}
+
+//____________________________________________________________________________//
+
+} // namespace fpe
 
 } // namespace boost
-
-//____________________________________________________________________________//
 
 #include <boost/test/detail/enable_warnings.hpp>
 

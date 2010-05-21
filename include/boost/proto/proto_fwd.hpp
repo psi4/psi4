@@ -9,14 +9,14 @@
 #ifndef BOOST_PROTO_FWD_HPP_EAN_04_01_2005
 #define BOOST_PROTO_FWD_HPP_EAN_04_01_2005
 
-#include <boost/proto/detail/prefix.hpp> // must be first include
 #include <cstddef>
 #include <climits>
 #include <boost/config.hpp>
-#include <boost/version.hpp>
 #include <boost/detail/workaround.hpp>
 #include <boost/preprocessor/cat.hpp>
+#include <boost/preprocessor/arithmetic/inc.hpp>
 #include <boost/preprocessor/punctuation/comma.hpp>
+#include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_params_with_a_default.hpp>
 #include <boost/preprocessor/repetition/enum_trailing_binary_params.hpp>
 #include <boost/preprocessor/repetition/repeat_from_to.hpp>
@@ -47,13 +47,14 @@
 
 #ifndef BOOST_PROTO_BROKEN_CONST_OVERLOADS
 # if BOOST_WORKAROUND(__GNUC__, == 3) \
-  || BOOST_WORKAROUND(__EDG_VERSION__, BOOST_TESTED_AT(306))
+  || BOOST_WORKAROUND(__EDG_VERSION__, BOOST_TESTED_AT(310))
 #  define BOOST_PROTO_BROKEN_CONST_OVERLOADS
 # endif
 #endif
 
 #ifndef BOOST_PROTO_BROKEN_CONST_QUALIFIED_FUNCTIONS
-# if BOOST_WORKAROUND(__GNUC__, == 3)
+# if BOOST_WORKAROUND(__GNUC__, == 3) \
+  || BOOST_WORKAROUND(__EDG_VERSION__, BOOST_TESTED_AT(310))
 #  define BOOST_PROTO_BROKEN_CONST_QUALIFIED_FUNCTIONS
 # endif
 #endif
@@ -82,59 +83,6 @@
 # endif
 #endif
 
-#if BOOST_VERSION < 103500
-#define BOOST_PROTO_FUSION_DEFINE_TAG(X)        typedef X tag;
-#define BOOST_PROTO_FUSION_DEFINE_CATEGORY(X)
-#define BOOST_PROTO_FUSION_RESULT_OF            meta
-#define BOOST_PROTO_FUSION_EXTENSION            meta
-#define BOOST_PROTO_FUSION_AT_C(N, X)           at<N>(X)
-#else
-#define BOOST_PROTO_FUSION_DEFINE_TAG(X)        typedef X fusion_tag;
-#define BOOST_PROTO_FUSION_DEFINE_CATEGORY(X)   typedef X category;
-#define BOOST_PROTO_FUSION_RESULT_OF            result_of
-#define BOOST_PROTO_FUSION_EXTENSION            extension
-#define BOOST_PROTO_FUSION_AT_C(N, X)           at_c<N>(X)
-#endif
-
-#include <boost/proto/detail/suffix.hpp> // must be last include
-
-#ifdef BOOST_PROTO_BUILDING_DOCS
-// HACKHACK so Doxygen shows inheritance from mpl::true_ and mpl::false_
-namespace boost
-{
-    /// INTERNAL ONLY
-    ///
-    namespace mpl
-    {
-        /// INTERNAL ONLY
-        ///
-        struct true_ {};
-        /// INTERNAL ONLY
-        ///
-        struct false_ {};
-    }
-
-    /// INTERNAL ONLY
-    ///
-    namespace fusion
-    {
-        /// INTERNAL ONLY
-        ///
-        template<typename Function>
-        class unfused_generic {};
-    }
-}
-#define BOOST_PROTO_WHEN_BUILDING_DOCS(x) x
-#define BOOST_PROTO_WHEN_NOT_BUILDING_DOCS(x)
-#define BOOST_PROTO_BEGIN_ADL_NAMESPACE(x)
-#define BOOST_PROTO_END_ADL_NAMESPACE(x)
-#else
-#define BOOST_PROTO_WHEN_BUILDING_DOCS(x)
-#define BOOST_PROTO_WHEN_NOT_BUILDING_DOCS(x) x
-#define BOOST_PROTO_BEGIN_ADL_NAMESPACE(x) namespace x {
-#define BOOST_PROTO_END_ADL_NAMESPACE(x) }
-#endif
-
 namespace boost { namespace proto
 {
     namespace detail
@@ -147,7 +95,7 @@ namespace boost { namespace proto
 
         struct private_type_
         {
-            private_type_ const &operator ,(int) const;
+            private_type_ operator ,(int) const;
         };
 
         template<typename T>
@@ -190,9 +138,31 @@ namespace boost { namespace proto
             typename boost::remove_const<typename boost::remove_reference<X>::type>::type
 
         struct _default;
+
+        struct not_a_domain;
+        struct not_a_grammar;
+        struct not_a_generator;
     }
 
     typedef detail::ignore const ignore;
+
+    namespace argsns_
+    {
+        template<typename Arg0>
+        struct term;
+
+        #define M0(Z, N, DATA)                                                                      \
+        template<BOOST_PP_ENUM_PARAMS_Z(Z, N, typename Arg)> struct BOOST_PP_CAT(list, N);          \
+        /**/
+        BOOST_PP_REPEAT_FROM_TO(1, BOOST_PP_INC(BOOST_PROTO_MAX_ARITY), M0, ~)
+        #undef M0
+    }
+
+    using argsns_::term;
+
+    #define M0(Z, N, DATA) using argsns_::BOOST_PP_CAT(list, N);
+    BOOST_PP_REPEAT_FROM_TO(1, BOOST_PP_INC(BOOST_PROTO_MAX_ARITY), M0, ~)
+    #undef M0
 
     ///////////////////////////////////////////////////////////////////////////////
     // Operator tags
@@ -254,17 +224,17 @@ namespace boost { namespace proto
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    BOOST_PROTO_BEGIN_ADL_NAMESPACE(wildcardns_)
+    namespace wildcardns_
+    {
         struct _;
-    BOOST_PROTO_END_ADL_NAMESPACE(wildcardns_)
+    }
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    #ifndef BOOST_PROTO_BUILDING_DOCS
     using wildcardns_::_;
-    #endif
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    BOOST_PROTO_BEGIN_ADL_NAMESPACE(generatorns_)
+    namespace generatorns_
+    {
         struct default_generator;
 
         template<template<typename> class Extends>
@@ -277,36 +247,38 @@ namespace boost { namespace proto
 
         template<typename First, typename Second>
         struct compose_generators;
-    BOOST_PROTO_END_ADL_NAMESPACE(generatorns_)
+    }
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    #ifndef BOOST_PROTO_BUILDING_DOCS
     using generatorns_::default_generator;
     using generatorns_::generator;
     using generatorns_::pod_generator;
     using generatorns_::by_value_generator;
     using generatorns_::compose_generators;
-    #endif
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    BOOST_PROTO_BEGIN_ADL_NAMESPACE(domainns_)
-        template<typename Generator = default_generator, typename Grammar = proto::_>
+    namespace domainns_
+    {
+        template<
+            typename Generator  = default_generator
+          , typename Grammar    = proto::_
+          , typename Super      = detail::not_a_domain
+        >
         struct domain;
 
         struct default_domain;
 
         struct deduce_domain;
-    BOOST_PROTO_END_ADL_NAMESPACE(domainns_)
+    }
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    #ifndef BOOST_PROTO_BUILDING_DOCS
     using domainns_::domain;
     using domainns_::default_domain;
     using domainns_::deduce_domain;
-    #endif
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    BOOST_PROTO_BEGIN_ADL_NAMESPACE(exprns_)
+    namespace exprns_
+    {
         template<typename Tag, typename Args, long Arity = Args::arity>
         struct expr;
 
@@ -322,14 +294,12 @@ namespace boost { namespace proto
         struct virtual_member;
         
         struct is_proto_expr;
-    BOOST_PROTO_END_ADL_NAMESPACE(exprns_)
+    }
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    #ifndef BOOST_PROTO_BUILDING_DOCS
     using exprns_::expr;
     using exprns_::extends;
     using exprns_::is_proto_expr;
-    #endif
 
     namespace control
     {
@@ -754,6 +724,8 @@ namespace boost { namespace proto
     struct _data;
 
     struct _value;
+
+    struct _void;
 
     template<int I>
     struct _child_c;

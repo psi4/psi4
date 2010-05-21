@@ -23,6 +23,11 @@
 #include <boost/config.hpp>
 #include <boost/serialization/extended_type_info.hpp>
 
+#ifdef BOOST_MSVC
+#  pragma warning(push)
+#  pragma warning(disable : 4511 4512)
+#endif
+
 namespace boost {
 namespace archive {
 namespace detail {
@@ -66,5 +71,9 @@ public:
 } // namespace detail
 } // namespace archive
 } // namespace boost
+
+#ifdef BOOST_MSVC
+#pragma warning(pop)
+#endif
 
 #endif // BOOST_ARCHIVE_BASIC_SERIALIZER_HPP

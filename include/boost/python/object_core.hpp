@@ -5,6 +5,8 @@
 #ifndef OBJECT_CORE_DWA2002615_HPP
 # define OBJECT_CORE_DWA2002615_HPP
 
+# define BOOST_PYTHON_OBJECT_HAS_IS_NONE // added 2010-03-15 by rwgk
+
 # include <boost/python/detail/prefix.hpp>
 
 # include <boost/type.hpp>
@@ -239,7 +241,9 @@ namespace api
         
       // Underlying object access -- returns a borrowed reference
       inline PyObject* ptr() const;
-      
+
+      inline bool is_none() const;
+
    private:
       PyObject* m_ptr;
   };
@@ -537,6 +541,11 @@ inline object::object(detail::new_non_null_reference p)
 inline PyObject* api::object_base::ptr() const
 {
     return m_ptr;
+}
+
+inline bool api::object_base::is_none() const
+{
+    return (m_ptr == Py_None);
 }
 
 //

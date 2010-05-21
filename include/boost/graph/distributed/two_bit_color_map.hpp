@@ -50,7 +50,7 @@ template<typename ProcessGroup, typename GlobalMap, typename StorageMap>
 inline two_bit_color_type
 get(two_bit_color_map<local_property_map<ProcessGroup,GlobalMap,StorageMap> >
       const& pm,
-    typename two_bit_color_map<GlobalMap>::key_type key)
+    typename property_traits<GlobalMap>::key_type key)
 {
   return get(pm.base(), key);
 }
@@ -59,7 +59,7 @@ template<typename ProcessGroup, typename GlobalMap, typename StorageMap>
 inline void
 put(two_bit_color_map<local_property_map<ProcessGroup,GlobalMap,StorageMap> >
       const& pm, 
-    typename two_bit_color_map<GlobalMap>::key_type key,
+    typename property_traits<GlobalMap>::key_type key,
     two_bit_color_type value)
 {
   put(pm.base(), key, value);
@@ -95,7 +95,7 @@ inline two_bit_color_type
 get(two_bit_color_map<
       parallel::distributed_property_map<
         ProcessGroup, GlobalMap, two_bit_color_map<StorageMap> > > const& pm,
-    typename two_bit_color_map<GlobalMap>::key_type key)
+    typename property_traits<GlobalMap>::key_type key)
 {
   return get(pm.base(), key);
 }
@@ -105,7 +105,7 @@ inline void
 put(two_bit_color_map<
       parallel::distributed_property_map<
         ProcessGroup, GlobalMap, two_bit_color_map<StorageMap> > > const& pm, 
-    typename two_bit_color_map<GlobalMap>::key_type key,
+    typename property_traits<GlobalMap>::key_type key,
     two_bit_color_type value)
 {
   put(pm.base(), key, value);

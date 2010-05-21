@@ -6,7 +6,7 @@
 #ifndef BOOST_PROPERTY_HPP
 #define BOOST_PROPERTY_HPP
 
-#include <boost/pending/ct_if.hpp>
+#include <boost/mpl/bool.hpp>
 
 namespace boost {
 
@@ -47,15 +47,9 @@ namespace boost {
   };
 
   template <class P>
-  struct has_property {
-    BOOST_STATIC_CONSTANT(bool, value = true);
-    typedef true_type type;
-  };
+  struct has_property : boost::mpl::true_ {};
   template <>
-  struct has_property<no_property> {
-    BOOST_STATIC_CONSTANT(bool, value = false);
-    typedef false_type type;
-  };
+  struct has_property<no_property> : boost::mpl::false_ {};
 
 } // namespace boost
 
@@ -77,7 +71,7 @@ namespace boost {
 
   template <class Tag2>
   inline detail::error_property_not_found
-  get_property_value(const no_property& p, Tag2) {
+  get_property_value(const no_property&, Tag2) {
     return detail::error_property_not_found();
   }
 

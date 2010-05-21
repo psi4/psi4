@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2001-2008.
+//  (C) Copyright Gennadiy Rozental 2001-2010.
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,7 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 54633 $
+//  Version     : $Revision: 62016 $
 //
 //  Description : simple implementation for Unit Test Framework parameter
 //  handling routines. May be rewritten in future to use some kind of
@@ -52,6 +52,7 @@ namespace env = rt::env;
 #include <map>
 #include <cstdlib>
 #include <iostream>
+#include <fstream>
 
 #include <boost/test/detail/suppress_warnings.hpp>
 
@@ -157,14 +158,17 @@ std::string AUTO_START_DBG    = "auto_start_dbg";
 std::string BREAK_EXEC_PATH   = "break_exec_path";
 std::string BUILD_INFO        = "build_info";
 std::string CATCH_SYS_ERRORS  = "catch_system_errors";
+std::string COLOR_OUTPUT      = "color_output";
 std::string DETECT_FP_EXCEPT  = "detect_fp_exceptions";
 std::string DETECT_MEM_LEAKS  = "detect_memory_leaks";
 std::string LOG_FORMAT        = "log_format";
 std::string LOG_LEVEL         = "log_level";
+std::string LOG_SINK          = "log_sink";
 std::string OUTPUT_FORMAT     = "output_format";
 std::string RANDOM_SEED       = "random";
 std::string REPORT_FORMAT     = "report_format";
 std::string REPORT_LEVEL      = "report_level";
+std::string REPORT_SINK       = "report_sink";
 std::string RESULT_CODE       = "result_code";
 std::string TESTS_TO_RUN      = "run_test";
 std::string SAVE_TEST_PATTERN = "save_pattern";
@@ -176,14 +180,17 @@ fixed_mapping<const_string,const_string> parameter_2_env_var(
     BREAK_EXEC_PATH   , "BOOST_TEST_BREAK_EXEC_PATH",
     BUILD_INFO        , "BOOST_TEST_BUILD_INFO",
     CATCH_SYS_ERRORS  , "BOOST_TEST_CATCH_SYSTEM_ERRORS",
+    COLOR_OUTPUT      , "BOOST_TEST_COLOR_OUTPUT",
     DETECT_FP_EXCEPT  , "BOOST_TEST_DETECT_FP_EXCEPTIONS",
     DETECT_MEM_LEAKS  , "BOOST_TEST_DETECT_MEMORY_LEAK",
     LOG_FORMAT        , "BOOST_TEST_LOG_FORMAT",
     LOG_LEVEL         , "BOOST_TEST_LOG_LEVEL",
+    LOG_SINK          , "BOOST_TEST_LOG_SINK",
     OUTPUT_FORMAT     , "BOOST_TEST_OUTPUT_FORMAT",
     RANDOM_SEED       , "BOOST_TEST_RANDOM",
     REPORT_FORMAT     , "BOOST_TEST_REPORT_FORMAT",
     REPORT_LEVEL      , "BOOST_TEST_REPORT_LEVEL",
+    REPORT_SINK       , "BOOST_TEST_REPORT_SINK",
     RESULT_CODE       , "BOOST_TEST_RESULT_CODE",
     TESTS_TO_RUN      , "BOOST_TESTS_TO_RUN",
     SAVE_TEST_PATTERN , "BOOST_TEST_SAVE_PATTERN",
@@ -216,9 +223,9 @@ retrieve_parameter( const_string parameter_name, cla::parser const& s_cla_parser
 
         optional<T> val = s_cla_parser.get<optional<T> >( parameter_name );
         if( val )
-	    return *val;
+            return *val;
         else
-	    return optional_value;
+            return optional_value;
     }
 
     boost::optional<T> v;
@@ -256,6 +263,9 @@ init( int& argc, char** argv )
           << cla::dual_name_parameter<bool>( CATCH_SYS_ERRORS + "|s" )
             - (cla::prefix = "--|-",cla::separator = "=| ",cla::guess_name,cla::optional,
                cla::description = "Allows to switch between catching and ignoring system errors (signals)")
+          << cla::dual_name_parameter<bool>( COLOR_OUTPUT + "|x" )
+            - (cla::prefix = "--|-",cla::separator = "=| ",cla::guess_name,cla::optional,
+               cla::description = "Allows to switch between catching and ignoring system errors (signals)")
           << cla::named_parameter<bool>( DETECT_FP_EXCEPT )
             - (cla::prefix = "--",cla::separator = "=",cla::guess_name,cla::optional,
                cla::description = "Allows to switch between catching and ignoring floating point exceptions")
@@ -268,6 +278,9 @@ init( int& argc, char** argv )
           << cla::dual_name_parameter<unit_test::log_level>( LOG_LEVEL + "|l" )
             - (cla::prefix = "--|-",cla::separator = "=| ",cla::guess_name,cla::optional,
                cla::description = "Specifies log level")
+          << cla::dual_name_parameter<std::string>( LOG_SINK + "|k" )
+            - (cla::prefix = "--|-",cla::separator = "=| ",cla::guess_name,cla::optional,
+               cla::description = "Specifies log sink:stdout(default),stderr or file name")
           << cla::dual_name_parameter<unit_test::output_format>( OUTPUT_FORMAT + "|o" )
             - (cla::prefix = "--|-",cla::separator = "=| ",cla::guess_name,cla::optional,
                cla::description = "Specifies output format (both log and report)")
@@ -281,6 +294,9 @@ init( int& argc, char** argv )
           << cla::dual_name_parameter<unit_test::report_level>(REPORT_LEVEL + "|r")
             - (cla::prefix = "--|-",cla::separator = "=| ",cla::guess_name,cla::optional,
                cla::description = "Specifies report level")
+          << cla::dual_name_parameter<std::string>( REPORT_SINK + "|e" )
+            - (cla::prefix = "--|-",cla::separator = "=| ",cla::guess_name,cla::optional,
+               cla::description = "Specifies report sink:stderr(default),stdout or file name")
           << cla::dual_name_parameter<bool>( RESULT_CODE + "|c" )
             - (cla::prefix = "--|-",cla::separator = "=| ",cla::guess_name,cla::optional,
                cla::description = "Allows to disable test modules's result code generation")
@@ -412,6 +428,14 @@ catch_sys_errors()
 //____________________________________________________________________________//
 
 bool
+color_output()
+{
+    return retrieve_parameter( COLOR_OUTPUT, s_cla_parser, false );
+}
+
+//____________________________________________________________________________//
+
+bool
 auto_start_dbg()
 {
     // !! set debugger as an option
@@ -449,6 +473,40 @@ output_format
 log_format()
 {
     return s_log_format;
+}
+
+//____________________________________________________________________________//
+
+std::ostream*
+report_sink()
+{
+    std::string sink_name = retrieve_parameter( REPORT_SINK, s_cla_parser, s_empty );
+
+    if( sink_name.empty() || sink_name == "stderr" )
+        return &std::cerr;    
+    
+    if( sink_name == "stdout" )
+        return &std::cout;
+
+    static std::ofstream log_file( sink_name.c_str() );
+    return &log_file;
+}
+
+//____________________________________________________________________________//
+
+std::ostream*
+log_sink()
+{
+    std::string sink_name = retrieve_parameter( LOG_SINK, s_cla_parser, s_empty );
+
+    if( sink_name.empty() || sink_name == "stdout" )
+        return &std::cout;    
+
+    if( sink_name == "stderr" )
+        return &std::cerr;    
+
+    static std::ofstream report_file( sink_name.c_str() );
+    return &report_file;
 }
 
 //____________________________________________________________________________//

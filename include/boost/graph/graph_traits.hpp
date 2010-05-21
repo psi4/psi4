@@ -181,6 +181,16 @@ namespace boost {
             >::value
         >
     { };
+
+    template <typename Graph>
+    struct is_adjacency_matrix
+        : mpl::bool_<
+            is_convertible<
+                typename graph_traits<Graph>::traversal_category,
+                adjacency_matrix_tag
+            >::value
+        >
+    { };
     //@}
 
     /** @name Directed Graph Traits

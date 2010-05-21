@@ -144,7 +144,7 @@ PyObject* function::call(PyObject* args, PyObject* keywords) const
             if (n_keyword_actual > 0      // Keyword arguments were supplied
                  || n_actual < min_arity) // or default keyword values are needed
             {                            
-                if (f->m_arg_names.ptr() == Py_None) 
+                if (f->m_arg_names.is_none())
                 {
                     // this overload doesn't accept keywords
                     inner_args = handle<>();
@@ -487,7 +487,7 @@ void function::add_to_namespace(
         }
 
         // A function is named the first time it is added to a namespace.
-        if (new_func->name().ptr() == Py_None)
+        if (new_func->name().is_none())
             new_func->m_name = name;
 
         handle<> name_space_name(
@@ -653,7 +653,7 @@ extern "C"
     static PyObject* function_get_name(PyObject* op, void*)
     {
         function* f = downcast<function>(op);
-        if (f->name().ptr() == Py_None)
+        if (f->name().is_none())
 #if PY_VERSION_HEX >= 0x03000000
             return PyUnicode_InternFromString("<unnamed Boost.Python function>");
 #else

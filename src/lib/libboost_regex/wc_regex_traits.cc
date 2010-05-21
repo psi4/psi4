@@ -195,16 +195,16 @@ c_regex_traits<wchar_t>::char_class_type BOOST_REGEX_CALL c_regex_traits<wchar_t
       char_class_xdigit,
    };
 
-   int id = ::boost::re_detail::get_default_class_id(p1, p2);
-   if(id < 0)
+   int idx = ::boost::re_detail::get_default_class_id(p1, p2);
+   if(idx < 0)
    {
       std::wstring s(p1, p2);
       for(std::wstring::size_type i = 0; i < s.size(); ++i)
          s[i] = (std::towlower)(s[i]);
-      id = ::boost::re_detail::get_default_class_id(&*s.begin(), &*s.begin() + s.size());
+      idx = ::boost::re_detail::get_default_class_id(&*s.begin(), &*s.begin() + s.size());
    }
-   BOOST_ASSERT(id+1 < static_cast<int>(sizeof(masks) / sizeof(masks[0])));
-   return masks[id+1];
+   BOOST_ASSERT(idx+1 < static_cast<int>(sizeof(masks) / sizeof(masks[0])));
+   return masks[idx+1];
 }
 
 bool BOOST_REGEX_CALL c_regex_traits<wchar_t>::isctype(wchar_t c, char_class_type mask) 

@@ -179,10 +179,10 @@ void get_params(Options &options)
 
   if(params.local) {
     fprintf(outfile, "\tLocal Cutoff       =     %3.1e\n", local.cutoff);
-    fprintf(outfile, "\tLocal Method      =     %s\n", local.method);
-    fprintf(outfile, "\tWeak pairs        =     %s\n", local.weakp);
+    fprintf(outfile, "\tLocal Method      =     %s\n", local.method.c_str());
+    fprintf(outfile, "\tWeak pairs        =     %s\n", local.weakp.c_str());
     fprintf(outfile, "\tFilter singles    =     %s\n", local.filter_singles ? "Yes" : "No");
-    fprintf(outfile, "\tLocal pairs       =     %s\n", local.pairdef);
+    fprintf(outfile, "\tLocal pairs       =     %s\n", local.pairdef.c_str());
     fprintf(outfile, "\tLocal CPHF cutoff =     %3.1e\n", local.cphf_cutoff);
   }
   fprintf(outfile, "\tSCS-MP2         =     %s\n", (params.scs == 1) ? "True" : "False");

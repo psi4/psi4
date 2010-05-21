@@ -111,30 +111,31 @@ BOOST_REGEX_DECL const char* BOOST_REGEX_CALL get_default_syntax(regex_constants
 BOOST_REGEX_DECL const char* BOOST_REGEX_CALL get_default_error_string(regex_constants::error_type n)
 {
    static const char* const s_default_error_messages[] = {
-      "Success",             /* REG_NOERROR */
-      "No match",             /* REG_NOMATCH */
-      "Invalid regular expression",    /* REG_BADPAT */
-      "Invalid collation character",      /* REG_ECOLLATE */
-      "Invalid character class name",     /* REG_ECTYPE */
-      "Invalid or trailing backslash",         /* REG_EESCAPE */
-      "Invalid back reference",        /* REG_ESUBREG */
-      "Unmatched [ or [^",       /* REG_EBRACK */
-      "Unmatched ( or \\(",         /* REG_EPAREN */
-      "Unmatched { or \\{",           /* REG_EBRACE */
-      "Invalid content of repeat range",     /* REG_BADBR */
-      "Invalid range end",       /* REG_ERANGE */
-      "Memory exhausted",           /* REG_ESPACE */
-      "Invalid preceding regular expression",   /* REG_BADRPT */
-      "Premature end of regular expression", /* REG_EEND */
-      "Regular expression too big",    /* REG_ESIZE */
-      "Unmatched ) or \\)",         /* REG_ERPAREN */
-      "Empty expression",           /* REG_EMPTY */
-      "Complexity requirements exceeded",  /* REG_ECOMPLEXITY */
-      "Out of stack space", /* REG_ESTACK */
-      "Unknown error",    /* REG_E_UNKNOWN */
-      "",
-      "",
-      "",
+      "Success",                                                            /* REG_NOERROR 0 error_ok */
+      "No match",                                                           /* REG_NOMATCH 1 error_no_match */
+      "Invalid regular expression.",                                        /* REG_BADPAT 2 error_bad_pattern */
+      "Invalid collation character.",                                       /* REG_ECOLLATE 3 error_collate */
+      "Invalid character class name, collating name, or character range.",  /* REG_ECTYPE 4 error_ctype */
+      "Invalid or unterminated escape sequence.",                           /* REG_EESCAPE 5 error_escape */
+      "Invalid back reference: specified capturing group does not exist.",  /* REG_ESUBREG 6 error_backref */
+      "Unmatched [ or [^ in character class declaration.",                  /* REG_EBRACK 7 error_brack */
+      "Unmatched marking parenthesis ( or \\(.",                            /* REG_EPAREN 8 error_paren */
+      "Unmatched quantified repeat operator { or \\{.",                     /* REG_EBRACE 9 error_brace */
+      "Invalid content of repeat range.",                                   /* REG_BADBR 10 error_badbrace */
+      "Invalid range end in character class",                               /* REG_ERANGE 11 error_range */
+      "Out of memory.",                                                     /* REG_ESPACE 12 error_space NOT USED */
+      "Invalid preceding regular expression prior to repetition operator.", /* REG_BADRPT 13 error_badrepeat */
+      "Premature end of regular expression",                                /* REG_EEND 14 error_end NOT USED */
+      "Regular expression is too large.",                                   /* REG_ESIZE 15 error_size NOT USED */
+      "Unmatched ) or \\)",                                                 /* REG_ERPAREN 16 error_right_paren NOT USED */
+      "Empty regular expression.",                                          /* REG_EMPTY 17 error_empty */
+      "The complexity of matching the regular expression exceeded predefined bounds.  "
+      "Try refactoring the regular expression to make each choice made by the state machine unambiguous.  "
+      "This exception is thrown to prevent \"eternal\" matches that take an "
+      "indefinite period time to locate.",                                  /* REG_ECOMPLEXITY 18 error_complexity */
+      "Ran out of stack space trying to match the regular expression.",     /* REG_ESTACK 19 error_stack */
+      "Invalid or unterminated Perl (?...) sequence.",                      /* REG_E_PERL 20 error_perl */
+      "Unknown error.",                                                     /* REG_E_UNKNOWN 21 error_unknown */
    };
 
    return (n > ::boost::regex_constants::error_unknown) ? s_default_error_messages[ ::boost::regex_constants::error_unknown] : s_default_error_messages[n];

@@ -65,6 +65,7 @@ const wchar_t* wnames[] = {
       L"REG_EMPTY",
       L"REG_ECOMPLEXITY",
       L"REG_ESTACK",
+      L"REG_E_PERL",
       L"REG_E_UNKNOWN",
 };
 }

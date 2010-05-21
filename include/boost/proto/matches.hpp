@@ -11,21 +11,22 @@
     #ifndef BOOST_PROTO_MATCHES_HPP_EAN_11_03_2006
     #define BOOST_PROTO_MATCHES_HPP_EAN_11_03_2006
 
-    #include <boost/proto/detail/prefix.hpp> // must be first include
     #include <boost/config.hpp>
     #include <boost/detail/workaround.hpp>
     #include <boost/preprocessor/cat.hpp>
     #include <boost/preprocessor/arithmetic/dec.hpp>
     #include <boost/preprocessor/arithmetic/sub.hpp>
-    #include <boost/preprocessor/repetition/enum.hpp>
     #include <boost/preprocessor/iteration/iterate.hpp>
     #include <boost/preprocessor/facilities/intercept.hpp>
     #include <boost/preprocessor/punctuation/comma_if.hpp>
+    #include <boost/preprocessor/repetition/enum.hpp>
     #include <boost/preprocessor/repetition/enum_params.hpp>
     #include <boost/preprocessor/repetition/enum_shifted.hpp>
+    #include <boost/preprocessor/repetition/enum_binary_params.hpp>
     #include <boost/preprocessor/repetition/enum_shifted_params.hpp>
     #include <boost/preprocessor/repetition/enum_trailing_params.hpp>
     #include <boost/preprocessor/repetition/enum_params_with_a_default.hpp>
+    #include <boost/preprocessor/repetition/repeat.hpp>
     #include <boost/config.hpp>
     #include <boost/mpl/logical.hpp>
     #include <boost/mpl/eval_if.hpp>
@@ -43,7 +44,6 @@
     #include <boost/proto/traits.hpp>
     #include <boost/proto/transform/when.hpp>
     #include <boost/proto/transform/impl.hpp>
-    #include <boost/proto/detail/suffix.hpp> // must be last include
 
     // Some compilers (like GCC) need extra help figuring out a template's arity.
     // I use MPL's BOOST_MPL_AUX_LAMBDA_ARITY_PARAM() macro to disambiguate, which
@@ -73,20 +73,8 @@
             template<bool B, typename Pred>
             struct and_2;
 
-            template<typename And>
-            struct last;
-
-            template<>
-            struct last<proto::and_<> >
-            {
-                typedef proto::_ type;
-            };
-
-            template<typename G0>
-            struct last<proto::and_<G0> >
-            {
-                typedef G0 type;
-            };
+            template<typename And, typename Expr, typename State, typename Data>
+            struct _and_impl;
 
             template<typename T, typename U>
             struct array_matches
@@ -517,7 +505,8 @@
             {};
         }
 
-        BOOST_PROTO_BEGIN_ADL_NAMESPACE(wildcardns_)
+        namespace wildcardns_
+        {
 
             /// \brief A wildcard grammar element that matches any expression,
             /// and a transform that returns the current expression unchanged.
@@ -571,7 +560,7 @@
 
                     /// \param expr An expression
                     /// \return \c e
-                    #ifdef BOOST_HAS_DECLTYPE
+                    #ifndef BOOST_NO_DECLTYPE
                     result_type
                     #else
                     typename impl::expr_param 
@@ -586,8 +575,20 @@
                     }
                 };
             };
+        }
 
-        BOOST_PROTO_END_ADL_NAMESPACE(wildcardns_)
+        namespace detail
+        {
+            template<typename Expr, typename State, typename Data>
+            struct _and_impl<proto::and_<>, Expr, State, Data>
+              : proto::_::impl<Expr, State, Data>
+            {};
+
+            template<typename G0, typename Expr, typename State, typename Data>
+            struct _and_impl<proto::and_<G0>, Expr, State, Data>
+              : proto::when<proto::_, G0>::template impl<Expr, State, Data>
+            {};
+        }
 
         namespace control
         {
@@ -611,7 +612,7 @@
                     /// \param e An expression
                     /// \pre <tt>matches\<Expr,not_\>::::value</tt> is \c true.
                     /// \return \c e
-                    #ifdef BOOST_HAS_DECLTYPE
+                    #ifndef BOOST_NO_DECLTYPE
                     result_type
                     #else
                     typename impl::expr_param 
@@ -679,8 +680,8 @@
             /// \endcode
             template<
                 typename If
-              , typename Then   BOOST_PROTO_WHEN_BUILDING_DOCS(= _)
-              , typename Else   BOOST_PROTO_WHEN_BUILDING_DOCS(= not_<_>)
+              , typename Then   // = _
+              , typename Else   // = not_<_>
             >
             struct if_ : transform<if_<If, Then, Else> >
             {
@@ -727,8 +728,8 @@
             /// matches any \c Bx for \c x in <tt>[0,n)</tt>.
             ///
             /// When applying <tt>or_\<B0,B1,...Bn\></tt> as a transform with an
-            /// expression \c e of type \c E, state \c s and data \c v, it is
-            /// equivalent to <tt>Bx()(e, s, v)</tt>, where \c x is the lowest
+            /// expression \c e of type \c E, state \c s and data \c d, it is
+            /// equivalent to <tt>Bx()(e, s, d)</tt>, where \c x is the lowest
             /// number such that <tt>matches\<E,Bx\>::::value</tt> is \c true.
             template<BOOST_PP_ENUM_PARAMS(BOOST_PROTO_MAX_LOGICAL_ARITY, typename G)>
             struct or_ : transform<or_<BOOST_PP_ENUM_PARAMS(BOOST_PROTO_MAX_LOGICAL_ARITY, G)> >
@@ -756,15 +757,15 @@
             };
 
             /// \brief For matching all of a set of grammars. When used as a
-            /// transform, \c and_\<\> applies the transform associated with
-            /// the last grammar in the set.
+            /// transform, \c and_\<\> applies the transforms associated with
+            /// the each grammar in the set, and returns the result of the last.
             ///
             /// An expression type \c E matches <tt>and_\<B0,B1,...Bn\></tt> if \c E
             /// matches all \c Bx for \c x in <tt>[0,n)</tt>.
             ///
             /// When applying <tt>and_\<B0,B1,...Bn\></tt> as a transform with an
-            /// expression \c e, state \c s and data \c v, it is
-            /// equivalent to <tt>Bn()(e, s, v)</tt>.
+            /// expression \c e, state \c s and data \c d, it is
+            /// equivalent to <tt>(B0()(e, s, d),B1()(e, s, d),...Bn()(e, s, d))</tt>.
             template<BOOST_PP_ENUM_PARAMS(BOOST_PROTO_MAX_LOGICAL_ARITY, typename G)>
             struct and_ : transform<and_<BOOST_PP_ENUM_PARAMS(BOOST_PROTO_MAX_LOGICAL_ARITY, G)> >
             {
@@ -772,15 +773,8 @@
 
                 template<typename Expr, typename State, typename Data>
                 struct impl
-                  : detail::last<and_>::type::template impl<Expr, State, Data>
-                {
-                    /// \param e An expression
-                    /// \param s The current state
-                    /// \param d A data of arbitrary type
-                    /// \pre <tt>matches\<Expr,and_\>::::value</tt> is \c true.
-                    /// \return <tt>which()(e, s, d)</tt>, where <tt>which</tt> is
-                    /// the last non-void sub-grammar in the <tt>and_\<\></tt>.
-                };
+                  : detail::_and_impl<and_, Expr, State, Data>
+                {};
             };
 
             /// \brief For matching one of a set of alternate grammars, which
@@ -797,8 +791,8 @@
             /// matches <tt>C::case_\<E::proto_tag\></tt>.
             ///
             /// When applying <tt>switch_\<C\></tt> as a transform with an
-            /// expression \c e of type \c E, state \c s and data \c v, it is
-            /// equivalent to <tt>C::case_\<E::proto_tag\>()(e, s, v)</tt>.
+            /// expression \c e of type \c E, state \c s and data \c d, it is
+            /// equivalent to <tt>C::case_\<E::proto_tag\>()(e, s, d)</tt>.
             template<typename Cases>
             struct switch_ : transform<switch_<Cases> >
             {
@@ -949,10 +943,31 @@
             {};
 
         #if N <= BOOST_PROTO_MAX_LOGICAL_ARITY
-            template<BOOST_PP_ENUM_PARAMS(N, typename G)>
-            struct last<proto::and_<BOOST_PP_ENUM_PARAMS(N, G)> >
+            template<BOOST_PP_ENUM_PARAMS(N, typename G), typename Expr, typename State, typename Data>
+            struct _and_impl<proto::and_<BOOST_PP_ENUM_PARAMS(N, G)>, Expr, State, Data>
+              : proto::transform_impl<Expr, State, Data>
             {
-                typedef BOOST_PP_CAT(G, BOOST_PP_DEC(N)) type;
+                #define M0(Z, N, DATA)                                                            \
+                typedef                                                                           \
+                    typename proto::when<proto::_, BOOST_PP_CAT(G, N)>                            \
+                        ::template impl<Expr, State, Data>                                        \
+                BOOST_PP_CAT(Gimpl, N);                                                           \
+                /**/
+                BOOST_PP_REPEAT(N, M0, ~)
+
+                typedef typename BOOST_PP_CAT(Gimpl, BOOST_PP_DEC(N))::result_type result_type;
+
+                result_type operator()(
+                    typename _and_impl::expr_param e
+                  , typename _and_impl::state_param s
+                  , typename _and_impl::data_param d
+                ) const
+                {
+                    // expands to (G0()(e,s,d),G1()(e,s,d),...);
+                    return (BOOST_PP_ENUM_BINARY_PARAMS(N, Gimpl, ()(e,s,d) BOOST_PP_INTERCEPT));
+                }
+
+                #undef M0
             };
 
             template<bool B, typename Expr, BOOST_PP_ENUM_PARAMS(N, typename G)>

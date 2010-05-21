@@ -1149,7 +1149,7 @@ namespace boost
 
             Target result;
             if(!(interpreter << arg && interpreter >> result))
-                BOOST_LCAST_THROW_BAD_CAST(Source, Target);
+              BOOST_LCAST_THROW_BAD_CAST(Source, Target);
             return result;
         }
 #if (defined _MSC_VER)
@@ -1191,11 +1191,7 @@ namespace boost
         Target result;
 
         if(!(interpreter << arg && interpreter >> result))
-#ifndef BOOST_NO_TYPEID
-            throw_exception(bad_lexical_cast(typeid(Source), typeid(Target)));
-#else
-            throw_exception(bad_lexical_cast());
-#endif
+          BOOST_LCAST_THROW_BAD_CAST(Source, Target);
         return result;
     }
 

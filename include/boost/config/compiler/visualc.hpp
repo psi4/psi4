@@ -68,6 +68,7 @@
 #  define BOOST_NO_POINTER_TO_MEMBER_TEMPLATE_PARAMETERS
 #  define BOOST_NO_IS_ABSTRACT
 #  define BOOST_NO_FUNCTION_TYPE_SPECIALIZATIONS
+#  define BOOST_NO_EXTERN_TEMPLATE
 // TODO: what version is meant here? Have there really been any fixes in cl 12.01 (as e.g. shipped with eVC4)?
 #  if (_MSC_VER > 1200)
 #     define BOOST_NO_MEMBER_FUNCTION_SPECIALIZATIONS
@@ -99,6 +100,24 @@
 #  define BOOST_NO_ADL_BARRIER
 #endif
 
+
+#if (_MSC_VER <= 1600)
+// MSVC (including the latest checked version) has not yet completely 
+// implemented value-initialization, as is reported:
+// "VC++ does not value-initialize members of derived classes without 
+// user-declared constructor", reported in 2009 by Sylvester Hesp:
+// https://connect.microsoft.com/VisualStudio/feedback/details/484295
+// "Presence of copy constructor breaks member class initialization",
+// reported in 2009 by Alex Vakulenko:
+// https://connect.microsoft.com/VisualStudio/feedback/details/499606
+// "Value-initialization in new-expression", reported in 2005 by
+// Pavel Kuznetsov (MetaCommunications Engineering):
+// https://connect.microsoft.com/VisualStudio/feedback/details/100744
+// See also: http://www.boost.org/libs/utility/value_init.htm#compiler_issues
+// (Niels Dekker, LKEB, May 2010)
+#define BOOST_NO_COMPLETE_VALUE_INITIALIZATION
+#endif
+
 #if _MSC_VER <= 1500  || !defined(BOOST_STRICT_CONFIG) // 1500 == VC++ 9.0
 #  define BOOST_NO_INITIALIZER_LISTS
 #endif
@@ -115,7 +134,7 @@
 
 //   
 // check for exception handling support:   
-#ifndef _CPPUNWIND 
+#if !defined(_CPPUNWIND) && !defined(BOOST_NO_EXCEPTIONS)
 #  define BOOST_NO_EXCEPTIONS   
 #endif 
 
@@ -125,7 +144,7 @@
 #if (_MSC_VER >= 1200)
 #   define BOOST_HAS_MS_INT64
 #endif
-#if (_MSC_VER >= 1310) && defined(_MSC_EXTENSIONS)
+#if (_MSC_VER >= 1310) && (defined(_MSC_EXTENSIONS) || (_MSC_VER >= 1400))
 #   define BOOST_HAS_LONG_LONG
 #else
 #   define BOOST_NO_LONG_LONG
@@ -159,11 +178,14 @@
 #if _MSC_VER < 1600
 #define BOOST_NO_AUTO_DECLARATIONS
 #define BOOST_NO_AUTO_MULTIDECLARATIONS
-#define BOOST_NO_DECLTYPE
 #define BOOST_NO_LAMBDAS
 #define BOOST_NO_RVALUE_REFERENCES
 #define BOOST_NO_STATIC_ASSERT
+#define BOOST_NO_NULLPTR
 #endif // _MSC_VER < 1600
+#if _MSC_VER >= 1600
+#define BOOST_HAS_STDINT_H
+#endif
 
 // C++0x features not supported by any versions
 #define BOOST_NO_CHAR16_T
@@ -171,19 +193,17 @@
 #define BOOST_NO_CONCEPTS
 #define BOOST_NO_CONSTEXPR
 #define BOOST_NO_DEFAULTED_FUNCTIONS
+#define BOOST_NO_DECLTYPE
 #define BOOST_NO_DELETED_FUNCTIONS
 #define BOOST_NO_EXPLICIT_CONVERSION_OPERATORS
-#define BOOST_NO_EXTERN_TEMPLATE
 #define BOOST_NO_FUNCTION_TEMPLATE_DEFAULT_ARGS
 #define BOOST_NO_INITIALIZER_LISTS
-#define BOOST_NO_NULLPTR
 #define BOOST_NO_RAW_LITERALS
 #define BOOST_NO_SCOPED_ENUMS
 #define BOOST_NO_SFINAE_EXPR
 #define BOOST_NO_TEMPLATE_ALIASES
 #define BOOST_NO_UNICODE_LITERALS
 #define BOOST_NO_VARIADIC_TEMPLATES
-
 //
 // prefix and suffix headers:
 //

@@ -10,24 +10,17 @@
     #ifndef BOOST_PROTO_TRANSFORM_FOLD_HPP_EAN_11_04_2007
     #define BOOST_PROTO_TRANSFORM_FOLD_HPP_EAN_11_04_2007
 
-    #include <boost/proto/detail/prefix.hpp>
-    #include <boost/version.hpp>
     #include <boost/preprocessor/cat.hpp>
     #include <boost/preprocessor/iteration/iterate.hpp>
     #include <boost/preprocessor/arithmetic/inc.hpp>
     #include <boost/preprocessor/arithmetic/sub.hpp>
     #include <boost/preprocessor/repetition/repeat.hpp>
-    #if BOOST_VERSION >= 103500
     #include <boost/fusion/include/fold.hpp>
-    #else
-    #include <boost/spirit/fusion/algorithm/fold.hpp>
-    #endif
     #include <boost/proto/proto_fwd.hpp>
     #include <boost/proto/fusion.hpp>
     #include <boost/proto/traits.hpp>
     #include <boost/proto/transform/call.hpp>
     #include <boost/proto/transform/impl.hpp>
-    #include <boost/proto/detail/suffix.hpp>
 
     namespace boost { namespace proto
     {
@@ -36,70 +29,31 @@
             template<typename Transform, typename Data>
             struct as_callable
             {
-                as_callable(Data v)
-                  : v_(v)
+                as_callable(Data d)
+                  : d_(d)
                 {}
 
                 template<typename Sig>
                 struct result;
 
-                template<typename This, typename Expr, typename State>
-                struct result<This(Expr, State)>
+                template<typename This, typename State, typename Expr>
+                struct result<This(State, Expr)>
                 {
                     typedef
                         typename when<_, Transform>::template impl<Expr, State, Data>::result_type
                     type;
                 };
 
-                #if BOOST_VERSION < 103500
-                template<typename Expr, typename State>
-                struct apply
-                  : result<as_callable(Expr, State)>
-                {};
-                #endif
-
-                template<typename Expr, typename State>
+                template<typename State, typename Expr>
                 typename when<_, Transform>::template impl<Expr &, State const &, Data>::result_type
-                operator ()(Expr &e, State const &s) const
+                operator ()(State const &s, Expr &e) const
                 {
-                    return typename when<_, Transform>::template impl<Expr &, State const &, Data>()(e, s, this->v_);
+                    return typename when<_, Transform>::template impl<Expr &, State const &, Data>()(e, s, this->d_);
                 }
 
             private:
-                Data v_;
+                Data d_;
             };
-
-            #if BOOST_VERSION < 103500
-            template<typename Sequence, typename Void = void>
-            struct as_fusion_sequence_type
-            {
-                typedef Sequence const type;
-            };
-
-            template<typename Sequence>
-            Sequence const &as_fusion_sequence(Sequence const &sequence, ...)
-            {
-                return sequence;
-            }
-
-            template<typename Sequence>
-            struct as_fusion_sequence_type<Sequence, typename Sequence::proto_is_expr_>
-            {
-                typedef typename Sequence::proto_base_expr const type;
-            };
-
-            template<typename Sequence>
-            typename Sequence::proto_base_expr const &as_fusion_sequence(Sequence const &sequence, int)
-            {
-                return sequence.proto_base();
-            }
-
-            #define BOOST_PROTO_AS_FUSION_SEQUENCE_TYPE(X) typename detail::as_fusion_sequence_type<X>::type
-            #define BOOST_PROTO_AS_FUSION_SEQUENCE(X) detail::as_fusion_sequence(X, 0)
-            #else
-            #define BOOST_PROTO_AS_FUSION_SEQUENCE_TYPE(X) X
-            #define BOOST_PROTO_AS_FUSION_SEQUENCE(X) X
-            #endif
 
             template<
                 typename State0
@@ -214,14 +168,14 @@
                     >::type
                 state0;
 
-                /// \brief <tt>fun(v)(e,s) == when\<_,Fun\>()(e,s,v)</tt>
+                /// \brief <tt>fun(d)(e,s) == when\<_,Fun\>()(e,s,d)</tt>
                 typedef
                     detail::as_callable<Fun, Data>
                 fun;
 
                 typedef
-                    typename fusion::BOOST_PROTO_FUSION_RESULT_OF::fold<
-                        BOOST_PROTO_AS_FUSION_SEQUENCE_TYPE(sequence)
+                    typename fusion::result_of::fold<
+                        sequence
                       , state0
                       , fun
                     >::type
@@ -245,7 +199,7 @@
                     typename when<_, Sequence>::template impl<Expr, State, Data> seq;
                     detail::as_callable<Fun, Data> f(d);
                     return fusion::fold(
-                        BOOST_PROTO_AS_FUSION_SEQUENCE(seq(e, s, d))
+                        seq(e, s, d)
                       , typename when<_, State0>::template impl<Expr, State, Data>()(e, s, d)
                       , f
                     );

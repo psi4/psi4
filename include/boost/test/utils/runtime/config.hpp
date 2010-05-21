@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2005-2008.
+//  (C) Copyright Gennadiy Rozental 2005-2010.
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at 
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,7 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 54633 $
+//  Version     : $Revision: 62016 $
 //
 //  Description : Runtime.Param library configuration
 // ***************************************************************************
@@ -67,6 +67,11 @@ typedef std::ostream                                            out_stream;
 typedef std::basic_ostream<char_type>                           out_stream;
 #endif
 
+#ifdef BOOST_MSVC
+#pragma warning(push)
+#pragma warning(disable:4996) // putenv
+#endif
+
 #ifndef UNDER_CE
 #if defined(__COMO__) && 0
 inline void
@@ -91,6 +96,10 @@ putenv_impl( cstring name, cstring value )
 }
 #endif
 #endif
+
+#ifdef BOOST_MSVC 
+#pragma warning(pop) 
+#endif 
 
 #define BOOST_RT_PARAM_LITERAL( l ) l
 #define BOOST_RT_PARAM_CSTRING_LITERAL( l ) cstring( l, sizeof( l ) - 1 )

@@ -11,6 +11,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/config.hpp>
+#include <boost/throw_exception.hpp>
 #include <boost/assert.hpp>
 #include <boost/thread/exceptions.hpp>
 #include <boost/detail/interlocked.hpp>
@@ -177,7 +178,7 @@ namespace boost
 #endif                
                 if(!res)
                 {
-                    throw thread_resource_error();
+                    boost::throw_exception(thread_resource_error());
                 }
                 return res;
             }
@@ -191,7 +192,7 @@ namespace boost
 #endif               
                 if(!res)
                 {
-                    throw thread_resource_error();
+                    boost::throw_exception(thread_resource_error());
                 }
                 return res;
             }
@@ -204,7 +205,7 @@ namespace boost
                 bool const success=DuplicateHandle(current_process,source,current_process,&new_handle,0,false,same_access_flag)!=0;
                 if(!success)
                 {
-                    throw thread_resource_error();
+                    boost::throw_exception(thread_resource_error());
                 }
                 return new_handle;
             }

@@ -73,7 +73,9 @@ boost::shared_ptr<Object const> object_cache<Key, Object>::get(const Key& k, siz
    // for now just throw, but we should never really get here...
    //
    ::boost::throw_exception(std::runtime_error("Error in thread safety code: could not acquire a lock"));
+#ifdef BOOST_NO_UNREACHABLE_RETURN_DETECTION
    return boost::shared_ptr<Object>();
+#endif
 #else
    return do_get(k, max_cache_size);
 #endif

@@ -175,25 +175,27 @@ typedef typename Traits::traversal_category        traversal_category;
 
     // local <-> global descriptor conversion functions
     vertex_descriptor local_to_global(vertex_descriptor u_local) const
-    { return m_global_vertex[u_local]; }
+    { return is_root() ? u_local : m_global_vertex[u_local]; }
 
     vertex_descriptor global_to_local(vertex_descriptor u_global) const {
         vertex_descriptor u_local; bool in_subgraph;
+        if (is_root()) return u_global;
         tie(u_local, in_subgraph) = this->find_vertex(u_global);
         assert(in_subgraph == true);
         return u_local;
     }
 
     edge_descriptor local_to_global(edge_descriptor e_local) const
-    { return m_global_edge[get(get(edge_index, m_graph), e_local)]; }
+    { return is_root() ? e_local : m_global_edge[get(get(edge_index, m_graph), e_local)]; }
 
     edge_descriptor global_to_local(edge_descriptor e_global) const
-    { return (*m_local_edge.find(get(get(edge_index, root().m_graph), e_global))).second; }
+    { return is_root() ? e_global : (*m_local_edge.find(get(get(edge_index, root().m_graph), e_global))).second; }
 
     // Is vertex u (of the root graph) contained in this subgraph?
     // If so, return the matching local vertex.
     std::pair<vertex_descriptor, bool>
     find_vertex(vertex_descriptor u_global) const {
+        if (is_root()) return std::make_pair(u_global, true);
         typename std::map<vertex_descriptor, vertex_descriptor>::const_iterator
             i = m_local_vertex.find(u_global);
         bool valid = i != m_local_vertex.end();

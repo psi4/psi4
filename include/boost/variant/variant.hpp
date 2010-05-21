@@ -698,6 +698,9 @@ public: // internal visitor interfaces
         ::boost::detail::variant::move_swap( operand, other );
     }
 
+private:
+    swap_with& operator=(const swap_with&);
+
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -758,6 +761,9 @@ public: // visitor interfaces
         // ...and compare lhs and rhs contents:
         return Comp()(lhs_content, rhs_content);
     }
+
+private:
+    comparer& operator=(const comparer&);
 
 };
 

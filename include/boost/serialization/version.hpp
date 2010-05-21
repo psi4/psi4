@@ -23,7 +23,6 @@
 #include <boost/mpl/integral_c_tag.hpp>
 
 #include <boost/type_traits/is_base_and_derived.hpp>
-//#include <boost/serialization/traits.hpp>
 
 namespace boost { 
 namespace serialization {
@@ -67,8 +66,19 @@ struct version
 //#include <boost/serialization/level.hpp>
 //#include <boost/mpl/equal_to.hpp>
 
+#include <boost/mpl/assert.hpp>
+#include <boost/mpl/less.hpp>
+#include <boost/mpl/comparison.hpp>
+
 // specify the current version number for the class
+// version numbers limited to 8 bits !!!
 #define BOOST_CLASS_VERSION(T, N)                                      \
+BOOST_MPL_ASSERT((                                                     \
+    boost::mpl::less<                                                  \
+        boost::mpl::int_<N>,                                           \
+        boost::mpl::int_<256>                                          \
+    >                                                                  \
+));                                                                    \
 namespace boost {                                                      \
 namespace serialization {                                              \
 template<>                                                             \

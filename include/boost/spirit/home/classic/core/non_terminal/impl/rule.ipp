@@ -231,7 +231,7 @@ BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN
         template <typename ParserT, typename ScannerT, typename AttrT>
         struct concrete_parser : abstract_parser<ScannerT, AttrT>
         {
-            concrete_parser(ParserT const& p) : p(p) {}
+            concrete_parser(ParserT const& p_) : p(p_) {}
             virtual ~concrete_parser() {}
 
             virtual typename match_result<ScannerT, AttrT>::type

@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2005-2008.
+//  (C) Copyright Gennadiy Rozental 2005-2010.
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at 
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,7 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 54633 $
+//  Version     : $Revision: 62016 $
 //
 //  Description : model of actual argument (both typed and abstract interface)
 // ***************************************************************************
@@ -43,7 +43,7 @@ namespace BOOST_RT_PARAM_NAMESPACE {
 class argument {
 public:
     // Constructor
-    argument( parameter const& p, call_traits<rtti::id_t>::param_type value_type )
+    argument( parameter const& p, rtti::id_t value_type )
     : p_formal_parameter( p )
     , p_value_type( value_type )
     {}
@@ -81,22 +81,22 @@ public:
 
 template<typename T>
 inline T const&
-arg_value( argument const& arg )
+arg_value( argument const& arg_ )
 {
-    assert( arg.p_value_type == rtti::type_id<T>() ); // detect logic error
+    assert( arg_.p_value_type == rtti::type_id<T>() ); // detect logic error
 
-    return static_cast<typed_argument<T> const&>( arg ).p_value.value;
+    return static_cast<typed_argument<T> const&>( arg_ ).p_value.value;
 }
 
 //____________________________________________________________________________//
 
 template<typename T>
 inline T&
-arg_value( argument& arg )
+arg_value( argument& arg_ )
 {
-    assert( arg.p_value_type == rtti::type_id<T>() ); // detect logic error
+    assert( arg_.p_value_type == rtti::type_id<T>() ); // detect logic error
 
-    return static_cast<typed_argument<T>&>( arg ).p_value.value;
+    return static_cast<typed_argument<T>&>( arg_ ).p_value.value;
 }
 
 #ifdef BOOST_MSVC

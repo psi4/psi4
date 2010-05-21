@@ -140,7 +140,7 @@ inline bool scoped_static_mutex_lock::locked()const
 namespace boost{
 
 class BOOST_REGEX_DECL scoped_static_mutex_lock;
-extern "C" BOOST_REGEX_DECL void free_static_mutex();
+extern "C" BOOST_REGEX_DECL void boost_regex_free_static_mutex();
 
 class BOOST_REGEX_DECL static_mutex
 {

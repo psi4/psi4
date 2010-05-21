@@ -99,7 +99,7 @@ bool perl_matcher<BidiIterator, Allocator, traits>::match_all_states()
    };
 
    if(state_count > max_state_count)
-      raise_error(traits_inst, regex_constants::error_space);
+      raise_error(traits_inst, regex_constants::error_complexity);
    while(pstate)
    {
       matcher_proc_type proc = s_match_vtable[pstate->type];
@@ -857,16 +857,16 @@ bool perl_matcher<BidiIterator, Allocator, traits>::match_recursion()
    //
    // Set new call stack:
    //
-   if(recursion_stack_position >= static_cast<int>(sizeof(recursion_stack)/sizeof(recursion_stack[0])))
+   if(recursion_stack.capacity() == 0)
    {
-      return false;
+      recursion_stack.reserve(50);
    }
-   recursion_stack[recursion_stack_position].preturn_address = pstate->next.p;
-   recursion_stack[recursion_stack_position].results = *m_presult;
-   recursion_stack[recursion_stack_position].repeater_stack = next_count;
+   recursion_stack.push_back(recursion_info<results_type>());
+   recursion_stack.back().preturn_address = pstate->next.p;
+   recursion_stack.back().results = *m_presult;
+   recursion_stack.back().repeater_stack = next_count;
    pstate = static_cast<const re_jump*>(pstate)->alt.p;
-   recursion_stack[recursion_stack_position].id = static_cast<const re_brace*>(pstate)->index;
-   ++recursion_stack_position;
+   recursion_stack.back().idx = static_cast<const re_brace*>(pstate)->index;
 
    repeater_count<BidiIterator>* saved = next_count;
    repeater_count<BidiIterator> r(&next_count); // resets all repeat counts since we're recursing and starting fresh on those
@@ -876,9 +876,9 @@ bool perl_matcher<BidiIterator, Allocator, traits>::match_recursion()
 
    if(!result)
    {
-      --recursion_stack_position;
-      next_count = recursion_stack[recursion_stack_position].repeater_stack;
-      *m_presult = recursion_stack[recursion_stack_position].results;
+      next_count = recursion_stack.back().repeater_stack;
+      *m_presult = recursion_stack.back().results;
+      recursion_stack.pop_back();
       return false;
    }
    return true;
@@ -895,20 +895,19 @@ bool perl_matcher<BidiIterator, Allocator, traits>::match_endmark()
       {
          m_presult->set_second(position, index);
       }
-      if(recursion_stack_position)
+      if(!recursion_stack.empty())
       {
-         if(index == recursion_stack[recursion_stack_position-1].id)
+         if(index == recursion_stack.back().idx)
          {
-            --recursion_stack_position;
-            recursion_info<results_type> saved = recursion_stack[recursion_stack_position];
+            recursion_info<results_type> saved = recursion_stack.back();
+            recursion_stack.pop_back();
             const re_syntax_base* saved_state = pstate = saved.preturn_address;
             repeater_count<BidiIterator>* saved_count = next_count;
             next_count = saved.repeater_stack;
             *m_presult = saved.results;
             if(!match_all_states())
             {
-               recursion_stack[recursion_stack_position] = saved;
-               ++recursion_stack_position;
+               recursion_stack.push_back(saved);
                next_count = saved_count;
                return false;
             }
@@ -928,17 +927,17 @@ bool perl_matcher<BidiIterator, Allocator, traits>::match_endmark()
 template <class BidiIterator, class Allocator, class traits>
 bool perl_matcher<BidiIterator, Allocator, traits>::match_match()
 {
-   if(recursion_stack_position)
+   if(!recursion_stack.empty())
    {
-      BOOST_ASSERT(0 == recursion_stack[recursion_stack_position-1].id);
-      --recursion_stack_position;
-      const re_syntax_base* saved_state = pstate = recursion_stack[recursion_stack_position].preturn_address;
-      *m_presult = recursion_stack[recursion_stack_position].results;
+      BOOST_ASSERT(0 == recursion_stack.back().idx);
+      const re_syntax_base* saved_state = pstate = recursion_stack.back().preturn_address;
+      *m_presult = recursion_stack.back().results;
+      recursion_stack.pop_back();
       if(!match_all_states())
       {
-         recursion_stack[recursion_stack_position].preturn_address = saved_state;
-         recursion_stack[recursion_stack_position].results = *m_presult;
-         ++recursion_stack_position;
+         recursion_stack.push_back(recursion_info<results_type>());
+         recursion_stack.back().preturn_address = saved_state;
+         recursion_stack.back().results = *m_presult;
          return false;
       }
       return true;

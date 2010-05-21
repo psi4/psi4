@@ -57,13 +57,13 @@ namespace boost
             int const res=pthread_mutex_init(&internal_mutex,NULL);
             if(res)
             {
-                throw thread_resource_error();
+                boost::throw_exception(thread_resource_error());
             }
             int const res2=pthread_cond_init(&cond,NULL);
             if(res2)
             {
                 BOOST_VERIFY(!pthread_mutex_destroy(&internal_mutex));
-                throw thread_resource_error();
+                boost::throw_exception(thread_resource_error());
             }
         }
         ~condition_variable_any()
@@ -87,7 +87,7 @@ namespace boost
             }
             if(res)
             {
-                throw condition_error();
+                boost::throw_exception(condition_error());
             }
         }
 
@@ -117,7 +117,7 @@ namespace boost
             }
             if(res)
             {
-                throw condition_error();
+                boost::throw_exception(condition_error());
             }
             return true;
         }

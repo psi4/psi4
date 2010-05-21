@@ -37,26 +37,6 @@ namespace std{
 #include <boost/archive/detail/decl.hpp>
 #include <boost/archive/detail/abi_prefix.hpp> // must be the last header
 
-// determine if its necessary to handle (u)int64_t specifically
-// i.e. that its not a synonym for (unsigned) long
-// if there is no 64 bit int or if its the same as a long
-// we shouldn't define separate functions for int64 data types.
-#if defined(BOOST_NO_INT64_T)
-    #define BOOST_NO_INTRINSIC_INT64_T
-#else 
-    #if defined(ULLONG_MAX)  
-        #if(ULONG_MAX == 18446744073709551615ul) // 2**64 - 1  
-            #define BOOST_NO_INTRINSIC_INT64_T  
-        #endif  
-    #elif defined(ULONG_MAX)  
-        #if(ULONG_MAX != 0xffffffff && ULONG_MAX == 18446744073709551615ul) // 2**64 - 1  
-            #define BOOST_NO_INTRINSIC_INT64_T  
-        #endif  
-    #else   
-        #define BOOST_NO_INTRINSIC_INT64_T  
-    #endif  
-#endif
-
 namespace boost {
 template<class T>
 class shared_ptr;
@@ -97,10 +77,15 @@ public:
     virtual void save(const unsigned int t) = 0;
     virtual void save(const long t) = 0;
     virtual void save(const unsigned long t) = 0;
-    #if !defined(BOOST_NO_INTRINSIC_INT64_T)
-    virtual void save(const boost::int64_t t) = 0;
-    virtual void save(const boost::uint64_t t) = 0;
+
+    #if defined(BOOST_HAS_LONG_LONG)
+    virtual void save(const boost::long_long_type t) = 0;
+    virtual void save(const boost::ulong_long_type t) = 0;
+    #elif defined(BOOST_HAS_MS_INT64)
+    virtual void save(const __int64 t) = 0;
+    virtual void save(const unsigned __int64 t) = 0;
     #endif
+
     virtual void save(const float t) = 0;
     virtual void save(const double t) = 0;
 

@@ -9,7 +9,6 @@
 #ifndef BOOST_PROTO_DETAIL_DECLTYPE_HPP_EAN_04_04_2008
 #define BOOST_PROTO_DETAIL_DECLTYPE_HPP_EAN_04_04_2008
 
-#include <boost/proto/detail/prefix.hpp> // must be first include
 #include <boost/config.hpp>
 #include <boost/detail/workaround.hpp>
 #include <boost/get_pointer.hpp>
@@ -35,15 +34,11 @@
 #include <boost/utility/result_of.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/proto/repeat.hpp>
-#include <boost/proto/detail/suffix.hpp> // must be last include
 
-// If we're generating doxygen documentation, hide all the nasty
-// Boost.Typeof gunk.
-#ifndef BOOST_PROTO_BUILDING_DOCS
-# ifdef BOOST_HAS_DECLTYPE
-#  define BOOST_PROTO_DECLTYPE_(EXPR, TYPE) typedef decltype(EXPR) TYPE;
-# else
-#  define BOOST_PROTO_DECLTYPE_NESTED_TYPEDEF_TPL_(NESTED, EXPR)                                    \
+#ifndef BOOST_NO_DECLTYPE
+# define BOOST_PROTO_DECLTYPE_(EXPR, TYPE) typedef decltype(EXPR) TYPE;
+#else
+# define BOOST_PROTO_DECLTYPE_NESTED_TYPEDEF_TPL_(NESTED, EXPR)                                     \
     BOOST_TYPEOF_NESTED_TYPEDEF_TPL(BOOST_PP_CAT(nested_and_hidden_, NESTED), EXPR)                 \
     static int const sz = sizeof(boost::proto::detail::check_reference(EXPR));                      \
     struct NESTED                                                                                   \
@@ -53,15 +48,9 @@
           , typename BOOST_PP_CAT(nested_and_hidden_, NESTED)::type                                 \
         >                                                                                           \
     {};
-#  define BOOST_PROTO_DECLTYPE_(EXPR, TYPE)                                                         \
+# define BOOST_PROTO_DECLTYPE_(EXPR, TYPE)                                                          \
     BOOST_PROTO_DECLTYPE_NESTED_TYPEDEF_TPL_(BOOST_PP_CAT(nested_, TYPE), (EXPR))                   \
     typedef typename BOOST_PP_CAT(nested_, TYPE)::type TYPE;
-# endif
-#else
-/// INTERNAL ONLY
-///
-# define BOOST_PROTO_DECLTYPE_(EXPR, TYPE)                                                          \
-    typedef detail::unspecified TYPE;
 #endif
 
 namespace boost { namespace proto

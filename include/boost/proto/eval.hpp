@@ -9,10 +9,8 @@
 #ifndef BOOST_PROTO_EVAL_HPP_EAN_03_29_2007
 #define BOOST_PROTO_EVAL_HPP_EAN_03_29_2007
 
-#include <boost/proto/detail/prefix.hpp> // must be first include
 #include <boost/proto/proto_fwd.hpp> // BOOST_PROTO_CALLABLE
 #include <boost/type_traits/remove_reference.hpp>
-#include <boost/proto/detail/suffix.hpp> // must be last include
 
 namespace boost { namespace proto
 {

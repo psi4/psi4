@@ -17,6 +17,9 @@
 #include <boost/fusion/view/reverse_view/detail/advance_impl.hpp>
 #include <boost/fusion/view/reverse_view/detail/distance_impl.hpp>
 #include <boost/fusion/view/reverse_view/detail/value_of_impl.hpp>
+#include <boost/fusion/view/reverse_view/detail/deref_data_impl.hpp>
+#include <boost/fusion/view/reverse_view/detail/value_of_data_impl.hpp>
+#include <boost/fusion/view/reverse_view/detail/key_of_impl.hpp>
 #include <boost/type_traits/is_base_of.hpp>
 #include <boost/static_assert.hpp>
 

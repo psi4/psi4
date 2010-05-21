@@ -63,7 +63,7 @@ public:
     template<class Y>
 #if !defined( BOOST_SP_NO_SP_CONVERTIBLE )
 
-    weak_ptr( weak_ptr<Y> const & r, typename detail::sp_enable_if_convertible<Y,T>::type = detail::sp_empty() )
+    weak_ptr( weak_ptr<Y> const & r, typename boost::detail::sp_enable_if_convertible<Y,T>::type = boost::detail::sp_empty() )
 
 #else
 
@@ -79,20 +79,20 @@ public:
     template<class Y>
 #if !defined( BOOST_SP_NO_SP_CONVERTIBLE )
 
-    weak_ptr( weak_ptr<Y> && r, typename detail::sp_enable_if_convertible<Y,T>::type = detail::sp_empty() )
+    weak_ptr( weak_ptr<Y> && r, typename boost::detail::sp_enable_if_convertible<Y,T>::type = boost::detail::sp_empty() )
 
 #else
 
     weak_ptr( weak_ptr<Y> && r )
 
 #endif
-    : px(r.lock().get()), pn(std::move(r.pn)) // never throws
+    : px( r.lock().get() ), pn( static_cast< boost::detail::weak_count && >( r.pn ) ) // never throws
     {
         r.px = 0;
     }
 
     // for better efficiency in the T == Y case
-    weak_ptr( weak_ptr && r ): px( r.px ), pn(std::move(r.pn)) // never throws
+    weak_ptr( weak_ptr && r ): px( r.px ), pn( static_cast< boost::detail::weak_count && >( r.pn ) ) // never throws
     {
         r.px = 0;
     }
@@ -100,7 +100,7 @@ public:
     // for better efficiency in the T == Y case
     weak_ptr & operator=( weak_ptr && r ) // never throws
     {
-        this_type( std::move( r ) ).swap( *this );
+        this_type( static_cast< weak_ptr && >( r ) ).swap( *this );
         return *this;
     }
 
@@ -110,7 +110,7 @@ public:
     template<class Y>
 #if !defined( BOOST_SP_NO_SP_CONVERTIBLE )
 
-    weak_ptr( shared_ptr<Y> const & r, typename detail::sp_enable_if_convertible<Y,T>::type = detail::sp_empty() )
+    weak_ptr( shared_ptr<Y> const & r, typename boost::detail::sp_enable_if_convertible<Y,T>::type = boost::detail::sp_empty() )
 
 #else
 
@@ -134,9 +134,9 @@ public:
 #if defined( BOOST_HAS_RVALUE_REFS )
 
     template<class Y>
-    weak_ptr & operator=(weak_ptr<Y> && r)
+    weak_ptr & operator=( weak_ptr<Y> && r )
     {
-        this_type( std::move( r ) ).swap( *this );
+        this_type( static_cast< weak_ptr<Y> && >( r ) ).swap( *this );
         return *this;
     }
 
@@ -183,10 +183,11 @@ public:
         pn.swap(other.pn);
     }
 
-    void _internal_assign(T * px2, boost::detail::shared_count const & pn2)
+    template<typename Y>
+    void _internal_aliasing_assign(weak_ptr<Y> const & r, T * px2)
     {
         px = px2;
-        pn = pn2;
+        pn = r.pn;
     }
 
     template<class Y> bool _internal_less(weak_ptr<Y> const & rhs) const
@@ -225,6 +226,6 @@ template<class T> void swap(weak_ptr<T> & a, weak_ptr<T> & b)
 
 #ifdef BOOST_MSVC
 # pragma warning(pop)
-#endif    
+#endif
 
 #endif  // #ifndef BOOST_SMART_PTR_WEAK_PTR_HPP_INCLUDED

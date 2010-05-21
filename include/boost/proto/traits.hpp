@@ -12,7 +12,6 @@
     #ifndef BOOST_PROTO_ARG_TRAITS_HPP_EAN_04_01_2005
     #define BOOST_PROTO_ARG_TRAITS_HPP_EAN_04_01_2005
 
-    #include <boost/proto/detail/prefix.hpp>
     #include <boost/config.hpp>
     #include <boost/detail/workaround.hpp>
     #include <boost/preprocessor/iteration/iterate.hpp>
@@ -44,7 +43,6 @@
     #include <boost/proto/args.hpp>
     #include <boost/proto/tags.hpp>
     #include <boost/proto/transform/pass_through.hpp>
-    #include <boost/proto/detail/suffix.hpp>
 
     #if BOOST_WORKAROUND( BOOST_MSVC, >= 1400 )
         #pragma warning(push)
@@ -155,7 +153,7 @@
         {};
 
         /// TODO document me!
-        template<typename T, typename Void BOOST_PROTO_WHEN_BUILDING_DOCS(= void)>
+        template<typename T, typename Void /* = void*/>
         struct is_transform
           : mpl::false_
         {};
@@ -176,7 +174,7 @@
             /// from <tt>proto::extends\<\></tt> or that uses the
             /// <tt>BOOST_PROTO_BASIC_EXTENDS()</tt> macro.) Otherwise,
             /// <tt>is_expr\<T\>::::value</tt> is \c false.
-            template<typename T, typename Void  BOOST_PROTO_WHEN_BUILDING_DOCS(= void)>
+            template<typename T, typename Void /* = void*/>
             struct is_expr
               : mpl::false_
             {};
@@ -242,10 +240,10 @@
             /// <tt>boost::result_of\<Domain(expr\< tag::terminal, term\<A\> \>)\>::::type</tt>.
             template<
                 typename T
-              , typename Domain BOOST_PROTO_WHEN_BUILDING_DOCS(= default_domain)
-              , typename Void   BOOST_PROTO_WHEN_BUILDING_DOCS(= void)
+              , typename Domain // = default_domain
+              , typename Void   // = void
               #ifdef BOOST_PROTO_BROKEN_PTS
-              , typename Void2  BOOST_PROTO_WHEN_BUILDING_DOCS(= void)
+              , typename Void2  // = void
               #endif
             >
             struct as_expr
@@ -337,10 +335,10 @@
             /// <tt>boost::result_of\<Domain(expr\< tag::terminal, term\<T &\> \>)\>::::type</tt>.
             template<
                 typename T
-              , typename Domain BOOST_PROTO_WHEN_BUILDING_DOCS(= default_domain)
-              , typename Void   BOOST_PROTO_WHEN_BUILDING_DOCS(= void)
+              , typename Domain // = default_domain
+              , typename Void   // = void
               #ifdef BOOST_PROTO_BROKEN_PTS
-              , typename Void2  BOOST_PROTO_WHEN_BUILDING_DOCS(= void)
+              , typename Void2  // = void
               #endif
             >
             struct as_child
@@ -432,7 +430,7 @@
             ///
             /// <tt>result_of::child\<Expr, N\></tt> is equivalent to
             /// <tt>result_of::child_c\<Expr, N::value\></tt>.
-            template<typename Expr, typename N  BOOST_PROTO_WHEN_BUILDING_DOCS(= mpl::long_<0>) >
+            template<typename Expr, typename N /* = mpl::long_<0>*/>
             struct child
               : child_c<Expr, N::value>
             {};
@@ -544,7 +542,7 @@
                     /// \pre <tt>matches\<Expr, terminal\<T\> \>::::value</tt> is \c true.
                     /// \return \c e
                     /// \throw nothrow
-                    #ifdef BOOST_HAS_DECLTYPE
+                    #ifndef BOOST_NO_DECLTYPE
                     result_type
                     #else
                     typename impl::expr_param
@@ -614,7 +612,7 @@
                     /// \pre <tt>matches\<Expr, nullary_expr\<Tag, T\> \>::::value</tt> is \c true.
                     /// \return \c e
                     /// \throw nothrow
-                    #ifdef BOOST_HAS_DECLTYPE
+                    #ifndef BOOST_NO_DECLTYPE
                     result_type
                     #else
                     typename impl::expr_param
@@ -791,7 +789,7 @@
         {
             /// \brief A callable PolymorphicFunctionObject that is
             /// equivalent to the \c as_expr() function.
-            template<typename Domain    BOOST_PROTO_WHEN_BUILDING_DOCS(= default_domain)>
+            template<typename Domain   /* = default_domain*/>
             struct as_expr
             {
                 BOOST_PROTO_CALLABLE()
@@ -845,7 +843,7 @@
 
             /// \brief A callable PolymorphicFunctionObject that is
             /// equivalent to the \c as_child() function.
-            template<typename Domain    BOOST_PROTO_WHEN_BUILDING_DOCS(= default_domain)>
+            template<typename Domain   /* = default_domain*/>
             struct as_child
             {
                 BOOST_PROTO_CALLABLE()
@@ -926,7 +924,7 @@
             /// A callable PolymorphicFunctionObject that is
             /// equivalent to the \c child() function. \c N is required
             /// to be an MPL Integral Constant.
-            template<typename N BOOST_PROTO_WHEN_BUILDING_DOCS(= mpl::long_<0>) >
+            template<typename N /* = mpl::long_<0>*/>
             struct child
             {
                 BOOST_PROTO_CALLABLE()

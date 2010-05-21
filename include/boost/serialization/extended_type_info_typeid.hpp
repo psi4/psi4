@@ -32,12 +32,16 @@
 #include <boost/serialization/extended_type_info.hpp>
 #include <boost/serialization/factory.hpp>
 
+// hijack serialization access
+#include <boost/serialization/access.hpp>
+
 #include <boost/mpl/if.hpp>
 
 #include <boost/config/abi_prefix.hpp> // must be the last header
+
 #ifdef BOOST_MSVC
 #  pragma warning(push)
-#  pragma warning(disable : 4251 4231 4660 4275)
+#  pragma warning(disable : 4251 4231 4660 4275 4511 4512)
 #endif
 
 namespace boost {
@@ -109,30 +113,26 @@ public:
         va_start(ap, count);
         switch(count){
         case 0:
-            return factory<boost::remove_const<T>, 0>(ap);
+            return factory<BOOST_DEDUCED_TYPENAME boost::remove_const<T>::type, 0>(ap);
         case 1:
-            return factory<boost::remove_const<T>, 1>(ap);
+            return factory<BOOST_DEDUCED_TYPENAME boost::remove_const<T>::type, 1>(ap);
         case 2:
-            return factory<boost::remove_const<T>, 2>(ap);
+            return factory<BOOST_DEDUCED_TYPENAME boost::remove_const<T>::type, 2>(ap);
         case 3:
-            return factory<boost::remove_const<T>, 3>(ap);
+            return factory<BOOST_DEDUCED_TYPENAME boost::remove_const<T>::type, 3>(ap);
         case 4:
-            return factory<boost::remove_const<T>, 4>(ap);
+            return factory<BOOST_DEDUCED_TYPENAME boost::remove_const<T>::type, 4>(ap);
         default:
             assert(false); // too many arguments
             // throw exception here?
             return NULL;
         }
     }
-    virtual void destroy(void const * const /* p */) const {
-        // the only current usage of extended type info is in the
-        // serialization library.  The statement below requires
-        // that destructor of type T be public and this creates
-        // a problem for some users.  So, for now, comment this
-        // out 
-        //delete static_cast<T const *>(p);
-        // and trap any attempt to invoke this function
-        assert(false);
+    virtual void destroy(void const * const p) const {
+        boost::serialization::access::destroy(
+            static_cast<T const * const>(p)
+        );
+        //delete static_cast<T const * const>(p);
     }
 };
 

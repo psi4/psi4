@@ -264,6 +264,23 @@ class distributed_property_map
     property_map_multiput
   };
 
+  // Code from Joaquín M López Muñoz to work around unusual implementation of
+  // std::pair in VC++ 10:
+  template<typename First,typename Second>
+  class pair_first_extractor {
+    typedef std::pair<First,Second> value_type;
+
+    public:
+    typedef First result_type;
+    const result_type& operator()(const value_type& x) const {
+      return x.first;
+    }
+
+    result_type& operator()(value_type& x) const {
+      return x.first;
+    }
+  };
+
  public:
   /// The type of the ghost cells
   typedef multi_index::multi_index_container<
@@ -271,9 +288,7 @@ class distributed_property_map
             multi_index::indexed_by<
               multi_index::sequenced<>,
               multi_index::hashed_unique<
-                multi_index::member<std::pair<key_type, value_type>,
-                                    key_type,
-                                    &std::pair<key_type, value_type>::first>
+                pair_first_extractor<key_type, value_type>
               >
             >
           > ghost_cells_type;

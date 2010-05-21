@@ -91,6 +91,11 @@ public:
 
 namespace detail {
 
+#ifdef BOOST_MSVC
+#  pragma warning(push)
+#  pragma warning(disable : 4511 4512)
+#endif
+
 template<class Archive, class T>
 class oserializer : public basic_oserializer
 {
@@ -119,14 +124,18 @@ public:
             || (boost::serialization::tracking_level<T>::value == boost::serialization::track_selectively
                 && serialized_as_pointer());
     }
-    virtual unsigned int version() const {
-        return ::boost::serialization::version<T>::value;
+    virtual version_type version() const {
+        return version_type(::boost::serialization::version<T>::value);
     }
     virtual bool is_polymorphic() const {
         return boost::is_polymorphic<T>::value;
     }
     virtual ~oserializer(){}
 };
+
+#ifdef BOOST_MSVC
+#  pragma warning(pop)
+#endif
 
 template<class Archive, class T>
 BOOST_DLLEXPORT void oserializer<Archive, T>::save_object_data(
@@ -142,6 +151,11 @@ BOOST_DLLEXPORT void oserializer<Archive, T>::save_object_data(
         version()
     );
 }
+
+#ifdef BOOST_MSVC
+#  pragma warning(push)
+#  pragma warning(disable : 4511 4512)
+#endif
 
 template<class Archive, class T>
 class pointer_oserializer :
@@ -162,6 +176,10 @@ public:
     pointer_oserializer();
     ~pointer_oserializer();
 };
+
+#ifdef BOOST_MSVC
+#  pragma warning(pop)
+#endif
 
 template<class Archive, class T>
 BOOST_DLLEXPORT void pointer_oserializer<Archive, T>::save_object_ptr(
@@ -288,13 +306,13 @@ struct save_non_pointer_type {
             > > >::type typex; 
         check_object_versioning<T>();
         typex::invoke(ar, t);
-    };
+    }
     template<class T>
     static void invoke(Archive & ar, T & t){
         check_object_level<T>();
         check_object_tracking<T>();
         invoke(ar, const_cast<const T &>(t));
-    };
+    }
 };
 
 template<class Archive>
@@ -377,7 +395,7 @@ struct save_pointer_type {
                 boost::serialization::throw_exception(
                     archive_exception(
                         archive_exception::unregistered_class,
-                        true_type->get_debug_info()
+                        "derived class not registered or exported"
                     )
                 );
             }
@@ -453,7 +471,7 @@ struct save_pointer_type {
             return;
         }
         save(ar, * t);
-    };
+    }
 };
 
 template<class Archive>

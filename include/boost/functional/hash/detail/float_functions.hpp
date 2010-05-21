@@ -84,7 +84,7 @@ namespace boost {
 // the boost namespace they'll always be preferable to any other function
 // (since the arguments are built in types, ADL can't be used).
 
-namespace BOOST_HASH_DETECT_FLOAT_FUNCTIONS {
+namespace boost_hash_detect_float_functions {
     template <class Float> boost::hash_detail::not_found ldexp(Float, int);
     template <class Float> boost::hash_detail::not_found frexp(Float, int*);    
 }
@@ -103,7 +103,7 @@ namespace BOOST_HASH_DETECT_FLOAT_FUNCTIONS {
 // happen mainly when there's a template in the same namesapce.
 
 #define BOOST_HASH_CALL_FLOAT_FUNC(cpp_func, c99_func, type1, type2)    \
-namespace BOOST_HASH_DETECT_FLOAT_FUNCTIONS {                           \
+namespace boost_hash_detect_float_functions {                           \
     template <class Float>                                              \
     boost::hash_detail::not_found c99_func(Float, type2);               \
 }                                                                       \
@@ -112,7 +112,7 @@ namespace boost {                                                       \
     namespace hash_detail {                                             \
         namespace c99_func##_detect {                                   \
             using namespace std;                                        \
-            using namespace BOOST_HASH_DETECT_FLOAT_FUNCTIONS;          \
+            using namespace boost_hash_detect_float_functions;          \
                                                                         \
             struct check {                                              \
                 static type1 x;                                         \

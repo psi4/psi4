@@ -26,7 +26,7 @@ namespace serialization {
 
 #ifdef BOOST_NO_EXCEPTIONS
 
-void inline throw_exception(std::exception const & e) {
+inline void throw_exception(std::exception const & e) {
     ::boost::throw_exception(e);
 }
 
