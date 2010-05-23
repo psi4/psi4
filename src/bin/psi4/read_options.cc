@@ -213,6 +213,8 @@ int read_options(const std::string &name, Options & options) {
     options.add_double("SCHWARZ_CUTOFF", 0.0);
     /*- -Minimum absolute D matrix value for DF-SCF exchange -*/
     options.add_double("DENSITY_CUTOFF", 0.0);
+    /*- -Minimum absolute S matrix value for DF-SCF exchange -*/
+    options.add_double("OVERLAP_CUTOFF", 0.0);
     /*- -Minimum absolute three-index value for DF-HF seive -*/
     options.add_double("THREE_INDEX_CUTOFF", 0.0);
   }
