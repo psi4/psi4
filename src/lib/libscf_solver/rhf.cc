@@ -103,6 +103,8 @@ double RHF::compute_energy()
     //Form initial MO guess by user specified method
     form_guess(); 
 
+    //S_->print(outfile);
+
     if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
         form_PK();
     else if (ri_integrals_ == true)
@@ -122,6 +124,7 @@ double RHF::compute_energy()
         Eold_ = E_;       // Save previous energy
 
         //form_G_from_J_and_K(1.0);
+        //D_->print(outfile);
 
         if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
             form_G_from_PK();
@@ -132,8 +135,13 @@ double RHF::compute_energy()
         else
            form_G();
 
+        //J_->print(outfile);
+        
+        //K_->print(outfile);
+        
         form_F();
-
+        //F_->print(outfile);
+        
         if (diis_enabled_)
             save_fock();
 
@@ -167,7 +175,7 @@ double RHF::compute_energy()
         fprintf(outfile, "\n  Failed to converged.\n");
         E_ = 0.0;
     }
-
+    timer_done();
     if (save_grid_) {
         // DOWN FOR MAINTENANCE
         //fprintf(outfile,"\n  Saving Cartesian Grid\n");

@@ -95,6 +95,7 @@ void HF::form_B()
     // Create integral factory for J (Fitting Matrix in form_B)
     IntegralFactory rifactory_J(ribasis_, zero, ribasis_, zero);
     shared_ptr<TwoBodyInt> Jint = shared_ptr<TwoBodyInt>(rifactory_J.eri());
+
     // Integral buffer
     const double *Jbuffer = Jint->buffer();
 
@@ -173,6 +174,85 @@ void HF::form_B()
     free_block(J_copy);
     timer_off("Form J^-1/2;");
 
+    //Form the schwarz sieve
+    timer_on("Schwarz Sieve");
+
+    int sig_fun_pairs = 0;
+    int sig_shell_pairs = 0;
+
+    int *schwarz_shell_pairs;
+    int *schwarz_fun_pairs;
+    if (schwarz_ > 0.0) {
+        
+        schwarz_shell_pairs = init_int_array(basisset_->nshell()*(basisset_->nshell()+1)/2);
+        schwarz_fun_pairs = init_int_array(norbs*(norbs+1)/2);
+        double* max_shell_val = init_array(basisset_->nshell()*(basisset_->nshell()+1)/2);;
+        double* max_fun_val = init_array(norbs*(norbs+1)/2);
+        double max_global_val;
+
+        IntegralFactory schwarzfactory(basisset_,basisset_,basisset_,basisset_);
+        shared_ptr<TwoBodyInt> eri = shared_ptr<TwoBodyInt>(schwarzfactory.eri());
+        const double *buffer = eri->buffer();
+
+        int MU, NU, mu, nu,omu,onu, nummu, numnu, index;
+        int MUNU = 0;
+        int munu = 0;
+        for (MU=0; MU < basisset_->nshell(); ++MU) {
+            nummu = basisset_->shell(MU)->nfunction();
+            for (NU=0; NU <= MU; ++NU, ++MUNU) {
+                numnu = basisset_->shell(NU)->nfunction();
+                eri->compute_shell(MU,NU,MU,NU);
+                for (mu=0; mu < nummu; ++mu) {
+                    omu = basisset_->shell(MU)->function_index() + mu;
+                    for (nu=0; nu < numnu; ++nu) {
+                        onu = basisset_->shell(NU)->function_index() + nu;
+                       
+                        if (omu>=onu) {
+                            index = mu*(numnu*nummu*numnu+numnu)+nu*(nummu*numnu+1);
+                            //int check = mu*numnu*nummu*numnu+nu*nummu*numnu+mu*numnu+nu;
+                            fprintf(outfile,"   Index = %d, (%d %d| %d %d) = %20.15f\n",index,omu,onu,omu,onu, buffer[index] );
+                            if (max_global_val<abs(buffer[index]))
+                                max_global_val = abs(buffer[index]);
+                            if (max_shell_val[MUNU]<abs(buffer[index]))
+                                max_shell_val[MUNU] = abs(buffer[index]);
+                            if (max_fun_val[omu*(omu+1)/2+onu]<abs(buffer[index]))
+                                max_fun_val[omu*(omu+1)/2+onu] = abs(buffer[index]);
+                        }
+                    }
+                }
+            }
+        }       
+        for (int ij = 0; ij < norbs*(norbs+1)/2; ij ++)
+            if (max_fun_val[ij]*max_global_val>=schwarz_*schwarz_){
+                schwarz_fun_pairs[ij] = 1;
+                sig_fun_pairs++;
+            }
+        for (int ij = 0; ij < basisset_->nshell()*(basisset_->nshell()+1)/2; ij ++)
+            if (max_shell_val[ij]*max_global_val>=schwarz_*schwarz_){
+                schwarz_shell_pairs[ij] = 1;
+                sig_shell_pairs++;
+            }
+        
+        fprintf(outfile,"\n  Function Pair Schwarz Sieve, schwarz_ = %14.10f:\n",schwarz_);
+        fprintf(outfile,"  %d Basis Function Pairs Eliminated out of %d Possible, %8.5f%% savings.\n\n",norbs*(norbs+1)/2-sig_fun_pairs,norbs*(norbs+1)/2,100.0*(norbs*(norbs+1)/2-sig_fun_pairs)/(1.0*norbs*(norbs+1)/2));
+        for (int i = 0, ij = 0; i<norbs; i++)
+            for (int j = 0; j<=i; j++, ij++)
+                fprintf(outfile,"   Function pair %d = (%d,%d), Max val %14.10f, Max Integral %14.10f, Significant %s\n",ij,i,j,max_fun_val[ij],max_fun_val[ij]*max_global_val,(schwarz_fun_pairs[ij])?"YES":"NO");
+        
+        fprintf(outfile,"\n  Shell Pair Schwarz Sieve, schwarz_ = %14.10f:\n",schwarz_);
+        int pairs = basisset_->nshell()*(basisset_->nshell()+1)/2;
+        fprintf(outfile,"  %d Shell Function Pairs Eliminated out of %d Possible, %8.5f%% savings.\n\n",pairs-sig_shell_pairs,pairs,100.0*(pairs-sig_shell_pairs)/(1.0*pairs));
+        for (int i = 0, ij = 0; i<basisset_->nshell(); i++)
+            for (int j = 0; j<=i; j++, ij++)
+                fprintf(outfile,"   Shell pair %d = (%d,%d), Max val %14.10f, Max Integral %14.10f, Significant %s\n",ij,i,j,max_shell_val[ij],max_shell_val[ij]*max_global_val,(schwarz_shell_pairs[ij])?"YES":"NO");
+        fprintf(outfile, "\n");
+
+        free(max_fun_val);
+        free(max_shell_val);
+    }
+
+    timer_off("Schwarz Sieve");
+
     //fprintf(outfile,"\nJmhalf:\n"); fflush(outfile);
     //print_mat(J_mhalf,ri_nbf_,ri_nbf_,outfile);
     timer_on("Overall (B|mn)");
@@ -182,6 +262,7 @@ void HF::form_B()
         shared_ptr<TwoBodyInt> eri = shared_ptr<TwoBodyInt>(rifactory.eri());
         const double *buffer = eri->buffer();
         double** A_ia_P = block_matrix(ri_nbf_,basisset_->nbf()*(basisset_->nbf()+1)/2); 
+
         int numPshell,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu;
         
         for (MU=0; MU < basisset_->nshell(); ++MU) {
@@ -547,8 +628,6 @@ void RHF::form_G_from_RI()
             double** QS = block_matrix(ri_nbf_,norbs);
             //Temp matrix for DGEMM
             double** Temp = block_matrix(ndocc,ri_nbf_);
-            //Temporary K matrix
-            double** K = block_matrix(norbs,norbs);
 
             //Exchange tensor E
             for (int m = 0; m<norbs; m++) {
@@ -588,14 +667,63 @@ void RHF::form_G_from_RI()
             timer_on("E DGEMM");
 
             //K_{mn} = E_{im}^QE_{in}^Q
-            C_DGEMM('N','T',norbs,norbs,ri_nbf_*ndocc,1.0,E[0],ri_nbf_*ndocc,E[0],ri_nbf_*ndocc, 0.0, K[0], norbs);
-            free_block(E);
-            for (int i = 0; i < norbs; i++)
-                for (int j = 0; j<=i; j++) {
-                K_->set(0,j,i,K[i][j]);
-                K_->set(0,i,j,K[i][j]);
+
+            //What is the smallest density element worth computing exchange for
+            double d_cutoff = options_.get_double("DENSITY_CUTOFF");
+            //What is the smallest overlap element worth computing exchange for
+            double s_cutoff = options_.get_double("OVERLAP_CUTOFF");
+            double cutoff = fmax(d_cutoff,s_cutoff);
+            bool compute_contribution;
+            double contribution;
+    
+            int att_D_elements = 0;
+            int att_S_elements = 0;
+            int att_elements = norbs*(norbs+1)/2;
+
+            if (cutoff > 0.0) {
+                //If the K matrix is sparse due to low overlap or density
+                //Form the matrix elements individually
+                for (int i = 0, ij = 0; i< norbs; i++)
+                    for (int j = 0; j <= i; j++, ij++) {
+                    
+                        compute_contribution = true;
+                        //Is S big enough?
+                        if (abs(S_->get(0,i,j))<s_cutoff) {
+                            compute_contribution = false;
+                            att_S_elements++;
+                        }
+                        //Is D big enough
+                        if (abs(D_->get(0,i,j))<d_cutoff) {
+                            att_D_elements++;
+                            compute_contribution = false;
+                        }
+
+                        if (compute_contribution) {
+                            contribution = C_DDOT(ri_nbf_*ndocc,&E[i][0],1,&E[j][0],1);
+                            K_->set(0,j,i,contribution);
+                            K_->set(0,i,j,contribution);
+                            att_elements--;
+                        }
+                    }
+                fprintf(outfile,"  K matrix was built with with a density cutoff of %14.10E\n",d_cutoff); 
+                fprintf(outfile,"  %d out of %d elements were attenuated due to density, %8.5f%%  attenuation.\n",att_D_elements,norbs*(norbs+1)/2,100.0*att_D_elements/(1.0*norbs*(norbs+1)/2));  
+                fprintf(outfile,"  K matrix was built with with an overlap cutoff of %14.10E\n",s_cutoff);  
+                fprintf(outfile,"  %d out of %d elements were attenuated due to overlap, %8.5f%% attenuation.\n",att_S_elements,norbs*(norbs+1)/2,100.0*att_S_elements/(1.0*norbs*(norbs+1)/2));  
+                fprintf(outfile,"  %d out of %d elements were attenuated in total, %8.5f%% attenuation.\n",att_elements,norbs*(norbs+1)/2,100.0*att_elements/(1.0*norbs*(norbs+1)/2));  
+            } else {
+                //DGEMM, usually faster regardless, maybe if the filling of the overlap matrix is <1/6 this will be better
+                //Temporary K matrix    
+                double** K = block_matrix(norbs,norbs);
+                //There it is
+                C_DGEMM('N','T',norbs,norbs,ri_nbf_*ndocc,1.0,E[0],ri_nbf_*ndocc,E[0],ri_nbf_*ndocc, 0.0, K[0], norbs);
+                for (int i = 0; i < norbs; i++)
+                    for (int j = 0; j<=i; j++) {
+                        K_->set(0,j,i,K[i][j]);
+                        K_->set(0,i,j,K[i][j]);
+                }
+                free_block(K);
             }
-            free_block(K);
+            free_block(E);
             timer_off("E DGEMM");
             //K_->print(outfile);
         }
@@ -659,9 +787,9 @@ void RHF::form_G_from_RI()
             fprintf(outfile,"\n");
             **/
 
-            for (int Q = row; Q< row+current_rows; Q++) {
-		offset = (Q-row)*norbs*(norbs+1)/2;
-                if (J_is_required_) {
+            if (J_is_required_) {
+                for (int Q = row; Q< row+current_rows; Q++) {
+		    offset = (Q-row)*norbs*(norbs+1)/2;
                     /* COULOMB PART */
                     //L_Q = (Q|ls)D_{ls}
                     timer_on("J DDOT");
@@ -672,24 +800,6 @@ void RHF::form_G_from_RI()
                     C_DAXPY(norbs*(norbs+1)/2,L,&in_buffer[offset],1,J,1);
                     timer_off("J DAXPY");
                 }
-                /* 
-                timer_on("Form E");
-                if (K_is_required_) {
-                     EXCHANGE TENSOR */
-                    /*
-                    for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
-                    {
-                        mu = ri_pair_mu_[ij];
-                        nu = ri_pair_nu_[ij];
-                        for (int i = 0; i<ndocc; i++)
-                        {
-                            E[mu][i+Q*ndocc]+=Cocc[i][nu]*in_buffer[ij+offset];
-                            if (mu != nu)
-                                E[nu][i+Q*ndocc]+=Cocc[i][mu]*in_buffer[ij+offset];
-                        }
-                    }
-                }
-                timer_off("Form E");*/
             }
             timer_on("Form E");
             if (K_is_required_) {
@@ -745,22 +855,13 @@ void RHF::form_G_from_RI()
             **/
             
         }
+        free_block(QS);
+        free(nu_indices);
+        free_block(Temp);
         free(in_buffer);
         psio_->close(PSIF_DFSCF_BJ,1);
 
-        timer_on("E DGEMM");
-        /* Exchange Tensor DGEMM */
-        if (K_is_required_) {
-            K = block_matrix(norbs,norbs);
-            C_DGEMM('N','T',norbs,norbs,ri_nbf_*ndocc,1.0,E[0],ri_nbf_*ndocc,E[0],ri_nbf_*ndocc, 0.0, K[0], norbs);
-            free_block(E);
-            free_block(QS);
-            free(nu_indices);
-            free_block(Temp);
-        }
-        timer_off("E DGEMM");
-
-        /* Form J and K */
+        /* Form J and */
         if (J_is_required_) {
             for (int i = 0, ij = 0; i < norbs; i++)
                 for (int j = 0; j<=i; j++, ij++) {
@@ -768,21 +869,72 @@ void RHF::form_G_from_RI()
                 J_->set(0,ri_pair_nu_[ij],ri_pair_mu_[ij],J[ij]);
             }
         }
-        if (K_is_required_) {
-            for (int i = 0; i < norbs; i++)
-                for (int j = 0; j <=i; j++) {
-                K_->set(0,i,j,K[i][j]);
-                K_->set(0,j,i,K[i][j]);
-            }
-        }
-
-        /* Frees */
         if (J_is_required_) {
             free(J);
         }
+        
+        timer_on("E DGEMM");
+        /* Exchange Tensor DGEMM */
         if (K_is_required_) {
-            free_block(K);
+            //What is the smallest density element worth computing exchange for
+            double d_cutoff = options_.get_double("DENSITY_CUTOFF");
+            //What is the smallest overlap element worth computing exchange for
+            double s_cutoff = options_.get_double("OVERLAP_CUTOFF");
+            double cutoff = fmax(d_cutoff,s_cutoff);
+            bool compute_contribution;
+            double contribution;
+    
+            int att_D_elements = 0;
+            int att_S_elements = 0;
+            int att_elements = norbs*(norbs+1)/2;
+
+            if (cutoff > 0.0) {
+                //If the K matrix is sparse due to low overlap or density
+                //Form the matrix elements individually
+                for (int i = 0, ij = 0; i< norbs; i++)
+                    for (int j = 0; j <= i; j++, ij++) {
+                    
+                        compute_contribution = true;
+                        //Is S big enough?
+                        if (abs(S_->get(0,i,j))<s_cutoff) {
+                            compute_contribution = false;
+                            att_S_elements++;
+                        }
+                        //Is D big enough
+                        if (abs(D_->get(0,i,j))<d_cutoff) {
+                            att_D_elements++;
+                            compute_contribution = false;
+                        }
+
+                        if (compute_contribution) {
+                            contribution = C_DDOT(ri_nbf_*ndocc,&E[i][0],1,&E[j][0],1);
+                            K_->set(0,j,i,contribution);
+                            K_->set(0,i,j,contribution);
+                            att_elements--;
+                        }
+                    }
+                fprintf(outfile,"  K matrix was built with with a density cutoff of %14.10E\n",d_cutoff); 
+                fprintf(outfile,"  %d out of %d elements were attenuated due to density, %8.5f%%  attenuation.\n",att_D_elements,norbs*(norbs+1)/2,100.0*att_D_elements/(1.0*norbs*(norbs+1)/2));  
+                fprintf(outfile,"  K matrix was built with with an overlap cutoff of %14.10E\n",s_cutoff);  
+                fprintf(outfile,"  %d out of %d elements were attenuated due to overlap, %8.5f%% attenuation.\n",att_S_elements,norbs*(norbs+1)/2,100.0*att_S_elements/(1.0*norbs*(norbs+1)/2));  
+                fprintf(outfile,"  %d out of %d elements were attenuated in total, %8.5f%% attenuation.\n",att_elements,norbs*(norbs+1)/2,100.0*att_elements/(1.0*norbs*(norbs+1)/2));  
+            } else {
+                //DGEMM, usually faster regardless, maybe if the filling of the overlap matrix is <1/6 this will be better
+                //Temporary K matrix    
+                double** K = block_matrix(norbs,norbs);
+                //There it is
+                C_DGEMM('N','T',norbs,norbs,ri_nbf_*ndocc,1.0,E[0],ri_nbf_*ndocc,E[0],ri_nbf_*ndocc, 0.0, K[0], norbs);
+                for (int i = 0; i < norbs; i++)
+                    for (int j = 0; j<=i; j++) {
+                        K_->set(0,j,i,K[i][j]);
+                        K_->set(0,i,j,K[i][j]);
+                }
+                free_block(K);
+            }
+            free_block(E);
         }
+        timer_off("E DGEMM");
+
     }
     else {
         //B is on disk, K will be in disk, Single disk pass
@@ -939,6 +1091,17 @@ void RHF::form_G_from_RI()
             }
         }
         free(in_buffer);
+        /* Form J */
+        if (J_is_required_) {
+            for (int i = 0, ij = 0; i < norbs; i++)
+                for (int j = 0; j<=i; j++, ij++) {
+                J_->set(0,ri_pair_mu_[ij],ri_pair_nu_[ij],J[ij]);
+                J_->set(0,ri_pair_nu_[ij],ri_pair_mu_[ij],J[ij]);
+            }
+        }
+        if (J_is_required_) {
+            free(J);
+        }
         psio_->close(PSIF_DFSCF_BJ,1);
         if (K_is_required_) {
             free(out_buffer);
@@ -959,6 +1122,14 @@ void RHF::form_G_from_RI()
 	    if (max_rows>ri_nbf_)
                 max_rows = ri_nbf_;
 
+            //What is the smallest density element worth computing exchange for
+            double d_cutoff = options_.get_double("DENSITY_CUTOFF");
+            //What is the smallest overlap element worth computing exchange for
+            double s_cutoff = options_.get_double("OVERLAP_CUTOFF");
+            double cutoff = fmax(d_cutoff,s_cutoff);
+            bool compute_contribution;
+            double contribution;
+    
             in_buffer = init_array(norbs*(norbs+1)/2*max_rows);
             double **E = block_matrix(norbs,max_rows*ndocc);
             double **Ktemp = block_matrix(norbs,norbs);
@@ -982,16 +1153,58 @@ void RHF::form_G_from_RI()
                 free_block(tempB);
                 **/
 
+                //Setup nice, get a semi-E matrix (blocked by aux basis)
                 for (int m = 0; m<norbs; m++) 
                     for (int Q = 0; Q<current_rows; Q++)
                         C_DCOPY(ndocc,&(in_buffer[Q*ndocc*norbs+m*ndocc]),1,&(E[m][Q*ndocc]),1);
 
                 //fprintf(outfile, "  E:\n");
                 //print_mat(E,norbs,ndocc*ri_nbf_,outfile);                
+    
+                //Here's the actual DGEMM
+                if (cutoff > 0.0) {
+                    int att_D_elements = 0;
+                    int att_S_elements = 0;
+                    int att_elements = norbs*(norbs+1)/2;
+                    
+                    //If the K matrix is sparse due to low overlap or density
+                    //Form the matrix elements individually
+                    for (int i = 0, ij = 0; i< norbs; i++)
+                        for (int j = 0; j <= i; j++, ij++) {
+                    
+                            compute_contribution = true;
+                            //Is S big enough?
+                            if (abs(S_->get(0,i,j))<s_cutoff) {
+                                compute_contribution = false;
+                                att_S_elements++;
+                            }
+                            //Is D big enough
+                            if (abs(D_->get(0,i,j))<d_cutoff) {
+                                att_D_elements++;
+                                compute_contribution = false;
+                            }
 
-                C_DGEMM('N','T',norbs,norbs,current_rows*ndocc,1.0,E[0],ri_nbf_*ndocc,E[0],ri_nbf_*ndocc, 0.0, Ktemp[0], norbs);
+                            if (compute_contribution) {
+                                contribution = C_DDOT(current_rows*ndocc,&E[i][0],1,&E[j][0],1);
+                                K[i][j] += contribution;
+                                if (i != j)
+                                    K[j][i] += contribution;
+                                att_elements--;
+                            }
+                        }
+                    fprintf(outfile,"  K matrix was built with with a density cutoff of %14.10E\n",d_cutoff); 
+                    fprintf(outfile,"  %d out of %d elements were attenuated due to density, %8.5f%%  attenuation.\n",att_D_elements,norbs*(norbs+1)/2,100.0*att_D_elements/(1.0*norbs*(norbs+1)/2));  
+                    fprintf(outfile,"  K matrix was built with with an overlap cutoff of %14.10E\n",s_cutoff);  
+                    fprintf(outfile,"  %d out of %d elements were attenuated due to overlap, %8.5f%% attenuation.\n",att_S_elements,norbs*(norbs+1)/2,100.0*att_S_elements/(1.0*norbs*(norbs+1)/2));  
+                    fprintf(outfile,"  %d out of %d elements were attenuated in total, %8.5f%% attenuation.\n",att_elements,norbs*(norbs+1)/2,100.0*att_elements/(1.0*norbs*(norbs+1)/2));  
+                } else {
+                    //DGEMM, usually faster regardless, maybe if the filling of the overlap matrix is <1/6 this will be better
+                    //Temporary K matrix    
+                    //There it is
+                    C_DGEMM('N','T',norbs,norbs,current_rows*ndocc,1.0,E[0],ri_nbf_*ndocc,E[0],ri_nbf_*ndocc, 0.0, Ktemp[0], norbs);
 
-                C_DAXPY(norbs*norbs,1.0,&Ktemp[0][0],1,&K[0][0],1);
+                    C_DAXPY(norbs*norbs,1.0,&Ktemp[0][0],1,&K[0][0],1);
+                }
                                 
                 timer_off("E DGEMM"); 
 
@@ -1018,30 +1231,14 @@ void RHF::form_G_from_RI()
             free_block(E);
             free_block(Ktemp);
             psio_->close(PSIF_DFSCF_K,0);
-        } 
-        /* Form J and K */
-        if (J_is_required_) {
-            for (int i = 0, ij = 0; i < norbs; i++)
-                for (int j = 0; j<=i; j++, ij++) {
-                J_->set(0,ri_pair_mu_[ij],ri_pair_nu_[ij],J[ij]);
-                J_->set(0,ri_pair_nu_[ij],ri_pair_mu_[ij],J[ij]);
-            }
-        }
-        if (K_is_required_) {
+            
             for (int i = 0; i < norbs; i++)
-                for (int j = 0; j <=i; j++) {
-                K_->set(0,i,j,K[i][j]);
-                K_->set(0,j,i,K[i][j]);
+                for (int j = 0; j<=i; j++) {
+                    K_->set(0,j,i,K[i][j]);
+                    K_->set(0,i,j,K[i][j]);
             }
-        }
-
-        /* Frees */
-        if (J_is_required_) {
-            free(J);
-        }
-        if (K_is_required_) {
             free_block(K);
-        }
+        } 
     }
 
     free(DD);
