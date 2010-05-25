@@ -344,10 +344,10 @@ void LMP2::amplitudes() {
                     if (i > k) ik_ = (i * (i + 1)) / 2 + k;
                     else ik_ = (k * (k + 1)) / 2 + i;
 
-                    if (pairdom_exist[kj_])
-                        free_block(Tempkj[ij_local[ij]][k]);
-                    if (pairdom_exist[ik_])
-                        free_block(Tempik[ij_local[ij]][k]);
+                    //if (pairdom_exist[kj_])
+                    //   free_block(Tempkj[ij_local[ij]][k]);
+                    //if (pairdom_exist[ik_])
+                    //    free_block(Tempik[ij_local[ij]][k]);
                 }
                 free(Tempkj[ij_local[ij]]);
                 free(Tempik[ij_local[ij]]);
