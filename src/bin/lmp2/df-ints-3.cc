@@ -358,13 +358,15 @@ for(i = 0; i < nocc; i++) {
   
   double ***I3 = (double ***) malloc(sizeof (double **) * nocc);
   for(i = 0; i < nocc; i++)
-    I3[i] = (double **) malloc(sizeof (double *) * uniteddomain_len[i]);
-  for(i = 0; i < nocc; i++) {
-    for(j = 0; j < uniteddomain_len[i]; j++) {
-      I3[i][j] = (double *) malloc(sizeof (double) * fit_len[i]);
-      memset(I3[i][j], '\0', sizeof (double) * fit_len[i]);
-    }
-  }
+    I3[i] = block_matrix(uniteddomain_len[i],fit_len[i]);
+  //for(i = 0; i < nocc; i++)
+    //I3[i] = (double **) malloc(sizeof (double *) * uniteddomain_len[i]);
+  //for(i = 0; i < nocc; i++) {
+  //  for(j = 0; j < uniteddomain_len[i]; j++) {
+  //    I3[i][j] = (double *) malloc(sizeof (double) * fit_len[i]);
+  //    memset(I3[i][j], '\0', sizeof (double) * fit_len[i]);
+  //  }
+  //}
   
 
   double* eigval = init_array(max_auxblock_len);
@@ -467,13 +469,15 @@ for(i = 0; i < nocc; i++) {
   
   double ***D = (double ***) malloc(sizeof (double **) * nocc);
   for(i = 0; i < nocc; i++)
-    D[i] = (double **) malloc(sizeof (double *) * uniteddomain_len[i]);
-  for(i = 0; i < nocc; i++) {
-    for(j = 0; j < uniteddomain_len[i]; j++) {
-      D[i][j] = (double *) malloc(sizeof (double) * fit_len[i]);
-      memset(D[i][j], '\0', sizeof (double) * fit_len[i]);
-    }
-  }
+    D[i] = block_matrix(uniteddomain_len[i],fit_len[i]);
+  //for(i = 0; i < nocc; i++)
+    //D[i] = (double **) malloc(sizeof (double *) * uniteddomain_len[i]);
+  //for(i = 0; i < nocc; i++) {
+    //for(j = 0; j < uniteddomain_len[i]; j++) {
+      //D[i][j] = (double *) malloc(sizeof (double) * fit_len[i]);
+      //memset(D[i][j], '\0', sizeof (double) * fit_len[i]);
+    //}
+  //}
   
   int m2, n2, Jsize;
   for(i = 0; i < nocc; i++) {  
@@ -518,8 +522,8 @@ for(i = 0; i < nocc; i++) {
     //Jsize = auxsize[m2];
     Jsize = omu+1;
     
-    fprintf(outfile,"  J matrix i = %d ,Jsize = %d: \n\n",i, Jsize);
-    print_mat(J,Jsize,Jsize,outfile);
+    //fprintf(outfile,"  J matrix i = %d ,Jsize = %d: \n\n",i, Jsize);
+    //print_mat(J,Jsize,Jsize,outfile);
     
     int M = max_aoblock_len;
     int N = max_fit_len;
@@ -541,32 +545,37 @@ for(i = 0; i < nocc; i++) {
 			 __FILE__, __LINE__);
     }
     
-    fprintf(outfile,"  J matrix Inverse i = %d: \n\n",i);
-    print_mat(J,Jsize,Jsize,outfile);
+    //fprintf(outfile,"  J matrix Inverse i = %d: \n\n",i);
+    //print_mat(J,Jsize,Jsize,outfile);
 
     fprintf(outfile, "\nBook keeping done... %d\n",i);
     fflush(outfile);
-    fprintf(outfile,"  I3 Matrix, AOsize = %d fit_len[%d] = %d ,max_fit_len = %d \n\n",AOsize[i],i, fit_len[i],max_fit_len);
-    print_mat(I3[i], AOsize[i], Jsize, outfile);
+    //fprintf(outfile,"  I3 Matrix, AOsize = %d fit_len[%d] = %d ,max_fit_len = %d \n\n",AOsize[i],i, fit_len[i],max_fit_len);
+    //print_mat(I3[i], AOsize[i], Jsize, outfile);
+
+    //Pointer based writeout
+    //for(int kk = 0; kk<AOsize[i]*Jsize; kk++)
+    //    fprintf(outfile,"  %d = %14.10f\n",kk, *(I3[i][0]+kk));
+
     // D[i][a][p] = I[i][a][q] * J_inv[q][p]  
 
-   for (int AA = 0; AA<AOsize[i]; AA++)
-	for (int Q = 0; Q<Jsize; Q++)
-	    for (int P = 0; P<Jsize; P++)
-		D[i][AA][Q] += I3[i][AA][P]*J[P][Q];
+   //for (int AA = 0; AA<AOsize[i]; AA++)
+   //	for (int Q = 0; Q<Jsize; Q++)
+   //	    for (int P = 0; P<Jsize; P++)
+   //		D[i][AA][Q] += I3[i][AA][P]*J[P][Q];
 
 
-    //C_DGEMM('n', 'n', AOsize[i], Jsize, Jsize,
-    //        1.0, &I3[i][0][0], fit_len[i], &J[0][0],max_fit_len, 
-    //         0.0, &D[i][0][0], fit_len[i]);
+    C_DGEMM('n', 'n', AOsize[i], Jsize, Jsize,
+            1.0, &I3[i][0][0], fit_len[i], &J[0][0],max_fit_len, 
+             0.0, &D[i][0][0], fit_len[i]);
     //C_DGEMM('n', 'n', 5, 9, 9,
     //        1.0, I3[i][0], 9, J[0],9, 
     //         0.0, D[i][0], 9);
 
     
-    fprintf(outfile,"  D Matrix, AOsize = %d\n\n",AOsize[i]);
-    print_mat(D[i], AOsize[i], Jsize, outfile);
-    fflush(outfile);
+    //fprintf(outfile,"  D Matrix, AOsize = %d\n\n",AOsize[i]);
+    //print_mat(D[i], AOsize[i], Jsize, outfile);
+    //fflush(outfile);
 
   } // end loop over i
 
