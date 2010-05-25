@@ -304,6 +304,7 @@ void LMP2::domains() {
                                 if(m == n || i == j) {
                                     pairdom_exist[ij] = 1;
                                     ij_pairs++;
+				    fprintf(outfile,"  (%d,%d) = %d, Significant at atom %d, atmo %d\n", i,j,ij,m,n);
                                 }
                                 else {
                                     xcoord = (geometry[n][0] - geometry[m][0]) * (geometry[n][0] - geometry[m][0]);
@@ -329,13 +330,15 @@ void LMP2::domains() {
 
     int **ij_map = get_ij_map();
     if(Communicator::world->me() == 0) {
-        if(neglectdp) {
-            fprintf(outfile, "\n   The following ij pairs are distant and will be negleted\n");
-            for(ij=0; ij < ij_pairs; ij++) {
-                if(pairdom_exist[ij] == 0)
-                    fprintf(outfile, "   i = %d \t j = %d\n", ij_map[ij][0], ij_map[ij][1]);
-            }
+      // if(neglectdp && print > 3) {
+      if(neglectdp) {
+        fprintf(outfile, "\n   The following ij pairs are significant and will not be negleted\n");
+        for(ij=0; ij < ij_pairs; ij++) {
+          //if (pairdom_exist[ij]==0) {
+            fprintf(outfile, " i = %d \t j = %d\n",  ij_map[ij][0], ij_map[ij][1]);
+          //}
         }
+      }
     }
 
     free_int_matrix(ij_map);
