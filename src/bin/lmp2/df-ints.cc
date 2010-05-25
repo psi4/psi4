@@ -49,7 +49,7 @@ if(Communicator::world->me() == 0){
 
   // Create a basis set object and initialize it using the checkpoint file.
   shared_ptr<BasisSet>basis = shared_ptr<BasisSet > (new BasisSet(chkpt));
-  shared_ptr<BasisSet>ribasis = shared_ptr<BasisSet > (new BasisSet(chkpt, "DF_BASIS"));
+  shared_ptr<BasisSet>ribasis = shared_ptr<BasisSet > (new BasisSet(chkpt, "DF_BASIS_MP2"));
   //ribasis->print();
 
   shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();

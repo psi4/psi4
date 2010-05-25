@@ -264,6 +264,9 @@ int** LMP2::get_ij_map() {
         }
     }
 
+    //for (int ij2 = 0; ij2<ij_pairs; ij2++)
+	//fprintf(outfile," %d (%d %d)\n", ij2,ij_map_[ij2][0], ij_map_[ij2][1]);
+
     return ij_map_;
 
 }
@@ -280,10 +283,12 @@ int* LMP2::original_ij_map() {
     counter = 0;
     for (i = 0, ij=0 ; i < nocc; i++) {
         for (j = 0; j <= i; j++, ij++) {
-            map_[ij] = counter;
             if (pairdom_exist[ij]) {
+            	map_[ij] = counter;
                 counter++;
             }
+	    else 
+		map_[ij] = -1;
         }
     }
 

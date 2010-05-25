@@ -106,7 +106,7 @@ PsiReturnType lmp2(Options &options, int argc, char * argv[]) {
     timer_off("PROJECT");
 
   if(options.get_bool("RI_LMP2")){
-    lmp2_obj.direct_df_transformation();
+    lmp2_obj.direct_df_transformation3();
   }
   else {
     if(Communicator::world->me() == 0)
