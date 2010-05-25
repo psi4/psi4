@@ -46,7 +46,9 @@ void LMP2::localize() {
   double *scratch, *evals;
   int *orb_order, *orb_boolean;
   double P, PiiA, Pst, Pss, Ptt, Ast, Bst, AB;
-  double Uss, Utt, Ust, Uts, LCks, LCkt, **U, **V, **VV;
+  double Uss, Utt, Ust, Uts, LCks, LCkt, **V;
+  double *tvec, *svec;
+  //double Uss, Utt, Ust, Uts, LCks, LCkt, **U, **V, **VV;
   double cos4a, alpha, alphamax, alphalast, conv;
 
   if(print > 2 && Communicator::world->me() == 0) {
@@ -143,10 +145,12 @@ void LMP2::localize() {
     fprintf(outfile, "\t------------------------------------------------------------\n");
   }
 
-  U = block_matrix(nocc, nocc);
+  tvec = init_array(nocc);
+  svec = init_array(nocc);
   V = block_matrix(nocc, nocc);
-  for(i=0; i < nocc; i++) V[i][i] = 1.0;
-  VV = block_matrix(nocc, nocc);
+  //U = block_matrix(nocc, nocc);
+  //for(i=0; i < nocc; i++) V[i][i] = 1.0;
+  //VV = block_matrix(nocc, nocc);
 
   for(iter=0; iter < 100; iter++) {
 
@@ -216,7 +220,7 @@ void LMP2::localize() {
           C[k][s] = Uss * LCks + Ust * LCkt;
           C[k][t] = Uts * LCks + Utt * LCkt;
         }
-
+	/**
         zero_mat(U, nocc, nocc);
         for(i=0; i < nocc; i++) U[i][i] = 1.0;
 
@@ -237,7 +241,17 @@ void LMP2::localize() {
         for(i=0; i < nocc; i++)
           for(j=0; j < nocc; j++)
             V[i][j] = VV[i][j];
-
+ 	**/
+	for (i = 0; i< nocc; i++)
+        {
+          svec[i] = Uss*V[i][s] + Ust*V[i][t];
+          tvec[i] = Uts*V[i][s] + Utt*V[i][t];
+        }
+        for (i = 0; i< nocc; i++)
+        {
+          V[i][s] = svec[i];
+          V[i][t] = tvec[i];
+        }
       } // t-loop
     } // s-loop
 
@@ -295,6 +309,9 @@ void LMP2::localize() {
   }
 
   free(evals);
+  free(svec);
+  free(tvec);
+  free_block(V);
 
   if(Communicator::world->me() == 0) {
     fprintf(outfile, "\n********************* Exiting Localization Scope ********************************\n");
