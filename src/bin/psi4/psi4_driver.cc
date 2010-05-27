@@ -199,13 +199,17 @@ psi4_driver(Options & options, int argc, char *argv[])
                 }
             }
         }
+
         tokens.clear();
 
         fflush(outfile);
     }
 
-    if (!messy)
-        psiclean();
+    if (!messy) {
+        if(Communicator::world->me() == 0)
+            psiclean();
+    }
+
 
     return Success;
 }
