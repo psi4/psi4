@@ -32,7 +32,7 @@ namespace psi { namespace scf {
 
 void HF::form_B()
 {
-    fprintf(outfile, "\n  Computing Integrals using Density Fitting");
+    fprintf(outfile, "\n  Computing Integrals using Density Fitting\n");
     //TODO: Add support for molecular symmetry
     if (factory_.nirreps() != 1)
     {
@@ -79,7 +79,7 @@ void HF::form_B()
                         if (omu>=onu) {
                             index = mu*(numnu*nummu*numnu+numnu)+nu*(nummu*numnu+1);
                             //int check = mu*numnu*nummu*numnu+nu*nummu*numnu+mu*numnu+nu;
-                            fprintf(outfile,"   Index = %d, (%d %d| %d %d) = %20.15f\n",index,omu,onu,omu,onu, buffer[index] );
+                            //fprintf(outfile,"   Index = %d, (%d %d| %d %d) = %20.15f\n",index,omu,onu,omu,onu, buffer[index] );
                             if (max_global_val<abs(buffer[index]))
                                 max_global_val = abs(buffer[index]);
                             if (max_shell_val[MUNU]<abs(buffer[index]))
@@ -102,19 +102,14 @@ void HF::form_B()
                 sig_shell_pairs++;
             }
         
-        fprintf(outfile,"\n  Function Pair Schwarz Sieve, schwarz_ = %14.10E:\n",schwarz_);
-        fprintf(outfile,"  %d Basis Function Pairs Eliminated out of %d Possible, %8.5f%% attenuation.\n\n",norbs*(norbs+1)/2-sig_fun_pairs,norbs*(norbs+1)/2,100.0*(norbs*(norbs+1)/2-sig_fun_pairs)/(1.0*norbs*(norbs+1)/2));
         //for (int i = 0, ij = 0; i<norbs; i++)
             //for (int j = 0; j<=i; j++, ij++)
                 //fprintf(outfile,"   Function pair %d = (%d,%d), Max val %14.10f, Max Integral %14.10f, Significant %s\n",ij,i,j,max_fun_val[ij],max_fun_val[ij]*max_global_val,(schwarz_fun_pairs[ij])?"YES":"NO");
-        
         //fprintf(outfile,"\n  Shell Pair Schwarz Sieve, schwarz_ = %14.10f:\n",schwarz_);
-        int pairs = basisset_->nshell()*(basisset_->nshell()+1)/2;
-        fprintf(outfile,"  %d Shell Function Pairs Eliminated out of %d Possible, %8.5f%% attenuation.\n\n",pairs-sig_shell_pairs,pairs,100.0*(pairs-sig_shell_pairs)/(1.0*pairs));
         //for (int i = 0, ij = 0; i<basisset_->nshell(); i++)
             //for (int j = 0; j<=i; j++, ij++)
                 //fprintf(outfile,"   Shell pair %d = (%d,%d), Max val %14.10f, Max Integral %14.10f, Significant %s\n",ij,i,j,max_shell_val[ij],max_shell_val[ij]*max_global_val,(schwarz_shell_pairs[ij])?"YES":"NO");
-        fprintf(outfile, "\n");
+        //fprintf(outfile, "\n");
 
         free(max_fun_val);
         free(max_shell_val);
@@ -359,16 +354,12 @@ void HF::form_B()
                     ntri_--;
                 }
             }
-            int attenuation = right-left;
-            fprintf(outfile,"  %d of %d (remaining) basis function pairs removed by three-index cutoff of %14.10E, %8.5f%% attenuation.\n",attenuation,ntri_naive_,three_index_cutoff, 100.0*attenuation/(1.0*ntri_naive_));
         }
-        if (schwarz_>0.0 || three_index_cutoff>0.0)
-            fprintf(outfile,"  After sieving, %d out of %d basis function pairs remain, %8.5f%% attenuation\n",ntri_,norbs*(norbs+1)/2,100.0*(1.0-ntri_/(1.0*norbs*(norbs+1)/2)));
-        print_mat(B_ia_P_, ri_nbf_,ntri_ ,outfile);
-        for (int left = 0; left<ntri_; left++)
-            fprintf(outfile,"  %d pair: (%d, %d)\n",left,ri_pair_mu_[left],ri_pair_nu_[left]);
+        //print_mat(B_ia_P_, ri_nbf_,ntri_ ,outfile);
+        //for (int left = 0; left<ntri_; left++)
+        //    fprintf(outfile,"  %d pair: (%d, %d)\n",left,ri_pair_mu_[left],ri_pair_nu_[left]);
 
-        fflush(outfile);
+        //fflush(outfile);
     } 
     if (df_storage_ == full||df_storage_ == flip_B_disk)
     {	
@@ -454,7 +445,7 @@ void HF::form_B()
 	free_block(Temp1);
 	free_block(Temp2);
 
-        print_mat(B_ia_P_,ri_nbf_,ntri_naive_,outfile);
+        //print_mat(B_ia_P_,ri_nbf_,ntri_naive_,outfile);
 
         if (three_index_cutoff>0.0) {
             int left =  0;
@@ -478,11 +469,7 @@ void HF::form_B()
                     ntri_--;
                 }
             }
-            int attenuation = right-left;
-            fprintf(outfile,"  %d of %d (remaining) basis function pairs removed by three-index cutoff of %14.10E, %8.5f%% attenuation.\n",attenuation,ntri_naive_,three_index_cutoff, 100.0*attenuation/(1.0*ntri_naive_));
         }
-        if (schwarz_>0.0 || three_index_cutoff>0.0)
-            fprintf(outfile,"  After sieving, %d out of %d basis function pairs remain, %8.5f%% attenuation\n",ntri_,norbs*(norbs+1)/2,100.0*(1.0-ntri_/(1.0*norbs*(norbs+1)/2)));
         //print_mat(B_ia_P_, ri_nbf_,ntri_ ,outfile);
         //for (int left = 0; left<ntri_; left++)
             //fprintf(outfile,"  %d pair: (%d, %d)\n",left,ri_pair_mu_[left],ri_pair_nu_[left]);
@@ -537,8 +524,8 @@ void HF::form_B()
                                         PHI = ribasis_->shell(Pshell)->function_index() + P;
                                         Temp1[PHI][s_index]= buffer[mu*numnu*numP+nu*numP+P];
                                     }
-                                    if (Pshell == 0)
-                                        fprintf(outfile,"  %MU = %d, NU = %d, mu = %d, nu = %d, omu = %d, onu = %d, l_index = %d, r_index = %d, s_index = %d\n",MU,NU,mu,nu,omu,onu, l_index,r_index,s_index);  
+                                    //if (Pshell == 0)
+                                    //    fprintf(outfile,"  %MU = %d, NU = %d, mu = %d, nu = %d, omu = %d, onu = %d, l_index = %d, r_index = %d, s_index = %d\n",MU,NU,mu,nu,omu,onu, l_index,r_index,s_index);  
                                     if (Pshell == 0) {
                                         delta_index++;
                                         ri_pair_mu_[r_index] = omu;
@@ -561,7 +548,7 @@ void HF::form_B()
                                 sig = true;
                             Temp3[Q] = Temp2[Q][pair];
                         }
-                        fprintf(outfile,"  Pair = %d, Sig = %s\n",pair,(sig?"Yes":"No"));
+                        //fprintf(outfile,"  Pair = %d, Sig = %s\n",pair,(sig?"Yes":"No"));
                         if (sig) { 
                             timer_on("(B|mn) disk");
                             psio_->write(PSIF_DFSCF_BJI,"BJ Three-Index Integrals",(char *) Temp3,sizeof(double)*ri_nbf_,next_PSIF_DFSCF_BJI,&next_PSIF_DFSCF_BJI);
@@ -577,12 +564,8 @@ void HF::form_B()
                 }
             }
         } 
-        int attenuation = ntri_naive_-ntri_;
-        fprintf(outfile,"  %d of %d (remaining) basis function pairs removed by three-index cutoff of %14.10E, %8.5f%% attenuation.\n",attenuation,ntri_naive_,three_index_cutoff, 100.0*attenuation/(1.0*ntri_naive_));
-        if (schwarz_>0.0 || three_index_cutoff>0.0)
-            fprintf(outfile,"  After sieving, %d out of %d basis function pairs remain, %8.5f%% attenuation\n",ntri_,norbs*(norbs+1)/2,100.0*(1.0-ntri_/(1.0*norbs*(norbs+1)/2)));
-        for (int left = 0; left<ntri_; left++)
-            fprintf(outfile,"  %d pair: (%d, %d)\n",left,ri_pair_mu_[left],ri_pair_nu_[left]);
+        //for (int left = 0; left<ntri_; left++)
+         //   fprintf(outfile,"  %d pair: (%d, %d)\n",left,ri_pair_mu_[left],ri_pair_nu_[left]);
 
         free_block(Temp1);
         free_block(Temp2);
@@ -646,7 +629,19 @@ void HF::form_B()
         //fprintf(outfile,"\n  BJ Restriped on disk.\n"); fflush(outfile);
     }
     timer_off("Overall (B|mn)");
-
+    if (schwarz_) {
+        fprintf(outfile,"\n  Function Pair Schwarz Sieve, Cutoff = %14.10E:\n",schwarz_);
+        fprintf(outfile,"  %d out of %d basis function pairs removed, %8.5f%% attenuation.\n",norbs*(norbs+1)/2-sig_fun_pairs,norbs*(norbs+1)/2,100.0*(norbs*(norbs+1)/2-sig_fun_pairs)/(1.0*norbs*(norbs+1)/2));
+        int pairs = basisset_->nshell()*(basisset_->nshell()+1)/2;
+        fprintf(outfile,"  %d out of %d basis function pairs removed, %8.5f%% attenuation.\n",pairs-sig_shell_pairs,pairs,100.0*(pairs-sig_shell_pairs)/(1.0*pairs));
+    }
+    if (three_index_cutoff) {
+        int attenuation = ntri_naive_-ntri_;
+        fprintf(outfile,"  Direct Three-Index Tensor Sieve, Cutoff = %14.10E:\n",three_index_cutoff);
+        fprintf(outfile,"  %d of %d (remaining) basis function pairs removed, %8.5f%% attenuation.\n",attenuation,ntri_naive_, 100.0*attenuation/(1.0*ntri_naive_));
+    }
+    if (schwarz_>0.0 || three_index_cutoff>0.0)
+        fprintf(outfile,"  After sieving, %d out of %d basis function pairs remain, %8.5f%% attenuation.\n\n",ntri_,norbs*(norbs+1)/2,100.0*(1.0-ntri_/(1.0*norbs*(norbs+1)/2)));
 }
 void HF::write_B()
 {
@@ -981,8 +976,8 @@ void RHF::form_G_from_RI()
                 timer_off("Form E");
             }
                
-            fprintf(outfile,"\n E: \n");
-            print_mat(E,norbs,ndocc*max_rows,outfile);
+            //fprintf(outfile,"\n E: \n");
+            //print_mat(E,norbs,ndocc*max_rows,outfile);
             
             
         }
@@ -1117,10 +1112,10 @@ void RHF::form_G_from_RI()
                 
             }
 
-            double **Bhack = block_matrix(ri_nbf_,ntri_);
-            C_DCOPY(ri_nbf_*ntri_,in_buffer,1,&Bhack[0][0],1);
-            fprintf(outfile,"  B:\n");
-            print_mat(Bhack,ri_nbf_,ntri_,outfile);
+            //double **Bhack = block_matrix(ri_nbf_,ntri_);
+            //C_DCOPY(ri_nbf_*ntri_,in_buffer,1,&Bhack[0][0],1);
+            //fprintf(outfile,"  B:\n");
+            //print_mat(Bhack,ri_nbf_,ntri_,outfile);
             
             timer_off("Read B");
             for (int Q = row; Q< row+current_rows; Q++) {
