@@ -170,6 +170,16 @@ int read_options(const std::string &name, Options & options) {
     else
       options.add_bool("RI_HF", true);
 
+    /*- Use Local fitting for K or not? -*/
+    options.add_bool("L_HF",false);
+    /*- Atomic Charge cutoff (for primary domain) -*/
+    options.add_double("CHARGE_CUTOFF",0.05);
+    /*- Extended domain radius, Angstrom -*/
+    options.add_double("R_EXT",3.0);
+    /*- Iterations per full Pipek-Mizey Localization -*/
+    options.add_int("STEPS_PER_LOCALIZE",1);
+    
+
     /*- The guess type to be used in the computation -*/
     options.add_str("GUESS", "", "CORE GWH SAD READ BASIS2");
     /*- The reference wavefunction used in the computation -*/
@@ -212,7 +222,7 @@ int read_options(const std::string &name, Options & options) {
     /*- -Minimum absolute TEI value for seive -*/
     options.add_double("SCHWARZ_CUTOFF", 0.0);
     /*- -Minimum absolute D matrix value for DF-SCF exchange -*/
-    options.add_double("DENSITY_CUTOFF", 0.0);
+    //options.add_double("DENSITY_CUTOFF", 0.0);
     /*- -Minimum absolute S matrix value for DF-SCF exchange -*/
     options.add_double("OVERLAP_CUTOFF", 0.0);
     /*- -Minimum absolute three-index value for DF-SCF seive -*/
