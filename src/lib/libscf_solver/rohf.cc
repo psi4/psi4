@@ -467,9 +467,9 @@ void ROHF::form_initialF() {
 #ifdef _DEBUG
     if (debug_) {
         fprintf(outfile, "Initial closed Fock matrix:\n");
-        Fc_->print(outfile);
+        Fc_.print(outfile);
         fprintf(outfile, "Initial open Fock matrix:\n");
-        Fo_->print(outfile);
+        Fo_.print(outfile);
     }
 #endif
 }
@@ -521,11 +521,11 @@ void ROHF::form_F() {
     }
 #ifdef _DEBUG
     if (debug_) {
-        Fc_->print(outfile);
-        Fo_->print(outfile);
+        Fc_.print(outfile);
+        Fo_.print(outfile);
         Fct->print(outfile);
         Fot->print(outfile);
-        Feff_->print(outfile);
+        Feff_.print(outfile);
     }
 #endif
 }
@@ -540,7 +540,7 @@ void ROHF::form_C() {
 
 #ifdef _DEBUG
     if (debug_) {
-        eigvec->eivprint(epsilon_);
+        eigvec.eivprint(epsilon_);
     }
 #endif
     temp->gemm(false, false, 1.0, C_, eigvec, 0.0);
@@ -548,7 +548,7 @@ void ROHF::form_C() {
 
 #ifdef _DEBUG
     if (debug_) {
-        C_->print(outfile);
+        C_.print(outfile);
     }
 #endif
 }
@@ -576,8 +576,8 @@ void ROHF::form_D() {
 
 #ifdef _DEBUG
     if (debug_) {
-        Dc_->print(outfile);
-        Do_->print(outfile);
+        Dc_.print(outfile);
+        Do_.print(outfile);
     }
 #endif
 }
@@ -750,11 +750,11 @@ void ROHF::form_G_from_PK() {
     if (debug_) {
         fprintf(outfile, "PK: ij = %lu\n", (unsigned long)ij);
         fflush(outfile);
-        Dc_->print(outfile);
+        Dc_.print(outfile);
         fprintf(outfile, "PK: Dc vector:\n");
         for (ij=0; ij<pk_pairs_; ++ij)
             fprintf(outfile, "PK: Dc vector [%lu] = %20.14f\n", (unsigned long)ij, Dc_vector[ij]);
-        Do_->print(outfile);
+        Do_.print(outfile);
         fprintf(outfile, "PK: Do vector:\n");
         for (ij=0; ij<pk_pairs_; ++ij)
             fprintf(outfile, "PK: Do vector [%lu] = %20.14f\n", (unsigned long)ij, Do_vector[ij]);
@@ -826,9 +826,9 @@ void ROHF::form_G_from_PK() {
 #ifdef _DEBUG
     if (debug_) {
         fprintf(outfile, "Gc from PK:\n");
-        Gc_->print(outfile);
+        Gc_.print(outfile);
         fprintf(outfile, "Go from PK:\n");
-        Go_->print(outfile);
+        Go_.print(outfile);
     }
 #endif
 
