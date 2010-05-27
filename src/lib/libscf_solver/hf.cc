@@ -186,6 +186,12 @@ void HF::common_init()
         direct_integrals_ = false;  // direct 4-index ints
     }
     
+    //Somewhat idiot proofed, you cant turn local K on without DF
+    local_K_ = false;
+    if (ri_integrals_)
+        if (options_.get_bool("L_HF"))
+            local_K_ = true;    
+
     //For HF algorithms, J and K are both required always.
     J_is_required_ = true;
     K_is_required_ = true;

@@ -67,11 +67,10 @@ void RHF::common_init()
     J_    = SharedMatrix(factory_.create_matrix("J"));
     K_    = SharedMatrix(factory_.create_matrix("K"));
 
-    //local_K_ = true;
-    local_K_ = false;
     if (local_K_) {
         Lref_    = SharedMatrix(factory_.create_matrix("Lref"));
         L_    = SharedMatrix(factory_.create_matrix("L"));
+        I_ = block_matrix(basisset_->molecule()->natom(),doccpi_[0]);
     }
 
     int nao = chkpt_->rd_nao();
@@ -93,7 +92,6 @@ void RHF::common_init()
     fprintf(outfile, "  Local Exchange %s.\n", local_K_ ? "enabled": "disabled");
 
     fflush(outfile);
-
     // Allocate memory for PK matrix
     if (direct_integrals_ == false && ri_integrals_ == false)
         allocate_PK();
@@ -125,8 +123,8 @@ double RHF::compute_energy()
         form_PK();
     else if (ri_integrals_ == true && local_K_ == false)
         form_B();
-    else if (ri_integrals_ == true && local_K_ == false)   
-        form_B_without_transform();
+    else if (ri_integrals_ == true && local_K_ == true)   
+        form_A();
 
     //if (local_K_)
     //    I_ = block_matrix(basisset_->molecule()->natom(),doccpi_[0]);
@@ -155,9 +153,9 @@ double RHF::compute_energy()
            form_G();
         timer_off("Form G");
 
-        //J_->print(outfile);
-        
-        //K_->print(outfile);
+        J_->print(outfile);
+      
+        K_->print(outfile);
         
         form_F();
         //F_->print(outfile);
@@ -206,11 +204,11 @@ double RHF::compute_energy()
         //save_RHF_grid(options_, basisset_, D_, C_);
     }
 
-    if (ri_integrals_)
-    {
+    if (ri_integrals_ && !local_K_) 
         free_B();
-    }
-    
+    else if (ri_integrals_ && local_K_)
+        free_A();
+
     //TEST LOCALIZATION
     //fully_localize_mos(); 
     //localized_Lodwin_charges();

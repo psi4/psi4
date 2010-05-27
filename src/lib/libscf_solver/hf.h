@@ -103,6 +103,10 @@ protected:
 
     /// Three Index tensor for DF-SCF
     double **B_ia_P_;
+    double **A_ia_P_;
+
+    /// Fitting Tensor Inverse (J-matrix) for DF-SCF
+    double **Jinv_;
 
     double schwarz_; //Current Schwarz magnitude (static for now)
     int ntri_; //Number of function pairs after schwarz sieve and subsequent sieves
@@ -213,12 +217,14 @@ protected:
     /** Form canonical three-index DF tensor */
     void form_B();
     /** Form B without metric transform for local K (makes J go crazy fast)*/
-    void form_B_without_transform();
+    void form_A();
         
     /** Write tensor from memory to disk */
     void write_B();
     /** Free all memory associated with DF */
     void free_B();
+    /** Free all memory associated with DF */
+    void free_A();
 
     inline int integral_type(int i, int j, int k, int l)
     {
