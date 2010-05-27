@@ -325,6 +325,10 @@ void OneBodyInt::compute_deriv1(std::vector<shared_ptr<SimpleMatrix> > &result)
     int ns1 = bs1_->nshell();
     int ns2 = bs2_->nshell();
 
+    // Check the length of result, must be 3*natom_
+    if (result.size() != 3*natom_)
+        throw SanityCheckError("OneBodyInt::compute_derv1(result): result must be 3 * natom in length.", __FILE__, __LINE__);
+
     for (int i=0; i<ns1; ++i) {
         for (int j=0; j<ns2; ++j) {
             // Compute the shell
