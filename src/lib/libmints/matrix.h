@@ -237,6 +237,11 @@ public:
     /// Diagonalize this places eigvectors and eigvalues must be created by caller.
     void diagonalize(Matrix& eigvectors, Vector& eigvalues);
 
+    /// Retrieves the i'th irrep
+    double** operator[](int i) { return matrix_[i]; }
+    double& operator()(int h, int i, int j) { return matrix_[h][i][j]; }
+    const double& operator()(int h, int i, int j) const { return matrix_[h][i][j]; }
+
     friend class Vector;
 };
 
