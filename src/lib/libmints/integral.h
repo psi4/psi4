@@ -274,6 +274,9 @@ public:
     /// Returns an OneBodyInt that computes the quadrupole integral.
     virtual OneBodyInt* quadrupole();
 
+    /// Returns an OneBodyInt that computes the electric field
+    virtual OneBodyInt *electric_field();
+
     /// Returns an ERI integral object
     virtual TwoBodyInt* eri(int deriv=0, double schwarz = 0.0);
 

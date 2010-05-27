@@ -128,9 +128,9 @@ void ElectricFieldInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<Gau
                                 int iind = l1 * ixm + m1 * iym + n1 * izm;
                                 int jind = l2 * jxm + m2 * jym + n2 * jzm;
 
-                                buffer_[ao12] += ex[iind][jind][0] * over_pf * Z;
-                                buffer_[ao12+ydisp] += ey[iind][jind][0] * over_pf * Z;
-                                buffer_[ao12+zdisp] += ez[iind][jind][0] * over_pf * Z;
+                                buffer_[ao12]       += -ex[iind][jind][0] * over_pf * Z;
+                                buffer_[ao12+ydisp] += -ey[iind][jind][0] * over_pf * Z;
+                                buffer_[ao12+zdisp] += -ez[iind][jind][0] * over_pf * Z;
 
                                 ao12++;
                             }
