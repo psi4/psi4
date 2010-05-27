@@ -21,11 +21,15 @@ class RHF : public HF {
 protected:
     SharedMatrix F_;
 //    SharedMatrix C_;
+    SharedMatrix Lref_; //Formal local orbital coefficients (from last guess)
+    SharedMatrix L_; //Propagated local orbital coefficients
     SharedMatrix D_;
     SharedMatrix Dold_;
     SharedMatrix G_;
     SharedMatrix J_;
     SharedMatrix K_;
+
+    double** I_;
 
     boost::shared_ptr<TwoBodyInt> eri_;
 
@@ -36,7 +40,7 @@ protected:
 
     void compute_multipole();
 
-    void form_guess();
+    bool load_or_compute_initial_C();
     void form_C();
     void form_D();
     double compute_initial_E();
@@ -46,6 +50,7 @@ protected:
     void form_G_from_PK(); // In core PK
     void form_G_from_direct_integrals(); // Computes all ERIs each iteration.
     void form_G_from_RI(); //Uses two- and three- index integrals
+    void form_G_from_RI_local_K(); //Uses two- and three- index integrals
     void form_G_from_J_and_K(double scale_K_by = 1.0); // Computes G from J and K
     void form_J_and_K();    // Computes J and K matrices from the ERIs
 
@@ -53,6 +58,10 @@ protected:
     void form_J_from_RI();
     void form_K_from_RI();
 
+    void fully_localize_mos();
+    void propagate_local_mos();
+    void localized_Lodwin_charges();
+    
     void form_PK();
     void form_F();
 

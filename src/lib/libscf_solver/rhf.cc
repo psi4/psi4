@@ -67,6 +67,13 @@ void RHF::common_init()
     J_    = SharedMatrix(factory_.create_matrix("J"));
     K_    = SharedMatrix(factory_.create_matrix("K"));
 
+    //local_K_ = true;
+    local_K_ = false;
+    if (local_K_) {
+        Lref_    = SharedMatrix(factory_.create_matrix("Lref"));
+        L_    = SharedMatrix(factory_.create_matrix("L"));
+    }
+
     int nao = chkpt_->rd_nao();
     chkpt_->wt_nmo(nao);
 
@@ -83,6 +90,7 @@ void RHF::common_init()
     fprintf(outfile, "  Out of core %s.\n", use_out_of_core_ ? "enabled" : "disabled");
     fprintf(outfile, "  Direct %s.\n", direct_integrals_ ? "enabled": "disabled");
     fprintf(outfile, "  Density Fitting %s.\n", ri_integrals_ ? "enabled": "disabled");
+    fprintf(outfile, "  Local Exchange %s.\n", local_K_ ? "enabled": "disabled");
 
     fflush(outfile);
 
@@ -94,31 +102,39 @@ void RHF::common_init()
 double RHF::compute_energy()
 {
     bool converged = false, diis_iter = false;
-    int iteration = 0;
+    iteration_ = 0;
 
     // Do the initial work to get the iterations started.
     //form_multipole_integrals();  // handled by HF class
+    timer_on("Core Hamiltonian");
     form_H(); //Core Hamiltonian
+    timer_off("Core Hamiltonian");
+    timer_on("Overlap Matrix");
     form_Shalf(); //Shalf Matrix
+    timer_off("Overlap Matrix");
     //Form initial MO guess by user specified method
-    form_guess(); 
+    // Check to see if there are MOs already in the checkpoint file.
+    // If so, read them in instead of forming them, unless the user disagrees.
+    timer_on("Initial Guess");
+    load_or_compute_initial_C();
+    timer_off("Initial Guess");
 
     //S_->print(outfile);
 
     if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
         form_PK();
-    else if (ri_integrals_ == true)
+    else if (ri_integrals_ == true && local_K_ == false)
         form_B();
+    else if (ri_integrals_ == true && local_K_ == false)   
+        form_B_without_transform();
 
-    // Check to see if there are MOs already in the checkpoint file.
-    // If so, read them in instead of forming them.
-    if (load_or_compute_initial_C())
-        fprintf(outfile, "  Read in previous MOs from file32.\n\n");
+    //if (local_K_)
+    //    I_ = block_matrix(basisset_->molecule()->natom(),doccpi_[0]);
 
     fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
     // SCF iterations
     do {
-        iteration++;
+        iteration_++;
 
         Dold_->copy(D_);  // Save previous density
         Eold_ = E_;       // Save previous energy
@@ -126,18 +142,22 @@ double RHF::compute_energy()
         //form_G_from_J_and_K(1.0);
         //D_->print(outfile);
 
+        timer_on("Form G");
         if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
             form_G_from_PK();
         else if (ri_integrals_ == false && direct_integrals_ == true)
             form_G_from_direct_integrals();
-        else if (ri_integrals_ == true)
+        else if (ri_integrals_ == true && local_K_ == false)
            form_G_from_RI();
+        else if (ri_integrals_ == true && local_K_ == true)
+           form_G_from_RI_local_K();
         else
            form_G();
+        timer_off("Form G");
 
-        //J_->print(outfile);
+        J_->print(outfile);
         
-        //K_->print(outfile);
+        K_->print(outfile);
         
         form_F();
         //F_->print(outfile);
@@ -147,21 +167,25 @@ double RHF::compute_energy()
 
         E_ = compute_E();
 
-        if (diis_enabled_ == true && iteration >= num_diis_vectors_) {
+        timer_on("DIIS");
+        if (diis_enabled_ == true && iteration_ >= num_diis_vectors_) {
             diis();
             diis_iter = true;
         } else {
             diis_iter = false;
         }
+        timer_off("DIIS");
 
-        fprintf(outfile, "  @RHF iteration %3d energy: %20.14f    %20.14f %20.14f %s\n", iteration, E_, E_ - Eold_, Drms_, diis_iter == false ? " " : "DIIS");
+        fprintf(outfile, "  @RHF iteration %3d energy: %20.14f    %20.14f %20.14f %s\n", iteration_, E_, E_ - Eold_, Drms_, diis_iter == false ? " " : "DIIS");
         fflush(outfile);
 
+        timer_on("Diagonalize H");
         form_C();
+        timer_off("Diagonalize H");
         form_D();
 
         converged = test_convergency();
-    } while (!converged && iteration < maxiter_);
+    } while (!converged && iteration_ < maxiter_);
 
     if (converged) {
         fprintf(outfile, "\n  Energy converged.\n");
@@ -175,7 +199,7 @@ double RHF::compute_energy()
         fprintf(outfile, "\n  Failed to converged.\n");
         E_ = 0.0;
     }
-    timer_done();
+    //timer_done();
     if (save_grid_) {
         // DOWN FOR MAINTENANCE
         //fprintf(outfile,"\n  Saving Cartesian Grid\n");
@@ -186,6 +210,15 @@ double RHF::compute_energy()
     {
         free_B();
     }
+    
+    //TEST LOCALIZATION
+    //fully_localize_mos(); 
+    //localized_Lodwin_charges();
+    //propagate_local_mos(); 
+
+    if (local_K_)
+        free_block(I_);    
+
     // Compute the final dipole.
     compute_multipole();
 
@@ -193,8 +226,9 @@ double RHF::compute_energy()
     fflush(outfile);
     return E_;
 }
-void RHF::form_guess()
+bool RHF::load_or_compute_initial_C()
 {    
+    bool ret = false;
     // Check to see if there are MOs already in the checkpoint file.
     // If so, read them in instead of forming them.
     string prefix(chkpt_->build_keyword(const_cast<char*>("MO coefficients")));
@@ -220,6 +254,7 @@ void RHF::form_guess()
 
         // Read SCF energy from checkpoint file.
         E_ = chkpt_->rd_escf();
+        ret = true;
     } else if (guess_type == "CORE" || guess_type == "") {
         //CORE is an old Psi standby, so we'll play this as spades
         fprintf(outfile, "  SCF Guess: Core (One-Electron) Hamiltonian.\n\n");
@@ -254,7 +289,7 @@ void RHF::form_guess()
     } else if (guess_type == "READ" || guess_type == "BASIS2") {
         throw std::invalid_argument("Checkpoint MOs requested, but do not exist!");
     }   
-    
+    return ret; 
 }
 void RHF::compute_multipole()
 {

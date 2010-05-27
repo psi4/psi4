@@ -215,8 +215,10 @@ int read_options(const std::string &name, Options & options) {
     options.add_double("DENSITY_CUTOFF", 0.0);
     /*- -Minimum absolute S matrix value for DF-SCF exchange -*/
     options.add_double("OVERLAP_CUTOFF", 0.0);
-    /*- -Minimum absolute three-index value for DF-HF seive -*/
+    /*- -Minimum absolute three-index value for DF-SCF seive -*/
     options.add_double("THREE_INDEX_CUTOFF", 0.0);
+    /*- -Maximum number of rows to read/write in each DF-SCf operation */
+    options.add_int("ROWS_PER_READ", 1);
   }
   else if (name == "MP2") {
     options.add_str("WFN", "");

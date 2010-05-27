@@ -457,6 +457,7 @@ void HF::form_Shalf()
     eigtemp.gemm(false, true, 1.0, eigtemp2, eigvec, 0.0);
     Shalf_->gemm(false, false, 1.0, eigvec, eigtemp, 0.0);
 
+    S_->diagonalize(eigvec, eigval);
     // Convert the eigenvalues to sqrt(eigenvalues)
     for (int h=0; h<eigval.nirreps(); ++h) {
         for (int i=0; i<dimpi[h]; ++i) {

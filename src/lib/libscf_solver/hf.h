@@ -40,6 +40,9 @@ protected:
     /// Max number of iterations for HF
     int maxiter_;
 
+    /// Current Iteration
+    int iteration_;
+    
     /// Nuclear repulsion energy
     double nuclearrep_;
 
@@ -84,11 +87,15 @@ protected:
     enum df_storage { double_full, full, flip_B_core, flip_B_disk, k_incore, disk};
     df_storage df_storage_;
 
-    int ri_integrals_;
-    int ri_nbf_;
+    //Density Fitting?
+    bool ri_integrals_;
+    int ri_nbf_; //Number of functions in the auxiliary basis
     int *ri_pair_nu_;
     int *ri_pair_mu_;
 
+    //Local K? (only with DF)
+    bool local_K_;
+    
     /// do we need Coulomb?
     bool J_is_required_;
     /// do we need Exchange?
@@ -97,7 +104,10 @@ protected:
     /// Three Index tensor for DF-SCF
     double **B_ia_P_;
 
-    double schwarz_;
+    double schwarz_; //Current Schwarz magnitude (static for now)
+    int ntri_; //Number of function pairs after schwarz sieve and subsequent sieves
+    int ntri_naive_; //Number of function pairs after schwarz sieve
+   
     
     /// save SCF Cartesian Grid
     bool save_grid_;
@@ -194,8 +204,20 @@ protected:
     /** Computes the initial energy. */
     virtual double compute_initial_E() { return 0.0; }
 
+    /** Perform full localization procedure */
+    virtual void fully_localize_mos() {}
+
+    /** Propagate previous localization guess a. la. R. Polly et. al. */
+    virtual void propagate_local_mos(){}
+
+    /** Form canonical three-index DF tensor */
     void form_B();
+    /** Form B without metric transform for local K (makes J go crazy fast)*/
+    void form_B_without_transform();
+        
+    /** Write tensor from memory to disk */
     void write_B();
+    /** Free all memory associated with DF */
     void free_B();
 
     inline int integral_type(int i, int j, int k, int l)
