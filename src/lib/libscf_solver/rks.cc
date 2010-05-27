@@ -127,7 +127,7 @@ double RKS::compute_energy()
 
     S_->print(outfile);
 
-    form_guess();
+    load_or_compute_initial_C();
 
     C_->print(outfile);
     D_->print(outfile);
