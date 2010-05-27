@@ -698,17 +698,21 @@ void ObaraSaikaTwoCenterElectricField::compute(double PA[3], double PB[3], doubl
     int mmax = am1 + am2;
 
     // Call our super class to compute potential integrals
-    ObaraSaikaTwoCenterVIRecursion::compute(PA, PB, PC, zeta, am1+1, am2+1);
+    //ObaraSaikaTwoCenterVIRecursion::compute(PA, PB, PC, zeta, max_am1_, max_am2_);
+    ObaraSaikaTwoCenterVIRecursion::compute(PA, PB, PC, zeta, am1, am2);
 
     // Compute starting integrals using A25
-    for (m=0; m<=mmax; ++m) {
+    fprintf(outfile, "setup:\n");
+    for (m=0; m<=mmax-1; ++m) {
         ex_[0][0][m] = 2.0 * zeta * PC[0] * vi_[0][0][m+1];
         ey_[0][0][m] = 2.0 * zeta * PC[1] * vi_[0][0][m+1];
         ez_[0][0][m] = 2.0 * zeta * PC[2] * vi_[0][0][m+1];
+        fprintf(outfile, "ex_[0][0][%d] = %lf\tey_[0][0][%d] = %lf\tez_[0][0][%d] = %lf\n", m, ex_[0][0][m], m, ey_[0][0][m], m, ez_[0][0][m]);
     }
 
     // Perform recursion in b with a=0
     //    subset of A24
+    fprintf(outfile, "upward in j with i=0:\n");
     for (b=1; b<=am2; ++b) {
         for (bx=0; bx<=b; ++bx) {
             for (by=0; by<=b-bx; ++by) {
@@ -723,12 +727,14 @@ void ObaraSaikaTwoCenterElectricField::compute(double PA[3], double PB[3], doubl
                         ex_[0][bind][m] = PB[2] * ex_[0][bind-bzm][m] - PC[2] * ex_[0][bind-bzm][m+1];
                         ey_[0][bind][m] = PB[2] * ey_[0][bind-bzm][m] - PC[2] * ey_[0][bind-bzm][m+1];
                         ez_[0][bind][m] = PB[2] * ez_[0][bind-bzm][m] - PC[2] * ez_[0][bind-bzm][m+1] + vi_[0][bind-bzm][m+1];
+                        fprintf(outfile, "ex_[0][%d][%d] = %lf\tey_[0][%d][%d] = %lf\tez_[0][%d][%d] = %lf\n", bind, m, ex_[0][bind][m], bind, m, ey_[0][bind][m], bind, m, ez_[0][bind][m]);
                     }
                     if (bz > 1) {
                         for (m=0; m<=am2-b-1; ++m) {
                             ex_[0][bind][m] += ooz * (bz-1) * (ex_[0][bind-2*bzm][m] - ex_[0][bind-2*bzm][m+1]);
                             ey_[0][bind][m] += ooz * (bz-1) * (ey_[0][bind-2*bzm][m] - ey_[0][bind-2*bzm][m+1]);
                             ez_[0][bind][m] += ooz * (bz-1) * (ez_[0][bind-2*bzm][m] - ez_[0][bind-2*bzm][m+1]);
+                            fprintf(outfile, "ex_[0][%d][%d] = %lf\tey_[0][%d][%d] = %lf\tez_[0][%d][%d] = %lf\n", bind, m, ex_[0][bind][m], bind, m, ey_[0][bind][m], bind, m, ez_[0][bind][m]);
                         }
                     }
                 }
@@ -737,12 +743,14 @@ void ObaraSaikaTwoCenterElectricField::compute(double PA[3], double PB[3], doubl
                         ex_[0][bind][m] = PB[1] * ex_[0][bind-bym][m] - PC[1] * ex_[0][bind-bym][m+1];
                         ey_[0][bind][m] = PB[1] * ey_[0][bind-bym][m] - PC[1] * ey_[0][bind-bym][m+1] + vi_[0][bind-bym][m+1];
                         ez_[0][bind][m] = PB[1] * ez_[0][bind-bym][m] - PC[1] * ez_[0][bind-bym][m+1];
+fprintf(outfile, "ex_[0][%d][%d] = %lf\tey_[0][%d][%d] = %lf\tez_[0][%d][%d] = %lf\n", bind, m, ex_[0][bind][m], bind, m, ey_[0][bind][m], bind, m, ez_[0][bind][m]);
                     }
                     if (by > 1) {
                         for (m=0; m<=am2-b-1; ++m) {
                             ex_[0][bind][m] += ooz * (by-1) * (ex_[0][bind-2*bym][m] - ex_[0][bind-2*bym][m+1]);
                             ey_[0][bind][m] += ooz * (by-1) * (ey_[0][bind-2*bym][m] - ey_[0][bind-2*bym][m+1]);
                             ez_[0][bind][m] += ooz * (by-1) * (ez_[0][bind-2*bym][m] - ez_[0][bind-2*bym][m+1]);
+fprintf(outfile, "ex_[0][%d][%d] = %lf\tey_[0][%d][%d] = %lf\tez_[0][%d][%d] = %lf\n", bind, m, ex_[0][bind][m], bind, m, ey_[0][bind][m], bind, m, ez_[0][bind][m]);
                         }
                     }
                 }
@@ -751,12 +759,14 @@ void ObaraSaikaTwoCenterElectricField::compute(double PA[3], double PB[3], doubl
                         ex_[0][bind][m] = PB[0] * ex_[0][bind-bxm][m] - PC[0] * ex_[0][bind-bxm][m+1] + vi_[0][bind-bxm][m+1];
                         ey_[0][bind][m] = PB[0] * ey_[0][bind-bxm][m] - PC[0] * ey_[0][bind-bxm][m+1];
                         ez_[0][bind][m] = PB[0] * ez_[0][bind-bxm][m] - PC[0] * ez_[0][bind-bxm][m+1];
+fprintf(outfile, "ex_[0][%d][%d] = %lf\tey_[0][%d][%d] = %lf\tez_[0][%d][%d] = %lf\n", bind, m, ex_[0][bind][m], bind, m, ey_[0][bind][m], bind, m, ez_[0][bind][m]);
                     }
                     if (bx > 1) {
                         for (m=0; m<=am2-b-1; ++m) {
                             ex_[0][bind][m] += ooz * (bx-1) * (ex_[0][bind-2*bxm][m] - ex_[0][bind-2*bxm][m+1]);
                             ey_[0][bind][m] += ooz * (bx-1) * (ey_[0][bind-2*bxm][m] - ey_[0][bind-2*bxm][m+1]);
                             ez_[0][bind][m] += ooz * (bx-1) * (ez_[0][bind-2*bxm][m] - ez_[0][bind-2*bxm][m+1]);
+fprintf(outfile, "ex_[0][%d][%d] = %lf\tey_[0][%d][%d] = %lf\tez_[0][%d][%d] = %lf\n", bind, m, ex_[0][bind][m], bind, m, ey_[0][bind][m], bind, m, ez_[0][bind][m]);
                         }
                     }
                 }
@@ -782,12 +792,14 @@ void ObaraSaikaTwoCenterElectricField::compute(double PA[3], double PB[3], doubl
                                     ex_[aind][bind][m] = PA[2] * ex_[aind-azm][bind][m] - PC[2] * ex_[aind-azm][bind][m+1];
                                     ey_[aind][bind][m] = PA[2] * ey_[aind-azm][bind][m] - PC[2] * ey_[aind-azm][bind][m+1];
                                     ez_[aind][bind][m] = PA[2] * ez_[aind-azm][bind][m] - PC[2] * ez_[aind-azm][bind][m+1] + vi_[aind-azm][bind][m+1];
+fprintf(outfile, "ex_[%d][%d][%d] = %lf\tey_[%d][%d][%d] = %lf\tez_[%d][%d][%d] = %lf\n", aind, bind, m, ex_[aind][bind][m], aind, bind, m, ey_[aind][bind][m], aind, bind, m, ez_[aind][bind][m]);
                                 }
                                 if (az > 1) {
                                     for (m=0; m<=mmax-a-b-1; ++m) {
                                         ex_[aind][bind][m] += ooz * (az-1) * (ex_[aind-2*azm][bind][m] - ex_[aind-2*azm][bind][m+1]);
                                         ey_[aind][bind][m] += ooz * (az-1) * (ey_[aind-2*azm][bind][m] - ey_[aind-2*azm][bind][m+1]);
                                         ez_[aind][bind][m] += ooz * (az-1) * (ez_[aind-2*azm][bind][m] - ez_[aind-2*azm][bind][m+1]);
+fprintf(outfile, "ex_[%d][%d][%d] = %lf\tey_[%d][%d][%d] = %lf\tez_[%d][%d][%d] = %lf\n", aind, bind, m, ex_[aind][bind][m], aind, bind, m, ey_[aind][bind][m], aind, bind, m, ez_[aind][bind][m]);
                                     }
                                 }
                                 if (bz > 0) {
@@ -795,6 +807,7 @@ void ObaraSaikaTwoCenterElectricField::compute(double PA[3], double PB[3], doubl
                                         ex_[aind][bind][m] += ooz * bz * (ex_[aind-azm][bind-bzm][m] - ex_[aind-azm][bind-bzm][m+1]);
                                         ey_[aind][bind][m] += ooz * bz * (ey_[aind-azm][bind-bzm][m] - ey_[aind-azm][bind-bzm][m+1]);
                                         ez_[aind][bind][m] += ooz * bz * (ez_[aind-azm][bind-bzm][m] - ez_[aind-azm][bind-bzm][m+1]);
+fprintf(outfile, "ex_[%d][%d][%d] = %lf\tey_[%d][%d][%d] = %lf\tez_[%d][%d][%d] = %lf\n", aind, bind, m, ex_[aind][bind][m], aind, bind, m, ey_[aind][bind][m], aind, bind, m, ez_[aind][bind][m]);
                                     }
                                 }
                             }
@@ -803,12 +816,14 @@ void ObaraSaikaTwoCenterElectricField::compute(double PA[3], double PB[3], doubl
                                     ex_[aind][bind][m] = PA[1] * ex_[aind-aym][bind][m] - PC[1] * ex_[aind-aym][bind][m+1];
                                     ey_[aind][bind][m] = PA[1] * ey_[aind-aym][bind][m] - PC[1] * ey_[aind-aym][bind][m+1] + vi_[aind-aym][bind][m+1];
                                     ez_[aind][bind][m] = PA[1] * ez_[aind-aym][bind][m] - PC[1] * ez_[aind-aym][bind][m+1];
+fprintf(outfile, "ex_[%d][%d][%d] = %lf\tey_[%d][%d][%d] = %lf\tez_[%d][%d][%d] = %lf\n", aind, bind, m, ex_[aind][bind][m], aind, bind, m, ey_[aind][bind][m], aind, bind, m, ez_[aind][bind][m]);
                                 }
                                 if (ay > 1) {
                                     for (m=0; m<=mmax-a-b-1; ++m) {
                                         ex_[aind][bind][m] += ooz * (ay-1) * (ex_[aind-2*aym][bind][m] - ex_[aind-2*aym][bind][m+1]);
                                         ey_[aind][bind][m] += ooz * (ay-1) * (ey_[aind-2*aym][bind][m] - ey_[aind-2*aym][bind][m+1]);
                                         ez_[aind][bind][m] += ooz * (ay-1) * (ez_[aind-2*aym][bind][m] - ez_[aind-2*aym][bind][m+1]);
+fprintf(outfile, "ex_[%d][%d][%d] = %lf\tey_[%d][%d][%d] = %lf\tez_[%d][%d][%d] = %lf\n", aind, bind, m, ex_[aind][bind][m], aind, bind, m, ey_[aind][bind][m], aind, bind, m, ez_[aind][bind][m]);
                                     }
                                 }
                                 if (by > 0) {
@@ -816,6 +831,7 @@ void ObaraSaikaTwoCenterElectricField::compute(double PA[3], double PB[3], doubl
                                         ex_[aind][bind][m] += ooz * by * (ex_[aind-aym][bind-bym][m] - ex_[aind-aym][bind-bym][m+1]);
                                         ey_[aind][bind][m] += ooz * by * (ey_[aind-aym][bind-bym][m] - ey_[aind-aym][bind-bym][m+1]);
                                         ez_[aind][bind][m] += ooz * by * (ez_[aind-aym][bind-bym][m] - ez_[aind-aym][bind-bym][m+1]);
+fprintf(outfile, "ex_[%d][%d][%d] = %lf\tey_[%d][%d][%d] = %lf\tez_[%d][%d][%d] = %lf\n", aind, bind, m, ex_[aind][bind][m], aind, bind, m, ey_[aind][bind][m], aind, bind, m, ez_[aind][bind][m]);
                                     }
                                 }
                             }
@@ -824,12 +840,14 @@ void ObaraSaikaTwoCenterElectricField::compute(double PA[3], double PB[3], doubl
                                     ex_[aind][bind][m] = PA[0] * ex_[aind-axm][bind][m] - PC[0] * ex_[aind-axm][bind][m+1] + vi_[aind-axm][bind][m+1];
                                     ey_[aind][bind][m] = PA[0] * ey_[aind-axm][bind][m] - PC[0] * ey_[aind-axm][bind][m+1];
                                     ez_[aind][bind][m] = PA[0] * ez_[aind-axm][bind][m] - PC[0] * ez_[aind-axm][bind][m+1];
+fprintf(outfile, "ex_[%d][%d][%d] = %lf\tey_[%d][%d][%d] = %lf\tez_[%d][%d][%d] = %lf\n", aind, bind, m, ex_[aind][bind][m], aind, bind, m, ey_[aind][bind][m], aind, bind, m, ez_[aind][bind][m]);
                                 }
                                 if (ax > 1) {
                                     for (m=0; m<=mmax-a-b-1; ++m) {
                                         ex_[aind][bind][m] += ooz * (ax-1) * (ex_[aind-2*axm][bind][m] - ex_[aind-2*axm][bind][m+1]);
                                         ey_[aind][bind][m] += ooz * (ax-1) * (ey_[aind-2*axm][bind][m] - ey_[aind-2*axm][bind][m+1]);
                                         ez_[aind][bind][m] += ooz * (ax-1) * (ez_[aind-2*axm][bind][m] - ez_[aind-2*axm][bind][m+1]);
+fprintf(outfile, "ex_[%d][%d][%d] = %lf\tey_[%d][%d][%d] = %lf\tez_[%d][%d][%d] = %lf\n", aind, bind, m, ex_[aind][bind][m], aind, bind, m, ey_[aind][bind][m], aind, bind, m, ez_[aind][bind][m]);
                                     }
                                 }
                                 if (bx > 0) {
@@ -837,6 +855,7 @@ void ObaraSaikaTwoCenterElectricField::compute(double PA[3], double PB[3], doubl
                                         ex_[aind][bind][m] += ooz * bx * (ex_[aind-axm][bind-bxm][m] - ex_[aind-axm][bind-bxm][m+1]);
                                         ey_[aind][bind][m] += ooz * bx * (ey_[aind-axm][bind-bxm][m] - ey_[aind-axm][bind-bxm][m+1]);
                                         ez_[aind][bind][m] += ooz * bx * (ez_[aind-axm][bind-bxm][m] - ez_[aind-axm][bind-bxm][m+1]);
+fprintf(outfile, "ex_[%d][%d][%d] = %lf\tey_[%d][%d][%d] = %lf\tez_[%d][%d][%d] = %lf\n", aind, bind, m, ex_[aind][bind][m], aind, bind, m, ey_[aind][bind][m], aind, bind, m, ez_[aind][bind][m]);
                                     }
                                 }
                             }
