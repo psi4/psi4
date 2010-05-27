@@ -8,6 +8,7 @@
 #include <libmints/dipole.h>
 #include <libmints/quadrupole.h>
 #include <libmints/eri.h>
+#include <libmints/electricfield.h>
 
 using namespace psi;
 
@@ -69,6 +70,11 @@ OneBodyInt* IntegralFactory::dipole(int deriv)
 OneBodyInt* IntegralFactory::quadrupole()
 {
     return new QuadrupoleInt(spherical_transforms_, bs1_, bs2_);
+}
+
+OneBodyInt* IntegralFactory::electric_field()
+{
+    return new ElectricFieldInt(spherical_transforms_, bs1_, bs2_);
 }
 
 TwoBodyInt* IntegralFactory::eri(int deriv, double schwarz)

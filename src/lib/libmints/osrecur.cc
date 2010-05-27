@@ -698,10 +698,10 @@ void ObaraSaikaTwoCenterElectricField::compute(double PA[3], double PB[3], doubl
     int mmax = am1 + am2;
 
     // Call our super class to compute potential integrals
-    ObaraSaikaTwoCenterVIRecursion::compute(PA, PB, PC, zeta, am1, am2);
+    ObaraSaikaTwoCenterVIRecursion::compute(PA, PB, PC, zeta, am1+1, am2+1);
 
     // Compute starting integrals using A25
-    for (m=0; m<=mmax-1; ++m) {
+    for (m=0; m<=mmax; ++m) {
         ex_[0][0][m] = 2.0 * zeta * PC[0] * vi_[0][0][m+1];
         ey_[0][0][m] = 2.0 * zeta * PC[1] * vi_[0][0][m+1];
         ez_[0][0][m] = 2.0 * zeta * PC[2] * vi_[0][0][m+1];
@@ -885,7 +885,7 @@ void ObaraSaikaTwoCenterElectricFieldGradient::compute(double PA[3], double PB[3
     int mmax = am1 + am2;
 
     // Call our super class to compute electric field and potential integrals
-    ObaraSaikaTwoCenterElectricField::compute(PA, PB, PC, zeta, am1, am2);
+    ObaraSaikaTwoCenterElectricField::compute(PA, PB, PC, zeta, am1+1, am2+1);
 
     // Compute starting integrals using A26
     for (m=0; m<=mmax-2; ++m) {
