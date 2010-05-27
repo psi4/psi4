@@ -131,6 +131,65 @@ public:
     virtual void compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2);
 };
 
+/*! \ingroup MINTS
+ *  \class ObaraSaikaTwoCenterElectricField
+ *  \brief Obara and Saika recursion object for computing electric field integrals.
+ */
+class ObaraSaikaTwoCenterElectricField : public ObaraSaikaTwoCenterVIRecursion
+{
+protected:
+    double ***ex_;
+    double ***ey_;
+    double ***ez_;
+    
+private:
+    // No default constructor
+    ObaraSaikaTwoCenterElectricField();
+    // No assignment operator
+    ObaraSaikaTwoCenterElectricField& operator=(const ObaraSaikaTwoCenterElectricField&);
+    
+public:
+    ObaraSaikaTwoCenterElectricField(int max_am1, int max_am2);
+    virtual ~ObaraSaikaTwoCenterElectricField();
+    
+    double ***ex() const { return ex_; }
+    double ***ey() const { return ey_; }
+    double ***ez() const { return ez_; }
+    
+    virtual void compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2);
+};
+
+/*! \ingroup MINTS
+ *  \class ObaraSaikaTwoCenterElectricFieldGradient
+ *  \brief Obara and Saika recursion object for computing electric field gradient integrals.
+ */
+class ObaraSaikaTwoCenterElectricFieldGradient : public ObaraSaikaTwoCenterElectricField
+{
+protected:
+    double ***exx_;
+    double ***eyy_;
+    double ***ezz_;
+    double ***exy_;
+    double ***exz_;
+    double ***eyz_;
+    
+private:
+    // No default constructor
+    ObaraSaikaTwoCenterElectricFieldGradient();
+    // No assignment operator
+    ObaraSaikaTwoCenterElectricFieldGradient& operator=(const ObaraSaikaTwoCenterElectricFieldGradient&);
+    
+public:
+    ObaraSaikaTwoCenterElectricFieldGradient(int max_am1, int max_am2);
+    virtual ~ObaraSaikaTwoCenterElectricFieldGradient();
+    
+    double ***ex() const { return ex_; }
+    double ***ey() const { return ey_; }
+    double ***ez() const { return ez_; }
+    
+    virtual void compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2);
+};
+
 }
 
 #endif
