@@ -153,9 +153,9 @@ double RHF::compute_energy()
            form_G();
         timer_off("Form G");
 
-        J_->print(outfile);
+        //J_->print(outfile);
       
-        K_->print(outfile);
+        //K_->print(outfile);
         
         form_F();
         //F_->print(outfile);
