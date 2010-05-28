@@ -10,6 +10,7 @@
 #include <libciomr/libciomr.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
+#include <libparallel/parallel.h>
 #include "factory.h"
 #include "wavefunction.h"
 
@@ -1011,6 +1012,22 @@ void Matrix::save(psi::PSIO* psio, unsigned int fileno, bool saveSubBlocks)
 void Matrix::save(shared_ptr<psi::PSIO> psio, unsigned int fileno, bool saveSubBlocks)
 {
     save(psio.get(), fileno, saveSubBlocks);
+}
+
+void Matrix::send(Communicator* comm)
+{
+}
+
+void Matrix::recv(Communicator* comm)
+{
+}
+
+void Matrix::bcast(Communicator* comm, int broadcaster)
+{
+    // Assume the user allocated the matrix to the correct size first.
+    for (int h=0; h<nirreps_; ++h) {
+        comm->bcast(matrix_[h][0], rowspi_[h] * colspi_[h], broadcaster);
+    }
 }
 
 //

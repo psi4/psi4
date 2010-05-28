@@ -2,6 +2,7 @@
 #include <exception.h>
 
 #include "parallel.h"
+#include "serialize.h"
 
 using namespace psi;
 using namespace boost;
@@ -76,6 +77,11 @@ BCASTMEMBER(unsigned int)
 BCASTMEMBER(int)
 BCASTMEMBER(char)
 BCASTMEMBER(long)
+
+void Communicator::bcast(Serializable *data, int broadcaster)
+{
+    data->bcast(this, broadcaster);
+}
 
 void Communicator::bcast(double& data, int broadcaster)
 {

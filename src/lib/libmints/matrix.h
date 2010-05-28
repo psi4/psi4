@@ -6,6 +6,7 @@
 #include <cstring>
 
 #include <libmints/vector.h>
+#include <libparallel/serialize.h>
 
 #include <libpsio/psio.hpp>
 #include <psi4-dec.h>
@@ -21,7 +22,7 @@ class SimpleMatrix;
  *
  * Using a matrix factory makes creating these a breeze.
  */
-class Matrix {
+class Matrix : public Serializable {
 protected:
     /// Matrix data
     double ***matrix_;
@@ -241,6 +242,11 @@ public:
     double** operator[](int i) { return matrix_[i]; }
     double& operator()(int h, int i, int j) { return matrix_[h][i][j]; }
     const double& operator()(int h, int i, int j) const { return matrix_[h][i][j]; }
+
+    // Serializable pure virtual functions:
+    void send(Communicator* comm);
+    void recv(Communicator* comm);
+    void bcast(Communicator* comm, int broadcaster);
 
     friend class Vector;
 };

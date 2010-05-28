@@ -8,7 +8,7 @@ PSITARGET = $(top_objdir)/lib/libPSI_parallel.a
 
 TRUECXXSRC = communicator.cc mpi.cc local.cc fprintf.cc
 
-INC = parallel.h
+INC = parallel.h serialize.h
 
 LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
 

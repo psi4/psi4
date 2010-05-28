@@ -20,6 +20,8 @@ namespace psi {
 
     extern FILE *outfile;
 
+    class Serializable;
+
     class Communicator {
     protected:
         int me_;
@@ -86,6 +88,7 @@ namespace psi {
         virtual void bcast(int *data, int ndata, int broadcaster=0);
         virtual void bcast(char *data, int ndata, int broadcaster=0);
         virtual void bcast(long *data, int ndata, int broadcaster=0);
+        virtual void bcast(Serializable *data, int broadcaster=0);
         void bcast(double &data, int broadcaster=0);
         void bcast(int &data, int broadcaster=0);
         virtual void raw_bcast(void *data, int nbyte, int broadcaster=0);
