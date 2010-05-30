@@ -29,7 +29,32 @@ protected:
     SharedMatrix J_;
     SharedMatrix K_;
 
-    double** I_;
+    //Local K stuff (sorry)
+    double** I_; //Lodwin Charges
+    int* domain_atoms_;
+    int** domain_shell_start_;
+    int** domain_shell_length_;
+    int** domain_fun_start_;
+    int** domain_fun_length_;
+    int** fit_shell_start_;
+    int** fit_shell_length_;
+    int** fit_fun_start_;
+    int** fit_fun_length_;
+    int* primary_shell_start_;
+    int* primary_shell_length_;
+    int* primary_fun_start_;
+    int* primary_fun_length_;
+    int* aux_shell_start_;
+    int* aux_shell_length_;
+    int* aux_fun_start_;
+    int* aux_fun_length_;
+    int* domain_size_;
+    int* fit_size_;
+    bool* domain_changed_;
+    int** atom_domains_;
+    int** old_atom_domains_;
+    int max_fit_size_;
+    int max_domain_size_;
 
     boost::shared_ptr<TwoBodyInt> eri_;
 
@@ -61,7 +86,12 @@ protected:
     void fully_localize_mos();
     void propagate_local_mos();
     void localized_Lodwin_charges();
-    
+
+    //Zillions of baby index matrices    
+    void form_domain_bookkeeping();
+    void free_domain_bookkeeping();
+    void form_domains();
+
     void form_PK();
     void form_F();
 

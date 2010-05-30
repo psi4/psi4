@@ -40,7 +40,7 @@ void HF::form_B()
         abort();
     } 
     int norbs = basisset_->nbf(); 
-    shared_ptr<BasisSet> ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_SCF"));
+    ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_SCF"));
     ri_nbf_ = ribasis_->nbf();
     
     //Form the schwarz sieve

@@ -8,6 +8,8 @@
 **
 ** 03/08/2002 EFV Added DGETRF since DGETRI isn't useful without it
 **
+** 05/29/2010 RMP added DPOTRF and DPOTRI for density fitting applications
+**
 ** Written to work similarly to the BLAS C interface in blas_intfc.c
 */
 
@@ -16,6 +18,8 @@
 #define F_DGESV dgesv_
 #define F_DGETRF dgetrf_
 #define F_DGETRI dgetri_
+#define F_DPOTRF dpotrf_
+#define F_DPOTRI dpotri_
 #define F_DGESVD dgesvd_
 #define F_DSYEV dsyev_
 #elif FC_SYMBOL==1
@@ -23,6 +27,8 @@
 #define F_DGESV dgesv
 #define F_DGETRF dgetrf
 #define F_DGETRI dgetri
+#define F_DPOTRF dpotrf
+#define F_DPOTRI dpotri
 #define F_DGESVD dgesvd
 #define F_DSYEV dsyev
 #elif FC_SYMBOL==3
@@ -30,6 +36,8 @@
 #define F_DGESV DGESV
 #define F_DGETRF DGETRF
 #define F_DGETRI DGETRI
+#define F_DPOTRF DPOTRF
+#define F_DPOTRI DPOTRI
 #define F_DGESVD DGESVD
 #define F_DSYEV DSYEV
 #elif FC_SYMBOL==4
@@ -37,6 +45,8 @@
 #define F_DGESV DGESV_
 #define F_DGETRF DGETRF_
 #define F_DGETRI DGETRI_
+#define F_DPOTRF DPOTRF_
+#define F_DPOTRI DPOTRI_
 #define F_DGESVD DGESVD_
 #define F_DSYEV DSYEV_
 #endif
@@ -50,7 +60,11 @@ extern int F_DGESV(int *, int *, double *, int *, int *, double *, int *,
 
 extern int F_DGETRF(int *, int *, double *, int *, int*, int *);
 
+extern int F_DPOTRF(char *, int *, double *, int *, int*);
+
 extern int F_DGETRI(int *, double *, int *, int *, double *, int *, int *);
+
+extern int F_DPOTRI(char *, int *, double *, int *, int*);
 
 extern int F_DGESVD(char *, char *, int *, int *, double *, int *, 
   double *, double *, int *, double *, int *, double *, int *, int *);
@@ -213,6 +227,33 @@ int C_DGETRF(int nrow, int ncol, double *a, int lda, int *ipiv)
 }
 
 
+/*!
+** C_DPOTRF(): Compute an Cholesky factorization of a Hermitian positive definite N-by-N matrix A.
+**
+** The factorization has the form
+**   A = U**T* U if uplo = 'U'
+**   or  A = L*L**T if oplo = 'L'
+**
+** \param uplo: uplo = 'U' upper triangle of A is stored.
+**              uplo = 'L' lower triangle of A is stored
+** \param n = number of rows and columns
+** \param A = matrix to factorize
+** \param lda  = leading dimension of a, lda >= max(1,ncol)
+**
+** Returns: int info.  info = 0: successful exit.  info < 0: if info=-i,
+**   the ith-argument had an illegal vale.  info>0: if info=i, the i-th
+**   minor is no positive definite
+**
+** \ingroup QT
+*/
+int C_DPOTRF(char uplo, int n,  double *A, int lda)
+{
+  int info;
+
+  ::F_DPOTRF(&uplo, &n, &(A[0]), &lda, &info);
+
+  return info;
+}
 /*!  
 ** C_DGETRI(): computes the inverse of a matrix using the LU factorization
 ** computed by DGETRF
@@ -249,6 +290,31 @@ int C_DGETRI(int n, double *a, int lda, int *ipiv, double *work, int lwork)
   int info;
 
   ::F_DGETRI(&n, &(a[0]), &lda, &(ipiv[0]), &(work[0]), &lwork, &info);
+
+  return info;
+}
+/*!
+** C_DPOTRI(): Compute inverse of a Hermitian positive deifinite matrix A AFTER a Cholesky
+** decomposition is computed by C_DPORF.
+**
+**
+** \param uplo: uplo = 'U' upper triangle of A is stored.
+**              uplo = 'L' lower triangle of A is stored
+** \param n = number of rows and columns
+** \param A = matrix to factorize
+** \param lda  = leading dimension of a, lda >= max(1,ncol)
+**
+** Returns: int info.  info = 0: successful exit.  info < 0: if info=-i,
+**   the ith-argument had an illegal vale.  info>0: if info=i, the i-th
+**   minor is no positive definite
+**
+** \ingroup QT
+*/
+int C_DPOTRI(char uplo, int n,  double *A, int lda)
+{
+  int info;
+
+  ::F_DPOTRI(&uplo, &n, &(A[0]), &lda, &info);
 
   return info;
 }

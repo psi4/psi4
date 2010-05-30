@@ -70,7 +70,6 @@ void RHF::common_init()
     if (local_K_) {
         Lref_    = SharedMatrix(factory_.create_matrix("Lref"));
         L_    = SharedMatrix(factory_.create_matrix("L"));
-        I_ = block_matrix(basisset_->molecule()->natom(),doccpi_[0]);
     }
 
     int nao = chkpt_->rd_nao();
@@ -125,9 +124,11 @@ double RHF::compute_energy()
         form_B();
     else if (ri_integrals_ == true && local_K_ == true)   
         form_A();
-
-    //if (local_K_)
-    //    I_ = block_matrix(basisset_->molecule()->natom(),doccpi_[0]);
+    
+    if (local_K_) {
+        I_ = block_matrix(basisset_->molecule()->natom(),doccpi_[0]);
+        form_domain_bookkeeping();
+    }
 
     fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
     // SCF iterations
@@ -153,9 +154,9 @@ double RHF::compute_energy()
            form_G();
         timer_off("Form G");
 
-        //J_->print(outfile);
+        J_->print(outfile);
       
-        //K_->print(outfile);
+        K_->print(outfile);
         
         form_F();
         //F_->print(outfile);
@@ -214,11 +215,13 @@ double RHF::compute_energy()
     //localized_Lodwin_charges();
     //propagate_local_mos(); 
 
-    if (local_K_)
-        free_block(I_);    
+    if (local_K_) {
+        free_block(I_);
+        free_domain_bookkeeping();
+    }    
 
     // Compute the final dipole.
-    compute_multipole();
+    //compute_multipole();
 
     //fprintf(outfile,"\nComputation Completed\n");
     fflush(outfile);

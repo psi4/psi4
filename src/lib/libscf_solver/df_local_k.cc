@@ -40,7 +40,7 @@ void HF::form_A()
         abort();
     } 
     int norbs = basisset_->nbf(); 
-    shared_ptr<BasisSet> ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_SCF"));
+    ribasis_ = shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_SCF"));
     ri_nbf_ = ribasis_->nbf();
     
     //Form the schwarz sieve
@@ -195,30 +195,39 @@ void HF::form_A()
             }
         }
     }
+    
+    //Copy J to Jfit_ for later use (elements of K)
+    C_DCOPY(ri_nbf_*ri_nbf_,Jinv_[0],1,Jfit_[0],1);
+
     //fprintf(outfile,"\nJ:\n"); fflush(outfile);
     //print_mat(Jinv_,ri_nbf_,ri_nbf_,outfile);
     timer_off("Form J Matrix;");
     timer_on("Form J^-1");
     
-    //Pivot indices
-    int* ipiv = init_int_array(ri_nbf_);
+    //fprintf(outfile,"  J\n");
+    //print_mat(Jinv_,ri_nbf_,ri_nbf_,outfile);
 
-    //LU Factorization (in place)
-    int LUerror = C_DGETRF(ri_nbf_,ri_nbf_,Jinv_[0],ri_nbf_,ipiv);
-    if (LUerror != 0)
-        throw std::domain_error("J Matrix LU Decomposition Failed!");
-
-    //Work array
-    double *work = init_array(3*ri_nbf_);   
-   
-    //Perform the inversion 
-    int Ierror = C_DGETRI(ri_nbf_,Jinv_[0],ri_nbf_,ipiv,work,3*ri_nbf_);
-    if (Ierror != 0)
+    //Cholesky facotrization (in place)
+    int CholError = C_DPOTRF('L',ri_nbf_,Jinv_[0],ri_nbf_);
+    if (CholError !=0 )
+        throw std::domain_error("J Matrix Cholesky Decomposition Failed!");
+    
+    //fprintf(outfile,"  Jchol\n");
+    //print_mat(Jinv_,ri_nbf_,ri_nbf_,outfile);
+    
+    //Inversion (in place)
+    int IError = C_DPOTRI('L',ri_nbf_,Jinv_[0],ri_nbf_);
+    if (IError !=0 )
         throw std::domain_error("J Matrix Inversion Failed!");
 
-    free(work);
-    free(ipiv); 
+    //LAPACK is smart and all, only uses half of the thing
+    for (int m = 0; m<ri_nbf_; m++)
+        for (int n = 0; n<m; n++)
+            Jinv_[m][n] = Jinv_[n][m]; 
 
+    //fprintf(outfile,"  J^-1\n");
+    //print_mat(Jinv_,ri_nbf_,ri_nbf_,outfile);
+    
     timer_off("Form J^-1");
 
     //fprintf(outfile,"\nJinv_:\n"); fflush(outfile);
@@ -434,6 +443,7 @@ void HF::free_A()
         free(A_ia_P_);
     free(ri_pair_mu_);
     free(ri_pair_nu_);
+    free_block(Jfit_);
     free_block(Jinv_);
 }
 void RHF::form_G_from_RI_local_K()
@@ -508,6 +518,25 @@ void RHF::form_G_from_RI_local_K()
             free(c);
         }
         if (K_is_required_) {
+            //Localize the canonical orbitals (or propagate guess)
+            if ((iteration_-1)%options_.get_int("STEPS_PER_LOCALIZE") == 0) {
+                timer_on("Pipek-Mekey");
+                fully_localize_mos();      
+                timer_off("Pipek-Mekey");
+            } else {
+                timer_on("Localization Update");
+                propagate_local_mos();
+                timer_off("Localization Update");
+            }
+            //Form the domain bookmarks
+            timer_on("Lodwin Analysis");
+            localized_Lodwin_charges(); 
+            timer_off("Lodwin Analysis");
+            //Form the domain bookmarks
+            timer_on("Form Domains");
+            form_domains(); 
+            timer_off("Form Domains");
+
         }
     } else if (df_storage_ == disk) {
         //Not implemented yet
@@ -894,5 +923,278 @@ void RHF::localized_Lodwin_charges()
     fprintf(outfile,"  Lodwin Atomic Charges");
     print_mat(I_,natom,ndocc,outfile);
 
+}
+void RHF::form_domain_bookkeeping()
+{
+    //Sets up all the crazy tables for local domains
+    //Must be called after form_A, as ri_basis_ must be 
+    //Initialized
+
+    //Some sizes for clarity
+    int ndocc = doccpi_[0];
+    int norbs = basisset_->nbf();
+    int natom = basisset_->molecule()->natom();
+   
+    //Number of contributing atoms per i (hopefully<<natom)
+    domain_atoms_ = init_int_array(ndocc);
+
+    //Array of primary domain shell starts per i
+    domain_shell_start_ = (int**)malloc(ndocc*sizeof(int*));
+    int* dummy_dss = init_int_array(ndocc*natom);
+    for (int i = 0; i<ndocc; i++)
+        domain_shell_start_[i] = &dummy_dss[i*natom];
+ 
+    //Array of primary domain function starts per i
+    domain_fun_start_ = (int**)malloc(ndocc*sizeof(int*));
+    int* dummy_dfs = init_int_array(ndocc*natom);
+    for (int i = 0; i<ndocc; i++)
+        domain_fun_start_[i] = &dummy_dfs[i*natom];
+ 
+    //Array of primary domain shell lengths per i
+    domain_shell_length_ = (int**)malloc(ndocc*sizeof(int*));
+    int* dummy_dsl = init_int_array(ndocc*natom);
+    for (int i = 0; i<ndocc; i++)
+        domain_shell_length_[i] = &dummy_dsl[i*natom];
+ 
+    //Array of primary domain function lengths per i
+    domain_fun_length_ = (int**)malloc(ndocc*sizeof(int*));
+    int* dummy_dfl = init_int_array(ndocc*natom);
+    for (int i = 0; i<ndocc; i++)
+        domain_fun_length_[i] = &dummy_dfl[i*natom];
+    
+    //Array of primary fit shell starts per i
+    fit_shell_start_ = (int**)malloc(ndocc*sizeof(int*));
+    int* dummy_ass = init_int_array(ndocc*natom);
+    for (int i = 0; i<ndocc; i++)
+        fit_shell_start_[i] = &dummy_ass[i*natom]; //redundant no?
+ 
+    //Array of primary fit function starts per i
+    fit_fun_start_ = (int**)malloc(ndocc*sizeof(int*));
+    int* dummy_afs = init_int_array(ndocc*natom);
+    for (int i = 0; i<ndocc; i++)
+        fit_fun_start_[i] = &dummy_afs[i*natom];
+ 
+    //Array of primary fit shell lengths per i
+    fit_shell_length_ = (int**)malloc(ndocc*sizeof(int*));
+    int* dummy_asl = init_int_array(ndocc*natom);
+    for (int i = 0; i<ndocc; i++)
+        fit_shell_length_[i] = &dummy_asl[i*natom];
+ 
+    //Array of primary fit function lengths per i
+    fit_fun_length_ = (int**)malloc(ndocc*sizeof(int*));
+    int* dummy_afl = init_int_array(ndocc*natom);
+    for (int i = 0; i<ndocc; i++)
+        fit_fun_length_[i] = &dummy_afl[i*natom];
+ 
+    //Domain sizes (hopefully << norbs)
+    domain_size_ = init_int_array(ndocc);
+    //Biggest domain size, for memory allocation
+    max_domain_size_ = 0;
+
+    //Fitting domain sizes (hopefully << ri_nbf_)
+    fit_size_ = init_int_array(ndocc);
+    //Biggest fitting domain size, for memory allocation
+    max_fit_size_ = 0;
+
+    //Has the atomic domain changed for this i?
+    //If not, might be able to save a lot of work
+    domain_changed_ = (bool*)malloc(ndocc*sizeof(bool));
+    
+    //Flag-style array for primary/extended domains;
+    atom_domains_ = (int**)malloc(ndocc*natom*sizeof(short*));
+    int* dummy3 = init_int_array(ndocc*natom);
+    for (int i = 0; i<ndocc; i++)
+        atom_domains_[i] = &dummy3[i*natom];
+    
+    //Flag-style array for OLD primary/extended domains;
+    old_atom_domains_ = (int**)malloc(ndocc*natom*sizeof(short*));
+    int* dummy4 = init_int_array(ndocc*natom);
+    for (int i = 0; i<ndocc; i++)
+        old_atom_domains_[i] = &dummy4[i*natom];
+   
+    //atom to primary basis shell start index;
+    primary_shell_start_ = init_int_array(natom);
+    //atom to primary function start index;
+    primary_fun_start_ = init_int_array(natom);
+    //atom to primary basis shell length;
+    primary_shell_length_ = init_int_array(natom);
+    //atom to primary function length;
+    primary_fun_length_ = init_int_array(natom);
+    int this_atom = 0;
+    int this_shell_length = 0; 
+    int this_fun_length = 0; 
+    for (int MU = 0; MU< basisset_->nshell(); MU++) {
+        if (basisset_->shell(MU)->ncenter() == this_atom+1) {
+            primary_fun_length_[this_atom] = this_fun_length;
+            primary_fun_start_[this_atom+1] = basisset_->shell(MU)->function_index();
+            primary_shell_length_[this_atom] = this_shell_length;
+            primary_shell_start_[this_atom+1] = MU;
+            this_fun_length = basisset_->shell(MU)->nfunction();
+            this_shell_length = 1;
+            this_atom++;
+        } else {
+            this_shell_length++;
+            this_fun_length += basisset_->shell(MU)->nfunction();
+        }
+    }
+    primary_fun_length_[this_atom] = this_fun_length;
+    primary_shell_length_[this_atom] = this_shell_length;
+
+    //atom to aux basis shell start index;
+    aux_shell_start_ = init_int_array(natom);
+    //atom to aux function start index;
+    aux_fun_start_ = init_int_array(natom);
+    //atom to aux basis shell length;
+    aux_shell_length_ = init_int_array(natom);
+    //atom to aux function length;
+    aux_fun_length_ = init_int_array(natom);
+    this_atom = 0; 
+    this_shell_length = 0; 
+    this_fun_length = 0; 
+    for (int MU = 0; MU< ribasis_->nshell(); MU++) {
+        if (ribasis_->shell(MU)->ncenter() == this_atom+1) {
+            aux_fun_length_[this_atom] = this_fun_length;
+            aux_fun_start_[this_atom+1] = ribasis_->shell(MU)->function_index();
+            aux_shell_length_[this_atom] = this_shell_length;
+            aux_shell_start_[this_atom+1] = MU;
+            this_fun_length = ribasis_->shell(MU)->nfunction();
+            this_shell_length = 1;
+            this_atom++;
+        } else {
+            this_shell_length++;
+            this_fun_length += ribasis_->shell(MU)->nfunction();
+        }
+    }
+    aux_fun_length_[this_atom] = this_fun_length;
+    aux_shell_length_[this_atom] = this_shell_length;
+} 
+void RHF::form_domains()
+{
+    //Lodwin Atomic charge cutoff for primary domains
+    double Q_cutoff = options_.get_double("CHARGE_CUTOFF");
+    
+    //Extended pair domain radius
+    double R_ext_ang = options_.get_double("R_EXT");
+    double R_ext = R_ext_ang*1.889725989; //1.889752989 [bohr/ang]
+
+    //Some sizes for clarity
+    int ndocc = doccpi_[0];
+    int norbs = basisset_->nbf();
+    int natom = basisset_->molecule()->natom();
+
+    //ATOM DOMAIN IDENTIFICATION
+
+    //PRIMARY DOMAIN 
+    //For each i, set all elements of atom_domains_ to 1
+    //if the Lodwin charge is big enough
+    memset((void*)atom_domains_[0],'\0',ndocc*natom*sizeof(bool));
+    for (int i = 0; i<ndocc; i++)
+        for (int N = 0 ; N<natom; N++)
+            if (I_[N][i] >= Q_cutoff)
+                atom_domains_[i][N] = 1; //Primary domain
+
+    //EXTENDED DOMAIN 
+    //For each i, set all elements of atom_domains_ to 2
+    //if they are not already 1 AND are within R_ext bohr
+    //of a primary domain atom
+    for (int i = 0; i<ndocc; i++)
+        for (int N = 0 ; N<natom; N++)
+            if (I_[N][i] < Q_cutoff)
+                for (int M = 0; M<natom; M++)
+                    if (I_[M][i] >= Q_cutoff)
+                        if ((basisset_->molecule()->xyz(M)).distance(basisset_->molecule()->xyz(N)) <= R_ext) {
+                            atom_domains_[i][N] = 2; //Extended domain
+                            continue;
+                        }
+
+    //Check for changes
+    memset((void*)domain_changed_,'\0',ndocc*sizeof(bool));
+    for (int i = 0; i<ndocc; i++)
+        for (int N = 0; N<natom; N++) {
+            if ((atom_domains_[i][N] > 0) && (old_atom_domains_[i][N] == 0)) {
+                domain_changed_[i] = true; continue;
+            } else if ((atom_domains_[i][N] == 0) && (old_atom_domains_[i][N] < 0)) {
+                domain_changed_[i] = true; continue;
+            }
+        } 
+
+    //Set old_atom_domains_ for next round
+    for (int i = 0; i<ndocc; i++)
+        for (int N = 0; N<natom; N++)
+            old_atom_domains_[i][N] = atom_domains_[i][N];
+
+    
+    //BASIS DOMAIN IDENTIFICATION
+    memset((void*)domain_atoms_,'\0',ndocc*sizeof(int));
+    max_domain_size_ = 0;
+    max_fit_size_ = 0;
+    int counter;
+   
+    for (int i = 0; i<ndocc; i++) {
+        counter = 0;
+        for (int N = 0; N<natom; N++)
+            if (atom_domains_[i][N] > 0) {
+                domain_atoms_[i]++;
+                domain_shell_start_[i][counter] = primary_shell_start_[N];
+                domain_fun_start_[i][counter] = primary_fun_start_[N];
+                domain_shell_length_[i][counter] = primary_shell_length_[N];
+                domain_fun_length_[i][counter] = primary_fun_length_[N];
+                fit_shell_start_[i][counter] = aux_shell_start_[N];
+                fit_fun_start_[i][counter] = aux_fun_start_[N];
+                fit_shell_length_[i][counter] = aux_shell_length_[N];
+                fit_fun_length_[i][counter] = aux_fun_length_[N];
+                counter++; 
+            }
+    }
+            
+    //PRIMARY BASIS DOMAIN SIZE IDENTIFICATION 
+    memset((void*)domain_size_,'\0',ndocc*sizeof(int));
+    memset((void*)fit_size_,'\0',ndocc*sizeof(int));
+    for (int i = 0; i<ndocc; i++) {
+        //Find bomain size w/ schwarz sieve TODO
+        if (max_domain_size_ < domain_size_[i])
+            max_domain_size_ = domain_size_[i];
+        if (max_fit_size_ < fit_size_[i])
+            max_fit_size_ = fit_size_[i];
+    }
+}
+void RHF::free_domain_bookkeeping()
+{
+    //frees (int** pointers are tricky)
+    free(domain_shell_start_[0]);
+    free(domain_shell_start_);
+    free(domain_shell_length_[0]);
+    free(domain_shell_length_);
+    free(domain_fun_start_[0]);
+    free(domain_fun_start_);
+    free(domain_fun_length_[0]);
+    free(domain_fun_length_);
+    free(fit_shell_start_[0]);
+    free(fit_shell_start_);
+    free(fit_shell_length_[0]);
+    free(fit_shell_length_);
+    free(fit_fun_start_[0]);
+    free(fit_fun_start_);
+    free(fit_fun_length_[0]);
+    free(fit_fun_length_);
+    
+    free(primary_shell_start_);
+    free(primary_shell_length_);
+    free(primary_fun_start_);
+    free(primary_fun_length_);
+    free(aux_shell_start_);
+    free(aux_shell_length_);
+    free(aux_fun_start_);
+    free(aux_fun_length_);
+
+    free(old_atom_domains_[0]);
+    free(old_atom_domains_);
+    free(atom_domains_[0]);
+    free(atom_domains_);
+    
+    free(domain_changed_);   
+    free(domain_atoms_);
+    free(domain_size_);
+    free(fit_size_);
 }
 }}

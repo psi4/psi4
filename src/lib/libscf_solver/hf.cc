@@ -188,9 +188,11 @@ void HF::common_init()
     
     //Somewhat idiot proofed, you cant turn local K on without DF
     local_K_ = false;
-    if (ri_integrals_)
-        if (options_.get_bool("L_HF"))
+    if (ri_integrals_) {
+        if (options_.get_bool("L_HF")) {
             local_K_ = true;    
+        }
+    }
 
     //For HF algorithms, J and K are both required always.
     J_is_required_ = true;
@@ -202,7 +204,8 @@ void HF::common_init()
     {
         schwarz_ = options_.get_double("SCHWARZ_CUTOFF");
     }
-
+    fprintf(outfile, "Schwarz Sieve Initialized to %14.10f\n",schwarz_);
+    
     // Handle common diis info
     diis_enabled_ = true;
     num_diis_vectors_ = 4;
