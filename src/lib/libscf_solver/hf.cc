@@ -204,7 +204,6 @@ void HF::common_init()
     {
         schwarz_ = options_.get_double("SCHWARZ_CUTOFF");
     }
-    fprintf(outfile, "Schwarz Sieve Initialized to %14.10f\n",schwarz_);
     
     // Handle common diis info
     diis_enabled_ = true;
