@@ -121,10 +121,12 @@ void C_DSPMV(char uplo, int n, double alpha, double *A,
              int inc_y);
 double C_DDOT(int n, double *X, int inc_x, double *Y, int inc_y);
 int C_DGETRF(int nrow, int ncol, double *a, int lda, int *ipiv);
+int C_DPOTRF(char uplo, int n, double *a, int lda);
 int C_DGEEV(int n, double **a, int lda, double *wr, double *wi, double **vl,
      int ldvl, double **vr, int ldvr, double *work, int lwork, int info);
 int C_DGESV(int n, int nrhs, double *a, int lda, int *ipiv, double *b, int ldb);
 int C_DGETRI(int n, double *a, int lda, int *ipiv, double *work, int lwork);
+int C_DPOTRI(char uplo, int n, double *a, int lda);
 int C_DGESVD(char jobu, char jobvt, int m, int n, double *A, int lda,
      double *s, double *u, int ldu, double *vt, int ldvt,
      double *work, int lwork);

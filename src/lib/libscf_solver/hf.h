@@ -12,6 +12,7 @@
 
 #include <libpsio/psio.hpp>
 #include <libmints/wavefunction.h>
+#include <libmints/basisset.h>
 #include <libdiis/diismanager.h>
 #include <psi4-dec.h>
 
@@ -93,7 +94,7 @@ protected:
     int *ri_pair_nu_;
     int *ri_pair_mu_;
 
-    //Local K? (only with DF)
+//Local K? (only with DF)
     bool local_K_;
     
     /// do we need Coulomb?
@@ -105,8 +106,13 @@ protected:
     double **B_ia_P_;
     double **A_ia_P_;
 
+    //RI Basis
+    shared_ptr<BasisSet> ribasis_;
+    
     /// Fitting Tensor Inverse (J-matrix) for DF-SCF
     double **Jinv_;
+    /// Fitting Tensor (J-matrix) for DF-SCF
+    double **Jfit_;
 
     double schwarz_; //Current Schwarz magnitude (static for now)
     int ntri_; //Number of function pairs after schwarz sieve and subsequent sieves
