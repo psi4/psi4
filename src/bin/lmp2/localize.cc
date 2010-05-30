@@ -100,12 +100,16 @@ void LMP2::localize() {
   nfzc = get_frdocc();
 
   // Compute the length of each AM block
-  l_length = init_int_array(LIBINT_MAX_AM);
+  l_length = init_int_array(LIBINT_MAX_AM+1);
   l_length[0] = 1;
-  for(l=1; l < (LIBINT_MAX_AM); l++) {
+  for(l=1; l < (LIBINT_MAX_AM+1); l++) {
     if(puream) l_length[l] = 2 * l + 1;
     else l_length[l] = l_length[l-1] + l + 1;
   }
+
+  //for (l = 0; l<LIBINT_MAX_AM+1; l++)
+  //fprintf(outfile," l_length[%d] = %d\n", l,l_length[l]);
+  //fflush(outfile);
 
   // Set up the atom->AO and AO->atom lookup arrays
   aostart = init_int_array(natom);
@@ -113,26 +117,30 @@ void LMP2::localize() {
   aostart_shell = init_int_array(natom);
   aostop_shell = init_int_array(natom);
   stype = get_stype();
-  for(i=0,atom=-1,offset=0; i < nshell; i++) {
-    am = stype[i] - 1;                  // am is the angular momentum of the orbital
-    shell_length = l_length[am];        // shell_length is the number of obritals in each shell
 
-    if(atom != snuc[i]-1) {             // snuc is the nucleus that the shell belongs to
-      if(atom != -1) {
-        aostop[atom] = offset-1;
-        aostop_shell[atom] = i-1;
-      }
-      atom = snuc[i]-1;
-      aostart[atom] = offset;
-      aostart_shell[atom] = i;
-    }
+  int nfun;
+  int m = 0;
+  for (int MU = 0; MU < nshell; MU++) {
+   atom = snuc[MU] - 1; //Use c++ indexing !
+   am = stype[MU] - 1;
+   nfun = l_length[am];
 
-    offset += shell_length;
+   //fprintf(outfile, "  MU = %d, atom = %d, am = %d, nfun = %d, m = %d\n", MU, atom, am, nfun, m);
+   
+   if (aostart[atom] == 0 && atom != 0) {
+    aostart_shell[atom] = MU;
+    aostart[atom] = m;
+   }
+   m += nfun;
+   aostop_shell[atom] = MU;
+   aostop[atom] = m-1;
   }
-  aostop[atom] = offset-1;
-  aostop_shell[atom] = i-1;
+
+  //for (int A = 0; A<natom; A++)
+    //fprintf(outfile, "A = %d, ao_start = %d, ao_stop = %d, ao_start_shell = %d, ao_stop_shell = %d\n",A,aostart[A],aostop[A],aostart_shell[A],aostop_shell[A]);
 
   ao2atom = init_int_array(nso);
+  //fprintf(outfile, " Nso : %d Nocc %d", nso, nocc); fflush(outfile);
   for(i=0; i < natom; i++)
     for(j=aostart[i]; j <= aostop[i]; j++) {
       ao2atom[j] = i;                   // ao2atom is the atom number that the AO is located on
@@ -151,6 +159,7 @@ void LMP2::localize() {
   //U = block_matrix(nocc, nocc);
   //for(i=0; i < nocc; i++) V[i][i] = 1.0;
   //VV = block_matrix(nocc, nocc);
+  alphalast = 0.0; //Valgrind complains!
 
   for(iter=0; iter < 100; iter++) {
 

@@ -46,16 +46,14 @@ void HF::form_A()
     //Form the schwarz sieve
     timer_on("Schwarz Sieve");
 
-    int sig_fun_pairs = 0;
-    int sig_shell_pairs = 0;
+    sig_fun_pairs_ = 0;
+    sig_shell_pairs_ = 0;
 
-    int *schwarz_shell_pairs;
-    int *schwarz_fun_pairs;
+    schwarz_shell_pairs_ = init_int_array(basisset_->nshell()*(basisset_->nshell()+1)/2);
+    schwarz_fun_pairs_ = init_int_array(norbs*(norbs+1)/2);
     if (schwarz_ > 0.0) {
         
-        schwarz_shell_pairs = init_int_array(basisset_->nshell()*(basisset_->nshell()+1)/2);
-        schwarz_fun_pairs = init_int_array(norbs*(norbs+1)/2);
-        double* max_shell_val = init_array(basisset_->nshell()*(basisset_->nshell()+1)/2);;
+        double* max_shell_val = init_array(basisset_->nshell()*(basisset_->nshell()+1)/2);
         double* max_fun_val = init_array(norbs*(norbs+1)/2);
         double max_global_val;
 
@@ -93,39 +91,39 @@ void HF::form_A()
         }       
         for (int ij = 0; ij < norbs*(norbs+1)/2; ij ++)
             if (max_fun_val[ij]*max_global_val>=schwarz_*schwarz_){
-                schwarz_fun_pairs[ij] = 1;
-                sig_fun_pairs++;
+                schwarz_fun_pairs_[ij] = 1;
+                sig_fun_pairs_++;
             }
         for (int ij = 0; ij < basisset_->nshell()*(basisset_->nshell()+1)/2; ij ++)
             if (max_shell_val[ij]*max_global_val>=schwarz_*schwarz_){
-                schwarz_shell_pairs[ij] = 1;
-                sig_shell_pairs++;
+                schwarz_shell_pairs_[ij] = 1;
+                sig_shell_pairs_++;
             }
         
         //for (int i = 0, ij = 0; i<norbs; i++)
             //for (int j = 0; j<=i; j++, ij++)
-                //fprintf(outfile,"   Function pair %d = (%d,%d), Max val %14.10f, Max Integral %14.10f, Significant %s\n",ij,i,j,max_fun_val[ij],max_fun_val[ij]*max_global_val,(schwarz_fun_pairs[ij])?"YES":"NO");
+                //fprintf(outfile,"   Function pair %d = (%d,%d), Max val %14.10f, Max Integral %14.10f, Significant %s\n",ij,i,j,max_fun_val[ij],max_fun_val[ij]*max_global_val,(schwarz_fun_pairs_[ij])?"YES":"NO");
         //fprintf(outfile,"\n  Shell Pair Schwarz Sieve, schwarz_ = %14.10f:\n",schwarz_);
         //for (int i = 0, ij = 0; i<basisset_->nshell(); i++)
             //for (int j = 0; j<=i; j++, ij++)
-                //fprintf(outfile,"   Shell pair %d = (%d,%d), Max val %14.10f, Max Integral %14.10f, Significant %s\n",ij,i,j,max_shell_val[ij],max_shell_val[ij]*max_global_val,(schwarz_shell_pairs[ij])?"YES":"NO");
+                //fprintf(outfile,"   Shell pair %d = (%d,%d), Max val %14.10f, Max Integral %14.10f, Significant %s\n",ij,i,j,max_shell_val[ij],max_shell_val[ij]*max_global_val,(schwarz_shell_pairs_[ij])?"YES":"NO");
         //fprintf(outfile, "\n");
 
         free(max_fun_val);
         free(max_shell_val);
     
-        ntri_naive_ = sig_fun_pairs; //Matrix size for most of the algorithm
+        ntri_naive_ = sig_fun_pairs_; //Matrix size for most of the algorithm
         ntri_ = ntri_naive_; //For now!
 
     } else {
         ntri_ = norbs*(norbs+1)/2; //Yeah, eat it 
         ntri_naive_ = norbs*(norbs+1)/2; 
-        schwarz_shell_pairs = init_int_array(basisset_->nshell()*(basisset_->nshell()+1)/2);
-        schwarz_fun_pairs = init_int_array(norbs*(norbs+1)/2);
+        sig_fun_pairs_ = ntri_;
+        sig_shell_pairs_ = basisset_->nshell()*(basisset_->nshell()+1)/2;
         for (int ij = 0; ij < basisset_->nshell()*(basisset_->nshell()+1)/2; ij++)
-            schwarz_shell_pairs[ij] = 1;
+            schwarz_shell_pairs_[ij] = 1;
         for (int ij = 0; ij < ntri_; ij++)
-            schwarz_fun_pairs[ij] = 1;
+            schwarz_fun_pairs_[ij] = 1;
     }
 
     timer_off("Schwarz Sieve");
@@ -195,6 +193,8 @@ void HF::form_A()
             }
         }
     }
+
+    Jfit_ = block_matrix(ri_nbf_,ri_nbf_);
     
     //Copy J to Jfit_ for later use (elements of K)
     C_DCOPY(ri_nbf_*ri_nbf_,Jinv_[0],1,Jfit_[0],1);
@@ -256,7 +256,7 @@ void HF::form_A()
             nummu = basisset_->shell(MU)->nfunction();
             for (NU=0; NU <= MU; ++NU) {
                 numnu = basisset_->shell(NU)->nfunction();
-                if (schwarz_shell_pairs[MU*(MU+1)/2+NU] == 1) {
+                if (schwarz_shell_pairs_[MU*(MU+1)/2+NU] == 1) {
                     delta_index = 0;
                     for (Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
                         numP = ribasis_->shell(Pshell)->nfunction();
@@ -268,7 +268,7 @@ void HF::form_A()
                             omu = basisset_->shell(MU)->function_index() + mu;
                             for (nu=0; nu < numnu; ++nu) {
                                 onu = basisset_->shell(NU)->function_index() + nu;
-                                if(omu>=onu && schwarz_fun_pairs[omu*(omu+1)/2+onu] == 1) {
+                                if(omu>=onu && schwarz_fun_pairs_[omu*(omu+1)/2+onu] == 1) {
                                     for (P=0; P < numP; ++P) {
                                         PHI = ribasis_->shell(Pshell)->function_index() + P;
                                         A_ia_P_[PHI][l_index]= buffer[mu*numnu*numP+nu*numP+P];
@@ -317,8 +317,8 @@ void HF::form_A()
                 nummu = basisset_->shell(MU)->nfunction();
                 for (NU=0; NU <= MU; ++NU) {
                     numnu = basisset_->shell(NU)->nfunction();
-                    //fprintf(outfile, "  MU = %d, NU = %d, Sig = %d\n",MU,NU,schwarz_shell_pairs[MU*(MU+1)/2+NU]); fflush(outfile);
-                    if (schwarz_shell_pairs[MU*(MU+1)/2+NU] == 1) {
+                    //fprintf(outfile, "  MU = %d, NU = %d, Sig = %d\n",MU,NU,schwarz_shell_pairs_[MU*(MU+1)/2+NU]); fflush(outfile);
+                    if (schwarz_shell_pairs_[MU*(MU+1)/2+NU] == 1) {
                         timer_on("(A|mn) Integrals");
                         eri->compute_shell(MU, NU, Pshell, 0);
                         timer_off("(A|mn) Integrals");
@@ -328,7 +328,7 @@ void HF::form_A()
                                 omu = basisset_->shell(MU)->function_index() + mu;
                                 for (nu=0; nu < numnu; ++nu) {
                                     onu = basisset_->shell(NU)->function_index() + nu;
-                                    if(omu>=onu && schwarz_fun_pairs[omu*(omu+1)/2+onu] == 1) {
+                                    if(omu>=onu && schwarz_fun_pairs_[omu*(omu+1)/2+onu] == 1) {
                                         Temp1[l_index]= buffer[mu*numnu*numP+nu*numP+P];
                                     }
                                     if (PHI == 0) {
@@ -352,97 +352,31 @@ void HF::form_A()
         free(Temp1);
         //fprintf(outfile,"\n  Through B on disk."); fflush(outfile);
         psio_->close(PSIF_DFSCF_BJI,1);
-        /**timer_on("(B|mn) restripe");
-        
-    	//RESTRIPE
-        psio_->open(PSIF_DFSCF_BJI,PSIO_OPEN_OLD);
-        psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_NEW);
-	next_PSIF_DFSCF_BJI = PSIO_ZERO;
-	psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
-	
-	double *Temp = init_array(ntri_);
-	for (int Q = 0; Q < ri_nbf_; Q++)
-            psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(Temp[0]),sizeof(double)*ntri_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
-	free(Temp);	
-
-        int max_cols = (memory_/sizeof(double))/((1.0+MEMORY_SAFETY_FACTOR)*ri_nbf_);
-        if (max_cols > ntri_)
-            max_cols = ntri_;
-	double *in_buffer = init_array(ri_nbf_);
-        //max_cols = 100;
-        double **buffer2 = block_matrix(ri_nbf_,max_cols);
-
-        int buf_ind = 0;
-        ULI global_offset = 0;
-        for (int ij = 0; ij < ntri_; ij++)
-        {
-            psio_->read(PSIF_DFSCF_BJI,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*ri_nbf_,next_PSIF_DFSCF_BJI,&next_PSIF_DFSCF_BJI);
-            //fprintf(outfile,"\n  Read in pair %d",ij); fflush(outfile);
-            for (int Q = 0; Q<ri_nbf_; Q++)
-            {
-                buffer2[Q][buf_ind] = in_buffer[Q];
-            }
-            buf_ind++;
-            //fprintf(outfile,"\n  Moved Pair to position %d in buffer",buf_ind); fflush(outfile);
-            if (buf_ind == max_cols || ij == ntri_-1)
-            {
-                //fprintf(outfile,"\n  Writing %d pairs to disk",buf_ind); fflush(outfile);
-                for (int Q = 0; Q<ri_nbf_; Q++)
-                {
-                    //fprintf(outfile,"\n  Working on Q %d",Q); fflush(outfile);
-                    next_PSIF_DFSCF_BJ = psio_get_address(PSIO_ZERO,(ULI)(Q*(ULI)ntri_*sizeof(double)+global_offset*sizeof(double)));
-                    //fprintf(outfile,"\n  Address Acquired"); fflush(outfile);
-                    psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(buffer2[Q][0]),sizeof(double)*buf_ind,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
-                    //fprintf(outfile,"\n  Entry Written"); fflush(outfile);
-                }
-                global_offset+=buf_ind;
-                buf_ind=0;
-            } 
-        }
-
-        free(in_buffer);
-        free_block(buffer2);
-        psio_->close(PSIF_DFSCF_BJI,0);
-        psio_->close(PSIF_DFSCF_BJ,1);
-        timer_off("(B|mn) restripe");**/
-
-        //fprintf(outfile,"\n  BJ Restriped on disk.\n"); fflush(outfile);
     }
     timer_off("Overall (A|mn)");
 
+    ri_pair_compound_ = init_int_array(norbs*(norbs+1)/2);
+    for (int ij =0; ij<norbs*(norbs+1)/2; ij++)
+        ri_pair_compound_[ij] = -1;
+    for (int ij = 0 ; ij<ntri_; ij++)
+        ri_pair_compound_[ri_pair_mu_[ij]*(ri_pair_mu_[ij]+1)/2+ri_pair_nu_[ij]] = ij;
+
     if (schwarz_) {
         fprintf(outfile,"\n  Function Pair Schwarz Sieve, Cutoff = %14.10E:\n",schwarz_);
-        fprintf(outfile,"  %d out of %d basis function pairs removed, %8.5f%% attenuation.\n",norbs*(norbs+1)/2-sig_fun_pairs,norbs*(norbs+1)/2,100.0*(norbs*(norbs+1)/2-sig_fun_pairs)/(1.0*norbs*(norbs+1)/2));
+        fprintf(outfile,"  %d out of %d basis function pairs removed, %8.5f%% attenuation.\n",norbs*(norbs+1)/2-sig_fun_pairs_,norbs*(norbs+1)/2,100.0*(norbs*(norbs+1)/2-sig_fun_pairs_)/(1.0*norbs*(norbs+1)/2));
         int pairs = basisset_->nshell()*(basisset_->nshell()+1)/2;
-        fprintf(outfile,"  %d out of %d basis shell pairs removed, %8.5f%% attenuation.\n",pairs-sig_shell_pairs,pairs,100.0*(pairs-sig_shell_pairs)/(1.0*pairs));
+        fprintf(outfile,"  %d out of %d basis shell pairs removed, %8.5f%% attenuation.\n",pairs-sig_shell_pairs_,pairs,100.0*(pairs-sig_shell_pairs_)/(1.0*pairs));
     }
-    /**
-    if (three_index_cutoff) {
-        int attenuation = ntri_naive_-ntri_;
-        fprintf(outfile,"  Direct Three-Index Tensor Sieve, Cutoff = %14.10E:\n",three_index_cutoff);
-        fprintf(outfile,"  %d of %d (remaining) basis function pairs removed, %8.5f%% attenuation.\n",attenuation,ntri_naive_, 100.0*attenuation/(1.0*ntri_naive_));
-    }
-    if (schwarz_>0.0 || three_index_cutoff>0.0)
-        fprintf(outfile,"  After sieving, %d out of %d basis function pairs remain, %8.5f%% attenuation.\n\n",ntri_,norbs*(norbs+1)/2,100.0*(1.0-ntri_/(1.0*norbs*(norbs+1)/2)));**/
 }
-/**
-void HF::write_B()
-{
-    psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_NEW);
-    psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
-            
-    for (int Q = 0; Q<ri_nbf_; Q++) {
-        psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(B_ia_P_[Q][0]),sizeof(double)*ntri_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
-                
-     }
-     psio_->close(PSIF_DFSCF_BJ,1);
-}**/
 void HF::free_A()
 {
     if (df_storage_ == full)
-        free(A_ia_P_);
+        free_block(A_ia_P_);
     free(ri_pair_mu_);
     free(ri_pair_nu_);
+    free(ri_pair_compound_);
+    free(schwarz_fun_pairs_);
+    free(schwarz_shell_pairs_);
     free_block(Jfit_);
     free_block(Jinv_);
 }
@@ -485,15 +419,36 @@ void RHF::form_G_from_RI_local_K()
             //only A irrep at the moment!!
         }
     }
+    //The localization and domain ID code is the same for all storage types
+    if (K_is_required_) {
+        //Localize the canonical orbitals (or propagate guess)
+        if ((iteration_-1)%options_.get_int("STEPS_PER_LOCALIZE") == 0) {
+            timer_on("Pipek-Mekey");
+            fully_localize_mos();      
+            timer_off("Pipek-Mekey");
+        } else {
+            timer_on("Localization Update");
+            propagate_local_mos();
+            timer_off("Localization Update");
+        }
+        //Form the domain bookmarks
+        timer_on("Lodwin Analysis");
+        localized_Lodwin_charges(); 
+        timer_off("Lodwin Analysis");
+        //Form the domain bookmarks
+        timer_on("Form Domains");
+        form_domains(); 
+        timer_off("Form Domains");
+    }
     if (df_storage_ == full) {
         if (J_is_required_) {
-            //As the great Ryann Kopacka would say, Play Your Game!
+            //This embedding of the fitting in the density metric is kinda hot (especially in core)
             //Oh, and see R. Polly et. al., J. Chem. Phys. 102(21-22), pp. 2311-2321, DOI 10.1080/0026897042000274801
             double* c = init_array(ri_nbf_);
             double* d = init_array(ri_nbf_);
             double *J = init_array(ntri_);
             //DGEMV -> L:
-            //L_Q = (Q|ls)*D_{ls}
+            //c_A = (A|ls)*D_{ls}
             timer_on("J DDOT");
             C_DGEMV('N',ri_nbf_,ntri_,1.0,A_ia_P_[0],ntri_naive_,DD,1,0.0,c,1);
             timer_off("J DDOT");
@@ -504,7 +459,7 @@ void RHF::form_G_from_RI_local_K()
             timer_off("J Fitting");
 
             //DGEMV -> J:
-            //J_{mn} = L_Q(Q|mn)
+            //J_{mn} = d_B(B|mn)
             timer_on("J DAXPY");
             C_DGEMV('T',ri_nbf_,ntri_,1.0,A_ia_P_[0],ntri_naive_,d,1,0.0,J,1);
             timer_off("J DAXPY");
@@ -518,24 +473,6 @@ void RHF::form_G_from_RI_local_K()
             free(c);
         }
         if (K_is_required_) {
-            //Localize the canonical orbitals (or propagate guess)
-            if ((iteration_-1)%options_.get_int("STEPS_PER_LOCALIZE") == 0) {
-                timer_on("Pipek-Mekey");
-                fully_localize_mos();      
-                timer_off("Pipek-Mekey");
-            } else {
-                timer_on("Localization Update");
-                propagate_local_mos();
-                timer_off("Localization Update");
-            }
-            //Form the domain bookmarks
-            timer_on("Lodwin Analysis");
-            localized_Lodwin_charges(); 
-            timer_off("Lodwin Analysis");
-            //Form the domain bookmarks
-            timer_on("Form Domains");
-            form_domains(); 
-            timer_off("Form Domains");
 
         }
     } else if (df_storage_ == disk) {
@@ -570,6 +507,9 @@ void RHF::propagate_local_mos()
         fprintf(outfile,"Must run in C1 for now.\n"); fflush(outfile);
         abort();
     } 
+    
+    fprintf(outfile,"\n  Computing extrapolation of local orbitals.\n");
+    
     int norbs = basisset_->nbf(); 
     //Get the C matrix (occupied only) 
     int ndocc = doccpi_[0];
@@ -660,7 +600,7 @@ void RHF::propagate_local_mos()
             L_->set(0,i,j,L[i][j]);
     free_block(L);
 
-    L_->print(outfile);
+    //L_->print(outfile);
 }
 void RHF::fully_localize_mos()
 {
@@ -698,8 +638,8 @@ void RHF::fully_localize_mos()
     for (int j = 0 ; j<norbs; j++)
       S[i][j] = S_->get(0,i,j);
 
-  fprintf(outfile, "\nC Matrix in the AO basis:\n");
-  print_mat(C, norbs, norbs, outfile);
+  //fprintf(outfile, "\C Matrix in the AO basis:\n");
+  //print_mat(C, norbs, ndocc, outfile);
 
   //evals = get_evals();
   bool puream = basisset_->has_puream();
@@ -707,13 +647,17 @@ void RHF::fully_localize_mos()
   for (i = 0; i<nshell; i++)
     snuc[i] = basisset_->shell(i)->ncenter();
 
-  fprintf(outfile, "Overlap Matrix");
-  print_mat(S, norbs, norbs, outfile);
+  //for (int q = 0; q< natom; q++)
+  //  fprintf(outfile,"  Snuc %d is %d",q,snuc[q]);
+  //fflush(outfile);
+  
+  //fprintf(outfile, "Overlap Matrix");
+  //print_mat(S, norbs, norbs, outfile);
 
   // Compute the length of each AM block
-  int *l_length = init_int_array(basisset_->max_am());
+  int *l_length = init_int_array(basisset_->max_am()+1);
   l_length[0] = 1;
-  for(l=1; l < (basisset_->max_am()); l++) {
+  for(l=1; l < (basisset_->max_am())+1; l++) {
     if(puream) l_length[l] = 2 * l + 1;
     else l_length[l] = l_length[l-1] + l + 1;
   }
@@ -727,24 +671,23 @@ void RHF::fully_localize_mos()
   for (i=0; i<nshell; i++)
     stype[i] = basisset_->shell(i)->am();  
 
-  for(i=0,atom=-1,offset=0; i < nshell; i++) {
-    am = stype[i] - 1;                  // am is the angular momentum of the orbital
-    shell_length = l_length[am];        // shell_length is the number of obritals in each shell
+  int nfun;
+  int m = 0;
+  for (int MU = 0; MU < nshell; MU++) {
+   atom = snuc[MU] ; //Use c++ indexing !
+   am = stype[MU];
+   nfun = l_length[am];
 
-    if(atom != snuc[i]-1) {             // snuc is the nucleus that the shell belongs to
-      if(atom != -1) {
-        aostop[atom] = offset-1;
-        aostop_shell[atom] = i-1;
-      }
-      atom = snuc[i]-1;
-      aostart[atom] = offset;
-      aostart_shell[atom] = i;
-    }
-
-    offset += shell_length;
+   //fprintf(outfile, "  MU = %d, atom = %d, am = %d, nfun = %d, m = %d\n", MU, atom, am, nfun, m);
+   
+   if (aostart[atom] == 0 && atom != 0) {
+    aostart_shell[atom] = MU;
+    aostart[atom] = m;
+   }
+   m += nfun;
+   aostop_shell[atom] = MU;
+   aostop[atom] = m-1;
   }
-  aostop[atom] = offset-1;
-  aostop_shell[atom] = i-1;
 
   int* ao2atom = init_int_array(norbs);
   for(i=0; i < natom; i++)
@@ -752,7 +695,9 @@ void RHF::fully_localize_mos()
       ao2atom[j] = i;                   // ao2atom is the atom number that the AO is located on
     }
 
-  fprintf(outfile, "\tNumber of doubly occupied orbitals: %d\n\n", nocc);
+  //fprintf(outfile, "\tNumber of doubly occupied orbitals: %d\n\n", nocc);
+
+  fprintf(outfile, "\n  Pipek-Mezey Localization Procedure:\n\n");
 
   fprintf(outfile, "\tIter     Pop. Localization   Max. Rotation Angle       Conv\n");
   fprintf(outfile, "\t------------------------------------------------------------\n");
@@ -760,6 +705,8 @@ void RHF::fully_localize_mos()
   V = block_matrix(nocc, nocc);
   double* tvec = init_array(nocc);
   double* svec = init_array(nocc);
+
+  alphalast = 0.0;
   
   for(iter=0; iter < 100; iter++) {
 
@@ -854,10 +801,12 @@ void RHF::fully_localize_mos()
   free(svec);
   free_block(V);
 
-  fprintf(outfile, "\nC Matrix in the LO basis:\n");
-  print_mat(C, norbs, norbs, outfile);
+  //fprintf(outfile, "\nC Matrix in the LO basis:\n");
+  //print_mat(C, norbs, norbs, outfile);
 
   //free(evals);
+  free(snuc);
+  free(stype);
   free(aostart);
   free(aostop);
   free(aostart_shell);
@@ -871,6 +820,7 @@ void RHF::fully_localize_mos()
         }
     Lref_->copy(L_);
     free_block(C);
+    free_block(S);
 }
 void RHF::localized_Lodwin_charges()
 {
@@ -886,8 +836,8 @@ void RHF::localized_Lodwin_charges()
     int norbs = basisset_->nbf();
     int natom = basisset_->molecule()->natom();
    
-    Shalf_->print(outfile); 
-    Sphalf_->print(outfile);
+    //Shalf_->print(outfile); 
+    //Sphalf_->print(outfile);
 
     double **Q = block_matrix(norbs,ndocc);
     {
@@ -897,7 +847,7 @@ void RHF::localized_Lodwin_charges()
         for (int m = 0; m<norbs; m++)
             for (int o = 0; o<ndocc; o++)
                 Q[m][o] = temp->get(0,m,o);
-        temp->print(outfile);
+        //temp->print(outfile);
     }    
     //Q^2 = 2*[Q_{mo}]^2 //two for spin degeneracy
     for (int m = 0; m<norbs; m++)
@@ -1151,12 +1101,15 @@ void RHF::form_domains()
     memset((void*)domain_size_,'\0',ndocc*sizeof(int));
     memset((void*)fit_size_,'\0',ndocc*sizeof(int));
     for (int i = 0; i<ndocc; i++) {
-        //Find bomain size w/ schwarz sieve TODO
+        //Find domain size w/ schwarz sieve TODO
         if (max_domain_size_ < domain_size_[i])
             max_domain_size_ = domain_size_[i];
         if (max_fit_size_ < fit_size_[i])
             max_fit_size_ = fit_size_[i];
     }
+
+    fprintf(outfile,"  Atomic Domain Selection:\n");
+    print_int_mat(atom_domains_,ndocc,natom,outfile);
 }
 void RHF::free_domain_bookkeeping()
 {

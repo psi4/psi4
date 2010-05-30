@@ -657,7 +657,7 @@ void HF::write_B()
 void HF::free_B()
 {
     if (df_storage_ == full||df_storage_ == double_full)
-        free(B_ia_P_);
+        free_block(B_ia_P_);
     free(ri_pair_mu_);
     free(ri_pair_nu_);
 }

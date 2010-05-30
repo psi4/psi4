@@ -93,8 +93,14 @@ protected:
     int ri_nbf_; //Number of functions in the auxiliary basis
     int *ri_pair_nu_;
     int *ri_pair_mu_;
+    int sig_fun_pairs_;
+    int sig_shell_pairs_;
 
-//Local K? (only with DF)
+    int *schwarz_shell_pairs_;
+    int *schwarz_fun_pairs_;
+    int *ri_pair_compound_;
+
+    //Local K? (only with DF)
     bool local_K_;
     
     /// do we need Coulomb?
