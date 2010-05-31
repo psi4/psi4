@@ -48,6 +48,7 @@ protected:
     int* aux_shell_length_;
     int* aux_fun_start_;
     int* aux_fun_length_;
+    int* domain_pairs_;
     int* domain_size_;
     int* fit_size_;
     bool* domain_changed_;
@@ -55,6 +56,7 @@ protected:
     int** old_atom_domains_;
     int max_fit_size_;
     int max_domain_size_;
+    int max_domain_pairs_;
 
     boost::shared_ptr<TwoBodyInt> eri_;
 

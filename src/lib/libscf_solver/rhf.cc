@@ -116,7 +116,16 @@ double RHF::compute_energy()
     load_or_compute_initial_C();
     timer_off("Initial Guess");
 
-    //S_->print(outfile);
+    if (print_>3) {
+        S_->print(outfile);
+        Shalf_->print(outfile);
+        H_->print(outfile);
+    }
+    if (print_>2) {
+        fprintf(outfile,"  Initial Guesses:\n");
+        C_->print(outfile);
+        D_->print(outfile);
+    }
 
     if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
         form_PK();
@@ -154,13 +163,18 @@ double RHF::compute_energy()
            form_G();
         timer_off("Form G");
 
-        J_->print(outfile);
+        if (print_>3) {
+            J_->print(outfile);
       
-        K_->print(outfile);
+            K_->print(outfile);
+        
+            G_->print(outfile);
+        }
         
         form_F();
-        //F_->print(outfile);
-        
+        if (print_>3) {
+            F_->print(outfile);
+        }
         if (diis_enabled_)
             save_fock();
 
@@ -182,6 +196,11 @@ double RHF::compute_energy()
         form_C();
         timer_off("Diagonalize H");
         form_D();
+
+        if (print_>2) {
+            C_->print(outfile);
+            D_->print(outfile);
+        }
 
         converged = test_convergency();
     } while (!converged && iteration_ < maxiter_);
@@ -209,11 +228,6 @@ double RHF::compute_energy()
         free_B();
     else if (ri_integrals_ && local_K_)
         free_A();
-
-    //TEST LOCALIZATION
-    //fully_localize_mos(); 
-    //localized_Lodwin_charges();
-    //propagate_local_mos(); 
 
     if (local_K_) {
         free_block(I_);
