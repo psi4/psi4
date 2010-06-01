@@ -29951,5 +29951,138 @@ KRYPTON:"aug-cc-pV5Z-JKFIT" = (
         (GET "AUG-CC-PV5Z-JKFIT")
         )
 
+%%%%%%%%%%%  AUG-CC-PVDZP  %%%%%%%%%%%%%%%%%%
+
+  "AUG-CC-PVDZP":puream = true
+  HYDROGEN:"AUG-CC-PVDZP" = (
+        (GET "H_CCPVDZ")
+        )
+  HELIUM:"AUG-CC-PVDZP" = (
+        (GET "H_CCPVDZ")
+        )
+  BORON:"AUG-CC-PVDZP" = (
+        (GET "H_CCPVDZ")
+        (S (           0.03105000           1.00000000))
+        (P (           0.02378000           1.00000000))
+        )
+  CARBON:"AUG-CC-PVDZP" = (
+        (GET "H_CCPVDZ")
+        (S (           0.04690000           1.00000000))
+        (P (           0.04041000           1.00000000))
+        )
+  NITROGEN:"AUG-CC-PVDZP" = (
+        (GET "H_CCPVDZ")
+        (S (           0.06124000           1.00000000))
+        (P (           0.05611000           1.00000000))
+        )
+  OXYGEN:"AUG-CC-PVDZP" = (
+        (GET "H_CCPVDZ")
+        (S (           0.07896000           1.00000000))
+        (P (           0.06856000           1.00000000))
+        )
+  FLUORINE:"AUG-CC-PVDZP" = (
+        (GET "H_CCPVDZ")
+        (S (           0.09863000           1.00000000))
+        (P (           0.08502000           1.00000000))
+        )
+  NEON:"AUG-CC-PVDZP" = (
+        (GET "H_CCPVDZ")
+        (S (           0.12300000           1.00000000))
+        (P (           0.10640000           1.00000000))
+        )
+
+%%%%%%%%%%%  ALIAS aug-cc-pVDZp => AUG-CC-PVDZP"  %%%%%%%%%%%%%%%%%%
+
+  "aug-cc-pVDZp":puream = true
+  HYDROGEN:"aug-cc-pVDZp" = (
+        (GET "AUG-CC-PVDZP")
+        )
+  HELIUM:"aug-cc-pVDZp" = (
+        (GET "AUG-CC-PVDZP")
+        )
+  BORON:"aug-cc-pVDZp" = (
+        (GET "AUG-CC-PVDZP")
+        )
+  CARBON:"aug-cc-pVDZp" = (
+        (GET "AUG-CC-PVDZP")
+        )
+  NITROGEN:"aug-cc-pVDZp" = (
+        (GET "AUG-CC-PVDZP")
+        )
+  OXYGEN:"aug-cc-pVDZp" = (
+        (GET "AUG-CC-PVDZP")
+        )
+  FLUORINE:"aug-cc-pVDZp" = (
+        (GET "AUG-CC-PVDZP")
+        )
+  NEON:"aug-cc-pVDZp" = (
+        (GET "AUG-CC-PVDZP")
+        )
+
+%%%%%%% "AUG-CC-PVDZP-JKFIT"  %%%%%%%%%%%%%%%%%%
+
+HYDROGEN:"AUG-CC-PVDZP-JKFIT" = (
+  (GET "CC-PVDZ-JKFIT")
+)
+BORON:"AUG-CC-PVDZP-JKFIT" = (
+  (GET "CC-PVDZ-JKFIT")
+  (S    (         0.0592930100           1.0000000000))
+  (P    (         0.0459689300           1.0000000000))
+  (D    (         0.0425993000           1.0000000000))
+)
+CARBON:"AUG-CC-PVDZP-JKFIT" = (
+  (GET "CC-PVDZ-JKFIT")
+  (S    (         0.0759692700           1.0000000000))
+  (P    (         0.0715729200           1.0000000000))
+  (D    (         0.0766446400           1.0000000000))
+)
+NITROGEN:"AUG-CC-PVDZP-JKFIT" = (
+  (GET "CC-PVDZ-JKFIT")
+  (S    (         0.1179680700           1.0000000000))
+  (P    (         0.1052322300           1.0000000000))
+  (D    (         0.1068003900           1.0000000000))
+)
+OXYGEN:"AUG-CC-PVDZP-JKFIT" = (
+  (GET "CC-PVDZ-JKFIT")
+  (S    (         0.1419478600           1.0000000000))
+  (P    (         0.1562870900           1.0000000000))
+  (D    (         0.1445469300           1.0000000000))
+)
+FLUORINE:"AUG-CC-PVDZP-JKFIT" = (
+  (GET "CC-PVDZ-JKFIT")
+  (S    (         0.1747100800           1.0000000000))
+  (P    (         0.1892364900           1.0000000000))
+  (D    (         0.1730826400           1.0000000000))
+)
+NEON:"AUG-CC-PVDZP-JKFIT" = (
+  (GET "CC-PVDZ-JKFIT")
+  (S    (         0.2075000000           1.0000000000))
+  (P    (         0.2224000000           1.0000000000))
+  (D    (         0.2018000000           1.0000000000))
+)
+%%%%%%% ALIAS "aug-cc-pVDZp-JKFIT"=>"AUG-CC-PVDZP-JKFIT"  %%%%%%%%%%%%%%%%%%
+
+HYDROGEN:"aug-cc-pVDZp-JKFIT" = (
+  (GET "AUG-CC-PVDZP-JKFIT")
+)
+BORON:"aug-cc-pVDZp-JKFIT" = (
+  (GET "AUG-CC-PVDZP-JKFIT")
+)
+CARBON:"aug-cc-pVDZp-JKFIT" = (
+  (GET "AUG-CC-PVDZP-JKFIT")
+)
+NITROGEN:"aug-cc-pVDZp-JKFIT" = (
+  (GET "AUG-CC-PVDZP-JKFIT")
+)
+OXYGEN:"aug-cc-pVDZp-JKFIT" = (
+  (GET "AUG-CC-PVDZP-JKFIT")
+)
+FLUORINE:"aug-cc-pVDZp-JKFIT" = (
+  (GET "AUG-CC-PVDZP-JKFIT")
+)
+NEON:"aug-cc-pVDZp-JKFIT" = (
+  (GET "AUG-CC-PVDZP-JKFIT")
+)
+
 )
 %
