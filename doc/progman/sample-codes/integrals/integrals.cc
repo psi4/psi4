@@ -70,7 +70,7 @@ integrals(Options &options, int argc, char *argv[])
         int count=0;
         for (shellIter.first(); shellIter.is_done() == false; shellIter.next()) {
             // Compute quartet
-            eri->compute_shell(shellIter.p(), shellIter.q(), shellIter.r(), shellIter.s());
+            eri->compute_shell(shellIter);
             // From the quartet get all the integrals
             IntegralsIterator intIter = shellIter.integrals_iterator();
             for (intIter.first(); intIter.is_done() == false; intIter.next()) {

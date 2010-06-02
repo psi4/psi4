@@ -31,6 +31,8 @@ namespace psi {
             options.add_bool("DO_TEI", false);
         }
         options.read_ipv1();
+        
+        return true;
     }
 }
 

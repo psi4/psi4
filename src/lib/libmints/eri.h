@@ -102,6 +102,9 @@ public:
     void form_sieve();
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
+    void compute_shell(const ShellCombinationsIterator&);
+
+    /// Compute ERIs between 4 shells. Result is stored in buffer.
     void compute_shell(int, int, int, int);
 
     /// Compute ERI derivatives between 4 shells. Result is stored in buffer.
