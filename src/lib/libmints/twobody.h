@@ -72,6 +72,9 @@ public:
     /// Buffer where the integrals are placed
     const double *buffer() const { return target_; };
     
+    /// Compute ERIs between 4 shells. Result is stored in buffer.
+    virtual void compute_shell(const ShellCombinationsIterator&) = 0;
+
     /// Compute the integrals
     virtual void compute_shell(int, int, int, int) = 0;
 
