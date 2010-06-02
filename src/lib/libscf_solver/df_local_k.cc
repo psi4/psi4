@@ -511,7 +511,7 @@ void RHF::form_G_from_RI_local_K()
 
                 //Form J for this domain
                 timer_on("Form Local J");
-                for (int A = 0, Pl = 0; A<domain_atoms_[i]; A++)
+               for (int A = 0, Pl = 0; A<domain_atoms_[i]; A++)
                     for (int P = fit_fun_start_[i][A]; P<fit_fun_start_[i][A]+fit_fun_length_[i][A]; P++, Pl++)    
                         for (int B = 0, Ql = 0; B<domain_atoms_[i]; B++)
                             for (int Q = fit_fun_start_[i][B]; Q<fit_fun_start_[i][B]+fit_fun_length_[i][B]; Q++, Ql++)
@@ -848,16 +848,22 @@ void RHF::fully_localize_mos()
   if (print_>1) {
     fprintf(outfile, "\n  Pipek-Mezey Localization Procedure:\n\n");
 
-    fprintf(outfile, "\tIter     Pop. Localization   Max. Rotation Angle       Conv\n");
-    fprintf(outfile, "\t------------------------------------------------------------\n");
+    fprintf(outfile, "\tIter     Pop. Localization   Max. Rotation Angle       Conv   Rotations\n");
+    fprintf(outfile, "\t-----------------------------------------------------------------------\n");
   }
   V = block_matrix(nocc, nocc);
   double* tvec = init_array(nocc);
   double* svec = init_array(nocc);
 
+  int max_iter = 200;
+  double conv_tol = 1E-12;
+  double angle_tol = 1E-9;
+  int tot_rotations, rotations; 
+
   alphalast = 0.0;
+  tot_rotations = 0;
   
-  for(iter=0; iter < 100; iter++) {
+  for(iter=0; iter < max_iter; iter++) {
 
   P = 0.0;
   for(i=0; i < nocc; i++) {
@@ -874,6 +880,7 @@ void RHF::fully_localize_mos()
 
   // Compute 2x2 rotations for Pipek-Mezey lo.zation
   alphamax = 0.0;
+  rotations = 0;
 
   for(s=0; s < nocc; s++) {
     for(t=0; t < s; t++) {
@@ -912,36 +919,41 @@ void RHF::fully_localize_mos()
         // Keep up with the maximum 2x2 rotation angle
         alphamax = (fabs(alpha) > alphamax ? alpha : alphamax);
 
+        if (fabs(alpha) > angle_tol) {
+         rotations++;
+         Uss = cos(alpha);                                            // Eqn 10a/b (JCP 90, 4916)
+         Utt = Uss;                                               // Eqn 10a/b (JCP 90, 4916)
+         Ust = sin(alpha);                                               // Eqn 10a/b (JCP 90, 4916)
+         Uts = -Ust;                                                  // Eqn 10a/b (JCP 90, 4916)
 
-        Uss = cos(alpha);                                            // Eqn 10a/b (JCP 90, 4916)
-        Utt = cos(alpha);                                               // Eqn 10a/b (JCP 90, 4916)
-        Ust = sin(alpha);                                               // Eqn 10a/b (JCP 90, 4916)
-        Uts = -Ust;                                                  // Eqn 10a/b (JCP 90, 4916)
-
-        // Now do the rotation
-        for(k=0; k < norbs; k++) {
+         // Now do the rotation
+         for(k=0; k < norbs; k++) {
           LCks = C[k][s];
           LCkt = C[k][t];
           C[k][s] = Uss * LCks + Ust * LCkt;
           C[k][t] = Uts * LCks + Utt * LCkt;
-        }
-        for (i = 0; i< nocc; i++)
-        {
+         }
+         for (i = 0; i< nocc; i++)
+         {
           svec[i] = Uss*V[i][s] + Ust*V[i][t];
           tvec[i] = Uts*V[i][s] + Utt*V[i][t];
-        }
-        for (i = 0; i< nocc; i++)
-        {
+         }
+         for (i = 0; i< nocc; i++)
+         {
           V[i][s] = svec[i]; 
           V[i][t] = tvec[i];
+         }
         }
       } // t-loop
     } // s-loop
 
     conv = fabs(alphamax) - fabs(alphalast);
     if (print_>1)
-        fprintf(outfile, "\t%4d  %20.10f  %20.10f  %4.3e\n", iter, P, alphamax, conv);
-    if((iter > 2) && ((fabs(conv) < 1E-12) || alphamax == 0.0)) break;
+        fprintf(outfile, "\t%4d  %20.10f  %20.10f  %4.3e  %8d\n", iter, P, alphamax, conv, rotations);
+
+    tot_rotations+=rotations;
+
+    if((iter > 2) && ((fabs(conv) < conv_tol) || alphamax == 0.0)) break;
     alphalast = alphamax;
 
     fflush(outfile);
@@ -951,6 +963,7 @@ void RHF::fully_localize_mos()
   free(svec);
   free_block(V);
 
+  fprintf(outfile,"\n  %d total rotations performed.\n",tot_rotations);
   //fprintf(outfile, "\nC Matrix in the LO basis:\n");
   //print_mat(C, norbs, norbs, outfile);
 
@@ -1297,6 +1310,12 @@ void RHF::form_domains()
         fprintf(outfile,"  Atomic Domain Selection (atoms x occ):\n");
         print_int_mat(atom_domains_,natom,ndocc,outfile);
         fprintf(outfile,"\n");
+        
+        fprintf(outfile,"  Number of atoms in domain:\n");
+        for (int i = 0; i<ndocc; i++)
+            fprintf(outfile,"    Orbital %d, %d atoms\n",i+1,domain_atoms_[i]);
+        fprintf(outfile,"\n");
+
     }
 
     if (print_>5) {
@@ -1305,11 +1324,6 @@ void RHF::form_domains()
             fprintf(outfile,"    Orbital %d, %s\n",i+1,(domain_changed_[i]?"Yes":"No"));
         fprintf(outfile,"\n");
     
-        fprintf(outfile,"  Number of atoms in domain:\n");
-        for (int i = 0; i<ndocc; i++)
-            fprintf(outfile,"    Orbital %d, %d atoms\n",i+1,domain_atoms_[i]);
-        fprintf(outfile,"\n");
-
         fprintf(outfile,"  Primary Basis Domain Shell Starts (occ x involved atoms):\n");
         print_int_mat(domain_shell_start_,ndocc,natom,outfile);
         fprintf(outfile,"\n");

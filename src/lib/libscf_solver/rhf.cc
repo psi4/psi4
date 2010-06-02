@@ -98,6 +98,8 @@ void RHF::common_init()
 
 double RHF::compute_energy()
 {
+    //fprintf(outfile,"  Print = %d\n",print_);
+    print_ = 5;
     bool converged = false, diis_iter = false;
     iteration_ = 0;
 
@@ -189,6 +191,10 @@ double RHF::compute_energy()
         }
         timer_off("DIIS");
 
+        if (print_>4 && diis_iter) {
+            fprintf(outfile,"  After DIIS:\n");
+            F_->print(outfile);
+        }
         fprintf(outfile, "  @RHF iteration %3d energy: %20.14f    %20.14f %20.14f %s\n", iteration_, E_, E_ - Eold_, Drms_, diis_iter == false ? " " : "DIIS");
         fflush(outfile);
 
@@ -674,6 +680,7 @@ void RHF::save_fock()
 
     // Orthonormalize the error matrix
     FDSmSDF.transform(Shalf_);
+    FDSmSDF.print(outfile);
 
     diis_manager_->add_entry(2, &FDSmSDF, F_.get());
 }
