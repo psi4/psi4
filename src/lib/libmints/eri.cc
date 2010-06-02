@@ -499,6 +499,11 @@ size_t ERI::memory_to_store_shell_pairs(const shared_ptr<BasisSet> &bs1, const s
     return mem;
 }
 
+void ERI::compute_shell(const ShellCombinationsIterator& shellIter)
+{
+    compute_shell(shellIter.p(), shellIter.q(), shellIter.r(), shellIter.s());
+}
+
 void ERI::compute_shell(int sh1, int sh2, int sh3, int sh4)
 {
     //SCHWARZ SIEVE

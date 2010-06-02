@@ -635,6 +635,8 @@ else if(name == "CCDENSITY") {
   options.read_ipv1();
   if(Communicator::world->me() == 0)
     options.print();
+    
+  return true;
 }
 
 } //end ::psi
