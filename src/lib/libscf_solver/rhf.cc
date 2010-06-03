@@ -2217,21 +2217,21 @@ void RHF::save_sapt_info()
     sprintf(key_buffer,"%s NOCC",body_type);
     errcod = psio_write_entry(fileno,key_buffer,(char *) &sapt_nocc, sizeof(int));
     sprintf(key_buffer,"%s NVIR",body_type);
-    errcod = psio_write_entry(fileno,body_type,(char *) &sapt_nvir, sizeof(int));
+    errcod = psio_write_entry(fileno,key_buffer,(char *) &sapt_nvir, sizeof(int));
     sprintf(key_buffer,"%s Number of Electrons",body_type);
-    errcod = psio_write_entry(fileno,body_type,(char *) &sapt_ne,sizeof(int));
+    errcod = psio_write_entry(fileno,key_buffer,(char *) &sapt_ne,sizeof(int));
     sprintf(key_buffer,"%s HF Energy",body_type);
-    errcod = psio_write_entry(fileno,body_type,(char *) &sapt_E_HF,sizeof(double));
+    errcod = psio_write_entry(fileno,key_buffer,(char *) &sapt_E_HF,sizeof(double));
     sprintf(key_buffer,"%s Nuclear Repulsion Energy",body_type);
-    errcod = psio_write_entry(fileno,body_type,(char *) &sapt_E_nuc, sizeof(double));
+    errcod = psio_write_entry(fileno,key_buffer,(char *) &sapt_E_nuc, sizeof(double));
     sprintf(key_buffer,"%s HF Eigenvalues",body_type);
-    errcod = psio_write_entry(fileno,body_type,(char *) &(sapt_evals[0]),sizeof(double)*sapt_nmo);
+    errcod = psio_write_entry(fileno,key_buffer,(char *) &(sapt_evals[0]),sizeof(double)*sapt_nmo);
     sprintf(key_buffer,"%s Nuclear Attraction Integrals",body_type);
-    errcod = psio_write_entry(fileno,body_type,(char *) &(sapt_V_ints[0]), sizeof(double)*sapt_nso*(sapt_nso+1)/2);
+    errcod = psio_write_entry(fileno,key_buffer,(char *) &(sapt_V_ints[0]), sizeof(double)*sapt_nso*(sapt_nso+1)/2);
     sprintf(key_buffer,"%s Overlap Integrals",body_type);
-    errcod = psio_write_entry(fileno,body_type,(char *) &(sapt_S_ints[0]), sizeof(double)*sapt_nso*(sapt_nso+1)/2);
+    errcod = psio_write_entry(fileno,key_buffer,(char *) &(sapt_S_ints[0]), sizeof(double)*sapt_nso*(sapt_nso+1)/2);
     sprintf(key_buffer,"%s HF Coefficients",body_type);
-    errcod = psio_write_entry(fileno,body_type,(char *) &(sapt_C[0][0]),sizeof(double)*sapt_nmo*sapt_nso);
+    errcod = psio_write_entry(fileno,key_buffer,(char *) &(sapt_C[0][0]),sizeof(double)*sapt_nmo*sapt_nso);
 
     psio_close(fileno,1);
 
