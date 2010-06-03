@@ -1,3 +1,4 @@
+#include <libmints/integral.h>
 #include <libmints/basisset.h>
 #include <libmints/properties.h>
 #include <libmints/matrix.h>

@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <cmath>
+#include <libmints/integral.h>
 #include <libmints/gshell.h>
 
 #include <libmints/wavefunction.h>

@@ -14,7 +14,7 @@
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 
-#include <libmints/matrix.h>
+#include <libmints/mints.h>
 #include "uks.h"
 
 

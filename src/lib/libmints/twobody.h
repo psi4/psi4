@@ -2,6 +2,7 @@
 #define _psi_src_lib_libmints_twobody_h
 
 #include <libmints/matrix.h>
+#include <libmints/integral.h>
 
 namespace psi {
     

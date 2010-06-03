@@ -26,6 +26,7 @@
 //
 
 #include <cmath>
+#include <libmints/integral.h>
 #include <libmints/fjt.h>
 #include <libmints/wavefunction.h>
 

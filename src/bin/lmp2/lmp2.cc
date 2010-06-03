@@ -19,6 +19,7 @@
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libparallel/parallel.h>
+#include <libmints/mints.h>
 //#include <libmints/matrix.h>
 #include "globals.h"
 

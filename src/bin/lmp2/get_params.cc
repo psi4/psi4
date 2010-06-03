@@ -8,6 +8,7 @@
 //#include <cstdio>
 //#include <cstdlib>
 //#include <cstring>
+#include <libmints/mints.h>
 #include <libparallel/parallel.h>
 #include <cmath>
 //#include <libipv1/ip_lib.h>

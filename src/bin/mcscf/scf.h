@@ -4,7 +4,7 @@
 #include "sblock_vector.h"
 #include "sblock_matrix.h"
 #include <libmoinfo/libmoinfo.h>
-#include <libmints/wavefunction.h>
+#include <libmints/mints.h>
 
 #define STORE_TEI 0
 

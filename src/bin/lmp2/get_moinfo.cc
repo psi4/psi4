@@ -16,6 +16,7 @@
 //#include <libpsio/psio.h>
 //#include <libqt/qt.h>
 //#include <psifiles.h>
+#include <libmints/mints.h>
 #include <libparallel/parallel.h>
 #define EXTERN
 #include "globals.h"

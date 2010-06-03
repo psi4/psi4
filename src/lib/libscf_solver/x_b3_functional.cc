@@ -12,7 +12,7 @@
 #include "functional.h"
 #include "integrator.h"
 #include "x_b3_functional.h"
-#include <libmints/properties.h>
+#include <libmints/mints.h>
 #include <string>
 using namespace psi;
 

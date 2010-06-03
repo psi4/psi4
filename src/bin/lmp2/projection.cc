@@ -11,6 +11,7 @@
 //#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libparallel/parallel.h>
+#include <libmints/mints.h>
 //#include <libchkpt/chkpt.h>
 //#include <libpsio/psio.h>
 #include <libqt/qt.h>
