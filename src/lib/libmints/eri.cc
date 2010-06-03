@@ -176,8 +176,6 @@ void ERI::init_shell_pairs12()
     double a1, a2, ab2, gam, c1, c2;
     double *curr_stack_ptr;
 
-    fprintf(outfile, "  Pre-computing some values for two-electron integrals.\n");
-
     // Estimate memory needed by allocated space for the dynamically allocated parts of ShellPair structure
     memd = ERI::memory_to_store_shell_pairs(basis1(), basis2());
 

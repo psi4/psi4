@@ -75,11 +75,14 @@ void HF::common_init()
 
     // Read in DOCC and SOCC from memory
     int nirreps = factory_.nirreps();
+    int ndocc = 0, nsocc = 0;
     input_docc_ = false;
     if (options_["DOCC"].has_changed()) {
         input_docc_ = true;
-        for (int i=0; i<nirreps; ++i)
+        for (int i=0; i<nirreps; ++i) {
             doccpi_[i] = options_["DOCC"][i].to_integer();
+            ndocc += 2*doccpi_[i];
+        }
     } else {
         for (int i=0; i<nirreps; ++i)
             doccpi_[i] = 0;
@@ -87,8 +90,10 @@ void HF::common_init()
     input_socc_ = false;
     if (options_["SOCC"].has_changed()) {
         input_socc_ = true;
-        for (int i=0; i<nirreps; ++i)
+        for (int i=0; i<nirreps; ++i) {
             soccpi_[i] = options_["SOCC"][i].to_integer();
+            nsocc += soccpi_[i];
+        }
     } else {
         for (int i=0; i<nirreps; ++i)
             soccpi_[i] = 0;
@@ -144,6 +149,12 @@ void HF::common_init()
 
     nbeta_  = (nElec_ - multiplicity_ + 1)/2;
     nalpha_ = nbeta_ + multiplicity_ - 1;
+
+//  if (ndocc != 0 && nbeta_ != ndocc && nalpha_ != (ndocc + nsocc)) {
+//      char *str = "Your DOCC, SOCC, charge, and multiplicity does not make sense.\n";
+//      fprintf(outfile, str);
+//      throw SanityCheckError(str, __FILE__, __LINE__);
+//  }
 
     perturb_h_ = false;
     perturb_h_ = options_.get_bool("PERTURB_H");
