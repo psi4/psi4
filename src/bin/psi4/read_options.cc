@@ -167,14 +167,7 @@ int read_options(const std::string &name, Options & options) {
     options.add_str("RI_BASIS_SCF", "");
     options.read_ipv1();
 
-    /*- Whether to use density fitting or not -*/
-    if(options.get_str("RI_BASIS_SCF").empty())
-      options.add_bool("RI_HF", false);
-    else
-      options.add_bool("RI_HF", true);
 
-    /*- Use Local fitting for K or not? -*/
-    options.add_bool("L_HF",false);
     /*- Atomic Charge cutoff (for primary domain) -*/
     options.add_double("CHARGE_CUTOFF",0.05);
     /*- Extended domain radius, Angstrom -*/
@@ -182,6 +175,9 @@ int read_options(const std::string &name, Options & options) {
     /*- Iterations per full Pipek-Mizey Localization -*/
     options.add_int("STEPS_PER_LOCALIZE",1);
     
+    options.add_str("SCF_TYPE","PK","PK OUT_OF_CORE DIRECT DF L_DF CD 1C_CD");
+    /*- Cholesky Cutoff -*/
+    options.add_double("CHOLESKY_CUTOFF",1E-4);
 
     /*- The guess type to be used in the computation -*/
     options.add_str("GUESS", "", "CORE GWH SAD READ BASIS2");
@@ -202,14 +198,10 @@ int read_options(const std::string &name, Options & options) {
     options.add_str("RI_STORAGE", "DEFAULT", "DEFAULT DOUBLE_IN_CORE IN_CORE FLIP_B_DISK K_IN_CORE DISK");
     /*- The operator used to perturb the Hamiltonian, if requested -*/
     options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z");
-    /*- Whether the computation is to be performed without disk-based storage of integrals -*/
-    options.add_bool("DIRECT", false);
     /*- The maximum number of error vectors stored for DIIS extrapolation -*/
     options.add_int("DIIS_VECTORS", 4);
     /*- Whether DIIS extrapolation is used to accelerate convergence -*/
     options.add_bool("DIIS", true);
-    /*- Whether to use hard disk based storage in the computation -*/
-    options.add_bool("OUT_OF_CORE", false);
     /*- The molecular charge -*/
     options.add_int("CHARGE", 0);
     /*- (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/

@@ -8,7 +8,7 @@ psi: (
 
   subgroup = c1  
   basis = "cc-pVTZ"
-  ri_hf = true
+  scf_type = df
   ri_basis_scf = "cc-pVTZ-RI"
 
   zmat= (

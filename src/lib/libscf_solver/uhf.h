@@ -17,7 +17,6 @@ protected:
     SharedMatrix Da_, Db_, Dt_, Dtold_;
     SharedMatrix Ca_, Cb_;
     SharedMatrix Ga_, Gb_;
-    int use_out_of_core_;
 
     double *p_jk_;
     double *p_k_;

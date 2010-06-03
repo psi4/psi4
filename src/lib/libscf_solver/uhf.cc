@@ -38,7 +38,6 @@ UHF::~UHF()
 void UHF::common_init()
 {
     Drms_ = 0.0;
-    use_out_of_core_ = false;
 
     Fa_     = SharedMatrix(factory_.create_matrix("F alpha"));
     Fb_     = SharedMatrix(factory_.create_matrix("F beta"));
@@ -58,16 +57,12 @@ void UHF::common_init()
     Va_   = NULL;
     Vb_   = NULL;
 
-    use_out_of_core_ = options_.get_bool("OUT_OF_CORE");
-
 //    if(print_ > 1) fprintf(outfile, "  DIIS not implemented for UHF, yet.\n\n");
 
+    fprintf(outfile, "  SCF Algorithm Type is %s.\n", scf_type_.c_str());
     fprintf(outfile, "  DIIS %s.\n", diis_enabled_ ? "enabled" : "disabled");
-    fprintf(outfile, "  Out of core %s.\n", use_out_of_core_ ? "enabled" : "disabled");
-    fprintf(outfile, "  Direct %s.\n", direct_integrals_ ? "enabled": "disabled");
-    fprintf(outfile, "  Density Fitting %s.\n", ri_integrals_ ? "enabled": "disabled");
 
-    if (direct_integrals_ == false && ri_integrals_ == false)
+    if (scf_type_ == "PK")
         allocate_PK();
 }
 
@@ -81,9 +76,9 @@ double UHF::compute_energy()
     form_H();
     // find_occupation(_H, _H);
 
-    if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
+    if (scf_type_ == "PK")
         form_PK();
-    else if (ri_integrals_ == true)
+    else if (scf_type_ == "DF")
         form_B();
 
     form_Shalf();
@@ -112,13 +107,13 @@ double UHF::compute_energy()
         Dtold_->copy(Dt_);
         Eold_ = E_;
 
-        if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
+        if (scf_type_ == "PK")
             form_G_from_PK();
-        else if (ri_integrals_ == false && direct_integrals_ == true)
+        else if (scf_type_ == "DIRECT")
            form_G_from_direct_integrals();
-        else if (ri_integrals_ == true)
+        else if (scf_type_ == "DF")
            form_G_from_RI();
-        else
+        else if (scf_type_ == "OUT_OF_CORE")
            form_G();
 
         form_F();
@@ -142,15 +137,11 @@ double UHF::compute_energy()
         form_C();
         //find_occupation(Fa_, Fb_);
         form_D();
-        if (print_>2) {
+        if (print_>4) {
             Fa_->print(outfile);
             Fb_->print(outfile);
             Ga_->print(outfile);
             Gb_->print(outfile);
-            Ca_->print(outfile);
-            Cb_->print(outfile);
-            Da_->print(outfile);
-            Db_->print(outfile);
             Ca_->print(outfile);
             Cb_->print(outfile);
             Da_->print(outfile);
@@ -160,7 +151,7 @@ double UHF::compute_energy()
         converged = test_convergency();
     } while (!converged && iter < maxiter_);
 
-    if (ri_integrals_)
+    if (scf_type_ == "DF")
     {
         free_B();
     }
@@ -493,7 +484,7 @@ void UHF::allocate_PK() {
         if (p_jk_ == NULL || p_k_ == NULL) {
             fprintf(outfile, "  Insufficient free system memory for in-core PK implementation.\n");
             fprintf(outfile, "  Switching to out-of-core algorithm.\n");
-            use_out_of_core_ = true;
+            scf_type_ == "OUT_OF_CORE";
         } else {
             // PK and K are zeroed out just before filling, not here
             if(print_ > 2){
@@ -512,7 +503,7 @@ void UHF::allocate_PK() {
                         "  Would need %lu elements of double memory. (%5f MiB)\n",
                         (unsigned long)pk_size_*2, pk_size_ * 8.0 / 1048576.0 * 2.0);
         fprintf(outfile, "  Switching to out-of-core algorithm.\n");
-        use_out_of_core_ = true;
+        scf_type_ == "OUT_OF_CORE";
     }
 }
 

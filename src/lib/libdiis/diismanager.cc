@@ -422,6 +422,7 @@ DIISManager::extrapolate(int numQuantities, ...)
         if(_storagePolicy == OnDisk) _subspace[n]->free_vector_memory();
         va_end(args);
     }
+    free_block(bMatrix);
 }
 
 

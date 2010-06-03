@@ -73,6 +73,9 @@ protected:
     size_t pk_size_;
     int *pk_symoffset_;
 
+    /// SCF algorithm type
+    string scf_type_;
+
     /// Perturb the Hamiltonian?
     int perturb_h_;
     /// How big of a perturbation
@@ -81,15 +84,11 @@ protected:
     enum perturb { nothing, dipole_x, dipole_y, dipole_z };
     perturb perturb_;
 
-    /// Using direct integrals?
-    int direct_integrals_;
-
     /// DF Storage Scheme
     enum df_storage { double_full, full, flip_B_core, flip_B_disk, k_incore, disk};
     df_storage df_storage_;
 
     //Density Fitting?
-    bool ri_integrals_;
     int ri_nbf_; //Number of functions in the auxiliary basis
     int *ri_pair_nu_;
     int *ri_pair_mu_;
@@ -231,6 +230,9 @@ protected:
     /** Propagate previous localization guess a. la. R. Polly et. al. */
     virtual void propagate_local_mos(){}
 
+    void sort_cholesky(double*, int*, int);
+    /** Form canonical three-index Cholesky tensor */
+    void form_CD();
     /** Form canonical three-index DF tensor */
     void form_B();
     /** Form B without metric transform for local K (makes J go crazy fast)*/
