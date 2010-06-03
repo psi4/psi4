@@ -13,6 +13,7 @@
 //#include <libqt/qt.h>
 //#include <psifiles.h>
 #define EXTERN
+#include <libmints/mints.h>
 #include "globals.h"
 
 namespace psi{ namespace lmp2{

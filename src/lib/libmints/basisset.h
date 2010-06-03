@@ -7,7 +7,7 @@
 #include <libmints/molecule.h>
 #include <libmints/gshell.h>
 #include <libmints/sobasis.h>
-#include <libmints/integral.h>
+//#include <libmints/integral.h>
 // Need libint for maximum angular momentum
 #include <libint/libint.h>
 #include <psi4-dec.h>
@@ -17,7 +17,9 @@
 namespace psi {
 
     class BasisSetParser;
-
+    class SOTransformShell;
+    class SphericalTransform;
+    class SOTransform;
 /*! \ingroup MINTS */
 
 //! Basis set container class

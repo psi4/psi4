@@ -18,6 +18,7 @@
 //#include <libint/libint.h>
 //#include <psifiles.h>
 #include <libparallel/parallel.h>
+#include <libmints/mints.h>
 #define EXTERN
 #include "globals.h"
 

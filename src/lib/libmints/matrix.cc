@@ -11,6 +11,7 @@
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <libparallel/parallel.h>
+#include <libmints/integral.h>
 #include "factory.h"
 #include "wavefunction.h"
 

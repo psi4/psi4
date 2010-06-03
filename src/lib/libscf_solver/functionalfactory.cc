@@ -9,6 +9,7 @@
 #include <cmath>
 #include <math.h>
 #include <stdlib.h>
+#include <libmints/mints.h>
 #include "functional.h"
 #include "functionalfactory.h"
 #include "x_lda_functional.h"

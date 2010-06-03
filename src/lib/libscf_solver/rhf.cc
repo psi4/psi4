@@ -22,13 +22,7 @@
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 
-#include <libmints/basisset.h>
-#include <libmints/onebody.h>
-#include <libmints/twobody.h>
-#include <libmints/integral.h>
-#include <libmints/factory.h>
-#include <libmints/wavefunction.h>
-#include <libmints/properties.h>
+#include <libmints/mints.h>
 #include "rhf.h"
 #include <psi4-dec.h>
 

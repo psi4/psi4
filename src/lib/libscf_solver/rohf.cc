@@ -6,6 +6,7 @@
 #include <utility>
 
 #include <psifiles.h>
+#include <libmints/integral.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>

@@ -11,6 +11,7 @@
 #define RHF_H
 
 #include <libpsio/psio.hpp>
+#include <libmints/mints.h>
 #include "hf.h"
 
 using namespace psi;

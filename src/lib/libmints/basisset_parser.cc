@@ -1,5 +1,7 @@
 #include "basisset_parser.h"
 
+#include <libmints/integral.h>
+
 #include <boost/regex.hpp>
 #include <boost/xpressive/xpressive.hpp>
 #include <boost/xpressive/regex_actions.hpp>

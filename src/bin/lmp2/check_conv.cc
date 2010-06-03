@@ -25,6 +25,7 @@
 //#include <libchkpt/chkpt.hpp>
 //#include <libpsio/psio.hpp>
 #include <libparallel/parallel.h>
+#include <libmints/mints.h>
 #define EXTERN
 #include "globals.h"
 

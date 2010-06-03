@@ -8,12 +8,7 @@
 
 #include <libpsio/psio.hpp>
 #include <libciomr/libciomr.h>
-#include <libmints/properties.h>
-#include <libmints/basispoints.h>
-#include <libmints/basisset.h>
-#include <libmints/molecule.h>
-#include <libmints/vector3.h>
-#include <libmints/gridblock.h>
+#include <libmints/mints.h>
 #include "hf.h"
 #include <cmath>
 #include <math.h>

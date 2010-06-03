@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include <libciomr/libciomr.h>
+#include <libmints/integral.h>
 #include <libmints/wavefunction.h>   // for df
 #include <libmints/osrecur.h>
 #include <exception.h>

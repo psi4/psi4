@@ -10,6 +10,7 @@
 //#include <fstream>              // file I/O support
 #include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
+#include <libmints/mints.h>
 #include <libparallel/parallel.h>
 //#include <libchkpt/chkpt.h>
 //#include <libpsio/psio.h>

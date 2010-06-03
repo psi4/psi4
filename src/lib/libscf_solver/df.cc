@@ -19,11 +19,7 @@
 #include "uhf.h"
 #include "rohf.h"
 
-#include <libmints/basisset.h>
-#include <libmints/onebody.h>
-#include <libmints/twobody.h>
-#include <libmints/integral.h>
-#include <libmints/molecule.h>
+#include <libmints/mints.h>
 
 using namespace std;
 using namespace psi;
