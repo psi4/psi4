@@ -79,6 +79,9 @@ public:
     /// Compute the integrals
     virtual void compute_shell(int, int, int, int) = 0;
 
+    ///Is the shell zero?
+    virtual int shell_is_zero(int,int,int,int) { return 0; }
+    
     /// Compute the integrals
     virtual void compute_shell_deriv1(int, int, int, int) = 0;
     

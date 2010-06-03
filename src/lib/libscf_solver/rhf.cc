@@ -112,6 +112,8 @@ double RHF::compute_energy()
     load_or_compute_initial_C();
     timer_off("Initial Guess");
 
+    print_ = options_.get_int("PRINT");
+
     if (print_>3) {
         S_->print(outfile);
         Shalf_->print(outfile);
@@ -213,6 +215,8 @@ double RHF::compute_energy()
         }
         fprintf(outfile, "\n");
         save_information();
+        if (options_.get_str("SAPT") != "FALSE")
+            save_sapt_info();   
     } else {
         fprintf(outfile, "\n  Failed to converged.\n");
         E_ = 0.0;
@@ -232,10 +236,10 @@ double RHF::compute_energy()
     if (local_K_) {
         free_block(I_);
         free_domain_bookkeeping();
-    }    
+    } 
 
     // Compute the final dipole.
-    //compute_multipole();
+    compute_multipole();
 
     //fprintf(outfile,"\nComputation Completed\n");
     fflush(outfile);
@@ -280,8 +284,7 @@ bool RHF::load_or_compute_initial_C()
         E_ = compute_initial_E();
     } else if (guess_type == "SAD") {
         //Superposition of Atomic Density (will be preferred when we can figure it out)
-        fprintf(outfile, "  SCF Guess: Superposition of Atomic Density.\n\n");
-        throw std::domain_error("SAD is not implemented for RHF/RKS yet!");
+        compute_SAD_guess();
     } else if (guess_type == "GWH") {
         //Generalized Wolfsberg Helmholtz (Sounds cool, easy to code)
         fprintf(outfile, "  SCF Guess: Generalized Wolfsberg-Helmholtz.\n\n");
@@ -1760,6 +1763,10 @@ void RHF::form_J_and_K_from_direct_integrals()
     J_->zero();
     K_->zero();
 
+    //D_->zero();
+    //D_->set(0,0,0,2.0000008);
+    //D_->set(0,5,5,2.0000008);
+
 
     // Need to back-transform the density from SO to AO basis
     SimpleMatrix *D = D_->to_simple_matrix();
@@ -2128,5 +2135,283 @@ void RHF::form_J_and_K_from_direct_integrals()
     delete D;
     // G_->print();
 }
+void RHF::save_sapt_info()
+{
+    if (factory_.nirreps() != 1)
+    {
+        fprintf(outfile,"Must run in C1. Period.\n"); fflush(outfile);
+        abort();
+    } 
+    if (soccpi_[0] != 0) 
+    {
+        fprintf(outfile,"Aren't we in RHF Here? Pair those electrons up cracker!\n"); fflush(outfile);
+        abort();
+    } 
 
+    int fileno;
+    char* body_type = (char*)malloc(400*sizeof(char));
+    char* key_buffer = (char*)malloc(4000*sizeof(char));
+
+    string type = options_.get_str("SAPT");
+    if (type == "2-DIMER") {
+        fileno = PSIF_SAPT_DIMER;
+        sprintf(body_type,"Dimer");
+    } else if (type == "2-MONOMER_A") {
+        fileno = PSIF_SAPT_MONOMERA;
+        sprintf(body_type,"Monomer");
+    } else if (type == "2-MONOMER_B") {
+        fileno = PSIF_SAPT_MONOMERB;
+        sprintf(body_type,"Monomer");
+    } else if (type == "3-TRIMER") {
+        fileno = PSIF_3B_SAPT_TRIMER;
+        sprintf(body_type,"Trimer");
+    } else if (type == "3-DIMER_AB") {
+        fileno = PSIF_3B_SAPT_DIMER_AB;
+        sprintf(body_type,"Dimer");
+    } else if (type == "3-DIMER_BC") {
+        fileno = PSIF_3B_SAPT_DIMER_BC;
+        sprintf(body_type,"Dimer");
+    } else if (type == "3-DIMER_AC") {
+        fileno = PSIF_3B_SAPT_DIMER_AC;
+        sprintf(body_type,"Dimer");
+    } else if (type == "3-MONOMER_A") {
+        fileno = PSIF_3B_SAPT_MONOMER_A;
+        sprintf(body_type,"Monomer");
+    } else if (type == "3-MONOMER_B") {
+        fileno = PSIF_3B_SAPT_MONOMER_B;
+        sprintf(body_type,"Monomer");
+    } else if (type == "3-MONOMER_C") {
+        fileno = PSIF_3B_SAPT_MONOMER_C;
+        sprintf(body_type,"Monomer");
+    } else {
+        throw std::domain_error("SAPT Output option invalid");
+    }
+    
+    psio_open(fileno,0);
+
+    int sapt_nso = basisset_->nbf();
+    int sapt_nmo = basisset_->nbf();
+    int sapt_nocc = 2*doccpi_[0];
+    int sapt_nvir = sapt_nso-sapt_nocc;
+    int sapt_ne = sapt_nocc;
+    double sapt_E_HF = E_;
+    double sapt_E_nuc = nuclearrep_;
+    SharedMatrix eigvector(factory_.create_matrix());
+    SharedVector eigvalues(factory_.create_vector());
+    F_->diagonalize(eigvector, eigvalues);
+    double *sapt_evals = eigvalues->to_block_vector();
+    double **sapt_C = C_->to_block_matrix();
+    SharedMatrix potential(factory_.create_matrix("Potential Integrals"));
+    IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
+    shared_ptr<OneBodyInt> V(integral.potential());
+    V->compute(potential);
+    double *sapt_V_ints = potential->to_lower_triangle(); 
+    double *sapt_S_ints = S_->to_lower_triangle(); 
+
+    int errcod;
+    
+    sprintf(key_buffer,"%s NSO",body_type);
+    errcod = psio_write_entry(fileno,key_buffer,(char *) &sapt_nso, sizeof(int));
+    sprintf(key_buffer,"%s NMO",body_type);
+    errcod = psio_write_entry(fileno,key_buffer,(char *) &sapt_nmo, sizeof(int));
+    sprintf(key_buffer,"%s NOCC",body_type);
+    errcod = psio_write_entry(fileno,key_buffer,(char *) &sapt_nocc, sizeof(int));
+    sprintf(key_buffer,"%s NVIR",body_type);
+    errcod = psio_write_entry(fileno,body_type,(char *) &sapt_nvir, sizeof(int));
+    sprintf(key_buffer,"%s Number of Electrons",body_type);
+    errcod = psio_write_entry(fileno,body_type,(char *) &sapt_ne,sizeof(int));
+    sprintf(key_buffer,"%s HF Energy",body_type);
+    errcod = psio_write_entry(fileno,body_type,(char *) &sapt_E_HF,sizeof(double));
+    sprintf(key_buffer,"%s Nuclear Repulsion Energy",body_type);
+    errcod = psio_write_entry(fileno,body_type,(char *) &sapt_E_nuc, sizeof(double));
+    sprintf(key_buffer,"%s HF Eigenvalues",body_type);
+    errcod = psio_write_entry(fileno,body_type,(char *) &(sapt_evals[0]),sizeof(double)*sapt_nmo);
+    sprintf(key_buffer,"%s Nuclear Attraction Integrals",body_type);
+    errcod = psio_write_entry(fileno,body_type,(char *) &(sapt_V_ints[0]), sizeof(double)*sapt_nso*(sapt_nso+1)/2);
+    sprintf(key_buffer,"%s Overlap Integrals",body_type);
+    errcod = psio_write_entry(fileno,body_type,(char *) &(sapt_S_ints[0]), sizeof(double)*sapt_nso*(sapt_nso+1)/2);
+    sprintf(key_buffer,"%s HF Coefficients",body_type);
+    errcod = psio_write_entry(fileno,body_type,(char *) &(sapt_C[0][0]),sizeof(double)*sapt_nmo*sapt_nso);
+
+    psio_close(fileno,1);
+
+    free(sapt_evals);
+    free(sapt_V_ints);
+    free(sapt_S_ints);
+    free_block(sapt_C);
+
+    free(body_type);
+    free(key_buffer); 
+}
+void RHF::compute_SAD_guess() {
+    
+    shared_ptr<Molecule> mol = basisset_->molecule();  
+    std::vector<shared_ptr<BasisSet> > atomic_bases;
+
+    if (print_ > 6) {
+        fprintf(outfile,"\n  Constructing atomic basis sets\n  Molecule:\n");
+        mol->print(); 
+    }
+
+    //Build the atomic basis sets for libmints use in UHF
+    for (int A = 0; A<mol->nallatom(); A++) {
+        atomic_bases.push_back(basisset_->atomic_basis_set(A));
+        if (print_>6) {
+            fprintf(outfile,"  Atomic Basis Set %d\n", A);
+            atomic_bases[A]->molecule()->print();
+            fprintf(outfile,"\n");
+            atomic_bases[A]->print(outfile);
+            fprintf(outfile,"\n");
+        }
+    } 
+   
+    //Spin occupations per atom, to be determined by Hund's Rules
+    //or user input
+    int* nalpha = init_int_array(mol->nallatom());
+    int* nbeta = init_int_array(mol->nallatom()); 
+    int* nelec = init_int_array(mol->nallatom()); 
+    int* nhigh = init_int_array(mol->nallatom()); 
+    
+    //Ground state high spin occupency array, atoms 0 to 36 (see Giffith's Quantum Mechanics, pp. 217)
+    const int reference_S[] = {0,1,0,1,0,1,2,3,2,1,0,1,0,1,2,3,2,1,0,1,0,1,2,3,6,5,4,3,2,1,0,1,2,3,2,1,0};
+
+    //At the moment, we'll assume no ions, and Hund filling
+    //Improvemnts to SAD can be made simply by changing the setup of nalpha and nbeta
+    if (print_>1)
+        fprintf(outfile,"\n  Determining atomic occupations:\n");
+    for (int A = 0; A<mol->nallatom(); A++) {
+        int Z = mol->fZ(A);
+        if (Z>36) {
+            throw std::domain_error("Atoms up to 36 (Kr) are currently supported with SAD");
+        } 
+        nhigh[A] = reference_S[Z];
+        nelec[A] = Z;
+        nbeta[A] = (nelec[A]-nhigh[A])/2;
+        nalpha[A] = nelec[A]-nbeta[A];
+        if (print_>1)
+            fprintf(outfile,"  Atom %d, Z = %d, nelec = %d, nohigh = %d, nalpha = %d, nbeta = %d\n",A,Z,nelec[A],nhigh[A],nalpha[A],nbeta[A]);
+    }
+
+    timer_on("Atomic UHF");
+
+    //Atomic D matrices within the atom specific AO basis
+    double*** atomic_D = (double***)malloc(mol->nallatom()*sizeof(double**));
+    for (int A = 0; A<mol->nallatom(); A++)
+        atomic_D[A] = block_matrix(atomic_bases[A]->nbf(),atomic_bases[A]->nbf());
+
+    if (print_>1)
+        fprintf(outfile,"\n  Performing Atomic UHF Computations:\n");
+    for (int A = 0; A<mol->nallatom(); A++) {
+        if (print_>1)
+            fprintf(outfile,"\n  UHF Computation for Atom %d:\n",A);
+        getUHFAtomicDensity(atomic_bases[A],nelec[A],nhigh[A],atomic_D[A]);
+    }
+    timer_off("Atomic UHF");
+
+    //Add atomic_D into D (scale by 1/2, we like pairs in RHF)
+    D_->zero();
+    for (int A = 0, offset = 0; A < mol->nallatom(); A++) {
+        int norbs = atomic_bases[A]->nbf();
+        for (int m = 0; m<norbs; m++)
+            for (int n = 0; n<norbs; n++)
+                D_->set(0,m+offset,n+offset,0.5*atomic_D[A][m][n]);
+        offset+=norbs;
+    }
+    if (print_>6)
+        D_->print(outfile);
+
+    //Compute a rough Fock matrix via integral direct
+    //Note, my convention is backwards, l and s are index variables
+    // m and n are zip variables
+    timer_on("SAD Fock");
+    double SAD_Schwarz = 1E-10;
+    G_->zero();
+    IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
+    TwoBodyInt *TEI = integral.eri(0, SAD_Schwarz);
+    const double* buffer = TEI->buffer();
+    for (int A = 0, shell_offset = 0; A<mol->nallatom(); A++) {
+    for (int MU = shell_offset; MU < shell_offset+atomic_bases[A]->nshell(); MU++) {
+    int numMU = basisset_->shell(MU)->nfunction();
+    for (int NU = shell_offset; NU < shell_offset+atomic_bases[A]->nshell() ; NU++) {
+    int numNU = basisset_->shell(NU)->nfunction();
+    for (int LA = 0; LA < basisset_->nshell(); LA++) {
+    int numLA = basisset_->shell(LA)->nfunction();
+    for (int SI = 0; SI < basisset_->nshell(); SI++) {
+    int numSI = basisset_->shell(SI)->nfunction();
+
+    //J
+    if (!TEI->shell_is_zero(MU,NU,LA,SI)) {
+    TEI->compute_shell(MU,NU,LA,SI);
+    for (int m = 0, index = 0; m<numMU; m++) {
+    int omu = basisset_->shell(MU)->function_index() + m;
+    for (int n = 0; n<numNU; n++) {
+    int onu = basisset_->shell(NU)->function_index() + n;
+    for (int l = 0; l<numLA; l++) {
+    int ola = basisset_->shell(LA)->function_index() + l;
+    for (int s = 0; s<numSI; s++,index++) {
+    int osi = basisset_->shell(SI)->function_index() + s;
+        G_->add(0,ola,osi,2.0*D_->get(0,omu,onu)*buffer[index]);
+    }
+    }
+    }
+    }
+    }
+
+    //K
+    if (!TEI->shell_is_zero(LA,MU,NU,SI)) {
+    TEI->compute_shell(LA,MU,NU,SI);    
+    for (int l = 0, index = 0; l<numLA; l++) {
+    int ola = basisset_->shell(LA)->function_index() + l;
+    for (int m = 0; m<numMU; m++) {
+    int omu = basisset_->shell(MU)->function_index() + m;
+    for (int n = 0; n<numNU; n++) {
+    int onu = basisset_->shell(NU)->function_index() + n;
+    for (int s = 0; s<numSI; s++,index++) {
+    int osi = basisset_->shell(SI)->function_index() + s;
+        G_->add(0,ola,osi,-D_->get(0,omu,onu)*buffer[index]);
+    }
+    }
+    }
+    }
+    }
+ 
+    }
+    }
+    }
+    }
+    shell_offset+= atomic_bases[A]->nshell();
+    }
+    timer_off("SAD Fock");
+
+    F_->copy(H_);
+    F_->add(G_);
+
+    //Compute initial E for reference
+    E_ = compute_E();
+    if (print_)
+        fprintf(outfile,"  Initial RHF Energy:   %14.10f\n",E_);
+    
+    //Form the C matrix from the rough Fock matrix
+    form_C();
+    //Form the D matrix from the resultant C matrix
+    form_D();
+
+    if (print_>7) {
+        G_->print(outfile);
+        F_->print(outfile);
+        C_->print(outfile);
+        D_->print(outfile);
+    }
+    
+    //Frees
+    for (int A = 0; A<mol->nallatom(); A++)
+        free_block(atomic_D[A]);
+    free(atomic_D); 
+    
+    free(nelec);
+    free(nhigh);
+    free(nalpha);
+    free(nbeta);
+    //abort(); 
+}
 }}

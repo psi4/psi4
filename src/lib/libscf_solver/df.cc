@@ -39,6 +39,11 @@ void HF::form_B()
     ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_SCF"));
     ri_nbf_ = ribasis_->nbf();
     
+    if (print_>5) {
+        basisset_->print(outfile); 
+        ribasis_->print(outfile);
+        fflush(outfile);
+    }
     //Form the schwarz sieve
     timer_on("Schwarz Sieve");
 
@@ -214,8 +219,10 @@ void HF::form_B()
             }
         }
     }
-    //fprintf(outfile,"\nJ:\n"); fflush(outfile);
-    //print_mat(J,ri_nbf_,ri_nbf_,outfile);
+    if (print_>5) {
+        fprintf(outfile,"\nJ:\n"); fflush(outfile);
+        print_mat(J,ri_nbf_,ri_nbf_,outfile);
+    }
     timer_off("Form J Matrix;");
     timer_on("Form J^-1/2;");
 
@@ -259,9 +266,10 @@ void HF::form_B()
     free_block(J_copy);
     timer_off("Form J^-1/2;");
 
-
-    //fprintf(outfile,"\nJmhalf:\n"); fflush(outfile);
-    //print_mat(J_mhalf,ri_nbf_,ri_nbf_,outfile);
+    if (print_>5) {
+        fprintf(outfile,"\nJmhalf:\n"); fflush(outfile);
+        print_mat(J_mhalf,ri_nbf_,ri_nbf_,outfile);
+    }
     timer_on("Overall (B|mn)");
     
     //Use ri_pair_mu_ and ri_pair_nu_ to keep track of things
@@ -423,6 +431,7 @@ void HF::form_B()
             if (!allocated) {
                 Temp1 = block_matrix(ri_nbf_,cols);
                 Temp2 = block_matrix(ri_nbf_,cols);
+                allocated = true;
             }
             for (int r = 0; r<ri_nbf_; r++)
                 for (int c = index; c<index+cols; c++)
@@ -733,44 +742,55 @@ void RHF::form_G_from_RI()
             // Temp matrix for sparse DGEMM if sieve exists
             double** Ctemp = block_matrix(ndocc,norbs);
             // Index array for non-canonical ordering of mn
-            int* m_indices = init_int_array(norbs);
+            int** m_ij_indices = init_int_matrix(norbs,norbs);
+            // Index array of n for given m (in order of above)
+            int** n_indices = init_int_matrix(norbs,norbs);
+            // sizes of above for schwarz sieve
+            int* index_sizes = init_int_array(norbs);
+
+            //timer_on("Initial E Indexing");
+            
+            for (int ij = 0; ij<ntri_; ij++) {
+                int m = ri_pair_mu_[ij];
+                int n = ri_pair_nu_[ij];
+                m_ij_indices[m][index_sizes[m]] = ij;
+                n_indices[m][index_sizes[m]] = n;
+                index_sizes[m]++;
+                if (m != n){
+                    m_ij_indices[n][index_sizes[n]] = ij;
+                    n_indices[n][index_sizes[n]] = m;
+                    index_sizes[n]++;
+                }
+            }
+
+            //timer_off("Initial E Indexing");
 
             //Exchange tensor E
             for (int m = 0; m<norbs; m++) {
                 //Find out where the m's are!
-                int index = 0;
-                for (int ij =0; ij<ntri_; ij++) {
-                    if (ri_pair_mu_[ij] == m || ri_pair_nu_[ij] == m) 
-                        m_indices[index++] = ij; //ns where the current m hits
-                }
-
-                int n_m = index;
-                /**
-                fprintf(outfile,"\n  nu = %d, ij indices are: ",nu);
-                for (int k = 0; k<norbs; k++)
-                    fprintf(outfile,"%d ",nu_indices[k]);
-                fprintf(outfile,"\n");
-                **/
+                //timer_on("Intermediate Indexing");
                 int n, ij;
-
-                for (index = 0; index<n_m; index++) {
-                    ij = m_indices[index];
-                    if (ri_pair_nu_[ij] == m)
-                        n = ri_pair_mu_[ij];
-                    else
-                        n = ri_pair_nu_[ij];
-                
+                for (int index = 0; index<index_sizes[m]; index++) {
+                    ij = m_ij_indices[m][index];
+                    n = n_indices[m][index];
+                 
                     //fprintf(outfile,"  index = %d ij = %d \n",index,ij); fflush(outfile);//fprintf(outfile,"(ij, mu) = (%d, %d)\n",ij,mu);
-                    for (int Q = 0; Q<ri_nbf_; Q++) {
-                         QS[Q][index] = B_ia_P_[Q][ij];
+                    C_DCOPY(ri_nbf_,&B_ia_P_[0][ij],ntri_,&QS[0][index],norbs);
+                    //for (int Q = 0; Q<ri_nbf_; Q++) {
+                    //     QS[Q][index] = B_ia_P_[Q][ij];
                          //fprintf(outfile," ij = %d, mu = %d, Q = %d, val = %14.10f\n",ij,mu,Q,QS[Q][mu]);
-                    }
-                    for (int o = 0; o<ndocc; o++) {
-                        Ctemp[o][index] = Cocc[o][n];
-                    }
+                    //}
+                    C_DCOPY(ndocc,&Cocc[0][n],norbs,&Ctemp[0][index],norbs);
+                    //for (int o = 0; o<ndocc; o++) {
+                    //    Ctemp[o][index] = Cocc[o][n];
+                    //}
                 }
+                //timer_off("Intermediate Indexing");
+                //timer_on("DGEMM 2");
                 
-                C_DGEMM('N','T',ndocc,ri_nbf_,n_m,1.0,Ctemp[0],norbs,QS[0],norbs, 0.0, Temp[0], ri_nbf_);
+                C_DGEMM('N','T',ndocc,ri_nbf_,index_sizes[m],1.0,Ctemp[0],norbs,QS[0],norbs, 0.0, Temp[0], ri_nbf_);
+                //timer_off("DGEMM 2");
+                //timer_on("Final Indexing");
                 
                 int offset;
                 for (int Q = 0; Q<ri_nbf_; Q++) {
@@ -779,9 +799,14 @@ void RHF::form_G_from_RI()
                         E[m][i+offset] = Temp[i][Q];
                     }
                 }
+                //timer_off("Final Indexing");
             }    
             free_block(Ctemp);
-            free(m_indices);
+            free(m_ij_indices[0]);
+            free(m_ij_indices);
+            free(n_indices[0]);
+            free(n_indices);
+            free(index_sizes);
             timer_off("Form E");
             
             //fprintf(outfile,"\n E: \n");
@@ -861,16 +886,42 @@ void RHF::form_G_from_RI()
         //Three index tensor, in core
         double **E;
         double **QS;
-        int *m_indices;
         double **Temp; 
         double **Ctemp;
-        double **K;
-        if (K_is_required_){
-            Ctemp = block_matrix(ndocc,norbs);
+        int** m_ij_indices;
+        int** n_indices;
+        int* index_sizes;
+        if (K_is_required_) {    
+            //E exchange matrix
             E = block_matrix(norbs, ndocc*ri_nbf_);
-            QS = block_matrix(max_rows,norbs);
-            m_indices = init_int_array(norbs);
+            //QS temp matrix for DGEMM
+            QS = block_matrix(ri_nbf_,norbs);
+            //Temp matrix for DGEMM
             Temp = block_matrix(ndocc,max_rows);
+            // Temp matrix for sparse DGEMM if sieve exists
+            Ctemp = block_matrix(ndocc,norbs);
+            // Index array for non-canonical ordering of mn
+            m_ij_indices = init_int_matrix(norbs,norbs);
+            // Index array of n for given m (in order of above)
+            n_indices = init_int_matrix(norbs,norbs);
+            // sizes of above for schwarz sieve
+            index_sizes = init_int_array(norbs);
+
+            //timer_on("Initial E Indexing");
+            
+            for (int ij = 0; ij<ntri_; ij++) {
+                int m = ri_pair_mu_[ij];
+                int n = ri_pair_nu_[ij];
+                m_ij_indices[m][index_sizes[m]] = ij;
+                n_indices[m][index_sizes[m]] = n;
+                index_sizes[m]++;
+                if (m != n){
+                    m_ij_indices[n][index_sizes[n]] = ij;
+                    n_indices[n][index_sizes[n]] = m;
+                    index_sizes[n]++;
+                }
+            }
+            //timer_off("Initial E Indexing");
         }
 
         int mu, nu;
@@ -926,40 +977,25 @@ void RHF::form_G_from_RI()
                 timer_on("Form E");
                 //Exchange tensor E
                 for (int m = 0; m<norbs; m++) {
-                    //Find out where the m's are!
-                    int index = 0;
-                    for (int ij =0; ij<ntri_; ij++) {
-                        if (ri_pair_mu_[ij] == m || ri_pair_nu_[ij] == m) 
-                            m_indices[index++] = ij; //ns where the current m hits
-                    }
-
-                    int n_m = index;
-                    /**
-                    fprintf(outfile,"\n  nu = %d, ij indices are: ",nu);
-                    for (int k = 0; k<norbs; k++)
-                        fprintf(outfile,"%d ",nu_indices[k]);
-                    fprintf(outfile,"\n");
-                    **/
+                    //timer_on("Intermediate Indexing");
                     int n, ij;
-
-                    for (index = 0; index<n_m; index++) {
-                        ij = m_indices[index];
-                        if (ri_pair_nu_[ij] == m)
-                            n = ri_pair_mu_[ij];
-                        else
-                            n = ri_pair_nu_[ij];
-                
-                         //fprintf(outfile,"  index = %d ij = %d \n",index,ij); fflush(outfile);//fprintf(outfile,"(ij, mu) = (%d, %d)\n",ij,mu);
-                        for (int Q = 0; Q<current_rows; Q++) {
-                             QS[Q][index] = in_buffer[Q*ntri_+ij];
-                            //fprintf(outfile," ij = %d, mu = %d, Q = %d, val = %14.10f\n",ij,mu,Q,QS[Q][mu]);
-                        }
-                        for (int o = 0; o<ndocc; o++) {
-                            Ctemp[o][index] = Cocc[o][n];
-                        }
+                    for (int index = 0; index<index_sizes[m]; index++) {
+                        ij = m_ij_indices[m][index];
+                        n = n_indices[m][index];
+                 
+                        //fprintf(outfile,"  index = %d ij = %d \n",index,ij); fflush(outfile);//fprintf(outfile,"(ij, mu) = (%d, %d)\n",ij,mu);
+                        C_DCOPY(current_rows,&in_buffer[ij],ntri_,&QS[0][index],norbs);
+                        //for (int Q = 0; Q<ri_nbf_; Q++) {
+                        //     QS[Q][index] = B_ia_P_[Q][ij];
+                             //fprintf(outfile," ij = %d, mu = %d, Q = %d, val = %14.10f\n",ij,mu,Q,QS[Q][mu]);
+                        //}
+                        C_DCOPY(ndocc,&Cocc[0][n],norbs,&Ctemp[0][index],norbs);
+                        //for (int o = 0; o<ndocc; o++) {
+                        //    Ctemp[o][index] = Cocc[o][n];
+                        //}
                     }
                 
-                    C_DGEMM('N','T',ndocc,current_rows,n_m,1.0,Ctemp[0],norbs,QS[0],norbs, 0.0, Temp[0], max_rows);
+                    C_DGEMM('N','T',ndocc,current_rows,index_sizes[m],1.0,Ctemp[0],norbs,QS[0],norbs, 0.0, Temp[0], max_rows);
                 
                     int offset;
                     for (int Q = 0; Q<current_rows; Q++) {
@@ -975,12 +1011,17 @@ void RHF::form_G_from_RI()
             //fprintf(outfile,"\n E: \n");
             //print_mat(E,norbs,ndocc*max_rows,outfile);
             
-            
         }
-        free_block(Ctemp);
-        free_block(QS);
-        free(m_indices);
-        free_block(Temp);
+        if (K_is_required_) {
+            free_block(Ctemp);
+            free_block(QS);
+            free(m_ij_indices[0]);
+            free(m_ij_indices);
+            free(n_indices[0]);
+            free(n_indices);
+            free(index_sizes);
+            free_block(Temp);
+        }
         free(in_buffer);
         psio_->close(PSIF_DFSCF_BJ,1);
 
@@ -1074,16 +1115,42 @@ void RHF::form_G_from_RI()
         //Three index tensor, buffered to disk
         double *out_buffer;
         double **QS;
+        double **Temp; 
         double **Ctemp;
-        int *m_indices;
-        double **Temp;
-        double **K;
-        if (K_is_required_){
-            out_buffer = init_array(norbs*ndocc*max_rows);
-            QS = block_matrix(max_rows,norbs);
-            m_indices = init_int_array(norbs);
+        int** m_ij_indices;
+        int** n_indices;
+        int* index_sizes;
+        if (K_is_required_) {    
+            //E exchange matrix
+            out_buffer = init_array(norbs*ndocc*ri_nbf_);
+            //QS temp matrix for DGEMM
+            QS = block_matrix(ri_nbf_,norbs);
+            //Temp matrix for DGEMM
             Temp = block_matrix(ndocc,max_rows);
+            // Temp matrix for sparse DGEMM if sieve exists
             Ctemp = block_matrix(ndocc,norbs);
+            // Index array for non-canonical ordering of mn
+            m_ij_indices = init_int_matrix(norbs,norbs);
+            // Index array of n for given m (in order of above)
+            n_indices = init_int_matrix(norbs,norbs);
+            // sizes of above for schwarz sieve
+            index_sizes = init_int_array(norbs);
+
+            //timer_on("Initial E Indexing");
+            
+            for (int ij = 0; ij<ntri_; ij++) {
+                int m = ri_pair_mu_[ij];
+                int n = ri_pair_nu_[ij];
+                m_ij_indices[m][index_sizes[m]] = ij;
+                n_indices[m][index_sizes[m]] = n;
+                index_sizes[m]++;
+                if (m != n){
+                    m_ij_indices[n][index_sizes[n]] = ij;
+                    n_indices[n][index_sizes[n]] = m;
+                    index_sizes[n]++;
+                }
+            }
+            //timer_off("Initial E Indexing");
         }
 
         int mu, nu;
@@ -1131,64 +1198,30 @@ void RHF::form_G_from_RI()
                     C_DAXPY(ntri_,L,&in_buffer[offset_B],1,J,1);
                     timer_off("J DAPXY");
                 } 
-                /*
-                timer_on("Form E");
-                if (K_is_required_) {
-                    // EXCHANGE TENSOR 
-                    memset(&out_buffer[offset_E],0,norbs*ndocc*sizeof(double));
-                    for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
-                    {
-                        mu = ri_pair_mu_[ij];
-                        nu = ri_pair_nu_[ij];
-                        for (int i = 0; i<ndocc; i++)
-                        {
-                            out_buffer[mu*ndocc+i+offset_E]+=Cocc[i][nu]*in_buffer[ij+offset_B];
-                            if (mu != nu)
-                                out_buffer[nu*ndocc+i+offset_E]+=Cocc[i][mu]*in_buffer[ij+offset_B];
-                        }
-                    }
-                }
-                timer_off("Form E");**/
             }
             
             if (K_is_required_) {
                 timer_on("Form E");
                 //Exchange tensor E
                 for (int m = 0; m<norbs; m++) {
-                    //Find out where the m's are!
-                    int index = 0;
-                    for (int ij =0; ij<ntri_; ij++) {
-                        if (ri_pair_mu_[ij] == m || ri_pair_nu_[ij] == m) 
-                            m_indices[index++] = ij; //ns where the current m hits
-                    }
-
-                    int n_m = index;
-                    /**
-                    fprintf(outfile,"\n  nu = %d, ij indices are: ",nu);
-                    for (int k = 0; k<norbs; k++)
-                        fprintf(outfile,"%d ",nu_indices[k]);
-                    fprintf(outfile,"\n");
-                    **/
+                    //timer_on("Intermediate Indexing");
                     int n, ij;
-
-                    for (index = 0; index<n_m; index++) {
-                        ij = m_indices[index];
-                        if (ri_pair_nu_[ij] == m)
-                            n = ri_pair_mu_[ij];
-                        else
-                            n = ri_pair_nu_[ij];
-                
-                         //fprintf(outfile,"  index = %d ij = %d \n",index,ij); fflush(outfile);//fprintf(outfile,"(ij, mu) = (%d, %d)\n",ij,mu);
-                        for (int Q = 0; Q<current_rows; Q++) {
-                             QS[Q][index] = in_buffer[Q*ntri_+ij];
-                            //fprintf(outfile," ij = %d, mu = %d, Q = %d, val = %14.10f\n",ij,mu,Q,QS[Q][mu]);
-                        }
-                        for (int o = 0; o<ndocc; o++) {
-                            Ctemp[o][index] = Cocc[o][n];
-                        }
+                    for (int index = 0; index<index_sizes[m]; index++) {
+                        ij = m_ij_indices[m][index];
+                        n = n_indices[m][index];
+                 
+                        //fprintf(outfile,"  index = %d ij = %d \n",index,ij); fflush(outfile);//fprintf(outfile,"(ij, mu) = (%d, %d)\n",ij,mu);
+                        C_DCOPY(current_rows,&in_buffer[ij],ntri_,&QS[0][index],norbs);
+                        //for (int Q = 0; Q<ri_nbf_; Q++) {
+                        //     QS[Q][index] = B_ia_P_[Q][ij];
+                             //fprintf(outfile," ij = %d, mu = %d, Q = %d, val = %14.10f\n",ij,mu,Q,QS[Q][mu]);
+                        //}
+                        C_DCOPY(ndocc,&Cocc[0][n],norbs,&Ctemp[0][index],norbs);
+                        //for (int o = 0; o<ndocc; o++) {
+                        //    Ctemp[o][index] = Cocc[o][n];
+                        //}
                     }
-                
-                    C_DGEMM('N','T',ndocc,current_rows,n_m,1.0,Ctemp[0],norbs,QS[0],norbs, 0.0, Temp[0], max_rows);
+                    C_DGEMM('N','T',ndocc,current_rows,index_sizes[m],1.0,Ctemp[0],norbs,QS[0],norbs, 0.0, Temp[0], max_rows);
                 
                     int delta;
                     for (int Q = row; Q<row+current_rows; Q++) {
@@ -1232,7 +1265,11 @@ void RHF::form_G_from_RI()
             free(out_buffer);
             free_block(QS);
             free_block(Ctemp);
-            free(m_indices);
+            free(m_ij_indices[0]);
+            free(m_ij_indices);
+            free(n_indices[0]);
+            free(n_indices);
+            free(index_sizes);
             free_block(Temp);
             psio_->close(PSIF_DFSCF_K,1);
         }
@@ -1242,7 +1279,7 @@ void RHF::form_G_from_RI()
             psio_->open(PSIF_DFSCF_K,PSIO_OPEN_OLD);
             next_PSIF_DFSCF_K = PSIO_ZERO;
 
-            K = block_matrix(norbs,norbs);
+            double **K = block_matrix(norbs,norbs);
             //Large blocks implemented
             max_rows = floor(((memory_/sizeof(double)))/((1.0+MEMORY_SAFETY_FACTOR)*(2.0*ndocc*norbs)));
 	    if (max_rows>ri_nbf_)

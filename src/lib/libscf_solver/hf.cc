@@ -583,5 +583,335 @@ bool HF::load_or_compute_initial_C()
 
     return ret;
 }
+void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, double** D)
+{
+    print_ = options_.get_int("PRINT");
+    shared_ptr<Molecule> mol = bas->molecule();    
+    
+    int nbeta = (nelec-nhigh)/2;
+    int nalpha = nelec-nbeta;
+    int natom = mol->natom();
+    int norbs = bas->nbf();
+    
+    if (print_>5)
+        fprintf(outfile,"  nalpha = %d, nbeta = %d, norbs = %d\n",nalpha,nbeta,norbs);
+
+    if (print_>5) {
+        bas->print(outfile);
+        mol->print();
+    }
+
+    if (natom != 1) {
+        throw std::domain_error("SAD Atomic UHF has been given a molecule, not an atom"); 
+    }
+
+    double** Dold = block_matrix(norbs,norbs);
+    double **Shalf = block_matrix(norbs, norbs);
+    double** Ca = block_matrix(norbs,norbs);
+    double** Cb = block_matrix(norbs,norbs);
+    double** Da = block_matrix(norbs,norbs);
+    double** Db = block_matrix(norbs,norbs);    
+    double** Fa = block_matrix(norbs,norbs);
+    double** Fb = block_matrix(norbs,norbs);    
+    double** Ga = block_matrix(norbs,norbs);
+    double** Gb = block_matrix(norbs,norbs);    
+    double** H = block_matrix(norbs,norbs);    
+
+    IntegralFactory integral(bas, bas, bas, bas);
+    OneBodyInt *S_ints = integral.overlap();
+    OneBodyInt *T_ints = integral.kinetic();
+    OneBodyInt *V_ints = integral.potential();
+    TwoBodyInt *TEI = integral.eri();
+
+    //Compute Shalf;
+    //Fill S
+    double **S = block_matrix(norbs,norbs);
+    const double* S_buffer = S_ints->buffer();
+    for (int MU = 0; MU < bas->nshell(); MU++) {
+        int numMU = bas->shell(MU)->nfunction();
+        for (int NU = 0; NU<= MU; NU++) {
+            int numNU = bas->shell(NU)->nfunction();
+            S_ints->compute_shell(MU,NU);
+            for (int m = 0, index = 0; m<numMU; m++) {
+                int omu = bas->shell(MU)->function_index()+m;
+                for (int n = 0; n<numNU; n++, index++) {
+                    int onu = bas->shell(NU)->function_index()+n;
+                    S[omu][onu] = S_buffer[index];
+                    S[onu][omu] = S_buffer[index];
+                }
+            }
+        }
+    }
+
+    if (print_>6) {
+    fprintf(outfile,"  S:\n");
+    print_mat(S,norbs,norbs,outfile);
+    }
+    // S^{-1/2}
+    
+    // First, diagonalize S
+    // the C_DSYEV call replaces the original matrix J with its eigenvectors
+    double* eigval = init_array(norbs);
+    int lwork = norbs * 3;
+    double* work = init_array(lwork);
+    int stat = C_DSYEV('v','u',norbs,S[0],norbs,eigval, work,lwork);
+    if (stat != 0) {
+        fprintf(outfile, "C_DSYEV failed\n");
+        exit(PSI_RETURN_FAILURE);
+    }
+    free(work);
+    
+    double **S_copy = block_matrix(norbs, norbs);
+    C_DCOPY(norbs*norbs,S[0],1,S_copy[0],1); 
+
+    // Now form S^{-1/2} = U(T)*s^{-1/2}*U,
+    // where s^{-1/2} is the diagonal matrix of the inverse square roots
+    // of the eigenvalues, and U is the matrix of eigenvectors of S
+    for (int i=0; i<norbs; i++) {
+        if (eigval[i] < 1.0E-10)
+            eigval[i] = 0.0;
+        else 
+            eigval[i] = 1.0 / sqrt(eigval[i]);
+
+        // scale one set of eigenvectors by the diagonal elements s^{-1/2}
+        C_DSCAL(norbs, eigval[i], S[i], 1);
+    }
+    free(eigval);
+
+    // Smhalf = S_copy(T) * S
+    C_DGEMM('t','n',norbs,norbs,norbs,1.0,
+            S_copy[0],norbs,S[0],norbs,0.0,Shalf[0],norbs);
+
+    free_block(S);
+    free_block(S_copy);
+    
+    if (print_>6) {
+    fprintf(outfile,"  S^-1/2:\n");
+    print_mat(Shalf,norbs,norbs,outfile);
+    }
+
+    //Compute H
+    const double* T_buffer = T_ints->buffer();
+    const double* V_buffer = V_ints->buffer();
+    for (int MU = 0; MU < bas->nshell(); MU++) {
+        int numMU = bas->shell(MU)->nfunction();
+        for (int NU = 0; NU<= MU; NU++) {
+            int numNU = bas->shell(NU)->nfunction();
+            V_ints->compute_shell(MU,NU);
+            T_ints->compute_shell(MU,NU);
+            for (int m = 0, index = 0; m<numMU; m++) {
+                int omu = bas->shell(MU)->function_index()+m;
+                for (int n = 0; n<numNU; n++, index++) {
+                    int onu = bas->shell(NU)->function_index()+n;
+                    H[omu][onu] = T_buffer[index]+V_buffer[index];
+                    H[onu][omu] = T_buffer[index]+V_buffer[index];
+                }
+            }
+        }
+    }
+
+    if (print_>6) {
+    fprintf(outfile,"  H:\n");
+    print_mat(H,norbs,norbs,outfile);
+    }
+
+    //Compute initial Ca and Da from core guess
+    atomicUHFHelperFormCandD(nalpha,norbs,Shalf,H,Ca,Da);
+    //Compute initial Cb and Db from core guess
+    atomicUHFHelperFormCandD(nbeta,norbs,Shalf,H,Cb,Db);
+    //Compute intial D  
+    C_DCOPY(norbs*norbs,Da[0],1,D[0],1);
+    C_DAXPY(norbs*norbs,1.0,Db[0],1,D[0],1);   
+    if (print_>6) {
+    fprintf(outfile,"  Ca:\n");
+    print_mat(Ca,norbs,norbs,outfile);
+
+    fprintf(outfile,"  Cb:\n");
+    print_mat(Cb,norbs,norbs,outfile);
+
+    fprintf(outfile,"  Da:\n");
+    print_mat(Da,norbs,norbs,outfile);
+
+    fprintf(outfile,"  Db:\n");
+    print_mat(Db,norbs,norbs,outfile);
+
+    fprintf(outfile,"  D:\n");
+    print_mat(D,norbs,norbs,outfile);
+    }
+
+    //Compute inital E for reference
+    double E = C_DDOT(norbs*norbs,D[0],1,H[0],1); 
+    E += C_DDOT(norbs*norbs,Da[0],1,Fa[0],1); 
+    E += C_DDOT(norbs*norbs,Db[0],1,Fb[0],1); 
+    E *= 0.5;       
+
+    const double* buffer = TEI->buffer();
+
+    double E_tol = 1E-5;
+    double D_tol = 1E-5;
+    int maxiter = 50;
+
+    double E_old;
+    int iteration = 0;
+
+    bool converged = false; 
+    if (print_>1) {
+    fprintf(outfile, "\n  Initial Atomic UHF Energy:    %14.10f\n\n",E);
+    fprintf(outfile, "                                         Total Energy            Delta E              Density RMS\n\n");
+    fflush(outfile);
+    }
+    do {
+
+        iteration++;
+
+        //Copy the old values over for error analysis 
+        E_old = E;    
+        //I'm only going to use the total for now, could be expanded later
+        C_DCOPY(norbs*norbs,D[0],1,Dold[0],1);    
+
+        //Form Ga and Gb via integral direct
+        memset((void*) Ga[0], '\0',norbs*norbs*sizeof(double));    
+        memset((void*) Gb[0], '\0',norbs*norbs*sizeof(double));    
+    
+        //At the moment this is 8-fold slower than it could be, we'll see if it is signficant
+        for (int MU = 0; MU < bas->nshell(); MU++) {
+        int numMU = bas->shell(MU)->nfunction();
+        for (int NU = 0; NU < bas->nshell(); NU++) {
+        int numNU = bas->shell(NU)->nfunction();
+        for (int LA = 0; LA < bas->nshell(); LA++) {
+        int numLA = bas->shell(LA)->nfunction();
+        for (int SI = 0; SI < bas->nshell(); SI++) {
+        int numSI = bas->shell(SI)->nfunction();
+        TEI->compute_shell(MU,NU,LA,SI);
+        for (int m = 0, index = 0; m < numMU; m++) {
+        int omu = bas->shell(MU)->function_index() + m;
+        for (int n = 0; n < numNU; n++) {
+        int onu = bas->shell(NU)->function_index() + n;
+        for (int l = 0; l < numLA; l++) {
+        int ola = bas->shell(LA)->function_index() + l;
+        for (int s = 0; s < numSI; s++, index++) {
+        int osi = bas->shell(SI)->function_index() + s;
+             //fprintf(outfile,"  Integral (%d, %d| %d, %d) = %14.10f\n",omu,onu,ola,osi,buffer[index]);
+             Ga[omu][onu] += D[ola][osi]*buffer[index];
+             //Ga[ola][osi] += D[omu][onu]*buffer[index];
+             Ga[omu][osi] -= Da[onu][ola]*buffer[index]; 
+             Gb[omu][onu] += D[ola][osi]*buffer[index];
+             //Gb[ola][osi] += D[omu][onu]*buffer[index];
+             Gb[omu][osi] -= Db[onu][ola]*buffer[index]; 
+        } 
+        } 
+        } 
+        } 
+        }      
+        }      
+        }      
+        }      
+
+        //Form Fa and Fb
+        C_DCOPY(norbs*norbs,H[0],1,Fa[0],1);
+        C_DAXPY(norbs*norbs,1.0,Ga[0],1,Fa[0],1);   
+        C_DCOPY(norbs*norbs,H[0],1,Fb[0],1);
+        C_DAXPY(norbs*norbs,1.0,Gb[0],1,Fb[0],1);   
+    
+        //Compute E
+        E = C_DDOT(norbs*norbs,D[0],1,H[0],1); 
+        E += C_DDOT(norbs*norbs,Da[0],1,Fa[0],1); 
+        E += C_DDOT(norbs*norbs,Db[0],1,Fb[0],1); 
+        E *= 0.5;       
+ 
+        //Diagonalize Fa and Fb to from Ca and Cb and Da and Db
+        atomicUHFHelperFormCandD(nalpha,norbs,Shalf,Fa,Ca,Da);
+        atomicUHFHelperFormCandD(nbeta,norbs,Shalf,Fb,Cb,Db);
+
+        //Form D
+        C_DCOPY(norbs*norbs,Da[0],1,D[0],1);
+        C_DAXPY(norbs*norbs,1.0,Db[0],1,D[0],1);  
+
+        //Form delta D and Drms
+        C_DAXPY(norbs*norbs,-1.0,D[0],1,Dold[0],1);
+        double Drms = sqrt(1.0/(1.0*norbs)*C_DDOT(norbs*norbs,Dold[0],1,Dold[0],1));  
+
+        double deltaE = fabs(E-E_old);        
+    
+        if (print_>6) {
+        fprintf(outfile,"  Fa:\n");
+        print_mat(Fa,norbs,norbs,outfile);
+
+        fprintf(outfile,"  Fb:\n");
+        print_mat(Fb,norbs,norbs,outfile);
+
+        fprintf(outfile,"  Ga:\n");
+        print_mat(Ga,norbs,norbs,outfile);
+
+        fprintf(outfile,"  Gb:\n");
+        print_mat(Gb,norbs,norbs,outfile);
+
+        fprintf(outfile,"  Ca:\n");
+        print_mat(Ca,norbs,norbs,outfile);
+
+        fprintf(outfile,"  Cb:\n");
+        print_mat(Cb,norbs,norbs,outfile);
+
+        fprintf(outfile,"  Da:\n");
+        print_mat(Da,norbs,norbs,outfile);
+
+        fprintf(outfile,"  Db:\n");
+        print_mat(Db,norbs,norbs,outfile);
+
+        fprintf(outfile,"  D:\n");
+        print_mat(D,norbs,norbs,outfile);
+        }
+        if (print_>1)
+            fprintf(outfile, "  @Atomic UHF iteration %3d energy: %20.14f    %20.14f %20.14f\n", iteration, E, deltaE, Drms);
+        if (iteration > 1 && deltaE < E_tol && Drms < D_tol)
+            converged = true;
+
+        if (iteration > maxiter) {  
+            fprintf(outfile, "Atomic UHF is not converging!");
+            break;
+        }
+
+        //Check convergence 
+    } while (!converged);
+    if (converged && print_ > 1)
+        fprintf(outfile, "\n  @Atomic UHF Final Energy: %20.14f\n", E);
+    
+    free_block(Ca);
+    free_block(Cb);
+    free_block(Da);
+    free_block(Db);
+    free_block(Fa);
+    free_block(Fb);
+    free_block(Ga);
+    free_block(Gb);
+    free_block(H);
+    free_block(Shalf);
+}
+void HF::atomicUHFHelperFormCandD(int nelec, int norbs,double** Shalf, double**F, double** C, double** D)
+{
+    //Forms C in the AO basis for SAD Guesses
+    double **Temp = block_matrix(norbs,norbs);
+    double **Fp = block_matrix(norbs,norbs);
+    double **Cp = block_matrix(norbs,norbs);
+    
+    //Form F' = X'FX = XFX for symmetric orthogonalization 
+    C_DGEMM('N','N',norbs,norbs,norbs,1.0,Shalf[0],norbs,F[0],norbs,0.0,Temp[0],norbs);  
+    C_DGEMM('N','N',norbs,norbs,norbs,1.0,Temp[0],norbs,Shalf[0],norbs,0.0,Fp[0],norbs);  
+
+    //Form C' = eig(F')
+    double *eigvals = init_array(norbs);
+    sq_rsp(norbs, norbs, Fp,  eigvals, 1, Cp, 1.0e-14);
+    free(eigvals);    
+
+    //Form C = XC'
+    C_DGEMM('N','N',norbs,norbs,norbs,1.0,Shalf[0],norbs,Cp[0],norbs,0.0,C[0],norbs);
+
+    //Form D = Cocc*Cocc'
+    C_DGEMM('N','T',norbs,norbs,nelec,1.0,C[0],norbs,C[0],norbs,0.0,D[0],norbs); 
+
+    free_block(Temp);
+    free_block(Cp);
+    free_block(Fp);
+}
 
 }}

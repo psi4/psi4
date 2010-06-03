@@ -97,6 +97,10 @@ public:
     const atom_info &r(int atom) const { return atoms_[atom]; }
     /// Return copy of atom_info for atom
     atom_info r(int atom) { return atoms_[atom]; }
+   /// Return reference to atom_info struct for atom in full atoms
+    const atom_info &fr(int atom) const { return full_atoms_[atom]; }
+    /// Return copy of atom_info for atom in full atoms
+    atom_info fr(int atom) { return full_atoms_[atom]; }
     /// Returns a Vector3 with x, y, z position of atom
     Vector3 xyz(int atom) const { return Vector3(atoms_[atom].x, atoms_[atom].y, atoms_[atom].z); }
     Vector3 fxyz(int atom) const { return Vector3(full_atoms_[atom].x, full_atoms_[atom].y, full_atoms_[atom].z); }
@@ -109,6 +113,12 @@ public:
     const std::string label(int atom) const;
     /// Returns charge of atom
     double charge(int atom) const { return atoms_[atom].charge; }
+    /// Returns mass atom atom
+    double fmass(int atom) const { return full_atoms_[atom].mass; }
+    /// Returns label of atom
+    const std::string flabel(int atom) const { return full_atoms_[atom].label; }
+    /// Returns charge of atom
+    double fcharge(int atom) const { return full_atoms_[atom].charge; }
 
     /// Tests to see of an atom is at the passed position with a given tolerance
     int atom_at_position1(double *, double tol = 0.05) const;

@@ -551,6 +551,7 @@ void Molecule::init_with_chkpt(shared_ptr<Chkpt> chkpt)
     double **geom = chkpt->rd_geom();
 
     for (int i=0; i<atoms; ++i) {
+        //fprintf(outfile,"  Atom %d, Z = %d, x = %14.10f,%14.10f,%14.10f, Label , Mass, \n",i,(int)zvals[i],geom[i][0],geom[i][1],geom[i][2]); fflush(outfile);
         add_atom((int)zvals[i], geom[i][0], geom[i][1], geom[i][2], atomic_labels[(int)zvals[i]], an2masses[(int)zvals[i]]);
     }
 

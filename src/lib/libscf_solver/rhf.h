@@ -95,6 +95,12 @@ protected:
     void free_domain_bookkeeping();
     void form_domains();
 
+    //Some stuff for Ed Hohenstein's SAPT code
+    void save_sapt_info();    
+    
+    //SAD Guess and propagation
+    void compute_SAD_guess();
+
     void form_PK();
     void form_F();
 
