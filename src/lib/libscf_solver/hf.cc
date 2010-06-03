@@ -50,16 +50,18 @@ HF::HF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
 
 HF::~HF()
 {
-    if (direct_integrals_ == false && ri_integrals_ == false) {
+    if (scf_type_ == "PK") {
         delete[] so2symblk_;
         delete[] so2index_;
         delete[] pk_symoffset_;
     }
-    free(zvals_);
+    delete[] zvals_;
 }
 
 void HF::common_init()
 {
+    scf_type_ = options_.get_str("SCF_TYPE");    
+
     S_.reset(factory_.create_matrix("S"));
     Shalf_.reset(factory_.create_matrix("S^-1/2"));
     Sphalf_.reset(factory_.create_matrix("S^+1/2"));
@@ -181,30 +183,9 @@ void HF::common_init()
         }
     }
 
-    // Run integral direct? default no
-    direct_integrals_ = false;
-    direct_integrals_ = options_.get_bool("DIRECT");
-
     // How much stuff shall we echo to the user?
     print_ = options_.get_int("PRINT");
     //fprintf(outfile,"  Print = %d\n",print_);
-
-    //Run density fitting? default no
-    ri_integrals_ = false;
-
-    if (options_.get_bool("RI_HF"))
-    {
-        ri_integrals_ = true;
-        direct_integrals_ = false;  // direct 4-index ints
-    }
-    
-    //Somewhat idiot proofed, you cant turn local K on without DF
-    local_K_ = false;
-    if (ri_integrals_) {
-        if (options_.get_bool("L_HF")) {
-            local_K_ = true;    
-        }
-    }
 
     //For HF algorithms, J and K are both required always.
     J_is_required_ = true;
@@ -253,7 +234,7 @@ void HF::common_init()
     Quadrupole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Quadrupole ZZ")));
 
     if(print_ > 1) print_header();
-    if (direct_integrals_ == false && ri_integrals_ == false)
+    if (scf_type_ == "PK")
         form_indexing();
 }
 
@@ -390,7 +371,7 @@ void HF::form_H()
     double *integrals = init_array(ioff[nso]);
 
     // Kinetic
-    if (!direct_integrals_&&!ri_integrals_) {
+    if (scf_type_ == "PK" || scf_type_ == "OUT_OF_CORE") {
         IWL::read_one(psio_.get(), PSIF_OEI, const_cast<char*>(PSIF_SO_T), integrals, ioff[nso], 0, 0, outfile);
         kinetic->set(integrals);
         IWL::read_one(psio_.get(), PSIF_OEI, const_cast<char*>(PSIF_SO_V), integrals, ioff[nso], 0, 0, outfile);
@@ -439,7 +420,7 @@ void HF::form_Shalf()
     int nso = chkpt_->rd_nso();
 
     // Overlap
-    if (!direct_integrals_&&!ri_integrals_) {
+    if (scf_type_ == "PK" || scf_type_ == "OUT_OF_CORE") {
         double *integrals = init_array(ioff[nso]);
         IWL::read_one(psio_.get(), PSIF_OEI, const_cast<char*>(PSIF_SO_S), integrals, ioff[nso], 0, 0, outfile);
         S_->set(integrals);

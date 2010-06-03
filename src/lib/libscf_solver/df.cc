@@ -647,6 +647,9 @@ void HF::form_B()
     }
     if (schwarz_>0.0 || three_index_cutoff>0.0)
         fprintf(outfile,"  After sieving, %d out of %d basis function pairs remain, %8.5f%% attenuation.\n\n",ntri_,norbs*(norbs+1)/2,100.0*(1.0-ntri_/(1.0*norbs*(norbs+1)/2)));
+
+    free_block(J_mhalf);
+
 }
 void HF::write_B()
 {

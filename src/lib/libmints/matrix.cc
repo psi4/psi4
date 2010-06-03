@@ -351,7 +351,7 @@ double *Matrix::to_lower_triangle() const
     double *tri = new double[ioff[sizer]];
     double **temp = to_block_matrix();
     sq_to_tri(temp, tri, sizer);
-    Matrix::free(temp);
+    free_block(temp);
     return tri;
 }
 
@@ -363,7 +363,7 @@ double **Matrix::to_block_matrix() const
         sizec += colspi_[h];
     }
 
-    double **temp = Matrix::matrix(sizer, sizec);
+    double **temp = block_matrix(sizer,sizec);
     int offsetr = 0, offsetc=0;
     for (int h=0; h <nirreps_; ++h) {
         for (int i=0; i<rowspi_[h]; ++i) {

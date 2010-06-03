@@ -63,7 +63,6 @@ protected:
 
     double Drms_;
 
-    int use_out_of_core_;
     double *pk_;
 
     void compute_multipole();

@@ -78,14 +78,10 @@ void ROHF::common_init()
 
     charge_ = options_.get_int("CHARGE");
     multiplicity_ = options_.get_int("MULTP");
-    use_out_of_core_ = options_.get_bool("OUT_OF_CORE");
-
-    // Disable the use of the out of core algorithm. Hasn't been modified for ROHF
-    use_out_of_core_ = false;
 
     fprintf(outfile, "  DIIS %s.\n\n", diis_enabled_ ? "enabled" : "disabled");
 
-    if (direct_integrals_ == false && ri_integrals_ == false)
+    if (scf_type_ == "PK")
         allocate_PK();
 }
 
@@ -114,12 +110,12 @@ double ROHF::compute_energy()
     // Do the initial work to give the iterations a starting point.
     form_H();
 
-    if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
+    if (scf_type_ == "PK")
         form_PK();
-    else if (ri_integrals_ == true)
+    else if (scf_type_ == "DF")
         form_B();
 
-    if (use_out_of_core_ == false)
+    if (scf_type_ == "PK")
         form_PK();
 
     form_Shalf();
@@ -136,13 +132,13 @@ double ROHF::compute_energy()
         Do_old_->copy(Do_); // save previous density
         Eold_ = E_; // save previous energy
 
-        if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
+        if (scf_type_ == "PK")
             form_G_from_PK();
-        else if (ri_integrals_ == false && direct_integrals_ == true)
+        else if (scf_type_ == "DIRECT")
             form_G_from_direct_integrals();
-        else if (ri_integrals_ == true)
+        else if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD")
             form_G_from_RI();
-        else
+        else if (scf_type_ == "OUT_OF_CORE");
             form_G();
 
         form_F(); // Forms: Fc_, Fo_, Feff_
@@ -170,7 +166,7 @@ double ROHF::compute_energy()
 
         converged = test_convergency();
     } while (!converged && iter < maxiter_);
-    if (ri_integrals_)
+    if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD")
     {
         free_B();
     }
@@ -431,7 +427,7 @@ void ROHF::allocate_PK() {
         if (pk_ == NULL || k_ == NULL) {
             fprintf(outfile, "  Insufficient free system memory for in-core PK implementation.\n");
             fprintf(outfile, "  Switching to out-of-core algorithm.\n");
-            use_out_of_core_ = true;
+            scf_type_ = "OUT_OF_CORE";
         } else {
             // Zero out PK and K
             memset(pk_, 0, pk_size_*sizeof(double));
@@ -451,7 +447,7 @@ void ROHF::allocate_PK() {
                 "  Would need %lu elements of double memory. (%5f MiB)\n",
                 (unsigned long)pk_size_*2, pk_size_ * 8.0 / 1048576.0 * 2.0);
         fprintf(outfile, "  Switching to out-of-core algorithm.\n");
-        use_out_of_core_ = true;
+        scf_type_ = "OUT_OF_CORE";
     }
 }
 

@@ -48,8 +48,6 @@ RHF::~RHF()
 
 void RHF::common_init()
 {
-    // Defaults: attempt in core algorithm
-    use_out_of_core_ = false;
     Drms_ = 0.0;
 
     // Allocate matrix memory
@@ -61,7 +59,7 @@ void RHF::common_init()
     J_    = SharedMatrix(factory_.create_matrix("J"));
     K_    = SharedMatrix(factory_.create_matrix("K"));
 
-    if (local_K_) {
+    if (scf_type_ == "L_DF") {
         Lref_    = SharedMatrix(factory_.create_matrix("Lref"));
         L_    = SharedMatrix(factory_.create_matrix("L"));
     }
@@ -72,21 +70,13 @@ void RHF::common_init()
     // PK super matrix for fast G
     pk_ = NULL;
 
-    // Check out of core
-    use_out_of_core_ = options_.get_bool("OUT_OF_CORE");
-    if (use_out_of_core_)
-        direct_integrals_ = false;
-
     // Print DIIS status
+    fprintf(outfile, "  SCF Algorithm Type is %s.\n", scf_type_.c_str());
     fprintf(outfile, "  DIIS %s.\n", diis_enabled_ ? "enabled" : "disabled");
-    fprintf(outfile, "  Out of core %s.\n", use_out_of_core_ ? "enabled" : "disabled");
-    fprintf(outfile, "  Direct %s.\n", direct_integrals_ ? "enabled": "disabled");
-    fprintf(outfile, "  Density Fitting %s.\n", ri_integrals_ ? "enabled": "disabled");
-    fprintf(outfile, "  Local Exchange %s.\n", local_K_ ? "enabled": "disabled");
 
     fflush(outfile);
     // Allocate memory for PK matrix
-    if (direct_integrals_ == false && ri_integrals_ == false)
+    if (scf_type_ == "PK")
         allocate_PK();
 }
 
@@ -124,17 +114,17 @@ double RHF::compute_energy()
         D_->print(outfile);
     }
 
-    if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
+    if (scf_type_ == "PK")
         form_PK();
-    else if (ri_integrals_ == true && local_K_ == false)
+    else if (scf_type_ == "CD" || scf_type_ == "1C_CD")
+        form_CD();
+    else if (scf_type_ == "DF")
         form_B();
-    else if (ri_integrals_ == true && local_K_ == true)   
+    else if (scf_type_ == "L_DF") {  
         form_A();
-    
-    if (local_K_) {
         I_ = block_matrix(basisset_->molecule()->natom(),doccpi_[0]);
         form_domain_bookkeeping();
-    }
+    } 
 
     fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
     // SCF iterations
@@ -148,16 +138,17 @@ double RHF::compute_energy()
         //D_->print(outfile);
 
         timer_on("Form G");
-        if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
+        if (scf_type_ == "PK")
             form_G_from_PK();
-        else if (ri_integrals_ == false && direct_integrals_ == true)
+        else if (scf_type_ == "DIRECT")
             form_G_from_direct_integrals();
-        else if (ri_integrals_ == true && local_K_ == false)
+        else if (scf_type_ == "DF"||scf_type_ == "CD"||scf_type_ =="1C_CD")
            form_G_from_RI();
-        else if (ri_integrals_ == true && local_K_ == true)
+        else if (scf_type_ == "L_DF")
            form_G_from_RI_local_K();
-        else
+        else if(scf_type_ == "OUT_OF_CORE")
            form_G();
+
         timer_off("Form G");
 
         if (print_>3) {
@@ -227,12 +218,10 @@ double RHF::compute_energy()
         //save_RHF_grid(options_, basisset_, D_, C_);
     }
 
-    if (ri_integrals_ && !local_K_) 
+    if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD") 
         free_B();
-    else if (ri_integrals_ && local_K_)
+    else if (scf_type_ == "L_DF") {
         free_A();
-
-    if (local_K_) {
         free_block(I_);
         free_domain_bookkeeping();
     } 
@@ -405,12 +394,12 @@ void RHF::compute_multipole()
     // Compute orbital extents
     fprintf(outfile, "\n  Orbital extents (a.u.):\n");
     fprintf(outfile, "\t%3s%15s  %15s  %15s  %15s\n", "MO", "<x^2>", "<y^2>", "<z^2>", "<r^2>");
-    SimpleMatrix C(C_->to_simple_matrix());
-    for (int i=0; i<C.rows(); ++i) {
+    SimpleMatrix *C = C_->to_simple_matrix();
+    for (int i=0; i<C->rows(); ++i) {
         double sumx=0.0, sumy=0.0, sumz=0.0;
-        for (int k=0; k<C.cols(); ++k) {
-            for (int l=0; l<C.cols(); ++l) {
-                double tmp = C.get(k, i) * C.get(l, i);
+        for (int k=0; k<C->cols(); ++k) {
+            for (int l=0; l<C->cols(); ++l) {
+                double tmp = C->get(k, i) * C->get(l, i);
                 sumx += Quadrupole_[0]->get(k, l) * tmp;
                 sumy += Quadrupole_[3]->get(k, l) * tmp;
                 sumz += Quadrupole_[5]->get(k, l) * tmp;
@@ -419,6 +408,7 @@ void RHF::compute_multipole()
         fprintf(outfile, "\t%3d%15.10f  %15.10f  %15.10f  %15.10f\n", i+1, fabs(sumx), fabs(sumy), fabs(sumz), fabs(sumx + sumy + sumz));
         //fflush(outfile);
     }
+    delete C;
 }
 /** CURRENTLY DOWN FOR MAINTENANCE
 void RHF::save_RHF_grid(Options& opts, shared_ptr<BasisSet> basis, SharedMatrix D, SharedMatrix C)
@@ -644,7 +634,7 @@ void RHF::save_information()
     // Write eigenvectors and eigenvalue to checkpoint
     double *values = eigvalues->to_block_vector();
     chkpt_->wt_evals(values);
-    free(values);
+    delete[] values;
     double **vectors = C_->to_block_matrix();
     chkpt_->wt_scf(vectors);
     free_block(vectors);
@@ -676,7 +666,7 @@ void RHF::save_fock()
 
     // Orthonormalize the error matrix
     FDSmSDF.transform(Shalf_);
-    FDSmSDF.print(outfile);
+    //FDSmSDF.print(outfile);
 
     diis_manager_->add_entry(2, &FDSmSDF, F_.get());
 }
@@ -705,9 +695,6 @@ bool RHF::test_convergency()
 
 void RHF::allocate_PK()
 {
-    if (ri_integrals_ == true || use_out_of_core_ == true || direct_integrals_ == true)
-        return;
-
     // The size of the pk matrix is determined in HF::form_indexing
     // Allocate memory for the PK matrix (using a vector)
     if (pk_size_ < (memory_ / sizeof(double))) {
@@ -716,7 +703,7 @@ void RHF::allocate_PK()
         if (pk_ == NULL) {
             fprintf(outfile, "  Insufficient free system memory for in-core PK implementation.\n");
             fprintf(outfile, "  Switching to out-of-core algorithm.\n");
-            use_out_of_core_ = true;
+            scf_type_ = "OUT_OF_CORE";
         } else {
              // Zero out PK
             memset(pk_, 0, pk_size_*sizeof(double));
@@ -727,7 +714,7 @@ void RHF::allocate_PK()
         fprintf(outfile, "  Insufficient memory for in-core PK implementation.\n");
         fprintf(outfile, "  Would need %lu elements of double memory. (%5f MiB)\n", (unsigned long)pk_size_, pk_size_ * sizeof(double) / 1048576.0);
         fprintf(outfile, "  Switching to out-of-core algorithm.\n");
-        use_out_of_core_ = true;
+        scf_type_ = "OUT_OF_CORE";
     }
 }
 void RHF::form_F()
@@ -1735,14 +1722,14 @@ void RHF::form_G_from_J_and_K(double scale_K_by)
 
 void RHF::form_J_and_K()
 {
-    if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false) {
+    if (scf_type_ == "PK") {
         //form_J_from_PK();
         //form_K_from_PK();
     }
-    else if (ri_integrals_ == false && direct_integrals_ == true) {
+    else if (scf_type_ == "DIRECT") {
         form_J_and_K_from_direct_integrals();
     }
-    else if (ri_integrals_ == true) {
+    else if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD") {
         form_J_from_RI();
         form_K_from_RI();
     }
@@ -2195,12 +2182,9 @@ void RHF::save_sapt_info()
     int sapt_ne = 2*sapt_nocc;
     double sapt_E_HF = E_;
     double sapt_E_nuc = nuclearrep_;
-    SharedMatrix eigvector(factory_.create_matrix());
-    SharedVector eigvalues(factory_.create_vector());
-    F_->diagonalize(eigvector, eigvalues);
-    double *sapt_evals = eigvalues->to_block_vector();
+    double *sapt_evals = chkpt_->rd_evals();
     double **sapt_C = C_->to_block_matrix();
-    print_mat(sapt_C,sapt_nso,sapt_nso,outfile);
+    //print_mat(sapt_C,sapt_nso,sapt_nso,outfile);
     SharedMatrix potential(factory_.create_matrix("Potential Integrals"));
     IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
     shared_ptr<OneBodyInt> V(integral.potential());
@@ -2324,7 +2308,7 @@ void RHF::compute_SAD_guess() {
     //Note, my convention is backwards, l and s are index variables
     // m and n are zip variables
     timer_on("SAD Fock");
-    double SAD_Schwarz = 1E-10;
+    double SAD_Schwarz = 1E-9;
     G_->zero();
     IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
     TwoBodyInt *TEI = integral.eri(0, SAD_Schwarz);
@@ -2374,6 +2358,7 @@ void RHF::compute_SAD_guess() {
     }
     }
     }
+    //fprintf(outfile,"  Cholesky Tensor: ntri_ = %d, ri_nbf_ = %d:\n",ntri_,ri_nbf_);
  
     }
     }

@@ -408,7 +408,7 @@ void ERI::free_shell_pairs12()
     ShellPair *sp;
     int np_i;
 
-    free(stack12_);
+    delete[] stack12_;
     for (si=0; si<basis1()->nshell(); ++si) {
         for (sj=0; sj<basis2()->nshell(); ++sj) {
             np_i = basis1()->shell(si)->nprimitive();
