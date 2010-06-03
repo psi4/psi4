@@ -92,7 +92,7 @@ void RHF::common_init()
 
 double RHF::compute_energy()
 {
-    fprintf(outfile,"  Print = %d\n",print_);
+    //fprintf(outfile,"  Print = %d\n",print_);
     //print_ = options_.get_int("PRINT");
     bool converged = false, diis_iter = false;
     iteration_ = 0;
