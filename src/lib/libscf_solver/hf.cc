@@ -187,7 +187,7 @@ void HF::common_init()
 
     // How much stuff shall we echo to the user?
     print_ = options_.get_int("PRINT");
-    //fprintf(outfile,"  Print = %d\n",print_);
+    fprintf(outfile,"  Print = %d\n",print_);
 
     //Run density fitting? default no
     ri_integrals_ = false;
@@ -596,7 +596,7 @@ bool HF::load_or_compute_initial_C()
 }
 void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, double** D)
 {
-    print_ = options_.get_int("PRINT");
+    //print_ = options_.get_int("PRINT");
     shared_ptr<Molecule> mol = bas->molecule();    
     
     int nbeta = (nelec-nhigh)/2;
