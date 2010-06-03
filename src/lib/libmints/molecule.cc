@@ -135,8 +135,9 @@ void Molecule::add_atom(int Z, double x, double y, double z,
         info.label = "Gh";
     info.mass = mass;
 
-    if (Z > 0)
-        atoms_.push_back(info);
+    // Will need to be modified to handle dummy atoms. Dummies go to full_atoms_.
+    // Ghosts need to go to both.
+    atoms_.push_back(info);
     full_atoms_.push_back(info);
 }
 
