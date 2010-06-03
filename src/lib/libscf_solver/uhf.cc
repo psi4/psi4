@@ -76,6 +76,7 @@ double UHF::compute_energy()
     bool converged = false, diis_iter = false;
     int iter = 0;
 
+    print_ = options_.get_int("PRINT");
     // Do the initial work to give the iterations a starting point
     form_H();
     // find_occupation(_H, _H);
@@ -88,9 +89,21 @@ double UHF::compute_energy()
     form_Shalf();
     form_initialF();
 
+    if (print_>3) {
+        H_->print(outfile);
+        S_->print(outfile);
+        Shalf_->print(outfile);
+    }
+
     if (load_or_compute_initial_C())
         fprintf(outfile, "  Read in previous MOs from file32.\n\n");
 
+    if (print_>2) {
+        Ca_->print(outfile);
+        Cb_->print(outfile);
+        Da_->print(outfile);
+        Db_->print(outfile);
+    }
     if (print_)
         fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
     do {
@@ -129,6 +142,20 @@ double UHF::compute_energy()
         form_C();
         //find_occupation(Fa_, Fb_);
         form_D();
+        if (print_>2) {
+            Fa_->print(outfile);
+            Fb_->print(outfile);
+            Ga_->print(outfile);
+            Gb_->print(outfile);
+            Ca_->print(outfile);
+            Cb_->print(outfile);
+            Da_->print(outfile);
+            Db_->print(outfile);
+            Ca_->print(outfile);
+            Cb_->print(outfile);
+            Da_->print(outfile);
+            Db_->print(outfile);
+        }
 
         converged = test_convergency();
     } while (!converged && iter < maxiter_);

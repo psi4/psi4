@@ -95,6 +95,17 @@
 #define PSIF_DFSCF_K           98   /* Exchange tensor for DF-SCF*/
 #define PSIF_DFSCF_BJI         99   /* The three-center integrals for DF-SCF */
 
+#define PSIF_SAPT_DIMER        120  /* SAPT Two-Body Dimer */
+#define PSIF_SAPT_MONOMERA     121 /* SAPT Two-Body Mon A */
+#define PSIF_SAPT_MONOMERB     122 /* SAPT Two-Body Mon A */
+#define PSIF_3B_SAPT_TRIMER              220/* SAPT Three-Body Trimer */
+#define PSIF_3B_SAPT_DIMER_AB            221 /* SAPT Three-Body Dimer AB */
+#define PSIF_3B_SAPT_DIMER_AC            222/* SAPT Three-Body Dimer AC */
+#define PSIF_3B_SAPT_DIMER_BC            223/* SAPT Three-Body Dimer BC */
+#define PSIF_3B_SAPT_MONOMER_A           224 /* SAPT Three-Body Mon A */
+#define PSIF_3B_SAPT_MONOMER_B           225/* SAPT Three-Body Mon B */
+#define PSIF_3B_SAPT_MONOMER_C           226/* SAPT Three-Body Mon C  */
+
 #define PSIF_SO_D1OEI          199  /* Derivative OEIs are stored in file 199 */
 #define PSIF_SO_D1ERI          200  /* Derivative ERIs are stored in files 200, 201, 202, etc. File 200*/
 

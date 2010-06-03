@@ -155,6 +155,9 @@ int read_options(const std::string &name, Options & options) {
     options.add_bool("SAVE_NUMERICAL_GRID",false);
     /*- Grid filename  -*/
     options.add_str("NUMERICAL_GRID_FILENAME","ngrid.out");
+    
+    /*- Are going to do SAPT? If so, what part?  -*/
+    options.add_str("SAPT","FALSE","2-DIMER 2-MONOMER_A 2-MONOMER_B 3-TRIMER 3-DIMER_AB 3-DIMER_BC 3-DIMER_AC 3-MONOMER_A 3-MONOMER_B 3-MONOMER_C");
 
     /*- Grid overage at sides  -*/
     options.add_double("CARTESIAN_OVERAGE",2.00);

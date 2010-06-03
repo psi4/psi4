@@ -12,6 +12,7 @@
 #include <libchkpt/chkpt.hpp>
 #include <psifiles.h>
 
+#include "molecule.h"
 #include "basisset.h"
 #include "integral.h"
 #include "symmetry.h"
@@ -361,4 +362,67 @@ void BasisSet::refresh()
             puream_ = true;
 
     }
+}
+
+shared_ptr<BasisSet> BasisSet::atomic_basis_set(int fcenter)
+{
+    //Construct a blank BasisSet on the heap
+    shared_ptr<BasisSet> bas(new BasisSet);
+    //Construct a blank Molecule on the heap
+    shared_ptr<Molecule> mol(new Molecule);
+
+    int Z = molecule_->fZ(fcenter);
+    double x = molecule_->fx(fcenter);
+    double y = molecule_->fy(fcenter);
+    double z = molecule_->fz(fcenter);
+    double mass = molecule_->fmass(fcenter);
+    double charge = molecule_->fcharge(fcenter);
+    std::string lab = molecule_->flabel(fcenter);
+    char* label = new char[lab.length() + 1];
+    strcpy(label,lab.c_str());  
+
+    //Put the atomic info into mol
+    mol->add_atom(Z, x, y, z, label, mass, (charge != 0.0) , charge);
+
+    //Assign the atomic molecule to bas
+    bas->molecule_ = mol;
+
+    //Go through shells in current basis set
+    //Push shells that belong to fcenter
+    //to bas
+    int current_shells = 0;
+    for (int i = 0; i<nshells_; i++) {
+        if (shell_center_[i] == fcenter+1) {
+            shared_ptr<GaussianShell> shell(new GaussianShell);
+            int nprm = shells_[i]->nprimitive();
+            int am = shells_[i]->am();
+            GaussianShell::GaussianType harmonics = (shells_[i]->is_pure() ? GaussianShell::Pure : GaussianShell::Cartesian);
+            int nc = 0; // In the atomic basis, always on the 0th atom
+            int start = 0; //Will be reset later
+            Vector3 center = shells_[i]->center();
+            double* e = shells_[i]->exps();
+            double* c = shells_[i]->coefs();
+
+            shell->init(nprm,e,am, harmonics, c,nc,
+              center,start);
+
+            bas->shells_.push_back(shell);
+            current_shells++;
+        }
+        if (shell_center_[i] >fcenter+1)
+            break;
+    }
+    
+    // Initialize SphericalTransform
+    for (int i=0; i<=max_am_; ++i) {
+        bas->sphericaltransforms_.push_back(SphericalTransform(i));
+    }
+    bas->sotransform_ = shared_ptr<SOTransform>(new SOTransform);
+    bas->sotransform_->init(current_shells);
+ 
+    //Setup the indexing in the atomic basis
+    bas->refresh();
+
+    //And ... return
+    return bas;
 }
