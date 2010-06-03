@@ -29,6 +29,7 @@
 #include <libmints/integral.h>
 #include <libmints/fjt.h>
 #include <libmints/wavefunction.h>
+#include <libciomr/libciomr.h>
 
 using namespace psi;
 using namespace std;
@@ -109,8 +110,9 @@ Taylor_Fjt::Taylor_Fjt(unsigned int mmax, double accuracy) :
     {
         const int nrow = max_T_+1;
         const int ncol = max_m_+1;
-        grid_ = new double*[nrow];
-        grid_[0] = new double[nrow*ncol];
+        grid_ = block_matrix(nrow, ncol);
+        //grid_ = new double*[nrow];
+        //grid_[0] = new double[nrow*ncol];
         for(int r=1; r<nrow; ++r)
             grid_[r] = grid_[r-1] + ncol;
     }
@@ -157,8 +159,7 @@ Taylor_Fjt::~Taylor_Fjt()
     delete[] F_;
     delete[] T_crit_;
     T_crit_ = 0;
-    delete[] grid_[0];
-    delete[] grid_;
+    free_block(grid_);
     grid_ = NULL;
 }
 
