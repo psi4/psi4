@@ -92,8 +92,8 @@ void RHF::common_init()
 
 double RHF::compute_energy()
 {
-    //fprintf(outfile,"  Print = %d\n",print_);
-    print_ = 5;
+    fprintf(outfile,"  Print = %d\n",print_);
+    //print_ = options_.get_int("PRINT");
     bool converged = false, diis_iter = false;
     iteration_ = 0;
 
@@ -112,7 +112,6 @@ double RHF::compute_energy()
     load_or_compute_initial_C();
     timer_off("Initial Guess");
 
-    print_ = options_.get_int("PRINT");
 
     if (print_>3) {
         S_->print(outfile);

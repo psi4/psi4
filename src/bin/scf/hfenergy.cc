@@ -41,27 +41,22 @@ double HFEnergy::compute_energy()
     
     if (reference == "RHF") {
         RHF rhf_energy(options_, psio_, chkpt_);
-        rhf_energy.set_print(3);
         energy = rhf_energy.compute_energy();
     }
     else if (reference == "ROHF") {
         ROHF rohf_energy(options_, psio_, chkpt_);
-        rohf_energy.set_print(3);
         energy = rohf_energy.compute_energy();
     }
     else if (reference == "UHF") {
         UHF uhf_energy(options_, psio_, chkpt_);
-        uhf_energy.set_print(3);
         energy = uhf_energy.compute_energy();
     }
     else if (reference == "RKS") {
         RKS rks_energy(options_, psio_, chkpt_);
-        rks_energy.set_print(3);
         energy = rks_energy.compute_energy();
     }
     else if (reference == "UKS") {
         UKS uks_energy(options_, psio_, chkpt_);
-        uks_energy.set_print(3);
         energy = uks_energy.compute_energy();
     }
     else {
