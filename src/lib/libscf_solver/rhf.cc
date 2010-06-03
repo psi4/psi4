@@ -2190,9 +2190,9 @@ void RHF::save_sapt_info()
 
     int sapt_nso = basisset_->nbf();
     int sapt_nmo = basisset_->nbf();
-    int sapt_nocc = 2*doccpi_[0];
+    int sapt_nocc = doccpi_[0];
     int sapt_nvir = sapt_nso-sapt_nocc;
-    int sapt_ne = sapt_nocc;
+    int sapt_ne = 2*sapt_nocc;
     double sapt_E_HF = E_;
     double sapt_E_nuc = nuclearrep_;
     SharedMatrix eigvector(factory_.create_matrix());
@@ -2200,6 +2200,7 @@ void RHF::save_sapt_info()
     F_->diagonalize(eigvector, eigvalues);
     double *sapt_evals = eigvalues->to_block_vector();
     double **sapt_C = C_->to_block_matrix();
+    print_mat(sapt_C,sapt_nso,sapt_nso,outfile);
     SharedMatrix potential(factory_.create_matrix("Potential Integrals"));
     IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
     shared_ptr<OneBodyInt> V(integral.potential());

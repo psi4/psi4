@@ -19,8 +19,9 @@ LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
 include ../MakeRules
 
 install_inc:: $(DEPENDINCLUDE)
-	$(MKDIRS) $(incdir)/libtrans
-	$(INSTALL_INCLUDE) $^ $(incdir)/libtrans
+	$(MKDIRS) $(incdir)/libscf_solver
+	$(INSTALL_INCLUDE) $^ $(incdir)/libscf_solver
+
 
 ifneq ($(DODEPEND),no)
 include $(LIBOBJ:%.o=%.d)
