@@ -187,7 +187,7 @@ void HF::common_init()
 
     // How much stuff shall we echo to the user?
     print_ = options_.get_int("PRINT");
-    fprintf(outfile,"  Print = %d\n",print_);
+    //fprintf(outfile,"  Print = %d\n",print_);
 
     //Run density fitting? default no
     ri_integrals_ = false;
