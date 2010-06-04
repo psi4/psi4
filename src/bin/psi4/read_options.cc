@@ -88,7 +88,7 @@ int read_options(const std::string &name, Options & options) {
     options.add_str("WFN", "");
     /*- The amount of information to pring to the output -*/
     options.add_int("PRINT",1);
-    /*- The number of CPU cores to use on each node -*/
+    //*- The number of CPU cores to use on each node -*/
     options.add_int("NUM_THREADS",1);
     /*- -Log10 of the threshold below which integrals are assumed to be zero -*/
     options.add_int("CUTOFF",15); // cutoff on integrals
