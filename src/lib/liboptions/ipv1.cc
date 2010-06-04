@@ -11,7 +11,7 @@
 #include <psi4-dec.h>
 
 namespace psi {
-  
+
   // Read all options from IPV1
   void Options::read_ipv1()
   {
@@ -35,11 +35,11 @@ namespace psi {
       }
       catch (PsiException e) {
         fprintf(stderr, "Key: %s\n%s\n", pos->first.c_str(), e.what());
-	    abort();
+        abort();
       }
     }
   }
-  
+
   void Options::read_boolean(Data& data, const std::string& key, int m, int n)
   {
     int int_value = 0;
@@ -51,7 +51,7 @@ namespace psi {
     if (err_code == IPE_OK)
       data.assign(int_value);
   }
-  
+
   void Options::read_double(Data& data, const std::string& key, int m, int n)
   {
     double double_value = 0.0;
@@ -63,7 +63,7 @@ namespace psi {
     if (err_code == IPE_OK)
       data.assign(double_value);
   }
-  
+
   void Options::read_int(Data& data, const std::string& key, int m, int n)
   {
     int int_value = 0;
@@ -73,9 +73,9 @@ namespace psi {
     else
       err_code = ip_data(const_cast<char*>(key.c_str()), const_cast<char*>("%d"), &int_value, m, n);
     if (err_code == IPE_OK)
-      data.assign(int_value);    
+      data.assign(int_value);
   }
-  
+
   void Options::read_string(Data& data, const std::string& key, int m, int n)
   {
     char *value = NULL;
@@ -90,7 +90,7 @@ namespace psi {
       free(value);
     value = NULL;
   }
-  
+
   void Options::read_array(Data& data, const std::string& key)
   {
     // Make sure ipv1 and data agree on the size of the array
@@ -98,7 +98,7 @@ namespace psi {
     int err_code = ip_count(const_cast<char*>(key.c_str()), &ipv1_size, 0);
     if (err_code != IPE_OK)
       return;
-    
+
     data.changed();
 
     if (data.size() < static_cast<unsigned int>(ipv1_size)) {
@@ -107,7 +107,7 @@ namespace psi {
       for (unsigned int i = 0; i < diff; ++i)
         data.add(new StringDataType("", ""));
     }
-    
+
     // Walk through the array and convert elements
     for (unsigned int i = 0; i < data.size(); ++i) {
       // Check the type of the array element. Only convert int, double, and boolean. Throw on others.
@@ -127,4 +127,47 @@ namespace psi {
         throw OptionsException("Unknown data type detect in Options. (" + data[i].type() + ")");
     }
   }
+
+  std::string Options::to_string() const {
+    std::stringstream str;
+    int linewidth = 0;
+    int largest_key = 0, largest_value = 7;  // 7 for '(empty)'
+
+    for (const_iterator pos = keyvals_.begin(); pos != keyvals_.end(); ++pos) {
+        pos->first.size()  > largest_key   ? largest_key = pos->first.size() : 0;
+        pos->second.to_string().size() > largest_value ? largest_value = pos->second.to_string().size() : 0;
+    }
+
+    for (const_iterator pos = keyvals_.begin(); pos != keyvals_.end(); ++pos) {
+      std::stringstream line;
+      std::string second_tmp = pos->second.to_string();
+      if (second_tmp.length() == 0) {
+        second_tmp = "(empty)";
+      }
+      line << "  " << std::left << std::setw(largest_key) << pos->first << " => " << std::setw(largest_value) << second_tmp;
+      if (pos->second.has_changed())
+        line << " !";
+      else
+        line << "  ";
+
+      str << line.str();
+
+      linewidth += line.str().size();
+      if (linewidth + largest_key + largest_value + 8 > 80) {
+          str << std::endl;
+          linewidth = 0;
+      }
+    }
+
+
+    return str.str();
+  }
+
+  void Options::print() {
+    std::string list = to_string();
+    fprintf(outfile, "\n\n  Options:");
+    fprintf(outfile, "\n  ----------------------------------------------------------------------------\n");
+    fprintf(outfile, "%s\n", list.c_str());
+  }
+
 }

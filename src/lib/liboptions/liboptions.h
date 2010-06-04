@@ -43,7 +43,7 @@ namespace psi {
   public:
     NotImplementedException(const std::string& message) : PSIEXCEPTION(message + " function not implemented") { }
   };
-  
+
   class OptionsException : public PsiException
   {
   public:
@@ -51,7 +51,7 @@ namespace psi {
   };
 
   class Data;
-  class DataType 
+  class DataType
   {
     bool changed_;
   public:
@@ -72,7 +72,7 @@ namespace psi {
     virtual std::string type() const {
       return std::string("unknown");
     }
-    
+
     virtual bool is_array() const {
       return false;
     }
@@ -99,7 +99,7 @@ namespace psi {
     }
     virtual void add(std::string, std::string) {
       throw NotImplementedException("add(std::string, std::string)");
-    }    
+    }
     virtual void add(std::string, int) {
       throw NotImplementedException("add(std::string, int)");
     }
@@ -140,10 +140,10 @@ namespace psi {
     virtual void reset() {
       throw DataTypeException("reset() failure");
     }
-    
+
     virtual Data& operator[](std::string) {
       throw NotImplementedException("Data& [string]");
-    }    
+    }
     virtual Data& operator[](unsigned int) {
       throw NotImplementedException("Data& [unsigned int]");
     }
@@ -156,18 +156,18 @@ namespace psi {
     BooleanDataType() : DataType(), boolean_(false) { }
     BooleanDataType(bool b) : DataType(), boolean_(b) { }
     virtual ~BooleanDataType() { }
-    
+
     virtual std::string type() const {
       return std::string("boolean");
     }
-    
+
     virtual std::string to_string() const {
       std::string ret;
       if (boolean_)
         ret = "TRUE";
       else
         ret = "FALSE";
-      return ret;      
+      return ret;
     }
     virtual int to_integer() const {
       return static_cast<int>(boolean_);
@@ -175,7 +175,7 @@ namespace psi {
     virtual double to_double() const {
       return static_cast<double>(boolean_);
     }
-    
+
     virtual void assign(bool b) {
       changed();
       boolean_ = b;
@@ -190,7 +190,7 @@ namespace psi {
       assign(static_cast<bool>(std::strtod(s.c_str(), NULL)));
     }
   };
-  
+
   class IntDataType : public DataType
   {
     int integer_;
@@ -381,7 +381,7 @@ namespace psi {
     std::string type() const {
       return ptr_->type();
     }
-    
+
     void add(DataType *data) {
       ptr_->add(data);
     }
@@ -561,7 +561,7 @@ namespace psi {
       }
       str += "}";
       return str;
-    }    
+    }
   };
 
   class Options
@@ -576,11 +576,11 @@ namespace psi {
       // Don't self copy
       if (this == &rhs)
         return *this;
-        
+
       keyvals_ = rhs.keyvals_;
       return *this;
     }
-    
+
     void to_upper(std::string& str) {
       std::transform(str.begin(), str.end(), str.begin(), ::toupper);
     }
@@ -652,7 +652,7 @@ namespace psi {
     }
 
     Data& get(std::string key) {
-      to_upper(key);      
+      to_upper(key);
       if (!exists(key)) {
         // Key not found. Throw an error
         throw IndexException(key);
@@ -716,41 +716,9 @@ namespace psi {
       return get(key);
     }
 
-    std::string to_string() const {
-      std::stringstream str;
-      int linewidth = 0;
-      for (const_iterator pos = keyvals_.begin(); pos != keyvals_.end(); ++pos) {
-        std::stringstream line;
-        std::string second_tmp = pos->second.to_string();
-        if (second_tmp.length() == 0) {
-          second_tmp = "(empty)";
-        }
-        line << "  " << std::left << std::setw(15) << pos->first << " => " << std::setw(15) << second_tmp;
-        if (pos->second.has_changed()) 
-          line << " !";
-        else
-          line << "  ";
+    std::string to_string() const;
+    void print();
 
-        str << line.str();
-
-        linewidth += line.str().size();
-        if (linewidth + 38 > 80) {
-            str << std::endl;
-            linewidth = 0;
-        }
-      }
-      
-
-      return str.str();
-    }
-
-    void print() {
-      std::string list = to_string();
-      fprintf(outfile, "\n\n  Options:");
-      fprintf(outfile, "\n  ----------------------------------------------------------------------------\n");
-      fprintf(outfile, "%s\n", list.c_str());
-    }
-    
     void read_ipv1();
 
   private:

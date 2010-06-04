@@ -120,11 +120,11 @@ double RHF::compute_energy()
         form_CD();
     else if (scf_type_ == "DF")
         form_B();
-    else if (scf_type_ == "L_DF") {  
+    else if (scf_type_ == "L_DF") {
         form_A();
         I_ = block_matrix(basisset_->molecule()->natom(),doccpi_[0]);
         form_domain_bookkeeping();
-    } 
+    }
 
     fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
     // SCF iterations
@@ -153,12 +153,12 @@ double RHF::compute_energy()
 
         if (print_>3) {
             J_->print(outfile);
-      
+
             K_->print(outfile);
-        
+
             G_->print(outfile);
         }
-        
+
         form_F();
         if (print_>3) {
             F_->print(outfile);
@@ -206,7 +206,7 @@ double RHF::compute_energy()
         fprintf(outfile, "\n");
         save_information();
         if (options_.get_str("SAPT") != "FALSE")
-            save_sapt_info();   
+            save_sapt_info();
     } else {
         fprintf(outfile, "\n  Failed to converged.\n");
         E_ = 0.0;
@@ -218,13 +218,13 @@ double RHF::compute_energy()
         //save_RHF_grid(options_, basisset_, D_, C_);
     }
 
-    if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD") 
+    if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD")
         free_B();
     else if (scf_type_ == "L_DF") {
         free_A();
         free_block(I_);
         free_domain_bookkeeping();
-    } 
+    }
 
     // Compute the final dipole.
     compute_multipole();
@@ -234,7 +234,7 @@ double RHF::compute_energy()
     return E_;
 }
 bool RHF::load_or_compute_initial_C()
-{    
+{
     bool ret = false;
     // Check to see if there are MOs already in the checkpoint file.
     // If so, read them in instead of forming them.
@@ -294,8 +294,8 @@ bool RHF::load_or_compute_initial_C()
         E_ = compute_initial_E();
     } else if (guess_type == "READ" || guess_type == "BASIS2") {
         throw std::invalid_argument("Checkpoint MOs requested, but do not exist!");
-    }   
-    return ret; 
+    }
+    return ret;
 }
 void RHF::compute_multipole()
 {
@@ -898,7 +898,7 @@ void RHF::form_PK()
     for (size_t ij=0; ij < pk_pairs_; ++ij)
         pk_[INDEX2(ij,ij)] *= 0.5;
 
-    fprintf(outfile, "  Processed %d two-electron integrals. form_PK", counter);
+    fprintf(outfile, "  Processed %d two-electron integrals.\n\n", counter);
 #ifdef _DEBUG
     if (debug_) {
         fprintf(outfile, "_pk:\n");
@@ -2127,12 +2127,12 @@ void RHF::save_sapt_info()
     {
         fprintf(outfile,"Must run in C1. Period.\n"); fflush(outfile);
         abort();
-    } 
-    if (soccpi_[0] != 0) 
+    }
+    if (soccpi_[0] != 0)
     {
         fprintf(outfile,"Aren't we in RHF Here? Pair those electrons up cracker!\n"); fflush(outfile);
         abort();
-    } 
+    }
 
     int fileno;
     char* body_type = (char*)malloc(400*sizeof(char));
@@ -2172,7 +2172,7 @@ void RHF::save_sapt_info()
     } else {
         throw std::domain_error("SAPT Output option invalid");
     }
-    
+
     psio_open(fileno,0);
 
     int sapt_nso = basisset_->nbf();
@@ -2189,11 +2189,11 @@ void RHF::save_sapt_info()
     IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
     shared_ptr<OneBodyInt> V(integral.potential());
     V->compute(potential);
-    double *sapt_V_ints = potential->to_lower_triangle(); 
-    double *sapt_S_ints = S_->to_lower_triangle(); 
+    double *sapt_V_ints = potential->to_lower_triangle();
+    double *sapt_S_ints = S_->to_lower_triangle();
 
     int errcod;
-    
+
     sprintf(key_buffer,"%s NSO",body_type);
     errcod = psio_write_entry(fileno,key_buffer,(char *) &sapt_nso, sizeof(int));
     sprintf(key_buffer,"%s NMO",body_type);
@@ -2225,16 +2225,16 @@ void RHF::save_sapt_info()
     free_block(sapt_C);
 
     free(body_type);
-    free(key_buffer); 
+    free(key_buffer);
 }
 void RHF::compute_SAD_guess() {
-    
-    shared_ptr<Molecule> mol = basisset_->molecule();  
+
+    shared_ptr<Molecule> mol = basisset_->molecule();
     std::vector<shared_ptr<BasisSet> > atomic_bases;
 
     if (print_ > 6) {
         fprintf(outfile,"\n  Constructing atomic basis sets\n  Molecule:\n");
-        mol->print(); 
+        mol->print();
     }
 
     //Build the atomic basis sets for libmints use in UHF
@@ -2247,15 +2247,15 @@ void RHF::compute_SAD_guess() {
             atomic_bases[A]->print(outfile);
             fprintf(outfile,"\n");
         }
-    } 
-   
+    }
+
     //Spin occupations per atom, to be determined by Hund's Rules
     //or user input
     int* nalpha = init_int_array(mol->nallatom());
-    int* nbeta = init_int_array(mol->nallatom()); 
-    int* nelec = init_int_array(mol->nallatom()); 
-    int* nhigh = init_int_array(mol->nallatom()); 
-    
+    int* nbeta = init_int_array(mol->nallatom());
+    int* nelec = init_int_array(mol->nallatom());
+    int* nhigh = init_int_array(mol->nallatom());
+
     //Ground state high spin occupency array, atoms 0 to 36 (see Giffith's Quantum Mechanics, pp. 217)
     const int reference_S[] = {0,1,0,1,0,1,2,3,2,1,0,1,0,1,2,3,2,1,0,1,0,1,2,3,6,5,4,3,2,1,0,1,2,3,2,1,0};
 
@@ -2267,7 +2267,7 @@ void RHF::compute_SAD_guess() {
         int Z = mol->fZ(A);
         if (Z>36) {
             throw std::domain_error("Atoms up to 36 (Kr) are currently supported with SAD");
-        } 
+        }
         nhigh[A] = reference_S[Z];
         nelec[A] = Z;
         nbeta[A] = (nelec[A]-nhigh[A])/2;
@@ -2343,7 +2343,7 @@ void RHF::compute_SAD_guess() {
 
     //K
     if (!TEI->shell_is_zero(LA,MU,NU,SI)) {
-    TEI->compute_shell(LA,MU,NU,SI);    
+    TEI->compute_shell(LA,MU,NU,SI);
     for (int l = 0, index = 0; l<numLA; l++) {
     int ola = basisset_->shell(LA)->function_index() + l;
     for (int m = 0; m<numMU; m++) {
@@ -2359,7 +2359,7 @@ void RHF::compute_SAD_guess() {
     }
     }
     //fprintf(outfile,"  Cholesky Tensor: ntri_ = %d, ri_nbf_ = %d:\n",ntri_,ri_nbf_);
- 
+
     }
     }
     }
@@ -2375,7 +2375,7 @@ void RHF::compute_SAD_guess() {
     E_ = compute_E();
     if (print_)
         fprintf(outfile,"  Initial RHF Energy:   %14.10f\n",E_);
-    
+
     //Form the C matrix from the rough Fock matrix
     form_C();
     //Form the D matrix from the resultant C matrix
@@ -2387,16 +2387,16 @@ void RHF::compute_SAD_guess() {
         C_->print(outfile);
         D_->print(outfile);
     }
-    
+
     //Frees
     for (int A = 0; A<mol->nallatom(); A++)
         free_block(atomic_D[A]);
-    free(atomic_D); 
-    
+    free(atomic_D);
+
     free(nelec);
     free(nhigh);
     free(nalpha);
     free(nbeta);
-    //abort(); 
+    //abort();
 }
 }}

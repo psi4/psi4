@@ -31,13 +31,7 @@ BasisSetParser::BasisSetParser(const std::string& _searchpath)
 {
     // If the search path is empty use either PSIDATADIR or INSTALLEDPSIDATADIR
     if (searchpath_.empty()) {
-        std::string psiDataDirName;
-        if (getenv("PSIDATADIR"))
-            psiDataDirName = getenv("PSIDATADIR");
-        if (psiDataDirName.empty())
-            psiDataDirName = INSTALLEDPSIDATADIR;
-        psiDataDirName += "/basis";
-        searchpath_ = psiDataDirName;
+        searchpath_ = Process::environment("PSIDATADIR") + "/basis";
     }
 }
 

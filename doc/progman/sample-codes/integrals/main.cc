@@ -13,7 +13,7 @@ namespace psi {
         PsiReturnType integrals(Options &options, int argc, char **argv);
     }
 
-    int 
+    int
     read_options(std::string name, Options &options)
     {
         ip_cwk_clear();
@@ -31,7 +31,7 @@ namespace psi {
             options.add_bool("DO_TEI", false);
         }
         options.read_ipv1();
-        
+
         return true;
     }
 }
@@ -45,6 +45,13 @@ main(int argc, char *argv[])
 
     for (i=1, num_unparsed=0; i<argc; ++i)
         argv_unparsed[num_unparsed++] = argv[i];
+
+    // Setup the environment
+    Process::arguments.init(argc, argv);
+    Process::environment.init(envp);
+
+    // Initialize local communicator
+    Communicator::world = shared_ptr<Communicator>(new LocalCommunicator);
 
     psi_start(&infile,&outfile,&psi_file_prefix,num_unparsed, argv_unparsed, 0);
     psio_init();

@@ -32,16 +32,9 @@ psi4_driver(Options & options, int argc, char *argv[])
 
     // Track down the psi.dat file and set up ipv1 to read it
     // unless the user provided an exec array in the input
-    std::string psiDatDirName;
-    std::string psiDatFileName;
-    if (getenv("PSIDATADIR"))
-        psiDatDirName = getenv("PSIDATADIR");
-    if (!psiDatDirName.empty()) {
-        psiDatFileName = psiDatDirName;
-    }else{
-        psiDatFileName = INSTALLEDPSIDATADIR;
-    }
-    psiDatFileName += "/psi.dat";
+    std::string psiDatDirName  = Process::environment("PSIDATADIR");
+    std::string psiDatFileName = Process::environment("PSIDATADIR") + "/psi.dat";
+
     FILE * psidat = fopen(psiDatFileName.c_str(), "r");
     if(psidat == NULL){
         throw PsiException("Psi 4 could not locate psi.dat",
@@ -53,9 +46,6 @@ psi4_driver(Options & options, int argc, char *argv[])
     ip_cwk_add(const_cast<char*>(":DEFAULT"));
     ip_cwk_add(const_cast<char*>(":PSI"));
     fclose(psidat);
-
-    fprintf(outfile, "[Debug]"); fflush(outfile);
-
 
     // Join the job descriptors into one label
     std::string calcType = options.get_str("WFN");
@@ -155,7 +145,6 @@ psi4_driver(Options & options, int argc, char *argv[])
           for (i=0; i<argc_new; ++i) fprintf(outfile," %s ", argv_new[i]);
         }
         read_options(thisJob, options);
-
         // If the function call is LMP2, run in parallel
         if(strcmp(thisJob, "LMP2") == 0) {
             // Needed a barrier before the functions are called
