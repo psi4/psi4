@@ -51,7 +51,7 @@ int main(int argc, char **argv, char **envp)
 
 #if HAVE_MPI == 1
     // Initialize MPI
-    // Since we allow multiple MPICommunicators to be created and MPI_Init needs to be
+    // Since we allow multiple MPICommunicators to be created and MPI_Init needs to be called
     // as soon as possible, main takes care of call MPI_Init and not the communicator itself.
     MPI_Init(&argc, &argv);
 
@@ -69,7 +69,7 @@ int main(int argc, char **argv, char **envp)
 
     psi_start(argc, argv);
 
-    if(Communicator::world->me()==0 && !clean_only) print_version(outfile);
+    if(!clean_only) print_version(outfile);
 
     set_memory(outfile);
 
