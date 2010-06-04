@@ -6,7 +6,7 @@ include ../MakeVars
 
 PSITARGET = $(top_objdir)/lib/libPSI_sapt.a
 
-TRUECXXSRC = 
+TRUECXXSRC = sapt.cc
 
 DEPENDINCLUDE = 
 
