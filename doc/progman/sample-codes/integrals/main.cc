@@ -38,7 +38,7 @@ namespace psi {
 
 
 int
-main(int argc, char *argv[])
+main(int argc, char *argv[], char *envp[])
 {
     int num_unparsed, i;
     char *argv_unparsed[100];
