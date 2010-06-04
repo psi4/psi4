@@ -41,9 +41,13 @@ namespace psi {
 }
 
 // This is the ONLY main function in PSI
-int main(int argc, char *argv[])
+int main(int argc, char **argv, char **envp)
 {
     using namespace psi;
+
+    // Setup the environment
+    Process::arguments.init(argc, argv);
+    Process::environment.init(envp);
 
 #if HAVE_MPI == 1
     // Initialize MPI

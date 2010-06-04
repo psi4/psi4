@@ -5,8 +5,9 @@ VPATH = @srcdir@
 include ../MakeVars
 
 PSITARGET = $(top_objdir)/lib/libPSI_parallel.a
+CXXDEF += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"
 
-TRUECXXSRC = communicator.cc mpi.cc local.cc fprintf.cc
+TRUECXXSRC = communicator.cc mpi.cc local.cc fprintf.cc process.cc
 
 INC = parallel.h serialize.h
 

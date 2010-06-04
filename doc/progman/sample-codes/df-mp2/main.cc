@@ -39,7 +39,7 @@ namespace psi{
     }
     namespace dfmp2{
         PsiReturnType dfmp2(Options &options, int argc, char **argv);
-        
+
         void title()
         {
             fprintf(outfile, "\t\t\t*************************\n");
@@ -61,6 +61,13 @@ main(int argc, char *argv[])
 
     for (i=1, num_unparsed=0; i<argc; ++i)
         argv_unparsed[num_unparsed++] = argv[i];
+
+    // Setup the environment
+    Process::arguments.init(argc, argv);
+    Process::environment.init(envp);
+
+    // Initialize local communicator
+    Communicator::world = shared_ptr<Communicator>(new LocalCommunicator);
 
     psi_start(&infile, &outfile, &psi_file_prefix,
                 num_unparsed, argv_unparsed, 0);

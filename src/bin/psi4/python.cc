@@ -51,7 +51,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("version", py_psi_version);
     def("clean", py_psi_clean);
     def("configure_io", py_psi_configure_psio);
-    
+
     // modules
     def("input",py_psi_input);
 
@@ -82,7 +82,7 @@ BOOST_PYTHON_MODULE(PsiMod)
         add_property( "emp2", &Chkpt::rd_emp2, &Chkpt::wt_emp2).
         def( "sharedObject", &Chkpt::shared_object).
         staticmethod("sharedObject");
-        
+
     class_<Vector3>("Vector3").
         def(init<double>()).
         def(init<double, double, double>()).
@@ -124,10 +124,10 @@ BOOST_PYTHON_MODULE(PsiMod)
         def("transpose", &SymmetryOperation::transpose);
 
     class_<PointGroup, shared_ptr<PointGroup> >("PointGroup").
-	def(init<const char*>()).
-	def("symbol", &PointGroup::symbol).
-	//def("origin", &PointGroup::origin).
-	def("setSymbol", &PointGroup::set_symbol);
+    def(init<const char*>()).
+    def("symbol", &PointGroup::symbol).
+    //def("origin", &PointGroup::origin).
+    def("setSymbol", &PointGroup::set_symbol);
 
     class_<Molecule, shared_ptr<Molecule> >("Molecule").
         def("initWithCheckpoint", &Molecule::init_with_chkpt).
@@ -150,19 +150,19 @@ BOOST_PYTHON_MODULE(PsiMod)
         def("printToOutput", &Molecule::print).
         def("nuclearRepulsionEnergy", &Molecule::nuclear_repulsion_energy).
         def("reorient", &Molecule::reorient).
-	    def("findPointGroup", &Molecule::find_point_group).
+        def("findPointGroup", &Molecule::find_point_group).
         def("setPointGroup", &Molecule::set_point_group).
         def("formSymmetryInformation", &Molecule::form_symmetry_information);
 }
 
 Python::Python() : Script()
 {
-    
+
 }
 
 Python::~Python()
 {
-    
+
 }
 
 void Python::initialize()
@@ -187,14 +187,9 @@ void Python::run(FILE *input)
         #else
         Py_SetProgramName(s);
         #endif
-        
-	// Track down the location of PSI4's python script directory.
-	std::string psiDataDirName;
-	if (getenv("PSIDATADIR"))
-	    psiDataDirName = getenv("PSIDATADIR");
-	if (psiDataDirName.empty())
-	    psiDataDirName = INSTALLEDPSIDATADIR;
-	psiDataDirName += "/python";
+
+        // Track down the location of PSI4's python script directory.
+        std::string psiDataDirName = Process::environment("PSIDATADIR") + "/python";
 
         // Add PSI library python path
         PyObject *path, *sysmod, *str;
@@ -220,7 +215,7 @@ void Python::run(FILE *input)
             object objectDict = objectMain.attr("__dict__");
             s = strdup("import PsiMod");
             PyRun_SimpleString(s);
-            
+
             object objectScriptInit = exec( strStartScript, objectDict, objectDict );
         }
         catch (error_already_set const& e)
