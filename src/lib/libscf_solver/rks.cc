@@ -132,9 +132,9 @@ double RKS::compute_energy()
     C_->print(outfile);
     D_->print(outfile);
 
-    if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false)
+    if (scf_type_ == "PK")
         form_PK();
-    else if (ri_integrals_ == true)
+    else if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD" )
         form_B();
 
     fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
@@ -210,7 +210,7 @@ double RKS::compute_energy()
         //fprintf(outfile,"  Saving Cartesian Grid\n");
         //save_RHF_grid(options_, basisset_, D_, C_);
     }
-    if (ri_integrals_)
+    if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD")
     {
         free_B();
     }
@@ -224,28 +224,28 @@ double RKS::compute_energy()
 
 void RKS::form_J()
 {
-    if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false) {
+    if (scf_type_ == "PK") {
         //form_J_from_PK();
     }
-    else if (ri_integrals_ == false && direct_integrals_ == true) {
+    else if (scf_type_ == "DIRECT") {
         form_J_and_K_from_direct_integrals();
     }
-    else if (ri_integrals_ == true) {
+    else if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD") {
         form_J_from_RI();
     }
-    else {
+    else if (scf_type_ == "OUT_OF_CORE" ){
         //form_J_and_K_disk();
     }
 }
 void RKS::form_K()
 {
-    if (ri_integrals_ == false && use_out_of_core_ == false && direct_integrals_ == false) {
+    if (scf_type_ == "PK") {
         //form_K_from_PK();
     }
-    else if (ri_integrals_ == false && direct_integrals_ == true) {
+    else if (scf_type_ == "OUT_OF_CORE" || scf_type_ == "DIRECT") {
         //Already formed
     }
-    else if (ri_integrals_ == true) {
+    else if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD") {
         form_K_from_RI();
     }
     else {
