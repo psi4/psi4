@@ -446,12 +446,17 @@ void HF::form_Shalf()
 
     // Convert the eigenvales to 1/sqrt(eigenvalues)
     int *dimpi = eigval.dimpi();
+    double min_S = fabs(eigval.get(0,0));
     for (int h=0; h<eigval.nirreps(); ++h) {
         for (int i=0; i<dimpi[h]; ++i) {
+            if (min_S > fabs(eigval.get(h,i)))
+                min_S = fabs(eigval.get(h,i));
             double scale = 1.0 / sqrt(eigval.get(h, i));
             eigval.set(h, i, scale);
         }
     }
+    if (print_)
+        fprintf(outfile,"\n  Minimum eigenvalue in the overlap matrix is %14.10E.\n",min_S);
     // Create a vector matrix from the converted eigenvalues
     eigtemp2.set(eigval);
 
@@ -604,7 +609,9 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     double** Da = block_matrix(norbs,norbs);
     double** Db = block_matrix(norbs,norbs);    
     double** Fa = block_matrix(norbs,norbs);
-    double** Fb = block_matrix(norbs,norbs);    
+    double** Fb = block_matrix(norbs,norbs);
+    double** Fa_old = block_matrix(norbs,norbs);
+    double** Fb_old = block_matrix(norbs,norbs);    
     double** Ga = block_matrix(norbs,norbs);
     double** Gb = block_matrix(norbs,norbs);    
     double** H = block_matrix(norbs,norbs);    
@@ -739,9 +746,10 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
 
     const double* buffer = TEI->buffer();
 
-    double E_tol = 1E-5;
-    double D_tol = 1E-5;
-    int maxiter = 50;
+    double E_tol = options_.get_double("SAD_E_CONVERGE");
+    double D_tol = options_.get_double("SAD_D_CONVERGE");
+    int maxiter = options_.get_int("SAD_MAXITER");
+    int f_mixing_iteration = options_.get_int("SAD_F_MIX_START");
 
     double E_old;
     int iteration = 0;
@@ -760,6 +768,9 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
         E_old = E;    
         //I'm only going to use the total for now, could be expanded later
         C_DCOPY(norbs*norbs,D[0],1,Dold[0],1);    
+        //And old Fock matrices for level shift
+        C_DCOPY(norbs*norbs,Fa[0],1,Fa_old[0],1);    
+        C_DCOPY(norbs*norbs,Fb[0],1,Fb_old[0],1);    
 
         //Form Ga and Gb via integral direct
         memset((void*) Ga[0], '\0',norbs*norbs*sizeof(double));    
@@ -811,6 +822,16 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
         E += C_DDOT(norbs*norbs,Db[0],1,Fb[0],1); 
         E *= 0.5;       
  
+        //Perform any required convergence stabilization
+        //F-mixing (should help with oscillation)
+        //20% old, 80% new Fock matrix for now
+        if (iteration >= f_mixing_iteration) {
+            C_DSCAL(norbs*norbs,0.8,Fa[0],1);
+            C_DSCAL(norbs*norbs,0.8,Fb[0],1);
+            C_DAXPY(norbs*norbs,0.2,Fa_old[0],1,Fa[0],1); 
+            C_DAXPY(norbs*norbs,0.2,Fb_old[0],1,Fb[0],1); 
+        }
+
         //Diagonalize Fa and Fb to from Ca and Cb and Da and Db
         atomicUHFHelperFormCandD(nalpha,norbs,Shalf,Fa,Ca,Da);
         atomicUHFHelperFormCandD(nbeta,norbs,Shalf,Fb,Cb,Db);
@@ -874,6 +895,8 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     free_block(Db);
     free_block(Fa);
     free_block(Fb);
+    free_block(Fa_old);
+    free_block(Fb_old);
     free_block(Ga);
     free_block(Gb);
     free_block(H);

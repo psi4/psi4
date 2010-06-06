@@ -224,6 +224,18 @@ int read_options(const std::string &name, Options & options) {
     options.add_double("THREE_INDEX_CUTOFF", 0.0);
     /*- -Maximum number of rows to read/write in each DF-SCf operation */
     options.add_int("ROWS_PER_READ", 1);
+    
+    /*- -SAD Guess Convergence in E */
+    options.add_double("SAD_E_CONVERGE", 1E-5);
+    /*- -SAD Guess Convergence in D */
+    options.add_double("SAD_D_CONVERGE", 1E-5);
+    /*- -SAD Guess Maxiter */
+    options.add_int("SAD_MAXITER", 50);
+    /*- -SAD Guess F-mix Iteration Start */
+    options.add_int("SAD_F_MIX_START", 10);
+    
+    /*- -SAD Guess Schwarz Sieve (for rough molecular F) */
+    options.add_double("SAD_SCHWARZ_CUTOFF", 1E-7);
   }
   else if (name == "MP2") {
     options.add_str("WFN", "");

@@ -2308,7 +2308,7 @@ void RHF::compute_SAD_guess() {
     //Note, my convention is backwards, l and s are index variables
     // m and n are zip variables
     timer_on("SAD Fock");
-    double SAD_Schwarz = 1E-9;
+    double SAD_Schwarz = options_.get_double("SAD_SCHWARZ_CUTOFF");
     G_->zero();
     IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
     TwoBodyInt *TEI = integral.eri(0, SAD_Schwarz);
