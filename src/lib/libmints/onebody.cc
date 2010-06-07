@@ -250,6 +250,7 @@ void OneBodyInt::so_transform(shared_ptr<Matrix> result, int sh1, int sh2, int i
                 // Compute and store
                 double val = coef1 * coef2 * localbuffer[offset1 + aofunc2];
 
+                //fprintf(outfile,"Irrep: %d, Irrepfunc 1: %d, Irrepfunc 2: %d, Val %14.10f,",irrep1,soirrepfunc1,soirrepfunc2,val); fflush(outfile);                 
                 result->add(irrep1, soirrepfunc1, soirrepfunc2, val);
             }
         }

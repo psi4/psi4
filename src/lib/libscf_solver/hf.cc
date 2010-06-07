@@ -614,9 +614,10 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     double** Fb_old = block_matrix(norbs,norbs);    
     double** Ga = block_matrix(norbs,norbs);
     double** Gb = block_matrix(norbs,norbs);    
-    double** H = block_matrix(norbs,norbs);    
 
     IntegralFactory integral(bas, bas, bas, bas);
+    MatrixFactory mat;
+    mat.init_with(1,&norbs,&norbs);
     OneBodyInt *S_ints = integral.overlap();
     OneBodyInt *T_ints = integral.kinetic();
     OneBodyInt *V_ints = integral.potential();
@@ -624,23 +625,9 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
 
     //Compute Shalf;
     //Fill S
-    double **S = block_matrix(norbs,norbs);
-    const double* S_buffer = S_ints->buffer();
-    for (int MU = 0; MU < bas->nshell(); MU++) {
-        int numMU = bas->shell(MU)->nfunction();
-        for (int NU = 0; NU<= MU; NU++) {
-            int numNU = bas->shell(NU)->nfunction();
-            S_ints->compute_shell(MU,NU);
-            for (int m = 0, index = 0; m<numMU; m++) {
-                int omu = bas->shell(MU)->function_index()+m;
-                for (int n = 0; n<numNU; n++, index++) {
-                    int onu = bas->shell(NU)->function_index()+n;
-                    S[omu][onu] = S_buffer[index];
-                    S[onu][omu] = S_buffer[index];
-                }
-            }
-        }
-    }
+    SharedMatrix S_UHF(mat.create_matrix("S_UHF"));
+    S_ints->compute(S_UHF);
+    double** S = S_UHF->to_block_matrix();
 
     if (print_>6) {
     fprintf(outfile,"  S:\n");
@@ -690,25 +677,16 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     }
 
     //Compute H
-    const double* T_buffer = T_ints->buffer();
-    const double* V_buffer = V_ints->buffer();
-    for (int MU = 0; MU < bas->nshell(); MU++) {
-        int numMU = bas->shell(MU)->nfunction();
-        for (int NU = 0; NU<= MU; NU++) {
-            int numNU = bas->shell(NU)->nfunction();
-            V_ints->compute_shell(MU,NU);
-            T_ints->compute_shell(MU,NU);
-            for (int m = 0, index = 0; m<numMU; m++) {
-                int omu = bas->shell(MU)->function_index()+m;
-                for (int n = 0; n<numNU; n++, index++) {
-                    int onu = bas->shell(NU)->function_index()+n;
-                    H[omu][onu] = T_buffer[index]+V_buffer[index];
-                    H[onu][omu] = T_buffer[index]+V_buffer[index];
-                }
-            }
-        }
-    }
-
+    SharedMatrix T_UHF(mat.create_matrix("T_UHF"));
+    T_ints->compute(T_UHF);
+    SharedMatrix V_UHF(mat.create_matrix("V_UHF"));
+    V_ints->compute(V_UHF);
+    SharedMatrix H_UHF(mat.create_matrix("H_UHF"));
+    H_UHF->zero();
+    H_UHF->add(T_UHF);
+    H_UHF->add(V_UHF);
+    double** H = H_UHF->to_block_matrix();
+    
     if (print_>6) {
     fprintf(outfile,"  H:\n");
     print_mat(H,norbs,norbs,outfile);
