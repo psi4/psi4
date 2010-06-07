@@ -75,7 +75,7 @@ double xyz2lm_coeff(int l, int m, int lx, int ly, int lz)
 
 void SphericalTransformComponent::init(int a, int b, int c, double coef, int cartindex, int pureindex)
 {
-    // printf("a = %d, b = %d, c = %d, coef = %f, cartindex = %d, pureindex = %d\n", a, b, c, coef, cartindex, pureindex);
+    //printf("a = %d, b = %d, c = %d, coef = %f, cartindex = %d, pureindex = %d\n", a, b, c, coef, cartindex, pureindex);
     a_ = a;
     b_ = b;
     c_ = c;

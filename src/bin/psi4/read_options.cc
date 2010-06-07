@@ -232,7 +232,7 @@ int read_options(const std::string &name, Options & options) {
     /*- -SAD Guess Maxiter */
     options.add_int("SAD_MAXITER", 50);
     /*- -SAD Guess F-mix Iteration Start */
-    options.add_int("SAD_F_MIX_START", 10);
+    options.add_int("SAD_F_MIX_START", 50);
     
     /*- -SAD Guess Schwarz Sieve (for rough molecular F) */
     options.add_double("SAD_SCHWARZ_CUTOFF", 1E-7);

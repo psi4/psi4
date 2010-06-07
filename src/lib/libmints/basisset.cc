@@ -366,6 +366,7 @@ void BasisSet::refresh()
 
 shared_ptr<BasisSet> BasisSet::atomic_basis_set(int fcenter)
 {
+    //May only work in C1!!!!
     //Construct a blank BasisSet on the heap
     shared_ptr<BasisSet> bas(new BasisSet);
     //Construct a blank Molecule on the heap
@@ -391,8 +392,17 @@ shared_ptr<BasisSet> BasisSet::atomic_basis_set(int fcenter)
     //Push shells that belong to fcenter
     //to bas
     int current_shells = 0;
+    int shell_start = -1;
+    int ao_start = 0;
+    int so_start = 0;
     for (int i = 0; i<nshells_; i++) {
+        if (shell_center_[i] < fcenter+1) {
+            ao_start += shells_[i]->ncartesian();
+            so_start += shells_[i]->nfunction();
+        }
         if (shell_center_[i] == fcenter+1) {
+            if (shell_start == -1)
+                shell_start = i;
             shared_ptr<GaussianShell> shell(new GaussianShell);
             int nprm = shells_[i]->nprimitive();
             int am = shells_[i]->am();
@@ -417,8 +427,22 @@ shared_ptr<BasisSet> BasisSet::atomic_basis_set(int fcenter)
     for (int i=0; i<=max_am_; ++i) {
         bas->sphericaltransforms_.push_back(SphericalTransform(i));
     }
+    //Initialize SOTransform
     bas->sotransform_ = shared_ptr<SOTransform>(new SOTransform);
     bas->sotransform_->init(current_shells);
+
+    //Populate SOTransform
+    for (int i = 0; i< current_shells; i++) {
+        //OK, this is the SOTransformShell in the full basis
+        SOTransformShell* full_so = sotransform_->aoshell(shell_start+i);
+        //and it must go into the SOTransform in the atomic basis, and the offset in shell, ao, and so must be respected
+        for (int ao = 0; ao < full_so->nfunc(); ao++) {
+            //printf("AO %d, AOStart %d, SOStart%d, i %d, shell_start %d.\n",ao,ao_start,so_start,i,shell_start);
+            bas->sotransform_->add_transform(i,full_so->func(ao)->irrep(),full_so->func(ao)->sofuncirrep()-so_start,full_so->func(ao)->coef(),full_so->func(ao)->aofunc(),full_so->func(ao)->sofunc()-so_start);
+        }
+        //ao_start += shells_[i+shell_start]->ncartesian();
+        //so_start += shells_[i+shell_start]->nfunction();
+    }
  
     //Setup the indexing in the atomic basis
     bas->refresh();
