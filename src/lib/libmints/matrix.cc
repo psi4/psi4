@@ -305,6 +305,30 @@ void Matrix::set(const double **sq)
     }
 }
 
+void Matrix::set(double **sq)
+{
+    int h, i, j, ii, jj;
+    int offset;
+
+    if (sq == NULL) {
+        zero();
+        // TODO: Need to throw an exception here.
+        return;
+    }
+    offset = 0;
+    for (h=0; h<nirreps_; ++h) {
+        for (i=0; i<rowspi_[h]; ++i) {
+            ii = i + offset;
+            for (j=0; j<=i; ++j) {
+                jj = j + offset;
+                matrix_[h][i][j] = sq[ii][jj];
+                matrix_[h][j][i] = sq[jj][ii];
+            }
+        }
+        offset += rowspi_[h];
+    }
+}
+
 void Matrix::set(SimpleMatrix *sq)
 {
     set(const_cast<const double**>(sq->matrix_));
