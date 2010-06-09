@@ -111,6 +111,8 @@ public:
     void set(const double *tri);
     /// Copies sq to matrix_
     void set(const double **sq);
+    void set(double **sq);
+
     /// Copies sq to matrix_
     void set(SimpleMatrix *sq);
     void set(shared_ptr<SimpleMatrix> sq);
