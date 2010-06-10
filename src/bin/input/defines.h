@@ -8,8 +8,8 @@
 
 #define CHECKPOINTFILE 30               /*Checkpoint file number*/
 #define NUM_ELEMENTS 108                /*Number of known elements*/
-#define MAXATOM 100
-#define MAXIOFF 1024
+#define MAXATOM 300 
+#define MAXIOFF 4000
 #define MAXSTRING 132
 #define MAXCONTRACTION 1500              /*Maximum number of primitives*/
 #define MAXBASISCOLUMNS 2               /*Number of columns in basis_set[][]. Used to be equal to MAXCONTRACTION*/
