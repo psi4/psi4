@@ -222,11 +222,13 @@ PsiReturnType input(Options & options, int argc, char *argv[])
      /*----------------------
        Print geometries etc.
       ----------------------*/
-
+     
+     fprintf(outfile, "  Primary Basis:\n");
      print_basis_info();
 
      // SCF RI basis?
      if (ip_exist("DF_BASIS_SCF",0) || ip_exist("RI_BASIS_SCF",0)) {
+       fprintf(outfile, "  DF-SCF Basis:\n");
        for(i=0;i<num_atoms;i++)
          atom_basis[i] = NULL;
        if (ip_exist("DF_BASIS_SCF",0)) read_basis("DF_BASIS_SCF");
@@ -241,6 +243,7 @@ PsiReturnType input(Options & options, int argc, char *argv[])
      }
      // MP2 RI basis?
      if (ip_exist("DF_BASIS_MP2",0) || ip_exist("RI_BASIS_MP2",0)) {
+       fprintf(outfile, "  DF-MP2 Basis:\n");
        for(i=0;i<num_atoms;i++)
          atom_basis[i] = NULL;
        if (ip_exist("DF_BASIS_MP2",0)) read_basis("DF_BASIS_MP2");
@@ -251,6 +254,20 @@ PsiReturnType input(Options & options, int argc, char *argv[])
        build_so_classes();
        build_usotao();
        write_to_chkpt(repulsion, "DF_BASIS_MP2");
+       print_basis_info();
+     }
+     // SCF Dual basis?
+     if (ip_exist("DUAL_BASIS_SCF",0) ) {
+       fprintf(outfile, "  SCF Dual-Basis:\n");
+       for(i=0;i<num_atoms;i++)
+         atom_basis[i] = NULL;
+       read_basis("DUAL_BASIS_SCF");
+       build_transmat();
+       if (puream)
+         build_cart2pureang();
+       build_so_classes();
+       build_usotao();
+       write_to_chkpt(repulsion, "DUAL_BASIS_SCF");
        print_basis_info();
      }
 

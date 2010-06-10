@@ -597,6 +597,8 @@ void HF::form_B()
         //max_cols = 100;
         double **buffer2 = block_matrix(ri_nbf_,max_cols);
 
+        fprintf(outfile,"  Max cols = %d, ri_nbf_ = %d, Size = %14.10f GiB\n",max_cols,ri_nbf_,max_cols*ri_nbf_*8/1.0E9); fflush(outfile);
+
         int buf_ind = 0;
         ULI global_offset = 0;
         for (int ij = 0; ij < ntri_; ij++)

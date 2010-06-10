@@ -150,7 +150,10 @@ public:
     /// Formation of S^+1/2 and S^-1/2 are the same
     void form_Shalf();
 
-    /// UHF Atomic Density Matrix for SAD (yes UHF, I happen to like UHF)
+    /// Perform casting of basis set if desired. 
+    SharedMatrix dualBasisProjection(SharedMatrix _C, int _nocc, shared_ptr<BasisSet> _old, shared_ptr<BasisSet> _new); 
+
+   /// UHF Atomic Density Matrix for SAD (yes UHF, I happen to like UHF)
     /// returns atomic_basis->nbf() x atomic_basis_->nbf() double array of approximate atomic density (summed over spin) 
     void getUHFAtomicDensity(shared_ptr<BasisSet> atomic_basis, int n_electrons, int multiplicity, double** D); 
     // Computes the C and D matrix in place for SAD Atomic UHF

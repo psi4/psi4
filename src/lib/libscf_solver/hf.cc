@@ -582,6 +582,7 @@ bool HF::load_or_compute_initial_C()
 }
 void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, double** D)
 {
+    //ONLY WORKS IN C1 at the moment
     //print_ = options_.get_int("PRINT");
     shared_ptr<Molecule> mol = bas->molecule();    
     
@@ -905,6 +906,159 @@ void HF::atomicUHFHelperFormCandD(int nelec, int norbs,double** Shalf, double**F
     free_block(Temp);
     free_block(Cp);
     free_block(Fp);
+}
+SharedMatrix HF::dualBasisProjection(SharedMatrix C_, int nocc, shared_ptr<BasisSet> old_basis, shared_ptr<BasisSet> new_basis) {
+    
+    //ALSO ONLY C1 at the moment
+    //The old C matrix
+    double** CA = C_->to_block_matrix();
+
+    //sizes
+    int old_norbs = old_basis->nbf();
+    int new_norbs = new_basis->nbf();        
+
+    //fprintf(outfile,"  Old norbs %d, New norbs %d, nocc %d\n",old_norbs,new_norbs,nocc);
+
+    //AB Integral facotry (acts on first two elements)
+    IntegralFactory integralAB(old_basis, new_basis, old_basis, new_basis);
+    MatrixFactory matAB;
+    matAB.init_with(1,&old_norbs,&new_norbs);
+    
+    //Overlap integrals (basisset to basisset)
+    OneBodyInt *SAB_ints = integralAB.overlap();
+    SharedMatrix S_AB(matAB.create_matrix("S_AB"));
+    SAB_ints->compute(S_AB);
+    //S_AB->print(outfile);
+    double** SAB = S_AB->to_block_matrix();
+
+    //BB Integral facotry (acts on first two elements)
+    IntegralFactory integralBB(new_basis, new_basis, new_basis, new_basis);
+    MatrixFactory matBB;
+    matBB.init_with(1,&new_norbs,&new_norbs);
+    
+    //Overlap integrals (basisset to basisset)
+    OneBodyInt *SBB_ints = integralBB.overlap();
+    SharedMatrix S_BB(matBB.create_matrix("S_BB"));
+    SBB_ints->compute(S_BB);
+    //S_BB->print(outfile);
+    double** SBB = S_BB->to_block_matrix();
+    
+    //Inverse overlap matrices
+    //double** SAAM1 = block_matrix(old_norbs,old_norbs);
+    double** SBBM1 = block_matrix(new_norbs,new_norbs);
+
+    //Copy the values in
+    C_DCOPY(new_norbs*new_norbs,SBB[0],1,SBBM1[0],1);
+
+    //SBB^-1
+    int CholError = C_DPOTRF('L',new_norbs,SBBM1[0],new_norbs);
+    if (CholError !=0 )
+        throw std::domain_error("S_BB Matrix Cholesky failed!");
+    
+    //Inversion (in place)
+    int IError = C_DPOTRI('L',new_norbs,SBBM1[0],new_norbs);
+    if (IError !=0 )
+        throw std::domain_error("S_BB Inversion Failed!");
+
+    //LAPACK is smart and all, only uses half of the thing
+    for (int m = 0; m<new_norbs; m++)
+        for (int n = 0; n<m; n++)
+            SBBM1[m][n] = SBBM1[n][m]; 
+
+    //fprintf(outfile,"  S_BB^-1:\n");
+    //print_mat(SBBM1,new_norbs,new_norbs,outfile);     
+ 
+    //Form T 
+    double** Temp1 = block_matrix(new_norbs,nocc);
+    C_DGEMM('T','N',new_norbs,nocc,old_norbs,1.0,SAB[0],new_norbs,CA[0],old_norbs,0.0,Temp1[0],nocc);
+
+    //fprintf(outfile," Temp1:\n");
+    //print_mat(Temp1,new_norbs,nocc,outfile);     
+    
+    double** Temp2 = block_matrix(new_norbs,nocc);  
+    C_DGEMM('N','N',new_norbs,nocc,new_norbs,1.0,SBBM1[0],new_norbs,Temp1[0],nocc,0.0,Temp2[0],nocc);
+
+    //fprintf(outfile," Temp2:\n");
+    //print_mat(Temp2,new_norbs,nocc,outfile);     
+    
+    double** Temp3 = block_matrix(old_norbs,nocc);
+    C_DGEMM('N','N',old_norbs,nocc,new_norbs,1.0,SAB[0],new_norbs,Temp2[0],nocc,0.0,Temp3[0],nocc);
+    
+    //fprintf(outfile," Temp3:\n");
+    //print_mat(Temp3,old_norbs,nocc,outfile);     
+    
+    double** T = block_matrix(nocc,nocc);
+    C_DGEMM('T','N',nocc,nocc,old_norbs,1.0,CA[0],old_norbs,Temp3[0],nocc,0.0,T[0],nocc);
+    
+    //fprintf(outfile," T:\n");
+    //print_mat(T,nocc,nocc,outfile);     
+    
+    //Find T^-1/2
+    // First, diagonalize T
+    // the C_DSYEV call replaces the original matrix T with its eigenvectors
+    double* eigval = init_array(nocc);
+    int lwork = nocc * 3;
+    double* work = init_array(lwork);
+    int stat = C_DSYEV('v','u',nocc,T[0],nocc,eigval, work,lwork);
+    if (stat != 0) {
+        fprintf(outfile, "C_DSYEV failed\n");
+        exit(PSI_RETURN_FAILURE);
+    }
+    free(work);
+
+    // Now T contains the eigenvectors of the original T
+    // Copy T to T_copy
+    double **T_mhalf = block_matrix(nocc, nocc);
+    double **T_copy = block_matrix(nocc, nocc);
+    C_DCOPY(nocc*nocc,T[0],1,T_copy[0],1); 
+
+    // Now form T^{-1/2} = U(T)*t^{-1/2}*U,
+    // where t^{-1/2} is the diagonal matrix of the inverse square roots
+    // of the eigenvalues, and U is the matrix of eigenvectors of T
+    for (int i=0; i<nocc; i++) {
+        if (eigval[i] < 1.0E-10)
+            eigval[i] = 0.0;
+        else 
+            eigval[i] = 1.0 / sqrt(eigval[i]);
+
+        // scale one set of eigenvectors by the diagonal elements t^{-1/2}
+        C_DSCAL(nocc, eigval[i], T[i], 1);
+    }
+    free(eigval);
+
+    // T_mhalf = T_copy(T) * T
+    C_DGEMM('t','n',nocc,nocc,nocc,1.0,
+            T_copy[0],nocc,T[0],nocc,0.0,T_mhalf[0],nocc);
+
+    //Form CB
+    double** CB = block_matrix(new_norbs,nocc);
+    C_DGEMM('N','N',new_norbs,nocc,nocc,1.0,Temp2[0],nocc,T_mhalf[0],nocc,0.0,CB[0],nocc);
+    
+    //fprintf(outfile," T^-1/2:\n");
+    //print_mat(T_mhalf,nocc,nocc,outfile);     
+    
+    //Set occupied part of C_B; 
+    MatrixFactory matBI;
+    matBI.init_with(1,&new_norbs,&nocc);
+    
+    SharedMatrix C_B(matBI.create_matrix("C_DB"));
+    for (int m = 0; m < new_norbs; m++) 
+        for (int i = 0; i<nocc; i++)
+            C_B->set(0,m,i,CB[m][i]); 
+
+    free_block(CA);   
+    free_block(SAB);   
+    free_block(SBB);   
+    free_block(SBBM1);   
+    free_block(Temp1);   
+    free_block(Temp2);   
+    free_block(Temp3);   
+    free_block(T);   
+    free_block(T_mhalf);   
+    free_block(T_copy);   
+    free_block(CB);   
+ 
+    return C_B;
 }
 
 }}

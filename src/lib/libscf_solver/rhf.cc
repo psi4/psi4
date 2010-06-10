@@ -212,11 +212,11 @@ double RHF::compute_energy()
         E_ = 0.0;
     }
     //timer_done();
-    if (save_grid_) {
+    //if (save_grid_) {
         // DOWN FOR MAINTENANCE
         //fprintf(outfile,"\n  Saving Cartesian Grid\n");
         //save_RHF_grid(options_, basisset_, D_, C_);
-    }
+    //}
 
     if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD")
         free_B();
@@ -228,6 +228,17 @@ double RHF::compute_energy()
 
     // Compute the final dipole.
     compute_multipole();
+
+    if (converged && options_.get_bool("DUAL_BASIS")) {
+        if (print_)
+            fprintf(outfile,"  Computing dual basis set cast"); 
+        shared_ptr<BasisSet> dual_basis =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DUAL_BASIS_SCF"));
+        SharedMatrix C2 = dualBasisProjection(C_,doccpi_[0],basisset_,dual_basis);
+        //C_->print(outfile);
+        //C2->print(outfile);
+        //Write stuff to chkpt here
+        
+    }
 
     //fprintf(outfile,"\nComputation Completed\n");
     fflush(outfile);

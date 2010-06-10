@@ -179,6 +179,9 @@ int read_options(const std::string &name, Options & options) {
     /*- Cholesky Cutoff -*/
     options.add_double("CHOLESKY_CUTOFF",1E-4);
 
+    /* -Dual basis projection? -*/
+    options.add_bool("DUAL_BASIS",false);
+
     /*- The guess type to be used in the computation -*/
     options.add_str("GUESS", "", "CORE GWH SAD READ BASIS2");
     /*- The reference wavefunction used in the computation -*/
