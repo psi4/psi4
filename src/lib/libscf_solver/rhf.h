@@ -100,6 +100,9 @@ protected:
     //SAD Guess and propagation
     void compute_SAD_guess();
 
+    //Save Dual Basis
+    void save_dual_basis_projection();
+
     void form_PK();
     void form_F();
 

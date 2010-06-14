@@ -465,7 +465,7 @@ bool UHF::test_convergency()
     Matrix Drms;
     Drms.copy(Dt_);
     Drms.subtract(Dtold_);
-    Drms_ = sqrt(Drms.sum_of_squares());
+    Drms_ = Drms.rms();
 
     if (fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_)
         return true;

@@ -64,9 +64,22 @@ void HF::common_init()
 
     S_.reset(factory_.create_matrix("S"));
     Shalf_.reset(factory_.create_matrix("S^-1/2"));
+    X_.reset(factory_.create_matrix("X"));
     Sphalf_.reset(factory_.create_matrix("S^+1/2"));
     H_.reset(factory_.create_matrix("One-electron Hamiltonion"));
     C_.reset(factory_.create_matrix("MO coefficients"));
+
+    memset((void*) nsopi_, '\0', factory_.nirreps()*sizeof(int));
+    memset((void*) nmopi_, '\0', factory_.nirreps()*sizeof(int));
+    nmo_ = 0;    
+    nso_ = 0;
+    int* dimpi = factory_.colspi();
+    for (int h = 0; h< factory_.nirreps(); h++){
+        nsopi_[h] = dimpi[h];
+        nmopi_[h] = nsopi_[h]; //For now
+        nso_ += nsopi_[h];
+        nmo_ += nmopi_[h]; //For now (form_Shalf may change this, and will record things in the chkpt)
+    }
 
     Eold_    = 0.0;
     E_       = 0.0;
@@ -322,11 +335,9 @@ void HF::form_indexing()
     int h, i, ij, offset, pk_size;
     int nirreps = factory_.nirreps();
     int *opi = factory_.rowspi();
-    int nso;
 
-    nso = chkpt_->rd_nso();
-    so2symblk_ = new int[nso];
-    so2index_  = new int[nso];
+    so2symblk_ = new int[nso_];
+    so2index_  = new int[nso_];
 
     ij = 0; offset = 0; pk_size = 0; pk_pairs_ = 0;
     for (h=0; h<nirreps; ++h) {
@@ -367,14 +378,13 @@ void HF::form_H()
     form_multipole_integrals();
 
     // Load in kinetic and potential matrices
-    int nso = chkpt_->rd_nso();
-    double *integrals = init_array(ioff[nso]);
+    double *integrals = init_array(ioff[nso_]);
 
     // Kinetic
     if (scf_type_ == "PK" || scf_type_ == "OUT_OF_CORE") {
-        IWL::read_one(psio_.get(), PSIF_OEI, const_cast<char*>(PSIF_SO_T), integrals, ioff[nso], 0, 0, outfile);
+        IWL::read_one(psio_.get(), PSIF_OEI, const_cast<char*>(PSIF_SO_T), integrals, ioff[nso_], 0, 0, outfile);
         kinetic->set(integrals);
-        IWL::read_one(psio_.get(), PSIF_OEI, const_cast<char*>(PSIF_SO_V), integrals, ioff[nso], 0, 0, outfile);
+        IWL::read_one(psio_.get(), PSIF_OEI, const_cast<char*>(PSIF_SO_V), integrals, ioff[nso_], 0, 0, outfile);
         potential->set(integrals);
     }
     else {
@@ -417,12 +427,17 @@ void HF::form_H()
 
 void HF::form_Shalf()
 {
-    int nso = chkpt_->rd_nso();
+    
+    //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    //
+    //          SYMMETRIC ORTHOGONALIZATION
+    //
+    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     // Overlap
     if (scf_type_ == "PK" || scf_type_ == "OUT_OF_CORE") {
-        double *integrals = init_array(ioff[nso]);
-        IWL::read_one(psio_.get(), PSIF_OEI, const_cast<char*>(PSIF_SO_S), integrals, ioff[nso], 0, 0, outfile);
+        double *integrals = init_array(ioff[nso_]);
+        IWL::read_one(psio_.get(), PSIF_OEI, const_cast<char*>(PSIF_SO_S), integrals, ioff[nso_], 0, 0, outfile);
         S_->set(integrals);
         free(integrals);
     }
@@ -436,21 +451,28 @@ void HF::form_Shalf()
     Matrix eigvec;
     Matrix eigtemp;
     Matrix eigtemp2;
+    Matrix eigvec_store;
     Vector eigval;
+    Vector eigval_store;
     factory_.create_matrix(eigvec, "L");
     factory_.create_matrix(eigtemp, "Temp");
     factory_.create_matrix(eigtemp2);
+    factory_.create_matrix(eigvec_store);
     factory_.create_vector(eigval);
+    factory_.create_vector(eigval_store);
 
+    //Used to do this 3 times, now only once
     S_->diagonalize(eigvec, eigval);
+    eigvec_store.copy(eigvec);
+    eigval_store.copy(eigval);
 
     // Convert the eigenvales to 1/sqrt(eigenvalues)
     int *dimpi = eigval.dimpi();
     double min_S = fabs(eigval.get(0,0));
     for (int h=0; h<eigval.nirreps(); ++h) {
         for (int i=0; i<dimpi[h]; ++i) {
-            if (min_S > fabs(eigval.get(h,i)))
-                min_S = fabs(eigval.get(h,i));
+            if (min_S > eigval.get(h,i))
+                min_S = eigval.get(h,i);
             double scale = 1.0 / sqrt(eigval.get(h, i));
             eigval.set(h, i, scale);
         }
@@ -463,7 +485,9 @@ void HF::form_Shalf()
     eigtemp.gemm(false, true, 1.0, eigtemp2, eigvec, 0.0);
     Shalf_->gemm(false, false, 1.0, eigvec, eigtemp, 0.0);
 
-    S_->diagonalize(eigvec, eigval);
+    //Sphalf needs a fresh copy of the factorization of S
+    eigvec.copy(eigvec_store);
+    eigval.copy(eigval_store);
     // Convert the eigenvalues to sqrt(eigenvalues)
     for (int h=0; h<eigval.nirreps(); ++h) {
         for (int i=0; i<dimpi[h]; ++i) {
@@ -481,6 +505,73 @@ void HF::form_Shalf()
     if (debug_ > 3) {
         Shalf_->print(outfile);
         Sphalf_->print(outfile);
+    }
+    //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    //
+    //          CANONICAL ORTHOGONALIZATION
+    //
+    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    
+    //If symmetric orthogonalization will work, use it
+    //Unless the user wants canonical
+    double S_cutoff = options_.get_double("S_MIN_EIGENVALUE");
+    if (min_S > S_cutoff && options_.get_str("S_ORTHOGONALIZATION") == "SYMMETRIC") {
+        if (print_)
+            fprintf(outfile,"  Using Symmetric Orthogonalization.\n");
+        canonical_X_ = false;
+
+        //A bit redundant, but it cements things
+        chkpt_->wt_nso(nso_);
+        //chkpt_->wt_nsopi(nsopi_);
+        chkpt_->wt_nmo(nmo_);
+        //chkpt_->wt_nmopi(nmopi_);
+
+        return;
+    } else {
+        if (print_)
+            fprintf(outfile,"  Using Canonical Orthogonalization with cutoff of %14.10E.\n",S_cutoff);
+        canonical_X_ = true;
+        
+        //Diagonalize S (or just get a fresh copy)
+        eigvec.copy(eigvec_store);
+        eigval.copy(eigval_store);
+        int delta_mos = 0;
+        for (int h=0; h<eigval.nirreps(); ++h) {
+            //in each irrep, scale significant cols i  by 1.0/sqrt(s_i)
+            int start_index = 0;
+            for (int i=0; i<dimpi[h]; ++i) {
+                if (S_cutoff  < eigval.get(h,i)) {
+                    double scale = 1.0 / sqrt(eigval.get(h, i));
+                    eigvec.scale_column(h, i, scale);
+                } else {
+                    start_index++;
+                    nmopi_[h]--;
+                    nmo_--;
+                }
+            }
+            //eigvec.print(outfile);
+            //Copy significant columns of eigvec into X in
+            //descending order
+            X_->zero();
+            for (int i=0; i<dimpi[h]-start_index; ++i) {
+                for (int m = 0; m < dimpi[h]; m++)
+                    X_->set(h,m,i,eigvec.get(h,m,dimpi[h]-i-1));
+            } 
+            //X_->print(outfile);
+            if (print_>2)
+                fprintf(outfile,"  Irrep %d, %d of %d possible MOs eliminated.\n",h,start_index,nsopi_[h]);
+            
+            delta_mos += start_index;
+        }
+
+        if (print_)
+            fprintf(outfile,"  Overall, %d of %d possible MOs eliminated.\n",delta_mos,nso_);
+        
+        //Now things get a bit different
+        chkpt_->wt_nso(nso_);
+        //chkpt_->wt_nsopi(nsopi_);
+        chkpt_->wt_nmo(nmo_);
+        //chkpt_->wt_nmopi(nmopi_);
     }
 }
 
@@ -821,7 +912,7 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
 
         //Form delta D and Drms
         C_DAXPY(norbs*norbs,-1.0,D[0],1,Dold[0],1);
-        double Drms = sqrt(1.0/(1.0*norbs)*C_DDOT(norbs*norbs,Dold[0],1,Dold[0],1));  
+        double Drms = sqrt(1.0/(1.0*norbs*norbs)*C_DDOT(norbs*norbs,Dold[0],1,Dold[0],1));  
 
         double deltaE = fabs(E-E_old);        
     
@@ -909,6 +1000,8 @@ void HF::atomicUHFHelperFormCandD(int nelec, int norbs,double** Shalf, double**F
 }
 SharedMatrix HF::dualBasisProjection(SharedMatrix C_, int nocc, shared_ptr<BasisSet> old_basis, shared_ptr<BasisSet> new_basis) {
     
+    //Based on Werner's method from Mol. Phys. 102, 21-22, 2311
+
     //ALSO ONLY C1 at the moment
     //The old C matrix
     double** CA = C_->to_block_matrix();

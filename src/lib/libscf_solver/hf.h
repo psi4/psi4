@@ -28,6 +28,7 @@ protected:
     SharedMatrix H_;
     SharedMatrix S_;
     SharedMatrix Shalf_;
+    SharedMatrix X_;
     SharedMatrix Sphalf_;
     SharedMatrix C_;
 
@@ -64,6 +65,17 @@ protected:
     /// Number of alpha and beta electrons per irrep
     int nalphapi_[8], nbetapi_[8];
 
+    /// Number of so per irrep
+    int nsopi_[8];
+    /// Number of mo per irrep
+    int nmopi_[8];    
+
+    int nso_;
+    int nmo_;
+
+    //Canonical or Symmetric orthogonalization?
+    bool canonical_X_;
+
     /// Mapping arrays
     int *so2symblk_;
     int *so2index_;
@@ -85,7 +97,7 @@ protected:
     perturb perturb_;
 
     /// DF Storage Scheme
-    enum df_storage { double_full, full, flip_B_core, flip_B_disk, k_incore, disk};
+    enum df_storage { double_core, core, flip_B_core, flip_B_disk, k_incore, disk};
     df_storage df_storage_;
 
     //Density Fitting?

@@ -90,10 +90,12 @@
 #define PSIF_HALFT0            94
 #define PSIF_HALFT1            95
 
-#define PSIF_DFSCF_B           96   /* B Matrix containing 3-index tensor in AOs for use with DF-SCF*/
+#define PSIF_DFSCF_A           96   /* B Matrix containing 3-index tensor in AOs for use with DF-SCF*/
 #define PSIF_DFSCF_BJ          97   /* B Matrix containing 3-index tensor in AOs with J^-1/2 for use with DF-SCF*/
 #define PSIF_DFSCF_K           98   /* Exchange tensor for DF-SCF*/
 #define PSIF_DFSCF_BJI         99   /* The three-center integrals for DF-SCF */
+
+#define PSIF_SCF_DB_MOS        100  /* Dual basis set MOs for DB-SCF or Basis-2 Guesses */ 
 
 #define PSIF_SAPT_DIMER        120  /* SAPT Two-Body Dimer */
 #define PSIF_SAPT_MONOMERA     121 /* SAPT Two-Body Mon A */

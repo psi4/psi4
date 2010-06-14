@@ -92,6 +92,19 @@ void Vector::copy(const Vector *rhs) {
     }
     copy_from(rhs->vector_);
 }
+void Vector::copy(const Vector &rhs) {
+    if (nirreps_ != rhs.nirreps_) {
+        release();
+        if (dimpi_)
+            delete[] dimpi_;
+        nirreps_ = rhs.nirreps_;
+        dimpi_ = new int[nirreps_];
+        for (int h=0; h<nirreps_; ++h)
+            dimpi_[h] = rhs.dimpi_[h];
+        alloc();
+    }
+    copy_from(rhs.vector_);
+}
 
 void Vector::set(double *vec) {
     int h, i, ij;
