@@ -188,6 +188,8 @@ public:
     void scale(double);
     /// Returns the sum of the squares of this
     double sum_of_squares();
+    /// Returns the rms of this
+    double rms();
     /// Add val to an element of this
     void add(int h, int m, int n, double val) { matrix_[h][m][n] += val; }
     /// Scale row m of irrep h by a

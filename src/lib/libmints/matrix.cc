@@ -646,6 +646,21 @@ double Matrix::sum_of_squares()
 
     return sum;
 }
+double Matrix::rms()
+{
+    double sum = (double)0.0;
+    long terms = 0;
+    for (int h=0; h<nirreps_; ++h) {
+        for (int i=0; i<rowspi_[h]; ++i) {
+            for (int j=0; j<colspi_[h]; ++j) {
+                sum += matrix_[h][i][j] * matrix_[h][i][j];
+                terms++;
+            }
+        }
+    }
+
+    return sqrt(sum/terms);
+}
 
 void Matrix::transform(Matrix* a, Matrix* transformer)
 {

@@ -133,24 +133,24 @@ void HF::form_A()
     unsigned long memA = ntri_*(long)ri_nbf_;
 
     string storage_type;
-    storage_type = options_.get_str("RI_STORAGE");
+    storage_type = options_.get_str("RI_SCF_STORAGE");
 
-    if (storage_type == "IN_CORE")
-        df_storage_ = full;
+    if (storage_type == "CORE")
+        df_storage_ = core;
     else if (storage_type == "DISK")
         df_storage_ = disk;
     else if (storage_type == "DEFAULT")
     {
     	//set df_storage_ semi-heuristically based on available memory
     	if (((long)((memA)*(1.0+MEMORY_SAFETY_FACTOR)))<(memory_/sizeof(double)))
-            df_storage_ = full; //K only in-core
+            df_storage_ = core; //K only in-core
     	else
             df_storage_ = disk; //Disk
     } else {
         throw std::domain_error("For Form A, IN_CORE and DISK are the only valid storage options");
     }	
 
-    if (df_storage_ == full)
+    if (df_storage_ == core)
         fprintf(outfile,"\n  Density Fitting Algorithm proceeding In Core.\n"); 
     else if (df_storage_ == disk)
         fprintf(outfile,"\n  Density Fitting Algorithm proceeding on Disk.\n"); 
@@ -246,7 +246,7 @@ void HF::form_A()
   
     //double three_index_cutoff = options_.get_double("THREE_INDEX_CUTOFF");
  
-    if (df_storage_ == full)
+    if (df_storage_ == core)
     {
     	IntegralFactory rifactory(basisset_, basisset_, ribasis_, zero);
         shared_ptr<TwoBodyInt> eri = shared_ptr<TwoBodyInt>(rifactory.eri());
@@ -385,7 +385,7 @@ void HF::form_A()
 }
 void HF::free_A()
 {
-    if (df_storage_ == full)
+    if (df_storage_ == core)
         free_block(A_ia_P_);
     free(ri_pair_mu_);
     free(ri_pair_nu_);
@@ -456,7 +456,7 @@ void RHF::form_G_from_RI_local_K()
     }
     if (print_>2)
         L_->print(outfile);
-    if (df_storage_ == full) {
+    if (df_storage_ == core) {
         if (J_is_required_) {
             //This embedding of the fitting in the density metric is kinda hot (especially in core)
             //Oh, and see R. Polly et. al., J. Chem. Phys. 102(21-22), pp. 2311-2321, DOI 10.1080/0026897042000274801

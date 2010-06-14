@@ -106,6 +106,8 @@ double RHF::compute_energy()
     if (print_>3) {
         S_->print(outfile);
         Shalf_->print(outfile);
+        if (canonical_X_)
+            X_->print(outfile);
         H_->print(outfile);
     }
     if (print_>2) {
@@ -127,6 +129,7 @@ double RHF::compute_energy()
     }
 
     fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
+    fflush(outfile);
     // SCF iterations
     do {
         iteration_++;
@@ -197,6 +200,15 @@ double RHF::compute_energy()
         converged = test_convergency();
     } while (!converged && iteration_ < maxiter_);
 
+    //Free the heavies pronto!
+    if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD")
+        free_B();
+    else if (scf_type_ == "L_DF") {
+        free_A();
+        free_block(I_);
+        free_domain_bookkeeping();
+    }
+    
     if (converged) {
         fprintf(outfile, "\n  Energy converged.\n");
         fprintf(outfile, "\n  @RHF Final Energy: %20.14f", E_);
@@ -205,40 +217,23 @@ double RHF::compute_energy()
         }
         fprintf(outfile, "\n");
         save_information();
-        if (options_.get_str("SAPT") != "FALSE")
+        if (options_.get_bool("DUAL_BASIS")) 
+            save_dual_basis_projection();
+        if (options_.get_str("SAPT") != "FALSE") //not a bool because it has types
             save_sapt_info();
     } else {
         fprintf(outfile, "\n  Failed to converged.\n");
         E_ = 0.0;
     }
-    //timer_done();
     //if (save_grid_) {
         // DOWN FOR MAINTENANCE
         //fprintf(outfile,"\n  Saving Cartesian Grid\n");
         //save_RHF_grid(options_, basisset_, D_, C_);
     //}
 
-    if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD")
-        free_B();
-    else if (scf_type_ == "L_DF") {
-        free_A();
-        free_block(I_);
-        free_domain_bookkeeping();
-    }
-
+    
     // Compute the final dipole.
     compute_multipole();
-
-    if (converged && options_.get_bool("DUAL_BASIS")) {
-        if (print_)
-            fprintf(outfile,"  Computing dual basis set cast"); 
-        shared_ptr<BasisSet> dual_basis =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DUAL_BASIS_SCF"));
-        SharedMatrix C2 = dualBasisProjection(C_,doccpi_[0],basisset_,dual_basis);
-        //C_->print(outfile);
-        //C2->print(outfile);
-        //Write stuff to chkpt here
-        
-    }
 
     //fprintf(outfile,"\nComputation Completed\n");
     fflush(outfile);
@@ -253,15 +248,17 @@ bool RHF::load_or_compute_initial_C()
     //What does the user want?
     //Options will be:
     // ""-Either READ or CORE (try READ first)
-    // "READ"-try to read MOs from checkpoint
-    // "BASIS2"-try to read MOs from checkpoint after basis cast up (in INPUT)
+    // "READ"-try to read MOs from checkpoint (restart style)
+    // "BASIS2"-try to read MOs from checkpoint after basis cast up (in INPUT) NOT WORKING!
+    // "DUAL_BASIS"-real the results of the DB computation from File 100, Temporary hack
     // "CORE"-CORE Hamiltonain
     // "GWH"-Generalized Wolfsberg-Helmholtz
-    // "SAD"-Superposition of Atomic Denisties TODO
+    // "SAD"-Superposition of Atomic Denisties 
     string guess_type = options_.get_str("GUESS");
     if ((guess_type == "" || guess_type == "READ"||guess_type == "BASIS2")&&chkpt_->exist(const_cast<char*>(prefix.c_str()))) {
-        //Try for existing MOs already. Deuces of loaded spades
-        fprintf(outfile, "  SCF Guess: Reading previous MOs.\n\n");
+         //Try for existing MOs already. Deuces of loaded spades
+        if (print_)
+            fprintf(outfile, "  SCF Guess: Reading previous MOs.\n\n");
 
         // Read MOs from checkpoint and set C_ to them
         double **vectors = chkpt_->rd_scf();
@@ -273,20 +270,67 @@ bool RHF::load_or_compute_initial_C()
         // Read SCF energy from checkpoint file.
         E_ = chkpt_->rd_escf();
         ret = true;
+    } else if (guess_type == "DUAL_BASIS") {
+         //Try for dual basis MOs, 
+        if (print_)
+            fprintf(outfile, "  SCF Guess: Dual-Basis. Reading from File 100.\n\n");
+
+        double** C2 = block_matrix(basisset_->nbf(),nalpha_); 
+
+        psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_OLD);
+        psio_address next_PSIF = PSIO_ZERO;
+        psio_->read(PSIF_SCF_DB_MOS,"DB MO Integrals",(char *) &(C2[0][0]),sizeof(double)*basisset_->nbf()*nalpha_,next_PSIF,&next_PSIF);
+        next_PSIF = PSIO_ZERO;
+        psio_->read(PSIF_SCF_DB_MOS,"DB SCF Energy",(char *) &(E_),sizeof(double),next_PSIF,&next_PSIF);
+        psio_->close(PSIF_SCF_DB_MOS,1);
+
+        //fprintf(outfile, "nalpha_ = %d\n",nalpha_);
+        //print_mat(C2,basisset_->nbf(),nalpha_,outfile);
+
+        C_->zero();
+        for (int m = 0; m<basisset_->nbf(); m++)
+            for (int i = 0; i<nalpha_; i++)
+                C_->set(0,m,i,C2[m][i]);
+        
+        free_block(C2); 
+        
+        //C_->print(outfile);
+    
+        memset((void*) doccpi_, '\0', factory_.nirreps()*sizeof(int));
+        memset((void*) soccpi_, '\0', factory_.nirreps()*sizeof(int));
+        memset((void*) nalphapi_, '\0', factory_.nirreps()*sizeof(int));
+        memset((void*) nbetapi_, '\0', factory_.nirreps()*sizeof(int));
+
+
+        doccpi_[0] = nalpha_;
+        nalphapi_[0] = nalpha_;
+        nbetapi_[0] = nalpha_;
+
+        // Read MOs from checkpoint and set C_ to them
+        form_D();
+
+        //D_->print(outfile);
+
+        ret = true;
+        
     } else if (guess_type == "CORE" || guess_type == "") {
         //CORE is an old Psi standby, so we'll play this as spades
-        fprintf(outfile, "  SCF Guess: Core (One-Electron) Hamiltonian.\n\n");
+        if (print_)
+            fprintf(outfile, "  SCF Guess: Core (One-Electron) Hamiltonian.\n\n");
         F_->copy(H_); //Try the core Hamiltonian as the Fock Matrix
         form_C();
         form_D();
         // Compute an initial energy using H and D
         E_ = compute_initial_E();
     } else if (guess_type == "SAD") {
+        if (print_)
+            fprintf(outfile, "  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.\n\n");
         //Superposition of Atomic Density (will be preferred when we can figure it out)
         compute_SAD_guess();
     } else if (guess_type == "GWH") {
         //Generalized Wolfsberg Helmholtz (Sounds cool, easy to code)
-        fprintf(outfile, "  SCF Guess: Generalized Wolfsberg-Helmholtz.\n\n");
+        if (print_)
+            fprintf(outfile, "  SCF Guess: Generalized Wolfsberg-Helmholtz.\n\n");
         F_->zero(); //Try F_{mn} = S_{mn} (H_{mm} + H_{nn})/2
         int h, i, j;
         S_->print(outfile);
@@ -306,7 +350,32 @@ bool RHF::load_or_compute_initial_C()
     } else if (guess_type == "READ" || guess_type == "BASIS2") {
         throw std::invalid_argument("Checkpoint MOs requested, but do not exist!");
     }
+    if (print_)
+        fprintf(outfile, "\n  Initial RHF energy: %20.14f\n\n", E_);
+    fflush(outfile);
     return ret;
+}
+void RHF::save_dual_basis_projection()
+{
+        if (print_)
+            fprintf(outfile,"\n  Computing dual basis set projection from %s to %s.\n  Results will be stored in File 100.\n",options_.get_str("BASIS").c_str(),options_.get_str("DUAL_BASIS_SCF").c_str()); 
+        shared_ptr<BasisSet> dual_basis =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DUAL_BASIS_SCF"));
+        SharedMatrix C_2 = dualBasisProjection(C_,doccpi_[0],basisset_,dual_basis);
+        //C_->print(outfile);
+        if(print_>3)
+            C_2->print(outfile);
+        //Write stuff to chkpt here
+        double** C2 = C_2->to_block_matrix();
+        //print_mat(C2,dual_basis->nbf(),doccpi_[0],outfile);
+        //fflush(outfile);
+
+        psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_NEW);
+        psio_address next_PSIF = PSIO_ZERO;
+        psio_->write(PSIF_SCF_DB_MOS,"DB MO Integrals",(char *) &(C2[0][0]),sizeof(double)*dual_basis->nbf()*doccpi_[0],next_PSIF,&next_PSIF);
+        next_PSIF = PSIO_ZERO;
+        psio_->write(PSIF_SCF_DB_MOS,"DB SCF Energy",(char *) &(E_),sizeof(double),next_PSIF,&next_PSIF);
+        psio_->close(PSIF_SCF_DB_MOS,1);
+        free_block(C2); 
 }
 void RHF::compute_multipole()
 {
@@ -696,7 +765,7 @@ bool RHF::test_convergency()
     Matrix D_rms;
     D_rms.copy(D_);
     D_rms.subtract(Dold_);
-    Drms_ = sqrt(D_rms.sum_of_squares());
+    Drms_ = D_rms.rms();
 
     if (fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_)
         return true;
@@ -741,27 +810,85 @@ void RHF::form_F()
 }
 void RHF::form_C()
 {
-    Matrix eigvec;
-    Vector eigval;
-    factory_.create_matrix(eigvec);
-    factory_.create_vector(eigval);
+    if (!canonical_X_) {
+        Matrix eigvec;
+        Vector eigval;
+        factory_.create_matrix(eigvec);
+        factory_.create_vector(eigval);
 
-    F_->transform(Shalf_);
-    F_->diagonalize(eigvec, eigval);
-    C_->gemm(false, false, 1.0, Shalf_, eigvec, 0.0);
+        F_->transform(Shalf_);
+        F_->diagonalize(eigvec, eigval);
+        C_->gemm(false, false, 1.0, Shalf_, eigvec, 0.0);
 
-    find_occupation(eigval);
+        find_occupation(eigval);
 
-    // Save C to checkpoint file.
-    //double **vectors = C_->to_block_matrix();
-    //chkpt_->wt_scf(vectors);
-    //free_block(vectors);
+        // Save C to checkpoint file.
+        //double **vectors = C_->to_block_matrix();
+        //chkpt_->wt_scf(vectors);
+        //free_block(vectors);
 
 #ifdef _DEBUG
-    if (debug_) {
-        C_->eivprint(eigval);
-    }
+        if (debug_) {
+            C_->eivprint(eigval);
+        }
 #endif
+    } else {
+
+        C_->zero();
+        Vector eigval;
+        factory_.create_vector(eigval);
+
+        for (int h = 0; h<C_->nirreps(); h++) {
+
+            int norbs = nsopi_[h];
+            int nmos = nmopi_[h];
+
+            //fprintf(outfile,"  Norbs = %d, Nmos = %d\n",norbs,nmos); fflush(outfile);
+            
+            double **X = block_matrix(norbs,nmos);
+            for (int m = 0 ; m<norbs; m++)
+                for (int i = 0; i<nmos; i++)
+                    X[m][i] = X_->get(h,m,i);
+
+            double **F = block_matrix(norbs,norbs);
+            for (int m = 0 ; m<norbs; m++)
+                for (int i = 0; i<norbs; i++)
+                    F[m][i] = F_->get(h,m,i);
+            
+            double **C = block_matrix(norbs,nmos);
+            double **Temp = block_matrix(nmos,norbs);
+            double **Fp = block_matrix(nmos,nmos);
+            double **Cp = block_matrix(nmos,nmos);
+    
+            //Form F' = X'FX for canonical orthogonalization 
+            C_DGEMM('T','N',nmos,norbs,norbs,1.0,X[0],nmos,F[0],norbs,0.0,Temp[0],norbs);  
+            C_DGEMM('N','N',nmos,nmos,norbs,1.0,Temp[0],norbs,X[0],nmos,0.0,Fp[0],nmos);  
+
+            //Form C' = eig(F')
+            double *eigvals = init_array(nmos);
+            sq_rsp(nmos, nmos, Fp,  eigvals, 1, Cp, 1.0e-14);
+            for (int i = 0; i<nmos; i++)
+                eigval.set(h,i,eigvals[i]);    
+            
+            free(eigvals);    
+
+            //Form C = XC'
+            C_DGEMM('N','N',norbs,nmos,nmos,1.0,X[0],nmos,Cp[0],nmos,0.0,C[0],nmos);
+
+            for (int m = 0 ; m<norbs; m++)
+                for (int i = 0; i<nmos; i++)
+                    C_->set(h,m,i,C[m][i]);
+
+            free_block(X);
+            free_block(F);
+            free_block(C);
+            free_block(Temp);
+            free_block(Cp);
+            free_block(Fp);
+        }
+        
+        find_occupation(eigval);
+    }
 }
 
 void RHF::form_D()
@@ -791,8 +918,6 @@ void RHF::form_D()
 double RHF::compute_initial_E()
 {
     double Etotal = nuclearrep_ + D_->vector_dot(H_);
-    fprintf(outfile, "\n  Initial RHF energy: %20.14f\n\n", Etotal);
-    fflush(outfile);
     return Etotal;
 }
 
@@ -2384,8 +2509,6 @@ void RHF::compute_SAD_guess() {
 
     //Compute initial E for reference
     E_ = compute_E();
-    if (print_)
-        fprintf(outfile,"  Initial RHF Energy:   %14.10f\n",E_);
 
     //Form the C matrix from the rough Fock matrix
     form_C();

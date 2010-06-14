@@ -65,6 +65,8 @@ public:
     void print(FILE *);
     /// Copies rhs to this
     void copy(const Vector* rhs);
+    /// Copies rhs to this
+    void copy(const Vector& rhs);
 
     /// General matrix vector multiplication
     void gemv(bool transa, double alpha, Matrix* A, Vector* X, double beta);

@@ -252,7 +252,7 @@ timer_off("Cholesky Decomp");
     }
   
   ri_nbf_ = pos;
-  df_storage_ = full;
+  df_storage_ = core;
 	
   psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_NEW);
   psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;

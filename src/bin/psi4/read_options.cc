@@ -181,9 +181,13 @@ int read_options(const std::string &name, Options & options) {
 
     /* -Dual basis projection? -*/
     options.add_bool("DUAL_BASIS",false);
+    /* -Dual basis set -*/
+    options.add_str("DUAL_BASIS_SCF","");
+    /* -primary basis set -*/
+    options.add_str("BASIS","");
 
     /*- The guess type to be used in the computation -*/
-    options.add_str("GUESS", "", "CORE GWH SAD READ BASIS2");
+    options.add_str("GUESS", "", "CORE GWH SAD READ BASIS2 DUAL_BASIS");
     /*- The reference wavefunction used in the computation -*/
     options.add_str("REFERENCE", "RHF");
     /*- The maximum number of iterations -*/
@@ -198,7 +202,19 @@ int read_options(const std::string &name, Options & options) {
     options.add_bool("PERTURB_H", false);
     options.add_double("LAMBDA", 0.0);
     /*- The storage scheme for the three index tensors in density fitting -*/
-    options.add_str("RI_STORAGE", "DEFAULT", "DEFAULT DOUBLE_IN_CORE IN_CORE FLIP_B_DISK K_IN_CORE DISK");
+    options.add_str("RI_SCF_STORAGE", "DEFAULT", "DEFAULT CORE DISK");
+    /*- Should we make sure to save `restart information for RI_SCF? -*/
+    options.add_bool("RI_SCF_SAVE",false);
+    /*- Should we try to restart -*/
+    options.add_bool("RI_SCF_RESTART",false);
+    /*- Minimum J matrix eigenvalue to be used -*/
+    options.add_double("RI_MIN_EIGENVALUE",1E-10);
+    
+    /*- SO orthogonalization: symmetric or canonical? -*/
+    options.add_str("S_ORTHOGONALIZATION","SYMMETRIC","SYMMETRIC CANONICAL");
+    /*- Minimum S matrix eigenvalue to be used before compensating for linear dependencies -*/
+    options.add_double("S_MIN_EIGENVALUE",1E-10);
+
     /*- The operator used to perturb the Hamiltonian, if requested -*/
     options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z");
     /*- The maximum number of error vectors stored for DIIS extrapolation -*/
