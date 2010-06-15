@@ -87,7 +87,6 @@ IntegralTransform::presort_so_tei()
     int currentActiveDPD = psi::dpd_default;
     dpd_set_default(_myDPDNum);
 
-    timer_on("presort");
     if(_print){
         fprintf(outfile, "\tPresorting SO-basis two-electron integrals.\n");
         fflush(outfile);
@@ -362,7 +361,6 @@ IntegralTransform::presort_so_tei()
     
     dpd_file4_close(&I);
     _psio->close(PSIF_SO_PRESORT, 1);
-    timer_off("presort");
 }
 
 /**

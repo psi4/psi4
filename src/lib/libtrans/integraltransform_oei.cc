@@ -200,7 +200,6 @@ IntegralTransform::generate_oei()
     int currentActiveDPD = psi::dpd_default;
     dpd_set_default(_myDPDNum);
 
-    timer_on("generate oei");
     int soIntFile = PSIF_SO_TEI;
 
     IWL *iwl = new IWL(_psio.get(), soIntFile, _tolerance, 1, 1);
@@ -366,7 +365,6 @@ IntegralTransform::generate_oei()
     }
 
     dpd_set_default(currentActiveDPD);
-    timer_off("generate oei");
 }
 
 

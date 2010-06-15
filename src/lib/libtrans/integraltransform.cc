@@ -51,8 +51,6 @@ IntegralTransform::IntegralTransform(SpaceVec spaces,
 void
 IntegralTransform::initialize()
 {
-    timer_init();
-
     raid_checkpoint();
     process_spaces();
     
@@ -112,7 +110,6 @@ IntegralTransform::~IntegralTransform()
     dpd_close(_myDPDNum);
     free_int_matrix(_cacheList);
     free(_cacheFiles);
-    timer_done();
 }
 
 }} // End namespaces
