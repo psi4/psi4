@@ -823,6 +823,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/cscf/Makefile
           src/bin/response/Makefile
           src/bin/cusp/Makefile
+          src/bin/dcft/Makefile
           src/bin/mcscf/Makefile
           src/bin/transqt2/Makefile
           src/bin/mp2/Makefile

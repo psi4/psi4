@@ -6,6 +6,7 @@ namespace psi{
     namespace cctriples { PsiReturnType cctriples(Options &, int argc, char *argv[]); }
     namespace cints    { PsiReturnType cints(Options &, int argc, char *argv[]); }
     namespace cscf     { PsiReturnType cscf(Options &, int argc, char *argv[]); }
+    namespace dcft     { PsiReturnType dcft(Options &, int argc, char *argv[]); }
     namespace input    { PsiReturnType input(Options &, int argc, char *argv[]); }
     namespace lmp2     { PsiReturnType lmp2(Options &, int argc, char *argv[]); }
     namespace mp2      { PsiReturnType mp2(Options &, int argc, char *argv[]); }
@@ -21,7 +22,7 @@ setup_driver(Options &options)
     // The list of valid job types
     options.add_str("JOBTYPE", "SP", "SP OPT");
     // The list of valid wavefunction types
-    options.add_str("WFN", "SCF", "CCSD CCSD_T MP2 MRCCSD LMP2 SCF MCSCF");
+    options.add_str("WFN", "SCF", "DCFT CCSD CCSD_T MP2 MRCCSD LMP2 SCF MCSCF");
     // The list of valid reference types
     options.add_str("REFERENCE", "RHF", "RHF ROHF MCSCF TCSCF UHF RKS UKS");
     // The list of valid derivative types
@@ -34,6 +35,7 @@ setup_driver(Options &options)
     dispatch_table["CCTRIPLES"] = &(psi::cctriples::cctriples);
     dispatch_table["CINTS"]     = &(psi::cints::cints);
     dispatch_table["CSCF"]      = &(psi::cscf::cscf);
+    dispatch_table["DCFT"]      = &(psi::dcft::dcft);
     dispatch_table["INPUT"]     = &(psi::input::input);
     dispatch_table["LMP2"]      = &(psi::lmp2::lmp2);
     dispatch_table["MP2"]       = &(psi::mp2::mp2);

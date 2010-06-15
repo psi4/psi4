@@ -82,6 +82,52 @@ int read_options(const std::string &name, Options & options) {
     /* The number of virtual orbitals to freeze in correlated computations -*/
     options.add_int("FREEZE_VIRT",0);
   }
+  else if(name == "DCFT") {
+      ip_cwk_add(":DCFT");
+      /*- The amount of information printed
+          to the output file -*/
+      options.add_int("PRINT", 1);
+      /*- How to cache quantities within the DPD library -*/
+      options.add_int("CACHELEV", 2);
+      /*- An array containing the number of doubly-occupied orbitals per irrep (in Cotton order) -*/
+      options.add("SOCC", new ArrayType());
+      /*- An array containing the number of singly-occupied orbitals per irrep (in Cotton order) -*/
+      options.add("DOCC", new ArrayType());
+      /*- The amount of memory available (in Mb) -*/
+      options.add_int("MEMORY", 2000);
+      /*- The shift applied to the denominator -*/
+      options.add_double("REGULARIZER", 0.0);
+      /*- The maximum number of lambda iterations per macro-iteration -*/
+      options.add_int("LAMBDA_MAXITER", 1);
+      /*- The maximum number of SCF iterations per cycle -*/
+      options.add_int("SCF_MAXITER", 50);
+      /*- The maximum number iterations allowed -*/
+      options.add_int("MAXITER", 40);
+      /*- The number of decimal digits required in the SCF density -*/
+      options.add_int("SCF_CONV", 8);
+      /*- The number of decimal digits required in the determination of lambda -*/
+      options.add_int("CONVERGENCE", 10);
+      /*- Whether to relax the orbitals or not -*/
+      options.add_bool("RELAX_ORBITALS", true);
+      /*- Should the tau terms be included? -*/
+      options.add_bool("IGNORE_TAU", false);
+      /*- -log10 of the threshold below which an integral is considered to be zero -*/
+      options.add_int("INT_THRESH", 14);
+      /*- -log10 of the threshold below the RMS lambda and SCF error must be for DIIS to start -*/
+      options.add_int("DIIS_START", 3);
+      /*- The maximum size of the DIIS subspace -*/
+      options.add_int("MAX_DIIS", 6);
+      /*- The number of DIIS vectors needed for extrapolation to start -*/
+      options.add_int("DIIS_NUM_VECS", 3);
+      /*- The algorithm to use for the <VV||VV> terms -*/
+      options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
+      /*- The algorithm to use for lambda and orbital updates -*/
+      options.add_str("ALGORITHM", "SIMULTANEOUS", "TWOSTEP SIMULTANEOUS");
+      /*- The molecular charge -*/
+      options.add_int("CHARGE", 0);
+      /*- (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
+      options.add_int("MULTP", 0);
+  }
   else if (name == "CINTS") {
     ip_cwk_add(const_cast<char*>(":CINTS"));
     /*- The wavefunction desired -*/
