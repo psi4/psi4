@@ -417,13 +417,14 @@ public:
     void gemm(bool transa, bool transb, double alpha, const SimpleMatrix* a, const SimpleMatrix* b, double beta);
     void gemm(bool transa, bool transb, double alpha, shared_ptr<SimpleMatrix> a, shared_ptr<SimpleMatrix> b, double beta);
     /// Diagonalize this, eigvector and eigvalues must be created by caller.
-    void diagonalize(SimpleMatrix* eigvectors, SimpleVector* eigvalues);
-    void diagonalize(shared_ptr<SimpleMatrix> eigvectors, shared_ptr<SimpleVector> eigvalues);
+    void diagonalize(SimpleMatrix* eigvectors, SimpleVector* eigvalues, int sort=1);
+    void diagonalize(shared_ptr<SimpleMatrix> eigvectors, shared_ptr<SimpleVector> eigvalues, int sort=1);
 
     /// Saves the block matrix to PSIO object with fileno and with the toc position of the name of the matrix
     void save(psi::PSIO* psio, unsigned int fileno);
     void save(psi::PSIO& psio, unsigned int fileno);
     void save(shared_ptr<psi::PSIO> psio, unsigned int fileno);
+    void load(shared_ptr<psi::PSIO> psio, unsigned int fileno);
 
     /// Saves the matrix in ASCII format to filename
     void save(const char *filename, bool append=true, bool saveLowerTriangle = true);
