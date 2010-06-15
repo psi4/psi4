@@ -102,6 +102,20 @@ BOOST_PYTHON_MODULE(PsiMod)
         def("__str__", &Vector3::to_string).
         def("__getitem__", &Vector3::get);
 
+    typedef string (Process::Environment::*environmentStringFunction)(const string&);
+
+    class_<Process::Environment>("Environment").
+        def("__getitem__", environmentStringFunction(&Process::Environment::operator ()));
+//        def("set", &Process::Environment::set);
+
+    typedef string (Process::Arguments::*argumentsStringFunction)(int);
+
+    class_<Process::Arguments>("Arguments").
+        def("__getitem__", argumentsStringFunction(&Process::Arguments::operator ()));
+
+    class_<Process>("Process").
+        add_static_property("environment", &Process::environment);
+
     typedef void (SymmetryOperation::*intFunction)(int);
     typedef void (SymmetryOperation::*doubleFunction)(double);
 
@@ -124,10 +138,10 @@ BOOST_PYTHON_MODULE(PsiMod)
         def("transpose", &SymmetryOperation::transpose);
 
     class_<PointGroup, shared_ptr<PointGroup> >("PointGroup").
-    def(init<const char*>()).
-    def("symbol", &PointGroup::symbol).
-    //def("origin", &PointGroup::origin).
-    def("setSymbol", &PointGroup::set_symbol);
+        def(init<const char*>()).
+        def("symbol", &PointGroup::symbol).
+        //def("origin", &PointGroup::origin).
+        def("setSymbol", &PointGroup::set_symbol);
 
     class_<Molecule, shared_ptr<Molecule> >("Molecule").
         def("initWithCheckpoint", &Molecule::init_with_chkpt).
