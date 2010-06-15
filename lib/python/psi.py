@@ -1,5 +1,8 @@
 import PsiMod
 
+def psidatadir(key):
+    return PsiMod.Process.environment[key]
+
 #
 # Define geometry to be used by PSI4.
 # This geometry will be saved to the checkpoint file.
