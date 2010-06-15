@@ -43,6 +43,7 @@ class DIISManager{
         void extrapolate(int numQuatities, ...);
         bool add_entry(int numQuatities, ...);
         int remove_entry();
+        void reset_subspace();
         /// The number of vectors currently in the subspace
         int subspace_size() {return _subspace.size();}
     protected:
