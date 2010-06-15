@@ -19,7 +19,8 @@ IWL::~IWL()
 
 void IWL::close()
 {
-    psio_->close(itap_, keep_);
+    if (psio_->open_check(itap_))
+        psio_->close(itap_, keep_);
     if (labels_)
         delete[](labels_);
     if (values_)
