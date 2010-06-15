@@ -153,7 +153,7 @@ DIISManager::set_error_vector_size(int numQuantities, ...)
  * vector, in that order, and in the same order they were passed to the
  * set_vector_size() and set_error_vector_size() functions.  N.B. Unlike the set_size
  * functions, the types of each component should not be specified here.  If the component
- * is an array, the pointer to the start of that array should be passed, in contranst to the
+ * is an array, the pointer to the start of that array should be passed, in contrast to the
  * set_size functions, which takes only the size of that array.
  * @return Whether the subspace was updated
  */
@@ -423,6 +423,17 @@ DIISManager::extrapolate(int numQuantities, ...)
         va_end(args);
     }
     free_block(bMatrix);
+}
+
+
+/**
+ * Removes any vectors existing in the DIIS subspace.
+ */
+void
+DIISManager::reset_subspace()
+{
+    for(int i = 0; i < _subspace.size(); ++i) delete _subspace[i];
+    _subspace.clear();
 }
 
 
