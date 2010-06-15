@@ -69,7 +69,7 @@ public:
     explicit Matrix(const Matrix& copy);
     explicit Matrix(shared_ptr<Matrix> copy);
     Matrix(Matrix& copy);
-    
+
     /// Explicit copy pointer constructor
     explicit Matrix(const Matrix* copy);
     /// Constructor, sets up the matrix
@@ -82,7 +82,7 @@ public:
 
     /// Initializes a matrix
     void init(int nirreps, int *rowspi, int *colspi, std::string name = "");
-    
+
     /// Creates an exact copy of the matrix and returns it.
     Matrix* clone() const;
     /// Copies cp's data onto this
@@ -144,7 +144,7 @@ public:
     void eivprint(Vector &values, FILE *out = outfile);
     /// Print the matrix with corresponding eigenvalues below each column
     void eivprint(shared_ptr<Vector> values, FILE *out = outfile);
-    
+
     /// Returns the rows per irrep array
     int *rowspi() const {
         return rowspi_;
@@ -176,7 +176,7 @@ public:
     void add(const Matrix&);
     /// Adds a matrix to this
     void add(shared_ptr<Matrix>);
-    
+
     /// Subtracts a matrix from this
     void subtract(const Matrix*);
     /// Subtracts a matrix from this
@@ -222,9 +222,25 @@ public:
     void diagonalize(Matrix* eigvectors, Vector* eigvalues);
     void diagonalize(shared_ptr<Matrix> eigvectors, shared_ptr<Vector> eigvalues);
     void diagonalize(shared_ptr<Matrix> eigvectors, Vector& eigvalues);
-    
-    // Reference versions of the above functions:
-    
+
+    /*! Computes the Cholesky factorization of a real symmetric
+     *  positive definite matrix A.
+     *
+     *  This is the block version of the algorithm, calling Level 3 BLAS.
+     */
+    void cholesky_factorize();
+    /*! Computes the inverse of a real symmetric positive definite
+     *  matrix A using the Cholesky factorization A = L*L**T
+     *  computed by cholesky_factorize().
+     */
+    void invert();
+
+    /*! Copy lower triangle to upper triangle */
+    void copy_lower_to_upper();
+    /*! Copy upper triangle to lower triangle */
+    void copy_upper_to_lower();
+
+    // Reference versions of the above functions
     /// Transform a by transformer save result to this
     void transform(Matrix& a, Matrix& transformer);
     /// Transform this by transformer
@@ -408,12 +424,12 @@ public:
     void save(psi::PSIO* psio, unsigned int fileno);
     void save(psi::PSIO& psio, unsigned int fileno);
     void save(shared_ptr<psi::PSIO> psio, unsigned int fileno);
-    
+
     /// Saves the matrix in ASCII format to filename
     void save(const char *filename, bool append=true, bool saveLowerTriangle = true);
     /// Saves the matrix in ASCII format to filename
     void save(std::string filename, bool append=true, bool saveLowerTriangle = true);
-    
+
     /// Retrieves the i'th row
     double* operator[](int i) { return matrix_[i]; }
     double& operator()(int i, int j) { return matrix_[i][j]; }

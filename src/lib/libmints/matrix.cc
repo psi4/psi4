@@ -150,7 +150,7 @@ void Matrix::init(int l_nirreps, int *l_rowspi, int *l_colspi, std::string name)
         rowspi_[i] = l_rowspi[i];
         colspi_[i] = l_colspi[i];
     }
-    alloc();    
+    alloc();
 }
 
 Matrix* Matrix::clone() const
@@ -791,6 +791,74 @@ void Matrix::diagonalize(shared_ptr<Matrix> eigvectors, Vector& eigvalues)
     diagonalize(eigvectors.get(), &eigvalues);
 }
 
+void Matrix::cholesky_factorize()
+{
+    for (int h=0; h<nirreps_; ++h) {
+        if (rowspi_[h]) {
+            int err = C_DPOTRF('L', rowspi_[h], matrix_[0][0], rowspi_[h]);
+            if (err != 0) {
+                if (err < 0) {
+                    fprintf(outfile, "cholesky_factorize: C_DPOTRF: argument %d has invalid paramter.\n", -err);
+                    fflush(outfile);
+                    abort();
+                }
+                if (err > 1) {
+                    fprintf(outfile, "cholesky_factorize: C_DPOTRF: the leading minor of order %d is not "
+                            "positive definite, and the factorization could not be "
+                            "completed.", err);
+                    fflush(outfile);
+                    abort();
+                }
+            }
+        }
+    }
+}
+
+void Matrix::invert()
+{
+    for (int h=0; h<nirreps_; ++h) {
+        if (rowspi_[h]) {
+            int err = C_DPOTRI('L', rowspi_[h], matrix_[0][0], rowspi_[h]);
+            if (err != 0) {
+                if (err < 0) {
+                    fprintf(outfile, "cholesky_factorize: C_DPOTRI: argument %d has invalid paramter.\n", -err);
+                    fflush(outfile);
+                    abort();
+                }
+                if (err > 1) {
+                    fprintf(outfile, "cholesky_factorize: C_DPOTRI: the (%d,%d) element of the factor U or L is "
+                            "zero, and the inverse could not be computed.\n", err, err);
+                    fflush(outfile);
+                    abort();
+                }
+            }
+        }
+    }
+    copy_lower_to_upper();
+}
+
+void Matrix::copy_lower_to_upper()
+{
+    for (int h=0; h<nirreps_; ++h) {
+        for (int m=0; m<rowspi_[h]; ++m) {
+            for (int n=0; n<m; ++n) {
+                matrix_[h][m][n] = matrix_[h][n][m];
+            }
+        }
+    }
+}
+
+void Matrix::copy_upper_to_lower()
+{
+    for (int h=0; h<nirreps_; ++h) {
+        for (int m=0; m<rowspi_[h]; ++m) {
+            for (int n=0; n<m; ++n) {
+                matrix_[h][n][m] = matrix_[h][m][n];
+            }
+        }
+    }
+}
+
 // Reference versions of the above functions:
 
 void Matrix::transform(Matrix& a, Matrix& transformer)
@@ -859,7 +927,7 @@ void Matrix::diagonalize(Matrix& eigvectors, Vector& eigvalues)
         if (rowspi_[h]) {
             sq_rsp(rowspi_[h], colspi_[h], matrix_[h], eigvalues.vector_[h], 1, eigvectors.matrix_[h], 1.0e-14);
         }
-    }                                                                              
+    }
 }
 
 void Matrix::save(const char *filename, bool append, bool saveLowerTriangle, bool saveSubBlocks)
@@ -1359,7 +1427,7 @@ void SimpleMatrix::accumulate_product(const SimpleMatrix* a, const SimpleMatrix*
 {
     gemm(false, false, 1.0, a, b, 1.0);
 }
- 
+
 void SimpleMatrix::accumulate_product(shared_ptr<SimpleMatrix> a, shared_ptr<SimpleMatrix> b)
 {
    gemm(false, false, 1.0, a, b, 1.0);
