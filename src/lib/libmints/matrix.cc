@@ -821,12 +821,12 @@ void Matrix::invert()
             int err = C_DPOTRI('L', rowspi_[h], matrix_[0][0], rowspi_[h]);
             if (err != 0) {
                 if (err < 0) {
-                    fprintf(outfile, "cholesky_factorize: C_DPOTRI: argument %d has invalid paramter.\n", -err);
+                    fprintf(outfile, "invert: C_DPOTRI: argument %d has invalid paramter.\n", -err);
                     fflush(outfile);
                     abort();
                 }
                 if (err > 1) {
-                    fprintf(outfile, "cholesky_factorize: C_DPOTRI: the (%d,%d) element of the factor U or L is "
+                    fprintf(outfile, "invert: C_DPOTRI: the (%d,%d) element of the factor U or L is "
                             "zero, and the inverse could not be computed.\n", err, err);
                     fflush(outfile);
                     abort();
