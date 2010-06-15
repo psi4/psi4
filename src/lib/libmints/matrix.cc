@@ -1557,16 +1557,16 @@ double SimpleMatrix::vector_dot(shared_ptr<SimpleMatrix> rhs)
     return vector_dot(rhs.get());
 }
 
-void SimpleMatrix::diagonalize(SimpleMatrix* eigvectors, SimpleVector* eigvalues)
+void SimpleMatrix::diagonalize(SimpleMatrix* eigvectors, SimpleVector* eigvalues, int sort)
 {
     if (rows_) {
-        sq_rsp(rows_, cols_, matrix_, eigvalues->vector_, 1, eigvectors->matrix_, 1.0e-14);
+        sq_rsp(rows_, cols_, matrix_, eigvalues->vector_, sort, eigvectors->matrix_, 1.0e-14);
     }
 }
 
-void SimpleMatrix::diagonalize(shared_ptr<SimpleMatrix> eigvectors, shared_ptr<SimpleVector> eigvalues)
+void SimpleMatrix::diagonalize(shared_ptr<SimpleMatrix> eigvectors, shared_ptr<SimpleVector> eigvalues, int sort)
 {
-    diagonalize(eigvectors.get(), eigvalues.get());
+    diagonalize(eigvectors.get(), eigvalues.get(), sort);
 }
 
 void SimpleMatrix::save(psi::PSIO* psio, unsigned int fileno)
@@ -1580,6 +1580,22 @@ void SimpleMatrix::save(psi::PSIO* psio, unsigned int fileno)
     }
 
     psio->write_entry(fileno, const_cast<char*>(name_.c_str()), (char*)matrix_[0], sizeof(double) * rows_ * cols_);
+
+    if (!already_open)
+        psio->close(fileno, 1);     // Close and keep
+}
+
+void SimpleMatrix::load(shared_ptr<psi::PSIO> psio, unsigned int fileno)
+{
+    // Check to see if the file is open
+    bool already_open = false;
+    if (psio->open_check(fileno)) {
+        already_open = true;
+    } else {
+        psio->open(fileno, PSIO_OPEN_OLD);
+    }
+
+    psio->read_entry(fileno, const_cast<char*>(name_.c_str()), (char*)matrix_[0], sizeof(double) * rows_ * cols_);
 
     if (!already_open)
         psio->close(fileno, 1);     // Close and keep

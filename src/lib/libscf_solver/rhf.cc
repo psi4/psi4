@@ -383,6 +383,7 @@ void RHF::compute_multipole()
     double dex, dey, dez, dx, dy, dz;
     // Convert blocked density to a full block
     SimpleMatrix D(D_->to_simple_matrix());
+    D.set_name("Full Block Density");
 
     dex = D.vector_dot(Dipole_[0]) * 2.0;
     dey = D.vector_dot(Dipole_[1]) * 2.0;
@@ -451,45 +452,71 @@ void RHF::compute_multipole()
     fprintf(outfile, "\n    Total dipole: %15.10f a.u.  %15.10f Debye\n", d, d*_dipmom_au2debye);
     fprintf(outfile, "    Conversion: 1.0 a.u. = %15.10f Debye\n", _dipmom_au2debye);
 
-    // fprintf(outfile, "\n    Orbital contributions (a.u.)\n");
-    // fprintf(outfile, "\t%6s %3s%15s  %15s  %15s\n", "Irrep", "MO", "X", "Y", "Z");
-    // for (int h=0; h<Dipole_[0].nirreps(); ++h) {
-    //   for (int i=0; i<doccpi_[h]; ++i) {
-    //     fprintf(outfile, "\t%6d %3d%15.10f  %15.10f  %15.10f\n", h+1, i+1,
-    //         Dipole_[0].get(h, i, i) * -2.0, Dipole_[1].get(h, i, i) * -2.0, Dipole_[2].get(h, i, i) * -2.0);
-    //   }
-    // }
-    // fprintf(outfile, "\n  Electric quadrupole (a.u.):");
-    // fprintf(outfile, "\n    Nuclear part:\n");
-    // fprintf(outfile, "\txx=%15.10f\txy=%15.10f\txz=%15.10f\n", nuclear_quadrupole_contribution_[0], nuclear_quadrupole_contribution_[1], nuclear_quadrupole_contribution_[2]);
-    // fprintf(outfile, "\tyy=%15.10f\tyz=%15.10f\tzz=%15.10f\n", nuclear_quadrupole_contribution_[3], nuclear_quadrupole_contribution_[4], nuclear_quadrupole_contribution_[5]);
-    // fprintf(outfile, "\n    Electronic part (cross terms do not match oeprop):\n");
-    // fprintf(outfile, "\txx=%15.10f\txy=%15.10f\txz=%15.10f\n", qexx, qexy, qexz);
-    // fprintf(outfile, "\tyy=%15.10f\tyz=%15.10f\tzz=%15.10f\n", qeyy, qeyz, qezz);
-    // fprintf(outfile, "\n    Principal values (a.u.) and axis:\n");
-    // fprintf(outfile, "\tQ1=%15.10f\tV1=(%15.10f %15.10f %15.10f)\n", evals.get(0), evecs.get(0, 0), evecs.get(1, 0), evecs.get(2, 0));
-    // fprintf(outfile, "\tQ2=%15.10f\tV2=(%15.10f %15.10f %15.10f)\n", evals.get(1), evecs.get(0, 1), evecs.get(1, 1), evecs.get(2, 1));
-    // fprintf(outfile, "\tQ3=%15.10f\tV3=(%15.10f %15.10f %15.10f)\n", evals.get(2), evecs.get(0, 2), evecs.get(1, 2), evecs.get(2, 2));
+    if (print_ > 3) {
+        SimpleMatrix *C = C_->to_simple_matrix();
+        C->set_name("MO Coefficients");
+        C->print();
+        // Transform dipole integrals to MO basis
+        Dipole_[0]->transform(C);
+        Dipole_[1]->transform(C);
+        Dipole_[2]->transform(C);
 
-    // Compute orbital extents
-    fprintf(outfile, "\n  Orbital extents (a.u.):\n");
-    fprintf(outfile, "\t%3s%15s  %15s  %15s  %15s\n", "MO", "<x^2>", "<y^2>", "<z^2>", "<r^2>");
-    SimpleMatrix *C = C_->to_simple_matrix();
-    for (int i=0; i<C->rows(); ++i) {
-        double sumx=0.0, sumy=0.0, sumz=0.0;
-        for (int k=0; k<C->cols(); ++k) {
-            for (int l=0; l<C->cols(); ++l) {
-                double tmp = C->get(k, i) * C->get(l, i);
-                sumx += Quadrupole_[0]->get(k, l) * tmp;
-                sumy += Quadrupole_[3]->get(k, l) * tmp;
-                sumz += Quadrupole_[5]->get(k, l) * tmp;
-            }
+        Dipole_[0]->print();
+        Dipole_[1]->print();
+        Dipole_[2]->print();
+        D.print();
+
+        fprintf(outfile, "\n    Orbital contributions to dipole (a.u.)\n");
+        fprintf(outfile, "\t%3s%15s  %15s  %15s\n", "MO", "X", "Y", "Z");
+        double totx=0.0, toty=0.0, totz=0.0;
+        for (int i=0; i<nalpha_; ++i) {
+            double x_contrib = 0.0, y_contrib = 0.0, z_contrib = 0.0;
+//            for (int j=0; j<Dipole_[0]->rows(); ++j) {
+                x_contrib += Dipole_[0]->get(i, i) * 2.0;
+                y_contrib += Dipole_[1]->get(i, i) * 2.0;
+                z_contrib += Dipole_[2]->get(i, i) * 2.0;
+//            }
+            totx += x_contrib;
+            toty += y_contrib;
+            totz += z_contrib;
+            fprintf(outfile, "\t%3d%15.10f  %15.10f  %15.10f\n", i+1,
+                    x_contrib, y_contrib, z_contrib);
         }
-        fprintf(outfile, "\t%3d%15.10f  %15.10f  %15.10f  %15.10f\n", i+1, fabs(sumx), fabs(sumy), fabs(sumz), fabs(sumx + sumy + sumz));
-        //fflush(outfile);
+        fprintf(outfile, "Total contributions:\n");
+        fprintf(outfile, "%15.10f %15.10f %15.10f\n", totx, toty, totz);
+
+        // fprintf(outfile, "\n  Electric quadrupole (a.u.):");
+        // fprintf(outfile, "\n    Nuclear part:\n");
+        // fprintf(outfile, "\txx=%15.10f\txy=%15.10f\txz=%15.10f\n", nuclear_quadrupole_contribution_[0], nuclear_quadrupole_contribution_[1], nuclear_quadrupole_contribution_[2]);
+        // fprintf(outfile, "\tyy=%15.10f\tyz=%15.10f\tzz=%15.10f\n", nuclear_quadrupole_contribution_[3], nuclear_quadrupole_contribution_[4], nuclear_quadrupole_contribution_[5]);
+        // fprintf(outfile, "\n    Electronic part (cross terms do not match oeprop):\n");
+        // fprintf(outfile, "\txx=%15.10f\txy=%15.10f\txz=%15.10f\n", qexx, qexy, qexz);
+        // fprintf(outfile, "\tyy=%15.10f\tyz=%15.10f\tzz=%15.10f\n", qeyy, qeyz, qezz);
+        // fprintf(outfile, "\n    Principal values (a.u.) and axis:\n");
+        // fprintf(outfile, "\tQ1=%15.10f\tV1=(%15.10f %15.10f %15.10f)\n", evals.get(0), evecs.get(0, 0), evecs.get(1, 0), evecs.get(2, 0));
+        // fprintf(outfile, "\tQ2=%15.10f\tV2=(%15.10f %15.10f %15.10f)\n", evals.get(1), evecs.get(0, 1), evecs.get(1, 1), evecs.get(2, 1));
+        // fprintf(outfile, "\tQ3=%15.10f\tV3=(%15.10f %15.10f %15.10f)\n", evals.get(2), evecs.get(0, 2), evecs.get(1, 2), evecs.get(2, 2));
+
+        // Compute orbital extents
+        fprintf(outfile, "\n  Orbital extents (a.u.):\n");
+        fprintf(outfile, "\t%3s%15s  %15s  %15s  %15s\n", "MO", "<x^2>", "<y^2>", "<z^2>", "<r^2>");
+        for (int i=0; i<C->rows(); ++i) {
+            double sumx=0.0, sumy=0.0, sumz=0.0;
+            for (int k=0; k<C->cols(); ++k) {
+                for (int l=0; l<C->cols(); ++l) {
+                    double tmp = C->get(k, i) * C->get(l, i);
+                    sumx += Quadrupole_[0]->get(k, l) * tmp;
+                    sumy += Quadrupole_[3]->get(k, l) * tmp;
+                    sumz += Quadrupole_[5]->get(k, l) * tmp;
+                }
+            }
+            fprintf(outfile, "\t%3d%15.10f  %15.10f  %15.10f  %15.10f\n", i+1, fabs(sumx), fabs(sumy), fabs(sumz), fabs(sumx + sumy + sumz));
+            //fflush(outfile);
+        }
+        delete C;
     }
-    delete C;
 }
+
 /** CURRENTLY DOWN FOR MAINTENANCE
 void RHF::save_RHF_grid(Options& opts, shared_ptr<BasisSet> basis, SharedMatrix D, SharedMatrix C)
 {
