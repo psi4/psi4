@@ -47,7 +47,7 @@ $PSITEST_SUMMARY_FILE = "../../test-case-results";
 @PSITEST_WFNS = ("SCF", "MP2", "MP2R12", "DETCI", "DETCAS", "CASSCF",
 "RASSCF", "ZAPTN", "BCCD", "BCCD_T", "CC2", "CCSD", "CCSD_T", "CC3", 
 "EOM_CC2", "LEOM_CC2", "EOM_CCSD", "LEOM_CCSD", "OOCCD", "CIS", "EOM_CC3",
-"SCF_MVD","PSIMRCC","SCF+D","MCSCF","IDMKPT2");
+"SCF_MVD","PSIMRCC","SCF+D","MCSCF","IDMKPT2", "DCFT");
 @PSITEST_REFTYPES = ("RHF", "ROHF", "UHF", "TWOCON");
 @PSITEST_DERTYPES = ("NONE", "ENERGY", "FIRST", "SECOND", "RESPONSE");
 
@@ -152,6 +152,7 @@ sub do_tests
           if ($wfn eq "EOM_CC2")  { $fail |= compare_eomcc2_energy(); last SWITCH2; }
           if ($wfn eq "EOM_CCSD") { $fail |= compare_eomccsd_energy(); last SWITCH2; }
           if ($wfn eq "EOM_CC3")  { $fail |= compare_eomcc3_energy(); last SWITCH2; }
+          if ($wfn eq "DCFT")     { $fail |= compare_dcft_energy(); last SWITCH2; }
           if ($wfn eq "BCCD")     { $fail |= compare_bccd_energy(); last SWITCH2; }
           if ($wfn eq "BCCD_T")   { $fail |= compare_bccd_t_energy(); last SWITCH2; }
           if ($wfn eq "CASSCF")   { $fail |= compare_casscf_energy(); last SWITCH2; }
@@ -466,6 +467,22 @@ sub compare_eomcc3_energy
   }       
   return $fail;
 }         
+
+sub compare_dcft_energy
+{
+  my $fail = 0;
+  my $REF_FILE = "$SRC_PATH/output.ref";
+  my $TEST_FILE = "output.dat";
+
+  if(abs(seek_dcft($REF_FILE) - seek_dcft($TEST_FILE)) > $PSITEST_ETOL) {
+    fail_test("DCFT energy"); $fail = 1;
+  }
+  else {
+    pass_test("DCFT energy");
+  }
+  
+  return $fail;
+}
 
 
 sub compare_bccd_energy
@@ -1497,6 +1514,9 @@ sub seek_scf
     }
     elsif (/\* SCF total energy\s+=\s+(-\d+\.\d+)/) {
       return $1;
+    }elsif(/Total Hartree-Fock energy\s+=\s+(-\d+\.\d+)/) {
+      # This is how the DCFT code reports it
+      return $1;
     }
   }
   close(OUT);
@@ -1694,6 +1714,33 @@ sub seek_bccd
   }
 
   printf "Error: Could not find B-CCD energy in $_[0].\n";
+  exit 1;
+}
+
+sub seek_dcft
+{
+  open(OUT, "$_[0]") || die "cannot open $_[0] $!";
+  @datafile = <OUT>;
+  close(OUT);
+
+  $match = "DCFT Total Energy";
+  $linenum = 0;
+  $lastiter = 0;
+
+  foreach $line (@datafile) {
+    if ($line =~ m/$match/) {
+      $lastiter = $linenum;
+    }
+    $linenum++;
+  }
+
+  ($junk, $dcft) = split (/=\s+/, $datafile[$lastiter]);
+
+  if($dcft != 0.0) {
+    return $dcft;
+  }
+
+  printf "Error: Could not find DCFT energy in $_[0].\n";
   exit 1;
 }
 

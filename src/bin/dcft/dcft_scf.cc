@@ -437,12 +437,10 @@ DCFTSolver::process_so_ints()
     dpdbuf4 *tau1_AO, *tau2_AO;
 
     bool buildTensors = false;
-    bool firstBuffer = true;
-    int lastBuffer = 0;
-    while(!lastBuffer || firstBuffer){
-        firstBuffer = false;
+    bool lastBuffer;
+    do{
         lastBuffer = iwl->last_buffer();
-        for(int index = iwl->index(); index < iwl->buffer_count(); ++index){
+        for(int index = 0; index < iwl->buffer_count(); ++index){
             labelIndex = 4*index;
             p = abs((int) lblptr[labelIndex++]);
             q = (int) lblptr[labelIndex++];
@@ -786,7 +784,7 @@ DCFTSolver::process_so_ints()
             }
         } /* end loop through current buffer */
         if(!lastBuffer) iwl->fetch();
-    } /* end loop over buffers */
+    }while(!lastBuffer);
     iwl->set_keep_flag(1);
     delete iwl;
 

@@ -7,6 +7,8 @@ rb_subdirs =
 
 ci_subdirs = 
 
+dcft_subdirs = dcft1 dcft2 dcft3
+
 mcscf_subdirs = 
 
 psimrcc_subdirs = 
@@ -15,6 +17,7 @@ scf_subdirs = scf1 scf2 scf3
 
 subdirs = \
 $(scf_subdirs) \
+$(dcft_subdirs) \
 $(cc_subdirs) \
 
 # the bare minimum
@@ -52,6 +55,12 @@ mcscf_tests:
 
 scf_tests:
 	for dir in $(scf_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+dcft_tests:
+	for dir in $(dcft_subdirs); \
 	do \
 	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
 	done
