@@ -1,0 +1,21 @@
+% This is the DCFT test with
+% K06 functional
+% Two-step algorithm
+% DIIS Enabled
+% MO Basis four-virtual terms
+psi: (
+ label = "blah"
+  jobtype = sp
+  wfn = dcft
+  maxiter = 40
+  scf_maxiter = 50
+  convergence = 11
+  ao_basis = none
+  algorithm = twostep
+  reference = rhf
+  basis = 3-21G
+  zmat = (
+    He
+    He 1 3.2
+  )
+)
