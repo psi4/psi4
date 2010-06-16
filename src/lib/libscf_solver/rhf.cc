@@ -34,6 +34,35 @@ using namespace std;
 
 namespace psi { namespace scf {
 
+static void sort_rows_based_on_energies(SimpleMatrix* C, double *energies, int *order_mapping)
+{
+    unsigned int i, j;
+    int itemp;
+    double dtemp;
+    int length = C->rows();
+
+    // Populate order_mapping with original ordering.
+    for (i=0; i< length; ++i)
+        order_mapping[i] = i;
+
+    // Sort using Quicksort algorithm
+    for (i=0; i<length; ++i) {
+        for (j = i+1; j<length; ++j) {
+            if (energies[i] > energies[j]) {
+                C->swap_rows(i, j);
+    
+                dtemp = energies[i];
+                energies[i] = energies[j];
+                energies[j] = dtemp;
+    
+                itemp = order_mapping[i];
+                order_mapping[i] = order_mapping[j];
+                order_mapping[j] = itemp;
+            }
+        }
+    }
+}
+
 RHF::RHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
     : HF(options, psio, chkpt)
 {
@@ -52,7 +81,6 @@ void RHF::common_init()
 
     // Allocate matrix memory
     F_    = SharedMatrix(factory_.create_matrix("F"));
-//    C_    = SharedMatrix(factory_.create_matrix("MO coefficients"));
     D_    = SharedMatrix(factory_.create_matrix("D"));
     Dold_ = SharedMatrix(factory_.create_matrix("D old"));
     G_    = SharedMatrix(factory_.create_matrix("G"));
@@ -60,7 +88,7 @@ void RHF::common_init()
     K_    = SharedMatrix(factory_.create_matrix("K"));
 
     if (scf_type_ == "L_DF") {
-        Lref_    = SharedMatrix(factory_.create_matrix("Lref"));
+        Lref_ = SharedMatrix(factory_.create_matrix("Lref"));
         L_    = SharedMatrix(factory_.create_matrix("L"));
     }
 
@@ -101,7 +129,6 @@ double RHF::compute_energy()
     timer_on("Initial Guess");
     load_or_compute_initial_C();
     timer_off("Initial Guess");
-
 
     if (print_>3) {
         S_->print(outfile);
@@ -231,7 +258,6 @@ double RHF::compute_energy()
         //save_RHF_grid(options_, basisset_, D_, C_);
     //}
 
-    
     // Compute the final dipole.
     compute_multipole();
 
@@ -239,6 +265,7 @@ double RHF::compute_energy()
     fflush(outfile);
     return E_;
 }
+
 bool RHF::load_or_compute_initial_C()
 {
     bool ret = false;
@@ -301,7 +328,6 @@ bool RHF::load_or_compute_initial_C()
         memset((void*) nalphapi_, '\0', factory_.nirreps()*sizeof(int));
         memset((void*) nbetapi_, '\0', factory_.nirreps()*sizeof(int));
 
-
         doccpi_[0] = nalpha_;
         nalphapi_[0] = nalpha_;
         nbetapi_[0] = nalpha_;
@@ -355,28 +381,30 @@ bool RHF::load_or_compute_initial_C()
     fflush(outfile);
     return ret;
 }
+
 void RHF::save_dual_basis_projection()
 {
-        if (print_)
-            fprintf(outfile,"\n  Computing dual basis set projection from %s to %s.\n  Results will be stored in File 100.\n",options_.get_str("BASIS").c_str(),options_.get_str("DUAL_BASIS_SCF").c_str()); 
-        shared_ptr<BasisSet> dual_basis =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DUAL_BASIS_SCF"));
-        SharedMatrix C_2 = dualBasisProjection(C_,doccpi_[0],basisset_,dual_basis);
-        //C_->print(outfile);
-        if(print_>3)
-            C_2->print(outfile);
-        //Write stuff to chkpt here
-        double** C2 = C_2->to_block_matrix();
-        //print_mat(C2,dual_basis->nbf(),doccpi_[0],outfile);
-        //fflush(outfile);
+    if (print_)
+        fprintf(outfile,"\n  Computing dual basis set projection from %s to %s.\n  Results will be stored in File 100.\n",options_.get_str("BASIS").c_str(),options_.get_str("DUAL_BASIS_SCF").c_str()); 
+    shared_ptr<BasisSet> dual_basis =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DUAL_BASIS_SCF"));
+    SharedMatrix C_2 = dualBasisProjection(C_,doccpi_[0],basisset_,dual_basis);
+    //C_->print(outfile);
+    if(print_>3)
+        C_2->print(outfile);
+    //Write stuff to chkpt here
+    double** C2 = C_2->to_block_matrix();
+    //print_mat(C2,dual_basis->nbf(),doccpi_[0],outfile);
+    //fflush(outfile);
 
-        psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_NEW);
-        psio_address next_PSIF = PSIO_ZERO;
-        psio_->write(PSIF_SCF_DB_MOS,"DB MO Integrals",(char *) &(C2[0][0]),sizeof(double)*dual_basis->nbf()*doccpi_[0],next_PSIF,&next_PSIF);
-        next_PSIF = PSIO_ZERO;
-        psio_->write(PSIF_SCF_DB_MOS,"DB SCF Energy",(char *) &(E_),sizeof(double),next_PSIF,&next_PSIF);
-        psio_->close(PSIF_SCF_DB_MOS,1);
-        free_block(C2); 
+    psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_NEW);
+    psio_address next_PSIF = PSIO_ZERO;
+    psio_->write(PSIF_SCF_DB_MOS,"DB MO Integrals",(char *) &(C2[0][0]),sizeof(double)*dual_basis->nbf()*doccpi_[0],next_PSIF,&next_PSIF);
+    next_PSIF = PSIO_ZERO;
+    psio_->write(PSIF_SCF_DB_MOS,"DB SCF Energy",(char *) &(E_),sizeof(double),next_PSIF,&next_PSIF);
+    psio_->close(PSIF_SCF_DB_MOS,1);
+    free_block(C2); 
 }
+
 void RHF::compute_multipole()
 {
     // Begin dipole
@@ -452,38 +480,27 @@ void RHF::compute_multipole()
     fprintf(outfile, "\n    Total dipole: %15.10f a.u.  %15.10f Debye\n", d, d*_dipmom_au2debye);
     fprintf(outfile, "    Conversion: 1.0 a.u. = %15.10f Debye\n", _dipmom_au2debye);
 
-    if (print_ > 3) {
+    if (print_ > 1) {
         SimpleMatrix *C = C_->to_simple_matrix();
-        C->set_name("MO Coefficients");
-        C->print();
         // Transform dipole integrals to MO basis
         Dipole_[0]->transform(C);
         Dipole_[1]->transform(C);
         Dipole_[2]->transform(C);
-
-        Dipole_[0]->print();
-        Dipole_[1]->print();
-        Dipole_[2]->print();
-        D.print();
 
         fprintf(outfile, "\n    Orbital contributions to dipole (a.u.)\n");
         fprintf(outfile, "\t%3s%15s  %15s  %15s\n", "MO", "X", "Y", "Z");
         double totx=0.0, toty=0.0, totz=0.0;
         for (int i=0; i<nalpha_; ++i) {
             double x_contrib = 0.0, y_contrib = 0.0, z_contrib = 0.0;
-//            for (int j=0; j<Dipole_[0]->rows(); ++j) {
-                x_contrib += Dipole_[0]->get(i, i) * 2.0;
-                y_contrib += Dipole_[1]->get(i, i) * 2.0;
-                z_contrib += Dipole_[2]->get(i, i) * 2.0;
-//            }
+            x_contrib += Dipole_[0]->get(i, i) * 2.0;
+            y_contrib += Dipole_[1]->get(i, i) * 2.0;
+            z_contrib += Dipole_[2]->get(i, i) * 2.0;
             totx += x_contrib;
             toty += y_contrib;
             totz += z_contrib;
             fprintf(outfile, "\t%3d%15.10f  %15.10f  %15.10f\n", i+1,
                     x_contrib, y_contrib, z_contrib);
         }
-        fprintf(outfile, "Total contributions:\n");
-        fprintf(outfile, "%15.10f %15.10f %15.10f\n", totx, toty, totz);
 
         // fprintf(outfile, "\n  Electric quadrupole (a.u.):");
         // fprintf(outfile, "\n    Nuclear part:\n");
@@ -498,21 +515,38 @@ void RHF::compute_multipole()
         // fprintf(outfile, "\tQ3=%15.10f\tV3=(%15.10f %15.10f %15.10f)\n", evals.get(2), evecs.get(0, 2), evecs.get(1, 2), evecs.get(2, 2));
 
         // Compute orbital extents
-        fprintf(outfile, "\n  Orbital extents (a.u.):\n");
-        fprintf(outfile, "\t%3s%15s  %15s  %15s  %15s\n", "MO", "<x^2>", "<y^2>", "<z^2>", "<r^2>");
-        for (int i=0; i<C->rows(); ++i) {
+        SimpleMatrix orbital_extents("Orbital Extents", C->cols(), 4);
+        for (int i=0; i<C->cols(); ++i) {
             double sumx=0.0, sumy=0.0, sumz=0.0;
-            for (int k=0; k<C->cols(); ++k) {
-                for (int l=0; l<C->cols(); ++l) {
+            for (int k=0; k<C->rows(); ++k) {
+                for (int l=0; l<C->rows(); ++l) {
                     double tmp = C->get(k, i) * C->get(l, i);
                     sumx += Quadrupole_[0]->get(k, l) * tmp;
                     sumy += Quadrupole_[3]->get(k, l) * tmp;
                     sumz += Quadrupole_[5]->get(k, l) * tmp;
                 }
             }
-            fprintf(outfile, "\t%3d%15.10f  %15.10f  %15.10f  %15.10f\n", i+1, fabs(sumx), fabs(sumy), fabs(sumz), fabs(sumx + sumy + sumz));
-            //fflush(outfile);
+
+            orbital_extents.set(i, 0, fabs(sumx));
+            orbital_extents.set(i, 1, fabs(sumy));
+            orbital_extents.set(i, 2, fabs(sumz));
+            orbital_extents.set(i, 3, fabs(sumx + sumy + sumz));
         }
+
+        // Sort orbital extent rows based on orbital energies
+        double *orbital_energies = orbital_energies_->to_block_vector();
+        int *order_mapping = new int[C->cols()];
+        sort_rows_based_on_energies(&orbital_extents, orbital_energies, order_mapping);
+
+        fprintf(outfile, "\n  Orbital extents (a.u.):\n");
+        fprintf(outfile, "\t%3s%15s  %15s  %15s  %15s\n", "MO", "<x^2>", "<y^2>", "<z^2>", "<r^2>");
+
+        for (int i=0; i<orbital_extents.rows(); ++i) {
+            fprintf(outfile, "\t%3d%15.10f  %15.10f  %15.10f  %15.10f\n", i+1, 
+                    orbital_extents.get(i, 0),orbital_extents.get(i, 1),orbital_extents.get(i, 2),orbital_extents.get(i, 3));
+        }
+        delete[] orbital_energies;
+        delete[] order_mapping;
         delete C;
     }
 }
@@ -648,6 +682,7 @@ double* RHF::getCartesianGridExtents(Options &opts, shared_ptr<Molecule> mol)
     }
     return ext;
 }**/
+
 void RHF::save_information()
 {
     // Print the final docc vector
@@ -845,6 +880,10 @@ void RHF::form_C()
 
         F_->transform(Shalf_);
         F_->diagonalize(eigvec, eigval);
+
+        // Save the orbital energies
+        orbital_energies_->copy(eigval);
+
         C_->gemm(false, false, 1.0, Shalf_, eigvec, 0.0);
 
         find_occupation(eigval);
