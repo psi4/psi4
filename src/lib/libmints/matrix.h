@@ -436,6 +436,11 @@ public:
     double& operator()(int i, int j) { return matrix_[i][j]; }
     const double& operator()(int i, int j) const { return matrix_[i][j]; }
 
+    /// Swap rows i and j
+    void swap_rows(int i, int j);
+    /// Swap cols i and j
+    void swap_columns(int i, int j);
+
     friend class Matrix;
 };
 

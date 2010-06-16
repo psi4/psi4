@@ -68,6 +68,7 @@ void HF::common_init()
     Sphalf_.reset(factory_.create_matrix("S^+1/2"));
     H_.reset(factory_.create_matrix("One-electron Hamiltonion"));
     C_.reset(factory_.create_matrix("MO coefficients"));
+    orbital_energies_.reset(factory_.create_vector());
 
     memset((void*) nsopi_, '\0', factory_.nirreps()*sizeof(int));
     memset((void*) nmopi_, '\0', factory_.nirreps()*sizeof(int));
@@ -427,7 +428,6 @@ void HF::form_H()
 
 void HF::form_Shalf()
 {
-    
     //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     //
     //          SYMMETRIC ORTHOGONALIZATION
@@ -671,6 +671,7 @@ bool HF::load_or_compute_initial_C()
 
     return ret;
 }
+
 void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, double** D)
 {
     //ONLY WORKS IN C1 at the moment

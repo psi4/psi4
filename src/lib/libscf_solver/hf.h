@@ -31,6 +31,7 @@ protected:
     SharedMatrix X_;
     SharedMatrix Sphalf_;
     SharedMatrix C_;
+    SharedVector orbital_energies_;
 
     /// Previous iteration's energy and current energy
     double Eold_;
