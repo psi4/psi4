@@ -32,6 +32,7 @@ ElectricFieldInt::~ElectricFieldInt()
 
 void ElectricFieldInt::compute_shell(int sh1, int sh2)
 {
+    fprintf(outfile, "shell1 = %d  shell2 = %d\n", sh1, sh2);
     compute_pair(bs1_->shell(sh1), bs2_->shell(sh2));
 }
 
@@ -66,8 +67,9 @@ void ElectricFieldInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<Gau
     AB2 += (A[0] - B[0]) * (A[0] - B[0]);
     AB2 += (A[1] - B[1]) * (A[1] - B[1]);
     AB2 += (A[2] - B[2]) * (A[2] - B[2]);
+    double AB = sqrt(AB2);
 
-    memset(buffer_, 0, s1->ncartesian() * s2->ncartesian() * sizeof(double));
+    memset(buffer_, 0, 3 * s1->ncartesian() * s2->ncartesian() * sizeof(double));
 
     double ***ex = efield_recur_.ex();
     double ***ey = efield_recur_.ey();
@@ -128,10 +130,15 @@ void ElectricFieldInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<Gau
                                 int iind = l1 * ixm + m1 * iym + n1 * izm;
                                 int jind = l2 * jxm + m2 * jym + n2 * jzm;
 
-                                buffer_[ao12]       += ex[iind][jind][0] * over_pf * Z;
-                                buffer_[ao12+ydisp] += ey[iind][jind][0] * over_pf * Z;
-                                buffer_[ao12+zdisp] += ez[iind][jind][0] * over_pf * Z;
+                                buffer_[ao12]       += ex[iind][jind][0] * over_pf;
+                                buffer_[ao12+ydisp] += ey[iind][jind][0] * over_pf;
+                                buffer_[ao12+zdisp] += ez[iind][jind][0] * over_pf;
 
+//                                if (AB != 0.0) {
+//                                    buffer_[ao12]       += Z * (A[0] - B[0]) / (AB * AB2);
+//                                    buffer_[ao12+ydisp] += Z * (A[1] - B[1]) / (AB * AB2);
+//                                    buffer_[ao12+zdisp] += Z * (A[2] - B[2]) / (AB * AB2);
+//                                }
                                 ao12++;
                             }
                         }
