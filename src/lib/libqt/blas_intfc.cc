@@ -61,7 +61,7 @@
 
 extern "C" {
 
-extern void F_DSWAP(int length, double *x, int incx, double *y, int inc_y);
+extern void F_DSWAP(int *length, double *x, int *incx, double *y, int *inc_y);
 extern void F_DAXPY(int *length, double *a, double *x, int *inc_x, 
   double *y, int *inc_y);
 extern void F_DCOPY(int *length, double *x, int *inc_x, 
@@ -82,7 +82,7 @@ extern double F_DDOT(int *n, double *x, int *incx, double *y, int *incy);
 
 namespace psi {
 
-void C_DSWAP(int length, double *x, int incx, double *y, int inc_y)
+void C_DSWAP(int length, double *x, int inc_x, double *y, int inc_y)
 {
   ::F_DSWAP(&length, x, &inc_x, y, &inc_y);
 }
