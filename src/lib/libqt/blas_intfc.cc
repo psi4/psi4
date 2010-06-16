@@ -18,6 +18,7 @@
 #include <cstdio>
 
 #if FC_SYMBOL==2
+#define F_DSWAP dswap_
 #define F_DAXPY daxpy_
 #define F_DCOPY dcopy_
 #define F_DGEMM dgemm_
@@ -27,6 +28,7 @@
 #define F_DSPMV dspmv_
 #define F_DDOT  ddot_
 #elif FC_SYMBOL==1
+#define F_DSWAP dswap
 #define F_DAXPY daxpy
 #define F_DCOPY dcopy
 #define F_DGEMM dgemm
@@ -36,6 +38,7 @@
 #define F_DSPMV dspmv
 #define F_DDOT  ddot
 #elif FC_SYMBOL==3
+#define F_DSWAP DSWAP
 #define F_DAXPY DAXPY
 #define F_DCOPY DCOPY
 #define F_DGEMM DGEMM
@@ -45,6 +48,7 @@
 #define F_DSPMV DSPMV
 #define F_DDOT  DDOT
 #elif FC_SYMBOL==4
+#define F_DSWAP DSWAP_
 #define F_DAXPY DAXPY_
 #define F_DCOPY DCOPY_
 #define F_DGEMM DGEMM_
@@ -57,6 +61,7 @@
 
 extern "C" {
 
+extern void F_DSWAP(int length, double *x, int incx, double *y, int inc_y);
 extern void F_DAXPY(int *length, double *a, double *x, int *inc_x, 
   double *y, int *inc_y);
 extern void F_DCOPY(int *length, double *x, int *inc_x, 
@@ -76,6 +81,11 @@ extern double F_DDOT(int *n, double *x, int *incx, double *y, int *incy);
 }
 
 namespace psi {
+
+void C_DSWAP(int length, double *x, int incx, double *y, int inc_y)
+{
+  ::F_DSWAP(&length, x, &inc_x, y, &inc_y);
+}
 
 /*! 
 ** C_DAXPY(): This function performs y = a * x + y. 

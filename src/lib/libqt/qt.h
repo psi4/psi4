@@ -103,6 +103,8 @@ void unit_vec(double *B, double *A, double *AB);
 /// Same as ::strncpy(), but make sure that dest ends in \0
 char* strncpy(char* dest, const char* source, size_t n);
 
+void C_DSWAP(int length, double *x, int incx, double *y, int inc_y);
+
 void C_DAXPY(int length, double a, double *x, int inc_x,
              double *y, int inc_y);
 void C_DCOPY(int length, double *x, int inc_x,
