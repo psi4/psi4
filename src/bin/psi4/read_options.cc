@@ -650,14 +650,19 @@ else if(name == "CCDENSITY") {
     options.add_bool("SCREEN_INTS", false);
     options.add_int("SCHWARTZ_TOL", 12);
    }
-  else if(name=="DF-MP2") {
-    options.add_str("WFN", "RI-MP2");
-    options.add_str("RI_BASIS_MP2","NONE");
-    options.add_str("BASIS","NONE");
+  else if(name=="DFMP2") {
+    //options.add_str("WFN", "RI-MP2");
+    //options.add_str("RI_BASIS_MP2","NONE");
+    // options.add_str("BASIS","NONE");
     options.add_bool("SCS","false");
     options.add_bool("SCS_N", "false");
     options.add_double("SCALE_OS", 6.0/5.0);
     options.add_double("SCALE_SS", 1.0/3.0);
+    options.add_int("DEBUG",0);
+    /*- -Log10 of the energy convergence criterion -*/
+    options.add_int("E_CONVERGE", 8);
+    /*- -Log10 of the density convergence criterion -*/
+    options.add_int("D_CONVERGE", 8);
   }
   else if(name == "PSIMRCC") {
     options.add_int("CORR_CHARGE",0);
