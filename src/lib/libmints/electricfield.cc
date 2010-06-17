@@ -60,7 +60,7 @@ void ElectricFieldInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<Gau
 
     // Not sure if these are needed.
     int ydisp = INT_NCART(am1) * INT_NCART(am2);
-    int zdisp = 2 * INT_NCART(am1) * INT_NCART(am2);
+    int zdisp = ydisp + INT_NCART(am1) * INT_NCART(am2);
 
     // compute intermediates
     double AB2 = 0.0;
@@ -134,11 +134,8 @@ void ElectricFieldInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<Gau
                                 buffer_[ao12+ydisp] += ey[iind][jind][0] * over_pf;
                                 buffer_[ao12+zdisp] += ez[iind][jind][0] * over_pf;
 
-//                                if (AB != 0.0) {
-//                                    buffer_[ao12]       += Z * (A[0] - B[0]) / (AB * AB2);
-//                                    buffer_[ao12+ydisp] += Z * (A[1] - B[1]) / (AB * AB2);
-//                                    buffer_[ao12+zdisp] += Z * (A[2] - B[2]) / (AB * AB2);
-//                                }
+//                                fprintf(outfile, "final: over_pf = %10.8lf AIX[%d][%d][0] = %10.8lf\tAIY = %10.8lf\tAIZ = %10.8lf\n", over_pf, iind, jind, ex[iind][jind][0], ey[iind][jind][0], ez[iind][jind][0]);
+
                                 ao12++;
                             }
                         }
@@ -163,9 +160,8 @@ void ElectricFieldInt::compute(vector<shared_ptr<SimpleMatrix> > &result)
             compute_shell(i, j);
 
             so_transform(result[0], i, j, 0);
-            so_transform(result[0], i, j, 1);
-            so_transform(result[0], i, j, 2);
-
+            so_transform(result[1], i, j, 1);
+            so_transform(result[2], i, j, 2);
         }
     }
 }
