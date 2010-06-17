@@ -3,7 +3,7 @@
 namespace psi{
     namespace ccsort   { PsiReturnType ccsort(Options &, int argc, char *argv[]); }
     namespace ccenergy { PsiReturnType ccenergy(Options &, int argc, char *argv[]); }
-    namespace cctriples { PsiReturnType cctriples(Options &, int argc, char *argv[]); }
+    namespace cctriples{ PsiReturnType cctriples(Options &, int argc, char *argv[]); }
     namespace cints    { PsiReturnType cints(Options &, int argc, char *argv[]); }
     namespace cscf     { PsiReturnType cscf(Options &, int argc, char *argv[]); }
     namespace dcft     { PsiReturnType dcft(Options &, int argc, char *argv[]); }
@@ -11,6 +11,7 @@ namespace psi{
     namespace lmp2     { PsiReturnType lmp2(Options &, int argc, char *argv[]); }
     namespace mp2      { PsiReturnType mp2(Options &, int argc, char *argv[]); }
     namespace scf      { PsiReturnType scf(Options&, int argc, char *argv[]); }
+    namespace dfmp2    { PsiReturnType dfmp2(Options&, int argc, char *argv[]); }
     namespace transqt2 { PsiReturnType transqt2(Options &, int argc, char *argv[]); }
     // namespace optking  { PsiReturnType optking(Options &, int argc, char *argv[]); }
     namespace psimrcc  { PsiReturnType psimrcc(Options &, int argc, char *argv[]); }
@@ -40,6 +41,7 @@ setup_driver(Options &options)
     dispatch_table["LMP2"]      = &(psi::lmp2::lmp2);
     dispatch_table["MP2"]       = &(psi::mp2::mp2);
     dispatch_table["SCF"]       = &(psi::scf::scf);
+    dispatch_table["DFMP2"]     = &(psi::dfmp2::dfmp2);
     dispatch_table["TRANSQT2"]  = &(psi::transqt2::transqt2);
     dispatch_table["MCSCF"]     = &(psi::mcscf::mcscf);
     dispatch_table["PSIMRCC"]   = &(psi::psimrcc::psimrcc);

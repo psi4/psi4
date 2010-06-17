@@ -844,6 +844,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/scf/Makefile
           src/bin/optking/Makefile
           src/bin/psimrcc/Makefile
+          src/bin/df-mp2/Makefile
 
           tests/Makefile
           tests/MakeVars

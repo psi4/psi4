@@ -5,9 +5,9 @@ include ../MakeVars
 
 LDLIBS += $(LAPACK) $(BLAS)
 
-PSILIBS = -lPSI_mints -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1 -lPSI_deriv -lPSI_int
+PSITARGET = $(top_objdir)/lib/libPSI_dfmp2.a
 
-CXXSRC = main.cc
+CXXSRC = dfmp2.cc dfmp2_energy.cc wrapper.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 
