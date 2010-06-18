@@ -146,7 +146,7 @@ psi4_driver(Options & options, int argc, char *argv[])
         }
         read_options(thisJob, options);
         // If the function call is LMP2, run in parallel
-        if(strcmp(thisJob, "LMP2") == 0) {
+        if(strcmp(thisJob, "LMP2") == 0 || strcmp(thisJob, "DFMP2") == 0) {
             // Needed a barrier before the functions are called
             Communicator::world->sync();
             if (dispatch_table[thisJob](options, argc_new, argv_new) != Success) {
