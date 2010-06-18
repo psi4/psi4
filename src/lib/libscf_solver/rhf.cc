@@ -157,6 +157,7 @@ double RHF::compute_energy()
 
     fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
     fflush(outfile);
+
     // SCF iterations
     do {
         iteration_++;
@@ -225,7 +226,7 @@ double RHF::compute_energy()
         }
 
         converged = test_convergency();
-    } while (!converged && iteration_ < maxiter_);
+    } while (!converged && iteration_ < maxiter_ ); 
 
     //Free the heavies pronto!
     if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD")
@@ -373,6 +374,7 @@ bool RHF::load_or_compute_initial_C()
         form_D();
         // Compute an initial energy using H and D
         E_ = compute_initial_E();
+
     } else if (guess_type == "READ" || guess_type == "BASIS2") {
         throw std::invalid_argument("Checkpoint MOs requested, but do not exist!");
     }

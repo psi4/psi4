@@ -111,7 +111,10 @@ namespace psi {
         void sum(int &data);
 
         virtual void print(FILE *out=outfile) const = 0;
+        
+        
     };
+    void p_fprintf(FILE * __restrict __stream, const char * __restrict __format, ...);
 
 #if HAVE_MPI == 1
     class MPICommunicator : public Communicator {
