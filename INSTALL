@@ -55,7 +55,12 @@ I. Compilation Prerequisites:
    look for the config program `python-config', likewise if your interpreter
    is named `python2.6' your config program is named `python2.6-config'. If
    you cannot find the config program the developer libraries will not be
-   detected and the PSI4 configure script will fail.
+   detected and the PSI4 configure script will fail.  
+
+   For Ubuntu users, you will need the following packages installed:
+   gfortran [for linking to BLAS/LAPACK], g++, autoconf, python-dev, 
+   flex, bison
+
 
 II. Brief Summary of Configruation, Compilation, and Installation
 
