@@ -39,7 +39,7 @@ L200:
       for (i=0; i < m; i++) {
          fprintf (out,"\n%5d",i+1);
          for (j=ii-1; j < nn; j++) {
-            fprintf (out,"%15.7f",a[i][j]);
+            fprintf (out,"%12.7f",a[i][j]);
             }
          }
       fprintf (out,"\n");

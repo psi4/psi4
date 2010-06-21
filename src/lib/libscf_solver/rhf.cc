@@ -2508,7 +2508,7 @@ void RHF::compute_SAD_guess() {
     if (print_>6)
         D_->print(outfile);
 
-    D_->print(outfile);    
+    //D_->print(outfile);    
 
     //Compute a rough Fock matrix via integral direct
     //Note, my convention is backwards, l and s are index variables

@@ -277,7 +277,6 @@ timer_off("Cholesky Decomp");
   psio_->write(PSIF_DFSCF_BJ,"N_AUX_RAW",(char *) &(naux_raw_),sizeof(int),next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
   next_PSIF_DFSCF_BJ = PSIO_ZERO;
   psio_->write(PSIF_DFSCF_BJ,"N_AUX_FIN",(char *) &(naux_fin_),sizeof(int),next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
-  psio_->close(PSIF_DFSCF_BJ,1); //We'll reuse this methinks
 
   psio_->close(PSIF_DFSCF_BJ,1); 
 
