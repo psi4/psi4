@@ -253,8 +253,10 @@ int read_options(const std::string &name, Options & options) {
     options.add_bool("RI_SCF_SAVE",false);
     /*- Should we try to restart -*/
     options.add_bool("RI_SCF_RESTART",false);
-    /*- Minimum J matrix eigenvalue to be used -*/
-    options.add_double("RI_MIN_EIGENVALUE",1E-10);
+    /*- Should we find the raw fitting metric condition number? -*/
+    options.add_bool("FIND_RAW_J_COND",false);
+    /*- Max J basis condition number to be allowed -*/
+    options.add_double("RI_MAX_COND",1E8);
     
     /*- SO orthogonalization: symmetric or canonical? -*/
     options.add_str("S_ORTHOGONALIZATION","SYMMETRIC","SYMMETRIC CANONICAL");
