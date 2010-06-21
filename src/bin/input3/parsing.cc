@@ -46,7 +46,11 @@ void parsing(Options & options)
      /* allow the user to specify subgroup=C1 for entire findif calc -
         hope this doesn't mess anything up (RAK 9-04) */
 	 subgroup = options.get_str("SUBGROUP");
-	 
+
+     /* Don't delete the old checkpoint file. Command line --keepchkpt
+        is currently broken in PSI4. */
+   keep_chkpt = options.get_bool("KEEP_CHKPT");
+
      /*------------------------------------------
        Parse Some boolean information from input
       ------------------------------------------*/
