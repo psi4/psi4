@@ -252,6 +252,7 @@ timer_off("Cholesky Decomp");
     }
   
   naux_fin_ = pos;
+  naux_raw_ = pos;
   df_storage_ = core;
 	
   psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_NEW);
@@ -262,6 +263,21 @@ timer_off("Cholesky Decomp");
     free(L[Q]);  
   }
   free(L);
+  
+  //Write the restart data, it's cheap
+  next_PSIF_DFSCF_BJ = PSIO_ZERO;
+  psio_->write(PSIF_DFSCF_BJ,"RI_PAIR_MU",(char *) &(ri_pair_mu_[0]),sizeof(int)*ntri_naive_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+  next_PSIF_DFSCF_BJ = PSIO_ZERO;
+  psio_->write(PSIF_DFSCF_BJ,"RI_PAIR_NU",(char *) &(ri_pair_nu_[0]),sizeof(int)*ntri_naive_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+  next_PSIF_DFSCF_BJ = PSIO_ZERO;
+  psio_->write(PSIF_DFSCF_BJ,"N_TRI",(char *) &(ntri_),sizeof(int),next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+  next_PSIF_DFSCF_BJ = PSIO_ZERO;
+  psio_->write(PSIF_DFSCF_BJ,"N_TRI_NAIVE",(char *) &(ntri_naive_),sizeof(int),next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+  next_PSIF_DFSCF_BJ = PSIO_ZERO;
+  psio_->write(PSIF_DFSCF_BJ,"N_AUX_RAW",(char *) &(naux_raw_),sizeof(int),next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+  next_PSIF_DFSCF_BJ = PSIO_ZERO;
+  psio_->write(PSIF_DFSCF_BJ,"N_AUX_FIN",(char *) &(naux_fin_),sizeof(int),next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+  psio_->close(PSIF_DFSCF_BJ,1); //We'll reuse this methinks
 
   psio_->close(PSIF_DFSCF_BJ,1); 
 
@@ -282,7 +298,10 @@ timer_off("Cholesky Decomp");
     psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(B_ia_P_[Q][0]),sizeof(double)*ntri_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);   
   }
   
-  psio_->close(PSIF_DFSCF_BJ,0); 
+  psio_->close(PSIF_DFSCF_BJ,1);
+
+  if (options_.get_bool("CHOLESKY_INTEGRALS_ONLY"))
+    abort(); 
 
 }
 void HF::sort_cholesky(double *vec, int *reorder, int length)
