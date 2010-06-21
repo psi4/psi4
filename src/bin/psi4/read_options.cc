@@ -224,6 +224,8 @@ int read_options(const std::string &name, Options & options) {
     options.add_str("SCF_TYPE","PK","PK OUT_OF_CORE DIRECT DF L_DF CD 1C_CD");
     /*- Cholesky Cutoff -*/
     options.add_double("CHOLESKY_CUTOFF",1E-4);
+    /*- Cholesky Integral factory only? -*/
+    options.add_bool("CHOLESKY_INTEGRALS_ONLY",false);
 
     /* -Dual basis projection? -*/
     options.add_bool("DUAL_BASIS",false);
