@@ -1228,7 +1228,7 @@ void RHF::form_G_from_direct_integrals()
     const double *buffer = eri_->buffer();
     // End factor out
 
-    fprintf(outfile, "      Computing integrals..."); fflush(outfile);
+    //fprintf(outfile, "      Computing integrals..."); fflush(outfile);
     int P, Q, R, S;
     int i, j, k, l;
     int index;
@@ -1425,7 +1425,7 @@ void RHF::form_G_from_direct_integrals()
             }
         }
     }
-    fprintf(outfile, "done.  %d two-electron integrals.\n", count); fflush(outfile);
+    //fprintf(outfile, "done.  %d two-electron integrals.\n", count); fflush(outfile);
 //    delete eri;
 
     // Set RefMatrix to RefSimpleMatrix handling symmetry blocking, if needed
@@ -2508,6 +2508,8 @@ void RHF::compute_SAD_guess() {
     if (print_>6)
         D_->print(outfile);
 
+    D_->print(outfile);    
+
     //Compute a rough Fock matrix via integral direct
     //Note, my convention is backwards, l and s are index variables
     // m and n are zip variables
@@ -2590,7 +2592,200 @@ void RHF::compute_SAD_guess() {
         D_->print(outfile);
     }
 
+    /**
+    //Compute a rough Fock matrix via integral direct
+    //Note, my convention is backwards, l and s are index variables
+    // m and n are zip variables
+    timer_on("SAD Fock");
+    double SAD_Schwarz = options_.get_double("SAD_SCHWARZ_CUTOFF");
+    G_->zero();
+    J_->zero();
+    K_->zero();
+    IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
+    TwoBodyInt *TEI = integral.eri(0, SAD_Schwarz);
+    const double* buffer = TEI->buffer();
+    
+    long kshells = 0;
+    long kdone = 0;
+    long jshells = 0;
+    long jdone = 0;
+
+    //J
+    for (int A = 0, shell_offset = 0; A<mol->nallatom(); A++) {
+    for (int MU = shell_offset; MU < shell_offset+atomic_bases[A]->nshell(); MU++) {
+    int numMU = basisset_->shell(MU)->nfunction();
+    for (int NU = shell_offset; NU <= MU ; NU++) {
+    int numNU = basisset_->shell(NU)->nfunction();
+    for (int LA = 0; LA < basisset_->nshell(); LA++) {
+    int numLA = basisset_->shell(LA)->nfunction();
+    for (int SI = 0; SI <= LA; SI++) {
+    int numSI = basisset_->shell(SI)->nfunction();
+
+    jshells++;
+
+    if (!TEI->shell_is_zero(MU,NU,LA,SI)) {
+    jdone++;
+    TEI->compute_shell(MU,NU,LA,SI);
+    for (int m = 0, index = 0; m<numMU; m++) {
+    int omu = basisset_->shell(MU)->function_index() + m;
+    for (int n = 0; n<numNU; n++) {
+    int onu = basisset_->shell(NU)->function_index() + n;
+    for (int l = 0; l<numLA; l++) {
+    int ola = basisset_->shell(LA)->function_index() + l;
+    for (int s = 0; s<numSI; s++,index++) {
+    int osi = basisset_->shell(SI)->function_index() + s;
+        //J_->add(0,ola,osi,2.0*D_->get(0,omu,onu)*buffer[index]); //Redundant shells
+        if (onu == omu) {
+            if (osi == ola) {
+                J_->add(0,ola,osi,2.0*D_->get(0,omu,onu)*buffer[index]);
+            } else if (osi < ola) {
+                J_->add(0,ola,osi,2.0*D_->get(0,omu,onu)*buffer[index]);
+                J_->add(0,osi,ola,2.0*D_->get(0,omu,onu)*buffer[index]);
+            }
+        }
+        else if (onu < omu) {
+            if (osi == ola) {
+                J_->add(0,ola,osi,4.0*D_->get(0,omu,onu)*buffer[index]);
+            } else if (osi < ola) {
+                J_->add(0,ola,osi,4.0*D_->get(0,omu,onu)*buffer[index]);
+                J_->add(0,osi,ola,4.0*D_->get(0,omu,onu)*buffer[index]);
+            }
+        }  
+    }
+    }
+    }
+    }
+    }
+
+
+    }
+    }
+    }
+    }
+    shell_offset+= atomic_bases[A]->nshell();
+    }
+    //End J
+    
+    //K
+    for (int A = 0, shell_offset = 0; A<mol->nallatom(); A++) {
+    for (int LA = 0; LA < basisset_->nshell(); LA++) {
+    int numLA = basisset_->shell(LA)->nfunction();
+    for (int MU = shell_offset; MU < shell_offset+atomic_bases[A]->nshell() && MU <= LA; MU++) {
+    int numMU = basisset_->shell(MU)->nfunction();
+    for (int SI = 0; SI <= LA; SI++) {
+    int numSI = basisset_->shell(SI)->nfunction();
+    for (int NU = shell_offset; NU < shell_offset+atomic_bases[A]->nshell() && NU <= SI; NU++) {
+    int numNU = basisset_->shell(NU)->nfunction();
+
+    kshells++;
+
+    if (!TEI->shell_is_zero(LA,MU,SI,NU)) {
+    kdone++;
+    TEI->compute_shell(LA,MU,SI,NU);
+    for (int l = 0, index = 0; l<numLA; l++) {
+    int ola = basisset_->shell(LA)->function_index() + l;
+    for (int m = 0; m<numMU; m++) {
+    int omu = basisset_->shell(MU)->function_index() + m;
+    for (int s = 0; s<numSI; s++) {
+    int osi = basisset_->shell(SI)->function_index() + s;
+    for (int n = 0; n<numNU; n++, index++) {
+    int onu = basisset_->shell(NU)->function_index() + n;
+        if (ola == osi && omu == onu) {
+            K_->add(0,ola,osi,-D_->get(0,omu,onu)*buffer[index]);
+        } else if (ola == osi && omu > onu) {
+            K_->add(0,ola,osi,-2.0*D_->get(0,omu,onu)*buffer[index]);       
+        } else if (ola > osi && omu == onu) {
+            K_->add(0,ola,osi,-D_->get(0,omu,onu)*buffer[index]);       
+            K_->add(0,osi,ola,-D_->get(0,omu,onu)*buffer[index]);       
+        } else if (ola > osi && omu > onu) {
+            K_->add(0,ola,osi,-2.0*D_->get(0,omu,onu)*buffer[index]);       
+            K_->add(0,osi,ola,-2.0*D_->get(0,omu,onu)*buffer[index]);        
+        }
+    }
+    }
+    }
+    }
+    }
+
+    }
+    }
+    }
+    }
+    shell_offset+= atomic_bases[A]->nshell();
+    }
+    //End K
+    timer_off("SAD Fock");
+
+
+    if (print_>1) {
+        fprintf(outfile,"  SAD Fock Computation:\n");
+        fprintf(outfile,"  %ld of %ld shells computed for Coulomb.\n",jdone,jshells);
+        fprintf(outfile,"  %ld of %ld shells computed for Exchange.\n",kdone,kshells);
+    }
+
+    G_->copy(J_);
+    G_->add(K_);
+
+    J_->print(outfile);
+    K_->print(outfile);
+
+    F_->copy(H_);
+    F_->add(G_);
+
+    //Compute initial E for reference
+    E_ = compute_E();
+
+    //Form the C matrix from the rough Fock matrix
+    form_C();
+    //Form the D matrix from the resultant C matrix
+    form_D();
+
+    if (print_>7) {
+        G_->print(outfile);
+        F_->print(outfile);
+        C_->print(outfile);
+        D_->print(outfile);
+    }
+
+    **/
+    timer_on("SAD C");
+
+
+    //Form the C matrix in reverse via eigendecoposition of D.
+    C_->zero();
+    int norbs = nso_;
+    int ndocc = nalpha_;
+    doccpi_[0] = nalpha_;
+    fprintf(outfile,"  Ndocc %d\n",ndocc);
+    double **D = D_->to_block_matrix();
+    double **V = block_matrix(norbs,norbs);    
+
+    print_mat(D,norbs,norbs,outfile);
+
+    double *eigvals = init_array(norbs);
+    sq_rsp(norbs, norbs, D,  eigvals, 1, V, 1.0e-14);
+
+    for (int i = ndocc; i < norbs; i++)
+        fprintf(outfile,"  Eigval %d, %14.10f\n",i,eigvals[i]);
+
+    print_mat(V,norbs,norbs,outfile);
+    //Yep
+    for (int i = norbs-ndocc-1; i<norbs; i++)
+        C_DSCAL(norbs, sqrt(eigvals[i]), V[i], 1);
+
+    print_mat(V,norbs,norbs,outfile);
+
+    for (int m = 0; m<norbs; m++)
+        for (int i = 0; i<ndocc; i++)
+            C_->set(0,m,i,V[m][norbs-i-1]);
+    C_->print(outfile);
+
     //Frees
+    free(D);    
+    free(V);    
+
+    timer_off("SAD C");
+    
     for (int A = 0; A<mol->nallatom(); A++)
         free_block(atomic_D[A]);
     free(atomic_D);

@@ -251,13 +251,13 @@ timer_off("Cholesky Decomp");
         ri_pair_nu_[ij] = j;
     }
   
-  ri_nbf_ = pos;
+  naux_fin_ = pos;
   df_storage_ = core;
 	
   psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_NEW);
   psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
   
-  for (int Q = 0; Q < ri_nbf_; Q++) {
+  for (int Q = 0; Q < naux_fin_; Q++) {
     psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(L[Q][0]),sizeof(double)*ntri_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ); 
     free(L[Q]);  
   }
@@ -265,20 +265,20 @@ timer_off("Cholesky Decomp");
 
   psio_->close(PSIF_DFSCF_BJ,1); 
 
-  B_ia_P_ = block_matrix(ri_nbf_,ntri_);
+  B_ia_P_ = block_matrix(naux_fin_,ntri_);
 
   if (print_> 3) 
-    fprintf(outfile,"  Cholesky Tensor: ntri_ = %d, ri_nbf_ = %d:\n",ntri_,ri_nbf_);
+    fprintf(outfile,"  Cholesky Tensor: ntri_ = %d, naux_fin_ = %d:\n",ntri_,naux_fin_);
     
 
   if (print_ > 7) {
-    print_mat(B_ia_P_,ri_nbf_,ntri_,outfile);
+    print_mat(B_ia_P_,naux_fin_,ntri_,outfile);
   }
 
   psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
   next_PSIF_DFSCF_BJ = PSIO_ZERO;
   
-  for (int Q = 0; Q < ri_nbf_; Q++) {
+  for (int Q = 0; Q < naux_fin_; Q++) {
     psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(B_ia_P_[Q][0]),sizeof(double)*ntri_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);   
   }
   

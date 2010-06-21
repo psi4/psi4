@@ -102,7 +102,8 @@ protected:
     df_storage df_storage_;
 
     //Density Fitting?
-    int ri_nbf_; //Number of functions in the auxiliary basis
+    int naux_raw_; //Number of functions in the raw auxiliary basis
+    int naux_fin_; //Number of functions in the finished auxiliary basis
     int *ri_pair_nu_;
     int *ri_pair_mu_;
     int sig_fun_pairs_;

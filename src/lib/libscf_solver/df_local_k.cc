@@ -41,7 +41,7 @@ void HF::form_A()
     } 
     int norbs = basisset_->nbf(); 
     ribasis_ = shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_SCF"));
-    ri_nbf_ = ribasis_->nbf();
+    naux_fin_ = ribasis_->nbf();
     
     //Form the schwarz sieve
     timer_on("Schwarz Sieve");
@@ -130,7 +130,7 @@ void HF::form_A()
 
     timer_off("Schwarz Sieve");
     //Size of the three-index tensor
-    unsigned long memA = ntri_*(long)ri_nbf_;
+    unsigned long memA = ntri_*(long)naux_fin_;
 
     string storage_type;
     storage_type = options_.get_str("RI_SCF_STORAGE");
@@ -168,7 +168,7 @@ void HF::form_A()
 
     // J Matrix (will later hold Jinv, 
     //LAPACK is in place
-    Jinv_ = block_matrix(ri_nbf_, ri_nbf_);
+    Jinv_ = block_matrix(naux_fin_, naux_fin_);
     
     timer_on("Form J Matrix;");
     // J_{MN} = (0M|N0)
@@ -196,43 +196,43 @@ void HF::form_A()
         }
     }
 
-    Jfit_ = block_matrix(ri_nbf_,ri_nbf_);
+    Jfit_ = block_matrix(naux_fin_,naux_fin_);
     
     //Copy J to Jfit_ for later use (elements of K)
-    C_DCOPY(ri_nbf_*ri_nbf_,Jinv_[0],1,Jfit_[0],1);
+    C_DCOPY(naux_fin_*naux_fin_,Jinv_[0],1,Jfit_[0],1);
 
     if (print_>4) {
         fprintf(outfile,"\nJ:\n"); fflush(outfile);
-        print_mat(Jinv_,ri_nbf_,ri_nbf_,outfile);
+        print_mat(Jinv_,naux_fin_,naux_fin_,outfile);
     }
 
     timer_off("Form J Matrix;");
     timer_on("Form J^-1");
     
     //fprintf(outfile,"  J\n");
-    //print_mat(Jinv_,ri_nbf_,ri_nbf_,outfile);
+    //print_mat(Jinv_,naux_fin_,naux_fin_,outfile);
 
     //Cholesky facotrization (in place)
-    int CholError = C_DPOTRF('L',ri_nbf_,Jinv_[0],ri_nbf_);
+    int CholError = C_DPOTRF('L',naux_fin_,Jinv_[0],naux_fin_);
     if (CholError !=0 )
         throw std::domain_error("J Matrix Cholesky Decomposition Failed!");
     
     //fprintf(outfile,"  Jchol\n");
-    //print_mat(Jinv_,ri_nbf_,ri_nbf_,outfile);
+    //print_mat(Jinv_,naux_fin_,naux_fin_,outfile);
     
     //Inversion (in place)
-    int IError = C_DPOTRI('L',ri_nbf_,Jinv_[0],ri_nbf_);
+    int IError = C_DPOTRI('L',naux_fin_,Jinv_[0],naux_fin_);
     if (IError !=0 )
         throw std::domain_error("J Matrix Inversion Failed!");
 
     //LAPACK is smart and all, only uses half of the thing
-    for (int m = 0; m<ri_nbf_; m++)
+    for (int m = 0; m<naux_fin_; m++)
         for (int n = 0; n<m; n++)
             Jinv_[m][n] = Jinv_[n][m]; 
 
     if (print_>4) {
         fprintf(outfile,"  J^-1\n");
-        print_mat(Jinv_,ri_nbf_,ri_nbf_,outfile);
+        print_mat(Jinv_,naux_fin_,naux_fin_,outfile);
     }
 
     timer_off("Form J^-1");
@@ -251,7 +251,7 @@ void HF::form_A()
     	IntegralFactory rifactory(basisset_, basisset_, ribasis_, zero);
         shared_ptr<TwoBodyInt> eri = shared_ptr<TwoBodyInt>(rifactory.eri());
         const double *buffer = eri->buffer();
-        A_ia_P_ = block_matrix(ri_nbf_,ntri_naive_); 
+        A_ia_P_ = block_matrix(naux_fin_,ntri_naive_); 
 
         int numP,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu;
         int start_index, delta_index, l_index;
@@ -293,7 +293,7 @@ void HF::form_A()
         }
         if (print_>4) {
             fprintf(outfile,"  3-Index Tensor:\n");
-            print_mat(A_ia_P_, ri_nbf_,ntri_naive_ ,outfile);
+            print_mat(A_ia_P_, naux_fin_,ntri_naive_ ,outfile);
             fprintf(outfile,"\n");
         }
         if (print_>5) {
@@ -460,24 +460,24 @@ void RHF::form_G_from_RI_local_K()
         if (J_is_required_) {
             //This embedding of the fitting in the density metric is kinda hot (especially in core)
             //Oh, and see R. Polly et. al., J. Chem. Phys. 102(21-22), pp. 2311-2321, DOI 10.1080/0026897042000274801
-            double* c = init_array(ri_nbf_);
-            double* d = init_array(ri_nbf_);
+            double* c = init_array(naux_fin_);
+            double* d = init_array(naux_fin_);
             double *J = init_array(ntri_);
             //DGEMV -> L:
             //c_A = (A|ls)*D_{ls}
             timer_on("J DDOT");
-            C_DGEMV('N',ri_nbf_,ntri_,1.0,A_ia_P_[0],ntri_naive_,DD,1,0.0,c,1);
+            C_DGEMV('N',naux_fin_,ntri_,1.0,A_ia_P_[0],ntri_naive_,DD,1,0.0,c,1);
             timer_off("J DDOT");
 
             //d_A = J^{-1}*c = J^{-1}_{AB}c_B
             timer_on("J Fitting");
-            C_DGEMV('N',ri_nbf_,ri_nbf_,1.0,Jinv_[0],ri_nbf_,c,1,0.0,d,1);
+            C_DGEMV('N',naux_fin_,naux_fin_,1.0,Jinv_[0],naux_fin_,c,1,0.0,d,1);
             timer_off("J Fitting");
 
             //DGEMV -> J:
             //J_{mn} = d_B(B|mn)
             timer_on("J DAXPY");
-            C_DGEMV('T',ri_nbf_,ntri_,1.0,A_ia_P_[0],ntri_naive_,d,1,0.0,J,1);
+            C_DGEMV('T',naux_fin_,ntri_,1.0,A_ia_P_[0],ntri_naive_,d,1,0.0,J,1);
             timer_off("J DAXPY");
             //Put everything in J_
             for (int ij = 0; ij < ntri_; ij++) {
@@ -1112,7 +1112,7 @@ void RHF::form_domain_bookkeeping()
     //Biggest domain size, for memory allocation
     max_domain_size_ = 0;
 
-    //Fitting domain sizes (hopefully << ri_nbf_)
+    //Fitting domain sizes (hopefully << naux_fin_)
     fit_size_ = init_int_array(ndocc);
     //Biggest fitting domain size, for memory allocation
     max_fit_size_ = 0;

@@ -64,7 +64,8 @@ void HF::form_B()
     int norbs = basisset_->nbf(); 
     int ndocc = doccpi_[0];
     ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_SCF"));
-    ri_nbf_ = ribasis_->nbf(); 
+    naux_raw_ = ribasis_->nbf(); 
+    naux_fin_ = naux_raw_; //For now 
     
     if (print_>5) {
         basisset_->print(outfile); 
@@ -78,6 +79,7 @@ void HF::form_B()
     //                        RESTART?
     //
     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    //TODO: Make restart work with the new transform
     if (options_.get_bool("RI_SCF_RESTART")) 
     {
         //restart!! Use existing 3-index tensor on disk
@@ -90,6 +92,10 @@ void HF::form_B()
         psio_->read(PSIF_DFSCF_BJ,"N_TRI",(char *) &(ntri_),sizeof(int),next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
         next_PSIF_DFSCF_BJ = PSIO_ZERO;
         psio_->read(PSIF_DFSCF_BJ,"N_TRI_NAIVE",(char *) &(ntri_naive_),sizeof(int),next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+        next_PSIF_DFSCF_BJ = PSIO_ZERO;
+        psio_->read(PSIF_DFSCF_BJ,"N_AUX_RAW",(char *) &(naux_raw_),sizeof(int),next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+        next_PSIF_DFSCF_BJ = PSIO_ZERO;
+        psio_->read(PSIF_DFSCF_BJ,"N_AUX_FIN",(char *) &(naux_fin_),sizeof(int),next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
         
         //Use ri_pair_mu_ and ri_pair_nu_ to keep track of things
         //Across schwarz sieve and unfortunate shell indexing
@@ -106,9 +112,9 @@ void HF::form_B()
 
         //Detrmine storage algorithm based on user input
         //Size of the three-index tensor
-        unsigned long memA = ntri_*(long)ri_nbf_;
+        unsigned long memA = ntri_naive_*(long)naux_fin_;
         //Size of the fitting metric 
-        unsigned long memJ = ri_nbf_*(long)ri_nbf_;
+        unsigned long memJ = naux_fin_*(long)naux_fin_;
         if (storage_type == "CORE")
             df_storage_ = core;
         else if (storage_type == "DISK")
@@ -116,7 +122,7 @@ void HF::form_B()
         else if (storage_type == "DEFAULT")
         {
     	    //set df_storage_ semi-heuristically based on available memory
-    	    if (((long)((memA+memJ)*(1.0+MEMORY_SAFETY_FACTOR)))<(memory_/sizeof(double)))
+    	    if (((long)((memA)*(1.0+MEMORY_SAFETY_FACTOR)))<(memory_/sizeof(double)))
                 df_storage_ = core; //Full in-core
     	    else
                 df_storage_ = disk; //Disk
@@ -130,10 +136,10 @@ void HF::form_B()
         
         if (df_storage_ == core) {
             //We need the three-index tensor in the core
-            //fprintf(outfile,"  n_tri_ %d, n_tri_naive_ %d, ri_nbf_ %d\n",ntri_,ntri_naive_,ri_nbf_); fflush(outfile);
-            B_ia_P_ = block_matrix(ri_nbf_,ntri_naive_);
+            //fprintf(outfile,"  n_tri_ %d, n_tri_naive_ %d, naux_fin_ %d\n",ntri_,ntri_naive_,naux_fin_); fflush(outfile);
+            B_ia_P_ = block_matrix(naux_fin_,ntri_naive_);
             next_PSIF_DFSCF_BJ = PSIO_ZERO;
-            psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(B_ia_P_[0][0]),sizeof(double)*ntri_naive_*ri_nbf_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+            psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(B_ia_P_[0][0]),sizeof(double)*ntri_naive_*naux_fin_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
         }
         psio_->close(PSIF_DFSCF_BJ,1); //we'll need to reuse this guy (probably)
         return;
@@ -233,43 +239,351 @@ void HF::form_B()
 
     //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     //
-    //                    DETERMINE STORAGE
-    //
-    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    //Detrmine storage algorithm based on user input
-    //Size of the three-index tensor
-    unsigned long memA = ntri_*(long)ri_nbf_;
-    //Size of the fitting metric 
-    unsigned long memJ = ri_nbf_*(long)ri_nbf_;
-
-    string storage_type;
-    storage_type = options_.get_str("RI_SCF_STORAGE");
-
-    if (storage_type == "CORE")
-        df_storage_ = core;
-    else if (storage_type == "DISK")
-        df_storage_ = disk;
-    else if (storage_type == "DEFAULT")
-    {
-    	//set df_storage_ semi-heuristically based on available memory
-    	if (((long)((memA+memJ)*(1.0+MEMORY_SAFETY_FACTOR)))<(memory_/sizeof(double)))
-            df_storage_ = core; //Full in-core
-    	else
-            df_storage_ = disk; //Disk
-    }	
-
-    if (df_storage_ == core)
-        fprintf(outfile,"\n  Density Fitting Algorithm proceeding on Core.\n"); 
-    else if (df_storage_ == disk)
-        fprintf(outfile,"\n  Density Fitting Algorithm proceeding on Disk\n"); 
-    fflush(outfile);
-
-    
-    //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    //
     //                      FORM J^-1/2
+    //        NEW ALGORITHM: CANONICAL ORTHOGONALIZATION
     //
     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        
+    timer_on("Form X");
+    //OK, integrals time. start with the fitting matrix J
+    //It takes a lot of work to get a null basis with Psi4! 
+    shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
+    
+    // Create integral factory for J_S (Overlap Matrix in form_B)
+    IntegralFactory rifactory_JS(ribasis_, ribasis_, zero, zero);
+    OneBodyInt *S = rifactory_JS.overlap();
+    MatrixFactory matJS;
+    matJS.init_with(1,&naux_raw_,&naux_raw_);
+
+    //Put the integrals in a good old double**
+    double** SJ;
+
+    { 
+        SharedMatrix S_J = shared_ptr<Matrix>(matJS.create_matrix("S_J"));
+        //Compute those integrals
+        S->compute(S_J);
+        delete S;
+        //S_J->print(outfile);
+        SJ = S_J->to_block_matrix();
+    }
+
+    //Debug
+    double** Scopy1 = block_matrix(naux_raw_,naux_raw_);
+    C_DCOPY(naux_raw_*naux_raw_, SJ[0], 1, Scopy1[0],1);
+    
+    // Form X
+    // First, diagonalize S_J
+    // the C_DSYEV call replaces the original matrix SJ with its eigenvectors
+    double* s_eigval = init_array(naux_raw_);
+    int lswork = naux_raw_ * 3;
+    double* swork = init_array(lswork);
+    int stat = C_DSYEV('v','u',naux_raw_,SJ[0],naux_raw_,s_eigval, swork,lswork);
+    if (stat != 0) {
+        fprintf(outfile, "C_DSYEV failed\n");
+        exit(PSI_RETURN_FAILURE);
+    }
+    free(swork);
+
+    //Debug
+    double** Scopy2 = block_matrix(naux_raw_,naux_raw_);
+    C_DCOPY(naux_raw_*naux_raw_, SJ[0], 1, Scopy2[0],1);
+  
+    for (int i =0; i<naux_raw_; i++)
+        C_DSCAL(naux_raw_,s_eigval[i],Scopy2[i],1); 
+    
+    C_DGEMM('t','n',naux_raw_,naux_raw_,naux_raw_,1.0,
+            Scopy2[0],naux_raw_,SJ[0],naux_raw_,-1.0,Scopy1[0],naux_raw_);
+
+    //print_mat(Scopy3, naux_raw_,naux_raw_,outfile);
+
+    double worst_zero = 0.0; 
+    double rms = 0.0;
+    for (int ij = 0; ij < naux_raw_*naux_raw_; ij++) {
+        if (fabs(Scopy1[0][ij]) > worst_zero)
+            worst_zero = fabs(Scopy1[0][ij]);
+        rms += Scopy1[0][ij]*Scopy1[0][ij];
+    }
+    rms = sqrt(1.0/(naux_raw_*naux_raw_)*rms);
+    fprintf(outfile,"  S_J: Worst Zero is %14.10E, RMS is %14.10E\n",worst_zero,rms);
+    
+
+    free_block(Scopy1);
+    free_block(Scopy2);     
+
+    //fprintf(outfile,"S_J Eigenvectors:\n");
+    //print_mat(SJ,naux_raw_,naux_raw_,outfile);
+    //fflush(outfile);
+
+    //fprintf(outfile,"S_J Eigenvalues:\n");
+    //for (int i = 0; i<naux_raw_; i++)
+    //    fprintf(outfile,"  Vector %d: %14.10f\n",i,s_eigval[i]);
+    //fflush(outfile);
+
+    //Find the condition number and largest/smallest eigenvalues of SJ
+    //The largest one is what is important
+    double min_SJ = s_eigval[0];
+    double max_SJ = s_eigval[0];
+    for (int i=0; i<naux_raw_; i++) {
+        if (min_SJ > s_eigval[i])
+            min_SJ = s_eigval[i];
+        if (max_SJ < s_eigval[i])
+            max_SJ = s_eigval[i];
+    }
+
+    //Print some stuff
+    double cond_SJ = max_SJ/min_SJ;
+    if (print_>0) {
+        fprintf(outfile,"  Min J overlap eigenvalue is %14.10E.\n",min_SJ);
+        fprintf(outfile,"  Max J overlap eigenvalue is %14.10E.\n",max_SJ);
+        fprintf(outfile,"  J overlap condition number is %14.10E.\n",cond_SJ);
+        fflush(outfile);
+    }
+    
+    //Find the user's allowed condition number
+    double cond_SJ_tol = options_.get_double("RI_MAX_COND");
+    //and compute the smallest allowed eigenvlue in the overlap matrix
+    double cutoff_SJ = max_SJ/cond_SJ_tol;
+
+    //Go through and scale columns of eigenvectors by allowed s^-1/2
+    int linear_dependencies = 0;
+    double new_min_SJ = s_eigval[naux_raw_-1]; //should be the biggest
+    for (int i = 0; i<naux_raw_; i++) {
+        if (s_eigval[i] <= cutoff_SJ) {
+            //OK this eigenvalue does not contribute to the subspace completeness
+            //and moreover it kills my condition number
+            s_eigval[i] = 0.0; //This isn't officially a big deal, but it's proper etiquette
+            naux_fin_--;
+            linear_dependencies++;
+        } else {
+            if (new_min_SJ > s_eigval[i])
+                new_min_SJ = s_eigval[i];
+            //OK, this eigenvalue is approved for launch
+            s_eigval[i] = 1.0 / sqrt(s_eigval[i]);
+        }
+       
+        //Scale the column out to produce the porous X matrix in place
+        //(Columns are rows in this messed up LAPACK-ness 
+        C_DSCAL(naux_raw_, s_eigval[i], SJ[i], 1);
+    }  
+    
+    //fprintf(outfile,"X (in S ordering):\n");
+    //print_mat(SJ,naux_raw_,naux_raw_,outfile);
+    //fflush(outfile);
+
+
+    //So how'd that go?
+    if (print_>0) {
+        fprintf(outfile, "  %d of %d finished auxiliary functions eliminated by canonical orthogonalization.\n",linear_dependencies, naux_raw_);
+        fprintf(outfile, "  Resultant condition number in J overlap matrix is %14.10E.\n",max_SJ/new_min_SJ);
+        fflush(outfile);
+    }
+
+    //The famed transformation matrix
+    double **X = block_matrix(naux_raw_,naux_fin_); 
+    
+    //We'll put it in canonical (descending eigenvalue) order
+    //This is after all, canonical. Well...as canonical as 
+    //representing one subspace with another subspace cast 
+    //onto a third subspace gets
+    for (int m = 0; m<naux_raw_; m++)
+        for (int n = 0; n<naux_fin_; n++)
+            X[m][n] = SJ[naux_raw_-n-1][m];
+    
+    //fprintf(outfile,"X:\n");
+    //print_mat(X,naux_raw_,naux_raw_,outfile);
+    //fflush(outfile);
+
+    free(s_eigval);
+    free_block(SJ);
+    //That felt surprisingly good
+
+    if (print_>5) {
+        fprintf(outfile,"  X (The J -> J' change of basis matrix):\n");
+        print_mat(X,naux_raw_,naux_fin_,outfile);
+        fflush(outfile);
+    }
+    
+    timer_off("Form X");
+    timer_on("Form J");
+    // J Matrix Time!
+    double **J = block_matrix(naux_raw_, naux_raw_);
+
+    //Next form J in the raw basis, 
+    IntegralFactory rifactory_J(ribasis_, zero, ribasis_, zero);
+    TwoBodyInt *Jint = rifactory_J.eri();
+
+    // Integral buffer
+    const double *Jbuffer = Jint->buffer();
+    
+    // J_{MN} = (0M|N0)
+    int index = 0;
+
+    for (int MU=0; MU < ribasis_->nshell(); ++MU) {
+        int nummu = ribasis_->shell(MU)->nfunction();
+
+        for (int NU=0; NU <= MU; ++NU) {
+            int numnu = ribasis_->shell(NU)->nfunction();
+
+            Jint->compute_shell(MU, 0, NU, 0);
+
+            index = 0;
+            for (int mu=0; mu < nummu; ++mu) {
+                int omu = ribasis_->shell(MU)->function_index() + mu;
+
+                for (int nu=0; nu < numnu; ++nu, ++index) {
+                    int onu = ribasis_->shell(NU)->function_index() + nu;
+
+                    J[omu][onu] = Jbuffer[index];
+                    J[onu][omu] = Jbuffer[index];
+                }
+            }
+        }
+    }
+    if (print_>5) {
+        fprintf(outfile,"\nJ (raw):\n");         
+        print_mat(J,naux_raw_,naux_raw_,outfile);
+        fflush(outfile);
+    }
+    delete Jint; //<-of course it will leak all over the bloody place
+
+    //fprintf(outfile,"J:\n");
+    //print_mat(J,naux_raw_,naux_raw_,outfile);
+    //fflush(outfile);
+
+    //Tansform the J matrix to J'
+    double **Jtemp1 = block_matrix(naux_fin_,naux_raw_);
+    double **Jp = block_matrix(naux_fin_,naux_fin_);
+
+    //Temp = X'*J
+    C_DGEMM('T','N',naux_fin_,naux_raw_,naux_raw_,1.0,X[0],naux_fin_,J[0],naux_raw_,0.0,Jtemp1[0],naux_raw_);
+
+    //J' = Temp*X
+    C_DGEMM('N','N',naux_fin_,naux_fin_,naux_raw_,1.0,Jtemp1[0],naux_raw_,X[0],naux_fin_,0.0,Jp[0],naux_fin_);
+
+    //fprintf(outfile,"J':\n");
+    //print_mat(Jp,naux_fin_,naux_fin_,outfile);
+    //fflush(outfile);
+
+    free_block(Jtemp1);
+
+    timer_off("Form J");
+
+    //For diagnostics purposes, we may want to know 
+    //how bad the raw J was
+    if (options_.get_bool("FIND_RAW_J_COND")) {
+        double** J2 = block_matrix(naux_raw_,naux_raw_);
+        C_DCOPY(naux_raw_*naux_raw_,J[0],1,J2[0],1);
+
+        //Find eigenvalues only
+        double* eigval = init_array(naux_raw_);
+        int lwork = naux_raw_ * 3;
+        double* work = init_array(lwork);
+        stat = C_DSYEV('n','u',naux_raw_,J2[0],naux_raw_,eigval, work,lwork);
+        if (stat != 0) {
+            fprintf(outfile, "C_DSYEV failed\n");
+            exit(PSI_RETURN_FAILURE);
+        }
+
+        free(work);
+                
+        double min_J = eigval[0];
+        double max_J = eigval[0];
+        for (int i=0; i<naux_raw_; i++) {
+            if (min_J > eigval[i])
+                min_J = eigval[i];
+            if (max_J < eigval[i])
+                max_J = eigval[i];
+
+        }
+        free(eigval);
+
+        fprintf(outfile,"  Smallest eigenvalue in the raw fitting metric is %14.10E.\n",min_J);
+        fprintf(outfile,"  Largest eigenvalue in the raw fitting metric is %14.10E.\n",max_J);
+        fprintf(outfile,"  Condition number of the raw fitting metric is %14.10E.\n",max_J/min_J);
+        fflush(outfile);
+
+        free_block(J2);
+    }
+    free_block(J);
+
+    //Find J'^-1/2
+    timer_on("Form J^-1/2");
+
+    // Form Jp^-1/2
+    // First, diagonalize Jp
+    // the C_DSYEV call replaces the original matrix Jp with its eigenvectors
+    double* eigval = init_array(naux_fin_);
+    int lwork = naux_fin_ * 3;
+    double* work = init_array(lwork);
+    stat = C_DSYEV('v','u',naux_fin_,Jp[0],naux_fin_,eigval, work,lwork);
+    if (stat != 0) {
+        fprintf(outfile, "C_DSYEV failed\n");
+        exit(PSI_RETURN_FAILURE);
+    }
+    free(work);
+
+    // Now Jp contains the eigenvectors of the original Jp
+    // Copy Jp to Jp_copy
+    double **Jp_copy = block_matrix(naux_fin_, naux_fin_);
+    C_DCOPY(naux_fin_*naux_fin_,Jp[0],1,Jp_copy[0],1); 
+
+    // Now form Jp^{-1/2} = U(T)*j'^{-1/2}*U,
+    // where j'^{-1/2} is the diagonal matrix of the inverse square roots
+    // of the eigenvalues, and U is the matrix of eigenvectors of J'
+    double min_J = eigval[0];
+    double max_J = eigval[0];
+    for (int i=0; i<naux_fin_; i++) {
+        if (min_J > eigval[i])
+            min_J = eigval[i];
+        if (max_J < eigval[i])
+            max_J = eigval[i];
+
+        //All eignvalues should be approved for use!
+        eigval[i] = 1.0 / sqrt(eigval[i]);
+        // scale one set of eigenvectors by the diagonal elements jp^{-1/2}
+        C_DSCAL(naux_fin_, eigval[i], Jp[i], 1);
+    }
+    free(eigval);
+
+    if (print_>0) {
+        fprintf(outfile,"  Smallest eigenvalue in the finished fitting metric is %14.10E.\n",min_J);
+        fprintf(outfile,"  Largest eigenvalue in the finished fitting metric is %14.10E.\n",max_J);
+        fprintf(outfile,"  Condition number of the finished fitting metric is %14.10E.\n",max_J/min_J);
+        fflush(outfile);
+    }
+
+    // J'^-1/2 = Jp_copy(T) * Jp
+    double** Jp_mhalf = block_matrix(naux_fin_,naux_fin_);
+    C_DGEMM('t','n',naux_fin_,naux_fin_,naux_fin_,1.0,
+            Jp_copy[0],naux_fin_,Jp[0],naux_fin_,0.0,Jp_mhalf[0],naux_fin_);
+
+    //fprintf(outfile,"J'^-1/2:\n");
+    //print_mat(Jp_mhalf,naux_fin_,naux_fin_,outfile);
+    //fflush(outfile);
+
+    free_block(Jp_copy);
+    free_block(Jp);
+    
+    timer_off("Form J^-1/2");
+    timer_on("Form W");
+
+    //W_AB' = X_AC'*J_CB'^-1/2
+    double** W = block_matrix(naux_raw_,naux_fin_);
+
+    C_DGEMM('N','N',naux_raw_,naux_fin_,naux_fin_,1.0,X[0],naux_fin_,Jp_mhalf[0],naux_fin_,0.0,W[0],naux_fin_);
+
+    //fprintf(outfile,"W:\n");
+    //print_mat(W,naux_raw_,naux_fin_,outfile);
+    //fflush(outfile);
+    free_block(Jp_mhalf);
+    timer_off("Form W");
+
+    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    //
+    //          OLD ALGORITHM (UNSTABLE)
+    //
+    //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    /**
     //OK, integrals time. start with the fitting matrix J
     //It takes a lot of work to get a null basis with Psi4! 
     shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
@@ -282,9 +596,9 @@ void HF::form_B()
     const double *Jbuffer = Jint->buffer();
 
     // J Matrix
-    double **J = block_matrix(ri_nbf_, ri_nbf_);
+    double **J = block_matrix(naux_fin_, naux_fin_);
     // J^{-1/2}
-    double **J_mhalf = block_matrix(ri_nbf_, ri_nbf_);
+    double **J_mhalf = block_matrix(naux_fin_, naux_fin_);
     
     timer_on("Form J Matrix;");
     // J_{MN} = (0M|N0)
@@ -313,18 +627,21 @@ void HF::form_B()
     }
     if (print_>5) {
         fprintf(outfile,"\nJ:\n"); fflush(outfile);
-        print_mat(J,ri_nbf_,ri_nbf_,outfile);
+        print_mat(J,naux_fin_,naux_fin_,outfile);
     }
     timer_off("Form J Matrix;");
     timer_on("Form J^-1/2;");
 
+    double **J_copy2 = block_matrix(naux_fin_, naux_fin_);
+    C_DCOPY(naux_fin_*naux_fin_,J[0],1,J_copy2[0],1); 
+    
     // Form J^-1/2
     // First, diagonalize J
     // the C_DSYEV call replaces the original matrix J with its eigenvectors
-    double* eigval = init_array(ri_nbf_);
-    int lwork = ri_nbf_ * 3;
+    double* eigval = init_array(naux_fin_);
+    int lwork = naux_fin_ * 3;
     double* work = init_array(lwork);
-    int stat = C_DSYEV('v','u',ri_nbf_,J[0],ri_nbf_,eigval, work,lwork);
+    int stat = C_DSYEV('v','u',naux_fin_,J[0],naux_fin_,eigval, work,lwork);
     if (stat != 0) {
         fprintf(outfile, "C_DSYEV failed\n");
         exit(PSI_RETURN_FAILURE);
@@ -333,15 +650,23 @@ void HF::form_B()
 
     // Now J contains the eigenvectors of the original J
     // Copy J to J_copy
-    double **J_copy = block_matrix(ri_nbf_, ri_nbf_);
-    C_DCOPY(ri_nbf_*ri_nbf_,J[0],1,J_copy[0],1); 
+    double **J_copy = block_matrix(naux_fin_, naux_fin_);
+    C_DCOPY(naux_fin_*naux_fin_,J[0],1,J_copy[0],1); 
 
     // Now form J^{-1/2} = U(T)*j^{-1/2}*U,
     // where j^{-1/2} is the diagonal matrix of the inverse square roots
     // of the eigenvalues, and U is the matrix of eigenvectors of J
     int linear_dependencies = 0;
-    for (int i=0; i<ri_nbf_; i++) {
-        if (eigval[i] < options_.get_double("RI_MIN_EIGENVALUE")) {
+    double min_J = eigval[0];
+    double max_J = eigval[0];
+    double min_J_cutoff = options_.get_double("RI_MIN_EIGENVALUE");
+    for (int i=0; i<naux_fin_; i++) {
+        if (min_J > eigval[i])
+            min_J = eigval[i];
+        if (max_J < eigval[i])
+            max_J = eigval[i];
+
+        if (eigval[i] < min_J_cutoff) {
             eigval[i] = 0.0;
             linear_dependencies++;
         }
@@ -349,25 +674,114 @@ void HF::form_B()
             eigval[i] = 1.0 / sqrt(eigval[i]);
 
         // scale one set of eigenvectors by the diagonal elements j^{-1/2}
-        C_DSCAL(ri_nbf_, eigval[i], J[i], 1);
+        C_DSCAL(naux_fin_, eigval[i], J[i], 1);
     }
     free(eigval);
+    if (print_>1) {
+        fprintf(outfile,"  Smallest eigenvalue in fitting metric is %14.10E.\n",min_J);
+        fprintf(outfile,"  Largest eigenvalue in fitting metric is %14.10E.\n",max_J);
+        fprintf(outfile,"  Condition number of fitting metric is %14.10E.\n",max_J/min_J);
+        fflush(outfile);
+    }
+
     if (linear_dependencies)
         fprintf(outfile,"  WARNING: %d linear dependencies found in auxiliary basis set.\n",linear_dependencies);
 
     // J_mhalf = J_copy(T) * J
-    C_DGEMM('t','n',ri_nbf_,ri_nbf_,ri_nbf_,1.0,
-            J_copy[0],ri_nbf_,J[0],ri_nbf_,0.0,J_mhalf[0],ri_nbf_);
+    C_DGEMM('t','n',naux_fin_,naux_fin_,naux_fin_,1.0,
+            J_copy[0],naux_fin_,J[0],naux_fin_,0.0,J_mhalf[0],naux_fin_);
+
+    free_block(J_copy);
+    
+    //Debug:
+    //J^1/2 = JJ^-1/2
+    //assert J^1/2J^-1/2 = 1
+    double** Jphalf = block_matrix(naux_fin_,naux_fin_);
+    double** ones = block_matrix(naux_fin_,naux_fin_);
+
+    //J^1/2
+    C_DGEMM('N','N',naux_fin_,naux_fin_,naux_fin_,1.0,J_copy2[0],naux_fin_,J_mhalf[0],naux_fin_,0.0,Jphalf[0],naux_fin_);
+    
+    //J^1/2
+    C_DGEMM('N','N',naux_fin_,naux_fin_,naux_fin_,1.0,J_mhalf[0],naux_fin_,Jphalf[0],naux_fin_,0.0,ones[0],naux_fin_);
+
+    //fprintf(outfile,"\nJmhalf:\n"); 
+    //print_mat(J_mhalf,naux_fin_,naux_fin_,outfile);
+    //fflush(outfile);
+        
+    //fprintf(outfile,"\nJphalf:\n"); 
+    //print_mat(Jphalf,naux_fin_,naux_fin_,outfile);
+    //fflush(outfile);
+        
+    //fprintf(outfile,"\nOnes:\n"); 
+    //print_mat(ones,naux_fin_,naux_fin_,outfile);
+    //fflush(outfile);
+        
+    double worst_zero = 0.0;
+    for (int Q = 0 ; Q<naux_fin_; Q++)
+        for (int P = 0; P<Q; P++)
+            if (fabs(ones[P][Q])>worst_zero)
+                worst_zero = fabs(ones[P][Q]);    
+
+    double worst_one = 0.0;
+    for (int Q = 0 ; Q<naux_fin_; Q++)
+        if (fabs(ones[Q][Q]-1.0)>worst_one)
+            worst_one = fabs(ones[Q][Q]-1.0);    
+
+    fprintf(outfile,"  Worst zero is off by %14.10f, Worst one is off by %14.10f\n",worst_zero,worst_one);
+    fflush(outfile);
+
+    free_block(ones);
+    free_block(Jphalf);
+    free_block(J_copy2);
+    //End Debug
 
     free_block(J);
-    free_block(J_copy);
     timer_off("Form J^-1/2;");
 
     if (print_>5) {
-        fprintf(outfile,"\nJmhalf:\n"); fflush(outfile);
-        print_mat(J_mhalf,ri_nbf_,ri_nbf_,outfile);
+        fprintf(outfile,"\nJmhalf:\n"); 
+        print_mat(J_mhalf,naux_fin_,naux_fin_,outfile);
+        fflush(outfile);
     }
+    **/   
     
+    //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    //
+    //                    DETERMINE STORAGE
+    //
+    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    //Detrmine storage algorithm based on user input
+    //This far down as values may change due to schwarz sieve and 
+    //fitting metric considerations
+
+    //Size of the three-index tensor
+    unsigned long memA = ntri_naive_*(long)naux_raw_;
+    //Size of the fitting metric 
+    unsigned long memJ = naux_raw_*(long)naux_fin_;
+
+    string storage_type;
+    storage_type = options_.get_str("RI_SCF_STORAGE");
+
+    if (storage_type == "CORE")
+        df_storage_ = core;
+    else if (storage_type == "DISK")
+        df_storage_ = disk;
+    else if (storage_type == "DEFAULT")
+    {
+    	//set df_storage_ semi-heuristically based on available memory
+    	if (((long)((memA+memJ)*(1.0+MEMORY_SAFETY_FACTOR)))<(memory_/sizeof(double)))
+            df_storage_ = core; //Full in-core
+    	else
+            df_storage_ = disk; //Disk
+    }	
+
+    if (df_storage_ == core)
+        fprintf(outfile,"\n  Density Fitting Algorithm proceeding on Core.\n"); 
+    else if (df_storage_ == disk)
+        fprintf(outfile,"\n  Density Fitting Algorithm proceeding on Disk\n"); 
+    fflush(outfile);
+ 
     //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     //
     //                        FORM B (FINALLY)
@@ -389,7 +803,7 @@ void HF::form_B()
         IntegralFactory rifactory(basisset_, basisset_, ribasis_, zero);
         shared_ptr<TwoBodyInt> eri = shared_ptr<TwoBodyInt>(rifactory.eri());
         const double *buffer = eri->buffer();
-        B_ia_P_ = block_matrix(ri_nbf_,ntri_naive_); 
+        B_ia_P_ = block_matrix(naux_raw_,ntri_naive_); 
         
         int numP,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu;
         int start_index, delta_index, l_index;
@@ -430,20 +844,21 @@ void HF::form_B()
                 }
             } 
         }
-        //print_mat(B_ia_P_, ri_nbf_,ntri_ ,outfile);
+        //print_mat(B_ia_P_, naux_raw_,ntri_ ,outfile);
 
 	// Transformation
-        int max_cols = (int) (memory_/sizeof(double)-memA-memJ)/(ri_nbf_*(1+MEMORY_SAFETY_FACTOR));
+        int max_cols = (int) (memory_/sizeof(double)-memA-memJ)/(naux_raw_*(1+MEMORY_SAFETY_FACTOR));
         if (max_cols > ntri_naive_)
             max_cols = ntri_naive_;
         if (max_cols < 1)
             max_cols = 1; //You need to be able to spare that much at least!
         
 
-        double **Temp1 = block_matrix(ri_nbf_,max_cols);
+        double **Temp1 = block_matrix(naux_raw_,max_cols);
 
         //fprintf(outfile,"  Max cols %d\n",max_cols);
-        //print_mat(B_ia_P_,ri_nbf_,ntri_naive_,outfile);
+        //fprintf(outfile,"  (A|mn)");
+        //print_mat(B_ia_P_,naux_raw_,ntri_naive_,outfile);
 	
         for (int index = 0; index<ntri_naive_; index+=max_cols)
 	{
@@ -451,17 +866,17 @@ void HF::form_B()
             if (index+cols>=ntri_naive_) 
                 cols = ntri_naive_-index;
 
-            for (int r = 0; r<ri_nbf_; r++)
+            for (int r = 0; r<naux_raw_; r++)
                 C_DCOPY(cols,&(B_ia_P_[r][index]),1,&(Temp1[r][0]),1);
 
             timer_on("(B|mn) Transform");
-            C_DGEMM('N','N',ri_nbf_,cols,ri_nbf_,1.0, J_mhalf[0], ri_nbf_, Temp1[0], max_cols,0.0, &B_ia_P_[0][index],ntri_naive_);
+            C_DGEMM('T','N',naux_fin_,cols,naux_raw_,1.0, W[0], naux_fin_, Temp1[0], max_cols,0.0, &B_ia_P_[0][index],ntri_naive_);
             timer_off("(B|mn) Transform");
 
 	}
 	free_block(Temp1);
 
-        //print_mat(B_ia_P_,ri_nbf_,ntri_naive_,outfile);
+        //print_mat(B_ia_P_,naux_fin_,ntri_naive_,outfile);
         timer_on("(B|mn) 3-Sieve");
 
         if (three_index_cutoff>0.0) {
@@ -470,15 +885,14 @@ void HF::form_B()
             bool negligible_col;
             for (right = 0; right<ntri_naive_; right++) {
                 negligible_col = true;
-                for (int Q = 0; Q<ri_nbf_; Q++) {
+                for (int Q = 0; Q<naux_fin_; Q++) {
                     if (fabs(B_ia_P_[Q][right])>three_index_cutoff) {
                         negligible_col = false;
                         break;
                     }
                 }
                 if (!negligible_col) {
-                    for (int Q = 0; Q<ri_nbf_; Q++)
-                        B_ia_P_[Q][left] = B_ia_P_[Q][right];
+                    C_DCOPY(naux_fin_,&B_ia_P_[0][right],ntri_naive_,&B_ia_P_[0][left],ntri_naive_);
                     ri_pair_mu_[left] = ri_pair_mu_[right];
                     ri_pair_nu_[left] = ri_pair_nu_[right]; 
                     left++; 
@@ -488,7 +902,8 @@ void HF::form_B()
             }
         }
         timer_off("(B|mn) 3-Sieve");
-        //print_mat(B_ia_P_, ri_nbf_,ntri_naive_ ,outfile);
+        //fprintf(outfile,"  B is here:\n");
+        //print_mat(B_ia_P_, naux_fin_,ntri_naive_ ,outfile);
         //for (int i = 0; i<ntri_naive_; i++)
         //    fprintf(outfile,"  i = %d, mu = %d, nu = %d\n",i,ri_pair_mu_[i],ri_pair_nu_[i]);
 
@@ -505,7 +920,7 @@ void HF::form_B()
         psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_NEW);
         psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
 	double *Prestripe = init_array(ntri_naive_);
-	for (int Q = 0; Q < ri_nbf_; Q++) {
+	for (int Q = 0; Q < naux_fin_; Q++) {
             psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(Prestripe[0]),sizeof(double)*ntri_naive_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
 	}
         free(Prestripe);	
@@ -528,16 +943,21 @@ void HF::form_B()
                 maxfun=basisset_->shell(m)->nfunction();
         int maxpairs = maxfun*maxfun;
 
-        //Find maximum allowed memory block size (we'll need two of the same size for a good multiply)
-        int max_cols = (int)((1.0-MEMORY_SAFETY_FACTOR)*memory_/sizeof(double)-memJ)/(2.0*ri_nbf_);         
+        //Find maximum allowed memory block size 
+        int max_cols = (int)((1.0-MEMORY_SAFETY_FACTOR)*memory_/sizeof(double)-memJ)/(naux_fin_+naux_raw_);         
         if (max_cols > ntri_naive_ + maxpairs - 1)
             max_cols = ntri_naive_ + maxpairs - 1;
         if (max_cols < maxpairs)
             max_cols = maxpairs; //Gotta give me something to work with         
 
         //Allocate the fitted and unfitted blocks for three-index integrals
-        double **Amn = block_matrix(ri_nbf_,max_cols); //Raw integrals
-        double **Bmn = block_matrix(ri_nbf_,max_cols); //Fitted integrals
+        double **Amn = block_matrix(naux_raw_,max_cols); //Raw integrals
+        double **Bmn = block_matrix(naux_fin_,max_cols); //Fitted integrals
+
+        //Some debug arrays
+        //double *min_val = init_array(naux_fin_);
+        //double *max_val = init_array(naux_fin_);
+        //double *sum_val = init_array(naux_fin_);
 
         int numP,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu;
         int porous_index = 0; //Index within loose tensor block (before three index sieve), block local
@@ -588,28 +1008,28 @@ void HF::form_B()
                     //Do the transform, three-index sieve, and dump the integrals if either:
                     //   1) The next batch of integrals might not fit
                     //   2) The last shell pair is done
-                    if (porous_index + maxpairs >= max_cols || (MU == basisset_->nshell()-1  && NU == MU)) { 
+                    if (porous_index + maxpairs  > max_cols || (MU == basisset_->nshell()-1  && NU == MU)) { 
                         //Do the transform
-                        pass++;
-                        //print_mat(Amn,ri_nbf_,max_cols,outfile);
+                        //print_mat(Amn,naux_raw_,max_cols,outfile);
+                        //fprintf(outfile,"Porous index = %d, naux_raw_ = %d, naux_fin_ = %d, max_cols = %d.\n", porous_index,naux_raw_,naux_fin_,max_cols); fflush(outfile);
                         timer_on("(B|mn) Transform");
-                        C_DGEMM('N','N',ri_nbf_,porous_index,ri_nbf_,1.0, J_mhalf[0], ri_nbf_, Amn[0], max_cols,0.0, Bmn[0],max_cols);
+                        C_DGEMM('T','N',naux_fin_,porous_index,naux_raw_,1.0, W[0], naux_fin_, Amn[0], max_cols,0.0, Bmn[0],max_cols);
                         timer_off("(B|mn) Transform");
-                        //print_mat(Bmn,ri_nbf_,max_cols,outfile);
+                        //print_mat(Bmn,naux_fin_,max_cols,outfile);
         
                         //Use the three index sieve to compact the tensor
                         timer_on("(B|mn) 3-Sieve");
                         if (three_index_cutoff > 0.0) {
                             for (int pair = 0; pair < porous_index; pair++) {
                                 bool sig = false;
-                                for (int Q = 0; Q<ri_nbf_;Q++) {
+                                for (int Q = 0; Q<naux_fin_;Q++) {
                                     if (fabs(Bmn[Q][pair])>=three_index_cutoff) {
                                         sig = true;
                                         break;
                                     }
                                 }
                                 if (sig) { 
-                                    C_DCOPY(ri_nbf_,&Bmn[0][pair],max_cols,&Amn[0][dense_index],max_cols);
+                                    C_DCOPY(naux_fin_,&Bmn[0][pair],max_cols,&Amn[0][dense_index],max_cols);
                                     dense_index++;
                                     ri_pair_mu_[l_index] = ri_pair_mu_[aux_index+pair];
                                     ri_pair_nu_[l_index] = ri_pair_nu_[aux_index+pair];
@@ -627,21 +1047,41 @@ void HF::form_B()
                         //NOTE: If three_index_cutoff > 0.0, the tensor is in Amn, otherwise it is in Bmn
                         //This allows for threading of the three index sieve
                         
-                        //fprintf(outfile,"\n  Pass = %d. Ready for writing:\n",pass); 
+                        //fprintf(outfile,"\n  Pass = %d. Ready for writing:\n",pass++); 
                         //fprintf(outfile,"  Max cols = %d, porous_index = %d, dense_index = %d, global_offset = %d, Tensor %s\n",max_cols,porous_index,dense_index,global_index,((three_index_cutoff > 0.0)?"Amn":"Bmn"));
                         //fflush(outfile);
 
-                        //print_mat(Amn,ri_nbf_,max_cols,outfile);
+                        //print_mat(Amn,naux_fin_,max_cols,outfile);
                         //fflush(outfile);
-                        //print_mat(Bmn,ri_nbf_,max_cols,outfile);
+                        //print_mat(Bmn,naux_fin_,max_cols,outfile);
                         //fflush(outfile);
 
                         timer_on("(B|mn) Disk Stripe");
-                        for (int Q = 0; Q < ri_nbf_; Q++) {
+                        for (int Q = 0; Q < naux_fin_; Q++) {
                             next_PSIF_DFSCF_BJ = psio_get_address(PSIO_ZERO,(ULI)(Q*(ULI)ntri_naive_*sizeof(double)+global_index*sizeof(double)));
                             psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *)((three_index_cutoff > 0.0)?&Amn[Q][0]:&Bmn[Q][0]),sizeof(double)*dense_index,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
                         }
                         timer_off("(B|mn) Disk Stripe");
+
+                        //Debugging info!
+                        /**
+                        for (int Q = 0; Q < naux_fin_; Q++) {
+                            for (int mn = 0; mn < dense_index; mn++) {
+                                if (three_index_cutoff > 0.0) {
+                                    if (Amn[Q][mn] < min_val[Q])
+                                        min_val[Q] = Amn[Q][mn];
+                                    if (Amn[Q][mn] > max_val[Q])
+                                        max_val[Q] = Amn[Q][mn];
+                                    sum_val[Q] += Amn[Q][mn];
+                                } else {
+                                    if (Bmn[Q][mn] < min_val[Q])
+                                        min_val[Q] = Bmn[Q][mn];
+                                    if (Bmn[Q][mn] > max_val[Q])
+                                        max_val[Q] = Bmn[Q][mn];
+                                    sum_val[Q] += Bmn[Q][mn];
+                                }
+                            }
+                        }**/
                         aux_index = r_index;
                         global_index += dense_index;
                         start_index = 0;
@@ -652,16 +1092,25 @@ void HF::form_B()
             }
         } 
 
+        //for (int Q = 0; Q<naux_fin_; Q++)
+        //    fprintf(outfile,"  Summary: Row = %d, Max = %14.10E, Min = %14.10E, Sum = %14.10E\n", Q, max_val[Q], min_val[Q], sum_val[Q]); 
+        //fflush(outfile);
+
+        //free(max_val);
+        //free(min_val);
+        //free(sum_val);
+ 
         free_block(Amn);
         free_block(Bmn);
         if (print_>1)
-            fprintf(outfile,"\n  Through (B|mn) on disk."); fflush(outfile);
+            fprintf(outfile,"\n  Through (B|mn) on disk."); 
         fflush(outfile);
        
+        //fprintf(outfile,"  B is here:\n");
         //next_PSIF_DFSCF_BJ = PSIO_ZERO;
-        //double** Bhack = block_matrix(ri_nbf_,ntri_naive_);
-        //psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *)&Bhack[0][0],sizeof(double)*ntri_naive_*ri_nbf_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
-        //print_mat(Bhack,ri_nbf_,ntri_naive_,outfile);
+        //double** Bhack = block_matrix(naux_fin_,ntri_naive_);
+        //psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *)&Bhack[0][0],sizeof(double)*ntri_naive_*naux_fin_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+        //print_mat(Bhack,naux_fin_,ntri_naive_,outfile);
         //free(Bhack);
 
         //for (int i = 0; i<ntri_naive_; i++)
@@ -676,9 +1125,16 @@ void HF::form_B()
         psio_->write(PSIF_DFSCF_BJ,"N_TRI",(char *) &(ntri_),sizeof(int),next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
         next_PSIF_DFSCF_BJ = PSIO_ZERO;
         psio_->write(PSIF_DFSCF_BJ,"N_TRI_NAIVE",(char *) &(ntri_naive_),sizeof(int),next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+        next_PSIF_DFSCF_BJ = PSIO_ZERO;
+        psio_->write(PSIF_DFSCF_BJ,"N_AUX_RAW",(char *) &(naux_raw_),sizeof(int),next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+        next_PSIF_DFSCF_BJ = PSIO_ZERO;
+        psio_->write(PSIF_DFSCF_BJ,"N_AUX_FIN",(char *) &(naux_fin_),sizeof(int),next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
         psio_->close(PSIF_DFSCF_BJ,1); //We'll reuse this methinks
     }
     timer_off("Overall (B|mn)");
+
+    //Don't need W anymore
+    free_block(W);
     
     if (print_>1) {
         if (schwarz_) {
@@ -705,7 +1161,7 @@ void HF::write_B()
     psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_NEW);
     psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
             
-    psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(B_ia_P_[0][0]),sizeof(double)*ntri_naive_*ri_nbf_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+    psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(B_ia_P_[0][0]),sizeof(double)*ntri_naive_*naux_fin_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
                 
     next_PSIF_DFSCF_BJ = PSIO_ZERO;
     psio_->write(PSIF_DFSCF_BJ,"RI_PAIR_MU",(char *) &(ri_pair_mu_[0]),sizeof(int)*ntri_naive_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
@@ -715,6 +1171,10 @@ void HF::write_B()
     psio_->write(PSIF_DFSCF_BJ,"N_TRI",(char *) &(ntri_),sizeof(int),next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
     next_PSIF_DFSCF_BJ = PSIO_ZERO;
     psio_->write(PSIF_DFSCF_BJ,"N_TRI_NAIVE",(char *) &(ntri_naive_),sizeof(int),next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+    next_PSIF_DFSCF_BJ = PSIO_ZERO;
+    psio_->write(PSIF_DFSCF_BJ,"N_AUX_RAW",(char *) &(naux_raw_),sizeof(int),next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+    next_PSIF_DFSCF_BJ = PSIO_ZERO;
+    psio_->write(PSIF_DFSCF_BJ,"N_AUX_FIN",(char *) &(naux_fin_),sizeof(int),next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
     psio_->close(PSIF_DFSCF_BJ,1);
 }
 void HF::free_B()
@@ -773,18 +1233,18 @@ void RHF::form_G_from_RI()
         if (J_is_required_) {
             /* COULOMB PART */
             //Coulomb convolution vector
-            double *L = init_array(ri_nbf_);
+            double *L = init_array(naux_fin_);
             //Temporary J matrix
             double *J = init_array(ntri_);
             //DGEMV -> L:
             //L_Q = (Q|ls)*D_{ls}
             timer_on("J DDOT");
-            C_DGEMV('N',ri_nbf_,ntri_,1.0,B_ia_P_[0],ntri_naive_,DD,1,0.0,L,1);
+            C_DGEMV('N',naux_fin_,ntri_,1.0,B_ia_P_[0],ntri_naive_,DD,1,0.0,L,1);
             timer_off("J DDOT");
             //DGEMV -> J:
             //J_{mn} = L_Q(Q|mn)
             timer_on("J DAXPY");
-            C_DGEMV('T',ri_nbf_,ntri_,1.0,B_ia_P_[0],ntri_naive_,L,1,0.0,J,1);
+            C_DGEMV('T',naux_fin_,ntri_,1.0,B_ia_P_[0],ntri_naive_,L,1,0.0,J,1);
             timer_off("J DAXPY");
             //Put everything in J_
             for (int ij = 0; ij < ntri_; ij++) {
@@ -792,20 +1252,17 @@ void RHF::form_G_from_RI()
                 J_->set(0,ri_pair_nu_[ij],ri_pair_mu_[ij],J[ij]);
             }
 
-            //J_->print(outfile);
-
             free(L);
             free(J);
-            //J_->print(outfile);
         }
         if (K_is_required_) {
             timer_on("Form E");
             /* EXCHANGE PART */
             
 
-            int max_rows = (memory_/sizeof(double)-ri_nbf_*ntri_naive_)/(norbs*ndocc*(1.0+MEMORY_SAFETY_FACTOR));
-            if (max_rows > ri_nbf_)
-                max_rows = ri_nbf_;
+            int max_rows = (memory_/sizeof(double)-naux_fin_*ntri_naive_)/(norbs*ndocc*(1.0+MEMORY_SAFETY_FACTOR));
+            if (max_rows > naux_fin_)
+                max_rows = naux_fin_;
             if (max_rows < 1)
                 max_rows = 1;
 
@@ -856,10 +1313,10 @@ void RHF::form_G_from_RI()
             
             //MASTER LOOP
             int current_rows;
-            for (int row = 0; row<ri_nbf_; row += max_rows) {
+            for (int row = 0; row<naux_fin_; row += max_rows) {
                 current_rows = max_rows;
-                if (row+current_rows>=ri_nbf_)
-                    current_rows = ri_nbf_-row; 
+                if (row+current_rows>=naux_fin_)
+                    current_rows = naux_fin_-row; 
 
                 timer_on("E SORT");
                 for (int m = 0; m<norbs; m++) {
@@ -872,7 +1329,7 @@ void RHF::form_G_from_RI()
                  
                         //fprintf(outfile,"  index = %d ij = %d \n",index,ij); fflush(outfile);//fprintf(outfile,"(ij, mu) = (%d, %d)\n",ij,mu);
                         C_DCOPY(current_rows,&B_ia_P_[row][ij],ntri_naive_,&QS[0][index],norbs);
-                        //for (int Q = 0; Q<ri_nbf_; Q++) {
+                        //for (int Q = 0; Q<naux_fin_; Q++) {
                         //     QS[Q][index] = B_ia_P_[Q][ij];
                              //fprintf(outfile," ij = %d, mu = %d, Q = %d, val = %14.10f\n",ij,mu,Q,QS[Q][mu]);
                         //}
@@ -959,7 +1416,7 @@ void RHF::form_G_from_RI()
             timer_off("Form E");
             
             //fprintf(outfile,"\n E: \n");
-            //print_mat(E,norbs,ndocc*ri_nbf_,outfile);
+            //print_mat(E,norbs,ndocc*naux_fin_,outfile);
             
             //K_->print(outfile);
             fflush(outfile);
@@ -970,14 +1427,14 @@ void RHF::form_G_from_RI()
         //                      DISK ALGORITHM
         //
         //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        //B is on disk, E will be in disk, Single disk pass
+        //B is on disk, E will be done in blocks on core 
         //B_ia_P_ stores multiple aux basis function rows of 
         //the three index tensor
 
         //How many rows to read?
         int max_rows = floor(((memory_/sizeof(double)))/((1.0+MEMORY_SAFETY_FACTOR)*(ntri_naive_+ndocc*norbs)));
-	if (max_rows > ri_nbf_)
-            max_rows = ri_nbf_;
+	if (max_rows > naux_fin_)
+            max_rows = naux_fin_;
         if (max_rows < 1)
             max_rows = 1; //Without a row, I can't work
 
@@ -1064,15 +1521,15 @@ void RHF::form_G_from_RI()
         
         //MASTER LOOP
         int current_rows,offset;
-        //int pass = 0;
-        for (int row = 0; row <ri_nbf_; row+=max_rows)
+        int pass = 0;
+        for (int row = 0; row <naux_fin_; row+=max_rows)
         {
 
             //Setup block size
             //Careful Starfox
 	    current_rows = max_rows;
-	    if (row+max_rows>=ri_nbf_)
-		current_rows = ri_nbf_-row;
+	    if (row+max_rows>=naux_fin_)
+		current_rows = naux_fin_-row;
             //Read max_rows of the (B|mn) tensor in, place in B_ia_P
             //fprintf(outfile,"\n  Pass %d, current_rows = %d\n",pass,current_rows);
             //pass++;
@@ -1083,9 +1540,24 @@ void RHF::form_G_from_RI()
             for (int Q = 0; Q<current_rows; Q+=rows_per_read) {
                 if (Q+rows_per_read>=current_rows)
                     block_height = current_rows-Q;
-                psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(B_ia_P_[Q][0]),sizeof(double)*ntri_naive_*block_height,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+                psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(B_ia_P_[Q][0]),sizeof(double)*ntri_naive_*(ULI)block_height,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
                 
             }
+
+            //fprintf(outfile,"  Read pass = %d. Current rows = %d. Max rows = %d, Ntri_naive = %d, Ntri = %d.\n",pass++,current_rows,max_rows,ntri_naive_,ntri_);
+
+            for (int here = row; here < row + current_rows; here++) {
+                double min_val = 0.0, max_val = 0.0, sum_val = 0.0;
+                for (int mn = 0; mn < ntri_; mn++) {
+                    if (B_ia_P_[here-row][mn] < min_val)
+                        min_val = B_ia_P_[here-row][mn];
+                    if (B_ia_P_[here-row][mn] > max_val)
+                        max_val = B_ia_P_[here-row][mn];
+                    sum_val += B_ia_P_[here-row][mn];
+                }
+                //fprintf(outfile,"  Summary: Row = %d, Max = %14.10E, Min = %14.10E, Sum = %14.10E\n", here, max_val, min_val, sum_val); 
+            }
+
 
             //double **Bhack = block_matrix(current_rows,ntri_);
             //C_DCOPY(current_rows*ntri_,in_buffer,1,&Bhack[0][0],1);
@@ -1125,7 +1597,7 @@ void RHF::form_G_from_RI()
  
                         //fprintf(outfile,"  index = %d ij = %d \n",index,ij); fflush(outfile);//fprintf(outfile,"(ij, mu) = (%d, %d)\n",ij,mu);
                         C_DCOPY(current_rows,&B_ia_P_[0][ij],ntri_naive_,&QS[0][index],norbs);
-                        //for (int Q = 0; Q<ri_nbf_; Q++) {
+                        //for (int Q = 0; Q<naux_fin_; Q++) {
                         //     QS[Q][index] = B_ia_P_[Q][ij];
                              //fprintf(outfile," ij = %d, mu = %d, Q = %d, val = %14.10f\n",ij,mu,Q,QS[Q][mu]);
                         //}
@@ -1261,17 +1733,17 @@ void RHF::form_J_from_RI()
         }
     }
 
-    double *L = init_array(ri_nbf_);
+    double *L = init_array(naux_fin_);
     double *Gtemp = init_array(norbs*(norbs+1)/2);
 
     //B_ia_P_ in core
     if (df_storage_ == core||df_storage_ == double_core)
     {
-        for (int i=0; i<ri_nbf_; i++) {
+        for (int i=0; i<naux_fin_; i++) {
             L[i]=C_DDOT(norbs*(norbs+1)/2,D2,1,B_ia_P_[i],1);
         }
 
-        C_DGEMM('T','N',1,norbs*(norbs+1)/2,ri_nbf_,1.0,L,1,B_ia_P_[0],norbs*(norbs+1)/2, 0.0, Gtemp, norbs*(norbs+1)/2);    
+        C_DGEMM('T','N',1,norbs*(norbs+1)/2,naux_fin_,1.0,L,1,B_ia_P_[0],norbs*(norbs+1)/2, 0.0, Gtemp, norbs*(norbs+1)/2);    
         free(D2);
     } 
     //B_ia_P_ on disk
@@ -1285,7 +1757,7 @@ void RHF::form_J_from_RI()
         psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
         psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
         double *in_buffer = init_array(norbs*(norbs+1)/2);
-        for (int i=0; i<ri_nbf_; i++) {
+        for (int i=0; i<naux_fin_; i++) {
             psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
             L[i]=C_DDOT(norbs*(norbs+1)/2,DD,1,in_buffer,1);
         }
@@ -1297,7 +1769,7 @@ void RHF::form_J_from_RI()
         next_PSIF_DFSCF_BJ = PSIO_ZERO;
         double *G2 = init_array(norbs*(norbs+1)/2);
         register double LL;
-        for (int Q = 0; Q<ri_nbf_; Q++)
+        for (int Q = 0; Q<naux_fin_; Q++)
         {
             psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
             LL = L[Q];
@@ -1358,28 +1830,28 @@ void RHF::form_K_from_RI()
     //B_ia_P in core, B_im_Q in core
     if (df_storage_ == core||df_storage_ == double_core)
     {
-        B_im_Q = block_matrix(norbs, ndocc*ri_nbf_);
-        double** QS = block_matrix(ri_nbf_,norbs);
-        double** Temp = block_matrix(ndocc,ri_nbf_);
+        B_im_Q = block_matrix(norbs, ndocc*naux_fin_);
+        double** QS = block_matrix(naux_fin_,norbs);
+        double** Temp = block_matrix(ndocc,naux_fin_);
 
-        //print_mat(B_ia_P_,ri_nbf_,norbs*(norbs+1)/2,outfile);
+        //print_mat(B_ia_P_,naux_fin_,norbs*(norbs+1)/2,outfile);
         //fprintf(outfile,"\nYo\n");
         //print_mat(Cocc,ndocc,norbs,outfile);
         for (int m = 0; m<norbs; m++) {
-            for (int Q = 0; Q<ri_nbf_; Q++) {
+            for (int Q = 0; Q<naux_fin_; Q++) {
                 for (int s = 0; s<norbs; s++) {
                     QS[Q][s] = B_ia_P_[Q][((s>=m)?ioff[s]+m:ioff[m]+s)];
                 }
             }
-            C_DGEMM('N','T',ndocc,ri_nbf_,norbs,1.0,Cocc[0],norbs,QS[0],norbs, 0.0, Temp[0], ri_nbf_);
-            //print_mat(Temp,ndocc,ri_nbf_,outfile);
-            for (int Q = 0; Q<ri_nbf_; Q++) {
+            C_DGEMM('N','T',ndocc,naux_fin_,norbs,1.0,Cocc[0],norbs,QS[0],norbs, 0.0, Temp[0], naux_fin_);
+            //print_mat(Temp,ndocc,naux_fin_,outfile);
+            for (int Q = 0; Q<naux_fin_; Q++) {
                 for (int i = 0; i<ndocc; i++) {
                     B_im_Q[m][i+Q*ndocc] = Temp[i][Q];
                 }
             }
         }
-        //print_mat(B_im_Q,norbs,ndocc*ri_nbf_,outfile);
+        //print_mat(B_im_Q,norbs,ndocc*naux_fin_,outfile);
         free_block(QS);
         free_block(Temp); 
     }
@@ -1389,11 +1861,11 @@ void RHF::form_K_from_RI()
         double *in_buffer = init_array(norbs*(norbs+1)/2);
         psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
         psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
-        B_im_Q = block_matrix(norbs, ndocc*ri_nbf_);
+        B_im_Q = block_matrix(norbs, ndocc*naux_fin_);
 
         int mu, nu;
 
-        for (int Q = 0; Q<ri_nbf_; Q++)
+        for (int Q = 0; Q<naux_fin_; Q++)
         {
             psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
             for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
@@ -1422,7 +1894,7 @@ void RHF::form_K_from_RI()
         double *out_buffer = init_array(norbs*ndocc);
 
         int mu, nu;
-        for (int Q = 0; Q<ri_nbf_; Q++)
+        for (int Q = 0; Q<naux_fin_; Q++)
         {
             for (int im = 0; im<ndocc*norbs; im++)
                 out_buffer[im] = 0.0;
@@ -1453,7 +1925,7 @@ void RHF::form_K_from_RI()
 
     if (df_storage_ == core ||df_storage_ == double_core|| df_storage_ == flip_B_disk || df_storage_ == k_incore)
     {
-        C_DGEMM('N','T',norbs,norbs,ri_nbf_*ndocc,1.0,B_im_Q[0],ri_nbf_*ndocc,B_im_Q[0],ri_nbf_*ndocc, 0.0, K[0], norbs);
+        C_DGEMM('N','T',norbs,norbs,naux_fin_*ndocc,1.0,B_im_Q[0],naux_fin_*ndocc,B_im_Q[0],naux_fin_*ndocc, 0.0, K[0], norbs);
         free_block(B_im_Q);
     } else {
         psio_->open(PSIF_DFSCF_K,PSIO_OPEN_OLD);
@@ -1461,7 +1933,7 @@ void RHF::form_K_from_RI()
 
         double *in_buffer = init_array(norbs*ndocc);
 
-        for (int Q = 0; Q<ri_nbf_; Q++)
+        for (int Q = 0; Q<naux_fin_; Q++)
         {
             psio_->read(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(in_buffer[0]),sizeof(double)*norbs*ndocc,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
 
@@ -1522,19 +1994,19 @@ void UHF::form_G_from_RI()
         }
     }
 
-    double *L = init_array(ri_nbf_);
+    double *L = init_array(naux_fin_);
     double *Gtemp = init_array(norbs*(norbs+1)/2);
     
     //B_ia_P_ in core
     if (df_storage_ == core||df_storage_ == double_core)
     {                
 
-        for (int i=0; i<ri_nbf_; i++) {
+        for (int i=0; i<naux_fin_; i++) {
             L[i]=C_DDOT(norbs*(norbs+1)/2,D2,1,B_ia_P_[i],1);
         }
 
 
-        C_DGEMM('T','N',1,norbs*(norbs+1)/2,ri_nbf_,1.0,L,1,B_ia_P_[0],norbs*(norbs+1)/2, 0.0, Gtemp, norbs*(norbs+1)/2);
+        C_DGEMM('T','N',1,norbs*(norbs+1)/2,naux_fin_,1.0,L,1,B_ia_P_[0],norbs*(norbs+1)/2, 0.0, Gtemp, norbs*(norbs+1)/2);
         free(D2);
     } 
     //B_ia_P_ on disk
@@ -1551,7 +2023,7 @@ void UHF::form_G_from_RI()
     	psio_open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
     	psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
     	double *in_buffer = init_array(norbs*(norbs+1)/2);
-    	for (int i=0; i<ri_nbf_; i++) {
+    	for (int i=0; i<naux_fin_; i++) {
             psio_read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
             L[i]=C_DDOT(norbs*(norbs+1)/2,DD,1,in_buffer,1);
       	}
@@ -1563,7 +2035,7 @@ void UHF::form_G_from_RI()
     	next_PSIF_DFSCF_BJ = PSIO_ZERO;
     	double *G2 = init_array(norbs*(norbs+1)/2);
     	register double LL;
-    	for (int Q = 0; Q<ri_nbf_; Q++)
+    	for (int Q = 0; Q<naux_fin_; Q++)
     	{
             psio_read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
             LL = L[Q];
@@ -1608,22 +2080,22 @@ void UHF::form_G_from_RI()
     //B_ia_P in core, B_im_Q in core
     if (df_storage_ == core||df_storage_ == double_core)
     {
-    	B_im_Q = block_matrix(norbs, nalpha*ri_nbf_);
-    	double** QS = block_matrix(ri_nbf_,norbs);
-    	double** Temp = block_matrix(nalpha,ri_nbf_);
+    	B_im_Q = block_matrix(norbs, nalpha*naux_fin_);
+    	double** QS = block_matrix(naux_fin_,norbs);
+    	double** Temp = block_matrix(nalpha,naux_fin_);
 
-        //print_mat(B_ia_P_,ri_nbf_,norbs*(norbs+1)/2,outfile);
+        //print_mat(B_ia_P_,naux_fin_,norbs*(norbs+1)/2,outfile);
         //fprintf(outfile,"\nYo\n");
         //print_mat(Cocc,nalpha,norbs,outfile);
         for (int m = 0; m<norbs; m++) {
-            for (int Q = 0; Q<ri_nbf_; Q++) {
+            for (int Q = 0; Q<naux_fin_; Q++) {
                 for (int s = 0; s<norbs; s++) {
                     QS[Q][s] = B_ia_P_[Q][((s>=m)?ioff[s]+m:ioff[m]+s)];
                 }
             }
-            //C_DGEMM('N','T',ndocc,ri_nbf_,norbs,1.0,Cocc[0],norbs,QS[0],norbs, 0.0, Temp[0], ri_nbf_);
-            C_DGEMM('N','T',nalpha,ri_nbf_,norbs,1.0,Cocc[0],norbs,QS[0],norbs, 0.0, Temp[0], ri_nbf_);
-            for (int Q = 0; Q<ri_nbf_; Q++) {
+            //C_DGEMM('N','T',ndocc,naux_fin_,norbs,1.0,Cocc[0],norbs,QS[0],norbs, 0.0, Temp[0], naux_fin_);
+            C_DGEMM('N','T',nalpha,naux_fin_,norbs,1.0,Cocc[0],norbs,QS[0],norbs, 0.0, Temp[0], naux_fin_);
+            for (int Q = 0; Q<naux_fin_; Q++) {
                 for (int i = 0; i<nalpha; i++) {
                     B_im_Q[m][i+Q*nalpha] = Temp[i][Q];
                 }
@@ -1640,11 +2112,11 @@ void UHF::form_G_from_RI()
         double *in_buffer = init_array(norbs*(norbs+1)/2);
     	psio_open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
     	psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
-    	B_im_Q = block_matrix(norbs, nalpha*ri_nbf_);
+    	B_im_Q = block_matrix(norbs, nalpha*naux_fin_);
     	
     	int mu, nu;
     	
-    	for (int Q = 0; Q<ri_nbf_; Q++)
+    	for (int Q = 0; Q<naux_fin_; Q++)
     	{
             psio_read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
             for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
@@ -1673,7 +2145,7 @@ void UHF::form_G_from_RI()
     	double *out_buffer = init_array(norbs*nalpha);
     	
     	int mu, nu;
-    	for (int Q = 0; Q<ri_nbf_; Q++)
+    	for (int Q = 0; Q<naux_fin_; Q++)
     	{
             for (int im = 0; im<nalpha*norbs; im++)
                 out_buffer[im] = 0.0;
@@ -1705,7 +2177,7 @@ void UHF::form_G_from_RI()
 
     if (df_storage_ == core ||df_storage_ == double_core|| df_storage_ == flip_B_disk || df_storage_ == k_incore)
     {
-    	C_DGEMM('N','T',norbs,norbs,ri_nbf_*nalpha,1.0,B_im_Q[0],ri_nbf_*nalpha,B_im_Q[0],ri_nbf_*nalpha, 0.0, Ka[0], norbs);
+    	C_DGEMM('N','T',norbs,norbs,naux_fin_*nalpha,1.0,B_im_Q[0],naux_fin_*nalpha,B_im_Q[0],naux_fin_*nalpha, 0.0, Ka[0], norbs);
     	free_block(B_im_Q);
     } else {
     	psio_open(PSIF_DFSCF_K,PSIO_OPEN_OLD);
@@ -1713,7 +2185,7 @@ void UHF::form_G_from_RI()
     	
     	double *in_buffer = init_array(norbs*nalpha);
     	
-    	for (int Q = 0; Q<ri_nbf_; Q++)
+    	for (int Q = 0; Q<naux_fin_; Q++)
     	{
             psio_read(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(in_buffer[0]),sizeof(double)*norbs*nalpha,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
 
@@ -1746,22 +2218,22 @@ void UHF::form_G_from_RI()
         //B_ia_P in core, B_im_Q in core
         if (df_storage_ == core||df_storage_ == double_core)
         {
-            B_im_Q = block_matrix(norbs, nbeta_*ri_nbf_);
-            double** QS = block_matrix(ri_nbf_,norbs);
-            double** Temp = block_matrix(nbeta_,ri_nbf_);
+            B_im_Q = block_matrix(norbs, nbeta_*naux_fin_);
+            double** QS = block_matrix(naux_fin_,norbs);
+            double** Temp = block_matrix(nbeta_,naux_fin_);
 
-            //print_mat(B_ia_P_,ri_nbf_,norbs*(norbs+1)/2,outfile);
+            //print_mat(B_ia_P_,naux_fin_,norbs*(norbs+1)/2,outfile);
             //fprintf(outfile,"\nYo\n");
             //print_mat(Cocc,nbeta_,norbs,outfile);
             for (int m = 0; m<norbs; m++) {
-                for (int Q = 0; Q<ri_nbf_; Q++) {
+                for (int Q = 0; Q<naux_fin_; Q++) {
                     for (int s = 0; s<norbs; s++) {
                         QS[Q][s] = B_ia_P_[Q][((s>=m)?ioff[s]+m:ioff[m]+s)];
                     }
                 }
-                C_DGEMM('N','T',nbeta_,ri_nbf_,norbs,1.0,Cocc[0],norbs,QS[0],norbs, 0.0, Temp[0], ri_nbf_);
-                //print_mat(Temp,nbeta_,ri_nbf_,outfile);
-                for (int Q = 0; Q<ri_nbf_; Q++) {
+                C_DGEMM('N','T',nbeta_,naux_fin_,norbs,1.0,Cocc[0],norbs,QS[0],norbs, 0.0, Temp[0], naux_fin_);
+                //print_mat(Temp,nbeta_,naux_fin_,outfile);
+                for (int Q = 0; Q<naux_fin_; Q++) {
                     for (int i = 0; i<nbeta_; i++) {
                         B_im_Q[m][i+Q*nbeta_] = Temp[i][Q];
                     }
@@ -1777,11 +2249,11 @@ void UHF::form_G_from_RI()
             double *in_buffer = init_array(norbs*(norbs+1)/2);
             psio_open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
             psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
-            B_im_Q = block_matrix(norbs, nbeta_*ri_nbf_);
+            B_im_Q = block_matrix(norbs, nbeta_*naux_fin_);
 
             int mu, nu;
 
-            for (int Q = 0; Q<ri_nbf_; Q++)
+            for (int Q = 0; Q<naux_fin_; Q++)
             {
     		psio_read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(in_buffer[0]),sizeof(double)*norbs*(norbs+1)/2,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
     		for (int ij = 0 ; ij<norbs*(norbs+1)/2; ij++)
@@ -1810,7 +2282,7 @@ void UHF::form_G_from_RI()
             double *out_buffer = init_array(norbs*nbeta_);
 
             int mu, nu;
-            for (int Q = 0; Q<ri_nbf_; Q++)
+            for (int Q = 0; Q<naux_fin_; Q++)
             {
     		for (int im = 0; im<nbeta_*norbs; im++)
                     out_buffer[im] = 0.0;
@@ -1843,7 +2315,7 @@ void UHF::form_G_from_RI()
 
  	if (df_storage_ == core ||df_storage_ == double_core|| df_storage_ == flip_B_disk || df_storage_ == k_incore)
         {
-            C_DGEMM('N','T',norbs,norbs,ri_nbf_*nbeta_,1.0,B_im_Q[0],ri_nbf_*nbeta_,B_im_Q[0],ri_nbf_*nbeta_, 0.0, Kb[0], norbs);
+            C_DGEMM('N','T',norbs,norbs,naux_fin_*nbeta_,1.0,B_im_Q[0],naux_fin_*nbeta_,B_im_Q[0],naux_fin_*nbeta_, 0.0, Kb[0], norbs);
             free_block(B_im_Q);
         } else {
             psio_open(PSIF_DFSCF_K,PSIO_OPEN_OLD);
@@ -1851,7 +2323,7 @@ void UHF::form_G_from_RI()
 
             double *in_buffer = init_array(norbs*nbeta_);
 
-            for (int Q = 0; Q<ri_nbf_; Q++)
+            for (int Q = 0; Q<naux_fin_; Q++)
             {
     		psio_read(PSIF_DFSCF_K,"Exchange Tensor",(char *) &(in_buffer[0]),sizeof(double)*norbs*nbeta_,next_PSIF_DFSCF_K,&next_PSIF_DFSCF_K);
     		
