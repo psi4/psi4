@@ -18,7 +18,8 @@ namespace psi {
 class ElectricFieldInt : public OneBodyInt
 {
     //! Obara and Saika recursion object to be used.
-    ObaraSaikaTwoCenterElectricField efield_recur_;
+    ObaraSaikaTwoCenterElectricField efield_recur_;                 // Both ElectricField and VIDeriv should give the same result
+//    ObaraSaikaTwoCenterVIDerivRecursion efield_recur_;
 
     //! Computes the electric field between two gaussian shells.
     void compute_pair(shared_ptr<GaussianShell>, shared_ptr<GaussianShell>);

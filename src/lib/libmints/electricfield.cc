@@ -75,6 +75,10 @@ void ElectricFieldInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<Gau
     double ***ey = efield_recur_.ey();
     double ***ez = efield_recur_.ez();
 
+//    double ***ex = efield_recur_.vx();
+//    double ***ey = efield_recur_.vy();
+//    double ***ez = efield_recur_.vz();
+
     for (int p1=0; p1<nprim1; ++p1) {
         double a1 = s1->exp(p1);
         double c1 = s1->coef(p1);
@@ -134,7 +138,7 @@ void ElectricFieldInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<Gau
                                 buffer_[ao12+ydisp] += ey[iind][jind][0] * over_pf;
                                 buffer_[ao12+zdisp] += ez[iind][jind][0] * over_pf;
 
-//                                fprintf(outfile, "final: over_pf = %10.8lf AIX[%d][%d][0] = %10.8lf\tAIY = %10.8lf\tAIZ = %10.8lf\n", over_pf, iind, jind, ex[iind][jind][0], ey[iind][jind][0], ez[iind][jind][0]);
+                                fprintf(outfile, "final: over_pf = %10.8lf AIX[%d][%d][0] = %10.8lf\tAIY = %10.8lf\tAIZ = %10.8lf\n", over_pf, iind, jind, ex[iind][jind][0], ey[iind][jind][0], ez[iind][jind][0]);
 
                                 ao12++;
                             }

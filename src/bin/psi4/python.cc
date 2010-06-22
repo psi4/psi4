@@ -130,7 +130,7 @@ BOOST_PYTHON_MODULE(PsiMod)
         def("i", &SymmetryOperation::i).
         def("sigma_h", &SymmetryOperation::sigma_h).
         def("sigma_xz", &SymmetryOperation::sigma_xz).
-        def("sigma_yz", &SymmetryOperation::sigma_yz).
+//        def("sigma_yz", &SymmetryOperation::sigma_yz).
         def("rotateN", intFunction(&SymmetryOperation::rotation)).
         def("rotateTheta", doubleFunction(&SymmetryOperation::rotation)).
         def("c2_x", &SymmetryOperation::c2_x).
