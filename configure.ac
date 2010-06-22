@@ -717,6 +717,11 @@ case $withval in
 esac
 ])
 
+# Check for OpenMP, the test reports for C++ only, because we called AC_LANG([C++]) near the top
+AX_OPENMP([
+    CXXOTH="$CXXOTH $OPENMP_CXXFLAGS"
+])
+
 # Adjust the flags dealing with strictness of the compilers.
 # The default is to disable strict language checks.
 AC_ARG_WITH(strict,[  --with-strict           --with-strict=yes to turn on strict compiler warnings],[
