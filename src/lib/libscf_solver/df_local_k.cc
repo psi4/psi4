@@ -458,7 +458,6 @@ void RHF::form_G_from_RI_local_K()
         L_->print(outfile);
     if (df_storage_ == core) {
         if (J_is_required_) {
-            //This embedding of the fitting in the density metric is kinda hot (especially in core)
             //Oh, and see R. Polly et. al., J. Chem. Phys. 102(21-22), pp. 2311-2321, DOI 10.1080/0026897042000274801
             double* c = init_array(naux_fin_);
             double* d = init_array(naux_fin_);

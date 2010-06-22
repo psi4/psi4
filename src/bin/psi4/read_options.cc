@@ -294,6 +294,8 @@ int read_options(const std::string &name, Options & options) {
     /*- -Maximum number of rows to read/write in each DF-SCf operation */
     options.add_int("ROWS_PER_READ", 1);
     
+    /*- -SAD Occupation Matrix Method */
+    options.add_str("SAD_C", "CHOLESKY", "CHOLESKY ID");
     /*- -SAD Guess Convergence in E */
     options.add_double("SAD_E_CONVERGE", 1E-5);
     /*- -SAD Guess Convergence in D */

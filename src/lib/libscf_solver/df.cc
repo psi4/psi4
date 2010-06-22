@@ -63,15 +63,6 @@ void HF::form_B()
     //Grab norbs and ndocc and get the ri basis up to the class scope     
     int norbs = basisset_->nbf(); 
     int ndocc = doccpi_[0];
-    ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_SCF"));
-    naux_raw_ = ribasis_->nbf(); 
-    naux_fin_ = naux_raw_; //For now 
-    
-    if (print_>5) {
-        basisset_->print(outfile); 
-        ribasis_->print(outfile);
-        fflush(outfile);
-    }
 
     
     //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -244,6 +235,16 @@ void HF::form_B()
     //
     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         
+    ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_SCF"));
+    naux_raw_ = ribasis_->nbf(); 
+    naux_fin_ = naux_raw_; //For now 
+    
+    if (print_>5) {
+        basisset_->print(outfile); 
+        ribasis_->print(outfile);
+        fflush(outfile);
+    }
+
     timer_on("Form X");
     //OK, integrals time. start with the fitting matrix J
     //It takes a lot of work to get a null basis with Psi4! 
@@ -444,7 +445,7 @@ void HF::form_B()
         print_mat(J,naux_raw_,naux_raw_,outfile);
         fflush(outfile);
     }
-    delete Jint; //<-of course it will leak all over the bloody place
+    delete Jint;
 
     //fprintf(outfile,"J:\n");
     //print_mat(J,naux_raw_,naux_raw_,outfile);
@@ -509,6 +510,9 @@ void HF::form_B()
     //Find J'^-1/2
     timer_on("Form J^-1/2");
 
+    //double **J_copy2 = block_matrix(naux_fin_, naux_fin_);
+    //C_DCOPY(naux_fin_*naux_fin_,Jp[0],1,J_copy2[0],1); 
+    
     // Form Jp^-1/2
     // First, diagonalize Jp
     // the C_DSYEV call replaces the original matrix Jp with its eigenvectors
@@ -564,6 +568,51 @@ void HF::form_B()
     free_block(Jp_copy);
     free_block(Jp);
     
+    /**
+    //Debug:
+    //J^1/2 = JJ^-1/2
+    //assert J^1/2J^-1/2 = 1
+    double** Jphalf = block_matrix(naux_fin_,naux_fin_);
+    double** ones = block_matrix(naux_fin_,naux_fin_);
+
+    //J^1/2
+    C_DGEMM('N','N',naux_fin_,naux_fin_,naux_fin_,1.0,J_copy2[0],naux_fin_,Jp_mhalf[0],naux_fin_,0.0,Jphalf[0],naux_fin_);
+    
+    //J^1/2
+    C_DGEMM('N','N',naux_fin_,naux_fin_,naux_fin_,1.0,Jp_mhalf[0],naux_fin_,Jphalf[0],naux_fin_,0.0,ones[0],naux_fin_);
+
+    fprintf(outfile,"\nJmhalf:\n"); 
+    print_mat(Jp_mhalf,naux_fin_,naux_fin_,outfile);
+    fflush(outfile);
+        
+    fprintf(outfile,"\nJphalf:\n"); 
+    print_mat(Jphalf,naux_fin_,naux_fin_,outfile);
+    fflush(outfile);
+        
+    fprintf(outfile,"\nOnes:\n"); 
+    print_mat(ones,naux_fin_,naux_fin_,outfile);
+    fflush(outfile);
+        
+    worst_zero = 0.0;
+    for (int Q = 0 ; Q<naux_fin_; Q++)
+        for (int P = 0; P<Q; P++)
+            if (fabs(ones[P][Q])>worst_zero)
+                worst_zero = fabs(ones[P][Q]);    
+
+    double worst_one = 0.0;
+    for (int Q = 0 ; Q<naux_fin_; Q++)
+        if (fabs(ones[Q][Q]-1.0)>worst_one)
+            worst_one = fabs(ones[Q][Q]-1.0);    
+
+    fprintf(outfile,"  Worst zero is off by %14.10E, Worst one is off by %14.10E\n",worst_zero,worst_one);
+    fflush(outfile);
+
+    free_block(ones);
+    free_block(Jphalf);
+    free_block(J_copy2);
+    //End Debug
+    **/
+
     timer_off("Form J^-1/2");
     timer_on("Form W");
 
@@ -576,6 +625,7 @@ void HF::form_B()
     //print_mat(W,naux_raw_,naux_fin_,outfile);
     //fflush(outfile);
     free_block(Jp_mhalf);
+    free_block(X);
     timer_off("Form W");
 
     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -828,7 +878,7 @@ void HF::form_B()
                                         
                                     for (P=0; P < numP; ++P) {
                                         PHI = ribasis_->shell(Pshell)->function_index() + P;
-                                        B_ia_P_[PHI][l_index]= buffer[mu*numnu*numP+nu*numP+P];
+                                        B_ia_P_[PHI][l_index] = buffer[mu*numnu*numP+nu*numP+P];
                                     }
                                     if (Pshell == 0) {
                                         delta_index++;
@@ -857,7 +907,11 @@ void HF::form_B()
         double **Temp1 = block_matrix(naux_raw_,max_cols);
 
         //fprintf(outfile,"  Max cols %d\n",max_cols);
-        //fprintf(outfile,"  (A|mn)");
+        //fprintf(outfile,"  (A|mn):");
+        //for (int ij = 0; ij < ntri_naive_; ij++) {
+        //    fprintf(outfile,"  Column %d: mu = %d, nu = %d\n",ij+1,ri_pair_mu_[ij],ri_pair_nu_[ij]);
+        //}
+
         //print_mat(B_ia_P_,naux_raw_,ntri_naive_,outfile);
 	
         for (int index = 0; index<ntri_naive_; index+=max_cols)
@@ -876,6 +930,7 @@ void HF::form_B()
 	}
 	free_block(Temp1);
 
+        //fprintf(outfile,"  (B|mn)");
         //print_mat(B_ia_P_,naux_fin_,ntri_naive_,outfile);
         timer_on("(B|mn) 3-Sieve");
 
@@ -1102,8 +1157,9 @@ void HF::form_B()
  
         free_block(Amn);
         free_block(Bmn);
+
         if (print_>1)
-            fprintf(outfile,"\n  Through (B|mn) on disk."); 
+            fprintf(outfile,"\n  Through (B|mn) on disk.\n"); 
         fflush(outfile);
        
         //fprintf(outfile,"  B is here:\n");
@@ -1132,8 +1188,9 @@ void HF::form_B()
         psio_->close(PSIF_DFSCF_BJ,1); //We'll reuse this methinks
     }
     timer_off("Overall (B|mn)");
-
-    //Don't need W anymore
+    
+    free(schwarz_fun_pairs);
+    free(schwarz_shell_pairs);
     free_block(W);
     
     if (print_>1) {

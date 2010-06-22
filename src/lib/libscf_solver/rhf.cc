@@ -351,7 +351,7 @@ bool RHF::load_or_compute_initial_C()
         E_ = compute_initial_E();
     } else if (guess_type == "SAD") {
         if (print_)
-            fprintf(outfile, "  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.\n\n");
+            fprintf(outfile, "  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.\n");
         //Superposition of Atomic Density (will be preferred when we can figure it out)
         compute_SAD_guess();
     } else if (guess_type == "GWH") {
@@ -961,20 +961,28 @@ void RHF::form_C()
 
 void RHF::form_D()
 {
-    int h, i, j, m;
+    int h, i, j;
     int *opi = D_->rowspi();
     int nirreps = D_->nirreps();
-    double val;
-    for (h=0; h<nirreps; ++h) {
-        for (i=0; i<opi[h]; ++i) {
-            for (j=0; j<opi[h]; ++j) {
-                val = 0.0;
-                for (m=0; m<doccpi_[h]; ++m)
-                    val += C_->get(h, i, m) * C_->get(h, j, m);
-                D_->set(h, i, j, val);
-            }
-        }
-    }
+    int norbs = basisset_->nbf();
+
+    double** C = C_->to_block_matrix();
+    double** D = block_matrix(norbs,norbs);
+    
+    int offset = 0;
+    for (h = 0; h<nirreps; ++h) {
+        C_DGEMM('n','t',opi[h],opi[h],doccpi_[h],1.0,&C[offset][offset],norbs,&C[offset][offset],norbs,0.0,&D[offset][offset],norbs);
+        
+        for (i = 0; i<opi[h]; i++)
+            for (int j = 0; j<opi[h]; j++)
+                D_->set(h,i,j,D[offset+i][offset+j]);
+
+        offset += opi[h]; 
+    } 
+
+    free_block(C);
+    free_block(D);
+
 
 #ifdef _DEBUG
     if (debug_) {
@@ -2431,7 +2439,8 @@ void RHF::save_sapt_info()
     free(body_type);
     free(key_buffer);
 }
-void RHF::compute_SAD_guess() {
+void RHF::compute_SAD_guess() 
+{
 
     shared_ptr<Molecule> mol = basisset_->molecule();
     std::vector<shared_ptr<BasisSet> > atomic_bases;
@@ -2465,7 +2474,7 @@ void RHF::compute_SAD_guess() {
 
     //At the moment, we'll assume no ions, and Hund filling
     //Improvemnts to SAD can be made simply by changing the setup of nalpha and nbeta
-    if (print_>1)
+    if (print_>3)
         fprintf(outfile,"\n  Determining atomic occupations:\n");
     for (int A = 0; A<mol->nallatom(); A++) {
         int Z = mol->fZ(A);
@@ -2476,7 +2485,7 @@ void RHF::compute_SAD_guess() {
         nelec[A] = Z;
         nbeta[A] = (nelec[A]-nhigh[A])/2;
         nalpha[A] = nelec[A]-nbeta[A];
-        if (print_>1)
+        if (print_>6)
             fprintf(outfile,"  Atom %d, Z = %d, nelec = %d, nohigh = %d, nalpha = %d, nbeta = %d\n",A,Z,nelec[A],nhigh[A],nalpha[A],nbeta[A]);
     }
 
@@ -2487,10 +2496,10 @@ void RHF::compute_SAD_guess() {
     for (int A = 0; A<mol->nallatom(); A++)
         atomic_D[A] = block_matrix(atomic_bases[A]->nbf(),atomic_bases[A]->nbf());
 
-    if (print_>1)
+    if (print_>2)
         fprintf(outfile,"\n  Performing Atomic UHF Computations:\n");
     for (int A = 0; A<mol->nallatom(); A++) {
-        if (print_>1)
+        if (print_>4)
             fprintf(outfile,"\n  UHF Computation for Atom %d:\n",A);
         getUHFAtomicDensity(atomic_bases[A],nelec[A],nhigh[A],atomic_D[A]);
     }
@@ -2510,6 +2519,11 @@ void RHF::compute_SAD_guess() {
 
     //D_->print(outfile);    
 
+    //A C matrix is needed. Do one of:
+    //   --An integral direct step (expensive)
+    //   --A Cholesky orbital approximation (cheap, but not as accurate) 
+    if (options_.get_str("SAD_C") == "ID") {
+    //>>>>>>>>ID SAD GUESS 
     //Compute a rough Fock matrix via integral direct
     //Note, my convention is backwards, l and s are index variables
     // m and n are zip variables
@@ -2572,7 +2586,6 @@ void RHF::compute_SAD_guess() {
     }
     shell_offset+= atomic_bases[A]->nshell();
     }
-    timer_off("SAD Fock");
 
     F_->copy(H_);
     F_->add(G_);
@@ -2584,14 +2597,107 @@ void RHF::compute_SAD_guess() {
     form_C();
     //Form the D matrix from the resultant C matrix
     form_D();
+    timer_off("SAD Fock");
 
     if (print_>7) {
         G_->print(outfile);
         F_->print(outfile);
         C_->print(outfile);
         D_->print(outfile);
-    }
+    }//<<<< END ID SAD GUESS
+    } else if (options_.get_str("SAD_C") == "CHOLESKY") {
+        timer_on("SAD Cholesky");
+        if (print_) {
+            fprintf(outfile,"  Approximating occupied orbitals via Partial Cholesky Decomposition.\n");
+            fprintf(outfile,"  NOTE: The first SCF iteration will not be variational.\n");
+        }
+        int norbs = nso_;
+        int ndocc = nalpha_;
 
+        double** D = D_->to_block_matrix();
+        double* Temp = init_array(norbs);    
+        int* P = init_int_array(norbs);
+        for (int i = 0; i<norbs; i++)
+            P[i] = i;
+    
+        //fprintf(outfile,"  D:\n");
+        //print_mat(D,norbs,norbs,outfile);        
+        //Pivot
+        double max;
+        int Temp_p;
+        int pivot;
+        for (int i = 0; i<norbs-1; i++) {
+            max = 0.0;
+            //Where's the pivot diagonal?
+            for (int j = i; j<norbs; j++)
+                if (max <= fabs(D[j][j])) {
+                    max = fabs(D[j][j]);
+                    pivot = j;
+                }
+        
+            //Rows
+            C_DCOPY(norbs,&D[pivot][0],1,Temp,1);            
+            C_DCOPY(norbs,&D[i][0],1,&D[pivot][0],1);            
+            C_DCOPY(norbs,Temp,1,&D[i][0],1);            
+
+            //Columns
+            C_DCOPY(norbs,&D[0][pivot],norbs,Temp,1);            
+            C_DCOPY(norbs,&D[0][i],norbs,&D[0][pivot],norbs);            
+            C_DCOPY(norbs,Temp,1,&D[0][i],norbs);            
+
+            Temp_p = P[i];
+            P[i] = P[pivot];
+            P[pivot] = Temp_p;
+        }
+
+        //fprintf(outfile,"  D (pivoted):\n");
+        //print_mat(D,norbs,norbs,outfile);        
+        //for (int i = 0; i<norbs; i++)
+        //    fprintf(outfile,"  Pivot %d is %d.\n",i,P[i]); 
+
+        //Cholesky Decomposition
+        int status = C_DPOTRF('U',norbs,D[0],norbs);
+        if (status < 0) {
+            fprintf(outfile,"  Cholesky Decomposition Failed");
+            fflush(outfile);
+            exit(PSI_RETURN_FAILURE);
+        }
+        for (int i = 0; i<norbs-1; i++)
+            for (int j = i+1; j<norbs; j++)
+                D[i][j] = 0.0; 
+ 
+        //fprintf(outfile,"  C Guess (Cholesky Unpivoted):\n");
+        //print_mat(D,norbs,ndocc,outfile);        
+        
+        //Unpivot
+        double** C = block_matrix(norbs,ndocc);
+        for (int m = 0; m < norbs; m++) {
+            C_DCOPY(ndocc,&D[m][0],1,&C[P[m]][0],1);
+        }
+
+        //Set C
+        C_->zero();
+        doccpi_[0] = nalpha_;
+        for (int m = 0; m<norbs; m++)
+            for (int i = 0; i<ndocc; i++)
+                C_->set(0,m,i,C[m][i]);
+
+
+        //fprintf(outfile,"  C Guess (Cholesky):\n");
+        //print_mat(C,norbs,ndocc,outfile);        
+
+        free(P);
+        free(Temp);
+        free_block(D);
+        free_block(C);
+
+        E_ = 0.0; //For now
+
+        timer_off("SAD Cholesky");
+
+    } else {
+        throw std::invalid_argument("ID or CHOLESKY are the only two C matrix generators at the moment");
+    }
     /**
     //Compute a rough Fock matrix via integral direct
     //Note, my convention is backwards, l and s are index variables
@@ -2748,6 +2854,7 @@ void RHF::compute_SAD_guess() {
     }
 
     **/
+    /**
     timer_on("SAD C");
 
 
@@ -2756,11 +2863,11 @@ void RHF::compute_SAD_guess() {
     int norbs = nso_;
     int ndocc = nalpha_;
     doccpi_[0] = nalpha_;
-    fprintf(outfile,"  Ndocc %d\n",ndocc);
+    //fprintf(outfile,"  Ndocc %d\n",ndocc);
     double **D = D_->to_block_matrix();
     double **V = block_matrix(norbs,norbs);    
 
-    print_mat(D,norbs,norbs,outfile);
+    //print_mat(D,norbs,norbs,outfile);
 
     double *eigvals = init_array(norbs);
     sq_rsp(norbs, norbs, D,  eigvals, 1, V, 1.0e-14);
@@ -2785,7 +2892,7 @@ void RHF::compute_SAD_guess() {
     free(V);    
 
     timer_off("SAD C");
-    
+    **/
     for (int A = 0; A<mol->nallatom(); A++)
         free_block(atomic_D[A]);
     free(atomic_D);

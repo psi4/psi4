@@ -242,7 +242,7 @@ int C_DGETRF(int nrow, int ncol, double *a, int lda, int *ipiv)
 **
 ** Returns: int info.  info = 0: successful exit.  info < 0: if info=-i,
 **   the ith-argument had an illegal vale.  info>0: if info=i, the i-th
-**   minor is no positive definite
+**   minor is not positive definite
 **
 ** \ingroup QT
 */
