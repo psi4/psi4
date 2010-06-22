@@ -720,6 +720,7 @@ esac
 # Check for OpenMP, the test reports for C++ only, because we called AC_LANG([C++]) near the top
 AX_OPENMP([
     CXXOTH="$CXXOTH $OPENMP_CXXFLAGS"
+    LDFLAGS="$LDFLAGS $OPENMP_CXXFLAGS"
 ])
 
 # Adjust the flags dealing with strictness of the compilers.
