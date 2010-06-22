@@ -826,7 +826,7 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     int iteration = 0;
 
     bool converged = false; 
-    if (print_>1) {
+    if (print_>2) {
     fprintf(outfile, "\n  Initial Atomic UHF Energy:    %14.10f\n\n",E);
     fprintf(outfile, "                                         Total Energy            Delta E              Density RMS\n\n");
     fflush(outfile);
@@ -945,7 +945,7 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
         fprintf(outfile,"  D:\n");
         print_mat(D,norbs,norbs,outfile);
         }
-        if (print_>1)
+        if (print_>2)
             fprintf(outfile, "  @Atomic UHF iteration %3d energy: %20.14f    %20.14f %20.14f\n", iteration, E, deltaE, Drms);
         if (iteration > 1 && deltaE < E_tol && Drms < D_tol)
             converged = true;
@@ -957,9 +957,10 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
 
         //Check convergence 
     } while (!converged);
-    if (converged && print_ > 1)
+    if (converged && print_ > 2)
         fprintf(outfile, "\n  @Atomic UHF Final Energy: %20.14f\n", E);
     
+    free_block(Dold);
     free_block(Ca);
     free_block(Cb);
     free_block(Da);

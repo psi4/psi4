@@ -299,8 +299,11 @@ timer_off("Cholesky Decomp");
   
   psio_->close(PSIF_DFSCF_BJ,1);
 
-  if (options_.get_bool("CHOLESKY_INTEGRALS_ONLY"))
-    abort(); 
+  if (options_.get_bool("CHOLESKY_INTEGRALS_ONLY")) {
+    fprintf(outfile,"  Integrals only required, exiting early");
+    fflush(outfile);
+    exit(PSI_RETURN_SUCCESS); 
+  }
 
 }
 void HF::sort_cholesky(double *vec, int *reorder, int length)
