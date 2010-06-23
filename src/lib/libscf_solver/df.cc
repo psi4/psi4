@@ -1213,7 +1213,7 @@ void HF::form_B()
 void HF::write_B()
 {
     if (print_)
-        fprintf(outfile,"  Saving three-index tensor to file 97 for restart purposes\n");
+        fprintf(outfile,"  Saving three-index tensor to file 97 for restart purposes.\n");
 
     psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_NEW);
     psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
