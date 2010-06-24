@@ -156,6 +156,10 @@ Make sure you have installed the developer libraries, too.])
                     [python python2 python2.6 dnl
 python2.5 python2.4])
 
+  # turn back to default flags
+  ac_save_CPPFLAGS="$CPPFLAGS"
+  ac_save_LIBS="$LIBS"
+  
   m4_if([$1],[],[
     dnl No version check is needed
     if test -z "$PYTHON"; then

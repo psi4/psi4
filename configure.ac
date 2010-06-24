@@ -285,6 +285,8 @@ EXTRAINCDIRS=$withval
 CPPFLAGS=$withval
 AC_MSG_RESULT([Using extra include directories: $withval])
 )
+AC_SUBST(EXTRAINCDIRS)
+AC_SUBST(CPPFLAGS)
 
 AC_ARG_WITH(libs,
 [  --with-libs             Specifies libraries (-llib1 -llib2).],
@@ -292,6 +294,8 @@ LDLIBS=$withval
 AC_MSG_RESULT([Using extra libraries: $withval])
 )
 AC_SUBST(LDLIBS)
+
+ 
 
 LDFLAGS=
 LIBDIRS=
@@ -303,14 +307,21 @@ AC_MSG_RESULT([Using extra library directories: $withval])
 )
 AC_SUBST(LDFLAGS)
 
+ 
+
 AC_CHECK_PROGS(PERL,perl,perl) AC_SUBST(PERL)
+ 
 # Check for python interpreter and libraries
 AC_PYTHON([2.4])
+
+ 
 
 AC_PROG_LATEX
 AC_PROG_LATEX2HTML
 AC_PROG_DVIPS
 AC_PROG_BIBTEX
+
+ 
 
 ####
 # Check for doxygen and it buddies
@@ -332,6 +343,8 @@ else
 fi
 AC_SUBST(DOT_PATH)
 AC_SUBST(HAVE_DOT)
+
+ 
 
 ########
 ## Check for libraries
@@ -394,6 +407,8 @@ case $FC_SYMBOL in
     ;;
 esac
 
+ 
+
 SAVE_LIBS=$LIBS
 LIBS="$LIBS $CLIBS $FLIBS"
 
@@ -447,6 +462,8 @@ AC_SUBST(BLAS)
 AC_MSG_RESULT([BLAS library is $BLAS])
 LIBS=$SAVE_LIBS
 
+ 
+
 # Similar checks for LAPACK, except that sometimes BLAS includes LAPACK
 # Also note that LAPACK often (always?) depends on BLAS
 SAVE_LIBS=$LIBS
@@ -480,6 +497,10 @@ fi
 AC_SUBST(LAPACK)
 LIBS=$SAVE_LIBS
 
+ 
+
+ 
+
 ########
 ## Check for header files
 ########
@@ -503,6 +524,8 @@ AC_CXX_PROCESS_CHECK([cstddef],[#include <cstddef>],,[HAVE_CSTDDEF=1],[HAVE_CSTD
 #CXXDEF="$CXXDEF -DHAVE_CSTDDEF=$HAVE_CSTDDEF"
 AC_DEFINE_UNQUOTED(HAVE_CSTDDEF,$HAVE_CSTDDEF)
 
+ 
+
 # Check for mpi.h
 AC_CXX_PROCESS_CHECK([mpi.h],[#include <mpi.h>],,[HAVE_MPI=1],[HAVE_MPI=0])
 # Check if we can link against mpi
@@ -517,6 +540,8 @@ AC_DEFINE_UNQUOTED(HAVE_MPI,$HAVE_MPI)
 ########
 ## Check for types
 ########
+
+ 
 
 #check to see if void* is allowed
 AC_MSG_CHECKING(for void pointers)
@@ -575,38 +600,22 @@ AC_CHECK_LIB(m,exit,CXXLIBS="$CXXLIBS -lm")
 AC_MSG_RESULT(c++ libs: $CXXLIBS)
 AC_SUBST(CXXLIBS)
 
-PSICPPFLAGS='-I. -I$(objincdir) -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib' AC_SUBST(PSICPPFLAGS)
+ 
 
+PSICPPFLAGS='-I. -I$(objincdir) -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib' AC_SUBST(PSICPPFLAGS)
+AC_SUBST(CPPFLAGS)
+
+ 
 AC_C_CONST
 
-#AC_CHECK_DECLS([putenv],[extradef="-DHAVE_DECL_PUTENV=1"])
+ 
+
 AC_CHECK_DECLS([putenv],[AC_DEFINE_UNQUOTED(HAVE_DECL_PUTENV,1)])
-#CDEF="$CDEF $extradef"
-#CXXDEF="$CXXDEF $extradef"
-#AC_CHECK_FUNC(putenv,[extradef="-DHAVE_PUTENV=1"])
 AC_CHECK_FUNC(putenv,[AC_DEFINE_UNQUOTED(HAVE_PUTENV,1)])
-#CDEF="$CDEF $extradef"
-#CXXDEF="$CXXDEF $extradef"
 
-#AC_CHECK_DECLS([setenv],[extradef="-DHAVE_DECL_SETENV=1"])
 AC_CHECK_DECLS([setenv],[AC_DEFINE_UNQUOTED(HAVE_DECL_SETENV,1)])
-#CDEF="$CDEF $extradef"
-#CXXDEF="$CXXDEF $extradef"
-#AC_CHECK_FUNC(setenv,[extradef="-DHAVE_SETENV=1"])
 AC_CHECK_FUNC(setenv,[AC_DEFINE_UNQUOTED(HAVE_SETENV,1)])
-#CDEF="$CDEF $extradef"
-#CXXDEF="$CXXDEF $extradef"
 
-#AC_CHECK_LIB(m,isinf,[extradef="-DHAVE_FUNC_ISINF=1"],[extradef=""])
-#if test X$extradef = X; then
-#  AC_CHECK_LIB(m,finite,[extradef="-DHAVE_FUNC_FINITE=1"],[extradef=""])
-#fi
-#if test X$extradef = X; then
-#  AC_MSG_ERROR([Did not find isinf() or finite() functions.])
-#else
-#  CDEF="$CDEF $extradef"
-#  CXXDEF="$CXXDEF $extradef"
-#fi
 AC_CHECK_LIB(m,isinf,[AC_DEFINE_UNQUOTED(HAVE_FUNC_ISINF,1)],[
   AC_CHECK_LIB(m,finite,[AC_DEFINE_UNQUOTED(HAVE_FUNC_FINITE,1)],[
     AC_MSG_ERROR([Did not find isinf() or finite() functions.])
