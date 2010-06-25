@@ -19,7 +19,6 @@
 //Hack to use MKL threads efficiently in sort
 //Will eventually become a flag in configure
 //#define HAVE_MKL 1
-//Turned OFF for now
 
 //MKL Header
 #ifdef HAVE_MKL
@@ -446,7 +445,7 @@ void HF::form_B()
     //representing one subspace with another subspace cast 
     //onto a third subspace gets
     int m_ind, n_ind;
-    #pragma omp parallel for private (m_ind, n_ind) collapse (2)
+    #pragma omp parallel for private (m_ind, n_ind) 
     for (int m = 0; m<naux_raw_; m++)
         for (int n = 0; n<naux_fin_; n++)
             X[m][n] = SJ[naux_raw_-n-1][m];
@@ -913,12 +912,13 @@ void HF::form_B()
 
     //Threading values (defaults to single thread unless OpenMP exists)
     int nthread = 1;
+    #ifdef _OPENMP
+        nthread = omp_get_max_threads();
+    #endif
     int rank = 0;
 
     if (df_storage_ == core)
     {
-    
-
         //Overall containers	
         IntegralFactory rifactory(basisset_, basisset_, ribasis_, zero);
         B_ia_P_ = block_matrix(naux_raw_,ntri_naive_); 
@@ -949,34 +949,24 @@ void HF::form_B()
             } 
         }
 
-//#pragma omp parallel (One day, not thread safe quite yet)
-{
     	//Build (A|mn) on core, and then transform in place using as large of a buffer as possible
-        //#ifdef _OPENMP
-        //    nthread = omp_get_num_threads();
-        //    rank = omp_get_thread_num();
-        //    fprintf(outfile,"  Thread %d of %d reporting.\n",rank,nthread);
-        //#endif
 
         //Get a TEI for each thread
-        //#pragma omp single 
-        {
-            buffer = new const double*[nthread];
-            eri = new shared_ptr<TwoBodyInt>[nthread];
-            for (int Q = 0; Q<nthread; Q++) {
-                eri[Q] = shared_ptr<TwoBodyInt>(rifactory.eri());
-                buffer[Q] = eri[Q]->buffer();
-            }
-            //fprintf(outfile,"  %d Threads in operation.\n",nthread); fflush(outfile);
+        buffer = new const double*[nthread];
+        eri = new shared_ptr<TwoBodyInt>[nthread];
+        for (int Q = 0; Q<nthread; Q++) {
+            eri[Q] = shared_ptr<TwoBodyInt>(rifactory.eri());
+            buffer[Q] = eri[Q]->buffer();
         }
 
-        //Barrier to prevent other threads from jumping the gun
-        //#pragma omp barrier        
-
         //The integrals (A|mn)
-        //#pragma omp parallel for private (numP, Pshell, MU, NU, P, PHI, mu, nu, nummu, numnu, omu, onu) 
+        #pragma omp parallel for private (numP, Pshell, MU, NU, P, PHI, mu, nu, nummu, numnu, omu, onu, rank) schedule (dynamic) 
         for (MU=0; MU < basisset_->nshell(); ++MU) {
-            //fprintf(outfile,"  Thread %d doing MU = %d",rank,MU); fflush(outfile);
+            #ifdef _OPENMP
+                rank = omp_get_thread_num();
+                //fprintf(outfile,"  Thread %d doing MU = %d",rank,MU); fflush(outfile);
+            #endif           
+
             nummu = basisset_->shell(MU)->nfunction();
             for (NU=0; NU <= MU; ++NU) {
                 numnu = basisset_->shell(NU)->nfunction();
@@ -1003,7 +993,7 @@ void HF::form_B()
                 }
             } 
         }
-} //End parallel mode      
+        
         delete []buffer;
         delete []eri; 
         //print_mat(B_ia_P_, naux_raw_,ntri_ ,outfile);
@@ -1557,7 +1547,7 @@ void RHF::form_G_from_RI()
                 
                 int m, n , ij, index, rank;
 
-                #pragma omp parallel for private (m, n , ij, index, rank)
+                #pragma omp parallel for private (m, n , ij, index, rank) schedule (dynamic)
                 for (m = 0; m<norbs; m++) {
 
                     rank = 0;
@@ -1831,7 +1821,7 @@ void RHF::form_G_from_RI()
                 
                 int m, n , ij3, index, rank;
 
-                #pragma omp parallel for private (m, n , ij3, index, rank)
+                #pragma omp parallel for private (m, n , ij3, index, rank) schedule (dynamic)
                 for (m = 0; m<norbs; m++) {
                     
                     rank = 0;
