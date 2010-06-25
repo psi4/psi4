@@ -100,10 +100,12 @@ protected:
     /// DF Storage Scheme
     enum df_storage { double_core, core, flip_B_core, flip_B_disk, k_incore, disk};
     df_storage df_storage_;
+    unsigned long int df_memory_;
 
     //Density Fitting?
     int naux_raw_; //Number of functions in the raw auxiliary basis
     int naux_fin_; //Number of functions in the finished auxiliary basis
+    int *ri_back_map_;
     int *ri_pair_nu_;
     int *ri_pair_mu_;
     int sig_fun_pairs_;
@@ -111,7 +113,6 @@ protected:
 
     int *schwarz_shell_pairs_;
     int *schwarz_fun_pairs_;
-    int *ri_pair_compound_;
 
     //Local K? (only with DF)
     bool local_K_;

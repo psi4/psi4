@@ -243,12 +243,15 @@ timer_off("Cholesky Decomp");
 
   ntri_naive_ = ntri;
   ntri_ = ntri;
+  int norbs = basisset_->nbf();
+  ri_back_map_ = init_int_array(norbs*(norbs+1)/2);  
   ri_pair_mu_ = init_int_array(ntri_);  
   ri_pair_nu_ = init_int_array(ntri_);  
   for (int i = 0, ij = 0; i < basisset_->nbf(); i++)
     for (int j = 0; j<=i; j++, ij++) { 
         ri_pair_mu_[ij] = i;
         ri_pair_nu_[ij] = j;
+        ri_back_map_[i*(i+1)/2+j] = ij;
     }
   
   naux_fin_ = pos;
@@ -265,6 +268,8 @@ timer_off("Cholesky Decomp");
   free(L);
   
   //Write the restart data, it's cheap
+  next_PSIF_DFSCF_BJ = PSIO_ZERO;
+  psio_->write(PSIF_DFSCF_BJ,"RI_PAIR_BACK",(char *) &(ri_back_map_[0]),sizeof(int)*(norbs*(norbs+1)/2),next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
   next_PSIF_DFSCF_BJ = PSIO_ZERO;
   psio_->write(PSIF_DFSCF_BJ,"RI_PAIR_MU",(char *) &(ri_pair_mu_[0]),sizeof(int)*ntri_naive_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
   next_PSIF_DFSCF_BJ = PSIO_ZERO;
