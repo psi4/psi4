@@ -6,9 +6,31 @@
 *       14 June 2010
 *
 *       Canonical (delocalized) density fitting routines for SCF
+*       
+*       This code is heavily based on BLAS calls, and may be easily 
+*       threaded simply by using threaded BLAS/LAPACK. MKL in particular
+*       is extremely efficient, as loops with internal DGEMMS may be
+*       parallelized with OpenMP, and the DGEMMS may be performed with one
+*       thread each to avoid thrashing 
 *
 *
 *****************************************************************************/
+
+//Hack to use MKL threads efficiently in sort
+//Will eventually become a flag in configure
+//#define HAVE_MKL 1
+//Turned OFF for now
+
+//MKL Header
+#ifdef HAVE_MKL
+#include <mkl.h>
+#endif
+
+//OpenMP Header
+//_OPENMP is defined by the compiler if it exists
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 #include <cstdlib>
 #include <cstdio>
@@ -63,14 +85,14 @@ void HF::form_B()
     //Grab norbs and ndocc and get the ri basis up to the class scope     
     int norbs = basisset_->nbf(); 
     int ndocc = doccpi_[0];
-
+    //Amount of memory avialable for DF Algortihm, in doubles
+    df_memory_ = (long)(memory_/sizeof(double)*(1.0-MEMORY_SAFETY_FACTOR));
     
     //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     //
     //                        RESTART?
     //
     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    //TODO: Make restart work with the new transform
     if (options_.get_bool("RI_SCF_RESTART")) 
     {
         //restart!! Use existing 3-index tensor on disk
@@ -92,6 +114,9 @@ void HF::form_B()
         //Across schwarz sieve and unfortunate shell indexing
         ri_pair_nu_ = init_int_array(ntri_naive_);
         ri_pair_mu_ = init_int_array(ntri_naive_);
+        ri_back_map_ = init_int_array(norbs*(norbs+1)/2);
+        next_PSIF_DFSCF_BJ = PSIO_ZERO;
+        psio_->read(PSIF_DFSCF_BJ,"RI_PAIR_BACK",(char *) &(ri_back_map_[0]),sizeof(int)*(norbs*(norbs+1)/2),next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
         next_PSIF_DFSCF_BJ = PSIO_ZERO;
         psio_->read(PSIF_DFSCF_BJ,"RI_PAIR_MU",(char *) &(ri_pair_mu_[0]),sizeof(int)*ntri_naive_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
         next_PSIF_DFSCF_BJ = PSIO_ZERO;
@@ -113,7 +138,8 @@ void HF::form_B()
         else if (storage_type == "DEFAULT")
         {
     	    //set df_storage_ semi-heuristically based on available memory
-    	    if (((long)((memA)*(1.0+MEMORY_SAFETY_FACTOR)))<(memory_/sizeof(double)))
+            //memJ here is padding for other uses, we may need more in the end
+    	    if (memA+memJ+memJ<df_memory_)
                 df_storage_ = core; //Full in-core
     	    else
                 df_storage_ = disk; //Disk
@@ -125,6 +151,33 @@ void HF::form_B()
             fprintf(outfile,"\n  Density Fitting Algorithm proceeding on Disk\n"); 
         fflush(outfile);
         
+        unsigned long int max_rows; 
+        if (df_storage_ == core)
+            max_rows = ((df_memory_-naux_raw_*(long)ntri_naive_)/((long)(norbs*ndocc)));
+        else
+            max_rows = ((df_memory_)/((long)(norbs*ndocc+ntri_naive_)));
+        
+        if (max_rows > naux_fin_)
+            max_rows = naux_fin_;
+        if (max_rows < 1)
+            max_rows = 1;
+        
+        if (print_>1) {
+            fprintf(outfile,"\n  DF MEMORY USAGE:\n");
+            fprintf(outfile,"  Total memory:           %15ld doubles, %15ld bytes.\n",memory_/sizeof(double),memory_);
+            fprintf(outfile,"  DF memory:              %15ld doubles, %15ld bytes.\n",df_memory_,df_memory_*sizeof(double));
+            fprintf(outfile,"  3-index storage:        %15ld doubles, %15ld bytes.\n",memA,memA*sizeof(double));
+            fprintf(outfile,"  Exchange size:          %15ld doubles, %15ld bytes.\n",ndocc*naux_fin_*(long)norbs,ndocc*naux_fin_*(long)norbs*sizeof(double));
+            fprintf(outfile,"  J memory:               %15ld doubles, %15ld bytes.\n",memJ,memJ*sizeof(double));
+            fprintf(outfile,"  Max rows (iterations):  %15ld rows.\n",max_rows);
+            fprintf(outfile,"  Nso:                    %15ld functions.\n",norbs);
+            fprintf(outfile,"  Npairs:                 %15ld pairs.\n",ntri_naive_);
+            fprintf(outfile,"  Ndocc:                  %15ld orbitals.\n",ndocc);
+            fprintf(outfile,"  Naux raw:               %15ld functions.\n",naux_raw_);
+            fprintf(outfile,"  Naux finished:          %15ld functions.\n",naux_fin_);
+            fprintf(outfile,"\n");
+            fflush(outfile);
+        }
         if (df_storage_ == core) {
             //We need the three-index tensor in the core
             //fprintf(outfile,"  n_tri_ %d, n_tri_naive_ %d, naux_fin_ %d\n",ntri_,ntri_naive_,naux_fin_); fflush(outfile);
@@ -269,8 +322,8 @@ void HF::form_B()
     }
 
     //Debug
-    double** Scopy1 = block_matrix(naux_raw_,naux_raw_);
-    C_DCOPY(naux_raw_*naux_raw_, SJ[0], 1, Scopy1[0],1);
+    //double** Scopy1 = block_matrix(naux_raw_,naux_raw_);
+    //C_DCOPY(naux_raw_*naux_raw_, SJ[0], 1, Scopy1[0],1);
     
     // Form X
     // First, diagonalize S_J
@@ -286,30 +339,30 @@ void HF::form_B()
     free(swork);
 
     //Debug
-    double** Scopy2 = block_matrix(naux_raw_,naux_raw_);
-    C_DCOPY(naux_raw_*naux_raw_, SJ[0], 1, Scopy2[0],1);
+    //double** Scopy2 = block_matrix(naux_raw_,naux_raw_);
+    //C_DCOPY(naux_raw_*naux_raw_, SJ[0], 1, Scopy2[0],1);
   
-    for (int i =0; i<naux_raw_; i++)
-        C_DSCAL(naux_raw_,s_eigval[i],Scopy2[i],1); 
+    //for (int i =0; i<naux_raw_; i++)
+    //    C_DSCAL(naux_raw_,s_eigval[i],Scopy2[i],1); 
     
-    C_DGEMM('t','n',naux_raw_,naux_raw_,naux_raw_,1.0,
-            Scopy2[0],naux_raw_,SJ[0],naux_raw_,-1.0,Scopy1[0],naux_raw_);
+    //C_DGEMM('t','n',naux_raw_,naux_raw_,naux_raw_,1.0,
+    //        Scopy2[0],naux_raw_,SJ[0],naux_raw_,-1.0,Scopy1[0],naux_raw_);
 
     //print_mat(Scopy3, naux_raw_,naux_raw_,outfile);
 
-    double worst_zero = 0.0; 
-    double rms = 0.0;
-    for (int ij = 0; ij < naux_raw_*naux_raw_; ij++) {
-        if (fabs(Scopy1[0][ij]) > worst_zero)
-            worst_zero = fabs(Scopy1[0][ij]);
-        rms += Scopy1[0][ij]*Scopy1[0][ij];
-    }
-    rms = sqrt(1.0/(naux_raw_*naux_raw_)*rms);
-    fprintf(outfile,"  S_J: Worst Zero is %14.10E, RMS is %14.10E\n",worst_zero,rms);
+    //double worst_zero = 0.0; 
+    //double rms = 0.0;
+    //for (int ij = 0; ij < naux_raw_*naux_raw_; ij++) {
+    //    if (fabs(Scopy1[0][ij]) > worst_zero)
+    //        worst_zero = fabs(Scopy1[0][ij]);
+    //    rms += Scopy1[0][ij]*Scopy1[0][ij];
+    //}
+    //rms = sqrt(1.0/(naux_raw_*naux_raw_)*rms);
+    //fprintf(outfile,"  S_J: Worst Zero is %14.10E, RMS is %14.10E\n",worst_zero,rms);
     
 
-    free_block(Scopy1);
-    free_block(Scopy2);     
+    //free_block(Scopy1);
+    //free_block(Scopy2);     
 
     //fprintf(outfile,"S_J Eigenvectors:\n");
     //print_mat(SJ,naux_raw_,naux_raw_,outfile);
@@ -361,10 +414,16 @@ void HF::form_B()
             //OK, this eigenvalue is approved for launch
             s_eigval[i] = 1.0 / sqrt(s_eigval[i]);
         }
+    }
+
+    int ind;
+    #pragma omp parallel for private (ind) schedule (dynamic)
+    for (int ind = 0; ind<naux_raw_; ind++) {
        
         //Scale the column out to produce the porous X matrix in place
         //(Columns are rows in this messed up LAPACK-ness 
-        C_DSCAL(naux_raw_, s_eigval[i], SJ[i], 1);
+        if (s_eigval[ind] > 0.0)
+            C_DSCAL(naux_raw_, s_eigval[ind], SJ[ind], 1);
     }  
     
     //fprintf(outfile,"X (in S ordering):\n");
@@ -386,6 +445,8 @@ void HF::form_B()
     //This is after all, canonical. Well...as canonical as 
     //representing one subspace with another subspace cast 
     //onto a third subspace gets
+    int m_ind, n_ind;
+    #pragma omp parallel for private (m_ind, n_ind) collapse (2)
     for (int m = 0; m<naux_raw_; m++)
         for (int n = 0; n<naux_fin_; n++)
             X[m][n] = SJ[naux_raw_-n-1][m];
@@ -396,7 +457,6 @@ void HF::form_B()
 
     free(s_eigval);
     free_block(SJ);
-    //That felt surprisingly good
 
     if (print_>5) {
         fprintf(outfile,"  X (The J -> J' change of basis matrix):\n");
@@ -541,11 +601,13 @@ void HF::form_B()
             min_J = eigval[i];
         if (max_J < eigval[i])
             max_J = eigval[i];
-
+    }
+    #pragma omp parallel for private (ind)
+    for (ind=0; ind<naux_fin_; ind++) {
         //All eignvalues should be approved for use!
-        eigval[i] = 1.0 / sqrt(eigval[i]);
+        eigval[ind] = 1.0 / sqrt(eigval[ind]);
         // scale one set of eigenvectors by the diagonal elements jp^{-1/2}
-        C_DSCAL(naux_fin_, eigval[i], Jp[i], 1);
+        C_DSCAL(naux_fin_, eigval[ind], Jp[ind], 1);
     }
     free(eigval);
 
@@ -820,7 +882,8 @@ void HF::form_B()
     else if (storage_type == "DEFAULT")
     {
     	//set df_storage_ semi-heuristically based on available memory
-    	if (((long)((memA+memJ)*(1.0+MEMORY_SAFETY_FACTOR)))<(memory_/sizeof(double)))
+        //The second memJ is padding for transformations, we may need more
+    	if (memA+memJ+memJ<df_memory_)
             df_storage_ = core; //Full in-core
     	else
             df_storage_ = disk; //Disk
@@ -837,39 +900,92 @@ void HF::form_B()
     //                        FORM B (FINALLY)
     //
     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    //Form the AO tensor (A|mn), transfrom to (B|mn) by embedding J^-1/2 
+    //Form the AO tensor (A|mn), transfrom to (B|mn) by embedding fitting metric W 
     timer_on("Overall (B|mn)");
     
-    //Use ri_pair_mu_ and ri_pair_nu_ to keep track of things
+    //Use ri_pair_mu_ and ri_pair_nu_ (and the back map) to keep track of things
     //Across schwarz sieve and unfortunate shell indexing
     ri_pair_nu_ = init_int_array(ntri_naive_);
     ri_pair_mu_ = init_int_array(ntri_naive_);
+    ri_back_map_ = init_int_array(norbs*(norbs+1)/2);
   
     double three_index_cutoff = options_.get_double("THREE_INDEX_CUTOFF");
- 
+
+    //Threading values (defaults to single thread unless OpenMP exists)
+    int nthread = 1;
+    int rank = 0;
+
     if (df_storage_ == core)
-    {	
-    	//Build (A|mn) on core, and then transform in place using as large of a buffer as possible
+    {
+    
+
+        //Overall containers	
         IntegralFactory rifactory(basisset_, basisset_, ribasis_, zero);
-        shared_ptr<TwoBodyInt> eri = shared_ptr<TwoBodyInt>(rifactory.eri());
-        const double *buffer = eri->buffer();
         B_ia_P_ = block_matrix(naux_raw_,ntri_naive_); 
-        
+        const double **buffer;
+        shared_ptr<TwoBodyInt> *eri;
+
+        //Set up schwarz bookkeeping
         int numP,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu;
-        int start_index, delta_index, l_index;
-        start_index = 0;
-        for (MU=0; MU < basisset_->nshell(); ++MU) {
+        int index;
+        for (MU=0, index = 0; MU < basisset_->nshell(); ++MU) {
             nummu = basisset_->shell(MU)->nfunction();
             for (NU=0; NU <= MU; ++NU) {
                 numnu = basisset_->shell(NU)->nfunction();
                 if (schwarz_shell_pairs[MU*(MU+1)/2+NU] == 1) {
-                    delta_index = 0;
+                    for (mu=0 ; mu < nummu; ++mu) {
+                        omu = basisset_->shell(MU)->function_index() + mu;
+                        for (nu=0; nu < numnu; ++nu) {
+                            onu = basisset_->shell(NU)->function_index() + nu;
+                            if(omu>=onu && schwarz_fun_pairs[omu*(omu+1)/2+onu] == 1) {
+                                ri_pair_mu_[index] = omu;
+                                ri_pair_nu_[index] = onu;
+                                ri_back_map_[omu*(omu+1)/2+onu] = index;
+                                index++;
+                            } 
+                        }
+                    }
+                }
+            } 
+        }
+
+//#pragma omp parallel (One day, not thread safe quite yet)
+{
+    	//Build (A|mn) on core, and then transform in place using as large of a buffer as possible
+        //#ifdef _OPENMP
+        //    nthread = omp_get_num_threads();
+        //    rank = omp_get_thread_num();
+        //    fprintf(outfile,"  Thread %d of %d reporting.\n",rank,nthread);
+        //#endif
+
+        //Get a TEI for each thread
+        //#pragma omp single 
+        {
+            buffer = new const double*[nthread];
+            eri = new shared_ptr<TwoBodyInt>[nthread];
+            for (int Q = 0; Q<nthread; Q++) {
+                eri[Q] = shared_ptr<TwoBodyInt>(rifactory.eri());
+                buffer[Q] = eri[Q]->buffer();
+            }
+            //fprintf(outfile,"  %d Threads in operation.\n",nthread); fflush(outfile);
+        }
+
+        //Barrier to prevent other threads from jumping the gun
+        //#pragma omp barrier        
+
+        //The integrals (A|mn)
+        //#pragma omp parallel for private (numP, Pshell, MU, NU, P, PHI, mu, nu, nummu, numnu, omu, onu) 
+        for (MU=0; MU < basisset_->nshell(); ++MU) {
+            //fprintf(outfile,"  Thread %d doing MU = %d",rank,MU); fflush(outfile);
+            nummu = basisset_->shell(MU)->nfunction();
+            for (NU=0; NU <= MU; ++NU) {
+                numnu = basisset_->shell(NU)->nfunction();
+                if (schwarz_shell_pairs[MU*(MU+1)/2+NU] == 1) {
                     for (Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
                         numP = ribasis_->shell(Pshell)->nfunction();
-                        timer_on("(B|mn) Integrals");
-                        eri->compute_shell(MU, NU, Pshell, 0);
-                        timer_off("(B|mn) Integrals");
-                        l_index = start_index;
+                        if (rank == 0) timer_on("(B|mn) Integrals");
+                        eri[rank]->compute_shell(MU, NU, Pshell, 0);
+                        if (rank == 0) timer_off("(B|mn) Integrals");
                         for (mu=0 ; mu < nummu; ++mu) {
                             omu = basisset_->shell(MU)->function_index() + mu;
                             for (nu=0; nu < numnu; ++nu) {
@@ -878,32 +994,53 @@ void HF::form_B()
                                         
                                     for (P=0; P < numP; ++P) {
                                         PHI = ribasis_->shell(Pshell)->function_index() + P;
-                                        B_ia_P_[PHI][l_index] = buffer[mu*numnu*numP+nu*numP+P];
+                                        B_ia_P_[PHI][ri_back_map_[omu*(omu+1)/2+onu]] = buffer[rank][mu*numnu*numP+nu*numP+P];
                                     }
-                                    if (Pshell == 0) {
-                                        delta_index++;
-                                        ri_pair_mu_[l_index] = omu;
-                                        ri_pair_nu_[l_index] = onu;
-                                    }
-                                    l_index++;
                                 } 
                             }
                         }
                     }
-                    start_index+=delta_index;
                 }
             } 
         }
+} //End parallel mode      
+        delete []buffer;
+        delete []eri; 
         //print_mat(B_ia_P_, naux_raw_,ntri_ ,outfile);
 
-	// Transformation
-        int max_cols = (int) (memory_/sizeof(double)-memA-memJ)/(naux_raw_*(1+MEMORY_SAFETY_FACTOR));
+        //Columns per batch for integral fitting 
+        unsigned long int max_cols = ((df_memory_-memA-memJ)/((long)naux_raw_));
         if (max_cols > ntri_naive_)
             max_cols = ntri_naive_;
         if (max_cols < 1)
             max_cols = 1; //You need to be able to spare that much at least!
         
+        //Rows per batch for iterations (for diagnostics)
+        unsigned long int max_rows = ((df_memory_-naux_raw_*(long)ntri_naive_)/((long)(norbs*ndocc)));
+        if (max_rows > naux_fin_)
+            max_rows = naux_fin_;
+        if (max_rows < 1)
+            max_rows = 1;
+       
+        if (print_>1) { 
+            fprintf(outfile,"\n  DF MEMORY USAGE:\n");
+            fprintf(outfile,"  Total memory:           %15ld doubles, %15ld bytes.\n",memory_/sizeof(double),memory_);
+            fprintf(outfile,"  DF memory:              %15ld doubles, %15ld bytes.\n",df_memory_,df_memory_*sizeof(double));
+            fprintf(outfile,"  3-index storage:        %15ld doubles, %15ld bytes.\n",memA,memA*sizeof(double));
+            fprintf(outfile,"  Exchange size:          %15ld doubles, %15ld bytes.\n",ndocc*naux_fin_*(long)norbs,ndocc*naux_fin_*(long)norbs*sizeof(double));
+            fprintf(outfile,"  J memory:               %15ld doubles, %15ld bytes.\n",memJ,memJ*sizeof(double));
+            fprintf(outfile,"  Max cols (integrals):   %15ld columns.\n",max_cols);
+            fprintf(outfile,"  Max rows (iterations):  %15ld rows.\n",max_rows);
+            fprintf(outfile,"  Nso:                    %15ld functions.\n",norbs);
+            fprintf(outfile,"  Npairs:                 %15ld pairs.\n",ntri_naive_);
+            fprintf(outfile,"  Ndocc:                  %15ld orbitals.\n",ndocc);
+            fprintf(outfile,"  Naux raw:               %15ld functions.\n",naux_raw_);
+            fprintf(outfile,"  Naux finished:          %15ld functions.\n",naux_fin_);
+            fprintf(outfile,"\n");
+            fflush(outfile);
+        }
 
+	// Transformatio buffern
         double **Temp1 = block_matrix(naux_raw_,max_cols);
 
         //fprintf(outfile,"  Max cols %d\n",max_cols);
@@ -999,12 +1136,37 @@ void HF::form_B()
         int maxpairs = maxfun*maxfun;
 
         //Find maximum allowed memory block size 
-        int max_cols = (int)((1.0-MEMORY_SAFETY_FACTOR)*memory_/sizeof(double)-memJ)/(naux_fin_+naux_raw_);         
+        unsigned long int max_cols = ((df_memory_-memJ)/((long)(naux_raw_+naux_fin_)));
         if (max_cols > ntri_naive_ + maxpairs - 1)
             max_cols = ntri_naive_ + maxpairs - 1;
         if (max_cols < maxpairs)
             max_cols = maxpairs; //Gotta give me something to work with         
 
+        //Max rows per block for iterations (for diagnostics)
+        unsigned long int max_rows = ((df_memory_)/((long)(norbs*ndocc+ntri_naive_)));
+	if (max_rows > naux_fin_)
+            max_rows = naux_fin_;
+        if (max_rows < 1)
+            max_rows = 1; //Without a row, I can't work
+     
+       if (print_>1) { 
+            fprintf(outfile,"\n  DF MEMORY USAGE:\n");
+            fprintf(outfile,"  Total memory:           %15ld doubles, %15ld bytes.\n",memory_/sizeof(double),memory_);
+            fprintf(outfile,"  DF memory:              %15ld doubles, %15ld bytes.\n",df_memory_,df_memory_*sizeof(double));
+            fprintf(outfile,"  3-index storage:        %15ld doubles, %15ld bytes.\n",memA,memA*sizeof(double));
+            fprintf(outfile,"  Exchange size:          %15ld doubles, %15ld bytes.\n",ndocc*naux_fin_*(long)norbs,ndocc*naux_fin_*(long)norbs*sizeof(double));
+            fprintf(outfile,"  J memory:               %15ld doubles, %15ld bytes.\n",memJ,memJ*sizeof(double));
+            fprintf(outfile,"  Max cols (integrals):   %15ld columns.\n",max_cols);
+            fprintf(outfile,"  Max rows (iterations):  %15ld rows.\n",max_rows);
+            fprintf(outfile,"  Nso:                    %15ld functions.\n",norbs);
+            fprintf(outfile,"  Npairs:                 %15ld pairs.\n",ntri_naive_);
+            fprintf(outfile,"  Ndocc:                  %15ld orbitals.\n",ndocc);
+            fprintf(outfile,"  Naux raw:               %15ld functions.\n",naux_raw_);
+            fprintf(outfile,"  Naux finished:          %15ld functions.\n",naux_fin_);
+            fprintf(outfile,"\n");
+            fflush(outfile);
+        }
+        
         //Allocate the fitted and unfitted blocks for three-index integrals
         double **Amn = block_matrix(naux_raw_,max_cols); //Raw integrals
         double **Bmn = block_matrix(naux_fin_,max_cols); //Fitted integrals
@@ -1027,7 +1189,6 @@ void HF::form_B()
             nummu = basisset_->shell(MU)->nfunction();
             for (NU=0; NU <= MU; ++NU) {
                 numnu = basisset_->shell(NU)->nfunction();
-                //fprintf(outfile, "  MU = %d, NU = %d, Sig = %d\n",MU,NU,schwarz_shell_pairs[MU*(MU+1)/2+NU]); fflush(outfile);
                 if (schwarz_shell_pairs[MU*(MU+1)/2+NU] == 1) {
                     for (Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
                         numP = ribasis_->shell(Pshell)->nfunction();
@@ -1045,8 +1206,6 @@ void HF::form_B()
                                         Amn[PHI][start_index+s_index]= buffer[mu*numnu*numP+nu*numP+P];
                                     }
                                     s_index++;
-                                    //if (Pshell == 0)
-                                    //    fprintf(outfile,"  %MU = %d, NU = %d, mu = %d, nu = %d, omu = %d, onu = %d, l_index = %d, r_index = %d, s_index = %d\n",MU,NU,mu,nu,omu,onu, l_index,r_index,s_index);  
                                     if (Pshell == 0) {
                                         porous_index++;
                                         ri_pair_mu_[r_index] = omu;
@@ -1059,6 +1218,9 @@ void HF::form_B()
                     }
                     start_index = porous_index;
                     //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                    //
+                    //     DISK DUMP BLOCK
+                    //
                     //Porous index is the filled length of the Amn tensor block 
                     //Do the transform, three-index sieve, and dump the integrals if either:
                     //   1) The next batch of integrals might not fit
@@ -1066,7 +1228,6 @@ void HF::form_B()
                     if (porous_index + maxpairs  > max_cols || (MU == basisset_->nshell()-1  && NU == MU)) { 
                         //Do the transform
                         //print_mat(Amn,naux_raw_,max_cols,outfile);
-                        //fprintf(outfile,"Porous index = %d, naux_raw_ = %d, naux_fin_ = %d, max_cols = %d.\n", porous_index,naux_raw_,naux_fin_,max_cols); fflush(outfile);
                         timer_on("(B|mn) Transform");
                         C_DGEMM('T','N',naux_fin_,porous_index,naux_raw_,1.0, W[0], naux_fin_, Amn[0], max_cols,0.0, Bmn[0],max_cols);
                         timer_off("(B|mn) Transform");
@@ -1102,8 +1263,7 @@ void HF::form_B()
                         //NOTE: If three_index_cutoff > 0.0, the tensor is in Amn, otherwise it is in Bmn
                         //This allows for threading of the three index sieve
                         
-                        //fprintf(outfile,"\n  Pass = %d. Ready for writing:\n",pass++); 
-                        //fprintf(outfile,"  Max cols = %d, porous_index = %d, dense_index = %d, global_offset = %d, Tensor %s\n",max_cols,porous_index,dense_index,global_index,((three_index_cutoff > 0.0)?"Amn":"Bmn"));
+                        //fprintf(outfile,"  Pass = %d. Ready to write %d cols:\n",pass++,dense_index); 
                         //fflush(outfile);
 
                         //print_mat(Amn,naux_fin_,max_cols,outfile);
@@ -1174,6 +1334,8 @@ void HF::form_B()
  
         //Write the restart data, it's cheap
         next_PSIF_DFSCF_BJ = PSIO_ZERO;
+        psio_->write(PSIF_DFSCF_BJ,"RI_PAIR_BACK",(char *) &(ri_back_map_[0]),sizeof(int)*(norbs*(norbs+1)/2),next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+        next_PSIF_DFSCF_BJ = PSIO_ZERO;
         psio_->write(PSIF_DFSCF_BJ,"RI_PAIR_MU",(char *) &(ri_pair_mu_[0]),sizeof(int)*ntri_naive_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
         next_PSIF_DFSCF_BJ = PSIO_ZERO;
         psio_->write(PSIF_DFSCF_BJ,"RI_PAIR_NU",(char *) &(ri_pair_nu_[0]),sizeof(int)*ntri_naive_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
@@ -1220,6 +1382,10 @@ void HF::write_B()
             
     psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(B_ia_P_[0][0]),sizeof(double)*ntri_naive_*naux_fin_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
                 
+    int norbs = basisset_->nbf();
+
+    next_PSIF_DFSCF_BJ = PSIO_ZERO;
+    psio_->write(PSIF_DFSCF_BJ,"RI_PAIR_BACK",(char *) &(ri_back_map_[0]),sizeof(int)*(norbs*(norbs+1)/2),next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
     next_PSIF_DFSCF_BJ = PSIO_ZERO;
     psio_->write(PSIF_DFSCF_BJ,"RI_PAIR_MU",(char *) &(ri_pair_mu_[0]),sizeof(int)*ntri_naive_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
     next_PSIF_DFSCF_BJ = PSIO_ZERO;
@@ -1240,6 +1406,7 @@ void HF::free_B()
         free_block(B_ia_P_);
     free(ri_pair_mu_);
     free(ri_pair_nu_);
+    free(ri_back_map_);
 }
 void RHF::form_G_from_RI()
 {
@@ -1317,24 +1484,30 @@ void RHF::form_G_from_RI()
             /* EXCHANGE PART */
             
 
-            int max_rows = (memory_/sizeof(double)-naux_fin_*ntri_naive_)/(norbs*ndocc*(1.0+MEMORY_SAFETY_FACTOR));
+            unsigned long int max_rows = ((df_memory_-naux_raw_*(long)ntri_naive_)/((long)(norbs*ndocc)));
             if (max_rows > naux_fin_)
                 max_rows = naux_fin_;
             if (max_rows < 1)
                 max_rows = 1;
 
             //fprintf(outfile,"  max_rows = %d\n",max_rows);
+            int nthread = 1;
+            #ifdef _OPENMP
+                nthread = omp_get_max_threads();
+            #endif
 
             //E exchange matrix
             double** E = block_matrix(norbs, ndocc*max_rows);
             //Temporary K matrix
             double** K = block_matrix(norbs,norbs);
             //QS temp matrix for DGEMM
-            double** QS = block_matrix(max_rows,norbs);
-            //Temp matrix for DGEMM
-            double** Temp = block_matrix(ndocc,max_rows);
+            double*** QS = new double**[nthread];
+            for (int T = 0; T < nthread; T++)
+                QS[T] = block_matrix(max_rows,norbs);
             // Temp matrix for sparse DGEMM if sieve exists
-            double** Ctemp = block_matrix(ndocc,norbs);
+            double*** Ctemp = new double**[nthread];
+            for (int T = 0; T < nthread; T++)
+                Ctemp[T] = block_matrix(ndocc,norbs);
             // Index array for non-canonical ordering of mn
             int** m_ij_indices = init_int_matrix(norbs,norbs);
             // Index array of n for given m (in order of above)
@@ -1376,21 +1549,36 @@ void RHF::form_G_from_RI()
                     current_rows = naux_fin_-row; 
 
                 timer_on("E SORT");
-                for (int m = 0; m<norbs; m++) {
+
+                #ifdef HAVE_MKL
+                    int mkl_nthreads = mkl_get_max_threads();
+                    mkl_set_num_threads(1); 
+                #endif
+                
+                int m, n , ij, index, rank;
+
+                #pragma omp parallel for private (m, n , ij, index, rank)
+                for (m = 0; m<norbs; m++) {
+
+                    rank = 0;
+                    #ifdef _OPENMP
+                        rank = omp_get_thread_num();
+                    #endif
+
                     //Find out where the m's are!
                     //timer_on("Intermediate Indexing");
                     int n, ij;
-                    for (int index = 0; index<index_sizes[m]; index++) {
+                    for (index = 0; index<index_sizes[m]; index++) {
                         ij = m_ij_indices[m][index];
                         n = n_indices[m][index];
                  
                         //fprintf(outfile,"  index = %d ij = %d \n",index,ij); fflush(outfile);//fprintf(outfile,"(ij, mu) = (%d, %d)\n",ij,mu);
-                        C_DCOPY(current_rows,&B_ia_P_[row][ij],ntri_naive_,&QS[0][index],norbs);
+                        C_DCOPY(current_rows,&B_ia_P_[row][ij],ntri_naive_,&QS[rank][0][index],norbs);
                         //for (int Q = 0; Q<naux_fin_; Q++) {
                         //     QS[Q][index] = B_ia_P_[Q][ij];
                              //fprintf(outfile," ij = %d, mu = %d, Q = %d, val = %14.10f\n",ij,mu,Q,QS[Q][mu]);
                         //}
-                        C_DCOPY(ndocc,&Cocc[0][n],norbs,&Ctemp[0][index],norbs);
+                        C_DCOPY(ndocc,&Cocc[0][n],norbs,&Ctemp[rank][0][index],norbs);
                         //for (int o = 0; o<ndocc; o++) {
                         //    Ctemp[o][index] = Cocc[o][n];
                         //}
@@ -1398,19 +1586,15 @@ void RHF::form_G_from_RI()
                     //timer_off("Intermediate Indexing");
                     //timer_on("DGEMM 2");
                 
-                    C_DGEMM('N','T',ndocc,current_rows,index_sizes[m],1.0,Ctemp[0],norbs,QS[0],norbs, 0.0, Temp[0], max_rows);
+                    //E_im^Q = C_in (Q|mn). Watch the lda on the E, or you'll cut if off in the last block! 
+                    C_DGEMM('N','T',ndocc,current_rows,index_sizes[m],1.0,Ctemp[rank][0],norbs,QS[rank][0],norbs, 0.0, E[m], current_rows);
                     //timer_off("DGEMM 2");
-                    //timer_on("Final Indexing");
-                
-                    int offset;
-                    for (int Q = 0; Q<current_rows; Q++) {
-                        offset = Q*ndocc;
-                        for (int i = 0; i<ndocc; i++) {
-                            E[m][i+offset] = Temp[i][Q];
-                        }
-                    }
-                    //timer_off("Final Indexing");
-                }    
+                }
+
+                #ifdef HAVE_MKL
+                    mkl_set_num_threads(mkl_nthreads);
+                #endif    
+    
                 timer_off("E SORT");
                 timer_on("E DGEMM");
 
@@ -1461,15 +1645,19 @@ void RHF::form_G_from_RI()
             //Frees
             free_block(E);
             free_block(K);
-            free_block(Ctemp);
             free(m_ij_indices[0]);
             free(m_ij_indices);
             free(n_indices[0]);
             free(n_indices);
             free(index_sizes);
-            free_block(Temp);
-            free_block(QS);
-            
+                
+            for (int T = 0; T<nthread; T++) {
+                free_block(Ctemp[T]);
+                free_block(QS[T]);
+            }
+            delete []Ctemp;           
+            delete []QS;           
+ 
             timer_off("Form E");
             
             //fprintf(outfile,"\n E: \n");
@@ -1489,7 +1677,7 @@ void RHF::form_G_from_RI()
         //the three index tensor
 
         //How many rows to read?
-        int max_rows = floor(((memory_/sizeof(double)))/((1.0+MEMORY_SAFETY_FACTOR)*(ntri_naive_+ndocc*norbs)));
+        unsigned long int max_rows = ((df_memory_)/((long)(norbs*ndocc+ntri_naive_)));
 	if (max_rows > naux_fin_)
             max_rows = naux_fin_;
         if (max_rows < 1)
@@ -1522,12 +1710,15 @@ void RHF::form_G_from_RI()
             J = init_array(ntri_);
         }
 
+        int nthread = 1;
+        #ifdef _OPENMP
+            nthread = omp_get_max_threads();
+        #endif
         //EXCHANGE STUFF
         double **E;
         double **K;
-        double **QS;
-        double **Temp; 
-        double **Ctemp;
+        double ***QS;
+        double ***Ctemp;
         int** m_ij_indices;
         int** n_indices;
         int* index_sizes;
@@ -1537,11 +1728,13 @@ void RHF::form_G_from_RI()
             //Temporary K matrix
             K = block_matrix(norbs,norbs);
             //QS temp matrix for DGEMM
-            QS = block_matrix(max_rows,norbs);
-            //Temp matrix for DGEMM
-            Temp = block_matrix(ndocc,max_rows);
+            QS = new double**[nthread];
+            for (int T = 0; T < nthread; T++)
+                QS[T] = block_matrix(max_rows,norbs);
             // Temp matrix for sparse DGEMM if sieve exists
-            Ctemp = block_matrix(ndocc,norbs);
+            Ctemp = new double**[nthread];
+            for (int T = 0; T < nthread; T++)
+                Ctemp[T] = block_matrix(ndocc,norbs);
             // Index array for non-canonical ordering of mn
             m_ij_indices = init_int_matrix(norbs,norbs);
             // Index array of n for given m (in order of above)
@@ -1578,7 +1771,7 @@ void RHF::form_G_from_RI()
         
         //MASTER LOOP
         int current_rows,offset;
-        int pass = 0;
+        //int pass = 0;
         for (int row = 0; row <naux_fin_; row+=max_rows)
         {
 
@@ -1602,19 +1795,6 @@ void RHF::form_G_from_RI()
             }
 
             //fprintf(outfile,"  Read pass = %d. Current rows = %d. Max rows = %d, Ntri_naive = %d, Ntri = %d.\n",pass++,current_rows,max_rows,ntri_naive_,ntri_);
-
-            for (int here = row; here < row + current_rows; here++) {
-                double min_val = 0.0, max_val = 0.0, sum_val = 0.0;
-                for (int mn = 0; mn < ntri_; mn++) {
-                    if (B_ia_P_[here-row][mn] < min_val)
-                        min_val = B_ia_P_[here-row][mn];
-                    if (B_ia_P_[here-row][mn] > max_val)
-                        max_val = B_ia_P_[here-row][mn];
-                    sum_val += B_ia_P_[here-row][mn];
-                }
-                //fprintf(outfile,"  Summary: Row = %d, Max = %14.10E, Min = %14.10E, Sum = %14.10E\n", here, max_val, min_val, sum_val); 
-            }
-
 
             //double **Bhack = block_matrix(current_rows,ntri_);
             //C_DCOPY(current_rows*ntri_,in_buffer,1,&Bhack[0][0],1);
@@ -1643,42 +1823,51 @@ void RHF::form_G_from_RI()
             //Do K here just like the core algorithm 
             if (K_is_required_) {
                 timer_on("E SORT");
-                for (int m = 0; m<norbs; m++) {
+                
+                #ifdef HAVE_MKL
+                    int mkl_nthreads = mkl_get_max_threads();
+                    mkl_set_num_threads(1); 
+                #endif
+                
+                int m, n , ij3, index, rank;
+
+                #pragma omp parallel for private (m, n , ij3, index, rank)
+                for (m = 0; m<norbs; m++) {
+                    
+                    rank = 0;
+                    #ifdef _OPENMP
+                        rank = omp_get_thread_num();
+                    #endif
                     //Find out where the m's are!
                     //timer_on("Intermediate Indexing");
-                    int n, ij;
-                    for (int index = 0; index<index_sizes[m]; index++) {
-                        ij = m_ij_indices[m][index];
+                    for (index = 0; index<index_sizes[m]; index++) {
+                        ij3 = m_ij_indices[m][index];
                         n = n_indices[m][index];
                 
  
                         //fprintf(outfile,"  index = %d ij = %d \n",index,ij); fflush(outfile);//fprintf(outfile,"(ij, mu) = (%d, %d)\n",ij,mu);
-                        C_DCOPY(current_rows,&B_ia_P_[0][ij],ntri_naive_,&QS[0][index],norbs);
+                        C_DCOPY(current_rows,&B_ia_P_[0][ij3],ntri_naive_,&QS[rank][0][index],norbs);
                         //for (int Q = 0; Q<naux_fin_; Q++) {
                         //     QS[Q][index] = B_ia_P_[Q][ij];
                              //fprintf(outfile," ij = %d, mu = %d, Q = %d, val = %14.10f\n",ij,mu,Q,QS[Q][mu]);
                         //}
-                        C_DCOPY(ndocc,&Cocc[0][n],norbs,&Ctemp[0][index],norbs);
+                        C_DCOPY(ndocc,&Cocc[0][n],norbs,&Ctemp[rank][0][index],norbs);
                         //for (int o = 0; o<ndocc; o++) {
                         //    Ctemp[o][index] = Cocc[o][n];
                         //}
                     }
                     //timer_off("Intermediate Indexing");
                     //timer_on("DGEMM 2");
-                
-                    C_DGEMM('N','T',ndocc,current_rows,index_sizes[m],1.0,Ctemp[0],norbs,QS[0],norbs, 0.0, Temp[0], max_rows);
+               
+                    //E_im^Q = C_in (Q|mn). Watch the lda on the E, or you'll cut if off in the last block! 
+                    C_DGEMM('N','T',ndocc,current_rows,index_sizes[m],1.0,Ctemp[rank][0],norbs,QS[rank][0],norbs, 0.0, E[m], current_rows);
                     //timer_off("DGEMM 2");
                     //timer_on("Final Indexing");
-                
-                    int offset;
-                    for (int Q = 0; Q<current_rows; Q++) {
-                        offset = Q*ndocc;
-                        for (int i = 0; i<ndocc; i++) {
-                            E[m][i+offset] = Temp[i][Q];
-                        }
-                    }
-                    //timer_off("Final Indexing");
                 }    
+                #ifdef HAVE_MKL
+                    mkl_set_num_threads(mkl_nthreads);
+                #endif    
+    
                 timer_off("E SORT");
                 timer_on("E DGEMM");
 
@@ -1740,14 +1929,17 @@ void RHF::form_G_from_RI()
             //Frees
             free_block(E);
             free_block(K);
-            free_block(Ctemp);
             free(m_ij_indices[0]);
             free(m_ij_indices);
             free(n_indices[0]);
             free(n_indices);
             free(index_sizes);
-            free_block(Temp);
-            free_block(QS);
+            for (int T = 0; T<nthread; T++) {
+                free_block(Ctemp[T]);
+                free_block(QS[T]);
+            }
+            delete []Ctemp;           
+            delete []QS;           
         } 
     }
 

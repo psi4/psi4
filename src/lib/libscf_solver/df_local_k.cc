@@ -370,11 +370,11 @@ void HF::form_A()
     }
     timer_off("Overall (A|mn)");
 
-    ri_pair_compound_ = init_int_array(norbs*(norbs+1)/2);
+    ri_back_map_ = init_int_array(norbs*(norbs+1)/2);
     for (int ij =0; ij<norbs*(norbs+1)/2; ij++)
-        ri_pair_compound_[ij] = -1;
+        ri_back_map_[ij] = -1;
     for (int ij = 0 ; ij<ntri_; ij++)
-        ri_pair_compound_[ri_pair_mu_[ij]*(ri_pair_mu_[ij]+1)/2+ri_pair_nu_[ij]] = ij;
+        ri_back_map_[ri_pair_mu_[ij]*(ri_pair_mu_[ij]+1)/2+ri_pair_nu_[ij]] = ij;
 
     if (schwarz_) {
         fprintf(outfile,"\n  Function Pair Schwarz Sieve, Cutoff = %14.10E:\n",schwarz_);
@@ -389,7 +389,7 @@ void HF::free_A()
         free_block(A_ia_P_);
     free(ri_pair_mu_);
     free(ri_pair_nu_);
-    free(ri_pair_compound_);
+    free(ri_back_map_);
     free(schwarz_fun_pairs_);
     free(schwarz_shell_pairs_);
     free_block(Jfit_);
@@ -556,12 +556,12 @@ void RHF::form_G_from_RI_local_K()
                                     ij = n*(n+1)/2+m;
                                 else
                                     ij = m*(m+1)/2+n;
-                                if (ri_pair_compound_[ij] >= 0) {
+                                if (ri_back_map_[ij] >= 0) {
 
                                     C_local[counter] = Cocc[i][n];                                    
                                     for (int C = 0, Pl = 0; C<domain_atoms_[i]; C++)
                                         for (int P = fit_fun_start_[i][C]; P<fit_fun_start_[i][C]+fit_fun_length_[i][C]; P++, Pl++)
-                                            QS[Pl][counter] = A_ia_P_[P][ri_pair_compound_[ij]];
+                                            QS[Pl][counter] = A_ia_P_[P][ri_back_map_[ij]];
                                     counter++;
                                 }
                             }
@@ -1287,7 +1287,7 @@ void RHF::form_domains()
             for (int m = domain_fun_start_[i][A]; m<domain_fun_start_[i][A]+domain_fun_length_[i][A]; m++)
                 for (int B=0; B<=A; B++)
                     for (int n = domain_fun_start_[i][B]; n<domain_fun_start_[i][B]+domain_fun_length_[i][B] && n<=m; n++)
-                        if (ri_pair_compound_[m*(m+1)/2+n] >= 0)
+                        if (ri_back_map_[m*(m+1)/2+n] >= 0)
                             domain_pairs_[i]++; 
 
         //Domain size is just total number of primary basis functions

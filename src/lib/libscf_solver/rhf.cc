@@ -86,6 +86,7 @@ void RHF::common_init()
     G_    = SharedMatrix(factory_.create_matrix("G"));
     J_    = SharedMatrix(factory_.create_matrix("J"));
     K_    = SharedMatrix(factory_.create_matrix("K"));
+    orbital_e_    = SharedVector(factory_.create_vector());
 
     if (scf_type_ == "L_DF") {
         Lref_ = SharedMatrix(factory_.create_matrix("Lref"));
@@ -113,7 +114,10 @@ double RHF::compute_energy()
     //fprintf(outfile,"  Print = %d\n",print_);
     //print_ = options_.get_int("PRINT");
     bool converged = false, diis_iter = false;
-    iteration_ = 0;
+    if (options_.get_str("GUESS") == "SAD")
+        iteration_ = -1;
+    else 
+        iteration_ = 0;
 
     // Do the initial work to get the iterations started.
     //form_multipole_integrals();  // handled by HF class
@@ -155,6 +159,8 @@ double RHF::compute_energy()
         form_domain_bookkeeping();
     }
 
+        
+
     fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
     fflush(outfile);
 
@@ -194,7 +200,7 @@ double RHF::compute_energy()
         if (print_>3) {
             F_->print(outfile);
         }
-        if (diis_enabled_)
+        if (diis_enabled_ && iteration_ > 0)
             save_fock();
 
         E_ = compute_E();
@@ -697,29 +703,34 @@ void RHF::save_information()
     }
     fprintf(outfile, ")\n");
 
-    // Needed for a couple of places.
-    SharedMatrix eigvector(factory_.create_matrix());
-    SharedVector eigvalues(factory_.create_vector());
+    //Canonical Orthogonalization has orbital eigenvalues
+    //Which differ from those of the USO Fock Matrix
+    //These are unchanged after the last iteration, so orbital_e_
+    //is now protected member of RHF     
 
-    F_->diagonalize(eigvector, eigvalues);
+    // Needed for a couple of places.
+    //SharedMatrix eigvector(factory_.create_matrix());
+    //SharedVector orbital_e_(factory_.create_vector());
+
+    //F_->diagonalize(eigvector, orbital_e_);
 
     int print_mos = false;
     print_mos = options_.get_bool("PRINT_MOS");
     if (print_mos) {
         fprintf(outfile, "\n  Molecular orbitals:\n");
 
-        C_->eivprint(eigvalues);
+        C_->eivprint(orbital_e_);
     }
 
     // Print out orbital energies.
     std::vector<std::pair<double, int> > pairs;
-    for (int h=0; h<eigvalues->nirreps(); ++h) {
-        for (int i=0; i<eigvalues->dimpi()[h]; ++i)
-            pairs.push_back(make_pair(eigvalues->get(h, i), h));
+    for (int h=0; h<orbital_e_->nirreps(); ++h) {
+        for (int i=0; i<nmopi_[h]; ++i)
+            pairs.push_back(make_pair(orbital_e_->get(h, i), h));
     }
     sort(pairs.begin(),pairs.end());
     int ndocc = 0;
-    for (int i=0; i<eigvalues->nirreps(); ++i)
+    for (int i=0; i<orbital_e_->nirreps(); ++i)
         ndocc += doccpi_[i];
 
     fprintf(outfile, "\n  Orbital energies (a.u.):\n    Doubly occupied orbitals\n      ");
@@ -730,19 +741,19 @@ void RHF::save_information()
     }
     fprintf(outfile, "\n");
     fprintf(outfile, "\n    Unoccupied orbitals\n      ");
-    for (int i=ndocc+1; i<=nso; ++i) {
+    for (int i=ndocc+1; i<=nmo_; ++i) {
         fprintf(outfile, "%12.6f %3s  ", pairs[i-1].first, temp2[pairs[i-1].second]);
         if ((i-ndocc) % 4 == 0)
             fprintf(outfile, "\n      ");
     }
     fprintf(outfile, "\n");
 
-    for (int i=0; i<eigvalues->nirreps(); ++i)
+    for (int i=0; i<orbital_e_->nirreps(); ++i)
         free(temp2[i]);
     free(temp2);
 
-    int *vec = new int[eigvalues->nirreps()];
-    for (int i=0; i<eigvalues->nirreps(); ++i)
+    int *vec = new int[orbital_e_->nirreps()];
+    for (int i=0; i<orbital_e_->nirreps(); ++i)
         vec[i] = 0;
 
     chkpt_->wt_nmo(nso);
@@ -751,15 +762,15 @@ void RHF::save_information()
     chkpt_->wt_escf(E_);
     chkpt_->wt_eref(E_);
     chkpt_->wt_clsdpi(doccpi_);
-    chkpt_->wt_orbspi(eigvalues->dimpi());
+    chkpt_->wt_orbspi(orbital_e_->dimpi());
     chkpt_->wt_openpi(vec);
     chkpt_->wt_phase_check(0);
 
     // Figure out frozen core orbitals
     int nfzc = chkpt_->rd_nfzc();
     int nfzv = chkpt_->rd_nfzv();
-    int *frzcpi = compute_fcpi(nfzc, eigvalues);
-    int *frzvpi = compute_fvpi(nfzv, eigvalues);
+    int *frzcpi = compute_fcpi(nfzc, orbital_e_);
+    int *frzvpi = compute_fvpi(nfzv, orbital_e_);
     chkpt_->wt_frzcpi(frzcpi);
     chkpt_->wt_frzvpi(frzvpi);
     delete[](frzcpi);
@@ -776,7 +787,7 @@ void RHF::save_information()
     chkpt_->wt_iopen(0);
 
     // Write eigenvectors and eigenvalue to checkpoint
-    double *values = eigvalues->to_block_vector();
+    double *values = orbital_e_->to_block_vector();
     chkpt_->wt_evals(values);
     delete[] values;
     double **vectors = C_->to_block_matrix();
@@ -809,7 +820,11 @@ void RHF::save_fock()
     FDSmSDF.subtract(SDF);
 
     // Orthonormalize the error matrix
-    FDSmSDF.transform(Shalf_);
+    if (!canonical_X_)
+        FDSmSDF.transform(Shalf_);
+    else 
+        FDSmSDF.transform(X_);
+        
     //FDSmSDF.print(outfile);
 
     diis_manager_->add_entry(2, &FDSmSDF, F_.get());
@@ -876,19 +891,12 @@ void RHF::form_C()
 {
     if (!canonical_X_) {
         Matrix eigvec;
-        Vector eigval;
         factory_.create_matrix(eigvec);
-        factory_.create_vector(eigval);
 
         F_->transform(Shalf_);
-        F_->diagonalize(eigvec, eigval);
-
-        // Save the orbital energies
-        orbital_energies_->copy(eigval);
+        F_->diagonalize(eigvec, *orbital_e_);
 
         C_->gemm(false, false, 1.0, Shalf_, eigvec, 0.0);
-
-        find_occupation(eigval);
 
         // Save C to checkpoint file.
         //double **vectors = C_->to_block_matrix();
@@ -897,14 +905,12 @@ void RHF::form_C()
 
 #ifdef _DEBUG
         if (debug_) {
-            C_->eivprint(eigval);
+            C_->eivprint(orbital_e_);
         }
 #endif
     } else {
 
         C_->zero();
-        Vector eigval;
-        factory_.create_vector(eigval);
 
         for (int h = 0; h<C_->nirreps(); h++) {
 
@@ -935,8 +941,13 @@ void RHF::form_C()
             //Form C' = eig(F')
             double *eigvals = init_array(nmos);
             sq_rsp(nmos, nmos, Fp,  eigvals, 1, Cp, 1.0e-14);
+
             for (int i = 0; i<nmos; i++)
-                eigval.set(h,i,eigvals[i]);    
+                orbital_e_->set(h,i,eigvals[i]);
+
+            //fprintf(outfile,"  Canonical orbital eigenvalues");
+            //for (int i = 0; i<nmos; i++)
+            //    fprintf(outfile,"  %d: %10.6f\n",i+1,eigvals[i]);    
             
             free(eigvals);    
 
@@ -955,8 +966,8 @@ void RHF::form_C()
             free_block(Fp);
         }
         
-        find_occupation(eigval);
     }
+    find_occupation(*orbital_e_);
 }
 
 void RHF::form_D()
@@ -2609,7 +2620,7 @@ void RHF::compute_SAD_guess()
         timer_on("SAD Cholesky");
         if (print_) {
             fprintf(outfile,"  Approximating occupied orbitals via Partial Cholesky Decomposition.\n");
-            fprintf(outfile,"  NOTE: The first SCF iteration will not be variational.\n");
+            fprintf(outfile,"  NOTE: The zero-th SCF iteration will not be variational.\n");
         }
         int norbs = nso_;
         int ndocc = nalpha_;

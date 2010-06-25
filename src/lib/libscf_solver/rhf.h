@@ -29,6 +29,7 @@ protected:
     SharedMatrix G_;
     SharedMatrix J_;
     SharedMatrix K_;
+    SharedVector orbital_e_;
 
     //Local K stuff (sorry)
     double** I_; //Lodwin Charges
