@@ -15,13 +15,23 @@ double ***init_box(int a, int b, int c)
     box = (double ***) malloc(sizeof(double **)*a);
     for(i=0;i<a;i++)
         box[i] = (double **) malloc(sizeof(double *)*b);
-    for(i=0;i<a;i++)
+    for(i=0;i<a;i++) {
         for(j=0;j<b;j++) {
             box[i][j] = (double *) malloc(sizeof(double)*c);
             memset((void *)box[i][j], '\0', sizeof(double)*c);
         }
-
+    }
     return box;
+}
+
+void zero_box(double ***box, int a, int b, int c)
+{
+    int i, j;
+    for (i=0; i<a; ++i) {
+        for (j=0; j<b; ++j) {
+            memset((void*)box[i][j], 0, sizeof(double)*c);
+        }
+    }
 }
 
 void free_box(double ***box, int a, int b)
@@ -303,6 +313,9 @@ void ObaraSaikaTwoCenterVIRecursion::compute(double PA[3], double PB[3], double 
 
     // Form Fm(U) from A20
     calculate_f(F, mmax, u);
+
+    // Think we're having problems with values being left over.
+    zero_box(vi_, size_, size_, mmax + 1);
 
     // Perform recursion in m for (a|A(0)|s) using A20
     for (m=0; m<=mmax; ++m) {
@@ -699,7 +712,7 @@ void ObaraSaikaTwoCenterElectricField::compute(double PA[3], double PB[3], doubl
     int mmax = am1 + am2;
 
     // Call our super class to compute potential integrals
-    ObaraSaikaTwoCenterVIRecursion::compute(PA, PB, PC, zeta, am1+1, am2+1);
+    ObaraSaikaTwoCenterVIRecursion::compute(PA, PB, PC, zeta, max_am1_, max_am2_);
 
     // Compute starting integrals using A25
     fprintf(outfile, "setup:\n");
