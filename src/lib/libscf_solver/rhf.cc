@@ -99,8 +99,9 @@ void RHF::common_init()
     // PK super matrix for fast G
     pk_ = NULL;
 
-    // Print DIIS status
+    //What are we using?
     fprintf(outfile, "  SCF Algorithm Type is %s.\n", scf_type_.c_str());
+    // Print DIIS status
     fprintf(outfile, "  DIIS %s.\n", diis_enabled_ ? "enabled" : "disabled");
 
     fflush(outfile);
@@ -120,14 +121,13 @@ double RHF::compute_energy()
         iteration_ = 0;
 
     // Do the initial work to get the iterations started.
-    //form_multipole_integrals();  // handled by HF class
     timer_on("Core Hamiltonian");
     form_H(); //Core Hamiltonian
     timer_off("Core Hamiltonian");
     timer_on("Overlap Matrix");
     form_Shalf(); //Shalf Matrix
     timer_off("Overlap Matrix");
-    //Form initial MO guess by user specified method
+    // Form initial MO guess by user specified method
     // Check to see if there are MOs already in the checkpoint file.
     // If so, read them in instead of forming them, unless the user disagrees.
     timer_on("Initial Guess");
@@ -756,7 +756,7 @@ void RHF::save_information()
     for (int i=0; i<orbital_e_->nirreps(); ++i)
         vec[i] = 0;
 
-    chkpt_->wt_nmo(nso);
+    chkpt_->wt_nmo(nmo_);
     chkpt_->wt_ref(0);        // Only RHF right now
     chkpt_->wt_etot(E_);
     chkpt_->wt_escf(E_);
@@ -787,10 +787,21 @@ void RHF::save_information()
     chkpt_->wt_iopen(0);
 
     // Write eigenvectors and eigenvalue to checkpoint
-    double *values = orbital_e_->to_block_vector();
+    // Literally throw away bad mos
+    double *values = init_array(nmo_);
+    for (int h=0, counter=0; h<orbital_e_->nirreps(); ++h) 
+        for (int i=0; i<nmopi_[h]; ++i, ++counter) 
+            values[counter] = orbital_e_->get(h,i);
+
     chkpt_->wt_evals(values);
-    delete[] values;
-    double **vectors = C_->to_block_matrix();
+    free(values);    
+
+    double **vectors = block_matrix(nso_,nmo_);
+    for (int h=0, counter=0; h<orbital_e_->nirreps(); ++h) 
+        for (int i=0; i<nmopi_[h]; ++i, ++counter) 
+            for (int m = 0; m<orbital_e_->dimpi()[h]; ++m)
+                vectors[m][counter] = C_->get(h,i,m);            
+
     chkpt_->wt_scf(vectors);
     free_block(vectors);
 }
