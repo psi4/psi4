@@ -137,7 +137,7 @@ void local_polar(const char *cart, int **domain, int *domain_len,
 	  }
 	  if(fabs((polar_mo_check[i]-polar_i)/polar_mo_check[i]) <= local.cphf_cutoff) {
 	    complete = 1;
-	    if(fabs(polar_atom[i][k]-polar_atom[i][k+1] <= 0.0001)) {
+	    if(fabs(polar_atom[i][k]-polar_atom[i][k+1]) <= 0.0001) {
 	      if(!domain[i][rank[k]]) {
 		domain[i][rank[k]] = 1;
 		domain_len[i]++;
@@ -228,7 +228,7 @@ void local_polar(const char *cart, int **domain, int *domain_len,
 	  }
 	  if(fabs((polar_mo_check[i]-polar_i)/polar_mo_check[i]) <= local.cphf_cutoff) {
 	    complete = 1;
-	    if(fabs(polar_atom[i][k]-polar_atom[i][k+1] <= 0.0001)) {
+	    if(fabs(polar_atom[i][k]-polar_atom[i][k+1]) <= 0.0001) {
 	      if(!domain[i][rank[k]]) {
 		domain[i][rank[k]] = 1;
 		domain_len[i]++;
@@ -319,7 +319,7 @@ void local_polar(const char *cart, int **domain, int *domain_len,
 	  }
 	  if(fabs((polar_mo_check[i]-polar_i)/polar_mo_check[i]) <= local.cphf_cutoff) {
 	    complete = 1;
-	    if(fabs(polar_atom[i][k]-polar_atom[i][k+1] <= 0.0001)) {
+	    if(fabs(polar_atom[i][k]-polar_atom[i][k+1]) <= 0.0001) {
 	      if(!domain[i][rank[k]]) {
 		domain[i][rank[k]] = 1;
 		domain_len[i]++;
