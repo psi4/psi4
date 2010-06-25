@@ -139,7 +139,7 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
 	  }
 	  if(fabs((mag_mo_check[i]-mag_i)/mag_mo_check[i]) <= local.cphf_cutoff) {
 	    complete = 1;
-	    if(fabs(mag_atom[i][k]-mag_atom[i][k+1] <= 0.0001)) {
+	    if(fabs(mag_atom[i][k]-mag_atom[i][k+1]) <= 0.0001) {
 	      if(!domain[i][rank[k]]) {
 		domain[i][rank[k]] = 1;
 		domain_len[i]++;
@@ -232,7 +232,7 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
 	  }
 	  if(fabs((mag_mo_check[i]-mag_i)/mag_mo_check[i]) <= local.cphf_cutoff) {
 	    complete = 1;
-	    if(fabs(mag_atom[i][k]-mag_atom[i][k+1] <= 0.0001)) {
+	    if(fabs(mag_atom[i][k]-mag_atom[i][k+1]) <= 0.0001) {
 	      if(!domain[i][rank[k]]) {
 		domain[i][rank[k]] = 1;
 		domain_len[i]++;
@@ -325,7 +325,7 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
 	  }
 	  if(fabs((mag_mo_check[i]-mag_i)/mag_mo_check[i]) <= local.cphf_cutoff) {
 	    complete = 1;
-	    if(fabs(mag_atom[i][k]-mag_atom[i][k+1] <= 0.0001)) {
+	    if(fabs(mag_atom[i][k]-mag_atom[i][k+1]) <= 0.0001) {
 	      if(!domain[i][rank[k]]) {
 		domain[i][rank[k]] = 1;
 		domain_len[i]++;
