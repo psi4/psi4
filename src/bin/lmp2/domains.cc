@@ -43,7 +43,7 @@ namespace lmp2 {
 void LMP2::domains() {
 
     int i, j, k, l, ij, m, n, a;
-    int xcoord, ycoord, zcoord;
+    double xcoord, ycoord, zcoord;
     int next_atom, row, col, errcod;
     int max, nvir, nfzc;
     int atom, am, offset, shell_length;
@@ -311,7 +311,7 @@ void LMP2::domains() {
                                     xcoord = (geometry[n][0] - geometry[m][0]) * (geometry[n][0] - geometry[m][0]);
                                     ycoord = (geometry[n][1] - geometry[m][1]) * (geometry[n][1] - geometry[m][1]);
                                     zcoord = (geometry[n][2] - geometry[m][2]) * (geometry[n][2] - geometry[m][2]);
-                                    dist = sqrt(xcoord + ycoord + zcoord) * 0.529177249;
+                                    dist = sqrt((xcoord + ycoord + zcoord)) * 0.529177249;
                                     if (dist < dpcutoff) {
                                         pairdom_exist[ij] = 1;
                                         ij_pairs++;
