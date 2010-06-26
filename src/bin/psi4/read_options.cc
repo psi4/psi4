@@ -307,6 +307,8 @@ int read_options(const std::string &name, Options & options) {
     
     /*- -SAD Guess Schwarz Sieve (for rough molecular F) */
     options.add_double("SAD_SCHWARZ_CUTOFF", 1E-7);
+    /*- -SAD Guess Cholesky Cutoff (for eliminating redundancies) */
+    options.add_double("SAD_CHOL_CUTOFF", 1E-7);
   }
   else if (name == "MP2") {
     options.add_str("WFN", "");

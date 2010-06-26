@@ -66,6 +66,8 @@ protected:
     /// Number of alpha and beta electrons per irrep
     int nalphapi_[8], nbetapi_[8];
 
+    int sad_nocc_;
+
     /// Number of so per irrep
     int nsopi_[8];
     /// Number of mo per irrep
