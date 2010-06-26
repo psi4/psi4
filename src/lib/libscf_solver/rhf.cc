@@ -2490,6 +2490,7 @@ void RHF::compute_SAD_guess()
     int* nbeta = init_int_array(mol->nallatom());
     int* nelec = init_int_array(mol->nallatom());
     int* nhigh = init_int_array(mol->nallatom());
+    int tot_elec = 0;
 
     //Ground state high spin occupency array, atoms 0 to 36 (see Giffith's Quantum Mechanics, pp. 217)
     const int reference_S[] = {0,1,0,1,0,1,2,3,2,1,0,1,0,1,2,3,2,1,0,1,0,1,2,3,6,5,4,3,2,1,0,1,2,3,2,1,0};
@@ -2505,6 +2506,7 @@ void RHF::compute_SAD_guess()
         }
         nhigh[A] = reference_S[Z];
         nelec[A] = Z;
+        tot_elec+= nelec[A];
         nbeta[A] = (nelec[A]-nhigh[A])/2;
         nalpha[A] = nelec[A]-nbeta[A];
         if (print_>6)
@@ -2635,6 +2637,13 @@ void RHF::compute_SAD_guess()
         }
         int norbs = nso_;
         int ndocc = nalpha_;
+        sad_nocc_ = tot_elec;
+        if (sad_nocc_>norbs) {
+            sad_nocc_ = norbs;
+            if (print_)
+                fprintf(outfile,"  WARNING! Number of orbitals is less than number of single electrons.\n");
+                fprintf(outfile,"  SAD Cholesky Guess might be ill-conditioned.\n");
+        }
 
         double** D = D_->to_block_matrix();
         double* Temp = init_array(norbs);    
@@ -2688,25 +2697,34 @@ void RHF::compute_SAD_guess()
             for (int j = i+1; j<norbs; j++)
                 D[i][j] = 0.0; 
  
-        //fprintf(outfile,"  C Guess (Cholesky Unpivoted):\n");
-        //print_mat(D,norbs,ndocc,outfile);        
+        //fprintf(outfile,"  C Guess (Cholesky Unpivoted) , rank is %d:\n", status);
+        //print_mat(D,norbs,sad_nocc_,outfile);        
         
         //Unpivot
-        double** C = block_matrix(norbs,ndocc);
+        double** C = block_matrix(norbs,sad_nocc_);
         for (int m = 0; m < norbs; m++) {
-            C_DCOPY(ndocc,&D[m][0],1,&C[P[m]][0],1);
+            C_DCOPY(sad_nocc_,&D[m][0],1,&C[P[m]][0],1);
         }
+
+        //Eliminate the redundancies
+        double chol_cutoff = options_.get_double("SAD_CHOL_CUTOFF");
+        for (int i = ndocc; i<sad_nocc_; i++) {
+            if (sqrt(1.0/(norbs)*C_DDOT(norbs,&C[0][i],sad_nocc_,&C[0][i],sad_nocc_))<chol_cutoff)
+                sad_nocc_--;
+        }
+
+        if (print_>1)
+            fprintf(outfile,"  %d of %d atomic occupation vectors selected for C.\n",sad_nocc_,tot_elec);
 
         //Set C
         C_->zero();
-        doccpi_[0] = nalpha_;
         for (int m = 0; m<norbs; m++)
-            for (int i = 0; i<ndocc; i++)
+            for (int i = 0; i<sad_nocc_; i++)
                 C_->set(0,m,i,C[m][i]);
-
-
         //fprintf(outfile,"  C Guess (Cholesky):\n");
-        //print_mat(C,norbs,ndocc,outfile);        
+        //print_mat(C,norbs,sad_nocc_,outfile);        
+
+        //C_->print(outfile);        
 
         free(P);
         free(Temp);
@@ -2714,6 +2732,7 @@ void RHF::compute_SAD_guess()
         free_block(C);
 
         E_ = 0.0; //For now
+        doccpi_[0] = nalpha_;//Also for now
 
         timer_off("SAD Cholesky");
 

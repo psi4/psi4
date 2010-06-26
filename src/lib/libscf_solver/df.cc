@@ -1364,12 +1364,12 @@ void HF::form_B()
 }
 void HF::write_B()
 {
-    if (print_)
+    if (print_>1)
         fprintf(outfile,"  Saving three-index tensor to file 97 for restart purposes.\n");
 
     psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_NEW);
     psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
-            
+        
     psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(B_ia_P_[0][0]),sizeof(double)*ntri_naive_*naux_fin_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
                 
     int norbs = basisset_->nbf();
@@ -1430,12 +1430,17 @@ void RHF::form_G_from_RI()
     }
     //Get the C matrix (exchange messes things up)
     int ndocc = doccpi_[0];
+    if (iteration_ == 0 && options_.get_str("GUESS") == "SAD" && options_.get_str("SAD_C") == "CHOLESKY")
+        ndocc = sad_nocc_;
     double** Cocc = block_matrix(ndocc,norbs);
     for (int i=0; i<norbs; i++) {
         for (int j=0; j<ndocc; j++)
             Cocc[j][i] = C_->get(0,i,j);
         //only A irrep at the moment!!
     }
+
+    //fprintf(outfile,"  ndocc = %d\n",ndocc);
+    //C_->print(outfile);
 
     //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     //
@@ -1472,8 +1477,6 @@ void RHF::form_G_from_RI()
         if (K_is_required_) {
             timer_on("Form E");
             /* EXCHANGE PART */
-            
-
             unsigned long int max_rows = ((df_memory_-naux_raw_*(long)ntri_naive_)/((long)(norbs*ndocc)));
             if (max_rows > naux_fin_)
                 max_rows = naux_fin_;
