@@ -259,6 +259,8 @@ int read_options(const std::string &name, Options & options) {
     options.add_bool("FIND_RAW_J_COND",false);
     /*- Max J basis condition number to be allowed -*/
     options.add_double("RI_MAX_COND",1E8);
+    /*- Max Number of threads for integrals (may be turned down if memory is an issue). 0 is blank -*/
+    options.add_int("RI_INTS_NUM_THREADS",1);
     
     /*- SO orthogonalization: symmetric or canonical? -*/
     options.add_str("S_ORTHOGONALIZATION","SYMMETRIC","SYMMETRIC CANONICAL");

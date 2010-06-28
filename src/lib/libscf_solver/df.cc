@@ -18,7 +18,7 @@
 
 //Hack to use MKL threads efficiently in sort
 //Will eventually become a flag in configure
-//#define HAVE_MKL 1
+#define HAVE_MKL 1
 
 //MKL Header
 #ifdef HAVE_MKL
@@ -84,7 +84,7 @@ void HF::form_B()
     //Grab norbs and ndocc and get the ri basis up to the class scope     
     int norbs = basisset_->nbf(); 
     int ndocc = doccpi_[0];
-    //Amount of memory avialable for DF Algortihm, in doubles
+    //Amount of memory available for DF Algorithm, in doubles
     df_memory_ = (long)(memory_/sizeof(double)*(1.0-MEMORY_SAFETY_FACTOR));
     
     //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -109,7 +109,7 @@ void HF::form_B()
         next_PSIF_DFSCF_BJ = PSIO_ZERO;
         psio_->read(PSIF_DFSCF_BJ,"N_AUX_FIN",(char *) &(naux_fin_),sizeof(int),next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
         
-        //Use ri_pair_mu_ and ri_pair_nu_ to keep track of things
+        //Use ri_pair_mu_ and ri_pair_nu_ and ri_back_map_ to keep track of things
         //Across schwarz sieve and unfortunate shell indexing
         ri_pair_nu_ = init_int_array(ntri_naive_);
         ri_pair_mu_ = init_int_array(ntri_naive_);
@@ -121,7 +121,7 @@ void HF::form_B()
         next_PSIF_DFSCF_BJ = PSIO_ZERO;
         psio_->read(PSIF_DFSCF_BJ,"RI_PAIR_NU",(char *) &(ri_pair_nu_[0]),sizeof(int)*ntri_naive_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
         
-        //Now determine the storage type. It might change if you switch machines
+        //Now determine the storage type. It might change if you switch machines or change memory available
         string storage_type;
         storage_type = options_.get_str("RI_SCF_STORAGE");
 
@@ -136,7 +136,7 @@ void HF::form_B()
             df_storage_ = disk;
         else if (storage_type == "DEFAULT")
         {
-    	    //set df_storage_ semi-heuristically based on available memory
+    	    //set df_storage_ based on available memory
             //memJ here is padding for other uses, we may need more in the end
     	    if (memA+memJ+memJ<df_memory_)
                 df_storage_ = core; //Full in-core
@@ -278,6 +278,39 @@ void HF::form_B()
             schwarz_fun_pairs[ij] = 1;
     }
 
+    //Use ri_pair_mu_ and ri_pair_nu_ (and the back map) to keep track of things
+    //Across schwarz sieve and unfortunate shell indexing
+    ri_pair_nu_ = init_int_array(ntri_naive_);
+    ri_pair_mu_ = init_int_array(ntri_naive_);
+    ri_back_map_ = init_int_array(norbs*(norbs+1)/2);
+  
+    {//<<< Drop out of scope
+
+        //Set up schwarz bookkeeping
+        int numP,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu;
+        int index;
+        for (MU=0, index = 0; MU < basisset_->nshell(); ++MU) {
+            nummu = basisset_->shell(MU)->nfunction();
+            for (NU=0; NU <= MU; ++NU) {
+                numnu = basisset_->shell(NU)->nfunction();
+                if (schwarz_shell_pairs[MU*(MU+1)/2+NU] == 1) {
+                    for (mu=0 ; mu < nummu; ++mu) {
+                        omu = basisset_->shell(MU)->function_index() + mu;
+                        for (nu=0; nu < numnu; ++nu) {
+                            onu = basisset_->shell(NU)->function_index() + nu;
+                            if(omu>=onu && schwarz_fun_pairs[omu*(omu+1)/2+onu] == 1) {
+                                ri_pair_mu_[index] = omu;
+                                ri_pair_nu_[index] = onu;
+                                ri_back_map_[omu*(omu+1)/2+onu] = index;
+                                index++;
+                            } 
+                        }
+                    }
+                }
+            } 
+        }
+    } //back into scope
+
     timer_off("Schwarz Sieve");
 
     //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -289,7 +322,7 @@ void HF::form_B()
         
     ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_SCF"));
     naux_raw_ = ribasis_->nbf(); 
-    naux_fin_ = naux_raw_; //For now 
+    naux_fin_ = naux_raw_; //To start
     
     if (print_>5) {
         basisset_->print(outfile); 
@@ -320,10 +353,7 @@ void HF::form_B()
         SJ = S_J->to_block_matrix();
     }
 
-    //Debug
-    //double** Scopy1 = block_matrix(naux_raw_,naux_raw_);
-    //C_DCOPY(naux_raw_*naux_raw_, SJ[0], 1, Scopy1[0],1);
-    
+
     // Form X
     // First, diagonalize S_J
     // the C_DSYEV call replaces the original matrix SJ with its eigenvectors
@@ -336,41 +366,6 @@ void HF::form_B()
         exit(PSI_RETURN_FAILURE);
     }
     free(swork);
-
-    //Debug
-    //double** Scopy2 = block_matrix(naux_raw_,naux_raw_);
-    //C_DCOPY(naux_raw_*naux_raw_, SJ[0], 1, Scopy2[0],1);
-  
-    //for (int i =0; i<naux_raw_; i++)
-    //    C_DSCAL(naux_raw_,s_eigval[i],Scopy2[i],1); 
-    
-    //C_DGEMM('t','n',naux_raw_,naux_raw_,naux_raw_,1.0,
-    //        Scopy2[0],naux_raw_,SJ[0],naux_raw_,-1.0,Scopy1[0],naux_raw_);
-
-    //print_mat(Scopy3, naux_raw_,naux_raw_,outfile);
-
-    //double worst_zero = 0.0; 
-    //double rms = 0.0;
-    //for (int ij = 0; ij < naux_raw_*naux_raw_; ij++) {
-    //    if (fabs(Scopy1[0][ij]) > worst_zero)
-    //        worst_zero = fabs(Scopy1[0][ij]);
-    //    rms += Scopy1[0][ij]*Scopy1[0][ij];
-    //}
-    //rms = sqrt(1.0/(naux_raw_*naux_raw_)*rms);
-    //fprintf(outfile,"  S_J: Worst Zero is %14.10E, RMS is %14.10E\n",worst_zero,rms);
-    
-
-    //free_block(Scopy1);
-    //free_block(Scopy2);     
-
-    //fprintf(outfile,"S_J Eigenvectors:\n");
-    //print_mat(SJ,naux_raw_,naux_raw_,outfile);
-    //fflush(outfile);
-
-    //fprintf(outfile,"S_J Eigenvalues:\n");
-    //for (int i = 0; i<naux_raw_; i++)
-    //    fprintf(outfile,"  Vector %d: %14.10f\n",i,s_eigval[i]);
-    //fflush(outfile);
 
     //Find the condition number and largest/smallest eigenvalues of SJ
     //The largest one is what is important
@@ -628,51 +623,6 @@ void HF::form_B()
 
     free_block(Jp_copy);
     free_block(Jp);
-    
-    /**
-    //Debug:
-    //J^1/2 = JJ^-1/2
-    //assert J^1/2J^-1/2 = 1
-    double** Jphalf = block_matrix(naux_fin_,naux_fin_);
-    double** ones = block_matrix(naux_fin_,naux_fin_);
-
-    //J^1/2
-    C_DGEMM('N','N',naux_fin_,naux_fin_,naux_fin_,1.0,J_copy2[0],naux_fin_,Jp_mhalf[0],naux_fin_,0.0,Jphalf[0],naux_fin_);
-    
-    //J^1/2
-    C_DGEMM('N','N',naux_fin_,naux_fin_,naux_fin_,1.0,Jp_mhalf[0],naux_fin_,Jphalf[0],naux_fin_,0.0,ones[0],naux_fin_);
-
-    fprintf(outfile,"\nJmhalf:\n"); 
-    print_mat(Jp_mhalf,naux_fin_,naux_fin_,outfile);
-    fflush(outfile);
-        
-    fprintf(outfile,"\nJphalf:\n"); 
-    print_mat(Jphalf,naux_fin_,naux_fin_,outfile);
-    fflush(outfile);
-        
-    fprintf(outfile,"\nOnes:\n"); 
-    print_mat(ones,naux_fin_,naux_fin_,outfile);
-    fflush(outfile);
-        
-    worst_zero = 0.0;
-    for (int Q = 0 ; Q<naux_fin_; Q++)
-        for (int P = 0; P<Q; P++)
-            if (fabs(ones[P][Q])>worst_zero)
-                worst_zero = fabs(ones[P][Q]);    
-
-    double worst_one = 0.0;
-    for (int Q = 0 ; Q<naux_fin_; Q++)
-        if (fabs(ones[Q][Q]-1.0)>worst_one)
-            worst_one = fabs(ones[Q][Q]-1.0);    
-
-    fprintf(outfile,"  Worst zero is off by %14.10E, Worst one is off by %14.10E\n",worst_zero,worst_one);
-    fflush(outfile);
-
-    free_block(ones);
-    free_block(Jphalf);
-    free_block(J_copy2);
-    //End Debug
-    **/
 
     timer_off("Form J^-1/2");
     timer_on("Form W");
@@ -688,175 +638,7 @@ void HF::form_B()
     free_block(Jp_mhalf);
     free_block(X);
     timer_off("Form W");
-
-    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    //
-    //          OLD ALGORITHM (UNSTABLE)
-    //
-    //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    /**
-    //OK, integrals time. start with the fitting matrix J
-    //It takes a lot of work to get a null basis with Psi4! 
-    shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
-    
-    // Create integral factory for J (Fitting Matrix in form_B)
-    IntegralFactory rifactory_J(ribasis_, zero, ribasis_, zero);
-    shared_ptr<TwoBodyInt> Jint = shared_ptr<TwoBodyInt>(rifactory_J.eri());
-
-    // Integral buffer
-    const double *Jbuffer = Jint->buffer();
-
-    // J Matrix
-    double **J = block_matrix(naux_fin_, naux_fin_);
-    // J^{-1/2}
-    double **J_mhalf = block_matrix(naux_fin_, naux_fin_);
-    
-    timer_on("Form J Matrix;");
-    // J_{MN} = (0M|N0)
-    int index = 0;
-
-    for (int MU=0; MU < ribasis_->nshell(); ++MU) {
-        int nummu = ribasis_->shell(MU)->nfunction();
-
-        for (int NU=0; NU <= MU; ++NU) {
-            int numnu = ribasis_->shell(NU)->nfunction();
-
-            Jint->compute_shell(MU, 0, NU, 0);
-
-            index = 0;
-            for (int mu=0; mu < nummu; ++mu) {
-                int omu = ribasis_->shell(MU)->function_index() + mu;
-
-                for (int nu=0; nu < numnu; ++nu, ++index) {
-                    int onu = ribasis_->shell(NU)->function_index() + nu;
-
-                    J[omu][onu] = Jbuffer[index];
-                    J[onu][omu] = Jbuffer[index];
-                }
-            }
-        }
-    }
-    if (print_>5) {
-        fprintf(outfile,"\nJ:\n"); fflush(outfile);
-        print_mat(J,naux_fin_,naux_fin_,outfile);
-    }
-    timer_off("Form J Matrix;");
-    timer_on("Form J^-1/2;");
-
-    double **J_copy2 = block_matrix(naux_fin_, naux_fin_);
-    C_DCOPY(naux_fin_*naux_fin_,J[0],1,J_copy2[0],1); 
-    
-    // Form J^-1/2
-    // First, diagonalize J
-    // the C_DSYEV call replaces the original matrix J with its eigenvectors
-    double* eigval = init_array(naux_fin_);
-    int lwork = naux_fin_ * 3;
-    double* work = init_array(lwork);
-    int stat = C_DSYEV('v','u',naux_fin_,J[0],naux_fin_,eigval, work,lwork);
-    if (stat != 0) {
-        fprintf(outfile, "C_DSYEV failed\n");
-        exit(PSI_RETURN_FAILURE);
-    }
-    free(work);
-
-    // Now J contains the eigenvectors of the original J
-    // Copy J to J_copy
-    double **J_copy = block_matrix(naux_fin_, naux_fin_);
-    C_DCOPY(naux_fin_*naux_fin_,J[0],1,J_copy[0],1); 
-
-    // Now form J^{-1/2} = U(T)*j^{-1/2}*U,
-    // where j^{-1/2} is the diagonal matrix of the inverse square roots
-    // of the eigenvalues, and U is the matrix of eigenvectors of J
-    int linear_dependencies = 0;
-    double min_J = eigval[0];
-    double max_J = eigval[0];
-    double min_J_cutoff = options_.get_double("RI_MIN_EIGENVALUE");
-    for (int i=0; i<naux_fin_; i++) {
-        if (min_J > eigval[i])
-            min_J = eigval[i];
-        if (max_J < eigval[i])
-            max_J = eigval[i];
-
-        if (eigval[i] < min_J_cutoff) {
-            eigval[i] = 0.0;
-            linear_dependencies++;
-        }
-        else 
-            eigval[i] = 1.0 / sqrt(eigval[i]);
-
-        // scale one set of eigenvectors by the diagonal elements j^{-1/2}
-        C_DSCAL(naux_fin_, eigval[i], J[i], 1);
-    }
-    free(eigval);
-    if (print_>1) {
-        fprintf(outfile,"  Smallest eigenvalue in fitting metric is %14.10E.\n",min_J);
-        fprintf(outfile,"  Largest eigenvalue in fitting metric is %14.10E.\n",max_J);
-        fprintf(outfile,"  Condition number of fitting metric is %14.10E.\n",max_J/min_J);
-        fflush(outfile);
-    }
-
-    if (linear_dependencies)
-        fprintf(outfile,"  WARNING: %d linear dependencies found in auxiliary basis set.\n",linear_dependencies);
-
-    // J_mhalf = J_copy(T) * J
-    C_DGEMM('t','n',naux_fin_,naux_fin_,naux_fin_,1.0,
-            J_copy[0],naux_fin_,J[0],naux_fin_,0.0,J_mhalf[0],naux_fin_);
-
-    free_block(J_copy);
-    
-    //Debug:
-    //J^1/2 = JJ^-1/2
-    //assert J^1/2J^-1/2 = 1
-    double** Jphalf = block_matrix(naux_fin_,naux_fin_);
-    double** ones = block_matrix(naux_fin_,naux_fin_);
-
-    //J^1/2
-    C_DGEMM('N','N',naux_fin_,naux_fin_,naux_fin_,1.0,J_copy2[0],naux_fin_,J_mhalf[0],naux_fin_,0.0,Jphalf[0],naux_fin_);
-    
-    //J^1/2
-    C_DGEMM('N','N',naux_fin_,naux_fin_,naux_fin_,1.0,J_mhalf[0],naux_fin_,Jphalf[0],naux_fin_,0.0,ones[0],naux_fin_);
-
-    //fprintf(outfile,"\nJmhalf:\n"); 
-    //print_mat(J_mhalf,naux_fin_,naux_fin_,outfile);
-    //fflush(outfile);
-        
-    //fprintf(outfile,"\nJphalf:\n"); 
-    //print_mat(Jphalf,naux_fin_,naux_fin_,outfile);
-    //fflush(outfile);
-        
-    //fprintf(outfile,"\nOnes:\n"); 
-    //print_mat(ones,naux_fin_,naux_fin_,outfile);
-    //fflush(outfile);
-        
-    double worst_zero = 0.0;
-    for (int Q = 0 ; Q<naux_fin_; Q++)
-        for (int P = 0; P<Q; P++)
-            if (fabs(ones[P][Q])>worst_zero)
-                worst_zero = fabs(ones[P][Q]);    
-
-    double worst_one = 0.0;
-    for (int Q = 0 ; Q<naux_fin_; Q++)
-        if (fabs(ones[Q][Q]-1.0)>worst_one)
-            worst_one = fabs(ones[Q][Q]-1.0);    
-
-    fprintf(outfile,"  Worst zero is off by %14.10f, Worst one is off by %14.10f\n",worst_zero,worst_one);
-    fflush(outfile);
-
-    free_block(ones);
-    free_block(Jphalf);
-    free_block(J_copy2);
-    //End Debug
-
-    free_block(J);
-    timer_off("Form J^-1/2;");
-
-    if (print_>5) {
-        fprintf(outfile,"\nJmhalf:\n"); 
-        print_mat(J_mhalf,naux_fin_,naux_fin_,outfile);
-        fflush(outfile);
-    }
-    **/   
-    
+ 
     //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     //
     //                    DETERMINE STORAGE
@@ -899,74 +681,47 @@ void HF::form_B()
     //                        FORM B (FINALLY)
     //
     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    //Form the AO tensor (A|mn), transfrom to (B|mn) by embedding fitting metric W 
+    //Form the AO tensor (A|mn), transform to (B|mn) by embedding fitting metric W 
     timer_on("Overall (B|mn)");
     
-    //Use ri_pair_mu_ and ri_pair_nu_ (and the back map) to keep track of things
-    //Across schwarz sieve and unfortunate shell indexing
-    ri_pair_nu_ = init_int_array(ntri_naive_);
-    ri_pair_mu_ = init_int_array(ntri_naive_);
-    ri_back_map_ = init_int_array(norbs*(norbs+1)/2);
-  
     double three_index_cutoff = options_.get_double("THREE_INDEX_CUTOFF");
 
     //Threading values (defaults to single thread unless OpenMP exists)
+    //The user may specify fewer threads for this due to memory requirements
     int nthread = 1;
     #ifdef _OPENMP
-        nthread = omp_get_max_threads();
+        if (options_.get_int("RI_INTS_NUM_THREADS") == 0)
+            nthread = omp_get_max_threads();
+        else
+            nthread = options_.get_int("RI_INTS_NUM_THREADS");
     #endif
     int rank = 0;
 
     if (df_storage_ == core)
     {
+    	//Build (A|mn) on core, and then transform in place using as large of a buffer as possible
+        
         //Overall containers	
         IntegralFactory rifactory(basisset_, basisset_, ribasis_, zero);
         B_ia_P_ = block_matrix(naux_raw_,ntri_naive_); 
-        const double **buffer;
-        shared_ptr<TwoBodyInt> *eri;
-
-        //Set up schwarz bookkeeping
-        int numP,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu;
-        int index;
-        for (MU=0, index = 0; MU < basisset_->nshell(); ++MU) {
-            nummu = basisset_->shell(MU)->nfunction();
-            for (NU=0; NU <= MU; ++NU) {
-                numnu = basisset_->shell(NU)->nfunction();
-                if (schwarz_shell_pairs[MU*(MU+1)/2+NU] == 1) {
-                    for (mu=0 ; mu < nummu; ++mu) {
-                        omu = basisset_->shell(MU)->function_index() + mu;
-                        for (nu=0; nu < numnu; ++nu) {
-                            onu = basisset_->shell(NU)->function_index() + nu;
-                            if(omu>=onu && schwarz_fun_pairs[omu*(omu+1)/2+onu] == 1) {
-                                ri_pair_mu_[index] = omu;
-                                ri_pair_nu_[index] = onu;
-                                ri_back_map_[omu*(omu+1)/2+onu] = index;
-                                index++;
-                            } 
-                        }
-                    }
-                }
-            } 
-        }
-
-    	//Build (A|mn) on core, and then transform in place using as large of a buffer as possible
 
         //Get a TEI for each thread
-        buffer = new const double*[nthread];
-        eri = new shared_ptr<TwoBodyInt>[nthread];
+        const double **buffer = new const double*[nthread];
+        shared_ptr<TwoBodyInt> *eri = new shared_ptr<TwoBodyInt>[nthread];
         for (int Q = 0; Q<nthread; Q++) {
             eri[Q] = shared_ptr<TwoBodyInt>(rifactory.eri());
             buffer[Q] = eri[Q]->buffer();
         }
 
+        int numP,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu;
+        int index;
         //The integrals (A|mn)
-        #pragma omp parallel for private (numP, Pshell, MU, NU, P, PHI, mu, nu, nummu, numnu, omu, onu, rank) schedule (dynamic) 
+        #pragma omp parallel for private (numP, Pshell, MU, NU, P, PHI, mu, nu, nummu, numnu, omu, onu, rank) schedule (dynamic) num_threads(nthread)
         for (MU=0; MU < basisset_->nshell(); ++MU) {
             #ifdef _OPENMP
                 rank = omp_get_thread_num();
                 //fprintf(outfile,"  Thread %d doing MU = %d",rank,MU); fflush(outfile);
             #endif           
-
             nummu = basisset_->shell(MU)->nfunction();
             for (NU=0; NU <= MU; ++NU) {
                 numnu = basisset_->shell(NU)->nfunction();
@@ -981,7 +736,6 @@ void HF::form_B()
                             for (nu=0; nu < numnu; ++nu) {
                                 onu = basisset_->shell(NU)->function_index() + nu;
                                 if(omu>=onu && schwarz_fun_pairs[omu*(omu+1)/2+onu] == 1) {
-                                        
                                     for (P=0; P < numP; ++P) {
                                         PHI = ribasis_->shell(Pshell)->function_index() + P;
                                         B_ia_P_[PHI][ri_back_map_[omu*(omu+1)/2+onu]] = buffer[rank][mu*numnu*numP+nu*numP+P];
@@ -1111,12 +865,20 @@ void HF::form_B()
 
         int pass = 0;
 
+        //For debug:
+        nthread = 1;
+
         //fprintf(outfile, "  Striped"); fflush(outfile);
         
         //Get an ERI object for the AO three-index integrals 
         IntegralFactory rifactory(basisset_, basisset_, ribasis_,zero);
-        shared_ptr<TwoBodyInt> eri = shared_ptr<TwoBodyInt>(rifactory.eri());
-        const double *buffer = eri->buffer();
+        //Get a TEI for each thread
+        const double **buffer = new const double*[nthread];
+        shared_ptr<TwoBodyInt> *eri = new shared_ptr<TwoBodyInt>[nthread];
+        for (int Q = 0; Q<nthread; Q++) {
+            eri[Q] = shared_ptr<TwoBodyInt>(rifactory.eri());
+            buffer[Q] = eri[Q]->buffer();
+        }
         
         //Determine the maximum nubmer of functions and pairs in the AO basis
         int maxfun = 0;
@@ -1157,35 +919,118 @@ void HF::form_B()
             fflush(outfile);
         }
         
+        //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        //
+        //                                   NEW DISK ALGORITHM (THREADED)
+        //
+        //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
         //Allocate the fitted and unfitted blocks for three-index integrals
         double **Amn = block_matrix(naux_raw_,max_cols); //Raw integrals
         double **Bmn = block_matrix(naux_fin_,max_cols); //Fitted integrals
 
-        //Some debug arrays
-        //double *min_val = init_array(naux_fin_);
-        //double *max_val = init_array(naux_fin_);
-        //double *sum_val = init_array(naux_fin_);
+        //Indexing
+        int l_index = 0; //Runing schwarz map index 
+        int disk_index = 0; //Runing disk offset (dense start)
+        //How many physical blocks could there be (I'll be safe, just for malloc)?
+        int nblocks = ntri_naive_/(max_cols-maxpairs)+2;
 
-        int numP,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu;
-        int porous_index = 0; //Index within loose tensor block (before three index sieve), block local
-        int dense_index = 0; //Index within dense transformed tensor block (after three index sieve), block local
-        int global_index = 0; //Dense block start index after schwarz sieve and three index sieve, global
-        int start_index = 0; //Loose block start index after schwarz sieve, global
-        int aux_index = 0; //Loose block start index before schwarz sieve, global
-        int l_index = 0; //Compact pair index after three_index sieve, global 
-        int r_index = 0; //Loose pair index before schwarz sieve, global
-        int s_index = 0; //Function pair index within shell pair, shell local
-        for (MU=0; MU < basisset_->nshell(); ++MU) {
-            nummu = basisset_->shell(MU)->nfunction();
-            for (NU=0; NU <= MU; ++NU) {
+        //What MUNU does the block start on?
+        int* block_starts = init_int_array(nblocks);
+        //How many shell pairs is the block
+        int* block_sizes = init_int_array(nblocks);
+        //What schwarzed omuonu does the block start on?
+        int* porous_starts = init_int_array(nblocks);
+        //How many schwarzed function pairs is the block?
+        int* porous_sizes = init_int_array(nblocks);
+
+        //Lets be safe and make a MU backmap
+        int* MU_map = init_int_array(basisset_->nshell()*(basisset_->nshell()+1)/2);
+        
+        {//<<< Drop out of scope
+
+            //Set up block bookkeeping
+            nblocks = 0;
+            int MU,NU,mu,nu,nummu,numnu,omu,onu;
+            int shell_pairs = 0;
+            int fun_pairs = 0;
+            int shell_tot = 0;
+            int fun_tot = 0;
+            int block = 0;
+            for (MU=0, index = 0; MU < basisset_->nshell(); ++MU) {
+                nummu = basisset_->shell(MU)->nfunction();
+                for (NU=0; NU <= MU; ++NU) {
+                    MU_map[shell_tot] = MU;
+                    shell_pairs++;
+                    shell_tot++;
+                    numnu = basisset_->shell(NU)->nfunction();
+                    if (schwarz_shell_pairs[MU*(MU+1)/2+NU] == 1) {
+                        for (mu=0 ; mu < nummu; ++mu) {
+                            omu = basisset_->shell(MU)->function_index() + mu;
+                            for (nu=0; nu < numnu; ++nu) {
+                                onu = basisset_->shell(NU)->function_index() + nu;
+                                if(omu>=onu && schwarz_fun_pairs[omu*(omu+1)/2+onu] == 1) {
+                                    fun_pairs++;
+                                    fun_tot++;
+                                } 
+                            }
+                        }
+                    }
+                    if (MU == basisset_->nshell() - 1 && NU == MU) {
+                        //Last block end
+                        nblocks++;
+                        block_sizes[block] = shell_pairs;
+                        porous_sizes[block] = fun_pairs;
+                        block++;
+                    } else if (fun_pairs+maxpairs > max_cols) {
+                        //Out of space
+                        nblocks++;
+                        block_sizes[block] = shell_pairs;
+                        porous_sizes[block] = fun_pairs;
+                        block_starts[block+1] = shell_tot;
+                        porous_starts[block+1] = fun_tot;
+                        shell_pairs = 0;
+                        fun_pairs = 0;
+                        block++;
+                    }
+                } 
+            }
+        } //back into scope
+
+        //fprintf(outfile,"  Number of blocks %d\n",nblocks); 
+        //for (int block = 0; block<nblocks; block++) {
+        //    fprintf(outfile,"  Block %d: block_starts = %d, block sizes = %d, porous starts = %d, porous sizes = %d\n",block,block_starts[block],block_sizes[block],porous_starts[block],porous_sizes[block]); 
+        //}
+        //fflush(outfile);
+
+        //Loop over blocks of index MUNU
+        for (int block = 0; block<nblocks; block++) {
+                    
+            //Need all the indexes
+            int numP,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu;
+            int index;
+            //Compute all the integrals for this block and place in buffer Amn 
+            #pragma omp parallel for private (numP, Pshell, MU, NU, P, PHI, mu, nu, nummu, numnu, omu, onu, rank) schedule (dynamic) num_threads(nthread)
+            for (int block_address = block_starts[block]; block_address<block_starts[block]+block_sizes[block]; block_address++) {
+                #ifdef _OPENMP
+                    rank = omp_get_thread_num();
+                #endif 
+                //Where are we in MU/NU? Using the canonical backmap definition.                             
+                MU = MU_map[block_address];
+                NU = block_address-MU*(MU+1)/2;  
+            
+                //fprintf(outfile,"  MU = %d, NU = %d, address = %d",MU,NU,block_address);              
+
+                //How big is the shell pair?
+                nummu = basisset_->shell(MU)->nfunction();
                 numnu = basisset_->shell(NU)->nfunction();
+                //Gogo integrals! (A|mn)
                 if (schwarz_shell_pairs[MU*(MU+1)/2+NU] == 1) {
                     for (Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
                         numP = ribasis_->shell(Pshell)->nfunction();
-                        timer_on("(B|mn) Integrals");
-                        eri->compute_shell(MU, NU, Pshell, 0);
-                        timer_off("(B|mn) Integrals");
-                        s_index = 0;
+                        if (rank == 0) timer_on("(B|mn) Integrals");
+                        eri[rank]->compute_shell(MU, NU, Pshell, 0);
+                        if (rank == 0) timer_off("(B|mn) Integrals");
                         for (mu=0 ; mu < nummu; ++mu) {
                             omu = basisset_->shell(MU)->function_index() + mu;
                             for (nu=0; nu < numnu; ++nu) {
@@ -1193,123 +1038,77 @@ void HF::form_B()
                                 if(omu>=onu && schwarz_fun_pairs[omu*(omu+1)/2+onu] == 1) {
                                     for (P=0; P < numP; ++P) {
                                         PHI = ribasis_->shell(Pshell)->function_index() + P;
-                                        Amn[PHI][start_index+s_index]= buffer[mu*numnu*numP+nu*numP+P];
-                                    }
-                                    s_index++;
-                                    if (Pshell == 0) {
-                                        porous_index++;
-                                        ri_pair_mu_[r_index] = omu;
-                                        ri_pair_nu_[r_index] = onu;
-                                        r_index++;
+                                        Amn[PHI][ri_back_map_[omu*(omu+1)/2+onu]-porous_starts[block]] = buffer[rank][mu*numnu*numP+nu*numP+P];
                                     }
                                 } 
                             }
                         }
                     }
-                    start_index = porous_index;
-                    //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-                    //
-                    //     DISK DUMP BLOCK
-                    //
-                    //Porous index is the filled length of the Amn tensor block 
-                    //Do the transform, three-index sieve, and dump the integrals if either:
-                    //   1) The next batch of integrals might not fit
-                    //   2) The last shell pair is done
-                    if (porous_index + maxpairs  > max_cols || (MU == basisset_->nshell()-1  && NU == MU)) { 
-                        //Do the transform
-                        //print_mat(Amn,naux_raw_,max_cols,outfile);
-                        timer_on("(B|mn) Transform");
-                        C_DGEMM('T','N',naux_fin_,porous_index,naux_raw_,1.0, W[0], naux_fin_, Amn[0], max_cols,0.0, Bmn[0],max_cols);
-                        timer_off("(B|mn) Transform");
-                        //print_mat(Bmn,naux_fin_,max_cols,outfile);
-        
-                        //Use the three index sieve to compact the tensor
-                        timer_on("(B|mn) 3-Sieve");
-                        if (three_index_cutoff > 0.0) {
-                            for (int pair = 0; pair < porous_index; pair++) {
-                                bool sig = false;
-                                for (int Q = 0; Q<naux_fin_;Q++) {
-                                    if (fabs(Bmn[Q][pair])>=three_index_cutoff) {
-                                        sig = true;
-                                        break;
-                                    }
-                                }
-                                if (sig) { 
-                                    C_DCOPY(naux_fin_,&Bmn[0][pair],max_cols,&Amn[0][dense_index],max_cols);
-                                    dense_index++;
-                                    ri_pair_mu_[l_index] = ri_pair_mu_[aux_index+pair];
-                                    ri_pair_nu_[l_index] = ri_pair_nu_[aux_index+pair];
-                                    l_index++; 
-                                } else {
-                                    ntri_--;
-                                }
-                            }
-                        } else {
-                            dense_index = porous_index;
-                        }
-                        timer_off("(B|mn) 3-Sieve");
-
-                        //Write the tensor out with the correct striping (mn is the fast index, but we only have blocks)
-                        //NOTE: If three_index_cutoff > 0.0, the tensor is in Amn, otherwise it is in Bmn
-                        //This allows for threading of the three index sieve
-                        
-                        //fprintf(outfile,"  Pass = %d. Ready to write %d cols:\n",pass++,dense_index); 
-                        //fflush(outfile);
-
-                        //print_mat(Amn,naux_fin_,max_cols,outfile);
-                        //fflush(outfile);
-                        //print_mat(Bmn,naux_fin_,max_cols,outfile);
-                        //fflush(outfile);
-
-                        timer_on("(B|mn) Disk Stripe");
-                        for (int Q = 0; Q < naux_fin_; Q++) {
-                            next_PSIF_DFSCF_BJ = psio_get_address(PSIO_ZERO,(ULI)(Q*(ULI)ntri_naive_*sizeof(double)+global_index*sizeof(double)));
-                            psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *)((three_index_cutoff > 0.0)?&Amn[Q][0]:&Bmn[Q][0]),sizeof(double)*dense_index,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
-                        }
-                        timer_off("(B|mn) Disk Stripe");
-
-                        //Debugging info!
-                        /**
-                        for (int Q = 0; Q < naux_fin_; Q++) {
-                            for (int mn = 0; mn < dense_index; mn++) {
-                                if (three_index_cutoff > 0.0) {
-                                    if (Amn[Q][mn] < min_val[Q])
-                                        min_val[Q] = Amn[Q][mn];
-                                    if (Amn[Q][mn] > max_val[Q])
-                                        max_val[Q] = Amn[Q][mn];
-                                    sum_val[Q] += Amn[Q][mn];
-                                } else {
-                                    if (Bmn[Q][mn] < min_val[Q])
-                                        min_val[Q] = Bmn[Q][mn];
-                                    if (Bmn[Q][mn] > max_val[Q])
-                                        max_val[Q] = Bmn[Q][mn];
-                                    sum_val[Q] += Bmn[Q][mn];
-                                }
-                            }
-                        }**/
-                        aux_index = r_index;
-                        global_index += dense_index;
-                        start_index = 0;
-                        porous_index = 0;
-                        dense_index = 0;
-                    } //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-                }
+                } 
             }
-        } 
-
-        //for (int Q = 0; Q<naux_fin_; Q++)
-        //    fprintf(outfile,"  Summary: Row = %d, Max = %14.10E, Min = %14.10E, Sum = %14.10E\n", Q, max_val[Q], min_val[Q], sum_val[Q]); 
-        //fflush(outfile);
-
-        //free(max_val);
-        //free(min_val);
-        //free(sum_val);
- 
+                
+            //Embed fitting metric
+            //(B|mn) = (A|mn)W_BA
+            timer_on("(B|mn) Transform");
+            C_DGEMM('T','N',naux_fin_,porous_sizes[block],naux_raw_,1.0, W[0], naux_fin_, Amn[0], max_cols,0.0, Bmn[0],max_cols);
+            timer_off("(B|mn) Transform");
+                        
+            //Use the three index sieve to compact the tensor
+            int dense_size = 0;
+            timer_on("(B|mn) 3-Sieve");
+            if (three_index_cutoff > 0.0) {
+                for (int pair = 0; pair < porous_sizes[block]; pair++) {
+                    bool sig = false;
+                    for (int Q = 0; Q<naux_fin_;Q++) {
+                        if (fabs(Bmn[Q][pair])>=three_index_cutoff) {
+                             sig = true;
+                             break;
+                        }
+                    }
+                    if (sig) { 
+                        C_DCOPY(naux_fin_,&Bmn[0][pair],max_cols,&Amn[0][dense_size],max_cols);
+                        dense_size++;
+                        ri_pair_mu_[l_index] = ri_pair_mu_[porous_starts[block]+pair];
+                        ri_pair_nu_[l_index] = ri_pair_nu_[porous_starts[block]+pair];
+                        l_index++; 
+                    } else {
+                        ntri_--;
+                    }
+                } 
+            } else {
+                dense_size = porous_sizes[block];
+            }
+            timer_off("(B|mn) 3-Sieve");
+            
+            //Flush the bastards
+            //Write the tensor out with the correct striping (mn is the fast index, but we only have blocks)
+            //NOTE: If three_index_cutoff > 0.0, the tensor is in Amn, otherwise it is in Bmn
+            //This allows for threading of the three index sieve
+            timer_on("(B|mn) Disk Stripe");
+            for (int Q = 0; Q < naux_fin_; Q++) {
+                next_PSIF_DFSCF_BJ = psio_get_address(PSIO_ZERO,(ULI)(Q*(ULI)ntri_naive_*sizeof(double)+disk_index*sizeof(double)));
+                psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *)((three_index_cutoff > 0.0)?&Amn[Q][0]:&Bmn[Q][0]),sizeof(double)*dense_size,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+            }
+            timer_off("(B|mn) Disk Stripe");
+            
+            //Update indexing
+            disk_index+=dense_size;
+            //fprintf(outfile,"  disk index = %d, dense size = %d, porous sizes = %d, block = %d\n",disk_index,dense_size,porous_sizes[block],block);
+        }
+        
+        //frees
+        delete []buffer;
+        delete []eri; 
         free_block(Amn);
         free_block(Bmn);
+        free(porous_sizes);
+        free(porous_starts);
+        free(block_sizes);
+        free(block_starts);
+        free(MU_map);
 
         if (print_>1)
-            fprintf(outfile,"\n  Through (B|mn) on disk.\n"); 
+            fprintf(outfile,"\n  Through DF integrals on disk.\n"); 
         fflush(outfile);
        
         //fprintf(outfile,"  B is here:\n");
@@ -1319,9 +1118,14 @@ void HF::form_B()
         //print_mat(Bhack,naux_fin_,ntri_naive_,outfile);
         //free(Bhack);
 
+        //fprintf(outfile,"  Indexing-fun pairs:\n");
         //for (int i = 0; i<ntri_naive_; i++)
-        //    fprintf(outfile,"  i = %d, mu = %d, nu = %d\n",i,ri_pair_mu_[i],ri_pair_nu_[i]);
- 
+        //    fprintf(outfile,"  i = %d, mu = %d, nu = %d, munu = %d\n",i,ri_pair_mu_[i],ri_pair_nu_[i], ri_pair_mu_[i]*(ri_pair_mu_[i]+1)/2+ri_pair_nu_[i]);
+        //fprintf(outfile,"  Indexing-back map:\n");
+        //for (int i = 0; i<norbs*(norbs+1)/2; i++)
+        //    fprintf(outfile,"  munu = %d, index = %d\n",i,ri_back_map_[i]);
+         
+
         //Write the restart data, it's cheap
         next_PSIF_DFSCF_BJ = PSIO_ZERO;
         psio_->write(PSIF_DFSCF_BJ,"RI_PAIR_BACK",(char *) &(ri_back_map_[0]),sizeof(int)*(norbs*(norbs+1)/2),next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);

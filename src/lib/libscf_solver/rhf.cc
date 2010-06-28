@@ -2545,7 +2545,7 @@ void RHF::compute_SAD_guess()
 
     //A C matrix is needed. Do one of:
     //   --An integral direct step (expensive)
-    //   --A Cholesky orbital approximation (cheap, but not as accurate) 
+    //   --A Cholesky orbital approximation (cheap, should be preferred after the David Sherrill correction) 
     if (options_.get_str("SAD_C") == "ID") {
     //>>>>>>>>ID SAD GUESS 
     //Compute a rough Fock matrix via integral direct
@@ -2687,8 +2687,8 @@ void RHF::compute_SAD_guess()
         //    fprintf(outfile,"  Pivot %d is %d.\n",i,P[i]); 
 
         //Cholesky Decomposition
-        int status = C_DPOTRF('U',norbs,D[0],norbs);
-        if (status < 0) {
+        int rank = C_DPOTRF('U',norbs,D[0],norbs);
+        if (rank < 0) {
             fprintf(outfile,"  Cholesky Decomposition Failed");
             fflush(outfile);
             exit(PSI_RETURN_FAILURE);
@@ -2697,7 +2697,7 @@ void RHF::compute_SAD_guess()
             for (int j = i+1; j<norbs; j++)
                 D[i][j] = 0.0; 
  
-        //fprintf(outfile,"  C Guess (Cholesky Unpivoted) , rank is %d:\n", status);
+        //fprintf(outfile,"  C Guess (Cholesky Unpivoted) , rank is %d:\n", rank);
         //print_mat(D,norbs,sad_nocc_,outfile);        
         
         //Unpivot
@@ -2705,6 +2705,10 @@ void RHF::compute_SAD_guess()
         for (int m = 0; m < norbs; m++) {
             C_DCOPY(sad_nocc_,&D[m][0],1,&C[P[m]][0],1);
         }
+
+        //Sometimes D is deficient in rank (usually in fact)
+        if (sad_nocc_ > rank-1)
+            sad_nocc_ = rank-1;
 
         //Eliminate the redundancies
         double chol_cutoff = options_.get_double("SAD_CHOL_CUTOFF");
