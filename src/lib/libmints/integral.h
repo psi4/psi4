@@ -218,6 +218,10 @@ public:
     ShellCombinationsIterator(shared_ptr<BasisSet>bs1, shared_ptr<BasisSet>bs2,
                               shared_ptr<BasisSet>bs3, shared_ptr<BasisSet>bs4) :
                        bs1_(bs1), bs2_(bs2), bs3_(bs3), bs4_(bs4) {    }
+    ShellCombinationsIterator()  {    }
+    void init(shared_ptr<BasisSet>bs1, shared_ptr<BasisSet>bs2,
+            shared_ptr<BasisSet>bs3, shared_ptr<BasisSet>bs4){bs1_=bs1; bs2_=bs2;
+        bs3_=bs3; bs4_=bs4; }
 
     void first();
     void next();
