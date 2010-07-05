@@ -5,6 +5,10 @@
  *  Created by Justin Turney on 4/10/08.
  *
  */
+ 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 #include <cstdlib>
 #include <cstdio>
@@ -73,6 +77,8 @@ RHF::~RHF()
 {
     if (pk_)
         delete[] pk_;
+    if (G_vector_)
+        free_block(G_vector_);
 }
 
 void RHF::common_init()
@@ -98,6 +104,7 @@ void RHF::common_init()
 
     // PK super matrix for fast G
     pk_ = NULL;
+    G_vector_ = NULL;
 
     //What are we using?
     fprintf(outfile, "  SCF Algorithm Type is %s.\n", scf_type_.c_str());
@@ -106,8 +113,16 @@ void RHF::common_init()
 
     fflush(outfile);
     // Allocate memory for PK matrix
-    if (scf_type_ == "PK")
+    if (scf_type_ == "PK") {
         allocate_PK();
+        
+        // Allocate memory for threading the PK
+        int nthread = 1;
+        #ifdef _OPENMP
+        nthread = omp_get_max_threads();
+        #endif
+        G_vector_ = block_matrix(nthread, pk_pairs_);
+    }
 }
 
 double RHF::compute_energy()
@@ -1147,11 +1162,15 @@ void RHF::form_G_from_PK()
     int *opi = factory_.rowspi();
     size_t ij;
     double *D_vector = new double[pk_pairs_];
-    double *G_vector = new double[pk_pairs_];
+    int nthread = 1;
+    #ifdef _OPENMP
+    nthread = omp_get_max_threads();
+    #endif
+    double **G_vector = block_matrix(nthread, pk_pairs_);
 
     G_->zero();
     memset(D_vector, 0, sizeof(double) * pk_pairs_);
-    memset(G_vector, 0, sizeof(double) * pk_pairs_);
+    memset(&(G_vector[0][0]), 0, sizeof(double) * nthread * pk_pairs_);
 
     ij=0;
     for (int h=0; h<nirreps; ++h) {
@@ -1166,62 +1185,52 @@ void RHF::form_G_from_PK()
         }
     }
 
-#ifdef _DEBUG
-    if (debug_) {
-        fprintf(outfile, "PK: ij = %lu\n", (unsigned long)ij);
-        fflush(outfile);
-        fprintf(outfile, "PK: D matrix:\n");
-        D_->print(outfile);
-        fprintf(outfile, "PK: D vector (appears to be OK):\n");
-        for (ij=0; ij<pk_pairs_; ++ij)
-            fprintf(outfile, "PK: D vector [%lu] = %20.14f\n", (unsigned long)ij, D_vector[ij]);
-    }
-#endif
-
     double G_pq,D_pq;
     double* D_rs;
     double* G_rs;
-    int pq,rs;
     double* PK_block = pk_;
     int ts_pairs = pk_pairs_;
-    for(pq = 0; pq < ts_pairs; ++pq){
+    #pragma omp parallel for private (G_pq, D_pq, D_rs, G_rs) schedule (dynamic)
+    for(int pq = 0; pq < ts_pairs; ++pq){
+        int threadid = 0;
+        double *local_PK_block = PK_block;
+        #ifdef _OPENMP
+        threadid = omp_get_thread_num();
+        local_PK_block += ioff[pq];
+        #endif
         G_pq = 0.0;
         D_pq = D_vector[pq];
         D_rs = &D_vector[0];
-        G_rs = &G_vector[0];
-        for(rs = 0; rs <= pq; ++rs){
-            G_pq += *PK_block * (*D_rs);
-            *G_rs += *PK_block * D_pq;
-
-            // fprintf(outfile, "pq=%d, rs=%d, G_pq=%f, PK_block=%f, D_rs=%f, G_rs=%f, D_pq=%f\n", pq, rs, G_pq, *PK_block, *D_rs, *G_rs, D_pq);
+        G_rs = &(G_vector[threadid][0]);
+        for(int rs = 0; rs <= pq; ++rs){
+            G_pq += *local_PK_block * (*D_rs);
+            *G_rs += *local_PK_block * D_pq;
 
             ++D_rs;
             ++G_rs;
-            ++PK_block;
+            ++local_PK_block;
         }
-        G_vector[pq] += G_pq;
+        G_vector[threadid][pq] += G_pq;
     }
 
+    for (int i = 1; i < nthread; ++i) {
+        for (int j=0; j<pk_pairs_; ++j)
+            G_vector[0][j] += G_vector[i][j];
+    }
+    
     // Convert G to a matrix
     ij = 0;
     for(int h = 0; h < nirreps; ++h){
         for(int p = 0; p < opi[h]; ++p){
             for(int q = 0; q <= p; ++q){
-                G_->set(h,p,q, 2.0 * G_vector[ij]);
-                G_->set(h,q,p, 2.0 * G_vector[ij]);
+                G_->set(h,p,q, 2.0 * G_vector[0][ij]);
+                G_->set(h,q,p, 2.0 * G_vector[0][ij]);
                 ij++;
             }
         }
     }
 
-#ifdef _DEBUG
-    if (debug_) {
-        G_->print(outfile);
-    }
-#endif
-
     delete[](D_vector);
-    delete[](G_vector);
 }
 
 void RHF::form_G_from_direct_integrals()

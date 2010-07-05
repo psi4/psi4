@@ -74,6 +74,8 @@ protected:
     double compute_initial_E();
     double compute_E();
 
+    // Form G routines
+    double **G_vector_; // Used in form_G_from_PK to handle threading.
     void form_G(); // Out of core (i think there is a bug here)
     void form_G_from_PK(); // In core PK
     void form_G_from_direct_integrals(); // Computes all ERIs each iteration.
