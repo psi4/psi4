@@ -6,6 +6,8 @@
 
 extern FILE *outfile;
 
+using namespace std;
+
 namespace psi{
 
 void ModelSpace::build()

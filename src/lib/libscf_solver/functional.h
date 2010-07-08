@@ -113,16 +113,16 @@ public:
 	/** Functional name
 	* @return functional or alias name ie: 'B3LYP'
 	*/
-	virtual string getName() {return string("None");}
+	virtual std::string getName() {return std::string("None");}
 	/** Functional description
 	* @return description of functional or especially
 	* substituent functionals of aliases
 	*/
-	virtual string getDescription() {return string("None"); }
+	virtual std::string getDescription() {return std::string("None"); }
 	/** Functional citation
 	* @return citation of functional
 	*/
-	virtual string getCitation() {return string("None"); }
+	virtual std::string getCitation() {return std::string("None"); }
 };
 typedef shared_ptr<Functional> SharedFunctional;
 }}

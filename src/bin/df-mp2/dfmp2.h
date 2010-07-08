@@ -27,7 +27,7 @@ protected:
     unsigned long int df_memory_;
     
     int print_;
-    string algorithm_type_;
+    std::string algorithm_type_;
 
     shared_ptr<BasisSet> ribasis_;
     shared_ptr<BasisSet> zerobasis_;

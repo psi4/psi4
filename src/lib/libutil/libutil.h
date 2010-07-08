@@ -12,8 +12,6 @@
 #include "class_macros.h"
 #include "memory_manager.h"
 
-using namespace std;
-
 namespace psi {
 
 typedef std::vector<std::string> strvec;

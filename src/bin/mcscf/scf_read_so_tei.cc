@@ -13,6 +13,8 @@
 #define MIN(i,j) ((i>j) ? j : i)
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
 
+using namespace std;
+
 extern FILE* outfile;
 
 namespace psi{ namespace mcscf{

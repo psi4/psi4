@@ -2,7 +2,7 @@
 #define _psi_src_lib_libmints_basisset_h_
 
 #include <cstdio>
-#include <libchkpt/chkpt.hpp>
+//#include <libchkpt/chkpt.hpp>
 
 #include <libmints/molecule.h>
 #include <libmints/gshell.h>
@@ -16,6 +16,7 @@
 
 namespace psi {
 
+    class Chkpt;
     class BasisSetParser;
     class SOTransformShell;
     class SphericalTransform;

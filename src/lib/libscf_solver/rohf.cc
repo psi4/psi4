@@ -6,7 +6,6 @@
 #include <utility>
 
 #include <psifiles.h>
-#include <libmints/integral.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>
@@ -14,8 +13,9 @@
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 
-#include <libmints/matrix.h>
+#include <libmints/mints.h>
 #include "rohf.h"
+#include <psi4-dec.h>
 
 using namespace std;
 using namespace psi;

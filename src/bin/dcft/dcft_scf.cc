@@ -5,6 +5,8 @@
 #include "libqt/qt.h"
 #include "libmints/matrix.h"
 
+using namespace std;
+
 namespace psi{ namespace dcft{
 
 /**

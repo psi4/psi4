@@ -386,7 +386,7 @@ public:
     /** String describing the grid setup
 	* @return descriptive string 
 	*/
-    string getString();
+    std::string getString();
 };
 
 typedef shared_ptr<Integrator> SharedIntegrator;

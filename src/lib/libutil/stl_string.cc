@@ -8,6 +8,7 @@
 
 namespace psi {
 
+using namespace std;
 
 /*********************
  String manipulation

@@ -5,6 +5,8 @@
 #include <psifiles.h>
 #include <sstream>
 
+using namespace std;
+
 namespace psi{
 
 DIISEntry::DIISEntry(std::string label, int ID, int orderAdded,
