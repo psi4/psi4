@@ -89,9 +89,6 @@ class BasisSet
     // Global arrays of x, y, z exponents
     static std::vector<Vector3> exp_ao[];
 
-    // Build AO transformation matrix. AOs transformed by symmetry operations of the point group of the molecule.
-    void build_ao_transformation_matrix();
-
 public:
 
     /** Constructor, reads in the basis set from the checkpoint file using basiskey
@@ -194,6 +191,10 @@ public:
      *  call refresh().
      */
     void refresh();
+
+    // Build AO transformation matrix. AOs transformed by symmetry operations of the point group of the molecule.
+    // Here for testing.
+    void build_ao_transformation_matrix();
 
     /** Return a BasisSet object containing all shells at center i
     *
