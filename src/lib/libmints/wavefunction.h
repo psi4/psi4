@@ -8,7 +8,7 @@
 #include <psi4-dec.h>
 
 #define MAX_IOFF 30000
-extern int ioff[MAX_IOFF];
+extern size_t ioff[MAX_IOFF];
 
 #define MAX_DF 500
 extern double df[MAX_DF];
