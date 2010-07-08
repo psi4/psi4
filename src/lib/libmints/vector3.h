@@ -103,7 +103,7 @@ public:
 
 Vector3 operator*(double, const Vector3&);
 
-#include "vector3_i.cc"
+#include "vector3.i"
 
 }
 

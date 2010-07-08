@@ -516,8 +516,6 @@ typedef shared_ptr<SimpleMatrix> SharedSimpleMatrix;
 typedef shared_ptr<Vector> SharedVector;
 typedef shared_ptr<SimpleVector> SharedSimpleVector;
 
-#include "matrix_i.cc"
-
 }
 
 #endif // MATRIX_H
