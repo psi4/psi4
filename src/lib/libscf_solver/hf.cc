@@ -68,7 +68,7 @@ void HF::common_init()
     Sphalf_.reset(factory_.create_matrix("S^+1/2"));
     H_.reset(factory_.create_matrix("One-electron Hamiltonion"));
     C_.reset(factory_.create_matrix("MO coefficients"));
-    orbital_energies_.reset(factory_.create_vector());
+    orbital_e_.reset(factory_.create_vector());
 
     memset((void*) nsopi_, '\0', factory_.nirreps()*sizeof(int));
     memset((void*) nmopi_, '\0', factory_.nirreps()*sizeof(int));
@@ -572,6 +572,8 @@ void HF::form_Shalf()
         //chkpt_->wt_nsopi(nsopi_);
         chkpt_->wt_nmo(nmo_);
         //chkpt_->wt_nmopi(nmopi_);
+        orbital_e_->init(eigvec.nirreps(), nmopi_);
+        C_->init(eigvec.nirreps(),nsopi_,nmopi_,"MO coefficients");
     }
 }
 

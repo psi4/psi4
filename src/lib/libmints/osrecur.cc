@@ -315,7 +315,7 @@ void ObaraSaikaTwoCenterVIRecursion::compute(double PA[3], double PB[3], double 
     calculate_f(F, mmax, u);
 
     // Think we're having problems with values being left over.
-    zero_box(vi_, size_, size_, mmax + 1);
+    //zero_box(vi_, size_, size_, mmax + 1);
 
     // Perform recursion in m for (a|A(0)|s) using A20
     for (m=0; m<=mmax; ++m) {
@@ -436,7 +436,9 @@ void ObaraSaikaTwoCenterVIRecursion::compute(double PA[3], double PB[3], double 
             }
         }
     }
+
     delete[] F;
+
 }
 
 ObaraSaikaTwoCenterVIDerivRecursion::ObaraSaikaTwoCenterVIDerivRecursion(int max_am1, int max_am2)

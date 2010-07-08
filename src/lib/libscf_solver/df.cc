@@ -380,7 +380,7 @@ void HF::form_B()
 
     //Print some stuff
     double cond_SJ = max_SJ/min_SJ;
-    if (print_>0) {
+    if (print_>1) {
         fprintf(outfile,"  Min J overlap eigenvalue is %14.10E.\n",min_SJ);
         fprintf(outfile,"  Max J overlap eigenvalue is %14.10E.\n",max_SJ);
         fprintf(outfile,"  J overlap condition number is %14.10E.\n",cond_SJ);
@@ -426,7 +426,7 @@ void HF::form_B()
 
 
     //So how'd that go?
-    if (print_>0) {
+    if (print_>1) {
         fprintf(outfile, "  %d of %d finished auxiliary functions eliminated by canonical orthogonalization.\n",linear_dependencies, naux_raw_);
         fprintf(outfile, "  Resultant condition number in J overlap matrix is %14.10E.\n",max_SJ/new_min_SJ);
         fflush(outfile);
@@ -605,7 +605,7 @@ void HF::form_B()
     }
     free(eigval);
 
-    if (print_>0) {
+    if (print_>1) {
         fprintf(outfile,"  Smallest eigenvalue in the finished fitting metric is %14.10E.\n",min_J);
         fprintf(outfile,"  Largest eigenvalue in the finished fitting metric is %14.10E.\n",max_J);
         fprintf(outfile,"  Condition number of the finished fitting metric is %14.10E.\n",max_J/min_J);
@@ -716,6 +716,7 @@ void HF::form_B()
         int numP,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu;
         int index;
         //The integrals (A|mn)
+        timer_on("(A|mn)");
         #pragma omp parallel for private (numP, Pshell, MU, NU, P, PHI, mu, nu, nummu, numnu, omu, onu, rank) schedule (dynamic) num_threads(nthread)
         for (MU=0; MU < basisset_->nshell(); ++MU) {
             #ifdef _OPENMP
@@ -728,9 +729,7 @@ void HF::form_B()
                 if (schwarz_shell_pairs[MU*(MU+1)/2+NU] == 1) {
                     for (Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
                         numP = ribasis_->shell(Pshell)->nfunction();
-                        if (rank == 0) timer_on("(B|mn) Integrals");
                         eri[rank]->compute_shell(MU, NU, Pshell, 0);
-                        if (rank == 0) timer_off("(B|mn) Integrals");
                         for (mu=0 ; mu < nummu; ++mu) {
                             omu = basisset_->shell(MU)->function_index() + mu;
                             for (nu=0; nu < numnu; ++nu) {
@@ -747,6 +746,7 @@ void HF::form_B()
                 }
             } 
         }
+        timer_off("(A|mn)");
         
         delete []buffer;
         delete []eri; 
@@ -804,16 +804,16 @@ void HF::form_B()
             for (int r = 0; r<naux_raw_; r++)
                 C_DCOPY(cols,&(B_ia_P_[r][index]),1,&(Temp1[r][0]),1);
 
-            timer_on("(B|mn) Transform");
+            timer_on("(B|mn)");
             C_DGEMM('T','N',naux_fin_,cols,naux_raw_,1.0, W[0], naux_fin_, Temp1[0], max_cols,0.0, &B_ia_P_[0][index],ntri_naive_);
-            timer_off("(B|mn) Transform");
+            timer_off("(B|mn)");
 
 	}
 	free_block(Temp1);
 
         //fprintf(outfile,"  (B|mn)");
         //print_mat(B_ia_P_,naux_fin_,ntri_naive_,outfile);
-        timer_on("(B|mn) 3-Sieve");
+        timer_on("3-Sieve");
 
         if (three_index_cutoff>0.0) {
             int left =  0;
@@ -837,7 +837,7 @@ void HF::form_B()
                 }
             }
         }
-        timer_off("(B|mn) 3-Sieve");
+        timer_off("3-Sieve");
         //fprintf(outfile,"  B is here:\n");
         //print_mat(B_ia_P_, naux_fin_,ntri_naive_ ,outfile);
         //for (int i = 0; i<ntri_naive_; i++)
@@ -852,7 +852,7 @@ void HF::form_B()
     {
 
         //Open the BJ file and prestripe it to avoid wrong block errors
-        timer_on("(B|mn) Prestriping");
+        timer_on("(B|mn) Prestripe");
         psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_NEW);
         psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
 	double *Prestripe = init_array(ntri_naive_);
@@ -861,12 +861,9 @@ void HF::form_B()
 	}
         free(Prestripe);	
 	next_PSIF_DFSCF_BJ = PSIO_ZERO; 
-        timer_off("(B|mn) Prestriping");
+        timer_off("(B|mn) Prestripe");
 
         int pass = 0;
-
-        //For debug:
-        nthread = 1;
 
         //fprintf(outfile, "  Striped"); fflush(outfile);
         
@@ -933,7 +930,7 @@ void HF::form_B()
         int l_index = 0; //Runing schwarz map index 
         int disk_index = 0; //Runing disk offset (dense start)
         //How many physical blocks could there be (I'll be safe, just for malloc)?
-        int nblocks = ntri_naive_/(max_cols-maxpairs)+2;
+        int nblocks = ntri_naive_/(max_cols-maxpairs)*2;
 
         //What MUNU does the block start on?
         int* block_starts = init_int_array(nblocks);
@@ -1010,6 +1007,7 @@ void HF::form_B()
             int numP,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu;
             int index;
             //Compute all the integrals for this block and place in buffer Amn 
+            timer_on("(A|mn)");
             #pragma omp parallel for private (numP, Pshell, MU, NU, P, PHI, mu, nu, nummu, numnu, omu, onu, rank) schedule (dynamic) num_threads(nthread)
             for (int block_address = block_starts[block]; block_address<block_starts[block]+block_sizes[block]; block_address++) {
                 #ifdef _OPENMP
@@ -1028,9 +1026,7 @@ void HF::form_B()
                 if (schwarz_shell_pairs[MU*(MU+1)/2+NU] == 1) {
                     for (Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
                         numP = ribasis_->shell(Pshell)->nfunction();
-                        if (rank == 0) timer_on("(B|mn) Integrals");
                         eri[rank]->compute_shell(MU, NU, Pshell, 0);
-                        if (rank == 0) timer_off("(B|mn) Integrals");
                         for (mu=0 ; mu < nummu; ++mu) {
                             omu = basisset_->shell(MU)->function_index() + mu;
                             for (nu=0; nu < numnu; ++nu) {
@@ -1046,16 +1042,17 @@ void HF::form_B()
                     }
                 } 
             }
+            timer_off("(A|mn)");
                 
             //Embed fitting metric
             //(B|mn) = (A|mn)W_BA
-            timer_on("(B|mn) Transform");
+            timer_on("(B|mn)");
             C_DGEMM('T','N',naux_fin_,porous_sizes[block],naux_raw_,1.0, W[0], naux_fin_, Amn[0], max_cols,0.0, Bmn[0],max_cols);
-            timer_off("(B|mn) Transform");
+            timer_off("(B|mn)");
                         
             //Use the three index sieve to compact the tensor
             int dense_size = 0;
-            timer_on("(B|mn) 3-Sieve");
+            timer_on("3-Sieve");
             if (three_index_cutoff > 0.0) {
                 for (int pair = 0; pair < porous_sizes[block]; pair++) {
                     bool sig = false;
@@ -1078,18 +1075,18 @@ void HF::form_B()
             } else {
                 dense_size = porous_sizes[block];
             }
-            timer_off("(B|mn) 3-Sieve");
+            timer_off("3-Sieve");
             
             //Flush the bastards
             //Write the tensor out with the correct striping (mn is the fast index, but we only have blocks)
             //NOTE: If three_index_cutoff > 0.0, the tensor is in Amn, otherwise it is in Bmn
             //This allows for threading of the three index sieve
-            timer_on("(B|mn) Disk Stripe");
+            timer_on("(B|mn) Write");
             for (int Q = 0; Q < naux_fin_; Q++) {
                 next_PSIF_DFSCF_BJ = psio_get_address(PSIO_ZERO,(ULI)(Q*(ULI)ntri_naive_*sizeof(double)+disk_index*sizeof(double)));
                 psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *)((three_index_cutoff > 0.0)?&Amn[Q][0]:&Bmn[Q][0]),sizeof(double)*dense_size,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
             }
-            timer_off("(B|mn) Disk Stripe");
+            timer_off("(B|mn) Write");
             
             //Update indexing
             disk_index+=dense_size;
@@ -1491,7 +1488,8 @@ void RHF::form_G_from_RI()
         psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
         //Row height per read, so that we can tune this value
         int rows_per_read = options_.get_int("ROWS_PER_READ"); 
-        
+        if (rows_per_read == 0)
+            rows_per_read = max_rows; 
         
         //Chunk of three-index tensor
         B_ia_P_ = block_matrix(max_rows,ntri_naive_);

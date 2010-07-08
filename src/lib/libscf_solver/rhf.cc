@@ -92,7 +92,6 @@ void RHF::common_init()
     G_    = SharedMatrix(factory_.create_matrix("G"));
     J_    = SharedMatrix(factory_.create_matrix("J"));
     K_    = SharedMatrix(factory_.create_matrix("K"));
-    orbital_e_    = SharedVector(factory_.create_vector());
 
     if (scf_type_ == "L_DF") {
         Lref_ = SharedMatrix(factory_.create_matrix("Lref"));
@@ -557,7 +556,7 @@ void RHF::compute_multipole()
         }
 
         // Sort orbital extent rows based on orbital energies
-        double *orbital_energies = orbital_energies_->to_block_vector();
+        double *orbital_energies = orbital_e_->to_block_vector();
         int *order_mapping = new int[C->cols()];
         sort_rows_based_on_energies(&orbital_extents, orbital_energies, order_mapping);
 
@@ -802,21 +801,12 @@ void RHF::save_information()
     chkpt_->wt_iopen(0);
 
     // Write eigenvectors and eigenvalue to checkpoint
-    // Literally throw away bad mos
-    double *values = init_array(nmo_);
-    for (int h=0, counter=0; h<orbital_e_->nirreps(); ++h)
-        for (int i=0; i<nmopi_[h]; ++i, ++counter)
-            values[counter] = orbital_e_->get(h,i);
-
+    
+    double* values = orbital_e_->to_block_vector();
     chkpt_->wt_evals(values);
     free(values);
 
-    double **vectors = block_matrix(nso_,nmo_);
-    for (int h=0, counter=0; h<orbital_e_->nirreps(); ++h)
-        for (int i=0; i<nmopi_[h]; ++i, ++counter)
-            for (int m = 0; m<orbital_e_->dimpi()[h]; ++m)
-                vectors[m][counter] = C_->get(h,i,m);
-
+    double** vectors = C_->to_block_matrix();
     chkpt_->wt_scf(vectors);
     free_block(vectors);
 }
@@ -1006,16 +996,18 @@ void RHF::form_D()
     double** C = C_->to_block_matrix();
     double** D = block_matrix(norbs,norbs);
 
-    int offset = 0;
+    int offset_R = 0;
+    int offset_C = 0;
     for (h = 0; h<nirreps; ++h) {
-        C_DGEMM('n','t',opi[h],opi[h],doccpi_[h],1.0,&C[offset][offset],norbs,&C[offset][offset],norbs,0.0,&D[offset][offset],norbs);
+        C_DGEMM('n','t',opi[h],opi[h],doccpi_[h],1.0,&C[offset_R][offset_C],nmo_,&C[offset_R][offset_C],nmo_,0.0,&D[offset_R][offset_R],norbs);
 
         for (i = 0; i<opi[h]; i++)
             for (int j = 0; j<opi[h]; j++)
-                D_->set(h,i,j,D[offset+i][offset+j]);
+                D_->set(h,i,j,D[offset_R+i][offset_R+j]);
 
-        offset += opi[h];
-    }
+        offset_R += opi[h]; 
+        offset_C += nmopi_[h]; 
+    } 
 
     free_block(C);
     free_block(D);
@@ -2418,13 +2410,13 @@ void RHF::save_sapt_info()
     psio_open(fileno,0);
 
     int sapt_nso = basisset_->nbf();
-    int sapt_nmo = basisset_->nbf();
+    int sapt_nmo = nmo_;
     int sapt_nocc = doccpi_[0];
-    int sapt_nvir = sapt_nso-sapt_nocc;
+    int sapt_nvir = sapt_nmo-sapt_nocc;
     int sapt_ne = 2*sapt_nocc;
     double sapt_E_HF = E_;
     double sapt_E_nuc = nuclearrep_;
-    double *sapt_evals = chkpt_->rd_evals();
+    double *sapt_evals = orbital_e_->to_block_vector();
     double **sapt_C = C_->to_block_matrix();
     //print_mat(sapt_C,sapt_nso,sapt_nso,outfile);
     SharedMatrix potential(factory_.create_matrix("Potential Integrals"));

@@ -294,7 +294,7 @@ int read_options(const std::string &name, Options & options) {
     /*- -Minimum absolute three-index value for DF-SCF seive -*/
     options.add_double("THREE_INDEX_CUTOFF", 0.0);
     /*- -Maximum number of rows to read/write in each DF-SCf operation */
-    options.add_int("ROWS_PER_READ", 1);
+    options.add_int("ROWS_PER_READ", 0);
     
     /*- -SAD Occupation Matrix Method */
     options.add_str("SAD_C", "CHOLESKY", "CHOLESKY ID");
@@ -664,10 +664,29 @@ else if(name == "CCDENSITY") {
     //options.add_str("WFN", "RI-MP2");
     //options.add_str("RI_BASIS_MP2","NONE");
     // options.add_str("BASIS","NONE");
-    options.add_bool("SCS","false");
-    options.add_bool("SCS_N", "false");
+    /*- Do SCS? -*/
+    options.add_bool("SCS",false);
+    /*- Do SCS-N? -*/
+    options.add_bool("SCS_N", false);
+    /*- OS Scale  -*/
     options.add_double("SCALE_OS", 6.0/5.0);
+    /*- SS Scale  -*/
     options.add_double("SCALE_SS", 1.0/3.0);
+    /*- % of memory for DF-MP2 three-index buffers  -*/
+    options.add_double("DFMP2_MEM_FACTOR", 0.9);
+    /*- Schwarz cutoff -*/
+    options.add_double("SCHWARZ_CUTOFF", 0.0);
+    /*- Max condition number in auxiliary basis -*/
+    options.add_double("RI_MAX_COND", 1.0E8);
+    /*- Find raw RI condition? -*/
+    options.add_bool("FIND_RAW_J_COND", false);
+    /*- DFMP@ Algorithm type  -*/
+    options.add_str("DFMP2_TYPE","DEFAULT", "DEFAULT DISK CORE OLD");
+    /*- -Maximum number of rows to read/write in each DF-MP2 operation */
+    options.add_int("ROWS_PER_READ", 0);
+    /*- Number of threads to compute integrals with. 0 is wild card- */
+    options.add_int("RI_INTS_NUM_THREADS", 1);
+    options.add_int("PRINT",1);
     options.add_int("DEBUG",0);
     /*- -Log10 of the energy convergence criterion -*/
     options.add_int("E_CONVERGE", 8);

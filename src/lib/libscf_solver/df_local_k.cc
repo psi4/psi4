@@ -33,10 +33,9 @@ namespace psi { namespace scf {
 void HF::form_A()
 {
     fprintf(outfile, "\n  Computing Integrals using Density Fitting\n");
-    //TODO: Add support for molecular symmetry
     if (factory_.nirreps() != 1)
     {
-        fprintf(outfile,"Must run in C1 for now.\n"); fflush(outfile);
+        fprintf(outfile,"Local SCF must run in C1.\n"); fflush(outfile);
         abort();
     } 
     int norbs = basisset_->nbf(); 
@@ -625,7 +624,7 @@ void RHF::form_G_from_RI_local_K()
     } else if (df_storage_ == disk) {
         //Not implemented yet
     } else {
-        throw std::domain_error("Storage algorithm is not correct for L-DF-SCF");
+        throw std::domain_error("Sepecified storage algorithm is not correct for L-DF-SCF");
     }
 
     if (J_is_required_) 
@@ -844,7 +843,7 @@ void RHF::fully_localize_mos()
     }
 
   //fprintf(outfile, "\tNumber of doubly occupied orbitals: %d\n\n", nocc);
-  if (print_>1) {
+  if (print_>2) {
     fprintf(outfile, "\n  Pipek-Mezey Localization Procedure:\n\n");
 
     fprintf(outfile, "\tIter     Pop. Localization   Max. Rotation Angle       Conv   Rotations\n");
@@ -947,7 +946,7 @@ void RHF::fully_localize_mos()
     } // s-loop
 
     conv = fabs(alphamax) - fabs(alphalast);
-    if (print_>1)
+    if (print_>2)
         fprintf(outfile, "\t%4d  %20.10f  %20.10f  %4.3e  %8d\n", iter, P, alphamax, conv, rotations);
 
     tot_rotations+=rotations;
@@ -962,7 +961,9 @@ void RHF::fully_localize_mos()
   free(svec);
   free_block(V);
 
-  fprintf(outfile,"\n  %d total rotations performed.\n",tot_rotations);
+  if (print_>2) {
+    fprintf(outfile,"\n  %d total rotations performed.\n",tot_rotations);
+  }
   //fprintf(outfile, "\nC Matrix in the LO basis:\n");
   //print_mat(C, norbs, norbs, outfile);
 
@@ -1305,7 +1306,7 @@ void RHF::form_domains()
             max_fit_size_ = fit_size_[i];
     }
 
-    if (print_>1) {
+    if (print_>2) {
         fprintf(outfile,"  Atomic Domain Selection (atoms x occ):\n");
         print_int_mat(atom_domains_,natom,ndocc,outfile);
         fprintf(outfile,"\n");
@@ -1317,7 +1318,7 @@ void RHF::form_domains()
 
     }
 
-    if (print_>5) {
+    if (print_>3) {
         fprintf(outfile,"  Domain changes?:\n");
         for (int i = 0; i<ndocc; i++)
             fprintf(outfile,"    Orbital %d, %s\n",i+1,(domain_changed_[i]?"Yes":"No"));
@@ -1370,7 +1371,7 @@ void RHF::form_domains()
         fprintf(outfile,"    Orbital %d, %d functions\n",i+1,fit_size_[i]);
         fprintf(outfile,"\n");
     }
-    if (print_>1) {
+    if (print_>2) {
         fprintf(outfile,"  Maximum number of primary basis function pairs for a domain is %d\n",max_domain_pairs_);
         fprintf(outfile,"  Maximum number of primary basis functions for a domain is %d\n",max_domain_size_);
         fprintf(outfile,"  Maximum number of auxiliary basis functions for a domain is %d\n",max_fit_size_);
