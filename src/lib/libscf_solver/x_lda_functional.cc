@@ -7,12 +7,13 @@
  */
 
 #include <cmath>
-#include <math.h>
-#include <stdlib.h>
+#include <cmath>
+#include <cstdlib>
 #include "functional.h"
 #include "integrator.h"
 #include "x_lda_functional.h"
 #include <libmints/mints.h>
+#include <libciomr/libciomr.h>
 #include <string>
 using namespace psi;
 using namespace std;

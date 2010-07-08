@@ -1,7 +1,6 @@
 #ifndef _PSI_SRC_LIB_LIBDIIS_DIISMANAGER_H_
 #define _PSI_SRC_LIB_LIBDIIS_DIISMANAGER_H_
 
-#include <libdpd/dpd.h>
 #include <libpsio/psio.hpp>
 #include <vector>
 #include <stdarg.h>
