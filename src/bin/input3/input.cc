@@ -64,7 +64,7 @@ PsiReturnType input(Options & options, int argc, char *argv[])
     /*-------------------------------------
       Initialize files and parsing library
      -------------------------------------*/
-    start_io(argc, argv);
+    start_io(options);
 
     init_globals();
     parsing(options);
