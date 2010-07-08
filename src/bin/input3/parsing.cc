@@ -1,6 +1,6 @@
 /*! \file
     \ingroup INPUT
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #define EXTERN
 #include <cstdio>
@@ -41,11 +41,11 @@ void parsing(Options & options)
      expert = options.get_bool("EXPERT");
 
      /* read print_lvl if chkpt_geom too */
-	 print_lvl = options.get_int("PRINT");
+     print_lvl = options.get_int("PRINT");
 
      /* allow the user to specify subgroup=C1 for entire findif calc -
         hope this doesn't mess anything up (RAK 9-04) */
-	 subgroup = options.get_str("SUBGROUP");
+     subgroup = options.get_str("SUBGROUP");
 
      /* Don't delete the old checkpoint file. Command line --keepchkpt
         is currently broken in PSI4. */
@@ -56,50 +56,50 @@ void parsing(Options & options)
       ------------------------------------------*/
 
      /* If not reading geometry from chkpt file, we will
-	need some options specified in input.dat */
+    need some options specified in input.dat */
      if (chkpt_geom == 0) {
-	   print_lvl = options.get_int("PRINT");
+       print_lvl = options.get_int("PRINT");
 
-	 /*Get the subgroup label */
-	 subgroup = options.get_str("SUBGROUP");
-	 
-	 /*Get the unique axis*/
-	 unique_axis = options.get_str("UNIQUE_AXIS");
+     /*Get the subgroup label */
+     subgroup = options.get_str("SUBGROUP");
+
+     /*Get the unique axis*/
+     unique_axis = options.get_str("UNIQUE_AXIS");
 
      nfragments = options.get_int("NFRAGMENTS");
 
-	 if (geomdat_geom == 0) {
-	   /*No default for these two unless running a findif procedure*/
-	   if (ip_exist("ZMAT",0) == 1) {
-	     cartOn = 0;
-         for (i=1;i<nfragments;++i) {
-           sprintf(tmp_label,"ZMAT%d",i+1);
-           if (ip_exist(tmp_label,0) == 0)
-	         punt("input cannot find all the needed fragment structures!");
+     if (geomdat_geom == 0) {
+         /*No default for these two unless running a findif procedure*/
+         if (ip_exist("ZMAT",0) == 1) {
+             cartOn = 0;
+             for (i=1;i<nfragments;++i) {
+                 sprintf(tmp_label,"ZMAT%d",i+1);
+                 if (ip_exist(tmp_label,0) == 0)
+                     punt("input cannot find all the needed fragment structures!");
+             }
          }
-       }
-	   else if (ip_exist("GEOMETRY",0) == 1) {
-	     cartOn = 1;
-         for (i=1;i<nfragments;++i) {
-           sprintf(tmp_label,"GEOMETRY%d",i+1);
-           if (ip_exist(tmp_label,0) == 0)
-	         punt("input cannot find all the needed fragment structures!");
+         else if (ip_exist("GEOMETRY",0) == 1) {
+             cartOn = 1;
+             for (i=1;i<nfragments;++i) {
+                 sprintf(tmp_label,"GEOMETRY%d",i+1);
+                 if (ip_exist(tmp_label,0) == 0)
+                     punt("input cannot find all the needed fragment structures!");
+             }
          }
-       }
-	   else
-	     punt("Both ZMAT and GEOMETRY are missing!");
+         else
+             punt("Both ZMAT and GEOMETRY are missing!");
 
-       units = options.get_str("UNITS");
+         units = options.get_str("UNITS");
 
-       if ((units == "BOHR") || (units == "AU"))
-         conv_factor = 1.0;
-       else if (units == "ANGSTROMS" || units == "ANGSTROM")
-         conv_factor = 1.0 / _bohr2angstroms;
-	   
-	   /*Set reference frame to be the frame of the input geometry*/
-	   keep_ref_frame = options.get_bool("KEEP_REF_FRAME");
-	 }
+         if ((units == "BOHR") || (units == "AU"))
+             conv_factor = 1.0;
+         else if (units == "ANGSTROMS" || units == "ANGSTROM")
+             conv_factor = 1.0 / _bohr2angstroms;
+
+         /*Set reference frame to be the frame of the input geometry*/
+         keep_ref_frame = options.get_bool("KEEP_REF_FRAME");
      }
+ }
 
 
      /* Check if need to freeze core */
