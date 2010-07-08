@@ -1,7 +1,6 @@
 #ifndef _PSI_SRC_LIB_LIBDIIS_DIISENTRY_H_
 #define _PSI_SRC_LIB_LIBDIIS_DIISENTRY_H_
 
-#include <psi4-dec.h>
 #include <libpsio/psio.hpp>
 #include "psifiles.h"
 
@@ -91,8 +90,5 @@ class DIISEntry{
 };
 
 } // End namespace
-
-// This is here so that files including this have clean(er) syntax
-using namespace psi;
 
 #endif // Header guard

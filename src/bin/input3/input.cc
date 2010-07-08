@@ -56,7 +56,7 @@ PsiReturnType input(Options & options, int argc, char *argv[])
    FILE *user_basis = NULL;
    FILE *local_basis = NULL;
    string pbasis_filename;
-   char *user_basis_filename, *user_basis_file;
+   string user_basis_file;
    double **Rmat;
    double ***unitvecs;
    double ***bondangles;
@@ -75,36 +75,28 @@ PsiReturnType input(Options & options, int argc, char *argv[])
      pbasis_filename = Process::environment("PSIDATADIR") + "/pbasis.dat";
      pbasis = fopen(pbasis_filename.c_str(), "r");
 
-     errcod = ip_string("BASIS_FILE", &user_basis_file,0);
-     if (errcod == IPE_OK && strlen(user_basis_file) != 0) {
-       /* Checking if only path to the file has been specified */
-       if (!strncmp(user_basis_file+strlen(user_basis_file)-1,"/",1)) { /* Append default name - basis.dat */
-     user_basis_filename = (char*)malloc(sizeof(char)*(strlen(user_basis_file)+10));
-     strcpy(user_basis_filename,user_basis_file);
-     user_basis_filename = strcat(user_basis_filename,"basis.dat");
-       }
-       else
-     user_basis_filename = user_basis_file;
-       user_basis = fopen(user_basis_filename, "r");
-       if (user_basis != NULL) {
-     ip_append(user_basis, outfile);
-     fclose(user_basis);
-     if (print_lvl > 0) fprintf(outfile,"\n  Parsed basis sets from %s\n",user_basis_filename);
-       }
-       free(user_basis_filename);
+     // Did the user specify the BASIS_FILE keyword with the path and name of the file to use.
+     user_basis_file = options.get_str("BASIS_FILE");
+     if (!user_basis_file.empty()) {
+         user_basis = fopen(user_basis_file.c_str(), "r");
+         if (user_basis != NULL) {
+             ip_append(user_basis, outfile);
+             fclose(user_basis);
+             if (print_lvl > 0) fprintf(outfile,"\n  Parsed basis sets from %s\n",user_basis_file.c_str());
+         }
      }
 
      if (pbasis != NULL) {
-       ip_append(pbasis, outfile);
-       fclose(pbasis);
-       if (print_lvl > 0) fprintf(outfile,"\n  Parsed basis sets from %s\n",pbasis_filename.c_str());
+         ip_append(pbasis, outfile);
+         fclose(pbasis);
+         if (print_lvl > 0) fprintf(outfile,"\n  Parsed basis sets from %s\n",pbasis_filename.c_str());
      }
 
      local_basis = fopen("./basis.dat", "r");
      if (local_basis != NULL) {
-       ip_append(local_basis, outfile);
-       fclose(local_basis);
-       if (print_lvl > 0) fprintf(outfile,"\n  Parsed basis sets from basis.dat\n");
+         ip_append(local_basis, outfile);
+         fclose(local_basis);
+         if (print_lvl > 0) fprintf(outfile,"\n  Parsed basis sets from basis.dat\n");
      }
 
      ip_cwk_add(":BASIS");
