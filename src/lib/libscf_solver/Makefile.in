@@ -6,13 +6,8 @@ include ../MakeVars
 
 PSITARGET = $(top_objdir)/lib/libPSI_scf_solver.a
 
-TRUECXXSRC = hf.cc   rhf.cc  rohf.cc uhf.cc df.cc df_local_k.cc rks.cc uks.cc integrator.cc\
-	 functionalfactory.cc x_lda_functional.cc null_functional.cc\
-         x_b88_functional.cc x_b3_functional.cc cholesky.cc
-
-DEPENDINCLUDE = hf.h   rhf.h  rohf.h uhf.h rks.h uks.h integrator.h\
-	 functional.h functionalfactory.h x_lda_functional.h null_functional.h\
-         x_b88_functional.h x_b3_functional.h
+TRUECXXSRC = $(notdir $(wildcard $(srcdir)/*.cc))
+DEPENDINCLUDE = $(notdir $(wildcard $(srcdir)/*.h))
 
 LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
 

@@ -9,19 +9,6 @@ PSITARGET = $(top_objdir)/lib/libPSI_mints.a
 TRUECXXSRC = $(notdir $(wildcard $(srcdir)/*.cc))
 DEPENDINCLUDE = $(notdir $(wildcard $(srcdir)/*.h))
 
-#TRUECXXSRC = basisset.cc dipole.cc eri.cc gshell.cc integral.cc kinetic.cc \
-#             molecule.cc onebody.cc osrecur.cc overlap.cc potential.cc quadrupole.cc \
-#             sobasis.cc transform.cc twobody.cc factory.cc matrix.cc \
-#             vector.cc wavefunction.cc basisset_parser.cc electricfield.cc \
-#             irrep.cc chartab.cc corrtab.cc ico.cc maketab.cc pointgrp.cc rep.cc symop.cc tetra.cc \
-#             fjt.cc basispoints.cc properties.cc gridblock.cc 
-
-#DEPENDINCLUDE = basisset.h dipole.h eri.h gshell.h integral.h kinetic.h molecule.h \
-#                onebody.h osrecur.h overlap.h potential.h quadrupole.h sobasis.h \
-#                twobody.h factory.h matrix.h vector.h vector3.h basisset_parser.h electricfield.h \
-#                wavefunction.h matrix_i.cc vector3_i.cc corrtab.h pointgrp.h \
-#                fjt.h basispoints.h properties.h gridblock.h
-
 LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
 
 include ../MakeRules
