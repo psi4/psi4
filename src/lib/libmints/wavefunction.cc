@@ -23,7 +23,7 @@ extern FILE *infile;
 }
 
 // Globals
-int ioff[MAX_IOFF];
+size_t ioff[MAX_IOFF];
 double df[MAX_DF];
 double bc[MAX_BC][MAX_BC];
 double fac[MAX_FAC];
@@ -92,7 +92,7 @@ void Wavefunction::initialize_singletons()
         return;
     
     ioff[0] = 0;
-    for (int i=1; i<MAX_IOFF; ++i)
+    for (size_t i=1; i<MAX_IOFF; ++i)
         ioff[i] = ioff[i-1] + i;
     
     df[0] = 1.0;

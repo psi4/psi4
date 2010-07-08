@@ -180,7 +180,7 @@ public:
     int equivalent(int iuniq, int j) const { return equiv_[iuniq][j]; }
     /** Converts an atom number to the number of its generating unique atom.
         The return value is in [0, nunique). */
-    int atom_to_unique(int iatom) const { return atom_to_uniq_[iatom]; }
+    int atom_to_unique(int iatom) const { return atom_to_unique_[iatom]; }
 
     //
     // Symmetry
