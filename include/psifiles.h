@@ -97,6 +97,9 @@
 
 #define PSIF_SCF_DB_MOS        100  /* Dual basis set MOs for DB-SCF or Basis-2 Guesses */ 
 
+#define PSIF_DFMP2_AIA         101  /* Unfitted three-index MO ints for DFMP2 */
+#define PSIF_DFMP2_QIA         102  /* Fitted-three index MO ints for DFMP2 */
+
 #define PSIF_SAPT_DIMER        120  /* SAPT Two-Body Dimer */
 #define PSIF_SAPT_MONOMERA     121 /* SAPT Two-Body Mon A */
 #define PSIF_SAPT_MONOMERB     122 /* SAPT Two-Body Mon A */
