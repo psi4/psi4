@@ -12,6 +12,7 @@
 #include "functional.h"
 #include "integrator.h"
 #include "x_lda_functional.h"
+#include <libciomr/libciomr.h>
 #include <libmints/mints.h>
 #include <libciomr/libciomr.h>
 #include <string>

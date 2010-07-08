@@ -34,6 +34,8 @@ int read_options(const std::string &name, Options & options) {
     ip_cwk_add(const_cast<char*>(":INPUT"));
     /*- The units used for the geometry -*/
     options.add_str("UNITS", "ANGSTROMS", "BOHR AU ANGSTROMS ANGSTROM");
+    /*- Allow the user to specify the basis set file to use. -*/
+    options.add_str("BASIS_FILE", "");
     /*- Whether to keep the checkpoint file. -*/
     options.add_bool("KEEP_CHKPT",false);
     /*- Read MOs from the checkpoint file and project onto new basis -*/
@@ -163,9 +165,9 @@ int read_options(const std::string &name, Options & options) {
     /*- The number of radial points in the DFT grid -*/
     options.add_int("N_RADIAL",99);
     /*- The number of spherical points in the DFT grid -*/
-    options.add_int("N_SPHERICAL",590);  
+    options.add_int("N_SPHERICAL",590);
     /*- The number of grid points per evaluation block -*/
-    options.add_int("N_BLOCK",5000);  
+    options.add_int("N_BLOCK",5000);
     /*- The spherical quadrature type for DFT, usually Lebedev-*/
     options.add_str("SPHERICAL_TYPE","LEBEDEV","LEBEDEV");
     /*- The radial quadrature type for DFT, Treutler is best -*/
@@ -178,7 +180,7 @@ int read_options(const std::string &name, Options & options) {
     options.add_str("C_FUNCTIONAL","");
     /*- Print Functional Test Data?  -*/
     options.add_bool("TEST_FUNCTIONAL",false);
-     
+
     /*- Save a grid or not?  -*/
     options.add_bool("SAVE_CARTESIAN_GRID",false);
     /*- Grid filename  -*/
@@ -196,12 +198,12 @@ int read_options(const std::string &name, Options & options) {
     /*- Number MO indices  -*/
     options.add_int("N_CARTESIAN_MOS",0);
 
-    
+
     /*- Save a grid or not?  -*/
     options.add_bool("SAVE_NUMERICAL_GRID",false);
     /*- Grid filename  -*/
     options.add_str("NUMERICAL_GRID_FILENAME","ngrid.out");
-    
+
     /*- Are going to do SAPT? If so, what part?  -*/
     options.add_str("SAPT","FALSE","2-DIMER 2-MONOMER_A 2-MONOMER_B 3-TRIMER 3-DIMER_AB 3-DIMER_BC 3-DIMER_AC 3-MONOMER_A 3-MONOMER_B 3-MONOMER_C");
 
@@ -220,7 +222,7 @@ int read_options(const std::string &name, Options & options) {
     options.add_double("R_EXT",3.0);
     /*- Iterations per full Pipek-Mizey Localization -*/
     options.add_int("STEPS_PER_LOCALIZE",1);
-    
+
     options.add_str("SCF_TYPE","PK","PK OUT_OF_CORE DIRECT DF L_DF CD 1C_CD");
     /*- Cholesky Cutoff -*/
     options.add_double("CHOLESKY_CUTOFF",1E-4);
@@ -261,7 +263,7 @@ int read_options(const std::string &name, Options & options) {
     options.add_double("RI_MAX_COND",1E8);
     /*- Max Number of threads for integrals (may be turned down if memory is an issue). 0 is blank -*/
     options.add_int("RI_INTS_NUM_THREADS",1);
-    
+
     /*- SO orthogonalization: symmetric or canonical? -*/
     options.add_str("S_ORTHOGONALIZATION","SYMMETRIC","SYMMETRIC CANONICAL");
     /*- Minimum S matrix eigenvalue to be used before compensating for linear dependencies -*/
@@ -295,7 +297,7 @@ int read_options(const std::string &name, Options & options) {
     options.add_double("THREE_INDEX_CUTOFF", 0.0);
     /*- -Maximum number of rows to read/write in each DF-SCf operation */
     options.add_int("ROWS_PER_READ", 0);
-    
+
     /*- -SAD Occupation Matrix Method */
     options.add_str("SAD_C", "CHOLESKY", "CHOLESKY ID");
     /*- -SAD Guess Convergence in E */
@@ -306,7 +308,7 @@ int read_options(const std::string &name, Options & options) {
     options.add_int("SAD_MAXITER", 50);
     /*- -SAD Guess F-mix Iteration Start */
     options.add_int("SAD_F_MIX_START", 50);
-    
+
     /*- -SAD Guess Schwarz Sieve (for rough molecular F) */
     options.add_double("SAD_SCHWARZ_CUTOFF", 1E-7);
     /*- -SAD Guess Cholesky Cutoff (for eliminating redundancies) */
@@ -741,7 +743,7 @@ else if(name == "CCDENSITY") {
   options.read_ipv1();
   if(Communicator::world->me() == 0)
     options.print();
-    
+
   return true;
 }
 
