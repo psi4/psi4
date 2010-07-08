@@ -1,7 +1,7 @@
 #ifndef _PSI_SRC_LIB_LIBDIIS_DIISENTRY_H_
 #define _PSI_SRC_LIB_LIBDIIS_DIISENTRY_H_
 
-#include <libdpd/dpd.h>
+#include <psi4-dec.h>
 #include <libpsio/psio.hpp>
 #include "psifiles.h"
 

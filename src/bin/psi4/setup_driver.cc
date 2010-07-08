@@ -23,11 +23,11 @@ setup_driver(Options &options)
     // The list of valid job types
     options.add_str("JOBTYPE", "SP", "SP OPT");
     // The list of valid wavefunction types
-    options.add_str("WFN", "SCF", "DCFT CCSD CCSD_T MP2 MRCCSD LMP2 SCF MCSCF");
+    options.add_str("WFN", "SCF", "DCFT CCSD CCSD_T MP2 MRCCSD LMP2 SCF MCSCF BCCD BCCD_T OOCCD");
     // The list of valid reference types
     options.add_str("REFERENCE", "RHF", "RHF ROHF MCSCF TCSCF UHF RKS UKS");
     // The list of valid derivative types
-    options.add_str("DERTYPE", "ENERGY", "NONE ENERGY FIRST SECOND");
+    options.add_str("DERTYPE", "ENERGY", "NONE ENERGY FIRST SECOND RESPONSE");
     options.read_ipv1();
 
     // make a map of function pointers to the functions
