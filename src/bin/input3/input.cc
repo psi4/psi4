@@ -104,234 +104,230 @@ PsiReturnType input(Options & options, int argc, char *argv[])
      /*-----------------
        Read in geometry
       -----------------*/
-     if (chkpt_geom == 0 && geomdat_geom == 0) { /* read geometry from input.dat */
-       if (cartOn)
-         read_cart();
-       else
-         read_zmat();
-       if (nfragments > 1)
-         orient_fragments();
-     }
-     else if (chkpt_geom) { /* else read the next molecular geometry from checkpoint file */
-       read_chkpt_geom();
-     }
-//     else if (geomdat_geom) { /* else read the next molecular geometry from geom.dat */
-//       read_geomdat();
-//     }
+    if (chkpt_geom == 0 && geomdat_geom == 0) { /* read geometry from input.dat */
+        if (cartOn)
+            read_cart();
+        else
+            read_zmat();
+        if (nfragments > 1)
+            orient_fragments();
+    }
+    else if (chkpt_geom) { /* else read the next molecular geometry from checkpoint file */
+        read_chkpt_geom();
+    }
 
-     freeze_core();
-     freeze_virt();
+    freeze_core();
+    freeze_virt();
 
-     repulsion = 0.0;
-     if (num_atoms > 1) {
-       natomtri = num_atoms*(num_atoms+1)/2;
-       Distance = init_array(natomtri);
-       calc_distance(geometry,Distance,num_atoms);
-       Nuc_repulsion(Distance, &repulsion);
-     }
+    repulsion = 0.0;
+    if (num_atoms > 1) {
+        natomtri = num_atoms*(num_atoms+1)/2;
+        Distance = init_array(natomtri);
+        calc_distance(geometry,Distance,num_atoms);
+        Nuc_repulsion(Distance, &repulsion);
+    }
 
-     fprintf(outfile,"\n  -Geometry before Center-of-Mass shift (a.u.):\n");
-     print_geometry(1.0);
+    fprintf(outfile,"\n  -Geometry before Center-of-Mass shift (a.u.):\n");
+    print_geometry(1.0);
 
-     reorient();
-     fprintf(outfile,"\n  -Geometry after Center-of-Mass shift and reorientation (a.u.):\n");
-     print_geometry(1.0);
+    reorient();
+    fprintf(outfile,"\n  -Geometry after Center-of-Mass shift and reorientation (a.u.):\n");
+    print_geometry(1.0);
 
-     /*--------------
+    /*--------------
        Get symmetric
       --------------*/
-     find_symmetry();
-     count_uniques();
-     print_symm_trans();
+    find_symmetry();
+    count_uniques();
+    print_symm_trans();
 
      /*---------------------------------------
        Canonical frame is the reference frame
        unless read geometry from chkpt file
       ---------------------------------------*/
-     if (keep_ref_frame == 0)
-       canon_eq_ref_frame();
+    if (keep_ref_frame == 0)
+        canon_eq_ref_frame();
 
-     /*---------------------
+    /*---------------------
        Parse basis set data
       ---------------------*/
 
-     atom_basis = (char **) malloc(sizeof(char *)*num_atoms);
-     for(i=0;i<num_atoms;i++)
-       atom_basis[i] = NULL;
-     read_basis("BASIS");
+    atom_basis = (char **) malloc(sizeof(char *)*num_atoms);
+    for(i=0;i<num_atoms;i++)
+        atom_basis[i] = NULL;
+    read_basis("BASIS");
 
-     /*----------------------------------------------
+    /*----------------------------------------------
        Form symmetry information arrays of all kinds
       ----------------------------------------------*/
 
-     build_transmat();
-     if (puream)
-       build_cart2pureang();
-     build_so_classes();
-     build_usotao();
-     build_cartdisp_salcs();
+    build_transmat();
+    if (puream)
+        build_cart2pureang();
+    build_so_classes();
+    build_usotao();
+    build_cartdisp_salcs();
 
-     /*---------------------
+    /*---------------------
        Read old calculation
       ---------------------*/
-     if (read_chkpt) {
-       init_oldcalc();
-     }
+    if (read_chkpt) {
+        init_oldcalc();
+    }
 
-     /*-------------------------------------------------
+    /*-------------------------------------------------
        Write the information out to the checkpoint file
       -------------------------------------------------*/
-     write_to_chkpt(repulsion, "");
+    write_to_chkpt(repulsion, "");
 
-     /*-------------------------------------------------
+    /*-------------------------------------------------
        Project old MOs onto new basis and write 'em out
       -------------------------------------------------*/
-     if (chkpt_mos) {
-       oldcalc_projection();
-       write_scf_to_chkpt();
-     }
+    if (chkpt_mos) {
+        oldcalc_projection();
+        write_scf_to_chkpt();
+    }
 
-     /*-------------------------------------------------
+    /*-------------------------------------------------
        Write old MOs and old/new basis overlap info out
       -------------------------------------------------*/
-     if (save_oldcalc) {
-       store_oldcalc();
-     }
+    if (save_oldcalc) {
+        store_oldcalc();
+    }
 
-     /*------------------------------
+    /*------------------------------
        Done with the old calculation
       ------------------------------*/
-     if (read_chkpt) {
-       cleanup_oldcalc();
-     }
+    if (read_chkpt) {
+        cleanup_oldcalc();
+    }
 
-     /*----------------------
+    /*----------------------
        Print geometries etc.
       ----------------------*/
 
-     fprintf(outfile, "  Primary Basis:\n");
-     print_basis_info();
+    fprintf(outfile, "  Primary Basis:\n");
+    print_basis_info();
 
-     // SCF RI basis?
-     if (ip_exist("DF_BASIS_SCF",0) || ip_exist("RI_BASIS_SCF",0)) {
-       fprintf(outfile, "  DF-SCF Basis:\n");
-       for(i=0;i<num_atoms;i++)
-         atom_basis[i] = NULL;
-       if (ip_exist("DF_BASIS_SCF",0)) read_basis("DF_BASIS_SCF");
-       else if (ip_exist("RI_BASIS_SCF",0)) read_basis("RI_BASIS_SCF");
-       build_transmat();
-       if (puream)
-         build_cart2pureang();
-       build_so_classes();
-       build_usotao();
-       write_to_chkpt(repulsion, "DF_BASIS_SCF");
-       print_basis_info();
-     }
-     // MP2 RI basis?
-     if (ip_exist("DF_BASIS_MP2",0) || ip_exist("RI_BASIS_MP2",0)) {
-       fprintf(outfile, "  DF-MP2 Basis:\n");
-       for(i=0;i<num_atoms;i++)
-         atom_basis[i] = NULL;
-       if (ip_exist("DF_BASIS_MP2",0)) read_basis("DF_BASIS_MP2");
-       else if (ip_exist("RI_BASIS_MP2",0)) read_basis("RI_BASIS_MP2");
-       build_transmat();
-       if (puream)
-         build_cart2pureang();
-       build_so_classes();
-       build_usotao();
-       write_to_chkpt(repulsion, "DF_BASIS_MP2");
-       print_basis_info();
-     }
-     // SCF Dual basis?
-     if (ip_exist("DUAL_BASIS_SCF",0) ) {
-       fprintf(outfile, "  SCF Dual-Basis:\n");
-       for(i=0;i<num_atoms;i++)
-         atom_basis[i] = NULL;
-       read_basis("DUAL_BASIS_SCF");
-       build_transmat();
-       if (puream)
-         build_cart2pureang();
-       build_so_classes();
-       build_usotao();
-       write_to_chkpt(repulsion, "DUAL_BASIS_SCF");
-       print_basis_info();
-     }
+    // SCF RI basis?
+    if (ip_exist("DF_BASIS_SCF",0) || ip_exist("RI_BASIS_SCF",0)) {
+        fprintf(outfile, "  DF-SCF Basis:\n");
+        for(i=0;i<num_atoms;i++)
+            atom_basis[i] = NULL;
+        if (ip_exist("DF_BASIS_SCF",0)) read_basis("DF_BASIS_SCF");
+        else if (ip_exist("RI_BASIS_SCF",0)) read_basis("RI_BASIS_SCF");
+        build_transmat();
+        if (puream)
+            build_cart2pureang();
+        build_so_classes();
+        build_usotao();
+        write_to_chkpt(repulsion, "DF_BASIS_SCF");
+        print_basis_info();
+    }
+    // MP2 RI basis?
+    if (ip_exist("DF_BASIS_MP2",0) || ip_exist("RI_BASIS_MP2",0)) {
+        fprintf(outfile, "  DF-MP2 Basis:\n");
+        for(i=0;i<num_atoms;i++)
+            atom_basis[i] = NULL;
+        if (ip_exist("DF_BASIS_MP2",0)) read_basis("DF_BASIS_MP2");
+        else if (ip_exist("RI_BASIS_MP2",0)) read_basis("RI_BASIS_MP2");
+        build_transmat();
+        if (puream)
+            build_cart2pureang();
+        build_so_classes();
+        build_usotao();
+        write_to_chkpt(repulsion, "DF_BASIS_MP2");
+        print_basis_info();
+    }
+    // SCF Dual basis?
+    if (ip_exist("DUAL_BASIS_SCF",0) ) {
+        fprintf(outfile, "  SCF Dual-Basis:\n");
+        for(i=0;i<num_atoms;i++)
+            atom_basis[i] = NULL;
+        read_basis("DUAL_BASIS_SCF");
+        build_transmat();
+        if (puream)
+            build_cart2pureang();
+        build_so_classes();
+        build_usotao();
+        write_to_chkpt(repulsion, "DUAL_BASIS_SCF");
+        print_basis_info();
+    }
 
+    fprintf(outfile,"\n  -Unique atoms in the canonical coordinate system (a.u.):\n");
+    print_unique_geometry(1.0);
+    fprintf(outfile,"\n  -Geometry in the canonical coordinate system (a.u.):\n");
+    print_geometry(1.0);
+    fprintf(outfile,"\n  -Geometry in the canonical coordinate system (Angstrom):\n");
+    print_geometry(_bohr2angstroms);
+    /* Print geometry including dummy atoms, if necessary */
+    is_dummy = 0;
+    for(i=0;i<num_allatoms;++i)
+        if(!strncmp(full_element[i],"X\0",2) )
+            is_dummy = 1;
+    if(is_dummy) {
+        fprintf(outfile,"\n  -Full geometry in the canonical coordinate system (a.u.):\n");
+        print_full_geometry(1.0);
+    }
+    rotate_full_geom(Rref);
+    fprintf(outfile,"\n  -Geometry in the reference coordinate system (a.u.):\n");
+    print_geometry(1.0);
+    fprintf(outfile,"\n  --------------------------------------------------------------------------\n");
 
-     fprintf(outfile,"\n  -Unique atoms in the canonical coordinate system (a.u.):\n");
-     print_unique_geometry(1.0);
-     fprintf(outfile,"\n  -Geometry in the canonical coordinate system (a.u.):\n");
-     print_geometry(1.0);
-     fprintf(outfile,"\n  -Geometry in the canonical coordinate system (Angstrom):\n");
-     print_geometry(_bohr2angstroms);
-     /* Print geometry including dummy atoms, if necessary */
-     is_dummy = 0;
-     for(i=0;i<num_allatoms;++i)
-       if(!strncmp(full_element[i],"X\0",2) )
-     is_dummy = 1;
-     if(is_dummy) {
-       fprintf(outfile,"\n  -Full geometry in the canonical coordinate system (a.u.):\n");
-       print_full_geometry(1.0);
-     }
-     rotate_full_geom(Rref);
-     fprintf(outfile,"\n  -Geometry in the reference coordinate system (a.u.):\n");
-     print_geometry(1.0);
-     fprintf(outfile,"\n  --------------------------------------------------------------------------\n");
+    if (num_atoms > 1) {
+        /* Print the Nuclear Repulsion Energy */
+        fprintf(outfile,"\n    Nuclear Repulsion Energy (a.u.) = %20.12lf\n\n",repulsion);
 
-     if (num_atoms > 1) {
-       /* Print the Nuclear Repulsion Energy */
-       fprintf(outfile,"\n    Nuclear Repulsion Energy (a.u.) = %20.12lf\n\n",repulsion);
+        /* Print the interatomic Distance Matrix in angstroms */
+        for(i=0;i<natomtri;i++)
+            Distance[i] *= _bohr2angstroms;
+        fprintf(outfile,"  -The Interatomic Distances in angstroms:\n");
+        print_array(Distance,num_atoms,outfile);
+        if(print_lvl < 3) {
+            fprintf(outfile,"\n    Note: To print *all* bond angles, out-of-plane\n");
+            fprintf(outfile,"          angles, and torsion angles set print = 3\n");
+        }
+        if(num_atoms > 2 && print_lvl >= 3) {
+            Rmat = init_matrix(num_atoms,num_atoms);
+            tri_to_sq(Distance,Rmat,num_atoms);
+            /*print_mat(Rmat,num_atoms,num_atoms,outfile);*/
+            unitvecs = unit_vectors(full_geom, Rmat);
+            bondangles = calc_bond_angles(unitvecs, Rmat);
+            if(num_atoms > 3 && print_lvl >= 3) {
+                calc_oop_angles(unitvecs, bondangles, Rmat);
+                calc_tors_angles(unitvecs, bondangles, Rmat);
+            }
 
-       /* Print the interatomic Distance Matrix in angstroms */
-       for(i=0;i<natomtri;i++)
-         Distance[i] *= _bohr2angstroms;
-       fprintf(outfile,"  -The Interatomic Distances in angstroms:\n");
-       print_array(Distance,num_atoms,outfile);
-       if(print_lvl < 3) {
-         fprintf(outfile,"\n    Note: To print *all* bond angles, out-of-plane\n");
-         fprintf(outfile,"          angles, and torsion angles set print = 3\n");
-       }
-       if(num_atoms > 2 && print_lvl >= 3) {
-         Rmat = init_matrix(num_atoms,num_atoms);
-         tri_to_sq(Distance,Rmat,num_atoms);
-     /*print_mat(Rmat,num_atoms,num_atoms,outfile);*/
-         unitvecs = unit_vectors(full_geom, Rmat);
-         bondangles = calc_bond_angles(unitvecs, Rmat);
-     if(num_atoms > 3 && print_lvl >= 3) {
-       calc_oop_angles(unitvecs, bondangles, Rmat);
-       calc_tors_angles(unitvecs, bondangles, Rmat);
-     }
+            free_matrix(Rmat, num_atoms);
+            /* Free Memory for 3D unitvecs */
+            for(i=0; i<num_atoms; i++) {
+                for(j=0; j<num_atoms; j++) {
+                    free(unitvecs[i][j]);
+                }
+            }
+            for(i=0; i<num_atoms; i++) {
+                free(unitvecs[i]);
+            }
+            free(unitvecs);
+            /* Free Memory for 3D bondangles */
+            for(i=0; i<num_atoms; i++) {
+                for(j=0; j<num_atoms; j++) {
+                    free(bondangles[i][j]);
+                }
+            }
+            for(i=0; i<num_atoms; i++) {
+                free(bondangles[i]);
+            }
+            free(bondangles);
+        }
 
-         free_matrix(Rmat, num_atoms);
-         /* Free Memory for 3D unitvecs */
-         for(i=0; i<num_atoms; i++) {
-           for(j=0; j<num_atoms; j++) {
-             free(unitvecs[i][j]);
-           }
-         }
-         for(i=0; i<num_atoms; i++) {
-           free(unitvecs[i]);
-         }
-         free(unitvecs);
-         /* Free Memory for 3D bondangles */
-         for(i=0; i<num_atoms; i++) {
-           for(j=0; j<num_atoms; j++) {
-             free(bondangles[i][j]);
-           }
-         }
-         for(i=0; i<num_atoms; i++) {
-           free(bondangles[i]);
-         }
-         free(bondangles);
-       }
+        free(Distance);
+        fprintf(outfile,"\n\n");
+    }
 
-       free(Distance);
-       fprintf(outfile,"\n\n");
-     }
-
-     cleanup();
-     stop_io();
-     return(Success);
+    cleanup();
+    stop_io();
+    return(Success);
 }
 
 void print_intro()

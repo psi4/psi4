@@ -45,7 +45,7 @@ protected:
 
     // Point group to use with this molecule.
     boost::shared_ptr<PointGroup> pg_;
-    
+
     /// Number of unique atoms
     int nunique_;
     int *nequiv_;
@@ -67,7 +67,7 @@ public:
     void init_with_chkpt(shared_ptr<Chkpt> chkpt);
     /// Pull information from an XYZ file
     void init_with_xyz(const std::string& xyzfilename);
-    
+
     /// Add an atom to the molecule
     void add_atom(int Z, double x, double y, double z,
                   const char * = 0, double mass = 0.0,
@@ -154,7 +154,7 @@ public:
 
     /// Compute inertia tensor.
     SimpleMatrix* inertia_tensor();
-    
+
     /// Returns the number of irreps
     int nirrep() const { return nirreps_; }
     /// Sets the number of irreps
@@ -165,7 +165,23 @@ public:
 
     /// Save information to checkpoint file.
     void save_to_chkpt(boost::shared_ptr<Chkpt> chkpt, std::string prefix = "");
-    
+
+    //
+    // Unique details
+    // These routines assume the molecular point group has been determined.
+    //
+    /// Return the number of unique atoms.
+    int nunique() const { return nunique_; }
+    /// Returns the overall number of the iuniq'th unique atom.
+    int unique(int iuniq) const { return equiv_[iuniq][0]; }
+    /// Returns the number of atoms equivalent to iuniq.
+    int nequivalent(int iuniq) const { return nequiv_[iuniq]; }
+    /// Returns the j'th atom equivalent to iuniq.
+    int equivalent(int iuniq, int j) const { return equiv_[iuniq][j]; }
+    /** Converts an atom number to the number of its generating unique atom.
+        The return value is in [0, nunique). */
+    int atom_to_unique(int iatom) const { return atom_to_uniq_[iatom]; }
+
     //
     // Symmetry
     //
