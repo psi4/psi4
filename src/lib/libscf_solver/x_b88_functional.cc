@@ -15,6 +15,7 @@
 #include <libmints/mints.h>
 #include <string>
 using namespace psi;
+using namespace std;
 
 namespace psi { namespace scf {
 X_B88_Functional::X_B88_Functional(int _block_size): Functional(_block_size)

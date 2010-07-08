@@ -89,7 +89,7 @@ protected:
     int *pk_symoffset_;
 
     /// SCF algorithm type
-    string scf_type_;
+    std::string scf_type_;
 
     /// Perturb the Hamiltonian?
     int perturb_h_;
@@ -154,8 +154,8 @@ protected:
 
 public:
     /// Exactly what their name says
-    vector<SharedSimpleMatrix> Dipole_;
-    vector<SharedSimpleMatrix> Quadrupole_;
+    std::vector<SharedSimpleMatrix> Dipole_;
+    std::vector<SharedSimpleMatrix> Quadrupole_;
 
     /// Nuclear contributions
     SimpleVector nuclear_dipole_contribution_;

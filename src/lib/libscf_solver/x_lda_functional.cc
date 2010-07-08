@@ -15,6 +15,7 @@
 #include <libmints/mints.h>
 #include <string>
 using namespace psi;
+using namespace std;
 
 namespace psi { namespace scf {
 X_LDA_Functional::X_LDA_Functional(int _block_size): Functional(_block_size)

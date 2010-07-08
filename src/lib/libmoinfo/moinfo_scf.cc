@@ -12,6 +12,8 @@
 
 extern FILE *outfile;
 
+using namespace std;
+
 namespace psi {
 
 MOInfoSCF::MOInfoSCF(Options& options_,shared_ptr<Chkpt> chkpt_,bool silent_)

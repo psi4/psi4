@@ -77,16 +77,16 @@ public:
 	/** Functional name
 	* @return functional or alias name ie: 'B3LYP'
 	*/
-	string getName();
+	std::string getName();
 	/** Functional description
 	* @return description of functional or especially
 	* substituent functionals of aliases
 	*/
-	string getDescription();
+	std::string getDescription();
 	/** Functional citation
 	* @return citation of functional
 	*/
-	string getCitation();	
+	std::string getCitation();	
 };
 
 }}

@@ -14,6 +14,7 @@
 
 using namespace psi;
 using namespace boost;
+using namespace std;
 
 // the third parameter of from_string() should be
 // one of std::hex, std::dec or std::oct

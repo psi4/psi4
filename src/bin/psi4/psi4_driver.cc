@@ -13,6 +13,8 @@
 
 #define MAX_ARGS (20)
 
+using namespace std;
+
 namespace psi {
 
 extern FILE *infile;

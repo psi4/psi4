@@ -15,6 +15,7 @@
 using namespace psi;
 using namespace boost;
 using namespace boost::python;
+using namespace std;
 
 namespace psi {
     extern void psiclean(void);
