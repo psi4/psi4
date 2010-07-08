@@ -5,7 +5,7 @@
  *  Created by Justin Turney on 4/10/08.
  *
  */
- 
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -54,11 +54,11 @@ static void sort_rows_based_on_energies(SimpleMatrix* C, double *energies, int *
         for (j = i+1; j<length; ++j) {
             if (energies[i] > energies[j]) {
                 C->swap_rows(i, j);
-    
+
                 dtemp = energies[i];
                 energies[i] = energies[j];
                 energies[j] = dtemp;
-    
+
                 itemp = order_mapping[i];
                 order_mapping[i] = order_mapping[j];
                 order_mapping[j] = itemp;
@@ -115,7 +115,7 @@ void RHF::common_init()
     // Allocate memory for PK matrix
     if (scf_type_ == "PK") {
         allocate_PK();
-        
+
         // Allocate memory for threading the PK
         int nthread = 1;
         #ifdef _OPENMP
@@ -132,7 +132,7 @@ double RHF::compute_energy()
     bool converged = false, diis_iter = false;
     if (options_.get_str("GUESS") == "SAD")
         iteration_ = -1;
-    else 
+    else
         iteration_ = 0;
 
     // Do the initial work to get the iterations started.
@@ -174,7 +174,7 @@ double RHF::compute_energy()
         form_domain_bookkeeping();
     }
 
-        
+
 
     fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
     fflush(outfile);
@@ -247,7 +247,7 @@ double RHF::compute_energy()
         }
 
         converged = test_convergency();
-    } while (!converged && iteration_ < maxiter_ ); 
+    } while (!converged && iteration_ < maxiter_ );
 
     //Free the heavies pronto!
     if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD")
@@ -257,7 +257,7 @@ double RHF::compute_energy()
         free_block(I_);
         free_domain_bookkeeping();
     }
-    
+
     if (converged) {
         fprintf(outfile, "\n  Energy converged.\n");
         fprintf(outfile, "\n  @RHF Final Energy: %20.14f", E_);
@@ -266,7 +266,7 @@ double RHF::compute_energy()
         }
         fprintf(outfile, "\n");
         save_information();
-        if (options_.get_bool("DUAL_BASIS")) 
+        if (options_.get_bool("DUAL_BASIS"))
             save_dual_basis_projection();
         if (options_.get_str("SAPT") != "FALSE") //not a bool because it has types
             save_sapt_info();
@@ -302,7 +302,7 @@ bool RHF::load_or_compute_initial_C()
     // "DUAL_BASIS"-real the results of the DB computation from File 100, Temporary hack
     // "CORE"-CORE Hamiltonain
     // "GWH"-Generalized Wolfsberg-Helmholtz
-    // "SAD"-Superposition of Atomic Denisties 
+    // "SAD"-Superposition of Atomic Denisties
     string guess_type = options_.get_str("GUESS");
     if ((guess_type == "" || guess_type == "READ"||guess_type == "BASIS2")&&chkpt_->exist(const_cast<char*>(prefix.c_str()))) {
          //Try for existing MOs already. Deuces of loaded spades
@@ -320,11 +320,11 @@ bool RHF::load_or_compute_initial_C()
         E_ = chkpt_->rd_escf();
         ret = true;
     } else if (guess_type == "DUAL_BASIS") {
-         //Try for dual basis MOs, 
+         //Try for dual basis MOs,
         if (print_)
             fprintf(outfile, "  SCF Guess: Dual-Basis. Reading from File 100.\n\n");
 
-        double** C2 = block_matrix(basisset_->nbf(),nalpha_); 
+        double** C2 = block_matrix(basisset_->nbf(),nalpha_);
 
         psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_OLD);
         psio_address next_PSIF = PSIO_ZERO;
@@ -340,11 +340,11 @@ bool RHF::load_or_compute_initial_C()
         for (int m = 0; m<basisset_->nbf(); m++)
             for (int i = 0; i<nalpha_; i++)
                 C_->set(0,m,i,C2[m][i]);
-        
-        free_block(C2); 
-        
+
+        free_block(C2);
+
         //C_->print(outfile);
-    
+
         memset((void*) doccpi_, '\0', factory_.nirreps()*sizeof(int));
         memset((void*) soccpi_, '\0', factory_.nirreps()*sizeof(int));
         memset((void*) nalphapi_, '\0', factory_.nirreps()*sizeof(int));
@@ -360,7 +360,7 @@ bool RHF::load_or_compute_initial_C()
         //D_->print(outfile);
 
         ret = true;
-        
+
     } else if (guess_type == "CORE" || guess_type == "") {
         //CORE is an old Psi standby, so we'll play this as spades
         if (print_)
@@ -408,7 +408,7 @@ bool RHF::load_or_compute_initial_C()
 void RHF::save_dual_basis_projection()
 {
     if (print_)
-        fprintf(outfile,"\n  Computing dual basis set projection from %s to %s.\n  Results will be stored in File 100.\n",options_.get_str("BASIS").c_str(),options_.get_str("DUAL_BASIS_SCF").c_str()); 
+        fprintf(outfile,"\n  Computing dual basis set projection from %s to %s.\n  Results will be stored in File 100.\n",options_.get_str("BASIS").c_str(),options_.get_str("DUAL_BASIS_SCF").c_str());
     shared_ptr<BasisSet> dual_basis =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DUAL_BASIS_SCF"));
     SharedMatrix C_2 = dualBasisProjection(C_,doccpi_[0],basisset_,dual_basis);
     //C_->print(outfile);
@@ -425,7 +425,7 @@ void RHF::save_dual_basis_projection()
     next_PSIF = PSIO_ZERO;
     psio_->write(PSIF_SCF_DB_MOS,"DB SCF Energy",(char *) &(E_),sizeof(double),next_PSIF,&next_PSIF);
     psio_->close(PSIF_SCF_DB_MOS,1);
-    free_block(C2); 
+    free_block(C2);
 }
 
 void RHF::compute_multipole()
@@ -565,7 +565,7 @@ void RHF::compute_multipole()
         fprintf(outfile, "\t%3s%15s  %15s  %15s  %15s\n", "MO", "<x^2>", "<y^2>", "<z^2>", "<r^2>");
 
         for (int i=0; i<orbital_extents.rows(); ++i) {
-            fprintf(outfile, "\t%3d%15.10f  %15.10f  %15.10f  %15.10f\n", i+1, 
+            fprintf(outfile, "\t%3d%15.10f  %15.10f  %15.10f  %15.10f\n", i+1,
                     orbital_extents.get(i, 0),orbital_extents.get(i, 1),orbital_extents.get(i, 2),orbital_extents.get(i, 3));
         }
         delete[] orbital_energies;
@@ -721,7 +721,7 @@ void RHF::save_information()
     //Canonical Orthogonalization has orbital eigenvalues
     //Which differ from those of the USO Fock Matrix
     //These are unchanged after the last iteration, so orbital_e_
-    //is now protected member of RHF     
+    //is now protected member of RHF
 
     // Needed for a couple of places.
     //SharedMatrix eigvector(factory_.create_matrix());
@@ -804,18 +804,18 @@ void RHF::save_information()
     // Write eigenvectors and eigenvalue to checkpoint
     // Literally throw away bad mos
     double *values = init_array(nmo_);
-    for (int h=0, counter=0; h<orbital_e_->nirreps(); ++h) 
-        for (int i=0; i<nmopi_[h]; ++i, ++counter) 
+    for (int h=0, counter=0; h<orbital_e_->nirreps(); ++h)
+        for (int i=0; i<nmopi_[h]; ++i, ++counter)
             values[counter] = orbital_e_->get(h,i);
 
     chkpt_->wt_evals(values);
-    free(values);    
+    free(values);
 
     double **vectors = block_matrix(nso_,nmo_);
-    for (int h=0, counter=0; h<orbital_e_->nirreps(); ++h) 
-        for (int i=0; i<nmopi_[h]; ++i, ++counter) 
+    for (int h=0, counter=0; h<orbital_e_->nirreps(); ++h)
+        for (int i=0; i<nmopi_[h]; ++i, ++counter)
             for (int m = 0; m<orbital_e_->dimpi()[h]; ++m)
-                vectors[m][counter] = C_->get(h,i,m);            
+                vectors[m][counter] = C_->get(h,i,m);
 
     chkpt_->wt_scf(vectors);
     free_block(vectors);
@@ -848,9 +848,9 @@ void RHF::save_fock()
     // Orthonormalize the error matrix
     if (!canonical_X_)
         FDSmSDF.transform(Shalf_);
-    else 
+    else
         FDSmSDF.transform(X_);
-        
+
     //FDSmSDF.print(outfile);
 
     diis_manager_->add_entry(2, &FDSmSDF, F_.get());
@@ -944,7 +944,7 @@ void RHF::form_C()
             int nmos = nmopi_[h];
 
             //fprintf(outfile,"  Norbs = %d, Nmos = %d\n",norbs,nmos); fflush(outfile);
-            
+
             double **X = block_matrix(norbs,nmos);
             for (int m = 0 ; m<norbs; m++)
                 for (int i = 0; i<nmos; i++)
@@ -954,15 +954,15 @@ void RHF::form_C()
             for (int m = 0 ; m<norbs; m++)
                 for (int i = 0; i<norbs; i++)
                     F[m][i] = F_->get(h,m,i);
-            
+
             double **C = block_matrix(norbs,nmos);
             double **Temp = block_matrix(nmos,norbs);
             double **Fp = block_matrix(nmos,nmos);
             double **Cp = block_matrix(nmos,nmos);
-    
-            //Form F' = X'FX for canonical orthogonalization 
-            C_DGEMM('T','N',nmos,norbs,norbs,1.0,X[0],nmos,F[0],norbs,0.0,Temp[0],norbs);  
-            C_DGEMM('N','N',nmos,nmos,norbs,1.0,Temp[0],norbs,X[0],nmos,0.0,Fp[0],nmos);  
+
+            //Form F' = X'FX for canonical orthogonalization
+            C_DGEMM('T','N',nmos,norbs,norbs,1.0,X[0],nmos,F[0],norbs,0.0,Temp[0],norbs);
+            C_DGEMM('N','N',nmos,nmos,norbs,1.0,Temp[0],norbs,X[0],nmos,0.0,Fp[0],nmos);
 
             //Form C' = eig(F')
             double *eigvals = init_array(nmos);
@@ -973,9 +973,9 @@ void RHF::form_C()
 
             //fprintf(outfile,"  Canonical orbital eigenvalues");
             //for (int i = 0; i<nmos; i++)
-            //    fprintf(outfile,"  %d: %10.6f\n",i+1,eigvals[i]);    
-            
-            free(eigvals);    
+            //    fprintf(outfile,"  %d: %10.6f\n",i+1,eigvals[i]);
+
+            free(eigvals);
 
             //Form C = XC'
             C_DGEMM('N','N',norbs,nmos,nmos,1.0,X[0],nmos,Cp[0],nmos,0.0,C[0],nmos);
@@ -991,7 +991,7 @@ void RHF::form_C()
             free_block(Cp);
             free_block(Fp);
         }
-        
+
     }
     find_occupation(*orbital_e_);
 }
@@ -1005,17 +1005,17 @@ void RHF::form_D()
 
     double** C = C_->to_block_matrix();
     double** D = block_matrix(norbs,norbs);
-    
+
     int offset = 0;
     for (h = 0; h<nirreps; ++h) {
         C_DGEMM('n','t',opi[h],opi[h],doccpi_[h],1.0,&C[offset][offset],norbs,&C[offset][offset],norbs,0.0,&D[offset][offset],norbs);
-        
+
         for (i = 0; i<opi[h]; i++)
             for (int j = 0; j<opi[h]; j++)
                 D_->set(h,i,j,D[offset+i][offset+j]);
 
-        offset += opi[h]; 
-    } 
+        offset += opi[h];
+    }
 
     free_block(C);
     free_block(D);
@@ -1166,11 +1166,11 @@ void RHF::form_G_from_PK()
     #ifdef _OPENMP
     nthread = omp_get_max_threads();
     #endif
-    double **G_vector = block_matrix(nthread, pk_pairs_);
+//    double **G_vector = block_matrix(nthread, pk_pairs_);
 
     G_->zero();
     memset(D_vector, 0, sizeof(double) * pk_pairs_);
-    memset(&(G_vector[0][0]), 0, sizeof(double) * nthread * pk_pairs_);
+    memset(&(G_vector_[0][0]), 0, sizeof(double) * nthread * pk_pairs_);
 
     ij=0;
     for (int h=0; h<nirreps; ++h) {
@@ -1189,9 +1189,8 @@ void RHF::form_G_from_PK()
     double* D_rs;
     double* G_rs;
     double* PK_block = pk_;
-    int ts_pairs = pk_pairs_;
     #pragma omp parallel for private (G_pq, D_pq, D_rs, G_rs) schedule (dynamic)
-    for(int pq = 0; pq < ts_pairs; ++pq){
+    for(int pq = 0; pq < pk_pairs_; ++pq){
         int threadid = 0;
         double *local_PK_block = PK_block;
         #ifdef _OPENMP
@@ -1201,7 +1200,7 @@ void RHF::form_G_from_PK()
         G_pq = 0.0;
         D_pq = D_vector[pq];
         D_rs = &D_vector[0];
-        G_rs = &(G_vector[threadid][0]);
+        G_rs = &(G_vector_[threadid][0]);
         for(int rs = 0; rs <= pq; ++rs){
             G_pq += *local_PK_block * (*D_rs);
             *G_rs += *local_PK_block * D_pq;
@@ -1210,21 +1209,21 @@ void RHF::form_G_from_PK()
             ++G_rs;
             ++local_PK_block;
         }
-        G_vector[threadid][pq] += G_pq;
+        G_vector_[threadid][pq] += G_pq;
     }
 
     for (int i = 1; i < nthread; ++i) {
         for (int j=0; j<pk_pairs_; ++j)
-            G_vector[0][j] += G_vector[i][j];
+            G_vector_[0][j] += G_vector_[i][j];
     }
-    
+
     // Convert G to a matrix
     ij = 0;
     for(int h = 0; h < nirreps; ++h){
         for(int p = 0; p < opi[h]; ++p){
             for(int q = 0; q <= p; ++q){
-                G_->set(h,p,q, 2.0 * G_vector[0][ij]);
-                G_->set(h,q,p, 2.0 * G_vector[0][ij]);
+                G_->set(h,p,q, 2.0 * G_vector_[0][ij]);
+                G_->set(h,q,p, 2.0 * G_vector_[0][ij]);
                 ij++;
             }
         }
@@ -2470,7 +2469,7 @@ void RHF::save_sapt_info()
     free(body_type);
     free(key_buffer);
 }
-void RHF::compute_SAD_guess() 
+void RHF::compute_SAD_guess()
 {
 
     shared_ptr<Molecule> mol = basisset_->molecule();
@@ -2550,13 +2549,13 @@ void RHF::compute_SAD_guess()
     if (print_>6)
         D_->print(outfile);
 
-    //D_->print(outfile);    
+    //D_->print(outfile);
 
     //A C matrix is needed. Do one of:
     //   --An integral direct step (expensive)
-    //   --A Cholesky orbital approximation (cheap, should be preferred after the David Sherrill correction) 
+    //   --A Cholesky orbital approximation (cheap, should be preferred after the David Sherrill correction)
     if (options_.get_str("SAD_C") == "ID") {
-    //>>>>>>>>ID SAD GUESS 
+    //>>>>>>>>ID SAD GUESS
     //Compute a rough Fock matrix via integral direct
     //Note, my convention is backwards, l and s are index variables
     // m and n are zip variables
@@ -2655,13 +2654,13 @@ void RHF::compute_SAD_guess()
         }
 
         double** D = D_->to_block_matrix();
-        double* Temp = init_array(norbs);    
+        double* Temp = init_array(norbs);
         int* P = init_int_array(norbs);
         for (int i = 0; i<norbs; i++)
             P[i] = i;
-    
+
         //fprintf(outfile,"  D:\n");
-        //print_mat(D,norbs,norbs,outfile);        
+        //print_mat(D,norbs,norbs,outfile);
         //Pivot
         double max;
         int Temp_p;
@@ -2674,16 +2673,16 @@ void RHF::compute_SAD_guess()
                     max = fabs(D[j][j]);
                     pivot = j;
                 }
-        
+
             //Rows
-            C_DCOPY(norbs,&D[pivot][0],1,Temp,1);            
-            C_DCOPY(norbs,&D[i][0],1,&D[pivot][0],1);            
-            C_DCOPY(norbs,Temp,1,&D[i][0],1);            
+            C_DCOPY(norbs,&D[pivot][0],1,Temp,1);
+            C_DCOPY(norbs,&D[i][0],1,&D[pivot][0],1);
+            C_DCOPY(norbs,Temp,1,&D[i][0],1);
 
             //Columns
-            C_DCOPY(norbs,&D[0][pivot],norbs,Temp,1);            
-            C_DCOPY(norbs,&D[0][i],norbs,&D[0][pivot],norbs);            
-            C_DCOPY(norbs,Temp,1,&D[0][i],norbs);            
+            C_DCOPY(norbs,&D[0][pivot],norbs,Temp,1);
+            C_DCOPY(norbs,&D[0][i],norbs,&D[0][pivot],norbs);
+            C_DCOPY(norbs,Temp,1,&D[0][i],norbs);
 
             Temp_p = P[i];
             P[i] = P[pivot];
@@ -2691,9 +2690,9 @@ void RHF::compute_SAD_guess()
         }
 
         //fprintf(outfile,"  D (pivoted):\n");
-        //print_mat(D,norbs,norbs,outfile);        
+        //print_mat(D,norbs,norbs,outfile);
         //for (int i = 0; i<norbs; i++)
-        //    fprintf(outfile,"  Pivot %d is %d.\n",i,P[i]); 
+        //    fprintf(outfile,"  Pivot %d is %d.\n",i,P[i]);
 
         //Cholesky Decomposition
         int rank = C_DPOTRF('U',norbs,D[0],norbs);
@@ -2704,11 +2703,11 @@ void RHF::compute_SAD_guess()
         }
         for (int i = 0; i<norbs-1; i++)
             for (int j = i+1; j<norbs; j++)
-                D[i][j] = 0.0; 
- 
+                D[i][j] = 0.0;
+
         //fprintf(outfile,"  C Guess (Cholesky Unpivoted) , rank is %d:\n", rank);
-        //print_mat(D,norbs,sad_nocc_,outfile);        
-        
+        //print_mat(D,norbs,sad_nocc_,outfile);
+
         //Unpivot
         double** C = block_matrix(norbs,sad_nocc_);
         for (int m = 0; m < norbs; m++) {
@@ -2735,9 +2734,9 @@ void RHF::compute_SAD_guess()
             for (int i = 0; i<sad_nocc_; i++)
                 C_->set(0,m,i,C[m][i]);
         //fprintf(outfile,"  C Guess (Cholesky):\n");
-        //print_mat(C,norbs,sad_nocc_,outfile);        
+        //print_mat(C,norbs,sad_nocc_,outfile);
 
-        //C_->print(outfile);        
+        //C_->print(outfile);
 
         free(P);
         free(Temp);

@@ -20,6 +20,7 @@ namespace psi {
     class SOTransformShell;
     class SphericalTransform;
     class SOTransform;
+
 /*! \ingroup MINTS */
 
 //! Basis set container class
@@ -87,6 +88,9 @@ class BasisSet
     static boost::once_flag initialized_shared_;
     // Global arrays of x, y, z exponents
     static std::vector<Vector3> exp_ao[];
+
+    // Build AO transformation matrix. AOs transformed by symmetry operations of the point group of the molecule.
+    void build_ao_transformation_matrix();
 
 public:
 
@@ -195,7 +199,7 @@ public:
     *
     * Used for Atomic HF computations for SAD Guesses
     */
-    shared_ptr<BasisSet> atomic_basis_set(int center);    
+    shared_ptr<BasisSet> atomic_basis_set(int center);
 
     /** Returns an empty basis set object.
      *

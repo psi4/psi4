@@ -19,7 +19,10 @@
 #include "factory.h"
 #include "vector3.h"
 #include "basisset_parser.h"
+#include "pointgrp.h"
+#include "wavefunction.h"
 
+using namespace std;
 using namespace psi;
 using namespace boost;
 
@@ -72,25 +75,61 @@ BasisSet::~BasisSet()
 
 void BasisSet::initialize_singletons()
 {
-//    fprintf(outfile, "In BasisSet::initialize_singletons:\n");
     // Populate the exp_ao arrays
     int ao;
     for (int l=0; l<LIBINT_MAX_AM; ++l) {
-//    fprintf(outfile, "  l = %d\n", l);
-    ao = 0;
-    for (int i=0; i<=l; ++i) {
-        int x = l-i;
-        for (int j=0; j<=i; ++j) {
-        int y = i-j;
-        int z = j;
+        ao = 0;
+        for (int i=0; i<=l; ++i) {
+            int x = l-i;
+            for (int j=0; j<=i; ++j) {
+                int y = i-j;
+                int z = j;
 
-        Vector3 xyz_ao(x, y, z);
-        BasisSet::exp_ao[l].push_back(xyz_ao);
+                Vector3 xyz_ao(x, y, z);
+                BasisSet::exp_ao[l].push_back(xyz_ao);
 
-//        fprintf(outfile, "    ao = %d %s\n", ao, xyz_ao.to_string().c_str());
-        ao++;
+                ao++;
+            }
         }
     }
+}
+
+void BasisSet::build_ao_transformation_matrix()
+{
+    // Obtain the character table of the molecule we are working with.
+    CharacterTable char_table = molecule_->point_group()->char_table();
+    int nirrep = char_table.nirrep();
+
+    double ***ao_type_transmat = new double**[LIBINT_MAX_AM];
+    for (int l=0; l<LIBINT_MAX_AM; ++l)
+        ao_type_transmat[l] = block_matrix(nirrep, ioff[l+1]);
+
+    // Apply the operations to the different atomic orbitals we'll find
+    for (int l=0; l<LIBINT_MAX_AM; ++l) {
+        for (int h=0; h<nirrep; ++h) {
+            SymmetryOperation& symop = char_table.symm_operation(h);
+            for (int i=0; i<ioff[l+1]; ++i) {
+                ao_type_transmat[l][h][i] = pow(symop[0][0], exp_ao[l][i][0]) *
+                                            pow(symop[1][1], exp_ao[l][i][1]) *
+                                            pow(symop[2][2], exp_ao[l][i][2]);
+            }
+        }
+    }
+
+    int **num_cart_so = init_int_matrix(LIBINT_MAX_AM, nirrep);
+    for (int l=0; l<LIBINT_MAX_AM; ++l) {
+        for (int ao=0; ao<ioff[l+1]; ++ao) {
+            for (int h=0; h<nirrep; ++h) {
+                int coeff=0;
+                for (int symop = 0; symop<nirrep; ++symop) {
+                    coeff += ao_type_transmat[l][symop][ao] * char_table.gamma(h).character(symop);
+                }
+                if (coeff != 0) {
+//                    ao_type_irr[l][ao] = h;
+                    num_cart_so[l][ao]++;
+                }
+            }
+        }
     }
 }
 
@@ -380,7 +419,7 @@ shared_ptr<BasisSet> BasisSet::atomic_basis_set(int fcenter)
     double charge = molecule_->fcharge(fcenter);
     std::string lab = molecule_->flabel(fcenter);
     char* label = new char[lab.length() + 1];
-    strcpy(label,lab.c_str());  
+    strcpy(label,lab.c_str());
 
     //Put the atomic info into mol
     mol->add_atom(Z, x, y, z, label, mass, (charge != 0.0) , charge);
@@ -422,7 +461,7 @@ shared_ptr<BasisSet> BasisSet::atomic_basis_set(int fcenter)
         if (shell_center_[i] >fcenter+1)
             break;
     }
-    
+
     // Initialize SphericalTransform
     for (int i=0; i<=max_am_; ++i) {
         bas->sphericaltransforms_.push_back(SphericalTransform(i));
@@ -443,7 +482,7 @@ shared_ptr<BasisSet> BasisSet::atomic_basis_set(int fcenter)
         //ao_start += shells_[i+shell_start]->ncartesian();
         //so_start += shells_[i+shell_start]->nfunction();
     }
- 
+
     //Setup the indexing in the atomic basis
     bas->refresh();
 
