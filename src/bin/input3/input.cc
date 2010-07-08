@@ -1,6 +1,6 @@
 /*! \defgroup INPUT input: Set up a PSI computation based on user input */
 
-/*! 
+/*!
 ** \file
 ** \ingroup INPUT
 ** \brief Set up a PSI computation based on user input
@@ -21,6 +21,8 @@
 #include <masses.h>
 #include "global.h"
 #include "defines.h"
+
+using namespace std;
 
 namespace psi { namespace input {
 
@@ -53,12 +55,12 @@ PsiReturnType input(Options & options, int argc, char *argv[])
    FILE *pbasis = NULL;
    FILE *user_basis = NULL;
    FILE *local_basis = NULL;
-   char *pbasis_dirname, *pbasis_filename;
+   string pbasis_filename;
    char *user_basis_filename, *user_basis_file;
    double **Rmat;
    double ***unitvecs;
    double ***bondangles;
-   
+
      /*-------------------------------------
        Initialize files and parsing library
       -------------------------------------*/
@@ -68,33 +70,26 @@ PsiReturnType input(Options & options, int argc, char *argv[])
      parsing(options);
      print_intro();
      print_options();
-     
-     /* To find default basis set file first check the environment, then its location after installation */
-     pbasis_dirname = getenv("PSIDATADIR");
-     if (pbasis_dirname != NULL) {
-       char* tmpstr = (char *) malloc(sizeof(char)*(strlen(pbasis_dirname)+12));
-       sprintf(tmpstr,"%s/pbasis.dat",pbasis_dirname);
-       pbasis_filename = tmpstr;
-     }
-     else
-       pbasis_filename = strdup(INSTALLEDPSIDATADIR "/pbasis.dat");
-     pbasis = fopen( pbasis_filename, "r");
 
-     errcod = ip_string("BASIS_FILE",&user_basis_file,0);
+     /* To find default basis set file first check the environment, then its location after installation */
+     pbasis_filename = Process::environment("PSIDATADIR") + "/pbasis.dat";
+     pbasis = fopen(pbasis_filename.c_str(), "r");
+
+     errcod = ip_string("BASIS_FILE", &user_basis_file,0);
      if (errcod == IPE_OK && strlen(user_basis_file) != 0) {
        /* Checking if only path to the file has been specified */
        if (!strncmp(user_basis_file+strlen(user_basis_file)-1,"/",1)) { /* Append default name - basis.dat */
-	 user_basis_filename = (char*)malloc(sizeof(char)*(strlen(user_basis_file)+10));
-	 strcpy(user_basis_filename,user_basis_file);
-	 user_basis_filename = strcat(user_basis_filename,"basis.dat");
+     user_basis_filename = (char*)malloc(sizeof(char)*(strlen(user_basis_file)+10));
+     strcpy(user_basis_filename,user_basis_file);
+     user_basis_filename = strcat(user_basis_filename,"basis.dat");
        }
        else
-	 user_basis_filename = user_basis_file;
+     user_basis_filename = user_basis_file;
        user_basis = fopen(user_basis_filename, "r");
        if (user_basis != NULL) {
-	 ip_append(user_basis, outfile);
-	 fclose(user_basis);
-	 if (print_lvl > 0) fprintf(outfile,"\n  Parsed basis sets from %s\n",user_basis_filename);
+     ip_append(user_basis, outfile);
+     fclose(user_basis);
+     if (print_lvl > 0) fprintf(outfile,"\n  Parsed basis sets from %s\n",user_basis_filename);
        }
        free(user_basis_filename);
      }
@@ -102,9 +97,8 @@ PsiReturnType input(Options & options, int argc, char *argv[])
      if (pbasis != NULL) {
        ip_append(pbasis, outfile);
        fclose(pbasis);
-       if (print_lvl > 0) fprintf(outfile,"\n  Parsed basis sets from %s\n",pbasis_filename);
+       if (print_lvl > 0) fprintf(outfile,"\n  Parsed basis sets from %s\n",pbasis_filename.c_str());
      }
-     free(pbasis_filename);
 
      local_basis = fopen("./basis.dat", "r");
      if (local_basis != NULL) {
@@ -150,7 +144,7 @@ PsiReturnType input(Options & options, int argc, char *argv[])
      reorient();
      fprintf(outfile,"\n  -Geometry after Center-of-Mass shift and reorientation (a.u.):\n");
      print_geometry(1.0);
-     
+
      /*--------------
        Get symmetric
       --------------*/
@@ -164,16 +158,16 @@ PsiReturnType input(Options & options, int argc, char *argv[])
       ---------------------------------------*/
      if (keep_ref_frame == 0)
        canon_eq_ref_frame();
-     
+
      /*---------------------
        Parse basis set data
       ---------------------*/
-     
+
      atom_basis = (char **) malloc(sizeof(char *)*num_atoms);
      for(i=0;i<num_atoms;i++)
        atom_basis[i] = NULL;
      read_basis("BASIS");
-     
+
      /*----------------------------------------------
        Form symmetry information arrays of all kinds
       ----------------------------------------------*/
@@ -218,11 +212,11 @@ PsiReturnType input(Options & options, int argc, char *argv[])
      if (read_chkpt) {
        cleanup_oldcalc();
      }
-     
+
      /*----------------------
        Print geometries etc.
       ----------------------*/
-     
+
      fprintf(outfile, "  Primary Basis:\n");
      print_basis_info();
 
@@ -280,9 +274,9 @@ PsiReturnType input(Options & options, int argc, char *argv[])
      print_geometry(_bohr2angstroms);
      /* Print geometry including dummy atoms, if necessary */
      is_dummy = 0;
-     for(i=0;i<num_allatoms;++i) 
+     for(i=0;i<num_allatoms;++i)
        if(!strncmp(full_element[i],"X\0",2) )
-	 is_dummy = 1;
+     is_dummy = 1;
      if(is_dummy) {
        fprintf(outfile,"\n  -Full geometry in the canonical coordinate system (a.u.):\n");
        print_full_geometry(1.0);
@@ -305,17 +299,17 @@ PsiReturnType input(Options & options, int argc, char *argv[])
          fprintf(outfile,"\n    Note: To print *all* bond angles, out-of-plane\n");
          fprintf(outfile,"          angles, and torsion angles set print = 3\n");
        }
-       if(num_atoms > 2 && print_lvl >= 3) { 
+       if(num_atoms > 2 && print_lvl >= 3) {
          Rmat = init_matrix(num_atoms,num_atoms);
          tri_to_sq(Distance,Rmat,num_atoms);
-	 /*print_mat(Rmat,num_atoms,num_atoms,outfile);*/
+     /*print_mat(Rmat,num_atoms,num_atoms,outfile);*/
          unitvecs = unit_vectors(full_geom, Rmat);
          bondangles = calc_bond_angles(unitvecs, Rmat);
-	 if(num_atoms > 3 && print_lvl >= 3) {
-	   calc_oop_angles(unitvecs, bondangles, Rmat);
-	   calc_tors_angles(unitvecs, bondangles, Rmat);
-	 }
-	 
+     if(num_atoms > 3 && print_lvl >= 3) {
+       calc_oop_angles(unitvecs, bondangles, Rmat);
+       calc_tors_angles(unitvecs, bondangles, Rmat);
+     }
+
          free_matrix(Rmat, num_atoms);
          /* Free Memory for 3D unitvecs */
          for(i=0; i<num_atoms; i++) {
@@ -338,7 +332,7 @@ PsiReturnType input(Options & options, int argc, char *argv[])
          }
          free(bondangles);
        }
-       
+
        free(Distance);
        fprintf(outfile,"\n\n");
      }
@@ -365,18 +359,18 @@ void print_options()
 {
   if (print_lvl) {
       if (strlen(label))
-	  fprintf(outfile,"  LABEL       =\t%s\n", label);
+      fprintf(outfile,"  LABEL       =\t%s\n", label);
       fprintf(outfile,"  SHOWNORM    =\t%d\n",shownorm);
       fprintf(outfile,"  PUREAM      =\t%d\n",puream);
       if (subgroup != "") {
-	  fprintf(outfile,"  SUBGROUP    =\t%s\n",subgroup.c_str());
-	  if (unique_axis != "")
-	      fprintf(outfile,"  UNIQUE_AXIS =\t%s\n",unique_axis.c_str());
+      fprintf(outfile,"  SUBGROUP    =\t%s\n",subgroup.c_str());
+      if (unique_axis != "")
+          fprintf(outfile,"  UNIQUE_AXIS =\t%s\n",unique_axis.c_str());
       }
       fprintf(outfile,"  PRINT_LVL   =\t%d\n",print_lvl);
       if (chkpt_mos) {
-	  fprintf(outfile,"  Will read old MO vector from the checkpoint file\n");
-	  fprintf(outfile,"  and project onto the new basis.\n");
+      fprintf(outfile,"  Will read old MO vector from the checkpoint file\n");
+      fprintf(outfile,"  and project onto the new basis.\n");
       }
       fflush(outfile);
   }
@@ -394,7 +388,7 @@ void print_geometry(double conv_factor)
 
   for(i=0;i<num_atoms;i++){
     // fprintf(outfile,"    %12s ",element[i]); fflush(outfile);
-    fprintf(outfile,"    %-4s ",atomic_labels[(int) elemsymb_charges[i]]); 
+    fprintf(outfile,"    %-4s ",atomic_labels[(int) elemsymb_charges[i]]);
     fflush(outfile);
     for(j=0;j<3;j++)
       fprintf(outfile,"  %17.12lf",geometry[i][j]*conv_factor);
@@ -417,7 +411,7 @@ void print_full_geometry(double conv_factor)
 
   for(i=0,cnt=0;i<num_allatoms;i++){
     if (strcmp(full_element[i],"X")==0) {
-      fprintf(outfile,"    %-4s ",full_element[i]); 
+      fprintf(outfile,"    %-4s ",full_element[i]);
     }
     else {
       fprintf(outfile,"    %-4s ",atomic_labels[(int) elemsymb_charges[cnt++]]);
@@ -436,7 +430,7 @@ void print_full_geometry(double conv_factor)
 void print_unique_geometry(double conv_factor)
 {
   int i,j;
-  
+
   fprintf(outfile,"   Atom            X                  Y                   Z\n");
   fprintf(outfile,"  ------   -----------------  -----------------  -----------------\n");
   for(i=0;i<num_uniques;i++){
@@ -468,7 +462,7 @@ void print_symm_trans()
     for(i=0;i<num_uniques;i++) {
       fprintf(outfile,"     %d    ",u2a[i]+1);
       for(j=0;j<nirreps;j++)
-	fprintf(outfile,"%d  ",atom_orbit[u2a[i]][j]+1);
+    fprintf(outfile,"%d  ",atom_orbit[u2a[i]][j]+1);
       fprintf(outfile,"\n");
     }
     fprintf(outfile,"\n");
@@ -483,7 +477,7 @@ void print_symm_trans()
     for(i=0;i<num_classes;i++) {
       fprintf(outfile,"     %d    ",i+1);
       for(j=0;j<nirreps;j++)
-	fprintf(outfile,"%d  ",class_orbit[i][j]+1);
+    fprintf(outfile,"%d  ",class_orbit[i][j]+1);
       fprintf(outfile,"\n");
     }
     fprintf(outfile,"\n");
@@ -514,7 +508,7 @@ void print_basis_info()
   fprintf(outfile,"    Atom     All Primitives // Unique Primitives // Shells\n");
   fprintf(outfile,"    ----     ---------------------------------------------\n");
   for(i=0;i<num_atoms;i++) {
-    fprintf(outfile,"    %4d     ", i+1);  
+    fprintf(outfile,"    %4d     ", i+1);
     first = first_shell_on_atom[i];
     last = first + nshells_per_atom[i];
     /* print out # and am of primitives per atom */
@@ -580,7 +574,7 @@ void print_basis_info()
     fprintf(outfile,"    ------  ----  -  -----  ----  -----\n");
     for(i=0;i<num_shells;i++)
       fprintf(outfile,"    %4d    %3d  %2d  %3d    %3d   %3d\n",i+1,
-	      shell_nucleus[i]+1,shell_ang_mom[i],first_prim_shell[i]+1,first_basisfn_shell[i]+1,nprim_in_shell[i]);
+          shell_nucleus[i]+1,shell_ang_mom[i],first_prim_shell[i]+1,first_basisfn_shell[i]+1,nprim_in_shell[i]);
     fprintf(outfile,"\n");
     fprintf(outfile,"    AMOrd. Shell#  Canon. Shell#\n");
     fprintf(outfile,"    -------------  -------------\n");
@@ -597,7 +591,7 @@ void print_basis_info()
 void cleanup()
 {
   int i,l,uc,class_curr,class_first,class_last;
-  
+
   /*----------------------
     Free up global arrays
    ----------------------*/
@@ -620,7 +614,7 @@ void cleanup()
     class_last = class_curr + unique_class_degen[uc];
     for(i=class_first;i<class_last;i++)
       for(l=0;l<=max_angmom_class[i];l++) {
-	free_matrix(class_so_coeff[i][l],ioff[l+1]*unique_class_degen[uc]);
+    free_matrix(class_so_coeff[i][l],ioff[l+1]*unique_class_degen[uc]);
       }
   }
   for(i=0;i<num_classes;i++) {
@@ -682,7 +676,7 @@ void cleanup()
       free_block(ref_pts_lc[i]);
   }
   free(ref_pts_lc);
-  
+
   return;
 }
 
