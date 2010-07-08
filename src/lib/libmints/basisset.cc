@@ -117,19 +117,38 @@ void BasisSet::build_ao_transformation_matrix()
     }
 
     int **num_cart_so = init_int_matrix(LIBINT_MAX_AM, nirrep);
+    int **ao_type_irr = new int*[LIBINT_MAX_AM];
+    for (int l=0; l<LIBINT_MAX_AM; ++l) {
+        ao_type_irr[l] = new int[ioff[l+1]];
+        memset(ao_type_irr[l], 0, sizeof(int)*ioff[l+1]);
+    }
+
     for (int l=0; l<LIBINT_MAX_AM; ++l) {
         for (int ao=0; ao<ioff[l+1]; ++ao) {
             for (int h=0; h<nirrep; ++h) {
                 int coeff=0;
                 for (int symop = 0; symop<nirrep; ++symop) {
-                    coeff += ao_type_transmat[l][symop][ao] * char_table.gamma(h).character(symop);
+//                    coeff += ao_type_transmat[l][symop][ao] * char_table.gamma(h).p();
+//                    coeff += ao_type_transmat[l][symop][ao] * char_table.gamma(h).character(symop);
                 }
                 if (coeff != 0) {
-//                    ao_type_irr[l][ao] = h;
-                    num_cart_so[l][ao]++;
+                    ao_type_irr[l][ao] = h;
+                    num_cart_so[l][h]++;
                 }
             }
         }
+    }
+
+    fprintf(outfile, "  Transformation matrices :\n\n");
+    for(int l=0; l<LIBINT_MAX_AM; l++) {
+        fprintf(outfile,"   l = %d\n",l);
+        for(int i=0; i<nirrep; i++) {
+            fprintf(outfile,"Symmetry Operation %d\n",i);
+            for(int j=0; j<ioff[l+1]; j++)
+                fprintf(outfile," %d  %lf\n", j+1, ao_type_transmat[l][i][j]);
+            fprintf(outfile,"\n");
+        }
+        fprintf(outfile,"\n");
     }
 }
 
