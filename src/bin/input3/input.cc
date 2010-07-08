@@ -41,65 +41,65 @@ void am_i_to_char(int am, char *am_label);
 
 PsiReturnType input(Options & options, int argc, char *argv[])
 {
-   /*variables and arrays*/
-   int i,j,k,l;
-   int errcod;
-   int is_dummy;
-   double temp = 0.0;			/*temporary anything*/
-   int natomtri = 0;                    /*number of elements in the lower triangle of a (num_atoms)x(num_atoms) matrix */
-   double Z = 0.0;			/*Atomic Number*/
-   double *Distance;			/*Lower triangle of the internuclear distance matrix*/
-   double repulsion;			/*nuclear Repulsion Energy*/
-   double ***E;				/*Unit Vectors between atoms*/
-   double ***Bond_Angle;		/*Matrix holds bond angles*/
-   FILE *pbasis = NULL;
-   FILE *user_basis = NULL;
-   FILE *local_basis = NULL;
-   string pbasis_filename;
-   string user_basis_file;
-   double **Rmat;
-   double ***unitvecs;
-   double ***bondangles;
+    /*variables and arrays*/
+    int i,j,k,l;
+    int errcod;
+    int is_dummy;
+    double temp = 0.0;			/*temporary anything*/
+    int natomtri = 0;         /*number of elements in the lower triangle of a (num_atoms)x(num_atoms) matrix */
+    double Z = 0.0;			/*Atomic Number*/
+    double *Distance;			/*Lower triangle of the internuclear distance matrix*/
+    double repulsion;			/*nuclear Repulsion Energy*/
+    double ***E;				/*Unit Vectors between atoms*/
+    double ***Bond_Angle;		/*Matrix holds bond angles*/
+    FILE *pbasis = NULL;
+    FILE *user_basis = NULL;
+    FILE *local_basis = NULL;
+    string pbasis_filename;
+    string user_basis_file;
+    double **Rmat;
+    double ***unitvecs;
+    double ***bondangles;
 
-     /*-------------------------------------
-       Initialize files and parsing library
-      -------------------------------------*/
-     start_io(argc, argv);
+    /*-------------------------------------
+      Initialize files and parsing library
+     -------------------------------------*/
+    start_io(argc, argv);
 
-     init_globals();
-     parsing(options);
-     print_intro();
-     print_options();
+    init_globals();
+    parsing(options);
+    print_intro();
+    print_options();
 
-     /* To find default basis set file first check the environment, then its location after installation */
-     pbasis_filename = Process::environment("PSIDATADIR") + "/pbasis.dat";
-     pbasis = fopen(pbasis_filename.c_str(), "r");
+    /* To find default basis set file first check the environment, then its location after installation */
+    pbasis_filename = Process::environment("PSIDATADIR") + "/pbasis.dat";
+    pbasis = fopen(pbasis_filename.c_str(), "r");
 
-     // Did the user specify the BASIS_FILE keyword with the path and name of the file to use.
-     user_basis_file = options.get_str("BASIS_FILE");
-     if (!user_basis_file.empty()) {
-         user_basis = fopen(user_basis_file.c_str(), "r");
-         if (user_basis != NULL) {
-             ip_append(user_basis, outfile);
-             fclose(user_basis);
-             if (print_lvl > 0) fprintf(outfile,"\n  Parsed basis sets from %s\n",user_basis_file.c_str());
-         }
-     }
+    // Did the user specify the BASIS_FILE keyword with the path and name of the file to use.
+    user_basis_file = options.get_str("BASIS_FILE");
+    if (!user_basis_file.empty()) {
+        user_basis = fopen(user_basis_file.c_str(), "r");
+        if (user_basis != NULL) {
+            ip_append(user_basis, outfile);
+            fclose(user_basis);
+            if (print_lvl > 0) fprintf(outfile,"\n  Parsed basis sets from %s\n",user_basis_file.c_str());
+        }
+    }
 
-     if (pbasis != NULL) {
-         ip_append(pbasis, outfile);
-         fclose(pbasis);
-         if (print_lvl > 0) fprintf(outfile,"\n  Parsed basis sets from %s\n",pbasis_filename.c_str());
-     }
+    if (pbasis != NULL) {
+        ip_append(pbasis, outfile);
+        fclose(pbasis);
+        if (print_lvl > 0) fprintf(outfile,"\n  Parsed basis sets from %s\n",pbasis_filename.c_str());
+    }
 
-     local_basis = fopen("./basis.dat", "r");
-     if (local_basis != NULL) {
-         ip_append(local_basis, outfile);
-         fclose(local_basis);
-         if (print_lvl > 0) fprintf(outfile,"\n  Parsed basis sets from basis.dat\n");
-     }
+    local_basis = fopen("./basis.dat", "r");
+    if (local_basis != NULL) {
+        ip_append(local_basis, outfile);
+        fclose(local_basis);
+        if (print_lvl > 0) fprintf(outfile,"\n  Parsed basis sets from basis.dat\n");
+    }
 
-     ip_cwk_add(":BASIS");
+    ip_cwk_add(":BASIS");
 
      /*-----------------
        Read in geometry
@@ -115,9 +115,9 @@ PsiReturnType input(Options & options, int argc, char *argv[])
      else if (chkpt_geom) { /* else read the next molecular geometry from checkpoint file */
        read_chkpt_geom();
      }
-     else if (geomdat_geom) { /* else read the next molecular geometry from geom.dat */
-       read_geomdat();
-     }
+//     else if (geomdat_geom) { /* else read the next molecular geometry from geom.dat */
+//       read_geomdat();
+//     }
 
      freeze_core();
      freeze_virt();
