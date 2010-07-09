@@ -7,6 +7,7 @@
 #include <libchkpt/chkpt.hpp>
 #include <libipv1/ip_lib.h>
 #include <libpsio/psio.h>
+#include <libciomr/libciomr.h>
 
 #ifdef MAIN
 #define EXT

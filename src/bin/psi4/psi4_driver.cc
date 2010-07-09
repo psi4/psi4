@@ -77,7 +77,7 @@ psi4_driver(Options & options)
     read_options("INPUT", options);
     dispatch_table["INPUT"](options, 0, argv_new);
 
-for (int n=0; n<40; ++n) {
+for (int n=0; n<8; ++n) {
 
     read_options("CINTS", options);
     dispatch_table["CINTS"](options, 0, argv_new);
