@@ -9,7 +9,7 @@
 
 #include "frag.h"
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 void frag_class::print(FILE *fp_out, bool print_vals, bool print_weights) const {
   int I,i,a,b;
@@ -100,8 +100,8 @@ void frag_class::compute(double *geom) {
   double dot, alpha_A, alpha_B, theta_A, theta_B;
   double e12A[3], e12B[3], e32A[3], e32B[3], eRA[3], eRB[3], v[3], v2[3], v3[3];
 
-  dkA = init_matrix(3,3);
-  dkB = init_matrix(3,3);
+  dkA = block_matrix(3,3);
+  dkB = block_matrix(3,3);
 
   /* compute reference points within each fragment */
   for (k=0; k<A_P; ++k) { /* k = point 1, 2 or 3 */
@@ -267,7 +267,7 @@ void frag_class::compute(double *geom) {
    // }
   }
 
-  free_matrix(dkA); free_matrix(dkB);
+  free_block(dkA); free_block(dkB);
 }
 
 /** compute S vectors.  In this case, the derivative of the
@@ -281,8 +281,8 @@ void frag_class::compute_s(double *geom) {
   double dot, alpha_A, alpha_B, theta_A, theta_B;
   double e12A[3], e12B[3], e32A[3], e32B[3], eRA[3], eRB[3], v[3], v2[3];
 
-  dkA = init_matrix(3,3);
-  dkB = init_matrix(3,3);
+  dkA = block_matrix(3,3);
+  dkB = block_matrix(3,3);
 
   /* compute reference points within each fragment */
   for (k=0; k<A_P; ++k)
@@ -447,7 +447,7 @@ void frag_class::compute_s(double *geom) {
       A_s[5][3*0+xyz] = v[xyz] / (R * SQR(sin(theta_B)));
   }
 
-  free_matrix(dkA); free_matrix(dkB);
+  free_block(dkA); free_block(dkB);
 }
 
 
@@ -473,4 +473,4 @@ int * fragment_set::atom2fragment(int natom) {
 }
 */
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */

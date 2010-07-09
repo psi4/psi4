@@ -10,7 +10,7 @@
 
 #include <libchkpt/chkpt.h>
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 void symmetrize_geom(double *x) {
   int ua, op, xyz, num_uniques, i;
@@ -52,8 +52,8 @@ void symmetrize_geom(double *x) {
   free_array(x_temp);
   free_int_array(ua2a);
   free_int_matrix(ict);
-  free_matrix(cartrep);
+  free_block(cartrep);
   return;
 }
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */

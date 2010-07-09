@@ -6,7 +6,7 @@
 #ifndef _psi3_bin_optking_out_h_
 #define _psi3_bin_optking_out_h_
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 class out_class {
 
@@ -240,6 +240,6 @@ class out_class {
 
 };
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 
 #endif

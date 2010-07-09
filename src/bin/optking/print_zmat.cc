@@ -19,7 +19,7 @@
 
 #include <masses.h>
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 /* recompute values for z-matrix and write back to chkpt */
 void compute_zmat(cartesians &carts, int *unique_zvars) {
@@ -234,5 +234,5 @@ void print_zmat(FILE *outfile, int *unique_zvars) {
   return;
 }
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 

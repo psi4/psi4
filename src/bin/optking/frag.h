@@ -7,8 +7,9 @@
 #define _psi3_bin_optking_fragment_h_
 
 #include <libqt/qt.h>
+#include <libciomr/libciomr.h>
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 /*
 Fragment_class describes a SET of interfragment coordinates connecting two fragments
@@ -51,19 +52,19 @@ class frag_class {
       B_P = B_P_in;
       A_atom   = new int[A_natom];
       B_atom   = new int[B_natom];
-      A_weight = init_matrix(3,A_natom);
-      B_weight = init_matrix(3,B_natom);
-      A_s = init_matrix(6,A_P*3);
-      B_s = init_matrix(6,B_P*3);
+      A_weight = block_matrix(3,A_natom);
+      B_weight = block_matrix(3,B_natom);
+      A_s = block_matrix(6,A_P*3);
+      B_s = block_matrix(6,B_P*3);
     }
 
     ~frag_class() {
       delete [] A_atom;
       delete [] B_atom;
-      free_matrix(A_weight);
-      free_matrix(B_weight);
-      free_matrix(A_s);
-      free_matrix(B_s);
+      free_block(A_weight);
+      free_block(B_weight);
+      free_block(A_s);
+      free_block(B_s);
     }
 
     /* functions in frag.cc */
@@ -268,6 +269,6 @@ class frag_class {
     };
 };
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 
 #endif

@@ -16,11 +16,12 @@
 
 #include <string>
 #include <psi4-dec.h>
+#include <libciomr/libciomr.h>
 
 #ifndef _psi3_bin_optking_def_h_
 #define _psi3_bin_optking_def_h_
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 // very basic prototypes for everyone
 void cross_product(double *u,double *v,double *out);
@@ -47,18 +48,9 @@ void intro(std::string header);
 void free_info(int nsimples);
 
 // memory allocation functions in mem.cc
-double * init_array(long int size);
 void zero_array(double *a, long int size);
 void free_array(double *a);
-int * init_int_array(int size);
-void zero_int_array(int *a, int size);
 void free_int_array(int *a);
-double ** init_matrix(long int m, long int n);
-void zero_matrix(double **a, long int m, long int n);
-void free_matrix(double **array);
-int **init_int_matrix(int m, int n);
-void zero_int_matrix(int **a, int n, int m);
-void free_int_matrix(int **array);
 double **unit_matrix(long int m);
 
 // enumerated types
@@ -113,6 +105,6 @@ enum Frag_switch {FRAG_A, FRAG_B};
 #define MODE_FREQ_GRAD_INTERFRAGMENT (32)
 #define MODE_FCONST_INIT (33)
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 
 #endif

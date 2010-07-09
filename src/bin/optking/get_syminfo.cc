@@ -14,7 +14,7 @@
 #include <libipv1/ip_lib.h>
 #include <libchkpt/chkpt.h>
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 void get_syminfo(const simples_class & simples) {
   int a, b, c, d, aa, bb, cc, dd, i, j, sign, natom;
@@ -227,5 +227,5 @@ void get_syminfo(const simples_class & simples) {
   return;
 }
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 

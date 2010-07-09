@@ -14,7 +14,7 @@
 #include "salc.h"
 #include "opt.h"
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 void delocalize(const simples_class & simples, const cartesians & carts) {
   int error,i,j,k,a,b,c,d,id,count,sub_index,row[5],dim[5];
@@ -26,7 +26,7 @@ void delocalize(const simples_class & simples, const cartesians & carts) {
   natom = optinfo.natom;
 
   // Build B matrix for simples
-  B = init_matrix(simples.get_num(),natom*3);
+  B = block_matrix(simples.get_num(),natom*3);
   count = -1;
   for (i=0; i<simples.get_num(STRE); ++i) {
     a = simples.get_atom(STRE, i, 0);
@@ -87,13 +87,13 @@ void delocalize(const simples_class & simples, const cartesians & carts) {
   }
   //  print_mat2(B,simples.get_num(),natom*3,outfile);
 
-  uBt = init_matrix(3*natom, simples.get_num());
+  uBt = block_matrix(3*natom, simples.get_num());
   fmass = carts.get_fmass();
   u = mass_mat(fmass);
   free_array(fmass);
 
   // Form BBt matrix
-  BBt = init_matrix(simples.get_num(),simples.get_num());
+  BBt = block_matrix(simples.get_num(),simples.get_num());
   if (optinfo.mix_types) {
     opt_mmult(u,0,B,1,uBt,0,3*natom,3*natom,simples.get_num(),0);
 
@@ -128,16 +128,16 @@ void delocalize(const simples_class & simples, const cartesians & carts) {
     }
     free(ptr);
   }
-  free_matrix(u);
-  free_matrix(B);
-  free_matrix(uBt);
+  free_block(u);
+  free_block(B);
+  free_block(uBt);
 
   //fprintf(outfile,"The BB^t Matrix:\n");
   //print_mat2(BBt,simples.get_num(),simples.get_num(),outfile);
 
   // Diagonalize BBt
   evals = init_array(simples.get_num());
-  evects = init_matrix(simples.get_num(),simples.get_num());
+  evects = block_matrix(simples.get_num(),simples.get_num());
   opt_sq_rsp(simples.get_num(),simples.get_num(), BBt, evals, 1, evects, 1.0E-14);
 
   /* check eigenvectors of BBt */
@@ -146,7 +146,7 @@ void delocalize(const simples_class & simples, const cartesians & carts) {
     fprintf(outfile,"\n\nChecking eigenvectors of BBt...\n");
     eivout(evects, evals, simples.get_num(), simples.get_num(), outfile);
   }
-  temp_mat = init_matrix(simples.get_num(),simples.get_num());
+  temp_mat = block_matrix(simples.get_num(),simples.get_num());
   opt_mmult(BBt,0,evects,0,temp_mat,0,simples.get_num(),simples.get_num(),simples.get_num(),0);
   for (j=0;j<simples.get_num();++j) {
     error = 0;
@@ -155,8 +155,8 @@ void delocalize(const simples_class & simples, const cartesians & carts) {
       if (error == 1) { fprintf(outfile,"Error in evect %d\n",j); error = 0;}
     }
   }
-  free_matrix(temp_mat);
-  free_matrix(BBt);
+  free_block(temp_mat);
+  free_block(BBt);
 
   /* check for proper number of non-redundant coordinates (3n-6) */ 
   num_nonzero = 0;
@@ -202,7 +202,7 @@ void delocalize(const simples_class & simples, const cartesians & carts) {
   int h;
   irr = init_int_array(simples.get_num());
 
-  evectst = init_matrix(num_nonzero,simples.get_num());
+  evectst = block_matrix(num_nonzero,simples.get_num());
 
   for (i=0;i<simples.get_num();++i) {
     for (j=simples.get_num()-num_nonzero;j<simples.get_num();++j) {
@@ -215,11 +215,11 @@ void delocalize(const simples_class & simples, const cartesians & carts) {
     print_mat(evectst,num_nonzero,simples.get_num(),outfile);
   }
   free_array(evals);
-  free_matrix(evects);
+  free_block(evects);
 
   /* send evectst to irrep.cc to be properly symmetrized */
   evectst_symm = irrep(simples, evectst);
-  free_matrix(evectst);
+  free_block(evectst);
 
   if (optinfo.print_delocalize == 1) {
     fprintf(outfile,"\nSymmetrized evects\n");
@@ -292,7 +292,7 @@ void delocalize(const simples_class & simples, const cartesians & carts) {
   fflush(fp_intco);
   fclose(fp_intco);
 
-  free_matrix(evectst_symm);
+  free_block(evectst_symm);
   return;
 }
 
@@ -380,5 +380,5 @@ void rm_rotations(const simples_class & simples, const cartesians & carts,
   return;
 }
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 

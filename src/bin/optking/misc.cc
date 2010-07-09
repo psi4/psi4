@@ -11,7 +11,7 @@
 #include <libchkpt/chkpt.h>
 #include <libpsio/psio.h>
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 double nuclear_repulsion(double *fatomic_num, double *coord) {
   int i, j, dim;
@@ -165,9 +165,9 @@ double **symm_matrix_invert(double **A, int dim, int print_det, int redundant) {
   int i;
   double **A_inv, **A_vects, *A_vals, **A_temp, det=1.0;
 
-  A_inv   = init_matrix(dim,dim);
-  A_temp  = init_matrix(dim,dim);
-  A_vects = init_matrix(dim,dim);
+  A_inv   = block_matrix(dim,dim);
+  A_temp  = block_matrix(dim,dim);
+  A_vects = block_matrix(dim,dim);
   A_vals  = init_array(dim);
 
   opt_sq_rsp(dim,dim,A,A_vals,1,A_vects,EVAL_TOL);
@@ -201,8 +201,8 @@ fprintf(outfile,"\ndetected redundant eval - setting inverse element to 0 \n");
   opt_mmult(A_vects,0,A_temp,0,A_inv,0,dim,dim,dim,0);
 
   free_array(A_vals);
-  free_matrix(A_vects);
-  free_matrix(A_temp);
+  free_block(A_vects);
+  free_block(A_temp);
   return A_inv;
 } 
 
@@ -226,7 +226,7 @@ void dgeev_optking(int L, double **G, double *lambda, double **alpha) {
   double *evals_i, *work, **left_evects, tval, temp;
 
   evals_i = init_array(L); 
-  left_evects = init_matrix(L,L);
+  left_evects = block_matrix(L,L);
 
   work = init_array(20*L);
   lwork = 20*L;          
@@ -250,7 +250,7 @@ void dgeev_optking(int L, double **G, double *lambda, double **alpha) {
 
   free_array(work);
   free_array(evals_i);
-  free_matrix(left_evects);
+  free_block(left_evects);
   return;
 }
 
@@ -259,7 +259,7 @@ double **mass_mat(double *masses) {
     double **u;
 
     dim = 3*optinfo.natom;
-    u = init_matrix(dim,dim);
+    u = block_matrix(dim,dim);
 
     for (i=0; i<dim; ++i) {
       if (masses[i] == 0.0)
@@ -387,12 +387,5 @@ void eivout(double **a, double *b, int m, int n, FILE *out) {
   return;
 }
 
-
-
-
-
-
-
-
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 

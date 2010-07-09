@@ -17,7 +17,7 @@
 #include <libpsio/psio.h>
 #include <libipv1/ip_lib.h>
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 static void H_update(double **H, simples_class &simples, const salc_set &symm, 
   const cartesians &carts);
@@ -30,7 +30,7 @@ double **compute_H(simples_class & simples, const salc_set &symm,
   char buffer[MAX_LINELENGTH];
 
   dim = symm.get_num();
-  H = init_matrix(dim,dim);
+  H = block_matrix(dim,dim);
 
   // Read in force constants from PSIF_OPTKING
   open_PSIF();
@@ -58,17 +58,17 @@ double **compute_H(simples_class & simples, const salc_set &symm,
   // and produce invertible Hessian
   // Form H <= PHP + 1000 (1-P)
   if ((optinfo.redundant) || (optinfo.constraints_present)) {
-    temp_mat = init_matrix(dim,dim);
+    temp_mat = block_matrix(dim,dim);
     opt_mmult(P,0,H,0,temp_mat,0,dim,dim,dim,0);
     opt_mmult(temp_mat,0,P,0,H,0,dim,dim,dim,0);
-    free_matrix(temp_mat);
+    free_block(temp_mat);
 
     temp_mat = unit_matrix((long int) dim);
     for (i=0;i<dim;++i)
       for (j=0;j<dim;++j) {
           H[i][j] += 1000 * (temp_mat[i][j] - P[i][j]);
       }
-    free_matrix(temp_mat);
+    free_block(temp_mat);
   }
 
   /*** write new force constants H to PSIF_OPTKING ***/
@@ -107,7 +107,7 @@ void H_update(double **H, simples_class &simples, const salc_set &symm,
   dg    = init_array(dim);
   x = init_array(3*natom);
   x_old = init_array(3*natom);
-  H_new = init_matrix(dim,dim);
+  H_new = block_matrix(dim,dim);
 
   /*** read/compute current internals and forces from PSIF_OPTKING ***/
   n_previous = optinfo.iteration+1;
@@ -184,11 +184,11 @@ void H_update(double **H, simples_class &simples, const salc_set &symm,
       //fprintf(outfile,"Xmat\n");
       //print_mat5(X,dim,dim,outfile);
   
-      temp_mat = init_matrix(dim,dim);
+      temp_mat = block_matrix(dim,dim);
       opt_mmult(X,0,H,0,temp_mat,0,dim,dim,dim,0);
       opt_mmult(temp_mat,0,X,1,H_new,0,dim,dim,dim,0);
-      free_matrix(temp_mat);
-      free_matrix(X);
+      free_block(temp_mat);
+      free_block(X);
     
       for (i=0;i<dim;++i)
         for (j=0;j<dim;++j)
@@ -297,7 +297,7 @@ void H_update(double **H, simples_class &simples, const salc_set &symm,
   free_array(dq);
   free_array(dg);
   free_array(x_old);
-  free_matrix(H_new);
+  free_block(H_new);
   return;
 }
 
@@ -330,7 +330,7 @@ void fconst_init(const cartesians & carts, const simples_class & simples, const 
     ip_cwk_add(":FCONST");
     fprintf(outfile,"Reading force constants from FCONST: \n");
     dim = symm.get_num();
-    temp_mat = init_matrix(dim,dim);
+    temp_mat = block_matrix(dim,dim);
     ip_count("SYMM_FC",&i,0);
     if (i != (dim*(dim+1))/2) {
       fprintf(outfile,"fconst has wrong number of entries\n");
@@ -353,7 +353,7 @@ void fconst_init(const cartesians & carts, const simples_class & simples, const 
         (char *) &(temp_mat[0][0]),dim*dim*sizeof(double));
     close_PSIF();
 
-    free_matrix(temp_mat);
+    free_block(temp_mat);
     return;
   }
 
@@ -368,7 +368,7 @@ void fconst_init(const cartesians & carts, const simples_class & simples, const 
       ip_cwk_add(":FCONST");
       fprintf(outfile,"Reading force constants from FCONST: \n");
       dim = symm.get_num();
-      temp_mat = init_matrix(dim,dim);
+      temp_mat = block_matrix(dim,dim);
       ip_count("SYMM_FC",&i,0);
       if (i != (dim*(dim+1))/2) {
         fprintf(outfile,"fconst has wrong number of entries\n");
@@ -392,10 +392,10 @@ void fconst_init(const cartesians & carts, const simples_class & simples, const 
     psio_write_entry(PSIF_OPTKING, "Symmetric Force Constants",
         (char *) &(temp_mat[0][0]),dim*dim*sizeof(double));
     close_PSIF();
-    free_matrix(temp_mat);
+    free_block(temp_mat);
   }
   delete [] buffer;
 }
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 

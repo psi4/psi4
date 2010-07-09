@@ -13,7 +13,7 @@
 
 #include <libqt/qt.h>
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 int test_B(const cartesians &carts, simples_class &simples, const salc_set &symm) {
   int i, j, atom, xyz, ncarts, natom, nsalcs;
@@ -35,7 +35,7 @@ int test_B(const cartesians &carts, simples_class &simples, const salc_set &symm
     print_mat(B, nsalcs, ncarts, outfile );
   }
 
-  dq = init_matrix(nsalcs,ncarts);
+  dq = block_matrix(nsalcs,ncarts);
 
   for (i=0; i<nsalcs; ++i) {
     for (atom=0; atom<natom; ++atom) {
@@ -82,10 +82,10 @@ int test_B(const cartesians &carts, simples_class &simples, const salc_set &symm
     fprintf(outfile,"  Looks great.\n");
   }
 
-  free_matrix(B);
-  free_matrix(dq);
+  free_block(B);
+  free_block(dq);
   return 0;
 }
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 

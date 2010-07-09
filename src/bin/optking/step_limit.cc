@@ -7,7 +7,7 @@
 #include "simples.h"
 #include "salc.h"
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 // no internal coordinate value can change more than optinfo.step_limit
 // dq is passed in in Angstroms or radians
@@ -86,4 +86,4 @@ void step_limit(const simples_class & simples, const salc_set &symm, double *dq)
   return;
 }
 
-}}
+}//}

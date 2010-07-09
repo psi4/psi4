@@ -6,7 +6,7 @@
 #ifndef _psi3_bin_optking_bend_h_
 #define _psi3_bin_optking_bend_h_
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 class bend_class {
 
@@ -181,6 +181,6 @@ class bend_class {
 
 };
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 
 #endif

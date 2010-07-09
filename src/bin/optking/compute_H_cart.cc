@@ -16,7 +16,7 @@
 #include <libipv1/ip_lib.h>
 #include <libpsio/psio.h>
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 double **compute_H_cart(cartesians & carts, double **P) {
   double **H, **H_inv, **H_inv_new, **H_new, **temp_mat;
@@ -24,7 +24,7 @@ double **compute_H_cart(cartesians & carts, double **P) {
   char buffer[MAX_LINELENGTH];
 
   dim = 3*carts.get_natom();
-  H = init_matrix(dim,dim);
+  H = block_matrix(dim,dim);
 
   /*** Read in force constants from PSIF_OPTKING ***/
   open_PSIF();
@@ -52,17 +52,17 @@ double **compute_H_cart(cartesians & carts, double **P) {
   }
 
   if (optinfo.redundant) { // could add constraints later
-    temp_mat = init_matrix(dim,dim);
+    temp_mat = block_matrix(dim,dim);
     opt_mmult(P,0,H,0,temp_mat,0,dim,dim,dim,0);
     opt_mmult(temp_mat,0,P,0,H,0,dim,dim,dim,0);
-    free_matrix(temp_mat);
+    free_block(temp_mat);
 
     temp_mat = unit_matrix((long int) dim);
     for (i=0;i<dim;++i)
       for (j=0;j<dim;++j) {
           H[i][j] += 1000 * (temp_mat[i][j] - P[i][j]);
       }
-    free_matrix(temp_mat);
+    free_block(temp_mat);
   }
 
   H_inv = symm_matrix_invert(H,dim,0,1);
@@ -72,7 +72,7 @@ double **compute_H_cart(cartesians & carts, double **P) {
   psio_write_entry(PSIF_OPTKING, "Cartesian Force Constants",
       (char *) &(H[0][0]),dim*dim*sizeof(double));
   close_PSIF();
-  free_matrix(H);
+  free_block(H);
   return H_inv;
 }
 
@@ -151,11 +151,11 @@ void H_update_cart(double **H, cartesians &carts) {
         for (j=0;j<dim;++j)
           X[i][j] -= (dg[i] * dx[j]) / xg ; 
   
-      temp_mat = init_matrix(dim,dim);
+      temp_mat = block_matrix(dim,dim);
       opt_mmult(X,0,H,0,temp_mat,0,dim,dim,dim,0);
       opt_mmult(temp_mat,0,X,1,H,0,dim,dim,dim,0);
-      free_matrix(temp_mat);
-      free_matrix(X);
+      free_block(temp_mat);
+      free_block(X);
     
       for (i=0;i<dim;++i)
         for (j=0;j<dim;++j)
@@ -259,7 +259,7 @@ void fconst_init_cart(cartesians &carts) {
     ip_cwk_add(":FCONST");
     if (ip_exist("CART_FC",0)) {
       fprintf(outfile,"Reading force constants from FCONST: \n");
-      temp_mat = init_matrix(dim,dim);
+      temp_mat = block_matrix(dim,dim);
       ip_count("CART_FC",&i,0);
       if (i != (dim*(dim+1))/2) {
         fprintf(outfile,"fconst has wrong number of entries\n");
@@ -282,12 +282,12 @@ void fconst_init_cart(cartesians &carts) {
           (char *) &(temp_mat[0][0]),dim*dim*sizeof(double));
       close_PSIF();
   
-      free_matrix(temp_mat);
+      free_block(temp_mat);
       return;
     }
   }
 
-  temp_mat = init_matrix(dim,dim);
+  temp_mat = block_matrix(dim,dim);
   fprintf(outfile,"Making diagonal Hessian guess.\n");
   for (i=0; i<dim; ++i)
     temp_mat[i][i] = 1.0;
@@ -299,10 +299,10 @@ void fconst_init_cart(cartesians &carts) {
   psio_write_entry(PSIF_OPTKING, "Cartesian Force Constants",
       (char *) &(temp_mat[0][0]),dim*dim*sizeof(double));
   close_PSIF();
-  free_matrix(temp_mat);
+  free_block(temp_mat);
 
   delete [] buffer;
 }
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 

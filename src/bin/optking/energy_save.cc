@@ -15,7 +15,7 @@
 #include <ccfiles.h>
 #include <libchkpt/chkpt.h>
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 void energy_save(void) {
   int i,j,dim_carts,total_num_disps;
@@ -93,5 +93,5 @@ void energy_save(void) {
   return ;
 }
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 

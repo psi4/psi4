@@ -10,7 +10,7 @@
 #include "salc.h"
 #include "opt.h"
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 // angle bends cannot go < 0
 // dq is in radians
@@ -53,4 +53,4 @@ void check_zero_angles(const simples_class & simples, const salc_set & symm, dou
   return;
 }
 
-}}
+}//}

@@ -12,7 +12,7 @@
 #include <libchkpt/chkpt.h>
 #include <masses.h>
 
-namespace psi { namespace optking {
+namespace psi { // namespace optking {
 
 /*** FORCES returns forces in cartesian coordinates in aJ/Ang ***/ 
 double *cartesians:: get_forces() const {
@@ -88,7 +88,7 @@ cartesians::cartesians() {
       coord[++count] = geom[i][j];
     }
   }
-  free_matrix(geom);
+  free_block(geom);
 
   zero_array(fatomic_num,nallatom);
 
@@ -101,7 +101,7 @@ cartesians::cartesians() {
       fcoord[++count] = fgeom[i][j];
 
   free_array(zvals);
-  free_matrix(fgeom);
+  free_block(fgeom);
 
   zero_array(fgrad, 3*nallatom);
   count = -1;
@@ -354,4 +354,4 @@ void cartesians :: print(int print_flag, FILE *fp_out, int new_geom_file,
   return;
 }
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */

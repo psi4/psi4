@@ -12,7 +12,7 @@
 #include "salc.h"
 #include "opt.h"
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 int **get_char_table(char *ptgrp) {
 
@@ -707,5 +707,5 @@ return num_ops;
 
 }      
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 

@@ -6,7 +6,7 @@
 #ifndef _psi3_bin_optking_stre_h_
 #define _psi3_bin_optking_stre_h_
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 class stre_class {
 
@@ -127,6 +127,6 @@ class stre_class {
 
 };
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 
 #endif

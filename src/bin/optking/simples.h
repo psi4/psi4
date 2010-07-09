@@ -20,7 +20,7 @@
 #include <cctype>
 #include <vector>
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 class salc_set; // forward declaration for friend functions
 
@@ -204,6 +204,6 @@ class simples_class {
 
 };
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 
 #endif
