@@ -386,7 +386,7 @@ void oe_deriv1_ints()
 
   for(i=0; i < Molecule.num_atoms*3; i++) 
     for(j=0; j < Symmetry.num_so; j++)
-      for(k=0; k < BasisSet.num_ao; k++)
+      for(k=0; k < Symmetry.num_so; k++)  // changed num_ao -> num_so 7-2010
         for(l=0; l < BasisSet.num_ao; l++)
           s_so[i][j][k] += Symmetry.usotao[j][l] * T[i][k][l];
 
@@ -408,7 +408,7 @@ void oe_deriv1_ints()
 
   for(i=0; i < Molecule.num_atoms*3; i++) 
     for(j=0; j < Symmetry.num_so; j++)
-      for(k=0; k < BasisSet.num_ao; k++)
+      for(k=0; k < Symmetry.num_so; k++)  // changed num_ao -> num_so
         for(l=0; l < BasisSet.num_ao; l++)
           t_so[i][j][k] += Symmetry.usotao[j][l] * T[i][k][l];
 
@@ -430,7 +430,7 @@ void oe_deriv1_ints()
 
   for(i=0; i < Molecule.num_atoms*3; i++) 
     for(j=0; j < Symmetry.num_so; j++)
-      for(k=0; k < BasisSet.num_ao; k++)
+      for(k=0; k < Symmetry.num_so; k++)  // changed num_ao -> num_so
         for(l=0; l < BasisSet.num_ao; l++)
           v_so[i][j][k] += Symmetry.usotao[j][l] * T[i][k][l];
 

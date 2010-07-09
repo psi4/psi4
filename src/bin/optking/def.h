@@ -14,6 +14,9 @@
 #include <physconst.h>
 #include <psifiles.h>
 
+#include <string>
+#include <psi4-dec.h>
+
 #ifndef _psi3_bin_optking_def_h_
 #define _psi3_bin_optking_def_h_
 
@@ -38,6 +41,10 @@ void exit_io(void);
 void print_mat(double **a, int m, int n, FILE *out);
 void eivout(double **a, double *b, int m, int n, FILE *out);
 void dot_array(double *a, double *b, long int n, double *value);
+
+void intro(void);
+void intro(std::string header);
+void free_info(int nsimples);
 
 // memory allocation functions in mem.cc
 double * init_array(long int size);

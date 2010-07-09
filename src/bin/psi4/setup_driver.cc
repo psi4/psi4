@@ -16,6 +16,7 @@ namespace psi{
     // namespace optking  { PsiReturnType optking(Options &, int argc, char *argv[]); }
     namespace psimrcc  { PsiReturnType psimrcc(Options &, int argc, char *argv[]); }
     namespace mcscf    { PsiReturnType mcscf(Options &, int argc, char *argv[]); }
+    namespace optking  { PsiReturnType opt_step(Options &, int argc, char *argv[]); }
 
 void
 setup_driver(Options &options)
@@ -45,6 +46,7 @@ setup_driver(Options &options)
     dispatch_table["TRANSQT2"]  = &(psi::transqt2::transqt2);
     dispatch_table["MCSCF"]     = &(psi::mcscf::mcscf);
     dispatch_table["PSIMRCC"]   = &(psi::psimrcc::psimrcc);
+    dispatch_table["OPT_STEP"]  = &(psi::optking::opt_step);
 }
 
 } // Namespaces

@@ -34,18 +34,20 @@ int argc, char *argv[], int overwrite_output) {
     return i;
 }
 
-int opt_psi_stop(FILE* infile, FILE* outfile, char* psi_file_prefix) {
+int opt_psi_stop(FILE* infile, FILE* outfile, char* psi_file_prefix) { } ;
+/* obselete
   ip_done();
   free(psi_file_prefix);
   fclose(outfile);
   fclose(infile);
   return(PSI_RETURN_SUCCESS);
 }
+*/
 
 void exit_io(void) {
   fprintf(outfile,"\n******** OPTKING execution completed ********\n\n");
-  psio_done();
-  opt_psi_stop(infile,outfile,psi_file_prefix);
+//  psio_done();
+//  opt_psi_stop(infile,outfile,psi_file_prefix);
 }
 
 // matrix multiplication

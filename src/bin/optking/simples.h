@@ -37,7 +37,7 @@ class simples_class {
 
   public:
 
-   friend int opt_step(cartesians &, simples_class &, const salc_set &);
+   friend PsiReturnType opt_step_internal(cartesians &, simples_class &, const salc_set &);
 
    // constructor in frag.cc
    // user_intcos = 1; read in simple coordinates from intco.dat

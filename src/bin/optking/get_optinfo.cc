@@ -20,13 +20,38 @@ namespace psi { namespace optking {
 
 static double power(double x, int y);
 
+// opt_mode == name of calling function/ name of function called from psi4
 void get_optinfo(void) {
-  int a, i, cnt, cnt2, natom, nallatom, errcod;
-  double tval;
-  char *junk;
+
+  static bool read_options = false;
+
+  if (read_options) { // already done
+    intro("options read previously");  
+    return;
+  }
+  
+  read_options = true;
+  intro();
+
+  ip_cwk_add(":OPTKING");
+
+  // determine if simples and salcs are provided in intco.dat 
+  optinfo.simples_present = optinfo.salcs_present = false;
+  opt_ffile_noexit(&fp_intco, "intco.dat", 2);
+  if (fp_intco != NULL)
+    ip_append(fp_intco, outfile) ;
+  if ( ip_exist(":INTCO",0) ) {
+    ip_cwk_add(":INTCO");
+    optinfo.simples_present = true;
+  }
+  if ( ip_exist("SYMM",0) || ip_exist("ASYMM",0) )
+    optinfo.salcs_present = true;
+  if (fp_intco != NULL)
+    fclose(fp_intco);
 
   optinfo.iteration = 0;
   optinfo.micro_iteration = 0;
+
   open_PSIF();
   if (psio_tocscan(PSIF_OPTKING, "Iteration") != NULL)
     psio_read_entry(PSIF_OPTKING, "Iteration", (char *) &(optinfo.iteration),sizeof(int));
@@ -35,6 +60,10 @@ void get_optinfo(void) {
   if (psio_tocscan(PSIF_OPTKING, "Balked last time") != NULL)
     psio_read_entry(PSIF_OPTKING, "Balked last time", (char *) &(optinfo.balked_last_time), sizeof(int));
   close_PSIF();
+
+  char *junk;
+  int a, i, cnt, cnt2, natom, nallatom, errcod;
+  double tval;
 
   optinfo.dertype = 0;
   if (ip_exist("DERTYPE",0)) {

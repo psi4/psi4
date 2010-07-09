@@ -18,6 +18,162 @@
 
 namespace psi { namespace optking {
 
+PsiReturnType opt_step_internal(cartesians &carts, simples_class &simples, const salc_set &symm);
+
+// for now, just a wrapper to call the old function
+PsiReturnType opt_step(Options & options, int argc, char *argv[]) {
+  static bool have_intcos = false;
+  static simples_class *simples;
+  static salc_set *symm_salcs;
+
+  optinfo.mode = MODE_OPT_STEP;
+  get_optinfo();
+
+  cartesians carts; // loads geometry/gradient from chkpt
+  fprintf(outfile, "\nCartesian geometry and possibly gradient in a.u. with masses\n");
+  carts.print(23,outfile,0,NULL,0);
+  fflush(outfile);
+
+  if (!have_intcos) {
+    have_intcos == true;
+
+    if ( optinfo.zmat_simples && !optinfo.simples_present) {
+      zmat_to_intco();
+      optinfo.simples_present = 1;
+      opt_ffile(&fp_intco, "intco.dat", 2);
+      ip_append(fp_intco, outfile) ;
+      ip_cwk_add(":INTCO");
+    }
+  
+    simples = new simples_class(carts, optinfo.simples_present);
+  
+    /* read in constraints */
+    opt_ffile_noexit(&fp_fintco, "fintco.dat", 2);
+    if (fp_fintco != NULL) ip_append(fp_fintco, outfile) ;
+    optinfo.constraints = read_constraints(*simples);
+    if (fp_fintco != NULL) fclose(fp_fintco);
+  
+    double * coord = carts.get_coord();
+    simples->compute(coord);
+    simples->compute_s(coord);
+    free_array(coord);
+    fprintf(outfile,"\nSimple Internal Coordinates and Values\n");
+    simples->print(outfile,1);
+    fflush(outfile);
+
+    /* obtain symmetry info, including simple transformation matrix */
+    try {
+      get_syminfo(*simples);
+    }
+    catch (const char * s) {
+      if (optinfo.zmat_simples) {
+        fprintf(outfile,"Unable to determine symmetry relationships of all internals.\n");
+        fprintf(outfile,"Proceeding anyway since coordinates taken from z-matrix.\n");
+      }
+      else {
+        fprintf(outfile,"Unable to determine symmetry relationships of internals.\n");
+        fprintf(outfile,"%s\n",s);
+        printf("Unable to determine symmetry relationships of internals.\n");
+        printf("%s\n",s);
+        free_info(simples->get_num());
+        exit_io();
+        abort();
+      }
+    }
+
+    /*** If SYMM is not user given, produce SYMM containing delocalized \
+     *** internal coordinates or else use redundant simples          ***/
+    if (!(optinfo.salcs_present)) {
+      if (optinfo.delocalize) {
+        fprintf(outfile,"\nForming delocalized internal coordinates.\n");
+        delocalize(*simples, carts);
+      }
+      else {
+        fprintf(outfile,"\nPutting simple, possibly redundant, internal coordinates in intco.dat.\n");
+        int i, j;
+        char *err, aline[MAX_LINELENGTH], **buffer;
+        opt_ffile(&fp_intco, "intco.dat", 2);
+        int count = 0;
+        for( ; ; ) {
+          err = fgets(aline, MAX_LINELENGTH, fp_intco);
+          if (err == NULL) break;
+          ++count;
+        }
+        rewind(fp_intco);
+  
+        // read all but the last line of the file into memory...
+        buffer = (char **) malloc((count-1) * sizeof(char *));
+        for(i=0; i < count-1; i++) {
+          buffer[i] = (char *) malloc(MAX_LINELENGTH * sizeof(char));
+          err = fgets(buffer[i], MAX_LINELENGTH, fp_intco);
+        }
+        rewind(fp_intco);
+        // ...and overwite
+        for(i=0; i < count-1; i++) {
+          fprintf(fp_intco, "%s", buffer[i]);
+          free(buffer[i]);
+        }
+        free(buffer);
+  
+        fprintf(fp_intco,"  symm = (\n");
+        for (j=0;j<simples->get_num();++j)
+          fprintf(fp_intco,"    (\" \" (%d))\n",simples->index_to_id(j));
+        fprintf(fp_intco,"  )\n");
+          fprintf(fp_intco,")\n");
+          fclose(fp_intco);
+      } // end delocalize
+  
+      // Add the new intco information to the keyword tree
+      int user_intcos;
+      opt_ffile(&fp_intco, "intco.dat", 2);
+      if (fp_intco != NULL) {
+        ip_append(fp_intco, outfile) ;
+        if (ip_exist(":INTCO",0)) {
+          user_intcos = 1;
+          ip_cwk_add(":INTCO");
+        }
+        fclose(fp_intco);
+      }
+    }
+    fflush(outfile);
+  
+    fprintf(outfile," \n ** Taking normal optimization step. **\n");
+
+    symm_salcs = new salc_set("SYMM"); // read SALCS
+    if (!optinfo.redundant)
+      symm_salcs->print();
+
+    if (optinfo.test_B) {
+      test_B(carts,*simples,*symm_salcs);
+      coord = carts.get_coord(); // restore internals to undisplaced state
+      simples->compute(coord);
+      simples->compute_s(coord);
+    }
+  }
+
+  PsiReturnType rval;
+
+  try {
+  //  if (optinfo.cartesian)
+  //    a = opt_step_cart(carts);
+  //  else
+      rval = opt_step_internal(carts, *simples, *symm_salcs);
+  }
+  catch (const char * s) {
+    fprintf(outfile,"%s\n",s);
+    fprintf(outfile,"opt_step() failed.\n");
+    printf("%s\n",s);
+    printf("opt_step() failed.\n");
+    free_info(simples->get_num());
+    exit_io();
+    return Failure;
+  }
+  //free_info(simples->get_num());
+  exit_io();
+  return rval;
+}
+
+
 inline double rfo_energy(double rfo_t, double rfo_g, double rfo_h) {
   return (rfo_t * rfo_g + 0.5 * rfo_t * rfo_t * rfo_h)/(1 + rfo_t*rfo_t)/(_hartree2J*1.0e18);
 }
@@ -27,7 +183,7 @@ inline double nr_energy(double rfo_t, double rfo_g, double rfo_h) {
 
 static bool line_search(cartesians & carts, int num_ints, double *dq);
 
-int opt_step(cartesians &carts, simples_class &simples, const salc_set &symm) {
+PsiReturnType opt_step_internal(cartesians &carts, simples_class &simples, const salc_set &symm) {
 
   int xyz, i,j,k,ii,a,b, dim, dim_carts, nsimples, constraint, cnt;
   double **B, **G, **G2, **G_inv, **H, **H_inv, **temp_mat, **u, **P;
@@ -564,7 +720,7 @@ int opt_step(cartesians &carts, simples_class &simples, const salc_set &symm) {
       fprintf(outfile,"\n");
     }
     free(f_q); free(q);
-    return(PSI_RETURN_ENDLOOP);
+    return Endloop;
   } // end converged geometry
 
   if (optinfo.analytic_interfragment) { // do interfragment steps analytically
@@ -766,7 +922,7 @@ int opt_step(cartesians &carts, simples_class &simples, const salc_set &symm) {
   }
   delete [] djunk;
   delete [] disp_label;
-  return(PSI_RETURN_SUCCESS);
+  return Success;
 }
 
 

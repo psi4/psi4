@@ -65,7 +65,8 @@ void grad_energy(cartesians &carts, simples_class &simples, const salc_set &all_
 void grad_save(const cartesians &carts);
 void energy_save(void);
 
-int opt_step(cartesians &carts, simples_class &simples, const salc_set &symm_salcs);
+PsiReturnType opt_step(Options & options, int argc, char *argv[]);
+PsiReturnType opt_step_internal(cartesians &carts, simples_class &simples, const salc_set &symm_salcs);
 
 int opt_step_cart(cartesians &carts);
 

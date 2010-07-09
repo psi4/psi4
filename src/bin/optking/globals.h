@@ -7,6 +7,10 @@
 #ifndef _psi3_bin_optking_globals_h_
 #define _psi3_bin_optking_globals_h_
 
+namespace psi {
+extern FILE *infile; 
+}
+
 namespace psi { namespace optking {
 
 /* Global variables */
@@ -16,11 +20,6 @@ namespace psi { namespace optking {
 #else
 # define EXTERN
 #endif
-
-extern "C" {
-  EXTERN FILE *infile, *outfile;
-  EXTERN char *psi_file_prefix;
-}
 
 EXTERN FILE *fp_input, *fp_intco, *fp_fconst, *fp_opt_aux, *fp_11, *fp_fintco, *fp_energy_dat;
 EXTERN int *ops_in_class;
@@ -35,9 +34,9 @@ EXTERN struct OPTInfo {
   int freq_irrep;
   int points_freq_grad_ints;
   int irrep;
-  int simples_present;
-  int salcs_present;
-  int constraints_present;
+  bool simples_present;
+  bool salcs_present;
+  bool constraints_present;
   int nconstraints;
   int *constraints;
   int test_B;

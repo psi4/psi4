@@ -1,7 +1,13 @@
-/*! \file
+/*! \file  opt.cc
     \ingroup OPTKING
-    \brief main optking function
-    OPT.CC Rollin King, begun 1999 
+    \brief optking Rollin King, Bethel University, begun 1999 
+           rewritten and moved to PSI4 2010
+
+  *** Old modes which have been converted into functions in psi4 ***
+*/
+
+/*
+** old optking "modes" **
 command-line      internal specifier   what it does
 --opt_step         MODE_OPT_STEP        take an ordinary geometry optimization step
 --disp_nosymm      MODE_DISP_NOSYMM     displaces along all internals, assumes no sym
@@ -48,12 +54,10 @@ namespace psi { namespace optking {
 int opt_psi_start(FILE** infile, FILE** outfile, char** psi_file_prefix,
 int argc, char *argv[], int overwrite_output);
 
-void intro(int argc, char **argv);
 void chkpt_restart(char *new_prefix);
 void load_ref(const cartesians &carts);
-void free_info(int nsimples);
 
-PsiReturnType optking(Options &options, int argc, char **argv) {
+PsiReturnType optking(Options &options, int argc, char *argv[]) {
 
     int i,j,a,b,dim,count,dim_carts,user_intcos, *constraints,xyz;
     int parsed=1, num_disps, disp_length;
@@ -96,10 +100,10 @@ PsiReturnType optking(Options &options, int argc, char **argv) {
         optinfo.mode = MODE_LOAD_REF;
         parsed++;
       }
-      else if (!strcmp(argv[i],"--opt_step")) {
-        optinfo.mode = MODE_OPT_STEP;
-        parsed++;
-      }
+      //else if (!strcmp(argv[i],"--opt_step")) {
+        //optinfo.mode = MODE_OPT_STEP;
+        //parsed++;
+      //}
       else if (!strcmp(argv[i],"--opt_report")) {
         optinfo.mode = MODE_OPT_REPORT;
         parsed++;
@@ -188,7 +192,7 @@ PsiReturnType optking(Options &options, int argc, char **argv) {
     /* init_in_out() sets the value of "infile", so we need to save it */
     fp_input = infile;
     
-    intro(argc, argv);
+    intro();
 
     ip_cwk_add(":OPTKING");
 
@@ -369,6 +373,7 @@ PsiReturnType optking(Options &options, int argc, char **argv) {
     }
 
     // do optimization step by gradients
+/*
     if (optinfo.mode == MODE_OPT_STEP) {
       fprintf(outfile," \n ** Taking normal optimization step. **\n");
       salc_set symm_salcs("SYMM");
@@ -404,6 +409,7 @@ PsiReturnType optking(Options &options, int argc, char **argv) {
       if (a == PSI_RETURN_SUCCESS) converged = Success;
       return converged; //return converged or not in some other way?
     }
+*/
 
     // only execute a user-given displacements vector
     if (optinfo.mode == MODE_DISP_USER) {
@@ -707,22 +713,15 @@ PsiReturnType optking(Options &options, int argc, char **argv) {
 }
 
 /***  INTRO   prints into ***/
-void intro(int argc, char **argv) {
-  int i;
-  if (optinfo.mode == MODE_OPT_STEP) {
-    fprintf(outfile,
-            "\n\t------------------------------------------------------\n");
-    fprintf(outfile,
-              "\t    OPTKING: for internal coordinate optimizations    \n");
-    fprintf(outfile,
-              "\t------------------------------------------------------\n");
-  }
-  else {
-    fprintf(outfile,"\n******* OPTKING: ");
-    for (i=1; i<argc; ++i)
-      fprintf(outfile,"%s ", argv[i]);
-    fprintf(outfile,"\n");
-  }
+void intro(void) {
+  fprintf(outfile, "\n\t------------------------------------------------------\n");
+  fprintf(outfile,   "\t    OPTKING: for internal coordinate optimizations    \n");
+  fprintf(outfile,   "\t     Rollin A. King, Bethel University, 1999-2010     \n");
+  fprintf(outfile,   "\t------------------------------------------------------\n");
+}
+
+void intro(std::string header) {
+  fprintf(outfile, "\n\t*** OPTKING : %s\n", header.c_str());
 }
 
 void free_info(int nsimples) {
