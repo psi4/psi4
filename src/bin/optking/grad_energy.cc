@@ -15,7 +15,7 @@
 #include <libipv1/ip_lib.h>
 #include <libpsio/psio.h>
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 void grad_energy(cartesians &carts, simples_class &simples, const salc_set &symm) {
 
@@ -116,7 +116,7 @@ for (i=0;i<symm.get_num();++i)
   B = compute_B(simples, symm);
   f = new double[dim_carts];
   opt_mmult(B,1,&f_q,1,&f,1,dim_carts,symm.get_num(),1,0);
-  free_matrix(B);
+  free_block(B);
 
   // change forces to gradient for writing a file11 entry
   for(i=0;i<dim_carts;++i)
@@ -143,7 +143,7 @@ for (i=0;i<symm.get_num();++i)
 
   // write out geometry, gradient and energy to chkpt file
   cnt = -1;
-  geom2D = init_matrix(carts.get_natom(),3);
+  geom2D = block_matrix(carts.get_natom(),3);
   for (i=0; i<carts.get_natom(); ++i)
     for (j=0; j<3; ++j)
       geom2D[i][j] = geom[++cnt];
@@ -153,7 +153,7 @@ for (i=0;i<symm.get_num();++i)
   chkpt_wt_grad(f);
   chkpt_wt_etot(energy);
   chkpt_close();
-  free_matrix(geom2D);
+  free_block(geom2D);
   free_array(f);
   free_array(geom);
 
@@ -174,5 +174,5 @@ for (i=0;i<symm.get_num();++i)
   */
 }
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 

@@ -11,7 +11,7 @@ namespace psi {
 extern FILE *infile; 
 }
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 /* Global variables */
 #ifdef EXTERN
@@ -138,6 +138,6 @@ EXTERN struct SYMInfo {
   int **ict_ops_sign;
 } syminfo;
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 
 #endif

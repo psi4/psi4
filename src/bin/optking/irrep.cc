@@ -17,7 +17,7 @@ significant modifications by J. Kenny June '00
 #include "cartesians.h"
 #include "simples.h"
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 static double **irrep_reduce(double **coord_mat, const simples_class &simples, int coords, int order);
 
@@ -40,7 +40,7 @@ double **irrep(const simples_class &simples, double **di_coord) {
 
   /* allocate some memory */
   // symm_coord = (double **) malloc(num_nonzero * sizeof(double *));
-  symm_coord = init_matrix(num_nonzero,simples.get_num());
+  symm_coord = block_matrix(num_nonzero,simples.get_num());
   spanned_arr = init_int_array(num_nonzero);
 
   /* determine order of point group */
@@ -89,7 +89,7 @@ double **irrep(const simples_class &simples, double **di_coord) {
       for (j=0; j<simples.get_num(); ++j)
         symm_coord[coord_num][j] = di_coord[coord_num][j];
     }
-    free_matrix(irreps_spanned);
+    free_block(irreps_spanned);
     free_int_array(spanned_arr);
     return symm_coord;
   }
@@ -98,7 +98,7 @@ double **irrep(const simples_class &simples, double **di_coord) {
     evect_proj = init_array(simples.get_num());
     tmp_evect = init_array(simples.get_num());
     irr_tmp = init_int_array(num_spanned_big);
-    coord_tmp = init_matrix(num_spanned_big,simples.get_num()); 
+    coord_tmp = block_matrix(num_spanned_big,simples.get_num()); 
 
     index = 0;     /* this variable keeps track of where to put next projection */
     for(coord_num=0;coord_num<num_nonzero;coord_num++) {
@@ -160,8 +160,8 @@ double **irrep(const simples_class &simples, double **di_coord) {
     }
 
     /* check characters of projected coordinates to make sure they span only one irrep each */
-    free_matrix(irreps_spanned); 
-//    irreps_spanned = init_matrix(num_spanned_big,simples.get_num());
+    free_block(irreps_spanned); 
+//    irreps_spanned = block_matrix(num_spanned_big,simples.get_num());
 
     irreps_spanned = irrep_reduce(coord_tmp, simples, num_spanned_big, order);
 
@@ -189,7 +189,7 @@ double **irrep(const simples_class &simples, double **di_coord) {
 
     // orthogonalize the vectors
     offset=0;     /* offset + index tells where next coordinate goes in matrix */
-    coord_tmp2 = init_matrix(num_spanned_big, simples.get_num());
+    coord_tmp2 = block_matrix(num_spanned_big, simples.get_num());
 
     /* orthogonalize vectors for each symmetry block independently */
     for (irrep=0;irrep<syminfo.nirreps;irrep++) {
@@ -322,7 +322,7 @@ double **irrep_reduce(double **coord_mat, const simples_class &simples, int num_
 
   chars = init_array(syminfo.nirreps);
   tmp_vec = init_array(simples.get_num());
-  coef_mat = init_matrix(num_coords,syminfo.nirreps);
+  coef_mat = block_matrix(num_coords,syminfo.nirreps);
 
   /* loop over number of coordinate vectors */
   for(coord=0;coord<num_coords;++coord) { 
@@ -357,5 +357,5 @@ double **irrep_reduce(double **coord_mat, const simples_class &simples, int num_
   return coef_mat;
 }
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 

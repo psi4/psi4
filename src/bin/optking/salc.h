@@ -13,7 +13,7 @@
 
 #include <libipv1/ip_lib.h>
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 class salc_class {
     int length;
@@ -144,6 +144,6 @@ class salc_set {
     }
 };
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 
 #endif

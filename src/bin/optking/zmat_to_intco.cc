@@ -10,7 +10,7 @@
 
 #include <libchkpt/chkpt.h>
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 void zmat_to_intco() {
   int i, first, a, b, c, d, cnt = 0, natom;
@@ -188,5 +188,5 @@ void zmat_to_intco() {
   return;
 }
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 

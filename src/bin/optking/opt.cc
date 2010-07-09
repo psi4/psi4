@@ -46,10 +46,11 @@ command-line      internal specifier   what it does
 #include "opt.h"
 
 #include <libipv1/ip_lib.h>
+#include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <ccfiles.h>
 
-namespace psi { namespace optking {
+namespace psi { // namespace optking {
 
 int opt_psi_start(FILE** infile, FILE** outfile, char** psi_file_prefix,
 int argc, char *argv[], int overwrite_output);
@@ -357,7 +358,7 @@ PsiReturnType optking(Options &options, int argc, char *argv[]) {
       fconst_init(carts, simples, symm);
       if (optinfo.print_hessian) {
         int dim = symm.get_num();
-        double **H = init_matrix(dim,dim);
+        double **H = block_matrix(dim,dim);
         open_PSIF();
         psio_read_entry(PSIF_OPTKING, "Symmetric Force Constants",
             (char *) &(H[0][0]),dim*dim*sizeof(double));
@@ -365,7 +366,7 @@ PsiReturnType optking(Options &options, int argc, char *argv[]) {
         fprintf(outfile,"\nThe Hessian (Second Derivative) Matrix\n");
         print_mat5(H,dim,dim,outfile);
         fprintf(outfile,"\n");
-        free_matrix(H);
+        free_block(H);
       } 
       exit_io();
       //return 0;
@@ -554,7 +555,7 @@ PsiReturnType optking(Options &options, int argc, char *argv[]) {
       psio_read_entry(PSIF_OPTKING, "OPT: Num. of disp.",
           (char *) &(total_num_disps), sizeof(int));
 
-      micro_geoms = init_matrix(total_num_disps, dim_carts);
+      micro_geoms = block_matrix(total_num_disps, dim_carts);
       psio_read_entry(PSIF_OPTKING, "OPT: Displaced geometries",
           (char *) &(micro_geoms[0][0]), total_num_disps*dim_carts* sizeof(double));
 
@@ -565,7 +566,7 @@ PsiReturnType optking(Options &options, int argc, char *argv[]) {
 
       chkpt_restart( syminfo.irrep_lbls[ irrep_per_disp[optinfo.disp_num]] );
 
-      geom2D = init_matrix(carts.get_natom(),3);
+      geom2D = block_matrix(carts.get_natom(),3);
       for (i=0; i<carts.get_natom(); ++i)
         for (j=0; j<3; ++j)
           geom2D[i][j] = micro_geoms[optinfo.disp_num][3*i+j];
@@ -582,11 +583,11 @@ PsiReturnType optking(Options &options, int argc, char *argv[]) {
       chkpt_close();
       fprintf(outfile,"\n ** Geometry for displacement %d sent to chkpt. **\n", 
               optinfo.disp_num+1);
-      free_matrix(micro_geoms);
+      free_block(micro_geoms);
 
       print_mat(geom2D,carts.get_natom(),3,outfile);
 
-      free_matrix(geom2D);
+      free_block(geom2D);
       free_info(simples.get_num());
       exit_io();
       //return(0);
@@ -772,7 +773,7 @@ void load_ref(const cartesians &carts) {
   close_PSIF();
 
   cnt = 0;
-  geom2D = init_matrix(carts.get_natom(), 3);
+  geom2D = block_matrix(carts.get_natom(), 3);
   for (i=0;i<carts.get_natom();++i)
     for (j=0;j<3;++j)
       geom2D[i][j] = geom[cnt++];
@@ -821,4 +822,4 @@ void chkpt_restart(char *new_prefix) {
   return;
 }
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */

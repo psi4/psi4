@@ -6,7 +6,7 @@
 #ifndef _psi3_bin_optking_cartesians_h_
 #define _psi3_bin_optking_cartesians_h_
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 class cartesians {
     double energy;
@@ -87,7 +87,7 @@ class cartesians {
     double **get_coord_2d() const {
       int i,j,cnt;
       double **copy;
-      copy = init_matrix(natom,3);
+      copy = block_matrix(natom,3);
       cnt=0;
       for (i=0; i<natom; ++i)
         for (j=0; j<3; ++j)
@@ -161,6 +161,6 @@ class cartesians {
     }
 };
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 
 #endif

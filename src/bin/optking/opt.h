@@ -8,7 +8,7 @@
 
 #include <psi4-dec.h>
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 void open_PSIF(void);
 void close_PSIF(void);
@@ -110,6 +110,6 @@ void fconst_init(const cartesians &carts, const simples_class &simples, const sa
 void fconst_init_cart(cartesians &carts);
 
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 
 #endif

@@ -16,7 +16,7 @@
 #include <cov_radii.h>
 #include <libpsio/psio.h>
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 // returns covalent bond length in bohr from atomic numbers
 inline double Rcov(int ZA, int ZB) {
@@ -301,7 +301,7 @@ void empirical_H(const simples_class & simples, const salc_set &symm, const cart
   double **intcos;
   double **f_new;
 
-  intcos = init_matrix(symm.get_num(),simples.get_num());
+  intcos = block_matrix(symm.get_num(),simples.get_num());
   int id, index;
 
   for (i=0;i<symm.get_num();++i) {
@@ -316,7 +316,7 @@ void empirical_H(const simples_class & simples, const salc_set &symm, const cart
   // fprintf(outfile,"Simples to Salc matrix\n");
   // print_mat(intcos,symm.get_num(),simples.get_num(),outfile);
 
-  f_new = init_matrix(symm.get_num(),symm.get_num());
+  f_new = block_matrix(symm.get_num(),symm.get_num());
   for (i=0;i<symm.get_num();++i)
     for (j=0;j<symm.get_num();++j)
       for (k=0;k<simples.get_num();++k)
@@ -329,9 +329,10 @@ void empirical_H(const simples_class & simples, const salc_set &symm, const cart
   close_PSIF();
 
   free_array(f);
-  free_matrix(f_new);
-  free_matrix(intcos);
+  free_block(f_new);
+  free_block(intcos);
   return;
 }
 
-}}
+}//}
+

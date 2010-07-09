@@ -9,7 +9,7 @@
 #include "cartesians.h"
 #include "simples.h"
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 extern void print_mat2(double **, int, int, FILE *);
 
@@ -67,7 +67,7 @@ void simples_class :: locate_id(int id, Intco_type *itype, int *sub_index, int *
 
 double ** simples_class::bond_connectivity_matrix(int natoms) const {
   int i, a, b;
-  double **B = init_matrix(natoms,natoms);
+  double **B = block_matrix(natoms,natoms);
   for (i=0; i<stre.size(); ++i) {
     a = stre[i].A;
     b = stre[i].B;
@@ -496,7 +496,7 @@ simples_class :: simples_class(cartesians& carts, int user_intcos)
       fprintf(outfile,"\nGenerating simple internals\n"); fflush(outfile);
 
       /* Compute atomic distance matrix */
-      atom_dist = init_matrix(natom,natom);
+      atom_dist = block_matrix(natom,natom);
       for (i=0; i<natom; ++i)
         for (j=0; j<natom; ++j)
           atom_dist[i][j] = sqrt(SQR(coord_2d[i][0] - coord_2d[j][0])+
@@ -752,8 +752,8 @@ simples_class :: simples_class(cartesians& carts, int user_intcos)
         }
       }
 
-      free_matrix(coord_2d);
-      free_matrix(atom_dist);
+      free_block(coord_2d);
+      free_block(atom_dist);
 
       opt_ffile(&fp_intco, "intco.dat",0);
       print(fp_intco,0); 
@@ -911,5 +911,5 @@ double simples_class::get_s(Intco_type itype, int sub_index, int atom,
 }
 
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 

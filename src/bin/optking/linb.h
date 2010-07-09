@@ -11,7 +11,7 @@
 
 #include <libchkpt/chkpt.h>
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 class linb_class {
 
@@ -245,6 +245,6 @@ class linb_class {
 
 };
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 
 #endif

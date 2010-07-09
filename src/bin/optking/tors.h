@@ -6,7 +6,7 @@
 #ifndef _psi3_bin_optking_tors_h_
 #define _psi3_bin_optking_tors_h_
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 class tors_class {
 
@@ -292,6 +292,6 @@ class tors_class {
 
 };
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 
 #endif

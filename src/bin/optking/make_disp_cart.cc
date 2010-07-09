@@ -22,7 +22,7 @@
 #include "salc.h"
 #include "opt.h"
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 /* MAKE_CART_DISP makes cartesian displacements for each atom */
 /* symmetrize later: (+ and - if symmetric; otherwise, just +) */
@@ -92,7 +92,7 @@ int make_disp_cart(cartesians &carts)
   free_array(com);
 
   /**** Determine the rotational coordinates from MOI tensor ****/
-  moi = init_matrix(3,3);
+  moi = block_matrix(3,3);
   for (i=0; i<natom; ++i) {
     moi[0][0] += masses[3*i] * (SQR(coord[3*i+1]) + SQR(coord[3*i+2]));
     moi[1][1] += masses[3*i] * (SQR(coord[3*i+0]) + SQR(coord[3*i+2]));
@@ -105,17 +105,17 @@ int make_disp_cart(cartesians &carts)
   moi[2][0] = moi[0][2];
   moi[2][1] = moi[1][2];
 
-  X = init_matrix(3,3);
+  X = block_matrix(3,3);
   evals = init_array(3);
   opt_sq_rsp(3,3,moi,evals,1,X,1.0E-14);
-  free_matrix(moi);
+  free_block(moi);
   if (print) {
     fprintf(outfile,"Eigenvectors (X) of MOI tensor\n");
     print_mat(X,3,3,outfile);
   }
 
   /**** Build matrix with COM and rotational constraints as rows ****/
-  constraints = init_matrix(6, 3*natom);
+  constraints = block_matrix(6, 3*natom);
   /* COM constraints */
   for (i=0; i<natom; ++i) {
     constraints[0][3*i]   = 1.0 * sqrt(masses[3*i]);
@@ -145,7 +145,7 @@ int make_disp_cart(cartesians &carts)
     fprintf(outfile,"Raw COM/Rotational Constraints\n");
     print_mat(constraints,6,3*natom,outfile);
   }
-  free_matrix(X);
+  free_block(X);
 
   /* Remove NULL constraint (if present) and normalize rest of them */
   cnt = -1;
@@ -164,14 +164,14 @@ int make_disp_cart(cartesians &carts)
   }
 
   /* Orthogonalize rotations and translations exactly-is this ever necessary?*/
-  constraints_ortho = init_matrix(nconstraints,3*natom);
+  constraints_ortho = block_matrix(nconstraints,3*natom);
   cnt = 0;
   for (i=0; i<nconstraints; ++i)
     cnt += schmidt_add(constraints_ortho, cnt, 3*natom, constraints[i]);
   for (i=0; i<nconstraints; ++i)
     for (j=0; j<3*natom; ++j)
       constraints[i][j] = constraints_ortho[i][j];
-  free_matrix(constraints_ortho);
+  free_block(constraints_ortho);
   if (print) {
     fprintf(outfile,"Orthogonal constraints\n");
     print_mat(constraints,nconstraints,3*natom,outfile);
@@ -183,7 +183,7 @@ int make_disp_cart(cartesians &carts)
 
   /* loop over irrep of coordinates */
   for (irrep=0; irrep < nirreps; ++irrep) {
-    salc_orig[irrep] = init_matrix(3*natom,3*natom);
+    salc_orig[irrep] = block_matrix(3*natom,3*natom);
     cnt=-1;
 
     /* loop over unique atoms and xyz coordinates */
@@ -228,7 +228,7 @@ int make_disp_cart(cartesians &carts)
   v = init_array(3*natom);
   nsalc_all = 0;
   for (irrep=0; irrep< nirreps; ++irrep) {
-    salc[irrep] = init_matrix(nsalc_orig[irrep],3*natom);
+    salc[irrep] = block_matrix(nsalc_orig[irrep],3*natom);
     cnt = 0;
 
     for (i=0; i<nsalc_orig[irrep]; ++i) {
@@ -255,9 +255,9 @@ int make_disp_cart(cartesians &carts)
     nsalc_all += cnt;
   }
   for (irrep=0; irrep<nirreps; ++irrep) {
-    free_matrix(salc_orig[irrep]);
+    free_block(salc_orig[irrep]);
   }
-  free_matrix(constraints);
+  free_block(constraints);
   free_int_array(nsalc_orig);
   free_array(v);
 
@@ -291,7 +291,7 @@ int make_disp_cart(cartesians &carts)
   geoms = (double ***) malloc(nirreps*sizeof(double **));
   for (irrep=0; irrep<nirreps; ++irrep) {
 
-    geoms[irrep] = init_matrix(ndisp[irrep],3*natom);
+    geoms[irrep] = block_matrix(ndisp[irrep],3*natom);
     for (i=0; i<ndisp[irrep]; ++i)
       for (j=0; j<3*natom; ++j)
         geoms[irrep][i][j] = coord[j];
@@ -337,7 +337,7 @@ int make_disp_cart(cartesians &carts)
       fprintf(outfile,"Displaced Geometries of irrep %d.\n",irrep);
       print_mat(geoms[irrep],ndisp[irrep],3*natom,outfile);
     }
-    free_matrix(geoms[irrep]);
+    free_block(geoms[irrep]);
   }
   free_array(geoms);
 
@@ -347,7 +347,7 @@ int make_disp_cart(cartesians &carts)
       psio_write(PSIF_OPTKING, "OPT: Adapted cartesians", (char *) &(salc[irrep][0][0]),
       nsalc[irrep]*3*natom*sizeof(double), next, &next);
     }
-    free_matrix(salc[irrep]);
+    free_block(salc[irrep]);
   }
   free_int_array(salc);
 
@@ -495,5 +495,5 @@ int check_coordinates(int natom, double *coord, double *masses, double *Zvals,
     exit(1);
 }
                                                                                                                 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 

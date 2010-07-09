@@ -15,7 +15,7 @@
 #include <libipv1/ip_lib.h>
 #include <libpsio/psio.h>
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 int opt_step_cart(cartesians &carts) {
   int xyz, i,j,k,ii,a,b, dim, dim_carts, success,nbfgs, constraint, nf;
@@ -142,5 +142,5 @@ int opt_step_cart(cartesians &carts) {
   return 0;
 }
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 

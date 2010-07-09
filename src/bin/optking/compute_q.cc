@@ -12,7 +12,7 @@
 #include "simples.h"
 #include "salc.h"
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 double *compute_q(const simples_class & simples, const salc_set & symm) {
   int i, j, simple, sub_index, sub_index2;
@@ -39,5 +39,5 @@ double *compute_q(const simples_class & simples, const salc_set & symm) {
   return q;
 }
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 

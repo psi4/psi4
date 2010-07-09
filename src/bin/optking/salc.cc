@@ -5,7 +5,7 @@
 
 #include "salc.h"
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 void salc_class::set_label(char *new_label) { strcpy(label,new_label); }
 
@@ -178,5 +178,5 @@ salc_set :: salc_set(const char *keyword)
   return;
 }
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 

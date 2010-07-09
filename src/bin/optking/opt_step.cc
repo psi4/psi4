@@ -16,7 +16,7 @@
 #include <libipv1/ip_lib.h>
 #include <libpsio/psio.h>
 
-namespace psi { namespace optking {
+namespace psi { // namespace optking {
 
 PsiReturnType opt_step_internal(cartesians &carts, simples_class &simples, const salc_set &symm);
 
@@ -316,22 +316,22 @@ PsiReturnType opt_step_internal(cartesians &carts, simples_class &simples, const
   // opt_mmult(B,1,&f_q,1,&temp_arr2,1,dim_carts,dim,1,0);
   // print_mat2(&temp_arr2, 1, dim_carts, outfile);
 
-  free_matrix(B);
+  free_block(B);
   free_array(f);
   free_array(temp_arr);
   free_array(temp_arr2);
-  free_matrix(u);
+  free_block(u);
 
   // Setup projection matrix P = G * G- for redundant internals
-  P = init_matrix(dim,dim);
+  P = block_matrix(dim,dim);
   opt_mmult(G,0,G_inv,0,P,0,dim,dim,dim,0); 
-  free_matrix(G);
-  free_matrix(G_inv);
+  free_block(G);
+  free_block(G_inv);
   
   // Add constraints to projection matrix
     // C has 1's on diagonal for constraints and 0's elsewhere
   if (optinfo.constraints_present) {
-    C = init_matrix(dim,dim);
+    C = block_matrix(dim,dim);
     double i_overlap, j_overlap;
     for (b=0; b<optinfo.nconstraints; ++b) {
       constraint = simples.index_to_id(optinfo.constraints[b]);
@@ -357,8 +357,8 @@ PsiReturnType opt_step_internal(cartesians &carts, simples_class &simples, const
     }
 
   // P = P' - P' C (CPC)^-1 C P'
-    T = init_matrix(dim,dim);
-    T2 = init_matrix(dim,dim);
+    T = block_matrix(dim,dim);
+    T2 = block_matrix(dim,dim);
     opt_mmult(P,0,C,0,T,0,dim,dim,dim,0); 
     opt_mmult(C,0,T,0,T2,0,dim,dim,dim,0); 
     T3 = symm_matrix_invert(T2, dim, 0, 1);
@@ -370,10 +370,10 @@ PsiReturnType opt_step_internal(cartesians &carts, simples_class &simples, const
     for (i=0;i<dim;++i)
       for (j=0;j<dim;++j)
         P[i][j] -= T2[i][j];
-    free_matrix(T);
-    free_matrix(T2);
-    free_matrix(T3);
-    free_matrix(C);
+    free_block(T);
+    free_block(T2);
+    free_block(T3);
+    free_block(C);
   }
 
    // Project redundancies and constraints out of forces: f_q = P f_q'
@@ -416,14 +416,14 @@ PsiReturnType opt_step_internal(cartesians &carts, simples_class &simples, const
   fconst_init(carts, simples, symm); // makes sure some force constants are in PSIF_OPTKING
 
   H = compute_H(simples,symm,P,carts); // get updated and projected Hessian
-  free_matrix(P);
+  free_block(P);
 
   // *** standard Newton-Raphson search ***
   if (!optinfo.rfo) { // displacements from inverted, projected Hessian, H_inv f_q = dq
     dq = init_array(dim);
     H_inv = symm_matrix_invert(H,dim,0,0);
     opt_mmult(H_inv,0,&f_q,1,&dq,1,dim,dim,1,0);
-    free_matrix(H_inv);
+    free_block(H_inv);
 
     step_limit(simples, symm, dq);
     check_zero_angles(simples, symm, dq);
@@ -465,7 +465,7 @@ PsiReturnType opt_step_internal(cartesians &carts, simples_class &simples, const
   else { // take RFO step
 
     // build and diagonalize RFO matrix
-    rfo_mat = init_matrix(dim+1,dim+1);
+    rfo_mat = block_matrix(dim+1,dim+1);
     for (i=0; i<dim; ++i) {
       rfo_mat[dim][i] = - f_q[i];
       for (j=0; j<=i; ++j)
@@ -555,7 +555,7 @@ PsiReturnType opt_step_internal(cartesians &carts, simples_class &simples, const
 /* alternative algorithm (H-lambdaI)x + g = 0
     dq = init_array(dim);
     double **H_test, **H_inv_test;
-    H_test = init_matrix(dim,dim);
+    H_test = block_matrix(dim,dim);
     for (i=0; i<dim; ++i)
       for (j=0; j<dim; ++j)
         H_test[i][j] = H[i][j];
@@ -568,8 +568,8 @@ PsiReturnType opt_step_internal(cartesians &carts, simples_class &simples, const
     dot_array(f_q, dq, dim, &tval);
     fprintf(outfile,"g^T x = lambda ? = %15.10lf\n", - tval);
     free_array(dq);
-    free_matrix(H_test);
-    free_matrix(H_inv_test);
+    free_block(H_test);
+    free_block(H_inv_test);
 */
 
     dq = init_array(dim);
@@ -591,7 +591,7 @@ PsiReturnType opt_step_internal(cartesians &carts, simples_class &simples, const
       rfo_u[j] = rfo_mat[rfo_root][j];
     normalize(&rfo_u, 1, dim);
 
-    free_matrix(rfo_mat);
+    free_block(rfo_mat);
 
     // get gradient and hessian in step direction
     dot_array(f_q, rfo_u, dim, &rfo_g);
@@ -772,24 +772,24 @@ PsiReturnType opt_step_internal(cartesians &carts, simples_class &simples, const
       geom = carts.get_coord_2d();
 
       a = simples.frag[sub_index].get_A_natom();
-      geom_A = init_matrix(a,3);
+      geom_A = block_matrix(a,3);
       for (atom=0;atom<a;++atom)
         for (xyz=0;xyz<3;++xyz)
           geom_A[atom][xyz] = geom[simples.frag[sub_index].get_A_atom(atom)][xyz];
 
       b = simples.frag[sub_index].get_B_natom();
-      geom_B = init_matrix(b,3);
+      geom_B = block_matrix(b,3);
       for (atom=0;atom<b;++atom)
         for (xyz=0;xyz<3;++xyz)
           geom_B[atom][xyz] = geom[simples.frag[sub_index].get_B_atom(atom)][xyz];
 
       // get reference point information for fragments
-      weight_A = init_matrix(3,a);
+      weight_A = block_matrix(3,a);
       for (cnt=0; cnt<simples.frag[sub_index].get_A_P(); ++cnt)
         for (atom=0;atom<a;++atom)
           weight_A[cnt][atom] = simples.frag[sub_index].get_A_weight(cnt,atom);
 
-      weight_B = init_matrix(3,b);
+      weight_B = block_matrix(3,b);
       for (cnt=0; cnt<simples.frag[sub_index].get_B_P(); ++cnt)
         for (atom=0;atom<b;++atom)
           weight_B[cnt][atom] = simples.frag[sub_index].get_B_weight(cnt,atom);
@@ -806,7 +806,7 @@ PsiReturnType opt_step_internal(cartesians &carts, simples_class &simples, const
 
       symmetrize_geom(geom[0]);
       carts.set_coord_2d(geom);
-      free_matrix(geom);
+      free_block(geom);
 
       // leave any residual error in dq for back-transformation to clean up
       // put inter_q in rad/Ang and/or 1/R
@@ -827,8 +827,8 @@ PsiReturnType opt_step_internal(cartesians &carts, simples_class &simples, const
         free_array(coord);
       }
 
-      free_matrix(geom_A); free_matrix(geom_B);
-      free_matrix(weight_A); free_matrix(weight_B);
+      free_block(geom_A); free_block(geom_B);
+      free_block(weight_A); free_block(weight_B);
     }
     // sprintf(disp_label,"\nNew Geometry in au after analytic fragment orientation\n");
     // carts.print(1,outfile,0,disp_label,0);
@@ -912,7 +912,7 @@ PsiReturnType opt_step_internal(cartesians &carts, simples_class &simples, const
 
   free_array(q); free_array(dq); free_array(f_q);
   if (!do_line_search) {
-    free_matrix(H);
+    free_block(H);
     optinfo.iteration += 1;
     open_PSIF();
     psio_write_entry(PSIF_OPTKING, "Iteration", (char *) &(optinfo.iteration),sizeof(int));
@@ -1050,5 +1050,5 @@ bool line_search(cartesians &carts, int dim, double *dq) {
   return true;
 }
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 

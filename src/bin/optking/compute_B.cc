@@ -11,14 +11,14 @@
 #include "salc.h"
 #include "opt.h"
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 double **compute_B(const simples_class & simples, const salc_set & symm) {
   int i,j,a,b,c,d, simple, sub_index, sub_index2, atom, xyz;
   double **B, coeff, prefactor, weight;
   Intco_type intco_type;
 
-  B = init_matrix(symm.get_num(),3*optinfo.natom);
+  B = block_matrix(symm.get_num(),3*optinfo.natom);
 
   for (i=0;i<symm.get_num();++i) {
     prefactor = symm.get_prefactor(i);
@@ -102,4 +102,4 @@ double **compute_B(const simples_class & simples, const salc_set & symm) {
   return B;
 }
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */

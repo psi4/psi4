@@ -14,7 +14,7 @@ it returns 1 if a new cartesian geometry was successfully determined
 #include "salc.h"
 #include "opt.h"
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 bool new_geom(const cartesians &carts, simples_class &simples, const salc_set &all_salcs,
     double *dq, int print_flag, int restart_geom_file,
@@ -37,10 +37,10 @@ bool new_geom(const cartesians &carts, simples_class &simples, const salc_set &a
   free_array(masses);
 //u = unit_matrix(dim_carts);
 
-  A = init_matrix(dim_carts, nsalcs);
-  G = init_matrix(nsalcs, nsalcs);
-  G_inv = init_matrix(nsalcs, nsalcs);
-  temp_mat = init_matrix(dim_carts, nsalcs);
+  A = block_matrix(dim_carts, nsalcs);
+  G = block_matrix(nsalcs, nsalcs);
+  G_inv = block_matrix(nsalcs, nsalcs);
+  temp_mat = block_matrix(dim_carts, nsalcs);
 
   // Compute B matrix -- Isn't this slick?
   coord = carts.get_coord();
@@ -81,8 +81,8 @@ bool new_geom(const cartesians &carts, simples_class &simples, const salc_set &a
   bmat_iter_done = 0;
   count = 0;
   do {
-    free_matrix(G);
-    free_matrix(G_inv);
+    free_block(G);
+    free_block(G_inv);
     G = compute_G(B, nsalcs, carts);
     G_inv = symm_matrix_invert(G, nsalcs, 0,optinfo.redundant);
 
@@ -128,7 +128,7 @@ bool new_geom(const cartesians &carts, simples_class &simples, const salc_set &a
     simples.compute(new_x);
     // simples.print(outfile,1);
     simples.compute_s(new_x);
-    free_matrix(B);
+    free_block(B);
     B = compute_B(simples, all_salcs);
 
     // compute new internal coordinate values
@@ -176,7 +176,7 @@ bool new_geom(const cartesians &carts, simples_class &simples, const salc_set &a
     ++count;
   } while( (bmat_iter_done == 0) && (count < optinfo.bt_max_iter) );
 
-  free_matrix(B);
+  free_block(B);
 
   fprintf(outfile,"\t------------------------------------\n");
 
@@ -257,12 +257,12 @@ bool new_geom(const cartesians &carts, simples_class &simples, const salc_set &a
 
   free_array(q); free_array(new_q);
   free_array(x); free_array(dx); free_array(new_x);
-  free_matrix(A);
-  free_matrix(G);
-  free_matrix(G_inv);
-  free_matrix(u);
-  free_matrix(temp_mat);
+  free_block(A);
+  free_block(G);
+  free_block(G_inv);
+  free_block(u);
+  free_block(temp_mat);
   return true;
 }
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */

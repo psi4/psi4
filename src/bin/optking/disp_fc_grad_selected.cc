@@ -15,7 +15,7 @@
 #include <libipv1/ip_lib.h>
 #include <libpsio/psio.h>
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 // only the symmetric salcs are passed in
 // make displacements for selected coordinates
@@ -55,7 +55,7 @@ int disp_fc_grad_selected(const cartesians &carts, simples_class &simples, const
   psio_write_entry(PSIF_OPTKING, "OPT: Reference energy", (char *) &(energy), sizeof(double));
   close_PSIF();
 
-  displacements = init_matrix(ndisps, nsymm);
+  displacements = block_matrix(ndisps, nsymm);
   for (i=0; i<ncoord; ++i) {
     displacements[2*i  ][coord2salc[i]] = -1.0 * optinfo.disp_size;
     displacements[2*i+1][coord2salc[i]] = 1.0 * optinfo.disp_size;
@@ -66,7 +66,7 @@ int disp_fc_grad_selected(const cartesians &carts, simples_class &simples, const
   }
 
   /*** generate and store Micro_iteration cartesian geometries ***/
-  micro_geoms = init_matrix(ndisps, dim_carts);
+  micro_geoms = block_matrix(ndisps, dim_carts);
   for (i=0;i<ndisps;++i)  {
     sprintf(disp_label,"Displaced geometry %d in a.u.\n",i+1);
     success = new_geom(carts,simples,symm,displacements[i],0,
@@ -77,7 +77,7 @@ int disp_fc_grad_selected(const cartesians &carts, simples_class &simples, const
       exit(PSI_RETURN_FAILURE);
     }
   }
-  free_matrix(displacements);
+  free_block(displacements);
 
   open_PSIF();
   psio_write_entry(PSIF_OPTKING, "OPT: Displaced geometries",
@@ -94,7 +94,7 @@ int disp_fc_grad_selected(const cartesians &carts, simples_class &simples, const
       (char *) coord2salc, ncoord * sizeof(int));
 
   close_PSIF();
-  free_matrix(micro_geoms);
+  free_block(micro_geoms);
   free_int_array(coord2salc);
 
   // write zeroes for initial energy and gradients of displacements
@@ -130,5 +130,5 @@ int disp_fc_grad_selected(const cartesians &carts, simples_class &simples, const
   return(ndisps);
 }
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 

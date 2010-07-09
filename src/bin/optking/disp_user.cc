@@ -13,7 +13,7 @@
 
 #include <libipv1/ip_lib.h>
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 int disp_user(const cartesians &carts, simples_class & simples, const salc_set &all_salcs) {
   int i,j,a,b,success,h;
@@ -44,7 +44,7 @@ int disp_user(const cartesians &carts, simples_class & simples, const salc_set &
     punt("No DISPLACEMENTS vector found in input.");
   }
 
-  displacements = init_matrix(num_disps,all_salcs.get_num());
+  displacements = block_matrix(num_disps,all_salcs.get_num());
   for (i=0;i<num_disps;++i) {
     disp_length = 0;
     ip_count("DISPLACEMENTS",&disp_length,1,i);
@@ -75,7 +75,7 @@ int disp_user(const cartesians &carts, simples_class & simples, const salc_set &
 
   /*** generate and store Micro_iteration cartesian geometries ***/
   double **micro_geoms;
-  micro_geoms = init_matrix(num_disps, 3*carts.get_natom());
+  micro_geoms = block_matrix(num_disps, 3*carts.get_natom());
   for (i=0;i<num_disps;++i)  {
     //sprintf(disp_label,"Displaced geometry %d in a.u.\n",i+1);
 
@@ -103,7 +103,7 @@ int disp_user(const cartesians &carts, simples_class & simples, const salc_set &
       exit(PSI_RETURN_FAILURE);
     }
   }
-  free_matrix(displacements);
+  free_block(displacements);
 
   open_PSIF();
   psio_write_entry(PSIF_OPTKING, "OPT: Displaced geometries",
@@ -128,7 +128,7 @@ int disp_user(const cartesians &carts, simples_class & simples, const salc_set &
 
   close_PSIF();
 
-  free_matrix(micro_geoms);
+  free_block(micro_geoms);
   free(disp_label);
   //free(djunk);
 
@@ -136,5 +136,5 @@ int disp_user(const cartesians &carts, simples_class & simples, const salc_set &
   return 100;
 }
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 

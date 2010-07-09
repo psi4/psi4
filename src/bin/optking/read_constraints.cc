@@ -13,7 +13,7 @@
 
 #include <libipv1/ip_lib.h>
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 int *read_constraints(const simples_class & simples) {
   int num_type, i,j,a,b,c,d,cnt,*sign,id, sub_index, sub_index2;
@@ -264,5 +264,5 @@ int *read_constraints(const simples_class & simples) {
   return constraints;
 }
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 

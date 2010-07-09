@@ -11,7 +11,7 @@
 #include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 // open a text file for 
 // code == 0 : writing
@@ -78,5 +78,5 @@ void opt_sq_rsp(int nm, int n, double **array, double *e_vals, int matz,
 
 
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 

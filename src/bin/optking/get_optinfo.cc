@@ -16,7 +16,7 @@
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.h>
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 static double power(double x, int y);
 
@@ -613,5 +613,5 @@ double power(double x, int y) {
   return tval;
 }
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 

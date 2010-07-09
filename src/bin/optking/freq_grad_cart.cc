@@ -15,7 +15,7 @@
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.h>
 
-namespace psi { namespace optking {
+namespace psi { //namespace optking {
 
 void freq_grad_cart(const cartesians &carts) {
   int i,j,k,l,a,b, ii, cnt, dim, natom, xyz, cnt_eval = -1, *evals_all_irrep,op_disp;
@@ -58,7 +58,7 @@ void freq_grad_cart(const cartesians &carts) {
   fprintf(outfile,"ndisp per irrep: "); for (h=0; h<nirreps; ++h) fprintf(outfile,"%d ",ndisp[h]);
   fprintf(outfile,"\n\n");
 
-  disp_grad = init_matrix(ndisp_all,3*natom);
+  disp_grad = block_matrix(ndisp_all,3*natom);
   if (optinfo.grad_dat) { /* read in gradients from "file11.dat" */
     opt_ffile(&fp_11, "file11.dat", 2);
     rewind(fp_11);
@@ -91,9 +91,9 @@ void freq_grad_cart(const cartesians &carts) {
 
   /**** construct full gradient list using unique ones ****/
   if (optinfo.points == 3) 
-    disp_grad_all = init_matrix(2*nsalc_all, 3*natom);
+    disp_grad_all = block_matrix(2*nsalc_all, 3*natom);
   else if (optinfo.points == 5) 
-    disp_grad_all = init_matrix(4*nsalc_all, 3*natom);
+    disp_grad_all = block_matrix(4*nsalc_all, 3*natom);
   /* just copy symmetric gradients */
   for (j=0; j<ndisp[0]; ++j) {
     for (I=0; I<3*natom; ++I)
@@ -131,7 +131,7 @@ void freq_grad_cart(const cartesians &carts) {
     }
     ndisp[h] += ndisp[h];
   }
-  free_matrix(disp_grad);
+  free_block(disp_grad);
 
   /* fix number of displacements to match full list of gradients */
   ndisp_all=0;
@@ -139,7 +139,7 @@ void freq_grad_cart(const cartesians &carts) {
     ndisp_all += ndisp[h];
   }
 
-  B = init_matrix(nsalc_all,3*natom);
+  B = block_matrix(nsalc_all,3*natom);
   psio_read_entry(PSIF_OPTKING, "OPT: Adapted cartesians",
     (char *) &(B[0][0]), nsalc_all*3*natom*sizeof(double));
   if (print) {
@@ -179,7 +179,7 @@ void freq_grad_cart(const cartesians &carts) {
    // In this case, B = c * masses^(1/2).  =>  G=I.
    // Thus, f_q = c * f_x / sqrt(masses)
     f_q = init_array(nsalc[h]);
-    grads_adapted = init_matrix(ndisp[h],3*natom);
+    grads_adapted = block_matrix(ndisp[h],3*natom);
   
     if (print) fprintf(outfile,"Gradients recomputed from internal coordinate gradients\n");
     for (k=0; k<ndisp[h]; ++k) {
@@ -206,7 +206,7 @@ void freq_grad_cart(const cartesians &carts) {
 
     free_array(f_q);
 
-    force_constants = init_matrix(nsalc[h],nsalc[h]);
+    force_constants = block_matrix(nsalc[h],nsalc[h]);
 
     /*** Construct force constant matrix from finite differences of forces ***/
     fprintf(outfile,"\n ** Using %d-point formula.\n",optinfo.points);
@@ -244,17 +244,17 @@ void freq_grad_cart(const cartesians &carts) {
 
     /** Find eigenvalues of force constant matrix **/
     evals  = init_array(dim);
-    evects = init_matrix(dim, dim);
+    evects = block_matrix(dim, dim);
     dgeev_optking(dim, force_constants, evals, evects);
-    free_matrix(force_constants);
+    free_block(force_constants);
     sort(evals, evects, dim);
 
-	normal = init_matrix(3*natom, dim);
+	normal = block_matrix(3*natom, dim);
     opt_mmult(&(B[start_irr[h]]),1,evects,0,normal,0,3*natom,dim,dim,0);
 	fprintf(outfile,"\n\tNormal coordinates for irrep %s\n",syminfo.clean_irrep_lbls[h]);
     print_evects(normal, evals, 3*natom, dim, outfile);
-	free_matrix(normal);
-    free_matrix(evects);
+	free_block(normal);
+    free_block(evects);
 
     for (i=0; i<dim; ++i) {
       ++cnt_eval;
@@ -264,7 +264,7 @@ void freq_grad_cart(const cartesians &carts) {
     free_array(evals);
   }
   free_array(masses);
-  free_matrix(disp_grad_all);
+  free_block(disp_grad_all);
 
   sort_evals_all(nsalc_all,evals_all, evals_all_irrep);
 
@@ -318,5 +318,5 @@ void sort_evals_all(int nsalc_all, double *evals_all, int *evals_all_irrep) {
   return;
 }
 
-}} /* namespace psi::optking */
+}//} /* namespace psi::optking */
 
