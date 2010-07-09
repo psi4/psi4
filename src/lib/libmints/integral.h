@@ -2,6 +2,7 @@
 #define _psi_src_lib_libmints_integral_h_
 
 #include <libmints/basisset.h>
+#include <libmints/cartesianiter.h>
 #include <vector>
 
 /*! \def INT_NCART(am)
@@ -24,6 +25,7 @@
 namespace psi {
 
 class BasisSet;
+class GaussianShell;
 class OneBodyInt;
 class TwoBodyInt;
 class Symmetry;
@@ -284,7 +286,7 @@ public:
     /// Returns an ERI integral object
     virtual TwoBodyInt* eri(int deriv=0, double schwarz = 0.0);
 
-    //Returns a general ERI iterator object for any (P Q | R S) in shells
+    /// Returns a general ERI iterator object for any (P Q | R S) in shells
     IntegralsIterator integrals_iterator(int p, int q, int r, int s);
 
     /// Returns an ERI iterator object, only coded for standard ERIs
@@ -293,8 +295,13 @@ public:
     /// Initializes spherical harmonic transformations
     virtual void init_spherical_harmonics(int max_am);
 
-    // Return spherical transform object for am
+    /// Return spherical transform object for am
     SphericalTransform* spherical_transform(int am) { return &(spherical_transforms_[am]); }
+
+    /// Return a new Cartesian iterator
+    CartesianIter* cartesian_iter(int l) { return new CartesianIter(l); }
+    /// Return a new rudundant Cartesian iterator
+    RedundantCartesianIter* redundant_cartesian_iter(int l) { return new RedundantCartesianIter(l); }
 };
 
 }

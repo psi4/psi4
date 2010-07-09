@@ -10,12 +10,11 @@
 #include "psifiles.h"
 #include "mospace.h"
 
-#define INDEX(i,j) ((i>j) ? ((i*(i+1)/2)+j) : ((j*(j+1)/2)+i))
+#ifndef INDEX
+    #define INDEX(i,j) (((i)>(j)) ? (((i)*((i)+1)/2)+(j)) : (((j)*((j)+1)/2)+(i)))
+#endif
 
-using namespace psi;
-
-namespace psi{ namespace libtrans{
-
+namespace psi{
 
 typedef std::vector<shared_ptr< MOSpace> > SpaceVec;
 
@@ -23,7 +22,7 @@ typedef std::vector<shared_ptr< MOSpace> > SpaceVec;
      The IntegralTransform class transforms one- and two-electron integrals
      within general spaces
    */
-  
+
 class IntegralTransform{
 // TODO check usage of restricted, to make sure that it's correct everywhere
     public:
@@ -66,7 +65,7 @@ class IntegralTransform{
          * OccAndVir - The frozen occupied and the frozen core orbitals are excluded
          */
         enum FrozenOrbitals {None, OccOnly, VirOnly, OccAndVir};
-        /** 
+        /**
          * The spin of the electron.  This could, of course, be a boolean but an
          * enum makes things a little more transparent
          *
@@ -76,7 +75,7 @@ class IntegralTransform{
         enum SpinType {Alpha, Beta};
         /**
          * Set up a transformation involving four MO spaces
-         * 
+         *
          * @param spaces             A vector containing smart pointers to the unique space(s) involved
          *                           in any transformations that this object will perform
          * @param transformationType The type of transformation, described by the
@@ -148,7 +147,7 @@ class IntegralTransform{
         void set_dpd_id(int n) {_myDPDNum = n;}
         /// The number of the DPD instance used in the transformation
         int get_dpd_id() const {return _myDPDNum;}
-        
+
     protected:
         void semicanonicalize();
         void raid_checkpoint();
@@ -281,9 +280,6 @@ class IntegralTransform{
         bool _useDPD;
 };
 
-}} // End namespaces
-
-// This is here so that files including this have clean(er) syntax
-using namespace psi::libtrans;
+} // End namespaces
 
 #endif // Header guard

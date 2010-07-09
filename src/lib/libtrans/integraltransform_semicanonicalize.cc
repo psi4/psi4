@@ -7,7 +7,8 @@
 #include "psifiles.h"
 #include "spaceinfo.h"
 
-namespace psi{ namespace libtrans{
+using namespace psi;
+
 /**
 * This will read in the alpha and beta Fock matrices, which were computed during the
 * two-electron SO integral sort and diagonalize the occ-occ and vir-vir blocks in the
@@ -228,5 +229,3 @@ IntegralTransform::semicanonicalize()
     _chkpt->wt_beta_scf(fullC);
     free_block(fullC);
 }
-
-}} // End namespaces

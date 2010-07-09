@@ -14,7 +14,7 @@
 #define EXTERN
 #include <libdpd/dpd.gbl>
 
-namespace psi{ namespace libtrans{
+using namespace psi;
 
 /**
  * Transform the two-electron integrals from the SO to the MO basis in the spaces specified
@@ -36,9 +36,7 @@ IntegralTransform::transform_tei(const shared_ptr<MOSpace> s1, const shared_ptr<
      * Andy Simmonett, 11/09*/
     if(_useIWL && !(s1==s2 && s1==s3 && s1==s4))
         throw FeatureNotImplemented("libtrans", "mixed spaces with IWL output", __FILE__, __LINE__);
-    
+
     transform_tei_first_half(s1, s2);
     transform_tei_second_half(s1, s2, s3, s4);
 }
-  
-}} // End namespaces

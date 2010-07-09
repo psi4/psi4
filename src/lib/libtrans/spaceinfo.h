@@ -1,9 +1,7 @@
 #ifndef _PSI_SRC_LIB_LIBTRANS_SPACEINFO_H_
 #define _PSI_SRC_LIB_LIBTRANS_SPACEINFO_H_
 
-using namespace psi;
-
-namespace psi{ namespace libtrans{
+namespace psi{
 
 /**
 * SpaceInfo is just a structure that contains all of the essential information
@@ -36,11 +34,7 @@ class SpaceInfo {
     double ***Cb;
 };
 
-
-}} // End namespaces
-
-// This is here so that files including this have clean(er) syntax
-using namespace psi::libtrans;
+} // End namespaces
 
 #endif // Header guard
 

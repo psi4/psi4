@@ -5,7 +5,7 @@
 #define EXTERN
 #include "libdpd/dpd.gbl"
 
-namespace psi{ namespace libtrans{
+using namespace psi;
 
 /**
  * Transforms the one-electron integrals.  This function is currently limited to
@@ -366,7 +366,3 @@ IntegralTransform::generate_oei()
 
     dpd_set_default(currentActiveDPD);
 }
-
-
-}} // End namespaces
-

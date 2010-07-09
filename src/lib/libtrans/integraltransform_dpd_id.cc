@@ -2,7 +2,8 @@
 #include "mospace.h"
 #include "exception.h"
 
-namespace psi{ namespace libtrans{
+using namespace psi;
+
 /**
  * Computes the DPD number that gives the most packing for a given pair of spaces
  * This version is specifically for chemists' notation integrals and is useful when
@@ -74,7 +75,7 @@ IntegralTransform::DPD_ID(const char c)
 
 /**
  * Computes the DPD number that gives the most packing for a given pair of spaces
- * 
+ *
  * @param str - a string describing the pair packing scheme
  *
  * The following entries are possible for str
@@ -122,6 +123,3 @@ IntegralTransform::DPD_ID(char *str)
     std::string s(str);
     return DPD_ID(s);
 }
-
-
-}} // Namespaces
