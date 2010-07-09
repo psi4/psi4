@@ -5,7 +5,7 @@
 #define EXTERN
 #include <libdpd/dpd.gbl>
 
-namespace psi{ namespace libtrans{
+using namespace psi;
 
 IntegralTransform::IntegralTransform(SpaceVec spaces,
                                      TransformationType transformationType,
@@ -53,7 +53,7 @@ IntegralTransform::initialize()
 {
     raid_checkpoint();
     process_spaces();
-    
+
     // Set up the DPD library
     // TODO implement cacheing of files
     int numSpaces = _spacesUsed.size();
@@ -111,5 +111,3 @@ IntegralTransform::~IntegralTransform()
     free_int_matrix(_cacheList);
     free(_cacheFiles);
 }
-
-}} // End namespaces

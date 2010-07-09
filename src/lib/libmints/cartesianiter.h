@@ -21,7 +21,7 @@ public:
 
     /// Start the iteration.
     virtual void start();
-    /// Move to the next Catesian function.
+    /// Move to the next Cartesian function.
     virtual void next();
     /// Returns nonzero if the iterator currently holds valid data.
     virtual operator int();
@@ -42,6 +42,92 @@ public:
         This starts at 0 and sequentially increases as next() is called. */
     int bfn() { return bfn_; }
 };
+
+/** RedundantCartesianIter objects loop through all possible combinations
+    of a given number of axes.  This is used to compute the transformation
+    matrices that maps a set of Cartesian functions to another set of
+    Cartesian functions in a rotated coordinate system. */
+class RedundantCartesianIter {
+private:
+    int done_;
+    int l_;
+    int *axis_;
+
+public:
+    /// Create a object for the given angular momentum.
+    RedundantCartesianIter(int l);
+    virtual ~RedundantCartesianIter();
+
+    /// Return the current Cartesian basis function number.
+    virtual int bfn();
+
+    /// Initialize the iterator.
+    void start();
+    /// Move to the next combination of axes.
+    void next();
+    /// Returns nonzero if the iterator currently hold valid data.
+    operator int() { return !done_; }
+
+    /// The current exponent of x.
+    int a() const;
+    /// The current exponent of y.
+    int b() const;
+    /// The current exponent of z.
+    int c() const;
+    /// The angular momentum.
+    int l() const { return l_; }
+    /// Returns a() if i==0, b() if i==1, and c() if i==2.
+    int l(int i) const;
+    /// Return the i'th axis.
+    int axis(int i) const { return axis_[i]; }
+};
+
+inline void RedundantCartesianIter::start()
+{
+    if (l_==0)
+        done_ = 1;
+    else
+        done_ = 0;
+
+    for (int i=0; i<l_; i++)
+        axis_[i] = 0;
+}
+
+inline void RedundantCartesianIter::next()
+{
+    for (int i=0; i<l_; i++) {
+        if (axis_[i] == 2)
+            axis_[i] = 0;
+        else {
+            axis_[i]++;
+            return;
+        }
+    }
+    done_ = 1;
+}
+
+inline int RedundantCartesianIter::l(int axis) const
+{
+    int i;
+    int r = 0;
+    for (i=0; i<l_; i++) if (axis_[i]==axis) r++;
+    return r;
+}
+
+inline int RedundantCartesianIter::a() const
+{
+    return l(0);
+}
+
+inline int RedundantCartesianIter::b() const
+{
+    return l(1);
+}
+
+inline int RedundantCartesianIter::c() const
+{
+    return l(2);
+}
 
 }
 

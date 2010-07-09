@@ -1,6 +1,7 @@
 #include "mospace.h"
 #include "libciomr/libciomr.h"
-namespace psi{ namespace libtrans{
+
+using namespace psi;
 
 /// Keeps track of which labels have been assigned, for safety
 std::map<char, int> MOSpace::labelsUsed;
@@ -56,7 +57,7 @@ MOSpace::MOSpace(const char label, const int nirreps, const int *aOrbsPI,
         _bEvecs(bEvecs),
         _aIndex(aIndex),
         _bIndex(bIndex)
-{    
+{
     if(labelsUsed.count(label)){
         std::string error("Space ");
         error += label;
@@ -64,7 +65,7 @@ MOSpace::MOSpace(const char label, const int nirreps, const int *aOrbsPI,
         throw SanityCheckError(error, __FILE__, __LINE__);
     }
     ++labelsUsed[label];
-    
+
     // Count the number of alpha orbitals
     int nAOrbs = 0;
     for(int h = 0; h < nirreps; ++h) nAOrbs += aOrbsPI[h];
@@ -88,7 +89,3 @@ MOSpace::~MOSpace()
     if(_aOrbSym != NULL) free(_aOrbSym);
     if(_bOrbSym != NULL) free(_bOrbSym);
 }
-
-
-}} // End namespaces
-

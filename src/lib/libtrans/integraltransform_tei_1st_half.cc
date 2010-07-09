@@ -13,7 +13,7 @@
 #define EXTERN
 #include <libdpd/dpd.gbl>
 
-namespace psi{ namespace libtrans{
+using namespace psi;
 
 void
 IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace> s2)
@@ -163,7 +163,7 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
 
     _psio->close(_aHtIntFile, 1);
     _psio->close(PSIF_HALFT0, 0);
-    
+
     if(_transformationType != Restricted){
         /*** BB two-electron integral transformation ***/
         if(_print) {
@@ -285,6 +285,3 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
     // Hand DPD control back to the user
     dpd_set_default(currentActiveDPD);
 }
-
-}} // End namespaces
-

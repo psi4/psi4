@@ -13,7 +13,7 @@
 #define EXTERN
 #include <libdpd/dpd.gbl>
 
-namespace psi{ namespace libtrans{
+using namespace psi;
 
 void
 IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace> s2,
@@ -69,7 +69,7 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
 
     _psio->open(_dpdIntFile, PSIO_OPEN_OLD);
     _psio->open(_aHtIntFile, PSIO_OPEN_OLD);
-    
+
     int braCore = DPD_ID(s1, s2, Alpha, true);
     int braDisk = DPD_ID(s1, s2, Alpha, true);
     int ketCore = 0;
@@ -291,7 +291,7 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
         if(_useIWL) iwl = new IWL(_psio.get(), PSIF_MO_BB_TEI, _tolerance, 0, 0);
 
         _psio->open(_bHtIntFile, PSIO_OPEN_OLD);
-        
+
         braCore = DPD_ID(s1, s2, Beta, true);
         ketCore = 0;
         braDisk = DPD_ID(s1, s2, Beta, true);
@@ -390,7 +390,7 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
         dpd_buf4_close(&J);
 
         _psio->close(_bHtIntFile, _keepHtInts);
-        
+
         if(_useIWL){
             iwl->flush(1);
             iwl->set_keep_flag(1);
@@ -415,5 +415,3 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
     // Hand DPD control back to the user
     dpd_set_default(currentActiveDPD);
 }
-
-}} // End namespaces

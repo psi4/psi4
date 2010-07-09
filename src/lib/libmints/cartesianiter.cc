@@ -33,8 +33,20 @@ void CartesianIter::next()
     bfn_++;
 }
 
-CartesianIter::operator int() 
+CartesianIter::operator int()
 {
     return (a_ >= 0);
 }
 
+int RedundantCartesianIter::bfn()
+{
+    int i = a();
+    int am = l();
+    if (am == i)
+        return 0;
+    else {
+        int j = b();
+        int c = am - i;
+        return ((((c+1)*c)>>1)+c-j);
+    }
+}

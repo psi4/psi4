@@ -4,9 +4,7 @@
 #include <psi4-dec.h>
 #include <map>
 
-using namespace psi;
-
-namespace psi{ namespace libtrans{
+namespace psi{
 
 class SpaceInfo;
 
@@ -59,7 +57,7 @@ class MOSpace{
          */
         #define MOSPACE_NIL 'n'
         static shared_ptr<MOSpace> nil;
-        
+
         // These are to allow the map to be used
         friend bool operator==(const MOSpace &lhs, const MOSpace &rhs)
                                 { return lhs._label == rhs._label; }
@@ -141,9 +139,6 @@ class MOSpace{
         const double ***_bEvecs;
 };
 
-}} // End namespaces
-
-// This is here so that files including this have clean(er) syntax
-using namespace psi::libtrans;
+} // End namespaces
 
 #endif // Header guard

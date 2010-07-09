@@ -7,7 +7,8 @@
 #include "mospace.h"
 #include "spaceinfo.h"
 
-namespace psi{ namespace libtrans{
+using namespace psi;
+
 /**
  * Gathers MO information from the checkpoint file
  */
@@ -30,7 +31,7 @@ IntegralTransform::raid_checkpoint()
     _nTriSo  = _nso * (_nso + 1) / 2;
     _nTriMo  = _nmo * (_nmo + 1) / 2;
     _sosym   = init_int_array(_nso);
-    
+
     int count = 0;
     for(int h = 0; h < _nirreps; ++h){
         for(int i = 0; i < _sopi[h]; ++i, ++count){
@@ -78,7 +79,7 @@ IntegralTransform::process_spaces()
     _spacesUsed.push_back(MOSPACE_NIL);
     _spaceArrays.push_back(_sopi);
     _spaceArrays.push_back(_sosym);
-    
+
     for(space = _uniqueSpaces.begin(); space != _uniqueSpaces.end(); ++space){
         shared_ptr<MOSpace> moSpace = *space;
         int *aOrbsPI = new int[_nirreps];
@@ -470,6 +471,3 @@ IntegralTransform::print_dpd_lookup()
         fprintf(outfile, "Pair %-10s ID = %d\n", iter->first.c_str(), iter->second);
     }
 }
-
-}} // End namespaces
-

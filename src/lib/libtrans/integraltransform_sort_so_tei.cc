@@ -10,8 +10,7 @@
 #define EXTERN
 #include <libdpd/dpd.gbl>
 
-namespace psi{ namespace libtrans{
-
+using namespace psi;
 
 /**
  * Presort the two-electron integrals into DPD buffers to prepare them for
@@ -66,7 +65,7 @@ IntegralTransform::presort_so_tei()
         }
         soOffset += _sopi[h];
     }
-    
+
     double *T = init_array(_nTriSo);
     if(_print>4) fprintf(outfile, "The SO basis kinetic energy integrals\n");
     IWL::read_one(_psio.get(), PSIF_OEI, PSIF_SO_T,   T, _nTriSo, 0, _print > 4, outfile);
@@ -83,7 +82,7 @@ IntegralTransform::presort_so_tei()
         }
     }
     free(T);
-    
+
     int currentActiveDPD = psi::dpd_default;
     dpd_set_default(_myDPDNum);
 
@@ -91,9 +90,9 @@ IntegralTransform::presort_so_tei()
         fprintf(outfile, "\tPresorting SO-basis two-electron integrals.\n");
         fflush(outfile);
     }
-    
+
     int soIntFile = PSIF_SO_TEI;
-    
+
     dpdfile4 I;
     _psio->open(PSIF_SO_PRESORT, PSIO_OPEN_NEW);
     dpd_file4_init(&I, PSIF_SO_PRESORT, 0, 3, 3, "SO Ints (nn|nn)");
@@ -358,7 +357,7 @@ IntegralTransform::presort_so_tei()
     dpd_set_default(currentActiveDPD);
 
     alreadyPresorted = true;
-    
+
     dpd_file4_close(&I);
     _psio->close(PSIF_SO_PRESORT, 1);
 }
@@ -366,7 +365,7 @@ IntegralTransform::presort_so_tei()
 /**
  * Builds the frozen core operator and Fock matrix using the integral currently
  * in memory. N.B. all matrices are passed in lower triangular array form.
- * 
+ *
  * @param p - the first index in the integral
  * @param q - the second index in the integral
  * @param r - the third index in the integral
@@ -799,5 +798,3 @@ IntegralTransform::idx_error(const char *message, int p, int q, int r, int s,
       pq,rs,pq_sym,rs_sym);
     throw PsiException("DPD idx failure.", __FILE__, __LINE__);
 }
-
-}} // Namespaces
