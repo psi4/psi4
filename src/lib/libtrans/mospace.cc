@@ -16,7 +16,15 @@ shared_ptr<MOSpace> MOSpace::nil(new MOSpace(MOSPACE_NIL));
  * for custom spaces.
  */
 MOSpace::MOSpace(char label):
-        _label(label)
+        _label(label),
+        _aOrbSym(0),
+        _bOrbSym(0),
+        _aOrbsPI(0),
+        _bOrbsPI(0),
+        _aEvecs(0),
+        _bEvecs(0),
+        _aIndex(0),
+        _bIndex(0)
 {
     // Register this label as "taken"
     ++labelsUsed[_label];
@@ -49,8 +57,8 @@ MOSpace::MOSpace(const char label, const int nirreps, const int *aOrbsPI,
                  const int *bOrbsPI, const double ***aEvecs, const double ***bEvecs,
                  const int *aIndex, const int *bIndex):
         _label(label),
-        _aOrbSym(NULL),
-        _bOrbSym(NULL),
+        _aOrbSym(0),
+        _bOrbSym(0),
         _aOrbsPI(aOrbsPI),
         _bOrbsPI(bOrbsPI),
         _aEvecs(aEvecs),

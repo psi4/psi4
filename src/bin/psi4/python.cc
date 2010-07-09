@@ -25,9 +25,24 @@ namespace psi {
 
 bool py_psi_input()
 {
-    // Need to modify input to not take argc and argv
-    // And Options object to be global.
-    // input::input3();
+    /* Apply any options that need to be to global options object.
+
+       If desired, set all the default values using read_options.
+       read_options would need to be modified to not use ipv1.
+
+       read_options("INPUT", options);
+
+       Override options, if needed.
+       options.set_str("UNITS", "BOHR");
+     */
+
+    /* Need to modify input to not take argc and argv
+       input::input3(options);
+
+       or
+
+       dispatch_table["INPUT"](options);
+     */
     printf("input: I did absolutely nothing.\n");
     return true;
 }
@@ -217,11 +232,13 @@ void Python::run(FILE *input)
         Py_DECREF(sysmod);
     }
     if (Py_IsInitialized()) {
+        // Stupid way to read in entire file.
         char line[256];
         std::stringstream file;
         while(fgets(line, sizeof(line), input)) {
             file << line;
         }
+        // str is a Boost Python C++ wrapper for Python strings.
         str strStartScript(file.str().c_str());
         //printf(file.str().c_str());
         try {
