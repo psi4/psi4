@@ -75,27 +75,22 @@ psi4_driver(Options & options)
     fprintf(outfile,"Hardwired to test SCF optimizations.\n");
 
     read_options("INPUT", options);
-    dispatch_table["INPUT"](options, 0, argv_new);
+    dispatch_table["INPUT"](options);
 
 for (int n=0; n<8; ++n) {
 
     read_options("CINTS", options);
-    dispatch_table["CINTS"](options, 0, argv_new);
+    dispatch_table["CINTS"](options);
 
     read_options("CSCF", options);
-    dispatch_table["CSCF"](options, 0, argv_new);
+    dispatch_table["CSCF"](options);
 
     read_options("CINTS", options);
-    argv_new[0] = new char [strlen("CINTS")+1];
-    strcpy(argv_new[0],"CINTS");
-    argv_new[1] = new char [strlen("--deriv1")+1];
-    strcpy(argv_new[1],"--deriv1");
-    dispatch_table["CINTS"](options, 2, argv_new);
-    free(argv_new[0]);
-    free(argv_new[1]);
+    options.set_str("MODE", "DERIV1");
+    dispatch_table["CINTS"](options);
 
     read_options("OPTKING", options);
-    dispatch_table["OPT_STEP"](options, 0, argv_new);
+    dispatch_table["OPT_STEP"](options);
 }
 
     return Success;

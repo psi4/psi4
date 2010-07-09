@@ -65,6 +65,8 @@ namespace psi {
       public:
           void init(int argc, char **argv);
 
+          int argc() const { return arguments_.size(); }
+
           const std::string& operator()(int argc) const;
           std::string operator()(int argc);
       };
