@@ -1,22 +1,23 @@
+#include "psi4.h"
 #include "psi4-dec.h"
 
 namespace psi{
-    namespace ccsort   { PsiReturnType ccsort(Options &, int argc, char *argv[]); }
-    namespace ccenergy { PsiReturnType ccenergy(Options &, int argc, char *argv[]); }
-    namespace cctriples{ PsiReturnType cctriples(Options &, int argc, char *argv[]); }
-    namespace cints    { PsiReturnType cints(Options &, int argc, char *argv[]); }
-    namespace cscf     { PsiReturnType cscf(Options &, int argc, char *argv[]); }
-    namespace dcft     { PsiReturnType dcft(Options &, int argc, char *argv[]); }
-    namespace input    { PsiReturnType input(Options &, int argc, char *argv[]); }
-    namespace lmp2     { PsiReturnType lmp2(Options &, int argc, char *argv[]); }
-    namespace mp2      { PsiReturnType mp2(Options &, int argc, char *argv[]); }
-    namespace scf      { PsiReturnType scf(Options&, int argc, char *argv[]); }
-    namespace dfmp2    { PsiReturnType dfmp2(Options&, int argc, char *argv[]); }
-    namespace transqt2 { PsiReturnType transqt2(Options &, int argc, char *argv[]); }
-    // namespace optking  { PsiReturnType optking(Options &, int argc, char *argv[]); }
+    namespace ccsort   { PsiReturnType ccsort(Options &); }
+    namespace ccenergy { PsiReturnType ccenergy(Options &); }
+    namespace cctriples{ PsiReturnType cctriples(Options &); }
+    namespace cints    { PsiReturnType cints(Options &); }
+    namespace cscf     { PsiReturnType cscf(Options &); }
+    namespace dcft     { PsiReturnType dcft(Options &); }
+    namespace input    { PsiReturnType input(Options &); }
+    namespace lmp2     { PsiReturnType lmp2(Options &); }
+    namespace mp2      { PsiReturnType mp2(Options &); }
+    namespace scf      { PsiReturnType scf(Options &); }
+    namespace dfmp2    { PsiReturnType dfmp2(Options &); }
+    namespace transqt2 { PsiReturnType transqt2(Options &); }
     namespace psimrcc  { PsiReturnType psimrcc(Options &, int argc, char *argv[]); }
     namespace mcscf    { PsiReturnType mcscf(Options &, int argc, char *argv[]); }
-    namespace optking  { PsiReturnType opt_step(Options &, int argc, char *argv[]); }
+    namespace psimrcc  { PsiReturnType psimrcc(Options &); }
+    namespace mcscf    { PsiReturnType mcscf(Options &); }
 
 void
 setup_driver(Options &options)

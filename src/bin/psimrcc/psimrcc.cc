@@ -80,7 +80,7 @@ namespace psi{ namespace psimrcc{
  * @param argv[]
  * @return PSI_RETURN_SUCCESS if the program ran without any problem
  */
-PsiReturnType psimrcc(Options &options, int argc, char *argv[])
+PsiReturnType psimrcc(Options &options)
 {
 //  using namespace psi::psimrcc;
 

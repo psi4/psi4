@@ -14,14 +14,10 @@ using namespace psi;
 namespace psi{ namespace dcft{
 
 PsiReturnType
-dcft(Options &options, int argc, char *argv[])
+dcft(Options &options)
 {
     // Start the timers
     tstart();
-    timer_init();
-
-    psio_init();
-    psio_ipv1_config();
     chkpt_init(PSIO_OPEN_OLD);
 
     fprintf(outfile,"\n\n\t\t*******************************************\n");
@@ -34,11 +30,13 @@ dcft(Options &options, int argc, char *argv[])
     DCFTSolver dcft(options);
     dcft.compute();
 
+    // Close checkpoint
+    chkpt_close();
+
     // Shut down the timers
-    timer_done();
     tstop();
 
-    return Success;   
+    return Success;
 }
 
 }} // End Namespaces

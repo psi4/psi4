@@ -30,11 +30,14 @@ EXT bool check_only;
 /*! Leave psi temp file */
 EXT bool messy;
 
-/* clean-up */
+/*! clean-up */
 EXT bool clean_only;
 
-/* Run python script? */
+/*! Run python script? */
 EXT bool script;
+
+/*! Dispatch table for calling modules */
+EXT std::map<std::string, PsiReturnType(*)(Options &)> dispatch_table;
 
 }
 

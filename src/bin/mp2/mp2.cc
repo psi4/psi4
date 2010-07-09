@@ -1,6 +1,6 @@
 /*! \defgroup MP2 mp2: Canonical Evaluation of MP2 Energy and Gradients */
 
-/*! 
+/*!
 ** \file
 ** \ingroup MP2
 ** \brief Canonical evaluation of MP2 energy and gradients
@@ -21,7 +21,7 @@
 
 namespace psi{ namespace mp2{
 
-void init_io(int argc, char *argv[]);
+void init_io();
 void title(void);
 void get_moinfo(void);
 void get_params(Options &options);
@@ -52,20 +52,20 @@ void exit_io(void);
 
 
 PsiReturnType
-mp2(Options & options, int argc, char **argv)
+mp2(Options & options)
 {
   using namespace psi::mp2;
 
   int *cachefiles;
   int **cachelist;
- 
-  init_io(argc,argv);
+
+  init_io();
   title();
 
   get_moinfo();
   get_params(options);
   init_ioff();
-  
+
   cachefiles = init_int_array(PSIO_MAXUNIT);
 
   if(params.ref == 2) { /** UHF **/
@@ -77,13 +77,13 @@ mp2(Options & options, int argc, char **argv)
   else { /** RHF or ROHF **/
     cachelist = cacheprep_rhf(params.cachelev,cachefiles);
     dpd_init(0,mo.nirreps,params.memory,params.cachetype,cachefiles,cachelist,
-	     NULL,2,mo.occpi,mo.occ_sym,mo.virpi,mo.vir_sym);
+         NULL,2,mo.occpi,mo.occ_sym,mo.virpi,mo.vir_sym);
   }
-  
+
   amps();
 
   mo.Emp2 = energy();
-  
+
   fprintf(outfile,"\n");
   fprintf(outfile,"\tScaled_OS correlation energy      = %20.15f\n",mo.escsmp2_os);
   fprintf(outfile,"\tScaled_SS correlation energy      = %20.15f\n",mo.escsmp2_ss);
@@ -101,7 +101,7 @@ mp2(Options & options, int argc, char **argv)
   chkpt_wt_emp2(mo.Emp2);
   chkpt_wt_etot(mo.Escf+mo.Emp2);
   chkpt_close();
-  
+
   if(params.opdm) {
     sort_amps();
     opdm();
@@ -124,7 +124,7 @@ mp2(Options & options, int argc, char **argv)
     Zvector();
     relax_I();
     relax_opdm();
-    sort_I(); 
+    sort_I();
     sort_opdm();
     fold();
     deanti();
@@ -132,39 +132,39 @@ mp2(Options & options, int argc, char **argv)
   }
 
   dpd_close(0);
-  
+
   cleanup();
 
   exit_io();
-  
+
   return Success;
 }
 
 
-void init_io(int argc, char *argv[])
+void init_io()
 {
-  int i=0;
-  int num_extra_args=0;
-  char **extra_args;
+//  int i=0;
+//  int num_extra_args=0;
+//  char **extra_args;
 
-  extra_args = (char **) malloc(argc*sizeof(char *));
+//  extra_args = (char **) malloc(argc*sizeof(char *));
   params.opdm = 0;
 
-  for(i=1; i<argc; i++) {
-    if(strcmp(argv[i], "--opdm") == 0) {
-      params.opdm = 1;
-    }
-    else {
-      extra_args[num_extra_args++] = argv[i];
-    }
-  }
-  
+//  for(i=1; i<argc; i++) {
+//    if(strcmp(argv[i], "--opdm") == 0) {
+//      params.opdm = 1;
+//    }
+//    else {
+//      extra_args[num_extra_args++] = argv[i];
+//    }
+//  }
+
   tstart();
-  
-  for(i=CC_MIN; i <= CC_MAX; i++) 
+
+  for(int i=CC_MIN; i <= CC_MAX; i++)
     psio_open(i,1);
 
-  free(extra_args);
+//  free(extra_args);
 }
 
 void title(void)
@@ -180,19 +180,19 @@ void title(void)
 void init_ioff(void)
 {
   int i;
-  
+
   ioff = init_int_array(MAXIOFF);
   ioff[0] = 0;
   for(i=1; i < MAXIOFF; i++) {
     ioff[i] = ioff[i-1] + i;
   }
-  
+
 }
 
 void cleanup(void)
 {
   int i;
-  
+
   free(mo.doccpi);
   free(mo.soccpi);
   free(mo.mopi);
@@ -202,7 +202,7 @@ void cleanup(void)
     free(mo.irreplabels[i]);
   free(mo.irreplabels);
   free(ioff);
-  
+
   if(params.ref == 2) {
     free(mo.aoccpi);
     free(mo.boccpi);

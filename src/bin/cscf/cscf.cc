@@ -1,6 +1,6 @@
 /*! \file
     \ingroup CSCF
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 
 /**************************************************************************/
@@ -181,7 +181,7 @@ namespace psi { namespace cscf {
   void print_initial_vec();
   extern void write_scf_matrices(void);
 
-PsiReturnType cscf(Options & options, int argc,char* argv[])
+PsiReturnType cscf(Options & options)
 {
   int i,j,nn;
   char *prog_name="CSCF3.0: An SCF program written in C";
@@ -195,7 +195,7 @@ PsiReturnType cscf(Options & options, int argc,char* argv[])
   readflgc = readflgo = num_bufs_o = num_bufs_c = ibl = iblc = iblo = 0;
   where = wherec = whereo = 0;
   intmx = old_ninta = 25920;
- 
+
   //errcod = psi_start(&infile,&outfile,&psi_file_prefix,argc-1, argv+1, 0);
   //if (errcod != PSI_RETURN_SUCCESS)
   //  exit(PSI_RETURN_FAILURE);
@@ -211,7 +211,7 @@ PsiReturnType cscf(Options & options, int argc,char* argv[])
   fprintf(outfile,"\n%16c%s\n",' ',prog_name);
   fprintf(outfile,"\n%14cWritten by too many people to mention here\n",' ');
   fprintf(outfile,"\n%13c------------------------------------------\n",' ');
-   
+
   itap30 = 30;
   itap33 = PSIF_SO_TEI;
   itap34 = 34;
@@ -233,7 +233,7 @@ PsiReturnType cscf(Options & options, int argc,char* argv[])
   ip_boolean("DYN_ACC",&dyn_acc,0);
   tight_ints=0;
   delta = 1.0;
-                                                      
+
   /* CDS 3/6/02 add flag to do only orthogonalization */
   errcod = ip_string("WFN",&wfn,0);
   if (strcmp(wfn,"DETCAS")==0 || strcmp(wfn,"CASSCF")==0 ||
@@ -244,12 +244,12 @@ PsiReturnType cscf(Options & options, int argc,char* argv[])
   wfn = NULL;
 
   /* STB (6/30/99) - Function added because in order to initialize things
-     one must know whether you are doing UHF or restricted */   
-   
+     one must know whether you are doing UHF or restricted */
+
   chkpt_init(PSIO_OPEN_OLD);
 
   occ_init();
-   
+
   /* initialize some constants and arrays */
   if (uhf)
     init_uhf();
@@ -270,17 +270,17 @@ PsiReturnType cscf(Options & options, int argc,char* argv[])
   /* get one electron integrals */
 
   rdone_iwl();
-   
+
   if(print & 1) {
     for (i=0; i < num_ir; i++) {
       s = &scf_info[i];
       if (nn=s->num_so) {
-	fprintf(outfile,"\nsmat for irrep %s\n",s->irrep_label);
-	print_array(s->smat,nn,outfile);
-	fprintf(outfile,"\ntmat for irrep %s\n",s->irrep_label);
-	print_array(s->tmat,nn,outfile);
-	fprintf(outfile,"\nhmat for irrep %s\n",s->irrep_label);
-	print_array(s->hmat,nn,outfile);
+    fprintf(outfile,"\nsmat for irrep %s\n",s->irrep_label);
+    print_array(s->smat,nn,outfile);
+    fprintf(outfile,"\ntmat for irrep %s\n",s->irrep_label);
+    print_array(s->tmat,nn,outfile);
+    fprintf(outfile,"\nhmat for irrep %s\n",s->irrep_label);
+    print_array(s->hmat,nn,outfile);
       }
     }
   }
@@ -293,8 +293,8 @@ PsiReturnType cscf(Options & options, int argc,char* argv[])
     for (i=0; i < num_ir ; i++) {
       s = &scf_info[i];
       if (nn=s->num_so) {
-	fprintf(outfile,"\nsahalf for irrep %s\n",s->irrep_label);
-	print_mat(s->sahalf,nn,s->num_mo,outfile);
+    fprintf(outfile,"\nsahalf for irrep %s\n",s->irrep_label);
+    print_mat(s->sahalf,nn,s->num_mo,outfile);
       }
     }
   }
@@ -314,7 +314,7 @@ PsiReturnType cscf(Options & options, int argc,char* argv[])
     else
       schmit(1);
   }
-   
+
   /* Print out the first vector */
   if (print & 2)
     print_initial_vec();
@@ -339,11 +339,11 @@ PsiReturnType cscf(Options & options, int argc,char* argv[])
       dmat();
     else{
       /*--- Prepare alpha and beta eigenvectors from
-	the core Hamiltonian guess ---*/
+    the core Hamiltonian guess ---*/
       if(inflg == 2)
-	cmatsplit();
+    cmatsplit();
       dmatuhf();
-	   
+
     }
   }
 
@@ -364,7 +364,7 @@ PsiReturnType cscf(Options & options, int argc,char* argv[])
     psio_open(Pmat.unit,PSIO_OPEN_NEW);
     psio_open(PKmat.unit,PSIO_OPEN_NEW);
     rdtwo();
-     
+
   }
   else {
     /* form the Fock matrix directly */
@@ -381,24 +381,24 @@ PsiReturnType cscf(Options & options, int argc,char* argv[])
     }
 
     formg_direct();
-    if(dyn_acc)  fprintf(outfile,"\n  Using inexpensive integrals");   
+    if(dyn_acc)  fprintf(outfile,"\n  Using inexpensive integrals");
   }
 
   /* iterate */
 
   iter = 0;
   converged = 0;
-      
+
   // these now don't call cleanup when converged
-  if(twocon) scf_iter_2(); 
+  if(twocon) scf_iter_2();
   else if(uhf) uhf_iter();
-  else scf_iter(); 
+  else scf_iter();
 
   // free diis stuff - need to add UHF code later
   free(btemp); btemp = NULL;
   free_block(bold); bold = NULL;
   free_block(bmat);  bmat = NULL;
-  if (refnum == 0) { //RHF 
+  if (refnum == 0) { //RHF
     for (i=0; i<ndiis; ++i) {
       for(j=0; j<num_ir; ++j) {
         if(scf_info[j].num_so) {
@@ -459,7 +459,7 @@ PsiReturnType cscf(Options & options, int argc,char* argv[])
   converged = hsos = singlet = uhf = special = twocon = ksdft = mixing = cscf_nint = 0;
   opshl1 = opshl2 = opblk1 = opblk2 = second_root = icheck_rot = check_mo_orthonormality = 0;
   ibl = iblc = iblo = 0;
-  
+
   itap30 = itap34 = itapS = itapT = itapV = itap33 = itap92 = itap93 = itapDSCF = 0;
 
   if (alpha != NULL) {free(alpha); alpha = NULL;}
@@ -517,24 +517,24 @@ void print_initial_vec()
 {
   int irrep, nso, nmo;
   struct symm *s;
-  
+
   for(irrep=0;irrep<num_ir;irrep++) {
       s = &scf_info[irrep];
       if (nso=s->num_so)
-	  nmo = s->num_mo;
-	  if (uhf) {
-	      fprintf(outfile,"\n  Initial alpha vector for irrep %s\n",s->irrep_label);
-	      print_mat(spin_info[0].scf_spin[irrep].cmat,nso,nmo,outfile);
-	      fprintf(outfile,"\n  Initial beta vector for irrep %s\n",s->irrep_label);
-	      print_mat(spin_info[1].scf_spin[irrep].cmat,nso,nmo,outfile);
-	  }
-	  else {
-	      fprintf(outfile,"\nInitial vector for irrep %s\n",s->irrep_label);
-	      print_mat(s->cmat,nso,nmo,outfile);
-	  }
+      nmo = s->num_mo;
+      if (uhf) {
+          fprintf(outfile,"\n  Initial alpha vector for irrep %s\n",s->irrep_label);
+          print_mat(spin_info[0].scf_spin[irrep].cmat,nso,nmo,outfile);
+          fprintf(outfile,"\n  Initial beta vector for irrep %s\n",s->irrep_label);
+          print_mat(spin_info[1].scf_spin[irrep].cmat,nso,nmo,outfile);
+      }
+      else {
+          fprintf(outfile,"\nInitial vector for irrep %s\n",s->irrep_label);
+          print_mat(s->cmat,nso,nmo,outfile);
+      }
   }
 
   return;
-}    
+}
 
 }} // namespace psi::cscf

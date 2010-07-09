@@ -3,7 +3,7 @@
 
 namespace psi{ namespace psimrcc{
 
-void init_psi(int argc, char *argv[]);
+void init_psi();
 void close_psi();
 
 }} /* End Namespaces */

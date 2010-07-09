@@ -21,7 +21,7 @@
 
 namespace psi { namespace scf {
 
-PsiReturnType scf(Options & options, int /* argc */, char * /* argv */[])
+PsiReturnType scf(Options & options)
 {
     tstart();
 

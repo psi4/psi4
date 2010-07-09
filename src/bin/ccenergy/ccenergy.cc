@@ -1,6 +1,6 @@
 /*! \file
     \ingroup CCENERGY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 /*
 **  CCENERGY: Program to calculate coupled cluster energies.
@@ -29,7 +29,7 @@ namespace psi { namespace ccenergy {
 
 #define IOFF_MAX 32641
 
-void init_io(int argc, char *argv[]);
+void init_io();
 void init_ioff(void);
 void title(void);
 void get_moinfo(void);
@@ -99,7 +99,7 @@ void local_done(void);
 
 namespace psi { namespace ccenergy {
 
-int ccenergy(Options &options, int argc, char *argv[])
+int ccenergy(Options &options)
 {
   int done=0, brueckner_done=0;
   int h, i, j, a, b, row, col, natom;
@@ -112,8 +112,8 @@ int ccenergy(Options &options, int argc, char *argv[])
   double *emp2_aa, *emp2_ab, *ecc_aa, *ecc_ab, tval;
 
   moinfo.iter=0;
-  
-  init_io(argc,argv);
+
+  init_io();
   init_ioff();
   title();
 
@@ -121,7 +121,7 @@ int ccenergy(Options &options, int argc, char *argv[])
   timer_init();
   timer_on("CCEnergy");
 #endif
-  
+
   get_moinfo();
   get_params(options);
 
@@ -130,13 +130,13 @@ int ccenergy(Options &options, int argc, char *argv[])
   if(params.ref == 2) { /** UHF **/
     cachelist = cacheprep_uhf(params.cachelev, cachefiles);
 
-    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, 
-	     cachelist, NULL, 4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.avirtpi,
-	     moinfo.avir_sym, moinfo.boccpi, moinfo.bocc_sym, moinfo.bvirtpi, moinfo.bvir_sym);
+    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles,
+         cachelist, NULL, 4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.avirtpi,
+         moinfo.avir_sym, moinfo.boccpi, moinfo.bocc_sym, moinfo.bvirtpi, moinfo.bvir_sym);
 
     if( params.aobasis != "NONE" ) { /* Set up new DPD's for AO-basis algorithm */
-      dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 
-               4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.sopi, moinfo.sosym, 
+      dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
+               4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.sopi, moinfo.sosym,
                moinfo.boccpi, moinfo.bocc_sym, moinfo.sopi, moinfo.sosym);
       dpd_set_default(0);
     }
@@ -147,12 +147,12 @@ int ccenergy(Options &options, int argc, char *argv[])
 
     priority = priority_list();
 
-    dpd_init(0, moinfo.nirreps, params.memory, params.cachetype, cachefiles, 
-	     cachelist, priority, 2, moinfo.occpi, moinfo.occ_sym, 
-	     moinfo.virtpi, moinfo.vir_sym);
-   
+    dpd_init(0, moinfo.nirreps, params.memory, params.cachetype, cachefiles,
+         cachelist, priority, 2, moinfo.occpi, moinfo.occ_sym,
+         moinfo.virtpi, moinfo.vir_sym);
+
     if( params.aobasis != "NONE") { /* Set up new DPD for AO-basis algorithm */
-      dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 
+      dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
                2, moinfo.occpi, moinfo.occ_sym, moinfo.sopi, moinfo.sosym);
       dpd_set_default(0);
     }
@@ -285,7 +285,7 @@ int ccenergy(Options &options, int argc, char *argv[])
         cc3();
       }
     }
-    
+
     if (!params.just_residuals)
       denom(); /* apply denominators to T1 and T2 */
 
@@ -305,7 +305,7 @@ int ccenergy(Options &options, int argc, char *argv[])
       fprintf(outfile, "\n");
       amp_write();
       if (params.analyze != 0)
-	analyze();
+    analyze();
       break;
     }
     if(params.diis) diis(moinfo.iter);
@@ -321,7 +321,7 @@ int ccenergy(Options &options, int argc, char *argv[])
   fprintf(outfile, "\n");
   if(!done) {
     fprintf(outfile, "\t ** Wave function not converged to %2.1e ** \n",
-	    params.convergence);
+        params.convergence);
     fflush(outfile);
     if( params.aobasis != "NONE" ) dpd_close(1);
     dpd_close(0);
@@ -342,7 +342,7 @@ int ccenergy(Options &options, int argc, char *argv[])
     fprintf(outfile, "\tSS SCS-MP2 correlation energy      = %20.15f\n", moinfo.emp2_ss*params.scsmp2_scale_ss);
     fprintf(outfile, "\tSCS-MP2 correlation energy            = %20.15f\n", moinfo.emp2_os*params.scsmp2_scale_os
           + moinfo.emp2_ss*params.scsmp2_scale_ss);
-    fprintf(outfile, "      * SCS-MP2 total energy                  = %20.15f\n", moinfo.eref 
+    fprintf(outfile, "      * SCS-MP2 total energy                  = %20.15f\n", moinfo.eref
           + moinfo.emp2_os*params.scsmp2_scale_os + moinfo.emp2_ss*params.scsmp2_scale_ss);
     }
     if (params.scsn) {
@@ -364,9 +364,9 @@ int ccenergy(Options &options, int argc, char *argv[])
   else if( params.wfn == "CC2" || params.wfn == "EOM_CC2" )  {
     fprintf(outfile, "\tCC2 correlation energy     = %20.15f\n", moinfo.ecc);
     fprintf(outfile, "      * CC2 total energy           = %20.15f\n", moinfo.eref + moinfo.ecc);
-    if(params.local && local.weakp == "MP2" ) 
-      fprintf(outfile, "      * LCC2 (+LMP2) total energy  = %20.15f\n", 
-	      moinfo.eref + moinfo.ecc + local.weak_pair_energy);
+    if(params.local && local.weakp == "MP2" )
+      fprintf(outfile, "      * LCC2 (+LMP2) total energy  = %20.15f\n",
+          moinfo.eref + moinfo.ecc + local.weak_pair_energy);
   }
   else {
     if (params.scscc) {
@@ -381,16 +381,16 @@ int ccenergy(Options &options, int argc, char *argv[])
     fprintf(outfile, "\n\tOpposite-spin CCSD correlation energy = %20.15f\n", moinfo.ecc_os);
     fprintf(outfile, "\tSame-spin CCSD correlation energy     = %20.15f\n", moinfo.ecc_ss);
     fprintf(outfile, "\tCCSD correlation energy               = %20.15f\n", moinfo.ecc);
-    fprintf(outfile, "      * CCSD total energy                     = %20.15f\n", moinfo.eref + moinfo.ecc); 
-    if(params.local && local.weakp == "MP2" ) 
-      fprintf(outfile, "      * LCCSD (+LMP2) total energy = %20.15f\n", 
-	      moinfo.eref + moinfo.ecc + local.weak_pair_energy);
+    fprintf(outfile, "      * CCSD total energy                     = %20.15f\n", moinfo.eref + moinfo.ecc);
+    if(params.local && local.weakp == "MP2" )
+      fprintf(outfile, "      * LCCSD (+LMP2) total energy = %20.15f\n",
+          moinfo.eref + moinfo.ecc + local.weak_pair_energy);
   }
   fprintf(outfile, "\n");
 
   /* Write total energy to the checkpoint file */
   chkpt_init(PSIO_OPEN_OLD);
-  chkpt_wt_etot(moinfo.ecc+moinfo.eref); 
+  chkpt_wt_etot(moinfo.ecc+moinfo.eref);
   chkpt_close();
 
   /* Write pertinent data to energy.dat for Dr. Yamaguchi */
@@ -404,9 +404,9 @@ int ccenergy(Options &options, int argc, char *argv[])
 
     ffile(&efile, "energy.dat",1);
     fprintf(efile, "*\n");
-    for(i=0; i < natom; i++) 
+    for(i=0; i < natom; i++)
       fprintf(efile, " %4d   %5.2f     %13.10f    %13.10f    %13.10f\n",
-	      i+1, zvals[i], geom[i][0], geom[i][1], geom[i][2]);
+          i+1, zvals[i], geom[i][0], geom[i][1], geom[i][2]);
     free_block(geom);  free(zvals);
     fprintf(efile, "SCF(30)   %22.12f\n", moinfo.escf);
     fprintf(efile, "REF(100)  %22.12f\n", moinfo.eref);
@@ -430,11 +430,11 @@ int ccenergy(Options &options, int argc, char *argv[])
       && (params.dertype == 1 || params.dertype == 3) && params.ref == 0) {
     params.ref = 1;
     /* generate the ROHF versions of the He^T1 intermediates */
-    cc3_Wmnij(); 
-    cc3_Wmbij(); 
-    cc3_Wmnie(); 
-    cc3_Wamef(); 
-    cc3_Wabei(); 
+    cc3_Wmnij();
+    cc3_Wmbij();
+    cc3_Wmnie();
+    cc3_Wamef();
+    cc3_Wabei();
     params.ref == 0;
   }
 
@@ -444,7 +444,7 @@ int ccenergy(Options &options, int argc, char *argv[])
   }
 
   if(params.brueckner) brueckner_done = rotate();
-  
+
   if( params.aobasis != "NONE" ) dpd_close(1);
   dpd_close(0);
 
@@ -458,11 +458,11 @@ int ccenergy(Options &options, int argc, char *argv[])
   timer_off("CCEnergy");
   timer_done();
 #endif
-  
+
   exit_io();
   if(params.brueckner && brueckner_done)
       throw FeatureNotImplemented("CCENERGY", "Brueckner end loop", __FILE__, __LINE__);
-  else 
+  else
       return Success;
 }
 
@@ -471,31 +471,31 @@ int ccenergy(Options &options, int argc, char *argv[])
 
 namespace psi { namespace ccenergy {
 
-void init_io(int argc, char *argv[])
+void init_io()
 {
-  int i, num_unparsed;
-  char *argv_unparsed[100];
+//  int i, num_unparsed;
+//  char *argv_unparsed[100];
 
 
   params.just_energy = 0;
   params.just_residuals = 0;
-  for (i=1, num_unparsed=0; i<argc; ++i) {
-    if (!strcmp(argv[i],"--just_energy")) {
-      /* just read T's on disk and compute energy */
-      params.just_energy = 1;
-    }
-    else if (!strcmp(argv[i],"--just_residuals")) {
-      params.just_residuals = 1;
-      /* just read T's on disk and compute residual matrix elements */
-    }
-    else {
-      argv_unparsed[num_unparsed++] = argv[i];
-    }
-  }
+//  for (i=1, num_unparsed=0; i<argc; ++i) {
+//    if (!strcmp(argv[i],"--just_energy")) {
+//      /* just read T's on disk and compute energy */
+//      params.just_energy = 1;
+//    }
+//    else if (!strcmp(argv[i],"--just_residuals")) {
+//      params.just_residuals = 1;
+//      /* just read T's on disk and compute residual matrix elements */
+//    }
+//    else {
+//      argv_unparsed[num_unparsed++] = argv[i];
+//    }
+//  }
 
   tstart();
 
-  for(i=CC_MIN; i <= CC_MAX; i++) psio_open(i,1);
+  for(int i=CC_MIN; i <= CC_MAX; i++) psio_open(i,1);
 }
 
 void title(void)
@@ -526,7 +526,7 @@ void memchk(void)
   mypid = getpid();
 
   memdat = freopen("output.dat","a",stdout);
- 
+
   sprintf(comm, "grep \"VmSize\" /proc/%d/status", (int) mypid);
 
   system(comm);
@@ -552,73 +552,73 @@ void checkpoint(void)
 /* just use T's on disk and don't iterate */
 void one_step(void) {
   dpdfile2 t1;
-	dpdbuf4 t2;
-	double tval;
+    dpdbuf4 t2;
+    double tval;
 
-	moinfo.ecc = energy();
-	fprintf(outfile,"\n\tValues computed from T amplitudes on disk.\n");
-	fprintf(outfile,"Reference expectation value computed: %20.15lf\n", moinfo.ecc);
-	psio_write_entry(CC_HBAR, "Reference expectation value", (char *) &(moinfo.ecc), sizeof(double));
+    moinfo.ecc = energy();
+    fprintf(outfile,"\n\tValues computed from T amplitudes on disk.\n");
+    fprintf(outfile,"Reference expectation value computed: %20.15lf\n", moinfo.ecc);
+    psio_write_entry(CC_HBAR, "Reference expectation value", (char *) &(moinfo.ecc), sizeof(double));
 
   if (params.just_residuals) {
-	  Fme_build(); Fae_build(); Fmi_build();
-		t1_build();
+      Fme_build(); Fae_build(); Fmi_build();
+        t1_build();
      Wmbej_build();
-		Z_build();
-		Wmnij_build();
-		t2_build();
-		if ( (params.ref == 0) || (params.ref == 1) ) {
-		  dpd_file2_init(&t1, CC_OEI, 0, 0, 1, "New tIA");
-		  dpd_file2_copy(&t1, CC_OEI, "FAI residual");
-		  dpd_file2_close(&t1);
-		  dpd_file2_init(&t1, CC_OEI, 0, 0, 1, "FAI residual");
-			tval = dpd_file2_dot_self(&t1);
-		  dpd_file2_close(&t1);
-			fprintf(outfile,"\tNorm squared of <Phi_I^A|Hbar|0> = %20.15lf\n",tval);
-		}
-	  if (params.ref == 1) {
-		  dpd_file2_init(&t1, CC_OEI, 0, 0, 1, "New tia");
-		  dpd_file2_copy(&t1, CC_OEI, "Fai residual");
-		  dpd_file2_close(&t1);
-		}
-		else if (params.ref == 2) {
-		  dpd_file2_init(&t1, CC_OEI, 0, 2, 3, "New tia");
-		  dpd_file2_copy(&t1, CC_OEI, "Fai residual");
-		  dpd_file2_close(&t1);
-		}
+        Z_build();
+        Wmnij_build();
+        t2_build();
+        if ( (params.ref == 0) || (params.ref == 1) ) {
+          dpd_file2_init(&t1, CC_OEI, 0, 0, 1, "New tIA");
+          dpd_file2_copy(&t1, CC_OEI, "FAI residual");
+          dpd_file2_close(&t1);
+          dpd_file2_init(&t1, CC_OEI, 0, 0, 1, "FAI residual");
+            tval = dpd_file2_dot_self(&t1);
+          dpd_file2_close(&t1);
+            fprintf(outfile,"\tNorm squared of <Phi_I^A|Hbar|0> = %20.15lf\n",tval);
+        }
+      if (params.ref == 1) {
+          dpd_file2_init(&t1, CC_OEI, 0, 0, 1, "New tia");
+          dpd_file2_copy(&t1, CC_OEI, "Fai residual");
+          dpd_file2_close(&t1);
+        }
+        else if (params.ref == 2) {
+          dpd_file2_init(&t1, CC_OEI, 0, 2, 3, "New tia");
+          dpd_file2_copy(&t1, CC_OEI, "Fai residual");
+          dpd_file2_close(&t1);
+        }
     if (params.ref == 0) {
-		  dpd_buf4_init(&t2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
-		  dpd_buf4_copy(&t2, CC_HBAR, "WAbIj residual");
-		  dpd_buf4_close(&t2);
-			dpd_buf4_init(&t2, CC_HBAR, 0, 0, 5, 0, 5, 0, "WAbIj residual");
-			tval = dpd_buf4_dot_self(&t2);
-			fprintf(outfile,"\tNorm squared of <Phi^Ij_Ab|Hbar|0>: %20.15lf\n",tval);
-			dpd_buf4_close(&t2);
+          dpd_buf4_init(&t2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
+          dpd_buf4_copy(&t2, CC_HBAR, "WAbIj residual");
+          dpd_buf4_close(&t2);
+            dpd_buf4_init(&t2, CC_HBAR, 0, 0, 5, 0, 5, 0, "WAbIj residual");
+            tval = dpd_buf4_dot_self(&t2);
+            fprintf(outfile,"\tNorm squared of <Phi^Ij_Ab|Hbar|0>: %20.15lf\n",tval);
+            dpd_buf4_close(&t2);
     }
     else if (params.ref == 1) {
       dpd_buf4_init(&t2, CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
       dpd_buf4_copy(&t2, CC_HBAR, "WABIJ residual");
       dpd_buf4_close(&t2);
       dpd_buf4_init(&t2, CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tijab");
-		  dpd_buf4_copy(&t2, CC_HBAR, "Wabij residual");
+          dpd_buf4_copy(&t2, CC_HBAR, "Wabij residual");
       dpd_buf4_close(&t2);
       dpd_buf4_init(&t2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
-		  dpd_buf4_copy(&t2, CC_HBAR, "WAbIj residual");
+          dpd_buf4_copy(&t2, CC_HBAR, "WAbIj residual");
       dpd_buf4_close(&t2);
     }
     else if(params.ref ==2) {
       dpd_buf4_init(&t2, CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
-  	  dpd_buf4_copy(&t2, CC_HBAR, "WABIJ residual");
+      dpd_buf4_copy(&t2, CC_HBAR, "WABIJ residual");
       dpd_buf4_close(&t2);
       dpd_buf4_init(&t2, CC_TAMPS, 0, 12, 17, 12, 17, 0, "New tijab");
-		  dpd_buf4_copy(&t2, CC_HBAR, "Wabij residual");
+          dpd_buf4_copy(&t2, CC_HBAR, "Wabij residual");
       dpd_buf4_close(&t2);
       dpd_buf4_init(&t2, CC_TAMPS, 0, 22, 28, 22, 28, 0, "New tIjAb");
-		  dpd_buf4_copy(&t2, CC_HBAR, "WAbIj residual");
+          dpd_buf4_copy(&t2, CC_HBAR, "WAbIj residual");
       dpd_buf4_close(&t2);
     }
-	}
-	return;
+    }
+    return;
 }
 
-}} // namespace psi::ccenergy 
+}} // namespace psi::ccenergy
