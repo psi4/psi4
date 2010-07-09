@@ -54,7 +54,7 @@ void setup()
 
 }
 
-void start_io(int argc, char *argv[])
+void start_io()
 {
   int i, errcod;
   int num_extra_args = 0;

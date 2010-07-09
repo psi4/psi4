@@ -6,33 +6,17 @@
 ** \LMP2 evaluation of energy
 */
 
-//#include "mpi.h"
-//#include <iostream>
-//#include <fstream>              // file I/O support
-//#include <cstdlib>              // support for exit()
-//#include <cstring>
-//#include <memory.h>
-//#include <assert.h>
-//#include <pthread.h>
-//#include <libipv1/ip_lib.h>
-//#include <libpsio/psio.hpp>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libparallel/parallel.h>
 #include <libmints/mints.h>
-//#include <libmints/matrix.h>
 #include "globals.h"
-
-//using namespace std;
-//using namespace psi;
-
-//std::string to_string(const int val); // In libmints/matrix.cc
 
 namespace psi{
 
 namespace lmp2{
 
-PsiReturnType lmp2(Options &options, int argc, char * argv[]) {
+PsiReturnType lmp2(Options &options) {
 
     shared_ptr<PSIO> psio_obj(new PSIO);
     psiopp_ipv1_config(psio_obj);
@@ -136,8 +120,7 @@ PsiReturnType lmp2(Options &options, int argc, char * argv[]) {
 
     tstop();
   }
-  
-//  MPI_Finalize();
+
   return Success;
 }
 

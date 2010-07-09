@@ -26,7 +26,7 @@ using namespace std;
 
 namespace psi { namespace input {
 
-extern Options options;
+//extern Options options;
 
 void print_intro();
 void print_options();
@@ -39,7 +39,7 @@ void cleanup();
 extern void build_cartdisp_salcs();
 void am_i_to_char(int am, char *am_label);
 
-PsiReturnType input(Options & options, int argc, char *argv[])
+PsiReturnType input(Options & options)
 {
     /*variables and arrays*/
     int i,j,k,l;

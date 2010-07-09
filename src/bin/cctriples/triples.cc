@@ -1,6 +1,6 @@
 /*! \file
     \ingroup CCTRIPLES
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -17,8 +17,8 @@
 
 namespace psi { namespace cctriples {
 
-    
-    void init_io(int argc, char *argv[]);
+
+    void init_io();
     void title(void);
     void get_moinfo(Options&);
     void exit_io(void);
@@ -45,26 +45,26 @@ namespace psi { namespace cctriples {
     void T3_grad_UHF_AAB(void);
     void T3_grad_UHF_BBA(void);
 
-    
-    void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps, int A, int Ga, int B, int Gb, int C, int Gc, 
-		    dpdbuf4 *C2, dpdbuf4 *F, dpdbuf4 *E, dpdfile2 *C1, dpdbuf4 *D, dpdfile2 *fIA, dpdfile2 *fIJ, dpdfile2 *fAB,
-		    int *occpi, int *occ_off, int *virtpi, int *vir_off, double omega);
 
-    void T3_UHF_AAB_abc(double ***W, double ***V, int disc, int nirreps, 
-		    int I, int Gi, int J, int Gj, int K, int Gk,
-		    dpdbuf4 *T2AA, dpdbuf4 *T2AB, dpdbuf4 *T2BA, dpdbuf4 *FAA, dpdbuf4 *FAB, dpdbuf4 *FBA,
-		    dpdbuf4 *EAA, dpdbuf4 *EAB, dpdbuf4 *EBA, dpdfile2 *T1A, dpdfile2 *T1B, 
-		    dpdbuf4 *DAA, dpdbuf4 *DAB, dpdfile2 *fIA, dpdfile2 *fia, 
-		    dpdfile2 *fIJ, dpdfile2 *fij,dpdfile2 *fAB, dpdfile2 *fab, 
-		    int *aoccpi, int *aocc_off, int *boccpi, int *bocc_off,
-		    int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off, double omega);
+    void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps, int A, int Ga, int B, int Gb, int C, int Gc,
+            dpdbuf4 *C2, dpdbuf4 *F, dpdbuf4 *E, dpdfile2 *C1, dpdbuf4 *D, dpdfile2 *fIA, dpdfile2 *fIJ, dpdfile2 *fAB,
+            int *occpi, int *occ_off, int *virtpi, int *vir_off, double omega);
+
+    void T3_UHF_AAB_abc(double ***W, double ***V, int disc, int nirreps,
+            int I, int Gi, int J, int Gj, int K, int Gk,
+            dpdbuf4 *T2AA, dpdbuf4 *T2AB, dpdbuf4 *T2BA, dpdbuf4 *FAA, dpdbuf4 *FAB, dpdbuf4 *FBA,
+            dpdbuf4 *EAA, dpdbuf4 *EAB, dpdbuf4 *EBA, dpdfile2 *T1A, dpdfile2 *T1B,
+            dpdbuf4 *DAA, dpdbuf4 *DAB, dpdfile2 *fIA, dpdfile2 *fia,
+            dpdfile2 *fIJ, dpdfile2 *fij,dpdfile2 *fAB, dpdfile2 *fab,
+            int *aoccpi, int *aocc_off, int *boccpi, int *bocc_off,
+            int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off, double omega);
     void transpose_integrals();
     void test_abc_loops_AAA();
     void test_abc_loops_AAB();
     void test_abc_loops_BBA();
     void test_abc_loops_BBB();
 
-PsiReturnType cctriples(Options &options, int argc, char *argv[])
+PsiReturnType cctriples(Options &options)
 {
   double ETAAA, ETAAB, ETABB, ETBBB, ET;
   long int memory;
@@ -74,8 +74,8 @@ PsiReturnType cctriples(Options &options, int argc, char *argv[])
   FILE *efile;
   int i, errcod, natom;
   char *keyw = NULL;
-  
-  init_io(argc, argv);
+
+  init_io();
   title();
 
   timer_init();
@@ -86,19 +86,19 @@ PsiReturnType cctriples(Options &options, int argc, char *argv[])
 
   cachefiles = init_int_array(PSIO_MAXUNIT);
 
-  
+
   if(params.ref == 0) { /*** RHF ***/
     cachelist = cacheprep_rhf(2, cachefiles);
 
     dpd_init(0, moinfo.nirreps, memory, 0, cachefiles, cachelist, NULL,
-	     2, moinfo.occpi, moinfo.occ_sym, moinfo.virtpi, moinfo.vir_sym);
+         2, moinfo.occpi, moinfo.occ_sym, moinfo.virtpi, moinfo.vir_sym);
   }
   else if(params.ref == 2) { /*** UHF ***/
     cachelist = cacheprep_uhf(2, cachefiles);
 
-    dpd_init(0, moinfo.nirreps, memory, 0, cachefiles, 
-	     cachelist, NULL, 4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.avirtpi,
-	     moinfo.avir_sym, moinfo.boccpi, moinfo.bocc_sym, moinfo.bvirtpi, moinfo.bvir_sym);
+    dpd_init(0, moinfo.nirreps, memory, 0, cachefiles,
+         cachelist, NULL, 4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.avirtpi,
+         moinfo.avir_sym, moinfo.boccpi, moinfo.bocc_sym, moinfo.bvirtpi, moinfo.bvir_sym);
   }
 
   count_ijk();
@@ -108,12 +108,12 @@ PsiReturnType cctriples(Options &options, int argc, char *argv[])
 
     ET = ET_RHF();
     fprintf(outfile, "\t(T) energy                    = %20.15f\n", ET);
-    fprintf(outfile, "      * CCSD(T) total energy          = %20.15f\n", 
-	    ET + moinfo.ecc + moinfo.eref);
+    fprintf(outfile, "      * CCSD(T) total energy          = %20.15f\n",
+        ET + moinfo.ecc + moinfo.eref);
 
     /* Compute triples contributions to the gradient */
     if(params.dertype == 1){
-	  T3_grad_RHF();
+      T3_grad_RHF();
     }
   }
   else if(params.ref == 1 ) { /** ROHF --- don't use this right now! **/
@@ -130,8 +130,8 @@ PsiReturnType cctriples(Options &options, int argc, char *argv[])
     fprintf(outfile, "\tBBB (T) energy                = %20.15f\n", ETBBB);
     ET = ETAAA + ETAAB + ETABB + ETBBB;
     fprintf(outfile, "\t(T) energy                    = %20.15f\n", ET);
-    fprintf(outfile, "      * CCSD(T) total energy          = %20.15f\n", 
-	    ET + moinfo.ecc + moinfo.eref);
+    fprintf(outfile, "      * CCSD(T) total energy          = %20.15f\n",
+        ET + moinfo.ecc + moinfo.eref);
   }
   else if(params.ref == 2) { /** UHF **/
     ETAAA = ET_UHF_AAA();
@@ -152,8 +152,8 @@ PsiReturnType cctriples(Options &options, int argc, char *argv[])
 
     ET = ETAAA + ETAAB + ETABB + ETBBB;
     fprintf(outfile, "\t(T) energy                    = %20.15f\n", ET);
-    fprintf(outfile, "      * CCSD(T) total energy          = %20.15f\n", 
-	    ET + moinfo.ecc + moinfo.eref);
+    fprintf(outfile, "      * CCSD(T) total energy          = %20.15f\n",
+        ET + moinfo.ecc + moinfo.eref);
 
     if(params.dertype==1) {
 
@@ -169,7 +169,7 @@ PsiReturnType cctriples(Options &options, int argc, char *argv[])
       fprintf(outfile, "\tAAA contributions complete.\n");
       fflush(outfile);
       T3_grad_UHF_BBB();
-      fprintf(outfile, "\tBBB contributions complete.\n");      
+      fprintf(outfile, "\tBBB contributions complete.\n");
       fflush(outfile);
       T3_grad_UHF_AAB();
       fprintf(outfile, "\tAAB contributions complete.\n");
@@ -197,9 +197,9 @@ PsiReturnType cctriples(Options &options, int argc, char *argv[])
     chkpt_close();
     ffile(&efile,"energy.dat",1);
     fprintf(efile, "*\n");
-    for(i=0; i < natom; i++) 
+    for(i=0; i < natom; i++)
       fprintf(efile, " %4d   %5.2f     %13.10f    %13.10f    %13.10f\n",
-	      i+1, zvals[i], geom[i][0], geom[i][1], geom[i][2]);
+          i+1, zvals[i], geom[i][0], geom[i][1], geom[i][2]);
     free_block(geom);  free(zvals);
     fprintf(efile, "SCF(30)   %22.12f\n", moinfo.escf);
     fprintf(efile, "REF(100)  %22.12f\n", moinfo.eref);
@@ -232,7 +232,7 @@ PsiReturnType cctriples(Options &options, int argc, char *argv[])
   return Success;
 }
 
-void init_io(int argc, char *argv[])
+void init_io()
 {
   tstart();
 

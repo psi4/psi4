@@ -132,6 +132,8 @@ int read_options(const std::string &name, Options & options) {
   }
   else if (name == "CINTS") {
     ip_cwk_add(const_cast<char*>(":CINTS"));
+    /*- The execution mode of cints, these were the command line arguments you could send -*/
+    options.add_str("MODE", "", "FOCK OEINTS TEINTS DERIV1 DERIV1_INTS DERIV2 OEPROP MP2 R12INTS MP2R12 MKPT2 CC_BT2 GIAO_DERIV");
     /*- The wavefunction desired -*/
     options.add_str("WFN", "");
     /*- The amount of information to pring to the output -*/

@@ -25,12 +25,6 @@ namespace psi {
     void set_memory(long int newmem) { memory = newmem; }
   };
 
-  struct ModuleInformation {
-    std::string rubyFunctionName;
-    int (*entryPoint)();
-    void (*registerOptions)();
-  };
-
   enum PsiReturnType {Success, Failure, Balk, Endloop};
 
   extern Module module;
@@ -38,7 +32,6 @@ namespace psi {
   extern PSIO *psio;
   extern char *psi_file_prefix;
   extern bool verbose;
-  extern std::map<std::string, PsiReturnType(*)(Options&, int, char*[])> dispatch_table;
 
   #ifndef NDEBUG
     #ifdef __GNUC__

@@ -9,6 +9,6 @@
 
 namespace psi { namespace cints {
 void parsing(Options &);
-void parsing_cmdline(int argc, char *argv[]);
+void parsing_cmdline(Options &);
 }}
 #endif

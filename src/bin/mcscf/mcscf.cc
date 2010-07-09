@@ -40,7 +40,7 @@ using namespace std;
  * @param argv[]
  * @return PSI_RETURN_SUCCESS if the program ran without any problem
  */
-PsiReturnType mcscf(Options& options,int argc, char *argv[])
+PsiReturnType mcscf(Options& options)
 {
   using namespace psi;
   shared_ptr<PSIO> psio(new PSIO);

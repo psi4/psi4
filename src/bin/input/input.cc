@@ -1,6 +1,6 @@
 /*! \defgroup INPUT input: Set up a PSI computation based on user input */
 
-/*! 
+/*!
 ** \file
   ** \ingroup INPUT
   ** \brief Set up a PSI computation based on user input
@@ -41,52 +41,6 @@ namespace psi { namespace input {
 
   using namespace psi;
 
-/*
-  void register_input_options()
-  {
-    // Reference wavefunction
-    options.add("WFN", "SCF", "");
-    // Keep the checkpoint file
-    options.add("KEEP_CHKPT", (bool)false);
-    // Read MOs from checkpoint and project onto new basis
-    options.add("CHKPT_MOS", (bool)false);
-
-    // These may be obseleted by psi4
-    // Read geometry from checkpoin file (in findif calculations)
-    options.add("CHKPT_GEOM", (bool)false);
-    // Don't project MOs but simply keep them
-    options.add("NOPROJECT", (bool)false);
-    // Read geometry from geom.dat file (in findif calculations)
-    options.add("GEOMDAT", (bool)false);
-    // No center of mass shift
-    options.add("NO_COM_SHIFT", (bool)false);
-    // Read MOs from checkpoint file and save to a separate file
-    options.add("SAVE_MOS", (bool)false);
-
-    // Don't overwrite the output file
-    // This should be removed. It is no longer input's responsiblity
-    options.add("KEEP_OUTPUT", (bool)false);
-    
-    options.add("NO_REORIENT", (bool)false);
-    options.add("LABEL","Default PSI3 Label");
-    options.add("SHOWNORM", (bool)false);
-    options.add("NORMALIZE", (bool)true);
-    options.add("PUREAM", (bool)false);
-    options.add("EXPERT", (bool)false);
-    options.add("PRINT", 1);
-    options.add("SUBGROUP", "", "C1 C2 CS CI C2V C2H D2 D2H");
-    options.add("UNIQUE_AXIS", "", "X Y Z");
-    options.add("NFRAGMENTS", 1);
-    options.add("KEEP_REF_FRAME", (bool)false);
-    options.add("FRAGMENT_DISTANCE_INVERSE", (bool)false);
-    
-    options.add("FREEZE_CORE", "FALSE", "FALSE NO TRUE YES SMALL LARGE");
-    options.add("FREEZE_VIRT",0);
-  }
-*/
-  
-  int input() { return 0; }
-  
   PsiReturnType input(Options & options, char **atom_basis, Molecular_system & molecules)
   {
    /*variables and arrays*/
@@ -269,7 +223,7 @@ namespace psi { namespace input {
     print_geometry(_bohr2angstroms);
    /* Print geometry including dummy atoms, if necessary */
     is_dummy = 0;
-    for(i=0;i<num_allatoms;++i) 
+    for(i=0;i<num_allatoms;++i)
       if(!strncmp(full_element[i],"X\0",2) )
       is_dummy = 1;
     if(is_dummy) {
@@ -294,7 +248,7 @@ namespace psi { namespace input {
         fprintf(outfile,"\n    Note: To print *all* bond angles, out-of-plane\n");
         fprintf(outfile,"          angles, and torsion angles set print = 3\n");
       }
-      if(num_atoms > 2 && print_lvl >= 3) { 
+      if(num_atoms > 2 && print_lvl >= 3) {
         Rmat = init_matrix(num_atoms,num_atoms);
         tri_to_sq(Distance,Rmat,num_atoms);
    /*print_mat(Rmat,num_atoms,num_atoms,outfile);*/
@@ -494,7 +448,7 @@ namespace psi { namespace input {
     fprintf(outfile,"    Atom     All Primitives // Unique Primitives // Shells\n");
     fprintf(outfile,"    ----     ---------------------------------------------\n");
     for(i=0;i<num_atoms;i++) {
-      fprintf(outfile,"    %4d     ", i+1);  
+      fprintf(outfile,"    %4d     ", i+1);
       first = first_shell_on_atom[i];
       last = first + nshells_per_atom[i];
     /* print out # and am of primitives per atom */

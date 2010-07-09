@@ -23,7 +23,7 @@ namespace psi { namespace dfmp2 {
 
 std::string to_string(const int val);   // In matrix.cpp
 
-PsiReturnType dfmp2(Options & options, int /* argc */, char * /* argv */[])
+PsiReturnType dfmp2(Options & options)
 {
     tstart();
     

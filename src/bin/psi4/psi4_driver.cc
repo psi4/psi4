@@ -24,7 +24,7 @@ extern int read_options(const std::string &jobName, Options &options);
 void psiclean(void);
 
 int
-psi4_driver(Options & options, int argc, char *argv[])
+psi4_driver(Options & options)
 {
     // Initialize the list of function pointers for each module
     setup_driver(options);
@@ -59,11 +59,11 @@ psi4_driver(Options & options, int argc, char *argv[])
       std::string reference = options.get_str("REFERENCE");
       std::string jobtype = options.get_str("JOBTYPE");
       std::string dertype = options.get_str("DERTYPE");
-      fprintf(outfile, "    Calculation type = %s\n",calcType.c_str()); fflush(outfile);
-      fprintf(outfile, "    Wavefunction     = %s\n",wfn.c_str()); fflush(outfile);
-      fprintf(outfile, "    Reference        = %s\n",reference.c_str()); fflush(outfile);
-      fprintf(outfile, "    Job type         = %s\n",jobtype.c_str()); fflush(outfile);
-      fprintf(outfile, "    Derivative type  = %s\n", dertype.c_str()); fflush(outfile);
+      fprintf(outfile, "    Calculation type = %s\n", calcType.c_str());  fflush(outfile);
+      fprintf(outfile, "    Wavefunction     = %s\n", wfn.c_str());       fflush(outfile);
+      fprintf(outfile, "    Reference        = %s\n", reference.c_str()); fflush(outfile);
+      fprintf(outfile, "    Job type         = %s\n", jobtype.c_str());   fflush(outfile);
+      fprintf(outfile, "    Derivative type  = %s\n", dertype.c_str());   fflush(outfile);
     }
 
     if(check_only)
@@ -101,22 +101,27 @@ for (int n=0; n<40; ++n) {
     return Success;
 
     char *jobList = const_cast<char*>(calcType.c_str());
+
     // This version assumes that the array contains only module names, not
     // macros for other job types, like $SCF
     int numTasks = 0;
     int errcod;
-    if(ip_exist(const_cast<char*>("EXEC"), 0)){
+
+    if(ip_exist(const_cast<char*>("EXEC"), 0)) {
         // Override psi.dat with the commands in the exec array in input
         errcod = ip_count(const_cast<char*>("EXEC"), &numTasks, 0);
         jobList = const_cast<char*>("EXEC");
-    }else{
+    }
+    else {
         errcod = ip_count(jobList, &numTasks, 0);
+
         if (!ip_exist(jobList, 0)){
             std::string err("Error: jobtype ");
             err += jobList;
             err += " is not defined in psi.dat";
             throw PsiException(err, __FILE__, __LINE__);
         }
+
         if (errcod != IPE_OK){
             std::string err("Error: trouble reading ");
             err += jobList;
@@ -125,25 +130,16 @@ for (int n=0; n<40; ++n) {
         }
     }
 
-    if(Communicator::world->me() == 0) fprintf(outfile, "    List of tasks to execute:\n");
+    fprintf(outfile, "    List of tasks to execute:\n");
     for(int n = 0; n < numTasks; ++n) {
         char *thisJob;
         ip_string(jobList, &thisJob, 1, n);
-        if(Communicator::world->me() == 0) fprintf(outfile, "    %s\n", thisJob);
+        fprintf(outfile, "    %s\n", thisJob);
         free(thisJob);
     }
 
-    if(check_only) return Success;
-
-    // remove command-line-like arguments from psi.dat string
-    // at this point argv[0] is still "psi4" - which we will remove
-    int i, argc_new;
-    //char *argv_new[MAX_ARGS];
-    for (i=1; i<argc; ++i) {
-      argv_new[i-1] = new char [strlen(argv[i])+1];
-      strcpy(argv_new[i-1],argv[i]);
-    }
-    --argc;
+    if(check_only)
+        return Success;
 
     // variables to parse string in psi.dat
     string thisJobWithArguments;
@@ -165,24 +161,30 @@ for (int n=0; n<40; ++n) {
         free(thisJob);
         thisJob = const_cast<char *>(tokens[0].c_str()); // module name for dispatch table
 
-        argc_new = argc + tokens.size();
-        for (i=0; i<tokens.size(); ++i)
-          argv_new[argc+i] = const_cast<char *>(tokens[i].c_str());
-
         // Make sure the job name is all upper case
         int length = strlen(thisJob);
         std::transform(thisJob, thisJob + length, thisJob, ::toupper);
         if(Communicator::world->me() == 0) {
           fprintf(outfile, "\n  Job %d is %s\n", n, thisJob); fflush(outfile);
-          fprintf(outfile, "  with command-line argument: ");
-          for (i=0; i<argc_new; ++i) fprintf(outfile," %s ", argv_new[i]);
         }
+
+        // Read the options for thisJob.
         read_options(thisJob, options);
+
+        // Handle MODE (command line argument passed in task list
+        if (tokens.size() > 1) {
+            // Convert token to upper case
+            std::transform(tokens[1].begin(), tokens[1].end(), tokens[1].begin(), ::toupper);
+            // Set the option overriding anything the user said.
+            options.set_str("MODE", tokens[1]);
+        }
+
         // If the function call is LMP2, run in parallel
         if(strcmp(thisJob, "LMP2") == 0 || strcmp(thisJob, "DFMP2") == 0) {
             // Needed a barrier before the functions are called
             Communicator::world->sync();
-            if (dispatch_table[thisJob](options, argc_new, argv_new) != Success) {
+
+            if (dispatch_table[thisJob](options) != Success) {
                 // Good chance at this time that an error occurred.
                 // Report it to the user.
                 fprintf(stderr, "%s did not return a Success code.\n", thisJob);
@@ -195,7 +197,7 @@ for (int n=0; n<40; ++n) {
                 // Needed a barrier before the functions are called
                 Communicator::world->sync();
                 if(Communicator::world->me() == 0) {
-                    if (dispatch_table[thisJob](options, argc_new, argv_new) != Success) {
+                    if (dispatch_table[thisJob](options) != Success) {
                         // Good chance at this time that an error occurred.
                         // Report it to the user.
                         fprintf(stderr, "%s did not return a Success code.\n", thisJob);
@@ -205,11 +207,15 @@ for (int n=0; n<40; ++n) {
             }
             else {
                 std::transform(thisJob, thisJob + length, thisJob, ::tolower);
-                // Close the output file.
+
+                // Close the output file, allowing the external program to write to it.
                 if (!outfile_name.empty())
                     fclose(outfile);
+
                 // Attempt to run the external program
                 int ret = ::system(thisJob);
+
+                // Re-open the output file, allowing psi4 to take output control again.
                 if (!outfile_name.empty())
                     fopen(outfile_name.c_str(), "a");
 

@@ -1,6 +1,6 @@
 /*! \file
     \ingroup CCSORT
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 /*
 **  CCSORT: Program to reorganize integrals for CC and MBPT calculations.
@@ -24,7 +24,7 @@ namespace psi { namespace ccsort {
 
 #define IOFF_MAX 32641
 
-void init_io(int argc, char *argv[]);
+void init_io();
 void init_ioff(void);
 void title(void);
 void get_params(Options & options);
@@ -52,7 +52,7 @@ void local_init(Options & options);
 void local_done(void);
 void cc_memcheck(void);
 
-int ccsort(Options &options, int argc, char *argv[])
+int ccsort(Options &options)
 {
   int i;
   int **cachelist, *cachefiles;
@@ -61,7 +61,7 @@ int ccsort(Options &options, int argc, char *argv[])
 
   unsigned long int ia_size, ab_size, ij_size, f_size, t2_size, b_size;
 
-  init_io(argc,argv);
+  init_io();
   init_ioff();
   title();
 
@@ -75,16 +75,16 @@ int ccsort(Options &options, int argc, char *argv[])
   if(params.ref == 2) { /*** UHF references ***/
     cachelist = cacheprep_uhf(params.cachelev, cachefiles);
 
-    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, 
-	     NULL, 4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.avirtpi, moinfo.avir_sym,
-	     moinfo.boccpi, moinfo.bocc_sym, moinfo.bvirtpi, moinfo.bvir_sym);
-  } 
+    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist,
+         NULL, 4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.avirtpi, moinfo.avir_sym,
+         moinfo.boccpi, moinfo.bocc_sym, moinfo.bvirtpi, moinfo.bvir_sym);
+  }
   else { /*** RHF/ROHF references ***/
     cachelist = cacheprep_rhf(params.cachelev, cachefiles);
 
-    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, 
-	     NULL, 2, moinfo.occpi, moinfo.occ_sym, moinfo.virtpi, 
-	     moinfo.vir_sym);
+    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist,
+         NULL, 2, moinfo.occpi, moinfo.occ_sym, moinfo.virtpi,
+         moinfo.vir_sym);
   }
 
   /* run a small computation of memory and disk requirements */
@@ -97,7 +97,7 @@ int ccsort(Options &options, int argc, char *argv[])
   c_sort();
   d_sort();
   e_sort();
-  f_sort(); 
+  f_sort();
   if(params.ref == 0) {
     d_spinad();
     e_spinad();
@@ -126,22 +126,23 @@ int ccsort(Options &options, int argc, char *argv[])
   return (Success);
 }
 
-void init_io(int argc, char *argv[])
+void init_io()
 {
-  int i, num_unparsed;
-  char **argv_unparsed;
+//  int i, num_unparsed;
+//  char **argv_unparsed;
 
-  argv_unparsed = (char **) malloc(argc * sizeof(char *));
+//  argv_unparsed = (char **) malloc(argc * sizeof(char *));
   params.reset = 0;
-  for(i=1, num_unparsed=0; i < argc; i++) {
-    if(!strcmp(argv[i], "--reset")) params.reset = 1;
-    else argv_unparsed[num_unparsed++] = argv[i];
-  }
+//  for(i=1, num_unparsed=0; i < argc; i++) {
+//    if(!strcmp(argv[i], "--reset")) params.reset = 1;
+//    else argv_unparsed[num_unparsed++] = argv[i];
+//  }
 
-  free(argv_unparsed);
+//  free(argv_unparsed);
 
   tstart();
 
+  int i;
   if(params.reset) for(i=CC_MIN; i <= CC_MAX; i++) psio_open(i,0);
   else for(i=CC_MIN; i <= CC_MAX; i++) psio_open(i,1);
 }
@@ -180,7 +181,7 @@ void cleanup(void)
   int i;
 
   psio_write_entry(CC_INFO, "Reference Energy", (char *) &(moinfo.eref),
-		   sizeof(double));
+           sizeof(double));
 
   if(params.ref == 2) {
 
@@ -227,8 +228,8 @@ void cleanup(void)
     free(moinfo.qt_allbocc);
     free(moinfo.qt_allavir);
     free(moinfo.qt_allbvir);
-    free(moinfo.allaocc_sym);  
-    free(moinfo.allbocc_sym);  
+    free(moinfo.allaocc_sym);
+    free(moinfo.allbocc_sym);
     free(moinfo.allavir_sym);
     free(moinfo.allbvir_sym);
 
@@ -269,7 +270,7 @@ void cleanup(void)
     free(moinfo.cc_allvir);
     free(moinfo.qt_allocc);
     free(moinfo.qt_allvir);
-    free(moinfo.allocc_sym);  
+    free(moinfo.allocc_sym);
     free(moinfo.allvir_sym);
 
     free(moinfo.occ_off);

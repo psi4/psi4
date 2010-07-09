@@ -1,6 +1,6 @@
 /*! \defgroup CINTS cints: The Integral Computation Suite */
 
-/*! 
+/*!
   \file
   \ingroup CINTS
   \brief Integral Computation Module
@@ -66,9 +66,9 @@ void deriv1_fock(void);
 #endif
 #include <Tools/cdsalc.h>
 
-namespace psi { 
+namespace psi {
   namespace cints {
-  
+
   /*-------------------------------
     External functions declaration
     -------------------------------*/
@@ -76,20 +76,21 @@ namespace psi {
     void check_max_am();
 
 //! CINTS main procedure.
-PsiReturnType cints(Options & options, int argc, char *argv[])
+PsiReturnType cints(Options & options/*, int argc, char *argv[]*/)
 {
   try {
     /*--- Local variables ---*/
     int i,j,k,l,m,count;
-    
+
     init_globals();
-    start_io(argc, argv);
+    start_io();
     parsing(options);
+
     /*--- Parse the command line ---*/
-    parsing_cmdline(argc,argv);
+    parsing_cmdline(options);
     print_intro();
     setup();
-    
+
     /*--- Prepare data ---*/
     init_molecule();
     init_symmetry();
@@ -97,15 +98,15 @@ PsiReturnType cints(Options & options, int argc, char *argv[])
     check_max_am();
     init_dcr();
     init_gto();
-    
+
     /* If need to compute derivatives over SO -- compute SALC data */
     if (UserOptions.make_deriv1 && UserOptions.symm_ints)
       init_cdsalc();
-    
+
     /*--- Print out some stuff ---*/
     print_scalars();
     print_basisset();
-    
+
     /*--- Compute the integrals ---*/
 #ifdef INCLUDE_Default_Ints
     if (UserOptions.make_oei) {
@@ -125,13 +126,13 @@ PsiReturnType cints(Options & options, int argc, char *argv[])
     if (UserOptions.make_deriv1)
       deriv1();
 #endif
-      
+
     /*--- Compute second derivative integrals ---*/
 #ifdef INCLUDE_Default_Deriv2
     if (UserOptions.make_deriv2)
       deriv2();
 #endif
-    
+
 #ifdef INCLUDE_OEProp_Ints
     if (UserOptions.make_oeprop)
       oeprop_ints();
@@ -160,7 +161,7 @@ PsiReturnType cints(Options & options, int argc, char *argv[])
     if (UserOptions.make_giao_deriv)
       giao_deriv();
 #endif
-    
+
     /*--- Cleanup ---*/
     if (UserOptions.make_deriv1 && UserOptions.symm_ints)
       cleanup_cdsalc();
@@ -168,7 +169,7 @@ PsiReturnType cints(Options & options, int argc, char *argv[])
     cleanup_symmetry();
     cleanup_basisset();
     cleanup_molecule();
-    
+
     stop_io();
   } catch (std::exception e) {
     std::cerr << e.what() << std::endl;

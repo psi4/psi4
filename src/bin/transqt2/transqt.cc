@@ -45,7 +45,7 @@
 namespace psi {
   namespace transqt2 {
 
-void init_io(int argc, char *argv[]);
+void init_io();
 void title(void);
 void get_params(Options & options);
 void get_moinfo(void);
@@ -59,7 +59,7 @@ void transtwo_rhf(void);
 void transtwo_uhf(void);
 void transone(int,int,double *,double *,double **,int,int *);
 
-PsiReturnType transqt2(Options & options, int argc, char *argv[])
+PsiReturnType transqt2(Options & options)
 {
   int nso, nmo, ntri_so, ntri_mo, nirreps;
   int **cachelist, *cachefiles;
@@ -72,7 +72,7 @@ PsiReturnType transqt2(Options & options, int argc, char *argv[])
   int *so_offset, *mo_offset;
   double efzc;
 
-  init_io(argc,argv);
+  init_io();
   title();
   get_params(options);
   get_moinfo();
@@ -89,7 +89,7 @@ PsiReturnType transqt2(Options & options, int argc, char *argv[])
   cachelist = cacheprep_rhf(params.cachelev, cachefiles); /* really just a placeholder */
 
   dpd_init(0, nirreps, params.memory, 0, cachefiles, cachelist,
-	   NULL, 2, moinfo.sopi, moinfo.sosym, moinfo.actpi, moinfo.actsym);
+       NULL, 2, moinfo.sopi, moinfo.sosym, moinfo.actpi, moinfo.actsym);
 
   /*** Starting one-electron transforms and presort ***/
 
@@ -111,11 +111,11 @@ PsiReturnType transqt2(Options & options, int argc, char *argv[])
     D = init_array(ntri_so);
     for(h=0; h < nirreps; h++)
       for(p=so_offset[h]; p < so_offset[h]+moinfo.sopi[h]; p++)
-	for(q=so_offset[h]; q <=p; q++) {
-	  pq = INDEX(p,q);
-	  for(i=mo_offset[h]; i < mo_offset[h] + moinfo.core[h]; i++)
-	    D[pq] += C[p][i] * C[q][i];
-	}
+    for(q=so_offset[h]; q <=p; q++) {
+      pq = INDEX(p,q);
+      for(i=mo_offset[h]; i < mo_offset[h] + moinfo.core[h]; i++)
+        D[pq] += C[p][i] * C[q][i];
+    }
     if(params.print_lvl > 2) {
       fprintf(outfile, "\n\tFrozen-core density (SO):\n");
       print_array(D, nso, outfile);
@@ -126,13 +126,13 @@ PsiReturnType transqt2(Options & options, int argc, char *argv[])
     D_b = init_array(ntri_so);
     for(h=0; h < nirreps; h++)
       for(p=so_offset[h]; p < so_offset[h]+moinfo.sopi[h]; p++)
-	for(q=so_offset[h]; q <=p; q++) {
-	  pq = INDEX(p,q);
-	  for(i=mo_offset[h]; i < mo_offset[h] + moinfo.core[h]; i++) {
-	    D_a[pq] += C_a[p][i] * C_a[q][i];
-	    D_b[pq] += C_b[p][i] * C_b[q][i];
-	  }
-	}
+    for(q=so_offset[h]; q <=p; q++) {
+      pq = INDEX(p,q);
+      for(i=mo_offset[h]; i < mo_offset[h] + moinfo.core[h]; i++) {
+        D_a[pq] += C_a[p][i] * C_a[q][i];
+        D_b[pq] += C_b[p][i] * C_b[q][i];
+      }
+    }
     if(params.print_lvl > 2) {
       fprintf(outfile, "\n\tAlpha Frozen-core density (SO):\n");
       print_array(D_a, nso, outfile);
@@ -161,10 +161,10 @@ PsiReturnType transqt2(Options & options, int argc, char *argv[])
   dpd_file4_init(&I, PSIF_SO_PRESORT, 0, 3, 3, "SO Ints (pq,rs)");
   if(params.ref == 0 || params.ref == 1)
     file_build_presort(&I, PSIF_SO_TEI, params.tolerance, params.memory,
-	!params.delete_tei, moinfo.ncore, D, NULL, F, NULL, params.ref);
+    !params.delete_tei, moinfo.ncore, D, NULL, F, NULL, params.ref);
   else
     file_build_presort(&I, PSIF_SO_TEI, params.tolerance, params.memory,
-	!params.delete_tei, moinfo.ncore, D_a, D_b, F_a, F_b, params.ref);
+    !params.delete_tei, moinfo.ncore, D_a, D_b, F_a, F_b, params.ref);
   dpd_file4_close(&I);
   psio_close(PSIF_SO_PRESORT, 1);
   timer_off("presort");
@@ -196,8 +196,8 @@ PsiReturnType transqt2(Options & options, int argc, char *argv[])
       pq = INDEX(p,p);
       efzc += D[pq] * (H[pq] + F[pq]);
       for(q=0; q < p; q++) {
-	pq = INDEX(p,q);
-	efzc += 2.0 * D[pq] * (H[pq] + F[pq]);
+    pq = INDEX(p,q);
+    efzc += 2.0 * D[pq] * (H[pq] + F[pq]);
       }
     }
   }
@@ -207,9 +207,9 @@ PsiReturnType transqt2(Options & options, int argc, char *argv[])
       efzc += 0.5 * D_a[pq] * (H[pq] + F_a[pq]);
       efzc += 0.5 * D_b[pq] * (H[pq] + F_b[pq]);
       for(q=0; q < p; q++) {
-	pq = INDEX(p,q);
-	efzc += D_a[pq] * (H[pq] + F_a[pq]);
-	efzc += D_b[pq] * (H[pq] + F_b[pq]);
+    pq = INDEX(p,q);
+    efzc += D_a[pq] * (H[pq] + F_a[pq]);
+    efzc += D_b[pq] * (H[pq] + F_b[pq]);
       }
     }
   }
@@ -313,24 +313,24 @@ PsiReturnType transqt2(Options & options, int argc, char *argv[])
   return(Success);
 }
 
-void init_io(int argc, char *argv[])
+void init_io()
 {
-  int i;
-  char *progid;
-  int num_extra_args = 0;
-  char **extra_args;
-  extra_args = (char **) malloc(argc*sizeof(char *));
+//  int i;
+//  char *progid;
+//  int num_extra_args = 0;
+//  char **extra_args;
+//  extra_args = (char **) malloc(argc*sizeof(char *));
 
   params.print_lvl = 1;
   params.backtr = 0;
-  for (i=1; i<argc; i++) {
-    if (!strcmp(argv[i], "--quiet"))
-      params.print_lvl = 0;
-    else if(!strcmp(argv[i], "--backtr"))
-      params.backtr = 1;
-    else
-      extra_args[num_extra_args++] = argv[i];
-  }
+//  for (i=1; i<argc; i++) {
+//    if (!strcmp(argv[i], "--quiet"))
+//      params.print_lvl = 0;
+//    else if(!strcmp(argv[i], "--backtr"))
+//      params.backtr = 1;
+//    else
+//      extra_args[num_extra_args++] = argv[i];
+//  }
 
   if(params.print_lvl) tstart();
 
