@@ -17,7 +17,7 @@ namespace psi{
     namespace psimrcc  { PsiReturnType psimrcc(Options &); }
     namespace mcscf    { PsiReturnType mcscf(Options &); }
 
-    PsiReturnType opt_step(Options &, int argc, char *argv[]);
+    PsiReturnType opt_step(Options &);
 
 void
 setup_driver(Options &options)

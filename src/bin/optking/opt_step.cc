@@ -21,7 +21,7 @@ namespace psi { // namespace optking {
 PsiReturnType opt_step_internal(cartesians &carts, simples_class &simples, const salc_set &symm);
 
 // for now, just a wrapper to call the old function
-PsiReturnType opt_step(Options & options, int argc, char *argv[]) {
+PsiReturnType opt_step(Options & options) {
   static bool have_intcos = false;
   static simples_class *simples;
   static salc_set *symm_salcs;
