@@ -69,6 +69,37 @@ psi4_driver(Options & options, int argc, char *argv[])
     if(check_only)
       fprintf(outfile, "\n    Sanity check requested. Exiting without execution.\n\n");
 
+    char *argv_new[MAX_ARGS];
+
+    // test SCF optimization
+    fprintf(outfile,"Hardwired to test SCF optimizations.\n");
+
+    read_options("INPUT", options);
+    dispatch_table["INPUT"](options, 0, argv_new);
+
+for (int n=0; n<40; ++n) {
+
+    read_options("CINTS", options);
+    dispatch_table["CINTS"](options, 0, argv_new);
+
+    read_options("CSCF", options);
+    dispatch_table["CSCF"](options, 0, argv_new);
+
+    read_options("CINTS", options);
+    argv_new[0] = new char [strlen("CINTS")+1];
+    strcpy(argv_new[0],"CINTS");
+    argv_new[1] = new char [strlen("--deriv1")+1];
+    strcpy(argv_new[1],"--deriv1");
+    dispatch_table["CINTS"](options, 2, argv_new);
+    free(argv_new[0]);
+    free(argv_new[1]);
+
+    read_options("OPTKING", options);
+    dispatch_table["OPT_STEP"](options, 0, argv_new);
+}
+
+    return Success;
+
     char *jobList = const_cast<char*>(calcType.c_str());
     // This version assumes that the array contains only module names, not
     // macros for other job types, like $SCF
@@ -107,7 +138,7 @@ psi4_driver(Options & options, int argc, char *argv[])
     // remove command-line-like arguments from psi.dat string
     // at this point argv[0] is still "psi4" - which we will remove
     int i, argc_new;
-    char *argv_new[MAX_ARGS];
+    //char *argv_new[MAX_ARGS];
     for (i=1; i<argc; ++i) {
       argv_new[i-1] = new char [strlen(argv[i])+1];
       strcpy(argv_new[i-1],argv[i]);
