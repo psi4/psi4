@@ -52,6 +52,6 @@ public:
     void print() const;
 };
 
-};
+}
 
 #endif // _psi_src_lib_libmints_shellrotation_h_

@@ -1,5 +1,4 @@
 psi: (
-  exec = (input cints scf)
   label = "BH cc-pVQZ SCF"
   jobtype = sp
   wfn = scf
