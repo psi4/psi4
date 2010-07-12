@@ -17,6 +17,7 @@
 #include <libparallel/parallel.h>
 #include "script.h"
 #include <physconst.h>
+#include <psifiles.h>
 
 #include <molecular_system.h>
 
@@ -67,7 +68,7 @@ int main(int argc, char **argv, char **envp)
     // Create base objects in the scripting language and initialize the language
     Script::language->initialize();
 
-    psi_start(argc, argv);
+    if(psi_start(argc, argv) == PSI_RETURN_FAILURE) return EXIT_FAILURE;
 
     if(!clean_only) print_version(outfile);
 

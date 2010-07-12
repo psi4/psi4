@@ -34,7 +34,7 @@ int argc, char *argv[], int overwrite_output) {
     return i;
 }
 
-int opt_psi_stop(FILE* infile, FILE* outfile, char* psi_file_prefix) { } ;
+int opt_psi_stop(FILE* infile, FILE* outfile, char* psi_file_prefix) { }
 /* obselete
   ip_done();
   free(psi_file_prefix);
