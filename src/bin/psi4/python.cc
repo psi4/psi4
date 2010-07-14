@@ -18,12 +18,18 @@ using namespace boost::python;
 using namespace std;
 
 namespace psi {
+    namespace input    { PsiReturnType input(Options &); }
+    namespace cints    { PsiReturnType cints(Options &); }
+    namespace cscf     { PsiReturnType cscf(Options &);  }
+    namespace scf      { PsiReturnType scf(Options &);   }
+
+    extern int read_options(const std::string &name, Options & options, bool call_ipv1 = true);
     extern void psiclean(void);
     extern FILE *outfile;
     extern Options options;
 }
 
-bool py_psi_input()
+int py_psi_input()
 {
     /* Apply any options that need to be to global options object.
 
@@ -43,8 +49,22 @@ bool py_psi_input()
 
        dispatch_table["INPUT"](options);
      */
-    printf("input: I did absolutely nothing.\n");
-    return true;
+    return input::input(options);
+}
+
+int py_psi_cints()
+{
+    return cints::cints(options);
+}
+
+int py_psi_cscf()
+{
+    return cscf::cscf(options);
+}
+
+int py_psi_scf()
+{
+    return scf::scf(options);
 }
 
 char const* py_psi_version()
@@ -62,14 +82,49 @@ bool py_psi_configure_psio(PSIO* obj)
     return psiopp_ipv1_config(obj);
 }
 
+void py_psi_set_default_options_for_module(std::string const & name)
+{
+    read_options(name, options, false);
+}
+
+void py_psi_print_options()
+{
+    options.print();
+}
+
+bool py_psi_set_option(std::string const & name, std::string const & value)
+{
+    options.set_str(name, value);
+    return true;
+}
+
+bool py_psi_set_options(std::string const & name, int value)
+{
+    options.set_int(name, value);
+    return true;
+}
+
 BOOST_PYTHON_MODULE(PsiMod)
 {
     def("version", py_psi_version);
     def("clean", py_psi_clean);
     def("configure_io", py_psi_configure_psio);
 
+    // Options
+    def("set_default_options_for_module", py_psi_set_default_options_for_module);
+    def("print_options", py_psi_print_options);
+
+    typedef void (*optionsStringFunction)(std::string const &, std::string const&);
+    typedef void (*optionsIntFunction)(std::string const &, int);
+
+    def("set_option", optionsStringFunction(py_psi_set_option));
+    def("set_option", optionsIntFunction(py_psi_set_option));
+
     // modules
-    def("input",py_psi_input);
+    def("input", py_psi_input);
+    def("cints", py_psi_cints);
+    def("cscf",  py_psi_cscf);
+    def("scf",   py_psi_scf);
 
     // Define library classes
     class_<PSIO, shared_ptr<PSIO> >( "IO" ).
@@ -81,8 +136,8 @@ BOOST_PYTHON_MODULE(PsiMod)
         def( "tocclean", &PSIO::tocclean ).
         def( "tocprint", &PSIO::tocprint ).
         def( "tocwrite", &PSIO::tocwrite ).
-        def( "sharedObject", &PSIO::shared_object).
-        staticmethod("sharedObject");
+        def( "shared_object", &PSIO::shared_object).
+        staticmethod("shared_object");
 
     class_<Chkpt, shared_ptr<Chkpt> >( "Checkpoint", init<PSIO*, int>() ).
         add_property( "enuc", &Chkpt::rd_enuc, &Chkpt::wt_enuc).
@@ -96,8 +151,8 @@ BOOST_PYTHON_MODULE(PsiMod)
         add_property( "eccsd", &Chkpt::rd_eccsd, &Chkpt::wt_eccsd).
         add_property( "e_t", &Chkpt::rd_e_t, &Chkpt::wt_e_t).
         add_property( "emp2", &Chkpt::rd_emp2, &Chkpt::wt_emp2).
-        def( "sharedObject", &Chkpt::shared_object).
-        staticmethod("sharedObject");
+        def( "shared_object", &Chkpt::shared_object).
+        staticmethod("shared_object");
 
     class_<Vector3>("Vector3").
         def(init<double>()).
@@ -147,8 +202,8 @@ BOOST_PYTHON_MODULE(PsiMod)
         def("sigma_h", &SymmetryOperation::sigma_h).
         def("sigma_xz", &SymmetryOperation::sigma_xz).
 //        def("sigma_yz", &SymmetryOperation::sigma_yz).
-        def("rotateN", intFunction(&SymmetryOperation::rotation)).
-        def("rotateTheta", doubleFunction(&SymmetryOperation::rotation)).
+        def("rotate_n", intFunction(&SymmetryOperation::rotation)).
+        def("rotate_theta", doubleFunction(&SymmetryOperation::rotation)).
         def("c2_x", &SymmetryOperation::c2_x).
         def("c2_y", &SymmetryOperation::c2_y).
         def("transpose", &SymmetryOperation::transpose);
@@ -157,32 +212,32 @@ BOOST_PYTHON_MODULE(PsiMod)
         def(init<const char*>()).
         def("symbol", &PointGroup::symbol).
         //def("origin", &PointGroup::origin).
-        def("setSymbol", &PointGroup::set_symbol);
+        def("set_symbol", &PointGroup::set_symbol);
 
     class_<Molecule, shared_ptr<Molecule> >("Molecule").
-        def("initWithCheckpoint", &Molecule::init_with_chkpt).
-        def("saveToCheckpoint", &Molecule::save_to_chkpt).
-        def("initWithIO", &Molecule::init_with_psio).
-        def("addAtom", &Molecule::add_atom).
+        def("init_with_checkpoint", &Molecule::init_with_chkpt).
+        def("save_to_checkpoint", &Molecule::save_to_chkpt).
+        def("init_with_io", &Molecule::init_with_psio).
+        def("add_atom", &Molecule::add_atom).
         def("natom", &Molecule::natom).
         def("Z", &Molecule::Z).
         def("x", &Molecule::x).
         def("y", &Molecule::y).
         def("z", &Molecule::z).
         //def("xyz", &Molecule::xyz).
-        def("centerOfMass", &Molecule::center_of_mass).
+        def("center_of_mass", &Molecule::center_of_mass).
         def("translate", &Molecule::translate).
-        def("moveToCOM", &Molecule::move_to_com).
+        def("move_to_com", &Molecule::move_to_com).
         def("mass", &Molecule::mass).
         def("label", &Molecule::label).
         def("charge", &Molecule::charge).
-        def("atomAtPosition", &Molecule::atom_at_position1).
-        def("printToOutput", &Molecule::print).
-        def("nuclearRepulsionEnergy", &Molecule::nuclear_repulsion_energy).
+        def("atom_at_position", &Molecule::atom_at_position1).
+        def("print_to_output", &Molecule::print).
+        def("nuclear_repulsion_energy", &Molecule::nuclear_repulsion_energy).
         def("reorient", &Molecule::reorient).
-        def("findPointGroup", &Molecule::find_point_group).
-        def("setPointGroup", &Molecule::set_point_group).
-        def("formSymmetryInformation", &Molecule::form_symmetry_information);
+        def("find_point_group", &Molecule::find_point_group).
+        def("set_point_group", &Molecule::set_point_group).
+        def("form_symmetry_information", &Molecule::form_symmetry_information);
 }
 
 Python::Python() : Script()

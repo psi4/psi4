@@ -34,7 +34,7 @@ namespace psi {
     int psi4_driver(Options & options);
     void psiclean(void);
 
-    int read_options(const std::string &name, Options & options);
+    int read_options(const std::string &name, Options & options, bool call_ipv1 = true);
     void read_atom_basis(char ** & atom_basis, int num_atoms);
     PSIO *psio = NULL;
 //    std::map<std::string, PsiReturnType(*)(Options &, int, char *[])> dispatch_table;

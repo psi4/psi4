@@ -19,7 +19,7 @@ namespace psi {
 
   extern FILE *infile;
   extern void setup_driver(Options &options);
-  extern int read_options(const std::string &jobName, Options &options);
+  extern int read_options(const std::string &jobName, Options &options, bool call_ipv1 = true);
 
   void psiclean(void);
 
@@ -125,7 +125,7 @@ for (int n=0; n<8; ++n) {
 	throw PsiException(err, __FILE__, __LINE__);
       }
     }
-    else {
+/*    else {
       errcod = ip_count(jobList, &numTasks, 0);
       if (!ip_exist(jobList, 0)){
 	std::string err("Error: jobtype ");
@@ -139,7 +139,7 @@ for (int n=0; n<8; ++n) {
 	err += " array from psi.dat";
 	throw PsiException(err, __FILE__, __LINE__);
       }
-    }
+    } */
 
     fprintf(outfile, "    List of tasks to execute:\n");
     for(int n = 0; n < numTasks; ++n) {
