@@ -18,7 +18,8 @@ namespace psi {
  * @param options - the liboptions module used in the computations.
  */
 
-int read_options(const std::string &name, Options & options) {
+int read_options(const std::string &name, Options & options, bool call_ipv1)
+{
 
   ip_cwk_clear();
   ip_cwk_add(const_cast<char*>(":BASIS"));
@@ -59,7 +60,7 @@ int read_options(const std::string &name, Options & options) {
         axes cooincide with the Cartesian axes -*/
     options.add_bool("NO_REORIENT",false);
     /*- The label used when storing job information -*/
-    options.add_str("LABEL","Default PSI3 Label");
+    options.add_str("LABEL","Default PSI4 Label");
     options.add_bool("SHOWNORM",false);
     options.add_bool("NORMALIZE",true);
     /*- Whether pure (spherical) angular momentum functions are to be used -*/
@@ -742,9 +743,11 @@ else if(name == "CCDENSITY") {
     options.add_str("TRIPLES_ALGORITHM","RESTRICTED","SPIN_ADAPTED RESTRICTED UNRESTRICTED");
     options.add_str("MP2_CCSD_METHOD","II","I IA II");
   }
-  options.read_ipv1();
-  if(Communicator::world->me() == 0)
+
+  if (call_ipv1) {
+    options.read_ipv1();
     options.print();
+  }
 
   return true;
 }

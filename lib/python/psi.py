@@ -30,28 +30,28 @@ def geometry(geom, reorient = True, prefix = "", chkpt = None, shiftToCOM = True
             print atom
             raise AttributeError("atom entries must have at least 4 elements")
 
-        molecule.addAtom(1, atom[1], atom[2], atom[3], atom[0], 1.0, 0, 0.0)
+        molecule.add_atom(1, atom[1], atom[2], atom[3], atom[0], 1.0, 0, 0.0)
 
     # Print the molecule:
-    molecule.printToOutput()
+    molecule.print_to_output()
 
     # If requested, shift molecule to center of mass
     if shiftToCOM == True:
-        molecule.moveToCOM()
+        molecule.move_to_com()
 
     # If requested, reorient the molecule.
     if reorient == True:
         molecule.reorient()
 
-	molecule.printToOutput()
+        molecule.print_to_output()
 
     # Save the molecule to the checkpoint file using prefix
     if chkpt == None:
         # If the user didn't provide a checkpoint object create one
         # using the shared psio object
-        psio = PsiMod.IO.sharedObject()
+        psio = PsiMod.IO.shared_object()
         chkpt = PsiMod.Checkpoint(psio, 1)
 
-    molecule.saveToCheckpoint(chkpt, prefix)
+    molecule.save_to_checkpoint(chkpt, prefix)
 
     return molecule
