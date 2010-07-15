@@ -1,3 +1,5 @@
+%! UHF-CCSD(T) cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the CN radical, with Z-matrix input.
+
 psi: (
   label = "UHF-CCSD(T)/cc-pVDZ 2Sigma+ CN"
   jobtype = sp

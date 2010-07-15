@@ -1,6 +1,8 @@
+%! RI-SCF cc-pVTZ energy of water, with Z-matrix input and cc-pVTZ-RI auxilliary basis.
+
 psi: (
   exec = (input scf)
-  label = "H2O cc-pVQZ SCF"
+  label = "H2O cc-pVTZ SCF"
   jobtype = sp
   wfn = scf
   reference = rhf

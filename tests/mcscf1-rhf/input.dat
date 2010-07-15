@@ -1,3 +1,5 @@
+%! RHF 6-31G** energy of water, using the MCSCF module and Z-matrix input.
+
 %  @SCF@     E(SCF) =      -76.023615019286
 
 psi: (

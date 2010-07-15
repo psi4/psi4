@@ -3,6 +3,15 @@
 use strict;
 use warnings;
 
+# This script does two things: a) reads the driver's options setup to provide a list of 
+# keywords expected by each module; b) looks for comments in each test case to identify
+# the type of calculation.  The results of this parsing is put into TeX files, which are
+# inlined into the manual.
+
+
+#
+# First, read the options for each module
+#
 my $DriverFile = "../../src/bin/psi4/read_options.cc";
 
 my $CurrentModule;
@@ -142,3 +151,36 @@ sub determine_keyword_type_and_default
  }
  ($Keyword, $Type, $Default, $Possibilities);
 }
+
+
+#
+# Now we raid the test cases looking for tags
+#
+
+my $TestsFolder = "../../tests";
+opendir(TESTS, $TestsFolder) or die "I can't read $TestsFolder\n";
+my $Out = "tests_descriptions.tex";
+open(OUT,">$Out") or die "I can't write to $Out\n";
+printf OUT "\\begin{tabular*}{\\textwidth}[tb]{p{0.15\\textwidth}p{0.75\\textwidth}}\n";
+foreach my $Dir(readdir TESTS){
+    my $Input = join("/",$TestsFolder,$Dir,"input.dat");
+    # Look for an input file in each subdirectory, or move on
+    open(INPUT, "<$Input") or next;
+    my $Description;
+    while(<INPUT>){
+        next unless s/\%\!//;
+        $Description .= $_;
+        chomp $Description;
+    }
+    close INPUT;
+    if($Description){
+        print OUT "{\\bf $Dir} & $Description\\\\\n";
+    }else{
+        warn "Warning!!! Undocumented input: $Input\n";
+    }
+}
+print OUT "\\end{tabular*}";
+close OUT;
+closedir TESTS;
+
+

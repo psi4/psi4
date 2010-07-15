@@ -88,6 +88,159 @@
 	 & & \\
 \end{tabular*}
 
+\subsection{DCFT}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 ALGORITHM & The algorithm to use for lambda and orbital updates \\ 
+
+	  & {\bf Possible Values:} TWOSTEP, SIMULTANEOUS \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} SIMULTANEOUS\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 AO\_BASIS & The algorithm to use for the <VV||VV> terms \\ 
+
+	  & {\bf Possible Values:} NONE, DISK, DIRECT \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} NONE\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CACHELEV & How to cache quantities within the DPD library \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 2\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CHARGE & The molecular charge \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CONVERGENCE & The number of decimal digits required in the determination of lambda \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 10\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DIIS\_NUM\_VECS & The number of DIIS vectors needed for extrapolation to start \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 3\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 LAMBDA\_MAXITER & The maximum number of lambda iterations per macro-iteration \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 MULTP & (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DIIS\_START & -log10 of the threshold below the RMS lambda and SCF error must be for DIIS to start \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 3\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 INT\_THRESH & -log10 of the threshold below which an integral is considered to be zero \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 14\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SCF\_CONV & The number of decimal digits required in the SCF density \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 8\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 IGNORE\_TAU & Should the tau terms be included? \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 MAXITER & The maximum number iterations allowed \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 40\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 REGULARIZER & The shift applied to the denominator \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RELAX\_ORBITALS & Whether to relax the orbitals or not \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} true\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DOCC & An array containing the number of singly-occupied orbitals per irrep (in Cotton order) \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} array &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SCF\_MAXITER & The maximum number of SCF iterations per cycle \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 50\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 MAX\_DIIS & The maximum size of the DIIS subspace \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 6\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 MEMORY & The amount of memory available (in Mb) \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 2000\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SOCC & An array containing the number of doubly-occupied orbitals per irrep (in Cotton order) \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} array &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 PRINT & The amount of information printed to the output file \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+
 \subsection{INPUT}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 CHKPT\_GEOM & Read geometry from checkpoint file (in findif calculations) \\ 
@@ -231,14 +384,14 @@
 
 \subsection{LMP2}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 WFN & The wavefunction desired \\ 
+	 RI\_BASIS\_MP2 & The wavefunction desired \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} LMP2\\
+	   & {\bf Type:} string &  {\bf Default:} NONE\\
 	 & & \\
 \end{tabular*}
 
-\subsection{SCF}
+\subsection{MCSCF}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 CHARGE & The molecular charge \\ 
 \end{tabular*}
@@ -254,10 +407,79 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DIIS & Whether DIIS extrapolation is used to accelerate convergence \\ 
+	 D\_CONVERGE & -Log10 of the density convergence criterion \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} true\\
+	   & {\bf Type:} integer &  {\bf Default:} 12\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 E\_CONVERGE & -Log10 of the energy convergence criterion \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 12\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 MULTP & (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+
+\subsection{SCF}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 BASIS & primary basis set \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CARTESIAN\_RESOLUTION\_Y & Grid y resolution (npoints)  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CARTESIAN\_RESOLUTION\_Z & Grid z resolution (npoints)  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RI\_SCF\_SAVE & Should we make sure to save restart information for RI SCF? \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SPHERICAL\_TYPE & The spherical quadrature type for DFT, usually Lebedev \\ 
+
+	  & {\bf Possible Values:} LEBEDEV \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} LEBEDEV\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SAD\_SCHWARZ\_CUTOFF & SAD Guess Schwarz Sieve (for rough molecular F) \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 1E\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 GRID\_STRING & The DFT grid specification, such as SG1 \\ 
+
+	  & {\bf Possible Values:} SG1 \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -268,17 +490,24 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 PRINT\_MOS & Whether to print the molecular orbitals \\ 
+	 CARTESIAN\_RESOLUTION\_X & Grid x resolution (npoints)  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RI\_BASIS & The name of the auxilliary basis to be used in RI computations \\ 
+	 DIIS & Whether DIIS extrapolation is used to accelerate convergence \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} No Default\\
+	   & {\bf Type:} boolean &  {\bf Default:} true\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DEBUG & The amount of debugging information to print \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 0\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -289,6 +518,55 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 N\_SPHERICAL & The number of spherical points in the DFT grid \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 590\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RI\_BASIS\_SCF & The name of the auxiliary basis to be used in RI computations \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SAD\_MAXITER & SAD Guess Maxiter \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 50\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 TEST\_FUNCTIONAL & Print Functional Test Data?  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CARTESIAN\_EXTENTS & Grid extents [xl, xr, yl, yr, zl, zr]  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} array &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CARTESIAN\_OVERAGE & Grid overage at sides  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 2\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CHARGE\_CUTOFF & Atomic Charge cutoff (for primary domain) \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 DIIS\_VECTORS & The maximum number of error vectors stored for DIIS extrapolation \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -296,17 +574,56 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DIRECT & Whether the computation is to be performed without disk-based storage of integrals \\ 
+	 SCHWARZ\_CUTOFF & Minimum absolute TEI value for seive \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 X\_FUNCTIONAL & The exchange functional name or alias  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DUAL\_BASIS & Dual basis projection? \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 OUT\_OF\_CORE & Whether to use hard disk based storage in the computation \\ 
+	 SAPT & Are going to do SAPT? If so, what part?  \\ 
+
+	  & {\bf Possible Values:} 2-DIMER, 2-MONOMER\_A, 2-MONOMER\_B, 3-TRIMER, 3-DIMER\_AB, 3-DIMER\_BC, 3-DIMER\_AC, 3-MONOMER\_A, 3-MONOMER\_B, 3-MONOMER\_C \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	   & {\bf Type:} string &  {\bf Default:} FALSE\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 S\_MIN\_EIGENVALUE & Minimum S matrix eigenvalue to be used before compensating for linear dependencies \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 1E\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 GUESS & The guess type to be used in the computation \\ 
+
+	  & {\bf Possible Values:} CORE, GWH, SAD, READ, BASIS2, DUAL\_BASIS \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 OVERLAP\_CUTOFF & Minimum absolute S matrix value for DF-SCF exchange \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 0\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -317,10 +634,186 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CARTESIAN\_MO\_INDICES & Grid MO indices  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} array &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CHARGE & The molecular charge \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CHOLESKY\_CUTOFF & Cholesky Cutoff \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 1E\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 DOCC & An array containing the number of doubly-occupied orbitals per irrep (in Cotton order) \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CARTESIAN\_FILENAME & Grid filename  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} Grid.out\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 N\_CARTESIAN\_MOS & Number MO indices  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 N\_RADIAL & The number of radial points in the DFT grid \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 99\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CARTESIAN\_RESOLUTION & Grid global resolution (npoints)  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 30\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 N\_BLOCK & The number of grid points per evaluation block \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 5000\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 PERTURB\_WITH & The operator used to perturb the Hamiltonian, if requested \\ 
+
+	  & {\bf Possible Values:} DIPOLE\_X, DIPOLE\_Y, DIPOLE\_Z \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} DIPOLE\_X\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SOCC & An array containing the number of singly-occupied orbitals per irrep (in Cotton order) \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} array &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 STEPS\_PER\_LOCALIZE & Iterations per full Pipek-Mizey Localization \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DUAL\_BASIS\_SCF & Dual basis set \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 PRINT\_MOS & Whether to print the molecular orbitals \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RADIAL\_TYPE & The radial quadrature type for DFT, Treutler is best \\ 
+
+	  & {\bf Possible Values:} TREUTLER, BECKE, EULER-MACLAURIN \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} TREUTLER\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RI\_MIN\_EIGENVALUE & Minimum J matrix eigenvalue to be used \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 1E\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RI\_SCF\_RESTART & Should we try to restart \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RI\_SCF\_STORAGE & The storage scheme for the three index tensors in density fitting \\ 
+
+	  & {\bf Possible Values:} DEFAULT, CORE, DISK \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} DEFAULT\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SAD\_E\_CONVERGE & SAD Guess Convergence in E \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 1E\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 ROWS\_PER\_READ & Maximum number of rows to read/write in each DF-SCF operation \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 C\_FUNCTIONAL & The correlation functional name  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DENSITY\_CUTOFF & Minimum absolute D matrix value for DF-SCF exchange \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 D\_CONVERGE & -Log10 of the density convergence criterion \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 8\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 NUCLEAR\_TYPE & The nuclear partition type for DFT, Treutler is best  \\ 
+
+	  & {\bf Possible Values:} NAIVE, BECKE, TREUTLER \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} TREUTLER\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 NUMERICAL\_GRID\_FILENAME & Grid filename  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} ngrid.out\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -338,22 +831,6 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 D\_CONVERGE & -Log10 of the density convergence criterion \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 8\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 PERTURB\_WITH & The operator used to perturb the Hamiltonian, if requested \\ 
-
-	  & {\bf Possible Values:} DIPOLE\_X, DIPOLE\_Y, DIPOLE\_Z \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} DIPOLE\_X\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 PRINT & The amount of information to print to the output \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -361,10 +838,54 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SOCC & An array containing the number of singly-occupied orbitals per irrep (in Cotton order) \\ 
+	 R\_EXT & Extended domain radius, Angstrom \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} array &  {\bf Default:} No Default\\
+	   & {\bf Type:} double &  {\bf Default:} 3\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SAVE\_CARTESIAN\_GRID & Save a grid or not?  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SAD\_F\_MIX\_START & SAD Guess F-mix Iteration Start \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 50\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 THREE\_INDEX\_CUTOFF & Minimum absolute three-index value for DF-SCF seive \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 S\_ORTHOGONALIZATION & SO orthogonalization: symmetric or canonical? \\ 
+
+	  & {\bf Possible Values:} SYMMETRIC, CANONICAL \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} SYMMETRIC\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SAD\_D\_CONVERGE & SAD Guess Convergence in D \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 1E\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SAVE\_NUMERICAL\_GRID & Save a grid or not?  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
 }

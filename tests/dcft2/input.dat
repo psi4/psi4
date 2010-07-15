@@ -1,8 +1,6 @@
-% This is the DCFT test with
-% K06 functional
-% Two-step algorithm
-% DIIS Enabled
-% MO Basis four-virtual terms
+%! DCFT calculation for the He dimer, with the K06 functional. This performs a
+%! two-step update of the orbitals and cumulant, using DIIS extrapolation.
+%! Four-virtual integrals are handled in the MO Basis.
 psi: (
  label = "blah"
   jobtype = sp

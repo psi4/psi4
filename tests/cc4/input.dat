@@ -1,5 +1,7 @@
+%! RHF-CCSD(T) cc-pVQZ frozen-core energy of the BH molecule.
+
 psi: (
-  label = "BH cc-pVQZ CCSD(T)"
+  label = "BH CCSD(T)"
   jobtype = sp
   wfn = ccsd_t
   reference = rhf
