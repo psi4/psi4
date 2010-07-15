@@ -122,7 +122,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1)
       options.add_int("MAX_DIIS", 6);
       /*- The number of DIIS vectors needed for extrapolation to start -*/
       options.add_int("DIIS_NUM_VECS", 3);
-      /*- The algorithm to use for the <VV||VV> terms -*/
+      /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
       options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
       /*- The algorithm to use for lambda and orbital updates -*/
       options.add_str("ALGORITHM", "SIMULTANEOUS", "TWOSTEP SIMULTANEOUS");
@@ -301,7 +301,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1)
     /*- Maximum number of rows to read/write in each DF-SCF operation -*/
     options.add_int("ROWS_PER_READ", 0);
 
-    /*- -SAD Occupation Matrix Method */
+    /*- SAD Occupation Matrix Method -*/
     options.add_str("SAD_C", "CHOLESKY", "CHOLESKY ID");
     /*- SAD Guess Convergence in E -*/
     options.add_double("SAD_E_CONVERGE", 1E-5);
@@ -314,7 +314,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1)
 
     /*- SAD Guess Schwarz Sieve (for rough molecular F) -*/
     options.add_double("SAD_SCHWARZ_CUTOFF", 1E-7);
-    /*- -SAD Guess Cholesky Cutoff (for eliminating redundancies) */
+    /*- SAD Guess Cholesky Cutoff (for eliminating redundancies) -*/
     options.add_double("SAD_CHOL_CUTOFF", 1E-7);
   }
   else if (name == "MP2") {
@@ -685,11 +685,11 @@ else if(name == "CCDENSITY") {
     options.add_double("RI_MAX_COND", 1.0E8);
     /*- Find raw RI condition? -*/
     options.add_bool("FIND_RAW_J_COND", false);
-    /*- DFMP@ Algorithm type  -*/
+    /*- DFMP2 Algorithm type  -*/
     options.add_str("DFMP2_TYPE","DEFAULT", "DEFAULT DISK CORE OLD");
-    /*- -Maximum number of rows to read/write in each DF-MP2 operation */
+    /*- -Maximum number of rows to read/write in each DF-MP2 operation -*/
     options.add_int("ROWS_PER_READ", 0);
-    /*- Number of threads to compute integrals with. 0 is wild card- */
+    /*- Number of threads to compute integrals with. 0 is wild card -*/
     options.add_int("RI_INTS_NUM_THREADS", 1);
     options.add_int("PRINT",1);
     options.add_int("DEBUG",0);
