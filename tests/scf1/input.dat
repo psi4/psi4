@@ -1,3 +1,5 @@
+%! RHF cc-pVQZ energy for the BH molecule, with Cartesian input.
+
 psi: (
   label = "BH cc-pVQZ SCF"
   jobtype = sp

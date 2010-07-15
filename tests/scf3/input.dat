@@ -1,3 +1,5 @@
+%! UHF 6-31G** energy of the $^3B_1$ state of CH$_2$, with Z-matrix input.
+
 psi: (
   exec = (input cints scf)
   label = "6-31G** UHF CH2 3B1"

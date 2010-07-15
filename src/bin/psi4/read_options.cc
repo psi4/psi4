@@ -171,7 +171,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1)
     options.add_int("N_SPHERICAL",590);
     /*- The number of grid points per evaluation block -*/
     options.add_int("N_BLOCK",5000);
-    /*- The spherical quadrature type for DFT, usually Lebedev-*/
+    /*- The spherical quadrature type for DFT, usually Lebedev -*/
     options.add_str("SPHERICAL_TYPE","LEBEDEV","LEBEDEV");
     /*- The radial quadrature type for DFT, Treutler is best -*/
     options.add_str("RADIAL_TYPE","TREUTLER","TREUTLER BECKE EULER-MACLAURIN");
@@ -232,11 +232,11 @@ int read_options(const std::string &name, Options & options, bool call_ipv1)
     /*- Cholesky Integral factory only? -*/
     options.add_bool("CHOLESKY_INTEGRALS_ONLY",false);
 
-    /* -Dual basis projection? -*/
+    /*- Dual basis projection? -*/
     options.add_bool("DUAL_BASIS",false);
-    /* -Dual basis set -*/
+    /*- Dual basis set -*/
     options.add_str("DUAL_BASIS_SCF","");
-    /* -primary basis set -*/
+    /*- primary basis set -*/
     options.add_str("BASIS","");
 
     /*- The guess type to be used in the computation -*/
@@ -256,7 +256,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1)
     options.add_double("LAMBDA", 0.0);
     /*- The storage scheme for the three index tensors in density fitting -*/
     options.add_str("RI_SCF_STORAGE", "DEFAULT", "DEFAULT CORE DISK");
-    /*- Should we make sure to save `restart information for RI_SCF? -*/
+    /*- Should we make sure to save restart information for RI SCF? -*/
     options.add_bool("RI_SCF_SAVE",false);
     /*- Should we try to restart -*/
     options.add_bool("RI_SCF_RESTART",false);
@@ -290,29 +290,29 @@ int read_options(const std::string &name, Options & options, bool call_ipv1)
     options.add_int("E_CONVERGE", 8);
     /*- -Log10 of the density convergence criterion -*/
     options.add_int("D_CONVERGE", 8);
-    /*- -Minimum absolute TEI value for seive -*/
+    /*- Minimum absolute TEI value for seive -*/
     options.add_double("SCHWARZ_CUTOFF", 0.0);
-    /*- -Minimum absolute D matrix value for DF-SCF exchange -*/
+    /*- Minimum absolute D matrix value for DF-SCF exchange -*/
     //options.add_double("DENSITY_CUTOFF", 0.0);
-    /*- -Minimum absolute S matrix value for DF-SCF exchange -*/
+    /*- Minimum absolute S matrix value for DF-SCF exchange -*/
     options.add_double("OVERLAP_CUTOFF", 0.0);
-    /*- -Minimum absolute three-index value for DF-SCF seive -*/
+    /*- Minimum absolute three-index value for DF-SCF seive -*/
     options.add_double("THREE_INDEX_CUTOFF", 0.0);
-    /*- -Maximum number of rows to read/write in each DF-SCf operation */
+    /*- Maximum number of rows to read/write in each DF-SCF operation -*/
     options.add_int("ROWS_PER_READ", 0);
 
     /*- -SAD Occupation Matrix Method */
     options.add_str("SAD_C", "CHOLESKY", "CHOLESKY ID");
-    /*- -SAD Guess Convergence in E */
+    /*- SAD Guess Convergence in E -*/
     options.add_double("SAD_E_CONVERGE", 1E-5);
-    /*- -SAD Guess Convergence in D */
+    /*- SAD Guess Convergence in D -*/
     options.add_double("SAD_D_CONVERGE", 1E-5);
-    /*- -SAD Guess Maxiter */
+    /*- SAD Guess Maxiter -*/
     options.add_int("SAD_MAXITER", 50);
-    /*- -SAD Guess F-mix Iteration Start */
+    /*- SAD Guess F-mix Iteration Start -*/
     options.add_int("SAD_F_MIX_START", 50);
 
-    /*- -SAD Guess Schwarz Sieve (for rough molecular F) */
+    /*- SAD Guess Schwarz Sieve (for rough molecular F) -*/
     options.add_double("SAD_SCHWARZ_CUTOFF", 1E-7);
     /*- -SAD Guess Cholesky Cutoff (for eliminating redundancies) */
     options.add_double("SAD_CHOL_CUTOFF", 1E-7);
