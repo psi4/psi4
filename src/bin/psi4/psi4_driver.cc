@@ -68,6 +68,7 @@ namespace psi {
     if(check_only)
       fprintf(outfile, "\n    Sanity check requested. Exiting without execution.\n\n");
 
+/*************
     // test SCF optimization
     //     char *argv_new[MAX_ARGS];
 /**
