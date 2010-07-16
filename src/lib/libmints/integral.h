@@ -282,6 +282,9 @@ public:
 
     /// Returns an OneBodyInt that computes the electric field
     virtual OneBodyInt *electric_field();
+    
+    /// Returns an OneBodyInt that computes the point electrostatic potential
+    virtual OneBodyInt *electrostatic();
 
     /// Returns an ERI integral object
     virtual TwoBodyInt* eri(int deriv=0, double schwarz = 0.0);
@@ -297,6 +300,9 @@ public:
 
     /// Return spherical transform object for am
     SphericalTransform* spherical_transform(int am) { return &(spherical_transforms_[am]); }
+    
+    // Return spherical transform object for am
+    std::vector<SphericalTransform> spherical_transform() { return spherical_transforms_; }
 
     /// Return a new Cartesian iterator
     CartesianIter* cartesian_iter(int l) { return new CartesianIter(l); }

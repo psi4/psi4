@@ -70,7 +70,7 @@ namespace psi {
 
     // test SCF optimization
     //     char *argv_new[MAX_ARGS];
-
+/**
     read_options("INPUT", options);
     dispatch_table["INPUT"](options);
 
@@ -89,7 +89,7 @@ for (int n=0; n<8; ++n) {
     read_options("OPTKING", options);
     dispatch_table["OPT_STEP"](options);
 }
-
+**/
     //     read_options("OPTKING", options);
     //     dispatch_table["OPT_STEP"](options, 0, argv_new);
     // }

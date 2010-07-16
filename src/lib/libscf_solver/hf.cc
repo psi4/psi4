@@ -781,7 +781,11 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     H_UHF->add(T_UHF);
     H_UHF->add(V_UHF);
     double** H = H_UHF->to_block_matrix();
-    
+   
+    delete S_ints;
+    delete T_ints;
+    delete V_ints;
+ 
     if (print_>6) {
     fprintf(outfile,"  H:\n");
     print_mat(H,norbs,norbs,outfile);
@@ -961,7 +965,8 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     } while (!converged);
     if (converged && print_ > 2)
         fprintf(outfile, "\n  @Atomic UHF Final Energy: %20.14f\n", E);
-    
+   
+    delete TEI; 
     free_block(Dold);
     free_block(Ca);
     free_block(Cb);

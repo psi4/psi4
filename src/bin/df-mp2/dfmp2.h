@@ -70,7 +70,7 @@ protected:
     int* sym_virt_;
 
     double** Qia_;
-    double** W_;
+    double** W_; //Fitting metric inverse sqrt or cholesky decomposition
 
     double schwarz_;
     int* schwarz_shell_pairs_;
@@ -85,8 +85,12 @@ protected:
 
     //Form the Schwarz Sieve
     void form_Schwarz();
-    //Form the fitting metric
-    void form_W();
+    //Form the inverse square root of the fitting metric (preconditioned)
+    void form_Wm12_fin();
+    //Form the inverse square root of the fitting metric (raw)
+    void form_Wm12_raw();
+    //Form the square root of the fitting metric and it's cholesky decomposition 
+    void form_Wp12_chol();
 
     //Build the (A|ia) tensor and stripe it here
     void form_Aia_disk();
