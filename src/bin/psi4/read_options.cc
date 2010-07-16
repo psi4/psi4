@@ -244,7 +244,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1)
     /*- The reference wavefunction used in the computation -*/
     options.add_str("REFERENCE", "RHF");
     /*- The maximum number of iterations -*/
-    options.add_int("MAXITER", 40);
+    options.add_int("MAXITER", 100);
     /*- An array containing the number of doubly-occupied orbitals per irrep (in Cotton order) -*/
     options.add("DOCC", new ArrayType());
     /*- An array containing the number of singly-occupied orbitals per irrep (in Cotton order) -*/
@@ -264,13 +264,15 @@ int read_options(const std::string &name, Options & options, bool call_ipv1)
     options.add_bool("FIND_RAW_J_COND",false);
     /*- Max J basis condition number to be allowed -*/
     options.add_double("RI_MAX_COND",1E8);
+    /*- SCF Fitting Type -*/
+    options.add_str("RI_FITTING_TYPE", "FINISHED", "FINISHED RAW CHOLESKY");
     /*- Max Number of threads for integrals (may be turned down if memory is an issue). 0 is blank -*/
     options.add_int("RI_INTS_NUM_THREADS",1);
 
     /*- SO orthogonalization: symmetric or canonical? -*/
     options.add_str("S_ORTHOGONALIZATION","SYMMETRIC","SYMMETRIC CANONICAL");
     /*- Minimum S matrix eigenvalue to be used before compensating for linear dependencies -*/
-    options.add_double("S_MIN_EIGENVALUE",1E-10);
+    options.add_double("S_MIN_EIGENVALUE",1E-7);
 
     /*- The operator used to perturb the Hamiltonian, if requested -*/
     options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z");
@@ -685,6 +687,8 @@ else if(name == "CCDENSITY") {
     options.add_double("RI_MAX_COND", 1.0E8);
     /*- Find raw RI condition? -*/
     options.add_bool("FIND_RAW_J_COND", false);
+    /*- DFMP2 Fitting Type -*/
+    options.add_str("RI_FITTING_TYPE", "FINISHED", "FINISHED RAW CHOLESKY");
     /*- DFMP2 Algorithm type  -*/
     options.add_str("DFMP2_TYPE","DEFAULT", "DEFAULT DISK CORE OLD");
     /*- -Maximum number of rows to read/write in each DF-MP2 operation -*/
@@ -697,6 +701,8 @@ else if(name == "CCDENSITY") {
     options.add_int("E_CONVERGE", 8);
     /*- -Log10 of the density convergence criterion -*/
     options.add_int("D_CONVERGE", 8);
+    
+    options.add_int("FRZCPI", 0);
   }
   else if(name == "PSIMRCC") {
     options.add_int("CORR_CHARGE",0);

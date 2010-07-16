@@ -135,6 +135,8 @@ protected:
     double **Jinv_;
     /// Fitting Tensor (J-matrix) for DF-SCF
     double **Jfit_;
+    /// Fitting metric decomposition (varies by fitting algorithm)
+    double **W_;
 
     double schwarz_; //Current Schwarz magnitude (static for now)
     int ntri_; //Number of function pairs after schwarz sieve and subsequent sieves
@@ -264,6 +266,14 @@ protected:
     void free_B();
     /** Free all memory associated with DF */
     void free_A();
+
+    /** Form DF fitting tensor inverse square root without conditioning **/
+    void form_Wm12_raw();
+    /** Form DF fitting tensor inverse square root with preconditioning via change of basis **/
+    void form_Wm12_fin();
+    /** Form DF fitting tensor square root cholesky decomposition **/
+    void form_Wp12_chol();
+
 
     inline int integral_type(int i, int j, int k, int l)
     {

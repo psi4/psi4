@@ -2,7 +2,7 @@
 *
 *       dfmp2.cc in psi4/src/bin/dfmp2
 *       By Rob Parrish, Ed Hohenstein, David Sherrill, CCMST Georgia Tech
-*       and Justin Turney, CCQC
+*       Justin Turney and Andy Simmonett CCQC University of Georgia 
 *       contact: robparrish@gmail.com
 *       28 June 2010
 *
@@ -64,6 +64,10 @@ void  DFMP2::setup()
   orbspi_ = chkpt_->rd_orbspi();
   frzcpi_ = chkpt_->rd_frzcpi();
   frzvpi_ = chkpt_->rd_frzvpi();
+
+  //HACK (for buckycatcher)
+  frzcpi_[0] = options_.get_int("FRZCPI");
+
   ndocc_ = 0;
   nvirt_ = 0;
   nf_docc_ = 0;
@@ -110,7 +114,7 @@ void  DFMP2::setup()
   df_memory_ = (unsigned long int)(options_.get_double("DFMP2_MEM_FACTOR")*memory_/sizeof(double)); 
 
   //Required core memory
-  unsigned long int core_memory = naux_raw_*nact_docc_*nact_virt_ + naux_raw_*naux_raw_;  
+  unsigned long int core_memory = naux_raw_*nact_docc_*(ULI)nact_virt_ + naux_raw_*(ULI)naux_raw_;  
 
   if (algorithm_type_ == "DEFAULT")
     if (core_memory < df_memory_)
@@ -260,7 +264,7 @@ double DFMP2::compute_E()
         fprintf(outfile,"   SCS-DF-MP2 (Pss = %14.10f, Pos = %14.10f):\n",ss_scale_,os_scale_);
         fprintf(outfile,"    SCS-Same-Spin Energy:            %20.16f [H]\n",E_sss_); 
         fprintf(outfile,"    SCS-Opposite-Spin Energy:        %20.16f [H]\n",E_sos_); 
-        fprintf(outfile,"    SCF-DF-MP2 Correlation Energy:   %20.16f [H]\n",E_scs_); 
+        fprintf(outfile,"    SCS-DF-MP2 Correlation Energy:   %20.16f [H]\n",E_scs_); 
         fprintf(outfile,"    SCS-DF-MP2 Total Energy:         %20.16f [H]\n",E_tot_scs_);
         fflush(outfile); 
     } 
@@ -342,8 +346,10 @@ void DFMP2::form_Schwarz()
     timer_off("Schwarz");
 
 }
-void DFMP2::form_W()
+void DFMP2::form_Wm12_fin()
 {
+    if (print_>1)
+        fprintf(outfile,"  Fitting metric conditioned by canonical orthogonalization.\n");
     timer_on("Form X");
 
     // Create integral factory for J_S (Overlap Matrix in form_B)
@@ -381,13 +387,7 @@ void DFMP2::form_W()
     //Find the condition number and largest/smallest eigenvalues of SJ
     //The largest one is what is important
     double min_SJ = s_eigval[0];
-    double max_SJ = s_eigval[0];
-    for (int i=0; i<naux_raw_; i++) {
-        if (min_SJ > s_eigval[i])
-            min_SJ = s_eigval[i];
-        if (max_SJ < s_eigval[i])
-            max_SJ = s_eigval[i];
-    }
+    double max_SJ = s_eigval[naux_raw_-1];
     //Print some stuff
     double cond_SJ = max_SJ/min_SJ;
     if (print_>1) {
@@ -549,14 +549,7 @@ void DFMP2::form_W()
         free(work);
 
         double min_J = eigval[0];
-        double max_J = eigval[0];
-        for (int i=0; i<naux_raw_; i++) {
-            if (min_J > eigval[i])
-                min_J = eigval[i];
-            if (max_J < eigval[i])
-                max_J = eigval[i];
-
-        }
+        double max_J = eigval[naux_raw_-1];
         free(eigval);
 
         fprintf(outfile,"  Smallest eigenvalue in the raw fitting metric is %14.10E.\n",min_J);
@@ -596,13 +589,14 @@ void DFMP2::form_W()
     // where j'^{-1/2} is the diagonal matrix of the inverse square roots
     // of the eigenvalues, and U is the matrix of eigenvectors of J'
     double min_J = eigval[0];
-    double max_J = eigval[0];
-    for (int i=0; i<naux_fin_; i++) {
-        if (min_J > eigval[i])
-            min_J = eigval[i];
-        if (max_J < eigval[i])
-            max_J = eigval[i];
+    double max_J = eigval[naux_fin_-1];
+    if (print_>1) {
+        fprintf(outfile,"  Smallest eigenvalue in the finished fitting metric is %14.10E.\n",min_J);
+        fprintf(outfile,"  Largest eigenvalue in the finished fitting metric is %14.10E.\n",max_J);
+        fprintf(outfile,"  Condition number of the finished fitting metric is %14.10E.\n",max_J/min_J);
+        fflush(outfile);
     }
+    
     #pragma omp parallel for private (ind)
     for (ind=0; ind<naux_fin_; ind++) {
         //All eignvalues should be approved for use!
@@ -612,12 +606,6 @@ void DFMP2::form_W()
     }
     free(eigval);
 
-    if (print_>1) {
-        fprintf(outfile,"  Smallest eigenvalue in the finished fitting metric is %14.10E.\n",min_J);
-        fprintf(outfile,"  Largest eigenvalue in the finished fitting metric is %14.10E.\n",max_J);
-        fprintf(outfile,"  Condition number of the finished fitting metric is %14.10E.\n",max_J/min_J);
-        fflush(outfile);
-    }
     // J'^-1/2 = Jp_copy(T) * Jp
     double** Jp_mhalf = block_matrix(naux_fin_,naux_fin_);
     C_DGEMM('t','n',naux_fin_,naux_fin_,naux_fin_,1.0,
@@ -642,15 +630,22 @@ void DFMP2::form_W()
     free_block(Jp_mhalf);
     free_block(X);
     timer_off("Form W");
-
   
+    if (debug_) {
+        fprintf(outfile,"  W:\n");
+        print_mat(W_,naux_raw_,naux_fin_,outfile);
+    }
+}
+void DFMP2::form_Wm12_raw()
+{ 
+  if (print_>1)
+    fprintf(outfile,"  WARNING: No conditioning algorithm selected for fitting metric.\n");
+ 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   // 
-  //     OLD METHOD
+  //     OLD METHOD (NO PRECONDITIONING)
   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  
-
-  /**
 
   // Create integral factory
   IntegralFactory rifactory(ribasis_, zerobasis_, basisset_, basisset_);
@@ -709,6 +704,14 @@ void DFMP2::form_W()
   }
   free(work);
 
+  double min_J = eigval[0];
+  double max_J = eigval[naux-1];
+  if (print_>1) {
+    fprintf(outfile,"  Smallest eigenvalue in the raw fitting metric is %14.10E.\n",min_J);
+    fprintf(outfile,"  Largest eigenvalue in the raw fitting metric is %14.10E.\n",max_J);
+    fprintf(outfile,"  Condition number of the raw fitting metric is %14.10E.\n",max_J/min_J);
+    fflush(outfile);
+  }  
   // Now J contains the eigenvectors of the original J
   // Copy J to J_copy
   double **J_copy = block_matrix(naux, naux);
@@ -717,6 +720,7 @@ void DFMP2::form_W()
   // Now form J^{-1/2} = U(T)*j^{-1/2}*U,
   // where j^{-1/2} is the diagonal matrix of the inverse square roots
   // of the eigenvalues, and U is the matrix of eigenvectors of J
+  #pragma omp parallel for schedule (static)
   for (int i=0; i<naux; i++) {
     if (eigval[i] < 1.0E-10)
       eigval[i] = 0.0;
@@ -736,12 +740,126 @@ void DFMP2::form_W()
   free_block(J_copy);
 
   timer_off("Form J");
-  **/
   
   if (debug_) {
     fprintf(outfile,"  W:\n");
     print_mat(W_,naux_raw_,naux_fin_,outfile);
   }
+}
+void DFMP2::form_Wp12_chol()
+{
+  if (print_>1)
+    fprintf(outfile,"  Fitting metric conditioned by Cholesky decomposition.\n");
+
+  // Create integral factory
+  IntegralFactory rifactory(ribasis_, zerobasis_, basisset_, basisset_);
+  IntegralFactory rifactory_J(ribasis_, zerobasis_, ribasis_, zerobasis_);
+
+  int naux = naux_raw_;    
+
+  TwoBodyInt* eri = rifactory.eri();
+  TwoBodyInt* Jint = rifactory_J.eri();
+  double **J = block_matrix(naux, naux);
+  W_ = block_matrix(naux, naux);
+  const double *Jbuffer = Jint->buffer();
+
+  timer_on("Form J");
+
+  int index = 0;
+    
+  for (int MU=0; MU < ribasis_->nshell(); ++MU) {
+    int nummu = ribasis_->shell(MU)->nfunction();
+        
+    for (int NU=0; NU < ribasis_->nshell(); ++NU) {
+      int numnu = ribasis_->shell(NU)->nfunction();
+    
+      Jint->compute_shell(MU, 0, NU, 0);
+            
+      index = 0;
+      for (int mu=0; mu < nummu; ++mu) {
+        int omu = ribasis_->shell(MU)->function_index() + mu;
+                
+        for (int nu=0; nu < numnu; ++nu, ++index) {
+          int onu = ribasis_->shell(NU)->function_index() + nu;
+
+          J[omu][onu] = Jbuffer[index];
+        }
+      }
+    }
+  }
+    
+  // Form J^+1/2
+  // First, diagonalize J
+  // the C_DSYEV call replaces the original matrix J with its eigenvectors
+  double* eigval = init_array(naux);
+  int lwork = naux * 3;
+  double* work = init_array(lwork);
+  int stat = C_DSYEV('v','u',naux,J[0],naux,eigval,
+    work,lwork);
+  if (stat != 0) {
+    fprintf(outfile, "C_DSYEV failed\n");
+    exit(PSI_RETURN_FAILURE);
+  }
+  free(work);
+
+  double min_J = eigval[0];
+  double max_J = eigval[naux-1];
+  if (print_>1) {
+    fprintf(outfile,"  Smallest eigenvalue in the raw fitting metric is %14.10E.\n",min_J);
+    fprintf(outfile,"  Largest eigenvalue in the raw fitting metric is %14.10E.\n",max_J);
+    fprintf(outfile,"  Condition number of the raw fitting metric is %14.10E.\n",max_J/min_J);
+    fflush(outfile);
+  }  
+
+  // Now J contains the eigenvectors of the original J
+  // Copy J to J_copy
+  double **J_copy = block_matrix(naux, naux);
+  C_DCOPY(naux*naux,J[0],1,J_copy[0],1); 
+  
+  // Now form J^{+1/2} = U(T)*j^{+1/2}*U,
+  // where j^{+1/2} is the diagonal matrix of the inverse square roots
+  // of the eigenvalues, and U is the matrix of eigenvectors of J
+  #pragma omp parallel for schedule (static)
+  for (int i=0; i<naux; i++) {
+    eigval[i] = sqrt(eigval[i]);
+    // scale one set of eigenvectors by the diagonal elements j^{-1/2}
+    C_DSCAL(naux, eigval[i], J[i], 1);
+  }
+  free(eigval);
+
+  // J_mhalf = J_copy(T) * J
+  C_DGEMM('t','n',naux,naux,naux,1.0,
+    J_copy[0],naux,J[0],naux,0.0,W_[0],naux);
+
+  free_block(J);
+  free_block(J_copy);
+
+  timer_off("Form J");
+ 
+  if (debug_) {
+    fprintf(outfile,"  W:\n");
+    print_mat(W_,naux_raw_,naux_fin_,outfile);
+  }
+
+  timer_on("J Cholesky");
+
+  //Choleskify W_ (results returned in place, should not be touched)
+  stat = C_DPOTRF('U',naux_raw_,W_[0],naux_raw_);
+  if (stat < 0) {
+    fprintf(outfile, "Cholesky argument %d is bad.\n",stat);
+    exit(PSI_RETURN_FAILURE);
+  }
+  else if (stat > 0) {
+    fprintf(outfile, "W^+1/2 is not positive definite.\n");
+    exit(PSI_RETURN_FAILURE);
+  }
+  
+  if (debug_) {
+    fprintf(outfile,"  L:\n");
+    print_mat(W_,naux_raw_,naux_fin_,outfile);
+  }
+
+  timer_off("J Cholesky");
 }
 void DFMP2::form_Aia_disk()
 {
@@ -935,7 +1053,12 @@ void DFMP2::form_Aia_disk()
 void DFMP2::form_Qia_disk()
 {
   //Form fitting metric
-  form_W();  
+  if (options_.get_str("RI_FITTING_TYPE") == "RAW")
+      form_Wm12_raw();
+  else if (options_.get_str("RI_FITTING_TYPE") == "FINISHED")
+      form_Wm12_fin();
+  else if (options_.get_str("RI_FITTING_TYPE") == "CHOLESKY")
+      form_Wp12_chol();
 
   //Available memory is lower due to W
   unsigned long int available_memory = df_memory_-naux_raw_*naux_fin_;
@@ -991,7 +1114,18 @@ void DFMP2::form_Qia_disk()
 
     //Embed fitting
     timer_on("(Q|ia)");
-    C_DGEMM('T','N',current_columns,naux_fin_,naux_raw_,1.0, Aia[0], max_cols, W_[0], naux_fin_,0.0, Qia[0],naux_fin_);
+    if (options_.get_str("RI_FITTING_TYPE") == "CHOLESKY") {
+
+        #pragma omp parallel for schedule(static)
+        for (int A = 0; A< naux_raw_; A++) {
+            C_DCOPY(current_columns, &Aia[A][0], 1, &Qia[0][A], naux_raw_);    
+        }   
+     
+        int info = C_DPOTRS('U',naux_raw_,current_columns,&W_[0][0],naux_raw_,&Qia[0][0],naux_raw_);
+
+    } else {
+        C_DGEMM('T','N',current_columns,naux_fin_,naux_raw_,1.0, Aia[0], max_cols, W_[0], naux_fin_,0.0, Qia[0],naux_fin_);
+    }
     timer_off("(Q|ia)");
 
     //fprintf(outfile,"  Nblocks = %d, Max cols = %d, current_columns = %d, current_column = %d\n",nblocks, max_cols, current_columns, current_column); 
@@ -1377,17 +1511,24 @@ void DFMP2::form_Qia_core()
   free_block(Ami);
 
   //Setup new blocks
+  //Setup fitting tensor
+  if (options_.get_str("RI_FITTING_TYPE") == "RAW")
+      form_Wm12_raw();
+  else if (options_.get_str("RI_FITTING_TYPE") == "FINISHED")
+      form_Wm12_fin();
+  else if (options_.get_str("RI_FITTING_TYPE") == "CHOLESKY")
+      form_Wp12_chol();
+  
   available_mem = df_memory_-three_mem-naux_raw_*(ULI)naux_fin_;
-
   unsigned long int max_cols = available_mem/(ULI)naux_raw_;
   if (max_cols > nact_docc_*(ULI)nact_virt_)
-      max_cols = nact_docc_*(ULI)nact_virt; 
+    max_cols = nact_docc_*(ULI)nact_virt; 
   if (max_cols < 1)
-      max_cols = 1;
+    max_cols = 1;
 
   nblocks = nact_docc_*(ULI)nact_virt_/max_cols; 
   if (nblocks*max_cols < nact_docc_*nact_virt_)
-      nblocks++;
+    nblocks++;
 
   int* column_starts = init_int_array(nblocks);
   int* column_sizes = init_int_array(nblocks);
@@ -1401,21 +1542,38 @@ void DFMP2::form_Qia_core()
     column_starts[block+1] = column_starts[block] + column_sizes[block];
   }
   
-  //Setup fitting tensor
-  form_W();
-  
   //Apply fitting by blocks
-  double** Abuffer = block_matrix(naux_raw_, max_cols);
+  double** Abuffer;
+  if (options_.get_str("RI_FITTING_TYPE") == "CHOLESKY") {
+      Abuffer = block_matrix(max_cols, naux_raw_);
+  } else {
+      Abuffer = block_matrix(naux_raw_, max_cols);
+  }
   timer_on("(Q|ia)");
   for (int block = 0; block < nblocks; block++) {
 
-    #pragma omp parallel for schedule(static)
-    for (int A = 0; A< naux_raw_; A++)
+     if (options_.get_str("RI_FITTING_TYPE") == "CHOLESKY") {
+
+      #pragma omp parallel for schedule(static)
+      for (int A = 0; A< naux_raw_; A++) {
+        C_DCOPY(column_sizes[block], &Qia_[A][column_starts[block]], 1, &Abuffer[0][A], naux_raw_);    
+      }        
+
+      int info = C_DPOTRS('U',naux_raw_,column_sizes[block],&W_[0][0],naux_raw_,&Abuffer[0][0],naux_raw_);
+        
+      #pragma omp parallel for schedule(static)
+      for (int A = 0; A< naux_raw_; A++) {
+        C_DCOPY(column_sizes[block], &Abuffer[0][A], naux_raw_, &Qia_[A][column_starts[block]], 1);  
+      }  
+    } else {
+      #pragma omp parallel for schedule(static)
+      for (int A = 0; A< naux_raw_; A++) {
         C_DCOPY(column_sizes[block], &Qia_[A][column_starts[block]], 1, &Abuffer[A][0], 1);    
+      }
 
-    //Multiply back into Qia_ with tight striping
-    C_DGEMM('T','N',naux_fin_, column_sizes[block], naux_raw_, 1.0, W_[0], naux_fin_, Abuffer[0], max_cols, 0.0, &Qia_[0][column_starts[block]], nact_docc_*(ULI) nact_virt_);
-
+      //Multiply back into Qia_ with tight striping
+      C_DGEMM('T','N',naux_fin_, column_sizes[block], naux_raw_, 1.0, W_[0], naux_fin_, Abuffer[0], max_cols, 0.0, &Qia_[0][column_starts[block]], nact_docc_*(ULI) nact_virt_);
+    }
   }
   timer_off("(Q|ia)");
 

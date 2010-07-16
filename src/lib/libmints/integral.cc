@@ -4,6 +4,7 @@
 #include <libmints/overlap.h>
 #include <libmints/kinetic.h>
 #include <libmints/potential.h>
+#include <libmints/electrostatic.h>
 #include <libmints/integral.h>
 #include <libmints/dipole.h>
 #include <libmints/quadrupole.h>
@@ -60,6 +61,11 @@ OneBodyInt* IntegralFactory::kinetic(int deriv)
 OneBodyInt* IntegralFactory::potential(int deriv)
 {
     return new PotentialInt(spherical_transforms_, bs1_, bs2_, deriv);
+}
+
+OneBodyInt* IntegralFactory::electrostatic()
+{
+    return new ElectrostaticInt(spherical_transforms_, bs1_, bs2_, 0);
 }
 
 OneBodyInt* IntegralFactory::dipole(int deriv)

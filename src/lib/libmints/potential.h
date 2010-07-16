@@ -16,16 +16,18 @@ namespace psi {
  */
 class PotentialInt : public OneBodyInt
 {
-    /// Recursion object that does the heavy lifting.
-    ObaraSaikaTwoCenterVIRecursion potential_recur_;
-    /// Recursion object that does the heavy lifting.
-    ObaraSaikaTwoCenterVIDerivRecursion potential_deriv_recur_;
     
     /// Computes integrals between two shell objects.
     void compute_pair(shared_ptr<GaussianShell>, shared_ptr<GaussianShell>);
     /// Computes integrals between two shell objects.
     void compute_pair_deriv1(shared_ptr<GaussianShell>, shared_ptr<GaussianShell>);
     
+protected:
+    /// Recursion object that does the heavy lifting.
+    ObaraSaikaTwoCenterVIRecursion potential_recur_;
+    /// Recursion object that does the heavy lifting.
+    ObaraSaikaTwoCenterVIDerivRecursion potential_deriv_recur_;
+
 public:
     /// Constructor
     PotentialInt(std::vector<SphericalTransform>&, shared_ptr<BasisSet>, shared_ptr<BasisSet>, int deriv=0);

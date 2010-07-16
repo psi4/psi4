@@ -8,7 +8,7 @@
 **
 ** 03/08/2002 EFV Added DGETRF since DGETRI isn't useful without it
 **
-** 05/29/2010 RMP added DPOTRF and DPOTRI for density fitting applications
+** 05/29/2010 RMP added DPOTRF, DPOTRS and DPOTRI for density fitting applications
 **
 ** Written to work similarly to the BLAS C interface in blas_intfc.c
 */
@@ -20,6 +20,7 @@
 #define F_DGETRI dgetri_
 #define F_DPOTRF dpotrf_
 #define F_DPOTRI dpotri_
+#define F_DPOTRS dpotrs_
 #define F_DGESVD dgesvd_
 #define F_DSYEV dsyev_
 #elif FC_SYMBOL==1
@@ -29,6 +30,7 @@
 #define F_DGETRI dgetri
 #define F_DPOTRF dpotrf
 #define F_DPOTRI dpotri
+#define F_DPOTRS dpotrs
 #define F_DGESVD dgesvd
 #define F_DSYEV dsyev
 #elif FC_SYMBOL==3
@@ -38,6 +40,7 @@
 #define F_DGETRI DGETRI
 #define F_DPOTRF DPOTRF
 #define F_DPOTRI DPOTRI
+#define F_DPOTRS DPOTRS
 #define F_DGESVD DGESVD
 #define F_DSYEV DSYEV
 #elif FC_SYMBOL==4
@@ -47,6 +50,7 @@
 #define F_DGETRI DGETRI_
 #define F_DPOTRF DPOTRF_
 #define F_DPOTRI DPOTRI_
+#define F_DPOTRS DPOTRS_
 #define F_DGESVD DGESVD_
 #define F_DSYEV DSYEV_
 #endif
@@ -60,9 +64,11 @@ extern int F_DGESV(int *, int *, double *, int *, int *, double *, int *,
 
 extern int F_DGETRF(int *, int *, double *, int *, int*, int *);
 
+extern int F_DGETRI(int *, double *, int *, int *, double *, int *, int *);
+
 extern int F_DPOTRF(char *, int *, double *, int *, int*);
 
-extern int F_DGETRI(int *, double *, int *, int *, double *, int *, int *);
+extern int F_DPOTRS(char *, int*, int*,  double *, int *, double *, int *, int *);
 
 extern int F_DPOTRI(char *, int *, double *, int *, int*);
 
@@ -315,6 +321,34 @@ int C_DPOTRI(char uplo, int n,  double *A, int lda)
   int info;
 
   ::F_DPOTRI(&uplo, &n, &(A[0]), &lda, &info);
+
+  return info;
+}
+/*!
+** C_DPOTRS(): Solve a Hermitian positive definite matrix Ax = B AFTER a Cholesky
+** decomposition is computed for A by C_DPORF.
+**
+**
+** \param uplo: uplo = 'U' upper triangle of A is stored.
+**              uplo = 'L' lower triangle of A is stored
+** \param n = number of rows and columns of A
+** \param nrhs = number of vectors to solve in B
+** \param A = matrix to solve 
+** \param lda  = leading dimension of a, lda >= max(1,ncol)
+** \param B = (input)forcing vector/(output)solution vector 
+** \param ldb  = leading dimension of b, ldb >= max(1,ncol)
+**
+** Returns: int info.  info = 0: successful exit.  info < 0: if info=-i,
+**   the ith-argument had an illegal value.  
+**
+** \ingroup QT
+*/
+int C_DPOTRS(char uplo, int n,  int nrhs, double *A, int lda, double *B, int ldb)
+{
+  int info;
+
+
+  ::F_DPOTRS(&uplo, &n, &nrhs, &(A[0]), &lda, &(B[0]), &ldb, &info);
 
   return info;
 }

@@ -265,14 +265,16 @@ double RHF::compute_energy()
         }
         fprintf(outfile, "\n");
         save_information();
-        if (options_.get_bool("DUAL_BASIS"))
-            save_dual_basis_projection();
-        if (options_.get_str("SAPT") != "FALSE") //not a bool because it has types
-            save_sapt_info();
     } else {
         fprintf(outfile, "\n  Failed to converged.\n");
         E_ = 0.0;
     }
+    
+    //often, we're close!
+    if (options_.get_bool("DUAL_BASIS"))
+        save_dual_basis_projection();
+    if (options_.get_str("SAPT") != "FALSE") //not a bool because it has types
+        save_sapt_info();
     //if (save_grid_) {
         // DOWN FOR MAINTENANCE
         //fprintf(outfile,"\n  Saving Cartesian Grid\n");

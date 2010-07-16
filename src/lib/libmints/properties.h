@@ -5,7 +5,10 @@
 #include <libmints/matrix.h>
 #include <libmints/vector3.h>
 #include <libmints/gridblock.h>
+#include <libmints/electrostatic.h>
 #include <psi4-dec.h>
+
+#define RKS_GGA_TESTBED_SIZE_  9
 namespace psi {
 
 	class Properties:public BasisPoints
@@ -27,14 +30,16 @@ namespace psi {
 			double* density_gradient_2_;
 			double* density_laplacian_;
 			double* ke_density_;
+			double* electrostatic_;
 			bool do_mos_;
 			bool do_density_;
 			bool do_density_gradient_;
 			bool do_density_hessian_;
 			bool do_density_laplacian_;
 			bool do_ke_density_;
-                        #define RKS_GGA_TESTBED_SIZE_  9
-		public:
+			bool do_electrostatic_;
+		        shared_ptr<ElectrostaticInt> e_ints_;
+                public:
 			static Properties * constructProperties(shared_ptr<BasisSet> b, int block_size)
 			{
 				return new Properties(b,block_size);
@@ -57,13 +62,15 @@ namespace psi {
 			const double* getDensityZZ() const { return densityZZ_; }		
 			const double* getDensityLaplacian() const { return density_laplacian_; }
 			const double* getKEDensity() const { return ke_density_; }	
-			double** getMOs() {return mos_; }
+			const double* getElectrostatic() const {return electrostatic_; }
+                        double** getMOs() {return mos_; }
 			void setToComputeMOs(bool v, int* indices, int n);
 			void setToComputeDensity(bool v);
 			void setToComputeDensityGradient(bool v);	
 			void setToComputeDensityHessian(bool v);	
 			void setToComputeDensityLaplacian(bool v);	
 			void setToComputeKEDensity(bool v);	
+			void setToComputeElectrostatic(bool v);	
 	};
 	typedef shared_ptr<Properties> SharedProperties;
 }

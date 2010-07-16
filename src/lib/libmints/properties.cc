@@ -25,6 +25,7 @@ Properties::Properties(shared_ptr<BasisSet> _b, int _block_size): BasisPoints(_b
 	do_density_hessian_ = false;
 	do_density_laplacian_ = false;
 	do_ke_density_ = false;
+	do_electrostatic_ = false;
         setToComputeDensity(true);
 }
 Properties::~Properties()
@@ -34,6 +35,7 @@ Properties::~Properties()
         setToComputeDensityHessian(false);
         setToComputeDensityLaplacian(false);
         setToComputeKEDensity(false);
+        setToComputeElectrostatic(false);
         int m[1];
         setToComputeMOs(false, m,0);
 }
@@ -61,14 +63,18 @@ void Properties::computeProperties(SharedGridBlock grid, SharedMatrix D, SharedM
 	int nirreps = D->nirreps();
 	computePoints(grid);
     
-        //double *xg = grid->getX();
-        //double *yg = grid->getY();
-        //double *zg = grid->getZ();
+        double *xg = grid->getX();
+        double *yg = grid->getY();
+        double *zg = grid->getZ();
+    
+        shared_ptr<Molecule> mol = basis_->molecule();
+    
         int ntrue = grid->getTruePoints();
 
         for (int grid_index = 0; grid_index<ntrue; grid_index++) {
         // << BEGIN OUTER LOOP OVER POINTS
         
+            Vector3 v(xg[grid_index],yg[grid_index],zg[grid_index]); 
         //Vector3 v(xg[grid_index],yg[grid_index],zg[grid_index]); 
         
          //fprintf(oufile,"\nPoint:  <%14.10f,%14.10f,%14.10f>\n",v[0],v[1],v[2]);
@@ -76,6 +82,27 @@ void Properties::computeProperties(SharedGridBlock grid, SharedMatrix D, SharedM
 	//{
 		//fprintf(outfile,"Basis Function %d is %14.10f\n",i,points_[i]);
 	//}
+        if (do_electrostatic_) {
+
+            double esp = 0.0;
+
+            //Nuclear contribution
+            int Z;
+            Vector3 r;
+            double R;
+            for (int A = 0; A < mol->natom(); A++) {
+                Z = mol->Z(A);
+                r = v-mol->xyz(A); 
+                R = sqrt(r[0]*r[0]+r[1]*r[1]+r[2]*r[2]);  
+                esp += Z/R;
+            }
+
+            //Electronic contribution
+            //TODO 
+            
+            electrostatic_[grid_index] = esp;
+        }
+
 	if (do_mos_) {
 		memset(mos_[grid_index],0,nmo_*sizeof(double));
 		for (int index = 0 ; index<nmo_; index++)
@@ -225,4 +252,17 @@ void Properties::setToComputeKEDensity(bool v)
 	do_ke_density_ = v;
 	if (v)
 		setToComputeGradients(true);
+}
+void Properties::setToComputeElectrostatic(bool v)
+{
+	if (!do_electrostatic_ && v) {
+            electrostatic_ = init_array(block_size_);
+            IntegralFactory factory(basis_,basis_,basis_,basis_);
+            std::vector<SphericalTransform> transformer = factory.spherical_transform();
+            e_ints_ = shared_ptr<ElectrostaticInt>(new ElectrostaticInt(transformer,basis_,basis_));
+        }
+        if (do_electrostatic_ && !v) {
+            free(ke_density_);
+        }
+	do_electrostatic_ = v;
 }
