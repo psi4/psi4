@@ -164,7 +164,7 @@ ERI::~ERI()
     if (screen_)
         free(schwarz_norm_);
     free_shell_pairs12();
-    //free_shell_pairs34();
+    free_shell_pairs34();
 }
 
 void ERI::init_shell_pairs12()
