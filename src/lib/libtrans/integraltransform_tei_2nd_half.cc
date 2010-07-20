@@ -65,7 +65,7 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
         fflush(outfile);
     }
 
-    if(_useIWL) iwl = new IWL(_psio.get(), PSIF_MO_AA_TEI, _tolerance, 0, 0);
+    if(_useIWL) iwl = new IWL(_psio.get(), _iwlAAIntFile, _tolerance, 0, 0);
 
     _psio->open(_dpdIntFile, PSIO_OPEN_OLD);
     _psio->open(_aHtIntFile, PSIO_OPEN_OLD);
@@ -178,7 +178,7 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
             fprintf(outfile, "\tStarting AB second half-transformation.\n");
             fflush(outfile);
         }
-        if(_useIWL) iwl = new IWL(_psio.get(), PSIF_MO_AB_TEI, _tolerance, 0, 0);
+        if(_useIWL) iwl = new IWL(_psio.get(), _iwlABIntFile, _tolerance, 0, 0);
 
         braCore = braDisk = DPD_ID(s1, s2, Alpha, true);
         ketCore = 0;
@@ -288,7 +288,7 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
             fprintf(outfile, "\tStarting BB second half-transformation.\n");
             fflush(outfile);
         }
-        if(_useIWL) iwl = new IWL(_psio.get(), PSIF_MO_BB_TEI, _tolerance, 0, 0);
+        if(_useIWL) iwl = new IWL(_psio.get(), _iwlBBIntFile, _tolerance, 0, 0);
 
         _psio->open(_bHtIntFile, PSIO_OPEN_OLD);
 
