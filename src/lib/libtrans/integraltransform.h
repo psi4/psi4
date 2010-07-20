@@ -148,6 +148,16 @@ class IntegralTransform{
         /// The number of the DPD instance used in the transformation
         int get_dpd_id() const {return _myDPDNum;}
 
+        /// Get the chkpt object being used by this object
+        shared_ptr<Chkpt> get_chkpt() const {return _chkpt;}
+        /// Set the checkpoint object to be used.  You must delay initialization in the ctor for this to work.
+        void set_chkpt(shared_ptr<Chkpt> chkpt) {_chkpt = chkpt;}
+
+        /// Get the psio object being used by this object
+        shared_ptr<PSIO> get_psio() const {return _psio;}
+        /// Set the psio object to be used.  You must delay initialization in the ctor for this to work.
+        void set_psio(shared_ptr<PSIO> psio) {_psio = psio;}
+
     protected:
         void semicanonicalize();
         void raid_checkpoint();
