@@ -38,6 +38,7 @@
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <psifiles.h>
+#include <float.h>
 
 #include "dfmp2.h"
 
@@ -346,38 +347,178 @@ void DFMP2::form_Schwarz()
     timer_off("Schwarz");
 
 }
-void DFMP2::form_Wm12_fin()
+double** DFMP2::form_W(shared_ptr<BasisSet> bas)
 {
-    if (print_>1)
-        fprintf(outfile,"  Fitting metric conditioned by canonical orthogonalization.\n");
-    timer_on("Form X");
+  shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
+  
+  IntegralFactory rifactory_J(bas, zero, bas, zero);
 
-    // Create integral factory for J_S (Overlap Matrix in form_B)
-    IntegralFactory rifactory_JS(ribasis_, ribasis_, zerobasis_, zerobasis_);
-    OneBodyInt *S = rifactory_JS.overlap();
-    MatrixFactory matJS;
-    matJS.init_with(1,&naux_raw_,&naux_raw_);
+  int naux = bas->nbf();    
 
-    //Put the integrals in a good old double**
-    double** SJ;
+  TwoBodyInt* Jint = rifactory_J.eri();
+  const double *Jbuffer = Jint->buffer();
+  
+  double **J = block_matrix(naux, naux);
 
-    {
-        SharedMatrix S_J = shared_ptr<Matrix>(matJS.create_matrix("S_J"));
-        //Compute those integrals
-        S->compute(S_J);
-        delete S;
-        //S_J->print(outfile);
-        SJ = S_J->to_block_matrix();
+  int index = 0;
+    
+  for (int MU=0; MU < bas->nshell(); ++MU) {
+    int nummu = bas->shell(MU)->nfunction();
+        
+    for (int NU=0; NU < bas->nshell(); ++NU) {
+      int numnu = bas->shell(NU)->nfunction();
+    
+      Jint->compute_shell(MU, 0, NU, 0);
+            
+      index = 0;
+      for (int mu=0; mu < nummu; ++mu) {
+        int omu = bas->shell(MU)->function_index() + mu;
+                
+        for (int nu=0; nu < numnu; ++nu, ++index) {
+          int onu = bas->shell(NU)->function_index() + nu;
+
+          J[omu][onu] = Jbuffer[index];
+        }
+      }
     }
+  }
 
+  return J;
+}
+double** DFMP2::form_W_overlap(shared_ptr<BasisSet> bas)
+{
+  
+  shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
+  int naux = bas->nbf();    
 
-    // Form X
-    // First, diagonalize S_J
+  IntegralFactory rifactory_JS(bas, bas, zero, zero);
+  OneBodyInt *S = rifactory_JS.overlap();
+
+  MatrixFactory matJS;
+  matJS.init_with(1,&naux,&naux);
+
+  //Put the integrals in a good old double**
+  double** SJ;
+  {
+    SharedMatrix S_J = shared_ptr<Matrix>(matJS.create_matrix("S_J"));
+    //Compute those integrals
+    S->compute(S_J);
+    //S_J->print(outfile);
+    SJ = S_J->to_block_matrix();
+  }
+
+  return SJ;
+}
+int DFMP2::matrix_power(double** J, int n, double power, double max_cond)
+{
+
+  double** J1 = block_matrix(n,n);
+  C_DCOPY(n*(ULI)n,J[0],1,J1[0],1);
+
+  // the C_DSYEV call replaces the original matrix J with its eigenvectors
+  double* eigval = init_array(n);
+  int lwork = n * 3;
+  double* work = init_array(lwork);
+  int stat = C_DSYEV('v','u',n,J1[0],n,eigval,
+    work,lwork);
+  if (stat != 0) {
+    fprintf(outfile, "C_DSYEV failed\n");
+    exit(PSI_RETURN_FAILURE);
+  }
+  free(work);
+
+  double min_J = eigval[0];
+  double max_J = eigval[n-1];
+
+  double min_allowed = (max_cond == DBL_MAX ? max_J/max_cond : -DBL_MAX);
+
+  // Now J contains the eigenvectors of the original J
+  // Copy J to J_copy
+  double **J2 = block_matrix(n, n);
+  C_DCOPY(n*(ULI)n,J1[0],1,J2[0],1); 
+  
+  // Now form J^{-1/2} = U(T)*j^{-1/2}*U,
+  // where j^{-1/2} is the diagonal matrix of the inverse square roots
+  // of the eigenvalues, and U is the matrix of eigenvectors of J
+  int clipped = 0;
+  #pragma omp parallel for schedule (static, 1) reduction(+: clipped)
+  for (int i=0; i<n; i++) {
+    if (eigval[i] < min_allowed) {
+      eigval[i] = 0.0;
+      clipped++;
+    }
+    else {
+      eigval[i] = pow(eigval[i],power);
+    }
+    // scale one set of eigenvectors by the diagonal elements j^{-1/2}
+    C_DSCAL(n, eigval[i], J1[i], 1);
+  }
+  free(eigval);
+
+  // J_mhalf = J_copy(T) * J
+  C_DGEMM('t','n',n,n,n,1.0,
+    J2[0],n,J1[0],n,0.0,J[0],n);
+
+  free_block(J1);
+  free_block(J2);
+  
+  if (print_>1) {
+    fprintf(outfile,"  Smallest eigenvalue in the matrix is %14.10E.\n",min_J);
+    fprintf(outfile,"  Largest eigenvalue in the matrix is %14.10E.\n",max_J);
+    fprintf(outfile,"  Condition number of the matrix is %14.10E.\n",max_J/min_J);
+    fprintf(outfile,"  %d columns removed to maintain a condition number of %14.10E.\n",clipped,max_cond);
+    fflush(outfile);
+  }
+  return clipped;  
+}
+void DFMP2::cholesky_decomposition(double** J, int n)
+{
+  //Choleskify J (results returned in place, should not be touched)
+  int stat = C_DPOTRF('U',n,J[0],n);
+  if (stat < 0) {
+    fprintf(outfile, "Cholesky argument %d is bad.\n",stat);
+    exit(PSI_RETURN_FAILURE);
+  }
+  else if (stat > 0) {
+    fprintf(outfile, "W^+1/2 is not positive definite.\n");
+    exit(PSI_RETURN_FAILURE);
+  }
+}
+void DFMP2::cholesky_inverse(double** J, int n)
+{
+  //Choleskify J (results returned in place, should not be touched)
+  int stat = C_DPOTRF('U',n,J[0],n);
+  if (stat < 0) {
+    fprintf(outfile, "Cholesky argument %d is bad.\n",stat);
+    exit(PSI_RETURN_FAILURE);
+  }
+  else if (stat > 0) {
+    fprintf(outfile, "W^+1/2 is not positive definite.\n");
+    exit(PSI_RETURN_FAILURE);
+  }
+  //Inversion (in place)
+  int IError = C_DPOTRI('U',n,J[0],n);
+  if (IError !=0 )
+    throw std::domain_error("J Matrix Inversion Failed!");
+
+  //LAPACK is smart and all, only uses half of the thing
+  for (int m = 0; m<n; m++)
+    for (int n = 0; n<m; n++)
+      J[n][m] = J[m][n]; 
+}
+double** DFMP2::form_X(double** W, int n, double max_cond, int* clipped)
+{
+    int naux_raw = n;
+    int naux_fin = n;
+
+    double** SJ = block_matrix(naux_raw,naux_raw);
+    C_DCOPY(naux_raw*(ULI)naux_raw,W[0],1,SJ[0],1);
+
     // the C_DSYEV call replaces the original matrix SJ with its eigenvectors
-    double* s_eigval = init_array(naux_raw_);
-    int lswork = naux_raw_ * 3;
+    double* s_eigval = init_array(naux_raw);
+    int lswork = naux_raw * 3;
     double* swork = init_array(lswork);
-    int stat = C_DSYEV('v','u',naux_raw_,SJ[0],naux_raw_,s_eigval, swork,lswork);
+    int stat = C_DSYEV('v','u',naux_raw,SJ[0],naux_raw,s_eigval, swork,lswork);
     if (stat != 0) {
         fprintf(outfile, "C_DSYEV failed\n");
         exit(PSI_RETURN_FAILURE);
@@ -387,31 +528,31 @@ void DFMP2::form_Wm12_fin()
     //Find the condition number and largest/smallest eigenvalues of SJ
     //The largest one is what is important
     double min_SJ = s_eigval[0];
-    double max_SJ = s_eigval[naux_raw_-1];
+    double max_SJ = s_eigval[naux_raw-1];
     //Print some stuff
     double cond_SJ = max_SJ/min_SJ;
     if (print_>1) {
-        fprintf(outfile,"  Min J overlap eigenvalue is %14.10E.\n",min_SJ);
-        fprintf(outfile,"  Max J overlap eigenvalue is %14.10E.\n",max_SJ);
-        fprintf(outfile,"  J overlap condition number is %14.10E.\n",cond_SJ);
+        fprintf(outfile,"  Min overlap eigenvalue is %14.10E.\n",min_SJ);
+        fprintf(outfile,"  Max overlap eigenvalue is %14.10E.\n",max_SJ);
+        fprintf(outfile,"  Overlap condition number is %14.10E.\n",cond_SJ);
         fflush(outfile);
     }
 
     //Find the user's allowed condition number
-    double cond_SJ_tol = options_.get_double("RI_MAX_COND");
+    double cond_SJ_tol = max_cond;
     //and compute the smallest allowed eigenvlue in the overlap matrix
     double cutoff_SJ = max_SJ/cond_SJ_tol;
 
     //Go through and scale columns of eigenvectors by allowed s^-1/2
-    int linear_dependencies = 0;
-    double new_min_SJ = s_eigval[naux_raw_-1]; //should be the biggest
-    for (int i = 0; i<naux_raw_; i++) {
+    int clip = 0;
+    double new_min_SJ = s_eigval[naux_raw-1]; //should be the biggest
+    for (int i = 0; i<naux_raw; i++) {
         if (s_eigval[i] <= cutoff_SJ) {
             //OK this eigenvalue does not contribute to the subspace completeness
             //and moreover it kills my condition number
             s_eigval[i] = 0.0; //This isn't officially a big deal, but it's proper etiquette
-            naux_fin_--;
-            linear_dependencies++;
+            naux_fin--;
+            clip++;
         } else {
             if (new_min_SJ > s_eigval[i])
                 new_min_SJ = s_eigval[i];
@@ -422,214 +563,86 @@ void DFMP2::form_Wm12_fin()
 
     int ind;
     #pragma omp parallel for private (ind) schedule (dynamic)
-    for (int ind = 0; ind<naux_raw_; ind++) {
+    for (int ind = 0; ind<naux_raw; ind++) {
 
         //Scale the column out to produce the porous X matrix in place
         //(Columns are rows in this messed up LAPACK-ness 
         if (s_eigval[ind] > 0.0)
-            C_DSCAL(naux_raw_, s_eigval[ind], SJ[ind], 1);
+            C_DSCAL(naux_raw, s_eigval[ind], SJ[ind], 1);
     }
-
-    //fprintf(outfile,"X (in S ordering):\n");
-    //print_mat(SJ,naux_raw_,naux_raw_,outfile);
-    //fflush(outfile);
-
 
     //So how'd that go?
     if (print_>1) {
-        fprintf(outfile, "  %d of %d finished auxiliary functions eliminated by canonical orthogonalization.\n",linear_dependencies, naux_raw_);
-        fprintf(outfile, "  Resultant condition number in J overlap matrix is %14.10E.\n",max_SJ/new_min_SJ);
+        fprintf(outfile, "  %d of %d finished auxiliary functions eliminated by canonical orthogonalization.\n",clip, naux_raw);
+        fprintf(outfile, "  Resultant condition number in overlap matrix is %14.10E.\n",max_SJ/new_min_SJ);
         fflush(outfile);
     }
     //The famed transformation matrix
-    double **X = block_matrix(naux_raw_,naux_fin_);
+    double **X = block_matrix(naux_raw,naux_fin);
 
     //We'll put it in canonical (descending eigenvalue) order
-    //This is after all, canonical. Well...as canonical as 
-    //representing one subspace with another subspace cast 
-    //onto a third subspace gets
-    int m_ind, n_ind;
-    #pragma omp parallel for private (m_ind, n_ind) 
-    for (int m = 0; m<naux_raw_; m++)
-        for (int n = 0; n<naux_fin_; n++)
-            X[m][n] = SJ[naux_raw_-n-1][m];
+    #pragma omp parallel for schedule (static, 1) 
+    for (int m = 0; m<naux_raw; m++)
+        for (int n = 0; n<naux_fin; n++)
+            X[m][n] = SJ[naux_raw-n-1][m];
 
-    //fprintf(outfile,"X:\n");
-    //print_mat(X,naux_raw_,naux_raw_,outfile);
-    //fflush(outfile);
-
+    free_block(SJ);
     free(s_eigval);
+
+    *clipped = clip; 
+    return X;
+}
+void DFMP2::form_Wm12_fin()
+{
+    if (print_>1)
+        fprintf(outfile,"  Fitting metric conditioned by canonical orthogonalization.\n");
+
+    timer_on("Form W_S");
+    double** SJ = form_W_overlap(ribasis_);
+    timer_off("Form W_S");
+    
+    int clipped = 0;
+    double max_cond = options_.get_double("RI_MAX_COND");
+    timer_on("Form X");
+    double** X = form_X(SJ, naux_raw_,max_cond, &clipped);    
+    timer_off("Form X");
+
+    naux_fin_ -= clipped;
     free_block(SJ);
 
-    if (print_>5) {
-        fprintf(outfile,"  X (The J -> J' change of basis matrix):\n");
-        print_mat(X,naux_raw_,naux_fin_,outfile);
-        fflush(outfile);
-    }
-
-    timer_off("Form X");
-    timer_on("Form J");
-    // J Matrix Time!
-    double **J = block_matrix(naux_raw_, naux_raw_);
-
-    //Next form J in the raw basis, 
-    IntegralFactory rifactory_J(ribasis_, zerobasis_, ribasis_, zerobasis_);
-    TwoBodyInt *Jint = rifactory_J.eri();
-
-    // Integral buffer
-    const double *Jbuffer = Jint->buffer();
-    // J_{MN} = (0M|N0)
-    int index = 0;
-
-    for (int MU=0; MU < ribasis_->nshell(); ++MU) {
-        int nummu = ribasis_->shell(MU)->nfunction();
-
-        for (int NU=0; NU <= MU; ++NU) {
-            int numnu = ribasis_->shell(NU)->nfunction();
-
-            Jint->compute_shell(MU, 0, NU, 0);
-
-            index = 0;
-            for (int mu=0; mu < nummu; ++mu) {
-                int omu = ribasis_->shell(MU)->function_index() + mu;
-
-                for (int nu=0; nu < numnu; ++nu, ++index) {
-                    int onu = ribasis_->shell(NU)->function_index() + nu;
-
-                    J[omu][onu] = Jbuffer[index];
-                    J[onu][omu] = Jbuffer[index];
-                }
-            }
-        }
-    }
-    if (print_>5) {
-        fprintf(outfile,"\nJ (raw):\n");
-        print_mat(J,naux_raw_,naux_raw_,outfile);
-        fflush(outfile);
-    }
-    delete Jint;
-
-    //fprintf(outfile,"J:\n");
-    //print_mat(J,naux_raw_,naux_raw_,outfile);
-    //fflush(outfile);
-
+    timer_on("Form W");
+    double **J = form_W(ribasis_);
+    timer_off("Form W");
+    
+    timer_on("Form W'");
     //Tansform the J matrix to J'
     double **Jtemp1 = block_matrix(naux_fin_,naux_raw_);
     double **Jp = block_matrix(naux_fin_,naux_fin_);
 
     //Temp = X'*J
     C_DGEMM('T','N',naux_fin_,naux_raw_,naux_raw_,1.0,X[0],naux_fin_,J[0],naux_raw_,0.0,Jtemp1[0],naux_raw_);
+    free_block(J);
 
     //J' = Temp*X
     C_DGEMM('N','N',naux_fin_,naux_fin_,naux_raw_,1.0,Jtemp1[0],naux_raw_,X[0],naux_fin_,0.0,Jp[0],naux_fin_);
-
-    //fprintf(outfile,"J':\n");
-    //print_mat(Jp,naux_fin_,naux_fin_,outfile);
-    //fflush(outfile);
-
     free_block(Jtemp1);
+    timer_off("Form W'");
 
-    timer_off("Form J");
-    //For diagnostics purposes, we may want to know 
-    //how bad the raw J was
-    if (options_.get_bool("FIND_RAW_J_COND")) {
-        double** J2 = block_matrix(naux_raw_,naux_raw_);
-        C_DCOPY(naux_raw_*naux_raw_,J[0],1,J2[0],1);
-
-        //Find eigenvalues only
-        double* eigval = init_array(naux_raw_);
-        int lwork = naux_raw_ * 3;
-        double* work = init_array(lwork);
-        stat = C_DSYEV('n','u',naux_raw_,J2[0],naux_raw_,eigval, work,lwork);
-        if (stat != 0) {
-            fprintf(outfile, "C_DSYEV failed\n");
-            exit(PSI_RETURN_FAILURE);
-        }
-
-        free(work);
-
-        double min_J = eigval[0];
-        double max_J = eigval[naux_raw_-1];
-        free(eigval);
-
-        fprintf(outfile,"  Smallest eigenvalue in the raw fitting metric is %14.10E.\n",min_J);
-        fprintf(outfile,"  Largest eigenvalue in the raw fitting metric is %14.10E.\n",max_J);
-        fprintf(outfile,"  Condition number of the raw fitting metric is %14.10E.\n",max_J/min_J);
-        fflush(outfile);
-
-        free_block(J2);
-    }
-    free_block(J);
 
     //Find J'^-1/2
-    timer_on("Form J^-1/2");
+    timer_on("W'^-1/2");
+    matrix_power(Jp, naux_fin_, -1.0/2.0); 
+    timer_off("W'^-1/2");
 
-    //double **J_copy2 = block_matrix(naux_fin_, naux_fin_);
-    //C_DCOPY(naux_fin_*naux_fin_,Jp[0],1,J_copy2[0],1); 
-
-    // Form Jp^-1/2
-    // First, diagonalize Jp
-    // the C_DSYEV call replaces the original matrix Jp with its eigenvectors
-    double* eigval = init_array(naux_fin_);
-    int lwork = naux_fin_ * 3;
-    double* work = init_array(lwork);
-    stat = C_DSYEV('v','u',naux_fin_,Jp[0],naux_fin_,eigval, work,lwork);
-    if (stat != 0) {
-        fprintf(outfile, "C_DSYEV failed\n");
-        exit(PSI_RETURN_FAILURE);
-    }
-    free(work);
-
-    // Now Jp contains the eigenvectors of the original Jp
-    // Copy Jp to Jp_copy
-    double **Jp_copy = block_matrix(naux_fin_, naux_fin_);
-    C_DCOPY(naux_fin_*naux_fin_,Jp[0],1,Jp_copy[0],1);
-
-    // Now form Jp^{-1/2} = U(T)*j'^{-1/2}*U,
-    // where j'^{-1/2} is the diagonal matrix of the inverse square roots
-    // of the eigenvalues, and U is the matrix of eigenvectors of J'
-    double min_J = eigval[0];
-    double max_J = eigval[naux_fin_-1];
-    if (print_>1) {
-        fprintf(outfile,"  Smallest eigenvalue in the finished fitting metric is %14.10E.\n",min_J);
-        fprintf(outfile,"  Largest eigenvalue in the finished fitting metric is %14.10E.\n",max_J);
-        fprintf(outfile,"  Condition number of the finished fitting metric is %14.10E.\n",max_J/min_J);
-        fflush(outfile);
-    }
-    
-    #pragma omp parallel for private (ind)
-    for (ind=0; ind<naux_fin_; ind++) {
-        //All eignvalues should be approved for use!
-        eigval[ind] = 1.0 / sqrt(eigval[ind]);
-        // scale one set of eigenvectors by the diagonal elements jp^{-1/2}
-        C_DSCAL(naux_fin_, eigval[ind], Jp[ind], 1);
-    }
-    free(eigval);
-
-    // J'^-1/2 = Jp_copy(T) * Jp
-    double** Jp_mhalf = block_matrix(naux_fin_,naux_fin_);
-    C_DGEMM('t','n',naux_fin_,naux_fin_,naux_fin_,1.0,
-            Jp_copy[0],naux_fin_,Jp[0],naux_fin_,0.0,Jp_mhalf[0],naux_fin_);
-
-    //fprintf(outfile,"J'^-1/2:\n");
-    //print_mat(Jp_mhalf,naux_fin_,naux_fin_,outfile);
-    //fflush(outfile);
-
-    free_block(Jp_copy);
-    free_block(Jp);
-
-    timer_off("Form J^-1/2");
-    timer_on("Form W");
-
+    timer_on("XW'^-1/2");
     //W_AB' = X_AC'*J_CB'^-1/2
     W_ = block_matrix(naux_raw_,naux_fin_);
 
-    C_DGEMM('N','N',naux_raw_,naux_fin_,naux_fin_,1.0,X[0],naux_fin_,Jp_mhalf[0],naux_fin_,0.0,W_[0],naux_fin_);
+    C_DGEMM('N','N',naux_raw_,naux_fin_,naux_fin_,1.0,X[0],naux_fin_,Jp[0],naux_fin_,0.0,W_[0],naux_fin_);
 
-    fflush(outfile);
-    free_block(Jp_mhalf);
+    free_block(Jp);
     free_block(X);
-    timer_off("Form W");
+    timer_off("XW'^-1/2");
   
     if (debug_) {
         fprintf(outfile,"  W:\n");
@@ -641,105 +654,16 @@ void DFMP2::form_Wm12_raw()
   if (print_>1)
     fprintf(outfile,"  WARNING: No conditioning algorithm selected for fitting metric.\n");
  
-  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-  // 
-  //     OLD METHOD (NO PRECONDITIONING)
-  //
-  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  
-
-  // Create integral factory
-  IntegralFactory rifactory(ribasis_, zerobasis_, basisset_, basisset_);
-  IntegralFactory rifactory_J(ribasis_, zerobasis_, ribasis_, zerobasis_);
-
-  int naux = naux_raw_;    
-
-  TwoBodyInt* eri = rifactory.eri();
-  TwoBodyInt* Jint = rifactory_J.eri();
-  double **J = block_matrix(naux, naux);
-  W_ = block_matrix(naux, naux);
-  const double *Jbuffer = Jint->buffer();
-
-  timer_on("Form J");
-
-  int index = 0;
-    
-  for (int MU=0; MU < ribasis_->nshell(); ++MU) {
-    int nummu = ribasis_->shell(MU)->nfunction();
-        
-    for (int NU=0; NU < ribasis_->nshell(); ++NU) {
-      int numnu = ribasis_->shell(NU)->nfunction();
-    
-      Jint->compute_shell(MU, 0, NU, 0);
-            
-      index = 0;
-      for (int mu=0; mu < nummu; ++mu) {
-        int omu = ribasis_->shell(MU)->function_index() + mu;
-                
-        for (int nu=0; nu < numnu; ++nu, ++index) {
-          int onu = ribasis_->shell(NU)->function_index() + nu;
-
-          J[omu][onu] = Jbuffer[index];
-        }
-      }
-    }
-  }
-    
-  // fprintf(outfile, "J:\n");
-  // print_mat(J, naux, naux, outfile);    
-  // Invert J matrix
-  // invert_matrix(J, J_inverse, naux, outfile);
-  // fprintf(outfile, "J^-1:\n");
-  // print_mat(J_inverse, naux, naux, outfile);
-  // Form J^-1/2
-  // First, diagonalize J
-  // the C_DSYEV call replaces the original matrix J with its eigenvectors
-  double* eigval = init_array(naux);
-  int lwork = naux * 3;
-  double* work = init_array(lwork);
-  int stat = C_DSYEV('v','u',naux,J[0],naux,eigval,
-    work,lwork);
-  if (stat != 0) {
-    fprintf(outfile, "C_DSYEV failed\n");
-    exit(PSI_RETURN_FAILURE);
-  }
-  free(work);
-
-  double min_J = eigval[0];
-  double max_J = eigval[naux-1];
-  if (print_>1) {
-    fprintf(outfile,"  Smallest eigenvalue in the raw fitting metric is %14.10E.\n",min_J);
-    fprintf(outfile,"  Largest eigenvalue in the raw fitting metric is %14.10E.\n",max_J);
-    fprintf(outfile,"  Condition number of the raw fitting metric is %14.10E.\n",max_J/min_J);
-    fflush(outfile);
-  }  
-  // Now J contains the eigenvectors of the original J
-  // Copy J to J_copy
-  double **J_copy = block_matrix(naux, naux);
-  C_DCOPY(naux*naux,J[0],1,J_copy[0],1); 
+  timer_on("Form W");  
+  W_ = form_W(ribasis_);
+  timer_off("Form W");  
+ 
+  double max_cond = options_.get_double("RI_MAX_COND");
+ 
+  timer_on("W^+1/2");  
+  matrix_power(W_, naux_raw_, -1.0/2.0,max_cond);
+  timer_off("W^+1/2");  
   
-  // Now form J^{-1/2} = U(T)*j^{-1/2}*U,
-  // where j^{-1/2} is the diagonal matrix of the inverse square roots
-  // of the eigenvalues, and U is the matrix of eigenvectors of J
-  #pragma omp parallel for schedule (static)
-  for (int i=0; i<naux; i++) {
-    if (eigval[i] < 1.0E-10)
-      eigval[i] = 0.0;
-    else {
-      eigval[i] = 1.0 / sqrt(eigval[i]);
-    }
-    // scale one set of eigenvectors by the diagonal elements j^{-1/2}
-    C_DSCAL(naux, eigval[i], J[i], 1);
-  }
-  free(eigval);
-
-  // J_mhalf = J_copy(T) * J
-  C_DGEMM('t','n',naux,naux,naux,1.0,
-    J_copy[0],naux,J[0],naux,0.0,W_[0],naux);
-
-  free_block(J);
-  free_block(J_copy);
-
-  timer_off("Form J");
   
   if (debug_) {
     fprintf(outfile,"  W:\n");
@@ -751,115 +675,22 @@ void DFMP2::form_Wp12_chol()
   if (print_>1)
     fprintf(outfile,"  Fitting metric conditioned by Cholesky decomposition.\n");
 
-  // Create integral factory
-  IntegralFactory rifactory(ribasis_, zerobasis_, basisset_, basisset_);
-  IntegralFactory rifactory_J(ribasis_, zerobasis_, ribasis_, zerobasis_);
-
-  int naux = naux_raw_;    
-
-  TwoBodyInt* eri = rifactory.eri();
-  TwoBodyInt* Jint = rifactory_J.eri();
-  double **J = block_matrix(naux, naux);
-  W_ = block_matrix(naux, naux);
-  const double *Jbuffer = Jint->buffer();
-
-  timer_on("Form J");
-
-  int index = 0;
-    
-  for (int MU=0; MU < ribasis_->nshell(); ++MU) {
-    int nummu = ribasis_->shell(MU)->nfunction();
-        
-    for (int NU=0; NU < ribasis_->nshell(); ++NU) {
-      int numnu = ribasis_->shell(NU)->nfunction();
-    
-      Jint->compute_shell(MU, 0, NU, 0);
-            
-      index = 0;
-      for (int mu=0; mu < nummu; ++mu) {
-        int omu = ribasis_->shell(MU)->function_index() + mu;
-                
-        for (int nu=0; nu < numnu; ++nu, ++index) {
-          int onu = ribasis_->shell(NU)->function_index() + nu;
-
-          J[omu][onu] = Jbuffer[index];
-        }
-      }
-    }
-  }
-    
-  // Form J^+1/2
-  // First, diagonalize J
-  // the C_DSYEV call replaces the original matrix J with its eigenvectors
-  double* eigval = init_array(naux);
-  int lwork = naux * 3;
-  double* work = init_array(lwork);
-  int stat = C_DSYEV('v','u',naux,J[0],naux,eigval,
-    work,lwork);
-  if (stat != 0) {
-    fprintf(outfile, "C_DSYEV failed\n");
-    exit(PSI_RETURN_FAILURE);
-  }
-  free(work);
-
-  double min_J = eigval[0];
-  double max_J = eigval[naux-1];
-  if (print_>1) {
-    fprintf(outfile,"  Smallest eigenvalue in the raw fitting metric is %14.10E.\n",min_J);
-    fprintf(outfile,"  Largest eigenvalue in the raw fitting metric is %14.10E.\n",max_J);
-    fprintf(outfile,"  Condition number of the raw fitting metric is %14.10E.\n",max_J/min_J);
-    fflush(outfile);
-  }  
-
-  // Now J contains the eigenvectors of the original J
-  // Copy J to J_copy
-  double **J_copy = block_matrix(naux, naux);
-  C_DCOPY(naux*naux,J[0],1,J_copy[0],1); 
+  timer_on("Form W");  
+  W_ = form_W(ribasis_);
+  timer_off("Form W");  
   
-  // Now form J^{+1/2} = U(T)*j^{+1/2}*U,
-  // where j^{+1/2} is the diagonal matrix of the inverse square roots
-  // of the eigenvalues, and U is the matrix of eigenvectors of J
-  #pragma omp parallel for schedule (static)
-  for (int i=0; i<naux; i++) {
-    eigval[i] = sqrt(eigval[i]);
-    // scale one set of eigenvectors by the diagonal elements j^{-1/2}
-    C_DSCAL(naux, eigval[i], J[i], 1);
-  }
-  free(eigval);
+  timer_on("W^+1/2");  
+  matrix_power(W_, naux_raw_, 1.0/2.0);
+  timer_off("W^+1/2");  
+  
+  timer_on("Chol(W^+1/2)");  
+  cholesky_decomposition(W_,naux_raw_); 
+  timer_off("Chol(W^+1/2)");  
 
-  // J_mhalf = J_copy(T) * J
-  C_DGEMM('t','n',naux,naux,naux,1.0,
-    J_copy[0],naux,J[0],naux,0.0,W_[0],naux);
-
-  free_block(J);
-  free_block(J_copy);
-
-  timer_off("Form J");
- 
   if (debug_) {
     fprintf(outfile,"  W:\n");
     print_mat(W_,naux_raw_,naux_fin_,outfile);
   }
-
-  timer_on("J Cholesky");
-
-  //Choleskify W_ (results returned in place, should not be touched)
-  stat = C_DPOTRF('U',naux_raw_,W_[0],naux_raw_);
-  if (stat < 0) {
-    fprintf(outfile, "Cholesky argument %d is bad.\n",stat);
-    exit(PSI_RETURN_FAILURE);
-  }
-  else if (stat > 0) {
-    fprintf(outfile, "W^+1/2 is not positive definite.\n");
-    exit(PSI_RETURN_FAILURE);
-  }
-  
-  if (debug_) {
-    fprintf(outfile,"  L:\n");
-    print_mat(W_,naux_raw_,naux_fin_,outfile);
-  }
-
-  timer_off("J Cholesky");
 }
 void DFMP2::form_Aia_disk()
 {
