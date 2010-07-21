@@ -13,6 +13,7 @@
 #include <libmints/basisset.h>
 #include <libdiis/diismanager.h>
 #include <psi4-dec.h>
+#include <float.h>
 #include <cstring>
 
 using namespace psi;
@@ -85,6 +86,20 @@ protected:
 
     //Form the Schwarz Sieve
     void form_Schwarz();
+
+    // Raw fitting metric
+    double** form_W(shared_ptr<BasisSet> b);
+    // Raw fitting overlap
+    double** form_W_overlap(shared_ptr<BasisSet> b);
+    // Form orthogonlization matrix
+    double** form_X(double** W, int n, double max_cond, int* clipped);
+    // Matrix power, in-place, with clipping
+    int matrix_power(double** J, int n, double pow, double max_cond = DBL_MAX);
+    // Matrix upper cholesky decomposition (U'U = J, FORTRAN -style), in-place 
+    void cholesky_decomposition(double** J, int n);
+    // Matrix inverse, via cholesky decomposition, in-place 
+    void cholesky_inverse(double** J, int n);
+
     //Form the inverse square root of the fitting metric (preconditioned)
     void form_Wm12_fin();
     //Form the inverse square root of the fitting metric (raw)
