@@ -2,7 +2,7 @@
  *  SAPT.CC 
  *
  */
-#define HAVE_MKL 1
+//#define HAVE_MKL 1
 
 #ifdef HAVEMKL
 #include <mkl.h>
