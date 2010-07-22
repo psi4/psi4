@@ -71,7 +71,6 @@ namespace psi {
 /*************
     // test SCF optimization
     //     char *argv_new[MAX_ARGS];
-/**
     read_options("INPUT", options);
     dispatch_table["INPUT"](options);
 

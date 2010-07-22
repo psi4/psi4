@@ -102,7 +102,14 @@
 
 #define PSIF_SAPT_DIMER        120  /* SAPT Two-Body Dimer */
 #define PSIF_SAPT_MONOMERA     121 /* SAPT Two-Body Mon A */
-#define PSIF_SAPT_MONOMERB     122 /* SAPT Two-Body Mon A */
+#define PSIF_SAPT_MONOMERB     122 /* SAPT Two-Body Mon B */
+
+#define PSIF_SAPT_AA_DF_INTS   123 /* SAPT AA DF Ints */
+#define PSIF_SAPT_AB_DF_INTS   124 /* SAPT AB DF Ints */
+#define PSIF_SAPT_BB_DF_INTS   125 /* SAPT BB DF Ints */
+#define PSIF_SAPT_AMPS         126 /* SAPT Amplitudes */
+#define PSIF_SAPT_TEMP         127 /* SAPT Temporary worlds fastest code file */
+
 #define PSIF_3B_SAPT_TRIMER              220/* SAPT Three-Body Trimer */
 #define PSIF_3B_SAPT_DIMER_AB            221 /* SAPT Three-Body Dimer AB */
 #define PSIF_3B_SAPT_DIMER_AC            222/* SAPT Three-Body Dimer AC */

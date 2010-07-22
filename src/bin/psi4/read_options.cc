@@ -85,6 +85,32 @@ int read_options(const std::string &name, Options & options, bool call_ipv1)
     /* The number of virtual orbitals to freeze in correlated computations -*/
     options.add_int("FREEZE_VIRT",0);
   }
+  else if (name == "SAPT") {
+    ip_cwk_add(":SAPT");
+    /*- The level of theory for SAPT -*/
+    options.add_str("SAPT_LEVEL","SAPT0","SAPT0");      
+    /*- The ubiquitous debug flag -*/
+    options.add_bool("DEBUG",false);  
+    /*- The ubiquitous print flag -*/
+    options.add_int("PRINT",1);  
+    /*- E converge value -*/
+    options.add_int("E_CONVERGE",10);  
+    /*- D converge value -*/
+    options.add_int("D_CONVERGE",8);  
+    /*- Max CPHF iterations -*/
+    options.add_int("MAXITER",50);  
+    /*- DIIS vecs -*/
+    options.add_int("DIISVECS",5);  
+    /*- Use a restart file? -*/
+    options.add_bool("DF_RESTART",false);  
+    /*- Use a restart file? -*/
+    options.add_bool("T2_RESTART",false);  
+    /*- Build a log file? -*/
+    options.add_bool("LOGFILE",false);  
+    /*- Schwarz cutoff -*/
+    options.add_double("SCHWARZ_CUTOFF",1.0E-12);  
+
+  }
   else if(name == "DCFT") {
       ip_cwk_add(":DCFT");
       /*- The amount of information printed
@@ -671,10 +697,6 @@ else if(name == "CCDENSITY") {
     //options.add_str("WFN", "RI-MP2");
     //options.add_str("RI_BASIS_MP2","NONE");
     // options.add_str("BASIS","NONE");
-    /*- Do SCS? -*/
-    options.add_bool("SCS",false);
-    /*- Do SCS-N? -*/
-    options.add_bool("SCS_N", false);
     /*- OS Scale  -*/
     options.add_double("SCALE_OS", 6.0/5.0);
     /*- SS Scale  -*/
@@ -683,14 +705,18 @@ else if(name == "CCDENSITY") {
     options.add_double("DFMP2_MEM_FACTOR", 0.9);
     /*- Schwarz cutoff -*/
     options.add_double("SCHWARZ_CUTOFF", 0.0);
-    /*- Max condition number in auxiliary basis -*/
-    options.add_double("RI_MAX_COND", 1.0E8);
-    /*- Find raw RI condition? -*/
-    options.add_bool("FIND_RAW_J_COND", false);
     /*- DFMP2 Fitting Type -*/
     options.add_str("RI_FITTING_TYPE", "FINISHED", "FINISHED RAW CHOLESKY");
-    /*- DFMP2 Algorithm type  -*/
+    /*- DFMP2 Algorithm (usually for debugging)  -*/
     options.add_str("DFMP2_TYPE","DEFAULT", "DEFAULT DISK CORE OLD");
+    /*- DFMP2 Fitting symmetry  -*/
+    options.add_str("FITTING_SYMMETRY","SYMMETRIC", "SYMMETRIC ASYMMETRIC");
+    /*- DFMP2 Fitting conditioning  -*/
+    options.add_str("FITTING_CONDITIONING","FINISHED", "RAW FINISHED");
+    /*- DFMP2 Fitting inversion  -*/
+    options.add_str("FITTING_INVERSION","EIG", "EIG CHOLESKY SOLVE");
+    /*- Max condition number in auxiliary basis -*/
+    options.add_double("RI_MAX_COND", 1.0E8);
     /*- -Maximum number of rows to read/write in each DF-MP2 operation -*/
     options.add_int("ROWS_PER_READ", 0);
     /*- Number of threads to compute integrals with. 0 is wild card -*/

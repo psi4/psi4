@@ -29,6 +29,9 @@ protected:
     
     int print_;
     std::string algorithm_type_;
+    std::string fitting_symmetry_;
+    std::string fitting_conditioning_;
+    std::string fitting_inversion_;
 
     shared_ptr<BasisSet> ribasis_;
     shared_ptr<BasisSet> zerobasis_;
@@ -70,6 +73,8 @@ protected:
     int* sym_docc_;
     int* sym_virt_;
 
+    double** Cia_;
+    double** Aia_;
     double** Qia_;
     double** W_; //Fitting metric inverse sqrt or cholesky decomposition
 
@@ -116,12 +121,21 @@ protected:
     //Do the summation
     void find_disk_contributions(double** Qia, double** Qjb, double***I, int* starts, int* sizes, int* stops, int block1, int block2);
     
+    //Build Aia directly on corei (returns double** as transform might be in place)
+    double** form_Aia_core();
     //Build Qia directly on core
     void form_Qia_core();
     //Evaluate and sum the energy contributions
-    void evaluate_contributions_core();   
+    void evaluate_contributions_core_sym();   
     //Free Qia_ 
     void free_Qia_core();
+    
+    //Build Cia directly on core
+    void form_Cia_core();
+    //Evaluate and sum the energy contributions
+    void evaluate_contributions_core_asym();   
+    //Free Cia_ 
+    void free_Cia_core();
  
     //Figure out all indexing and parameters
     //Only chkpt reads in here for disk-based
