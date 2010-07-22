@@ -16,6 +16,7 @@ namespace psi{
     namespace transqt2 { PsiReturnType transqt2(Options &); }
     namespace psimrcc  { PsiReturnType psimrcc(Options &); }
     namespace mcscf    { PsiReturnType mcscf(Options &); }
+    namespace sapt     { PsiReturnType sapt(Options &); }
 
     PsiReturnType opt_step(Options &);
 
@@ -47,6 +48,7 @@ setup_driver(Options &options)
     dispatch_table["TRANSQT2"]  = &(psi::transqt2::transqt2);
     dispatch_table["MCSCF"]     = &(psi::mcscf::mcscf);
     dispatch_table["PSIMRCC"]   = &(psi::psimrcc::psimrcc);
+    dispatch_table["SAPT"]      = &(psi::sapt::sapt);
     dispatch_table["OPT_STEP"]  = &(psi::opt_step);
 }
 

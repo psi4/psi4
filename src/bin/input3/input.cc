@@ -152,6 +152,7 @@ PsiReturnType input(Options & options)
        Parse basis set data
       ---------------------*/
 
+    fprintf(outfile, "  Primary Basis:\n");
     atom_basis = (char **) malloc(sizeof(char *)*num_atoms);
     for(i=0;i<num_atoms;i++)
         atom_basis[i] = NULL;
@@ -206,7 +207,6 @@ PsiReturnType input(Options & options)
        Print geometries etc.
       ----------------------*/
 
-    fprintf(outfile, "  Primary Basis:\n");
     print_basis_info();
 
     // SCF RI basis?
@@ -237,6 +237,21 @@ PsiReturnType input(Options & options)
         build_so_classes();
         build_usotao();
         write_to_chkpt(repulsion, "DF_BASIS_MP2");
+        print_basis_info();
+    }
+    // SAPT RI basis?
+    if (ip_exist("DF_BASIS_SAPT",0) || ip_exist("RI_BASIS_SAPT",0)) {
+        fprintf(outfile, "  DF-SAPT Basis:\n");
+        for(i=0;i<num_atoms;i++)
+            atom_basis[i] = NULL;
+        if (ip_exist("DF_BASIS_SAPT",0)) read_basis("DF_BASIS_SAPT");
+        else if (ip_exist("RI_BASIS_SAPT",0)) read_basis("RI_BASIS_SAPT");
+        build_transmat();
+        if (puream)
+            build_cart2pureang();
+        build_so_classes();
+        build_usotao();
+        write_to_chkpt(repulsion, "DF_BASIS_SAPT");
         print_basis_info();
     }
     // SCF Dual basis?

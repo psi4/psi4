@@ -447,7 +447,7 @@ void ERI::free_shell_pairs34()
     int np_i;
 
     // If stack34_ is NULL then we only used pairs12.
-    if (stack34_ == NULL)
+    if (stack34_ == NULL || true)
         return;
 
     free(stack34_);

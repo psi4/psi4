@@ -111,7 +111,12 @@ void  DFMP2::setup()
   print_ = options_.get_int("PRINT");
 
   algorithm_type_ = options_.get_str("DFMP2_TYPE");
-  // Form the initial memory usage estimate  
+   
+  fitting_symmetry_ = options_.get_str("FITTING_SYMMETRY");
+  fitting_conditioning_ = options_.get_str("FITTING_CONDITIONING");
+  fitting_inversion_ = options_.get_str("FITTING_INVERSION");
+
+ // Form the initial memory usage estimate  
   df_memory_ = (unsigned long int)(options_.get_double("DFMP2_MEM_FACTOR")*memory_/sizeof(double)); 
 
   //Required core memory
@@ -274,12 +279,19 @@ double DFMP2::compute_E()
 }
 double DFMP2::compute_E_core()
 {
+    if (fitting_symmetry_ == "SYMMETRIC") {
 
-    form_Qia_core();
+        form_Qia_core();
+        evaluate_contributions_core_sym();
+        free_Qia_core();
 
-    evaluate_contributions_core();
-
-    free_Qia_core();
+    } else if (fitting_symmetry_ == "ASYMMETRIC") {
+        
+        //form_Cia_core();
+        //evaluate_contributions_core_asym();
+        //free_Cia_core();
+   
+    }
 
     return E_;
 }
@@ -1148,7 +1160,7 @@ void DFMP2::find_disk_contributions(double** Qia, double** Qjb, double***I, int*
   E_os_ += e_os;
     
 }
-void DFMP2::form_Qia_core()
+double** DFMP2::form_Aia_core()
 {
   //Convention
   int norbs =  nso_;
@@ -1223,8 +1235,7 @@ void DFMP2::form_Qia_core()
     }
   }
  
-  //Qia_ is the working buffer (actually Aia for now)
-  Qia_ = block_matrix(naux_raw_,nact_docc_*(ULI)nact_virt_);
+  double** Aia = block_matrix(naux_raw_,nact_docc_*(ULI)nact_virt_);
 
   //Buffer tensors
   double** Amn = block_matrix(max_rows,norbs*(ULI)norbs);
@@ -1317,7 +1328,7 @@ void DFMP2::form_Qia_core()
     #pragma omp parallel for  
     for (int A = 0; A<p_sizes[block]; A++) {
       C_DGEMM('T', 'N', nact_docc, nact_virt, norbs, 1.0, &(Ami[A][0]),
-        nact_docc, &(C_virt_[0][0]), nact_virt, 0.0, &(Qia_[p_starts[block]+A][0]), nact_virt_);
+        nact_docc, &(C_virt_[0][0]), nact_virt, 0.0, &(Aia[p_starts[block]+A][0]), nact_virt_);
     }
 
     #ifdef HAVE_MKL
@@ -1328,7 +1339,7 @@ void DFMP2::form_Qia_core()
   }
   if (debug_) {
     fprintf(outfile, "  Aia\n");
-    print_mat(Qia_,naux_raw_,nact_docc*nact_virt, outfile);
+    print_mat(Aia,naux_raw_,nact_docc*nact_virt, outfile);
   }  
 
   delete[] buffer;
@@ -1341,7 +1352,18 @@ void DFMP2::form_Qia_core()
   free_block(Amn);
   free_block(Ami);
 
-  //Setup new blocks
+  return Aia;
+}
+void DFMP2::form_Qia_core()
+{
+
+  //Convention
+  int norbs =  nso_;
+  int nact_docc =  nact_docc_;
+  int nact_virt =  nact_virt_;
+  
+  Qia_ = form_Aia_core();
+
   //Setup fitting tensor
   if (options_.get_str("RI_FITTING_TYPE") == "RAW")
       form_Wm12_raw();
@@ -1350,14 +1372,15 @@ void DFMP2::form_Qia_core()
   else if (options_.get_str("RI_FITTING_TYPE") == "CHOLESKY")
       form_Wp12_chol();
   
-  available_mem = df_memory_-three_mem-naux_raw_*(ULI)naux_fin_;
+  unsigned long int three_mem = naux_raw_*nact_docc_*(ULI)nact_virt_;
+  unsigned long int available_mem = df_memory_-three_mem-naux_raw_*(ULI)naux_fin_;
   unsigned long int max_cols = available_mem/(ULI)naux_raw_;
   if (max_cols > nact_docc_*(ULI)nact_virt_)
     max_cols = nact_docc_*(ULI)nact_virt; 
   if (max_cols < 1)
     max_cols = 1;
 
-  nblocks = nact_docc_*(ULI)nact_virt_/max_cols; 
+  unsigned long int nblocks = nact_docc_*(ULI)nact_virt_/max_cols; 
   if (nblocks*max_cols < nact_docc_*nact_virt_)
     nblocks++;
 
@@ -1418,7 +1441,7 @@ void DFMP2::form_Qia_core()
   free(column_sizes);
   free(column_starts);
 }
-void DFMP2::evaluate_contributions_core()
+void DFMP2::evaluate_contributions_core_sym()
 {
   int nthreads = 1;
   int rank = 0;

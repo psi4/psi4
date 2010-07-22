@@ -827,7 +827,7 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libboost_python/Makefile
           src/lib/libboost_regex/Makefile
           src/lib/libboost_thread/Makefile
-          src/lib/libsapt/Makefile
+          src/lib/libsapt_solver/Makefile
  
           src/util/tocprint/Makefile
           src/util/psiclean/Makefile
@@ -860,6 +860,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/optking/Makefile
           src/bin/psimrcc/Makefile
           src/bin/df-mp2/Makefile
+          src/bin/sapt/Makefile
 
           tests/Makefile
           tests/MakeVars
