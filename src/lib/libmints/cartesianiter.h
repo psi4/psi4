@@ -48,7 +48,6 @@ public:
     matrices that maps a set of Cartesian functions to another set of
     Cartesian functions in a rotated coordinate system. */
 class RedundantCartesianIter {
-private:
     int done_;
     int l_;
     int *axis_;
@@ -128,6 +127,51 @@ inline int RedundantCartesianIter::c() const
 {
     return l(2);
 }
+
+/** Like RedundantCartesianIter, except a, b, and c are fixed to a given
+    value. */
+class RedundantCartesianSubIter {
+    int done_;
+    int l_;
+    int e_[3];
+    int *axis_;
+
+    // the locations of the z's in the axis array
+    int *zloc_;
+    // the locations of the y's in the subarray after the z's are removed
+    int *yloc_;
+
+    int valid();
+
+public:
+    /// Create a object for the given angular momentum.
+    RedundantCartesianSubIter(int l);
+    virtual ~RedundantCartesianSubIter();
+
+    /// Return the current Cartesian basis function number.
+    virtual int bfn();
+
+    /** Initialize the iterator.  The constraints on a, b, and c are
+        given as arguments. */
+    void start(int a, int b, int c);
+    /// Move to the next combination of axes.
+    void next();
+    /// Returns nonzero if the iterator currently hold valid data.
+    operator int() const { return !done_; }
+
+    /// The current exponent of x.
+    int a() const { return e_[0]; }
+    /// The current exponent of y.
+    int b() const { return e_[1]; }
+    /// The current exponent of z.
+    int c() const { return e_[2]; }
+    /// The angular momentum.
+    int l() const { return l_; }
+    /// Returns a() if i==0, b() if i==1, and c() if i==2.
+    int l(int i) { return e_[i]; }
+    /// Return the i'th axis.
+    int axis(int i) { return axis_[i]; }
+};
 
 }
 
