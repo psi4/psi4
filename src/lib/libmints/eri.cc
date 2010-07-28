@@ -164,7 +164,7 @@ ERI::~ERI()
     if (screen_)
         free(schwarz_norm_);
     free_shell_pairs12();
-    free_shell_pairs34();
+    free_shell_pairs34();       // This shouldn't do anything, but this might change in the future
 }
 
 void ERI::init_shell_pairs12()
@@ -175,6 +175,11 @@ void ERI::init_shell_pairs12()
     size_t memd;
     double a1, a2, ab2, gam, c1, c2;
     double *curr_stack_ptr;
+
+    if (basis1() != basis2() || basis1() != basis3() || basis2() != basis4()) {
+        use_shell_pairs_ = false;
+        return;
+    }
 
     // Estimate memory needed by allocated space for the dynamically allocated parts of ShellPair structure
     memd = ERI::memory_to_store_shell_pairs(basis1(), basis2());
@@ -284,14 +289,10 @@ void ERI::init_shell_pairs34()
 {
     // If basis1 == basis3 && basis2 == basis4, then we don't need to do anything except use the pointer
     // of pairs12_.
-    if (basis1() == basis3() && basis2() == basis4()) {
-        use_shell_pairs_ = true;
+    if (use_shell_pairs_ == true) {
+        // This assumes init_shell_pairs12 was called and precomputed the values.
         pairs34_ = pairs12_;
         stack34_ = NULL;
-        return;
-    }
-    else {
-        use_shell_pairs_ = false;
         return;
     }
 #if 0
@@ -408,6 +409,9 @@ void ERI::free_shell_pairs12()
     ShellPair *sp;
     int np_i;
 
+    if (!use_shell_pairs_)
+        return;
+
     delete[] stack12_;
     for (si=0; si<basis1()->nshell(); ++si) {
         for (sj=0; sj<basis2()->nshell(); ++sj) {
@@ -447,9 +451,11 @@ void ERI::free_shell_pairs34()
     int np_i;
 
     // If stack34_ is NULL then we only used pairs12.
-    if (stack34_ == NULL || true)
+    if (stack34_ == NULL)
         return;
 
+    // Code is commented out above that allocates stack34_
+#if 0
     free(stack34_);
     for (si=0; si<basis3()->nshell(); ++si) {
         for (sj=0; sj<basis4()->nshell(); ++sj) {
@@ -480,6 +486,7 @@ void ERI::free_shell_pairs34()
     for (si=0; si<basis3()->nshell(); ++si)
         delete[] pairs34_[si];
     delete[] pairs34_;
+#endif
 }
 
 size_t ERI::memory_to_store_shell_pairs(const shared_ptr<BasisSet> &bs1, const shared_ptr<BasisSet> &bs2)
