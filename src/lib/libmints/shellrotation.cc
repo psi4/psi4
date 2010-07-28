@@ -55,7 +55,7 @@ ShellRotation::ShellRotation(const ShellRotation& other)
     *this = other;
 }
 
-ShellRotation::ShellRotation(int a, SymmetryOperation& so, const shared_ptr<IntegralFactory>& ints) :
+ShellRotation::ShellRotation(int a, SymmetryOperation& so, const shared_ptr<IntegralFactory>& ints, int pure) :
     n_(0), am_(0), r_(0)
 {
     init(a, so, ints);
