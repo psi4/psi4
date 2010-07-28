@@ -304,10 +304,14 @@ public:
     // Return spherical transform object for am
     std::vector<SphericalTransform> spherical_transform() { return spherical_transforms_; }
 
+    /// Return a spherical transform iterator object for am
+    SphericalTransformIter* spherical_transform_iter(int am) { return new SphericalTransformIter(spherical_transforms_[am]); }
     /// Return a new Cartesian iterator
     CartesianIter* cartesian_iter(int l) { return new CartesianIter(l); }
     /// Return a new rudundant Cartesian iterator
     RedundantCartesianIter* redundant_cartesian_iter(int l) { return new RedundantCartesianIter(l); }
+    /// Return a new rudundant Cartesian sub iterator
+    RedundantCartesianSubIter* redundant_cartesian_sub_iter(int l) { return new RedundantCartesianSubIter(l); }
 };
 
 }

@@ -20,15 +20,18 @@ public:
     /// Initialize this from another ShellRotation.
     ShellRotation(const ShellRotation&);
     /// Initialize using init(...) or, if pure is nonzero, init_pure(...).
-    ShellRotation(int a, SymmetryOperation&, const shared_ptr<IntegralFactory>&);
+    ShellRotation(int a, SymmetryOperation&, const shared_ptr<IntegralFactory>&, int pure=0);
     virtual ~ShellRotation();
 
     /// Assign this to another shell rotation.
     ShellRotation& operator=(const ShellRotation&);
     
     /** Initialize the ShellRotation for Cartesian functions, given the
-        angular momentum, a symmetry operation, and an Integral object. */
+        angular momentum, a symmetry operation, and an IntegralFactory object. */
     void init(int a, SymmetryOperation&, const shared_ptr<IntegralFactory>&);
+    /** Initialize the ShellRotation for solid harmonic function, given the
+        angular momentum, a symmetry operation, and an IntegralFactory object. */
+    void init_pure(int a, SymmetryOperation&, const shared_ptr<IntegralFactory>&);
 
     /// Return the angular momentum.
     int am() const { return am_; }

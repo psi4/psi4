@@ -62,6 +62,11 @@ class BasisSet
     //! Does the loaded basis set contain pure angular momentum functions?
     bool puream_;
 
+    //! Number of shells per center
+    std::vector<int> center_to_nshell_;
+    //! For a given center, what is its first shell.
+    std::vector<int> center_to_shell_;
+
     //! Array of gaussian shells
     std::vector<shared_ptr<GaussianShell> > shells_;
     //! Molecule object.
@@ -160,6 +165,12 @@ public:
      */
     shared_ptr<GaussianShell> shell(int si) const;
 
+    /** Return the i'th Gaussian shell on center
+     *  @param i Shell number
+     *  @return A shared pointer to the GaussianShell object for the i'th shell.
+     */
+    shared_ptr<GaussianShell> shell(int center, int si) const;
+
     /** Returns i'th shell's transform object.
      *  @param i Shell number
      *  @return A SOTransformShell object that details how to transform from AO to SO.
@@ -192,6 +203,11 @@ public:
      *  call refresh().
      */
     void refresh();
+
+    /// Return the number of shells on a given center.
+    int nshell_on_center(int i) const { return center_to_nshell_[i]; }
+    /// Return the overall shell number
+    int shell_on_center(int center, int shell) const { return center_to_shell_[center] + shell; }
 
     // Build AO transformation matrix. AOs transformed by symmetry operations of the point group of the molecule.
     // Here for testing.

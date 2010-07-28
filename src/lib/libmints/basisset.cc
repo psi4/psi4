@@ -298,6 +298,14 @@ shared_ptr<GaussianShell> BasisSet::shell(int si) const
     return shells_[si];
 }
 
+shared_ptr<GaussianShell> BasisSet::shell(int center, int si) const
+{
+    #ifdef DEBUG
+    assert(si < nshell());
+    #endif
+    return shells_[center_to_shell_[center] + si];
+}
+
 shared_ptr<BasisSet> BasisSet::zero_basis_set()
 {
     shared_ptr<BasisSet> new_basis(new BasisSet());
@@ -400,11 +408,23 @@ void BasisSet::refresh()
     shell_first_ao_             = new int[nshells_];
     shell_center_               = new int[nshells_];
 
+    center_to_nshell_.clear(); center_to_nshell_.resize(molecule_->natom(), 0);
+    center_to_shell_.clear();  center_to_shell_.resize(molecule_->natom(), 0);
+    center_to_shell_[0] = 0;
+
+    int current_center = 0;
+
     for (int i=0; i<nshells_; ++i) {
         shell_center_[i]   = shells_[i]->ncenter();
         shell_first_ao_[i] = nao_;
         shell_first_basis_function_[i] = nbf_;
         shells_[i]->set_function_index(nbf_);
+
+        center_to_nshell_[shell_center_[i]]++;
+        if (current_center != shell_center_[i]) {
+            center_to_shell_[shell_center_[i]] = i;
+            current_center = shell_center_[i];
+        }
 
         nprimitives_ += shells_[i]->nprimitive();
         nao_         += shells_[i]->ncartesian();
