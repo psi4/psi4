@@ -18,7 +18,7 @@ static void define_localv(int la, FILE *code);
 
 static char **k1;
 
-int emit_vrr_t1_build()
+void emit_vrr_t1_build()
 {
   int old_am = Params.old_am;
   int new_am = Params.opt_am;

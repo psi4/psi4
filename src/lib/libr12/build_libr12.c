@@ -40,6 +40,8 @@ Libr12Params_t Params;
 void punt();
 void emit_vrr_r_build();
 void emit_vrr_t_build();
+void emit_vrr_t1_build();
+void emit_vrr_t2_build();
 void emit_grt_order();
 void emit_gr_order();
 void emit_hrr_t_build();
