@@ -13,7 +13,7 @@ extern Libr12Params_t Params;
 
 extern void punt(char *);
 
-int emit_hrr_t_build()
+void emit_hrr_t_build()
 {
   int new_am = Params.new_am;
   int max_class_size = Params.max_class_size;

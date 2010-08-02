@@ -55,7 +55,14 @@ static int first_vrr_to_compute = 0; /* Number of the first class to be computed
 static int hrr_hash_table[NUMGRTTYPES][2*LMAX_AM][2*LMAX_AM][2*LMAX_AM][2*LMAX_AM];
 static int vrr_hash_table[NUMGRTTYPES][2*LMAX_AM][2*LMAX_AM][4*LMAX_AM];
 
-int emit_grt_order()
+void mark_hrr_parents(int n, class *allnodes, int rent);
+void mark_vrr_parents(int n, class *allnodes, int rent);
+int mk_hrr_node(class node, class *allnodes, int new);
+int mk_vrr_node(class node, class *allnodes, int new);
+int alloc_mem_vrr(class *nodes);
+int alloc_mem_hrr(class *nodes);
+
+void emit_grt_order()
 {
   int old_am = Params.old_am;
   int new_am = Params.new_am;
@@ -541,7 +548,6 @@ int emit_grt_order()
     }
     }
   }
-  return max_stack_size;
 }
 
 
@@ -1028,7 +1034,7 @@ int mk_vrr_node(class node, class *allnodes, int new)
 
 /* Make hrr_nodes[rent] a parent of hrr_nodes[n] and proceed recursively */
 
-int mark_hrr_parents(int n, class *allnodes, int rent)
+void mark_hrr_parents(int n, class *allnodes, int rent)
 {
   int i;
   int *tmp;
@@ -1065,7 +1071,7 @@ int mark_hrr_parents(int n, class *allnodes, int rent)
 
 /* Make vrr_nodes[rent] a parent of vrr_nodes[n] and proceed recursively */
 
-int mark_vrr_parents(int n, class *allnodes, int rent)
+void mark_vrr_parents(int n, class *allnodes, int rent)
 {
   int i;
   int *tmp;

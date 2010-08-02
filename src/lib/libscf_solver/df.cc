@@ -169,11 +169,11 @@ void HF::form_B()
             fprintf(outfile,"  Exchange size:          %15ld doubles, %15ld bytes.\n",ndocc*naux_fin_*(long)norbs,ndocc*naux_fin_*(long)norbs*sizeof(double));
             fprintf(outfile,"  J memory:               %15ld doubles, %15ld bytes.\n",memJ,memJ*sizeof(double));
             fprintf(outfile,"  Max rows (iterations):  %15ld rows.\n",max_rows);
-            fprintf(outfile,"  Nso:                    %15ld functions.\n",norbs);
-            fprintf(outfile,"  Npairs:                 %15ld pairs.\n",ntri_naive_);
-            fprintf(outfile,"  Ndocc:                  %15ld orbitals.\n",ndocc);
-            fprintf(outfile,"  Naux raw:               %15ld functions.\n",naux_raw_);
-            fprintf(outfile,"  Naux finished:          %15ld functions.\n",naux_fin_);
+            fprintf(outfile,"  Nso:                    %15d functions.\n",norbs);
+            fprintf(outfile,"  Npairs:                 %15d pairs.\n",ntri_naive_);
+            fprintf(outfile,"  Ndocc:                  %15d orbitals.\n",ndocc);
+            fprintf(outfile,"  Naux raw:               %15d functions.\n",naux_raw_);
+            fprintf(outfile,"  Naux finished:          %15d functions.\n",naux_fin_);
             fprintf(outfile,"\n");
             fflush(outfile);
         }
@@ -464,11 +464,11 @@ void HF::form_B()
             fprintf(outfile,"  J memory:               %15ld doubles, %15ld bytes.\n",memJ,memJ*sizeof(double));
             fprintf(outfile,"  Max cols (integrals):   %15ld columns.\n",max_cols);
             fprintf(outfile,"  Max rows (iterations):  %15ld rows.\n",max_rows);
-            fprintf(outfile,"  Nso:                    %15ld functions.\n",norbs);
-            fprintf(outfile,"  Npairs:                 %15ld pairs.\n",ntri_naive_);
-            fprintf(outfile,"  Ndocc:                  %15ld orbitals.\n",ndocc);
-            fprintf(outfile,"  Naux raw:               %15ld functions.\n",naux_raw_);
-            fprintf(outfile,"  Naux finished:          %15ld functions.\n",naux_fin_);
+            fprintf(outfile,"  Nso:                    %15d functions.\n",norbs);
+            fprintf(outfile,"  Npairs:                 %15d pairs.\n",ntri_naive_);
+            fprintf(outfile,"  Ndocc:                  %15d orbitals.\n",ndocc);
+            fprintf(outfile,"  Naux raw:               %15d functions.\n",naux_raw_);
+            fprintf(outfile,"  Naux finished:          %15d functions.\n",naux_fin_);
             fprintf(outfile,"\n");
             fflush(outfile);
         }
@@ -620,11 +620,11 @@ void HF::form_B()
             fprintf(outfile,"  J memory:               %15ld doubles, %15ld bytes.\n",memJ,memJ*sizeof(double));
             fprintf(outfile,"  Max cols (integrals):   %15ld columns.\n",max_cols);
             fprintf(outfile,"  Max rows (iterations):  %15ld rows.\n",max_rows);
-            fprintf(outfile,"  Nso:                    %15ld functions.\n",norbs);
-            fprintf(outfile,"  Npairs:                 %15ld pairs.\n",ntri_naive_);
-            fprintf(outfile,"  Ndocc:                  %15ld orbitals.\n",ndocc);
-            fprintf(outfile,"  Naux raw:               %15ld functions.\n",naux_raw_);
-            fprintf(outfile,"  Naux finished:          %15ld functions.\n",naux_fin_);
+            fprintf(outfile,"  Nso:                    %15d functions.\n",norbs);
+            fprintf(outfile,"  Npairs:                 %15d pairs.\n",ntri_naive_);
+            fprintf(outfile,"  Ndocc:                  %15d orbitals.\n",ndocc);
+            fprintf(outfile,"  Naux raw:               %15d functions.\n",naux_raw_);
+            fprintf(outfile,"  Naux finished:          %15d functions.\n",naux_fin_);
             fprintf(outfile,"\n");
             fflush(outfile);
         }
