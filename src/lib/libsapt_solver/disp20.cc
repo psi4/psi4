@@ -33,9 +33,11 @@ void SAPT0::disp20()
   time_t stop;
 
   double energy=0.0;
-  double avail_mem = params_.memory - params_.dfbs_mem; 
+  double avail_mem = params_.memory - (double) sizeof(double)*
+    calc_info_.noccB*calc_info_.nvirB*(ULI) calc_info_.nrio;
 
-  fprintf(outfile,"Begining Disp20 Calculation\n");
+  if (params_.print)
+    fprintf(outfile,"Begining Disp20 Calculation\n");
 
   int temp_size = (int) ((avail_mem) / ((double) sizeof(double) * ((double) 
                   (2*calc_info_.noccB*calc_info_.nvirB + calc_info_.nrio))));
@@ -56,8 +58,10 @@ void SAPT0::disp20()
   int blocks = (calc_info_.noccA*calc_info_.nvirA)/temp_size;
   if ((calc_info_.noccA*calc_info_.nvirA)%temp_size) blocks++;
 
-  fprintf(outfile,"T2 ARBS Amplitudes formed in %d chunks\n\n",blocks);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"T2 ARBS Amplitudes formed in %d chunks\n\n",blocks);
+    fflush(outfile);
+  }
 
   if (params_.logfile) {
     fprintf(params_.logfilename,"     Block      Start       Stop\n");
@@ -89,7 +93,7 @@ void SAPT0::disp20()
     }
 
     psio_read(PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",(char *) &(B_p_AR[0][0]),
-      sizeof(double)*(ar_stop-ar_start)*calc_info_.nrio,next_PSIF_DF_AR,
+      sizeof(double)*(ar_stop-ar_start)*(ULI) calc_info_.nrio,next_PSIF_DF_AR,
       &next_PSIF_DF_AR);
 
     C_DGEMM('N','T',ar_stop-ar_start,calc_info_.noccB*calc_info_.nvirB,
@@ -112,8 +116,8 @@ void SAPT0::disp20()
               &(ARBS[0][0]),1,&(tARBS[0][0]),1);
 
     psio_write(PSIF_SAPT_AMPS,"T2 ARBS Amplitudes",(char *) &(tARBS[0][0]),
-      sizeof(double)*(ar_stop-ar_start)*calc_info_.noccB*calc_info_.nvirB,
-      next_PSIF_tARBS,&next_PSIF_tARBS);
+      sizeof(double)*(ar_stop-ar_start)*calc_info_.noccB*
+      (ULI) calc_info_.nvirB,next_PSIF_tARBS,&next_PSIF_tARBS);
 
     if (params_.logfile) {
       stop = time(NULL);
@@ -134,8 +138,10 @@ void SAPT0::disp20()
 
   results_.disp20 = energy*4.0;
   
-  fprintf(outfile,"Dispersion Energy     = %18.12lf mH\n\n",energy*4000.0);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"Dispersion Energy     = %18.12lf mH\n\n",energy*4000.0);
+    fflush(outfile);
+  }
 }
 void SAPT0::theta_ar()
 {
@@ -148,12 +154,14 @@ void SAPT0::theta_ar()
   time_t stop;
 
   double NA = 1.0 / ((double) calc_info_.NA);
-  double avail_mem = params_.memory - params_.dfbs_mem; 
+  double avail_mem = params_.memory - (double) sizeof(double)*
+    calc_info_.noccB*calc_info_.nvirB*(ULI) calc_info_.nrio;
 
-  fprintf(outfile,"Forming Theta (BS) AR Intermediates\n");
+  if (params_.print)
+    fprintf(outfile,"Forming Theta (BS) AR Intermediates\n");
 
-  int temp_size = (int) ((avail_mem) / (8.0*((double) (calc_info_.noccB*
-                  calc_info_.nvirB + calc_info_.nrio))));
+  int temp_size = (int) ((avail_mem) / ((double) sizeof(double)*((double) 
+    (calc_info_.noccB*calc_info_.nvirB + calc_info_.nrio))));
 
   if (temp_size < 1) {
     fprintf(outfile,"Not enough memory in Theta AR\n\n");
@@ -170,8 +178,10 @@ void SAPT0::theta_ar()
   int blocks = (calc_info_.noccA*calc_info_.nvirA)/temp_size;
   if ((calc_info_.noccA*calc_info_.nvirA)%temp_size) blocks++;
 
-  fprintf(outfile,"T2 ARBS Amplitudes read in %d chunks\n\n",blocks);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"T2 ARBS Amplitudes read in %d chunks\n\n",blocks);
+    fflush(outfile);
+  }
 
   if (params_.logfile) {
     fprintf(params_.logfilename,"     Block      Start       Stop\n");
@@ -203,15 +213,15 @@ void SAPT0::theta_ar()
     }
 
     psio_read(PSIF_SAPT_AMPS,"T2 ARBS Amplitudes",(char *) &(tARBS[0][0]),
-      sizeof(double)*(ar_stop-ar_start)*calc_info_.noccB*calc_info_.nvirB,
-      next_PSIF_tARBS,&next_PSIF_tARBS);
+      sizeof(double)*(ar_stop-ar_start)*calc_info_.noccB*
+      (ULI) calc_info_.nvirB,next_PSIF_tARBS,&next_PSIF_tARBS);
 
     C_DGEMM('N','N',(ar_stop-ar_start),calc_info_.nrio,calc_info_.noccB*
       calc_info_.nvirB,1.0,&(tARBS[0][0]),calc_info_.noccB*calc_info_.nvirB,
       &(B_p_BS[0][0]),calc_info_.nrio,0.0,&(theta_AR[0][0]),calc_info_.nrio);
 
     psio_write(PSIF_SAPT_AMPS,"Theta (BS) AR",(char *) &(theta_AR[0][0]),
-      sizeof(double)*(ar_stop-ar_start)*calc_info_.nrio,next_PSIF_theta,
+      sizeof(double)*(ar_stop-ar_start)*(ULI) calc_info_.nrio,next_PSIF_theta,
       &next_PSIF_theta);
 
     if (params_.logfile) {
@@ -242,12 +252,14 @@ void SAPT0::theta_bs()
   time_t stop;
 
   double NB = 1.0 / ((double) calc_info_.NB);
-  double avail_mem = params_.memory - params_.dfbs_mem; 
+  double avail_mem = params_.memory - (double) sizeof(double)*
+    calc_info_.noccB*calc_info_.nvirB*(ULI) calc_info_.nrio;
 
-  fprintf(outfile,"Forming Theta (AR) BS Intermediates\n");
+  if (params_.print)
+    fprintf(outfile,"Forming Theta (AR) BS Intermediates\n");
 
-  int temp_size = (int) ((avail_mem) / (8.0*((double) (calc_info_.noccB*
-                  calc_info_.nvirB + calc_info_.nrio))));
+  int temp_size = (int) ((avail_mem) / ((double) sizeof(double)*((double) 
+    (calc_info_.noccB*calc_info_.nvirB + calc_info_.nrio))));
 
   if (temp_size < 1) {
     fprintf(outfile,"Not enough memory in Theta BS\n\n");
@@ -264,8 +276,10 @@ void SAPT0::theta_bs()
   int blocks = (calc_info_.noccA*calc_info_.nvirA)/temp_size;
   if ((calc_info_.noccA*calc_info_.nvirA)%temp_size) blocks++;
 
-  fprintf(outfile,"T2 ARBS Amplitudes read in %d chunks\n\n",blocks);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"T2 ARBS Amplitudes read in %d chunks\n\n",blocks);
+    fflush(outfile);
+  }
 
   if (params_.logfile) {
     fprintf(params_.logfilename,"     Block      Start       Stop\n");
@@ -297,7 +311,7 @@ void SAPT0::theta_bs()
     }
 
     psio_read(PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",(char *) &(B_p_AR[0][0]),
-      sizeof(double)*(ar_stop-ar_start)*calc_info_.nrio,next_PSIF_DF_AR,
+      sizeof(double)*(ar_stop-ar_start)*(ULI) calc_info_.nrio,next_PSIF_DF_AR,
       &next_PSIF_DF_AR);
 
     for (int ar=ar_start; ar<ar_stop; ar++){
@@ -307,8 +321,8 @@ void SAPT0::theta_bs()
     }
 
     psio_read(PSIF_SAPT_AMPS,"T2 ARBS Amplitudes",(char *) &(tARBS[0][0]),
-      sizeof(double)*(ar_stop-ar_start)*calc_info_.noccB*calc_info_.nvirB,
-      next_PSIF_tARBS,&next_PSIF_tARBS);
+      sizeof(double)*(ar_stop-ar_start)*calc_info_.noccB*
+      (ULI) calc_info_.nvirB,next_PSIF_tARBS,&next_PSIF_tARBS);
 
     C_DGEMM('T','N',calc_info_.noccB*calc_info_.nvirB,calc_info_.nrio,
       (ar_stop-ar_start),1.0,&(tARBS[0][0]),calc_info_.noccB*calc_info_.nvirB,
@@ -322,7 +336,7 @@ void SAPT0::theta_bs()
   }
 
   psio_write_entry(PSIF_SAPT_AMPS,"Theta (AR) BS",(char *) &(theta_BS[0][0]),
-    sizeof(double)*calc_info_.noccB*calc_info_.nvirB*calc_info_.nrio);
+    sizeof(double)*calc_info_.noccB*calc_info_.nvirB*(ULI) calc_info_.nrio);
 
   free_block(theta_BS);
   free_block(tARBS);

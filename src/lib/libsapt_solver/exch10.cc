@@ -5,7 +5,6 @@
 #include <cmath>
 #include <cstring>
 #include <iostream>
-#include <libpsio/psio.h>
 #include <libiwl/iwl.h>
 #include <psifiles.h>
 #include <libchkpt/chkpt.h>
@@ -28,7 +27,8 @@ void SAPT0::exch10()
     fflush(params_.logfilename);
   }
 
-  fprintf(outfile,"Begining Exch10 Calculation\n\n");
+  if (params_.print)
+    fprintf(outfile,"Begining Exch10 Calculation\n\n");
 
   double **B_p_AB = get_AB_ints(1);
   double **B_q_AB = get_AB_ints(2);
@@ -131,17 +131,17 @@ void SAPT0::exch10()
   free_block(B_p_AB);
   free_block(B_q_AB);
 
-  fprintf(outfile,"EXCH1       Energy = %18.12lf  H\n",ex1);
-  fprintf(outfile,"EXCH2       Energy = %18.12lf  H\n",ex2);
-  fprintf(outfile,"EXCH3       Energy = %18.12lf  H\n",ex3);
-  fprintf(outfile,"EXCH4       Energy = %18.12lf  H\n",ex4);
-  fprintf(outfile,"EXCH5       Energy = %18.12lf  H\n",ex5);
-  fprintf(outfile,"EXCH6       Energy = %18.12lf  H\n\n",ex6);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"EXCH1       Energy = %18.12lf  H\n",ex1);
+    fprintf(outfile,"EXCH2       Energy = %18.12lf  H\n",ex2);
+    fprintf(outfile,"EXCH3       Energy = %18.12lf  H\n",ex3);
+    fprintf(outfile,"EXCH4       Energy = %18.12lf  H\n",ex4);
+    fprintf(outfile,"EXCH5       Energy = %18.12lf  H\n",ex5);
+    fprintf(outfile,"EXCH6       Energy = %18.12lf  H\n\n",ex6);
+    fflush(outfile);
+  }
 
   results_.exch10 = -2.0*(ex1+ex2+ex3-ex4-ex5+ex6);
-
-  fflush(outfile);
 }
 
 }}

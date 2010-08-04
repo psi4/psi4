@@ -5,7 +5,6 @@
 #include <cmath>
 #include <cstring>
 #include <iostream>
-#include <libpsio/psio.h>
 #include <libiwl/iwl.h>
 #include <psifiles.h>
 #include <libchkpt/chkpt.h>
@@ -29,8 +28,10 @@ void SAPT0::exch_ind20respA_B()
     fflush(params_.logfilename);
   }
 
-  fprintf(outfile,"Begining Exch-Ind20,resp (A<-B) Calculation\n\n");
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"Begining Exch-Ind20,resp (A<-B) Calculation\n\n");
+    fflush(outfile);
+  }
 
   double **B_p_AB = get_AB_ints(1);
   double **B_p_RB = get_RB_ints(1);
@@ -45,8 +46,10 @@ void SAPT0::exch_ind20respA_B()
 
   free_block(B_p_AB);
  
-  fprintf(outfile,"EXCH1       Energy = %18.12lf  H\n",e1);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"EXCH1       Energy = %18.12lf  H\n",e1);
+    fflush(outfile);
+  }
 
   double **X_RB = block_matrix(calc_info_.nvirA,calc_info_.noccB);
   double **Y_RB = block_matrix(calc_info_.nvirA,calc_info_.noccB);
@@ -61,8 +64,10 @@ void SAPT0::exch_ind20respA_B()
   e2 = 2.0*C_DDOT(calc_info_.nvirA*calc_info_.noccB,&(X_RB[0][0]),1,
              &(Y_RB[0][0]),1);
 
-  fprintf(outfile,"EXCH2       Energy = %18.12lf  H\n",e2);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"EXCH2       Energy = %18.12lf  H\n",e2);
+    fflush(outfile);
+  }
 
   double **C_p_AB = block_matrix(calc_info_.noccA*calc_info_.noccB,calc_info_.nrio);
 
@@ -92,8 +97,10 @@ void SAPT0::exch_ind20respA_B()
   free_block(C_p_AB);
   free_block(B_p_AA);
 
-  fprintf(outfile,"EXCH5       Energy = %18.12lf  H\n",e5);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"EXCH5       Energy = %18.12lf  H\n",e5);
+    fflush(outfile);
+  }
 
   double **B_p_AR = get_AR_ints(1);
   B_p_AB = get_AB_ints(2);
@@ -112,8 +119,10 @@ void SAPT0::exch_ind20respA_B()
     e3 += 2.0*C_DDOT(calc_info_.noccB,&(calc_info_.S_AB[a][0]),1,&(Y_AB[a][0]),1);
   }
 
-  fprintf(outfile,"EXCH3       Energy = %18.12lf  H\n",e3);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"EXCH3       Energy = %18.12lf  H\n",e3);
+    fflush(outfile);
+  }
 
   memset(&(Y_RB[0][0]),'\0',sizeof(double)*calc_info_.nvirA*calc_info_.noccB);
 
@@ -128,8 +137,10 @@ void SAPT0::exch_ind20respA_B()
 
   free_block(B_p_AB);
 
-  fprintf(outfile,"EXCH4       Energy = %18.12lf  H\n",e4);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"EXCH4       Energy = %18.12lf  H\n",e4);
+    fflush(outfile);
+  }
 
   double **B_p_BB = get_BB_ints(1);
 
@@ -149,8 +160,10 @@ void SAPT0::exch_ind20respA_B()
   e9 = 2.0*C_DDOT(calc_info_.noccB*calc_info_.noccB,&(X_BB[0][0]),1,
              &(Y_BB[0][0]),1);
 
-  fprintf(outfile,"EXCH9       Energy = %18.12lf  H\n",e9);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"EXCH9       Energy = %18.12lf  H\n",e9);
+    fflush(outfile);
+  }
 
   double **X_AA = block_matrix(calc_info_.noccA,calc_info_.noccA);
 
@@ -173,8 +186,10 @@ void SAPT0::exch_ind20respA_B()
   free_block(X_AR);
   free_block(Y_AR);
 
-  fprintf(outfile,"EXCH11      Energy = %18.12lf  H\n",e11);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"EXCH11      Energy = %18.12lf  H\n",e11);
+    fflush(outfile);
+  }
 
   C_p_AB = block_matrix(calc_info_.noccA*calc_info_.noccB,calc_info_.nrio);
 
@@ -199,8 +214,10 @@ void SAPT0::exch_ind20respA_B()
 	free_block(C_p_AB);
 	free_block(B_p_AR);
 
-  fprintf(outfile,"EXCH13      Energy = %18.12lf  H\n",e13);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"EXCH13      Energy = %18.12lf  H\n",e13);
+    fflush(outfile);
+  }
 
   B_p_AB = get_AB_ints(1);
 
@@ -216,8 +233,10 @@ void SAPT0::exch_ind20respA_B()
   e6 = 2.0*C_DDOT(calc_info_.noccA*calc_info_.noccB,&(X_AB[0][0]),1,
              &(Y_AB[0][0]),1);
 
-  fprintf(outfile,"EXCH6       Energy = %18.12lf  H\n",e6);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"EXCH6       Energy = %18.12lf  H\n",e6);
+    fflush(outfile);
+  }
 
   C_DGEMM('N','T',calc_info_.noccA,calc_info_.noccB,calc_info_.noccB*calc_info_.nrio,
     1.0,&(B_p_AB[0][0]),calc_info_.noccB*calc_info_.nrio,&(B_p_BB[0][0]),
@@ -228,8 +247,10 @@ void SAPT0::exch_ind20respA_B()
   free_block(Y_AB);
   free_block(B_p_AB);
 
-  fprintf(outfile,"EXCH7       Energy = %18.12lf  H\n",e7);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"EXCH7       Energy = %18.12lf  H\n",e7);
+    fflush(outfile);
+  }
 
   B_p_AA = get_AA_ints(1);
 
@@ -246,8 +267,10 @@ void SAPT0::exch_ind20respA_B()
   free_block(X_BB);
   free_block(Y_BB);
 
-  fprintf(outfile,"EXCH8       Energy = %18.12lf  H\n",e8);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"EXCH8       Energy = %18.12lf  H\n",e8);
+    fflush(outfile);
+  }
 
   C_DGEMM('N','T',calc_info_.noccA,calc_info_.noccA,calc_info_.noccB,1.0,
     &(calc_info_.S_AB[0][0]),calc_info_.nmo,&(X_AB[0][0]),
@@ -264,8 +287,10 @@ void SAPT0::exch_ind20respA_B()
   free_block(X_AA);
   free_block(Y_AA);
 
-  fprintf(outfile,"EXCH10      Energy = %18.12lf  H\n",e10);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"EXCH10      Energy = %18.12lf  H\n",e10);
+    fflush(outfile);
+  }
 
   C_p_AB = block_matrix(calc_info_.noccA*calc_info_.noccB,calc_info_.nrio);
 
@@ -291,12 +316,15 @@ void SAPT0::exch_ind20respA_B()
 	free_block(C_p_AB);
 	free_block(D_p_AB);
 
-  fprintf(outfile,"EXCH12      Energy = %18.12lf  H\n\n",e12);
+  if (params_.print) 
+    fprintf(outfile,"EXCH12      Energy = %18.12lf  H\n\n",e12);
 
   results_.exch_indrA_B = -2.0*(e1+e2+e3-e4-e5+e6-e7-e8-e9-e10-e11+e12+e13);
 
-  fprintf(outfile,"exch_indrA_B       = %18.12lf  H\n\n",results_.exch_indrA_B);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"exch_indrA_B       = %18.12lf  H\n\n",results_.exch_indrA_B);
+    fflush(outfile);
+  }
 }
 
 void SAPT0::exch_ind20respB_A()
@@ -308,8 +336,10 @@ void SAPT0::exch_ind20respB_A()
     fflush(params_.logfilename);
   }
 
-  fprintf(outfile,"Begining Exch-Ind20,resp (B<-A) Calculation\n\n");
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"Begining Exch-Ind20,resp (B<-A) Calculation\n\n");
+    fflush(outfile);
+  }
 
   double **B_p_AS = get_AS_ints(1);
   double **B_p_AB = get_AB_ints(2);
@@ -327,8 +357,10 @@ void SAPT0::exch_ind20respB_A()
 
   free_block(B_p_AB);
 
-  fprintf(outfile,"EXCH1       Energy = %18.12lf  H\n",e1);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"EXCH1       Energy = %18.12lf  H\n",e1);
+    fflush(outfile);
+  }
 
   double **X_AS = block_matrix(calc_info_.noccA,calc_info_.nvirB);
   double **Y_AS = block_matrix(calc_info_.noccA,calc_info_.nvirB);
@@ -343,8 +375,10 @@ void SAPT0::exch_ind20respB_A()
   e2 = 2.0*C_DDOT(calc_info_.noccA*calc_info_.nvirB,&(X_AS[0][0]),1,
              &(Y_AS[0][0]),1);
 
-  fprintf(outfile,"EXCH2       Energy = %18.12lf  H\n",e2);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"EXCH2       Energy = %18.12lf  H\n",e2);
+    fflush(outfile);
+  }
 
   double **C_p_AB = block_matrix(calc_info_.noccA*calc_info_.noccB,calc_info_.nrio);
 
@@ -372,8 +406,10 @@ void SAPT0::exch_ind20respB_A()
   free_block(C_p_AB);
   free_block(B_p_BB);
 
-  fprintf(outfile,"EXCH5       Energy = %18.12lf  H\n",e5);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"EXCH5       Energy = %18.12lf  H\n",e5);
+    fflush(outfile);
+  }
 
   double **B_p_BS = get_BS_ints(1);
   B_p_AB = get_AB_ints(1);
@@ -392,8 +428,10 @@ void SAPT0::exch_ind20respB_A()
     e3 += 2.0*C_DDOT(calc_info_.noccB,&(calc_info_.S_AB[a][0]),1,&(Y_AB[a][0]),1);
   }
 
-  fprintf(outfile,"EXCH3       Energy = %18.12lf  H\n",e3);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"EXCH3       Energy = %18.12lf  H\n",e3);
+    fflush(outfile);
+  }
 
   memset(&(Y_AS[0][0]),'\0',sizeof(double)*calc_info_.noccA*calc_info_.nvirB);
 
@@ -408,8 +446,10 @@ void SAPT0::exch_ind20respB_A()
 
   free_block(B_p_AB);
 
-  fprintf(outfile,"EXCH4       Energy = %18.12lf  H\n",e4);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"EXCH4       Energy = %18.12lf  H\n",e4);
+    fflush(outfile);
+  }
 
   double **B_p_AA = get_AA_ints(1);
 
@@ -429,8 +469,10 @@ void SAPT0::exch_ind20respB_A()
   e9 = 2.0*C_DDOT(calc_info_.noccA*calc_info_.noccA,&(X_AA[0][0]),1,
              &(Y_AA[0][0]),1);
 
-  fprintf(outfile,"EXCH9       Energy = %18.12lf  H\n",e9);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"EXCH9       Energy = %18.12lf  H\n",e9);
+    fflush(outfile);
+  }
 
   double **X_BB = block_matrix(calc_info_.noccB,calc_info_.noccB);
 
@@ -453,8 +495,10 @@ void SAPT0::exch_ind20respB_A()
   free_block(X_BS);
   free_block(Y_BS);
 
-  fprintf(outfile,"EXCH11      Energy = %18.12lf  H\n",e11);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"EXCH11      Energy = %18.12lf  H\n",e11);
+    fflush(outfile);
+  }
 
   C_p_AB = block_matrix(calc_info_.noccA*calc_info_.noccB,calc_info_.nrio);
 
@@ -479,8 +523,10 @@ void SAPT0::exch_ind20respB_A()
   free_block(C_p_AB);
   free_block(B_p_BS);
 
-  fprintf(outfile,"EXCH13      Energy = %18.12lf  H\n",e13);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"EXCH13      Energy = %18.12lf  H\n",e13);
+    fflush(outfile);
+  }
 
   B_p_AB = get_AB_ints(2);
 
@@ -496,8 +542,10 @@ void SAPT0::exch_ind20respB_A()
   e6 = 2.0*C_DDOT(calc_info_.noccA*calc_info_.noccB,&(X_AB[0][0]),1,
              &(Y_AB[0][0]),1);
 
-  fprintf(outfile,"EXCH6       Energy = %18.12lf  H\n",e6);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"EXCH6       Energy = %18.12lf  H\n",e6);
+    fflush(outfile);
+  }
 
   memset(&(Y_AB[0][0]),'\0',sizeof(double)*calc_info_.noccA*calc_info_.noccB);
 
@@ -513,8 +561,10 @@ void SAPT0::exch_ind20respB_A()
   free_block(Y_AB);
   free_block(B_p_AB);
 
-  fprintf(outfile,"EXCH7       Energy = %18.12lf  H\n",e7);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"EXCH7       Energy = %18.12lf  H\n",e7);
+    fflush(outfile);
+  }
 
   B_p_BB = get_BB_ints(1);
 
@@ -531,8 +581,10 @@ void SAPT0::exch_ind20respB_A()
   free_block(X_AA);
   free_block(Y_AA);
 
-  fprintf(outfile,"EXCH8       Energy = %18.12lf  H\n",e8);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"EXCH8       Energy = %18.12lf  H\n",e8);
+    fflush(outfile);
+  }
 
   C_DGEMM('T','N',calc_info_.noccB,calc_info_.noccB,calc_info_.noccA,1.0,
     &(calc_info_.S_AB[0][0]),calc_info_.nmo,&(X_AB[0][0]),
@@ -549,8 +601,10 @@ void SAPT0::exch_ind20respB_A()
   free_block(X_BB);
   free_block(Y_BB);
 
-  fprintf(outfile,"EXCH10      Energy = %18.12lf  H\n",e10);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"EXCH10      Energy = %18.12lf  H\n",e10);
+    fflush(outfile);
+  }
 
   C_p_AB = block_matrix(calc_info_.noccA*calc_info_.noccB,calc_info_.nrio);
 
@@ -576,13 +630,15 @@ void SAPT0::exch_ind20respB_A()
   free_block(C_p_AB);
   free_block(D_p_AB);
 
-  fprintf(outfile,"EXCH12      Energy = %18.12lf  H\n\n",e12);
-  fflush(outfile);
+  if (params_.print) 
+    fprintf(outfile,"EXCH12      Energy = %18.12lf  H\n\n",e12);
 
   results_.exch_indrB_A = -2.0*(e1+e2+e3-e4-e5+e6-e7-e8-e9-e10-e11+e12+e13);
 
-  fprintf(outfile,"exch_indrB_A       = %18.12lf  H\n\n",results_.exch_indrB_A);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"exch_indrB_A       = %18.12lf  H\n\n",results_.exch_indrB_A);
+    fflush(outfile);
+  }
 }
 
 }}

@@ -5,7 +5,6 @@
 #include <cmath>
 #include <cstring>
 #include <iostream>
-#include <libpsio/psio.h>
 #include <libiwl/iwl.h>
 #include <psifiles.h>
 #include <libchkpt/chkpt.h>
@@ -28,7 +27,8 @@ void SAPT0::elst10()
     fflush(params_.logfilename);
   }
 
-  fprintf(outfile,"Begining Elst10 Calculation\n\n");
+  if (params_.print)
+    fprintf(outfile,"Begining Elst10 Calculation\n\n");
 
   double **B_p_A = get_diag_AA_ints(1);
   double **B_p_B = get_diag_BB_ints(1);
@@ -51,8 +51,10 @@ void SAPT0::elst10()
 
   results_.elst10 = energy;
 
-  fprintf(outfile,"E^{(10)}_{elst}     = %18.12lf mH\n\n",energy*1000.0);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"E^{(10)}_{elst}     = %18.12lf mH\n\n",energy*1000.0);
+    fflush(outfile);
+  }
 }
 
 }}

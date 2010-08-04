@@ -26,8 +26,10 @@ void SAPT0::exch_disp20()
     fflush(params_.logfilename);
   }
 
-  fprintf(outfile,"Begining Exch-Disp20 Calculation\n\n");
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"Begining Exch-Disp20 Calculation\n\n");
+    fflush(outfile);
+  }
 
   if (params_.logfile) { 
     fprintf(params_.logfilename,"  Starting Exch-Disp 1\n\n"); fflush(params_.logfilename); 
@@ -59,8 +61,10 @@ void SAPT0::exch_disp20()
   results_.exch_disp20 += exch_disp_7();
   results_.exch_disp20 *= -2.0;
 
-  fprintf(outfile,"\nExch_Disp Energy = %18.12lf  H\n\n",results_.exch_disp20);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"\nExch_Disp Energy = %18.12lf  H\n\n",results_.exch_disp20);
+    fflush(outfile);
+  }
 }
 
 double SAPT0::exch_disp_1()
@@ -133,7 +137,7 @@ double SAPT0::exch_disp_1()
     }
 
     psio_read(PSIF_SAPT_AB_DF_INTS,"AS RI Integrals",(char *) &(B_p_aS[0][0]),
-      sizeof(double)*calc_info_.nvirB*calc_info_.nrio,next_PSIF_DF_AS,
+      sizeof(double)*calc_info_.nvirB*(ULI) calc_info_.nrio,next_PSIF_DF_AS,
       &next_PSIF_DF_AS);
 
     for (int s=0; s<calc_info_.nvirB; s++){
@@ -143,7 +147,7 @@ double SAPT0::exch_disp_1()
     }
 
     psio_read(PSIF_SAPT_AMPS,"T2 ARBS Amplitudes",(char *) &(taRBS[0][0]),
-      sizeof(double)*calc_info_.nvirA*calc_info_.noccB*calc_info_.nvirB,
+      sizeof(double)*calc_info_.nvirA*calc_info_.noccB*(ULI) calc_info_.nvirB,
       next_PSIF_tARBS,&next_PSIF_tARBS);
 
     C_DGEMM('N','T',calc_info_.nvirA*calc_info_.noccB,calc_info_.nvirB,
@@ -177,10 +181,12 @@ double SAPT0::exch_disp_1()
   free_block(vRBaS);
   free_block(taRBS);
 
-  fprintf(outfile,"VTOT        Energy = %18.12lf  H\n",vtot);
-  fprintf(outfile,"H1          Energy = %18.12lf  H\n",h1);
-  fprintf(outfile,"H3          Energy = %18.12lf  H\n",h3);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"VTOT        Energy = %18.12lf  H\n",vtot);
+    fprintf(outfile,"H1          Energy = %18.12lf  H\n",h1);
+    fprintf(outfile,"H3          Energy = %18.12lf  H\n",h3);
+    fflush(outfile); 
+  }
 
   if (params_.logfile) {
     fprintf(params_.logfilename,"\n");
@@ -217,7 +223,7 @@ double SAPT0::exch_disp_2()
     calc_info_.nrio);
 
   psio_read_entry(PSIF_SAPT_AMPS,"Theta (AR) BS",(char *) &(theta_BS[0][0]),
-    sizeof(double)*calc_info_.noccB*calc_info_.nvirB*calc_info_.nrio);
+    sizeof(double)*calc_info_.noccB*calc_info_.nvirB*(ULI) calc_info_.nrio);
 
   double **X_BS = block_matrix(calc_info_.noccB,calc_info_.nvirB);
 
@@ -240,8 +246,10 @@ double SAPT0::exch_disp_2()
   free_block(X_BS);
   free_block(Z_BS);
 
-  fprintf(outfile,"H2          Energy = %18.12lf  H\n",h2);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"H2          Energy = %18.12lf  H\n",h2);
+    fflush(outfile);
+  }
 
   if (params_.logfile) {
     fprintf(params_.logfilename,"\n");
@@ -278,7 +286,7 @@ double SAPT0::exch_disp_3()
     calc_info_.nrio);
 
   psio_read_entry(PSIF_SAPT_AMPS,"Theta (BS) AR",(char *) &(theta_AR[0][0]),
-    sizeof(double)*calc_info_.noccA*calc_info_.nvirA*calc_info_.nrio);
+    sizeof(double)*calc_info_.noccA*calc_info_.nvirA*(ULI) calc_info_.nrio);
 
   double **X_AR = block_matrix(calc_info_.noccA,calc_info_.nvirA);
 
@@ -301,8 +309,10 @@ double SAPT0::exch_disp_3()
   free_block(X_AR);
   free_block(Z_AR);
 
-  fprintf(outfile,"H4          Energy = %18.12lf  H\n",h4);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"H4          Energy = %18.12lf  H\n",h4);
+    fflush(outfile);
+  }
 
   if (params_.logfile) {
     fprintf(params_.logfilename,"\n");
@@ -335,7 +345,7 @@ double SAPT0::exch_disp_4()
     }
 
     psio_read(PSIF_SAPT_AMPS,"T2 ARBS Amplitudes",(char *) &(taRBS[0][0]),
-      sizeof(double)*calc_info_.nvirA*calc_info_.noccB*calc_info_.nvirB,
+      sizeof(double)*calc_info_.nvirA*calc_info_.noccB*(ULI) calc_info_.nvirB,
       next_PSIF_tARBS,&next_PSIF_tARBS);
 
     C_DGEMM('T','N',calc_info_.nvirB,calc_info_.nrio,calc_info_.noccA,
@@ -363,8 +373,10 @@ double SAPT0::exch_disp_4()
   free_block(vRBaS);
   free_block(taRBS);
 
-  fprintf(outfile,"H2*         Energy = %18.12lf  H\n",h2);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"H2*         Energy = %18.12lf  H\n",h2);
+    fflush(outfile);
+  }
 
   if (params_.logfile) {
     fprintf(params_.logfilename,"\n");
@@ -408,7 +420,7 @@ double SAPT0::exch_disp_5()
     }
 
     psio_read(PSIF_SAPT_AB_DF_INTS,"AS RI Integrals",(char *) &(B_p_aS[0][0]),
-      sizeof(double)*calc_info_.nvirB*calc_info_.nrio,next_PSIF_DF_AS,
+      sizeof(double)*calc_info_.nvirB*(ULI) calc_info_.nrio,next_PSIF_DF_AS,
       &next_PSIF_DF_AS);
 
     for (int s=0; s<calc_info_.nvirB; s++){
@@ -418,7 +430,7 @@ double SAPT0::exch_disp_5()
     }
 
     psio_read(PSIF_SAPT_AMPS,"T2 ARBS Amplitudes",(char *) &(taRBS[0][0]),
-      sizeof(double)*calc_info_.nvirA*calc_info_.noccB*calc_info_.nvirB,
+      sizeof(double)*calc_info_.nvirA*calc_info_.noccB*(ULI) calc_info_.nvirB,
       next_PSIF_tARBS,&next_PSIF_tARBS);
 
     C_DGEMM('N','T',calc_info_.nvirA*calc_info_.noccB,calc_info_.nvirB,
@@ -441,8 +453,10 @@ double SAPT0::exch_disp_5()
   free_block(vRBaS);
   free_block(taRBS);
 
-  fprintf(outfile,"H4*         Energy = %18.12lf  H\n",h4);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"H4*         Energy = %18.12lf  H\n",h4);
+    fflush(outfile);
+  }
 
   if (params_.logfile) {
     fprintf(params_.logfilename,"\n");
@@ -489,7 +503,7 @@ double SAPT0::exch_disp_6()
       calc_info_.nrio);
 
     psio_read(PSIF_SAPT_AMPS,"T2 ARBS Amplitudes",(char *) &(taRBS[0][0]),
-      sizeof(double)*calc_info_.nvirA*calc_info_.noccB*calc_info_.nvirB,
+      sizeof(double)*calc_info_.nvirA*calc_info_.noccB*(ULI) calc_info_.nvirB,
       next_PSIF_tARBS,&next_PSIF_tARBS);
 
     C_DGEMM('N','T',calc_info_.nvirA*calc_info_.noccB,calc_info_.nvirB,
@@ -512,8 +526,10 @@ double SAPT0::exch_disp_6()
   free_block(vRBaS);
   free_block(taRBS);
 
-  fprintf(outfile,"Q9          Energy = %18.12lf  H\n",q9);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"Q9          Energy = %18.12lf  H\n",q9);
+    fflush(outfile);
+  }
 
   if (params_.logfile) {
     fprintf(params_.logfilename,"\n");
@@ -529,6 +545,22 @@ double SAPT0::exch_disp_7()
   time_t stop;
   double q12 = 0.0;
 
+  int errcod = psio_open(PSIF_SAPT_TEMP,0);
+
+  double **B_p_BS = get_BS_ints(1);
+  double **C_p_AS = block_matrix(calc_info_.noccA*calc_info_.nvirB,calc_info_.nrio);
+
+  C_DGEMM('N','N',calc_info_.noccA,calc_info_.nvirB*calc_info_.nrio,
+    calc_info_.noccB,1.0,&(calc_info_.S_AB[0][0]),calc_info_.nmo,
+    &(B_p_BS[0][0]),calc_info_.nvirB*calc_info_.nrio,0.0,&(C_p_AS[0][0]),
+    calc_info_.nvirB*calc_info_.nrio);
+
+  psio_write_entry(PSIF_SAPT_TEMP,"S_AB X B_BS^P",(char *) &(C_p_AS[0][0]),
+    sizeof(double)*calc_info_.nvirB*calc_info_.noccA*(ULI) calc_info_.nrio);
+
+  free_block(B_p_BS);
+  free_block(C_p_AS);
+
   double **B_p_AR = get_AR_ints(1);
   double **C_p_RB = block_matrix(calc_info_.nvirA*calc_info_.noccB,calc_info_.nrio);
 
@@ -541,11 +573,11 @@ double SAPT0::exch_disp_7()
 
   free_block(B_p_AR);
 
-  double **B_p_BS = get_BS_ints(1);
   double **C_p_aS = block_matrix(calc_info_.nvirB,calc_info_.nrio);
   double **vRBaS = block_matrix(calc_info_.nvirA*calc_info_.noccB,calc_info_.nvirB);
   double **taRBS = block_matrix(calc_info_.nvirA,calc_info_.noccB*calc_info_.nvirB);
 
+  psio_address next_PSIF = PSIO_ZERO;
   psio_address next_PSIF_tARBS = PSIO_ZERO;
 
   for (int a=0; a<calc_info_.noccA; a++) {
@@ -556,12 +588,12 @@ double SAPT0::exch_disp_7()
       fflush(params_.logfilename);
     }
 
-    C_DGEMV('t',calc_info_.noccB,calc_info_.nvirB*calc_info_.nrio,1.0,
-      &(B_p_BS[0][0]),calc_info_.nvirB*calc_info_.nrio,&(calc_info_.S_AB[a][0]),1,
-      0.0,&(C_p_aS[0][0]),1);
+    psio_read(PSIF_SAPT_TEMP,"S_AB X B_BS^P",(char *) &(C_p_aS[0][0]),
+      sizeof(double)*calc_info_.nvirB*(ULI) calc_info_.nrio,
+      next_PSIF,&next_PSIF);
 
     psio_read(PSIF_SAPT_AMPS,"T2 ARBS Amplitudes",(char *) &(taRBS[0][0]),
-      sizeof(double)*calc_info_.nvirA*calc_info_.noccB*calc_info_.nvirB,
+      sizeof(double)*calc_info_.nvirA*calc_info_.noccB*(ULI) calc_info_.nvirB,
       next_PSIF_tARBS,&next_PSIF_tARBS);
 
     C_DGEMM('N','T',calc_info_.nvirA*calc_info_.noccB,calc_info_.nvirB,
@@ -578,19 +610,22 @@ double SAPT0::exch_disp_7()
     }
   }
 
-  free_block(B_p_BS);
   free_block(C_p_aS);
   free_block(C_p_RB);
   free_block(vRBaS);
   free_block(taRBS);
 
-  fprintf(outfile,"Q12         Energy = %18.12lf  H\n",q12);
-  fflush(outfile);
+  if (params_.print) {
+    fprintf(outfile,"Q12         Energy = %18.12lf  H\n",q12);
+    fflush(outfile);
+  }
 
   if (params_.logfile) {
     fprintf(params_.logfilename,"\n");
     fflush(params_.logfilename);
   }
+
+  psio_close(PSIF_SAPT_TEMP,0);
 
   return(q12);
 }
