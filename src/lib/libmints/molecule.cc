@@ -1423,6 +1423,26 @@ void Molecule::form_symmetry_information(double tol)
     }
 }
 
+const char* Molecule::sym_label()
+{
+  if (pg_==NULL) set_point_group(find_point_group());
+  const char *symlabel;
+  symlabel = pg_->symbol();
+  return symlabel;
+}
+
+char** Molecule::irrep_labels()
+{
+  if (pg_==NULL) set_point_group(find_point_group());
+  int nirreps = pg_->char_table().nirrep();
+  char **irreplabel = (char **) malloc(sizeof(char *)*nirreps);
+  for (int i=0; i<nirreps; i++) {
+    irreplabel[i] = (char *) malloc(sizeof(char)*5);
+    strcpy(irreplabel[i],pg_->char_table().gamma(i).symbol());
+  }
+  return irreplabel;
+}
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Atomic Radii
