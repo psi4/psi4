@@ -19,8 +19,8 @@ extern double bc[MAX_BC][MAX_BC];
 #define MAX_FAC 100
 extern double fac[MAX_FAC];
 
-#define INDEX2(i, j) ( i >= j ? ioff[i] + j : ioff[j] + i )
-#define INDEX4(i, j, k, l) ( INDEX2( INDEX2(i, j), INDEX2(k, l) ) )
+#define INDEX2(i, j) ( (i) >= (j) ? ioff[(i)] + (j) : ioff[(j)] + (i) )
+#define INDEX4(i, j, k, l) ( INDEX2( INDEX2((i), (j)), INDEX2((k), (l)) ) )
 
 namespace psi {
 
