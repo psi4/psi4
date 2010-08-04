@@ -16,6 +16,8 @@
 /* MPI? */
 #undef HAVE_MPI
 
+#undef MKL
+
 #undef HAVE_CMATH
 #undef HAVE_CSTDIO
 #undef HAVE_CSTDLIB
