@@ -45,7 +45,7 @@ void SOTransform::init(int nshells)
 
 void SOTransform::add_transform(int aoshell, int irrep, int sofuncirrep, double coef, int aofunc, int sofunc)
 {
-    printf("aoshell %d, irrep %d, sofuncirrep %d, coef %14.10f, aofunc %d, sofunc %d\n",aoshell,irrep,sofuncirrep,coef,aofunc,sofunc);
+    //printf("aoshell %d, irrep %d, sofuncirrep %d, coef %14.10f, aofunc %d, sofunc %d\n",aoshell,irrep,sofuncirrep,coef,aofunc,sofunc);
     unsigned int i;
     
     // Find the aoshell
