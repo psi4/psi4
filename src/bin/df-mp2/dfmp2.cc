@@ -11,7 +11,7 @@
 *****************************************************************************/
 //Hack to use MKL threads efficiently in sort
 //Will eventually become a flag in configure
-//#define HAVE_MKL 1
+#define HAVE_MKL 1
 
 //MKL Header
 #ifdef HAVE_MKL

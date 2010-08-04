@@ -61,7 +61,7 @@ if(num_frames_rem != 0){
       }
       fprintf(out,"\n");
   }
-
+}
 fprintf(out,"\n\n");
 //R.I.P. goto statements - Aug 4th 2010 - MSM
 
