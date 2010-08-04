@@ -1,0 +1,35 @@
+!  STO-3G  EMSL  Basis Set Exchange Library   3/4/10 12:56 PM
+! Elements                             References
+! --------                             ----------
+!  H - Ne: W.J. Hehre, R.F. Stewart and J.A. Pople, J. Chem. Phys. 2657 (1969).
+! Na - Ar: W.J. Hehre, R. Ditchfield, R.F. Stewart, J.A. Pople,
+!          J. Chem. Phys.  2769 (1970).
+! K,Ca - : W.J. Pietro, B.A. Levy, W.J. Hehre and R.F. Stewart,
+! Ga - Kr: J. Am. Chem. Soc. 19, 2225 (1980).
+! Sc - Zn: W.J. Pietro and W.J. Hehre, J. Comp. Chem. 4, 241 (1983) + Gaussian.
+!  Y - Cd: W.J. Pietro and W.J. Hehre, J. Comp. Chem. 4, 241 (1983). + Gaussian
+!   
+
+
+****
+H     0 
+S   3   1.00
+      3.42525091             0.15432897       
+      0.62391373             0.53532814       
+      0.16885540             0.44463454       
+****
+O     0 
+S   3   1.00
+    130.7093200              0.15432897       
+     23.8088610              0.53532814       
+      6.4436083              0.44463454       
+S   3   1.00
+      5.0331513             -0.09996723       
+      1.1695961              0.39951283       
+      0.3803890              0.70011547       
+P   3   1.0
+      5.0331513              0.15591627
+      1.1695961              0.60768372
+      0.3803890              0.39195739
+****
+

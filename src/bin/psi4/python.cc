@@ -92,13 +92,13 @@ void py_psi_print_options()
     options.print();
 }
 
-bool py_psi_set_option(std::string const & name, std::string const & value)
+bool py_psi_set_option_string(std::string const & name, std::string const & value)
 {
     options.set_str(name, value);
     return true;
 }
 
-bool py_psi_set_options(std::string const & name, int value)
+bool py_psi_set_option_int(std::string const & name, int value)
 {
     options.set_int(name, value);
     return true;
@@ -117,8 +117,8 @@ BOOST_PYTHON_MODULE(PsiMod)
     typedef void (*optionsStringFunction)(std::string const &, std::string const&);
     typedef void (*optionsIntFunction)(std::string const &, int);
 
-    def("set_option", optionsStringFunction(py_psi_set_option));
-    def("set_option", optionsIntFunction(py_psi_set_option));
+    def("set_option", py_psi_set_option_string);
+    def("set_option", py_psi_set_option_int);
 
     // modules
     def("input", py_psi_input);

@@ -71,14 +71,33 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
     for (atom=0; atom<molecule->natom(); ++atom) {
         Vector3 center = molecule->xyz(atom);
 
-        // Modify the name of the basis set to generate a filename: STO-3G -> sto3g
+        // Modify the name of the basis set to generate a filename: STO-3G -> sto-3g
         string basisname = basisnames[atom];
         // First make it lower case
         transform(basisname.begin(), basisname.end(), basisname.begin(), ::tolower);
-        // Remove all '-'
-        xpressive::sregex match_hyphen = xpressive::as_xpr("-");
-        string format_hyphen; // empty string
-        basisname = regex_replace(basisname, match_hyphen, format_hyphen);
+
+        string format_underscore("_"); // empty string
+        // Replace all '(' with '_'
+        xpressive::sregex match_format = xpressive::as_xpr("(");
+        basisname = regex_replace(basisname, match_format, format_underscore);
+
+        // Replace all ')' with '_'
+        match_format = xpressive::as_xpr(")");
+        basisname = regex_replace(basisname, match_format, format_underscore);
+
+        // Replace all ',' with '_'
+        match_format = xpressive::as_xpr(",");
+        basisname = regex_replace(basisname, match_format, format_underscore);
+
+        // Replace all '*' with 's'
+        match_format = xpressive::as_xpr("*");
+        string format_star("s");
+        basisname = regex_replace(basisname, match_format, format_star);
+
+        // Replace all '+' with 'p'
+        match_format = xpressive::as_xpr("+");
+        string format_plus("p");
+        basisname = regex_replace(basisname, match_format, format_plus);
 
 //        cout << " basisname with '-' removed: " << basisname << endl;
         string basis_filename = searchpath() + "/" + basisname + ".gbs";
