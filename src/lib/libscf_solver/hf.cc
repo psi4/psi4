@@ -446,6 +446,7 @@ void HF::form_Shalf()
         IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
         OneBodyInt *S = integral.overlap();
         S->compute(S_);
+        S_->print();
         delete S;
     }
     S_->print();
