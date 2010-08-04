@@ -1,0 +1,14 @@
+# Run: psi4 -s
+
+import psi;
+from psi import *;
+import PsiMod;
+
+PsiMod.set_default_options_for_module("SCF");
+
+PsiMod.set_option("NO_INPUT", True);
+PsiMod.set_option("SCF_TYPE", "DIRECT");
+PsiMod.set_option("BASIS", "STO-3G");
+PsiMod.set_option("XYZ_FILE", "mol.xyz");
+
+PsiMod.scf();
