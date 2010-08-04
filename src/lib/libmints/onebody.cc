@@ -30,7 +30,7 @@ void do_sparse_transform11(double *source, double *target, int chunk,
 {
     int i2;
 
-    for (trans.first(); trans.is_done(); trans.next()) {
+    for (trans.first(); !trans.is_done(); trans.next()) {
         double coef = trans.coef();
         int pure = trans.pureindex();
         int cart = trans.cartindex();
@@ -50,7 +50,7 @@ void do_sparse_transform12(double *source, double *target, int chunk,
 {
     int i1, ichunk;
 
-    for (trans.first(); trans.is_done(); trans.next()) {
+    for (trans.first(); !trans.is_done(); trans.next()) {
         double coef = trans.coef();
         int pure = trans.pureindex();
         int cart = trans.cartindex();
@@ -232,14 +232,14 @@ void OneBodyInt::so_transform(shared_ptr<Matrix> result, int sh1, int sh2, int i
     double *localbuffer = buffer_+chunkoffset;
 
     // Assume result is zeroed out where it matters.
-    for (trans1.first(); trans1.is_done(); trans1.next()) {
+    for (trans1.first(); !trans1.is_done(); trans1.next()) {
         int irrep1       = trans1.irrep();
         int aofunc1      = trans1.aofunc();
         int soirrepfunc1 = trans1.sofuncirrep();
         double coef1     = trans1.coef();
         int offset1      = aofunc1 * nao2;
 
-        for (trans2.first(); trans2.is_done(); trans2.next()) {
+        for (trans2.first(); !trans2.is_done(); trans2.next()) {
             int irrep2       = trans2.irrep();
             int aofunc2      = trans2.aofunc();
             int soirrepfunc2 = trans2.sofuncirrep();
@@ -250,7 +250,7 @@ void OneBodyInt::so_transform(shared_ptr<Matrix> result, int sh1, int sh2, int i
                 // Compute and store
                 double val = coef1 * coef2 * localbuffer[offset1 + aofunc2];
 
-                //fprintf(outfile,"Irrep: %d, Irrepfunc 1: %d, Irrepfunc 2: %d, Val %14.10f,",irrep1,soirrepfunc1,soirrepfunc2,val); fflush(outfile);                 
+                //fprintf(outfile,"Irrep: %d, Irrepfunc 1: %d, Irrepfunc 2: %d, coef1 = %lf, coef2 = %lf, localbuffer = %lf, Val %14.10f,\n",irrep1,soirrepfunc1,soirrepfunc2,coef1,coef2,localbuffer[offset1+aofunc2], val); fflush(outfile);                 
                 result->add(irrep1, soirrepfunc1, soirrepfunc2, val);
             }
         }
@@ -270,13 +270,13 @@ void OneBodyInt::so_transform(shared_ptr<SimpleMatrix> result, int sh1, int sh2,
     double *localbuffer = buffer_+chunkoffset;
 
     // Assume result is zeroed out where it matters.
-    for (trans1.first(); trans1.is_done(); trans1.next()) {
+    for (trans1.first(); !trans1.is_done(); trans1.next()) {
         int aofunc1      = trans1.aofunc();
         int sofunc1      = trans1.sofunc();
         double coef1     = trans1.coef();
         int offset1      = aofunc1 * nao2;
 
-        for (trans2.first(); trans2.is_done(); trans2.next()) {
+        for (trans2.first(); !trans2.is_done(); trans2.next()) {
             int aofunc2      = trans2.aofunc();
             int sofunc2      = trans2.sofunc();
             double coef2     = trans2.coef();

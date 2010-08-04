@@ -13,6 +13,7 @@
 #include <libmints/integral.h>
 #include "factory.h"
 #include "wavefunction.h"
+#include "basisset_parser.h"
 
 #include <psi4-dec.h>
 
@@ -55,15 +56,34 @@ void Wavefunction::common_init()
     //     chkpt_ = new Chkpt(psio_, PSIO_OPEN_OLD);
     // }
     
-    // Initialize the matrix factory
-    factory_.init_with_chkpt(chkpt_);
+    if (options_.get_bool("NO_INPUT") == false) {
+        // Initialize the matrix factory
+        factory_.init_with_chkpt(chkpt_);
 
-    // Initialize the basis set object
-    basisset_ = shared_ptr<BasisSet>(new BasisSet(chkpt_));
+        // Initialize the basis set object
+        basisset_ = shared_ptr<BasisSet>(new BasisSet(chkpt_));
     
-    // Basis set object has reference to initialized molecule, grab it
-    molecule_ = basisset_->molecule();
-    
+        // Basis set object has reference to initialized molecule, grab it
+        molecule_ = basisset_->molecule();
+    }
+    else {
+        // Eventually move molecule to the constructor, the driver will tell
+        // the wavefunction what to use.
+        // Load molecule from xyz file
+        molecule_ = shared_ptr<Molecule>(new Molecule);
+        molecule_->init_with_xyz(options_.get_str("XYZ_FILE"));
+        molecule_->move_to_com();
+        molecule_->reorient();
+        molecule_->print();
+
+        shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
+        basisset_ = BasisSet::construct(parser, molecule_, options_.get_str("BASIS"));
+        basisset_->print();
+
+        int nbf[] = { basisset_->nbf() };
+        factory_.init_with(1, nbf, nbf);
+    }
+
     // Read in the memory requirements from input
     fndcor(&(memory_), infile, outfile);
     

@@ -27,6 +27,7 @@
 #include <libqt/qt.h>
 
 #include <libmints/mints.h>
+#include <libmints/basisset_parser.h>
 #include "rhf.h"
 #include <psi4-dec.h>
 
@@ -97,9 +98,6 @@ void RHF::common_init()
         Lref_ = SharedMatrix(factory_.create_matrix("Lref"));
         L_    = SharedMatrix(factory_.create_matrix("L"));
     }
-
-    int nao = chkpt_->rd_nao();
-    chkpt_->wt_nmo(nao);
 
     // PK super matrix for fast G
     pk_ = NULL;
@@ -410,7 +408,17 @@ void RHF::save_dual_basis_projection()
 {
     if (print_)
         fprintf(outfile,"\n  Computing dual basis set projection from %s to %s.\n  Results will be stored in File 100.\n",options_.get_str("BASIS").c_str(),options_.get_str("DUAL_BASIS_SCF").c_str());
-    shared_ptr<BasisSet> dual_basis =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DUAL_BASIS_SCF"));
+
+    shared_ptr<BasisSet> dual_basis;
+    if (options_.get_bool("NO_INPUT") == false) {
+        dual_basis =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DUAL_BASIS_SCF"));
+    }
+    else {
+        shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+        dual_basis = BasisSet::construct(parser, molecule_, 
+                                         options_.get_str("DUAL_BASIS_SCF"));
+    }
+
     SharedMatrix C_2 = dualBasisProjection(C_,doccpi_[0],basisset_,dual_basis);
     //C_->print(outfile);
     if(print_>3)
@@ -709,15 +717,16 @@ double* RHF::getCartesianGridExtents(Options &opts, shared_ptr<Molecule> mol)
 
 void RHF::save_information()
 {
+#ifdef OLD
     // Print the final docc vector
     char **temp2 = chkpt_->rd_irr_labs();
     int nso = chkpt_->rd_nso();
-
     fprintf(outfile, "\n  Final occupation vector = (");
     for (int h=0; h<factory_.nirreps(); ++h) {
         fprintf(outfile, "%2d %3s ", doccpi_[h], temp2[h]);
     }
     fprintf(outfile, ")\n");
+#endif
 
     //Canonical Orthogonalization has orbital eigenvalues
     //Which differ from those of the USO Fock Matrix
@@ -739,6 +748,7 @@ void RHF::save_information()
     }
 
     // Print out orbital energies.
+#ifdef OLD
     std::vector<std::pair<double, int> > pairs;
     for (int h=0; h<orbital_e_->nirreps(); ++h) {
         for (int i=0; i<nmopi_[h]; ++i)
@@ -767,11 +777,13 @@ void RHF::save_information()
     for (int i=0; i<orbital_e_->nirreps(); ++i)
         free(temp2[i]);
     free(temp2);
+#endif
 
     int *vec = new int[orbital_e_->nirreps()];
     for (int i=0; i<orbital_e_->nirreps(); ++i)
         vec[i] = 0;
 
+    chkpt_->wt_nirreps(factory_.nirreps());
     chkpt_->wt_nmo(nmo_);
     chkpt_->wt_ref(0);        // Only RHF right now
     chkpt_->wt_etot(E_);
@@ -783,6 +795,7 @@ void RHF::save_information()
     chkpt_->wt_phase_check(0);
 
     // Figure out frozen core orbitals
+#ifdef OLD
     int nfzc = chkpt_->rd_nfzc();
     int nfzv = chkpt_->rd_nfzv();
     int *frzcpi = compute_fcpi(nfzc, orbital_e_);
@@ -791,7 +804,7 @@ void RHF::save_information()
     chkpt_->wt_frzvpi(frzvpi);
     delete[](frzcpi);
     delete[](frzvpi);
-
+#endif
     // Save the Fock matrix
     // Need to recompute the Fock matrix as F_ is modified during the SCF interation
     form_F();

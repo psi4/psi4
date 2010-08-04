@@ -370,7 +370,7 @@ shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parse
     vector<string> basisnames;
 
     for (int i=0; i<mol->natom(); ++i)
-    basisnames.push_back(basisname);
+        basisnames.push_back(basisname);
 
     return construct(parser, mol, basisnames);
 }
@@ -382,6 +382,29 @@ shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parse
     shared_ptr<BasisSet> basisset(new BasisSet);
     basisset->molecule_ = mol;
     parser->parse(basisset, basisnames);
+
+    for (int i=0; i<=basisset->max_am(); ++i)
+        basisset->sphericaltransforms_.push_back(SphericalTransform(i));
+
+    // Form the spherical transform (simple bf->ao)
+    // Initialize SOTransform
+    basisset->sotransform_ = shared_ptr<SOTransform>(new SOTransform);
+    basisset->sotransform_->init(basisset->nshell());
+
+    int so_global=0;
+    int ao_global=0;
+    for (int i=0; i < basisset->nshell(); ++i) {
+        SphericalTransform st(basisset->shell(i)->am());
+        SphericalTransformIter iter(st);
+
+        ao_global = basisset->shell_to_function(i);
+        so_global = basisset->shell_to_basis_function(i);
+
+        for (iter.first(); !iter.is_done(); iter.next()) {
+            basisset->sotransform_->add_transform(i, 0, iter.pureindex() + so_global, iter.coef(),
+                                                  iter.cartindex(), iter.pureindex() + so_global);
+        }
+    }
 
     return basisset;
 }

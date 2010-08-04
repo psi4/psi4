@@ -505,7 +505,7 @@ static void transform2e_1(int am, SphericalTransformIter& sti, double *s, double
 {
     memset(t,0,INT_NPURE(am)*njkl*sizeof(double));
 
-    for (sti.first(); sti.is_done(); sti.next()) {
+    for (sti.first(); !sti.is_done(); sti.next()) {
         double *sptr = s + sti.cartindex()*njkl;
         double *tptr = t + sti.pureindex()*njkl;
         double coef = sti.coef();
@@ -522,7 +522,7 @@ static void transform2e_2(int am, SphericalTransformIter& sti, double *s, double
 
     memset(t,0,ni*tjkl*sizeof(double));
 
-    for (sti.first(); sti.is_done(); sti.next()) {
+    for (sti.first(); !sti.is_done(); sti.next()) {
         double *sptr = s + sti.cartindex()*nkl;
         double *tptr = t + sti.pureindex()*nkl;
         double coef = sti.coef();
@@ -541,7 +541,7 @@ static void transform2e_3(int am, SphericalTransformIter& sti, double *s, double
 
     memset(t,0,nij*tkl*sizeof(double));
 
-    for (sti.first(); sti.is_done(); sti.next()) {
+    for (sti.first(); !sti.is_done(); sti.next()) {
         double *sptr = s + sti.cartindex()*nl;
         double *tptr = t + sti.pureindex()*nl;
         // printf("cartindex = %d, pureindex = %d\n", sti.cartindex(), sti.pureindex());
@@ -568,7 +568,7 @@ static void transform2e_4(int am, SphericalTransformIter& sti, double *s, double
     // Clear out target memory
     memset(t, 0, nijk*tl*sizeof(double));
 
-    for (sti.first(); sti.is_done(); sti.next()) {
+    for (sti.first(); !sti.is_done(); sti.next()) {
         // Starting point in source and target buffers
         double *sptr = s + sti.cartindex();
         double *tptr = t + sti.pureindex();

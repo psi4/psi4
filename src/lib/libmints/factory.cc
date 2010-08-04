@@ -59,9 +59,11 @@ bool MatrixFactory::init_with(int nirreps, int *rowspi, int *colspi)
     rowspi_ = new int[nirreps_];
     colspi_ = new int[nirreps_];
         
+    nso_ = 0;
     for (int i=0; i<nirreps_; ++i) {
         rowspi_[i] = rowspi[i];
         colspi_[i] = colspi[i];
+        nso_ += rowspi_[i];
     }
     
     return true;
