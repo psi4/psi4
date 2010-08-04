@@ -202,6 +202,10 @@ public:
     /// Initialize molecular specific symemtry information
     /// Uses the point group object obtain by calling point_group()
     void form_symmetry_information(double tol=1.0e-8);
+    /// Returns the symmetry label
+    const char *sym_label();
+    // Returns the irrep labels
+    char **irrep_labels();
 };
 
 typedef boost::shared_ptr<Molecule> SharedMolecule;
