@@ -61,8 +61,6 @@ private:
      *  @param gs The contraction set to normalize.
      */
     void contraction_normalization();
-    /** Handles calling primitive_normalization and contraction_normalization for you. */
-    void normalize_shell();
 
     /** Lookup array that when you index the angular momentum it returns the lowercase letter corresponding to it. */
     static const char *amtypes;
@@ -74,6 +72,8 @@ public:
     GaussianShell() {};
     ~GaussianShell();
 
+    /** Handles calling primitive_normalization and contraction_normalization for you. */
+    void normalize_shell();
     /** Initializes the GaussianShell with the data provided.
      *  @param nprm The number of primitives.
      *  @param e An array of exponent values.

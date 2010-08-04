@@ -51,7 +51,6 @@ protected:
 
     /// Number of atoms and their Z value (used in find_occupation)
     int natom_;
-    double *zvals_;
 
     /// DOCC vector from input (if found)
     int doccpi_[8];

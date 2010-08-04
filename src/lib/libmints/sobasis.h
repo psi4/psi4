@@ -69,7 +69,7 @@ public:
     
     void first() { i_ = 0; }
     void next()  { i_++;   }
-    bool is_done() { return i_ < trans_->nfunc() ? true : false; }
+    bool is_done() { return i_ < trans_->nfunc() ? false : true; }
     
     /// Returns the coefficient of component i
     double coef() const { return trans_->func(i_)->coef(); }

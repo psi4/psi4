@@ -93,6 +93,8 @@ void OverlapInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<GaussianS
 
             double over_pf = exp(-a1*a2*AB2*oog) * sqrt(M_PI*oog) * M_PI * oog * c1 * c2;
 
+            //printf("PA %f %f %f PB %f %f %f gamma %f am1 %d am2 %d\n", PA[0], PA[1], PA[2], PB[0], PB[1], PB[2], gamma, am1, am2);
+
             // Do recursion
             overlap_recur_.compute(PA, PB, gamma, am1, am2);
 

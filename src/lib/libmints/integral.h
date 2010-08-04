@@ -98,7 +98,7 @@ public:
 
     void first() { i_ = 0; }
     void next()  { i_++;   }
-    bool is_done() { return i_ < trans_.n() ? true : false; }
+    bool is_done() { return i_ < trans_.n() ? false : true; }
 
     /// Returns the Cartesian basis function index of component i
     int cartindex() const { return trans_.cartindex(i_); }

@@ -47,7 +47,7 @@ public:
 class Gaussian94BasisSetParser : public BasisSetParser
 {
 public:
-    Gaussian94BasisSetParser(const std::string& _searchpath) : BasisSetParser(_searchpath) {}
+    Gaussian94BasisSetParser(const std::string& _searchpath = "") : BasisSetParser(_searchpath) {}
 
     void parse(boost::shared_ptr<BasisSet> &basisSet, const std::vector<std::string> &basisnames);
 };

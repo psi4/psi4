@@ -55,7 +55,6 @@ HF::~HF()
         delete[] so2index_;
         delete[] pk_symoffset_;
     }
-    delete[] zvals_;
 }
 
 void HF::common_init()
@@ -116,16 +115,16 @@ void HF::common_init()
     }
 
     // Read information from checkpoint
-    nuclearrep_ = chkpt_->rd_enuc();
-    natom_ = chkpt_->rd_natom();
-    zvals_ = chkpt_->rd_zvals();
-
+    //nuclearrep_ = chkpt_->rd_enuc();
+    //natom_ = chkpt_->rd_natom();
+    nuclearrep_ = molecule_->nuclear_repulsion_energy();
+    natom_ = molecule_->natom();
 
     // Determine the number of electrons in the system
     charge_ = options_.get_int("CHARGE");
     nElec_  = 0;
     for (int i=0; i<natom_; ++i)
-        nElec_ += (int)zvals_[i];
+        nElec_ += (int)molecule_->Z(i);
     nElec_ -= charge_;
 
     // If the user told us the multiplicity, read it from the input
@@ -305,6 +304,7 @@ void HF::print_header()
 #else
     fprintf(outfile, "  Release version.\n");
 #endif
+#ifdef OLD
     temp = chkpt_->rd_sym_label();
     fprintf(outfile, "  Running in %s symmetry.\n", temp);
     free(temp);
@@ -323,6 +323,7 @@ void HF::print_header()
     free(temp2);
 
     fprintf(outfile, ")\n");
+#endif
     fprintf(outfile, "  Nuclear repulsion = %20.15f\n", nuclearrep_);
 
     fprintf(outfile, "  Energy threshold  = %3.2e\n", energy_threshold_);
@@ -447,6 +448,7 @@ void HF::form_Shalf()
         S->compute(S_);
         delete S;
     }
+    S_->print();
     // Form S^(-1/2) matrix
     Matrix eigvec;
     Matrix eigtemp;
