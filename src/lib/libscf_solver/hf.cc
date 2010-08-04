@@ -449,7 +449,6 @@ void HF::form_Shalf()
         S_->print();
         delete S;
     }
-    S_->print();
     // Form S^(-1/2) matrix
     Matrix eigvec;
     Matrix eigtemp;
