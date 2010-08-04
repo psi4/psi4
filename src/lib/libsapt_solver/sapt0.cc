@@ -74,10 +74,8 @@ double SAPT0::compute_energy()
     exch_ind20respA_B();
     exch_ind20respB_A();
 
-    if (params_.print)
-        print_results();
+    print_results();
 
-    fprintf(outfile,"Woot!\n");
     return 0.0;
 }
 void SAPT0::ao_df_ints()
@@ -100,10 +98,6 @@ void SAPT0::ao_df_ints()
   //TODO MAke this go away
   // Initialize the factory with data from checkpoint
   factory.init_with_chkpt(chkpt_);
-
-
-  fprintf(outfile,"\n  Using Schwartz screening threshold of %14.10E\n",params_.schwarz);
-  fflush(outfile);
 
   if (params_.logfile) {
     fprintf(params_.logfilename,"  Building J matrix\n");
@@ -199,18 +193,6 @@ void SAPT0::ao_df_ints()
   int nriorbs = ribasis_->nbf();
   double mem1;
   double avail_mem = params_.memory;
-
-  fprintf(outfile,"\n  Available memory is %.0lf MB\n\n",avail_mem/1000000);
-
-  // Get monomer A and B coeffcient matrices
-
-  fprintf(outfile,"    Orbital Information\n");
-  fprintf(outfile,"  -----------------------\n");
-  fprintf(outfile,"      NSO = %5d\n",calc_info_.nso);
-  fprintf(outfile,"      NMO = %5d\n",calc_info_.nmo);
-  fprintf(outfile,"      NRI = %5d\n\n",nriorbs);
-  fflush(outfile);
-  
   calc_info_.nrio = nriorbs + 3;
 
   // Get Schwartz screening arrays
@@ -414,11 +396,12 @@ void SAPT0::ao_df_ints()
 
     temp = block_matrix(nriorbs,numP);
 
-    next_DF_MO = psio_get_address(PSIO_ZERO,oP*sizeof(double));
+    next_DF_MO = psio_get_address(PSIO_ZERO,oP*(ULI) sizeof(double));
     for (int P=0; P < nriorbs; ++P) {
       psio_read(PSIF_SAPT_TEMP,"MO RI Integrals",(char *) &(temp[P][0]),
-        sizeof(double)*numP,next_DF_MO,&next_DF_MO);
-      next_DF_MO = psio_get_address(next_DF_MO,(nmo*nmo-numP)*sizeof(double));
+        sizeof(double)*(ULI) numP,next_DF_MO,&next_DF_MO);
+      next_DF_MO = psio_get_address(next_DF_MO,(nmo*nmo-numP)*
+        (ULI) sizeof(double));
     } 
 
     temp_J = block_matrix(numP,calc_info_.nrio);
@@ -433,7 +416,7 @@ void SAPT0::ao_df_ints()
       int j = (ij+oP)%nmo;
       if (i < calc_info_.noccA && j < calc_info_.noccA) {
         psio_write(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",(char *)
-          &(temp_J[ij][0]),sizeof(double)*calc_info_.nrio,next_DF_AA,
+          &(temp_J[ij][0]),sizeof(double)*(ULI) calc_info_.nrio,next_DF_AA,
           &next_DF_AA);
       }
     }
@@ -443,7 +426,7 @@ void SAPT0::ao_df_ints()
       int j = (ij+oP)%nmo;
       if (i < calc_info_.noccA && j >= calc_info_.noccA) {
         psio_write(PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",(char *)
-          &(temp_J[ij][0]),sizeof(double)*calc_info_.nrio,next_DF_AR,
+          &(temp_J[ij][0]),sizeof(double)*(ULI) calc_info_.nrio,next_DF_AR,
           &next_DF_AR);
       }
     }
@@ -453,7 +436,7 @@ void SAPT0::ao_df_ints()
       int j = (ij+oP)%nmo;
       if (i >= calc_info_.noccA && j >= calc_info_.noccA) {
         psio_write(PSIF_SAPT_AA_DF_INTS,"RR RI Integrals",(char *)
-          &(temp_J[ij][0]),sizeof(double)*calc_info_.nrio,next_DF_RR,
+          &(temp_J[ij][0]),sizeof(double)*(ULI) calc_info_.nrio,next_DF_RR,
           &next_DF_RR);
       }
     }
@@ -578,11 +561,12 @@ void SAPT0::ao_df_ints()
 
     temp = block_matrix(nriorbs,numP);
 
-    next_DF_MO = psio_get_address(PSIO_ZERO,oP*sizeof(double));
+    next_DF_MO = psio_get_address(PSIO_ZERO,oP*(ULI) sizeof(double));
     for (int P=0; P < nriorbs; ++P) {
       psio_read(PSIF_SAPT_TEMP,"MO RI Integrals",(char *) &(temp[P][0]),
-        sizeof(double)*numP,next_DF_MO,&next_DF_MO);
-      next_DF_MO = psio_get_address(next_DF_MO,(nmo*nmo-numP)*sizeof(double));
+        sizeof(double)*(ULI) numP,next_DF_MO,&next_DF_MO);
+      next_DF_MO = psio_get_address(next_DF_MO,(nmo*nmo-numP)*
+        (ULI) sizeof(double));
     }
 
     temp_J = block_matrix(numP,calc_info_.nrio);
@@ -597,7 +581,7 @@ void SAPT0::ao_df_ints()
       int j = (ij+oP)%nmo;
       if (i < calc_info_.noccB && j < calc_info_.noccB) {
         psio_write(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",(char *)
-          &(temp_J[ij][0]),sizeof(double)*calc_info_.nrio,next_DF_BB,
+          &(temp_J[ij][0]),sizeof(double)*(ULI) calc_info_.nrio,next_DF_BB,
           &next_DF_BB);
       }
     }
@@ -607,7 +591,7 @@ void SAPT0::ao_df_ints()
       int j = (ij+oP)%nmo;
       if (i < calc_info_.noccB && j >= calc_info_.noccB) {
         psio_write(PSIF_SAPT_BB_DF_INTS,"BS RI Integrals",(char *)
-          &(temp_J[ij][0]),sizeof(double)*calc_info_.nrio,next_DF_BS,
+          &(temp_J[ij][0]),sizeof(double)*(ULI) calc_info_.nrio,next_DF_BS,
           &next_DF_BS);
       }
     }
@@ -617,7 +601,7 @@ void SAPT0::ao_df_ints()
       int j = (ij+oP)%nmo;
       if (i >= calc_info_.noccB && j >= calc_info_.noccB) {
         psio_write(PSIF_SAPT_BB_DF_INTS,"SS RI Integrals",(char *)
-          &(temp_J[ij][0]),sizeof(double)*calc_info_.nrio,next_DF_SS,
+          &(temp_J[ij][0]),sizeof(double)*(ULI) calc_info_.nrio,next_DF_SS,
           &next_DF_SS);
       }
     }
@@ -742,11 +726,12 @@ void SAPT0::ao_df_ints()
 
     temp = block_matrix(nriorbs,numP);
 
-    next_DF_MO = psio_get_address(PSIO_ZERO,oP*sizeof(double));
+    next_DF_MO = psio_get_address(PSIO_ZERO,oP*(ULI) sizeof(double));
     for (int P=0; P < nriorbs; ++P) {
       psio_read(PSIF_SAPT_TEMP,"MO RI Integrals",(char *) &(temp[P][0]),
-        sizeof(double)*numP,next_DF_MO,&next_DF_MO);
-      next_DF_MO = psio_get_address(next_DF_MO,(nmo*nmo-numP)*sizeof(double));
+        sizeof(double)*(ULI) numP,next_DF_MO,&next_DF_MO);
+      next_DF_MO = psio_get_address(next_DF_MO,(nmo*nmo-numP)*
+        (ULI) sizeof(double));
     }
 
     temp_J = block_matrix(numP,calc_info_.nrio);
@@ -761,7 +746,7 @@ void SAPT0::ao_df_ints()
       int j = (ij+oP)%nmo;
       if (i < calc_info_.noccA && j < calc_info_.noccB) {
         psio_write(PSIF_SAPT_AB_DF_INTS,"AB RI Integrals",(char *)
-          &(temp_J[ij][0]),sizeof(double)*calc_info_.nrio,next_DF_AB,
+          &(temp_J[ij][0]),sizeof(double)*(ULI) calc_info_.nrio,next_DF_AB,
           &next_DF_AB);
       }
     }
@@ -771,7 +756,7 @@ void SAPT0::ao_df_ints()
       int j = (ij+oP)%nmo;
       if (i < calc_info_.noccA && j >= calc_info_.noccB) {
         psio_write(PSIF_SAPT_AB_DF_INTS,"AS RI Integrals",(char *)
-          &(temp_J[ij][0]),sizeof(double)*calc_info_.nrio,next_DF_AS,
+          &(temp_J[ij][0]),sizeof(double)*(ULI) calc_info_.nrio,next_DF_AS,
           &next_DF_AS);
       }
     }
@@ -781,7 +766,7 @@ void SAPT0::ao_df_ints()
       int j = (ij+oP)%nmo;
       if (i >= calc_info_.noccA && j < calc_info_.noccB) {
         psio_write(PSIF_SAPT_AB_DF_INTS,"RB RI Integrals",(char *)
-          &(temp_J[ij][0]),sizeof(double)*calc_info_.nrio,next_DF_RB,
+          &(temp_J[ij][0]),sizeof(double)*(ULI) calc_info_.nrio,next_DF_RB,
           &next_DF_RB);
       }
     }
@@ -838,7 +823,8 @@ double** SAPT0::get_AA_ints(int dress) {
   double **A = block_matrix(calc_info_.noccA*calc_info_.noccA,calc_info_.nrio);
 
   psio_read_entry(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",(char *)
-    &(A[0][0]),sizeof(double)*calc_info_.noccA*calc_info_.noccA*calc_info_.nrio);
+    &(A[0][0]),sizeof(double)*calc_info_.noccA*calc_info_.noccA*
+    (ULI) calc_info_.nrio);
 
   if (dress) {
     for (int a=0; a<calc_info_.noccA; a++){
@@ -869,7 +855,7 @@ double** SAPT0::get_diag_AA_ints(int dress) {
   psio_address next_PSIF = PSIO_ZERO;
   for (int a=0; a<calc_info_.noccA; a++){
     psio_read(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",(char *)
-      &(A[a][0]),sizeof(double)*calc_info_.nrio,next_PSIF,&next_PSIF);
+      &(A[a][0]),sizeof(double)*(ULI) calc_info_.nrio,next_PSIF,&next_PSIF);
     next_PSIF = psio_get_address(next_PSIF,calc_info_.noccA*calc_info_.nrio*
       (ULI) sizeof(double));
     if (dress) {
@@ -893,7 +879,8 @@ double** SAPT0::get_BB_ints(int dress) {
   double **A = block_matrix(calc_info_.noccB*calc_info_.noccB,calc_info_.nrio);
 
   psio_read_entry(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",(char *)
-    &(A[0][0]),sizeof(double)*calc_info_.noccB*calc_info_.noccB*calc_info_.nrio);
+    &(A[0][0]),sizeof(double)*calc_info_.noccB*calc_info_.noccB*
+    (ULI) calc_info_.nrio);
 
   if (dress) {
     for (int b=0; b<calc_info_.noccB; b++){
@@ -924,7 +911,7 @@ double** SAPT0::get_diag_BB_ints(int dress) {
   psio_address next_PSIF = PSIO_ZERO;
   for (int b=0; b<calc_info_.noccB; b++){
     psio_read(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",(char *)
-      &(A[b][0]),sizeof(double)*calc_info_.nrio,next_PSIF,&next_PSIF);
+      &(A[b][0]),sizeof(double)*(ULI) calc_info_.nrio,next_PSIF,&next_PSIF);
     next_PSIF = psio_get_address(next_PSIF,calc_info_.noccB*calc_info_.nrio*
       (ULI) sizeof(double));
     if (dress) {
@@ -948,7 +935,8 @@ double** SAPT0::get_AB_ints(int dress) {
   double **A = block_matrix(calc_info_.noccA*calc_info_.noccB,calc_info_.nrio);
 
   psio_read_entry(PSIF_SAPT_AB_DF_INTS,"AB RI Integrals",(char *)
-    &(A[0][0]),sizeof(double)*calc_info_.noccA*calc_info_.noccB*calc_info_.nrio);
+    &(A[0][0]),sizeof(double)*calc_info_.noccA*calc_info_.noccB*
+    (ULI) calc_info_.nrio);
 
   if (dress==1) {
     for (int a=0; a<calc_info_.noccA; a++){
@@ -986,7 +974,8 @@ double** SAPT0::get_AS_ints(int dress) {
   double **A = block_matrix(calc_info_.noccA*calc_info_.nvirB,calc_info_.nrio);
 
   psio_read_entry(PSIF_SAPT_AB_DF_INTS,"AS RI Integrals",(char *)
-    &(A[0][0]),sizeof(double)*calc_info_.noccA*calc_info_.nvirB*calc_info_.nrio);
+    &(A[0][0]),sizeof(double)*calc_info_.noccA*calc_info_.nvirB*
+    (ULI) calc_info_.nrio);
 
   if (dress) {
     for (int a=0; a<calc_info_.noccA; a++){
@@ -1014,7 +1003,8 @@ double** SAPT0::get_RB_ints(int dress) {
   double **A = block_matrix(calc_info_.nvirA*calc_info_.noccB,calc_info_.nrio);
 
   psio_read_entry(PSIF_SAPT_AB_DF_INTS,"RB RI Integrals",(char *)
-    &(A[0][0]),sizeof(double)*calc_info_.nvirA*calc_info_.noccB*calc_info_.nrio);
+    &(A[0][0]),sizeof(double)*calc_info_.nvirA*calc_info_.noccB*
+    (ULI) calc_info_.nrio);
 
   if (dress) {
     for (int r=0; r<calc_info_.nvirA; r++){
@@ -1042,7 +1032,8 @@ double** SAPT0::get_AR_ints(int dress) {
   double **A = block_matrix(calc_info_.nvirA*calc_info_.noccA,calc_info_.nrio);
 
   psio_read_entry(PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",(char *)
-    &(A[0][0]),sizeof(double)*calc_info_.noccA*calc_info_.nvirA*calc_info_.nrio);
+    &(A[0][0]),sizeof(double)*calc_info_.noccA*calc_info_.nvirA*
+    (ULI) calc_info_.nrio);
 
   if (dress) {
     for (int a=0; a<calc_info_.noccA; a++){
@@ -1068,7 +1059,8 @@ double** SAPT0::get_BS_ints(int dress) {
   double **A = block_matrix(calc_info_.nvirB*calc_info_.noccB,calc_info_.nrio);
 
   psio_read_entry(PSIF_SAPT_BB_DF_INTS,"BS RI Integrals",(char *)
-    &(A[0][0]),sizeof(double)*calc_info_.noccB*calc_info_.nvirB*calc_info_.nrio);
+    &(A[0][0]),sizeof(double)*calc_info_.noccB*calc_info_.nvirB*
+    (ULI) calc_info_.nrio);
 
   if (dress) {
     for (int b=0; b<calc_info_.noccB; b++){
@@ -1088,31 +1080,30 @@ void SAPT0::print_results()
 
   results_.exch_indr20 = results_.exch_indrA_B + results_.exch_indrB_A;
 
-  sapt0 = results_.elst10+results_.exch10+results_.indr20+results_.exch_indr20+
-          results_.disp20+results_.exch_disp20;
+  sapt0 = results_.hf_int + results_.disp20 + results_.exch_disp20;
 
   results_.deltaHF = results_.hf_int - (results_.elst10 + results_.exch10 +
                     results_.indr20 + results_.exch_indr20);
 
-  fprintf(outfile,"********************************************************************\n\n");
-  fprintf(outfile,"                            SAPT Results  \n\n");
-  fprintf(outfile,"  E_HF          %16.8lf mH %16.8lf kcal mol^-1\n",
+  fprintf(outfile,"    SAPT Results  \n");
+  fprintf(outfile,"  ------------------------------------------------------------------\n");
+  fprintf(outfile,"    E_HF          %16.8lf mH %16.8lf kcal mol^-1\n",
           results_.hf_int*1000.0,results_.hf_int*627.5095);
-  fprintf(outfile,"  Elst10        %16.8lf mH %16.8lf kcal mol^-1\n",
+  fprintf(outfile,"    Elst10        %16.8lf mH %16.8lf kcal mol^-1\n",
           results_.elst10*1000.0,results_.elst10*627.5095);
-  fprintf(outfile,"  Exch10(S^2)   %16.8lf mH %16.8lf kcal mol^-1\n",
+  fprintf(outfile,"    Exch10(S^2)   %16.8lf mH %16.8lf kcal mol^-1\n",
           results_.exch10*1000.0,results_.exch10*627.5095);
-  fprintf(outfile,"  Ind20,r       %16.8lf mH %16.8lf kcal mol^-1\n",
+  fprintf(outfile,"    Ind20,r       %16.8lf mH %16.8lf kcal mol^-1\n",
           results_.indr20*1000.0,results_.indr20*627.5095);
-  fprintf(outfile,"  Exch-Ind20,r  %16.8lf mH %16.8lf kcal mol^-1\n",
+  fprintf(outfile,"    Exch-Ind20,r  %16.8lf mH %16.8lf kcal mol^-1\n",
           results_.exch_indr20*1000.0,results_.exch_indr20*627.5095);
-  fprintf(outfile,"  delta HF,r    %16.8lf mH %16.8lf kcal mol^-1\n",
+  fprintf(outfile,"    delta HF,r    %16.8lf mH %16.8lf kcal mol^-1\n",
           results_.deltaHF*1000.0,results_.deltaHF*627.5095);
-  fprintf(outfile,"  Disp20        %16.8lf mH %16.8lf kcal mol^-1\n",
+  fprintf(outfile,"    Disp20        %16.8lf mH %16.8lf kcal mol^-1\n",
           results_.disp20*1000.0,results_.disp20*627.5095);
-  fprintf(outfile,"  Exch-Disp20   %16.8lf mH %16.8lf kcal mol^-1\n\n",
+  fprintf(outfile,"    Exch-Disp20   %16.8lf mH %16.8lf kcal mol^-1\n\n",
           results_.exch_disp20*1000.0,results_.exch_disp20*627.5095);
-  fprintf(outfile,"  Total SAPT0   %16.8lf mH %16.8lf kcal mol^-1\n\n",
+  fprintf(outfile,"    Total SAPT0   %16.8lf mH %16.8lf kcal mol^-1\n",
           sapt0*1000.0,sapt0*627.5095);
 }
 

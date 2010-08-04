@@ -59,9 +59,7 @@ void SAPT::setup_sapt()
     get_ribasis();
     get_calc_info();
     oetrans();
-
-    if (params_.print) 
-        print_header();
+    print_header();
 }
 void SAPT::get_ribasis()
 {
@@ -308,53 +306,21 @@ void SAPT::vtrans()
 
   free_block(VBAj);
 }
-void SAPT::memcalc()
-{
-  params_.aarr_mem = (double) sizeof(double)*((double) calc_info_.noccA*calc_info_.noccA)*((double) calc_info_.nvirA*calc_info_.nvirA); //AARR
-  params_.bbss_mem = (double) sizeof(double)*((double) calc_info_.noccB*calc_info_.noccB)*((double) calc_info_.nvirB*calc_info_.nvirB); //BBSS
-  params_.aabb_mem = (double) sizeof(double)*((double) calc_info_.noccA*calc_info_.noccA)*((double) calc_info_.noccB*calc_info_.noccB); //AABB
-  params_.abab_mem = (double) sizeof(double)*((double) calc_info_.noccA*calc_info_.noccB)*((double) calc_info_.noccA*calc_info_.noccB); //ABAB
-  params_.aaab_mem = (double) sizeof(double)*((double) calc_info_.noccA*calc_info_.noccA)*((double) calc_info_.noccA*calc_info_.noccB); //AAAB
-  params_.abbb_mem = (double) sizeof(double)*((double) calc_info_.noccA*calc_info_.noccB)*((double) calc_info_.noccB*calc_info_.noccB); //ABBB
-  params_.arar_mem = (double) sizeof(double)*((double) calc_info_.noccA*calc_info_.nvirA*calc_info_.noccA*calc_info_.nvirA); //ARAR
-  params_.bsbs_mem = (double) sizeof(double)*((double) calc_info_.noccB*calc_info_.nvirB*calc_info_.noccB*calc_info_.nvirB); //BSBS
-  params_.arbb_mem = (double) sizeof(double)*((double) calc_info_.noccA*calc_info_.nvirA)*((double) calc_info_.noccB*calc_info_.noccB); //ARBB
-  params_.aabs_mem = (double) sizeof(double)*((double) calc_info_.noccA*calc_info_.noccA)*((double) calc_info_.noccB*calc_info_.nvirB); //AABS
-  params_.arbs_mem = (double) sizeof(double)*((double) calc_info_.noccA*calc_info_.nvirA)*((double) calc_info_.noccB*calc_info_.nvirB); //ARBS
-  params_.abrb_mem = (double) sizeof(double)*((double) calc_info_.noccA*calc_info_.noccB)*((double) calc_info_.nvirA*calc_info_.noccB); //ABRB
-  params_.abas_mem = (double) sizeof(double)*((double) calc_info_.noccA*calc_info_.noccB)*((double) calc_info_.noccA*calc_info_.nvirB); //ABAS
-  params_.asrb_mem = (double) sizeof(double)*((double) calc_info_.noccA*calc_info_.nvirB)*((double) calc_info_.nvirA*calc_info_.noccB); //ASRB
-  params_.asbb_mem = (double) sizeof(double)*((double) calc_info_.noccA*calc_info_.nvirB)*((double) calc_info_.noccB*calc_info_.noccB); //ASBB
-  params_.abbs_mem = (double) sizeof(double)*((double) calc_info_.noccA*calc_info_.noccB)*((double) calc_info_.nvirB*calc_info_.noccB); //ABBS
-  params_.aarb_mem = (double) sizeof(double)*((double) calc_info_.noccA*calc_info_.noccA)*((double) calc_info_.nvirA*calc_info_.noccB); //AARB
-  params_.arab_mem = (double) sizeof(double)*((double) calc_info_.noccA*calc_info_.nvirA)*((double) calc_info_.noccA*calc_info_.noccB); //ARAB
-  params_.dfaa_mem = (double) sizeof(double)*((double) calc_info_.noccA*calc_info_.noccA)*((double) calc_info_.nrio); //DF_AA
-  params_.dfar_mem = (double) sizeof(double)*((double) calc_info_.nvirA*calc_info_.noccA)*((double) calc_info_.nrio); //DF_AR
-  params_.dfrr_mem = (double) sizeof(double)*((double) calc_info_.nvirA*calc_info_.nvirA)*((double) calc_info_.nrio); //DF_RR
-  params_.dfbb_mem = (double) sizeof(double)*((double) calc_info_.noccB*calc_info_.noccB)*((double) calc_info_.nrio); //DF_BB
-  params_.dfbs_mem = (double) sizeof(double)*((double) calc_info_.nvirB*calc_info_.noccB)*((double) calc_info_.nrio); //DF_BS
-  params_.dfss_mem = (double) sizeof(double)*((double) calc_info_.nvirB*calc_info_.nvirB)*((double) calc_info_.nrio); //DF_SS
-  params_.dfab_mem = (double) sizeof(double)*((double) calc_info_.noccA*calc_info_.noccB)*((double) calc_info_.nrio); //DF_AB
-  params_.dfas_mem = (double) sizeof(double)*((double) calc_info_.noccA*calc_info_.nvirB)*((double) calc_info_.nrio); //DF_AS
-  params_.dfrb_mem = (double) sizeof(double)*((double) calc_info_.nvirA*calc_info_.noccB)*((double) calc_info_.nrio); //DF_RB
-}
 void SAPT::print_header()
 {
- fprintf(outfile,"*******************************************************\n");
- fprintf(outfile,"                        S A P T   \n");
- fprintf(outfile,"\n");
- fprintf(outfile,"                     Ed Hohenstein\n") ;
- fprintf(outfile,"                      6 June 2009\n") ;
- fprintf(outfile,"*******************************************************\n");
+ fprintf(outfile,"       S A P T   \n");
+ fprintf(outfile,"    Ed Hohenstein\n") ;
+ fprintf(outfile,"     6 June 2009\n") ;
  fprintf(outfile,"\n");
  fprintf(outfile,"    Orbital Information\n");
  fprintf(outfile,"  -----------------------\n");
- fprintf(outfile,"      NMO    = %5d\n",calc_info_.nmo);
- fprintf(outfile,"      NRI    = %5d\n",calc_info_.nri);
- fprintf(outfile,"      NOCC_A = %5d\n",calc_info_.noccA);
- fprintf(outfile,"      NOCC_B = %5d\n",calc_info_.noccB);
- fprintf(outfile,"      NVIR_A = %5d\n",calc_info_.nvirA);
- fprintf(outfile,"      NVIR_B = %5d\n\n",calc_info_.nvirB);
+ fprintf(outfile,"    NSO     = %9d\n",calc_info_.nso);
+ fprintf(outfile,"    NMO     = %9d\n",calc_info_.nmo);
+ fprintf(outfile,"    NRI     = %9d\n",calc_info_.nri);
+ fprintf(outfile,"    NOCC_A  = %9d\n",calc_info_.noccA);
+ fprintf(outfile,"    NOCC_B  = %9d\n",calc_info_.noccB);
+ fprintf(outfile,"    NVIR_A  = %9d\n",calc_info_.nvirA);
+ fprintf(outfile,"    NVIR_B  = %9d\n\n",calc_info_.nvirB);
 
  #ifdef _OPENMP
  fprintf(outfile,"Running SAPT with %d OMP threads\n\n",omp_get_max_threads());
@@ -367,7 +333,7 @@ double** SAPT::get_DF_ints(int filenum, char *label, int length)
 {
   double **A = block_matrix(length,calc_info_.nrio);
   psio_read_entry(filenum,label,(char *) A[0],
-                  sizeof(double)*length*calc_info_.nrio);
+                  sizeof(double)*length*(ULI) calc_info_.nrio);
   return(A);
 }
 void SAPT::zero_disk(int file, char *array, char *zero, int nri, int ijmax)
@@ -407,7 +373,8 @@ double SAPT::CHF(int dfnum, char *OO, char *OV, char *VV, double **W, double **C
 
   conv = 1.0;
 
-  fprintf(outfile,"Iter      Energy (mH)         dE (mH)            RMS (mH)    Time (s)\n");
+  if (params_.print)
+    fprintf(outfile,"Iter      Energy (mH)         dE (mH)            RMS (mH)    Time (s)\n");
 
   do {
 
@@ -444,18 +411,22 @@ double SAPT::CHF(int dfnum, char *OO, char *OV, char *VV, double **W, double **C
 
     iter++;
     stop = time(NULL);
-    fprintf(outfile,"%4d %16.8lf %17.9lf %17.9lf    %10ld\n",iter,E*1000.0,(E_old-E)*1000.0,conv*1000.0,stop-start);
-    fflush(outfile);
+    if (params_.print) {
+      fprintf(outfile,"%4d %16.8lf %17.9lf %17.9lf    %10ld\n",iter,E*1000.0,(E_old-E)*1000.0,conv*1000.0,stop-start);
+      fflush(outfile);
+    }
 
     E_old = E;
     }
   while(conv > params_.d_conv && iter < params_.maxiter);
 
   if (conv <= params_.d_conv) {
-    fprintf(outfile,"\nCHF Iterations converged\n\n");
+    if (params_.print)
+      fprintf(outfile,"\nCHF Iterations converged\n\n");
     }
   else {
-    fprintf(outfile,"\nCHF Iterations did not converge\n\n");
+    if (params_.print)
+      fprintf(outfile,"\nCHF Iterations did not converge\n\n");
     }
 
   C_DCOPY(nocc*nvir,&(C_old[0][0]),1,&(CHF[0][0]),1);
@@ -553,7 +524,7 @@ void SAPT::A_mat(int dfnum, char *OO, char *OV, char *VV, double **C_old,
     }
 
     psio_read(dfnum,VV,(char *) &(B_p_RR[0][0]),sizeof(double)*
-              (r_stop-r_start)*nvir*calc_info_.nrio,next_PSIF,&next_PSIF);
+      (r_stop-r_start)*nvir*(ULI) calc_info_.nrio,next_PSIF,&next_PSIF);
     for (int r=r_start; r<r_stop; r++) {
       C_DGEMM('N','N',nocc,calc_info_.nrio,nvir,1.0,&(C_old[0][0]),nvir,
         &(B_p_RR[(r-r_start)*nvir][0]),calc_info_.nrio,1.0,&(B_p_AR[r][0]),

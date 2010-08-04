@@ -18,36 +18,6 @@ struct params  {
   double schwarz;
 
   double memory;
-  double aarr_mem;
-  double bbss_mem;
-  double aabb_mem;
-  double abab_mem;
-  double aaab_mem;
-  double abbb_mem;
-  double arar_mem;
-  double bsbs_mem;
-  double arbb_mem;
-  double aabs_mem;
-  double arbs_mem;
-  double abrb_mem;
-  double abas_mem;
-  double asrb_mem;
-  double asbb_mem;
-  double abbs_mem;
-  double aarb_mem;
-  double arab_mem;
-  double dfaa_mem;
-  double dfar_mem;
-  double dfrr_mem;
-  double dfbb_mem;
-  double dfbs_mem;
-  double dfss_mem;
-  double dfab_mem;
-  double dfas_mem;
-  double dfrb_mem;
-  
-  int asrb_block;
-  int arbs_block;
   };
 
 /* This struct holds information from the SCF calculations that is used

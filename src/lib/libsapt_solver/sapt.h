@@ -35,7 +35,6 @@ public:
     void setup_sapt();
     void get_params();
     virtual void print_header();
-    void memcalc();
     void get_ribasis();
     void get_calc_info();
     void cleanup_calc_info();
