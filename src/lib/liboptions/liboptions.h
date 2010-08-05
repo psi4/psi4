@@ -283,24 +283,6 @@ namespace psi {
       return std::string("string");
     }
 
-    // std::vector<std::string> split(const std::string& str){
-    //   // Split a string
-    //   typedef std::string::const_iterator iter;
-    //   std::vector<std::string> splitted_string;
-    //   iter i = str.begin();
-    //   while(i != str.end()){
-    //     // Ignore leading blanks
-    //     i = find_if(i,str.end(), not_space);
-    //     // Find the end of next word
-    //     iter j = find_if(i,str.end(),space);
-    //     // Copy the characters in [i,j)
-    //     if(i!=str.end())
-    //       splitted_string.push_back(std::string(i,j));
-    //     i = j;
-    //   }
-    //   return(splitted_string);
-    // }
-
     virtual std::string to_string() const {
       return str_;
     }
@@ -329,6 +311,63 @@ namespace psi {
     }
     virtual void assign(std::string s) {
       to_upper(s);
+      if (choices_.size() > 0) {
+        bool wrong_input = true;
+        for (unsigned int i=0; i<choices_.size(); ++i)
+          if (s == choices_[i])
+            wrong_input = false;
+        if (wrong_input)
+          throw DataTypeException(s + " is not a valid choice");
+        str_ = s;
+      }
+      else {
+        changed();
+        str_ = s;
+      }
+    }
+  };
+
+  class IStringDataType : public DataType
+  {
+    std::string str_;
+    std::vector<std::string> choices_;
+  public:
+    IStringDataType() : DataType(), str_(), choices_() { }
+    IStringDataType(std::string s) : DataType(), str_(s), choices_() { }
+    IStringDataType(std::string s, std::string c) : DataType(), str_(s), choices_() { choices_ = split(c); }
+    virtual ~IStringDataType() { }
+
+    virtual std::string type() const {
+      return std::string("string");
+    }
+
+    virtual std::string to_string() const {
+      return str_;
+    }
+    virtual int to_integer() const {
+      return static_cast<int>(std::strtod(str_.c_str(), NULL));
+    }
+    virtual double to_double() const {
+      return std::strtod(str_.c_str(), NULL);
+    }
+
+    virtual void assign(bool b) {
+      if (b)
+        assign("TRUE");
+      else
+        assign("FALSE");
+    }
+    virtual void assign(int i) {
+      std::stringstream strm;
+      strm << i;
+      assign(strm.str());
+    }
+    virtual void assign(double d) {
+      std::stringstream strm;
+      strm << d;
+      assign(strm.str());
+    }
+    virtual void assign(std::string s) {
       if (choices_.size() > 0) {
         bool wrong_input = true;
         for (unsigned int i=0; i<choices_.size(); ++i)
@@ -609,6 +648,9 @@ namespace psi {
     void add(std::string key, std::string s, std::string c = "") {
       add(key, new StringDataType(s, c));
     }
+    void add_i(std::string key, std::string s, std::string c = "") {
+      add(key, new IStringDataType(s, c));
+    }
 
     void add_bool(std::string key, bool b) {
       add(key,b);
@@ -621,6 +663,9 @@ namespace psi {
     }
     void add_str(std::string key, std::string s, std::string c = "") {
       add(key,s,c);
+    }
+    void add_str_i(std::string key, std::string s, std::string c = "") {
+      add_i(key,s,c);
     }
     void add_array(std::string key) {
       add(key, new ArrayType());
@@ -637,7 +682,6 @@ namespace psi {
     void set_str(std::string key, std::string s) {
       get(key).assign(s);
     }
-
 
     void clear(void) {
       keyvals_.clear();
