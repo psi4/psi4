@@ -74,11 +74,9 @@ void Wavefunction::common_init()
         molecule_->init_with_xyz(options_.get_str("XYZ_FILE"));
         molecule_->move_to_com();
         molecule_->reorient();
-        molecule_->print();
 
         shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
         basisset_ = BasisSet::construct(parser, molecule_, options_.get_str("BASIS"));
-        basisset_->print();
 
         int nbf[] = { basisset_->nbf() };
         factory_.init_with(1, nbf, nbf);

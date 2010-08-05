@@ -231,9 +231,13 @@ void BasisSet::initialize_shells(shared_ptr<Chkpt> chkpt, std::string& basiskey)
     for (int i=0; i<nshells_; ++i) {
         int am;
         am = shell_am[i] - 1;
+
+        // For some awful reason input stored shell_center_ as 1-based....let's fix this
+        shell_center_[i]--;
+
         int fprim = shell_fprim[i] - 1;
         int nprims = shell_num_prims[i];
-        Vector3 center = molecule_->xyz(shell_center_[i] - 1);
+        Vector3 center = molecule_->xyz(shell_center_[i]);
         double *cc = new double[nprims];
         for (int p=0; p<nprims; ++p) {
             cc[p] = ccoeffs[fprim+p][am];
@@ -242,7 +246,7 @@ void BasisSet::initialize_shells(shared_ptr<Chkpt> chkpt, std::string& basiskey)
         // Construct a new shell. GaussianShell copies the data to new memory
         shells_.push_back(shared_ptr<GaussianShell>(new GaussianShell));
         shells_[i]->init(nprims, &(exponents[fprim]), am,
-            puream_ ? GaussianShell::Pure : GaussianShell::Cartesian, cc, shell_center_[i]-1, center,
+            puream_ ? GaussianShell::Pure : GaussianShell::Cartesian, cc, shell_center_[i], center,
             puream_start);
 
         if (nprims > max_nprimitives_)
