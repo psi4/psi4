@@ -30,8 +30,8 @@ int read_options(const std::string &name, Options & options, bool call_ipv1)
   options.clear();
 
   options.add_bool("NO_INPUT", false);
-  options.add_str("XYZ_FILE", "mol.xyz");
-  options.add_str("BASIS_PATH", "");
+  options.add_str_i("XYZ_FILE", "mol.xyz");
+  options.add_str_i("BASIS_PATH", "");
 
   if (name == "PSI4") {
     options.add_str("UNITS", "ANGSTROMS", "BOHR AU ANGSTROMS ANGSTROM");
