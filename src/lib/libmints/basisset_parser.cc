@@ -67,8 +67,7 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
     // Hold the result of a regex_match
     smatch what;
 
-    int atom;
-    for (atom=0; atom<molecule->natom(); ++atom) {
+    for (int atom=0; atom<molecule->natom(); ++atom) {
         Vector3 center = molecule->xyz(atom);
 
         // Modify the name of the basis set to generate a filename: STO-3G -> sto-3g
@@ -103,15 +102,21 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
         string basis_filename = searchpath() + "/" + basisname + ".gbs";
 //        cout << " will attempt to read from: " << basis_filename << endl;
 
+        // Load in entire file.
+        vector<string> lines;
+        string text;
         ifstream infile(basis_filename.c_str());
-        string line;
-
         if (!infile)
             throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to open basis set file: " + basis_filename);
-
         while (infile.good()) {
-            // Get a line from the file.
-            getline(infile, line);
+            getline(infile, text);
+            lines.push_back(text);
+        }
+
+        int lineno = 0;
+        bool found = false;
+        while (lineno < lines.size()) {
+            string line = lines[lineno++];
 
             // Spit out the line for debugging.
 //            cout << line << endl;
@@ -150,7 +155,7 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
 //                    std::cout << " }\n";
 //                }
                 // Check the captures and see if this basis set is for the atom we need.
-                bool found = false;
+                found = false;
                 for (int i=0; i < what.captures(1).size(); ++i) {
                     if (iequals(molecule->label(atom), string(what.captures(1)[i].first, what.captures(1)[i].second)))
                         found = true;
@@ -160,7 +165,7 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
 //                    cout << "found\n";
 
                     // Read in the next line
-                    getline(infile, line);
+                    line = lines[lineno++];
 
                     // Need to do the following until we match a "****" which is the end of the basis set
                     while (!regex_match(line, what, separator)) {
@@ -184,7 +189,7 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
                                 double *contractions = new double[nprimitive];
 
                                 for (int p=0; p<nprimitive; ++p) {
-                                    getline(infile, line);
+                                    line = lines[lineno++];
 
                                     // Must match primitives1; will work on the others later
                                     if (!regex_match(line, what, primitives1))
@@ -230,7 +235,7 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
                                 double *contractions2 = new double[nprimitive];
 
                                 for (int p=0; p<nprimitive; ++p) {
-                                    getline(infile, line);
+                                    line = lines[lineno++];
 
                                     // Must match primitivies2;
                                     if (!regex_match(line, what, primitives2))
@@ -293,11 +298,14 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
                         } else {
                             throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Expected shell information, but got:\n" + line);
                         }
-                        getline(infile, line);
+                        line = lines[lineno++];
                     }
+                    break;
                 }
             }
         }
+        if (found == false)
+            throw PSIEXCEPTION("Gaussian94BasisSetParser::parser: Unable to find the basis set.");
     }
 
     // Have the basis set object refresh its internal data.
