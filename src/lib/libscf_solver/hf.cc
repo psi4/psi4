@@ -246,7 +246,7 @@ void HF::common_init()
     Quadrupole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Quadrupole YZ")));
     Quadrupole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Quadrupole ZZ")));
 
-    if(print_ > 1) print_header();
+    print_header();
     if (scf_type_ == "PK")
         form_indexing();
 }
@@ -296,14 +296,16 @@ void HF::print_header()
     char **temp2;
     char *reference;
 
-    ip_string(const_cast<char*>("REFERENCE"), &reference, 0);
-
-    fprintf(outfile, " %s: by Justin Turney and Rob Parrish\n\n", reference);
+    fprintf(outfile, " SCF: by Justin Turney and Rob Parrish\n\n", reference);
 #ifdef _DEBUG
-    fprintf(outfile, "  Debug version.\n");
+    fprintf(outfile, "  Debug version.\n\n");
 #else
-    fprintf(outfile, "  Release version.\n");
+    fprintf(outfile, "  Release version.\n\n");
 #endif
+
+    fprintf(outfile, "  Molecular geometry:\n\n");
+    molecule_->print();
+
 #ifdef OLD
     temp = chkpt_->rd_sym_label();
     fprintf(outfile, "  Running in %s symmetry.\n", temp);
@@ -324,12 +326,12 @@ void HF::print_header()
 
     fprintf(outfile, ")\n");
 #endif
+
     fprintf(outfile, "  Nuclear repulsion = %20.15f\n", nuclearrep_);
 
     fprintf(outfile, "  Energy threshold  = %3.2e\n", energy_threshold_);
     fprintf(outfile, "  Density threshold = %3.2e\n\n", density_threshold_);
     fflush(outfile);
-    free(reference);
 }
 
 void HF::form_indexing()
@@ -446,7 +448,6 @@ void HF::form_Shalf()
         IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
         OneBodyInt *S = integral.overlap();
         S->compute(S_);
-        S_->print();
         delete S;
     }
     // Form S^(-1/2) matrix

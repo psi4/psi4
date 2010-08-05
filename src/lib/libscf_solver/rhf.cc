@@ -290,9 +290,11 @@ double RHF::compute_energy()
 bool RHF::load_or_compute_initial_C()
 {
     bool ret = false;
+
     // Check to see if there are MOs already in the checkpoint file.
     // If so, read them in instead of forming them.
     string prefix(chkpt_->build_keyword(const_cast<char*>("MO coefficients")));
+
     //What does the user want?
     //Options will be:
     // ""-Either READ or CORE (try READ first)
@@ -1017,7 +1019,7 @@ void RHF::form_D()
         C_DGEMM('n','t',opi[h],opi[h],doccpi_[h],1.0,&C[offset_R][offset_C],nmo_,&C[offset_R][offset_C],nmo_,0.0,&D[offset_R][offset_R],norbs);
 
         for (i = 0; i<opi[h]; i++)
-            for (int j = 0; j<opi[h]; j++)
+            for (j = 0; j<opi[h]; j++)
                 D_->set(h,i,j,D[offset_R+i][offset_R+j]);
 
         offset_R += opi[h]; 
