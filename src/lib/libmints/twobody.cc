@@ -2,10 +2,7 @@
 
 #include <libqt/qt.h>
 
-#include <libmints/twobody.h>
-#include <libmints/basisset.h>
-#include <libmints/gshell.h>
-#include <libmints/integral.h>
+#include "mints.h"
 
 using namespace psi;
 

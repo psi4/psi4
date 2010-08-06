@@ -1,3 +1,4 @@
+#include <cmath>
 #include <stdexcept>
 #include <libciomr/libciomr.h>
 #include <libmints/integral.h>

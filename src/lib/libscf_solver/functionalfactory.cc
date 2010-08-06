@@ -9,13 +9,13 @@
 #include <cmath>
 #include <math.h>
 #include <stdlib.h>
+#include <libmints/mints.h>
 #include "functional.h"
 #include "functionalfactory.h"
 #include "x_lda_functional.h"
 #include "x_b88_functional.h"
 #include "x_b3_functional.h"
 #include "null_functional.h"
-#include <libmints/mints.h>
 #include <string>
 #include <cstring>
 using namespace psi;

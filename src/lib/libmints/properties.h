@@ -1,15 +1,18 @@
 #ifndef _psi_src_lib_libmints_properties_h_
 #define _psi_src_lib_libmints_properties_h_
-#include <libmints/basisset.h>
-#include <libmints/basispoints.h>
-#include <libmints/matrix.h>
-#include <libmints/vector3.h>
-#include <libmints/gridblock.h>
-#include <libmints/electrostatic.h>
-#include <psi4-dec.h>
+
+#include <boost/shared_ptr.hpp>
 
 #define RKS_GGA_TESTBED_SIZE_  9
 namespace psi {
+
+    class BasisSet;
+    class BasisPoints;
+    class Matrix;
+    class SimpleMatrix;
+    class Vector3;
+    class GridBlock;
+    class ElectrostaticInt;
 
 	class Properties:public BasisPoints
 	{
@@ -38,15 +41,15 @@ namespace psi {
 			bool do_density_laplacian_;
 			bool do_ke_density_;
 			bool do_electrostatic_;
-		        shared_ptr<ElectrostaticInt> e_ints_;
+		    boost::shared_ptr<ElectrostaticInt> e_ints_;
                 public:
-			static Properties * constructProperties(shared_ptr<BasisSet> b, int block_size)
+			static Properties * constructProperties(boost::shared_ptr<BasisSet> b, int block_size)
 			{
 				return new Properties(b,block_size);
 			}
-			Properties(shared_ptr<BasisSet> b, int block_size);
+			Properties(boost::shared_ptr<BasisSet> b, int block_size);
 			~Properties();
-			void computeProperties(SharedGridBlock grid, SharedMatrix D, SharedMatrix C = SharedMatrix() );
+			void computeProperties(boost::shared_ptr<GridBlock> grid, boost::shared_ptr<Matrix> D, boost::shared_ptr<Matrix> C = boost::shared_ptr<Matrix>() );
                         void get_RKS_GGA_Testbed();
                         int get_RKS_GGA_Testbed_Size() const {return RKS_GGA_TESTBED_SIZE_; }
 			const double* getDensity() const { return density_; }		
@@ -72,6 +75,6 @@ namespace psi {
 			void setToComputeKEDensity(bool v);	
 			void setToComputeElectrostatic(bool v);	
 	};
-	typedef shared_ptr<Properties> SharedProperties;
+	typedef boost::shared_ptr<Properties> SharedProperties;
 }
 #endif

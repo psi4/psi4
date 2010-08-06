@@ -11,12 +11,17 @@
 #define RHF_H
 
 #include <libpsio/psio.hpp>
-#include <libmints/mints.h>
 #include "hf.h"
 
 using namespace psi;
 
-namespace psi { namespace scf {
+namespace psi { 
+
+class TwoBodyInt;
+class PSIO;
+class Chkpt;
+
+namespace scf {
 
 class RHF : public HF {
 protected:

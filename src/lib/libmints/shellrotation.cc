@@ -28,10 +28,9 @@
 
 #include <cstdio>
 
-#include <libmints/integral.h>
-#include <libmints/pointgrp.h>
+#include "mints.h"
+
 #include <libciomr/libciomr.h>
-#include "shellrotation.h"
 
 using namespace psi;
 

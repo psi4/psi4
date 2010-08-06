@@ -2,9 +2,10 @@
 #define _psi_src_lib_libmints_gshell_h_
 
 #include <cstdio>
-#include <libmints/vector3.h>
 
 namespace psi {
+
+class Vector3;
 
 /*! \ingroup MINTS
  *  \class GaussianShell
@@ -111,7 +112,7 @@ public:
     bool is_pure() const       { return puream_; }
 
     /// Returns the center of the Molecule this shell is on
-    Vector3 center() const          { return center_; }
+    Vector3 center() const;
     /// Returns the atom number this shell is on. Used by integral derivatives for indexing.
     int ncenter() const             { return nc_; }
 
@@ -135,7 +136,6 @@ public:
     void set_function_index(int i) { start_ = i; }
     int ncartesians() const { return ncartesians_; }
     int nfunctions() const { return nfunctions_; }
-
 };
 
 }

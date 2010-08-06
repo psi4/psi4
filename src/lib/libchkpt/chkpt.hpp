@@ -5,6 +5,7 @@
 #include <libchkpt/config.h>
 #include <cstdlib>
 #include <strings.h>
+#include <string>
 #include <cstring>
 
 using namespace boost;

@@ -1,9 +1,6 @@
 #include <stdexcept>
 
-#include <libmints/onebody.h>
-#include <libmints/basisset.h>
-#include <libmints/gshell.h>
-#include <libmints/integral.h>
+#include "mints.h"
 #include <exception.h>
 
 using namespace psi;

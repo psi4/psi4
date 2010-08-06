@@ -1,9 +1,11 @@
 #ifndef _psi_src_lib_libmints_integral_h_
 #define _psi_src_lib_libmints_integral_h_
 
-#include <libmints/basisset.h>
-#include <libmints/cartesianiter.h>
+#include <boost/shared_ptr.hpp>
 #include <vector>
+
+#include "onebody.h"
+#include "twobody.h"
 
 /*! \def INT_NCART(am)
     Gives the number of cartesian functions for an angular momentum.
@@ -29,6 +31,9 @@ class GaussianShell;
 class OneBodyInt;
 class TwoBodyInt;
 class Symmetry;
+class CartesianIter;
+class RedundantCartesianIter;
+class RedundantCartesianSubIter;
 
 /*! \ingroup MINTS */
 class SphericalTransformComponent
@@ -127,7 +132,7 @@ private:
     };
 
     Integral current;
-    shared_ptr<GaussianShell> usi, usj, usk, usl;
+    boost::shared_ptr<GaussianShell> usi, usj, usk, usl;
 
     bool done;
 
@@ -136,46 +141,8 @@ private:
     int ni, nj, nk, nl, fii, fij, fik, fil;
 
 public:
-    IntegralsIterator(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2,
-                      shared_ptr<GaussianShell> s3, shared_ptr<GaussianShell> s4) {
-        done = false;
-        usi = s1;
-        usj = s2;
-        usk = s3;
-        usl = s4;
-        ni =usi->nfunction();
-        nj =usj->nfunction();
-        nk =usk->nfunction();
-        nl =usl->nfunction();
-
-        fii = usi->function_index();
-        fij = usj->function_index();
-        fik = usk->function_index();
-        fil = usl->function_index();
-
-        iimax = ni - 1;
-        if (usi == usj && usk == usl && usi == usk) {
-            kkmax = 0;
-            llmax = 0;
-            jjmax = 0;
-        }
-        else if(usi == usk && usj == usl){
-            kkmax = 0;
-            llmax = 0;
-            jjmax = nj - 1;
-        }
-        else{
-            kkmax = nk - 1;
-            jjmax = (usi == usj) ? 0 : nj - 1;
-            llmax = (usk == usl) ? 0 : nl - 1;
-        }
-
-        ii = 0;
-        jj = 0;
-        kk = 0;
-        ll = 0;
-
-    }
+    IntegralsIterator(boost::shared_ptr<GaussianShell> s1, boost::shared_ptr<GaussianShell> s2,
+                      boost::shared_ptr<GaussianShell> s3, boost::shared_ptr<GaussianShell> s4);
 
     void first();
     void next();
@@ -208,22 +175,17 @@ private:
 
     bool done;
 
-    shared_ptr<BasisSet> bs1_;
-    shared_ptr<BasisSet> bs2_;
-    shared_ptr<BasisSet> bs3_;
-    shared_ptr<BasisSet> bs4_;
-
-//    void generate_combinations(BasisSet*bs1, BasisSet*bs2,
-//        BasisSet*bs3, BasisSet*bs4);
+    boost::shared_ptr<BasisSet> bs1_;
+    boost::shared_ptr<BasisSet> bs2_;
+    boost::shared_ptr<BasisSet> bs3_;
+    boost::shared_ptr<BasisSet> bs4_;
 
 public:
-    ShellCombinationsIterator(shared_ptr<BasisSet>bs1, shared_ptr<BasisSet>bs2,
-                              shared_ptr<BasisSet>bs3, shared_ptr<BasisSet>bs4) :
-                       bs1_(bs1), bs2_(bs2), bs3_(bs3), bs4_(bs4) {    }
-    ShellCombinationsIterator()  {    }
-    void init(shared_ptr<BasisSet>bs1, shared_ptr<BasisSet>bs2,
-            shared_ptr<BasisSet>bs3, shared_ptr<BasisSet>bs4){bs1_=bs1; bs2_=bs2;
-        bs3_=bs3; bs4_=bs4; }
+    ShellCombinationsIterator(boost::shared_ptr<BasisSet>bs1, boost::shared_ptr<BasisSet>bs2,
+                              boost::shared_ptr<BasisSet>bs3, boost::shared_ptr<BasisSet>bs4);
+    ShellCombinationsIterator();
+    void init(boost::shared_ptr<BasisSet>bs1, boost::shared_ptr<BasisSet>bs2,
+            boost::shared_ptr<BasisSet>bs3, boost::shared_ptr<BasisSet>bs4);
 
     void first();
     void next();
@@ -243,27 +205,27 @@ class IntegralFactory
 {
 protected:
     /// Center 1 basis set
-    shared_ptr<BasisSet> bs1_;
+    boost::shared_ptr<BasisSet> bs1_;
     /// Center 2 basis set
-    shared_ptr<BasisSet> bs2_;
+    boost::shared_ptr<BasisSet> bs2_;
     /// Center 3 basis set
-    shared_ptr<BasisSet> bs3_;
+    boost::shared_ptr<BasisSet> bs3_;
     /// Center 4 basis set
-    shared_ptr<BasisSet> bs4_;
+    boost::shared_ptr<BasisSet> bs4_;
 
     /// Provides ability to transform to and from sphericals (d=0, f=1, g=2)
     std::vector<SphericalTransform> spherical_transforms_;
 
 public:
     /** Initialize IntegralFactory object given a GaussianBasisSet for each center. */
-    IntegralFactory(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2,
-                    shared_ptr<BasisSet> bs3, shared_ptr<BasisSet> bs4);
+    IntegralFactory(boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2,
+                    boost::shared_ptr<BasisSet> bs3, boost::shared_ptr<BasisSet> bs4);
 
     virtual ~IntegralFactory();
 
     /// Set the basis set for each center.
-    virtual void set_basis(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2,
-        shared_ptr<BasisSet> bs3, shared_ptr<BasisSet> bs4);
+    virtual void set_basis(boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2,
+        boost::shared_ptr<BasisSet> bs3, boost::shared_ptr<BasisSet> bs4);
 
     /// Returns an OneBodyInt that computes the overlap integral.
     virtual OneBodyInt* overlap(int deriv=0);
@@ -307,11 +269,11 @@ public:
     /// Return a spherical transform iterator object for am
     SphericalTransformIter* spherical_transform_iter(int am) { return new SphericalTransformIter(spherical_transforms_[am]); }
     /// Return a new Cartesian iterator
-    CartesianIter* cartesian_iter(int l) { return new CartesianIter(l); }
+    CartesianIter* cartesian_iter(int l);
     /// Return a new rudundant Cartesian iterator
-    RedundantCartesianIter* redundant_cartesian_iter(int l) { return new RedundantCartesianIter(l); }
+    RedundantCartesianIter* redundant_cartesian_iter(int l);
     /// Return a new rudundant Cartesian sub iterator
-    RedundantCartesianSubIter* redundant_cartesian_sub_iter(int l) { return new RedundantCartesianSubIter(l); }
+    RedundantCartesianSubIter* redundant_cartesian_sub_iter(int l);
 };
 
 }

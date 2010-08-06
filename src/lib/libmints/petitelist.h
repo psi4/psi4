@@ -3,9 +3,6 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <libmints/basisset.h>
-#include <libmints/integral.h>
-
 #include <stdint.h>
 
 namespace psi {
@@ -121,7 +118,7 @@ public:
     int in_p4(int ij, int kl, int i, int j, int k, int l) const;
     int in_p4(int i, int j, int k, int l) const;
 
-    int nfunction(int i) const { return (c1_) ? basis_->nbf() : nbf_in_ir_[i]; }
+    int nfunction(int i) const;
 
     int nblocks() const { return nblocks_; }
 

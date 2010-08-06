@@ -10,10 +10,7 @@
 #include <libiwl/iwl.h>
 #include <libqt/qt.h>
 
-#include <libmints/integral.h>
-#include "factory.h"
-#include "wavefunction.h"
-#include "basisset_parser.h"
+#include "mints.h"
 
 #include <psi4-dec.h>
 

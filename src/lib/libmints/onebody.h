@@ -1,10 +1,13 @@
 #ifndef _psi_src_lib_libmints_onebody_h_
 #define _psi_src_lib_libmints_onebody_h_
 
-#include <libmints/matrix.h>
+#include <vector>
+#include <boost/shared_ptr.hpp>
 
 namespace psi {
     
+class Matrix;
+class SimpleMatrix;
 class IntegralFactory;
 class BasisSet;
 class GaussianShell;
@@ -17,8 +20,8 @@ class SphericalTransform;
 class OneBodyInt
 {
 protected:
-    shared_ptr<BasisSet> bs1_;
-    shared_ptr<BasisSet> bs2_;
+    boost::shared_ptr<BasisSet> bs1_;
+    boost::shared_ptr<BasisSet> bs2_;
     std::vector<SphericalTransform>& spherical_transforms_;
     
     double *buffer_;
@@ -26,17 +29,17 @@ protected:
     int deriv_;
     int natom_;
     
-    OneBodyInt(std::vector<SphericalTransform>&, shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2, int deriv=0);
+    OneBodyInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int deriv=0);
     
 public:
     virtual ~OneBodyInt();
     
     /// Basis set on center one.
-    shared_ptr<BasisSet> basis();
+    boost::shared_ptr<BasisSet> basis();
     /// Basis set on center one.
-    shared_ptr<BasisSet> basis1();
+    boost::shared_ptr<BasisSet> basis1();
     /// Basis set on center two.
-    shared_ptr<BasisSet> basis2();
+    boost::shared_ptr<BasisSet> basis2();
     
     /// Buffer where the integrals are placed.
     const double *buffer() const;
@@ -45,12 +48,12 @@ public:
     virtual void compute_shell(int, int) = 0;
     
     /// Computes all integrals and stores them in result
-    void compute(shared_ptr<Matrix> result);
+    void compute(boost::shared_ptr<Matrix> result);
     
     /// Computes all integrals and stores them in result by default this method throws
-    virtual void compute(std::vector<shared_ptr<Matrix> > &result);
+    virtual void compute(std::vector<boost::shared_ptr<Matrix> > &result);
     /// Computes all integrals and stores them in result by default this method throws
-    virtual void compute(std::vector<shared_ptr<SimpleMatrix> > &result);
+    virtual void compute(std::vector<boost::shared_ptr<SimpleMatrix> > &result);
     
     /// Does the method provide first derivatives?
     virtual bool has_deriv1() { return false; }
@@ -59,11 +62,11 @@ public:
     virtual bool has_deriv2() { return false; }
 
     /// Computes the first derivatives and stores them in result
-    virtual void compute_deriv1(std::vector<shared_ptr<Matrix> > &result);
+    virtual void compute_deriv1(std::vector<boost::shared_ptr<Matrix> > &result);
     /// Computes the first derivatives and stores them in result
-    virtual void compute_deriv1(std::vector<shared_ptr<SimpleMatrix> > &result);
+    virtual void compute_deriv1(std::vector<boost::shared_ptr<SimpleMatrix> > &result);
     /// Computes the second derivatives and stores them in result
-    virtual void compute_deriv2(std::vector<shared_ptr<SimpleMatrix> > &result);
+    virtual void compute_deriv2(std::vector<boost::shared_ptr<SimpleMatrix> > &result);
     
     /// Computes the integrals between basis function in the given shell pair
     virtual void compute_shell_deriv1(int, int);
@@ -77,18 +80,18 @@ public:
     virtual OneBodyInt* clone();
     
     /// Normalize Cartesian functions based on angular momentum
-    void normalize_am(shared_ptr<GaussianShell>, shared_ptr<GaussianShell>, int nchunk=1);
+    void normalize_am(boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>, int nchunk=1);
     
     /// Transform Cartesian integrals to spherical harmonic ones.
     /// Reads from buffer_ and stores results back in buffer_.
-    virtual void spherical_transform(shared_ptr<GaussianShell>, shared_ptr<GaussianShell>);
+    virtual void spherical_transform(boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>);
     
-    void do_transform(shared_ptr<GaussianShell>, shared_ptr<GaussianShell>, int);
+    void do_transform(boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>, int);
     
     /// Accumulates results into a Matrix
-    void so_transform(shared_ptr<Matrix> result, int, int, int ichunk=0);
+    void so_transform(boost::shared_ptr<Matrix> result, int, int, int ichunk=0);
     /// Accumulates results into a SimpleMatrix
-    void so_transform(shared_ptr<SimpleMatrix> result, int, int, int ichunk=0);
+    void so_transform(boost::shared_ptr<SimpleMatrix> result, int, int, int ichunk=0);
 };
 
 }

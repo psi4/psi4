@@ -3,11 +3,8 @@
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 
-#include <libmints/basisset.h>
-#include <libmints/gshell.h>
-#include <libmints/overlap.h>
-#include <libmints/eri.h>
-#include <libmints/wavefunction.h>
+#include "mints.h"
+
 #include <physconst.h>
 #include <exception.h>
 

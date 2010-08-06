@@ -7,7 +7,7 @@
 *
 * Created by Robert Parrish on 04/15/2010
 */
-#include <psi4-dec.h>
+#include <boost/shared_ptr.hpp>
 
 namespace psi { 
 /*! \ingroup LIBMINTS */
@@ -45,6 +45,6 @@ public:
     void setTruePoints(int n) { true_points_ = n; }
     void setMaxPoints(int n) { max_points_ = n; }
 };
-typedef shared_ptr<GridBlock> SharedGridBlock;
+typedef boost::shared_ptr<GridBlock> SharedGridBlock;
 }
 #endif

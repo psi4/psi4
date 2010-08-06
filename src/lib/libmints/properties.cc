@@ -1,19 +1,7 @@
-#include <libmints/integral.h>
-#include <libmints/basisset.h>
-#include <libmints/properties.h>
-#include <libmints/matrix.h>
-#include <libmints/vector3.h>
-#include <libmints/gridblock.h>
+#include "mints.h"
 #include <cstdio>
 #include <cmath>
-//#include <psifiles.h>
 #include <libciomr/libciomr.h>
-//#include <libpsio/psio.h>
-//#include <libchkpt/chkpt.hpp>
-//#include <libipv1/ip_lib.h>
-//#include <libiwl/iwl.hpp>
-//#include <libqt/qt.h>
-//#include <psifiles.h>
 
 using namespace psi;
 

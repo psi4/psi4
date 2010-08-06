@@ -8,11 +8,11 @@
 
 #include <cmath>
 #include <cstdlib>
+#include <libmints/mints.h>
+#include <libciomr/libciomr.h>
 #include "functional.h"
 #include "integrator.h"
 #include "x_b88_functional.h"
-#include <libmints/mints.h>
-#include <libciomr/libciomr.h>
 #include <string>
 using namespace psi;
 using namespace std;

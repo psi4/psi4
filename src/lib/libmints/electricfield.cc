@@ -2,10 +2,7 @@
 #include <vector>
 #include <libciomr/libciomr.h>
 
-#include "basisset.h"
-#include "gshell.h"
-#include "overlap.h"
-#include "electricfield.h"
+#include "mints.h"
 #include <physconst.h>
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))

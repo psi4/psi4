@@ -14,16 +14,12 @@
 #include <libqt/qt.h>
 #include <psifiles.h>
 
+#include <libmints/mints.h>
+
 #include "hf.h"
 #include "rhf.h"
 #include "uhf.h"
 #include "rohf.h"
-
-#include <libmints/basisset.h>
-#include <libmints/onebody.h>
-#include <libmints/twobody.h>
-#include <libmints/integral.h>
-#include <libmints/molecule.h>
 
 using namespace std;
 using namespace psi;

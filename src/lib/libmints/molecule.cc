@@ -3,6 +3,9 @@
 #include <fstream>
 #include <algorithm>
 
+#include <libpsio/psio.hpp>
+#include <libchkpt/chkpt.hpp>
+
 #include <libmints/molecule.h>
 #include <libmints/matrix.h>
 #include <libmints/pointgrp.h>
@@ -1641,6 +1644,16 @@ char** Molecule::irrep_labels()
     strcpy(irreplabel[i],pg_->char_table().gamma(i).symbol());
   }
   return irreplabel;
+}
+
+Vector3 Molecule::xyz(int atom) const
+{
+    return Vector3(atoms_[atom].x, atoms_[atom].y, atoms_[atom].z);
+}
+
+Vector3 Molecule::fxyz(int atom) const
+{
+    return Vector3(full_atoms_[atom].x, full_atoms_[atom].y, full_atoms_[atom].z);
 }
 
 //////////////////////////////////////////////////////////////////////////////

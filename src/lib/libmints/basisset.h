@@ -2,25 +2,32 @@
 #define _psi_src_lib_libmints_basisset_h_
 
 #include <cstdio>
-//#include <libchkpt/chkpt.hpp>
+#include <string>
+#include <vector>
+#include <boost/shared_ptr.hpp>
 
-#include <libmints/molecule.h>
-#include <libmints/gshell.h>
-#include <libmints/sobasis.h>
-#include <libmints/integral.h>
 // Need libint for maximum angular momentum
+
+// These probably should be remove and anything we need to be forward declared.
 #include <libint/libint.h>
-#include <psi4-dec.h>
 
 #include <boost/thread/once.hpp>
 
 namespace psi {
+
+    extern FILE *outfile;
+
+    class Molecule;
+    class GaussianShell;
 
     class Chkpt;
     class BasisSetParser;
     class SOTransformShell;
     class SphericalTransform;
     class SOTransform;
+    class Matrix;
+    class SimpleMatrix;
+    class Vector3;
 
 /*! \ingroup MINTS */
 
@@ -55,9 +62,9 @@ class BasisSet
     int max_stability_index_;
     //! Unique symmetry orbitals to atomic orbitals.
     double **uso2ao_;
-    shared_ptr<SimpleMatrix> simple_mat_uso2ao_;
+    boost::shared_ptr<SimpleMatrix> simple_mat_uso2ao_;
     double **uso2bf_;
-    shared_ptr<SimpleMatrix> simple_mat_uso2bf_;
+    boost::shared_ptr<SimpleMatrix> simple_mat_uso2bf_;
 
     //! Does the loaded basis set contain pure angular momentum functions?
     bool puream_;
@@ -68,11 +75,11 @@ class BasisSet
     std::vector<int> center_to_shell_;
 
     //! Array of gaussian shells
-    std::vector<shared_ptr<GaussianShell> > shells_;
+    std::vector<boost::shared_ptr<GaussianShell> > shells_;
     //! Molecule object.
-    shared_ptr<Molecule> molecule_;
+    boost::shared_ptr<Molecule> molecule_;
     //! Symmetry orbital transformation (used in one-electron integrals)
-    shared_ptr<SOTransform> sotransform_;
+    boost::shared_ptr<SOTransform> sotransform_;
     //! Spherical transfromation (used in two-electron integrals)
     std::vector<SphericalTransform> sphericaltransforms_;
 
@@ -88,7 +95,7 @@ class BasisSet
         @param chkpt Checkpoint library object to read from.
         @param basiskey If reading non-default basis set information then this is set to the suffix of the TOC entries.
       */
-    void initialize_shells(shared_ptr<psi::Chkpt> chkpt, std::string& basiskey);
+    void initialize_shells(boost::shared_ptr<psi::Chkpt> chkpt, std::string& basiskey);
 
     // Has static information been initialized?
     static boost::once_flag initialized_shared_;
@@ -102,7 +109,7 @@ public:
      *  @param basiskey To load the default basis set leave this parameter empty.
      *                  If an RI-basis is wanted pass "DF"
      */
-    BasisSet(shared_ptr<psi::Chkpt> chkpt, std::string basiskey = "");
+    BasisSet(boost::shared_ptr<psi::Chkpt> chkpt, std::string basiskey = "");
 
     /** Copy constructor, currently errors if used. */
     BasisSet(const BasisSet&);
@@ -145,7 +152,7 @@ public:
     /** Molecule this basis is for.
      *  @return Shared pointer to the molecule for this basis set.
      */
-    shared_ptr<Molecule> molecule() const         { return molecule_;    }
+    boost::shared_ptr<Molecule> molecule() const         { return molecule_;    }
     /// Maximum stabilizer index
     int max_stability_index() const    { return max_stability_index_; }
     /** Given a shell what is its first AO function
@@ -163,25 +170,25 @@ public:
      *  @param i Shell number
      *  @return A shared pointer to the GaussianShell object for the i'th shell.
      */
-    shared_ptr<GaussianShell> shell(int si) const;
+    boost::shared_ptr<GaussianShell> shell(int si) const;
 
     /** Return the i'th Gaussian shell on center
      *  @param i Shell number
      *  @return A shared pointer to the GaussianShell object for the i'th shell.
      */
-    shared_ptr<GaussianShell> shell(int center, int si) const;
+    boost::shared_ptr<GaussianShell> shell(int center, int si) const;
 
     /** Returns i'th shell's transform object.
      *  @param i Shell number
      *  @return A SOTransformShell object that details how to transform from AO to SO.
      */
-    SOTransformShell* so_transform(int i) { return sotransform_->aoshell(i); }
+    SOTransformShell* so_transform(int i);
 
     /** Returns the transformation object for a given angular momentum. Used in ERIs.
      *  @param am Angular momentum
      *  @return A SphericalTransform object that details how to transfrom from AO to BF.
      */
-    SphericalTransform& spherical_transform(int am) { return sphericaltransforms_[am]; }
+    SphericalTransform& spherical_transform(int am);
 
     /** Print the basis set.
      *  @param out The file stream to use for printing. Defaults to outfile.
@@ -191,12 +198,12 @@ public:
     /** Returns the uso2ao_ matrix.
      *  @return The transformation matrix for USO to AO.
      */
-    const shared_ptr<SimpleMatrix> uso_to_ao() const { return simple_mat_uso2ao_; }
+    const boost::shared_ptr<SimpleMatrix> uso_to_ao() const { return simple_mat_uso2ao_; }
 
     /** Returns the uso2bf_ matrix.
      *  @return The transformation matrix for USO to BF.
      */
-    const shared_ptr<SimpleMatrix> uso_to_bf() const { return simple_mat_uso2bf_; }
+    const boost::shared_ptr<SimpleMatrix> uso_to_bf() const { return simple_mat_uso2bf_; }
 
     /** Refresh internal basis set data. Useful if someone has pushed to shells_.
      *  Pushing to shells_ happens in the BasisSetParsers, so the parsers will
@@ -217,7 +224,7 @@ public:
     *
     * Used for Atomic HF computations for SAD Guesses
     */
-    shared_ptr<BasisSet> atomic_basis_set(int center);
+    boost::shared_ptr<BasisSet> atomic_basis_set(int center);
 
     /** Returns an empty basis set object.
      *
@@ -225,7 +232,7 @@ public:
      *  at the origin with an exponent of 0.0 and contraction of 1.0.
      *  @return A new empty BasisSet object.
      */
-    static shared_ptr<BasisSet> zero_basis_set();
+    static boost::shared_ptr<BasisSet> zero_basis_set();
 
     /** Returns a new BasisSet object.
      *
@@ -235,8 +242,8 @@ public:
      * @param basisname Name of the basis set to search for in pbasis.dat
      * @return A new basis set object constructed from the information passed in.
      */
-    static shared_ptr<BasisSet> construct(const shared_ptr<BasisSetParser>& parser,
-        const shared_ptr<Molecule>& mol,
+    static boost::shared_ptr<BasisSet> construct(const boost::shared_ptr<BasisSetParser>& parser,
+        const boost::shared_ptr<Molecule>& mol,
         const std::string &basisname);
 
     /** Returns a new BasisSet object.
@@ -247,8 +254,8 @@ public:
      * @param basisnames Name of the basis set for each atom in molecule to search for in pbasis.dat
      * @return A new basis set object constructed from the information passed in.
      */
-    static shared_ptr<BasisSet> construct(const shared_ptr<BasisSetParser>& parser,
-        const shared_ptr<Molecule>& mol,
+    static boost::shared_ptr<BasisSet> construct(const boost::shared_ptr<BasisSetParser>& parser,
+        const boost::shared_ptr<Molecule>& mol,
         const std::vector<std::string> &basisnames);
 
     friend class Gaussian94BasisSetParser;

@@ -12,15 +12,17 @@
 #include <libchkpt/chkpt.hpp>
 #include <psifiles.h>
 
+#include "vector3.h"
 #include "molecule.h"
 #include "basisset.h"
 #include "integral.h"
 #include "symmetry.h"
+#include "gshell.h"
 #include "factory.h"
-#include "vector3.h"
 #include "basisset_parser.h"
 #include "pointgrp.h"
 #include "wavefunction.h"
+#include "sobasis.h"
 
 using namespace std;
 using namespace psi;
@@ -557,3 +559,14 @@ shared_ptr<BasisSet> BasisSet::atomic_basis_set(int fcenter)
     //And ... return
     return bas;
 }
+
+SOTransformShell* BasisSet::so_transform(int i)
+{
+    return sotransform_->aoshell(i);
+}
+
+SphericalTransform& BasisSet::spherical_transform(int am)
+{
+    return sphericaltransforms_[am];
+}
+

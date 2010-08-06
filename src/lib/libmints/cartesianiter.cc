@@ -1,5 +1,5 @@
 #include "cartesianiter.h"
-#include <psi4-def.h>
+#include <exception.h>
 
 using namespace psi;
 
@@ -37,6 +37,20 @@ void CartesianIter::next()
 CartesianIter::operator int()
 {
     return (a_ >= 0);
+}
+
+////////////////////////////////////////////////////////////////////////
+
+RedundantCartesianIter::RedundantCartesianIter(int l) :
+    done_(0), l_(l), axis_(0)
+{
+    l_ = l;
+    axis_ = new int[l_];
+}
+
+RedundantCartesianIter::~RedundantCartesianIter()
+{
+    delete[] axis_;
 }
 
 int RedundantCartesianIter::bfn()

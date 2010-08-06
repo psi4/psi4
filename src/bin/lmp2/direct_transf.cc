@@ -5,25 +5,10 @@
 //#include "mpi.h"
 #include <iostream>
 #include <fstream>              // file I/O support
-//#include <cstdio>
-//#include <cstdlib>
-//#include <cstring>
-//#include <cmath>
-//#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
-//#include <libchkpt/chkpt.h>
-//#include <libpsio/psio.h>
-//#include <libqt/qt.h>
-//#include <libint/libint.h>
-#include <libmints/basisset.h>
-//#include <libmints/onebody.h>
-#include <libmints/twobody.h>
-#include <libmints/integral.h>
-#include <libmints/factory.h>
-#include <libmints/wavefunction.h>
+#include <libmints/mints.h>
 #include <libparallel/parallel.h>
 
-//#include <psifiles.h>
 #define EXTERN
 #include "globals.h"
 
