@@ -4,6 +4,10 @@
 #include <vector>
 #include <string>
 #include <cstdio>
+#include <string>
+#include <map>
+
+#include <boost/regex.hpp>
 
 #include <libmints/vector3.h>
 #include <libmints/vector.h>
@@ -33,6 +37,29 @@ public:
         std::string label;
     };
 
+    /**
+     * The type of geometry provided in the input
+     * None      - used to identify if the initial parsing has been done
+     * Cartesian - Cartesian coordinates
+     * ZMatrix   - Z matrix coordinates
+     */
+    enum GeometryFormat {None, ZMatrix, Cartesian};
+    
+    static shared_ptr<Molecule> parse_geometry(const std::string &geom);
+    /// Assigns the value val to the variable labelled string in the list of geometry variables
+    void set_variable(const std::string &str, double val) {geometryVariables_[str] = val;}
+    /// Checks to see if the variable str is in the list, sets it to val and returns
+    /// true if it is, and returns false if not.
+    bool get_variable(const std::string &str, double &val) {if(geometryVariables_.count(str)){
+                                                               val = geometryVariables_[str];
+                                                               return true;
+                                                           }else{
+                                                               return false;
+                                                           }}
+    /// Sets the geometry format
+    void set_geometry_format(GeometryFormat format) { geometryFormat_ = format; }
+    /// Gets the geometry format
+    GeometryFormat get_geometry_format() const { return geometryFormat_; }
 protected:
     /// Atom info vector (no knowledge of dummy atoms)
     std::vector<atom_info> atoms_;
@@ -42,6 +69,7 @@ protected:
     int nirreps_;
     /// Zero it out
     void clear();
+    double get_value(const std::string &str, const std::string &line);
 
     // Point group to use with this molecule.
     boost::shared_ptr<PointGroup> pg_;
@@ -51,6 +79,32 @@ protected:
     int *nequiv_;
     int **equiv_;
     int *atom_to_unique_;
+
+    /// A regular expression to test if a string looks like a floating point number
+    static boost::regex realNumber_;
+    /// A regular expression to test if a string looks like an integer
+    static boost::regex integerNumber_;
+    /// A regular expression to test if a string looks like an atom symbol
+    static boost::regex atomSymbol_;
+    /// A regular expression to test if a string looks like a variable assignment (e.g. x = 1.9)
+    static boost::regex variableDefinition_;
+    /// A regular expression to test if a string is just a blank line
+    static boost::regex blankLine_;
+    /// A regular expression to test if a string looks like a comment line
+    static boost::regex commentLine_;
+    /// A regular expression to test if a string looks like a command to specify the units
+    static boost::regex unitLabel_;
+    /// A regular expression to test if a string looks like a charge/multiplicty definition (e.g. -1 1)
+    static boost::regex chargeAndMultiplicity_;
+
+    /// The format of the geometry provided by the user
+    GeometryFormat geometryFormat_;
+
+    /// A listing of the variables used to define the geometries
+    std::map<std::string, double> geometryVariables_;
+    
+    /// Receives strings from regex_match tests
+    smatch reMatches_;
 
 public:
     Molecule();
