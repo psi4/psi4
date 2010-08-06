@@ -6,7 +6,6 @@
 #include <libiwl/iwl.hpp>
 #include "psifiles.h"
 #include "mospace.h"
-#include "spaceinfo.h"
 #define EXTERN
 #include <libdpd/dpd.gbl>
 

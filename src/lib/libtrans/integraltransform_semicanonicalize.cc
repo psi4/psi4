@@ -5,7 +5,6 @@
 #include <libiwl/iwl.hpp>
 #include "mospace.h"
 #include "psifiles.h"
-#include "spaceinfo.h"
 
 using namespace psi;
 
