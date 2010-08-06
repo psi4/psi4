@@ -289,7 +289,7 @@ void HF::print_header()
     char *temp;
     char **temp2;
     
-    fprintf(outfile, " %s: by Justin Turney and Rob Parrish\n\n", options_.get_str("REFERENCE"));
+    fprintf(outfile, " %s: by Justin Turney and Rob Parrish\n\n", options_.get_str("REFERENCE").c_str());
 
 #ifdef _DEBUG
     fprintf(outfile, "  Debug version.\n\n");
