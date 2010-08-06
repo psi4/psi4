@@ -10,7 +10,6 @@
 #include "psifiles.h"
 #include "ccfiles.h"
 #include "mospace.h"
-#include "spaceinfo.h"
 #define EXTERN
 #include <libdpd/dpd.gbl>
 

@@ -5,7 +5,6 @@
 #include <libqt/qt.h>
 #include <sstream>
 #include "mospace.h"
-#include "spaceinfo.h"
 
 using namespace psi;
 
