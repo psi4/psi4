@@ -111,6 +111,11 @@ bool py_psi_set_option_int(std::string const & name, int value)
     return true;
 }
 
+void py_psi_set_active_molecule(shared_ptr<Molecule> molecule)
+{
+    options.set_molecule(molecule);
+}
+
 BOOST_PYTHON_MODULE(PsiMod)
 {
     def("version", py_psi_version);
@@ -119,6 +124,7 @@ BOOST_PYTHON_MODULE(PsiMod)
 
     // Options
     def("set_default_options_for_module", py_psi_set_default_options_for_module);
+    def("set_active_molecule", py_psi_set_active_molecule);
     def("print_options", py_psi_print_options);
     def("print_out", py_psi_print_out);
 
@@ -246,7 +252,9 @@ BOOST_PYTHON_MODULE(PsiMod)
         def("reorient", &Molecule::reorient).
         def("find_point_group", &Molecule::find_point_group).
         def("set_point_group", &Molecule::set_point_group).
-        def("form_symmetry_information", &Molecule::form_symmetry_information);
+        def("form_symmetry_information", &Molecule::form_symmetry_information).
+        def("create_molecule_from_string", &Molecule::create_molecule_from_string).
+        staticmethod("create_molecule_from_string");
 }
 
 Python::Python() : Script()

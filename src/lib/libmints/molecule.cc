@@ -618,7 +618,7 @@ void Molecule::reorient()
 int Molecule::nfzc(std::string depth)
 {
     if (depth == "FALSE") {
-        return 0; 
+        return 0;
     }
     else if (depth == "TRUE" || depth == "SMALL") {
         int nfzc = 0;
@@ -626,17 +626,17 @@ int Molecule::nfzc(std::string depth)
             if (atoms_[A].Z > 2 && atoms_[A].Z <= 10)
                 nfzc++;
             else if (atoms_[A].Z > 10)
-                nfzc+=2; 
+                nfzc+=2;
         }
         return nfzc;
-    } 
+    }
     else if (depth == "LARGE") {
         int nfzc = 0;
         for (int A = 0; A < atoms_.size(); A++) {
             if (atoms_[A].Z > 2 && atoms_[A].Z <= 10)
                 nfzc++;
             else if (atoms_[A].Z > 10)
-                nfzc+=5; 
+                nfzc+=5;
         }
         return nfzc;
     }
@@ -762,7 +762,7 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
  * @param text: a string providing the user's input
  */
 shared_ptr<Molecule>
-Molecule::parse_geometry(const std::string &text)
+Molecule::create_molecule_from_string(const std::string &text)
 {
     Element_to_Z zVals;
     zVals.load_values();

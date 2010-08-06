@@ -5,12 +5,37 @@ def psidatadir(key):
 
 #
 # Define geometry to be used by PSI4.
+# The molecule created by this will be set in options.
+#
+# geometry("
+#   O  1.0 0.0 0.0
+#   H  0.0 1.0 0.0
+#   H  0.0 0.0 0.0
+#
+def geometry(geom, reorient = True, shiftToCOM = True):
+    # Create a Molecule object
+    molecule = PsiMod.Molecule.create_molecule_from_string(geom)
+
+    # If requested, shift molecule to center of mass
+    if shiftToCOM == True:
+        molecule.move_to_com()
+
+    # If requested, reorient the molecule.
+    if reorient == True:
+        molecule.reorient()
+
+    PsiMod.set_active_molecule(molecule)
+
+    return molecule
+
+#
+# Define geometry to be used by PSI4.
 # This geometry will be saved to the checkpoint file.
 #
 # geometry( [[ "O", 0.0, 0.0, 0.0 ],
 #            [ "H", 1.0, 0.0, 0.0 ]] )
 #
-def geometry(geom, reorient = True, prefix = "", chkpt = None, shiftToCOM = True):
+def geometry_old(geom, reorient = True, prefix = "", chkpt = None, shiftToCOM = True):
     # Make sure the user passed in what we expect
     if isinstance(geom, list) == False:
         raise TypeError("geometry must be a list")
