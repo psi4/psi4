@@ -1,0 +1,70 @@
+# 
+# bsse-corrected interaction energy along surface
+# 
+# Changed somewhat from Lori's initial suggested syntax
+#
+# CDS 8/6/10
+
+set {
+ mol_coord	zmat		# need special "vzmat" for zmat w/variables?
+ mol_units	angstrom
+}
+
+! charge 0                      # shortcut for set
+
+mol1 {
+O 
+H1 O r1(i) 
+H2 O r2(i) H1 theta(i)
+Ar O 2.0   H1 (180.0 - theta(i)/2.0) H2 0.0
+}
+
+set basis	6-31G*
+set reference   rhf
+
+angles = (100, 104, 110) 
+distances = (1.6, 1.7, 1.8, 1.9, 2.0) 
+i = 0
+for angle in angles:
+ for distance in distances:
+   i += 1
+   r1 = distances(ir1) 
+   # converts to something like this:
+   # mol1.update_zmat("r1", distances(ir1));
+   # where we have made a list associating r1 with mol1 so we know which molecule
+   # to update (and that r1 is a "special" z-matrix variable)
+   r2(i) = distances(ir2) 
+   theta(i) = angles(ith) 
+
+   sp ccsd(t)
+
+   escf_dimer(i) = energyscf 
+   eccsd_dimer(i) = energc 
+   eccsdt_dimer(i) = energy
+ 
+   dummy	1, 2, 3
+
+   sp ccsd(t)
+
+   escf_ar(i) = energyscf 
+   eccsd_ar(i) = energc 
+   eccsdt_ar(i) = energy
+
+   dummy	4
+
+   sp ccsd(t)
+
+   escf_water(i) = energyscf 
+   eccsd_water(i) = energc 
+   eccsdt_water(i) = energy
+
+#  compute BSSE-corrected interaction energy
+   ie_cpc_escf(i) = 627.5095 * ( escf_dimer(i) - escf_ar(i) - escf_water(i) )
+   ie_cpc_eccsd(i) = 627.5095 * ( eccsd_dimer(i) - eccsd_ar(i) - eccsd_water(i) )
+   ie_cpc_eccsdt(i) = 627.5095 * ( eccsdt_dimer(i) - eccsdt_ar(i) - eccsdt_water(i) )
+
+
+table		r1, r2, theta, ie_cpc_escf, ie_cpc_eccsd, ie_cpc_eccsdt 
+head		r1, r2, theta, scf, ccsd, ccsd(t)
+tablefate	file 		! save table to standard filename, say job.table
+
