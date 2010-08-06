@@ -115,8 +115,6 @@ void HF::common_init()
     }
 
     // Read information from checkpoint
-    //nuclearrep_ = chkpt_->rd_enuc();
-    //natom_ = chkpt_->rd_natom();
     nuclearrep_ = molecule_->nuclear_repulsion_energy();
     natom_ = molecule_->natom();
 
@@ -294,9 +292,9 @@ void HF::print_header()
 {
     char *temp;
     char **temp2;
-    char *reference;
+    
+    fprintf(outfile, " %s: by Justin Turney and Rob Parrish\n\n", options_.get_str("REFERENCE"));
 
-    fprintf(outfile, " SCF: by Justin Turney and Rob Parrish\n\n", reference);
 #ifdef _DEBUG
     fprintf(outfile, "  Debug version.\n\n");
 #else
@@ -524,10 +522,11 @@ void HF::form_Shalf()
         canonical_X_ = false;
 
         //A bit redundant, but it cements things
+        chkpt_->wt_nirreps(factory_.nirreps());
         chkpt_->wt_nso(nso_);
-        //chkpt_->wt_nsopi(nsopi_);
+        chkpt_->wt_sopi(nsopi_);
         chkpt_->wt_nmo(nmo_);
-        //chkpt_->wt_nmopi(nmopi_);
+        chkpt_->wt_orbspi(nmopi_);
 
         return;
     } else {
@@ -571,10 +570,11 @@ void HF::form_Shalf()
             fprintf(outfile,"  Overall, %d of %d possible MOs eliminated.\n",delta_mos,nso_);
         
         //Now things get a bit different
+        chkpt_->wt_nirreps(factory_.nirreps());
         chkpt_->wt_nso(nso_);
-        //chkpt_->wt_nsopi(nsopi_);
+        chkpt_->wt_sopi(nsopi_);
         chkpt_->wt_nmo(nmo_);
-        //chkpt_->wt_nmopi(nmopi_);
+        chkpt_->wt_orbspi(nmopi_);
         orbital_e_->init(eigvec.nirreps(), nmopi_);
         C_->init(eigvec.nirreps(),nsopi_,nmopi_,"MO coefficients");
     }

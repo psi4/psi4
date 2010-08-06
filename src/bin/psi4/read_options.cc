@@ -269,6 +269,11 @@ int read_options(const std::string &name, Options & options, bool call_ipv1)
     options.add_str("DUAL_BASIS_SCF","");
     /*- primary basis set -*/
     options.add_str("BASIS","");
+    /*- The scope of core orbitals to freeze in later correlated computations -*/
+    options.add_str("FREEZE_CORE","FALSE", \
+      "FALSE TRUE SMALL LARGE");
+    /* The number of virtual orbitals to freeze in correlated computations -*/
+    options.add_int("FREEZE_VIRT",0);
 
     /*- The guess type to be used in the computation -*/
     options.add_str("GUESS", "", "CORE GWH SAD READ BASIS2 DUAL_BASIS");
@@ -284,6 +289,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1)
     options.add_int("PRINT", 1);
     /*- Whether to perturb the Hamiltonian or not -*/
     options.add_bool("PERTURB_H", false);
+    /*- How big is the perturbation? -*/
     options.add_double("LAMBDA", 0.0);
     /*- The storage scheme for the three index tensors in density fitting -*/
     options.add_str("RI_SCF_STORAGE", "DEFAULT", "DEFAULT CORE DISK");
@@ -700,8 +706,10 @@ else if(name == "CCDENSITY") {
    }
   else if(name=="DFMP2") {
     //options.add_str("WFN", "RI-MP2");
-    //options.add_str("RI_BASIS_MP2","NONE");
-    // options.add_str("BASIS","NONE");
+    /*- RI Basis, needed by Python -*/
+    options.add_str("RI_BASIS_MP2","NONE");
+    /*- Basis, needed by Python -*/
+    options.add_str("BASIS","NONE");
     /*- OS Scale  -*/
     options.add_double("SCALE_OS", 6.0/5.0);
     /*- SS Scale  -*/
@@ -732,8 +740,6 @@ else if(name == "CCDENSITY") {
     options.add_int("E_CONVERGE", 8);
     /*- -Log10 of the density convergence criterion -*/
     options.add_int("D_CONVERGE", 8);
-    
-    options.add_int("FRZCPI", 0);
   }
   else if(name == "PSIMRCC") {
     options.add_int("CORR_CHARGE",0);
