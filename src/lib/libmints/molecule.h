@@ -45,7 +45,7 @@ public:
      */
     enum GeometryFormat {None, ZMatrix, Cartesian};
     
-    static shared_ptr<Molecule> parse_geometry(const std::string &geom);
+    static boost::shared_ptr<Molecule> parse_geometry(const std::string &geom);
     /// Assigns the value val to the variable labelled string in the list of geometry variables
     void set_variable(const std::string &str, double val) {geometryVariables_[str] = val;}
     /// Checks to see if the variable str is in the list, sets it to val and returns
@@ -103,9 +103,6 @@ protected:
     /// A listing of the variables used to define the geometries
     std::map<std::string, double> geometryVariables_;
     
-    /// Receives strings from regex_match tests
-    smatch reMatches_;
-
 public:
     Molecule();
     /// Copy constructor.

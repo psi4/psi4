@@ -89,7 +89,8 @@ namespace psi {
     double
     Molecule::get_value(const std::string &str, const std::string &line)
     {
-        if(regex_match(str, reMatches_, realNumber_)){
+        smatch reMatches;
+        if(regex_match(str, reMatches, realNumber_)){
             // This is already a number
             return str_to_double(str);
         }else{
