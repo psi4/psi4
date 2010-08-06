@@ -611,7 +611,35 @@ void Molecule::reorient()
     // Delete the tensor matrix
     delete itensor;
 }
-
+int Molecule::nfzc(std::string depth)
+{
+    if (depth == "FALSE") {
+        return 0; 
+    }
+    else if (depth == "TRUE" || depth == "SMALL") {
+        int nfzc = 0;
+        for (int A = 0; A < atoms_.size(); A++) {
+            if (atoms_[A].Z > 2 && atoms_[A].Z <= 10)
+                nfzc++;
+            else if (atoms_[A].Z > 10)
+                nfzc+=2; 
+        }
+        return nfzc;
+    } 
+    else if (depth == "LARGE") {
+        int nfzc = 0;
+        for (int A = 0; A < atoms_.size(); A++) {
+            if (atoms_[A].Z > 2 && atoms_[A].Z <= 10)
+                nfzc++;
+            else if (atoms_[A].Z > 10)
+                nfzc+=5; 
+        }
+        return nfzc;
+    }
+    else {
+        throw std::invalid_argument("Frozen core spec is not supported, options are {true, false, small, large}.");
+    }
+}
 void Molecule::init_with_psio(shared_ptr<PSIO> psio)
 {
     // User sent a psio object. Create a chkpt object based on it.
@@ -643,6 +671,8 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
 
     if (xyzfilename.empty())
         throw PSIEXCEPTION("Molecule::init_with_xyz: given filename is blank.");
+
+    //printf("%s",xyzfilename.c_str());
 
     ifstream infile(xyzfilename.c_str());
     string line, natom_str;

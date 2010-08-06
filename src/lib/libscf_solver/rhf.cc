@@ -719,16 +719,14 @@ double* RHF::getCartesianGridExtents(Options &opts, shared_ptr<Molecule> mol)
 
 void RHF::save_information()
 {
-#ifdef OLD
     // Print the final docc vector
-    char **temp2 = chkpt_->rd_irr_labs();
+    char **temp2 = molecule_->irrep_labels();
     int nso = chkpt_->rd_nso();
     fprintf(outfile, "\n  Final occupation vector = (");
     for (int h=0; h<factory_.nirreps(); ++h) {
         fprintf(outfile, "%2d %3s ", doccpi_[h], temp2[h]);
     }
     fprintf(outfile, ")\n");
-#endif
 
     //Canonical Orthogonalization has orbital eigenvalues
     //Which differ from those of the USO Fock Matrix
@@ -750,7 +748,6 @@ void RHF::save_information()
     }
 
     // Print out orbital energies.
-#ifdef OLD
     std::vector<std::pair<double, int> > pairs;
     for (int h=0; h<orbital_e_->nirreps(); ++h) {
         for (int i=0; i<nmopi_[h]; ++i)
@@ -779,7 +776,6 @@ void RHF::save_information()
     for (int i=0; i<orbital_e_->nirreps(); ++i)
         free(temp2[i]);
     free(temp2);
-#endif
 
     int *vec = new int[orbital_e_->nirreps()];
     for (int i=0; i<orbital_e_->nirreps(); ++i)
@@ -797,16 +793,19 @@ void RHF::save_information()
     chkpt_->wt_phase_check(0);
 
     // Figure out frozen core orbitals
-#ifdef OLD
-    int nfzc = chkpt_->rd_nfzc();
-    int nfzv = chkpt_->rd_nfzv();
+    //int nfzc = compute_nfzc();
+    //int nfzv = compute_nfzv();
+    int nfzc = molecule_->nfzc(options_.get_str("FREEZE_CORE"));
+    int nfzv = options_.get_int("FREEZE_VIRT");
+    chkpt_->wt_nfzc(nfzc);
+    chkpt_->wt_nfzv(nfzv);
     int *frzcpi = compute_fcpi(nfzc, orbital_e_);
     int *frzvpi = compute_fvpi(nfzv, orbital_e_);
     chkpt_->wt_frzcpi(frzcpi);
     chkpt_->wt_frzvpi(frzvpi);
     delete[](frzcpi);
     delete[](frzvpi);
-#endif
+    
     // Save the Fock matrix
     // Need to recompute the Fock matrix as F_ is modified during the SCF interation
     form_F();
@@ -2489,6 +2488,7 @@ void RHF::compute_SAD_guess()
         mol->print();
     }
 
+
     //Build the atomic basis sets for libmints use in UHF
     for (int A = 0; A<mol->nallatom(); A++) {
         atomic_bases.push_back(basisset_->atomic_basis_set(A));
@@ -2519,16 +2519,17 @@ void RHF::compute_SAD_guess()
     for (int A = 0; A<mol->nallatom(); A++) {
         int Z = mol->fZ(A);
         if (Z>36) {
-            throw std::domain_error("Atoms up to 36 (Kr) are currently supported with SAD");
+            throw std::domain_error("Atoms up to 36 (Kr) are currently supported with SAD Guess");
         }
         nhigh[A] = reference_S[Z];
         nelec[A] = Z;
         tot_elec+= nelec[A];
         nbeta[A] = (nelec[A]-nhigh[A])/2;
         nalpha[A] = nelec[A]-nbeta[A];
-        if (print_>6)
+        //if (print_>6)
             fprintf(outfile,"  Atom %d, Z = %d, nelec = %d, nhigh = %d, nalpha = %d, nbeta = %d\n",A,Z,nelec[A],nhigh[A],nalpha[A],nbeta[A]);
     }
+    fflush(outfile);
 
     timer_on("Atomic UHF");
 

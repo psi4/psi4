@@ -22,6 +22,7 @@ namespace psi {
     namespace cints    { PsiReturnType cints(Options &); }
     namespace cscf     { PsiReturnType cscf(Options &);  }
     namespace scf      { PsiReturnType scf(Options &);   }
+    namespace dfmp2    { PsiReturnType dfmp2(Options &); }
 
     extern int read_options(const std::string &name, Options & options, bool call_ipv1 = true);
     extern void psiclean(void);
@@ -66,7 +67,10 @@ int py_psi_scf()
 {
     return scf::scf(options);
 }
-
+int py_psi_dfmp2()
+{
+    return dfmp2::dfmp2(options);
+}
 char const* py_psi_version()
 {
     return PSI_VERSION;
@@ -91,7 +95,10 @@ void py_psi_print_options()
 {
     options.print();
 }
-
+void py_psi_print_out(std::string s)
+{
+    fprintf(outfile,"%s",s.c_str());
+}
 bool py_psi_set_option_string(std::string const & name, std::string const & value)
 {
     options.set_str(name, value);
@@ -113,6 +120,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     // Options
     def("set_default_options_for_module", py_psi_set_default_options_for_module);
     def("print_options", py_psi_print_options);
+    def("print_out", py_psi_print_out);
 
     typedef void (*optionsStringFunction)(std::string const &, std::string const&);
     typedef void (*optionsIntFunction)(std::string const &, int);
@@ -125,6 +133,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("cints", py_psi_cints);
     def("cscf",  py_psi_cscf);
     def("scf",   py_psi_scf);
+    def("dfmp2", py_psi_dfmp2);
 
     // Define library classes
     class_<PSIO, shared_ptr<PSIO> >( "IO" ).

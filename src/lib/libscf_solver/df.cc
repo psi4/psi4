@@ -16,10 +16,6 @@
 *
 *****************************************************************************/
 
-//Hack to use MKL threads efficiently in sort
-//Will eventually become a flag in configure
-//#define HAVE_MKL 1
-
 //MKL Header
 #ifdef HAVE_MKL
 #include <mkl.h>
@@ -977,7 +973,13 @@ void HF::form_Wp12_chol()
     
     //It takes a lot of work to get a null basis with Psi4! 
     shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
-    ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_SCF"));
+    if (options_.get_bool("NO_INPUT") == false) {
+        ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_SCF"));
+    } else {
+        shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
+        ribasis_ = BasisSet::construct(parser, molecule_, options_.get_str("RI_BASIS_SCF"));
+        ribasis_->print();
+    }
     naux_raw_ = ribasis_->nbf(); 
     naux_fin_ = naux_raw_; 
     
@@ -1120,7 +1122,13 @@ void HF::form_Wm12_raw()
  
     //It takes a lot of work to get a null basis with Psi4! 
     shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
-    ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_SCF"));
+    if (options_.get_bool("NO_INPUT") == false) {
+        ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_SCF"));
+    } else {
+        shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
+        ribasis_ = BasisSet::construct(parser, molecule_, options_.get_str("RI_BASIS_SCF"));
+        ribasis_->print();
+    }
     naux_raw_ = ribasis_->nbf(); 
     naux_fin_ = naux_raw_; //To start
     
@@ -1245,7 +1253,14 @@ void HF::form_Wm12_fin()
  
     //It takes a lot of work to get a null basis with Psi4! 
     shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
-    ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_SCF"));
+    
+    if (options_.get_bool("NO_INPUT") == false) {
+        ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_SCF"));
+    } else {
+        shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
+        ribasis_ = BasisSet::construct(parser, molecule_, options_.get_str("RI_BASIS_SCF"));
+        ribasis_->print();
+    }
     naux_raw_ = ribasis_->nbf(); 
     naux_fin_ = naux_raw_; //To start
     

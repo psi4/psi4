@@ -174,6 +174,9 @@ public:
     /// Returns charge of atom
     double fcharge(int atom) const { return full_atoms_[atom].charge; }
 
+    /// Number of frozen core for molecule given freezing state
+    int nfzc(std::string depth);
+
     /// Tests to see of an atom is at the passed position with a given tolerance
     int atom_at_position1(double *, double tol = 0.05) const;
     int atom_at_position2(Vector3&, double tol = 0.05) const;

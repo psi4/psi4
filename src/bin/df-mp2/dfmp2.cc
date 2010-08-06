@@ -9,10 +9,6 @@
 *       Canonical (delocalized) density fitting routines for MP2 and SCS-MP2
 *
 *****************************************************************************/
-//Hack to use MKL threads efficiently in sort
-//Will eventually become a flag in configure
-//#define HAVE_MKL 1
-
 //MKL Header
 #ifdef HAVE_MKL
 #include <mkl.h>
@@ -66,9 +62,6 @@ void  DFMP2::setup()
   frzcpi_ = chkpt_->rd_frzcpi();
   frzvpi_ = chkpt_->rd_frzvpi();
 
-  //HACK (for buckycatcher)
-  frzcpi_[0] = options_.get_int("FRZCPI");
-
   ndocc_ = 0;
   nvirt_ = 0;
   nf_docc_ = 0;
@@ -87,7 +80,13 @@ void  DFMP2::setup()
   nso_ = chkpt_->rd_nso();
   
   // Form ribasis object and auxiliary basis indexing:
-  ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_MP2"));
+  if (options_.get_bool("NO_INPUT") == false) {
+      ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_MP2"));
+  } else {
+     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
+     ribasis_ = BasisSet::construct(parser, molecule_, options_.get_str("RI_BASIS_MP2"));
+     ribasis_->print();
+  }
   naux_raw_ = ribasis_->nbf();
   naux_fin_ = ribasis_->nbf(); //For now, may be pared later
   zerobasis_ = BasisSet::zero_basis_set();

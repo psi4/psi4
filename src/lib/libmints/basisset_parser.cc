@@ -286,6 +286,7 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
                                                 atom,
                                                 center,
                                                 0);
+                                new_shell->normalize_shell();
                                 basisSet->shells_.push_back(new_shell);
 
                                 delete[] exponents;
