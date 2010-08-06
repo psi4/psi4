@@ -6,6 +6,12 @@ import PsiMod;
 
 PsiMod.version();
 
+geometry("""
+O 0.0 0.0 0.0
+H 0.0 0.0 1.0
+H 0.0 1.0 0.0
+""")
+
 PsiMod.set_default_options_for_module("SCF");
 
 PsiMod.set_option("NO_INPUT", True);
@@ -15,10 +21,9 @@ PsiMod.set_option("PRINT", 2);
 PsiMod.set_option("BASIS", "3-21G");
 PsiMod.set_option("RI_BASIS_SCF", "STO-3G");
 PsiMod.set_option("FREEZE_CORE", "true");
-PsiMod.set_option("XYZ_FILE", "mol.xyz");
+# PsiMod.set_option("XYZ_FILE", "mol.xyz");
 
 PsiMod.print_out("\n Running SCF:\n");
-PsiMod.print_out("\n Options:\n");
 PsiMod.print_options();
 
 PsiMod.scf();
@@ -30,7 +35,6 @@ PsiMod.set_option("RI_BASIS_MP2", "STO-3G");
 PsiMod.set_option("XYZ_FILE", "mol.xyz");
 
 PsiMod.print_out("\n Running DFMP2:\n");
-PsiMod.print_out("\n Options:\n");
 PsiMod.print_options();
 PsiMod.dfmp2();
 
