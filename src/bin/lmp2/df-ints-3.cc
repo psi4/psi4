@@ -15,13 +15,7 @@
 #include <iostream>
 #include <fstream>              // file I/O support
 #include <libciomr/libciomr.h>
-#include <libmints/basisset.h>
-#include <libmints/onebody.h>
-#include <libmints/twobody.h>
-#include <libmints/integral.h>
-#include <libmints/factory.h>
-//#include <libmints/symmetry.h>
-#include <libmints/wavefunction.h>
+#include <libmints/mints.h>
 #include <libparallel/parallel.h>
 //#include <psifiles.h>
 #define EXTERN

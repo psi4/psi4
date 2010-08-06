@@ -6,6 +6,8 @@
 #include <libipv1/ip_lib.h>
 #include <libutil/libutil.h>
 
+#include <libmints/mints.h>
+
 #include "liboptions.h"
 
 #include <psi4-dec.h>
@@ -170,4 +172,13 @@ namespace psi {
     fprintf(outfile, "%s\n", list.c_str());
   }
 
+  void Options::set_molecule(boost::shared_ptr<Molecule> molecule)
+  {
+    molecule_ = molecule;
+  }
+
+  boost::shared_ptr<Molecule> Options::molecule() const
+  {
+    return molecule_;
+  }
 }

@@ -1,11 +1,13 @@
 #ifndef _psi_src_lib_libmints_basisset_parser_h_
 #define _psi_src_lib_libmints_basisset_parser_h_
 
-#include <cstdio>
-// Need libint for maximum angular momentum
-#include "basisset.h"
+#include <vector>
+#include <string>
+#include <boost/shared_ptr.hpp>
 
 namespace psi {
+
+    class BasisSet;
 
 /*! @ingroup MINTS
     @class BasisSetParser

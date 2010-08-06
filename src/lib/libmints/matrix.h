@@ -9,12 +9,13 @@
 #include <libparallel/serialize.h>
 
 #include <libpsio/psio.hpp>
-#include <psi4-dec.h>
 
 namespace psi {
 
 class MatrixFactory;
 class SimpleMatrix;
+
+extern FILE *outfile;
 
 /*! \ingroup MINTS
  *  \class Matrix

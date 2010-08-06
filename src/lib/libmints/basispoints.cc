@@ -1,21 +1,17 @@
-#include <libmints/integral.h>
-#include <libmints/basisset.h>
-#include <libmints/basispoints.h>
-#include <libmints/gridblock.h>
-#include <libmints/gshell.h>
+#include "molecule.h"
+#include "vector3.h"
+#include "integral.h"
+#include "basisset.h"
+#include "basispoints.h"
+#include "gridblock.h"
+#include "gshell.h"
 #include <cstdio>
 #include <cmath>
 
-//#include <psifiles.h>
 #include <libciomr/libciomr.h>
-//#include <libpsio/psio.h>
-//#include <libchkpt/chkpt.hpp>
-//#include <libipv1/ip_lib.h>
-//#include <libiwl/iwl.hpp>
-//#include <libqt/qt.h>
-//#include <psifiles.h>
 
 using namespace psi;
+using namespace boost;
 
 BasisPoints::BasisPoints(shared_ptr<BasisSet> bas, int block_size)
 {
@@ -396,3 +392,9 @@ void BasisPoints::computePoints(SharedGridBlock grid)
     // << CLOSE OUTER LOOP OVER GRID POINTS
     }
 }
+
+int BasisPoints::nbf()
+{
+    return basis_->nbf();
+}
+

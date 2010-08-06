@@ -4,21 +4,21 @@
 #include <vector>
 #include <string>
 #include <cstdio>
-#include <string>
 #include <map>
 
 #include <boost/regex.hpp>
-
-#include <libmints/vector3.h>
-#include <libmints/vector.h>
-#include <libmints/matrix.h>
-
-#include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace psi {
 
+class PSIO;
+class Chkpt;
 class PointGroup;
+class Matrix;
+class SimpleMatrix;
+class Vector;
+class SimpleVector;
+class Vector3;
 
 extern FILE *outfile;
 
@@ -116,9 +116,9 @@ public:
     Molecule& operator=(const Molecule& other);
 
     /// Pull information from a chkpt object created from psio
-    void init_with_psio(shared_ptr<PSIO> psio);
+    void init_with_psio(boost::shared_ptr<PSIO> psio);
     /// Pull information from the chkpt object passed
-    void init_with_chkpt(shared_ptr<Chkpt> chkpt);
+    void init_with_chkpt(boost::shared_ptr<Chkpt> chkpt);
     /// Pull information from an XYZ file
     void init_with_xyz(const std::string& xyzfilename);
 
@@ -156,8 +156,8 @@ public:
     /// Return copy of atom_info for atom in full atoms
     atom_info fr(int atom) { return full_atoms_[atom]; }
     /// Returns a Vector3 with x, y, z position of atom
-    Vector3 xyz(int atom) const { return Vector3(atoms_[atom].x, atoms_[atom].y, atoms_[atom].z); }
-    Vector3 fxyz(int atom) const { return Vector3(full_atoms_[atom].x, full_atoms_[atom].y, full_atoms_[atom].z); }
+    Vector3 xyz(int atom) const;
+    Vector3 fxyz(int atom) const;
     /// Returns x, y, or z component of 'atom'
     double& xyz(int atom, int _xyz);
     const double& xyz(int atom, int _xyz) const;

@@ -1,15 +1,17 @@
 #ifndef _psi_src_lib_libmints_electrostatic_h_
 #define _psi_src_lib_libmints_electrostatic_h_
 
-#include <libmints/basisset.h>
-#include <libmints/gshell.h>
-#include <libmints/osrecur.h>
-#include <libmints/onebody.h>
-#include <libmints/integral.h>
-#include <libmints/potential.h>
-#include <libmints/vector3.h>
-
 namespace psi {
+
+    class BasisSet;
+    class GaussianShell;
+    class ObaraSaikaTwoCenterRecursion;
+    class OneBodyInt;
+    class PotentialInt;
+    class IntegralFactory;
+    class SphericalTransform;
+    class SimpleMatrix;
+    class Vector3;
 
 /*! \ingroup MINTS
  *  \class PotentialInt

@@ -1,12 +1,6 @@
 #ifndef _psi_src_lib_libmints_wavefunction_h
 #define _psi_src_lib_libmints_wavefunction_h
 
-#include <libmints/factory.h>
-#include <libmints/molecule.h>
-#include <libmints/basisset.h>
-#include <libpsio/psio.hpp>
-#include <psi4-dec.h>
-
 #define MAX_IOFF 30000
 extern size_t ioff[MAX_IOFF];
 
@@ -22,7 +16,15 @@ extern double fac[MAX_FAC];
 #define INDEX2(i, j) ( (i) >= (j) ? ioff[(i)] + (j) : ioff[(j)] + (i) )
 #define INDEX4(i, j, k, l) ( INDEX2( INDEX2((i), (j)), INDEX2((k), (l)) ) )
 
+#include "factory.h"
+#include <liboptions/liboptions.h>
+
 namespace psi {
+
+class Molecule;
+class BasisSet;
+class MatrixFactory;
+class Options;
 
 /*! \ingroup MINTS
  *  \class Wavefunction

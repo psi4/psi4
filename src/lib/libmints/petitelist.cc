@@ -28,10 +28,7 @@
 //
 
 
-#include "petitelist.h"
-#include "matrix.h"
-#include "shellrotation.h"
-#include "pointgrp.h"
+#include "mints.h"
 
 using namespace boost;
 using namespace psi;
@@ -178,6 +175,11 @@ PetiteList::~PetiteList()
     shell_map_=0;
     lamij_=0;
     nbf_in_ir_=0;
+}
+
+int PetiteList::nfunction(int i) const
+{
+    return (c1_) ? basis_->nbf() : nbf_in_ir_[i];
 }
 
 void PetiteList::init()

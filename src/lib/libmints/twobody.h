@@ -1,12 +1,12 @@
 #ifndef _psi_src_lib_libmints_twobody_h
 #define _psi_src_lib_libmints_twobody_h
 
-#include <libmints/matrix.h>
-#include <libmints/integral.h>
+#include <boost/shared_ptr.hpp>
 
 namespace psi {
     
 class IntegralFactory;
+class ShellCombinationsIterator;
 class BasisSet;
 class GaussianShell;
 
@@ -17,15 +17,15 @@ class GaussianShell;
 class TwoBodyInt
 {
 protected:
-    shared_ptr<BasisSet> bs1_;
-    shared_ptr<BasisSet> bs2_;
-    shared_ptr<BasisSet> bs3_;
-    shared_ptr<BasisSet> bs4_;
+    boost::shared_ptr<BasisSet> bs1_;
+    boost::shared_ptr<BasisSet> bs2_;
+    boost::shared_ptr<BasisSet> bs3_;
+    boost::shared_ptr<BasisSet> bs4_;
 
-    shared_ptr<BasisSet> original_bs1_;
-    shared_ptr<BasisSet> original_bs2_;
-    shared_ptr<BasisSet> original_bs3_;
-    shared_ptr<BasisSet> original_bs4_;
+    boost::shared_ptr<BasisSet> original_bs1_;
+    boost::shared_ptr<BasisSet> original_bs2_;
+    boost::shared_ptr<BasisSet> original_bs3_;
+    boost::shared_ptr<BasisSet> original_bs4_;
     
     /// Buffer to hold the final integrals.
     double *target_;
@@ -50,25 +50,25 @@ protected:
     void permute_1234_to_4321(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4);
     
     TwoBodyInt(
-               shared_ptr<BasisSet> bs1,
-               shared_ptr<BasisSet> bs2,
-               shared_ptr<BasisSet> bs3,
-               shared_ptr<BasisSet> bs4,
+               boost::shared_ptr<BasisSet> bs1,
+               boost::shared_ptr<BasisSet> bs2,
+               boost::shared_ptr<BasisSet> bs3,
+               boost::shared_ptr<BasisSet> bs4,
                int deriv = 0);
                
 public:
     virtual ~TwoBodyInt();
     
     /// Basis set on center one
-    shared_ptr<BasisSet> basis();
+    boost::shared_ptr<BasisSet> basis();
     /// Basis set on center one
-    shared_ptr<BasisSet> basis1();
+    boost::shared_ptr<BasisSet> basis1();
     /// Basis set on center two
-    shared_ptr<BasisSet> basis2();
+    boost::shared_ptr<BasisSet> basis2();
     /// Basis set on center three
-    shared_ptr<BasisSet> basis3();
+    boost::shared_ptr<BasisSet> basis3();
     /// Basis set on center four
-    shared_ptr<BasisSet> basis4();
+    boost::shared_ptr<BasisSet> basis4();
 
     /// Buffer where the integrals are placed
     const double *buffer() const { return target_; };
@@ -86,7 +86,7 @@ public:
     virtual void compute_shell_deriv1(int, int, int, int) = 0;
     
     /// Normalize Cartesian functions based on angular momentum
-    void normalize_am(shared_ptr<GaussianShell>, shared_ptr<GaussianShell>, shared_ptr<GaussianShell>, shared_ptr<GaussianShell>, int nchunk=1);
+    void normalize_am(boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>, int nchunk=1);
         
     /// Return true if the clone member can be called. By default returns false.
     virtual bool cloneable();

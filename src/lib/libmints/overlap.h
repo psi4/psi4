@@ -1,13 +1,21 @@
 #ifndef _psi_src_lib_libmints_overlap_h_
 #define _psi_src_lib_libmints_overlap_h_
 
-#include <libmints/basisset.h>
-#include <libmints/gshell.h>
-#include <libmints/osrecur.h>
+#include <boost/shared_ptr.hpp>
+#include <vector>
+
 #include <libmints/onebody.h>
-#include <libmints/integral.h>
 
 namespace psi {
+
+    class BasisSet;
+    class GaussianShell;
+    class ObaraSaikaTwoCenterRecursion;
+    class OneBodyInt;
+    class IntegralFactory;
+    class SphericalTransform;
+    class SimpleMatrix;
+    class Matrix;
 
 /*! \ingroup MINTS
  *  \class OverlapInt
@@ -20,13 +28,13 @@ class OverlapInt : public OneBodyInt
     ObaraSaikaTwoCenterRecursion overlap_recur_;
     
     /// Computes the overlap between a given shell pair.
-    void compute_pair(shared_ptr<GaussianShell> , shared_ptr<GaussianShell>);
-    void compute_pair_deriv1(shared_ptr<GaussianShell>, shared_ptr<GaussianShell>);
-    void compute_pair_deriv2(shared_ptr<GaussianShell>, shared_ptr<GaussianShell>);
+    void compute_pair(boost::shared_ptr<GaussianShell> , boost::shared_ptr<GaussianShell>);
+    void compute_pair_deriv1(boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>);
+    void compute_pair_deriv2(boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>);
     
 public:
     /// Constructor, it assumes you are not computing derivatives by default
-    OverlapInt(std::vector<SphericalTransform>&, shared_ptr<BasisSet>, shared_ptr<BasisSet>, int deriv=0);
+    OverlapInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, int deriv=0);
     ~OverlapInt();
     
     /// Compute overlap between 2 shells. Result is stored in buffer.

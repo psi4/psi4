@@ -20,6 +20,8 @@
 namespace psi {
   extern FILE *outfile;
 
+  class Molecule;               // Found in libmints/molecule.h
+
   class DataTypeException : public PsiException
   {
   public:
@@ -608,6 +610,8 @@ namespace psi {
     std::map<std::string, Data> keyvals_;
     typedef std::map<std::string, Data>::iterator iterator;
     typedef std::map<std::string, Data>::const_iterator const_iterator;
+
+    boost::shared_ptr<Molecule> molecule_;
   public:
     Options() { }
 
@@ -764,6 +768,11 @@ namespace psi {
     void print();
 
     void read_ipv1();
+
+    // Set active molecule
+    void set_molecule(boost::shared_ptr<Molecule> molecule);
+    // Return active molecule
+    boost::shared_ptr<Molecule> molecule() const;
 
   private:
     void read_boolean(Data& data, const std::string& key, int m = 0, int n = 0);

@@ -1,6 +1,6 @@
-#include "basisset_parser.h"
+#include "mints.h"
 
-#include <libmints/integral.h>
+#include <psi4-dec.h>
 
 #include <boost/regex.hpp>
 #include <boost/xpressive/xpressive.hpp>

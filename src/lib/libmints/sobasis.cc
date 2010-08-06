@@ -1,6 +1,7 @@
 #include <cstdio>
 
-#include <libmints/sobasis.h>
+#include "mints.h"
+
 #include <psi4-dec.h>
 
 using namespace psi;

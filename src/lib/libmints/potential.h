@@ -1,13 +1,18 @@
 #ifndef _psi_src_lib_libmints_potential_h_
 #define _psi_src_lib_libmints_potential_h_
 
-#include <libmints/basisset.h>
-#include <libmints/gshell.h>
-#include <libmints/osrecur.h>
-#include <libmints/onebody.h>
-#include <libmints/integral.h>
+#include <vector>
+#include <boost/shared_ptr.hpp>
 
 namespace psi {
+
+    class BasisSet;
+    class GaussianShell;
+    class ObaraSaikaTwoCenterVIRecursion;
+    class ObaraSaikaTwoCenterVIDerivRecursion;
+    class OneBodyInt;
+    class IntegralFactory;
+    class SphericalTransform;
 
 /*! \ingroup MINTS
  *  \class PotentialInt
@@ -18,9 +23,9 @@ class PotentialInt : public OneBodyInt
 {
     
     /// Computes integrals between two shell objects.
-    void compute_pair(shared_ptr<GaussianShell>, shared_ptr<GaussianShell>);
+    void compute_pair(boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>);
     /// Computes integrals between two shell objects.
-    void compute_pair_deriv1(shared_ptr<GaussianShell>, shared_ptr<GaussianShell>);
+    void compute_pair_deriv1(boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>);
     
 protected:
     /// Recursion object that does the heavy lifting.
@@ -30,7 +35,7 @@ protected:
 
 public:
     /// Constructor
-    PotentialInt(std::vector<SphericalTransform>&, shared_ptr<BasisSet>, shared_ptr<BasisSet>, int deriv=0);
+    PotentialInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, int deriv=0);
     ~PotentialInt();
     
     /// Computes integrals between two shells.

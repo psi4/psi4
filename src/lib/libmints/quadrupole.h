@@ -1,13 +1,18 @@
 #ifndef _psi_src_lib_libmints_quadrupole_h_
 #define _psi_src_lib_libmints_quadrupole_h_
 
-#include <libmints/basisset.h>
-#include <libmints/gshell.h>
-#include <libmints/osrecur.h>
-#include <libmints/onebody.h>
-#include <libmints/integral.h>
+#include <vector>
+#include <boost/shared_ptr.hpp>
 
 namespace psi {
+
+class OneBodyInt;
+class ObaraSaikaTwoCenterRecursion;
+class GaussianShell;
+class SphericalTransform;
+class BasisSet;
+class Matrix;
+class SimpleMatrix;
 
 /*! \ingroup MINTS
  *  \class QuadrupoleInt
@@ -18,20 +23,20 @@ class QuadrupoleInt : public OneBodyInt
 {
     ObaraSaikaTwoCenterRecursion overlap_recur_;
     
-    void compute_pair(shared_ptr<GaussianShell>, shared_ptr<GaussianShell>);
+    void compute_pair(boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>);
     
 public:
-    QuadrupoleInt(std::vector<SphericalTransform>&, shared_ptr<BasisSet>, shared_ptr<BasisSet>);
+    QuadrupoleInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>);
     virtual ~QuadrupoleInt();
     
     void compute_shell(int, int);
     
     /// Computes all quadrupole integrals (Qxx, Qxy, Qxz, Qyy, Qyz, Qzz) result must be an array of enough
     /// size to contain it.
-    void compute(std::vector<shared_ptr<Matrix> > &result);
-    void compute(std::vector<shared_ptr<SimpleMatrix> > &result);
+    void compute(std::vector<boost::shared_ptr<Matrix> > &result);
+    void compute(std::vector<boost::shared_ptr<SimpleMatrix> > &result);
     
-    virtual void spherical_transform(shared_ptr<GaussianShell> , shared_ptr<GaussianShell>);
+    virtual void spherical_transform(boost::shared_ptr<GaussianShell> , boost::shared_ptr<GaussianShell>);
 };
 
 }

@@ -1,7 +1,8 @@
 #include <cstdlib>
 #include <cmath>
-#include <libmints/integral.h>
-#include <libmints/gshell.h>
+#include "vector3.h"
+#include "integral.h"
+#include "gshell.h"
 
 #include <libmints/wavefunction.h>
 
@@ -135,4 +136,9 @@ double GaussianShell::normalize(int l, int m, int n)
         // printf("l_=%d, l=%d, m=%d, n=%d, norm=%15.10f\n", l_[0], l, m, n, sqrt(numer/denom));
         return sqrt(numer/denom);
     }
+}
+
+Vector3 GaussianShell::center() const
+{ 
+    return center_; 
 }

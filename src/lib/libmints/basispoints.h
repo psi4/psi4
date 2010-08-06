@@ -1,14 +1,17 @@
 #ifndef _psi_src_lib_libmints_basispoints_h_
 #define _psi_src_lib_libmints_basispoints_h_
-#include <libmints/basisset.h>
-#include <libmints/vector3.h>
-#include <libmints/gridblock.h>
+
+#include <boost/shared_ptr.hpp>
+
 namespace psi {
+
+    class BasisSet;
+    class GridBlock;
 
 	class BasisPoints
 	{
 		protected:
-			shared_ptr<BasisSet> basis_;
+			boost::shared_ptr<BasisSet> basis_;
 			double* ao_points_; 
 			double* ao_gradX_, *ao_gradY_, *ao_gradZ_;
 			double* ao_hessXY_, *ao_hessXZ_, *ao_hessYZ_, *ao_hessXX_, *ao_hessYY_, *ao_hessZZ_;
@@ -45,9 +48,9 @@ namespace psi {
                         void release();
 			void allocate();
 		public:
-			BasisPoints(shared_ptr<BasisSet> b, int block_size);
+			BasisPoints(boost::shared_ptr<BasisSet> b, int block_size);
 			~BasisPoints();
-			void computePoints(SharedGridBlock block);
+			void computePoints(boost::shared_ptr<GridBlock> block);
 			double** getPoints() { return points_; }
 			double** getGradientsX() {return gradientsZ_; }
 			double** getGradientsY() {return gradientsY_; }
@@ -63,10 +66,10 @@ namespace psi {
 			void setToComputeGradients(bool val) { do_gradients_ = val; allocate(); release(); }
 			void setToComputeHessians(bool val) { do_hessians_ = val; allocate(); release(); }
 			void setToComputeLaplacians(bool val) { do_laplacians_ = val; allocate(); release(); }
-			int nbf() { return basis_->nbf();  }
-                        int getBlockSize() { return block_size_;}  
+			int nbf();
+            int getBlockSize() { return block_size_;}  
 			int getTrueSize() {return true_size_; }
-                        void setTrueSize(int size) {true_size_ = size; }
+            void setTrueSize(int size) {true_size_ = size; }
 	};
 }
 #endif

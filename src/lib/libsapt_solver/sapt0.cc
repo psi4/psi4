@@ -29,13 +29,9 @@
 #include <libqt/qt.h>
 #include <psifiles.h>
 
-#include "sapt0.h"
+#include <libmints/mints.h>
 
-#include <libmints/basisset.h>
-#include <libmints/onebody.h>
-#include <libmints/twobody.h>
-#include <libmints/integral.h>
-#include <libmints/molecule.h>
+#include "sapt0.h"
 
 using namespace boost;
 using namespace std;

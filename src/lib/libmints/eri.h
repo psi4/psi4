@@ -1,18 +1,18 @@
 #ifndef _psi_src_lib_libmints_eri_h
 #define _psi_src_lib_libmints_eri_h
 
-#include <libmints/basisset.h>
-#include <libmints/gshell.h>
-#include <libmints/osrecur.h>
-#include <libmints/onebody.h>
-#include <libmints/twobody.h>
-#include <libmints/integral.h>
-#include <libmints/fjt.h>
-
 #include <libint/libint.h>
 #include <libderiv/libderiv.h>
 
 namespace psi {
+
+    class BasisSet;
+    class GaussianShell;
+    class TwoBodyInt;
+    class IntegralFactory;
+    class SphericalTransform;
+    class SimpleMatrix;
+    class Fjt;
 
     /**
       * \ingroup MINTS

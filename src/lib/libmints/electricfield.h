@@ -1,13 +1,15 @@
 #ifndef _psi_src_lib_libmints_electricfield_h_
 #define _psi_src_lib_libmints_electricfield_h_
 
-#include <libmints/basisset.h>
-#include <libmints/gshell.h>
-#include <libmints/osrecur.h>
-#include <libmints/onebody.h>
-#include <libmints/integral.h>
-
 namespace psi {
+
+    class BasisSet;
+    class GaussianShell;
+    class ObaraSaikaTwoCenterRecursion;
+    class OneBodyInt;
+    class IntegralFactory;
+    class SphericalTransform;
+    class SimpleMatrix;
 
 /*! \ingroup MINTS
  *  \class ElectricFieldInt

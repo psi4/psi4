@@ -1,9 +1,7 @@
 #include <stdexcept>
 #include <libciomr/libciomr.h>
 
-#include <libmints/basisset.h>
-#include <libmints/gshell.h>
-#include <libmints/overlap.h>
+#include "mints.h"
 #include <physconst.h>
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))

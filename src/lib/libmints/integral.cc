@@ -1,15 +1,4 @@
-#include <libmints/basisset.h>
-#include <libmints/onebody.h>
-#include <libmints/twobody.h>
-#include <libmints/overlap.h>
-#include <libmints/kinetic.h>
-#include <libmints/potential.h>
-#include <libmints/electrostatic.h>
-#include <libmints/integral.h>
-#include <libmints/dipole.h>
-#include <libmints/quadrupole.h>
-#include <libmints/eri.h>
-#include <libmints/electricfield.h>
+#include "mints.h"
 
 using namespace psi;
 
@@ -106,6 +95,21 @@ IntegralsIterator ShellCombinationsIterator::integrals_iterator()
 IntegralsIterator IntegralFactory::integrals_iterator(int p, int q, int r, int s)
 {
     return IntegralsIterator(bs1_->shell(p), bs2_->shell(q), bs3_->shell(r), bs4_->shell(s));
+}
+
+CartesianIter* IntegralFactory::cartesian_iter(int l) 
+{ 
+    return new CartesianIter(l); 
+}
+
+RedundantCartesianIter* IntegralFactory::redundant_cartesian_iter(int l) 
+{ 
+    return new RedundantCartesianIter(l); 
+}
+
+RedundantCartesianSubIter* IntegralFactory::redundant_cartesian_sub_iter(int l) 
+{ 
+    return new RedundantCartesianSubIter(l); 
 }
 
 /*
