@@ -39,6 +39,79 @@ bool from_string(T& t,
 #define ZERO 1.0E-14
 
 namespace psi {
+
+    boost::regex Molecule::realNumber_("(-?\\d+\\.\\d+)|(-?\\d+\\.)|(-?\\.\\d+)|(-?\\d+)", boost::regbase::normal | boost::regbase::icase);
+    boost::regex Molecule::integerNumber_("(-?\\d+)", boost::regbase::normal | boost::regbase::icase);
+    boost::regex Molecule::atomSymbol_("([A-Z]{1,2})\\d*", boost::regbase::normal | boost::regbase::icase);
+    boost::regex Molecule::variableDefinition_("\\s*(\\w+)\\s*=\\s*((-?\\d+\\.\\d+)|(-?\\d+\\.)|(-?\\.\\d+)|(-?\\d+))\\s*", boost::regbase::normal | boost::regbase::icase);
+    boost::regex Molecule::blankLine_("[\\s%]*", boost::regbase::normal | boost::regbase::icase);
+    boost::regex Molecule::commentLine_("\\s*%.*", boost::regbase::normal | boost::regbase::icase);
+    boost::regex Molecule::unitLabel_("\\s*((ang)|(angstrom)|(bohr)|(au)|(a\\.u\\.))\\s*", boost::regbase::normal | boost::regbase::icase);
+    boost::regex Molecule::chargeAndMultiplicity_("\\s*(-?\\d+)\\s+(\\d+)\\s*", boost::regbase::normal | boost::regbase::icase);
+
+    /**
+     * Interprets a string as an integer, throwing if it's unsuccesful.
+     */
+    int
+    str_to_int(const std::string& s)
+    {
+        int i;
+        std::istringstream iss(s);
+        if((iss >> std::dec >> i).fail())
+            throw PSIEXCEPTION("Unable to convert " + s + " to an integer");
+        return i;
+    }
+
+    /**
+     * Interprets a string as an double, throwing if it's unsuccesful.
+     */
+    double
+    str_to_double(const std::string& s)
+    {
+        double d;
+        std::istringstream iss(s);
+        if((iss >> std::dec >> d).fail())
+            throw PSIEXCEPTION("Unable to convert " + s + " to a double");
+        return d;
+    }
+
+    /**
+     * Attempts to interpret a string as a double.  If it's not succesful, it checks to
+     * see if it's been defined as a variable and returns its value, or throws.
+     *
+     * @param str: the string to interpret.
+     * @param line: the current line, for error message printing.
+     * @return the numerical interpretation of the string.
+     */
+    double
+    Molecule::get_value(const std::string &str, const std::string &line)
+    {
+        if(regex_match(str, reMatches_, realNumber_)){
+            // This is already a number
+            return str_to_double(str);
+        }else{
+            if(str[0] == '-'){
+                // This is negative; ignore the leading '-' and return minus the value
+                if(geometryVariables_.count(str.substr(1, str.size() - 1))){
+                    return -1.0*geometryVariables_[str.substr(1, str.size() - 1)];
+                }else{
+                    throw PSIEXCEPTION("Illegal value in geometry specification: " + str
+                                       + " on line " + line
+                                       + ".\n Provide a number or define the variable\n");
+                }
+            }else{
+                // This is positive; return the value using the string as-is
+                if(geometryVariables_.count(str)){
+                    return geometryVariables_[str];
+                }else{
+                    throw PSIEXCEPTION("Illegal value in geometry specification: " + str
+                                       + " on line " + line
+                                       + ".\n Provide a number or define the variable\n");
+                }
+            }
+        }
+    }
+
     void if_to_invert_axis(const Vector3& v1, int& must_invert, int& should_invert, double& maxproj)
     {
         int xyz, nzero;
@@ -84,7 +157,8 @@ Molecule::Molecule():
     nunique_(0),
     nequiv_(0),
     equiv_(0),
-    atom_to_unique_(0)
+    atom_to_unique_(0),
+    geometryFormat_(None)
 {
 
 }
@@ -646,6 +720,102 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
         }
     }
 }
+
+/**
+ * Given a string (including newlines to separate lines), builds a new molecule
+ * and wraps it in a smart pointer
+ *
+ * @param text: a string providing the user's input
+ */
+shared_ptr<Molecule>
+Molecule::parse_geometry(const std::string &text)
+{
+    Element_to_Z zVals;
+    zVals.load_values();
+    smatch reMatches;
+    // Split the input at newlines, storing the result in "lines"
+    std::vector<std::string> lines;
+    boost::split(lines, text, boost::is_any_of("\n"));
+
+    shared_ptr<Molecule> mol(new Molecule);
+    /*
+     * Time to look for lines that look like they describe charge and multiplicity,
+     * a variable, units, comment lines, and blank lines.  When found, process them
+     * and remove them so that only the raw geometry remains.  Iterated backwards, as
+     * elements are deleted as they are processed.
+     */
+    for(int lineNumber = lines.size() -1 ; lineNumber >= 0; --lineNumber){
+        if(regex_match(lines[lineNumber], reMatches, variableDefinition_)){
+            // A variable definition
+            double value = str_to_double(reMatches[2]);
+            mol->set_variable(reMatches[1].str(), value);
+            lines.erase(lines.begin() + lineNumber);
+        }else if(regex_match(lines[lineNumber], reMatches, blankLine_)){
+            // A blank line, nuke it
+#if DEBUG
+            fprintf(outfile, "Found a blank line\n");
+#endif
+            lines.erase(lines.begin() + lineNumber);
+        }else if(regex_match(lines[lineNumber], reMatches, commentLine_)){
+            // A comment line, nuke it
+#if DEBUG
+            fprintf(outfile, "Found a comment line\n");
+#endif
+            lines.erase(lines.begin() + lineNumber);
+        }else if(regex_match(lines[lineNumber], reMatches, unitLabel_)){
+            // A comment line, nuke it
+#if DEBUG
+            fprintf(outfile, "Found a unit: %s\n", reMatches[1].str().c_str());
+#endif
+            lines.erase(lines.begin() + lineNumber);
+        }else if(regex_match(lines[lineNumber], reMatches, chargeAndMultiplicity_)){
+            // A charge/multiplicity specifier
+#if DEBUG
+            fprintf(outfile "Found a charge/multiplicity line\n");
+#endif
+            // TODO add to options..
+            lines.erase(lines.begin() + lineNumber);
+        }
+    }
+
+    if(!lines.size()) throw PSIEXCEPTION("No geometry specified");
+
+    // For now, we can count the entries on the first line to determine the type
+    std::vector<std::string> splitLine;
+    boost::split(splitLine, lines[0], boost::is_any_of("\t ,"),token_compress_on);
+    if(splitLine.size() == 4){
+        mol->set_geometry_format(Cartesian);
+    }else if(splitLine.size() == 1){
+        mol->set_geometry_format(ZMatrix);
+    }else{
+       throw PSIEXCEPTION("Illegal geometry specification line : " + lines[0]);
+    };
+
+    // Now it's time to interpret the geometry string
+    if(mol->get_geometry_format() == Cartesian){
+        std::vector<std::string>::iterator line = lines.begin();
+        for(; line != lines.end(); ++line){
+            boost::split(splitLine, *(line), boost::is_any_of("\t ,"),token_compress_on);
+            if(splitLine.size() != 4){
+                throw PSIEXCEPTION("Invalid line in geometry specification :" + *(line));
+            }
+            // Check that the atom symbol is valid
+            if(!regex_match(splitLine[0], reMatches, atomSymbol_))
+                throw PSIEXCEPTION("Illegal atom symbol in geometry specification: " + splitLine[0]
+                                   + " on line\n" + *(line));
+            std::string atomSym(boost::to_upper_copy(reMatches[1].str()));
+            double x = mol->get_value(splitLine[1], *line);
+            double y = mol->get_value(splitLine[2], *line);
+            double z = mol->get_value(splitLine[3], *line);
+            fprintf(outfile, "Adding atom %-2s %16.10f %16.10f %16.10f\n", splitLine[0].c_str(), x, y, z);
+            mol->add_atom((int)zVals[atomSym], x, y, z, atomSym.c_str(), atomic_masses[(int)zVals[atomSym]]);
+        }
+    }else if(mol->get_geometry_format() == ZMatrix){
+
+    }
+    return mol;
+}
+
 
 void Molecule::save_to_chkpt(shared_ptr<Chkpt> chkpt, std::string prefix)
 {
