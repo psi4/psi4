@@ -6,8 +6,6 @@
 
 namespace psi{
 
-class SpaceInfo;
-
   /**
    * The MOSpace class is used to define orbital spaces in which to transform
    * integrals
