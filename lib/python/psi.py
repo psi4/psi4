@@ -29,6 +29,21 @@ def geometry(geom, reorient = True, shiftToCOM = True):
     return molecule
 
 #
+# Set options
+#
+# options({
+#    'WFN': 'SCF',
+#    'BASIS': 'STO-3G'
+# })
+def options(dict, module = ''):
+    m = module.strip().upper()
+    if len(m) > 0:
+        PsiMod.set_default_options_for_module(m)
+
+    for key in dict.keys():
+        PsiMod.set_option(key.upper(), dict[key]);
+
+#
 # Define geometry to be used by PSI4.
 # This geometry will be saved to the checkpoint file.
 #

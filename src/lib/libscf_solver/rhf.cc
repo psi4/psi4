@@ -267,7 +267,7 @@ double RHF::compute_energy()
         fprintf(outfile, "\n  Failed to converged.\n");
         E_ = 0.0;
     }
-    
+
     //often, we're close!
     if (options_.get_bool("DUAL_BASIS"))
         save_dual_basis_projection();
@@ -314,6 +314,14 @@ bool RHF::load_or_compute_initial_C()
         double **vectors = chkpt_->rd_scf();
         C_->set(const_cast<const double**>(vectors));
         free_block(vectors);
+
+        // Read in orbital energies (needed to guess occupation)
+        double *orbitale = chkpt_->rd_evals();
+        orbital_e_->set(orbitale);
+        delete[] orbitale;
+
+        // Guess the occupation, if needed.
+        find_occupation(*orbital_e_);
 
         form_D();
 
@@ -417,7 +425,7 @@ void RHF::save_dual_basis_projection()
     }
     else {
         shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-        dual_basis = BasisSet::construct(parser, molecule_, 
+        dual_basis = BasisSet::construct(parser, molecule_,
                                          options_.get_str("DUAL_BASIS_SCF"));
     }
 
@@ -805,7 +813,7 @@ void RHF::save_information()
     chkpt_->wt_frzvpi(frzvpi);
     delete[](frzcpi);
     delete[](frzvpi);
-    
+
     // Save the Fock matrix
     // Need to recompute the Fock matrix as F_ is modified during the SCF interation
     form_F();
@@ -817,7 +825,7 @@ void RHF::save_information()
     chkpt_->wt_iopen(0);
 
     // Write eigenvectors and eigenvalue to checkpoint
-    
+
     double* values = orbital_e_->to_block_vector();
     chkpt_->wt_evals(values);
     free(values);
@@ -1020,9 +1028,9 @@ void RHF::form_D()
             for (j = 0; j<opi[h]; j++)
                 D_->set(h,i,j,D[offset_R+i][offset_R+j]);
 
-        offset_R += opi[h]; 
-        offset_C += nmopi_[h]; 
-    } 
+        offset_R += opi[h];
+        offset_C += nmopi_[h];
+    }
 
     free_block(C);
     free_block(D);
