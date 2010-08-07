@@ -145,6 +145,8 @@ protected:
     /// save SCF Cartesian Grid
     bool save_grid_;
 
+    /// DIIS manager intiialized?
+    bool initialized_diis_manager_;
     /// DIIS manager for all SCF wavefunctions
     boost::shared_ptr<DIISManager> diis_manager_;
 
