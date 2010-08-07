@@ -829,11 +829,10 @@ void RHF::save_information()
 
 void RHF::save_fock()
 {
-    static bool initialized_diis_manager = false;
-    if (initialized_diis_manager == false) {
+    if (initialized_diis_manager_ == false) {
         diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, F_.get());
         diis_manager_->set_vector_size(1, DIISEntry::Matrix, F_.get());
-        initialized_diis_manager = true;
+        initialized_diis_manager_ = true;
     }
 
     // Determine error matrix for this Fock
