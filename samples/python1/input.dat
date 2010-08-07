@@ -12,27 +12,31 @@ H 0.0 0.0 1.0
 H 0.0 1.0 0.0
 """)
 
-PsiMod.set_default_options_for_module("SCF");
-
-PsiMod.set_option("NO_INPUT", True);
-#PsiMod.set_option("GUESS", "SAD");
-PsiMod.set_option("SCF_TYPE", "DF");
-PsiMod.set_option("PRINT", 2);
-PsiMod.set_option("BASIS", "3-21G");
-PsiMod.set_option("RI_BASIS_SCF", "STO-3G");
-PsiMod.set_option("FREEZE_CORE", "true");
-# PsiMod.set_option("XYZ_FILE", "mol.xyz");
+options({
+    'NO_INPUT' : True,
+#   'GUESS' : 'SAD',
+    'SCF_TYPE': 'DF',
+    'PRINT': 2,
+    'BASIS': "3-21G",
+    'RI_BASIS_SCF': "STO-3G",
+    'FREEZE_CORE': "true",
+#   'XYZ_FILE': "mol.xyz",
+},
+    module= 'SCF'
+)
 
 PsiMod.print_out("\n Running SCF:\n");
 PsiMod.print_options();
 
 PsiMod.scf();
 
-PsiMod.set_default_options_for_module("DFMP2");
-PsiMod.set_option("NO_INPUT", True);
-PsiMod.set_option("BASIS", "3-21G");
-PsiMod.set_option("RI_BASIS_MP2", "STO-3G");
-PsiMod.set_option("XYZ_FILE", "mol.xyz");
+options({
+    'NO_INPUT' : True,
+    'BASIS' : '3-21G',
+    'RI_BASIS_MP2': 'STO-3G'
+},
+    module='dfmp2'
+)
 
 PsiMod.print_out("\n Running DFMP2:\n");
 PsiMod.print_options();
