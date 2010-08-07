@@ -1,6 +1,8 @@
 #ifndef _psi_src_lib_libmints_wavefunction_h
 #define _psi_src_lib_libmints_wavefunction_h
 
+#include <stddef.h>
+
 #define MAX_IOFF 30000
 extern size_t ioff[MAX_IOFF];
 
