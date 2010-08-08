@@ -19,7 +19,7 @@ options({
     'PRINT': 2,
     'BASIS': "3-21G",
     'RI_BASIS_SCF': "STO-3G",
-    'DOCC': [2, 0, 1, 1],
+    'DOCC': [3, 0, 1, 1],
 #   'XYZ_FILE': "mol.xyz",
 },
     module= 'SCF'
