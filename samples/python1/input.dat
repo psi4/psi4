@@ -19,7 +19,7 @@ options({
     'PRINT': 2,
     'BASIS': "3-21G",
     'RI_BASIS_SCF': "STO-3G",
-    'FREEZE_CORE': "true",
+    'DOCC': [2, 0, 1, 1],
 #   'XYZ_FILE': "mol.xyz",
 },
     module= 'SCF'
@@ -33,7 +33,7 @@ PsiMod.scf();
 options({
     'NO_INPUT' : True,
     'BASIS' : '3-21G',
-    'RI_BASIS_MP2': 'STO-3G'
+    'RI_BASIS_MP2': 'STO-3G',
 },
     module='dfmp2'
 )

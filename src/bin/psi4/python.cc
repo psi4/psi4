@@ -32,24 +32,6 @@ namespace psi {
 
 int py_psi_input()
 {
-    /* Apply any options that need to be to global options object.
-
-       If desired, set all the default values using read_options.
-       read_options would need to be modified to not use ipv1.
-
-       read_options("INPUT", options);
-
-       Override options, if needed.
-       options.set_str("UNITS", "BOHR");
-     */
-
-    /* Need to modify input to not take argc and argv
-       input::input3(options);
-
-       or
-
-       dispatch_table["INPUT"](options);
-     */
     return input::input(options);
 }
 
@@ -95,10 +77,12 @@ void py_psi_print_options()
 {
     options.print();
 }
+
 void py_psi_print_out(std::string s)
 {
     fprintf(outfile,"%s",s.c_str());
 }
+
 bool py_psi_set_option_string(std::string const & name, std::string const & value)
 {
     options.set_str(name, value);
@@ -108,6 +92,20 @@ bool py_psi_set_option_string(std::string const & name, std::string const & valu
 bool py_psi_set_option_int(std::string const & name, int value)
 {
     options.set_int(name, value);
+    return true;
+}
+
+bool py_psi_set_option_array(std::string const & name, python::list values)
+{
+    size_t n = len(values);
+
+    // Reset the array to a known state (empty).
+    options[name].reset();
+
+    for (size_t i=0; i < n; ++i) {
+        options[name].add(extract<double>(values[i]));
+    }
+
     return true;
 }
 
@@ -128,11 +126,9 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("print_options", py_psi_print_options);
     def("print_out", py_psi_print_out);
 
-    typedef void (*optionsStringFunction)(std::string const &, std::string const&);
-    typedef void (*optionsIntFunction)(std::string const &, int);
-
     def("set_option", py_psi_set_option_string);
     def("set_option", py_psi_set_option_int);
+    def("set_option", py_psi_set_option_array);
 
     // modules
     def("input", py_psi_input);
