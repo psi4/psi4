@@ -1,3 +1,73 @@
+These are notes on the input format for PSI4.  Lori's original notes
+are below.  Newer notes are on top.
+
+C. David Sherrill, 7 August 2010
+
+Here's the current basic idea which has evolved from conversations with
+Jet, Andy, and Lori.  We'll have a fairly simple, user-friendly input
+format which, optionally, can contain as much Python code as the user
+wants.  Any Python code will be valid.  We will then convert the non-Python
+code into Python code with a parser so that the entire input is run as a
+script using Python exec() statements.  The reason we need to convert the
+entire input (instead of some particular line or block) is that the user 
+will surely want to embed some PSI directives inside the Python code block,
+and we can ony call exec() on an entire block, not pieces of a code block
+at a time.
+
+Thus, we will develop a "PSI-Python" language which is just adding some
+special PSI keywords/directives to Python.  The PSI-Python input is 
+parsed and converted into valid Python (including PsiMod calls), and the
+Python is executed by passing the whole thing to exec().  
+
+Because we will parse the entire input all at once before executing, this
+makes parsing a little easier because we can look for multi-line regexp's.
+We actually need to parse the whole input at once (rather than
+line-by-line) because that's probably the only way to look for special
+things like z-matrix variable resets later in the script.  That's going to
+be one of the tricky parts --- variables in a z-matrix specification may be
+reset later in the script (think PES scans ala MOLPRO).  We can do that
+but we will need to make a special list of all z-matrix variables, and then
+look for them later in input.  When we see them being set, we need to call
+some PsiMod function which will set them in the molecule (either the
+default molecule or some named molecule if there are more than one).
+
+So, what are the special PSI keywords in PsiPython?  Eventually we could
+make all user options as keywords, but initially it's easier to set those
+with a special "i'm about to set a PSI user option" keyword.  I propose to
+initially do this with they syntax:
+
+set {
+  charge 0
+  multiplicity 1
+}
+
+or
+
+set charge 0
+set multiplicity 1
+
+or 
+
+! charge 0
+! multiplicity 1
+
+User comments are marked by # symbols (already the Python comment symbol)
+
+The other special section we need is for the molecule.  This can be
+
+mol {
+  [Cartesian or z-matrix goes in here]
+}
+
+I'm putting an example of this input style in example-input-1.in
+
+What I need to figure out next is how to handle the "sectioning" of input
+the way Jet has implemented it in PsiMod.
+
+---CDS 8/7/10
+
+Older notes:
+-------------------------------------------------------------------------
 LAB, Monday, January 10, 2009
 
 Perspectives on Input Files (with Samples)
@@ -333,17 +403,4 @@ xdm_kai		400
 
 
 -------------------------------------------------------------
-
-CDS: Need to be able to mix new options inside code segments.  Thus, how are we going
-to do exec() on a string if it has stuff in it like setting options?  We could
-map it into a python command perhaps... map it over as an option-setting command
-if it has the following syntax:
-
-options {
-  xdm_kai  400
-}
-
-option xdm_kai 400
-! xdm_kai 400 (or some other character; I think I like # for comments, already are python coments)
-
 

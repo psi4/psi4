@@ -5,44 +5,52 @@
 #
 # CDS 8/6/10
 
+#
+# use set as a shortcut for options --- don't parse options
+# because that's valid PsiMod already
+#
+
 set {
- mol_coord	zmat		# need special "vzmat" for zmat w/variables?
+ mol_coord	zmat
  mol_units	angstrom
 }
 
 ! charge 0                      # shortcut for set
 
-mol1 {
+molecule {
 O 
-H1 O r1(i) 
-H2 O r2(i) H1 theta(i)
-Ar O 2.0   H1 (180.0 - theta(i)/2.0) H2 0.0
+H1 O r1
+H2 O r2 H1 theta
+Ar O 2.0   H1 (180.0 - theta/2.0) H2 0.0
 }
 
 set basis	6-31G*
 set reference   rhf
 
+# I'll simplify Lori's original example a little by making r1=r2 here
 angles = (100, 104, 110) 
 distances = (1.6, 1.7, 1.8, 1.9, 2.0) 
 i = 0
 for angle in angles:
  for distance in distances:
    i += 1
-   r1 = distances(ir1) 
+   r1 = distance
    # converts to something like this:
-   # mol1.update_zmat("r1", distances(ir1));
-   # where we have made a list associating r1 with mol1 so we know which molecule
-   # to update (and that r1 is a "special" z-matrix variable)
-   r2(i) = distances(ir2) 
-   theta(i) = angles(ith) 
+   # update_zmat("r1", distance);
+   # where we have made a list associating r1 with mol1 so we know which 
+   # molecule to update (and that r1 is a "special" z-matrix variable)
+   r2 = distance
+   theta = angle
 
    sp ccsd(t)
+   # converts to something like sp("ccsd(t)")
 
    escf_dimer(i) = energyscf 
    eccsd_dimer(i) = energc 
    eccsdt_dimer(i) = energy
  
    dummy	1, 2, 3
+   # converts to something like mol1.dummy(1,2,3)
 
    sp ccsd(t)
 
