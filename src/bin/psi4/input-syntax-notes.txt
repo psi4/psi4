@@ -66,6 +66,38 @@ the way Jet has implemented it in PsiMod.
 
 ---CDS 8/7/10
 
+Maybe we could do sectioning like this:
+
+set (dfmp2) {
+  no_input true
+  basis 3-21G
+  ri-basis cc-pvdz
+}
+
+The final special psi input would be specifying the modules to run.
+Lori suggested things like
+
+  sp ccsd(t)
+
+I think this seems ok at first glance (the other option would just be to
+say ccsd(t), but sp is good because alternatively it could say opt or
+freq).
+
+How will we do optimizations of composite or user-defined sequences?
+Not sure, but perhaps we could have a user-defined wavefunction
+(energy or grad) sequence, and then call sp/opt/freq on that...
+
+  sp wfn1
+
+wfn1 {
+  scf     # module names?
+  ccsd(t) # another module
+  # probably need to be able to mix python code in here...
+}
+
+---CDS 8/9/10
+
+
 Older notes:
 -------------------------------------------------------------------------
 LAB, Monday, January 10, 2009
