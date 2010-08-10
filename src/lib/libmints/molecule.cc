@@ -315,17 +315,17 @@ double Molecule::nuclear_repulsion_energy()
     return e;
 }
 
-SimpleVector Molecule::nuclear_repulsion_energy_deriv1()
+SimpleMatrix Molecule::nuclear_repulsion_energy_deriv1()
 {
-    SimpleVector de(3*natom());
+    SimpleMatrix de("Nuclear Repulsion Energy 1st Derivatives", natom(), 3);
 
-    for (int i=1; i<natom(); ++i) {
+    for (int i=0; i<natom(); ++i) {
         for (int j=0; j<natom(); ++j) {
             if (i != j) {
                 double temp = pow((xyz(i).distance(xyz(j))), 3.0);
-                de[3*i+0] -= (x(i) - x(j)) * Z(i) * Z(j) / temp;
-                de[3*i+1] -= (y(i) - y(j)) * Z(i) * Z(j) / temp;
-                de[3*i+2] -= (z(i) - z(j)) * Z(i) * Z(j) / temp;
+                de(i, 0) -= (x(i) - x(j)) * Z(i) * Z(j) / temp;
+                de(i, 1) -= (y(i) - y(j)) * Z(i) * Z(j) / temp;
+                de(i, 2) -= (z(i) - z(j)) * Z(i) * Z(j) / temp;
             }
         }
     }
@@ -336,9 +336,9 @@ SimpleVector Molecule::nuclear_repulsion_energy_deriv1()
 /*
     TODO Test nuclear_repulsion_energy_deriv2
 */
-SimpleMatrix* Molecule::nuclear_repulsion_energy_deriv2()
+SimpleMatrix Molecule::nuclear_repulsion_energy_deriv2()
 {
-    SimpleMatrix *hess = new SimpleMatrix("Nuclear Repulsion Energy 2nd Derivatives", 3*natom(), 3*natom());
+    SimpleMatrix hess("Nuclear Repulsion Energy 2nd Derivatives", 3*natom(), 3*natom());
     double sx, sy, sz, x2, y2, z2, r2, r, r5, pfac;
 
     for (int i=1; i<natom(); ++i) {
@@ -346,7 +346,7 @@ SimpleMatrix* Molecule::nuclear_repulsion_energy_deriv2()
         int iy = ix+1;
         int iz = iy+1;
 
-        for (int j=0; j<i; ++j) {
+        for (int j=0; j<=i; ++j) {
             int jx = 3*j;
             int jy = jx+j;
             int jz = jy+j;
@@ -361,29 +361,29 @@ SimpleMatrix* Molecule::nuclear_repulsion_energy_deriv2()
             r5 = r2*r2*r;
             pfac = Z(i) * Z(j) / r5;
 
-            hess->add(ix, ix, pfac * (3*x2 - r2));
-            hess->add(iy, iy, pfac * (3*y2 - r2));
-            hess->add(iz, iz, pfac * (3*z2 - r2));
-            hess->add(ix, iy, pfac*3*sx*sy);
-            hess->add(ix, iz, pfac*3*sx*sz);
-            hess->add(iy, iz, pfac*3*sy*sz);
+            hess.add(ix, ix, pfac * (3*x2 - r2));
+            hess.add(iy, iy, pfac * (3*y2 - r2));
+            hess.add(iz, iz, pfac * (3*z2 - r2));
+            hess.add(ix, iy, pfac*3*sx*sy);
+            hess.add(ix, iz, pfac*3*sx*sz);
+            hess.add(iy, iz, pfac*3*sy*sz);
 
-            hess->add(jx, jx, pfac * (3*x2 - r2));
-            hess->add(jy, jy, pfac * (3*y2 - r2));
-            hess->add(jz, jz, pfac * (3*z2 - r2));
-            hess->add(jx, jy, pfac*3*sx*sy);
-            hess->add(jx, jz, pfac*3*sx*sz);
-            hess->add(jy, jz, pfac*3*sy*sz);
+            hess.add(jx, jx, pfac * (3*x2 - r2));
+            hess.add(jy, jy, pfac * (3*y2 - r2));
+            hess.add(jz, jz, pfac * (3*z2 - r2));
+            hess.add(jx, jy, pfac*3*sx*sy);
+            hess.add(jx, jz, pfac*3*sx*sz);
+            hess.add(jy, jz, pfac*3*sy*sz);
 
-            hess->add(ix, jx, -pfac*(3*sx*sx-r2));
-            hess->add(ix, jy, -pfac*(3*sx*sy));
-            hess->add(ix, jz, -pfac*(3*sx*sz));
-            hess->add(iy, jx, -pfac*(3*sy*sx));
-            hess->add(iy, jy, -pfac*(3*sy*sy-r2));
-            hess->add(iy, jz, -pfac*3*sy*sz);
-            hess->add(iz, jx, -pfac*3*sz*sx);
-            hess->add(iz, jy, -pfac*3*sz*sy);
-            hess->add(iz, jz, -pfac*(3*sz*sz-r2));
+            hess.add(ix, jx, -pfac*(3*sx*sx-r2));
+            hess.add(ix, jy, -pfac*(3*sx*sy));
+            hess.add(ix, jz, -pfac*(3*sx*sz));
+            hess.add(iy, jx, -pfac*(3*sy*sx));
+            hess.add(iy, jy, -pfac*(3*sy*sy-r2));
+            hess.add(iy, jz, -pfac*3*sy*sz);
+            hess.add(iz, jx, -pfac*3*sz*sx);
+            hess.add(iz, jy, -pfac*3*sz*sy);
+            hess.add(iz, jz, -pfac*(3*sz*sz-r2));
         }
     }
     return hess;

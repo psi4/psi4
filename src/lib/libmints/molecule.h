@@ -219,10 +219,10 @@ public:
     Vector3 center_of_mass() const;
     /// Computes nuclear repulsion energy
     double nuclear_repulsion_energy();
-    /// Computes nuclear repulsion energy derivatives. Free with delete[]
-    SimpleVector nuclear_repulsion_energy_deriv1();
+    /// Computes nuclear repulsion energy derivatives.
+    SimpleMatrix nuclear_repulsion_energy_deriv1();
     /// Computes nuclear repulsion energy second derivatives.
-    SimpleMatrix* nuclear_repulsion_energy_deriv2();
+    SimpleMatrix nuclear_repulsion_energy_deriv2();
 
     /// Returns the nuclear contribution to the dipole moment
     SimpleVector nuclear_dipole_contribution();

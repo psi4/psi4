@@ -1331,6 +1331,24 @@ void SimpleMatrix::print(FILE *out)
     fprintf(out, "\n");
 }
 
+void SimpleMatrix::print_atom_vector(FILE *out)
+{
+    int i;
+
+    if (name_.length()) {
+        fprintf(out,"\n  -%s:\n", name_c.str());
+    }
+    fprintf(out,"     Atom            X                  Y                   Z\n");
+    fprintf(out,"    ------   -----------------  -----------------  -----------------\n");
+
+    for(i=0;i<rows();i++) {
+        fprintf(out,"    %4d   ",i+1);
+        fprintf(out,"  %17.12lf  %17.12lf  %17.12lf", matrix_[i][0], matrix_[i][1], matrix_[i][2]);
+        fprintf(out,"\n");
+    }
+    fprintf(out,"\n");
+}
+
 void SimpleMatrix::eivprint(SimpleVector *values, FILE *out)
 {
     if (name_.length()) {

@@ -359,6 +359,10 @@ public:
 
     /// Prints the matrix with print_mat
     void print(FILE *out = outfile);
+
+    /// Prints the matrix with atom and xyz styling.
+    void print_atom_vector(FILE *out = outfile);
+
     /// Print the matrix with corresponding eigenvalues below each column
     void eivprint(SimpleVector *values, FILE *out = outfile);
     void eivprint(shared_ptr<SimpleVector> values, FILE *out = outfile);
