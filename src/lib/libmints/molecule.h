@@ -9,6 +9,7 @@
 #include <boost/regex.hpp>
 #include <boost/shared_ptr.hpp>
 
+#define LINEAR_A_TOL 1.0E-2 //When sin(a) is below this, we consider the angle to be linear
 namespace psi {
 
 class PSIO;
@@ -44,6 +45,10 @@ public:
      * ZMatrix   - Z matrix coordinates
      */
     enum GeometryFormat {None, ZMatrix, Cartesian};
+    /**
+     * The Units used to define the geometry
+     */
+    enum GeometryUnits {Angstrom, Bohr};
 
     static boost::shared_ptr<Molecule> create_molecule_from_string(const std::string &geom);
     /// Assigns the value val to the variable labelled string in the list of geometry variables
@@ -56,20 +61,48 @@ public:
                                                            }else{
                                                                return false;
                                                            }}
+    /// Sets the geometry string
+    void set_geometry_string(std::vector<std::string> strVec) { geometryString_ = strVec; }
     /// Sets the geometry format
     void set_geometry_format(GeometryFormat format) { geometryFormat_ = format; }
     /// Gets the geometry format
-    GeometryFormat get_geometry_format() const { return geometryFormat_; }
+    GeometryFormat geometry_format() const { return geometryFormat_; }
+    /// Sets the molcular charge
+    void set_charge(int charge) {charge_ = charge;}
+    /// Gets the molecular charge
+    //int charge() const {return charge_;}
+    /// Sets the multiplicity (defined as 2Ms + 1)
+    void set_multiplicity(int mult) { multiplicity_ = mult; }
+    /// Get the multiplicity (defined as 2Ms + 1)
+    int multiplicity() const { return multiplicity_; }
+    /// Sets the geometry units
+    void set_units(GeometryUnits units) { units_ = units; }
+    /// Gets the geometry units
+    GeometryUnits units() const { return units_; }
+
+    void update_geometry();
 protected:
+    ///A regex match object to receive captured expressions in regex searches
+    boost::smatch reMatches_;
     /// Atom info vector (no knowledge of dummy atoms)
     std::vector<atom_info> atoms_;
     /// Atom info vector (includes dummy atoms)
     std::vector<atom_info> full_atoms_;
+    /// Each line of the string passed in to define the geometry
+    std::vector<std::string> geometryString_;
     /// Symmetry information about the molecule
     int nirreps_;
+    /// The molecular charge
+    int charge_;
+    /// The multiplicity (defined as 2Ms + 1)
+    int multiplicity_;
+    /// The units used to define the geometry
+    GeometryUnits units_;
     /// Zero it out
     void clear();
     double get_value(const std::string &str, const std::string &line);
+    int get_anchor_atom(const std::string &str, const std::vector<std::string> &atoms,
+                              const std::string &line);
 
     // Point group to use with this molecule.
     boost::shared_ptr<PointGroup> pg_;

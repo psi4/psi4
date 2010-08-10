@@ -2,6 +2,8 @@
 #include <cstdio>
 #include <fstream>
 #include <algorithm>
+#include <vector>
+#include <string>
 
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>
@@ -46,7 +48,7 @@ namespace psi {
     boost::regex Molecule::realNumber_("(-?\\d+\\.\\d+)|(-?\\d+\\.)|(-?\\.\\d+)|(-?\\d+)", boost::regbase::normal | boost::regbase::icase);
     boost::regex Molecule::integerNumber_("(-?\\d+)", boost::regbase::normal | boost::regbase::icase);
     boost::regex Molecule::atomSymbol_("([A-Z]{1,2})\\d*", boost::regbase::normal | boost::regbase::icase);
-    boost::regex Molecule::variableDefinition_("\\s*(\\w+)\\s*=\\s*((-?\\d+\\.\\d+)|(-?\\d+\\.)|(-?\\.\\d+)|(-?\\d+))\\s*", boost::regbase::normal | boost::regbase::icase);
+    boost::regex Molecule::variableDefinition_("\\s*(\\w+)\\s*=\\s*((-?\\d+\\.\\d+)|(-?\\d+\\.)|(-?\\.\\d+)|(-?\\d+)|(tda))\\s*", boost::regbase::normal | boost::regbase::icase);
     boost::regex Molecule::blankLine_("[\\s%]*", boost::regbase::normal | boost::regbase::icase);
     boost::regex Molecule::commentLine_("\\s*%.*", boost::regbase::normal | boost::regbase::icase);
     boost::regex Molecule::unitLabel_("\\s*((ang)|(angstrom)|(bohr)|(au)|(a\\.u\\.))\\s*", boost::regbase::normal | boost::regbase::icase);
@@ -79,6 +81,33 @@ namespace psi {
     }
 
     /**
+     * Attempts to interpret a string as an atom specifier in a zmatrix.
+     *
+     * @param str: the string to interpret.
+     * @param atoms: the list of atoms known so far
+     * @param line: the current line, for error message printing.
+     * @return the atom number (adjusted to zero-based counting)
+     */
+    int
+    Molecule::get_anchor_atom(const std::string &str, const std::vector<std::string> &atoms,
+                              const std::string &line)
+    {
+        if(regex_match(str, reMatches_, integerNumber_)){
+            // This is just a number, return it
+            return str_to_int(str) - 1;
+        }else{
+            // Look to see if this string is known
+            std::vector<std::string>::const_iterator iter = find(atoms.begin(), atoms.end(), str);
+            if(iter == atoms.end()){
+                throw PSIEXCEPTION("Illegal value " + str + " in atom specification"
+                                   + " on line " + line + "\n\n");
+            }else{
+                return distance(atoms.begin(), iter); 
+            }
+        }
+    }
+
+    /**
      * Attempts to interpret a string as a double.  If it's not succesful, it checks to
      * see if it's been defined as a variable and returns its value, or throws.
      *
@@ -89,8 +118,7 @@ namespace psi {
     double
     Molecule::get_value(const std::string &str, const std::string &line)
     {
-        smatch reMatches;
-        if(regex_match(str, reMatches, realNumber_)){
+        if(regex_match(str, reMatches_, realNumber_)){
             // This is already a number
             return str_to_double(str);
         }else{
@@ -162,6 +190,8 @@ Molecule::Molecule():
     nequiv_(0),
     equiv_(0),
     atom_to_unique_(0),
+    multiplicity_(1),
+    charge_(0),
     geometryFormat_(None)
 {
 
@@ -764,8 +794,6 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
 shared_ptr<Molecule>
 Molecule::create_molecule_from_string(const std::string &text)
 {
-    Element_to_Z zVals;
-    zVals.load_values();
     smatch reMatches;
     // Split the input at newlines, storing the result in "lines"
     std::vector<std::string> lines;
@@ -778,36 +806,32 @@ Molecule::create_molecule_from_string(const std::string &text)
      * and remove them so that only the raw geometry remains.  Iterated backwards, as
      * elements are deleted as they are processed.
      */
-    for(int lineNumber = lines.size() -1 ; lineNumber >= 0; --lineNumber){
+    for(int lineNumber = lines.size() - 1 ; lineNumber >= 0; --lineNumber){
         if(regex_match(lines[lineNumber], reMatches, variableDefinition_)){
             // A variable definition
-            double value = str_to_double(reMatches[2]);
+            double value = (boost::iequals("tda", reMatches[2].str()) ?
+                               360.0*atan(sqrt(2))/M_PI : str_to_double(reMatches[2]));
             mol->set_variable(reMatches[1].str(), value);
             lines.erase(lines.begin() + lineNumber);
         }else if(regex_match(lines[lineNumber], reMatches, blankLine_)){
             // A blank line, nuke it
-#if DEBUG
-            fprintf(outfile, "Found a blank line\n");
-#endif
             lines.erase(lines.begin() + lineNumber);
         }else if(regex_match(lines[lineNumber], reMatches, commentLine_)){
             // A comment line, nuke it
-#if DEBUG
-            fprintf(outfile, "Found a comment line\n");
-#endif
             lines.erase(lines.begin() + lineNumber);
         }else if(regex_match(lines[lineNumber], reMatches, unitLabel_)){
             // A comment line, nuke it
-#if DEBUG
-            fprintf(outfile, "Found a unit: %s\n", reMatches[1].str().c_str());
-#endif
+            if(   boost::iequals("ang", reMatches[1].str())
+               || boost::iequals("angstrom",   reMatches[1].str())){
+                mol->set_units(Angstrom);
+            }else{
+                mol->set_units(Bohr);
+            }
             lines.erase(lines.begin() + lineNumber);
         }else if(regex_match(lines[lineNumber], reMatches, chargeAndMultiplicity_)){
             // A charge/multiplicity specifier
-#if DEBUG
-            fprintf(outfile "Found a charge/multiplicity line\n");
-#endif
-            // TODO add to options..
+            mol->set_charge(str_to_int(reMatches[1]));
+            mol->set_multiplicity(str_to_int(reMatches[2]));
             lines.erase(lines.begin() + lineNumber);
         }
     }
@@ -822,32 +846,186 @@ Molecule::create_molecule_from_string(const std::string &text)
     }else if(splitLine.size() == 1){
         mol->set_geometry_format(ZMatrix);
     }else{
-       throw PSIEXCEPTION("Illegal geometry specification line : " + lines[0]);
+        throw PSIEXCEPTION("Illegal geometry specification line : " + lines[0] +
+                       ".  You should provide either Z-Matrix or Cartesian input");
     };
+    
+    mol->set_geometry_string(lines);
+    mol->update_geometry();
+    return mol;
+}
 
+/**
+ * Updates the geometry, by (re)interpreting the string used to create the molecule, and the current values
+ * of the variables. The atoms list is cleared, and then rebuilt by this routine.
+ */
+void
+Molecule::update_geometry()
+{
+    smatch reMatches;
+    Element_to_Z zVals;
+    zVals.load_values();
+    std::vector<std::string> splitLine;
+    // Start over, even if we have atoms already
+    atoms_.empty();
+    // Have the atoms been added already?  If so, we only need to update positions.
+    bool firstRun = natom();
+    // Begin by assuming that the user provided angstrom input
+    double conversionFactor = (units_ == Angstrom ? 1.0 / _bohr2angstroms : 1.0);
     // Now it's time to interpret the geometry string
-    if(mol->get_geometry_format() == Cartesian){
-        std::vector<std::string>::iterator line = lines.begin();
-        for(; line != lines.end(); ++line){
-            boost::split(splitLine, *(line), boost::is_any_of("\t ,"),token_compress_on);
+    std::string atomSym;
+    double x, y, z;
+    if(geometryFormat_ == Cartesian){
+        std::vector<std::string>::iterator line = geometryString_.begin();
+        for(; line != geometryString_.end(); ++line){
+            boost::split(splitLine, *line, boost::is_any_of("\t ,"),token_compress_on);
             if(splitLine.size() != 4){
-                throw PSIEXCEPTION("Invalid line in geometry specification :" + *(line));
+                throw PSIEXCEPTION("Incorrect number of entries in geometry specification :" + *line);
             }
             // Check that the atom symbol is valid
             if(!regex_match(splitLine[0], reMatches, atomSymbol_))
                 throw PSIEXCEPTION("Illegal atom symbol in geometry specification: " + splitLine[0]
                                    + " on line\n" + *(line));
-            std::string atomSym(boost::to_upper_copy(reMatches[1].str()));
-            double x = mol->get_value(splitLine[1], *line);
-            double y = mol->get_value(splitLine[2], *line);
-            double z = mol->get_value(splitLine[3], *line);
-            fprintf(outfile, "Adding atom %-2s %16.10f %16.10f %16.10f\n", splitLine[0].c_str(), x, y, z);
-            mol->add_atom((int)zVals[atomSym], x, y, z, atomSym.c_str(), atomic_masses[(int)zVals[atomSym]]);
+            atomSym = boost::to_upper_copy(reMatches[1].str());
+            x = get_value(splitLine[1], *line) * conversionFactor;
+            y = get_value(splitLine[2], *line) * conversionFactor;
+            z = get_value(splitLine[3], *line) * conversionFactor;
+            add_atom((int)zVals[atomSym], x, y, z, atomSym.c_str(), atomic_masses[(int)zVals[atomSym]]);
         }
-    }else if(mol->get_geometry_format() == ZMatrix){
+    }else if(geometryFormat_ == ZMatrix){
+        unsigned int currentAtom = 0;
+        std::vector<std::string>::iterator line = geometryString_.begin();
+        double r, a, d; // The bond length, valence bond angle, and torsion angle, respectively
+        int rTo, aTo, dTo; // The "anchor" atoms, used to define r, a, and d
+        std::vector<std::string> atoms;
+        for(; line != geometryString_.end(); ++line){
+            boost::split(splitLine, *line, boost::is_any_of("\t ,"),token_compress_on);
+            if(currentAtom == 0){
+                // This is the first line
+                if(splitLine.size() != 1){
+                    throw PSIEXCEPTION("Incorrect number of entries in geometry specification :" + *line);
+                }
+                // Check that the atom symbol is valid
+                if(!regex_match(splitLine[0], reMatches, atomSymbol_))
+                    throw PSIEXCEPTION("Illegal atom symbol in geometry specification: " + splitLine[0]
+                                       + " on line\n" + *(line));
+                atoms.push_back(splitLine[0]);
+                atomSym = boost::to_upper_copy(reMatches[1].str());
+                x = y = z = 0.0;
+            }else if(currentAtom == 1){
+                // This is the second line
+                if(splitLine.size() != 3){
+                    throw PSIEXCEPTION("Incorrect number of entries in geometry specification :" + *line);
+                }
+                // Check that the atom symbol is valid
+                if(!regex_match(splitLine[0], reMatches, atomSymbol_))
+                    throw PSIEXCEPTION("Illegal atom symbol in geometry specification: " + splitLine[0]
+                                       + " on line\n" + *(line));
+                atomSym = boost::to_upper_copy(reMatches[1].str());
+                atoms.push_back(splitLine[0]);
+                rTo = get_anchor_atom(splitLine[1], atoms, *line);
+                if(rTo >= currentAtom) 
+                     throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
+                                         + splitLine[1] + " has not been defined yet.");
+                r = get_value(splitLine[2], *line) * conversionFactor;
+                x = y = 0.0;
+                z = r;
+            }else if(currentAtom == 2){
+                // This is the third line
+                if(splitLine.size() != 5){
+                    throw PSIEXCEPTION("Incorrect number of entries in geometry specification :" + *line);
+                }
+                // Check that the atom symbol is valid
+                if(!regex_match(splitLine[0], reMatches, atomSymbol_))
+                    throw PSIEXCEPTION("Illegal atom symbol in geometry specification: " + splitLine[0]
+                                       + " on line\n" + *line);
+                atomSym = boost::to_upper_copy(reMatches[1].str());
+                atoms.push_back(splitLine[0]);
+                rTo = get_anchor_atom(splitLine[1], atoms, *line);
+                if(rTo >= currentAtom) 
+                     throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
+                                         + splitLine[1] + " has not been defined yet.");
+                r = get_value(splitLine[2], *line) * conversionFactor;
+                aTo = get_anchor_atom(splitLine[3], atoms, *line);
+                if(aTo >= currentAtom) 
+                     throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
+                                         + splitLine[3] + " has not been defined yet.");
+                a = get_value(splitLine[4], *line);
+                if(aTo == rTo)
+                     throw PSIEXCEPTION("Atom used multiple times on line " + *line);
 
+                a *= M_PI / 180.0;
+                if(rTo == 0){
+                    x = r*sin(a);
+                    y = 0.0;
+                    z = r*cos(a);
+                }else{
+                    x = r*sin(a);
+                    y = 0.0;
+                    z = atoms_[1].z - r*cos(a);
+                }
+            }else{
+                // This is line 4 onwards
+                if(splitLine.size() != 7){
+                    throw PSIEXCEPTION("Incorrect number of entries in geometry specification :" + *line);
+                }
+                // Check that the atom symbol is valid
+                if(!regex_match(splitLine[0], reMatches, atomSymbol_))
+                    throw PSIEXCEPTION("Illegal atom symbol in geometry specification: " + splitLine[0]
+                                       + " on line\n" + *(line));
+                atomSym = boost::to_upper_copy(reMatches[1].str());
+                atoms.push_back(splitLine[0]);
+                rTo = get_anchor_atom(splitLine[1], atoms, *line);
+                if(rTo >= currentAtom) 
+                     throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
+                                         + splitLine[1] + " has not been defined yet.");
+                r = get_value(splitLine[2], *line) * conversionFactor;
+                aTo = get_anchor_atom(splitLine[3], atoms, *line);
+                if(aTo >= currentAtom) 
+                     throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
+                                         + splitLine[3] + " has not been defined yet.");
+                a = get_value(splitLine[4], *line);
+                dTo = get_anchor_atom(splitLine[5], atoms, *line);
+                if(dTo >= currentAtom) 
+                     throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
+                                         + splitLine[5] + " has not been defined yet.");
+                d = get_value(splitLine[6], *line);
+                if(aTo == rTo || rTo == dTo /* for you star wars fans */ || aTo == dTo)
+                     throw PSIEXCEPTION("Atom used multiple times on line " + *line);
+
+                a *= M_PI / 180.0;
+                d *= M_PI / 180.0;
+            
+                /*
+                 * The atom specification is 
+                 *      this       rTo   rVal  aTo  aVal   dTo   dVal
+                 *        D         C           B           A
+                 * which allows us to define the vector from B->C (eBC) as the +z axis, and eAB
+                 * lies in the xz plane.  Then eX, eY and eZ (=eBC) are the x, y, and z axes, respecively.
+                 */
+                Vector3 eAB(atoms_[aTo].x - atoms_[dTo].x, atoms_[aTo].y - atoms_[dTo].y, atoms_[aTo].z - atoms_[dTo].z);
+                Vector3 eBC(atoms_[rTo].x - atoms_[aTo].x, atoms_[rTo].y - atoms_[aTo].y, atoms_[rTo].z - atoms_[aTo].z);
+                eAB.normalize();
+                eBC.normalize();
+                double cosBCD = cos(a);
+                double sinBCD = sin(a);
+                double cosABCD = cos(d);
+                double sinABCD = sin(d);
+                double cosABC = -eAB.dot(eBC);
+                double sinABC = sqrt(1.0 - cosABC * cosABC);
+                if(sinABC < LINEAR_A_TOL || sinBCD < LINEAR_A_TOL)
+                    throw PSIEXCEPTION("Line " + *line + " defines a dihedral using a linear bond angle");
+                Vector3 eY = eAB.perp_unit(eBC);
+                Vector3 eX = eY.perp_unit(eBC);
+
+                x = atoms_[rTo].x + r * ( -eBC[0] * cosBCD + eX[0] * sinBCD * cosABCD + eY[0] * sinBCD * sinABCD); 
+                y = atoms_[rTo].y + r * ( -eBC[1] * cosBCD + eX[1] * sinBCD * cosABCD + eY[1] * sinBCD * sinABCD); 
+                z = atoms_[rTo].z + r * ( -eBC[2] * cosBCD + eX[2] * sinBCD * cosABCD + eY[2] * sinBCD * sinABCD); 
+            }
+            add_atom((int)zVals[atomSym], x, y, z, atomSym.c_str(), atomic_masses[(int)zVals[atomSym]]);
+            ++currentAtom;
+        }
     }
-    return mol;
 }
 
 
