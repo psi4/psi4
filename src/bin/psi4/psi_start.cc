@@ -7,11 +7,15 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <string>
+#include <boost/regex.hpp>
 #include <getopt.h>
 #include <psifiles.h>
 #include <libipv1/ip_lib.h>
 #include <psiconfig.h>
 #include "psi4.h"
+
+using namespace std;
 
 namespace psi {
 
@@ -56,7 +60,7 @@ int psi_start(int argc, char *argv[])
     { "output",  1, NULL, 'o' },
     { "prefix",  1, NULL, 'p' },
     { "input",   1, NULL, 'i' },
-    { "script",  0, NULL, 's' },
+//    { "script",  0, NULL, 's' },
     { "messy",   0, NULL, 'm' },
     { NULL,      0, NULL,  0  }
   };
@@ -106,9 +110,9 @@ int psi_start(int argc, char *argv[])
       append = true;
       break;
 
-      case 's': // -s or --script
-      script = true;
-      break;
+//      case 's': // -s or --script
+//      script = true;
+//      break;
 
       case 'w': // -w or --wipe
       clean_only = true;
@@ -119,6 +123,7 @@ int psi_start(int argc, char *argv[])
       break;
 
       default: // Something else, unexpected
+      printf("Unexpected argument given: -%c\n", next_option);
       exit(EXIT_FAILURE);
       break;
     }
@@ -130,10 +135,21 @@ int psi_start(int argc, char *argv[])
   char *arg;
   char *tmpstr1;
 
+  if (optind <= argc-2) {
+      ifname = argv[optind];
+      ofname = argv[optind+1];
+  }
+  else if (optind <= argc-1) {
+      ifname = argv[optind];
+  }
+
   /* if some args were not specified on command-line - check the environment */
-  if (ifname.empty() && getenv("PSI_INPUT")) ifname = getenv("PSI_INPUT");
-  if (ofname.empty() && getenv("PSI_OUTPUT")) ofname = getenv("PSI_OUTPUT");
-  if (fprefix.empty() && getenv("PSI_PREFIX")) fprefix = getenv("PSI_PREFIX");
+  if (ifname.empty() && Process::environment("PSI_INPUT").size())
+      ifname = Process::environment("PSI_INPUT");
+  if (ofname.empty() && Process::environment("PSI_OUTPUT").size())
+      ofname = Process::environment("PSI_OUTPUT");
+  if (fprefix.empty() && Process::environment("PSI_PREFIX").size())
+      fprefix = Process::environment("PSI_PREFIX");
 
   /* if some arguments still not defined - assign default values */
   if (ifname.empty()) ifname = "input.dat";
@@ -147,6 +163,25 @@ int psi_start(int argc, char *argv[])
     fprintf(stderr, "Error: could not open input file %s\n",ifname.c_str());
     return(PSI_RETURN_FAILURE);
   }
+
+  // Check the input for "psi:(" if found assume IPV1, if not assumes Python
+  boost::regex commentLine("\\s*(%|#).*", boost::regbase::normal | boost::regbase::icase);
+  boost::regex psicommand("^\\s*psi\\s*:\\s*\\(.*", boost::regbase::normal | boost::regbase::icase);
+  char line[256];
+
+  script = true;
+  smatch  matches;
+  while(fgets(line, sizeof(line), infile)) {
+      string fileline = line;
+      string nocomment = boost::regex_replace(fileline, commentLine, "");
+      if (boost::regex_match(nocomment, matches, psicommand)) {
+          script = false;
+          break;
+      }
+  }
+
+  // Rewind the file since we've been reading from it.
+  fseek(infile, 0L, SEEK_SET);
 
   if(append) {
     if(ofname == "stdout") outfile=stdout;

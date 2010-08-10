@@ -306,9 +306,31 @@ void Python::run(FILE *input)
         while(fgets(line, sizeof(line), input)) {
             file << line;
         }
+
+        // Process the input file
+        PyObject *input = PyImport_ImportModule("input");
+        PyObject *function = PyObject_GetAttrString(input, "process_input");
+        PyObject *pargs = Py_BuildValue("(s)", file.str().c_str());
+        PyObject *ret = PyEval_CallObject(function, pargs);
+
+        char *val;
+        PyArg_Parse(ret, "s", &val);
+        string inputfile = val;
+
+        Py_DECREF(ret);
+        Py_DECREF(pargs);
+        Py_DECREF(function);
+        Py_DECREF(input);
+
         // str is a Boost Python C++ wrapper for Python strings.
-        str strStartScript(file.str().c_str());
-        //printf(file.str().c_str());
+//        str strStartScript(file.str().c_str());
+        str strStartScript(inputfile);
+
+        if (verbose) {
+            fprintf(outfile, "Input file to run:\n%s", inputfile.c_str());
+            fflush(outfile);
+        }
+
         try {
             PyImport_AppendInittab(strdup("PsiMod"), initPsiMod);
             object objectMain(handle<>(borrowed(PyImport_AddModule("__main__"))));

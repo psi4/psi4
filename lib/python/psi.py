@@ -1,5 +1,9 @@
 import PsiMod
 
+class ValueNotSet (Exception): pass
+
+molecule = None
+
 def psidatadir(key):
     return PsiMod.Process.environment[key]
 
@@ -14,6 +18,7 @@ def psidatadir(key):
 #
 def geometry(geom, reorient = True, shiftToCOM = True):
     # Create a Molecule object
+    global molecule
     molecule = PsiMod.Molecule.create_molecule_from_string(geom)
 
     # If requested, shift molecule to center of mass
@@ -27,6 +32,12 @@ def geometry(geom, reorient = True, shiftToCOM = True):
     PsiMod.set_active_molecule(molecule)
 
     return molecule
+
+def dummify():
+    if not molecule:
+        raise ValueNotSet("no default molecule found")
+
+    #molecule.set_dummy_atom
 
 #
 # Set options
