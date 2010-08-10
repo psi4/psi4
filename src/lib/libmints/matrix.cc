@@ -1336,7 +1336,7 @@ void SimpleMatrix::print_atom_vector(FILE *out)
     int i;
 
     if (name_.length()) {
-        fprintf(out,"\n  -%s:\n", name_c.str());
+        fprintf(out,"\n  -%s:\n", name_.c_str());
     }
     fprintf(out,"     Atom            X                  Y                   Z\n");
     fprintf(out,"    ------   -----------------  -----------------  -----------------\n");
