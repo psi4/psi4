@@ -67,7 +67,7 @@ ERI::ERI(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet>bs2, shared_ptr<BasisSet>
     // 2. Maximum number of primitive combinations
     int max_nprim = bs1->max_nprimitive() * bs2->max_nprimitive() * bs3->max_nprimitive() * bs4->max_nprimitive();
     // 3. Maximum Cartesian class size
-    max_cart_ = ioff[bs1->max_am()] * ioff[bs2->max_am()] * ioff[bs3->max_am()] * ioff[bs4->max_am()] +1;
+    max_cart_ = ioff[bs1->max_am()+1] * ioff[bs2->max_am()+1] * ioff[bs3->max_am()+1] * ioff[bs4->max_am()+1];
 
     // Make sure libint is compiled to handle our max AM
     if (max_am >= LIBINT_MAX_AM) {
@@ -130,7 +130,7 @@ ERI::ERI(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet>bs2, shared_ptr<BasisSet>
     }
     memset(source_, 0, sizeof(double)*size);
 
-    fjt_ = new Taylor_Fjt(bs1->max_am() + bs2->max_am() + bs3->max_am() + bs4->max_am() + deriv_,
+    fjt_ = new Taylor_Fjt(bs1->max_am() + bs2->max_am() + bs3->max_am() + bs4->max_am() + deriv_ +1,
                           1e-15);
 
     screen_ = false;
@@ -173,7 +173,7 @@ void ERI::init_shell_pairs12()
     double a1, a2, ab2, gam, c1, c2;
     double *curr_stack_ptr;
 
-    if (basis1() != basis2() || basis1() != basis3() || basis2() != basis4()) {
+    if (basis1() != basis2() || basis1() != basis3() || basis2() != basis4() || deriv_ > 0) {
         use_shell_pairs_ = false;
         return;
     }
@@ -1133,9 +1133,9 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
     for (int p1=0; p1<nprim1; ++p1) {
         double a1 = s1->exp(p1);
         double c1 = s1->coef(p1);
-        int max_p2 = (sh1 == sh2) ? p1 + 1 : nprim2;
-//        for (int p2=0; p2<nprim2; ++p2) {
-        for (int p2=0; p2<max_p2; ++p2) {
+//        int max_p2 = (sh1 == sh2) ? p1 + 1 : nprim2;
+        for (int p2=0; p2<nprim2; ++p2) {
+//        for (int p2=0; p2<max_p2; ++p2) {
             double a2 = s2->exp(p2);
             double c2 = s2->coef(p2);
             double zeta = a1 + a2;
@@ -1162,8 +1162,9 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
             for (int p3=0; p3<nprim3; ++p3) {
                 double a3 = s3->exp(p3);
                 double c3 = s3->coef(p3);
-                int max_p4 = (sh3 == sh4) ? p3 + 1 : nprim4;
-                for (int p4=0; p4<max_p4; ++p4) {
+//                int max_p4 = (sh3 == sh4) ? p3 + 1 : nprim4;
+//                for (int p4=0; p4<max_p4; ++p4) {
+                for (int p4=0; p4<nprim4; ++p4) {
                     double a4 = s4->exp(p4);
                     double c4 = s4->coef(p4);
                     double nu = a3 + a4;
