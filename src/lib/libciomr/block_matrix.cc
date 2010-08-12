@@ -9,6 +9,10 @@
 #include <cstring>
 #include <strings.h>
 #include <psifiles.h>
+#include <unistd.h>
+#ifdef _POSIX_MEMLOCK
+#include <sys/mman.h>
+#endif
 
 namespace psi {
 
@@ -26,6 +30,9 @@ namespace psi {
 **
 ** \param n = number of rows (unsigned long to allow large matrices)
 ** \param m = number of columns (unsigned long to allow large matrices)
+** \param memlock = optional bool indicating whether to lock memory 
+**   into physical RAM or not, and available only where _POSIX_MEMLOCK 
+**   is defined. Defaults to false if not specified.
 **
 ** Returns: double star pointer to newly allocated matrix
 **
@@ -36,7 +43,7 @@ namespace psi {
 ** \ingroup CIOMR
 */
 
-double ** block_matrix(unsigned long int n, unsigned long int m)
+double ** block_matrix(unsigned long int n, unsigned long int m, bool memlock)
 {
     double **A=NULL;
     double *B=NULL;
@@ -44,27 +51,59 @@ double ** block_matrix(unsigned long int n, unsigned long int m)
 
     if(!m || !n) return(static_cast<double **>(0));
 
-//  if ((A = (double **) malloc(n * (unsigned long int)sizeof(double *)))==NULL) {
     if ((A = new double*[n])==NULL) {
         fprintf(stderr,"block_matrix: trouble allocating memory \n");
         fprintf(stderr,"n = %ld\n",n);
         exit(PSI_RETURN_FAILURE);
     }
 
-//  if ((B = (double *) malloc(m*n * (unsigned long int)sizeof(double)))==NULL) {
     if ((B = new double[n*m])==NULL) {
         fprintf(stderr,"block_matrix: trouble allocating memory \n");
         fprintf(stderr,"m = %ld\n",m);
         exit(PSI_RETURN_FAILURE);
     }
 
-    // bzero is not in the C standard, use memset instead.
-    //bzero(B, m*n*(unsigned long int)sizeof(double));
     memset(static_cast<void*>(B), 0, m*n*sizeof(double));
     
+
     for (i = 0; i < n; i++) {
         A[i] = &(B[i*m]);
     }
+
+#ifdef _POSIX_MEMLOCK
+    if (memlock) {
+
+        char* addr = (char*) B;
+        unsigned long size = m*n*(unsigned long)sizeof(double);  
+        unsigned long page_offset, page_size;
+
+        page_size = sysconf(_SC_PAGESIZE);
+        page_offset = (unsigned long) addr % page_size;
+
+        addr -= page_offset;  /* Adjust addr to page boundary */
+        size += page_offset;  /* Adjust size with page_offset */
+
+        if ( mlock(addr, size) ) {  /* Lock the memory */
+            fprintf(stderr,"block_matrix: trouble locking memory \n");
+            fflush(stderr);
+            exit(PSI_RETURN_FAILURE);
+        }
+        
+        addr = (char*) A;
+        size = n*(unsigned long)sizeof(double*);  
+
+        page_offset = (unsigned long) addr % page_size;
+
+        addr -= page_offset;  /* Adjust addr to page boundary */
+        size += page_offset;  /* Adjust size with page_offset */
+
+        if ( mlock(addr, size) ) {  /* Lock the memory */
+            fprintf(stderr,"block_matrix: trouble locking memory \n");
+            fflush(stderr);
+            exit(PSI_RETURN_FAILURE);
+        }
+    }
+#endif
 
     return(A);
 }

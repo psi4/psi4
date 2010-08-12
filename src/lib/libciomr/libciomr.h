@@ -94,7 +94,7 @@ void zero_long_int_matrix(long int **array, int rows, int cols);
 void print_long_int_mat(long int **a, int m, int n, FILE *out);
 
 /* Functions in block_matrix.c */
-double ** block_matrix(unsigned long int n, unsigned long int m);
+double ** block_matrix(unsigned long int n, unsigned long int m, bool mlock = false);
 void free_block(double **array);
 
 /* Functions in fndcor */
