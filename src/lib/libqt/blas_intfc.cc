@@ -13,9 +13,13 @@
  May 1998
 
  Additions by TD Crawford and EF Valeev, June 1999.
+
+ Modifications to support BLASI calls with > 2B elements
+ Rob Parrish, August 2010. The future has finally arrived. 
 */
 
 #include <cstdio>
+#include <limits.h>
 
 #if FC_SYMBOL==2
 #define F_DSWAP dswap_
@@ -82,9 +86,16 @@ extern double F_DDOT(int *n, double *x, int *incx, double *y, int *incy);
 
 namespace psi {
 
-void C_DSWAP(int length, double *x, int inc_x, double *y, int inc_y)
+void C_DSWAP(unsigned long int length, double *x, int inc_x, double *y, int inc_y)
 {
-  ::F_DSWAP(&length, x, &inc_x, y, &inc_y);
+    int big_blocks = (int)(length / INT_MAX);
+    int small_size = (int)(length % INT_MAX);
+    for (int block = 0; block <= big_blocks; block++) {
+        double* x_s = &x[block*inc_x*(unsigned long int)INT_MAX];
+        double* y_s = &y[block*inc_y*(unsigned long int)INT_MAX];
+        signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
+        ::F_DSWAP(&length_s, x_s, &inc_x, y_s, &inc_y);
+    }
 }
 
 /*! 
@@ -103,10 +114,17 @@ void C_DSWAP(int length, double *x, int inc_x, double *y, int inc_y)
 **
 ** \ingroup QT
 */
-void C_DAXPY(int length, double a, double *x, int inc_x, 
+void C_DAXPY(unsigned long int length, double a, double *x, int inc_x, 
              double *y, int inc_y)
 {
-  ::F_DAXPY(&length, &a, x, &inc_x, y, &inc_y);
+    int big_blocks = (int)(length / INT_MAX);
+    int small_size = (int)(length % INT_MAX);
+    for (int block = 0; block <= big_blocks; block++) {
+        double* x_s = &x[block*inc_x*(unsigned long int)INT_MAX];
+        double* y_s = &y[block*inc_y*(unsigned long int)INT_MAX];
+        signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
+        ::F_DAXPY(&length_s, &a, x_s, &inc_x, y_s, &inc_y);
+    }
 }
 
 
@@ -125,10 +143,17 @@ void C_DAXPY(int length, double a, double *x, int inc_x,
 **
 ** \ingroup QT
 */
-void C_DCOPY(int length, double *x, int inc_x, 
+void C_DCOPY(unsigned long int length, double *x, int inc_x, 
              double *y, int inc_y)
 {
-  ::F_DCOPY(&length, x, &inc_x, y, &inc_y);
+    int big_blocks = (int)(length / INT_MAX);
+    int small_size = (int)(length % INT_MAX);
+    for (int block = 0; block <= big_blocks; block++) {
+        double* x_s = &x[block*inc_x*(unsigned long int)INT_MAX];
+        double* y_s = &y[block*inc_y*(unsigned long int)INT_MAX];
+        signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
+        ::F_DCOPY(&length_s, x_s, &inc_x, y_s, &inc_y);
+    }
 }
 
 
@@ -144,9 +169,15 @@ void C_DCOPY(int length, double *x, int inc_x,
 **
 ** \ingroup QT
 */
-void C_DSCAL(int length, double alpha, double *vec, int inc)
+void C_DSCAL(unsigned long int length, double alpha, double *vec, int inc)
 {
-  ::F_DSCAL(&length, &alpha, vec, &inc);
+    int big_blocks = (int)(length / INT_MAX);
+    int small_size = (int)(length % INT_MAX);
+    for (int block = 0; block <= big_blocks; block++) {
+        double* vec_s = &vec[block*inc*(unsigned long int)INT_MAX];
+        signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
+        ::F_DSCAL(&length_s, &alpha, vec_s, &inc);
+    }
 }
 
 
@@ -164,13 +195,56 @@ void C_DSCAL(int length, double alpha, double *vec, int inc)
 **
 ** \ingroup QT
 */
-void C_DROT(int length, double *x, int inc_x, double *y, int inc_y,
+void C_DROT(unsigned long int length, double *x, int inc_x, double *y, int inc_y,
             double costheta, double sintheta)
 {
+    int big_blocks = (int)(length / INT_MAX);
+    int small_size = (int)(length % INT_MAX);
+    for (int block = 0; block <= big_blocks; block++) {
+        double* x_s = &x[block*inc_x*(unsigned long int)INT_MAX];
+        double* y_s = &y[block*inc_y*(unsigned long int)INT_MAX];
+        signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
+        ::F_DROT(&length_s, x_s, &inc_x, y_s, &inc_y, &costheta, &sintheta);
+    }
 
-  ::F_DROT(&length,x,&inc_x,y,&inc_y,&costheta,&sintheta);
 }
 
+
+
+/*!
+** C_DDOT(): This function returns the dot product of two vectors, x and y.
+**
+** \param length  = Number of elements in x and y.
+** \param x       = A pointer to the beginning of the data in x.
+**                  Must be of at least length (1+(N-1)*abs(inc_x).
+** \param inc_x   = how many places to skip to get to next element in x
+** \param y       = A pointer to the beginning of the data in y.
+** \param inc_y   = how many places to skip to get to next element in y
+**
+** Returns: the dot product
+**
+** Interface written by ST Brown.
+** July 2000
+** \ingroup QT
+*/
+
+double C_DDOT(unsigned long int length, double *x, int inc_x, double *y, int inc_y)
+{
+    if(length == 0) return 0.0;
+
+    double reg = 0.0;
+
+    int big_blocks = (int)(length / INT_MAX);
+    int small_size = (int)(length % INT_MAX);
+    for (int block = 0; block <= big_blocks; block++) {
+        double* x_s = &x[block*inc_x*(unsigned long int)INT_MAX];
+        double* y_s = &y[block*inc_y*(unsigned long int)INT_MAX];
+        signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
+        reg += ::F_DDOT(&length_s, x_s, &inc_x, y_s, &inc_y);
+    }
+   
+    return reg;
+}
 
 /*!
 ** C_DGEMM(): This function calculates C(m,n)=alpha*(opT)A(m,k)*(opT)B(k,n)+ 
@@ -357,30 +431,6 @@ void C_DSPMV(char uplo, int n, double alpha, double *A,
 
 }
 
-
-/*!
-** C_DDOT(): This function returns the dot product of two vectors, x and y.
-**
-** \param length  = Number of elements in x and y.
-** \param x       = A pointer to the beginning of the data in x.
-**                  Must be of at least length (1+(N-1)*abs(inc_x).
-** \param inc_x   = how many places to skip to get to next element in x
-** \param y       = A pointer to the beginning of the data in y.
-** \param inc_y   = how many places to skip to get to next element in y
-**
-** Returns: the dot product
-**
-** Interface written by ST Brown.
-** July 2000
-** \ingroup QT
-*/
-
-double C_DDOT(int n, double *x, int inc_x, double *y, int inc_y)
-{
-   if(n == 0) return 0.0;
-
-   return ::F_DDOT(&n,x,&inc_x,y,&inc_y);
-}
 
 }
 
