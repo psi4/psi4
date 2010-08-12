@@ -5,7 +5,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libiwl/iwl.h>
 #include <libqt/qt.h>
@@ -83,6 +82,9 @@ void transform_two_backtr_uhf(void)
   double *PAA_block, *PAB_block, *PBB_block, *J_block, *JA_block, *JB_block;
   double **A_AA, **A_AB, **A_BB, **B, ***CA, ***CB;
   int A_cols, B_cols, *C_colspi;
+  std::string AA = "AA";
+  std::string AB = "AB";
+  std::string BB = "BB";
 
   int ktr, ltr, *reorder, ntei;
   struct iwlbuf MBuff, JBuff;
@@ -126,7 +128,7 @@ void transform_two_backtr_uhf(void)
 	    first_tmp_file, tolerance, outfile);
   if(print_lvl > 1) { yosh_print(&YBuffP, outfile); fflush(outfile); }
   yosh_init_buckets(&YBuffP);
-  yosh_rdtwo_backtr_uhf("AA", &YBuffP, PSIF_MO_AA_TPDM, ioff, 1, 1, 1, 0, outfile);
+  yosh_rdtwo_backtr_uhf(AA, &YBuffP, PSIF_MO_AA_TPDM, ioff, 1, 1, 1, 0, outfile);
   yosh_close_buckets(&YBuffP, 0);
   yosh_sort(&YBuffP, PSIF_AA_PRESORT, 0, ioff, NULL, src_orbs, src_ntri, 0, 1, 0, 0, 1, 0, outfile);
   yosh_done(&YBuffP);
@@ -141,7 +143,7 @@ void transform_two_backtr_uhf(void)
 	    first_tmp_file, tolerance, outfile);
   if(print_lvl > 1) { yosh_print(&YBuffP, outfile); fflush(outfile); }
   yosh_init_buckets(&YBuffP);
-  yosh_rdtwo_backtr_uhf("AB", &YBuffP, PSIF_MO_AB_TPDM, ioff, 0, 1, 1, 0, outfile);
+  yosh_rdtwo_backtr_uhf(AB, &YBuffP, PSIF_MO_AB_TPDM, ioff, 0, 1, 1, 0, outfile);
   yosh_close_buckets(&YBuffP, 0);
   yosh_sort(&YBuffP, PSIF_AB_PRESORT, 0, ioff, NULL, src_orbs, src_ntri, 0, 1, 0, 0, 1, 0, outfile);
   yosh_done(&YBuffP);
@@ -580,7 +582,7 @@ void transform_two_backtr_uhf(void)
 	    first_tmp_file, tolerance, outfile);
   if(print_lvl > 1) { yosh_print(&YBuffP, outfile); fflush(outfile); }
   yosh_init_buckets(&YBuffP);
-  yosh_rdtwo_backtr_uhf("BB", &YBuffP, PSIF_MO_BB_TPDM, ioff, 1, 1, 1, 0, outfile);
+  yosh_rdtwo_backtr_uhf(BB, &YBuffP, PSIF_MO_BB_TPDM, ioff, 1, 1, 1, 0, outfile);
   yosh_close_buckets(&YBuffP, 0);
   yosh_sort(&YBuffP, PSIF_BB_PRESORT, 0, ioff, NULL, src_orbs, src_ntri, 0, 1, 0, 0, 1, 0, outfile);
   yosh_done(&YBuffP);

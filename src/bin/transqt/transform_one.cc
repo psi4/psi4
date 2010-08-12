@@ -5,7 +5,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libqt/qt.h>
@@ -113,13 +112,13 @@ void trans_one_forwards(void)
    * a generalized mmult routine
    */ 
   if (!params.do_all_tei) {
-    if(!strcmp(params.ref,"UHF")) {
+    if(params.ref == "UHF") {
       destruct_evects(nirreps, moinfo.evects_alpha);
       destruct_evects(nirreps, moinfo.evects_beta);
     }
     else destruct_evects(nirreps, moinfo.evects);
 
-    if(!strcmp(params.ref,"UHF")) {
+    if(params.ref == "UHF") {
       moinfo.evects_alpha = construct_evects("alpha", moinfo.nirreps, 
                                              moinfo.orbspi,
 					     moinfo.sopi, moinfo.orbspi,
@@ -149,7 +148,7 @@ void trans_one_forwards(void)
     
     oe_ints = moinfo.oe_ints;
 
-    if(!strcmp(params.ref,"UHF")) {
+    if(params.ref == "UHF") {
     
       itap = params.h_bare_a_file;
 
@@ -209,7 +208,7 @@ void trans_one_forwards(void)
 
   if (params.do_h_fzc) {
 
-    if(!strcmp(params.ref,"UHF")) {
+    if(params.ref == "UHF") {
 
       itap = params.h_fzc_a_file;
       oe_ints = moinfo.fzc_operator_alpha;
@@ -324,7 +323,7 @@ void trans_one_backwards(void)
   dst_ntri = (dst_orbs * (dst_orbs + 1)) / 2;
   src_ntri = (src_orbs * (src_orbs + 1)) / 2;
 
-  if(!strcmp(params.ref, "UHF")) {
+  if(params.ref == "UHF") {
 
     tmat = block_matrix(src_orbs, src_orbs);
     psio_open(PSIF_MO_OPDM, PSIO_OPEN_OLD);
@@ -403,7 +402,7 @@ void trans_one_backwards(void)
     tmat = block_matrix(src_orbs, src_orbs);
 
     psio_open(params.opdm_in_file, PSIO_OPEN_OLD);
-    if (strcmp(params.wfn, "OOCCD")!=0)
+    if (params.wfn != "OOCCD")
         psio_read_entry(params.opdm_in_file, "MO-basis OPDM", (char *) tmat[0],
                         src_orbs*src_orbs*sizeof(double));
     else {
@@ -455,7 +454,7 @@ void trans_one_backwards(void)
   src_orbs = nmo; 
   src_ntri = (src_orbs * (src_orbs + 1)) / 2;
 
-  if(!strcmp(params.ref,"UHF")) {
+  if(params.ref == "UHF") {
 
     /* we need to re-construct the C matrices because we now need the   */
     /* columns corresponding to frozen virtual orbitals               */

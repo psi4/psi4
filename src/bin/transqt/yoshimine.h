@@ -73,7 +73,7 @@ YEXTERN void yosh_rdtwo_uhf(struct yoshimine *YBuff, int itapERI, int del_tei_fi
 YEXTERN void yosh_rdtwo_backtr(struct yoshimine *YBuff, int tei_file, 
       int *ioff, int symmetrize, int add_ref_pt, int del_tei_file, int prtflg, 
       FILE *outfile);
-YEXTERN void yosh_rdtwo_backtr_uhf(const char *spin, struct yoshimine *YBuff, int tei_file, 
+YEXTERN void yosh_rdtwo_backtr_uhf(std::string, struct yoshimine *YBuff, int tei_file, 
       int *ioff, int swap_bk, int symm_pq, int del_tei_file, int prtflg, FILE *outfile);
 YEXTERN void flush_bucket(struct bucket *bptr, int lastbuf);
 YEXTERN void yosh_sort(struct yoshimine *YBuff, int out_tape, int keep_bins,

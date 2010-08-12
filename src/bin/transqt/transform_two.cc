@@ -6,7 +6,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <libciomr/libciomr.h>
-#include <libipv1/ip_lib.h>
 #include <libchkpt/chkpt.h>
 #include <libqt/qt.h>
 #include <libiwl/iwl.h>
@@ -65,7 +64,7 @@ void transform_two(void)
   struct iwlbuf *twopdm_out;
 
   /* Special code for full UHF transformations */
-  if(!strcmp(params.ref, "UHF")) {
+  if(params.ref == "UHF") {
     if(params.backtr) transform_two_backtr_uhf();
     else transform_two_uhf();
     return;
