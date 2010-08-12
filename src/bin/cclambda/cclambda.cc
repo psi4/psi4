@@ -21,7 +21,7 @@
 
 namespace psi { namespace cclambda {
 
-void init_io(int argc, char *argv[]);
+void init_io(void);
 void title(void);
 void get_moinfo(void);
 void get_params(Options& options);
@@ -72,13 +72,13 @@ void cc3_l3l1(void);
 void local_init(void);
 void local_done(void);
 
-int cclambda(Options& options, int argc, char *argv[])
+PsiReturnType cclambda(Options& options)
 {
   int done=0, i, root_L_irr;
   int **cachelist, *cachefiles;
   dpdfile2 L1;
 
-  init_io(argc, argv); /* parses command-line arguments */
+  init_io();
   title();
   moinfo.iter=0;
   get_moinfo();
@@ -256,18 +256,19 @@ int cclambda(Options& options, int argc, char *argv[])
 
   cleanup(); 
   exit_io();
-  return PSI_RETURN_SUCCESS;
+  return Success;
 }
 
 
-/* parse command line arguments */
-void init_io(int argc, char *argv[])
+// must be fixed with options later for excited states
+void init_io(void)
 {
   int i, num_unparsed;
-  char *lbl, *progid, *argv_unparsed[100];
+  char *lbl, *argv_unparsed[100];
 
   params.all=0;    /* do all Ls including ground state */
   params.zeta=0; /* only do ground-state L */
+/*
   for (i=1, num_unparsed=0; i<argc; ++i) {
     if (!strcmp(argv[i],"--all")) {
       params.all = 1;
@@ -279,14 +280,10 @@ void init_io(int argc, char *argv[])
       argv_unparsed[num_unparsed++] = argv[i];
     }
   }
-
-/* convergence in CCLAMBDA: will only replace default if this is the last keyword read */
-  free(progid);
-
+*/
   tstart();
 
   for(i=CC_MIN; i <= CC_MAX; i++) psio_open(i,1);
-
 }
 
 void title(void)
