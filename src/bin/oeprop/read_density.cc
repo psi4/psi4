@@ -14,13 +14,15 @@
 
 namespace psi { namespace oeprop {
 
-void read_density()
+void print_density_resort(double **Ptot, int dim, int *new_order, FILE *out);
+
+void read_density(Options & options)
 { 
   int i,j,k,l,dim_i,count,ibf;
-  int *locs;
+  int fzc, *locs;
   double **psq_so, *tmp_arr, **tmp_mat, **psq_ao;
   int irrep, mo_offset, so_offset, i_ci, j_ci, max_opi, errcod;
-  int fzc, populated_orbs;
+  int populated_orbs;
   int *docc, *socc, *frozen_docc, *frozen_uocc, *reorder, **ras_opi; 
   int *rstr_docc, *rstr_uocc;
   int *reorder_a, *reorder_b;
@@ -54,28 +56,30 @@ void read_density()
   double *eval_tmp;
   int ntri;
   int irrep_dim;
-  std::string id;
+  std::string id, tmpstring;
   
   Ptot = init_array(natri);
   nso = nbfso;
   ntri = (nmo*(nmo+1))/2;
 
   if(opdm_basis == "MO" && ref == "RHF") {
-    id == "RHF";
+    id = "RHF";
   }
   else if(opdm_basis == "MO" && ref == "ROHF") {
     /* Methods using semi-canonical orbitals */
-    if(wfn == "MP2" || wfn == "CC2" ||wfn == "EOM_CC2" ||wfn == "CCSD(T)" ||wfn == "CC3" ||wfn == "EOM_CC3")
-      id == "UHF";
-    else id == "RHF";
+    if (wfn == "MP2" || wfn == "CC2" || wfn == "EOM_CC2" ||
+        wfn == "CCSD(T)" || wfn == "CC3" || wfn == "EOM_CC3")
+      id = "UHF";
+    else 
+      id = strdup("RHF");
   }
   else if(opdm_basis == "MO" && ref == "UHF") {
-    id == "UHF";
+    id = "UHF";
   }
 
   /* Read OPDM in MO-basis */
 
-  if(id == "RHF") {
+  if (id == "RHF") {     
     psq_so = block_matrix(nbfso,nbfso);
 
     max_opi = 0;
@@ -91,12 +95,15 @@ void read_density()
     rstr_docc = init_int_array(nirreps);
     rstr_uocc = init_int_array(nirreps);
 
-    fzc = 1;
-    fzc = options.get_int("FREEZE_CORE");
- 
     if (ci_wfn(wfn)) {
-        frozen_docc = init_int_array(nirreps);
-        frozen_uocc = init_int_array(nirreps);
+      fzc = 1;
+      if (options["FREEZE_CORE"].has_changed()) {
+        tmpstring = options.get_str("FREEZE_CORE");
+        if (tmpstring == "FALSE" || tmpstring == "NO")
+          fzc = 0;
+      }
+      frozen_docc = init_int_array(nirreps);
+      frozen_uocc = init_int_array(nirreps);
       if (!ras_set2(nirreps, nmo, fzc, 1, orbspi, docc, socc,
 		   frozen_docc, frozen_uocc, rstr_docc, rstr_uocc,
                    ras_opi, reorder, 1, 0) )
@@ -114,25 +121,19 @@ void read_density()
         frozen_uocc = chkpt_rd_frzvpi();
       }
       else { /* try to read input occupations if you can */
-        if(options["DOCC"].has_changed()) 
+        if (options["DOCC"].has_changed())
           docc = options.get_int_array("DOCC");
-        else {
-          free(docc);
+        else
           docc = chkpt_rd_clsdpi();
-        }
-                
-        if(options["SOCC"].has_changed()) 
+
+        if (options["SOCC"].has_changed())
           socc = options.get_int_array("SOCC");
-        else {
-          free(socc);
-          socc = chkpt_rd_clsdpi();
-        }
-
-
+        else
+          socc = chkpt_rd_openpi();
 
         frozen_docc = get_frzcpi();
         frozen_uocc = get_frzvpi();
-        }
+      }
 
       reorder_qt(docc, socc, frozen_docc, frozen_uocc,
                reorder, orbspi, nirreps);
@@ -199,11 +200,54 @@ void read_density()
       so_offset += sopi[irrep];
     }
 
-    /*if (print_lvl >= PRINTOPDMLEVEL) {
+    if (print_lvl >= PRINTOPDMLEVEL) {
       fprintf(outfile,"  Total density matrix in SO basis :\n");
       print_mat(psq_so,nbfso,nbfso,outfile);
       fprintf(outfile,"\n");
-    }*/
+
+      // Add printing for exporting density in BF (5d/7f) basis
+      FILE *fp_rho = fopen("AO_density.dat", "w");
+      double **psq_bf = block_matrix(nbfso, nbfso);
+
+      double **tmp_mat2 = block_matrix(nbfso, nbfso);
+      mmult(psq_so, 0, usotbf, 0, tmp_mat2, 0, nbfso, nbfso, nbfso, 0);
+      mmult(usotbf, 1, tmp_mat2, 0, psq_bf, 0, nbfso, nbfso, nbfso,0);
+      free_block(tmp_mat2);
+
+      fprintf(outfile,"  Total density matrix in BF basis :\n");
+      print_mat(psq_bf, nbfso, nbfso, outfile);
+      fprintf(outfile,"\n");
+
+      int *new_order = init_int_array(nbfso);
+      int cnt=0;
+      for(i=0; i<nshell; i++) { // loop over shells
+        switch (stype[i]-1) {   // ang momentum
+          case 0:               // s functions leave alone
+            new_order[cnt++] = sloc_new[i]-1;
+            break;
+          case 1: // was (pz, px, py) ?
+            new_order[cnt++] = sloc_new[i]+2-1;
+            new_order[cnt++] = sloc_new[i]+0-1;
+            new_order[cnt++] = sloc_new[i]+1-1;
+            break;
+          case 2:
+            new_order[cnt++] = sloc_new[i]+2-1; 
+            new_order[cnt++] = sloc_new[i]+3-1; // check
+            new_order[cnt++] = sloc_new[i]+1-1;
+            new_order[cnt++] = sloc_new[i]+4-1;
+            new_order[cnt++] = sloc_new[i]+0-1;
+            break;
+          default:
+            fprintf(outfile,"Warning: f's and higher angular momentum ordering not fixed in order.\n");
+         }
+      }
+      //for (i=0; i<nbfso; ++i)
+      //printf("new_order[%d] = %d\n", i, new_order[i]);
+      print_density_resort(psq_bf, nbfso, new_order, fp_rho);
+      free(new_order);
+      fclose(fp_rho);
+      free_block(psq_bf);
+    }
     
     free_block(onepdm);
     free_block(opdm_blk);
@@ -234,7 +278,7 @@ void read_density()
 
     free_matrix(psq_ao,nbfao);
   } /* end read RHF MO-basis case */
-  else if(id == "UHF") {
+  else if (id == "UHF") {
     eval_tmp = chkpt_rd_alpha_evals();
     chkpt_wt_evals(eval_tmp);
     free(eval_tmp);
@@ -491,8 +535,8 @@ void read_density()
   }
 
   /* Read OPDM in SO-basis */
-  if(opdm_basis == "SO") {
-    if(opdm_format == "SQUARE") {
+  if (opdm_basis == "SO") {
+    if (opdm_format == "SQUARE") {
       psq_so = block_matrix(nbfso,nbfso);
       psio_open(opdm_file, PSIO_OPEN_OLD);
       psio_read_entry(opdm_file, "SO-basis OPDM", (char *) psq_so[0],
@@ -536,8 +580,8 @@ void read_density()
     free_block(psq_so);
   }
   /* Read in OPDM in AO-basis */
-  else if(opdm_basis == "AO") {
-    if(opdm_format == "SQUARE") {
+  else if (opdm_basis == "AO") {
+    if (opdm_format == "SQUARE") {
       psq_ao = block_matrix(nbfao,nbfao);
       psio_open(opdm_file, PSIO_OPEN_OLD);
       psio_read_entry(opdm_file, "AO-basis OPDM", (char *) psq_ao[0],
@@ -548,8 +592,8 @@ void read_density()
         for(i=0; i<nbfao; i++) {
           for(j=0; j<=i; j++) {
             Ptot[ioff[i]+j] = (psq_ao[i][j] + psq_ao[j][i])/2;
-	  }
-	}
+          }
+        }
       }
       /* Symmetric OPDM */
       else {
@@ -571,6 +615,27 @@ void read_density()
     fprintf(outfile,"\n\n");
   }
 
+  return;
+}
+
+// desired format:
+// 1.87556975E-01  1.03249105E-01  6.55381717E-02 -3.36671267E-02  2.38478241E-02
+// new_order maps new indices onto the old ones
+void print_density_resort(double **P, int nrow, int *new_order, FILE *out) {
+  int i, j, row, col, cnt;
+
+  cnt = 0;
+  for (i=0; i<nrow; ++i) { // loop over new indices
+    for (j=0; j<=i; ++j) {
+      row = new_order[i];
+      col = new_order[j];
+      fprintf(out,"%16.8e", P[row][col]);
+      if (++cnt == 5) {
+        cnt = 0;
+        fprintf(out,"\n");
+      }
+    }
+  }
   return;
 }
 

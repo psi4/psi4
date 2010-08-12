@@ -100,15 +100,13 @@ void AI_OSrecurs(double pax, double pay, double paz,
   calc_f(F,(int) mmax,u);
 
 	/* Computing starting integrals for recursion */
-  fprintf(outfile, "setup:\n");
+
   for(m=0;m<=mmax;m++)
     AI0[0][0][m] = tmp*F[m];
   for(m=0;m<=mmax-1;m++) {
     AIX[0][0][m] = 2*gamma*pcx*AI0[0][0][m+1];
     AIY[0][0][m] = 2*gamma*pcy*AI0[0][0][m+1];
     AIZ[0][0][m] = 2*gamma*pcz*AI0[0][0][m+1];
-
-    fprintf(outfile, "AIX[0][0][%d] = %lf\tAIY[0][0][%d] = %lf\tAIZ[0][0][%d] = %lf\n", m, AIX[0][0][m], m, AIY[0][0][m], m, AIZ[0][0][m]);
   }
   for(m=0;m<=mmax-2;m++) {
     AIXX[0][0][m] = 4*gamma*gamma*pcx*pcx*AI0[0][0][m+2] -
@@ -124,7 +122,7 @@ void AI_OSrecurs(double pax, double pay, double paz,
   
 
 	/* Upward recursion in j with i=0 */
-  fprintf(outfile, "upward in j with i=0:\n");
+  
   for(b=1;b<=jang;b++)
     for(jx=0;jx<=b;jx++)
     for(jy=0;jy<=b-jx;jy++) {
@@ -142,7 +140,6 @@ void AI_OSrecurs(double pax, double pay, double paz,
           AIZ[0][jind][m] = pbz*AIZ[0][jind-jzm][m] -
                             pcz*AIZ[0][jind-jzm][m+1] +
                                 AI0[0][jind-jzm][m+1];
-          fprintf(outfile, "AIX[0][%d][%d] = %lf\tAIY[0][%d][%d] = %lf\tAIZ[0][%d][%d] = %lf\n", jind, m, AIX[0][jind][m], jind, m, AIY[0][jind][m], jind, m, AIZ[0][jind][m]);
         }
         for(m=0;m<=mmax-b-2;m++) {	/* Gradients of the electric field */
           AIXX[0][jind][m] = pbz*AIXX[0][jind-jzm][m] -
@@ -172,7 +169,6 @@ void AI_OSrecurs(double pax, double pay, double paz,
                                           AIY[0][jind-2*jzm][m+1]);
             AIZ[0][jind][m] += pp*(jz-1)*(AIZ[0][jind-2*jzm][m] -
                                           AIZ[0][jind-2*jzm][m+1]);
-          fprintf(outfile, "AIX[0][%d][%d] = %lf\tAIY[0][%d][%d] = %lf\tAIZ[0][%d][%d] = %lf\n", jind, m, AIX[0][jind][m], jind, m, AIY[0][jind][m], jind, m, AIZ[0][jind][m]);
           }
           for(m=0;m<=mmax-b-2;m++) {
             AIXX[0][jind][m] += pp*(jz-1)*(AIXX[0][jind-2*jzm][m] -
@@ -203,7 +199,6 @@ void AI_OSrecurs(double pax, double pay, double paz,
                                 AI0[0][jind-jym][m+1];
           AIZ[0][jind][m] = pby*AIZ[0][jind-jym][m] -
                             pcy*AIZ[0][jind-jym][m+1];
-          fprintf(outfile, "AIX[0][%d][%d] = %lf\tAIY[0][%d][%d] = %lf\tAIZ[0][%d][%d] = %lf\n", jind, m, AIX[0][jind][m], jind, m, AIY[0][jind][m], jind, m, AIZ[0][jind][m]);
         }
         for(m=0;m<=mmax-b-2;m++) {
           AIXX[0][jind][m] = pby*AIXX[0][jind-jym][m] -
@@ -233,7 +228,6 @@ void AI_OSrecurs(double pax, double pay, double paz,
                                           AIY[0][jind-2*jym][m+1]);
             AIZ[0][jind][m] += pp*(jy-1)*(AIZ[0][jind-2*jym][m] -
                                           AIZ[0][jind-2*jym][m+1]);
-          fprintf(outfile, "AIX[0][%d][%d] = %lf\tAIY[0][%d][%d] = %lf\tAIZ[0][%d][%d] = %lf\n", jind, m, AIX[0][jind][m], jind, m, AIY[0][jind][m], jind, m, AIZ[0][jind][m]);
           }
           for(m=0;m<=mmax-b-2;m++) {
             AIXX[0][jind][m] += pp*(jy-1)*(AIXX[0][jind-2*jym][m] -
@@ -264,7 +258,6 @@ void AI_OSrecurs(double pax, double pay, double paz,
                             pcx*AIY[0][jind-jxm][m+1];
           AIZ[0][jind][m] = pbx*AIZ[0][jind-jxm][m] -
                             pcx*AIZ[0][jind-jxm][m+1];
-          fprintf(outfile, "AIX[0][%d][%d] = %lf\tAIY[0][%d][%d] = %lf\tAIZ[0][%d][%d] = %lf\n", jind, m, AIX[0][jind][m], jind, m, AIY[0][jind][m], jind, m, AIZ[0][jind][m]);
         }
         for(m=0;m<=mmax-b-2;m++) {
           AIXX[0][jind][m] = pbx*AIXX[0][jind-jxm][m] -
@@ -294,7 +287,6 @@ void AI_OSrecurs(double pax, double pay, double paz,
                                           AIY[0][jind-2*jxm][m+1]);
             AIZ[0][jind][m] += pp*(jx-1)*(AIZ[0][jind-2*jxm][m] -
                                           AIZ[0][jind-2*jxm][m+1]);
-          fprintf(outfile, "AIX[0][%d][%d] = %lf\tAIY[0][%d][%d] = %lf\tAIZ[0][%d][%d] = %lf\n", jind, m, AIX[0][jind][m], jind, m, AIY[0][jind][m], jind, m, AIZ[0][jind][m]);
           }
           for(m=0;m<=mmax-b-2;m++) {
             AIXX[0][jind][m] += pp*(jx-1)*(AIXX[0][jind-2*jxm][m] -
@@ -313,8 +305,7 @@ void AI_OSrecurs(double pax, double pay, double paz,
         }
       }
       else /* This should and will never happen */
-        throw PsiException("There's some error in the AI_OSrecurs algorithm", __FILE__, __LINE__);
-//        punt("There's some error in the AI_OSrecurs algorithm");
+        throw("There's some error in the AI_OSrecurs algorithm");
     }
  
 
@@ -344,7 +335,6 @@ void AI_OSrecurs(double pax, double pay, double paz,
             AIZ[iind][jind][m] = paz*AIZ[iind-izm][jind][m] -
                                  pcz*AIZ[iind-izm][jind][m+1] +
                                      AI0[iind-izm][jind][m+1];
-          fprintf(outfile, "AIX[%d][%d][%d] = %lf\tAIY[%d][%d][%d] = %lf\tAIZ[%d][%d][%d] = %lf\n", iind, jind, m, AIX[iind][jind][m], iind, jind, m, AIY[iind][jind][m], iind, jind, m, AIZ[iind][jind][m]);
           }
           for(m=0;m<=mmax-a-b-2;m++) {	/* Gradients of the electric field */
             AIXX[iind][jind][m] = paz*AIXX[iind-izm][jind][m] -
@@ -374,7 +364,6 @@ void AI_OSrecurs(double pax, double pay, double paz,
                                                AIY[iind-2*izm][jind][m+1]);
               AIZ[iind][jind][m] += pp*(iz-1)*(AIZ[iind-2*izm][jind][m] -
                                                AIZ[iind-2*izm][jind][m+1]);
-          fprintf(outfile, "AIX[%d][%d][%d] = %lf\tAIY[%d][%d][%d] = %lf\tAIZ[%d][%d][%d] = %lf\n", iind, jind, m, AIX[iind][jind][m], iind, jind, m, AIY[iind][jind][m], iind, jind, m, AIZ[iind][jind][m]);
             }
             for(m=0;m<=mmax-a-b-2;m++) {
               AIXX[iind][jind][m] += pp*(iz-1)*(AIXX[iind-2*izm][jind][m] -
@@ -402,7 +391,6 @@ void AI_OSrecurs(double pax, double pay, double paz,
                                            AIY[iind-izm][jind-jzm][m+1]);
               AIZ[iind][jind][m] += pp*jz*(AIZ[iind-izm][jind-jzm][m] -
                                            AIZ[iind-izm][jind-jzm][m+1]);
-          fprintf(outfile, "AIX[%d][%d][%d] = %lf\tAIY[%d][%d][%d] = %lf\tAIZ[%d][%d][%d] = %lf\n", iind, jind, m, AIX[iind][jind][m], iind, jind, m, AIY[iind][jind][m], iind, jind, m, AIZ[iind][jind][m]);
             }
             for(m=0;m<=mmax-a-b-2;m++) {
               AIXX[iind][jind][m] += pp*jz*(AIXX[iind-izm][jind-jzm][m] -
@@ -433,7 +421,6 @@ void AI_OSrecurs(double pax, double pay, double paz,
                                      AI0[iind-iym][jind][m+1];
             AIZ[iind][jind][m] = pay*AIZ[iind-iym][jind][m] -
                                  pcy*AIZ[iind-iym][jind][m+1];
-          fprintf(outfile, "AIX[%d][%d][%d] = %lf\tAIY[%d][%d][%d] = %lf\tAIZ[%d][%d][%d] = %lf\n", iind, jind, m, AIX[iind][jind][m], iind, jind, m, AIY[iind][jind][m], iind, jind, m, AIZ[iind][jind][m]);
           }
           for(m=0;m<=mmax-a-b-2;m++) {
             AIXX[iind][jind][m] = pay*AIXX[iind-iym][jind][m] -
@@ -463,7 +450,6 @@ void AI_OSrecurs(double pax, double pay, double paz,
                                                AIY[iind-2*iym][jind][m+1]);
               AIZ[iind][jind][m] += pp*(iy-1)*(AIZ[iind-2*iym][jind][m] -
                                                AIZ[iind-2*iym][jind][m+1]);
-          fprintf(outfile, "AIX[%d][%d][%d] = %lf\tAIY[%d][%d][%d] = %lf\tAIZ[%d][%d][%d] = %lf\n", iind, jind, m, AIX[iind][jind][m], iind, jind, m, AIY[iind][jind][m], iind, jind, m, AIZ[iind][jind][m]);
             }
             for(m=0;m<=mmax-a-b-2;m++) {
               AIXX[iind][jind][m] += pp*(iy-1)*(AIXX[iind-2*iym][jind][m] -
@@ -491,7 +477,6 @@ void AI_OSrecurs(double pax, double pay, double paz,
                                            AIY[iind-iym][jind-jym][m+1]);
               AIZ[iind][jind][m] += pp*jy*(AIZ[iind-iym][jind-jym][m] -
                                            AIZ[iind-iym][jind-jym][m+1]);
-          fprintf(outfile, "AIX[%d][%d][%d] = %lf\tAIY[%d][%d][%d] = %lf\tAIZ[%d][%d][%d] = %lf\n", iind, jind, m, AIX[iind][jind][m], iind, jind, m, AIY[iind][jind][m], iind, jind, m, AIZ[iind][jind][m]);
             }
             for(m=0;m<=mmax-a-b-2;m++) {
               AIXX[iind][jind][m] += pp*jy*(AIXX[iind-iym][jind-jym][m] -
@@ -522,7 +507,6 @@ void AI_OSrecurs(double pax, double pay, double paz,
                                  pcx*AIY[iind-ixm][jind][m+1];
             AIZ[iind][jind][m] = pax*AIZ[iind-ixm][jind][m] -
                                  pcx*AIZ[iind-ixm][jind][m+1];
-          fprintf(outfile, "AIX[%d][%d][%d] = %lf\tAIY[%d][%d][%d] = %lf\tAIZ[%d][%d][%d] = %lf\n", iind, jind, m, AIX[iind][jind][m], iind, jind, m, AIY[iind][jind][m], iind, jind, m, AIZ[iind][jind][m]);
           }
           for(m=0;m<=mmax-a-b-2;m++) {	/* Gradients of the electric field */
             AIXX[iind][jind][m] = pax*AIXX[iind-ixm][jind][m] -
@@ -552,7 +536,6 @@ void AI_OSrecurs(double pax, double pay, double paz,
                                                AIY[iind-2*ixm][jind][m+1]);
               AIZ[iind][jind][m] += pp*(ix-1)*(AIZ[iind-2*ixm][jind][m] -
                                                AIZ[iind-2*ixm][jind][m+1]);
-          fprintf(outfile, "AIX[%d][%d][%d] = %lf\tAIY[%d][%d][%d] = %lf\tAIZ[%d][%d][%d] = %lf\n", iind, jind, m, AIX[iind][jind][m], iind, jind, m, AIY[iind][jind][m], iind, jind, m, AIZ[iind][jind][m]);
             }
             for(m=0;m<=mmax-a-b-2;m++) {
               AIXX[iind][jind][m] += pp*(ix-1)*(AIXX[iind-2*ixm][jind][m] -
@@ -580,7 +563,6 @@ void AI_OSrecurs(double pax, double pay, double paz,
                                            AIY[iind-ixm][jind-jxm][m+1]);
               AIZ[iind][jind][m] += pp*jx*(AIZ[iind-ixm][jind-jxm][m] -
                                            AIZ[iind-ixm][jind-jxm][m+1]);
-          fprintf(outfile, "AIX[%d][%d][%d] = %lf\tAIY[%d][%d][%d] = %lf\tAIZ[%d][%d][%d] = %lf\n", iind, jind, m, AIX[iind][jind][m], iind, jind, m, AIY[iind][jind][m], iind, jind, m, AIZ[iind][jind][m]);
             }
             for(m=0;m<=mmax-a-b-2;m++) {
               AIXX[iind][jind][m] += pp*jx*(AIXX[iind-ixm][jind-jxm][m] -
@@ -599,8 +581,7 @@ void AI_OSrecurs(double pax, double pay, double paz,
           }
         }
         else /* This should and will never happen */
-          throw PsiException("There's some error in the AI_OSrecurs algorithm", __FILE__, __LINE__);
-//          punt("There's some error in the AI_OSrecurs algorithm");
+          throw("There's some error in the AI_OSrecurs algorithm");
       }
     }
   free(F);
