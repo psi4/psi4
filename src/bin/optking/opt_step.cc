@@ -11,6 +11,7 @@
 #include "simples.h"
 #include "salc.h"
 #include "opt.h"
+#include "psi4-dec.h"
 
 #include <libqt/qt.h>
 #include <libipv1/ip_lib.h>
@@ -18,7 +19,8 @@
 
 namespace psi { // namespace optking {
 
-PsiReturnType opt_step_internal(cartesians &carts, simples_class &simples, const salc_set &symm);
+PsiReturnType opt_step_internal(Options & options, cartesians &carts,
+    simples_class &simples, const salc_set &symm);
 
 // for now, just a wrapper to call the old function
 PsiReturnType opt_step(Options & options) {
@@ -157,7 +159,7 @@ PsiReturnType opt_step(Options & options) {
   //  if (optinfo.cartesian)
   //    a = opt_step_cart(carts);
   //  else
-      rval = opt_step_internal(carts, *simples, *symm_salcs);
+      rval = opt_step_internal(options, carts, *simples, *symm_salcs);
   }
   catch (const char * s) {
     fprintf(outfile,"%s\n",s);
@@ -183,7 +185,8 @@ inline double nr_energy(double rfo_t, double rfo_g, double rfo_h) {
 
 static bool line_search(cartesians & carts, int num_ints, double *dq);
 
-PsiReturnType opt_step_internal(cartesians &carts, simples_class &simples, const salc_set &symm) {
+PsiReturnType opt_step_internal(Options & options,
+    cartesians &carts, simples_class &simples, const salc_set &symm) {
 
   int xyz, i,j,k,ii,a,b, dim, dim_carts, nsimples, constraint, cnt;
   double **B, **G, **G2, **G_inv, **H, **H_inv, **temp_mat, **u, **P;
@@ -242,6 +245,12 @@ PsiReturnType opt_step_internal(cartesians &carts, simples_class &simples, const
   if (optinfo.ts && (fabs(DE_error) > optinfo.step_energy_limit) && fabs(DE_old) > optinfo.line_search_min) {
     fprintf(outfile,"\t\tEnergy deviated too much from projection.\n");
     do_line_search = true;
+  }
+
+  // for now in psi4 no line searches are implemented
+  if (do_line_search && options.get_bool("NO_LINE_SEARCH")) {
+    fprintf(outfile,"\tPreventing line search due to user input of NO_LINE_SEARCH.\n");
+    do_line_search = false;
   }
 
   // *** Bad step - step back and do line search
