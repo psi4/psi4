@@ -6,7 +6,6 @@ include ../MakeVars
 LDLIBS += $(BLAS)
 
 PSITARGET = $(top_objdir)/lib/libPSI_cchbar.a
-#PSILIBS = -lPSI_dpd -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
 
 CXXSRC = \
 F.cc               Wabei_RHF.cc        cache.cc       get_params.cc \

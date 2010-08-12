@@ -19,10 +19,10 @@
 
 namespace psi { namespace cchbar {
 
-void init_io(int argc, char *argv[]);
+void init_io();
 void title(void);
-void get_moinfo(void);
-void get_params(void);
+void get_moinfo(Options &);
+void get_params(Options &);
 void exit_io(void);
 void F_build(void);
 void Wmbej_build(void);
@@ -52,14 +52,14 @@ void norm_HET1(void);
 
 using namespace psi;
 
-int cchbar(Options &options, int argc, char *argv[])
+PsiReturnType cchbar(Options &options)
 {
   int **cachelist, *cachefiles;
 
-  init_io(argc, argv);
+  init_io();
   title();
-  get_moinfo();
-  get_params();
+  get_moinfo(options);
+  get_params(options);
 
   cachefiles = init_int_array(PSIO_MAXUNIT);
 
@@ -139,10 +139,10 @@ int cchbar(Options &options, int argc, char *argv[])
 
   cleanup(); 
   exit_io();
-  return PSI_RETURN_SUCCESS;
+  return Success;
 }
 
-void init_io(int argc, char *argv[])
+void init_io()
 {
   tstart();
 
