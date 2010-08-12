@@ -1073,6 +1073,8 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
 {
     shared_ptr<GaussianShell> s1, s2, s3, s4;
 
+//    fprintf(outfile, "sh1 = %d sh2 = %d sh3 = %d sh4 = %d\n", sh1, sh2, sh3, sh4);
+
     s1 = bs1_->shell(sh1);
     s2 = bs2_->shell(sh2);
     s3 = bs3_->shell(sh3);
@@ -1128,14 +1130,14 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
     libderiv_.CD[1] = C[1] - D[1];
     libderiv_.CD[2] = C[2] - D[2];
 
-    // Prepare all the data needed by libint
+    // Prepare all the data needed by libderiv
     nprim = 0;
     for (int p1=0; p1<nprim1; ++p1) {
         double a1 = s1->exp(p1);
         double c1 = s1->coef(p1);
-//        int max_p2 = (sh1 == sh2) ? p1 + 1 : nprim2;
-        for (int p2=0; p2<nprim2; ++p2) {
-//        for (int p2=0; p2<max_p2; ++p2) {
+        int max_p2 = (sh1 == sh2) ? p1 + 1 : nprim2;
+        for (int p2=0; p2<max_p2; ++p2) {
+//        for (int p2=0; p2<nprim2; ++p2) {
             double a2 = s2->exp(p2);
             double c2 = s2->coef(p2);
             double zeta = a1 + a2;
@@ -1162,9 +1164,9 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
             for (int p3=0; p3<nprim3; ++p3) {
                 double a3 = s3->exp(p3);
                 double c3 = s3->coef(p3);
-//                int max_p4 = (sh3 == sh4) ? p3 + 1 : nprim4;
-//                for (int p4=0; p4<max_p4; ++p4) {
-                for (int p4=0; p4<nprim4; ++p4) {
+                int max_p4 = (sh3 == sh4) ? p3 + 1 : nprim4;
+                for (int p4=0; p4<max_p4; ++p4) {
+//                for (int p4=0; p4<nprim4; ++p4) {
                     double a4 = s4->exp(p4);
                     double c4 = s4->coef(p4);
                     double nu = a3 + a4;
@@ -1243,30 +1245,30 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
                             libderiv_.PrimQuartet[nprim].F[i] = F[i] * val;
                         }
                     }
-//                    fprintf(outfile, "twozeta_a = %lf twozeta_b = %lf twozeta_c = %lf twozeta_d = %lf\n",
-//                        libderiv_.PrimQuartet[nprim].twozeta_a, libderiv_.PrimQuartet[nprim].twozeta_b, libderiv_.PrimQuartet[nprim].twozeta_c, libderiv_.PrimQuartet[nprim].twozeta_d);
-//                    fprintf(outfile, "coef1 = %lf\n", val);
-//                    if (fabs(PQ2) > 1.0e-14) {
-//                        for (int i=0; i<=am+DERIV_LVL; ++i) {
-//                            fprintf(outfile, "F[%d] = %lf\n", i, F[i]);
-//                        }
-//                    }
-//                    fprintf(outfile, "PA[0] %lf PA[1] %lf PA[2] %lf\n", PA[0], PA[1], PA[2]);
-//                    fprintf(outfile, "PB[0] %lf PB[1] %lf PB[2] %lf\n", PB[0], PB[1], PB[2]);
-//                    fprintf(outfile, "QC[0] %lf QC[1] %lf QC[2] %lf\n", QC[0], QC[1], QC[2]);
-//                    fprintf(outfile, "QD[0] %lf QD[1] %lf QD[2] %lf\n", QD[0], QD[1], QD[2]);
-//                    fprintf(outfile, "WP[0] %lf WP[1] %lf WP[2] %lf\n", WP[0], WP[1], WP[2]);
-//                    fprintf(outfile, "WQ[0] %lf WQ[1] %lf WQ[2] %lf\n", WQ[0], WQ[1], WQ[2]);
+                    fprintf(outfile, "twozeta_a = %lf twozeta_b = %lf twozeta_c = %lf twozeta_d = %lf\n",
+                        libderiv_.PrimQuartet[nprim].twozeta_a, libderiv_.PrimQuartet[nprim].twozeta_b, libderiv_.PrimQuartet[nprim].twozeta_c, libderiv_.PrimQuartet[nprim].twozeta_d);
+                    fprintf(outfile, "coef1 = %lf\n", val);
+                    if (fabs(PQ2) > 1.0e-14) {
+                        for (int i=0; i<=am+DERIV_LVL; ++i) {
+                            fprintf(outfile, "F[%d] = %lf\n", i, F[i]);
+                        }
+                    }
+                    fprintf(outfile, "PA[0] %lf PA[1] %lf PA[2] %lf\n", PA[0], PA[1], PA[2]);
+                    fprintf(outfile, "PB[0] %lf PB[1] %lf PB[2] %lf\n", PB[0], PB[1], PB[2]);
+                    fprintf(outfile, "QC[0] %lf QC[1] %lf QC[2] %lf\n", QC[0], QC[1], QC[2]);
+                    fprintf(outfile, "QD[0] %lf QD[1] %lf QD[2] %lf\n", QD[0], QD[1], QD[2]);
+                    fprintf(outfile, "WP[0] %lf WP[1] %lf WP[2] %lf\n", WP[0], WP[1], WP[2]);
+                    fprintf(outfile, "WQ[0] %lf WQ[1] %lf WQ[2] %lf\n", WQ[0], WQ[1], WQ[2]);
 
-//                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].oo2z);
-//                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].oo2n);
-//                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].oo2zn);
-//                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].poz);
-//                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].pon);
-//                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].twozeta_a);
-//                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].twozeta_b);
-//                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].twozeta_c);
-//                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].twozeta_d);
+                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].oo2z);
+                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].oo2n);
+                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].oo2zn);
+                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].poz);
+                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].pon);
+                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].twozeta_a);
+                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].twozeta_b);
+                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].twozeta_c);
+                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].twozeta_d);
 
                     nprim++;
                 }
