@@ -23,7 +23,7 @@
 
 namespace psi { namespace ccdensity {
 
-void init_io(int argc, char *argv[]);
+void init_io(void);
 void title(void);
 void get_moinfo(void);
 void get_frozen(void);
@@ -93,7 +93,7 @@ void x_te_intermediates_rhf(void);
 void x_xi_intermediates(void);
 void V_build(void);
 
-int ccdensity(Options& options, int argc, char *argv[])
+PsiReturnType ccdensity(Options& options)
 {
   int i;
   int **cachelist, *cachefiles;
@@ -102,7 +102,7 @@ int ccdensity(Options& options, int argc, char *argv[])
   dpdfile2 D;
   double tval;
   
-  init_io(argc,argv);
+  init_io();
   title();
   /*  get_frozen(); */
   get_params( options );
@@ -161,7 +161,7 @@ int ccdensity(Options& options, int argc, char *argv[])
       psio_close(EOM_TMP_XI,0); /* delete EOM_TMP_XI */
       psio_open(EOM_TMP_XI,PSIO_OPEN_NEW);
       exit_io();
-      return PSI_RETURN_SUCCESS;
+      return Success;
     }
 
     /* compute ground state parts of onepdm or put zeroes there */
@@ -326,11 +326,12 @@ int ccdensity(Options& options, int argc, char *argv[])
 
   cleanup(); 
   exit_io();
-  return PSI_RETURN_SUCCESS;
+  return Success;
 }
 
 
-void init_io(int argc, char *argv[])
+// must be fixed with options for excited state densities
+void init_io(void)
 {
   int i, num_unparsed;
   char *argv_unparsed[100];;
@@ -342,9 +343,10 @@ void init_io(int argc, char *argv[])
   params.use_zeta = 0;
   params.transition = 0;
 
+/*
   for (i=1, num_unparsed=0; i<argc; ++i) {
     if(!strcmp(argv[i], "--onepdm")) {
-      params.onepdm = 1; /* generate ONLY the onepdm (for one-electron properties) */
+      params.onepdm = 1; // generate ONLY the onepdm (for one-electron properties)
     }
     else if (!strcmp(argv[i],"--use_zeta")) {
       params.use_zeta = 1;
@@ -368,20 +370,18 @@ void init_io(int argc, char *argv[])
       argv_unparsed[num_unparsed++] = argv[i];
     }
   }
+*/
 
   tstart();
 
-  /* Open all dpd data files here */
-  /* erase files for easy debugging */
   for(i=CC_MIN; i <= CC_MAX; i++) psio_open(i,PSIO_OPEN_OLD);
-  /*
+  // erase old files
   psio_close(CC_GR,0);
   psio_close(CC_GL,0);
   psio_close(EOM_TMP0,0);
   psio_open(CC_GR,PSIO_OPEN_NEW);
   psio_open(CC_GL,PSIO_OPEN_NEW);
   psio_open(EOM_TMP0,PSIO_OPEN_NEW);
-  */
 }
 
 void title(void)
