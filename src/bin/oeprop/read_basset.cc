@@ -20,6 +20,7 @@ void read_basset_info()
   stype = chkpt_rd_stype();
   snumg = chkpt_rd_snumg();
   sloc  = chkpt_rd_sloc();
+  sloc_new  = chkpt_rd_sloc_new();
   
   lmax = 0;
   for(i=0;i<nshell;i++)

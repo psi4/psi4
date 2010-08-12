@@ -22,18 +22,21 @@ namespace psi { namespace oeprop {
 
 void print_grid()
 {
-//  if (!strcmp(grid_format,"MEGAPOVPLUS"))
-  if(grid_format == "MEGAPOVPLUS")
+  if (grid_format == "MEGAPOVPLUS")
     print_grid_megapovray();
-//  else if (!strcmp(grid_format,"PLOTMTV"))
-  else if(grid_format == "PLOTMTV")
+  else if (grid_format == "PLOTMTV")
     print_grid_plotmtv();
-//  else if (!strcmp(grid_format,"GAUSSCUBE"))
-  else if(grid_format == "GAUSSCUBE")
+  else if (grid_format == "GAUSSCUBE")
     print_grid_gausscube();
 
   return;
 }
+
+}} // namespace psi::oeprop
+
+namespace {
+using namespace psi::oeprop;
+using namespace psi;
 
 void print_2d_summary()
 {
@@ -404,7 +407,7 @@ void print_grid_gausscube()
    ------------------------------------------------------------------------*/
   /* Comment and subcomment */
   fprintf(grid_file,"Gaussian Cube file created by OEPROP (Psi 3.2)\n");
-  fprintf(grid_file,"Calculation title: %s\n",title);
+  fprintf(grid_file,"Calculation title: %s\n",title.c_str());
   if (grid == 5)
     fprintf(grid_file,"%5d",-1*natom);
   else if (grid == 6)
@@ -466,4 +469,4 @@ void print_grid_gausscube()
   return;
 }
 
-}} // namespace
+} // namespace

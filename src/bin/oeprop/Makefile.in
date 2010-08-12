@@ -3,15 +3,13 @@ VPATH = @srcdir@
 
 include ../MakeVars
 
-CXXFLAGS = $(CXXDBG) $(CXXOPT) $(CXXDEF) $(CXXOTH) $(CXXINC)
+PSITARGET=$(top_objdir)/lib/libPSI_oeprop.a
 
-PSILIBS = -lPSI_iwl -lPSI_qt -lPSI_chkpt -lPSI_ciomr -lPSI_psio -lPSI_ipv1
-
-CXXSRC = main.cc oeprop.cc parsing.cc grid_unitvec.cc read_density.cc \
+CXXSRC = oeprop.cc compute_oeprops.cc parsing.cc grid_unitvec.cc read_density.cc \
 compute_density.cc read_basset.cc recursion.cc populate.cc mprefxyz.cc \
 initialize.cc overlap.cc get_nmo.cc grid.cc grid_oeprop.cc \
 grid_dens_2d.cc grid_dens_3d.cc grid_mo.cc print.cc print_grid.cc \
-connectivity.cc misc.cc get_opdm_lbl.cc fza.cc
+connectivity.cc get_opdm_lbl.cc fza.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 
@@ -21,8 +19,4 @@ ifneq ($(DODEPEND),no)
 $(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
 include $(BINOBJ:%.o=%.d)
 endif
-
-install_man:: oeprop.1
-	$(MKDIRS) $(DESTDIR)$(mandir)/man1
-	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(mandir)/man1
 

@@ -117,7 +117,7 @@ void print_params()
 {
    int i;
 
-   fprintf(outfile,"\n  Title : '%s'\n",title);
+   fprintf(outfile,"\n  Title : '%s'\n",title.c_str());
    fprintf(outfile,"\n  List of PARAMETERS :\n");
    fprintf(outfile,"    # of atoms                 = %6d\n",natom);
    fprintf(outfile,"    # of molecular orbitals    = %6d\n",nmo);

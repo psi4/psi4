@@ -12,28 +12,20 @@
 
 namespace psi { namespace oeprop {
 
-void get_opdm_lbl(void) { 
+void get_opdm_lbl(Options & options) { 
   int i, errcod;
   int root;
 
   nrho = 1;
-
-  if(options["NUM_ROOTS"].has_changed()) {
-//  if (ip_exist("NUM_ROOTS",0)) {
-    nrho = 1;
+  if (options["NUM_ROOTS"].has_changed()) {
     nrho = options.get_int("NUM_ROOTS");
-//    errcod = ip_data("NUM_ROOTS","%d",&nrho,0);
-//    if (errcod != IPE_OK) {
-//      fprintf(outfile,"(oeprop): error parsing NUM_ROOTS keyword\n");
-//      abort();
-//    }
   }
   else if (cc_wfn(wfn)) {
     psio_open(CC_INFO,1);
     psio_read_entry(CC_INFO, "Num. of CC densities", (char *) &(nrho), 
       sizeof(int));
     psio_close(CC_INFO,1);
-  } 
+  }
   else if (ci_wfn(wfn)) {
     psio_open(opdm_file,1);
     if (transdens) 
@@ -48,20 +40,12 @@ void get_opdm_lbl(void) {
   if (nrho < 1) {
     fprintf(outfile,"(oeprop): error - got nrho = %d\n", nrho);
     throw PsiException("error - got nrho", __FILE__, __LINE__);
-//    abort();
   }
 
   /* if the ROOT keyword is specified, let's just analyze the ROOT given 
      and not however many there may be on disk */
-  if(options["ROOT"].has_changed()) {
-//  if (ip_exist("ROOT",0)) {
-    root = 1;
+  if (options["ROOT"].has_changed()) {
     root = options.get_int("ROOT");
-//    errcod = ip_data("ROOT","%d",&root,0);
-//    if (errcod != IPE_OK) {
-//      fprintf(outfile,"(oeprop): error parsing ROOT keyword\n");
-//      abort();
-//    }
     root -= 1;
     nrho = 1;
     opdm_lbl = (char **) malloc(sizeof(char *) * nrho);
@@ -76,8 +60,7 @@ void get_opdm_lbl(void) {
   /* if ROOT is not given and only one density specified, 
      then let's analyze "THE" density */
   else if (nrho == 1) {
-//    if ( !strcmp(ref,"RHF") || !strcmp(ref,"ROHF") ) {
-    if(ref == "RHF" || ref == "ROHF") {
+    if ( ref == "RHF" || ref == "ROHF" ) {
       opdm_lbl = (char **) malloc(sizeof(char *) * nrho);
       opdm_lbl[0] = (char *) malloc(32*sizeof(char));
       sprintf(opdm_lbl[0], "MO-basis %s", transdens ? "TDM" : "OPDM");
@@ -99,8 +82,7 @@ void get_opdm_lbl(void) {
 
   if (nrho == 1) return;
 
-//  if ( !strcmp(ref,"RHF") || !strcmp(ref,"ROHF") ) {
-  if(ref == "RHF" || ref == "ROHF") {
+  if ( ref == "RHF" || ref == "ROHF" ) {
     opdm_lbl = (char **) malloc(sizeof(char *) * nrho);
     for (i=0;i<nrho;i++) {
       opdm_lbl[i] = (char *) malloc(32*sizeof(char));

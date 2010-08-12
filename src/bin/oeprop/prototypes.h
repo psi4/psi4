@@ -8,39 +8,35 @@
 
 namespace psi { namespace oeprop {
 
-void start_io(int argc, char *argv[]);
-void stop_io();
-//void punt(const char *);
-void parsing();
-void grid_unitvec();
-void compute_density();
-void read_density();
-void get_nmo();
-void compute_overlap();
-void compute_oeprops();
-void compute_grid();
-void read_basset_info();
-void read_zvec();
+void parsing(Options &);
+void compute_density(void);
+void read_density(Options &);
+void get_nmo(void);
+void compute_overlap(void);
+void compute_oeprops(void);
+void compute_grid(void);
+void read_basset_info(void);
+void read_zvec(void);
 void MI_OSrecurs(double, double, double, double, double, double, double, int, int, int);
 void AI_OSrecurs(double, double, double, double, double, double, double, double, double, double, int, int);
-void populate();
-void compute_mp_ref_xyz();
-void move2ref();
-void init_xyz();
+void populate(void);
+void compute_mp_ref_xyz(void);
+void move2ref(void);
+void init_xyz(void);
 double ***init_box(int, int, int);
 void free_box(double ***, int, int);
-void print_intro();
-void print_tasks();
-void print_params();
-void print_pop_header();
-void print_mp();
-void print_lm();
-void print_esp();
-void print_grid();
-void print_misc();
-void compute_connectivity();
-void get_opdm_lbl(void);
-void grid_parse();
+void print_intro(void);
+void print_tasks(void);
+void print_params(void);
+void print_pop_header(void);
+void print_mp(void);
+void print_lm(void);
+void print_esp(void);
+void print_grid(void);
+void print_misc(void);
+void compute_connectivity(void);
+void get_opdm_lbl(Options &);
+void grid_parse(Options &);
 
 }} // namespace psi::oeprop
 
