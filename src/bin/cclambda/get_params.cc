@@ -28,7 +28,7 @@ void get_params(Options& options)
 
   /* check WFN keyword in input */
   params.wfn = options.get_str("WFN");
-	excited_method = cc_excited(params.wfn);
+  excited_method = cc_excited(params.wfn);
 
   if(params.wfn == "CC2" || params.wfn == "EOM_CC2") {
     psio_read_entry(CC_INFO, "CC2 Energy", (char *) &(moinfo.ecc),
