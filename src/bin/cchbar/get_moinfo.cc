@@ -47,9 +47,7 @@ void get_moinfo(Options &options)
  
   std::string read_eom_ref = options.get_str("EOM_REFERENCE");
 //  errcod = ip_string("EOM_REFERENCE", &(read_eom_ref),0);
-    if(read_eom_ref != "ROHF"){
-       params.ref = 1;
-    }
+  if(read_eom_ref == "ROHF") params.ref = 1;
 
   /* Get frozen and active orbital lookups from CC_INFO */
   moinfo.frdocc = init_int_array(moinfo.nirreps);
