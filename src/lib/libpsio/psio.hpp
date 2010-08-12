@@ -2,6 +2,7 @@
 #define _psi_src_lib_libpsio_psio_hpp_
 
 #include <boost/shared_ptr.hpp>
+#include <boost/thread/thread.hpp>
 #include <string>
 #include <map>
 
@@ -104,6 +105,7 @@ namespace psi {
        */
       void rw(unsigned int unit, char *buffer, psio_address address, ULI size,
               int wrt);
+      
       /// Delete all TOC entries after the given key. If a blank key is given, the entire TOC will be wiped.
       void tocclean(unsigned int unit, const char *key);
       /// Print the table of contents for the given unit
@@ -165,8 +167,57 @@ namespace psi {
       /// Read the table of contents for file number 'unit'.
       void tocread(unsigned int unit);
 
+      friend class AIO_Handler;
   };
-  
+
+  class AIO_Handler {
+    private:
+        /// Unit number argument
+        unsigned int unit_;
+        /// Entry Key (80-char) argument
+        const char* key_;
+        /// Memory buffer argument
+        char* buffer_;
+        /// Size argument
+        ULI size_;
+        /// Start address argument
+        psio_address start_; 
+        /// End address pointer argument
+        psio_address *end_; 
+        /// PSIO object this AIO_Handler is built on
+        shared_ptr<PSIO> psio_; 
+        /// Thread this AIO_Handler is currently running on
+        shared_ptr<boost::thread> thread_;
+    public:
+        /// AIO_Handlers are constructed around a synchronous PSIO object
+        AIO_Handler(shared_ptr<PSIO> psio);
+        /// Destructor
+        ~AIO_Handler();
+        /// Thread object this AIO_Handler is currently running on
+        shared_ptr<boost::thread> get_thread();
+        /// When called, synchronize will not return until all requested data has been read or written
+        void synchronize();
+        /// Asynchronous read, same as PSIO::read, but nonblocking
+        void read(unsigned int unit, const char *key, char *buffer, ULI size,
+                psio_address start, psio_address *end); 
+        /// Asynchronous write, same as PSIO::write, but nonblocking
+        void write(unsigned int unit, const char *key, char *buffer, ULI size,
+                psio_address start, psio_address *end); 
+        /// Asynchronous read_entry, same as PSIO::read_entry, but nonblocking
+        void read_entry(unsigned int unit, const char *key, char *buffer, ULI size); 
+        /// Asynchronous read_entry, same as PSIO::write_entry, but nonblocking
+        void write_entry(unsigned int unit, const char *key, char *buffer, ULI size); 
+        
+        /// Function bound to thread internally
+        void call_read();
+        /// Function bound to thread internally
+        void call_write();
+        /// Function bound to thread internally
+        void call_read_entry();
+        /// Function bound to thread internally
+        void call_write_entry();
+  }; 
+ 
   int psiopp_ipv1_config(shared_ptr<PSIO> psio_obj);
   int psiopp_ipv1_config(PSIO *psio_obj);
   extern shared_ptr<PSIO> _default_psio_lib_;
