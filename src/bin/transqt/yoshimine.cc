@@ -91,7 +91,7 @@ void yosh_init(struct yoshimine *YBuff, unsigned bra_indices,
       fprintf(stderr, "(yosh_init): maximum number of buckets exceeded\n") ;
       fprintf(outfile, "(yosh_init): maximum number of buckets exceeded\n") ;
       fprintf(outfile, "   wanted %d buckets\n", nbuckets) ;
-      tstop(outfile) ;
+      tstop() ;
       exit(PSI_RETURN_FAILURE) ;
       }
 
@@ -992,7 +992,7 @@ void yosh_rdtwo_backtr(struct yoshimine *YBuff, int tei_file, int *ioff,
 **   printflag    = 1 for printing (for debugging only!) else 0
 **   outfile      = file to print integrals to (if printflag is set)
 */
-void yosh_rdtwo_backtr_uhf(const char *spin, struct yoshimine *YBuff, int tei_file, int *ioff, 
+void yosh_rdtwo_backtr_uhf(std::string spin, struct yoshimine *YBuff, int tei_file, int *ioff, 
 			   int swap_bk, int symm_pq, int del_tei_file,
 			   int printflag, FILE *outfile)
 { 
@@ -1012,19 +1012,19 @@ void yosh_rdtwo_backtr_uhf(const char *spin, struct yoshimine *YBuff, int tei_fi
     fprintf(outfile, "Two-particle density from file %d:\n", tei_file);
   }
 
-  if(!strcmp(spin, "AA")) {
+  if(spin == "AA") {
     iorder = moinfo.corr2pitz_nofzv_a;
     jorder = moinfo.corr2pitz_nofzv_a;
     korder = moinfo.corr2pitz_nofzv_a;
     lorder = moinfo.corr2pitz_nofzv_a;
   }
-  else if(!strcmp(spin, "BB")) {
+  else if(spin == "BB") {
     iorder = moinfo.corr2pitz_nofzv_b;
     jorder = moinfo.corr2pitz_nofzv_b;
     korder = moinfo.corr2pitz_nofzv_b;
     lorder = moinfo.corr2pitz_nofzv_b;
   }
-  else if(!strcmp(spin, "AB")) {
+  else if(spin == "AB") {
     iorder = moinfo.corr2pitz_nofzv_a;
     jorder = moinfo.corr2pitz_nofzv_a;
     korder = moinfo.corr2pitz_nofzv_b;

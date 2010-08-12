@@ -54,7 +54,7 @@ void cleanup(void)
   for(i=0; i < moinfo.nirreps; i++)
     free(moinfo.labels[i]);
   free(moinfo.labels);
-  if(!strcmp(params.ref,"UHF")) {
+  if(params.ref == "UHF") {
     destruct_evects(params.backtr ? moinfo.backtr_nirreps : moinfo.nirreps, 
 		    moinfo.evects_alpha);
     destruct_evects(params.backtr ? moinfo.backtr_nirreps : moinfo.nirreps, 
@@ -65,14 +65,14 @@ void cleanup(void)
 		    moinfo.evects);
   }
   free(moinfo.active);
-  if(!strcmp(params.ref,"UHF")) {
+  if(params.ref == "UHF") {
     free_block(moinfo.scf_vector_alpha);
     free_block(moinfo.scf_vector_beta);
   }
   else free_block(moinfo.scf_vector);
   /* free(moinfo.evals); */
   free(moinfo.oe_ints);
-  if(!strcmp(params.ref,"UHF")) {
+  if(params.ref == "UHF") {
     free(moinfo.fzc_operator_alpha);
     free(moinfo.fzc_operator_beta);
   }
@@ -94,7 +94,6 @@ void cleanup(void)
   free(ioff);
 
   /* Free params Arrays */
-  free(params.wfn);
 }
 
 }} // end namespace psi::transqt

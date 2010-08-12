@@ -13,6 +13,7 @@
 */
 
 #include <cstdio>
+#include "psi4-dec.h"
 
 extern FILE *outfile;
 

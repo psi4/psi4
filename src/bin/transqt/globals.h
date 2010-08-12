@@ -5,11 +5,6 @@
 #ifndef _psi_bin_transqt_global_h_
 #define _psi_bin_transqt_global_h_
 
-/* External global variables */
-extern "C" {
-  extern FILE *infile, *outfile;
-}
-
 namespace psi { namespace transqt {
 
 extern int *ioff;

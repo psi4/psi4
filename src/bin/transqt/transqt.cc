@@ -123,7 +123,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <libipv1/ip_lib.h>
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
@@ -133,14 +132,7 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "globals.h"
-
-using namespace psi::transqt;
-
-/* First definitions of globals */
-extern "C" {
-  FILE *infile, *outfile;
-  char *psi_file_prefix;
-}
+#include "psi4-dec.h"
 
 namespace psi { namespace transqt {
 
@@ -163,12 +155,12 @@ void transform_two_mp2(void);
 void transform_two_mp2r12a_t(void);
 void transform_two_mp2r12a_gr(void);
 
-void init_io(int argc, char *argv[]);
+void init_io(Options & options);
 void title(void);
 void init_ioff(void);
-void get_parameters(void);
+void get_parameters(Options & options);
 void print_parameters(void);
-void get_moinfo(void);
+void get_moinfo(Options & options);
 void get_one_electron_integrals(void);
 void exit_io(void);
 void get_reorder_array(void);
@@ -178,18 +170,15 @@ double *** construct_evects(const char *spin, int nirreps, int *active, int *sop
 void destruct_evects(int nirreps, double ***evects);
 int check_C(int nso, int nmo, double **Cmat, double *S);
 
-}} // end of namespace psi::transqt
-
-
-int main(int argc, char *argv[])
+PsiReturnType transqt(Options & options)
 {
   params.print_lvl = 1;
-  init_io(argc,argv);
+  init_io(options);
   title();
   init_ioff();
-  get_parameters();
+  get_parameters(options);
   print_parameters();
-  get_moinfo();
+  get_moinfo(options);
   get_reorder_array();
 
   get_one_electron_integrals();
@@ -218,72 +207,37 @@ int main(int argc, char *argv[])
 
   cleanup();
   exit_io();
-  return(PSI_RETURN_SUCCESS);
+  return Success;
 }
 
-namespace psi { namespace transqt {
-
-void init_io(int argc, char *argv[])
+void init_io(Options & options) 
 {
-   int i, errcod;
-   int num_extra_args = 0;
-   char **extra_args;
-   extra_args = (char **) malloc(argc*sizeof(char *));
+  params.print_lvl = options.get_int("PRINT_LVL"); // default is 1
 
-   params.runmode = MODE_NORMAL;
-   params.psimrcc = 0;
+  std::string tmpstring  = options.get_str("MODE"); // default TO_MO
+  if (tmpstring == "TO_MO")
+    params.backtr = 0;
+  else
+    params.backtr = 1;
 
-   for (i=1; i<argc; i++) {
+  params.psimrcc = options.get_bool("PSIMRCC"); // default false
 
-       /*--- "Quiet" option ---*/
-       if (strcmp(argv[i], "--quiet") == 0) {
-           params.print_lvl = 0;
-       }
-       /*--- do backtransformation ---*/
-       else if (strcmp(argv[i], "--backtr") == 0) {
-	   params.backtr = 1;
-       }
-       /*--- use Pitzer ordering and don't freeze core, used by psimrcc ---*/
-       else if (strcmp(argv[i], "--psimrcc") == 0) {
-           params.psimrcc = 1;
-       }
-       /*--- transform integrals for MP2R12A ---*/
-       else if (strcmp(argv[i], "--mp2r12a") == 0) {
-	   /*---
-	     the second argument is the type
-	     of integrals to transform
-	    ---*/
-	 i++;
-	 switch (atoi(argv[i])) {
-	 case 0: /*--- transform ERIs ---*/
+  params.runmode = MODE_NORMAL; // the default
+
+  if (options["MP2R12A"].has_changed()) {
+    // case 0: //--- transform ERIs ---
+    if (tmpstring == "MP2R12AERI")
 	   params.runmode = MODE_MP2R12AERI;
-	   break;
+    // case 1: //--- transform ints of r12
+    else if (tmpstring == "MP2R12AR12")
+      params.runmode = MODE_MP2R12AR12;
+    // case 2: //--- transform ints of [r12,T1]
+    else if (tmpstring == "MP2R12AR12T1")
+      params.runmode = MODE_MP2R12AR12T1;
+  }
 
-	 case 1: /*--- transform ints of r12 ---*/
-	   params.runmode = MODE_MP2R12AR12;
-	   break;
-
-	 case 2: /*--- transform ints of [r12,T1] ---*/
-	   params.runmode = MODE_MP2R12AR12T1;
-	   break;
-	 }
-       }
-       else {
-	 extra_args[num_extra_args++] = argv[i];
-	 printf("Extra arg[%d]: %s\n", num_extra_args-1, argv[i]);
-       }
-   }
-
-   errcod = psi_start(&infile,&outfile,&psi_file_prefix,num_extra_args, extra_args, 0);
-   if (errcod != PSI_RETURN_SUCCESS)
-    abort();
-   if (params.print_lvl) tstart(outfile);
-   ip_cwk_add(":TRANSQT");
-
-   psio_init(); psio_ipv1_config();
-   free(extra_args);
+  if (params.print_lvl > 0) tstart();
 }
-
 
 void title(void)
 {
@@ -318,28 +272,18 @@ void init_ioff(void)
 
 void exit_io(void)
 {
-  psio_done();
-  if (params.print_lvl) tstop(outfile);
-  psi_stop(infile,outfile,psi_file_prefix);
+  if (params.print_lvl) tstop();
 }
 
 
-void get_parameters(void)
+void get_parameters(Options & options)
 {
   int errcod;
   int tol, i;
 
-  errcod = ip_string("WFN", &(params.wfn),0);
-  if(errcod == IPE_KEY_NOT_FOUND) {
-    params.wfn = (char *) malloc(sizeof(char)*5);
-    strcpy(params.wfn, "CCSD");
-  }
+  params.wfn = options.get_str("WFN");
 
-  errcod = ip_string("DERTYPE", &(params.dertype),0);
-  if(errcod == IPE_KEY_NOT_FOUND) {
-    params.dertype = (char *) malloc(sizeof(char)*5);
-    strcpy(params.dertype, "NONE");
-  }
+  params.dertype = options.get_str("DERTYPE");
 
   /* The defaults below depend on what run mode we are in */
   if (params.runmode == MODE_NORMAL) {
@@ -380,165 +324,121 @@ void get_parameters(void)
     abort();
   }
 
-
   /* Adding for UHF capabilities -- TDC, 06/14/01 */
-  errcod = ip_string("REFERENCE", &(params.ref), 0);
-  if(errcod == IPE_KEY_NOT_FOUND) {
-    params.ref = (char *) malloc(sizeof(char)*4);
-    strcpy(params.ref, "RHF");
-  }
+  params.ref = options.get_str("REFERENCE");
 
   params.semicanonical = 0;
   /* Semicanonical orbitals for perturbation theory */
-  if(!strcmp(params.ref, "ROHF") && (!strcmp(params.wfn, "CCSD_T") || !strcmp(params.wfn, "MP2") ||
-				     !strcmp(params.wfn, "CC3") || !strcmp(params.wfn,"EOM_CC3") ||
-				     !strcmp(params.wfn, "CC2") || !strcmp(params.wfn,"EOM_CC2"))) {
-    strcpy(params.ref, "UHF");
+  if(params.ref == "ROHF" && (params.wfn == "CCSD_T" || params.wfn == "MP2" ||
+    params.wfn == "CC3" || params.wfn == "EOM_CC3" || params.wfn == "CC2" || params.wfn == "EOM_CC2")) {
+    params.ref = "UHF";
     params.semicanonical = 1;
   }
 
   /* Averaged semicanonical orbitals for ZAPTn */
-  if(!strcmp(params.ref, "ROHF") && !strcmp(params.wfn, "ZAPTN"))
+  if(params.ref == "ROHF" && params.wfn == "ZAPTN")
     params.semicanonical = 2;
 
+  tol = options.get_int("TOLERANCE");
+  params.tolerance = 1.0*pow(10.0,(double) -tol);
 
-  /* the default to this was already set by command line parsing */
-  errcod = ip_boolean("BACKTRANS", &(params.backtr), 0);
-
-  params.tolerance = 1e-14;
-  errcod = ip_data("TOLERANCE","%d",&(tol),0);
-  if(errcod == IPE_OK) {
-      params.tolerance = 1.0*pow(10.0,(double) -tol);
-    }
-  params.h_bare_file = PSIF_OEI;
-  errcod = ip_data("OEI_FILE","%d",&(params.h_bare_file),0);
+  params.h_bare_file = options.get_int("OEI_FILE");
   /* UHF additions, TDC 6/01 */
-  params.h_bare_a_file = PSIF_OEI;
-  errcod = ip_data("OEI_A_FILE","%d",&(params.h_bare_a_file),0);
-  params.h_bare_b_file = PSIF_OEI;
-  errcod = ip_data("OEI_B_FILE","%d",&(params.h_bare_b_file),0);
+  params.h_bare_a_file = options.get_int("OEI_A_FILE");
+  params.h_bare_b_file = options.get_int("OEI_B_FILE");
 
-  params.h_fzc_file = PSIF_OEI;
-  errcod = ip_data("FZC_FILE","%d",&(params.h_fzc_file),0);
+  params.h_fzc_file = options.get_int("FZC_FILE");
   /* UHF additions, TDC 6/01 */
-  params.h_fzc_a_file = PSIF_OEI;
-  errcod = ip_data("FZC_A_FILE","%d",&(params.h_fzc_a_file),0);
-  params.h_fzc_b_file = PSIF_OEI;
-  errcod = ip_data("FZC_B_FILE","%d",&(params.h_fzc_b_file),0);
+  params.h_fzc_a_file = options.get_int("FZC_A_FILE");
+  params.h_fzc_b_file = options.get_int("FZC_B_FILE");
 
   /* The sorted_tei values don't actually seem to be used */
-  params.sorted_tei_file = PSIF_MO_TEI;
-  errcod = ip_data("SORTED_TEI_FILE","%d",&(params.sorted_tei_file),0);
+  params.sorted_tei_file = options.get_int("SORTED_TEI_FILE");
 
   if (params.backtr) {
-    params.src_tei_file = PSIF_MO_TPDM;
-    errcod = ip_data("TPDM_FILE","%d",&(params.src_tei_file),0);
+    params.src_tei_file = options.get_int("TPDM_FILE");
   }
   else {
-    params.src_S_file = PSIF_OEI;
-    errcod = ip_data("SO_S_FILE","%d",&(params.src_S_file),0);
-    params.src_T_file = PSIF_OEI;
-    errcod = ip_data("SO_T_FILE","%d",&(params.src_T_file),0);
-    params.src_V_file = PSIF_OEI;
-    errcod = ip_data("SO_V_FILE","%d",&(params.src_V_file),0);
-    errcod = ip_data("SO_TEI_FILE","%d",&(params.src_tei_file),0);
+    params.src_S_file   = options.get_int("SO_S_FILE");
+    params.src_T_file   = options.get_int("SO_T_FILE");
+    params.src_V_file   = options.get_int("SO_V_FILE");
+    params.src_tei_file = options.get_int("SO_TEI_FILE");
   }
 
-  params.first_tmp_file = 150;
-  errcod = ip_data("FIRST_TMP_FILE", "%d", &(params.first_tmp_file),0);
-  params.opdm_in_file = PSIF_MO_OPDM;
-  errcod = ip_data("OPDM_IN_FILE", "%d", &(params.opdm_in_file),0);
-  params.opdm_out_file = PSIF_AO_OPDM;
-  errcod = ip_data("OPDM_OUT_FILE", "%d", &(params.opdm_out_file),0);
-  params.lag_in_file = PSIF_MO_LAG;
-  errcod = ip_data("LAG_IN_FILE", "%d", &(params.lag_in_file),0);
+  params.first_tmp_file = options.get_int("FIRST_TMP_FILE");
+  params.opdm_in_file   = options.get_int("OPDM_IN_FILE");
+  params.opdm_out_file  = options.get_int("OPDM_OUT_FILE");
+  params.lag_in_file    = options.get_int("LAG_IN_FILE");
 
-  params.presort_file = PSIF_SO_PRESORT;
-  errcod = ip_data("PRESORT_FILE", "%d", &(params.presort_file),0);
-  params.keep_presort = 0;
-  errcod = ip_boolean("KEEP_PRESORT", &(params.keep_presort),0);
+  params.presort_file   = options.get_int("PRESORT_FILE");
+  params.keep_presort   = options.get_bool("KEEP_PRESORT");
+  params.jfile          = options.get_int("J_FILE");
+  params.keep_half_tf   = options.get_bool("KEEP_J");
 
-  params.jfile = 91;
-  errcod = ip_data("J_FILE","%d", &(params.jfile),0);
-  params.keep_half_tf = 0;
-  errcod = ip_boolean("KEEP_J", &(params.keep_half_tf),0);
   if (params.backtr) params.mfile = PSIF_AO_TPDM;
-  errcod = ip_data("M_FILE","%d", &(params.mfile),0);
-
+  if (options["M_FILE"].has_changed())
+    params.mfile = options.get_int("M_FILE");
   /* UHF additions, TDC, 6/01 */
-  params.aa_mfile = PSIF_MO_AA_TEI;
-  errcod = ip_data("AA_M_FILE","%d", &(params.aa_mfile),0);
-  params.bb_mfile = PSIF_MO_BB_TEI;
-  errcod = ip_data("BB_M_FILE","%d", &(params.bb_mfile),0);
-  params.ab_mfile = PSIF_MO_AB_TEI;
-  errcod = ip_data("AB_M_FILE","%d", &(params.ab_mfile),0);
+  params.aa_mfile    = options.get_int("AA_M_FILE");
+  params.bb_mfile    = options.get_int("BB_M_FILE");
+  params.ab_mfile    = options.get_int("AB_M_FILE");
 
-  params.max_buckets = 499;
-  errcod = ip_data("MAX_BUCKETS","%d", &(params.max_buckets),0);
+  params.max_buckets = options.get_int("MAX_BUCKETS");
 
-  if ((strcmp(params.wfn,"OOCCD")==0 || strcmp(params.wfn,"DETCAS")==0 ||
-       strcmp(params.wfn,"BCCD")==0  || strcmp(params.wfn,"BCCD_T")==0 ||
-       strcmp(params.wfn,"CASSCF")==0|| strcmp(params.wfn,"RASSCF")==0) &&
+  if ((params.wfn == "OOCCD" || params.wfn == "DETCAS" ||
+       params.wfn == "BCCD"  || params.wfn == "BCCD_T" ||
+       params.wfn == "CASSCF"|| params.wfn == "RASSCF") &&
       !params.backtr)
     params.delete_src_tei = 0;
   else
     params.delete_src_tei = 1;
 
   /* If AO-basis chosen, keep the SO_TEI file */
-  if(ip_exist("AO_BASIS",0)) {
-    errcod = ip_string("AO_BASIS", &(params.aobasis),0);
-  }
-  else params.aobasis = strdup("NONE");
-  if(!strcmp(params.aobasis,"DISK")) {
+  params.aobasis = options.get_str("AO_BASIS"); // default NONE
+  if(params.aobasis == "DISK")
     params.delete_src_tei = 0;
-  }
 
   if (!params.backtr) {
-    errcod = ip_boolean("DELETE_AO", &(params.delete_src_tei),0);
+    if (options["DELETE_AO"].has_changed())
+      params.delete_src_tei = options.get_bool("DELETE_AO");
   }
   else {
-    errcod = ip_boolean("DELETE_TPDM", &(params.delete_src_tei),0);
+    if (options["DELETE_TPDM"].has_changed())
+      params.delete_src_tei = options.get_bool("DELETE_TPDM");
   }
 
-  params.print_te_ints = 0;
-  errcod = ip_boolean("PRINT_TE_INTEGRALS", &(params.print_te_ints),0);
-  params.print_oe_ints = 0;
-  errcod = ip_boolean("PRINT_OE_INTEGRALS", &(params.print_oe_ints),0);
-  params.print_sorted_oe_ints = 0;
-  errcod = ip_boolean("PRINT_SORTED_OE_INTS",&(params.print_sorted_oe_ints),0);
-  params.print_sorted_te_ints = 0;
-  errcod = ip_boolean("PRINT_SORTED_TE_INTS",&(params.print_sorted_te_ints),0);
-  params.print_mos = 0;
-  errcod = ip_boolean("PRINT_MOS", &(params.print_mos),0);
-  errcod = ip_data("PRINT", "%d", &(params.print_lvl),0);
+  params.print_te_ints   = options.get_bool("PRINT_TE_INTEGRALS");
+  params.print_oe_ints   = options.get_bool("PRINT_OE_INTEGRALS");
+  params.print_sorted_oe_ints = options.get_bool("PRINT_SORTED_OE_INTS");
+  params.print_sorted_te_ints = options.get_bool("PRINT_SORTED_TE_INTS");
+  params.print_mos       = options.get_bool("PRINT_MOS");
 
-  if (strcmp(params.wfn, "CI")==0 || strcmp(params.wfn, "DETCAS")==0 ||
-      strcmp(params.wfn, "CASSCF")==0 || strcmp(params.wfn, "RASSCF")==0 ||
-      strcmp(params.wfn, "DETCI")==0 ||
-      strcmp(params.wfn, "ZAPTN")==0) {
+  if (params.wfn == "CI" || params.wfn == "DETCAS" || params.wfn == "CASSCF" ||
+   params.wfn == "RASSCF" || params.wfn == "DETCI" || params.wfn == "ZAPTN") {
     params.lagran_double = 1;
     params.lagran_halve = 0;
     params.ras_type = 1;
-    }
+  }
   else {
     params.lagran_double = 0;
     params.lagran_halve = 0;
     params.ras_type = 0;
-    }
-  errcod = ip_boolean("LAGRAN_DOUBLE", &(params.lagran_double),0);
-  errcod = ip_boolean("LAGRAN_HALVE", &(params.lagran_halve),0);
+  }
+  if (options["LAGRAN_DOUBLE"].has_changed())
+    params.lagran_double = options.get_bool("LAGRAN_DOUBLE");
+  if (options["LAGRAN_HALVE"].has_changed())
+    params.lagran_halve = options.get_bool("LAGRAN_HALVE");
 
-
-
-  if ((strcmp(params.wfn, "OOCCD")==0 || strcmp(params.dertype, "FIRST")==0 ||
-       strcmp(params.wfn, "DETCAS")==0 || strcmp(params.wfn, "CASSCF")==0 ||
-       strcmp(params.wfn, "RASSCF")==0) && !params.backtr)
+  if ((params.wfn == "OOCCD" || params.dertype == "FIRST" || params.wfn == "DETCAS" ||
+   params.wfn == "CASSCF" || params.wfn == "RASSCF") && !params.backtr)
     params.do_all_tei = 1;
   else params.do_all_tei = 0;
   if (params.runmode == MODE_MP2R12AERI || params.runmode == MODE_MP2R12AR12 ||
       params.runmode == MODE_MP2R12AR12T1)
-  params.do_all_tei = 1;
-  errcod = ip_boolean("DO_ALL_TEI", &(params.do_all_tei), 0);
+    params.do_all_tei = 1;
+
+  if (options["DO_ALL_TEI"].has_changed())
+    params.do_all_tei = options.get_bool("DO_ALL_TEI");
 
   params.do_h_bare = 1;  params.do_h_fzc = 1;
 
@@ -547,29 +447,26 @@ void get_parameters(void)
     params.do_h_fzc = 0;
   }
   else {
-    if (strcmp(params.wfn, "OOCCD")==0) {
+    if (params.wfn == "OOCCD") {
       params.do_h_bare = 1;
       params.do_h_fzc = 0;
     }
-    else if ((strcmp(params.wfn,"CI")==0 || strcmp(params.wfn,"DETCI")==0 ||
-             strcmp(params.wfn,"ZAPTN")==0) &&
-             strcmp(params.dertype, "NONE")==0) {
+    else if ((params.wfn =="CI" || params.wfn == "DETCI" || params.wfn == "ZAPTN") &&
+     params.dertype == "NONE") {
       params.do_h_bare = 0;
       params.do_h_fzc = 1;
     }
   }
 
-  params.tpdm_add_ref = 0;
-  errcod = ip_boolean("TPDM_ADD_REF", &(params.tpdm_add_ref), 0);
+  params.tpdm_add_ref = options.get_bool("TPDM_ADD_REF"); // default is false
 
-  if (strcmp(params.wfn,"DETCAS")==0 || strcmp(params.wfn,"CASSCF")==0 ||
-      strcmp(params.wfn,"RASSCF")==0)
+  if (params.wfn =="DETCAS" || params.wfn == "CASSCF" || params.wfn == "RASSCF")
     params.treat_cor_as_fzc = 1;
   else
     params.treat_cor_as_fzc = 0;
 
-  params.fzc = 1;
-  errcod = ip_boolean("FREEZE_CORE", &(params.fzc),0);
+  
+  params.fzc = options.get_bool("FREEZE_CORE");
   if (params.backtr) params.fzc = 0; /* can't freeze core for backtr */
 
   /* Mark Hoffmann's code can't handle deleted core orbitals because
@@ -577,46 +474,40 @@ void get_parameters(void)
      stack.  That's not going to work easily with TRANSQT unless we
      simply transform all of them.
   */
-  if (strcmp(params.wfn,"GVVPT2")==0 || (strcmp(params.wfn,"MCSCF")==0))
+  if (params.wfn == "GVVPT2" || params.wfn == "MCSCF")
     params.fzc=0;
 
   /* remove restricted docc from RAS 1 ? */
-  params.del_restr_docc = 1;
-  errcod = ip_boolean("DELETE_RESTR_DOCC",&(params.del_restr_docc),0);
+  
+  params.del_restr_docc = options.get_bool("DELETE_RESTR_DOCC"); // default is true
   if (params.backtr) params.del_restr_docc = 0;
 
-  params.print_reorder = 0;
-  errcod = ip_boolean("PRINT_REORDER", &(params.print_reorder),0);
+  params.print_reorder = options.get_bool("PRINT_REORDER"); // default is false
 
-  fndcor(&(params.maxcor),infile,outfile);
+  //fndcor(&(params.maxcor),infile,outfile);
+  params.maxcor  = module.get_memory();
   params.maxcord = params.maxcor/sizeof(double);
 
-  params.pitzer = 0;
-  errcod = ip_boolean("PITZER",&(params.pitzer),0);
+  params.pitzer = options.get_bool("PITZER"); // default is false
 
   /* pitzer = true for SCF second derivative calculation */
-  if(!strcmp(params.wfn,"SCF") && !strcmp(params.dertype,"SECOND"))
+  if(params.wfn == "SCF" && params.dertype == "SECOND")
     params.pitzer = 1;
-  if(!strcmp(params.wfn,"SCF_MVD") && !strcmp(params.dertype,"FIRST"))
+  if(params.wfn == "SCF_MVD" && params.dertype == "FIRST")
     params.pitzer = 1;
 
   if(params.psimrcc)
     params.pitzer = 1;
 
-  params.reorder = 0;
-  errcod = ip_boolean("REORDER",&(params.reorder),0);
+  params.reorder = options.get_bool("REORDER"); //default is false
 
-  params.check_C_orthonorm = 0;
-  errcod = ip_boolean("CHECK_C_ORTHONORM",&(params.check_C_orthonorm),0);
+  params.check_C_orthonorm = options.get_bool("CHECK_C_ORTHONORM"); //default is false
 
-  params.qrhf = 0;
-  errcod = ip_boolean("QRHF", &(params.qrhf), 0);
+  params.qrhf = options.get_bool("QRHF"); //default is false
 
-  params.ivo = 0;
-  errcod = ip_boolean("IVO", &(params.ivo), 0);
+  params.ivo  = options.get_bool("IVO"); //default is false
 
   return;
-
 }
 
 
@@ -626,12 +517,12 @@ void print_parameters(void)
   if (params.print_lvl) {
       fprintf(outfile,"\tInput Parameters:\n");
       fprintf(outfile,"\t-----------------\n");
-      fprintf(outfile,"\tWavefunction           =  %s\n", params.wfn);
+      fprintf(outfile,"\tWavefunction           =  %s\n", params.wfn.c_str());
       if(params.semicanonical==1) {
       fprintf(outfile,"\tReference orbitals     =  ROHF changed to UHF for Semicanonical Orbitals\n");
       }
       else {
-      fprintf(outfile,"\tReference orbitals     =  %s\n", params.ref);
+      fprintf(outfile,"\tReference orbitals     =  %s\n", params.ref.c_str());
       }
       fprintf(outfile,"\tBacktrans              =  %s\n",
 	                           params.backtr ? "Yes" : "No");
@@ -703,7 +594,7 @@ void print_parameters(void)
   return;
 }
 
-void get_moinfo(void)
+void get_moinfo(Options & options)
 {
   int i,j,k,h,errcod,size,row,col,p,q,offset,first_offset,last_offset,warned;
   int *tmpi, nopen;
@@ -731,11 +622,11 @@ void get_moinfo(void)
   moinfo.rstruocc = init_int_array(moinfo.nirreps);
 
   /* Needed for MO  reordering */
-  if(!strcmp(params.ref, "UHF") && params.semicanonical == 0) {
+  if(params.ref == "UHF" && params.semicanonical == 0) {
     moinfo.scf_vector_alpha = chkpt_rd_alpha_scf();
     moinfo.scf_vector_beta = chkpt_rd_beta_scf();
   }
-  else if(!strcmp(params.ref, "UHF") && params.semicanonical == 1){
+  else if(params.ref == "UHF" && params.semicanonical == 1){
     moinfo.scf_vector = chkpt_rd_scf();
   }
   else {
@@ -745,41 +636,40 @@ void get_moinfo(void)
   /* reorder the MOs if the user has requested it */
   if (params.reorder) {
 
-    if(!strcmp(params.ref, "UHF") && params.semicanonical == 0) {
+    if(params.ref == "UHF" && params.semicanonical == 0) {
       fprintf(stderr, "ERROR: MO reordering not allowed for UHF references.\n");
       abort();
     }
     params.moorder = init_int_array(moinfo.nmo);
-    errcod = ip_int_array("MOORDER",params.moorder,moinfo.nmo);
-
-    if (errcod != IPE_OK) {
-      fprintf(stderr,"ERROR: %s\n",ip_error_message(errcod));
+    if (!options["MOORDER"].has_changed() || options["MOORDER"].size() != moinfo.nmo)
       fprintf(outfile,"\nTrouble parsing MOORDER.  Ignoring it.\n");
-    }
-
     else {
+      int *tmpv = options.get_int_array("MOORDER");
+      memcpy(params.moorder, tmpv, moinfo.nmo*sizeof(int));
+      delete tmpv;
+
       /* print the MOORDER array */
       fprintf(outfile, "\nMOORDER array: \n");
       for (i=0; i<moinfo.nmo; i++)
-	fprintf(outfile, "%3d", params.moorder[i]);
+        fprintf(outfile, "%3d", params.moorder[i]);
       fprintf(outfile, "\n");
 
       /* change numbering in MOORDER from relative to absolute Pitzer */
       for (i=0,k=0,h=-1; i<moinfo.nirreps; i++) {
-	for (j=0; j<moinfo.orbspi[i]; j++) {
-	  params.moorder[k++] += h;
-	}
-	h += j;
+        for (j=0; j<moinfo.orbspi[i]; j++) {
+          params.moorder[k++] += h;
+        }
+        h += j;
       }
 
       /* swap the rows of the SCF coefficient matrix */
       tmpmat = init_matrix(moinfo.nso,moinfo.nmo);
       for (i=0; i<moinfo.nso; i++)
-	for (j=0; j<moinfo.nmo; j++)
-	  tmpmat[i][j] = moinfo.scf_vector[i][j];
+        for (j=0; j<moinfo.nmo; j++)
+          tmpmat[i][j] = moinfo.scf_vector[i][j];
       for (i=0; i<moinfo.nso; i++)
-	for (j=0; j<moinfo.nmo; j++)
-	  moinfo.scf_vector[i][j] = tmpmat[i][params.moorder[j]];
+        for (j=0; j<moinfo.nmo; j++)
+          moinfo.scf_vector[i][j] = tmpmat[i][params.moorder[j]];
 
       free_matrix(tmpmat, moinfo.nso);
     }
@@ -802,19 +692,14 @@ void get_moinfo(void)
   moinfo.frdocc = get_frzcpi();
   moinfo.fruocc = get_frzvpi();
 
-  if (strcmp(params.wfn, "CI") == 0 || strcmp(params.wfn, "DETCI") == 0
-      || strcmp(params.wfn, "GVVPT2") == 0
-      || strcmp(params.wfn, "MCSCF") == 0
-      || strcmp(params.wfn, "OOCCD") == 0
-      || strcmp(params.wfn, "ZAPTN") == 0
-      || strcmp(params.wfn, "CASSCF") == 0
-      || strcmp(params.wfn, "RASSCF") == 0
-      || strcmp(params.wfn, "DETCAS") == 0) {
+  if (params.wfn == "CI" || params.wfn == "DETCI" || params.wfn == "GVVPT2"
+      || params.wfn == "MCSCF" || params.wfn == "OOCCD" || params.wfn == "ZAPTN"
+      || params.wfn == "CASSCF" || params.wfn == "RASSCF" || params.wfn == "DETCAS") {
 
     ras_opi = init_int_matrix(MAX_RAS_SPACES,moinfo.nirreps);
     tmpi = init_int_array(moinfo.nmo);
 
-    if (strcmp(params.wfn, "GVVPT2")==0 || strcmp(params.wfn, "MCSCF")==0)
+    if (params.wfn == "GVVPT2" || params.wfn == "MCSCF")
       i=1;
     else i=0;
 
@@ -866,32 +751,34 @@ void get_moinfo(void)
 
   if ( chkpt_rd_override_occ() == 0 ) {
     moinfo.ndocc = 0;
-    tmpi = init_int_array(moinfo.nirreps);
-    errcod = ip_int_array("DOCC", tmpi, moinfo.nirreps);
-    if (errcod == IPE_OK) {
+
+    if (options["DOCC"].has_changed() && options["DOCC"].size() == moinfo.nirreps) {
+      tmpi = options.get_int_array("DOCC");
+
       for (i=0,warned=0; i<moinfo.nirreps; i++) {
         if (tmpi[i] != moinfo.clsdpi[i] && !warned && !params.qrhf) {
-	  fprintf(outfile, "\tWarning: DOCC doesn't match chkpt file\n");
-	  warned = 1;
+          fprintf(outfile, "\tWarning: DOCC doesn't match chkpt file\n");
+          warned = 1;
         }
         moinfo.clsdpi[i] = tmpi[i];
         moinfo.ndocc += tmpi[i];
       }
+      delete tmpi;
     }
 
-    moinfo.nsocc = 0;
-    errcod = ip_int_array("SOCC", tmpi, moinfo.nirreps);
-    if (errcod == IPE_OK) {
+    if (options["SOCC"].has_changed() && options["SOCC"].size() == moinfo.nirreps) {
+      tmpi = options.get_int_array("SOCC");
+
       for (i=0,warned=0; i<moinfo.nirreps; i++) {
         if (tmpi[i] != moinfo.openpi[i] && !warned && !params.qrhf) {
-	  fprintf(outfile, "\tWarning: SOCC doesn't match chkpt file\n");
-	  warned = 1;
+          fprintf(outfile, "\tWarning: SOCC doesn't match chkpt file\n");
+          warned = 1;
         }
         moinfo.openpi[i] = tmpi[i];
         moinfo.nsocc += tmpi[i];
       }
+      delete tmpi;
     }
-    free(tmpi);
   }
 
   /* Dump the new occupations to chkpt file if QRHF reference requested
@@ -1045,7 +932,7 @@ void get_moinfo(void)
   if (!params.backtr) {
     if (params.do_all_tei) {
 
-      if(!strcmp(params.ref,"UHF")) {
+      if(params.ref == "UHF") {
 	moinfo.evects_alpha = construct_evects("alpha", moinfo.nirreps, moinfo.orbspi,
 					       moinfo.sopi, moinfo.orbspi,
 					       moinfo.first_so, moinfo.last_so,
@@ -1068,7 +955,7 @@ void get_moinfo(void)
       }
     }
     else {
-      if(!strcmp(params.ref,"UHF")) {
+      if(params.ref == "UHF") {
 	moinfo.evects_alpha = construct_evects("alpha", moinfo.nirreps, moinfo.active,
 					       moinfo.sopi, moinfo.orbspi,
 					       moinfo.first_so, moinfo.last_so,
@@ -1105,7 +992,7 @@ void get_moinfo(void)
     if (params.print_mos) print_mat(so2ao,moinfo.nso,moinfo.nao,outfile);
     tmpmat = init_matrix(moinfo.nso, moinfo.nmo - moinfo.nfzv);
 
-    if(!strcmp(params.ref,"UHF")) {
+    if(params.ref == "UHF") {
       moinfo.evects_alpha = (double ***) malloc (1 * sizeof(double **));
       moinfo.evects_alpha[0] = block_matrix(moinfo.nao, moinfo.nmo - moinfo.nfzv);
       moinfo.evects_beta = (double ***) malloc (1 * sizeof(double **));
@@ -1228,18 +1115,13 @@ void get_reorder_array(void)
   moinfo.order_beta = init_int_array(moinfo.nmo);
 
   /* for backtransforms, no reorder array...map Pitzer to Pitzer */
-  if (strcmp(params.wfn, "CI") == 0 || strcmp(params.wfn, "DETCI") == 0
-      || strcmp(params.wfn, "GVVPT2") == 0
-      || strcmp(params.wfn, "MCSCF") == 0
-      || strcmp(params.wfn, "OOCCD") == 0
-      || strcmp(params.wfn, "ZAPTN") == 0
-      || strcmp(params.wfn, "CASSCF") == 0
-      || strcmp(params.wfn, "RASSCF") == 0
-      || strcmp(params.wfn, "DETCAS") == 0) {
+  if (params.wfn == "CI" || params.wfn == "DETCI" || params.wfn == "GVVPT2"
+      || params.wfn == "MCSCF" || params.wfn == "OOCCD" || params.wfn == "ZAPTN"
+      || params.wfn == "CASSCF" || params.wfn == "RASSCF" || params.wfn == "DETCAS") {
 
     ras_opi = init_int_matrix(MAX_RAS_SPACES,moinfo.nirreps);
 
-    if (strcmp(params.wfn, "GVVPT2")==0 || strcmp(params.wfn, "MCSCF")==0)
+    if (params.wfn == "GVVPT2" || params.wfn == "MCSCF")
       i=1;
     else i=0;
 
@@ -1360,7 +1242,7 @@ void get_one_electron_integrals()
   T = init_array(moinfo.noeints);
   V = init_array(moinfo.noeints);
   moinfo.oe_ints = init_array(moinfo.noeints);
-  if(!strcmp(params.ref,"UHF")) {
+  if(params.ref == "UHF") {
     moinfo.fzc_operator_alpha = init_array(moinfo.noeints);
     moinfo.fzc_operator_beta = init_array(moinfo.noeints);
   }
@@ -1395,7 +1277,7 @@ void get_one_electron_integrals()
   for (i=0; i < moinfo.noeints; i++) {
     moinfo.oe_ints[i] = T[i] + V[i];
 
-    if(!strcmp(params.ref,"UHF"))
+    if(params.ref == "UHF")
       moinfo.fzc_operator_alpha[i] = moinfo.fzc_operator_beta[i] = T[i] + V[i];
     else moinfo.fzc_operator[i] = T[i] + V[i];
 
@@ -1409,7 +1291,7 @@ void get_one_electron_integrals()
    * to the frozen core operator, so go ahead and compute that now
    */
   if (params.fzc && moinfo.nfzc) {
-    if(!strcmp(params.ref,"UHF")) {
+    if(params.ref == "UHF") {
       moinfo.fzc_density_alpha = init_array(moinfo.noeints);
       fzc_density(moinfo.nirreps, moinfo.frdocc, moinfo.fzc_density_alpha,
 		  moinfo.scf_vector_alpha, moinfo.first, moinfo.first_so, moinfo.last_so, ioff);
@@ -1468,10 +1350,10 @@ double *** construct_evects(const char *spin, int nirreps, int *active, int *sop
   double ***evects;
   double **scf;
 
-  if(!strcmp(spin,"alpha")) scf = moinfo.scf_vector_alpha;
-  else if(!strcmp(spin,"beta")) scf = moinfo.scf_vector_beta;
-  else if(!strcmp(spin,"RHF")) scf = moinfo.scf_vector;
-  else { fprintf(stderr, "ERROR: Bad spin value!\n"); abort(); }
+  if(spin == "alpha")     scf = moinfo.scf_vector_alpha;
+  else if(spin == "beta") scf = moinfo.scf_vector_beta;
+  else if(spin == "RHF")  scf = moinfo.scf_vector;
+  else throw PsiException ("Bad spin value in construct_evects", __FILE__, __LINE__);
 
   evects = (double ***) malloc(nirreps * sizeof(double **));
 
