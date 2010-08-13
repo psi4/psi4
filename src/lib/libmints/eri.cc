@@ -1167,6 +1167,9 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
                 int max_p4 = (sh3 == sh4) ? p3 + 1 : nprim4;
                 for (int p4=0; p4<max_p4; ++p4) {
 //                for (int p4=0; p4<nprim4; ++p4) {
+
+                    fprintf(outfile, "p1 = %d p2 = %d p3 = %d p4 = %d\n", p1, p2, p3, p4);
+
                     double a4 = s4->exp(p4);
                     double c4 = s4->coef(p4);
                     double nu = a3 + a4;
@@ -1278,6 +1281,9 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
 
     // How many are there?
     size_t size = INT_NCART(am1) * INT_NCART(am2) * INT_NCART(am3) * INT_NCART(am4);
+
+    fprintf(outfile, "orig_am[0] = %d orig_am[1] = %d orig_am[2] = %d orig_am[3] = %d\n",
+            am1, am2, am3, am4);
 
     // Compute the integral
     build_deriv1_eri[am1][am2][am3][am4](&libderiv_, nprim);
