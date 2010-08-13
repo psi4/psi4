@@ -26,9 +26,8 @@ namespace psi {
 **
 ** \ingroup QT
 */
-int cc_wfn(char *wfn)
+int cc_wfn(const char *wfn)
 {
-
   if ( !strcmp(wfn, "CCSD")     || !strcmp(wfn, "CCSD_T") || 
        !strcmp(wfn, "BCCD")     || !strcmp(wfn, "BCCD_T") || 
        !strcmp(wfn, "CC2")      || !strcmp(wfn, "CC3")    ||
@@ -58,17 +57,7 @@ int cc_wfn(char *wfn)
 */
 int cc_wfn(std::string wfn)
 {
-  if ((wfn =="CCSD")     || (wfn =="CCSD_T") ||
-      (wfn =="BCCD")     || (wfn =="BCCD_T") ||
-      (wfn =="CC2")      || (wfn =="CC3")    ||
-      (wfn =="EOM_CCSD") || (wfn =="LEOM_CCSD") ||
-      (wfn =="EOM_CC2")  || (wfn =="EOM_CC3") ||
-      (wfn =="CIS") ) {
-    return 1;
-  }
-  else {
-    return 0;
-  }
+  return cc_wfn(wfn.c_str());
 }
 
 }

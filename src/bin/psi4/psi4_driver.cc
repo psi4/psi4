@@ -17,20 +17,16 @@ using namespace std;
 
 namespace psi {
 
-  extern FILE *infile;
-  extern void setup_driver(Options &options);
-  extern int read_options(const std::string &jobName, Options &options, bool call_ipv1 = true);
+  extern PsiReturnType execute_bp(std::string & bp, Options & options);
+  extern void setup_driver(Options & options);
+  extern int read_options(const std::string &jobName, Options &options, bool call_ipv1 = true,
+    bool suppress_printing = false);
+  extern void psiclean(void);
 
-  void psiclean(void);
+  int psi4_driver(Options & options) {
 
-  int
-  psi4_driver(Options & options)
-  {
     // Initialize the list of function pointers for each module
     setup_driver(options);
-
-    if (options.get_str("DERTYPE") == "NONE")
-      options.set_str("DERTYPE", "ENERGY");
 
     // Track down the psi.dat file and set up ipv1 to read it
     // unless the user provided an exec array in the input
@@ -48,209 +44,80 @@ namespace psi {
     ip_cwk_add(const_cast<char*>(":PSI"));
     fclose(psidat);
 
+    std::string jobtype = options.get_str("JOBTYPE");
+    std::string wfn = options.get_str("WFN");
+    std::string reference = options.get_str("REFERENCE");
+    std::string dertype = options.get_str("DERTYPE");
+    std::string calcType;
+
     // Join the job descriptors into one label
-    std::string calcType = options.get_str("WFN");
+    calcType = wfn;
     calcType += ":";
-    calcType += options.get_str("DERTYPE");
+    calcType += reference;
+    calcType += ":";
+    calcType +=  dertype;
 
     if(Communicator::world->me() == 0) {
-      std::string wfn = options.get_str("WFN");
-      std::string reference = options.get_str("REFERENCE");
-      std::string jobtype = options.get_str("JOBTYPE");
-      std::string dertype = options.get_str("DERTYPE");
-      fprintf(outfile, "    Calculation type = %s\n", calcType.c_str());  fflush(outfile);
+      fprintf(outfile, "    Job type         = %s\n", jobtype.c_str());   fflush(outfile);
       fprintf(outfile, "    Wavefunction     = %s\n", wfn.c_str());       fflush(outfile);
       fprintf(outfile, "    Reference        = %s\n", reference.c_str()); fflush(outfile);
-      fprintf(outfile, "    Job type         = %s\n", jobtype.c_str());   fflush(outfile);
       fprintf(outfile, "    Derivative type  = %s\n", dertype.c_str());   fflush(outfile);
+      fprintf(outfile, "    Calculation type = %s\n", calcType.c_str());  fflush(outfile);
     }
 
-    if(check_only)
-      fprintf(outfile, "\n    Sanity check requested. Exiting without execution.\n\n");
+    if(check_only) fprintf(outfile, "\n    Sanity check requested. Exiting without execution.\n\n");
 
-/*************
-    // test SCF optimization
-    //     char *argv_new[MAX_ARGS];
-    read_options("INPUT", options);
-    dispatch_table["INPUT"](options);
+    if (jobtype == "SP") {
+      if (!check_only) {
+        read_options("INPUT", options);
+        dispatch_table["INPUT"](options);
+      }
+      else fprintf(outfile,"    Tasks to compute enegy: input\n");
 
-for (int n=0; n<8; ++n) {
-
-    read_options("CINTS", options);
-    dispatch_table["CINTS"](options);
-
-    read_options("CSCF", options);
-    dispatch_table["CSCF"](options);
-
-    read_options("CINTS", options);
-    options.set_str("MODE", "DERIV1");
-    dispatch_table["CINTS"](options);
-
-    read_options("OPTKING", options);
-    dispatch_table["OPT_STEP"](options);
-}
-**/
-    //     read_options("OPTKING", options);
-    //     dispatch_table["OPT_STEP"](options, 0, argv_new);
-    // }
-
-    //     return Success;
-
-    char *jobList = const_cast<char*>(calcType.c_str());
-
-    // This version assumes that the array contains only module names, not
-    // macros for other job types, like $SCF
-    int numTasks = 0;
-    int errcod;
-
-    if(ip_exist(const_cast<char*>("EXEC"), 0)) {
-      // Override psi.dat with the commands in the exec array in input
-      errcod = ip_count(const_cast<char*>("EXEC"), &numTasks, 0);
-      jobList = const_cast<char*>("EXEC");
+      std::string bp_name = options.get_str("WFN") + ":" + "ENERGY";
+      execute_bp(bp_name, options);
     }
-    else {
-      errcod = ip_count(jobList, &numTasks, 0);
+    else if (jobtype == "OPT") {
+      if (dertype == "FIRST") {
+      std::string bp_name = options.get_str("WFN") + ":" + "FIRST";
 
-      if (!ip_exist(jobList, 0)){
-	std::string err("Error: jobtype ");
-	err += jobList;
-	err += " is not defined in psi.dat";
-	throw PsiException(err, __FILE__, __LINE__);
+      if (check_only) {
+        fprintf(outfile,"    Geometry optimization requested.\n");
+
+        read_options("OPTKING", options, true, true); // don't print
+        int nopt = options.get_int("NOPT");
+        fprintf(outfile,"    Tasks include input, up to %d gradients.\n", nopt);
+
+        fprintf(outfile,"    To compute gradient:\n");
+        execute_bp(bp_name, options);
       }
-
-      if (errcod != IPE_OK){
-	std::string err("Error: trouble reading ");
-	err += jobList;
-	err += " array from psi.dat";
-	throw PsiException(err, __FILE__, __LINE__);
-      }
-    }
-/*    else {
-      errcod = ip_count(jobList, &numTasks, 0);
-      if (!ip_exist(jobList, 0)){
-	std::string err("Error: jobtype ");
-	err += jobList;
-	err += " is not defined in psi.dat";
-	throw PsiException(err, __FILE__, __LINE__);
-      }
-      if (errcod != IPE_OK){
-	std::string err("Error: trouble reading ");
-	err += jobList;
-	err += " array from psi.dat";
-	throw PsiException(err, __FILE__, __LINE__);
-      }
-    } */
-
-    fprintf(outfile, "    List of tasks to execute:\n");
-    for(int n = 0; n < numTasks; ++n) {
-      char *thisJob;
-      ip_string(jobList, &thisJob, 1, n);
-      fprintf(outfile, "    %s\n", thisJob);
-      free(thisJob);
-    }
-
-    if(check_only)
-      return Success;
-
-    // variables to parse string in psi.dat
-    string thisJobWithArguments;
-    stringstream ss;
-    vector<string> tokens;
-    string buf;
-
-    for(int n = 0; n < numTasks; ++n){
-      char *thisJob;
-      errcod = ip_string(jobList, &thisJob, 1, n);
-
-      // tokenize string in psi.dat
-      thisJobWithArguments.assign(thisJob);
-      ss.clear();
-      ss << thisJobWithArguments;
-      while (ss >> buf)
-	tokens.push_back(buf);
-
-      free(thisJob);
-      thisJob = const_cast<char *>(tokens[0].c_str()); // module name for dispatch table
-
-      // Make sure the job name is all upper case
-      int length = strlen(thisJob);
-      std::transform(thisJob, thisJob + length, thisJob, ::toupper);
-      if(Communicator::world->me() == 0) {
-	fprintf(outfile, "\n  Job %d is %s\n", n, thisJob); fflush(outfile);
-      }
-
-      // Read the options for thisJob.
-      read_options(thisJob, options);
-
-      // Handle MODE (command line argument passed in task list
-      if (tokens.size() > 1) {
-	// Convert token to upper case
-	std::transform(tokens[1].begin(), tokens[1].end(), tokens[1].begin(), ::toupper);
-	// Set the option overriding anything the user said.
-	options.set_str("MODE", tokens[1]);
-      }
-
-      // If the function call is LMP2, run in parallel
-      if(strcmp(thisJob, "LMP2") == 0 || strcmp(thisJob, "DFMP2") == 0) {
-	// Needed a barrier before the functions are called
-	Communicator::world->sync();
-
-	if (dispatch_table[thisJob](options) != Success) {
-	  // Good chance at this time that an error occurred.
-	  // Report it to the user.
-	  fprintf(stderr, "%s did not return a Success code.\n", thisJob);
-	  throw PsiException("Module failed.", __FILE__, __LINE__);
-	}
-      }
-      // If any other functions are called only process 0 runs the function
       else {
-	if (dispatch_table.find(thisJob) != dispatch_table.end()) {
-	  // Needed a barrier before the functions are called
-	  Communicator::world->sync();
-	  if(Communicator::world->me() == 0) {
-	    if (dispatch_table[thisJob](options) != Success) {
-	      // Good chance at this time that an error occurred.
-	      // Report it to the user.
-	      fprintf(stderr, "%s did not return a Success code.\n", thisJob);
-	      throw PsiException("Module failed.", __FILE__, __LINE__);
-	    }
-	  }
-	}
-	else {
-	  std::transform(thisJob, thisJob + length, thisJob, ::tolower);
+        read_options("INPUT", options);
+        dispatch_table["INPUT"](options);
 
-	  // Close the output file, allowing the external program to write to it.
-	  if (!outfile_name.empty())
-	    fclose(outfile);
+        read_options("OPTKING", options, true, true); // don't print
+        int nopt = options.get_int("NOPT");
+        PsiReturnType rval;
 
-	  // Attempt to run the external program
-	  int ret = ::system(thisJob);
-
-	  // Re-open the output file, allowing psi4 to take output control again.
-	  if (!outfile_name.empty())
-	    fopen(outfile_name.c_str(), "a");
-
-	  if (ret == -1 || ret == 127) {
-	    std::string err = "Module ";
-	    err += thisJob;
-	    err += " is not known to PSI4.  Please update the driver\n";
-	    throw PsiException(err, __FILE__, __LINE__);
-	  }
-	}
+        for (int i=0; i<nopt; ++i) {
+          execute_bp(bp_name, options);
+          read_options("OPTKING", options);
+          rval = dispatch_table["OPT_STEP"](options);
+          if (rval == Endloop) break;
+        }
+      }  // do optimization by gradients
+      } // dertype = first
+      else {
+        fprintf(outfile,"Can only do optimizations by gradients at this time.\n");
       }
-
-      tokens.clear();
-
-      fflush(outfile);
     }
 
-    if (!messy) {
-      if(Communicator::world->me() == 0)
-	psiclean();
-    }
+   // if (!messy) ???
+   if (!check_only && Communicator::world->me() == 0)
+     psiclean();
 
-
-    return Success;
-  }
+   return Success;
+}
 
 } // Namespace
+

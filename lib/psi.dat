@@ -1,13 +1,15 @@
 psi: (
-  SCF:ENERGY  = ("input" "cints" "cscf")
-  DCFT:ENERGY = ("input" "cints" "dcft")
-  MCSCF:ENERGY = ("input" "cints" "mcscf")
-  MRCCSD:ENERGY = ("input" "cints" "cscf" "transqt2" "psimrcc")
-  MP2:ENERGY  = ("input" "cints" "cscf" "transqt2" "ccsort" "mp2")
-  LMP2:ENERGY = ("input" "cints" "scf" "lmp2")
-  CCSD:ENERGY = ("input" "cints" "cscf" "transqt2" "ccsort" "ccenergy")
-  CCSD_T:ENERGY = ("input" "cints" "cscf" "transqt2" "ccsort" "ccenergy" "cctriples")
-  SCF:FIRST =   ("input" "cints" "cscf" "cints deriv1")
+  SCF:ENERGY  =  ("cints" "cscf")
+  DCFT:ENERGY =  ("cints" "dcft")
+  MCSCF:ENERGY = ("cints" "mcscf")
+  MRCCSD:ENERGY =("cints" "cscf" "transqt2" "psimrcc")
+  MP2:ENERGY  =  ("cints" "cscf" "transqt2" "ccsort" "mp2")
+  LMP2:ENERGY =  ("cints" "scf" "lmp2")
+  CCSD:ENERGY =  ("cints" "cscf" "transqt2" "ccsort" "ccenergy")
+  CCSD_T:ENERGY =("cints" "cscf" "transqt2" "ccsort" "ccenergy" "cctriples")
+  SCF:FIRST =    ("cints" "cscf" "cints deriv1")
+  CCSD:FIRST =   ("cints" "cscf" "transqt2" "ccsort" "ccenergy" "cchbar" "cclambda" "ccdensity" 
+    "oeprop" "transqt to_ao" "cints deriv1")
 )
 
 junk: (
