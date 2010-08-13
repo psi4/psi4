@@ -1053,13 +1053,14 @@ void ERI::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
         p13p24 = true;
     }
 
-    // s1, s2, s3, s4 contain the shells to do in libderive order
+    // s1, s2, s3, s4 contain the shells to do in libderiv order
     compute_quartet_deriv1(s1, s2, s3, s4);    // compute 9 sets of integral derivatives
 
+    // Need both sizes because source_ is in cartesians and target_ might be in pure am
     size_t size = n1 * n2 * n3 * n4;
     // Permute integrals back, if needed
     if (p12 || p34 || p13p24) {
-        // 3n of them
+        // 12 of them
         for (int i=0; i<12; ++i)
             permute_target(source_+(i*size), target_+(i*size), s1, s2, s3, s4, p12, p34, p13p24);
     }
@@ -1084,22 +1085,28 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
     int am2 = s2->am();
     int am3 = s3->am();
     int am4 = s4->am();
+
     int am = am1 + am2 + am3 + am4; // total am
+
     int nprim1 = s1->nprimitive();
     int nprim2 = s2->nprimitive();
     int nprim3 = s3->nprimitive();
     int nprim4 = s4->nprimitive();
     size_t nprim;
+
     double A[3], B[3], C[3], D[3];
     A[0] = s1->center()[0];
     A[1] = s1->center()[1];
     A[2] = s1->center()[2];
+
     B[0] = s2->center()[0];
     B[1] = s2->center()[1];
     B[2] = s2->center()[2];
+
     C[0] = s3->center()[0];
     C[1] = s3->center()[1];
     C[2] = s3->center()[2];
+
     D[0] = s4->center()[0];
     D[1] = s4->center()[1];
     D[2] = s4->center()[2];
@@ -1118,6 +1125,7 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
     AB2 += (A[0] - B[0]) * (A[0] - B[0]);
     AB2 += (A[1] - B[1]) * (A[1] - B[1]);
     AB2 += (A[2] - B[2]) * (A[2] - B[2]);
+
     double CD2 = 0.0;
     CD2 += (C[0] - D[0]) * (C[0] - D[0]);
     CD2 += (C[1] - D[1]) * (C[1] - D[1]);
@@ -1168,7 +1176,7 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
                 for (int p4=0; p4<max_p4; ++p4) {
 //                for (int p4=0; p4<nprim4; ++p4) {
 
-                    fprintf(outfile, "p1 = %d p2 = %d p3 = %d p4 = %d\n", p1, p2, p3, p4);
+//                    fprintf(outfile, "p1 = %d p2 = %d p3 = %d p4 = %d\n", p1, p2, p3, p4);
 
                     double a4 = s4->exp(p4);
                     double c4 = s4->coef(p4);
@@ -1248,30 +1256,30 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
                             libderiv_.PrimQuartet[nprim].F[i] = F[i] * val;
                         }
                     }
-                    fprintf(outfile, "twozeta_a = %lf twozeta_b = %lf twozeta_c = %lf twozeta_d = %lf\n",
-                        libderiv_.PrimQuartet[nprim].twozeta_a, libderiv_.PrimQuartet[nprim].twozeta_b, libderiv_.PrimQuartet[nprim].twozeta_c, libderiv_.PrimQuartet[nprim].twozeta_d);
-                    fprintf(outfile, "coef1 = %lf\n", val);
-                    if (fabs(PQ2) > 1.0e-14) {
-                        for (int i=0; i<=am+DERIV_LVL; ++i) {
-                            fprintf(outfile, "F[%d] = %lf\n", i, F[i]);
-                        }
-                    }
-                    fprintf(outfile, "PA[0] %lf PA[1] %lf PA[2] %lf\n", PA[0], PA[1], PA[2]);
-                    fprintf(outfile, "PB[0] %lf PB[1] %lf PB[2] %lf\n", PB[0], PB[1], PB[2]);
-                    fprintf(outfile, "QC[0] %lf QC[1] %lf QC[2] %lf\n", QC[0], QC[1], QC[2]);
-                    fprintf(outfile, "QD[0] %lf QD[1] %lf QD[2] %lf\n", QD[0], QD[1], QD[2]);
-                    fprintf(outfile, "WP[0] %lf WP[1] %lf WP[2] %lf\n", WP[0], WP[1], WP[2]);
-                    fprintf(outfile, "WQ[0] %lf WQ[1] %lf WQ[2] %lf\n", WQ[0], WQ[1], WQ[2]);
+//                    fprintf(outfile, "twozeta_a = %lf twozeta_b = %lf twozeta_c = %lf twozeta_d = %lf\n",
+//                        libderiv_.PrimQuartet[nprim].twozeta_a, libderiv_.PrimQuartet[nprim].twozeta_b, libderiv_.PrimQuartet[nprim].twozeta_c, libderiv_.PrimQuartet[nprim].twozeta_d);
+//                    fprintf(outfile, "coef1 = %lf\n", val);
+//                    if (fabs(PQ2) > 1.0e-14) {
+//                        for (int i=0; i<=am+DERIV_LVL; ++i) {
+//                            fprintf(outfile, "F[%d] = %lf\n", i, libderiv_.PrimQuartet[nprim].F[i]);
+//                        }
+//                    }
+//                    fprintf(outfile, "PA[0] %lf PA[1] %lf PA[2] %lf\n", libderiv_.PrimQuartet[nprim].U[0][0], libderiv_.PrimQuartet[nprim].U[0][1], libderiv_.PrimQuartet[nprim].U[0][2]);
+//                    fprintf(outfile, "PB[0] %lf PB[1] %lf PB[2] %lf\n", libderiv_.PrimQuartet[nprim].U[1][0], libderiv_.PrimQuartet[nprim].U[1][1], libderiv_.PrimQuartet[nprim].U[1][2]);
+//                    fprintf(outfile, "QC[0] %lf QC[1] %lf QC[2] %lf\n", libderiv_.PrimQuartet[nprim].U[2][0], libderiv_.PrimQuartet[nprim].U[2][1], libderiv_.PrimQuartet[nprim].U[2][2]);
+//                    fprintf(outfile, "QD[0] %lf QD[1] %lf QD[2] %lf\n", libderiv_.PrimQuartet[nprim].U[3][0], libderiv_.PrimQuartet[nprim].U[3][1], libderiv_.PrimQuartet[nprim].U[3][2]);
+//                    fprintf(outfile, "WP[0] %lf WP[1] %lf WP[2] %lf\n", libderiv_.PrimQuartet[nprim].U[4][0], libderiv_.PrimQuartet[nprim].U[4][1], libderiv_.PrimQuartet[nprim].U[4][2]);
+//                    fprintf(outfile, "WQ[0] %lf WQ[1] %lf WQ[2] %lf\n", libderiv_.PrimQuartet[nprim].U[5][0], libderiv_.PrimQuartet[nprim].U[5][1], libderiv_.PrimQuartet[nprim].U[5][2]);
 
-                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].oo2z);
-                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].oo2n);
-                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].oo2zn);
-                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].poz);
-                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].pon);
-                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].twozeta_a);
-                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].twozeta_b);
-                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].twozeta_c);
-                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].twozeta_d);
+//                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].oo2z);
+//                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].oo2n);
+//                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].oo2zn);
+//                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].poz);
+//                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].pon);
+//                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].twozeta_a);
+//                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].twozeta_b);
+//                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].twozeta_c);
+//                    fprintf(outfile, "%f\n", libderiv_.PrimQuartet[nprim].twozeta_d);
 
                     nprim++;
                 }
@@ -1282,8 +1290,8 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
     // How many are there?
     size_t size = INT_NCART(am1) * INT_NCART(am2) * INT_NCART(am3) * INT_NCART(am4);
 
-    fprintf(outfile, "orig_am[0] = %d orig_am[1] = %d orig_am[2] = %d orig_am[3] = %d\n",
-            am1, am2, am3, am4);
+//    fprintf(outfile, "orig_am[0] = %d orig_am[1] = %d orig_am[2] = %d orig_am[3] = %d nprim = %d\n",
+//            am1, am2, am3, am4, nprim);
 
     // Compute the integral
     build_deriv1_eri[am1][am2][am3][am4](&libderiv_, nprim);
@@ -1291,6 +1299,7 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
     // Zero out memory
     memset(source_, 0, sizeof(double) * size * 12);
 
+    // Copy results from libderiv into source_ (note libderiv only gives 3 of the centers)
     memcpy(source_+ 0*size, libderiv_.ABCD[0],  sizeof(double) * size);
     memcpy(source_+ 1*size, libderiv_.ABCD[1],  sizeof(double) * size);
     memcpy(source_+ 2*size, libderiv_.ABCD[2],  sizeof(double) * size);
@@ -1320,8 +1329,32 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
 //        fprintf(outfile, " A%d %20.14f\n", s4->ncenter(), source_[i + 11*size]);
     }
 
-    // Normalize the 3n sets of integrals
+    int center_i = s1->ncenter();
+    int center_j = s2->ncenter();
+    int center_k = s3->ncenter();
+    int center_l = s4->ncenter();
+
+    // Normalize the 12 types of integrals
     normalize_am(s1, s2, s3, s4, 12);
+
+//    for (int z=0; z<size; ++z)
+//        fprintf(outfile, " A%d %20.14lf\n", center_i, source_[z + 0  * size]);
+//    for (int z=0; z<size; ++z)
+//        fprintf(outfile, " A%d %20.14lf\n", center_i, source_[z + 1  * size]);
+//    for (int z=0; z<size; ++z)
+//        fprintf(outfile, " A%d %20.14lf\n", center_i, source_[z + 2  * size]);
+//    for (int z=0; z<size; ++z)
+//        fprintf(outfile, " A%d %20.14lf\n", center_k, source_[z + 6  * size]);
+//    for (int z=0; z<size; ++z)
+//        fprintf(outfile, " A%d %20.14lf\n", center_k, source_[z + 7  * size]);
+//    for (int z=0; z<size; ++z)
+//        fprintf(outfile, " A%d %20.14lf\n", center_k, source_[z + 8  * size]);
+//    for (int z=0; z<size; ++z)
+//        fprintf(outfile, " A%d %20.14lf\n", center_l, source_[z + 9  * size]);
+//    for (int z=0; z<size; ++z)
+//        fprintf(outfile, " A%d %20.14lf\n", center_l, source_[z + 10 * size]);
+//    for (int z=0; z<size; ++z)
+//        fprintf(outfile, " A%d %20.14lf\n", center_l, source_[z + 11 * size]);
 
     // Transform the integrals to the spherical basis
     pure_transform(sh1, sh2, sh3, sh4, 12);
