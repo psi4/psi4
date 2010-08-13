@@ -96,6 +96,8 @@ bool py_psi_set_option_int(std::string const & name, int value)
     return true;
 }
 
+// Right now this can only handle arrays of integers.
+// Unable to handle strings.
 bool py_psi_set_option_array(std::string const & name, python::list values)
 {
     size_t n = len(values);
