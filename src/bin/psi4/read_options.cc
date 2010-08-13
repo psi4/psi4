@@ -16,9 +16,12 @@ namespace psi {
  *
  * @param name    - the name of the module.
  * @param options - the liboptions module used in the computations.
+ * @params call_ipv1 - boolean to specify whether to read input [true]
+ * @param suppress_printing - boolean to specify whether to print to output file [false]
  */
 
-int read_options(const std::string &name, Options & options, bool call_ipv1)
+int read_options(const std::string &name, Options & options, bool call_ipv1,
+   bool suppress_printing)
 {
 
   ip_cwk_clear();
@@ -380,6 +383,67 @@ int read_options(const std::string &name, Options & options, bool call_ipv1)
     options.add_str("AO_BASIS", "NONE");
     options.add_bool("DELETE_TEI", true);
   }
+  else if(name == "TRANSQT") {
+    options.add_int("PRINT_LVL", 1);
+    options.add_str("REFERENCE","RHF");
+    options.add_str("MODE", "TO_MO", "TO_MO TO_AO");
+    options.add_str("WFN", "CCSD");
+    options.add_str("DERTYPE", "NONE");
+    options.add_bool("PSIMRCC", false);
+    options.add_str("MP2R12A", "MP2R12AERI", "MP2R12AERI MP2R12AR12 MP2R12AR12T1");
+    options.add_int("TOLERANCE", 14);
+    options.add_int("OEI_FILE", PSIF_OEI);
+    options.add_int("OEI_A_FILE", PSIF_OEI);
+    options.add_int("OEI_B_FILE", PSIF_OEI);
+    options.add_int("FZC_FILE", PSIF_OEI);
+    options.add_int("FZC_A_FILE", PSIF_OEI);
+    options.add_int("FZC_B_FILE", PSIF_OEI);
+    options.add_int("SORTED_TEI_FILE", PSIF_MO_TEI);
+    options.add_int("TPDM_FILE", PSIF_MO_TPDM);
+    options.add_int("SO_S_FILE", PSIF_OEI);
+    options.add_int("SO_T_FILE", PSIF_OEI);
+    options.add_int("SO_V_FILE", PSIF_OEI);
+    options.add_int("SO_TEI_FILE", PSIF_MO_TEI); // ?
+    options.add_int("FIRST_TMP_FILE", 150);
+    options.add_int("OPDM_IN_FILE", PSIF_MO_OPDM);
+    options.add_int("OPDM_OUT_FILE", PSIF_AO_OPDM);
+    options.add_int("LAG_IN_FILE", PSIF_MO_LAG);
+    options.add_int("PRESORT_FILE", PSIF_SO_PRESORT);
+    options.add_bool("KEEP_PRESORT", false);
+    options.add_int("J_FILE", 91);
+    options.add_bool("KEEP_J", false); // keep half-transformed integrals
+    options.add_int("M_FILE", 0); // output integrals file; depends on direction
+    options.add_int("AA_M_FILE", PSIF_MO_AA_TEI);
+    options.add_int("BB_M_FILE", PSIF_MO_BB_TEI);
+    options.add_int("AB_M_FILE", PSIF_MO_AB_TEI);
+    options.add_int("MAX_BUCKETS", 499);
+    options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
+    options.add_bool("DELETE_AO", true);
+    options.add_bool("DELETE_TPDM", true);
+
+    options.add_bool("PRINT_TE_INTEGRALS", false);
+    options.add_bool("PRINT_OE_INTEGRALS", false);
+    options.add_bool("PRINT_SORTED_OE_INTS", false);
+    options.add_bool("PRINT_SORTED_TE_INTS", false);
+    options.add_bool("PRINT_MOS", false);
+
+    options.add_bool("LAGRAN_DOUBLE", false);
+    options.add_bool("LAGRAN_HALVE", false);
+    options.add_bool("DO_ALL_TEI", false);
+    options.add_bool("TPDM_ADD_REF", false);
+    options.add_bool("FREEZE_CORE", true);
+    options.add_bool("DELETE_RESTR_DOCC", true);
+    options.add_bool("PRINT_REORDER", false);
+    options.add_bool("PITZER", false);
+    options.add_bool("REORDER", false);
+    options.add_bool("CHECK_C_ORTHONORM", false);
+    options.add_bool("QRHF", false);
+    options.add_bool("IVO", false);
+    options.add("MOORDER", new ArrayType());
+    options.add("DOCC", new ArrayType());
+    options.add("SOCC", new ArrayType());
+
+  }
   else if(name == "CUSP"){
     options.add("FROZEN_DOCC", new ArrayType());
     options.add("FROZEN_UOCC", new ArrayType());
@@ -422,7 +486,7 @@ else if(name == "CCDENSITY") {
     options.add_str("REFERENCE","RHF");
     options.add_str("DERTYPE","NONE");
     options.add_int("TOLERANCE",14);
-    options.add_int("CACHELEVEL",2);
+    options.add_int("CACHELEV",2);
     options.add_bool("AO_BASIS",false);
     options.add_bool("AEL",false);
     options.add_str("GAUGE","LENGTH");
@@ -438,7 +502,7 @@ else if(name == "CCDENSITY") {
     options.add_int("CONVERGENCE",7);
     options.add_bool("RESTART",false);
     options.add_int("PRINT",0);
-    options.add_int("CACHELEVEL",2);
+    options.add_int("CACHELEV",2);
     options.add_bool("SEKINO",false);
     options.add_bool("DIIS",true);
     options.add_bool("AO_BASIS",false);
@@ -447,6 +511,7 @@ else if(name == "CCDENSITY") {
     options.add_str("DERTYPE","NONE");
     options.add_str("JOBTYPE","");
     options.add_bool("LOCAL",false);
+    options.add_str("LOCAL_WEAKP","NONE");
     options.add_double("LOCAL_CUTOFF",0.02);
     options.add_str("LOCAL_METHOD","WERNER");
     options.add_bool("LOCAL_FILTER_SINGLES",true);
@@ -454,6 +519,7 @@ else if(name == "CCDENSITY") {
     options.add_str("FREEZE_CORE","FALSE");
     options.add_str("LOCAL_PAIRDEF","");
     options.add("STATES_PER_IRREP", new ArrayType());
+    options.add_bool("PROP_ALL",false);
     options.add_int("PROP_SYM",1);
     options.add_int("PROP_ROOT",1);
     options.add_int("MAXITER",50);
@@ -474,8 +540,8 @@ else if(name == "CCDENSITY") {
     options.add_double("SCALE",0.5);
   }
   else if(name == "OEPROP") {
-    options.add_int("NUM_ROOTS",0);
-    options.add_int("ROOT",0);
+    options.add_int("NUM_ROOTS",1);
+    options.add_int("ROOT",1);
     options.add_int("GRID",0);
     options.add_str("MO_TO_PLOT","");
     options.add_int("GRID_ORIGIN",0);
@@ -488,32 +554,34 @@ else if(name == "CCDENSITY") {
     options.add_int("NIY",0);
     options.add_int("NIZ",0);
     options.add_str("GRID_FORMAT","");
-    options.add_double("GRID_ZMIN",0);
-    options.add_double("GRID_ZMAX",0);
-    options.add_int("EDGRAD_LOGSCALE",0);
+    options.add_double("GRID_ZMIN",0.0);
+    options.add_double("GRID_ZMAX",3.0);
+    options.add_int("EDGRAD_LOGSCALE",5);
     options.add_str("WFN","");
-    options.add_int("TRANSITION_DENSITY",0);
+    options.add_bool("TRANSITION_DENSITY", false);
     options.add_str("REFERENCE", "RHF");
-    options.add_int("READ_OPDM", 1);
-    options.add_double("OPDM_FILE", 0.0);
+    options.add_bool("READ_OPDM", true);
+    options.add_int("OPDM_FILE", 0);
     options.add_str("OPDM_BASIS", "MO");
     options.add_str("OPDM_FORMAT", "SQUARE");
-    options.add_int("WRTNOS", 0);
-    options.add_int("ASYMM_OPDM", 0);
-    options.add_int("SPIN_PROP", 0);
-    options.add_double("PRINT", 1);
-    options.add_int("PRINT_NOS", 0);
+    options.add_bool("WRTNOS", false);
+    options.add_bool("ASYMM_OPDM", false);
+    options.add_bool("SPIN_PROP", false);
+    options.add_int("PRINT", 1);
+    options.add_bool("PRINT_NOS", false);
     options.add_int("CORREL_CORR", 0);
     options.add_double("ZVEC_FILE", 0);
     options.add_int("DELETE_ZVEC", 0);
-    options.add_double("MPMAX", 0.0);
+    options.add_int("MPMAX", 1);
     options.add("MP_REF_XYZ", new ArrayType());
-    options.add_double("MP_REF", 0.0);
+    options.add_int("MP_REF", 0);
     options.add("LM_REF_XYZ", new ArrayType());
-    options.add_int("NUC_ESP", 0);
-    options.add_double("FINE_STRUCTURE_ALPHA", 1/(_c_au));
-    options.add_int("QED_DARWIN", 0);
-    options.add_int("FREEZE_CORE", 0);
+    options.add_bool("NUC_ESP", true);
+    options.add_double("FINE_STRUCTURE_ALPHA", 1.0);
+    options.add_bool("QED_DARWIN", false);
+    options.add_str("FREEZE_CORE","FALSE");
+    options.add("DOCC", new ArrayType());
+    options.add("SOCC", new ArrayType());
   }
   else if(name == "CCHBAR") {
     options.add_bool("TAMPLITUDE",false);
@@ -522,6 +590,7 @@ else if(name == "CCDENSITY") {
     options.add_str("WFN", "SCF");
     options.add_str("DERTYPE", "ENERGY");
     options.add_bool("WABEI_LOWDISK", false);
+    options.add_str("EOM_REFERENCE","RHF");
   }
   else if(name == "CCRESPONSE") {
     options.add_str("WFN", "SCF");
@@ -786,10 +855,15 @@ else if(name == "CCDENSITY") {
     options.add_str("TRIPLES_ALGORITHM","RESTRICTED","SPIN_ADAPTED RESTRICTED UNRESTRICTED");
     options.add_str("MP2_CCSD_METHOD","II","I IA II");
   }
+  else if(name == "OPTKING") {
+    /*- Maximum number of permitted steps in geometry optimization -*/
+    options.add_int("NOPT", 40);
+    options.add_bool("NO_LINE_SEARCH", true); // whether to prevent any line searches; true is not yet implemented in psi4 
+  }
 
   if (call_ipv1) {
     options.read_ipv1();
-    options.print();
+    if (!suppress_printing) options.print();
   }
 
   return true;

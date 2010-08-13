@@ -21,9 +21,8 @@ namespace psi {
 ** Returns: 1 if an excited state method, else 0
 ** \ingroup QT
 */
-int cc_excited(char *wfn)
+int cc_excited(const char *wfn)
 {
-
   if ( !strcmp(wfn, "CCSD")   || !strcmp(wfn, "CCSD_T") || !strcmp(wfn, "BCCD") 
     || !strcmp(wfn, "BCCD_T") || !strcmp(wfn, "CC2")    || !strcmp(wfn, "CC3") 
     || !strcmp(wfn, "CCSD_MVD") ) {
@@ -50,19 +49,7 @@ int cc_excited(char *wfn)
 */
 int cc_excited(std::string wfn)
 {
-  if ( (wfn =="CCSD")   || (wfn =="CCSD_T") || (wfn =="BCCD")
-    || (wfn =="BCCD_T") || (wfn =="CC2")    || (wfn =="CC3")
-    || (wfn =="CCSD_MVD") ) {
-    return 0;
-  }
-  else if ( (wfn =="EOM_CCSD") || (wfn =="LEOM_CCSD") ||
-            (wfn =="EOM_CC2")  || (wfn =="EOM_CC3") ) {
-    return 1;
-  }
-  else {
-    printf("Invalid value of input keyword WFN: %s\n", wfn.c_str());
-    exit(PSI_RETURN_FAILURE);
-  }
+  return cc_excited(wfn.c_str());
 }
 
 }

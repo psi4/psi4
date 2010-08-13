@@ -24,7 +24,8 @@ namespace psi {
     namespace scf      { PsiReturnType scf(Options &);   }
     namespace dfmp2    { PsiReturnType dfmp2(Options &); }
 
-    extern int read_options(const std::string &name, Options & options, bool call_ipv1 = true);
+    extern int read_options(const std::string &name, Options & options, bool call_ipv1 = true,
+      bool suppress_printing = false);
     extern void psiclean(void);
     extern FILE *outfile;
     extern Options options;

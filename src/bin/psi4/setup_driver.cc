@@ -17,6 +17,11 @@ namespace psi{
     namespace psimrcc  { PsiReturnType psimrcc(Options &); }
     namespace mcscf    { PsiReturnType mcscf(Options &); }
     namespace sapt     { PsiReturnType sapt(Options &); }
+    namespace cchbar   { PsiReturnType cchbar(Options &); }
+    namespace cclambda { PsiReturnType cclambda(Options &); }
+    namespace ccdensity { PsiReturnType ccdensity(Options &); }
+    namespace oeprop   { PsiReturnType oeprop(Options &); }
+    namespace transqt  { PsiReturnType transqt(Options &); }
 
     PsiReturnType opt_step(Options &);
 
@@ -31,7 +36,11 @@ setup_driver(Options &options)
     options.add_str("REFERENCE", "RHF", "RHF ROHF MCSCF TCSCF UHF RKS UKS");
     // The list of valid derivative types
     options.add_str("DERTYPE", "ENERGY", "NONE ENERGY FIRST SECOND RESPONSE");
+
     options.read_ipv1();
+
+    //if (options.get_str("DERTYPE") == "NONE")
+    //  options.set_str("DERTYPE", "ENERGY");
 
     // make a map of function pointers to the functions
     dispatch_table["CCENERGY"]  = &(psi::ccenergy::ccenergy);
@@ -50,6 +59,11 @@ setup_driver(Options &options)
     dispatch_table["PSIMRCC"]   = &(psi::psimrcc::psimrcc);
     dispatch_table["SAPT"]      = &(psi::sapt::sapt);
     dispatch_table["OPT_STEP"]  = &(psi::opt_step);
+    dispatch_table["CCHBAR"]    = &(psi::cchbar::cchbar);
+    dispatch_table["CCLAMBDA"]  = &(psi::cclambda::cclambda);
+    dispatch_table["CCDENSITY"] = &(psi::ccdensity::ccdensity);
+    dispatch_table["OEPROP"]    = &(psi::oeprop::oeprop);
+    dispatch_table["TRANSQT"]    = &(psi::transqt::transqt);
 }
 
 } // Namespaces

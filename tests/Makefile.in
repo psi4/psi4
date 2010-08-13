@@ -1,7 +1,7 @@
 
 .PHONY: tests quicktests cc_tests psirb_tests clean quicktestsclean
 
-cc_subdirs = cc4 cc8 cc8a mcscf1-rhf
+cc_subdirs = cc1 cc4 cc8 cc8a mcscf1-rhf
 
 rb_subdirs = 
 

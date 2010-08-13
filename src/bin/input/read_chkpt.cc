@@ -94,8 +94,8 @@ void read_chkpt_geom()
   chkpt_wt_clsdpi(clsdpi);
   chkpt_wt_openpi(openpi);
 
-  if (cc_wfn(const_cast<char*>(wfn.c_str()))) {
-    if (cc_excited(const_cast<char*>(wfn.c_str()))) {
+  if (cc_wfn(wfn)) {
+    if (cc_excited(wfn)) {
       states_per_irrep = init_int_array(nirreps);
       for (h=0; h < nirreps_ref; ++h) {
         errcod = ip_data("STATES_PER_IRREP","%d",&(i),1,h);

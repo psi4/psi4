@@ -82,8 +82,9 @@ int david(double **A, int N, int M, double *eps, double **v, double cutoff,
 
 int* get_frzcpi();
 int* get_frzvpi();
-int cc_excited(char *wfn);
-int cc_wfn(char *wfn);
+int cc_excited(const char *wfn);
+int cc_excited(std::string wfn);
+int cc_wfn(const char *wfn);
 int cc_wfn(std::string wfn);
 void free_3d_array(double ***A, int p, int q);
 double ***init_3d_array(int p, int q, int r);
@@ -103,25 +104,25 @@ void unit_vec(double *B, double *A, double *AB);
 /// Same as ::strncpy(), but make sure that dest ends in \0
 char* strncpy(char* dest, const char* source, size_t n);
 
-void C_DSWAP(int length, double *x, int incx, double *y, int inc_y);
+void C_DSWAP(unsigned long int length, double *x, int incx, double *y, int inc_y);
 
-void C_DAXPY(int length, double a, double *x, int inc_x,
+void C_DAXPY(unsigned long int length, double a, double *x, int inc_x,
              double *y, int inc_y);
-void C_DCOPY(int length, double *x, int inc_x,
+void C_DCOPY(unsigned long int length, double *x, int inc_x,
              double *y, int inc_y);
 void C_DGEMM(char transa, char transb, int m, int n, int k,
              double alpha, double *A, int nca, double *B, int ncb,
              double beta, double *C, int ncc);
-void C_DROT(int ntot, double *x, int incx, double *y, int incy,
+void C_DROT(unsigned long int ntot, double *x, int incx, double *y, int incy,
              double costheta, double sintheta);
-void C_DSCAL(int len, double alpha, double *vec, int inc);
+void C_DSCAL(unsigned long int len, double alpha, double *vec, int inc);
 void C_DGEMV(char transa, int m, int n, double alpha, double *A,
              int nca, double *X, int inc_x, double beta, double *Y,
              int inc_y);
 void C_DSPMV(char uplo, int n, double alpha, double *A,
              double *X, int inc_x, double beta, double *Y,
              int inc_y);
-double C_DDOT(int n, double *X, int inc_x, double *Y, int inc_y);
+double C_DDOT(unsigned long int n, double *X, int inc_x, double *Y, int inc_y);
 int C_DGETRF(int nrow, int ncol, double *a, int lda, int *ipiv);
 int C_DPOTRF(char uplo, int n, double *a, int lda);
 int C_DPOTRS(char uplo, int n, int nrhs, double *a, int lda, double* b, int ldb);
