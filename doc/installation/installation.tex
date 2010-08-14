@@ -27,7 +27,7 @@
 \begin{center}
 \ \\
 \vspace{2.0in}
-{\bf {\Large Installation Manual for the \PSIthree\ Program Package}} \\
+{\bf {\Large Installation Manual for the \PSIfour\ Program Package}} \\
 \vspace{0.5in}
 T.\ Daniel Crawford,$^a$ C.\ David Sherrill,$^b$ and Edward F.\ Valeev$^{a}$ 
 \\ \  \\
@@ -39,7 +39,7 @@ Virginia 24061-0001} \\
 \vspace{0.1in}
 \ \\
 \vspace{0.3in}
-\PSIthree\ Version: \PSIversion \\
+\PSIfour\ Version: \PSIversion \\
 Created on: \today
 \end{center}
 
@@ -48,7 +48,7 @@ Created on: \today
 \newpage
 \section{Compilation Prerequisites}
 
-The following external software packages are needed to complile \PSIthree:
+The following external software packages are needed to complile \PSIfour:
 \begin{itemize}
 \item C, C++, and FORTRAN77 compilers. The FORTRAN77 compiler is only
   used to determine the symbol-naming convention of and some system
@@ -57,15 +57,22 @@ The following external software packages are needed to complile \PSIthree:
 \item A well-optimized basic linear algebra subroutine (BLAS) library
   for vital matrix-matrix and matrix-vector multiplication
   routines. (See recommendations below.)
-\item The linear algebra package (LAPACK).  \PSIthree\ makes use of
+\item The linear algebra package (LAPACK).  \PSIfour\ makes use of
   LAPACK's eigenvalue/eigenvector and matrix inversion routines.  (See
   recommendations below)
 \item POSIX threads (Pthreads) library
 \item Perl interpreter (version 5.005 or higher)
+\item Python interpreter (2.4 or higher, but not version 3.x; 
+      needed for input files)
+\item Python developer libraries corresponding to your interpreter
+\item A version of MPI is currently required; MPICH2 is recommended.
+  (Note: MPICH2-1.1.0 had trouble with some header files.  MPICH2-1.2.1
+  seems to fix it.)
 \item Various GNU utilies: \htmladdnormallink{{\tt
 www.gnu.org}}{http://www.gnu.org}
 \begin{itemize}
 \item {\tt autoconf (version 2.52 or higher)}
+\item {\tt aclocal}
 \item {\tt make}
 \item {\tt flex}
 \item {\tt bison}
@@ -81,22 +88,25 @@ psi3/misc)
 
 \section{Brief Summary of Configuration, Compilation, and Installation}
 
-A good directory for the \PSIthree\ source code is /usr/local/src/psi3.
+A good directory for the \PSIfour\ source code is /usr/local/src/psi3.
 The directory should {\em not} be named {\tt /usr/local/psi}, as that is
 the default installation directory unless changed by the {\tt --prefix}
 directive (see below).  It should also not have any periods in the path,
 e.g., {\tt /usr/local/psi3.2}, because of a bug in {\tt dvips} which will
 cause the compilation of documentation to fail.
 
-The following series of steps will configure and build the \PSIthree\
+The following series of steps will configure and build the \PSIfour\
 package and install the executables in /usr/local/psi/bin:
 
 \begin{enumerate}
-\item {\tt cd \$PSI3} (your top-level \PSIthree\ source directory)
+\item {\tt cd \$PSI4} (your top-level \PSIfour\ source directory)
+\item {\tt aclocal}
+\item {\tt autoconf}
 \item {\tt mkdir objdir}
 \item {\tt cd objdir}
-\item {\tt ../configure} (may need some of the options below, esp.~if
-  {\tt blas} or {\tt lapack} are in non-standard locations)
+\item {\tt ../configure --with-cxx=mpicxx} 
+  (may need some of the options below, esp.~if
+  {\tt blas} or {\tt lapack} are in non-standard locations). 
 \item {\tt make}
 \item {\tt make tests} (optional, but recommended)
 \item {\tt make install}
@@ -108,7 +118,7 @@ You may need to make use of one or more of the following options to
 the {\tt configure} script:
 \begin{itemize}
 \item {\tt -}{\tt -prefix=directory} --- Use this option if you wish to
-  install the \PSIthree\ package somewhere other than the default
+  install the \PSIfour\ package somewhere other than the default
   directory, {\tt /usr/local/psi}.  This directory will contain
   subdirectories with the final installed binaries, libraries, 
   documentation, and shared data files.
@@ -120,6 +130,8 @@ the {\tt configure} script:
   C++ compiler.  One should use compilers that generate reentrant
   code, if possible. The default search order for compilers is: {\tt xlC\_r}
   (AIX only), {\tt g++}, {\tt c++}, {\tt icpc}, {\tt cxx}.
+  At the moment, MPI is required and you need to use
+  mpicxx (where this has been added to your PATH).
 \item {\tt -}{\tt -with-fc=compiler} --- Use this option to specify a
   Fortran-77 compiler, which is used to determine linking coventions
   for BLAS and LAPACK libraries and to provide system routines for
@@ -201,18 +213,18 @@ the {\tt configure} script:
 \section{Detailed Installation Instructions}
 
 This section provides detailed instructions for compiling and
-installing the \PSIthree\ package.  
+installing the \PSIfour\ package.  
 
 \subsection{Step 1: Configuration}
 
-First, we recommend that you choose for the top-level {\tt \$PSI3}
+First, we recommend that you choose for the top-level {\tt \$PSI4}
 source directory something other than {\tt /usr/local/psi}; your {\tt
-  \$HOME} directory or {\tt /usr/local/src/psi3} are convenient
-choices.  Next, in the top-level {\tt \$PSI3} source directory you've
+  \$HOME} directory or {\tt /usr/local/src/psi4} are convenient
+choices.  Next, in the top-level {\tt \$PSI4} source directory you've
 chosen, first run {\tt autoconf} to generate the configure script from
 {\tt configure.ac}.  It is best to keep the source code separate from
 the compilation area, so you must choose a subdirectory for
-compilation of the codes.  A simple option is {\tt \$PSI3/objdir},
+compilation of the codes.  A simple option is {\tt \$PSI4/objdir},
 which should work for most environments.  However, if you need
 executables for several architectures, choose more meaningful
 subdirectory names.
@@ -220,7 +232,7 @@ subdirectory names.
 $\bullet$ The compilation directory will be referred to as {\tt \$objdir}
 for the remainder of these instructions.
 
-In {\tt \$objdir}, run the configure script found in the {\tt \$PSI3}
+In {\tt \$objdir}, run the configure script found in the {\tt \$PSI4}
 top-level source directory.  This script will scan your system to locate
 certain libraries, header files, etc. needed for complete compilation.
 The script accepts a number of options, all of which are listed above.
@@ -235,7 +247,7 @@ to as {\tt \$prefix} for the remainder of these instructions.
 \subsection{Step 2: Compilation}
 
 Running {\tt make} (which must be GNU's {\tt 'make'} utility) in {\tt
-\$objdir} will compile the \PSIthree\ libraries and executable
+\$objdir} will compile the \PSIfour\ libraries and executable
 modules.
 
 \subsection{Step 3: Testing}
@@ -270,7 +282,7 @@ disk space by running {\tt make clean} in {\tt \$objdir}.
 
 \subsection{Step 7: User Configuration}
 
-After the \PSIthree\ package has been successfullly installed, the user will
+After the \PSIfour\ package has been successfullly installed, the user will
 need to add the installation directory into their path.  If the package
 has been installed in the default location {\tt /usr/local/psi3}, then
 in C shell, the user should add something like the following to 
@@ -280,24 +292,24 @@ setenv PSI /usr/local/psi3
 set path = ($path $PSI/bin)
 setenv MANPATH $PSI/doc/man:$MANPATH
 \end{verbatim}
-The final line will enable the use of the \PSIthree\ man pages.
+The final line will enable the use of the \PSIfour\ man pages.
 \begin{verbatim}
 \end{verbatim}
 
 \section{Recommendations for BLAS and LAPACK Libraries}
 
-Much of the speed and efficiency of the PSI3 programs depends on the
+Much of the speed and efficiency of the PSI4 programs depends on the
 corresponding speed and efficiency of the available BLAS and LAPACK
 libraries (especially the former).  In addition, the most common
 compilation problems involve these libraries.  Users may therefore
 wish to consider the following BLAS and LAPACK recommendations when
-building PSI3:
+building PSI4:
 
 \begin{itemize}
 \item It is NOT wise to use the stock BLAS library provided with many
   Linux distributions like RedHat.  This library is usually just the
   netlib ({http://netlib.org/}distribution and is completely
-  unoptimized.  PSI3's performance will suffer if you choose this
+  unoptimized.  PSI4's performance will suffer if you choose this
   route.  The choice of LAPACK is less critical, and so the
   unoptimized netlib distribution is acceptable.  If you do choose to
   use the RedHat/Fedora stock BLAS and LAPACK, be aware that some
@@ -311,27 +323,27 @@ building PSI3:
   hand-optimized BLAS \\
 ({\tt http://www.tacc.utexas.edu/resources/software/}) and ATLAS \\ ({\tt
 http://math-atlas.sourceforge.net/}).  These work well on nearly
-  every achitecture to which the PSI3 developers have access, though we have
+  every achitecture to which the PSI4 developers have access, though we have
   identified at least one case in which the Goto libraries yielded faulty
   DGEMM call.  On Mac OS X systems, however, the {\tt vecLib} package that
   comes with Xcode works well. Note also that we have encountered problems
 with the  version 10 of Intel's MKL, particularly for very large coupled
 cluster  calculations.
 
-\item PSI3 does not require a Fortran compiler, unless the resident
+\item PSI4 does not require a Fortran compiler, unless the resident
   BLAS and LAPACK libraries require Fortran-based system libraries.
   If you see compiler complaints about missing symbols like ``{\tt
     do\_fio}'' or ``{\tt e\_wsfe}'' then your libraries were most likely
   compiled with g77 or gfortran, which require {\tt -lg2c} to resolve
-  the Fortran I/O calls.  Use of the same gcc package for PSI3 should
+  the Fortran I/O calls.  Use of the same gcc package for PSI4 should
   normally resolve this problem.
 
-\item The PSI3 configure script can often identify and use
+\item The PSI4 configure script can often identify and use
   several different BLAS and LAPACK libraries, but its ability to do
   this automatically depends on a number of factors, including
-  correspondence between the compiler used for PSI3 and the compiler
+  correspondence between the compiler used for PSI4 and the compiler
   used to build BLAS/LAPACK, and placement of the libraries in
-  commonly searched directories, among others.  PSI3's configure
+  commonly searched directories, among others.  PSI4's configure
   script will find your BLAS and LAPACK if any of the the following
   are installed in standard locations (e.g. {\tt /usr/local/lib}):
 
@@ -347,7 +359,7 @@ cluster  calculations.
   \item If configure cannot identify your BLAS and LAPACK libraries
     automatically, you can specify them on the command-line using the
     {\tt -}{\tt -with-blas} and {\tt -}{\tt -with-lapack} arguments
-    described above.  Here are a few examples that work on the PSI3
+    described above.  Here are a few examples that work on the PSI4
     developers' systems:
   
     (a) Linux with ATLAS:
@@ -366,6 +378,86 @@ cluster  calculations.
     (d) Linux on ia32 with MKL 10.1 and {\tt icc/icpc} 11.0:
 
     {\tt -}{\tt -with-blas='-Wl,--start-group -L/usr/local/opt/intel/mkl/10.1.0.015/lib/32 -lmkl -Wl,}{\tt -}{\tt -end-group -lguide -lpthread'}
+
+\subsection{Compilation notes for ATLAS}
+   These shortcut notes might be helpful if you are using Linux.  However,
+   we recommend reading and following the full ATLAS installation notes.
+
+   \begin{itemize}
+   
+   \item
+   You'll need a Fortran compiler installed.
+
+   \item
+   Unpack the source code, then make a compilation directory (could
+   be an {\tt obj} subdirectory in the source directory, or elsewhere).
+
+   \item
+   Turn off CPU throttling so the auto-tuning capabilities have a chance
+   to work.  On Linux, this can be tune using
+
+     {\tt /usr/bin/cpufreq-selector -g performance}
+
+   \item
+   {\tt cd} into the compilation directory and run the source
+   directory configure script there, with any necessary flags, e.g.,
+ 
+     {\tt /usr/local/src/atlas/configure --prefix=/usr/local/atlas}
+
+   where {\tt prefix} gives the installation directory.
+   It should automatically detect if you're on an {\tt x86\_64} 
+   architecture and use 64-bit addressing ({\tt -b 64} flag) if so.
+
+   \item
+   Then make and check using
+
+     {\tt make; make check; make ptcheck}
+
+   \item
+   And install
+
+     {\tt make install}
+   \end{itemize}
+
+\subsection{Compilation notes for Netlib's LAPACK}
+   These shortcut notes might be helpful if you are using Linux.  However,
+   we recommend reading and following the full LAPACK installation notes.
+
+   \begin{itemize}
+
+   \item
+   You'll need a Fortran compiler installed.
+
+   \item
+   If you decide to compile LAPACK from source, it may be obtained from \\
+   {\tt http://www.netlib.org/lapack/}.  Unpack the source code, and in the
+   top-level source directory, you need to create a make.inc file with
+   the appropriate options for your machine.  For Linux/gfortran,
+   simply
+
+     {\tt cp make.inc.example make.inc}
+
+   \item
+   Next, edit {\tt BLASLIB} in {\tt make.inc} to point to your BLAS library
+   (full pathnames are recommended), e.g.,
+
+     {\tt
+     BLASLIB      = /home/david/software/atlas3.9.25/lib/libf77blas.a \\
+/home/david/software/atlas3.9.25/lib/libatlas.a
+     }
+
+   \item
+   Edit Makefile as necessary (probably not needed).
+
+   \item {\tt make}
+
+   \item
+   Copy the resulting file [{\tt lapack\_(\$ARCH).a}] where you want it
+   (a standard location like {\tt /usr/local/lib} is easier for PSI to find).
+   It is probably helpful to rename the file {\tt liblapack.a}.
+
+   \end{itemize}
+
 
 \section{Miscellaneous architecture-specific notes}
 \begin{itemize}
@@ -410,16 +502,11 @@ cluster  calculations.
       {\tt -}{\tt -with-blas='-altivec -framework vecLib'} {\tt -}{\tt
         -with-lapack=' '}
 
-  \item Pre Mac OS 10.4: Certain PSI3 codes require significant
+  \item Pre Mac OS 10.4: Certain PSI4 codes require significant
       stackspace for compilation.  Increase your shell's stacksize
       limit before running {\tt make}.  For csh, for example, this is
       done using ``unlimit stacksize.''  [NB: This limit appears to have
       been lifted starting with Mac OS 10.3.X (Panther).]
-
-  \item Mac 10.5 users can take advantage of the ruby driver in PSI 3.4 by
-   including the following options on the configure command line:
-
-   {\tt -}{\tt -with-ruby-include='-I/System/Library/Frameworks/Ruby.framework/Headers'} {\tt -}{\tt -with-ruby-lib='-framework Ruby'}
 
   \end{itemize}
 
@@ -433,9 +520,10 @@ configure flag: {\tt -}{\tt -with-aix64}.
 \item SGI IRIX 6.$x$:
   \begin{itemize}
    \item MIPSpro C++ compilers prior to version 7.4 require a command-line flag
-   '{\tt -LANG:std}' in order to compile \PSIthree\ properly.
+   '{\tt -LANG:std}' in order to compile \PSIfour\ properly.
 
-   \item Use command-line flag '{\tt -64}' in order to produce 64-bit \PSIthree\ executables with
+   \item Use command-line flag '{\tt -64}' in order to produce 64-bit
+\PSIfour\ executables with
    MIPSpro compilers. The following is an example of appropriate configure options:
    \begin{verbatim}
   --with-cc='cc -64' --with-cxx='CC -64 -LANG:std' --with-fc='f77 -64'
@@ -446,7 +534,7 @@ configure flag: {\tt -}{\tt -with-aix64}.
   \end{itemize}
 
 \item Compaq Alpha/OSF 5.1: default shell ({\tt /bin/sh})
-is not POSIX-compliant which causes some \PSIthree\ makefiles
+is not POSIX-compliant which causes some \PSIfour\ makefiles
 to fail. Set environmental variable {\tt BIN\_SH} to {\tt xpg4}.
 
 \end{itemize}
