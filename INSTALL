@@ -9,7 +9,6 @@ when using mpich2-1.1.0.  Using mpich2-1.2.1 seems to fix it.
 * The code now requires Python.  You must have the Python developer's
 package installed, in addition to the base Python package
 
-Potential Problems (1/10)
 
 
 Installation Instructions for PSI4
@@ -38,11 +37,15 @@ I. Compilation Prerequisites:
    * Perl interpreter (5.005 or higher; needed for running test cases)
    * Python interpreter (2.4 or higher; needed for input files)
    * Python developer libraries corresponding to your interpreter.
+   * A version of MPI is currently required; MPICH2 is recommended.
+     (Note: MPICH2-1.1.0 had trouble with some header files.  MPICH2-1.2.1
+     seems to fix it.)
    * GNU utilities: (see http://www.gnu.org)
       ** make
       ** flex
       ** bison
       ** autoconf (version 2.52 or higher)
+      ** aclocal
       ** fileutils (esp. install)
    * For documentation:
       ** latex
@@ -98,7 +101,8 @@ the configure script:
    * --with-cxx=compiler --- Use this option to specify a C++ compiler.
    One should use compilers that generate reentrant code, if possible.
    The default search order for compilers is: xlC_r (AIX only), g++, c++,
-   icpc, cxx.
+   icpc, cxx.  At the moment, MPI is required and you need to use
+   mpicxx (where this has been added to your PATH).
 
    * --with-fc=compiler --- Use this option to specify a Fortran-77 compiler,
    which is used to determine linking coventions for BLAS and LAPACK libraries
@@ -349,6 +353,67 @@ BLAS and LAPACK recommendations when building PSI4:
 
     --with-blas='-Wl,--start-group -L/usr/local/opt/intel/mkl/10.1.0.015/lib/32 -l mkl -Wl,--end-group -lguide -lpthread'
 
+Compilation notes for ATLAS:
+
+   These shortcut notes might be helpful if you are using Linux.  However,
+   we recommend reading and following the full ATLAS installation notes.
+
+   You'll need a Fortran compiler installed.   
+
+   Unpack the source code, then make a compilation directory (could
+   be an obj subdirectory in the source directory, or elsewhere).
+
+   Turn off CPU throttling so the auto-tuning capabilities have a chance
+   to work.  On Linux, this can be tune using
+
+     /usr/bin/cpufreq-selector -g performance
+
+   cd into the compilation directory and run the source
+   directory configure script there, with any necessary flags, e.g.,
+     
+     /usr/local/src/atlas/configure --prefix=/usr/local/atlas
+
+   where prefix gives the installation directory.
+   It should automatically detect if you're on an x86_64
+
+   Then make and check using
+
+     make; make check; make ptcheck
+
+   And install
+
+     make install
+   
+
+Compilation notes for netlib's LAPACK:
+
+   These shortcut notes might be helpful if you are using Linux.  However,
+   we recommend reading and following the full LAPACK installation notes.
+
+   You'll need a Fortran compiler installed.
+
+   If you decide to compile LAPACK from source, it may be obtained from 
+   http://www.netlib.org/lapack/.  Unpack the source code, and in the
+   top-level source directory, you need to create a make.inc file with
+   the appropriate options for your machine.  For Linux/gfortran,
+   simply 
+  
+     cp make.inc.example make.inc
+
+   Next, edit BLASLIB in make.inc to point to your BLAS library
+   (full pathnames are recommended):
+ 
+     BLASLIB      = /home/david/software/atlas3.9.25/lib/libf77blas.a /home/david/software/atlas3.9.25/lib/libatlas.a
+
+   Edit Makefile as necessary (probably not needed).
+
+     make
+
+   Copy the resulting file [lapack_($ARCH).a] where you want it
+   (a standard location like /usr/local/lib is easier for PSI to find).
+   It is probably helpful to rename the file liblapack.a.
+
+     
 V. Miscellaneous architecture-specific notes
 
   * Linux on x86 and x86_64:
