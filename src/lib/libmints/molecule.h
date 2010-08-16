@@ -212,8 +212,11 @@ public:
     int atom_at_position2(Vector3&, double tol = 0.05) const;
 
     SimpleMatrix geometry();
+    SimpleMatrix full_geometry();
     void set_geometry(SimpleMatrix& geom);
+    void set_full_geometry(SimpleMatrix& geom);
     void rotate(SimpleMatrix& R);
+    void rotate_full(SimpleMatrix& R);
 
     /// Computes center of mass of molecule (does not translate molecule)
     Vector3 center_of_mass() const;
