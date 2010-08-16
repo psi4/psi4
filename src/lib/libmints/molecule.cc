@@ -396,6 +396,11 @@ void Molecule::translate(const Vector3& r)
         atoms_[i].y += r[1];
         atoms_[i].z += r[2];
     }
+    for (int i=0; i<nallatom(); ++i) {
+        full_atoms_[i].x += r[0];
+        full_atoms_[i].y += r[1];
+        full_atoms_[i].z += r[2];
+    }
 }
 
 void Molecule::move_to_com()
@@ -415,6 +420,17 @@ SimpleMatrix Molecule::geometry()
 
     return geom;
 }
+SimpleMatrix Molecule::full_geometry()
+{
+    SimpleMatrix geom(nallatom(), 3);
+    for (int i=0; i<nallatom(); ++i) {
+        geom[i][0] = fx(i);
+        geom[i][1] = fy(i);
+        geom[i][2] = fz(i);
+    }
+
+    return geom;
+}
 
 void Molecule::set_geometry(SimpleMatrix& geom)
 {
@@ -422,6 +438,14 @@ void Molecule::set_geometry(SimpleMatrix& geom)
         atoms_[i].x = geom[i][0];
         atoms_[i].y = geom[i][1];
         atoms_[i].z = geom[i][2];
+    }
+}
+void Molecule::set_full_geometry(SimpleMatrix& geom)
+{
+    for (int i=0; i<nallatom(); ++i) {
+        full_atoms_[i].x = geom[i][0];
+        full_atoms_[i].y = geom[i][1];
+        full_atoms_[i].z = geom[i][2];
     }
 }
 
@@ -434,6 +458,16 @@ void Molecule::rotate(SimpleMatrix& R)
     new_geom.gemm(false, false, 1.0, &geom, &R, 0.0);
 
     set_geometry(new_geom);
+}
+void Molecule::rotate_full(SimpleMatrix& R)
+{
+    SimpleMatrix new_geom(nallatom(), 3);
+    SimpleMatrix geom = full_geometry();
+
+    // Multiple the geometry by the rotation matrix.
+    new_geom.gemm(false, false, 1.0, &geom, &R, 0.0);
+
+    set_full_geometry(new_geom);
 }
 
 void Molecule::reorient()
@@ -572,7 +606,9 @@ void Molecule::reorient()
 
     if (degen == 0) {
         rotate(itensor_axes);
+        rotate_full(itensor_axes);
         rotate(R);
+        rotate_full(R);
     }
 
     if (degen == 1) {
@@ -623,6 +659,7 @@ void Molecule::reorient()
             R[0][1] = sin_phix;
             R[1][0] = -sin_phix;
             rotate(R);
+            rotate_full(R);
 
             R.zero();
             R[0][0] = 1.0;
@@ -631,6 +668,7 @@ void Molecule::reorient()
             R[1][2] = sin_theta;
             R[2][1] = -sin_theta;
             rotate(R);
+            rotate_full(R);
 
             R.zero();
             R[2][2] = 1.0;
@@ -639,6 +677,7 @@ void Molecule::reorient()
             R[0][1] = -sin_phix;
             R[1][0] = sin_phix;
             rotate(R);
+            rotate_full(R);
         }
     }
 
