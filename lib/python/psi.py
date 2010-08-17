@@ -1,6 +1,13 @@
 import PsiMod
 
-class ValueNotSet (Exception): pass
+
+class PsiException: pass
+class ValueNotSet (PsiException): pass
+class RowAlignmentError(PsiException):
+
+    def __init__(self, l1name, l1, l2name, l2):
+        msg = "Rows %s and %s not aligned. Length %d != %d" % (l1name, l2name, l1, l2)
+        PsiException.__init__(self, msg)
 
 molecule = None
 
@@ -132,3 +139,92 @@ def geometry_old(geom, reorient = True, prefix = "", chkpt = None, shiftToCOM = 
     molecule.save_to_checkpoint(chkpt, prefix)
 
     return molecule
+
+class Table:
+
+    def __init__(self, rows=(),
+                 row_label_width=10,
+                 row_label_precision=4,
+                 cols=(),
+                 width=16, precision=10):
+        self.row_label_width = row_label_width
+        self.row_label_precision = row_label_precision
+        self.width = width
+        self.precision = precision
+        self.rows = rows
+
+        if isinstance(cols, str):
+            self.cols = (cols,)
+        else:
+            self.cols = cols
+
+        self.labels = []
+        self.data = []
+
+    def format_label(self):
+        str = lambda x: (('%%%d.%df' % (self.row_label_width, self.row_label_precision)) % x)
+        return " ".join(map(str, self.labels))
+
+    def format_values(self, values):
+        str = lambda x: (('%%%d.%df' % (self.width, self.precision)) % x)
+        return " ".join(map(str, values))
+
+    def __getitem__(self, value):
+        self.labels.append(value)
+        return self
+
+    def __setitem__(self, name, value):
+        self.labels.append(name)
+        label = self.format_label()
+        self.labels = []
+
+        #if hasattr(value, "__iter__"):
+        self.data.append( (label, list(value) ) )
+        #else:
+            #self.data.append( (label, list(value) ) )
+
+    def save(self, file):
+        import pickle
+        pickle_str = pickle.dumps(self)
+        fileobj = open(file, "w")
+        fileobj.write(str(self))
+        fileobj.close()
+
+    def __str__(self):
+        rowstr = lambda x: '%%%ds' % self.row_label_width % x
+        colstr = lambda x: '%%%ds' % self.width % x
+
+        lines = []
+
+        row_header = " ".join(map(rowstr, self.rows))
+        row_header += " ".join(map(colstr, self.cols))
+
+        lines.append(row_header)
+
+        for datarow in self.data:
+            row_data = datarow[0]
+            row_data += self.format_values(datarow[1])
+            lines.append(row_data)
+
+        return "\n".join(lines)
+
+    def copy(self):
+        import copy
+        return copy.deepcopy(self)
+
+    def absolute_to_relative(self, Factor = 627.51):
+        import copy
+
+        if len(self.data) == 0:
+            return
+
+        current_min = list(copy.deepcopy(self.data[0][1]))
+        for datarow in self.data:
+            for col in range(0, len(datarow[1])):
+                if current_min[col] > datarow[1][col]:
+                    current_min[col] = datarow[1][col]
+
+        for datarow in self.data:
+            for col in range(0, len(datarow[1])):
+                datarow[1][col] = (datarow[1][col] - current_min[col]) * Factor
+

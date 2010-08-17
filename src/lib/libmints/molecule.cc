@@ -897,7 +897,7 @@ Molecule::create_molecule_from_string(const std::string &text)
     };
     
     mol->set_geometry_string(lines);
-    mol->update_geometry();
+//    mol->update_geometry();
     return mol;
 }
 
