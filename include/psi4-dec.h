@@ -56,6 +56,8 @@ namespace psi {
           const std::string& operator()(const std::string& key) const;
           std::string operator()(const std::string& key);
           const std::string& set(const std::string& key, const std::string& value);
+
+          double current_energy;
       };
 
       class Arguments

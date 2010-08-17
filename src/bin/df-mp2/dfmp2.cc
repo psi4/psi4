@@ -240,7 +240,7 @@ DFMP2::~DFMP2()
    free_block(C_docc_); 
    free_block(C_virt_); 
 }
-double DFMP2::compute_E()
+double DFMP2::compute_energy()
 {
     if (algorithm_type_ == "DISK")
         E_ = compute_E_disk();
@@ -274,7 +274,7 @@ double DFMP2::compute_E()
         fflush(outfile); 
     } 
 
-    return E_;
+    return E_tot_;
 }
 double DFMP2::compute_E_core()
 {

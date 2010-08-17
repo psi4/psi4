@@ -107,6 +107,15 @@ namespace psi {
         }
     }
 
+    double Molecule::get_variable(const std::string &str)
+    {
+        if(geometryVariables_.count(str)){
+            return geometryVariables_[str];
+        }else{
+            throw PSIEXCEPTION(str + " not known");
+        }
+    }
+
     /**
      * Attempts to interpret a string as a double.  If it's not succesful, it checks to
      * see if it's been defined as a variable and returns its value, or throws.
@@ -464,7 +473,7 @@ void Molecule::rotate_full(SimpleMatrix& R)
     SimpleMatrix new_geom(nallatom(), 3);
     SimpleMatrix geom = full_geometry();
 
-    // Multiple the geometry by the rotation matrix.
+    // Multiply the geometry by the rotation matrix.
     new_geom.gemm(false, false, 1.0, &geom, &R, 0.0);
 
     set_full_geometry(new_geom);
@@ -472,13 +481,8 @@ void Molecule::rotate_full(SimpleMatrix& R)
 
 void Molecule::reorient()
 {
-    // If no atoms are present throw
-    if (natom() <= 0) {
-        throw PSIEXCEPTION("Molecule::reorient called with no atoms.");
-    }
-
     // Nothing for us to do.
-    if (natom() == 1)
+    if (natom() <= 1)
         return;
 
     // Otherwise, do something.
@@ -684,7 +688,8 @@ void Molecule::reorient()
     // Delete the tensor matrix
     delete itensor;
 }
-int Molecule::nfzc(std::string depth)
+
+int Molecule::nfrozen_core(std::string depth)
 {
     if (depth == "FALSE") {
         return 0;
@@ -713,6 +718,7 @@ int Molecule::nfzc(std::string depth)
         throw std::invalid_argument("Frozen core spec is not supported, options are {true, false, small, large}.");
     }
 }
+
 void Molecule::init_with_psio(shared_ptr<PSIO> psio)
 {
     // User sent a psio object. Create a chkpt object based on it.
@@ -839,6 +845,7 @@ Molecule::create_molecule_from_string(const std::string &text)
     boost::split(lines, text, boost::is_any_of("\n"));
 
     shared_ptr<Molecule> mol(new Molecule);
+    mol->set_units(Angstrom);
     /*
      * Time to look for lines that look like they describe charge and multiplicity,
      * a variable, units, comment lines, and blank lines.  When found, process them
@@ -906,9 +913,9 @@ Molecule::update_geometry()
     zVals.load_values();
     std::vector<std::string> splitLine;
     // Start over, even if we have atoms already
-    atoms_.empty();
+    atoms_.clear();
     // Have the atoms been added already?  If so, we only need to update positions.
-    bool firstRun = natom();
+//    bool firstRun = natom();
     // Begin by assuming that the user provided angstrom input
     double conversionFactor = (units_ == Angstrom ? 1.0 / _bohr2angstroms : 1.0);
     // Now it's time to interpret the geometry string
@@ -1065,6 +1072,11 @@ Molecule::update_geometry()
             ++currentAtom;
         }
     }
+
+    fprintf(outfile, "moving to center of mass.\n");
+    move_to_com();
+    fprintf(outfile, "reorienting molecule.\n");
+    reorient();
 }
 
 

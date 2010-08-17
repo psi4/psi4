@@ -147,7 +147,7 @@ protected:
 public:
     DFMP2(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
     /// Compute DF-MP2 energy.
-    double compute_E();
+    double compute_energy();
 
     virtual ~DFMP2();
 };

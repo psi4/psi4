@@ -46,14 +46,24 @@ int py_psi_cscf()
     return cscf::cscf(options);
 }
 
-int py_psi_scf()
+double py_psi_scf()
 {
-    return scf::scf(options);
+    if (scf::scf(options) == Success) {
+        return Process::environment.current_energy;
+    }
+    else
+        return 0.0;
 }
-int py_psi_dfmp2()
+
+double py_psi_dfmp2()
 {
-    return dfmp2::dfmp2(options);
+    if (dfmp2::dfmp2(options) == Success) {
+        return Process::environment.current_energy;
+    }
+    else
+        return 0.0;
 }
+
 char const* py_psi_version()
 {
     return PSI_VERSION;
@@ -253,7 +263,10 @@ BOOST_PYTHON_MODULE(PsiMod)
         def("set_point_group", &Molecule::set_point_group).
         def("form_symmetry_information", &Molecule::form_symmetry_information).
         def("create_molecule_from_string", &Molecule::create_molecule_from_string).
-        staticmethod("create_molecule_from_string");
+        staticmethod("create_molecule_from_string").
+        def("is_variable", &Molecule::is_variable).
+        def("set_variable", &Molecule::set_variable).
+        def("get_variable", &Molecule::get_variable);
 }
 
 Python::Python() : Script()

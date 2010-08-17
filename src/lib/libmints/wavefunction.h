@@ -61,7 +61,7 @@ public:
     virtual ~Wavefunction();
 
     /// Compute energy. Subclasses override this function to compute its energy.
-    virtual double compute_energy();
+    virtual double compute_energy() = 0;
 
     /// Initialize internal variables from checkpoint file.
     void init_with_chkpt();
