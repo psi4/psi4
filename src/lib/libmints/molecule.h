@@ -51,16 +51,16 @@ public:
     enum GeometryUnits {Angstrom, Bohr};
 
     static boost::shared_ptr<Molecule> create_molecule_from_string(const std::string &geom);
-    /// Assigns the value val to the variable labelled string in the list of geometry variables
-    void set_variable(const std::string &str, double val) {geometryVariables_[str] = val;}
+    /// Assigns the value val to the variable labelled string in the list of geometry variables.
+    /// Also calls update_geometry()
+    void set_variable(const std::string &str, double val) {geometryVariables_[str] = val; update_geometry();}
     /// Checks to see if the variable str is in the list, sets it to val and returns
     /// true if it is, and returns false if not.
-    bool get_variable(const std::string &str, double &val) {if(geometryVariables_.count(str)){
-                                                               val = geometryVariables_[str];
-                                                               return true;
-                                                           }else{
-                                                               return false;
-                                                           }}
+    double get_variable(const std::string &str);
+    /// Checks to see if the variable str is in the list, returns
+    /// true if it is, and returns false if not.
+    bool is_variable(const std::string &str) const { return geometryVariables_.count(str); }
+
     /// Sets the geometry string
     void set_geometry_string(std::vector<std::string> strVec) { geometryString_ = strVec; }
     /// Sets the geometry format
@@ -205,7 +205,7 @@ public:
     double fcharge(int atom) const { return full_atoms_[atom].charge; }
 
     /// Number of frozen core for molecule given freezing state
-    int nfzc(std::string depth);
+    int nfrozen_core(std::string depth);
 
     /// Tests to see of an atom is at the passed position with a given tolerance
     int atom_at_position1(double *, double tol = 0.05) const;

@@ -12,6 +12,9 @@ Process::Arguments Process::arguments;
 // Need to split each entry by the first '=', left side is key, right the value
 void Process::Environment::init(char **envp)
 {
+    // Initialize current energy
+    current_energy = 0.0;
+
     // First set some defaults:
     environment_["PSIDATADIR"] = INSTALLEDPSIDATADIR;
 

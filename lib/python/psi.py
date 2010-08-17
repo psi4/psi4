@@ -4,8 +4,34 @@ class ValueNotSet (Exception): pass
 
 molecule = None
 
-def psidatadir(key):
-    return PsiMod.Process.environment[key]
+def new_set_attr(self, name, value):
+    fxn = object.__getattribute__(self, "is_variable")
+    isvar = fxn(name)
+    if isvar:
+        fxn = object.__getattribute__(self, "set_variable")
+        fxn(name, value)
+        return
+
+    object.__setattr__(self, name, value)
+
+def new_get_attr(self, name):
+    fxn = object.__getattribute__(self, "is_variable")
+    isvar = fxn(name)
+
+    if isvar:
+        fxn = object.__getattribute__(self, "get_variable")
+        return fxn(name)
+
+    return object.__getattribute__(self, name)
+
+
+def dynamic_variable_bind(cls):
+    #class specific
+    cls.__setattr__ = new_set_attr
+    cls.__getattr__ = new_get_attr
+
+
+dynamic_variable_bind(PsiMod.Molecule) #pass class type, not class instance
 
 #
 # Define geometry to be used by PSI4.
