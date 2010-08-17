@@ -1,0 +1,47 @@
+molecule h2o {
+O
+H 1 R
+H 1 R 2 A
+
+R = .9
+A = 104.5
+}
+
+Rvals = [ 0.9, 1.0, 1.1 ]
+Avals = range(100, 102)
+
+table = Table(rows=("R", "A"), cols=("E(SCF)", "E(MP2)"))
+
+for R in Rvals:
+    h2o.R = R
+
+    for A in Avals:
+
+        h2o.A = A
+
+        set scf {
+            SCF_TYPE DF
+            PRINT 2
+            DIIS False
+            BASIS 3-21G
+            RI_BASIS_SCF STO-3G
+            DOCC [3, 0, 1, 1]
+        }
+    
+        escf = scf()
+
+        set dfmp2 {
+            BASIS  3-21G
+            RI_BASIS_MP2 STO-3G
+        }
+    
+        edfmp2 = dfmp2()
+        table[R][A] = escf, edfmp2
+    
+print table
+
+relative = table.copy()
+relative.absolute_to_relative()
+
+print relative
+
