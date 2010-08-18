@@ -51,6 +51,7 @@ namespace psi {
       class Environment
       {
           std::map<std::string, std::string> environment_;
+          const std::string empty_;
 
           boost::shared_ptr<Molecule> molecule_;
       public:
