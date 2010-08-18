@@ -26,7 +26,7 @@ using namespace psi;
 namespace psi { namespace scf {
      
 HFEnergy::HFEnergy(Options & options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) 
-    : Wavefunction(options, psio, chkpt)
+    : options_(options), psio_(psio), chkpt_(chkpt)
 {
     
 }

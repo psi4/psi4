@@ -375,8 +375,13 @@ shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parse
     // the other version of construct
     vector<string> basisnames;
 
-    for (int i=0; i<mol->natom(); ++i)
+    // Update geometry in molecule, if there is a problem an exception is thrown.
+    mol->update_geometry();
+
+    for (int i=0; i<mol->natom(); ++i) {
+//        printf("adding %s to basisnames\n", basisname.c_str());
         basisnames.push_back(basisname);
+    }
 
     return construct(parser, mol, basisnames);
 }
@@ -386,6 +391,10 @@ shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parse
         const std::vector<std::string>& basisnames)
 {
     shared_ptr<BasisSet> basisset(new BasisSet);
+
+    // Update geometry in molecule, if there is a problem an exception is thrown.
+    mol->update_geometry();
+
     basisset->molecule_ = mol;
     parser->parse(basisset, basisnames);
 

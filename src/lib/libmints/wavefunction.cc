@@ -64,16 +64,8 @@ void Wavefunction::common_init()
         molecule_ = basisset_->molecule();
     }
     else {
-        // Eventually move molecule to the constructor, the driver will tell
-        // the wavefunction what to use.
-//         Load molecule from xyz file
-//        molecule_ = shared_ptr<Molecule>(new Molecule);
-//        molecule_->init_with_xyz(options_.get_str("XYZ_FILE"));
-//        molecule_->move_to_com();
-//        molecule_->reorient();
-
-        // Take the molecule from options
-        molecule_ = options_.molecule();
+        // Take the molecule from the environment
+        molecule_ = Process::environment.molecule();
 
         shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
         basisset_ = BasisSet::construct(parser, molecule_, options_.get_str("BASIS"));

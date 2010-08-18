@@ -38,7 +38,7 @@ PsiReturnType dfmp2(Options & options)
     timer_init();
 
     DFMP2 df(options, psio, chkpt);
-    Process::environment.current_energy = df.compute_energy();
+    df.compute_energy();
     
     // Shut down psi. 
     timer_done();

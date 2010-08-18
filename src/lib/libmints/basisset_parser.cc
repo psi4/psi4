@@ -46,13 +46,17 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
     shared_ptr<Molecule> molecule = basisSet->molecule();
 
     // Ensure that the number of atoms match the number of basis names
-    if (molecule->natom() != basisnames.size())
+    if (molecule->natom() != basisnames.size()) {
+        fprintf(outfile, "Gaussian94BasisSetParser::parse: Number of atoms does not match number of basis set names.\n");
+        fprintf(outfile, "molecule->natom() = %d     basisnames.size() = %d\n", molecule->natom(), basisnames.size());
+        fflush(outfile);
         throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Number of atoms does not match number of basis set names.");
+    }
 
     // Regular expressions that we'll be checking for.
     regex comment("^\\s*\\!.*");                                    // line starts with !
     regex separator("^\\*\\*\\*\\*");                               // line starts with ****
-    regex atom_array("^\\s*(?:([A-Za-z]+)\\s+)+0.*");               // array of atomic symbols terminated by 0
+    regex atom_array("^\\s*([A-Za-z]+)\\s+0.*");               // array of atomic symbols terminated by 0
     regex shell("^\\s*(\\w+)\\s*(\\d+)\\s*(-?\\d+\\.\\d+)");        // Match beginning of contraction
     regex primitives1("^\\s*(-?\\d+\\.\\d+)\\s*(-?\\d+\\.\\d+).*");    // Match s, p, d, f, g, ... functions
     regex primitives2("^\\s*(-?\\d+\\.\\d+)\\s*(-?\\d+\\.\\d+)\\s*(-?\\d+\\.\\d+).*"); // match sp functions
@@ -136,32 +140,15 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
             }
             // Match: H    0
             // or:    H    O...     0
-            if (regex_match(line, what, atom_array, boost::match_extra)) {
+            if (regex_match(line, what, atom_array)) {
 //                cout << " matched a atom array line.\n";
-//                for(int i = 0; i < what.size(); ++i)
-//                    std::cout << "      $" << i << " = \"" << what[i] << "\"\n";
-//                std::cout << "   Captures:\n";
-//                for(int i = 0; i < what.size(); ++i)
-//                {
-//                    std::cout << "      $" << i << " = {";
-//                    for(int j = 0; j < what.captures(i).size(); ++j)
-//                    {
-//                        if(j)
-//                            std::cout << ", ";
-//                        else
-//                            std::cout << " ";
-//                        std::cout << "\"" << what.captures(i)[j] << "\"";
-//                    }
-//                    std::cout << " }\n";
-//                }
+//                cout << " what.captures(1)" << what[1].str() << "\n";
+
                 // Check the captures and see if this basis set is for the atom we need.
                 found = false;
-                for (int i=0; i < what.captures(1).size(); ++i) {
-                    if (iequals(molecule->label(atom), string(what.captures(1)[i].first, what.captures(1)[i].second)))
-                        found = true;
-                }
+                if (iequals(molecule->label(atom), what[1].str())) {
+                    found = true;
 
-                if (found) {
 //                    cout << "found\n";
 
                     // Read in the next line
@@ -306,7 +293,7 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
             }
         }
         if (found == false)
-            throw PSIEXCEPTION("Gaussian94BasisSetParser::parser: Unable to find the basis set.");
+            throw PSIEXCEPTION("Gaussian94BasisSetParser::parser: Unable to find the basis set for " + molecule->label(atom));
     }
 
     // Have the basis set object refresh its internal data.

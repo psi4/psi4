@@ -53,13 +53,13 @@ public:
     static boost::shared_ptr<Molecule> create_molecule_from_string(const std::string &geom);
     /// Assigns the value val to the variable labelled string in the list of geometry variables.
     /// Also calls update_geometry()
-    void set_variable(const std::string &str, double val) {geometryVariables_[str] = val; update_geometry();}
+    void set_variable(const std::string &str, double val);
     /// Checks to see if the variable str is in the list, sets it to val and returns
     /// true if it is, and returns false if not.
     double get_variable(const std::string &str);
     /// Checks to see if the variable str is in the list, returns
     /// true if it is, and returns false if not.
-    bool is_variable(const std::string &str) const { return geometryVariables_.count(str); }
+    bool is_variable(const std::string &str) const;
 
     /// Sets the geometry string
     void set_geometry_string(std::vector<std::string> strVec) { geometryString_ = strVec; }
