@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <vector>
 #include <string>
+#include <limits>
 
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>
@@ -50,7 +51,7 @@ namespace psi {
     boost::regex Molecule::atomSymbol_("([A-Z]{1,2})\\d*", boost::regbase::normal | boost::regbase::icase);
     boost::regex Molecule::variableDefinition_("\\s*(\\w+)\\s*=\\s*((-?\\d+\\.\\d+)|(-?\\d+\\.)|(-?\\.\\d+)|(-?\\d+)|(tda))\\s*", boost::regbase::normal | boost::regbase::icase);
     boost::regex Molecule::blankLine_("[\\s%]*", boost::regbase::normal | boost::regbase::icase);
-    boost::regex Molecule::commentLine_("\\s*%.*", boost::regbase::normal | boost::regbase::icase);
+    boost::regex Molecule::commentLine_("\\s*[#%].*", boost::regbase::normal | boost::regbase::icase);
     boost::regex Molecule::unitLabel_("\\s*((ang)|(angstrom)|(bohr)|(au)|(a\\.u\\.))\\s*", boost::regbase::normal | boost::regbase::icase);
     boost::regex Molecule::chargeAndMultiplicity_("\\s*(-?\\d+)\\s+(\\d+)\\s*", boost::regbase::normal | boost::regbase::icase);
 
@@ -107,6 +108,19 @@ namespace psi {
         }
     }
 
+    void Molecule::set_variable(const std::string &str, double val)
+    {
+        geometryVariables_[str] = val;
+
+        try {
+            update_geometry();
+        }
+        catch (...) {
+            // Update geometry might have added some atoms, delete them to be safe.
+            atoms_.clear();
+        }
+    }
+
     double Molecule::get_variable(const std::string &str)
     {
         if(geometryVariables_.count(str)){
@@ -114,6 +128,27 @@ namespace psi {
         }else{
             throw PSIEXCEPTION(str + " not known");
         }
+    }
+
+    bool Molecule::is_variable(const std::string &str) const
+    {
+        smatch reMatches;
+        std::vector<std::string> splitLine;
+
+        string neg = "-" + str;
+
+        std::vector<std::string>::const_iterator line = geometryString_.begin();
+        for(; line != geometryString_.end(); ++line){
+            boost::split(splitLine, *line, boost::is_any_of("\t ,"),token_compress_on);
+
+            vector<string>::iterator word = splitLine.begin();
+            for (; word != splitLine.end(); ++word) {
+                if (*word == str || *word == neg)
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     /**

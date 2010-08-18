@@ -43,6 +43,8 @@ namespace psi {
     #define WHEREAMI()
   #endif
 
+  class Molecule;
+
   class Process
   {
   public:
@@ -50,6 +52,7 @@ namespace psi {
       {
           std::map<std::string, std::string> environment_;
 
+          boost::shared_ptr<Molecule> molecule_;
       public:
           void init(char **envp);
 
@@ -57,7 +60,13 @@ namespace psi {
           std::string operator()(const std::string& key);
           const std::string& set(const std::string& key, const std::string& value);
 
-          double current_energy;
+          // Set active molecule
+          void set_molecule(boost::shared_ptr<Molecule> molecule);
+          // Return active molecule
+          boost::shared_ptr<Molecule> molecule() const;
+
+          /// Map containing current energies
+          std::map<std::string, double> globals;
       };
 
       class Arguments

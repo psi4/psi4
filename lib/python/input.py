@@ -21,13 +21,13 @@ def process_set_commands(matchobj):
         temp = re.sub(r'#.*', "", line)
         result.append(re.sub(r'^\s*()(\w+)\s+(.*)($|#.*)', process_set_command, temp))
 
-    if matchobj.group(1) != "":
+    if module != "":
         x = 'PsiMod.set_default_options_for_module("%s")' % (module.upper())
         result.insert(0, x)
         result.insert(1, 'PsiMod.set_option("NO_INPUT", True)')
 
     set_commands = spaces
-    set_commands += spaces.join(result)
+    set_commands += (spaces+"\n").join(result)
 
     return set_commands
 

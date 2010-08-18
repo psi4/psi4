@@ -274,6 +274,10 @@ double DFMP2::compute_energy()
         fflush(outfile); 
     } 
 
+    Process::environment.globals["CURRENT ENERGY"] = E_tot_;
+    Process::environment.globals["DF-MP2 ENERGY"] = E_tot_;
+    Process::environment.globals["SCS-DF-MP2 ENERGY"] = E_tot_scs_;
+
     return E_tot_;
 }
 double DFMP2::compute_E_core()

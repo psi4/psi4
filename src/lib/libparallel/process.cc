@@ -1,5 +1,5 @@
 #include <psi4-dec.h>
-
+#include <libmints/molecule.h>
 #include <boost/algorithm/string.hpp>
 
 using namespace std;
@@ -12,9 +12,6 @@ Process::Arguments Process::arguments;
 // Need to split each entry by the first '=', left side is key, right the value
 void Process::Environment::init(char **envp)
 {
-    // Initialize current energy
-    current_energy = 0.0;
-
     // First set some defaults:
     environment_["PSIDATADIR"] = INSTALLEDPSIDATADIR;
 
@@ -60,6 +57,16 @@ const string& Process::Environment::set(const std::string &key, const std::strin
     const string& old = operator()(key);
     environment_[key] = value;
     return old;
+}
+
+void Process::Environment::set_molecule(boost::shared_ptr<Molecule> molecule)
+{
+  molecule_ = molecule;
+}
+
+boost::shared_ptr<Molecule> Process::Environment::molecule() const
+{
+  return molecule_;
 }
 
 void Process::Arguments::init(int argc, char **argv)

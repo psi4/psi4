@@ -37,7 +37,10 @@ PsiReturnType scf(Options & options)
 
     // Compute the Hartree-Fock energy
     HFEnergy hf(options, psio, chkpt);
-    Process::environment.current_energy = hf.compute_energy();
+    double energy = hf.compute_energy();
+
+    Process::environment.globals["SCF ENERGY"] = energy;
+    Process::environment.globals["CURRENT ENERGY"] = energy;
 
     // Shut down psi.
     timer_done();

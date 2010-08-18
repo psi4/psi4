@@ -49,7 +49,7 @@ int py_psi_cscf()
 double py_psi_scf()
 {
     if (scf::scf(options) == Success) {
-        return Process::environment.current_energy;
+        return Process::environment.globals["CURRENT ENERGY"];
     }
     else
         return 0.0;
@@ -58,7 +58,7 @@ double py_psi_scf()
 double py_psi_dfmp2()
 {
     if (dfmp2::dfmp2(options) == Success) {
-        return Process::environment.current_energy;
+        return Process::environment.globals["CURRENT ENERGY"];
     }
     else
         return 0.0;
@@ -124,7 +124,14 @@ bool py_psi_set_option_array(std::string const & name, python::list values)
 
 void py_psi_set_active_molecule(shared_ptr<Molecule> molecule)
 {
-    options.set_molecule(molecule);
+    Process::environment.set_molecule(molecule);
+}
+
+double py_psi_get_variable(const std::string & key)
+{
+    string uppercase_key = key;
+    transform(uppercase_key.begin(), uppercase_key.end(), uppercase_key.begin(), ::toupper);
+    return Process::environment.globals[key];
 }
 
 BOOST_PYTHON_MODULE(PsiMod)
@@ -142,6 +149,8 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("set_option", py_psi_set_option_string);
     def("set_option", py_psi_set_option_int);
     def("set_option", py_psi_set_option_array);
+
+    def("get_variable", py_psi_get_variable);
 
     // modules
     def("input", py_psi_input);

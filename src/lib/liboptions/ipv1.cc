@@ -171,14 +171,4 @@ namespace psi {
     fprintf(outfile, "\n  ----------------------------------------------------------------------------\n");
     fprintf(outfile, "%s\n", list.c_str());
   }
-
-  void Options::set_molecule(boost::shared_ptr<Molecule> molecule)
-  {
-    molecule_ = molecule;
-  }
-
-  boost::shared_ptr<Molecule> Options::molecule() const
-  {
-    return molecule_;
-  }
 }

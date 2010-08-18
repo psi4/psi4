@@ -16,7 +16,10 @@
 
 namespace psi { namespace scf {
  
-class HFEnergy : public Wavefunction {
+class HFEnergy {
+    Options & options_;
+    boost::shared_ptr<PSIO> psio_;
+    boost::shared_ptr<Chkpt> chkpt_;
 public:
     HFEnergy(Options & options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
     virtual ~HFEnergy() {}
