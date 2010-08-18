@@ -1113,12 +1113,12 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
 
     // Prefactor
     double prefactor = 1.0;
-    if (sh1 == sh2)
-        prefactor *= 0.5;
-    if (sh3 == sh4)
-        prefactor *= 0.5;
-    if (sh1 == sh3 && sh2 == sh4 || sh1 == sh4 && sh2 == sh3)
-        prefactor *= 0.5;
+//    if (sh1 == sh2)
+//        prefactor *= 0.5;
+//    if (sh3 == sh4)
+//        prefactor *= 0.5;
+//    if (sh1 == sh3 && sh2 == sh4 || sh1 == sh4 && sh2 == sh3)
+//        prefactor *= 0.5;
 
     // compute intermediates
     double AB2 = 0.0;

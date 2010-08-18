@@ -35,10 +35,11 @@ const string& Process::Environment::operator()(const string& key) const
     // Search for the key:
     map<string, string>::const_iterator it = environment_.find(key);
 
-    if (it == environment_.end())
-        return string(); // Not found return empty string.
+    if (it == environment_.end()) {
+        return empty_;      // Not found return empty string.
+    }
     else
-        return it->second; // Found, return the value
+        return it->second;  // Found, return the value
 }
 
 string Process::Environment::operator()(const string& key)

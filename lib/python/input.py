@@ -27,7 +27,7 @@ def process_set_commands(matchobj):
         result.insert(1, 'PsiMod.set_option("NO_INPUT", True)')
 
     set_commands = spaces
-    set_commands += (spaces+"\n").join(result)
+    set_commands += (spaces).join(result)
 
     return set_commands
 
