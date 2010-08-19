@@ -20,6 +20,7 @@
 
 #include <boost/regex.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/trim.hpp>
 
 using namespace std;
 using namespace psi;
@@ -921,6 +922,8 @@ Molecule::create_molecule_from_string(const std::string &text)
 
     // For now, we can count the entries on the first line to determine the type
     std::vector<std::string> splitLine;
+    // Trim leading and trailing whitespace
+    boost::algorithm::trim(lines[0]);
     boost::split(splitLine, lines[0], boost::is_any_of("\t ,"),token_compress_on);
     if(splitLine.size() == 4){
         mol->set_geometry_format(Cartesian);
@@ -959,6 +962,8 @@ Molecule::update_geometry()
     if(geometryFormat_ == Cartesian){
         std::vector<std::string>::iterator line = geometryString_.begin();
         for(; line != geometryString_.end(); ++line){
+            // Trim leading and trailing whitespace
+            boost::algorithm::trim(*line);
             boost::split(splitLine, *line, boost::is_any_of("\t ,"),token_compress_on);
             if(splitLine.size() != 4){
                 throw PSIEXCEPTION("Incorrect number of entries in geometry specification :" + *line);
@@ -968,7 +973,7 @@ Molecule::update_geometry()
                 throw PSIEXCEPTION("Illegal atom symbol in geometry specification: " + splitLine[0]
                                    + " on line\n" + *(line));
             atomSym = boost::to_upper_copy(reMatches[1].str());
-            x = get_value(splitLine[1], *line) * conversionFactor;
+            x = get_value(splitLine[1], *line) * conversionFactor;  
             y = get_value(splitLine[2], *line) * conversionFactor;
             z = get_value(splitLine[3], *line) * conversionFactor;
             add_atom((int)zVals[atomSym], x, y, z, atomSym.c_str(), atomic_masses[(int)zVals[atomSym]]);
@@ -980,6 +985,8 @@ Molecule::update_geometry()
         int rTo, aTo, dTo; // The "anchor" atoms, used to define r, a, and d
         std::vector<std::string> atoms;
         for(; line != geometryString_.end(); ++line){
+            // Trim leading and trailing whitespace
+            boost::algorithm::trim(*line);
             boost::split(splitLine, *line, boost::is_any_of("\t ,"),token_compress_on);
             if(currentAtom == 0){
                 // This is the first line
