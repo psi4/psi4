@@ -347,13 +347,14 @@ void TwoBodyInt::pure_transform(int sh1, int sh2, int sh3, int sh4, int nchunk)
     for (int ichunk=0; ichunk < nchunk; ++ichunk) {
         // Compute the offset in source_, and target
         size_t sourcechunkoffset = ichunk * (nao1 * nao2 * nao3 * nao4);
-        size_t targetchunkoffset = ichunk * (nbf1 * nbf2 * nbf3 * nbf4);
+//        size_t targetchunkoffset = ichunk * (nbf1 * nbf2 * nbf3 * nbf4);
         double *source1, *target1;
         double *source2, *target2;
         double *source3, *target3;
         double *source4, *target4;
         double *source = source_+sourcechunkoffset;
-        double *target = target_+targetchunkoffset;
+//        double *target = target_+targetchunkoffset;
+        double *target = target_+sourcechunkoffset;
         double *tmpbuf = tformbuf_;
 
         int transform_index = 8*is_pure1 + 4*is_pure2 + 2*is_pure3 + is_pure4;
