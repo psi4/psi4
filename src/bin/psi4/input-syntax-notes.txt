@@ -1,6 +1,101 @@
 These are notes on the input format for PSI4.  Lori's original notes
 are below.  Newer notes are on top.
 
+C. David Sherrill and Lori Burns, 19 August 2010
+
+Thinking more about input parsing.  What we have have right now is
+something like this from Jet, based on the earlier notes below.
+
+molecule {
+O 0.0 0.0 0.0
+H 0.0 0.0 1.0
+H 0.0 1.0 0.0
+}
+
+set scf {
+#   GUESS   SAD
+    SCF_TYPE DF
+    PRINT 2
+    BASIS 3-21G
+    RI_BASIS_SCF STO-3G
+    DOCC [3, 0, 1, 1]
+}
+
+scf()
+
+set dfmp2 {
+    BASIS  3-21G
+    RI_BASIS_MP2 STO-3G
+}
+
+dfmp2()
+
+This is a good start but what I dislike about it is that it requires the
+options for each module to be set before calling the module (even if
+no options are changed), because that's where the call to set the
+default options goes.  Ideally, we would also eventually like to be
+able to set options directly by saying things like
+
+RI_BASIS_MP2 STO-3G
+
+without the set keyword, etc.
+
+What I would like to propose next is that we have each module do its own
+input parsing, like this:
+
+a) The parser scans the input and grabs user input options and puts them
+in some generic list; this list may be updated during the execution
+of the script.  The list can specify whether an option is in a "default"
+space (visible to any module having keywords belonging to the list)
+or whether they option belongs to a specific module.
+
+b) When a module is called, the current list of user options is passed to
+the module. The module constructs an Options object from this list.
+Options specified as specific to this module override any options that
+belong to the "default" scope.  Errors are thrown if values are invalid
+for the current module's options.
+
+c) The module then executes based on its constructed Options object.
+
+In the future, one could add a "validation mode" processing of the input
+file / script, where the script is run through but each module is just
+called in validation mode (where the Options object is constructed
+and checked, and nothing else is executed, and zeroes are returned
+for any values expected by the script).
+
+If we want to get rid of the "set" command later, we could add a routine in
+the driver which calls all the modules and gets them to return a list
+of all their allowed keywords.  The user input is then preprocessed
+and all the keywords are converted into "set keyword" calls before the
+script is executed.
+
+Other notes:
+
+Some users might not be ready to carefully indent their loops as required
+by python.  Alternatively, we might allow syntax like this (which could be
+converted to python by the parser):
+
+for dist in array: {
+  code goes here, automatically indented properly by parser
+  etc.
+  (could have the colon above, or not)
+}
+
+GT users suggest that we have a special way to signify the execution
+of modules, e.g.,
+
+   > sp ccsd(t)
+   > oeprop()
+
+or 
+   run sp ccsd(t)
+   run oeprop()
+
+or "psi4", "exec", etc.  (However, "run" and "exec" might also be good
+keywords to specify system commands in linux called from the script).
+
+****
+
 C. David Sherrill, 7 August 2010
 
 Here's the current basic idea which has evolved from conversations with
