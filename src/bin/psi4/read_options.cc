@@ -165,6 +165,10 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
       /*- (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
       options.add_int("MULTP", 0);
   }
+  else if (name == "MINTS") {
+      /*- primary basis set -*/
+      options.add_str("BASIS","");
+  }
   else if (name == "CINTS") {
     ip_cwk_add(const_cast<char*>(":CINTS"));
     /*- The execution mode of cints, these were the command line arguments you could send -*/

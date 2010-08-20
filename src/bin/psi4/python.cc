@@ -20,6 +20,7 @@ using namespace std;
 namespace psi {
     namespace input    { PsiReturnType input(Options &); }
     namespace cints    { PsiReturnType cints(Options &); }
+    namespace mints    { PsiReturnType mints(Options &); }
     namespace cscf     { PsiReturnType cscf(Options &);  }
     namespace scf      { PsiReturnType scf(Options &);   }
     namespace dfmp2    { PsiReturnType dfmp2(Options &); }
@@ -34,6 +35,11 @@ namespace psi {
 int py_psi_input()
 {
     return input::input(options);
+}
+
+int py_psi_mints()
+{
+    return mints::mints(options);
 }
 
 int py_psi_cints()
@@ -155,6 +161,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     // modules
     def("input", py_psi_input);
     def("cints", py_psi_cints);
+    def("mints", py_psi_mints);
     def("cscf",  py_psi_cscf);
     def("scf",   py_psi_scf);
     def("dfmp2", py_psi_dfmp2);

@@ -27,8 +27,6 @@ PsiReturnType dfmp2(Options & options)
 {
     tstart();
     
-    Wavefunction::initialize_singletons();
-    
     shared_ptr<PSIO> psio(new PSIO);
     psiopp_ipv1_config(psio);
     
