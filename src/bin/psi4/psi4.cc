@@ -15,6 +15,7 @@
 #include <libciomr/libciomr.h>
 #include <liboptions/liboptions.h>
 #include <libparallel/parallel.h>
+#include <libmints/wavefunction.h>
 #include "script.h"
 #include <physconst.h>
 #include <psifiles.h>
@@ -61,6 +62,8 @@ int main(int argc, char **argv, char **envp)
     // Initialize local communicator
     Communicator::world = shared_ptr<Communicator>(new LocalCommunicator);
 #endif
+
+    Wavefunction::initialize_singletons();
 
     // Create the scripting object
     Script::language = shared_ptr<Script>(new Python);

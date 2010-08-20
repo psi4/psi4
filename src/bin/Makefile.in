@@ -3,7 +3,7 @@
 
 subdirs = \
 transqt2 cscf dcft input3 cints ccenergy cctriples ccsort scf lmp2 mp2 optking mcscf psimrcc \
-df-mp2 sapt cchbar cclambda ccdensity oeprop transqt psi4
+df-mp2 sapt cchbar cclambda ccdensity oeprop transqt mints psi4
 
 all: default
 
