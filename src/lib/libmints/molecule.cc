@@ -239,13 +239,15 @@ Molecule::Molecule():
     charge_(0),
     geometryFormat_(None)
 {
-
+    std::string def_name("default");
+    name_ = def_name; 
 }
 
 Molecule::Molecule(const Molecule& other)
 {
     atoms_ = other.atoms_;
     nirreps_ = other.nirreps_;
+    name_ = other.name_;
 }
 
 Molecule::~Molecule()
