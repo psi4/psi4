@@ -49,6 +49,11 @@ SAPT0::~SAPT0()
 }
 double SAPT0::compute_energy()
 {
+    if (params_.lr_ints) {
+      lr_ints();
+      return 0.0;
+    }
+
     if (!params_.df_restart) {
       ao_df_ints();
     } else {

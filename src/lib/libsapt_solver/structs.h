@@ -9,6 +9,7 @@ struct params  {
   int logfile;
   FILE* logfilename;
 
+  bool lr_ints;
   int print;
 
   int diisvec;

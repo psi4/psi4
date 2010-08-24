@@ -2,9 +2,7 @@
  *  SAPT.CC 
  *
  */
-//#define HAVE_MKL 1
-
-#ifdef HAVEMKL
+#ifdef HAVE_MKL
 #include <mkl.h>
 #endif
 
@@ -70,7 +68,10 @@ void SAPT::get_ribasis()
 }
 void SAPT::get_params()
 {
-    //Files/restarts 
+    //LR Ints?
+    params_.lr_ints = options_.get_bool("LR_INTS");
+    
+    //Files restarts 
     params_.df_restart = options_.get_bool("DF_RESTART");
     params_.t2_restart = options_.get_bool("T2_RESTART");
     params_.logfile = options_.get_bool("LOGFILE");

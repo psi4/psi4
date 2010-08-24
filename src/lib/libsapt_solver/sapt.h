@@ -41,6 +41,7 @@ public:
     void oetrans();
     void strans();
     void vtrans();
+    void lr_ints();
     double** get_DF_ints(int filenum, char* label, int length);
     void zero_disk(int a, char* b, char* c, int, int);
     double CHF(int, char *, char *, char *, double **, double **, double *, int, int);
