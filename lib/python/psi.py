@@ -56,10 +56,11 @@ dynamic_variable_bind(PsiMod.Molecule) #pass class type, not class instance
 #   H  0.0 1.0 0.0
 #   H  0.0 0.0 0.0
 #
-def geometry(geom, reorient = True, shiftToCOM = True):
+def geometry(geom, reorient = True, shiftToCOM = True, name = "default"):
     # Create a Molecule object
     global molecule
     molecule = PsiMod.Molecule.create_molecule_from_string(geom)
+    molecule.set_name(name)
 
     # If requested, shift molecule to center of mass
     if shiftToCOM == True:

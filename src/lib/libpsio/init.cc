@@ -8,6 +8,7 @@
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 #include <boost/shared_ptr.hpp>
+#include <psi4-dec.h>
 
 namespace psi {
 

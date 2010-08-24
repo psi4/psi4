@@ -117,6 +117,11 @@ namespace psi {
 
       /// Upon catastrophic failure, the library will exit() with this code. The default is 1, but can be overridden.
       static int _error_exit_code_;
+      
+      /// Current namespace (for PREFIX.NAMESPACE.UNIT numbering)
+      static std::string current_namespace_; 
+      /// Set the current namespace (for PREFIX.NAMESPACE.UNIT file numbering) 
+      static void set_current_namespace(const std::string &_ns) { current_namespace_ = _ns; }
 
       /// Return the global shared object
       static shared_ptr<PSIO> shared_object() { return _default_psio_lib_; }
@@ -135,7 +140,6 @@ namespace psi {
       
       /// Library state variable
       int state_;
-
       /// grab the filename of unit and strdup into name.
       void get_filename(unsigned int unit, char **name);
       /// return the number of volumes over which unit will be striped

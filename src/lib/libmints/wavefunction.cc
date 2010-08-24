@@ -47,12 +47,6 @@ void Wavefunction::common_init()
 {
     Wavefunction::initialize_singletons();
 
-    // Was a chkpt object sent to us?
-    // if (chkpt_ == 0) {
-    //     // No, create a checkpoint object
-    //     chkpt_ = new Chkpt(psio_, PSIO_OPEN_OLD);
-    // }
-
     if (options_.get_bool("NO_INPUT") == false) {
         // Initialize the matrix factory
         factory_.init_with_chkpt(chkpt_);
@@ -66,7 +60,6 @@ void Wavefunction::common_init()
     else {
         // Take the molecule from the environment
         molecule_ = Process::environment.molecule();
-
         shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
         basisset_ = BasisSet::construct(parser, molecule_, options_.get_str("BASIS"));
 

@@ -35,13 +35,31 @@ def process_molecule_command(matchobj):
     spaces = matchobj.group(1)
     name = matchobj.group(2)
     geometry = matchobj.group(3)
+    reorient = "True"
+    com = "True"
     molecule = spaces
     if name != "":
         molecule += '%s = ' % (name)
 
-    molecule += 'geometry("""%s""")' % (geometry)
+    molecule += 'geometry("""%s"""' % (geometry)
+    molecule += ',%s' % (reorient)
+    molecule += ',%s' % (com)
+    if name != "":
+        molecule += ',"%s"' % (name)
+
+    molecule += ")\n"
+    molecule += 'PsiMod.set_namespace("%s")' % (name)
 
     return molecule
+
+def process_print_command(matchobj):
+    spaces = matchobj.group(1)
+    string = matchobj.group(2)
+
+    printer = "\npsi_string_print = %s\n" % string
+    printer += "PsiMod.print_out(psi_string_print)\n"   
+
+    return printer
 
 def process_input(raw_input):
     # Process all "set name? { ... }"
@@ -55,6 +73,10 @@ def process_input(raw_input):
     # Process "molecule name? { ... }"
     molecule = re.compile(r'^(\s*?)molecule\s*(\w*?)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(molecule, process_molecule_command, temp)
+
+    # Process "print" and transform it to "PsiMod.print_out()"
+    print_string = re.compile(r'(\s*?)print\s+(.*)',re.IGNORECASE)
+    temp = re.sub(print_string,process_print_command,temp)
 
     temp = "from PsiMod import *\nfrom psi import *\n" + temp
 

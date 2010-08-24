@@ -82,6 +82,8 @@ public:
 
     void update_geometry();
 protected:
+    /// Molecule (or fragment) name
+    std::string name_;
     ///A regex match object to receive captured expressions in regex searches
     boost::smatch reMatches_;
     /// Atom info vector (no knowledge of dummy atoms)
@@ -156,6 +158,11 @@ public:
     void add_atom(int Z, double x, double y, double z,
                   const char * = 0, double mass = 0.0,
                   int have_charge = 0, double charge = 0.0);
+
+    /// Get molecule name
+    const std::string get_name() const {return name_; }
+    /// Set molecule name
+    void set_name(const std::string &_name) { name_ = _name; }
 
     /// Number of atoms
     int natom() const { return atoms_.size(); }

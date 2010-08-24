@@ -139,6 +139,10 @@ double py_psi_get_variable(const std::string & key)
     transform(uppercase_key.begin(), uppercase_key.end(), uppercase_key.begin(), ::toupper);
     return Process::environment.globals[key];
 }
+void py_psi_set_namespace(const std::string & name)
+{
+    PSIO::set_current_namespace(name);
+}
 
 BOOST_PYTHON_MODULE(PsiMod)
 {
@@ -156,6 +160,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("set_option", py_psi_set_option_int);
     def("set_option", py_psi_set_option_array);
 
+    def("set_namespace", py_psi_set_namespace);
     def("get_variable", py_psi_get_variable);
 
     // modules
@@ -255,6 +260,7 @@ BOOST_PYTHON_MODULE(PsiMod)
         def("set_symbol", &PointGroup::set_symbol);
 
     class_<Molecule, shared_ptr<Molecule> >("Molecule").
+        def("set_name", &Molecule::set_name).
         def("init_with_checkpoint", &Molecule::init_with_chkpt).
         def("save_to_checkpoint", &Molecule::save_to_chkpt).
         def("init_with_io", &Molecule::init_with_psio).
