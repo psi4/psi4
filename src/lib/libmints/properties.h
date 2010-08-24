@@ -2,12 +2,12 @@
 #define _psi_src_lib_libmints_properties_h_
 
 #include <boost/shared_ptr.hpp>
+#include <libmints/basispoints.h>
 
 #define RKS_GGA_TESTBED_SIZE_  9
 namespace psi {
 
     class BasisSet;
-    class BasisPoints;
     class Matrix;
     class SimpleMatrix;
     class Vector3;

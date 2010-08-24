@@ -32,14 +32,18 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
 
   options.clear();
 
+  /*- Not using input module -*/
   options.add_bool("NO_INPUT", false);
-  options.add_str_i("XYZ_FILE", "mol.xyz");
+  /*- Path to basis path -*/
   options.add_str_i("BASIS_PATH", "");
-
-  if (name == "PSI4") {
-    options.add_str("UNITS", "ANGSTROMS", "BOHR AU ANGSTROMS ANGSTROM");
-  }
-  else if (name == "INPUT") {
+  /*- units to use (global) -*/
+  options.add_str("UNITS", "ANGSTROMS", "BOHR AU ANGSTROMS ANG ANGSTROM");
+  /*- The molecular charge -*/
+  options.add_int("CHARGE", 0);
+  /*- (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
+  options.add_int("MULTP", 1);
+  
+  if (name == "INPUT"|| options.read_globals()) {
     ip_cwk_add(const_cast<char*>(":INPUT"));
     /*- The units used for the geometry -*/
     options.add_str("UNITS", "ANGSTROMS", "BOHR AU ANGSTROMS ANGSTROM");
@@ -49,7 +53,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_bool("KEEP_CHKPT",false);
     /*- Read MOs from the checkpoint file and project onto new basis -*/
     options.add_bool("CHKPT_MOS",false);
-  // these may be obseleted in psi4
+    // these may be obseleted in psi4
     /*- Read geometry from checkpoint file (in findif calculations) -*/
     options.add_bool("CHKPT_GEOM",false);
     /*- Don't project MOs but simply keep them -*/
@@ -93,7 +97,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     /* The number of virtual orbitals to freeze in correlated computations -*/
     options.add_int("FREEZE_VIRT",0);
   }
-  else if (name == "SAPT") {
+  else if (name == "SAPT"|| options.read_globals()) {
     ip_cwk_add(":SAPT");
     /*- The level of theory for SAPT -*/
     options.add_str("SAPT_LEVEL","SAPT0","SAPT0");      
@@ -109,6 +113,8 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_int("MAXITER",50);  
     /*- DIIS vecs -*/
     options.add_int("DIISVECS",5);  
+    /*- Compute linear response integrals? -*/
+    options.add_bool("LR_INTS",false);  
     /*- Use a restart file? -*/
     options.add_bool("DF_RESTART",false);  
     /*- Use a restart file? -*/
@@ -119,7 +125,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_double("SCHWARZ_CUTOFF",1.0E-12);  
 
   }
-  else if(name == "DCFT") {
+  else if(name == "DCFT"|| options.read_globals()) {
       ip_cwk_add(":DCFT");
       /*- The amount of information printed
           to the output file -*/
@@ -165,11 +171,11 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
       /*- (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
       options.add_int("MULTP", 0);
   }
-  else if (name == "MINTS") {
+  else if (name == "MINTS"|| options.read_globals()) {
       /*- primary basis set -*/
       options.add_str("BASIS","");
   }
-  else if (name == "CINTS") {
+  else if (name == "CINTS"|| options.read_globals()) {
     ip_cwk_add(const_cast<char*>(":CINTS"));
     /*- The execution mode of cints, these were the command line arguments you could send -*/
     options.add_str("MODE", "", "FOCK OEINTS TEINTS DERIV1 DERIV1_INTS DERIV2 OEPROP MP2 R12INTS MP2R12 MKPT2 CC_BT2 GIAO_DERIV");
@@ -200,7 +206,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_int("ERI_FILE", PSIF_SO_TEI);
 
   }
-  else if (name == "SCF") {
+  else if (name == "SCF"|| options.read_globals()) {
     /*- The DFT grid specification, such as SG1 -*/
     options.add_str("GRID_STRING","","SG1");
     /*- The number of radial points in the DFT grid -*/
@@ -363,7 +369,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     /*- SAD Guess Cholesky Cutoff (for eliminating redundancies) -*/
     options.add_double("SAD_CHOL_CUTOFF", 1E-7);
   }
-  else if (name == "MP2") {
+  else if (name == "MP2"|| options.read_globals()) {
     options.add_str("WFN", "");
     options.add_str("REFERENECE", "RHF");
     options.add_str("JOBTYPE", "SP");
@@ -376,7 +382,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_double("SCALE_OS", 6.0/5.0);
     options.add_double("SCALE_SS", 1.0/3.0);
   }
-  else if(name == "TRANSQT2") {
+  else if(name == "TRANSQT2"|| options.read_globals()) {
     options.add_str("WFN", "");
     options.add_str("REFERENCE","RHF");
     options.add_str("DERTYPE", "NONE");
@@ -387,7 +393,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_str("AO_BASIS", "NONE");
     options.add_bool("DELETE_TEI", true);
   }
-  else if(name == "TRANSQT") {
+  else if(name == "TRANSQT"|| options.read_globals()) {
     options.add_int("PRINT_LVL", 1);
     options.add_str("REFERENCE","RHF");
     options.add_str("MODE", "TO_MO", "TO_MO TO_AO");
@@ -448,11 +454,11 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add("SOCC", new ArrayType());
 
   }
-  else if(name == "CUSP"){
+  else if(name == "CUSP"|| options.read_globals()){
     options.add("FROZEN_DOCC", new ArrayType());
     options.add("FROZEN_UOCC", new ArrayType());
   }
-  else if(name == "CCSORT") {
+  else if(name == "CCSORT"|| options.read_globals()) {
     options.add_str("WFN", "");
     options.add_str("REFERENCE", "RHF");
     options.add_str("DERTYPE", "NONE");
@@ -479,13 +485,13 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_bool("LOCAL", false);
     options.add("OMEGA", new ArrayType());
   }
-  else if(name == "CCTRIPLES") {
+  else if(name == "CCTRIPLES"|| options.read_globals()) {
     options.add_str("WFN", "");
     options.add_int("NTHREADS",1);
     options.add_str("REFERENCE","RHF");
     options.add_str("DERTYPE","NONE");
   }
-else if(name == "CCDENSITY") {
+  else if(name == "CCDENSITY"|| options.read_globals()) {
     options.add_str("WFN", "SCF");
     options.add_str("REFERENCE","RHF");
     options.add_str("DERTYPE","NONE");
@@ -501,7 +507,7 @@ else if(name == "CCDENSITY") {
     options.add_int("PROP_SYM", 0);
     options.add_int("PROP_ROOT", 0);
   }
-  else if(name == "CCLAMBDA") {
+  else if(name == "CCLAMBDA"|| options.read_globals()) {
     options.add_str("WFN","SCF");
     options.add_int("CONVERGENCE",7);
     options.add_bool("RESTART",false);
@@ -528,13 +534,13 @@ else if(name == "CCDENSITY") {
     options.add_int("PROP_ROOT",1);
     options.add_int("MAXITER",50);
   }
-  else if(name == "CLAG") {
+  else if(name == "CLAG"|| options.read_globals()) {
     options.add_bool("WRITE_CAS_FILES",0);
     options.add_str("DERTYPE","NONE");
     options.add_str("WFN","NONE");
     options.add_int("ROOT",1);
   }
-  else if(name == "STABLE") {
+  else if(name == "STABLE"|| options.read_globals()) {
     options.add_int("PRINT",1);
     options.add_int("CACHELEV",2);
     options.add_str("REFERENCE",0);
@@ -543,7 +549,7 @@ else if(name == "CCDENSITY") {
     options.add_int("ROTATION_METHOD",0);
     options.add_double("SCALE",0.5);
   }
-  else if(name == "OEPROP") {
+  else if(name == "OEPROP"|| options.read_globals()) {
     options.add_int("NUM_ROOTS",1);
     options.add_int("ROOT",1);
     options.add_int("GRID",0);
@@ -587,7 +593,7 @@ else if(name == "CCDENSITY") {
     options.add("DOCC", new ArrayType());
     options.add("SOCC", new ArrayType());
   }
-  else if(name == "CCHBAR") {
+  else if(name == "CCHBAR"|| options.read_globals()) {
     options.add_bool("TAMPLITUDE",false);
     options.add_int("CACHELEV",2);
     options.add_int("PRINT",0);
@@ -596,7 +602,7 @@ else if(name == "CCDENSITY") {
     options.add_bool("WABEI_LOWDISK", false);
     options.add_str("EOM_REFERENCE","RHF");
   }
-  else if(name == "CCRESPONSE") {
+  else if(name == "CCRESPONSE"|| options.read_globals()) {
     options.add_str("WFN", "SCF");
     options.add_int("PRINT",1);
     options.add_int("CACHELEV",2);
@@ -623,7 +629,7 @@ else if(name == "CCDENSITY") {
     options.add_bool("LINEAR",0);
     options.add("OMEGA",new ArrayType());
   }
-  else if(name == "MVO") {
+  else if(name == "MVO"|| options.read_globals()) {
    options.add_str("WFN","CCSD");
    options.add_int("FZC_FILE", PSIF_OEI);
    options.add_bool("PRINT_MOS",false);
@@ -645,13 +651,13 @@ else if(name == "CCDENSITY") {
    options.add("SOCC", new ArrayType());
    options.add("DOCC_VIRT", new ArrayType());
   }
-  else if(name == "RESPONSE"){
+  else if(name == "RESPONSE"|| options.read_globals()){
     options.add_int("PRINT", 1);
     options.add_str("REFERENCE", "RHF");
     options.add("OMEGA", new ArrayType());
     options.add_str("PROPERTY","POLARIZABILITY");
   }
-  else if(name == "MCSCF") {
+  else if(name == "MCSCF"|| options.read_globals()) {
     /*- The molecular charge -*/
     options.add_int("CHARGE", 0);
     /*- (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
@@ -685,10 +691,10 @@ else if(name == "CCDENSITY") {
     options.add_str("REFERENCE","RHF","RHF ROHF UHF TWOCON MCSCF GENERAL");
     options.add_str("WFN_SYM","1","A AG AU AP APP A1 A2 B BG BU B1 B2 B3 B1G B2G B3G B1U B2U B3U 0 1 2 3 4 5 6 7 8");
   }
-  else if(name == "EXTREMA") {
+  else if(name == "EXTREMA"|| options.read_globals()) {
     options.add_str("COORDINATES","foo");
   }
-  else if(name == "CCENERGY") {
+  else if(name == "CCENERGY"|| options.read_globals()) {
     options.add_bool("NEWTRIPS", 1);
     options.add_str("WFN", "NONE", "CCSD CCSD_T EOM_CCSD LEOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
     options.add_str("REFERENCE", "RHF");
@@ -730,7 +736,7 @@ else if(name == "CCDENSITY") {
     options.add_double("CC_SCALE_OS", 1.27);
     options.add_double("CC_SCALE_SS",1.13);
   }
-  else if(name == "CIS") {
+  else if(name == "CIS"|| options.read_globals()) {
     options.add_str("WFN", "CIS", "CCSD CCSD_T EOM_CCSD CIS");
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
     options.add_double("LOCAL_AMP_PRINT_CUTOFF", 0.60);
@@ -747,7 +753,7 @@ else if(name == "CCDENSITY") {
     options.add("DOMAINS", new ArrayType());
     options.add_bool("DOMAIN_PRINT", 0);
   }
-  else if(name == "LMP2") {
+  else if(name == "LMP2"|| options.read_globals()) {
     /*- The wavefunction desired -*/
     options.add_str("RI_BASIS_MP2", "NONE");
     options.read_ipv1();
@@ -777,7 +783,7 @@ else if(name == "CCDENSITY") {
     options.add_bool("SCREEN_INTS", false);
     options.add_int("SCHWARTZ_TOL", 12);
    }
-  else if(name=="DFMP2") {
+  else if(name=="DFMP2"|| options.read_globals()) {
     //options.add_str("WFN", "RI-MP2");
     /*- RI Basis, needed by Python -*/
     options.add_str("RI_BASIS_MP2","NONE");
@@ -814,7 +820,7 @@ else if(name == "CCDENSITY") {
     /*- -Log10 of the density convergence criterion -*/
     options.add_int("D_CONVERGE", 8);
   }
-  else if(name == "PSIMRCC") {
+  else if(name == "PSIMRCC"|| options.read_globals()) {
     options.add_int("CORR_CHARGE",0);
     options.add_int("DEBUG",0);
     options.add_int("DAMPING_FACTOR",0);
@@ -859,7 +865,7 @@ else if(name == "CCDENSITY") {
     options.add_str("TRIPLES_ALGORITHM","RESTRICTED","SPIN_ADAPTED RESTRICTED UNRESTRICTED");
     options.add_str("MP2_CCSD_METHOD","II","I IA II");
   }
-  else if(name == "OPTKING") {
+  else if(name == "OPTKING"|| options.read_globals()) {
     /*- Maximum number of permitted steps in geometry optimization -*/
     options.add_int("NOPT", 40);
     options.add_bool("NO_LINE_SEARCH", true); // whether to prevent any line searches; true is not yet implemented in psi4 

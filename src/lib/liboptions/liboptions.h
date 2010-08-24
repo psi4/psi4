@@ -605,6 +605,7 @@ namespace psi {
 
   class Options
   {
+    bool globals_;
     std::map<std::string, Data> keyvals_;
     typedef std::map<std::string, Data>::iterator iterator;
     typedef std::map<std::string, Data>::const_iterator const_iterator;
@@ -620,6 +621,9 @@ namespace psi {
       keyvals_ = rhs.keyvals_;
       return *this;
     }
+
+    bool read_globals() const { return globals_; }
+    void set_read_globals(bool _b) { globals_ = _b; }
 
     void to_upper(std::string& str) {
       std::transform(str.begin(), str.end(), str.begin(), ::toupper);
