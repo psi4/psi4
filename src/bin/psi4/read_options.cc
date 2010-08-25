@@ -123,6 +123,8 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_bool("LOGFILE",false);
     /*- Schwarz cutoff -*/
     options.add_double("SCHWARZ_CUTOFF",1.0E-12);
+    /*- Memory safety -*/
+    options.add_double("SAPT_MEM_SAFETY",0.9);  
 
   }
   if(name == "DCFT"|| options.read_globals()) {

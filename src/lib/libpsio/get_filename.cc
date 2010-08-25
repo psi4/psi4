@@ -12,12 +12,11 @@
 
 namespace psi {
 
-std::string PSIO::current_namespace_;
-
 void PSIO::get_filename(unsigned int unit, char **name) {
   std::string kval;
   std::string module_name = module.gprgid();
   std::string dot("."); 
+
   std::string ns = (current_namespace_ == "") ? "" : dot + current_namespace_;
   kval = filecfg_kwd(module_name.c_str(), "NAME", unit);
   //printf("File namespace is %s\n",(current_namespace_).c_str());

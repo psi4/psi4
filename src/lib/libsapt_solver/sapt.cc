@@ -89,6 +89,7 @@ void SAPT::get_params()
 
     //Schwarz cutoff
     params_.schwarz = options_.get_double("SCHWARZ_CUTOFF");
+    params_.mem_safety = options_.get_double("SAPT_MEM_SAFETY");
 }
 void SAPT::get_calc_info()
 {

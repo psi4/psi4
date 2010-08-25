@@ -172,10 +172,6 @@ double py_psi_get_variable(const std::string & key)
     transform(uppercase_key.begin(), uppercase_key.end(), uppercase_key.begin(), ::toupper);
     return Process::environment.globals[key];
 }
-void py_psi_set_namespace(const std::string & name)
-{
-    PSIO::set_current_namespace(name);
-}
 
 BOOST_PYTHON_MODULE(PsiMod)
 {
@@ -194,7 +190,6 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("set_option", py_psi_set_option_int);
     def("set_option", py_psi_set_option_array);
 
-    def("set_namespace", py_psi_set_namespace);
 
     def("set_global_option", py_psi_set_global_option_string);
     def("set_global_option", py_psi_set_global_option_int);
@@ -221,7 +216,10 @@ BOOST_PYTHON_MODULE(PsiMod)
         def( "tocprint", &PSIO::tocprint ).
         def( "tocwrite", &PSIO::tocwrite ).
         def( "shared_object", &PSIO::shared_object).
-        staticmethod("shared_object");
+        staticmethod("shared_object").
+        def( "set_current_namespace", &PSIO::set_current_namespace).
+        def( "set_default_namespace", &PSIO::set_default_namespace).
+        staticmethod("set_default_namespace");
 
     class_<Chkpt, shared_ptr<Chkpt> >( "Checkpoint", init<PSIO*, int>() ).
         add_property( "enuc", &Chkpt::rd_enuc, &Chkpt::wt_enuc).

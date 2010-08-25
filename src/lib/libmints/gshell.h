@@ -2,6 +2,7 @@
 #define _psi_src_lib_libmints_gshell_h_
 
 #include <cstdio>
+#include <libmints/vector3.h>
 
 namespace psi {
 

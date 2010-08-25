@@ -45,5 +45,4 @@ edis = (2*ear-ear2)*627.51
 edis2 = 2*edis
 
 print 'Dissociation energy = %f kcal*mol^-1\n' % edis
-print '2x Dissociation energy = %f kcal*mol^-1\n' % edis2
 
