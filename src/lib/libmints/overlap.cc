@@ -356,3 +356,9 @@ void OverlapInt::compute_pair_deriv2(shared_ptr<GaussianShell> s1, shared_ptr<Ga
     // Spherical harmonic transformation
     // Wrapped up in the AO to SO transformation
 }
+
+void OverlapInt::compute_shell_deriv2(int sh1, int sh2)
+{
+    compute_pair_deriv2(bs1_->shell(sh1), bs2_->shell(sh2));
+}
+
