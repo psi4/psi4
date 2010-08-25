@@ -18,8 +18,6 @@ namespace lmp2 {
 
 PsiReturnType lmp2(Options &options) {
 
-    // testing svn updated with local modifications
-
     shared_ptr<PSIO> psio_obj(new PSIO);
     psiopp_ipv1_config(psio_obj);
     shared_ptr<Chkpt> chkpt_obj(new Chkpt(psio_obj, PSIO_OPEN_OLD));
