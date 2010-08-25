@@ -21,6 +21,7 @@
 #include <boost/regex.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/python.hpp>
 
 using namespace std;
 using namespace psi;
@@ -54,7 +55,8 @@ namespace psi {
     boost::regex Molecule::blankLine_("[\\s%]*", boost::regbase::normal | boost::regbase::icase);
     boost::regex Molecule::commentLine_("\\s*[#%].*", boost::regbase::normal | boost::regbase::icase);
     boost::regex Molecule::unitLabel_("\\s*((ang)|(angstrom)|(bohr)|(au)|(a\\.u\\.))\\s*", boost::regbase::normal | boost::regbase::icase);
-    boost::regex Molecule::chargeAndMultiplicity_("\\s*(-?\\d+)\\s+(\\d+)\\s*", boost::regbase::normal | boost::regbase::icase);
+    boost::regex Molecule::chargeAndMultiplicity_("\\s*(-?\\d+)\\s+(\\d+)\\s*", boost::regbase::normal);
+    boost::regex Molecule::fragmentMarker_("\\s*--\\s*", boost::regbase::normal);
 
     /**
      * Interprets a string as an integer, throwing if it's unsuccesful.
@@ -236,7 +238,7 @@ Molecule::Molecule():
     equiv_(0),
     atom_to_unique_(0),
     multiplicity_(1),
-    charge_(0),
+    molecularCharge_(0),
     geometryFormat_(None)
 {
     std::string def_name("default");
@@ -274,8 +276,7 @@ void Molecule::clear()
 }
 
 void Molecule::add_atom(int Z, double x, double y, double z,
-                        const char *label, double mass,
-                        int have_charge, double charge)
+                        const char *label, double mass, double charge)
 {
     atom_info info;
 
@@ -284,15 +285,11 @@ void Molecule::add_atom(int Z, double x, double y, double z,
     info.z = z;
     info.Z = Z;
     info.charge = charge;
-    if (label != NULL)
-        info.label = label;
-    else
-        info.label = "Gh";
+    info.label = label;
     info.mass = mass;
 
-    // Will need to be modified to handle dummy atoms. Dummies go to full_atoms_.
-    // Ghosts need to go to both.
-    atoms_.push_back(info);
+    // Dummies go to full_atoms_, ghosts need to go to both.
+    if(label != "X") atoms_.push_back(info);
     full_atoms_.push_back(info);
 }
 
@@ -916,12 +913,57 @@ Molecule::create_molecule_from_string(const std::string &text)
             }
             lines.erase(lines.begin() + lineNumber);
         }else if(regex_match(lines[lineNumber], reMatches, chargeAndMultiplicity_)){
-            // A charge/multiplicity specifier
-            mol->set_charge(str_to_int(reMatches[1]));
-            mol->set_multiplicity(str_to_int(reMatches[2]));
-            lines.erase(lines.begin() + lineNumber);
+            if(lineNumber && !regex_match(lines[lineNumber-1], reMatches, fragmentMarker_)){
+                // As long as this does not follow a "--", it's a global charge/multiplicity
+                // specifier, so we process it, then nuke it
+                mol->set_molecular_charge(str_to_int(reMatches[1]));
+                mol->set_multiplicity(str_to_int(reMatches[2]));
+                lines.erase(lines.begin() + lineNumber);
+            }
         }
     }
+
+    // Now go through the rest of the lines looking for fragment markers
+    unsigned int firstAtom  = 0;
+    mol->fragmentMultiplicities_.push_back(mol->multiplicity_);
+    mol->fragmentCharges_.push_back(mol->molecularCharge_);
+    unsigned int atomCount = 0;
+    for(unsigned int lineNumber = 0; lineNumber < lines.size(); ++lineNumber){
+        if(regex_match(lines[lineNumber], reMatches, fragmentMarker_)){
+            // Check that there are more lines remaining
+            if(lineNumber == lines.size() - 1)
+                throw PSIEXCEPTION("Nothing specified after the final \"--\" in geometry");
+            // Now we process the atom markers
+            mol->fragments_.push_back(std::make_pair(firstAtom, lineNumber));
+            firstAtom = lineNumber;
+            // Figure out how to handle the multiplicity
+            if(regex_match(lines[lineNumber+1], reMatches, chargeAndMultiplicity_)){
+                // The user specified a charge/multiplicity for this fragment
+                mol->fragmentCharges_.push_back(str_to_int(reMatches[1]));
+                mol->fragmentMultiplicities_.push_back(str_to_int(reMatches[2]));
+                // Don't forget to skip over the charge multiplicity line..
+                ++lineNumber;
+            }else{
+                // The user didn't give us charge/multiplicity - use the molecule default
+                mol->fragmentCharges_.push_back(mol->molecularCharge_);
+                mol->fragmentMultiplicities_.push_back(mol->multiplicity_);
+            }
+        }else{
+            ++atomCount;
+        }
+    }
+    mol->fragments_.push_back(std::make_pair(firstAtom, atomCount));
+    
+    // Clean up the "--" and charge/multiplicity specifiers - they're no longer needed
+    for(int lineNumber = lines.size() - 1 ; lineNumber >= 0; --lineNumber){
+        if(   regex_match(lines[lineNumber], reMatches, fragmentMarker_)
+           || regex_match(lines[lineNumber], reMatches, chargeAndMultiplicity_))
+           lines.erase(lines.begin() + lineNumber);
+    }
+
+//    for(int i = 0; i < mol->fragments_.size(); ++i)
+//        fprintf(outfile, "Fragment %d, atom %d to %d, charge %d mult %d\n",
+//                i,mol->fragments_[i].first,mol->fragments_[i].second, mol->fragmentCharges_[i], mol->fragmentMultiplicities_[i]);
 
     if(!lines.size()) throw PSIEXCEPTION("No geometry specified");
 
@@ -1124,6 +1166,88 @@ Molecule::update_geometry()
     move_to_com();
     fprintf(outfile, "reorienting molecule.\n");
     reorient();
+}
+
+
+/**
+ * A wrapper to extract_subsets, callable from Boost
+ * @param reals: A list containing the real atoms.
+ * @param ghost: A list containing the ghost atoms.
+ * @return The ref counted cloned molecule.
+ */
+boost::shared_ptr<Molecule>
+Molecule::py_extract_subsets(boost::python::list & reals,
+                             boost::python::list & ghosts)
+{
+    fprintf(outfile, "py extract called\n");fflush(outfile);
+    std::vector<int> realVec;
+    for(int i = 0; i < boost::python::len(reals); ++i)
+        realVec.push_back(boost::python::extract<int>(reals[i]));
+    std::vector<int> ghostVec;
+    for(int i = 0; i < boost::python::len(ghosts); ++i)
+        ghostVec.push_back(boost::python::extract<int>(ghosts[i]));
+
+    return extract_subsets(realVec, ghostVec);
+}
+
+
+/**
+ * Makes a copy of the molecule, returning a new ref counted molecule with
+ * only certain fragment atoms present as either ghost or real atoms
+ * @param real_list: The list of fragments that should be present in the molecule as real atoms.
+ * @param ghost_list: The list of fragments that should be present in the molecule as ghosts.
+ * @return The ref counted cloned molecule
+ */
+boost::shared_ptr<Molecule>
+Molecule::extract_subsets(const std::vector<int> &real_list, const std::vector<int> &ghost_list) const
+{
+    if(ghost_list.size() + real_list.size() > fragments_.size())
+        throw PSIEXCEPTION("The sum of real- and ghost-atom subsets is greater than the number of subsets");
+
+    boost::shared_ptr<Molecule> clone(new Molecule);
+    std::vector<std::pair<int, int> >list;
+    // 0 is a ghost atom, 1 is a real atom
+    for(int i = 0; i < ghost_list.size(); ++i){
+        if(ghost_list[i] > fragments_.size())
+            throw PSIEXCEPTION("Invalid ghost atom subset requested");
+        list.push_back(std::make_pair(ghost_list[i], 0));
+    }
+    for(int i = 0; i < real_list.size(); ++i){
+        if(real_list[i] > fragments_.size())
+            throw PSIEXCEPTION("Invalid real atom subset requested");
+        list.push_back(std::make_pair(real_list[i], 1));
+    }
+    fprintf(outfile, "list size total %d real %d ghost %d\n",list.size(),
+                    real_list.size(), ghost_list.size());fflush(outfile);
+    sort(list.begin(), list.end());
+
+    int fragCharge = 0;
+    int multiplicity = 1;
+    for(int fragment = 0; fragment < list.size(); ++fragment){
+        int fragmentNum = list[fragment].first;
+        bool isReal     = list[fragment].second;
+        for(int atom = fragments_[fragmentNum].first; atom < fragments_[fragmentNum].second; ++atom){
+            int Z             = full_atoms_[atom].Z;
+            double x          = full_atoms_[atom].x;
+            double y          = full_atoms_[atom].y;
+            double z          = full_atoms_[atom].z;
+            const char *label = full_atoms_[atom].label.c_str();
+            double mass       = full_atoms_[atom].mass;
+            double charge     = full_atoms_[atom].charge;
+            if(isReal){
+                fprintf(outfile, "Adding real atom %s %f %f %f\n",label, x,y,z);fflush(outfile);
+                clone->add_atom(Z, x, y, z, label, mass, charge);
+            }else{
+                clone->add_atom(0, x, y, z, label, mass, charge);
+                fprintf(outfile, "Adding ghost atom %s %f %f %f\n",label, x,y,z);fflush(outfile);
+            }
+        }
+        fragCharge += fragmentCharges_[fragmentNum];
+        multiplicity += fragmentMultiplicities_[fragmentNum] - 1;
+    }
+    clone->set_molecular_charge(fragCharge);
+    clone->set_multiplicity(multiplicity);
+    return clone;
 }
 
 
