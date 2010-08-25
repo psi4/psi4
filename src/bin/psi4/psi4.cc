@@ -32,13 +32,11 @@ namespace psi {
     int psi_stop(FILE* infile, FILE* outfile, char* psi_file_prefix);
     void print_version(FILE *);
     void set_memory(FILE *outfile);
-    int psi4_driver(Options & options);
+    int psi4_driver();
     void psiclean(void);
 
     void read_atom_basis(char ** & atom_basis, int num_atoms);
     PSIO *psio = NULL;
-//    std::map<std::string, PsiReturnType(*)(Options &, int, char *[])> dispatch_table;
-    Options options;
 }
 
 // This is the ONLY main function in PSI
@@ -86,7 +84,7 @@ int main(int argc, char **argv, char **envp)
 
     // Okay, we might only need to make this function call if we're using IPV1
     if (!script) {
-        psi4_driver(options);
+        psi4_driver();
     }
     else {
         Script::language->run(infile);

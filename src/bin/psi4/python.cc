@@ -29,32 +29,31 @@ namespace psi {
       bool suppress_printing = false);
     extern void psiclean(void);
     extern FILE *outfile;
-    extern Options options;
 }
 
 int py_psi_input()
 {
-    return input::input(options);
+    return input::input(Process::environment.options);
 }
 
 int py_psi_mints()
 {
-    return mints::mints(options);
+    return mints::mints(Process::environment.options);
 }
 
 int py_psi_cints()
 {
-    return cints::cints(options);
+    return cints::cints(Process::environment.options);
 }
 
 int py_psi_cscf()
 {
-    return cscf::cscf(options);
+    return cscf::cscf(Process::environment.options);
 }
 
 double py_psi_scf()
 {
-    if (scf::scf(options) == Success) {
+    if (scf::scf(Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
     else
@@ -63,7 +62,7 @@ double py_psi_scf()
 
 double py_psi_dfmp2()
 {
-    if (dfmp2::dfmp2(options) == Success) {
+    if (dfmp2::dfmp2(Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
     else
@@ -87,12 +86,17 @@ bool py_psi_configure_psio(PSIO* obj)
 
 void py_psi_set_default_options_for_module(std::string const & name)
 {
-    read_options(name, options, false);
+    read_options(name, Process::environment.options, false);
 }
 
 void py_psi_print_options()
 {
-    options.print();
+    Process::environment.options.print();
+}
+
+void py_psi_print_global_options()
+{
+    Process::environment.options.print_globals();
 }
 
 void py_psi_print_out(std::string s)
@@ -102,13 +106,13 @@ void py_psi_print_out(std::string s)
 
 bool py_psi_set_option_string(std::string const & name, std::string const & value)
 {
-    options.set_str(name, value);
+    Process::environment.options.set_str(name, value);
     return true;
 }
 
 bool py_psi_set_option_int(std::string const & name, int value)
 {
-    options.set_int(name, value);
+    Process::environment.options.set_int(name, value);
     return true;
 }
 
@@ -119,10 +123,39 @@ bool py_psi_set_option_array(std::string const & name, python::list values)
     size_t n = len(values);
 
     // Reset the array to a known state (empty).
-    options[name].reset();
+    Process::environment.options[name].reset();
 
     for (size_t i=0; i < n; ++i) {
-        options[name].add(extract<double>(values[i]));
+        Process::environment.options[name].add(extract<double>(values[i]));
+    }
+
+    return true;
+}
+
+bool py_psi_set_global_option_string(std::string const & name, std::string const & value)
+{
+    Process::environment.options.set_global_str(name, value);
+    return true;
+}
+
+bool py_psi_set_global_option_int(std::string const & name, int value)
+{
+    Process::environment.options.set_global_int(name, value);
+    return true;
+}
+
+// Right now this can only handle arrays of integers.
+// Unable to handle strings.
+bool py_psi_set_global_option_array(std::string const & name, python::list values)
+{
+    size_t n = len(values);
+
+    // Reset the array to a known state (empty).
+//    Process::environment.options[name].reset();
+    Process::environment.options.get_global(name).reset();
+
+    for (size_t i=0; i < n; ++i) {
+        Process::environment.options.get_global(name).add(extract<double>(values[i]));
     }
 
     return true;
@@ -154,13 +187,21 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("set_default_options_for_module", py_psi_set_default_options_for_module);
     def("set_active_molecule", py_psi_set_active_molecule);
     def("print_options", py_psi_print_options);
+    def("print_global_options", py_psi_print_global_options);
     def("print_out", py_psi_print_out);
 
     def("set_option", py_psi_set_option_string);
     def("set_option", py_psi_set_option_int);
     def("set_option", py_psi_set_option_array);
 
+<<<<<<< HEAD
     def("set_namespace", py_psi_set_namespace);
+=======
+    def("set_global_option", py_psi_set_global_option_string);
+    def("set_global_option", py_psi_set_global_option_int);
+    def("set_global_option", py_psi_set_global_option_array);
+
+>>>>>>> reworked liboptions to have a global scope
     def("get_variable", py_psi_get_variable);
 
     // modules
@@ -315,6 +356,12 @@ void Python::run(FILE *input)
     char *s;
     if (input == NULL)
         return;
+
+    // Setup globals options
+    Process::environment.options.set_read_globals(true);
+    read_options("", Process::environment.options, false, true);
+    Process::environment.options.set_read_globals(false);
+
     if (!Py_IsInitialized()) {
         s = strdup("psi");
         Py_Initialize();
@@ -382,8 +429,9 @@ void Python::run(FILE *input)
         {
             PyErr_Print();
         }
-    } else {
-            fprintf(stderr, "Unable to run Python input file.\n");
-            return;
+    }
+    else {
+        fprintf(stderr, "Unable to run Python input file.\n");
+        return;
     }
 }
