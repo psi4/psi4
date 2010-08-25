@@ -1,0 +1,25 @@
+molecule h2o {
+O
+H 1 R
+H 1 R 2 A
+}
+
+set scf {
+    SCF_TYPE DIRECT
+    #PRINT 2
+    DIIS False
+    BASIS cc-pVDZ
+    RI_BASIS_SCF cc-pVDZ-HF
+    DOCC [3, 0, 1, 1]
+}
+
+escf = scf()
+
+set dfmp2 {
+    BASIS  cc-pVDZ
+    RI_BASIS_MP2 cc-pVDZ-RI
+}
+
+edfmp2 = dfmp2()
+escs = get_variable('SCS-DF-MP2 ENERGY')
+

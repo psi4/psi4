@@ -8,3 +8,6 @@ configure
 *.a
 .*
 *.pyc
+output.dat
+psi.32
+psi.timer.dat
