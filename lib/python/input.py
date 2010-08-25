@@ -1,5 +1,30 @@
 import re;
 
+def process_global_command(matchobj):
+    spaces = matchobj.group(1)
+    key   = matchobj.group(2).upper()
+    value = matchobj.group(3).strip()
+
+    if re.match(r'^[-]?\d*\.?\d+$', value) or re.match(r'^\[.*\]$', value):
+        return spaces + 'PsiMod.set_global_option("%s", %s)' % (key, value)
+    else:
+        return spaces + 'PsiMod.set_global_option("%s", "%s")' % (key, value)
+
+def process_globals_command(matchobj):
+    spaces = matchobj.group(1)
+    commands = matchobj.group(3)
+    command_lines = re.split('\n', commands)
+
+    result = []
+    for line in command_lines:
+        temp = re.sub(r'#.*', "", line)
+        result.append(re.sub(r'^\s*()(\w+)\s+(.*)($|#.*)', process_global_command, temp))
+
+    set_commands = spaces
+    set_commands += (spaces).join(result)
+
+    return set_commands
+
 def process_set_command(matchobj):
     spaces = matchobj.group(1)
     key   = matchobj.group(2).upper()
@@ -65,7 +90,7 @@ def process_print_command(matchobj):
     string = matchobj.group(2)
 
     printer = "\npsi_string_print = %s\n" % string
-    printer += "PsiMod.print_out(psi_string_print)\n"   
+    printer += "PsiMod.print_out(psi_string_print)\n"
 
     return printer
 
@@ -77,6 +102,14 @@ def process_input(raw_input):
     # Process all individual "set key value"
     set_command = re.compile(r'(\s*?)set\s+(\w+)[\s=]+(.*?)($|#.*)', re.MULTILINE | re.IGNORECASE)
     temp = re.sub(set_command, process_set_command, temp)
+
+    # Process all "global(s) { ... }"
+    globals_command = re.compile(r'^(\s*?)(global|globals) \s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    temp = re.sub(globals_command, process_globals_command, temp)
+
+    # Process all individual "global key value"
+    global_command = re.compile(r'(\s*?)global\s+(\w+)[\s=]+(.*?)($|#.*)', re.MULTILINE | re.IGNORECASE)
+    temp = re.sub(global_command, process_global_command, temp)
 
     # Process "molecule name? { ... }"
     molecule = re.compile(r'^(\s*?)molecule\s*(\w*?)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
@@ -113,7 +146,14 @@ set scf {
     DOCC [3, 0, 1, 1]
 }
 
+globals {
+    BASIS STO-3G
+    RI_BASIS_SCF STO-3G
+}
+
 set docc [2, 0, 1, 1]
+
+global print 1
 
 for val in Rs:
     h2.R = val
