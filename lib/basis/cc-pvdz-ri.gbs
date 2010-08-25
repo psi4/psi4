@@ -1,12 +1,15 @@
-!  cc-pVDZ-RI  EMSL  Basis Set Exchange Library   8/12/10 2:41 AM
+spherical
+
+!
+!  cc-pVDZ-RI  EMSL  Basis Set Exchange Library   8/20/10 10:05 AM
 ! Elements                             References
 ! --------                             ----------
-! H He B C N O F Ne: Weigend, Kohn, Hattig, Efficient use of the correlation 
-!                    consistent basis sets in resolution of the identity MP2 calculations, 
-!                    The Journal of Chemical Physics 116, 3175 (2002).
-! C N O F:           Hattig, Optimization of auxiliary basis sets for RI-MP2 and RI-CC2 
-!                    calculations: Core-valence and quintuple-? basis sets for H to Ar 
-!                    and QZVPP basis sets for Li to Kr, Physical Chemistry Chemical Physics 7, 59 (2005).
+! H He B C N O F Ne: Weigend, Kohn, Hattig, Efficient use of the correlation consistent 
+! basis sets in resolution of the identity MP2 calculations, The Journal of Chemical 
+! Physics 116, 3175 (2002).
+! C N O F: Hattig, Optimization of auxiliary basis sets for RI-MP2 and RI-CC2 calculations: 
+! Core-valence and quintuple-? basis sets for H to Ar and QZVPP basis sets for Li to Kr, 
+! Physical Chemistry Chemical Physics 7, 59 (2005).
 ! 
 
 
@@ -1114,4 +1117,5 @@ G   1   1.00
 G   1   1.00
       1.8832303404           1.0000000        
 ****
+
 
