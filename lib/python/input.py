@@ -52,6 +52,14 @@ def process_molecule_command(matchobj):
 
     return molecule
 
+def process_extract_command(matchobj):
+    spaces = matchobj.group(1)
+    name = matchobj.group(2)
+    extract = matchobj.group(0)
+    extract += spaces + "PsiMod.set_active_molecule(%s)" % name   
+ 
+    return extract
+
 def process_print_command(matchobj):
     spaces = matchobj.group(1)
     string = matchobj.group(2)
@@ -73,6 +81,10 @@ def process_input(raw_input):
     # Process "molecule name? { ... }"
     molecule = re.compile(r'^(\s*?)molecule\s*(\w*?)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(molecule, process_molecule_command, temp)
+
+    # Process " extract"
+    extract = re.compile(r'(\s*?)(\w+)\s*=\s*\w+\.extract_subsets.*', re.IGNORECASE)
+    temp = re.sub(extract, process_extract_command, temp)
 
     # Process "print" and transform it to "PsiMod.print_out()"
     print_string = re.compile(r'(\s*?)print\s+(.*)',re.IGNORECASE)
