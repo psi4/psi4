@@ -176,7 +176,7 @@ public:
 
     /// Add an atom to the molecule
     void add_atom(int Z, double x, double y, double z,
-                  const char * = 0, double mass = 0.0,
+                  const char * = "", double mass = 0.0,
                   double charge = 0.0);
 
     /// The number of fragments in the molecule
