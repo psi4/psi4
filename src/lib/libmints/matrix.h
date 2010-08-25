@@ -418,6 +418,10 @@ public:
     double vector_dot(SimpleMatrix* rhs);
     double vector_dot(shared_ptr<SimpleMatrix> rhs);
 
+    /// Element add mirror.
+    /// Performs (i, j) = (j, i) = (i, j) + (j, i)
+    void element_add_mirror();
+
     /// General matrix multiply, saves result to this
     void gemm(bool transa, bool transb, double alpha, const SimpleMatrix* a, const SimpleMatrix* b, double beta);
     void gemm(bool transa, bool transb, double alpha, shared_ptr<SimpleMatrix> a, shared_ptr<SimpleMatrix> b, double beta);

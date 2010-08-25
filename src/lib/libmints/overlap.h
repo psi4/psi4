@@ -26,22 +26,22 @@ class OverlapInt : public OneBodyInt
 {
     /// Generic Obara Saika recursion object.
     ObaraSaikaTwoCenterRecursion overlap_recur_;
-    
+
     /// Computes the overlap between a given shell pair.
     void compute_pair(boost::shared_ptr<GaussianShell> , boost::shared_ptr<GaussianShell>);
     void compute_pair_deriv1(boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>);
     void compute_pair_deriv2(boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>);
-    
+
 public:
     /// Constructor, it assumes you are not computing derivatives by default
     OverlapInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, int deriv=0);
     ~OverlapInt();
-    
+
     /// Compute overlap between 2 shells. Result is stored in buffer.
     void compute_shell(int, int);
     void compute_shell_deriv1(int, int);
-    // void compute_shell_deriv2(int, int);
-    
+    void compute_shell_deriv2(int, int);
+
     /// Does the method provide first derivatives?
     bool has_deriv1() { return true; }
     /// Does the method provide second derivatives?
