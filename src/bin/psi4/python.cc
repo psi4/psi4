@@ -2,6 +2,7 @@
 // Use "python-config --includes" to determine this location.
 #include <cstdio>
 #include <boost/python.hpp>
+#include <boost/python/overloads.hpp>
 #include <psiconfig.h>
 #include <sstream>
 #include "script.h"
@@ -298,6 +299,7 @@ BOOST_PYTHON_MODULE(PsiMod)
 
     class_<Molecule, shared_ptr<Molecule> >("Molecule").
         def("set_name", &Molecule::set_name).
+        def("fix_orientation", &Molecule::set_orientation_fixed).
         def("init_with_checkpoint", &Molecule::init_with_chkpt).
         def("save_to_checkpoint", &Molecule::save_to_chkpt).
         def("init_with_io", &Molecule::init_with_psio).
@@ -315,7 +317,12 @@ BOOST_PYTHON_MODULE(PsiMod)
         def("label", &Molecule::label).
         def("charge", &Molecule::charge).
         def("molecular_charge", &Molecule::molecular_charge).
-        def("extract_subsets", &Molecule::py_extract_subsets).
+        def("extract_subsets", &Molecule::py_extract_subsets_1).
+        def("extract_subsets", &Molecule::py_extract_subsets_2).
+        def("extract_subsets", &Molecule::py_extract_subsets_3).
+        def("extract_subsets", &Molecule::py_extract_subsets_4).
+        def("extract_subsets", &Molecule::py_extract_subsets_5).
+        def("extract_subsets", &Molecule::py_extract_subsets_6).
         def("atom_at_position", &Molecule::atom_at_position1).
         def("print_to_output", &Molecule::print).
         def("nuclear_repulsion_energy", &Molecule::nuclear_repulsion_energy).

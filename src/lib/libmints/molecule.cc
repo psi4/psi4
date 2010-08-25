@@ -57,6 +57,7 @@ namespace psi {
     boost::regex Molecule::unitLabel_("\\s*((ang)|(angstrom)|(bohr)|(au)|(a\\.u\\.))\\s*", boost::regbase::normal | boost::regbase::icase);
     boost::regex Molecule::chargeAndMultiplicity_("\\s*(-?\\d+)\\s+(\\d+)\\s*", boost::regbase::normal);
     boost::regex Molecule::fragmentMarker_("\\s*--\\s*", boost::regbase::normal);
+    boost::regex Molecule::orientCommand_("\\s*no_?reorient\\s*", boost::regbase::normal| boost::regbase::icase);
 
     /**
      * Interprets a string as an integer, throwing if it's unsuccesful.
@@ -239,10 +240,10 @@ Molecule::Molecule():
     atom_to_unique_(0),
     multiplicity_(1),
     molecularCharge_(0),
-    geometryFormat_(None)
+    geometryFormat_(None),
+    fix_orientation_(false),
+    name_("default")
 {
-    std::string def_name("default");
-    name_ = def_name;
 }
 
 Molecule::Molecule(const Molecule& other)
@@ -519,6 +520,9 @@ void Molecule::rotate_full(SimpleMatrix& R)
 
 void Molecule::reorient()
 {
+    if (fix_orientation_)
+        return; 
+
     // Nothing for us to do.
     if (natom() <= 1)
         return;
@@ -912,6 +916,10 @@ Molecule::create_molecule_from_string(const std::string &text)
                 mol->set_units(Bohr);
             }
             lines.erase(lines.begin() + lineNumber);
+        }else if(regex_match(lines[lineNumber], reMatches, orientCommand_)){
+            // Set
+            mol->set_orientation_fixed(true);
+            lines.erase(lines.begin() + lineNumber);
         }else if(regex_match(lines[lineNumber], reMatches, chargeAndMultiplicity_)){
             if(lineNumber && !regex_match(lines[lineNumber-1], reMatches, fragmentMarker_)){
                 // As long as this does not follow a "--", it's a global charge/multiplicity
@@ -1179,9 +1187,7 @@ Molecule::update_geometry()
         }
     }
 
-    fprintf(outfile, "moving to center of mass.\n");
     move_to_com();
-    fprintf(outfile, "reorienting molecule.\n");
     reorient();
 }
 
@@ -1193,17 +1199,92 @@ Molecule::update_geometry()
  * @return The ref counted cloned molecule.
  */
 boost::shared_ptr<Molecule>
-Molecule::py_extract_subsets(boost::python::list & reals,
-                             boost::python::list & ghosts)
+Molecule::py_extract_subsets_1(boost::python::list reals,
+                             boost::python::list ghosts)
 {
     std::vector<int> realVec;
     for(int i = 0; i < boost::python::len(reals); ++i)
-        realVec.push_back(boost::python::extract<int>(reals[i] - 1));
+        realVec.push_back(boost::python::extract<int>(reals[i] )- 1);
     std::vector<int> ghostVec;
     for(int i = 0; i < boost::python::len(ghosts); ++i)
-        ghostVec.push_back(boost::python::extract<int>(ghosts[i] - 1));
+        ghostVec.push_back(boost::python::extract<int>(ghosts[i]) - 1);
 
     return extract_subsets(realVec, ghostVec);
+}
+/**
+ * A wrapper to extract_subsets, callable from Boost
+ * @param reals: A list containing the real atoms.
+ * @param ghost: An int containing the ghost atoms.
+ * @return The ref counted cloned molecule.
+ */
+boost::shared_ptr<Molecule>
+Molecule::py_extract_subsets_2(boost::python::list reals,
+                             int ghost)
+{
+    std::vector<int> realVec;
+    for(int i = 0; i < boost::python::len(reals); ++i)
+        realVec.push_back(boost::python::extract<int>(reals[i])-1);
+    std::vector<int> ghostVec;
+    if (ghost >= 1)
+        ghostVec.push_back(ghost - 1 );
+
+    return extract_subsets(realVec, ghostVec);
+}
+/**
+ * A wrapper to extract_subsets, callable from Boost
+ * @param reals: An int containing the real atoms.
+ * @param ghost: A list containing the ghost atoms.
+ * @return The ref counted cloned molecule.
+ */
+boost::shared_ptr<Molecule>
+Molecule::py_extract_subsets_3(int reals,
+                             boost::python::list ghost)
+{
+    std::vector<int> realVec;
+    realVec.push_back(reals - 1);
+    std::vector<int> ghostVec;
+    for(int i = 0; i < boost::python::len(ghost); ++i)
+        ghostVec.push_back(boost::python::extract<int>(ghost[i]) - 1);
+
+    return extract_subsets(realVec, ghostVec);
+}
+/**
+ * A wrapper to extract_subsets, callable from Boost
+ * @param reals: An int containing the real atoms.
+ * @param ghost: An int containing the ghost atoms.
+ * @return The ref counted cloned molecule.
+ */
+boost::shared_ptr<Molecule>
+Molecule::py_extract_subsets_4(int reals,
+                             int ghost)
+{
+    std::vector<int> realVec;
+    realVec.push_back(reals -1 );
+    std::vector<int> ghostVec;
+    if (ghost >= 0) 
+        ghostVec.push_back(ghost - 1);
+
+    return extract_subsets(realVec, ghostVec);
+}
+/**
+ * A wrapper to extract_subsets, callable from Boost
+ * @param reals: A list containing the real atoms.
+ * @return The ref counted cloned molecule.
+ */
+boost::shared_ptr<Molecule>
+Molecule::py_extract_subsets_5(boost::python::list reals)
+{
+    return py_extract_subsets_2(reals, -1);
+}
+/**
+ * A wrapper to extract_subsets, callable from Boost
+ * @param reals: An int containing the real atoms.
+ * @return The ref counted cloned molecule.
+ */
+boost::shared_ptr<Molecule>
+Molecule::py_extract_subsets_6(int reals)
+{
+    return py_extract_subsets_4(reals, -1);
 }
 
 
@@ -1265,6 +1346,7 @@ Molecule::extract_subsets(const std::vector<int> &real_list, const std::vector<i
     clone->set_multiplicity(multiplicity);
     clone->geometryFormat_ = geometryFormat_;
     clone->units_ = units_;
+    clone->fix_orientation_ = fix_orientation_;
 
     return clone;
 }
@@ -1318,15 +1400,14 @@ void Molecule::save_to_chkpt(shared_ptr<Chkpt> chkpt, std::string prefix)
 void Molecule::print() const
 {
     if (natom()) {
-        fprintf(outfile,"       Center              X                  Y                   Z           Charge\n");
-        fprintf(outfile,"    ------------   -----------------  -----------------  -----------------  ---------\n");
+        fprintf(outfile,"       Center              X                  Y                   Z       \n");
+        fprintf(outfile,"    ------------   -----------------  -----------------  -----------------\n");
 
         for(int i = 0; i < natom(); ++i){
             Vector3 geom = xyz(i);
             fprintf(outfile, "    %8s%4s ",label(i).c_str(),Z(i) ? "" : "(Gh)"); fflush(outfile);
             for(int j = 0; j < 3; j++)
                 fprintf(outfile, "  %17.12f", geom[j]);
-            fprintf(outfile,"  %17d",Z(i));
             fprintf(outfile,"\n");
         }
         fprintf(outfile,"\n");

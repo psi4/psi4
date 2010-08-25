@@ -59,8 +59,16 @@ public:
     static boost::shared_ptr<Molecule> create_molecule_from_string(const std::string &geom);
     boost::shared_ptr<Molecule> extract_subsets(const std::vector<int> &real_list,
                                                 const std::vector<int> &ghost_list) const;
-    boost::shared_ptr<Molecule> py_extract_subsets(boost::python::list & reals,
-                                                   boost::python::list & ghost);
+    boost::shared_ptr<Molecule> py_extract_subsets_1(boost::python::list reals,
+                                                   boost::python::list ghost);
+    boost::shared_ptr<Molecule> py_extract_subsets_2(boost::python::list reals,
+                                                   int ghost = -1);
+    boost::shared_ptr<Molecule> py_extract_subsets_3(int reals,
+                                                   boost::python::list ghost);
+    boost::shared_ptr<Molecule> py_extract_subsets_4(int reals,
+                                                   int ghost = -1);
+    boost::shared_ptr<Molecule> py_extract_subsets_5(boost::python::list reals);
+    boost::shared_ptr<Molecule> py_extract_subsets_6(int reals);
 
     /// Assigns the value val to the variable labelled string in the list of geometry variables.
     /// Also calls update_geometry()
@@ -91,6 +99,11 @@ public:
     /// Gets the geometry units
     GeometryUnits units() const { return units_; }
 
+    /// Get whether or not orientation is fixed
+    bool orientation_fixed() const { return fix_orientation_; }
+    /// Set whether or not orientation is fixed
+    void set_orientation_fixed(bool _fix = true) { fix_orientation_ = _fix; }
+
     void update_geometry();
 protected:
     /// Molecule (or fragment) name
@@ -107,6 +120,9 @@ protected:
     std::vector<int> fragmentCharges_;
     /// The multiplicity of each fragment
     std::vector<int> fragmentMultiplicities_;
+
+    /// Reorient or not?
+    bool fix_orientation_;
 
     /// Symmetry information about the molecule
     int nirreps_;
@@ -149,6 +165,8 @@ protected:
     static boost::regex chargeAndMultiplicity_;
     /// A regular expression to test if a string looks like a fragment marker
     static boost::regex fragmentMarker_;
+    /// A regular expression to test if a string is a no_?reorient flag
+    static boost::regex orientCommand_;
 
     /// The format of the geometry provided by the user
     GeometryFormat geometryFormat_;
