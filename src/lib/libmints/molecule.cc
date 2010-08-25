@@ -289,7 +289,7 @@ void Molecule::add_atom(int Z, double x, double y, double z,
     info.mass = mass;
 
     // Dummies go to full_atoms_, ghosts need to go to both.
-    if(label != "X") atoms_.push_back(info);
+    if(strcmp(label, "X") && strcmp(label, "x")) atoms_.push_back(info);
     full_atoms_.push_back(info);
 }
 
