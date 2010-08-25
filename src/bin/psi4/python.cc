@@ -194,14 +194,12 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("set_option", py_psi_set_option_int);
     def("set_option", py_psi_set_option_array);
 
-<<<<<<< HEAD
     def("set_namespace", py_psi_set_namespace);
-=======
+
     def("set_global_option", py_psi_set_global_option_string);
     def("set_global_option", py_psi_set_global_option_int);
     def("set_global_option", py_psi_set_global_option_array);
 
->>>>>>> reworked liboptions to have a global scope
     def("get_variable", py_psi_get_variable);
 
     // modules
