@@ -1003,7 +1003,7 @@ Molecule::update_geometry()
     std::vector<std::string> splitLine;
     std::vector<int> zIn;
     for(int i = 0; i < atoms_.size(); ++i) zIn.push_back(Z(i));
-    
+
     // Start over, even if we have atoms already
     atoms_.clear();
     // Have the atoms been added already?  If so, we only need to update positions.
@@ -1233,6 +1233,7 @@ Molecule::extract_subsets(const std::vector<int> &real_list, const std::vector<i
             throw PSIEXCEPTION("Invalid real atom subset requested");
         list.push_back(std::make_pair(real_list[i], 1));
     }
+
     sort(list.begin(), list.end());
 
     int fragCharge = 0;
