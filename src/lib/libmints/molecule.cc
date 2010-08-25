@@ -997,6 +997,9 @@ Molecule::update_geometry()
     Element_to_Z zVals;
     zVals.load_values();
     std::vector<std::string> splitLine;
+    std::vector<int> zIn;
+    for(int i = 0; i < atoms_.size(); ++i) zIn.push_back(Z(i));
+    
     // Start over, even if we have atoms already
     atoms_.clear();
     // Have the atoms been added already?  If so, we only need to update positions.
@@ -1006,6 +1009,7 @@ Molecule::update_geometry()
     // Now it's time to interpret the geometry string
     std::string atomSym;
     double x, y, z;
+    unsigned int currentAtom = 0;
     if(geometryFormat_ == Cartesian){
         std::vector<std::string>::iterator line = geometryString_.begin();
         for(; line != geometryString_.end(); ++line){
@@ -1024,10 +1028,14 @@ Molecule::update_geometry()
             x = get_value(splitLine[1], *line) * conversionFactor;
             y = get_value(splitLine[2], *line) * conversionFactor;
             z = get_value(splitLine[3], *line) * conversionFactor;
-            add_atom((int)zVals[atomSym], x, y, z, atomSym.c_str(), atomic_masses[(int)zVals[atomSym]]);
+            if(zIn.empty()){
+                add_atom((int)zVals[atomSym], x, y, z, atomSym.c_str(), atomic_masses[(int)zVals[atomSym]]);
+            }else{
+                add_atom(zIn[currentAtom], x, y, z, atomSym.c_str(), atomic_masses[(int)zVals[atomSym]]);
+            }
+            ++currentAtom;
         }
     }else if(geometryFormat_ == ZMatrix){
-        unsigned int currentAtom = 0;
         std::vector<std::string>::iterator line = geometryString_.begin();
         double r, a, d; // The bond length, valence bond angle, and torsion angle, respectively
         int rTo, aTo, dTo; // The "anchor" atoms, used to define r, a, and d
@@ -1158,7 +1166,11 @@ Molecule::update_geometry()
                 y = atoms_[rTo].y + r * ( -eBC[1] * cosBCD + eX[1] * sinBCD * cosABCD + eY[1] * sinBCD * sinABCD);
                 z = atoms_[rTo].z + r * ( -eBC[2] * cosBCD + eX[2] * sinBCD * cosABCD + eY[2] * sinBCD * sinABCD);
             }
-            add_atom((int)zVals[atomSym], x, y, z, atomSym.c_str(), atomic_masses[(int)zVals[atomSym]]);
+            if(zIn.empty()){
+                add_atom((int)zVals[atomSym], x, y, z, atomSym.c_str(), atomic_masses[(int)zVals[atomSym]]);
+            }else{
+                add_atom(zIn[currentAtom], x, y, z, atomSym.c_str(), atomic_masses[(int)zVals[atomSym]]);
+            }
             ++currentAtom;
         }
     }
