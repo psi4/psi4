@@ -9,6 +9,7 @@ print_html_topfile ();
 
 foreach $basisfile (@HGBS) {
 
+   $puream = "";
    foreach $element (@HELEM) { $entryhash{$element} = "<td>&nbsp;</td>"; }
 
    open IN, $basisfile;
@@ -19,6 +20,9 @@ foreach $basisfile (@HGBS) {
    $basisfile = @ltemp[0];
 
    foreach $line (@text) {
+
+      if ($line =~ /cartesian/)    { $puream = "6D/10F"; }
+      elsif ($line =~ /spherical/) { $puream = "5D/7F";  }
 
       if ( ($line =~ /\s0\s/) && ($alert eq "yes") ) {
 
@@ -35,7 +39,7 @@ foreach $basisfile (@HGBS) {
 
    }
 
-   print HTML_OUT "<tr><td>$basisfile</td>";
+   print HTML_OUT "<tr><td>$basisfile</td><td>$puream</td>";
    foreach $element (@HELEM) { print HTML_OUT "$entryhash{$element}"; }
    print HTML_OUT "</tr>\n\n";
 
@@ -47,18 +51,18 @@ system("open -a /Applications/Safari.app psi4bases.html");
 
 sub print_html_topfile {
 
-   print HTML_OUT "<table border=\"1\" cellpadding=\"5\" cellspacing=\"5\" width=\"100%\">
-<tr>
-<th>Basis&nbsp;Set&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
-<th>H</th><th>He</th>
-<th>Li</th><th>Be</th><th>B</th><th>C</th><th>N</th><th>O</th><th>F</th><th>Ne</th>
-<th>Na</th><th>Mg</th><th>Al</th><th>Si</th><th>P</th><th>S</th><th>Cl</th><th>Ar</th>
-<th>K</th><th>Ca</th><th>Sc</th><th>Ti</th><th>V</th><th>Cr</th><th>Mn</th><th>Fe</th><th>Co</th>
-<th>Ni</th><th>Cu</th><th>Zn</th><th>Ga</th><th>Ge</th><th>As</th><th>Se</th><th>Br</th><th>Kr</th>
-</tr>
-<tr>
-\n";
-
+   print HTML_OUT "<table border=\"1\" cellpadding=\"4\" cellspacing=\"3\" width=\"100%\">
+   <tr><th>Basis&nbsp;Set&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th><th>puream</th>
+   <th bgcolor=#ffdddd>H</th><th bgcolor=#ffdddd>He</th><th bgcolor=#99ccee>Li</th><th bgcolor=#99ccee>Be</th>
+   <th bgcolor=#99ccee>B</th><th bgcolor=#99ccee>C</th><th bgcolor=#99ccee>N</th><th bgcolor=#99ccee>O</th>
+   <th bgcolor=#99ccee>F</th><th bgcolor=#99ccee>Ne</th><th bgcolor=#ccccee>Na</th><th bgcolor=#ccccee>Mg</th>
+   <th bgcolor=#ccccee>Al</th><th bgcolor=#ccccee>Si</th><th bgcolor=#ccccee>P</th><th bgcolor=#ccccee>S</th>
+   <th bgcolor=#ccccee>Cl</th><th bgcolor=#ccccee>Ar</th><th bgcolor=#cceecc>K</th><th bgcolor=#cceecc>Ca</th>
+   <th bgcolor=#cceecc>Sc</th><th bgcolor=#cceecc>Ti</th><th bgcolor=#cceecc>V</th><th bgcolor=#cceecc>Cr</th>
+   <th bgcolor=#cceecc>Mn</th><th bgcolor=#cceecc>Fe</th><th bgcolor=#cceecc>Co</th><th bgcolor=#cceecc>Ni</th>
+   <th bgcolor=#cceecc>Cu</th><th bgcolor=#cceecc>Zn</th><th bgcolor=#cceecc>Ga</th><th bgcolor=#cceecc>Ge</th>
+   <th bgcolor=#cceecc>As</th><th bgcolor=#cceecc>Se</th><th bgcolor=#cceecc>Br</th><th bgcolor=#cceecc>Kr</th>
+   <tr>\n";
 }
 
 
