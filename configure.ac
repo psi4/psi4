@@ -312,6 +312,7 @@ AC_SUBST(LDFLAGS)
 AC_CHECK_PROGS(PERL,perl,perl) AC_SUBST(PERL)
  
 # Check for python interpreter and libraries
+#  Version 2.4 is required because we call Py_InitializeEx(0)
 AC_PYTHON([2.4])
 
  

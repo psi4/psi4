@@ -993,6 +993,10 @@ Molecule::create_molecule_from_string(const std::string &text)
 void
 Molecule::update_geometry()
 {
+    // Nothing to do.
+    if (geometryString_.empty())
+        return;
+
     smatch reMatches;
     Element_to_Z zVals;
     zVals.load_values();
