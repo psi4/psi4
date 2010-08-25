@@ -48,7 +48,7 @@ def process_molecule_command(matchobj):
         molecule += ',"%s"' % (name)
 
     molecule += ")\n"
-    molecule += 'PsiMod.set_namespace("%s")' % (name)
+    molecule += 'PsiMod.IO.set_default_namespace("%s")' % (name)
 
     return molecule
 

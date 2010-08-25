@@ -1009,6 +1009,7 @@ Molecule::update_geometry()
     if(geometryFormat_ == Cartesian){
         std::vector<std::string>::iterator line = geometryString_.begin();
         for(; line != geometryString_.end(); ++line){
+            //fprintf(outfile,"GeometryString size %d\n",geometryString_.size());
             // Trim leading and trailing whitespace
             boost::algorithm::trim(*line);
             boost::split(splitLine, *line, boost::is_any_of("\t ,"),token_compress_on);
@@ -1241,13 +1242,19 @@ Molecule::extract_subsets(const std::vector<int> &real_list, const std::vector<i
                 clone->add_atom(0, x, y, z, label, mass, charge);
                 fprintf(outfile, "Adding ghost atom %s %f %f %f\n",label, x,y,z);fflush(outfile);
             }
-            clone->geometryString_.push_back(geometryString[atom]);
+            fprintf(outfile,"%s\n",geometryString_[atom].c_str());
+            clone->geometryString_.push_back(geometryString_[atom]);
         }
-        fragCharge += fragmentCharges_[fragmentNum];
-        multiplicity += fragmentMultiplicities_[fragmentNum] - 1;
+        if (isReal) {
+            fragCharge += fragmentCharges_[fragmentNum];
+            multiplicity += fragmentMultiplicities_[fragmentNum] - 1;
+        }
     }
     clone->set_molecular_charge(fragCharge);
     clone->set_multiplicity(multiplicity);
+    clone->geometryFormat_ = geometryFormat_;
+    clone->units_ = units_;
+
     return clone;
 }
 
@@ -1305,7 +1312,7 @@ void Molecule::print() const
 
         for(int i = 0; i < natom(); ++i){
             Vector3 geom = xyz(i);
-            fprintf(outfile, "    %8s%4s ",label(i).c_str(),Z(atom) ? "" : "(Gh)"); fflush(outfile);
+            fprintf(outfile, "    %8s%4s ",label(i).c_str(),Z(i) ? "" : "(Gh)"); fflush(outfile);
             for(int j = 0; j < 3; j++)
                 fprintf(outfile, "  %17.12f", geom[j]);
             fprintf(outfile,"\n");

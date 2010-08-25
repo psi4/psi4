@@ -118,10 +118,11 @@ namespace psi {
       /// Upon catastrophic failure, the library will exit() with this code. The default is 1, but can be overridden.
       static int _error_exit_code_;
       
-      /// Current namespace (for PREFIX.NAMESPACE.UNIT numbering)
-      static std::string current_namespace_; 
       /// Set the current namespace (for PREFIX.NAMESPACE.UNIT file numbering) 
-      static void set_current_namespace(const std::string &_ns) { current_namespace_ = _ns; }
+      static void set_default_namespace(const std::string &_ns) { default_namespace_ = _ns; }
+      
+      /// Set the current namespace (for PREFIX.NAMESPACE.UNIT file numbering) 
+      void set_current_namespace(const std::string &_ns) { current_namespace_ = _ns; }
 
       /// Return the global shared object
       static shared_ptr<PSIO> shared_object() { return _default_psio_lib_; }
@@ -129,6 +130,12 @@ namespace psi {
       /// vector of units
       psio_ud *psio_unit;
 
+      /// Current default namespace (for PREFIX.NAMESPACE.UNIT numbering)
+      static std::string default_namespace_; 
+      
+      /// Current namespace (for PREFIX.NAMESPACE.UNIT numbering)
+      std::string current_namespace_; 
+      
       typedef std::map<std::string,std::string> KWDMap;
       /// library configuration is described by a set of keywords
       KWDMap files_keywords_;

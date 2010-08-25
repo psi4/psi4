@@ -19,6 +19,7 @@ struct params  {
   double schwarz;
 
   double memory;
+  double mem_safety;
   };
 
 /* This struct holds information from the SCF calculations that is used

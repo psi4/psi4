@@ -717,7 +717,7 @@ void DFMP2::form_Aia_disk()
   int nact_virt =  nact_virt_;
 
   //Storage required for each A
-  int storage_per_row = norbs*norbs+nact_docc*norbs+nact_docc*nact_virt;
+  unsigned long int storage_per_row = norbs*norbs+nact_docc*norbs+nact_docc*nact_virt;
 
   int maxPshell = 0;
   for (int P = 0; P<ribasis_->nshell(); P++)
@@ -808,7 +808,7 @@ void DFMP2::form_Aia_disk()
   //Loop over blocks of A
   for (int block = 0; block<nblocks; block++) {
     //Zero that guy out!
-    memset((void*)&Amn[0][0],'\0',block_sizes[block]*norbs*norbs); 
+    memset((void*)&Amn[0][0],'\0',p_sizes[block]*norbs*(ULI)norbs); 
     
     //Form Amn ints
     timer_on("(A|mn)");

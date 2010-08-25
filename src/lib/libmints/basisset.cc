@@ -375,7 +375,7 @@ shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parse
     // the other version of construct
     vector<string> basisnames;
 
-    // Update geometry in molecule, if there is a problem an exception is thrown.
+    // Update geometry in molecule, if there is a problem an exception is thrown    
     mol->update_geometry();
 
     for (int i=0; i<mol->natom(); ++i) {
@@ -396,6 +396,9 @@ shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parse
     mol->update_geometry();
 
     basisset->molecule_ = mol;
+    fprintf(outfile,"  Printing broken molecule\n");
+    mol->print();
+    fflush(outfile);
     parser->parse(basisset, basisnames);
 
     for (int i=0; i<=basisset->max_am(); ++i)

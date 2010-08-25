@@ -14,6 +14,7 @@ namespace psi {
 
 /* Definition of global data */
 shared_ptr<PSIO> _default_psio_lib_;
+std::string PSIO::default_namespace_;
 
 int PSIO::_error_exit_code_ = 1;
 psio_address PSIO_ZERO = { 0, 0 };
@@ -45,6 +46,7 @@ PSIO::PSIO() {
     psio_unit[i].toclen = 0;
     psio_unit[i].toc = NULL;
   }
+  current_namespace_ = default_namespace_;
 }
 
   int psio_init(void) {
