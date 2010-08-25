@@ -242,7 +242,7 @@ Molecule::Molecule():
     geometryFormat_(None)
 {
     std::string def_name("default");
-    name_ = def_name; 
+    name_ = def_name;
 }
 
 Molecule::Molecule(const Molecule& other)
@@ -953,7 +953,7 @@ Molecule::create_molecule_from_string(const std::string &text)
         }
     }
     mol->fragments_.push_back(std::make_pair(firstAtom, atomCount));
-    
+
     // Clean up the "--" and charge/multiplicity specifiers - they're no longer needed
     for(int lineNumber = lines.size() - 1 ; lineNumber >= 0; --lineNumber){
         if(   regex_match(lines[lineNumber], reMatches, fragmentMarker_)
@@ -1326,6 +1326,9 @@ void Molecule::print() const
             fprintf(outfile, "\n");
             fflush(outfile);
         }
+    }
+    else {
+        fprintf(outfile, "  No atoms in this molecule.\n");
     }
 }
 
