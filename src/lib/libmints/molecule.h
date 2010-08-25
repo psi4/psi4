@@ -9,7 +9,13 @@
 #include <boost/regex.hpp>
 #include <boost/shared_ptr.hpp>
 
+
 #define LINEAR_A_TOL 1.0E-2 //When sin(a) is below this, we consider the angle to be linear
+
+namespace boost{ namespace python{
+       class list;
+}}
+
 namespace psi {
 
 class PSIO;
@@ -51,6 +57,11 @@ public:
     enum GeometryUnits {Angstrom, Bohr};
 
     static boost::shared_ptr<Molecule> create_molecule_from_string(const std::string &geom);
+    boost::shared_ptr<Molecule> extract_subsets(const std::vector<int> &real_list,
+                                                const std::vector<int> &ghost_list) const;
+    boost::shared_ptr<Molecule> py_extract_subsets(boost::python::list & reals,
+                                                   boost::python::list & ghost);
+
     /// Assigns the value val to the variable labelled string in the list of geometry variables.
     /// Also calls update_geometry()
     void set_variable(const std::string &str, double val);
@@ -67,10 +78,10 @@ public:
     void set_geometry_format(GeometryFormat format) { geometryFormat_ = format; }
     /// Gets the geometry format
     GeometryFormat geometry_format() const { return geometryFormat_; }
-    /// Sets the molcular charge
-    void set_charge(int charge) {charge_ = charge;}
+    /// Sets the molecular charge
+    void set_molecular_charge(int charge) {molecularCharge_ = charge;}
     /// Gets the molecular charge
-    //int charge() const {return charge_;}
+    int molecular_charge() const {return molecularCharge_;}
     /// Sets the multiplicity (defined as 2Ms + 1)
     void set_multiplicity(int mult) { multiplicity_ = mult; }
     /// Get the multiplicity (defined as 2Ms + 1)
@@ -92,10 +103,15 @@ protected:
     std::vector<atom_info> full_atoms_;
     /// Each line of the string passed in to define the geometry
     std::vector<std::string> geometryString_;
+    /// The charge of each fragment
+    std::vector<int> fragmentCharges_;
+    /// The multiplicity of each fragment
+    std::vector<int> fragmentMultiplicities_;
+
     /// Symmetry information about the molecule
     int nirreps_;
     /// The molecular charge
-    int charge_;
+    int molecularCharge_;
     /// The multiplicity (defined as 2Ms + 1)
     int multiplicity_;
     /// The units used to define the geometry
@@ -131,12 +147,16 @@ protected:
     static boost::regex unitLabel_;
     /// A regular expression to test if a string looks like a charge/multiplicty definition (e.g. -1 1)
     static boost::regex chargeAndMultiplicity_;
+    /// A regular expression to test if a string looks like a fragment marker
+    static boost::regex fragmentMarker_;
 
     /// The format of the geometry provided by the user
     GeometryFormat geometryFormat_;
 
     /// A listing of the variables used to define the geometries
     std::map<std::string, double> geometryVariables_;
+    /// The list of atom ranges defining each fragment
+    std::vector<std::pair<int, int> > fragments_;
 
 public:
     Molecule();
@@ -157,13 +177,14 @@ public:
     /// Add an atom to the molecule
     void add_atom(int Z, double x, double y, double z,
                   const char * = 0, double mass = 0.0,
-                  int have_charge = 0, double charge = 0.0);
+                  double charge = 0.0);
 
+    /// The number of fragments in the molecule
+    int num_fragments() const { return fragments_.size();}
     /// Get molecule name
     const std::string get_name() const {return name_; }
     /// Set molecule name
     void set_name(const std::string &_name) { name_ = _name; }
-
     /// Number of atoms
     int natom() const { return atoms_.size(); }
     /// Number of all atoms (includes dummies)

@@ -499,7 +499,7 @@ shared_ptr<BasisSet> BasisSet::atomic_basis_set(int fcenter)
     strcpy(label,lab.c_str());
 
     //Put the atomic info into mol
-    mol->add_atom(Z, x, y, z, label, mass, (charge != 0.0) , charge);
+    mol->add_atom(Z, x, y, z, label, mass, charge);
 
     //Assign the atomic molecule to bas
     bas->molecule_ = mol;
