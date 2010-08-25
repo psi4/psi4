@@ -1192,13 +1192,12 @@ boost::shared_ptr<Molecule>
 Molecule::py_extract_subsets(boost::python::list & reals,
                              boost::python::list & ghosts)
 {
-    fprintf(outfile, "py extract called\n");fflush(outfile);
     std::vector<int> realVec;
     for(int i = 0; i < boost::python::len(reals); ++i)
-        realVec.push_back(boost::python::extract<int>(reals[i]));
+        realVec.push_back(boost::python::extract<int>(reals[i] - 1));
     std::vector<int> ghostVec;
     for(int i = 0; i < boost::python::len(ghosts); ++i)
-        ghostVec.push_back(boost::python::extract<int>(ghosts[i]));
+        ghostVec.push_back(boost::python::extract<int>(ghosts[i] - 1));
 
     return extract_subsets(realVec, ghostVec);
 }
@@ -1230,8 +1229,6 @@ Molecule::extract_subsets(const std::vector<int> &real_list, const std::vector<i
             throw PSIEXCEPTION("Invalid real atom subset requested");
         list.push_back(std::make_pair(real_list[i], 1));
     }
-    fprintf(outfile, "list size total %d real %d ghost %d\n",list.size(),
-                    real_list.size(), ghost_list.size());fflush(outfile);
     sort(list.begin(), list.end());
 
     int fragCharge = 0;
@@ -1248,11 +1245,9 @@ Molecule::extract_subsets(const std::vector<int> &real_list, const std::vector<i
             double mass       = full_atoms_[atom].mass;
             double charge     = full_atoms_[atom].charge;
             if(isReal){
-                fprintf(outfile, "Adding real atom %s %f %f %f\n",label, x,y,z);fflush(outfile);
                 clone->add_atom(Z, x, y, z, label, mass, charge);
             }else{
                 clone->add_atom(0, x, y, z, label, mass, charge);
-                fprintf(outfile, "Adding ghost atom %s %f %f %f\n",label, x,y,z);fflush(outfile);
             }
             clone->geometryString_.push_back(geometryString_[atom]);
         }
@@ -1318,14 +1313,15 @@ void Molecule::save_to_chkpt(shared_ptr<Chkpt> chkpt, std::string prefix)
 void Molecule::print() const
 {
     if (natom()) {
-        fprintf(outfile,"       Center              X                  Y                   Z\n");
-        fprintf(outfile,"    ------------   -----------------  -----------------  -----------------\n");
+        fprintf(outfile,"       Center              X                  Y                   Z           Charge\n");
+        fprintf(outfile,"    ------------   -----------------  -----------------  -----------------  ---------\n");
 
         for(int i = 0; i < natom(); ++i){
             Vector3 geom = xyz(i);
             fprintf(outfile, "    %8s%4s ",label(i).c_str(),Z(i) ? "" : "(Gh)"); fflush(outfile);
             for(int j = 0; j < 3; j++)
                 fprintf(outfile, "  %17.12f", geom[j]);
+            fprintf(outfile,"  %17d",Z(i));
             fprintf(outfile,"\n");
         }
         fprintf(outfile,"\n");
