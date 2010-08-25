@@ -362,7 +362,8 @@ void Python::run(FILE *input)
 
     if (!Py_IsInitialized()) {
         s = strdup("psi");
-        Py_Initialize();
+        // Py_InitializeEx(0) causes sig handlers to not be installed.
+        Py_InitializeEx(0);
         #if PY_VERSION_HEX >= 0x03000000
         Py_SetProgramName(L"psi");
         #else
