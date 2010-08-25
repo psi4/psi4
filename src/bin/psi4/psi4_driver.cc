@@ -23,8 +23,10 @@ namespace psi {
     bool suppress_printing = false);
   extern void psiclean(void);
 
-  int psi4_driver(Options & options)
+  int psi4_driver()
   {
+      Options& options = Process::environment.options;
+
       // Initialize the list of function pointers for each module
       setup_driver(options);
 

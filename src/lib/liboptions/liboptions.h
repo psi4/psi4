@@ -318,6 +318,7 @@ namespace psi {
             wrong_input = false;
         if (wrong_input)
           throw DataTypeException(s + " is not a valid choice");
+        changed();
         str_ = s;
       }
       else {
@@ -375,6 +376,7 @@ namespace psi {
             wrong_input = false;
         if (wrong_input)
           throw DataTypeException(s + " is not a valid choice");
+        changed();
         str_ = s;
       }
       else {
@@ -506,12 +508,14 @@ namespace psi {
     virtual Data& operator[](unsigned int i) {
       if (i >= array_.size())
         throw IndexException("out of range");
+      changed();
       return array_[i];
     }
     virtual Data& operator[](std::string s) {
       unsigned int i = static_cast<unsigned int>(std::strtod(s.c_str(), NULL));
       if (i >= array_.size())
         throw IndexException("out of range");
+      changed();
       return array_[i];
     }
     virtual bool is_array() const {
@@ -605,13 +609,19 @@ namespace psi {
 
   class Options
   {
-    bool globals_;
+    bool edit_globals_;
+
+    /// "Active" set of options
     std::map<std::string, Data> keyvals_;
+
+    /// "Global" set of options
+    std::map<std::string, Data> globals_;
+
     typedef std::map<std::string, Data>::iterator iterator;
     typedef std::map<std::string, Data>::const_iterator const_iterator;
 
   public:
-    Options() { }
+    Options() :edit_globals_(false) { }
 
     Options & operator=(const Options& rhs) {
       // Don't self copy
@@ -622,8 +632,8 @@ namespace psi {
       return *this;
     }
 
-    bool read_globals() const { return globals_; }
-    void set_read_globals(bool _b) { globals_ = _b; }
+    bool read_globals() const { return edit_globals_; }
+    void set_read_globals(bool _b) { edit_globals_ = _b; }
 
     void to_upper(std::string& str) {
       std::transform(str.begin(), str.end(), str.begin(), ::toupper);
@@ -632,14 +642,16 @@ namespace psi {
     void add(std::string key, DataType *data) {
       to_upper(key);
 
+      std::map<std::string, Data> & local = edit_globals_ ? globals_ : keyvals_;
+
       // Make sure the key isn't already there
-      iterator pos = keyvals_.find(key);
-      if (pos != keyvals_.end()) { // If it is there, make sure they are the same type
-        if (pos->second.type() != data->type())
-          throw DuplicateKeyException();
-        return;
+      iterator pos = local.find(key);
+      if (pos != local.end()) { // If it is there, make sure they are the same type
+          if (pos->second.type() != data->type())
+              throw DuplicateKeyException();
+          return;
       }
-      keyvals_[key] = Data(data);
+      local[key] = Data(data);
     }
     void add(std::string key, bool b) {
       add(key, new BooleanDataType(b));
@@ -688,85 +700,153 @@ namespace psi {
       get(key).assign(s);
     }
 
+    void set_global_bool(std::string key, bool b) {
+      get_global(key).assign(b);
+    }
+    void set_global_int(std::string key, int i) {
+      get_global(key).assign(i);
+    }
+    void set_global_double(std::string key, double d) {
+      get_global(key).assign(d);
+    }
+    void set_global_str(std::string key, std::string s) {
+      get_global(key).assign(s);
+    }
+
     void clear(void) {
       keyvals_.clear();
     }
 
-    bool exists(std::string key) {
+    bool exists_in_active(std::string key) {
       to_upper(key);
+
       iterator pos = keyvals_.find(key);
       if (pos != keyvals_.end())
         return true;
       return false;
     }
 
+    bool exists_in_global(std::string key) {
+      to_upper(key);
+
+      iterator pos = globals_.find(key);
+      if (pos != globals_.end())
+        return true;
+      return false;
+    }
+
     Data& get(std::string key) {
       to_upper(key);
-      if (!exists(key)) {
+      if (!exists_in_active(key)) {
         // Key not found. Throw an error
         throw IndexException(key);
       }
       return keyvals_[key];
     }
 
+    Data& get(std::map<std::string, Data>& m, std::string& key) {
+        to_upper(key);
+        return m[key];
+    }
+
+    Data& get_global(std::string key) {
+      to_upper(key);
+      if (!exists_in_global(key)) {
+        // Key not found. Throw an error
+        throw IndexException(key);
+      }
+      return globals_[key];
+    }
+
+    Data& use(std::string& key)
+    {
+        to_upper(key);
+
+        // edit globals being true overrides everything
+        if (edit_globals_)
+            return get(globals_, key);
+
+        if (!exists_in_active(key) && !exists_in_global(key))
+            throw IndexException(key);
+        else if (!exists_in_active(key) && exists_in_global(key))
+            return get(globals_, key);
+        else if (exists_in_active(key) && exists_in_global(key)) {
+            Data& active = get(keyvals_, key);
+
+            if (active.has_changed() == false) {
+                // Pull from globals
+                return get(globals_, key);
+            }
+            else {
+                // Pull from keyvals
+                return get(keyvals_, key);
+            }
+        }
+        else
+            return get(keyvals_, key);
+    }
+
     bool get_bool(std::string key) {
-      return(static_cast<bool>(get(key).to_integer()));
+      return(static_cast<bool>(use(key).to_integer()));
     }
 
     int get_int(std::string key) {
-      return(get(key).to_integer());
+      return(use(key).to_integer());
     }
 
     double get_double(std::string key) {
-      return(get(key).to_double());
+      return(use(key).to_double());
     }
 
     std::string get_str(std::string key) {
-      return(get(key).to_string());
+      return(use(key).to_string());
     }
 
     int* get_int_array(std::string key) {
-      int *array = new int[get(key).size()];
-      for (unsigned int i=0; i<get(key).size(); ++i) {
-        array[i] = get(key)[i].to_integer();
+      int *array = new int[use(key).size()];
+      for (unsigned int i=0; i<use(key).size(); ++i) {
+        array[i] = use(key)[i].to_integer();
       }
       return array;
     }
 
     std::vector<int> get_int_vector(std::string key) {
       std::vector<int> array;
-      for (unsigned int i=0; i<get(key).size(); ++i) {
-        array.push_back(get(key)[i].to_integer());
+      for (unsigned int i=0; i<use(key).size(); ++i) {
+        array.push_back(use(key)[i].to_integer());
       }
       return array;
     }
 
     double* get_double_array(std::string key) {
-      double *array = new double[get(key).size()];
-      for (unsigned int i=0; i<get(key).size(); ++i) {
-        array[i] = get(key)[i].to_double();
+      double *array = new double[use(key).size()];
+      for (unsigned int i=0; i<use(key).size(); ++i) {
+        array[i] = use(key)[i].to_double();
       }
       return array;
     }
 
     std::vector<double> get_double_vector(std::string key) {
       std::vector<double> array;
-      for (unsigned int i=0; i<get(key).size(); ++i) {
-        array.push_back(get(key)[i].to_double());
+      for (unsigned int i=0; i<use(key).size(); ++i) {
+        array.push_back(use(key)[i].to_double());
       }
       return array;
     }
 
     const char* get_cstr(std::string key) {
-      return(get(key).to_string().c_str());
+      return(use(key).to_string().c_str());
     }
 
     Data& operator[](std::string key) {
-      return get(key);
+      return use(key);
     }
 
     std::string to_string() const;
+    std::string globals_to_string() const;
+
     void print();
+    void print_globals();
 
     void read_ipv1();
 

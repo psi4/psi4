@@ -42,7 +42,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
   options.add_int("CHARGE", 0);
   /*- (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
   options.add_int("MULTP", 1);
-  
+
   if (name == "INPUT"|| options.read_globals()) {
     ip_cwk_add(const_cast<char*>(":INPUT"));
     /*- The units used for the geometry -*/
@@ -97,35 +97,35 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     /* The number of virtual orbitals to freeze in correlated computations -*/
     options.add_int("FREEZE_VIRT",0);
   }
-  else if (name == "SAPT"|| options.read_globals()) {
+  if (name == "SAPT"|| options.read_globals()) {
     ip_cwk_add(":SAPT");
     /*- The level of theory for SAPT -*/
-    options.add_str("SAPT_LEVEL","SAPT0","SAPT0");      
+    options.add_str("SAPT_LEVEL","SAPT0","SAPT0");
     /*- The ubiquitous debug flag -*/
-    options.add_bool("DEBUG",false);  
+    options.add_bool("DEBUG",false);
     /*- The ubiquitous print flag -*/
-    options.add_int("PRINT",1);  
+    options.add_int("PRINT",1);
     /*- E converge value -*/
-    options.add_int("E_CONVERGE",10);  
+    options.add_int("E_CONVERGE",10);
     /*- D converge value -*/
-    options.add_int("D_CONVERGE",8);  
+    options.add_int("D_CONVERGE",8);
     /*- Max CPHF iterations -*/
-    options.add_int("MAXITER",50);  
+    options.add_int("MAXITER",50);
     /*- DIIS vecs -*/
-    options.add_int("DIISVECS",5);  
+    options.add_int("DIISVECS",5);
     /*- Compute linear response integrals? -*/
-    options.add_bool("LR_INTS",false);  
+    options.add_bool("LR_INTS",false);
     /*- Use a restart file? -*/
-    options.add_bool("DF_RESTART",false);  
+    options.add_bool("DF_RESTART",false);
     /*- Use a restart file? -*/
-    options.add_bool("T2_RESTART",false);  
+    options.add_bool("T2_RESTART",false);
     /*- Build a log file? -*/
-    options.add_bool("LOGFILE",false);  
+    options.add_bool("LOGFILE",false);
     /*- Schwarz cutoff -*/
-    options.add_double("SCHWARZ_CUTOFF",1.0E-12);  
+    options.add_double("SCHWARZ_CUTOFF",1.0E-12);
 
   }
-  else if(name == "DCFT"|| options.read_globals()) {
+  if(name == "DCFT"|| options.read_globals()) {
       ip_cwk_add(":DCFT");
       /*- The amount of information printed
           to the output file -*/
@@ -171,11 +171,11 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
       /*- (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
       options.add_int("MULTP", 0);
   }
-  else if (name == "MINTS"|| options.read_globals()) {
+  if (name == "MINTS"|| options.read_globals()) {
       /*- primary basis set -*/
       options.add_str("BASIS","");
   }
-  else if (name == "CINTS"|| options.read_globals()) {
+  if (name == "CINTS"|| options.read_globals()) {
     ip_cwk_add(const_cast<char*>(":CINTS"));
     /*- The execution mode of cints, these were the command line arguments you could send -*/
     options.add_str("MODE", "", "FOCK OEINTS TEINTS DERIV1 DERIV1_INTS DERIV2 OEPROP MP2 R12INTS MP2R12 MKPT2 CC_BT2 GIAO_DERIV");
@@ -206,7 +206,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_int("ERI_FILE", PSIF_SO_TEI);
 
   }
-  else if (name == "SCF"|| options.read_globals()) {
+  if (name == "SCF"|| options.read_globals()) {
     /*- The DFT grid specification, such as SG1 -*/
     options.add_str("GRID_STRING","","SG1");
     /*- The number of radial points in the DFT grid -*/
@@ -337,7 +337,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     /*- Whether to print the molecular orbitals -*/
     options.add_bool("PRINT_MOS", false);
     /*- The amount of debugging information to print -*/
-    options.add_int("DEBUG", 0);
+    options.add_bool("DEBUG", false);
     /*- -Log10 of the energy convergence criterion -*/
     options.add_int("E_CONVERGE", 8);
     /*- -Log10 of the density convergence criterion -*/
@@ -369,7 +369,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     /*- SAD Guess Cholesky Cutoff (for eliminating redundancies) -*/
     options.add_double("SAD_CHOL_CUTOFF", 1E-7);
   }
-  else if (name == "MP2"|| options.read_globals()) {
+  if (name == "MP2"|| options.read_globals()) {
     options.add_str("WFN", "");
     options.add_str("REFERENECE", "RHF");
     options.add_str("JOBTYPE", "SP");
@@ -382,7 +382,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_double("SCALE_OS", 6.0/5.0);
     options.add_double("SCALE_SS", 1.0/3.0);
   }
-  else if(name == "TRANSQT2"|| options.read_globals()) {
+  if(name == "TRANSQT2"|| options.read_globals()) {
     options.add_str("WFN", "");
     options.add_str("REFERENCE","RHF");
     options.add_str("DERTYPE", "NONE");
@@ -390,10 +390,11 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_bool("PRINT_TEI", false);
     options.add_int("TOLERANCE", 14);
     options.add_int("CACHELEV", 2);
-    options.add_str("AO_BASIS", "NONE");
+    /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
+    options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
     options.add_bool("DELETE_TEI", true);
   }
-  else if(name == "TRANSQT"|| options.read_globals()) {
+  if(name == "TRANSQT"|| options.read_globals()) {
     options.add_int("PRINT_LVL", 1);
     options.add_str("REFERENCE","RHF");
     options.add_str("MODE", "TO_MO", "TO_MO TO_AO");
@@ -427,6 +428,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_int("BB_M_FILE", PSIF_MO_BB_TEI);
     options.add_int("AB_M_FILE", PSIF_MO_AB_TEI);
     options.add_int("MAX_BUCKETS", 499);
+    /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
     options.add_bool("DELETE_AO", true);
     options.add_bool("DELETE_TPDM", true);
@@ -441,7 +443,11 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_bool("LAGRAN_HALVE", false);
     options.add_bool("DO_ALL_TEI", false);
     options.add_bool("TPDM_ADD_REF", false);
-    options.add_bool("FREEZE_CORE", true);
+//    options.add_bool("FREEZE_CORE", true);
+    /*- The scope of core orbitals to freeze in later correlated computations -*/
+#warning TransQT freeze_core keyword type was changed.
+    options.add_str("FREEZE_CORE","FALSE", \
+      "FALSE TRUE SMALL LARGE");
     options.add_bool("DELETE_RESTR_DOCC", true);
     options.add_bool("PRINT_REORDER", false);
     options.add_bool("PITZER", false);
@@ -454,11 +460,11 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add("SOCC", new ArrayType());
 
   }
-  else if(name == "CUSP"|| options.read_globals()){
+  if(name == "CUSP"|| options.read_globals()){
     options.add("FROZEN_DOCC", new ArrayType());
     options.add("FROZEN_UOCC", new ArrayType());
   }
-  else if(name == "CCSORT"|| options.read_globals()) {
+  if(name == "CCSORT"|| options.read_globals()) {
     options.add_str("WFN", "");
     options.add_str("REFERENCE", "RHF");
     options.add_str("DERTYPE", "NONE");
@@ -469,13 +475,17 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_double("LOCAL_CORE_CUTOFF",0.05);
     options.add_str("LOCAL_METHOD","WERNER");
     options.add_str("LOCAL_WEAKP","NONE");
-    options.add_str("FREEZE_CORE","NONE");
+    /*- The scope of core orbitals to freeze in later correlated computations -*/
+#warning CCSort freeze_core keyword type was changed.
+    options.add_str("FREEZE_CORE","FALSE", \
+      "FALSE TRUE SMALL LARGE");
     options.add_str("LOCAL_PAIRDEF","BP");
     options.add_bool("LOCAL_DOMAIN_POLAR", false);
     options.add_bool("LOCAL_DOMAIN_MAG", false);
     options.add_bool("LOCAL_DOMAIN_SEP", false);
     options.add_bool("LOCAL_FILTER_SINGLES", false);
-    options.add_str("AO_BASIS","NONE");
+    /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
+    options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
     options.add_str("EOM_REFERENCE","RHF");
     options.add_int("PRINT", 0);
     options.add_bool("KEEP_TEIFILE", false);
@@ -485,19 +495,21 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_bool("LOCAL", false);
     options.add("OMEGA", new ArrayType());
   }
-  else if(name == "CCTRIPLES"|| options.read_globals()) {
+  if(name == "CCTRIPLES"|| options.read_globals()) {
     options.add_str("WFN", "");
     options.add_int("NTHREADS",1);
     options.add_str("REFERENCE","RHF");
     options.add_str("DERTYPE","NONE");
   }
-  else if(name == "CCDENSITY"|| options.read_globals()) {
+  if(name == "CCDENSITY"|| options.read_globals()) {
     options.add_str("WFN", "SCF");
     options.add_str("REFERENCE","RHF");
     options.add_str("DERTYPE","NONE");
     options.add_int("TOLERANCE",14);
     options.add_int("CACHELEV",2);
-    options.add_bool("AO_BASIS",false);
+    /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
+#warning CCDensity ao_basis keyword type was changed.
+    options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
     options.add_bool("AEL",false);
     options.add_str("GAUGE","LENGTH");
     options.add_bool("RELAX_OPDM",false);
@@ -507,7 +519,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_int("PROP_SYM", 0);
     options.add_int("PROP_ROOT", 0);
   }
-  else if(name == "CCLAMBDA"|| options.read_globals()) {
+  if(name == "CCLAMBDA"|| options.read_globals()) {
     options.add_str("WFN","SCF");
     options.add_int("CONVERGENCE",7);
     options.add_bool("RESTART",false);
@@ -515,7 +527,9 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_int("CACHELEV",2);
     options.add_bool("SEKINO",false);
     options.add_bool("DIIS",true);
-    options.add_bool("AO_BASIS",false);
+    /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
+#warning CCLambda ao_basis keyword type was changed.
+    options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
     options.add_str("ABCD","NEW");
     options.add_int("NUM_AMPS",10);
     options.add_str("DERTYPE","NONE");
@@ -526,7 +540,10 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_str("LOCAL_METHOD","WERNER");
     options.add_bool("LOCAL_FILTER_SINGLES",true);
     options.add_double("LOCAL_CPHF_CUTOFF",0.10);
-    options.add_str("FREEZE_CORE","FALSE");
+    /*- The scope of core orbitals to freeze in later correlated computations -*/
+#warning CCLambda freeze_core keyword type was changed.
+    options.add_str("FREEZE_CORE","FALSE", \
+      "FALSE TRUE SMALL LARGE");
     options.add_str("LOCAL_PAIRDEF","");
     options.add("STATES_PER_IRREP", new ArrayType());
     options.add_bool("PROP_ALL",false);
@@ -534,22 +551,22 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_int("PROP_ROOT",1);
     options.add_int("MAXITER",50);
   }
-  else if(name == "CLAG"|| options.read_globals()) {
+  if(name == "CLAG"|| options.read_globals()) {
     options.add_bool("WRITE_CAS_FILES",0);
     options.add_str("DERTYPE","NONE");
     options.add_str("WFN","NONE");
     options.add_int("ROOT",1);
   }
-  else if(name == "STABLE"|| options.read_globals()) {
+  if(name == "STABLE"|| options.read_globals()) {
     options.add_int("PRINT",1);
     options.add_int("CACHELEV",2);
-    options.add_str("REFERENCE",0);
+    options.add_str("REFERENCE","RHF");
     options.add_bool("FOLLOW",false);
     options.add_int("NUM_EVECS_PRINT",0);
     options.add_int("ROTATION_METHOD",0);
     options.add_double("SCALE",0.5);
   }
-  else if(name == "OEPROP"|| options.read_globals()) {
+  if(name == "OEPROP"|| options.read_globals()) {
     options.add_int("NUM_ROOTS",1);
     options.add_int("ROOT",1);
     options.add_int("GRID",0);
@@ -589,11 +606,14 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_bool("NUC_ESP", true);
     options.add_double("FINE_STRUCTURE_ALPHA", 1.0);
     options.add_bool("QED_DARWIN", false);
-    options.add_str("FREEZE_CORE","FALSE");
+    /*- The scope of core orbitals to freeze in later correlated computations -*/
+#warning OEProp freeze_core keyword type was changed.
+    options.add_str("FREEZE_CORE","FALSE", \
+      "FALSE TRUE SMALL LARGE");
     options.add("DOCC", new ArrayType());
     options.add("SOCC", new ArrayType());
   }
-  else if(name == "CCHBAR"|| options.read_globals()) {
+  if(name == "CCHBAR"|| options.read_globals()) {
     options.add_bool("TAMPLITUDE",false);
     options.add_int("CACHELEV",2);
     options.add_int("PRINT",0);
@@ -602,12 +622,12 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_bool("WABEI_LOWDISK", false);
     options.add_str("EOM_REFERENCE","RHF");
   }
-  else if(name == "CCRESPONSE"|| options.read_globals()) {
+  if(name == "CCRESPONSE"|| options.read_globals()) {
     options.add_str("WFN", "SCF");
     options.add_int("PRINT",1);
     options.add_int("CACHELEV",2);
     options.add_str("REFERENCE","RHF");
-    options.add_str("DERTYPE",0);
+    options.add_str("DERTYPE", "NONE");
     options.add_str("GAUGE","LENGTH");
     options.add_int("MAXITER",50);
     options.add_int("CONVERGENCE",7);
@@ -621,7 +641,10 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_str("LOCAL_WEAKP","NONE");
     options.add_bool("LOCAL_FILER_SINGLES", false);
     options.add_double("LOCAL_CPHF_CUTOFF",0.10);
-    options.add_str("FREEZE_CORE","FALSE");
+    /*- The scope of core orbitals to freeze in later correlated computations -*/
+#warning CCREsponse freeze_core keyword type was changed.
+    options.add_str("FREEZE_CORE","FALSE", \
+      "FALSE TRUE SMALL LARGE");
     options.add_str("LOCAL_PAIRDEF","NONE");
     options.add_bool("ANALYZE",0);
     options.add_int("NUM_AMPS",5);
@@ -629,7 +652,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_bool("LINEAR",0);
     options.add("OMEGA",new ArrayType());
   }
-  else if(name == "MVO"|| options.read_globals()) {
+  if(name == "MVO"|| options.read_globals()) {
    options.add_str("WFN","CCSD");
    options.add_int("FZC_FILE", PSIF_OEI);
    options.add_bool("PRINT_MOS",false);
@@ -651,13 +674,13 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
    options.add("SOCC", new ArrayType());
    options.add("DOCC_VIRT", new ArrayType());
   }
-  else if(name == "RESPONSE"|| options.read_globals()){
+  if(name == "RESPONSE"|| options.read_globals()){
     options.add_int("PRINT", 1);
     options.add_str("REFERENCE", "RHF");
     options.add("OMEGA", new ArrayType());
     options.add_str("PROPERTY","POLARIZABILITY");
   }
-  else if(name == "MCSCF"|| options.read_globals()) {
+  if(name == "MCSCF"|| options.read_globals()) {
     /*- The molecular charge -*/
     options.add_int("CHARGE", 0);
     /*- (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
@@ -665,7 +688,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_int("CONVERGENCE",9);
     options.add_int("LEVELSHIFT",0);
     /*- The amount of debugging information to print -*/
-    options.add_int("DEBUG", 0);
+    options.add_bool("DEBUG", false);
     /*- -Log10 of the energy convergence criterion -*/
     options.add_int("E_CONVERGE", 12);
     /*- -Log10 of the density convergence criterion -*/
@@ -691,10 +714,10 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_str("REFERENCE","RHF","RHF ROHF UHF TWOCON MCSCF GENERAL");
     options.add_str("WFN_SYM","1","A AG AU AP APP A1 A2 B BG BU B1 B2 B3 B1G B2G B3G B1U B2U B3U 0 1 2 3 4 5 6 7 8");
   }
-  else if(name == "EXTREMA"|| options.read_globals()) {
+  if(name == "EXTREMA"|| options.read_globals()) {
     options.add_str("COORDINATES","foo");
   }
-  else if(name == "CCENERGY"|| options.read_globals()) {
+  if(name == "CCENERGY"|| options.read_globals()) {
     options.add_bool("NEWTRIPS", 1);
     options.add_str("WFN", "NONE", "CCSD CCSD_T EOM_CCSD LEOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
     options.add_str("REFERENCE", "RHF");
@@ -705,6 +728,8 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_int("CONVERGENCE", 7);
     options.add_bool("RESTART",1);
     options.add_bool("FORCE_RESTART", 0);
+    /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
+#warning CCEnergy ao_basis keyword type was changed.
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
     options.add_int("CACHELEV", 2);
     options.add_str("CACHETYPE", "LOW", "LOW LRU");
@@ -720,7 +745,10 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_str("LOCAL_WEAKP", "NONE", "NONE NEGLECT MP2");
     //options.add_int("LOCAL_FILTER_SINGLES", 1);
     options.add_double("LOCAL_CPHF_CUTOFF", 0.10);
-    options.add_bool("FREEZE_CORE", 0);
+    /*- The scope of core orbitals to freeze in later correlated computations -*/
+#warning CCEnergy freeze_core keyword type was changed.
+    options.add_str("FREEZE_CORE","FALSE", \
+      "FALSE TRUE SMALL LARGE");
     options.add_str("LOCAL_PAIRDEF", "BP", "BP RESPONSE");
     options.add_int("NUM_AMPS", 10);
     options.add_int("BRUECKNER_CONV", 5);
@@ -736,7 +764,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_double("CC_SCALE_OS", 1.27);
     options.add_double("CC_SCALE_SS",1.13);
   }
-  else if(name == "CIS"|| options.read_globals()) {
+  if(name == "CIS"|| options.read_globals()) {
     options.add_str("WFN", "CIS", "CCSD CCSD_T EOM_CCSD CIS");
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
     options.add_double("LOCAL_AMP_PRINT_CUTOFF", 0.60);
@@ -753,7 +781,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add("DOMAINS", new ArrayType());
     options.add_bool("DOMAIN_PRINT", 0);
   }
-  else if(name == "LMP2"|| options.read_globals()) {
+  if(name == "LMP2"|| options.read_globals()) {
     /*- The wavefunction desired -*/
     options.add_str("RI_BASIS_MP2", "NONE");
     options.read_ipv1();
@@ -783,7 +811,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_bool("SCREEN_INTS", false);
     options.add_int("SCHWARTZ_TOL", 12);
    }
-  else if(name=="DFMP2"|| options.read_globals()) {
+  if(name=="DFMP2"|| options.read_globals()) {
     //options.add_str("WFN", "RI-MP2");
     /*- RI Basis, needed by Python -*/
     options.add_str("RI_BASIS_MP2","NONE");
@@ -814,15 +842,15 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     /*- Number of threads to compute integrals with. 0 is wild card -*/
     options.add_int("RI_INTS_NUM_THREADS", 1);
     options.add_int("PRINT",1);
-    options.add_int("DEBUG",0);
+    options.add_bool("DEBUG",false);
     /*- -Log10 of the energy convergence criterion -*/
     options.add_int("E_CONVERGE", 8);
     /*- -Log10 of the density convergence criterion -*/
     options.add_int("D_CONVERGE", 8);
   }
-  else if(name == "PSIMRCC"|| options.read_globals()) {
+  if(name == "PSIMRCC"|| options.read_globals()) {
     options.add_int("CORR_CHARGE",0);
-    options.add_int("DEBUG",0);
+    options.add_bool("DEBUG",false);
     options.add_int("DAMPING_FACTOR",0);
     options.add_int("MAXDIIS",7);
     options.add_int("NUM_THREADS",1);
@@ -865,10 +893,10 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_str("TRIPLES_ALGORITHM","RESTRICTED","SPIN_ADAPTED RESTRICTED UNRESTRICTED");
     options.add_str("MP2_CCSD_METHOD","II","I IA II");
   }
-  else if(name == "OPTKING"|| options.read_globals()) {
+  if(name == "OPTKING"|| options.read_globals()) {
     /*- Maximum number of permitted steps in geometry optimization -*/
     options.add_int("NOPT", 40);
-    options.add_bool("NO_LINE_SEARCH", true); // whether to prevent any line searches; true is not yet implemented in psi4 
+    options.add_bool("NO_LINE_SEARCH", true); // whether to prevent any line searches; true is not yet implemented in psi4
   }
 
   if (call_ipv1) {

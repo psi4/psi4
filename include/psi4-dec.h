@@ -61,13 +61,16 @@ namespace psi {
           std::string operator()(const std::string& key);
           const std::string& set(const std::string& key, const std::string& value);
 
-          // Set active molecule
+          /// Set active molecule
           void set_molecule(boost::shared_ptr<Molecule> molecule);
-          // Return active molecule
+          /// Return active molecule
           boost::shared_ptr<Molecule> molecule() const;
 
           /// Map containing current energies
           std::map<std::string, double> globals;
+
+          /// "Global" liboptions object.
+          Options options;
       };
 
       class Arguments

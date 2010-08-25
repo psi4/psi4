@@ -40,32 +40,32 @@ PsiReturnType execute_bp(std::string & bp, Options & options) {
       errcod = ip_count(jobList, &numTasks, 0);
 
       if (!ip_exist(jobList, 0)){
-	std::string err("Error: jobtype ");
-	err += jobList;
-	err += " is not defined in psi.dat";
-	throw PsiException(err, __FILE__, __LINE__);
+    std::string err("Error: jobtype ");
+    err += jobList;
+    err += " is not defined in psi.dat";
+    throw PsiException(err, __FILE__, __LINE__);
       }
 
       if (errcod != IPE_OK){
-	std::string err("Error: trouble reading ");
-	err += jobList;
-	err += " array from psi.dat";
-	throw PsiException(err, __FILE__, __LINE__);
+    std::string err("Error: trouble reading ");
+    err += jobList;
+    err += " array from psi.dat";
+    throw PsiException(err, __FILE__, __LINE__);
       }
     }
 /*    else {
       errcod = ip_count(jobList, &numTasks, 0);
       if (!ip_exist(jobList, 0)){
-	std::string err("Error: jobtype ");
-	err += jobList;
-	err += " is not defined in psi.dat";
-	throw PsiException(err, __FILE__, __LINE__);
+    std::string err("Error: jobtype ");
+    err += jobList;
+    err += " is not defined in psi.dat";
+    throw PsiException(err, __FILE__, __LINE__);
       }
       if (errcod != IPE_OK){
-	std::string err("Error: trouble reading ");
-	err += jobList;
-	err += " array from psi.dat";
-	throw PsiException(err, __FILE__, __LINE__);
+    std::string err("Error: trouble reading ");
+    err += jobList;
+    err += " array from psi.dat";
+    throw PsiException(err, __FILE__, __LINE__);
       }
     } */
 
@@ -95,7 +95,7 @@ PsiReturnType execute_bp(std::string & bp, Options & options) {
       ss.clear();
       ss << thisJobWithArguments;
       while (ss >> buf)
-	tokens.push_back(buf);
+    tokens.push_back(buf);
 
       free(thisJob);
       thisJob = const_cast<char *>(tokens[0].c_str()); // module name for dispatch table
@@ -104,67 +104,69 @@ PsiReturnType execute_bp(std::string & bp, Options & options) {
       int length = strlen(thisJob);
       std::transform(thisJob, thisJob + length, thisJob, ::toupper);
       if(Communicator::world->me() == 0) {
-	fprintf(outfile, "\n  Job %d is %s\n", n, thisJob); fflush(outfile);
+    fprintf(outfile, "\n  Job %d is %s\n", n, thisJob); fflush(outfile);
       }
 
       // Read the options for thisJob.
       read_options(thisJob, options);
 
+      options.print();
+
       // Handle MODE (command line argument passed in task list
       if (tokens.size() > 1) {
-	// Convert token to upper case
-	std::transform(tokens[1].begin(), tokens[1].end(), tokens[1].begin(), ::toupper);
-	// Set the option overriding anything the user said.
-	options.set_str("MODE", tokens[1]);
+    // Convert token to upper case
+    std::transform(tokens[1].begin(), tokens[1].end(), tokens[1].begin(), ::toupper);
+    // Set the option overriding anything the user said.
+    options.set_str("MODE", tokens[1]);
       }
 
       // If the function call is LMP2, run in parallel
       if(strcmp(thisJob, "LMP2") == 0 || strcmp(thisJob, "DFMP2") == 0) {
-	// Needed a barrier before the functions are called
-	Communicator::world->sync();
+    // Needed a barrier before the functions are called
+    Communicator::world->sync();
 
-	if (dispatch_table[thisJob](options) != Success) {
-	  // Good chance at this time that an error occurred.
-	  // Report it to the user.
-	  fprintf(stderr, "%s did not return a Success code.\n", thisJob);
-	  throw PsiException("Module failed.", __FILE__, __LINE__);
-	}
+    if (dispatch_table[thisJob](options) != Success) {
+      // Good chance at this time that an error occurred.
+      // Report it to the user.
+      fprintf(stderr, "%s did not return a Success code.\n", thisJob);
+      throw PsiException("Module failed.", __FILE__, __LINE__);
+    }
       }
       // If any other functions are called only process 0 runs the function
       else {
-	if (dispatch_table.find(thisJob) != dispatch_table.end()) {
-	  // Needed a barrier before the functions are called
-	  Communicator::world->sync();
-	  if(Communicator::world->me() == 0) {
-	    if (dispatch_table[thisJob](options) != Success) {
-	      // Good chance at this time that an error occurred.
-	      // Report it to the user.
-	      fprintf(stderr, "%s did not return a Success code.\n", thisJob);
-	      throw PsiException("Module failed.", __FILE__, __LINE__);
-	    }
-	  }
-	}
-	else {
-	  std::transform(thisJob, thisJob + length, thisJob, ::tolower);
+    if (dispatch_table.find(thisJob) != dispatch_table.end()) {
+      // Needed a barrier before the functions are called
+      Communicator::world->sync();
+      if(Communicator::world->me() == 0) {
+        if (dispatch_table[thisJob](options) != Success) {
+          // Good chance at this time that an error occurred.
+          // Report it to the user.
+          fprintf(stderr, "%s did not return a Success code.\n", thisJob);
+          throw PsiException("Module failed.", __FILE__, __LINE__);
+        }
+      }
+    }
+    else {
+      std::transform(thisJob, thisJob + length, thisJob, ::tolower);
 
-	  // Close the output file, allowing the external program to write to it.
-	  if (!outfile_name.empty())
-	    fclose(outfile);
+      // Close the output file, allowing the external program to write to it.
+      if (!outfile_name.empty())
+        fclose(outfile);
 
-	  // Attempt to run the external program
-	  int ret = ::system(thisJob);
+      // Attempt to run the external program
+      int ret = ::system(thisJob);
 
-	  // Re-open the output file, allowing psi4 to take output control again.
-	  if (!outfile_name.empty())
-	    fopen(outfile_name.c_str(), "a");
+      // Re-open the output file, allowing psi4 to take output control again.
+      if (!outfile_name.empty())
+        fopen(outfile_name.c_str(), "a");
 
-	  if (ret == -1 || ret == 127) {
-	    std::string err = "Module ";
-	    err += thisJob;
-	    err += " is not known to PSI4.  Please update the driver\n";
-	    throw PsiException(err, __FILE__, __LINE__);
-	  }
-	}
+      if (ret == -1 || ret == 127) {
+        std::string err = "Module ";
+        err += thisJob;
+        err += " is not known to PSI4.  Please update the driver\n";
+        throw PsiException(err, __FILE__, __LINE__);
+      }
+    }
       }
 
       tokens.clear();
