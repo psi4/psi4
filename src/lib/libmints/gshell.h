@@ -7,16 +7,15 @@ namespace psi {
 
 class Vector3;
 
+enum PrimitiveType { Normalized, Unnormalized };
+enum GaussianType { Cartesian, Pure };
+
 /*! \ingroup MINTS
  *  \class GaussianShell
  *  \brief Gaussian orbital shell.
  */
 class GaussianShell
 {
-public:
-    enum PrimitiveType { Normalized, Unnormalized };
-    enum GaussianType { Cartesian, Pure };
-
 private:
     /// number of primitives used in this contraction
     int nprimitives_;
@@ -94,7 +93,7 @@ public:
               int nc,
               Vector3& center,
               int start,
-              PrimitiveType pt = GaussianShell::Normalized);
+              PrimitiveType pt = Normalized);
 
     /// The number of primitive Gaussians
     int nprimitive() const          { return nprimitives_; }

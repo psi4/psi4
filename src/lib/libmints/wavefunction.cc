@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <cmath>
 
+#include <liboptions/liboptions.h>
 #include <psifiles.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>

@@ -54,10 +54,12 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
     }
 
     // Regular expressions that we'll be checking for.
-    regex comment("^\\s*\\!.*");                                    // line starts with !
-    regex separator("^\\*\\*\\*\\*");                               // line starts with ****
-    regex atom_array("^\\s*([A-Za-z]+)\\s+0.*");               // array of atomic symbols terminated by 0
-    regex shell("^\\s*(\\w+)\\s*(\\d+)\\s*(-?\\d+\\.\\d+)");        // Match beginning of contraction
+    regex cartesian("^cartesian", regbase::icase);
+    regex spherical("^spherical", regbase::icase);
+    regex comment("^\\s*\\!.*");                                       // line starts with !
+    regex separator("^\\*\\*\\*\\*");                                  // line starts with ****
+    regex atom_array("^\\s*([A-Za-z]+)\\s+0.*");                       // array of atomic symbols terminated by 0
+    regex shell("^\\s*(\\w+)\\s*(\\d+)\\s*(-?\\d+\\.\\d+)");           // Match beginning of contraction
     regex primitives1("^\\s*(-?\\d+\\.\\d+)\\s*(-?\\d+\\.\\d+).*");    // Match s, p, d, f, g, ... functions
     regex primitives2("^\\s*(-?\\d+\\.\\d+)\\s*(-?\\d+\\.\\d+)\\s*(-?\\d+\\.\\d+).*"); // match sp functions
     regex primitives3("^\\s*(-?\\d+\\.\\d+)\\s*(-?\\d+\\.\\d+)\\s*(-?\\d+\\.\\d+)\\s*(-?\\d+\\.\\d+).*"); // match spd functions
@@ -72,6 +74,10 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
     smatch what;
 
     for (int atom=0; atom<molecule->natom(); ++atom) {
+        // Basis type.
+        GaussianType gaussian_type = Pure;
+
+        // Pull atomic center location
         Vector3 center = molecule->xyz(atom);
 
         // Modify the name of the basis set to generate a filename: STO-3G -> sto-3g
@@ -128,6 +134,17 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
             // Ignore blank lines
             if (line.empty())
                 continue;
+
+            // Look for Cartesian or Spherical
+            if (regex_match(line, what, cartesian)) {
+                gaussian_type = Cartesian;
+                continue;
+            }
+
+            if (regex_match(line, what, spherical)) {
+                gaussian_type = Pure;
+                continue;
+            }
 
             // Do some matches
             if (regex_match(line, what, comment)) {
@@ -201,7 +218,7 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
                                 new_shell->init(nprimitive,
                                                 exponents,
                                                 am,
-                                                GaussianShell::Pure,
+                                                gaussian_type,
                                                 contractions,
                                                 atom,
                                                 center,
@@ -256,7 +273,7 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
                                 new_shell->init(nprimitive,
                                                 exponents,
                                                 am1,
-                                                GaussianShell::Pure,
+                                                gaussian_type,
                                                 contractions1,
                                                 atom,
                                                 center,
@@ -268,7 +285,7 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
                                 new_shell->init(nprimitive,
                                                 exponents,
                                                 am2,
-                                                GaussianShell::Pure,
+                                                gaussian_type,
                                                 contractions2,
                                                 atom,
                                                 center,

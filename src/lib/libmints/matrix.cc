@@ -7,6 +7,7 @@
  *
  */
 
+#include <exception.h>
 #include <libciomr/libciomr.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
