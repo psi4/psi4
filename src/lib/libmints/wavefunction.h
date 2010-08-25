@@ -19,7 +19,6 @@ extern double fac[MAX_FAC];
 #define INDEX4(i, j, k, l) ( INDEX2( INDEX2((i), (j)), INDEX2((k), (l)) ) )
 
 #include "factory.h"
-#include <liboptions/liboptions.h>
 
 namespace psi {
 

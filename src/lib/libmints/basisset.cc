@@ -248,7 +248,7 @@ void BasisSet::initialize_shells(shared_ptr<Chkpt> chkpt, std::string& basiskey)
         // Construct a new shell. GaussianShell copies the data to new memory
         shells_.push_back(shared_ptr<GaussianShell>(new GaussianShell));
         shells_[i]->init(nprims, &(exponents[fprim]), am,
-            puream_ ? GaussianShell::Pure : GaussianShell::Cartesian, cc, shell_center_[i], center,
+            puream_ ? Pure : Cartesian, cc, shell_center_[i], center,
             puream_start);
 
         if (nprims > max_nprimitives_)
@@ -359,7 +359,7 @@ shared_ptr<BasisSet> BasisSet::zero_basis_set()
     double c = 1.0;
 
     // Add the null-s-function
-    new_basis->shells_[0]->init(1, &e, am, GaussianShell::Cartesian, &c, 0, center, 0, GaussianShell::Normalized);
+    new_basis->shells_[0]->init(1, &e, am, Cartesian, &c, 0, center, 0, Normalized);
 
     // Add s-function SO transform.
     new_basis->sotransform_->add_transform(0, 0, 0, 1.0, 0, 0);
@@ -524,7 +524,7 @@ shared_ptr<BasisSet> BasisSet::atomic_basis_set(int fcenter)
             shared_ptr<GaussianShell> shell(new GaussianShell);
             int nprm = shells_[i]->nprimitive();
             int am = shells_[i]->am();
-            GaussianShell::GaussianType harmonics = (shells_[i]->is_pure() ? GaussianShell::Pure : GaussianShell::Cartesian);
+            GaussianType harmonics = (shells_[i]->is_pure() ? Pure : Cartesian);
             int nc = 0; // In the atomic basis, always on the 0th atom
             int start = 0; //Will be reset later
             Vector3 center = shells_[i]->center();
