@@ -130,7 +130,7 @@ ERI::ERI(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet>bs2, shared_ptr<BasisSet>
     }
     memset(source_, 0, sizeof(double)*size);
 
-    fjt_ = new Taylor_Fjt(bs1->max_am() + bs2->max_am() + bs3->max_am() + bs4->max_am() + deriv_, 1e-15);
+    fjt_ = new Taylor_Fjt(bs1->max_am() + bs2->max_am() + bs3->max_am() + bs4->max_am() + deriv_+1, 1e-15);
 
     screen_ = false;
     if (schwarz != 0.0)
