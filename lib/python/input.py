@@ -60,15 +60,11 @@ def process_molecule_command(matchobj):
     spaces = matchobj.group(1)
     name = matchobj.group(2)
     geometry = matchobj.group(3)
-    reorient = "True"
-    com = "True"
     molecule = spaces
     if name != "":
         molecule += '%s = ' % (name)
 
     molecule += 'geometry("""%s"""' % (geometry)
-    molecule += ',%s' % (reorient)
-    molecule += ',%s' % (com)
     if name != "":
         molecule += ',"%s"' % (name)
 
@@ -82,6 +78,7 @@ def process_extract_command(matchobj):
     name = matchobj.group(2)
     extract = matchobj.group(0)
     extract += spaces + "PsiMod.set_active_molecule(%s)" % name   
+    extract += '\nPsiMod.IO.set_default_namespace("%s")' % name   
  
     return extract
 
