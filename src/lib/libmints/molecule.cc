@@ -934,8 +934,8 @@ Molecule::create_molecule_from_string(const std::string &text)
             if(lineNumber == lines.size() - 1)
                 throw PSIEXCEPTION("Nothing specified after the final \"--\" in geometry");
             // Now we process the atom markers
-            mol->fragments_.push_back(std::make_pair(firstAtom, lineNumber));
-            firstAtom = lineNumber;
+            mol->fragments_.push_back(std::make_pair(firstAtom, atomCount));
+            firstAtom = atomCount;
             // Figure out how to handle the multiplicity
             if(regex_match(lines[lineNumber+1], reMatches, chargeAndMultiplicity_)){
                 // The user specified a charge/multiplicity for this fragment
@@ -1242,7 +1242,6 @@ Molecule::extract_subsets(const std::vector<int> &real_list, const std::vector<i
                 clone->add_atom(0, x, y, z, label, mass, charge);
                 fprintf(outfile, "Adding ghost atom %s %f %f %f\n",label, x,y,z);fflush(outfile);
             }
-            fprintf(outfile,"%s\n",geometryString_[atom].c_str());
             clone->geometryString_.push_back(geometryString_[atom]);
         }
         if (isReal) {
