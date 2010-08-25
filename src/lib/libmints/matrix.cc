@@ -1423,6 +1423,15 @@ void SimpleMatrix::add(shared_ptr<SimpleMatrix> plus)
     add(plus.get());
 }
 
+void SimpleMatrix::element_add_mirror()
+{
+    for (int i=0; i<rows_; ++i) {
+        for (int j=0; j<i; ++j) {
+            matrix_[i][j] = matrix_[j][i] = (matrix_[i][j] + matrix_[j][i]);
+        }
+    }
+}
+
 void SimpleMatrix::subtract(const SimpleMatrix* plus)
 {
     double *lhs, *rhs;

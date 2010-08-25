@@ -319,6 +319,9 @@ void OneBodyInt::compute_deriv1(std::vector<shared_ptr<Matrix> > &result)
 
 void OneBodyInt::compute_deriv1(std::vector<shared_ptr<SimpleMatrix> > &result)
 {
+    if (deriv_ < 1)
+        throw SanityCheckError("OneBodyInt::compute_deriv1(result): integral object not created to handle derivatives.", __FILE__, __LINE__);
+
     // Do not worry about zeroing out result
     int ns1 = bs1_->nshell();
     int ns2 = bs2_->nshell();
@@ -345,9 +348,16 @@ void OneBodyInt::compute_shell_deriv1(int, int)
 
 void OneBodyInt::compute_deriv2(std::vector<shared_ptr<SimpleMatrix> > &result)
 {
+    if (deriv_ < 2)
+        throw SanityCheckError("OneBodyInt::compute_deriv1(result): integral object not created to handle derivatives.", __FILE__, __LINE__);
+
     // Do not worry about zeroing out result
     int ns1 = bs1_->nshell();
     int ns2 = bs2_->nshell();
+
+    // Check the length of result, must be 9*natom_
+    if (result.size() != 9*natom_)
+        throw SanityCheckError("OneBodyInt::compute_derv2(result): result must be 9 * natom in length.", __FILE__, __LINE__);
 
     for (int i=0; i<ns1; ++i) {
         for (int j=0; j<ns2; ++i) {

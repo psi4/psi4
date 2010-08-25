@@ -104,7 +104,7 @@ namespace psi {
                 throw PSIEXCEPTION("Illegal value " + str + " in atom specification"
                                    + " on line " + line + "\n\n");
             }else{
-                return distance(atoms.begin(), iter); 
+                return distance(atoms.begin(), iter);
             }
         }
     }
@@ -393,10 +393,10 @@ SimpleMatrix Molecule::nuclear_repulsion_energy_deriv2()
         int iy = ix+1;
         int iz = iy+1;
 
-        for (int j=0; j<=i; ++j) {
+        for (int j=0; j<i; ++j) {
             int jx = 3*j;
-            int jy = jx+j;
-            int jz = jy+j;
+            int jy = jx+1;
+            int jz = jy+1;
 
             sx = x(i) - x(j);
             sy = y(i) - y(j);
@@ -433,6 +433,9 @@ SimpleMatrix Molecule::nuclear_repulsion_energy_deriv2()
             hess.add(iz, jz, -pfac*(3*sz*sz-r2));
         }
     }
+
+    hess.element_add_mirror();
+
     return hess;
 }
 
@@ -935,7 +938,7 @@ Molecule::create_molecule_from_string(const std::string &text)
         throw PSIEXCEPTION("Illegal geometry specification line : " + lines[0] +
                        ".  You should provide either Z-Matrix or Cartesian input");
     };
-    
+
     mol->set_geometry_string(lines);
 //    mol->update_geometry();
     return mol;
@@ -975,7 +978,7 @@ Molecule::update_geometry()
                 throw PSIEXCEPTION("Illegal atom symbol in geometry specification: " + splitLine[0]
                                    + " on line\n" + *(line));
             atomSym = boost::to_upper_copy(reMatches[1].str());
-            x = get_value(splitLine[1], *line) * conversionFactor;  
+            x = get_value(splitLine[1], *line) * conversionFactor;
             y = get_value(splitLine[2], *line) * conversionFactor;
             z = get_value(splitLine[3], *line) * conversionFactor;
             add_atom((int)zVals[atomSym], x, y, z, atomSym.c_str(), atomic_masses[(int)zVals[atomSym]]);
@@ -1014,7 +1017,7 @@ Molecule::update_geometry()
                 atomSym = boost::to_upper_copy(reMatches[1].str());
                 atoms.push_back(splitLine[0]);
                 rTo = get_anchor_atom(splitLine[1], atoms, *line);
-                if(rTo >= currentAtom) 
+                if(rTo >= currentAtom)
                      throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
                                          + splitLine[1] + " has not been defined yet.");
                 r = get_value(splitLine[2], *line) * conversionFactor;
@@ -1032,12 +1035,12 @@ Molecule::update_geometry()
                 atomSym = boost::to_upper_copy(reMatches[1].str());
                 atoms.push_back(splitLine[0]);
                 rTo = get_anchor_atom(splitLine[1], atoms, *line);
-                if(rTo >= currentAtom) 
+                if(rTo >= currentAtom)
                      throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
                                          + splitLine[1] + " has not been defined yet.");
                 r = get_value(splitLine[2], *line) * conversionFactor;
                 aTo = get_anchor_atom(splitLine[3], atoms, *line);
-                if(aTo >= currentAtom) 
+                if(aTo >= currentAtom)
                      throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
                                          + splitLine[3] + " has not been defined yet.");
                 a = get_value(splitLine[4], *line);
@@ -1066,17 +1069,17 @@ Molecule::update_geometry()
                 atomSym = boost::to_upper_copy(reMatches[1].str());
                 atoms.push_back(splitLine[0]);
                 rTo = get_anchor_atom(splitLine[1], atoms, *line);
-                if(rTo >= currentAtom) 
+                if(rTo >= currentAtom)
                      throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
                                          + splitLine[1] + " has not been defined yet.");
                 r = get_value(splitLine[2], *line) * conversionFactor;
                 aTo = get_anchor_atom(splitLine[3], atoms, *line);
-                if(aTo >= currentAtom) 
+                if(aTo >= currentAtom)
                      throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
                                          + splitLine[3] + " has not been defined yet.");
                 a = get_value(splitLine[4], *line);
                 dTo = get_anchor_atom(splitLine[5], atoms, *line);
-                if(dTo >= currentAtom) 
+                if(dTo >= currentAtom)
                      throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
                                          + splitLine[5] + " has not been defined yet.");
                 d = get_value(splitLine[6], *line);
@@ -1085,9 +1088,9 @@ Molecule::update_geometry()
 
                 a *= M_PI / 180.0;
                 d *= M_PI / 180.0;
-            
+
                 /*
-                 * The atom specification is 
+                 * The atom specification is
                  *      this       rTo   rVal  aTo  aVal   dTo   dVal
                  *        D         C           B           A
                  * which allows us to define the vector from B->C (eBC) as the +z axis, and eAB
@@ -1108,9 +1111,9 @@ Molecule::update_geometry()
                 Vector3 eY = eAB.perp_unit(eBC);
                 Vector3 eX = eY.perp_unit(eBC);
 
-                x = atoms_[rTo].x + r * ( -eBC[0] * cosBCD + eX[0] * sinBCD * cosABCD + eY[0] * sinBCD * sinABCD); 
-                y = atoms_[rTo].y + r * ( -eBC[1] * cosBCD + eX[1] * sinBCD * cosABCD + eY[1] * sinBCD * sinABCD); 
-                z = atoms_[rTo].z + r * ( -eBC[2] * cosBCD + eX[2] * sinBCD * cosABCD + eY[2] * sinBCD * sinABCD); 
+                x = atoms_[rTo].x + r * ( -eBC[0] * cosBCD + eX[0] * sinBCD * cosABCD + eY[0] * sinBCD * sinABCD);
+                y = atoms_[rTo].y + r * ( -eBC[1] * cosBCD + eX[1] * sinBCD * cosABCD + eY[1] * sinBCD * sinABCD);
+                z = atoms_[rTo].z + r * ( -eBC[2] * cosBCD + eX[2] * sinBCD * cosABCD + eY[2] * sinBCD * sinABCD);
             }
             add_atom((int)zVals[atomSym], x, y, z, atomSym.c_str(), atomic_masses[(int)zVals[atomSym]]);
             ++currentAtom;

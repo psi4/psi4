@@ -48,7 +48,7 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
     // Ensure that the number of atoms match the number of basis names
     if (molecule->natom() != basisnames.size()) {
         fprintf(outfile, "Gaussian94BasisSetParser::parse: Number of atoms does not match number of basis set names.\n");
-        fprintf(outfile, "molecule->natom() = %d     basisnames.size() = %d\n", molecule->natom(), basisnames.size());
+        fprintf(outfile, "molecule->natom() = %d     basisnames.size() = %lu\n", molecule->natom(), basisnames.size());
         fflush(outfile);
         throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Number of atoms does not match number of basis set names.");
     }
