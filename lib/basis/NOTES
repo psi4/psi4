@@ -1,0 +1,267 @@
+Tuesday, August 24, 2010
+notes on psi4 basis sets -- LAB
+
+*******************************************************************************
+*******************************************************************************
+
+
+General
+
+[21]	The status formerly conferred by puream = T/F in pbasis is now indicated by the word 'cartesian' or 'spherical' at the top of the .gbs file. A basic script for prepending this label to multiple files is included in primitives.tar.
+
+[20]	Warning! EMSL has a very restrictive view on what elements are defined for a given basis set. Its 6-31G* is undefined for H & He since these have no polarization functions set by *. Its cc-pCVXZ is undefined for H & He since these don't need any core functions added (the internal processor in EMSL likely does a restrictive sum of cc-pVDZ and a set of core functions). Its cc-pV(X+d)Z is only defined for Al-Ar since other elements are identical to cc-pVXZ. In other words, don't heedlessly download a basis set from EMSL and install it as new or as a replacement because it may not be complete or it may create an inconsistency in other basis sets that (should) share functions. Examine the dependency charts below. The same applies to correcting an exponent or coefficient. Trace and correct all dependencies. If performing a large-scale update, consider the scripts described below and included in primitives.tar.
+
+
+Pople basis sets
+
+[19]	Basis sets sto-3g and 3-21g and the families 6-31g and 6-311g are included.
+
+[18]	Same "Pople-style Diffuse" from EMSL applies to both 6-31G & 6-311G.
+
+[17]	Manually added blank H-He entries to single-plus/single-star/double-plus/double-star diffuse or polarization component files where valid.
+
+[16]	For (2d,2p) polarization set for 6-311G, deleted Ge-Kr because only one D function present, copied from (d,p). That is, EMSL basis was not as advertised. Also, Br exponent changed (0.415 vs. 0.451) in a suspicious manner.
+
+[15]	The prospect of checking in symbolic links (e.g., between 6-311ppgss and 6-311ppG_d_p_) was perturbing, and some that would need to be established for Dunning sets (e.g., aug-cc-pvdz-ri and aug-cc-pv_dpd_z-ri) were non-obvious. In such situations, identical files with different names are created. For Dunning sets, these copies are generated automatically by the script.
+
+[14]	Notes in pbasis on sto-3g state that the gaussian 5D convention was used. However, a puream is never set for sto-3g, meaning it will default to cartesian (6D). However, none of the elements defined in pbasis include d-functions, so the issue is moot. In the gbs version, which does have elements with d-functions, sto-3g will be set as 5D in accordance with the pbasis note and the Gaussian website. In other words, done as psi3 says, not as it does.
+
+
+Dunning basis sets
+
+[13]	Every plain and -RI basis set that could be formed at the D, T, Q, 5, or 6-zeta level from EMSL data is included. Since Dunning basis sets have strongly additive definitions (see table below), this results in far more basis sets (and with broader element ranges) than it might look from EMSL. When basis sets of different names are actually identical, identical files with different names are created. It is hoped that such a scheme will permit default density-fitting bases to be easily set.
+
+[12]	Dual-basis basis sets are truncated from (aug-)cc-pVXZ bases in accordance with JCP 125 074108 and JCTC 5 1560 and consistent with the q-chem manual. I have taken the liberty of applying the first-row truncation scheme to the second row for aug-cc-pVXZ-DUAL basis sets, as this was defined in the paper for the cc-pVXZ-DUAL basis sets and has been used internally within the (Sherrill) lab.
+
+[11]	JKFIT basis sets were taken from Molpro since they aren't specified in detail in the relevant paper and the website the relevant paper recommends is dead. People at Molpro have themselves extended the basis set to cover noble gas elements, augmentation by diffuse functions, and the double-zeta family. Unfortunately, for Ga-Br, they haven't formatted the basis functions to read in properly. Consequently, for these elements, you'll never get a matching energy between Molpro and Psi. I've implemented the basis set as Molpro says, not as it does.
+
+[10]	Heavy-augmented basis sets implemented in all accessible cases (including RI, JKFIT, and DUAL) to save trouble for the user. Also implemented is a local favorite, aug-cc-pVDZ', accessible as aug-cc-pVDZp.
+
+[9]	Currently in pbasis I have defined (aug-)cc-pVXZ-RI-QCHEM (X=DTQ) for consistency with Q-Chem, which uses outdated coefficients for a very few elements in the (aug-)cc-pVXZ-RI basis sets. Rather than continue this here, I mean to appeal to Q-Chem to update their definitions. The affected elements are {C,N,O,F} in (aug-)cc-pVDZ-RI and {Ne} in (aug-)cc-pVTZ-RI and (aug-)cc-pVQZ-RI.
+
+[8]	Ignoring cc-pwCVXZ-RI (X=DTQ5) family from EMSL since defined for six-element block Cu-Hg only. For more conventional elements, the basis is available as defined in the table below.
+
+[7]	In JCP 132 054108 (2010), Hill and co. announced an update of the f-function exponents for the sulfur atom in cc-pV6Z. This is incorporated into the EMSL basis set but not into all its dependencies [for example cc-pV(6+d)Z]. File basis-cc-pv_6pd_z.gbs was corrected.
+
+[6]	The basis set families (aug-)cc-p(wC)VXZ and (aug-)cc-p(wC)V(X+d)Z differ only for the d-functions in the six-atom block Al-Ar. The change involves adjusting existing exponents and adding an additional d-function. The (aug-)cc-p(wC)V(X+d)Z basis sets are strongly preferred.
+
+[5]	Hattig and co. (the developers) have defined the (aug-)cc-p(wC)VXZ-RI basis set to be equivalent to the corresponding (aug-)cc-p(wC)V(X+d)Z-RI set. That is, they optimized the RI fitting bases to reproduce the more correct (X+d) variant.
+
+[4]	The JKFIT basis sets (Weigend) were published just a year after the announcement that cc-pVXZ were deficient for Al-Ar and that cc-pV(X+d)Z were recommended in their stead. Weigend makes no acknowledgement of the (X+d) variant in his discussion. Since the original trouble with Al-Ar arose from CBS extrapolations of the correlation energy and JKFIT is primarily concerned with the HF stage, this would seem a minimal issue. Nevertheless, Weigand states that an additional steep f function for Al-Cl was added to jkfit (x=t,q). Since fitting basis sets generally have l+1 highest angmom fns (where l is highest in target basis), this is actually compatible with the extra tight d function in (X+d). Thus I (the copy-and-paster) declare (aug-)cc-p(wC)VXZ-JKFIT basis set to be equivalent to the corresponding (aug-)cc-p(wC)V(X+d)Z-JKFIT set.
+
+
+Scripts
+
+[3]	Basis sets in EMSL are available as full basis sets, supplementary polarization functions, supplementary diffuse functions, supplementary core functions, etc.. As downloaded from EMSL, gbs files with filename very close to the EMSL name are kept in the primitives.tar file. Using such component files necessitates the operation of 'adding' basis sets. A script emsl_manipulate.pl is available to merge the two gbs files given as its arguments for elements which are present in both. Run the script without arguments for description of further capabilities.
+
+[2]	For Pople-style basis sets, the emsl_manipulate.pl script is perfectly adequate, since it's obvious how to build up a given basis. Accessible Dunning basis sets are far more numerous and their dependencies more complex (see table below). Moreover, element ranges as well as component files need to be built up. A script is available make_dunning.pl that essentially encodes the table below so that, in the presence of component gbs files from EMSL (stored in primitives.tar), it generates the full Dunning basis sets. Note that diff comparisons with complex basis sets downloaded from EMSL won't be clean because EMSL resorts all functions into S, P, D, etc. blocks. Also note DUAL and aug-cc-pVDZp basis sets are not built through this script. The script is recommended for any extensive update to Dunning basis sets. This will preserve consistency as 'GET LOWER_BASIS' did in pbasis.
+
+[1]	Running the script documentbases.pl in a folder with gbs files creates a html page that displays what elements are available in each basis set file.
+
+
+*******************************************************************************
+*******************************************************************************
+
+
+Pople-style
+
+plain			heavy_diffuse	full_diffuse	alt_name
+-------------------------------------------------------------------------------
+sto-3g
+3-21g
+
+
+6-31G			+		++
+6-31G(d)		+		++		duplicated-as-s
+6-31G(d,p)		+		++		duplicated-as-ss
+
+
+6-311G			+		++
+6-311G(d)		+		++		duplicated-as-s
+6-311G(d,p)		+		++		duplicated-as-ss
+
+6-311G(2d)		+		++
+6-311G(2d,p)		+		++
+6-311G(2d,2p)		+		++
+
+6-311G(2df)		+		++
+6-311G(2df,p)		+		++
+6-311G(2df,2p)		+		++
+6-311G(2df,2pd)		+		++
+
+6-311G(3df)		+		++
+6-311G(3df,p)		+		++
+6-311G(3df,2p)		+		++
+6-311G(3df,2pd)		+		++
+6-311G(3df,3pd)		+		++
+
+
+*******************************************************************************
+*******************************************************************************
+
+
+Dunning-style
+
+The labels (A) below are shortcuts to EMSL files (B) of a basis set closely matching the file name. In order to form a complete 
+specification, the amendments (D) need to be made. Basis sets are available at zeta levels (C).
+
+(A)		   (B)					(C)	(D)
+---------------------------------------------------------------------------------------------------------------------------------------------
+1		=  basis-cc-pvxz			DTQ56
+2		=  basis-cc-pv_xpd_z			DTQ56	only def. for Al-Ar, other elements appended from basis-cc-pvxz
+19		=  basis-cc-pvxz-ri			DTQ56
+37		=  molpro-basis-cc-pvxz-jkfit		DTQ5
+
+diffuse		=  diffuse-aug-cc-pvxz			DTQ56
+diffuse_xpd 	=  diffuse-aug-cc-pv_xpd_z		DTQ56	only def. for Al-Ar, other elements appended from diffuse-aug-cc-pvxz
+d-diffuse	=  diffuse-d-aug-cc-pvxz		DTQ56
+d-diffuse_xpd	=  DNE					-----
+diffuse_ri	=  diffuse-aug-cc-pvxz-ri		DTQ56
+d-diffuse_ri	=  DNE					-----
+diffuse_jk	=  molpro-diffuse-aug-cc-pvxz-jkfit	DTQ5
+d-diffuse_jk	=  DNE					-----
+
+core		=  corevalence-cc-pcvxz			DTQ56	blanks-added-for: H,He
+w-core		=  tight-cc-pwcvxz			DTQ5	blanks-added-for: H,He
+core_ri		=  DNE					-----
+w-core_ri	=  tight-cc-pwcvxz-ri			DTQ5	blanks-added-for: H,He
+core_jk		=  DNE					-----
+w-core_jk	=  DNE					-----
+
+
+detailed description of necessary constructions
+2		=  basis-cc-pvxz.gbs with elements Al-Ar replaced by basis-cc-pv_xpd_z.gbs [net change compared to 1 is (for Al-Ar) new 
+		   exponents for all d-orbitals and one extra d-orbital]
+diffuse_xpd 	=  diffuse-aug-cc-pvxz.gbs with elements Al-Ar replaced by diffuse-aug-cc-pv_xpd_z.gbs [net change compared to diffuse is 
+		   (for Al-Ar) a new exponent for the d-orbital]
+core		=  corevalence-cc-pcvxz.gbs with blank entries added for H and He, which require no supplementary functions to describe core
+w-core		=  tight-cc-pwcvxz.gbs with blank entries added for H and He, which require no supplementary functions to describe core
+w-core_ri	=  tight-cc-pwcvxz-ri.gbs with blank entries added for H and He, which require no supplementary functions to describe core
+
+
+key
+[elem: label]	=  elements in list elem are taken from basis set label
+DNE		=  basis sets not available
+
+
+
+basis				label	straightforward_construction	fundamental_construction				available
+---------------------------------------------------------------------------------------------------------------------------------------------
+!  cc-pVXZ			 1	=   1				=   1							DTQ56
+!  cc-pV(X+d)Z			 2	=   2				=   2							DTQ56
+!  cc-pCVXZ			 3	=   1 + core			=   1 + core						DTQ56
+!  cc-pCV(X+d)Z			 4	=   2 + core			=   2 + core						DTQ56
+!  cc-pwCVXZ			 5	=   1 + w-core			=   1 + w-core						DTQ5
+!  cc-pwCV(X+d)Z		 6	=   2 + w-core			=   2 + w-core						DTQ5
+
+!  aug-cc-pVXZ			 7	=   1 + diffuse			=   1 + diffuse						DTQ56
+!  aug-cc-pV(X+d)Z		 8	=   2 + diffuse_xpd		=   2 + diffuse_xpd					DTQ56
+!  aug-cc-pCVXZ			 9	=   3 + diffuse			=   1 + core + diffuse					DTQ56
+!  aug-cc-pCV(X+d)Z		10	=   4 + diffuse_xpd		=   2 + core + diffuse_xpd				DTQ56
+!  aug-cc-pwCVXZ		11	=   5 + diffuse			=   1 + w-core + diffuse				DTQ5
+!  aug-cc-pwCV(X+d)Z		12	=   6 + diffuse_xpd		=   2 + w-core + diffuse_xpd				DTQ5
+
+!  heavy-aug-cc-pVXZ		73	=   7 [H-He:  1]		=   1 + diffuse [H-He:  1]				DTQ56
+!  heavy-aug-cc-pV(X+d)Z	74	=   8 [H-He:  1]		=   2 + diffuse_xpd [H-He:  1]				DTQ56
+!  heavy-aug-cc-pCVXZ		75	=   9 [H-He:  1]		=   1 + core + diffuse [H-He:  1]			DTQ56
+!  heavy-aug-cc-pCV(X+d)Z	76	=  10 [H-He:  1]		=   2 + core + diffuse_xpd [H-He:  1]			DTQ56
+!  heavy-aug-cc-pwCVXZ		77	=  11 [H-He:  1]		=   1 + w-core + diffuse [H-He:  1]			DTQ5
+!  heavy-aug-cc-pwCV(X+d)Z	78	=  12 [H-He:  1]		=   2 + w-core + diffuse_xpd [H-He:  1]			DTQ5
+
+!  d-aug-cc-pVXZ		13	=   7 + d-diffuse		=   1 + diffuse + d-diffuse				DTQ56
+!  d-aug-cc-pV(X+d)Z		14	=   8 + d-diffuse_xpd		=   2 + diffuse_xpd + d-diffuse_xpd			-----
+!  d-aug-cc-pCVXZ		15	=   9 + d-diffuse		=   1 + core + diffuse + d-diffuse			DTQ56
+!  d-aug-cc-pCV(X+d)Z		16	=  10 + d-diffuse_xpd		=   2 + core + diffuse_xpd + d-diffuse_xpd		-----
+!  d-aug-cc-pwCVXZ		17	=  11 + d-diffuse		=   1 + w-core + diffuse + d-diffuse			DTQ5
+!  d-aug-cc-pwCV(X+d)Z		18	=  12 + d-diffuse_xpd		=   2 + w-core + diffuse_xpd + d-diffuse_xpd		-----
+
+
+!  cc-pVXZ-RI			19	=  19				=  19							DTQ56
+!  cc-pV(X+d)Z-RI		20	=  19				=  19							DTQ56
+!  cc-pCVXZ-RI			21	=  19 + core_ri			=  19 + core_ri						-----
+!  cc-pCV(X+d)Z-RI		22	=  21				=  19 + core_ri						-----
+!  cc-pwCVXZ-RI			23	=  19 + w-core_ri		=  19 + w-core_ri					DTQ5
+!  cc-pwCV(X+d)Z-RI		24	=  23				=  19 + w-core_ri					DTQ5
+
+!  aug-cc-pVXZ-RI		25	=  19 + diffuse_ri		=  19 + diffuse_ri					DTQ56
+!  aug-cc-pV(X+d)Z-RI		26	=  25				=  19 + diffuse_ri					DTQ56
+!  aug-cc-pCVXZ-RI		27	=  21 + diffuse_ri		=  19 + core_ri + diffuse_ri				-----
+!  aug-cc-pCV(X+d)Z-RI		28	=  27				=  19 + core_ri + diffuse_ri				-----
+!  aug-cc-pwCVXZ-RI		29	=  23 + diffuse_ri		=  19 + w-core_ri + diffuse_ri				DTQ5
+!  aug-cc-pwCV(X+d)Z-RI		30	=  29				=  19 + w-core_ri + diffuse_ri				DTQ5
+
+!  heavy-aug-cc-pVXZ-RI		79	=  25 [H-He: 19]		=  19 + diffuse_ri [H-He: 19]				DTQ56
+!  heavy-aug-cc-pV(X+d)Z-RI	80	=  79				=  19 + diffuse_ri [H-He: 19]				DTQ56
+!  heavy-aug-cc-pCVXZ-RI	81	=  27 [H-He: 19]		=  19 + core_ri + diffuse_ri [H-He: 19]			-----
+!  heavy-aug-cc-pCV(X+d)Z-RI	82	=  81				=  19 + core_ri + diffuse_ri [H-He: 19]			-----
+!  heavy-aug-cc-pwCVXZ-RI	83	=  29 [H-He: 19]		=  19 + w-core_ri + diffuse_ri [H-He: 19]		DTQ5
+!  heavy-aug-cc-pwCV(X+d)Z-RI	84	=  83				=  19 + w-core_ri + diffuse_ri [H-He: 19]		DTQ5
+
+!  d-aug-cc-pVXZ-RI		31	=  25 + d-diffuse_ri		=  19 + diffuse_ri + d-diffuse_ri			-----
+!  d-aug-cc-pV(X+d)Z-RI		32	=  31				=  19 + diffuse_ri + d-diffuse_ri			-----
+!  d-aug-cc-pCVXZ-RI		33	=  27 + d-diffuse_ri		=  19 + core_ri + diffuse_ri + d-diffuse_ri		-----
+!  d-aug-cc-pCV(X+d)Z-RI	34	=  33				=  19 + core_ri + diffuse_ri + d-diffuse_ri		-----
+!  d-aug-cc-pwCVXZ-RI		35	=  29 + d-diffuse_ri		=  19 + w-core_ri + diffuse_ri + d-diffuse_ri		-----
+!  d-aug-cc-pwCV(X+d)Z-RI	36	=  35				=  19 + w-core_ri + diffuse_ri + d-diffuse_ri		-----
+
+
+!  cc-pVXZ-JKFIT		37	=  37				=  37							DTQ5
+!  cc-pV(X+d)Z-JKFIT		38	=  37				=  37							DTQ5
+!  cc-pCVXZ-JKFIT		39	=  37 + core_jk			=  37 + core_jk						-----
+!  cc-pCV(X+d)Z-JKFIT		40	=  39				=  37 + core_jk						-----
+!  cc-pwCVXZ-JKFIT		41	=  37 + w-core_jk		=  37 + w-core_jk					-----
+!  cc-pwCV(X+d)Z-JKFIT		42	=  41				=  37 + w-core_jk					-----
+
+!  aug-cc-pVXZ-JKFIT		43	=  37 + diffuse_jk		=  37 + diffuse_jk					DTQ5
+!  aug-cc-pV(X+d)Z-JKFIT	44	=  43				=  37 + diffuse_jk					DTQ5
+!  aug-cc-pCVXZ-JKFIT		45	=  39 + diffuse_jk		=  37 + core_jk + diffuse_jk				-----
+!  aug-cc-pCV(X+d)Z-JKFIT	46	=  45				=  37 + core_jk + diffuse_jk				-----
+!  aug-cc-pwCVXZ-JKFIT		47	=  41 + diffuse_jk		=  37 + w-core_jk + diffuse_jk				-----
+!  aug-cc-pwCV(X+d)Z-JKFIT	48	=  47				=  37 + w-core_jk + diffuse_jk				-----
+
+!  heavy-aug-cc-pVXZ-JKFIT	85	=  43 [H-He: 37]		=  37 + diffuse_jk [H-He: 37]				DTQ5
+!  heavy-aug-cc-pV(X+d)Z-JKFIT	86	=  85				=  37 + diffuse_jk [H-He: 37]				DTQ5
+!  heavy-aug-cc-pCVXZ-JKFIT	87	=  45 [H-He: 37]		=  37 + core_jk + diffuse_jk [H-He: 37]			-----
+!  heavy-aug-cc-pCV(X+d)Z-JKFIT	88	=  87				=  37 + core_jk + diffuse_jk [H-He: 37]			-----
+!  heavy-aug-cc-pwCVXZ-JKFIT	89	=  47 [H-He: 37]		=  37 + w-core_jk + diffuse_jk [H-He: 37]		-----
+!  heavy-aug-cc-pwCV(X+d)Z-JKFIT90	=  89				=  37 + w-core_jk + diffuse_jk [H-He: 37]		-----
+
+!  d-aug-cc-pVXZ-JKFIT		49	=  43 + d-diffuse_jk		=  37 + diffuse_jk + d-diffuse_jk			-----
+!  d-aug-cc-pV(X+d)Z-JKFIT	50	=  49				=  37 + diffuse_jk + d-diffuse_jk			-----
+!  d-aug-cc-pCVXZ-JKFIT		51	=  45 + d-diffuse_jk		=  37 + core_jk + diffuse_jk + d-diffuse_jk		-----
+!  d-aug-cc-pCV(X+d)Z-JKFIT	52	=  51				=  37 + core_jk + diffuse_jk + d-diffuse_jk		-----
+!  d-aug-cc-pwCVXZ-JKFIT	53	=  47 + d-diffuse_jk		=  37 + w-core_jk + diffuse_jk + d-diffuse_jk		-----
+!  d-aug-cc-pwCV(X+d)Z-JKFIT	54	=  53				=  37 + w-core_jk + diffuse_jk + d-diffuse_jk		-----
+
+
+!  cc-pVXZ-DUAL			55	=   1 - selected									 TQ
+!  cc-pV(X+d)Z-DUAL		56	= 
+!  cc-pCVXZ-DUAL		57	= 
+!  cc-pCV(X+d)Z-DUAL		58	= 
+!  cc-pwCVXZ-DUAL		59	= 
+!  cc-pwCV(X+d)Z-DUAL		60	= 
+
+!  aug-cc-pVXZ-DUAL		61	=   7 - selected									DTQ
+!  aug-cc-pV(X+d)Z-DUAL		62	= 
+!  aug-cc-pCVXZ-DUAL		63	= 
+!  aug-cc-pCV(X+d)Z-DUAL	64	= 
+!  aug-cc-pwCVXZ-DUAL		65	= 
+!  aug-cc-pwCV(X+d)Z-DUAL	66	= 
+
+!  heavy-aug-cc-pVXZ-DUAL	91	=  61 [H-He: 55]									 TQ
+!  heavy-aug-cc-pV(X+d)Z-DUAL	92	= 
+!  heavy-aug-cc-pCVXZ-DUAL	93	= 
+!  heavy-aug-cc-pCV(X+d)Z-DUAL	94	= 
+!  heavy-aug-cc-pwCVXZ-DUAL	95	= 
+!  heavy-aug-cc-pwCV(X+d)Z-DUAL	96	= 
+
+!  d-aug-cc-pVXZ-DUAL		67	= 
+!  d-aug-cc-pV(X+d)Z-DUAL	68	= 
+!  d-aug-cc-pCVXZ-DUAL		69	= 
+!  d-aug-cc-pCV(X+d)Z-DUAL	70	= 
+!  d-aug-cc-pwCVXZ-DUAL		71	= 
+!  d-aug-cc-pwCV(X+d)Z-DUAL	72	= 
+
+
+*******************************************************************************
+*******************************************************************************
