@@ -1241,6 +1241,7 @@ Molecule::extract_subsets(const std::vector<int> &real_list, const std::vector<i
                 clone->add_atom(0, x, y, z, label, mass, charge);
                 fprintf(outfile, "Adding ghost atom %s %f %f %f\n",label, x,y,z);fflush(outfile);
             }
+            clone->geometryString_.push_back(geometryString[atom]);
         }
         fragCharge += fragmentCharges_[fragmentNum];
         multiplicity += fragmentMultiplicities_[fragmentNum] - 1;
@@ -1304,7 +1305,7 @@ void Molecule::print() const
 
         for(int i = 0; i < natom(); ++i){
             Vector3 geom = xyz(i);
-            fprintf(outfile, "    %12s ",label(i).c_str()); fflush(outfile);
+            fprintf(outfile, "    %8s%4s ",label(i).c_str(),Z(atom) ? "" : "(Gh)"); fflush(outfile);
             for(int j = 0; j < 3; j++)
                 fprintf(outfile, "  %17.12f", geom[j]);
             fprintf(outfile,"\n");
