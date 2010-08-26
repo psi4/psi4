@@ -861,7 +861,6 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/ccdensity/Makefile
           src/bin/cis/Makefile
           src/bin/scf/Makefile
-          src/bin/optking/Makefile
           src/bin/psimrcc/Makefile
           src/bin/df-mp2/Makefile
           src/bin/sapt/Makefile
