@@ -1,5 +1,8 @@
 import re;
 
+yes = re.compile(r'^(yes|true|on)', re.IGNORECASE)
+no = re.compile(r'^(no|false|off)', re.IGNORECASE)
+
 def process_global_command(matchobj):
     spaces = matchobj.group(1)
     key   = matchobj.group(2).upper()
@@ -10,6 +13,10 @@ def process_global_command(matchobj):
     elif re.match(r'^\$', value):
         # Assume the user as set the variable in value
         return spaces + 'PsiMod.set_global_option("%s", %s)' % (key, value[1:])
+    elif re.match(yes, value):
+        return spaces + 'PsiMod.set_global_option("%s", True)' % (key)
+    elif re.match(no, value):
+        return spaces + 'PsiMod.set_global_option("%s", False)' % (key)
     else:
         return spaces + 'PsiMod.set_global_option("%s", "%s")' % (key, value)
 
@@ -38,6 +45,10 @@ def process_set_command(matchobj):
     elif re.match(r'^\$', value):
         # Assume the user as set the variable in value
         return spaces + 'PsiMod.set_option("%s", %s)' % (key, value[1:])
+    elif re.match(yes, value):
+        return spaces + 'PsiMod.set_option("%s", True)' % (key)
+    elif re.match(no, value):
+        return spaces + 'PsiMod.set_option("%s", False)' % (key)
     else:
         # Just place the value in quotes
         return spaces + 'PsiMod.set_option("%s", "%s")' % (key, value)
@@ -85,9 +96,9 @@ def process_extract_command(matchobj):
     name = matchobj.group(2)
     extract = matchobj.group(0)
     extract += spaces + '%s.set_name("%s")' %(name,name)
-    extract += "\nPsiMod.set_active_molecule(%s)" % name   
-    extract += '\nPsiMod.IO.set_default_namespace("%s")' % name   
- 
+    extract += "\nPsiMod.set_active_molecule(%s)" % name
+    extract += '\nPsiMod.IO.set_default_namespace("%s")' % name
+
     return extract
 
 def process_print_command(matchobj):
@@ -149,6 +160,7 @@ set scf {
     BASIS 3-21G
     RI_BASIS_SCF STO-3G
     DOCC [3, 0, 1, 1]
+    DIIS on
 }
 
 globals {
