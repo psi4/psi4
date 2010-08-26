@@ -17,6 +17,7 @@
 #include <masses.h>
 #include <physconst.h>
 #include <element_to_Z.h>
+#include <psi4-dec.h>
 
 #include <boost/regex.hpp>
 #include <boost/algorithm/string.hpp>
@@ -240,6 +241,7 @@ Molecule::Molecule():
     atom_to_unique_(0),
     multiplicity_(1),
     molecularCharge_(0),
+    units_(Angstrom),
     geometryFormat_(None),
     fix_orientation_(false),
     name_("default")
@@ -887,7 +889,16 @@ Molecule::create_molecule_from_string(const std::string &text)
     boost::split(lines, text, boost::is_any_of("\n"));
 
     shared_ptr<Molecule> mol(new Molecule);
-    mol->set_units(Angstrom);
+    std::string units = Process::environment.options.get_str("UNITS");
+    if(boost::iequals(units, "ANG") || boost::iequals(units, "ANGSTROM") || boost::iequals(units, "ANGSTROMS")){
+        mol->set_units(Angstrom);
+    }else if(boost::iequals(units, "BOHR") || boost::iequals(units, "AU") || boost::iequals(units, "A.U.")){
+        mol->set_units(Bohr);
+    }else{
+        throw PSIEXCEPTION("Unit " + units + " is not recognized");
+    }
+    mol->molecularCharge_ = Process::environment.options.get_int("CHARGE");
+    mol->multiplicity_ = Process::environment.options.get_int("MULTP");
     /*
      * Time to look for lines that look like they describe charge and multiplicity,
      * a variable, units, comment lines, and blank lines.  When found, process them

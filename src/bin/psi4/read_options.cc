@@ -37,7 +37,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
   /*- Path to basis path -*/
   options.add_str_i("BASIS_PATH", "");
   /*- units to use (global) -*/
-  options.add_str("UNITS", "ANGSTROMS", "BOHR AU ANGSTROMS ANG ANGSTROM");
+  options.add_str("UNITS", "ANGSTROMS", "BOHR AU A.U. ANGSTROMS ANG ANGSTROM");
   /*- The molecular charge -*/
   options.add_int("CHARGE", 0);
   /*- (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
@@ -46,7 +46,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
   if (name == "INPUT"|| options.read_globals()) {
     ip_cwk_add(const_cast<char*>(":INPUT"));
     /*- The units used for the geometry -*/
-    options.add_str("UNITS", "ANGSTROMS", "BOHR AU ANGSTROMS ANGSTROM");
+    options.add_str("UNITS", "ANGSTROMS", "BOHR AU A.U. ANGSTROMS ANGSTROM");
     /*- Allow the user to specify the basis set file to use. -*/
     options.add_str("BASIS_FILE", "");
     /*- Whether to keep the checkpoint file. -*/
