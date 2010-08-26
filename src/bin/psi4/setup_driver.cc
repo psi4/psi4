@@ -23,8 +23,6 @@ namespace psi{
     namespace oeprop   { PsiReturnType oeprop(Options &); }
     namespace transqt  { PsiReturnType transqt(Options &); }
 
-    PsiReturnType opt_step(Options &);
-
 void
 setup_driver(Options &options)
 {
@@ -58,7 +56,6 @@ setup_driver(Options &options)
     dispatch_table["MCSCF"]     = &(psi::mcscf::mcscf);
     dispatch_table["PSIMRCC"]   = &(psi::psimrcc::psimrcc);
     dispatch_table["SAPT"]      = &(psi::sapt::sapt);
-    dispatch_table["OPT_STEP"]  = &(psi::opt_step);
     dispatch_table["CCHBAR"]    = &(psi::cchbar::cchbar);
     dispatch_table["CCLAMBDA"]  = &(psi::cclambda::cclambda);
     dispatch_table["CCDENSITY"] = &(psi::ccdensity::ccdensity);

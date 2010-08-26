@@ -11,7 +11,7 @@ namespace psi{
 
 DIISEntry::DIISEntry(std::string label, int ID, int orderAdded,
                      int errorVectorSize, double *errorVector,
-                     int vectorSize, double *vector):
+                     int vectorSize, double *vector, shared_ptr<PSIO> psio):
         _vectorSize(vectorSize),
         _errorVectorSize(errorVectorSize),
         _vector(vector),
@@ -19,7 +19,7 @@ DIISEntry::DIISEntry(std::string label, int ID, int orderAdded,
         _ID(ID),
         _orderAdded(orderAdded),
         _label(label),
-        _psio(_default_psio_lib_)
+        _psio(psio)
 {
     double sumSQ = C_DDOT(_errorVectorSize, _errorVector, 1, _errorVector, 1);
     _rmsError = sqrt(sumSQ / _errorVectorSize);

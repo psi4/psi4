@@ -25,10 +25,11 @@ class DIISEntry{
          * Pointer  - The quantity will be taken from contiguous memory pointed to by a
          *            double* pointer.  In this case, the next parameter passed to the
          *            set_size.. routines should be the number of elements to read.
+         * Psio     - The PSIO object to use for I/O
          */
         enum InputType {DPDBuf4, DPDFile2, Matrix, Vector, Pointer};
         DIISEntry(std::string label, int ID, int count, int vectorSize, double *vector,
-                  int errorVectorSize, double *errorVector);
+                  int errorVectorSize, double *errorVector, shared_ptr<PSIO> psio);
         ~DIISEntry();
         /// Whether the dot product of this entry's and the nth entry's error vector is known
         bool dot_is_known_with(int n) {return _knownDotProducts[n];}

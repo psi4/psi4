@@ -33,7 +33,8 @@ class DIISManager{
 
         DIISManager(int maxSubspaceSize, std::string label,
                     RemovalPolicy = LargestError,
-                    StoragePolicy = OnDisk);
+                    StoragePolicy = OnDisk,
+                    shared_ptr<PSIO> psio = _default_psio_lib_);
         DIISManager() {_maxSubspaceSize = 0;}
         ~DIISManager();
 
@@ -72,6 +73,8 @@ class DIISManager{
         std::vector<size_t> _componentSizes;
         /// The label used in disk storage of the DIISEntry objects
         std::string _label;
+        /// The PSIO object to use for I/O
+        shared_ptr<PSIO> _psio;
 };
 
 } // End namespace
