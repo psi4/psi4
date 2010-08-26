@@ -2533,7 +2533,7 @@ void RHF::compute_SAD_guess()
         tot_elec+= nelec[A];
         nbeta[A] = (nelec[A]-nhigh[A])/2;
         nalpha[A] = nelec[A]-nbeta[A];
-        //if (print_>6)
+        if (print_>5)
             fprintf(outfile,"  Atom %d, Z = %d, nelec = %d, nhigh = %d, nalpha = %d, nbeta = %d\n",A,Z,nelec[A],nhigh[A],nalpha[A],nbeta[A]);
     }
     fflush(outfile);

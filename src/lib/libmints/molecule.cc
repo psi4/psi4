@@ -123,6 +123,7 @@ namespace psi {
         catch (...) {
             // Update geometry might have added some atoms, delete them to be safe.
             atoms_.clear();
+            full_atoms_.clear();
         }
     }
 
@@ -276,6 +277,7 @@ void Molecule::clear()
 {
     nirreps_ = 0;
     atoms_.empty();
+    full_atoms_.empty();
 }
 
 void Molecule::add_atom(int Z, double x, double y, double z,
@@ -1025,6 +1027,7 @@ Molecule::update_geometry()
 
     // Start over, even if we have atoms already
     atoms_.clear();
+    full_atoms_.clear();
     // Have the atoms been added already?  If so, we only need to update positions.
 //    bool firstRun = natom();
     // Begin by assuming that the user provided angstrom input
