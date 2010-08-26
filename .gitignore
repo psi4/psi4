@@ -9,5 +9,5 @@ configure
 .*
 *.pyc
 output.dat
-psi.32
-psi.timer.dat
+*.32
+*.timer.dat
