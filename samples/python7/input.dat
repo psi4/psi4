@@ -10,6 +10,7 @@ molecule dimer {
      C     0.000000     0.000000     1.693240
      H     0.000000     0.000000     0.627352
      H     0.000000     0.000000     3.963929
+     angstrom
      no_reorient
 }
 
@@ -17,8 +18,10 @@ set scf {
     SCF_TYPE DF
     BASIS cc-pVDZ
     RI_BASIS_SCF cc-pVDZ-RI
-    DIIS FALSE
-    GUESS CORE 
+    DIIS TRUE
+    MAXITER 100
+    E_CONVERGE 8
+    GUESS SAD 
 }
 
 e_dimer = scf()
@@ -26,17 +29,11 @@ e_dimer = scf()
 ethene = dimer.extract_subsets( 1, 2)
 e_ad = scf()
 
-clean()
-
 ethyne = dimer.extract_subsets( 2, 1)
 e_bd = scf()
 
-clean()
-
 ethene_m = dimer.extract_subsets( 1)
 e_am = scf()
-
-clean()
 
 ethyne_m = dimer.extract_subsets( 2)
 e_bm = scf()
@@ -65,8 +62,8 @@ e_intm_kcal = e_intm_h*627.509
 bsse_h = e_intd_h - e_intm_h
 bsse_kcal = e_intd_kcal - e_intm_kcal
 
-print "  E_int    = %15.10f [H] = %15.10f [kcal] (dimer basis)\n" %(e_intd_h, e_intd_kcal)
-print "  E_int    = %15.10f [H] = %15.10f [kcal] (monomer basis)\n" %(e_intm_h, e_intm_kcal)
+print "  E_int    = %15.10f [H] = %15.10f [kcal] (CP Corrected)\n" %(e_intd_h, e_intd_kcal)
+print "  E_int    = %15.10f [H] = %15.10f [kcal] (non-CP Corrected)\n" %(e_intm_h, e_intm_kcal)
 
 print "\n"
 
