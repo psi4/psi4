@@ -525,7 +525,7 @@ void Molecule::rotate_full(SimpleMatrix& R)
 void Molecule::reorient()
 {
     if (fix_orientation_)
-        return; 
+        return;
 
     // Nothing for us to do.
     if (natom() <= 1)
@@ -1275,7 +1275,7 @@ Molecule::py_extract_subsets_4(int reals,
     std::vector<int> realVec;
     realVec.push_back(reals -1 );
     std::vector<int> ghostVec;
-    if (ghost >= 0) 
+    if (ghost >= 0)
         ghostVec.push_back(ghost - 1);
 
     return extract_subsets(realVec, ghostVec);
@@ -1300,7 +1300,6 @@ Molecule::py_extract_subsets_6(int reals)
 {
     return py_extract_subsets_4(reals, -1);
 }
-
 
 /**
  * Makes a copy of the molecule, returning a new ref counted molecule with
