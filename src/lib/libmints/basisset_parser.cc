@@ -60,9 +60,12 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
     regex separator("^\\*\\*\\*\\*");                                  // line starts with ****
     regex atom_array("^\\s*([A-Za-z]+)\\s+0.*");                       // array of atomic symbols terminated by 0
     regex shell("^\\s*(\\w+)\\s*(\\d+)\\s*(-?\\d+\\.\\d+)");           // Match beginning of contraction
-    regex primitives1("^\\s*(-?\\d+\\.\\d+)\\s*(-?\\d+\\.\\d+).*");    // Match s, p, d, f, g, ... functions
-    regex primitives2("^\\s*(-?\\d+\\.\\d+)\\s*(-?\\d+\\.\\d+)\\s*(-?\\d+\\.\\d+).*"); // match sp functions
-    regex primitives3("^\\s*(-?\\d+\\.\\d+)\\s*(-?\\d+\\.\\d+)\\s*(-?\\d+\\.\\d+)\\s*(-?\\d+\\.\\d+).*"); // match spd functions
+
+#define NUMBER "((?:-?\\d*\\.\\d+(?:[Ee][-+]\\d+)?)|(?:-?\\d+\\.\\d*(?:[Ee][-+]\\d+)?))"
+
+    regex primitives1("^\\s*" NUMBER "\\s+" NUMBER ".*");    // Match s, p, d, f, g, ... functions
+    regex primitives2("^\\s*" NUMBER "\\s+" NUMBER "\\s+" NUMBER ".*"); // match sp functions
+    regex primitives3("^\\s*" NUMBER "\\s+" NUMBER "\\s+" NUMBER "\\s+" NUMBER ".*"); // match spd functions
 
     // s, p and s, p, d can be grouped together in Pople-style basis sets
     const string sp("SP"), spd("SPD");
