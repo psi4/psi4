@@ -291,9 +291,9 @@ void BasisSet::print(FILE *out) const
     fprintf(out, "    Spherical Harmonics?: %s\n", has_puream() ? "true" : "false");
     fprintf(out, "    Max angular momentum: %d\n\n", max_am());
 
-    fprintf(out, "    Shells:\n\n");
-    for (int s=0; s<nshell(); ++s)
-        shells_[s]->print(out);
+//    fprintf(out, "    Shells:\n\n");
+//    for (int s=0; s<nshell(); ++s)
+//        shells_[s]->print(out);
 }
 
 shared_ptr<GaussianShell> BasisSet::shell(int si) const
@@ -375,7 +375,7 @@ shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parse
     // the other version of construct
     vector<string> basisnames;
 
-    // Update geometry in molecule, if there is a problem an exception is thrown    
+    // Update geometry in molecule, if there is a problem an exception is thrown
     mol->update_geometry();
 
     for (int i=0; i<mol->natom(); ++i) {
