@@ -15,10 +15,10 @@ molecule dimer {
 }
 
 globals {
-    BASIS cc-pVDZ
+    BASIS aug-cc-pVDZ
     SCF_TYPE DF
-    RI_BASIS_SCF cc-pVDZ-JKFIT
-    DIIS TRUE
+    RI_BASIS_SCF aug-cc-pVDZ-JKFIT
+    DIIS 1 
     MAXITER 100
     E_CONVERGE 8
     GUESS SAD 
@@ -29,19 +29,20 @@ set scf {
 }
 
 print "\n\n" 
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
-print "  //          SCF Computation          //\n"
-print "  //       Ethene-Ethyne/cc-pVDZ       //\n"
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
+print "  //          SCF Computation          //"
+print "  //       Ethene-Ethyne/cc-pVDZ       //"
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
 print "\n"
 
+print_options()
 e_dimer = scf()
 
 print "\n\n" 
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
-print "  //          SCF Computation          //\n"
-print "  //      Ethene-(Ethyne)/cc-pVDZ      //\n"
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
+print "  //          SCF Computation          //"
+print "  //      Ethene-(Ethyne)/cc-pVDZ      //"
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
 print "\n"
 
 ethene = dimer.extract_subsets( 1, 2)
@@ -53,10 +54,10 @@ set scf {
 e_ad = scf()
 
 print "\n\n" 
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
-print "  //          SCF Computation          //\n"
-print "  //     (Ethene)-Ethyne/cc-pVDZ       //\n"
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
+print "  //          SCF Computation          //"
+print "  //     (Ethene)-Ethyne/cc-pVDZ       //"
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
 print "\n"
 
 ethyne = dimer.extract_subsets( 2, 1)
@@ -68,10 +69,10 @@ set scf {
 e_bd = scf()
 
 print "\n\n" 
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
-print "  //          SCF Computation          //\n"
-print "  //          Ethene/cc-pVDZ           //\n"
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
+print "  //          SCF Computation          //"
+print "  //          Ethene/cc-pVDZ           //"
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
 print "\n"
 
 ethene_m = dimer.extract_subsets( 1)
@@ -83,10 +84,10 @@ set scf {
 e_am = scf()
 
 print "\n\n" 
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
-print "  //          SCF Computation          //\n"
-print "  //           Ethyne/cc-pVDZ          //\n"
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
+print "  //          SCF Computation          //"
+print "  //           Ethyne/cc-pVDZ          //"
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
 print "\n"
 
 ethyne_m = dimer.extract_subsets( 2)
@@ -94,10 +95,10 @@ e_bm = scf()
 
 
 print "\n\n" 
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
-print "  //  CP Corrected SCF Dimer Energies  //\n"
-print "  //                WOOT!              //\n"
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
+print "  //  CP Corrected SCF Dimer Energies  //"
+print "  //                WOOT!              //"
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
 print "\n"
 
 print "  E_dimer  = %15.10f [H] (dimer basis)\n" % e_dimer
@@ -123,10 +124,10 @@ print "\n"
 print "  BSSE     = %15.10f [H] = %15.10f [kcal]\n" %(bsse_h, bsse_kcal)
 
 print "\n\n" 
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
-print "  //         SAPT0 Computation         //\n"
-print "  //       Ethene-Ethyne/cc-pVDZ       //\n"
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
+print "  //         SAPT0 Computation         //"
+print "  //       Ethene-Ethyne/cc-pVDZ       //"
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
 print "\n"
 
 activate(dimer)
@@ -136,14 +137,14 @@ PsiMod.IO.change_file_namespace(121,"ethene","dimer")
 PsiMod.IO.change_file_namespace(122,"ethyne","dimer")
 
 set sapt {
-    ri_basis_sapt cc-pVDZ-RI
+    ri_basis_sapt aug-cc-pVDZ-RI
 }
 print_options()
 e_sapt = sapt()
 
-print "E_sapt = %15.10f [H]\n" % e_sapt
+print "\n  E_sapt = %15.10f [H]\n" % e_sapt
 
-print "Have a nice day!"
+print "\n  Have a nice day!"
 print "\n\n"
 
 

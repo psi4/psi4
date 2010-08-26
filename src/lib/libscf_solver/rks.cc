@@ -39,7 +39,7 @@ RKS::RKS(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) : RHF
     FunctionalFactory fact;
     x_functional_ = SharedFunctional(fact.getExchangeFunctional(options.get_str("X_FUNCTIONAL"),options.get_str("C_FUNCTIONAL"),options.get_int("N_BLOCK")));
     c_functional_ = SharedFunctional(fact.getCorrelationFunctional(options.get_str("X_FUNCTIONAL"),options.get_str("C_FUNCTIONAL"),options.get_int("N_BLOCK")));
-    integrator_ = SharedIntegrator(Integrator::createIntegrator(molecule_,options));
+    integrator_ = Integrator::createIntegrator(molecule_,options);
     V_ = SharedMatrix (factory_.create_matrix("V"));
     properties_ = SharedProperties(Properties::constructProperties(basisset_,options.get_int("N_BLOCK")));
 
