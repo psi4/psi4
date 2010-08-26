@@ -5,7 +5,7 @@ H 1 R 2 A
 }
 
 Rvals = [ 0.9, 1.0, 1.1 ]
-Avals = range(100, 106)
+Avals = range(100, 106, 2)
 
 table = Table(rows=("R", "A"), cols=("E(SCF)", "E(SCS)", "E(DFMP2)"))
 
@@ -39,10 +39,10 @@ for R in Rvals:
 
         table[R][A] = escf, escs, edfmp2
     
-print table
+print str(table)
 
 relative = table.copy()
 relative.absolute_to_relative()
 
-print relative
+print str(relative)
 

@@ -7,6 +7,9 @@ def process_global_command(matchobj):
 
     if re.match(r'^[-]?\d*\.?\d+$', value) or re.match(r'^\[.*\]$', value):
         return spaces + 'PsiMod.set_global_option("%s", %s)' % (key, value)
+    elif re.match(r'^\$', value):
+        # Assume the user as set the variable in value
+        return spaces + 'PsiMod.set_global_option("%s", %s)' % (key, value[1:])
     else:
         return spaces + 'PsiMod.set_global_option("%s", "%s")' % (key, value)
 
@@ -32,7 +35,11 @@ def process_set_command(matchobj):
 
     if re.match(r'^[-]?\d*\.?\d+$', value) or re.match(r'^\[.*\]$', value):
         return spaces + 'PsiMod.set_option("%s", %s)' % (key, value)
+    elif re.match(r'^\$', value):
+        # Assume the user as set the variable in value
+        return spaces + 'PsiMod.set_option("%s", %s)' % (key, value[1:])
     else:
+        # Just place the value in quotes
         return spaces + 'PsiMod.set_option("%s", "%s")' % (key, value)
 
 def process_set_commands(matchobj):
@@ -77,9 +84,9 @@ def process_extract_command(matchobj):
     spaces = matchobj.group(1)
     name = matchobj.group(2)
     extract = matchobj.group(0)
-    extract += spaces + "PsiMod.set_active_molecule(%s)" % name   
-    extract += '\nPsiMod.IO.set_default_namespace("%s")' % name   
- 
+    extract += spaces + "PsiMod.set_active_molecule(%s)" % name
+    extract += '\nPsiMod.IO.set_default_namespace("%s")' % name
+
     return extract
 
 def process_print_command(matchobj):
@@ -154,6 +161,11 @@ global print 1
 
 for val in Rs:
     h2.R = val
+
+    set basis cc-pv(T+d)Z
+
+    for base in basissets:
+        set basis $base
 
     set scf {
         SCF_TYPE DF
