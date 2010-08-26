@@ -149,7 +149,12 @@ void SAPT::lr_ints()
     int rank = 0;
 
     //Setup Integrator
-    //shared_ptr<Integrator> integrator = (shared_ptr<Integrator>)(Integrator::createIntegrator(molecule_,options_));
+    shared_ptr<Integrator> integrator = (shared_ptr<Integrator>)(Integrator::createIntegrator(molecule_,options_));
+    //integrator->checkLebedev(outfile);
+    //integrator->checkSphericalIntegrators(outfile);
+    //integrator->checkMolecularIntegrators(outfile);
+    //integrator->printAvailableLebedevGrids(outfile);
+    //fflush(outfile);
  
     //Setup Functional
     int npoints = 1;
@@ -339,6 +344,7 @@ void SAPT::lr_ints()
 
     //Close LR Integrals file
     psio_->close(PSIF_SAPT_LRINTS,1);    
+
 }
 
 }}

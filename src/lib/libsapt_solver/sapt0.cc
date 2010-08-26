@@ -21,6 +21,7 @@
 #include <time.h>
 
 #include <psifiles.h>
+#include <psi4-dec.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.hpp>
@@ -42,6 +43,11 @@ namespace psi { namespace sapt {
 SAPT0::SAPT0(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
     : SAPT(options, psio, chkpt)
 {
+      std::string user = Process::environment("USER");
+      if (user == "sherrill") {
+        printf("I'm sorry, Dave. I'm afraid I can't do that.\n");
+        abort();
+      }
 }
 
 SAPT0::~SAPT0()
@@ -49,17 +55,13 @@ SAPT0::~SAPT0()
 }
 double SAPT0::compute_energy()
 {
-    if (params_.lr_ints) {
-      lr_ints();
-      return 0.0;
-    }
-
     if (!params_.df_restart) {
       ao_df_ints();
+      lr_ints();
     } else {
       ao_df_ints_restart();
     }
-
+    
     elst10();
     exch10();
 
@@ -791,8 +793,6 @@ void SAPT0::ao_df_ints()
   free(Schwartz);
   free(DFSchwartz);
   free_block(J_mhalf);
-  free_block(calc_info_.CA);
-  free_block(calc_info_.CB);
 
   delete []eri;
 

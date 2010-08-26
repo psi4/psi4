@@ -310,9 +310,9 @@ public:
 	* @param opt Options object specifying grid type/make
 	* @ return SharedIntegtor type
 	*/
-    static Integrator * createIntegrator(shared_ptr<Molecule> m, Options & opt)
+    static boost::shared_ptr<Integrator> createIntegrator(shared_ptr<Molecule> m, Options & opt)
     {
-        return new Integrator(m,opt);
+        return boost::shared_ptr<Integrator>(new Integrator(m,opt));
     }
     /** Constructor, sets up Integrator associated with Molecule m,
 	* with grid preferences/defaults in Options opt
@@ -352,37 +352,37 @@ public:
     /** The molecule associated with this Integrator
 	* @return The molecule associated with this Integrator
 	*/
-    const shared_ptr<Molecule> getMolecule() const {return molecule_;}
+    shared_ptr<Molecule> getMolecule() const {return molecule_;}
     /** Number of radial points per atom
 	* @return The number of radial points per nucleus
 	*/
-    const int getNRadial() const {return nradial_; }
+    int getNRadial() const {return nradial_; }
     /** Number of spherical points per nucleus in the given sphere
 	* @return The number of spherical points per nucleus
 	* @param ind The index of the desired sphere
 	*/
-    const int getNSpherical(int ind = 0) const {return nspherical_[ind];}
+    int getNSpherical(int ind = 0) const {return nspherical_[ind];}
     /** Number of spheres
 	* @return The number of spheres in the pruned grid scheme
 	* (either 1 or 5 at the moment)
 	*/
-    const int getNSpheres() const {return nspheres_;}
+    int getNSpheres() const {return nspheres_;}
     /** Selected nuclear scheme
 	* @return Nuclear grid scheme, such as Treutler
 	*/
-    const nuclear_scheme getNuclearScheme() const {return nuclear_scheme_; }
+    nuclear_scheme getNuclearScheme() const {return nuclear_scheme_; }
     /** Selected radial scheme
 	* @return Radial grid scheme, such as Treutler
 	*/
-    const radial_scheme getRadialScheme() const {return radial_scheme_; }
+    radial_scheme getRadialScheme() const {return radial_scheme_; }
     /** Selected spherical scheme
 	* @return Spherical grid scheme, such as Lebedev
 	*/
-    const spherical_scheme getSphericalScheme() const {return spherical_scheme_; }
+    spherical_scheme getSphericalScheme() const {return spherical_scheme_; }
     /** Selected special grid scheme
 	* @return Special grid scheme, such as SG1
 	*/
-    const special_grid getSpecialGridScheme() const {return special_grid_; }
+    special_grid getSpecialGridScheme() const {return special_grid_; }
     /** String describing the grid setup
 	* @return descriptive string 
 	*/
