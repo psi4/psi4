@@ -9,16 +9,25 @@
 #include <psifiles.h>
 
 namespace psi{
-
+/**
+ *
+ * @param maxSubspaceSize Maximum number of vectors allowed in the subspace
+ * @param label: the base part of the label used to store the vectors to disk
+ * @param removalPolicy: How to decide which vectors to remove when the subspace is full
+ * @param storagePolicy: How to store the DIIS vectors
+ * @param psio: the PSIO object to use for I/O.  Do not specify if DPD is being used.
+ */
 DIISManager::DIISManager(int maxSubspaceSize,
                          std::string label,
                          RemovalPolicy removalPolicy,
-                         StoragePolicy storagePolicy):
+                         StoragePolicy storagePolicy,
+                         shared_ptr<PSIO> psio):
             _maxSubspaceSize(maxSubspaceSize),
             _removalPolicy(removalPolicy),
             _storagePolicy(storagePolicy),
             _errorVectorSize(0),
             _vectorSize(0),
+            _psio(psio),
             _entryCount(0),
             _label(label)
 {
@@ -238,12 +247,12 @@ DIISManager::add_entry(int numQuantities, ...)
     if(_subspace.size() < _maxSubspaceSize){
         _subspace.push_back(new DIISEntry(_label, entryID, _entryCount++,
                             _errorVectorSize, errorVectorPtr,
-                            _vectorSize, vectorPtr));
+                            _vectorSize, vectorPtr, _psio));
     }else{
         delete _subspace[entryID];
         _subspace[entryID] = new DIISEntry(_label, entryID, _entryCount++,
                                            _errorVectorSize, errorVectorPtr,
-                                           _vectorSize, vectorPtr);
+                                           _vectorSize, vectorPtr, _psio);
     }
 
     if(_storagePolicy == OnDisk) {
@@ -439,8 +448,8 @@ DIISManager::reset_subspace()
 
 DIISManager::~DIISManager()
 {
-    if (_default_psio_lib_->open_check(PSIF_LIBDIIS))
-        _default_psio_lib_->close(PSIF_LIBDIIS, 1);
+    if (_psio->open_check(PSIF_LIBDIIS))
+        _psio->close(PSIF_LIBDIIS, 1);
 }
 
 } // Namespace
