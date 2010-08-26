@@ -4,15 +4,22 @@ H 1 1.0
 H 1 1.0 2 104.5
 }
 
-PsiMod.set_global_option("BASIS", "STO-3G")
-PsiMod.set_global_option("RI_BASIS_SCF", "cc-pVDZ-JKFIT")
-PsiMod.print_global_options()
-
-set scf {
-    SCF_TYPE DF
+globals {
+  basis sto-3g
+  ri_basis_scf cc-pvdz-jkfit
 }
 
-PsiMod.print_options()
+set scf {
+    scf_type df
+}
 
-escf = scf()
+edf = scf()
 
+set scf {
+    scf_type direct
+    guess core
+}
+
+edirect = scf()
+
+print "Density fitting error: %20.12lf Hartree\n" % (edirect - edf)
