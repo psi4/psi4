@@ -76,6 +76,7 @@ PsiReturnType execute_bp(std::string & bp, Options & options) {
       fprintf(outfile, "    %s\n", thisJob);
       free(thisJob);
     }
+    fflush(outfile);
 
     if(check_only)
       return Success;
