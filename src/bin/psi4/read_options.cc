@@ -125,7 +125,8 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_double("SCHWARZ_CUTOFF",1.0E-12);
     /*- Memory safety -*/
     options.add_double("SAPT_MEM_SAFETY",0.9);  
-
+    /*- SAPT DF Basis -*/
+    options.add_str("RI_BASIS_SAPT", "");
   }
   if(name == "DCFT"|| options.read_globals()) {
       ip_cwk_add(":DCFT");
@@ -254,7 +255,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_str("NUMERICAL_GRID_FILENAME","ngrid.out");
 
     /*- Are going to do SAPT? If so, what part?  -*/
-    options.add_str("SAPT","FALSE","2-DIMER 2-MONOMER_A 2-MONOMER_B 3-TRIMER 3-DIMER_AB 3-DIMER_BC 3-DIMER_AC 3-MONOMER_A 3-MONOMER_B 3-MONOMER_C");
+    options.add_str("SAPT","FALSE","FALSE 2-DIMER 2-MONOMER_A 2-MONOMER_B 3-TRIMER 3-DIMER_AB 3-DIMER_BC 3-DIMER_AC 3-MONOMER_A 3-MONOMER_B 3-MONOMER_C");
 
     /*- Grid overage at sides  -*/
     options.add_double("CARTESIAN_OVERAGE",2.00);

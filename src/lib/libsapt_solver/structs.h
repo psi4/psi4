@@ -104,6 +104,7 @@ struct results {
   double exch_indrB_A;
 
   double exch_disp20;
+  double sapt0;
 
   double deltaHF;
   };

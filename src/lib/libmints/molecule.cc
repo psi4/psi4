@@ -1360,6 +1360,7 @@ Molecule::extract_subsets(const std::vector<int> &real_list, const std::vector<i
     clone->geometryFormat_ = geometryFormat_;
     clone->units_ = units_;
     clone->fix_orientation_ = fix_orientation_;
+    clone->name_ = name_;
 
     return clone;
 }

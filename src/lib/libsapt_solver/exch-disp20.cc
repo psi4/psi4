@@ -136,7 +136,7 @@ double SAPT0::exch_disp_1()
       fflush(params_.logfilename);
     }
 
-    psio_read(PSIF_SAPT_AB_DF_INTS,"AS RI Integrals",(char *) &(B_p_aS[0][0]),
+    psio_->read(PSIF_SAPT_AB_DF_INTS,"AS RI Integrals",(char *) &(B_p_aS[0][0]),
       sizeof(double)*calc_info_.nvirB*(ULI) calc_info_.nrio,next_PSIF_DF_AS,
       &next_PSIF_DF_AS);
 
@@ -146,7 +146,7 @@ double SAPT0::exch_disp_1()
       B_p_aS[s][calc_info_.nrio-1] = enuc*calc_info_.S_AB[a][s+calc_info_.noccB];
     }
 
-    psio_read(PSIF_SAPT_AMPS,"T2 ARBS Amplitudes",(char *) &(taRBS[0][0]),
+    psio_->read(PSIF_SAPT_AMPS,"T2 ARBS Amplitudes",(char *) &(taRBS[0][0]),
       sizeof(double)*calc_info_.nvirA*calc_info_.noccB*(ULI) calc_info_.nvirB,
       next_PSIF_tARBS,&next_PSIF_tARBS);
 
@@ -222,7 +222,7 @@ double SAPT0::exch_disp_2()
   double **theta_BS = block_matrix(calc_info_.noccB*calc_info_.nvirB,
     calc_info_.nrio);
 
-  psio_read_entry(PSIF_SAPT_AMPS,"Theta (AR) BS",(char *) &(theta_BS[0][0]),
+  psio_->read_entry(PSIF_SAPT_AMPS,"Theta (AR) BS",(char *) &(theta_BS[0][0]),
     sizeof(double)*calc_info_.noccB*calc_info_.nvirB*(ULI) calc_info_.nrio);
 
   double **X_BS = block_matrix(calc_info_.noccB,calc_info_.nvirB);
@@ -285,7 +285,7 @@ double SAPT0::exch_disp_3()
   double **theta_AR = block_matrix(calc_info_.noccA*calc_info_.nvirA,
     calc_info_.nrio);
 
-  psio_read_entry(PSIF_SAPT_AMPS,"Theta (BS) AR",(char *) &(theta_AR[0][0]),
+  psio_->read_entry(PSIF_SAPT_AMPS,"Theta (BS) AR",(char *) &(theta_AR[0][0]),
     sizeof(double)*calc_info_.noccA*calc_info_.nvirA*(ULI) calc_info_.nrio);
 
   double **X_AR = block_matrix(calc_info_.noccA,calc_info_.nvirA);
@@ -344,7 +344,7 @@ double SAPT0::exch_disp_4()
       fflush(params_.logfilename);
     }
 
-    psio_read(PSIF_SAPT_AMPS,"T2 ARBS Amplitudes",(char *) &(taRBS[0][0]),
+    psio_->read(PSIF_SAPT_AMPS,"T2 ARBS Amplitudes",(char *) &(taRBS[0][0]),
       sizeof(double)*calc_info_.nvirA*calc_info_.noccB*(ULI) calc_info_.nvirB,
       next_PSIF_tARBS,&next_PSIF_tARBS);
 
@@ -419,7 +419,7 @@ double SAPT0::exch_disp_5()
       fflush(params_.logfilename);
     }
 
-    psio_read(PSIF_SAPT_AB_DF_INTS,"AS RI Integrals",(char *) &(B_p_aS[0][0]),
+    psio_->read(PSIF_SAPT_AB_DF_INTS,"AS RI Integrals",(char *) &(B_p_aS[0][0]),
       sizeof(double)*calc_info_.nvirB*(ULI) calc_info_.nrio,next_PSIF_DF_AS,
       &next_PSIF_DF_AS);
 
@@ -429,7 +429,7 @@ double SAPT0::exch_disp_5()
       B_p_aS[s][calc_info_.nrio-1] = enuc*calc_info_.S_AB[a][s+calc_info_.noccB];
     }
 
-    psio_read(PSIF_SAPT_AMPS,"T2 ARBS Amplitudes",(char *) &(taRBS[0][0]),
+    psio_->read(PSIF_SAPT_AMPS,"T2 ARBS Amplitudes",(char *) &(taRBS[0][0]),
       sizeof(double)*calc_info_.nvirA*calc_info_.noccB*(ULI) calc_info_.nvirB,
       next_PSIF_tARBS,&next_PSIF_tARBS);
 
@@ -502,7 +502,7 @@ double SAPT0::exch_disp_6()
       &(B_p_AA[a*calc_info_.noccA][0]),calc_info_.nrio,0.0,&(C_p_aS[0][0]),
       calc_info_.nrio);
 
-    psio_read(PSIF_SAPT_AMPS,"T2 ARBS Amplitudes",(char *) &(taRBS[0][0]),
+    psio_->read(PSIF_SAPT_AMPS,"T2 ARBS Amplitudes",(char *) &(taRBS[0][0]),
       sizeof(double)*calc_info_.nvirA*calc_info_.noccB*(ULI) calc_info_.nvirB,
       next_PSIF_tARBS,&next_PSIF_tARBS);
 
@@ -545,7 +545,7 @@ double SAPT0::exch_disp_7()
   time_t stop;
   double q12 = 0.0;
 
-  int errcod = psio_open(PSIF_SAPT_TEMP,0);
+  psio_->open(PSIF_SAPT_TEMP,0);
 
   double **B_p_BS = get_BS_ints(1);
   double **C_p_AS = block_matrix(calc_info_.noccA*calc_info_.nvirB,calc_info_.nrio);
@@ -555,7 +555,7 @@ double SAPT0::exch_disp_7()
     &(B_p_BS[0][0]),calc_info_.nvirB*calc_info_.nrio,0.0,&(C_p_AS[0][0]),
     calc_info_.nvirB*calc_info_.nrio);
 
-  psio_write_entry(PSIF_SAPT_TEMP,"S_AB X B_BS^P",(char *) &(C_p_AS[0][0]),
+  psio_->write_entry(PSIF_SAPT_TEMP,"S_AB X B_BS^P",(char *) &(C_p_AS[0][0]),
     sizeof(double)*calc_info_.nvirB*calc_info_.noccA*(ULI) calc_info_.nrio);
 
   free_block(B_p_BS);
@@ -588,11 +588,11 @@ double SAPT0::exch_disp_7()
       fflush(params_.logfilename);
     }
 
-    psio_read(PSIF_SAPT_TEMP,"S_AB X B_BS^P",(char *) &(C_p_aS[0][0]),
+    psio_->read(PSIF_SAPT_TEMP,"S_AB X B_BS^P",(char *) &(C_p_aS[0][0]),
       sizeof(double)*calc_info_.nvirB*(ULI) calc_info_.nrio,
       next_PSIF,&next_PSIF);
 
-    psio_read(PSIF_SAPT_AMPS,"T2 ARBS Amplitudes",(char *) &(taRBS[0][0]),
+    psio_->read(PSIF_SAPT_AMPS,"T2 ARBS Amplitudes",(char *) &(taRBS[0][0]),
       sizeof(double)*calc_info_.nvirA*calc_info_.noccB*(ULI) calc_info_.nvirB,
       next_PSIF_tARBS,&next_PSIF_tARBS);
 
@@ -625,7 +625,7 @@ double SAPT0::exch_disp_7()
     fflush(params_.logfilename);
   }
 
-  psio_close(PSIF_SAPT_TEMP,0);
+  psio_->close(PSIF_SAPT_TEMP,0);
 
   return(q12);
 }

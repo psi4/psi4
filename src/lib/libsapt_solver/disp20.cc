@@ -92,7 +92,7 @@ void SAPT0::disp20()
       fflush(params_.logfilename);
     }
 
-    psio_read(PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",(char *) &(B_p_AR[0][0]),
+    psio_->read(PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",(char *) &(B_p_AR[0][0]),
       sizeof(double)*(ar_stop-ar_start)*(ULI) calc_info_.nrio,next_PSIF_DF_AR,
       &next_PSIF_DF_AR);
 
@@ -115,7 +115,7 @@ void SAPT0::disp20()
     energy += C_DDOT((ar_stop-ar_start)*calc_info_.noccB*calc_info_.nvirB,
               &(ARBS[0][0]),1,&(tARBS[0][0]),1);
 
-    psio_write(PSIF_SAPT_AMPS,"T2 ARBS Amplitudes",(char *) &(tARBS[0][0]),
+    psio_->write(PSIF_SAPT_AMPS,"T2 ARBS Amplitudes",(char *) &(tARBS[0][0]),
       sizeof(double)*(ar_stop-ar_start)*calc_info_.noccB*
       (ULI) calc_info_.nvirB,next_PSIF_tARBS,&next_PSIF_tARBS);
 
@@ -212,7 +212,7 @@ void SAPT0::theta_ar()
       fflush(params_.logfilename);
     }
 
-    psio_read(PSIF_SAPT_AMPS,"T2 ARBS Amplitudes",(char *) &(tARBS[0][0]),
+    psio_->read(PSIF_SAPT_AMPS,"T2 ARBS Amplitudes",(char *) &(tARBS[0][0]),
       sizeof(double)*(ar_stop-ar_start)*calc_info_.noccB*
       (ULI) calc_info_.nvirB,next_PSIF_tARBS,&next_PSIF_tARBS);
 
@@ -220,7 +220,7 @@ void SAPT0::theta_ar()
       calc_info_.nvirB,1.0,&(tARBS[0][0]),calc_info_.noccB*calc_info_.nvirB,
       &(B_p_BS[0][0]),calc_info_.nrio,0.0,&(theta_AR[0][0]),calc_info_.nrio);
 
-    psio_write(PSIF_SAPT_AMPS,"Theta (BS) AR",(char *) &(theta_AR[0][0]),
+    psio_->write(PSIF_SAPT_AMPS,"Theta (BS) AR",(char *) &(theta_AR[0][0]),
       sizeof(double)*(ar_stop-ar_start)*(ULI) calc_info_.nrio,next_PSIF_theta,
       &next_PSIF_theta);
 
@@ -310,7 +310,7 @@ void SAPT0::theta_bs()
       fflush(params_.logfilename);
     }
 
-    psio_read(PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",(char *) &(B_p_AR[0][0]),
+    psio_->read(PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",(char *) &(B_p_AR[0][0]),
       sizeof(double)*(ar_stop-ar_start)*(ULI) calc_info_.nrio,next_PSIF_DF_AR,
       &next_PSIF_DF_AR);
 
@@ -320,7 +320,7 @@ void SAPT0::theta_bs()
       B_p_AR[ar-ar_start][calc_info_.nrio-2] = NB*calc_info_.VBAA[a][r];
     }
 
-    psio_read(PSIF_SAPT_AMPS,"T2 ARBS Amplitudes",(char *) &(tARBS[0][0]),
+    psio_->read(PSIF_SAPT_AMPS,"T2 ARBS Amplitudes",(char *) &(tARBS[0][0]),
       sizeof(double)*(ar_stop-ar_start)*calc_info_.noccB*
       (ULI) calc_info_.nvirB,next_PSIF_tARBS,&next_PSIF_tARBS);
 
@@ -335,7 +335,7 @@ void SAPT0::theta_bs()
     }
   }
 
-  psio_write_entry(PSIF_SAPT_AMPS,"Theta (AR) BS",(char *) &(theta_BS[0][0]),
+  psio_->write_entry(PSIF_SAPT_AMPS,"Theta (AR) BS",(char *) &(theta_BS[0][0]),
     sizeof(double)*calc_info_.noccB*calc_info_.nvirB*(ULI) calc_info_.nrio);
 
   free_block(theta_BS);
