@@ -124,6 +124,9 @@ namespace psi {
       /// Set the current namespace (for PREFIX.NAMESPACE.UNIT file numbering) 
       void set_current_namespace(const std::string &_ns) { current_namespace_ = _ns; }
 
+      /// Change file FILENO from NS1 to NS2
+      static void change_file_namespace(unsigned int fileno, const std::string & ns1, const std::string & ns2);
+
       /// Return the global shared object
       static shared_ptr<PSIO> shared_object() { return _default_psio_lib_; }
     private:

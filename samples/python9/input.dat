@@ -1,0 +1,149 @@
+molecule dimer {
+     C     0.000000    -0.667578    -2.124659
+     C     0.000000     0.667578    -2.124659
+     H     0.923621    -1.232253    -2.126185
+     H    -0.923621    -1.232253    -2.126185
+     H    -0.923621     1.232253    -2.126185
+     H     0.923621     1.232253    -2.126185
+     --
+     C     0.000000     0.000000     2.900503
+     C     0.000000     0.000000     1.693240
+     H     0.000000     0.000000     0.627352
+     H     0.000000     0.000000     3.963929
+     angstrom
+     no_reorient
+}
+
+globals {
+    BASIS cc-pVDZ
+    SCF_TYPE DF
+    RI_BASIS_SCF cc-pVDZ-JKFIT
+    DIIS TRUE
+    MAXITER 100
+    E_CONVERGE 8
+    GUESS SAD 
+}
+
+set scf {
+    SAPT 2-dimer    
+}
+
+print "\n\n" 
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
+print "  //          SCF Computation          //\n"
+print "  //       Ethene-Ethyne/cc-pVDZ       //\n"
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
+print "\n"
+
+e_dimer = scf()
+
+print "\n\n" 
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
+print "  //          SCF Computation          //\n"
+print "  //      Ethene-(Ethyne)/cc-pVDZ      //\n"
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
+print "\n"
+
+ethene = dimer.extract_subsets( 1, 2)
+
+set scf {
+    SAPT 2-monomer_A    
+}
+
+e_ad = scf()
+
+print "\n\n" 
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
+print "  //          SCF Computation          //\n"
+print "  //     (Ethene)-Ethyne/cc-pVDZ       //\n"
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
+print "\n"
+
+ethyne = dimer.extract_subsets( 2, 1)
+
+set scf {
+    SAPT 2-monomer_B    
+}
+
+e_bd = scf()
+
+print "\n\n" 
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
+print "  //          SCF Computation          //\n"
+print "  //          Ethene/cc-pVDZ           //\n"
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
+print "\n"
+
+ethene_m = dimer.extract_subsets( 1)
+
+set scf {
+    SAPT false   
+}
+
+e_am = scf()
+
+print "\n\n" 
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
+print "  //          SCF Computation          //\n"
+print "  //           Ethyne/cc-pVDZ          //\n"
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
+print "\n"
+
+ethyne_m = dimer.extract_subsets( 2)
+e_bm = scf()
+
+
+print "\n\n" 
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
+print "  //  CP Corrected SCF Dimer Energies  //\n"
+print "  //                WOOT!              //\n"
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
+print "\n"
+
+print "  E_dimer  = %15.10f [H] (dimer basis)\n" % e_dimer
+print "  E_ethene = %15.10f [H] (dimer basis)\n" % e_ad
+print "  E_ethene = %15.10f [H] (monomer basis)\n" % e_am
+print "  E_ethyne = %15.10f [H] (dimer basis)\n" % e_bd
+print "  E_ethyne = %15.10f [H] (monomer basis)\n" % e_bm
+
+print "\n"
+
+e_intd_h = e_dimer-e_ad-e_bd
+e_intm_h = e_dimer-e_am-e_bm
+e_intd_kcal = e_intd_h*627.509
+e_intm_kcal = e_intm_h*627.509
+bsse_h = e_intd_h - e_intm_h
+bsse_kcal = e_intd_kcal - e_intm_kcal
+
+print "  E_int    = %15.10f [H] = %15.10f [kcal] (CP Corrected)\n" %(e_intd_h, e_intd_kcal)
+print "  E_int    = %15.10f [H] = %15.10f [kcal] (non-CP Corrected)\n" %(e_intm_h, e_intm_kcal)
+
+print "\n"
+
+print "  BSSE     = %15.10f [H] = %15.10f [kcal]\n" %(bsse_h, bsse_kcal)
+
+print "\n\n" 
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
+print "  //         SAPT0 Computation         //\n"
+print "  //       Ethene-Ethyne/cc-pVDZ       //\n"
+print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//\n"
+print "\n"
+
+activate(dimer)
+
+#Hack to change file namespaces
+PsiMod.IO.change_file_namespace(121,"ethene","dimer")
+PsiMod.IO.change_file_namespace(122,"ethyne","dimer")
+
+set sapt {
+    ri_basis_sapt cc-pVDZ-RI
+}
+print_options()
+e_sapt = sapt()
+
+print "E_sapt = %15.10f [H]\n" % e_sapt
+
+print "Have a nice day!"
+print "\n\n"
+
+

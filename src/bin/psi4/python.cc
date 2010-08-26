@@ -25,6 +25,7 @@ namespace psi {
     namespace cscf     { PsiReturnType cscf(Options &);  }
     namespace scf      { PsiReturnType scf(Options &);   }
     namespace dfmp2    { PsiReturnType dfmp2(Options &); }
+    namespace sapt     { PsiReturnType sapt(Options &); }
 
     extern int read_options(const std::string &name, Options & options, bool call_ipv1 = true,
       bool suppress_printing = false);
@@ -65,6 +66,14 @@ double py_psi_dfmp2()
 {
     if (dfmp2::dfmp2(Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
+    }
+    else
+        return 0.0;
+}
+double py_psi_sapt()
+{
+    if (sapt::sapt(Process::environment.options) == Success) {
+        return Process::environment.globals["SAPT ENERGY"];
     }
     else
         return 0.0;
@@ -205,6 +214,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("cscf",  py_psi_cscf);
     def("scf",   py_psi_scf);
     def("dfmp2", py_psi_dfmp2);
+    def("sapt", py_psi_sapt);
 
     // Define library classes
     class_<PSIO, shared_ptr<PSIO> >( "IO" ).
@@ -220,7 +230,9 @@ BOOST_PYTHON_MODULE(PsiMod)
         staticmethod("shared_object").
         def( "set_current_namespace", &PSIO::set_current_namespace).
         def( "set_default_namespace", &PSIO::set_default_namespace).
-        staticmethod("set_default_namespace");
+        staticmethod("set_default_namespace").
+        def( "change_file_namespace", &PSIO::change_file_namespace).
+        staticmethod("change_file_namespace");
 
     class_<Chkpt, shared_ptr<Chkpt> >( "Checkpoint", init<PSIO*, int>() ).
         add_property( "enuc", &Chkpt::rd_enuc, &Chkpt::wt_enuc).
@@ -299,6 +311,7 @@ BOOST_PYTHON_MODULE(PsiMod)
 
     class_<Molecule, shared_ptr<Molecule> >("Molecule").
         def("set_name", &Molecule::set_name).
+        def("get_name", &Molecule::get_name).
         def("fix_orientation", &Molecule::set_orientation_fixed).
         def("init_with_checkpoint", &Molecule::init_with_chkpt).
         def("save_to_checkpoint", &Molecule::save_to_chkpt).

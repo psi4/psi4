@@ -84,16 +84,17 @@ def process_extract_command(matchobj):
     spaces = matchobj.group(1)
     name = matchobj.group(2)
     extract = matchobj.group(0)
-    extract += spaces + "PsiMod.set_active_molecule(%s)" % name
-    extract += '\nPsiMod.IO.set_default_namespace("%s")' % name
-
+    extract += spaces + '%s.set_name("%s")' %(name,name)
+    extract += "\nPsiMod.set_active_molecule(%s)" % name   
+    extract += '\nPsiMod.IO.set_default_namespace("%s")' % name   
+ 
     return extract
 
 def process_print_command(matchobj):
     spaces = matchobj.group(1)
     string = matchobj.group(2)
 
-    printer = "\npsi_string_print = %s\n" % string
+    printer = "\npsi_string_print = str(%s)\n" % string
     printer += "PsiMod.print_out(psi_string_print)\n"
 
     return printer

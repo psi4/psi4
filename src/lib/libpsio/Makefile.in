@@ -15,7 +15,7 @@ volseek.cc        error.cc               get_numvols.cc toclen.cc        write.c
 get_address.cc    get_volpath.cc         read_entry.cc  tocprint.cc \
 rw.cc             tocread.cc             write_entry.cc get_filename.cc  open.cc \
 tocclean.cc       tocscan.cc             open_check.cc  filescfg.cc      ipv1_config.cc \
-aio_handler.cc
+aio_handler.cc    change_namespace.cc
 
 INC = psio.h psio.hpp config.h
 

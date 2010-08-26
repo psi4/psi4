@@ -140,6 +140,10 @@ def geometry_old(geom, reorient = True, prefix = "", chkpt = None, shiftToCOM = 
 
     return molecule
 
+def activate(mol):
+    PsiMod.set_active_molecule(mol)
+    PsiMod.IO.set_default_namespace(mol.get_name())
+
 class Table:
 
     def __init__(self, rows=(),
