@@ -102,7 +102,7 @@ void py_psi_print_global_options()
 
 void py_psi_print_out(std::string s)
 {
-    fprintf(outfile,"%s",s.c_str());
+    fprintf(outfile,"%s\n",s.c_str());
 }
 
 bool py_psi_set_option_string(std::string const & name, std::string const & value)

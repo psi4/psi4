@@ -162,7 +162,8 @@ class Table:
         self.data = []
 
     def format_label(self):
-        str = lambda x: (('%%%d.%df' % (self.row_label_width, self.row_label_precision)) % x)
+        #str = lambda x: (('%%%d.%df' % (self.row_label_width, self.row_label_precision)) % x)
+        str = lambda x: (('%%%ds' % (self.row_label_width)) % x)
         return " ".join(map(str, self.labels))
 
     def format_values(self, values):
@@ -178,10 +179,10 @@ class Table:
         label = self.format_label()
         self.labels = []
 
-        #if hasattr(value, "__iter__"):
-        self.data.append( (label, list(value) ) )
-        #else:
-            #self.data.append( (label, list(value) ) )
+        if isinstance(value, list):
+            self.data.append( (label, value ) )
+        else:
+            self.data.append( (label, [value] ) )
 
     def save(self, file):
         import pickle
@@ -196,12 +197,17 @@ class Table:
 
         lines = []
 
-        row_header = " ".join(map(rowstr, self.rows))
-        row_header += " ".join(map(colstr, self.cols))
+        table_header = ""
+        if isinstance(self.rows, str):
+            table_header += "%%%ds" % self.row_label_width % self.rows
+        else:
+            table_header += " ".join(map(rowstr, self.rows))
+        table_header += " ".join(map(colstr, self.cols))
 
-        lines.append(row_header)
+        lines.append(table_header)
 
         for datarow in self.data:
+            #print datarow
             row_data = datarow[0]
             row_data += self.format_values(datarow[1])
             lines.append(row_data)
@@ -226,5 +232,6 @@ class Table:
 
         for datarow in self.data:
             for col in range(0, len(datarow[1])):
+                #print datarow[1][col]
                 datarow[1][col] = (datarow[1][col] - current_min[col]) * Factor
 

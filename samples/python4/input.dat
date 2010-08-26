@@ -5,9 +5,9 @@ H 1 R 2 A
 }
 
 Rvals = [ 0.9, 1.0, 1.1 ]
-Avals = range(100, 106, 2)
+Avals = range(100, 102, 2)
 
-table = Table(rows=("R", "A"), cols=("E(SCF)", "E(SCS)", "E(DFMP2)"))
+table = Table(rows=["R", "A"], cols=["E(SCF)", "E(SCS)", "E(DFMP2)"])
 
 h2o.label = "Water"
 
@@ -37,7 +37,7 @@ for R in Rvals:
         edfmp2 = dfmp2()
         escs = get_variable('SCS-DF-MP2 ENERGY')
 
-        table[R][A] = escf, escs, edfmp2
+        table[R][A] = [escf, escs, edfmp2]
     
 print str(table)
 

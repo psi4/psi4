@@ -4,7 +4,8 @@ H 1 1.0
 H 1 1.0 2 104.5
 }
 
-table = Table(rows=("Basis"), row_label_format_string = "%10s", cols=("E(SCF)"))
+#table = Table(rows=("Basis"), row_label_format_string = "%10s", cols=("E(SCF)"))
+table = Table(rows=("Basis"), cols=("E(SCF)"))
 
 globals {
   diis false
