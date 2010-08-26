@@ -102,6 +102,7 @@ namespace psi {
                   PsiReturnType rval;
 
                   for (int i=0; i<nopt; ++i) {
+printf("executing %s\n", bp_name.c_str());
                       execute_bp(bp_name, options);
                       read_options("OPTKING", options);
                       rval = dispatch_table["OPT_STEP"](options);
