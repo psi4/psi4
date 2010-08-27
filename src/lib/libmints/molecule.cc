@@ -273,6 +273,24 @@ Molecule& Molecule::operator=(const Molecule& other)
     return *this;
 }
 
+/// Addition
+//Molecule Molecule::operator+(const Molecule& other)
+//{
+
+//}
+
+///// Subtraction
+//Molecule Molecule::operator-(const Molecule& other)
+//{
+
+//}
+
+/// Plus equals
+void Molecule::operator+=(const Molecule& other)
+{
+
+}
+
 void Molecule::clear()
 {
     nirreps_ = 0;
@@ -281,21 +299,43 @@ void Molecule::clear()
 }
 
 void Molecule::add_atom(int Z, double x, double y, double z,
-                        const char *label, double mass, double charge)
+                        const char *label, double mass, double charge, int lineno)
 {
-    atom_info info;
+    if (lineno >= 0) {
+        bool should_add = false;
 
-    info.x = x;
-    info.y = y;
-    info.z = z;
-    info.Z = Z;
-    info.charge = charge;
-    info.label = label;
-    info.mass = mass;
+        vector<int>::const_iterator iter = fragmentsUsed_.begin();
+        for (; iter != fragmentsUsed_.end(); ++iter) {
+            pair<int, int> range = fragments_[*iter];
 
-    // Dummies go to full_atoms_, ghosts need to go to both.
-    if(strcmp(label, "X") && strcmp(label, "x")) atoms_.push_back(info);
-    full_atoms_.push_back(info);
+            if (lineno >= range.first && lineno < range.second) {
+                should_add = true;
+                break;
+            }
+        }
+        if (should_add == false)
+            return;
+    }
+
+    Vector3 temp(x, y, z);
+    if (atom_at_position2(temp) == -1) {
+        atom_info info;
+
+        info.x = x;
+        info.y = y;
+        info.z = z;
+        info.Z = Z;
+        info.charge = charge;
+        info.label = label;
+        info.mass = mass;
+
+        // Dummies go to full_atoms_, ghosts need to go to both.
+        if(strcmp(label, "X") && strcmp(label, "x")) atoms_.push_back(info);
+        full_atoms_.push_back(info);
+    }
+    else {
+        throw PSIEXCEPTION("Molecule::add_atom: Adding atom on top of an existing atom.");
+    }
 }
 
 double Molecule::mass(int atom) const
@@ -484,6 +524,15 @@ SimpleMatrix Molecule::full_geometry()
     return geom;
 }
 
+void Molecule::set_geometry(double** geom)
+{
+    for (int i=0; i<natom(); ++i) {
+        atoms_[i].x = geom[i][0];
+        atoms_[i].y = geom[i][1];
+        atoms_[i].z = geom[i][2];
+    }
+}
+
 void Molecule::set_geometry(SimpleMatrix& geom)
 {
     for (int i=0; i<natom(); ++i) {
@@ -492,6 +541,7 @@ void Molecule::set_geometry(SimpleMatrix& geom)
         atoms_[i].z = geom[i][2];
     }
 }
+
 void Molecule::set_full_geometry(SimpleMatrix& geom)
 {
     for (int i=0; i<nallatom(); ++i) {
@@ -948,6 +998,7 @@ Molecule::create_molecule_from_string(const std::string &text)
     unsigned int firstAtom  = 0;
     mol->fragmentMultiplicities_.push_back(mol->multiplicity_);
     mol->fragmentCharges_.push_back(mol->molecularCharge_);
+    mol->fragmentsUsed_.push_back(0);
     unsigned int atomCount = 0;
     for(unsigned int lineNumber = 0; lineNumber < lines.size(); ++lineNumber){
         if(regex_match(lines[lineNumber], reMatches, fragmentMarker_)){
@@ -956,6 +1007,7 @@ Molecule::create_molecule_from_string(const std::string &text)
                 throw PSIEXCEPTION("Nothing specified after the final \"--\" in geometry");
             // Now we process the atom markers
             mol->fragments_.push_back(std::make_pair(firstAtom, atomCount));
+            mol->fragmentsUsed_.push_back(mol->fragmentsUsed_.size());
             firstAtom = atomCount;
             // Figure out how to handle the multiplicity
             if(regex_match(lines[lineNumber+1], reMatches, chargeAndMultiplicity_)){

@@ -5,7 +5,7 @@ H 1 1.0 2 104.5
 }
 
 globals {
-  basis cc-pvtz
+  basis sto-3g
 }
 
 set scf {

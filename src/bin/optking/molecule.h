@@ -33,7 +33,7 @@ class MOLECULE {
     for (int f=0; f<fragments.size(); ++f)
       n += fragments[f]->g_natom();
     return n;
-  } 
+  }
 
   int g_nintco(void) const {
     int n=0;
@@ -138,6 +138,7 @@ class MOLECULE {
   }
 
   void write_geom_chkpt(void);
+  void write_geom_to_active_molecule();
 
   double ** compute_B(void) const {
     double **B, **B_frag;
@@ -187,7 +188,7 @@ class MOLECULE {
       intcos.at(i)->print_s(fp, geom);
   }
   void displace(double *dq, bool print_disp = false);
-  double ** H_guess(void); 
+  double ** H_guess(void);
 */
 
 };

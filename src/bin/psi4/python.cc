@@ -17,6 +17,8 @@ using namespace boost;
 using namespace boost::python;
 using namespace std;
 
+namespace opt      { psi::PsiReturnType optking(psi::Options &); }
+
 namespace psi {
     namespace input    { PsiReturnType input(Options &); }
     namespace cints    { PsiReturnType cints(Options &); }
@@ -25,12 +27,26 @@ namespace psi {
     namespace cscf     { PsiReturnType cscf(Options &);  }
     namespace scf      { PsiReturnType scf(Options &);   }
     namespace dfmp2    { PsiReturnType dfmp2(Options &); }
-    namespace sapt     { PsiReturnType sapt(Options &); }
+    namespace sapt     { PsiReturnType sapt(Options &);  }
+
+    namespace transqt  { PsiReturnType transqt(Options &);  }
+    namespace transqt2 { PsiReturnType transqt2(Options &); }
+    namespace ccsort   { PsiReturnType ccsort(Options&);    }
+    namespace ccenergy { PsiReturnType ccenergy(Options&);  }
+    namespace cchbar   { PsiReturnType cchbar(Options&);    }
+    namespace cclambda { PsiReturnType cclambda(Options&);   }
+    namespace ccdensity{ PsiReturnType ccdensity(Options&); }
+    namespace oeprop   { PsiReturnType oeprop(Options&);    }
 
     extern int read_options(const std::string &name, Options & options, bool call_ipv1 = true,
       bool suppress_printing = false);
     extern void psiclean(void);
     extern FILE *outfile;
+}
+
+int py_psi_optking()
+{
+    return opt::optking(Process::environment.options);
 }
 
 int py_psi_input()
@@ -82,6 +98,54 @@ double py_psi_sapt()
     }
     else
         return 0.0;
+}
+
+double py_psi_transqt()
+{
+    transqt::transqt(Process::environment.options);
+    return 0.0;
+}
+
+double py_psi_transqt2()
+{
+    transqt2::transqt2(Process::environment.options);
+    return 0.0;
+}
+
+double py_psi_ccsort()
+{
+    ccsort::ccsort(Process::environment.options);
+    return 0.0;
+}
+
+double py_psi_ccenergy()
+{
+    ccenergy::ccenergy(Process::environment.options);
+    return 0.0;
+}
+
+double py_psi_cchbar()
+{
+    cchbar::cchbar(Process::environment.options);
+    return 0.0;
+}
+
+double py_psi_cclambda()
+{
+    cclambda::cclambda(Process::environment.options);
+    return 0.0;
+}
+
+double py_psi_ccdensity()
+{
+    ccdensity::ccdensity(Process::environment.options);
+    return 0.0;
+}
+
+double py_psi_oeprop()
+{
+    oeprop::oeprop(Process::environment.options);
+    return 0.0;
 }
 
 char const* py_psi_version()
@@ -227,6 +291,15 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("scf",   py_psi_scf);
     def("dfmp2", py_psi_dfmp2);
     def("sapt", py_psi_sapt);
+    def("optking", py_psi_optking);
+    def("transqt", py_psi_transqt);
+    def("transqt2", py_psi_transqt2);
+    def("ccsort", py_psi_ccsort);
+    def("ccenergy", py_psi_ccenergy);
+    def("cchbar", py_psi_cchbar);
+    def("cclambda", py_psi_cclambda);
+    def("ccdensity", py_psi_ccdensity);
+    def("oeprop", py_psi_oeprop);
 
     // Define library classes
     class_<PSIO, shared_ptr<PSIO> >( "IO" ).
@@ -359,7 +432,8 @@ BOOST_PYTHON_MODULE(PsiMod)
         staticmethod("create_molecule_from_string").
         def("is_variable", &Molecule::is_variable).
         def("set_variable", &Molecule::set_variable).
-        def("get_variable", &Molecule::get_variable);
+        def("get_variable", &Molecule::get_variable).
+        def("update_geometry", &Molecule::update_geometry);
 }
 
 Python::Python() : Script()
