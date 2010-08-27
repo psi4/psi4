@@ -1,0 +1,24 @@
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+LDLIBS += $(BLAS)
+
+PSITARGET = $(top_objdir)/lib/libPSI_optking.a
+
+CXXSRC = \
+atom_data.cc       frag_disp.cc       molecule_steps.cc  set_params.cc \
+bend.cc            linear_algebra.cc  opt_data.cc        stre.cc \
+frag.cc            mem.cc             optking.cc         tors.cc \
+frag_H_guess.cc    molecule.cc        print.cc           v3d.cc \
+
+BINOBJ = $(CXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+ifneq ($(DODEPEND),no)
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(BINOBJ:%.o=%.d)
+endif
+
