@@ -341,7 +341,7 @@ void BasisPoints::computePoints(SharedGridBlock grid)
             int ind_so;
             //AO -> SO (fairly easy)
             SphericalTransformIter trans(basis_->spherical_transform(shell->am()));
-            for (trans.first(); trans.is_done();trans.next()) {
+            for (trans.first(); !trans.is_done();trans.next()) {
                 trans_coef = trans.coef();
                 ind_ao = trans.cartindex();
                 ind_so = trans.pureindex();
