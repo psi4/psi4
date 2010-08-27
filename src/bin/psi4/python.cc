@@ -34,7 +34,7 @@ namespace psi {
     namespace ccsort   { PsiReturnType ccsort(Options&);    }
     namespace ccenergy { PsiReturnType ccenergy(Options&);  }
     namespace cchbar   { PsiReturnType cchbar(Options&);    }
-    namespace cclambda { PsiReturnType cclambda(Options&);   }
+    namespace cclambda { PsiReturnType cclambda(Options&);  }
     namespace ccdensity{ PsiReturnType ccdensity(Options&); }
     namespace oeprop   { PsiReturnType oeprop(Options&);    }
 
