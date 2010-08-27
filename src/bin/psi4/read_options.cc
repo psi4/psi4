@@ -113,8 +113,8 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_int("MAXITER",50);
     /*- DIIS vecs -*/
     options.add_int("DIISVECS",5);
-    /*- Compute linear response integrals? -*/
-    options.add_bool("LR_INTS",false);
+    /*- Compute coupled HF Dispersion energy -*/
+    options.add_bool("CHF_DISP",true);
     /*- Use a restart file? -*/
     options.add_bool("DF_RESTART",false);
     /*- Use a restart file? -*/
