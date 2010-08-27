@@ -5,7 +5,7 @@ def scf_energy():
     scf()
 
 def scf_gradient():
-    # First, we'll need to determine if we're doing fin-dif of energies
+    # First, we'll need to determine if we're doing findif of energies
     # or analytic gradients.
 
     #if dertype == Energy:
