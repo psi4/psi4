@@ -866,6 +866,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/sapt/Makefile
           src/bin/mints/Makefile
           src/bin/deriv/Makefile
+          src/bin/optking/Makefile
 
           tests/Makefile
           tests/MakeVars
