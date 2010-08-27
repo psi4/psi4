@@ -2,7 +2,6 @@
 // Use "python-config --includes" to determine this location.
 #include <cstdio>
 #include <boost/python.hpp>
-#include <boost/python/overloads.hpp>
 #include <psiconfig.h>
 #include <sstream>
 #include "script.h"
@@ -22,6 +21,7 @@ namespace psi {
     namespace input    { PsiReturnType input(Options &); }
     namespace cints    { PsiReturnType cints(Options &); }
     namespace mints    { PsiReturnType mints(Options &); }
+    namespace deriv    { PsiReturnType deriv(Options &); }
     namespace cscf     { PsiReturnType cscf(Options &);  }
     namespace scf      { PsiReturnType scf(Options &);   }
     namespace dfmp2    { PsiReturnType dfmp2(Options &); }
@@ -41,6 +41,11 @@ int py_psi_input()
 int py_psi_mints()
 {
     return mints::mints(Process::environment.options);
+}
+
+int py_psi_deriv()
+{
+    return deriv::deriv(Process::environment.options);
 }
 
 int py_psi_cints()
@@ -176,6 +181,11 @@ void py_psi_set_active_molecule(shared_ptr<Molecule> molecule)
     Process::environment.set_molecule(molecule);
 }
 
+boost::shared_ptr<Molecule> py_psi_get_active_molecule()
+{
+    return Process::environment.molecule();
+}
+
 double py_psi_get_variable(const std::string & key)
 {
     string uppercase_key = key;
@@ -192,6 +202,8 @@ BOOST_PYTHON_MODULE(PsiMod)
     // Options
     def("set_default_options_for_module", py_psi_set_default_options_for_module);
     def("set_active_molecule", py_psi_set_active_molecule);
+    def("get_active_molecule", &py_psi_get_active_molecule);
+
     def("print_options", py_psi_print_options);
     def("print_global_options", py_psi_print_global_options);
     def("print_out", py_psi_print_out);
@@ -199,7 +211,6 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("set_option", py_psi_set_option_string);
     def("set_option", py_psi_set_option_int);
     def("set_option", py_psi_set_option_array);
-
 
     def("set_global_option", py_psi_set_global_option_string);
     def("set_global_option", py_psi_set_global_option_int);
@@ -211,6 +222,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("input", py_psi_input);
     def("cints", py_psi_cints);
     def("mints", py_psi_mints);
+    def("deriv", py_psi_deriv);
     def("cscf",  py_psi_cscf);
     def("scf",   py_psi_scf);
     def("dfmp2", py_psi_dfmp2);

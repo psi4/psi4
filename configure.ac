@@ -865,7 +865,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/df-mp2/Makefile
           src/bin/sapt/Makefile
           src/bin/mints/Makefile
-          src/bin/optking/Makefile
+          src/bin/deriv/Makefile
 
           tests/Makefile
           tests/MakeVars

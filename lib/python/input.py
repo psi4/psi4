@@ -139,7 +139,7 @@ def process_input(raw_input):
     print_string = re.compile(r'(\s*?)print\s+(.*)',re.IGNORECASE)
     temp = re.sub(print_string,process_print_command,temp)
 
-    temp = "from PsiMod import *\nfrom psi import *\n" + temp
+    temp = "from PsiMod import *\nfrom psi import *\nfrom psiopt import *\n" + temp
 
     return temp
 

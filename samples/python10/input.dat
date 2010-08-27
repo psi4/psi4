@@ -1,0 +1,16 @@
+molecule h2o {
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+globals {
+  basis cc-pvtz
+}
+
+set scf {
+    scf_type direct
+}
+
+opt(scf_gradient)
+
