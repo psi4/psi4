@@ -74,8 +74,8 @@ void SAPT::get_ribasis()
 }
 void SAPT::get_params()
 {
-    //LR Ints?
-    params_.lr_ints = options_.get_bool("LR_INTS");
+    //Coupled HF Dispersion?
+    params_.chf_disp = options_.get_bool("CHF_DISP");
     
     //Files restarts 
     params_.df_restart = options_.get_bool("DF_RESTART");

@@ -9,7 +9,7 @@ struct params  {
   int logfile;
   FILE* logfilename;
 
-  bool lr_ints;
+  bool chf_disp;
   int print;
 
   int diisvec;
@@ -82,6 +82,8 @@ struct calcinfo {
                  // monomer B basis)
   double **WABS; // Electrostatic potential of monomer A in monomer B basis
   double **WBAR; // Electrostatic potential of monomer B in monomer A basis
+
+  double **J; // Coulomb fitting metric
   };
 
 /* This struct stores the results of the SAPT components */
@@ -94,6 +96,7 @@ struct results {
   double exch10;
 
   double disp20;
+  double disp20chf;
 
   double indr20;
   double indrA_B;
