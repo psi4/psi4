@@ -205,19 +205,32 @@ void SAPT::lr_ints()
     //Setup Functional
     int npoints = options_.get_int("N_BLOCK");
     FunctionalFactory fact;
-    SharedFunctional lda_func = SharedFunctional(fact.getExchangeFunctional("X_LDA","NULL",npoints));
-    SharedProperties primary_props = SharedProperties(Properties::constructProperties(basisset_,npoints));
-    shared_ptr<BasisPoints> aux_props = (shared_ptr<BasisPoints>)(new BasisPoints(ribasis_,npoints));
+    SharedFunctional *lda_func = new shared_ptr<Functional>[nthread];
+    SharedProperties *primary_props = new shared_ptr<Properties>[nthread];
+    shared_ptr<BasisPoints> *aux_props = new shared_ptr<BasisPoints>[nthread];
+
+    for (int thread = 0; thread < nthread; thread++) {
+        lda_func[thread] = SharedFunctional(fact.getExchangeFunctional("X_LDA","NULL",npoints));
+        primary_props[thread] = SharedProperties(Properties::constructProperties(basisset_,npoints));
+        aux_props[thread] = (shared_ptr<BasisPoints>)(new BasisPoints(ribasis_,npoints));
+    }
 
     double density_check_A = 0.0;
     double density_check_B = 0.0;
     
-    double *lda_values              =  lda_func->getValue();    
-    double *lda_grads               =  lda_func->getGradientA();    
-    const double *rho               =  primary_props->getDensity();    
-    double **primary_points         =  primary_props->getPoints();    
-    double **aux_points             =  aux_props->getPoints();  
+    double **lda_values              =  new double*[nthread];    
+    double **lda_grads               =  new double*[nthread];    
+    const double **rho               =  new const double*[nthread];    
+    double ***primary_points         =  new double**[nthread];    
+    double ***aux_points             =  new double**[nthread];  
 
+    for (int thread = 0; thread < nthread; thread++) {
+        lda_values[thread]     =  lda_func[thread]->getValue();    
+        lda_grads[thread]      =  lda_func[thread]->getGradientA();    
+        rho[thread]            =  primary_props[thread]->getDensity();    
+        primary_points[thread] =  primary_props[thread]->getPoints();    
+        aux_points[thread]     =  aux_props[thread]->getPoints();  
+    }
     //Schwarz sieve
     timer_on("Schwarz");
     unsigned long int sig_shell_pairs = 0;
@@ -337,30 +350,41 @@ void SAPT::lr_ints()
         //Numerical Integrals
         integrator->reset();
         while (!integrator -> isDone()) {
+   
+            timer_on("Get Grid Points");
             shared_ptr<GridBlock> pts = integrator->getNextBlock();
+            timer_off("Get Grid Points");
             int true_pts = pts->getTruePoints();
             double* x = pts->getX(); 
             double* y = pts->getY(); 
             double* z = pts->getZ(); 
             double* w = pts->getWeights(); 
 
-            primary_props->computeProperties(pts,DA_);
-            aux_props->computePoints(pts);
-
+            timer_on("Get Primary Points");
+            primary_props[0]->computeProperties(pts,DA_);
+            timer_off("Get Primary Points");
+            timer_on("Get Aux Points");
+            aux_props[0]->computePoints(pts);
+            timer_off("Get Aux Points");
+            timer_on("Functional");
+            lda_func[0]->computeFunctionalRKS(primary_props[0]);
+            timer_off("Functional");
+            
+            timer_on("Sum Contributions");
             for (int pt = 0; pt < true_pts; pt++) {
              for (int P = 0; P < naux; P++) {
               for (int m = 0; m < norbs; m++) {
                for (int n = 0; n < norbs; n++)  {
-                Amn[P][m*norbs+n] += 2.0*primary_points[pt][m]*primary_points[pt][n]*
-                    aux_points[pt][P]*w[pt]*lda_grads[pt]; 
+                Amn[P][m*norbs+n] += 2.0*primary_points[0][pt][m]*primary_points[0][pt][n]*
+                    aux_points[0][pt][P]*w[pt]*lda_grads[0][pt]; 
                }
               }
              }
-             density_check_A += w[pt]*rho[pt];
+             density_check_A += w[pt]*rho[0][pt];
              //fprintf(outfile,"  <x,y,z,w,rho> = <%14.10f,%14.10f,%14.10f,%14.10f,%14.10f>\n",x[pt],y[pt],z[pt],w[pt],rho[pt]);   
              //fprintf(outfile,"   <phi[0],chi[0]> = <%14.10f,%14.10f>\n",primary_points[pt][0],aux_points[pt][0]);   
             }     
-            
+            timer_off("Sum Contributions");
         }
 
         //Transform        
@@ -453,19 +477,19 @@ void SAPT::lr_ints()
             double* z = pts->getZ(); 
             double* w = pts->getWeights(); 
 
-            primary_props->computeProperties(pts,DB_);
-            aux_props->computePoints(pts);
+            primary_props[0]->computeProperties(pts,DB_);
+            aux_props[0]->computePoints(pts);
 
             for (int pt = 0; pt < true_pts; pt++) {
              for (int P = 0; P < naux; P++) {
               for (int m = 0; m < norbs; m++) {
                for (int n = 0; n < norbs; n++)  {
-                Amn[P][m*norbs+n] += 2.0*primary_points[pt][m]*primary_points[pt][n]*
-                    aux_points[pt][P]*w[pt]*lda_grads[pt]; 
+                Amn[P][m*norbs+n] += 2.0*primary_points[0][pt][m]*primary_points[0][pt][n]*
+                    aux_points[0][pt][P]*w[pt]*lda_grads[0][pt]; 
                }
               }
              }
-             density_check_B += w[pt]*rho[pt];
+             density_check_B += w[pt]*rho[0][pt];
             }     
             
         }
@@ -561,6 +585,9 @@ void SAPT::lr_ints()
 
     free_block(Bjb);
     free_block(Ajb);
+}
+void gauss_leguerre_quadrature(int n, double* x, double* w) {
+    
 }
 
 }}
