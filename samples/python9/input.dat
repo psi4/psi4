@@ -68,62 +68,6 @@ set scf {
 
 e_bd = scf()
 
-print "\n\n" 
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
-print "  //          SCF Computation          //"
-print "  //          Ethene/cc-pVDZ           //"
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
-print "\n"
-
-ethene_m = dimer.extract_subsets( 1)
-
-set scf {
-    SAPT false   
-}
-
-e_am = scf()
-
-print "\n\n" 
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
-print "  //          SCF Computation          //"
-print "  //           Ethyne/cc-pVDZ          //"
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
-print "\n"
-
-ethyne_m = dimer.extract_subsets( 2)
-e_bm = scf()
-
-
-print "\n\n" 
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
-print "  //  CP Corrected SCF Dimer Energies  //"
-print "  //                WOOT!              //"
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
-print "\n"
-
-print "  E_dimer  = %15.10f [H] (dimer basis)\n" % e_dimer
-print "  E_ethene = %15.10f [H] (dimer basis)\n" % e_ad
-print "  E_ethene = %15.10f [H] (monomer basis)\n" % e_am
-print "  E_ethyne = %15.10f [H] (dimer basis)\n" % e_bd
-print "  E_ethyne = %15.10f [H] (monomer basis)\n" % e_bm
-
-print "\n"
-
-e_intd_h = e_dimer-e_ad-e_bd
-e_intm_h = e_dimer-e_am-e_bm
-e_intd_kcal = e_intd_h*627.509
-e_intm_kcal = e_intm_h*627.509
-bsse_h = e_intd_h - e_intm_h
-bsse_kcal = e_intd_kcal - e_intm_kcal
-
-print "  E_int    = %15.10f [H] = %15.10f [kcal] (CP Corrected)\n" %(e_intd_h, e_intd_kcal)
-print "  E_int    = %15.10f [H] = %15.10f [kcal] (non-CP Corrected)\n" %(e_intm_h, e_intm_kcal)
-
-print "\n"
-
-print "  BSSE     = %15.10f [H] = %15.10f [kcal]\n" %(bsse_h, bsse_kcal)
-
-print "\n\n" 
 print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
 print "  //         SAPT0 Computation         //"
 print "  //       Ethene-Ethyne/cc-pVDZ       //"
@@ -138,6 +82,7 @@ PsiMod.IO.change_file_namespace(122,"ethyne","dimer")
 
 set sapt {
     ri_basis_sapt aug-cc-pVDZ-RI
+    chf_disp 0
 }
 print_options()
 e_sapt = sapt()
