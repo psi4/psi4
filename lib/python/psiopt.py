@@ -1,7 +1,34 @@
 from PsiMod import *
 
+def ccsd_energy():
+    # Do checks to see if scf, transqt, and ccsort executed?
+
+    transqt()
+    ccsort()
+    ccenergy()
+
+def ccsd_gradient():
+    # Do checks to see if ccsd executed?
+
+    cchbar()
+    cclambda()
+    ccdensity()
+    oeprop()
+    transqt_to_ao()
+
+    # Using one- and two-particle densities and lagrangian compute gradient
+    #   NOTE: This code needs to be modified, currently coded to SCF gradient
+    # was cints --deriv1
+    deriv()
+
 def scf_energy():
     # Would be nice to do a check that required modules were executed.
+
+    # Need to check what the user asked for:
+    #    direct and df (scf will compute integrals needed)
+    #    pk and out of core [cints (or mints with modification) needs
+    #                        to run first]
+
     scf()
 
 def scf_gradient():
@@ -11,7 +38,7 @@ def scf_gradient():
     #if dertype == Energy:
     #    do steps needed for findif of energies
     #    Does this involve calling optking to generate displacements?
-    #    or, will "opt(...)" tell us to use energies and provide
+    #    or, will "opt(...)", below, tell us to use energies and provide
     #    displacements
 
     #elif dertype == Gradient:
@@ -19,7 +46,7 @@ def scf_gradient():
     # should be using.
 
     # Compute energy
-    scf_energy()
+    scf_energy()       # or should we call scf() directly
 
     # Compute gradient:
     deriv()
