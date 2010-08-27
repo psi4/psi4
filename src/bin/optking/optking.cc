@@ -18,7 +18,7 @@ namespace opt {
 #ifdef PSI4
 using psi::Options;
 OptReturnType optking(Options & options) {
-#elif "QCHEM4"
+#elif QCHEM4
 OptReturnType optking(void) {
 outfile = fopen("output.dat","a");
 #endif

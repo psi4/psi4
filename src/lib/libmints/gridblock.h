@@ -13,7 +13,7 @@ namespace psi {
 /*! \ingroup LIBMINTS */
 //! Integration Point/Weight container class (blocks, not individual) 
 class GridBlock {
-protected:
+public:
     /// Weight vector [max_points_]
     double* w_;
     /// x vector [max_points_]
@@ -26,7 +26,6 @@ protected:
     int max_points_;
     /// Actual number of valid points
     int true_points_; 
-public:
     /** Constructor, allocates block object with max_points size **/
     GridBlock(int max_points);
     /** Destructor, deallocates arrays **/
