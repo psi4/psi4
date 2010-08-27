@@ -92,8 +92,8 @@ void SAPT::lr_ints()
     //print_mat(DB_temp,norbs,norbs,outfile);
     free_block(DB_temp);
 
-    DA_->print(outfile);
-    DB_->print(outfile);
+    //DA_->print(outfile);
+    //DB_->print(outfile);
 
     //Prestripe
     psio_address lr_prestripe = PSIO_ZERO;
@@ -331,8 +331,8 @@ void SAPT::lr_ints()
         }
         timer_off("(A|mn)");
 
-        fprintf(outfile, "  Amn\n");
-        print_mat(Amn,max_rows,norbs*norbs, outfile);
+        //fprintf(outfile, "  Amn\n");
+        //print_mat(Amn,max_rows,norbs*norbs, outfile);
         
         //Numerical Integrals
         integrator->reset();
@@ -393,8 +393,8 @@ void SAPT::lr_ints()
             mkl_set_num_threads(mkl_nthreads);
         #endif
 
-        fprintf(outfile, "  Aia\n");
-        print_mat(Aia,p_sizes[block],noccA*nvirA, outfile);
+        //fprintf(outfile, "  Aia\n");
+        //print_mat(Aia,p_sizes[block],noccA*nvirA, outfile);
 
         //Stripe to disk
         timer_on("(A|ia) Write");
@@ -440,8 +440,8 @@ void SAPT::lr_ints()
         }
         timer_off("(A|mn)");
 
-        fprintf(outfile, "  Bmn\n");
-        print_mat(Amn,max_rows,norbs*norbs, outfile);
+        //fprintf(outfile, "  Bmn\n");
+        //print_mat(Amn,max_rows,norbs*norbs, outfile);
         
         //Numerical Integrals
         integrator->reset();
@@ -500,8 +500,8 @@ void SAPT::lr_ints()
             mkl_set_num_threads(mkl_nthreads);
         #endif
 
-        fprintf(outfile, "  Bia\n");
-        print_mat(Bia,p_sizes[block],noccB*nvirB, outfile);
+        //fprintf(outfile, "  Bia\n");
+        //print_mat(Bia,p_sizes[block],noccB*nvirB, outfile);
 
         //Stripe to disk
         timer_on("(A|ia) Write");
