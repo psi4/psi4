@@ -75,7 +75,8 @@ outfile = fopen("output.dat","a");
     p_Opt_data->summary();
     p_Opt_data->write();
 #ifdef PSI4
-  mol1.write_geom_chkpt(); // write geometry for next step to chkpt file
+//  mol1.write_geom_chkpt(); // write geometry for next step to chkpt file
+  mol1.write_geom_to_active_molecule(); // write geometry for next step to chkpt file
 #endif
     delete p_Opt_data;
     print_end(outfile);
@@ -91,7 +92,8 @@ outfile = fopen("output.dat","a");
   mol1.write_geom(); // write geometry for next step to output file
 
 #ifdef PSI4
-  mol1.write_geom_chkpt(); // write geometry for next step to chkpt file
+//  mol1.write_geom_chkpt(); // write geometry for next step to chkpt file
+    mol1.write_geom_to_active_molecule(); // write geometry for next step to chkpt file
 #endif
 
   print_end(outfile);

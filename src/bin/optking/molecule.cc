@@ -74,24 +74,24 @@ MOLECULE::MOLECULE(ifstream & fin) {
     }
     catch (std::ios_base::failure & bf) { }
     int ngeom = nlines / (2*nallatom+2);
- 
+
     fin.clear();
     fin.seekg(0);
     for (i=0; i< (ngeom-1)*(2*nallatom+2); ++i)
       fin.getline(cline, 256);
- 
+
     fin.getline(cline, 256); // header line
 
     for (frag=0; frag<nfrag; ++frag)
       fin >> i;
     fin >> energy;
- 
+
     FRAG * one_frag;
- 
+
     for (frag=0; frag<nfrag; ++frag) {
       double *Z = init_array(natom_i[frag]);
       double **geom = init_matrix(natom_i[frag], 3);
-      
+
       for (i=0; i<natom_i[frag]; ++i) {
         // check to see if atomic number or symbol
         if ( isalpha((lbl.c_str())[0]) )
@@ -120,7 +120,7 @@ MOLECULE::MOLECULE(ifstream & fin) {
     }
     free_int_array(natom_i);
 
-  } // end try reading geometries 
+  } // end try reading geometries
   catch (std::ios_base::failure & bf) {
     printf("Error reading molecular geometry and gradient\n");
     fprintf(outfile,"Error reading molecular geometry and gradient\n");
@@ -227,7 +227,7 @@ void MOLECULE::project_f_and_H(void) {
 
   for (int i=0; i<Nintco; ++i)
     for (int j=0; j<Nintco; ++j)
-      H[i][j] -= P[i][j]; 
+      H[i][j] -= P[i][j];
 
   free_matrix(P);
 }
@@ -247,6 +247,7 @@ void MOLECULE::write_geom(void) {
 }
 
 #ifdef PSI4
+#include <libmints/molecule.h>
 #include <libchkpt/chkpt.h>
 namespace opt {
 
@@ -262,10 +263,24 @@ void MOLECULE::write_geom_chkpt(void) {
 
 fprintf(outfile,"Print new geom\n");
 print_matrix(outfile, geom_2D, g_natom(), 3);
-    
+
   chkpt_init(PSIO_OPEN_OLD);
   chkpt_wt_geom(geom_2D);
   chkpt_close();
+}
+
+void MOLECULE::write_geom_to_active_molecule() {
+    using namespace psi;
+    double *x = g_geom_array();
+
+    double **geom_2D = init_matrix(g_natom(), 3);
+    int cnt = 0;
+    for (int i=0; i<g_natom(); ++i)
+      for (int xyz=0; xyz < 3; ++xyz)
+        geom_2D[i][xyz] = x[cnt++];
+
+    // Modify "active molecule" with new geometry
+    Process::environment.molecule()->set_geometry(geom_2D);
 }
 
 }

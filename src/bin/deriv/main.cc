@@ -121,6 +121,9 @@ PsiReturnType deriv(Options & options)
 
     scf_grad.print_atom_vector();
 
+    GradientWriter grad(basisset->molecule(), scf_grad);
+    grad.write("psi.file11.dat");
+
 //    SimpleMatrix enuc2 = basis->molecule()->nuclear_repulsion_energy_deriv2();
 //    enuc2.print();
 

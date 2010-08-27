@@ -28,4 +28,5 @@
 #include <libmints/sobasis.h>
 #include <libmints/vector.h>
 #include <libmints/vector3.h>
+#include <libmints/writer.h>
 #include <libmints/wavefunction.h>

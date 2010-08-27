@@ -51,14 +51,28 @@ def scf_gradient():
     # Compute gradient:
     deriv()
 
+def gradient(energy_method):
+    pass
+
+# TODO: Need to get options from liboptions
+nopt = 20
+
 def opt(method = scf_gradient):
     # Assume the active molecule is the one we want to use.
 
     # Tell the user what we're going to do:
     print_out("Optimizer:")
 
-    # Compute the gradient
-    method()
+    mol = get_active_molecule()
+    mol.update_geometry()
+    print_out("Molecule printed from python:")
+    mol.print_to_output()
 
-    # Tell the user that we don't know what to do with the gradient
-    print_out("Optimizer: Don't know what to do with the gradient!")
+    for n in range(nopt):
+        # Compute the gradient
+        gradient = method()
+
+        # Take step
+        if optking(get_active_molecule(), gradient) == 3:
+            print_out("Optimizer: Optimization complete!")
+            return
