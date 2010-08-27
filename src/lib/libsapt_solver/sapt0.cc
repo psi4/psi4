@@ -76,7 +76,7 @@ double SAPT0::compute_energy()
 
     if (params_.chf_disp) {
       lr_ints();
-      df_disp20_chf();
+//      df_disp20_chf();
     }
 
     ind20resp();

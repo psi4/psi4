@@ -123,7 +123,7 @@ double UHF::compute_energy()
 
         E_ = compute_E();
 
-        if (diis_enabled_ == true && iter >= num_diis_vectors_) {
+        if (diis_enabled_ == true && iter >= min_diis_vectors_) {
             diis();
             diis_iter = true;
         } else {

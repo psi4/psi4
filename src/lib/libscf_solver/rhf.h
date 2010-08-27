@@ -114,7 +114,7 @@ protected:
     void form_F();
 
     void save_fock();
-    void diis();
+    bool diis();
     void allocate_PK();
 
     //DOWN FOR MAINTENANCE

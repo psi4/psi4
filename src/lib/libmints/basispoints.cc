@@ -335,6 +335,7 @@ void BasisPoints::computePoints(SharedGridBlock grid)
         }
         int start = shell->function_index();
         if (shell->is_pure()) {
+            //printf("PURE\n");
             double trans_coef;
             int ind_ao;
             int ind_so;
@@ -363,11 +364,12 @@ void BasisPoints::computePoints(SharedGridBlock grid)
                 if (do_laplacians_) {
                     laplacians_[grid_index][ind_so+start] += trans_coef*ao_laplac_[ind_ao];
                 }
-                //fprintf(out,"Transforming AO shell index %d to SO total index %d, c = %14.10f\n",ind_ao,ind_so+start,trans_coef); fflush(outfile);
+                //fprintf(outfile,"Transforming AO shell index %d to SO total index %d, c = %14.10f\n",ind_ao,ind_so+start,trans_coef); fflush(outfile);
             }
         }
         else {
             //AO -> AO (Easy) Thanks Jet!
+            //printf("CART\n");
             if (do_points_) {
                 memcpy(points_[grid_index]+start, ao_points_, l_size);
             }
@@ -389,6 +391,8 @@ void BasisPoints::computePoints(SharedGridBlock grid)
             }
         }
     }
+//        for (int Q = 0; Q < basis_->nbf(); Q++)
+//            fprintf(outfile,"  pt = %d, Q = %d, val = %14.10f\n",grid_index,Q,points_[grid_index][Q]); 
     // << CLOSE OUTER LOOP OVER GRID POINTS
     }
 }

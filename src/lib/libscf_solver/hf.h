@@ -150,8 +150,12 @@ protected:
     /// DIIS manager for all SCF wavefunctions
     boost::shared_ptr<DIISManager> diis_manager_;
 
-    /// How many vectors for DIIS
-    int num_diis_vectors_;
+    /// How many min vectors for DIIS
+    int min_diis_vectors_;
+    /// How many max vectors for DIIS
+    int max_diis_vectors_;
+    /// When do we start collecting vectors for DIIS
+    int diis_start_;
     /// Are we even using DIIS?
     int diis_enabled_;
 

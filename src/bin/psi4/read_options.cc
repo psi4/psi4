@@ -130,9 +130,9 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     /*- The DFT grid specification, such as SG1 -*/
     options.add_str("GRID_STRING","","SG1");
     /*- The number of radial points in the DFT grid -*/
-    options.add_int("N_RADIAL",4);
+    options.add_int("N_RADIAL",99);
     /*- The number of spherical points in the DFT grid -*/
-    options.add_int("N_SPHERICAL",14);
+    options.add_int("N_SPHERICAL",590);
     /*- The number of grid points per evaluation block -*/
     options.add_int("N_BLOCK",5000);
     /*- The spherical quadrature type for DFT, usually Lebedev -*/
@@ -345,8 +345,12 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
 
     /*- The operator used to perturb the Hamiltonian, if requested -*/
     options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z");
+    /*- The minimum iteration to start storing DIIS vectors -*/
+    options.add_int("START_DIIS_ITER", 1);
+    /*- The minimum number of error vectors stored for DIIS extrapolation -*/
+    options.add_int("MIN_DIIS_VECTORS", 2);
     /*- The maximum number of error vectors stored for DIIS extrapolation -*/
-    options.add_int("DIIS_VECTORS", 4);
+    options.add_int("MAX_DIIS_VECTORS", 10);
     /*- Whether DIIS extrapolation is used to accelerate convergence -*/
     options.add_bool("DIIS", true);
     /*- The molecular charge -*/

@@ -40,7 +40,7 @@ class DIISManager{
 
         void set_error_vector_size(int numQuantities, ...);
         void set_vector_size(int numQuantities, ...);
-        void extrapolate(int numQuatities, ...);
+        bool extrapolate(int numQuatities, ...);
         bool add_entry(int numQuatities, ...);
         int remove_entry();
         void reset_subspace();

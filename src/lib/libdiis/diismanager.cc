@@ -309,10 +309,10 @@ DIISManager::get_next_entry_id()
  * function.  The types of each component should not be specified here, unlike the
  * set_vector_size() function call.
  */
-void
+bool
 DIISManager::extrapolate(int numQuantities, ...)
 {
-    if(!_subspace.size()) return;
+    if(!_subspace.size()) return false;
     int dimension = _subspace.size() + 1;
     double **bMatrix = block_matrix(dimension, dimension);
     double *coefficients = init_array(dimension);
@@ -432,6 +432,7 @@ DIISManager::extrapolate(int numQuantities, ...)
         va_end(args);
     }
     free_block(bMatrix);
+    return true;
 }
 
 

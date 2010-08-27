@@ -18,11 +18,14 @@ set scf {
     SCF_TYPE DF
     BASIS cc-pVDZ
     RI_BASIS_SCF cc-pVDZ-RI
-    DIIS TRUE
+    DIIS 1
     MAXITER 100
     E_CONVERGE 8
     GUESS SAD 
 }
+
+print_global_options()
+print_options()
 
 e_dimer = scf()
 

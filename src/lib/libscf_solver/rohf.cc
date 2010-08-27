@@ -55,22 +55,22 @@ void ROHF::common_init()
     diis_B_ = NULL;
     current_diis_fock_ = 0;
 
-    num_diis_vectors_ = options_.get_int("DIIS_VECTORS");
+    min_diis_vectors_ = options_.get_int("DIIS_VECTORS");
     diis_enabled_ = options_.get_bool("DIIS");
     diis_enabled_ = false;      // DIIS doesn't work, so don't bother.
 
     // Don't perform DIIS is less than 2 vectors requested, or user requested a negative number
-    if (num_diis_vectors_ < 2) {
+    if (min_diis_vectors_ < 2) {
         // disable diis
         diis_enabled_ = false;
     }
 
     if (diis_enabled_ == true) {
         // Allocate the memory
-        diis_B_ = block_matrix(num_diis_vectors_, num_diis_vectors_);
+        diis_B_ = block_matrix(min_diis_vectors_, min_diis_vectors_);
 
         // Allocate space for diis_F_ and diis_E_
-        for (int i=0; i < num_diis_vectors_; ++i) {
+        for (int i=0; i < min_diis_vectors_; ++i) {
             diis_F_.push_back(SharedMatrix(factory_.create_matrix()));
             diis_E_.push_back(SharedMatrix(factory_.create_matrix()));
         }
@@ -149,7 +149,7 @@ double ROHF::compute_energy()
         // Compute total energy
         E_ = compute_E();
 
-        if (diis_enabled_ == true && iter >= num_diis_vectors_ && iter % 6 == 0) {
+        if (diis_enabled_ == true && iter >= min_diis_vectors_ && iter % 6 == 0) {
             diis();
             diis_iter = true;
         } else {
@@ -312,21 +312,21 @@ void ROHF::save_fock() {
     }
 #endif
     current_diis_fock_++;
-    if (current_diis_fock_ == num_diis_vectors_)
+    if (current_diis_fock_ == min_diis_vectors_)
         current_diis_fock_ = 0;
 }
 
 void ROHF::diis() {
     int i, j, matrix_size;
 
-    matrix_size = num_diis_vectors_ + 1;
+    matrix_size = min_diis_vectors_ + 1;
 
     // Construct the B matrix
     // Assumes all the error matrices are available
     SharedMatrix temp(factory_.create_matrix());
-    for (i=0; i<num_diis_vectors_; ++i) {
+    for (i=0; i<min_diis_vectors_; ++i) {
         // diis_E_[i].print(outfile);
-        for (j=0; j<num_diis_vectors_; ++j) {
+        for (j=0; j<min_diis_vectors_; ++j) {
 //			temp.gemm(false, true, 1.0, diis_E_[i], diis_E_[j], 0.0);
 //			diis_B_[i][j] = temp.trace();
             diis_B_[i][j] = diis_E_[i]->vector_dot(diis_E_[j]);
@@ -336,7 +336,7 @@ void ROHF::diis() {
 #ifdef _DEBUG
     if (debug_) {
         fprintf(outfile, "  B matrix:\n");
-        print_mat(diis_B_, num_diis_vectors_, num_diis_vectors_, outfile);
+        print_mat(diis_B_, min_diis_vectors_, min_diis_vectors_, outfile);
     }
 #endif
 
@@ -378,7 +378,7 @@ void ROHF::diis() {
     // Extrapolate a new Fock matrix.
     if (errcode == 0) {
         Feff_->zero();
-    	for (i=0; i<num_diis_vectors_; ++i) {
+    	for (i=0; i<min_diis_vectors_; ++i) {
     	    Matrix scaled;
             scaled.copy(diis_F_[i]);
             scaled.scale(b[i+1]);

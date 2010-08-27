@@ -212,15 +212,14 @@ double RHF::compute_energy()
         if (print_>3) {
             F_->print(outfile);
         }
-        if (diis_enabled_ && iteration_ > 0)
+        if (diis_enabled_ && iteration_ > 0 && iteration_ >= diis_start_ )
             save_fock();
 
         E_ = compute_E();
 
         timer_on("DIIS");
-        if (diis_enabled_ == true && iteration_ >= num_diis_vectors_) {
-            diis();
-            diis_iter = true;
+        if (diis_enabled_ == true && iteration_ >= diis_start_ + min_diis_vectors_ - 1) {
+            diis_iter = diis();
         } else {
             diis_iter = false;
         }
@@ -870,9 +869,9 @@ void RHF::save_fock()
     diis_manager_->add_entry(2, &FDSmSDF, F_.get());
 }
 
-void RHF::diis()
+bool RHF::diis()
 {
-    diis_manager_->extrapolate(1, F_.get());
+    return diis_manager_->extrapolate(1, F_.get());
 }
 
 bool RHF::test_convergency()
