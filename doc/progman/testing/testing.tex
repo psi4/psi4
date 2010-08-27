@@ -17,7 +17,10 @@ test suite, here is what you should do.
 \item Create an appropriate input file for running the new module. 
       Then, if your program produced the correct data, rename
       the output files to *.ref. Follow the convention of the 
-      existing test cases.
+      existing test cases. Make sure you add a descriptive comment to the
+      input file, stating what the calculation type is.  Use the special comment
+      marker ``\%!'' to do this, so that the comment is inserted into the user's
+      manual.
 
 \item If the test case is small, add the directory name to the list
       in \$PSI4/tests/Makefile.in.  If the test is particularly tricky,
