@@ -46,18 +46,21 @@ protected:
     void Q2(double **);
     void Q14(double **);
     
-    double **get_AA_ints(int dress) ;
-    double **get_diag_AA_ints(int dress) ;
-    double **get_BB_ints(int dress) ;
-    double **get_diag_BB_ints(int dress) ;
-    double **get_AB_ints(int dress) ;
-    double **get_AS_ints(int dress) ;
-    double **get_RB_ints(int dress) ;
-    double **get_AR_ints(int dress) ;
-    double **get_BS_ints(int dress) ;
+    double **get_AA_ints(int);
+    double **get_diag_AA_ints(int);
+    double **get_BB_ints(int);
+    double **get_diag_BB_ints(int);
+    double **get_AB_ints(int);
+    double **get_AS_ints(int);
+    double **get_RB_ints(int);
+    double **get_AR_ints(int);
+    double **get_BS_ints(int);
 
     void ao_df_ints();
     void ao_df_ints_restart();
+
+    double **DF_FDDS(double,int,char *,int,char *,double *,int,int);
+    double **D_lambda_F(double,int,char *,int,char *,double *,int,int);
 public:
     SAPT0(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
 
@@ -65,6 +68,7 @@ public:
     void elst10();
     void exch10();
     void disp20();
+    void df_disp20_chf();
     void theta_ar();
     void theta_bs();
     void exch_disp20();

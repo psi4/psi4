@@ -52,12 +52,14 @@ SAPT0::SAPT0(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
 
 SAPT0::~SAPT0()
 {
+    psio_->close(PSIF_SAPT_AA_DF_INTS,1);
+    psio_->close(PSIF_SAPT_BB_DF_INTS,1);
+    psio_->close(PSIF_SAPT_AB_DF_INTS,1);
 }
 double SAPT0::compute_energy()
 {
     if (!params_.df_restart) {
       ao_df_ints();
-      lr_ints();
     } else {
       ao_df_ints_restart();
     }
@@ -71,6 +73,11 @@ double SAPT0::compute_energy()
     theta_bs();
     exch_disp20();
     psio_->close(PSIF_SAPT_AMPS,0);
+
+    if (params_.chf_disp) {
+      lr_ints();
+      df_disp20_chf();
+    }
 
     ind20resp();
     exch_ind20respA_B();
@@ -115,6 +122,7 @@ void SAPT0::ao_df_ints()
   IntegralFactory rifactory_J(ribasis_, zero_, ribasis_, zero_);
 
   TwoBodyInt* Jint = rifactory_J.eri();
+//double **calc_info_.J = block_matrix(ribasis_->nbf(), ribasis_->nbf());
   double **J = block_matrix(ribasis_->nbf(), ribasis_->nbf());
   double **J_mhalf = block_matrix(ribasis_->nbf(),ribasis_->nbf());
   const double *Jbuffer = Jint->buffer();
@@ -142,6 +150,9 @@ void SAPT0::ao_df_ints()
       }
     }
   }
+
+//C_DCOPY(ribasis_->nbf()*ribasis_->nbf(),&(J[0][0]),1,
+//  &(calc_info_.J[0][0]),1);
 
   if (params_.logfile) {
     fprintf(params_.logfilename,"  Forming J^-1/2 matrix\n");
@@ -359,6 +370,8 @@ void SAPT0::ao_df_ints()
             calc_info_.nrio,calc_info_.noccA*calc_info_.noccA);
   zero_disk(PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",(char *) &(zeros[0]),
             calc_info_.nrio,calc_info_.nvirA*calc_info_.noccA);
+//zero_disk(PSIF_SAPT_AA_DF_INTS,"Bare AR RI Integrals",(char *) &(zeros[0]),
+//          calc_info_.nrio,calc_info_.nvirA*calc_info_.noccA);
   zero_disk(PSIF_SAPT_AA_DF_INTS,"RR RI Integrals",(char *) &(zeros[0]),
             calc_info_.nrio,calc_info_.nvirA*calc_info_.nvirA);
   timer_off("Zero AA Ints         ");
@@ -408,6 +421,16 @@ void SAPT0::ao_df_ints()
       next_DF_MO = psio_get_address(next_DF_MO,(nmo*nmo-numP)*
         (ULI) sizeof(double));
     } 
+
+//  for (int ij=0; ij<numP; ij++) {
+//    int i = (ij+oP)/nmo;
+//    int j = (ij+oP)%nmo;
+//    if (i < calc_info_.noccA && j >= calc_info_.noccA) {
+//      psio_->write(PSIF_SAPT_AA_DF_INTS,"Bare AR RI Integrals",(char *)
+//        &(temp[ij][0]),sizeof(double)*(ULI) calc_info_.nrio,next_DF_AR,
+//        &next_DF_AR);
+//    }
+//  }
 
     temp_J = block_matrix(numP,calc_info_.nrio);
 
@@ -533,6 +556,8 @@ void SAPT0::ao_df_ints()
             calc_info_.nrio,calc_info_.noccB*calc_info_.noccB);
   zero_disk(PSIF_SAPT_BB_DF_INTS,"BS RI Integrals",(char *) &(zeros[0]),
             calc_info_.nrio,calc_info_.nvirB*calc_info_.noccB);
+//  zero_disk(PSIF_SAPT_BB_DF_INTS,"Bare BS RI Integrals",(char *) &(zeros[0]),
+//            calc_info_.nrio,calc_info_.nvirB*calc_info_.noccB);
   zero_disk(PSIF_SAPT_BB_DF_INTS,"SS RI Integrals",(char *) &(zeros[0]),
             calc_info_.nrio,calc_info_.nvirB*calc_info_.nvirB);
   timer_off("Zero BB Ints         ");
@@ -573,6 +598,16 @@ void SAPT0::ao_df_ints()
       next_DF_MO = psio_get_address(next_DF_MO,(nmo*nmo-numP)*
         (ULI) sizeof(double));
     }
+
+//    for (int ij=0; ij<numP; ij++) {
+//      int i = (ij+oP)/nmo;
+//      int j = (ij+oP)%nmo;
+//      if (i < calc_info_.noccB && j >= calc_info_.noccB) {
+//        psio_->write(PSIF_SAPT_BB_DF_INTS,"Bare BS RI Integrals",(char *)
+//          &(temp[ij][0]),sizeof(double)*(ULI) calc_info_.nrio,next_DF_BS,
+//          &next_DF_BS);
+//      }
+//    }
 
     temp_J = block_matrix(numP,calc_info_.nrio);
 
@@ -1102,11 +1137,12 @@ void SAPT0::print_results()
           results_.deltaHF*1000.0,results_.deltaHF*627.5095);
   fprintf(outfile,"    Disp20        %16.8lf mH %16.8lf kcal mol^-1\n",
           results_.disp20*1000.0,results_.disp20*627.5095);
+  fprintf(outfile,"    Disp20 (CHF)  %16.8lf mH %16.8lf kcal mol^-1\n",
+          results_.disp20chf*1000.0,results_.disp20chf*627.5095);
   fprintf(outfile,"    Exch-Disp20   %16.8lf mH %16.8lf kcal mol^-1\n\n",
           results_.exch_disp20*1000.0,results_.exch_disp20*627.5095);
   fprintf(outfile,"    Total SAPT0   %16.8lf mH %16.8lf kcal mol^-1\n",
           results_.sapt0*1000.0,results_.sapt0*627.5095);
 }
-
 
 }}
