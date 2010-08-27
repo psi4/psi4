@@ -127,6 +127,22 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_double("SAPT_MEM_SAFETY",0.9);  
     /*- SAPT DF Basis -*/
     options.add_str("RI_BASIS_SAPT", "");
+    /*- The DFT grid specification, such as SG1 -*/
+    options.add_str("GRID_STRING","","SG1");
+    /*- The number of radial points in the DFT grid -*/
+    options.add_int("N_RADIAL",99);
+    /*- The number of spherical points in the DFT grid -*/
+    options.add_int("N_SPHERICAL",590);
+    /*- The number of grid points per evaluation block -*/
+    options.add_int("N_BLOCK",5000);
+    /*- The spherical quadrature type for DFT, usually Lebedev -*/
+    options.add_str("SPHERICAL_TYPE","LEBEDEV","LEBEDEV");
+    /*- The radial quadrature type for DFT, Treutler is best -*/
+    options.add_str("RADIAL_TYPE","TREUTLER","TREUTLER BECKE EULER-MACLAURIN");
+    /*- The nuclear partition type for DFT, Treutler is best  -*/
+    options.add_str("NUCLEAR_TYPE","TREUTLER","NAIVE BECKE TREUTLER");
+    /*- Number of threads to compute integrals with. 0 is wild card -*/
+    options.add_int("RI_INTS_NUM_THREADS", 1);
   }
   if(name == "DCFT"|| options.read_globals()) {
       ip_cwk_add(":DCFT");
