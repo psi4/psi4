@@ -1137,8 +1137,9 @@ void SAPT0::print_results()
           results_.deltaHF*1000.0,results_.deltaHF*627.5095);
   fprintf(outfile,"    Disp20        %16.8lf mH %16.8lf kcal mol^-1\n",
           results_.disp20*1000.0,results_.disp20*627.5095);
-  fprintf(outfile,"    Disp20 (CHF)  %16.8lf mH %16.8lf kcal mol^-1\n",
-          results_.disp20chf*1000.0,results_.disp20chf*627.5095);
+  if (params_.chf_disp)
+    fprintf(outfile,"    Disp20 (CHF)  %16.8lf mH %16.8lf kcal mol^-1\n",
+            results_.disp20chf*1000.0,results_.disp20chf*627.5095);
   fprintf(outfile,"    Exch-Disp20   %16.8lf mH %16.8lf kcal mol^-1\n\n",
           results_.exch_disp20*1000.0,results_.exch_disp20*627.5095);
   fprintf(outfile,"    Total SAPT0   %16.8lf mH %16.8lf kcal mol^-1\n",
