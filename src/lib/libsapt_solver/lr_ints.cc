@@ -357,7 +357,8 @@ void SAPT::lr_ints()
               }
              }
              density_check_A += w[pt]*rho[pt];
-             fprintf(outfile,"  <x,y,z,w,rho> = <%14.10f,%14.10f,%14.10f,%14.10f,%14.10f>\n",x[pt],y[pt],z[pt],w[pt],rho[pt]);   
+             //fprintf(outfile,"  <x,y,z,w,rho> = <%14.10f,%14.10f,%14.10f,%14.10f,%14.10f>\n",x[pt],y[pt],z[pt],w[pt],rho[pt]);   
+             //fprintf(outfile,"   <phi,,z,w,rho> = <%14.10f,%14.10f,%14.10f,%14.10f,%14.10f>\n",x[pt],y[pt],z[pt],w[pt],rho[pt]);   
             }     
             
         }
