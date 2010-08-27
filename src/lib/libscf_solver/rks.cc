@@ -164,7 +164,7 @@ double RKS::compute_energy()
 
         E_ = compute_E();
 
-        if (diis_enabled_ == true && iteration >= num_diis_vectors_) {
+        if (diis_enabled_ == true && iteration >= min_diis_vectors_) {
             diis();
             diis_iter = true;
         } else {

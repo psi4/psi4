@@ -207,22 +207,24 @@ void HF::common_init()
     
     // Handle common diis info
     diis_enabled_ = true;
-    num_diis_vectors_ = 4;
+    min_diis_vectors_ = 4;
 
-    // Allocate memory for DIISnum_diis_vectors_
+    // Allocate memory for DIISmin_diis_vectors_
     //  First, did the user request a different number of diis vectors?
-    num_diis_vectors_ = options_.get_int("DIIS_VECTORS");
+    min_diis_vectors_ = options_.get_int("MIN_DIIS_VECTORS");
+    max_diis_vectors_ = options_.get_int("MAX_DIIS_VECTORS");
+    diis_start_ = options_.get_int("START_DIIS_ITER");
     diis_enabled_ = options_.get_bool("DIIS");
 
     // Don't perform DIIS if less than 2 vectors requested, or user requested a negative number
-    if (num_diis_vectors_ < 2) {
+    if (min_diis_vectors_ < 2) {
         // disable diis
         diis_enabled_ = false;
     }
 
     // Initialize DIIS manager
     if (diis_enabled_)
-        diis_manager_ = shared_ptr<DIISManager>(new DIISManager(num_diis_vectors_, "HF DIIS vector"));
+        diis_manager_ = shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector"));
 
     initialized_diis_manager_ = false; 
 

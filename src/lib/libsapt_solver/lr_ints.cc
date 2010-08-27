@@ -351,14 +351,14 @@ void SAPT::lr_ints()
              for (int P = 0; P < naux; P++) {
               for (int m = 0; m < norbs; m++) {
                for (int n = 0; n < norbs; n++)  {
-                Amn[P][m*norbs+n] += primary_points[pt][m]*primary_points[pt][n]*
+                Amn[P][m*norbs+n] += 2.0*primary_points[pt][m]*primary_points[pt][n]*
                     aux_points[pt][P]*w[pt]*lda_grads[pt]; 
                }
               }
              }
              density_check_A += w[pt]*rho[pt];
              //fprintf(outfile,"  <x,y,z,w,rho> = <%14.10f,%14.10f,%14.10f,%14.10f,%14.10f>\n",x[pt],y[pt],z[pt],w[pt],rho[pt]);   
-             //fprintf(outfile,"   <phi,,z,w,rho> = <%14.10f,%14.10f,%14.10f,%14.10f,%14.10f>\n",x[pt],y[pt],z[pt],w[pt],rho[pt]);   
+             //fprintf(outfile,"   <phi[0],chi[0]> = <%14.10f,%14.10f>\n",primary_points[pt][0],aux_points[pt][0]);   
             }     
             
         }
@@ -460,7 +460,7 @@ void SAPT::lr_ints()
              for (int P = 0; P < naux; P++) {
               for (int m = 0; m < norbs; m++) {
                for (int n = 0; n < norbs; n++)  {
-                Amn[P][m*norbs+n] += primary_points[pt][m]*primary_points[pt][n]*
+                Amn[P][m*norbs+n] += 2.0*primary_points[pt][m]*primary_points[pt][n]*
                     aux_points[pt][P]*w[pt]*lda_grads[pt]; 
                }
               }
@@ -509,8 +509,8 @@ void SAPT::lr_ints()
         timer_off("(A|ia) Write");
     }
 
-    fprintf(outfile,"Density check for monomer A: %14.10f electrons found, should be %d.\n", density_check_A,noccA*2); 
-    fprintf(outfile,"Density check for monomer B: %14.10f electrons found, should be %d.\n", density_check_B,noccB*2); 
+    fprintf(outfile,"Density check for monomer A: %14.10f electrons found, should be %d.\n", 2.0*density_check_A,noccA*2); 
+    fprintf(outfile,"Density check for monomer B: %14.10f electrons found, should be %d.\n", 2.0*density_check_B,noccB*2); 
     
     //Frees
     free_block(Amn);
@@ -526,7 +526,7 @@ void SAPT::lr_ints()
     free(p_sizes);
 
     //Close LR Integrals file
-    psio_->close(PSIF_SAPT_LRINTS,1);    
+    //psio_->close(PSIF_SAPT_LRINTS,1);    
 
 }
 

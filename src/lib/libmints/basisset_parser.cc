@@ -141,11 +141,15 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
             // Look for Cartesian or Spherical
             if (regex_match(line, what, cartesian)) {
                 gaussian_type = Cartesian;
+                if (Process::environment.options.get_global("PUREAM").has_changed()) {
+                    gaussian_type = ((Process::environment.options.get_global("PUREAM").to_integer()) ? Pure : Cartesian); 
+                }
                 continue;
-            }
-
-            if (regex_match(line, what, spherical)) {
+            } else if (regex_match(line, what, spherical)) {
                 gaussian_type = Pure;
+                if (Process::environment.options.get_global("PUREAM").has_changed()) {
+                    gaussian_type = ((Process::environment.options.get_global("PUREAM").to_integer()) ? Pure : Cartesian); 
+                }
                 continue;
             }
 
