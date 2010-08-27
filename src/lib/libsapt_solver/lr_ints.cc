@@ -525,9 +525,42 @@ void SAPT::lr_ints()
     free(p_starts);
     free(p_sizes);
 
-    //Close LR Integrals file
-    //psio_->close(PSIF_SAPT_LRINTS,1);    
+    //Naiive restripe of LR ints
+    Bia = block_matrix(naux,noccA*nvirA);
+    Aia = block_matrix(noccA*nvirA,naux);
 
+    psio_->read_entry(PSIF_SAPT_LRINTS,"A LR Integrals",(char *)(&Bia[0][0]),
+      sizeof(double)*naux*noccA*(ULI)nvirA);
+
+    for (int P = 0; P < naux; P++) {
+      for (int i = 0, ia = 0; i < noccA; i++) {
+        for (int a = 0; a < nvirA; a++, ia++)  {
+          Aia[ia][P] = Bia[P][ia];
+    }}}
+
+    psio_->write_entry(PSIF_SAPT_LRINTS,"A LR Integrals",(char *)(&Aia[0][0]),
+      sizeof(double)*naux*noccA*(ULI)nvirA);
+
+    free_block(Bia);
+    free_block(Aia);
+
+    double **Bjb = block_matrix(naux,noccB*nvirB);
+    double **Ajb = block_matrix(noccB*nvirB,naux);
+
+    psio_->read_entry(PSIF_SAPT_LRINTS,"B LR Integrals",(char *)(&Bjb[0][0]),
+      sizeof(double)*naux*noccB*(ULI)nvirB);
+
+    for (int P = 0; P < naux; P++) {
+      for (int j = 0, jb = 0; j < noccB; j++) {
+        for (int b = 0; b < nvirB; b++, jb++)  {
+          Ajb[jb][P] = Bjb[P][jb];
+    }}}
+
+    psio_->write_entry(PSIF_SAPT_LRINTS,"B LR Integrals",(char *)(&Ajb[0][0]),
+      sizeof(double)*naux*noccB*(ULI)nvirB);
+
+    free_block(Bjb);
+    free_block(Ajb);
 }
 
 }}
