@@ -34,43 +34,45 @@ using namespace std;
 MOLECULE::MOLECULE(ifstream & fin) {
   string lbl;
   stringstream sline (stringstream::in | stringstream::out);
-  stringstream sword;
-  char cline[256], word[256];
+  stringstream sline2 (stringstream::in | stringstream::out);
+  char cline[256];
 
   try {
-    fin.clear(); // reset stream state to good
-    //fin.exceptions(ios_base::failbit); // have failbit throw an exception
+    fin.clear();
+    fin.exceptions(ios_base::failbit);
 
     fin.getline(cline, 256);   // header row
     fin.getline(cline, 256);   // natom_i and energy row
     sline << cline;
 
     // cnt number of fragments (integer entries)
-    int nfrag = 0;
     sline >> lbl;
+    int nfrag = 0;
     while (is_integer(lbl.c_str())) {
       nfrag++;
-      sline >> lbl;   // get word
+      sline >> lbl; 
     }
 
     // record natoms for each fragment
-    sline.clear();
-    sline << cline;
+    sline2 << cline;
     int * natom_i = init_int_array(nfrag);
     int i, frag, nallatom=0;
     for (frag=0; frag<nfrag; ++frag) {
-      sline >> natom_i[frag];
+      sline2 >> natom_i[frag];
       nallatom += natom_i[frag];
     }
 
     // rewind, determine number of geometries
-    fin.clear();
     fin.seekg(0);
     int nlines = 0;
-    while ( !fin.eof() ) {
-      fin.getline(cline,256) ;
-      ++nlines;
+    try {
+      //while ( !fin.eof() ) { // ignore exception
+      while (fin.peek() != EOF) {
+        fin.getline(cline, 256);
+        ++nlines;
+      }
     }
+    catch (std::ios_base::failure & bf) { }
     int ngeom = nlines / (2*nallatom+2);
  
     fin.clear();
