@@ -1,7 +1,7 @@
 #include "psi4.h"
 #include "psi4-dec.h"
 
-//namespace opt      { psi::PsiReturnType optking(psi::Options &); }
+namespace opt      { psi::PsiReturnType optking(psi::Options &); }
 
 namespace psi{
     namespace ccsort   { PsiReturnType ccsort(Options &); }
@@ -58,7 +58,7 @@ setup_driver(Options &options)
     dispatch_table["MCSCF"]     = &(psi::mcscf::mcscf);
     dispatch_table["PSIMRCC"]   = &(psi::psimrcc::psimrcc);
     dispatch_table["SAPT"]      = &(psi::sapt::sapt);
-//    dispatch_table["OPT_STEP"]  = &(opt::optking);
+    dispatch_table["OPT_STEP"]  = &(opt::optking);
     dispatch_table["CCHBAR"]    = &(psi::cchbar::cchbar);
     dispatch_table["CCLAMBDA"]  = &(psi::cclambda::cclambda);
     dispatch_table["CCDENSITY"] = &(psi::ccdensity::ccdensity);
