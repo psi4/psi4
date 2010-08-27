@@ -52,9 +52,11 @@ SAPT0::SAPT0(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
 
 SAPT0::~SAPT0()
 {
-    psio_->close(PSIF_SAPT_AA_DF_INTS,1);
-    psio_->close(PSIF_SAPT_BB_DF_INTS,1);
-    psio_->close(PSIF_SAPT_AB_DF_INTS,1);
+  psio_->close(PSIF_SAPT_AA_DF_INTS,1);
+  psio_->close(PSIF_SAPT_BB_DF_INTS,1);
+  psio_->close(PSIF_SAPT_AB_DF_INTS,1);
+  if (params_.chf_disp)
+    psio_->close(PSIF_SAPT_LRINTS,1);
 }
 double SAPT0::compute_energy()
 {
@@ -85,10 +87,7 @@ double SAPT0::compute_energy()
 
     print_results();
 
-    double energy = results_.sapt0;
-    Process::environment.globals["SAPT ENERGY"] = energy;
-
-    return energy;
+    return results_.sapt0;
 }
 void SAPT0::ao_df_ints()
 {
@@ -1116,7 +1115,10 @@ void SAPT0::print_results()
 {
   results_.exch_indr20 = results_.exch_indrA_B + results_.exch_indrB_A;
 
-  results_.sapt0 = results_.hf_int + results_.disp20 + results_.exch_disp20;
+  if (params_.chf_disp)
+    results_.sapt0 = results_.hf_int + results_.disp20chf + results_.exch_disp20;
+  else 
+    results_.sapt0 = results_.hf_int + results_.disp20 + results_.exch_disp20;
 
   results_.deltaHF = results_.hf_int - (results_.elst10 + results_.exch10 +
                     results_.indr20 + results_.exch_indr20);
@@ -1144,6 +1146,17 @@ void SAPT0::print_results()
           results_.exch_disp20*1000.0,results_.exch_disp20*627.5095);
   fprintf(outfile,"    Total SAPT0   %16.8lf mH %16.8lf kcal mol^-1\n",
           results_.sapt0*1000.0,results_.sapt0*627.5095);
+
+  Process::environment.globals["SAPT ELST10 ENERGY"] = results_.elst10;
+  Process::environment.globals["SAPT EXCH10 ENERGY"] = results_.exch10;
+  Process::environment.globals["SAPT IND20 ENERGY"] = results_.indr20;
+  Process::environment.globals["SAPT EXCH-IND20 ENERGY"] = results_.exch_indr20;
+  Process::environment.globals["SAPT DELTA-HF ENERGY"] = results_.deltaHF;
+  Process::environment.globals["SAPT DISP20 ENERGY"] = results_.disp20;
+  if (params_.chf_disp)
+    Process::environment.globals["SAPT CHF-DISP20 ENERGY"] = results_.disp20chf;
+  Process::environment.globals["SAPT EXCH-DISP20 ENERGY"] = results_.exch_disp20;
+  Process::environment.globals["SAPT SAPT0 ENERGY"] = results_.sapt0;
 }
 
 }}
