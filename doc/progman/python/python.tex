@@ -1,0 +1,73 @@
+One of the most significant changes introduced in version 4 was the use of
+Python.  The input file is actually a Python script, which interacts with a Psi
+Python module to perform computations.  In order for this to happen, the C++
+binding must be known to Python; this is all done in the 
+{\tt \$PSI4/src/bin/psi4/python.cc} file.  For example, we have an SCF module, with
+the C++ signature
+{\tt PsiReturnType cscf::cscf(Options \&options);}
+To allow Python to use this, we first define a little wrapper function
+\begin{verbatim}
+double py_psi_scf()
+{
+    if (scf::scf(Process::environment.options) == Success)
+        return Process::environment.globals["CURRENT ENERGY"];
+    else
+        return 0.0;
+}
+\end{verbatim}
+This does a couple of things to automate things a) it passes the default
+options object into SCF automatically, so that the user doesn't have to, and b)
+checks the return value, and will return the energy, which is posted to the
+globals map, back to Python.  Note that this is C++ code, within \PSIfour\ so
+it is aware of all global objects, such as PSIO, Chkpt and Options.  Now we
+have this simple function call, we can tell Python about it:
+\begin{verbatim}
+def("scf",  py_psi_scf);
+\end{verbatim}
+This binds the keyword ``scf'' to the newly created wrapper function, allowing
+the user to type ``scf()'' in their Python input file to fire up the SCF
+module.  Similarly, the user might want to be able to call {\tt Molecule}'s
+member functions directly from Python.  This can also be done easily:
+
+\begin{verbatim}
+class_<Molecule, shared_ptr<Molecule> >("Molecule").
+        def("print_to_output", &Molecule::print).
+        def("nuclear_repulsion_energy", &Molecule::nuclear_repulsion_energy);
+\end{verbatim}
+
+This first defines the keyword {\tt Molecule} to refer to the C++ {\tt
+Molecule}; the {\tt shared\_ptr<Molecule>} keyword tells Python to store it as
+a shared pointer, which ensures that the object will not be deleted until both
+C++ and Python have no more references to it.  The member functions to be bound
+are then specified by a chained sequence of {\tt def} calls (note the periods),
+terminated by a semicolon.  Then, if the user had defined a molecule called
+``water'', they could print its geometry simply with the command {\tt
+water.print\_to\_output()}.
+
+Direct interaction with the Psi module from Python requires function calls that
+look like {\tt PsiMod.call\_some\_function()}.  This is not very friendly to
+your average user, so a preprocessor checks for known Psi syntax and turns it
+into valid Python, before handing it off for excecution.  This preprocessor is
+purely Python, and lives in {\tt \$PSI4/lib/python/input.py}.  For example, the
+following text \begin{verbatim}
+set scf {
+    SCF_TYPE DIRECT
+    BASIS cc-pVDZ
+    RI_BASIS_SCF cc-pVDZ-HF
+    guess core
+}
+\end{verbatim}
+is converted to the following text
+\begin{verbatim}
+PsiMod.set_default_options_for_module("SCF")
+PsiMod.set_option("SCF_TYPE", "DIRECT")
+PsiMod.set_option("BASIS", "cc-pVDZ")
+PsiMod.set_option("RI_BASIS_SCF", "cc-pVDZ-HF")
+PsiMod.set_option("GUESS", "core")
+\end{verbatim}
+which can be handled by Python.
+
+There are a number of other utilities, which are entirely Python, located in
+{\tt \$PSI4/lib/python}.  These provide convenient functions to the user, such
+as {\tt table}.
+

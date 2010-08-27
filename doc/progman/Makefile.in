@@ -12,6 +12,7 @@ svn/svn.tex \
 introduction/introduction.tex \
 introduction/history.tex \
 introduction/license.tex \
+python/python.tex \
 testing/testing.tex \
 sample-codes/sample-codes.tex \
 sample-codes/integrals/integrals.tex \
