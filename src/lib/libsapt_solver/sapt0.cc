@@ -1157,6 +1157,7 @@ void SAPT0::print_results()
     Process::environment.globals["SAPT CHF-DISP20 ENERGY"] = results_.disp20chf;
   Process::environment.globals["SAPT EXCH-DISP20 ENERGY"] = results_.exch_disp20;
   Process::environment.globals["SAPT SAPT0 ENERGY"] = results_.sapt0;
+  Process::environment.globals["SAPT ENERGY"] = results_.sapt0;
 }
 
 }}

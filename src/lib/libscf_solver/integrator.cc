@@ -26,7 +26,6 @@ double Integrator::getNuclearWeightNaive(Vector3 v, int nuc)
 	if (molecule_->natom()<=1)
 		return 1.0;
 
-	int order = 3;
 	double numerator = 0.0;
 	double denominator = 0.0;
 	double prod;
@@ -38,9 +37,9 @@ double Integrator::getNuclearWeightNaive(Vector3 v, int nuc)
 		for (int j = 0; j<molecule_->natom(); j++) {
 			if (i!=j) {
 				//Yo
-				mu = (v.distance(molecule_->xyz(i))-v.distance(molecule_->xyz(j)))/(molecule_->xyz(i)).distance(molecule_->xyz(j));
+				mu = (v.distance(molecule_->xyz(i))-v.distance(molecule_->xyz(j)))*inv_distance_map_[i][j];
 				s = mu;
-			 	for (int k = 1; k<= order; k++)
+			 	for (int k = 1; k<= 3; k++)
   					s = 1.5*s-0.5*s*s*s;
 			 	s = 0.5*(1.0-s);
 				prod *= s;
@@ -58,7 +57,6 @@ double Integrator::getNuclearWeightBecke(Vector3 v, int nuc)
 	if (molecule_->natom()<=1)
 		return 1.0;
 
-	int order = 3;
 	double numerator = 0.0;
 	double denominator = 0.0;
 	double prod;
@@ -70,16 +68,16 @@ double Integrator::getNuclearWeightBecke(Vector3 v, int nuc)
 		for (int j = 0; j<molecule_->natom(); j++) {
 			if (i!=j) {
 				//Yo
-				mu = (v.distance(molecule_->xyz(i))-v.distance(molecule_->xyz(j)))/(molecule_->xyz(i)).distance(molecule_->xyz(j));
+				mu = (v.distance(molecule_->xyz(i))-v.distance(molecule_->xyz(j)))*inv_distance_map_[i][j];
 				//mu->nu
-				chi = getBraggSlaterRadius(molecule_->Z(i))/getBraggSlaterRadius(molecule_->Z(j));
+				chi = chi_values_[i][j]; 
 				u = (chi-1.0)/(chi+1.0);
 				a = u/(u*u-1.0);
 				a = (a<-0.5?-0.5:a);
 				a = (a>0.5?0.5:a);
 				nu = mu+a*(1.0-mu*mu); 
 				s = nu;
-			 for (int k = 1; k<= order; k++)
+			 for (int k = 1; k<= 3; k++)
   				s = 1.5*s-0.5*s*s*s;
 				s = 0.5*(1.0-s);
 				prod *= s;
@@ -97,7 +95,6 @@ double Integrator::getNuclearWeightTreutler(Vector3 v, int nuc)
 	if (molecule_->natom()<=1)
 		return 1.0;
 
-	int order = 3;
 	double numerator = 0.0;
 	double denominator = 0.0;
 	double prod;
@@ -109,16 +106,16 @@ double Integrator::getNuclearWeightTreutler(Vector3 v, int nuc)
 		for (int j = 0; j<molecule_->natom(); j++) {
 			if (i!=j) {
 				//Yo
-				mu = (v.distance(molecule_->xyz(i))-v.distance(molecule_->xyz(j)))/(molecule_->xyz(i)).distance(molecule_->xyz(j));
+				mu = (v.distance(molecule_->xyz(i))-v.distance(molecule_->xyz(j)))*inv_distance_map_[i][j];
 				//mu->nu
-				chi = sqrt(getBraggSlaterRadius(molecule_->Z(i))/getBraggSlaterRadius(molecule_->Z(j)));
+				chi = chi_values_[i][j];
 				u = (chi-1.0)/(chi+1.0);
 				a = u/(u*u-1.0);
 				a = (a<-0.5?-0.5:a);
 				a = (a>0.5?0.5:a);
 				nu = mu+a*(1.0-mu*mu); 
 				s = nu;
-			 for (int k = 1; k<= order; k++)
+			 for (int k = 1; k<= 3; k++)
   			s = 1.5*s-0.5*s*s*s;
 				s = 0.5*(1.0-s);
 				prod *= s;
@@ -295,7 +292,29 @@ Integrator::Integrator(shared_ptr<Molecule> m, Options & opt)
         block_size_ = opt.get_int("N_BLOCK");
         grid_block_ = SharedGridBlock(GridBlock::createGridBlock(block_size_));
 
-	reset();
+        inv_distance_map_ = block_matrix(molecule_->natom(),molecule_->natom());
+        for (int i = 0; i< molecule_->natom(); i++)
+            for (int j = 0; j<i; j++) {
+                inv_distance_map_[i][j] = 1.0/(molecule_->xyz(i)).distance(molecule_->xyz(j));
+                inv_distance_map_[j][i] = inv_distance_map_[i][j];
+            }
+
+        chi_values_ = block_matrix(molecule_->natom(),molecule_->natom());
+        for (int i = 0; i< molecule_->natom(); i++)
+            for (int j = 0; j<i; j++) {
+                if (nuclear_scheme_ == treutler_n) {
+                    chi_values_[i][j] = sqrt(getBraggSlaterRadius(molecule_->Z(i))/getBraggSlaterRadius(molecule_->Z(j)));
+                    chi_values_[j][i] = chi_values_[i][j]; 
+                } else if (nuclear_scheme_ == becke_n) {
+                    chi_values_[i][j] = getBraggSlaterRadius(molecule_->Z(i))/getBraggSlaterRadius(molecule_->Z(j));
+                    chi_values_[j][i] = chi_values_[i][j]; 
+                } else {
+                    chi_values_[i][j] = 1.0;
+                    chi_values_[j][i] = 1.0;
+                }
+            }
+	
+        reset();
 }
 Integrator::~Integrator()
 {
@@ -311,6 +330,8 @@ Integrator::~Integrator()
 		free(rad_.r);
 		free(rad_.w);
 	}
+        free_block(inv_distance_map_);
+        free_block(chi_values_);
 }
 void Integrator::reset()
 {
@@ -319,84 +340,6 @@ void Integrator::reset()
 	sphereIndex_ = 0;
 	sphericalIndex_ = 0;
 	radialIndex_ = 0;
-}
-IntegrationPoint Integrator::getNextPoint()
-{
-	if (done_)
-		throw std::domain_error("Error: all integration points already traversed");
-	//Line things up
-	if (radialIndex_ == 0 && sphericalIndex_ == 0 && sphereIndex_ == 0) {
-		if (started_) {
-			free(rad_.r);
-			free(rad_.w);
-		}
-		if (radial_scheme_ == becke_r)
-			rad_ = getRadialQuadratureBecke(nradial_,getBraggSlaterRadius(molecule_->Z(nuclearIndex_)));
-		else if (radial_scheme_ == treutler_r)
-			rad_ = getRadialQuadratureTreutler(nradial_,getTreutlerRadius(molecule_->Z(nuclearIndex_)));
-		if (radial_scheme_ == em_r)
-			rad_ = getRadialQuadratureEulerMaclaurin(nradial_,getSG1Radius(molecule_->Z(nuclearIndex_)));
-	}
-	
-	//Bat it home!	
-
-	IntegrationPoint p;
-	Vector3 v(sphere_[sphereIndex_].x[sphericalIndex_],sphere_[sphereIndex_].y[sphericalIndex_],sphere_[sphereIndex_].z[sphericalIndex_]);
- v *= rad_.r[radialIndex_];
-	v += molecule_->xyz(nuclearIndex_);
-
-	double wnuc;
-	if (nuclear_scheme_ == naive_n)
-		wnuc = getNuclearWeightNaive(v,nuclearIndex_);
-	if (nuclear_scheme_ == becke_n)
-		wnuc = getNuclearWeightBecke(v,nuclearIndex_);
-	else if (nuclear_scheme_ == treutler_n)
-		wnuc = getNuclearWeightTreutler(v,nuclearIndex_);
-	
-
-	p.point = v;
-	p.weight = sphere_[sphereIndex_].w[sphericalIndex_]*rad_.w[radialIndex_]*wnuc;
-
-	//Clean things up
-	started_ = true;
-	if (special_grid_ == SG1) {
-		sphericalIndex_++;
-		if (sphericalIndex_>=nspherical_[sphereIndex_]){
-			sphericalIndex_ = 0;
-			radialIndex_++;
-			if (radialIndex_ >= nradial_) {
-				radialIndex_ = 0;
-				nuclearIndex_++;
-				if (nuclearIndex_ >= nnuclei_) {
-					done_ = true;
-				}
-			}
-			if (! done_) {
-				//Set the sphereIndex_ to the correct pruned grid
-				double rr = rad_.r[radialIndex_];
-				sphereIndex_ = 0;
-				for (int k=0; k<nspheres_-1; k++) {
-					if (rr>getSG1Alpha(molecule_->Z(nuclearIndex_),k)*getSG1Radius(molecule_->Z(nuclearIndex_)))
-						sphereIndex_ = k+1;
-				}	
-			}
-		}
-	}
- else if (special_grid_ == NONE) {
-		sphericalIndex_++;
-		if (sphericalIndex_>=nspherical_[sphereIndex_]){
-			sphericalIndex_ = 0;
-			radialIndex_++;
-			if (radialIndex_ >= nradial_) {
-				radialIndex_ = 0;
-				nuclearIndex_++;
-				if (nuclearIndex_ >= nnuclei_) {
-					done_ = true;
-				}
-			}
-		}
-	}
-	return p;	
 }
 SharedGridBlock Integrator::getNextBlock()
 {
@@ -505,7 +448,19 @@ SharedGridBlock Integrator::getNextBlock()
     grid_block_->setTruePoints(ntrue);
     return grid_block_;
 }
-string Integrator::getString()
+void Integrator::getBlock(unsigned long int block_number, shared_ptr<GridBlock> block)
+{
+    //TODO
+    unsigned long int point_number = block_size_*block_number;
+    //atom_number = point_number/points_per_atom;    
+}
+int Integrator::getNumberOfBlocks()
+{
+    //TODO
+    int nblocks = 0; 
+    return nblocks; 
+}
+std::string Integrator::getString()
 {
 	string s("");
 	char temp[80];
@@ -704,7 +659,9 @@ SphericalQuadrature Integrator::getSphericalQuadrature(int degree)
     //This one requires a bit of faith
     //The Soviets did their job
     int start=0;
-    double a,b,v;
+    double a = 0.0;
+    double b = 0.0;
+    double v = 0.0;
     SphericalQuadrature leb_tmp;
     
     leb_tmp.x = init_array(degree);
