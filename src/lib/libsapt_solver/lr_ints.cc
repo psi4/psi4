@@ -179,8 +179,6 @@ void SAPT::lr_ints()
     double **Amn = block_matrix(max_rows,norbs*(ULI)norbs);
     double **Ami = block_matrix(max_rows,norbs*(ULI)noccA);
     double **Aia = block_matrix(max_rows,noccA*(ULI)nvirA); 
-    double **Bmi = block_matrix(max_rows,norbs*(ULI)noccB);
-    double **Bia = block_matrix(max_rows,noccB*(ULI)nvirB); 
 
     //Threading considerations
     int nthread = 1;
@@ -375,7 +373,7 @@ void SAPT::lr_ints()
              for (int P = 0; P < naux; P++) {
               for (int m = 0; m < norbs; m++) {
                for (int n = 0; n < norbs; n++)  {
-                Amn[P][m*norbs+n] += 2.0*primary_points[0][pt][m]*primary_points[0][pt][n]*
+                //Amn[P][m*norbs+n] += 2.0*primary_points[0][pt][m]*primary_points[0][pt][n]*
                     aux_points[0][pt][P]*w[pt]*lda_grads[0][pt]; 
                }
               }
@@ -424,7 +422,81 @@ void SAPT::lr_ints()
         timer_on("(A|ia) Write");
         psio_->write(PSIF_SAPT_LRINTS,"A LR Integrals",(char *)(&Aia[0][0]),sizeof(double)*p_sizes[block]*noccA*(ULI)nvirA,disk_address_A,&disk_address_A);
         timer_off("(A|ia) Write");
+    }
+    
+    free_block(Amn);
+    free_block(Ami);
+    free_block(Aia);
+    
+    //Memory considerations
+    memory_per_row = 0;
 
+    memory_per_row += norbs*(ULI)norbs;
+    memory_per_row += noccB*(ULI)norbs;
+    memory_per_row += noccB*(ULI)nvirB;
+
+    max_rows = block_memory/memory_per_row;
+    if (max_rows > naux)
+        max_rows = naux;
+    if (max_rows < maxPshell)
+        max_rows = maxPshell;
+
+    nblocks = 2*naux/max_rows;
+
+    free(block_starts);
+    free(block_sizes);
+    free(block_stops);
+    free(p_starts);
+    free(p_sizes);
+
+    p_starts = init_int_array(nblocks);
+    p_sizes = init_int_array(nblocks);
+    block_starts = init_int_array(nblocks);
+    block_stops = init_int_array(nblocks);
+    block_sizes = init_int_array(nblocks);
+
+    //Determine block sizes
+    nblocks = 0;
+    fun_counter = 0;
+    for (int A=0; A<ribasis_->nshell(); A++) {
+        if (A == ribasis_->nshell() - 1) {
+            block_sizes[nblocks]++;
+            p_sizes[nblocks] += ribasis_->shell(A)->nfunction();
+            block_stops[nblocks] = ribasis_->nshell();
+            nblocks++;
+            break;
+        }
+
+        if (fun_counter+ribasis_->shell(A)->nfunction() > max_rows) {
+            block_stops[nblocks] = A;
+            block_starts[nblocks+1] = A;
+            block_sizes[nblocks+1] = 1;
+            p_sizes[nblocks+1] = ribasis_->shell(A)->nfunction();
+            p_starts[nblocks+1] = ribasis_->shell(A)->function_index();
+            nblocks++;
+            fun_counter = ribasis_->shell(A)->nfunction();
+            continue;
+        }
+        p_sizes[nblocks] += ribasis_->shell(A)->nfunction();
+        block_sizes[nblocks]++;
+        fun_counter += ribasis_->shell(A)->nfunction();
+    }
+
+    //Block prints
+    /**
+    fprintf(outfile,"\n  Block info:\n");
+    for (int i = 0; i<nblocks; i++) {
+        fprintf(outfile,"  i = %d, block_starts = %d, block_stops = %d, block_sizes = %d, p_starts = %d, p_sizes = %d\n",
+            i,block_starts[i],block_stops[i],block_sizes[i],p_starts[i],p_sizes[i]);
+    }  **/ 
+ 
+    //Blocks
+    double **Bmn = block_matrix(max_rows,norbs*(ULI)norbs);
+    double **Bmi = block_matrix(max_rows,norbs*(ULI)noccA);
+    double **Bia = block_matrix(max_rows,noccA*(ULI)nvirA); 
+   
+    for (int block = 0; block < nblocks; block++) {
+    
         //>>>>>>>>>>>>>>>>>>>>>>>>//
         //   MONOMER B INTEGRALS  //
         //<<<<<<<<<<<<<<<<<<<<<<<<//        
@@ -453,8 +525,8 @@ void SAPT::lr_ints()
                             omu = basisset_->shell(MU)->function_index() + mu;
                                 for (nu=0; nu < numnu; ++nu, ++index) {
                                     onu = basisset_->shell(NU)->function_index() + nu;
-                                    Amn[op-p_starts[block]][omu*norbs+onu] = buffer[rank][index]; // (op | omu onu) integral
-                                    Amn[op-p_starts[block]][onu*norbs+omu] = buffer[rank][index]; // (op | onu omu) integral
+                                    Bmn[op-p_starts[block]][omu*norbs+onu] = buffer[rank][index]; // (op | omu onu) integral
+                                    Bmn[op-p_starts[block]][onu*norbs+omu] = buffer[rank][index]; // (op | onu omu) integral
                                 }
                             }
                         } 
@@ -465,7 +537,7 @@ void SAPT::lr_ints()
         timer_off("(A|mn)");
 
         //fprintf(outfile, "  Bmn\n");
-        //print_mat(Amn,max_rows,norbs*norbs, outfile);
+        //print_mat(Bmn,max_rows,norbs*norbs, outfile);
         
         //Numerical Integrals
         integrator->reset();
@@ -479,12 +551,13 @@ void SAPT::lr_ints()
 
             primary_props[0]->computeProperties(pts,DB_);
             aux_props[0]->computePoints(pts);
+            lda_func[0]->computeFunctionalRKS(primary_props[0]);
 
             for (int pt = 0; pt < true_pts; pt++) {
              for (int P = 0; P < naux; P++) {
               for (int m = 0; m < norbs; m++) {
                for (int n = 0; n < norbs; n++)  {
-                Amn[P][m*norbs+n] += 2.0*primary_points[0][pt][m]*primary_points[0][pt][n]*
+                Bmn[P][m*norbs+n] += 2.0*primary_points[0][pt][m]*primary_points[0][pt][n]*
                     aux_points[0][pt][P]*w[pt]*lda_grads[0][pt]; 
                }
               }
@@ -498,7 +571,7 @@ void SAPT::lr_ints()
         //Transform to Ami
         // (A|mi) = (Amn)C_ni
         timer_on("(A|mi)");
-        C_DGEMM('N', 'N', p_sizes[block]*norbs, noccB, norbs, 1.0, &(Amn[0][0]),
+        C_DGEMM('N', 'N', p_sizes[block]*norbs, noccB, norbs, 1.0, &(Bmn[0][0]),
             norbs, &(CB[0][0]), nmoB, 0.0, &(Bmi[0][0]), noccB);
         timer_off("(A|mi)");
 
@@ -537,18 +610,18 @@ void SAPT::lr_ints()
     fprintf(outfile,"Density check for monomer B: %14.10f electrons found, should be %d.\n", 2.0*density_check_B,noccB*2); 
     
     //Frees
-    free_block(Amn);
-    free_block(Ami);
+    free_block(Bmn);
     free_block(Bmi);
-    free_block(Aia);
     free_block(Bia);
-    free(schwarz_shell_pairs);
+    
     free(block_starts);
     free(block_sizes);
     free(block_stops);
     free(p_starts);
     free(p_sizes);
 
+    free(schwarz_shell_pairs);
+    
     //Naiive restripe of LR ints
     Bia = block_matrix(naux,noccA*nvirA);
     Aia = block_matrix(noccA*nvirA,naux);
@@ -586,8 +659,23 @@ void SAPT::lr_ints()
     free_block(Bjb);
     free_block(Ajb);
 }
-void gauss_leguerre_quadrature(int n, double* x, double* w) {
-    
+void gauss_leguerre_quadrature(int n, double xi, double* r, double* w) {
+        double x,temp;
+        for (int tau = 1; tau<=n; tau++) {
+                //$x = \cos\left(\frac{\tau}{n_\tau+1}\pi\right)$
+                //$r = \frac{\xi}{\ln(2)}(1+x)^{\0.6}\ln\left(\frac{2.0}{1-x}\right)$
+                x = cos(tau/(n+1.0)*M_PI);
+                r[tau-1] = xi*INVLN2*pow(1.0+x,0.6)*log(2.0/(1.0-x));
+                //$w = \frac{\pi}{n_tau+1.0}\sin^2\left(\frac{\tau}{n_\tau+1}\pi\right)$
+                //$w *= \frac{2\xi}{(1+x)^2}$ Accounts for change of variable
+                //$w *= \frac{1}{\sqrt{1-x^2}}$ Accounts for integral type
+                //$w *= r^2$ accounts for spherical integration on R^3
+                temp = sin(tau/(n+1.0)*M_PI);
+                w[tau-1] = M_PI/(n+1.0)*temp*temp;
+                w[tau-1] *= xi*INVLN2*(0.6*pow(1.0+x,0.6-1.0)*log(2.0/(1.0-x))+pow(1.0+x,0.6)/(1.0-x));
+                w[tau-1] *= 1.0/sqrt(1.0-x*x);
+        }
+
 }
 
 }}

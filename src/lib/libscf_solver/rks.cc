@@ -22,6 +22,7 @@
 #include <libmints/twobody.h>
 #include <libmints/basispoints.h>
 #include <libmints/properties.h>
+#include <libmints/molecule.h>
 #include "integrator.h"
 #include "functional.h"
 #include "functionalfactory.h"
@@ -435,13 +436,13 @@ void RKS::save_DFT_grid()
     for (int i=0; i<mol->natom(); i++)
         fprintf(grid_file,"%14.10f,%14.10f,%14.10f,%d\n",mol->x(i),mol->y(i), mol->z(i), mol->Z(i));
 
-    IntegrationPoint q;
+    //IntegrationPoint q;
     for (integrator_->reset(); !integrator_->isDone(); )
     {
-        q = integrator_->getNextPoint();
-        Vector3 v = q.point;
-        double w = q.weight;
-        fprintf(grid_file,"%14.10f, %14.10f, %14.10f, %14.10f\n",v[0],v[1], v[2], w);
+        //q = integrator_->getNextPoint();
+   //     Vector3 v = q.point;
+     //   double w = q.weight;
+       // fprintf(grid_file,"%14.10f, %14.10f, %14.10f, %14.10f\n",v[0],v[1], v[2], w);
     }
 
 

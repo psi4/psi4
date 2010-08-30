@@ -48,7 +48,7 @@ public:
     void diis_update(double **, double **, double **, int, int);
     void A_mat(int, char *, char *, char *, double **, double **, int, int, int);
     double **W_ints(int, char *, double *, double **, int, int);
-
+    void gauss_leguerre_quadrature(int npoints, double alpha, double* x, double* w);
 
     virtual ~SAPT();
 };

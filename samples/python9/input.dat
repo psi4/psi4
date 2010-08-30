@@ -29,20 +29,13 @@ set scf {
 }
 
 print "\n\n" 
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
-print "  //          SCF Computation          //"
-print "  //       Ethene-Ethyne/cc-pVDZ       //"
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
+banner("SCF Computation\nEthene-Ethyne/aug-cc-pVDZ")
 print "\n"
 
-print_options()
 e_dimer = scf()
 
 print "\n\n" 
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
-print "  //          SCF Computation          //"
-print "  //      Ethene-(Ethyne)/cc-pVDZ      //"
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
+banner("SCF Computation\nEthene-(Ethyne)/aug-cc-pVDZ")
 print "\n"
 
 ethene = dimer.extract_subsets( 1, 2)
@@ -54,10 +47,7 @@ set scf {
 e_ad = scf()
 
 print "\n\n" 
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
-print "  //          SCF Computation          //"
-print "  //     (Ethene)-Ethyne/cc-pVDZ       //"
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
+banner("SCF Computation\n(Ethene)-Ethyne/aug-cc-pVDZ")
 print "\n"
 
 ethyne = dimer.extract_subsets( 2, 1)
@@ -68,10 +58,8 @@ set scf {
 
 e_bd = scf()
 
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
-print "  //         SAPT0 Computation         //"
-print "  //       Ethene-Ethyne/cc-pVDZ       //"
-print "  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//"
+print "\n\n" 
+banner("SAPT0 Computation\nEthene-Ethyne/aug-cc-pVDZ")
 print "\n"
 
 activate(dimer)
@@ -84,12 +72,11 @@ set sapt {
     ri_basis_sapt aug-cc-pVDZ-RI
     chf_disp 0
 }
-print_options()
 e_sapt = sapt()
 
 print "\n  E_sapt = %15.10f [H]\n" % e_sapt
 
-print "\n  Have a nice day!"
+banner("Have a nice day!",2)
 print "\n\n"
 
 
