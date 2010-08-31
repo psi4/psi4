@@ -204,31 +204,56 @@ void OverlapInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<Ga
                             int m2 = kk - ll;
                             int n2 = ll;
 
+                            double ix = 0.0, iy = 0.0, iz = 0.0;
+                            //Using Translational Invariance
                             // x on center i
-                            buffer_[center_i+(0*size)+ao12] += 2.0*a1*over_pf*x[l1+1][l2]*y[m1][m2]*z[n1][n2];
+                            ix += 2.0*a1*over_pf*x[l1+1][l2]*y[m1][m2]*z[n1][n2];
                             if (l1)
-                                buffer_[center_i+(0*size)+ao12] -= l1*over_pf*x[l1-1][l2]*y[m1][m2]*z[n1][n2];
+                                ix -= l1*over_pf*x[l1-1][l2]*y[m1][m2]*z[n1][n2];
                             // y on center i
-                            buffer_[center_i+(1*size)+ao12] += 2.0*a1*over_pf*x[l1][l2]*y[m1+1][m2]*z[n1][n2];
+                            iy += 2.0*a1*over_pf*x[l1][l2]*y[m1+1][m2]*z[n1][n2];
                             if (m1)
-                                buffer_[center_i+(1*size)+ao12] -= m1*over_pf*x[l1][l2]*y[m1-1][m2]*z[n1][n2];
+                                iy -= m1*over_pf*x[l1][l2]*y[m1-1][m2]*z[n1][n2];
                             // z on center i
-                            buffer_[center_i+(2*size)+ao12] += 2.0*a1*over_pf*x[l1][l2]*y[m1][m2]*z[n1+1][n2];
+                            iz += 2.0*a1*over_pf*x[l1][l2]*y[m1][m2]*z[n1+1][n2];
                             if (n1)
-                                buffer_[center_i+(2*size)+ao12] -= n1*over_pf*x[l1][l2]*y[m1][m2]*z[n1-1][n2];
+                                iz -= n1*over_pf*x[l1][l2]*y[m1][m2]*z[n1-1][n2];
 
+                            // x on center i,j
+                            buffer_[center_i+(0*size)+ao12] += ix;
+                            buffer_[center_j+(0*size)+ao12] -= ix;
+                            // y on center i,j
+                            buffer_[center_i+(1*size)+ao12] += iy;
+                            buffer_[center_j+(1*size)+ao12] -= iy;
+                            // z on center i,j
+                            buffer_[center_i+(2*size)+ao12] += iz;
+                            buffer_[center_j+(2*size)+ao12] -= iz;
+
+                            //OLD CODE
+                            // x on center i
+//                            buffer_[center_i+(0*size)+ao12] += 2.0*a1*over_pf*x[l1+1][l2]*y[m1][m2]*z[n1][n2];
+//                            if (l1)
+//                                buffer_[center_i+(0*size)+ao12] -= l1*over_pf*x[l1-1][l2]*y[m1][m2]*z[n1][n2];
+                            // y on center i
+//                            buffer_[center_i+(1*size)+ao12] += 2.0*a1*over_pf*x[l1][l2]*y[m1+1][m2]*z[n1][n2];
+//                            if (m1)
+//                                buffer_[center_i+(1*size)+ao12] -= m1*over_pf*x[l1][l2]*y[m1-1][m2]*z[n1][n2];
+                            // z on center i
+//                            buffer_[center_i+(2*size)+ao12] += 2.0*a1*over_pf*x[l1][l2]*y[m1][m2]*z[n1+1][n2];
+//                            if (n1)
+//                                buffer_[center_i+(2*size)+ao12] -= n1*over_pf*x[l1][l2]*y[m1][m2]*z[n1-1][n2];
                             // x on center j
-                            buffer_[center_j+(0*size)+ao12] += 2.0*a2*over_pf*x[l1][l2+1]*y[m1][m2]*z[n1][n2];
-                            if (l2)
-                                buffer_[center_j+(0*size)+ao12] -= l2*over_pf*x[l1][l2-1]*y[m1][m2]*z[n1][n2];
+//                            buffer_[center_j+(0*size)+ao12] += 2.0*a2*over_pf*x[l1][l2+1]*y[m1][m2]*z[n1][n2];
+//                            if (l2)
+//                                buffer_[center_j+(0*size)+ao12] -= l2*over_pf*x[l1][l2-1]*y[m1][m2]*z[n1][n2];
                             // y on center j
-                            buffer_[center_j+(1*size)+ao12] += 2.0*a2*over_pf*x[l1][l2]*y[m1][m2+1]*z[n1][n2];
-                            if (m2)
-                                buffer_[center_j+(1*size)+ao12] -= m2*over_pf*x[l1][l2]*y[m1][m2-1]*z[n1][n2];
+//                            buffer_[center_j+(1*size)+ao12] += 2.0*a2*over_pf*x[l1][l2]*y[m1][m2+1]*z[n1][n2];
+//                            if (m2)
+//                                buffer_[center_j+(1*size)+ao12] -= m2*over_pf*x[l1][l2]*y[m1][m2-1]*z[n1][n2];
                             // z on center j
-                            buffer_[center_j+(2*size)+ao12] += 2.0*a2*over_pf*x[l1][l2]*y[m1][m2]*z[n1][n2+1];
-                            if (n2)
-                                buffer_[center_j+(2*size)+ao12] -= n2*over_pf*x[l1][l2]*y[m1][m2]*z[n1][n2-1];
+//                            buffer_[center_j+(2*size)+ao12] += 2.0*a2*over_pf*x[l1][l2]*y[m1][m2]*z[n1][n2+1];
+//                            if (n2)
+//                                buffer_[center_j+(2*size)+ao12] -= n2*over_pf*x[l1][l2]*y[m1][m2]*z[n1][n2-1];
 
                             ao12++;
                         }
