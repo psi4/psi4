@@ -249,7 +249,7 @@ void KineticInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<Ga
                             // z on center i
                             iz += 2.0 * a1 * ke_int(x, y, z, a1, l1, m1, n1+1, a2, l2, m2, n2) * over_pf;
                             if (n1)
-                                buffer_[center_i+(2*size)+ao12] -= n1 * ke_int(x, y, z, a1, l1, m1, n1-1, a2, l2, m2, n2) * over_pf;
+                                iz -= n1 * ke_int(x, y, z, a1, l1, m1, n1-1, a2, l2, m2, n2) * over_pf;
                             // x on center i,j
                             buffer_[center_i+(0*size)+ao12] += ix;
                             buffer_[center_j+(0*size)+ao12] -= ix;
