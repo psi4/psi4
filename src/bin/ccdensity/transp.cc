@@ -33,6 +33,7 @@ void transp(double sign)
   int *doccpi;
   int *order;
   double **NX_MO, **NY_MO, **NZ_MO;
+  double **NX_SO, **NY_SO, **NZ_SO;
 
   chkpt_init(PSIO_OPEN_OLD);
   if(params.ref == 0 || params.ref == 1) {
@@ -86,26 +87,31 @@ void transp(double sign)
     }
 
   NX_MO = block_matrix(nmo, nmo);
+  NX_SO = block_matrix(nso, nso);
+  X = block_matrix(nso, nao);
 
-  C_DGEMM('n','t',nao,nso,nao,1,&(TMP[0][0]),nao,&(usotao[0][0]),nao,
-	  0,&(X[0][0]),nao);
-  zero_mat(TMP, nao, nao);
-  C_DGEMM('n','n',nso,nso,nao,1,&(usotao[0][0]),nao,&(X[0][0]),nao,
-	  0,&(TMP[0][0]),nao);
+  C_DGEMM('n','n',nso,nao,nao,1,&(usotao[0][0]),nao,&(TMP[0][0]),nao,
+          0,&(X[0][0]),nao);
+  free_block(TMP);
+  C_DGEMM('n','t',nso,nso,nao,1,&(X[0][0]),nao,&(usotao[0][0]),nao,
+          0,&(NX_SO[0][0]),nso);
+  free_block(X);
 
   if(params.ref == 0 || params.ref == 1) {
-    C_DGEMM('n','n',nso,nmo,nso,1,&(TMP[0][0]),nao,&(scf[0][0]),nmo,
-	    0,&(X[0][0]),nao);
-    C_DGEMM('t','n',nmo,nmo,nso,1,&(scf[0][0]),nmo,&(X[0][0]),nao,
-	    0,&(NX_MO[0][0]),nmo);
+    X = block_matrix(nmo,nso);
+    C_DGEMM('t','n',nmo,nso,nso,1,&(scf[0][0]),nmo,&(NX_SO[0][0]),nso,
+            0,&(X[0][0]),nso);
+    C_DGEMM('n','n',nmo,nmo,nso,1,&(X[0][0]),nso,&(scf[0][0]),nmo,
+            0,&(NX_MO[0][0]),nmo);
   }
   else if(params.ref == 2) {
   }
 
   zero_arr(scratch, noei_ao);
-  zero_mat(TMP, nao, nao);
-  zero_mat(X, nao, nao);
+  free_block(X);
+  free_block(NX_SO);
 
+  TMP = block_matrix(nao, nao);
   stat = iwl_rdone(PSIF_OEI, PSIF_AO_NablaY, scratch, noei_ao, 0, 0, outfile);
   for(i=0,ij=0; i < nao; i++)
     for(j=0; j <= i; j++,ij++) {
@@ -114,26 +120,31 @@ void transp(double sign)
     }
 
   NY_MO = block_matrix(nmo, nmo);
+  NY_SO = block_matrix(nso, nso);
+  X = block_matrix(nso, nao);
 
-  C_DGEMM('n','t',nao,nso,nao,1,&(TMP[0][0]),nao,&(usotao[0][0]),nao,
-	  0,&(X[0][0]),nao);
-  zero_mat(TMP, nao, nao);
-  C_DGEMM('n','n',nso,nso,nao,1,&(usotao[0][0]),nao,&(X[0][0]),nao,
-	  0,&(TMP[0][0]),nao);
+  C_DGEMM('n','n',nso,nao,nao,1,&(usotao[0][0]),nao,&(TMP[0][0]),nao,
+          0,&(X[0][0]),nao);
+  free_block(TMP);
+  C_DGEMM('n','t',nso,nso,nao,1,&(X[0][0]),nao,&(usotao[0][0]),nao,
+          0,&(NY_SO[0][0]),nso);
+  free_block(X);
 
   if(params.ref == 0 || params.ref == 1) {
-    C_DGEMM('n','n',nso,nmo,nso,1,&(TMP[0][0]),nao,&(scf[0][0]),nmo,
-	    0,&(X[0][0]),nao);
-    C_DGEMM('t','n',nmo,nmo,nso,1,&(scf[0][0]),nmo,&(X[0][0]),nao,
-	    0,&(NY_MO[0][0]),nmo);
+    X = block_matrix(nmo,nso);
+    C_DGEMM('t','n',nmo,nso,nso,1,&(scf[0][0]),nmo,&(NY_SO[0][0]),nso,
+            0,&(X[0][0]),nso);
+    C_DGEMM('n','n',nmo,nmo,nso,1,&(X[0][0]),nso,&(scf[0][0]),nmo,
+            0,&(NY_MO[0][0]),nmo);
   }
   else if(params.ref == 2) {
   }
 
   zero_arr(scratch, noei_ao);
-  zero_mat(TMP, nao, nao);
-  zero_mat(X, nao, nao);
+  free_block(X);
+  free_block(NY_SO);
 
+  TMP = block_matrix(nao, nao);
   stat = iwl_rdone(PSIF_OEI, PSIF_AO_NablaZ, scratch, noei_ao, 0, 0, outfile);
   for(i=0,ij=0; i < nao; i++)
     for(j=0; j <= i; j++,ij++) {
@@ -142,25 +153,28 @@ void transp(double sign)
     }
 
   NZ_MO = block_matrix(nmo, nmo);
+  NZ_SO = block_matrix(nso, nso);
+  X = block_matrix(nso, nao);
 
-  C_DGEMM('n','t',nao,nso,nao,1,&(TMP[0][0]),nao,&(usotao[0][0]),nao,
-	  0,&(X[0][0]),nao);
-  zero_mat(TMP, nao, nao);
-  C_DGEMM('n','n',nso,nso,nao,1,&(usotao[0][0]),nao,&(X[0][0]),nao,
-	  0,&(TMP[0][0]),nao);
+  C_DGEMM('n','n',nso,nao,nao,1,&(usotao[0][0]),nao,&(TMP[0][0]),nao,
+          0,&(X[0][0]),nao);
+  free_block(TMP);
+  C_DGEMM('n','t',nso,nso,nao,1,&(X[0][0]),nao,&(usotao[0][0]),nao,
+          0,&(NZ_SO[0][0]),nso);
+  free_block(X);
 
   if(params.ref == 0 || params.ref == 1) {
-    C_DGEMM('n','n',nso,nmo,nso,1,&(TMP[0][0]),nao,&(scf[0][0]),nmo,
-	    0,&(X[0][0]),nao);
-    C_DGEMM('t','n',nmo,nmo,nso,1,&(scf[0][0]),nmo,&(X[0][0]),nao,
-	    0,&(NZ_MO[0][0]),nmo);
+    X = block_matrix(nmo,nso);
+    C_DGEMM('t','n',nmo,nso,nso,1,&(scf[0][0]),nmo,&(NZ_SO[0][0]),nso,
+            0,&(X[0][0]),nso);
+    C_DGEMM('n','n',nmo,nmo,nso,1,&(X[0][0]),nso,&(scf[0][0]),nmo,
+            0,&(NZ_MO[0][0]),nmo);
   }
   else if(params.ref == 2) {
   }
 
-  free(scratch);
   free_block(X);
-  free_block(TMP);
+  free_block(NZ_SO);
 
   for(i=0; i<nmo; i++)
     for(j=0; j<nmo; j++) {
