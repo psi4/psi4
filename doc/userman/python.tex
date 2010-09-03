@@ -1,0 +1,59 @@
+\section{Python} \label{python}
+\PSIfour\ has adopted the power of the Python scripting language
+to drive calculations. In doing so, users are allowed to perform
+complex calculations that would prove impossible with the old
+IPV1 style of input.
+
+\subsection{Preprocessor}
+At first glace at \PSIfour 's new input style:
+\begin{verbatim}
+# cc-pVDZ H2O test single point
+molecule {
+o
+h 1 0.957
+h 1 0.957 2 104.5
+}
+
+set scf {
+    basis cc-pVDZ
+}
+
+scf()
+\end{verbatim}
+does not look like Python. This is because to provide the user a simpler
+format the input file is preprocessed into Python. Of course, if desired,
+you are free to put any Python command into your input file. In some
+cases you'll have to use Python (i.e. if you want to loop over a range of
+geometrical parameters or basis sets).
+
+The above input file does the exact same thing that the input file provided
+in chapter \ref{tutorial}'s {\em Running a basic SCF calculation}. It provides
+a simple single-point energy computation on water.
+
+\begin{verbatim}
+# cc-pVDZ H2O test single point
+molecule {
+o
+h 1 roh
+h 1 roh 2 ahoh
+
+roh = 0.957
+ahoh = 104.5
+}
+
+set scf {
+    basis cc-pVDZ
+}
+
+scf()
+\end{verbatim}
+
+Both of these input files are automatically preprocessed to Python for you.
+
+\subsection{Preprocessor Keywords}
+
+\begin{description}
+\item[molecule {\em name } \{ ... \}]\mbox{}\\
+Defines a molecule.
+
+\end{description}
