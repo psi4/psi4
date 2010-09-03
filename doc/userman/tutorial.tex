@@ -1,12 +1,12 @@
-\section{A \PSIthree\ Tutorial} \label{tutorial}
+\section{A \PSIfour\ Tutorial} \label{tutorial}
 
 \subsection{Before Getting Started: A Warning about Scratch Files}
-Generally, electronic structure programs like \PSIthree\ make
+Generally, electronic structure programs like \PSIfour\ make
 significant use of disk drives.  Therefore, it is very important
-to ensure that PSI3 is writing its temporary files to a disk drive
+to ensure that PSI4 is writing its temporary files to a disk drive
 phsyically attached to the computer running the computation.  If it
 is not, it will significantly slow down the program and the network.
-By default, PSI3 will write temporary files to \file{/tmp}, but you
+By default, PSI4 will write temporary files to \file{/tmp}, but you
 will want to set up a default scratch path (as described in sections
 \ref{scratchfiles} and \ref{psirc}) because the \file{/tmp} directory
 is usually not large enough except for small test cases.  In any 
@@ -16,19 +16,20 @@ fileserver elsewhere on the network.
 
 \subsection{Basic Input File Structure} 
 
-PSI3 reads input from a text file, which can be prepared in any standard
+PSI4 reads input from a text file, which can be prepared in any standard
 text editor.  The default input file name is \file{input.dat} and the
 default output file name is \file{output.dat}.  So that you can give your
 files meaningful names, these defaults can be changed by specifying
 the input file name and output file name on the the command line.
 The syntax is:
 
-{\tt psi3 input-name output-name}
+{\tt psi4 input-name output-name}
 
-PSI3 is a modular program, with each module performing specific tasks
+\subsubsection{IPV1-Style Input}
+PSI4 is a modular single executable, with each module performing specific tasks
 and computations.  Which modules are run for a particular computation
 depends on the type of computation and the particular keywords specified
-in the input file.  All keywords in PSI3 use the structure {\tt keyword =
+in the input file.  All keywords in PSI4 use the structure {\tt keyword =
 value}, where values may be strings, booleans, integers, or real numbers.
 If the value is a string which contains a special character (such as a
 space or a dash) you must enclose the string in double quotation marks.
@@ -104,7 +105,7 @@ perform a frequency analysis to determine the nature of the stationary
 point.  To do this, change the value of {\tt jobtype} to {\tt freq}.
 For an SCF frequeny calculation, you would also set {\tt dertype =
 second} to compute the second derivatives analytically.  Unfortunately,
-analytical second derivitives are not available in \PSIthree\ for
+analytical second derivitives are not available in \PSIfour\ for
 wavefunctions beyond SCF, so instead use the highest order analytical
 derivitives that are available for the type of wavefunction you
 have chosen.  This information is given in Table \ref{table:methods}.
