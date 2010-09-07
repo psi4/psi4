@@ -11,6 +11,8 @@
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define EPS 1.0e-17
 
+#define ERI_GRADIENT_NTYPE 9
+
 using namespace psi;
 
 inline void calc_f(double *F, int n, double t)
@@ -110,7 +112,7 @@ ERI::ERI(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet>bs2, shared_ptr<BasisSet>
     memset(tformbuf_, 0, sizeof(double)*size);
 
     if (deriv_ == 1)
-        size *= 12;         // 4 centers with x, y, z contributions
+        size *= ERI_GRADIENT_NTYPE;         // 3 centers with x, y, z contributions; 4th determined by translational invariance
 
     try {
         target_ = new double[size];
@@ -1060,13 +1062,13 @@ void ERI::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
     size_t size = n1 * n2 * n3 * n4;
     // Permute integrals back, if needed
     if (p12 || p34 || p13p24) {
-        // 12 of them
-        for (int i=0; i<12; ++i)
+        // ERI_GRADIENT_NTYPE of them
+        for (int i=0; i<ERI_GRADIENT_NTYPE; ++i)
             permute_target(source_+(i*size), target_+(i*size), s1, s2, s3, s4, p12, p34, p13p24);
     }
     else {
         // copy the integrals to the target_, 3n of them
-        memcpy(target_, source_, 12 * size *sizeof(double));
+        memcpy(target_, source_, ERI_GRADIENT_NTYPE * size *sizeof(double));
     }
 }
 
@@ -1297,45 +1299,59 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
     build_deriv1_eri[am1][am2][am3][am4](&libderiv_, nprim);
 
     // Zero out memory
-    memset(source_, 0, sizeof(double) * size * 12);
+    memset(source_, 0, sizeof(double) * size * ERI_GRADIENT_NTYPE);
 
-    // Copy results from libderiv into source_ (note libderiv only gives 3 of the centers)
+    // Copy results from libderiv into source_ (note libderiv only gives 3 of the centers).
+    // The libmints array returns the following integral derivatives:
+    //   0 -> A_x
+    //   1 -> A_y
+    //   2 -> A_z
+    //   3 -> C_x
+    //   4 -> C_y
+    //   5 -> C_z
+    //   6 -> D_x
+    //   7 -> D_y
+    //   8 -> D_z
+    // Center B can be determined by:
+    //   B_x = -(A_x + C_x + D_x)
+    //   B_y = -(A_y + C_y + D_y)
+    //   B_z = -(A_z + C_z + D_z)
     memcpy(source_+ 0*size, libderiv_.ABCD[0],  sizeof(double) * size);
     memcpy(source_+ 1*size, libderiv_.ABCD[1],  sizeof(double) * size);
     memcpy(source_+ 2*size, libderiv_.ABCD[2],  sizeof(double) * size);
-    memcpy(source_+ 6*size, libderiv_.ABCD[6],  sizeof(double) * size);
-    memcpy(source_+ 7*size, libderiv_.ABCD[7],  sizeof(double) * size);
-    memcpy(source_+ 8*size, libderiv_.ABCD[8],  sizeof(double) * size);
-    memcpy(source_+ 9*size, libderiv_.ABCD[9],  sizeof(double) * size);
-    memcpy(source_+10*size, libderiv_.ABCD[10], sizeof(double) * size);
-    memcpy(source_+11*size, libderiv_.ABCD[11], sizeof(double) * size);
+    memcpy(source_+ 3*size, libderiv_.ABCD[6],  sizeof(double) * size);
+    memcpy(source_+ 4*size, libderiv_.ABCD[7],  sizeof(double) * size);
+    memcpy(source_+ 5*size, libderiv_.ABCD[8],  sizeof(double) * size);
+    memcpy(source_+ 6*size, libderiv_.ABCD[9],  sizeof(double) * size);
+    memcpy(source_+ 7*size, libderiv_.ABCD[10], sizeof(double) * size);
+    memcpy(source_+ 8*size, libderiv_.ABCD[11], sizeof(double) * size);
 
-    for (size_t i=0; i < size; ++i) {
-        // Use translational invariance to determine center_j derivatives
-        source_[(3*size)+i] -= (libderiv_.ABCD[0][i] + libderiv_.ABCD[6][i] + libderiv_.ABCD[9][i]);
-        source_[(4*size)+i] -= (libderiv_.ABCD[1][i] + libderiv_.ABCD[7][i] + libderiv_.ABCD[10][i]);
-        source_[(5*size)+i] -= (libderiv_.ABCD[2][i] + libderiv_.ABCD[8][i] + libderiv_.ABCD[11][i]);
+//    for (size_t i=0; i < size; ++i) {
+//        // Use translational invariance to determine center_j derivatives
+//        source_[(3*size)+i] -= (libderiv_.ABCD[0][i] + libderiv_.ABCD[6][i] + libderiv_.ABCD[9][i]);
+//        source_[(4*size)+i] -= (libderiv_.ABCD[1][i] + libderiv_.ABCD[7][i] + libderiv_.ABCD[10][i]);
+//        source_[(5*size)+i] -= (libderiv_.ABCD[2][i] + libderiv_.ABCD[8][i] + libderiv_.ABCD[11][i]);
 
-//        fprintf(outfile, " A%d %20.14f\n", s1->ncenter(), source_[i + 0*size]);
-//        fprintf(outfile, " A%d %20.14f\n", s1->ncenter(), source_[i + 1*size]);
-//        fprintf(outfile, " A%d %20.14f\n", s1->ncenter(), source_[i + 2*size]);
+////        fprintf(outfile, " A%d %20.14f\n", s1->ncenter(), source_[i + 0*size]);
+////        fprintf(outfile, " A%d %20.14f\n", s1->ncenter(), source_[i + 1*size]);
+////        fprintf(outfile, " A%d %20.14f\n", s1->ncenter(), source_[i + 2*size]);
 
-//        fprintf(outfile, " A%d %20.14f\n", s3->ncenter(), source_[i + 6*size]);
-//        fprintf(outfile, " A%d %20.14f\n", s3->ncenter(), source_[i + 7*size]);
-//        fprintf(outfile, " A%d %20.14f\n", s3->ncenter(), source_[i + 8*size]);
+////        fprintf(outfile, " A%d %20.14f\n", s3->ncenter(), source_[i + 6*size]);
+////        fprintf(outfile, " A%d %20.14f\n", s3->ncenter(), source_[i + 7*size]);
+////        fprintf(outfile, " A%d %20.14f\n", s3->ncenter(), source_[i + 8*size]);
 
-//        fprintf(outfile, " A%d %20.14f\n", s4->ncenter(), source_[i + 9*size]);
-//        fprintf(outfile, " A%d %20.14f\n", s4->ncenter(), source_[i + 10*size]);
-//        fprintf(outfile, " A%d %20.14f\n", s4->ncenter(), source_[i + 11*size]);
-    }
+////        fprintf(outfile, " A%d %20.14f\n", s4->ncenter(), source_[i + 9*size]);
+////        fprintf(outfile, " A%d %20.14f\n", s4->ncenter(), source_[i + 10*size]);
+////        fprintf(outfile, " A%d %20.14f\n", s4->ncenter(), source_[i + 11*size]);
+//    }
 
-    int center_i = s1->ncenter();
-    int center_j = s2->ncenter();
-    int center_k = s3->ncenter();
-    int center_l = s4->ncenter();
+//    int center_i = s1->ncenter();
+//    int center_j = s2->ncenter();
+//    int center_k = s3->ncenter();
+//    int center_l = s4->ncenter();
 
     // Normalize the 12 types of integrals
-    normalize_am(s1, s2, s3, s4, 12);
+    normalize_am(s1, s2, s3, s4, ERI_GRADIENT_NTYPE);
 
 //    for (int z=0; z<size; ++z)
 //        fprintf(outfile, " A%d %20.14lf\n", center_i, source_[z + 0  * size]);
@@ -1357,7 +1373,7 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
 //        fprintf(outfile, " A%d %20.14lf\n", center_l, source_[z + 11 * size]);
 
     // Transform the integrals to the spherical basis
-    pure_transform(sh1, sh2, sh3, sh4, 12);
+    pure_transform(sh1, sh2, sh3, sh4, ERI_GRADIENT_NTYPE);
 
     // Results are in source_
 }

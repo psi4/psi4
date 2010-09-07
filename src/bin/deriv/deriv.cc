@@ -154,18 +154,26 @@ void Deriv::compute(SharedSimpleMatrix& C, SharedSimpleMatrix& Q, SharedSimpleMa
                                        - Q->get(mu, ro) * Q->get(nu, si)
                                        - Q->get(mu, si) * Q->get(nu, ro)) * prefactor;
 
-                tb_->add(center_i, 0, four_index_D * buffer[0*size+index]);
-                tb_->add(center_i, 1, four_index_D * buffer[1*size+index]);
-                tb_->add(center_i, 2, four_index_D * buffer[2*size+index]);
-                tb_->add(center_j, 0, four_index_D * buffer[3*size+index]);
-                tb_->add(center_j, 1, four_index_D * buffer[4*size+index]);
-                tb_->add(center_j, 2, four_index_D * buffer[5*size+index]);
-                tb_->add(center_k, 0, four_index_D * buffer[6*size+index]);
-                tb_->add(center_k, 1, four_index_D * buffer[7*size+index]);
-                tb_->add(center_k, 2, four_index_D * buffer[8*size+index]);
-                tb_->add(center_l, 0, four_index_D * buffer[9*size+index]);
-                tb_->add(center_l, 1, four_index_D * buffer[10*size+index]);
-                tb_->add(center_l, 2, four_index_D * buffer[11*size+index]);
+                double Ax = buffer[0*size+index], Ay = buffer[1*size+index], Az = buffer[2*size+index];
+                double Bx = 0.0,                  By = 0.0,                  Bz = 0.0;
+                double Cx = buffer[3*size+index], Cy = buffer[4*size+index], Cz = buffer[5*size+index];
+                double Dx = buffer[6*size+index], Dy = buffer[7*size+index], Dz = buffer[8*size+index];
+
+                // Use translational invariance to determine B
+                Bx = -(Ax + Cx + Dx);             By = -(Ay + Cy + Dy);      Bz = -(Az + Cz + Dz);
+
+                tb_->add(center_i, 0, four_index_D * Ax);
+                tb_->add(center_i, 1, four_index_D * Ay);
+                tb_->add(center_i, 2, four_index_D * Az);
+                tb_->add(center_j, 0, four_index_D * Bx);
+                tb_->add(center_j, 1, four_index_D * By);
+                tb_->add(center_j, 2, four_index_D * Bz);
+                tb_->add(center_k, 0, four_index_D * Cx);
+                tb_->add(center_k, 1, four_index_D * Cy);
+                tb_->add(center_k, 2, four_index_D * Cz);
+                tb_->add(center_l, 0, four_index_D * Dx);
+                tb_->add(center_l, 1, four_index_D * Dy);
+                tb_->add(center_l, 2, four_index_D * Dz);
             }
         }
         tb_->scale(4.0);
