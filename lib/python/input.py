@@ -8,22 +8,26 @@ def process_global_command(matchobj):
     key   = matchobj.group(2).upper()
     value = matchobj.group(3).strip()
 
+    temp = ""
     if re.match(r'^[-]?\d*\.?\d+$', value) or re.match(r'^\[.*\]$', value):
-        return spaces + 'PsiMod.set_global_option("%s", %s)' % (key, value)
+        temp ='PsiMod.set_global_option("%s", %s)' % (key, value)
     elif re.match(r'^\$', value):
         # Assume the user as set the variable in value
-        return spaces + 'PsiMod.set_global_option("%s", %s)' % (key, value[1:])
+        temp = 'PsiMod.set_global_option("%s", %s)' % (key, value[1:])
     elif re.match(yes, value):
-        return spaces + 'PsiMod.set_global_option("%s", True)' % (key)
+        temp = 'PsiMod.set_global_option("%s", True)' % (key)
     elif re.match(no, value):
-        return spaces + 'PsiMod.set_global_option("%s", False)' % (key)
+        temp = 'PsiMod.set_global_option("%s", False)' % (key)
     else:
-        return spaces + 'PsiMod.set_global_option("%s", "%s")' % (key, value)
+        temp = 'PsiMod.set_global_option("%s", "%s")' % (key, value)
 
-def process_globals_command(matchobj):
+    return spaces + temp + "\n"
+
+def process_global_commands(matchobj):
     spaces = matchobj.group(1)
     commands = matchobj.group(3)
     command_lines = re.split('\n', commands)
+    map(lambda x: x.strip(), command_lines)
 
     result = []
     for line in command_lines:
@@ -120,8 +124,8 @@ def process_input(raw_input):
     temp = re.sub(set_command, process_set_command, temp)
 
     # Process all "global(s) { ... }"
-    globals_command = re.compile(r'^(\s*?)(global|globals) \s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
-    temp = re.sub(globals_command, process_globals_command, temp)
+    global_commands = re.compile(r'^(\s*?)(global|globals) \s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    temp = re.sub(global_commands, process_global_commands, temp)
 
     # Process all individual "global key value"
     global_command = re.compile(r'(\s*?)global\s+(\w+)[\s=]+(.*?)($|#.*)', re.MULTILINE | re.IGNORECASE)
