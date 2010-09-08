@@ -786,7 +786,6 @@ FFLAGS='$(FDBG) $(FOPT) $(FOTH) $(FSTATIC)' AC_SUBST(FFLAGS)
 ########
 
 AC_CONFIG_FILES([include/Makefile
-          include/chkpt_params.h
           Makefile lib/Makefile src/Makefile
           src/lib/Makefile src/lib/MakeRules src/lib/MakeVars
           src/util/Makefile src/util/MakeRules src/util/MakeVars
