@@ -16,6 +16,20 @@
 #include <mpi.h>
 #endif
 
+#if HAVE_MADNESS == 1
+
+#ifdef WORLD_INSTANTIATE_STATIC_TEMPLATES
+#undef WORLD_INSTANTIATE_STATIC_TEMPLATES
+#define WORLD_INSTANTIATE_STATIC_TEMPLATES
+#else
+#define WORLD_INSTANTIATE_STATIC_TEMPLATES
+#endif
+
+#include <world/world.h>
+
+#endif
+
+
 namespace psi {
 
     extern FILE *outfile;
@@ -174,6 +188,27 @@ namespace psi {
 
         virtual void print(FILE *out=outfile) const;
     };
+
+
+#ifdef HAVE_MADNESS == 1
+
+    class MadCommunicator : public Communicator {
+        boost::shared_ptr<madness::World> madworld_;
+        int nthread_;
+
+    public:
+        MadCommunicator(boost::shared_ptr<madness::World> madness_world);
+        virtual ~MadCommunicator();
+
+        virtual void sync();
+
+        virtual void raw_send(int target, const void *data, int nbyte);
+        virtual void raw_recv(int sender, void *data, int nbyte);
+        virtual void print(FILE *out=outfile) const;
+
+    };
+
+#endif
 
 }
 

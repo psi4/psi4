@@ -16,6 +16,9 @@
 /* MPI? */
 #undef HAVE_MPI
 
+/* MADNESS? */
+#undef HAVE_MADNESS
+
 #undef MKL
 
 #undef HAVE_CMATH

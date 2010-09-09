@@ -48,6 +48,27 @@ int main(int argc, char **argv, char **envp)
     Process::arguments.init(argc, argv);
     Process::environment.init(envp);
 
+#if HAVE_MADNESS == 1
+    int use_madness;
+    std::string mad = Process::environment("MADNESS");
+    if ((mad == "true") || (mad == "True") || (mad == "TRUE")) {
+        use_madness = 1;
+    }
+    else {
+        use_madness = 0;
+    }
+
+    if(use_madness) {
+        madness::initialize(argc, argv);
+
+        shared_ptr<madness::World> madness_world(new madness::World(MPI::COMM_WORLD));
+
+        Communicator::world = shared_ptr<Communicator>(new MadCommunicator(madness_world));
+    }
+    else {
+#endif
+
+
 #if HAVE_MPI == 1
     // Initialize MPI
     // Since we allow multiple MPICommunicators to be created and MPI_Init needs to be called
@@ -61,6 +82,11 @@ int main(int argc, char **argv, char **envp)
     Communicator::world = shared_ptr<Communicator>(new LocalCommunicator);
 #endif
 
+#if HAVE_MADNESS == 1
+    }
+#endif
+
+
     Wavefunction::initialize_singletons();
 
     // Create the scripting object
@@ -70,7 +96,7 @@ int main(int argc, char **argv, char **envp)
 
     if(psi_start(argc, argv) == PSI_RETURN_FAILURE) return EXIT_FAILURE;
 
-    if(!clean_only) print_version(outfile);
+    if(!clean_only && Communicator::world->me() == 0) print_version(outfile);
 
     set_memory(outfile);
 
@@ -94,8 +120,19 @@ int main(int argc, char **argv, char **envp)
     psi_stop(infile, outfile, psi_file_prefix);
     Script::language->finalize();
 
+#if HAVE_MADNESS == 1
+    if(use_madness) {
+        madness::finalize();
+    }
+    else {
+#endif
+
 #if HAVE_MPI == 1
     MPI_Finalize();
+#endif
+
+#if HAVE_MADNESS == 1
+    }
 #endif
 
     // This needs to be changed to a return value from the processed script

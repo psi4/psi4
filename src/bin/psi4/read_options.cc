@@ -924,7 +924,10 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
 
   if (call_ipv1) {
     options.read_ipv1();
-    if (!suppress_printing) options.print();
+    //if (!suppress_printing && Communicator::world->me() == 0) {
+    //    fprintf(outfile, "printed from read_options\n");
+    //    options.print();
+    //}
   }
 
   return true;
