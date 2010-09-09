@@ -538,6 +538,18 @@ AC_DEFINE_UNQUOTED(HAVE_MPI,$HAVE_MPI)
 
 /bin/rm -f a.out
 
+# Check if we can link against madness
+#AC_CXX_PROCESS_CHECK([world.h],[#include <world/world.h>],,[HAVE_MADNESS=1],[HAVE_MADNESS=0])
+# Check if we can link against madness
+AC_MSG_CHECKING([if we can link to MADNESS])
+AC_TRY_LINK([#include <world/world.h>], [ madness::finalize(); ], [HAVE_MADNESS=1
+AC_MSG_RESULT([yes])],[HAVE_MADNESS=0
+AC_MSG_RESULT([no])])
+AC_DEFINE_UNQUOTED(HAVE_MADNESS,$HAVE_MADNESS)
+
+/bin/rm -f a.out
+
+
 ########
 ## Check for types
 ########
