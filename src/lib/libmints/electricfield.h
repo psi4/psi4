@@ -23,6 +23,9 @@ class ElectricFieldInt : public OneBodyInt
     ObaraSaikaTwoCenterElectricField efield_recur_;                 // Both ElectricField and VIDeriv should give the same result
 //    ObaraSaikaTwoCenterVIDerivRecursion efield_recur_;
 
+    //! Number of atoms.
+    int natom_;
+
     //! Computes the electric field between two gaussian shells.
     void compute_pair(shared_ptr<GaussianShell>, shared_ptr<GaussianShell>);
 

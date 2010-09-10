@@ -11,7 +11,7 @@ using namespace psi;
 using namespace std;
 
 ElectricFieldInt::ElectricFieldInt(vector<SphericalTransform>& spherical_transforms, shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2, int nderiv) :
-    OneBodyInt(spherical_transforms, bs1, bs2, nderiv), efield_recur_(bs1->max_am(), bs2->max_am())
+    OneBodyInt(spherical_transforms, bs1, bs2, nderiv), efield_recur_(bs1->max_am(), bs2->max_am()), natom_(bs1->molecule()->natom())
 {
     int maxam1 = bs1_->max_am();
     int maxam2 = bs2_->max_am();
@@ -19,7 +19,7 @@ ElectricFieldInt::ElectricFieldInt(vector<SphericalTransform>& spherical_transfo
     int maxnao1 = INT_NCART(maxam1);
     int maxnao2 = INT_NCART(maxam2);
 
-    buffer_ = new double[3*maxnao1*maxnao2];
+    buffer_ = new double[3*natom_*maxnao1*maxnao2];
 }
 
 ElectricFieldInt::~ElectricFieldInt()
@@ -29,7 +29,7 @@ ElectricFieldInt::~ElectricFieldInt()
 
 void ElectricFieldInt::compute_shell(int sh1, int sh2)
 {
-    fprintf(outfile, "shell1 = %d  shell2 = %d\n", sh1, sh2);
+//    fprintf(outfile, "shell1 = %d  shell2 = %d\n", sh1, sh2);
     compute_pair(bs1_->shell(sh1), bs2_->shell(sh2));
 }
 
@@ -56,8 +56,9 @@ void ElectricFieldInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<Gau
     int jxm = jym * jym;
 
     // Not sure if these are needed.
-    int ydisp = INT_NCART(am1) * INT_NCART(am2);
-    int zdisp = ydisp + INT_NCART(am1) * INT_NCART(am2);
+    int size =  INT_NCART(am1) * INT_NCART(am2);
+    int ydisp = size;
+    int zdisp = ydisp + size;
 
     // compute intermediates
     double AB2 = 0.0;
@@ -66,7 +67,7 @@ void ElectricFieldInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<Gau
     AB2 += (A[2] - B[2]) * (A[2] - B[2]);
     double AB = sqrt(AB2);
 
-    memset(buffer_, 0, 3 * s1->ncartesian() * s2->ncartesian() * sizeof(double));
+    memset(buffer_, 0, 3 * natom_ * s1->ncartesian() * s2->ncartesian() * sizeof(double));
 
     double ***ex = efield_recur_.ex();
     double ***ey = efield_recur_.ey();
@@ -102,6 +103,8 @@ void ElectricFieldInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<Gau
 
             // Loop over atoms of basis set 1 (only works if bs1_ and bs2_ are on the same molecule
             for (int atom=0; atom<bs1_->molecule()->natom(); ++atom) {
+                int atomoffset = atom * 3 * size;
+
                 double PC[3];
                 double Z = (double)bs1_->molecule()->Z(atom);
                 Vector3 C = bs1_->molecule()->xyz(atom);
@@ -131,11 +134,11 @@ void ElectricFieldInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<Gau
                                 int iind = l1 * ixm + m1 * iym + n1 * izm;
                                 int jind = l2 * jxm + m2 * jym + n2 * jzm;
 
-                                buffer_[ao12]       += ex[iind][jind][0] * over_pf;
-                                buffer_[ao12+ydisp] += ey[iind][jind][0] * over_pf;
-                                buffer_[ao12+zdisp] += ez[iind][jind][0] * over_pf;
+                                buffer_[atomoffset+ao12]       += ex[iind][jind][0] * over_pf;
+                                buffer_[atomoffset+ao12+ydisp] += ey[iind][jind][0] * over_pf;
+                                buffer_[atomoffset+ao12+zdisp] += ez[iind][jind][0] * over_pf;
 
-                                fprintf(outfile, "final: over_pf = %10.8lf AIX[%d][%d][0] = %10.8lf\tAIY = %10.8lf\tAIZ = %10.8lf\n", over_pf, iind, jind, ex[iind][jind][0], ey[iind][jind][0], ez[iind][jind][0]);
+//                                fprintf(outfile, "final: over_pf = %10.8lf AIX[%d][%d][0] = %10.8lf\tAIY = %10.8lf\tAIZ = %10.8lf\n", over_pf, iind, jind, ex[iind][jind][0], ey[iind][jind][0], ez[iind][jind][0]);
 
                                 ao12++;
                             }
@@ -147,11 +150,14 @@ void ElectricFieldInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<Gau
     }
 
     // Integrals are done. Normalize for angular momentum
-    normalize_am(s1, s2, 3);
+    normalize_am(s1, s2, 3*natom_);
 }
 
 void ElectricFieldInt::compute(vector<shared_ptr<SimpleMatrix> > &result)
 {
+    if (result.size() < 3*natom_)
+        throw PSIEXCEPTION("ElectricFieldInt::compute: result array must be atleast 3 * number of atoms.");
+
     // Do not worry about zeroing out result
     int ns1 = bs1_->nshell();
     int ns2 = bs2_->nshell();
@@ -160,9 +166,8 @@ void ElectricFieldInt::compute(vector<shared_ptr<SimpleMatrix> > &result)
         for (int j=0; j<ns2; ++j) {
             compute_shell(i, j);
 
-            so_transform(result[0], i, j, 0);
-            so_transform(result[1], i, j, 1);
-            so_transform(result[2], i, j, 2);
+            for (int k=0; k<3*natom_; ++k)
+                so_transform(result[k], i, j, k);
         }
     }
 }
