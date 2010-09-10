@@ -5,7 +5,7 @@ using namespace psi;
 using namespace boost;
 
 
-#ifdef HAVE_MADNESS == 1
+#if HAVE_MADNESS == 1
     MadCommunicator::MadCommunicator(boost::shared_ptr<madness::World> madness_world) :
     Communicator(), madworld_(madness_world) {
         me_ = madworld_->rank();
