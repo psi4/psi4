@@ -686,7 +686,7 @@ void ObaraSaikaTwoCenterVIDerivRecursion::compute(double PA[3], double PB[3], do
 }
 
 ObaraSaikaTwoCenterElectricField::ObaraSaikaTwoCenterElectricField(int max_am1, int max_am2)
-    : ObaraSaikaTwoCenterVIRecursion(max_am1+1, max_am2+1)
+    : ObaraSaikaTwoCenterVIRecursion(max_am1+2, max_am2+2)
 {
     ex_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
     ey_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
@@ -715,7 +715,7 @@ void ObaraSaikaTwoCenterElectricField::compute(double PA[3], double PB[3], doubl
     int mmax = am1 + am2;
 
     // Call our super class to compute potential integrals
-    ObaraSaikaTwoCenterVIRecursion::compute(PA, PB, PC, zeta, max_am1_, max_am2_);
+    ObaraSaikaTwoCenterVIRecursion::compute(PA, PB, PC, zeta, max_am1_+1, max_am2_+1);
 
     // Compute starting integrals using A25
     fprintf(outfile, "setup:\n");
