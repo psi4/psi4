@@ -190,7 +190,7 @@ namespace psi {
     };
 
 
-#ifdef HAVE_MADNESS == 1
+#if HAVE_MADNESS == 1
 
     class MadCommunicator : public Communicator {
         boost::shared_ptr<madness::World> madworld_;
