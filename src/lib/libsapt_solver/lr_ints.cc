@@ -27,7 +27,7 @@
 #include <libqt/qt.h>
 #include <psifiles.h>
 
-#include "sapt.h"
+#include "sapt_dft.h"
 #include "structs.h"
 
 #include <libmints/basisset.h>
@@ -48,11 +48,8 @@ using namespace scf;
 
 namespace psi { namespace sapt {
 
-void SAPT::lr_ints()
+void SAPT_DFT::lr_ints()
 {
-    //Open new LR Integrals file
-    psio_->open(PSIF_SAPT_LRINTS,PSIO_OPEN_NEW);
-
     if (params_.print > 1)
         fprintf(outfile,"Computing numerical density-fitted integrals.\n");
 
@@ -68,7 +65,6 @@ void SAPT::lr_ints()
     double **CA = calc_info_.CA;
     double **CB = calc_info_.CB;
     double schwarz = params_.schwarz;
-    double mem_safety = params_.mem_safety;
 
     //fprintf(outfile,"CA:\n");
     //print_mat(CA,norbs,nmoA,outfile);
@@ -109,7 +105,7 @@ void SAPT::lr_ints()
     free(bufferB);
 
     //Memory considerations
-    unsigned long int total_df_memory = (unsigned long int)(mem_safety*memory_/sizeof(double));
+    unsigned long int total_df_memory = (unsigned long int)(params_.memory/sizeof(double));
     unsigned long int block_memory = total_df_memory/2;
     unsigned long int grid_memory = total_df_memory-block_memory;
     unsigned long int memory_per_row = 0;
@@ -624,19 +620,17 @@ void SAPT::lr_ints()
     
     //Naiive restripe of LR ints
     Bia = block_matrix(naux,noccA*nvirA);
-    Aia = block_matrix(noccA*nvirA,naux);
+    Aia = block_matrix(noccA*nvirA,calc_info_.nrio);
 
     psio_->read_entry(PSIF_SAPT_LRINTS,"A LR Integrals",(char *)(&Bia[0][0]),
       sizeof(double)*naux*noccA*(ULI)nvirA);
 
-    for (int P = 0; P < naux; P++) {
-      for (int i = 0, ia = 0; i < noccA; i++) {
-        for (int a = 0; a < nvirA; a++, ia++)  {
-          Aia[ia][P] = Bia[P][ia];
-    }}}
+    C_DGEMM('T','N',noccA*nvirA,calc_info_.nri,calc_info_.nri,1.0,&(Bia[0][0]),
+      noccA*nvirA,&(calc_info_.Jmhalf[0][0]),calc_info_.nri,0.0,&(Aia[0][0]),
+      calc_info_.nrio);
 
-    psio_->write_entry(PSIF_SAPT_LRINTS,"A LR Integrals",(char *)(&Aia[0][0]),
-      sizeof(double)*naux*noccA*(ULI)nvirA);
+    psio_->write_entry(PSIF_SAPT_LRINTS,"AR LR Integrals",(char *)(&Aia[0][0]),
+      sizeof(double)*calc_info_.nrio*noccA*(ULI)nvirA);
 
     free_block(Bia);
     free_block(Aia);
@@ -647,35 +641,15 @@ void SAPT::lr_ints()
     psio_->read_entry(PSIF_SAPT_LRINTS,"B LR Integrals",(char *)(&Bjb[0][0]),
       sizeof(double)*naux*noccB*(ULI)nvirB);
 
-    for (int P = 0; P < naux; P++) {
-      for (int j = 0, jb = 0; j < noccB; j++) {
-        for (int b = 0; b < nvirB; b++, jb++)  {
-          Ajb[jb][P] = Bjb[P][jb];
-    }}}
+    C_DGEMM('T','N',noccB*nvirB,calc_info_.nri,calc_info_.nri,1.0,&(Bjb[0][0]),
+      noccB*nvirB,&(calc_info_.Jmhalf[0][0]),calc_info_.nri,0.0,&(Ajb[0][0]),
+      calc_info_.nrio);
 
-    psio_->write_entry(PSIF_SAPT_LRINTS,"B LR Integrals",(char *)(&Ajb[0][0]),
+    psio_->write_entry(PSIF_SAPT_LRINTS,"BS LR Integrals",(char *)(&Ajb[0][0]),
       sizeof(double)*naux*noccB*(ULI)nvirB);
 
     free_block(Bjb);
     free_block(Ajb);
-}
-void gauss_leguerre_quadrature(int n, double xi, double* r, double* w) {
-        double x,temp;
-        for (int tau = 1; tau<=n; tau++) {
-                //$x = \cos\left(\frac{\tau}{n_\tau+1}\pi\right)$
-                //$r = \frac{\xi}{\ln(2)}(1+x)^{\0.6}\ln\left(\frac{2.0}{1-x}\right)$
-                x = cos(tau/(n+1.0)*M_PI);
-                r[tau-1] = xi*INVLN2*pow(1.0+x,0.6)*log(2.0/(1.0-x));
-                //$w = \frac{\pi}{n_tau+1.0}\sin^2\left(\frac{\tau}{n_\tau+1}\pi\right)$
-                //$w *= \frac{2\xi}{(1+x)^2}$ Accounts for change of variable
-                //$w *= \frac{1}{\sqrt{1-x^2}}$ Accounts for integral type
-                //$w *= r^2$ accounts for spherical integration on R^3
-                temp = sin(tau/(n+1.0)*M_PI);
-                w[tau-1] = M_PI/(n+1.0)*temp*temp;
-                w[tau-1] *= xi*INVLN2*(0.6*pow(1.0+x,0.6-1.0)*log(2.0/(1.0-x))+pow(1.0+x,0.6)/(1.0-x));
-                w[tau-1] *= 1.0/sqrt(1.0-x*x);
-        }
-
 }
 
 }}

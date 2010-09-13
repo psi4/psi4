@@ -19,7 +19,7 @@ using namespace psi;
 namespace psi { namespace sapt {
 
 class SAPT0 : public SAPT {
-protected:
+private:
     double exch_disp_1();
     double exch_disp_2();
     double exch_disp_3();
@@ -28,55 +28,43 @@ protected:
     double exch_disp_6();
     double exch_disp_7();
 
+    virtual void theta_ar();
+    virtual void theta_bs();
+
     void H3(double **);
     void Q1(double **);
     void Q3(double **);
     void Q5(double **);
-
     void H1(double **);
     void Q7(double **);
     void Q10(double **);
     void Q11(double **);
-
     void H2(double **);
     void Q6(double **);
     void Q13(double **);
-
     void H4(double **);
     void Q2(double **);
     void Q14(double **);
-    
-    double **get_AA_ints(int);
-    double **get_diag_AA_ints(int);
-    double **get_BB_ints(int);
-    double **get_diag_BB_ints(int);
-    double **get_AB_ints(int);
-    double **get_AS_ints(int);
-    double **get_RB_ints(int);
-    double **get_AR_ints(int);
-    double **get_BS_ints(int);
 
-    void ao_df_ints();
-    void ao_df_ints_restart();
+    virtual double exch_ind20respA_B();
+    virtual double exch_ind20respB_A();
 
-    double **DF_FDDS(double,int,char *,int,char *,double *,int,int);
-    double **D_lambda_F(double,int,char *,int,char *,double *,int,int);
-public:
-    SAPT0(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
-
-    double compute_energy();
+protected:
+    virtual void print_header();
     void elst10();
     void exch10();
-    void disp20();
-    void df_disp20_chf();
-    void theta_ar();
-    void theta_bs();
-    void exch_disp20();
-    void ind20resp();   
-    void exch_ind20respA_B();   
-    void exch_ind20respB_A();   
-    void print_results(); 
+    virtual void disp20();
+    virtual void exch_disp20();
+    void ind20();
+    virtual void exch_ind20();
+    virtual double print_results();
+
+public:
+    SAPT0(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
     virtual ~SAPT0();
+
+    virtual double compute_energy();
+
 };
 
 }}

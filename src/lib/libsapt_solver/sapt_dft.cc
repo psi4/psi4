@@ -32,7 +32,7 @@
 
 #include <libmints/mints.h>
 
-#include "sapt0.h"
+#include "sapt_dft.h"
 
 using namespace boost;
 using namespace std;
@@ -40,16 +40,18 @@ using namespace psi;
 
 namespace psi { namespace sapt {
 
-SAPT0::SAPT0(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
-    : SAPT(options, psio, chkpt)
+SAPT_DFT::SAPT_DFT(Options& options, shared_ptr<PSIO> psio, 
+  shared_ptr<Chkpt> chkpt) : SAPT0(options, psio, chkpt)
 {
+    psio_->open(PSIF_SAPT_LRINTS,PSIO_OPEN_NEW);
 }
 
-SAPT0::~SAPT0()
+SAPT_DFT::~SAPT_DFT()
 {
+    psio_->close(PSIF_SAPT_LRINTS,1);
 }
 
-double SAPT0::compute_energy()
+double SAPT_DFT::compute_energy()
 {  
     print_header(); 
     compute_integrals();
@@ -58,6 +60,7 @@ double SAPT0::compute_energy()
     exch10();
     disp20();
     exch_disp20();
+    df_disp20_chf();
     cphf_induction();
     ind20();
     exch_ind20();
@@ -65,11 +68,12 @@ double SAPT0::compute_energy()
     return print_results();
 }
 
-void SAPT0::print_header()
+void SAPT_DFT::print_header()
 {
-     fprintf(outfile,"        SAPT0  \n");
-     fprintf(outfile,"    Ed Hohenstein\n") ;
-     fprintf(outfile,"     6 June 2009\n") ;
+     fprintf(outfile,"      SAPT(DFT)  \n");
+     fprintf(outfile,"    Ed Hohenstein\n");
+     fprintf(outfile,"     Rob Parrish\n");
+     fprintf(outfile,"   5 September 2010\n");
      fprintf(outfile,"\n");
      fprintf(outfile,"    Orbital Information\n");
      fprintf(outfile,"  -----------------------\n");
@@ -89,33 +93,38 @@ void SAPT0::print_header()
      fflush(outfile);
 }   
 
-double SAPT0::print_results()
+double SAPT_DFT::print_results()
 {
   double eHF = calc_info_.eHF_D - calc_info_.eHF_A - calc_info_.eHF_B;
   double sapt0 = eHF + results_.disp20 + results_.exch_disp20;
+  double sapt_dft = eHF + results_.disp20chf + results_.exch_disp20;
   double dHF = eHF - (results_.elst10 + results_.exch10 + results_.ind20 + 
     results_.exch_ind20);
 
   fprintf(outfile,"    SAPT Results  \n");
   fprintf(outfile,"  ------------------------------------------------------------------\n");
-  fprintf(outfile,"    E_HF          %16.8lf mH %16.8lf kcal mol^-1\n",
+  fprintf(outfile,"    E_HF             %16.8lf mH %16.8lf kcal mol^-1\n",
           eHF*1000.0,eHF*627.5095);
-  fprintf(outfile,"    Elst10        %16.8lf mH %16.8lf kcal mol^-1\n",
+  fprintf(outfile,"    Elst10           %16.8lf mH %16.8lf kcal mol^-1\n",
           results_.elst10*1000.0,results_.elst10*627.5095);
-  fprintf(outfile,"    Exch10(S^2)   %16.8lf mH %16.8lf kcal mol^-1\n",
+  fprintf(outfile,"    Exch10(S^2)      %16.8lf mH %16.8lf kcal mol^-1\n",
           results_.exch10*1000.0,results_.exch10*627.5095);
-  fprintf(outfile,"    Ind20,r       %16.8lf mH %16.8lf kcal mol^-1\n",
+  fprintf(outfile,"    Ind20,r          %16.8lf mH %16.8lf kcal mol^-1\n",
           results_.ind20*1000.0,results_.ind20*627.5095);
-  fprintf(outfile,"    Exch-Ind20,r  %16.8lf mH %16.8lf kcal mol^-1\n",
+  fprintf(outfile,"    Exch-Ind20,r     %16.8lf mH %16.8lf kcal mol^-1\n",
           results_.exch_ind20*1000.0,results_.exch_ind20*627.5095);
-  fprintf(outfile,"    delta HF,r    %16.8lf mH %16.8lf kcal mol^-1\n",
+  fprintf(outfile,"    delta HF,r       %16.8lf mH %16.8lf kcal mol^-1\n",
           dHF*1000.0,dHF*627.5095);
-  fprintf(outfile,"    Disp20        %16.8lf mH %16.8lf kcal mol^-1\n",
+  fprintf(outfile,"    Disp20           %16.8lf mH %16.8lf kcal mol^-1\n",
           results_.disp20*1000.0,results_.disp20*627.5095);
-  fprintf(outfile,"    Exch-Disp20   %16.8lf mH %16.8lf kcal mol^-1\n\n",
+  fprintf(outfile,"    Exch-Disp20      %16.8lf mH %16.8lf kcal mol^-1\n",
           results_.exch_disp20*1000.0,results_.exch_disp20*627.5095);
-  fprintf(outfile,"    Total SAPT0   %16.8lf mH %16.8lf kcal mol^-1\n",
+  fprintf(outfile,"    Disp20 (CHF)     %16.8lf mH %16.8lf kcal mol^-1\n\n",
+          results_.disp20chf*1000.0,results_.disp20chf*627.5095);
+  fprintf(outfile,"    Total SAPT0      %16.8lf mH %16.8lf kcal mol^-1\n",
           sapt0*1000.0,sapt0*627.5095);
+  fprintf(outfile,"    Total SAPT(DFT)  %16.8lf mH %16.8lf kcal mol^-1\n",
+          sapt_dft*1000.0,sapt_dft*627.5095);
 
   Process::environment.globals["SAPT ELST10 ENERGY"] = results_.elst10;
   Process::environment.globals["SAPT EXCH10 ENERGY"] = results_.exch10;
@@ -123,12 +132,14 @@ double SAPT0::print_results()
   Process::environment.globals["SAPT EXCH-IND20 ENERGY"] = results_.exch_ind20;
   Process::environment.globals["SAPT DELTA-HF ENERGY"] = dHF;
   Process::environment.globals["SAPT DISP20 ENERGY"] = results_.disp20;
+  Process::environment.globals["SAPT DISP20 CHF ENERGY"] = results_.disp20chf;
   Process::environment.globals["SAPT EXCH-DISP20 ENERGY"] = 
     results_.exch_disp20;
   Process::environment.globals["SAPT SAPT0 ENERGY"] = sapt0;
-  Process::environment.globals["SAPT ENERGY"] = sapt0;
+  Process::environment.globals["SAPT SAPT DFT ENERGY"] = sapt_dft;
+  Process::environment.globals["SAPT ENERGY"] = sapt_dft;
 
-  return(sapt0);
+  return(sapt_dft);
 }
 
 }}

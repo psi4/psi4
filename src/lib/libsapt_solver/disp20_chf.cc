@@ -17,12 +17,14 @@
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "structs.h"
-#include "sapt0.h"
+#include "sapt_dft.h"
 
 namespace psi { namespace sapt {
 
-void SAPT0::df_disp20_chf()
+void SAPT_DFT::df_disp20_chf()
 {
+//  lr_ints();
+
   if (params_.print)
     fprintf(outfile,"Begining Disp20 (CHF) Calculation\n\n");
 
@@ -68,13 +70,22 @@ void SAPT0::df_disp20_chf()
   for (int i=0; i<16; i++) {
 
     A_PQ = DF_FDDS(x_k[i],PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",
-      PSIF_SAPT_LRINTS,"A LR Integrals",calc_info_.evalsA,
+      PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",calc_info_.evalsA,
       calc_info_.noccA,calc_info_.nvirA);
 
     B_PQ = DF_FDDS(x_k[i],PSIF_SAPT_BB_DF_INTS,"BS RI Integrals",
-      PSIF_SAPT_LRINTS,"B LR Integrals",calc_info_.evalsB,
+      PSIF_SAPT_BB_DF_INTS,"BS RI Integrals",calc_info_.evalsB,
       calc_info_.noccB,calc_info_.nvirB);
 
+/*
+    A_PQ = DF_FDDS(x_k[i],PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",
+      PSIF_SAPT_LRINTS,"AR LR Integrals",calc_info_.evalsA,
+      calc_info_.noccA,calc_info_.nvirA);
+
+    B_PQ = DF_FDDS(x_k[i],PSIF_SAPT_BB_DF_INTS,"BS RI Integrals",
+      PSIF_SAPT_LRINTS,"BS LR Integrals",calc_info_.evalsB,
+      calc_info_.noccB,calc_info_.nvirB);
+*/
     tval = -C_DDOT(calc_info_.nrio*calc_info_.nrio,&(A_PQ[0][0]),1,
       &(B_PQ[0][0]),1)/(8.0*M_PI);
 
@@ -99,7 +110,7 @@ void SAPT0::df_disp20_chf()
   }
 }
 
-double **SAPT0::D_lambda_F(double omega, int file1, char *Dints,
+double **SAPT_DFT::D_lambda_F(double omega, int file1, char *Dints,
   int file2, char *Fints, double *evals, int nocc, int nvir)
 {
   double **lambda = block_matrix(nocc,nvir);
@@ -120,6 +131,7 @@ double **SAPT0::D_lambda_F(double omega, int file1, char *Dints,
   free_block(lambda);
 
   double **D_p_AR = get_DF_ints(file1,Dints,nocc*nvir);
+
   double **C_pq = block_matrix(calc_info_.nrio,calc_info_.nrio);
 
   C_DGEMM('T','N',calc_info_.nrio,calc_info_.nrio,nocc*nvir,1.0,
@@ -132,7 +144,7 @@ double **SAPT0::D_lambda_F(double omega, int file1, char *Dints,
   return(C_pq);
 }
 
-double **SAPT0::DF_FDDS(double omega, int DFfile, char *AR_ints, 
+double **SAPT_DFT::DF_FDDS(double omega, int DFfile, char *AR_ints, 
   int LRfile, char *F_ints, double *evals, int nocc, int nvir)
 {
   double **DyF = D_lambda_F(omega,DFfile,AR_ints,LRfile,F_ints,evals,
