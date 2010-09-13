@@ -1,4 +1,4 @@
-molecule dimer  
+molecule dimer { 
      C     0.000000    -0.667578    -2.124659
      C     0.000000     0.667578    -2.124659
      H     0.923621    -1.232253    -2.126185
@@ -25,4 +25,4 @@ globals {
     GUESS SAD 
 }
 
-run_sapt0()
+e_sapt0 = energy('sapt0')
