@@ -1,4 +1,4 @@
-molecule dimer {
+molecule dimer  
      C     0.000000    -0.667578    -2.124659
      C     0.000000     0.667578    -2.124659
      H     0.923621    -1.232253    -2.126185
@@ -18,65 +18,11 @@ globals {
     BASIS aug-cc-pVDZ
     SCF_TYPE DF
     RI_BASIS_SCF aug-cc-pVDZ-JKFIT
-    DIIS 1 
+    RI_BASIS_SAPT aug-cc-pVDZ-RI
+    DIIS True
     MAXITER 100
     E_CONVERGE 8
     GUESS SAD 
 }
 
-set scf {
-    SAPT 2-dimer    
-}
-
-print "\n\n" 
-banner("SCF Computation\nEthene-Ethyne/aug-cc-pVDZ")
-print "\n"
-
-e_dimer = scf()
-
-print "\n\n" 
-banner("SCF Computation\nEthene-(Ethyne)/aug-cc-pVDZ")
-print "\n"
-
-ethene = dimer.extract_subsets( 1, 2)
-
-set scf {
-    SAPT 2-monomer_A    
-}
-
-e_ad = scf()
-
-print "\n\n" 
-banner("SCF Computation\n(Ethene)-Ethyne/aug-cc-pVDZ")
-print "\n"
-
-ethyne = dimer.extract_subsets( 2, 1)
-
-set scf {
-    SAPT 2-monomer_B    
-}
-
-e_bd = scf()
-
-print "\n\n" 
-banner("SAPT0 Computation\nEthene-Ethyne/aug-cc-pVDZ")
-print "\n"
-
-activate(dimer)
-
-#Hack to change file namespaces
-PsiMod.IO.change_file_namespace(121,"ethene","dimer")
-PsiMod.IO.change_file_namespace(122,"ethyne","dimer")
-
-set sapt {
-    ri_basis_sapt aug-cc-pVDZ-RI
-    chf_disp 0
-}
-e_sapt = sapt()
-
-print "\n  E_sapt = %15.10f [H]\n" % e_sapt
-
-banner("Have a nice day!",2)
-print "\n\n"
-
-
+run_sapt0()

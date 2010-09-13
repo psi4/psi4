@@ -85,7 +85,7 @@ void  DFMP2::setup()
   } else {
      shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
      ribasis_ = BasisSet::construct(parser, molecule_, options_.get_str("RI_BASIS_MP2"));
-     ribasis_->print();
+     //ribasis_->print();
   }
   naux_raw_ = ribasis_->nbf();
   naux_fin_ = ribasis_->nbf(); //For now, may be pared later

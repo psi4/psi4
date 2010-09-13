@@ -52,6 +52,7 @@ namespace psi {
       {
           std::map<std::string, std::string> environment_;
           const std::string empty_;
+          unsigned long int memory_;
 
           boost::shared_ptr<Molecule> molecule_;
       public:
@@ -68,6 +69,10 @@ namespace psi {
 
           /// Map containing current energies
           std::map<std::string, double> globals;
+
+          /// Memory in bytes
+          unsigned long int get_memory() const { return memory_; }
+          void set_memory(unsigned long int m)  { memory_ = m; }
 
           /// "Global" liboptions object.
           Options options;

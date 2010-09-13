@@ -57,6 +57,10 @@ void Wavefunction::common_init()
 
         // Basis set object has reference to initialized molecule, grab it
         molecule_ = basisset_->molecule();
+        
+        // Read in the memory requirements from input
+        fndcor(&(memory_), infile, outfile);
+
     }
     else {
         // Take the molecule from the environment
@@ -66,10 +70,11 @@ void Wavefunction::common_init()
 
         int nbf[] = { basisset_->nbf() };
         factory_.init_with(1, nbf, nbf);
-    }
 
-    // Read in the memory requirements from input
-    fndcor(&(memory_), infile, outfile);
+        memory_ = Process::environment.get_memory();    
+
+        //fprintf(outfile,"  Using %ld bytes of core memory\n",memory_);
+    }
 
     // Read in the debug flag
     debug_ = options_.get_int("DEBUG");

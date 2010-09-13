@@ -37,14 +37,16 @@
 #include <libmints/molecule.h>
 #include <libmints/gshell.h>
 #include <libmints/gridblock.h>
+#include <libmints/properties.h>
 #include <libmints/matrix.h>
 #include <libscf_solver/integrator.h>
-#include <libscf_solver/functionalfactory.h>
+#include <libfunctional/functional.h>
 
 using namespace boost;
 using namespace std;
 using namespace psi;
 using namespace scf;
+using namespace functional;
 
 namespace psi { namespace sapt {
 
@@ -198,13 +200,12 @@ void SAPT_DFT::lr_ints()
  
     //Setup Functional
     int npoints = options_.get_int("N_BLOCK");
-    FunctionalFactory fact;
-    SharedFunctional *lda_func = new shared_ptr<Functional>[nthread];
+    shared_ptr<Functional> *lda_func = new shared_ptr<Functional>[nthread];
     SharedProperties *primary_props = new shared_ptr<Properties>[nthread];
     shared_ptr<BasisPoints> *aux_props = new shared_ptr<BasisPoints>[nthread];
 
     for (int thread = 0; thread < nthread; thread++) {
-        lda_func[thread] = SharedFunctional(fact.getExchangeFunctional("X_LDA","NULL",npoints));
+        lda_func[thread] = Functional::createFunctional("S",npoints);
         primary_props[thread] = SharedProperties(Properties::constructProperties(basisset_,npoints));
         aux_props[thread] = (shared_ptr<BasisPoints>)(new BasisPoints(ribasis_,npoints));
     }
@@ -219,8 +220,8 @@ void SAPT_DFT::lr_ints()
     double ***aux_points             =  new double**[nthread];  
 
     for (int thread = 0; thread < nthread; thread++) {
-        lda_values[thread]     =  lda_func[thread]->getValue();    
-        lda_grads[thread]      =  lda_func[thread]->getGradientA();    
+        lda_values[thread]     =  lda_func[thread]->getFunctional();    
+        lda_grads[thread]      =  lda_func[thread]->getV_RhoA();    
         rho[thread]            =  primary_props[thread]->getDensity();    
         primary_points[thread] =  primary_props[thread]->getPoints();    
         aux_points[thread]     =  aux_props[thread]->getPoints();  
@@ -361,7 +362,7 @@ void SAPT_DFT::lr_ints()
             aux_props[0]->computePoints(pts);
             timer_off("Get Aux Points");
             timer_on("Functional");
-            lda_func[0]->computeFunctionalRKS(primary_props[0]);
+            lda_func[0]->computeRKSFunctional(primary_props[0]);
             timer_off("Functional");
             
             timer_on("Sum Contributions");
@@ -547,7 +548,7 @@ void SAPT_DFT::lr_ints()
 
             primary_props[0]->computeProperties(pts,DB_);
             aux_props[0]->computePoints(pts);
-            lda_func[0]->computeFunctionalRKS(primary_props[0]);
+            lda_func[0]->computeRKSFunctional(primary_props[0]);
 
             for (int pt = 0; pt < true_pts; pt++) {
              for (int P = 0; P < naux; P++) {

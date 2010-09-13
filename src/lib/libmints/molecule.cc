@@ -1381,7 +1381,7 @@ Molecule::extract_subsets(const std::vector<int> &real_list, const std::vector<i
     }
 
     sort(list.begin(), list.end());
-
+    
     int fragCharge = 0;
     int multiplicity = 1;
     for(int fragment = 0; fragment < list.size(); ++fragment){

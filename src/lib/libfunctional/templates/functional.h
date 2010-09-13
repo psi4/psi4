@@ -25,10 +25,10 @@ namespace functional {
 class Functional {
     public:
 
-        static boost::shared_ptr<Functional> createFunctional(const std::string & name, int npoints = 5000, int deriv = 1);
+        static boost::shared_ptr<Functional> createFunctional(const std::string & name, int npoints, int deriv = 1);
         static std::string availableFunctionals();
 
-        Functional(int npoints = 5000, int deriv = 1);
+        Functional(int npoints, int deriv = 1);
         ~Functional();
 
         std::string getName() const { return name_; }        
@@ -53,8 +53,8 @@ class Functional {
         double getDensityCutoff() const { return cutoff_; } 
         void setDensityCutoff(double cutoff) {cutoff = cutoff; }
         
-        virtual void computeRKSFunctional(boost::shared_ptr<Properties> props) {};
-        virtual void computeUKSFunctional(boost::shared_ptr<Properties> props) {};
+        virtual void computeRKSFunctional(boost::shared_ptr<Properties> props) = 0;
+        virtual void computeUKSFunctional(boost::shared_ptr<Properties> props) = 0;
 
         double* getFunctional() const { return functional_; }       
         double* getV_RhoA() const { return v_rho_a_; }       

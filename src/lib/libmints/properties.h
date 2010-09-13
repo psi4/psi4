@@ -34,6 +34,13 @@ namespace psi {
 			double* density_laplacian_;
 			double* ke_density_;
 			double* electrostatic_;
+                        double* rho_a_;
+                        double* rho_b_;
+                        double* gamma_aa_;
+                        double* gamma_ab_;
+                        double* gamma_bb_;
+                        double* tau_a_;
+                        double* tau_b_;
 			bool do_mos_;
 			bool do_density_;
 			bool do_density_gradient_;
@@ -66,6 +73,13 @@ namespace psi {
 			const double* getDensityLaplacian() const { return density_laplacian_; }
 			const double* getKEDensity() const { return ke_density_; }	
 			const double* getElectrostatic() const {return electrostatic_; }
+			const double* getDensityA() const { return rho_a_; }	
+			const double* getDensityB() const { return rho_b_; }	
+			const double* getDensityGradientSquaredAA() const { return gamma_aa_; }
+			const double* getDensityGradientSquaredAB() const { return gamma_ab_; }
+			const double* getDensityGradientSquaredBB() const { return gamma_bb_; }
+			const double* getKEDensityA() const { return tau_a_; }	
+			const double* getKEDensityB() const { return tau_b_; }	
                         double** getMOs() {return mos_; }
 			void setToComputeMOs(bool v, int* indices, int n);
 			void setToComputeDensity(bool v);

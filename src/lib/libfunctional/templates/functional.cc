@@ -170,7 +170,7 @@ std::string Functional::getParametersString()
 void Functional::setParameter(const std::string & key, double val)
 {
     for (int A = 0; A<params_.size(); A++) {
-        if (boost::to_upper_copy(params_[A].first) == boost::to_upper_copy(key))
+        if (boost::to_upper(params_[A].first) == boost::to_upper(key.upper()))
             params_[A] = make_pair(key,val);
     }
 
