@@ -15,6 +15,8 @@
 #include <libmints/integral.h>
 #include "factory.h"
 #include "wavefunction.h"
+#include <libdpd/dpd.h>
+#include <exception.h>
 
 #include <cmath>
 #include <sstream>
@@ -129,6 +131,24 @@ Matrix::Matrix(std::string name, int l_nirreps, int *l_rowspi, int *l_colspi) : 
     }
     alloc();
 }
+
+Matrix::Matrix(dpdfile2 *inFile) : name_(inFile->label)
+{
+    dpd_file2_mat_init(inFile);
+    dpd_file2_mat_rd(inFile);
+    matrix_ = NULL;
+    nirreps_ = inFile->params->nirreps;
+    rowspi_ = new int[nirreps_];
+    colspi_ = new int[nirreps_];
+    for (int i=0; i<nirreps_; ++i) {
+        rowspi_[i] = inFile->params->rowtot[i];
+        colspi_[i] = inFile->params->coltot[i];
+    }
+    alloc();
+    copy_from(inFile->matrix);
+    dpd_file2_mat_close(inFile);
+}
+
 
 Matrix::~Matrix()
 {
@@ -679,10 +699,28 @@ void Matrix::transform(shared_ptr<Matrix> a, shared_ptr<Matrix> transformer)
 
 void Matrix::transform(Matrix* transformer)
 {
-    Matrix temp(this);
+    bool square = true;
+    int h = 0;
 
-    temp.gemm(false, false, 1.0, this, transformer, 0.0);
-    gemm(true, false, 1.0, transformer, &temp, 0.0);
+    while(h < nirreps_ && square){
+        if(transformer->rowspi()[h] != transformer->colspi()[h]){
+            square = false;
+        }
+        ++h;
+    }
+
+    if(square){
+        Matrix temp(this);
+        temp.gemm(false, false, 1.0, this, transformer, 0.0);
+        gemm(true, false, 1.0, transformer, &temp, 0.0);
+    }
+    else{
+        Matrix temp(nirreps_, rowspi_, transformer->colspi());
+        Matrix result(nirreps_, transformer->colspi(), transformer->colspi());
+        temp.gemm(false, false, 1.0, this, transformer, 0.0);
+        result.gemm(true, false, 1.0, transformer, &temp, 0.0);
+        copy(&result);
+    }
 }
 
 void Matrix::transform(shared_ptr<Matrix> transformer)
@@ -705,10 +743,28 @@ void Matrix::back_transform(shared_ptr<Matrix> a, shared_ptr<Matrix> transformer
 
 void Matrix::back_transform(Matrix* transformer)
 {
-    Matrix temp(this);
+    bool square = true;
+    int h = 0;
 
-    temp.gemm(false, true, 1.0, this, transformer, 0.0);
-    gemm(false, false, 1.0, transformer, &temp, 0.0);
+    while(h < nirreps_ && square){
+        if(transformer->rowspi()[h] != transformer->colspi()[h]){
+            square = false;
+        }
+        h++;
+    }
+
+    if(square){
+        Matrix temp(this);
+        temp.gemm(false, true, 1.0, this, transformer, 0.0);
+        gemm(false, false, 1.0, transformer, &temp, 0.0);
+    }
+    else{
+        Matrix temp(nirreps_, rowspi_, transformer->rowspi());
+        Matrix result(nirreps_, transformer->rowspi(), transformer->rowspi());
+        temp.gemm(false, true, 1.0, this, transformer, 0.0);
+        result.gemm(false, false, 1.0, transformer, &temp, 0.0);
+        copy(&result);
+    }
 }
 
 void Matrix::back_transform(shared_ptr<Matrix> transformer)
@@ -725,7 +781,7 @@ void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix* a, const
     for (h=0; h<nirreps_; ++h) {
         m = rowspi_[h];
         n = colspi_[h];
-        k = a->colspi_[h];
+        k = transa ? a->rowspi_[h] : a->colspi_[h];
         nca = transa ? m : k;
         ncb = transb ? k : n;
         ncc = n;
@@ -904,7 +960,7 @@ void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix& a, const
     for (h=0; h<nirreps_; ++h) {
         m = rowspi_[h];
         n = colspi_[h];
-        k = a.colspi_[h];
+        k = transa ? a.rowspi_[h] : a.colspi_[h];
         nca = transa ? m : k;
         ncb = transb ? k : n;
         ncc = n;
@@ -931,6 +987,50 @@ void Matrix::diagonalize(Matrix& eigvectors, Vector& eigvalues)
         }
     }
 }
+
+void Matrix::write_to_dpdfile2(dpdfile2 *outFile)
+{
+
+    dpd_file2_mat_init(outFile);
+
+    if(outFile->params->nirreps != nirreps_) {
+        char *str = new char[100];
+        sprintf(str, "Irrep count mismatch.  Matrix class has %d irreps, but dpdfile2 has %d.",
+                nirreps_, outFile->params->nirreps);
+        throw SanityCheckError(str, __FILE__, __LINE__);
+    }
+
+    if(outFile->my_irrep != 0) {
+        throw FeatureNotImplemented("libmints Matrix class",
+                "Matrices whose irrep is not the symmetric one", __FILE__, __LINE__);
+    }
+
+    for(int h = 0; h < nirreps_; ++h){
+        if(outFile->params->rowtot[h] != rowspi_[h]){
+            char *str = new char[100];
+            sprintf(str, "Row count mismatch for irrep %d.  Matrix class has %d rows, but dpdfile2 has %d.",
+                    h, rowspi_[h], outFile->params->rowtot[h]);
+            throw SanityCheckError(str, __FILE__, __LINE__);
+        }
+        if(outFile->params->coltot[h] != colspi_[h]){
+            char *str = new char[100];
+            sprintf(str, "Column count mismatch for irrep %d.  Matrix class has %d columns, but dpdfile2 has %d.",
+                    h, colspi_[h], outFile->params->coltot[h]);
+            throw SanityCheckError(str, __FILE__, __LINE__);
+        }
+
+        // TODO: optimize this with memcopys
+        for(int row = 0; row < rowspi_[h]; ++row){
+            for(int col = 0; col < colspi_[h]; ++col){
+                outFile->matrix[h][row][col] = matrix_[h][row][col];
+            }
+        }
+    }
+
+    dpd_file2_mat_wrt(outFile);
+    dpd_file2_mat_close(outFile);
+}
+
 
 void Matrix::save(const char *filename, bool append, bool saveLowerTriangle, bool saveSubBlocks)
 {
@@ -1552,7 +1652,7 @@ void SimpleMatrix::gemm(bool transa, bool transb, double alpha, const SimpleMatr
 
     m = rows_;
     n = cols_;
-    k = a->cols_;
+    k = transa ? a->rows_ : a->cols_;
     nca = transa ? m : k;
     ncb = transb ? k : n;
     ncc = n;

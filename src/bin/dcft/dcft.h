@@ -47,9 +47,19 @@ class DCFTSolver
     void find_occupation(Vector &evals, bool forcePrint = false);
     void build_intermediates();
     void process_so_ints();
+    void build_G();
+    void build_tensors();
     void build_denominators();
     void dpd_buf4_add(dpdbuf4 *A, dpdbuf4 *B, double alpha);
     void scf_guess();
+    void half_transform(dpdbuf4 *A, dpdbuf4 *B, Matrix C1, Matrix C2,
+            int *mospi_left, int *mospi_right, int **so_row, int **mo_row,
+            bool backwards, double alpha, double beta);
+    void file2_transform(dpdfile2 *A, dpdfile2 *B, Matrix *C, bool backwards);
+    void AO_contribute(dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO, int p, int q,
+            int r, int s, double value, dpdfile2* = NULL, dpdfile2* = NULL, dpdfile2* = NULL);
+    //void AO_contribute(dpdfile2 *tau1_AO, dpdfile2 *tau2_AO, int p, int q,
+    //        int r, int s, double value);
     bool correct_mo_phases(bool dieOnError = true);
     double compute_lambda_residual();
     double compute_scf_error_vector();
@@ -133,13 +143,13 @@ class DCFTSolver
     /// The Tikhonow regularizer used to remove singularities (c.f. Taube and Bartlett, JCP, 2009)
     double _regularizer;
     /// The alpha occupied eigenvectors, per irrep
-    double ***_aOccC;
+    Matrix _aOccC;
     /// The beta occupied eigenvectors, per irrep
-    double ***_bOccC;
+    Matrix _bOccC;
     /// The alpha virtual eigenvectors, per irrep
-    double ***_aVirC;
+    Matrix _aVirC;
     /// The beta virtual eigenvectors, per irrep
-    double ***_bVirC;
+    Matrix _bVirC;
     /// The Tau matrix in the AO basis, stored by irrep, to perturb the alpha Fock matrix
     double ***_aTau;
     /// The Tau matrix in the AO basis, stored by irrep, to perturb the beta Fock matrix

@@ -61,6 +61,7 @@ DCFTSolver::compute()
             lambdaDone = false;
             while(!lambdaDone && nLambdaIterations++ < _options.get_int("LAMBDA_MAXITER")){
                 std::string diisString;
+                build_tensors();
                 build_intermediates();
                 _lambdaConvergence = compute_lambda_residual();
                 if(_lambdaConvergence < _diisStartThresh){
