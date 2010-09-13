@@ -113,8 +113,8 @@ Taylor_Fjt::Taylor_Fjt(unsigned int mmax, double accuracy) :
         grid_ = block_matrix(nrow, ncol);
         //grid_ = new double*[nrow];
         //grid_[0] = new double[nrow*ncol];
-        for(int r=1; r<nrow; ++r)
-            grid_[r] = grid_[r-1] + ncol;
+        //for(int r=1; r<nrow; ++r)
+        //    grid_[r] = grid_[r-1] + ncol;
     }
 
     /*-------------------------------------------------------
