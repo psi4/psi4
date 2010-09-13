@@ -159,7 +159,6 @@ Taylor_Fjt::~Taylor_Fjt()
     delete[] F_;
     delete[] T_crit_;
     T_crit_ = 0;
-    printf("Yo\n");
     free_block(grid_);
     grid_ = NULL;
 }
