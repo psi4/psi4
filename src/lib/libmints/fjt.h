@@ -34,7 +34,7 @@ namespace psi {
     class Fjt {
     public:
         Fjt();
-        ~Fjt();
+        virtual ~Fjt();
         /** Computed F_j(T) for every 0 <= j <= J (total of J+1 doubles).
         The user may read/write these values.
         The values will be overwritten with the next call to this functions.
@@ -51,7 +51,7 @@ namespace psi {
         static const int max_interp_order = 8;
 
         Taylor_Fjt(unsigned int jmax, double accuracy);
-        ~Taylor_Fjt();
+        virtual ~Taylor_Fjt();
         /// Implements Fjt::values()
         double *values(int J, double T);
     private:
@@ -97,7 +97,7 @@ namespace psi {
         int ngtable() const { return maxj + 7; }
     public:
         FJT(int n);
-        ~FJT();
+        virtual ~FJT();
         /// implementation of Fjt::values()
         double *values(int J, double T);
     };
