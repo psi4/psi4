@@ -11,10 +11,11 @@
 #include <libpsio/psio.hpp>
 #include "hf.h"
 #include "rhf.h"
-#include "functional.h"
+#include <libfunctional/superfunctional.h>
 #include "integrator.h"
 #include <libmints/properties.h>
 using namespace psi;
+using namespace psi::functional;
 
 namespace psi { namespace scf {
      
@@ -26,10 +27,8 @@ class RKS : public RHF {
 protected:
     /// Vxc matrix
     SharedMatrix V_;
-    /// Exchange Functional
-    SharedFunctional x_functional_;
-    /// Correlation Functional
-    SharedFunctional c_functional_;
+    /// Exchange-Correlation Functional
+    shared_ptr<SuperFunctional> functional_;
     /// Integrator
     SharedIntegrator integrator_;
     /// Properties evaluator
@@ -40,10 +39,8 @@ protected:
     double dipoleCheckY_;   
     double dipoleCheckZ_;  
 
-    /// Exchange Functional Energy
-    double x_functional_energy_;
     /// Correlation Functional Energy
-    double c_functional_energy_;
+    double functional_energy_;
  
 public:
     /// Constructor, same as RHF, which it derives from

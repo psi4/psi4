@@ -109,10 +109,30 @@ def process_print_command(matchobj):
     spaces = matchobj.group(1)
     string = matchobj.group(2)
 
-    printer = "\npsi_string_print = str(%s)\n" % string
-    printer += "PsiMod.print_out(psi_string_print)\n"
+    printer = str(spaces)
+    printer += "PsiMod.print_out(str(%s))\n" % str(string)
 
     return printer
+
+def process_memory_command(matchobj):
+    spec = re.compile(r'^\s*([+-]?\d*\.\d+)(?![-+0-9\.])\s*([MGK]B)\s*', re.DOTALL | re.IGNORECASE)
+    match = re.match(spec,matchobj.group(2))    
+
+    sig = str(match.group(1))
+    units = str(match.group(2))
+  
+    val = float(sig)
+    memory_amount = val
+
+    if (units.upper() == 'KB'):
+        memory_amount = val*1000
+    elif (units.upper() == 'MB'):
+        memory_amount = val*1000000
+    elif (units.upper() == 'GB'):
+        memory_amount = val*1000000000
+ 
+    command = "\nPsiMod.set_memory(%d)\n" % (int(memory_amount))
+    return command
 
 def process_input(raw_input):
     # Process all "set name? { ... }"
@@ -143,6 +163,11 @@ def process_input(raw_input):
     print_string = re.compile(r'(\s*?)print\s+(.*)',re.IGNORECASE)
     temp = re.sub(print_string,process_print_command,temp)
 
+    # Process "memory { ... }" 
+    memory_string = re.compile(r'^(\s*?)memory\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)   
+    temp = re.sub(memory_string,process_memory_command,temp)
+
+    # imports
     temp = "from PsiMod import *\nfrom psi import *\nfrom psiopt import *\n" + temp
 
     return temp

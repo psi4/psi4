@@ -47,6 +47,7 @@ int main(int argc, char **argv, char **envp)
     // Setup the environment
     Process::arguments.init(argc, argv);
     Process::environment.init(envp);
+    Process::environment.set_memory(256000000L);
 
 #if HAVE_MADNESS == 1
     int use_madness;

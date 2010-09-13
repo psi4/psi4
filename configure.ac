@@ -840,6 +840,7 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libboost_regex/Makefile
           src/lib/libboost_thread/Makefile
           src/lib/libsapt_solver/Makefile
+          src/lib/libfunctional/Makefile
  
           src/util/tocprint/Makefile
           src/util/psiclean/Makefile

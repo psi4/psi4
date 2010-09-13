@@ -1,0 +1,54 @@
+/**********************************************************
+* factory.cc: defines for functional factory for KS-DFT
+* Robert Parrish, robparrish@gmail.com
+* 09/01/2010
+*
+***********************************************************/
+#include "functional.h"
+#include "superfunctional.h"
+HEADERS
+#include <boost/algorithm/string.hpp>
+#include <string>
+#include <sstream>
+
+using namespace psi;
+using namespace boost;
+using namespace std;
+
+namespace psi { namespace functional {
+
+boost::shared_ptr<Functional> Functional::createFunctional(const std::string & name, int npoints, int deriv)
+{
+    CONSTRUCTORS
+}
+std::string Functional::availableFunctionals()
+{
+    std::stringstream f;
+    f << "   Available Exchange Functionals:   " << endl;
+    f << "    Name:        LSDA:     GGA:     Meta: " << endl;
+    f << "  ------------ --------- -------- ---------" << endl;
+    
+    PRINTERS_X
+   
+    f << endl; 
+    f << "   Available Correlation Functionals:   " << endl;
+    f << "    Name:        LSDA:     GGA:     Meta: " << endl;
+    f << "  ------------ --------- -------- ---------" << endl;
+    
+    PRINTERS_C
+    
+    return f.str();
+    
+}
+boost::shared_ptr<SuperFunctional> createSuperFunctional(const std::string & name, int npoints, int deriv)
+{
+    shared_ptr<SuperFunctional> superfun = (shared_ptr<SuperFunctional>) new SuperFunctional(npoints, deriv);
+
+    //Alias Table
+    SUPERFUNCTIONAL_ALIAS        
+
+    return superfun;
+}
+
+}}
+

@@ -224,7 +224,7 @@ void HF::common_init()
 
     // Initialize DIIS manager
     if (diis_enabled_)
-        diis_manager_ = shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector"));
+        diis_manager_ = shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk, psio_));
 
     initialized_diis_manager_ = false; 
 

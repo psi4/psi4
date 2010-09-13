@@ -24,8 +24,7 @@
 #include <libmints/properties.h>
 #include <libmints/molecule.h>
 #include "integrator.h"
-#include "functional.h"
-#include "functionalfactory.h"
+#include <libfunctional/functional.h>
 #include <libmints/matrix.h>
 #include "rks.h"
 
@@ -37,12 +36,14 @@ namespace psi { namespace scf {
 
 RKS::RKS(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) : RHF(options, psio, chkpt)
 {
-    FunctionalFactory fact;
-    x_functional_ = SharedFunctional(fact.getExchangeFunctional(options.get_str("X_FUNCTIONAL"),options.get_str("C_FUNCTIONAL"),options.get_int("N_BLOCK")));
-    c_functional_ = SharedFunctional(fact.getCorrelationFunctional(options.get_str("X_FUNCTIONAL"),options.get_str("C_FUNCTIONAL"),options.get_int("N_BLOCK")));
+    //x_functional_ = Functional::createFunctional(options.get_str("X_FUNCTIONAL"),options.get_int("N_BLOCK"));
+    //c_functional_ = Functional::createFunctional(options.get_str("C_FUNCTIONAL"),options.get_int("N_BLOCK"));
+
     integrator_ = Integrator::createIntegrator(molecule_,options);
     V_ = SharedMatrix (factory_.create_matrix("V"));
     properties_ = SharedProperties(Properties::constructProperties(basisset_,options.get_int("N_BLOCK")));
+
+    /**
 
     if (x_functional_->isGGA() || c_functional_-> isGGA() )
     {
@@ -52,60 +53,64 @@ RKS::RKS(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) : RHF
 
     fprintf(outfile,"  \n");
     fprintf(outfile,"  Exchange Functional Name: %s\n",x_functional_->getName().c_str());
-    fprintf(outfile,"  Exchange Functional Description:\n%s\n",x_functional_->getDescription().c_str());
-    fprintf(outfile,"  Exchange Functional Citation:\n%s\n",x_functional_->getCitation().c_str());
+    fprintf(outfile,"  Exchange Functional Description:\n  %s\n",x_functional_->getDescription().c_str());
+    fprintf(outfile,"  Exchange Functional Citation:\n  %s\n",x_functional_->getCitation().c_str());
+    fprintf(outfile,"  Exchange Functional Parameters:\n%s\n",x_functional_->getParametersString().c_str());
     fprintf(outfile,"  \n");
     
-    if (options.get_bool("TEST_FUNCTIONAL") && x_functional_->isGGA()) {
+    if (options.get_bool("TEST_FUNCTIONAL") ) {
         int n_test = properties_->get_RKS_GGA_Testbed_Size();
         properties_->get_RKS_GGA_Testbed(); //Please set block size bigger than 9 or risk a segfault!
-        x_functional_->computeFunctionalRKS(properties_);
+        x_functional_->computeRKSFunctional(properties_);
         
         const double* rhoa = properties_->getDensity(); 
         const double* sigmaa = properties_->getDensityGradientSquared();
 
-        double *zk = x_functional_->getValue(); 
-        double *vrhoa = x_functional_->getGradientA(); 
-        double *vsigmaaa = x_functional_->getGradientAA(); 
+        double *zk = x_functional_->getFunctional(); 
+        double *vrhoa = x_functional_->getV_RhoA(); 
+        double *vsigmaaa = x_functional_->getV_GammaAA(); 
 
-        fprintf(outfile, "  Testing Exchange Functional:");
+        fprintf(outfile, "  Testing Exchange Functional:\n");
         for (int k = 0; k<n_test; k++) {
-            fprintf(outfile, "  -rhoa = %8.2E, sigmaa = %8.2E\n", rhoa[k], sigmaa[k]);
-            fprintf(outfile, "   zk = %15.11E\n",zk[k]);
+            fprintf(outfile, "   rhoa = %8.2E, sigmaa = %8.2E\n", rhoa[k], sigmaa[k]);
+            fprintf(outfile, "   zk = %15.11E\n",2.0*zk[k]);
             fprintf(outfile, "   vrhoa = %15.11E\n",vrhoa[k]);
-            fprintf(outfile, "   vsimgaaa = %15.11E\n",vsigmaaa[k]);
+            if (x_functional_->isGGA())
+                fprintf(outfile, "   vsimgaaa = %15.11E\n",vsigmaaa[k]);
         }
         fprintf(outfile, "  \n");
     }
 
     fprintf(outfile,"  Correlation Functional Name: %s\n",c_functional_->getName().c_str());
-    fprintf(outfile,"  Correlation Functional Description:\n%s\n",c_functional_->getDescription().c_str());
-    fprintf(outfile,"  Correlation Functional Citation:\n%s\n",c_functional_->getCitation().c_str());
+    fprintf(outfile,"  Correlation Functional Description:\n  %s\n",c_functional_->getDescription().c_str());
+    fprintf(outfile,"  Correlation Functional Citation:\n  %s\n",c_functional_->getCitation().c_str());
+    fprintf(outfile,"  Correlation Functional Parameters:\n%s\n",c_functional_->getParametersString().c_str());
     fprintf(outfile,"  \n");
     fprintf(outfile,"%s\n",(integrator_->getString()).c_str());
     
-    if (options.get_bool("TEST_FUNCTIONAL") && c_functional_->isGGA()) {
+    if (options.get_bool("TEST_FUNCTIONAL") ) {
         int n_test = properties_->get_RKS_GGA_Testbed_Size();
         properties_->get_RKS_GGA_Testbed(); //Please set block size bigger than 9 or risk a segfault!
-        c_functional_->computeFunctionalRKS(properties_);
+        c_functional_->computeRKSFunctional(properties_);
         
         const double* rhoa = properties_->getDensity(); 
         const double* sigmaa = properties_->getDensityGradientSquared();
 
-        double *zk = c_functional_->getValue(); 
-        double *vrhoa = c_functional_->getGradientA(); 
-        double *vsigmaaa = c_functional_->getGradientAA(); 
+        double *zk = c_functional_->getFunctional(); 
+        double *vrhoa = c_functional_->getV_RhoA(); 
+        double *vsigmaaa = c_functional_->getV_GammaAA(); 
 
-        fprintf(outfile, "  Testing Correlation Functional:");
+        fprintf(outfile, "  Testing Correlation Functional:\n");
         for (int k = 0; k<n_test; k++) {
-            fprintf(outfile, "  -rhoa = %8.2E, sigmaa = %8.2E\n", rhoa[k], sigmaa[k]);
-            fprintf(outfile, "   zk = %15.11E\n",zk[k]);
+            fprintf(outfile, "   rhoa = %8.2E, sigmaa = %8.2E\n", rhoa[k], sigmaa[k]);
+            fprintf(outfile, "   zk = %15.11E\n",2.0*zk[k]);
             fprintf(outfile, "   vrhoa = %15.11E\n",vrhoa[k]);
-            fprintf(outfile, "   vsimgaaa = %15.11E\n",vsigmaaa[k]);
+            if (c_functional_->isGGA())
+                fprintf(outfile, "   vsimgaaa = %15.11E\n",vsigmaaa[k]);
         }
         fprintf(outfile, "  \n");
     }
-    
+    **/
 }
 
 RKS::~RKS()
@@ -149,7 +154,7 @@ double RKS::compute_energy()
         form_J(); //J is always needed, and sometimes you get
                   //K for free-ish with that
         J_->print(outfile);
-        if (x_functional_->hasExactExchange()) {
+        if (functional_->isHybrid()) {
             form_K(); //Sometimes, you really need K too
             K_->print(outfile);
         }
@@ -258,21 +263,19 @@ double RKS::compute_E()
     double one_electron_energy = 2.0*D_->vector_dot(H_);
     double J_energy = D_->vector_dot(J_);
     double K_energy = 0.0;
-    if (x_functional_->hasExactExchange()) {
-        K_energy = x_functional_->getExactExchangeCoefficient()*D_->vector_dot(K_);
+    if (functional_->isHybrid()) {
+        K_energy = functional_->getExactExchange()*D_->vector_dot(K_);
     }
     double Etotal = 0.0;
     Etotal += nuclearrep_;
     Etotal += one_electron_energy;
     Etotal += J_energy;
     Etotal += K_energy;
-    Etotal += x_functional_energy_;
-    Etotal += c_functional_energy_;
+    Etotal += functional_energy_;
 
     //fprintf(outfile,"  One Electron Energy: %14.10f\n",one_electron_energy);
     //fprintf(outfile,"  Classical Coulomb Energy: %14.10f\n",J_energy);
-    //fprintf(outfile,"  Exchange Functional Energy: %14.10f\n",x_functional_energy_);
-    //fprintf(outfile,"  Correlation Functional Energy: %14.10f\n",c_functional_energy_);
+    //fprintf(outfile,"  Functional Energy: %14.10f\n",functional_energy_);
 
     return Etotal;
 
@@ -283,8 +286,8 @@ void RKS::form_F()
     J_->scale(2.0);
         F_->add(J_);
     //J_->scale(0.5);
-    if (x_functional_->hasExactExchange()) {
-    	K_->scale(-x_functional_->getExactExchangeCoefficient());
+    if (functional_->isHybrid()) {
+    	K_->scale(-functional_->getExactExchange());
     	F_->add(K_);
     }
     //V_->scale(1.0);
@@ -300,12 +303,9 @@ void RKS::form_V()
 {
     V_->zero();
 
-    bool x_GGA = x_functional_->isGGA();
-    bool c_GGA = c_functional_->isGGA();
-    bool GGA = x_GGA | c_GGA;
+    bool GGA = functional_->isGGA();
 
-    x_functional_energy_ = 0.0;
-    c_functional_energy_ = 0.0;
+    functional_energy_ = 0.0;
     densityCheck_ = 0.0;
     dipoleCheckX_ = 0.0;
     dipoleCheckY_ = 0.0;
@@ -314,10 +314,8 @@ void RKS::form_V()
     //LSDA Setup
     double val;
 
-    double *x_fun = x_functional_->getValue();
-    double *x_funGrad = x_functional_->getGradientA();
-    double *c_fun = c_functional_->getValue();
-    double *c_funGrad = c_functional_->getGradientA();
+    double *x_fun = functional_->getFunctional(0)->getFunctional();
+    double *x_funGrad = functional_->getFunctional(0)->getV_RhoA();
 
     const double* rhog = properties_->getDensity();
    
@@ -328,10 +326,8 @@ void RKS::form_V()
     double GGA_val;
     double fun_x, fun_y, fun_z;
 
-    double *x_funGradAA = x_functional_->getGradientAA();
-    double *x_funGradAB = x_functional_->getGradientAB();
-    double *c_funGradAA = c_functional_->getGradientAA();
-    double *c_funGradAB = c_functional_->getGradientAB();
+    double *x_funGradAA = functional_->getFunctional(0)->getV_GammaAA();
+    double *x_funGradAB = functional_->getFunctional(0)->getV_GammaAB();
 
     const double *rho_x = properties_->getDensityX();
     const double *rho_y = properties_->getDensityY();
@@ -355,32 +351,25 @@ void RKS::form_V()
         double* wg = q->getWeights();
 
         properties_->computeProperties(q,D_,C_);
-        x_functional_->computeFunctionalRKS(properties_);
-        c_functional_->computeFunctionalRKS(properties_);
+        functional_->getFunctional(0)->computeRKSFunctional(properties_);
 
         for (int grid_index = 0; grid_index<ntrue; grid_index++) {
         //BEGIN LOOP OVER GRID POINTS
 
-            x_functional_energy_ += 2.0*x_fun[grid_index]*wg[grid_index];
-            c_functional_energy_ += 2.0*c_fun[grid_index]*wg[grid_index];
+            functional_energy_ += 2.0*x_fun[grid_index]*wg[grid_index];
 
             //GGA contribution (2 \diff f / \diff s_aa \nabla \rho + \diff f / \diff s_ab \nabla \rho)
             fun_x = 0.0;            
             fun_y = 0.0;            
             fun_z = 0.0;            
-            if (x_GGA) {
+            if (GGA) {
                 fun_x += (2.0*x_funGradAA[grid_index]+x_funGradAB[grid_index])*rho_x[grid_index];
                 fun_y += (2.0*x_funGradAA[grid_index]+x_funGradAB[grid_index])*rho_y[grid_index];
                 fun_z += (2.0*x_funGradAA[grid_index]+x_funGradAB[grid_index])*rho_z[grid_index];
             }
-            if (c_GGA) {
-                fun_x += (2.0*c_funGradAA[grid_index]+c_funGradAB[grid_index])*rho_x[grid_index];
-                fun_y += (2.0*c_funGradAA[grid_index]+c_funGradAB[grid_index])*rho_y[grid_index];
-                fun_z += (2.0*c_funGradAA[grid_index]+c_funGradAB[grid_index])*rho_z[grid_index];
-           } 
         
-            fprintf(outfile,"  Point: <%14.10f,%14.10f,%14.10f>, w = %14.10f, rho = %14.10f\n",xg[grid_index],yg[grid_index],zg[grid_index],wg[grid_index],rhog[grid_index]);
-            fprintf(outfile,"    x_fun = %14.10f, c_fun = %14.10f, d_x_fun = %14.10f, d_c_fun = %14.10f\n",x_fun[grid_index],c_fun[grid_index],x_funGrad[grid_index],c_funGrad[grid_index]);
+            //fprintf(outfile,"  Point: <%14.10f,%14.10f,%14.10f>, w = %14.10f, rho = %14.10f\n",xg[grid_index],yg[grid_index],zg[grid_index],wg[grid_index],rhog[grid_index]);
+            //fprintf(outfile,"    x_fun = %14.10f, c_fun = %14.10f, d_x_fun = %14.10f, d_c_fun = %14.10f\n",x_fun[grid_index],c_fun[grid_index],x_funGrad[grid_index],c_funGrad[grid_index]);
             if (GGA) {
                 fprintf(outfile,"    del_rho: <%14.10f,%14.10f,%14.10f>\n",rho_x[grid_index],rho_y[grid_index],rho_z[grid_index]);
                 fprintf(outfile,"    del_fun: <%14.10f,%14.10f,%14.10f>\n",fun_x,fun_y,fun_z);
@@ -391,7 +380,7 @@ void RKS::form_V()
                     for (int j = 0; j<=i; j++) {
                         //fprintf(outfile,"   (%4d,%4d), phi_a = %14.10f, phi_b = %14.10f\n",i,j,basis_points[i],basis_points[j]);
                         //LSDA Contribution
-                        val = wg[grid_index]*basis_points[grid_index][i+h_offset]*(x_funGrad[grid_index]+c_funGrad[grid_index])*basis_points[grid_index][j+h_offset];
+                        val = wg[grid_index]*basis_points[grid_index][i+h_offset]*(x_funGrad[grid_index])*basis_points[grid_index][j+h_offset];
                         V_->add(h,i,j,val);
 
                         if (i!=j)
