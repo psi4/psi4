@@ -370,7 +370,7 @@ double** DFMP2::form_W(shared_ptr<BasisSet> bas)
 
   int naux = bas->nbf();    
 
-  TwoBodyInt* Jint = rifactory_J.eri();
+  shared_ptr<TwoBodyInt> Jint = (shared_ptr<TwoBodyInt>)rifactory_J.eri();
   const double *Jbuffer = Jint->buffer();
   
   double **J = block_matrix(naux, naux);
@@ -407,7 +407,7 @@ double** DFMP2::form_W_overlap(shared_ptr<BasisSet> bas)
   int naux = bas->nbf();    
 
   IntegralFactory rifactory_JS(bas, bas, zero, zero);
-  OneBodyInt *S = rifactory_JS.overlap();
+  shared_ptr<OneBodyInt> S = (shared_ptr<OneBodyInt>)rifactory_JS.overlap();
 
   MatrixFactory matJS;
   matJS.init_with(1,&naux,&naux);

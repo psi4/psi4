@@ -5,7 +5,18 @@ H 0.0 1.0 0.0
 }
 
 set scf {
-#   GUESS   SAD
+    GUESS   SAD
+    SCF_TYPE DIRECT
+    PRINT 2
+    BASIS 3-21G
+    RI_BASIS_SCF STO-3G
+    DOCC [3, 0, 1, 1]
+}
+
+scf()
+
+set scf {
+    GUESS   SAD
     SCF_TYPE DF
     PRINT 2
     BASIS 3-21G
