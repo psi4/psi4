@@ -3,13 +3,8 @@
 #include <cstdio>
 namespace psi { namespace sapt { 
 
-struct params  {
-  int t2_restart;
-  int df_restart;
-  int logfile;
-  FILE* logfilename;
+struct params {
 
-  bool chf_disp;
   int print;
 
   int diisvec;
@@ -18,8 +13,61 @@ struct params  {
   double d_conv;
   double schwarz;
 
-  double memory;
-  double mem_safety;
+  int foccA;
+  int foccB;
+
+  bool nat_orbs;
+  double occ_cutoff;
+
+  long int memory;
+
+  };
+
+struct workflow {
+
+  // DFints
+  int save_Jmhalf;
+
+  // OEints
+  int W_ov;
+  int W_oo;
+  int W_vv;
+
+  // Storage from CHF Solver
+  int save_s;
+  int save_chf;
+
+  // MO integrals to be computed and stored on disk
+  int g_arar;
+  int g_bsbs;
+
+  // Types of amplitudes to be formed and stored on disk
+  int t_arar;
+  int theta_arar;
+  int t_bsbs;
+  int theta_bsbs;
+  int Y2_ar;
+  int Y2_bs;
+  int t_ar;
+  int t_bs;
+  int t2_arar;
+  int theta2_arar;
+  int t2_bsbs;
+  int theta2_bsbs;
+  int t_arbs;
+  int t_bsar;
+
+  // Types of intermediates to be formed and stored on disk
+  int mp2_opdm;
+  int theta_ar_ar; 
+  int theta_bs_bs; 
+  int theta2_ar_ar; 
+  int theta2_bs_bs; 
+  int theta_bs_ar; 
+  int theta_ar_bs; 
+  int gt_ar_arbs;
+  int gt_bs_arbs;
+
   };
 
 /* This struct holds information from the SCF calculations that is used
@@ -81,35 +129,61 @@ struct calcinfo {
                  // (first index in monomer A basis, second index in
                  // monomer B basis)
   double **WABS; // Electrostatic potential of monomer A in monomer B basis
+  double **WABB;
+  double **WASS;
   double **WBAR; // Electrostatic potential of monomer B in monomer A basis
+  double **WBAA;
+  double **WBRR;
 
-  double **J; // Coulomb fitting metric
+  double **Jmhalf;
+
+  };
+
+struct noinfo {
+
+  int nvirA;
+  int nvirB;
+
+  double disp20;
+
+  double *evalsA;
+  double *evalsB;
+
+  double **CA;
+  double **CB;
+
   };
 
 /* This struct stores the results of the SAPT components */
 struct results {
 
-  double hf_int;
-
   double elst10;
-
   double exch10;
-
   double disp20;
+  double ind20;
+  double exch_ind20;
+  double exch_disp20;
+
   double disp20chf;
 
-  double indr20;
-  double indrA_B;
-  double indrB_A;
+  double elst12;
+  double exch11;
+  double exch12;
+  double ind22;
 
-  double exch_indr20;
-  double exch_indrA_B;
-  double exch_indrB_A;
+  double disp21;
+  double disp22sdq;
+  double disp22t;
 
-  double exch_disp20;
-  double sapt0;
+  double elst130;
+  double elst103;
+  double ind30;
+  double exch_ind30;
+  double disp30;
+  double exch_disp30;
+  double ind_disp30;
+  double exch_ind_disp30;
 
-  double deltaHF;
   };
 
 }}
