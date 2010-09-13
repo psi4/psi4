@@ -4,6 +4,10 @@
 #include <cstdlib>
 #include <cstdio>
 
+namespace boost {
+template<class T> class shared_ptr;
+}
+
 namespace psi {
 
 class Matrix;
@@ -140,6 +144,9 @@ public:
     
     friend class SimpleMatrix;
 };
+
+typedef boost::shared_ptr<Vector> SharedVector;
+typedef boost::shared_ptr<SimpleVector> SharedSimpleVector;
 
 }
 

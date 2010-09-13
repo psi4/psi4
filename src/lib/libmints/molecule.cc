@@ -11,6 +11,7 @@
 
 #include <libmints/molecule.h>
 #include <libmints/matrix.h>
+#include <libmints/vector.h>
 #include <libmints/pointgrp.h>
 #include <libciomr/libciomr.h>
 

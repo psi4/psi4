@@ -49,10 +49,6 @@
  *      June, 1993
  */
 
-#ifdef __GNUC__
-#pragma implementation
-#endif
-
 #include <cstdlib>
 #include <cstring>
 #include <ctype.h>

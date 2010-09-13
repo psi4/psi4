@@ -49,10 +49,6 @@
  *      June, 1993
  */
 
-#ifdef __GNUC__
-#pragma interface
-#endif
-
 #ifndef _math_symmetry_pointgrp_h
 #define _math_symmetry_pointgrp_h
 

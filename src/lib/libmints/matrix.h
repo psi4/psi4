@@ -5,14 +5,18 @@
 #include <string>
 #include <cstring>
 
-#include <libmints/vector.h>
 #include <libparallel/serialize.h>
 #include <libdpd/dpd.h>
 
-#include <libpsio/psio.hpp>
+namespace boost {
+template<class T> class shared_ptr;
+}
 
 namespace psi {
 
+class PSIO;
+class Vector;
+class SimpleVector;
 class MatrixFactory;
 class SimpleMatrix;
 
@@ -69,7 +73,7 @@ public:
     Matrix(std::string name);
     /// Explicit copy reference constructor
     explicit Matrix(const Matrix& copy);
-    explicit Matrix(shared_ptr<Matrix> copy);
+    explicit Matrix(boost::shared_ptr<Matrix> copy);
     Matrix(Matrix& copy);
 
     /// Explicit copy pointer constructor
@@ -93,13 +97,13 @@ public:
     /// Copies cp's data onto this
     void copy(Matrix* cp);
     void copy(Matrix& cp);
-    void copy(shared_ptr<Matrix> cp);
+    void copy(boost::shared_ptr<Matrix> cp);
     void copy(const Matrix& cp);
     void copy(const Matrix* cp);
 
     /// Load a matrix from a PSIO object from fileno with tocentry of size nso
     bool load(psi::PSIO* psio, unsigned int fileno, char *tocentry, int nso);
-    bool load(shared_ptr<psi::PSIO> psio, unsigned int fileno, char *tocentry, int nso);
+    bool load(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, char *tocentry, int nso);
 
     /// Saves the matrix in ASCII format to filename
     void save(const char *filename, bool append=true, bool saveLowerTriangle = true, bool saveSubBlocks=false);
@@ -108,7 +112,7 @@ public:
     }
     /// Saves the block matrix to PSIO object with fileno and with the toc position of the name of the matrix
     void save(psi::PSIO* psio, unsigned int fileno, bool saveSubBlocks=true);
-    void save(shared_ptr<psi::PSIO> psio, unsigned int fileno, bool saveSubBlocks=true);
+    void save(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool saveSubBlocks=true);
 
     /// Set every element of matrix_ to val
     void set(double val);
@@ -120,13 +124,13 @@ public:
 
     /// Copies sq to matrix_
     void set(SimpleMatrix *sq);
-    void set(shared_ptr<SimpleMatrix> sq);
+    void set(boost::shared_ptr<SimpleMatrix> sq);
     /// Set a single element of matrix_
     void set(int h, int m, int n, double val) { matrix_[h][m][n] = val; }
     /// Set the diagonal of matrix_ to vec
     void set(Vector *vec);
     void set(Vector& vec);
-    void set(shared_ptr<Vector> vec);
+    void set(boost::shared_ptr<Vector> vec);
 
     /// Returns a single element of matrix_
     double get(int h, int m, int n) { return matrix_[h][m][n]; }
@@ -148,7 +152,7 @@ public:
     /// Print the matrix with corresponding eigenvalues below each column
     void eivprint(Vector &values, FILE *out = outfile);
     /// Print the matrix with corresponding eigenvalues below each column
-    void eivprint(shared_ptr<Vector> values, FILE *out = outfile);
+    void eivprint(boost::shared_ptr<Vector> values, FILE *out = outfile);
 
     /// Returns the rows per irrep array
     int *rowspi() const {
@@ -180,15 +184,15 @@ public:
     /// Adds a matrix to this
     void add(const Matrix&);
     /// Adds a matrix to this
-    void add(shared_ptr<Matrix>);
+    void add(boost::shared_ptr<Matrix>);
 
     /// Subtracts a matrix from this
     void subtract(const Matrix*);
     /// Subtracts a matrix from this
-    void subtract(shared_ptr<Matrix>);
+    void subtract(boost::shared_ptr<Matrix>);
     /// Multiplies the two arguments and adds their result to this
     void accumulate_product(const Matrix*, const Matrix*);
-    void accumulate_product(shared_ptr<Matrix>, shared_ptr<Matrix>);
+    void accumulate_product(boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix>);
     /// Scales this matrix
     void scale(double);
     /// Returns the sum of the squares of this
@@ -203,30 +207,30 @@ public:
     void scale_column(int h, int n, double a);
     /// Transform a by transformer save result to this
     void transform(Matrix* a, Matrix* transformer);
-    void transform(shared_ptr<Matrix> a, shared_ptr<Matrix> transformer);
+    void transform(boost::shared_ptr<Matrix> a, boost::shared_ptr<Matrix> transformer);
     /// Transform this by transformer
     void transform(Matrix* transformer);
-    void transform(shared_ptr<Matrix> transformer);
+    void transform(boost::shared_ptr<Matrix> transformer);
     /// Back transform a by transformer save result to this
     void back_transform(Matrix* a, Matrix* transformer);
-    void back_transform(shared_ptr<Matrix> a, shared_ptr<Matrix> transformer);
+    void back_transform(boost::shared_ptr<Matrix> a, boost::shared_ptr<Matrix> transformer);
     /// Back transform this by transformer
     void back_transform(Matrix* transformer);
-    void back_transform(shared_ptr<Matrix> transformer);
+    void back_transform(boost::shared_ptr<Matrix> transformer);
 
     /// Returns the vector dot product of this by rhs
     double vector_dot(Matrix* rhs);
-    double vector_dot(shared_ptr<Matrix> rhs);
+    double vector_dot(boost::shared_ptr<Matrix> rhs);
 
     /// General matrix multiply, saves result to this
     void gemm(bool transa, bool transb, double alpha, const Matrix* a, const Matrix* b, double beta);
-    void gemm(bool transa, bool transb, double alpha, shared_ptr<Matrix> a, shared_ptr<Matrix> b, double beta);
-    void gemm(bool transa, bool transb, double alpha, shared_ptr<Matrix> a, Matrix& b, double beta);
-    void gemm(bool transa, bool transb, double alpha, Matrix& a, shared_ptr<Matrix> b, double beta);
+    void gemm(bool transa, bool transb, double alpha, boost::shared_ptr<Matrix> a, boost::shared_ptr<Matrix> b, double beta);
+    void gemm(bool transa, bool transb, double alpha, boost::shared_ptr<Matrix> a, Matrix& b, double beta);
+    void gemm(bool transa, bool transb, double alpha, Matrix& a, boost::shared_ptr<Matrix> b, double beta);
     /// Diagonalize this places eigvectors and eigvalues must be created by caller.
     void diagonalize(Matrix* eigvectors, Vector* eigvalues);
-    void diagonalize(shared_ptr<Matrix> eigvectors, shared_ptr<Vector> eigvalues);
-    void diagonalize(shared_ptr<Matrix> eigvectors, Vector& eigvalues);
+    void diagonalize(boost::shared_ptr<Matrix> eigvectors, boost::shared_ptr<Vector> eigvalues);
+    void diagonalize(boost::shared_ptr<Matrix> eigvectors, Vector& eigvalues);
 
     /*! Computes the Cholesky factorization of a real symmetric
      *  positive definite matrix A.
@@ -325,7 +329,7 @@ public:
     SimpleMatrix(const SimpleMatrix& copy);
     /// Explicit copy pointer constructor
     explicit SimpleMatrix(const SimpleMatrix* copy);
-    explicit SimpleMatrix(shared_ptr<SimpleMatrix> copy);
+    explicit SimpleMatrix(boost::shared_ptr<SimpleMatrix> copy);
     /// Constructor, sets up the matrix
     SimpleMatrix(int rows, int cols);
     /// Constructor, sets name_, and sets up the matrix
@@ -345,7 +349,7 @@ public:
     SimpleMatrix* clone() const;
     /// Copies cp's data onto this
     void copy(SimpleMatrix* cp);
-    void copy(shared_ptr<SimpleMatrix> cp);
+    void copy(boost::shared_ptr<SimpleMatrix> cp);
 
     /// Set every element of this to val
     void set(double val);
@@ -354,7 +358,7 @@ public:
     /// Set a single element of matrix_
     void set(int m, int n, double val) { matrix_[m][n] = val; }
     void set(SimpleVector *vec);
-    void set(shared_ptr<SimpleVector> vec);
+    void set(boost::shared_ptr<SimpleVector> vec);
     void set(double **mat);
 
     /// Sets the diagonal of matrix_ to vec
@@ -372,7 +376,7 @@ public:
 
     /// Print the matrix with corresponding eigenvalues below each column
     void eivprint(SimpleVector *values, FILE *out = outfile);
-    void eivprint(shared_ptr<SimpleVector> values, FILE *out = outfile);
+    void eivprint(boost::shared_ptr<SimpleVector> values, FILE *out = outfile);
     /// The number of rows
     int rows() const { return rows_; }
     /// The number of columns
@@ -391,13 +395,13 @@ public:
 
     /// Add a matrix to this
     void add(const SimpleMatrix*);
-    void add(shared_ptr<SimpleMatrix>);
+    void add(boost::shared_ptr<SimpleMatrix>);
     /// Subtracts a matrix from this
     void subtract(const SimpleMatrix*);
-    void subtract(shared_ptr<SimpleMatrix>);
+    void subtract(boost::shared_ptr<SimpleMatrix>);
     /// Multiples the two arguments and adds their result to this
     void accumulate_product(const SimpleMatrix*, const SimpleMatrix*);
-    void accumulate_product(shared_ptr<SimpleMatrix>, shared_ptr<SimpleMatrix>);
+    void accumulate_product(boost::shared_ptr<SimpleMatrix>, boost::shared_ptr<SimpleMatrix>);
     /// Scales this matrix
     void scale(double);
     /// Returns the sum of the squares of this
@@ -410,20 +414,20 @@ public:
     void scale_column(int n, double a);
     /// Transform a by transformer save result to this
     void transform(SimpleMatrix* a, SimpleMatrix* transformer);
-    void transform(shared_ptr<SimpleMatrix> a, shared_ptr<SimpleMatrix> transformer);
+    void transform(boost::shared_ptr<SimpleMatrix> a, boost::shared_ptr<SimpleMatrix> transformer);
     /// Transform this by transformer
     void transform(SimpleMatrix* transformer);
-    void transform(shared_ptr<SimpleMatrix> transformer);
+    void transform(boost::shared_ptr<SimpleMatrix> transformer);
     /// Back transform a by transformer save result to this
     void back_transform(SimpleMatrix* a, SimpleMatrix* transformer);
-    void back_transform(shared_ptr<SimpleMatrix> a, shared_ptr<SimpleMatrix> transformer);
+    void back_transform(boost::shared_ptr<SimpleMatrix> a, boost::shared_ptr<SimpleMatrix> transformer);
     /// Back transform this by transformer
     void back_transform(SimpleMatrix* transformer);
-    void back_transform(shared_ptr<SimpleMatrix> transformer);
+    void back_transform(boost::shared_ptr<SimpleMatrix> transformer);
 
     /// Return the vector dot product of rhs by this
     double vector_dot(SimpleMatrix* rhs);
-    double vector_dot(shared_ptr<SimpleMatrix> rhs);
+    double vector_dot(boost::shared_ptr<SimpleMatrix> rhs);
 
     /// Element add mirror.
     /// Performs (i, j) = (j, i) = (i, j) + (j, i)
@@ -431,16 +435,16 @@ public:
 
     /// General matrix multiply, saves result to this
     void gemm(bool transa, bool transb, double alpha, const SimpleMatrix* a, const SimpleMatrix* b, double beta);
-    void gemm(bool transa, bool transb, double alpha, shared_ptr<SimpleMatrix> a, shared_ptr<SimpleMatrix> b, double beta);
+    void gemm(bool transa, bool transb, double alpha, boost::shared_ptr<SimpleMatrix> a, boost::shared_ptr<SimpleMatrix> b, double beta);
     /// Diagonalize this, eigvector and eigvalues must be created by caller.
     void diagonalize(SimpleMatrix* eigvectors, SimpleVector* eigvalues, int sort=1);
-    void diagonalize(shared_ptr<SimpleMatrix> eigvectors, shared_ptr<SimpleVector> eigvalues, int sort=1);
+    void diagonalize(boost::shared_ptr<SimpleMatrix> eigvectors, boost::shared_ptr<SimpleVector> eigvalues, int sort=1);
 
     /// Saves the block matrix to PSIO object with fileno and with the toc position of the name of the matrix
     void save(psi::PSIO* psio, unsigned int fileno);
     void save(psi::PSIO& psio, unsigned int fileno);
-    void save(shared_ptr<psi::PSIO> psio, unsigned int fileno);
-    void load(shared_ptr<psi::PSIO> psio, unsigned int fileno);
+    void save(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
+    void load(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
 
     /// Saves the matrix in ASCII format to filename
     void save(const char *filename, bool append=true, bool saveLowerTriangle = true);
@@ -527,10 +531,8 @@ public:
 };
 
 
-typedef shared_ptr<Matrix> SharedMatrix;
-typedef shared_ptr<SimpleMatrix> SharedSimpleMatrix;
-typedef shared_ptr<Vector> SharedVector;
-typedef shared_ptr<SimpleVector> SharedSimpleVector;
+typedef boost::shared_ptr<Matrix> SharedMatrix;
+typedef boost::shared_ptr<SimpleMatrix> SharedSimpleMatrix;
 
 }
 
