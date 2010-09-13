@@ -26,7 +26,7 @@ DCFTSolver::transform_integrals()
     _ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::occ, MOSpace::occ);
     _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::occ, MOSpace::occ);
     _ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::vir);
-    if(_options.get_str("AO_BASIS") == "NONE"){
+    if((_options.get_str("AO_BASIS") == "NONE")){
         _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir);
     }
 

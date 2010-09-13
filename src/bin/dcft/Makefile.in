@@ -9,9 +9,10 @@ LDLIBS += $(LAPACK) $(BLAS)
 #PSILIBS = -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
 
 CXXSRC = \
-dcft.cc                    dcft_integrals.cc          dcft_memory.cc             dcft_scf.cc \
-dcft_compute.cc            dcft_intermediates.cc      dcft_mp2.cc                dcft_tau.cc \
-dcft_energy.cc             dcft_lambda.cc             dcft_n_representability.cc main.cc
+half_transform.cc   	       AO_contribute.cc		      dcft.cc                    dcft_integrals.cc \
+dcft_memory.cc                 dcft_scf.cc                dcft_compute.cc            dcft_intermediates.cc  \
+dcft_mp2.cc                    dcft_tau.cc                dcft_energy.cc             dcft_lambda.cc    \
+dcft_n_representability.cc     main.cc
 
 
 BINOBJ = $(CXXSRC:%.cc=%.o)

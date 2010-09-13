@@ -13,11 +13,7 @@ namespace psi{ namespace dcft{
 
 DCFTSolver::DCFTSolver(Options &options):
     _psio(_default_psio_lib_),
-    _chkpt(_default_chkpt_lib_),
-        _aOccC(NULL),
-        _bOccC(NULL),
-        _aVirC(NULL),
-        _bVirC(NULL)
+    _chkpt(_default_chkpt_lib_)
 {
     _options          = options;
     _scfMaxIter       = options.get_int("SCF_MAXITER");

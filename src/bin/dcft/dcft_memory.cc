@@ -24,25 +24,21 @@ DCFTSolver::init_moinfo()
     _clsdPI  = _chkpt->rd_clsdpi();
     _frzcPI  = _chkpt->rd_frzcpi();
     _frzvPI  = _chkpt->rd_frzvpi();
-    _aOccC   = new double**[_nIrreps];
-    _bOccC   = new double**[_nIrreps];
-    _aVirC   = new double**[_nIrreps];
-    _bVirC   = new double**[_nIrreps];
     _nAOcc   = _nBOcc =  _nAVir = _nBVir = 0;
     for(int h = 0; h < _nIrreps; ++h){
         _nAOccPI[h] = _clsdPI[h] + _openPI[h];
         _nBOccPI[h] = _clsdPI[h];
         _nAVirPI[h] = _moPI[h] - _clsdPI[h] - _openPI[h] - _frzvPI[h];
         _nBVirPI[h] = _moPI[h] - _clsdPI[h] - _frzvPI[h];
-        _aOccC[h]   = block_matrix(_soPI[h], _nAOccPI[h]);
-        _bOccC[h]   = block_matrix(_soPI[h], _nBOccPI[h]);
-        _aVirC[h]   = block_matrix(_soPI[h], _nAVirPI[h]);
-        _bVirC[h]   = block_matrix(_soPI[h], _nBVirPI[h]);
         for(int n = 0; n < _nAOccPI[h]; ++n) ++_nAOcc;
         for(int n = 0; n < _nBOccPI[h]; ++n) ++_nBOcc;
         for(int n = 0; n < _nAVirPI[h]; ++n) ++_nAVir;
         for(int n = 0; n < _nBVirPI[h]; ++n) ++_nBVir;
     }
+    _aOccC.init(_nIrreps, _soPI, _nAOccPI, "Alpha Occupied MO Coefficients");
+    _bOccC.init(_nIrreps, _soPI, _nBOccPI, "Beta Occupied MO Coefficients");
+    _aVirC.init(_nIrreps, _soPI, _nAVirPI, "Alpha Virtual MO Coefficients");
+    _bVirC.init(_nIrreps, _soPI, _nBVirPI, "Beta Virtual MO Coefficients");
     _aScfError.init(_nIrreps, _nAOccPI, _nAVirPI, "Alpha SCF Error Vector");
     _bScfError.init(_nIrreps, _nBOccPI, _nBVirPI, "Beta SCF Error Vector");
 
@@ -192,17 +188,17 @@ void
 DCFTSolver::free_moinfo()
 {
     for(int h = 0; h < _nIrreps; ++h){
-        free_block(_aOccC[h]);
-        free_block(_bOccC[h]);
-        free_block(_aVirC[h]);
-        free_block(_bVirC[h]);
+        //free_block(_aOccC[h]);
+        //free_block(_bOccC[h]);
+        //free_block(_aVirC[h]);
+        //free_block(_bVirC[h]);
         free_block(_aTau[h]);
         free_block(_bTau[h]);
     }
-    delete [] _aOccC;
-    delete [] _bOccC;
-    delete [] _aVirC;
-    delete [] _bVirC;
+    //delete [] _aOccC;
+    //delete [] _bOccC;
+    //delete [] _aVirC;
+    //delete [] _bVirC;
     delete [] _aTau;
     delete [] _bTau;
     delete [] _openPI;

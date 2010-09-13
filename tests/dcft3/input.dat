@@ -8,7 +8,7 @@ psi: (
   maxiter = 40
   scf_maxiter = 50
   convergence = 11
-  ao_basis = none %Change this to "disk", when implemented
+  ao_basis = disk
   algorithm = simultaneous
   reference = rhf
   basis = 3-21G

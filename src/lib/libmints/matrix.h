@@ -7,6 +7,7 @@
 
 #include <libmints/vector.h>
 #include <libparallel/serialize.h>
+#include <libdpd/dpd.h>
 
 #include <libpsio/psio.hpp>
 
@@ -77,6 +78,9 @@ public:
     Matrix(int nirreps, int *rowspi, int *colspi);
     /// Constructor, sets name_, and sets up the matrix
     Matrix(std::string name, int nirreps, int *rowspi, int *colspi);
+
+    /// Contructs a Matrix from a dpdfile2, which must already be initialized.
+    Matrix(dpdfile2 *inFile);
 
     /// Destructor, frees memory
     ~Matrix();
@@ -268,6 +272,9 @@ public:
     void send(Communicator* comm);
     void recv(Communicator* comm);
     void bcast(Communicator* comm, int broadcaster);
+
+    /// Writes this to the dpdfile2 given
+    void write_to_dpdfile2(dpdfile2 *outFile);
 
     friend class Vector;
 };
