@@ -115,12 +115,12 @@ def process_print_command(matchobj):
     return printer
 
 def process_memory_command(matchobj):
-    spec = re.compile(r'^\s*([+-]?\d*\.\d+)(?![-+0-9\.])\s*([MGK]B)\s*', re.DOTALL | re.IGNORECASE)
+    spec = re.compile(r'^\s*([+-]?\d*\.*\d+)(?![-+0-9\.])\s*([MGK]B)\s*', re.DOTALL | re.IGNORECASE)
     match = re.match(spec,matchobj.group(2))    
 
     sig = str(match.group(1))
     units = str(match.group(2))
-  
+
     val = float(sig)
     memory_amount = val
 

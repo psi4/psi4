@@ -423,7 +423,24 @@ def banner(text, type = 1, width = 35):
 
     PsiMod.print_out(banner)
 
-def run_sapt0():
+def energy(name):
+    
+    handle = energy_procedures(name)
+    handle(name)
+
+def energy_procedures(name):
+    if (name.lower() == 'sapt0'):
+        return lambda name : run_sapt('sapt0') 
+    elif (name.lower() == 'sapt2'):
+        return lambda name : run_sapt('sapt2')
+    elif (name.lower() == 'sapt2+'):
+        return lambda name : run_sapt('sapt2+')
+    elif (name.lower() == 'sapt2+(3)'):
+        return lambda name : run_sapt('sapt2+(3)')
+    else:
+        raise 'Undefined Energy Procedure' 
+
+def run_sapt(name):
     if not molecule:
         raise ValueNotSet("no molecule found")
      
@@ -472,7 +489,15 @@ def run_sapt0():
     PsiMod.IO.set_default_namespace("dimer")
     PsiMod.set_default_options_for_module("SAPT")
     PsiMod.set_option("NO_INPUT",True)
+    if (name.lower() == 'sapt0'):
+        PsiMod.set_option("SAPT_LEVEL","SAPT0")
+    elif (name.lower() == 'sapt2'):
+        PsiMod.set_option("SAPT_LEVEL","SAPT2")
+    elif (name.lower() == 'sapt2+'):
+        PsiMod.set_option("SAPT_LEVEL","SAPT2+")
+    elif (name.lower() == 'sapt2+(3)'):
+        PsiMod.set_option("SAPT_LEVEL","SAPT2+(3)")
     PsiMod.print_out("\n")
-    banner('SAPT 0')
+    banner(name.upper())
     PsiMod.print_out("\n")
     e_sapt = PsiMod.sapt()

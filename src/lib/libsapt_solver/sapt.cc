@@ -78,8 +78,21 @@ void SAPT::get_params()
       options_.get_double("SAPT_MEM_SAFETY"));
 
     //Get Frozen Orbital Info
-    params_.foccA = options_.get_int("NFRZ_A");
-    params_.foccB = options_.get_int("NFRZ_B");
+    std::vector<int> realsA;
+    realsA.push_back(0); 
+    std::vector<int> ghostsA; 
+    ghostsA.push_back(1); 
+    std::vector<int> realsB;
+    realsB.push_back(1); 
+    std::vector<int> ghostsB; 
+    ghostsB.push_back(0);
+    shared_ptr<Molecule> monomerA = molecule_->extract_subsets(realsA,ghostsA);
+    shared_ptr<Molecule> monomerB = molecule_->extract_subsets(realsB,ghostsB);
+ 
+    params_.foccA = monomerA->nfrozen_core(options_.get_str("FREEZE_CORE"));
+    params_.foccB = monomerB->nfrozen_core(options_.get_str("FREEZE_CORE"));
+    //params_.foccA = options_.get_int("NFRZ_A");
+    //params_.foccB = options_.get_int("NFRZ_B");
 
     //Natural Orbital Stuff
     params_.nat_orbs = options_.get_bool("NAT_ORBS");
