@@ -61,6 +61,7 @@ def geometry(geom, name = "default"):
     return molecule
 
 def dummify():
+    global molecule
     if not molecule:
         raise ValueNotSet("no default molecule found")
     #molecule.set_dummy_atom
@@ -232,8 +233,6 @@ def extract_cluster_indexing(mol,cluster_size = 0):
                 break
             
     return clusters
-
-#
 # Set options
 #
 # options({
@@ -256,6 +255,7 @@ def options(dict, module = ''):
 #            [ "H", 1.0, 0.0, 0.0 ]] )
 #
 def geometry_old(geom, reorient = True, prefix = "", chkpt = None, shiftToCOM = True):
+    global molecule
     # Make sure the user passed in what we expect
     if isinstance(geom, list) == False:
         raise TypeError("geometry must be a list")
@@ -302,6 +302,8 @@ def geometry_old(geom, reorient = True, prefix = "", chkpt = None, shiftToCOM = 
     return molecule
 
 def activate(mol):
+    global molecule
+    molecule = mol
     PsiMod.set_active_molecule(mol)
     PsiMod.IO.set_default_namespace(mol.get_name())
 
@@ -400,6 +402,16 @@ class Table:
                 #print datarow[1][col]
                 datarow[1][col] = (datarow[1][col] - current_min[col]) * Factor
 
+    def scale(self, Factor = 627.51):
+
+        if len(self.data) == 0:
+            return
+
+        for datarow in self.data:
+            for col in range(0, len(datarow[1])):
+                #print datarow[1][col]
+                datarow[1][col] = datarow[1][col] * Factor
+
 def banner(text, type = 1, width = 35):
     lines = text.split('\n')
     max_length = 0
@@ -426,7 +438,7 @@ def banner(text, type = 1, width = 35):
 def energy(name):
     
     handle = energy_procedures(name)
-    handle(name)
+    return handle(name)
 
 def energy_procedures(name):
     if (name.lower() == 'sapt0'):
@@ -437,10 +449,71 @@ def energy_procedures(name):
         return lambda name : run_sapt('sapt2+')
     elif (name.lower() == 'sapt2+(3)'):
         return lambda name : run_sapt('sapt2+(3)')
+    elif (name.lower() == 'hf'):
+        return lambda name : run_scf('hf')
+    elif (name.lower() == 'rhf'):
+        return lambda name : run_scf('rhf')
+    elif (name.lower() == 'uhf'):
+        return lambda name : run_scf('uhf')
+    elif (name.lower() == 'rohf'):
+        return lambda name : run_scf('rohf')
+    elif (name.lower() == 'rks'):
+        return lambda name : run_scf('rks')
+    elif (name.lower() == 'uks'):
+        return lambda name : run_scf('uks')
+    elif (name.lower() == 'dfmp2'):
+        return lambda name : run_dfmp2('dfmp2')
+    elif (name.lower() == 'scs-dfmp2'):
+        return lambda name : run_dfmp2('scs-dfmp2')
     else:
         raise 'Undefined Energy Procedure' 
 
+def run_scf(name):
+    global molecule
+    if not molecule:
+        raise ValueNotSet("no molecule found")
+    
+    molecule.update_geometry()
+    PsiMod.set_active_molecule(molecule)
+    PsiMod.set_default_options_for_module("SCF")
+    PsiMod.set_option("NO_INPUT",True)
+    
+    PsiMod.print_out("\n")
+    banner(name.upper())
+    PsiMod.print_out("\n")
+    e_scf = PsiMod.scf()
+    return e_scf
+
+def run_dfmp2(name):
+    global molecule
+    if not molecule:
+        raise ValueNotSet("no molecule found")
+    
+    molecule.update_geometry()
+    PsiMod.set_active_molecule(molecule)
+    PsiMod.set_default_options_for_module("SCF")
+    PsiMod.set_option("NO_INPUT",True)
+    
+    PsiMod.print_out("\n")
+    banner("SCF")
+    PsiMod.print_out("\n")
+    e_scf = PsiMod.scf()
+    
+    PsiMod.set_default_options_for_module("DFMP2")
+    PsiMod.set_option("NO_INPUT",True)
+    
+    PsiMod.print_out("\n")
+    banner("DFMP2")
+    PsiMod.print_out("\n")
+    e_dfmp2 = PsiMod.dfmp2()
+    e_scs_dfmp2 = PsiMod.get_variable('SCS-DF-MP2 ENERGY')
+    if (name.upper() == 'SCS-DFMP2'):
+        return e_scs_dfmp2
+    elif (name.upper() == 'DFMP2'):
+        return e_dfmp2
+
 def run_sapt(name):
+    global molecule
     if not molecule:
         raise ValueNotSet("no molecule found")
      
@@ -489,6 +562,8 @@ def run_sapt(name):
     PsiMod.IO.set_default_namespace("dimer")
     PsiMod.set_default_options_for_module("SAPT")
     PsiMod.set_option("NO_INPUT",True)
+    PsiMod.set_option("E_CONVERGE",10)
+    PsiMod.set_option("D_CONVERGE",10)
     if (name.lower() == 'sapt0'):
         PsiMod.set_option("SAPT_LEVEL","SAPT0")
     elif (name.lower() == 'sapt2'):
@@ -501,3 +576,96 @@ def run_sapt(name):
     banner(name.upper())
     PsiMod.print_out("\n")
     e_sapt = PsiMod.sapt()
+    return e_sapt
+
+def cp(name, check_bsse = False):
+    
+    global molecule
+    if not molecule:
+        raise ValueNotSet("no molecule found")
+    
+    mol = molecule
+    mol.update_geometry()
+    activate(mol)   
+ 
+    PsiMod.print_out("\n")
+    banner("CP Computation: Complex.\nFull Basis Set.")
+    PsiMod.print_out("\n")
+    handle = energy_procedures(name)
+    e_dimer = handle(name)
+
+
+    #All monomers with ghosts
+    monomers = extract_clusters(mol, True, 1)
+    e_monomer_full = []
+    
+    cluster_n = 0
+    for cluster in monomers:
+        activate(cluster)
+        PsiMod.print_out("\n")
+        banner(("CP Computation: Monomer %d.\n Full Basis Set." % (cluster_n + 1)))
+        PsiMod.print_out("\n")
+        handle = energy_procedures(name)
+        e_monomer_full.append(handle(name))
+        cluster_n = cluster_n + 1
+        
+    if (check_bsse): 
+        #All monomers without ghosts
+        monomers = extract_clusters(mol, False, 1)
+        e_monomer_bsse = []
+   
+        cluster_n = 0
+        for cluster in monomers:
+            activate(cluster)
+            PsiMod.print_out("\n")
+            #cluster.print_to_output()
+            banner(("CP Computation: Monomer %d.\n Monomer Set." % (cluster_n + 1)))
+            PsiMod.print_out("\n")
+            handle = energy_procedures(name)
+            e_monomer_bsse.append(handle(name))
+            cluster_n = cluster_n + 1
+
+    if (not check_bsse):
+        cp_table = Table(rows = ["System:"], cols = ["Energy (full):"])
+        cp_table["Complex"] = [e_dimer]
+        for cluster_n in range(0,len(monomers)):
+            key = "Monomer %d" % (cluster_n+1)
+            cp_table[key] = [e_monomer_full[cluster_n]]
+        
+        e_full = e_dimer
+        for cluster_n in range(0,len(monomers)):
+            e_full = e_full - e_monomer_full[cluster_n]
+        cp_table["Interaction"] = [e_full]
+    
+    else:
+        cp_table = Table(rows = ["System:"], cols = ["Energy (full):","Energy (monomer):","BSSE:"])
+        cp_table["Complex"] = [e_dimer, 0.0, 0.0]
+        for cluster_n in range(0,len(monomers)):
+            key = "Monomer %d" % (cluster_n+1)
+            cp_table[key] = [e_monomer_full[cluster_n], e_monomer_bsse[cluster_n], \
+                e_monomer_full[cluster_n] - e_monomer_bsse[cluster_n]]
+        
+        e_full = e_dimer
+        e_bsse = e_dimer
+        for cluster_n in range(0,len(monomers)):
+            e_full = e_full - e_monomer_full[cluster_n]
+            e_bsse = e_bsse - e_monomer_bsse[cluster_n]
+        cp_table["Totals:"] = [e_full, e_bsse, e_full-e_bsse]
+    
+    PsiMod.print_out("\n")
+    banner("CP Computation: Results.")
+    PsiMod.print_out("\n")
+    
+    banner("Hartree",2)
+    PsiMod.print_out("\n")
+    
+    PsiMod.print_out(str(cp_table))
+
+    PsiMod.print_out("\n")
+    banner("kcal*mol^-1",2)
+    PsiMod.print_out("\n")
+
+    cp_table.scale()   
+ 
+    PsiMod.print_out(str(cp_table))
+    return e_full

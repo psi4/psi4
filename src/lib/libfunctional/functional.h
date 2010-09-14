@@ -27,6 +27,8 @@ class Functional {
 
         static boost::shared_ptr<Functional> createFunctional(const std::string & name, int npoints = 5000, int deriv = 1);
         static std::string availableFunctionals();
+        static std::vector<std::string> availableNames();
+        static std::string testFunctionals();
 
         Functional(int npoints = 5000, int deriv = 1);
         ~Functional();

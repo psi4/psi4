@@ -31,7 +31,7 @@ class SuperFunctional {
         static boost::shared_ptr<SuperFunctional> buildSuperFunctional(const std::string & build, int npoints = 5000, int deriv = 1);        
 
         SuperFunctional(int npoints = 5000, int deriv = 1);
-        ~SuperFunctional();
+        virtual ~SuperFunctional();
 
         std::string getName() const { return name_; }        
         std::string getDescription() const { return description_; }        

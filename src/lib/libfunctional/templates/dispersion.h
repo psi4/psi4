@@ -29,7 +29,7 @@ class Dispersion {
         static boost::shared_ptr<Dispersion> createDispersion(const std::string & type);
 
         Dispersion();
-        ~Dispersion();
+        virtual ~Dispersion();
 
         std::string getName() const { return name_; }        
         std::string getDescription() const { return description_; }        
@@ -52,7 +52,7 @@ class Dispersion {
 class D1 : public Dispersion {
     public:
         D1(); 
-        ~D1(); 
+        virtual ~D1(); 
         double computeEnergy(boost::shared_ptr<Molecule> m); 
         boost::shared_ptr<Matrix> computeGradient(boost::shared_ptr<Molecule> m); 
         boost::shared_ptr<Matrix> computeHessian(boost::shared_ptr<Molecule> m); 
@@ -64,7 +64,7 @@ class D1 : public Dispersion {
 class D2 : public Dispersion {
     public:
         D2(); 
-        ~D2(); 
+        virtual ~D2(); 
         double computeEnergy(boost::shared_ptr<Molecule> m); 
         boost::shared_ptr<Matrix> computeGradient(boost::shared_ptr<Molecule> m); 
         boost::shared_ptr<Matrix> computeHessian(boost::shared_ptr<Molecule> m); 
@@ -76,7 +76,7 @@ class D2 : public Dispersion {
 class D3 : public Dispersion {
     public:
         D3(); 
-        ~D3(); 
+        virtual ~D3(); 
         double computeEnergy(boost::shared_ptr<Molecule> m); 
         boost::shared_ptr<Matrix> computeGradient(boost::shared_ptr<Molecule> m); 
         boost::shared_ptr<Matrix> computeHessian(boost::shared_ptr<Molecule> m); 

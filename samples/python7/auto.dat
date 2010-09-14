@@ -14,19 +14,16 @@ molecule dimer {
      no_reorient
 }
 
-memory {
-    3500 MB
-}
-
 globals {
     BASIS aug-cc-pVDZ
     SCF_TYPE DF
     RI_BASIS_SCF aug-cc-pVDZ-RI
-    RI_BASIS_SAPT aug-cc-pVDZ-RI
+    RI_BASIS_MP2 aug-cc-pVDZ-RI
     DIIS True
     MAXITER 100
     E_CONVERGE 8
     GUESS SAD 
 }
 
-e_sapt2 = energy('sapt2')
+#Do a CP-corrected interaction energy at DFMP2, and determine BSSE
+cp('dfmp2',True)

@@ -29,7 +29,7 @@ class Functional {
         static std::string availableFunctionals();
 
         Functional(int npoints, int deriv = 1);
-        ~Functional();
+        virtual ~Functional();
 
         std::string getName() const { return name_; }        
         std::string getDescription() const { return description_; }        
