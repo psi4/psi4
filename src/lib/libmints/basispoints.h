@@ -49,7 +49,7 @@ namespace psi {
 			void allocate();
 		public:
 			BasisPoints(boost::shared_ptr<BasisSet> b, int block_size);
-			~BasisPoints();
+			virtual ~BasisPoints();
 			void computePoints(boost::shared_ptr<GridBlock> block);
 			double** getPoints() { return points_; }
 			double** getGradientsX() {return gradientsZ_; }

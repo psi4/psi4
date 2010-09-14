@@ -1,11 +1,12 @@
 /**********************************************************
-* functional.cc: definiitions for functionals for KS-DFT
+* functional.cc: definitions for functionals for KS-DFT
 * Robert Parrish, robparrish@gmail.com
 * 09/01/2010
 *
 ***********************************************************/
 
 #include <boost/algorithm/string.hpp> 
+#include <libmints/properties.h>
 #include <libciomr/libciomr.h>
 #include "functional.h"
 #include <stdlib.h>
@@ -19,6 +20,36 @@ using namespace std;
 
 namespace psi { namespace functional {
 
+std::string Functional::testFunctionals()
+{
+    std::vector<std::string> names = Functional::availableNames();
+    std::stringstream s;
+
+    s << "  Testing Functionals:" << endl;
+
+    shared_ptr<Properties> props = Properties::get_testbed();
+    int npoints = props->getTrueSize();
+
+    for (int A = 0; A < names.size(); A++ ) { 
+        shared_ptr<Functional> func = Functional::createFunctional(names[A],npoints,2);
+        
+        s << "  Testing Functional " << names[A] << ":" << endl;
+        
+        s << "  RKS Results:" << endl;
+        s << " ---------------" << endl;
+
+        func->computeRKSFunctional(props);
+
+        for (int Q = 0; Q < npoints; Q++) {
+
+            //s << "   rho_a = " <<             
+
+        }
+
+    }
+
+    return s.str();
+}
 
 Functional::Functional(int npoints, int deriv) : npoints_(npoints), deriv_(deriv)
 {

@@ -44,6 +44,13 @@ std::string Functional::availableFunctionals()
     return f.str();
     
 }
+std::vector<std::string> Functional::availableNames()
+{
+    std::vector<std::string> names;
+    names.push_back("S");
+    names.push_back("B88");
+    return names;
+}
 boost::shared_ptr<SuperFunctional> SuperFunctional::createSuperFunctional(const std::string & name, int npoints, int deriv)
 {
     shared_ptr<SuperFunctional> superfun = (shared_ptr<SuperFunctional>) new SuperFunctional(npoints, deriv);
