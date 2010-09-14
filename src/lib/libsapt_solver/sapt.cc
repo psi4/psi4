@@ -77,7 +77,12 @@ void SAPT::get_params()
     params_.memory = (long int) ((double) memory_ * 
       options_.get_double("SAPT_MEM_SAFETY"));
 
-    //Get Frozen Orbital Info
+  //Get Frozen Orbital Info
+  if (options_["NFRZ_A"].has_changed() || options_["NFRZ_B"].has_changed()) {
+     params_.foccA = options_.get_int("NFRZ_A");
+     params_.foccB = options_.get_int("NFRZ_B");
+  }
+  else {
     std::vector<int> realsA;
     realsA.push_back(0); 
     std::vector<int> ghostsA; 
@@ -86,13 +91,14 @@ void SAPT::get_params()
     realsB.push_back(1); 
     std::vector<int> ghostsB; 
     ghostsB.push_back(0);
-    shared_ptr<Molecule> monomerA = molecule_->extract_subsets(realsA,ghostsA);
-    shared_ptr<Molecule> monomerB = molecule_->extract_subsets(realsB,ghostsB);
- 
+    shared_ptr<Molecule> monomerA = molecule_->extract_subsets(realsA,
+      ghostsA);
+    shared_ptr<Molecule> monomerB = molecule_->extract_subsets(realsB,
+      ghostsB);
+
     params_.foccA = monomerA->nfrozen_core(options_.get_str("FREEZE_CORE"));
-    params_.foccB = monomerB->nfrozen_core(options_.get_str("FREEZE_CORE"));
-    //params_.foccA = options_.get_int("NFRZ_A");
-    //params_.foccB = options_.get_int("NFRZ_B");
+    params_.foccB = monomerB->nfrozen_core(options_.get_str("FREEZE_CORE"));    
+  }
 
     //Natural Orbital Stuff
     params_.nat_orbs = options_.get_bool("NAT_ORBS");
