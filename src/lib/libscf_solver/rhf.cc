@@ -399,7 +399,7 @@ double RHF::compute_energy_parallel()
             D_->print(outfile);
         }
 
-        converged = test_convergency();
+        converged =  test_convergency();
     } while (!converged && iteration_ < maxiter_ );
 
 
@@ -414,6 +414,8 @@ double RHF::compute_energy_parallel()
         save_information();
         }
     }
+
+
     else {
         if (Communicator::world->me() == 0)
             fprintf(outfile, "\n  Failed to converged.\n");
@@ -1696,14 +1698,11 @@ void RHF::form_G_from_direct_integrals_parallel()
 
     G_->zero();
 
-    std::cout << Communicator::world->me() << "\tnso = " << factory_.nso() << std::endl;
-
     g_info->initialize(basisset_, D_, factory_.nso());
 
-    mad_G g_matrix(*Communicator::world->get_madworld());
+    shared_ptr<mad_G> g_matrix(new mad_G(*Communicator::world->get_madworld()));
 
-
-    shared_ptr<ShellCombinationsIterator> iter = g_info->create_shell_iter();
+    shared_ptr<ShellCombinationsIterator> shell_iter = g_info->create_shell_iter();
 
 /*    int number_of_shell_pairs=0;
     for (iter->first(); !iter->is_done(); iter->next()) {
@@ -1724,12 +1723,13 @@ void RHF::form_G_from_direct_integrals_parallel()
 
     //sort_shell(shell, number_of_shell_pairs, 8);
 
+    std::cout << "running in parallel" << std::endl;
     int counter = 0;
-    for(iter->first(); !iter->is_done(); iter->next()) {
+    for(shell_iter->first(); !shell_iter->is_done(); shell_iter->next()) {
         Pair pqrs(counter);
 
-        if ( Communicator::world->me() == g_matrix.owner(pqrs) ) {
-            g_matrix.task(pqrs, &G_MAT::build_G, iter->p(), iter->q(), iter->r(), iter->s());
+        if ( Communicator::world->me() == g_matrix->owner(pqrs) ) {
+            g_matrix->task(pqrs, &G_MAT::build_G, shell_iter->p(), shell_iter->q(), shell_iter->r(), shell_iter->s());
         }
         counter++;
 

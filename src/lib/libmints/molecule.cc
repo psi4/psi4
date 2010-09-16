@@ -844,7 +844,7 @@ void Molecule::init_with_chkpt(shared_ptr<Chkpt> chkpt)
             geom = block_matrix(natoms, 3);
         }
 
-        Communicator::world->raw_bcast(&(zvals[0]), natoms*sizeof(int), 0);
+        Communicator::world->raw_bcast(&(zvals[0]), natoms*sizeof(double), 0);
         Communicator::world->raw_bcast(&(geom[0][0]), natoms*3*sizeof(double), 0);
     }
 

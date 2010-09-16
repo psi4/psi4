@@ -113,9 +113,11 @@ int main(int argc, char **argv, char **envp)
 
     // Okay, we might only need to make this function call if we're using IPV1
     if (!script) {
+        std::cout << "running psi4_driver" << std::endl;
         psi4_driver();
     }
     else {
+        std::cout << "running psi4_python" << std::endl;
         Script::language->run(infile);
     }
 
