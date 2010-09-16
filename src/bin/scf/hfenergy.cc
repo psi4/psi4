@@ -69,8 +69,8 @@ double HFEnergy::compute_energy()
 }
 
 #if HAVE_MADNESS == 1
-    double HFEnergy::compute_parallel_energy()
-    {
+    double HFEnergy::compute_parallel_energy() {
+
         // Check the requested reference in the input file
         string reference, type;
         double energy;
@@ -78,12 +78,14 @@ double HFEnergy::compute_energy()
         type = options_.get_str("SCF_TYPE");
         reference = options_.get_str("REFERENCE");
 
-        if(Communicator::world->me() == 0)
-            fprintf(outfile, "\n Running in parallel with the MADNESS runtime library\n\n");
+        if(Communicator::world->me() == 0) {
+            fprintf(outfile, "\n Running in parallel with the MADNESS runtime library\n");
+            fprintf(outfile, " (Number of procs = %d)\n\n", Communicator::world->nproc());
+        }
         if(type == "DIRECT") {
             if (reference == "RHF") {
                 RHF rhf_energy(options_, psio_, chkpt_);
-                energy = rhf_energy.compute_energy();
+                energy = rhf_energy.compute_energy_parallel();
             }
             else {
                 throw InputException("Parallel SCF only works for RHF reference" , "REFERENCE", __FILE__, __LINE__);

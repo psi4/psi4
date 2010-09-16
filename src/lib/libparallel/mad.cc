@@ -6,8 +6,10 @@ using namespace boost;
 
 
 #if HAVE_MADNESS == 1
+
     MadCommunicator::MadCommunicator(boost::shared_ptr<madness::World> madness_world) :
-    Communicator(), madworld_(madness_world) {
+    Communicator() {
+        madworld_ = madness_world;
         me_ = madworld_->rank();
         nproc_ = madworld_->nproc();
 
@@ -50,6 +52,10 @@ using namespace boost;
         madworld_->gop.fence();
     }
 
+    void MadCommunicator::barrier() {
+        madworld_->mpi.Barrier();
+    }
+
     void MadCommunicator::raw_send(int target, const void *data, int nbyte){
         madworld_->mpi.Isend(data, nbyte, MPI_BYTE, target, 0);
     }
@@ -57,7 +63,31 @@ using namespace boost;
     void MadCommunicator::raw_recv(int sender, void *data, int nbyte) {
         madworld_->mpi.Irecv(data, nbyte, MPI_BYTE, sender, 0);
     }
+
+    void MadCommunicator::sum(double *data, int nelem, double *receive_buffer, int target) {
+        madworld_->gop.sum(data, nelem);
+    }
+
+    void MadCommunicator::sum(unsigned int *data, int nelem, unsigned int *receive_buffer, int target) {
+        madworld_->gop.sum(data, nelem);
+    }
+
+    void MadCommunicator::sum(int *data, int nelem, int *receive_buffer, int target) {
+        madworld_->gop.sum(data, nelem);
+    }
+
+    void MadCommunicator::sum(char *data, int nelem, char *receive_buffer, int target) {
+        madworld_->gop.sum(data, nelem);
+    }
     
+    void MadCommunicator::sum(long *data, int nelem, long *receive_buffer, int target) {
+        madworld_->gop.sum(data, nelem);
+    }
+
+    void MadCommunicator::raw_bcast(void *data, int nbyte, int broadcaster) {
+        madworld_->gop.broadcast(data, nbyte, broadcaster);
+    }
+
     void MadCommunicator::print(FILE *out) const {
         if (me() == 0) {
             fprintf(out, "\n    Using MadCommunicator (Number of procs = %d)\n", nproc());

@@ -8,6 +8,9 @@
  */
 
 #include "factory.h"
+#include <libparallel/parallel.h>
+#include "libciomr/libciomr.h"
+
 
  using namespace psi;
  
@@ -45,10 +48,22 @@ bool MatrixFactory::init_with_chkpt(shared_ptr<PSIO> psio)
 
 bool MatrixFactory::init_with_chkpt(shared_ptr<Chkpt> chkpt)
 {
-    nirreps_ = chkpt->rd_nirreps();
-    rowspi_  = chkpt->rd_sopi();
-    colspi_  = chkpt->rd_sopi();
-    nso_     = chkpt->rd_nso();
+    if(Communicator::world->me() == 0) {
+        nirreps_ = chkpt->rd_nirreps();
+        rowspi_  = chkpt->rd_sopi();
+        colspi_  = chkpt->rd_sopi();
+        nso_     = chkpt->rd_nso();
+    }
+    if(Communicator::world->nproc() > 1) {
+        Communicator::world->raw_bcast(&nirreps_, sizeof(int), 0);
+        Communicator::world->raw_bcast(&nso_, sizeof(int), 0);
+        if(Communicator::world->me() != 0) {
+            rowspi_ = init_int_array(nirreps_);
+            colspi_ = init_int_array(nirreps_);
+        }
+        Communicator::world->raw_bcast(&(rowspi_[0]), nirreps_*sizeof(int), 0);
+        Communicator::world->raw_bcast(&(colspi_[0]), nirreps_*sizeof(int), 0);
+    }
     
     return true;
 }

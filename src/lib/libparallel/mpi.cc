@@ -39,6 +39,11 @@ void MPICommunicator::sync()
     MPI_Barrier(comm_);
 }
 
+void MPICommunicator::barrier()
+{
+    MPI_Barrier(comm_);
+}
+
 void MPICommunicator::raw_send(int target, const void* data, int nbyte)
 {
     MPI_Send(const_cast<void*>(data), nbyte, MPI_BYTE, target, 0, comm_);

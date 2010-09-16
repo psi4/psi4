@@ -11,6 +11,7 @@
 #include <libchkpt/chkpt.hpp>
 #include <libipv1/ip_lib.h>
 #include <libiwl/iwl.hpp>
+#include <libparallel/parallel.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
 #include <libmints/mints.h>
@@ -63,7 +64,9 @@ void HF::form_CD()
   int *reorder = init_int_array(shelltri);
   int *snuc = init_int_array(basisset_->nshell());
 
-  snuc = chkpt_->rd_snuc();
+  if (Communicator::world->me() == 0)
+    snuc = chkpt_->rd_snuc();
+  Communicator::world->raw_bcast(&(snuc[0]), basisset_->nshell()*sizeof(int), 0);
 
   for(int P=0,PQ=0;P<basisset_->nshell();P++) { // Get diagonal 2e terms
     int numw = basisset_->shell(P)->nfunction();

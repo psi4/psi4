@@ -47,6 +47,7 @@ namespace psi {
 
         static boost::shared_ptr<Communicator> world;
 
+
         /**
          * Returns the local processor number in the communicator.
          * @return Integer between 0 and n, the number of processors
@@ -60,6 +61,7 @@ namespace psi {
         int nproc() const { return nproc_; }
 
         virtual void sync() = 0;
+        virtual void barrier() = 0;
 
         /**
          * Send array of data to remote node.
@@ -126,6 +128,9 @@ namespace psi {
 
         virtual void print(FILE *out=outfile) const = 0;
 
+#if HAVE_MADNESS == 1
+        virtual boost::shared_ptr<madness::World> get_madworld() {};
+#endif
 
     };
 //    void p_fprintf(FILE * __restrict __stream, const char * __restrict __format, ...);
@@ -142,6 +147,7 @@ namespace psi {
         MPICommunicator& operator=(const MPICommunicator& other);
 
         virtual void sync();
+        virtual void barrier();
 
         virtual void raw_send(int target, const void *data, int nbyte);
         virtual void raw_recv(int sender, void *data, int nbyte);
@@ -201,10 +207,21 @@ namespace psi {
         virtual ~MadCommunicator();
 
         virtual void sync();
+        virtual void barrier();
 
         virtual void raw_send(int target, const void *data, int nbyte);
         virtual void raw_recv(int sender, void *data, int nbyte);
         virtual void print(FILE *out=outfile) const;
+
+        virtual void sum(double *data, int n, double *receive_buffer=0, int target=-1);
+        virtual void sum(unsigned int *data, int n, unsigned int *receive_buffer=0, int target=-1);
+        virtual void sum(int *data, int n, int *receive_buffer=0, int target=-1);
+        virtual void sum(char *data, int n, char *receive_buffer=0, int target=-1);
+        virtual void sum(long *data, int n, long *receive_buffer=0, int target=-1);
+
+        virtual void raw_bcast(void *data, int nbyte, int broadcaster=0);
+
+        virtual boost::shared_ptr<madness::World> get_madworld() { return madworld_; };
 
     };
 

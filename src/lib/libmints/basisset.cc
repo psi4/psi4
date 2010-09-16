@@ -10,7 +10,10 @@
 
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.hpp>
+#include <libparallel/parallel.h>
 #include <psifiles.h>
+#include <chkpt_params.h>
+
 
 #include "vector3.h"
 #include "molecule.h"
@@ -47,11 +50,14 @@ BasisSet::BasisSet(shared_ptr<Chkpt> chkpt, std::string basiskey) :
     call_once(initialize_singletons, initialized_shared_);
 
     // This requirement holds no matter what.
-    puream_ = chkpt->rd_puream(basiskey.c_str()) ? true : false;
+    if(Communicator::world->me() == 0)
+        puream_ = chkpt->rd_puream(basiskey.c_str()) ? true : false;
+    if(Communicator::world->nproc() > 1)
+        Communicator::world->raw_bcast(&puream_, sizeof(bool), 0);
 
     // Initialize molecule, retrieves number of center and geometry
     molecule_->init_with_chkpt(chkpt);
-
+    
     // Obtain symmetry information from the molecule.
     shared_ptr<PointGroup> pg = molecule_->find_point_group();
     molecule_->set_point_group(pg);
@@ -156,16 +162,40 @@ void BasisSet::build_ao_transformation_matrix()
 
 void BasisSet::initialize_shells(shared_ptr<Chkpt> chkpt, std::string& basiskey)
 {
-    // Initialize some data from checkpoint.
-    nshells_      = chkpt->rd_nshell(basiskey.c_str());
-    nprimitives_  = chkpt->rd_nprim(basiskey.c_str());
-    nao_          = chkpt->rd_nao(basiskey.c_str());
+    if(Communicator::world->me() == 0) {
+        // Initialize some data from checkpoint.
+        nshells_      = chkpt->rd_nshell(basiskey.c_str());
+        nprimitives_  = chkpt->rd_nprim(basiskey.c_str());
+        nao_          = chkpt->rd_nao(basiskey.c_str());
 
-    // Psi3 only allows either all Cartesian or all Spherical harmonic
-    nbf_          = chkpt->rd_nso(basiskey.c_str());
-    max_am_       = chkpt->rd_max_am(basiskey.c_str());
-    uso2ao_       = chkpt->rd_usotao(basiskey.c_str());
-    uso2bf_       = chkpt->rd_usotbf(basiskey.c_str());
+        // Psi3 only allows either all Cartesian or all Spherical harmonic
+        nbf_          = chkpt->rd_nso(basiskey.c_str());
+        max_am_       = chkpt->rd_max_am(basiskey.c_str());
+    }
+
+    if(Communicator::world->nproc() > 1) {
+        Communicator::world->raw_bcast(&nshells_, sizeof(int), 0);
+        Communicator::world->raw_bcast(&nprimitives_, sizeof(int), 0);
+        Communicator::world->raw_bcast(&nao_, sizeof(int), 0);
+        Communicator::world->raw_bcast(&nbf_, sizeof(int), 0);
+        Communicator::world->raw_bcast(&max_am_, sizeof(int), 0);
+    }
+
+    if(Communicator::world->me() == 0) {
+        uso2ao_       = chkpt->rd_usotao(basiskey.c_str());
+        uso2bf_       = chkpt->rd_usotbf(basiskey.c_str());
+    }
+    else {
+        uso2ao_ = block_matrix(nbf_, nao_);
+        uso2bf_ = block_matrix(nbf_, nbf_);
+    }
+
+    if(Communicator::world->nproc() > 1) {
+        Communicator::world->raw_bcast(&(uso2ao_[0][0]), nbf_*nao_*sizeof(double), 0);
+        Communicator::world->raw_bcast(&(uso2bf_[0][0]), nbf_*nbf_*sizeof(double), 0);
+    }
+
+
 
     simple_mat_uso2ao_ = shared_ptr<SimpleMatrix>(new SimpleMatrix("Unique SO to AO transformation matrix", nbf_, nao_));
     simple_mat_uso2ao_->set(uso2ao_);
@@ -175,29 +205,57 @@ void BasisSet::initialize_shells(shared_ptr<Chkpt> chkpt, std::string& basiskey)
     simple_mat_uso2bf_->set(uso2bf_);
     // simple_mat_uso2bf_.print();
 
-    // Retrieve angular momentum of each shell (1=s, 2=p, ...)
-    int *shell_am = chkpt->rd_stype(basiskey.c_str());
+    int *shell_am;
+    int *shell_num_prims;
+    double *exponents;
+    double **ccoeffs;
+    int *shell_fprim;
+    if(Communicator::world->me() == 0) {
+        // Retrieve angular momentum of each shell (1=s, 2=p, ...)
+        shell_am = chkpt->rd_stype(basiskey.c_str());
 
-    // Retrieve number of primitives per shell
-    int *shell_num_prims = chkpt->rd_snumg(basiskey.c_str());
+        // Retrieve number of primitives per shell
+        shell_num_prims = chkpt->rd_snumg(basiskey.c_str());
 
-    // Retrieve exponents of primitive Gaussians
-    double *exponents = chkpt->rd_exps(basiskey.c_str());
+        // Retrieve exponents of primitive Gaussians
+        exponents = chkpt->rd_exps(basiskey.c_str());
 
-    // Retrieve coefficients of primitive Gaussian
-    double **ccoeffs = chkpt->rd_contr_full(basiskey.c_str());
+        // Retrieve coefficients of primitive Gaussian
+        ccoeffs = chkpt->rd_contr_full(basiskey.c_str());
 
-    // Retrieve pointer to first primitive in shell
-    int *shell_fprim = chkpt->rd_sprim(basiskey.c_str());
+        // Retrieve pointer to first primitive in shell
+        shell_fprim = chkpt->rd_sprim(basiskey.c_str());
 
-    // Retrieve pointer to first basis function in shell
-    shell_first_basis_function_ = chkpt->rd_sloc_new(basiskey.c_str());
+        // Retrieve pointer to first basis function in shell
+        shell_first_basis_function_ = chkpt->rd_sloc_new(basiskey.c_str());
 
-    // Retrieve pointer to first AO in shell
-    shell_first_ao_ = chkpt->rd_sloc(basiskey.c_str());
+        // Retrieve pointer to first AO in shell
+        shell_first_ao_ = chkpt->rd_sloc(basiskey.c_str());
 
-    // Retrieve location of shells (which atom it's centered on)
-    shell_center_ = chkpt->rd_snuc(basiskey.c_str());
+        // Retrieve location of shells (which atom it's centered on)
+        shell_center_ = chkpt->rd_snuc(basiskey.c_str());
+    }
+    else {
+        shell_am = init_int_array(nshells_);
+        shell_num_prims = init_int_array(nshells_);
+        exponents = init_array(nprimitives_);
+        ccoeffs = block_matrix(nprimitives_, MAXANGMOM);
+        shell_fprim = init_int_array(nshells_);
+        shell_first_basis_function_ = init_int_array(nshells_);
+        shell_first_ao_ = init_int_array(nshells_);
+        shell_center_ = init_int_array(nshells_);
+    }
+
+    if(Communicator::world->nproc() > 1) {
+        Communicator::world->raw_bcast(&(shell_am[0]), nshells_*sizeof(int), 0);
+        Communicator::world->raw_bcast(&(shell_num_prims[0]), nshells_*sizeof(int), 0);
+        Communicator::world->raw_bcast(&(exponents[0]), nprimitives_*sizeof(double), 0);
+        Communicator::world->raw_bcast(&(ccoeffs[0][0]), nprimitives_*MAXANGMOM*sizeof(double), 0);
+        Communicator::world->raw_bcast(&(shell_fprim[0]), nshells_*sizeof(int), 0);
+        Communicator::world->raw_bcast(&(shell_first_basis_function_[0]), nshells_*sizeof(int), 0);
+        Communicator::world->raw_bcast(&(shell_first_ao_[0]), nshells_*sizeof(int), 0);
+        Communicator::world->raw_bcast(&(shell_center_[0]), nshells_*sizeof(int), 0);
+    }
 
     // Initialize SphericalTransform
     for (int i=0; i<=max_am_; ++i) {
@@ -210,8 +268,19 @@ void BasisSet::initialize_shells(shared_ptr<Chkpt> chkpt, std::string& basiskey)
 
     int *so2symblk = new int[nbf_];
     int *so2index  = new int[nbf_];
-    int *sopi = chkpt->rd_sopi(basiskey.c_str());
-    int nirreps = chkpt->rd_nirreps();
+
+    int *sopi;
+    int nirreps;
+    if(Communicator::world->me() == 0) {
+        sopi = chkpt->rd_sopi(basiskey.c_str());
+        nirreps = chkpt->rd_nirreps();
+    }
+    if(Communicator::world->nproc() > 1)
+        Communicator::world->raw_bcast(&nirreps, sizeof(int), 0);
+    if(Communicator::world->me() != 0)
+        sopi = init_int_array(nirreps);
+    if(Communicator::world->nproc() > 1)
+        Communicator::world->raw_bcast(&(sopi[0]), nirreps*sizeof(int), 0);
 
     // Create so2symblk and so2index
     int ij = 0; int offset = 0;

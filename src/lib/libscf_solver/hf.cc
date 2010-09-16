@@ -18,6 +18,7 @@
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.hpp>
+#include <libparallel/parallel.h>
 #include <libipv1/ip_lib.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
@@ -244,7 +245,8 @@ void HF::common_init()
     Quadrupole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Quadrupole YZ")));
     Quadrupole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Quadrupole ZZ")));
 
-    print_header();
+    if(Communicator::world->me() == 0)
+        print_header();
     if (scf_type_ == "PK")
         form_indexing();
 }
@@ -269,7 +271,7 @@ void HF::find_occupation(Vector & evals)
             soccpi_[pairs[i].second]++;
     }
 
-    if(print_>5){
+    if(print_>5 && Communicator::world->me() == 0){
         fprintf(outfile, "\tDOCC: [");
         for (int h=0; h<evals.nirreps(); ++h){
             fprintf(outfile, "%3d ", doccpi_[h]);
@@ -292,7 +294,7 @@ void HF::print_header()
 {
     char *temp;
     char **temp2;
-    
+
     fprintf(outfile, " %s: by Justin Turney and Rob Parrish\n\n", options_.get_str("REFERENCE").c_str());
 
 #ifdef _DEBUG
@@ -305,31 +307,35 @@ void HF::print_header()
     molecule_->print();
 
 #ifdef OLD
-    temp = chkpt_->rd_sym_label();
-    fprintf(outfile, "  Running in %s symmetry.\n", temp);
-    free(temp);
+    if(Communicator::world->me() == 0) {
+        temp = chkpt_->rd_sym_label();
+        fprintf(outfile, "  Running in %s symmetry.\n", temp);
+        free(temp);
 
-    temp2 = chkpt_->rd_irr_labs();
-    fprintf(outfile, "  Input DOCC vector = (");
-    for (int h=0; h<factory_.nirreps(); ++h) {
-        fprintf(outfile, "%2d %3s ", doccpi_[h], temp2[h]);
-    }
-    fprintf(outfile, ")\n");
-    fprintf(outfile, "  Input SOCC vector = (");
-    for (int h=0; h<factory_.nirreps(); ++h) {
-        fprintf(outfile, "%2d %3s ", soccpi_[h], temp2[h]);
-        free(temp2[h]);
-    }
-    free(temp2);
+        temp2 = chkpt_->rd_irr_labs();
+        fprintf(outfile, "  Input DOCC vector = (");
+        for (int h=0; h<factory_.nirreps(); ++h) {
+            fprintf(outfile, "%2d %3s ", doccpi_[h], temp2[h]);
+        }
+        fprintf(outfile, ")\n");
+        fprintf(outfile, "  Input SOCC vector = (");
+        for (int h=0; h<factory_.nirreps(); ++h) {
+            fprintf(outfile, "%2d %3s ", soccpi_[h], temp2[h]);
+            free(temp2[h]);
+        }
+        free(temp2);
 
-    fprintf(outfile, ")\n");
+        fprintf(outfile, ")\n");
+    }
 #endif
 
-    fprintf(outfile, "  Nuclear repulsion = %20.15f\n", nuclearrep_);
+    if(Communicator::world->me() == 0) {
+        fprintf(outfile, "  Nuclear repulsion = %20.15f\n", nuclearrep_);
 
-    fprintf(outfile, "  Energy threshold  = %3.2e\n", energy_threshold_);
-    fprintf(outfile, "  Density threshold = %3.2e\n\n", density_threshold_);
-    fflush(outfile);
+        fprintf(outfile, "  Energy threshold  = %3.2e\n", energy_threshold_);
+        fprintf(outfile, "  Density threshold = %3.2e\n\n", density_threshold_);
+        fflush(outfile);
+    }
 }
 
 void HF::form_indexing()
@@ -347,7 +353,7 @@ void HF::form_indexing()
             so2symblk_[ij] = h;
             so2index_[ij] = ij-offset;
 
-            if (debug_ > 3)
+            if (debug_ > 3 && Communicator::world->me() == 0)
                 fprintf(outfile, "so2symblk_[%3d] = %3d, so2index_[%3d] = %3d\n", ij, so2symblk_[ij], ij, so2index_[ij]);
 
             ij++;
@@ -398,16 +404,16 @@ void HF::form_H()
         V->compute(potential);
     }
 
-    if (debug_ > 2)
+    if (debug_ > 2 && Communicator::world->me() == 0)
         kinetic->print(outfile);
 
-    if (debug_ > 2)
+    if (debug_ > 2 && Communicator::world->me() == 0)
         potential->print(outfile);
 
     H_->copy(kinetic);
     H_->add(potential);
 
-    if (debug_ > 2)
+    if (debug_ > 2 && Communicator::world->me() == 0)
         H_->print(outfile);
 
     free(integrals);
@@ -478,7 +484,7 @@ void HF::form_Shalf()
             eigval.set(h, i, scale);
         }
     }
-    if (print_)
+    if (print_ && Communicator::world->me() == 0)
         fprintf(outfile,"\n  Minimum eigenvalue in the overlap matrix is %14.10E.\n",min_S);
     // Create a vector matrix from the converted eigenvalues
     eigtemp2.set(eigval);
@@ -503,7 +509,7 @@ void HF::form_Shalf()
     eigtemp.gemm(false, true, 1.0, eigtemp2, eigvec, 0.0);
     Sphalf_->gemm(false, false, 1.0, eigvec, eigtemp, 0.0);
 
-    if (debug_ > 3) {
+    if (debug_ > 3 && Communicator::world->me() == 0) {
         Shalf_->print(outfile);
         Sphalf_->print(outfile);
     }
@@ -517,20 +523,22 @@ void HF::form_Shalf()
     //Unless the user wants canonical
     double S_cutoff = options_.get_double("S_MIN_EIGENVALUE");
     if (min_S > S_cutoff && options_.get_str("S_ORTHOGONALIZATION") == "SYMMETRIC") {
-        if (print_)
+        if (print_ && Communicator::world->me() == 0)
             fprintf(outfile,"  Using Symmetric Orthogonalization.\n");
         canonical_X_ = false;
 
-        //A bit redundant, but it cements things
-        chkpt_->wt_nirreps(factory_.nirreps());
-        chkpt_->wt_nso(nso_);
-        chkpt_->wt_sopi(nsopi_);
-        chkpt_->wt_nmo(nmo_);
-        chkpt_->wt_orbspi(nmopi_);
+        if(Communicator::world->me() == 0) {
+            //A bit redundant, but it cements things
+            chkpt_->wt_nirreps(factory_.nirreps());
+            chkpt_->wt_nso(nso_);
+            chkpt_->wt_sopi(nsopi_);
+            chkpt_->wt_nmo(nmo_);
+            chkpt_->wt_orbspi(nmopi_);
+        }
 
         return;
     } else {
-        if (print_)
+        if (print_ && Communicator::world->me() == 0)
             fprintf(outfile,"  Using Canonical Orthogonalization with cutoff of %14.10E.\n",S_cutoff);
         canonical_X_ = true;
         
@@ -560,21 +568,22 @@ void HF::form_Shalf()
                     X_->set(h,m,i,eigvec.get(h,m,dimpi[h]-i-1));
             } 
             //X_->print(outfile);
-            if (print_>2)
+            if (print_>2 && Communicator::world->me() == 0)
                 fprintf(outfile,"  Irrep %d, %d of %d possible MOs eliminated.\n",h,start_index,nsopi_[h]);
             
             delta_mos += start_index;
         }
 
-        if (print_)
+        if (print_ && Communicator::world->me() == 0) {
             fprintf(outfile,"  Overall, %d of %d possible MOs eliminated.\n",delta_mos,nso_);
         
         //Now things get a bit different
-        chkpt_->wt_nirreps(factory_.nirreps());
-        chkpt_->wt_nso(nso_);
-        chkpt_->wt_sopi(nsopi_);
-        chkpt_->wt_nmo(nmo_);
-        chkpt_->wt_orbspi(nmopi_);
+            chkpt_->wt_nirreps(factory_.nirreps());
+            chkpt_->wt_nso(nso_);
+            chkpt_->wt_sopi(nsopi_);
+            chkpt_->wt_nmo(nmo_);
+            chkpt_->wt_orbspi(nmopi_);
+        }
         orbital_e_->init(eigvec.nirreps(), nmopi_);
         C_->init(eigvec.nirreps(),nsopi_,nmopi_,"MO coefficients");
     }
@@ -655,14 +664,23 @@ bool HF::load_or_compute_initial_C()
     string prefix(chkpt_->build_keyword(const_cast<char*>("MO coefficients")));
     if (chkpt_->exist(const_cast<char*>(prefix.c_str()))) {
         // Read MOs from checkpoint and set C_ to them
-        double **vectors = chkpt_->rd_scf();
+        double **vectors;
+        if(Communicator::world->me() == 0)
+            vectors = chkpt_->rd_scf();
+        else
+            vectors = block_matrix(nso_, nmo_);
+        if(Communicator::world->nproc() > 1)
+            Communicator::world->raw_bcast(&(vectors[0][0]), nso_*nmo_*sizeof(double), 0);
+
         C_->set(const_cast<const double**>(vectors));
         free_block(vectors);
 
         form_D();
 
         // Read SCF energy from checkpoint file.
-        E_ = chkpt_->rd_escf();
+        if(Communicator::world->me() == 0)
+            E_ = chkpt_->rd_escf();
+        Communicator::world->raw_bcast(&E_, sizeof(double), 0);
 
         ret = true;
     } else {
@@ -688,10 +706,10 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     int natom = mol->natom();
     int norbs = bas->nbf();
     
-    if (print_>5)
+    if (print_>5 && Communicator::world->me() == 0)
         fprintf(outfile,"  nalpha = %d, nbeta = %d, norbs = %d\n",nalpha,nbeta,norbs);
 
-    if (print_>5) {
+    if (print_>5 && Communicator::world->me() == 0) {
         bas->print(outfile);
         mol->print();
     }
@@ -727,9 +745,9 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     S_ints->compute(S_UHF);
     double** S = S_UHF->to_block_matrix();
 
-    if (print_>6) {
-    fprintf(outfile,"  S:\n");
-    print_mat(S,norbs,norbs,outfile);
+    if (print_>6 && Communicator::world->me() == 0) {
+        fprintf(outfile,"  S:\n");
+        print_mat(S,norbs,norbs,outfile);
     }
     // S^{-1/2}
     
@@ -740,7 +758,8 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     double* work = init_array(lwork);
     int stat = C_DSYEV('v','u',norbs,S[0],norbs,eigval, work,lwork);
     if (stat != 0) {
-        fprintf(outfile, "C_DSYEV failed\n");
+        if (Communicator::world->me() == 0)
+            fprintf(outfile, "C_DSYEV failed\n");
         exit(PSI_RETURN_FAILURE);
     }
     free(work);
@@ -769,9 +788,9 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     free_block(S);
     free_block(S_copy);
     
-    if (print_>6) {
-    fprintf(outfile,"  S^-1/2:\n");
-    print_mat(Shalf,norbs,norbs,outfile);
+    if (print_>6 && Communicator::world->me() == 0) {
+        fprintf(outfile,"  S^-1/2:\n");
+        print_mat(Shalf,norbs,norbs,outfile);
     }
 
     //Compute H
@@ -789,9 +808,9 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     delete T_ints;
     delete V_ints;
  
-    if (print_>6) {
-    fprintf(outfile,"  H:\n");
-    print_mat(H,norbs,norbs,outfile);
+    if (print_>6 && Communicator::world->me() == 0) {
+        fprintf(outfile,"  H:\n");
+        print_mat(H,norbs,norbs,outfile);
     }
 
     //Compute initial Ca and Da from core guess
@@ -801,21 +820,21 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     //Compute intial D  
     C_DCOPY(norbs*norbs,Da[0],1,D[0],1);
     C_DAXPY(norbs*norbs,1.0,Db[0],1,D[0],1);   
-    if (print_>6) {
-    fprintf(outfile,"  Ca:\n");
-    print_mat(Ca,norbs,norbs,outfile);
+    if (print_>6 && Communicator::world->me() == 0) {
+        fprintf(outfile,"  Ca:\n");
+        print_mat(Ca,norbs,norbs,outfile);
 
-    fprintf(outfile,"  Cb:\n");
-    print_mat(Cb,norbs,norbs,outfile);
+        fprintf(outfile,"  Cb:\n");
+        print_mat(Cb,norbs,norbs,outfile);
 
-    fprintf(outfile,"  Da:\n");
-    print_mat(Da,norbs,norbs,outfile);
+        fprintf(outfile,"  Da:\n");
+        print_mat(Da,norbs,norbs,outfile);
 
-    fprintf(outfile,"  Db:\n");
-    print_mat(Db,norbs,norbs,outfile);
+        fprintf(outfile,"  Db:\n");
+        print_mat(Db,norbs,norbs,outfile);
 
-    fprintf(outfile,"  D:\n");
-    print_mat(D,norbs,norbs,outfile);
+        fprintf(outfile,"  D:\n");
+        print_mat(D,norbs,norbs,outfile);
     }
 
     //Compute inital E for reference
@@ -835,10 +854,10 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     int iteration = 0;
 
     bool converged = false; 
-    if (print_>2) {
-    fprintf(outfile, "\n  Initial Atomic UHF Energy:    %14.10f\n\n",E);
-    fprintf(outfile, "                                         Total Energy            Delta E              Density RMS\n\n");
-    fflush(outfile);
+    if (print_>2 && Communicator::world->me() == 0) {
+        fprintf(outfile, "\n  Initial Atomic UHF Energy:    %14.10f\n\n",E);
+        fprintf(outfile, "                                         Total Energy            Delta E              Density RMS\n\n");
+        fflush(outfile);
     }
     do {
 
@@ -926,47 +945,48 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
 
         double deltaE = fabs(E-E_old);        
     
-        if (print_>6) {
-        fprintf(outfile,"  Fa:\n");
-        print_mat(Fa,norbs,norbs,outfile);
+        if (print_>6 && Communicator::world->me() == 0) {
+            fprintf(outfile,"  Fa:\n");
+            print_mat(Fa,norbs,norbs,outfile);
 
-        fprintf(outfile,"  Fb:\n");
-        print_mat(Fb,norbs,norbs,outfile);
+            fprintf(outfile,"  Fb:\n");
+            print_mat(Fb,norbs,norbs,outfile);
 
-        fprintf(outfile,"  Ga:\n");
-        print_mat(Ga,norbs,norbs,outfile);
+            fprintf(outfile,"  Ga:\n");
+            print_mat(Ga,norbs,norbs,outfile);
 
-        fprintf(outfile,"  Gb:\n");
-        print_mat(Gb,norbs,norbs,outfile);
+            fprintf(outfile,"  Gb:\n");
+            print_mat(Gb,norbs,norbs,outfile);
 
-        fprintf(outfile,"  Ca:\n");
-        print_mat(Ca,norbs,norbs,outfile);
+            fprintf(outfile,"  Ca:\n");
+            print_mat(Ca,norbs,norbs,outfile);
 
-        fprintf(outfile,"  Cb:\n");
-        print_mat(Cb,norbs,norbs,outfile);
+            fprintf(outfile,"  Cb:\n");
+            print_mat(Cb,norbs,norbs,outfile);
 
-        fprintf(outfile,"  Da:\n");
-        print_mat(Da,norbs,norbs,outfile);
+            fprintf(outfile,"  Da:\n");
+            print_mat(Da,norbs,norbs,outfile);
 
-        fprintf(outfile,"  Db:\n");
-        print_mat(Db,norbs,norbs,outfile);
+            fprintf(outfile,"  Db:\n");
+            print_mat(Db,norbs,norbs,outfile);
 
-        fprintf(outfile,"  D:\n");
-        print_mat(D,norbs,norbs,outfile);
+            fprintf(outfile,"  D:\n");
+            print_mat(D,norbs,norbs,outfile);
         }
-        if (print_>2)
+        if (print_>2 && Communicator::world->me() == 0)
             fprintf(outfile, "  @Atomic UHF iteration %3d energy: %20.14f    %20.14f %20.14f\n", iteration, E, deltaE, Drms);
         if (iteration > 1 && deltaE < E_tol && Drms < D_tol)
             converged = true;
 
-        if (iteration > maxiter) {  
-            fprintf(outfile, "Atomic UHF is not converging!");
+        if (iteration > maxiter) {
+            if(Communicator::world->me() == 0)
+                fprintf(outfile, "Atomic UHF is not converging!");
             break;
         }
 
         //Check convergence 
     } while (!converged);
-    if (converged && print_ > 2)
+    if (converged && print_ > 2 && Communicator::world->me() == 0)
         fprintf(outfile, "\n  @Atomic UHF Final Energy: %20.14f\n", E);
    
     delete TEI; 
@@ -1106,7 +1126,8 @@ SharedMatrix HF::dualBasisProjection(SharedMatrix C_, int nocc, shared_ptr<Basis
     double* work = init_array(lwork);
     int stat = C_DSYEV('v','u',nocc,T[0],nocc,eigval, work,lwork);
     if (stat != 0) {
-        fprintf(outfile, "C_DSYEV failed\n");
+        if(Communicator::world->me() == 0)
+            fprintf(outfile, "C_DSYEV failed\n");
         exit(PSI_RETURN_FAILURE);
     }
     free(work);

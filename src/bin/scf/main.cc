@@ -50,11 +50,15 @@ PsiReturnType scf(Options & options)
     parallel = options.get_bool("PARALLEL");
 
 
-    if(use_madness && parallel) {
-        // Compute the Hartree-Fock energy
-        HFEnergy hf(options, psio, chkpt);
-        energy = hf.compute_parallel_energy();
-
+    if (parallel) {
+        if(use_madness) {
+            // Compute the Hartree-Fock energy
+            HFEnergy hf(options, psio, chkpt);
+            energy = hf.compute_parallel_energy();
+        }
+        else {
+            throw InputException("If you want to run SCF in parallel please set MADNESS=true in environment." , "PARALLEL", __FILE__, __LINE__);
+        }
     }
     else {
 #endif
