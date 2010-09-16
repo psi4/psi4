@@ -122,116 +122,232 @@ replaceInFile('EXTRACT_PARAMS',params,[name '_functional.cc']);
 %========== ORDER 0 ==========%
 
 ccode(data.functional,'file','functional');
-replaceInFile('UKS_FUNCTIONAL',cleanFunctional('functional'),[name '_functional.cc']);
 
 %========== ORDER 1 ==========%
 
 ccode(diff(data.functional,rho_a,1),'file','v_rho_a');
-replaceInFile('UKS_V1_RHO_A',cleanFunctional('v_rho_a'),[name '_functional.cc']);
-
 ccode(diff(data.functional,rho_b,1),'file','v_rho_b');
-replaceInFile('UKS_V1_RHO_B',cleanFunctional('v_rho_b'),[name '_functional.cc']);
-
 ccode(diff(data.functional,gamma_aa,1),'file','v_gamma_aa');
-replaceInFile('UKS_V1_GAMMA_AA',cleanFunctional('v_gamma_aa'),[name '_functional.cc']);
-
 ccode(diff(data.functional,gamma_ab,1),'file','v_gamma_ab');
-replaceInFile('UKS_V1_GAMMA_AB',cleanFunctional('v_gamma_ab'),[name '_functional.cc']);
-
 ccode(diff(data.functional,gamma_bb,1),'file','v_gamma_bb');
-replaceInFile('UKS_V1_GAMMA_BB',cleanFunctional('v_gamma_bb'),[name '_functional.cc']);
-
 ccode(diff(data.functional,tau_a,1),'file','v_tau_a');
-replaceInFile('UKS_V1_TAU_A',cleanFunctional('v_tau_a'),[name '_functional.cc']);
-
 ccode(diff(data.functional,tau_b,1),'file','v_tau_b');
-replaceInFile('UKS_V1_TAU_B',cleanFunctional('v_tau_b'),[name '_functional.cc']);
 
 %========== ORDER 2 ==========%
 
 ccode(diff(diff(data.functional,rho_a,1),rho_a,1),'file','v_rho_a_rho_a');
-replaceInFile('UKS_V2_RHO_A_RHO_A',cleanFunctional('v_rho_a_rho_a'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,rho_a,1),rho_b,1),'file','v_rho_a_rho_b');
-replaceInFile('UKS_V2_RHO_A_RHO_B',cleanFunctional('v_rho_a_rho_b'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,rho_b,1),rho_b,1),'file','v_rho_b_rho_b');
-replaceInFile('UKS_V2_RHO_B_RHO_B',cleanFunctional('v_rho_b_rho_b'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,rho_a,1),gamma_aa,1),'file','v_rho_a_gamma_aa');
-replaceInFile('UKS_V2_RHO_A_GAMMA_AA',cleanFunctional('v_rho_a_gamma_aa'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,rho_a,1),gamma_ab,1),'file','v_rho_a_gamma_ab');
-replaceInFile('UKS_V2_RHO_A_GAMMA_AB',cleanFunctional('v_rho_a_gamma_ab'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,rho_a,1),gamma_bb,1),'file','v_rho_a_gamma_bb');
-replaceInFile('UKS_V2_RHO_A_GAMMA_BB',cleanFunctional('v_rho_a_gamma_bb'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,rho_b,1),gamma_aa,1),'file','v_rho_b_gamma_aa');
-replaceInFile('UKS_V2_RHO_B_GAMMA_AA',cleanFunctional('v_rho_b_gamma_aa'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,rho_b,1),gamma_ab,1),'file','v_rho_b_gamma_ab');
-replaceInFile('UKS_V2_RHO_B_GAMMA_AB',cleanFunctional('v_rho_b_gamma_ab'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,rho_b,1),gamma_bb,1),'file','v_rho_b_gamma_bb');
-replaceInFile('UKS_V2_RHO_B_GAMMA_BB',cleanFunctional('v_rho_b_gamma_bb'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,gamma_aa,1),gamma_aa,1),'file','v_gamma_aa_gamma_aa');
-replaceInFile('UKS_V2_GAMMA_AA_GAMMA_AA',cleanFunctional('v_gamma_aa_gamma_aa'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,gamma_aa,1),gamma_ab,1),'file','v_gamma_aa_gamma_ab');
-replaceInFile('UKS_V2_GAMMA_AA_GAMMA_AB',cleanFunctional('v_gamma_aa_gamma_ab'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,gamma_aa,1),gamma_bb,1),'file','v_gamma_aa_gamma_bb');
-replaceInFile('UKS_V2_GAMMA_AA_GAMMA_BB',cleanFunctional('v_gamma_aa_gamma_bb'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,gamma_ab,1),gamma_ab,1),'file','v_gamma_ab_gamma_ab');
-replaceInFile('UKS_V2_GAMMA_AB_GAMMA_AB',cleanFunctional('v_gamma_ab_gamma_ab'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,gamma_ab,1),gamma_bb,1),'file','v_gamma_ab_gamma_bb');
-replaceInFile('UKS_V2_GAMMA_AB_GAMMA_BB',cleanFunctional('v_gamma_ab_gamma_bb'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,gamma_bb,1),gamma_bb,1),'file','v_gamma_bb_gamma_bb');
-replaceInFile('UKS_V2_GAMMA_BB_GAMMA_BB',cleanFunctional('v_gamma_bb_gamma_bb'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,rho_a,1),tau_a,1),'file','v_rho_a_tau_a');
-replaceInFile('UKS_V2_RHO_A_TAU_A',cleanFunctional('v_rho_a_tau_a'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,rho_a,1),tau_b,1),'file','v_rho_a_tau_b');
-replaceInFile('UKS_V2_RHO_A_TAU_B',cleanFunctional('v_rho_a_tau_b'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,rho_b,1),tau_a,1),'file','v_rho_b_tau_a');
-replaceInFile('UKS_V2_RHO_B_TAU_A',cleanFunctional('v_rho_b_tau_a'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,rho_b,1),tau_b,1),'file','v_rho_b_tau_b');
-replaceInFile('UKS_V2_RHO_B_TAU_B',cleanFunctional('v_rho_b_tau_b'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,tau_a,1),tau_a,1),'file','v_tau_a_tau_a');
-replaceInFile('UKS_V2_TAU_A_TAU_A',cleanFunctional('v_tau_a_tau_a'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,tau_a,1),tau_b,1),'file','v_tau_a_tau_b');
-replaceInFile('UKS_V2_TAU_A_TAU_B',cleanFunctional('v_tau_a_tau_b'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,tau_b,1),tau_b,1),'file','v_tau_b_tau_b');
-replaceInFile('UKS_V2_TAU_B_TAU_B',cleanFunctional('v_tau_b_tau_b'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,gamma_aa,1),tau_a,1),'file','v_gamma_aa_tau_a');
-replaceInFile('UKS_V2_GAMMA_AA_TAU_A',cleanFunctional('v_gamma_aa_tau_a'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,gamma_ab,1),tau_a,1),'file','v_gamma_ab_tau_a');
-replaceInFile('UKS_V2_GAMMA_AB_TAU_A',cleanFunctional('v_gamma_ab_tau_a'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,gamma_bb,1),tau_a,1),'file','v_gamma_bb_tau_a');
-replaceInFile('UKS_V2_GAMMA_BB_TAU_A',cleanFunctional('v_gamma_bb_tau_a'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,gamma_aa,1),tau_b,1),'file','v_gamma_aa_tau_b');
-replaceInFile('UKS_V2_GAMMA_AA_TAU_B',cleanFunctional('v_gamma_aa_tau_b'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,gamma_ab,1),tau_b,1),'file','v_gamma_ab_tau_b');
-replaceInFile('UKS_V2_GAMMA_AB_TAU_B',cleanFunctional('v_gamma_ab_tau_b'),[name '_functional.cc']);
-
 ccode(diff(diff(data.functional,gamma_bb,1),tau_b,1),'file','v_gamma_bb_tau_b');
-replaceInFile('UKS_V2_GAMMA_BB_TAU_B',cleanFunctional('v_gamma_bb_tau_b'),[name '_functional.cc']);
+
+%========== ORDER 0 ==========%
+
+ccode(data.functional_a0,'file','functional_a0');
+
+%========== ORDER 1 ==========%
+
+ccode(diff(data.functional_a0,rho_a,1),'file','v_rho_a_a0');
+ccode(diff(data.functional_a0,rho_b,1),'file','v_rho_b_a0');
+ccode(diff(data.functional_a0,gamma_aa,1),'file','v_gamma_aa_a0');
+ccode(diff(data.functional_a0,gamma_ab,1),'file','v_gamma_ab_a0');
+ccode(diff(data.functional_a0,gamma_bb,1),'file','v_gamma_bb_a0');
+ccode(diff(data.functional_a0,tau_a,1),'file','v_tau_a_a0');
+ccode(diff(data.functional_a0,tau_b,1),'file','v_tau_b_a0');
+
+%========== ORDER 2 ==========%
+
+ccode(diff(diff(data.functional_a0,rho_a,1),rho_a,1),'file','v_rho_a_rho_a_a0');
+ccode(diff(diff(data.functional_a0,rho_a,1),rho_b,1),'file','v_rho_a_rho_b_a0');
+ccode(diff(diff(data.functional_a0,rho_b,1),rho_b,1),'file','v_rho_b_rho_b_a0');
+ccode(diff(diff(data.functional_a0,rho_a,1),gamma_aa,1),'file','v_rho_a_gamma_aa_a0');
+ccode(diff(diff(data.functional_a0,rho_a,1),gamma_ab,1),'file','v_rho_a_gamma_ab_a0');
+ccode(diff(diff(data.functional_a0,rho_a,1),gamma_bb,1),'file','v_rho_a_gamma_bb_a0');
+ccode(diff(diff(data.functional_a0,rho_b,1),gamma_aa,1),'file','v_rho_b_gamma_aa_a0');
+ccode(diff(diff(data.functional_a0,rho_b,1),gamma_ab,1),'file','v_rho_b_gamma_ab_a0');
+ccode(diff(diff(data.functional_a0,rho_b,1),gamma_bb,1),'file','v_rho_b_gamma_bb_a0');
+ccode(diff(diff(data.functional_a0,gamma_aa,1),gamma_aa,1),'file','v_gamma_aa_gamma_aa_a0');
+ccode(diff(diff(data.functional_a0,gamma_aa,1),gamma_ab,1),'file','v_gamma_aa_gamma_ab_a0');
+ccode(diff(diff(data.functional_a0,gamma_aa,1),gamma_bb,1),'file','v_gamma_aa_gamma_bb_a0');
+ccode(diff(diff(data.functional_a0,gamma_ab,1),gamma_ab,1),'file','v_gamma_ab_gamma_ab_a0');
+ccode(diff(diff(data.functional_a0,gamma_ab,1),gamma_bb,1),'file','v_gamma_ab_gamma_bb_a0');
+ccode(diff(diff(data.functional_a0,gamma_bb,1),gamma_bb,1),'file','v_gamma_bb_gamma_bb_a0');
+ccode(diff(diff(data.functional_a0,rho_a,1),tau_a,1),'file','v_rho_a_tau_a_a0');
+ccode(diff(diff(data.functional_a0,rho_a,1),tau_b,1),'file','v_rho_a_tau_b_a0');
+ccode(diff(diff(data.functional_a0,rho_b,1),tau_a,1),'file','v_rho_b_tau_a_a0');
+ccode(diff(diff(data.functional_a0,rho_b,1),tau_b,1),'file','v_rho_b_tau_b_a0');
+ccode(diff(diff(data.functional_a0,tau_a,1),tau_a,1),'file','v_tau_a_tau_a_a0');
+ccode(diff(diff(data.functional_a0,tau_a,1),tau_b,1),'file','v_tau_a_tau_b_a0');
+ccode(diff(diff(data.functional_a0,tau_b,1),tau_b,1),'file','v_tau_b_tau_b_a0');
+ccode(diff(diff(data.functional_a0,gamma_aa,1),tau_a,1),'file','v_gamma_aa_tau_a_a0');
+ccode(diff(diff(data.functional_a0,gamma_ab,1),tau_a,1),'file','v_gamma_ab_tau_a_a0');
+ccode(diff(diff(data.functional_a0,gamma_bb,1),tau_a,1),'file','v_gamma_bb_tau_a_a0');
+ccode(diff(diff(data.functional_a0,gamma_aa,1),tau_b,1),'file','v_gamma_aa_tau_b_a0');
+ccode(diff(diff(data.functional_a0,gamma_ab,1),tau_b,1),'file','v_gamma_ab_tau_b_a0');
+ccode(diff(diff(data.functional_a0,gamma_bb,1),tau_b,1),'file','v_gamma_bb_tau_b_a0');
+
+%========== ORDER 0 ==========%
+
+ccode(data.functional_b0,'file','functional_b0');
+
+%========== ORDER 1 ==========%
+
+ccode(diff(data.functional_b0,rho_a,1),'file','v_rho_a_b0');
+ccode(diff(data.functional_b0,rho_b,1),'file','v_rho_b_b0');
+ccode(diff(data.functional_b0,gamma_aa,1),'file','v_gamma_aa_b0');
+ccode(diff(data.functional_b0,gamma_ab,1),'file','v_gamma_ab_b0');
+ccode(diff(data.functional_b0,gamma_bb,1),'file','v_gamma_bb_b0');
+ccode(diff(data.functional_b0,tau_a,1),'file','v_tau_a_b0');
+ccode(diff(data.functional_b0,tau_b,1),'file','v_tau_b_b0');
+
+%========== ORDER 2 ==========%
+
+ccode(diff(diff(data.functional_b0,rho_a,1),rho_a,1),'file','v_rho_a_rho_a_b0');
+ccode(diff(diff(data.functional_b0,rho_a,1),rho_b,1),'file','v_rho_a_rho_b_b0');
+ccode(diff(diff(data.functional_b0,rho_b,1),rho_b,1),'file','v_rho_b_rho_b_b0');
+ccode(diff(diff(data.functional_b0,rho_a,1),gamma_aa,1),'file','v_rho_a_gamma_aa_b0');
+ccode(diff(diff(data.functional_b0,rho_a,1),gamma_ab,1),'file','v_rho_a_gamma_ab_b0');
+ccode(diff(diff(data.functional_b0,rho_a,1),gamma_bb,1),'file','v_rho_a_gamma_bb_b0');
+ccode(diff(diff(data.functional_b0,rho_b,1),gamma_aa,1),'file','v_rho_b_gamma_aa_b0');
+ccode(diff(diff(data.functional_b0,rho_b,1),gamma_ab,1),'file','v_rho_b_gamma_ab_b0');
+ccode(diff(diff(data.functional_b0,rho_b,1),gamma_bb,1),'file','v_rho_b_gamma_bb_b0');
+ccode(diff(diff(data.functional_b0,gamma_aa,1),gamma_aa,1),'file','v_gamma_aa_gamma_aa_b0');
+ccode(diff(diff(data.functional_b0,gamma_aa,1),gamma_ab,1),'file','v_gamma_aa_gamma_ab_b0');
+ccode(diff(diff(data.functional_b0,gamma_aa,1),gamma_bb,1),'file','v_gamma_aa_gamma_bb_b0');
+ccode(diff(diff(data.functional_b0,gamma_ab,1),gamma_ab,1),'file','v_gamma_ab_gamma_ab_b0');
+ccode(diff(diff(data.functional_b0,gamma_ab,1),gamma_bb,1),'file','v_gamma_ab_gamma_bb_b0');
+ccode(diff(diff(data.functional_b0,gamma_bb,1),gamma_bb,1),'file','v_gamma_bb_gamma_bb_b0');
+ccode(diff(diff(data.functional_b0,rho_a,1),tau_a,1),'file','v_rho_a_tau_a_b0');
+ccode(diff(diff(data.functional_b0,rho_a,1),tau_b,1),'file','v_rho_a_tau_b_b0');
+ccode(diff(diff(data.functional_b0,rho_b,1),tau_a,1),'file','v_rho_b_tau_a_b0');
+ccode(diff(diff(data.functional_b0,rho_b,1),tau_b,1),'file','v_rho_b_tau_b_b0');
+ccode(diff(diff(data.functional_b0,tau_a,1),tau_a,1),'file','v_tau_a_tau_a_b0');
+ccode(diff(diff(data.functional_b0,tau_a,1),tau_b,1),'file','v_tau_a_tau_b_b0');
+ccode(diff(diff(data.functional_b0,tau_b,1),tau_b,1),'file','v_tau_b_tau_b_b0');
+ccode(diff(diff(data.functional_b0,gamma_aa,1),tau_a,1),'file','v_gamma_aa_tau_a_b0');
+ccode(diff(diff(data.functional_b0,gamma_ab,1),tau_a,1),'file','v_gamma_ab_tau_a_b0');
+ccode(diff(diff(data.functional_b0,gamma_bb,1),tau_a,1),'file','v_gamma_bb_tau_a_b0');
+ccode(diff(diff(data.functional_b0,gamma_aa,1),tau_b,1),'file','v_gamma_aa_tau_b_b0');
+ccode(diff(diff(data.functional_b0,gamma_ab,1),tau_b,1),'file','v_gamma_ab_tau_b_b0');
+ccode(diff(diff(data.functional_b0,gamma_bb,1),tau_b,1),'file','v_gamma_bb_tau_b_b0');
+
+%========== ORDER 0 ==========%
+
+try
+    ccode(data.functional_a0b0,'file','functional_a0b0');
+catch exception
+    syms qqqq
+    ccode(diff(data.functional_a0b0,qqqq),'file','functional_a0b0')
+end
+
+%========== ORDER 1 ==========%
+
+ccode(diff(data.functional_a0b0,rho_a,1),'file','v_rho_a_a0b0');
+ccode(diff(data.functional_a0b0,rho_b,1),'file','v_rho_b_a0b0');
+ccode(diff(data.functional_a0b0,gamma_aa,1),'file','v_gamma_aa_a0b0');
+ccode(diff(data.functional_a0b0,gamma_ab,1),'file','v_gamma_ab_a0b0');
+ccode(diff(data.functional_a0b0,gamma_bb,1),'file','v_gamma_bb_a0b0');
+ccode(diff(data.functional_a0b0,tau_a,1),'file','v_tau_a_a0b0');
+ccode(diff(data.functional_a0b0,tau_b,1),'file','v_tau_b_a0b0');
+
+%========== ORDER 2 ==========%
+
+ccode(diff(diff(data.functional_a0b0,rho_a,1),rho_a,1),'file','v_rho_a_rho_a_a0b0');
+ccode(diff(diff(data.functional_a0b0,rho_a,1),rho_b,1),'file','v_rho_a_rho_b_a0b0');
+ccode(diff(diff(data.functional_a0b0,rho_b,1),rho_b,1),'file','v_rho_b_rho_b_a0b0');
+ccode(diff(diff(data.functional_a0b0,rho_a,1),gamma_aa,1),'file','v_rho_a_gamma_aa_a0b0');
+ccode(diff(diff(data.functional_a0b0,rho_a,1),gamma_ab,1),'file','v_rho_a_gamma_ab_a0b0');
+ccode(diff(diff(data.functional_a0b0,rho_a,1),gamma_bb,1),'file','v_rho_a_gamma_bb_a0b0');
+ccode(diff(diff(data.functional_a0b0,rho_b,1),gamma_aa,1),'file','v_rho_b_gamma_aa_a0b0');
+ccode(diff(diff(data.functional_a0b0,rho_b,1),gamma_ab,1),'file','v_rho_b_gamma_ab_a0b0');
+ccode(diff(diff(data.functional_a0b0,rho_b,1),gamma_bb,1),'file','v_rho_b_gamma_bb_a0b0');
+ccode(diff(diff(data.functional_a0b0,gamma_aa,1),gamma_aa,1),'file','v_gamma_aa_gamma_aa_a0b0');
+ccode(diff(diff(data.functional_a0b0,gamma_aa,1),gamma_ab,1),'file','v_gamma_aa_gamma_ab_a0b0');
+ccode(diff(diff(data.functional_a0b0,gamma_aa,1),gamma_bb,1),'file','v_gamma_aa_gamma_bb_a0b0');
+ccode(diff(diff(data.functional_a0b0,gamma_ab,1),gamma_ab,1),'file','v_gamma_ab_gamma_ab_a0b0');
+ccode(diff(diff(data.functional_a0b0,gamma_ab,1),gamma_bb,1),'file','v_gamma_ab_gamma_bb_a0b0');
+ccode(diff(diff(data.functional_a0b0,gamma_bb,1),gamma_bb,1),'file','v_gamma_bb_gamma_bb_a0b0');
+ccode(diff(diff(data.functional_a0b0,rho_a,1),tau_a,1),'file','v_rho_a_tau_a_a0b0');
+ccode(diff(diff(data.functional_a0b0,rho_a,1),tau_b,1),'file','v_rho_a_tau_b_a0b0');
+ccode(diff(diff(data.functional_a0b0,rho_b,1),tau_a,1),'file','v_rho_b_tau_a_a0b0');
+ccode(diff(diff(data.functional_a0b0,rho_b,1),tau_b,1),'file','v_rho_b_tau_b_a0b0');
+ccode(diff(diff(data.functional_a0b0,tau_a,1),tau_a,1),'file','v_tau_a_tau_a_a0b0');
+ccode(diff(diff(data.functional_a0b0,tau_a,1),tau_b,1),'file','v_tau_a_tau_b_a0b0');
+ccode(diff(diff(data.functional_a0b0,tau_b,1),tau_b,1),'file','v_tau_b_tau_b_a0b0');
+ccode(diff(diff(data.functional_a0b0,gamma_aa,1),tau_a,1),'file','v_gamma_aa_tau_a_a0b0');
+ccode(diff(diff(data.functional_a0b0,gamma_ab,1),tau_a,1),'file','v_gamma_ab_tau_a_a0b0');
+ccode(diff(diff(data.functional_a0b0,gamma_bb,1),tau_a,1),'file','v_gamma_bb_tau_a_a0b0');
+ccode(diff(diff(data.functional_a0b0,gamma_aa,1),tau_b,1),'file','v_gamma_aa_tau_b_a0b0');
+ccode(diff(diff(data.functional_a0b0,gamma_ab,1),tau_b,1),'file','v_gamma_ab_tau_b_a0b0');
+ccode(diff(diff(data.functional_a0b0,gamma_bb,1),tau_b,1),'file','v_gamma_bb_tau_b_a0b0');
+
+%========== ORDER 0 ==========%
+
+replaceInFile('UKS_FUNCTIONAL',buildUKS('functional'),[name '_functional.cc']);
+
+%========== ORDER 1 ==========%
+
+replaceInFile('UKS_V1_RHO_A',buildUKS('v_rho_a'),[name '_functional.cc']);
+replaceInFile('UKS_V1_RHO_B',buildUKS('v_rho_b'),[name '_functional.cc']);
+replaceInFile('UKS_V1_GAMMA_AA',buildUKS('v_gamma_aa'),[name '_functional.cc']);
+replaceInFile('UKS_V1_GAMMA_AB',buildUKS('v_gamma_ab'),[name '_functional.cc']);
+replaceInFile('UKS_V1_GAMMA_BB',buildUKS('v_gamma_bb'),[name '_functional.cc']);
+replaceInFile('UKS_V1_TAU_A',buildUKS('v_tau_a'),[name '_functional.cc']);
+replaceInFile('UKS_V1_TAU_B',buildUKS('v_tau_b'),[name '_functional.cc']);
+
+%========== ORDER 2 ==========%
+
+replaceInFile('UKS_V2_RHO_A_RHO_A',buildUKS('v_rho_a_rho_a'),[name '_functional.cc']);
+replaceInFile('UKS_V2_RHO_A_RHO_B',buildUKS('v_rho_a_rho_b'),[name '_functional.cc']);
+replaceInFile('UKS_V2_RHO_B_RHO_B',buildUKS('v_rho_b_rho_b'),[name '_functional.cc']);
+replaceInFile('UKS_V2_RHO_A_GAMMA_AA',buildUKS('v_rho_a_gamma_aa'),[name '_functional.cc']);
+replaceInFile('UKS_V2_RHO_A_GAMMA_AB',buildUKS('v_rho_a_gamma_ab'),[name '_functional.cc']);
+replaceInFile('UKS_V2_RHO_A_GAMMA_BB',buildUKS('v_rho_a_gamma_bb'),[name '_functional.cc']);
+replaceInFile('UKS_V2_RHO_B_GAMMA_AA',buildUKS('v_rho_b_gamma_aa'),[name '_functional.cc']);
+replaceInFile('UKS_V2_RHO_B_GAMMA_AB',buildUKS('v_rho_b_gamma_ab'),[name '_functional.cc']);
+replaceInFile('UKS_V2_RHO_B_GAMMA_BB',buildUKS('v_rho_b_gamma_bb'),[name '_functional.cc']);
+replaceInFile('UKS_V2_GAMMA_AA_GAMMA_AA',buildUKS('v_gamma_aa_gamma_aa'),[name '_functional.cc']);
+replaceInFile('UKS_V2_GAMMA_AA_GAMMA_AB',buildUKS('v_gamma_aa_gamma_ab'),[name '_functional.cc']);
+replaceInFile('UKS_V2_GAMMA_AA_GAMMA_BB',buildUKS('v_gamma_aa_gamma_bb'),[name '_functional.cc']);
+replaceInFile('UKS_V2_GAMMA_AB_GAMMA_AB',buildUKS('v_gamma_ab_gamma_ab'),[name '_functional.cc']);
+replaceInFile('UKS_V2_GAMMA_AB_GAMMA_BB',buildUKS('v_gamma_ab_gamma_bb'),[name '_functional.cc']);
+replaceInFile('UKS_V2_GAMMA_BB_GAMMA_BB',buildUKS('v_gamma_bb_gamma_bb'),[name '_functional.cc']);
+replaceInFile('UKS_V2_RHO_A_TAU_A',buildUKS('v_rho_a_tau_a'),[name '_functional.cc']);
+replaceInFile('UKS_V2_RHO_A_TAU_B',buildUKS('v_rho_a_tau_b'),[name '_functional.cc']);
+replaceInFile('UKS_V2_RHO_B_TAU_A',buildUKS('v_rho_b_tau_a'),[name '_functional.cc']);
+replaceInFile('UKS_V2_RHO_B_TAU_B',buildUKS('v_rho_b_tau_b'),[name '_functional.cc']);
+replaceInFile('UKS_V2_TAU_A_TAU_A',buildUKS('v_tau_a_tau_a'),[name '_functional.cc']);
+replaceInFile('UKS_V2_TAU_A_TAU_B',buildUKS('v_tau_a_tau_b'),[name '_functional.cc']);
+replaceInFile('UKS_V2_TAU_B_TAU_B',buildUKS('v_tau_b_tau_b'),[name '_functional.cc']);
+replaceInFile('UKS_V2_GAMMA_AA_TAU_A',buildUKS('v_gamma_aa_tau_a'),[name '_functional.cc']);
+replaceInFile('UKS_V2_GAMMA_AB_TAU_A',buildUKS('v_gamma_ab_tau_a'),[name '_functional.cc']);
+replaceInFile('UKS_V2_GAMMA_BB_TAU_A',buildUKS('v_gamma_bb_tau_a'),[name '_functional.cc']);
+replaceInFile('UKS_V2_GAMMA_AA_TAU_B',buildUKS('v_gamma_aa_tau_b'),[name '_functional.cc']);
+replaceInFile('UKS_V2_GAMMA_AB_TAU_B',buildUKS('v_gamma_ab_tau_b'),[name '_functional.cc']);
+replaceInFile('UKS_V2_GAMMA_BB_TAU_B',buildUKS('v_gamma_bb_tau_b'),[name '_functional.cc']);
 
 %>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %       RKS FUNCTIONALS
@@ -243,40 +359,71 @@ rks_functional = subs(rks_functional,gamma_ab,gamma_aa,0);
 rks_functional = subs(rks_functional,gamma_bb,gamma_aa,0);
 rks_functional = subs(rks_functional,tau_b,tau_a,0);
 
+rks_functional_0 = data.functional_a0b0;
+rks_functional_0 = subs(rks_functional_0,rho_b,rho_a,0);
+rks_functional_0 = subs(rks_functional_0,gamma_ab,gamma_aa,0);
+rks_functional_0 = subs(rks_functional_0,gamma_bb,gamma_aa,0);
+rks_functional_0 = subs(rks_functional_0,tau_b,tau_a,0);
+
 %========== ORDER 0 ==========%
 
 ccode(simplify(rks_functional),'file','functional');
-replaceInFile('RKS_FUNCTIONAL',cleanFunctional('functional'),[name '_functional.cc']);
 
 %========== ORDER 1 ==========%
 
 ccode(diff(rks_functional,rho_a,1),'file','v_rho_a');
-replaceInFile('RKS_V1_RHO_A',cleanFunctional('v_rho_a'),[name '_functional.cc']);
-
 ccode(diff(rks_functional,gamma_aa,1),'file','v_gamma_aa');
-replaceInFile('RKS_V1_GAMMA_AA',cleanFunctional('v_gamma_aa'),[name '_functional.cc']);
-
 ccode(diff(rks_functional,tau_a,1),'file','v_tau_a');
-replaceInFile('RKS_V1_TAU_A',cleanFunctional('v_tau_a'),[name '_functional.cc']);
 
 %========== ORDER 2 ==========%
 
 ccode(diff(diff(rks_functional,rho_a,1),rho_a,1),'file','v_rho_a_rho_a');
-replaceInFile('RKS_V2_RHO_A_RHO_A',cleanFunctional('v_rho_a_rho_a'),[name '_functional.cc']);
-
 ccode(diff(diff(rks_functional,rho_a,1),gamma_aa,1),'file','v_rho_a_gamma_aa');
-replaceInFile('RKS_V2_RHO_A_GAMMA_AA',cleanFunctional('v_rho_a_gamma_aa'),[name '_functional.cc']);
-
 ccode(diff(diff(rks_functional,gamma_aa,1),gamma_aa,1),'file','v_gamma_aa_gamma_aa');
-replaceInFile('RKS_V2_GAMMA_AA_GAMMA_AA',cleanFunctional('v_gamma_aa_gamma_aa'),[name '_functional.cc']);
-
 ccode(diff(diff(rks_functional,rho_a,1),tau_a,1),'file','v_rho_a_tau_a');
-replaceInFile('RKS_V2_RHO_A_TAU_A',cleanFunctional('v_rho_a_tau_a'),[name '_functional.cc']);
-
 ccode(diff(diff(rks_functional,tau_a,1),tau_a,1),'file','v_tau_a_tau_a');
-replaceInFile('RKS_V2_TAU_A_TAU_A',cleanFunctional('v_tau_a_tau_a'),[name '_functional.cc']);
-
 ccode(diff(diff(rks_functional,gamma_aa,1),tau_a,1),'file','v_gamma_aa_tau_a');
-replaceInFile('RKS_V2_GAMMA_AA_TAU_A',cleanFunctional('v_gamma_aa_tau_a'),[name '_functional.cc']);
+
+%========== ORDER 0 ==========%
+
+try
+    ccode(rks_functional_0,'file','functional_0');
+catch exception
+    syms qqqq
+    ccode(diff(rks_functional_0,qqqq),'file','functional_0')
+end
+%========== ORDER 1 ==========%
+
+ccode(diff(rks_functional_0,rho_a,1),'file','v_rho_a_0');
+ccode(diff(rks_functional_0,gamma_aa,1),'file','v_gamma_aa_0');
+ccode(diff(rks_functional_0,tau_a,1),'file','v_tau_a_0');
+
+%========== ORDER 2 ==========%
+
+ccode(diff(diff(rks_functional_0,rho_a,1),rho_a,1),'file','v_rho_a_rho_a_0');
+ccode(diff(diff(rks_functional_0,rho_a,1),gamma_aa,1),'file','v_rho_a_gamma_aa_0');
+ccode(diff(diff(rks_functional_0,gamma_aa,1),gamma_aa,1),'file','v_gamma_aa_gamma_aa_0');
+ccode(diff(diff(rks_functional_0,rho_a,1),tau_a,1),'file','v_rho_a_tau_a_0');
+ccode(diff(diff(rks_functional_0,tau_a,1),tau_a,1),'file','v_tau_a_tau_a_0');
+ccode(diff(diff(rks_functional_0,gamma_aa,1),tau_a,1),'file','v_gamma_aa_tau_a_0');
+
+%========== ORDER 0 ==========%
+
+replaceInFile('RKS_FUNCTIONAL',buildRKS('functional'),[name '_functional.cc']);
+
+%========== ORDER 1 ==========%
+
+replaceInFile('RKS_V1_RHO_A',buildRKS('v_rho_a'),[name '_functional.cc']);
+replaceInFile('RKS_V1_GAMMA_AA',buildRKS('v_gamma_aa'),[name '_functional.cc']);
+replaceInFile('RKS_V1_TAU_A',buildRKS('v_tau_a'),[name '_functional.cc']);
+
+%========== ORDER 2 ==========%
+
+replaceInFile('RKS_V2_RHO_A_RHO_A',buildRKS('v_rho_a_rho_a'),[name '_functional.cc']);
+replaceInFile('RKS_V2_RHO_A_GAMMA_AA',buildRKS('v_rho_a_gamma_aa'),[name '_functional.cc']);
+replaceInFile('RKS_V2_GAMMA_AA_GAMMA_AA',buildRKS('v_gamma_aa_gamma_aa'),[name '_functional.cc']);
+replaceInFile('RKS_V2_RHO_A_TAU_A',buildRKS('v_rho_a_tau_a'),[name '_functional.cc']);
+replaceInFile('RKS_V2_TAU_A_TAU_A',buildRKS('v_tau_a_tau_a'),[name '_functional.cc']);
+replaceInFile('RKS_V2_GAMMA_AA_TAU_A',buildRKS('v_gamma_aa_tau_a'),[name '_functional.cc']);
 
 

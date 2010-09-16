@@ -1,6 +1,7 @@
 // Include Python's header file.
 // Use "python-config --includes" to determine this location.
 #include <cstdio>
+#include <boost/algorithm/string.hpp>
 #include <boost/python.hpp>
 #include <psiconfig.h>
 #include <sstream>
@@ -182,12 +183,28 @@ void py_psi_print_global_options()
 
 void py_psi_print_out(std::string s)
 {
-    fprintf(outfile,"%s\n",s.c_str());
+    fprintf(outfile,"%s",s.c_str());
 }
 
 bool py_psi_set_option_string(std::string const & name, std::string const & value)
 {
     Process::environment.options.set_str(name, value);
+
+    string nonconst_key = name;
+    Data& data = Process::environment.options.use(nonconst_key);
+
+    if (data.type() == "string") {
+        Process::environment.options.set_str(name, value);
+    } else if (data.type() == "boolean") {
+        if (boost::to_upper_copy(value) == "TRUE" || boost::to_upper_copy(value) == "YES" || \
+          boost::to_upper_copy(value) == "ON") 
+            Process::environment.options.set_int(name, true);
+        else if (boost::to_upper_copy(value) == "FALSE" || boost::to_upper_copy(value) == "NO" || \
+          boost::to_upper_copy(value) == "OFF") 
+            Process::environment.options.set_int(name, false);
+        else 
+            throw std::domain_error("Required option type is boolean, no boolean specified");
+    }
     return true;
 }
 
@@ -215,7 +232,23 @@ bool py_psi_set_option_array(std::string const & name, python::list values)
 
 bool py_psi_set_global_option_string(std::string const & name, std::string const & value)
 {
-    Process::environment.options.set_global_str(name, value);
+    //Process::environment.options.set_global_str(name, value);
+    
+    string nonconst_key = name;
+    Data& data = Process::environment.options.use(nonconst_key);
+
+    if (data.type() == "string") {
+        Process::environment.options.set_global_str(name, value);
+    } else if (data.type() == "boolean") {
+        if (boost::to_upper_copy(value) == "TRUE" || boost::to_upper_copy(value) == "YES" || \
+          boost::to_upper_copy(value) == "ON") 
+            Process::environment.options.set_global_int(name, true);
+        else if (boost::to_upper_copy(value) == "FALSE" || boost::to_upper_copy(value) == "NO" || \
+          boost::to_upper_copy(value) == "OFF") 
+            Process::environment.options.set_global_int(name, false);
+        else 
+            throw std::domain_error("Required option type is boolean, no boolean specified");
+    }
     return true;
 }
 
@@ -224,7 +257,6 @@ bool py_psi_set_global_option_int(std::string const & name, int value)
     Process::environment.options.set_global_int(name, value);
     return true;
 }
-
 // Right now this can only handle arrays of integers.
 // Unable to handle strings.
 bool py_psi_set_global_option_array(std::string const & name, python::list values)
@@ -276,7 +308,7 @@ double py_psi_get_variable(const std::string & key)
 void py_psi_set_memory(unsigned long int mem)
 {
     Process::environment.set_memory(mem);
-    fprintf(outfile,"\n  Memory set to %7.3f %s by Python script.\n",(mem > 1000000000 ? mem/1.0E9 : mem/1.0E6),
+    fprintf(outfile,"\n  Memory set to %7.3f %s by Python script.\n",(mem > 1000000000 ? mem/1.0E9 : mem/1.0E6), \
         (mem > 1000000000 ? "GB" : "MB" )); 
 }
 BOOST_PYTHON_MODULE(PsiMod)
@@ -468,6 +500,13 @@ BOOST_PYTHON_MODULE(PsiMod)
         staticmethod("create_superfunctional").
         def("build_superfunctional", &SuperFunctional::buildSuperFunctional).
         staticmethod("build_superfunctional").
+        def("available_superfunctionals", &SuperFunctional::availableSuperFunctionals).
+        staticmethod("available_superfunctionals").
+        def("available_names", &SuperFunctional::availableNames).
+        staticmethod("available_names").
+        def("test_superfunctionals", &SuperFunctional::testSuperFunctionals).
+        staticmethod("test_superfunctionals").
+        def("test_superfunctional", &SuperFunctional::testSuperFunctional).
 
         def("get_name", &SuperFunctional::getName).
         def("get_description", &SuperFunctional::getDescription).
@@ -513,6 +552,11 @@ BOOST_PYTHON_MODULE(PsiMod)
         staticmethod("create_functional").
         def("available_functionals", &Functional::availableFunctionals).
         staticmethod("available_functionals").
+        def("available_names", &Functional::availableNames).
+        staticmethod("available_names").
+        def("test_functionals", &Functional::testFunctionals).
+        staticmethod("test_functionals").
+        def("test_functional", &Functional::testFunctional).
         
         def("get_name", &Functional::getName).
         def("get_description", &Functional::getDescription).

@@ -26,4 +26,5 @@ globals {
 }
 
 #Do a CP-corrected interaction energy at DFMP2, and determine BSSE
-cp('dfmp2',True)
+#cp('dfmp2',molecule = dimer,check_bsse = True)
+cp('dfmp2')

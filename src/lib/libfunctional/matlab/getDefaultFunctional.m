@@ -2,6 +2,12 @@ function data = getDefaultFunctional()
 
 %Functional symbolic definition
 data.functional = 0;
+%Functional symbolic definition (for rho_a -> 0)
+data.functional_a0 = 0;
+%Functional symbolic definition (for rho_b -> 0)
+data.functional_b0 = 0;
+%Functional symbolic definition (for rho_b  + rho_b -> 0)
+data.functional_a0b0 = 0;
 
 %Functional symbolic variables
 rho_a = sym('rho_a');
@@ -24,8 +30,9 @@ data.is_gga = 0;
 %is meta?
 data.is_meta = 0;
 
-%exchange or correlation?
-data.is_exchange = 0;
+%exchange or correlation or both?
+%['x', 'c', 'xc']
+data.type = 'x';
 
 %Functional name
 data.name = 'null';

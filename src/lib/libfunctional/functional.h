@@ -44,6 +44,8 @@ class Functional {
         void setParameters(const std::vector<std::pair<std::string,double> > & params) { params_ = params; }        
         void setParameter(const std::string & key, double value);
 
+        std::string testFunctional(shared_ptr<Properties> props);
+
         bool isGGA() const { return is_gga_; } 
         bool isMeta() const { return is_meta_; } 
 
@@ -100,7 +102,6 @@ class Functional {
         void reallocate(int npoints, int deriv);
         void release();
         void allocate();
-        void reallocate();
         
         std::string name_;
         std::string description_;

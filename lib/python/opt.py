@@ -1,4 +1,5 @@
 from PsiMod import *
+from molecule import *
 
 def ccsd_energy():
     # Do checks to see if scf, transqt, and ccsort executed?
