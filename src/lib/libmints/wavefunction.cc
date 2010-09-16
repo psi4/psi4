@@ -60,7 +60,7 @@ void Wavefunction::common_init()
 
         // Basis set object has reference to initialized molecule, grab it
         molecule_ = basisset_->molecule();
-        
+
         // Read in the memory requirements from input
         fndcor(&(memory_), infile, outfile);
     }
