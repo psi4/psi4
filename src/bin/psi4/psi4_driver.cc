@@ -58,7 +58,7 @@ int psi4_driver() {
     calcType += ":";
     calcType += dertype;
 
-    if (Communicator::world->me() == 0) {
+    //if (Communicator::world->me() == 0) {
         fprintf(outfile, "    Job type         = %s\n", jobtype.c_str());
         fflush(outfile);
         fprintf(outfile, "    Wavefunction     = %s\n", wfn.c_str());
@@ -69,10 +69,10 @@ int psi4_driver() {
         fflush(outfile);
         fprintf(outfile, "    Calculation type = %s\n", calcType.c_str());
         fflush(outfile);
-    }
+    //}
 
     if (check_only) {
-        if (Communicator::world->me() == 0)
+        //if (Communicator::world->me() == 0)
             fprintf(outfile, "\n    Sanity check requested. Exiting without execution.\n\n");
     }
 
@@ -84,7 +84,7 @@ int psi4_driver() {
             }
         }
         else {
-            if(Communicator::world->me() == 0)
+            //if(Communicator::world->me() == 0)
                 fprintf(outfile, "    Tasks to compute enegy: input\n");
         }
 
@@ -95,16 +95,16 @@ int psi4_driver() {
             std::string bp_name = options.get_str("WFN") + ":" + "FIRST";
 
             if (check_only) {
-                if(Communicator::world->me() == 0)
+                //if(Communicator::world->me() == 0)
                     fprintf(outfile, "    Geometry optimization requested.\n");
 
                 read_options("OPTKING", options, true, true); // don't print
                 int nopt = options.get_int("NOPT");
-                if(Communicator::world->me() == 0) {
+                //if(Communicator::world->me() == 0) {
                     fprintf(outfile, "    Tasks include input, up to %d gradients.\n", nopt);
 
                     fprintf(outfile, "    To compute gradient:\n");
-                }
+                //}
                 execute_bp(bp_name, options);
             } else {
                 if(Communicator::world->me() == 0) {
@@ -127,7 +127,7 @@ int psi4_driver() {
             } // do optimization by gradients
         }// dertype = first
         else {
-            if(Communicator::world->me() == 0)
+            //if(Communicator::world->me() == 0)
                 fprintf(outfile, "Can only do optimizations by gradients at this time.\n");
         }
     }

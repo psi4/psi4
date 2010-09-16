@@ -22,14 +22,17 @@
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.hpp>
+#include <libparallel/parallel.h>
 #include <libipv1/ip_lib.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 
 #include <libmints/mints.h>
 #include <libmints/basisset_parser.h>
-#include "rhf.h"
-#include <psi4-dec.h>
+//#include "rhf.h"
+
+//#include <psi4-dec.h>
+#include "pairs.h"
 
 #define TIME_SCF
 #define _DEBUG
@@ -103,10 +106,12 @@ void RHF::common_init()
     pk_ = NULL;
     G_vector_ = NULL;
 
-    //What are we using?
-    fprintf(outfile, "  SCF Algorithm Type is %s.\n", scf_type_.c_str());
-    // Print DIIS status
-    fprintf(outfile, "  DIIS %s.\n", diis_enabled_ ? "enabled" : "disabled");
+    if(Communicator::world->me() == 0) {
+        //What are we using?
+        fprintf(outfile, "  SCF Algorithm Type is %s.\n", scf_type_.c_str());
+        // Print DIIS status
+        fprintf(outfile, "  DIIS %s.\n", diis_enabled_ ? "enabled" : "disabled");
+    }
 
     fflush(outfile);
     // Allocate memory for PK matrix
@@ -286,6 +291,158 @@ double RHF::compute_energy()
     return E_;
 }
 
+double RHF::compute_energy_parallel()
+{
+#if HAVE_MADNESS == 1
+
+    //fprintf(outfile,"  Print = %d\n",print_);
+    //print_ = options_.get_int("PRINT");
+    bool converged = false, diis_iter = false;
+    if (options_.get_str("GUESS") == "SAD")
+        iteration_ = -1;
+    else
+        iteration_ = 0;
+
+    // Do the initial work to get the iterations started.
+    timer_on("Core Hamiltonian");
+    form_H(); //Core Hamiltonian
+    timer_off("Core Hamiltonian");
+    timer_on("Overlap Matrix");
+    form_Shalf(); //Shalf Matrix
+    timer_off("Overlap Matrix");
+    // Form initial MO guess by user specified method
+    // Check to see if there are MOs already in the checkpoint file.
+    // If so, read them in instead of forming them, unless the user disagrees.
+    timer_on("Initial Guess");
+    load_or_compute_initial_C();
+    timer_off("Initial Guess");
+
+    if (print_>3 && Communicator::world->me() == 0) {
+        S_->print(outfile);
+        Shalf_->print(outfile);
+        if (canonical_X_)
+            X_->print(outfile);
+        H_->print(outfile);
+    }
+    if (print_>2 && Communicator::world->me() == 0) {
+        fprintf(outfile,"  Initial Guesses:\n");
+        C_->print(outfile);
+        D_->print(outfile);
+    }
+
+    if (scf_type_ == "PK")
+        form_PK();
+    else if (scf_type_ == "CD" || scf_type_ == "1C_CD")
+        form_CD();
+    else if (scf_type_ == "DF")
+        form_B();
+    else if (scf_type_ == "L_DF") {
+        form_A();
+        I_ = block_matrix(basisset_->molecule()->natom(),doccpi_[0]);
+        form_domain_bookkeeping();
+    }
+
+    if(Communicator::world->me() == 0) {
+        fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
+        fflush(outfile);
+    }
+
+    // SCF iterations
+    do {
+        iteration_++;
+
+        Dold_->copy(D_);  // Save previous density
+        Eold_ = E_;       // Save previous energy
+
+        if (scf_type_ == "DIRECT")
+            form_G_from_direct_integrals_parallel();
+        else {
+            throw InputException("Parallel SCF is direct only. Please set SCF_TYPE=direct in input", "SCF_TYPE", __FILE__, __LINE__);
+            break;
+        }
+
+
+        form_F();
+
+        if (print_>3 && Communicator::world->me() == 0) {
+            F_->print(outfile);
+        }
+        if (diis_enabled_ && iteration_ > 0 && iteration_ >= diis_start_ )
+            save_fock();
+
+        E_ = compute_E();
+
+        timer_on("DIIS");
+        if (diis_enabled_ == true && iteration_ >= diis_start_ + min_diis_vectors_ - 1) {
+            diis_iter = diis();
+        } else {
+            diis_iter = false;
+        }
+        timer_off("DIIS");
+
+        if (print_>4 && diis_iter && Communicator::world->me() == 0) {
+            fprintf(outfile,"  After DIIS:\n");
+            F_->print(outfile);
+        }
+        if(Communicator::world->me() == 0)
+            fprintf(outfile, "  @RHF iteration %3d energy: %20.14f    %20.14f %20.14f %s\n", iteration_, E_, E_ - Eold_, Drms_, diis_iter == false ? " " : "DIIS");
+        fflush(outfile);
+
+        timer_on("Diagonalize H");
+        form_C();
+
+        timer_off("Diagonalize H");
+        form_D();
+
+        if (print_>2 && Communicator::world->me() == 0) {
+            C_->print(outfile);
+            D_->print(outfile);
+        }
+
+        converged = test_convergency();
+    } while (!converged && iteration_ < maxiter_ );
+
+
+    if (converged) {
+        if (Communicator::world->me() == 0) {
+        fprintf(outfile, "\n  Energy converged.\n");
+        fprintf(outfile, "\n  @RHF Final Energy: %20.14f", E_);
+        if (perturb_h_) {
+            fprintf(outfile, " with %f perturbation", lambda_);
+        }
+        fprintf(outfile, "\n");
+        save_information();
+        }
+    }
+    else {
+        if (Communicator::world->me() == 0)
+            fprintf(outfile, "\n  Failed to converged.\n");
+        E_ = 0.0;
+    }
+
+    //often, we're close!
+    if (options_.get_bool("DUAL_BASIS"))
+        save_dual_basis_projection();
+    if (options_.get_str("SAPT") != "FALSE") //not a bool because it has types
+        save_sapt_info();
+    //if (save_grid_) {
+        // DOWN FOR MAINTENANCE
+        //fprintf(outfile,"\n  Saving Cartesian Grid\n");
+        //save_RHF_grid(options_, basisset_, D_, C_);
+    //}
+
+    // Compute the final dipole.
+    compute_multipole();
+
+    //fprintf(outfile,"\nComputation Completed\n");
+    fflush(outfile);
+
+#endif
+
+    return E_;
+}
+
+
 bool RHF::load_or_compute_initial_C()
 {
     bool ret = false;
@@ -310,12 +467,27 @@ bool RHF::load_or_compute_initial_C()
             fprintf(outfile, "  SCF Guess: Reading previous MOs.\n\n");
 
         // Read MOs from checkpoint and set C_ to them
-        double **vectors = chkpt_->rd_scf();
+        double **vectors;
+        if(Communicator::world->me() == 0)
+            vectors = chkpt_->rd_scf();
+        if(Communicator::world->nproc() > 1) {
+            if(Communicator::world->me() != 0)
+                vectors = block_matrix(nso_,nmo_);
+            Communicator::world->raw_bcast(&(vectors[0][0]), nso_*nmo_*sizeof(double), 0);
+        }
         C_->set(const_cast<const double**>(vectors));
         free_block(vectors);
 
         // Read in orbital energies (needed to guess occupation)
-        double *orbitale = chkpt_->rd_evals();
+        double *orbitale;
+        if(Communicator::world->me() == 0)
+            orbitale = chkpt_->rd_evals();
+        if(Communicator::world->nproc() > 1) {
+            if(Communicator::world->me() != 0)
+                orbitale = init_array(nmo_);
+            Communicator::world->raw_bcast(&(orbitale[0]), nmo_*sizeof(double), 0);
+        }
+
         orbital_e_->set(orbitale);
         delete[] orbitale;
 
@@ -325,11 +497,15 @@ bool RHF::load_or_compute_initial_C()
         form_D();
 
         // Read SCF energy from checkpoint file.
-        E_ = chkpt_->rd_escf();
+        if(Communicator::world->me() == 0)
+            E_ = chkpt_->rd_escf();
+        if(Communicator::world->nproc() > 1)
+            Communicator::world->raw_bcast(&E_, sizeof(double), 0);
+
         ret = true;
     } else if (guess_type == "DUAL_BASIS") {
          //Try for dual basis MOs,
-        if (print_)
+        if (print_ && Communicator::world->me() == 0)
             fprintf(outfile, "  SCF Guess: Dual-Basis. Reading from File 100.\n\n");
 
         double** C2 = block_matrix(basisset_->nbf(),nalpha_);
@@ -728,7 +904,12 @@ void RHF::save_information()
 {
     // Print the final docc vector
     char **temp2 = molecule_->irrep_labels();
-    int nso = chkpt_->rd_nso();
+    int nso;
+    if(Communicator::world->me() == 0)
+        nso = chkpt_->rd_nso();
+    if(Communicator::world->nproc() > 1)
+        Communicator::world->raw_bcast(&nso, sizeof(int), 0);
+
     fprintf(outfile, "\n  Final occupation vector = (");
     for (int h=0; h<factory_.nirreps(); ++h) {
         fprintf(outfile, "%2d %3s ", doccpi_[h], temp2[h]);
@@ -788,29 +969,35 @@ void RHF::save_information()
     for (int i=0; i<orbital_e_->nirreps(); ++i)
         vec[i] = 0;
 
-    chkpt_->wt_nirreps(factory_.nirreps());
-    chkpt_->wt_nmo(nmo_);
-    chkpt_->wt_nao(basisset_->nbf());
-    chkpt_->wt_ref(0);        // Only RHF right now
-    chkpt_->wt_etot(E_);
-    chkpt_->wt_escf(E_);
-    chkpt_->wt_eref(E_);
-    chkpt_->wt_clsdpi(doccpi_);
-    chkpt_->wt_orbspi(orbital_e_->dimpi());
-    chkpt_->wt_openpi(vec);
-    chkpt_->wt_phase_check(0);
+    if(Communicator::world->me() == 0) {
+        chkpt_->wt_nirreps(factory_.nirreps());
+        chkpt_->wt_nmo(nmo_);
+        chkpt_->wt_nao(basisset_->nbf());
+        chkpt_->wt_ref(0);        // Only RHF right now
+        chkpt_->wt_etot(E_);
+        chkpt_->wt_escf(E_);
+        chkpt_->wt_eref(E_);
+        chkpt_->wt_clsdpi(doccpi_);
+        chkpt_->wt_orbspi(orbital_e_->dimpi());
+        chkpt_->wt_openpi(vec);
+        chkpt_->wt_phase_check(0);
+    }
 
     // Figure out frozen core orbitals
     //int nfzc = compute_nfzc();
     //int nfzv = compute_nfzv();
     int nfzc = molecule_->nfrozen_core(options_.get_str("FREEZE_CORE"));
     int nfzv = options_.get_int("FREEZE_VIRT");
-    chkpt_->wt_nfzc(nfzc);
-    chkpt_->wt_nfzv(nfzv);
+    if(Communicator::world->me() == 0) {
+        chkpt_->wt_nfzc(nfzc);
+        chkpt_->wt_nfzv(nfzv);
+    }
     int *frzcpi = compute_fcpi(nfzc, orbital_e_);
     int *frzvpi = compute_fvpi(nfzv, orbital_e_);
-    chkpt_->wt_frzcpi(frzcpi);
-    chkpt_->wt_frzvpi(frzvpi);
+    if(Communicator::world->me() == 0) {
+        chkpt_->wt_frzcpi(frzcpi);
+        chkpt_->wt_frzvpi(frzvpi);
+    }
     delete[](frzcpi);
     delete[](frzvpi);
 
@@ -818,20 +1005,24 @@ void RHF::save_information()
     // Need to recompute the Fock matrix as F_ is modified during the SCF interation
     form_F();
     double *ftmp = F_->to_lower_triangle();
-    chkpt_->wt_fock(ftmp);
+    if(Communicator::world->me() == 0)
+        chkpt_->wt_fock(ftmp);
     delete[](ftmp);
 
     // This code currently only handles RHF
-    chkpt_->wt_iopen(0);
+    if(Communicator::world->me() == 0)
+        chkpt_->wt_iopen(0);
 
     // Write eigenvectors and eigenvalue to checkpoint
 
     double* values = orbital_e_->to_block_vector();
-    chkpt_->wt_evals(values);
+    if(Communicator::world->me() == 0)
+        chkpt_->wt_evals(values);
     free(values);
 
     double** vectors = C_->to_block_matrix();
-    chkpt_->wt_scf(vectors);
+    if(Communicator::world->me() == 0)
+        chkpt_->wt_scf(vectors);
     free_block(vectors);
 }
 
@@ -1490,6 +1681,77 @@ void RHF::form_G_from_direct_integrals()
     // G_->print();
     timer_off("form_G_from_direct_integrals");
 }
+
+void RHF::form_G_from_direct_integrals_parallel()
+{
+#if HAVE_MADNESS == 1
+    using namespace madness;
+
+
+    timer_on("G_direct_parallel");
+
+//    shared_ptr<madness::World> newworld = Communicator::world->get_madworld();
+    // Zero out the G matrix
+//    std::cout << "nmo = " << nmo_ << std::endl;
+
+    G_->zero();
+
+    std::cout << Communicator::world->me() << "\tnso = " << factory_.nso() << std::endl;
+
+    g_info->initialize(basisset_, D_, factory_.nso());
+
+    mad_G g_matrix(*Communicator::world->get_madworld());
+
+
+    shared_ptr<ShellCombinationsIterator> iter = g_info->create_shell_iter();
+
+/*    int number_of_shell_pairs=0;
+    for (iter->first(); !iter->is_done(); iter->next()) {
+        number_of_shell_pairs++;
+    }
+
+    int** shell = init_int_matrix(8, number_of_shell_pairs);
+    int count=0;
+    for (iter->first(); !iter->is_done(); iter->next()) {
+        shell[0][count] = iter->p();
+        shell[1][count] = iter->q();
+        shell[2][count] = iter->r();
+        shell[3][count] = iter->s();
+
+        count++;
+    }
+*/
+
+    //sort_shell(shell, number_of_shell_pairs, 8);
+
+    int counter = 0;
+    for(iter->first(); !iter->is_done(); iter->next()) {
+        Pair pqrs(counter);
+
+        if ( Communicator::world->me() == g_matrix.owner(pqrs) ) {
+            g_matrix.task(pqrs, &G_MAT::build_G, iter->p(), iter->q(), iter->r(), iter->s());
+        }
+        counter++;
+
+    }
+
+    Communicator::world->sync();
+
+    g_info->sum_G();
+
+    Communicator::world->sync();
+
+    fflush(outfile);
+    //free_int_matrix(shell);
+
+    g_info->set_G_(G_);
+    //G_->print(outfile);
+    //G_->set(g_info->get_pG());
+
+    timer_off("G_direct_parallel");
+#endif
+}
+
 
 void RHF::form_G()
 {

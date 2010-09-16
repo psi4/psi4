@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include <liboptions/liboptions.h>
+#include <libparallel/parallel.h>
 #include <psifiles.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
@@ -46,9 +47,11 @@ Wavefunction::~Wavefunction()
 
 void Wavefunction::common_init()
 {
+
     Wavefunction::initialize_singletons();
 
     if (options_.get_bool("NO_INPUT") == false) {
+
         // Initialize the matrix factory
         factory_.init_with_chkpt(chkpt_);
 
@@ -60,7 +63,6 @@ void Wavefunction::common_init()
         
         // Read in the memory requirements from input
         fndcor(&(memory_), infile, outfile);
-
     }
     else {
         // Take the molecule from the environment

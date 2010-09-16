@@ -68,12 +68,12 @@ PsiReturnType execute_bp(std::string & bp, Options & options) {
           }
         } */
 
-    if (Communicator::world->me() == 0)
+    //if (Communicator::world->me() == 0)
         fprintf(outfile, "    List of tasks to execute:\n");
     for (int n = 0; n < numTasks; ++n) {
         char *thisJob;
         ip_string(jobList, &thisJob, 1, n);
-        if (Communicator::world->me() == 0)
+        //if (Communicator::world->me() == 0)
             fprintf(outfile, "    %s\n", thisJob);
         free(thisJob);
     }
@@ -105,18 +105,19 @@ PsiReturnType execute_bp(std::string & bp, Options & options) {
         // Make sure the job name is all upper case
         int length = strlen(thisJob);
         std::transform(thisJob, thisJob + length, thisJob, ::toupper);
-        if (Communicator::world->me() == 0) {
+        //if (Communicator::world->me() == 0) {
             fprintf(outfile, "\n  Job %d is %s\n", n, thisJob);
             fflush(outfile);
-        }
+        //}
 
         // Read the options for thisJob.
         read_options(thisJob, options);
 
-        if (Communicator::world->me() == 0) {
+        //if (Communicator::world->me() == 0) {
             fprintf(outfile, "printed from execute_bp\n");
-            options.print();
-        }
+            if (Communicator::world->me() == 0)
+                options.print();
+        //}
 
         // Handle MODE (command line argument passed in task list
         if (tokens.size() > 1) {
@@ -134,7 +135,7 @@ PsiReturnType execute_bp(std::string & bp, Options & options) {
             if (dispatch_table[thisJob](options) != Success) {
                 // Good chance at this time that an error occurred.
                 // Report it to the user.
-                if (Communicator::world->me() == 0)
+                //if (Communicator::world->me() == 0)
                     fprintf(stderr, "%s did not return a Success code.\n", thisJob);
                 throw PsiException("Module failed.", __FILE__, __LINE__);
             }
@@ -147,7 +148,7 @@ PsiReturnType execute_bp(std::string & bp, Options & options) {
                     if (dispatch_table[thisJob](options) != Success) {
                         // Good chance at this time that an error occurred.
                         // Report it to the user.
-                        if (Communicator::world->me() == 0)
+                        //if (Communicator::world->me() == 0)
                             fprintf(stderr, "%s did not return a Success code.\n", thisJob);
                         throw PsiException("Module failed.", __FILE__, __LINE__);
                     }

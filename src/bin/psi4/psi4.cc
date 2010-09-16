@@ -88,6 +88,8 @@ int main(int argc, char **argv, char **envp)
 #endif
 
 
+    //sleep(60);
+
     Wavefunction::initialize_singletons();
 
     // Create the scripting object
@@ -97,7 +99,7 @@ int main(int argc, char **argv, char **envp)
 
     if(psi_start(argc, argv) == PSI_RETURN_FAILURE) return EXIT_FAILURE;
 
-    if(!clean_only && Communicator::world->me() == 0) print_version(outfile);
+    if(!clean_only) print_version(outfile);
 
     set_memory(outfile);
 

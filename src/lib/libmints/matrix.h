@@ -374,6 +374,8 @@ public:
     double **to_block_matrix() const;
     /// Sets the name of the matrix
     void set_name(std::string name) { name_ = name; }
+    /// Returns the pointer to the matrix
+    double* ptr() { return &matrix_[0][0]; }
 
     /// Prints the matrix with print_mat
     void print(FILE *out = outfile);

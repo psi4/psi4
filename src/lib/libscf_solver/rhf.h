@@ -83,6 +83,7 @@ protected:
     void form_G(); // Out of core (i think there is a bug here)
     void form_G_from_PK(); // In core PK
     void form_G_from_direct_integrals(); // Computes all ERIs each iteration.
+    void form_G_from_direct_integrals_parallel(); // Computes all ERIs in parallel each iteration
     void form_G_from_RI(); //Uses two- and three- index integrals
     void form_G_from_RI_local_K(); //Uses two- and three- index integrals
     void form_G_from_J_and_K(double scale_K_by = 1.0); // Computes G from J and K
@@ -131,6 +132,7 @@ public:
     virtual ~RHF();
 
     double compute_energy();
+    double compute_energy_parallel();
 };
 
 }}
