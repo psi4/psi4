@@ -553,7 +553,7 @@ void PetiteList::init()
                 if (am==0)
                     red_rep[g] += 1.0;
                 else {
-                    ShellRotation r(am,so,integral_,gbs.shell(i,s)->is_pure());
+                    ShellRotation r(am,so,integral_.get(),gbs.shell(i,s)->is_pure());
                     red_rep[g] += r.trace();
                 }
             }
@@ -581,16 +581,16 @@ void PetiteList::init()
     delete[] red_rep;
 }
 
-Dimension* PetiteList::AO_basisdim()
+Dimension PetiteList::AO_basisdim()
 {
     int one = 1;
     int nbf = basis_->nbf();
-    Dimension *ret = new Dimension(1, "AO Basis Dimension");
-    (*ret)[0] = nbf;
+    Dimension ret(1, "AO Basis Dimension");
+    ret[0] = nbf;
     return ret;
 }
 
-Dimension* PetiteList::SO_basisdim()
+Dimension PetiteList::SO_basisdim()
 {
     int i, j, ii;
 
@@ -603,15 +603,14 @@ Dimension* PetiteList::SO_basisdim()
     // ncomp is the number of symmetry blocks we have
     int ncomp = nblocks();
 
-    Dimension* pret = new Dimension(ncomp, "SO Basis Dimension");
-    Dimension& ret = *pret;
+    Dimension ret(ncomp, "SO Basis Dimension");
 
     for (i=0; i<nirrep_; ++i) {
         int nbas = (c1_) ? gbs.nbf() : nbf_in_ir_[i];
         ret[i] = nbas;
     }
 
-    return pret;
+    return ret;
 }
 
 void PetiteList::print(FILE *out)
@@ -765,7 +764,131 @@ SO_block* PetiteList::aotoso_info()
                             int equivatom = atom_map_[i][g];
                             int atomoffset = gbs.molecule()->atom_to_unique_offset(equivatom);
 
-                            ShellRotation rr = integral_->sh
+                            ShellRotation rr = integral_->shell_rotation(gbs.shell(i, s)->am(), so, gbs.shell(i, s)->is_pure());
+
+                            for (ii=0; ii<rr.dim(); ++ii) {
+                                for (jj=0; jj<rr.dim(); ++jj) {
+                                    linorb[ii][atomoffset*nfuncuniq+jj] += ccdg * rr(ii, jj);
+                                }
                             }
+                        }
                     }
+
+                    // find the linearly independent SO's for this irrep/component
+                    memcpy(linorbcop[0], linorb[0], nfuncuniq*nfuncall*sizeof(double));
+                    double *singval = new double[nfuncuniq];
+                    double djunk=0;
+                    int ijunk=1;
+                    int lwork = 5*nfuncall;
+                    double *work = new double[lwork];
+                    int into;
+
+                    // Solve At = V SIGMA Ut (since Fortran layout is used)
+                    C_DGESVD('N', 'A', nfuncall, nfuncuniq, linorb[0], nfuncall, singval, &djunk, ijunk, u[0], nfuncuniq, work, lwork);
+
+                    // Should do a test of the return value of C_DGESVD
+
+                    // put the lin indep symm orbs into the so array
+                    for (j=0; j<nfuncuniq; ++j) {
+                        if (singval[j] > 1.0e-6) {
+                            SO tso;
+                            tso.set_length(nfuncall);
+                            int ll =0, llnonzero=0;
+                            for (int k=0; k<nequiv; ++k) {
+                                for (int l=0; l<nfuncuniq; ++l, ++ll){
+                                    double tmp=0.0;
+                                    for (int m=0; m<nfuncuniq; ++m) {
+                                        tmp += u[m][j] * linorbcop[m][ll] / singval[j];
+                                    }
+                                    if (fabs(tmp) > 1.0e-14) {
+                                        int equivatom = gbs.molecule()->equivalent(iuniq, k);
+                                        tso.cont[llnonzero].bfn
+                                                = l
+                                                + bfn_offset_in_shell
+                                                + gbs.shell_to_function(gbs.shell_on_center(equivatom, s));
+                                        tso.cont[llnonzero].coef = tmp;
+                                        llnonzero++;
+                                    }
+                                }
+                            }
+                            tso.reset_length(llnonzero);
+                            if (llnonzero == 0) {
+                                throw PSIEXCEPTION("aotoso: internal error: no bfns in SO");
+                            }
+                            if (SOs[irnum+comp].add(tso, saoelem[irnum+comp])) {
+                                saoelem[irnum+comp]++;
+                            }
+                            else {
+                                throw PSIEXCEPTION("aotoso: internal error: impossible duplicate SO");
+                            }
+                        }
+                    }
+                    delete[] singval;
+                    delete[] work;
+                }
+                irnum += ct.gamma(ir).degeneracy();
+            }
+            bfn_offset_in_shell += gbs.shell(i, s)->nfunction();
+
+            free_block(linorb);
+            free_block(linorbcop);
+            free_block(u);
+        }
+    }
+
+    // MPQC does a bcast of all SOs here...do we need to?
+
+    for (i=0; i<ncomp; ++i) {
+        ir = whichir[i];
+        int scal = ct.gamma(ir).complex() ? 2 : 1;
+
+        if (saoelem[i] < nbf_in_ir_[ir]/scal) {
+            // If we found too few, there are big problems
+
+            throw PSIEXCEPTION("aotoso: trouble making SO's didn't find enough SO's");
+        }
+        else if (saoelem[i] > nbf_in_ir_[ir]/scal) {
+            // there are some redundant so's left.
+            throw PSIEXCEPTION("aotoso: trouble making SO's found too many SO's");
+        }
+    }
+
+    if (ct.complex()) {
+        SO_block *nSOs = new SO_block[nblocks_];
+
+        int in=0;
+
+        for (i=ir=0; ir < nirrep_; ir++) {
+            if (ct.gamma(ir).complex()) {
+                nSOs[in].set_length(nbf_in_ir_[ir]);
+                int k;
+                for (k=0; k < SOs[i].len; k++)
+                    nSOs[in].add(SOs[i].so[k],k);
+                i++;
+
+                for (j=0; j < SOs[i].len; j++,k++)
+                    nSOs[in].add(SOs[i].so[j],k);
+
+                i++;
+                in++;
+            } else {
+                for (j=0; j < ct.gamma(ir).degeneracy(); j++,i++,in++) {
+                    nSOs[in].set_length(nbf_in_ir_[ir]);
+                    for (int k=0; k < SOs[i].len; k++)
+                        nSOs[in].add(SOs[i].so[k],k);
+                }
+            }
+        }
+
+        SO_block *tmp= SOs;
+        SOs = nSOs;
+        delete[] tmp;
+    }
+
+    delete[] saoelem;
+    delete[] whichir;
+    delete[] whichcmp;
+
+    return SOs;
 }
+

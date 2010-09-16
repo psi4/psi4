@@ -66,6 +66,9 @@ class BasisSet
     double **uso2bf_;
     boost::shared_ptr<SimpleMatrix> simple_mat_uso2bf_;
 
+    //! Map function number to shell
+    std::vector<int> function_to_shell_;
+
     //! Does the loaded basis set contain pure angular momentum functions?
     bool puream_;
 
@@ -165,6 +168,9 @@ public:
      *  @return The function number for the first function for the i'th shell.
      */
     int shell_to_basis_function(int i) const { return shell_first_basis_function_[i]; }
+
+    /** Given a function number what shell does it correspond to. */
+    int function_to_shell(int i) const { return function_to_shell_[i]; }
 
     /** Return the si'th Gaussian shell
      *  @param i Shell number

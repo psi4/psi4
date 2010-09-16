@@ -9,6 +9,17 @@ Dimension::Dimension(int n, const std::string &name)
     memset(blocks_, 0, sizeof(int)*n_);
 }
 
+Dimension::Dimension(const Dimension &other)
+{
+    if (n_ < other.n_) {
+        delete blocks_;
+        blocks_ = new int[other.n_];
+    }
+    n_ = other.n_;
+    for (int i=0; i<n_; ++i)
+        blocks_[i] = other.blocks_[i];
+}
+
 Dimension::~Dimension()
 {
     delete[] blocks_;
@@ -21,4 +32,17 @@ void Dimension::print(FILE *out) const
         fprintf(outfile, "%d  ", blocks_[i]);
     }
     fprintf(outfile, "\n");
+}
+
+Dimension& Dimension::operator =(const Dimension& other)
+{
+    if (n_ < other.n_) {
+        delete blocks_;
+        blocks_ = new int[other.n_];
+    }
+    n_ = other.n_;
+    for (int i=0; i<n_; ++i)
+        blocks_[i] = other.blocks_[i];
+
+    return *this;
 }

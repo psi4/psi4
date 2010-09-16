@@ -476,7 +476,16 @@ void BasisSet::refresh()
 
         if (puream_ == false && shells_[i]->is_pure())
             puream_ = true;
+    }
 
+    function_to_shell_.resize(nbf());
+    int ifunc = 0;
+    for (int i=0; i<nshells_; ++i) {
+        int nfun = shell(i)->nfunction();
+        for (int j=0; j<nfun; ++j) {
+            function_to_shell_[ifunc] = i;
+            ifunc++;
+        }
     }
 }
 

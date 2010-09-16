@@ -54,7 +54,7 @@ ShellRotation::ShellRotation(const ShellRotation& other)
     *this = other;
 }
 
-ShellRotation::ShellRotation(int a, SymmetryOperation& so, const IntegralFactory* ints, int pure) :
+ShellRotation::ShellRotation(int a, SymmetryOperation& so, IntegralFactory* ints, int pure) :
     n_(0), am_(0), r_(0)
 {
     if (a > 0 && pure)
@@ -98,7 +98,7 @@ void ShellRotation::done()
     n_=0;
 }
 
-void ShellRotation::init(int a, SymmetryOperation& so, const IntegralFactory* ints)
+void ShellRotation::init(int a, SymmetryOperation& so, IntegralFactory* ints)
 {
     done();
 
@@ -149,7 +149,7 @@ void ShellRotation::init(int a, SymmetryOperation& so, const IntegralFactory* in
     delete jp;
 }
 
-void ShellRotation::init_pure(int a, SymmetryOperation &so, const IntegralFactory *ints)
+void ShellRotation::init_pure(int a, SymmetryOperation &so, IntegralFactory *ints)
 {
     if (a < 1) {
         init(a, so, ints);
@@ -170,18 +170,36 @@ void ShellRotation::init_pure(int a, SymmetryOperation &so, const IntegralFactor
     int lI[3];
     int m, iI;
 
-    r = new double*[n_];
+    r_ = new double*[n_];
     for (m=0; m<n_; ++m) {
-        r[m] = new double[n_];
-        memset(r[m], 0, sizeof(double)*n_);
+        r_[m] = new double[n_];
+        memset(r_[m], 0, sizeof(double)*n_);
     }
 
     for (I.first(); !I.is_done(); I.next()) {
         for (J.first(); !J.is_done(); J.next()) {
             double coef = I.coef()*J.coef();
             double tmp = 0.0;
-            for (K.s)
+            for (K.start(J.a(), J.b(), J.c()); K; K.next()) {
+                double tmp2 = coef;
+                for (m=0; m<3; ++m)
+                    lI[m] = I.l(m);
+
+                for (m=0; m<am_; ++m) {
+                    for (iI=0; lI[iI] == 0; iI++);
+                    lI[iI]--;
+
+                    tmp2 *= so(K.axis(m), iI);
+                }
+                tmp += tmp2;
             }
+            r_[I.pureindex()][J.pureindex()] += tmp;
+        }
+    }
+
+    delete ip;
+    delete jp;
+    delete kp;
 }
 
 ShellRotation ShellRotation::operate(const ShellRotation& rot) const

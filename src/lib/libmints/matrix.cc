@@ -16,6 +16,7 @@
 #include <libmints/integral.h>
 #include "factory.h"
 #include "wavefunction.h"
+#include "dimension.h"
 
 #include <libdpd/dpd.h>
 
@@ -854,7 +855,7 @@ void Matrix::cholesky_factorize()
 {
     for (int h=0; h<nirreps_; ++h) {
         if (rowspi_[h]) {
-            int err = C_DPOTRF('L', rowspi_[h], matrix_[0][0], rowspi_[h]);
+            int err = C_DPOTRF('L', rowspi_[h], matrix_[h][0], rowspi_[h]);
             if (err != 0) {
                 if (err < 0) {
                     fprintf(outfile, "cholesky_factorize: C_DPOTRF: argument %d has invalid paramter.\n", -err);
@@ -877,7 +878,7 @@ void Matrix::invert()
 {
     for (int h=0; h<nirreps_; ++h) {
         if (rowspi_[h]) {
-            int err = C_DPOTRI('L', rowspi_[h], matrix_[0][0], rowspi_[h]);
+            int err = C_DPOTRI('L', rowspi_[h], matrix_[h][0], rowspi_[h]);
             if (err != 0) {
                 if (err < 0) {
                     fprintf(outfile, "invert: C_DPOTRI: argument %d has invalid paramter.\n", -err);
@@ -1315,6 +1316,14 @@ SimpleMatrix::SimpleMatrix(const Matrix& c) : matrix_(0), rows_(0), cols_(0)
     matrix_ = c.to_block_matrix();
 }
 
+SimpleMatrix::SimpleMatrix(std::string& name, const Dimension& rows, const Dimension& cols)
+{
+    name_ = name;
+    rows_ = rows[0];
+    cols_ = cols[0];
+    alloc();
+}
+
 SimpleMatrix::~SimpleMatrix()
 {
     release();
@@ -1491,6 +1500,58 @@ double SimpleMatrix::trace() const
         val += matrix_[i][i];
     }
     return val;
+}
+
+void SimpleMatrix::invert()
+{
+    if (rows_) {
+        int err = C_DPOTRI('L', rows_, matrix_[0], rows_);
+        if (err != 0) {
+            if (err < 0) {
+                fprintf(outfile, "invert: C_DPOTRI: argument %d has invalid paramter.\n", -err);
+                fflush(outfile);
+                abort();
+            }
+            if (err > 1) {
+                fprintf(outfile, "invert: C_DPOTRI: the (%d,%d) element of the factor U or L is "
+                        "zero, and the inverse could not be computed.\n", err, err);
+                fflush(outfile);
+                abort();
+            }
+        }
+    }
+    copy_lower_to_upper();
+}
+
+void SimpleMatrix::copy_lower_to_upper()
+{
+    for (int m=0; m<rows_; ++m) {
+        for (int n=0; n<m; ++n) {
+            matrix_[m][n] = matrix_[n][m];
+        }
+    }
+}
+
+void SimpleMatrix::copy_upper_to_lower()
+{
+    for (int m=0; m<rows_; ++m) {
+        for (int n=0; n<m; ++n) {
+            matrix_[n][m] = matrix_[m][n];
+        }
+    }
+}
+
+void SimpleMatrix::transpose_this()
+{
+    double temp;
+
+    for (int i=0; i<rows_; ++i) {
+        for (int j=0; j<cols_; ++j) {
+            temp = matrix_[i][j];
+            matrix_[i][j] = matrix_[j][i];
+            matrix_[j][i] = temp;
+        }
+    }
 }
 
 SimpleMatrix* SimpleMatrix::transpose()
