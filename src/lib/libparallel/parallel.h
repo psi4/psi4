@@ -130,6 +130,7 @@ namespace psi {
 
 #if HAVE_MADNESS == 1
         virtual boost::shared_ptr<madness::World> get_madworld() {};
+        virtual madness::Spinlock* mad_mutex() {};
 #endif
 
     };
@@ -220,6 +221,8 @@ namespace psi {
         virtual void sum(long *data, int n, long *receive_buffer=0, int target=-1);
 
         virtual void raw_bcast(void *data, int nbyte, int broadcaster=0);
+
+        virtual madness::Spinlock* mad_mutex() { return new madness::Spinlock(); };
 
         virtual boost::shared_ptr<madness::World> get_madworld() { return madworld_; };
 

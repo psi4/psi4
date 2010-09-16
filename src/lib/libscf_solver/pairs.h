@@ -21,7 +21,7 @@ namespace psi{ namespace scf{
 
 class PARALLEL_G_BUILD_INFO {
     private:
-        shared_ptr<madness::MutexFair> eri_lock;
+        shared_ptr<madness::Spinlock> eri_lock;
         shared_ptr<BasisSet> basis_info;
         shared_ptr<IntegralFactory> integral;
         shared_ptr<TwoBodyInt> eri_info;
@@ -58,13 +58,14 @@ class PARALLEL_G_BUILD_INFO {
                 pG = shared_ptr<SimpleMatrix>(new SimpleMatrix(nso, nso));
                 pG->zero();
             }
-            else
+            else {
+                pG = shared_ptr<SimpleMatrix>(new SimpleMatrix(nso, nso));
                 pG->zero();
-
-            pG->print(outfile);
+            }
 
             //pG.init(basis_info->nao(), basis_info->nao(), "parallel_G (AO basis)");
-            eri_lock = shared_ptr<madness::MutexFair> (new madness::MutexFair());
+            if(eri_lock.get() == NULL)
+                eri_lock = shared_ptr<madness::Spinlock> (Communicator::world->mad_mutex());
         }
 
         shared_ptr<IntegralsIterator> create_int_iter(const int & P, const int & Q,
@@ -99,9 +100,7 @@ class PARALLEL_G_BUILD_INFO {
         }
 
        void sum_G() {
-           pG->print(outfile);
            Communicator::world->sum(pG->ptr(), nso*nso, pG->ptr(), 0);
-           pG->print(outfile);
        }
 
        double* get_ptr_pG() {
@@ -110,7 +109,6 @@ class PARALLEL_G_BUILD_INFO {
 
        void set_G_(SharedMatrix _G) {
            _G->set(pG);
-           _G->print(outfile);
        }
 
         void lock_mutex() {
@@ -191,12 +189,12 @@ class Pair {
 
 class G_MAT {
     private:
-        double mat;
+        Tensor<double> mat;
 
-    public:
-        G_MAT() {}
+    public:        
+        G_MAT() {}           
 
-        G_MAT(double & mat) : mat(mat) {}
+        G_MAT(Tensor<double> & _mat) : mat(_mat) {}
 
         ~G_MAT() {}
 
@@ -243,6 +241,7 @@ class G_MAT {
                         g_info->add_pG(k, k, temp3);
                         g_info->add_pG(i, k, -temp2);
                         g_info->add_pG(k, i, -temp2);
+
                         break;
 
                         case 3:
@@ -252,6 +251,7 @@ class G_MAT {
                         g_info->add_pG(i, l, temp1);
                         g_info->add_pG(l, i, temp1);
                         g_info->add_pG(i, i, temp2);
+
                         break;
 
                         case 4:
@@ -261,6 +261,7 @@ class G_MAT {
                         g_info->add_pG(i, j, temp1);
                         g_info->add_pG(j, i, temp1);
                         g_info->add_pG(j, j, temp2);
+
                         break;
 
                         case 5:
@@ -272,6 +273,7 @@ class G_MAT {
                         g_info->add_pG(j, i, temp1);
                         g_info->add_pG(j, j, -temp2);
                         g_info->add_pG(i, i, -temp3);
+
                         break;
 
                         case 6:
@@ -287,6 +289,7 @@ class G_MAT {
                         g_info->add_pG(l, k, temp3);
                         g_info->add_pG(i, l, -temp4);
                         g_info->add_pG(l, i, -temp4);
+
                         break;
 
                         case 7:
@@ -302,6 +305,7 @@ class G_MAT {
                         g_info->add_pG(k, j, -temp3);
                         g_info->add_pG(i, j,  temp4);
                         g_info->add_pG(j, i,  temp4);
+
                         break;
 
                         case 8:
@@ -317,6 +321,7 @@ class G_MAT {
                         g_info->add_pG(k, i, -temp3);
                         g_info->add_pG(j, k, -temp4);
                         g_info->add_pG(k, j, -temp4);
+
                         break;
 
                         case 9:
@@ -332,6 +337,7 @@ class G_MAT {
                         g_info->add_pG(i, i, -temp3);
                         g_info->add_pG(j, l, -temp4);
                         g_info->add_pG(l, j, -temp4);
+
                         break;
 
                         case 10:
@@ -347,6 +353,7 @@ class G_MAT {
                         g_info->add_pG(i, l, -temp3);
                         g_info->add_pG(l, i, -temp3);
                         g_info->add_pG(j, j, -temp4);
+
                         break;
 
                         case 11:
@@ -362,6 +369,7 @@ class G_MAT {
                         g_info->add_pG(i, k, -temp3);
                         g_info->add_pG(k, i, -temp3);
                         g_info->add_pG(j, j, -temp4);
+
                         break;
 
                         case 12:
@@ -386,6 +394,7 @@ class G_MAT {
                         g_info->add_pG(l, i, -temp5);
                         g_info->add_pG(j, k, -temp6);
                         g_info->add_pG(k, j, -temp6);
+
                         break;
                     };
                 }

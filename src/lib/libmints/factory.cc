@@ -64,7 +64,7 @@ bool MatrixFactory::init_with_chkpt(shared_ptr<Chkpt> chkpt)
         Communicator::world->raw_bcast(&(rowspi_[0]), nirreps_*sizeof(int), 0);
         Communicator::world->raw_bcast(&(colspi_[0]), nirreps_*sizeof(int), 0);
     }
-    
+
     return true;
 }
 
