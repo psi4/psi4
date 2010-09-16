@@ -107,7 +107,20 @@ sub determine_keyword_type_and_default
          $Default = $2;
          $Possibilities = $3;
          $Default = "No Default" unless $Default =~ /\w+/;
+     }elsif(/add_str_i\(\s*\"(.*)\"\s*\,\s*\"(.*)\"\s*\,\s*\"(.*)\"\s*\)/){
+         # This is a string, with default and options
+         $Type = "str";
+         $Keyword = $1;
+         $Default = $2;
+         $Possibilities = $3;
+         $Default = "No Default" unless $Default =~ /\w+/;
      }elsif(/add_str\(\s*\"(.*)\"\s*,\s*\"(.*)\"\s*\)/){
+         # This is a string, with default, but without options
+         $Type = "str";
+         $Keyword = $1;
+         $Default = $2;
+         $Default = "No Default" unless $Default =~ /\w+/;
+     }elsif(/add_str_i\(\s*\"(.*)\"\s*,\s*\"(.*)\"\s*\)/){
          # This is a string, with default, but without options
          $Type = "str";
          $Keyword = $1;
