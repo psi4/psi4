@@ -10,7 +10,9 @@
 #include <libparallel/parallel.h>
 #include <libqt/qt.h>
 #include "rhf.h"
+#if HAVE_MADNESS == 1
 #include <tensor/tensor.h>
+#endif
 #include <psi4-dec.h>
 
 #if HAVE_MADNESS == 1
@@ -43,7 +45,7 @@ class PARALLEL_G_BUILD_INFO {
             if(integral.get() == NULL)
                 integral = shared_ptr<IntegralFactory> (new IntegralFactory(basis_info, basis_info, basis_info, basis_info));
 
-            if (eri_info.get() == NULL) 
+            if (eri_info.get() == NULL)
                 eri_info = shared_ptr<TwoBodyInt>(integral->eri());
 
             if(pD.get() == NULL)
@@ -83,7 +85,7 @@ class PARALLEL_G_BUILD_INFO {
 
         void compute_integrals(const int &P, const int &Q,
           const int &R, const int &S) {
-            
+
             eri_info->compute_shell(P, Q, R, S);
         }
 
@@ -191,8 +193,8 @@ class G_MAT {
     private:
         Tensor<double> mat;
 
-    public:        
-        G_MAT() {}           
+    public:
+        G_MAT() {}
 
         G_MAT(Tensor<double> & _mat) : mat(_mat) {}
 
@@ -208,7 +210,7 @@ class G_MAT {
             // Get the storage buffer from the eri object
 
             const double *buffer = g_info->get_buffer();
-            
+
             g_info->compute_integrals(_P, _Q, _R, _S);
 
             shared_ptr<IntegralsIterator> integral_iter = g_info->create_int_iter(_P, _Q, _R, _S);
