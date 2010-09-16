@@ -183,6 +183,7 @@ namespace psi {
         LocalCommunicator& operator=(const LocalCommunicator& other);
 
         virtual void sync();
+        virtual void barrier();
 
         virtual void raw_send(int target, const void *data, int nbyte);
         virtual void raw_recv(int sender, void *data, int nbyte);

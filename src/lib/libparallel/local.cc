@@ -82,6 +82,11 @@ void LocalCommunicator::sync()
 
 }
 
+void LocalCommunicator::barrier()
+{
+
+}
+
 void LocalCommunicator::print(FILE *out) const
 {
     fprintf(out, "\n    Using LocalCommunicator (Number of processes = 1)\n\n");
