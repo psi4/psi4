@@ -19,6 +19,7 @@ class Vector;
 class SimpleVector;
 class MatrixFactory;
 class SimpleMatrix;
+class Dimension;
 
 extern FILE *outfile;
 
@@ -85,6 +86,9 @@ public:
 
     /// Contructs a Matrix from a dpdfile2, which must already be initialized.
     Matrix(dpdfile2 *inFile);
+
+    /// Constructor using Dimension's
+    Matrix(std::string& name, const Dimension& rows, const Dimension& cols);
 
     /// Destructor, frees memory
     ~Matrix();
@@ -339,6 +343,9 @@ public:
     /// Converts Matrix pointer to SimpleMatrix
     SimpleMatrix(const Matrix* copy);
 
+    /// Constructor using Dimension's
+    SimpleMatrix(std::string& name, const Dimension& rows, const Dimension& cols);
+
     /// Destructor, frees memory
     ~SimpleMatrix();
 
@@ -390,8 +397,18 @@ public:
 
     /// Returns the trace of this
     double trace() const;
+    /*! Computes the inverse of a real symmetric positive definite
+     *  matrix A using the Cholesky factorization A = L*L**T
+     *  computed by cholesky_factorize().
+     */
+    void invert();
     /// Create a new SimpleMatrix which is the transpose of this
     SimpleMatrix *transpose();
+    /// Transpose of this
+    void transpose_this();
+
+    void copy_lower_to_upper();
+    void copy_upper_to_lower();
 
     /// Add a matrix to this
     void add(const SimpleMatrix*);

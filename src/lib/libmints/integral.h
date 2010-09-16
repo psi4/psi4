@@ -23,7 +23,18 @@
     Computes offset index for cartesian function.
 */
 #define INT_CARTINDEX(am,i,j) (((i) == (am))? 0 : (((((am) - (i) + 1)*((am) - (i)))>>1) + (am) - (i) - (j)))
-
+/*! \def INT_ICART(a, b, c)
+    Given a, b, and c compute a cartesian offset.
+*/
+#define INT_ICART(a, b, c) (((((((a)+(b)+(c)+1)<<1)-(a))*((a)+1))>>1)-(b)-1)
+/*! \def INT_IPURE(l, m)
+    Given l and m compute a pure function offset.
+*/
+#if PSI_INTEGRALS_STANDARD == 1
+  #define INT_IPURE(l, m) ((l)+(m))
+#else
+  #define INT_IPURE(l, m) ((m)<0?2*-(m):((m)==0?0:2*(m)-1))
+#endif
 namespace psi {
 
 class BasisSet;
@@ -64,6 +75,8 @@ public:
 };
 
 /*! \ingroup MINTS */
+/** This is a base class for a container for a sparse Cartesian to solid
+    harmonic basis function transformation. */
 class SphericalTransform
 {
 protected:
@@ -72,6 +85,8 @@ protected:
     int subl_;
 
     SphericalTransform();
+
+    virtual void init();
 public:
     SphericalTransform(int l, int subl = -1);
     virtual ~SphericalTransform() {};
@@ -95,6 +110,16 @@ public:
 };
 
 /*! \ingroup MINTS */
+/// This describes a solid harmonic to Cartesian transformation.
+class ISphericalTransform : public SphericalTransform
+{
+protected:
+    ISphericalTransform();
+    void init();
+public:
+    ISphericalTransform(int l, int subl=-1);
+};
+
 class SphericalTransformIter
 {
 private:
@@ -120,6 +145,8 @@ public:
     int b()         const { return trans_.b(i_); }
     /// Returns the Cartesian basis function's z exponent of component i
     int c()         const { return trans_.c(i_); }
+    /// Return a component of the transform.
+    int l(int i) { return i?(i==1?b():c()):a(); }
 };
 
 /*! \ingroup MINTS */
@@ -216,8 +243,10 @@ protected:
     /// Center 4 basis set
     boost::shared_ptr<BasisSet> bs4_;
 
-    /// Provides ability to transform to and from sphericals (d=0, f=1, g=2)
+    /// Provides ability to transform to sphericals (d=0, f=1, g=2)
     std::vector<SphericalTransform> spherical_transforms_;
+    /// Provides ability to transform from sphericals (d=0, f=1, g=2)
+    std::vector<ISphericalTransform> ispherical_transforms_;
 
 public:
     /** Initialize IntegralFactory object given a GaussianBasisSet for each center. */
@@ -270,7 +299,8 @@ public:
     std::vector<SphericalTransform> spherical_transform() { return spherical_transforms_; }
 
     /// Return a spherical transform iterator object for am
-    SphericalTransformIter* spherical_transform_iter(int am) { return new SphericalTransformIter(spherical_transforms_[am]); }
+    SphericalTransformIter* spherical_transform_iter(int am, int inv=0, int subl=-1);
+
     /// Return a new Cartesian iterator
     CartesianIter* cartesian_iter(int l);
     /// Return a new rudundant Cartesian iterator

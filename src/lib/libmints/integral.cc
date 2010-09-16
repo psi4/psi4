@@ -79,8 +79,10 @@ TwoBodyInt* IntegralFactory::eri(int deriv, double schwarz)
 
 void IntegralFactory::init_spherical_harmonics(int max_am)
 {
-    for (int i=0; i<=max_am; ++i)
+    for (int i=0; i<=max_am; ++i) {
         spherical_transforms_.push_back(SphericalTransform(i));
+        ispherical_transforms_.push_back(ISphericalTransform(i));
+    }
 }
 
 ShellCombinationsIterator IntegralFactory::shells_iterator()
@@ -92,6 +94,7 @@ IntegralsIterator ShellCombinationsIterator::integrals_iterator()
 {
     return IntegralsIterator(bs1_->shell(p()), bs2_->shell(q()), bs3_->shell(r()), bs4_->shell(s()));
 }
+
 IntegralsIterator IntegralFactory::integrals_iterator(int p, int q, int r, int s)
 {
     return IntegralsIterator(bs1_->shell(p), bs2_->shell(q), bs3_->shell(r), bs4_->shell(s));
@@ -112,10 +115,21 @@ RedundantCartesianSubIter* IntegralFactory::redundant_cartesian_sub_iter(int l)
     return new RedundantCartesianSubIter(l);
 }
 
-ShellRotation IntegralFactory::shell_rotation(int am, SymmetryOperation &, int pure)
+ShellRotation IntegralFactory::shell_rotation(int am, SymmetryOperation &so, int pure)
 {
     ShellRotation r(am, so, this, pure);
     return r;
+}
+
+SphericalTransformIter* IntegralFactory::spherical_transform_iter(int am, int inv, int subl)
+{
+    if (subl != -1)
+        throw NotImplementedException("IntegralFactory::spherical_transform_iter: Not implemented for subl != -1.");
+
+    if (inv) {
+        return new SphericalTransformIter(ispherical_transforms_[am]);
+    }
+    return new SphericalTransformIter(spherical_transforms_[am]);
 }
 
 /*

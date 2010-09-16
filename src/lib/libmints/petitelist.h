@@ -128,8 +128,8 @@ public:
 
     void print(FILE *out=outfile);
 
-    Dimension* AO_basisdim();
-    Dimension* SO_basisdim();
+    Dimension AO_basisdim();
+    Dimension SO_basisdim();
 
     /// Return the basis function rotation matrix R(g)
     /// @param g index of the group operation

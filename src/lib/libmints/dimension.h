@@ -16,8 +16,12 @@ class Dimension
 
     Dimension();
 public:
+    Dimension(const Dimension& other);
     Dimension(int n, const std::string& name = "");
     ~Dimension();
+
+    /// Assignment operator
+    Dimension& operator=(const Dimension& other);
 
     /// Return the dimension
     int n() const { return n_; }
