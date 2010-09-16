@@ -280,6 +280,9 @@ public:
     /** Converts an atom number to the number of its generating unique atom.
         The return value is in [0, nunique). */
     int atom_to_unique(int iatom) const { return atom_to_unique_[iatom]; }
+    /** Converts an atom number to the offset of this atom in the list of
+        generated atoms. The unique atom itself is allowed offset 0. */
+    int atom_to_unique_offset(int iatom) const;
     /// @}
 
     ///

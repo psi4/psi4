@@ -54,10 +54,13 @@ ShellRotation::ShellRotation(const ShellRotation& other)
     *this = other;
 }
 
-ShellRotation::ShellRotation(int a, SymmetryOperation& so, const shared_ptr<IntegralFactory>& ints, int pure) :
+ShellRotation::ShellRotation(int a, SymmetryOperation& so, const IntegralFactory* ints, int pure) :
     n_(0), am_(0), r_(0)
 {
-    init(a, so, ints);
+    if (a > 0 && pure)
+        init_pure(a, so, ints);
+    else
+        init(a, so, ints);
 }
 
 ShellRotation::~ShellRotation()
@@ -95,7 +98,7 @@ void ShellRotation::done()
     n_=0;
 }
 
-void ShellRotation::init(int a, SymmetryOperation& so, const shared_ptr<IntegralFactory>& ints)
+void ShellRotation::init(int a, SymmetryOperation& so, const IntegralFactory* ints)
 {
     done();
 
@@ -144,6 +147,41 @@ void ShellRotation::init(int a, SymmetryOperation& so, const shared_ptr<Integral
 
     delete ip;
     delete jp;
+}
+
+void ShellRotation::init_pure(int a, SymmetryOperation &so, const IntegralFactory *ints)
+{
+    if (a < 1) {
+        init(a, so, ints);
+        return;
+    }
+
+    done();
+
+    am_=a;
+
+    SphericalTransformIter *ip = ints->spherical_transform_iter(am_);
+    SphericalTransformIter *jp = ints->spherical_transform_iter(am_, 1);
+    RedundantCartesianSubIter *kp = ints->redundant_cartesian_sub_iter(am_);
+
+    SphericalTransformIter& I = *ip;
+    SphericalTransformIter& J = *jp;
+    RedundantCartesianSubIter& K = *kp;
+    int lI[3];
+    int m, iI;
+
+    r = new double*[n_];
+    for (m=0; m<n_; ++m) {
+        r[m] = new double[n_];
+        memset(r[m], 0, sizeof(double)*n_);
+    }
+
+    for (I.first(); !I.is_done(); I.next()) {
+        for (J.first(); !J.is_done(); J.next()) {
+            double coef = I.coef()*J.coef();
+            double tmp = 0.0;
+            for (K.s)
+            }
 }
 
 ShellRotation ShellRotation::operate(const ShellRotation& rot) const

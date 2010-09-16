@@ -1382,7 +1382,7 @@ Molecule::extract_subsets(const std::vector<int> &real_list, const std::vector<i
     }
 
     sort(list.begin(), list.end());
-    
+
     int fragCharge = 0;
     int multiplicity = 1;
     for(int fragment = 0; fragment < list.size(); ++fragment){
@@ -1696,6 +1696,18 @@ void Molecule::is_linear_planar(bool& linear, bool& planar, double tol) const
         }
     }
     planar = true;
+}
+
+int Molecule::atom_to_unique_offset(int iatom) const
+{
+    int iuniq = atom_to_unique_[iatom];
+    int nequiv = nequiv_[iuniq];
+    for (int i=0; i<nequiv; ++i) {
+        if (equiv_[iuniq][i] == iatom)
+            return i;
+    }
+    throw PSIEXCEPTION("Molecule::atom_to_unique_offset: I should've found the atom requested...but didn't.");
+    return -1;
 }
 
 boost::shared_ptr<PointGroup> Molecule::find_point_group(double tol) const

@@ -3,13 +3,17 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include <cstdio>
 #include <stdint.h>
 
 namespace psi {
 
+extern FILE *outfile;
+
 class BasisSet;
 class IntegralFactory;
 class Matrix;
+class Dimension;
 
 inline int64_t
 ij_offset64(int64_t i, int64_t j)
@@ -122,10 +126,10 @@ public:
 
     int nblocks() const { return nblocks_; }
 
-    void print();
+    void print(FILE *out=outfile);
 
-    int* AO_basisdim();
-    int* SO_basisdim();
+    Dimension* AO_basisdim();
+    Dimension* SO_basisdim();
 
     /// Return the basis function rotation matrix R(g)
     /// @param g index of the group operation

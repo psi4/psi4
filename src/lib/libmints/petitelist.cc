@@ -27,11 +27,237 @@
 // The U.S. Government is granted a limited license as per AL 91-7.
 //
 
-
 #include "mints.h"
+#include <libqt/qt.h> // needed for dgesvd
 
 using namespace boost;
 using namespace psi;
+
+///////////////////////////////////////////////////////////////////////////////
+
+contribution::contribution()
+{
+
+}
+
+contribution::~contribution()
+{
+
+}
+
+contribution::contribution(int b, double c) : bfn(b), coef(c)
+{
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+SO::SO() : len(0), length(0), cont(0)
+{
+
+}
+
+SO::SO(int l) : len(0), length(0), cont(0)
+{
+    set_length(l);
+}
+
+SO::~SO()
+{
+    set_length(0);
+}
+
+SO& SO::operator =(const SO& so)
+{
+    set_length(so.length);
+    length = so.length;
+    for (int i=0; i<length; ++i)
+        cont[i] = so.cont[i];
+    return *this;
+}
+
+void SO::set_length(int l)
+{
+    len=l;
+    length=l;
+    if (cont) {
+        delete[] cont;
+        cont=0;
+    }
+
+    if (l)
+        cont = new contribution[l];
+}
+
+void SO::reset_length(int l)
+{
+    length=l;
+
+    if (l<=len)
+        return;
+
+    l=l+10;
+
+    contribution *newcont = new contribution[l];
+
+    if (cont) {
+        for (int i=0; i<len; ++i)
+            newcont[i] = cont[i];
+
+        delete[] cont;
+    }
+
+    cont = newcont;
+    len=l;
+}
+
+int SO::equiv(const SO& so)
+{
+    int i;
+
+    if (so.length != length)
+        return 0;
+
+    double c=0;
+    for (i=0; i < length; i++) {
+        if (cont[i].bfn != so.cont[i].bfn)
+            return 0;
+        c += cont[i].coef*so.cont[i].coef;
+    }
+
+    // if the overlap == 1.0, they're equal (SO's should have been
+    // normalized by now)
+    if (fabs(fabs(c)-1.0) < 1.0e-3)
+        return 1;
+
+    return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+SO_block::SO_block() : len(0), so(0)
+{
+}
+
+SO_block::SO_block(int l) : len(0), so(0)
+{
+    set_length(l);
+}
+
+SO_block::~SO_block()
+{
+    set_length(0);
+}
+
+void
+SO_block::set_length(int l)
+{
+    len=l;
+    if (so) {
+        delete[] so;
+        so=0;
+    }
+
+    if (l)
+        so = new SO[l];
+}
+
+void
+SO_block::reset_length(int l)
+{
+    if (len == l) return;
+
+    SO *newso = new SO[l];
+
+    if (so) {
+        for (int i=0; i < len; i++)
+            newso[i] = so[i];
+
+        delete[] so;
+    }
+
+    so=newso;
+    len=l;
+}
+
+int
+SO_block::add(SO& s, int i)
+{
+    // first check to see if s is already here
+    for (int j=0; j < ((i < len) ? i : len); j++)
+        if (so[j].equiv(s))
+            return 0;
+
+    if (i >= len)
+        reset_length(i+1);
+    so[i] = s;
+
+    return 1;
+}
+
+void
+SO_block::print(const char *title)
+{
+    int i,j;
+
+    fprintf(outfile, "SO block %s\n", title);
+
+    for (i=0; i < len; i++) {
+        fprintf(outfile, "  SO %d\n", i+1);
+        for (j=0; j < so[i].length; j++)
+            fprintf(outfile, " %10d", so[i].cont[j].bfn);
+        fprintf(outfile, "\n");
+
+        for (j=0; j < so[i].length; j++)
+            fprintf(outfile, " %10.7f", so[i].cont[j].coef);
+        fprintf(outfile, "\n");
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+struct lin_comb {
+    int ns;
+    int f0;
+    int mapf0;
+    double **c;
+
+    lin_comb(int ins, int if0, int imf0) : ns(ins), f0(if0), mapf0(imf0) {
+        int i;
+
+        c = new double*[ns];
+        for (i=0; i < ns; i++) {
+            c[i] = new double[ns];
+            memset(c[i],0,sizeof(double)*ns);
+        }
+    }
+
+    ~lin_comb() {
+        if (c) {
+            for (int i=0; i < ns; i++)
+                if (c[i])
+                    delete[] c[i];
+                delete[] c;
+            c=0;
+        }
+    }
+
+    void print() const {
+        int i;
+        for (i=0; i < ns; i++)
+            fprintf(outfile, " %10d", mapf0+i);
+        fprintf(outfile, "\n");
+
+        for (i=0; i < ns; i++) {
+            fprintf(outfile, "%2d", f0+i);
+            for (int j=0; j < ns; j++)
+                fprintf(outfile, " %10.7f", c[i][j]);
+            fprintf(outfile, "\n");
+        }
+    }
+};
+
+///////////////////////////////////////////////////////////////////////////////
 
 int **compute_atom_map(const shared_ptr<BasisSet> &basis)
 {
@@ -353,4 +579,193 @@ void PetiteList::init()
     }
 
     delete[] red_rep;
+}
+
+Dimension* PetiteList::AO_basisdim()
+{
+    int one = 1;
+    int nbf = basis_->nbf();
+    Dimension *ret = new Dimension(1, "AO Basis Dimension");
+    (*ret)[0] = nbf;
+    return ret;
+}
+
+Dimension* PetiteList::SO_basisdim()
+{
+    int i, j, ii;
+
+    // grab reference to the basis set;
+    BasisSet& gbs = *basis_.get();
+
+    // Create the character table for the point group
+    CharacterTable ct = gbs.molecule()->point_group()->char_table();
+
+    // ncomp is the number of symmetry blocks we have
+    int ncomp = nblocks();
+
+    Dimension* pret = new Dimension(ncomp, "SO Basis Dimension");
+    Dimension& ret = *pret;
+
+    for (i=0; i<nirrep_; ++i) {
+        int nbas = (c1_) ? gbs.nbf() : nbf_in_ir_[i];
+        ret[i] = nbas;
+    }
+
+    return pret;
+}
+
+void PetiteList::print(FILE *out)
+{
+    int i;
+
+    fprintf(out, "PetiteList:\n");
+
+    if (c1_) {
+        fprintf(out, "  is c1\n");
+        return;
+    }
+
+    fprintf(out, "  natom_ = %d\n", natom_);
+    fprintf(out, "  nshell_ = %d\n", nshell_);
+    fprintf(out, "  ng_ = %d\n", ng_);
+    fprintf(out, "  nirrep_ = %d\n", nirrep_);
+
+    fprintf(out, "  atom_map_ = \n");
+    for (i=0; i<natom_; ++i) {
+        fprintf(out, "    ");
+        for (int g=0; g<ng_; ++g)
+            fprintf(out, "%5d ", atom_map_[i][g]);
+        fprintf(outfile, "\n");
+    }
+
+    fprintf(out, "  shell_map_ = \n");
+    for (i=0; i<nshell_; ++i) {
+        fprintf(out, "    ");
+        for (int g=0; g<ng_; ++g)
+            fprintf(out, "%5d ", shell_map_[i][g]);
+        fprintf(outfile, "\n");
+    }
+
+    fprintf(out, "  p1_ =\n");
+    for (i=0; i<nshell_; ++i)
+        fprintf(out, "    %5d\n", p1_[i]);
+
+    fprintf(out, "  lamij_ = \n");
+    for (i=0; i<nshell_; ++i) {
+        fprintf(out, "    ");
+        for (int j=0; j<=i; ++j)
+            fprintf(out, "%5d ", lamij_[i_offset64(i)+j]);
+        fprintf(outfile, "\n");
+    }
+
+    fprintf(out, "\n");
+
+    CharacterTable ct = basis_->molecule()->point_group()->char_table();
+    for (i=0; i<nirrep_; ++i)
+        fprintf(out, "%5d functions of %s symmetry\n", nbf_in_ir_[i], ct.gamma(i).symbol());
+}
+
+SO_block* PetiteList::aotoso_info()
+{
+    int iuniq, i, j, d, ii, jj, g, s, c, ir;
+
+    BasisSet& gbs = *basis_.get();
+    Molecule& mol = *gbs.molecule().get();
+
+    CharacterTable ct = mol.point_group()->char_table();
+    SymmetryOperation so;
+
+    if (c1_) {
+        SO_block *SOs = new SO_block[1];
+        SOs[0].set_length(gbs.nbf());
+        for (i=0; i<gbs.nbf(); ++i) {
+            SOs[0].so[i].set_length(1);
+            SOs[0].so[i].cont[0].bfn=i;
+            SOs[0].so[i].cont[0].coef=1.0;
+        }
+        return SOs;
+    }
+
+    int ncomp=0;
+    for (i=0; i<nirrep_; ++i)
+        ncomp += ct.gamma(i).degeneracy();
+
+    int *saoelem = new int[ncomp];
+    memset(saoelem, 0, sizeof(int)*ncomp);
+
+    int *whichir = new int[ncomp];
+    int *whichcmp = new int[ncomp];
+    for (i=ii=0; i<nirrep_; ++i) {
+        for (int j=0; j<ct.gamma(i).degeneracy(); ++j,++ii) {
+            whichir[ii] = i;
+            whichcmp[ii] =j;
+        }
+    }
+
+    // SOs is an array of SO_blocks which hold the redundant SO's
+    SO_block *SOs = new SO_block[ncomp];
+
+    for (i=0; i<ncomp; ++i) {
+        ir = whichir[i];
+        int len = (ct.gamma(ir).complex()) ? nbf_in_ir_[ir]/2 : nbf_in_ir_[ir];
+        SOs[i].set_length(len);
+    }
+
+    // loop over all unique shells
+    for (iuniq=0; iuniq<mol.nunique(); ++iuniq) {
+        int nequiv = mol.nequivalent(iuniq);
+        i = mol.unique(iuniq);
+        for (s=0; s<gbs.nshell_on_center(i); ++s) {
+            int shell_i = gbs.shell_on_center(i, s);
+
+            // test to see if there are any high am cartesian functions in this
+            // shell.  for now don't allow symmetry with cartesian functions...I
+            // just can't seem to get them working.
+            if (gbs.shell(i, s)->am() > 1 && gbs.shell(i, s)->is_cartesian()) {
+                if (ng_ != nirrep_) {
+                    fprintf(stderr, "PetiteList::aotoso: cannot yet handle symmetry for angular momentum >= 2\n");
+                    abort();
+                }
+            }
+
+            int bfn_offset_in_shell = 0;
+            int nfuncuniq = gbs.shell(i, s)->nfunction();
+            int nfuncall  = nfuncuniq * nequiv;
+
+            // Allocate an array to store linear combination of orbitals
+            // this is destroyed by the SVD routine
+            double **linorb = block_matrix(nfuncuniq, nfuncall);
+
+            // a copy of linorb
+            double **linorbcop = block_matrix(nfuncuniq, nfuncall);
+
+            // allocate an array for the SVD routine
+            double **u = block_matrix(nfuncuniq, nfuncuniq);
+
+            // loop through each irrep to form the linear combination of orbitals
+            // of that symmetry
+            int irnum = 0;
+            for (ir = 0; ir<ct.nirrep(); ++ir) {
+                int cmplx = (ct.complex() && ct.gamma(ir).complex());
+                for (int comp=0; comp < ct.gamma(ir).degeneracy(); ++comp) {
+                    memset(linorb[0], 0, nfuncuniq*nfuncall*sizeof(double));
+                    for (d=0; d < ct.gamma(ir).degeneracy(); ++d) {
+                        // if this a point group with a complex E representation,
+                        // then only do the first set of projects for E
+                        if (d && cmplx) break;
+
+                        // operate on each function in this contraction with each
+                        // symmetry operation to form symmetrized linear combinations
+                        // of orbitals
+                        for (g=0; g<ng_; ++g) {
+                            // the character
+                            double ccdg = ct.gamma(ir).p(comp, d, g);
+
+                            so = ct.symm_operation(g);
+                            int equivatom = atom_map_[i][g];
+                            int atomoffset = gbs.molecule()->atom_to_unique_offset(equivatom);
+
+                            ShellRotation rr = integral_->sh
+                            }
+                    }
 }

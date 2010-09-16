@@ -30,3 +30,4 @@
 #include <libmints/vector3.h>
 #include <libmints/writer.h>
 #include <libmints/wavefunction.h>
+#include <libmints/dimension.h>

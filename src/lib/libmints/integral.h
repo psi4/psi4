@@ -34,6 +34,8 @@ class Symmetry;
 class CartesianIter;
 class RedundantCartesianIter;
 class RedundantCartesianSubIter;
+class ShellRotation;
+class SymmetryOperation;
 
 /*! \ingroup MINTS */
 class SphericalTransformComponent
@@ -67,10 +69,11 @@ class SphericalTransform
 protected:
     std::vector<SphericalTransformComponent> components_;
     int l_; // The angular momentum this transform is for.
+    int subl_;
 
     SphericalTransform();
 public:
-    SphericalTransform(int l);
+    SphericalTransform(int l, int subl = -1);
     virtual ~SphericalTransform() {};
 
     /// Returns the Cartesian basis function index of component i
@@ -244,7 +247,7 @@ public:
 
     /// Returns an OneBodyInt that computes the electric field
     virtual OneBodyInt *electric_field();
-    
+
     /// Returns an OneBodyInt that computes the point electrostatic potential
     virtual OneBodyInt *electrostatic();
 
@@ -262,7 +265,7 @@ public:
 
     /// Return spherical transform object for am
     SphericalTransform* spherical_transform(int am) { return &(spherical_transforms_[am]); }
-    
+
     // Return spherical transform object for am
     std::vector<SphericalTransform> spherical_transform() { return spherical_transforms_; }
 
@@ -274,6 +277,9 @@ public:
     RedundantCartesianIter* redundant_cartesian_iter(int l);
     /// Return a new rudundant Cartesian sub iterator
     RedundantCartesianSubIter* redundant_cartesian_sub_iter(int l);
+    /** Return the ShellRotation object for a shell of a given angular
+        momentum. Pass nonzero to pure to do solid harmonics. */
+    ShellRotation shell_rotation(int am, SymmetryOperation&, int pure=0);
 };
 
 }

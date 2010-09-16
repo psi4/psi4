@@ -97,19 +97,25 @@ IntegralsIterator IntegralFactory::integrals_iterator(int p, int q, int r, int s
     return IntegralsIterator(bs1_->shell(p), bs2_->shell(q), bs3_->shell(r), bs4_->shell(s));
 }
 
-CartesianIter* IntegralFactory::cartesian_iter(int l) 
-{ 
-    return new CartesianIter(l); 
+CartesianIter* IntegralFactory::cartesian_iter(int l)
+{
+    return new CartesianIter(l);
 }
 
-RedundantCartesianIter* IntegralFactory::redundant_cartesian_iter(int l) 
-{ 
-    return new RedundantCartesianIter(l); 
+RedundantCartesianIter* IntegralFactory::redundant_cartesian_iter(int l)
+{
+    return new RedundantCartesianIter(l);
 }
 
-RedundantCartesianSubIter* IntegralFactory::redundant_cartesian_sub_iter(int l) 
-{ 
-    return new RedundantCartesianSubIter(l); 
+RedundantCartesianSubIter* IntegralFactory::redundant_cartesian_sub_iter(int l)
+{
+    return new RedundantCartesianSubIter(l);
+}
+
+ShellRotation IntegralFactory::shell_rotation(int am, SymmetryOperation &, int pure)
+{
+    ShellRotation r(am, so, this, pure);
+    return r;
 }
 
 /*
@@ -174,7 +180,8 @@ void ShellCombinationsIterator::generate_combinations(BasisSet*bs1, BasisSet*bs2
     }
 }*/
 
-void ShellCombinationsIterator::first(){
+void ShellCombinationsIterator::first()
+{
     usii = usjj = uskk = usll = upk = 0;
     done = false;
 
@@ -209,8 +216,8 @@ void ShellCombinationsIterator::first(){
 
 }
 
-
-void ShellCombinationsIterator::next(){
+void ShellCombinationsIterator::next()
+{
     ++upk;
     if(upk >= num_unique_pk){
         upk = 0;
@@ -284,10 +291,8 @@ void ShellCombinationsIterator::next(){
 
 }
 
-
-
-
-void IntegralsIterator::first(){
+void IntegralsIterator::first()
+{
     current.i = 0 + fii;
     current.j = 0 + fij;
     current.k = 0 + fik;
@@ -319,8 +324,8 @@ void IntegralsIterator::first(){
     }
 }
 
-
-void IntegralsIterator::next(){
+void IntegralsIterator::next()
+{
     if (usi == usj && usk == usl && usi == usk) {
         ++ll;
         if(ll > llmax){
