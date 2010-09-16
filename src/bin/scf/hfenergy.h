@@ -25,6 +25,11 @@ public:
     virtual ~HFEnergy() {}
     
     double compute_energy();
+
+#if HAVE_MADNESS == 1
+    double compute_parallel_energy();
+#endif
+    
 };
 
 }}

@@ -298,6 +298,9 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_int("STEPS_PER_LOCALIZE",1);
 
     options.add_str("SCF_TYPE","PK","PK OUT_OF_CORE DIRECT DF L_DF CD 1C_CD");
+    /*- Whether to run in parallel or not -*/
+    options.add_bool("PARALLEL", false);
+
     /*- Cholesky Cutoff -*/
     options.add_double("CHOLESKY_CUTOFF",1E-4);
     /*- Cholesky Integral factory only? -*/
