@@ -9,6 +9,7 @@
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.h>
 #include <libpsio/psio.hpp>
+#include <libparallel/parallel.h>
 #include <libchkpt/chkpt.hpp>
 #include <libipv1/ip_lib.h>
 #include <libiwl/iwl.h>
@@ -33,10 +34,46 @@ PsiReturnType scf(Options & options)
     // Initialize the psi3 timer library.
     timer_init();
 
-    // Compute the Hartree-Fock energy
-    HFEnergy hf(options, psio, chkpt);
-    double energy = hf.compute_energy();
+    double energy;
+    bool parallel;
 
+#if HAVE_MADNESS == 1
+    int use_madness;
+    std::string mad = Process::environment("MADNESS");
+    if ((mad == "true") || (mad == "True") || (mad == "TRUE")) {
+        use_madness = 1;
+    }
+    else {
+        use_madness = 0;
+    }
+
+    parallel = options.get_bool("PARALLEL");
+
+
+    if(use_madness && parallel) {
+        // Compute the Hartree-Fock energy
+        HFEnergy hf(options, psio, chkpt);
+        energy = hf.compute_parallel_energy();
+
+    }
+    else {
+#endif
+#if HAVE_MPI == 1
+        if(Communicator::world->me() == 0) {
+#endif
+
+            // Compute the Hartree-Fock energy
+            HFEnergy hf(options, psio, chkpt);
+            energy = hf.compute_energy();
+
+#if HAVE_MPI == 1
+        }
+#endif
+#if HAVE_MADNESS == 1
+    }
+#endif
+
+    
     Process::environment.globals["SCF ENERGY"] = energy;
     Process::environment.globals["CURRENT ENERGY"] = energy;
 

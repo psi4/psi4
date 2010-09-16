@@ -127,7 +127,7 @@ PsiReturnType execute_bp(std::string & bp, Options & options) {
         }
 
         // If the function call is LMP2, run in parallel
-        if (strcmp(thisJob, "LMP2") == 0 || strcmp(thisJob, "DFMP2") == 0) {
+        if (strcmp(thisJob, "LMP2") == 0 || strcmp(thisJob, "DFMP2") == 0 || strcmp(thisJob, "SCF") == 0) {
             // Needed a barrier before the functions are called
             Communicator::world->sync();
 
