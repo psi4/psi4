@@ -1,4 +1,4 @@
-function polished = cleanFunctional(name)
+function polished = cleanFunctional(name, handle)
 
 %Clean internal variables
 rho_a_str = sprintf('sed -i s/%s/%s/g "%s"','rho_a','rho_a\[index\]',name);
@@ -31,10 +31,10 @@ for k = 1:length(starts)-1
 end 
 
 k = length(starts);
-cleaned = [cleaned raw(stop:extents{k}(1,1)-1) name '_[index]' raw(extents{k}(2,2)+1:end)];
+cleaned = [cleaned raw(stop:extents{k}(1,1)-1) handle  '_[index]' raw(extents{k}(2,2)+1:end)];
 
 newline = sprintf('\n');
-cleaned = regexprep(cleaned,'\n  ','\n');
+cleaned = regexprep(cleaned,'\n  ','\n    ');
 
 %undo Hack
 cleaned = cleaned(2:end);
@@ -53,7 +53,7 @@ for k = 1:length(cleaned)
     end
     if (delta > 100)
         if (~isempty(strfind(')+*-/ ',cleaned(k))))
-            polished = [polished cleaned(left:k) ' \' newline '   '];
+            polished = [polished cleaned(left:k) ' \' newline '       '];
             delta = 3;
             left = k + 1;
         end

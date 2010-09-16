@@ -45,12 +45,12 @@ void NAME_Functional::computeRKSFunctional(shared_ptr<Properties> prop)
     const double* gamma_aa;
     const double* tau_a;
 
-    rho_a = prop->getDensity();
+    rho_a = prop->getDensityA();
     if (is_gga_) {
-        gamma_aa = prop->getDensityGradientSquared();
+        gamma_aa = prop->getDensityGradientSquaredAA();
     }
     if (is_meta_) {
-        tau_a = prop->getKEDensity();
+        tau_a = prop->getKEDensityA();
     }
 
     EXTRACT_PARAMS
@@ -125,7 +125,7 @@ void NAME_Functional::computeUKSFunctional(shared_ptr<Properties> prop)
     const double* tau_b;
 
     rho_a = prop->getDensityA();
-    rho_a = prop->getDensityB();
+    rho_b = prop->getDensityB();
     if (is_gga_) {
         gamma_aa = prop->getDensityGradientSquaredAA();
         gamma_ab = prop->getDensityGradientSquaredAB();

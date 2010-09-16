@@ -19,35 +19,74 @@ namespace psi { namespace functional {
 
 boost::shared_ptr<Functional> Functional::createFunctional(const std::string & name, int npoints, int deriv)
 {
-    CONSTRUCTORS
+    FUNCTIONAL_CONSTRUCTORS
 }
 std::string Functional::availableFunctionals()
 {
     std::stringstream f;
     f << "   Available Exchange Functionals:   " << endl;
-    f << "    Name:        LSDA:     GGA:     Meta: " << endl;
-    f << "  ------------ --------- -------- ---------" << endl;
-    
-    PRINTERS_X
-   
+    f << "    Name:        LSDA:      GGA:     Meta: " << endl;
+    f << "  ------------ --------- --------- ---------" << endl;
+    X_FUNCTIONALS   
+ 
     f << endl; 
     f << "   Available Correlation Functionals:   " << endl;
-    f << "    Name:        LSDA:     GGA:     Meta: " << endl;
-    f << "  ------------ --------- -------- ---------" << endl;
+    f << "    Name:        LSDA:      GGA:     Meta: " << endl;
+    f << "  ------------ --------- --------- ---------" << endl;
+    C_FUNCTIONALS
     
-    PRINTERS_C
+    f << endl; 
+    f << "   Available Combined Functionals:   " << endl;
+    f << "    Name:        LSDA:      GGA:     Meta: " << endl;
+    f << "  ------------ --------- --------- ---------" << endl;
+    XC_FUNCTIONALS
     
     return f.str();
     
 }
-boost::shared_ptr<SuperFunctional> createSuperFunctional(const std::string & name, int npoints, int deriv)
+std::vector<std::string> Functional::availableNames()
+{
+    std::vector<std::string> names;
+    FUNCTIONAL_NAMES
+    return names;
+}
+boost::shared_ptr<SuperFunctional> SuperFunctional::createSuperFunctional(const std::string & name, int npoints, int deriv)
 {
     shared_ptr<SuperFunctional> superfun = (shared_ptr<SuperFunctional>) new SuperFunctional(npoints, deriv);
 
     //Alias Table
-    SUPERFUNCTIONAL_ALIAS        
+    SUPER_CONSTRUCTORS        
 
     return superfun;
+}
+std::string SuperFunctional::availableSuperFunctionals()
+{
+    std::stringstream f;
+    
+    f << "   Available Exchange SuperFunctionals:   " << endl;
+    f << "    Name:        LSDA:      GGA:     Meta:    Hybrid:     PT2:      RC:       -D:" << endl;
+    f << "  ------------ --------- --------- --------- --------- --------- --------- ---------" << endl;
+    X_SUPERFUNCTIONALS  
+ 
+    f << endl; 
+    f << "   Available Correlation SuperFunctionals:   " << endl;
+    f << "    Name:        LSDA:      GGA:     Meta:    Hybrid:     PT2:      RC:       -D:" << endl;
+    f << "  ------------ --------- --------- --------- --------- --------- --------- ---------" << endl;
+    C_SUPERFUNCTIONALS    
+
+    f << endl; 
+    f << "   Available Combined SuperFunctionals:   " << endl;
+    f << "    Name:        LSDA:      GGA:     Meta:    Hybrid:     PT2:      RC:       -D:" << endl;
+    f << "  ------------ --------- --------- --------- --------- --------- --------- ---------" << endl;
+    XC_SUPERFUNCTIONALS    
+
+    return f.str();
+}
+std::vector<std::string> SuperFunctional::availableNames()
+{
+    std::vector<std::string> names;
+    SUPER_NAMES
+    return names;
 }
 
 }}

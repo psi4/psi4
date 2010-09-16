@@ -875,7 +875,9 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_int("ROWS_PER_READ", 0);
     /*- Number of threads to compute integrals with. 0 is wild card -*/
     options.add_int("RI_INTS_NUM_THREADS", 1);
+    /*- Print level -*/
     options.add_int("PRINT",1);
+    /*- Debugging information? -*/
     options.add_bool("DEBUG",false);
     /*- -Log10 of the energy convergence criterion -*/
     options.add_int("E_CONVERGE", 8);

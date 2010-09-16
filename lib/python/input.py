@@ -14,10 +14,6 @@ def process_global_command(matchobj):
     elif re.match(r'^\$', value):
         # Assume the user as set the variable in value
         temp = 'PsiMod.set_global_option("%s", %s)' % (key, value[1:])
-    elif re.match(yes, value):
-        temp = 'PsiMod.set_global_option("%s", True)' % (key)
-    elif re.match(no, value):
-        temp = 'PsiMod.set_global_option("%s", False)' % (key)
     else:
         temp = 'PsiMod.set_global_option("%s", "%s")' % (key, value)
 
@@ -49,10 +45,6 @@ def process_set_command(matchobj):
     elif re.match(r'^\$', value):
         # Assume the user as set the variable in value
         return spaces + 'PsiMod.set_option("%s", %s)' % (key, value[1:])
-    elif re.match(yes, value):
-        return spaces + 'PsiMod.set_option("%s", True)' % (key)
-    elif re.match(no, value):
-        return spaces + 'PsiMod.set_option("%s", False)' % (key)
     else:
         # Just place the value in quotes
         return spaces + 'PsiMod.set_option("%s", "%s")' % (key, value)
@@ -135,6 +127,17 @@ def process_memory_command(matchobj):
     return command
 
 def process_input(raw_input):
+    
+    #NOTE: If adding mulitline data to the preprocessor, use ONLY the following syntax:
+    #   function [objname] { ... }
+    #   which has the regex capture group:
+    #
+    #   r'^(\s*?)FUNCTION\s*(\w*?)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE
+    # 
+    #   your function is in capture group #1
+    #   your objname is in capture group #2
+    #   your data is in capture group #3
+
     # Process all "set name? { ... }"
     set_commands = re.compile(r'^(\s*?)set\s*(\w*?)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(set_commands, process_set_commands, raw_input)
@@ -144,7 +147,7 @@ def process_input(raw_input):
     temp = re.sub(set_command, process_set_command, temp)
 
     # Process all "global(s) { ... }"
-    global_commands = re.compile(r'^(\s*?)(global|globals) \s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    global_commands = re.compile(r'^(\s*?)(global|globals)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(global_commands, process_global_commands, temp)
 
     # Process all individual "global key value"
@@ -168,7 +171,15 @@ def process_input(raw_input):
     temp = re.sub(memory_string,process_memory_command,temp)
 
     # imports
-    temp = "from PsiMod import *\nfrom psi import *\nfrom psiopt import *\n" + temp
+    imports  = 'from PsiMod import *\n'    
+    imports += 'from opt import *\n'    
+    imports += 'from molecule import *\n'    
+    imports += 'from driver import *\n'    
+    imports += 'from text import *\n'    
+    imports += 'from wrappers import *\n'    
+    imports += 'from psiexceptions import *\n'    
+
+    temp = imports + temp
 
     return temp
 

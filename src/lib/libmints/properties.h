@@ -74,6 +74,7 @@ class Properties : public BasisPoints
         const double* getDensityLaplacian() const { return density_laplacian_; }
         const double* getKEDensity() const { return ke_density_; }	
         const double* getElectrostatic() const {return electrostatic_; }
+
         const double* getDensityA() const { return rho_a_; }	
         const double* getDensityB() const { return rho_b_; }	
         const double* getDensityGradientSquaredAA() const { return gamma_aa_; }
@@ -81,6 +82,7 @@ class Properties : public BasisPoints
         const double* getDensityGradientSquaredBB() const { return gamma_bb_; }
         const double* getKEDensityA() const { return tau_a_; }	
         const double* getKEDensityB() const { return tau_b_; }	
+
         double** getMOs() {return mos_; }
         void setToComputeMOs(bool v, int* indices, int n);
         void setToComputeDensity(bool v);

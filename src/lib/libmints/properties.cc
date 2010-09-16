@@ -188,9 +188,13 @@ void Properties::setToComputeDensity(bool v)
 {
     if (!do_density_ && v) {
             density_ = init_array(block_size_);
+            rho_a_ = init_array(block_size_);
+            rho_b_ = init_array(block_size_);
         }
         if (do_density_ && !v) {
             free(density_);
+            free(rho_a_);
+            free(rho_b_);
         }
 
         do_density_ = v;
@@ -204,12 +208,18 @@ void Properties::setToComputeDensityGradient(bool v)
             densityY_ = init_array(block_size_);
             densityZ_ = init_array(block_size_);
             density_gradient_2_ = init_array(block_size_);
+            gamma_aa_ = init_array(block_size_);
+            gamma_ab_ = init_array(block_size_);
+            gamma_bb_ = init_array(block_size_);
         }
         if (do_density_gradient_ && !v) {
             free(densityX_);
             free(densityY_);
             free(densityZ_);
             free(density_gradient_2_);
+            free(gamma_aa_);
+            free(gamma_ab_);
+            free(gamma_bb_);
         }
     do_density_gradient_ = v;
     if (v) {
@@ -261,9 +271,13 @@ void Properties::setToComputeKEDensity(bool v)
 {
     if (!do_ke_density_ && v) {
             ke_density_ = init_array(block_size_);
+            tau_a_ = init_array(block_size_);
+            tau_b_ = init_array(block_size_);
         }
         if (do_ke_density_ && !v) {
             free(ke_density_);
+            free(tau_a_);
+            free(tau_b_);
         }
     do_ke_density_ = v;
     if (v)

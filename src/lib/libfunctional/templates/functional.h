@@ -25,11 +25,13 @@ namespace functional {
 class Functional {
     public:
 
-        static boost::shared_ptr<Functional> createFunctional(const std::string & name, int npoints, int deriv = 1);
+        static boost::shared_ptr<Functional> createFunctional(const std::string & name, int npoints = 5000, int deriv = 1);
         static std::string availableFunctionals();
+        static std::vector<std::string> availableNames();
+        static std::string testFunctionals();
 
-        Functional(int npoints, int deriv = 1);
-        virtual ~Functional();
+        Functional(int npoints = 5000, int deriv = 1);
+        ~Functional();
 
         std::string getName() const { return name_; }        
         std::string getDescription() const { return description_; }        
@@ -42,6 +44,8 @@ class Functional {
         void setParameters(const std::vector<std::pair<std::string,double> > & params) { params_ = params; }        
         void setParameter(const std::string & key, double value);
 
+        std::string testFunctional(shared_ptr<Properties> props);
+
         bool isGGA() const { return is_gga_; } 
         bool isMeta() const { return is_meta_; } 
 
@@ -53,8 +57,8 @@ class Functional {
         double getDensityCutoff() const { return cutoff_; } 
         void setDensityCutoff(double cutoff) {cutoff = cutoff; }
         
-        virtual void computeRKSFunctional(boost::shared_ptr<Properties> props) = 0;
-        virtual void computeUKSFunctional(boost::shared_ptr<Properties> props) = 0;
+        virtual void computeRKSFunctional(boost::shared_ptr<Properties> props) {};
+        virtual void computeUKSFunctional(boost::shared_ptr<Properties> props) {};
 
         double* getFunctional() const { return functional_; }       
         double* getV_RhoA() const { return v_rho_a_; }       
@@ -98,7 +102,6 @@ class Functional {
         void reallocate(int npoints, int deriv);
         void release();
         void allocate();
-        void reallocate();
         
         std::string name_;
         std::string description_;
