@@ -53,6 +53,7 @@ class PARALLEL_G_BUILD_INFO {
             }
 
             if(pG.get() == NULL) {
+                //factory_.create_simple_matrix(G, "G (AO basis)");
                 pG = shared_ptr<SimpleMatrix>(new SimpleMatrix(nso, nso));
                 pG->zero();
             }
@@ -119,6 +120,7 @@ class PARALLEL_G_BUILD_INFO {
 };
 
 shared_ptr<PARALLEL_G_BUILD_INFO> g_info(new PARALLEL_G_BUILD_INFO());
+//shared_ptr<PARALLEL_G_BUILD_INFO> g_info();
 
 inline int integral_type(int i, int j, int k, int l)
 {
@@ -184,6 +186,7 @@ class Pair {
 
 
 class G_MAT {
+    private:
 
     public:
         G_MAT() {}
@@ -398,6 +401,10 @@ class G_MAT {
         }
 
 
+        template <typename Archive>
+        void serialize(const Archive& ar) {
+            ar;
+        }
 };
 
 typedef madness::WorldContainer<Pair,G_MAT> mad_G;
