@@ -10,9 +10,6 @@
 #include <libparallel/parallel.h>
 #include <libqt/qt.h>
 #include "rhf.h"
-#if HAVE_MADNESS == 1
-#include <tensor/tensor.h>
-#endif
 #include <psi4-dec.h>
 
 #if HAVE_MADNESS == 1
@@ -56,7 +53,6 @@ class PARALLEL_G_BUILD_INFO {
             }
 
             if(pG.get() == NULL) {
-                //factory_.create_simple_matrix(G, "G (AO basis)");
                 pG = shared_ptr<SimpleMatrix>(new SimpleMatrix(nso, nso));
                 pG->zero();
             }
@@ -65,7 +61,6 @@ class PARALLEL_G_BUILD_INFO {
                 pG->zero();
             }
 
-            //pG.init(basis_info->nao(), basis_info->nao(), "parallel_G (AO basis)");
             if(eri_lock.get() == NULL)
                 eri_lock = shared_ptr<madness::Spinlock> (Communicator::world->mad_mutex());
         }
@@ -124,7 +119,6 @@ class PARALLEL_G_BUILD_INFO {
 };
 
 shared_ptr<PARALLEL_G_BUILD_INFO> g_info(new PARALLEL_G_BUILD_INFO());
-//shared_ptr<PARALLEL_G_BUILD_INFO> g_info();
 
 inline int integral_type(int i, int j, int k, int l)
 {
@@ -190,13 +184,9 @@ class Pair {
 
 
 class G_MAT {
-    private:
-        Tensor<double> mat;
 
     public:
         G_MAT() {}
-
-        G_MAT(Tensor<double> & _mat) : mat(_mat) {}
 
         ~G_MAT() {}
 
@@ -408,10 +398,6 @@ class G_MAT {
         }
 
 
-        template <typename Archive>
-        void serialize(const Archive& ar) {
-            ar & mat;
-        }
 };
 
 typedef madness::WorldContainer<Pair,G_MAT> mad_G;

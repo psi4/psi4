@@ -26,7 +26,7 @@ public:
     
     double compute_energy();
 
-#if HAVE_MADNESS == 1
+#if HAVE_MPI == 1
     double compute_parallel_energy();
 #endif
     

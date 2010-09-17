@@ -78,8 +78,6 @@ int main(int argc, char **argv, char **envp)
     Communicator::world = shared_ptr<Communicator>(new LocalCommunicator);
 #endif
 
-    //sleep(60);
-
     Wavefunction::initialize_singletons();
 
     // Create the scripting object

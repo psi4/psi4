@@ -680,7 +680,8 @@ bool HF::load_or_compute_initial_C()
         // Read SCF energy from checkpoint file.
         if(Communicator::world->me() == 0)
             E_ = chkpt_->rd_escf();
-        Communicator::world->raw_bcast(&E_, sizeof(double), 0);
+        if(Communicator::world->nproc() > 1)
+            Communicator::world->raw_bcast(&E_, sizeof(double), 0);
 
         ret = true;
     } else {

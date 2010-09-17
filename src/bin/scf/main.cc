@@ -35,35 +35,21 @@ PsiReturnType scf(Options & options)
     timer_init();
 
     double energy;
-    bool parallel;
+    bool parallel = options.get_bool("PARALLEL");
 
-
-    std::string communicator = Process::environment("COMMUNICATOR");
-    parallel = options.get_bool("PARALLEL");
-
-    if(parallel == 1) {
-        if(communicator == "MADNESS" || communicator == "MPI") {
+    if(parallel) {
 #if HAVE_MPI == 1
-            HFEnergy hf(options, psio, chkpt);
-            energy = hf.compute_parallel_energy();
+        HFEnergy hf(options, psio, chkpt);
+        // Compute the Hartree-Fock energy in parallel
+        energy = hf.compute_parallel_energy();
+#else
+        throw InputException("Parallel SCF requires MPI or MADNESS. If you want to run in parallel, please install one or both." , "PARALLEL", __FILE__, __LINE__);
 #endif
-        }
-        else {
-            throw InputException("If you want to run SCF in parallel please set COMMUNICATOR to MADNESS or MPI in environment." , "PARALLEL", __FILE__, __LINE__);
-        }
     }
-
-
     else {
-        if(Communicator::world->nproc() <= 1) {
+            HFEnergy hf(options, psio, chkpt); 
             // Compute the Hartree-Fock energy
-            HFEnergy hf(options, psio, chkpt);
             energy = hf.compute_energy();
-        }
-        else {
-            throw InputException("If you want to run SCF in parallel please set COMMUNICATOR to MADNESS or MPI in environment, and parallel=true in input.",
-                    "PARALLEL", __FILE__, __LINE__);
-        }
     }
     
     Process::environment.globals["SCF ENERGY"] = energy;
