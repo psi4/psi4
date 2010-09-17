@@ -293,7 +293,7 @@ double RHF::compute_energy()
 
 double RHF::compute_energy_parallel()
 {
-#if HAVE_MADNESS == 1
+#if HAVE_MPI == 1
 
     //fprintf(outfile,"  Print = %d\n",print_);
     //print_ = options_.get_int("PRINT");
@@ -1674,6 +1674,7 @@ void RHF::form_G_from_direct_integrals()
     fprintf(outfile, "done.  %d two-electron integrals.\n", count); fflush(outfile);
 //    delete eri;
 
+
     // Set RefMatrix to RefSimpleMatrix handling symmetry blocking, if needed
     // Transform G back to symmetry blocking
     // G.transform(basisset_->uso_to_bf());
@@ -1691,14 +1692,9 @@ void RHF::form_G_from_direct_integrals_parallel()
 
     if(communicator == "MADNESS") {
 #if HAVE_MADNESS == 1
-        std::cout << "running with madness" << std::endl;
         using namespace madness;
 
         timer_on("G_direct_parallel");
-
-    //    shared_ptr<madness::World> newworld = Communicator::world->get_madworld();
-        // Zero out the G matrix
-    //    std::cout << "nmo = " << nmo_ << std::endl;
 
         G_->zero();
 
@@ -1748,15 +1744,14 @@ void RHF::form_G_from_direct_integrals_parallel()
         //free_int_matrix(shell);
 
         g_info->set_G_(G_);
-        //G_->print(outfile);
-        //G_->set(g_info->get_pG());
 
         timer_off("G_direct_parallel");
+#else
+        throw InputException("You are trying to run in parallel with MADNESS, but MADNESS is not installed or not linked properly." , "PARALLEL", __FILE__, __LINE__);
 #endif
     }
     else if (communicator == "MPI") {
-#if HAVE_MPI
-        std::cout << Communicator::world->me() << "\trunning with mpi" << std::endl;
+#if HAVE_MPI == 1
 
         timer_on("form_G_from_direct_integrals");
         double temp1, temp2, temp3, temp4, temp5, temp6;
@@ -1767,12 +1762,6 @@ void RHF::form_G_from_direct_integrals_parallel()
 
         // Need to back-transform the density from SO to AO basis
         SimpleMatrix *D = D_->to_simple_matrix();
-
-        // D->set_name("D (AO basis) pre-transform");
-        // D->print();
-        // D->back_transform(basisset_->uso_to_bf());
-        // D->set_name("D (AO basis) post-transform");
-        // D->print();
 
         // Need a temporary G in the AO basis
         SimpleMatrix G_local;
@@ -1790,7 +1779,7 @@ void RHF::form_G_from_direct_integrals_parallel()
         const double *buffer = eri_->buffer();
         // End factor out
 
-        //fprintf(outfile, "      Computing integrals..."); fflush(outfile);
+        fprintf(outfile, "      Computing integrals..."); fflush(outfile);
         int P, Q, R, S;
         int i, j, k, l;
         int index;
@@ -2003,10 +1992,14 @@ void RHF::form_G_from_direct_integrals_parallel()
 
         G_->set(&G);
         delete D;
-        // G_->print();
         timer_off("form_G_from_direct_integrals");
 
+#else
+        throw InputException("You are trying to run in parallel with MPI, but MPI is not installed or not linked properly." , "PARALLEL", __FILE__, __LINE__);
 #endif
+    }
+    else {
+        throw InputException("If you want to run SCF in parallel please set COMMUNICATOR to MADNESS or MPI in environment." , "PARALLEL", __FILE__, __LINE__);
     }
 
 }

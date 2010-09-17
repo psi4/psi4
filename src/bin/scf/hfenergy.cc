@@ -68,7 +68,7 @@ double HFEnergy::compute_energy()
     return energy;
 }
 
-#if HAVE_MADNESS == 1
+#if HAVE_MPI == 1
     double HFEnergy::compute_parallel_energy() {
 
         // Check the requested reference in the input file
