@@ -49,44 +49,34 @@ int main(int argc, char **argv, char **envp)
     Process::environment.init(envp);
     Process::environment.set_memory(256000000L);
 
-#if HAVE_MADNESS == 1
-    int use_madness;
-    std::string mad = Process::environment("MADNESS");
-    if ((mad == "true") || (mad == "True") || (mad == "TRUE")) {
-        use_madness = 1;
-    }
-    else {
-        use_madness = 0;
-    }
-
-    if(use_madness) {
-        madness::initialize(argc, argv);
-
-        shared_ptr<madness::World> madness_world(new madness::World(MPI::COMM_WORLD));
-
-        Communicator::world = shared_ptr<Communicator>(new MadCommunicator(madness_world));
-    }
-    else {
-#endif
-
+    std::string communicator = Process::environment("COMMUNICATOR");
 
 #if HAVE_MPI == 1
-    // Initialize MPI
-    // Since we allow multiple MPICommunicators to be created and MPI_Init needs to be called
-    // as soon as possible, main takes care of call MPI_Init and not the communicator itself.
-    MPI_Init(&argc, &argv);
 
-    // Create the global world communicator
-    Communicator::world = shared_ptr<Communicator>(new MPICommunicator(MPI_COMM_WORLD));
+    #if HAVE_MADNESS == 1
+        if(communicator == "MADNESS") {
+            madness::initialize(argc, argv);
+            Communicator::world = shared_ptr<Communicator>(new MadCommunicator(
+                    shared_ptr<madness::World>(new madness::World(MPI::COMM_WORLD)) ));
+        }
+        else {
+    #endif
+            // Initialize MPI
+            // Since we allow multiple MPICommunicators to be created and MPI_Init needs to be called
+            // as soon as possible, main takes care of call MPI_Init and not the communicator itself.
+            MPI_Init(&argc, &argv);
+
+            // Create the global world communicator
+            Communicator::world = shared_ptr<Communicator>(new MPICommunicator(MPI_COMM_WORLD));
+
+    #if HAVE_MADNESS == 1
+        }
+    #endif
+    
 #else
     // Initialize local communicator
     Communicator::world = shared_ptr<Communicator>(new LocalCommunicator);
 #endif
-
-#if HAVE_MADNESS == 1
-    }
-#endif
-
 
     //sleep(60);
 
@@ -113,11 +103,9 @@ int main(int argc, char **argv, char **envp)
 
     // Okay, we might only need to make this function call if we're using IPV1
     if (!script) {
-        std::cout << "running psi4_driver" << std::endl;
         psi4_driver();
     }
     else {
-        std::cout << "running psi4_python" << std::endl;
         Script::language->run(infile);
     }
 
@@ -125,19 +113,14 @@ int main(int argc, char **argv, char **envp)
     psi_stop(infile, outfile, psi_file_prefix);
     Script::language->finalize();
 
-#if HAVE_MADNESS == 1
-    if(use_madness) {
-        madness::finalize();
-    }
-    else {
-#endif
-
 #if HAVE_MPI == 1
-    MPI_Finalize();
-#endif
+    #if HAVE_MADNESS == 1
+        if(communicator == "MADNESS")
+            madness::finalize();
+    #endif
 
-#if HAVE_MADNESS == 1
-    }
+    if(communicator == "MPI")
+        MPI_Finalize();
 #endif
 
     // This needs to be changed to a return value from the processed script

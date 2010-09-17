@@ -1671,7 +1671,7 @@ void RHF::form_G_from_direct_integrals()
             }
         }
     }
-    //fprintf(outfile, "done.  %d two-electron integrals.\n", count); fflush(outfile);
+    fprintf(outfile, "done.  %d two-electron integrals.\n", count); fflush(outfile);
 //    delete eri;
 
     // Set RefMatrix to RefSimpleMatrix handling symmetry blocking, if needed
@@ -1686,70 +1686,329 @@ void RHF::form_G_from_direct_integrals()
 
 void RHF::form_G_from_direct_integrals_parallel()
 {
+
+    std::string communicator = Process::environment("COMMUNICATOR");
+
+    if(communicator == "MADNESS") {
 #if HAVE_MADNESS == 1
-    using namespace madness;
+        std::cout << "running with madness" << std::endl;
+        using namespace madness;
 
+        timer_on("G_direct_parallel");
 
-    timer_on("G_direct_parallel");
+    //    shared_ptr<madness::World> newworld = Communicator::world->get_madworld();
+        // Zero out the G matrix
+    //    std::cout << "nmo = " << nmo_ << std::endl;
 
-//    shared_ptr<madness::World> newworld = Communicator::world->get_madworld();
-    // Zero out the G matrix
-//    std::cout << "nmo = " << nmo_ << std::endl;
+        G_->zero();
 
-    G_->zero();
+        g_info->initialize(basisset_, D_, factory_.nso());
 
-    g_info->initialize(basisset_, D_, factory_.nso());
+        shared_ptr<mad_G> g_matrix(new mad_G(*Communicator::world->get_madworld()));
 
-    shared_ptr<mad_G> g_matrix(new mad_G(*Communicator::world->get_madworld()));
+        shared_ptr<ShellCombinationsIterator> shell_iter = g_info->create_shell_iter();
 
-    shared_ptr<ShellCombinationsIterator> shell_iter = g_info->create_shell_iter();
-
-/*    int number_of_shell_pairs=0;
-    for (iter->first(); !iter->is_done(); iter->next()) {
-        number_of_shell_pairs++;
-    }
-
-    int** shell = init_int_matrix(8, number_of_shell_pairs);
-    int count=0;
-    for (iter->first(); !iter->is_done(); iter->next()) {
-        shell[0][count] = iter->p();
-        shell[1][count] = iter->q();
-        shell[2][count] = iter->r();
-        shell[3][count] = iter->s();
-
-        count++;
-    }
-*/
-
-    //sort_shell(shell, number_of_shell_pairs, 8);
-
-    std::cout << "running in parallel" << std::endl;
-    int counter = 0;
-    for(shell_iter->first(); !shell_iter->is_done(); shell_iter->next()) {
-        Pair pqrs(counter);
-
-        if ( Communicator::world->me() == g_matrix->owner(pqrs) ) {
-            g_matrix->task(pqrs, &G_MAT::build_G, shell_iter->p(), shell_iter->q(), shell_iter->r(), shell_iter->s());
+    /*    int number_of_shell_pairs=0;
+        for (iter->first(); !iter->is_done(); iter->next()) {
+            number_of_shell_pairs++;
         }
-        counter++;
 
+        int** shell = init_int_matrix(8, number_of_shell_pairs);
+        int count=0;
+        for (iter->first(); !iter->is_done(); iter->next()) {
+            shell[0][count] = iter->p();
+            shell[1][count] = iter->q();
+            shell[2][count] = iter->r();
+            shell[3][count] = iter->s();
+
+            count++;
+        }
+    */
+
+        //sort_shell(shell, number_of_shell_pairs, 8);
+
+        int counter = 0;
+        for(shell_iter->first(); !shell_iter->is_done(); shell_iter->next()) {
+            Pair pqrs(counter);
+
+            if ( Communicator::world->me() == g_matrix->owner(pqrs) ) {
+                g_matrix->task(pqrs, &G_MAT::build_G, shell_iter->p(), shell_iter->q(), shell_iter->r(), shell_iter->s());
+            }
+            counter++;
+
+        }
+
+        Communicator::world->sync();
+
+        g_info->sum_G();
+
+        Communicator::world->sync();
+
+        fflush(outfile);
+        //free_int_matrix(shell);
+
+        g_info->set_G_(G_);
+        //G_->print(outfile);
+        //G_->set(g_info->get_pG());
+
+        timer_off("G_direct_parallel");
+#endif
+    }
+    else if (communicator == "MPI") {
+#if HAVE_MPI
+        std::cout << Communicator::world->me() << "\trunning with mpi" << std::endl;
+
+        timer_on("form_G_from_direct_integrals");
+        double temp1, temp2, temp3, temp4, temp5, temp6;
+        int itype;
+
+        // Zero out the G matrix
+        G_->zero();
+
+        // Need to back-transform the density from SO to AO basis
+        SimpleMatrix *D = D_->to_simple_matrix();
+
+        // D->set_name("D (AO basis) pre-transform");
+        // D->print();
+        // D->back_transform(basisset_->uso_to_bf());
+        // D->set_name("D (AO basis) post-transform");
+        // D->print();
+
+        // Need a temporary G in the AO basis
+        SimpleMatrix G_local;
+        factory_.create_simple_matrix(G_local, "G (AO basis)");
+        G_local.zero();
+
+        // Initialize an integral object
+        // Begin factor ou
+
+        IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
+        if (eri_.get() == NULL) {
+            eri_ = shared_ptr<TwoBodyInt>(integral.eri());
+        }
+        ShellCombinationsIterator iter = integral.shells_iterator();
+        const double *buffer = eri_->buffer();
+        // End factor out
+
+        //fprintf(outfile, "      Computing integrals..."); fflush(outfile);
+        int P, Q, R, S;
+        int i, j, k, l;
+        int index;
+        double value;
+
+        int count_local=0;
+        int v=0;
+        for (iter.first(); !iter.is_done(); iter.next()) {
+            P = iter.p();
+            Q = iter.q();
+            R = iter.r();
+            S = iter.s();
+            
+            if(Communicator::world->me() == v%Communicator::world->nproc()) {
+
+                // Compute quartet
+                timer_on("compute_shell");
+                eri_->compute_shell(P, Q, R, S);
+                timer_off("compute_shell");
+
+                // From the quartet get all the integrals
+                IntegralsIterator int_iter = iter.integrals_iterator();
+                for (int_iter.first(); !int_iter.is_done(); int_iter.next()) {
+                    i = int_iter.i();
+                    j = int_iter.j();
+                    k = int_iter.k();
+                    l = int_iter.l();
+                    index = int_iter.index();
+                    value = buffer[index];
+
+                    // We only care about those greater that 1.0e-14
+                    if (fabs(value) > 1.0e-14) {
+                        itype = integral_type(i, j, k, l);
+                        switch(itype) {
+                            case 1:
+                            temp1 = D->get(i, i) * value;
+
+                            G_local.add(i, i, temp1);
+                            break;
+
+                            case 2:
+                            temp1 = D->get(k, k) * 2.0 * value;
+                            temp2 = D->get(i, k) * value;
+                            temp3 = D->get(i, i) * 2.0 * value;
+
+                            G_local.add(i, i, temp1);
+                            G_local.add(k, k, temp3);
+                            G_local.add(i, k, -temp2);
+                            G_local.add(k, i, -temp2);
+                            break;
+
+                            case 3:
+                            temp1 = D->get(i, i) * value;
+                            temp2 = D->get(i, l) * value * 2.0;
+
+                            G_local.add(i, l, temp1);
+                            G_local.add(l, i, temp1);
+                            G_local.add(i, i, temp2);
+                            break;
+
+                            case 4:
+                            temp1 = D->get(j, j) * value;
+                            temp2 = D->get(i, j) * value * 2.0;
+
+                            G_local.add(i, j, temp1);
+                            G_local.add(j, i, temp1);
+                            G_local.add(j, j, temp2);
+                            break;
+
+                            case 5:
+                            temp1 = D->get(i, j) * value * 3.0;
+                            G_local.add(i, j, temp1);
+                            G_local.add(j, i, temp1);
+
+                            temp2 = D->get(i, i) * value;
+                            temp3 = D->get(j, j) * value;
+                            G_local.add(j, j, -temp2);
+                            G_local.add(i, i, -temp3);
+                            break;
+
+                            case 6:
+                            temp1 = D->get(k, l) * value * 4.0;
+                            temp2 = D->get(i, l) * value;
+                            temp3 = D->get(i, i) * value * 2.0;
+                            temp4 = D->get(i, k) * value;
+
+                            G_local.add(i, i, temp1);
+                            G_local.add(i, k, -temp2);
+                            G_local.add(k, i, -temp2);
+                            G_local.add(k, l, temp3);
+                            G_local.add(l, k, temp3);
+                            G_local.add(i, l, -temp4);
+                            G_local.add(l, i, -temp4);
+                            break;
+
+                            case 7:
+                            temp1 = D->get(i, j) * value * 4.0;
+                            temp2 = D->get(j, k) * value;
+                            temp3 = D->get(i, k) * value;
+                            temp4 = D->get(k, k) * value * 2.0;
+
+                            G_local.add(k, k,  temp1);
+                            G_local.add(i, k, -temp2);
+                            G_local.add(k, i, -temp2);
+                            G_local.add(j, k, -temp3);
+                            G_local.add(k, j, -temp3);
+                            G_local.add(i, j,  temp4);
+                            G_local.add(j, i,  temp4);
+                            break;
+
+                            case 8:
+                            temp1 = D->get(k, k) * value * 2.0;
+                            temp2 = D->get(i, j) * value * 4.0;
+                            temp3 = D->get(j, k) * value;
+                            temp4 = D->get(i, k) * value;
+
+                            G_local.add(i, j, temp1);
+                            G_local.add(j, i, temp1);
+                            G_local.add(k, k, temp2);
+                            G_local.add(i, k, -temp3);
+                            G_local.add(k, i, -temp3);
+                            G_local.add(j, k, -temp4);
+                            G_local.add(k, j, -temp4);
+                            break;
+
+                            case 9:
+                            temp1 = D->get(i, l) * value * 3.0;
+                            temp2 = D->get(i, j) * value * 3.0;
+                            temp3 = D->get(j, l) * value * 2.0;
+                            temp4 = D->get(i, i) * value;
+
+                            G_local.add(i, j, temp1);
+                            G_local.add(j, i, temp1);
+                            G_local.add(i, l, temp2);
+                            G_local.add(l, i, temp2);
+                            G_local.add(i, i, -temp3);
+                            G_local.add(j, l, -temp4);
+                            G_local.add(l, j, -temp4);
+                            break;
+
+                            case 10:
+                            temp1 = D->get(j, l) * value * 3.0;
+                            temp2 = D->get(i, j) * value * 3.0;
+                            temp3 = D->get(j, j) * value;
+                            temp4 = D->get(i, l) * value * 2.0;
+
+                            G_local.add(i, j, temp1);
+                            G_local.add(j, i, temp1);
+                            G_local.add(j, l, temp2);
+                            G_local.add(l, j, temp2);
+                            G_local.add(i, l, -temp3);
+                            G_local.add(l, i, -temp3);
+                            G_local.add(j, j, -temp4);
+                            break;
+
+                            case 11:
+                            temp1 = D->get(k, j) * value * 3.0;
+                            temp2 = D->get(i, j) * value * 3.0;
+                            temp3 = D->get(j, j) * value;
+                            temp4 = D->get(i, k) * value * 2.0;
+
+                            G_local.add(i, j, temp1);
+                            G_local.add(j, i, temp1);
+                            G_local.add(k, j, temp2);
+                            G_local.add(j, k, temp2);
+                            G_local.add(i, k, -temp3);
+                            G_local.add(k, i, -temp3);
+                            G_local.add(j, j, -temp4);
+                            break;
+
+                            case 12:
+                            case 13:
+                            case 14:
+                            temp1 = D->get(k, l) * value * 4.0;
+                            temp2 = D->get(i, j) * value * 4.0;
+                            temp3 = D->get(j, l) * value;
+                            temp4 = D->get(i, k) * value;
+                            temp5 = D->get(j, k) * value;
+                            temp6 = D->get(i, l) * value;
+
+                            G_local.add(i, j, temp1);
+                            G_local.add(j, i, temp1);
+                            G_local.add(k, l, temp2);
+                            G_local.add(l, k, temp2);
+                            G_local.add(i, k, -temp3);
+                            G_local.add(k, i, -temp3);
+                            G_local.add(j, l, -temp4);
+                            G_local.add(l, j, -temp4);
+                            G_local.add(i, l, -temp5);
+                            G_local.add(l, i, -temp5);
+                            G_local.add(j, k, -temp6);
+                            G_local.add(k, j, -temp6);
+                            break;
+                        };
+
+                        count_local++;
+                    }
+                }
+            }
+            v++;
+        }
+
+        SimpleMatrix G = G_local;
+        int count;
+
+        Communicator::world->sum(G_local.ptr(), factory_.nso()*factory_.nso(), G.ptr(), -1);
+        Communicator::world->sum(&count_local, 1, &count, 0);
+
+        fprintf(outfile, "done.  %d two-electron integrals.\n", count); fflush(outfile);
+
+        G_->set(&G);
+        delete D;
+        // G_->print();
+        timer_off("form_G_from_direct_integrals");
+
+#endif
     }
 
-    Communicator::world->sync();
-
-    g_info->sum_G();
-
-    Communicator::world->sync();
-
-    fflush(outfile);
-    //free_int_matrix(shell);
-
-    g_info->set_G_(G_);
-    //G_->print(outfile);
-    //G_->set(g_info->get_pG());
-
-    timer_off("G_direct_parallel");
-#endif
 }
 
 
