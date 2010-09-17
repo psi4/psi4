@@ -78,10 +78,8 @@ double HFEnergy::compute_energy()
         type = options_.get_str("SCF_TYPE");
         reference = options_.get_str("REFERENCE");
 
-        if(Communicator::world->me() == 0) {
-            fprintf(outfile, "\n Running in parallel with the MADNESS runtime library\n");
-            fprintf(outfile, " (Number of procs = %d)\n\n", Communicator::world->nproc());
-        }
+        Communicator::world->print(outfile);
+
         if(type == "DIRECT") {
             if (reference == "RHF") {
                 RHF rhf_energy(options_, psio_, chkpt_);

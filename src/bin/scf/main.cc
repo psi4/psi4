@@ -37,46 +37,34 @@ PsiReturnType scf(Options & options)
     double energy;
     bool parallel;
 
-#if HAVE_MADNESS == 1
-    int use_madness;
-    std::string mad = Process::environment("MADNESS");
-    if ((mad == "true") || (mad == "True") || (mad == "TRUE")) {
-        use_madness = 1;
-    }
-    else {
-        use_madness = 0;
-    }
 
+    std::string communicator = Process::environment("COMMUNICATOR");
     parallel = options.get_bool("PARALLEL");
 
-
-    if (parallel) {
-        if(use_madness) {
-            // Compute the Hartree-Fock energy
+    if(parallel == 1) {
+        if(communicator == "MADNESS" || communicator == "MPI") {
+#if HAVE_MPI == 1
             HFEnergy hf(options, psio, chkpt);
             energy = hf.compute_parallel_energy();
+#endif
         }
         else {
-            throw InputException("If you want to run SCF in parallel please set MADNESS=true in environment." , "PARALLEL", __FILE__, __LINE__);
+            throw InputException("If you want to run SCF in parallel please set COMMUNICATOR to MADNESS or MPI in environment." , "PARALLEL", __FILE__, __LINE__);
         }
     }
-    else {
-#endif
-#if HAVE_MPI == 1
-        if(Communicator::world->me() == 0) {
-#endif
 
+
+    else {
+        if(Communicator::world->nproc() <= 1) {
             // Compute the Hartree-Fock energy
             HFEnergy hf(options, psio, chkpt);
             energy = hf.compute_energy();
-
-#if HAVE_MPI == 1
         }
-#endif
-#if HAVE_MADNESS == 1
+        else {
+            throw InputException("If you want to run SCF in parallel please set COMMUNICATOR to MADNESS or MPI in environment, and parallel=true in input.",
+                    "PARALLEL", __FILE__, __LINE__);
+        }
     }
-#endif
-
     
     Process::environment.globals["SCF ENERGY"] = energy;
     Process::environment.globals["CURRENT ENERGY"] = energy;
