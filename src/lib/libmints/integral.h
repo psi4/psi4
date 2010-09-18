@@ -133,6 +133,9 @@ public:
     void next()  { i_++;   }
     bool is_done() { return i_ < trans_.n() ? false : true; }
 
+    /// Returns how many transforms are in this iterator.
+    int n() const { return trans_.n(); }
+
     /// Returns the Cartesian basis function index of component i
     int cartindex() const { return trans_.cartindex(i_); }
     /// Returns the spherical harmonic basis index of component i

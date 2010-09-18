@@ -170,6 +170,8 @@ void ShellRotation::init_pure(int a, SymmetryOperation &so, IntegralFactory *int
     int lI[3];
     int m, iI;
 
+    n_ = I.n();
+
     r_ = new double*[n_];
     for (m=0; m<n_; ++m) {
         r_[m] = new double[n_];
