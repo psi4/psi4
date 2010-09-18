@@ -784,7 +784,9 @@ SO_block* PetiteList::aotoso_info()
                     int into;
 
                     // Solve At = V SIGMA Ut (since Fortran layout is used)
-                    C_DGESVD('N', 'A', nfuncall, nfuncuniq, linorb[0], nfuncall, singval, &djunk, ijunk, u[0], nfuncuniq, work, lwork);
+//                    C_DGESVD('N', 'A', nfuncall, nfuncuniq, linorb[0], nfuncall, singval, &djunk, ijunk, u[0], nfuncuniq, work, lwork);
+
+                    C_DGESVD('A', 'N', nfuncuniq, nfuncall, linorb[0], nfuncall, singval, u[0], nfuncuniq, &djunk, ijunk, work, lwork);
 
                     // Should do a test of the return value of C_DGESVD
 

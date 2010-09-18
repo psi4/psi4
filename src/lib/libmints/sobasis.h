@@ -78,6 +78,9 @@ public:
     void next()  { i_++;   }
     bool is_done() { return i_ < trans_->nfunc() ? false : true; }
 
+    /// Returns the number of shells in the transform.
+    int n() const { return trans_->nfunc(); }
+
     /// Returns the coefficient of component i
     double coef() const { return trans_->func(i_)->coef(); }
     /// Returns the AO function number of component i
