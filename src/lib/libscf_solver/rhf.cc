@@ -3013,7 +3013,7 @@ void RHF::compute_SAD_guess()
 
 
     //Build the atomic basis sets for libmints use in UHF
-    for (int A = 0; A<mol->nallatom(); A++) {
+    for (int A = 0; A<mol->natom(); A++) {
         atomic_bases.push_back(basisset_->atomic_basis_set(A));
         if (print_>6) {
             fprintf(outfile,"  Atomic Basis Set %d\n", A);
@@ -3026,10 +3026,10 @@ void RHF::compute_SAD_guess()
 
     //Spin occupations per atom, to be determined by Hund's Rules
     //or user input
-    int* nalpha = init_int_array(mol->nallatom());
-    int* nbeta = init_int_array(mol->nallatom());
-    int* nelec = init_int_array(mol->nallatom());
-    int* nhigh = init_int_array(mol->nallatom());
+    int* nalpha = init_int_array(mol->natom());
+    int* nbeta = init_int_array(mol->natom());
+    int* nelec = init_int_array(mol->natom());
+    int* nhigh = init_int_array(mol->natom());
     int tot_elec = 0;
 
     //Ground state high spin occupency array, atoms 0 to 36 (see Giffith's Quantum Mechanics, pp. 217)
@@ -3039,8 +3039,8 @@ void RHF::compute_SAD_guess()
     //Improvemnts to SAD can be made simply by changing the setup of nalpha and nbeta
     if (print_>3)
         fprintf(outfile,"\n  Determining atomic occupations:\n");
-    for (int A = 0; A<mol->nallatom(); A++) {
-        int Z = mol->fZ(A);
+    for (int A = 0; A<mol->natom(); A++) {
+        int Z = mol->Z(A);
         if (Z>36) {
             throw std::domain_error("Atoms up to 36 (Kr) are currently supported with SAD Guess");
         }
@@ -3057,13 +3057,13 @@ void RHF::compute_SAD_guess()
     timer_on("Atomic UHF");
 
     //Atomic D matrices within the atom specific AO basis
-    double*** atomic_D = (double***)malloc(mol->nallatom()*sizeof(double**));
-    for (int A = 0; A<mol->nallatom(); A++)
+    double*** atomic_D = (double***)malloc(mol->natom()*sizeof(double**));
+    for (int A = 0; A<mol->natom(); A++)
         atomic_D[A] = block_matrix(atomic_bases[A]->nbf(),atomic_bases[A]->nbf());
 
     if (print_>2)
         fprintf(outfile,"\n  Performing Atomic UHF Computations:\n");
-    for (int A = 0; A<mol->nallatom(); A++) {
+    for (int A = 0; A<mol->natom(); A++) {
         if (print_>4)
             fprintf(outfile,"\n  UHF Computation for Atom %d:\n",A);
         getUHFAtomicDensity(atomic_bases[A],nelec[A],nhigh[A],atomic_D[A]);
@@ -3072,7 +3072,7 @@ void RHF::compute_SAD_guess()
 
     //Add atomic_D into D (scale by 1/2, we like pairs in RHF)
     D_->zero();
-    for (int A = 0, offset = 0; A < mol->nallatom(); A++) {
+    for (int A = 0, offset = 0; A < mol->natom(); A++) {
         int norbs = atomic_bases[A]->nbf();
         for (int m = 0; m<norbs; m++)
             for (int n = 0; n<norbs; n++)
@@ -3098,7 +3098,7 @@ void RHF::compute_SAD_guess()
     IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
     TwoBodyInt *TEI = integral.eri(0, SAD_Schwarz);
     const double* buffer = TEI->buffer();
-    for (int A = 0, shell_offset = 0; A<mol->nallatom(); A++) {
+    for (int A = 0, shell_offset = 0; A<mol->natom(); A++) {
     for (int MU = shell_offset; MU < shell_offset+atomic_bases[A]->nshell(); MU++) {
     int numMU = basisset_->shell(MU)->nfunction();
     for (int NU = shell_offset; NU < shell_offset+atomic_bases[A]->nshell() ; NU++) {
@@ -3284,7 +3284,7 @@ void RHF::compute_SAD_guess()
     } else {
         throw std::invalid_argument("ID or CHOLESKY are the only two C matrix generators at the moment");
     }
-    for (int A = 0; A<mol->nallatom(); A++)
+    for (int A = 0; A<mol->natom(); A++)
         free_block(atomic_D[A]);
     free(atomic_D);
 

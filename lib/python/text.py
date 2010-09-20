@@ -1,4 +1,5 @@
 import PsiMod
+import sys
 from psiexceptions import *
 
 class Table:
@@ -129,3 +130,8 @@ def banner(text, type = 1, width = 35):
 
     PsiMod.print_out(banner)
 
+def print_stdout(stuff):
+    print >> sys.stdout, stuff
+
+def print_stderr(stuff):
+    print >> sys.stderr, stuff
