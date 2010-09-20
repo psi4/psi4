@@ -558,7 +558,7 @@ void BasisSet::refresh()
     }
 }
 
-shared_ptr<BasisSet> BasisSet::atomic_basis_set(int fcenter)
+shared_ptr<BasisSet> BasisSet::atomic_basis_set(int center)
 {
     //May only work in C1!!!!
     //Construct a blank BasisSet on the heap
@@ -566,13 +566,13 @@ shared_ptr<BasisSet> BasisSet::atomic_basis_set(int fcenter)
     //Construct a blank Molecule on the heap
     shared_ptr<Molecule> mol(new Molecule);
 
-    int Z = molecule_->fZ(fcenter);
-    double x = molecule_->fx(fcenter);
-    double y = molecule_->fy(fcenter);
-    double z = molecule_->fz(fcenter);
-    double mass = molecule_->fmass(fcenter);
-    double charge = molecule_->fcharge(fcenter);
-    std::string lab = molecule_->flabel(fcenter);
+    int Z = molecule_->Z(center);
+    double x = molecule_->x(center);
+    double y = molecule_->y(center);
+    double z = molecule_->z(center);
+    double mass = molecule_->fmass(center);
+    double charge = molecule_->fcharge(center);
+    std::string lab = molecule_->flabel(center);
     char* label = new char[lab.length() + 1];
     strcpy(label,lab.c_str());
 
@@ -582,21 +582,19 @@ shared_ptr<BasisSet> BasisSet::atomic_basis_set(int fcenter)
     //Assign the atomic molecule to bas
     bas->molecule_ = mol;
 
-    int index_criteria = fcenter;
-
     //Go through shells in current basis set
-    //Push shells that belong to fcenter
+    //Push shells that belong to center
     //to bas
     int current_shells = 0;
     int shell_start = -1;
     int ao_start = 0;
     int so_start = 0;
     for (int i = 0; i<nshells_; i++) {
-        if (shell_center_[i] < index_criteria) {
+        if (shell_center_[i] < center) {
             ao_start += shells_[i]->ncartesian();
             so_start += shells_[i]->nfunction();
         }
-        if (shell_center_[i] == index_criteria) {
+        if (shell_center_[i] == center) {
             if (shell_start == -1)
                 shell_start = i;
             shared_ptr<GaussianShell> shell(new GaussianShell);
@@ -615,7 +613,7 @@ shared_ptr<BasisSet> BasisSet::atomic_basis_set(int fcenter)
             bas->shells_.push_back(shell);
             current_shells++;
         }
-        if (shell_center_[i] > index_criteria)
+        if (shell_center_[i] > center)
             break;
     }
 
