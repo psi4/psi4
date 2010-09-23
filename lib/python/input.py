@@ -122,7 +122,7 @@ def process_memory_command(matchobj):
     elif (units.upper() == 'GB'):
         memory_amount = val*1000000000
  
-    command = "\n%sPsiMod.set_memory(%d)\n" % (spacing,int(memory_amount))
+    command = "%sPsiMod.set_memory(%d)\n" % (spacing,int(memory_amount))
     return command
 
 def process_input(raw_input):
@@ -137,9 +137,13 @@ def process_input(raw_input):
     #   your objname is in capture group #2
     #   your data is in capture group #3
 
+    # Nuke all comments
+    comment = re.compile(r'#.*')
+    temp = re.sub(comment,'',raw_input)
+
     # Process all "set name? { ... }"
     set_commands = re.compile(r'^(\s*?)set\s*(\w*?)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
-    temp = re.sub(set_commands, process_set_commands, raw_input)
+    temp = re.sub(set_commands, process_set_commands, temp)
 
     # Process all individual "set key value"
     set_command = re.compile(r'(\s*?)set\s+(\w+)[\s=]+(.*?)($|#.*)', re.MULTILINE | re.IGNORECASE)
