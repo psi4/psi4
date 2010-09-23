@@ -6,6 +6,7 @@
  *  Copyright 2008 by Justin M. Turney, Ph.D.. All rights reserved.
  *
  */
+//#define _MKL
 
 #ifndef HF_H
 #define HF_H

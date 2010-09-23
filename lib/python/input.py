@@ -41,13 +41,13 @@ def process_set_command(matchobj):
     value = matchobj.group(3).strip()
 
     if re.match(r'^[-]?\d*\.?\d+$', value) or re.match(r'^\[.*\]$', value):
-        return spaces + 'PsiMod.set_option("%s", %s)' % (key, value)
+        return spaces + 'PsiMod.set_option("%s", %s)\n' % (key, value)
     elif re.match(r'^\$', value):
         # Assume the user as set the variable in value
-        return spaces + 'PsiMod.set_option("%s", %s)' % (key, value[1:])
+        return spaces + 'PsiMod.set_option("%s", %s)\n' % (key, value[1:])
     else:
         # Just place the value in quotes
-        return spaces + 'PsiMod.set_option("%s", "%s")' % (key, value)
+        return spaces + 'PsiMod.set_option("%s", "%s")\n' % (key, value)
 
 def process_set_commands(matchobj):
     spaces = matchobj.group(1)
@@ -61,9 +61,9 @@ def process_set_commands(matchobj):
         result.append(re.sub(r'^\s*()(\w+)\s+(.*)($|#.*)', process_set_command, temp))
 
     if module != "":
-        x = 'PsiMod.set_default_options_for_module("%s")' % (module.upper())
+        x = 'PsiMod.set_default_options_for_module("%s")\n' % (module.upper())
         result.insert(0, x)
-        result.insert(1, 'PsiMod.set_option("NO_INPUT", True)')
+        result.insert(1, 'PsiMod.set_option("NO_INPUT", True)\n')
 
     set_commands = spaces
     set_commands += (spaces).join(result)
@@ -107,11 +107,10 @@ def process_print_command(matchobj):
     return printer
 
 def process_memory_command(matchobj):
-    spec = re.compile(r'^\s*([+-]?\d*\.*\d+)(?![-+0-9\.])\s*([MGK]B)\s*', re.DOTALL | re.IGNORECASE)
-    match = re.match(spec,matchobj.group(2))    
 
-    sig = str(match.group(1))
-    units = str(match.group(2))
+    spacing = str(matchobj.group(1))
+    sig = str(matchobj.group(2))
+    units = str(matchobj.group(3))
 
     val = float(sig)
     memory_amount = val
@@ -123,7 +122,7 @@ def process_memory_command(matchobj):
     elif (units.upper() == 'GB'):
         memory_amount = val*1000000000
  
-    command = "\nPsiMod.set_memory(%d)\n" % (int(memory_amount))
+    command = "\n%sPsiMod.set_memory(%d)\n" % (spacing,int(memory_amount))
     return command
 
 def process_input(raw_input):
@@ -166,8 +165,8 @@ def process_input(raw_input):
     print_string = re.compile(r'(\s*?)print\s+(.*)',re.IGNORECASE)
     temp = re.sub(print_string,process_print_command,temp)
 
-    # Process "memory { ... }" 
-    memory_string = re.compile(r'^(\s*?)memory\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)   
+    # Process "memory ... "
+    memory_string = re.compile(r'(\s*?)memory\s+([+-]?\d*\.?\d+)\s+([KMG]B)', re.IGNORECASE)   
     temp = re.sub(memory_string,process_memory_command,temp)
 
     # imports
@@ -178,6 +177,7 @@ def process_input(raw_input):
     imports += 'from text import *\n'    
     imports += 'from wrappers import *\n'    
     imports += 'from psiexceptions import *\n'    
+    imports += 'from util import *\n'    
 
     temp = imports + temp
 
