@@ -9,16 +9,6 @@
 *       Canonical (delocalized) density fitting routines for MP2 and SCS-MP2
 *
 *****************************************************************************/
-//MKL Header
-#ifdef HAVE_MKL
-#include <mkl.h>
-#endif
-
-//OpenMP Header
-//_OPENMP is defined by the compiler if it exists
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 
 #include <cstdlib>
 #include <cstdio>
@@ -40,6 +30,17 @@
 
 #include <libmints/mints.h>
 #include <libparallel/parallel.h>
+
+//MKL Header
+#ifdef _MKL
+#include <mkl.h>
+#endif
+
+//OpenMP Header
+//_OPENMP is defined by the compiler if it exists
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 using namespace boost;
 using namespace std;
@@ -855,7 +856,7 @@ void DFMP2::form_Aia_disk()
     //fprintf(outfile, "  Ami\n");
     //print_mat(Ami,max_rows,nact_docc*norbs, outfile);
 
-    #ifdef HAVE_MKL
+    #ifdef _MKL
        int mkl_nthreads = mkl_get_max_threads();
        mkl_set_num_threads(1);
     #endif
@@ -870,7 +871,7 @@ void DFMP2::form_Aia_disk()
     }
     timer_off("(A|ia)");
 
-    #ifdef HAVE_MKL
+    #ifdef _MKL
        mkl_set_num_threads(mkl_nthreads);
     #endif
 
@@ -1044,7 +1045,7 @@ void DFMP2::evaluate_contributions_disk()
     #endif
 
     // MKL trick
-    #ifdef HAVE_MKL
+    #ifdef _MKL
         int mkl_nthreads = mkl_get_max_threads();
         mkl_set_num_threads(1);
     #endif
@@ -1105,7 +1106,7 @@ void DFMP2::evaluate_contributions_disk()
     free(block_sizes);
 
     //Reset MKL
-    #ifdef HAVE_MKL
+    #ifdef _MKL
         mkl_set_num_threads(mkl_nthreads);
     #endif
     
@@ -1321,7 +1322,7 @@ double** DFMP2::form_Aia_core()
     }
 
     timer_on("(A|ia)");
-    #ifdef HAVE_MKL
+    #ifdef _MKL
        int mkl_nthreads = mkl_get_max_threads();
        mkl_set_num_threads(1);
     #endif
@@ -1334,7 +1335,7 @@ double** DFMP2::form_Aia_core()
         nact_docc, &(C_virt_[0][0]), nact_virt, 0.0, &(Aia[p_starts[block]+A][0]), nact_virt_);
     }
 
-    #ifdef HAVE_MKL
+    #ifdef _MKL
        mkl_set_num_threads(mkl_nthreads);
     #endif
     timer_off("(A|ia)");
@@ -1453,7 +1454,7 @@ void DFMP2::evaluate_contributions_core_sym()
     nthreads = omp_get_max_threads();
   #endif
 
-  #ifdef HAVE_MKL
+  #ifdef _MKL
     int mkl_nthreads = mkl_get_max_threads();
     mkl_set_num_threads(1);
   #endif
@@ -1510,7 +1511,7 @@ void DFMP2::evaluate_contributions_core_sym()
     free_block(I[r]);
   delete[] I;
  
-  #ifdef HAVE_MKL
+  #ifdef _MKL
     mkl_set_num_threads(mkl_nthreads);
   #endif
 

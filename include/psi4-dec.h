@@ -53,6 +53,7 @@ namespace psi {
           std::map<std::string, std::string> environment_;
           const std::string empty_;
           unsigned long int memory_;
+          int nthread_;         
 
           boost::shared_ptr<Molecule> molecule_;
       public:
@@ -69,6 +70,10 @@ namespace psi {
 
           /// Map containing current energies
           std::map<std::string, double> globals;
+
+          /// Number of threads per process
+          int get_n_threads() const {return nthread_; }
+          void set_n_threads(int nthread); 
 
           /// Memory in bytes
           unsigned long int get_memory() const { return memory_; }

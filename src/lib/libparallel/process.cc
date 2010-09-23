@@ -2,6 +2,19 @@
 #include <libmints/molecule.h>
 #include <boost/algorithm/string.hpp>
 
+//MKL Header
+//#define _MKL
+#ifdef _MKL
+#include <mkl.h>
+#endif
+
+//OpenMP Header
+//_OPENMP is defined by the compiler if it exists
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
+
 using namespace std;
 using namespace psi;
 using namespace boost;
@@ -24,10 +37,27 @@ void Process::Environment::init(char **envp)
         ++i;
     }
 
+    nthread_ = 1;
+
+    #ifdef _OPENMP
+        nthread_ = omp_get_max_threads(); 
+    #endif
+
     // For testing, print out the enviroment:
 //    for (map<string, string>::const_iterator iter = environment_.begin();
 //         iter != environment_.end(); ++iter)
 //        printf("Key: %s Value: %s\n", iter->first.c_str(), iter->second.c_str());
+}
+
+void Process::Environment::set_n_threads(int nthread)
+{
+    nthread_ = nthread;
+    #ifdef _OPENMP
+        omp_set_num_threads(nthread_);        
+    #endif
+    #ifdef _MKL
+        mkl_set_num_threads(nthread_);
+    #endif
 }
 
 const string& Process::Environment::operator()(const string& key) const

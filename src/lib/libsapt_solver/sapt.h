@@ -7,6 +7,8 @@
 #ifndef SAPT_H
 #define SAPT_H
 
+//#define _MKL
+
 #include <libpsio/psio.hpp>
 #include <libmints/wavefunction.h>
 #include <libmints/basisset.h>

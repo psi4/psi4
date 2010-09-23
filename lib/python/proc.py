@@ -6,6 +6,9 @@ from text import *
 def run_scf(name, **kwargs):
 
     molecule = PsiMod.get_active_molecule()
+    if (kwargs.has_key('molecule')):
+        molecule = kwargs.pop('molecule')    
+    
     if not molecule:
         raise ValueNotSet("no molecule found")
     
@@ -22,6 +25,8 @@ def run_scf(name, **kwargs):
 def run_dfmp2(name, **kwargs):
     
     molecule = PsiMod.get_active_molecule()
+    if (kwargs.has_key('molecule')):
+        molecule = kwargs.pop('molecule')    
     if not molecule:
         raise ValueNotSet("no molecule found")
     

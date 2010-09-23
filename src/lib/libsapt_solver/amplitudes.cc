@@ -1,6 +1,6 @@
 /* This handles the 1e, 2e and DF integrals for all SAPT jobs */
 
-#ifdef HAVEMKL
+#ifdef _MKL
 #include <mkl.h>
 #endif
 

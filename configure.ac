@@ -499,7 +499,7 @@ AC_SUBST(LAPACK)
 LIBS=$SAVE_LIBS
 
  
-AC_CHECK_LIB([m], MKL_Free_Buffers, AC_DEFINE([MKL]),[], $BLAS)
+AC_CHECK_LIB([m], MKL_Free_Buffers, AC_DEFINE([_MKL]),[], $BLAS)
  
 
 ########

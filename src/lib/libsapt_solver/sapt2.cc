@@ -3,7 +3,7 @@
  *
  */
 
-#ifdef HAVEMKL
+#ifdef _MKL
 #include <mkl.h>
 #endif
 

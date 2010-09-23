@@ -14,9 +14,7 @@ molecule dimer {
      no_reorient
 }
 
-memory {
-    3500 MB
-}
+memory 3500.0 MB 
 
 globals {
     BASIS aug-cc-pVDZ

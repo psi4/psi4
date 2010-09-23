@@ -16,16 +16,6 @@
 *
 *****************************************************************************/
 
-//MKL Header
-#ifdef HAVE_MKL
-#include <mkl.h>
-#endif
-
-//OpenMP Header
-//_OPENMP is defined by the compiler if it exists
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 
 #include <cstdlib>
 #include <cstdio>
@@ -47,6 +37,17 @@
 #include "rhf.h"
 #include "uhf.h"
 #include "rohf.h"
+
+//MKL Header
+#ifdef _MKL
+#include <mkl.h>
+#endif
+
+//OpenMP Header
+//_OPENMP is defined by the compiler if it exists
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 #include <libmints/mints.h>
 
@@ -375,10 +376,12 @@ void HF::form_B()
     //The user may specify fewer threads for this due to memory requirements
     int nthread = 1;
     #ifdef _OPENMP
-        if (options_.get_int("RI_INTS_NUM_THREADS") == 0)
+        if (options_.get_int("RI_INTS_NUM_THREADS") == 0) {
             nthread = omp_get_max_threads();
-        else
+           // printf("OMP says %d threads\n",nthread);
+        } else {
             nthread = options_.get_int("RI_INTS_NUM_THREADS");
+        }
     #endif
     int rank = 0;
 
@@ -564,12 +567,12 @@ void HF::form_B()
         timer_on("(B|mn) Prestripe");
         psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_NEW);
         psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
-    double *Prestripe = init_array(ntri_naive_);
-    for (int Q = 0; Q < naux_fin_; Q++) {
-            psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(Prestripe[0]),sizeof(double)*ntri_naive_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
-    }
+        double *Prestripe = init_array(ntri_naive_);
+        for (int Q = 0; Q < naux_fin_; Q++) {
+                psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(Prestripe[0]),sizeof(double)*ntri_naive_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+        }
         free(Prestripe);
-    next_PSIF_DFSCF_BJ = PSIO_ZERO;
+        next_PSIF_DFSCF_BJ = PSIO_ZERO;
         timer_off("(B|mn) Prestripe");
 
         int pass = 0;
@@ -602,7 +605,7 @@ void HF::form_B()
 
         //Max rows per block for iterations (for diagnostics)
         unsigned long int max_rows = ((df_memory_)/((long)(norbs*ndocc+ntri_naive_)));
-    if (max_rows > naux_fin_)
+        if (max_rows > naux_fin_)
             max_rows = naux_fin_;
         if (max_rows < 1)
             max_rows = 1; //Without a row, I can't work
@@ -1646,6 +1649,7 @@ void RHF::form_G_from_RI()
             int nthread = 1;
             #ifdef _OPENMP
                 nthread = omp_get_max_threads();
+                //printf("Now OMP says %d threads\n",nthread);
             #endif
 
             //E exchange matrix
@@ -1702,8 +1706,9 @@ void RHF::form_G_from_RI()
 
                 timer_on("E SORT");
 
-                #ifdef HAVE_MKL
+                #ifdef _MKL
                     int mkl_nthreads = mkl_get_max_threads();
+                    //printf("MKL says %d threads\n", mkl_nthreads);
                     mkl_set_num_threads(1);
                 #endif
 
@@ -1743,7 +1748,7 @@ void RHF::form_G_from_RI()
                     //timer_off("DGEMM 2");
                 }
 
-                #ifdef HAVE_MKL
+                #ifdef _MKL
                     mkl_set_num_threads(mkl_nthreads);
                 #endif
 
@@ -1977,7 +1982,7 @@ void RHF::form_G_from_RI()
             if (K_is_required_) {
                 timer_on("E SORT");
 
-                #ifdef HAVE_MKL
+                #ifdef _MKL
                     int mkl_nthreads = mkl_get_max_threads();
                     mkl_set_num_threads(1);
                 #endif
@@ -2017,7 +2022,7 @@ void RHF::form_G_from_RI()
                     //timer_off("DGEMM 2");
                     //timer_on("Final Indexing");
                 }
-                #ifdef HAVE_MKL
+                #ifdef _MKL
                     mkl_set_num_threads(mkl_nthreads);
                 #endif
 

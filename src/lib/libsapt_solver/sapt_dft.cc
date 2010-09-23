@@ -3,7 +3,9 @@
  *
  */
 
-#ifdef HAVEMKL
+#include "sapt_dft.h"
+
+#ifdef _MKL
 #include <mkl.h>
 #endif
 
@@ -31,8 +33,6 @@
 #include <psifiles.h>
 
 #include <libmints/mints.h>
-
-#include "sapt_dft.h"
 
 using namespace boost;
 using namespace std;

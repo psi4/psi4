@@ -3,7 +3,10 @@
  *
  */
 
-#ifdef HAVE_MKL
+#include "sapt_dft.h"
+#include "structs.h"
+
+#ifdef _MKL
 #include <mkl.h>
 #endif
 
@@ -26,9 +29,6 @@
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <psifiles.h>
-
-#include "sapt_dft.h"
-#include "structs.h"
 
 #include <libmints/basisset.h>
 #include <libmints/onebody.h>
@@ -393,7 +393,7 @@ void SAPT_DFT::lr_ints()
         //fprintf(outfile, "  Ami\n");
         //print_mat(Ami,p_sizes[block],noccA*norbs, outfile);
 
-        #ifdef HAVE_MKL
+        #ifdef _MKL
             int mkl_nthreads = mkl_get_max_threads();
             mkl_set_num_threads(1);
         #endif
@@ -408,7 +408,7 @@ void SAPT_DFT::lr_ints()
         }
         timer_off("(A|ia)");
 
-        #ifdef HAVE_MKL
+        #ifdef _MKL
             mkl_set_num_threads(mkl_nthreads);
         #endif
 
@@ -575,7 +575,7 @@ void SAPT_DFT::lr_ints()
         //fprintf(outfile, "  Bmi\n");
         //print_mat(Bmi,p_sizes[block],noccB*norbs, outfile);
 
-        #ifdef HAVE_MKL
+        #ifdef _MKL
             int mkl_nthreads = mkl_get_max_threads();
             mkl_set_num_threads(1);
         #endif
@@ -590,7 +590,7 @@ void SAPT_DFT::lr_ints()
         }
         timer_off("(A|ia)");
 
-        #ifdef HAVE_MKL
+        #ifdef _MKL
             mkl_set_num_threads(mkl_nthreads);
         #endif
 

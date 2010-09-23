@@ -311,6 +311,18 @@ void py_psi_set_memory(unsigned long int mem)
     fprintf(outfile,"\n  Memory set to %7.3f %s by Python script.\n",(mem > 1000000000 ? mem/1.0E9 : mem/1.0E6), \
         (mem > 1000000000 ? "GB" : "MB" )); 
 }
+unsigned long int py_psi_get_memory()
+{
+    return Process::environment.get_memory();
+}
+void py_psi_set_n_threads(int nthread)
+{
+    Process::environment.set_n_threads(nthread);
+}
+int py_psi_get_n_threads()
+{
+    return Process::environment.get_n_threads();
+}
 BOOST_PYTHON_MODULE(PsiMod)
 {
     def("version", py_psi_version);
@@ -321,6 +333,10 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("set_default_options_for_module", py_psi_set_default_options_for_module);
     def("set_active_molecule", py_psi_set_active_molecule);
     def("get_active_molecule", &py_psi_get_active_molecule);
+    def("set_memory", py_psi_set_memory);
+    def("get_memory", py_psi_get_memory);
+    def("set_n_threads", &py_psi_set_n_threads);
+    def("get_n_threads", &py_psi_get_n_threads);
 
     def("print_options", py_psi_print_options);
     def("print_global_options", py_psi_print_global_options);
@@ -337,7 +353,6 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("get_option", py_psi_get_option);
 
     def("get_variable", py_psi_get_variable);
-    def("set_memory", py_psi_set_memory);
 
     // modules
     def("input", py_psi_input);

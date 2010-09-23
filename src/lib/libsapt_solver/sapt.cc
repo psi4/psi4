@@ -2,7 +2,10 @@
  *  SAPT.CC 
  *
  */
-#ifdef HAVE_MKL
+#include "sapt.h"
+#include "structs.h"
+
+#ifdef _MKL
 #include <mkl.h>
 #endif
 
@@ -25,9 +28,6 @@
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <psifiles.h>
-
-#include "sapt.h"
-#include "structs.h"
 
 #include <libmints/basisset.h>
 #include <libmints/basisset_parser.h>
