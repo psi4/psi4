@@ -851,6 +851,13 @@ void Molecule::init_with_chkpt(shared_ptr<Chkpt> chkpt)
         add_atom((int)zvals[i], geom[i][0], geom[i][1], geom[i][2], atomic_labels[(int)zvals[i]], an2masses[(int)zvals[i]]);
     }
 
+    // We need to make 1 fragment with all atoms
+    fragments_.push_back(std::make_pair(0, natoms));
+    fragmentTypes_.push_back(Real);
+
+    // chkpt is already in AU set the conversion to 1
+    inputUnitsToAU_ = 1.0;
+
     if(Communicator::world->me() == 0)
         nirreps_ = chkpt->rd_nirreps();
     if(Communicator::world->nproc() > 1)
@@ -868,8 +875,6 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
 
     if (xyzfilename.empty())
         throw PSIEXCEPTION("Molecule::init_with_xyz: given filename is blank.");
-
-    //printf("%s",xyzfilename.c_str());
 
     ifstream infile(xyzfilename.c_str());
     string line, natom_str;
@@ -1209,6 +1214,9 @@ Molecule::create_molecule_from_string(const std::string &text)
 void
 Molecule::update_geometry()
 {
+    if (fragments_.size() == 0)
+        throw PSIEXCEPTION("Molecule::update_geometry: There are no fragments in this molecule.");
+
     atoms_.clear();
     EntryVectorIter iter; 
     for (iter = full_atoms_.begin(); iter != full_atoms_.end(); ++iter){

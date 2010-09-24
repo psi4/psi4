@@ -57,7 +57,7 @@ void Wavefunction::common_init()
 
         // Initialize the basis set object
         basisset_ = shared_ptr<BasisSet>(new BasisSet(chkpt_));
-
+        
         // Basis set object has reference to initialized molecule, grab it
         molecule_ = basisset_->molecule();
 
