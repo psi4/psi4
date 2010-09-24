@@ -91,9 +91,13 @@ protected:
     int multiplicity_;
     /// The units used to define the geometry
     GeometryUnits units_;
+    /// The conversion factor to take input units to Bohr
+    double inputUnitsToAU_;
+    /// A list of all variables known, whether they have been set or not.
+    std::vector<std::string> allVariables_;
     /// Zero it out
     void clear();
-    CoordValue* get_value(const std::string &str, const std::string &line);
+    CoordValue* get_value(const std::string &str, const std::string &line, bool dontThrow = false);
     static int get_anchor_atom(const std::string &str, const std::vector<std::string> &atoms,
                               const std::string &line);
 
@@ -202,8 +206,8 @@ public:
     /// Return copy of atom_info for atom in full atoms
 //    atom_info fr(int atom) { return full_atoms_[atom]; }
     /// Returns a Vector3 with x, y, z position of atom
-    const Vector3& xyz(int atom) const;
-    const Vector3& fxyz(int atom) const;
+    Vector3 xyz(int atom) const;
+    Vector3 fxyz(int atom) const;
     /// Returns x, y, or z component of 'atom'
     const double& xyz(int atom, int _xyz) const;
     /// Returns mass atom atom
@@ -230,6 +234,7 @@ public:
     SimpleMatrix full_geometry();
     void set_geometry(double** geom);
     void set_geometry(SimpleMatrix& geom);
+    void set_full_geometry(double** geom);
     void set_full_geometry(SimpleMatrix& geom);
     void rotate(SimpleMatrix& R);
     void rotate_full(SimpleMatrix& R);
