@@ -16,6 +16,12 @@
 #include <libparallel/parallel.h>
 #include <libciomr/libciomr.h>
 
+#include "vector3.h"
+#include "molecule.h"
+#include "matrix.h"
+#include "pointgrp.h"
+#include "coordentry.h"
+
 #include <masses.h>
 #include <physconst.h>
 #include <element_to_Z.h>
@@ -167,17 +173,17 @@ namespace psi {
      * @param line: the current line, for error message printing.
      * @return the numerical interpretation of the string.
      */
-    double
+    CoordValue*
     Molecule::get_value(const std::string &str, const std::string &line)
     {
         if(regex_match(str, reMatches_, realNumber_)){
             // This is already a number
-            return str_to_double(str);
+            return new NumberValue(str_to_double(str));
         }else{
             if(str[0] == '-'){
                 // This is negative; ignore the leading '-' and return minus the value
                 if(geometryVariables_.count(str.substr(1, str.size() - 1))){
-                    return -1.0*geometryVariables_[str.substr(1, str.size() - 1)];
+                    return new VariableValue(str.substr(1, str.size() - 1), geometryVariables_, true);
                 }else{
                     throw PSIEXCEPTION("Illegal value in geometry specification: " + str
                                        + " on line " + line
@@ -186,7 +192,7 @@ namespace psi {
             }else{
                 // This is positive; return the value using the string as-is
                 if(geometryVariables_.count(str)){
-                    return geometryVariables_[str];
+                    return new VariableValue(str, geometryVariables_);
                 }else{
                     throw PSIEXCEPTION("Illegal value in geometry specification: " + str
                                        + " on line " + line
@@ -300,64 +306,64 @@ void Molecule::clear()
     full_atoms_.empty();
 }
 
-void Molecule::add_atom(int Z, double x, double y, double z,
-                        const char *label, double mass, double charge, int lineno)
-{
-    if (lineno >= 0) {
-        bool should_add = false;
-
-        vector<int>::const_iterator iter = fragmentsUsed_.begin();
-        for (; iter != fragmentsUsed_.end(); ++iter) {
-            pair<int, int> range = fragments_[*iter];
-
-            if (lineno >= range.first && lineno < range.second) {
-                should_add = true;
-                break;
-            }
-        }
-        if (should_add == false)
-            return;
-    }
-
-    Vector3 temp(x, y, z);
-    if (atom_at_position2(temp) == -1) {
-        atom_info info;
-
-        info.x = x;
-        info.y = y;
-        info.z = z;
-        info.Z = Z;
-        info.charge = charge;
-        info.label = label;
-        info.mass = mass;
-
-        // Dummies go to full_atoms_, ghosts need to go to both.
-        if(strcmp(label, "X") && strcmp(label, "x")) atoms_.push_back(info);
-        full_atoms_.push_back(info);
-    }
-    else {
-        throw PSIEXCEPTION("Molecule::add_atom: Adding atom on top of an existing atom.");
-    }
-}
+//void Molecule::add_atom(int Z, double x, double y, double z,
+//                        const char *label, double mass, double charge, int lineno)
+//{
+//    if (lineno >= 0) {
+//        bool should_add = false;
+//
+//        vector<int>::const_iterator iter = fragmentsUsed_.begin();
+//        for (; iter != fragmentsUsed_.end(); ++iter) {
+//            pair<int, int> range = fragments_[*iter];
+//
+//            if (lineno >= range.first && lineno < range.second) {
+//                should_add = true;
+//                break;
+//            }
+//        }
+//        if (should_add == false)
+//            return;
+//    }
+//
+//    Vector3 temp(x, y, z);
+//    if (atom_at_position2(temp) == -1) {
+//        atom_info info;
+//
+//        info.x = x;
+//        info.y = y;
+//        info.z = z;
+//        info.Z = Z;
+//        info.charge = charge;
+//        info.label = label;
+//        info.mass = mass;
+//
+//        // Dummies go to full_atoms_, ghosts need to go to both.
+//        if(strcmp(label, "X") && strcmp(label, "x")) atoms_.push_back(info);
+//        full_atoms_.push_back(info);
+//    }
+//    else {
+//        throw PSIEXCEPTION("Molecule::add_atom: Adding atom on top of an existing atom.");
+//    }
+//}
 
 double Molecule::mass(int atom) const
 {
-    if (atoms_[atom].mass != 0.0)
-        return atoms_[atom].mass;
+    if (atoms_[atom]->mass() != 0.0)
+        return atoms_[atom]->mass();
 
-    return an2masses[atoms_[atom].Z];
+    return an2masses[atoms_[atom]->Z()];
 }
 
-const std::string Molecule::label(int atom) const
+const std::string& Molecule::label(int atom) const
 {
-    return atoms_[atom].label;
+    return atoms_[atom]->label();
 }
 
 int Molecule::atom_at_position1(double *xyz, double tol) const
 {
     Vector3 b(xyz);
     for (int i=0; i < natom(); ++i) {
-        Vector3 a(atoms_[i].x, atoms_[i].y, atoms_[i].z);
+        Vector3 a(atoms_[i]->compute());
         if (b.distance(a) < tol)
             return i;
     }
@@ -367,7 +373,7 @@ int Molecule::atom_at_position1(double *xyz, double tol) const
 int Molecule::atom_at_position2(Vector3& b, double tol) const
 {
     for (int i=0; i < natom(); ++i) {
-        Vector3 a(atoms_[i].x, atoms_[i].y, atoms_[i].z);
+        Vector3 a(atoms_[i]->compute());
         if (b.distance(a) < tol)
             return i;
     }
@@ -485,15 +491,16 @@ SimpleMatrix Molecule::nuclear_repulsion_energy_deriv2()
 
 void Molecule::translate(const Vector3& r)
 {
+    Vector3 temp;
     for (int i=0; i<natom(); ++i) {
-        atoms_[i].x += r[0];
-        atoms_[i].y += r[1];
-        atoms_[i].z += r[2];
+        temp = atoms_[i]->compute();
+        temp += r;
+        atoms_[i]->set(temp);
     }
     for (int i=0; i<nallatom(); ++i) {
-        full_atoms_[i].x += r[0];
-        full_atoms_[i].y += r[1];
-        full_atoms_[i].z += r[2];
+        temp = full_atoms_[i]->compute();
+        temp += r;
+        full_atoms_[i]->set(r);
     }
 }
 
@@ -529,27 +536,24 @@ SimpleMatrix Molecule::full_geometry()
 void Molecule::set_geometry(double** geom)
 {
     for (int i=0; i<natom(); ++i) {
-        atoms_[i].x = geom[i][0];
-        atoms_[i].y = geom[i][1];
-        atoms_[i].z = geom[i][2];
+        Vector3 temp(geom[i][0], geom[i][1], geom[i][2]);
+        atoms_[i]->set(temp);
     }
 }
 
 void Molecule::set_geometry(SimpleMatrix& geom)
 {
     for (int i=0; i<natom(); ++i) {
-        atoms_[i].x = geom[i][0];
-        atoms_[i].y = geom[i][1];
-        atoms_[i].z = geom[i][2];
+        Vector3 temp(geom[i][0], geom[i][1], geom[i][2]);
+        atoms_[i]->set(temp);
     }
 }
 
 void Molecule::set_full_geometry(SimpleMatrix& geom)
 {
-    for (int i=0; i<nallatom(); ++i) {
-        full_atoms_[i].x = geom[i][0];
-        full_atoms_[i].y = geom[i][1];
-        full_atoms_[i].z = geom[i][2];
+    for (int i=0; i<natom(); ++i) {
+        Vector3 temp(geom[i][0], geom[i][1], geom[i][2]);
+        full_atoms_[i]->set(temp);
     }
 }
 
@@ -794,20 +798,20 @@ int Molecule::nfrozen_core(std::string depth)
     }
     else if (depth == "TRUE" || depth == "SMALL") {
         int nfzc = 0;
-        for (int A = 0; A < atoms_.size(); A++) {
-            if (atoms_[A].Z > 2 && atoms_[A].Z <= 10)
+        for (int A = 0; A < natom(); A++) {
+            if (Z(A) > 2 && Z(A) <= 10)
                 nfzc++;
-            else if (atoms_[A].Z > 10)
+            else if (Z(A) > 10)
                 nfzc+=2;
         }
         return nfzc;
     }
     else if (depth == "LARGE") {
         int nfzc = 0;
-        for (int A = 0; A < atoms_.size(); A++) {
-            if (atoms_[A].Z > 2 && atoms_[A].Z <= 10)
+        for (int A = 0; A < natom(); A++) {
+            if (Z(A) > 2 && Z(A) <= 10)
                 nfzc++;
-            else if (atoms_[A].Z > 10)
+            else if (Z(A) > 10)
                 nfzc+=5;
         }
         return nfzc;
@@ -863,6 +867,7 @@ void Molecule::init_with_chkpt(shared_ptr<Chkpt> chkpt)
     Chkpt::free(geom);
 }
 
+// TODO: Make sure it isn't used.
 void Molecule::init_with_xyz(const std::string& xyzfilename)
 {
     Element_to_Z Z;
@@ -966,49 +971,60 @@ Molecule::create_molecule_from_string(const std::string &text)
 
     shared_ptr<Molecule> mol(new Molecule);
     std::string units = Process::environment.options.get_str("UNITS");
-    if(boost::iequals(units, "ANG") || boost::iequals(units, "ANGSTROM") || boost::iequals(units, "ANGSTROMS")){
+
+    if(boost::iequals(units, "ANG") || boost::iequals(units, "ANGSTROM") || boost::iequals(units, "ANGSTROMS")) {
         mol->set_units(Angstrom);
-    }else if(boost::iequals(units, "BOHR") || boost::iequals(units, "AU") || boost::iequals(units, "A.U.")){
+    }
+    else if(boost::iequals(units, "BOHR") || boost::iequals(units, "AU") || boost::iequals(units, "A.U.")) {
         mol->set_units(Bohr);
-    }else{
+    }
+    else {
         throw PSIEXCEPTION("Unit " + units + " is not recognized");
     }
+
     mol->molecularCharge_ = Process::environment.options.get_int("CHARGE");
     mol->multiplicity_ = Process::environment.options.get_int("MULTP");
+
     /*
      * Time to look for lines that look like they describe charge and multiplicity,
      * a variable, units, comment lines, and blank lines.  When found, process them
      * and remove them so that only the raw geometry remains.  Iterated backwards, as
      * elements are deleted as they are processed.
      */
-    for(int lineNumber = lines.size() - 1 ; lineNumber >= 0; --lineNumber){
-        if(regex_match(lines[lineNumber], reMatches, variableDefinition_)){
+    for(int lineNumber = lines.size() - 1 ; lineNumber >= 0; --lineNumber) {
+        if(regex_match(lines[lineNumber], reMatches, variableDefinition_)) {
             // A variable definition
             double value = (boost::iequals("tda", reMatches[2].str()) ?
                                360.0*atan(sqrt(2))/M_PI : str_to_double(reMatches[2]));
             mol->set_variable(reMatches[1].str(), value);
             lines.erase(lines.begin() + lineNumber);
-        }else if(regex_match(lines[lineNumber], reMatches, blankLine_)){
+        }
+        else if(regex_match(lines[lineNumber], reMatches, blankLine_)) {
             // A blank line, nuke it
             lines.erase(lines.begin() + lineNumber);
-        }else if(regex_match(lines[lineNumber], reMatches, commentLine_)){
+        }
+        else if(regex_match(lines[lineNumber], reMatches, commentLine_)) {
             // A comment line, nuke it
             lines.erase(lines.begin() + lineNumber);
-        }else if(regex_match(lines[lineNumber], reMatches, unitLabel_)){
+        }
+        else if(regex_match(lines[lineNumber], reMatches, unitLabel_)) {
             // A comment line, nuke it
             if(   boost::iequals("ang", reMatches[1].str())
                || boost::iequals("angstrom",   reMatches[1].str())){
                 mol->set_units(Angstrom);
-            }else{
+            }
+            else {
                 mol->set_units(Bohr);
             }
             lines.erase(lines.begin() + lineNumber);
-        }else if(regex_match(lines[lineNumber], reMatches, orientCommand_)){
+        }
+        else if(regex_match(lines[lineNumber], reMatches, orientCommand_)) {
             // Set
             mol->set_orientation_fixed(true);
             lines.erase(lines.begin() + lineNumber);
-        }else if(regex_match(lines[lineNumber], reMatches, chargeAndMultiplicity_)){
-            if(lineNumber && !regex_match(lines[lineNumber-1], reMatches, fragmentMarker_)){
+        }
+        else if(regex_match(lines[lineNumber], reMatches, chargeAndMultiplicity_)) {
+            if(lineNumber && !regex_match(lines[lineNumber-1], reMatches, fragmentMarker_)) {
                 // As long as this does not follow a "--", it's a global charge/multiplicity
                 // specifier, so we process it, then nuke it
                 mol->set_molecular_charge(str_to_int(reMatches[1]));
@@ -1020,32 +1036,38 @@ Molecule::create_molecule_from_string(const std::string &text)
 
     // Now go through the rest of the lines looking for fragment markers
     unsigned int firstAtom  = 0;
+    unsigned int atomCount = 0;
+
     mol->fragmentMultiplicities_.push_back(mol->multiplicity_);
     mol->fragmentCharges_.push_back(mol->molecularCharge_);
     mol->fragmentsUsed_.push_back(0);
-    unsigned int atomCount = 0;
-    for(unsigned int lineNumber = 0; lineNumber < lines.size(); ++lineNumber){
-        if(regex_match(lines[lineNumber], reMatches, fragmentMarker_)){
+
+    for(unsigned int lineNumber = 0; lineNumber < lines.size(); ++lineNumber) {
+        if(regex_match(lines[lineNumber], reMatches, fragmentMarker_)) {
             // Check that there are more lines remaining
             if(lineNumber == lines.size() - 1)
                 throw PSIEXCEPTION("Nothing specified after the final \"--\" in geometry");
+
             // Now we process the atom markers
             mol->fragments_.push_back(std::make_pair(firstAtom, atomCount));
             mol->fragmentsUsed_.push_back(mol->fragmentsUsed_.size());
             firstAtom = atomCount;
+
             // Figure out how to handle the multiplicity
-            if(regex_match(lines[lineNumber+1], reMatches, chargeAndMultiplicity_)){
+            if(regex_match(lines[lineNumber+1], reMatches, chargeAndMultiplicity_)) {
                 // The user specified a charge/multiplicity for this fragment
                 mol->fragmentCharges_.push_back(str_to_int(reMatches[1]));
                 mol->fragmentMultiplicities_.push_back(str_to_int(reMatches[2]));
                 // Don't forget to skip over the charge multiplicity line..
                 ++lineNumber;
-            }else{
+            }
+            else {
                 // The user didn't give us charge/multiplicity - use the molecule default
                 mol->fragmentCharges_.push_back(mol->molecularCharge_);
                 mol->fragmentMultiplicities_.push_back(mol->multiplicity_);
             }
-        }else{
+        }
+        else {
             ++atomCount;
         }
     }
@@ -1069,14 +1091,17 @@ Molecule::create_molecule_from_string(const std::string &text)
     // Trim leading and trailing whitespace
     boost::algorithm::trim(lines[0]);
     boost::split(splitLine, lines[0], boost::is_any_of("\t ,"),token_compress_on);
-    if(splitLine.size() == 4){
+
+    if(splitLine.size() == 4) {
         mol->set_geometry_format(Cartesian);
-    }else if(splitLine.size() == 1){
+    }
+    else if(splitLine.size() == 1) {
         mol->set_geometry_format(ZMatrix);
-    }else{
+    }
+    else {
         throw PSIEXCEPTION("Illegal geometry specification line : " + lines[0] +
                        ".  You should provide either Z-Matrix or Cartesian input");
-    };
+    }
 
     mol->set_geometry_string(lines);
 //    mol->update_geometry();
@@ -1112,7 +1137,7 @@ Molecule::update_geometry()
     std::string atomSym;
     double x, y, z;
     unsigned int currentAtom = 0;
-    if(geometryFormat_ == Cartesian){
+    if(geometryFormat_ == Cartesian) {
         std::vector<std::string>::iterator line = geometryString_.begin();
         for(; line != geometryString_.end(); ++line){
             //fprintf(outfile,"GeometryString size %d\n",geometryString_.size());
@@ -1137,18 +1162,19 @@ Molecule::update_geometry()
             }
             ++currentAtom;
         }
-    }else if(geometryFormat_ == ZMatrix){
+    }
+    else if(geometryFormat_ == ZMatrix) {
         std::vector<std::string>::iterator line = geometryString_.begin();
-        double r, a, d; // The bond length, valence bond angle, and torsion angle, respectively
+        CoordValue *r, *a, *d; // The bond length, valence bond angle, and torsion angle, respectively
         int rTo, aTo, dTo; // The "anchor" atoms, used to define r, a, and d
         std::vector<std::string> atoms;
-        for(; line != geometryString_.end(); ++line){
+        for(; line != geometryString_.end(); ++line) {
             // Trim leading and trailing whitespace
             boost::algorithm::trim(*line);
             boost::split(splitLine, *line, boost::is_any_of("\t ,"),token_compress_on);
-            if(currentAtom == 0){
+            if(currentAtom == 0) {
                 // This is the first line
-                if(splitLine.size() != 1){
+                if(splitLine.size() != 1) {
                     throw PSIEXCEPTION("Incorrect number of entries in geometry specification :" + *line);
                 }
                 // Check that the atom symbol is valid
@@ -1158,7 +1184,8 @@ Molecule::update_geometry()
                 atoms.push_back(splitLine[0]);
                 atomSym = boost::to_upper_copy(reMatches[1].str());
                 x = y = z = 0.0;
-            }else if(currentAtom == 1){
+            }
+            else if(currentAtom == 1) {
                 // This is the second line
                 if(splitLine.size() != 3){
                     throw PSIEXCEPTION("Incorrect number of entries in geometry specification :" + *line);
@@ -1176,9 +1203,10 @@ Molecule::update_geometry()
                 r = get_value(splitLine[2], *line) * conversionFactor;
                 x = y = 0.0;
                 z = r;
-            }else if(currentAtom == 2){
+            }
+            else if(currentAtom == 2) {
                 // This is the third line
-                if(splitLine.size() != 5){
+                if(splitLine.size() != 5) {
                     throw PSIEXCEPTION("Incorrect number of entries in geometry specification :" + *line);
                 }
                 // Check that the atom symbol is valid
@@ -1208,9 +1236,10 @@ Molecule::update_geometry()
                 }else{
                     x = r*sin(a);
                     y = 0.0;
-                    z = atoms_[1].z - r*cos(a);
+                    z = atoms_[1]->compute()[2] - r*cos(a);
                 }
-            }else{
+            }
+            else{
                 // This is line 4 onwards
                 if(splitLine.size() != 7){
                     throw PSIEXCEPTION("Incorrect number of entries in geometry specification :" + *line);
@@ -1242,36 +1271,10 @@ Molecule::update_geometry()
                 a *= M_PI / 180.0;
                 d *= M_PI / 180.0;
 
-                /*
-                 * The atom specification is
-                 *      this       rTo   rVal  aTo  aVal   dTo   dVal
-                 *        D         C           B           A
-                 * which allows us to define the vector from B->C (eBC) as the +z axis, and eAB
-                 * lies in the xz plane.  Then eX, eY and eZ (=eBC) are the x, y, and z axes, respecively.
-                 */
-                Vector3 eAB(atoms_[aTo].x - atoms_[dTo].x, atoms_[aTo].y - atoms_[dTo].y, atoms_[aTo].z - atoms_[dTo].z);
-                Vector3 eBC(atoms_[rTo].x - atoms_[aTo].x, atoms_[rTo].y - atoms_[aTo].y, atoms_[rTo].z - atoms_[aTo].z);
-                eAB.normalize();
-                eBC.normalize();
-                double cosBCD = cos(a);
-                double sinBCD = sin(a);
-                double cosABCD = cos(d);
-                double sinABCD = sin(d);
-                double cosABC = -eAB.dot(eBC);
-                double sinABC = sqrt(1.0 - cosABC * cosABC);
-                if(sinABC < LINEAR_A_TOL || sinBCD < LINEAR_A_TOL)
-                    throw PSIEXCEPTION("Line " + *line + " defines a dihedral using a linear bond angle");
-                Vector3 eY = eAB.perp_unit(eBC);
-                Vector3 eX = eY.perp_unit(eBC);
-
-                x = atoms_[rTo].x + r * ( -eBC[0] * cosBCD + eX[0] * sinBCD * cosABCD + eY[0] * sinBCD * sinABCD);
-                y = atoms_[rTo].y + r * ( -eBC[1] * cosBCD + eX[1] * sinBCD * cosABCD + eY[1] * sinBCD * sinABCD);
-                z = atoms_[rTo].z + r * ( -eBC[2] * cosBCD + eX[2] * sinBCD * cosABCD + eY[2] * sinBCD * sinABCD);
-            }
-            if(zIn.empty()){
-                add_atom((int)zVals[atomSym], x, y, z, atomSym.c_str(), atomic_masses[(int)zVals[atomSym]]);
-            }else{
-                add_atom(zIn[currentAtom], x, y, z, atomSym.c_str(), atomic_masses[(int)zVals[atomSym]]);
+                CoordValue *rval =
+                int zval = (int)zVals[atomSym];
+//                shared_ptr<CoordEntry> new_atom(new ZMatrixEntry(currentAtom, zval, 0, atomic_masses[zval],
+//                                                atomSym, full_atoms_[rTo].get(), get_value(
             }
             ++currentAtom;
         }
@@ -1441,7 +1444,6 @@ Molecule::extract_subsets(const std::vector<int> &real_list, const std::vector<i
     return clone;
 }
 
-
 void Molecule::save_to_chkpt(shared_ptr<Chkpt> chkpt, std::string prefix)
 {
     // Save the current prefix
@@ -1522,9 +1524,8 @@ void Molecule::print() const
             fflush(outfile);
         }
     }
-    else {
+    else
         fprintf(outfile, "  No atoms in this molecule.\n");
-    }
 }
 
 SimpleVector Molecule::nuclear_dipole_contribution()
@@ -1585,25 +1586,25 @@ SimpleMatrix* Molecule::inertia_tensor()
     return tensor;
 }
 
-double& Molecule::xyz(int atom, int _xyz)
-{
-    if (_xyz == 0)
-        return atoms_[atom].x;
-    else if (_xyz == 1)
-        return atoms_[atom].y;
-    else
-        return atoms_[atom].z;
-}
-
-const double& Molecule::xyz(int atom, int _xyz) const
-{
-    if (_xyz == 0)
-        return atoms_[atom].x;
-    else if (_xyz == 1)
-        return atoms_[atom].y;
-    else
-        return atoms_[atom].z;
-}
+//double& Molecule::xyz(int atom, int _xyz)
+//{
+//    if (_xyz == 0)
+//        return atoms_[atom].x;
+//    else if (_xyz == 1)
+//        return atoms_[atom].y;
+//    else
+//        return atoms_[atom].z;
+//}
+//
+//const double& Molecule::xyz(int atom, int _xyz) const
+//{
+//    if (_xyz == 0)
+//        return atoms_[atom].x;
+//    else if (_xyz == 1)
+//        return atoms_[atom].y;
+//    else
+//        return atoms_[atom].z;
+//}
 
 //
 // Symmetry
@@ -2257,175 +2258,72 @@ char** Molecule::irrep_labels()
   return irreplabel;
 }
 
-Vector3 Molecule::xyz(int atom) const
+const Vector3& Molecule::xyz(int atom) const
 {
-    return Vector3(atoms_[atom].x, atoms_[atom].y, atoms_[atom].z);
+    return atoms_[atom]->compute();
 }
 
-Vector3 Molecule::fxyz(int atom) const
+const Vector3& Molecule::fxyz(int atom) const
 {
-    return Vector3(full_atoms_[atom].x, full_atoms_[atom].y, full_atoms_[atom].z);
+    return full_atoms_[atom]->compute();
 }
 
-//////////////////////////////////////////////////////////////////////////////
-//
-// Atomic Radii
-//
-//////////////////////////////////////////////////////////////////////////////
-
-AtomicRadii::AtomicRadii()
-    : count_(0), radii_(0)
+int Molecule::Z(int atom) const
 {
-
+    return atoms_[atom]->Z();
 }
 
-AtomicRadii::~AtomicRadii()
+int Molecule::fZ(int atom) const
 {
-    if (radii_)
-        delete[] radii_;
-    radii_ = 0;
-    count_ = 0;
+    return full_atoms_[atom]->Z();
 }
 
-TreutlerAtomicRadii::TreutlerAtomicRadii()
-    : AtomicRadii()
+double Molecule::x(int atom) const
 {
-    count_ = 37;
-    radii_ = new double[count_];
-
-    radii_[0]  = 1.0; /* Ghost Atom */
-    radii_[1]  = 0.8; /* H */
-    radii_[2]  = 0.9; /* He */
-    radii_[3]  = 1.8; /* Li */
-    radii_[4]  = 1.4; /* Be */
-    radii_[5]  = 1.3; /* B */
-    radii_[6]  = 1.1; /* C */
-    radii_[7]  = 0.9; /* N */
-    radii_[8]  = 0.9; /* O */
-    radii_[9]  = 0.9; /* F */
-    radii_[10] = 0.9; /* Ne */
-    radii_[11] = 1.4; /* Na */
-    radii_[12] = 1.3; /* Mg */
-    radii_[13] = 1.3; /* Al */
-    radii_[14] = 1.2; /* Si */
-    radii_[15] = 1.1; /* P */
-    radii_[16] = 1.0; /* S */
-    radii_[17] = 1.0; /* Cl */
-    radii_[18] = 1.0; /* Ar */
-    radii_[19] = 1.5; /* K */
-    radii_[20] = 1.4; /* Ca */
-    radii_[21] = 1.3; /* Sc */
-    radii_[22] = 1.2; /* Ti */
-    radii_[23] = 1.2; /* V */
-    radii_[24] = 1.2; /* Cr */
-    radii_[25] = 1.2; /* Mn */
-    radii_[26] = 1.2; /* Fe */
-    radii_[27] = 1.2; /* Co */
-    radii_[28] = 1.1; /* Ni */
-    radii_[29] = 1.1; /* Cu */
-    radii_[30] = 1.1; /* Zn */
-    radii_[31] = 1.1; /* Ga */
-    radii_[32] = 1.0; /* Ge */
-    radii_[33] = 0.9; /* As */
-    radii_[34] = 0.9; /* Se */
-    radii_[35] = 0.9; /* Br */
-    radii_[36] = 0.9; /* Kr */
+    return atoms_[atom]->compute()[0];
 }
 
-AdjustedVanDerWaalsAtomicRadii::AdjustedVanDerWaalsAtomicRadii()
+double Molecule::y(int atom) const
 {
-    count_ = 55;
-    radii_ = new double[count_];
-
-    radii_[0]  = 1.000; /* Default element or ghost */
-    radii_[1]  = 1.001; /* H  (untouched) */
-    radii_[2]  = 0.5*1.012; /* He */
-    radii_[3]  = 0.5*0.825; /* Li */
-    radii_[4]  = 0.5*1.408; /* Be */
-    radii_[5]  = 0.5*1.485; /* B  */
-    radii_[6]  = 0.5*1.452; /* C  */
-    radii_[7]  = 0.5*1.397; /* N  */
-    radii_[8]  = 0.5*1.342; /* O  */
-    radii_[9]  = 0.5*1.287; /* F  */
-    radii_[10] = 0.5*1.243; /* Ne */
-    radii_[11] = 0.5*1.144; /* Na */
-    radii_[12] = 0.5*1.364; /* Mg */
-    radii_[13] = 0.5*1.639; /* Al */
-    radii_[14] = 0.5*1.716; /* Si */
-    radii_[15] = 0.5*1.705; /* P  */
-    radii_[16] = 0.5*1.683; /* S  */
-    radii_[17] = 0.5*1.639; /* Cl */
-    radii_[18] = 0.5*1.595; /* Ar */
-    radii_[19] = 0.5*1.485; /* K  */
-    radii_[20] = 0.5*1.474; /* Ca */
-    radii_[21] = 0.5*1.562; /* Sc */
-    radii_[22] = 0.5*1.562; /* Ti */
-    radii_[23] = 0.5*1.562; /* V  */
-    radii_[24] = 0.5*1.562; /* Cr */
-    radii_[25] = 0.5*1.562; /* Mn */
-    radii_[26] = 0.5*1.562; /* Fe */
-    radii_[27] = 0.5*1.562; /* Co */
-    radii_[28] = 0.5*1.562; /* Ni */
-    radii_[29] = 0.5*1.562; /* Cu */
-    radii_[30] = 0.5*1.562; /* Zn */
-    radii_[31] = 0.5*1.650; /* Ga */
-    radii_[32] = 0.5*1.727; /* Ge */
-    radii_[33] = 0.5*1.760; /* As */
-    radii_[34] = 0.5*1.771; /* Se */
-    radii_[35] = 0.5*1.749; /* Br */
-    radii_[36] = 0.5*1.727; /* Kr */
-    radii_[37] = 0.5*1.628; /* Rb */
-    radii_[38] = 0.5*1.606; /* Sr */
-    radii_[39] = 0.5*1.639; /* Y  */
-    radii_[40] = 0.5*1.639; /* Zr */
-    radii_[41] = 0.5*1.639; /* Nb */
-    radii_[42] = 0.5*1.639; /* Mo */
-    radii_[43] = 0.5*1.639; /* Tc */
-    radii_[44] = 0.5*1.639; /* Ru */
-    radii_[45] = 0.5*1.639; /* Rh */
-    radii_[46] = 0.5*1.639; /* Pd */
-    radii_[47] = 0.5*1.639; /* Ag */
-    radii_[48] = 0.5*1.639; /* Cd */
-    radii_[49] = 0.5*1.672; /* In */
-    radii_[50] = 0.5*1.804; /* Sn */
-    radii_[51] = 0.5*1.881; /* Sb */
-    radii_[52] = 0.5*1.892; /* Te */
-    radii_[53] = 0.5*1.892; /* I  */
-    radii_[54] = 0.5*1.881; /* Xe */
+    return atoms_[atom]->compute()[1];
 }
 
-BraggSlaterAtomicRadii::BraggSlaterAtomicRadii()
-    : AtomicRadii()
+double Molecule::z(int atom) const
 {
-    count_ = 0;
-    radii_ = new double[count_];
-
+    return atoms_[atom]->compute()[2];
 }
 
-SG1AtomicRadii::SG1AtomicRadii()
-    : AtomicRadii()
+double Molecule::fx(int atom) const
 {
-    count_ = 19;
-    radii_ = new double[count_];
-
-    radii_[0]  = 2.0000; /* Ghost */
-    radii_[1]  = 1.0000; /* H */
-    radii_[2]  = 0.5882; /* He */
-    radii_[3]  = 3.0769; /* Li */
-    radii_[4]  = 2.0513; /* Be */
-    radii_[5]  = 1.5385; /* B */
-    radii_[6]  = 1.2308; /* C */
-    radii_[7]  = 1.0256; /* N */
-    radii_[8]  = 0.8791; /* O */
-    radii_[9]  = 0.7692; /* F */
-    radii_[10] = 0.6838; /* Ne */
-    radii_[11] = 4.0909; /* Na */
-    radii_[12] = 3.1579; /* Mg */
-    radii_[13] = 2.5714; /* Al */
-    radii_[14] = 2.1687; /* Si */
-    radii_[15] = 1.8750; /* P */
-    radii_[16] = 1.6514; /* S */
-    radii_[17] = 1.4754; /* Cl */
-    radii_[18] = 1.3333; /* Ar */
+    return full_atoms_[atom]->compute()[0];
 }
 
+double Molecule::fy(int atom) const
+{
+    return full_atoms_[atom]->compute()[1];
+}
+
+double Molecule::fz(int atom) const
+{
+    return full_atoms_[atom]->compute()[2];
+}
+
+double Molecule::charge(int atom) const
+{
+    return atoms_[atom]->charge();
+}
+
+double Molecule::fcharge(int atom) const
+{
+    return full_atoms_[atom]->charge();
+}
+
+double Molecule::fmass(int atom) const
+{
+    return full_atoms_[atom]->mass();
+}
+
+const std::string& flabel(int atom) const
+{
+    return full_atoms_[atom]->label();
+}
