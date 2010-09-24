@@ -17,22 +17,37 @@ CoordEntry::~CoordEntry()
 
 }
 
-CartesianEntry::CartesianEntry(int entry_number, int Z, double x, double y, double z, double charge, double mass, std::string& label)
-    : CoordEntry(entry_number, Z, charge, mass, label)
+CartesianEntry::CartesianEntry(int entry_number, int Z, double charge, double mass, std::string& label, 
+                               boost::shared_ptr<CoordValue>(x), boost::shared_ptr<CoordValue>(y), boost::shared_ptr<CoordValue>(z))
+    : CoordEntry(entry_number, Z, charge, mass, label), x_(x), y_(y), z_(z)
 {
-    coordinates_[0] = x;
-    coordinates_[1] = y;
-    coordinates_[2] = z;
+    compute();
 }
 
 const Vector3& CartesianEntry::compute()
 {
+    if(computed_)
+        return coordinates_;
+
+    coordinates_[0] = x_->compute();
+    coordinates_[1] = y_->compute();
+    coordinates_[2] = z_->compute();
+    computed_ = true;
     return coordinates_;
 }
 
-void CartesianEntry::set(const Vector3 &other)
+void
+CartesianEntry::set_coordinates(double x, double y, double z)
 {
-    coordinates_ = other;
+    coordinates_[0] = x;
+    coordinates_[1] = y;
+    coordinates_[2] = z;
+
+    x_->set(x);
+    y_->set(y);
+    z_->set(z);
+
+    computed_ = true;
 }
 
 ZMatrixEntry::ZMatrixEntry(int entry_number, int Z, double charge, double mass, std::string& label,
@@ -44,17 +59,49 @@ ZMatrixEntry::ZMatrixEntry(int entry_number, int Z, double charge, double mass, 
       ato_(ato), aval_(aval),
       dto_(dto), dval_(dval)
 {
-
+  compute();
 }
 
 ZMatrixEntry::~ZMatrixEntry()
 {
 }
 
+void
+ZMatrixEntry::set_coordinates(double x, double y, double z)
+{
+    coordinates_[0] = x;
+    coordinates_[1] = y;
+    coordinates_[2] = z;
+
+    if(rto_ != 0){
+        if(!rto_->is_computed())
+             throw PSIEXCEPTION("Coordinates have been set in the wrong order");
+        rval_->set(r(coordinates_, rto_->compute()));
+    }
+    if(ato_ != 0){
+        if(!ato_->is_computed())
+             throw PSIEXCEPTION("Coordinates have been set in the wrong order");
+        aval_->set(180.0*a(coordinates_, rto_->compute(), ato_->compute())/M_PI);
+    }
+    if(dto_ != 0){
+        if(!dto_->is_computed())
+             throw PSIEXCEPTION("Coordinates have been set in the wrong order");
+        dval_->set(180.0*d(coordinates_, rto_->compute(), ato_->compute(), dto_->compute())/M_PI);
+    }
+
+    computed_ = true;
+}
+
+
+/**
+ * Computes the coordinates of the current atom's entry
+ * @Return The Cartesian Coordinates, in Bohr
+ */
 const Vector3& ZMatrixEntry::compute()
 {
-    if (computed_)
+    if (computed_){
         return coordinates_;
+}
 
     if(rto_ == 0 && ato_ == 0 && dto_ == 0){
         coordinates_[0] = 0.0;
@@ -65,8 +112,8 @@ const Vector3& ZMatrixEntry::compute()
         coordinates_[1] = 0.0;
         coordinates_[2] = rval_->compute();
     }else if(dto_ == 0){
-        double a = aval_->compute() * M_PI / 180.0;
         double r = rval_->compute();
+        double a = aval_->compute() * M_PI/180.0;
         if(rto_->entry_number() == 0){
             coordinates_[0] = r*sin(a);
             coordinates_[1] = 0.0;
@@ -78,11 +125,8 @@ const Vector3& ZMatrixEntry::compute()
         }
     }else{
         double r = rval_->compute();
-        double a = aval_->compute();
-        double d = dval_->compute();
-
-        a *= M_PI / 180.0;
-        d *= M_PI / 180.0;
+        double a = aval_->compute() * M_PI/180.0;
+        double d = dval_->compute() * M_PI/180.0;
 
         /*
          * The atom specification is
@@ -114,13 +158,8 @@ const Vector3& ZMatrixEntry::compute()
         coordinates_[1] = rTo[1] + r * ( -eBC[1] * cosBCD + eX[1] * sinBCD * cosABCD + eY[1] * sinBCD * sinABCD);
         coordinates_[2] = rTo[2] + r * ( -eBC[2] * cosBCD + eX[2] * sinBCD * cosABCD + eY[2] * sinBCD * sinABCD);
     }
-
     computed_ = true;
     return coordinates_;
-}
-
-void ZMatrixEntry::set(const Vector3 &)
-{
 
 }
 
