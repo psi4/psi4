@@ -51,15 +51,22 @@ public:
 
     /**
      * The type of geometry provided in the input
-     * None      - used to identify if the initial parsing has been done
      * Cartesian - Cartesian coordinates
      * ZMatrix   - Z matrix coordinates
      */
-    enum GeometryFormat {None, ZMatrix, Cartesian};
+    enum GeometryFormat {ZMatrix, Cartesian};
     /**
      * The Units used to define the geometry
      */
     enum GeometryUnits {Angstrom, Bohr};
+    /**
+     * How to handle each fragment
+     * Absent  - Neglect completely
+     * Real    - Include, as normal
+     * Ghost   - Include, but with ghost atoms
+     */
+    enum FragmentType {Absent, Real, Ghost};
+
 
     typedef std::vector<boost::shared_ptr<CoordEntry> > EntryVector;
     typedef EntryVector::iterator EntryVectorIter;
@@ -73,8 +80,6 @@ protected:
     EntryVector atoms_;
     /// Atom info vector (includes dummy atoms)
     EntryVector full_atoms_;
-    /// Each line of the string passed in to define the geometry
-    std::vector<std::string> geometryString_;
     /// The charge of each fragment
     std::vector<int> fragmentCharges_;
     /// The multiplicity of each fragment
@@ -97,7 +102,7 @@ protected:
     std::vector<std::string> allVariables_;
     /// Zero it out
     void clear();
-    CoordValue* get_value(const std::string &str, const std::string &line, bool dontThrow = false);
+    CoordValue* get_coord_value(const std::string &str);
     static int get_anchor_atom(const std::string &str, const std::vector<std::string> &atoms,
                               const std::string &line);
 
@@ -131,15 +136,12 @@ protected:
     /// A regular expression to test if a string is a no_?reorient flag
     static boost::regex orientCommand_;
 
-    /// The format of the geometry provided by the user
-    GeometryFormat geometryFormat_;
-
     /// A listing of the variables used to define the geometries
     std::map<std::string, double> geometryVariables_;
     /// The list of atom ranges defining each fragment from parent molecule
     std::vector<std::pair<int, int> > fragments_;
-    /// Fragments used from parent in this molecule.
-    std::vector<int> fragmentsUsed_;
+    /// A list describing how to handle each fragment
+    std::vector<FragmentType> fragmentTypes_;
 
 public:
     Molecule();
@@ -219,7 +221,7 @@ public:
     /// Returns mass atom atom
     double fmass(int atom) const;
     /// Returns label of atom
-    const std::string& flabel(int atom) const;
+    std::string flabel(int atom) const;
     /// Returns charge of atom
     double fcharge(int atom) const;
 
@@ -324,6 +326,12 @@ public:
     /// @}
 
     static boost::shared_ptr<Molecule> create_molecule_from_string(const std::string &geom);
+    void activate_all_fragments();
+    void deactivate_all_fragments();
+    void set_active_fragments(boost::python::list reals);
+    void set_active_fragment(int fragment);
+    void set_ghost_fragments(boost::python::list ghosts);
+    void set_ghost_fragment(int fragment);
     boost::shared_ptr<Molecule> extract_subsets(const std::vector<int> &real_list,
                                                 const std::vector<int> &ghost_list) const;
     boost::shared_ptr<Molecule> py_extract_subsets_1(boost::python::list reals,
@@ -347,12 +355,6 @@ public:
     /// true if it is, and returns false if not.
     bool is_variable(const std::string &str) const;
 
-    /// Sets the geometry string
-    void set_geometry_string(std::vector<std::string> strVec) { geometryString_ = strVec; }
-    /// Sets the geometry format
-    void set_geometry_format(GeometryFormat format) { geometryFormat_ = format; }
-    /// Gets the geometry format
-    GeometryFormat geometry_format() const { return geometryFormat_; }
     /// Sets the molecular charge
     void set_molecular_charge(int charge) {molecularCharge_ = charge;}
     /// Gets the molecular charge

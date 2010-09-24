@@ -6,6 +6,7 @@
 #include "vector3.h"
 #include <boost/shared_ptr.hpp>
 
+using namespace boost;
 namespace psi {
 
 class Vector3;
@@ -19,10 +20,24 @@ class Vector3;
 class CoordValue
 {
 public:
+    /**
+     * The specialization of CoordValue used to represent this number.
+     * NumberType: A simple number
+     * VariableType: A number to be extracted from a map owned by molecule
+     */
+    enum CoordValueType {NumberType, VariableType};
     /// Computes the current value, and returns it.
     virtual double compute() =0;
     /// Sets the current value.
     virtual void set(double val) =0;
+    /// The type of variable representation
+    virtual CoordValueType type() =0;
+    /// Whether the current value is up to date or not
+    bool computed_;
+    /// Flag the current value as outdated
+    void invalidate() { computed_ = false; }
+    /// Clones the current object, using a user-provided variable array, for deep copying
+    virtual shared_ptr<CoordValue> clone( std::map<std::string, double>& map) =0;
 };
 
 /**
@@ -35,6 +50,10 @@ public:
     NumberValue(double value) :value_(value) {}
     double compute() { return value_; }
     void set(double val) { value_ = val; }
+    CoordValueType type() { return NumberType; }
+    shared_ptr<CoordValue> clone(std::map<std::string, double>& map) {
+        return shared_ptr<CoordValue>(new NumberValue(value_));
+    }
 };
 
 /**
@@ -49,8 +68,12 @@ class VariableValue : public CoordValue
 public:
     VariableValue(const std::string name, std::map<std::string, double>& geometryVariables, bool negate=false)
         : name_(name), geometryVariables_(geometryVariables), negate_(negate) {}
-    double compute() { return negate_ ? -geometryVariables_[name_] : geometryVariables_[name_]; }
+    double compute();
     void set(double val) { geometryVariables_[name_] = negate_ ? -val : val; }
+    CoordValueType type() { return VariableType; }
+    shared_ptr<CoordValue> clone(std::map<std::string, double>& map) {
+        return shared_ptr<CoordValue>(new VariableValue(name_, map, negate_));
+    }
 };
 
 //class EquationValue
@@ -77,24 +100,35 @@ protected:
         { Vector3 eBA(a2-a1), eBC(a2-a3); eBA.normalize(); eBC.normalize(); return acos(eBA.dot(eBC)); }
     /// Computes the dihedral (in rad.) between four sets of coordinates.
     static double d(const Vector3 &a1, const Vector3 &a2, const Vector3 &a3, const Vector3 &a4)
-        { Vector3 eBA(a1-a2), eBC(a3-a2), eCD(a4-a3); eBA.normalize(); eBC.normalize();
-          eCD.normalize(); return acos(eBA.dot(eBC)*eBC.dot(eCD)/(sin(a(a1,a2,a3)*sin(a(a2,a3,a4)))));}
-
+        { Vector3 eBA(a1-a2), eBC(a3-a2), eCD(a4-a3), eCB(a2-a3);
+          eBA.normalize(); eBC.normalize(); eCD.normalize(); eCB.normalize(); 
+          Vector3 BAxBC(eBA.cross(eBC)), CBxCD(eCB.cross(eCD));
+          double cosTau = BAxBC.dot(CBxCD)/(sin(a(a1,a2,a3))*sin(a(a2,a3,a4)));
+          if(cosTau < -1.0) cosTau = -1.0; if(cosTau > 1.0) cosTau = 1.0; return acos(cosTau); }
 
 public:
-    CoordEntry(int entry_number, int Z, double charge, double mass, std::string& label);
+    /**
+     * The type of CoordEntry specialization
+     * CartesianEntry: Cartesian storage.
+     * ZMatrixEntry: ZMatrix storage.
+     */
+    enum CoordEntryType {CartesianCoord, ZMatrixCoord};
+    CoordEntry(int entry_number, int Z, double charge, double mass, std::string label);
     virtual ~CoordEntry();
 
     /// Computes the values of the coordinates (in whichever units were inputted), returning them in a Vector.
-    virtual const Vector3& compute() = 0;
+    virtual const Vector3& compute() =0;
     /// Given the current set of coordinates, updates the values of this atom's coordinates,
     /// and any variables that may depend on it.
     virtual void set_coordinates(double x, double y, double z) = 0;
-
+    /// The type of CoordEntry Specialization
+    virtual CoordEntryType type() =0;
     /// Whether the current atom's coordinates are up-to-date.
     bool is_computed() const { return computed_; }
     /// Flags the current coordinates as being outdated.
-    void invalidate() { computed_ = false; }
+    virtual void invalidate() =0;
+    /// Clones the current object, using a user-provided variable array, for deep copying
+    virtual shared_ptr<CoordEntry> clone( std::vector<shared_ptr<CoordEntry> > &atoms, std::map<std::string, double>& map) =0;
 
     /// Whether the current atom is ghosted or not.
     bool is_ghosted() const { return ghosted_; }
@@ -108,7 +142,7 @@ public:
     /// The atomic mass of the current atom.
     double mass() const { return mass_; }
     /// The atomic symbol.
-    const std::string& label() const { return label_; }
+    std::string label() const { return label_; }
     /// The order in which this appears in the full atom list.
     int entry_number() const { return entry_number_; }
 };
@@ -118,12 +152,16 @@ class CartesianEntry : public CoordEntry{
     boost::shared_ptr<CoordValue> y_;
     boost::shared_ptr<CoordValue> z_;
 public:
-    CartesianEntry(int entry_number, int Z, double charge, double mass, std::string& label,
+    CartesianEntry(int entry_number, int Z, double charge, double mass, std::string label,
                    boost::shared_ptr<CoordValue>(x), boost::shared_ptr<CoordValue>(y), boost::shared_ptr<CoordValue>(z));
 
     const Vector3& compute();
     void set_coordinates(double x, double y, double z);
-    
+    CoordEntryType type() { return CartesianCoord; }
+    void invalidate () { computed_ = false; x_->invalidate(); y_->invalidate(); z_->invalidate(); }
+    shared_ptr<CoordEntry> clone( std::vector<shared_ptr<CoordEntry> > &atoms, std::map<std::string, double>& map){
+        return shared_ptr<CoordEntry>(new CartesianEntry(entry_number_, Z_, charge_, mass_, label_, x_->clone(map), y_->clone(map), z_->clone(map)));
+    }
 };
 
 class ZMatrixEntry : public CoordEntry
@@ -136,7 +174,7 @@ class ZMatrixEntry : public CoordEntry
     boost::shared_ptr<CoordValue> dval_;
 
 public:
-    ZMatrixEntry(int entry_number, int Z, double charge, double mass, std::string& label,
+    ZMatrixEntry(int entry_number, int Z, double charge, double mass, std::string label,
                  boost::shared_ptr<CoordEntry> rto=boost::shared_ptr<CoordEntry>(),
                  boost::shared_ptr<CoordValue> rval=boost::shared_ptr<CoordValue>(),
                  boost::shared_ptr<CoordEntry> ato=boost::shared_ptr<CoordEntry>(),
@@ -144,9 +182,28 @@ public:
                  boost::shared_ptr<CoordEntry> dto=boost::shared_ptr<CoordEntry>(),
                  boost::shared_ptr<CoordValue> dval=boost::shared_ptr<CoordValue>());
     virtual ~ZMatrixEntry();
-
+    void invalidate () { computed_ = false; if(rval_ != 0) rval_->invalidate(); 
+                                         if(aval_ != 0) aval_->invalidate();
+                                         if(dval_ != 0) dval_->invalidate(); }
     const Vector3& compute();
     void set_coordinates(double x, double y, double z);
+    CoordEntryType type() { return ZMatrixCoord; }
+    shared_ptr<CoordEntry> clone( std::vector<shared_ptr<CoordEntry> > &atoms, std::map<std::string, double>& map){
+        if(rto_ == 0 && ato_ == 0 && dto_ == 0){
+            return shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, label_));
+        }else if(ato_ == 0 && dto_ == 0){
+            return shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, label_, 
+                                          atoms[rto_->entry_number()], rval_->clone(map)));
+        }else if(dto_ == 0){
+            return shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, label_, 
+                                          atoms[rto_->entry_number()], rval_->clone(map),
+                                          atoms[ato_->entry_number()], aval_->clone(map)));
+        }
+        return shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, label_, 
+                                      atoms[rto_->entry_number()], rval_->clone(map),
+                                      atoms[ato_->entry_number()], aval_->clone(map),
+                                      atoms[dto_->entry_number()], dval_->clone(map)));
+    }
 };
 
 }
