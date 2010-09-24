@@ -1,6 +1,6 @@
 molecule h2 {
 H
-H 1 R
+H 1 .9
 
 R = .9
 }

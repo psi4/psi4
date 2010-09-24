@@ -12,10 +12,33 @@ CoordEntry::CoordEntry(int entry_number, int Z, double charge, double mass, std:
 {
 }
 
+CoordEntry::~CoordEntry()
+{
+
+}
+
+CartesianEntry::CartesianEntry(int entry_number, int Z, double x, double y, double z, double charge, double mass, std::string& label)
+    : CoordEntry(entry_number, Z, charge, mass, label)
+{
+    coordinates_[0] = x;
+    coordinates_[1] = y;
+    coordinates_[2] = z;
+}
+
+const Vector3& CartesianEntry::compute()
+{
+    return coordinates_;
+}
+
+void CartesianEntry::set(const Vector3 &other)
+{
+    coordinates_ = other;
+}
+
 ZMatrixEntry::ZMatrixEntry(int entry_number, int Z, double charge, double mass, std::string& label,
-                           ZMatrixEntry *rto, CoordValue *rval,
-                           ZMatrixEntry *ato, CoordValue *aval,
-                           ZMatrixEntry *dto, CoordValue *dval)
+                           boost::shared_ptr<CoordEntry> rto, boost::shared_ptr<CoordValue> rval,
+                           boost::shared_ptr<CoordEntry> ato, boost::shared_ptr<CoordValue> aval,
+                           boost::shared_ptr<CoordEntry> dto, boost::shared_ptr<CoordValue> dval)
     : CoordEntry(entry_number, Z, charge, mass, label),
       rto_(rto), rval_(rval),
       ato_(ato), aval_(aval),
@@ -26,12 +49,6 @@ ZMatrixEntry::ZMatrixEntry(int entry_number, int Z, double charge, double mass, 
 
 ZMatrixEntry::~ZMatrixEntry()
 {
-    if (rval_)
-        delete rval_;
-    if (aval_)
-        delete aval_;
-    if (dval_)
-        delete dval_;
 }
 
 const Vector3& ZMatrixEntry::compute()
@@ -50,7 +67,7 @@ const Vector3& ZMatrixEntry::compute()
     }else if(dto_ == 0){
         double a = aval_->compute() * M_PI / 180.0;
         double r = rval_->compute();
-        if(rto_->entry_number_ == 0){
+        if(rto_->entry_number() == 0){
             coordinates_[0] = r*sin(a);
             coordinates_[1] = 0.0;
             coordinates_[2] = r*cos(a);
@@ -101,3 +118,9 @@ const Vector3& ZMatrixEntry::compute()
     computed_ = true;
     return coordinates_;
 }
+
+void ZMatrixEntry::set(const Vector3 &)
+{
+
+}
+
