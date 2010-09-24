@@ -6,7 +6,15 @@
 
 using namespace psi;
 
-CoordEntry::CoordEntry(int entry_number, int Z, double charge, double mass, std::string& label)
+double
+VariableValue::compute()
+{
+    if(geometryVariables_.count(name_) == 0) 
+        throw PSIEXCEPTION("Variable " + name_ + " used in geometry specification has not been defined");
+    return negate_ ? -geometryVariables_[name_] : geometryVariables_[name_];
+}
+
+CoordEntry::CoordEntry(int entry_number, int Z, double charge, double mass, std::string label)
     : entry_number_(entry_number), computed_(false), Z_(Z),
       charge_(charge), mass_(mass), label_(label), ghosted_(false)
 {
@@ -17,11 +25,10 @@ CoordEntry::~CoordEntry()
 
 }
 
-CartesianEntry::CartesianEntry(int entry_number, int Z, double charge, double mass, std::string& label, 
+CartesianEntry::CartesianEntry(int entry_number, int Z, double charge, double mass, std::string label, 
                                boost::shared_ptr<CoordValue>(x), boost::shared_ptr<CoordValue>(y), boost::shared_ptr<CoordValue>(z))
     : CoordEntry(entry_number, Z, charge, mass, label), x_(x), y_(y), z_(z)
 {
-    compute();
 }
 
 const Vector3& CartesianEntry::compute()
@@ -50,7 +57,7 @@ CartesianEntry::set_coordinates(double x, double y, double z)
     computed_ = true;
 }
 
-ZMatrixEntry::ZMatrixEntry(int entry_number, int Z, double charge, double mass, std::string& label,
+ZMatrixEntry::ZMatrixEntry(int entry_number, int Z, double charge, double mass, std::string label,
                            boost::shared_ptr<CoordEntry> rto, boost::shared_ptr<CoordValue> rval,
                            boost::shared_ptr<CoordEntry> ato, boost::shared_ptr<CoordValue> aval,
                            boost::shared_ptr<CoordEntry> dto, boost::shared_ptr<CoordValue> dval)
@@ -59,7 +66,6 @@ ZMatrixEntry::ZMatrixEntry(int entry_number, int Z, double charge, double mass, 
       ato_(ato), aval_(aval),
       dto_(dto), dval_(dval)
 {
-  compute();
 }
 
 ZMatrixEntry::~ZMatrixEntry()

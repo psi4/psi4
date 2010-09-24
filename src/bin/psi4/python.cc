@@ -496,6 +496,12 @@ BOOST_PYTHON_MODULE(PsiMod)
         def("extract_subsets", &Molecule::py_extract_subsets_4).
         def("extract_subsets", &Molecule::py_extract_subsets_5).
         def("extract_subsets", &Molecule::py_extract_subsets_6).
+        def("activate_all_fragments", &Molecule::activate_all_fragments).
+        def("deactivate_all_fragments", &Molecule::deactivate_all_fragments).
+        def("set_active_fragments", &Molecule::set_active_fragments).
+        def("set_active_fragment", &Molecule::set_active_fragment).
+        def("set_ghost_fragments", &Molecule::set_ghost_fragments).
+        def("set_ghost_fragment", &Molecule::set_ghost_fragment).
         def("atom_at_position", &Molecule::atom_at_position1).
         def("print_to_output", &Molecule::print).
         def("nuclear_repulsion_energy", &Molecule::nuclear_repulsion_energy).
