@@ -6,6 +6,7 @@
 
 // Probably but the best, but I'm lazy.
 #include "vector3.h"
+#include <boost/shared_ptr.hpp>
 
 namespace psi {
 
@@ -56,6 +57,7 @@ protected:
 
 public:
     CoordEntry(int entry_number, int Z, double charge, double mass, std::string& label);
+    virtual ~CoordEntry();
 
     virtual const Vector3& compute() = 0;
     virtual void set(const Vector3&) = 0;
@@ -70,22 +72,36 @@ public:
     double charge() const { return charge_; }
     double mass() const { return mass_; }
     const std::string& label() const { return label_; }
+
+    int entry_number() const { return entry_number_; }
+};
+
+// This version does not support variables in coordinates
+class CartesianEntry : public CoordEntry{
+public:
+    CartesianEntry(int entry_number, int Z, double x, double y, double z, double charge, double mass, std::string& label);
+
+    const Vector3& compute();
+    void set(const Vector3&);
 };
 
 class ZMatrixEntry : public CoordEntry
 {
-    ZMatrixEntry *rto_;
-    CoordValue *rval_;
-    ZMatrixEntry *ato_;
-    CoordValue *aval_;
-    ZMatrixEntry *dto_;
-    CoordValue *dval_;
+    boost::shared_ptr<CoordEntry> rto_;
+    boost::shared_ptr<CoordValue>   rval_;
+    boost::shared_ptr<CoordEntry> ato_;
+    boost::shared_ptr<CoordValue>   aval_;
+    boost::shared_ptr<CoordEntry> dto_;
+    boost::shared_ptr<CoordValue>   dval_;
 
 public:
     ZMatrixEntry(int entry_number, int Z, double charge, double mass, std::string& label,
-                 ZMatrixEntry *rto=0, CoordValue *rval=0,
-                 ZMatrixEntry *ato=0, CoordValue *aval=0,
-                 ZMatrixEntry *dto=0, CoordValue *dval=0);
+                 boost::shared_ptr<CoordEntry> rto=boost::shared_ptr<CoordEntry>(),
+                 boost::shared_ptr<CoordValue> rval=boost::shared_ptr<CoordValue>(),
+                 boost::shared_ptr<CoordEntry> ato=boost::shared_ptr<CoordEntry>(),
+                 boost::shared_ptr<CoordValue> aval=boost::shared_ptr<CoordValue>(),
+                 boost::shared_ptr<CoordEntry> dto=boost::shared_ptr<CoordEntry>(),
+                 boost::shared_ptr<CoordValue> dval=boost::shared_ptr<CoordValue>());
     virtual ~ZMatrixEntry();
 
     const Vector3& compute();

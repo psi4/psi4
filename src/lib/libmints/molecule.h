@@ -61,15 +61,18 @@ public:
      */
     enum GeometryUnits {Angstrom, Bohr};
 
+    typedef std::vector<boost::shared_ptr<CoordEntry> > EntryVector;
+    typedef EntryVector::iterator EntryVectorIter;
+
 protected:
     /// Molecule (or fragment) name
     std::string name_;
     /// A regex match object to receive captured expressions in regex searches
-    boost::smatch reMatches_;
+    static boost::smatch reMatches_;
     /// Atom info vector (no knowledge of dummy atoms)
-    std::vector<boost::shared_ptr<CoordEntry> > atoms_;
+    EntryVector atoms_;
     /// Atom info vector (includes dummy atoms)
-    std::vector<boost::shared_ptr<CoordEntry> > full_atoms_;
+    EntryVector full_atoms_;
     /// Each line of the string passed in to define the geometry
     std::vector<std::string> geometryString_;
     /// The charge of each fragment
@@ -91,7 +94,7 @@ protected:
     /// Zero it out
     void clear();
     CoordValue* get_value(const std::string &str, const std::string &line);
-    int get_anchor_atom(const std::string &str, const std::vector<std::string> &atoms,
+    static int get_anchor_atom(const std::string &str, const std::vector<std::string> &atoms,
                               const std::string &line);
 
     /// Point group to use with this molecule.
@@ -160,9 +163,9 @@ public:
     void init_with_xyz(const std::string& xyzfilename);
 
     /// Add an atom to the molecule
-    //void add_atom(int Z, double x, double y, double z,
-    //              const char * = "", double mass = 0.0,
-    //              double charge = 0.0, int lineno = -1);
+    void add_atom(int Z, double x, double y, double z,
+                  const char * = "", double mass = 0.0,
+                  double charge = 0.0, int lineno = -1);
 
     /// The number of fragments in the molecule
     int num_fragments() const { return fragments_.size();}
@@ -202,12 +205,11 @@ public:
     const Vector3& xyz(int atom) const;
     const Vector3& fxyz(int atom) const;
     /// Returns x, y, or z component of 'atom'
-    //double& xyz(int atom, int _xyz);
-    //const double& xyz(int atom, int _xyz) const;
+    const double& xyz(int atom, int _xyz) const;
     /// Returns mass atom atom
     double mass(int atom) const;
     /// Returns label of atom
-    const std::string& label(int atom) const;
+    std::string label(int atom) const;
     /// Returns charge of atom
     double charge(int atom) const;
     /// Returns mass atom atom

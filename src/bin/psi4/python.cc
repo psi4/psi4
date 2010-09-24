@@ -197,12 +197,12 @@ bool py_psi_set_option_string(std::string const & name, std::string const & valu
         Process::environment.options.set_str(name, value);
     } else if (data.type() == "boolean") {
         if (boost::to_upper_copy(value) == "TRUE" || boost::to_upper_copy(value) == "YES" || \
-          boost::to_upper_copy(value) == "ON") 
+          boost::to_upper_copy(value) == "ON")
             Process::environment.options.set_int(name, true);
         else if (boost::to_upper_copy(value) == "FALSE" || boost::to_upper_copy(value) == "NO" || \
-          boost::to_upper_copy(value) == "OFF") 
+          boost::to_upper_copy(value) == "OFF")
             Process::environment.options.set_int(name, false);
-        else 
+        else
             throw std::domain_error("Required option type is boolean, no boolean specified");
     }
     return true;
@@ -233,7 +233,7 @@ bool py_psi_set_option_array(std::string const & name, python::list values)
 bool py_psi_set_global_option_string(std::string const & name, std::string const & value)
 {
     //Process::environment.options.set_global_str(name, value);
-    
+
     string nonconst_key = name;
     Data& data = Process::environment.options.use(nonconst_key);
 
@@ -241,12 +241,12 @@ bool py_psi_set_global_option_string(std::string const & name, std::string const
         Process::environment.options.set_global_str(name, value);
     } else if (data.type() == "boolean") {
         if (boost::to_upper_copy(value) == "TRUE" || boost::to_upper_copy(value) == "YES" || \
-          boost::to_upper_copy(value) == "ON") 
+          boost::to_upper_copy(value) == "ON")
             Process::environment.options.set_global_int(name, true);
         else if (boost::to_upper_copy(value) == "FALSE" || boost::to_upper_copy(value) == "NO" || \
-          boost::to_upper_copy(value) == "OFF") 
+          boost::to_upper_copy(value) == "OFF")
             Process::environment.options.set_global_int(name, false);
-        else 
+        else
             throw std::domain_error("Required option type is boolean, no boolean specified");
     }
     return true;
@@ -309,7 +309,7 @@ void py_psi_set_memory(unsigned long int mem)
 {
     Process::environment.set_memory(mem);
     fprintf(outfile,"\n  Memory set to %7.3f %s by Python script.\n",(mem > 1000000000 ? mem/1.0E9 : mem/1.0E6), \
-        (mem > 1000000000 ? "GB" : "MB" )); 
+        (mem > 1000000000 ? "GB" : "MB" ));
 }
 unsigned long int py_psi_get_memory()
 {
@@ -537,7 +537,7 @@ BOOST_PYTHON_MODULE(PsiMod)
         def("get_functional", &SuperFunctional::getFunctional).
         def("get_weight", &SuperFunctional::getWeight).
         def("get_size", &SuperFunctional::size).
-               
+
         def("set_name", &SuperFunctional::setName).
         def("set_description", &SuperFunctional::setDescription).
         def("set_citation", &SuperFunctional::setCitation).
@@ -549,7 +549,7 @@ BOOST_PYTHON_MODULE(PsiMod)
         def("set_npoints", &SuperFunctional::setNPoints).
         def("set_deriv", &SuperFunctional::setDeriv).
         def("set_size", &SuperFunctional::size).
-        
+
         def("is_gga", &SuperFunctional::isGGA).
         def("is_meta", &SuperFunctional::isMeta).
         def("is_hybrid", &SuperFunctional::isHybrid).
@@ -558,10 +558,10 @@ BOOST_PYTHON_MODULE(PsiMod)
         def("is_dash_d", &SuperFunctional::isDashD).
 
         //def("add_functional", &SuperFunctional::addFunctional).
-        
+
         def("computeRKSFunctional", &SuperFunctional::computeRKSFunctional).
         def("computeUKSFunctional", &SuperFunctional::computeUKSFunctional);
-    
+
     class_<Functional, shared_ptr<Functional> >("Functional").
         def("create_functional", &Functional::createFunctional).
         staticmethod("create_functional").
@@ -572,7 +572,7 @@ BOOST_PYTHON_MODULE(PsiMod)
         def("test_functionals", &Functional::testFunctionals).
         staticmethod("test_functionals").
         def("test_functional", &Functional::testFunctional).
-        
+
         def("get_name", &Functional::getName).
         def("get_description", &Functional::getDescription).
         def("get_citation", &Functional::getCitation).
