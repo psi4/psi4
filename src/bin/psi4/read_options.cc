@@ -168,11 +168,13 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
       /*- The shift applied to the denominator -*/
       options.add_double("REGULARIZER", 0.0);
       /*- The maximum number of lambda iterations per macro-iteration -*/
-      options.add_int("LAMBDA_MAXITER", 1);
+      options.add_int("LAMBDA_MAXITER", 50);
       /*- The maximum number of SCF iterations per cycle -*/
       options.add_int("SCF_MAXITER", 50);
       /*- The maximum number iterations allowed -*/
       options.add_int("MAXITER", 40);
+      /*- Whether to compute the full two particle density matrix at the end of the computation, for properties -*/
+      options.add_bool("COMPUTE_TPDM", 0);
       /*- The number of decimal digits required in the SCF density -*/
       options.add_int("SCF_CONV", 8);
       /*- The number of decimal digits required in the determination of lambda -*/

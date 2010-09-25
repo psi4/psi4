@@ -552,7 +552,6 @@ namespace psi{ namespace dcft{
         dpd_file2_close(&tau);
 
 
-
         /********** AB ***********/
         dpd_buf4_init(&lambda, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
             ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");

@@ -50,6 +50,7 @@ class DCFTSolver
     void build_G();
     void build_tensors();
     void build_denominators();
+    void dump_density();
     void dpd_buf4_add(dpdbuf4 *A, dpdbuf4 *B, double alpha);
     void scf_guess();
     void half_transform(dpdbuf4 *A, dpdbuf4 *B, Matrix C1, Matrix C2,
