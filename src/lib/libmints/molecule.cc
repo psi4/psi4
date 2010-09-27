@@ -1025,8 +1025,8 @@ Molecule::create_molecule_from_string(const std::string &text)
             if(lineNumber && !regex_match(lines[lineNumber-1], reMatches, fragmentMarker_)) {
                 // As long as this does not follow a "--", it's a global charge/multiplicity
                 // specifier, so we process it, then nuke it
-                mol->set_molecular_charge(str_to_int(reMatches[1]));
-                mol->set_multiplicity(str_to_int(reMatches[2]));
+                mol->molecularCharge_ = str_to_int(reMatches[1]);
+                mol->multiplicity_    = str_to_int(reMatches[2]);
                 lines.erase(lines.begin() + lineNumber);
             }
         }
@@ -1109,7 +1109,7 @@ Molecule::create_molecule_from_string(const std::string &text)
     std::vector<std::string>::iterator line = lines.begin();
     for(; line != lines.end(); ++line){
         // Trim leading and trailing whitespace
-        boost::algorithm::trim(lines[0]);
+        boost::algorithm::trim(*line);
         boost::split(splitLine, *line, boost::is_any_of("\t ,"),token_compress_on);
         atoms.push_back(splitLine[0]);
 
