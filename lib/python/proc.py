@@ -7,41 +7,63 @@ def run_scf(name, **kwargs):
 
     molecule = PsiMod.get_active_molecule()
     if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')    
-    
+        molecule = kwargs.pop('molecule')
+
     if not molecule:
         raise ValueNotSet("no molecule found")
-    
+
     molecule.update_geometry()
     PsiMod.set_default_options_for_module("SCF")
     PsiMod.set_option("NO_INPUT",True)
-    
+
     PsiMod.print_out("\n")
     banner(name.upper())
     PsiMod.print_out("\n")
     e_scf = PsiMod.scf()
     return e_scf
 
-def run_dfmp2(name, **kwargs):
-    
+def run_ccsd(name, **kwargs):
+
     molecule = PsiMod.get_active_molecule()
     if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')    
+        molecule = kwargs.pop('molecule')
+
     if not molecule:
         raise ValueNotSet("no molecule found")
-    
+
+    molecule.update_geometry()
+    PsiMod.set_active_molecule(molecule)
+
+    # For a CCSD energy, we need SCF to be run.
+    # Could we somehow do a check to see if SCF was run?
+    # This would be useful of the user had to do something special with SCF to get
+    # it to converge.
+    run_scf("scf", **kwargs);
+
+    PsiMod.transqt()
+    PsiMod.ccsort()
+    PsiMod.ccenergy()
+
+def run_dfmp2(name, **kwargs):
+
+    molecule = PsiMod.get_active_molecule()
+    if (kwargs.has_key('molecule')):
+        molecule = kwargs.pop('molecule')
+    if not molecule:
+        raise ValueNotSet("no molecule found")
+
     molecule.update_geometry()
     PsiMod.set_default_options_for_module("SCF")
     PsiMod.set_option("NO_INPUT",True)
-    
+
     PsiMod.print_out("\n")
     banner("SCF")
     PsiMod.print_out("\n")
     e_scf = PsiMod.scf()
-    
+
     PsiMod.set_default_options_for_module("DFMP2")
     PsiMod.set_option("NO_INPUT",True)
-    
+
     PsiMod.print_out("\n")
     banner("DFMP2")
     PsiMod.print_out("\n")
@@ -53,19 +75,19 @@ def run_dfmp2(name, **kwargs):
         return e_dfmp2
 
 def run_sapt(name, **kwargs):
-    
-    molecule = PsiMod.get_active_molecule() 
+
+    molecule = PsiMod.get_active_molecule()
     if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')    
-    
+        molecule = kwargs.pop('molecule')
+
     if not molecule:
         raise ValueNotSet("no molecule found")
-     
+
     molecule.update_geometry()
     monomerA = molecule.extract_subsets(1,2)
-    monomerA.set_name("monomerA")   
-    monomerB = molecule.extract_subsets(2,1)    
-    monomerB.set_name("monomerB")   
+    monomerA.set_name("monomerA")
+    monomerB = molecule.extract_subsets(2,1)
+    monomerB.set_name("monomerB")
 
     PsiMod.IO.set_default_namespace("dimer")
     PsiMod.set_default_options_for_module("SCF")
@@ -85,7 +107,7 @@ def run_sapt(name, **kwargs):
     banner('Monomer A HF')
     PsiMod.print_out("\n")
     e_monomerA = PsiMod.scf()
-    
+
     activate(monomerB)
     PsiMod.IO.set_default_namespace("monomerB")
     PsiMod.set_default_options_for_module("SCF")
@@ -118,5 +140,4 @@ def run_sapt(name, **kwargs):
     PsiMod.print_out("\n")
     e_sapt = PsiMod.sapt()
     return e_sapt
-
 

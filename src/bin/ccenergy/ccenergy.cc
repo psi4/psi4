@@ -459,6 +459,9 @@ int ccenergy(Options &options)
   timer_done();
 #endif
 
+  Process::environment.globals["CCSD ENERGY"] = moinfo.ecc+moinfo.eref;
+  Process::environment.globals["CURRENT ENERGY"] = moinfo.ecc+moinfo.eref;
+
   exit_io();
   if(params.brueckner && brueckner_done)
       throw FeatureNotImplemented("CCENERGY", "Brueckner end loop", __FILE__, __LINE__);
