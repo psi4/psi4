@@ -2,7 +2,7 @@ import PsiMod
 from proc import *
 
 #Procedure lookup tables
-procedures = {'energy' : { 
+procedures = {'energy' : {
             'scf'           : run_scf,
             'hf'            : run_scf,
             'rhf'           : run_scf,
@@ -16,12 +16,14 @@ procedures = {'energy' : {
             'sapt2'         : run_sapt,
             'sapt2+'        : run_sapt,
             'sapt2+(3)'     : run_sapt,
-        }, 
-        'gradient' : { },
+            'ccsd'          : run_ccsd
+        },
+        'gradient' : {
+        },
         'hessian' : { }}
 
 def energy(name, **kwargs):
-   
+
     if (kwargs.has_key('molecule')):
         activate(kwargs['molecule'])
     if (kwargs.has_key('bases')):

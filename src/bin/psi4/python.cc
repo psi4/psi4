@@ -123,8 +123,11 @@ double py_psi_ccsort()
 
 double py_psi_ccenergy()
 {
-    ccenergy::ccenergy(Process::environment.options);
-    return 0.0;
+    if (ccenergy::ccenergy(Process::environment.options) == Success) {
+        return Process::environment.globals["CURRENT ENERGY"];
+    }
+    else
+        return 0.0;
 }
 
 double py_psi_cchbar()

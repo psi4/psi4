@@ -4,22 +4,16 @@ H 1 1.0
 H 1 1.0 2 104.5
 }
 
-#psio = IO()
-#configure_io(psio)
-#psio.open(32, 1)
-#psio.tocprint(32)
-#psio.close(32, 1)
-
 globals {
   basis sto-3g
 }
 
-set scf {
-    scf_type direct
-}
-
-h2o.update_geometry()
 
 #opt(scf_gradient)
-scf_gradient()
+#scf_gradient()
+
+#energy('ccsd')
+
+input()
+#scf()
 
