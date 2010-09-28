@@ -14,7 +14,8 @@ path_traits.cc \
 portability.cc \
 unique_path.cc \
 utf8_codecvt_facet.cc \
-windows_file_codecvt.cc
+windows_file_codecvt.cc \
+error_code.cc
 
 LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
 
