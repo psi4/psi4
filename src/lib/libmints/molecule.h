@@ -87,6 +87,10 @@ protected:
 
     /// Reorient or not?
     bool fix_orientation_;
+    /// Whether the user specified the charge, or default was used
+    bool chargeSpecified_;
+    /// Whether the user spefified the multiplicity, or default was used
+    bool multiplicitySpecified_;
 
     /// Symmetry information about the molecule
     int nirreps_;
@@ -268,6 +272,10 @@ public:
     /// Compute inertia tensor.
     SimpleMatrix* inertia_tensor();
 
+    /// Returns true if the user specified the charge
+    bool chargeSpecified() const { return chargeSpecified_; }
+    /// Returns true if the user specified the multiplicity
+    bool multiplicitySpecified() const { return multiplicitySpecified_; }
     /// Returns the number of irreps
     int nirrep() const { return nirreps_; }
     /// Sets the number of irreps
