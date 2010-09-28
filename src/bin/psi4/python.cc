@@ -1,8 +1,20 @@
 // Include Python's header file.
 // Use "python-config --includes" to determine this location.
+
+#define BOOST_FILESYSTEM_VERSION 3
+
+//  As an example program, we don't want to use any deprecated features
+#ifndef BOOST_FILESYSTEM_NO_DEPRECATED 
+#  define BOOST_FILESYSTEM_NO_DEPRECATED
+#endif
+#ifndef BOOST_SYSTEM_NO_DEPRECATED 
+#  define BOOST_SYSTEM_NO_DEPRECATED
+#endif
+
 #include <cstdio>
 #include <boost/algorithm/string.hpp>
 #include <boost/python.hpp>
+#include <boost/filesystem.hpp>
 #include <psiconfig.h>
 #include <sstream>
 #include "script.h"
@@ -649,6 +661,10 @@ void Python::run(FILE *input)
 
         // Track down the location of PSI4's python script directory.
         std::string psiDataDirName = Process::environment("PSIDATADIR") + "/python";
+        boost::filesystem::path bf_path;
+        bf_path = boost::filesystem::system_complete(psiDataDirName);
+        if(!boost::filesystem::is_directory(bf_path))
+            throw PSIEXCEPTION("Unable to read the Python folder - check the PSIDATADIR environmental variable");
 
         // Add PSI library python path
         PyObject *path, *sysmod, *str;
