@@ -303,7 +303,6 @@ void HF::print_header()
     fprintf(outfile, "  Release version.\n\n");
 #endif
 
-    fprintf(outfile, "  Molecular geometry:\n\n");
     molecule_->print();
 
 #ifdef OLD

@@ -1002,11 +1002,11 @@ Molecule::create_molecule_from_string(const std::string &text)
             lines.erase(lines.begin() + lineNumber);
         }
         else if(regex_match(lines[lineNumber], reMatches, commentLine_)) {
-            // A comment line, nuke it
+            // A comment line, just nuke it
             lines.erase(lines.begin() + lineNumber);
         }
         else if(regex_match(lines[lineNumber], reMatches, unitLabel_)) {
-            // A comment line, nuke it
+            // A units specifier
             if(   boost::iequals("ang", reMatches[1].str())
                || boost::iequals("angstrom",   reMatches[1].str())){
                 mol->set_units(Angstrom);
@@ -1017,16 +1017,18 @@ Molecule::create_molecule_from_string(const std::string &text)
             lines.erase(lines.begin() + lineNumber);
         }
         else if(regex_match(lines[lineNumber], reMatches, orientCommand_)) {
-            // Set
+            // Fix the orientation
             mol->set_orientation_fixed(true);
             lines.erase(lines.begin() + lineNumber);
         }
         else if(regex_match(lines[lineNumber], reMatches, chargeAndMultiplicity_)) {
+            int tempCharge       = str_to_int(reMatches[1]);
+            int tempMultiplicity = str_to_int(reMatches[2]);
             if(lineNumber && !regex_match(lines[lineNumber-1], reMatches, fragmentMarker_)) {
                 // As long as this does not follow a "--", it's a global charge/multiplicity
                 // specifier, so we process it, then nuke it
-                mol->molecularCharge_ = str_to_int(reMatches[1]);
-                mol->multiplicity_    = str_to_int(reMatches[2]);
+                mol->molecularCharge_ = tempCharge;
+                mol->multiplicity_    = tempMultiplicity;
                 lines.erase(lines.begin() + lineNumber);
             }
         }
@@ -1222,13 +1224,15 @@ Molecule::update_geometry()
     for (iter = full_atoms_.begin(); iter != full_atoms_.end(); ++iter){
         (*iter)->invalidate();
     }
-    int molecularCharge_ = 0;
-    int multiplicity_    = 1;
+    molecularCharge_ = 0;
+    multiplicity_    = 1;
     for(int fragment = 0; fragment < fragments_.size(); ++fragment){
         if(fragmentTypes_[fragment] == Absent) continue;
-        for(int atom = fragments_[fragment].first; atom < fragments_[fragment].second; ++atom){
+        if(fragmentTypes_[fragment] == Real){
             molecularCharge_ += fragmentCharges_[fragment];
             multiplicity_    += fragmentMultiplicities_[fragment] - 1;
+        }
+        for(int atom = fragments_[fragment].first; atom < fragments_[fragment].second; ++atom){
             full_atoms_[atom]->compute();
             full_atoms_[atom]->set_ghosted(fragmentTypes_[fragment] == Ghost);
             if(full_atoms_[atom]->label() != "X") atoms_.push_back(full_atoms_[atom]);
@@ -1478,6 +1482,8 @@ void Molecule::save_to_chkpt(shared_ptr<Chkpt> chkpt, std::string prefix)
 void Molecule::print() const
 {
     if (natom()) {
+        fprintf(outfile,"    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
+                units_ == Angstrom ? "Angstrom" : "Bohr", molecularCharge_, multiplicity_);
         fprintf(outfile,"       Center              X                  Y                   Z       \n");
         fprintf(outfile,"    ------------   -----------------  -----------------  -----------------\n");
 
