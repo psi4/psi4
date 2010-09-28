@@ -230,8 +230,9 @@
 //
 // all versions support __declspec:
 //
-#ifndef __STRICT_ANSI__
-#  define BOOST_HAS_DECLSPEC
+#if defined(__STRICT_ANSI__)
+// config/platform/win32.hpp will define BOOST_SYMBOL_EXPORT, etc., unless already defined  
+#  define BOOST_SYMBOL_EXPORT
 #endif
 //
 // ABI fixing headers:

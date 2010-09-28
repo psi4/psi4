@@ -68,7 +68,6 @@
 #  define BOOST_NO_POINTER_TO_MEMBER_TEMPLATE_PARAMETERS
 #  define BOOST_NO_IS_ABSTRACT
 #  define BOOST_NO_FUNCTION_TYPE_SPECIALIZATIONS
-#  define BOOST_NO_EXTERN_TEMPLATE
 // TODO: what version is meant here? Have there really been any fixes in cl 12.01 (as e.g. shipped with eVC4)?
 #  if (_MSC_VER > 1200)
 #     define BOOST_NO_MEMBER_FUNCTION_SPECIALIZATIONS
@@ -80,6 +79,8 @@
 // although a conforming signature for swprint exists in VC7.1
 // it appears not to actually work:
 #  define BOOST_NO_SWPRINTF
+// Our extern template tests also fail for this compiler:
+#  define BOOST_NO_EXTERN_TEMPLATE
 #endif
 
 #if defined(UNDER_CE)
@@ -162,11 +163,6 @@
 #if !defined(_CPPRTTI) && !defined(BOOST_NO_RTTI)
 #  define BOOST_NO_RTTI
 #endif
-
-//
-// all versions support __declspec:
-//
-#define BOOST_HAS_DECLSPEC
 
 //
 // C++0x features

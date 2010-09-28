@@ -59,10 +59,12 @@
 //
 //   See above for BOOST_NO_LONG_LONG
 //
+#if (__EDG_VERSION__ < 310)
+#  define BOOST_NO_EXTERN_TEMPLATE
+#endif
 #if (__EDG_VERSION__ <= 310) || !defined(BOOST_STRICT_CONFIG)
 // No support for initializer lists
 #  define BOOST_NO_INITIALIZER_LISTS
-#  define BOOST_NO_EXTERN_TEMPLATE
 #endif
 
 #define BOOST_NO_AUTO_DECLARATIONS

@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2005-2010.
+//  (C) Copyright Gennadiy Rozental 2005-2008.
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,7 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 62016 $
+//  Version     : $Revision: 49312 $
 //
 //  Description : plain report formatter definition
 // ***************************************************************************
@@ -22,8 +22,6 @@
 #include <boost/test/unit_test_suite_impl.hpp>
 
 #include <boost/test/utils/basic_cstring/io.hpp>
-#include <boost/test/utils/setcolor.hpp>
-#include <boost/test/detail/unit_test_parameters.hpp>
 
 // STL
 #include <iomanip>
@@ -159,13 +157,9 @@ plain_report_formatter::do_confirmation_report( test_unit const& tu, std::ostrea
     test_results const& tr = results_collector.results( tu.p_id );
     
     if( tr.passed() ) {
-        BOOST_TEST_SCOPE_SETCOLOR( ostr, term_attr::BRIGHT, term_color::GREEN );
-
         ostr << "*** No errors detected\n";
         return;
     }
-        
-    BOOST_TEST_SCOPE_SETCOLOR( ostr, term_attr::BRIGHT, term_color::RED );
         
     if( tr.p_skipped ) {
         ostr << "*** Test " << tu.p_type_name << " skipped due to " 

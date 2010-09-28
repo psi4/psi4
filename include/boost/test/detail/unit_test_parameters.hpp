@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2001-2010.
+//  (C) Copyright Gennadiy Rozental 2001-2008.
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at 
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,7 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 62016 $
+//  Version     : $Revision: 57992 $
 //
 //  Description : storage for unit test framework parameters information
 // ***************************************************************************
@@ -46,7 +46,6 @@ BOOST_TEST_DECL bool                     save_pattern();
 BOOST_TEST_DECL bool                     show_build_info();
 BOOST_TEST_DECL bool                     show_progress();
 BOOST_TEST_DECL bool                     catch_sys_errors();
-BOOST_TEST_DECL bool                     color_output();
 BOOST_TEST_DECL bool                     auto_start_dbg();
 BOOST_TEST_DECL bool                     use_alt_stack();
 BOOST_TEST_DECL bool                     detect_fp_exceptions();

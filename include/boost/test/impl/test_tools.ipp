@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2005-2010.
+//  (C) Copyright Gennadiy Rozental 2005-2008.
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,7 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 62016 $
+//  Version     : $Revision: 54633 $
 //
 //  Description : supplies offline implementation for the Test Tools
 // ***************************************************************************
@@ -33,8 +33,6 @@
 #include <cctype>
 #include <cwchar>
 #include <stdexcept>
-#include <vector>
-#include <utility>
 #include <ios>
 
 // !! should we use #include <cstdarg>
@@ -115,162 +113,11 @@ namespace tt_detail {
 
 using ::boost::unit_test::lazy_ostream;
 
-static char const* check_str [] = { " == ", " != ", " < " , " <= ", " > " , " >= " };
-static char const* rever_str [] = { " != ", " == ", " >= ", " > " , " <= ", " < "  };
-
-template<typename OutStream>
-void
-format_report( OutStream& os, predicate_result const& pr, unit_test::lazy_ostream const& assertion_descr,
-               tool_level tl, check_type ct,
-               std::size_t num_args, va_list args,
-               char const*  prefix, char const*  suffix )
-{
-    using namespace unit_test;
-
-    switch( ct ) {
-    case CHECK_PRED:
-        os << prefix << assertion_descr << suffix;
-        
-        if( !pr.has_empty_message() )
-            os << ". " << pr.message();
-        break;
-
-    case CHECK_MSG:
-        if( tl == PASS )
-            os << prefix << "'" << assertion_descr << "'" << suffix;
-        else
-            os << assertion_descr;
-        
-        if( !pr.has_empty_message() )
-            os << ". " << pr.message();
-        break;
-
-    case CHECK_EQUAL: 
-    case CHECK_NE: 
-    case CHECK_LT: 
-    case CHECK_LE: 
-    case CHECK_GT: 
-    case CHECK_GE: {
-        char const*         arg1_descr  = va_arg( args, char const* );
-        lazy_ostream const* arg1_val    = va_arg( args, lazy_ostream const* );
-        char const*         arg2_descr  = va_arg( args, char const* );
-        lazy_ostream const* arg2_val    = va_arg( args, lazy_ostream const* );
-
-        os << prefix << arg1_descr << check_str[ct-CHECK_EQUAL] << arg2_descr << suffix;
-
-        if( tl != PASS )
-            os << " [" << *arg1_val << rever_str[ct-CHECK_EQUAL] << *arg2_val << "]" ;
-        
-        if( !pr.has_empty_message() )
-            os << ". " << pr.message();
-        break;
-    }
-
-    case CHECK_CLOSE:
-    case CHECK_CLOSE_FRACTION: {
-        char const*         arg1_descr  = va_arg( args, char const* );
-        lazy_ostream const* arg1_val    = va_arg( args, lazy_ostream const* );
-        char const*         arg2_descr  = va_arg( args, char const* );
-        lazy_ostream const* arg2_val    = va_arg( args, lazy_ostream const* );
-        /* toler_descr = */               va_arg( args, char const* );
-        lazy_ostream const* toler_val   = va_arg( args, lazy_ostream const* );
-
-        os << "difference{" << pr.message() << (ct == CHECK_CLOSE ? "%" : "")
-                            << "} between " << arg1_descr << "{" << *arg1_val
-                            << "} and "               << arg2_descr << "{" << *arg2_val
-                            << ( tl == PASS ? "} doesn't exceed " : "} exceeds " )
-                            << *toler_val;
-        if( ct == CHECK_CLOSE )
-            os << "%";
-        break;
-    }
-    case CHECK_SMALL: {
-        char const*         arg1_descr  = va_arg( args, char const* );
-        lazy_ostream const* arg1_val    = va_arg( args, lazy_ostream const* );
-        /* toler_descr = */               va_arg( args, char const* );
-        lazy_ostream const* toler_val   = va_arg( args, lazy_ostream const* );
-
-        os << "absolute value of " << arg1_descr << "{" << *arg1_val << "}" 
-                                   << ( tl == PASS ? " doesn't exceed " : " exceeds " )
-                                   << *toler_val;
-        
-        if( !pr.has_empty_message() )
-            os << ". " << pr.message();
-        break;
-    }
-
-    case CHECK_PRED_WITH_ARGS: {
-        std::vector< std::pair<char const*, lazy_ostream const*> > args_copy;
-        args_copy.reserve( num_args );
-        for( std::size_t i = 0; i < num_args; ++i ) {
-            char const* desc = va_arg( args, char const* );
-            lazy_ostream const* value = va_arg( args, lazy_ostream const* );
-            args_copy.push_back( std::make_pair( desc, value ) );
-        }
-
-        os << prefix << assertion_descr;
-
-        // print predicate call description
-        os << "( ";
-        for( std::size_t i = 0; i < num_args; ++i ) {
-            os << args_copy[i].first;
-            
-            if( i != num_args-1 )
-                os << ", ";
-        }
-        os << " )" << suffix;
-                        
-        if( tl != PASS ) {
-            os << " for ( ";
-            for( std::size_t i = 0; i < num_args; ++i ) {
-                os << *args_copy[i].second;
-                
-                if( i != num_args-1 )
-                    os << ", ";
-            }
-            os << " )";
-        }
-
-        if( !pr.has_empty_message() )
-            os << ". " << pr.message();
-        break;
-    }
-
-    case CHECK_EQUAL_COLL: {
-        char const* left_begin_descr    = va_arg( args, char const* );
-        char const* left_end_descr      = va_arg( args, char const* );
-        char const* right_begin_descr   = va_arg( args, char const* );
-        char const* right_end_descr     = va_arg( args, char const* );
-
-        os << prefix << "{ " << left_begin_descr  << ", " << left_end_descr  << " } == { " 
-                             << right_begin_descr << ", " << right_end_descr << " }"
-           << suffix;
-
-        if( !pr.has_empty_message() )
-            os << ". " << pr.message();
-        break;
-    }
-
-    case CHECK_BITWISE_EQUAL: {
-        char const* left_descr    = va_arg( args, char const* );
-        char const* right_descr   = va_arg( args, char const* );
-
-        os << prefix << left_descr  << " =.= " << right_descr << suffix;
-        
-        if( !pr.has_empty_message() )
-            os << ". " << pr.message();
-        break;
-    }
-    }
-}
-
-//____________________________________________________________________________//
-
 bool
-check_impl( predicate_result const& pr, lazy_ostream const& assertion_descr,
+check_impl( predicate_result const& pr, lazy_ostream const& check_descr,
             const_string file_name, std::size_t line_num,
             tool_level tl, check_type ct,
-            std::size_t num_args, ... )
+            std::size_t num_of_args, ... )
 {
     using namespace unit_test;
 
@@ -309,14 +156,201 @@ check_impl( predicate_result const& pr, lazy_ostream const& assertion_descr,
         return true;
     }
 
-    unit_test_log << unit_test::log::begin( file_name, line_num ) << ll;
-    va_list args;
-    va_start( args, num_args );
+    switch( ct ) {
+    case CHECK_PRED:
+        unit_test_log << unit_test::log::begin( file_name, line_num ) 
+                      << ll << prefix << check_descr << suffix;
+        
+        if( !pr.has_empty_message() )
+            unit_test_log << ". " << pr.message();
+        
+        unit_test_log << unit_test::log::end();
+        break;
 
-    format_report( unit_test_log, pr, assertion_descr, tl, ct, num_args, args, prefix, suffix );
+    case CHECK_MSG:
+        unit_test_log << unit_test::log::begin( file_name, line_num ) << ll;
+        
+        if( tl == PASS )
+            unit_test_log << prefix << "'" << check_descr << "'" << suffix;
+        else
+            unit_test_log << check_descr;
+        
+        if( !pr.has_empty_message() )
+            unit_test_log << ". " << pr.message();
 
-    va_end( args );
-    unit_test_log << unit_test::log::end();
+        unit_test_log << unit_test::log::end();
+        break;
+
+    case CHECK_EQUAL: 
+    case CHECK_NE: 
+    case CHECK_LT: 
+    case CHECK_LE: 
+    case CHECK_GT: 
+    case CHECK_GE: {
+        static char const* check_str [] = { " == ", " != ", " < " , " <= ", " > " , " >= " };
+        static char const* rever_str [] = { " != ", " == ", " >= ", " > " , " <= ", " < "  };
+
+        va_list args;
+
+        va_start( args, num_of_args );
+        char const*         arg1_descr  = va_arg( args, char const* );
+        lazy_ostream const* arg1_val    = va_arg( args, lazy_ostream const* );
+        char const*         arg2_descr  = va_arg( args, char const* );
+        lazy_ostream const* arg2_val    = va_arg( args, lazy_ostream const* );
+
+        unit_test_log << unit_test::log::begin( file_name, line_num ) 
+                      << ll << prefix << arg1_descr << check_str[ct-CHECK_EQUAL] << arg2_descr << suffix;
+
+        if( tl != PASS )
+            unit_test_log << " [" << *arg1_val << rever_str[ct-CHECK_EQUAL] << *arg2_val << "]" ;
+
+        va_end( args );
+        
+        if( !pr.has_empty_message() )
+            unit_test_log << ". " << pr.message();
+
+        unit_test_log << unit_test::log::end();
+        break;
+    }
+
+    case CHECK_CLOSE:
+    case CHECK_CLOSE_FRACTION: {
+        va_list args;
+
+        va_start( args, num_of_args );
+        char const*         arg1_descr  = va_arg( args, char const* );
+        lazy_ostream const* arg1_val    = va_arg( args, lazy_ostream const* );
+        char const*         arg2_descr  = va_arg( args, char const* );
+        lazy_ostream const* arg2_val    = va_arg( args, lazy_ostream const* );
+        /* toler_descr = */               va_arg( args, char const* );
+        lazy_ostream const* toler_val   = va_arg( args, lazy_ostream const* );
+
+        unit_test_log << unit_test::log::begin( file_name, line_num ) << ll;
+
+        unit_test_log << "difference{" << pr.message() << (ct == CHECK_CLOSE ? "%" : "")
+                      << "} between " << arg1_descr << "{" << *arg1_val
+                      << "} and "               << arg2_descr << "{" << *arg2_val
+                      << ( tl == PASS ? "} doesn't exceed " : "} exceeds " )
+                      << *toler_val;
+        if( ct == CHECK_CLOSE )
+            unit_test_log << "%";
+
+        va_end( args );
+        
+        unit_test_log << unit_test::log::end();
+        break;
+    }
+    case CHECK_SMALL: {
+        va_list args;
+
+        va_start( args, num_of_args );
+        char const*         arg1_descr  = va_arg( args, char const* );
+        lazy_ostream const* arg1_val    = va_arg( args, lazy_ostream const* );
+        /* toler_descr = */               va_arg( args, char const* );
+        lazy_ostream const* toler_val   = va_arg( args, lazy_ostream const* );
+
+        unit_test_log << unit_test::log::begin( file_name, line_num ) << ll;
+
+        unit_test_log << "absolute value of " << arg1_descr << "{" << *arg1_val << "}" 
+                      << ( tl == PASS ? " doesn't exceed " : " exceeds " )
+                      << *toler_val;
+
+        va_end( args );
+        
+        if( !pr.has_empty_message() )
+            unit_test_log << ". " << pr.message();
+
+        unit_test_log << unit_test::log::end();
+        break;
+    }
+
+    case CHECK_PRED_WITH_ARGS: {
+        unit_test_log << unit_test::log::begin( file_name, line_num ) 
+                      << ll << prefix << check_descr;
+
+        // print predicate call description
+        {
+            va_list args;
+            va_start( args, num_of_args );
+
+            unit_test_log << "( ";
+            for( std::size_t i = 0; i < num_of_args; ++i ) {
+                unit_test_log << va_arg( args, char const* );
+                va_arg( args, lazy_ostream const* ); // skip argument value;
+                
+                if( i != num_of_args-1 )
+                    unit_test_log << ", ";
+            }
+            unit_test_log << " )" << suffix;
+            va_end( args );
+        }
+                        
+        if( tl != PASS ) {
+            va_list args;
+            va_start( args, num_of_args );
+
+            unit_test_log << " for ( ";
+            for( std::size_t i = 0; i < num_of_args; ++i ) {
+                va_arg( args, char const* ); // skip argument description;            
+                unit_test_log << *va_arg( args, lazy_ostream const* );
+                
+                if( i != num_of_args-1 )
+                    unit_test_log << ", ";
+            }
+            unit_test_log << " )";
+            va_end( args );
+        }
+       
+        if( !pr.has_empty_message() )
+            unit_test_log << ". " << pr.message();
+
+        unit_test_log << unit_test::log::end();
+        break;
+    }
+
+    case CHECK_EQUAL_COLL: {
+        va_list args;
+
+        va_start( args, num_of_args );
+        char const* left_begin_descr    = va_arg( args, char const* );
+        char const* left_end_descr      = va_arg( args, char const* );
+        char const* right_begin_descr   = va_arg( args, char const* );
+        char const* right_end_descr     = va_arg( args, char const* );
+
+        unit_test_log << unit_test::log::begin( file_name, line_num ) 
+                      << ll << prefix 
+                      << "{ " << left_begin_descr  << ", " << left_end_descr  << " } == { " 
+                              << right_begin_descr << ", " << right_end_descr << " }"
+                      << suffix;
+
+        va_end( args );
+        
+        if( !pr.has_empty_message() )
+            unit_test_log << ". " << pr.message();
+
+        unit_test_log << unit_test::log::end();
+        break;
+    }
+
+    case CHECK_BITWISE_EQUAL: {
+        va_list args;
+
+        va_start( args, num_of_args );
+        char const* left_descr    = va_arg( args, char const* );
+        char const* right_descr   = va_arg( args, char const* );
+
+        unit_test_log << unit_test::log::begin( file_name, line_num )
+                      << ll << prefix << left_descr  << " =.= " << right_descr << suffix;
+
+        va_end( args );
+        
+        if( !pr.has_empty_message() )
+            unit_test_log << ". " << pr.message();
+
+        unit_test_log << unit_test::log::end();
+        break;
+    }
+    }
 
     switch( tl ) {
     case PASS:
@@ -339,23 +373,6 @@ check_impl( predicate_result const& pr, lazy_ostream const& assertion_descr,
     }
 
     return true;
-}
-
-//____________________________________________________________________________//
-
-BOOST_TEST_DECL std::string 
-prod_report_format( predicate_result const& pr, unit_test::lazy_ostream const& assertion_descr, check_type ct, std::size_t num_args, ... )
-{
-    std::ostringstream msg_buff;
-
-    va_list args;
-    va_start( args, num_args );
-
-    format_report( msg_buff, pr, assertion_descr, CHECK, ct, num_args, args, "assertion ", " failed" );
-
-    va_end( args );
-
-    return msg_buff.str();
 }
 
 //____________________________________________________________________________//

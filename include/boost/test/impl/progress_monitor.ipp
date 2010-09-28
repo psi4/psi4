@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2005-2010.
+//  (C) Copyright Gennadiy Rozental 2005-2008.
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,7 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 62016 $
+//  Version     : $Revision: 57992 $
 //
 //  Description : implements simple text based progress monitor
 // ***************************************************************************
@@ -20,7 +20,6 @@
 #include <boost/test/unit_test_suite_impl.hpp>
 
 #include <boost/test/detail/unit_test_parameters.hpp>
-#include <boost/test/utils/setcolor.hpp>
 
 // Boost
 #include <boost/progress.hpp>
@@ -59,8 +58,6 @@ progress_monitor_impl& s_pm_impl() { static progress_monitor_impl the_inst; retu
 void
 progress_monitor_t::test_start( counter_t test_cases_amount )
 {
-    BOOST_TEST_SCOPE_SETCOLOR( *s_pm_impl().m_stream, term_attr::BRIGHT, term_color::MAGENTA );
-
     s_pm_impl().m_progress_display.reset( new progress_display( test_cases_amount, *s_pm_impl().m_stream ) );
 }
 
@@ -69,8 +66,6 @@ progress_monitor_t::test_start( counter_t test_cases_amount )
 void
 progress_monitor_t::test_aborted()
 {
-    BOOST_TEST_SCOPE_SETCOLOR( *s_pm_impl().m_stream, term_attr::BRIGHT, term_color::MAGENTA );
-
     (*s_pm_impl().m_progress_display) += s_pm_impl().m_progress_display->count();
 }
 
@@ -79,8 +74,6 @@ progress_monitor_t::test_aborted()
 void
 progress_monitor_t::test_unit_finish( test_unit const& tu, unsigned long )
 {
-    BOOST_TEST_SCOPE_SETCOLOR( *s_pm_impl().m_stream, term_attr::BRIGHT, term_color::MAGENTA );
-
     if( tu.p_type == tut_case )
         ++(*s_pm_impl().m_progress_display);
 }
@@ -90,8 +83,6 @@ progress_monitor_t::test_unit_finish( test_unit const& tu, unsigned long )
 void
 progress_monitor_t::test_unit_skipped( test_unit const& tu )
 {
-    BOOST_TEST_SCOPE_SETCOLOR( *s_pm_impl().m_stream, term_attr::BRIGHT, term_color::MAGENTA );
-
     test_case_counter tcc;
     traverse_test_tree( tu, tcc );
     

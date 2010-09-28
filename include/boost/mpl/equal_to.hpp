@@ -10,9 +10,9 @@
 //
 // See http://www.boost.org/libs/mpl for documentation.
 
-// $Id: equal_to.hpp 49239 2008-10-10 09:10:26Z agurtovoy $
-// $Date: 2008-10-10 05:10:26 -0400 (Fri, 10 Oct 2008) $
-// $Revision: 49239 $
+// $Id: equal_to.hpp 49267 2008-10-11 06:19:02Z agurtovoy $
+// $Date: 2008-10-11 02:19:02 -0400 (Sat, 11 Oct 2008) $
+// $Revision: 49267 $
 
 #define AUX778076_OP_NAME equal_to
 #define AUX778076_OP_TOKEN ==

@@ -105,7 +105,6 @@ namespace boost
         
         typedef typename remove_const<ValueParam>::type value_type;
         
-        // Not the real associated pointer type
         typedef typename mpl::eval_if<
             boost::detail::iterator_writability_disabled<ValueParam,Reference>
           , add_pointer<const value_type>
@@ -618,12 +617,6 @@ namespace boost
          Value, CategoryOrTraversal, Reference, Difference
       > associated_types;
 
-      typedef boost::detail::operator_arrow_result<
-        typename associated_types::value_type
-        , Reference
-        , typename associated_types::pointer
-      > pointer_;
-
    protected:
       // For use by derived classes
       typedef iterator_facade<Derived,Value,CategoryOrTraversal,Reference,Difference> iterator_facade_;
@@ -633,9 +626,7 @@ namespace boost
       typedef typename associated_types::value_type value_type;
       typedef Reference reference;
       typedef Difference difference_type;
-
-      typedef typename pointer_::type pointer;
-
+      typedef typename associated_types::pointer pointer;
       typedef typename associated_types::iterator_category iterator_category;
 
       reference operator*() const
@@ -643,9 +634,18 @@ namespace boost
           return iterator_core_access::dereference(this->derived());
       }
 
-      pointer operator->() const
+      typename boost::detail::operator_arrow_result<
+          value_type
+        , reference
+        , pointer
+      >::type
+      operator->() const
       {
-          return pointer_::make(*this->derived());
+          return boost::detail::operator_arrow_result<
+              value_type
+            , reference
+            , pointer
+          >::make(*this->derived());
       }
         
       typename boost::detail::operator_brackets_result<Derived,Value,reference>::type

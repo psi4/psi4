@@ -77,6 +77,15 @@
 #      define BOOST_NO_COMPLETE_VALUE_INITIALIZATION
 #    endif
 
+//
+// Dynamic shared object (DSO) and dynamic-link library (DLL) support
+//
+#if __SUNPRO_CC > 0x500
+#  define BOOST_SYMBOL_EXPORT __global
+#  define BOOST_SYMBOL_IMPORT __global
+#  define BOOST_SYMBOL_VISIBLE __global
+#endif
+
 
 
 //

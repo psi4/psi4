@@ -61,7 +61,7 @@ namespace boost
 template<class T> class shared_ptr;
 template<class T> class weak_ptr;
 template<class T> class enable_shared_from_this;
-class enable_shared_from_raw;
+template<class T> class enable_shared_from_this2;
 
 namespace detail
 {
@@ -110,7 +110,13 @@ template< class X, class Y, class T > inline void sp_enable_shared_from_this( bo
     }
 }
 
-template< class X, class Y > inline void sp_enable_shared_from_this( boost::shared_ptr<X> * ppx, Y const * py, boost::enable_shared_from_raw const * pe );
+template< class X, class Y, class T > inline void sp_enable_shared_from_this( boost::shared_ptr<X> * ppx, Y const * py, boost::enable_shared_from_this2< T > const * pe )
+{
+    if( pe != 0 )
+    {
+        pe->_internal_accept_owner( ppx, const_cast< Y* >( py ) );
+    }
+}
 
 #ifdef _MANAGED
 
@@ -583,9 +589,6 @@ template<class E, class T, class Y> std::basic_ostream<E, T> & operator<< (std::
 
 // get_deleter
 
-namespace detail
-{
-
 #if ( defined(__GNUC__) && BOOST_WORKAROUND(__GNUC__, < 3) ) || \
     ( defined(__EDG_VERSION__) && BOOST_WORKAROUND(__EDG_VERSION__, <= 238) ) || \
     ( defined(__HP_aCC) && BOOST_WORKAROUND(__HP_aCC, <= 33500) )
@@ -593,7 +596,7 @@ namespace detail
 // g++ 2.9x doesn't allow static_cast<X const *>(void *)
 // apparently EDG 2.38 and HP aCC A.03.35 also don't accept it
 
-template<class D, class T> D * basic_get_deleter(shared_ptr<T> const & p)
+template<class D, class T> D * get_deleter(shared_ptr<T> const & p)
 {
     void const * q = p._internal_get_deleter(BOOST_SP_TYPEID(D));
     return const_cast<D *>(static_cast<D const *>(q));
@@ -601,54 +604,12 @@ template<class D, class T> D * basic_get_deleter(shared_ptr<T> const & p)
 
 #else
 
-template<class D, class T> D * basic_get_deleter(shared_ptr<T> const & p)
+template<class D, class T> D * get_deleter(shared_ptr<T> const & p)
 {
     return static_cast<D *>(p._internal_get_deleter(BOOST_SP_TYPEID(D)));
 }
 
 #endif
-
-class esft2_deleter_wrapper
-{
-private:
-
-    shared_ptr<void> deleter_;
-
-public:
-
-    esft2_deleter_wrapper()
-    {
-    }
-
-    template< class T > void set_deleter( shared_ptr<T> const & deleter )
-    {
-        deleter_ = deleter;
-    }
-    template<typename D> D* get_deleter() const
-    {
-        return boost::detail::basic_get_deleter<D>(deleter_);
-    }
-    template< class T> void operator()( T* )
-    {
-        BOOST_ASSERT( deleter_.use_count() <= 1 );
-        deleter_.reset();
-    }
-};
-
-} // namespace detail
-
-template<class D, class T> D * get_deleter(shared_ptr<T> const & p)
-{
-    D *del = boost::detail::basic_get_deleter<D>(p);
-    if(del == 0)
-    {
-        boost::detail::esft2_deleter_wrapper *del_wrapper = boost::detail::basic_get_deleter<boost::detail::esft2_deleter_wrapper>(p);
-// The following get_deleter method call is fully qualified because
-// older versions of gcc (2.95, 3.2.3) fail to compile it when written del_wrapper->get_deleter<D>()
-        if(del_wrapper) del = del_wrapper->::boost::detail::esft2_deleter_wrapper::get_deleter<D>();
-    }
-    return del;
-}
 
 // atomic access
 

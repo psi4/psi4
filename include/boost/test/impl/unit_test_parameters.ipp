@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2001-2010.
+//  (C) Copyright Gennadiy Rozental 2001-2008.
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,7 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 62016 $
+//  Version     : $Revision: 63640 $
 //
 //  Description : simple implementation for Unit Test Framework parameter
 //  handling routines. May be rewritten in future to use some kind of
@@ -158,7 +158,6 @@ std::string AUTO_START_DBG    = "auto_start_dbg";
 std::string BREAK_EXEC_PATH   = "break_exec_path";
 std::string BUILD_INFO        = "build_info";
 std::string CATCH_SYS_ERRORS  = "catch_system_errors";
-std::string COLOR_OUTPUT      = "color_output";
 std::string DETECT_FP_EXCEPT  = "detect_fp_exceptions";
 std::string DETECT_MEM_LEAKS  = "detect_memory_leaks";
 std::string LOG_FORMAT        = "log_format";
@@ -180,7 +179,6 @@ fixed_mapping<const_string,const_string> parameter_2_env_var(
     BREAK_EXEC_PATH   , "BOOST_TEST_BREAK_EXEC_PATH",
     BUILD_INFO        , "BOOST_TEST_BUILD_INFO",
     CATCH_SYS_ERRORS  , "BOOST_TEST_CATCH_SYSTEM_ERRORS",
-    COLOR_OUTPUT      , "BOOST_TEST_COLOR_OUTPUT",
     DETECT_FP_EXCEPT  , "BOOST_TEST_DETECT_FP_EXCEPTIONS",
     DETECT_MEM_LEAKS  , "BOOST_TEST_DETECT_MEMORY_LEAK",
     LOG_FORMAT        , "BOOST_TEST_LOG_FORMAT",
@@ -261,9 +259,6 @@ init( int& argc, char** argv )
             - (cla::prefix = "--|-",cla::separator = "=| ",cla::guess_name,cla::optional,
                cla::description = "Shows library build information" )
           << cla::dual_name_parameter<bool>( CATCH_SYS_ERRORS + "|s" )
-            - (cla::prefix = "--|-",cla::separator = "=| ",cla::guess_name,cla::optional,
-               cla::description = "Allows to switch between catching and ignoring system errors (signals)")
-          << cla::dual_name_parameter<bool>( COLOR_OUTPUT + "|x" )
             - (cla::prefix = "--|-",cla::separator = "=| ",cla::guess_name,cla::optional,
                cla::description = "Allows to switch between catching and ignoring system errors (signals)")
           << cla::named_parameter<bool>( DETECT_FP_EXCEPT )
@@ -423,14 +418,6 @@ catch_sys_errors()
         true 
 #endif
         );
-}
-
-//____________________________________________________________________________//
-
-bool
-color_output()
-{
-    return retrieve_parameter( COLOR_OUTPUT, s_cla_parser, false );
 }
 
 //____________________________________________________________________________//
