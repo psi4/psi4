@@ -19,29 +19,40 @@
 # include <limits>
 #endif
 
-#include <boost/detail/extended_integer.hpp>  // for BOOST_HAS_XINT, etc.
-
 #if (defined(BOOST_HAS_LONG_LONG) && defined(BOOST_NO_LONG_LONG_NUMERIC_LIMITS)) \
       || (defined(BOOST_HAS_MS_INT64) && defined(BOOST_NO_MS_INT64_NUMERIC_LIMITS))
 // Add missing specializations for numeric_limits:
-#if !defined(BOOST_HAS_XINT) || !(BOOST_HAS_XINT)
-#error "Shouldn't have gotten here based on preceeding preprocessor statements"
+#ifdef BOOST_HAS_MS_INT64
+#  define BOOST_LLT __int64
+#  define BOOST_ULLT unsigned __int64
+#else
+#  define BOOST_LLT  ::boost::long_long_type
+#  define BOOST_ULLT  ::boost::ulong_long_type
 #endif
-#define BOOST_LLT    ::boost::detail::xint_t
-#define BOOST_ULLT  ::boost::detail::uxint_t
 
 #include <climits>  // for CHAR_BIT
 
 namespace std
 {
   template<>
-  class numeric_limits< BOOST_LLT > 
+  class numeric_limits<BOOST_LLT> 
   {
    public:
 
       BOOST_STATIC_CONSTANT(bool, is_specialized = true);
-      static BOOST_LLT min BOOST_PREVENT_MACRO_SUBSTITUTION (){ return BOOST_XINT_MIN; }
-      static BOOST_LLT max BOOST_PREVENT_MACRO_SUBSTITUTION (){ return BOOST_XINT_MAX; }
+#ifdef BOOST_HAS_MS_INT64
+      static BOOST_LLT min BOOST_PREVENT_MACRO_SUBSTITUTION (){ return 0x8000000000000000i64; }
+      static BOOST_LLT max BOOST_PREVENT_MACRO_SUBSTITUTION (){ return 0x7FFFFFFFFFFFFFFFi64; }
+#elif defined(LLONG_MAX)
+      static BOOST_LLT min BOOST_PREVENT_MACRO_SUBSTITUTION (){ return LLONG_MIN; }
+      static BOOST_LLT max BOOST_PREVENT_MACRO_SUBSTITUTION (){ return LLONG_MAX; }
+#elif defined(LONGLONG_MAX)
+      static BOOST_LLT min BOOST_PREVENT_MACRO_SUBSTITUTION (){ return LONGLONG_MIN; }
+      static BOOST_LLT max BOOST_PREVENT_MACRO_SUBSTITUTION (){ return LONGLONG_MAX; }
+#else
+      static BOOST_LLT min BOOST_PREVENT_MACRO_SUBSTITUTION (){ return 1LL << (sizeof(BOOST_LLT) * CHAR_BIT - 1); }
+      static BOOST_LLT max BOOST_PREVENT_MACRO_SUBSTITUTION (){ return ~(min)(); }
+#endif
       BOOST_STATIC_CONSTANT(int, digits = sizeof(BOOST_LLT) * CHAR_BIT -1);
       BOOST_STATIC_CONSTANT(int, digits10 = (CHAR_BIT * sizeof (BOOST_LLT) - 1) * 301L / 1000);
       BOOST_STATIC_CONSTANT(bool, is_signed = true);
@@ -77,13 +88,24 @@ namespace std
   };
 
   template<>
-  class numeric_limits< BOOST_ULLT > 
+  class numeric_limits<BOOST_ULLT> 
   {
    public:
 
       BOOST_STATIC_CONSTANT(bool, is_specialized = true);
-      static BOOST_ULLT min BOOST_PREVENT_MACRO_SUBSTITUTION (){ return (BOOST_ULLT) 0u; }
-      static BOOST_ULLT max BOOST_PREVENT_MACRO_SUBSTITUTION (){ return BOOST_UXINT_MAX; }
+#ifdef BOOST_HAS_MS_INT64
+      static BOOST_ULLT min BOOST_PREVENT_MACRO_SUBSTITUTION (){ return 0ui64; }
+      static BOOST_ULLT max BOOST_PREVENT_MACRO_SUBSTITUTION (){ return 0xFFFFFFFFFFFFFFFFui64; }
+#elif defined(ULLONG_MAX) && defined(ULLONG_MIN)
+      static BOOST_ULLT min BOOST_PREVENT_MACRO_SUBSTITUTION (){ return ULLONG_MIN; }
+      static BOOST_ULLT max BOOST_PREVENT_MACRO_SUBSTITUTION (){ return ULLONG_MAX; }
+#elif defined(ULONGLONG_MAX) && defined(ULONGLONG_MIN)
+      static BOOST_ULLT min BOOST_PREVENT_MACRO_SUBSTITUTION (){ return ULONGLONG_MIN; }
+      static BOOST_ULLT max BOOST_PREVENT_MACRO_SUBSTITUTION (){ return ULONGLONG_MAX; }
+#else
+      static BOOST_ULLT min BOOST_PREVENT_MACRO_SUBSTITUTION (){ return 0uLL; }
+      static BOOST_ULLT max BOOST_PREVENT_MACRO_SUBSTITUTION (){ return ~0uLL; }
+#endif
       BOOST_STATIC_CONSTANT(int, digits = sizeof(BOOST_LLT) * CHAR_BIT);
       BOOST_STATIC_CONSTANT(int, digits10 = (CHAR_BIT * sizeof (BOOST_LLT)) * 301L / 1000);
       BOOST_STATIC_CONSTANT(bool, is_signed = false);

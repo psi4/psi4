@@ -106,6 +106,7 @@
 #  define BOOST_NO_0X_HDR_UNORDERED_MAP
 #  define BOOST_NO_0X_HDR_UNORDERED_SET
 #  define BOOST_NO_0X_HDR_TUPLE
+#  define BOOST_NO_0X_HDR_TYPEINDEX
 #endif
 
 #if !defined(_HAS_TR1_IMPORTS) && !defined(BOOST_NO_0X_HDR_TUPLE)

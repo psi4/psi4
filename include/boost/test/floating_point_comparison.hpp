@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2001-2010.
+//  (C) Copyright Gennadiy Rozental 2001-2008.
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at 
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,7 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 62016 $
+//  Version     : $Revision: 57992 $
 //
 //  Description : defines algoirthms for comparing 2 floating point values
 // ***************************************************************************
@@ -17,16 +17,13 @@
 
 // Boost.Test
 #include <boost/test/detail/global_typedef.hpp>
+#include <boost/test/utils/class_properties.hpp>
 #include <boost/test/predicate_result.hpp>
 
 // Boost
 #include <boost/limits.hpp>  // for std::numeric_limits
 #include <boost/numeric/conversion/conversion_traits.hpp> // for numeric::conversion_traits
 #include <boost/static_assert.hpp>
-#include <boost/assert.hpp>
-
-// STL
-#include <iosfwd>
 
 #include <boost/test/detail/suppress_warnings.hpp>
 
@@ -34,22 +31,25 @@
 
 namespace boost {
 
-namespace math { namespace fpc {
+namespace test_tools {
+
+using unit_test::readonly_property;
 
 // ************************************************************************** //
-// **************                 fpc::strength                ************** //
+// **************        floating_point_comparison_type        ************** //
 // ************************************************************************** //
 
-enum strength {
+enum floating_point_comparison_type {
     FPC_STRONG, // "Very close"   - equation 1' in docs, the default
     FPC_WEAK    // "Close enough" - equation 2' in docs.
+
 };
 
 // ************************************************************************** //
 // **************                    details                   ************** //
 // ************************************************************************** //
 
-namespace fpc_detail {
+namespace tt_detail {
 
 // FPT is Floating-Point Type: float, double, long double or User-Defined.
 template<typename FPT>
@@ -73,7 +73,7 @@ struct fpt_limits {
     {
         return std::numeric_limits<FPT>::is_specialized
                     ? (std::numeric_limits<FPT>::max)()
-                    : static_cast<FPT>(1000000); // for the our purposes it doesn't really matter what value is returned here
+                    : static_cast<FPT>(1000000); // for the our purpuses it doesn't really matter what value is returned here
     }
 };
 
@@ -98,27 +98,11 @@ safe_fpt_division( FPT f1, FPT f2 )
 
 //____________________________________________________________________________//
 
-} // namespace fpc_detail
+} // namespace tt_detail
 
 // ************************************************************************** //
 // **************         tolerance presentation types         ************** //
 // ************************************************************************** //
-
-template<typename ToleranceType>
-struct tolerance_traits {
-    template<typename FPT>
-    static ToleranceType    actual_tolerance( FPT fraction_tolerance )
-    {
-        return static_cast<ToleranceType>( fraction_tolerance );
-    } 
-    template<typename FPT>
-    static FPT              fraction_tolerance( ToleranceType tolerance )
-    {
-        return static_cast<FPT>(tolerance);
-    } 
-};
-
-//____________________________________________________________________________//
 
 template<typename FPT>
 struct percent_tolerance_t {
@@ -129,25 +113,8 @@ struct percent_tolerance_t {
 
 //____________________________________________________________________________//
 
-template<typename FPT>
-struct tolerance_traits<percent_tolerance_t<FPT> > {
-    template<typename FPT2>
-    static percent_tolerance_t<FPT> actual_tolerance( FPT2 fraction_tolerance )
-    {
-        return percent_tolerance_t<FPT>( fraction_tolerance * static_cast<FPT2>(100.) );
-    }
-
-    template<typename FPT2>
-    static FPT2 fraction_tolerance( percent_tolerance_t<FPT> tolerance )
-    {
-        return static_cast<FPT2>(tolerance.m_value)*static_cast<FPT2>(0.01); 
-    }
-};
-
-//____________________________________________________________________________//
-
-template<typename FPT>
-std::ostream& operator<<( std::ostream& out, percent_tolerance_t<FPT> t )
+template<typename Out,typename FPT>
+Out& operator<<( Out& out, percent_tolerance_t<FPT> t )
 {
     return out << t.m_value;
 }
@@ -163,6 +130,32 @@ percent_tolerance( FPT v )
 
 //____________________________________________________________________________//
 
+template<typename FPT>
+struct fraction_tolerance_t {
+    explicit fraction_tolerance_t( FPT v ) : m_value( v ) {}
+
+    FPT m_value;
+};
+
+//____________________________________________________________________________//
+
+template<typename Out,typename FPT>
+Out& operator<<( Out& out, fraction_tolerance_t<FPT> t )
+{
+    return out << t.m_value;
+}
+
+//____________________________________________________________________________//
+
+template<typename FPT>
+inline fraction_tolerance_t<FPT>
+fraction_tolerance( FPT v )
+{
+    return fraction_tolerance_t<FPT>( v );
+}
+
+//____________________________________________________________________________//
+
 // ************************************************************************** //
 // **************             close_at_tolerance               ************** //
 // ************************************************************************** //
@@ -174,110 +167,46 @@ public:
     typedef bool result_type;
 
     // Constructor
-    template<typename ToleranceType>
-    explicit    close_at_tolerance( ToleranceType tolerance, fpc::strength fpc_strength = FPC_STRONG ) 
-    : m_fraction_tolerance( tolerance_traits<ToleranceType>::template fraction_tolerance<FPT>( tolerance ) )
-    , m_strength( fpc_strength )
-    {
-        BOOST_ASSERT( m_fraction_tolerance >= 0 ); // no reason for tolerance to be negative
-    }
+    template<typename ToleranceBaseType>
+    explicit    close_at_tolerance( percent_tolerance_t<ToleranceBaseType>  tolerance, 
+                                    floating_point_comparison_type          fpc_type = FPC_STRONG ) 
+    : p_fraction_tolerance( tt_detail::fpt_abs( static_cast<FPT>(0.01)*tolerance.m_value ) )
+    , p_strong_or_weak( fpc_type ==  FPC_STRONG )
+    , m_report_modifier( 100. )
+    {}
+    template<typename ToleranceBaseType>
+    explicit    close_at_tolerance( fraction_tolerance_t<ToleranceBaseType> tolerance, 
+                                    floating_point_comparison_type          fpc_type = FPC_STRONG ) 
+    : p_fraction_tolerance( tt_detail::fpt_abs( tolerance.m_value ) )
+    , p_strong_or_weak( fpc_type ==  FPC_STRONG )
+    , m_report_modifier( 1. )
+    {}
 
-    // Access methods
-    FPT                 fraction_tolerance() const  { return m_fraction_tolerance; }
-    fpc::strength       strength() const            { return m_strength; }
-    FPT                 failed_fraction() const     { return m_failed_fraction; }
-
-    // Action method
-    bool                operator()( FPT left, FPT right ) const
+    predicate_result        operator()( FPT left, FPT right ) const
     {
-        FPT diff              = fpc_detail::fpt_abs( left - right );
-        FPT fraction_of_right = fpc_detail::safe_fpt_division( diff, fpc_detail::fpt_abs( right ) );
-        FPT fraction_of_left  = fpc_detail::safe_fpt_division( diff, fpc_detail::fpt_abs( left ) );
+        FPT diff = tt_detail::fpt_abs( left - right );
+        FPT d1   = tt_detail::safe_fpt_division( diff, tt_detail::fpt_abs( right ) );
+        FPT d2   = tt_detail::safe_fpt_division( diff, tt_detail::fpt_abs( left ) );
         
-        bool res( m_strength == FPC_STRONG
-            ? (fraction_of_right <= m_fraction_tolerance && fraction_of_left <= m_fraction_tolerance) 
-            : (fraction_of_right <= m_fraction_tolerance || fraction_of_left <= m_fraction_tolerance) );
+        predicate_result res( p_strong_or_weak 
+            ? (d1 <= p_fraction_tolerance.get() && d2 <= p_fraction_tolerance.get()) 
+            : (d1 <= p_fraction_tolerance.get() || d2 <= p_fraction_tolerance.get()) );
 
         if( !res )
-            m_failed_fraction = (fraction_of_right > m_fraction_tolerance ? fraction_of_right : fraction_of_left);
+            res.message() << (( d1 <= p_fraction_tolerance.get() ? d2 : d1 ) * m_report_modifier);
 
         return res;
     }
 
+    // Public properties
+    readonly_property<FPT>  p_fraction_tolerance;
+    readonly_property<bool> p_strong_or_weak;
 private:
     // Data members
-    FPT                 m_fraction_tolerance;
-    fpc::strength       m_strength;
-	mutable FPT         m_failed_fraction;
+    FPT                     m_report_modifier;
 };
 
-// ************************************************************************** //
-// **************                 is_close_to                  ************** //
-// ************************************************************************** //
-
-template<typename FPT1, typename FPT2, typename ToleranceType>
-bool
-is_close_to( FPT1 left, FPT2 right, ToleranceType tolerance )
-{
-    // deduce "better" type from types of arguments being compared
-    // if one type is floating and the second integral we use floating type and 
-    // value of integral type is promoted to the floating. The same for float and double
-    // But we don't want to compare two values of integral types using this tool.
-    typedef typename numeric::conversion_traits<FPT1,FPT2>::supertype FPT;
-    BOOST_STATIC_ASSERT( !is_integral<FPT>::value );
-
-    return fpc::close_at_tolerance<FPT>( tolerance, FPC_STRONG )( left, right );
-}
-
 //____________________________________________________________________________//
-
-// ************************************************************************** //
-// **************             close_at_tolerance               ************** //
-// ************************************************************************** //
-
-template<typename FPT>
-class small_with_tolerance {
-public:
-    // Public typedefs
-    typedef bool result_type;
-
-    // Constructor
-    explicit    small_with_tolerance( FPT tolerance ) 
-    : m_tolerance( tolerance )
-    {
-        BOOST_ASSERT( m_tolerance >= 0 ); // no reason for the tolerance to be negative
-    }
-
-    // Action method
-    bool        operator()( FPT fpv ) const
-    {
-        return fpc::fpc_detail::fpt_abs( fpv ) < m_tolerance;
-    }
-
-private:
-    // Data members
-    FPT         m_tolerance;
-};
-
-// ************************************************************************** //
-// **************                  is_small                    ************** //
-// ************************************************************************** //
-
-template<typename FPT>
-bool
-is_small( FPT fpv, FPT tolerance )
-{
-    return small_with_tolerance<FPT>( tolerance )( fpv );
-}
-
-//____________________________________________________________________________//
-
-} // namespace fpc
-} // namespace math
-
-namespace test_tools {
-
-namespace fpc = math::fpc;
 
 // ************************************************************************** //
 // **************               check_is_close                 ************** //
@@ -287,16 +216,34 @@ struct BOOST_TEST_DECL check_is_close_t {
     // Public typedefs
     typedef bool result_type;
 
-    template<typename FPT1, typename FPT2, typename ToleranceType>
+    template<typename FPT1, typename FPT2, typename ToleranceBaseType>
     predicate_result
-    operator()( FPT1 left, FPT2 right, ToleranceType tolerance ) const
+    operator()( FPT1 left, FPT2 right, percent_tolerance_t<ToleranceBaseType> tolerance, 
+                floating_point_comparison_type fpc_type = FPC_STRONG ) const
     {
-        predicate_result pr( fpc::is_close_to( left, right, tolerance ) );
+        // deduce "better" type from types of arguments being compared
+        // if one type is floating and the second integral we use floating type and 
+        // value of integral type is promoted to the floating. The same for float and double
+        // But we don't want to compare two values of integral types using this tool.
+        typedef typename numeric::conversion_traits<FPT1,FPT2>::supertype FPT;
+        BOOST_STATIC_ASSERT( !is_integral<FPT>::value );
 
-        if( !pr )
-            pr.message() << tolerance;
+        close_at_tolerance<FPT> pred( tolerance, fpc_type );
 
-        return pr;
+        return pred( left, right );
+    }
+    template<typename FPT1, typename FPT2, typename ToleranceBaseType>
+    predicate_result
+    operator()( FPT1 left, FPT2 right, fraction_tolerance_t<ToleranceBaseType> tolerance, 
+                floating_point_comparison_type fpc_type = FPC_STRONG ) const
+    {
+        // same as in a comment above
+        typedef typename numeric::conversion_traits<FPT1,FPT2>::supertype FPT;
+        BOOST_STATIC_ASSERT( !is_integral<FPT>::value );
+
+        close_at_tolerance<FPT> pred( tolerance, fpc_type );
+
+        return pred( left, right );
     }
 };
 
@@ -318,7 +265,7 @@ struct BOOST_TEST_DECL check_is_small_t {
     bool
     operator()( FPT fpv, FPT tolerance ) const
     {
-        return fpc::is_small( fpv, tolerance );
+        return tt_detail::fpt_abs( fpv ) < tt_detail::fpt_abs( tolerance );
     }
 };
 

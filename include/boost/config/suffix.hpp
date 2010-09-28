@@ -26,6 +26,19 @@
 #define BOOST_CONFIG_SUFFIX_HPP
 
 //
+// ensure that visibility macros are always defined, thus symplifying use
+//
+#ifndef BOOST_SYMBOL_EXPORT
+# define BOOST_SYMBOL_EXPORT
+#endif
+#ifndef BOOST_SYMBOL_IMPORT
+# define BOOST_SYMBOL_IMPORT
+#endif
+#ifndef BOOST_SYMBOL_VISIBLE
+# define BOOST_SYMBOL_VISIBLE
+#endif
+
+//
 // look for long long by looking for the appropriate macros in <limits.h>.
 // Note that we use limits.h rather than climits for maximal portability,
 // remember that since these just declare a bunch of macros, there should be

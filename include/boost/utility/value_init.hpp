@@ -10,6 +10,7 @@
 // 21 Ago 2008 (Added swap) Niels Dekker, Fernando Cacciola
 // 20 Feb 2009 (Fixed logical const-ness issues) Niels Dekker, Fernando Cacciola
 // 03 Apr 2010 (Added initialized<T>, suggested by Jeffrey Hellrung, fixing #3472) Niels Dekker
+// 30 May 2010 (Made memset call conditional, fixing #3869) Niels Dekker
 //
 #ifndef BOOST_UTILITY_VALUE_INIT_21AGO2002_HPP
 #define BOOST_UTILITY_VALUE_INIT_21AGO2002_HPP
@@ -21,6 +22,7 @@
 // contains. More details on these issues are at libs/utility/value_init.htm
 
 #include <boost/aligned_storage.hpp>
+#include <boost/config.hpp> // For BOOST_NO_COMPLETE_VALUE_INITIALIZATION.
 #include <boost/detail/workaround.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/type_traits/cv_traits.hpp>
@@ -39,6 +41,23 @@
 // a const type: "warning C4512: assignment operator could not be generated".
 #pragma warning(disable: 4512)
 #endif
+#endif
+
+#ifdef BOOST_NO_COMPLETE_VALUE_INITIALIZATION
+  // Implementation detail: The macro BOOST_DETAIL_VALUE_INIT_WORKAROUND_SUGGESTED 
+  // suggests that a workaround should be applied, because of compiler issues 
+  // regarding value-initialization.
+  #define BOOST_DETAIL_VALUE_INIT_WORKAROUND_SUGGESTED
+#endif
+
+// Implementation detail: The macro BOOST_DETAIL_VALUE_INIT_WORKAROUND
+// switches the value-initialization workaround either on or off.
+#ifndef BOOST_DETAIL_VALUE_INIT_WORKAROUND
+  #ifdef BOOST_DETAIL_VALUE_INIT_WORKAROUND_SUGGESTED
+  #define BOOST_DETAIL_VALUE_INIT_WORKAROUND 1
+  #else
+  #define BOOST_DETAIL_VALUE_INIT_WORKAROUND 0
+  #endif
 #endif
 
 namespace boost {
@@ -82,10 +101,9 @@ class initialized
 
     initialized()
     {
-      // Note: the following memset call will become conditional when ticket #3869 is fixed:
-      // https://svn.boost.org/trac/boost/ticket/3869 reported by Aleksey Gurtovoy.
+#if BOOST_DETAIL_VALUE_INIT_WORKAROUND
       std::memset(&x, 0, sizeof(x));
-
+#endif
       new (wrapper_address()) wrapper();
     }
 

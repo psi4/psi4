@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2005-2010.
+//  (C) Copyright Gennadiy Rozental 2005-2008.
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,7 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 62016 $
+//  Version     : $Revision: 57991 $
 //
 //  Description : implements framework API - main driver for the test
 // ***************************************************************************
@@ -125,13 +125,13 @@ public:
     {
         while( !m_test_units.empty() ) {
             test_unit_store::value_type const& tu     = *m_test_units.begin();
-            test_unit const*                   tu_ptr = tu.second;
+            test_unit*                         tu_ptr = tu.second;
 
             // the delete will erase this element from map
             if( ut_detail::test_id_2_unit_type( tu.second->p_id ) == tut_suite )
-                delete static_cast<test_suite const*>(tu_ptr);
+                delete  (test_suite const*)tu_ptr;
             else
-                delete static_cast<test_case const*>(tu_ptr);
+                delete  (test_case const*)tu_ptr;
         }
     }
 

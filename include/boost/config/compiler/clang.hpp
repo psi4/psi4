@@ -18,12 +18,6 @@
 #  define BOOST_NO_RTTI
 #endif
 
-#if defined(__int32)
-// HACK: Clang only defines the type __int32 in Microsoft-compatibility mode,
-// which means that declspecs are also available
-#  define BOOST_HAS_DECLSPEC
-#endif
-
 #if defined(__int64)
 #  define BOOST_HAS_MS_INT64
 #endif
@@ -58,13 +52,6 @@
 // HACK: Clang does support extern templates, but Boost's test for
 // them is wrong.
 #define BOOST_NO_EXTERN_TEMPLATE
-
-// Clang version 2.0 (trunk 103769) does not yet properly 
-// value-initialize objects of a pointer-to-member type,
-// as was reported by Christopher Jefferson in May 2010, Bug 7139,
-// "ptr to member not zeroed", http://llvm.org/bugs/show_bug.cgi?id=7139
-// (Niels Dekker, LKEB, May 2010)
-#define BOOST_NO_COMPLETE_VALUE_INITIALIZATION
 
 #ifndef BOOST_COMPILER
 #  define BOOST_COMPILER "Clang version " __clang_version__

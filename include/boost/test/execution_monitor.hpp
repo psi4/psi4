@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2001-2010.
+//  (C) Copyright Gennadiy Rozental 2001-2008.
 //  (C) Copyright Beman Dawes 2001.
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at 
@@ -8,7 +8,7 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 62016 $
+//  Version     : $Revision: 57992 $
 //
 //  Description : defines abstract monitor interfaces and implements execution exception
 //  The original Boost Test Library included an implementation detail function
@@ -39,104 +39,39 @@
 #include <boost/test/utils/class_properties.hpp>
 
 // Boost
-#include <boost/shared_ptr.hpp>
+#include <boost/scoped_ptr.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/type.hpp>
 #include <boost/cstdlib.hpp>
 
 #include <boost/test/detail/suppress_warnings.hpp>
 
-#ifdef BOOST_SEH_BASED_SIGNAL_HANDLING
-
-// for the FP constants and control routines
-#include <float.h>
-
-#ifndef EM_INVALID
-#define EM_INVALID _EM_INVALID
-#endif
-
-#ifndef EM_DENORMAL
-#define EM_DENORMAL _EM_DENORMAL
-#endif
-
-#ifndef EM_ZERODIVIDE
-#define EM_ZERODIVIDE _EM_ZERODIVIDE
-#endif
-
-#ifndef EM_OVERFLOW
-#define EM_OVERFLOW _EM_OVERFLOW
-#endif
-
-#ifndef EM_UNDERFLOW
-#define EM_UNDERFLOW _EM_UNDERFLOW
-#endif
-
-#ifndef MCW_EM
-#define MCW_EM _MCW_EM
-#endif
-
-#else // based on ISO C standard
-
-#ifndef __CYGWIN__
-#include <fenv.h>
-#endif
-
-#endif
-
 //____________________________________________________________________________//
 
 namespace boost {
 
-// ************************************************************************** //
-// **************        detail::translator_holder_base        ************** //
-// ************************************************************************** //
-
 namespace detail {
 
-class translator_holder_base;
-typedef boost::shared_ptr<translator_holder_base> translator_holder_base_ptr;
+// ************************************************************************** //
+// **************       detail::translate_exception_base       ************** //
+// ************************************************************************** //
 
-class BOOST_TEST_DECL translator_holder_base {
-protected:
-    typedef boost::unit_test::const_string const_string;
+class BOOST_TEST_DECL translate_exception_base {
 public:
     // Constructor
-    translator_holder_base( translator_holder_base_ptr next, const_string tag )
-    : m_next( next )
-    , m_tag( tag.begin(), tag.end() )
+    explicit    translate_exception_base( boost::scoped_ptr<translate_exception_base>& next )
     {
+        next.swap( m_next );
     }
 
     // Destructor
-    virtual     ~translator_holder_base() {}
+    virtual     ~translate_exception_base() {}
 
-    // translator holder interface
-    // invokes the function F inside the try/catch guarding against specific exception
     virtual int operator()( unit_test::callback0<int> const& F ) = 0;
-    // erases specific translator holder from the chain
-    translator_holder_base_ptr erase( translator_holder_base_ptr this_, const_string tag ) 
-    {
-        if( m_next )
-            m_next = m_next->erase( m_next, tag );
-
-        return m_tag == tag ? m_next : this_;
-    }
-#ifndef BOOST_NO_RTTI
-    virtual translator_holder_base_ptr erase( translator_holder_base_ptr this_, std::type_info const& ) = 0;
-    template<typename ExceptionType>
-    translator_holder_base_ptr erase( translator_holder_base_ptr this_, boost::type<ExceptionType>* = 0 )
-    {
-        if( m_next )
-            m_next = m_next->erase<ExceptionType>( m_next );
-
-        return erase( this_, typeid(ExceptionType) );
-    }
-#endif
 
 protected:
     // Data members
-    translator_holder_base_ptr  m_next;
-    std::string                 m_tag;
+    boost::scoped_ptr<translate_exception_base> m_next;
 };
 
 } // namespace detail
@@ -206,10 +141,15 @@ private:
 // ************************************************************************** //
 
 class BOOST_TEST_DECL execution_monitor {
-    typedef boost::unit_test::const_string const_string;
 public:
     // Constructor
-    execution_monitor();
+    execution_monitor()
+    : p_catch_system_errors( true )
+    , p_auto_start_dbg( false )
+    , p_timeout( 0 )
+    , p_use_alt_stack( true )
+    , p_detect_fp_exceptions( false )
+    {}
 
     // Public properties
     
@@ -217,22 +157,18 @@ public:
     //  try to catch system errors/exceptions that would cause program to crash 
     //  in regular case
     unit_test::readwrite_property<bool> p_catch_system_errors; 
-
     //  The p_auto_start_dbg parameter specifies whether the monitor should 
     //  try to attach debugger in case of caught system error
     unit_test::readwrite_property<bool> p_auto_start_dbg;
-
     //  The p_timeout parameter specifies the seconds that elapse before
     //  a timer_error occurs.  May be ignored on some platforms.
     unit_test::readwrite_property<int>  p_timeout;
-
     //  The p_use_alt_stack parameter specifies whether the monitor should
     //  use alternative stack for the signal catching
     unit_test::readwrite_property<bool> p_use_alt_stack;
-
     //  The p_detect_fp_exceptions parameter specifies whether the monitor should
-    //  try to detect hardware floating point exceptions (!= 0), and which specific exception to catch
-    unit_test::readwrite_property<unsigned> p_detect_fp_exceptions;
+    //  try to detect hardware floating point exceptions
+    unit_test::readwrite_property<bool> p_detect_fp_exceptions;
 
     int         execute( unit_test::callback0<int> const& F ); 
     //  Returns:  Value returned by function call F().
@@ -246,58 +182,41 @@ public:
     //  Note: execute() doesn't consider it an error for F to return a non-zero value.
     
     // register custom (user supplied) exception translator
-    template<typename ExceptionType, typename ExceptionTranslator>
-    void        register_exception_translator( ExceptionTranslator const& tr, const_string tag = const_string(), boost::type<ExceptionType>* = 0 );
-
-    // erase custom exception translator
-    void        erase_exception_translator( const_string tag )
-    {
-        m_custom_translators = m_custom_translators->erase( m_custom_translators, tag );
-    }
-    template<typename ExceptionType>
-    void        erase_exception_translator( boost::type<ExceptionType>* = 0 )
-    {
-        m_custom_translators = m_custom_translators->erase<ExceptionType>( m_custom_translators );
-    }
+    template<typename Exception, typename ExceptionTranslator>
+    void        register_exception_translator( ExceptionTranslator const& tr, boost::type<Exception>* = 0 );
 
 private:
     // implementation helpers
     int         catch_signals( unit_test::callback0<int> const& F );
 
     // Data members
-    detail::translator_holder_base_ptr  m_custom_translators;
-    boost::scoped_array<char>           m_alt_stack;
+    boost::scoped_ptr<detail::translate_exception_base> m_custom_translators;
+    boost::scoped_array<char>                           m_alt_stack;
 }; // execution_monitor
-
-// ************************************************************************** //
-// **************          detail::translator_holder           ************** //
-// ************************************************************************** //
 
 namespace detail {
 
-template<typename ExceptionType, typename ExceptionTranslator>
-class translator_holder : public translator_holder_base
-{
-public:
-    explicit    translator_holder( ExceptionTranslator const& tr, translator_holder_base_ptr& next, const_string tag = const_string() )
-    : translator_holder_base( next, tag ), m_translator( tr ) {}
+// ************************************************************************** //
+// **************         detail::translate_exception          ************** //
+// ************************************************************************** //
 
-    // translator holder interface
-    virtual int operator()( unit_test::callback0<int> const& F )
+template<typename Exception, typename ExceptionTranslator>
+class translate_exception : public translate_exception_base
+{
+    typedef boost::scoped_ptr<translate_exception_base> base_ptr;
+public:
+    explicit    translate_exception( ExceptionTranslator const& tr, base_ptr& next )
+    : translate_exception_base( next ), m_translator( tr ) {}
+
+    int operator()( unit_test::callback0<int> const& F )
     {
         try {
             return m_next ? (*m_next)( F ) : F();
-        } catch( ExceptionType const& e ) {
+        } catch( Exception const& e ) {
             m_translator( e );
             return boost::exit_exception_failure;
         }
     }
-#ifndef BOOST_NO_RTTI
-    virtual translator_holder_base_ptr erase( translator_holder_base_ptr this_, std::type_info const& ti ) 
-    {
-        return ti == typeid(ExceptionType) ? m_next : this_;
-    }
-#endif
 
 private:
     // Data members
@@ -306,12 +225,12 @@ private:
 
 } // namespace detail
 
-template<typename ExceptionType, typename ExceptionTranslator>
+template<typename Exception, typename ExceptionTranslator>
 void
-execution_monitor::register_exception_translator( ExceptionTranslator const& tr, const_string tag, boost::type<ExceptionType>* )
+execution_monitor::register_exception_translator( ExceptionTranslator const& tr, boost::type<Exception>* )
 {
     m_custom_translators.reset( 
-        new detail::translator_holder<ExceptionType,ExceptionTranslator>( tr, m_custom_translators, tag ) );
+        new detail::translate_exception<Exception,ExceptionTranslator>( tr,m_custom_translators ) );
 }
 
 // ************************************************************************** //
@@ -334,43 +253,6 @@ public:
 };
 
 #define BOOST_TEST_SYS_ASSERT( exp ) if( (exp) ) ; else throw ::boost::system_error( BOOST_STRINGIZE( exp ) )
-
-// ************************************************************************** //
-// **************Floating point exception management interface ************** //
-// ************************************************************************** //
-
-namespace fpe {
-
-enum masks {
-    BOOST_FPE_OFF       = 0,
-
-#ifdef BOOST_SEH_BASED_SIGNAL_HANDLING
-    BOOST_FPE_DIVBYZERO = EM_ZERODIVIDE,
-    BOOST_FPE_INEXACT   = EM_INEXACT,
-    BOOST_FPE_INVALID   = EM_INVALID,
-    BOOST_FPE_OVERFLOW  = EM_OVERFLOW,
-    BOOST_FPE_UNDERFLOW = EM_UNDERFLOW|EM_DENORMAL,
-
-    BOOST_FPE_ALL       = MCW_EM,
-#elif defined(__CYGWIN__)
-    BOOST_FPE_ALL       = 1
-#else
-    BOOST_FPE_DIVBYZERO = FE_DIVBYZERO,
-    BOOST_FPE_INEXACT   = FE_INEXACT,
-    BOOST_FPE_INVALID   = FE_INVALID,
-    BOOST_FPE_OVERFLOW  = FE_OVERFLOW,
-    BOOST_FPE_UNDERFLOW = FE_UNDERFLOW,
-
-    BOOST_FPE_ALL       = FE_ALL_EXCEPT,
-#endif
-    BOOST_FPE_INV       = BOOST_FPE_ALL+1
-};
-
-// return the previous set of enabled exceptions when successful, and BOOST_FPE_INV otherwise
-unsigned BOOST_TEST_DECL enable( unsigned mask );
-unsigned BOOST_TEST_DECL disable( unsigned mask );
-
-} // namespace fpe
 
 }  // namespace boost
 

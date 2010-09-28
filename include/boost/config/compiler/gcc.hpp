@@ -108,13 +108,39 @@
 #if __GNUC__ > 3 || ( __GNUC__ == 3 && __GNUC_MINOR__ >= 1 )
 #define BOOST_HAS_NRVO
 #endif
+
+//
+// Dynamic shared object (DSO) and dynamic-link library (DLL) support
+//
+#if __GNUC__ >= 4
+#  if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+     // All Win32 development environments, including 64-bit Windows and MinGW, define 
+     // _WIN32 or one of its variant spellings. Note that Cygwin is a POSIX environment,
+     // so does not define _WIN32 or its variants.
+#    define BOOST_HAS_DECLSPEC
+#    define BOOST_SYMBOL_EXPORT __attribute__((dllexport))
+#    define BOOST_SYMBOL_IMPORT __attribute__((dllimport))
+#  else
+#    define BOOST_SYMBOL_EXPORT __attribute__((visibility("default")))
+#    define BOOST_SYMBOL_IMPORT
+#  endif
+#  define BOOST_SYMBOL_VISIBLE __attribute__((visibility("default")))
+#else
+// config/platform/win32.hpp will define BOOST_SYMBOL_EXPORT, etc., unless already defined  
+#  define BOOST_SYMBOL_EXPORT
+#endif
+
 //
 // RTTI and typeinfo detection is possible post gcc-4.3:
 //
 #if __GNUC__ * 100 + __GNUC_MINOR__ >= 403
 #  ifndef __GXX_RTTI
-#     define BOOST_NO_TYPEID
-#     define BOOST_NO_RTTI
+#     ifndef BOOST_NO_TYPEID
+#        define BOOST_NO_TYPEID
+#     endif
+#     ifndef BOOST_NO_RTTI
+#        define BOOST_NO_RTTI
+#     endif
 #  endif
 #endif
 

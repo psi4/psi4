@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2001-2010.
+//  (C) Copyright Gennadiy Rozental 2001-2008.
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at 
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,7 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 62016 $
+//  Version     : $Revision: 54633 $
 //
 //  Description : contains definition for all test tools in test toolbox
 // ***************************************************************************
@@ -17,13 +17,7 @@
 
 // Boost.Test
 #include <boost/test/predicate_result.hpp>
-#ifndef BOOST_TEST_PROD
 #include <boost/test/unit_test_log.hpp>
-#define BOOST_TEST_TOOLS_STRINGIZE( arg ) BOOST_TEST_STRINGIZE( arg )
-#else
-#define BOOST_TEST_PASSPOINT()
-#define BOOST_TEST_TOOLS_STRINGIZE( arg ) BOOST_STRINGIZE( arg )
-#endif
 #include <boost/test/floating_point_comparison.hpp>
 
 #include <boost/test/detail/config.hpp>
@@ -37,7 +31,7 @@
 // Boost
 #include <boost/preprocessor/seq/for_each.hpp>
 #include <boost/preprocessor/seq/size.hpp>
-#include <boost/preprocessor/seq/to_tuple.hpp>
+#include <boost/preprocessor/seq/enum.hpp> 
 #include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/preprocessor/punctuation/comma_if.hpp>
 #include <boost/preprocessor/arithmetic/add.hpp>
@@ -77,56 +71,50 @@
 // R - right argument
 // TL - tool level
 // CT - check type
-// ARGS - arguments list (as PP sequence)
+// ARGS - arguments list
 
-// frwd_type:
-// 0 - args exists and need to be forwarded; call check_frwd
-// 1 - args exists, but do not need to be forwarded; call check_impl directly
-// 2 - no arguments; call check_impl directly
-
-#ifndef BOOST_TEST_PROD 
-
-#define BOOST_TEST_TOOL_PASS_PRED0( P, ARGS ) P
-#define BOOST_TEST_TOOL_PASS_PRED1( P, ARGS ) P BOOST_PP_SEQ_TO_TUPLE(ARGS)
-#define BOOST_TEST_TOOL_PASS_PRED2( P, ARGS ) P
-
-#define BOOST_TEST_TOOL_PASS_ARG( r, _, arg ) , arg, BOOST_STRINGIZE( arg )
-#define BOOST_TEST_TOOL_PASS_ARG_DSCR( r, _, arg ) , BOOST_STRINGIZE( arg )
-
-#define BOOST_TEST_TOOL_PASS_ARGS0( ARGS ) \
-    BOOST_PP_SEQ_FOR_EACH( BOOST_TEST_TOOL_PASS_ARG, _, ARGS )
-#define BOOST_TEST_TOOL_PASS_ARGS1( ARGS ) \
-    , BOOST_PP_SEQ_SIZE(ARGS) BOOST_PP_SEQ_FOR_EACH( BOOST_TEST_TOOL_PASS_ARG_DSCR, _, ARGS )
-#define BOOST_TEST_TOOL_PASS_ARGS2( ARGS ) \
-    , 0
-
-#define BOOST_TEST_TOOL_IMPL(frwd_type, P, assertion_descr,TL,CT,ARGS)  \
-do {                                                                    \
-    BOOST_TEST_PASSPOINT();                                             \
-    ::boost::test_tools::tt_detail::                                    \
-    BOOST_PP_IF( frwd_type, check_impl, check_frwd ) (                  \
-        BOOST_JOIN( BOOST_TEST_TOOL_PASS_PRED, frwd_type )( P, ARGS ),  \
-        ::boost::unit_test::lazy_ostream::instance() << assertion_descr,\
+#define BOOST_TEST_TOOL_IMPL( func, P, check_descr, TL, CT )            \
+    ::boost::test_tools::tt_detail::func(                               \
+        P,                                                              \
+        ::boost::unit_test::lazy_ostream::instance() << check_descr,    \
         BOOST_TEST_L(__FILE__),                                         \
         static_cast<std::size_t>(__LINE__),                             \
         ::boost::test_tools::tt_detail::TL,                             \
         ::boost::test_tools::tt_detail::CT                              \
-        BOOST_JOIN( BOOST_TEST_TOOL_PASS_ARGS, frwd_type )( ARGS ) );   \
-} while( ::boost::test_tools::dummy_cond )                              \
 /**/
-#endif
 
 //____________________________________________________________________________//
 
-#define BOOST_WARN( P )                     BOOST_TEST_TOOL_IMPL( 2, (P), BOOST_TEST_TOOLS_STRINGIZE( P ), WARN, CHECK_PRED, _ )
-#define BOOST_CHECK( P )                    BOOST_TEST_TOOL_IMPL( 2, (P), BOOST_TEST_TOOLS_STRINGIZE( P ), CHECK, CHECK_PRED, _ )
-#define BOOST_REQUIRE( P )                  BOOST_TEST_TOOL_IMPL( 2, (P), BOOST_TEST_TOOLS_STRINGIZE( P ), REQUIRE, CHECK_PRED, _ )
+#define BOOST_CHECK_IMPL( P, check_descr, TL, CT )                  \
+do {                                                                \
+    BOOST_TEST_PASSPOINT();                                         \
+    BOOST_TEST_TOOL_IMPL( check_impl, P, check_descr, TL, CT ), 0 );\
+} while( ::boost::test_tools::dummy_cond )                          \
+/**/
 
 //____________________________________________________________________________//
 
-#define BOOST_WARN_MESSAGE( P, M )          BOOST_TEST_TOOL_IMPL( 2, (P), M, WARN, CHECK_MSG, _ )
-#define BOOST_CHECK_MESSAGE( P, M )         BOOST_TEST_TOOL_IMPL( 2, (P), M, CHECK, CHECK_MSG, _ )
-#define BOOST_REQUIRE_MESSAGE( P, M )       BOOST_TEST_TOOL_IMPL( 2, (P), M, REQUIRE, CHECK_MSG, _ )
+#define BOOST_TEST_PASS_ARG_INFO( r, data, arg ) , arg, BOOST_STRINGIZE( arg )
+
+#define BOOST_CHECK_WITH_ARGS_IMPL( P, check_descr, TL, CT, ARGS )  \
+do {                                                                \
+    BOOST_TEST_PASSPOINT();                                         \
+    BOOST_TEST_TOOL_IMPL( check_frwd, P, check_descr, TL, CT )      \
+    BOOST_PP_SEQ_FOR_EACH( BOOST_TEST_PASS_ARG_INFO, '_', ARGS ) ); \
+} while( ::boost::test_tools::dummy_cond )                          \
+/**/
+
+//____________________________________________________________________________//
+
+#define BOOST_WARN( P )                     BOOST_CHECK_IMPL( (P), BOOST_TEST_STRINGIZE( P ), WARN, CHECK_PRED )
+#define BOOST_CHECK( P )                    BOOST_CHECK_IMPL( (P), BOOST_TEST_STRINGIZE( P ), CHECK, CHECK_PRED )
+#define BOOST_REQUIRE( P )                  BOOST_CHECK_IMPL( (P), BOOST_TEST_STRINGIZE( P ), REQUIRE, CHECK_PRED )
+
+//____________________________________________________________________________//
+
+#define BOOST_WARN_MESSAGE( P, M )          BOOST_CHECK_IMPL( (P), M, WARN, CHECK_MSG )
+#define BOOST_CHECK_MESSAGE( P, M )         BOOST_CHECK_IMPL( (P), M, CHECK, CHECK_MSG )
+#define BOOST_REQUIRE_MESSAGE( P, M )       BOOST_CHECK_IMPL( (P), M, REQUIRE, CHECK_MSG )
 
 //____________________________________________________________________________//
 
@@ -139,10 +127,10 @@ do {                                                                    \
     try {                                                                                               \
         BOOST_TEST_PASSPOINT();                                                                         \
         S;                                                                                              \
-        BOOST_TEST_TOOL_IMPL( 2,false,"exception " BOOST_STRINGIZE(E) " is expected",TL,CHECK_MSG,_);  \
-    } catch( E const& ex ) {                                                                            \
+        BOOST_CHECK_IMPL( false, "exception " BOOST_STRINGIZE( E ) " is expected", TL, CHECK_MSG ); }   \
+    catch( E const& ex ) {                                                                              \
         ::boost::unit_test::ut_detail::ignore_unused_variable_warning( ex );                            \
-        BOOST_TEST_TOOL_IMPL( 2, P, prefix BOOST_STRINGIZE( E ) " is caught", TL, CHECK_MSG, _ );      \
+        BOOST_CHECK_IMPL( P, prefix BOOST_STRINGIZE( E ) " is caught", TL, CHECK_MSG );                 \
     }                                                                                                   \
 /**/
 
@@ -160,13 +148,13 @@ do {                                                                    \
 
 //____________________________________________________________________________//
 
-#define BOOST_CHECK_NO_THROW_IMPL( S, TL )                                                              \
-    try {                                                                                               \
-        S;                                                                                              \
-        BOOST_TEST_TOOL_IMPL( 2,true,"no exceptions thrown by " BOOST_STRINGIZE( S ),TL,CHECK_MSG,_);  \
-    } catch( ... ) {                                                                                    \
-        BOOST_TEST_TOOL_IMPL( 2,false,"exception thrown by " BOOST_STRINGIZE( S ), TL, CHECK_MSG, _ ); \
-    }                                                                                                   \
+#define BOOST_CHECK_NO_THROW_IMPL( S, TL )                                                          \
+    try {                                                                                           \
+        S;                                                                                          \
+        BOOST_CHECK_IMPL( true, "no exceptions thrown by " BOOST_STRINGIZE( S ), TL, CHECK_MSG ); } \
+    catch( ... ) {                                                                                  \
+        BOOST_CHECK_IMPL( false, "exception thrown by " BOOST_STRINGIZE( S ), TL, CHECK_MSG );      \
+    }                                                                                               \
 /**/
 
 #define BOOST_WARN_NO_THROW( S )            BOOST_CHECK_NO_THROW_IMPL( S, WARN )
@@ -175,121 +163,133 @@ do {                                                                    \
 
 //____________________________________________________________________________//
 
-#define BOOST_WARN_EQUAL( L, R )            BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::tt_detail::equal_impl_frwd(), "", WARN, CHECK_EQUAL, (L)(R) )
-#define BOOST_CHECK_EQUAL( L, R )           BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::tt_detail::equal_impl_frwd(), "", CHECK, CHECK_EQUAL, (L)(R) )
-#define BOOST_REQUIRE_EQUAL( L, R )         BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::tt_detail::equal_impl_frwd(), "", REQUIRE, CHECK_EQUAL, (L)(R) )
+#define BOOST_WARN_EQUAL( L, R ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::tt_detail::equal_impl_frwd(), "", WARN, CHECK_EQUAL, (L)(R) )
+#define BOOST_CHECK_EQUAL( L, R ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::tt_detail::equal_impl_frwd(), "", CHECK, CHECK_EQUAL, (L)(R) )
+#define BOOST_REQUIRE_EQUAL( L, R ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::tt_detail::equal_impl_frwd(), "", REQUIRE, CHECK_EQUAL, (L)(R) )
 
 //____________________________________________________________________________//
 
-#define BOOST_WARN_NE( L, R )               BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::tt_detail::ne_impl(), "", WARN, CHECK_NE, (L)(R) )
-#define BOOST_CHECK_NE( L, R )              BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::tt_detail::ne_impl(), "", CHECK, CHECK_NE, (L)(R) )
-#define BOOST_REQUIRE_NE( L, R )            BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::tt_detail::ne_impl(), "", REQUIRE, CHECK_NE, (L)(R) )
+#define BOOST_WARN_NE( L, R ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::tt_detail::ne_impl(), "", WARN, CHECK_NE, (L)(R) )
+#define BOOST_CHECK_NE( L, R ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::tt_detail::ne_impl(), "", CHECK, CHECK_NE, (L)(R) )
+#define BOOST_REQUIRE_NE( L, R ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::tt_detail::ne_impl(), "", REQUIRE, CHECK_NE, (L)(R) )
 
 //____________________________________________________________________________//
 
-#define BOOST_WARN_LT( L, R )               BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::tt_detail::lt_impl(), "", WARN, CHECK_LT, (L)(R) )
-#define BOOST_CHECK_LT( L, R )              BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::tt_detail::lt_impl(), "", CHECK, CHECK_LT, (L)(R) )
-#define BOOST_REQUIRE_LT( L, R )            BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::tt_detail::lt_impl(), "", REQUIRE, CHECK_LT, (L)(R) )
+#define BOOST_WARN_LT( L, R ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::tt_detail::lt_impl(), "", WARN, CHECK_LT, (L)(R) )
+#define BOOST_CHECK_LT( L, R ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::tt_detail::lt_impl(), "", CHECK, CHECK_LT, (L)(R) )
+#define BOOST_REQUIRE_LT( L, R ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::tt_detail::lt_impl(), "", REQUIRE, CHECK_LT, (L)(R) )
 
 //____________________________________________________________________________//
 
-#define BOOST_WARN_LE( L, R )               BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::tt_detail::le_impl(), "", WARN, CHECK_LE, (L)(R) )
-#define BOOST_CHECK_LE( L, R )              BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::tt_detail::le_impl(), "", CHECK, CHECK_LE, (L)(R) )
-#define BOOST_REQUIRE_LE( L, R )            BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::tt_detail::le_impl(), "", REQUIRE, CHECK_LE, (L)(R) )
+#define BOOST_WARN_LE( L, R ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::tt_detail::le_impl(), "", WARN, CHECK_LE, (L)(R) )
+#define BOOST_CHECK_LE( L, R ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::tt_detail::le_impl(), "", CHECK, CHECK_LE, (L)(R) )
+#define BOOST_REQUIRE_LE( L, R ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::tt_detail::le_impl(), "", REQUIRE, CHECK_LE, (L)(R) )
 
 //____________________________________________________________________________//
 
-#define BOOST_WARN_GT( L, R )               BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::tt_detail::gt_impl(), "", WARN, CHECK_GT, (L)(R) )
-#define BOOST_CHECK_GT( L, R )              BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::tt_detail::gt_impl(), "", CHECK, CHECK_GT, (L)(R) )
-#define BOOST_REQUIRE_GT( L, R )            BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::tt_detail::gt_impl(), "", REQUIRE, CHECK_GT, (L)(R) )
+#define BOOST_WARN_GT( L, R ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::tt_detail::gt_impl(), "", WARN, CHECK_GT, (L)(R) )
+#define BOOST_CHECK_GT( L, R ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::tt_detail::gt_impl(), "", CHECK, CHECK_GT, (L)(R) )
+#define BOOST_REQUIRE_GT( L, R ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::tt_detail::gt_impl(), "", REQUIRE, CHECK_GT, (L)(R) )
 
 //____________________________________________________________________________//
 
-#define BOOST_WARN_GE( L, R )               BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::tt_detail::ge_impl(), "", WARN, CHECK_GE, (L)(R) )
-#define BOOST_CHECK_GE( L, R )              BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::tt_detail::ge_impl(), "", CHECK, CHECK_GE, (L)(R) )
-#define BOOST_REQUIRE_GE( L, R )            BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::tt_detail::ge_impl(), "", REQUIRE, CHECK_GE, (L)(R) )
+#define BOOST_WARN_GE( L, R ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::tt_detail::ge_impl(), "", WARN, CHECK_GE, (L)(R) )
+#define BOOST_CHECK_GE( L, R ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::tt_detail::ge_impl(), "", CHECK, CHECK_GE, (L)(R) )
+#define BOOST_REQUIRE_GE( L, R ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::tt_detail::ge_impl(), "", REQUIRE, CHECK_GE, (L)(R) )
 
 //____________________________________________________________________________//
 
-#define BOOST_WARN_CLOSE( L, R, T )         BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::check_is_close, "", WARN, CHECK_CLOSE, (L)(R)(::boost::math::fpc::percent_tolerance(T)) )
-#define BOOST_CHECK_CLOSE( L, R, T )        BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::check_is_close, "", CHECK, CHECK_CLOSE, (L)(R)(::boost::math::fpc::percent_tolerance(T)) )
-#define BOOST_REQUIRE_CLOSE( L, R, T )      BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::check_is_close, "", REQUIRE, CHECK_CLOSE, (L)(R)(::boost::math::fpc::percent_tolerance(T)) )
+#define BOOST_WARN_CLOSE( L, R, T ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::check_is_close, "", WARN, CHECK_CLOSE, \
+        (L)(R)(::boost::test_tools::percent_tolerance(T)) )
+#define BOOST_CHECK_CLOSE( L, R, T ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::check_is_close, "", CHECK, CHECK_CLOSE, \
+        (L)(R)(::boost::test_tools::percent_tolerance(T)) )
+#define BOOST_REQUIRE_CLOSE( L, R, T ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::check_is_close, "", REQUIRE, CHECK_CLOSE, \
+        (L)(R)(::boost::test_tools::percent_tolerance(T)) )
 
 //____________________________________________________________________________//
 
-#define BOOST_WARN_CLOSE_FRACTION(L, R, T)  BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::check_is_close, "", WARN, CHECK_CLOSE_FRACTION, (L)(R)(T) )
-#define BOOST_CHECK_CLOSE_FRACTION(L, R, T) BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::check_is_close, "", CHECK, CHECK_CLOSE_FRACTION, (L)(R)(T) )
-#define BOOST_REQUIRE_CLOSE_FRACTION(L,R,T) BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::check_is_close, "", REQUIRE, CHECK_CLOSE_FRACTION, (L)(R)(T) )
+#define BOOST_WARN_CLOSE_FRACTION( L, R, T ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::check_is_close, "", WARN, CHECK_CLOSE_FRACTION, \
+    (L)(R)(::boost::test_tools::fraction_tolerance(T)) )
+#define BOOST_CHECK_CLOSE_FRACTION( L, R, T ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::check_is_close, "", CHECK, CHECK_CLOSE_FRACTION, \
+    (L)(R)(::boost::test_tools::fraction_tolerance(T)) )
+#define BOOST_REQUIRE_CLOSE_FRACTION( L, R, T ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::check_is_close, "", REQUIRE, CHECK_CLOSE_FRACTION, \
+    (L)(R)(::boost::test_tools::fraction_tolerance(T)) )
 
 //____________________________________________________________________________//
 
-#define BOOST_WARN_SMALL( FPV, T )          BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::check_is_small, "", WARN, CHECK_SMALL, (FPV)(T) )
-#define BOOST_CHECK_SMALL( FPV, T )         BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::check_is_small, "", CHECK, CHECK_SMALL, (FPV)(T) )
-#define BOOST_REQUIRE_SMALL( FPV, T )       BOOST_TEST_TOOL_IMPL( 0, \
-    ::boost::test_tools::check_is_small, "", REQUIRE, CHECK_SMALL, (FPV)(T) )
+#define BOOST_WARN_SMALL( FPV, T ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::check_is_small, "", WARN, CHECK_SMALL, (FPV)(T) )
+#define BOOST_CHECK_SMALL( FPV, T ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::check_is_small, "", CHECK, CHECK_SMALL, (FPV)(T) )
+#define BOOST_REQUIRE_SMALL( FPV, T ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( ::boost::test_tools::check_is_small, "", REQUIRE, CHECK_SMALL, (FPV)(T) )
 
 //____________________________________________________________________________//
 
-#define BOOST_WARN_PREDICATE( P, ARGS )     BOOST_TEST_TOOL_IMPL( 0, \
-    P, BOOST_TEST_TOOLS_STRINGIZE( P ), WARN, CHECK_PRED_WITH_ARGS, ARGS )
-#define BOOST_CHECK_PREDICATE( P, ARGS )    BOOST_TEST_TOOL_IMPL( 0, \
-    P, BOOST_TEST_TOOLS_STRINGIZE( P ), CHECK, CHECK_PRED_WITH_ARGS, ARGS )
-#define BOOST_REQUIRE_PREDICATE( P, ARGS )  BOOST_TEST_TOOL_IMPL( 0, \
-    P, BOOST_TEST_TOOLS_STRINGIZE( P ), REQUIRE, CHECK_PRED_WITH_ARGS, ARGS )
+#define BOOST_WARN_PREDICATE( P, ARGS ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( P, BOOST_TEST_STRINGIZE( P ), WARN, CHECK_PRED_WITH_ARGS, ARGS )
+#define BOOST_CHECK_PREDICATE( P, ARGS ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( P, BOOST_TEST_STRINGIZE( P ), CHECK, CHECK_PRED_WITH_ARGS, ARGS )
+#define BOOST_REQUIRE_PREDICATE( P, ARGS ) \
+    BOOST_CHECK_WITH_ARGS_IMPL( P, BOOST_TEST_STRINGIZE( P ), REQUIRE, CHECK_PRED_WITH_ARGS, ARGS )
 
 //____________________________________________________________________________//
+
+#define BOOST_EQUAL_COLLECTIONS_IMPL( L_begin, L_end, R_begin, R_end, TL )      \
+    BOOST_TEST_TOOL_IMPL( check_impl, ::boost::test_tools::tt_detail::equal_coll_impl( \
+        (L_begin), (L_end), (R_begin), (R_end) ), "", TL, CHECK_EQUAL_COLL ),   \
+    4,                                                                          \
+    BOOST_STRINGIZE( L_begin ), BOOST_STRINGIZE( L_end ),                       \
+    BOOST_STRINGIZE( R_begin ), BOOST_STRINGIZE( R_end ) )                      \
+/**/
 
 #define BOOST_WARN_EQUAL_COLLECTIONS( L_begin, L_end, R_begin, R_end )          \
-    BOOST_TEST_TOOL_IMPL( 1, ::boost::test_tools::tt_detail::equal_coll_impl(), \
-        "", WARN, CHECK_EQUAL_COLL, (L_begin)(L_end)(R_begin)(R_end) )          \
-/**/
+    BOOST_EQUAL_COLLECTIONS_IMPL( L_begin, L_end, R_begin, R_end, WARN )
 #define BOOST_CHECK_EQUAL_COLLECTIONS( L_begin, L_end, R_begin, R_end )         \
-    BOOST_TEST_TOOL_IMPL( 1, ::boost::test_tools::tt_detail::equal_coll_impl(), \
-        "", CHECK, CHECK_EQUAL_COLL, (L_begin)(L_end)(R_begin)(R_end) )         \
-/**/
+    BOOST_EQUAL_COLLECTIONS_IMPL( L_begin, L_end, R_begin, R_end, CHECK )
 #define BOOST_REQUIRE_EQUAL_COLLECTIONS( L_begin, L_end, R_begin, R_end )       \
-    BOOST_TEST_TOOL_IMPL( 1, ::boost::test_tools::tt_detail::equal_coll_impl(), \
-        "", REQUIRE, CHECK_EQUAL_COLL, (L_begin)(L_end)(R_begin)(R_end) )       \
+    BOOST_EQUAL_COLLECTIONS_IMPL( L_begin, L_end, R_begin, R_end, REQUIRE )
+
+//____________________________________________________________________________//
+
+#define BOOST_BITWISE_EQUAL_IMPL( L, R, TL )                                    \
+    BOOST_TEST_TOOL_IMPL( check_impl,                                           \
+      ::boost::test_tools::tt_detail::bitwise_equal_impl( (L), (R) ),           \
+      "", TL, CHECK_BITWISE_EQUAL ),                                            \
+    2, BOOST_STRINGIZE( L ), BOOST_STRINGIZE( R ) )                             \
 /**/
 
-//____________________________________________________________________________//
-
-#define BOOST_WARN_BITWISE_EQUAL( L, R )    BOOST_TEST_TOOL_IMPL( 1, \
-    ::boost::test_tools::tt_detail::bitwise_equal_impl(), "", WARN, CHECK_BITWISE_EQUAL, (L)(R) )
-#define BOOST_CHECK_BITWISE_EQUAL( L, R )   BOOST_TEST_TOOL_IMPL( 1, \
-    ::boost::test_tools::tt_detail::bitwise_equal_impl(), "", CHECK, CHECK_BITWISE_EQUAL, (L)(R) )
-#define BOOST_REQUIRE_BITWISE_EQUAL( L, R ) BOOST_TEST_TOOL_IMPL( 1, \
-    ::boost::test_tools::tt_detail::bitwise_equal_impl(), "", REQUIRE, CHECK_BITWISE_EQUAL, (L)(R) )
+#define BOOST_WARN_BITWISE_EQUAL( L, R )    BOOST_BITWISE_EQUAL_IMPL( L, R, WARN )
+#define BOOST_CHECK_BITWISE_EQUAL( L, R )   BOOST_BITWISE_EQUAL_IMPL( L, R, CHECK )
+#define BOOST_REQUIRE_BITWISE_EQUAL( L, R ) BOOST_BITWISE_EQUAL_IMPL( L, R, REQUIRE )
 
 //____________________________________________________________________________//
 
-#define BOOST_IS_DEFINED( symb ) ::boost::test_tools::tt_detail::is_defined_impl( #symb, BOOST_STRINGIZE(= symb) )
+#define BOOST_IS_DEFINED( symb )            ::boost::test_tools::tt_detail::is_defined_impl( #symb, BOOST_STRINGIZE(= symb) )
 
 //____________________________________________________________________________//
 
@@ -476,18 +476,14 @@ operator<<( std::ostream& ostr, print_helper_t<T> const& ph )
 // ************************************************************************** //
 
 BOOST_TEST_DECL 
-bool check_impl( predicate_result const& pr, ::boost::unit_test::lazy_ostream const& assertion_descr,
+bool check_impl( predicate_result const& pr, ::boost::unit_test::lazy_ostream const& check_descr,
                  const_string file_name, std::size_t line_num,
                  tool_level tl, check_type ct,
                  std::size_t num_args, ... );
 
 //____________________________________________________________________________//
-// This function adds level of indirection, but it makes sure we evaluate predicate 
-// arguments only once
 
-#ifndef BOOST_TEST_PROD
 #define TEMPL_PARAMS( z, m, dummy ) , typename BOOST_JOIN( Arg, m )
-
 #define FUNC_PARAMS( z, m, dummy )                                                  \
  , BOOST_JOIN( Arg, m ) const& BOOST_JOIN( arg, m )                                 \
  , char const* BOOST_JOIN( BOOST_JOIN( arg, m ), _descr )                           \
@@ -505,7 +501,7 @@ bool check_impl( predicate_result const& pr, ::boost::unit_test::lazy_ostream co
 template<typename Pred                                                              \
          BOOST_PP_REPEAT_ ## z( BOOST_PP_ADD( n, 1 ), TEMPL_PARAMS, _ )>            \
 inline bool                                                                         \
-check_frwd( Pred P, unit_test::lazy_ostream const& assertion_descr,                 \
+check_frwd( Pred P, unit_test::lazy_ostream const& check_descr,                     \
             const_string file_name, std::size_t line_num,                           \
             tool_level tl, check_type ct                                            \
             BOOST_PP_REPEAT_ ## z( BOOST_PP_ADD( n, 1 ), FUNC_PARAMS, _ )           \
@@ -513,7 +509,7 @@ check_frwd( Pred P, unit_test::lazy_ostream const& assertion_descr,             
 {                                                                                   \
     return                                                                          \
     check_impl( P( BOOST_PP_REPEAT_ ## z( BOOST_PP_ADD( n, 1 ), PRED_PARAMS, _ ) ), \
-                assertion_descr, file_name, line_num, tl, ct,                       \
+                check_descr, file_name, line_num, tl, ct,                           \
                 BOOST_PP_ADD( n, 1 )                                                \
                 BOOST_PP_REPEAT_ ## z( BOOST_PP_ADD( n, 1 ), ARG_INFO, _ )          \
     );                                                                              \
@@ -531,8 +527,6 @@ BOOST_PP_REPEAT( BOOST_TEST_MAX_PREDICATE_ARITY, IMPL_FRWD, _ )
 #undef PRED_INFO
 #undef ARG_INFO
 #undef IMPL_FRWD
-
-#endif
 
 //____________________________________________________________________________//
 
@@ -634,77 +628,75 @@ struct ge_impl {
 
 //____________________________________________________________________________//
 
-struct equal_coll_impl {
-    template <typename Left, typename Right>
-    predicate_result operator()( Left left_begin, Left left_end, Right right_begin, Right right_end )
-    {
-        predicate_result    pr( true );
-        std::size_t         pos = 0;
+template <typename Left, typename Right>
+inline predicate_result
+equal_coll_impl( Left left_begin, Left left_end, Right right_begin, Right right_end )
+{
+    predicate_result    res( true );
+    std::size_t         pos = 0;
 
-        for( ; left_begin != left_end && right_begin != right_end; ++left_begin, ++right_begin, ++pos ) {
-            if( *left_begin != *right_begin ) {
-                pr = false;
-                pr.message() << "\nMismatch in a position " << pos << ": "  << *left_begin << " != " << *right_begin;
-            }
+    for( ; left_begin != left_end && right_begin != right_end; ++left_begin, ++right_begin, ++pos ) {
+        if( *left_begin != *right_begin ) {
+            res = false;
+            res.message() << "\nMismatch in a position " << pos << ": "  << *left_begin << " != " << *right_begin;
         }
-
-        if( left_begin != left_end ) {
-            std::size_t r_size = pos;
-            while( left_begin != left_end ) {
-                ++pos;
-                ++left_begin;
-            }
-
-            pr = false;
-            pr.message() << "\nCollections size mismatch: " << pos << " != " << r_size;
-        }
-
-        if( right_begin != right_end ) {
-            std::size_t l_size = pos;
-            while( right_begin != right_end ) {
-                ++pos;
-                ++right_begin;
-            }
-
-            pr = false;
-            pr.message() << "\nCollections size mismatch: " << l_size << " != " << pos;
-        }
-
-        return pr;
     }
-};
+
+    if( left_begin != left_end ) {
+        std::size_t r_size = pos;
+        while( left_begin != left_end ) {
+            ++pos;
+            ++left_begin;
+        }
+
+        res = false;
+        res.message() << "\nCollections size mismatch: " << pos << " != " << r_size;
+    }
+
+    if( right_begin != right_end ) {
+        std::size_t l_size = pos;
+        while( right_begin != right_end ) {
+            ++pos;
+            ++right_begin;
+        }
+
+        res = false;
+        res.message() << "\nCollections size mismatch: " << l_size << " != " << pos;
+    }
+
+    return res;
+}
 
 //____________________________________________________________________________//
 
-struct bitwise_equal_impl {
-    template <class Left, class Right>
-    predicate_result    operator()( Left const& left, Right const& right )
-    {
-        predicate_result    pr( true );
+template <class Left, class Right>
+inline predicate_result
+bitwise_equal_impl( Left const& left, Right const& right )
+{
+    predicate_result    res( true );
 
-        std::size_t left_bit_size  = sizeof(Left)*CHAR_BIT;
-        std::size_t right_bit_size = sizeof(Right)*CHAR_BIT;
+    std::size_t left_bit_size  = sizeof(Left)*CHAR_BIT;
+    std::size_t right_bit_size = sizeof(Right)*CHAR_BIT;
 
-        static Left const leftOne( 1 );
-        static Right const rightOne( 1 );
+    static Left const leftOne( 1 );
+    static Right const rightOne( 1 );
 
-        std::size_t total_bits = left_bit_size < right_bit_size ? left_bit_size : right_bit_size;
+    std::size_t total_bits = left_bit_size < right_bit_size ? left_bit_size : right_bit_size;
 
-        for( std::size_t counter = 0; counter < total_bits; ++counter ) {
-            if( ( left & ( leftOne << counter ) ) != ( right & ( rightOne << counter ) ) ) {
-                pr = false;
-                pr.message() << "\nMismatch in a position " << counter;
-            }
+    for( std::size_t counter = 0; counter < total_bits; ++counter ) {
+        if( ( left & ( leftOne << counter ) ) != ( right & ( rightOne << counter ) ) ) {
+            res = false;
+            res.message() << "\nMismatch in a position " << counter;
         }
-
-        if( left_bit_size != right_bit_size ) {
-            pr = false;
-            pr.message() << "\nOperands bit sizes mismatch: " << left_bit_size << " != " << right_bit_size;
-        }
-
-        return pr;
     }
-};
+
+    if( left_bit_size != right_bit_size ) {
+        res = false;
+        res.message() << "\nOperands bit sizes mismatch: " << left_bit_size << " != " << right_bit_size;
+    }
+
+    return res;
+}
 
 //____________________________________________________________________________//
 

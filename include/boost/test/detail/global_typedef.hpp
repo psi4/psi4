@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2001-2010.
+//  (C) Copyright Gennadiy Rozental 2001-2008.
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at 
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,7 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 62016 $
+//  Version     : $Revision: 54633 $
 //
 //  Description : some trivial global typedefs
 // ***************************************************************************
@@ -19,13 +19,6 @@
 #define BOOST_TEST_L( s )         boost::unit_test::const_string( s, sizeof( s ) - 1 )
 #define BOOST_TEST_STRINGIZE( s ) BOOST_TEST_L( BOOST_STRINGIZE( s ) )
 #define BOOST_TEST_EMPTY_STRING   BOOST_TEST_L( "" )
-
-#define BOOST_TEST_SCOPE_SETCOLOR( os, attr, color )            \
-    scope_setcolor const& sc = runtime_config::color_output()   \
-           ? scope_setcolor( os, attr, color )                  \
-           : scope_setcolor();                                  \
-    ut_detail::ignore_unused_variable_warning( sc )             \
-/**/
 
 #include <boost/test/detail/suppress_warnings.hpp>
 
