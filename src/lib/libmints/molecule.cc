@@ -225,6 +225,8 @@ Molecule::Molecule():
     units_(Angstrom),
     inputUnitsToAU_(0.0),
     fix_orientation_(false),
+    chargeSpecified_(false),
+    multiplicitySpecified_(false),
     name_("default")
 {
 }
@@ -254,6 +256,8 @@ Molecule& Molecule::operator=(const Molecule& other)
     allVariables_           = other.allVariables_;
     fragmentTypes_          = other.fragmentTypes_;
     geometryVariables_      = other.geometryVariables_;
+    chargeSpecified_        = other.chargeSpecified_;
+    multiplicitySpecified_  = other.multiplicitySpecified_;
     
     // These are symmetry related variables, and are filled in by the following funtions
     pg_             = shared_ptr<PointGroup>();
@@ -826,6 +830,10 @@ void Molecule::init_with_chkpt(shared_ptr<Chkpt> chkpt)
 
     int natoms = 0;
     double *zvals, **geom;
+    molecularCharge_       = Process::environment.options.get_int("CHARGE");
+    chargeSpecified_       = Process::environment.options["CHARGE"].has_changed();
+    multiplicity_          = Process::environment.options.get_int("MULTP");
+    multiplicitySpecified_ = Process::environment.options["MULTP"].has_changed();
 
     if(Communicator::world->me() == 0) {
         natoms = chkpt->rd_natom();
@@ -981,7 +989,9 @@ Molecule::create_molecule_from_string(const std::string &text)
     }
 
     mol->molecularCharge_ = Process::environment.options.get_int("CHARGE");
+    mol->chargeSpecified_ = Process::environment.options["CHARGE"].has_changed();
     mol->multiplicity_ = Process::environment.options.get_int("MULTP");
+    mol->multiplicitySpecified_ = Process::environment.options["MULTP"].has_changed();
 
     /*
      * Time to look for lines that look like they describe charge and multiplicity,
@@ -1027,8 +1037,10 @@ Molecule::create_molecule_from_string(const std::string &text)
             if(lineNumber && !regex_match(lines[lineNumber-1], reMatches, fragmentMarker_)) {
                 // As long as this does not follow a "--", it's a global charge/multiplicity
                 // specifier, so we process it, then nuke it
-                mol->molecularCharge_ = tempCharge;
-                mol->multiplicity_    = tempMultiplicity;
+                mol->molecularCharge_       = tempCharge;
+                mol->chargeSpecified_       = true;
+                mol->multiplicity_          = tempMultiplicity;
+                mol->multiplicitySpecified_ = true;
                 lines.erase(lines.begin() + lineNumber);
             }
         }

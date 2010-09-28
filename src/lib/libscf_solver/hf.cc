@@ -116,18 +116,19 @@ void HF::common_init()
     natom_ = molecule_->natom();
 
     // Determine the number of electrons in the system
-    charge_ = options_.get_int("CHARGE");
+    charge_ = molecule_->molecular_charge();
     nElec_  = 0;
     for (int i=0; i<natom_; ++i)
         nElec_ += (int)molecule_->Z(i);
     nElec_ -= charge_;
 
     // If the user told us the multiplicity, read it from the input
-    if(options_["MULTP"].has_changed()){
-        multiplicity_ = options_.get_int("MULTP");
+    if(molecule_->multiplicitySpecified()){
+        multiplicity_ = molecule_->multiplicity();
     }else{
         if(nElec_%2){
             multiplicity_ = 2;
+            molecule_->set_multiplicity(2);
             // There are an odd number of electrons
             fprintf(outfile,"\tThere are an odd number of electrons - assuming doublet.\n"
                             "\tSpecify the multiplicity with the MULTP option in the\n"
@@ -140,6 +141,7 @@ void HF::common_init()
                             "\tinput if this is incorrect\n\n");
         }
     }
+
     // Make sure that the multiplicity is reasonable
     if(multiplicity_ - 1 > nElec_){
         char *str = new char[100];
