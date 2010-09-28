@@ -16,7 +16,8 @@ PSILIBS = \
 -lPSI_functional -lPSI_mints_deriv -lPSI_optking \
 -lPSI_mints -lPSI_trans -lPSI_dpd -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_qt \
 -lPSI_ciomr -lPSI_ipv1 -lPSI_options -lPSI_util -lPSI_moinfo \
--lPSI_deriv -lPSI_int -lPSI_util -lPSI_diis -lPSI_parallel -lboost_python -lboost_regex -lboost_thread
+-lPSI_deriv -lPSI_int -lPSI_util -lPSI_diis -lPSI_parallel -lboost_python -lboost_regex -lboost_thread \
+-lboost_filesystem
 
 CXXSRC = read_atom_basis.cc \
 read_atom_basis.cc set_memory.cc \

@@ -839,6 +839,7 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libboost_python/Makefile
           src/lib/libboost_regex/Makefile
           src/lib/libboost_thread/Makefile
+          src/lib/libboost_filesystem/Makefile
           src/lib/libsapt_solver/Makefile
           src/lib/libfunctional/Makefile
  
