@@ -1,0 +1,29 @@
+
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+PSITARGET = $(top_objdir)/lib/libboost_filesystem.a
+
+TRUECXXSRC = \
+codecvt_error_category.cc \
+operations.cc \
+path.cc \
+path_traits.cc \
+portability.cc \
+unique_path.cc \
+utf8_codecvt_facet.cc \
+windows_file_codecvt.cc
+
+LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+install_inc:: $(DEPENDINCLUDE)
+	$(MKDIRS) $(DESTDIR)$(incdir)/libboost_filesystem
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libboost_filesystem
+
+ifneq ($(DODEPEND),no)
+include $(LIBOBJ:%.o=%.d)
+endif
