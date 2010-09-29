@@ -129,6 +129,7 @@ const Vector3& ZMatrixEntry::compute()
             coordinates_[1] = 0.0;
             coordinates_[2] = rto_->compute()[2] - r*cos(a);
         }
+//TODO generalize this, for general orientations of the first two atoms - this is all that's missing for any zmat/cart combination in geometries
     }else{
         double r = rval_->compute();
         double a = aval_->compute() * M_PI/180.0;
