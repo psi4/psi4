@@ -1096,24 +1096,7 @@ Molecule::create_molecule_from_string(const std::string &text)
 
     if(!lines.size()) throw PSIEXCEPTION("No geometry specified");
 
-    // For now, we can count the entries on the first line to determine the type
     std::vector<std::string> splitLine;
-    // Trim leading and trailing whitespace
-    boost::algorithm::trim(lines[0]);
-    boost::split(splitLine, lines[0], boost::is_any_of("\t ,"),token_compress_on);
-
-    GeometryFormat geometryFormat;
-    if(splitLine.size() == 4) {
-        geometryFormat = Cartesian;
-    }
-    else if(splitLine.size() == 1) {
-        geometryFormat = ZMatrix;
-    }
-    else {
-        throw PSIEXCEPTION("Illegal geometry specification line : " + lines[0] +
-                       ".  You should provide either Z-Matrix or Cartesian input");
-    }
-
     Element_to_Z zVals;
     zVals.load_values();
     int currentAtom = 0, rTo, aTo, dTo;
@@ -1126,6 +1109,7 @@ Molecule::create_molecule_from_string(const std::string &text)
         boost::algorithm::trim(*line);
         boost::split(splitLine, *line, boost::is_any_of("\t ,"),token_compress_on);
         atoms.push_back(splitLine[0]);
+        int numEntries = splitLine.size();
 
         // Check that the atom symbol is valid
         if(!regex_match(splitLine[0], reMatches, atomSymbol_))
@@ -1133,92 +1117,77 @@ Molecule::create_molecule_from_string(const std::string &text)
                                + " on line\n" + *(line));
         atomSym = boost::to_upper_copy(reMatches[1].str());
 
-        if(geometryFormat == Cartesian){
-            if(splitLine.size() != 4){
-                throw PSIEXCEPTION("Incorrect number of entries in geometry specification :" + *line);
-            }
+        if(numEntries == 4){
+            // This is a Cartesian entry
             shared_ptr<CoordValue> xval(mol->get_coord_value(splitLine[1]));
             shared_ptr<CoordValue> yval(mol->get_coord_value(splitLine[2]));
             shared_ptr<CoordValue> zval(mol->get_coord_value(splitLine[3]));
             mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new CartesianEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
                                                                                  atomic_masses[(int)zVals[atomSym]], atomSym,
                                                                                  xval, yval, zval)));
-        }else if(geometryFormat == ZMatrix){
-            if(currentAtom == 0){
-                // This is the first line
-                if(splitLine.size() != 1) {
-                    throw PSIEXCEPTION("Incorrect number of entries in geometry specification :" + *line);
-                }
-
-                mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
+        }else if(numEntries == 1){
+            // This is the first line of a Z-Matrix
+            mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
                                                                                    atomic_masses[(int)zVals[atomSym]], atomSym)));
-            }else if(currentAtom == 1){
-                // This is the second line
-                if(splitLine.size() != 3){
-                    throw PSIEXCEPTION("Incorrect number of entries in geometry specification :" + *line);
-                }
-                rTo = get_anchor_atom(splitLine[1], atoms, *line);
-                if(rTo >= currentAtom)
-                     throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
-                                         + splitLine[1] + " has not been defined yet.");
-                shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
-                mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], 0,
-                                                                                   atomic_masses[(int)zVals[atomSym]], atomSym,
-                                                                                   mol->full_atoms_[rTo], rval)));
-            }else if(currentAtom == 2){
-                // This is the third line
-                if(splitLine.size() != 5) {
-                    throw PSIEXCEPTION("Incorrect number of entries in geometry specification :" + *line);
-                }
-                rTo = get_anchor_atom(splitLine[1], atoms, *line);
-                if(rTo >= currentAtom)
-                     throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
-                                         + splitLine[1] + " has not been defined yet.");
-                aTo = get_anchor_atom(splitLine[3], atoms, *line);
-                if(aTo >= currentAtom)
-                     throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
-                                         + splitLine[3] + " has not been defined yet.");
-                if(aTo == rTo)
-                     throw PSIEXCEPTION("Atom used multiple times on line " + *line);
-                shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
-                shared_ptr<CoordValue> aval(mol->get_coord_value(splitLine[4]));
-                mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
-                                                                                   atomic_masses[(int)zVals[atomSym]], atomSym,
-                                                                                   mol->full_atoms_[rTo], rval, mol->full_atoms_[aTo], aval)));
-            }else{
-                // This is line 4 onwards
-                if(splitLine.size() != 7){
-                    throw PSIEXCEPTION("Incorrect number of entries in geometry specification :" + *line);
-                }
-                rTo = get_anchor_atom(splitLine[1], atoms, *line);
-                if(rTo >= currentAtom)
-                     throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
-                                         + splitLine[1] + " has not been defined yet.");
-                aTo = get_anchor_atom(splitLine[3], atoms, *line);
-                if(aTo >= currentAtom)
-                     throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
-                                         + splitLine[3] + " has not been defined yet.");
-                dTo = get_anchor_atom(splitLine[5], atoms, *line);
-                if(dTo >= currentAtom)
-                     throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
-                                         + splitLine[5] + " has not been defined yet.");
-                if(aTo == rTo || rTo == dTo /* for you star wars fans */ || aTo == dTo)
-                     throw PSIEXCEPTION("Atom used multiple times on line " + *line);
+        }else if(numEntries == 3){
+            // This is the second line of a Z-Matrix
+            rTo = get_anchor_atom(splitLine[1], atoms, *line);
+            if(rTo >= currentAtom)
+                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
+                                     + splitLine[1] + " has not been defined yet.");
+            shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
+            mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], 0,
+                                                                               atomic_masses[(int)zVals[atomSym]], atomSym,
+                                                                               mol->full_atoms_[rTo], rval)));
+        }else if(numEntries == 5){
+            // This is the third line of a Z-Matrix
+            rTo = get_anchor_atom(splitLine[1], atoms, *line);
+            if(rTo >= currentAtom)
+                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
+                                     + splitLine[1] + " has not been defined yet.");
+            aTo = get_anchor_atom(splitLine[3], atoms, *line);
+            if(aTo >= currentAtom)
+                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
+                                     + splitLine[3] + " has not been defined yet.");
+            if(aTo == rTo)
+                 throw PSIEXCEPTION("Atom used multiple times on line " + *line);
+            shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
+            shared_ptr<CoordValue> aval(mol->get_coord_value(splitLine[4]));
+            mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
+                                                                               atomic_masses[(int)zVals[atomSym]], atomSym,
+                                                                               mol->full_atoms_[rTo], rval, mol->full_atoms_[aTo], aval)));
+        }else if(numEntries == 7){
+            // This is line 4 onwards of a Z-Matrix
+            rTo = get_anchor_atom(splitLine[1], atoms, *line);
+            if(rTo >= currentAtom)
+                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
+                                     + splitLine[1] + " has not been defined yet.");
+            aTo = get_anchor_atom(splitLine[3], atoms, *line);
+            if(aTo >= currentAtom)
+                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
+                                     + splitLine[3] + " has not been defined yet.");
+            dTo = get_anchor_atom(splitLine[5], atoms, *line);
+            if(dTo >= currentAtom)
+                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
+                                     + splitLine[5] + " has not been defined yet.");
+            if(aTo == rTo || rTo == dTo /* for you star wars fans */ || aTo == dTo)
+                 throw PSIEXCEPTION("Atom used multiple times on line " + *line);
 
-                int zval = (int)zVals[atomSym];
-                shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
-                shared_ptr<CoordValue> aval(mol->get_coord_value(splitLine[4]));
-                shared_ptr<CoordValue> dval(mol->get_coord_value(splitLine[6]));
-                mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
-                                                                                   atomic_masses[(int)zVals[atomSym]], atomSym,
-                                                                                   mol->full_atoms_[rTo], rval, mol->full_atoms_[aTo],
-                                                                                   aval, mol->full_atoms_[dTo], dval)));
-            }
+            int zval = (int)zVals[atomSym];
+            shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
+            shared_ptr<CoordValue> aval(mol->get_coord_value(splitLine[4]));
+            shared_ptr<CoordValue> dval(mol->get_coord_value(splitLine[6]));
+            mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
+                                                                               atomic_masses[(int)zVals[atomSym]], atomSym,
+                                                                               mol->full_atoms_[rTo], rval, mol->full_atoms_[aTo],
+                                                                               aval, mol->full_atoms_[dTo], dval)));
+        } else {
+            throw PSIEXCEPTION("Illegal geometry specification line : " + lines[0] +
+                           ".  You should provide either Z-Matrix or Cartesian input");
         }
         ++currentAtom;
     }
     return mol;
-    Molecule test(*mol);
 }
 
 /**
