@@ -1185,40 +1185,42 @@ bool Matrix::load(shared_ptr<psi::PSIO> psio, unsigned int fileno, char *tocentr
 
 void Matrix::save(psi::PSIO* psio, unsigned int fileno, bool saveSubBlocks)
 {
-    // Check to see if the file is open
-    bool already_open = false;
-    if (psio->open_check(fileno)) {
-        already_open = true;
-    } else {
-        psio->open(fileno, PSIO_OPEN_OLD);
-    }
-
-    if (saveSubBlocks) {
-        for (int h=0; h<nirreps_; ++h) {
-            std::string str(name_);
-            str += " Irrep " + to_string(h);
-
-            // Write the sub-blocks
-            if (colspi_[h] > 0 && rowspi_[h] > 0)
-                psio->write_entry(fileno, const_cast<char*>(str.c_str()), (char*)matrix_[h][0], sizeof(double) * colspi_[h] * rowspi_[h]);
-        }
-    } else {
-        double **fullblock = to_block_matrix();
-        // Need to know the size
-        int sizer=0, sizec=0;
-        for (int h=0; h<nirreps_; ++h) {
-            sizer += rowspi_[h];
-            sizec += colspi_[h];
+    if(Communicator::world->me == 0) {
+        // Check to see if the file is open
+        bool already_open = false;
+        if (psio->open_check(fileno)) {
+            already_open = true;
+        } else {
+            psio->open(fileno, PSIO_OPEN_OLD);
         }
 
-        // Write the full block
-        if (sizer > 0 && sizec > 0)
-            psio->write_entry(fileno, const_cast<char*>(name_.c_str()), (char*)fullblock[0], sizeof(double) * sizer * sizec);
-        Matrix::free(fullblock);
-    }
+        if (saveSubBlocks) {
+            for (int h=0; h<nirreps_; ++h) {
+                std::string str(name_);
+                str += " Irrep " + to_string(h);
 
-    if (!already_open)
-        psio->close(fileno, 1);     // Close and keep
+                // Write the sub-blocks
+                if (colspi_[h] > 0 && rowspi_[h] > 0)
+                    psio->write_entry(fileno, const_cast<char*>(str.c_str()), (char*)matrix_[h][0], sizeof(double) * colspi_[h] * rowspi_[h]);
+            }
+        } else {
+            double **fullblock = to_block_matrix();
+            // Need to know the size
+            int sizer=0, sizec=0;
+            for (int h=0; h<nirreps_; ++h) {
+                sizer += rowspi_[h];
+                sizec += colspi_[h];
+            }
+
+            // Write the full block
+            if (sizer > 0 && sizec > 0)
+                psio->write_entry(fileno, const_cast<char*>(name_.c_str()), (char*)fullblock[0], sizeof(double) * sizer * sizec);
+            Matrix::free(fullblock);
+        }
+
+        if (!already_open)
+            psio->close(fileno, 1);     // Close and keep
+    }
 }
 
 void Matrix::save(shared_ptr<psi::PSIO> psio, unsigned int fileno, bool saveSubBlocks)
@@ -1762,18 +1764,20 @@ void SimpleMatrix::diagonalize(shared_ptr<SimpleMatrix> eigvectors, shared_ptr<S
 
 void SimpleMatrix::save(psi::PSIO* psio, unsigned int fileno)
 {
-    // Check to see if the file is open
-    bool already_open = false;
-    if (psio->open_check(fileno)) {
-        already_open = true;
-    } else {
-        psio->open(fileno, PSIO_OPEN_OLD);
+    if(Communicator::world->me() == 0) {
+        // Check to see if the file is open
+        bool already_open = false;
+        if (psio->open_check(fileno)) {
+            already_open = true;
+        } else {
+            psio->open(fileno, PSIO_OPEN_OLD);
+        }
+
+        psio->write_entry(fileno, const_cast<char*>(name_.c_str()), (char*)matrix_[0], sizeof(double) * rows_ * cols_);
+
+        if (!already_open)
+            psio->close(fileno, 1);     // Close and keep
     }
-
-    psio->write_entry(fileno, const_cast<char*>(name_.c_str()), (char*)matrix_[0], sizeof(double) * rows_ * cols_);
-
-    if (!already_open)
-        psio->close(fileno, 1);     // Close and keep
 }
 
 void SimpleMatrix::load(shared_ptr<psi::PSIO> psio, unsigned int fileno)

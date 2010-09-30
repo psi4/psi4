@@ -141,6 +141,7 @@ double RHF::compute_energy()
     timer_on("Core Hamiltonian");
     form_H(); //Core Hamiltonian
     timer_off("Core Hamiltonian");
+
     timer_on("Overlap Matrix");
     form_Shalf(); //Shalf Matrix
     timer_off("Overlap Matrix");
