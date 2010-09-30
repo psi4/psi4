@@ -134,6 +134,8 @@ void SAPT::get_params()
       workflow_.t_bsar = 0;
       workflow_.gt_ar_arbs = 0;
       workflow_.gt_bs_arbs = 0;
+      workflow_.Y3_ar = 0;
+      workflow_.Y3_bs = 0;
     }
     else if (options_.get_str("SAPT_LEVEL") == "SAPT_DFT") {
       workflow_.W_ov = 1;
@@ -165,6 +167,8 @@ void SAPT::get_params()
       workflow_.t_bsar = 0;
       workflow_.gt_ar_arbs = 0;
       workflow_.gt_bs_arbs = 0;
+      workflow_.Y3_ar = 0;
+      workflow_.Y3_bs = 0;
     }
     else if (options_.get_str("SAPT_LEVEL") == "SAPT2") {
       workflow_.W_ov = 1;
@@ -196,6 +200,8 @@ void SAPT::get_params()
       workflow_.t_bsar = 0;
       workflow_.gt_ar_arbs = 0;
       workflow_.gt_bs_arbs = 0;
+      workflow_.Y3_ar = 0;
+      workflow_.Y3_bs = 0;
     }
     else if (options_.get_str("SAPT_LEVEL") == "SAPT2+") {
       workflow_.W_ov = 1;
@@ -227,8 +233,41 @@ void SAPT::get_params()
       workflow_.t_bsar = 1;
       workflow_.gt_ar_arbs = 1;
       workflow_.gt_bs_arbs = 1;
+      workflow_.Y3_ar = 0;
+      workflow_.Y3_bs = 0;
     }
     else if (options_.get_str("SAPT_LEVEL") == "SAPT2+3") {
+      workflow_.W_ov = 1;
+      workflow_.W_oo = 1;
+      workflow_.W_vv = 1;
+      workflow_.save_s = 1;
+      workflow_.save_chf = 1;
+      workflow_.save_Jmhalf = 0;
+      workflow_.t_arar = 1;
+      workflow_.theta_arar = 1;
+      workflow_.t_bsbs = 1;
+      workflow_.theta_bsbs = 1;
+      workflow_.Y2_ar = 1;
+      workflow_.Y2_bs = 1;
+      workflow_.t_ar = 1;
+      workflow_.t_bs = 1;
+      workflow_.mp2_opdm = 1;
+      workflow_.theta_ar_ar = 1;
+      workflow_.theta_bs_bs = 1;
+      workflow_.t2_arar = 1;
+      workflow_.theta2_arar = 1;
+      workflow_.t2_bsbs = 1;
+      workflow_.theta2_bsbs = 1;
+      workflow_.theta2_ar_ar = 1;
+      workflow_.theta2_bs_bs = 1;
+      workflow_.g_arar = 1;
+      workflow_.g_bsbs = 1;
+      workflow_.t_arbs = 1;
+      workflow_.t_bsar = 1;
+      workflow_.gt_ar_arbs = 1;
+      workflow_.gt_bs_arbs = 1;
+      workflow_.Y3_ar = 1;
+      workflow_.Y3_bs = 1;
     }
     else {
       fprintf(outfile,"Invalid SAPT level\n"); fflush(outfile);

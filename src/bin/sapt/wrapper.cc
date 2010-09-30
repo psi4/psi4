@@ -18,6 +18,7 @@
 #include <libsapt_solver/sapt_dft.h>
 #include <libsapt_solver/sapt2.h>
 #include <libsapt_solver/sapt2p.h>
+#include <libsapt_solver/sapt2p3.h>
 #include <libmints/mints.h>
 #include "wrapper.h"
 
@@ -59,6 +60,11 @@ PsiReturnType sapt(Options & options)
     
     if (options.get_str("SAPT_LEVEL") == "SAPT2+") {
         SAPT2p sapt(options, psio, chkpt);
+        sapt.compute_energy();
+    }
+
+    if (options.get_str("SAPT_LEVEL") == "SAPT2+3") {
+        SAPT2p3 sapt(options, psio, chkpt);
         sapt.compute_energy();
     }
     
