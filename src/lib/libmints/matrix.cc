@@ -1185,7 +1185,7 @@ bool Matrix::load(shared_ptr<psi::PSIO> psio, unsigned int fileno, char *tocentr
 
 void Matrix::save(psi::PSIO* psio, unsigned int fileno, bool saveSubBlocks)
 {
-    if(Communicator::world->me == 0) {
+    if(Communicator::world->me() == 0) {
         // Check to see if the file is open
         bool already_open = false;
         if (psio->open_check(fileno)) {

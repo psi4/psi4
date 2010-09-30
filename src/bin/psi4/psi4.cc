@@ -51,7 +51,6 @@ int main(int argc, char **argv, char **envp)
 
     std::string communicator = Process::environment("COMMUNICATOR");
 
-    std::cout << "COMMUNICATOR = " << communicator << std::endl;
 #if HAVE_MPI == 1
 
     #if HAVE_MADNESS == 1
