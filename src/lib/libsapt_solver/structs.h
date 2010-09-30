@@ -56,6 +56,8 @@ struct workflow {
   int theta2_bsbs;
   int t_arbs;
   int t_bsar;
+  int Y3_ar;
+  int Y3_bs;
 
   // Types of intermediates to be formed and stored on disk
   int mp2_opdm;
@@ -175,14 +177,13 @@ struct results {
   double disp22sdq;
   double disp22t;
 
-  double elst130;
-  double elst103;
   double ind30;
   double exch_ind30;
   double disp30;
   double exch_disp30;
   double ind_disp30;
   double exch_ind_disp30;
+  double elst13;
 
   };
 

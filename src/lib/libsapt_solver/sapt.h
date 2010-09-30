@@ -53,10 +53,24 @@ private:
     void t2_bsbs(int);
     void Y2(char *, char *, char *, char *, char *, int, char *, char *, 
       char *, double *, int, int);
-    double *t2_solver(char *, char *, int, char *, char *, char *, double *,
-      int, int);
+    double *t2_solver(int, char *, char *, int, char *, char *, char *, 
+      double *, int, int, int);
+    void frzn_t2_prep(char *, char *, char *, int, char *, char *, char *, 
+      int, int, int);
+    void natural_orbitalify_t2(char *, char *, int, char *, char *, char *,
+      double *, double **, int, int, int, int);
     void g_arar();
     void g_bsbs();
+    void Y3_ar();
+    void Y3_bs();
+    void Y3_1(double **, int, char *, char *, char *, int, char *, int, int);
+    void Y3_2(double **, int, char *, char *, char *, int, char *, char *,
+      char *, char *, int, int);
+    void Y3_3(double **, int, char *, int, char *, char *, int, int);
+    void Y3_4(double **, int, char *, char *, int, char *, int, int);
+    void Y3_5(double **, int, char *, char *, char *, int, char *, char *, 
+      int, int);
+    void Y3_6(double **, int, char *, char *, char *, int, char *, int, int);
 
     // Natural Orbital Functions
     void natural_orbitalify(char *, char *, double *, double **, int, int,
