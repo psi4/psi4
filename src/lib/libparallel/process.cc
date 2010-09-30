@@ -1,4 +1,5 @@
 #include <psi4-dec.h>
+#include <psiconfig.h>
 #include <libmints/molecule.h>
 #include <boost/algorithm/string.hpp>
 
@@ -47,6 +48,30 @@ void Process::Environment::init(char **envp)
 //    for (map<string, string>::const_iterator iter = environment_.begin();
 //         iter != environment_.end(); ++iter)
 //        printf("Key: %s Value: %s\n", iter->first.c_str(), iter->second.c_str());
+
+
+    // If madness and or MPI is not set up, COMMUNICATOR is changed to a value
+    // that makes sense. (i.e. MPI or LOCAL)
+#if HAVE_MADNESS == 0
+    #if HAVE_MPI == 1
+        if (Process::environment("COMMUNICATOR") != "MPI") {
+            environment_["COMMUNICATOR"] = "MPI";
+            std::cout << "COMMUNICATOR was changed to MPI" << std::endl;
+        }
+    #else
+        if (Process::environment("COMMUNICATOR") != "LOCAL") {
+            environment_["COMMUNICATOR"] = "LOCAL";
+            std::cout << "COMMUNICATOR was changed to LOCAL" << std::endl;
+        }
+    #endif
+#else
+    if(Process::environment("COMMUNICATOR") != "MPI" && Process::environment("COMMUNICATOR") != "MADNESS") {
+        environment_["COMMUNICATOR"] = "MPI";
+        std::cout << "COMMUNICATOR was changed to MPI" << std::endl;
+    }
+#endif
+
+
 }
 
 void Process::Environment::set_n_threads(int nthread)

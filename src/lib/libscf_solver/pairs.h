@@ -53,7 +53,6 @@ class PARALLEL_G_BUILD_INFO {
             }
 
             if(pG.get() == NULL) {
-                //factory_.create_simple_matrix(G, "G (AO basis)");
                 pG = shared_ptr<SimpleMatrix>(new SimpleMatrix(nso, nso));
                 pG->zero();
             }
