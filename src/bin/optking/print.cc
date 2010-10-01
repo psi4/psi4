@@ -27,5 +27,21 @@ void print_matrix(const FILE *fp, double **A, const int nrow, const int ncol) {
   }
 }
 
+void print_array(const FILE *fp, double *A, const int ncol) {
+  int j,col=0;
+
+  const int max_col = 9;
+
+  for (j=0; j<ncol; ++j) {
+    fprintf(const_cast<FILE *>(fp), "%13.8f", A[j]);
+    ++col;
+    if ((col == max_col) && (j != ncol-1)) {
+      fprintf(const_cast<FILE *>(fp), "\n");
+      col = 0;
+    }
+  }
+  fprintf(const_cast<FILE *>(fp),"\n");
+}
+
 }
 

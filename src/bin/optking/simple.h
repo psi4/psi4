@@ -13,15 +13,16 @@ namespace opt {
 
 enum INTCO_TYPE {min_type, stre_type, bend_type, tors_type, max_type};
 
+typedef const double * const * const GeomType;
+
 class SIMPLE {
 
   protected:
 
     INTCO_TYPE s_type; // type of simple
     int s_natom;       // # of atoms in internal definition, i.e., # of
-                      // atoms with non-zero s-vectors
-    int *s_atom;      // atoms indices in internal definition
-    double s_val;     // value of coordinate
+                       // atoms with non-zero s-vectors
+    int *s_atom;       // atom indices in internal definition
 
   public:
 
@@ -36,36 +37,41 @@ class SIMPLE {
     }
 
     INTCO_TYPE g_type(void) const { return s_type; }
-    int     g_natom(void) const { return s_natom; }
-    int     g_atom(int a) const { return s_atom[a]; }
-    double  g_val(void)   const { return s_val; }
+    int g_natom(void) const { return s_natom; }
+    int g_atom(int a) const { return s_atom[a]; }
 
     // do-nothing function overridden only by torsion class
     virtual void fix_near_180(void) { return; }
 
     // each internal coordinate type must provide the following virtual functions:
 
-    // compute value of internal coordinate and return
-    virtual void compute_val(double **geom) = 0;
+    // function to print coordinate definitions to intco.dat
+    virtual void print_intco_dat(FILE *fp) const = 0;
 
-    // compute s vector (xyz) for atom a and return
-    virtual double * g_s(double **geom, const int iatom) const = 0;
+    // return value of internal coordinate
+    virtual double value(GeomType geom) const = 0;
+
+    // compute s vector (dq/dx, dq/dy, dq/dz)
+    virtual double ** DqDx(GeomType geom) const = 0;
+
+    // compute second derivative (B' matrix elements)
+    // dq_i dq_j / dx^2, dydx, dy^2, dzdx, dzdy, dz^2 
+    virtual double ** Dq2Dx2(GeomType geom) const = 0;
 
     // print coordinates and value to output file
-    virtual void print(const FILE *fp) const = 0;
+    virtual void print(FILE *fp, GeomType geom) const = 0;
 
     // print coordinates and displacements 
-    virtual void print_disp(const FILE *fp, const double old_q, const double f_q,
+    virtual void print_disp(FILE *fp, const double old_q, const double f_q,
       const double dq, const double new_q) const = 0;
 
     // for debugging, print s vectors to output file
-    virtual void print_s(const FILE *fp, double **geom) const = 0;
+    virtual void print_s(FILE *fp, GeomType geom) const = 0;
 
     // each derived class should have an equality operator of this type that
     // first checks types with g_type() and then, if true, compares
     // the internal coordinates
     virtual bool operator==(const SIMPLE & s2) const  = 0;
-
 
 };
 

@@ -90,6 +90,7 @@ void MOLECULE::nr_step(void) {
 void MOLECULE::rfo_step(void) {
   int i, j;
   int dim = g_nintco();
+  double tval, tval2;
   double *f_q = p_Opt_data->g_forces_pointer();
   double **H = p_Opt_data->g_H_pointer();
   double *dq = p_Opt_data->g_dq_pointer();
@@ -115,24 +116,24 @@ void MOLECULE::rfo_step(void) {
     print_matrix(outfile, &(lambda), 1, dim+1);
   }
 
-  // Do intermediate normalization.  How?  Does it matter?
-  // RFO paper says to make the last element '1' and then "scaling of the eigenvector
-  // by a factor alpha used to calculate mode displacements" (see page 54) amounts to
-  // the same thing as just making sure the sign of the last entry of the evect is positive
-  //  During the course of an optimization some evects may appear that are bogus leads (presumably)
-  // due to a bad hessian - the root following can avoid them.  also some evects have a virtual
-  // 0 in the last entry and so cannot be divided by it
+  // Do intermediate normalization.  
+  // RFO paper says to scale eigenvector to make the last element equal to 1.
+  // During the course of an optimization some evects may appear that are bogus leads
+  // - the root following can avoid them. 
   for (i=0; i<dim+1; ++i) {
-    if (rfo_mat[i][dim] < 0)
-      for (j=0;j<dim+1;++j) rfo_mat[i][j] *= -1;
+    tval = rfo_mat[i][dim];
+    if (fabs(tval) > 1.0e-10) {
+      for (j=0;j<dim+1;++j)
+        rfo_mat[i][j] /= rfo_mat[i][dim];
+    }
   }
   if (Opt_params.print_lvl >= 3) {
-    fprintf(outfile,"RFO evects\n");
+    fprintf(outfile,"RFO eigenvectors (rows)\n");
     print_matrix(outfile, rfo_mat, dim+1, dim+1);
   }
 
   int rfo_root, f;
-  double tval, tval2, rfo_eval;
+  double rfo_eval;
   double *rfo_u;      // unit vector in step direction
   double rfo_dqnorm;   // norm of step
   double rfo_g;         // gradient in step direction

@@ -83,10 +83,10 @@ class MOLECULE {
       fragments[i]->print_intcos(fout, i);
   }
 
-  void compute_intco_values(void) {
+  void print_intco_dat(FILE *fout) {
     for (int i=0; i<fragments.size(); ++i)
-      fragments[i]->compute_intco_values();
-  };
+      fragments[i]->print_intco_dat(fout, i);
+  }
 
   int add_simples_by_connectivity(void) {
     int n=0;
@@ -95,15 +95,31 @@ class MOLECULE {
     return n;
   }
 
-  double * g_intco_values(void) const {
-    int f,i;
+  // compute intco values from frag member geometries
+  double * intco_values(void) const {
     double *q, *q_frag;
-
     q = init_array(g_nintco());
-    for (f=0; f<fragments.size(); ++f) {
-      q_frag = fragments[f]->g_intco_values();
-      for (i=0; i<fragments[f]->g_nintco(); ++i)
+
+    for (int f=0; f<fragments.size(); ++f) {
+      q_frag = fragments[f]->intco_values();
+      for (int i=0; i<fragments[f]->g_nintco(); ++i)
         q[g_intco_offset(f)+i]  = q_frag[i];
+      free_array(q_frag);
+    }
+    return q;
+  }
+
+  // compute intco values from given geometry
+  double * intco_values(GeomType new_geom) const {
+    double *q, *q_frag;
+    q = init_array(g_nintco());
+
+    for (int f=0; f<fragments.size(); ++f) {
+      q_frag = fragments[f]->intco_values( &(new_geom[g_atom_offset(f)]) );
+
+      for (int i=0; i<fragments[f]->g_nintco(); ++i)
+        q[g_intco_offset(f)+i]  = q_frag[i];
+
       free_array(q_frag);
     }
     return q;
@@ -124,14 +140,28 @@ class MOLECULE {
   }
 
   double * g_geom_array(void) {
-    int f, i;
     double *g, *g_frag;
 
     g = init_array(3*g_natom());
-    for (f=0; f<fragments.size(); ++f) {
+    for (int f=0; f<fragments.size(); ++f) {
       g_frag = fragments[f]->g_geom_array();
-      for (i=0; i<3*fragments[f]->g_natom(); ++i)
+      for (int i=0; i<3*fragments[f]->g_natom(); ++i)
         g[g_atom_offset(f)+i] = g_frag[i];
+      free_array(g_frag);
+    }
+    return g;
+  }
+
+  double ** g_geom_2D(void) {
+    double **g, *g_frag;
+
+    g = init_matrix(g_natom(),3);
+    for (int f=0; f<fragments.size(); ++f) {
+      g_frag = fragments[f]->g_geom_array();
+      int cnt=0;
+      for (int i=0; i<fragments[f]->g_natom(); ++i)
+        for (int xyz=0; xyz<3; ++xyz)
+          g[g_atom_offset(f)+i][xyz] = g_frag[cnt++];
       free_array(g_frag);
     }
     return g;
@@ -175,6 +205,9 @@ class MOLECULE {
     for (int f=0; f<fragments.size(); ++f)
       fragments[f]->fix_tors_near_180();
   }
+
+  void test_B(void);
+  void test_derivative_B(void);
 
 /*
   // compute and print B matrix (for debugging)

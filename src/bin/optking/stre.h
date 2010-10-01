@@ -18,13 +18,20 @@ class STRE : public SIMPLE {
 
     ~STRE() { } // also calls ~SIMPLE()
 
-    //STRE(const STRE & from) : SIMPLE (from)  { fprintf(stdout,"stre copy constructor\n"); } 
+    double value(GeomType geom) const;
 
-    void compute_val(double **geom);
-    double * g_s(double **geom, const int iatom) const;
-    void print(const FILE *fp) const;
-    void print_s(const FILE *fp, double **geom) const;
-    void print_disp(const FILE *fp, const double old_q, const double f_q,
+    // compute and return array of first derivative (B matrix elements)
+    // returned matrix is [atom][x,y,z]
+    double **DqDx(GeomType geom) const;
+
+    // compute and return array of second derivative (B' matrix elements)
+    // returned matrix is order 3N cart by 3N cart
+    double **Dq2Dx2(GeomType geom) const;
+
+    void print(FILE *fp, GeomType geom) const;
+    void print_s(FILE *fp, GeomType geom) const;
+    void print_intco_dat(FILE *fp) const;
+    void print_disp(FILE *fp, const double old_q, const double f_q,
       const double dq, const double new_q) const;
     bool operator==(const SIMPLE & s2) const;
 

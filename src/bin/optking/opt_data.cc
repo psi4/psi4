@@ -4,14 +4,9 @@
 */
 
 #include "opt_data.h"
+
 #define EXTERN
 #include "globals.h"
-
-#include <cmath>
-#include "print.h"
-#include "physconst.h"
-
-using psi::outfile;
 
 namespace opt {
 
@@ -28,13 +23,40 @@ STEP_DATA::STEP_DATA(int Nintco, int Ncart) {
   dq = init_array(Nintco);
 }
 
-// read entry from binary file
-STEP_DATA::STEP_DATA(ifstream & fin, int Nintco, int Ncart) {
-  f_q = init_array(Nintco);
-  geom = init_array(Ncart);
-  unit_step = init_array(Nintco);
-  dq = init_array(Nintco);
+//free memory
+STEP_DATA::~STEP_DATA() {
+  free_array(f_q);
+  free_array(geom);
+  free_array(unit_step);
+  free_array(dq);
+}
 
+// read entry from binary file ; file pointer must be in right place for qchem code
+#if defined(PSI4)
+void STEP_DATA::read(int istep, int Nintco, int Ncart) {
+  char lbl[80];
+  using namespace psi;
+  sprintf(lbl, "f_q %d", istep);
+  psio_read_entry(PSIF_OPTKING, lbl, (char *) f_q,    Nintco*sizeof(double));
+  sprintf(lbl, "geom %d", istep);
+  psio_read_entry(PSIF_OPTKING, lbl, (char *) geom,    Ncart*sizeof(double));
+  sprintf(lbl, "energy %d", istep);
+  psio_read_entry(PSIF_OPTKING, lbl, (char *) &energy,       sizeof(double));
+  sprintf(lbl, "DE_predicted %d", istep);
+  psio_read_entry(PSIF_OPTKING, lbl, (char *) &DE_predicted, sizeof(double));
+  sprintf(lbl, "unit_step %d", istep);
+  psio_read_entry(PSIF_OPTKING, lbl, (char *) unit_step, Nintco*sizeof(double));
+  sprintf(lbl, "dq_norm %d", istep);
+  psio_read_entry(PSIF_OPTKING, lbl, (char *) &dq_norm,      sizeof(double));
+  sprintf(lbl, "dq_gradient %d", istep);
+  psio_read_entry(PSIF_OPTKING, lbl, (char *) &dq_gradient,  sizeof(double));
+  sprintf(lbl, "dq_hessian %d", istep);
+  psio_read_entry(PSIF_OPTKING, lbl, (char *) &dq_hessian,   sizeof(double));
+  sprintf(lbl, "dq %d", istep);
+  psio_read_entry(PSIF_OPTKING, lbl, (char *) dq,       Nintco*sizeof(double));
+}
+#elif defined (QCHEM4)
+void STEP_DATA::read(ifstream & fin, int Nintco, int Ncart) {
   fin.read( (char *) f_q,    Nintco*sizeof(double));
   fin.read( (char *) geom,    Ncart*sizeof(double));
   fin.read( (char *) &energy,       sizeof(double));
@@ -44,22 +66,8 @@ STEP_DATA::STEP_DATA(ifstream & fin, int Nintco, int Ncart) {
   fin.read( (char *) &dq_gradient,  sizeof(double));
   fin.read( (char *) &dq_hessian,   sizeof(double));
   fin.read( (char *) dq,       Nintco*sizeof(double));
-
-/* fprintf(outfile, "Data read from binary file\n");
-fprintf(outfile, "f_q\n");
-print_matrix(outfile, &f_q, 1, Nintco);
-fprintf(outfile, "geom\n");
-print_matrix(outfile, &geom, 1, Ncart); */
-
 }
-
-//free memory
-STEP_DATA::~STEP_DATA() {
-  free_array(f_q);
-  free_array(geom);
-  free_array(unit_step);
-  free_array(dq);
-}
+#endif
 
 // save geometry and energy
 void STEP_DATA::save_geom_energy(double *geom_in, double energy_in, int Ncart) {
@@ -77,7 +85,32 @@ void STEP_DATA::save_step_info(double DE_predicted_in, double *unit_step_in, dou
   dq_hessian = dq_hessian_in;
 }
 
+// read entry from binary file ; file pointer must be in right place for qchem code
 //write entry to binary file
+#if defined(PSI4)
+void STEP_DATA::write(int istep, int Nintco, int Ncart) {
+  char lbl[80];
+  using namespace psi;
+  sprintf(lbl, "f_q %d", istep);
+  psio_write_entry(PSI_OPTDATA_FILE_NUM, lbl, (char *) f_q, Nintco*sizeof(double));
+  sprintf(lbl, "geom %d", istep);
+  psio_write_entry(PSI_OPTDATA_FILE_NUM, lbl, (char *) geom, Ncart*sizeof(double));
+  sprintf(lbl, "energy %d", istep);
+  psio_write_entry(PSI_OPTDATA_FILE_NUM, lbl, (char *) &energy, sizeof(double));
+  sprintf(lbl, "DE_predicted %d", istep);
+  psio_write_entry(PSI_OPTDATA_FILE_NUM, lbl, (char *) &DE_predicted, sizeof(double));
+  sprintf(lbl, "unit_step %d", istep);
+  psio_write_entry(PSI_OPTDATA_FILE_NUM, lbl, (char *) unit_step, Nintco*sizeof(double));
+  sprintf(lbl, "dq_norm %d", istep);
+  psio_write_entry(PSI_OPTDATA_FILE_NUM, lbl, (char *) &dq_norm, sizeof(double));
+  sprintf(lbl, "dq_gradient %d", istep);
+  psio_write_entry(PSI_OPTDATA_FILE_NUM, lbl, (char *) &dq_gradient, sizeof(double));
+  sprintf(lbl, "dq_hessian %d", istep);
+  psio_write_entry(PSI_OPTDATA_FILE_NUM, lbl, (char *) &dq_hessian, sizeof(double));
+  sprintf(lbl, "dq %d", istep);
+  psio_write_entry(PSI_OPTDATA_FILE_NUM, lbl, (char *) dq, Nintco*sizeof(double));
+}
+#elif defined(QCHEM4)
 void STEP_DATA::write(ofstream & fout, int Nintco, int Ncart) {
   fout.write( (char *) f_q,    Nintco*sizeof(double));
   fout.write( (char *) geom,    Ncart*sizeof(double));
@@ -89,45 +122,88 @@ void STEP_DATA::write(ofstream & fout, int Nintco, int Ncart) {
   fout.write( (char *) &dq_hessian,   sizeof(double));
   fout.write( (char *) dq,       Nintco*sizeof(double));
 }
+#endif
 
 // constructor function reads available data and allocates memory for current step
 OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
-  ifstream fin(FILENAME_OPT_DATA, ios_base::in | ios_base::binary);
-  fin.clear();
-  fin.seekg(0);
   Nintco = Nintco_in;
   Ncart = Ncart_in;
   H = init_matrix(Nintco, Nintco);
   rfo_eigenvector = init_array(Nintco+1);
+  bool data_file_present = false;
 
-  if (!fin.is_open()) { // previous data file does not exist
+// determine if old data file is present
+#if defined(PSI4)
+  using namespace psi;
+  //if (!psio_open_check(PSIF_OPTKING))
+  psio_open(PSIF_OPTKING, PSIO_OPEN_OLD);
+  if (psio_rd_toclen(PSIF_OPTKING) > 0)
+    data_file_present = true;
+  psio_close(PSIF_OPTKING, 0);
+#elif defined(QCHEM4)
+  ifstream fin(FILENAME_OPT_DATA, ios_base::in | ios_base::binary);
+  data_file_present = fin.is_open();
+  fin.close();
+#endif
+
+  if (!data_file_present) { 
     fprintf(outfile, "\tPrevious optimization step data not found.  Starting new optimization.\n");
     iteration = 0;
     consecutive_back_steps = 0;
   }
   else { // previous file exists
     int Nintco_old, Ncart_old;
+#if defined (PSI4)
+    psio_open(PSIF_OPTKING, PSIO_OPEN_OLD);
+    psio_read_entry(PSIF_OPTKING, "Nintco", (char *) &Nintco_old, sizeof(int));
+    psio_read_entry(PSIF_OPTKING, "Ncart",  (char *) &Ncart_old, sizeof(int));
+#elif defined(QCHEM4)
+    ifstream fin(FILENAME_OPT_DATA, ios_base::in | ios_base::binary);
     fin.read( (char *) &Nintco_old, sizeof(int));
     fin.read( (char *)  &Ncart_old, sizeof(int));
+#endif
     if (Nintco_old != Nintco)
       fprintf(outfile, "\tThe number of coordinates has changed.  Ignoring old data.\n");
     if (Ncart_old != Ncart)
       fprintf(outfile, "\tThe number of atoms has changed.  Ignoring old data.\n");
-    if ( (Nintco_old != Nintco) || (Ncart_old != Ncart) ) { //don't use it
+
+    if ( (Nintco_old != Nintco) || (Ncart_old != Ncart) ) { // don't use old data
       iteration = 0;
       consecutive_back_steps = 0;
-    } else { // use old data
-        fin.read( (char *) H[0], Nintco * Nintco * sizeof(double) );
-        fin.read( (char *) &iteration, sizeof(int));
-        fin.read( (char *) &consecutive_back_steps, sizeof(int));
-        fin.read( (char *) rfo_eigenvector, (Nintco+1)*sizeof(double));
+      // delete old data
+#if defined (PSI4)
+      psio_close(PSIF_OPTKING, 0);
+#elif defined (QCHEM4)
+      fin.close();
+      std::remove(FILENAME_OPT_DATA);
+#endif
+    }
+    else { // read in old optimization data
+#if defined (PSI4)
+      psio_read_entry(PSIF_OPTKING, "H", (char *) H[0], Nintco * Nintco * sizeof(double) );
+      psio_read_entry(PSIF_OPTKING, "iteration", (char *) &iteration, sizeof(int));
+      psio_read_entry(PSIF_OPTKING, "consecutive_back_steps", (char *) &consecutive_back_steps, sizeof(int));
+      psio_read_entry(PSIF_OPTKING, "rfo_eigenvector", (char *) rfo_eigenvector, (Nintco+1)*sizeof(double));
       for (int i=0; i<iteration; ++i) {
-        STEP_DATA *one_step = new STEP_DATA(fin, Nintco, Ncart);
+        STEP_DATA *one_step = new STEP_DATA(Nintco, Ncart);
+        one_step->read(i+1, Nintco, Ncart);
         steps.push_back(one_step);
       }
+      psio_close(PSIF_OPTKING, 1);
+#elif defined (QCHEM4)
+      fin.read( (char *) H[0], Nintco * Nintco * sizeof(double) );
+      fin.read( (char *) &iteration, sizeof(int));
+      fin.read( (char *) &consecutive_back_steps, sizeof(int));
+      fin.read( (char *) rfo_eigenvector, (Nintco+1)*sizeof(double));
+      for (int i=0; i<iteration; ++i) {
+        STEP_DATA *one_step = new STEP_DATA(Nintco, Ncart);
+        one_step.read(fin, Nintco, Ncart);
+        steps.push_back(one_step);
+      }
+      fin.close();
+#endif
     }
   }
-  fin.close();
 
   ++iteration; // increment for current step
   // create memory for this, current step
@@ -145,6 +221,22 @@ OPT_DATA::~OPT_DATA() {
 
 // write data to binary file
 void OPT_DATA::write(void) {
+#if defined (PSI4)
+  using namespace psi;
+  psio_open(PSIF_OPTKING, PSIO_OPEN_OLD);
+
+  psio_write_entry(PSIF_OPTKING, "Nintco", (char *) &Nintco, sizeof(int));
+  psio_write_entry(PSIF_OPTKING, "Ncart" , (char *) &Ncart , sizeof(int));
+  psio_write_entry(PSIF_OPTKING, "H", (char *) H[0], Nintco * Nintco * sizeof(double) );
+  psio_write_entry(PSIF_OPTKING, "iteration", (char *) &iteration, sizeof(int));
+  psio_write_entry(PSIF_OPTKING, "consecutive_back_steps", (char *) &consecutive_back_steps, sizeof(int));
+  psio_write_entry(PSIF_OPTKING, "rfo_eigenvector", (char *) rfo_eigenvector, (Nintco+1)*sizeof(double));
+
+  for (int i=0; i<steps.size(); ++i)
+    steps[i]->write(i+1, Nintco, Ncart);
+  psio_close(PSIF_OPTKING, 1);
+
+#elif defined (QCHEM4) 
   ofstream fout(FILENAME_OPT_DATA, ios_base::out | ios_base::trunc | ios_base::binary);
   if (!fout.is_open())
     throw("Could not open file to save geometry data.\n");
@@ -156,10 +248,10 @@ void OPT_DATA::write(void) {
   fout.write( (char *) &consecutive_back_steps, sizeof(int));
   fout.write( (char *) rfo_eigenvector, (Nintco+1)*sizeof(double));
 
-  for (int i=0; i<steps.size(); ++i) {
+  for (int i=0; i<steps.size(); ++i) 
     steps[i]->write(fout, Nintco, Ncart);
-  }
   fout.close();
+#endif
 }
 
 
@@ -258,8 +350,8 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
   x = steps[step_this]->g_geom_pointer();
 
   mol.set_geom_array(x);
-  mol.compute_intco_values();
-  q = mol.g_intco_values();
+  //mol.compute_intco_values();
+  q = mol.intco_values();
   mol.fix_tors_near_180(); // fix configuration for torsions
 
   if (Opt_params.H_update_use_last == 0) { // use all available old gradients
@@ -288,8 +380,8 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
     x_old = g_geom_pointer(i_step);
 
     mol.set_geom_array(x_old);
-    mol.compute_intco_values(); // (will use torsion fixing above)
-    q_old = mol.g_intco_values();
+    //mol.compute_intco_values(); // (will use torsion fixing above)
+    q_old = mol.intco_values();
 
     for (i=0;i<Nintco;++i) {
       dq[i] = q[i] - q_old[i];

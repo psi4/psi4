@@ -95,19 +95,15 @@ void FRAG::write_geom(FILE *fp_geom) {
 void FRAG::print_intcos(FILE *fp, const int id) {
   fprintf(fp,"\t---Fragment %d Intrafragment Coordinates---\n", id+1);
   fprintf(fp,"\t * Coordinate *           * BOHR/RAD *       * ANG/DEG *\n");
-  //fprintf(fp,"\t ----------                 --------         ----------\n");
-  //fprintf(fp,"\t Coordinate                 BOHR/RAD           ANG/DEG\n");
-  //fprintf(fp,"\t ----------                 --------         ----------\n");
-  int i;
-  for (i=0; i<intcos.size(); ++i)
-    intcos.at(i)->print(fp);
+  for (int i=0; i<intcos.size(); ++i)
+    intcos.at(i)->print(fp,geom);
   fprintf(fp, "\n");
 }
 
-void FRAG::compute_intco_values(void) {
-  int i;
-  for (i=0; i<intcos.size(); ++i)
-    intcos.at(i)->compute_val(geom);
+void FRAG::print_intco_dat(FILE *fp, const int id) {
+  fprintf(fp,"\t---Fragment %d Intrafragment Coordinates---\n", id+1);
+  for (int i=0; i<intcos.size(); ++i)
+    intcos.at(i)->print_intco_dat(fp);
 }
 
 // automatically determine bond connectivity by comparison of interatomic distance
@@ -238,43 +234,51 @@ int FRAG::find(const SIMPLE *one) const {
   return intcos.size();
 }
 
-// returns values of internal coordinates
-double * FRAG::g_intco_values(void) const {
+// returns values of internal coordinates - using member geometry
+double * FRAG::intco_values(void) const {
   double * q = init_array(intcos.size());
   for (int i=0; i<intcos.size(); ++i)
-      q[i] = intcos.at(i)->g_val();
+    q[i] = intcos.at(i)->value(geom);
+  return q;
+}
+
+// returns values of internal coordinates - using given geometry
+double * FRAG::intco_values(GeomType new_geom) const {
+  double * q = init_array(intcos.size());
+  for (int i=0; i<intcos.size(); ++i)
+    q[i] = intcos.at(i)->value(new_geom);
   return q;
 }
 
 // returns B matrix of internal coordinates
 double ** FRAG::compute_B(void) const {
-  int i, j, xyz;
-  double *s1;
+  double **Bintco;
   double **B = init_matrix(intcos.size(), 3*natom);
 
-  for (i=0; i<intcos.size(); ++i) {
-    for (j=0; j < intcos.at(i)->g_natom(); ++j) {
-      s1 = intcos.at(i)->g_s(geom, j);
-      for (xyz=0; xyz<3; ++xyz)
-        B[i][3*intcos.at(i)->g_atom(j) + xyz] = s1[xyz];
-      free_array(s1);
-    }
+  for (int i=0; i<intcos.size(); ++i) {
+    Bintco = intcos.at(i)->DqDx(geom);
+
+    for (int j=0; j < intcos.at(i)->g_natom(); ++j)
+      for (int xyz=0; xyz<3; ++xyz)
+        B[i][3*intcos.at(i)->g_atom(j) + xyz] = Bintco[j][xyz];
+
+    free_matrix(Bintco);
   }
   return B;
 }
 
 // returns B matrix of internal coordinates; use previously allocated memory
 void FRAG::compute_B(double **B) const {
-  int i, j, xyz;
-  double *s1;
+  double **Bintco;
 
-  for (i=0; i<intcos.size(); ++i) {
-    for (j=0; j < intcos.at(i)->g_natom(); ++j) {
-      s1 = intcos.at(i)->g_s(geom, j);
-      for (xyz=0; xyz<3; ++xyz)
-        B[i][3*intcos.at(i)->g_atom(j) + xyz] = s1[xyz];
-      free_array(s1);
-    }
+  for (int i=0; i<intcos.size(); ++i) {
+    Bintco = intcos.at(i)->DqDx(geom);
+
+    for (int j=0; j < intcos.at(i)->g_natom(); ++j)
+      for (int xyz=0; xyz<3; ++xyz)
+        B[i][3*intcos.at(i)->g_atom(j) + xyz] = Bintco[j][xyz];
+
+    free_matrix(Bintco);
   }
   return;
 }
@@ -286,6 +290,7 @@ void FRAG::print_B(FILE *fp) const {
   fprintf(fp,"\t---B matrix---\n");
   print_matrix(fp, B, intcos.size(), 3*natom);
   fprintf(fp,"\n");
+  free_matrix(B);
 }
 
 void FRAG::fix_tors_near_180(void) {
@@ -333,7 +338,7 @@ void FRAG::check_zero_angles(double const * const dq) {
   int i, cnt = 0;
   for (i=0; i<intcos.size(); ++i) {
     if (intcos[i]->g_type() == bend_type) {
-      if (intcos[i]->g_val() + dq[cnt++] < 0.0) 
+      if (intcos[i]->value(geom) + dq[cnt++] < 0.0) 
           throw("Bond angle passing through zero. Try new bonds, angles, or considering higher symmetry");
     }
   }

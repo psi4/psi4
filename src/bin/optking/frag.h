@@ -31,8 +31,7 @@ class FRAG {
   void print_geom(FILE *fp, const int id, bool print_mass = false);
   void print_geom_grad(FILE *fp, const int id, bool print_mass = false);
   void print_intcos(FILE *fp, const int id);
-
-  void compute_intco_values(void);
+  void print_intco_dat(FILE *fp, const int id);
 
   void update_connectivity_by_distances(double scale_radii = -1);
 
@@ -68,14 +67,17 @@ class FRAG {
   void check_zero_angles(double const * const dq);
 
   //print s vectors to output file
-  void print_s(const FILE *fp, double **geom) const {
-    fprintf(const_cast<FILE *>(fp),"\t---S vectors for internals---\n");
+  void print_s(FILE *fp, const double ** const geom) const {
+    fprintf(fp,"\t---S vectors for internals---\n");
     for(int i=0; i<intcos.size(); ++i)
       intcos.at(i)->print_s(fp, geom);
   }
 
-  // returns values of internal coordinates
-  double * g_intco_values(void) const ;
+  // compute and return values of internal coordinates from member geometry
+  double * intco_values(void) const ;
+
+  // compute and return values of internal coordinates from given geometry
+  double * intco_values(GeomType new_geom) const ;
 
   // is simple one already present?
   bool present(const SIMPLE *one) const;

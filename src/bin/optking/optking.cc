@@ -12,6 +12,7 @@ namespace opt {
   void print_title(FILE *fp);
   void print_end(FILE *fp);
   void set_params(void); // set optimization parameters
+  void init_ioff(void);
 
   //Package = PSI; // designate package
 
@@ -27,6 +28,7 @@ outfile = fopen("output.dat","a");
 
   // open output file and write title header
   print_title(outfile);
+  init_ioff();
 
   // set optimization parameters
   set_params();
@@ -39,12 +41,16 @@ outfile = fopen("output.dat","a");
   // automatically generate coordinates
   mol1.update_connectivity_by_distances();
   mol1.add_simples_by_connectivity();
-  mol1.compute_intco_values();
+  //mol1.compute_intco_values();
 
   // print to output file
   mol1.print_connectivity(outfile);
   mol1.print_geom_grad(outfile);
   mol1.print_intcos(outfile);
+  mol1.print_intco_dat(outfile);
+
+  mol1.test_B();
+  mol1.test_derivative_B();
 
   // read binary file for previous step data
   p_Opt_data = new OPT_DATA(mol1.g_nintco(), 3*mol1.g_natom());
@@ -80,7 +86,7 @@ outfile = fopen("output.dat","a");
 #endif
     delete p_Opt_data;
     print_end(outfile);
-#ifdef QCHEM
+#ifdef QCHEM4
     fclose(outfile);
 #endif
     return OptReturnEndloop;
@@ -97,7 +103,7 @@ outfile = fopen("output.dat","a");
 #endif
 
   print_end(outfile);
-#ifdef QCHEM
+#ifdef QCHEM4
   fclose(outfile);
 #endif
   return OptReturnSuccess;
@@ -113,6 +119,13 @@ void print_end(FILE *fp) {
   fprintf(fp, "\t\t\t--------------------------\n");
   fprintf(fp, "\t\t\t OPTKING Finished Execution \n");
   fprintf(fp, "\t\t\t--------------------------\n");
+}
+void init_ioff(void)
+{
+  int i;
+  ioff = init_int_array(IOFF_MAX);
+  ioff[0] = 0;
+  for(i=1; i < IOFF_MAX; i++) ioff[i] = ioff[i-1] + i;
 }
 }
 

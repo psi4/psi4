@@ -8,6 +8,11 @@
 #include <sstream>
 #include "v3d.h"
 #include "physconst.h"
+#include <math.h>
+
+#include "print.h"
+#define EXTERN
+#include "globals.h"
 
 namespace opt {
 
@@ -32,79 +37,154 @@ BEND::BEND(int A_in, int B_in, int C_in) : SIMPLE(bend_type, 3) {
 }
 
 // compute angle and store value in radians
-void BEND::compute_val(double **geom) {
+double BEND::value(GeomType geom) const {
   double tval;
   if ( ! v3d_angle(geom[s_atom[0]], geom[s_atom[1]], geom[s_atom[2]], tval) )
     throw("BEND::compute_val: could not compute angle");
-  s_val = tval;
+  return tval;
 }
 
-double * BEND::g_s(double **geom, const int iatom) const {
-  int xyz;
-  bool rval;
-  double ang, rBA, rBC;
-  double eBA[3], eBC[3];
-  double *s = init_array(3);
-
-  if ( iatom!=0 && iatom!=1 && iatom!=2 )
-    throw("BEND::g_s: requested atom not 0, 1, or 2");
-
-  v3d_axpy(-1, geom[s_atom[1]], geom[s_atom[0]], eBA);
-  v3d_axpy(-1, geom[s_atom[1]], geom[s_atom[2]], eBC);
-  rBA = v3d_norm(eBA);
-  rBC = v3d_norm(eBC);
-  v3d_scm(1.0/rBA, eBA);
-  v3d_scm(1.0/rBC, eBC);
-
-  // compute value of angle in radians
-  v3d_angle(geom[s_atom[0]], geom[s_atom[1]], geom[s_atom[2]], ang);
-
-  if (iatom == 0) {
-    for (xyz=0;xyz<3;++xyz)
-      s[xyz] = (eBA[xyz]*cos(ang) - eBC[xyz]) / (rBA*sin(ang));
-  }
-  else if (iatom == 1) {
-    for (xyz=0;xyz<3;++xyz)
-      s[xyz] = ((rBA - rBC*cos(ang))*eBA[xyz] + (rBC-rBA*cos(ang))*eBC[xyz])
-                      / (rBA * rBC * sin(ang));
-  }
-  else if (iatom == 2) {
-    for (xyz=0;xyz<3;++xyz)
-      s[xyz] = (eBC[xyz]*cos(ang) - eBA[xyz]) / (rBC*sin(ang));
-  }
-  return s;
+inline int zeta(const int a, const int m, const int n) {
+  if (a == m) return 1;
+  else if (a == n) return -1;
+  else return 0;
 }
 
-void BEND::print (const FILE *fp) const {
+inline int delta(const int i, const int j) {
+  if (i == j) return 1;
+  else return 0;
+}
+
+double ** BEND::DqDx(GeomType geom) const {
+  double **dqdx = init_matrix(3,3);
+
+  double u[3], v[3], w[3];
+  v3d_axpy(-1, geom[s_atom[1]], geom[s_atom[0]], u); // B->A
+  v3d_axpy(-1, geom[s_atom[1]], geom[s_atom[2]], v); // B->C
+  double Lu = v3d_norm(u); // RBA
+  double Lv = v3d_norm(v); // RBC
+  v3d_scm(1.0/Lu, u); // eBA
+  v3d_scm(1.0/Lv, v); // eBC
+
+  // determine w' vector
+  if (!v3d_is_parallel(u,v))
+    v3d_cross_product(u,v,w);
+  else {
+    double tvect[3];
+    tvect[0] = 1; tvect[1] = -1; tvect[2] = 1;
+    if (!v3d_is_parallel(u,tvect) && !v3d_is_parallel(v,tvect))
+      v3d_cross_product(u,tvect,w);
+    else {
+      tvect[0] = -1; tvect[1] = 1; tvect[2] = 1;
+      v3d_cross_product(u,tvect,w);
+    }
+  }
+  v3d_normalize(w);
+
+  double u_cross_w[3],w_cross_v[3];
+  v3d_cross_product(u, w, u_cross_w);
+  v3d_cross_product(w, v, w_cross_v);
+
+  for (int a=0; a<3; ++a)
+    for (int i=0; i<3; ++i)
+      dqdx[a][i] = zeta(a,0,1)*u_cross_w[i]/Lu + zeta(a,2,1)*w_cross_v[i]/Lv;
+
+  return dqdx;
+}
+
+double ** BEND::Dq2Dx2(GeomType geom) const {
+  double **dq2dx2 = init_matrix(9,9);
+
+  double u[3], v[3], w[3];
+  v3d_axpy(-1, geom[s_atom[1]], geom[s_atom[0]], u); // B->A
+  v3d_axpy(-1, geom[s_atom[1]], geom[s_atom[2]], v); // B->C
+  double Lu = v3d_norm(u); // RBA
+  double Lv = v3d_norm(v); // RBC
+  v3d_scm(1.0/Lu, u);  // eBA
+  v3d_scm(1.0/Lv, v);  // eBC
+
+  // determine w' vector
+  if (!v3d_is_parallel(u,v)) 
+    v3d_cross_product(u,v,w);
+  else {
+    double tvect[3]; 
+    tvect[0] = 1; tvect[1] = -1; tvect[2] = 1;
+    if (!v3d_is_parallel(u,tvect) && !v3d_is_parallel(v,tvect)) 
+      v3d_cross_product(u,tvect,w);
+    else {
+      tvect[0] = -1; tvect[1] = 1; tvect[2] = 1;
+      v3d_cross_product(u,tvect,w);
+    }
+  }
+  v3d_normalize(w);
+
+  // compute first derivatives
+  double u_cross_w[3],w_cross_v[3];
+  v3d_cross_product(u, w, u_cross_w);
+  v3d_cross_product(w, v, w_cross_v);
+
+  double **dqdx = init_matrix(3,3);
+  for (int a=0; a<3; ++a)
+    for (int i=0; i<3; ++i)
+      dqdx[a][i] = zeta(a,0,1)*u_cross_w[i]/Lu + zeta(a,2,1)*w_cross_v[i]/Lv;
+
+  double cos_q = v3d_dot(u,v);
+  if (1.0-cos_q*cos_q <= 1.0e-12) return dqdx; // leave 2nd derivatives empty - sin 0 = 0 in denominator
+  double sin_q = sqrt(1.0 - cos_q*cos_q);
+
+  double tval;
+  for (int a=0; a<3; ++a)
+    for (int i=0; i<3; ++i) //i = a_xyz
+      for (int b=0; b<3; ++b)
+        for (int j=0; j<3; ++j) { //j=b_xyz
+          tval = zeta(a,0,1)*zeta(b,0,1)*(u[i]*v[j]+u[j]*v[i]-3*u[i]*u[j]*cos_q+delta(i,j)*cos_q) / (Lu*Lu*sin_q);
+
+          tval +=zeta(a,2,1)*zeta(b,2,1)*(v[i]*u[j]+v[j]*u[i]-3*v[i]*v[j]*cos_q+delta(i,j)*cos_q) / (Lv*Lv*sin_q);
+
+          tval +=zeta(a,0,1)*zeta(b,2,1)*(u[i]*u[j]+v[j]*v[i]-u[i]*v[j]*cos_q-delta(i,j)) / (Lu*Lv*sin_q);
+
+          tval +=zeta(a,2,1)*zeta(b,0,1)*(v[i]*v[j]+u[j]*u[i]-v[i]*u[j]*cos_q-delta(i,j)) / (Lu*Lv*sin_q);
+
+          tval -= cos_q / sin_q * dqdx[a][i] * dqdx[b][j];
+
+          dq2dx2[3*a+i][3*b+j] = tval;
+        }
+
+  free_matrix(dqdx);
+
+  return dq2dx2;
+}
+
+
+void BEND::print(FILE *fp, GeomType geom) const {
   ostringstream iss(ostringstream::out); // create stream; allow output to it
   iss << "A(" << s_atom[0]+1 << "," << s_atom[1]+1 << "," << s_atom[2]+1 << ")" ;
-  fprintf(const_cast<FILE *>(fp),"\t %-15s  =  %15.6lf\t%15.6lf\n",
-    iss.str().c_str(), s_val, s_val/_pi*180.0);
+  double val = value(geom);
+  fprintf(fp,"\t %-15s  =  %15.6lf\t%15.6lf\n",
+    iss.str().c_str(), val, val/_pi*180.0);
 }
 
-void BEND::print_disp(const FILE *fp, const double q_old, const double f_q,
+void BEND::print_disp(FILE *fp, const double q_old, const double f_q,
     const double dq, const double q_new) const {
   ostringstream iss(ostringstream::out); // create stream; allow output to it
   iss << "A(" << s_atom[0]+1 << "," << s_atom[1]+1 << "," << s_atom[2]+1 << ")" ;
-  fprintf(const_cast<FILE *>(fp),"\t %-15s = %13.6lf%13.6lf%13.6lf%13.6lf\n",
+  fprintf(fp,"\t %-15s = %13.6lf%13.6lf%13.6lf%13.6lf\n",
     iss.str().c_str(), q_old/_pi*180.0, f_q*_hartree2aJ*_pi/180.0,
       dq/_pi*180.0, q_new/_pi*180.0);
 }
 
+void BEND::print_intco_dat(FILE *fp) const {
+  fprintf(fp, "B%6d%6d%6d\n", s_atom[0]+1, s_atom[1]+1, s_atom[2]+1);
+}
 
-void BEND::print_s(const FILE *fp, double **geom) const {
-  fprintf(const_cast<FILE *>(fp),"S vector for bend, A(%d %d %d): \n",
+void BEND::print_s(FILE *fp, GeomType geom) const {
+  fprintf(fp,"S vector for bend, A(%d %d %d): \n",
     s_atom[0]+1, s_atom[1]+1, s_atom[2]+1);
-  double *s0, *s1, *s2;
-  s0 = g_s(geom,0);
-  s1 = g_s(geom,1);
-  s2 = g_s(geom,2);
-  fprintf(const_cast<FILE *>(fp), "Atom 1: %12.8f %12.8f,%12.8f\n", s0[0], s0[1], s0[2]);
-  fprintf(const_cast<FILE *>(fp), "Atom 2: %12.8f %12.8f,%12.8f\n", s1[0], s1[1], s1[2]);
-  fprintf(const_cast<FILE *>(fp), "Atom 3: %12.8f %12.8f,%12.8f\n", s2[0], s2[1], s2[2]);
-  free_array(s0);
-  free_array(s1);
-  free_array(s2);
+  double **dqdx = DqDx(geom);
+  fprintf(fp, "Atom 1: %12.8f %12.8f,%12.8f\n", dqdx[0][0], dqdx[0][1], dqdx[0][2]);
+  fprintf(fp, "Atom 2: %12.8f %12.8f,%12.8f\n", dqdx[1][0], dqdx[1][1], dqdx[1][2]);
+  fprintf(fp, "Atom 3: %12.8f %12.8f,%12.8f\n", dqdx[2][0], dqdx[2][1], dqdx[2][2]);
+  free_matrix(dqdx);
 }
 
 bool BEND::operator==(const SIMPLE & s2) const {

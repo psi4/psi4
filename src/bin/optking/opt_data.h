@@ -1,12 +1,21 @@
 #ifndef _opt_opt_data_h_
 #define _opt_opt_data_h_
 
+#include <cmath>
 #include <fstream>
 #include <vector>
+
+#include "package.h"
+
 #include "linear_algebra.h"
 #include "molecule.h"
+#include "print.h"
 
-#define FILENAME_OPT_DATA "opt_data.1"
+#if defined(PSI4)
+#include "physconst.h"
+#include <libpsio/psio.h>
+#include <psifiles.h>
+#endif
 
 namespace opt {
 
@@ -26,7 +35,7 @@ class STEP_DATA {
   double *dq;         // step in internal coordinates
 
   public:
-    STEP_DATA(ifstream & fin, int Nintco, int Ncart);  // read in date for one step
+    //STEP_DATA(ifstream & fin, int Nintco, int Ncart);  // read in date for one step
 
     STEP_DATA(int Nintco, int Ncart);   // allocate memory only
 
@@ -39,8 +48,19 @@ class STEP_DATA {
     void save_step_info(double DE_predicted_in, double *unit_step_in, double dq_norm_in,
      double dq_gradient_in, double dq_hessian_in, int Nintco);
 
-    // write entry to binary file
+    // write step to binary file
+#if defined(PSI4)
+    void write(int istep, int Nintco, int Ncart);
+#elif defined (QCHEM4)
     void write(ofstream & fout, int Nintco, int Ncart);
+#endif
+
+    // read step from binary file
+#if defined(PSI4)
+    void read(int istep, int Nintco, int Ncart);
+#elif defined (QCHEM4) 
+    void read(ifstream & fin, int Nintco, int Ncart);
+#endif
 
     // functions to retrieve data
     double *g_forces_pointer(void) const { return f_q; }
