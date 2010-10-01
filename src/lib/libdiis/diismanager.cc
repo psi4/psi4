@@ -343,7 +343,20 @@ DIISManager::extrapolate(int numQuantities, ...)
     coefficients[_subspace.size()] = 1.0;
     bMatrix[_subspace.size()][_subspace.size()] = 0.0;
 
-    C_DGESV(dimension, 1, bMatrix[0], dimension, pivots, coefficients, dimension);
+    int ret = 0;
+    ret = C_DGESV(dimension, 1, bMatrix[0], dimension, pivots, coefficients, dimension);
+
+    if (ret != 0) {
+        if (ret < 0) {
+            fprintf(stderr, "libdiis: DIIS extrapolation error: %d argument to DGESV had an illegal value.\n", -ret);
+            abort();
+        }
+        else {
+            fprintf(stderr, "libdiis: DIIS extrapolation error: DGESV matrix element (%d, %d) is exactly zero\n"
+                            "         resulting in a singularity.\nTry turning DIIS off.\n", ret, ret);
+            abort();
+        }
+    }
 
     dpdfile2 *file2;
     dpdbuf4 *buf4;
