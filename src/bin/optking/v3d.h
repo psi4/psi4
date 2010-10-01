@@ -9,6 +9,8 @@
 #include <cmath>
 #define V3D_SQR(x) ((x)*(x))
 
+#define PARALLEL_LIMIT (1.0e-10)
+
 namespace opt { namespace v3d {
 
 // scalar multiply a vector
@@ -55,6 +57,14 @@ inline void v3d_cross_product(const double *u, const double *v, double *X) {
   X[1] = -1.0*(u[0]*v[2]-u[2]*v[0]);
   X[2] = u[0]*v[1]-u[1]*v[0];
   return;
+}
+
+// check to see if two vectors are parallel, i.e., is |A.B| close to 1
+inline bool v3d_is_parallel(const double *A, const double *B) {
+  if ( fabs( fabs(v3d_dot(A,B)) - 1.0e0) > PARALLEL_LIMIT )
+    return false;
+  else
+    return true;
 }
 
 // Compute vector A->B.  Normalize eAB.  Return "false" and do not normalize

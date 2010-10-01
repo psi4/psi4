@@ -28,9 +28,9 @@ void FRAG::displace(double *dq, bool print_disp) {
   fprintf(outfile,"\t Iter     RMS difference    MAX difference   \n");
   fprintf(outfile,"\t---------------------------------------------\n");
 
-  compute_intco_values(); // lock in orientation of torsions
+  //compute_intco_values(); // lock in orientation of torsions
   fix_tors_near_180(); // subsequent computes will modify torsional values
-  double * q_orig = g_intco_values();
+  double * q_orig = intco_values();
   if (Opt_params.print_lvl > 2) {
     fprintf(outfile,"\nOriginal q internal coordinates\n");
     for (i=0; i<Nints; ++i) fprintf(outfile, "\t%15.10lf\n", q_orig[i]);
@@ -79,8 +79,8 @@ void FRAG::displace(double *dq, bool print_disp) {
     }
 
     set_geom_array(new_geom);
-    compute_intco_values();
-    new_q = g_intco_values();
+    //compute_intco_values();
+    new_q = intco_values();
     /* if (Opt_params.print_lvl > 2) {
       fprintf(outfile,"\nObtained q internal coordinates\n");
       for (i=0; i<Nints; ++i) fprintf(outfile, "\t%15.10lf\n", new_q[i]);}*/
@@ -116,8 +116,8 @@ void FRAG::displace(double *dq, bool print_disp) {
   }
 
   /* Set dq to final, total displacement achieved */
-  compute_intco_values();
-  new_q = g_intco_values();
+  //compute_intco_values();
+  new_q = intco_values();
   for (i=0; i< Nints; ++i)
     dq[i] = new_q[i] - q_orig[i]; // calculate dq from _target_
 
@@ -125,7 +125,7 @@ void FRAG::displace(double *dq, bool print_disp) {
 
     double *f_q = p_Opt_data->g_forces_pointer(); // for printing
 
-    fprintf(outfile,"\n\t---Internal Coordinate Displacements in ANG or DEG (%d) ---\n", intcos.size());
+    fprintf(outfile,"\n\t---Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG (%d) ---\n", intcos.size());
     fprintf(outfile,"\t ----------------------------------------------------------------------\n");
     fprintf(outfile,"\t Coordinate             Previous        Force       Change         New \n");
     fprintf(outfile,"\t ----------             --------       ------       ------       ------\n");

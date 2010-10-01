@@ -65,8 +65,7 @@ MOLECULE::MOLECULE(ifstream & fin) {
     // rewind, determine number of geometries
     fin.seekg(0);
     int nlines = 0;
-    try {
-      //while ( !fin.eof() ) { // ignore exception
+    try { // ignore exceptions only here
       while (fin.peek() != EOF) {
         fin.getline(cline, 256);
         ++nlines;
@@ -140,7 +139,7 @@ bool is_integer(const char *check) {
 }
 
 
-// compute forces in internal coordinates
+// compute forces in internal coordinates in au
 // forces in internal coordinates, f_q = G_inv B u f_x
 // if u is unit matrix, f_q = (BB^T)^(-1) * B f_x
 void MOLECULE::forces (void) {
@@ -233,15 +232,8 @@ void MOLECULE::project_f_and_H(void) {
 }
 
 void MOLECULE::write_geom(void) {
-  FILE *fp_geom = fopen(FILENAME_GEOM_OUT, "w");
-
-  fprintf(fp_geom, "PSI: (\n");
-  fprintf(fp_geom, "GEOMETRY = ( \n");
   for (int i=0; i<fragments.size(); ++i)
-    fragments[i]->write_geom(fp_geom);
-  fprintf(fp_geom, "  )\n");
-  fprintf(fp_geom, ")\n");
-  fclose(fp_geom);
+    fragments[i]->write_geom(outfile);
 }
 
 }
@@ -331,6 +323,122 @@ void MOLECULE::H_guess(void) const {
     fprintf(outfile,"Initial Hessian guess\n");
     print_matrix(outfile, H, g_nintco(), g_nintco());
   }
+  return;
+}
+
+// test the analytic B matrix (and displacement code) by comparing
+// analytic DqDx to finite-difference DqDx
+void MOLECULE::test_B(void) {
+  int Natom = g_natom();
+  int Nintco = g_nintco();
+  const double disp_size = 0.001;
+
+  fprintf(outfile,"\n\tTesting B-matrix numerically...\n");
+
+  double **B_analytic = compute_B();
+  fprintf(outfile, "Analytic B matrix in au\n");
+  print_matrix(outfile, B_analytic, Nintco, 3*Natom);
+
+  double **coord, *q_plus, *q_minus, **B_fd;
+
+  coord = g_geom_2D(); // in au
+  B_fd = init_matrix(Nintco, 3*Natom);
+
+  for (int atom=0; atom<Natom; ++atom) {
+    for (int xyz=0; xyz<3; ++xyz) {
+      coord[atom][xyz] += disp_size;
+      q_plus  = intco_values(coord);
+      coord[atom][xyz] -= 2.0*disp_size;
+      q_minus = intco_values(coord);
+      coord[atom][xyz] += disp_size; // restore
+
+      for (int i=0; i<Nintco; ++i)
+        B_fd[i][3*atom+xyz] = (q_plus[i]-q_minus[i]) / (2.0*disp_size);
+
+      free_array(q_plus);
+      free_array(q_minus);
+    }
+  }
+  free_matrix(coord);
+
+  fprintf(outfile,"\nNumerical B matrix in au, disp_size = %lf\n",disp_size);
+  print_matrix(outfile, B_fd, Nintco, 3*Natom);
+
+  double max_error = 0.0;
+  for (int i=0; i<Nintco; ++i)
+    for (int j=0; j<3*Natom; ++j)
+      if ( fabs(B_analytic[i][j] - B_fd[i][j]) > max_error )
+        max_error = fabs(B_analytic[i][j] - B_fd[i][j]);
+
+  fprintf(outfile,"\n\tMaximum difference is %.1e.", max_error);
+  if (max_error > 5.0e-3) {
+    fprintf(outfile, "\nUh-Oh.  Perhaps a bug or your angular coordinates are at a discontinuity.\n");
+    fprintf(outfile, "If the latter, restart your optimization at a new or updated geometry.\n");
+    fprintf(outfile, "Remove angular coordinates that are fixed by symmetry\n");
+  }
+  else {
+    fprintf(outfile,"  Looks great.\n");
+  }
+
+  free_matrix(B_analytic);
+  free_matrix(B_fd);
+  return;
+}
+
+void MOLECULE::test_derivative_B(void) {
+  int Natom = g_natom();
+  int Nintco = g_nintco();
+  const double disp_size = 0.001;
+
+  fprintf(outfile,"\n\tTesting B-matrix numerically...\n");
+
+  double **B_analytic = compute_B();
+  fprintf(outfile, "Analytic B matrix in au\n");
+  print_matrix(outfile, B_analytic, Nintco, 3*Natom);
+
+  double **coord, *q_plus, *q_minus, **B_fd;
+
+  coord = g_geom_2D(); // in au
+  B_fd = init_matrix(Nintco, 3*Natom);
+
+  for (int atom=0; atom<Natom; ++atom) {
+    for (int xyz=0; xyz<3; ++xyz) {
+      coord[atom][xyz] += disp_size;
+      q_plus  = intco_values(coord);
+      coord[atom][xyz] -= 2.0*disp_size;
+      q_minus = intco_values(coord);
+      coord[atom][xyz] += disp_size; // restore
+
+      for (int i=0; i<Nintco; ++i)
+        B_fd[i][3*atom+xyz] = (q_plus[i]-q_minus[i]) / (2.0*disp_size);
+
+      free_array(q_plus);
+      free_array(q_minus);
+    }
+  }
+  free_matrix(coord);
+
+  fprintf(outfile,"\nNumerical B matrix in au, disp_size = %lf\n",disp_size);
+  print_matrix(outfile, B_fd, Nintco, 3*Natom);
+
+  double max_error = 0.0;
+  for (int i=0; i<Nintco; ++i)
+    for (int j=0; j<3*Natom; ++j)
+      if ( fabs(B_analytic[i][j] - B_fd[i][j]) > max_error )
+        max_error = fabs(B_analytic[i][j] - B_fd[i][j]);
+
+  fprintf(outfile,"\n\tMaximum difference is %.1e.", max_error);
+  if (max_error > 5.0e-3) {
+    fprintf(outfile, "\nUh-Oh.  Perhaps a bug or your angular coordinates are at a discontinuity.\n");
+    fprintf(outfile, "If the latter, restart your optimization at a new or updated geometry.\n");
+    fprintf(outfile, "Remove angular coordinates that are fixed by symmetry\n");
+  }
+  else {
+    fprintf(outfile,"  Looks great.\n");
+  }
+
+  free_matrix(B_analytic);
+  free_matrix(B_fd);
   return;
 }
 

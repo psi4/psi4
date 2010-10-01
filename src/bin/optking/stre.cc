@@ -33,59 +33,101 @@ STRE::STRE(int A_in, int B_in) : SIMPLE(stre_type, 2) {
 }
 
 // compute value and store in au
-void STRE::compute_val(double **geom) {
-  s_val = v3d_dist(geom[s_atom[0]], geom[s_atom[1]]);
+double STRE::value(GeomType geom) const {
+  return ( v3d_dist(geom[s_atom[0]], geom[s_atom[1]]) );
 }
 
-// compute s vector for atom and return
-double * STRE::g_s(double **geom, const int iatom) const {
-  double *eBA = init_array(3);
+inline int zeta(const int a, const int m, const int n) {
+  if (a == m) return 1;
+  else if (a == n) return -1;
+  else return 0;
+}
 
-  if ( (iatom != 0) && (iatom != 1) )
-    throw("STRE::g_s: requested atom not 0 or 1");
+inline int delta(const int i, const int j) {
+  if (i == j) return 1;
+  else return 0;
+}
 
-  if (! v3d_eAB(geom[s_atom[1]], geom[s_atom[0]], eBA) )
+// Equations for B and B' elements from
+// Bakken & Helgaker, JCP, 117, 9160 (2002).
+
+// compute and return array of first derivative (B marix elements)
+// return order is:
+// atom_i  cartesian
+// 0       x y z
+// 1       x y z ..
+double ** STRE::DqDx(GeomType geom) const {
+  double eAB[3];
+  double **dqdx = init_matrix(2,3);
+
+  if (! v3d_eAB(geom[s_atom[0]], geom[s_atom[1]], eAB) )
     throw("STRE::g_s: could not normalize s vector.");
 
-  if (iatom == 1) {
-      eBA[0] *= -1.0;
-      eBA[1] *= -1.0;
-      eBA[2] *= -1.0;
-  }
+  for (int a=0; a<2; ++a)
+    for (int a_xyz=0; a_xyz<3; ++a_xyz)
+      dqdx[a][a_xyz] = zeta(a,1,0) * eAB[a_xyz];
 
-  return eBA;
+  return dqdx;
+}
+
+// compute and return array of second derivative (B' matrix elements)
+// return order is:
+// atom_a atom_b cartesians
+// 0      1      xx xy xz yx yy yz zx zy zz
+double ** STRE::Dq2Dx2(GeomType geom) const {
+  double eAB[3];
+  double **dq2dx2 = init_matrix(6,6);
+
+  if (! v3d_eAB(geom[s_atom[0]], geom[s_atom[1]], eAB) )
+    throw("STRE::g_s: could not normalize s vector.");
+
+  double length = value(geom);
+
+  double tval;
+  for (int a=0; a<2; ++a)
+    for (int a_xyz=0; a_xyz<3; ++a_xyz)
+      for (int b=0; b<2; ++b)
+        for (int b_xyz=0; b_xyz<3; ++b_xyz) {
+          tval = (eAB[a_xyz] * eAB[b_xyz] - delta(a_xyz,b_xyz))/length;
+          if (a == b) tval *= -1.0;
+          dq2dx2[3*a+a_xyz][3*b+b_xyz] = tval;
+        }
+
+  return dq2dx2;
 }
 
 // print stretch and value
-void STRE::print(const FILE *fp) const {
+void STRE::print(FILE *fp, GeomType geom) const {
   ostringstream iss(ostringstream::out); // create stream; allow output to it
   iss << "R(" << s_atom[0]+1 << "," << s_atom[1]+1 << ")" ;
-  fprintf(const_cast<FILE *>(fp),"\t %-15s  =  %15.6lf\t%15.6lf\n",
-    iss.str().c_str(), s_val, s_val*_bohr2angstroms);
+  double val = value(geom);
+  fprintf(fp,"\t %-15s  =  %15.6lf\t%15.6lf\n",
+    iss.str().c_str(), val, val*_bohr2angstroms);
+}
+
+void STRE::print_intco_dat(FILE *fp) const {
+  fprintf(fp, "S%6d%6d\n", s_atom[0]+1, s_atom[1]+1);
 }
 
 // print displacement
-void STRE::print_disp(const FILE *fp, const double q_orig, const double f_q,
+void STRE::print_disp(FILE *fp, const double q_orig, const double f_q,
     const double dq, const double new_q) const {
   ostringstream iss(ostringstream::out);
   iss << "R(" << s_atom[0]+1 << "," << s_atom[1]+1 << ")" ;
-  fprintf(const_cast<FILE *>(fp),"\t %-15s = %13.6lf%13.6lf%13.6lf%13.6lf\n",
+  fprintf(fp,"\t %-15s = %13.6lf%13.6lf%13.6lf%13.6lf\n",
     iss.str().c_str(), q_orig*_bohr2angstroms, f_q*_hartree2aJ/_bohr2angstroms,
     dq*_bohr2angstroms, new_q*_bohr2angstroms);
 }
 
 
 // print s vectors
-void STRE::print_s(const FILE *fp, double **geom) const {
-  fprintf(const_cast<FILE *>(fp),"S vector for stretch R(%d %d): \n",
+void STRE::print_s(FILE *fp, GeomType geom) const {
+  fprintf(fp,"S vector for stretch R(%d %d): \n",
     s_atom[0]+1, s_atom[1]+1);
-  double *s0, *s1;
-  s0 = g_s(geom, 0);
-  s1 = g_s(geom, 1);
-  fprintf(const_cast<FILE *>(fp),"Atom 1: %12.8f %12.8f,%12.8f\n", s0[0],s0[1],s0[2]);
-  fprintf(const_cast<FILE *>(fp),"Atom 2: %12.8f %12.8f,%12.8f\n", s1[0],s1[1],s1[2]);
-  free_array(s0);
-  free_array(s1);
+  double **dqdx = DqDx(geom);
+  fprintf(fp,"Atom 1: %12.8f %12.8f,%12.8f\n", dqdx[0][0],dqdx[0][1],dqdx[0][2]);
+  fprintf(fp,"Atom 2: %12.8f %12.8f,%12.8f\n", dqdx[1][0],dqdx[1][1],dqdx[1][2]);
+  free_matrix(dqdx);
 }
 
 bool STRE::operator==(const SIMPLE & s2) const {
