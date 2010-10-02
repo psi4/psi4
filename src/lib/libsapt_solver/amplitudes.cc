@@ -431,12 +431,12 @@ void SAPT::Y2(char *Y2_out, char *T_out, char *VV_opdm, char *OO_opdm,
   double **B_p_RR = get_DF_ints(dfnum,VV_label,nvir*nvir);
   double **B_p_AA = get_DF_ints(dfnum,OO_label,nocc*nocc);
 
-  C_DGEMM('N','T',nocc,nvir,nvir*calc_info_.nri,1.0,&(T_p_AR[0][0]),
+  C_DGEMM('N','T',nocc,nvir,nvir*calc_info_.nrio,1.0,&(T_p_AR[0][0]),
     nvir*calc_info_.nrio,&(B_p_RR[0][0]),nvir*calc_info_.nrio,0.0,&(Y2[0][0]),
     nvir);
 
   for (int a=0; a<nocc; a++) {
-    C_DGEMM('N','T',nocc,nvir,calc_info_.nri,-1.0,&(B_p_AA[a*nocc][0]),
+    C_DGEMM('N','T',nocc,nvir,calc_info_.nrio,-1.0,&(B_p_AA[a*nocc][0]),
       calc_info_.nrio,&(T_p_AR[a*nvir][0]),calc_info_.nrio,1.0,&(Y2[0][0]),
       nvir);
   }

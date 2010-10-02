@@ -57,7 +57,7 @@ void SAPT2p3::exch_ind_disp30()
   e21 = exch_ind_disp30_21();
   e12 = exch_ind_disp30_12();
 
-  results_.exch_ind_disp30 = e10+e01+e11;
+  results_.exch_ind_disp30 = e10+e01+e11+e21+e12;
   if (params_.print) {
     fprintf(outfile,"Exch-Ind-Disp30    = %18.12lf  H\n\n",
       results_.exch_ind_disp30);
