@@ -18,6 +18,7 @@ namespace psi { namespace sapt {
 
 void SAPT2p3::exch_disp30()
 {
+  double e11,e20,e02,e22;
   if (params_.print)
     fprintf(outfile,"Begining Exch-Disp30 Calculation\n\n");
 
@@ -26,17 +27,22 @@ void SAPT2p3::exch_disp30()
   double **Y_ARBS = read_IJKL(PSIF_SAPT_AMPS,"Exch-Disp V_ARBS",
     calc_info_.noccA*calc_info_.nvirA,calc_info_.noccB*calc_info_.nvirB);
 
-  results_.exch_disp30 = -2.0*C_DDOT(calc_info_.noccA*calc_info_.nvirA*
-    calc_info_.nvirB*calc_info_.noccB,&(X_ARBS[0][0]),1,&(Y_ARBS[0][0]),1);
+  e11 = -2.0*C_DDOT(calc_info_.noccA*calc_info_.nvirA*calc_info_.nvirB*
+    calc_info_.noccB,&(X_ARBS[0][0]),1,&(Y_ARBS[0][0]),1);
 
   free_block(X_ARBS);
   free_block(Y_ARBS);
 
-  results_.exch_disp30 += exch_disp30_20();
-  results_.exch_disp30 += exch_disp30_02();
-  results_.exch_disp30 += exch_disp30_22();
+  e20 = exch_disp30_20();
+  e02 = exch_disp30_02();
+  e22 = exch_disp30_22();
+  results_.exch_disp30 = e11 + e20 + e02 + e22;
 
   if (params_.print) {
+    fprintf(outfile,"Exch-Disp30_11     = %18.12lf  H\n",e11);
+    fprintf(outfile,"Exch-Disp30_20     = %18.12lf  H\n",e20);
+    fprintf(outfile,"Exch-Disp30_02     = %18.12lf  H\n",e02);
+    fprintf(outfile,"Exch-Disp30_22     = %18.12lf  H\n",e22);
     fprintf(outfile,"Exch-Disp30        = %18.12lf  H\n\n",
       results_.exch_disp30);
     fflush(outfile);
@@ -339,7 +345,7 @@ double SAPT2p3::exch_disp30_02()
   }
 
   C_DGEMM('N','N',calc_info_.noccA,calc_info_.noccA*calc_info_.nrio,
-    calc_info_.noccA,2.0,&(calc_info_.S_AB[0][0]),calc_info_.nmo,
+    calc_info_.noccB,2.0,&(calc_info_.S_AB[0][0]),calc_info_.nmo,
     &(A_p_BA[0][0]),calc_info_.noccA*calc_info_.nrio,1.0,
     &(A_p_AA[0][0]),calc_info_.noccA*calc_info_.nrio);
 
