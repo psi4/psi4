@@ -86,12 +86,14 @@ void GaussianShell::contraction_normalization()
 
 void GaussianShell::normalize_shell()
 {
+    
     int i, gs;
     
     for (i = 0; i < nprimitives_; ++i) {
         double normalization = primitive_normalization(i);
         coef_[i] *= normalization;
     }
+    contraction_normalization();
 }
 
 int GaussianShell::nfunction() const
