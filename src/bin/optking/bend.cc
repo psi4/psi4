@@ -81,13 +81,13 @@ double ** BEND::DqDx(GeomType geom) const {
   }
   v3d_normalize(w);
 
-  double u_cross_w[3],w_cross_v[3];
-  v3d_cross_product(u, w, u_cross_w);
-  v3d_cross_product(w, v, w_cross_v);
+  double uXw[3],wXv[3];
+  v3d_cross_product(u, w, uXw);
+  v3d_cross_product(w, v, wXv);
 
   for (int a=0; a<3; ++a)
     for (int i=0; i<3; ++i)
-      dqdx[a][i] = zeta(a,0,1)*u_cross_w[i]/Lu + zeta(a,2,1)*w_cross_v[i]/Lv;
+      dqdx[a][i] = zeta(a,0,1)*uXw[i]/Lu + zeta(a,2,1)*wXv[i]/Lv;
 
   return dqdx;
 }
@@ -119,14 +119,14 @@ double ** BEND::Dq2Dx2(GeomType geom) const {
   v3d_normalize(w);
 
   // compute first derivatives
-  double u_cross_w[3],w_cross_v[3];
-  v3d_cross_product(u, w, u_cross_w);
-  v3d_cross_product(w, v, w_cross_v);
+  double uXw[3],wXv[3];
+  v3d_cross_product(u, w, uXw);
+  v3d_cross_product(w, v, wXv);
 
   double **dqdx = init_matrix(3,3);
   for (int a=0; a<3; ++a)
     for (int i=0; i<3; ++i)
-      dqdx[a][i] = zeta(a,0,1)*u_cross_w[i]/Lu + zeta(a,2,1)*w_cross_v[i]/Lv;
+      dqdx[a][i] = zeta(a,0,1)*uXw[i]/Lu + zeta(a,2,1)*wXv[i]/Lv;
 
   double cos_q = v3d_dot(u,v);
   if (1.0-cos_q*cos_q <= 1.0e-12) return dqdx; // leave 2nd derivatives empty - sin 0 = 0 in denominator

@@ -37,12 +37,6 @@ double STRE::value(GeomType geom) const {
   return ( v3d_dist(geom[s_atom[0]], geom[s_atom[1]]) );
 }
 
-inline int zeta(const int a, const int m, const int n) {
-  if (a == m) return 1;
-  else if (a == n) return -1;
-  else return 0;
-}
-
 inline int delta(const int i, const int j) {
   if (i == j) return 1;
   else return 0;
@@ -64,8 +58,10 @@ double ** STRE::DqDx(GeomType geom) const {
     throw("STRE::g_s: could not normalize s vector.");
 
   for (int a=0; a<2; ++a)
-    for (int a_xyz=0; a_xyz<3; ++a_xyz)
-      dqdx[a][a_xyz] = zeta(a,1,0) * eAB[a_xyz];
+    for (int a_xyz=0; a_xyz<3; ++a_xyz) {
+      dqdx[a][a_xyz] = eAB[a_xyz];
+      if (a == 0) dqdx[a][a_xyz] *= -1;
+    }
 
   return dqdx;
 }

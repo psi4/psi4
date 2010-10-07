@@ -91,6 +91,7 @@ void STEP_DATA::save_step_info(double DE_predicted_in, double *unit_step_in, dou
 void STEP_DATA::write(int istep, int Nintco, int Ncart) {
   char lbl[80];
   using namespace psi;
+  fprintf(outfile,"Writing step data to psio file.\n");
   sprintf(lbl, "f_q %d", istep);
   psio_write_entry(PSI_OPTDATA_FILE_NUM, lbl, (char *) f_q, Nintco*sizeof(double));
   sprintf(lbl, "geom %d", istep);
@@ -139,7 +140,7 @@ OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
   psio_open(PSIF_OPTKING, PSIO_OPEN_OLD);
   if (psio_rd_toclen(PSIF_OPTKING) > 0)
     data_file_present = true;
-  psio_close(PSIF_OPTKING, 0);
+  psio_close(PSIF_OPTKING, 1);
 #elif defined(QCHEM4)
   ifstream fin(FILENAME_OPT_DATA, ios_base::in | ios_base::binary);
   data_file_present = fin.is_open();
@@ -225,6 +226,7 @@ void OPT_DATA::write(void) {
   using namespace psi;
   psio_open(PSIF_OPTKING, PSIO_OPEN_OLD);
 
+  fprintf(outfile,"Writing optimization data to psio file.\n");
   psio_write_entry(PSIF_OPTKING, "Nintco", (char *) &Nintco, sizeof(int));
   psio_write_entry(PSIF_OPTKING, "Ncart" , (char *) &Ncart , sizeof(int));
   psio_write_entry(PSIF_OPTKING, "H", (char *) H[0], Nintco * Nintco * sizeof(double) );
@@ -502,6 +504,38 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
   return;
 }
 
+double ** OPT_DATA::read_cartesian_H(void) const {
+
+  double **H_cart = init_matrix(Ncart, Ncart);
+
+  ifstream H_cart_file;
+  H_cart_file.open(FILENAME_CARTESIAN_H, ios_base::in);
+
+  try {
+    int n;
+    H_cart_file >> n; // read natom
+    H_cart_file >> n; // read natom*6 (?)
+
+    for (int i=0; i<Ncart; ++i)
+      for (int j=0; j<Ncart; ++j)
+        H_cart_file >> H_cart[i][j];
+  }
+  catch (std::ios_base::failure & bf) {
+    printf("Error reading cartesian Hessian matrix\n");
+    fprintf(outfile,"Error reading cartesian Hessian matrix\n");
+    throw "Error reading cartesian Hessian matrix\n";
+  }
+
+  H_cart_file.close();
+
+  if (Opt_params.print_lvl >= 3) {
+    fprintf(outfile,"\tCartesian Hessian matrix read: \n");
+    print_matrix(outfile, H_cart, Ncart, Ncart);
+    fflush(outfile);
+  }
+
+  return H_cart;
+}
 
 } // end ::opt
 

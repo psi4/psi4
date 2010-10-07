@@ -151,6 +151,9 @@ class OPT_DATA {
 
     // perform Hessian update
     void H_update(opt::MOLECULE & mol);
+
+    // read in cartesian Hessian
+    double ** read_cartesian_H(void) const;
 };
 
 };

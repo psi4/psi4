@@ -54,6 +54,12 @@ class FRAG {
   double ** compute_B(void) const ;
   void compute_B(double **) const ; // use prevously allocated memory
 
+  // compute B' matrix for one internal coordinate computed with member geometry
+  double ** compute_derivative_B(int intco_index) const;
+
+  // compute B' matrix for one internal coordinate computed with given geometry
+  double ** compute_derivative_B(int intco_index, GeomType new_geom) const;
+
   // compute and print B matrix (for debugging)
   void print_B(FILE *fp) const ;
 
@@ -62,6 +68,16 @@ class FRAG {
 
   // return number of intrafragment coordinates
   int g_nintco(void) const { return intcos.size(); };
+
+  // return natom in definition of intco # intco_index
+  int g_intco_natom(const int intco_index) const {
+    return intcos.at(intco_index)->g_natom();
+  }
+
+  // return atom i in definition of intco # intco_index
+  int g_intco_atom(const int intco_index, const int atom) const {
+    return intcos.at(intco_index)->g_atom(atom);
+  }
 
   // don't let angles pass through 0
   void check_zero_angles(double const * const dq);

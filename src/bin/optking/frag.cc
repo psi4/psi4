@@ -250,6 +250,17 @@ double * FRAG::intco_values(GeomType new_geom) const {
   return q;
 }
 
+// returns B' matrix for one internal coordinate
+double ** FRAG::compute_derivative_B(int intco_index) const {
+  return compute_derivative_B(intco_index,geom);
+}
+
+// returns B' matrix for one internal coordinate computed with given geometry
+double ** FRAG::compute_derivative_B(int intco_index, GeomType new_geom) const {
+  double **frag_dq2dx2 = intcos.at(intco_index)->Dq2Dx2(new_geom);
+  return frag_dq2dx2;
+}
+
 // returns B matrix of internal coordinates
 double ** FRAG::compute_B(void) const {
   double **Bintco;

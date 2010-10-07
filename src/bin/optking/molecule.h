@@ -6,7 +6,8 @@
 #include <fstream>
 
 #define FILENAME_GEOM_GRAD_IN "psi.file11.dat"
-#define FILENAME_GEOM_OUT "psi.geom.dat"
+#define FILENAME_GEOM_OUT     "psi.geom.dat"
+#define FILENAME_CARTESIAN_H  "psi.file15.dat"
 
 namespace opt {
 
@@ -125,7 +126,7 @@ class MOLECULE {
     return q;
   }
 
-  double * g_grad_array(void) {
+  double * g_grad_array(void) const {
     int f, i;
     double *g, *g_frag;
 
@@ -185,7 +186,57 @@ class MOLECULE {
     return B;
   }
 
+  // return derivative B matrix for 1 internal coordinate
+  //double ** compute_derivative_B(int intco_index) const {
+    //compute_derivative_B(intco_index, geom);
+  //}
+
+  double ** compute_derivative_B(int intco_index, GeomType new_geom = NULL) const {
+    int cnt_intcos = 0;
+    int frag_i = 0;
+    int intco_i = 0;
+
+    for (int f=0; f<fragments.size(); ++f) {
+      for (int i=0; i<fragments[f]->g_nintco(); ++i) {
+        if (cnt_intcos++ == intco_index) {
+          frag_i = f;
+          intco_i = i;
+          break;
+        }
+      }
+    }
+
+printf("Computing Bprime for frag %d intco %d\n", frag_i, intco_i);
+
+    double **dq2dx2_frag;
+    if (new_geom == NULL)
+      dq2dx2_frag = fragments[frag_i]->compute_derivative_B(intco_i);
+    else
+      dq2dx2_frag = fragments[frag_i]->compute_derivative_B(intco_i, new_geom);
+
+    double **dq2dx2 = init_matrix(3*g_natom(), 3*g_natom());
+
+    int natom_intco = fragments[frag_i]->g_intco_natom(intco_i);  // 2, 3 or 4 depending on type
+
+printf("natom_intco in compute_derivative_B %d\n", natom_intco);
+
+    int mol_a, mol_b;
+    for (int a=0; a<natom_intco; ++a) {
+      mol_a = fragments[frag_i]->g_intco_atom(intco_index, a);
+      for (int b=0; b<natom_intco; ++b) {
+        mol_b = fragments[frag_i]->g_intco_atom(intco_index, b);
+        for (int xyz_a=0; xyz_a<3; ++xyz_a)
+          for (int xyz_b=0; xyz_b<3; ++xyz_b)
+            dq2dx2[3*mol_a + xyz_a][3*mol_b + xyz_b] = dq2dx2_frag[3*a+xyz_a][3*b+xyz_b];
+      }
+    }
+    free_matrix(dq2dx2_frag);
+
+    return dq2dx2;
+  }
+
   void H_guess(void) const;
+
   void forces(void);
   void project_f_and_H(void);
   void nr_step(void);
@@ -208,6 +259,8 @@ class MOLECULE {
 
   void test_B(void);
   void test_derivative_B(void);
+
+  double ** cartesian_H_to_internals(void) const;
 
 /*
   // compute and print B matrix (for debugging)
