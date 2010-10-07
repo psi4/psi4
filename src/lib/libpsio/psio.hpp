@@ -129,6 +129,19 @@ namespace psi {
 
       /// Return the global shared object
       static shared_ptr<PSIO> shared_object() { return _default_psio_lib_; }
+
+      /** Read the length of the TOC for a given unit directly from the file.
+       **
+       ** \param unit = PSI unit number from which to read the toclen.
+       **
+       ** NB: Note that we do not exit if the read request of the toclen from
+       ** the file fails. This is because the request may be to an new file
+       ** for which the toclen has not yet been written.  (We allow the user
+       ** to open files with status PSIO_OPEN_OLD even if they don't exist,
+       ** because sometimes you can't know this in advance.)
+       */
+      ULI rd_toclen(unsigned int unit);
+
     private:
       /// vector of units
       psio_ud *psio_unit;
@@ -160,17 +173,6 @@ namespace psi {
       psio_tocentry* toclast(unsigned int unit);
       /// Compute the length of the TOC for a given unit using the in-core TOC list.
       unsigned int toclen(unsigned int unit);
-      /** Read the length of the TOC for a given unit directly from the file.
-       **
-       ** \param unit = PSI unit number from which to read the toclen.
-       **
-       ** NB: Note that we do not exit if the read request of the toclen from
-       ** the file fails. This is because the request may be to an new file
-       ** for which the toclen has not yet been written.  (We allow the user
-       ** to open files with status PSIO_OPEN_OLD even if they don't exist,
-       ** because sometimes you can't know this in advance.)
-       */
-      ULI rd_toclen(unsigned int unit);
       /** Write the length of the TOC for a given unit directly to the file.
        **
        ** \param unit = PSI unit number to which to write the toclen.
