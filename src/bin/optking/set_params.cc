@@ -52,10 +52,9 @@ void set_params(void) {
   Opt_params.bt_dq_conv_max = 1.0e-5;
 
   // 1=default; 2=medium; 3=lots
-  Opt_params.print_lvl = 4;
+  Opt_params.print_lvl = 3;
 
 }
-
 
 }
 

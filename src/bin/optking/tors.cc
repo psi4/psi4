@@ -13,6 +13,7 @@
 #include "v3d.h"
 #include "physconst.h"
 #include "opt_params.h"
+#include <cmath>
 
 namespace opt {
 
@@ -107,10 +108,10 @@ double ** TORS::DqDx(GeomType geom) const {
   v3d_cross_product(u, w, uXw);
   v3d_cross_product(v, w, vXw);
 
-  double tval1, tval2, tval3;
+  double tval1, tval2, tval3, tval4;
   for (int a=0; a<4; ++a) // atoms
     for (int i=0; i<3; ++i) {  //i=a_xyz
-      tval1 = tval2 = tval3 = 0.0;
+      tval1 = tval2 = tval3 = tval4 = 0.0;
 
       if ((a == 0) || (a == 1))
         tval1 = zeta(a,0,1) * uXw[i] / (Lu*sin_u*sin_u);
@@ -118,16 +119,24 @@ double ** TORS::DqDx(GeomType geom) const {
       if ((a == 2) || (a == 3))
         tval2 = zeta(a,2,3) * vXw[i] / (Lv*sin_v*sin_v);
 
-      if ((a == 1) || (a == 2)) // "+" sign below differs from JCP, 117, 9164 (2002)
-        tval3 = zeta(a,1,2) * (uXw[i]*cos_u/(Lw*sin_u*sin_u) + vXw[i]*cos_v/(Lw*sin_v*sin_v));
+      if ((a == 1) || (a == 2))
+        tval3 =   zeta(a,1,2) * uXw[i]*cos_u/(Lw*sin_u*sin_u);
 
-      dqdx[a][i] = tval1 + tval2 + tval3;
+      if ((a == 1) || (a == 2)) // "+" sign (or zeta(a,2,1)) differs from JCP, 117, 9164 (2002)
+        tval4 = - zeta(a,2,1) * vXw[i]*cos_v/(Lw*sin_v*sin_v);
+
+      dqdx[a][i] = tval1 + tval2 + tval3 + tval4;
     }
 
   return dqdx;
 }
 
 // torsion is m-o-p-n
+// There are several errors in JCP, 22, 9164, (2002)
+// I identified incorrect signs by making the equations invariant to reversing the atom indices
+// (0,1,2,3) -> (3,2,1,0) and checking terms against finite differences.  Also, the last terms
+// with sin^2 in the denominator are incorrectly given as only sin^1 in the paper.
+// -RAK 2010
 double ** TORS::Dq2Dx2(GeomType geom) const {
   double **dq2dx2 = init_matrix(12,12);
 
@@ -135,16 +144,15 @@ double ** TORS::Dq2Dx2(GeomType geom) const {
   v3d_axpy(-1, geom[s_atom[1]], geom[s_atom[0]], u); // u=m-o eBA
   v3d_axpy(-1, geom[s_atom[2]], geom[s_atom[3]], v); // v=n-p eCD
   v3d_axpy(-1, geom[s_atom[1]], geom[s_atom[2]], w); // w=p-o eBC
-  double Lu, Lv, Lw;
-  Lu = v3d_norm(u); // RBA 
-  Lv = v3d_norm(v); // RCD 
-  Lw = v3d_norm(w); // RBC 
+  double Lu = v3d_norm(u); // RBA 
+  double Lv = v3d_norm(v); // RCD 
+  double Lw = v3d_norm(w); // RBC 
   v3d_scm(1.0/Lu, u);  // eBA
   v3d_scm(1.0/Lv, v);  // eCD
   v3d_scm(1.0/Lw, w);  // eBC
 
   double cos_u = v3d_dot(u,w);
-  double cos_v = - v3d_dot(v,w);
+  double cos_v = -1.0 * v3d_dot(v,w);
   if (1.0 - cos_u*cos_u <= 1.0e-12) return dq2dx2; // abort and leave zero if 0 or 180 angle
   if (1.0 - cos_v*cos_v <= 1.0e-12) return dq2dx2; // abort and leave zero if 0 or 180 angle
   double sin_u = sqrt(1.0 - cos_u*cos_u);
@@ -159,48 +167,69 @@ double ** TORS::Dq2Dx2(GeomType geom) const {
   double cosu3 = cos_u*cos_u*cos_u;
   double cosv3 = cos_v*cos_v*cos_v;
 
-  double tval;
+  double tval, tval1, tval1b, tval2, tval2b, tval3, tval3b, tval4, tval4b;
+
   int k; // cartesian ; not i or j
-  for (int a=0; a<4; ++a)
-    for (int i=0; i<3; ++i) //i = a_xyz
-      for (int b=0; b<4; ++b)
+  for (int a=0; a<4; ++a) {
+    for (int b=0; b<=a; ++b) {
+      for (int i=0; i<3; ++i) { //i = a_xyz
         for (int j=0; j<3; ++j) { //j=b_xyz
+          tval = 0;
 
-          tval = zeta(a,0,1)*zeta(b,0,1)*(uXw[i]*(w[j]*cos_u-u[j]) + uXw[j]*(w[i]*cos_u-u[i]))
-                   / (Lu*Lu*sinu4);
+          if ((a==0 && b==0) || (a==1 && b==0) || (a==1 && b ==1))
+            tval +=  zeta(a,0,1)*zeta(b,0,1)*(uXw[i]*(w[j]*cos_u-u[j]) + uXw[j]*(w[i]*cos_u-u[i])) / (Lu*Lu*sinu4);
 
-          tval +=zeta(a,3,2)*zeta(b,3,2)*(vXw[i]*(w[j]*cos_v-v[j]) + vXw[j]*(w[i]*cos_v-v[i]))
-                   / (Lv*Lv*sinv4);
+          // above under reversal of atom indices, u->v ; w->(-w) ; uXw->(-uXw)
+          if ((a==3 && b==3) || (a==3 && b==2) || (a==2 && b==2))
+            tval += zeta(a,3,2)*zeta(b,3,2)*(vXw[i]*(w[j]*cos_v+v[j]) + vXw[j]*(w[i]*cos_v+v[i])) / (Lv*Lv*sinv4);
 
-          tval += (zeta(a,0,1)*zeta(b,1,2)+zeta(a,2,1)*zeta(b,1,0)) *
-            (uXw[i] * (w[j]-2*u[j]*cos_u+w[j]*cos_u*cos_u) +
-             uXw[j] * (w[i]-2*u[i]*cos_u+w[i]*cos_u*cos_u)) / (2*Lu*Lw*sinu4);
+          if ((a==1 && b==1) || (a==2 && b==1) || (a==2 && b==0) || (a==1 && b==0))
+            tval +=   (zeta(a,0,1)*zeta(b,1,2)+zeta(a,2,1)*zeta(b,1,0)) *
+              (uXw[i] * (w[j] - 2*u[j]*cos_u + w[j]*cos_u*cos_u) +
+               uXw[j] * (w[i] - 2*u[i]*cos_u + w[i]*cos_u*cos_u)) / (2*Lu*Lw*sinu4);
 
-          tval += (zeta(a,3,2)*zeta(b,2,1)+zeta(a,2,1)*zeta(b,3,2)) *
-            (vXw[i] * (w[j]+2*u[j]*cos_v+w[j]*cos_v*cos_v) +
-             vXw[j] * (w[i]+2*u[i]*cos_v+w[i]*cos_v*cos_v)) / (2*Lu*Lw*sinv4);
+          if ((a==3 && b==2) || (a==3 && b==1) || (a==2 && b==2) || (a==2 && b==1))
+            tval +=  (zeta(a,3,2)*zeta(b,2,1)+zeta(a,1,2)*zeta(b,2,3)) *
+              (vXw[i] * (w[j] + 2*v[j]*cos_v + w[j]*cos_v*cos_v) +
+               vXw[j] * (w[i] + 2*v[i]*cos_v + w[i]*cos_v*cos_v)) / (2*Lv*Lw*sinv4);
 
-          tval += zeta(a,1,2)*zeta(b,2,1)*
-            (uXw[i]*(u[j]+u[j]*cos_u*cos_u-3*w[j]*cos_u+w[j]*cosu3) +
-             uXw[j]*(u[i]+u[i]*cos_u*cos_u-3*w[i]*cos_u+w[i]*cosu3)) / (2*Lw*Lw*sinu4);
-             
-          tval += zeta(a,1,2)*zeta(b,1,2)*
-            (vXw[i]*(v[j]+v[j]*cos_v*cos_v+3*w[j]*cos_v-w[j]*cosv3) +
-             vXw[j]*(v[i]+v[i]*cos_v*cos_v+3*w[i]*cos_v-w[i]*cosv3)) / (2*Lw*Lw*sinv4);
+          if ((a==1 && b==1) || (a==2 && b==2) || (a==2 && b==1))
+            tval +=   zeta(a,1,2)*zeta(b,2,1)*
+              (uXw[i]*(u[j] + u[j]*cos_u*cos_u - 3*w[j]*cos_u + w[j]*cosu3) +
+               uXw[j]*(u[i] + u[i]*cos_u*cos_u - 3*w[i]*cos_u + w[i]*cosu3)) / (2*Lw*Lw*sinu4);
+
+          if ((a==2 && b==1) || (a==2 && b==2) || (a==1 && b==1))
+            tval +=  zeta(a,2,1)*zeta(b,1,2)*
+              (vXw[i]*(-v[j] - v[j]*cos_v*cos_v - 3*w[j]*cos_v + w[j]*cosv3) +
+               vXw[j]*(-v[i] - v[i]*cos_v*cos_v - 3*w[i]*cos_v + w[i]*cosv3)) / (2*Lw*Lw*sinv4);
 
           if ((a != b) && (i != j)) {
             if ( i!=0 && j!=0 ) k = 0; // k is unique coordinate not i or j
             else if ( i!=1 && j!=1 ) k = 1;
             else k = 2;
 
-            tval += (zeta(a,0,1)*zeta(b,1,2)+zeta(a,2,1)*zeta(b,1,0)) * (j-i) *
-              pow(-0.5,fabs(j-i)) * (w[k]*cos_u - u[k]) / (Lu*Lw*sin_u);
+            if (a==1 && b==1)
+              tval +=  zeta(a,0,1)*zeta(b,1,2) * (j-i) *
+                pow(-0.5, fabs(j-i)) * (+w[k]*cos_u - u[k]) / (Lu*Lw*sin_u*sin_u);
 
-            tval += (zeta(a,3,1)*zeta(b,1,2)+zeta(a,2,1)*zeta(b,1,0)) * (j-i) *
-              pow(-0.5,fabs(j-i)) * (w[k]*cos_v - v[k]) / (Lv*Lw*sin_v);
+            if ((a==3 && b==2) || (a==3 && b==1) || (a==2 && b==2) || (a==2 && b==1))
+              tval +=  zeta(a,3,2)*zeta(b,2,1) * (j-i) *
+                pow(-0.5, fabs(j-i)) * (-w[k]*cos_v - v[k]) / (Lv*Lw*sin_v*sin_v);
+
+            if ((a==2 && b==1) || (a==2 && b==0) || (a==1 && b==1) || (a==1 && b==0))
+              tval +=  zeta(a,2,1)*zeta(b,1,0) * (j-i) *
+                pow(-0.5, fabs(j-i)) * (-w[k]*cos_u + u[k]) / (Lu*Lw*sin_u*sin_u);
+
+            if (a==2 && b==2)
+              tval +=  zeta(a,1,2)*zeta(b,2,3) * (j-i) *
+                pow(-0.5, fabs(j-i)) * (+w[k]*cos_v + v[k]) / (Lv*Lw*sin_v*sin_v);
           }
-          dq2dx2[3*a+i][3*b+j] = tval;
-        }
+          dq2dx2[3*a+i][3*b+j] = dq2dx2[3*b+j][3*a+i] = tval;
+        } // j
+      } // i
+    } // atom b
+  } // atom a
+  return dq2dx2;
 }
 
 

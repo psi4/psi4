@@ -55,10 +55,12 @@ outfile = fopen("output.dat","a");
   // read binary file for previous step data
   p_Opt_data = new OPT_DATA(mol1.g_nintco(), 3*mol1.g_natom());
 
-  // save geometry, gradient, and energy
+  // save geometry and energy
   double * x = mol1.g_geom_array();
   p_Opt_data->save_geom_energy(x, mol1.g_energy());
   free_array(x);
+
+  //mol1.cartesian_H_to_internals();
 
   // compute forces in internal coordinates from cartesian gradient
   mol1.forces(); // puts forces in p_Opt_data->step[last one]
