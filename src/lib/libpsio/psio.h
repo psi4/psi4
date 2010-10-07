@@ -30,7 +30,6 @@ namespace psi {
   void psio_tocprint(unsigned int unit, FILE *output);
   psio_tocentry *psio_tocscan(unsigned int unit, const char *key);
   psio_tocentry *psio_toclast(unsigned int unit);
-  unsigned int psio_toclen(unsigned int unit);
   int psio_tocclean(unsigned int unit, const char *key);
   
   int psio_write(unsigned int unit, const char *key, char *buffer, ULI size,
@@ -48,7 +47,7 @@ namespace psi {
   
   int psio_open_check(unsigned int unit);
   
-  ULI psio_rd_toclen(unsigned int unit);
+  unsigned long int psio_rd_toclen(unsigned int unit);
   void psio_wt_toclen(unsigned int unit, ULI toclen);
   
   int psio_set_filescfg_kwd(const char* kwdgrp, const char* kwd, int unit,

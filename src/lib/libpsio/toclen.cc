@@ -67,5 +67,9 @@ void PSIO::wt_toclen(unsigned int unit, ULI len) {
   }
 }
 
+unsigned long int psio_rd_toclen(unsigned int unit) {
+  return _default_psio_lib_->rd_toclen(unit);
+}
+
 }
 

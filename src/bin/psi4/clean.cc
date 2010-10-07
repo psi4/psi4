@@ -25,7 +25,11 @@ void psiclean(void) {
   ip_cwk_add(const_cast<char*>(":PSI"));
   ip_set_uppercase(1);
 
-  for(int i=0; i < 32; i++) { // skip the checkpoint file by default
+  //for(int i=0; i < 32; i++) { // skip the checkpoint file by default
+  // skip checkpoint and optimization data files by default
+  psio_open(0, PSIO_OPEN_OLD);
+  psio_close(0, 0);
+  for(int i=2; i < 32; i++) {
     psio_open(i, PSIO_OPEN_OLD);
     psio_close(i, 0);
   }
