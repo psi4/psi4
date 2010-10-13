@@ -50,7 +50,8 @@ void opt_matrix_mult(double **A, bool tA, double **B, bool tB, double **C, bool 
     nca = (tA ? nr : nl );
     ncb = (tB ? nl : nc );
 
-    F_DGEMM(&FtB, &FtA, &nc, &nr, &nl, &alpha, B[0], &ncb, A[0], &nca, &beta, C[0], &nr);
+    //F_DGEMM(&FtB, &FtA, &nc, &nr, &nl, &alpha, B[0], &ncb, A[0], &nca, &beta, C[0], &nr);
+    F_DGEMM(&FtB, &FtA, &nc, &nr, &nl, &alpha, B[0], &ncb, A[0], &nca, &beta, C[0], &nc);
   }
   else { // C is transposed, so compute B^t * A^t = C^t
     FtA = (tA ? 'N' : 'T');

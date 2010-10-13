@@ -496,30 +496,30 @@ double ** MOLECULE::cartesian_H_to_internals(void) const {
   int Nintco = g_nintco();
   int Ncart = 3*g_natom();
 
-  // compute B^-1 =u B^T (BuB^T)^-1 where u=unit matrix and -1 is generalized inverse
+  // compute A = u B^t (B u B^t)^-1 where u=unit matrix and -1 is generalized inverse
   double **B = compute_B();
   double **G = init_matrix(Nintco, Nintco);
   opt_matrix_mult(B, 0, B, 1, G, 0, Nintco, Ncart, Nintco, 0);
 
-  double **G_inv = symm_matrix_inv(G, Nintco, 1);
+  double **G_inv = symm_matrix_inv(G, Nintco, true);
   free_matrix(G);
 
-  double **B_inv = init_matrix(Ncart, Nintco);
-  opt_matrix_mult(B, 1, G_inv, 1, B_inv, 0, Ncart, Nintco, Nintco, 0);
-  free_matrix(B);
+  double **A = init_matrix(Ncart, Nintco);
+  opt_matrix_mult(B, 1, G_inv, 0, A, 0, Ncart, Nintco, Nintco, 0);
   free_matrix(G_inv);
+  free_matrix(B);
 
-  // compute gradient in internal coordinates
+  // compute gradient in internal coordinates, A^t g_x = g_q
   double *grad_x = g_grad_array();
   double *grad_q = init_array(Nintco);
-  opt_matrix_mult(B_inv, 1, &grad_x, 1, &grad_q, 1, Nintco, Ncart, 1, 0);
+  opt_matrix_mult(A, 1, &grad_x, 1, &grad_q, 1, Nintco, Ncart, 1, 0);
   free_array(grad_x);
 
-  double **H_cart = p_Opt_data->read_cartesian_H(); // read in cartesian H
+  // read in cartesian H
+  double **H_cart = p_Opt_data->read_cartesian_H();
 
-  // transform cartesian H to internals; (B^t)^-1 (H_x - K) B^-1
+  // transform cartesian H to internals; A^t (H_x - K) A
   // K_ij = sum_q ( grad_q[q] d^2(q)/(dxi dxj) )
-
   double **dq2dx2;
 
   for (int q=0; q<Nintco; ++q) {
@@ -534,19 +534,41 @@ double ** MOLECULE::cartesian_H_to_internals(void) const {
   free_array(grad_q);
 
   double **temp_mat = init_matrix(Ncart, Nintco);
-  opt_matrix_mult(H_cart, 0, B_inv, 0, temp_mat, 0, Ncart, Ncart, Nintco, 0);
+  opt_matrix_mult(H_cart, 0, A, 0, temp_mat, 0, Ncart, Ncart, Nintco, 0);
   free_matrix(H_cart);
 
   double **H_int = init_matrix(Nintco, Nintco);
-  opt_matrix_mult(B_inv, 1, temp_mat, 0, H_int, 0, Nintco, Ncart, Nintco, 0);
-  free_matrix(B_inv);
+  opt_matrix_mult(A, 1, temp_mat, 0, H_int, 0, Nintco, Ncart, Nintco, 0);
   free_matrix(temp_mat);
+
+  free_matrix(A);
 
   if (Opt_params.print_lvl >= 3) {
     fprintf(outfile, "Hessian transformed to internal coordinates:\n");
-    print_matrix(outfile, H_int, Nintco, Nintco);
+    print_matrix(outfile, H_int, Nintco, Nintco); fflush(outfile);
   }
 
+  // Check by transforming internal coordinate Hessian back into cartesian coordinates:
+/*
+  B = compute_B();
+  temp_mat = init_matrix(Ncart, Nintco);
+  opt_matrix_mult(B, 1, H_int, 0, temp_mat, 0, Ncart, Nintco, Nintco, 0);
+  H_cart = init_matrix(Ncart, Ncart);
+  opt_matrix_mult(temp_mat, 0, B, 0, H_cart, 0, Ncart, Nintco, Ncart, 0);
+  free_matrix(temp_mat);
+
+  for (int q=0; q<Nintco; ++q) {
+    dq2dx2 = compute_derivative_B(q); // d^2(q)/ dx_i dx_j
+    for (int i=0; i<Ncart; ++i)
+      for (int j=0; j<Ncart; ++j)
+        H_cart[i][j] += grad_q[q] * dq2dx2[i][j];
+    free_matrix(dq2dx2);
+  }
+  free_array(grad_q);
+  fprintf(outfile, "Hessian transformed back into Cartesian coordinates\n");
+  print_matrix(outfile, H_cart, Ncart, Ncart); fflush(outfile);
+  free_matrix(B);
+*/
   return H_int;
 }
 

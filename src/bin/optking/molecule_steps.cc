@@ -98,7 +98,7 @@ void MOLECULE::rfo_step(void) {
   // build (lower-triangle of) RFO matrix and diagonalize
   double **rfo_mat = init_matrix(dim+1, dim+1);
   for (i=0; i<dim; ++i)
-    for (j=i; j<dim; ++j)
+    for (j=0; j<=i; ++j)
       rfo_mat[i][j] = H[i][j];
 
   for (i=0; i<dim; ++i)
@@ -149,8 +149,8 @@ void MOLECULE::rfo_step(void) {
   else { // do root following
     double * rfo_old_evect = p_Opt_data->g_rfo_eigenvector_pointer();
     tval = 0;
-    for (i=0; i<dim+1; ++i) {
-      tval2 = array_dot(rfo_mat[i], rfo_old_evect,dim+1);
+    for (i=0; i<dim; ++i) { // dot only within H block, excluding rows and columns approaching 0
+      tval2 = array_dot(rfo_mat[i], rfo_old_evect,dim);
       if (tval2 > tval) {
         tval = tval2;
         rfo_root = i;
