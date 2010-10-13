@@ -12,7 +12,7 @@ void set_params(void) {
 
   Opt_params.step_type = OPT_PARAMS::RFO; // Newton-Raphson (NR) or RFO step
 
-  Opt_params.rfo_follow_root = true; // follow initial step
+  Opt_params.rfo_follow_root = false; // follow initial step
   Opt_params.rfo_root = 0; // which root to follow
 
   Opt_params.scale_connectivity = 1.2;
@@ -20,7 +20,8 @@ void set_params(void) {
   Opt_params.empirical_H = OPT_PARAMS::SCHLEGEL;
   //Opt_params.empirical_H = OPT_PARAMS::FISCHER;
 
-  Opt_params.H_update = OPT_PARAMS::BOFILL; // any of {NONE, BFGS, MS, POWELL, BOFILL}
+  //Opt_params.H_update = OPT_PARAMS::BOFILL; // any of {NONE, BFGS, MS, POWELL, BOFILL}
+  Opt_params.H_update = OPT_PARAMS::BFGS; // any of {NONE, BFGS, MS, POWELL, BOFILL}
   Opt_params.H_update_use_last = 0; // how many old Hessians to use (0=all)
 
   // maximum change in bohr or radian
@@ -52,7 +53,7 @@ void set_params(void) {
   Opt_params.bt_dq_conv_max = 1.0e-5;
 
   // 1=default; 2=medium; 3=lots
-  Opt_params.print_lvl = 3;
+  Opt_params.print_lvl = 1;
 
 }
 

@@ -50,7 +50,7 @@ outfile = fopen("output.dat","a");
   mol1.print_intco_dat(outfile);
 
   mol1.test_B();
-  mol1.test_derivative_B();
+  //mol1.test_derivative_B();
 
   // read binary file for previous step data
   p_Opt_data = new OPT_DATA(mol1.g_nintco(), 3*mol1.g_natom());
@@ -60,7 +60,8 @@ outfile = fopen("output.dat","a");
   p_Opt_data->save_geom_energy(x, mol1.g_energy());
   free_array(x);
 
-  //mol1.cartesian_H_to_internals();
+  //double **H_int = mol1.cartesian_H_to_internals();
+  //free_matrix(H_int);
 
   // compute forces in internal coordinates from cartesian gradient
   mol1.forces(); // puts forces in p_Opt_data->step[last one]

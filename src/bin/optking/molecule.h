@@ -206,8 +206,6 @@ class MOLECULE {
       }
     }
 
-printf("Computing Bprime for frag %d intco %d\n", frag_i, intco_i);
-
     double **dq2dx2_frag;
     if (new_geom == NULL)
       dq2dx2_frag = fragments[frag_i]->compute_derivative_B(intco_i);
@@ -217,8 +215,6 @@ printf("Computing Bprime for frag %d intco %d\n", frag_i, intco_i);
     double **dq2dx2 = init_matrix(3*g_natom(), 3*g_natom());
 
     int natom_intco = fragments[frag_i]->g_intco_natom(intco_i);  // 2, 3 or 4 depending on type
-
-printf("natom_intco in compute_derivative_B %d\n", natom_intco);
 
     int mol_a, mol_b;
     for (int a=0; a<natom_intco; ++a) {
