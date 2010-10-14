@@ -82,8 +82,9 @@ void SAPT0::print_header()
      fprintf(outfile,"    NVIR_B  = %9d\n\n",calc_info_.nvirB);
     
      #ifdef _OPENMP
-     fprintf(outfile,"Running SAPT with %d OMP threads\n\n",
+     fprintf(outfile,"Running SAPT with %d OMP threads\n",
        omp_get_max_threads());
+     fprintf(outfile,"Using version %d of OpenMP\n\n",_OPENMP);
      #endif 
     
      fflush(outfile);
