@@ -39,10 +39,6 @@ void SAPT2p3::exch_disp30()
   results_.exch_disp30 = e11 + e20 + e02 + e22;
 
   if (params_.print) {
-    fprintf(outfile,"Exch-Disp30_11     = %18.12lf  H\n",e11);
-    fprintf(outfile,"Exch-Disp30_20     = %18.12lf  H\n",e20);
-    fprintf(outfile,"Exch-Disp30_02     = %18.12lf  H\n",e02);
-    fprintf(outfile,"Exch-Disp30_22     = %18.12lf  H\n",e22);
     fprintf(outfile,"Exch-Disp30        = %18.12lf  H\n\n",
       results_.exch_disp30);
     fflush(outfile);
