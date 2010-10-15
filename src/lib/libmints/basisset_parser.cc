@@ -61,7 +61,7 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
     regex atom_array("^\\s*([A-Za-z]+)\\s+0.*");                       // array of atomic symbols terminated by 0
     regex shell("^\\s*(\\w+)\\s*(\\d+)\\s*(-?\\d+\\.\\d+)");           // Match beginning of contraction
 
-#define NUMBER "((?:-?\\d*\\.\\d+(?:[Ee][-+]\\d+)?)|(?:-?\\d+\\.\\d*(?:[Ee][-+]\\d+)?))"
+#define NUMBER "((?:[-+]?\\d*\\.\\d+(?:[DeEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DeEe][-+]?\\d+)?))"
 
     regex primitives1("^\\s*" NUMBER "\\s+" NUMBER ".*");    // Match s, p, d, f, g, ... functions
     regex primitives2("^\\s*" NUMBER "\\s+" NUMBER "\\s+" NUMBER ".*"); // match sp functions
@@ -202,6 +202,14 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
                                 for (int p=0; p<nprimitive; ++p) {
                                     line = lines[lineno++];
 
+                                    int idx;
+                                    while((idx=line.find_first_of('D')) >= 0 ) {
+                                      line.replace( idx, 1, "e" );
+                                    }
+                                    while((idx=line.find_first_of('d')) >= 0 ) {
+                                      line.replace( idx, 1, "e" );
+                                    }
+
                                     // Must match primitives1; will work on the others later
                                     if (!regex_match(line, what, primitives1))
                                         throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to match an exponent with one contraction:\n" + line);
@@ -247,6 +255,14 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
 
                                 for (int p=0; p<nprimitive; ++p) {
                                     line = lines[lineno++];
+
+                                    int idx;
+                                    while((idx=line.find_first_of('D')) >= 0 ) {
+                                      line.replace( idx, 1, "e" );
+                                    }
+                                    while((idx=line.find_first_of('d')) >= 0 ) {
+                                      line.replace( idx, 1, "e" );
+                                    }
 
                                     // Must match primitivies2;
                                     if (!regex_match(line, what, primitives2))
