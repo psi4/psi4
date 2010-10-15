@@ -720,6 +720,18 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
         throw std::domain_error("SAD Atomic UHF has been given a molecule, not an atom"); 
     }
 
+    //double xc = mol->x(0);
+    //double yc = mol->y(0);
+    //double zc = mol->z(0);
+
+    //Vector3 vb = bas->shell(0)->center();
+    //double xb = vb[0];
+    //double yb = vb[1];
+    //double zb = vb[2];
+
+    //fprintf(outfile, " Molecule center <%14.10f,%14.10f,%14.10f>, Basis center <%14.10f,%14.10f,%14.10f>.\n", \
+        xc, yc, zc, xb, yb, zb);
+
     double** Dold = block_matrix(norbs,norbs);
     double **Shalf = block_matrix(norbs, norbs);
     double** Ca = block_matrix(norbs,norbs);
