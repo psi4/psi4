@@ -3055,19 +3055,77 @@ void RHF::compute_SAD_guess()
     }
     fflush(outfile);
 
+    // Determine redundant atoms
+    int* unique_indices = init_int_array(mol->natom()); // All atoms to representative unique atom
+    int* atomic_indices = init_int_array(mol->natom()); // unique atom to first representative atom 
+    int* offset_indices = init_int_array(mol->natom()); // unique atom index to rank 
+    int nunique = 0;
+    for (int l = 0; l < mol->natom(); l++) {
+        unique_indices[l] = l;
+        atomic_indices[l] = l;
+    }
+    for (int l = 0; l < mol->natom() - 1; l++) {
+        for (int m = l + 1; m < mol->natom(); m++) {
+            if (unique_indices[m] != m)
+                continue; //Already assigned
+            if (mol->Z(l) != mol->Z(m))
+                continue;
+            if (nalpha[l] != nalpha[m])
+                continue;
+            if (nbeta[l] != nbeta[m])
+                continue;
+            if (nhigh[l] != nhigh[m])
+                continue;
+            if (nelec[l] != nelec[m])
+                continue;
+            if (atomic_bases[l]->nbf() != atomic_bases[m]->nbf())
+                continue;
+            if (atomic_bases[l]->nshell() != atomic_bases[m]->nshell())
+                continue;
+            if (atomic_bases[l]->nprimitive() != atomic_bases[m]->nprimitive())
+                continue;
+            if (atomic_bases[l]->max_am() != atomic_bases[m]->max_am())
+                continue;
+            if (atomic_bases[l]->max_nprimitive() != atomic_bases[m]->max_nprimitive())
+                continue;
+            if (atomic_bases[l]->has_puream() !=  atomic_bases[m]->has_puream())
+                continue;
+
+            //TODO check the basis rigorously            
+            
+            //Rigorous match obtained
+            unique_indices[m] = l;
+        }
+    }
+    for (int l = 0; l < mol->natom(); l++) {
+        if (unique_indices[l] == l) {
+            atomic_indices[nunique] = l;
+            offset_indices[l] = nunique;
+            nunique++;
+        }    
+    }
+
+    //printf(" Nunique = %d \n", nunique);
+    //printf(" Unique Indices   Atomic Indices \n");
+    //for (int l = 0; l < mol->natom(); l++) {
+    //    printf(" %14d   %14d \n", unique_indices[l], atomic_indices[l]);
+    //}    
+
     timer_on("Atomic UHF");
 
     //Atomic D matrices within the atom specific AO basis
-    double*** atomic_D = (double***)malloc(mol->natom()*sizeof(double**));
-    for (int A = 0; A<mol->natom(); A++)
-        atomic_D[A] = block_matrix(atomic_bases[A]->nbf(),atomic_bases[A]->nbf());
+    double*** atomic_D = (double***)malloc(nunique*sizeof(double**));
+    for (int A = 0; A<nunique; A++) {
+        atomic_D[A] = block_matrix(atomic_bases[atomic_indices[A]]->nbf(),atomic_bases[atomic_indices[A]]->nbf());
+    }
 
     if (print_>2)
         fprintf(outfile,"\n  Performing Atomic UHF Computations:\n");
-    for (int A = 0; A<mol->natom(); A++) {
+    for (int A = 0; A<nunique; A++) {
+        int index = atomic_indices[A];
         if (print_>4)
-            fprintf(outfile,"\n  UHF Computation for Atom %d:\n",A);
-        getUHFAtomicDensity(atomic_bases[A],nelec[A],nhigh[A],atomic_D[A]);
+            fprintf(outfile,"\n  UHF Computation for Atom %d:\n",index);
+        getUHFAtomicDensity(atomic_bases[index],nelec[index],nhigh[index],atomic_D[A]);
     }
     timer_off("Atomic UHF");
 
@@ -3075,14 +3133,18 @@ void RHF::compute_SAD_guess()
     D_->zero();
     for (int A = 0, offset = 0; A < mol->natom(); A++) {
         int norbs = atomic_bases[A]->nbf();
+        int back_index = unique_indices[A];
         for (int m = 0; m<norbs; m++)
             for (int n = 0; n<norbs; n++)
-                D_->set(0,m+offset,n+offset,0.5*atomic_D[A][m][n]);
+                D_->set(0,m+offset,n+offset,0.5*atomic_D[offset_indices[back_index]][m][n]);
         offset+=norbs;
     }
     if (print_>6)
         D_->print(outfile);
 
+    free(atomic_indices);
+    free(unique_indices);
+    free(offset_indices);
     //D_->print(outfile);
 
     //A C matrix is needed. Do one of:
@@ -3285,7 +3347,7 @@ void RHF::compute_SAD_guess()
     } else {
         throw std::invalid_argument("ID or CHOLESKY are the only two C matrix generators at the moment");
     }
-    for (int A = 0; A<mol->natom(); A++)
+    for (int A = 0; A<nunique; A++)
         free_block(atomic_D[A]);
     free(atomic_D);
 
