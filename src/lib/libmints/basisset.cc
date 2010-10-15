@@ -577,7 +577,8 @@ shared_ptr<BasisSet> BasisSet::atomic_basis_set(int center)
     strcpy(label,lab.c_str());
 
     //Put the atomic info into mol
-    mol->add_atom(Z, x, y, z, label, mass, charge);
+    mol->add_atom(Z, 0.0, 0.0, 0.0, label, mass, charge);
+    Vector3 v(0.0,0.0,0.0);
 
     //Assign the atomic molecule to bas
     bas->molecule_ = mol;
@@ -603,12 +604,11 @@ shared_ptr<BasisSet> BasisSet::atomic_basis_set(int center)
             GaussianType harmonics = (shells_[i]->is_pure() ? Pure : Cartesian);
             int nc = 0; // In the atomic basis, always on the 0th atom
             int start = 0; //Will be reset later
-            Vector3 center = shells_[i]->center();
             double* e = shells_[i]->exps();
             double* c = shells_[i]->coefs();
 
             shell->init(nprm,e,am, harmonics, c,nc,
-              center,start);
+              v,start);
 
             bas->shells_.push_back(shell);
             current_shells++;
@@ -632,7 +632,8 @@ shared_ptr<BasisSet> BasisSet::atomic_basis_set(int center)
         //and it must go into the SOTransform in the atomic basis, and the offset in shell, ao, and so must be respected
         for (int ao = 0; ao < full_so->nfunc(); ao++) {
             //printf("AO %d, AOStart %d, SOStart%d, i %d, shell_start %d.\n",ao,ao_start,so_start,i,shell_start);
-            bas->sotransform_->add_transform(i,full_so->func(ao)->irrep(),full_so->func(ao)->sofuncirrep()-so_start,full_so->func(ao)->coef(),full_so->func(ao)->aofunc(),full_so->func(ao)->sofunc()-so_start);
+            bas->sotransform_->add_transform(i,full_so->func(ao)->irrep(),full_so->func(ao)->sofuncirrep()-so_start,full_so->func(ao)->coef(), \
+                full_so->func(ao)->aofunc(),full_so->func(ao)->sofunc()-so_start);
         }
         //ao_start += shells_[i+shell_start]->ncartesian();
         //so_start += shells_[i+shell_start]->nfunction();
