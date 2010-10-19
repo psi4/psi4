@@ -20,9 +20,6 @@ namespace psi { namespace sapt {
 
 class SAPT2p : public SAPT2 {
 private:
-    virtual void theta_ar();
-    virtual void theta_bs();
-
     double disp210();
     double disp201();
     double disp211();
@@ -50,6 +47,9 @@ protected:
     virtual void disp22sdq();
     virtual void disp22t();
     virtual double print_results();
+
+    virtual void theta_ar();
+    virtual void theta_bs();
 
 public:
     SAPT2p(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);

@@ -15,6 +15,7 @@
 #include <libqt/qt.h>
 
 #include <libsapt_solver/sapt0.h>
+#include <libsapt_solver/scs_sapt.h>
 #include <libsapt_solver/sapt_dft.h>
 #include <libsapt_solver/sapt2.h>
 #include <libsapt_solver/sapt2p.h>
@@ -45,6 +46,12 @@ PsiReturnType sapt(Options & options)
     if (options.get_str("SAPT_LEVEL") == "SAPT0") {
         SAPT0 sapt(options, psio, chkpt);
         sapt.compute_energy();
+    }
+
+    if (options.get_str("SAPT_LEVEL") == "SCS_SAPT") {
+        fprintf(outfile,"  SCS-SAPT is not currently implemented\n");
+//      SCS_SAPT sapt(options, psio, chkpt);
+//      sapt.compute_energy();
     }
 
     if (options.get_str("SAPT_LEVEL") == "SAPT_DFT") {

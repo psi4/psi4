@@ -15,6 +15,7 @@
 #include <libqt/qt.h>
 #include "structs.h"
 #include "sapt0.h"
+#include "scs_sapt.h"
 #include "sapt2p.h"
 #include "sapt2p3.h"
 
@@ -38,6 +39,40 @@ void SAPT0::exch_disp20()
   results_.exch_disp20 += exch_disp_6();
   results_.exch_disp20 += exch_disp_7();
   results_.exch_disp20 *= -2.0;
+
+  if (params_.print) {
+    fprintf(outfile,"\nExch_Disp Energy = %18.12lf  H\n\n",
+      results_.exch_disp20);
+    fflush(outfile);
+  }
+}
+
+void SCS_SAPT::exch_disp20()
+{ 
+  theta_ar();
+  theta_bs();
+  
+  if (params_.print) {
+    fprintf(outfile,"Begining Exch-Disp20 Calculation\n\n"); 
+    fflush(outfile);
+  }
+
+  results_.exch_disp20_ss = exch_disp_1();
+
+  results_.exch_disp20_os = exch_disp_2();
+  results_.exch_disp20_os += exch_disp_3();
+  results_.exch_disp20_os *= 0.5;
+  
+  results_.exch_disp20_ss += results_.exch_disp20_os;
+  results_.exch_disp20_ss += exch_disp_4();
+  results_.exch_disp20_ss += exch_disp_5();
+  results_.exch_disp20_ss += exch_disp_6();
+  results_.exch_disp20_ss += exch_disp_7();
+
+  results_.exch_disp20_os *= -2.0;
+  results_.exch_disp20_ss *= -2.0;
+
+  results_.exch_disp20 = results_.exch_disp20_os+results_.exch_disp20_ss;
 
   if (params_.print) {
     fprintf(outfile,"\nExch_Disp Energy = %18.12lf  H\n\n",

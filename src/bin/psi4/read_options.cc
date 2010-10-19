@@ -100,7 +100,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
   if (name == "SAPT"|| options.read_globals()) {
     ip_cwk_add(":SAPT");
     /*- The level of theory for SAPT -*/
-    options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT_DFT SAPT2 SAPT2+ SAPT2+3");
+    options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT_DFT SAPT2 SAPT2+ SAPT2+3 SCS_SAPT");
     /*- The ubiquitous debug flag -*/
     options.add_bool("DEBUG",false);
     /*- The ubiquitous print flag -*/
