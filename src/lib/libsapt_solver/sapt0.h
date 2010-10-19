@@ -20,17 +20,6 @@ namespace psi { namespace sapt {
 
 class SAPT0 : public SAPT {
 private:
-    double exch_disp_1();
-    double exch_disp_2();
-    double exch_disp_3();
-    double exch_disp_4();
-    double exch_disp_5();
-    double exch_disp_6();
-    double exch_disp_7();
-
-    virtual void theta_ar();
-    virtual void theta_bs();
-
     void H3(double **);
     void Q1(double **);
     void Q3(double **);
@@ -58,6 +47,17 @@ protected:
     void ind20();
     virtual void exch_ind20();
     virtual double print_results();
+
+    virtual void theta_ar();
+    virtual void theta_bs();
+
+    double exch_disp_1();
+    double exch_disp_2();
+    double exch_disp_3();
+    double exch_disp_4();
+    double exch_disp_5();
+    double exch_disp_6();
+    double exch_disp_7();
 
 public:
     SAPT0(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);

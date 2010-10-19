@@ -166,6 +166,11 @@ struct results {
   double exch_ind20;
   double exch_disp20;
 
+  double disp20_os;
+  double disp20_ss;
+  double exch_disp20_os;
+  double exch_disp20_ss;
+
   double disp20chf;
 
   double elst12;
