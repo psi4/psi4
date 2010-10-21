@@ -104,10 +104,10 @@ int clag(int argc, char **argv)
 
   // later probably need zorb on for any deriv calc in case they have
   // frozen orbitals or something.  For now, keep it off for MCSCF
-  if ((dertype == "NONE") &&
-    (wfn == "DETCAS")   &&
-    (wfn == "CASSCF")   &&
-    (wfn == "RASSCF")) do_zorb = 1;
+  if ((dertype != "NONE") &&
+    (wfn != "DETCAS")   &&
+    (wfn != "CASSCF")   &&
+    (wfn != "RASSCF")) do_zorb = 1;
   else
     do_zorb = 0;
 
