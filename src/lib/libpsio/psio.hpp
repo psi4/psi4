@@ -120,9 +120,15 @@ namespace psi {
       
       /// Set the current namespace (for PREFIX.NAMESPACE.UNIT file numbering) 
       static void set_default_namespace(const std::string &_ns) { default_namespace_ = _ns; }
+
+      /// Get the default namespace (for PREFIX.NAMESPACE.UNIT file numbering) 
+      static std::string get_default_namespace() { return default_namespace_; }
       
       /// Set the current namespace (for PREFIX.NAMESPACE.UNIT file numbering) 
       void set_current_namespace(const std::string &_ns) { current_namespace_ = _ns; }
+
+      /// Get the current namespace (for PREFIX.NAMESPACE.UNIT file numbering) 
+      std::string get_current_namespace() { return current_namespace_; }
 
       /// Change file FILENO from NS1 to NS2
       static void change_file_namespace(unsigned int fileno, const std::string & ns1, const std::string & ns2);
