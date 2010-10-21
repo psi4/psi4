@@ -400,6 +400,9 @@ BOOST_PYTHON_MODULE(PsiMod)
         def( "tocwrite", &PSIO::tocwrite ).
         def( "shared_object", &PSIO::shared_object).
         staticmethod("shared_object").
+        def( "get_current_namespace", &PSIO::get_current_namespace).
+        def( "get_default_namespace", &PSIO::get_default_namespace).
+        staticmethod("get_default_namespace").
         def( "set_current_namespace", &PSIO::set_current_namespace).
         def( "set_default_namespace", &PSIO::set_default_namespace).
         staticmethod("set_default_namespace").

@@ -6,20 +6,77 @@ from text import *
 def run_scf(name, **kwargs):
 
     molecule = PsiMod.get_active_molecule()
+    cast = False
     if (kwargs.has_key('molecule')):
         molecule = kwargs.pop('molecule')
+    if (kwargs.has_key('cast_up')):
+        cast = kwargs.pop('cast_up')
 
+ 
     if not molecule:
         raise ValueNotSet("no molecule found")
 
     molecule.update_geometry()
-    PsiMod.set_default_options_for_module("SCF")
-    PsiMod.set_option("NO_INPUT",True)
 
-    PsiMod.print_out("\n")
-    banner(name.upper())
-    PsiMod.print_out("\n")
-    e_scf = PsiMod.scf()
+    if (cast):
+
+        namespace = PsiMod.IO.get_default_namespace()
+        basis = PsiMod.get_option('BASIS')
+        ri_basis_scf = PsiMod.get_option('RI_BASIS_SCF')
+        scf_type = PsiMod.get_option('SCF_TYPE')
+        #puream = PsiMod.get_global_option('PUREAM')
+
+        PsiMod.IO.set_default_namespace((namespace + ".guess"))
+        PsiMod.set_default_options_for_module("SCF")
+        PsiMod.set_option("NO_INPUT",True)
+
+        PsiMod.set_option('GUESS','SAD')
+        PsiMod.set_option('BASIS','3-21G')
+        PsiMod.set_option('RI_BASIS_SCF','cc-pvdz-ri')
+        PsiMod.set_option('DUAL_BASIS_SCF',basis)
+        PsiMod.set_option('DUAL_BASIS',True)
+        PsiMod.set_option('SCF_TYPE','DF')
+        #PsiMod.set_global_option('PUREAM',True)
+        
+        PsiMod.print_out('\n')
+        banner('Cast-up SCF Computation')
+        PsiMod.print_out('\n')
+
+        PsiMod.print_out('\n')
+        banner('3-21G/SAD Guess')
+        PsiMod.print_out('\n')
+
+        PsiMod.scf()     
+
+        PsiMod.IO.change_file_namespace(100,(namespace + ".guess"),namespace)
+        PsiMod.IO.set_default_namespace(namespace)
+
+        PsiMod.set_default_options_for_module("SCF")
+        PsiMod.set_option("NO_INPUT",True)
+
+        PsiMod.set_option('GUESS','DUAL_BASIS')
+        PsiMod.set_option('BASIS',basis)
+        PsiMod.set_option('RI_BASIS_SCF',ri_basis_scf)
+        PsiMod.set_option('DUAL_BASIS_SCF','')
+        PsiMod.set_option('DUAL_BASIS',False)
+        PsiMod.set_option('SCF_TYPE',scf_type)
+        #PsiMod.set_global_option('PUREAM',puream)
+
+        PsiMod.print_out('\n')
+        banner(name.upper())
+        PsiMod.print_out('\n')
+
+        e_scf = PsiMod.scf()     
+    else:
+
+        PsiMod.set_default_options_for_module("SCF")
+        PsiMod.set_option("NO_INPUT",True)
+
+        PsiMod.print_out("\n")
+        banner(name.upper())
+        PsiMod.print_out("\n")
+        e_scf = PsiMod.scf()
+    
     return e_scf
 
 def run_ccsd(name, **kwargs):
