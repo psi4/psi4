@@ -186,12 +186,14 @@ def run_sapt(name, **kwargs):
     PsiMod.set_option("D_CONVERGE",10)
     if (name.lower() == 'sapt0'):
         PsiMod.set_option("SAPT_LEVEL","SAPT0")
+    elif (name.lower() == 'scs-sapt'):
+        PsiMod.set_option("SAPT_LEVEL","SCS_SAPT")
     elif (name.lower() == 'sapt2'):
         PsiMod.set_option("SAPT_LEVEL","SAPT2")
     elif (name.lower() == 'sapt2+'):
         PsiMod.set_option("SAPT_LEVEL","SAPT2+")
-    elif (name.lower() == 'sapt2+(3)'):
-        PsiMod.set_option("SAPT_LEVEL","SAPT2+(3)")
+    elif (name.lower() == 'sapt2+3'):
+        PsiMod.set_option("SAPT_LEVEL","SAPT2+3")
     PsiMod.print_out("\n")
     banner(name.upper())
     PsiMod.print_out("\n")

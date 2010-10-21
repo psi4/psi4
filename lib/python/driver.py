@@ -13,9 +13,10 @@ procedures = {'energy' : {
             'dfmp2'         : run_dfmp2,
             'scs-dfmp2'     : run_dfmp2,
             'sapt0'         : run_sapt,
+            'scs-sapt'      : run_sapt,
             'sapt2'         : run_sapt,
             'sapt2+'        : run_sapt,
-            'sapt2+(3)'     : run_sapt,
+            'sapt2+3'       : run_sapt,
             'ccsd'          : run_ccsd
         },
         'gradient' : {
