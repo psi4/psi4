@@ -61,7 +61,7 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
     regex atom_array("^\\s*([A-Za-z]+)\\s+0.*");                       // array of atomic symbols terminated by 0
     regex shell("^\\s*(\\w+)\\s*(\\d+)\\s*(-?\\d+\\.\\d+)");           // Match beginning of contraction
 
-#define NUMBER "((?:[-+]?\\d*\\.\\d+(?:[DeEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DeEe][-+]?\\d+)?))"
+#define NUMBER "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
 
     regex primitives1("^\\s*" NUMBER "\\s+" NUMBER ".*");    // Match s, p, d, f, g, ... functions
     regex primitives2("^\\s*" NUMBER "\\s+" NUMBER "\\s+" NUMBER ".*"); // match sp functions
