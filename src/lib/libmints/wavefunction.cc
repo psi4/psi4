@@ -78,6 +78,15 @@ void Wavefunction::common_init()
         //fprintf(outfile,"  Using %ld bytes of core memory\n",memory_);
     }
 
+    nso_ = basisset_->nbf();
+    nmo_ = basisset_->nbf();
+    for (int k = 0; k < 8; k++) {
+        nsopi_[k] = 0; 
+        nmopi_[k] = 0;
+        doccpi_[k] = 0; 
+        soccpi_[k] = 0; 
+    }
+
     // Read in the debug flag
     debug_ = options_.get_int("DEBUG");
 

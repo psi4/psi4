@@ -303,6 +303,20 @@ object py_psi_get_option(const string& key)
 
     return object();
 }
+object py_psi_get_global_option(const string& key)
+{
+    string nonconst_key = key;
+    Data& data = Process::environment.options.use(nonconst_key);
+
+    if (data.type() == "string")
+        return str(data.to_string());
+    else if (data.type() == "boolean" || data.type() == "integer")
+        return object(data.to_integer());
+    else if (data.type() == "double")
+        return object(data.to_double());
+
+    return object();
+}
 
 void py_psi_set_active_molecule(shared_ptr<Molecule> molecule)
 {
@@ -366,6 +380,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("set_global_option", py_psi_set_global_option_array);
 
     def("get_option", py_psi_get_option);
+    def("get_global_option", py_psi_get_global_option);
 
     def("get_variable", py_psi_get_variable);
 

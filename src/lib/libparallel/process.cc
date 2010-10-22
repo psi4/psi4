@@ -115,7 +115,7 @@ const string& Process::Environment::set(const std::string &key, const std::strin
     return old;
 }
 
-void Process::Environment::set_molecule(boost::shared_ptr<Molecule> molecule)
+void Process::Environment::set_molecule(const boost::shared_ptr<Molecule>& molecule)
 {
   molecule_ = molecule;
 }
@@ -123,6 +123,16 @@ void Process::Environment::set_molecule(boost::shared_ptr<Molecule> molecule)
 boost::shared_ptr<Molecule> Process::Environment::molecule() const
 {
   return molecule_;
+}
+
+void Process::Environment::set_reference_wavefunction(const boost::shared_ptr<Wavefunction>& reference_wavefunction)
+{
+  reference_wavefunction_ = reference_wavefunction;
+}
+
+boost::shared_ptr<Wavefunction> Process::Environment::reference_wavefunction() const
+{
+  return reference_wavefunction_;
 }
 
 void Process::Arguments::init(int argc, char **argv)

@@ -44,6 +44,7 @@ namespace psi {
   #endif
 
   class Molecule;
+  class Wavefunction;
 
   class Process
   {
@@ -56,6 +57,7 @@ namespace psi {
           int nthread_;         
 
           boost::shared_ptr<Molecule> molecule_;
+          boost::shared_ptr<Wavefunction> reference_wavefunction_;
       public:
           void init(char **envp);
 
@@ -64,9 +66,14 @@ namespace psi {
           const std::string& set(const std::string& key, const std::string& value);
 
           /// Set active molecule
-          void set_molecule(boost::shared_ptr<Molecule> molecule);
+          void set_molecule(const boost::shared_ptr<Molecule>& molecule);
           /// Return active molecule
           boost::shared_ptr<Molecule> molecule() const;
+
+          /// Set reference wavefunction
+          void set_reference_wavefunction(const boost::shared_ptr<Wavefunction>& reference_wavefunction);
+          /// Get reference wavefunction
+          boost::shared_ptr<Wavefunction> reference_wavefunction() const;
 
           /// Map containing current energies
           std::map<std::string, double> globals;

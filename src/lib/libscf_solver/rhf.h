@@ -25,10 +25,9 @@ namespace scf {
 
 class RHF : public HF {
 protected:
-    SharedMatrix F_;
-//    SharedMatrix C_;
     SharedMatrix Lref_; //Formal local orbital coefficients (from last guess)
     SharedMatrix L_; //Propagated local orbital coefficients
+    SharedMatrix F_;
     SharedMatrix D_;
     SharedMatrix Dold_;
     SharedMatrix G_;
