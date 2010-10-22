@@ -90,7 +90,10 @@ void RHF::common_init()
     Drms_ = 0.0;
 
     // Allocate matrix memory
-    F_    = SharedMatrix(factory_.create_matrix("F"));
+    Fa_   = SharedMatrix(factory_.create_matrix("F"));
+    F_    = Fa_;
+    Ca_   = SharedMatrix(factory_.create_matrix("C"));
+    C_    = Ca_;
     D_    = SharedMatrix(factory_.create_matrix("D"));
     Dold_ = SharedMatrix(factory_.create_matrix("D old"));
     G_    = SharedMatrix(factory_.create_matrix("G"));
@@ -907,11 +910,6 @@ void RHF::save_information()
 {
     // Print the final docc vector
     char **temp2 = molecule_->irrep_labels();
-    int nso;
-    if(Communicator::world->me() == 0)
-        nso = chkpt_->rd_nso();
-    if(Communicator::world->nproc() > 1)
-        Communicator::world->raw_bcast(&nso, sizeof(int), 0);
 
     fprintf(outfile, "\n  Final occupation vector = (");
     for (int h=0; h<factory_.nirreps(); ++h) {
@@ -975,13 +973,14 @@ void RHF::save_information()
     if(Communicator::world->me() == 0) {
         chkpt_->wt_nirreps(factory_.nirreps());
         chkpt_->wt_nmo(nmo_);
+        chkpt_->wt_nso(basisset_->nbf());
         chkpt_->wt_nao(basisset_->nbf());
         chkpt_->wt_ref(0);        // Only RHF right now
         chkpt_->wt_etot(E_);
         chkpt_->wt_escf(E_);
         chkpt_->wt_eref(E_);
-        chkpt_->wt_clsdpi(doccpi_);
         chkpt_->wt_orbspi(orbital_e_->dimpi());
+        chkpt_->wt_clsdpi(doccpi_);
         chkpt_->wt_openpi(vec);
         chkpt_->wt_phase_check(0);
     }
@@ -995,8 +994,14 @@ void RHF::save_information()
         chkpt_->wt_nfzc(nfzc);
         chkpt_->wt_nfzv(nfzv);
     }
-    int *frzcpi = compute_fcpi(nfzc, orbital_e_);
-    int *frzvpi = compute_fvpi(nfzv, orbital_e_);
+    int* frzcpi = compute_fcpi(nfzc, orbital_e_);
+    int* frzvpi = compute_fvpi(nfzv, orbital_e_);
+
+    for (int k = 0; k < 8; k++) {
+        frzcpi_[k] = frzcpi[k];
+        frzvpi_[k] = frzvpi[k];
+    }
+
     if(Communicator::world->me() == 0) {
         chkpt_->wt_frzcpi(frzcpi);
         chkpt_->wt_frzvpi(frzvpi);

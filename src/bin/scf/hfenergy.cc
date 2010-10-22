@@ -40,31 +40,31 @@ double HFEnergy::compute_energy()
 
     reference = options_.get_str("REFERENCE");
 
+    shared_ptr<Wavefunction> scf;
+
     if (reference == "RHF") {
-        RHF rhf_energy(options_, psio_, chkpt_);
-        energy = rhf_energy.compute_energy();
+        scf = shared_ptr<Wavefunction>(new RHF(options_, psio_, chkpt_));
     }
     else if (reference == "ROHF") {
-        ROHF rohf_energy(options_, psio_, chkpt_);
-        energy = rohf_energy.compute_energy();
+        scf = shared_ptr<Wavefunction>(new ROHF(options_, psio_, chkpt_));
     }
     else if (reference == "UHF") {
-        UHF uhf_energy(options_, psio_, chkpt_);
-        energy = uhf_energy.compute_energy();
+        scf = shared_ptr<Wavefunction>(new UHF(options_, psio_, chkpt_));
     }
     else if (reference == "RKS") {
-        RKS rks_energy(options_, psio_, chkpt_);
-        energy = rks_energy.compute_energy();
+        scf = shared_ptr<Wavefunction>(new RKS(options_, psio_, chkpt_));
     }
     else if (reference == "UKS") {
-        UKS uks_energy(options_, psio_, chkpt_);
-        energy = uks_energy.compute_energy();
+        scf = shared_ptr<Wavefunction>(new UKS(options_, psio_, chkpt_));
     }
     else {
         throw InputException("Unknown reference " + reference, "REFERENCE", __FILE__, __LINE__);
         energy = 0.0;
     }
+    energy = scf->compute_energy();
     
+    Process::environment.set_reference_wavefunction(scf);
+
     return energy;
 }
 

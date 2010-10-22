@@ -40,7 +40,10 @@ void ROHF::common_init()
 {
     Fc_      = SharedMatrix(factory_.create_matrix("F closed"));
     Fo_      = SharedMatrix(factory_.create_matrix("F open"));
-    Feff_    = SharedMatrix(factory_.create_matrix("F effective (MO basis)"));
+    Fa_      = SharedMatrix(factory_.create_matrix("F effective (MO basis)"));
+    Feff_    = Fa_; 
+    Ca_       = SharedMatrix(factory_.create_matrix("Moleular orbitals"));
+    C_    = Ca_; 
     Dc_      = SharedMatrix(factory_.create_matrix("D closed"));
     Do_      = SharedMatrix(factory_.create_matrix("D open"));
     Dc_old_  = SharedMatrix(factory_.create_matrix("D closed old"));

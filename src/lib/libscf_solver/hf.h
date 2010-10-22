@@ -26,12 +26,12 @@ namespace psi { namespace scf {
 
 class HF : public Wavefunction {
 protected:
+    SharedMatrix C_;
     SharedMatrix H_;
     SharedMatrix S_;
     SharedMatrix Shalf_;
     SharedMatrix X_;
     SharedMatrix Sphalf_;
-    SharedMatrix C_;
     SharedVector orbital_e_;
 
     /// Previous iteration's energy and current energy
@@ -50,15 +50,10 @@ protected:
     /// Nuclear repulsion energy
     double nuclearrep_;
 
-    /// Number of atoms and their Z value (used in find_occupation)
-    int natom_;
-
     /// DOCC vector from input (if found)
-    int doccpi_[8];
     bool input_docc_;
 
     /// SOCC vector from input (if found)
-    int soccpi_[8];
     bool input_socc_;
 
     /// Number of alpha and beta electrons
@@ -66,15 +61,8 @@ protected:
     /// Number of alpha and beta electrons per irrep
     int nalphapi_[8], nbetapi_[8];
 
+    //Initial SAD doubly occupied may be more than ndocc
     int sad_nocc_;
-
-    /// Number of so per irrep
-    int nsopi_[8];
-    /// Number of mo per irrep
-    int nmopi_[8];    
-
-    int nso_;
-    int nmo_;
 
     //Canonical or Symmetric orthogonalization?
     bool canonical_X_;

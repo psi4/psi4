@@ -21,8 +21,7 @@ globals {
     MAXITER 100
     E_CONVERGE 8
     GUESS SAD 
-#    NAT_ORBS True
-#    FREEZE_CORE Small 
+    PUREAM True
 }
 
-e_sapt2p = energy('sapt2+')
+e_sapt2p = energy('sapt2+', cast_up = True)

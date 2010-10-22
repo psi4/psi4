@@ -12,10 +12,8 @@ namespace psi { namespace scf {
 
 class UHF : public HF {
 protected:
-    SharedMatrix Fa_, Fb_;
     SharedMatrix pertFa_, pertFb_;
     SharedMatrix Da_, Db_, Dt_, Dtold_;
-    SharedMatrix Ca_, Cb_;
     SharedMatrix Ga_, Gb_;
 
     double *p_jk_;

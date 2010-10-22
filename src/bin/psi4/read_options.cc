@@ -390,7 +390,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_int("ROWS_PER_READ", 0);
 
     /*- The amount of SAD information to print to the output -*/
-    options.add_int("SAD_PRINT", 1);
+    options.add_int("SAD_PRINT", 0);
     /*- SAD Occupation Matrix Method -*/
     options.add_str("SAD_C", "CHOLESKY", "CHOLESKY ID");
     /*- SAD Guess Convergence in E -*/

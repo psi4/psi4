@@ -46,13 +46,6 @@ void SAPT::df_ints()
   psio_->open(PSIF_SAPT_BB_DF_INTS,PSIO_OPEN_NEW);
   psio_->open(PSIF_SAPT_AB_DF_INTS,PSIO_OPEN_NEW);
 
-  // Create a new matrix factory
-  MatrixFactory factory;
-
-  //TODO Make this go away
-  // Initialize the factory with data from checkpoint
-  factory.init_with_chkpt(chkpt_);
-
   timer_on("Form J matrix        ");
 
   // Create integral factory

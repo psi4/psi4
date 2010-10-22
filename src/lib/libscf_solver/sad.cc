@@ -332,14 +332,14 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
 
         if (iteration > maxiter) {
             if(Communicator::world->me() == 0)
-                fprintf(outfile, "  Atomic UHF is not converging! Try casting from a smaller basis or call Rob at CCMST.\n");
+                fprintf(outfile, "\n WARNING: Atomic UHF is not converging! Try casting from a smaller basis or call Rob at CCMST.\n");
             break;
         }
 
         //Check convergence 
     } while (!converged);
     if (converged && print_ > 1 && Communicator::world->me() == 0)
-        fprintf(outfile, "\n  @Atomic UHF Final Energy: %20.14f\n", E);
+        fprintf(outfile, "\n  @Atomic UHF Final Energy for atom %s: %20.14f", mol->label(0).c_str(),E);
    
     delete TEI; 
     free_block(Dold);
@@ -503,14 +503,17 @@ void RHF::compute_SAD_guess()
         atomic_D[A] = block_matrix(atomic_bases[atomic_indices[A]]->nbf(),atomic_bases[atomic_indices[A]]->nbf());
     }
 
-    if (sad_print_>1)
+    if (sad_print_)
         fprintf(outfile,"\n  Performing Atomic UHF Computations:\n");
     for (int A = 0; A<nunique; A++) {
         int index = atomic_indices[A];
-        if (sad_print_>1)
-            fprintf(outfile,"\n  UHF Computation for Unique Atom %d which is Atom %d:\n",A, index);
+        if (sad_print_)
+            fprintf(outfile,"\n  UHF Computation for Unique Atom %d which is Atom %d:",A, index);
         getUHFAtomicDensity(atomic_bases[index],nelec[index],nhigh[index],atomic_D[A]);
     }
+    if (sad_print_)
+        fprintf(outfile,"\n");
+    
     timer_off("Atomic UHF");
 
     //Add atomic_D into D (scale by 1/2, we like pairs in RHF)
@@ -523,7 +526,7 @@ void RHF::compute_SAD_guess()
                 D_->set(0,m+offset,n+offset,0.5*atomic_D[offset_indices[back_index]][m][n]);
         offset+=norbs;
     }
-    if (sad_print_>6)
+    if (sad_print_>4)
         D_->print(outfile);
 
     free(atomic_indices);
@@ -619,7 +622,7 @@ void RHF::compute_SAD_guess()
     } else if (options_.get_str("SAD_C") == "CHOLESKY") {
         timer_on("SAD Cholesky");
         if (sad_print_) {
-            fprintf(outfile,"  Approximating occupied orbitals via Partial Cholesky Decomposition.\n");
+            fprintf(outfile,"\n  Approximating occupied orbitals via Partial Cholesky Decomposition.\n");
             fprintf(outfile,"  NOTE: The zero-th SCF iteration will not be variational.\n");
         }
         int norbs = nso_;
@@ -632,8 +635,10 @@ void RHF::compute_SAD_guess()
         for (int i = 0; i<norbs; i++)
             P[i] = i;
 
-        //fprintf(outfile,"  D:\n");
-        //print_mat(D,norbs,norbs,outfile);
+        if (sad_print_ > 5) {
+            fprintf(outfile,"  D:\n");
+            print_mat(D,norbs,norbs,outfile);
+        }
         //Pivot
         double max;
         int Temp_p;
@@ -662,11 +667,13 @@ void RHF::compute_SAD_guess()
             P[pivot] = Temp_p;
         }
 
-        //fprintf(outfile,"  D (pivoted):\n");
-        //print_mat(D,norbs,norbs,outfile);
-        //for (int i = 0; i<norbs; i++)
-        //    fprintf(outfile,"  Pivot %d is %d.\n",i,P[i]);
-
+        if (sad_print_ > 5) {
+            fprintf(outfile,"  D (pivoted):\n");
+            print_mat(D,norbs,norbs,outfile);
+            for (int i = 0; i<norbs; i++)
+                fprintf(outfile,"  Pivot %d is %d.\n",i,P[i]);
+        }
+    
         //Cholesky Decomposition
         int rank = C_DPOTRF('U',norbs,D[0],norbs);
         if (rank < 0) {
@@ -686,8 +693,10 @@ void RHF::compute_SAD_guess()
             for (int j = i+1; j<norbs; j++)
                 D[i][j] = 0.0;
 
-        //fprintf(outfile,"  C Guess (Cholesky Unpivoted) , rank is %d:\n", rank);
-        //print_mat(D,norbs,sad_nocc_,outfile);
+        if (sad_print_ > 5) {
+            fprintf(outfile,"  C Guess (Cholesky Unpivoted) , rank is %d:\n", rank);
+            print_mat(D,norbs,sad_nocc_,outfile);
+        }
 
         //Unpivot
         double** C = block_matrix(norbs,sad_nocc_);
@@ -696,11 +705,11 @@ void RHF::compute_SAD_guess()
         }
 
         //Eliminate the redundancies
-        double chol_cutoff = options_.get_double("SAD_CHOL_CUTOFF");
-        for (int i = ndocc; i<sad_nocc_; i++) {
-            if (sqrt(1.0/(norbs)*C_DDOT(norbs,&C[0][i],sad_nocc_,&C[0][i],sad_nocc_))<chol_cutoff)
-                sad_nocc_--;
-        }
+        //double chol_cutoff = options_.get_double("SAD_CHOL_CUTOFF");
+        //for (int i = ndocc; i<sad_nocc_; i++) {
+        //    if (sqrt(1.0/(norbs)*C_DDOT(norbs,&C[0][i],sad_nocc_,&C[0][i],sad_nocc_))<chol_cutoff)
+        //        sad_nocc_--;
+        //}
 
         if (sad_print_>1)
             fprintf(outfile,"  %d of %d possible partial occupation vectors selected for C.\n",sad_nocc_,norbs);
@@ -710,9 +719,11 @@ void RHF::compute_SAD_guess()
         for (int m = 0; m<norbs; m++)
             for (int i = 0; i<sad_nocc_; i++)
                 C_->set(0,m,i,C[m][i]);
-        //fprintf(outfile,"  C Guess (Cholesky):\n");
-        //print_mat(C,norbs,sad_nocc_,outfile);
-
+        
+        if (sad_print_ > 5) {
+            fprintf(outfile,"\n  C Guess (Cholesky):\n");
+            print_mat(C,norbs,sad_nocc_,outfile);
+        }
         //C_->print(outfile);
 
         free(P);

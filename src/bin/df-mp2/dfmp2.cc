@@ -56,12 +56,41 @@ DFMP2::DFMP2(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt_)
 void  DFMP2::setup()
 {
   timer_on("Setup");
-  // Form primary basis indexing
-  nirreps_ = chkpt_->rd_nirreps();
-  clsdpi_ = chkpt_->rd_clsdpi();
-  orbspi_ = chkpt_->rd_orbspi();
-  frzcpi_ = chkpt_->rd_frzcpi();
-  frzvpi_ = chkpt_->rd_frzvpi();
+
+  // Old chkpt stuff 
+
+  //// Form primary basis indexing
+  //nirreps_ = chkpt_->rd_nirreps();
+  //clsdpi_ = chkpt_->rd_clsdpi();
+  //orbspi_ = chkpt_->rd_orbspi();
+  //frzcpi_ = chkpt_->rd_frzcpi();
+  //frzvpi_ = chkpt_->rd_frzvpi();
+  //nso_ = chkpt_->rd_nso();
+  //E_scf_ = chkpt_->rd_escf();
+
+  //// Read in C coefficients
+  //double **vectors; 
+  //vectors = chkpt_->rd_scf();
+
+  //// Load in orbital energies
+  //double *orbital_energies; 
+  //orbital_energies = chkpt_->rd_evals();
+
+  //New Process::environment.reference_wavefunction() stuff 
+
+  shared_ptr<Wavefunction> ref = Process::environment.reference_wavefunction(); 
+  E_scf_ = Process::environment.globals["SCF ENERGY"];
+  nirreps_ = ref->get_nirreps();
+  nso_ = ref->get_nso();
+  clsdpi_ = ref->get_doccpi();
+  orbspi_ = ref->get_nmopi();
+  frzcpi_ = ref->get_frzcpi();
+  frzvpi_ = ref->get_frzvpi();
+
+  SharedMatrix C = ref->get_Ca();
+  SharedVector epsilon = ref->get_epsilon_a();
+
+  //End Process::environment.reference_wavefunction() stuff 
 
   ndocc_ = 0;
   nvirt_ = 0;
@@ -78,7 +107,6 @@ void  DFMP2::setup()
       nact_virt_ += orbspi_[h] - frzvpi_[h] - clsdpi_[h];
   }
   nmo_ = ndocc_+nvirt_;
-  nso_ = chkpt_->rd_nso();
   
   // Form ribasis object and auxiliary basis indexing:
   if (options_.get_bool("NO_INPUT") == false) {
@@ -93,7 +121,6 @@ void  DFMP2::setup()
   zerobasis_ = BasisSet::zero_basis_set();
   
   // Form initial energy values
-  E_scf_ = chkpt_->rd_escf();
   E_ss_ = 0.0;
   E_os_ = 0.0;
   E_ = 0.0;
@@ -128,16 +155,6 @@ void  DFMP2::setup()
     else 
         algorithm_type_ = "DISK"; 
  
-  // Read in C coefficients
-  double **vectors; 
-  vectors = chkpt_->rd_scf();
-
-  //print_mat(vectors,nso_,nmo_,outfile);
-  
-  // Load in orbital energies
-  double *orbital_energies; 
-  orbital_energies = chkpt_->rd_evals();
-  
   //Put the orbitals and C matrix into some nice arrays
   C_docc_   = block_matrix(nso_, nact_docc_);
   C_virt_   = block_matrix(nso_, nact_virt_);
@@ -145,35 +162,28 @@ void  DFMP2::setup()
   eps_virt_ = init_array(nact_virt_);
   sym_docc_ = init_int_array(nact_docc_);
   sym_virt_ = init_int_array(nact_virt_);
-  int offset = 0;
   int act_docc_count  = 0;
   int act_virt_count  = 0;
   for(int h=0; h<nirreps_; ++h){
     // Skip over the frozen core orbitals in this irrep
-    offset += frzcpi_[h];
     // Copy over the info for active occupied orbitals
     for(int i=0; i<clsdpi_[h]-frzcpi_[h]; ++i){
       for (int mu=0; mu<nso_; ++mu)
-        C_docc_[mu][act_docc_count] = vectors[mu][offset];
-      eps_docc_[act_docc_count] = orbital_energies[offset];
+        C_docc_[mu][act_docc_count] = C->get(h,mu,i+frzcpi_[h]);;
+      eps_docc_[act_docc_count] = epsilon->get(h,i+frzcpi_[h]);
       sym_docc_[act_docc_count] = h;
       ++act_docc_count;
-      ++offset;
     }
     // Copy over the info for active virtual orbitals
     for(int a=0; a<orbspi_[h]-clsdpi_[h]-frzvpi_[h]; ++a){
       for (int mu=0; mu<nso_; ++mu)
-        C_virt_[mu][act_virt_count] = vectors[mu][offset];
-      eps_virt_[act_virt_count] = orbital_energies[offset];
+        C_virt_[mu][act_virt_count] = C->get(h,mu,a+clsdpi_[h]);
+      eps_virt_[act_virt_count] = epsilon->get(h,a+clsdpi_[h]);
       sym_virt_[act_virt_count] = h;
-      ++offset;
       ++act_virt_count;
     }
     // Skip over the frozen virtual orbitals in this irrep
-    offset += frzvpi_[h];
   }
-  free(orbital_energies);
-  free_block(vectors);
   
   schwarz_ = options_.get_double("SCHWARZ_CUTOFF");
   schwarz_shell_pairs_ = NULL;
@@ -229,10 +239,10 @@ void DFMP2::print_header()
 }
 DFMP2::~DFMP2()
 {
-   free(clsdpi_); 
-   free(orbspi_); 
-   free(frzcpi_); 
-   free(frzvpi_); 
+   //free(clsdpi_); 
+   //free(orbspi_); 
+   //free(frzcpi_); 
+   //free(frzvpi_); 
    free(sym_docc_); 
    free(sym_virt_); 
    free(eps_docc_); 

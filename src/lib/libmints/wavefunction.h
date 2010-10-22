@@ -48,6 +48,34 @@ protected:
     double energy_threshold_;
     double density_threshold_;
 
+    /// Number of doubly occupied per irrep
+    int doccpi_[8];
+    /// Number of singly occupied per irrep
+    int soccpi_[8];
+    /// Number of frozen core per irrep
+    int frzcpi_[8];
+    /// Number of frozen virtuals per irrep
+    int frzvpi_[8];
+
+    
+    /// Number of so per irrep
+    int nsopi_[8];
+    /// Number of mo per irrep
+    int nmopi_[8];    
+
+    int nso_;
+    int nmo_;
+    int nirreps_;
+
+    SharedMatrix Ca_;
+    SharedMatrix Cb_;
+
+    SharedMatrix Fa_;
+    SharedMatrix Fb_;
+
+    SharedVector epsilon_a_;
+    SharedVector epsilon_b_;
+
 private:
     // Wavefunction() {}
     void common_init();
@@ -68,6 +96,23 @@ public:
     shared_ptr<Molecule> molecule() { return molecule_; }
 
     static void initialize_singletons();
+
+    int* get_doccpi() const { return (int*)doccpi_; }
+    int* get_soccpi() const { return (int*)soccpi_; }
+    int* get_nsopi() const { return (int*)nsopi_; }
+    int* get_nmopi() const { return (int*)nmopi_; }
+    int* get_frzcpi() const { return (int*)frzcpi_; }
+    int* get_frzvpi() const { return (int*)frzvpi_; }
+    int get_nso() const { return nso_; }
+    int get_nmo() const { return nmo_; }
+    int get_nirreps() const { return nirreps_; }
+    SharedMatrix get_Ca() const { return Ca_; }
+    SharedMatrix get_Cb() const { return Cb_; }
+    SharedMatrix get_Fa() const { return Fa_; }
+    SharedMatrix get_Fb() const { return Fb_; }
+    SharedVector get_epsilon_a() const { return epsilon_a_; }
+    SharedVector get_epsilon_b() const { return epsilon_b_; }
+
 };
 
 }

@@ -63,13 +63,14 @@ void HF::common_init()
     X_.reset(factory_.create_matrix("X"));
     Sphalf_.reset(factory_.create_matrix("S^+1/2"));
     H_.reset(factory_.create_matrix("One-electron Hamiltonion"));
-    C_.reset(factory_.create_matrix("MO coefficients"));
-    orbital_e_.reset(factory_.create_vector());
+    epsilon_a_.reset(factory_.create_vector());
+    orbital_e_ = epsilon_a_;
 
     memset((void*) nsopi_, '\0', factory_.nirreps()*sizeof(int));
     memset((void*) nmopi_, '\0', factory_.nirreps()*sizeof(int));
     nmo_ = 0;    
     nso_ = 0;
+    nirreps_ = factory_.nirreps();
     int* dimpi = factory_.colspi();
     for (int h = 0; h< factory_.nirreps(); h++){
         nsopi_[h] = dimpi[h];
@@ -113,12 +114,11 @@ void HF::common_init()
 
     // Read information from checkpoint
     nuclearrep_ = molecule_->nuclear_repulsion_energy();
-    natom_ = molecule_->natom();
 
     // Determine the number of electrons in the system
     charge_ = molecule_->molecular_charge();
     nElec_  = 0;
-    for (int i=0; i<natom_; ++i)
+    for (int i=0; i<molecule_->natom(); ++i)
         nElec_ += (int)molecule_->Z(i);
     nElec_ -= charge_;
 
@@ -330,13 +330,11 @@ void HF::print_header()
     }
 #endif
 
-    if(Communicator::world->me() == 0) {
-        fprintf(outfile, "  Nuclear repulsion = %20.15f\n", nuclearrep_);
+    fprintf(outfile, "  Nuclear repulsion = %20.15f\n", nuclearrep_);
 
-        fprintf(outfile, "  Energy threshold  = %3.2e\n", energy_threshold_);
-        fprintf(outfile, "  Density threshold = %3.2e\n\n", density_threshold_);
-        fflush(outfile);
-    }
+    fprintf(outfile, "  Energy threshold  = %3.2e\n", energy_threshold_);
+    fprintf(outfile, "  Density threshold = %3.2e\n\n", density_threshold_);
+    fflush(outfile);
 }
 
 void HF::form_indexing()
@@ -528,15 +526,6 @@ void HF::form_Shalf()
             fprintf(outfile,"  Using Symmetric Orthogonalization.\n");
         canonical_X_ = false;
 
-        if(Communicator::world->me() == 0) {
-            //A bit redundant, but it cements things
-            chkpt_->wt_nirreps(factory_.nirreps());
-            chkpt_->wt_nso(nso_);
-            chkpt_->wt_sopi(nsopi_);
-            chkpt_->wt_nmo(nmo_);
-            chkpt_->wt_orbspi(nmopi_);
-        }
-
         return;
     } else {
         if (print_ && Communicator::world->me() == 0)
@@ -578,12 +567,6 @@ void HF::form_Shalf()
         if (print_ && Communicator::world->me() == 0) {
             fprintf(outfile,"  Overall, %d of %d possible MOs eliminated.\n",delta_mos,nso_);
         
-        //Now things get a bit different
-            chkpt_->wt_nirreps(factory_.nirreps());
-            chkpt_->wt_nso(nso_);
-            chkpt_->wt_sopi(nsopi_);
-            chkpt_->wt_nmo(nmo_);
-            chkpt_->wt_orbspi(nmopi_);
         }
         orbital_e_->init(eigvec.nirreps(), nmopi_);
         C_->init(eigvec.nirreps(),nsopi_,nmopi_,"MO coefficients");
