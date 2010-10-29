@@ -25,87 +25,37 @@ namespace psi { namespace sapt {
 
 class SAPT : public Wavefunction {
 private:
-    workflow workflow_;
-
     void get_params();
-    void get_ribasis();
-    void get_calc_info();
-    void cleanup_calc_info();
 
     // Integral Functions
-    void df_ints();
-    void oetrans();
-    void w_ints();
-
-    // CPHF Functions
-    double **uchf_ind(double **, double *, int, int);
-    double **cphf_ind(int, char *, char *, char *, double **, double **, 
-      double *, int, int);
-    void A_mat(int, char *, char *, char *, double **, double **, int, int,
-      int);
-    void diis_update(double **, double **, double **, int, int);
-
-    // Amplitude functions
-    void t_arar(int, int, int);
-    void t_bsbs(int, int, int);
-    void t_arbs(int);
-    void t2_arar(int);
-    void t2_bsbs(int);
-    void Y2(char *, char *, char *, char *, char *, int, char *, char *, 
-      char *, double *, int, int);
-    double *t2_solver(int, char *, char *, int, char *, char *, char *, 
-      double *, int, int, int);
-    void frzn_t2_prep(char *, char *, char *, int, char *, char *, char *, 
-      int, int, int);
-    void natural_orbitalify_t2(char *, char *, int, char *, char *, char *,
-      double *, double **, int, int, int, int);
-    void g_arar();
-    void g_bsbs();
-    void Y3_ar();
-    void Y3_bs();
-    void Y3_1(double **, int, char *, char *, char *, int, char *, int, int);
-    void Y3_2(double **, int, char *, char *, char *, int, char *, char *,
-      char *, char *, int, int);
-    void Y3_3(double **, int, char *, int, char *, char *, int, int);
-    void Y3_4(double **, int, char *, char *, int, char *, int, int);
-    void Y3_5(double **, int, char *, char *, char *, int, char *, char *, 
-      int, int);
-    void Y3_6(double **, int, char *, char *, char *, int, char *, int, int);
-
-    // Natural Orbital Functions
-    void natural_orbitalify(char *, char *, double *, double **, int, int,
-      char);
+    virtual void df_ints()=0;
+    virtual void oetrans()=0;
+    virtual void w_ints()=0;
 
 protected:
-    params params_;
-    calcinfo calc_info_;
-    results results_;
-    noinfo no_info_;
     shared_ptr<BasisSet> ribasis_;
     shared_ptr<BasisSet> zero_;
+    params params_;
 
     virtual void print_header()=0;
     virtual double print_results()=0;
 
+    void get_ribasis();
     void compute_integrals();
-    void compute_amplitudes();
-    void cphf_induction();
 
     void zero_disk(int, char *, char *, int, int);
     double **read_IJKL(int, char *, int, int);
     void write_IJKL(double **, int, char *, int, int);
     double **get_DF_ints(int,char *,int);
-    double **get_diag_AA_ints(int);
-    double **get_diag_BB_ints(int);
-    double **get_AA_ints(int);
-    double **get_BB_ints(int);
-    double **get_AB_ints(int);
-    double **get_AS_ints(int);
-    double **get_RB_ints(int);
-    double **get_AR_ints(int);
-    double **get_BS_ints(int);
-    double **get_RR_ints(int);
-    double **get_SS_ints(int);
+    double **IJKL_ints(int, char *, int, int, char *, int);
+    double **IJIJ_ints(int, char *, int);
+
+    double **uchf_ind(double **, double *, int, int);
+    double **cphf_ind(int, char *, char *, char *, double **, double **,
+      double *, int, int);
+    void A_mat(int, char *, char *, char *, double **, double **, int, int,
+      int);
+    void diis_update(double **, double **, double **, int, int);
 
 public:
     SAPT(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);

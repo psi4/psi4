@@ -12,13 +12,13 @@
 #include <libmints/basisset.h>
 #include <psi4-dec.h>
 
-#include "sapt.h"
+#include "sapt2b.h"
 
 using namespace psi;
 
 namespace psi { namespace sapt {
 
-class SAPT0 : public SAPT {
+class SAPT0 : public SAPT2B {
 private:
     void H3(double **);
     void Q1(double **);

@@ -30,8 +30,6 @@ private:
     void ind_disp_ovov();
     double exch_ind_disp30_21();
     double exch_ind_disp30_12();
-    double **disp30_amps(int, int, int, double *, double *, int, int, int, 
-      int, int, int);
     void frzn_disp30_prep();
     void natural_orbitalify_disp30();
     double exch_disp30_20();

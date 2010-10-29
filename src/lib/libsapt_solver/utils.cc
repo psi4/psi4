@@ -11,7 +11,7 @@
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "structs.h"
-#include "sapt.h"
+#include "sapt2b.h"
 
 namespace psi { namespace sapt {
 
@@ -26,13 +26,13 @@ void SAPT::zero_disk(int file, char *array, char *zero, int nri, int ijmax)
 
 double** SAPT::get_DF_ints(int filenum, char *label, int length)
 {
-  double **A = block_matrix(length,calc_info_.nrio);
+  double **A = block_matrix(length,ribasis_->nbf()+3);
   psio_->read_entry(filenum,label,(char *) A[0],
-                  sizeof(double)*length*(ULI) calc_info_.nrio);
+                  sizeof(double)*length*(ULI) (ribasis_->nbf()+3));
   return(A);
 } 
 
-double** SAPT::get_AA_ints(int dress) 
+double** SAPT2B::get_AA_ints(int dress) 
 {
 
   double enuc, NA, NB;
@@ -63,7 +63,7 @@ double** SAPT::get_AA_ints(int dress)
 
 }
 
-double** SAPT::get_diag_AA_ints(int dress) 
+double** SAPT2B::get_diag_AA_ints(int dress) 
 {
 
   double enuc, NA, NB;
@@ -90,7 +90,7 @@ double** SAPT::get_diag_AA_ints(int dress)
   return(A);
 }
 
-double** SAPT::get_BB_ints(int dress) 
+double** SAPT2B::get_BB_ints(int dress) 
 {
 
   double enuc, NA, NB;
@@ -121,7 +121,7 @@ double** SAPT::get_BB_ints(int dress)
 
 }
 
-double** SAPT::get_diag_BB_ints(int dress) 
+double** SAPT2B::get_diag_BB_ints(int dress) 
 {
 
   double enuc, NA, NB;
@@ -148,7 +148,7 @@ double** SAPT::get_diag_BB_ints(int dress)
   return(A);
 }
 
-double** SAPT::get_AB_ints(int dress) 
+double** SAPT2B::get_AB_ints(int dress) 
 {
 
   double enuc, NA, NB;
@@ -188,7 +188,7 @@ double** SAPT::get_AB_ints(int dress)
 
 }
 
-double** SAPT::get_AS_ints(int dress) 
+double** SAPT2B::get_AS_ints(int dress) 
 {
 
   double enuc, NA, NB;
@@ -228,7 +228,7 @@ double** SAPT::get_AS_ints(int dress)
 
 }
 
-double** SAPT::get_RB_ints(int dress) 
+double** SAPT2B::get_RB_ints(int dress) 
 {
 
   double enuc, NA, NB;
@@ -268,7 +268,7 @@ double** SAPT::get_RB_ints(int dress)
 
 }
 
-double** SAPT::get_AR_ints(int dress) 
+double** SAPT2B::get_AR_ints(int dress) 
 {
 
   double enuc, NA, NB;
@@ -296,7 +296,7 @@ double** SAPT::get_AR_ints(int dress)
 
 }
 
-double** SAPT::get_BS_ints(int dress) 
+double** SAPT2B::get_BS_ints(int dress) 
 {
 
   double enuc, NA, NB;
@@ -324,7 +324,7 @@ double** SAPT::get_BS_ints(int dress)
 
 }
 
-double** SAPT::get_RR_ints(int dress)
+double** SAPT2B::get_RR_ints(int dress)
 {
 
   double enuc, NA, NB;
@@ -356,7 +356,7 @@ double** SAPT::get_RR_ints(int dress)
 
 }
 
-double** SAPT::get_SS_ints(int dress)
+double** SAPT2B::get_SS_ints(int dress)
 {
 
   double enuc, NA, NB;
@@ -406,6 +406,37 @@ void SAPT::write_IJKL(double **A, int filenum, char *label, int length_IJ,
                   sizeof(double)*length_IJ*length_KL);
 
   free_block(A);
+}
+
+double **SAPT::IJKL_ints(int IJfile, char *IJlabel, int IJlength, int KLfile, 
+  char *KLlabel, int KLlength)
+{
+  double **IJKL = block_matrix(IJlength, KLlength);
+  double **DF_p_IJ = get_DF_ints(IJfile, IJlabel, IJlength);
+  double **DF_p_KL = get_DF_ints(KLfile, KLlabel, KLlength);
+
+  C_DGEMM('N','T',IJlength,KLlength,ribasis_->nbf()+3,1.0,&(DF_p_IJ[0][0]),
+    ribasis_->nbf()+3,&(DF_p_KL[0][0]),ribasis_->nbf()+3,0.0,&(IJKL[0][0]),
+    KLlength);
+
+  free_block(DF_p_IJ);
+  free_block(DF_p_KL);
+
+  return(IJKL);
+}
+
+double **SAPT::IJIJ_ints(int IJfile, char *IJlabel, int IJlength)
+{
+  double **IJIJ = block_matrix(IJlength, IJlength);
+  double **DF_p_IJ = get_DF_ints(IJfile, IJlabel, IJlength);
+
+  C_DGEMM('N','T',IJlength,IJlength,ribasis_->nbf()+3,1.0,&(DF_p_IJ[0][0]),
+    ribasis_->nbf()+3,&(DF_p_IJ[0][0]),ribasis_->nbf()+3,0.0,&(IJIJ[0][0]),
+    IJlength);
+
+  free_block(DF_p_IJ);
+
+  return(IJIJ);
 }
 
 }}

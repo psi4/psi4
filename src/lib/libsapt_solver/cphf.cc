@@ -12,11 +12,12 @@
 #include <libipv1/ip_data.gbl>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
-#include "sapt.h"
+#include "sapt2b.h"
+#include "sapt3b.h"
 
 namespace psi { namespace sapt {
 
-void SAPT::cphf_induction()
+void SAPT2B::cphf_induction()
 {
   calc_info_.sA = uchf_ind(calc_info_.WBAR,calc_info_.evalsA,calc_info_.noccA,
     calc_info_.nvirA);
@@ -45,6 +46,69 @@ void SAPT::cphf_induction()
   }
   if (!workflow_.save_s)
     free_block(calc_info_.sB);
+}
+
+void SAPT3B::cphf_induction()
+{
+  calc_info_.sA_B = uchf_ind(calc_info_.WBAR,calc_info_.evalsA,
+    calc_info_.noccA,calc_info_.nvirA);
+  if (params_.print) {
+    fprintf(outfile,"Solving CHF equations: Monomer A <- Monomer B\n\n");
+    fflush(outfile);
+  }
+  calc_info_.CHFA_B = cphf_ind(PSIF_3B_SAPT_AA_DF_INTS,"AA RI Integrals",
+    "AR RI Integrals", "RR RI Integrals", calc_info_.WBAR, calc_info_.sA_B,
+    calc_info_.evalsA, calc_info_.noccA, calc_info_.nvirA);
+
+  calc_info_.sA_C = uchf_ind(calc_info_.WCAR,calc_info_.evalsA,
+    calc_info_.noccA,calc_info_.nvirA);
+  if (params_.print) {
+    fprintf(outfile,"Solving CHF equations: Monomer A <- Monomer C\n\n");
+    fflush(outfile);
+  }
+  calc_info_.CHFA_C = cphf_ind(PSIF_3B_SAPT_AA_DF_INTS,"AA RI Integrals",
+    "AR RI Integrals", "RR RI Integrals", calc_info_.WCAR, calc_info_.sA_C,
+    calc_info_.evalsA, calc_info_.noccA, calc_info_.nvirA);
+
+  calc_info_.sB_A = uchf_ind(calc_info_.WABS,calc_info_.evalsB,
+    calc_info_.noccB,calc_info_.nvirB);
+  if (params_.print) {
+    fprintf(outfile,"Solving CHF equations: Monomer B <- Monomer A\n\n");
+    fflush(outfile);
+  }
+  calc_info_.CHFB_A = cphf_ind(PSIF_3B_SAPT_BB_DF_INTS,"BB RI Integrals",
+    "BS RI Integrals", "SS RI Integrals", calc_info_.WABS, calc_info_.sB_A,
+    calc_info_.evalsB, calc_info_.noccB, calc_info_.nvirB);
+
+  calc_info_.sB_C = uchf_ind(calc_info_.WCBS,calc_info_.evalsB,
+    calc_info_.noccB,calc_info_.nvirB);
+  if (params_.print) {
+    fprintf(outfile,"Solving CHF equations: Monomer B <- Monomer C\n\n");
+    fflush(outfile);
+  }
+  calc_info_.CHFB_C = cphf_ind(PSIF_3B_SAPT_BB_DF_INTS,"BB RI Integrals",
+    "BS RI Integrals", "SS RI Integrals", calc_info_.WCBS, calc_info_.sB_C,
+    calc_info_.evalsB, calc_info_.noccB, calc_info_.nvirB);
+
+  calc_info_.sC_A = uchf_ind(calc_info_.WACT,calc_info_.evalsC,
+    calc_info_.noccC,calc_info_.nvirC);
+  if (params_.print) {
+    fprintf(outfile,"Solving CHF equations: Monomer C <- Monomer A\n\n");
+    fflush(outfile);
+  }
+  calc_info_.CHFC_A = cphf_ind(PSIF_3B_SAPT_CC_DF_INTS,"CC RI Integrals",
+    "CT RI Integrals", "TT RI Integrals", calc_info_.WACT, calc_info_.sC_A,
+    calc_info_.evalsC, calc_info_.noccC, calc_info_.nvirC);
+
+  calc_info_.sC_B = uchf_ind(calc_info_.WBCT,calc_info_.evalsC,
+    calc_info_.noccC,calc_info_.nvirC);
+  if (params_.print) {
+    fprintf(outfile,"Solving CHF equations: Monomer C <- Monomer B\n\n");
+    fflush(outfile);
+  }
+  calc_info_.CHFC_B = cphf_ind(PSIF_3B_SAPT_CC_DF_INTS,"CC RI Integrals",
+    "CT RI Integrals", "TT RI Integrals", calc_info_.WBCT, calc_info_.sC_B,
+    calc_info_.evalsC, calc_info_.noccC, calc_info_.nvirC);
 }
 
 double **SAPT::uchf_ind(double **W, double *evals, int nocc, int nvir)
@@ -110,10 +174,9 @@ double **SAPT::cphf_ind(int dfnum, char *OO, char *OV, char *VV, double **W,
     conv = 0.0;
 
     for (int a=0, i=0; a < nocc; a++) {
-    for (int r=nocc; r < calc_info_.nmo; r++,i++) {
-      resC[i][iter % params_.diisvec] = fabs(C[a][r-nocc] - 
-                          C_old[a][r-nocc]);
-      conv += pow(C[a][r-nocc] - C_old[a][r-nocc],2);
+    for (int r=0; r < nvir; r++,i++) {
+      resC[i][iter % params_.diisvec] = fabs(C[a][r] - C_old[a][r]);
+      conv += pow(C[a][r] - C_old[a][r],2);
       }}
 
     conv = sqrt(conv/(nocc*nvir));
@@ -155,37 +218,39 @@ double **SAPT::cphf_ind(int dfnum, char *OO, char *OV, char *VV, double **W,
 void SAPT::A_mat(int dfnum, char *OO, char *OV, char *VV, double **C_old, 
   double **C_new, int nocc, int nvir, int iter)
 {
-  double **B_p_AR = get_DF_ints(dfnum,OV,nocc*nvir);
-  double *C_p = init_array(calc_info_.nrio);
+  int nrio = ribasis_->nbf() + 3;
 
-  C_DGEMV('t',nocc*nvir,calc_info_.nrio,1.0,&(B_p_AR[0][0]),calc_info_.nrio,
+  double **B_p_AR = get_DF_ints(dfnum,OV,nocc*nvir);
+  double *C_p = init_array(nrio);
+
+  C_DGEMV('t',nocc*nvir,nrio,1.0,&(B_p_AR[0][0]),nrio,
           &(C_old[0][0]),1,0.0,C_p,1);
-  C_DGEMV('n',nocc*nvir,calc_info_.nrio,4.0,&(B_p_AR[0][0]),calc_info_.nrio,
+  C_DGEMV('n',nocc*nvir,nrio,4.0,&(B_p_AR[0][0]),nrio,
           C_p,1,0.0,&(C_new[0][0]),1);
 
   free(C_p);
 
-  double **D_p_AA = block_matrix(nocc*nocc,calc_info_.nrio);
+  double **D_p_AA = block_matrix(nocc*nocc,nrio);
 
   for (int a=0; a<nocc; a++) {
-    C_DGEMM('N','N',nocc,calc_info_.nrio,nvir,1.0,&(C_old[0][0]),nvir,
-      &(B_p_AR[a*nvir][0]),calc_info_.nrio,0.0,&(D_p_AA[a][0]),
-      nocc*calc_info_.nrio);
+    C_DGEMM('N','N',nocc,nrio,nvir,1.0,&(C_old[0][0]),nvir,
+      &(B_p_AR[a*nvir][0]),nrio,0.0,&(D_p_AA[a][0]),
+      nocc*nrio);
   }
 
   for (int a=0; a<nocc; a++) {
-    C_DGEMM('N','T',nocc,nvir,calc_info_.nrio,-1.0,&(D_p_AA[a*nocc][0]),
-      calc_info_.nrio,&(B_p_AR[a*nvir][0]),calc_info_.nrio,1.0,&(C_new[0][0]),
+    C_DGEMM('N','T',nocc,nvir,nrio,-1.0,&(D_p_AA[a*nocc][0]),
+      nrio,&(B_p_AR[a*nvir][0]),nrio,1.0,&(C_new[0][0]),
       nvir);
   }
 
   free_block(D_p_AA);
-  memset(&(B_p_AR[0][0]),'\0',sizeof(double)*nocc*nvir*calc_info_.nrio);
+  memset(&(B_p_AR[0][0]),'\0',sizeof(double)*nocc*nvir*nrio);
 
   long int avail_mem = params_.memory;
-  avail_mem -= 8*(nocc*nvir*(long int) calc_info_.nrio);
+  avail_mem -= 8*(nocc*nvir*(long int) nrio);
 
-  long int temp_size = avail_mem / (8*nvir*(long int) calc_info_.nrio);
+  long int temp_size = avail_mem / (8*nvir*(long int) nrio);
   
   if (temp_size > nvir)
     temp_size = nvir;
@@ -198,7 +263,7 @@ void SAPT::A_mat(int dfnum, char *OO, char *OV, char *VV, double **C_old,
     exit(0);
   } 
 
-  double **B_p_RR = block_matrix(temp_size*nvir,calc_info_.nrio);
+  double **B_p_RR = block_matrix(temp_size*nvir,nrio);
 
   psio_address next_PSIF = PSIO_ZERO;
   for (int t_r=0; t_r<blocks; t_r++) {
@@ -208,11 +273,11 @@ void SAPT::A_mat(int dfnum, char *OO, char *OV, char *VV, double **C_old,
       r_stop = nvir;
 
     psio_->read(dfnum,VV,(char *) &(B_p_RR[0][0]),sizeof(double)*
-      (r_stop-r_start)*nvir*(ULI) calc_info_.nrio,next_PSIF,&next_PSIF);
+      (r_stop-r_start)*nvir*(ULI) nrio,next_PSIF,&next_PSIF);
     for (int r=r_start; r<r_stop; r++) {
-      C_DGEMM('N','N',nocc,calc_info_.nrio,nvir,1.0,&(C_old[0][0]),nvir,
-        &(B_p_RR[(r-r_start)*nvir][0]),calc_info_.nrio,1.0,&(B_p_AR[r][0]),
-        nvir*calc_info_.nrio);
+      C_DGEMM('N','N',nocc,nrio,nvir,1.0,&(C_old[0][0]),nvir,
+        &(B_p_RR[(r-r_start)*nvir][0]),nrio,1.0,&(B_p_AR[r][0]),
+        nvir*nrio);
     }
 
   }
@@ -221,8 +286,8 @@ void SAPT::A_mat(int dfnum, char *OO, char *OV, char *VV, double **C_old,
   double **B_p_AA = get_DF_ints(dfnum,OO,nocc*nocc);
 
   for (int a=0; a<nocc; a++) {
-    C_DGEMM('N','T',nocc,nvir,calc_info_.nrio,-1.0,&(B_p_AA[a*nocc][0]),
-      calc_info_.nrio,&(B_p_AR[a*nvir][0]),calc_info_.nrio,1.0,&(C_new[0][0]),
+    C_DGEMM('N','T',nocc,nvir,nrio,-1.0,&(B_p_AA[a*nocc][0]),
+      nrio,&(B_p_AR[a*nvir][0]),nrio,1.0,&(C_new[0][0]),
       nvir);
   }
 
