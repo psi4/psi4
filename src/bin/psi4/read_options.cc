@@ -100,7 +100,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
   if (name == "SAPT"|| options.read_globals()) {
     ip_cwk_add(":SAPT");
     /*- The level of theory for SAPT -*/
-    options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT_DFT SAPT2 SAPT2+ SAPT2+3 SCS_SAPT");
+    options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT_DFT SAPT2 SAPT2+ SAPT2+3 SCS_SAPT SAPT3B_N5 SAPT3B_N6 SAPT3B_N7");
     /*- The ubiquitous debug flag -*/
     options.add_bool("DEBUG",false);
     /*- The ubiquitous print flag -*/
@@ -121,6 +121,8 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_int("NFRZ_A",0);
     /*- Frozen Occupieds of Monomer B -*/
     options.add_int("NFRZ_B",0);
+    /*- Frozen Occupieds of Monomer C -*/
+    options.add_int("NFRZ_C",0);
     /*- Compute coupled HF Dispersion energy -*/
     options.add_bool("CHF_DISP",true);
     /*- Use a restart file? -*/

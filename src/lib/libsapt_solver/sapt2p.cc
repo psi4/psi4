@@ -151,22 +151,17 @@ double SAPT2p::print_results()
   fprintf(outfile,"    Total SAPT2+     %16.8lf mH %16.8lf kcal mol^-1\n",
           sapt2p*1000.0,sapt2p*627.5095);
 
-  Process::environment.globals["SAPT ELST10 ENERGY"] = results_.elst10;
-  Process::environment.globals["SAPT ELST12 ENERGY"] = results_.elst12;
-  Process::environment.globals["SAPT EXCH10 ENERGY"] = results_.exch10;
-  Process::environment.globals["SAPT EXCH11 ENERGY"] = results_.exch11;
-  Process::environment.globals["SAPT EXCH12 ENERGY"] = results_.exch12;
-  Process::environment.globals["SAPT IND20 ENERGY"] = results_.ind20;
-  Process::environment.globals["SAPT EXCH-IND20 ENERGY"] = results_.exch_ind20;
-  Process::environment.globals["SAPT IND22 ENERGY"] = results_.ind22;
-  Process::environment.globals["SAPT EXCH-IND22 ENERGY"] = exch_ind22;
-  Process::environment.globals["SAPT DELTA-HF ENERGY"] = dHF;
-  Process::environment.globals["SAPT DISP20 ENERGY"] = results_.disp20;
-  Process::environment.globals["SAPT DISP21 ENERGY"] = results_.disp21;
-  Process::environment.globals["SAPT DISP22-SDQ ENERGY"] = results_.disp22sdq;
-  Process::environment.globals["SAPT DISP22-T ENERGY"] = results_.disp22t;
-  Process::environment.globals["SAPT EXCH-DISP20 ENERGY"] = 
-    results_.exch_disp20;
+  double tot_elst = results_.elst10 + results_.elst12;
+  double tot_exch = results_.exch10 + results_.exch11 + results_.exch12;
+  double tot_ind = results_.ind20 + results_.exch_ind20 + dHF + results_.ind22
+    + exch_ind22;
+  double tot_disp = results_.disp20 + results_.exch_disp20 + results_.disp21
+    + results_.disp22sdq + results_.disp22t;
+
+  Process::environment.globals["SAPT ELST ENERGY"] = tot_elst;
+  Process::environment.globals["SAPT EXCH ENERGY"] = tot_exch;
+  Process::environment.globals["SAPT IND ENERGY"] = tot_ind;
+  Process::environment.globals["SAPT DISP ENERGY"] = tot_disp;
   Process::environment.globals["SAPT SAPT0 ENERGY"] = sapt0;
   Process::environment.globals["SAPT SAPT2 ENERGY"] = sapt2;
   Process::environment.globals["SAPT SAPT2+ ENERGY"] = sapt2p;

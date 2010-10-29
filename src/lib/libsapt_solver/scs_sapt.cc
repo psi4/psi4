@@ -127,16 +127,15 @@ double SCS_SAPT::print_results()
   fprintf(outfile,"    Total SCS-SAPT   %16.8lf mH %16.8lf kcal mol^-1\n",
           scs_sapt*1000.0,scs_sapt*627.5095);
 
-  Process::environment.globals["SAPT ELST10 ENERGY"] = results_.elst10;
-  Process::environment.globals["SAPT EXCH10 ENERGY"] = results_.exch10;
-  Process::environment.globals["SAPT IND20 ENERGY"] = results_.ind20;
-  Process::environment.globals["SAPT EXCH-IND20 ENERGY"] = results_.exch_ind20;
-  Process::environment.globals["SAPT DELTA-HF ENERGY"] = dHF;
-  Process::environment.globals["SAPT DISP20 ENERGY"] = results_.disp20;
-  Process::environment.globals["SAPT EXCH-DISP20 ENERGY"] = 
-    results_.exch_disp20;
-  Process::environment.globals["SAPT SCS-DISP20 ENERGY"] = scs_disp;
-  Process::environment.globals["SAPT SCS-EXCH-DISP20 ENERGY"] = scs_exch_disp;
+  double tot_elst = results_.elst10;
+  double tot_exch = results_.exch10;
+  double tot_ind = results_.ind20 + results_.exch_ind20 + dHF;
+  double tot_disp = scs_disp + scs_exch_disp;
+
+  Process::environment.globals["SAPT ELST ENERGY"] = tot_elst;
+  Process::environment.globals["SAPT EXCH ENERGY"] = tot_exch;
+  Process::environment.globals["SAPT IND ENERGY"] = tot_ind;
+  Process::environment.globals["SAPT DISP ENERGY"] = tot_disp;
   Process::environment.globals["SAPT SAPT0 ENERGY"] = sapt0;
   Process::environment.globals["SAPT SCS-SAPT ENERGY"] = scs_sapt;
   Process::environment.globals["SAPT ENERGY"] = scs_sapt;

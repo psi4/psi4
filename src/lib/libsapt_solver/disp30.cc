@@ -27,7 +27,7 @@ void SAPT2p3::disp30()
     psio_->open(PSIF_SAPT_TEMP,0);
     natural_orbitalify_disp30();
 
-    double **wARBS = disp30_amps(PSIF_SAPT_TEMP,PSIF_SAPT_TEMP,PSIF_SAPT_TEMP,
+    double **wARBS = disp30_amps(PSIF_SAPT_TEMP,"T ARBS Amplitudes",PSIF_SAPT_TEMP,"AA RI Integrals","RR RI Integrals",PSIF_SAPT_TEMP,"BB RI Integrals","SS RI Integrals",
       no_info_.evalsA,no_info_.evalsB,calc_info_.noccA,no_info_.nvirA,
       params_.foccA,calc_info_.noccB,no_info_.nvirB,params_.foccB);
 
@@ -90,7 +90,7 @@ void SAPT2p3::disp30()
   else if ((params_.foccA || params_.foccB) && 0) {
     psio_->open(PSIF_SAPT_TEMP,0);
     frzn_disp30_prep();
-    double **xARBS = disp30_amps(PSIF_SAPT_TEMP,PSIF_SAPT_TEMP,PSIF_SAPT_TEMP,
+    double **xARBS = disp30_amps(PSIF_SAPT_TEMP,"T ARBS Amplitudes",PSIF_SAPT_TEMP,"AA RI Integrals","RR RI Integrals",PSIF_SAPT_TEMP,"BB RI Integrals","SS RI Integrals",
       calc_info_.evalsA,calc_info_.evalsB,calc_info_.noccA,calc_info_.nvirA,
       params_.foccA,calc_info_.noccB,calc_info_.nvirB,params_.foccB);
     tARBS = block_matrix(calc_info_.noccA*calc_info_.nvirA,calc_info_.noccB*
@@ -105,8 +105,8 @@ void SAPT2p3::disp30()
     psio_->close(PSIF_SAPT_TEMP,0);
   }
   else {
-    tARBS = disp30_amps(PSIF_SAPT_AMPS,PSIF_SAPT_AA_DF_INTS,
-      PSIF_SAPT_BB_DF_INTS,calc_info_.evalsA,calc_info_.evalsB,
+    tARBS = disp30_amps(PSIF_SAPT_AMPS,"T ARBS Amplitudes",PSIF_SAPT_AA_DF_INTS,"AA RI Integrals","RR RI Integrals",
+      PSIF_SAPT_BB_DF_INTS,"BB RI Integrals","SS RI Integrals",calc_info_.evalsA,calc_info_.evalsB,
       calc_info_.noccA,calc_info_.nvirA,0,calc_info_.noccB,
       calc_info_.nvirB,0);
   }
@@ -136,155 +136,6 @@ void SAPT2p3::disp30()
     fprintf(outfile,"Disp30             = %18.12lf  H\n\n",results_.disp30);
     fflush(outfile);
   }
-}
-
-double **SAPT2p3::disp30_amps(int ampfile, int AAintfile, int BBintfile, 
-  double *evalsA, double *evalsB, int noccA, int nvirA, int foccA, int noccB, 
-  int nvirB, int foccB)
-{
-  noccA -= foccA;
-  noccB -= foccB;
-
-  double **tARBS = read_IJKL(ampfile,"T ARBS Amplitudes",noccA*nvirA,
-    noccB*nvirB);
-  double **tABRS = block_matrix(noccA*noccB,nvirA*nvirB);
-
-    for (int a=0, ar=0; a < noccA; a++) {
-    for (int r=0; r < nvirA; r++, ar++) {
-      for (int b=0, bs=0; b < noccB; b++) {
-      for (int s=0; s < nvirB; s++, bs++) {
-        int ab = a*noccB + b;
-        int rs = r*nvirB + s;
-        tABRS[ab][rs] = tARBS[ar][bs];
-      }}
-    }}
-
-  free_block(tARBS);
-
-  double **t2ABRS = block_matrix(noccA*noccB,nvirA*nvirB);
-
-  double **B_p_RR = get_DF_ints(AAintfile,"RR RI Integrals",nvirA*nvirA);
-  double **B_p_SS = get_DF_ints(BBintfile,"SS RI Integrals",nvirB*nvirB);
-
-  double **X_RS = block_matrix(nvirA,nvirB*nvirB);
-
-  for (int r=0; r < nvirA; r++) {
-    C_DGEMM('N','T',nvirA,nvirB*nvirB,calc_info_.nrio,1.0,
-      &(B_p_RR[r*nvirA][0]),calc_info_.nrio,&(B_p_SS[0][0]),
-      calc_info_.nrio,0.0,&(X_RS[0][0]),nvirB*nvirB);
-    C_DGEMM('N','T',noccA*noccB,nvirA*nvirB,nvirB,1.0,&(tABRS[0][r*nvirB]),
-      nvirA*nvirB,&(X_RS[0][0]),nvirB,1.0,&(t2ABRS[0][0]),nvirA*nvirB);
-  }
-
-  free_block(B_p_RR);
-  free_block(B_p_SS);
-  free_block(X_RS);
-
-  double **B_p_AA = get_DF_ints(AAintfile,"AA RI Integrals",noccA*noccA);
-  double **B_p_BB = get_DF_ints(BBintfile,"BB RI Integrals",noccB*noccB);
-
-  double **ABAB = block_matrix(noccA*noccB,noccA*noccB);
-
-  for (int a=0, ab=0; a < noccA; a++) {
-    for (int b=0; b < noccB; b++,ab++) {
-      C_DGEMM('N','T',noccA,noccB,calc_info_.nrio,1.0,&(B_p_AA[a*noccA][0]),
-        calc_info_.nrio,&(B_p_BB[b*noccB][0]),calc_info_.nrio,0.0,
-        &(ABAB[ab][0]),noccB);
-  }}
-
-  free_block(B_p_AA);
-  free_block(B_p_BB);
-
-  C_DGEMM('N','N',noccA*noccB,nvirA*nvirB,noccA*noccB,1.0,&(ABAB[0][0]),
-    noccA*noccB,&(tABRS[0][0]),nvirA*nvirB,1.0,&(t2ABRS[0][0]),nvirA*nvirB);
-
-  free_block(ABAB);
-
-  double **tBRAS = block_matrix(noccB*nvirA,noccA*nvirB);
-
-    for (int a=0, ab=0; a < noccA; a++) {
-    for (int b=0; b < noccB; b++, ab++) {
-      for (int r=0, rs=0; r < nvirA; r++) {
-      for (int s=0; s < nvirB; s++, rs++) {
-        int br = b*nvirA + r;
-        int as = a*nvirB + s;
-        tBRAS[br][as] = tABRS[ab][rs];
-      }}
-    }}
-
-  free_block(tABRS);
-
-  double **t2BRAS = block_matrix(noccB*nvirA,noccA*nvirB);
-
-    for (int a=0, ab=0; a < noccA; a++) {
-    for (int b=0; b < noccB; b++, ab++) {
-      for (int r=0, rs=0; r < nvirA; r++) {
-      for (int s=0; s < nvirB; s++, rs++) {
-        int br = b*nvirA + r;
-        int as = a*nvirB + s;
-        t2BRAS[br][as] = t2ABRS[ab][rs];
-      }}
-    }}
-
-  free_block(t2ABRS);
-
-  B_p_BB = get_DF_ints(BBintfile,"BB RI Integrals",noccB*noccB);
-  B_p_RR = get_DF_ints(AAintfile,"RR RI Integrals",nvirA*nvirA);
-
-  double **BRBR = block_matrix(noccB*nvirA,noccB*nvirA);
-
-  for (int b=0, br=0; b < noccB; b++) {
-    for (int r=0; r < nvirA; r++, br++) {
-      C_DGEMM('N','T',noccB,nvirA,calc_info_.nrio,1.0,&(B_p_BB[b*noccB][0]),
-        calc_info_.nrio,&(B_p_RR[r*nvirA][0]),calc_info_.nrio,0.0,
-        &(BRBR[br][0]),nvirA);
-  }}
-
-  free_block(B_p_BB);
-  free_block(B_p_RR);
-
-  C_DGEMM('N','N',noccB*nvirA,noccA*nvirB,noccB*nvirA,-1.0,&(BRBR[0][0]),
-    noccB*nvirA,&(tBRAS[0][0]),noccA*nvirB,1.0,&(t2BRAS[0][0]),noccA*nvirB);
-
-  free_block(BRBR);
-
-  B_p_AA = get_DF_ints(AAintfile,"AA RI Integrals",noccA*noccA);
-  B_p_SS = get_DF_ints(BBintfile,"SS RI Integrals",nvirB*nvirB);
-
-  double **ASAS = block_matrix(noccA*nvirB,noccA*nvirB);
-
-  for (int a=0, as=0; a < noccA; a++) {
-    for (int s=0; s < nvirB; s++, as++) {
-      C_DGEMM('N','T',noccA,nvirB,calc_info_.nrio,1.0,&(B_p_AA[a*noccA][0]),
-        calc_info_.nrio,&(B_p_SS[s*nvirB][0]),calc_info_.nrio,0.0,
-        &(ASAS[as][0]),nvirB);
-  }}
-
-  free_block(B_p_AA);
-  free_block(B_p_SS);
-
-  C_DGEMM('N','N',noccB*nvirA,noccA*nvirB,noccA*nvirB,-1.0,&(tBRAS[0][0]),
-    noccA*nvirB,&(ASAS[0][0]),noccA*nvirB,1.0,&(t2BRAS[0][0]),noccA*nvirB);
-
-  free_block(ASAS);
-  free_block(tBRAS);
-
-  tARBS = block_matrix(noccA*nvirA,noccB*nvirB);
-
-  for (int a=0,ar=0; a < noccA; a++) {
-    for (int r=0; r < nvirA; r++,ar++) {
-      for (int b=0,bs=0; b < noccB; b++) {
-        for (int s=0; s < nvirB; s++,bs++) {
-          int br = b*nvirA + r;
-          int as = a*nvirB + s;
-          double denom = evalsA[a+foccA]+evalsB[b+foccB]-
-                  evalsA[r+noccA+foccA]-evalsB[s+noccB+foccB];
-          tARBS[ar][bs] = t2BRAS[br][as]/denom;
-  }}}}
-
-  free_block(t2BRAS);
-
-  return(tARBS);
 }
 
 void SAPT2p3::frzn_disp30_prep()

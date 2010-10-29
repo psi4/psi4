@@ -20,6 +20,9 @@
 #include <libsapt_solver/sapt2.h>
 #include <libsapt_solver/sapt2p.h>
 #include <libsapt_solver/sapt2p3.h>
+#include <libsapt_solver/sapt3bn5.h>
+#include <libsapt_solver/sapt3bn6.h>
+#include <libsapt_solver/sapt3bn7.h>
 #include <libmints/mints.h>
 #include "wrapper.h"
 
@@ -49,15 +52,15 @@ PsiReturnType sapt(Options & options)
     }
 
     if (options.get_str("SAPT_LEVEL") == "SCS_SAPT") {
-        fprintf(outfile,"  SCS-SAPT is not currently implemented\n");
-//      SCS_SAPT sapt(options, psio, chkpt);
-//      sapt.compute_energy();
+//      fprintf(outfile,"  SCS-SAPT is not currently implemented\n");
+        SCS_SAPT sapt(options, psio, chkpt);
+        sapt.compute_energy();
     }
 
     if (options.get_str("SAPT_LEVEL") == "SAPT_DFT") {
-        fprintf(outfile,"  SAPT(DFT) is not currently implemented\n");
-//      SAPT_DFT sapt(options, psio, chkpt);
-//      sapt.compute_energy();
+//      fprintf(outfile,"  SAPT(DFT) is not currently implemented\n");
+        SAPT_DFT sapt(options, psio, chkpt);
+        sapt.compute_energy();
     }
 
     if (options.get_str("SAPT_LEVEL") == "SAPT2") {
@@ -74,7 +77,22 @@ PsiReturnType sapt(Options & options)
         SAPT2p3 sapt(options, psio, chkpt);
         sapt.compute_energy();
     }
-    
+ 
+    if (options.get_str("SAPT_LEVEL") == "SAPT3B_N5") {
+        SAPT3BN5 sapt(options, psio, chkpt);
+        sapt.compute_energy();
+    }
+
+    if (options.get_str("SAPT_LEVEL") == "SAPT3B_N6") {
+        SAPT3BN6 sapt(options, psio, chkpt);
+        sapt.compute_energy();
+    }
+ 
+    if (options.get_str("SAPT_LEVEL") == "SAPT3B_N7") {
+        SAPT3BN7 sapt(options, psio, chkpt);
+        sapt.compute_energy();
+    }
+ 
     // Shut down psi. 
     timer_done();
 
