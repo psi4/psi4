@@ -119,6 +119,10 @@
 #define PSIF_3B_SAPT_MONOMER_A           224 /* SAPT Three-Body Mon A */
 #define PSIF_3B_SAPT_MONOMER_B           225/* SAPT Three-Body Mon B */
 #define PSIF_3B_SAPT_MONOMER_C           226/* SAPT Three-Body Mon C  */
+#define PSIF_3B_SAPT_AA_DF_INTS          227
+#define PSIF_3B_SAPT_BB_DF_INTS          228
+#define PSIF_3B_SAPT_CC_DF_INTS          229
+#define PSIF_3B_SAPT_AMPS                230
 
 #define PSIF_SO_D1OEI          199  /* Derivative OEIs are stored in file 199 */
 #define PSIF_SO_D1ERI          200  /* Derivative ERIs are stored in files 200, 201, 202, etc. File 200*/
