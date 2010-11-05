@@ -44,6 +44,9 @@ void set_params(void) {
   // this fraction of pi from 0 or from pi
   Opt_params.error_tors_angle = 0.01;   
 
+  // angle is 0/pi if the bond angle is within this fraction of pi from 0/pi
+  Opt_params.collinear_lim = 0.01;   
+
   // threshold for which entries in diagonalized redundant matrix are kept and inverted
   // while computing a generalized inverse of a matrix
   Opt_params.redundant_eval_tol = 1.0e-10;

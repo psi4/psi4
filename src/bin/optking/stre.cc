@@ -93,16 +93,16 @@ double ** STRE::Dq2Dx2(GeomType geom) const {
 }
 
 // print stretch and value
-void STRE::print(FILE *fp, GeomType geom) const {
+void STRE::print(FILE *fp, GeomType geom, int off) const {
   ostringstream iss(ostringstream::out); // create stream; allow output to it
-  iss << "R(" << s_atom[0]+1 << "," << s_atom[1]+1 << ")" ;
+  iss << "R(" << s_atom[0]+1+off << "," << s_atom[1]+1+off << ")" ;
   double val = value(geom);
   fprintf(fp,"\t %-15s  =  %15.6lf\t%15.6lf\n",
     iss.str().c_str(), val, val*_bohr2angstroms);
 }
 
-void STRE::print_intco_dat(FILE *fp) const {
-  fprintf(fp, "S%6d%6d\n", s_atom[0]+1, s_atom[1]+1);
+void STRE::print_intco_dat(FILE *fp, int off) const {
+  fprintf(fp, "S%6d%6d\n", s_atom[0]+1+off, s_atom[1]+1+off);
 }
 
 // print displacement

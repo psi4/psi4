@@ -253,8 +253,8 @@ void MOLECULE::write_geom_chkpt(void) {
     for (int xyz=0; xyz < 3; ++xyz)
       geom_2D[i][xyz] = x[cnt++];
 
-fprintf(outfile,"Print new geom\n");
-print_matrix(outfile, geom_2D, g_natom(), 3);
+  //fprintf(outfile,"Print new geom\n");
+  //print_matrix(outfile, geom_2D, g_natom(), 3);
 
   chkpt_init(PSIO_OPEN_OLD);
   chkpt_wt_geom(geom_2D);
@@ -325,172 +325,6 @@ void MOLECULE::H_guess(void) const {
   }
   return;
 }
-
-// test the analytic B matrix (and displacement code) by comparing
-// analytic DqDx to finite-difference DqDx
-/*
-void MOLECULE::test_B(void) {
-  int Natom = g_natom();
-  int Nintco = g_nintco();
-  const double disp_size = 0.001;
-
-  fprintf(outfile,"\n\tTesting B-matrix numerically...\n");
-
-  double **B_analytic = compute_B();
-  if (Opt_params.print_lvl >= 3) {
-    fprintf(outfile, "Analytic B matrix in au\n");
-    print_matrix(outfile, B_analytic, Nintco, 3*Natom);
-  }
-
-  double **coord, *q_plus, *q_minus, **B_fd;
-
-  coord = g_geom_2D(); // in au
-  B_fd = init_matrix(Nintco, 3*Natom);
-
-  for (int atom=0; atom<Natom; ++atom) {
-    for (int xyz=0; xyz<3; ++xyz) {
-      coord[atom][xyz] += disp_size;
-      q_plus  = intco_values(coord);
-      coord[atom][xyz] -= 2.0*disp_size;
-      q_minus = intco_values(coord);
-      coord[atom][xyz] += disp_size; // restore
-
-      for (int i=0; i<Nintco; ++i)
-        B_fd[i][3*atom+xyz] = (q_plus[i]-q_minus[i]) / (2.0*disp_size);
-
-      free_array(q_plus);
-      free_array(q_minus);
-    }
-  }
-  free_matrix(coord);
-  if (Opt_params.print_lvl >= 3) {
-    fprintf(outfile,"\nNumerical B matrix in au, disp_size = %lf\n",disp_size);
-    print_matrix(outfile, B_fd, Nintco, 3*Natom);
-  }
-
-  double max_error = 0.0;
-  for (int i=0; i<Nintco; ++i)
-    for (int j=0; j<3*Natom; ++j)
-      if ( fabs(B_analytic[i][j] - B_fd[i][j]) > max_error )
-        max_error = fabs(B_analytic[i][j] - B_fd[i][j]);
-
-  fprintf(outfile,"\t\tMaximum difference is %.1e.", max_error);
-  if (max_error > 1.0e-3) {
-    fprintf(outfile, "\nUh-Oh.  Perhaps a bug or your angular coordinates are at a discontinuity.\n");
-    fprintf(outfile, "If the latter, restart your optimization at a new or updated geometry.\n");
-    fprintf(outfile, "Remove angular coordinates that are fixed by symmetry\n");
-  }
-  else {
-    fprintf(outfile,"  Passed.\n");
-  }
-
-  free_matrix(B_analytic);
-  free_matrix(B_fd);
-  return;
-}
-*/
-
-/*
-void MOLECULE::test_derivative_B(void) {
-  int Natom = g_natom();
-  int Nintco = g_nintco();
-  const double disp_size = 0.001;
-  bool warn = false;
-
-  double **coord, *q;
-  double **dq2dx2_analytic, **dq2dx2_fd;
-
-  coord = g_geom_2D(); // in au
-  dq2dx2_fd = init_matrix(3*Natom, 3*Natom);
-
-  q = intco_values(coord);
-
-  fprintf(outfile,"\n\tTesting Derivative B-matrix by finite differences...\n");
-  for (int i=0; i<Nintco; ++i) {
-    fprintf(outfile,"\t\tInternal coordinate %d : ", i+1);
-    dq2dx2_analytic = compute_derivative_B(i);
-    if (Opt_params.print_lvl >= 3) {
-      fprintf(outfile, "Analytic B' (Dq2Dx2) matrix in au\n");
-      print_matrix(outfile, dq2dx2_analytic, 3*Natom, 3*Natom);
-    }
-
-    for (int atom_a=0; atom_a<Natom; ++atom_a) {
-      for (int xyz_a=0; xyz_a<3; ++xyz_a) {
-
-        for (int atom_b=0; atom_b<Natom; ++atom_b) {
-          for (int xyz_b=0; xyz_b<3; ++xyz_b) {
-
-            if (atom_a == atom_b && xyz_a == xyz_b) { // diagonal elements
-              double *q_plus, *q_minus;
-              coord[atom_a][xyz_a] += disp_size;
-              q_plus  = intco_values(coord);
-              coord[atom_a][xyz_a] -= 2.0*disp_size;
-              q_minus = intco_values(coord);
-              coord[atom_a][xyz_a] += disp_size; // restore coord
-
-              dq2dx2_fd[3*atom_a+xyz_a][3*atom_a+xyz_a] = (q_plus[i]+q_minus[i]-2.0*q[i])
-                  / (disp_size*disp_size);
-
-              free_array(q_plus); free_array(q_minus);
-            }
-            else { // off-diagonal
-              double *q_pp, *q_pm, *q_mp, *q_mm;
-              coord[atom_a][xyz_a] += disp_size;
-              coord[atom_b][xyz_b] += disp_size;
-              q_pp  = intco_values(coord);
-              coord[atom_a][xyz_a] -= 2.0*disp_size;
-              coord[atom_b][xyz_b] -= 2.0*disp_size;
-              q_mm  = intco_values(coord);
-              coord[atom_a][xyz_a] += 2.0*disp_size;
-              q_pm  = intco_values(coord);
-              coord[atom_a][xyz_a] -= 2.0*disp_size;
-              coord[atom_b][xyz_b] += 2.0*disp_size;
-              q_mp  = intco_values(coord);
-              coord[atom_a][xyz_a] += disp_size; //restore coord
-              coord[atom_b][xyz_b] -= disp_size;
-
-              dq2dx2_fd[3*atom_a+xyz_a][3*atom_b+xyz_b] = (q_pp[i]+q_mm[i]-q_pm[i]-q_mp[i])
-                  / (4.0*disp_size*disp_size);
-
-              free_array(q_pp); free_array(q_mm); free_array(q_pm); free_array(q_mp);
-            }
-          }
-        } // atom_b
-      }
-    } // atom_a
-
-    if (Opt_params.print_lvl >= 3) {
-      fprintf(outfile,"\nNumerical B' matrix in au, disp_size = %lf\n",disp_size);
-      print_matrix(outfile, dq2dx2_fd, 3*Natom, 3*Natom);
-    }
-
-    double max_error = 0.0;
-    for (int i=0; i<3*Natom; ++i)
-      for (int j=0; j<3*Natom; ++j)
-        if ( fabs(dq2dx2_analytic[i][j] - dq2dx2_fd[i][j]) > max_error )
-          max_error = fabs(dq2dx2_analytic[i][j] - dq2dx2_fd[i][j]);
-
-    fprintf(outfile,"Maximum difference is %.1e. ", max_error);
-    if (max_error > 5.0e-3) {
-      fprintf(outfile, "Uh-Oh.  See below\n");
-      warn = true;
-    }
-    else { fprintf(outfile," Passed.\n"); }
-
-    if (warn) {
-      fprintf(outfile, "\nWarning: Perhaps a bug or your angular coordinates are at a discontinuity.\n");
-      fprintf(outfile, "Try restarting your optimization at a new or updated geometry.\n");
-      fprintf(outfile, "Also, remove angular coordinates that are fixed by symmetry.\n");
-    }
-
-    free_matrix(dq2dx2_analytic);
-    fflush(outfile);
-  }
-  fprintf(outfile,"\n");
-  free_matrix(dq2dx2_fd);
-  return;
-}
-*/
 
 double ** MOLECULE::cartesian_H_to_internals(void) const {
   int Nintco = g_nintco();
@@ -570,6 +404,152 @@ double ** MOLECULE::cartesian_H_to_internals(void) const {
   free_matrix(B);
 */
   return H_int;
+}
+
+double ** MOLECULE::compute_B(void) const {
+  double **B, **B_frag, **B_inter;
+  int i, j;
+
+  B = init_matrix(g_nintco(), 3*g_natom());
+
+  for (int f=0; f<fragments.size(); ++f) {
+    B_frag = fragments[f]->compute_B();
+
+    for (i=0; i<fragments[f]->g_nintco(); ++i)
+      for (j=0; j<3*fragments[f]->g_natom(); ++j)
+        B[g_intco_offset(f)+i][3*g_atom_offset(f)+j] = B_frag[i][j];
+
+    free_matrix(B_frag);
+  }
+
+  for (int I=0; I<interfragments.size(); ++I) {
+    B_inter = interfragments[I]->compute_B(); // ->g_nintco() X (3*atom A)+3(natom_B)
+
+    int iA = interfragments[I]->g_A_index();
+    int iB = interfragments[I]->g_B_index();
+    int nA = interfragments[I]->g_natom_A();
+    int nB = interfragments[I]->g_natom_B();
+
+    for (i=0; i<interfragments[I]->g_nintco(); ++i) { // for each of up to 6 coordinates
+
+      for (j=0; j<3*nA; ++j)
+        B[g_interfragment_intco_offset(I)+i][3*g_atom_offset(iA)+j] = B_inter[i][j];
+
+      for (j=0; j<3*nB; ++j)
+        B[g_interfragment_intco_offset(I)+i][3*g_atom_offset(iB)+j] = B_inter[i][3*nA+j];
+
+    }
+    free_matrix(B_inter);
+  }
+  return B;
+}
+
+double ** MOLECULE::compute_derivative_B(int intco_index) const {
+  int cnt_intcos = 0;
+  int fragment_index = -1;
+  int coordinate_index = 0;
+  bool is_interfragment = true;
+  int f;
+
+  for (f=0; f<fragments.size(); ++f) {
+    for (int i=0; i<fragments[f]->g_nintco(); ++i) {
+      if (cnt_intcos++ == intco_index) {
+        fragment_index = f;
+        coordinate_index = i;
+        is_interfragment = false;
+        break;
+      }
+    }
+  }
+
+  if (is_interfragment) {  // inntco_index not yet found
+    for (f=0; f<interfragments.size(); ++f) {
+      for (int i=0; i<interfragments[f]->g_nintco(); ++i) {
+        if (cnt_intcos++ == intco_index) {
+          fragment_index = f;
+          coordinate_index = i;
+          break;
+        }
+      }
+    }
+  }
+
+  if (fragment_index == -1)
+    throw("MOLECULE::compute_derivative_B() could not find intco_index");
+
+  double **dq2dx2_frag;
+
+  double **dq2dx2 = init_matrix(3*g_natom(), 3*g_natom());
+
+  if (!is_interfragment) {
+    dq2dx2_frag = fragments[fragment_index]->compute_derivative_B(coordinate_index);
+    // dimension is 2x2, 3x3 or 4x4 and given by natom_intco
+    int natom_intco = fragments[fragment_index]->g_intco_natom(coordinate_index);
+    int atom_a, atom_b;
+
+    for (int a=0; a<natom_intco; ++a) {
+      atom_a = g_atom_offset(fragment_index) + fragments[fragment_index]->g_intco_atom(coordinate_index, a);
+      for (int b=0; b<natom_intco; ++b) {
+        atom_b = g_atom_offset(fragment_index) + fragments[fragment_index]->g_intco_atom(coordinate_index, b);
+
+      for (int xyz_a=0; xyz_a<3; ++xyz_a)
+        for (int xyz_b=0; xyz_b<3; ++xyz_b)
+          dq2dx2[3*atom_a + xyz_a][3*atom_b + xyz_b] = dq2dx2_frag[3*a+xyz_a][3*b+xyz_b];
+
+      }
+    }
+    free_matrix(dq2dx2_frag);
+  }
+  else { // interfragment cordinate
+    dq2dx2_frag = interfragments[fragment_index]->compute_derivative_B(coordinate_index);
+
+    // dimension is (3*natomA + 3*natomB) x (3*natomA + 3*natomB) -> 3*natom X 3*natom
+    int nA = interfragments[fragment_index]->g_natom_A();
+    int nB = interfragments[fragment_index]->g_natom_B();
+    int iA = 3*g_atom_offset(interfragments[fragment_index]->g_A_index());
+    int iB = 3*g_atom_offset(interfragments[fragment_index]->g_B_index());
+
+    //print_matrix(outfile,dq2dx2_frag, 3*(nA+nB), 3*(nA+nB));
+    for (int a=0; a<3*nA; ++a) // A-A block
+      for (int aa=0; aa<3*nA; ++aa)
+        dq2dx2[iA + a][iA + aa] = dq2dx2_frag[a][aa];
+
+    for (int a=0; a<3*nA; ++a) // A-B block
+      for (int bb=0; bb<3*nB; ++bb)
+        dq2dx2[iA + a][iB + bb] = dq2dx2_frag[a][3*nA + bb];
+
+    for (int b=0; b<3*nB; ++b) // B-A block
+      for (int aa=0; aa<3*nA; ++aa)
+        dq2dx2[iB + b][iA + aa] = dq2dx2_frag[3*nA + b][aa];
+
+    for (int b=0; b<3*nB; ++b) // B-B block
+      for (int bb=0; bb<3*nB; ++bb)
+        dq2dx2[iB + b][iB + bb] = dq2dx2_frag[3*nA + b][3*nA + bb];
+
+    free_matrix(dq2dx2_frag);
+  }
+  return dq2dx2;
+}
+
+void MOLECULE::print_intco_dat(FILE *fout) {
+
+  for (int i=0; i<fragments.size(); ++i) {
+    int first = g_atom_offset(i);
+    fprintf(fout,"%d-%d\n", first+1, first + fragments[i]->g_natom());
+    fragments[i]->print_intco_dat(fout, g_atom_offset(i));
+  }
+
+  for (int I=0; I<interfragments.size(); ++I) {
+    int frag_a = interfragments[I]->g_A_index();
+    int frag_b = interfragments[I]->g_B_index();
+    fprintf(fout,"F %d %d\n", frag_a+1, frag_b+1);
+
+    for (int i=0; i<6; ++i) 
+      fprintf(fout," %d", (int) interfragments[I]->coordinate_on(i));
+    fprintf(fout,"\n");
+
+    interfragments[I]->print_intco_dat(fout, g_atom_offset(frag_a), g_atom_offset(frag_b));
+  }
 }
 
 }

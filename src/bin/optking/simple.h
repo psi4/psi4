@@ -46,7 +46,7 @@ class SIMPLE {
     // each internal coordinate type must provide the following virtual functions:
 
     // function to print coordinate definitions to intco.dat
-    virtual void print_intco_dat(FILE *fp) const = 0;
+    virtual void print_intco_dat(FILE *fp, int atom_offset=0) const = 0;
 
     // return value of internal coordinate
     virtual double value(GeomType geom) const = 0;
@@ -59,7 +59,7 @@ class SIMPLE {
     virtual double ** Dq2Dx2(GeomType geom) const = 0;
 
     // print coordinates and value to output file
-    virtual void print(FILE *fp, GeomType geom) const = 0;
+    virtual void print(FILE *fp, GeomType geom, int atom_offset=0) const = 0;
 
     // print coordinates and displacements 
     virtual void print_disp(FILE *fp, const double old_q, const double f_q,

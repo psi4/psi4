@@ -233,9 +233,9 @@ double ** TORS::Dq2Dx2(GeomType geom) const {
 }
 
 
-void TORS::print(FILE *fp, GeomType geom) const {
+void TORS::print(FILE *fp, GeomType geom, int off) const {
   ostringstream iss(ostringstream::out); // create stream; allow output to it
-  iss << "T(" << s_atom[0]+1 << "," << s_atom[1]+1 << "," << s_atom[2]+1 << "," << s_atom[3]+1 << ")";
+  iss << "T(" << s_atom[0]+1+off << "," << s_atom[1]+1+off << "," << s_atom[2]+1+off << "," << s_atom[3]+1+off << ")";
   double val = value(geom);
   fprintf(fp,"\t %-15s  =  %15.6lf\t%15.6lf\n",
     iss.str().c_str(), val, val/_pi*180.0);
@@ -249,8 +249,9 @@ void TORS::print_disp(FILE *fp, const double q_old, const double f_q,
     iss.str().c_str(), q_old/_pi*180.0, f_q*_pi/180.0,dq/_pi*180.0, q_new/_pi*180.0);
 }
 
-void TORS::print_intco_dat(FILE *fp) const {
-  fprintf(fp, "S%6d%6d%6d%6d\n", s_atom[0]+1, s_atom[1]+1, s_atom[2]+1, s_atom[3]+1);
+void TORS::print_intco_dat(FILE *fp, int off) const {
+  fprintf(fp, "S%6d%6d%6d%6d\n", s_atom[0]+1+off, s_atom[1]+1+off,
+    s_atom[2]+1+off, s_atom[3]+1+off);
 }
 
 void TORS::print_s(FILE *fp, GeomType geom) const {

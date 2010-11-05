@@ -79,9 +79,8 @@ void FRAG::print_geom_grad(FILE *fp, const int id, bool print_masses) {
       fprintf(fp,"\t %-4s%20.10lf%20.10lf%20.10lf\n",
         Z_to_symbol[(int) Z[i]], geom[i][0], geom[i][1], geom[i][2]);
   }
-    for (i=0; i<natom; ++i)
-      fprintf(fp,"\t %24.10lf%20.10lf%20.10lf\n",
-        grad[i][0], grad[i][1], grad[i][2]);
+  for (i=0; i<natom; ++i)
+    fprintf(fp,"\t %24.10lf%20.10lf%20.10lf\n", grad[i][0], grad[i][1], grad[i][2]);
   fprintf(fp, "\n");
 }
 
@@ -92,18 +91,17 @@ void FRAG::write_geom(FILE *fp_geom) {
 }
 
 
-void FRAG::print_intcos(FILE *fp, const int id) {
-  fprintf(fp,"\t---Fragment %d Intrafragment Coordinates---\n", id+1);
+void FRAG::print_intcos(FILE *fp, int atom_offset) {
   fprintf(fp,"\t * Coordinate *           * BOHR/RAD *       * ANG/DEG *\n");
   for (int i=0; i<intcos.size(); ++i)
-    intcos.at(i)->print(fp,geom);
+    intcos.at(i)->print(fp,geom,atom_offset);
   fprintf(fp, "\n");
 }
 
-void FRAG::print_intco_dat(FILE *fp, const int id) {
-  fprintf(fp,"\t---Fragment %d Intrafragment Coordinates---\n", id+1);
+void FRAG::print_intco_dat(FILE *fp, int atom_offset) {
+  //fprintf(fp,"\t---Fragment %d Intrafragment Coordinates---\n", id+1);
   for (int i=0; i<intcos.size(); ++i)
-    intcos.at(i)->print_intco_dat(fp);
+    intcos.at(i)->print_intco_dat(fp,atom_offset);
 }
 
 // automatically determine bond connectivity by comparison of interatomic distance
@@ -132,13 +130,13 @@ void FRAG::update_connectivity_by_distances(double scale) {
   delete [] Zint;
 }
 
-void FRAG::print_connectivity(FILE *fp, const int id) const {
+void FRAG::print_connectivity(FILE *fp, const int id, const int offset) const {
   fprintf(fp,"\t---Fragment %d Bond Connectivity---\n", id+1);
   int i,j;
   for (i=0; i<natom; ++i) {
-    fprintf(fp,"\t %d :", i+1);
+    fprintf(fp,"\t %d :", i+1+offset);
       for (j=0; j<natom; ++j)
-        if (connectivity[i][j]) fprintf(fp," %d", j+1);
+        if (connectivity[i][j]) fprintf(fp," %d", j+1+offset);
     fprintf(fp,"\n");
   }
   fprintf(fp,"\n");
@@ -326,6 +324,15 @@ void FRAG::set_grad(double ** grad_in) {
   }
 } 
 
+double ** FRAG::g_geom(void) {
+  double **g = matrix_return_copy(geom,natom,3);
+  return g;
+}
+
+GeomType FRAG::g_geom_pointer(void) {
+  return geom;
+}
+
 double * FRAG::g_geom_array(void) {
   int i, xyz, cnt=0;
   double * geom_array = init_array(3*natom);
@@ -344,6 +351,17 @@ double * FRAG::g_grad_array(void) {
   return grad_array; 
 }
 
+double ** FRAG::g_grad(void) {
+  double **g = matrix_return_copy(grad,natom,3);
+  return g;
+}
+
+double * FRAG::g_Z(void) const {
+  double *z = init_array(natom);
+  for (int i=0; i<natom; ++i) z[i] = Z[i];
+  return z;
+}
+
 // don't let bends pass through zero - assumes dq is in right order for fragment
 void FRAG::check_zero_angles(double const * const dq) {
   int i, cnt = 0;
@@ -354,6 +372,19 @@ void FRAG::check_zero_angles(double const * const dq) {
     }
   }
 }
+
+bool ** FRAG::g_connectivity(void) const {
+  bool **c = init_bool_matrix(natom, natom);
+  for (int i=0; i<natom; ++i)
+    for (int j=0; j<=i; ++j)
+      c[i][j] = c[j][i] = connectivity[i][j];
+  return c;
+}
+
+const bool * const * const FRAG::g_connectivity_pointer(void) const {
+  return connectivity;
+}
+
 
 }
 
