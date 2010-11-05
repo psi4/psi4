@@ -12,7 +12,7 @@ atom_data.cc       frag_disp.cc       molecule_steps.cc  set_params.cc \
 bend.cc            linear_algebra.cc  opt_data.cc        stre.cc \
 frag.cc            mem.cc             optking.cc         tors.cc \
 frag_H_guess.cc    molecule.cc        print.cc           v3d.cc \
-molecule_tests.cc
+molecule_tests.cc  molecule_fragments.cc  interfrag.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 

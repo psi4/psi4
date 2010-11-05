@@ -31,9 +31,11 @@ void MOLECULE::test_B(void) {
   fprintf(outfile,"\n\tTesting B-matrix numerically...\n");
 
   double **B_analytic = compute_B();
+
   if (Opt_params.print_lvl >= 3) {
     fprintf(outfile, "Analytic B matrix in au\n");
     print_matrix(outfile, B_analytic, Nintco, 3*Natom);
+    fflush(outfile);
   }
 
   double **coord, *q_plus, *q_minus, **B_fd;
@@ -60,6 +62,7 @@ void MOLECULE::test_B(void) {
   if (Opt_params.print_lvl >= 3) {
     fprintf(outfile,"\nNumerical B matrix in au, disp_size = %lf\n",disp_size);
     print_matrix(outfile, B_fd, Nintco, 3*Natom);
+    fflush(outfile);
   }
 
   double max_error = 0.0;
@@ -69,7 +72,7 @@ void MOLECULE::test_B(void) {
         max_error = fabs(B_analytic[i][j] - B_fd[i][j]);
 
   fprintf(outfile,"\t\tMaximum difference is %.1e.", max_error);
-  if (max_error > 1.0e-3) {
+  if (max_error > 10*disp_size*disp_size) {
     fprintf(outfile, "\nUh-Oh.  Perhaps a bug or your angular coordinates are at a discontinuity.\n");
     fprintf(outfile, "If the latter, restart your optimization at a new or updated geometry.\n");
     fprintf(outfile, "Remove angular coordinates that are fixed by symmetry\n");
@@ -87,7 +90,7 @@ void MOLECULE::test_derivative_B(void) {
   int Natom = g_natom();
   int Nintco = g_nintco();
   const double disp_size = 0.001;
-  bool warn = false;
+  bool warn;
 
   double **coord, *q;
   double **dq2dx2_analytic, **dq2dx2_fd;
@@ -97,21 +100,45 @@ void MOLECULE::test_derivative_B(void) {
 
   q = intco_values(coord);
 
-  fprintf(outfile,"\n\tTesting Derivative B-matrix by finite differences...\n");
+  fprintf(outfile,"\n\tTesting Derivative B-matrix numerically...\n");
   for (int i=0; i<Nintco; ++i) {
-    fprintf(outfile,"\t\tInternal coordinate %d : ", i+1);
+    warn = false;
+    fprintf(outfile,"\t\tInternal coordinate %d : ", i+1); fflush(outfile);
     dq2dx2_analytic = compute_derivative_B(i);
     if (Opt_params.print_lvl >= 3) {
       fprintf(outfile, "Analytic B' (Dq2Dx2) matrix in au\n");
-      print_matrix(outfile, dq2dx2_analytic, 3*Natom, 3*Natom);
+      print_matrix(outfile, dq2dx2_analytic, 3*Natom, 3*Natom); fflush(outfile);
     }
 
+    // compute B' matrix from B matrices
     for (int atom_a=0; atom_a<Natom; ++atom_a) {
       for (int xyz_a=0; xyz_a<3; ++xyz_a) {
+        double **B_plus, **B_minus;
 
+        coord[atom_a][xyz_a] += disp_size;
+        set_geom_array(coord[0]);
+        B_plus  = compute_B();
+        coord[atom_a][xyz_a] -= 2.0*disp_size;
+        set_geom_array(coord[0]);
+        B_minus = compute_B();
+        coord[atom_a][xyz_a] += disp_size; // restore coord
+        set_geom_array(coord[0]);
+
+        for (int atom_b=0; atom_b<Natom; ++atom_b)
+          for (int xyz_b=0; xyz_b<3; ++xyz_b)
+            dq2dx2_fd[3*atom_a+xyz_a][3*atom_b+xyz_b] =
+              (B_plus[i][3*atom_b+xyz_b]-B_minus[i][3*atom_b+xyz_b]) / (2.0*disp_size);
+
+        free_matrix(B_plus); free_matrix(B_minus);
+      }
+    } // atom_a
+
+
+/* determine 2nd derivatives by energies by displacements must not be too small
+    for (int atom_a=0; atom_a<Natom; ++atom_a) {
+      for (int xyz_a=0; xyz_a<3; ++xyz_a) {
         for (int atom_b=0; atom_b<Natom; ++atom_b) {
           for (int xyz_b=0; xyz_b<3; ++xyz_b) {
-
             if (atom_a == atom_b && xyz_a == xyz_b) { // diagonal elements
               double *q_plus, *q_minus;
               coord[atom_a][xyz_a] += disp_size;
@@ -140,30 +167,28 @@ void MOLECULE::test_derivative_B(void) {
               q_mp  = intco_values(coord);
               coord[atom_a][xyz_a] += disp_size; //restore coord
               coord[atom_b][xyz_b] -= disp_size;
-
               dq2dx2_fd[3*atom_a+xyz_a][3*atom_b+xyz_b] = (q_pp[i]+q_mm[i]-q_pm[i]-q_mp[i])
                   / (4.0*disp_size*disp_size);
-
               free_array(q_pp); free_array(q_mm); free_array(q_pm); free_array(q_mp);
             }
           }
         } // atom_b
       }
     } // atom_a
-
+*/
     if (Opt_params.print_lvl >= 3) {
-      fprintf(outfile,"\nNumerical B' matrix in au, disp_size = %lf\n",disp_size);
+      fprintf(outfile,"\nNumerical B' matrix by values in au, disp_size = %lf\n",disp_size);
       print_matrix(outfile, dq2dx2_fd, 3*Natom, 3*Natom);
     }
 
     double max_error = 0.0;
-    for (int i=0; i<3*Natom; ++i)
+    for (int ii=0; ii<3*Natom; ++ii)
       for (int j=0; j<3*Natom; ++j)
-        if ( fabs(dq2dx2_analytic[i][j] - dq2dx2_fd[i][j]) > max_error )
-          max_error = fabs(dq2dx2_analytic[i][j] - dq2dx2_fd[i][j]);
+        if ( fabs(dq2dx2_analytic[ii][j] - dq2dx2_fd[ii][j]) > max_error )
+          max_error = fabs(dq2dx2_analytic[ii][j] - dq2dx2_fd[ii][j]);
 
     fprintf(outfile,"Maximum difference is %.1e. ", max_error);
-    if (max_error > 5.0e-3) {
+    if (max_error > 10*disp_size*disp_size) {
       fprintf(outfile, "Uh-Oh.  See below\n");
       warn = true;
     }

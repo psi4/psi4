@@ -26,11 +26,11 @@ class BEND : public SIMPLE {
     // compute and return array of second derivative (B' matrix elements)
     double **Dq2Dx2(GeomType geom) const;
 
-    void print(FILE *fp, GeomType geom) const;
+    void print(FILE *fp, GeomType geom, int atom_offset=0) const;
+    void print_intco_dat(FILE *fp, int atom_offset=0) const;
     void print_s(FILE *fp, GeomType geom) const;
     void print_disp(FILE *fp, const double old_q, const double f_q,
       const double dq, const double new_q) const;
-    void print_intco_dat(FILE *fp) const;
     bool operator==(const SIMPLE & s2) const;
 
 };

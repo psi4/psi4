@@ -11,8 +11,8 @@ namespace opt {
 void print_matrix(const FILE *fp, double **A, const int nrow, const int ncol) {
   int i,j,col=0;
 
-  //const int max_col = 9;
-  const int max_col = 12;
+  //const int max_col = 12;
+  const int max_col = 18;
 
   for (i=0; i<nrow; ++i) {
     for (j=0; j<ncol; ++j) {

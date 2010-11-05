@@ -7,6 +7,8 @@
 
 namespace opt {
 
+class INTERFRAG;
+
 using std::vector;
 
 class FRAG {
@@ -19,6 +21,7 @@ class FRAG {
   vector<SIMPLE *> intcos;
 
  public:
+  friend class INTERFRAG;
 
   FRAG(int natom_in, double *Z_in, double **geom_in); // use if Z and geom are known
 
@@ -30,12 +33,12 @@ class FRAG {
 
   void print_geom(FILE *fp, const int id, bool print_mass = false);
   void print_geom_grad(FILE *fp, const int id, bool print_mass = false);
-  void print_intcos(FILE *fp, const int id);
-  void print_intco_dat(FILE *fp, const int id);
+  void print_intcos(FILE *fp, int atom_offset=0);
+  void print_intco_dat(FILE *fp, int atom_offset=0);
 
   void update_connectivity_by_distances(double scale_radii = -1);
 
-  void print_connectivity(FILE *fout, const int id) const ;
+  void print_connectivity(FILE *fout, const int id, const int offset = 0) const ;
 
   // add simple internals based on connectivity; return number added
   int add_stre_by_connectivity(void);
@@ -79,6 +82,9 @@ class FRAG {
     return intcos.at(intco_index)->g_atom(atom);
   }
 
+  // return array of atomic numbers
+  double *g_Z(void) const;
+
   // don't let angles pass through 0
   void check_zero_angles(double const * const dq);
 
@@ -102,6 +108,10 @@ class FRAG {
 
   void displace(double *dq, bool print_disp = false);
 
+  double ** g_geom(void);
+  GeomType g_geom_pointer(void);
+  double ** g_grad(void);
+
   double * g_geom_array(void);
   double * g_grad_array(void);
   void set_geom_array(double * geom_array_in);
@@ -110,9 +120,12 @@ class FRAG {
   void write_geom(FILE *fp_geom); // write cartesian geometry out for next step
 
   double ** H_guess(void); 
+  bool **g_connectivity(void) const;
+  const bool * const * const g_connectivity_pointer(void) const;
 
 };
 
 }
 
 #endif
+

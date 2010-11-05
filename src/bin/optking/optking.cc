@@ -40,17 +40,27 @@ outfile = fopen("output.dat","a");
 
   // automatically generate coordinates
   mol1.update_connectivity_by_distances();
-  mol1.add_simples_by_connectivity();
-  //mol1.compute_intco_values();
+  // split separated fragments and make interfragment coordinates
+  mol1.fragmentize();
+  mol1.update_connectivity_by_distances();
+
+  mol1.print_connectivity(outfile); fflush(outfile);
+
+  mol1.add_simples_by_connectivity();// define intrafragment coordinates
+  mol1.add_interfragment();        // define reference points for interfragment coordinates
+
+  mol1.print_intcos(outfile); fflush(outfile);
 
   // print to output file
-  mol1.print_connectivity(outfile);
   mol1.print_geom_grad(outfile);
-  mol1.print_intcos(outfile);
-  mol1.print_intco_dat(outfile);
 
-  mol1.test_B();
+  FILE *intco_dat = fopen("psi.intco.dat","w");
+  mol1.print_intco_dat(intco_dat); // for I/O of coordinate definitions
+  fclose(intco_dat);
+
+  //mol1.test_B();
   //mol1.test_derivative_B();
+  //return OptReturnSuccess;
 
   // read binary file for previous step data
   p_Opt_data = new OPT_DATA(mol1.g_nintco(), 3*mol1.g_natom());
@@ -109,6 +119,7 @@ outfile = fopen("output.dat","a");
 #ifdef QCHEM4
   fclose(outfile);
 #endif
+  free_int_array(ioff);
   return OptReturnSuccess;
 }
 

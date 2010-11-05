@@ -156,9 +156,9 @@ double ** BEND::Dq2Dx2(GeomType geom) const {
 }
 
 
-void BEND::print(FILE *fp, GeomType geom) const {
+void BEND::print(FILE *fp, GeomType geom, int off) const {
   ostringstream iss(ostringstream::out); // create stream; allow output to it
-  iss << "A(" << s_atom[0]+1 << "," << s_atom[1]+1 << "," << s_atom[2]+1 << ")" ;
+  iss << "A(" << s_atom[0]+1+off << "," << s_atom[1]+1+off << "," << s_atom[2]+1+off << ")" ;
   double val = value(geom);
   fprintf(fp,"\t %-15s  =  %15.6lf\t%15.6lf\n",
     iss.str().c_str(), val, val/_pi*180.0);
@@ -173,8 +173,8 @@ void BEND::print_disp(FILE *fp, const double q_old, const double f_q,
       dq/_pi*180.0, q_new/_pi*180.0);
 }
 
-void BEND::print_intco_dat(FILE *fp) const {
-  fprintf(fp, "B%6d%6d%6d\n", s_atom[0]+1, s_atom[1]+1, s_atom[2]+1);
+void BEND::print_intco_dat(FILE *fp, int off) const {
+  fprintf(fp, "B%6d%6d%6d\n", s_atom[0]+1+off, s_atom[1]+1+off, s_atom[2]+1+off);
 }
 
 void BEND::print_s(FILE *fp, GeomType geom) const {

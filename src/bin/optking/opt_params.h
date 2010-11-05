@@ -44,6 +44,8 @@ struct OPT_PARAMS {
   // this fraction of pi from 0 or from pi
   double error_tors_angle;  
 
+  double collinear_lim; // as above, how close to 0 or pi counts as linear for angles
+
   // threshold for which entries in diagonalized redundant matrix are kept and inverted
   // while computing a generalized inverse of a matrix
   double redundant_eval_tol;

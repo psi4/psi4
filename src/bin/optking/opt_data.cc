@@ -36,7 +36,7 @@ STEP_DATA::~STEP_DATA() {
 void STEP_DATA::read(int istep, int Nintco, int Ncart) {
   char lbl[80];
   using namespace psi;
-printf("Reading step data\n");
+  //printf("Reading step data\n");
   sprintf(lbl, "f_q %d", istep);
   psio_read_entry(PSIF_OPTKING, lbl, (char *) f_q,    Nintco*sizeof(double));
   sprintf(lbl, "geom %d", istep);
@@ -92,8 +92,7 @@ void STEP_DATA::save_step_info(double DE_predicted_in, double *unit_step_in, dou
 void STEP_DATA::write(int istep, int Nintco, int Ncart) {
   char lbl[80];
   using namespace psi;
-printf("Write step data\n");
-  fprintf(outfile,"Writing step data to psio file.\n");
+  //fprintf(outfile,"Writing step data to psio file.\n");
   sprintf(lbl, "f_q %d", istep);
   psio_write_entry(PSI_OPTDATA_FILE_NUM, lbl, (char *) f_q, Nintco*sizeof(double));
   sprintf(lbl, "geom %d", istep);
@@ -115,7 +114,7 @@ printf("Write step data\n");
 }
 #elif defined(QCHEM4)
 void STEP_DATA::write(ofstream & fout, int Nintco, int Ncart) {
-printf("Write step data\n");
+  //printf("Write step data\n");
   fout.write( (char *) f_q,    Nintco*sizeof(double));
   fout.write( (char *) geom,    Ncart*sizeof(double));
   fout.write( (char *) &energy,       sizeof(double));
@@ -149,8 +148,6 @@ OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
   data_file_present = fin.is_open();
   fin.close();
 #endif
-
-printf("Read opt data\n");
 
   if (!data_file_present) { 
     fprintf(outfile, "\tPrevious optimization step data not found.  Starting new optimization.\n");
@@ -232,8 +229,6 @@ void OPT_DATA::write(void) {
 #if defined (PSI4)
   using namespace psi;
   psio_open(PSIF_OPTKING, PSIO_OPEN_OLD);
-
-printf("Write opt data\n");
 
   fprintf(outfile,"Writing optimization data to psio file.\n");
   psio_write_entry(PSIF_OPTKING, "Nintco", (char *) &Nintco, sizeof(int));

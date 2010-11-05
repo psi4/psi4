@@ -2,6 +2,8 @@
 #define _opt_molecule_h_
 
 #include "frag.h"
+#include "interfrag.h"
+#include "print.h"
 
 #include <fstream>
 
@@ -13,7 +15,8 @@ namespace opt {
 
 class MOLECULE {
 
-  vector<FRAG *> fragments ;
+  vector<FRAG *> fragments;           // fragments with intrafragment coordinates
+  vector<INTERFRAG *> interfragments; // interfragment coordinates
   double energy;
 
  public:
@@ -25,7 +28,16 @@ class MOLECULE {
     for (int i=0; i<fragments.size(); ++i)
       delete fragments[i];
     fragments.clear();
+    for (int i=0; i<interfragments.size(); ++i)
+      delete interfragments[i];
+    interfragments.clear();
   }
+
+  // if you have one fragment - make sure all atoms are bonded
+  // if not, break up into multiple fragments
+  void fragmentize(void);
+
+  void add_interfragment(void);
 
   int g_nfragment(void) const { return fragments.size(); };
 
@@ -36,24 +48,55 @@ class MOLECULE {
     return n;
   }
 
+  //void update_reference_points(void) {
+  //  for (int f=0; f<interfragments.size(); ++f)
+  //    interfragments[f]->update_reference_points();
+  //}
+
   int g_nintco(void) const {
+    int n=0;
+    for (int f=0; f<fragments.size(); ++f)
+      n += fragments[f]->g_nintco();
+    for (int i=0; i<interfragments.size(); ++i)
+      n += interfragments[i]->g_nintco();
+    return n;
+  }
+
+  int g_nintco_intrafragment(void) const {
     int n=0;
     for (int f=0; f<fragments.size(); ++f)
       n += fragments[f]->g_nintco();
     return n;
   }
 
-  int g_atom_offset(int i) const {
+  int g_nintco_interfragment(void) const {
+    int n=0;
+    for (int f=0; f<interfragments.size(); ++f)
+      n += interfragments[f]->g_nintco();
+    return n;
+  }
+
+  // given fragment index returns first atom in that fragment
+  int g_atom_offset(int index) const {
     int n = 0;
-    for (int f=1; f<=i; ++f)
+    for (int f=1; f<=index; ++f)
       n += fragments[f-1]->g_natom();
     return n;
   }
 
-  int g_intco_offset(int i) const {
+  // given fragment tells which internal coordinate is first one for that fragment
+  int g_intco_offset(int index) const {
     int n = 0;
-    for (int f=1; f<=i; ++i)
-      n += fragments[i-1]->g_nintco();
+    for (int f=1; f<=index; ++f)
+      n += fragments[f-1]->g_nintco();
+    return n;
+  }
+
+  // given interfragment index tells which internal coordinate is first one for that set
+  int g_interfragment_intco_offset(int index) const {
+    int n = g_nintco_intrafragment();
+    for (int f=1; f<=index; ++f)
+      n += interfragments[f-1]->g_nintco();
     return n;
   }
 
@@ -66,7 +109,7 @@ class MOLECULE {
 
   void print_connectivity(FILE *fout) const {
     for (int i=0; i<fragments.size(); ++i)
-      fragments[i]->print_connectivity(fout, i);
+      fragments[i]->print_connectivity(fout, i, g_atom_offset(i));
   }
 
   void print_geom(FILE *fout, bool print_mass = false) {
@@ -80,14 +123,16 @@ class MOLECULE {
   }
 
   void print_intcos(FILE *fout) {
-    for (int i=0; i<fragments.size(); ++i)
-      fragments[i]->print_intcos(fout, i);
+    for (int i=0; i<fragments.size(); ++i) {
+      fprintf(fout,"\t---Fragment %d Intrafragment Coordinates---\n", i+1);
+      fragments[i]->print_intcos(fout, g_atom_offset(i));
+    }
+    for (int i=0; i<interfragments.size(); ++i) {
+      interfragments[i]->print_intcos(fout);
+    }
   }
 
-  void print_intco_dat(FILE *fout) {
-    for (int i=0; i<fragments.size(); ++i)
-      fragments[i]->print_intco_dat(fout, i);
-  }
+  void print_intco_dat(FILE *fout);
 
   int add_simples_by_connectivity(void) {
     int n=0;
@@ -98,21 +143,14 @@ class MOLECULE {
 
   // compute intco values from frag member geometries
   double * intco_values(void) const {
-    double *q, *q_frag;
-    q = init_array(g_nintco());
-
-    for (int f=0; f<fragments.size(); ++f) {
-      q_frag = fragments[f]->intco_values();
-      for (int i=0; i<fragments[f]->g_nintco(); ++i)
-        q[g_intco_offset(f)+i]  = q_frag[i];
-      free_array(q_frag);
-    }
+    GeomType x = g_geom_2D();
+    double *q = intco_values(x);
     return q;
   }
 
   // compute intco values from given geometry
   double * intco_values(GeomType new_geom) const {
-    double *q, *q_frag;
+    double *q, *q_frag, *q_IF;
     q = init_array(g_nintco());
 
     for (int f=0; f<fragments.size(); ++f) {
@@ -123,8 +161,28 @@ class MOLECULE {
 
       free_array(q_frag);
     }
+
+    for (int I=0; I<interfragments.size(); ++I) {
+      int A_index = interfragments[I]->g_A_index();
+      int B_index = interfragments[I]->g_B_index();
+      
+      q_IF = interfragments[I]->intco_values( &(new_geom[g_atom_offset(A_index)]),
+        &(new_geom[g_atom_offset(B_index)]) );
+
+      for (int i=0; i<interfragments[I]->g_nintco(); ++i)
+        q[g_interfragment_intco_offset(I)+i]  = q_IF[i];
+
+      free_array(q_IF);
+    }
+
     return q;
   }
+
+  void write_geom_chkpt(void);
+  void write_geom_to_active_molecule();
+
+  double ** compute_B(void) const;
+  double ** compute_derivative_B(int intco_index) const ;
 
   double * g_grad_array(void) const {
     int f, i;
@@ -153,7 +211,7 @@ class MOLECULE {
     return g;
   }
 
-  double ** g_geom_2D(void) {
+  double ** g_geom_2D(void) const {
     double **g, *g_frag;
 
     g = init_matrix(g_natom(),3);
@@ -168,67 +226,19 @@ class MOLECULE {
     return g;
   }
 
-  void write_geom_chkpt(void);
-  void write_geom_to_active_molecule();
+  double ** g_grad_2D(void) {
+    double **g, *g_frag;
 
-  double ** compute_B(void) const {
-    double **B, **B_frag;
-    int f, i, j;
-
-    B = init_matrix(g_nintco(), 3*g_natom());
-    for (f=0; f<fragments.size(); ++f) {
-      B_frag = fragments[f]->compute_B();
-      for (i=0; i<fragments[f]->g_nintco(); ++i)
-        for (j=0; j<3*fragments[f]->g_natom(); ++j)
-          B[i+g_intco_offset(f)][j+g_atom_offset(f)] = B_frag[i][j];
-      free_matrix(B_frag);
-    }
-    return B;
-  }
-
-  // return derivative B matrix for 1 internal coordinate
-  //double ** compute_derivative_B(int intco_index) const {
-    //compute_derivative_B(intco_index, geom);
-  //}
-
-  double ** compute_derivative_B(int intco_index, GeomType new_geom = NULL) const {
-    int cnt_intcos = 0;
-    int frag_i = 0;
-    int intco_i = 0;
-
+    g = init_matrix(g_natom(),3);
     for (int f=0; f<fragments.size(); ++f) {
-      for (int i=0; i<fragments[f]->g_nintco(); ++i) {
-        if (cnt_intcos++ == intco_index) {
-          frag_i = f;
-          intco_i = i;
-          break;
-        }
-      }
+      g_frag = fragments[f]->g_grad_array();
+      int cnt=0;
+      for (int i=0; i<fragments[f]->g_natom(); ++i)
+        for (int xyz=0; xyz<3; ++xyz)
+          g[g_atom_offset(f)+i][xyz] = g_frag[cnt++];
+      free_array(g_frag);
     }
-
-    double **dq2dx2_frag;
-    if (new_geom == NULL)
-      dq2dx2_frag = fragments[frag_i]->compute_derivative_B(intco_i);
-    else
-      dq2dx2_frag = fragments[frag_i]->compute_derivative_B(intco_i, new_geom);
-
-    double **dq2dx2 = init_matrix(3*g_natom(), 3*g_natom());
-
-    int natom_intco = fragments[frag_i]->g_intco_natom(intco_i);  // 2, 3 or 4 depending on type
-
-    int mol_a, mol_b;
-    for (int a=0; a<natom_intco; ++a) {
-      mol_a = fragments[frag_i]->g_intco_atom(intco_index, a);
-      for (int b=0; b<natom_intco; ++b) {
-        mol_b = fragments[frag_i]->g_intco_atom(intco_index, b);
-        for (int xyz_a=0; xyz_a<3; ++xyz_a)
-          for (int xyz_b=0; xyz_b<3; ++xyz_b)
-            dq2dx2[3*mol_a + xyz_a][3*mol_b + xyz_b] = dq2dx2_frag[3*a+xyz_a][3*b+xyz_b];
-      }
-    }
-    free_matrix(dq2dx2_frag);
-
-    return dq2dx2;
+    return g;
   }
 
   void H_guess(void) const;
