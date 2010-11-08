@@ -29,9 +29,7 @@
 
 #include <libmints/mints.h>
 #include <libmints/basisset_parser.h>
-//#include "rhf.h"
 
-//#include <psi4-dec.h>
 #include "pairs.h"
 
 #define TIME_SCF
@@ -365,7 +363,6 @@ double RHF::compute_energy_parallel()
             break;
         }
 
-
         form_F();
 
         if (print_>3 && Communicator::world->me() == 0) {
@@ -474,25 +471,21 @@ bool RHF::load_or_compute_initial_C()
 
         // Read MOs from checkpoint and set C_ to them
         double **vectors;
-        if(Communicator::world->me() == 0)
+        if (Communicator::world->me() == 0)
             vectors = chkpt_->rd_scf();
-        if(Communicator::world->nproc() > 1) {
-            if(Communicator::world->me() != 0)
-                vectors = block_matrix(nso_,nmo_);
-            Communicator::world->raw_bcast(&(vectors[0][0]), nso_*nmo_*sizeof(double), 0);
-        }
+        else 
+            vectors = block_matrix(nso_,nmo_);
+        Communicator::world->raw_bcast(&(vectors[0][0]), nso_*nmo_*sizeof(double), 0);
         C_->set(const_cast<const double**>(vectors));
         free_block(vectors);
 
         // Read in orbital energies (needed to guess occupation)
         double *orbitale;
-        if(Communicator::world->me() == 0)
+        if (Communicator::world->me() == 0)
             orbitale = chkpt_->rd_evals();
-        if(Communicator::world->nproc() > 1) {
-            if(Communicator::world->me() != 0)
-                orbitale = init_array(nmo_);
-            Communicator::world->raw_bcast(&(orbitale[0]), nmo_*sizeof(double), 0);
-        }
+        else
+            orbitale = init_array(nmo_);
+        Communicator::world->raw_bcast(&(orbitale[0]), nmo_*sizeof(double), 0);
 
         orbital_e_->set(orbitale);
         delete[] orbitale;
@@ -505,8 +498,7 @@ bool RHF::load_or_compute_initial_C()
         // Read SCF energy from checkpoint file.
         if(Communicator::world->me() == 0)
             E_ = chkpt_->rd_escf();
-        if(Communicator::world->nproc() > 1)
-            Communicator::world->raw_bcast(&E_, sizeof(double), 0);
+        Communicator::world->bcast(E_);
 
         ret = true;
     } else if (guess_type == "DUAL_BASIS") {
@@ -1114,6 +1106,7 @@ void RHF::allocate_PK()
         scf_type_ = "OUT_OF_CORE";
     }
 }
+
 void RHF::form_F()
 {
     F_->copy(H_);
@@ -1125,6 +1118,7 @@ void RHF::form_F()
     }
 #endif
 }
+
 void RHF::form_C()
 {
     if (!canonical_X_) {
