@@ -282,7 +282,7 @@ public:
     void nirrep(int nirreps) { nirreps_ = nirreps; }
 
     /// Print the molecule
-    void print() const;
+    void print();
 
     /// Save information to checkpoint file.
     void save_to_chkpt(boost::shared_ptr<Chkpt> chkpt, std::string prefix = "");

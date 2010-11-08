@@ -629,6 +629,8 @@ namespace psi {
         return *this;
 
       keyvals_ = rhs.keyvals_;
+      globals_ = rhs.globals_;
+
       return *this;
     }
 

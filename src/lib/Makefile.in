@@ -5,7 +5,7 @@ subdirs = libipv1 libciomr libchkpt libqt libpsio libiwl libdpd \
           libint libderiv libr12 libbasis libutil liboptions libfunctional libmoinfo \
           libmints libtrans libparallel libscf_solver libboost_python \
           libboost_regex libboost_thread libdiis libsapt_solver \
-          libboost_filesystem
+          libboost_filesystem libplugin
 
 all: default
 
