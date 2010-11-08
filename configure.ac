@@ -805,6 +805,8 @@ AC_CONFIG_FILES([include/Makefile
           src/util/Makefile src/util/MakeRules src/util/MakeVars
           src/bin/Makefile src/bin/MakeRules src/bin/MakeVars
 
+          bin/psi4-config
+
           doc/MakeVars doc/MakeRules doc/Makefile
           doc/macros.tex doc/progman/svn/svn.eps
           doc/installation/Makefile
