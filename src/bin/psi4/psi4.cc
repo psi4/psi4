@@ -35,7 +35,6 @@ namespace psi {
     int psi4_driver();
     void psiclean(void);
 
-    void read_atom_basis(char ** & atom_basis, int num_atoms);
     PSIO *psio = NULL;
 }
 

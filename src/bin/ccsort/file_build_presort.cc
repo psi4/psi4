@@ -38,7 +38,7 @@ int file_build_presort(dpdfile4 *File, int inputfile, double tolerance, int keep
 
   nirreps = File->params->nirreps;
 
-  memoryb = module.get_memory();
+  memoryb = Process::environment.get_memory();
   memoryd = memoryb/sizeof(double);
 
   /* It's annoying that I have to compute this here */

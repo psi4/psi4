@@ -17,7 +17,7 @@ namespace psi { namespace cchbar {
 
 void get_params(Options &options)
 {
-  params.memory = module.get_memory();
+  params.memory = Process::environment.get_memory();
 
   /* compute the Tamplitude equation matrix elements (usually 0) */
 //  params.Tamplitude = 0;

@@ -82,7 +82,7 @@ PsiReturnType cctriples(Options &options)
   timer_on("CCtriples");
 
   get_moinfo(options);
-  memory = module.get_memory();
+  memory = Process::environment.get_memory();
 
   cachefiles = init_int_array(PSIO_MAXUNIT);
 

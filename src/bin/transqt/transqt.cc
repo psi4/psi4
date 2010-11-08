@@ -485,7 +485,7 @@ void get_parameters(Options & options)
   params.print_reorder = options.get_bool("PRINT_REORDER"); // default is false
 
   //fndcor(&(params.maxcor),infile,outfile);
-  params.maxcor  = module.get_memory();
+  params.maxcor  = Process::environment.get_memory();
   params.maxcord = params.maxcor/sizeof(double);
 
   params.pitzer = options.get_bool("PITZER"); // default is false

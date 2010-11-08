@@ -62,7 +62,7 @@ void get_params(Options& options)
   params.restart = options.get_bool("RESTART");
   if(!moinfo.phase) params.restart = 0;
 
-  params.memory = module.get_memory();
+  params.memory = Process::environment.get_memory();
 
   params.print = 0;
   params.print = options.get_int("PRINT");

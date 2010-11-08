@@ -70,7 +70,7 @@ void get_params(Options &options)
   forceit = options.get_bool("FORCE_RESTART");
   if(forceit) params.restart = 1;
 
-  params.memory = module.get_memory();
+  params.memory = Process::environment.get_memory();
 
   params.aobasis = options.get_str("AO_BASIS");
   params.cachelev = options.get_int("CACHELEV");

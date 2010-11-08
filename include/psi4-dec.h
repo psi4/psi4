@@ -2,7 +2,7 @@
 #define psi_include_psi4_dec_h
 
 #include <string>
-#include <libutil/libutil.h>
+//#include x<libutil/libutil.h>
 #include <liboptions/liboptions.h>
 #include <exception.h>
 #include <boost/shared_ptr.hpp>
@@ -13,21 +13,8 @@ using namespace boost;
 
 namespace psi {
 
-  class Module {
-    std::string prgid;
-    long int memory;
-
-  public:
-    Module(std::string s = "PSI4") { prgid = s; }
-    void set_prgid (std::string s) { prgid = s; }
-    std::string gprgid(void) const { return prgid; }
-    long int get_memory(void) const { return memory; }
-    void set_memory(long int newmem) { memory = newmem; }
-  };
-
   enum PsiReturnType {Success, Failure, Balk, Endloop};
 
-  extern Module module;
   extern FILE *outfile;
   extern PSIO *psio;
   extern char *psi_file_prefix;
@@ -53,7 +40,7 @@ namespace psi {
       {
           std::map<std::string, std::string> environment_;
           unsigned long int memory_;
-          int nthread_;         
+          int nthread_;
 
           boost::shared_ptr<Molecule> molecule_;
           boost::shared_ptr<Wavefunction> reference_wavefunction_;
@@ -79,7 +66,7 @@ namespace psi {
 
           /// Number of threads per process
           int get_n_threads() const {return nthread_; }
-          void set_n_threads(int nthread); 
+          void set_n_threads(int nthread);
 
           /// Memory in bytes
           unsigned long int get_memory() const { return memory_; }
