@@ -1,6 +1,9 @@
+#!/usr/bin/env python
 from optparse import OptionParser
 
 configuration = {
+    "top_srcdir" : "@abs_top_srcdir@",
+    "top_objdir" : "@abs_top_builddir@",
     "CXX"      : "@CXX@",
     "CXXDEF"   : "@CXXDEF@",
     "CXXOPT"   : "@CXXOPT@",
@@ -23,7 +26,9 @@ parser.add_option("--debug",    action="store_true", dest="debug")
 parser.add_option("--includes", action="store_true", dest="includes")
 parser.add_option("--flags",    action="store_true", dest="flags")
 parser.add_option("--cppflags", action="store_true", dest="cppflags")
-parser.add_option("--psicppflags, action="store_true", dest="psicppflags")
+parser.add_option("--psicppflags", action="store_true", dest="psicppflags")
+parser.add_option("--srcdir",   action="store_true", dest="srcdir")
+parser.add_option("--objdir",   action="store_true", dest="objdir")
 
 (options, args) = parser.parse_args()
 
@@ -41,7 +46,11 @@ elif options.includes:
     print configuration["CXXINC"],
 elif options.flags:
     print configuration["CXXFLAGS"],
-elif options.flags:
+elif options.cppflags:
     print configuration["CPPFLAGS"],
-elif options.flags:
+elif options.psicppflags:
     print configuration["PSICPPFLAGS"],
+elif options.srcdir:
+    print configuration["top_srcdir"],
+elif options.objdir:
+    print configuration["top_objdir"],
