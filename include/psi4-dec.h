@@ -52,7 +52,6 @@ namespace psi {
       class Environment
       {
           std::map<std::string, std::string> environment_;
-          const std::string empty_;
           unsigned long int memory_;
           int nthread_;         
 

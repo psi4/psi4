@@ -22,6 +22,7 @@ using namespace boost;
 
 Process::Environment Process::environment;
 Process::Arguments Process::arguments;
+const std::string empty_;
 
 // Need to split each entry by the first '=', left side is key, right the value
 void Process::Environment::init(char **envp)

@@ -142,7 +142,8 @@ def process_input(raw_input):
     temp = re.sub(comment,'',raw_input)
 
     # Process all "set name? { ... }"
-    set_commands = re.compile(r'^(\s*?)set\s*(\w*?)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    #set_commands = re.compile(r'^(\s*?)set\s*(\w*?)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    set_commands = re.compile(r'^(\s*?)set\s*([\w\.]*?)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(set_commands, process_set_commands, temp)
 
     # Process all individual "set key value"

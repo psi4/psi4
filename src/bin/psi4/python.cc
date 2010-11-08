@@ -23,6 +23,8 @@
 #include <libmints/molecule.h>
 #include <libmints/pointgrp.h>
 #include <libfunctional/superfunctional.h>
+#include <libplugin/plugin.h>
+#include <map>
 
 #include <libpsio/psio.hpp>
 
@@ -31,6 +33,8 @@ using namespace psi::functional;
 using namespace boost;
 using namespace boost::python;
 using namespace std;
+
+std::map<std::string, plugin_info> plugins;
 
 namespace opt      { psi::PsiReturnType optking(psi::Options &); }
 
@@ -58,6 +62,110 @@ namespace psi {
     extern void psiclean(void);
     extern FILE *outfile;
 }
+
+/**************************************************************************
+ * Plug-In functions                                                      *
+ **************************************************************************/
+
+/**
+    Python interface for loading plugins.
+
+        Python:
+            plugin_load("integrals.so")
+
+    @param fullpathname Full path and filename of the plugin to load.
+    @returns 0 if not loaded, 1 if loaded, 2 if already loaded.
+*/
+
+int py_psi_plugin_load(std::string fullpathname)
+{
+    int ret = 0;
+
+    std::string uc = boost::algorithm::to_upper_copy(fullpathname);
+
+    // Make sure the plugin isn't already loaded.
+    if (plugins.count(uc) == 0) {
+        plugins[uc] = plugin_load(fullpathname);
+        fprintf(outfile, "%s loaded.\n", fullpathname.c_str());
+        ret = 1;
+    }
+    else
+        ret = 2;
+
+    return ret;
+}
+
+/**
+    Python interface for calling plugins.
+
+        Python:
+            plugin("integrals.so")
+
+    @param fullpathname Used to identity loaded plugin.
+    @returns The result from the plugin.
+*/
+int py_psi_plugin(std::string fullpathname)
+{
+    std::string uc = boost::algorithm::to_upper_copy(fullpathname);
+    if (plugins.count(uc) == 0) {
+        plugins[uc] = plugin_load(fullpathname);
+        plugin_info& tmpinfo = plugins[uc];
+        tmpinfo.read_options(tmpinfo.name, Process::environment.options);
+    }
+
+    plugin_info& info = plugins[uc];
+
+    // Call the plugin
+    // Should be wrapped in a try/catch block.
+    fprintf(outfile, "Calling plugin %s.\n", fullpathname.c_str());
+    fflush(outfile);
+
+    // Have the plugin copy the environment to get current options.
+    info.init_plugin(Communicator::world, Process::environment);
+
+    // Call the plugin
+    int ret = info.plugin(Process::environment.options);
+
+    return ret;
+}
+
+/**
+    Python interface for closing plugin.
+
+        Python:
+            plugin_close("integrals.so")
+
+    @param fullpathname Used to identity loaded plugin.
+*/
+void py_psi_plugin_close(std::string fullpathname)
+{
+    std::string uc = boost::algorithm::to_upper_copy(fullpathname);
+    if (plugins.count(uc) > 0) {
+        plugin_info& info = plugins[uc];
+        plugin_close(info);
+        plugins.erase(uc);
+    }
+}
+
+/**
+    Python interface for closing all plugins.
+
+        Python:
+            plugin_close_all()
+*/
+void py_psi_plugin_close_all()
+{
+    std::map<std::string, plugin_info>::const_iterator iter = plugins.begin();
+
+    for (; iter != plugins.end(); ++iter)
+        plugin_close(plugins[iter->first]);
+
+    plugins.clear();
+}
+
+/**************************************************************************
+ * End of Plug-In functions                                               *
+ **************************************************************************/
 
 int py_psi_optking()
 {
@@ -184,6 +292,14 @@ bool py_psi_configure_psio(PSIO* obj)
 void py_psi_set_default_options_for_module(std::string const & name)
 {
     read_options(name, Process::environment.options, false);
+
+    if (plugins.count(name)) {
+        // Easy reference
+        plugin_info& info = plugins[name];
+
+        // Tell the plugin to load in its options into the current environment.
+        info.read_options(info.name, Process::environment.options);
+    }
 }
 
 void py_psi_print_options()
@@ -303,6 +419,7 @@ object py_psi_get_option(const string& key)
 
     return object();
 }
+
 object py_psi_get_global_option(const string& key)
 {
     string nonconst_key = key;
@@ -334,24 +451,29 @@ double py_psi_get_variable(const std::string & key)
     transform(uppercase_key.begin(), uppercase_key.end(), uppercase_key.begin(), ::toupper);
     return Process::environment.globals[key];
 }
+
 void py_psi_set_memory(unsigned long int mem)
 {
     Process::environment.set_memory(mem);
     fprintf(outfile,"\n  Memory set to %7.3f %s by Python script.\n",(mem > 1000000000 ? mem/1.0E9 : mem/1.0E6), \
         (mem > 1000000000 ? "GB" : "MB" ));
 }
+
 unsigned long int py_psi_get_memory()
 {
     return Process::environment.get_memory();
 }
+
 void py_psi_set_n_threads(int nthread)
 {
     Process::environment.set_n_threads(nthread);
 }
+
 int py_psi_get_n_threads()
 {
     return Process::environment.get_n_threads();
 }
+
 BOOST_PYTHON_MODULE(PsiMod)
 {
     def("version", py_psi_version);
@@ -383,6 +505,12 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("get_global_option", py_psi_get_global_option);
 
     def("get_variable", py_psi_get_variable);
+
+    // plugins
+    def("plugin_load",      py_psi_plugin_load);
+    def("plugin",           py_psi_plugin);
+    def("plugin_close",     py_psi_plugin_close);
+    def("plugin_close_all", py_psi_plugin_close_all);
 
     // modules
     def("input", py_psi_input);
@@ -744,4 +872,6 @@ void Python::run(FILE *input)
         fprintf(stderr, "Unable to run Python input file.\n");
         return;
     }
+
+    py_psi_plugin_close_all();
 }

@@ -1460,7 +1460,7 @@ void Molecule::save_to_chkpt(shared_ptr<Chkpt> chkpt, std::string prefix)
     free_block(fgeom);
 }
 
-void Molecule::print() const
+void Molecule::print()
 {
     if (natom()) {
         fprintf(outfile,"    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
