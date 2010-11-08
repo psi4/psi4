@@ -653,8 +653,7 @@ bool HF::load_or_compute_initial_C()
             vectors = chkpt_->rd_scf();
         else
             vectors = block_matrix(nso_, nmo_);
-        if(Communicator::world->nproc() > 1)
-            Communicator::world->raw_bcast(&(vectors[0][0]), nso_*nmo_*sizeof(double), 0);
+        Communicator::world->raw_bcast(&(vectors[0][0]), nso_*nmo_*sizeof(double));
 
         C_->set(const_cast<const double**>(vectors));
         free_block(vectors);
@@ -664,8 +663,7 @@ bool HF::load_or_compute_initial_C()
         // Read SCF energy from checkpoint file.
         if(Communicator::world->me() == 0)
             E_ = chkpt_->rd_escf();
-        if(Communicator::world->nproc() > 1)
-            Communicator::world->raw_bcast(&E_, sizeof(double), 0);
+        Communicator::world->bcast(E_);
 
         ret = true;
     } else {
