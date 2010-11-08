@@ -269,8 +269,9 @@ DCFTSolver::compute()
     
     print_opdm();
 
-    if(_options.get_bool("COMPUTE_TPDM")) dump_density();
 
+    if(_options.get_bool("COMPUTE_TPDM")) dump_density();
+    mulliken_charges();
     check_n_representability();
 
     if(!_options.get_bool("RELAX_ORBITALS") && _options.get_bool("IGNORE_TAU")){
