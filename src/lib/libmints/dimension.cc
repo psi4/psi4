@@ -1,3 +1,4 @@
+#include <string.h>
 #include "dimension.h"
 
 using namespace psi;
