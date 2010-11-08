@@ -26,7 +26,10 @@ struct OPT_PARAMS {
   enum {NR, RFO} step_type; // Newton-Raphson (NR) or RFO step
 
   // Hessian guess
-  enum {FISCHER, SCHLEGEL} empirical_H;
+
+  enum INTRAFRAGMENT_HESSIAN {FISCHER, SCHLEGEL} intrafragment_H;
+  enum INTERFRAGMENT_HESSIAN {DEFAULT, FISCHER_LIKE}  interfragment_H;
+
   enum {NONE, BFGS, MS, POWELL, BOFILL} H_update;
   int H_update_use_last;
 
@@ -34,6 +37,8 @@ struct OPT_PARAMS {
   double intrafragment_step_limit;
   // maximum change in aJ/Ang^2 allowed by Hessian updates
   double H_change_limit;
+
+  bool frag_dist_rho;
 
 // ** Unlikely to need modified **
 
