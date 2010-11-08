@@ -39,7 +39,7 @@ void get_params( Options& options)
   tol = options.get_int("TOLERANCE");
   params.tolerance = 1.0*pow(10.0,(double) -tol);
 
-  params.memory = module.get_memory();
+  params.memory = Process::environment.get_memory();
   //fndcor(&(params.memory),infile,outfile);
 
 //  params.cachelev = 2;

@@ -5,7 +5,6 @@
 #include <psi4-dec.h>
 
 namespace psi {
-  Module module;
   FILE *outfile;
   char *psi_file_prefix;
 }

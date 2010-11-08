@@ -19,8 +19,8 @@ PSILIBS = \
 -lPSI_deriv -lPSI_int -lPSI_util -lPSI_diis -lPSI_plugin -lPSI_parallel -lboost_python -lboost_regex -lboost_thread \
 -lboost_filesystem
 
-CXXSRC = read_atom_basis.cc \
-read_atom_basis.cc set_memory.cc \
+CXXSRC = \
+set_memory.cc \
 psi4.cc psi4_driver.cc read_options.cc clean.cc \
 setup_driver.cc \
 psi_start.cc psi_stop.cc version.cc \

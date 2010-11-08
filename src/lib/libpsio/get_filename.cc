@@ -14,23 +14,9 @@ namespace psi {
 
 void PSIO::get_filename(unsigned int unit, char **name) {
   std::string kval;
-  std::string module_name = module.gprgid();
-  std::string dot("."); 
+  std::string dot(".");
 
   std::string ns = (current_namespace_ == "") ? "" : dot + current_namespace_;
-  kval = filecfg_kwd(module_name.c_str(), "NAME", unit);
-  //printf("File namespace is %s\n",(current_namespace_).c_str());
-  if (!kval.empty()) {
-    kval = kval + ns;
-    *name = strdup(kval.c_str());
-    return;
-  }
-  kval = filecfg_kwd(module_name.c_str(), "NAME", -1);
-  if (!kval.empty()) {
-    kval = kval + ns;
-    *name = strdup(kval.c_str());
-    return;
-  }
   kval = filecfg_kwd("PSI", "NAME", unit);
   if (!kval.empty()) {
     kval = kval + ns;
@@ -55,7 +41,7 @@ void PSIO::get_filename(unsigned int unit, char **name) {
     *name = strdup(kval.c_str());
     return;
   }
-  
+
   // assume that the default has been provided already
   abort();
 }

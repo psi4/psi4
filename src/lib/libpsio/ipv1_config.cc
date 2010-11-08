@@ -65,28 +65,11 @@ namespace psi {
 
     /* allocate ip_token
      conservative estimate for its length = strlen(gprgid())+80 */
-    std::string module_name = module.gprgid();
-    ip_token = (char*) malloc( (strlen(module_name.c_str())+80)*sizeof(char));
+    ip_token = (char*) malloc( 80 *sizeof(char));
     name = (char*) malloc( 80 * sizeof(char));
 
     for (i=0; i<nkwds; ++i) {
       const char* kwd = kwds[i];
-
-      /* unit and program specific */
-      for (unit=0; unit<PSIO_MAXUNIT; ++unit) {
-        sprintf(ip_token, ":%s:FILES:FILE%u:%s", module_name.c_str(), unit, kwd);
-        errcod = ip_data(ip_token, const_cast<char*>("%s"), name, 0);
-        if (errcod == IPE_OK) {
-          psio_obj->filecfg_kwd(module_name.c_str(), kwd, unit, name);
-        }
-      }
-
-      /* program specific */
-      sprintf(ip_token, ":%s:FILES:DEFAULT:%s", module_name.c_str(), kwd);
-      errcod = ip_data(ip_token, const_cast<char*>("%s"), name, 0);
-      if (errcod == IPE_OK) {
-        psio_obj->filecfg_kwd(module_name.c_str(), kwd, -1, name);
-      }
 
       /* unit specific in PSI section */
       for (unit=0; unit<PSIO_MAXUNIT; ++unit) {

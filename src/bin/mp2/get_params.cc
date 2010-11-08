@@ -128,7 +128,7 @@ void get_params(Options &options)
     params.scs_scale_ss = options.get_double("SCALE_SS");
   }
 
-  params.memory = module.get_memory();
+  params.memory = Process::environment.get_memory();
  
   fprintf(outfile, "\n");
   fprintf(outfile, "\tInput parameters:\n");

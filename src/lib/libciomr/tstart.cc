@@ -36,10 +36,7 @@ void tstart()
 
   time_start = time(NULL);
 
-  //for (i=0; i < 78 ; i++) { fprintf(outfile,"*"); }
-  std::string module_name = module.gprgid();
-  fprintf(outfile,"\n*** %s ", module_name.c_str());
-  fprintf(outfile,"called tstart() on %s\n", name);
+  fprintf(outfile,"\n*** tstart() called on %s\n", name);
   fprintf(outfile,"*** at %s\n",ctime(&time_start));
 
   free(name);
@@ -51,7 +48,7 @@ void tstart()
 ** \param outfile = output file pointer.
 **
 ** \ingroup CIOMR
-*/ 
+*/
 void tstop()
 {
   int error;
@@ -72,16 +69,13 @@ void tstop()
   user_s = ((double) total_tmstime.tms_utime)/clk_tck;
   sys_s = ((double) total_tmstime.tms_stime)/clk_tck;
 
-  //for (i=0; i < 78 ; i++) { fprintf(outfile,"*"); }
-  std::string module_name = module.gprgid();
-  fprintf(outfile,"\n*** %s ", module_name.c_str());
-  fprintf(outfile,"called tstop() on %s at %s", name, ctime(&time_end));
+  fprintf(outfile,"\n*** tstop() called on %s at %s", name, ctime(&time_end));
   fprintf(outfile,"\tuser time   = %10.2f seconds = %10.2f minutes\n",
-	  user_s, user_s/60.0);
+          user_s, user_s/60.0);
   fprintf(outfile,"\tsystem time = %10.2f seconds = %10.2f minutes\n",
-	  sys_s, sys_s/60.0);
+          sys_s, sys_s/60.0);
   fprintf(outfile,"\ttotal time  = %10d seconds = %10.2f minutes\n",
-	  (int)total_time, ((double) total_time)/60.0);
+          (int)total_time, ((double) total_time)/60.0);
 
   free(name);
 
