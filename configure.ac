@@ -23,6 +23,9 @@ AC_DEFINE(PSI_VERSION,"psi_version")
 AC_DEFINE(PSI_BUILDID,"psi_buildid")
 AC_DEFINE(PSI_BUGREPORT,"psi_bugreport")
 
+AC_SUBST(abs_top_srcdir)
+AC_SUBST(abs_top_builddir)
+
 AC_CONFIG_AUX_DIR(bin)
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -32,9 +35,6 @@ AC_PREFIX_DEFAULT(/usr/local/psi4)
 AC_PROG_MAKE_SET([])
 
 srcdir=`(cd $srcdir; pwd)`
-
-objincdir='$(top_objdir)/include'
-AC_SUBST(objincdir)
 
 if test -z $docdir; then
        docdir='$(datadir)/doc/$(PACKAGE)'
@@ -617,9 +617,9 @@ AC_SUBST(CXXLIBS)
 
  
 
-PSICPPFLAGS='-I. -I$(objincdir) -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib' AC_SUBST(PSICPPFLAGS)
+PSICPPFLAGS='-I. -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib' AC_SUBST(PSICPPFLAGS)
 AC_SUBST(CPPFLAGS)
-
+AC_SUBST(top_objdir)
  
 AC_C_CONST
 
@@ -805,8 +805,6 @@ AC_CONFIG_FILES([include/Makefile
           src/util/Makefile src/util/MakeRules src/util/MakeVars
           src/bin/Makefile src/bin/MakeRules src/bin/MakeVars
 
-          bin/psi4-config
-
           doc/MakeVars doc/MakeRules doc/Makefile
           doc/macros.tex doc/progman/svn/svn.eps
           doc/installation/Makefile
@@ -901,6 +899,10 @@ AC_CONFIG_FILES([include/Makefile
           tests/cc8/Makefile
           tests/cc8a/Makefile
           tests/mcscf1-rhf/Makefile
+
+          bin/psi4-config
 ])
+
+AC_CONFIG_COMMANDS([psi4-config], [chmod +x bin/psi4-config])
 
 AC_OUTPUT
