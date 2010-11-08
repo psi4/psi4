@@ -1,0 +1,41 @@
+from optparse import OptionParser
+
+configuration = {
+    "CXX"      : "@CXX@",
+    "CXXDEF"   : "@CXXDEF@",
+    "CXXOPT"   : "@CXXOPT@",
+    "CXXOTH"   : "@CXXOTH@",
+    "CXXDBG"   : "@CXXDBG@",
+    "CXXINC"   : "@CPPFLAGS@ @PSICPPFLAGS@ @PYTHON_INCLUDE@",
+    "CXXFLAGS" : "@CXXDBG@ @CXXOPT@ @CXXDEF@ @CXXOTH@ @CXXINC@",
+    "LDFLAGS"  : "@LAPACK@ @BLAS@ @PYTHON_LDFLAGS@ -lpthread",
+    "CPPFLAGS" : "@CPPFLAGS@",
+    "PSICPPFLAGS" : "@PSICPPFLAGS@"
+}
+
+parser = OptionParser()
+
+parser.add_option("--compiler", action="store_true", dest="cxx", help="Which compiler was used to compile PSI4.")
+parser.add_option("--defines",  action="store_true", dest="defines")
+parser.add_option("--opt",      action="store_true", dest="opt")
+parser.add_option("--other",    action="store_true", dest="other")
+parser.add_option("--debug",    action="store_true", dest="debug")
+parser.add_option("--includes", action="store_true", dest="includes")
+parser.add_option("--flags",    action="store_true", dest="flags")
+
+(options, args) = parser.parse_args()
+
+if options.cxx:
+    print configuration["CXX"],
+elif options.defines:
+    print configuration["CXXDEF"],
+elif options.opt:
+    print configuration["CXXOPT"],
+elif options.other:
+    print configuration["OTHER"],
+elif options.debug:
+    print configuration["CXXDBG"],
+elif options.includes:
+    print configuration["CXXINC"],
+elif options.flags:
+    print configuration["CXXFLAGS"],
