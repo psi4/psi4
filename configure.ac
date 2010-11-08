@@ -33,8 +33,6 @@ AC_PROG_MAKE_SET([])
 
 srcdir=`(cd $srcdir; pwd)`
 
-LT_INIT
-
 objincdir='$(top_objdir)/include'
 AC_SUBST(objincdir)
 
