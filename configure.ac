@@ -24,6 +24,7 @@ AC_DEFINE(PSI_BUILDID,"psi_buildid")
 AC_DEFINE(PSI_BUGREPORT,"psi_bugreport")
 
 AC_CONFIG_AUX_DIR(bin)
+AC_CONFIG_MACRO_DIR([m4])
 
 AC_CANONICAL_TARGET
 AC_PREFIX_DEFAULT(/usr/local/psi4)
@@ -32,6 +33,7 @@ AC_PROG_MAKE_SET([])
 
 srcdir=`(cd $srcdir; pwd)`
 
+LT_INIT
 
 objincdir='$(top_objdir)/include'
 AC_SUBST(objincdir)
