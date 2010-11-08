@@ -58,9 +58,8 @@ outfile = fopen("output.dat","a");
   mol1.print_intco_dat(intco_dat); // for I/O of coordinate definitions
   fclose(intco_dat);
 
-  //mol1.test_B();
-  //mol1.test_derivative_B();
-  //return OptReturnSuccess;
+ //mol1.test_B();
+ //mol1.test_derivative_B();
 
   // read binary file for previous step data
   p_Opt_data = new OPT_DATA(mol1.g_nintco(), 3*mol1.g_natom());

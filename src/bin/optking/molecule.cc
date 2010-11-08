@@ -307,16 +307,29 @@ void MOLECULE::check_intrafragment_zero_angles(double const * const dq) {
 }
 
 void MOLECULE::H_guess(void) const {
-  double **H, **H_frag;
-  int f, i, j;
+  double **H, **H_frag, **H_interfrag;
 
   H = p_Opt_data->g_H_pointer();
-  for (f=0; f<fragments.size(); ++f) {
+
+  for (int f=0; f<fragments.size(); ++f) {
     H_frag = fragments[f]->H_guess();
-    for (i=0; i<fragments[f]->g_nintco(); ++i)
-      for (j=0; j<fragments[f]->g_nintco(); ++j)
+
+    for (int i=0; i<fragments[f]->g_nintco(); ++i)
+      for (int j=0; j<fragments[f]->g_nintco(); ++j)
         H[g_intco_offset(f) + i][g_intco_offset(f) + j] = H_frag[i][j];
+
     free_matrix(H_frag);
+  }
+
+  for (int I=0; I<interfragments.size(); ++I) {
+    H_interfrag = interfragments[I]->H_guess();
+
+    for (int i=0; i<interfragments[I]->g_nintco(); ++i)
+      for (int j=0; j<interfragments[I]->g_nintco(); ++j)
+        H[g_interfragment_intco_offset(I) + i][g_interfragment_intco_offset(I) + j] =
+          H_interfrag[i][j];
+
+    free_matrix(H_interfrag);
   }
 
   if (Opt_params.print_lvl >= 2) {

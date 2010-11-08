@@ -43,7 +43,7 @@ double ** FRAG::H_guess(void) {
   f = init_array(intcos.size());
 
   // Form diagonal Hessian in simple internals first
-  if (Opt_params.empirical_H == OPT_PARAMS::SCHLEGEL) {
+  if (Opt_params.intrafragment_H == OPT_PARAMS::SCHLEGEL) {
     fprintf(outfile,"\n\tGenerating empirical Hessian (Schlegel '84)\n");
     for (i=0; i<intcos.size(); ++i) {
 
@@ -96,7 +96,7 @@ double ** FRAG::H_guess(void) {
       } // end switch coordinate type
     } // loop over intcos
   } // end Schlegel
-  else if (Opt_params.empirical_H == OPT_PARAMS::FISCHER) {
+  else if (Opt_params.intrafragment_H == OPT_PARAMS::FISCHER) {
     fprintf(outfile,"\nGenerating empirical Hessian (Fischer & Almlof '92)\n");
     for (i=0; i<intcos.size(); ++i) {
 

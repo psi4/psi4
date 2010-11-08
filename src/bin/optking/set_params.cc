@@ -17,8 +17,9 @@ void set_params(void) {
 
   Opt_params.scale_connectivity = 1.2;
 
-  Opt_params.empirical_H = OPT_PARAMS::SCHLEGEL;
-  //Opt_params.empirical_H = OPT_PARAMS::FISCHER;
+  Opt_params.intrafragment_H = OPT_PARAMS::SCHLEGEL;
+
+  Opt_params.interfragment_H = OPT_PARAMS::DEFAULT;
 
   //Opt_params.H_update = OPT_PARAMS::BOFILL; // any of {NONE, BFGS, MS, POWELL, BOFILL}
   Opt_params.H_update = OPT_PARAMS::BFGS; // any of {NONE, BFGS, MS, POWELL, BOFILL}
@@ -26,6 +27,8 @@ void set_params(void) {
 
   // maximum change in bohr or radian
   Opt_params.intrafragment_step_limit = 0.4;
+
+  Opt_params.frag_dist_rho = false;
 
   // maximum change in Hessian element allowed by Hessian update schemes is this or 50% of value
   Opt_params.H_change_limit = 0.3;

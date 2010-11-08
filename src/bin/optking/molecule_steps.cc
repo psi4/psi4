@@ -195,14 +195,23 @@ void MOLECULE::rfo_step(void) {
   fprintf(outfile,"\tProjected energy change by RFO approximation: %20.10lf\n", DE_projected);
 
   // do displacements for each fragment separately
-//  double *f_frag;
-  for (f=0; f<fragments.size(); ++f) {
-    //f_frag = init_array(fragments[f]->g_nintco());
-    //for (i=0; i<fragments[f]->g_nintco(); ++i)
-      //f_frag[i] = f_q[ g_intco_offset(f) + i];
+  for (f=0; f<fragments.size(); ++f)
     fragments[f]->displace(&(dq[g_intco_offset(f)]), true);
-    //free_array(f_frag);
+
+  // do displacements for interfragment coordinates
+/*
+  double *q_target;
+  for (int I=0; I<interfragments[I]; ++I) {
+
+    q_target = interfragments[I]->intco_values();
+    for (i=0; i<interfragments[I]->g_nintco(); ++i)
+      q_target[i] += dq[g_interfragment_intco_offset(I) + i];
+
+    interfragments[I]->orient_fragment(q_target);
+
+    free_array(q_target);
   }
+*/
 
   // save values in step data
   p_Opt_data->save_step_info(DE_projected, rfo_u, rfo_dqnorm, rfo_g, rfo_h);
