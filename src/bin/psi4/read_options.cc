@@ -183,6 +183,9 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
       options.add_int("CONVERGENCE", 10);
       /*- Whether to relax the orbitals or not -*/
       options.add_bool("RELAX_ORBITALS", true);
+      /*- The damping factor used in the initial SCF procedure (0 - 1000) 0 means full standard SCF update
+          is performed, 1000 will completely damp the iteration to the extent that no update is performed -*/
+      options.add_int("DAMPING_FACTOR", 0);
       /*- Should the tau terms be included? -*/
       options.add_bool("IGNORE_TAU", false);
       /*- -log10 of the threshold below which an integral is considered to be zero -*/

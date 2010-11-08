@@ -754,4 +754,70 @@ DCFTSolver::check_n_representability()
     }
 }
 
+/**
+ * Prints the mulliken charges.
+ */
+void
+DCFTSolver::mulliken_charges()
+{
+    SimpleMatrix aOPDM(_aKappa.to_simple_matrix());
+    SimpleMatrix bOPDM(_bKappa.to_simple_matrix());
+    int offset = 0;
+    for(int h = 0; h < _nIrreps; ++h){
+        for(int row = 0; row < _soPI[h]; ++row){
+            for(int col = 0; col < _soPI[h]; ++col){
+                aOPDM.add(row + offset, col + offset, _aTau[h][row][col]);
+                bOPDM.add(row + offset, col + offset, _aTau[h][row][col]);
+            }
+        }
+        offset += _soPI[h];
+    }
+
+    SimpleMatrix aDS(_nSo, _nSo);
+    SimpleMatrix bDS(_nSo, _nSo);
+    SimpleMatrix S(_aoS.to_simple_matrix());
+    // Form the DS matrix (well, Kappa X S really)
+    aDS.gemm(0, 0, 1.0, &aOPDM, &S, 0.0);
+    bDS.gemm(0, 0, 1.0, &aOPDM, &S, 0.0);
+    int nAtoms         = _chkpt->rd_natom();
+    int nShells        = _chkpt->rd_nshell();
+    int *shellLocation = _chkpt->rd_sloc_new();
+    int *shellAngMom   = _chkpt->rd_stype();
+    int *shellToAtom   = _chkpt->rd_snuc();
+    double *zVals      = _chkpt->rd_zvals();
+    double **U         = _chkpt->rd_usotbf();
+    char **labels      = _chkpt->rd_felement();
+    SimpleMatrix aoADS(_nSo, _nSo);
+    SimpleMatrix aoBDS(_nSo, _nSo);
+    SimpleMatrix UMat(_nSo, _nSo);
+    UMat.set(U);
+    SimpleMatrix tmp(_nSo, _nSo);
+    // Transform the SO DS matrix into the AO basis
+    tmp.gemm(1, 0, 1.0, &UMat, &aDS, 0.0);
+    aoADS.gemm(0, 0, 1.0, &tmp, &UMat, 0.0);
+    tmp.gemm(1, 0, 1.0, &UMat, &bDS, 0.0);
+    aoBDS.gemm(0, 0, 1.0, &tmp, &UMat, 0.0);
+    SimpleVector aCharges(nAtoms);
+    SimpleVector bCharges(nAtoms);
+    for(int shell = 0; shell < nShells; ++shell){
+        int atom       = shellToAtom[shell] - 1;
+        int firstBF    = shellLocation[shell] - 1;
+        int shellSize  = 2*shellAngMom[shell] - 1;
+        for(int bf = 0; bf < shellSize; ++bf){
+            aCharges[atom] += aoADS.get(bf + firstBF, bf + firstBF);
+            bCharges[atom] += aoBDS.get(bf + firstBF, bf + firstBF);
+        }
+    }
+
+    fprintf(outfile, "\n\t\t     Mulliken Population Analysis\n\n");
+    fprintf(outfile,   "\t\t    Atom          Charge      Spin\n");
+    fprintf(outfile,   "\t\t-------------------------------------\n");
+    for(int atom = 0; atom < nAtoms; ++atom){
+        fprintf(outfile, "\t\t  %-12s  %8.3f   %8.3f\n",
+                labels[atom], zVals[atom] - aCharges[atom] - bCharges[atom],
+                aCharges[atom] - bCharges[atom]);
+    }
+
+}
+
 }} // Namespaces

@@ -12,12 +12,49 @@ namespace psi{ namespace dcft{
 
 
   /**
-  * Performs the SCF procedure to update the orbitals, and transforms the integrals
-  * to the updated basis
-  */
+   * Performs the SCF procedure to update the orbitals, unless orbitals already exist in checkpoint.
+   */
   void
   DCFTSolver::perform_scf()
   {
+      char *keyword = _chkpt->build_keyword("Alpha MO coefficients");
+      if(_chkpt->exist(keyword)){
+          fprintf(outfile, "\tUsing the orbitals found in the checkpoint file\n");
+          double **Ca    = _chkpt->rd_alpha_scf();
+          double **Cb    = _chkpt->rd_beta_scf();
+          double *aEvals = _chkpt->rd_alpha_evals();
+          double *bEvals = _chkpt->rd_beta_evals();
+          int nirreps    = _chkpt->rd_nirreps();
+          int *mopi      = _chkpt->rd_orbspi();
+          int *sopi      = _chkpt->rd_sopi();
+          _scfEnergy = _chkpt->rd_escf();
+          _eNuc      = _chkpt->rd_enuc();
+          int moOffset   = 0;
+          int soOffset   = 0;
+          for(int h = 0; h < nirreps; ++h){
+              for(int mo = 0; mo < mopi[h]; ++mo){
+                  for(int so = 0; so < sopi[h]; ++so){
+                      _Ca.set(h, so, mo, Ca[so + soOffset][mo + moOffset]);
+                      _Cb.set(h, so, mo, Cb[so + soOffset][mo + moOffset]);
+                  }
+                  _aEvals.set(h, mo, aEvals[mo + moOffset]);
+                  _bEvals.set(h, mo, bEvals[mo + moOffset]);
+              }
+              moOffset += mopi[h];
+              soOffset += sopi[h];
+          }
+          free_block(Ca);
+          free_block(Cb);
+          free(aEvals);
+          free(bEvals);
+          free(mopi);
+          free(sopi);
+          free(keyword);
+          return;
+      }else{
+          fprintf(outfile, "\tNo orbitals found in the checkpoint file, SCF guess will be used\n");
+      }
+      free(keyword);
       scf_guess();
       bool converged = false;
       _nScfIterations = 0;
@@ -45,7 +82,7 @@ namespace psi{ namespace dcft{
           _oldCb.copy(_Cb);
           _Cb.gemm(false, false, 1.0, _sHalfInv, tmp, 0.0);
           find_occupation(_aEvals);
-          double rmsDeltaP = update_scf_density();
+          double rmsDeltaP = update_scf_density(_nScfIterations > 10);
           converged = rmsDeltaP < pow(10.0,-_options.get_int("SCF_CONV"));
           fprintf(outfile, "\t*  %-3d      %10.2e       %10.2e      %20.16f  *\n",
                   _nScfIterations, rmsDeltaP, _scfEnergy - oldEnergy, _scfEnergy);
@@ -53,8 +90,9 @@ namespace psi{ namespace dcft{
       fprintf(outfile, "\t*===================================================================*\n\n");
 
       if(!converged){
-          throw ConvergenceError<int>("DCFT SCF guess", _scfMaxIter, _scfThreshold,
-                                _scfConvergence, __FILE__, __LINE__);
+
+//          throw ConvergenceError<int>("DCFT SCF guess", _scfMaxIter, _scfThreshold,
+//                                _scfConvergence, __FILE__, __LINE__);
       }
 
       // Dump information to checkpoint
@@ -357,11 +395,14 @@ namespace psi{ namespace dcft{
 
   /**
   * Uses the MO coefficients to form the SCF density matrices in the SO basis.
+  * @param Whether to damp the update or not
   * @return RMS density change
   */
   double
-  DCFTSolver::update_scf_density()
+  DCFTSolver::update_scf_density(bool damp)
   {
+      int dampingFactor = _options.get_int("DAMPING_FACTOR");
+      double newFraction = damp ? 1.0 : 1.0 - dampingFactor/1000.0;
       size_t nElements = 0;
       double sumOfSquares = 0.0;
       Matrix old(_aKappa);
@@ -371,7 +412,7 @@ namespace psi{ namespace dcft{
                   double val = 0.0;
                   for (int i = 0; i < _nAOccPI[h]; ++i)
                       val += _Ca.get(h, mu, i) * _Ca.get(h, nu, i);
-                  _aKappa.set(h, mu, nu, val);
+                  _aKappa.set(h, mu, nu, newFraction*val + (1.0-newFraction) * _aKappa.get(h, mu, nu));
                   ++nElements;
                   sumOfSquares += pow(val - old.get(h, mu, nu), 2.0);
               }
@@ -384,7 +425,7 @@ namespace psi{ namespace dcft{
                   double val = 0.0;
                   for (int i = 0; i < _nBOccPI[h]; ++i)
                       val += _Cb.get(h, mu, i) * _Cb.get(h, nu, i);
-                  _bKappa.set(h, mu, nu, val);
+                  _bKappa.set(h, mu, nu, newFraction*val + (1.0-newFraction) * _bKappa.get(h, mu, nu));
                   ++nElements;
                   sumOfSquares += pow(val - old.get(h, mu, nu), 2.0);
               }

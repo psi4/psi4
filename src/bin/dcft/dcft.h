@@ -51,6 +51,7 @@ class DCFTSolver
     void build_tensors();
     void build_denominators();
     void dump_density();
+    void mulliken_charges();
     void dpd_buf4_add(dpdbuf4 *A, dpdbuf4 *B, double alpha);
     void scf_guess();
     void half_transform(dpdbuf4 *A, dpdbuf4 *B, Matrix C1, Matrix C2,
@@ -64,7 +65,7 @@ class DCFTSolver
     bool correct_mo_phases(bool dieOnError = true);
     double compute_lambda_residual();
     double compute_scf_error_vector();
-    double update_scf_density();
+    double update_scf_density(bool damp = false);
     /// Whether the DOCC array was provided by the user
     bool _inputDocc;
     /// Whether the SOCC array was provided by the user
