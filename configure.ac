@@ -525,7 +525,9 @@ AC_CXX_PROCESS_CHECK([cstddef],[#include <cstddef>],,[HAVE_CSTDDEF=1],[HAVE_CSTD
 #CXXDEF="$CXXDEF -DHAVE_CSTDDEF=$HAVE_CSTDDEF"
 AC_DEFINE_UNQUOTED(HAVE_CSTDDEF,$HAVE_CSTDDEF)
 
- 
+# Check for dlfcn.h
+AC_CXX_PROCESS_CHECK([dlfcn.h],[#include <dlfcn.h>],,[HAVE_DLFCN_H=1],[HAVE_DLFCN_H=0]) 
+AC_DEFINE_UNQUOTED(HAVE_DLFCN_H,$HAVE_DLFCN_H)
 
 # Check for mpi.h
 AC_CXX_PROCESS_CHECK([mpi.h],[#include <mpi.h>],,[HAVE_MPI=1],[HAVE_MPI=0])

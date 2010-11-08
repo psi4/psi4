@@ -32,5 +32,8 @@
 #undef HAVE_SETENV
 #undef HAVE_FUNC_ISINF
 
+/* Have dlfcn.h for dlopen and friends */
+#undef HAVE_DLFCN_H
+
 #endif /* _psi_src_psiconfig_h */
 
