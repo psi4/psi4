@@ -1,6 +1,17 @@
+#define BOOST_FILESYSTEM_VERSION 3
+
+//  As an example program, we don't want to use any deprecated features
+#ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+#  define BOOST_FILESYSTEM_NO_DEPRECATED
+#endif
+#ifndef BOOST_SYSTEM_NO_DEPRECATED
+#  define BOOST_SYSTEM_NO_DEPRECATED
+#endif
+
 #include "plugin.h"
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
+
 
 namespace psi {
 #if HAVE_DLFCN_H == 1
@@ -37,7 +48,9 @@ plugin_info plugin_load(std::string& plugin_pathname)
         throw PSIEXCEPTION(msg);
     }
 
-    info.name = boost::filesystem::basename(plugin_pathname);
+    boost::filesystem::path pluginPath(plugin_pathname);
+    info.name = pluginPath.stem().string();
+
     info.plugin = (plugin_t) dlsym(info.plugin_handle, info.name.c_str());
     const char *dlsym_error3 = dlerror();
     if (dlsym_error3) {
