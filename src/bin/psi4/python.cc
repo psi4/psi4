@@ -4,10 +4,10 @@
 #define BOOST_FILESYSTEM_VERSION 3
 
 //  As an example program, we don't want to use any deprecated features
-#ifndef BOOST_FILESYSTEM_NO_DEPRECATED 
+#ifndef BOOST_FILESYSTEM_NO_DEPRECATED
 #  define BOOST_FILESYSTEM_NO_DEPRECATED
 #endif
-#ifndef BOOST_SYSTEM_NO_DEPRECATED 
+#ifndef BOOST_SYSTEM_NO_DEPRECATED
 #  define BOOST_SYSTEM_NO_DEPRECATED
 #endif
 
@@ -15,6 +15,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/python.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/algorithm/string.hpp>
 #include <psiconfig.h>
 #include <sstream>
 #include "script.h"
@@ -81,7 +82,8 @@ int py_psi_plugin_load(std::string fullpathname)
 {
     int ret = 0;
 
-    std::string uc = boost::algorithm::to_upper_copy(fullpathname);
+    boost::filesystem::path pluginPath(fullpathname);
+    std::string uc = boost::algorithm::to_upper_copy(pluginPath.stem().string());
 
     // Make sure the plugin isn't already loaded.
     if (plugins.count(uc) == 0) {
@@ -106,10 +108,13 @@ int py_psi_plugin_load(std::string fullpathname)
 */
 int py_psi_plugin(std::string fullpathname)
 {
-    std::string uc = boost::algorithm::to_upper_copy(fullpathname);
+    boost::filesystem::path pluginPath(fullpathname);
+    std::string uc = boost::algorithm::to_upper_copy(pluginPath.stem().string());
     if (plugins.count(uc) == 0) {
         plugins[uc] = plugin_load(fullpathname);
         plugin_info& tmpinfo = plugins[uc];
+        fprintf(outfile, "Reading options from the %s block\n", tmpinfo.name.c_str());
+        fflush(outfile);
         tmpinfo.read_options(tmpinfo.name, Process::environment.options);
     }
 
@@ -139,7 +144,8 @@ int py_psi_plugin(std::string fullpathname)
 */
 void py_psi_plugin_close(std::string fullpathname)
 {
-    std::string uc = boost::algorithm::to_upper_copy(fullpathname);
+    boost::filesystem::path pluginPath(fullpathname);
+    std::string uc = boost::algorithm::to_upper_copy(pluginPath.stem().string());
     if (plugins.count(uc) > 0) {
         plugin_info& info = plugins[uc];
         plugin_close(info);
