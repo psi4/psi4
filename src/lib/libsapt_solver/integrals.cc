@@ -205,6 +205,7 @@ void SAPT2B::df_ints()
   double** MO_RI = block_matrix(maxPshell,nmo*nmo);
 
   psio_address next_DF_MO = PSIO_ZERO;
+  psio_address next_bare_AR = PSIO_ZERO;
 
   for (int Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
     int numPshell = ribasis_->shell(Pshell)->nfunction();
@@ -244,6 +245,16 @@ void SAPT2B::df_ints()
         AO_RI[P], norbs, 0.0, halftrans, norbs);
       C_DGEMM('N', 'N', nmo, nmo, norbs, 1.0, halftrans, norbs, 
         calc_info_.CA[0], nmo, 0.0, MO_RI[P], nmo);
+    }
+
+    if (options_.get_str("SAPT_LEVEL") == "SAPT_DFT") {
+      for (int P=0; P < numPshell; ++P) {
+        for (int a=0; a < calc_info_.noccA; ++a) {
+          psio_->write(PSIF_SAPT_AA_DF_INTS,"AR Bare RI Integrals",(char *)
+            &(MO_RI[P][a*nmo+calc_info_.noccA]),sizeof(double)*(ULI) 
+            calc_info_.nvirA,next_bare_AR,&next_bare_AR);
+        }
+      }
     }
 
     psio_->write(PSIF_SAPT_TEMP,"MO RI Integrals",(char *) &(MO_RI[0][0]),
@@ -334,6 +345,7 @@ void SAPT2B::df_ints()
   MO_RI = block_matrix(maxPshell,nmo*nmo);
 
   next_DF_MO = PSIO_ZERO;
+  psio_address next_bare_BS = PSIO_ZERO;
 
   for (int Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
     int numPshell = ribasis_->shell(Pshell)->nfunction();
@@ -373,6 +385,16 @@ void SAPT2B::df_ints()
         AO_RI[P], norbs, 0.0, halftrans, norbs);
       C_DGEMM('N', 'N', nmo, nmo, norbs, 1.0, halftrans, norbs,
         calc_info_.CB[0], nmo, 0.0, MO_RI[P], nmo);
+    }
+
+    if (options_.get_str("SAPT_LEVEL") == "SAPT_DFT") {
+      for (int P=0; P < numPshell; ++P) {
+        for (int b=0; b < calc_info_.noccB; ++b) {
+          psio_->write(PSIF_SAPT_BB_DF_INTS,"BS Bare RI Integrals",(char *)
+            &(MO_RI[P][b*nmo+calc_info_.noccB]),sizeof(double)*(ULI) 
+            calc_info_.nvirB,next_bare_BS,&next_bare_BS);
+        }
+      }
     }
 
     psio_->write(PSIF_SAPT_TEMP,"MO RI Integrals",(char *) &(MO_RI[0][0]),
