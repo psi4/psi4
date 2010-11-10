@@ -214,18 +214,18 @@ public:
     ~ObaraSaikaThreeCenterRecursion();
 
     /// Returns the x recursion matrix.
-    const double ***x() const { return x_; }
+    double ***x() const { return x_; }
     /// Returns the y recursion matrix.
-    const double ***y() const { return y_; }
+    double ***y() const { return y_; }
     /// Returns the z recursion matrix.
-    const double ***z() const { return z_; }
+    double ***z() const { return z_; }
 
     /// Computes the recursion matrices for the data provided.
     void compute(double GA[3],
                  double GB[3],
                  double GC[3],
-                 double gamma,
-                 int amA, int amB, int amC);
+                 double gammac,
+                 int amA, int amC, int amB);
 };
 
 }

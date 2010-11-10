@@ -1157,7 +1157,7 @@ ObaraSaikaThreeCenterRecursion::~ObaraSaikaThreeCenterRecursion()
     free_box(z_, max_am1_+1, max_am2_+1);
 }
 
-void ObaraSaikaThreeCenterRecursion::compute(double GA[3], double GB[3], double GC[3], double gamma, int amA, int amB, int amC)
+void ObaraSaikaThreeCenterRecursion::compute(double GA[3], double GB[3], double GC[3], double gamma, int amA, int amC, int amB)
 {
     if (amA < 0 || amA > max_am1_)
         throw SanityCheckError("ERROR: ObaraSaikaThreeCenterRecursion::compute -- am1 out of bounds", __FILE__, __LINE__);
@@ -1172,11 +1172,24 @@ void ObaraSaikaThreeCenterRecursion::compute(double GA[3], double GB[3], double 
     // Starting point
     x_[0][0][0] = y_[0][0][0] = z_[0][0][0] = 1.0;
 
-    // Begin - Upward recursion in b for a=c=0
-    x_[0][0][1] = GB[0];
-    y_[0][0][1] = GB[1];
-    z_[0][0][1] = GB[2];
+    // 1 up from the bottom.
+    if (amA >= 1) {
+        x_[1][0][0] = GA[0];
+        y_[1][0][0] = GA[1];
+        z_[1][0][0] = GA[2];
+    }
+    if (amB >= 1) {
+        x_[0][0][1] = GB[0];
+        y_[0][0][1] = GB[1];
+        z_[0][0][1] = GB[2];
+    }
+    if (amC >= 1) {
+        x_[0][1][0] = GC[0];
+        y_[0][1][0] = GC[1];
+        z_[0][1][0] = GC[2];
+    }
 
+    // Begin - Upward recursion in b for a=c=0
     for (b=1; b<amB; ++b) {
         x_[0][0][b+1] = GB[0] * x_[0][0][b];
         y_[0][0][b+1] = GB[1] * y_[0][0][b];
@@ -1188,15 +1201,120 @@ void ObaraSaikaThreeCenterRecursion::compute(double GA[3], double GB[3], double 
     // End - Upward recursion in b for a=c=0
 
     // Begin - Upward recursion in c for all b and a=0
-    x_[0][1][0] = GC[0];
-    y_[0][1][0] = GC[1];
-    z_[0][1][0] = GC[2];
-    for (b=1; b<=amB; ++b) {
-        x_[0][1][j] = GC[0] * x_[0][0][j];
-        y_[0][1][j] = GC[1] * y_[0][0][j];
-        z_[0][1][j] = GC[2] * z_[0][0][j];
-        x_[0][1][j] += b * pp * x_[0][0][j-1];
-        y_[0][1][j] += b * pp * y_[0][0][j-1];
-        z_[0][1][j] += b * pp * z_[0][0][j-1];
+    if (amC) {
+        for (b=1; b<=amB; ++b) {
+            x_[0][1][b] = GC[0] * x_[0][0][b];
+            y_[0][1][b] = GC[1] * y_[0][0][b];
+            z_[0][1][b] = GC[2] * z_[0][0][b];
+            x_[0][1][b] += b * pp * x_[0][0][b-1];
+            y_[0][1][b] += b * pp * y_[0][0][b-1];
+            z_[0][1][b] += b * pp * z_[0][0][b-1];
+        }
+        for (c=1; c<amC; ++c) {
+            x_[0][c+1][0] = GC[0] * x_[0][c][0];
+            y_[0][c+1][0] = GC[1] * y_[0][c][0];
+            z_[0][c+1][0] = GC[2] * z_[0][c][0];
+            x_[0][c+1][0] += c * pp * x_[0][c-1][0];
+            y_[0][c+1][0] += c * pp * y_[0][c-1][0];
+            z_[0][c+1][0] += c * pp * z_[0][c-1][0];
+
+            for (b=1; b<=amB; ++b) {
+                x_[0][c+1][b] = GC[0] * x_[0][c][b];
+                y_[0][c+1][b] = GC[0] * y_[0][c][b];
+                z_[0][c+1][b] = GC[0] * z_[0][c][b];
+                x_[0][c+1][b] += c * pp * x_[0][c-1][b];
+                y_[0][c+1][b] += c * pp * y_[0][c-1][b];
+                z_[0][c+1][b] += c * pp * z_[0][c-1][b];
+                x_[0][c+1][b] += b * pp * x_[0][c][b-1];
+                y_[0][c+1][b] += b * pp * y_[0][c][b-1];
+                z_[0][c+1][b] += b * pp * z_[0][c][b-1];
+            }
+        }
+    }
+    // End - Upward recursion in c for all b and a = 0
+
+    // Begin - Upward recursion in a for all b and c
+    if (amA) {
+        for (b=1; b<=amB; ++b) {
+            x_[1][0][b] = GA[0] * x_[0][0][b];
+            y_[1][0][b] = GA[1] * y_[0][0][b];
+            z_[1][0][b] = GA[2] * z_[0][0][b];
+            x_[1][0][b] += b * pp * x_[0][0][b-1];
+            y_[1][0][b] += b * pp * y_[0][0][b-1];
+            z_[1][0][b] += b * pp * z_[0][0][b-1];
+        }
+        for (c=1; c<=amC; ++c) {
+            x_[1][c][0] = GA[0] * x_[0][c][0];
+            y_[1][c][0] = GA[1] * y_[0][c][0];
+            z_[1][c][0] = GA[2] * z_[0][c][0];
+            x_[1][c][0] += c * pp * x_[0][c-1][0];
+            y_[1][c][0] += c * pp * y_[0][c-1][0];
+            z_[1][c][0] += c * pp * z_[0][c-1][0];
+        }
+        for (a=1; a<amA; ++a) {
+            x_[a+1][0][0] = GA[0] * x_[a][0][0];
+            y_[a+1][0][0] = GA[1] * y_[a][0][0];
+            z_[a+1][0][0] = GA[2] * z_[a][0][0];
+            x_[a+1][0][0] += a * pp * x_[a-1][0][0];
+            y_[a+1][0][0] += a * pp * y_[a-1][0][0];
+            z_[a+1][0][0] += a * pp * z_[a-1][0][0];
+
+            for (b=1; b<=amB; ++b) {
+                x_[a+1][0][b] = GA[0] * x_[a][0][b];
+                y_[a+1][0][b] = GA[1] * y_[a][0][b];
+                z_[a+1][0][b] = GA[2] * z_[a][0][b];
+                x_[a+1][0][b] += a * pp * x_[a-1][0][b];
+                y_[a+1][0][b] += a * pp * y_[a-1][0][b];
+                z_[a+1][0][b] += a * pp * z_[a-1][0][b];
+                x_[a+1][0][b] += b * pp * x_[a][0][b-1];
+                y_[a+1][0][b] += b * pp * y_[a][0][b-1];
+                z_[a+1][0][b] += b * pp * z_[a][0][b-1];
+            }
+
+            for (c=1; c<=amC; ++c) {
+                x_[a+1][c][0] = GA[0] * x_[a][c][0];
+                y_[a+1][c][0] = GA[1] * y_[a][c][0];
+                z_[a+1][c][0] = GA[2] * z_[a][c][0];
+                x_[a+1][c][0] += a * pp * x_[a-1][c][0];
+                y_[a+1][c][0] += a * pp * y_[a-1][c][0];
+                z_[a+1][c][0] += a * pp * z_[a-1][c][0];
+                x_[a+1][c][0] += c * pp * x_[a][c-1][0];
+                y_[a+1][c][0] += c * pp * y_[a][c-1][0];
+                z_[a+1][c][0] += c * pp * z_[a][c-1][0];
+            }
+        }
+    }
+    // End - Upward recursion in a for all b and c = 0
+
+    if (amA && amB && amC) {
+        x_[1][1][1] = GA[0] * x_[0][1][1];
+        y_[1][1][1] = GA[1] * y_[0][1][1];
+        z_[1][1][1] = GA[2] * z_[0][1][1];
+        x_[1][1][1] += pp * x_[0][1][0];
+        y_[1][1][1] += pp * y_[0][1][0];
+        z_[1][1][1] += pp * z_[0][1][0];
+        x_[1][1][1] += pp * x_[0][0][1];
+        x_[1][1][1] += pp * y_[0][0][1];
+        x_[1][1][1] += pp * z_[0][0][1];
+
+        // Begin - Bring everything together
+        for (a=1; a<amA; ++a) {
+            for (b=1; b<=amB; ++b) {
+                for (c=1; c<=amC; ++c) {
+                    x_[a+1][c][b] = GA[0] * x_[a][c][b];
+                    y_[a+1][c][b] = GA[1] * y_[a][c][b];
+                    z_[a+1][c][b] = GA[2] * z_[a][c][b];
+                    x_[a+1][c][b] += a * pp * x_[a-1][c][b];
+                    y_[a+1][c][b] += a * pp * y_[a-1][c][b];
+                    z_[a+1][c][b] += a * pp * z_[a-1][c][b];
+                    x_[a+1][c][b] += b * pp * x_[a][c][b-1];
+                    y_[a+1][c][b] += b * pp * y_[a][c][b-1];
+                    z_[a+1][c][b] += b * pp * z_[a][c][b-1];
+                    x_[a+1][c][b] += c * pp * x_[a][c-1][b];
+                    y_[a+1][c][b] += c * pp * y_[a][c-1][b];
+                    z_[a+1][c][b] += c * pp * z_[a][c-1][b];
+                }
+            }
+        }
     }
 }
