@@ -99,6 +99,8 @@ void ThreeCenterOverlapInt::compute_pair(shared_ptr<GaussianShell> sA, shared_pt
             double oog = 1.0 / gamma;
 
             P[0] = (aA * A[0] + aB * B[0]) * oog;
+            P[1] = (aA * A[1] + aB * B[1]) * oog;
+            P[2] = (aA * A[2] + aB * B[2]) * oog;
 
             double overlap_AB = exp(-aA*aB*AB2*oog) * sqrt(M_PI*oog) * M_PI * oog * cA * cB;
 
