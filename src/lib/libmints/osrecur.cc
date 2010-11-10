@@ -1130,3 +1130,73 @@ void ObaraSaikaTwoCenterElectricFieldGradient::compute(double PA[3], double PB[3
     }
 }
 
+/***********************************************************
+ *                                                         *
+ * ObaraSaikaThreeCenterRecurion                           *
+ *                                                         *
+ **********************************************************/
+ObaraSaikaThreeCenterRecursion::ObaraSaikaThreeCenterRecursion(int max_am1, int max_am2, int max_am3)
+    : max_am1_(max_am1), max_am2_(max_am2), max_am3_(max_am3)
+{
+    if (max_am1 < 0)
+        throw SanityCheckError("ERROR: ObaraSaikaThreeCenterRecursion -- max_am1 must be nonnegative", __FILE__, __LINE__);
+    if (max_am2 < 0)
+        throw SanityCheckError("ERROR: ObaraSaikaThreeCenterRecursion -- max_am2 must be nonnegative", __FILE__, __LINE__);
+    if (max_am3 < 0)
+        throw SanityCheckError("ERROR: ObaraSaikaThreeCenterRecursion -- max_am3 must be nonnegative", __FILE__, __LINE__);
+
+    x_ = init_box(max_am1+1, max_am2+1, max_am3+1);
+    y_ = init_box(max_am1+1, max_am2+1, max_am3+1);
+    z_ = init_box(max_am1+1, max_am2+1, max_am3+1);
+}
+
+ObaraSaikaThreeCenterRecursion::~ObaraSaikaThreeCenterRecursion()
+{
+    free_box(x_, max_am1_+1, max_am2_+1);
+    free_box(y_, max_am1_+1, max_am2_+1);
+    free_box(z_, max_am1_+1, max_am2_+1);
+}
+
+void ObaraSaikaThreeCenterRecursion::compute(double GA[3], double GB[3], double GC[3], double gamma, int amA, int amB, int amC)
+{
+    if (amA < 0 || amA > max_am1_)
+        throw SanityCheckError("ERROR: ObaraSaikaThreeCenterRecursion::compute -- am1 out of bounds", __FILE__, __LINE__);
+    if (amB < 0 || amB > max_am2_)
+        throw SanityCheckError("ERROR: ObaraSaikaThreeCenterRecursion::compute -- am2 out of bounds", __FILE__, __LINE__);
+    if (amC < 0 || amC > max_am3_)
+        throw SanityCheckError("ERROR: ObaraSaikaThreeCenterRecursion::compute -- am3 out of bounds", __FILE__, __LINE__);
+
+    int a,b,c;
+    double pp = 1.0/(2.0*gamma);
+
+    // Starting point
+    x_[0][0][0] = y_[0][0][0] = z_[0][0][0] = 1.0;
+
+    // Begin - Upward recursion in b for a=c=0
+    x_[0][0][1] = GB[0];
+    y_[0][0][1] = GB[1];
+    z_[0][0][1] = GB[2];
+
+    for (b=1; b<amB; ++b) {
+        x_[0][0][b+1] = GB[0] * x_[0][0][b];
+        y_[0][0][b+1] = GB[1] * y_[0][0][b];
+        z_[0][0][b+1] = GB[2] * z_[0][0][b];
+        x_[0][0][b+1] += b * pp * x_[0][0][b-1];
+        y_[0][0][b+1] += b * pp * y_[0][0][b-1];
+        z_[0][0][b+1] += b * pp * z_[0][0][b-1];
+    }
+    // End - Upward recursion in b for a=c=0
+
+    // Begin - Upward recursion in c for all b and a=0
+    x_[0][1][0] = GC[0];
+    y_[0][1][0] = GC[1];
+    z_[0][1][0] = GC[2];
+    for (b=1; b<=amB; ++b) {
+        x_[0][1][j] = GC[0] * x_[0][0][j];
+        y_[0][1][j] = GC[1] * y_[0][0][j];
+        z_[0][1][j] = GC[2] * z_[0][0][j];
+        x_[0][1][j] += b * pp * x_[0][0][j-1];
+        y_[0][1][j] += b * pp * y_[0][0][j-1];
+        z_[0][1][j] += b * pp * z_[0][0][j-1];
+    }
+}

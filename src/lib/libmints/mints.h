@@ -31,3 +31,4 @@
 #include <libmints/writer.h>
 #include <libmints/wavefunction.h>
 #include <libmints/dimension.h>
+#include <libmints/3overlap.h>
