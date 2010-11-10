@@ -890,6 +890,8 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_int("PRINT",1);
     /*- Debugging information? -*/
     options.add_bool("DEBUG",false);
+    /*- Parallel algoritmh? -*/
+    options.add_bool("PARALLEL_DFMP2",false);
     /*- -Log10 of the energy convergence criterion -*/
     options.add_int("E_CONVERGE", 8);
     /*- -Log10 of the density convergence criterion -*/

@@ -293,18 +293,14 @@ double DFMP2::compute_energy()
 }
 double DFMP2::compute_E_core()
 {
-    if (fitting_symmetry_ == "SYMMETRIC") {
-
+    if (options_.get_bool("PARALLEL_DFMP2")) { 
+        form_Qia_core();
+        evaluate_contributions_core_parallel();
+        free_Qia_core();
+    } else {
         form_Qia_core();
         evaluate_contributions_core_sym();
         free_Qia_core();
-
-    } else if (fitting_symmetry_ == "ASYMMETRIC") {
-        
-        //form_Cia_core();
-        //evaluate_contributions_core_asym();
-        //free_Cia_core();
-   
     }
 
     return E_;
@@ -1459,6 +1455,81 @@ void DFMP2::evaluate_contributions_core_sym()
 {
   int nthreads = 1;
   int rank = 0;
+
+  #ifdef _OPENMP
+    nthreads = omp_get_max_threads();
+  #endif
+
+  #ifdef _MKL
+    int mkl_nthreads = mkl_get_max_threads();
+    mkl_set_num_threads(1);
+  #endif
+
+  double*** I = new double**[nthreads];
+  for (int r = 0 ; r<nthreads; r++) {
+    I[r] = block_matrix(nact_virt_,nact_virt_);
+  }
+  
+  double iajb, ibja, denom, perm_scale;
+  long double e_ss, e_os;
+  int a, b, i, j;
+
+  e_ss = 0.0;
+  e_os = 0.0;
+
+  #pragma omp parallel for private (rank, a, b, i, j, perm_scale, iajb, ibja, denom) reduction (+: e_ss, e_os) schedule (dynamic)
+  for (i=0; i < nact_docc_; ++i) {
+   
+    #ifdef _OPENMP
+      rank = omp_get_thread_num();
+    #endif
+ 
+    for (j=0; j <= i; ++j) {
+
+      if (rank == 0) timer_on("(ia|jb)");
+      C_DGEMM('T','N',nact_virt_,nact_virt_,naux_fin_,1.0,&(Qia_[0][i*nact_virt_]),
+        nact_docc_*(ULI) nact_virt_,&(Qia_[0][j*nact_virt_]),nact_docc_*(ULI) nact_virt_,0.0,&(I[rank][0][0]),nact_virt_);
+      if (rank == 0) timer_off("(ia|jb)");
+
+      //fprintf(outfile, "  ij = (%d,%d), I:\n",i,j);
+      //print_mat(I[0],nact_virt_,nact_virt_,outfile);
+
+      if (rank == 0) timer_on("T_MP2");
+      for (a=0; a < nact_virt_; ++a) {
+        for (b=0; b < nact_virt_; ++b) {
+          iajb = I[rank][a][b];
+          ibja = I[rank][b][a];
+          denom = 1.0 /
+            (eps_docc_[i] + eps_docc_[j] -
+             eps_virt_[a] - eps_virt_[b]);
+
+          perm_scale = ((i == j)? 1.0 : 2.0 );
+
+          e_ss += perm_scale*(iajb*iajb-iajb*ibja)*denom;
+          e_os += perm_scale*(iajb*iajb)*denom;
+        }
+      }
+      if (rank == 0) timer_off("T_MP2");
+    } 
+  }
+
+  for (int r = 0; r<nthreads; r++)
+    free_block(I[r]);
+  delete[] I;
+ 
+  #ifdef _MKL
+    mkl_set_num_threads(mkl_nthreads);
+  #endif
+
+  E_ss_ += e_ss;
+  E_os_ += e_os;
+}
+void DFMP2::evaluate_contributions_core_parallel()
+{
+  int nthreads = 1;
+  int rank = 0;
+
+    // Ben Seibert, your stuff goes here
 
   #ifdef _OPENMP
     nthreads = omp_get_max_threads();
