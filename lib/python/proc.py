@@ -182,6 +182,8 @@ def run_sapt(name, **kwargs):
         PsiMod.set_option("SAPT_LEVEL","SAPT2+")
     elif (name.lower() == 'sapt2+3'):
         PsiMod.set_option("SAPT_LEVEL","SAPT2+3")
+    elif (name.lower() == 'sapt_dft'):
+        PsiMod.set_option("SAPT_LEVEL","SAPT_DFT")
     PsiMod.print_out("\n")
     banner(name.upper())
     PsiMod.print_out("\n")

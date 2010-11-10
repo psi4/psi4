@@ -153,6 +153,8 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_str("NUCLEAR_TYPE","TREUTLER","NAIVE BECKE TREUTLER");
     /*- Number of threads to compute integrals with. 0 is wild card -*/
     options.add_int("RI_INTS_NUM_THREADS", 1);
+    /*- Number of omega quadrature points -*/
+    options.add_int("N_OMEGA",8);
   }
   if(name == "DCFT"|| options.read_globals()) {
       ip_cwk_add(":DCFT");

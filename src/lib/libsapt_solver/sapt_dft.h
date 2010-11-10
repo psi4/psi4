@@ -20,14 +20,39 @@ namespace psi { namespace sapt {
 
 class SAPT_DFT : public SAPT0 {
 private:
-    void lr_ints();
 
-    double **D_lambda_F(double, int, char *, int, char *, double *, int, int);
-    double **DF_FDDS(double, int, char *, int, char *, double *, int, int);
+    double E_MP2C_int_;
+    double E_MP2C_delta_;
+    double E_MP2_int_;
+    double E_UCHF_disp_;
+    double E_TDDFT_disp_;
+
+    double **X0_A_;
+    double **X0_B_;
+    double **XC_A_;
+    double **XC_B_;
+    double **D_A_;
+    double **D_B_;
+    double **W_A_;
+    double **W_B_;
+    double **S_;
+    double **J_;
+    double **Jinv_;
+
+    void free_arrays();
+    void allocate_arrays();
+
+    void compute_S();
+    void compute_D();
+    void compute_J();
+    void compute_W();
+    void compute_X_0(double omega);
+    void compute_X_coup(double omega);
+    double compute_UCHF_disp();
+    double compute_TDDFT_disp();
 
 protected:
     virtual void print_header();
-    void df_disp20_chf();
     virtual double print_results();
 
 public:
@@ -36,6 +61,23 @@ public:
 
     virtual double compute_energy();
 
+};
+
+class OmegaQuadrature {
+    protected:
+        int npoints_;
+        int index_;
+        double* omega_;
+        double* w_;
+    public:
+        OmegaQuadrature(int npoints);
+        virtual ~OmegaQuadrature();
+
+        double getWeight() { return w_[index_]; }
+        double getOmega() { return omega_[index_]; }
+        void nextPoint() { index_++; }
+        void reset() { index_ = 0; }
+        bool isDone() { return index_ >= npoints_; }
 };
 
 }}
