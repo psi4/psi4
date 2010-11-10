@@ -41,6 +41,7 @@ class BasisSet;
 class GaussianShell;
 class OneBodyInt;
 class TwoBodyInt;
+class ThreeCenterOverlapInt;
 class Symmetry;
 class CartesianIter;
 class RedundantCartesianIter;
@@ -264,6 +265,9 @@ public:
 
     /// Returns an OneBodyInt that computes the overlap integral.
     virtual OneBodyInt* overlap(int deriv=0);
+
+    /// Returns a ThreeCenterOverlapINt that computes the overlap between three centers
+    virtual ThreeCenterOverlapInt* overlap_3c();
 
     /// Returns an OneBodyInt that computes the kinetic energy integral.
     virtual OneBodyInt* kinetic(int deriv=0);

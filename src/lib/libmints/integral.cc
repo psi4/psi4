@@ -42,6 +42,11 @@ OneBodyInt* IntegralFactory::overlap(int deriv)
     return new OverlapInt(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
+ThreeCenterOverlapInt* IntegralFactory::overlap_3c()
+{
+    return new ThreeCenterOverlapInt(spherical_transforms_, bs1_, bs2_, bs3_);
+}
+
 OneBodyInt* IntegralFactory::kinetic(int deriv)
 {
     return new KineticInt(spherical_transforms_, bs1_, bs2_, deriv);
