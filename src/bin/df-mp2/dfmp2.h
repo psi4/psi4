@@ -128,6 +128,8 @@ protected:
     void form_Qia_core();
     //Evaluate and sum the energy contributions
     void evaluate_contributions_core_sym();   
+    //Evaluate and sum the energy contributions NEW PARALLEL ALGORITHM
+    void evaluate_contributions_core_parallel();   
     //Free Qia_ 
     void free_Qia_core();
     

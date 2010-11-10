@@ -62,6 +62,8 @@ double SAPT_DFT::compute_energy()
     // DF integrals for use with X
     fprintf(outfile, "  Computing density-fitting MO integrals.\n");
     compute_integrals();
+
+    // This needs to go away
     compute_amplitudes();
     elst10();
     exch10();
@@ -70,15 +72,17 @@ double SAPT_DFT::compute_energy()
     cphf_induction();
     ind20();
     exch_ind20();
+    // Yeah, all of it, sorry Ed
+
     // The density matrices (AO)
     fprintf(outfile, "  Computing density matrices.\n");
-    compute_D();
+    compute_D(); // Confirmed
     // The auxiliary S matrix and its inverse
     fprintf(outfile, "  Computing auxiliary overlap matrix.\n");
-    compute_S();
+    compute_S(); // Confirmed
     // The J matrix
     fprintf(outfile, "  Computing auxiliary fitting matrix.\n");
-    compute_J();
+    compute_J(); // Confirmed
     // The bloody W matrix of Dyson's Equation
     fprintf(outfile, "  Computing interelectronic interaction matrix.\n");
     compute_W();
@@ -215,11 +219,11 @@ void SAPT_DFT::compute_D() {
     D_A_ = block_matrix(norbs,norbs);
     C_DGEMM('N','T',norbs,norbs,noccA,1.0,&CA[0][0],nmoA,&CA[0][0],nmoA,0.0,&D_A_[0][0],norbs);
     //fprintf(outfile,"DA:\n");
-    //print_mat(DA_temp,norbs,norbs,outfile);
+    //print_mat(D_A_,norbs,norbs,outfile);
     D_B_ = block_matrix(norbs,norbs);
     C_DGEMM('N','T',norbs,norbs,noccB,1.0,&CB[0][0],nmoB,&CB[0][0],nmoB,0.0,&D_B_[0][0],norbs);
     //fprintf(outfile,"DB:\n");
-    //print_mat(DB_temp,norbs,norbs,outfile);
+    //print_mat(D_B_,norbs,norbs,outfile);
 }
 void SAPT_DFT::compute_J() {
     
@@ -250,10 +254,13 @@ void SAPT_DFT::compute_J() {
 
 
                     J_[omu][onu] = Jbuffer[index];
+                    J_[onu][omu] = Jbuffer[index];
                 }
             }
         }   
     }
+
+    
 
     Jinv_ = block_matrix(naux,naux);
     C_DCOPY(naux*(ULI)naux, J_[0], 1, Jinv_[0], 1);
@@ -262,6 +269,16 @@ void SAPT_DFT::compute_J() {
     int stat = C_DPOTRF('U',naux,Jinv_[0],naux);
     // Inverse 
     stat = C_DPOTRI('U',naux,Jinv_[0],naux);
+
+    // Rexpand J^-1 (Upper triangle)
+    for (int P = 0; P < naux; P++)
+        for (int Q = P+1; Q < naux; Q++)
+            Jinv_[P][Q] = Jinv_[Q][P];
+
+    //fprintf(outfile,"J:\n");
+    //print_mat(J_,naux,naux,outfile);
+    //fprintf(outfile,"J^-1:\n");
+    //print_mat(Jinv_,naux,naux,outfile);
 }
 void SAPT_DFT::compute_W() {
    
@@ -511,9 +528,17 @@ void SAPT_DFT::compute_X_0(double omega) {
     double *eps_i, *eps_a; 
 
     // =============== MONOMER A ================//
+    //fprintf(outfile, "  Monomer A X_0:\n");
     double** A_ints = block_matrix(naux, nvirA*(ULI)noccA);
     eps_i = calc_info_.evalsA;
     eps_a = calc_info_.evalsA + noccA;
+
+    //fprintf(outfile,"  Epsilon occ:\n");
+    //for (int i = 0; i < noccA; i++)
+    //    fprintf(outfile, "   i = %d: eps = %20.14f\n", i, eps_i[i]);
+    //fprintf(outfile,"  Epsilon virt:\n");
+    //for (int i = 0; i < nvirA; i++)
+    //    fprintf(outfile, "   a = %d: eps = %20.14f\n", i, eps_a[i]);
 
     // Read the AR DF integrals 
     psio_address next_DF_AA = PSIO_ZERO;
@@ -521,25 +546,44 @@ void SAPT_DFT::compute_X_0(double omega) {
         &A_ints[0][0], naux*nvirA*noccA*(ULI)sizeof(double), next_DF_AA, \
         &next_DF_AA);
 
+    //fprintf(outfile, "  AR Bare RI Integrals (A|ia)\n");
+    //print_mat(A_ints, naux, nvirA*(ULI)noccA, outfile);
+
     // Scale the products ia by \sqrt(lambda_ia)
+    //fprintf(outfile, "  Applying response, omega = %20.14f\n",omega);
     for (int i = 0; i < noccA; i++) {
         for (int a = 0; a < nvirA; a++) {
             eps_ia = eps_a[a] - eps_i[i]; 
             lambda = 4.0 * eps_ia / (eps_ia*eps_ia + omega2);
-            C_DSCAL(naux, sqrt(lambda), &A_ints[0][i*nvirA + a], 1); 
+            //fprintf(outfile, "   i = %d, a = %d, lambda = %20.14f\n", i, a, lambda);
+            C_DSCAL(noccA*(ULI)nvirA, sqrt(lambda), &A_ints[0][i*nvirA + a], 1); 
         }
     }
+
+    //fprintf(outfile, "  Symmetric Response AR RI Integrals (A|ia)\n");
+    //print_mat(A_ints, naux, nvirA*(ULI)noccA, outfile);
 
     // The only O(N^4) DGEMM in the whole thing
     C_DGEMM('N','T', naux, naux, noccA*(ULI)nvirA, 1.0, A_ints[0], noccA*(ULI)nvirA, \
         A_ints[0], noccA*(ULI)nvirA, 0.0, X0_A_[0], naux);
 
+    //fprintf(outfile, "X_0^A:\n");
+    //print_mat(X0_A_, naux, naux, outfile);
+
     free_block(A_ints);     
 
     // =============== MONOMER B ================//
+    //fprintf(outfile, "  Monomer B X_0:\n");
     double** B_ints = block_matrix(naux, nvirB*(ULI)noccB);
     eps_i = calc_info_.evalsB;
     eps_a = calc_info_.evalsB + noccB;
+
+    //fprintf(outfile,"  Epsilon occ:\n");
+    //for (int i = 0; i < noccB; i++)
+    //    fprintf(outfile, "   i = %d: eps = %20.14f\n", i, eps_i[i]);
+    //fprintf(outfile,"  Epsilon virt:\n");
+    //for (int i = 0; i < nvirB; i++)
+    //    fprintf(outfile, "   a = %d: eps = %20.14f\n", i, eps_a[i]);
 
     // Read the BS DF integrals 
     psio_address next_DF_BB = PSIO_ZERO;
@@ -547,18 +591,29 @@ void SAPT_DFT::compute_X_0(double omega) {
         &B_ints[0][0], naux*nvirB*noccB*(ULI)sizeof(double), next_DF_BB, \
         &next_DF_BB);
 
+    //fprintf(outfile, "  BS Bare RI Integrals (A|ia)\n");
+    //print_mat(A_ints, naux, nvirB*(ULI)noccB, outfile);
+
     // Scale the products ia by \sqrt(lambda_ia)
+    //fprintf(outfile, "  Applying response, omega = %20.14f\n",omega);
     for (int i = 0; i < noccB; i++) {
         for (int a = 0; a < nvirB; a++) {
             eps_ia = eps_a[a] - eps_i[i]; 
             lambda = 4.0 * eps_ia / (eps_ia*eps_ia + omega2);
-            C_DSCAL(naux, sqrt(lambda), &B_ints[0][i*nvirA + a], 1); 
+            //fprintf(outfile, "   i = %d, a = %d, lambda = %20.14f\n", i, a, lambda);
+            C_DSCAL(noccB*(ULI)nvirB, sqrt(lambda), &B_ints[0][i*nvirB + a], 1); 
         }
     }
+
+    //fprintf(outfile, "  Symmetric Response BS RI Integrals (A|ia)\n");
+    //print_mat(B_ints, naux, nvirB*(ULI)noccB, outfile);
 
     // OK, I lied
     C_DGEMM('N','T', naux, naux, noccB*(ULI)nvirB, 1.0, B_ints[0], noccB*(ULI)nvirB, \
         B_ints[0], noccB*(ULI)nvirB, 0.0, X0_B_[0], naux);
+
+    //fprintf(outfile, "X_0^B:\n");
+    //print_mat(X0_B_, naux, naux, outfile);
 
     free_block(B_ints);     
 }
@@ -634,7 +689,7 @@ double SAPT_DFT::compute_UCHF_disp() {
 
     // Form C_B
     C_DGEMM('N','N', naux, naux, naux, 1.0, Jinv_[0], naux, X0_B_[0], naux, \
-        0.0, Temp1[0], naux);
+        0.0, Temp2[0], naux);
 
     double contribution = -1.0/(2.0*M_PI)*C_DDOT(naux*(ULI)naux, Temp1[0], 1, Temp2[0],1); 
 
@@ -656,7 +711,7 @@ double SAPT_DFT::compute_TDDFT_disp() {
 
     // Form C_B
     C_DGEMM('N','N', naux, naux, naux, 1.0, Jinv_[0], naux, XC_B_[0], naux, \
-        0.0, Temp1[0], naux);
+        0.0, Temp2[0], naux);
 
     double contribution = -1.0/(2.0*M_PI)*C_DDOT(naux*(ULI)naux, Temp1[0], 1, Temp2[0],1); 
 
