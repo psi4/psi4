@@ -76,6 +76,7 @@ class IntegralTransform{
         /**
          * Set up a transformation involving four MO spaces
          *
+         * @param chkpt              The checkpoint object to use for reading orbital info
          * @param spaces             A vector containing smart pointers to the unique space(s) involved
          *                           in any transformations that this object will perform
          * @param transformationType The type of transformation, described by the
@@ -89,7 +90,8 @@ class IntegralTransform{
          * @param initialize         Whether to initialize during construction or not.  Useful if some
          *                           options need to be tweaked before initialization.
          */
-        IntegralTransform(SpaceVec spaces,
+        IntegralTransform(shared_ptr<Chkpt> chkpt,
+                          SpaceVec spaces,
                           TransformationType transformationType = Restricted,
                           OutputType outputType = DPDOnly,
                           MOOrdering moOrdering = QTOrder,
@@ -147,11 +149,6 @@ class IntegralTransform{
         void set_dpd_id(int n) {_myDPDNum = n;}
         /// The number of the DPD instance used in the transformation
         int get_dpd_id() const {return _myDPDNum;}
-
-        /// Get the chkpt object being used by this object
-        shared_ptr<Chkpt> get_chkpt() const {return _chkpt;}
-        /// Set the checkpoint object to be used.  You must delay initialization in the ctor for this to work.
-        void set_chkpt(shared_ptr<Chkpt> chkpt) {_chkpt = chkpt;}
 
         /// Get the psio object being used by this object
         shared_ptr<PSIO> get_psio() const {return _psio;}
