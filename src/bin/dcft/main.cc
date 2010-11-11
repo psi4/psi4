@@ -18,7 +18,6 @@ dcft(Options &options)
 {
     // Start the timers
     tstart();
-    chkpt_init(PSIO_OPEN_OLD);
 
     fprintf(outfile,"\n\n\t\t*******************************************\n");
     fprintf(outfile,    "\t\t*  DCFT - A Density Cumulant Functional   *\n");
@@ -29,9 +28,6 @@ dcft(Options &options)
     // but one fine day, main might do something a bit more elaborate...
     DCFTSolver dcft(options);
     dcft.compute();
-
-    // Close checkpoint
-    chkpt_close();
 
     // Shut down the timers
     tstop();

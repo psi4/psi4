@@ -7,18 +7,19 @@
 
 using namespace psi;
 
-IntegralTransform::IntegralTransform(SpaceVec spaces,
+IntegralTransform::IntegralTransform(shared_ptr<Chkpt> chkpt,
+                                     SpaceVec spaces,
                                      TransformationType transformationType,
                                      OutputType outputType,
                                      MOOrdering moOrdering,
                                      FrozenOrbitals frozenOrbitals,
                                      bool init):
+            _chkpt(chkpt),
             _transformationType(transformationType),
             _moOrdering(moOrdering),
             _outputType(outputType),
             _uniqueSpaces(spaces),
             _frozenOrbitals(frozenOrbitals),
-            _chkpt(_default_chkpt_lib_),
             _psio(_default_psio_lib_),
             _Ca(NULL),
             _Cb(NULL)
