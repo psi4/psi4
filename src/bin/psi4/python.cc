@@ -20,6 +20,7 @@
 #include <sstream>
 #include "script.h"
 #include "libchkpt/chkpt.hpp"
+#include "libpsio/psio.hpp"
 #include "liboptions/liboptions.h"
 #include <libmints/molecule.h>
 #include <libmints/pointgrp.h>
@@ -126,7 +127,7 @@ int py_psi_plugin(std::string fullpathname)
     fflush(outfile);
 
     // Have the plugin copy the environment to get current options.
-    info.init_plugin(Communicator::world, Process::environment);
+    info.init_plugin(Communicator::world, Process::environment, _default_chkpt_lib_, _default_psio_lib_);
 
     // Call the plugin
     int ret = info.plugin(Process::environment.options);

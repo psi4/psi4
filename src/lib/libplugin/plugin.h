@@ -1,5 +1,6 @@
 #include <psiconfig.h>
 #include <psi4-dec.h>
+#include <libchkpt/chkpt.hpp>
 #include <libparallel/parallel.h>
 
 namespace psi {
@@ -7,10 +8,12 @@ namespace psi {
     // Useful typedef's
     typedef PsiReturnType (*plugin_t)(Options &);
     typedef int (*read_options_t)(std::string, Options&);
-    typedef void (*init_plugin_t)(const shared_ptr<Communicator>& comm, const Process::Environment& env);
+    typedef void (*init_plugin_t)(const shared_ptr<Communicator>& comm, const Process::Environment& env,
+                                  const shared_ptr<Chkpt> &chkpt, const shared_ptr<PSIO> &psio);
 
     // The following lines are used in plugins
-    extern "C" void init_plugin(const shared_ptr<psi::Communicator>& comm, const psi::Process::Environment& env);
+    extern "C" void init_plugin(const shared_ptr<psi::Communicator>& comm, const psi::Process::Environment& env,
+                                const shared_ptr<Chkpt> &chkpt, const shared_ptr<PSIO> &psio);
     #define INIT_PLUGIN psi::init_plugin_t init_plugin_p = &psi::init_plugin;
 
     // The following lines are used by the PSI4 driver.
