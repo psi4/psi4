@@ -61,7 +61,7 @@ plugin_info plugin_load(std::string& plugin_pathname)
     }
 
     // Tell the plugin to initialize itself (found in libplugin)
-    info.init_plugin(Communicator::world, Process::environment);
+    info.init_plugin(Communicator::world, Process::environment, _default_chkpt_lib_, _default_psio_lib_);
 
     // Store the name of the plugin for read_options
     boost::to_upper(info.name);
