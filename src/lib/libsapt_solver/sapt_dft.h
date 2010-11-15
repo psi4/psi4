@@ -53,6 +53,8 @@ private:
 
 protected:
     virtual void print_header();
+    virtual void disp20();
+    virtual void exch_disp20();
     virtual double print_results();
 
 public:
