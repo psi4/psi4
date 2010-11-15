@@ -1,10 +1,10 @@
 /*! \defgroup CINTS cints: The Integral Computation Suite */
 
 /*!
-  \file
-  \ingroup CINTS
-  \brief Integral Computation Module
-*/
+ \file
+ \ingroup CINTS
+ \brief Integral Computation Module
+ */
 #include<cstdio>
 #include<cstdlib>
 #include<cmath>
@@ -67,20 +67,19 @@ void deriv1_fock(void);
 #include <Tools/cdsalc.h>
 
 namespace psi {
-  namespace cints {
+namespace cints {
 
-  /*-------------------------------
-    External functions declaration
-    -------------------------------*/
-    void init_globals();
-    void check_max_am();
+/*-------------------------------
+ External functions declaration
+ -------------------------------*/
+void init_globals();
+void check_max_am();
 
 //! CINTS main procedure.
-PsiReturnType cints(Options & options/*, int argc, char *argv[]*/)
-{
+PsiReturnType cints(Options & options/*, int argc, char *argv[]*/) {
   try {
     /*--- Local variables ---*/
-    int i,j,k,l,m,count;
+    int i, j, k, l, m, count;
 
     init_globals();
     start_io();
@@ -95,13 +94,14 @@ PsiReturnType cints(Options & options/*, int argc, char *argv[]*/)
     init_molecule();
     init_symmetry();
     init_basisset();
+
     check_max_am();
     init_dcr();
     init_gto();
 
     /* If need to compute derivatives over SO -- compute SALC data */
-    if (UserOptions.make_deriv1 && UserOptions.symm_ints)
-      init_cdsalc();
+    //if (UserOptions.make_deriv1 && UserOptions.symm_ints) init_cdsalc();
+    init_cdsalc(); // just do this
 
     /*--- Print out some stuff ---*/
     print_scalars();
@@ -110,74 +110,69 @@ PsiReturnType cints(Options & options/*, int argc, char *argv[]*/)
     /*--- Compute the integrals ---*/
 #ifdef INCLUDE_Default_Ints
     if (UserOptions.make_oei) {
-      /* Molecule.Enuc = */ compute_enuc();
+      /* Molecule.Enuc = */compute_enuc();
       chkpt_wt_enuc(Molecule.Enuc);
       oe_ints();
     }
-    if (UserOptions.make_eri)
-      te_ints();
+    if (UserOptions.make_eri) te_ints();
 #endif
 #ifdef INCLUDE_Fock
-    if (UserOptions.make_fock)
-      fock();
+    if (UserOptions.make_fock) fock();
 #endif
     /*--- Compute the derivative integrals ---*/
 #ifdef INCLUDE_Default_Deriv1
-    if (UserOptions.make_deriv1)
-      deriv1();
+    if (UserOptions.make_deriv1) deriv1();
 #endif
 
     /*--- Compute second derivative integrals ---*/
 #ifdef INCLUDE_Default_Deriv2
-    if (UserOptions.make_deriv2)
-      deriv2();
+    if (UserOptions.make_deriv2) deriv2();
 #endif
 
 #ifdef INCLUDE_OEProp_Ints
-    if (UserOptions.make_oeprop)
-      oeprop_ints();
+    if (UserOptions.make_oeprop) oeprop_ints();
 #endif
 #ifdef INCLUDE_MP2
-    if (UserOptions.make_mp2)
-      mp2();
+    if (UserOptions.make_mp2) mp2();
 #endif
 #ifdef INCLUDE_MkPT2
     if (UserOptions.make_mkpt2_ints)
-      run_mkpt2();
+    run_mkpt2();
 #endif
 #ifdef INCLUDE_R12_Ints
     if (UserOptions.make_r12ints)
-      r12_te_ints();
+    r12_te_ints();
 #endif
 #ifdef INCLUDE_MP2R12
     if (UserOptions.make_mp2r12)
-      mp2r12();
+    mp2r12();
 #endif
 #ifdef INCLUDE_CC
     if (UserOptions.make_cc_bt2)
-      direct_cc();
+    direct_cc();
 #endif
 #ifdef INCLUDE_GIAO_Deriv
     if (UserOptions.make_giao_deriv)
-      giao_deriv();
+    giao_deriv();
 #endif
 
     /*--- Cleanup ---*/
-    if (UserOptions.make_deriv1 && UserOptions.symm_ints)
-      cleanup_cdsalc();
+    if (UserOptions.make_deriv1 && UserOptions.symm_ints) cleanup_cdsalc();
     cleanup_gto();
     cleanup_symmetry();
     cleanup_basisset();
     cleanup_molecule();
 
     stop_io();
-  } catch (std::exception e) {
+  }
+  catch (std::exception e) {
     std::cerr << e.what() << std::endl;
     std::cerr << "cints failed due to errors\n";
-    punt(const_cast<char*>(e.what()));
+    punt(const_cast<char*> (e.what()));
   }
-  return(Success);
+  return (Success);
 }
 
-}}
+}
+}
 

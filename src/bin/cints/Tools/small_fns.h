@@ -14,5 +14,6 @@ void punt(char* message);
 double distance_calc(struct coordinates g1, struct coordinates g2);
 double ***init_box(int, int, int);
 void free_box(double ***, int, int);
+long int ipow(int a, int b);
 }}
 #endif

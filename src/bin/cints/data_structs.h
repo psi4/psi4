@@ -47,6 +47,7 @@ namespace psi {
 			      which the radial part of the first basis function
 			      drops below BasisSet.thresh */
       int *trans_vec;      /* shell symmetry transformation vector */
+      bool *span;          /* flags to indicate which irreps are spanned by orbitals in a shell */
     };
     
     struct coordinates{
@@ -81,6 +82,7 @@ namespace psi {
       double **lagr;
       double Smax;
       double Dmax;
+      bool *span; /* irreps spanned by orbital products in shell pair */
     };
     
     struct unique_shell_pair{
@@ -117,6 +119,7 @@ namespace psi {
     enum scftype {rhf = 0, uhf = 1, rohf = 2, twocon = 3};
     enum frametype {canonical = 0, reference = 1};
     
+    // UserOptions_t
     typedef struct {
       char *wfn;                         /* Wavefunction */
       char *dertype;                     /* Derivative type */
@@ -155,6 +158,7 @@ namespace psi {
       int empirical_dispersion;          /* add grad to empirical dispersion terms? */
     } UserOptions_t;
     
+    // BasisSet_t
     typedef struct {
       int num_prims;                     /* number of primitive gaussians */
       int num_shells;                    /* number of shells */
@@ -173,6 +177,7 @@ namespace psi {
       
     } BasisSet_t;
     
+    // SymmetryInfo_t
     typedef struct {
       int nirreps;                       /* number of irreps */
       int max_stab_index;                /* maximum stabilizer index */
@@ -200,10 +205,12 @@ namespace psi {
       double **usotao;                   /* SO to (basis functions if puream && !make_fock, AO otherwise)
 					    transformation matrix */
       double **cdsalc2cd;                /* Cartesian displacement SALCs (in columns) */
+      int *uso2shell;                     /* provides map from absolute symmetry orbital number to contributing unique shell */
       struct unique_shell_pair **us_pairs; /* unique shell symmetry info */
+
     } SymmetryInfo_t;
     
-
+    // Molecule_t
     typedef struct {
       int num_atoms;                     /* number of atoms */
       double Enuc;                       /* nuclear repulsion energy */
@@ -212,6 +219,7 @@ namespace psi {
       double **Rref;                     /* rotation back to reference frame */
     } Molecule_t;
     
+    // IOUnits_t
     typedef struct {
       int itap30;               /* Checkpoint file */
       int itap33;               /* SO ERI file in IWL format */
@@ -244,6 +252,7 @@ namespace psi {
       int itapD1ERI_SO;         /* SO derivative ERI integrals are stored in files itapD1ERI_SO, itapD1ERI_SO+1, ... itapD1ERI_SO+3*natoms */
     } IOUnits_t;
     
+    // GTOs_t
     typedef struct {
       double **bf_norm;                  /* "angular" parts of the normalization constants for cartesian GTOs of each
 					    angular momentum level */
@@ -256,6 +265,7 @@ namespace psi {
       int ***pp2cc_rowlength;            /* see above */
     } GTOs_t;
     
+    // Fm_Eval_t
     typedef struct {
       double **grid;            /* Table of "exact" Fm(T) values. Row index corresponds to
 				   values of T (max_T+1 rows), column index to values
@@ -274,6 +284,7 @@ namespace psi {
 							      for given T and l */
     } Fm_Eval_t;
     
+    // MOInfo_t
     typedef struct {
       double Escf;              /* SCF energy */
       double Ecorr;             /* Correlation energy */
@@ -345,7 +356,7 @@ namespace psi {
 
     } MOInfo_t;
     
-    
+    // CCInfo_t
     typedef struct {
       double **T2_s;  /* source T2's */
       double **T2_t;  /* target T2's */

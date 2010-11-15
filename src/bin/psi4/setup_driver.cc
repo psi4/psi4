@@ -63,7 +63,7 @@ setup_driver(Options &options)
     dispatch_table["CCLAMBDA"]  = &(psi::cclambda::cclambda);
     dispatch_table["CCDENSITY"] = &(psi::ccdensity::ccdensity);
     dispatch_table["OEPROP"]    = &(psi::oeprop::oeprop);
-    dispatch_table["TRANSQT"]    = &(psi::transqt::transqt);
+    dispatch_table["TRANSQT"]   = &(psi::transqt::transqt);
 }
 
 } // Namespaces

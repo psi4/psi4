@@ -153,4 +153,14 @@ void free_box(double ***box, int a, int b)
   free(box);
 
 }
+
+
+/*! compute integer powers of integers */
+long int ipow(int a, int b){
+  int r = 1;
+  for (int i=0; i<b; i++){
+    r *= a;
+  }
+  return r;
+}
 }}

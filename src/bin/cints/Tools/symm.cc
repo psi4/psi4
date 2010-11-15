@@ -54,11 +54,12 @@ void init_symmetry()
     if (UserOptions.scf_only) {
       Symmetry.so2symblk = init_int_array(Symmetry.num_so);
       count = 0;
-      for(i=0;i<Symmetry.nirreps;i++)
-	for(j=0;j<Symmetry.sopi[i];j++)
-	  Symmetry.so2symblk[count++] = i;
+      for (i = 0; i < Symmetry.nirreps; i++)
+        for (j = 0; j < Symmetry.sopi[i]; j++)
+          Symmetry.so2symblk[count++] = i;
     }
 #endif
+
   }
 
   return;
@@ -74,6 +75,8 @@ void cleanup_symmetry()
   free(Symmetry.us2s);
   free(Symmetry.atom_positions);
   free(Symmetry.cartrep);
+  free(Symmetry.uso2shell);
+
 
   return;
 }
@@ -102,4 +105,5 @@ void init_dp_table(void)
 
   return;
 }
+
 }}
