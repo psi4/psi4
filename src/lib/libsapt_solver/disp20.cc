@@ -18,6 +18,7 @@
 #include <libqt/qt.h>
 #include "structs.h"
 #include "sapt0.h"
+#include "sapt_dft.h"
 #include "sapt2p.h"
 
 namespace psi { namespace sapt {
@@ -103,6 +104,59 @@ void SAPT0::disp20()
     fprintf(outfile,"Dispersion Energy     = %18.12lf mH\n\n",energy*4000.0);
     fflush(outfile);
   }
+}
+
+void SAPT_DFT::disp20()
+{
+  double disp=0.0;
+  double exdisp=0.0;
+
+  double **B_p_AR = get_DF_ints(PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",
+    calc_info_.noccA*calc_info_.nvirA);
+  double **B_p_BS = get_DF_ints(PSIF_SAPT_BB_DF_INTS,"BS RI Integrals",
+    calc_info_.noccB*calc_info_.nvirB);
+  double **ARBS = block_matrix(calc_info_.noccA*calc_info_.nvirA,
+    calc_info_.noccB*calc_info_.nvirB);
+  double **tARBS = block_matrix(calc_info_.noccA*calc_info_.nvirA,
+    calc_info_.noccB*calc_info_.nvirB);
+    
+  C_DGEMM('N','T',calc_info_.noccA*calc_info_.nvirA,calc_info_.noccB*
+    calc_info_.nvirB,calc_info_.nrio,1.0,&(B_p_AR[0][0]),calc_info_.nrio,
+    &(B_p_BS[0][0]),calc_info_.nrio,0.0,&(ARBS[0][0]),calc_info_.noccB*
+    calc_info_.nvirB);
+  
+  for (int a=0, ar=0; a < calc_info_.noccA; a++) {
+  for (int r=0; r < calc_info_.nvirA; r++, ar++) {
+    for (int b=0, bs=0; b < calc_info_.noccB; b++) {
+    for (int s=0; s < calc_info_.nvirB; s++, bs++) {
+      double denom = calc_info_.evalsA[a]+calc_info_.evalsB[b]-
+        calc_info_.evalsA[r+calc_info_.noccA]-
+        calc_info_.evalsB[s+calc_info_.noccB];
+      tARBS[ar][bs] = ARBS[ar][bs]/denom;
+    }}
+  }} 
+
+  disp = 4.0*C_DDOT(calc_info_.noccA*calc_info_.nvirA*calc_info_.noccB*
+    calc_info_.nvirB,&(tARBS[0][0]),1,&(ARBS[0][0]),1);
+
+  psio_->read_entry(PSIF_SAPT_AMPS,"Exch-Disp V_ARBS",(char *)
+    &(ARBS[0][0]),calc_info_.noccA*calc_info_.nvirA*calc_info_.noccB*
+    calc_info_.nvirB*(ULI) sizeof(double));
+
+  exdisp = C_DDOT(calc_info_.noccA*calc_info_.nvirA*calc_info_.noccB*
+    calc_info_.nvirB,&(tARBS[0][0]),1,&(ARBS[0][0]),1);
+
+  free_block(ARBS);
+  free_block(tARBS);
+
+  if (params_.print) {
+    fprintf(outfile,"Disp20                = %18.12lf H\n\n",disp);
+    fprintf(outfile,"Exch-Disp20           = %18.12lf H\n\n",exdisp);
+    fflush(outfile);
+  }
+
+  results_.disp20 = disp;
+  results_.exch_disp20 = exdisp;
 }
 
 void SAPT2p::disp20()

@@ -67,11 +67,12 @@ double SAPT_DFT::compute_energy()
     compute_amplitudes();
     elst10();
     exch10();
-    disp20();
     exch_disp20();
+    disp20();
     cphf_induction();
     ind20();
     exch_ind20();
+    exit(0);
     // Yeah, all of it, sorry Ed
 
     // The density matrices (AO)
