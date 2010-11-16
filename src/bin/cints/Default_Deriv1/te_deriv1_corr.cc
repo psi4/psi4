@@ -277,7 +277,7 @@ void te_deriv1_corr()
           sjj_fao = BasisSet.shells[sjj].fao - 1;
           skk_fao = BasisSet.shells[skk].fao - 1;
           sll_fao = BasisSet.shells[sll].fao - 1;
-          fprintf(debugfile, "\t Start quartet: %d %d %d %d\n", sii, sjj, skk, sll); // jtf
+//          fprintf(debugfile, "\t Start quartet: %d %d %d %d\n", sii, sjj, skk, sll); // jtf
 //          fprintf(debugfile, "Symm:\t %d, %d, %d, %d\n ", Symmetry. );
           do {
             if (buf_offset < buf_size) {
