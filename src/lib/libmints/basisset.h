@@ -227,9 +227,12 @@ public:
     void build_ao_transformation_matrix();
 
     /** Return a BasisSet object containing all shells at center i
-    *
-    * Used for Atomic HF computations for SAD Guesses
-    */
+     *
+     * Used for Atomic HF computations for SAD Guesses
+     *
+     * @param center Atomic center to provide a basis object for.
+     * @returns A new basis set object for the atomic center.
+     */
     boost::shared_ptr<BasisSet> atomic_basis_set(int center);
 
     /** Returns an empty basis set object.
