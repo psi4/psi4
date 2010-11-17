@@ -1,4 +1,3 @@
-
 /*! \file
     \ingroup CINTS
     \brief Enter brief description of file here 
@@ -412,7 +411,7 @@ void te_deriv1_corr()
         }
 
   if (UserOptions.print_lvl >= PRINT_TEDERIV)
-    print_atomvec("Two-electron contribution to the forces (a.u.)", grad_te_local);
+    print_atomvec((char *)"Two-electron contribution to the forces (a.u.)", grad_te_local);
 
 
 
