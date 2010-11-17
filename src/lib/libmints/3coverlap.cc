@@ -4,6 +4,73 @@
 
 using namespace psi;
 
+static void transform3c_1(int, SphericalTransformIter&, double*, double*, int);
+static void transform3c_2(int, SphericalTransformIter&, double*, double*, int, int, int);
+static void transform3c_3(int, SphericalTransformIter&, double*, double*, int, int);
+
+static void transform3c_1(int am, SphericalTransformIter& sti, double *s, double *t, int ncb)
+{
+    memset(t, 0, INT_NPURE(am)*ncb*sizeof(double));
+
+    for (sti.first(); !sti.is_done(); sti.next()) {
+        double *sptr = s + sti.cartindex() * ncb;
+        double *tptr = t + sti.pureindex() * ncb;
+        double coef = sti.coef();
+        for (int cb=0; cb<ncb; ++cb)
+            *(tptr++) += coef * *(sptr++);
+    }
+}
+
+static void transform3c_2(int am, SphericalTransformIter &sti, double *s, double *t, int na, int nc, int nb)
+{
+    int sc = INT_NPURE(am);
+    const int scb = nc * nb;
+    const int tcb = sc * nb;
+
+//    fprintf(outfile, "transform3c_2: s = %p t = %p na = %d nc = %d nb = %d\n", s, t, na, nc, nb); fflush(outfile);
+
+    memset(t, 0, na*tcb*sizeof(double));
+
+    int interval = 0;
+    for (sti.first(); !sti.is_done(); sti.next()) {
+        double *sptr = s + sti.cartindex()*nb;
+        double *tptr = t + sti.pureindex()*nb;
+//        fprintf(outfile, "transform3c_2 in sti loop: sptr = %p tptr = %p\n", sptr, tptr); fflush(outfile);
+        double coef = sti.coef();
+        for (int a=0; a<na; ++a,sptr+=scb, tptr+=tcb) {
+//            fprintf(outfile, "transform3c_2 in a loop: sptr = %p tptr = %p\n", sptr, tptr); fflush(outfile);
+            for (int b=0; b<nb; ++b) {
+//                fprintf(outfile, "transform3c_2 in b loop: sptr = %p tptr = %p\n", sptr, tptr); fflush(outfile);
+                tptr[b] += coef * sptr[b];
+            }
+        }
+        interval++;
+    }
+}
+
+static void transform3c_3(int am, SphericalTransformIter &sti, double *s, double *t, int nac, int nb)
+{
+    const int sb = nb;
+    const int tb = INT_NPURE(am);
+
+    // Clear out target memory
+    memset(t, 0, nac*tb*sizeof(double));
+
+    for (sti.first(); !sti.is_done(); sti.next()) {
+        double *sptr = s + sti.cartindex();
+        double *tptr = t + sti.pureindex();
+        double coef = sti.coef();
+
+        for (int ac=0; ac<nac; ++ac) {
+            *(tptr) += coef * *(sptr);
+
+            // skip ahead to the next ijk
+            sptr += sb;
+            tptr += tb;
+        }
+    }
+}
+
 ThreeCenterOverlapInt::ThreeCenterOverlapInt(std::vector<SphericalTransform>& st,
                                              boost::shared_ptr<BasisSet> bs1,
                                              boost::shared_ptr<BasisSet> bs2,
@@ -11,12 +78,10 @@ ThreeCenterOverlapInt::ThreeCenterOverlapInt(std::vector<SphericalTransform>& st
     : overlap_recur_(bs1->max_am(), bs2->max_am(), bs3->max_am()),
       bs1_(bs1), bs2_(bs2), bs3_(bs3)
 {
-    buffer_ = 0;
-    size_t size;
+    size_t size = INT_NCART(bs1->max_am()) * INT_NCART(bs2->max_am()) * INT_NCART(bs3->max_am());
 
     // Allocate memory for buffer_ storage
     try {
-        size = INT_NCART(bs1->max_am()) * INT_NCART(bs2->max_am()) * INT_NCART(bs3->max_am());
         buffer_ = new double[size];
     }
     catch (std::bad_alloc& e) {
@@ -24,6 +89,24 @@ ThreeCenterOverlapInt::ThreeCenterOverlapInt(std::vector<SphericalTransform>& st
         exit(EXIT_FAILURE);
     }
     memset(buffer_, 0, sizeof(double)*size);
+
+    try {
+        target_ = new double[size];
+    }
+    catch (std::bad_alloc& e) {
+        fprintf(stderr, "Error allocating memory for target_\n");
+        exit(EXIT_FAILURE);
+    }
+    memset(target_, 0, sizeof(double)*size);
+
+    try {
+        tformbuf_ = new double[size];
+    }
+    catch (std::bad_alloc& e) {
+        fprintf(stderr, "Error allocating memory for tformbuf_");
+        exit(EXIT_FAILURE);
+    }
+    memset(tformbuf_, 0, sizeof(double)*size);
 }
 
 ThreeCenterOverlapInt::~ThreeCenterOverlapInt()
@@ -56,7 +139,9 @@ void ThreeCenterOverlapInt::compute_shell(int sh1, int sh2, int sh3)
     compute_pair(bs1_->shell(sh1), bs2_->shell(sh2), bs3_->shell(sh3));
 }
 
-void ThreeCenterOverlapInt::compute_pair(shared_ptr<GaussianShell> sA, shared_ptr<GaussianShell> sC, shared_ptr<GaussianShell> sB)
+void ThreeCenterOverlapInt::compute_pair(shared_ptr<GaussianShell> sA,
+                                         shared_ptr<GaussianShell> sC,
+                                         shared_ptr<GaussianShell> sB)
 {
     int ao132;
     int amA = sA->am();
@@ -168,11 +253,14 @@ void ThreeCenterOverlapInt::compute_pair(shared_ptr<GaussianShell> sA, shared_pt
     }
 
     normalize_am(sA, sC, sB);
+    pure_transform(sA, sC, sB);
 }
 
-void ThreeCenterOverlapInt::normalize_am(shared_ptr<GaussianShell>& sA, shared_ptr<GaussianShell>& sC, shared_ptr<GaussianShell>& sB)
+void ThreeCenterOverlapInt::normalize_am(shared_ptr<GaussianShell>& sA,
+                                         shared_ptr<GaussianShell>& sC,
+                                         shared_ptr<GaussianShell>& sB)
 {
-    // Integrals are done. Normalize for angular momentum
+    // Assume integrals are done. Normalize for angular momentum
     int amA = sA->am();
     int amC = sC->am();
     int amB = sB->am();
@@ -205,5 +293,107 @@ void ThreeCenterOverlapInt::normalize_am(shared_ptr<GaussianShell>& sA, shared_p
                 }
             }
         }
+    }
+}
+
+void ThreeCenterOverlapInt::pure_transform(shared_ptr<GaussianShell>& s1,
+                                           shared_ptr<GaussianShell>& s2,
+                                           shared_ptr<GaussianShell>& s3)
+{
+    // Get the transforms from the basis set
+    SphericalTransformIter trans1(bs1_->spherical_transform(s1->am()));
+    SphericalTransformIter trans2(bs2_->spherical_transform(s2->am()));
+    SphericalTransformIter trans3(bs3_->spherical_transform(s3->am()));
+
+    // Get the angular momentum for each shell
+    int am1 = s1->am();
+    int am2 = s2->am();
+    int am3 = s3->am();
+
+    // Get number of Cartesian functions for each shell
+    int nao1 = s1->ncartesian();
+    int nao2 = s2->ncartesian();
+    int nao3 = s3->ncartesian();
+
+    int nbf1 = s1->nfunction();
+    int nbf2 = s2->nfunction();
+    int nbf3 = s3->nfunction();
+
+    // Get if each shell has pure functions
+    bool is_pure1 = s1->is_pure();
+    bool is_pure2 = s2->is_pure();
+    bool is_pure3 = s3->is_pure();
+
+    double *source1, *target1;
+    double *source2, *target2;
+    double *source3, *target3;
+
+    double *source = buffer_;
+    double *target = target_;
+    double *tmpbuf = tformbuf_;
+
+    int transform_index = 4*is_pure1 + 2*is_pure2 + is_pure3;
+    switch (transform_index) {
+    case 0:  // no transform
+        break;
+
+    case 1:  // (a|c|bT)
+        source3 = source;
+        target3 = target;
+        break;
+
+    case 2:  // (a|cT|b)
+        source2 = source;
+        target2 = target;
+        break;
+
+    case 3:  // (a|cT|bT)
+        source3 = source;
+        target3 = tmpbuf;
+        source2 = tmpbuf;
+        target2 = target;
+        break;
+
+    case 4:  // (aT|c|b)
+        source1 = source;
+        target1 = target;
+        break;
+
+    case 5:  // (aT|c|bT)
+        source3 = source;
+        target3 = tmpbuf;
+        source1 = tmpbuf;
+        target1 = target;
+        break;
+
+    case 6:  // (aT|cT|b)
+        source2 = source;
+        target2 = tmpbuf;
+        source1 = tmpbuf;
+        target1 = target;
+        break;
+
+    case 7: // (aT|cT|bT)
+        source3 = source;
+        target3 = tmpbuf;
+        source2 = tmpbuf;
+        target2 = source;
+        source1 = source;
+        target1 = target;
+        break;
+    }
+
+    size_t size = 1;
+    if (is_pure3) {
+        transform3c_3(am3, trans3, source3, target3, nao1*nao2, nao3);
+        size *= nbf3;
+    }
+    if (is_pure2) {
+        transform3c_2(am2, trans2, source2, target2, nao1, nao2, nbf3);
+        size *= nbf2;
+    }
+    if (is_pure1) {
+        transform3c_1(am1, trans1, source1, target1, nbf2*nbf3);
+        size *= nbf1;
     }
 }
