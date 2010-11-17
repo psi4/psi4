@@ -23,8 +23,14 @@ protected:
     boost::shared_ptr<BasisSet> bs2_;
     boost::shared_ptr<BasisSet> bs3_;
 
-    /// Buffer to hold the final integrals.
+    /// Buffer to hold the source integrals.
     double *buffer_;
+
+    /// Buffer to hold the target integrals.
+    double *target_;
+
+    /// Buffer used during the spherical transformation.
+    double *tformbuf_;
 
     void compute_pair(shared_ptr<GaussianShell> s1,
                       shared_ptr<GaussianShell> s2,
@@ -47,7 +53,7 @@ public:
     boost::shared_ptr<BasisSet> basis3();
 
     /// Buffer where the integrals are placed.
-    const double *buffer() const { return buffer_; }
+    const double *buffer() const { return target_; }
 
     /// Compute the integrals of the form (a|c|b).
     virtual void compute_shell(int, int, int);
@@ -58,9 +64,9 @@ public:
                       boost::shared_ptr<GaussianShell>&);
 
     /// Perform pure (spherical) transform.
-    void pure_transform(boost::shared_ptr<GaussianShell>,
-                        boost::shared_ptr<GaussianShell>,
-                        boost::shared_ptr<GaussianShell>);
+    void pure_transform(boost::shared_ptr<GaussianShell>&,
+                        boost::shared_ptr<GaussianShell>&,
+                        boost::shared_ptr<GaussianShell>&);
 };
 
 }
