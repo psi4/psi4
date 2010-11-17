@@ -811,6 +811,11 @@ void Matrix::gemm(bool transa, bool transb, double alpha, shared_ptr<Matrix> a, 
     gemm(transa, transb, alpha, a.get(), const_cast<const Matrix*>(&b), beta);
 }
 
+void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix& a, const Matrix& b, double beta)
+{
+    gemm(transa, transb, alpha, &a, &b, beta);
+}
+
 double Matrix::vector_dot(Matrix* rhs)
 {
     double sum = 0.0;
@@ -951,28 +956,6 @@ void Matrix::back_transform(Matrix& transformer)
 
     temp.gemm(false, true, 1.0, *this, transformer, 0.0);
     gemm(false, false, 1.0, transformer, temp, 0.0);
-}
-
-void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix& a, const Matrix& b, double beta)
-{
-    char ta = transa ? 't' : 'n';
-    char tb = transb ? 't' : 'n';
-    int h, m, n, k, nca, ncb, ncc;
-
-    for (h=0; h<nirreps_; ++h) {
-        m = rowspi_[h];
-        n = colspi_[h];
-        k = transa ? a.rowspi_[h] : a.colspi_[h];
-        nca = transa ? m : k;
-        ncb = transb ? k : n;
-        ncc = n;
-
-        if (m && n && k) {
-            C_DGEMM(ta, tb, m, n, k, alpha, &(a.matrix_[h][0][0]),
-                    nca, &(b.matrix_[h][0][0]), ncb, beta, &(matrix_[h][0][0]),
-                    ncc);
-        }
-    }
 }
 
 double Matrix::vector_dot(Matrix& rhs)
