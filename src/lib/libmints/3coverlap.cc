@@ -27,20 +27,15 @@ static void transform3c_2(int am, SphericalTransformIter &sti, double *s, double
     const int scb = nc * nb;
     const int tcb = sc * nb;
 
-//    fprintf(outfile, "transform3c_2: s = %p t = %p na = %d nc = %d nb = %d\n", s, t, na, nc, nb); fflush(outfile);
-
     memset(t, 0, na*tcb*sizeof(double));
 
     int interval = 0;
     for (sti.first(); !sti.is_done(); sti.next()) {
         double *sptr = s + sti.cartindex()*nb;
         double *tptr = t + sti.pureindex()*nb;
-//        fprintf(outfile, "transform3c_2 in sti loop: sptr = %p tptr = %p\n", sptr, tptr); fflush(outfile);
         double coef = sti.coef();
         for (int a=0; a<na; ++a,sptr+=scb, tptr+=tcb) {
-//            fprintf(outfile, "transform3c_2 in a loop: sptr = %p tptr = %p\n", sptr, tptr); fflush(outfile);
             for (int b=0; b<nb; ++b) {
-//                fprintf(outfile, "transform3c_2 in b loop: sptr = %p tptr = %p\n", sptr, tptr); fflush(outfile);
                 tptr[b] += coef * sptr[b];
             }
         }
@@ -112,6 +107,8 @@ ThreeCenterOverlapInt::ThreeCenterOverlapInt(std::vector<SphericalTransform>& st
 ThreeCenterOverlapInt::~ThreeCenterOverlapInt()
 {
     delete[] buffer_;
+    delete[] target_;
+    delete[] tformbuf_;
 }
 
 boost::shared_ptr<BasisSet> ThreeCenterOverlapInt::basis()
