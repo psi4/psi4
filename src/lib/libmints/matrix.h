@@ -55,8 +55,7 @@ protected:
         double** mat = (double**) malloc(sizeof(double*)*nrow);
         const size_t size = sizeof(double)*nrow*ncol;
         mat[0] = (double*) malloc(size);
-        //bzero((void*)mat[0],size);
-        memset((void *)mat[0], '\0', size);
+        memset((void *)mat[0], 0, size);
         for(int r=1; r<nrow; ++r) mat[r] = mat[r-1] + ncol;
         return mat;
     }
@@ -70,7 +69,11 @@ protected:
 public:
     /// Default constructor, zeros everything out
     Matrix();
-    /// Constructor, zeros everything out, sets name_
+    /**
+     * Constructor, zeros everything out, sets name_
+     *
+     * @param name Name of the matrix, used in saving and printing.
+     */
     Matrix(std::string name);
     /// Explicit copy reference constructor
     explicit Matrix(const Matrix& copy);
@@ -79,65 +82,173 @@ public:
 
     /// Explicit copy pointer constructor
     explicit Matrix(const Matrix* copy);
-    /// Constructor, sets up the matrix
+    /**
+     * Constructor, sets up the matrix
+     *
+     * @param nirreps Number of blocks.
+     * @param rowspi Array of length nirreps giving row dimensionality.
+     * @param colspi Array of length nirreps giving column dimensionality.
+     */
     Matrix(int nirreps, int *rowspi, int *colspi);
-    /// Constructor, sets name_, and sets up the matrix
+    /**
+     * Constructor, sets name_, and sets up the matrix
+     *
+     * @param name Name of the matrix.
+     * @param nirreps Number of blocks.
+     * @param rowspi Array of length nirreps giving row dimensionality.
+     * @param colspi Array of length nirreps giving column dimensionality.
+     */
     Matrix(std::string name, int nirreps, int *rowspi, int *colspi);
 
-    /// Contructs a Matrix from a dpdfile2, which must already be initialized.
+    /**
+     * Contructs a Matrix from a dpdfile2
+     *
+     * @param inFile dpdfile2 object to replicate (must already be initialized).
+     */
     Matrix(dpdfile2 *inFile);
 
-    /// Constructor using Dimension's
+    /**
+     * Constructor using Dimension objects to define order and dimensionality.
+     *
+     * @param name Name of the matrix.
+     * @param rows Dimension object providing row information.
+     * @param cols Dimension object providing column information.
+     */
     Matrix(std::string& name, const Dimension& rows, const Dimension& cols);
 
     /// Destructor, frees memory
     ~Matrix();
 
-    /// Initializes a matrix
+    /**
+     * Initializes a matrix
+     *
+     * @param nirreps Number of blocks in this matrix.
+     * @param rowspi Array of length nirreps giving row dimensionality.
+     * @param colspi Array of length nirreps giving column dimensionality.
+     */
     void init(int nirreps, int *rowspi, int *colspi, std::string name = "");
 
     /// Creates an exact copy of the matrix and returns it.
     Matrix* clone() const;
-    /// Copies cp's data onto this
+
+    /**
+     * @{
+     * Copies data onto this
+     * @param cp Object to copy from.
+     */
     void copy(Matrix* cp);
     void copy(Matrix& cp);
     void copy(boost::shared_ptr<Matrix> cp);
     void copy(const Matrix& cp);
     void copy(const Matrix* cp);
+    /** @} */
 
-    /// Load a matrix from a PSIO object from fileno with tocentry of size nso
+    /**
+     * @{
+     * Load a matrix from a PSIO object from fileno with tocentry of size nso
+     *
+     * @param psio PSIO object to read with.
+     * @param fileno File to read from.
+     * @param tocentry Table of contents entry to use.
+     * @param nso Number of orbitals to use to read in.
+     * @returns true if loaded, false otherwise.
+     */
     bool load(psi::PSIO* psio, unsigned int fileno, char *tocentry, int nso);
     bool load(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, char *tocentry, int nso);
+    /** @} */
 
-    /// Saves the matrix in ASCII format to filename
+    /**
+     * @{
+     * Saves the matrix in ASCII format to filename
+     *
+     * @param filename Name of the file to write to.
+     * @param append Append to the file?
+     * @param saveLowerTriangle Save only the lower triangle?
+     * @param saveSubBlocks Save three index quantities denoting symmetry block (true), or convert to a full matrix and save that (false)?
+     */
     void save(const char *filename, bool append=true, bool saveLowerTriangle = true, bool saveSubBlocks=false);
     void save(std::string filename, bool append=true, bool saveLowerTriangle = true, bool saveSubBlocks=false) {
         save(filename.c_str(), append, saveLowerTriangle, saveSubBlocks);
     }
-    /// Saves the block matrix to PSIO object with fileno and with the toc position of the name of the matrix
+    /** @} */
+
+    /**
+     * @{
+     * Saves the block matrix to PSIO object with fileno and with the toc position of the name of the matrix
+     *
+     * @param psio PSIO object to write with.
+     * @param fileno File to write to.
+     * @param saveSubBlocks Save information suffixing point group label.
+     */
     void save(psi::PSIO* psio, unsigned int fileno, bool saveSubBlocks=true);
     void save(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool saveSubBlocks=true);
+    /** @} */
 
-    /// Set every element of matrix_ to val
+    /**
+     * Set every element of matrix_ to val
+     *
+     * @param val Value to apply to entire matrix.
+     */
     void set(double val);
-    /// Copies lower triangle tri to matrix_, calls tri_to_sq
+
+    /**
+     * Copies lower triangle tri to matrix_, calls tri_to_sq
+     *
+     * @param tri Lower triangle matrix to set to.
+     */
     void set(const double *tri);
-    /// Copies sq to matrix_
+
+    /**
+     * @{
+     * Copies sq to matrix_
+     *
+     * @param sq Double matrix to copy over.
+     */
     void set(const double **sq);
     void set(double **sq);
+    /** @} */
 
-    /// Copies sq to matrix_
+    /**
+     * @{
+     * Copies sq to matrix_
+     *
+     * @param sq SimpleMatrix object to set this matrix to.
+     */
     void set(SimpleMatrix *sq);
     void set(boost::shared_ptr<SimpleMatrix> sq);
-    /// Set a single element of matrix_
+    /** @} */
+
+    /**
+     * Set a single element of matrix_
+     *
+     * @param h Subblock to address
+     * @param m Row
+     * @param n Column
+     * @param val Value
+     */
     void set(int h, int m, int n, double val) { matrix_[h][m][n] = val; }
-    /// Set the diagonal of matrix_ to vec
+
+    /**
+     * @{
+     * Set the diagonal of matrix_ to vec
+     *
+     * @param vec Vector to apply to the diagonal.
+     */
     void set(Vector *vec);
     void set(Vector& vec);
     void set(boost::shared_ptr<Vector> vec);
+    /** @} */
 
-    /// Returns a single element of matrix_
+    /**
+     * Returns a single element of matrix_
+     *
+     * @param h Subblock
+     * @param m Row
+     * @param n Column
+     * @returns value at position (h, m, n)
+     */
     double get(int h, int m, int n) { return matrix_[h][m][n]; }
+
     /// Returns matrix_
     double **to_block_matrix() const;
     double *to_lower_triangle() const;

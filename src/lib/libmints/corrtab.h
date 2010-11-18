@@ -28,10 +28,6 @@
 // The U.S. Government is granted a limited license as per AL 91-7.
 //
 
-#ifdef __GNUC__
-#pragma interface
-#endif
-
 #ifndef _math_symmetry_corrtab_h
 #define _math_symmetry_corrtab_h
 
@@ -42,7 +38,7 @@
 namespace psi {
 
 // //////////////////////////////////////////////////////////////////
- 
+
 /** The CorrelationTable class provides a correlation
     table between two point groups.
 */

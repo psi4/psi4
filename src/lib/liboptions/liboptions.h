@@ -479,6 +479,7 @@ namespace psi {
     }
   };
 
+  #pragma warning disable 654
   class ArrayType : public DataType
   {
     std::vector<Data> array_;
@@ -542,6 +543,7 @@ namespace psi {
     }
   };
 
+  #pragma warning disable 654
   class MapType : public DataType
   {
     std::map<std::string, Data> keyvals_;
