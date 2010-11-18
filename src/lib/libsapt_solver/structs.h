@@ -110,6 +110,7 @@ struct calcinfo {
   double *diagAA; // Diagonal (AA|P) type fitting integrals (summed)
   double *diagBB; // Diagonal (BB|P) type fitting integrals (summed)
 
+  double **C; // SCF coefficient matrix of dimer
   double **CA; // SCF coefficient matrix of monomer A
   double **CB; // SCF coefficient matrix of monomer B
   double **sA; // Approximate CPHF coefficients

@@ -300,6 +300,10 @@ void SAPT2B::get_calc_info()
     psio_->read_entry(PSIF_SAPT_DIMER,"Dimer Overlap Integrals",(char *) 
       &calc_info_.S[0], sizeof(double)*calc_info_.nsotri);
   
+    calc_info_.C = block_matrix(calc_info_.nso,calc_info_.nmo);
+    psio_->read_entry(PSIF_SAPT_DIMER,"Dimer HF Coefficients",(char *) 
+      &(calc_info_.C[0][0]), sizeof(double)*calc_info_.nmo*calc_info_.nso);
+
     psio_->close(PSIF_SAPT_DIMER,1);
   
     calc_info_.ioff = (int *) malloc (calc_info_.nsotri * sizeof(int));
@@ -379,6 +383,7 @@ void SAPT2B::get_calc_info()
 
 void SAPT2B::cleanup_calc_info()
 { 
+    free_block(calc_info_.C);
     free_block(calc_info_.CA);
     free_block(calc_info_.CB);
     free_block(calc_info_.S_AB);
