@@ -123,7 +123,7 @@ case $withval in
     PSI_INTEGRALS_STANDARD=1
     ;;
   *)
-    AC_MSG_WARN([did not recognize value $withval. will assume the default]) 
+    AC_MSG_WARN([did not recognize value $withval. will assume the default])
     ;;
 esac
 ])
@@ -186,9 +186,9 @@ AC_ARG_WITH(f77symbol,[  --with-f77symbol        FORTRAN77 symbol convention
                           Allowed values are:
                             lc  : lower-case
                             lcu : lower-case with underscore (default)
-                            uc  : upper-case                            
+                            uc  : upper-case
                             ucu : upper-case with underscore],[
-case $withval in            
+case $withval in
   lc)
     FC_SYMBOL=1
     ;;
@@ -202,7 +202,7 @@ case $withval in
     FC_SYMBOL=4
     ;;
   *)
-    AC_MSG_WARN([did not recognize value $withval. will assume lower-case with underscore])    
+    AC_MSG_WARN([did not recognize value $withval. will assume lower-case with underscore])
     FC_SYMBOL=2
     ;;
 esac
@@ -214,18 +214,18 @@ if test -n "$F77" ; then
   /bin/rm -f ffunc.f flink.c
   echo "      subroutine ffunc()" > ffunc.f
   echo "      return" >> ffunc.f
-  echo "      end" >> ffunc.f 
+  echo "      end" >> ffunc.f
   $F77 -c ffunc.f 1>/dev/null 2>/dev/null
-  echo "main(){ FF(); return 0; }" > flink.c   
+  echo "main(){ FF(); return 0; }" > flink.c
   if $CC -o flink -DFF=ffunc flink.c ffunc.o $LDFLAGS $LIBS 1>/dev/null 2>/dev/null; then
     AC_MSG_RESULT(same as C)
-    FC_SYMBOL=1  
+    FC_SYMBOL=1
   elif $CC -o flink -DFF=ffunc_ flink.c ffunc.o $LDFLAGS $LIBS 1>/dev/null 2>/dev/null; then
     AC_MSG_RESULT(lowercase with underscore)
-    FC_SYMBOL=2  
+    FC_SYMBOL=2
   elif $CC -o flink -DFF=FFUNC flink.c ffunc.o $LDFLAGS $LIBS 1>/dev/null 2>/dev/null; then
     AC_MSG_RESULT(uppercase)
-    FC_SYMBOL=3  
+    FC_SYMBOL=3
   elif $CC -o flink -DFF=FFUNC_ flink.c ffunc.o $LDFLAGS $LIBS 1>/dev/null 2>/dev/null; then
     AC_MSG_RESULT(uppercase with underscore)
     FC_SYMBOL=4
@@ -250,7 +250,7 @@ AC_PROG_LEX
 AC_PROG_YACC
 AC_PROG_INSTALL
 AC_PROG_LN_S
-AC_CHECK_PROGS(AR,ar,ar) 
+AC_CHECK_PROGS(AR,ar,ar)
 AC_ARG_WITH(ar,
 [  --with-ar               Names the archive creator.],
 AR=$withval
@@ -295,7 +295,7 @@ AC_MSG_RESULT([Using extra libraries: $withval])
 )
 AC_SUBST(LDLIBS)
 
- 
+
 
 LDFLAGS=
 LIBDIRS=
@@ -307,22 +307,22 @@ AC_MSG_RESULT([Using extra library directories: $withval])
 )
 AC_SUBST(LDFLAGS)
 
- 
+
 
 AC_CHECK_PROGS(PERL,perl,perl) AC_SUBST(PERL)
- 
+
 # Check for python interpreter and libraries
 #  Version 2.4 is required because we call Py_InitializeEx(0)
 AC_PYTHON([2.4])
 
- 
+
 
 AC_PROG_LATEX
 AC_PROG_LATEX2HTML
 AC_PROG_DVIPS
 AC_PROG_BIBTEX
 
- 
+
 
 ####
 # Check for doxygen and it buddies
@@ -345,7 +345,7 @@ fi
 AC_SUBST(DOT_PATH)
 AC_SUBST(HAVE_DOT)
 
- 
+
 
 ########
 ## Check for libraries
@@ -408,7 +408,7 @@ case $FC_SYMBOL in
     ;;
 esac
 
- 
+
 
 SAVE_LIBS=$LIBS
 LIBS="$LIBS $CLIBS $FLIBS"
@@ -440,7 +440,7 @@ if test -z "$BLAS"; then
   LIBS="-latlas $LIBS"
   AC_CHECK_LIB(f77blas, $DGEMM_SYMBOL, BLAS="-lf77blas -latlas")
   LIBS=$SAVE_LIBS2
-fi  
+fi
 if test -z "$BLAS"; then
   AC_CHECK_LIB(mkl, $DGEMM_SYMBOL, BLAS="-lmkl")
 fi
@@ -463,7 +463,7 @@ AC_SUBST(BLAS)
 AC_MSG_RESULT([BLAS library is $BLAS])
 LIBS=$SAVE_LIBS
 
- 
+
 
 # Similar checks for LAPACK, except that sometimes BLAS includes LAPACK
 # Also note that LAPACK often (always?) depends on BLAS
@@ -477,7 +477,7 @@ if test -z "$LAPACK"; then
   else
     AC_CHECK_FUNC($DGEEV_SYMBOL,LAPACK_IN_BLAS=yes)
   fi
-fi 
+fi
 if test -z "$LAPACK_IN_BLAS"; then
   if test -z "$LAPACK"; then
     if test $CC = icc; then
@@ -498,9 +498,11 @@ fi
 AC_SUBST(LAPACK)
 LIBS=$SAVE_LIBS
 
- 
-AC_CHECK_LIB([m], MKL_Free_Buffers, AC_DEFINE([_MKL]),[], $BLAS)
- 
+
+AC_CHECK_LIB([m], MKL_Free_Buffers, AC_DEFINE([HAVE_MKL]),[], $BLAS)
+# The following check is disable until issues arising because of it are resolved.
+#AC_CHECK_LIB([m], mkl_malloc, AC_DEFINE([HAVE_MKL_MALLOC]), [], $BLAS)
+
 
 ########
 ## Check for header files
@@ -509,24 +511,24 @@ AC_CHECK_LIB([m], MKL_Free_Buffers, AC_DEFINE([_MKL]),[], $BLAS)
 # check for header files
 AC_CHECK_HEADERS([errno.h fcntl.h unistd.h stdint.h sys/types.h sys/param.h sys/times.h sys/time.h utime.h time.h])
 # check for C++ headers
-AC_CXX_PROCESS_CHECK([cmath],[#include <cmath>],,[HAVE_CMATH=1],[HAVE_CMATH=0]) 
+AC_CXX_PROCESS_CHECK([cmath],[#include <cmath>],,[HAVE_CMATH=1],[HAVE_CMATH=0])
 #CXXDEF="$CXXDEF -DHAVE_CMATH=$HAVE_CMATH"
 AC_DEFINE_UNQUOTED(HAVE_CMATH,$HAVE_CMATH)
-AC_CXX_PROCESS_CHECK([cstdio],[#include <cstdio>],,[HAVE_CSTDIO=1],[HAVE_CSTDIO=0]) 
+AC_CXX_PROCESS_CHECK([cstdio],[#include <cstdio>],,[HAVE_CSTDIO=1],[HAVE_CSTDIO=0])
 #CXXDEF="$CXXDEF -DHAVE_CSTDIO=$HAVE_CSTDIO"
 AC_DEFINE_UNQUOTED(HAVE_CSTDIO,$HAVE_CSTDIO)
-AC_CXX_PROCESS_CHECK([cstdlib],[#include <cstdlib>],,[HAVE_CSTDLIB=1],[HAVE_CSTDLIB=0]) 
+AC_CXX_PROCESS_CHECK([cstdlib],[#include <cstdlib>],,[HAVE_CSTDLIB=1],[HAVE_CSTDLIB=0])
 #CXXDEF="$CXXDEF -DHAVE_CSTDLIB=$HAVE_CSTDLIB"
 AC_DEFINE_UNQUOTED(HAVE_CSTDLIB,$HAVE_CSTDLIB)
-AC_CXX_PROCESS_CHECK([cstring],[#include <cstring>],,[HAVE_CSTRING=1],[HAVE_CSTRING=0]) 
+AC_CXX_PROCESS_CHECK([cstring],[#include <cstring>],,[HAVE_CSTRING=1],[HAVE_CSTRING=0])
 #CXXDEF="$CXXDEF -DHAVE_CSTRING=$HAVE_CSTRING"
 AC_DEFINE_UNQUOTED(HAVE_CSTRING,$HAVE_CSTRING)
-AC_CXX_PROCESS_CHECK([cstddef],[#include <cstddef>],,[HAVE_CSTDDEF=1],[HAVE_CSTDDEF=0]) 
+AC_CXX_PROCESS_CHECK([cstddef],[#include <cstddef>],,[HAVE_CSTDDEF=1],[HAVE_CSTDDEF=0])
 #CXXDEF="$CXXDEF -DHAVE_CSTDDEF=$HAVE_CSTDDEF"
 AC_DEFINE_UNQUOTED(HAVE_CSTDDEF,$HAVE_CSTDDEF)
 
 # Check for dlfcn.h
-AC_CXX_PROCESS_CHECK([dlfcn.h],[#include <dlfcn.h>],,[HAVE_DLFCN_H=1],[HAVE_DLFCN_H=0]) 
+AC_CXX_PROCESS_CHECK([dlfcn.h],[#include <dlfcn.h>],,[HAVE_DLFCN_H=1],[HAVE_DLFCN_H=0])
 AC_DEFINE_UNQUOTED(HAVE_DLFCN_H,$HAVE_DLFCN_H)
 
 # Check for mpi.h
@@ -556,7 +558,7 @@ AC_DEFINE_UNQUOTED(HAVE_MADNESS,$HAVE_MADNESS)
 ## Check for types
 ########
 
- 
+
 
 #check to see if void* is allowed
 AC_MSG_CHECKING(for void pointers)
@@ -615,15 +617,15 @@ AC_CHECK_LIB(m,exit,CXXLIBS="$CXXLIBS -lm")
 AC_MSG_RESULT(c++ libs: $CXXLIBS)
 AC_SUBST(CXXLIBS)
 
- 
+
 
 PSICPPFLAGS='-I. -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib' AC_SUBST(PSICPPFLAGS)
 AC_SUBST(CPPFLAGS)
 AC_SUBST(top_objdir)
- 
+
 AC_C_CONST
 
- 
+
 
 AC_CHECK_DECLS([putenv],[AC_DEFINE_UNQUOTED(HAVE_DECL_PUTENV,1)])
 AC_CHECK_FUNC(putenv,[AC_DEFINE_UNQUOTED(HAVE_PUTENV,1)])
@@ -667,7 +669,7 @@ case $target_cpu in
       FOPT=""
     fi
     if test "$CC" = gcc -o "$CC" = cc ; then
-      COPT=""    
+      COPT=""
     fi
     if test "$CXX" = g++ -o "$CXX" = c++ -o "$CXX" = gcc ; then
       CXXOPT=""
@@ -709,8 +711,8 @@ AC_MSG_RESULT([C++ preprocessor directives: $CXXDEF])
 AC_ARG_WITH(debug,[  --with-debug            will turn on debugging],[
 case $withval in
   yes)
-	CDBG='-g'
-	CXXDBG='-g'
+        CDBG='-g'
+        CXXDBG='-g'
     ;;
   no)
     CDBG=''
@@ -753,7 +755,7 @@ AC_ARG_WITH(strict,[  --with-strict           --with-strict=yes to turn on stric
 case $withval in
   yes)
     # "Strict" flags only known for GNU compilers
-    if test "$G77" = yes ; then      
+    if test "$G77" = yes ; then
       FOTH="$FOTH -Wall"
     fi
     if test "$GCC" = yes ; then
@@ -845,10 +847,10 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libsapt_solver/Makefile
           src/lib/libfunctional/Makefile
           src/lib/libplugin/Makefile
- 
+
           src/util/tocprint/Makefile
           src/util/psiclean/Makefile
- 
+
           src/bin/psi4/Makefile
           src/bin/input3/Makefile
           src/bin/cints/Makefile

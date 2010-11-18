@@ -121,9 +121,9 @@ void RHF::common_init()
 
         // Allocate memory for threading the PK
         int nthread = 1;
-        #ifdef _OPENMP
+#ifdef _OPENMP
         nthread = omp_get_max_threads();
-        #endif
+#endif
         G_vector_ = block_matrix(nthread, pk_pairs_);
     }
 }
@@ -177,8 +177,6 @@ double RHF::compute_energy()
         I_ = block_matrix(basisset_->molecule()->natom(),doccpi_[0]);
         form_domain_bookkeeping();
     }
-
-
 
     fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
     fflush(outfile);
@@ -473,7 +471,7 @@ bool RHF::load_or_compute_initial_C()
         double **vectors;
         if (Communicator::world->me() == 0)
             vectors = chkpt_->rd_scf();
-        else 
+        else
             vectors = block_matrix(nso_,nmo_);
         Communicator::world->raw_bcast(&(vectors[0][0]), nso_*nmo_*sizeof(double), 0);
         C_->set(const_cast<const double**>(vectors));
@@ -1792,7 +1790,7 @@ void RHF::form_G_from_direct_integrals_parallel()
             Q = iter.q();
             R = iter.r();
             S = iter.s();
-            
+
             if(Communicator::world->me() == v%Communicator::world->nproc()) {
 
                 // Compute quartet

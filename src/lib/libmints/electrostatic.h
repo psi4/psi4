@@ -24,12 +24,15 @@ public:
     /// Constructor
     ElectrostaticInt(std::vector<SphericalTransform>&, shared_ptr<BasisSet>, shared_ptr<BasisSet>, int deriv=0);
     ~ElectrostaticInt();
-    
+
+    // Intel C++ 12 thinks we're trying to overload the "void compute_shell(int, int)" and warns us about it.
+    // The following line is to shut it up.
+    #pragma warning disable 1125
     /// Computes integrals between two shells.
     void compute_shell(int, int, Vector3&);
     /// Computes integrals between two shells.
     void compute_pair(shared_ptr<GaussianShell>, shared_ptr<GaussianShell>, Vector3&);
-    
+
     /// Does the method provide first derivatives?
     bool has_deriv1() { return false; }
 };

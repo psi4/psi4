@@ -19,7 +19,11 @@
 /* MADNESS? */
 #undef HAVE_MADNESS
 
-#undef MKL
+/* Defined if we are using MKL */
+#undef HAVE_MKL
+
+/* Defined if we are using an MKL with mkl_malloc (MKL version 10+ supposedly) */
+#undef HAVE_MKL_MALLOC
 
 #undef HAVE_CMATH
 #undef HAVE_CSTDIO
