@@ -31,19 +31,13 @@ private:
     double **X0_B_;
     double **XC_A_;
     double **XC_B_;
-    double **D_A_;
-    double **D_B_;
-    double **W_A_;
-    double **W_B_;
-    double **S_;
+    double **W_;
     double **J_;
     double **Jinv_;
 
     void free_arrays();
     void allocate_arrays();
 
-    void compute_S();
-    void compute_D();
     void compute_J();
     void compute_W();
     void compute_X_0(double omega);
