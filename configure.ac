@@ -250,6 +250,7 @@ AC_PROG_LEX
 AC_PROG_YACC
 AC_PROG_INSTALL
 AC_PROG_LN_S
+AC_CHECK_PROGS([QHELPGENERATOR],[qhelpgenerator])
 AC_CHECK_PROGS(AR,ar,ar)
 AC_ARG_WITH(ar,
 [  --with-ar               Names the archive creator.],
@@ -820,7 +821,6 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libiwl/Makefile
           src/lib/libpsio/Makefile
           src/lib/libqt/Makefile
-          src/lib/libbasis/Makefile
           src/lib/libciomr/Makefile
           src/lib/libipv1/Makefile
           src/lib/libchkpt/Makefile
