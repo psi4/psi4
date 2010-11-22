@@ -116,15 +116,15 @@ protected:
     double **B_ia_P_;
     double **A_ia_P_;
 
-    //RI Basis
+    // RI Basis
     shared_ptr<BasisSet> ribasis_;
+    /// Poisson Basis
+    shared_ptr<BasisSet> poissonbasis_;
     
-    /// Fitting Tensor Inverse (J-matrix) for DF-SCF
-    double **Jinv_;
-    /// Fitting Tensor (J-matrix) for DF-SCF
-    double **Jfit_;
-    /// Fitting metric decomposition (varies by fitting algorithm)
+    /// Fitting metric (J-matrix) for DF-SCF
     double **W_;
+    /// Fitting metric decomposition (varies by fitting algorithm)
+    double **Winv_;
 
     double schwarz_; //Current Schwarz magnitude (static for now)
     int ntri_; //Number of function pairs after schwarz sieve and subsequent sieves
@@ -251,6 +251,8 @@ protected:
     void form_CD();
     /** Form canonical three-index DF tensor */
     void form_B();
+    /** Form three-index DF tensor with Poisson fitting */
+    void form_B_Poisson();
     /** Form B without metric transform for local K (makes J go crazy fast)*/
     void form_A();
         
@@ -261,6 +263,10 @@ protected:
     /** Free all memory associated with DF */
     void free_A();
 
+    /** Form DF fitting tensor **/
+    void form_W();
+    /** Form DF fitting tensor w/ Poisson fitting **/
+    void form_W_Poisson();
     /** Form DF fitting tensor inverse square root without conditioning **/
     void form_Wm12_raw();
     /** Form DF fitting tensor inverse square root with preconditioning via change of basis **/
