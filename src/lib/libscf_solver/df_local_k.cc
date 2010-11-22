@@ -163,7 +163,7 @@ void HF::form_A()
 
     // J Matrix (will later hold Jinv, 
     //LAPACK is in place
-    Jinv_ = block_matrix(naux_fin_, naux_fin_);
+    Winv_ = block_matrix(naux_fin_, naux_fin_);
     
     timer_on("Form J Matrix;");
     // J_{MN} = (0M|N0)
@@ -184,50 +184,50 @@ void HF::form_A()
                 for (int nu=0; nu < numnu; ++nu, ++index) {
                     int onu = ribasis_->shell(NU)->function_index() + nu;
 
-                    Jinv_[omu][onu] = Jbuffer[index];
-                    Jinv_[onu][omu] = Jbuffer[index];
+                    Winv_[omu][onu] = Jbuffer[index];
+                    Winv_[onu][omu] = Jbuffer[index];
                 }
             }
         }
     }
 
-    Jfit_ = block_matrix(naux_fin_,naux_fin_);
+    W_ = block_matrix(naux_fin_,naux_fin_);
     
-    //Copy J to Jfit_ for later use (elements of K)
-    C_DCOPY(naux_fin_*naux_fin_,Jinv_[0],1,Jfit_[0],1);
+    //Copy J to W_ for later use (elements of K)
+    C_DCOPY(naux_fin_*naux_fin_,Winv_[0],1,W_[0],1);
 
     if (print_>4) {
         fprintf(outfile,"\nJ:\n"); fflush(outfile);
-        print_mat(Jinv_,naux_fin_,naux_fin_,outfile);
+        print_mat(Winv_,naux_fin_,naux_fin_,outfile);
     }
 
     timer_off("Form J Matrix;");
     timer_on("Form J^-1");
     
     //fprintf(outfile,"  J\n");
-    //print_mat(Jinv_,naux_fin_,naux_fin_,outfile);
+    //print_mat(Winv_,naux_fin_,naux_fin_,outfile);
 
     //Cholesky facotrization (in place)
-    int CholError = C_DPOTRF('L',naux_fin_,Jinv_[0],naux_fin_);
+    int CholError = C_DPOTRF('L',naux_fin_,Winv_[0],naux_fin_);
     if (CholError !=0 )
         throw std::domain_error("J Matrix Cholesky Decomposition Failed!");
     
     //fprintf(outfile,"  Jchol\n");
-    //print_mat(Jinv_,naux_fin_,naux_fin_,outfile);
+    //print_mat(Winv_,naux_fin_,naux_fin_,outfile);
     
     //Inversion (in place)
-    int IError = C_DPOTRI('L',naux_fin_,Jinv_[0],naux_fin_);
+    int IError = C_DPOTRI('L',naux_fin_,Winv_[0],naux_fin_);
     if (IError !=0 )
         throw std::domain_error("J Matrix Inversion Failed!");
 
     //LAPACK is smart and all, only uses half of the thing
     for (int m = 0; m<naux_fin_; m++)
         for (int n = 0; n<m; n++)
-            Jinv_[m][n] = Jinv_[n][m]; 
+            Winv_[m][n] = Winv_[n][m]; 
 
     if (print_>4) {
         fprintf(outfile,"  J^-1\n");
-        print_mat(Jinv_,naux_fin_,naux_fin_,outfile);
+        print_mat(Winv_,naux_fin_,naux_fin_,outfile);
     }
 
     timer_off("Form J^-1");
@@ -387,8 +387,8 @@ void HF::free_A()
     free(ri_back_map_);
     free(schwarz_fun_pairs_);
     free(schwarz_shell_pairs_);
-    free_block(Jfit_);
-    free_block(Jinv_);
+    free_block(W_);
+    free_block(Winv_);
 }
 void RHF::form_G_from_RI_local_K()
 {
@@ -465,7 +465,7 @@ void RHF::form_G_from_RI_local_K()
 
             //d_A = J^{-1}*c = J^{-1}_{AB}c_B
             timer_on("J Fitting");
-            C_DGEMV('N',naux_fin_,naux_fin_,1.0,Jinv_[0],naux_fin_,c,1,0.0,d,1);
+            C_DGEMV('N',naux_fin_,naux_fin_,1.0,Winv_[0],naux_fin_,c,1,0.0,d,1);
             timer_off("J Fitting");
 
             //DGEMV -> J:
@@ -509,7 +509,7 @@ void RHF::form_G_from_RI_local_K()
                     for (int P = fit_fun_start_[i][A]; P<fit_fun_start_[i][A]+fit_fun_length_[i][A]; P++, Pl++)    
                         for (int B = 0, Ql = 0; B<domain_atoms_[i]; B++)
                             for (int Q = fit_fun_start_[i][B]; Q<fit_fun_start_[i][B]+fit_fun_length_[i][B]; Q++, Ql++)
-                                 J[Pl][Ql] = Jfit_[P][Q]; 
+                                 J[Pl][Ql] = W_[P][Q]; 
                 timer_off("Form Local J");
 
                 //fprintf(outfile,"  Local J:\n");

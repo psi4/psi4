@@ -224,6 +224,20 @@ PsiReturnType input(Options & options)
         write_to_chkpt(repulsion, "DF_BASIS_SCF");
         print_basis_info();
     }
+    // SCF Poisson basis?
+    if (ip_exist("POISSON_BASIS_SCF",0) ) {
+        fprintf(outfile, "  Poisson-SCF Basis:\n");
+        for(i=0;i<num_atoms;i++)
+            atom_basis[i] = NULL;
+        read_basis("POISSON_BASIS_SCF");
+        build_transmat();
+        if (puream)
+            build_cart2pureang();
+        build_so_classes();
+        build_usotao();
+        write_to_chkpt(repulsion, "POISSON_BASIS_SCF");
+        print_basis_info();
+    }
     // MP2 RI basis?
     if (ip_exist("DF_BASIS_MP2",0) || ip_exist("RI_BASIS_MP2",0)) {
         fprintf(outfile, "  DF-MP2 Basis:\n");

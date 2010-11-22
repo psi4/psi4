@@ -424,6 +424,8 @@ void SAPT_DFT::compute_W() {
             for (int nu = 0; nu < norbs; nu ++)
                 Dmat->set(0, mu, nu, D[mu][nu]);
 
+        Dmat->print(outfile);
+
         shared_ptr<Properties> props(new Properties(basisset_, options_.get_int("N_BLOCK")));
         shared_ptr<BasisPoints> points(new BasisPoints(ribasis_, options_.get_int("N_BLOCK")));
         shared_ptr<psi::scf::Integrator> integrator(new psi::scf::Integrator(basisset_->molecule(), options_));
@@ -441,11 +443,14 @@ void SAPT_DFT::compute_W() {
 
             for (int grid_index = 0; grid_index<ntrue; grid_index++) {
 
-                if (rhog[grid_index] > 1E-12)
+               for (int P = 0; P < naux; P++)
+                   for (int Q = 0; Q < naux; Q++) {
+                       Wtest[P][Q] += wg[grid_index] * rhog[grid_index]* \
+                           basisg[grid_index][P] * basisg[grid_index][Q];
+                   }
+                if (rhog[grid_index] > 1E-30)
                     for (int P = 0; P < naux; P++)
                         for (int Q = 0; Q < naux; Q++) {
-                            Wtest[P][Q] += wg[grid_index] * rhog[grid_index]* \
-                                basisg[grid_index][P] * basisg[grid_index][Q];
                             Wptest[P][Q] += wg[grid_index] * -C_x*(8.0/9.0)*pow(rhog[grid_index],-2.0/3.0)* \
                                 basisg[grid_index][P] * basisg[grid_index][Q];
                         }

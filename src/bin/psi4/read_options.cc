@@ -296,6 +296,8 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add("CARTESIAN_EXTENTS",new ArrayType());
     /*- The name of the auxiliary basis to be used in RI computations -*/
     options.add_str("RI_BASIS_SCF", "");
+    /*- The name of the poisson basis to be used in RI computations -*/
+    options.add_str("POISSON_BASIS_SCF", "");
     options.read_ipv1();
 
 
@@ -306,7 +308,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     /*- Iterations per full Pipek-Mizey Localization -*/
     options.add_int("STEPS_PER_LOCALIZE",1);
 
-    options.add_str("SCF_TYPE","PK","PK OUT_OF_CORE DIRECT DF L_DF CD 1C_CD");
+    options.add_str("SCF_TYPE","PK","PK OUT_OF_CORE DIRECT DF POISSON L_DF CD 1C_CD");
     /*- Whether to run in parallel or not -*/
     options.add_bool("PARALLEL", false);
 

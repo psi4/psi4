@@ -172,6 +172,8 @@ double RHF::compute_energy()
         form_CD();
     else if (scf_type_ == "DF")
         form_B();
+    else if (scf_type_ == "POISSON")
+        form_B_Poisson();
     else if (scf_type_ == "L_DF") {
         form_A();
         I_ = block_matrix(basisset_->molecule()->natom(),doccpi_[0]);
@@ -196,7 +198,7 @@ double RHF::compute_energy()
             form_G_from_PK();
         else if (scf_type_ == "DIRECT")
             form_G_from_direct_integrals();
-        else if (scf_type_ == "DF"||scf_type_ == "CD"||scf_type_ =="1C_CD")
+        else if (scf_type_ == "DF"||scf_type_ == "CD"||scf_type_ =="1C_CD" || scf_type_ == "POISSON")
            form_G_from_RI();
         else if (scf_type_ == "L_DF")
            form_G_from_RI_local_K();

@@ -502,7 +502,7 @@ void HF::form_B()
                     C_DCOPY(cols,&(B_ia_P_[r][index]),1,&(Temp1[r][0]),1);
                 }
 
-                C_DGEMM('T','N',naux_fin_,cols,naux_raw_,1.0, W_[0], naux_fin_, Temp1[0], max_cols,0.0, &B_ia_P_[0][index],ntri_naive_);
+                C_DGEMM('T','N',naux_fin_,cols,naux_raw_,1.0, Winv_[0], naux_fin_, Temp1[0], max_cols,0.0, &B_ia_P_[0][index],ntri_naive_);
             } else if (options_.get_str("RI_FITTING_TYPE") == "CHOLESKY") {
 
                 #pragma omp parallel for schedule(static)
@@ -510,7 +510,7 @@ void HF::form_B()
                     C_DCOPY(cols, &B_ia_P_[A][index], 1, &Temp1[0][A], naux_raw_);
                 }
 
-                int info = C_DPOTRS('U',naux_raw_,cols,&W_[0][0],naux_raw_,&Temp1[0][0],naux_raw_);
+                int info = C_DPOTRS('U',naux_raw_,cols,&Winv_[0][0],naux_raw_,&Temp1[0][0],naux_raw_);
 
                 #pragma omp parallel for schedule(static)
                 for (int A = 0; A< naux_raw_; A++) {
@@ -798,11 +798,11 @@ void HF::form_B()
             timer_off("(A|mn)");
 
             //Embed fitting metric
-            //(B|mn) = (A|mn)W_BA
+            //(B|mn) = (A|mn)Winv_BA
             timer_on("(Q|mn)");
             if (options_.get_str("RI_FITTING_TYPE") == "CHOLESKY") {
 
-                int info = C_DPOTRS('U',naux_raw_,porous_sizes[block],&W_[0][0],naux_raw_,&Amn[0][0],naux_raw_);
+                int info = C_DPOTRS('U',naux_raw_,porous_sizes[block],&Winv_[0][0],naux_raw_,&Amn[0][0],naux_raw_);
 
                 #pragma omp parallel for schedule(static)
                 for (int A = 0; A< naux_raw_; A++) {
@@ -810,7 +810,7 @@ void HF::form_B()
                 }
             }
             else {
-                C_DGEMM('T','N',naux_fin_,porous_sizes[block],naux_raw_,1.0, W_[0], naux_fin_, Amn[0], max_cols,0.0, Bmn[0],max_cols);
+                C_DGEMM('T','N',naux_fin_,porous_sizes[block],naux_raw_,1.0, Winv_[0], naux_fin_, Amn[0], max_cols,0.0, Bmn[0],max_cols);
             }
             timer_off("(Q|mn)");
 
@@ -908,7 +908,7 @@ void HF::form_B()
 
     free(schwarz_fun_pairs);
     free(schwarz_shell_pairs);
-    free_block(W_);
+    free_block(Winv_);
 
     if (print_>1) {
         if (schwarz_) {
@@ -963,17 +963,8 @@ void HF::free_B()
     free(ri_pair_nu_);
     free(ri_back_map_);
 }
-void HF::form_Wp12_chol()
+void HF::form_W()
 {
-    if (print_>1)
-        fprintf(outfile,"  Fitting metric conditioned by Cholesky decomposition.\n");
-    //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    //
-    //                   FORM CHOL(J^+1/2)
-    //            NEW ALGORITHM: CHOLESKY SOLVER
-    //
-    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
     //It takes a lot of work to get a null basis with Psi4!
     shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
     if (options_.get_bool("NO_INPUT") == false) {
@@ -993,11 +984,11 @@ void HF::form_Wp12_chol()
 
     timer_on("Form J");
     // J Matrix Time!
-    double **J = block_matrix(naux_raw_, naux_raw_);
+    W_ = block_matrix(naux_raw_, naux_raw_);
 
     //Next form J in the raw basis,
     IntegralFactory rifactory_J(ribasis_, zero, ribasis_, zero);
-    TwoBodyInt *Jint = rifactory_J.eri();
+    shared_ptr<TwoBodyInt> Jint(rifactory_J.eri());
 
     // Integral buffer
     const double *Jbuffer = Jint->buffer();
@@ -1020,20 +1011,133 @@ void HF::form_Wp12_chol()
                 for (int nu=0; nu < numnu; ++nu, ++index) {
                     int onu = ribasis_->shell(NU)->function_index() + nu;
 
-                    J[omu][onu] = Jbuffer[index];
-                    J[onu][omu] = Jbuffer[index];
+                    W_[omu][onu] = Jbuffer[index];
+                    W_[onu][omu] = Jbuffer[index];
                 }
             }
         }
     }
     if (print_>5) {
         fprintf(outfile,"\nJ (raw):\n");
-        print_mat(J,naux_raw_,naux_raw_,outfile);
+        print_mat(W_,naux_raw_,naux_raw_,outfile);
         fflush(outfile);
     }
-    delete Jint;
 
     timer_off("Form J");
+}
+void HF::form_W_Poisson()
+{
+    //It takes a lot of work to get a null basis with Psi4!
+    shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
+    if (options_.get_bool("NO_INPUT") == false) {
+        ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_SCF"));
+        poissonbasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "POISSON_BASIS_SCF"));
+    } else {
+        shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
+        ribasis_ = BasisSet::construct(parser, molecule_, options_.get_str("RI_BASIS_SCF"));
+        poissonbasis_ = BasisSet::construct(parser, molecule_, options_.get_str("POISSON_BASIS_SCF"));
+    }
+    naux_raw_ = ribasis_->nbf() + poissonbasis_->nbf();
+    naux_fin_ = naux_raw_;
+
+    int nri = ribasis_->nbf();
+    int npois = poissonbasis_->nbf();
+
+    if (print_>5) {
+        basisset_->print(outfile);
+        ribasis_->print(outfile);
+        poissonbasis_->print(outfile);
+        fflush(outfile);
+    }
+
+    timer_on("Form J");
+    // J Matrix Time!
+    W_ = block_matrix(naux_raw_, naux_raw_);
+
+    // == (A|B) Block == //
+    IntegralFactory rifactory_J(ribasis_, zero, ribasis_, zero);
+    shared_ptr<TwoBodyInt> Jint(rifactory_J.eri());
+
+    // Integral buffer
+    const double *Jbuffer = Jint->buffer();
+
+    // J_{MN} = (0M|N0)
+    int index = 0;
+
+    for (int MU=0; MU < ribasis_->nshell(); ++MU) {
+        int nummu = ribasis_->shell(MU)->nfunction();
+
+        for (int NU=0; NU <= MU; ++NU) {
+            int numnu = ribasis_->shell(NU)->nfunction();
+
+            Jint->compute_shell(MU, 0, NU, 0);
+
+            index = 0;
+            for (int mu=0; mu < nummu; ++mu) {
+                int omu = ribasis_->shell(MU)->function_index() + mu;
+
+                for (int nu=0; nu < numnu; ++nu, ++index) {
+                    int onu = ribasis_->shell(NU)->function_index() + nu;
+
+                    W_[omu][onu] = Jbuffer[index];
+                    W_[onu][omu] = Jbuffer[index];
+                }
+            }
+        }
+    }
+    
+    // == (AB) Block == //
+    IntegralFactory rifactory_RP(ribasis_, poissonbasis_,  zero, zero);
+    shared_ptr<OneBodyInt> O(rifactory_RP.overlap());
+    SharedMatrix Omat(new Matrix(1, &nri, &npois));
+    O->compute(Omat);
+
+    for (int omu = 0; omu < ribasis_->nbf(); omu++) {
+        for (int onu = ribasis_->nbf(); onu < ribasis_->nbf() + npois; onu++) {
+            W_[omu][onu] = Omat->get(0,omu, onu - ribasis_->nbf());
+            W_[onu][omu] = W_[omu][onu]; 
+        }
+    }
+
+    // == (A|T|B) Block == //
+    IntegralFactory rifactory_P(poissonbasis_, poissonbasis_,  zero, zero);
+    shared_ptr<OneBodyInt> T(rifactory_P.kinetic());
+    SharedMatrix Tmat(new Matrix(1, &npois, &npois));
+    T->compute(Tmat);
+
+    for (int omu = ribasis_->nbf(); omu < ribasis_->nbf() + npois; omu++) {
+        for (int onu = ribasis_->nbf(); onu < ribasis_->nbf() + npois; onu++) {
+            W_[omu][onu] = 1.0/(2.0*M_PI)*Tmat->get(0,omu - ribasis_->nbf(), onu - ribasis_->nbf());
+            W_[onu][omu] = W_[omu][onu]; 
+        }
+    }
+
+
+    if (print_>5) {
+        fprintf(outfile,"\nJ (raw):\n");
+        print_mat(W_,naux_raw_,naux_raw_,outfile);
+        fflush(outfile);
+    }
+
+    timer_off("Form J");
+}
+void HF::form_Wp12_chol()
+{
+    if (print_>1)
+        fprintf(outfile,"  Fitting metric conditioned by Cholesky decomposition.\n");
+    //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    //
+    //                   FORM CHOL(J^+1/2)
+    //            NEW ALGORITHM: CHOLESKY SOLVER
+    //
+    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+    // Build RI basis, indexing, and W_
+    if (options_.get_str("SCF_TYPE") == "POISSON")
+        form_W_Poisson();
+    else
+        form_W();
+
     timer_on("Form J^+1/2");
 
     // Form J^-1/2
@@ -1042,7 +1146,7 @@ void HF::form_Wp12_chol()
     double* eigval = init_array(naux_raw_);
     int lwork = naux_raw_ * 3;
     double* work = init_array(lwork);
-    int stat = C_DSYEV('v','u',naux_raw_,J[0],naux_raw_,eigval, work,lwork);
+    int stat = C_DSYEV('v','u',naux_raw_,W_[0],naux_raw_,eigval, work,lwork);
     if (stat != 0) {
         fprintf(outfile, "C_DSYEV failed\n");
         exit(PSI_RETURN_FAILURE);
@@ -1052,7 +1156,7 @@ void HF::form_Wp12_chol()
     // Now Jp contains the eigenvectors of the original Jp
     // Copy Jp to Jp_copy
     double **J_copy = block_matrix(naux_raw_, naux_raw_);
-    C_DCOPY(naux_raw_*naux_raw_,J[0],1,J_copy[0],1);
+    C_DCOPY(naux_raw_*naux_raw_,W_[0],1,J_copy[0],1);
 
     // Now form Jp^{-1/2} = U(T)*j'^{-1/2}*U,
     // where j'^{-1/2} is the diagonal matrix of the inverse square roots
@@ -1065,7 +1169,7 @@ void HF::form_Wp12_chol()
         //All eignvalues should be approved for use!
         eigval[ind] = sqrt(eigval[ind]);
         // scale one set of eigenvectors by the diagonal elements jp^{-1/2}
-        C_DSCAL(naux_raw_, eigval[ind], J[ind], 1);
+        C_DSCAL(naux_raw_, eigval[ind], W_[ind], 1);
     }
     free(eigval);
 
@@ -1077,23 +1181,23 @@ void HF::form_Wp12_chol()
     }
 
     // J'^-1/2 = Jp_copy(T) * Jp
-    W_ = block_matrix(naux_raw_,naux_raw_);
+    Winv_ = block_matrix(naux_raw_,naux_raw_);
     C_DGEMM('t','n',naux_raw_,naux_raw_,naux_raw_,1.0,
-            J_copy[0],naux_raw_,J[0],naux_raw_,0.0,W_[0],naux_raw_);
+            J_copy[0],naux_raw_,W_[0],naux_raw_,0.0,Winv_[0],naux_raw_);
 
     //fprintf(outfile,"W^+1/2:\n");
-    //print_mat(W_,naux_raw_,naux_raw_,outfile);
+    //print_mat(Winv_,naux_raw_,naux_raw_,outfile);
     //fflush(outfile);
 
     free_block(J_copy);
-    free_block(J);
+    free_block(W_);
 
     timer_off("Form J^+1/2");
 
     timer_on("J Cholesky");
 
-    //Choleskify W_ (results returned in place, should not be touched)
-    stat = C_DPOTRF('U',naux_raw_,W_[0],naux_raw_);
+    //Choleskify Winv_ (results returned in place, should not be touched)
+    stat = C_DPOTRF('U',naux_raw_,Winv_[0],naux_raw_);
     if (stat < 0) {
         fprintf(outfile, "Cholesky argument %d is bad.\n",stat);
         exit(PSI_RETURN_FAILURE);
@@ -1105,7 +1209,7 @@ void HF::form_Wp12_chol()
 
     if (debug_) {
         fprintf(outfile,"  L:\n");
-        print_mat(W_,naux_raw_,naux_fin_,outfile);
+        print_mat(Winv_,naux_raw_,naux_fin_,outfile);
     }
 
     timer_off("J Cholesky");
@@ -1119,69 +1223,13 @@ void HF::form_Wm12_raw()
     //               OLD ALGORITHM: RAW FITTING
     //
     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    if (print_>1)
-        fprintf(outfile,"  WARNING: No conditioning algorithm selected for fitting metric.\n");
 
-    //It takes a lot of work to get a null basis with Psi4!
-    shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
-    if (options_.get_bool("NO_INPUT") == false) {
-        ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_SCF"));
-    } else {
-        shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
-        ribasis_ = BasisSet::construct(parser, molecule_, options_.get_str("RI_BASIS_SCF"));
-    }
-    naux_raw_ = ribasis_->nbf();
-    naux_fin_ = naux_raw_; //To start
+    // Build RI basis, indexing, and W_
+    if (options_.get_str("SCF_TYPE") == "POISSON")
+        form_W_Poisson();
+    else
+        form_W();
 
-    if (print_>5) {
-        basisset_->print(outfile);
-        ribasis_->print(outfile);
-        fflush(outfile);
-    }
-
-    timer_on("Form J");
-    // J Matrix Time!
-    double **J = block_matrix(naux_raw_, naux_raw_);
-
-    //Next form J in the raw basis,
-    IntegralFactory rifactory_J(ribasis_, zero, ribasis_, zero);
-    TwoBodyInt *Jint = rifactory_J.eri();
-
-    // Integral buffer
-    const double *Jbuffer = Jint->buffer();
-
-    // J_{MN} = (0M|N0)
-    int index = 0;
-
-    for (int MU=0; MU < ribasis_->nshell(); ++MU) {
-        int nummu = ribasis_->shell(MU)->nfunction();
-
-        for (int NU=0; NU <= MU; ++NU) {
-            int numnu = ribasis_->shell(NU)->nfunction();
-
-            Jint->compute_shell(MU, 0, NU, 0);
-
-            index = 0;
-            for (int mu=0; mu < nummu; ++mu) {
-                int omu = ribasis_->shell(MU)->function_index() + mu;
-
-                for (int nu=0; nu < numnu; ++nu, ++index) {
-                    int onu = ribasis_->shell(NU)->function_index() + nu;
-
-                    J[omu][onu] = Jbuffer[index];
-                    J[onu][omu] = Jbuffer[index];
-                }
-            }
-        }
-    }
-    if (print_>5) {
-        fprintf(outfile,"\nJ (raw):\n");
-        print_mat(J,naux_raw_,naux_raw_,outfile);
-        fflush(outfile);
-    }
-    delete Jint;
-
-    timer_off("Form J");
     timer_on("Form J^+1/2");
 
     // Form J^-1/2
@@ -1190,7 +1238,7 @@ void HF::form_Wm12_raw()
     double* eigval = init_array(naux_raw_);
     int lwork = naux_raw_ * 3;
     double* work = init_array(lwork);
-    int stat = C_DSYEV('v','u',naux_raw_,J[0],naux_raw_,eigval, work,lwork);
+    int stat = C_DSYEV('v','u',naux_raw_,W_[0],naux_raw_,eigval, work,lwork);
     if (stat != 0) {
         fprintf(outfile, "C_DSYEV failed\n");
         exit(PSI_RETURN_FAILURE);
@@ -1200,7 +1248,7 @@ void HF::form_Wm12_raw()
     // Now Jp contains the eigenvectors of the original Jp
     // Copy Jp to Jp_copy
     double **J_copy = block_matrix(naux_raw_, naux_raw_);
-    C_DCOPY(naux_raw_*naux_raw_,J[0],1,J_copy[0],1);
+    C_DCOPY(naux_raw_*naux_raw_,W_[0],1,J_copy[0],1);
 
     // Now form Jp^{-1/2} = U(T)*j'^{-1/2}*U,
     // where j'^{-1/2} is the diagonal matrix of the inverse square roots
@@ -1216,7 +1264,7 @@ void HF::form_Wm12_raw()
             eigval[ind] = 1.0 / sqrt(eigval[ind]);
         }
         // scale one set of eigenvectors by the diagonal elements j^{-1/2}
-        C_DSCAL(naux_raw_, eigval[ind], J[ind], 1);
+        C_DSCAL(naux_raw_, eigval[ind], W_[ind], 1);
     }
     free(eigval);
 
@@ -1228,16 +1276,16 @@ void HF::form_Wm12_raw()
     }
 
     // J'^-1/2 = Jp_copy(T) * Jp
-    W_ = block_matrix(naux_raw_,naux_raw_);
+    Winv_ = block_matrix(naux_raw_,naux_raw_);
     C_DGEMM('t','n',naux_raw_,naux_raw_,naux_raw_,1.0,
-            J_copy[0],naux_raw_,J[0],naux_raw_,0.0,W_[0],naux_raw_);
+            J_copy[0],naux_raw_,W_[0],naux_raw_,0.0,Winv_[0],naux_raw_);
 
     //fprintf(outfile,"W^+1/2:\n");
-    //print_mat(W_,naux_raw_,naux_raw_,outfile);
+    //print_mat(Winv_,naux_raw_,naux_raw_,outfile);
     //fflush(outfile);
 
     free_block(J_copy);
-    free_block(J);
+    free_block(W_);
 
     timer_off("Form J^+1/2");
 }
@@ -1249,31 +1297,19 @@ void HF::form_Wm12_fin()
     //        NEW ALGORITHM: CANONICAL ORTHOGONALIZATION
     //
     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    if (print_>1)
-        fprintf(outfile,"  Fitting metric conditioned by canonical orthogonalization.\n");
 
-    //It takes a lot of work to get a null basis with Psi4!
-    shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
-
-    if (options_.get_bool("NO_INPUT") == false) {
-        ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_SCF"));
-    } else {
-        shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
-        ribasis_ = BasisSet::construct(parser, molecule_, options_.get_str("RI_BASIS_SCF"));
-    }
-    naux_raw_ = ribasis_->nbf();
-    naux_fin_ = naux_raw_; //To start
-
-    if (print_>5) {
-        basisset_->print(outfile);
-        ribasis_->print(outfile);
-        fflush(outfile);
-    }
+    // Build RI basis, indexing, and W_
+    if (options_.get_str("SCF_TYPE") == "POISSON") {
+        //form_W_Poisson();
+        throw std::domain_error("Poisson fitting with canonical orthogonalization not implemented yet"); 
+    } else
+        form_W();
 
     timer_on("Form X");
     //OK, integrals time. start with the fitting matrix J
 
     // Create integral factory for J_S (Overlap Matrix in form_B)
+    shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
     IntegralFactory rifactory_JS(ribasis_, ribasis_, zero, zero);
     OneBodyInt *S = rifactory_JS.overlap();
     MatrixFactory matJS;
@@ -1392,47 +1428,6 @@ void HF::form_Wm12_fin()
     }
 
     timer_off("Form X");
-    timer_on("Form J");
-    // J Matrix Time!
-    double **J = block_matrix(naux_raw_, naux_raw_);
-
-    //Next form J in the raw basis,
-    IntegralFactory rifactory_J(ribasis_, zero, ribasis_, zero);
-    TwoBodyInt *Jint = rifactory_J.eri();
-
-    // Integral buffer
-    const double *Jbuffer = Jint->buffer();
-
-    // J_{MN} = (0M|N0)
-    int index = 0;
-
-    for (int MU=0; MU < ribasis_->nshell(); ++MU) {
-        int nummu = ribasis_->shell(MU)->nfunction();
-
-        for (int NU=0; NU <= MU; ++NU) {
-            int numnu = ribasis_->shell(NU)->nfunction();
-
-            Jint->compute_shell(MU, 0, NU, 0);
-
-            index = 0;
-            for (int mu=0; mu < nummu; ++mu) {
-                int omu = ribasis_->shell(MU)->function_index() + mu;
-
-                for (int nu=0; nu < numnu; ++nu, ++index) {
-                    int onu = ribasis_->shell(NU)->function_index() + nu;
-
-                    J[omu][onu] = Jbuffer[index];
-                    J[onu][omu] = Jbuffer[index];
-                }
-            }
-        }
-    }
-    if (print_>5) {
-        fprintf(outfile,"\nJ (raw):\n");
-        print_mat(J,naux_raw_,naux_raw_,outfile);
-        fflush(outfile);
-    }
-    delete Jint;
 
     //fprintf(outfile,"J:\n");
     //print_mat(J,naux_raw_,naux_raw_,outfile);
@@ -1443,7 +1438,7 @@ void HF::form_Wm12_fin()
     double **Jp = block_matrix(naux_fin_,naux_fin_);
 
     //Temp = X'*J
-    C_DGEMM('T','N',naux_fin_,naux_raw_,naux_raw_,1.0,X[0],naux_fin_,J[0],naux_raw_,0.0,Jtemp1[0],naux_raw_);
+    C_DGEMM('T','N',naux_fin_,naux_raw_,naux_raw_,1.0,X[0],naux_fin_,W_[0],naux_raw_,0.0,Jtemp1[0],naux_raw_);
 
     //J' = Temp*X
     C_DGEMM('N','N',naux_fin_,naux_fin_,naux_raw_,1.0,Jtemp1[0],naux_raw_,X[0],naux_fin_,0.0,Jp[0],naux_fin_);
@@ -1454,13 +1449,11 @@ void HF::form_Wm12_fin()
 
     free_block(Jtemp1);
 
-    timer_off("Form J");
-
     //For diagnostics purposes, we may want to know
     //how bad the raw J was
     if (options_.get_bool("FIND_RAW_J_COND")) {
         double** J2 = block_matrix(naux_raw_,naux_raw_);
-        C_DCOPY(naux_raw_*naux_raw_,J[0],1,J2[0],1);
+        C_DCOPY(naux_raw_*naux_raw_,W_[0],1,J2[0],1);
 
         //Find eigenvalues only
         double* eigval = init_array(naux_raw_);
@@ -1485,7 +1478,7 @@ void HF::form_Wm12_fin()
 
         free_block(J2);
     }
-    free_block(J);
+    free_block(W_);
 
     //Find J'^-1/2
     timer_on("Form J^-1/2");
@@ -1548,10 +1541,10 @@ void HF::form_Wm12_fin()
     timer_off("Form J^-1/2");
     timer_on("Form W");
 
-    //W_AB' = X_AC'*J_CB'^-1/2
-    W_ = block_matrix(naux_raw_,naux_fin_);
+    //Winv_AB' = X_AC'*J_CB'^-1/2
+    Winv_ = block_matrix(naux_raw_,naux_fin_);
 
-    C_DGEMM('N','N',naux_raw_,naux_fin_,naux_fin_,1.0,X[0],naux_fin_,Jp_mhalf[0],naux_fin_,0.0,W_[0],naux_fin_);
+    C_DGEMM('N','N',naux_raw_,naux_fin_,naux_fin_,1.0,X[0],naux_fin_,Jp_mhalf[0],naux_fin_,0.0,Winv_[0],naux_fin_);
 
     //fprintf(outfile,"W:\n");
     //print_mat(W,naux_raw_,naux_fin_,outfile);
