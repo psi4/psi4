@@ -7,7 +7,6 @@ psi: (
   wfn = scf
   reference = rhf
   dertype = none
-  ri_fitting_type = "cholesky"
 
   subgroup = c1  
   basis = "cc-pVTZ"
