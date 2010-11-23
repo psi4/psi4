@@ -137,26 +137,26 @@ void ThreeCenterOverlapInt::compute_shell(int sh1, int sh2, int sh3)
 }
 
 void ThreeCenterOverlapInt::compute_pair(shared_ptr<GaussianShell> sA,
-                                         shared_ptr<GaussianShell> sC,
-                                         shared_ptr<GaussianShell> sB)
+                                         shared_ptr<GaussianShell> sB,
+                                         shared_ptr<GaussianShell> sC)
 {
-    int ao132;
+    unsigned int ao123;
     int amA = sA->am();
-    int amC = sC->am();
     int amB = sB->am();
+    int amC = sC->am();
     int nprimA = sA->nprimitive();
-    int nprimC = sC->nprimitive();
     int nprimB = sB->nprimitive();
+    int nprimC = sC->nprimitive();
     double A[3], B[3], C[3], P[3], G[3], GA[3], GB[3], GC[3];
     A[0] = sA->center()[0];
     A[1] = sA->center()[1];
     A[2] = sA->center()[2];
-    C[0] = sC->center()[0];
-    C[1] = sC->center()[1];
-    C[2] = sC->center()[2];
     B[0] = sB->center()[0];
     B[1] = sB->center()[1];
     B[2] = sB->center()[2];
+    C[0] = sC->center()[0];
+    C[1] = sC->center()[1];
+    C[2] = sC->center()[2];
 
     double AB2 = 0.0;
     AB2 += (A[0] - B[0]) * (A[0] - B[0]);
@@ -214,31 +214,37 @@ void ThreeCenterOverlapInt::compute_pair(shared_ptr<GaussianShell> sA,
 
                 double overlap_ACB = exp(-gamma*aC*oogc*PC2) * sqrt(gamma * oogc) * (gamma *oogc) * overlap_AB * cC;
 
-                overlap_recur_.compute(GA, GB, GC, gammac, amA, amC, amB);
+                 // Computes (ACB) overlap
+                overlap_recur_.compute(GA, GB, GC, gammac, amA, amB, amC);
 
-                ao132 = 0;
+                // We're going to be reordering the result of the above line.
+                // The result of above B is the fast running index, but I'm going to be make it C instead.
+                ao123 = 0;
                 for(int ii = 0; ii <= amA; ii++) {
                     int lA = amA - ii;
                     for(int jj = 0; jj <= ii; jj++) {
                         int mA = ii - jj;
                         int nA = jj;
-                        for(int kk = 0; kk <= amC; kk++) {
-                            int lC = amC - kk;
-                            for(int ll = 0; ll <= kk; ll++) {
-                                int mC = kk - ll;
-                                int nC = ll;
 
-                                for(int mm = 0; mm <= amB; mm++) {
-                                    int lB = amB - mm;
-                                    for(int nn = 0; nn <= mm; nn++) {
-                                        int mB = mm - nn;
-                                        int nB = nn;
+                        for(int mm = 0; mm <= amB; mm++) {
+                            int lB = amB - mm;
+                            for(int nn = 0; nn <= mm; nn++) {
+                                int mB = mm - nn;
+                                int nB = nn;
 
+                                for(int kk = 0; kk <= amC; kk++) {
+                                    int lC = amC - kk;
+                                    for(int ll = 0; ll <= kk; ll++) {
+                                        int mC = kk - ll;
+                                        int nC = ll;
+
+                                        // These are ordered (ACB) -> B fast running
                                         double x0 = x[lA][lC][lB];
                                         double y0 = y[mA][mC][mB];
                                         double z0 = z[nA][nC][nB];
 
-                                        buffer_[ao132++] += overlap_ACB*x0*y0*z0;
+                                        // But we're going to store then like (ABC) -> C fast running
+                                        buffer_[ao123++] += overlap_ACB*x0*y0*z0;
                                     }
                                 }
                             }
@@ -249,42 +255,46 @@ void ThreeCenterOverlapInt::compute_pair(shared_ptr<GaussianShell> sA,
         }
     }
 
-    normalize_am(sA, sC, sB);
-    pure_transform(sA, sC, sB);
+    normalize_am(sA, sB, sC);
+    pure_transform(sA, sB, sC);
 }
 
 void ThreeCenterOverlapInt::normalize_am(shared_ptr<GaussianShell>& sA,
-                                         shared_ptr<GaussianShell>& sC,
-                                         shared_ptr<GaussianShell>& sB)
+                                         shared_ptr<GaussianShell>& sB,
+                                         shared_ptr<GaussianShell>& sC)
 {
     // Assume integrals are done. Normalize for angular momentum
     int amA = sA->am();
-    int amC = sC->am();
     int amB = sB->am();
+    int amC = sC->am();
 
     int length = INT_NCART(amA) * INT_NCART(amC) * INT_NCART(amB);
 
-    int ao132 = 0;
+    int ao123 = 0;
     for(int ii = 0; ii <= amA; ii++) {
         int lA = amA - ii;
         for(int jj = 0; jj <= ii; jj++) {
             int mA = ii - jj;
             int nA = jj;
-            for(int kk = 0; kk <= amC; kk++) {
-                int lC = amC - kk;
-                for(int ll = 0; ll <= kk; ll++) {
-                    int mC = kk - ll;
-                    int nC = ll;
 
-                    for(int mm = 0; mm <= amB; mm++) {
-                        int lB = amB - mm;
-                        for(int nn = 0; nn <= mm; nn++) {
-                            int mB = mm - nn;
-                            int nB = nn;
+            double normA = sA->normalize(lA, mA, nA);
 
+            for(int mm = 0; mm <= amB; mm++) {
+                int lB = amB - mm;
+                for(int nn = 0; nn <= mm; nn++) {
+                    int mB = mm - nn;
+                    int nB = nn;
 
-                            buffer_[ao132] *= sA->normalize(lA, mA, nA) * sC->normalize(lC, mC, nC) * sB->normalize(lB, mB, nB);
-                            ao132++;
+                    double normB = sB->normalize(lB, mB, nB);
+
+                    for(int kk = 0; kk <= amC; kk++) {
+                        int lC = amC - kk;
+                        for(int ll = 0; ll <= kk; ll++) {
+                            int mC = kk - ll;
+                            int nC = ll;
+
+                            buffer_[ao123] *= normA * normB * sC->normalize(lC, mC, nC);
+                            ao123++;
                         }
                     }
                 }
@@ -334,43 +344,43 @@ void ThreeCenterOverlapInt::pure_transform(shared_ptr<GaussianShell>& s1,
     case 0:  // no transform
         break;
 
-    case 1:  // (a|c|bT)
+    case 1:  // (a|b|cT)
         source3 = source;
         target3 = target;
         break;
 
-    case 2:  // (a|cT|b)
+    case 2:  // (a|bT|c)
         source2 = source;
         target2 = target;
         break;
 
-    case 3:  // (a|cT|bT)
+    case 3:  // (a|bT|cT)
         source3 = source;
         target3 = tmpbuf;
         source2 = tmpbuf;
         target2 = target;
         break;
 
-    case 4:  // (aT|c|b)
+    case 4:  // (aT|b|c)
         source1 = source;
         target1 = target;
         break;
 
-    case 5:  // (aT|c|bT)
+    case 5:  // (aT|b|cT)
         source3 = source;
         target3 = tmpbuf;
         source1 = tmpbuf;
         target1 = target;
         break;
 
-    case 6:  // (aT|cT|b)
+    case 6:  // (aT|bT|c)
         source2 = source;
         target2 = tmpbuf;
         source1 = tmpbuf;
         target1 = target;
         break;
 
-    case 7: // (aT|cT|bT)
+    case 7: // (aT|bT|cT)
         source3 = source;
         target3 = tmpbuf;
         source2 = tmpbuf;

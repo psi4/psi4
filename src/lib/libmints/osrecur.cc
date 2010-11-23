@@ -1145,19 +1145,19 @@ ObaraSaikaThreeCenterRecursion::ObaraSaikaThreeCenterRecursion(int max_am1, int 
     if (max_am3 < 0)
         throw SanityCheckError("ERROR: ObaraSaikaThreeCenterRecursion -- max_am3 must be nonnegative", __FILE__, __LINE__);
 
-    x_ = init_box(max_am1+1, max_am2+1, max_am3+1);
-    y_ = init_box(max_am1+1, max_am2+1, max_am3+1);
-    z_ = init_box(max_am1+1, max_am2+1, max_am3+1);
+    x_ = init_box(max_am1+1, max_am3+1, max_am2+1);
+    y_ = init_box(max_am1+1, max_am3+1, max_am2+1);
+    z_ = init_box(max_am1+1, max_am3+1, max_am2+1);
 }
 
 ObaraSaikaThreeCenterRecursion::~ObaraSaikaThreeCenterRecursion()
 {
-    free_box(x_, max_am1_+1, max_am2_+1);
-    free_box(y_, max_am1_+1, max_am2_+1);
-    free_box(z_, max_am1_+1, max_am2_+1);
+    free_box(x_, max_am1_+1, max_am3_+1);
+    free_box(y_, max_am1_+1, max_am3_+1);
+    free_box(z_, max_am1_+1, max_am3_+1);
 }
 
-void ObaraSaikaThreeCenterRecursion::compute(double GA[3], double GB[3], double GC[3], double gamma, int amA, int amC, int amB)
+void ObaraSaikaThreeCenterRecursion::compute(double GA[3], double GB[3], double GC[3], double gamma, int amA, int amB, int amC)
 {
     if (amA < 0 || amA > max_am1_)
         throw SanityCheckError("ERROR: ObaraSaikaThreeCenterRecursion::compute -- am1 out of bounds", __FILE__, __LINE__);
