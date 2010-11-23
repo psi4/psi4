@@ -225,7 +225,7 @@ public:
                  double GB[3],
                  double GC[3],
                  double gammac,
-                 int amA, int amC, int amB);
+                 int amA, int amB, int amC);
 };
 
 }
