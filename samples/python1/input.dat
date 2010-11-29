@@ -1,9 +1,3 @@
-# Run: psi4 -s
-
-import psi;
-from psi import *;
-import PsiMod;
-
 PsiMod.version();
 
 geometry("""
@@ -12,31 +6,27 @@ H 0.0 0.0 1.0
 H 0.0 1.0 0.0
 """)
 
-options({
-    'NO_INPUT' : True,
-#   'GUESS' : 'SAD',
-    'SCF_TYPE': 'DF',
-    'PRINT': 2,
-    'BASIS': "3-21G",
-    'RI_BASIS_SCF': "STO-3G",
-    'DOCC': [3, 0, 1, 1],
-#   'XYZ_FILE': "mol.xyz",
-},
-    module= 'SCF'
-)
+set scf {
+    NO_INPUT  True
+#   GUESS  SAD
+    SCF_TYPE DF
+    PRINT 2
+    BASIS 3-21G
+    RI_BASIS_SCF STO-3G
+    DOCC [3, 0, 1, 1]
+#   XYZ_FILE mol.xyz
+}
 
 PsiMod.print_out("\n Running SCF:\n");
 PsiMod.print_options();
 
 PsiMod.scf();
 
-options({
-    'NO_INPUT' : True,
-    'BASIS' : '3-21G',
-    'RI_BASIS_MP2': 'STO-3G',
-},
-    module='dfmp2'
-)
+set dfmp2 {
+    NO_INPUT True
+    BASIS 3-21G
+    RI_BASIS_MP2 STO-3G
+}
 
 PsiMod.print_out("\n Running DFMP2:\n");
 PsiMod.print_options();
