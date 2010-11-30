@@ -21,6 +21,26 @@ IntegralFactory::~IntegralFactory()
 
 }
 
+boost::shared_ptr<BasisSet> IntegralFactory::basis1()
+{
+    return bs1_;
+}
+
+boost::shared_ptr<BasisSet> IntegralFactory::basis2()
+{
+    return bs2_;
+}
+
+boost::shared_ptr<BasisSet> IntegralFactory::basis3()
+{
+    return bs3_;
+}
+
+boost::shared_ptr<BasisSet> IntegralFactory::basis4()
+{
+    return bs4_;
+}
+
 void IntegralFactory::set_basis(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2,
                 shared_ptr<BasisSet> bs3, shared_ptr<BasisSet> bs4)
 {
