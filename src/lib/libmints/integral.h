@@ -259,6 +259,15 @@ public:
 
     virtual ~IntegralFactory();
 
+    /// Return the basis set on center 1.
+    boost::shared_ptr<BasisSet> basis1();
+    /// Return the basis set on center 2.
+    boost::shared_ptr<BasisSet> basis2();
+    /// Return the basis set on center 3.
+    boost::shared_ptr<BasisSet> basis3();
+    /// Return the basis set on center 4.
+    boost::shared_ptr<BasisSet> basis4();
+
     /// Set the basis set for each center.
     virtual void set_basis(boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2,
         boost::shared_ptr<BasisSet> bs3, boost::shared_ptr<BasisSet> bs4);
