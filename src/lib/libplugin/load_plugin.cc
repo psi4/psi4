@@ -60,11 +60,16 @@ plugin_info plugin_load(std::string& plugin_pathname)
         throw PSIEXCEPTION(msg);
     }
 
-    // Tell the plugin to initialize itself (found in libplugin)
-    info.init_plugin(Communicator::world, Process::environment, _default_chkpt_lib_, _default_psio_lib_);
-
     // Store the name of the plugin for read_options
     boost::to_upper(info.name);
+
+    // Get the plugin's options into the global space
+    Process::environment.options.set_read_globals(true);
+    info.read_options(info.name, Process::environment.options);
+    Process::environment.options.set_read_globals(false);
+
+    // Tell the plugin to initialize itself (found in libplugin)
+    info.init_plugin(Communicator::world, Process::environment, _default_chkpt_lib_, _default_psio_lib_);
 
     return info;
 }
