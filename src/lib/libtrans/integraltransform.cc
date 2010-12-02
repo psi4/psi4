@@ -111,4 +111,5 @@ IntegralTransform::~IntegralTransform()
     dpd_close(_myDPDNum);
     free_int_matrix(_cacheList);
     free(_cacheFiles);
+    free(_zeros);
 }

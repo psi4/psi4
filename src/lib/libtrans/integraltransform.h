@@ -253,6 +253,8 @@ class IntegralTransform{
         int _myDPDNum;
         // The amount of information to print
         int _print;
+        // Just an array of zeros! Used in the null MOSpace "transforms"
+        int *_zeros;
         // The number of symmetrized orbitals per irrep
         int *_sopi;
         // The symmetry (irrep number) of each symmetrized atomic orbital
