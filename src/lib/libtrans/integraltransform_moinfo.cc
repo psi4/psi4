@@ -30,6 +30,7 @@ IntegralTransform::raid_checkpoint()
     _nTriSo  = _nso * (_nso + 1) / 2;
     _nTriMo  = _nmo * (_nmo + 1) / 2;
     _sosym   = init_int_array(_nso);
+    _zeros   = init_int_array(_nirreps);
 
     int count = 0;
     for(int h = 0; h < _nirreps; ++h){
@@ -78,6 +79,8 @@ IntegralTransform::process_spaces()
     _spacesUsed.push_back(MOSPACE_NIL);
     _spaceArrays.push_back(_sopi);
     _spaceArrays.push_back(_sosym);
+    _aOrbsPI[MOSPACE_NIL] = _zeros;
+    _bOrbsPI[MOSPACE_NIL] = _zeros;
 
     for(space = _uniqueSpaces.begin(); space != _uniqueSpaces.end(); ++space){
         shared_ptr<MOSpace> moSpace = *space;
@@ -438,7 +441,11 @@ IntegralTransform::process_eigenvectors()
                     }
                 }
             }
+        }else if(moSpace->label() == MOSPACE_VIR){
+            // Do nothing!
         }
+        // TODO process custom MO spaces!
+
         _aMOCoefficients[moSpace->label()] = Ca;
         _bMOCoefficients[moSpace->label()] = Cb;
 

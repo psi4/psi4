@@ -134,6 +134,7 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
                     if(nrows && ncols && nlinks)
                         C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, &J.matrix[h][pq][rs],
                                 nlinks, c4a[Gs][0], ncols, 0.0, TMP[0], _nso);
+                    //TODO else if s4->label() == MOSPACE_NIL, copy buffer...
 
                     // Transform ( S1 S2 | n S4 ) -> ( S1 S2 | S3 S4 )
                     nrows = aOrbsPI3[Gr];
@@ -143,6 +144,7 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
                     if(nrows && ncols && nlinks)
                         C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, c3a[Gr][0], nrows ,
                                 TMP[0], _nso, 0.0, &K.matrix[h][pq][rs], ncols);
+                    //TODO else if s3->label() == MOSPACE_NIL, copy buffer...
                 } /* Gr */
                 if(_useIWL){
                     int p = aIndex1[K.params->roworb[h][pq+n*rowsPerBucket][0]];
@@ -243,6 +245,7 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
                         if(nrows && ncols && nlinks)
                             C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, &J.matrix[h][pq][rs],
                                     nlinks, c4b[Gs][0], ncols, 0.0, TMP[0], _nso);
+                        //TODO else if s4->label() == MOSPACE_NIL, copy buffer...
 
                         // Transform ( S1 S2 | n s4 ) -> ( S1 S2 | s3 s4 )
                         nrows = bOrbsPI3[Gr];
@@ -252,6 +255,7 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
                         if(nrows && ncols && nlinks)
                             C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, c3b[Gr][0], nrows,
                                     TMP[0], _nso, 0.0, &K.matrix[h][pq][rs], ncols);
+                        //TODO else if s3->label() == MOSPACE_NIL, copy buffer...
                     } /* Gr */
                     if(_useIWL){
                         int p = aIndex1[K.params->roworb[h][pq+n*rowsPerBucket][0]];

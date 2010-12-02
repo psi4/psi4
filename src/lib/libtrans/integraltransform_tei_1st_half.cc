@@ -120,6 +120,7 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
                     if(nrows && ncols && nlinks)
                         C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, &J.matrix[h][pq][rs],
                                 nlinks, c2a[Gs][0], ncols, 0.0, TMP[0], _nso);
+                    //TODO else if s1->label() == MOSPACE_NIL, copy buffer...
 
                     // Transform ( n n | n S2 ) -> ( n n | S1 S2 )
                     nrows = aOrbsPI1[Gr];
@@ -129,6 +130,7 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
                     if(nrows && ncols && nlinks)
                         C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, c1a[Gr][0], nrows,
                                 TMP[0], _nso, 0.0, &K.matrix[h][pq][rs], ncols);
+                    //TODO else if s2->label() == MOSPACE_NIL, copy buffer...
                 } /* Gr */
             } /* pq */
             dpd_buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
@@ -228,6 +230,7 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
                         if(nrows && ncols && nlinks)
                             C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, &J.matrix[h][pq][rs],
                             nlinks, c2b[Gs][0], ncols, 0.0, TMP[0], _nso);
+                        //TODO else if s2->label() == MOSPACE_NIL, copy buffer...
 
                         // Transform ( n n | n s2 ) -> ( n n | s1 s2 )
                         nrows = bOrbsPI1[Gr];
@@ -237,6 +240,7 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
                         if(nrows && ncols && nlinks)
                             C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, c1b[Gr][0], nrows,
                                     TMP[0], _nso, 0.0, &K.matrix[h][pq][rs], ncols);
+                        //TODO else if s1->label() == MOSPACE_NIL, copy buffer...
                     } /* Gr */
                 } /* pq */
                 dpd_buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
