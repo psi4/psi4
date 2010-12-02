@@ -61,24 +61,14 @@ double ** block_matrix(unsigned long int n, unsigned long int m, bool memlock)
 
     if(!m || !n) return(static_cast<double **>(0));
 
-#ifdef HAVE_MKL && HAVE_MKL_MALLOC
-    // Allocate memory using MKLs allocation mechanism. Ensuring our memory is aligned to
-    // how MKL likes it.
-    A = static_cast<double**>(MKL_malloc(sizeof(double)*n, 16));
-#else
     A = new double*[n];
-#endif
     if (A==NULL) {
         fprintf(stderr,"block_matrix: trouble allocating memory \n");
         fprintf(stderr,"n = %ld\n",n);
         exit(PSI_RETURN_FAILURE);
     }
 
-#ifdef HAVE_MKL && HAVE_MKL_MALLOC
-    B = static_cast<double*>(MKL_malloc(sizeof(double)*n*m, 16));
-#else
     B = new double[n*m];
-#endif
     if (B == NULL) {
         fprintf(stderr,"block_matrix: trouble allocating memory \n");
         fprintf(stderr,"m = %ld\n",m);
@@ -141,13 +131,8 @@ double ** block_matrix(unsigned long int n, unsigned long int m, bool memlock)
 void free_block(double **array)
 {
     if(array == NULL) return;
-#ifdef HAVE_MKL && HAVE_MKL_MALLOC
-    MKL_free(static_cast<void*>(array[0]));
-    MKL_free(static_cast<void*>(array));
-#else
     delete [] array[0];
     delete [] array;
-#endif
 }
 
 }
