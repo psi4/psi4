@@ -113,10 +113,16 @@ void C_DCOPY(unsigned long int length, double *x, int inc_x,
 void C_DGEMM(char transa, char transb, int m, int n, int k,
              double alpha, double *A, int nca, double *B, int ncb,
              double beta, double *C, int ncc);
+void C_DSYMM(char side, char uplo, int m, int n, 
+             double alpha, double *A, int nca, double *B, int ncb,
+             double beta, double *C, int ncc);
 void C_DROT(unsigned long int ntot, double *x, int incx, double *y, int incy,
              double costheta, double sintheta);
 void C_DSCAL(unsigned long int len, double alpha, double *vec, int inc);
 void C_DGEMV(char transa, int m, int n, double alpha, double *A,
+             int nca, double *X, int inc_x, double beta, double *Y,
+             int inc_y);
+void C_DSYMV(char uplo, int n, double alpha, double *A,
              int nca, double *X, int inc_x, double beta, double *Y,
              int inc_y);
 void C_DSPMV(char uplo, int n, double alpha, double *A,

@@ -26,9 +26,11 @@
 #define F_DAXPY daxpy_
 #define F_DCOPY dcopy_
 #define F_DGEMM dgemm_
+#define F_DSYMM dsymm_
 #define F_DROT drot_
 #define F_DSCAL dscal_
 #define F_DGEMV dgemv_
+#define F_DSYMV dsymv_
 #define F_DSPMV dspmv_
 #define F_DDOT  ddot_
 #elif FC_SYMBOL==1
@@ -36,9 +38,11 @@
 #define F_DAXPY daxpy
 #define F_DCOPY dcopy
 #define F_DGEMM dgemm
+#define F_DSYMM dsymm
 #define F_DROT drot
 #define F_DSCAL dscal
 #define F_DGEMV dgemv
+#define F_DSYMV dsymv
 #define F_DSPMV dspmv
 #define F_DDOT  ddot
 #elif FC_SYMBOL==3
@@ -46,9 +50,11 @@
 #define F_DAXPY DAXPY
 #define F_DCOPY DCOPY
 #define F_DGEMM DGEMM
+#define F_DSYMM DSYMM
 #define F_DROT DROT
 #define F_DSCAL DSCAL
 #define F_DGEMV DGEMV
+#define F_DSYMV DSYMV
 #define F_DSPMV DSPMV
 #define F_DDOT  DDOT
 #elif FC_SYMBOL==4
@@ -56,9 +62,11 @@
 #define F_DAXPY DAXPY_
 #define F_DCOPY DCOPY_
 #define F_DGEMM DGEMM_
+#define F_DSYMM DSYMM_
 #define F_DROT DROT_
 #define F_DSCAL DSCAL_
 #define F_DGEMV DGEMV_
+#define F_DSYMV DSYMV_
 #define F_DSPMV DSPMV_
 #define F_DDOT  DDOT_
 #endif
@@ -73,10 +81,15 @@ extern void F_DCOPY(int *length, double *x, int *inc_x,
 extern void F_DGEMM(char *transa, char *transb, int *m, int *n, int *k,
   double *alpha, double *A, int *lda, double *B, int *ldb,
   double *beta, double *C, int *ldc);
+extern void F_DSYMM(char* side, char *uplo, int *m, int *n, 
+  double *alpha, double *A, int *lda, double *B, int *ldb,
+  double *beta, double *C, int *ldc);
 extern void F_DROT(int *ntot, double *x, int *incx, double *y, int *incy,
   double *cotheta, double *sintheta);
 extern void F_DSCAL(int *n, double *alpha, double *vec, int *inc);
 extern void F_DGEMV(char *transa, int *m, int *n, double *alpha, double *A,
+  int *lda, double *X, int *inc_x, double *beta, double *Y, int *inc_y);
+extern void F_DSYMV(char *uplo, int *n, double *alpha, double *A,
   int *lda, double *X, int *inc_x, double *beta, double *Y, int *inc_y);
 extern void F_DSPMV(char *uplo, int *n, double *alpha, double *A, double *X,
   int *inc_x, double *beta, double *Y, int *inc_y);
@@ -328,6 +341,237 @@ void C_DGEMM(char transa, char transb, int m, int n, int k, double alpha,
   if (m == 0 || n == 0 || k == 0) return;
 
   ::F_DGEMM(&transb,&transa,&n,&m,&k,&alpha,B,&ncb,A,&nca,&beta,C,&ncc);
+
+}
+/*
+*  Purpose
+*  =======
+*  Note: C-style ordering implemented via wrapper
+*  DSYMM  performs one of the matrix-matrix operations
+*
+*     C := alpha*A*B + beta*C,
+*
+*  or
+*
+*     C := alpha*B*A + beta*C,
+*
+*  where alpha and beta are scalars,  A is a symmetric matrix and  B and
+*  C are  m by n matrices.
+*
+*  Parameters
+*  ==========
+*
+*  SIDE   - CHARACTER*1.
+*           On entry,  SIDE  specifies whether  the  symmetric matrix  A
+*           appears on the  left or right  in the  operation as follows:
+*
+*              SIDE = 'L' or 'l'   C := alpha*A*B + beta*C,
+*
+*              SIDE = 'R' or 'r'   C := alpha*B*A + beta*C,
+*
+*           Unchanged on exit.
+*
+*  UPLO   - CHARACTER*1.
+*           On  entry,   UPLO  specifies  whether  the  upper  or  lower
+*           triangular  part  of  the  symmetric  matrix   A  is  to  be
+*           referenced as follows:
+*
+*              UPLO = 'U' or 'u'   Only the upper triangular part of the
+*                                  symmetric matrix is to be referenced.
+*
+*              UPLO = 'L' or 'l'   Only the lower triangular part of the
+*                                  symmetric matrix is to be referenced.
+*
+*           Unchanged on exit.
+*
+*  M      - INTEGER.
+*           On entry,  M  specifies the number of rows of the matrix  C.
+*           M  must be at least zero.
+*           Unchanged on exit.
+*
+*  N      - INTEGER.
+*           On entry, N specifies the number of columns of the matrix C.
+*           N  must be at least zero.
+*           Unchanged on exit.
+*
+*  ALPHA  - DOUBLE PRECISION.
+*           On entry, ALPHA specifies the scalar alpha.
+*           Unchanged on exit.
+*
+*  A      - DOUBLE PRECISION array of DIMENSION ( LDA, ka ), where ka is
+*           m  when  SIDE = 'L' or 'l'  and is  n otherwise.
+*           Before entry  with  SIDE = 'L' or 'l',  the  m by m  part of
+*           the array  A  must contain the  symmetric matrix,  such that
+*           when  UPLO = 'U' or 'u', the leading m by m upper triangular
+*           part of the array  A  must contain the upper triangular part
+*           of the  symmetric matrix and the  strictly  lower triangular
+*           part of  A  is not referenced,  and when  UPLO = 'L' or 'l',
+*           the leading  m by m  lower triangular part  of the  array  A
+*           must  contain  the  lower triangular part  of the  symmetric
+*           matrix and the  strictly upper triangular part of  A  is not
+*           referenced.
+*           Before entry  with  SIDE = 'R' or 'r',  the  n by n  part of
+*           the array  A  must contain the  symmetric matrix,  such that
+*           when  UPLO = 'U' or 'u', the leading n by n upper triangular
+*           part of the array  A  must contain the upper triangular part
+*           of the  symmetric matrix and the  strictly  lower triangular
+*           part of  A  is not referenced,  and when  UPLO = 'L' or 'l',
+*           the leading  n by n  lower triangular part  of the  array  A
+*           must  contain  the  lower triangular part  of the  symmetric
+*           matrix and the  strictly upper triangular part of  A  is not
+*           referenced.
+*           Unchanged on exit.
+*
+*  LDA    - INTEGER.
+*           On entry, LDA specifies the first dimension of A as declared
+*           in the calling (sub) program.  When  SIDE = 'L' or 'l'  then
+*           LDA must be at least  max( 1, m ), otherwise  LDA must be at
+*           least  max( 1, n ).
+*           Unchanged on exit.
+*
+*  B      - DOUBLE PRECISION array of DIMENSION ( LDB, n ).
+*           Before entry, the leading  m by n part of the array  B  must
+*           contain the matrix B.
+*           Unchanged on exit.
+*
+*  LDB    - INTEGER.
+*           On entry, LDB specifies the first dimension of B as declared
+*           in  the  calling  (sub)  program.   LDB  must  be  at  least
+*           max( 1, m ).
+*           Unchanged on exit.
+*
+*  BETA   - DOUBLE PRECISION.
+*           On entry,  BETA  specifies the scalar  beta.  When  BETA  is
+*           supplied as zero then C need not be set on input.
+*           Unchanged on exit.
+*
+*  C      - DOUBLE PRECISION array of DIMENSION ( LDC, n ).
+*           Before entry, the leading  m by n  part of the array  C must
+*           contain the matrix  C,  except when  beta  is zero, in which
+*           case C need not be set on entry.
+*           On exit, the array  C  is overwritten by the  m by n updated
+*           matrix.
+*
+*  LDC    - INTEGER.
+*           On entry, LDC specifies the first dimension of C as declared
+*           in  the  calling  (sub)  program.   LDC  must  be  at  least
+*           max( 1, m ).
+*           Unchanged on exit.
+*/
+void C_DSYMM(char side, char uplo, int m, int n, double alpha,
+           double *A, int nca, double *B, int ncb, double beta, double *C,
+           int ncc)
+{
+
+  /* the only strange thing we need to do is reverse everything
+     since the stride runs differently in C vs. Fortran
+   */
+
+  /* also, do nothing if a dimension is 0 */
+  if (m == 0 || n == 0 ) return;
+
+  if (side == 'R' || side == 'r')
+    side = 'L';
+  else 
+    side = 'R';
+  if (uplo == 'U' || uplo == 'u')
+    uplo = 'L';
+  else 
+    uplo = 'U';
+
+  ::F_DSYMM(&side,&uplo,&n,&m,&alpha,A,&nca,B,&ncb,&beta,C,&ncc);
+
+}
+/*
+*  Purpose
+*  =======
+*  Note: C-style indexing implemented in wrapper
+*  DSYMV  performs the matrix-vector  operation
+*
+*     y := alpha*A*x + beta*y,
+*
+*  where alpha and beta are scalars, x and y are n element vectors and
+*  A is an n by n symmetric matrix.
+*
+*  Arguments
+*  ==========
+*
+*  UPLO   - CHARACTER*1.
+*           On entry, UPLO specifies whether the upper or lower
+*           triangular part of the array A is to be referenced as
+*           follows:
+*
+*              UPLO = 'U' or 'u'   Only the upper triangular part of A
+*                                  is to be referenced.
+*
+*              UPLO = 'L' or 'l'   Only the lower triangular part of A
+*                                  is to be referenced.
+*
+*           Unchanged on exit.
+*
+*  N      - INTEGER.
+*           On entry, N specifies the order of the matrix A.
+*           N must be at least zero.
+*           Unchanged on exit.
+*
+*  ALPHA  - DOUBLE PRECISION.
+*           On entry, ALPHA specifies the scalar alpha.
+*           Unchanged on exit.
+*
+*  A      - DOUBLE PRECISION array of DIMENSION ( LDA, n ).
+*           Before entry with  UPLO = 'U' or 'u', the leading n by n
+*           upper triangular part of the array A must contain the upper
+*           triangular part of the symmetric matrix and the strictly
+*           lower triangular part of A is not referenced.
+*           Before entry with UPLO = 'L' or 'l', the leading n by n
+*           lower triangular part of the array A must contain the lower
+*           triangular part of the symmetric matrix and the strictly
+*           upper triangular part of A is not referenced.
+*           Unchanged on exit.
+*
+*  LDA    - INTEGER.
+*           On entry, LDA specifies the first dimension of A as declared
+*           in the calling (sub) program. LDA must be at least
+*           max( 1, n ).
+*           Unchanged on exit.
+*
+*  X      - DOUBLE PRECISION array of dimension at least
+*           ( 1 + ( n - 1 )*abs( INCX ) ).
+*           Before entry, the incremented array X must contain the n
+*           element vector x.
+*           Unchanged on exit.
+*
+*  INCX   - INTEGER.
+*           On entry, INCX specifies the increment for the elements of
+*           X. INCX must not be zero.
+*           Unchanged on exit.
+*
+*  BETA   - DOUBLE PRECISION.
+*           On entry, BETA specifies the scalar beta. When BETA is
+*           supplied as zero then Y need not be set on input.
+*           Unchanged on exit.
+*
+*  Y      - DOUBLE PRECISION array of dimension at least
+*           ( 1 + ( n - 1 )*abs( INCY ) ).
+*           Before entry, the incremented array Y must contain the n
+*           element vector y. On exit, Y is overwritten by the updated
+*           vector y.
+*
+*  INCY   - INTEGER.
+*           On entry, INCY specifies the increment for the elements of
+*           Y. INCY must not be zero.
+*           Unchanged on exit.
+*/
+void C_DSYMV(char uplo, int n, double alpha, double *A,
+             int nca, double *X, int inc_x, double beta, double *Y,
+             int inc_y)
+{
+  if (n == 0) return;
+
+  if(uplo == 'L' || uplo == 'l') uplo = 'U';
+  else uplo = 'L';
+
+  ::F_DSYMV(&uplo,&n,&alpha,A,&nca,X,&inc_x,&beta,Y,&inc_y);
 
 }
 

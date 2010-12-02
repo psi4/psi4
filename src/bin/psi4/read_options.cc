@@ -137,6 +137,8 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_double("SAPT_MEM_SAFETY",0.9);  
     /*- SAPT DF Basis -*/
     options.add_str("RI_BASIS_SAPT", "");
+    /*- SAPT Quadrature Basis (for functional kernels) -*/
+    options.add_str("RI_BASIS_QUAD", "");
     /*- The DFT grid specification, such as SG1 -*/
     options.add_str("GRID_STRING","","SG1");
     /*- The number of radial points in the DFT grid -*/
