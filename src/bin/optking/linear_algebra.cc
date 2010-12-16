@@ -44,6 +44,8 @@ void opt_matrix_mult(double **A, bool tA, double **B, bool tB, double **C, bool 
   char FtA, FtB;
   int nca, ncb;
 
+  if (!nr || !nl || !nc) return;
+
   if (!tC)  { // reverse A and B to account for different C/Fortran stride
     FtA = (tA ? 'T' : 'N');
     FtB = (tB ? 'T' : 'N');

@@ -24,6 +24,7 @@ class FRAG {
   friend class INTERFRAG;
 
   FRAG(int natom_in, double *Z_in, double **geom_in); // use if Z and geom are known
+  FRAG(int natom_in);
 
   ~FRAG(); // free memory
 
@@ -36,7 +37,8 @@ class FRAG {
   void print_intcos(FILE *fp, int atom_offset=0);
   void print_intco_dat(FILE *fp, int atom_offset=0);
 
-  void update_connectivity_by_distances(double scale_radii = -1);
+  void update_connectivity_by_distances(void);
+  void update_connectivity_by_bonds(void);
 
   void print_connectivity(FILE *fout, const int id, const int offset = 0) const ;
 
@@ -51,6 +53,11 @@ class FRAG {
     n += add_bend_by_connectivity();
     n += add_tors_by_connectivity();
     return n;
+  }
+
+  // add connectivity between two atoms; atom numbers are for fragment
+  void connect(int i, int j) {
+    connectivity[i][j] = connectivity[j][i] = true;
   }
 
   // compute B matrix (intcos.size x 3*natom)
@@ -84,6 +91,7 @@ class FRAG {
 
   // return array of atomic numbers
   double *g_Z(void) const;
+  double *g_Z_pointer(void) { return Z; }
 
   // don't let angles pass through 0
   void check_zero_angles(double const * const dq);
@@ -106,22 +114,39 @@ class FRAG {
 
   int find(const SIMPLE *one) const;
 
-  void displace(double *dq, bool print_disp = false);
+  void displace(double *dq, bool print_disp = false, int atom_offset=0);
 
-  double ** g_geom(void);
-  GeomType g_geom_pointer(void);
+  double ** g_geom_pointer(void) { return geom; };           // returns pointer
+  double ** g_geom(void) const;                              // returns a copy
+  GeomType g_geom_const_pointer(void) const { return geom;}; // returns const pointer
+
   double ** g_grad(void);
+  double ** g_grad_pointer(void) {return grad;};
 
   double * g_geom_array(void);
   double * g_grad_array(void);
   void set_geom_array(double * geom_array_in);
+  void set_geom(double ** geom_in);
   void set_grad(double **grad_in);
 
-  void write_geom(FILE *fp_geom); // write cartesian geometry out for next step
+  void print_geom(FILE *fp_geom); // write cartesian geometry out for next step
 
   double ** H_guess(void); 
   bool **g_connectivity(void) const;
   const bool * const * const g_connectivity_pointer(void) const;
+
+  bool read_intco(std::vector<std::string> & tokens, int first_atom_offset);
+
+  // return matrix of constraints on coordinates
+  double ** compute_constraints(void) const;
+
+  // add any missing hydrogen bonds within the fragment
+  // return number added
+  int add_hbonds(void);
+
+  void intco_add(SIMPLE * i) {
+    intcos.push_back(i);
+  }
 
 };
 

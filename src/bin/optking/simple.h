@@ -24,12 +24,15 @@ class SIMPLE {
                        // atoms with non-zero s-vectors
     int *s_atom;       // atom indices in internal definition
 
+    bool s_frozen;     // is internal coordinate constrained frozen?
+
   public:
 
-    SIMPLE (INTCO_TYPE s_type_in, int s_natom_in) {
+    SIMPLE (INTCO_TYPE s_type_in, int s_natom_in, bool freeze_in) {
       s_type = s_type_in;
       s_natom = s_natom_in;
       s_atom = init_int_array(s_natom);
+      s_frozen = freeze_in;
     };
 
     virtual ~SIMPLE() { // derived class destructors called first; then this one
@@ -40,8 +43,18 @@ class SIMPLE {
     int g_natom(void) const { return s_natom; }
     int g_atom(int a) const { return s_atom[a]; }
 
+    bool is_frozen(void) { return s_frozen; }
+    void freeze(void)    { s_frozen = true; }
+    void unfreeze(void)  { s_frozen = false; }
+
     // do-nothing function overridden only by torsion class
     virtual void fix_near_180(void) { return; }
+
+    // do-nothing function overridden by stretch class 
+    virtual bool is_hbond(void) { return false; }
+
+    // do-nothing function overridden by stretch class 
+    virtual bool is_inverse_stre(void) { return false; }
 
     // each internal coordinate type must provide the following virtual functions:
 
@@ -63,7 +76,7 @@ class SIMPLE {
 
     // print coordinates and displacements 
     virtual void print_disp(FILE *fp, const double old_q, const double f_q,
-      const double dq, const double new_q) const = 0;
+      const double dq, const double new_q, int atom_offset = 0) const = 0;
 
     // for debugging, print s vectors to output file
     virtual void print_s(FILE *fp, GeomType geom) const = 0;

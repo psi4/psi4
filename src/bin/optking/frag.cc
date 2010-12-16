@@ -31,6 +31,16 @@ FRAG::FRAG(int natom_in, double *Z_in, double **geom_in) {
   mass = init_array(natom);
 }
 
+FRAG::FRAG(int natom_in) {
+  natom = natom_in;
+
+  Z = init_array(natom);
+  geom = init_matrix(natom,3);
+  grad = init_matrix(natom,3);
+  connectivity = init_bool_matrix(natom,natom);
+  mass = init_array(natom);
+}
+
 FRAG::~FRAG() {
   //printf("Destructing fragment\n");
   free_array(Z);
@@ -84,10 +94,10 @@ void FRAG::print_geom_grad(FILE *fp, const int id, bool print_masses) {
   fprintf(fp, "\n");
 }
 
-void FRAG::write_geom(FILE *fp_geom) {
+void FRAG::print_geom(FILE *fp_geom) {
   for (int i=0; i<natom; ++i)
-    fprintf(fp_geom, "( %15.10lf %15.10lf %15.10lf %15.10lf) \n",
-      Z[i], geom[i][0], geom[i][1], geom[i][2]);
+    fprintf(fp_geom, "\t  %3s  %15.10lf%15.10lf%15.10lf\n",
+      Z_to_symbol[(int) Z[i]], geom[i][0], geom[i][1], geom[i][2]);
 }
 
 
@@ -96,6 +106,7 @@ void FRAG::print_intcos(FILE *fp, int atom_offset) {
   for (int i=0; i<intcos.size(); ++i)
     intcos.at(i)->print(fp,geom,atom_offset);
   fprintf(fp, "\n");
+  fflush(fp);
 }
 
 void FRAG::print_intco_dat(FILE *fp, int atom_offset) {
@@ -106,12 +117,10 @@ void FRAG::print_intco_dat(FILE *fp, int atom_offset) {
 
 // automatically determine bond connectivity by comparison of interatomic distance
 //with scale_connectivity * sum of covalent radii
-void FRAG::update_connectivity_by_distances(double scale) {
+void FRAG::update_connectivity_by_distances(void) {
   int i, j, *Zint;
   double Rij;
-
-  if (scale == -1) // not specified by argument, so use default
-    scale = Opt_params.scale_connectivity;
+  double scale = Opt_params.scale_connectivity;
 
   Zint = new int [natom];
   for (i=0; i<natom; ++i) {
@@ -119,6 +128,10 @@ void FRAG::update_connectivity_by_distances(double scale) {
     if ( Zint[i] > LAST_COV_RADII_INDEX )
       throw("Warning: cannot automatically bond atom with strange atomic number");
   }
+
+  for (i=0; i<natom; ++i)
+    for (j=0; j<natom; ++j)
+      connectivity[i][j] = false;
 
   for (i=0; i<natom; ++i) {
     for (j=0; j<i; ++j) {
@@ -128,6 +141,21 @@ void FRAG::update_connectivity_by_distances(double scale) {
     }
   }
   delete [] Zint;
+}
+
+//build connectivity matrix from the current set of bonds
+void FRAG::update_connectivity_by_bonds(void) {
+  for (int i=0; i<natom; ++i)
+    for (int j=0; j<natom; ++j)
+      connectivity[i][j] = false;
+
+  for (int i=0; i<intcos.size(); ++i) {
+    if (intcos.at(i)->g_type() == stre_type) {
+      int a = intcos.at(i)->g_atom(0);
+      int b = intcos.at(i)->g_atom(1);
+      connectivity[a][b] = connectivity[b][a] = true;
+    }
+  }
 }
 
 void FRAG::print_connectivity(FILE *fp, const int id, const int offset) const {
@@ -163,6 +191,51 @@ int FRAG::add_stre_by_connectivity(void) {
   return nadded;
 }
 
+// Add missing hydrogen bond stretches - return number added
+// defined as [O,N,F,Cl]-H ... [O,N,F,Cl] with distance < 2.3 Angstroms
+// and angle greater than 90 degrees
+int FRAG::add_hbonds(void) {
+  int nadded = 0;
+  double dist, ang;
+  const double pi = acos(-1);
+
+  bool *is_X = init_bool_array(natom);
+  bool *is_H = init_bool_array(natom);
+  for (int i=0; i<natom; ++i) {
+    if (Z[i] == 1)
+      is_H[i] = true;
+    else if (Z[i] == 7 || Z[i] == 8 || Z[i] == 9 || Z[i] == 17)
+      is_X[i] = true;
+  }
+
+  for (int x=0; x<natom; ++x) {
+    if (is_X[x]) { // electronegative atom
+      for (int h=0; h<natom; ++h) {
+        if (connectivity[x][h] && is_H[h]) { // x is bonded to h
+          for (int y=0; y<natom; ++y) {
+            if (y != x && is_X[y]) {    // eligible y exists
+              dist = v3d_dist(geom[h], geom[y]);  // check distance
+              if (dist < Opt_params.maximum_H_bond_distance) { // y is close enough to h
+                if (v3d_angle(geom[x], geom[h], geom[y], ang)) { // now check bond angle
+                  if (ang > pi/2) {
+                    STRE *one_stre = new STRE(h,y);
+                    one_stre->make_hbond();
+                    if (!present(one_stre)) {
+                      intcos.push_back(one_stre);
+                      ++nadded;
+                    } 
+                    else delete one_stre;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return nadded;
+}
 
 // angles for all bonds present; return number added
 int FRAG::add_bend_by_connectivity(void) {
@@ -276,6 +349,19 @@ double ** FRAG::compute_B(void) const {
   return B;
 }
 
+// returns matrix of constraints (for now, 1's on diagonals to be frozen)
+double ** FRAG::compute_constraints(void) const {
+  double **C = init_matrix(intcos.size(), intcos.size());
+
+  for (int i=0; i<intcos.size(); ++i)
+    if (intcos[i]->is_frozen())
+      C[i][i] = 1.0;
+  //print_matrix(stdout, C, intcos.size(), intcos.size());
+
+  return C;
+}
+
+
 // returns B matrix of internal coordinates; use previously allocated memory
 void FRAG::compute_B(double **B) const {
   double **Bintco;
@@ -316,6 +402,12 @@ void FRAG::set_geom_array(double * geom_array_in) {
       geom[i][xyz] = geom_array_in[cnt++];
 }
 
+void FRAG::set_geom(double ** geom_in) {
+  for (int i=0; i<natom; ++i)
+    for (int xyz=0; xyz<3; ++xyz)
+      geom[i][xyz] = geom_in[i][xyz];
+}
+
 void FRAG::set_grad(double ** grad_in) {
   for (int i=0; i<natom; ++i) {
     grad[i][0] = grad_in[i][0];
@@ -324,20 +416,16 @@ void FRAG::set_grad(double ** grad_in) {
   }
 } 
 
-double ** FRAG::g_geom(void) {
+double ** FRAG::g_geom(void) const {
   double **g = matrix_return_copy(geom,natom,3);
   return g;
 }
 
-GeomType FRAG::g_geom_pointer(void) {
-  return geom;
-}
-
 double * FRAG::g_geom_array(void) {
-  int i, xyz, cnt=0;
+  int cnt=0;
   double * geom_array = init_array(3*natom);
-  for (i=0; i<natom; ++i)
-    for (xyz=0; xyz<3; ++xyz)
+  for (int i=0; i<natom; ++i)
+    for (int xyz=0; xyz<3; ++xyz)
       geom_array[cnt++] = geom[i][xyz];
   return geom_array; 
 }
@@ -384,7 +472,6 @@ bool ** FRAG::g_connectivity(void) const {
 const bool * const * const FRAG::g_connectivity_pointer(void) const {
   return connectivity;
 }
-
 
 }
 

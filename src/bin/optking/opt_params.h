@@ -15,13 +15,16 @@ struct OPT_PARAMS {
   double conv_max_DE;
   double conv_max_disp;
 
-  // variable meanings are described in set_params.cc
+  // variable meanings are described in more detail in set_params.cc
   double scale_connectivity;  
 
-  // whether to do root following
-  bool rfo_follow_root;
-  // default= 1
-  int rfo_root;
+  enum FRAGMENT_MODE {SINGLE, MULTI} fragment_mode;
+
+  bool generate_intcos_only;
+
+  bool rfo_follow_root; // whether to do root following
+  int rfo_root;         // which root to follow
+  double rfo_normalization_min; // small threshold for rfo normalization
 
   enum {NR, RFO} step_type; // Newton-Raphson (NR) or RFO step
 
@@ -35,10 +38,18 @@ struct OPT_PARAMS {
 
   // related to step taken
   double intrafragment_step_limit;
-  // maximum change in aJ/Ang^2 allowed by Hessian updates
-  double H_change_limit;
 
-  bool frag_dist_rho;
+  // whether to limit changes in Hessian due to update
+  bool H_update_limit;
+  // changes in H are limited to H_update_limit_scale * the previous value
+  // if they exceed that, then they are limited to H_update_limit_max
+  double H_update_limit_scale;
+  double H_update_limit_max;
+
+  // whether to use 1/R as the distance coordinate in interfragment stretching modes
+  bool interfragment_distance_inverse;
+
+  double maximum_H_bond_distance;
 
 // ** Unlikely to need modified **
 
@@ -47,22 +58,31 @@ struct OPT_PARAMS {
 
   // torsional angles will not be computed if the contained bond angles are within
   // this fraction of pi from 0 or from pi
-  double error_tors_angle;  
+  double tors_angle_lim;
 
-  double collinear_lim; // as above, how close to 0 or pi counts as linear for angles
+  double bend_collinear_tol; // as above, how close to 0 or pi counts as linear for angles
+
+  double tors_cos_tol; // cos(angle) must be this close to -1/+1 for angle to count as 0/pi
 
   // threshold for which entries in diagonalized redundant matrix are kept and inverted
   // while computing a generalized inverse of a matrix
   double redundant_eval_tol;
 
-  // number of allowed iterations in backtransformation to cartesian coordinates
+  // maximum number of allowed iterations in backtransformation to cartesian coordinates
   double bt_max_iter;
-  // required convergence for backtransformation on internal coordinates
-  double bt_dq_conv_rms;
-  double bt_dq_conv_max;
+
+  // rms and max change in cartesian coordinates in backtransformation
+  double bt_dx_conv;
+
+  // give up on backtransformation iterations if change rms from one iteration to the 
+  // next is below this value
+  double bt_dx_conv_rms_change;
 
   //1=default; 2=medium; 3=lots
   int print_lvl;
+
+  bool test_B; // whether to test B matrices
+  bool test_derivative_B; // whether to test derivative B matrices
 
 };
 

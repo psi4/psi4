@@ -13,6 +13,8 @@
 
 namespace opt {
 
+using namespace v3d;
+
 INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
     double **weightA_in, double **weightB_in, int ndA_in, int ndB_in) {
 
@@ -27,31 +29,149 @@ INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
 
   double **inter_geom = init_matrix(6,3); // some rows may be unused
 
-  // create pseudo-fragment with atomic numbers at 6
+  // create pseudo-fragment with atomic numbers at 6 positions
   // the atomic numbers may only affect Hessian guess routines
   double *Z = init_array(6);
   for (int i=0; i<6; ++i) Z[i] = 6;
   inter_frag = new FRAG(6, Z, inter_geom);
 
+  STRE *one_stre = NULL;  // RAB
+  BEND *one_bend = NULL;  // theta_A
+  BEND *one_bend2 = NULL; // theta_B
+  TORS *one_tors  = NULL; // tau
+  TORS *one_tors2 = NULL; // phi_A
+  TORS *one_tors3 = NULL; // phi_B
+
   update_reference_points();
 
+  // turn unusued coordinates off below
+  for (int i=0; i<6; ++i) D_on[i] = true;
+ 
   if (ndA == 3 && ndB == 3) {
-    for (int i=0; i<6; ++i) D_on[i] = true;
-
+    one_stre  = new STRE(2, 3);    // RAB
+    one_bend  = new BEND(1, 2, 3); // theta_A
+    one_bend2 = new BEND(2, 3, 4); // theta_B
+    one_tors  = new TORS(1, 2, 3, 4); // tau
+    one_tors2 = new TORS(0, 1, 2, 3); // phi_A
+    one_tors3 = new TORS(2, 3, 4, 5); // phi_B
+  }
+  else if (ndA == 3 && ndB == 2) {
+    D_on[5] = false; // no phi_B
+    one_stre  = new STRE(2, 3);    // RAB
+    one_bend  = new BEND(1, 2, 3); // theta_A
+    one_bend2 = new BEND(2, 3, 4); // theta_B
+    one_tors  = new TORS(1, 2, 3, 4); // tau
+    one_tors2 = new TORS(0, 1, 2, 3); // phi_A
+  }
+  else if (ndA == 2 && ndB == 3) {
+    D_on[4] = false; // no phi_A
+    one_stre  = new STRE(2, 3);    // RAB
+    one_bend  = new BEND(1, 2, 3); // theta_A
+    one_bend2 = new BEND(2, 3, 4); // theta_B
+    one_tors  = new TORS(1, 2, 3, 4); // tau
+    one_tors3 = new TORS(2, 3, 4, 5); // phi_B
+  }
+  else if (ndA == 3 && ndB == 1) {
+    D_on[2] = D_on[3] = D_on[5] = false; // no theta_B, tau, phi_B
     STRE *one_stre  = new STRE(2, 3);    // RAB
     BEND *one_bend  = new BEND(1, 2, 3); // theta_A
-    BEND *one_bend2 = new BEND(2, 3, 4); // theta_B
-    TORS *one_tors  = new TORS(1, 2, 3, 4); // tau
     TORS *one_tors2 = new TORS(0, 1, 2, 3); // phi_A
-    TORS *one_tors3 = new TORS(2, 3, 4, 5); // phi_B
-
-    inter_frag->intcos.push_back(one_stre);
-    inter_frag->intcos.push_back(one_bend);
-    inter_frag->intcos.push_back(one_bend2);
-    inter_frag->intcos.push_back(one_tors);
-    inter_frag->intcos.push_back(one_tors2);
-    inter_frag->intcos.push_back(one_tors3);
   }
+  else if (ndA == 1 && ndB == 3) {
+    D_on[1] = D_on[3] = D_on[4] = false; // no theta_A, tau, phi_A
+    one_stre  = new STRE(2, 3);    // RAB
+    one_bend2 = new BEND(2, 3, 4); // theta_B
+    one_tors3 = new TORS(2, 3, 4, 5); // phi_B
+  }
+  else if (ndA == 2 && ndB == 2) {
+    D_on[4] = D_on[5] = false; // no phi_A, phi_B
+    one_stre  = new STRE(2, 3);    // RAB
+    one_bend  = new BEND(1, 2, 3); // theta_A
+    one_bend2 = new BEND(2, 3, 4); // theta_B
+    one_tors  = new TORS(1, 2, 3, 4); // tau
+  }
+  else if (ndA == 2 && ndB == 1) {
+    D_on[2] = D_on[4] = D_on[5] = false; // no theta_B, phi_A, phi_B
+    one_stre  = new STRE(2, 3);    // RAB
+    one_bend  = new BEND(1, 2, 3); // theta_A
+    one_tors  = new TORS(1, 2, 3, 4); // tau
+  }
+  else if (ndA == 1 && ndB == 2) {
+    D_on[1] = D_on[4] = D_on[5] = false; // no theta_A, phi_A, phi_B
+    one_stre  = new STRE(2, 3);    // RAB
+    one_bend2 = new BEND(2, 3, 4); // theta_B
+    one_tors  = new TORS(1, 2, 3, 4); // tau
+  }
+  else if (ndA == 1 && ndB == 1) {
+    D_on[1] = D_on[2] = D_on[3] = D_on[4] =  D_on[5] = false;
+    one_stre  = new STRE(2, 3);    // RAB
+  }
+  else {
+    throw("INTERFRAG::INTERFRAG Num. reference points on each fragment must be at least 1.");
+  }
+
+  // check if stretch is a H-bond or includes something H-bond like (remember stretch is
+  // in general between linear combinations of atoms
+  double ang;
+
+  bool *is_XA = init_bool_array(g_natom());
+  for (int a=0; a<A->g_natom(); ++a)
+    if (A->Z[a] == 7 || A->Z[a] == 8 || A->Z[a] == 9 || A->Z[a] == 17)
+      is_XA[a] = true;
+
+  bool *is_XB = init_bool_array(g_natom());
+  for (int b=0; b<B->g_natom(); ++b)
+    if (B->Z[b] == 7 || B->Z[b] == 8 || B->Z[b] == 9 || B->Z[b] == 17)
+      is_XB[b] = true;
+
+  // Look for A[X]-A[H] ... B[Y]
+  for (int h=0; h<A->natom; ++h) {
+    if (weightA[0][h] != 0.0 && A->Z[h] == 1.0) { // H atom is (part of) A[0]
+      for (int x=0; x<A->natom; ++x) {
+        if (A->connectivity[x][h] && is_XA[x]) {  // electronegative X atom is present
+          for (int y=0; y<B->natom; ++y) {
+            if (weightB[0][y] != 0.0 && is_XB[y]) { // electronegative Y atom is part of B[0]
+              if (v3d_angle(A->geom[x], A->geom[h], B->geom[y], ang)) { //check angle
+                if (ang < _pi/2)
+                  one_stre->make_hbond();
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Look for A[Y]...B[H]-B[X]
+  for (int h=0; h<B->natom; ++h) {
+    if (weightB[0][h] != 0.0 && B->Z[h] == 1.0) { // H atom is (part of) B[0]
+      for (int x=0; x<B->natom; ++x) {
+        if (B->connectivity[x][h] && is_XB[x]) {  // electronegative X atom is present
+          for (int y=0; y<A->natom; ++y) {
+            if (weightA[0][y] != 0.0 && is_XA[y]) { // electronegative Y atom is part of A[0]
+              if (v3d_angle(B->geom[x], B->geom[h], A->geom[y], ang)) { //check angle
+                if (ang < _pi/2)
+                  one_stre->make_hbond();
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  if (Opt_params.interfragment_distance_inverse) {
+    one_stre->make_inverse_stre(); 
+printf("Using interfragment 1/R distance coordinate\n");
+  }
+  if (one_stre->is_hbond())
+printf("Detected H-bonding interfragment coordinate\n");
+
+  if (one_stre  != NULL) inter_frag->intcos.push_back(one_stre);
+  if (one_bend  != NULL) inter_frag->intcos.push_back(one_bend);
+  if (one_bend2 != NULL) inter_frag->intcos.push_back(one_bend2);
+  if (one_tors  != NULL) inter_frag->intcos.push_back(one_tors);
+  if (one_tors2 != NULL) inter_frag->intcos.push_back(one_tors2);
+  if (one_tors3 != NULL) inter_frag->intcos.push_back(one_tors3);
 }
 
 // update location of reference points using given geometries
@@ -81,6 +201,25 @@ int INTERFRAG::g_nintco(void) const {
   return dim;
 }
 
+// freeze coordinate i if D_freeze[i]; index runs 0->6 as does D_on
+void INTERFRAG::freeze(bool *D_freeze) {
+  int cnt = -1;
+  for (int i=0; i<6; ++i) {
+    if (D_on[i]) {
+      ++cnt;
+      if (D_freeze[i])
+        inter_frag->intcos[cnt]->freeze();
+    }
+  }
+}
+
+// is coordinate J frozen?  J runs over only active coordinates.
+bool INTERFRAG::is_frozen(int J) { 
+  if (J < 0 || J > g_nintco())
+    throw("INTERFRAG::is_frozen() index J runs only over active coordinates");
+  return inter_frag->intcos[J]->is_frozen();
+}
+
 // compute and return coordinate values - using given fragment geometries
 double * INTERFRAG::intco_values(GeomType new_geom_A, GeomType new_geom_B) {
   update_reference_points(new_geom_A, new_geom_B);
@@ -105,7 +244,7 @@ double ** INTERFRAG::compute_B(GeomType new_geom_A, GeomType new_geom_B) {
   double **B_ref; // derivative of interfragment D wrt reference point position
 
   if (D_on[0]) {
-    B_ref = inter_frag->intcos.at(0)->DqDx(inter_frag->geom); // RAB, returns (2,3)
+    B_ref = inter_frag->intcos.at(cnt)->DqDx(inter_frag->geom); // RAB, returns (2,3)
     for (xyz=0; xyz<3; ++xyz) {
       for (int a=0; a<natomA; ++a)
         B[cnt][3*a + xyz] += weightA[0][a] * B_ref[0][xyz];
@@ -117,7 +256,7 @@ double ** INTERFRAG::compute_B(GeomType new_geom_A, GeomType new_geom_B) {
   }
 
   if (D_on[1]) {
-    B_ref = inter_frag->intcos.at(1)->DqDx(inter_frag->geom); // theta_A, returns (3,3)
+    B_ref = inter_frag->intcos.at(cnt)->DqDx(inter_frag->geom); // theta_A, returns (3,3)
     for (xyz=0; xyz<3; ++xyz)  {
       for (int a=0; a<natomA; ++a) {
         B[cnt][3*a + xyz] += weightA[1][a] * B_ref[0][xyz];
@@ -131,7 +270,7 @@ double ** INTERFRAG::compute_B(GeomType new_geom_A, GeomType new_geom_B) {
   }
 
   if (D_on[2]) {
-    B_ref = inter_frag->intcos.at(2)->DqDx(inter_frag->geom); // theta_B, returns (3,3)
+    B_ref = inter_frag->intcos.at(cnt)->DqDx(inter_frag->geom); // theta_B, returns (3,3)
     for (xyz=0; xyz<3; ++xyz)  {
       for (int a=0; a<natomA; ++a)
         B[cnt][3*a + xyz] += weightA[0][a] * B_ref[0][xyz];
@@ -145,7 +284,7 @@ double ** INTERFRAG::compute_B(GeomType new_geom_A, GeomType new_geom_B) {
   }
 
   if (D_on[3]) {
-    B_ref = inter_frag->intcos.at(3)->DqDx(inter_frag->geom); // tau, returns (4,3)
+    B_ref = inter_frag->intcos.at(cnt)->DqDx(inter_frag->geom); // tau, returns (4,3)
     for (xyz=0; xyz<3; ++xyz)  {
       for (int a=0; a<natomA; ++a) {
         B[cnt][3*a + xyz] += weightA[1][a] * B_ref[0][xyz];
@@ -161,7 +300,7 @@ double ** INTERFRAG::compute_B(GeomType new_geom_A, GeomType new_geom_B) {
   }
 
   if (D_on[4]) {
-    B_ref = inter_frag->intcos.at(4)->DqDx(inter_frag->geom); // phi_A, returns (4,3)
+    B_ref = inter_frag->intcos.at(cnt)->DqDx(inter_frag->geom); // phi_A, returns (4,3)
     for (xyz=0; xyz<3; ++xyz)  {
       for (int a=0; a<natomA; ++a) {
         B[cnt][3*a + xyz] += weightA[2][a] * B_ref[0][xyz];
@@ -176,7 +315,7 @@ double ** INTERFRAG::compute_B(GeomType new_geom_A, GeomType new_geom_B) {
   }
 
   if (D_on[5]) {
-    B_ref = inter_frag->intcos.at(5)->DqDx(inter_frag->geom); // phi_B, returns (4,3)
+    B_ref = inter_frag->intcos.at(cnt)->DqDx(inter_frag->geom); // phi_B, returns (4,3)
     for (xyz=0; xyz<3; ++xyz)  {
       for (int a=0; a<natomA; ++a)
         B[cnt][3*a + xyz] += weightA[0][a] * B_ref[0][xyz];
@@ -374,7 +513,7 @@ double **INTERFRAG::compute_derivative_B(int J, GeomType new_geom_A, GeomType ne
 }
 
 
-void INTERFRAG::print_intcos(FILE *fp) const {
+void INTERFRAG::print_intcos(FILE *fp, int off_A, int off_B) const {
   fprintf(fp,"\t---Interfragment Coordinates Between Fragments %d and %d---\n", 
     A_index+1, B_index+1);
   fprintf(fp,"\t * Reference Points *\n");
@@ -383,7 +522,8 @@ void INTERFRAG::print_intcos(FILE *fp) const {
     if (i<ndA) {
       fprintf(fp,"\t\t %d A%d :", cnt+1, i+1);
       for (int j=0; j<A->g_natom(); ++j)
-        if (weightA[i][j] != 0.0) fprintf(fp," %d/%5.3f", j+1, weightA[i][j]);
+        if (weightA[i][j] != 0.0)
+          fprintf(fp," %d/%5.3f", off_A+j+1, weightA[i][j]);
       fprintf(fp,"\n");
     }
   }
@@ -391,7 +531,8 @@ void INTERFRAG::print_intcos(FILE *fp) const {
     if (i < ndB) {
       fprintf(fp,"\t\t %d B%d :", cnt+1, i+1);
       for (int j=0; j<B->g_natom(); ++j)
-        if (weightB[i][j] != 0.0) fprintf(fp," %d/%5.3f", j+1, weightB[i][j]);
+        if (weightB[i][j] != 0.0)
+          fprintf(fp," %d/%5.3f", off_B+j+1, weightB[i][j]);
       fprintf(fp,"\n");
     }
   }
@@ -413,32 +554,68 @@ void INTERFRAG::print_intco_dat(FILE *fp, int off_A, int off_B) const {
   }
 }
 
+// Make the initial Hessian guess for interfragment coordinates
 double ** INTERFRAG::H_guess(void) {
   double **H;
+
+  // use formulas from Fischer et al - not designed for interfragment modes
   if (Opt_params.interfragment_H == OPT_PARAMS::FISCHER_LIKE) {
-        // H_guess uses Opt_params.intrafragment_H on inter_frag, so set and restore value
-        OPT_PARAMS::INTRAFRAGMENT_HESSIAN i = Opt_params.intrafragment_H ;
-        Opt_params.intrafragment_H = OPT_PARAMS::FISCHER;
-        H = inter_frag->H_guess();
-        Opt_params.intrafragment_H = i;
+    // H_guess uses intrafragment_H on inter_frag, so set and restore value
+    OPT_PARAMS::INTRAFRAGMENT_HESSIAN i = Opt_params.intrafragment_H ;
+    Opt_params.intrafragment_H = OPT_PARAMS::FISCHER;
+    H = inter_frag->H_guess();
+    Opt_params.intrafragment_H = i;
   }
-  else {
+  else { // DEFAULT
     H = init_matrix(inter_frag->g_nintco(), inter_frag->g_nintco());
-    int cnt = 0;
-    if (D_on[0]) { // FISCHER formula for stretch
-      double rAB = v3d::v3d_dist(inter_frag->geom[2], inter_frag->geom[3]);
-      H[cnt][cnt] = 0.3601 * exp(-1.944*(rAB - 4.0));
-      if (H[cnt][cnt] > 3) H[cnt][cnt] = 3;
-      if (Opt_params.frag_dist_rho) H[cnt][cnt] *= pow(rAB,4);
+    int cnt=0;
+    double rAB;
+
+    if (Opt_params.interfragment_distance_inverse)
+      rAB = inter_frag->intcos[0]->value(inter_frag->geom);
+
+    if (inter_frag->intcos[0]->is_hbond()) {
+
+      H[cnt][cnt] = 0.03;
+      if (Opt_params.interfragment_distance_inverse)
+        H[cnt][cnt] *= pow(rAB,4);
       ++cnt;
+
+      if (D_on[1]) { H[cnt][cnt] = 0.007; ++cnt; }
+      if (D_on[2]) { H[cnt][cnt] = 0.007; ++cnt; }
+      if (D_on[3]) { H[cnt][cnt] = 0.002; ++cnt; }
+      if (D_on[4]) { H[cnt][cnt] = 0.002; ++cnt; }
+      if (D_on[5]) { H[cnt][cnt] = 0.002; ++cnt; }
     }
-    if (D_on[1]) { H[cnt][cnt] = 0.001;  ++cnt; }
-    if (D_on[2]) { H[cnt][cnt] = 0.001;  ++cnt; }
-    if (D_on[3]) { H[cnt][cnt] = 0.0005; ++cnt; }
-    if (D_on[4]) { H[cnt][cnt] = 0.0005; ++cnt; }
-    if (D_on[5]) { H[cnt][cnt] = 0.0005; ++cnt; }
+    else {
+
+      H[cnt][cnt] = 0.007;
+      if (Opt_params.interfragment_distance_inverse)
+        H[cnt][cnt] *= pow(rAB,4);
+      ++cnt;
+
+      if (D_on[1]) { H[cnt][cnt] = 0.003;  ++cnt; }
+      if (D_on[2]) { H[cnt][cnt] = 0.003;  ++cnt; }
+      if (D_on[3]) { H[cnt][cnt] = 0.001; ++cnt; }
+      if (D_on[4]) { H[cnt][cnt] = 0.001; ++cnt; }
+      if (D_on[5]) { H[cnt][cnt] = 0.001; ++cnt; }
+    }
+  
   }
   return H;
+}
+
+// return matrix with 1's on diagonal for frozen coordinates
+double ** INTERFRAG::compute_constraints(void) const {
+  double **C = init_matrix(g_nintco(), g_nintco());
+  int cnt = 0;
+  for (int i=0; i<6; ++i) {
+    if (D_on[i]) {
+      if (inter_frag->intcos[cnt++]->is_frozen())
+        C[i][i] = 1.0;
+    }
+  }
+  return C;
 }
 
 } // opt

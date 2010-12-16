@@ -7,6 +7,7 @@
 #define _opt_interfrag_h_
 
 #include "linear_algebra.h"
+#include "physconst.h"
 
 namespace opt {
 /*
@@ -49,6 +50,7 @@ class INTERFRAG {
 
   bool D_on[6]; // indicates which coordinates [0-5] are present;
                 // if ndA or ndB <3, then not all 6 coordinates are defined
+
   public:
 
   // memory provided by calling function
@@ -79,6 +81,12 @@ class INTERFRAG {
     intco_values(A->geom, B->geom);
   }
 
+  // freeze coordinate i if D_freeze[i]; index runs 0->6 as does D_on
+  void freeze(bool *D_freeze);
+
+  // is coordinate J frozen?  J runs over only active coordinates.
+  bool is_frozen(int J);
+
   // compute and return coordinate values - using given fragment geometries
   double *intco_values(GeomType new_geom_A, GeomType new_geom_B);
 
@@ -97,7 +105,7 @@ class INTERFRAG {
   double **compute_derivative_B(int intco_index, GeomType new_geom_A, GeomType new_geom_B);
 
   // print reference point definitions and values of coordinates
-  void print_intcos(FILE *fp) const;
+  void print_intcos(FILE *fp, int A_off=0, int B_off=0) const;
 
   // print coordinate definitions
   void print_intco_dat(FILE *fp, int atom_offset_A=0, int atom_offset_B=0) const;
@@ -121,6 +129,8 @@ class INTERFRAG {
   double ** H_guess(void); // guess Hessian
 
   bool orient_fragment(double *q_target);
+
+  double ** compute_constraints(void) const;
 
 }; // class INTERFRAG
 

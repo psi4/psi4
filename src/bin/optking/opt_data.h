@@ -11,11 +11,7 @@
 #include "molecule.h"
 #include "print.h"
 
-#if defined(PSI4)
-#include "physconst.h"
-#include <libpsio/psio.h>
-#include <psifiles.h>
-#endif
+#include "io.h"
 
 namespace opt {
 
@@ -48,25 +44,17 @@ class STEP_DATA {
     void save_step_info(double DE_predicted_in, double *unit_step_in, double dq_norm_in,
      double dq_gradient_in, double dq_hessian_in, int Nintco);
 
-    // write step to binary file
-#if defined(PSI4)
+    // functions to read and write a step to the binary file
     void write(int istep, int Nintco, int Ncart);
-#elif defined (QCHEM4)
-    void write(ofstream & fout, int Nintco, int Ncart);
-#endif
-
     // read step from binary file
-#if defined(PSI4)
     void read(int istep, int Nintco, int Ncart);
-#elif defined (QCHEM4) 
-    void read(ifstream & fin, int Nintco, int Ncart);
-#endif
 
     // functions to retrieve data
     double *g_forces_pointer(void) const { return f_q; }
-    double *g_geom_pointer(void) const { return geom; }
+    double *g_geom_const_pointer(void) const { return geom; }
     double *g_dq_pointer(void) const { return dq; }
     double g_energy(void) const { return energy; }
+    double g_DE_predicted(void) const { return DE_predicted; }
 };
 
 // data for an optimization
@@ -122,10 +110,17 @@ class OPT_DATA {
     double *g_dq_pointer(void) const {
       return steps[steps.size()-1]->g_dq_pointer();
     }
-    // return current data
+    // return energy from the previous step (last entry - 1)
     double g_last_energy(void) const {
       if (steps.size() > 1)
         return steps[steps.size()-2]->g_energy();
+      else return 0.0;
+    }
+
+    // return predicted energy change at the previous step (last entry - 1)
+    double g_last_DE_predicted(void) const {
+      if (steps.size() > 1)
+        return steps[steps.size()-2]->g_DE_predicted();
       else return 0.0;
     }
 
@@ -136,12 +131,14 @@ class OPT_DATA {
     double *g_forces_pointer(int i) const {
       return steps.at(i)->g_forces_pointer();
     }
-    double *g_geom_pointer(int i) const {
-      return steps.at(i)->g_geom_pointer();
+    double *g_geom_const_pointer(int i) const {
+      return steps.at(i)->g_geom_const_pointer();
     }
     double *g_dq_pointer(int i) const {
       return steps.at(i)->g_dq_pointer();
     }
+
+    bool previous_step_report(void) const;
 
     // check convergence of current step
     bool conv_check(void) const;
@@ -154,6 +151,7 @@ class OPT_DATA {
 
     // read in cartesian Hessian
     double ** read_cartesian_H(void) const;
+
 };
 
 };

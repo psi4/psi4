@@ -1,0 +1,119 @@
+*********************
+Package specific info 
+*********************
+
+*io.h
+contains declarations for wrapper functions to read and write from the binary i/o file
+
+*globals.h
+PSI/QCHEM : declares text output file (opt::outfile)
+PSI :
+defines set names of files for input/output
+includes "psi4-dec.h"
+
+*optking.cc:
+PSI/QCHEM :
+ define return type OptReturnType for optking function
+ defines the possible optking return values (at top of file)
+
+ functions to open/set and close opt::outfile file pointer
+
+ opens/closes intco.dat file for writing
+ opens/closes intco.dat file stream for reading
+
+PSI: accepts psi::Options object as argument
+
+* set_params.cc:
+assign values to optimization keyword options
+
+* geom_gradients_io.cc
+read_natoms()     gets number of atoms and returns it
+read_geom_grad()  gets geometry and gradient and inserts into molecule fragment
+
+****
+Libraries
+****
+
+The "v3d" library (in namespace opt::v3d) contains functions that
+operate on arrays with 3 elements (3D-vectors).
+
+The "mem" library (in namespace opt) provides memory allocation
+and deallocation functions.
+
+****
+Internal Coordinate Classes
+****
+
+The "simple.h" header declares SIMPLE, a simple internal coordinate base class containing
+INTCO_TYPE s_type  - the type of simple coordinate (stre, bend, etc.)
+int s_natom   - the # of atoms in definition
+int *s_atom   - indices of atoms in definition (numbering within the fragment)
+bool s_frozen - whether the coordinate is frozen
+
+These variables are retrieved using the public functions:
+g_type(); g_natom(); g_atom(int a); is_frozen();
+
+Frozenness is toggled by freeze() , unfreeze() .
+
+Some derived class functions are
+virtual void fix_near_180(); // for torions
+virtual bool is_hbond();     // for stretches - whether H-bond
+virtual bool is_inverse_stre() // for stretches - whether 1/R
+
+Contains the following virtual functions which must be provided by derived classes:
+// function to print coordinate definitions to file
+virtual void print_intco_dat(FILE *fp, int atom_offset=0) const = 0;
+// return value of internal coordinate
+virtual double value(GeomType geom) const = 0;
+// compute s vector (dq/dx, dq/dy, dq/dz)
+virtual double ** DqDx(GeomType geom) const = 0;
+// compute second derivative (B' matrix elements)
+// dq_i dq_j / dx^2, dydx, dy^2, dzdx, dzdy, dz^2 
+virtual double ** Dq2Dx2(GeomType geom) const = 0;
+// print coordinates and value to output file
+virtual void print(FILE *fp, GeomType geom, int atom_offset=0) const = 0;
+// print coordinates and displacements 
+virtual void print_disp(FILE *fp, const double old_q, const double f_q,
+const double dq, const double new_q, int atom_offset = 0) const = 0;
+// for debugging, print s vectors to output file
+virtual void print_s(FILE *fp, GeomType geom) const = 0;
+// an equality operator
+virtual bool operator==(const SIMPLE & s2) const  = 0;
+
+The derived classes are STRE, BEND, TORS.
+
+****
+FRAG class
+****
+The frag.h file declares a fragment class whose members include:
+ number of atoms
+ atomic numbers
+ geometry 
+ gradient
+ nuclear masses 
+ connectivity 
+ // a vector of pointers to the intrafragment internal coordinates
+ vector<SIMPLE *> simples
+
+****
+INTERFRAG class
+****
+The interfrag.h file declares a class for a set of interfragment coordinates.  The
+private members include:
+  pointers to the fragments connected
+  index numbers for the fragments connected (in the MOLECULE)
+  number of reference points used on each fragment
+  weights applied to each reference points on each fragment
+  a pseudo-fragment FRAG which contains only the location of the reference atoms
+  booleans to indicate which of the 6 possible interfragment coodinates are present
+
+INTERFRAG is a friend class to FRAG, so these can manipulate the fragments they connect.
+
+****
+MOLECULE Class
+****
+molecule.h declares the MOLECULE class which contains:
+ a vector of pointers to fragments
+ a vector of pointers to interfragment coordinate sets
+ (possibly) the energy
+
