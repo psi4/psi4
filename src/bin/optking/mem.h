@@ -17,6 +17,9 @@ void free_array(double *f);
 int *init_int_array(int m);
 void free_int_array(int *f);
 
+bool *init_bool_array(int m);
+void free_bool_array(bool *f);
+
 double **init_matrix(long int m, long int n);
 void free_matrix(double **A);
 void zero_matrix(double **A, long int m, long int n);

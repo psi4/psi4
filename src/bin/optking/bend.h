@@ -14,7 +14,7 @@ class BEND : public SIMPLE {
 
   public:
 
-    BEND(int A_in, int B_in, int C_in);
+    BEND(int A_in, int B_in, int C_in, bool freeze_in=false);
 
     ~BEND() { } // also calls ~SIMPLE()
 
@@ -30,7 +30,7 @@ class BEND : public SIMPLE {
     void print_intco_dat(FILE *fp, int atom_offset=0) const;
     void print_s(FILE *fp, GeomType geom) const;
     void print_disp(FILE *fp, const double old_q, const double f_q,
-      const double dq, const double new_q) const;
+      const double dq, const double new_q, int atom_offset=0) const;
     bool operator==(const SIMPLE & s2) const;
 
 };

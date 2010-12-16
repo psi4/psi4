@@ -8,11 +8,13 @@ LDLIBS += $(BLAS)
 PSITARGET = $(top_objdir)/lib/libPSI_optking.a
 
 CXXSRC = \
-atom_data.cc       frag_disp.cc       molecule_steps.cc  set_params.cc \
-bend.cc            linear_algebra.cc  opt_data.cc        stre.cc \
-frag.cc            mem.cc             optking.cc         tors.cc \
-frag_H_guess.cc    molecule.cc        print.cc           v3d.cc \
-molecule_tests.cc  molecule_fragments.cc  interfrag.cc   interfrag_orient.cc
+atom_data.cc       frag_disp.cc       molecule_steps.cc     set_params.cc \
+bend.cc            linear_algebra.cc  opt_data.cc           stre.cc \
+frag.cc            mem.cc             optking.cc            tors.cc \
+frag_H_guess.cc    molecule.cc        print.cc              v3d.cc \
+molecule_tests.cc  interfrag.cc       molecule_fragments.cc interfrag_orient.cc \
+molecule_read_intcos.cc               opt_data_io.cc  \
+geom_gradients_io.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 

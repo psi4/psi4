@@ -41,12 +41,22 @@ int *init_int_array(int m) {
   return A;
 }
 
+bool *init_bool_array(int m) {
+  bool *A = (bool *) malloc(m * sizeof(bool));
+  for (int i=0; i<m; ++i)
+     A[i] = false;
+  return A;
+}
 
 void free_array(double *f) {
   free(f);
 }
 
 void free_int_array(int *f) {
+  free(f);
+}
+
+void free_bool_array(bool *f) {
   free(f);
 }
 

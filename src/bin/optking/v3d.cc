@@ -16,12 +16,22 @@ bool v3d_angle(const double *A, const double *B, const double *C, double & phi) 
   double dotprod, eBA[3], eBC[3];
 
   // eBA
-  if (! v3d_eAB(B, A, eBA) )
+  if (! v3d_eAB(B, A, eBA) ) {
+fprintf(outfile, "could not normalize eBA, B:");
+for (int i=0; i<3; ++i) fprintf(outfile,"%15.10lf", B[i]);
+fprintf(outfile,"\n A:");
+for (int i=0; i<3; ++i) fprintf(outfile,"%15.10lf", A[i]);
     return false;
+  }
 
   // eBC
-  if (! v3d_eAB(B, C, eBC) )
+  if (! v3d_eAB(B, C, eBC) ) {
+fprintf(outfile, "could not normalize eBC, B:");
+for (int i=0; i<3; ++i) fprintf(outfile,"%15.10lf", B[i]);
+fprintf(outfile,"\n A:");
+for (int i=0; i<3; ++i) fprintf(outfile,"%15.10lf", A[i]);
     return false;
+  }
 
   dotprod = v3d_dot(eBA,eBC);
 
@@ -41,6 +51,8 @@ bool v3d_tors(const double *A, const double *B, const double *C, const double *D
   double tval, phi_123, phi_234, ulim, llim;
   double eAB[3], eBC[3], eCD[3], tmp[3], tmp2[3];
 
+  tau = 0.0;
+
   // form e unit vectors 
   if ( !v3d_eAB(A,B,eAB) || !v3d_eAB(B,C,eBC) || !v3d_eAB(C,D,eCD) )
     throw ("v3d_tors: distances are not reasonably normalized for e vectors.");
@@ -58,8 +70,8 @@ bool v3d_tors(const double *A, const double *B, const double *C, const double *D
 
   // check bond angles; don't allow torsions with angles between 1.8 degrees of singularity
   const double pi = acos(-1);
-  llim = Opt_params.error_tors_angle * pi;
-  ulim = (1-Opt_params.error_tors_angle) * pi;
+  llim = Opt_params.tors_angle_lim * pi;
+  ulim = (1-Opt_params.tors_angle_lim) * pi;
   if (phi_123 < llim || phi_123 > ulim)
     return false;
   else if (phi_234 < llim || phi_234 > ulim)
@@ -69,12 +81,12 @@ bool v3d_tors(const double *A, const double *B, const double *C, const double *D
   v3d_cross_product(eBC,eCD,tmp2);
   tval = v3d_dot(tmp,tmp2) / (sin(phi_123) * sin(phi_234) );
 
-  if (tval >= -1.0 && tval <= 1.0)
-    tau = acos(tval);
-  else if (tval > 1.0)
+  if (tval >= 1.0 - Opt_params.tors_cos_tol)
     tau = 0.0;
-  else
+  else if (tval <= -1.0 + Opt_params.tors_cos_tol)
     tau = pi;
+  else
+    tau = acos(tval);
 
   // determine sign of torsion ; this convention matches Wilson, Decius and Cross
   v3d_cross_product(eBC,eCD,tmp);

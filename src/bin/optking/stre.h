@@ -12,9 +12,12 @@ namespace opt {
 
 class STRE : public SIMPLE {
 
+    bool hbond; // whether stretch is a hydrogen bond
+    bool inverse_stre; // whether stretch is really 1/R
+
   public:
 
-    STRE(int A_in, int B_in);
+    STRE(int A_in, int B_in, bool freeze_in=false);
 
     ~STRE() { } // also calls ~SIMPLE()
 
@@ -32,8 +35,13 @@ class STRE : public SIMPLE {
     void print_intco_dat(FILE *fp, int atom_offset=0) const;
     void print_s(FILE *fp, GeomType geom) const;
     void print_disp(FILE *fp, const double old_q, const double f_q,
-      const double dq, const double new_q) const;
+      const double dq, const double new_q, int atom_offset = 0) const;
     bool operator==(const SIMPLE & s2) const;
+
+    void make_hbond(void) { hbond = true; }
+    bool is_hbond(void) { return hbond; }
+    void make_inverse_stre(void) { inverse_stre = true; }
+    bool is_inverse_stre(void) { return inverse_stre; }
 
 };
 

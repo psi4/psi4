@@ -20,8 +20,10 @@ using namespace v3d;
 using namespace std;
 
 // constructor - makes sure A<C
-BEND::BEND(int A_in, int B_in, int C_in) : SIMPLE(bend_type, 3) {
-  //fprintf(stdout,"constructing BEND A_in:%d B_in:%d C_in:%d\n", A_in, B_in, C_in);
+BEND::BEND(int A_in, int B_in, int C_in, bool freeze_in) : SIMPLE(bend_type, 3, freeze_in) {
+  //fprintf(stdout,"constructing BEND A_in:%d B_in:%d C_in:%d, frozen %d\n",
+  //  A_in, B_in, C_in, freeze_in);
+
   if (A_in == B_in || B_in == C_in || A_in == C_in)
     throw("BEND::BEND() Atoms defining bend are not unique.");
 
@@ -160,21 +162,27 @@ void BEND::print(FILE *fp, GeomType geom, int off) const {
   ostringstream iss(ostringstream::out); // create stream; allow output to it
   iss << "A(" << s_atom[0]+1+off << "," << s_atom[1]+1+off << "," << s_atom[2]+1+off << ")" ;
   double val = value(geom);
-  fprintf(fp,"\t %-15s  =  %15.6lf\t%15.6lf\n",
-    iss.str().c_str(), val, val/_pi*180.0);
+  if (!s_frozen)
+    fprintf(fp,"\t %-15s  =  %15.6lf\t%15.6lf\n", iss.str().c_str(), val, val/_pi*180.0);
+  else
+    fprintf(fp,"\t*%-15s  =  %15.6lf\t%15.6lf\n", iss.str().c_str(), val, val/_pi*180.0);
 }
 
 void BEND::print_disp(FILE *fp, const double q_old, const double f_q,
-    const double dq, const double q_new) const {
+    const double dq, const double q_new, int atom_offset) const {
   ostringstream iss(ostringstream::out); // create stream; allow output to it
-  iss << "A(" << s_atom[0]+1 << "," << s_atom[1]+1 << "," << s_atom[2]+1 << ")" ;
+  if (s_frozen) iss << "*";
+  iss << "A(" << s_atom[0]+atom_offset+1 << "," << s_atom[1]+atom_offset+1 << "," << s_atom[2]+atom_offset+1 << ")" ;
   fprintf(fp,"\t %-15s = %13.6lf%13.6lf%13.6lf%13.6lf\n",
     iss.str().c_str(), q_old/_pi*180.0, f_q*_hartree2aJ*_pi/180.0,
       dq/_pi*180.0, q_new/_pi*180.0);
 }
 
 void BEND::print_intco_dat(FILE *fp, int off) const {
-  fprintf(fp, "B%6d%6d%6d\n", s_atom[0]+1+off, s_atom[1]+1+off, s_atom[2]+1+off);
+  if (s_frozen)
+    fprintf(fp, "B*%6d%6d%6d\n", s_atom[0]+1+off, s_atom[1]+1+off, s_atom[2]+1+off);
+  else
+    fprintf(fp, "B %6d%6d%6d\n", s_atom[0]+1+off, s_atom[1]+1+off, s_atom[2]+1+off);
 }
 
 void BEND::print_s(FILE *fp, GeomType geom) const {

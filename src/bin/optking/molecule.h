@@ -7,10 +7,6 @@
 
 #include <fstream>
 
-#define FILENAME_GEOM_GRAD_IN "psi.file11.dat"
-#define FILENAME_GEOM_OUT     "psi.geom.dat"
-#define FILENAME_CARTESIAN_H  "psi.file15.dat"
-
 namespace opt {
 
 class MOLECULE {
@@ -21,7 +17,7 @@ class MOLECULE {
 
  public:
 
-  MOLECULE(std::ifstream & fp);   // allocate and read in geometry
+  MOLECULE(int num_atoms); // allocate molecule with one fragment of this size
 
   ~MOLECULE() {
     //printf("Destructing molecule\n");
@@ -47,11 +43,6 @@ class MOLECULE {
       n += fragments[f]->g_natom();
     return n;
   }
-
-  //void update_reference_points(void) {
-  //  for (int f=0; f<interfragments.size(); ++f)
-  //    interfragments[f]->update_reference_points();
-  //}
 
   int g_nintco(void) const {
     int n=0;
@@ -102,9 +93,14 @@ class MOLECULE {
 
   double g_energy(void) const { return energy; }
 
-  void update_connectivity_by_distances(double scale_radii = -1) {
+  void update_connectivity_by_distances(void) {
     for (int i=0; i<fragments.size(); ++i)
-      fragments[i]->update_connectivity_by_distances(scale_radii);
+      fragments[i]->update_connectivity_by_distances();
+  }
+
+  void update_connectivity_by_bonds(void) {
+    for (int i=0; i<fragments.size(); ++i)
+      fragments[i]->update_connectivity_by_bonds();
   }
 
   void print_connectivity(FILE *fout) const {
@@ -123,18 +119,21 @@ class MOLECULE {
   }
 
   void print_intcos(FILE *fout) {
+    int a,b;
     for (int i=0; i<fragments.size(); ++i) {
       fprintf(fout,"\t---Fragment %d Intrafragment Coordinates---\n", i+1);
       fragments[i]->print_intcos(fout, g_atom_offset(i));
     }
     for (int i=0; i<interfragments.size(); ++i) {
-      interfragments[i]->print_intcos(fout);
+      a = interfragments[i]->g_A_index();
+      b = interfragments[i]->g_B_index();
+      interfragments[i]->print_intcos(fout, g_atom_offset(a), g_atom_offset(b));
     }
   }
 
-  void print_intco_dat(FILE *fout);
+  void print_intco_dat(FILE *fp_intco);
 
-  int add_simples_by_connectivity(void) {
+  int add_intrafragment_simples_by_connectivity(void) {
     int n=0;
     for (int i=0; i<fragments.size(); ++i)
       n += fragments[i]->add_simples_by_connectivity();
@@ -178,8 +177,8 @@ class MOLECULE {
     return q;
   }
 
-  void write_geom_chkpt(void);
-  void write_geom_to_active_molecule();
+  void write_geom(void);
+  void print_geom(void);
 
   double ** compute_B(void) const;
   double ** compute_derivative_B(int intco_index) const ;
@@ -192,7 +191,7 @@ class MOLECULE {
     for (f=0; f<fragments.size(); ++f) {
       g_frag = fragments[f]->g_grad_array();
       for (i=0; i<3*fragments[f]->g_natom(); ++i)
-        g[g_atom_offset(f)+i] = g_frag[i];
+        g[3*g_atom_offset(f)+i] = g_frag[i];
       free_array(g_frag);
     }
     return g;
@@ -205,23 +204,22 @@ class MOLECULE {
     for (int f=0; f<fragments.size(); ++f) {
       g_frag = fragments[f]->g_geom_array();
       for (int i=0; i<3*fragments[f]->g_natom(); ++i)
-        g[g_atom_offset(f)+i] = g_frag[i];
+        g[3*g_atom_offset(f)+i] = g_frag[i];
       free_array(g_frag);
     }
     return g;
   }
 
   double ** g_geom_2D(void) const {
-    double **g, *g_frag;
+    double **g_frag;
+    double **g = init_matrix(g_natom(),3);
 
-    g = init_matrix(g_natom(),3);
     for (int f=0; f<fragments.size(); ++f) {
-      g_frag = fragments[f]->g_geom_array();
-      int cnt=0;
+      g_frag = fragments[f]->g_geom();
       for (int i=0; i<fragments[f]->g_natom(); ++i)
         for (int xyz=0; xyz<3; ++xyz)
-          g[g_atom_offset(f)+i][xyz] = g_frag[cnt++];
-      free_array(g_frag);
+          g[g_atom_offset(f)+i][xyz] = g_frag[i][xyz];
+      free_matrix(g_frag);
     }
     return g;
   }
@@ -251,8 +249,6 @@ class MOLECULE {
   void apply_intrafragment_step_limit(double * & dq);
   void check_intrafragment_zero_angles(double const * const dq);
 
-  void write_geom(void);
-
   void set_geom_array(double * array_in) {
     for (int f=0; f<fragments.size(); ++f)
       fragments[f]->set_geom_array( &(array_in[3*g_atom_offset(f)]) );
@@ -268,19 +264,21 @@ class MOLECULE {
 
   double ** cartesian_H_to_internals(void) const;
 
-/*
-  // compute and print B matrix (for debugging)
-  void print_B(FILE *fp) const ;
 
-  // check nearness to 180 and save value
+  bool read_intcos(std::ifstream & fin);
+  // function to obtain geometry and gradient
+  void read_geom_grad(void);
+
+  // tell whether internal coordinate is frozen
+  double ** compute_constraints(void);
+
+/* // check nearness to 180 and save value
   //print s vectors to output file
   void print_s(const FILE *fp, double **geom) const {
     fprintf(const_cast<FILE *>(fp),"\t---S vectors for internals---\n");
     for(int i=0; i<intcos.size(); ++i)
       intcos.at(i)->print_s(fp, geom);
   }
-  void displace(double *dq, bool print_disp = false);
-  double ** H_guess(void);
 */
 
 };

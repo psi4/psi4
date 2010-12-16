@@ -5,6 +5,11 @@
 #ifndef _opt_globals_h_
 #define _opt_globals_h_
 
+#define FILENAME_INTCO_DAT    "intco.dat"
+#define FILENAME_OUTPUT_DAT   "output.dat"     // not used by PSI
+#define FILENAME_CARTESIAN_H  "psi.file15.dat" // used by PSI
+#define FILENAME_GEOM_GRAD_IN "psi.file11.dat" // used by PSI
+
 #include <cstdio>
 #include "package.h"
 
@@ -15,36 +20,33 @@
 #define EXTERN
 #endif
 
-// get outfile pointer
-#ifdef PSI4
-#include <psi4-dec.h>
-using psi::outfile;
-#elif QCHEM4
-namespace opt { EXTERN FILE *outfile; }
+#if defined(OPTKING_PACKAGE_PSI)
+  #include <psi4-dec.h>
 #endif
 
-// set return type
-#ifdef PSI4
-typedef psi::PsiReturnType OptReturnType;
-#define OptReturnEndloop (psi::Endloop)
-#define OptReturnSuccess (psi::Success)
-#elif QCHEM4
-typedef int OptReturnType int;
-#define OptReturnEndloop 1
-#define OptReturnSuccess 0
-#endif
+namespace opt {
+  EXTERN FILE *outfile;
 
-// ioff array limit
+  int read_natoms(void);
+}
+
+
+// symmetric matrix offset lookup array
 #define IOFF_MAX 32641
+namespace opt {
+  EXTERN int *ioff;
+}
 
-// parameters for optimization and pointer for storage of optimization data
+// struct holding options/parameters for optking execution
 #include "opt_params.h"
-#include "opt_data.h"
 namespace opt {
   EXTERN OPT_PARAMS Opt_params;
-  EXTERN OPT_DATA *p_Opt_data;
+}
 
-  EXTERN int *ioff;
+// class for storage and manipulation of optimization step data
+#include "opt_data.h"
+namespace opt {
+  EXTERN OPT_DATA *p_Opt_data;
 }
 
 #endif

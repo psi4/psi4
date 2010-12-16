@@ -1,9 +1,5 @@
 
-// define package type
-#define PSI4
-#define PSI_OPTDATA_FILE_NUM 1
-#define FILENAME_OPT_DATA "opt_data.1"
-
-//#define QCHEM4
-//EXTERN enum Package_type {PSI, QCHEM} Package;
+// select one quantum chemistry package
+#define OPTKING_PACKAGE_PSI   1
+//#define OPTKING_PACKAGE_QCHEM 1
 
