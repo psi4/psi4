@@ -6,8 +6,10 @@ psi: (
   wfn = ccsd
   reference = rhf
   dertype = FIRST
-  docc = (3 0 1 1)
+%  docc = (3 0 1 1)
+docc = (5)
   basis = "6-31G**"
+subgroup = c1
   zmat = (
     O
     H  1  0.97

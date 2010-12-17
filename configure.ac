@@ -800,7 +800,7 @@ FFLAGS='$(FDBG) $(FOPT) $(FOTH) $(FSTATIC)' AC_SUBST(FFLAGS)
 
 ########
 ## Output
-########
+######## #src/lib/libbasis/Makefile
 
 AC_CONFIG_FILES([include/Makefile
           Makefile lib/Makefile src/Makefile

@@ -588,7 +588,8 @@ void te_deriv1_ints() {
           //
           bool have_nonzero_integrals = false;
           // For now I will use the same path for both C1 and non-C1 case
-          if (Symmetry.nirreps >= 1) { /*--- Non-C1 case ---*/
+          //if (Symmetry.nirreps >= 1) { /*--- Non-C1 case ---*/
+          if (Symmetry.nirreps > 1) { /*--- Non-C1 case ---*/
             /*---
              npi_ij - number of pairs of SOs arising from the ij pair of unique shells
              whose direct product transforms as irrep_ij
