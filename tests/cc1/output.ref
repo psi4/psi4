@@ -19,8 +19,8 @@
     Derivative type  = FIRST
     Calculation type = CCSD:RHF:FIRST
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:22 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:39 2010
 
                                 --------------
                                     INPUT
@@ -29,6 +29,7 @@
   LABEL       =	RHF CCSD GRADIENT
   SHOWNORM    =	0
   PUREAM      =	0
+  SUBGROUP    =	C1
   PRINT_LVL   =	1
 
   Parsed basis sets from /usr/local/psi4/share/psi/pbasis.dat
@@ -63,10 +64,10 @@ Coordinates after reading z-matrices
 
 
   -SYMMETRY INFORMATION:
-    Computational point group is C2v 
-    Number of irr. rep.      = 4
+    Computational point group is C1  
+    Number of irr. rep.      = 1
     Number of atoms          = 3
-    Number of unique atoms   = 2
+    Number of unique atoms   = 3
 
   Primary Basis:
 
@@ -98,19 +99,24 @@ Coordinates after reading z-matrices
         (P (     1.10000000     1.00000000) )
        )
 
+   -Basis set on unique center 3:
+      ( (S (    18.73113696     0.03349460)
+           (     2.82539437     0.23472695)
+           (     0.64012169     0.81375733) )
+        (S (     0.16127776     1.00000000) )
+        (P (     1.10000000     1.00000000) )
+       )
+
 
   -BASIS SET INFORMATION:
     Total number of shells = 12
-    Number of primitives   = 20
+    Number of primitives   = 25
     Number of AO           = 25
     Number of SO           = 25
 
     Irrep    Number of SO
     -----    ------------
-      1           12
-      2            2
-      3            4
-      4            7
+      1           25
 
   -Contraction Scheme:
     Atom     All Primitives // Unique Primitives // Shells
@@ -123,32 +129,33 @@ Coordinates after reading z-matrices
   -Unique atoms in the canonical coordinate system (a.u.):
    Atom            X                  Y                   Z
   ------   -----------------  -----------------  -----------------
-    O         0.000000000000     0.000000000000    -0.127705012634
-    H         0.000000000000     1.434547523692     1.013385611877
+    O         0.000000000000    -0.127705012634     0.000000000000
+    H         1.434547523692     1.013385611877     0.000000000000
+    H        -1.434547523692     1.013385611877    -0.000000000000
 
 
   -Geometry in the canonical coordinate system (a.u.):
    Atom            X                  Y                   Z
   ------   -----------------  -----------------  -----------------
-    O         0.000000000000     0.000000000000    -0.127705012634
-    H         0.000000000000     1.434547523692     1.013385611877
-    H        -0.000000000000    -1.434547523692     1.013385611877
+    O         0.000000000000    -0.127705012634     0.000000000000
+    H         1.434547523692     1.013385611877     0.000000000000
+    H        -1.434547523692     1.013385611877    -0.000000000000
 
 
   -Geometry in the canonical coordinate system (Angstrom):
    Atom            X                  Y                   Z
   ------   -----------------  -----------------  -----------------
-    O         0.000000000000     0.000000000000    -0.067578587269
-    H         0.000000000000     0.759129912147     0.536260610269
-    H        -0.000000000000    -0.759129912147     0.536260610269
+    O         0.000000000000    -0.067578587269     0.000000000000
+    H         0.759129912147     0.536260610269     0.000000000000
+    H        -0.759129912147     0.536260610269    -0.000000000000
 
 
   -Geometry in the reference coordinate system (a.u.):
    Atom            X                  Y                   Z
   ------   -----------------  -----------------  -----------------
-    O         0.000000000000     0.000000000000    -0.127705012634
-    H         0.000000000000     1.434547523692     1.013385611877
-    H        -0.000000000000    -1.434547523692     1.013385611877
+    O         0.000000000000    -0.127705012634     0.000000000000
+    H         1.434547523692     1.013385611877     0.000000000000
+    H        -1.434547523692     1.013385611877    -0.000000000000
 
 
   --------------------------------------------------------------------------
@@ -168,8 +175,8 @@ Coordinates after reading z-matrices
 
 
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:22 2010
-	user time   =       0.08 seconds =       0.00 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:39 2010
+	user time   =       0.09 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
     List of tasks to execute:
@@ -202,8 +209,8 @@ printed from execute_bp
   UNITS                => ANGSTROMS     V_FILE               => 35          
   WFN                  => CCSD       !
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:22 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:39 2010
 
                   --------------------------------------------
                     CINTS: An integrals program written in C
@@ -226,14 +233,14 @@ printed from execute_bp
     Fine-structure alpha scaling =   0.0073
 
   -SYMMETRY INFORMATION;
-    Computational point group        = C2v
-    Number of irreps                 = 4
+    Computational point group        = C1 
+    Number of irreps                 = 1
 
-    Wrote 13617 two-electron integrals to IWL file 33
+    Wrote 25620 two-electron integrals to IWL file 33
 
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:22 2010
-	user time   =       0.10 seconds =       0.00 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:39 2010
+	user time   =       0.11 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
@@ -247,8 +254,8 @@ printed from execute_bp
   MULTP      => 1            NO_INPUT   => FALSE      
   UNITS      => ANGSTROMS  
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:22 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:39 2010
 
              ------------------------------------------
 
@@ -282,7 +289,7 @@ printed from execute_bp
   iterations before extrapolation  = 0
   6 error matrices will be kept
 
-  keeping integrals in 114320 bytes of core
+  keeping integrals in 847680 bytes of core
 
   The lowest eigenvalue of the overlap matrix was 2.230864e-02
 
@@ -290,59 +297,58 @@ printed from execute_bp
   Using DOCC and SOCC to determine occupations
 
 
-  Symmetry block:   A1    A2    B1    B2   
-  DOCC:              3     0     1     1   
-  SOCC:              0     0     0     0   
+  Symmetry block:   A    
+  DOCC:              5   
+  SOCC:              0   
 
   reading integrals in the IWL format from files 33,35,36,37
-  wrote 6516 integrals to file92
+  wrote 25654 integrals to file92
 
   iter       total energy        delta E         delta P          diiser
     1       -68.2945751265    7.737181e+01    0.000000e+00    0.000000e+00
-    2       -71.3448673106    3.050292e+00    1.461731e-01    1.190466e+00
-    3       -75.8740206500    4.529153e+00    1.386292e-01    8.573611e-01
-    4       -76.0127771706    1.387565e-01    3.571875e-03    1.989130e-01
-    5       -76.0218018537    9.024683e-03    1.255711e-03    4.393924e-02
-    6       -76.0219748189    1.729652e-04    1.594762e-04    1.118920e-02
-    7       -76.0219974063    2.258741e-05    7.979152e-05    3.902789e-03
-    8       -76.0219978577    4.514294e-07    1.227064e-05    2.893048e-04
-    9       -76.0219978753    1.754036e-08    3.631956e-06    6.228041e-05
-   10       -76.0219978763    1.006882e-09    9.827202e-07    1.132714e-05
-   11       -76.0219978763    2.330580e-11    1.193354e-07    1.728025e-06
-   12       -76.0219978763    2.458478e-12    5.349900e-08    5.148786e-07
-   13       -76.0219978763   -1.421085e-14    2.824306e-09    3.877380e-08
-   14       -76.0219978763    2.842171e-14    6.149916e-10    1.019689e-08
-   15       -76.0219978763    0.000000e+00    1.063461e-10    4.573083e-09
-   16       -76.0219978763    0.000000e+00    1.439428e-11    2.909392e-10
+    2       -71.4021490467    3.107574e+00    5.656428e-02    1.190466e+00
+    3       -75.8130501234    4.410901e+00    5.431395e-02    8.943816e-01
+    4       -75.9985078718    1.854577e-01    1.402216e-03    2.524891e-01
+    5       -76.0214110821    2.290321e-02    9.663377e-04    8.365861e-02
+    6       -76.0219464166    5.353346e-04    1.343552e-04    1.166987e-02
+    7       -76.0219952403    4.882368e-05    7.480713e-05    2.629123e-03
+    8       -76.0219977616    2.521299e-06    1.410282e-05    6.314372e-04
+    9       -76.0219978740    1.124434e-07    3.806473e-06    1.172892e-04
+   10       -76.0219978763    2.240171e-09    6.259662e-07    1.469074e-05
+   11       -76.0219978763    1.064393e-11    2.828767e-08    1.109606e-06
+   12       -76.0219978763    3.694822e-13    4.388694e-09    2.539886e-07
+   13       -76.0219978763   -5.684342e-14    7.958966e-10    5.125678e-08
+   14       -76.0219978763    0.000000e+00    1.241809e-10    8.291002e-09
+   15       -76.0219978763    7.105427e-14    3.990065e-11    1.709288e-09
 
 Orbital energies (a.u.):
 
   Doubly occupied orbitals
-   1A1    -20.563756     2A1     -1.335128     1B2     -0.693868  
-   3A1     -0.569546     1B1     -0.496894  
+   1A     -20.563756     2A      -1.335128     3A      -0.693868  
+   4A      -0.569546     5A      -0.496894  
 
 
   Unoccupied orbitals
-   4A1      0.209148     2B2      0.301190     3B2      0.992987  
-   5A1      1.080901     6A1      1.131133     2B1      1.168613  
-   4B2      1.294487     7A1      1.418370     1A2      1.805555  
-   8A1      1.805556     3B1      1.919426     9A1      2.554725  
-   5B2      2.571406     6B2      2.778746     2A2      2.955797  
-   4B1      2.985114    10A1      3.349725    11A1      3.681199  
-   7B2      3.913091    12A1      4.093637  
+   6A       0.209148     7A       0.301190     8A       0.992987  
+   9A       1.080901    10A       1.131133    11A       1.168613  
+  12A       1.294487    13A       1.418370    14A       1.805555  
+  15A       1.805556    16A       1.919426    17A       2.554725  
+  18A       2.571406    19A       2.778746    20A       2.955797  
+  21A       2.985114    22A       3.349725    23A       3.681199  
+  24A       3.913091    25A       4.093637  
 
 
       * SCF total energy   =     -76.021997876298
-        kinetic energy     =      75.764070728969
-        nuc. attr. energy  =    -198.644160740606
-        elec. rep. energy  =      46.858092135338
-        potential energy   =    -151.786068605268
-        virial theorem     =       1.996607203776
+        kinetic energy     =      75.764070730858
+        nuc. attr. energy  =    -198.644160745238
+        elec. rep. energy  =      46.858092138081
+        potential energy   =    -151.786068607157
+        virial theorem     =       1.996607203801
         wavefunction norm  =       1.000000000000
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:22 2010
-	user time   =       0.11 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:39 2010
+	user time   =       0.13 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   Job 2 is TRANSQT2
@@ -360,8 +366,8 @@ printed from execute_bp
   UNITS      => ANGSTROMS    WFN        => CCSD      !
 
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:22 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:39 2010
 
 
 	**************************************************
@@ -386,20 +392,17 @@ printed from execute_bp
 	Cache Type      =	LRU
 	Chkpt Parameters:
 	--------------------
-	Number of irreps     = 4
+	Number of irreps     = 1
 	Number of SOs        = 25
 	Number of MOs        = 25
 	Number of active MOs = 25
 
 	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
 	-----	-----	------	------	------	------	------
-	 A1 	   12	    0	    3	    0	    9	    0
-	 A2 	   2	    0	    0	    0	    2	    0
-	 B1 	   4	    0	    1	    0	    3	    0
-	 B2 	   7	    0	    1	    0	    6	    0
+	 A  	   25	    0	    5	    0	    20	    0
 
 	Nuclear Rep. energy (chkpt) =      9.07723884680363
-	SCF energy          (chkpt) =    -76.02199787629843
+	SCF energy          (chkpt) =    -76.02199787629847
 
 	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (pq,rs) nbuckets = 1
@@ -409,10 +412,10 @@ printed from execute_bp
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:22 2010
-	user time   =       0.13 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:40 2010
+	user time   =       0.17 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
   Job 3 is CCSORT
 printed from execute_bp
@@ -451,8 +454,8 @@ printed from execute_bp
   WFN                  => CCSD           !
 
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:22 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:40 2010
 
 
 			**************************
@@ -478,37 +481,25 @@ printed from execute_bp
 
 	Chkpt Parameters:
 	--------------------
-	Number of irreps     = 4
+	Number of irreps     = 1
 	Number of MOs        = 25
 	Number of active MOs = 25
 
 	Label	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
 	-----	-----	------	------	------	------	------
-	 A1 	   12	    0	    3	    0	    9	    0
-	 A2 	   2	    0	    0	    0	    2	    0
-	 B1 	   4	    0	    1	    0	    3	    0
-	 B2 	   7	    0	    1	    0	    6	    0
+	 A  	   25	    0	    5	    0	    20	    0
 
 	Nuclear Rep. energy (chkpt) =      9.07723884680363
-	SCF energy          (chkpt) =    -76.02199787629843
+	SCF energy          (chkpt) =    -76.02199787629847
 
-	Size of irrep 0 of <ab|cd> integrals:      0.017 (MW) /      0.135 (MB)
-	Size of irrep 1 of <ab|cd> integrals:      0.005 (MW) /      0.041 (MB)
-	Size of irrep 2 of <ab|cd> integrals:      0.006 (MW) /      0.049 (MB)
-	Size of irrep 3 of <ab|cd> integrals:      0.014 (MW) /      0.115 (MB)
-	Total:                                     0.043 (MW) /      0.341 (MB)
+	Size of irrep 0 of <ab|cd> integrals:      0.160 (MW) /      1.280 (MB)
+	Total:                                     0.160 (MW) /      1.280 (MB)
 
-	Size of irrep 0 of <ia|bc> integrals:      0.005 (MW) /      0.037 (MB)
-	Size of irrep 1 of <ia|bc> integrals:      0.001 (MW) /      0.009 (MB)
-	Size of irrep 2 of <ia|bc> integrals:      0.002 (MW) /      0.012 (MB)
-	Size of irrep 3 of <ia|bc> integrals:      0.003 (MW) /      0.028 (MB)
-	Total:                                     0.011 (MW) /      0.086 (MB)
+	Size of irrep 0 of <ia|bc> integrals:      0.040 (MW) /      0.320 (MB)
+	Total:                                     0.040 (MW) /      0.320 (MB)
 
-	Size of irrep 0 of tijab amplitudes:       0.001 (MW) /      0.011 (MB)
-	Size of irrep 1 of tijab amplitudes:       0.000 (MW) /      0.001 (MB)
-	Size of irrep 2 of tijab amplitudes:       0.000 (MW) /      0.004 (MB)
-	Size of irrep 3 of tijab amplitudes:       0.001 (MW) /      0.006 (MB)
-	Total:                                     0.003 (MW) /      0.022 (MB)
+	Size of irrep 0 of tijab amplitudes:       0.010 (MW) /      0.080 (MB)
+	Total:                                     0.010 (MW) /      0.080 (MB)
 
 
 	Sorting File: A <ij|kl> nbuckets = 1
@@ -519,17 +510,17 @@ printed from execute_bp
 	Sorting File: E <ai|jk> nbuckets = 1
 	Sorting File: F <ia|bc> nbuckets = 1
 	Sorting File: F <ai|bc> nbuckets = 1
-	One-electron energy          =   -122.88009001187018
-	Two-electron (AA) energy     =     14.41616333314054
-	Two-electron (BB) energy     =     14.41616333314054
-	Two-electron (AB) energy     =     23.36468995562764
-	Two-electron energy          =     37.78085328876818
+	One-electron energy          =   -122.88009001162135
+	Two-electron (AA) energy     =     14.41616333304189
+	Two-electron (BB) energy     =     14.41616333304189
+	Two-electron (AB) energy     =     23.36468995547741
+	Two-electron energy          =     37.78085328851930
 	Frozen-core energy (transqt) =      0.00000000000000
-	Reference energy             =    -76.02199787629839
+	Reference energy             =    -76.02199787629843
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:22 2010
-	user time   =       0.16 seconds =       0.00 minutes
-	system time =       0.06 seconds =       0.00 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:40 2010
+	user time   =       0.20 seconds =       0.00 minutes
+	system time =       0.08 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   Job 4 is CCENERGY
@@ -584,8 +575,8 @@ printed from execute_bp
   WFN                 => CCSD           !
 
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:22 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:40 2010
 
 			**************************
 			*                        *
@@ -594,8 +585,8 @@ printed from execute_bp
 			**************************
 
 	Nuclear Rep. energy (chkpt)   =    9.077238846803628
-	SCF energy          (chkpt)   =  -76.021997876298428
-	Reference energy    (file100) =  -76.021997876298386
+	SCF energy          (chkpt)   =  -76.021997876298471
+	Reference energy    (file100) =  -76.021997876298428
 
 	Input parameters:
 	-----------------
@@ -625,64 +616,64 @@ printed from execute_bp
 	            ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
   ----     ---------------------    ---------   ----------  ----------  ----------
-     0        -0.200284583173948    0.000e+00    0.000000    0.000000    0.000000
-     1        -0.204524502075002    2.733e-02    0.004508    0.008904    0.008904
-     2        -0.208454935199261    9.794e-03    0.005161    0.010333    0.010333
-     3        -0.208976352651959    2.795e-03    0.005693    0.011917    0.011917
-     4        -0.208980674127093    6.466e-04    0.005747    0.012228    0.012228
-     5        -0.208995515133577    2.053e-04    0.005786    0.012422    0.012422
-     6        -0.208991614392825    6.453e-05    0.005799    0.012493    0.012493
-     7        -0.208991056570570    1.565e-05    0.005803    0.012511    0.012511
-     8        -0.208991037417512    2.937e-06    0.005803    0.012514    0.012514
-     9        -0.208990960559508    7.070e-07    0.005803    0.012514    0.012514
-    10        -0.208990980781139    1.507e-07    0.005803    0.012514    0.012514
-    11        -0.208990979379472    2.941e-08    0.005803    0.012514    0.012514
+     0        -0.200284583169298    0.000e+00    0.000000    0.000000    0.000000
+     1        -0.204524502074040    2.733e-02    0.004508    0.008904    0.008904
+     2        -0.208454935199139    9.794e-03    0.005161    0.010333    0.010333
+     3        -0.208976352652796    2.795e-03    0.005693    0.011917    0.011917
+     4        -0.208980674127266    6.466e-04    0.005747    0.012228    0.012228
+     5        -0.208995515133740    2.053e-04    0.005786    0.012422    0.012422
+     6        -0.208991614392845    6.453e-05    0.005799    0.012493    0.012493
+     7        -0.208991056570576    1.565e-05    0.005803    0.012511    0.012511
+     8        -0.208991037417517    2.937e-06    0.005803    0.012514    0.012514
+     9        -0.208990960559513    7.070e-07    0.005803    0.012514    0.012514
+    10        -0.208990980781143    1.507e-07    0.005803    0.012514    0.012514
+    11        -0.208990979379477    2.941e-08    0.005803    0.012514    0.012514
 
 	Iterations converged.
 
 
 	Largest TIA Amplitudes:
-	          2   0         0.0108429989
-	          3  11        -0.0066539437
-	          4  14        -0.0062968525
-	          4  18         0.0053909624
-	          4  16         0.0049115255
-	          1   2         0.0043626426
-	          2   5        -0.0040679843
+	          3   0        -0.0108429991
+	          4   5         0.0066539436
+	          2   1         0.0062968525
+	          2  13         0.0053909624
+	          2   6         0.0049115255
+	          1   4        -0.0043626426
+	          3  11        -0.0040679843
 	          1   0        -0.0026726467
-	          1   7         0.0023396374
-	          2   1        -0.0022229009
+	          1  17         0.0023396374
+	          3   3         0.0022229009
 
 	Largest TIjAb Amplitudes:
-	  3   3  11  11        -0.0518990452
-	  4   4  14  14        -0.0394129106
-	  2   2   2   2        -0.0298937778
-	  4   4  15  15        -0.0287516509
-	  2   3   2  11         0.0252441039
-	  3   2  11   2         0.0252441039
-	  3   4  11  16        -0.0248319597
-	  4   3  16  11        -0.0248319597
-	  4   4  16  16        -0.0246255003
-	  3   4  11  14        -0.0244548465
+	  4   4   5   5        -0.0518990452
+	  2   2   1   1        -0.0394129106
+	  3   3   4   4        -0.0298937778
+	  2   2   2   2        -0.0287516509
+	  3   4   4   5        -0.0252441039
+	  4   3   5   4        -0.0252441039
+	  2   4   6   5         0.0248319597
+	  4   2   5   6         0.0248319597
+	  2   2   6   6        -0.0246255003
+	  2   4   1   5        -0.0244548465
 
-	SCF energy       (chkpt)              =  -76.021997876298428
-	Reference energy (file100)            =  -76.021997876298386
+	SCF energy       (chkpt)              =  -76.021997876298471
+	Reference energy (file100)            =  -76.021997876298428
 
-	Opposite-spin MP2 correlation energy  =   -0.149954963249766
-	Same-spin MP2 correlation energy      =   -0.050329619924182
-	MP2 correlation energy                =   -0.200284583173948
-      * MP2 total energy                      =  -76.222282459472339
+	Opposite-spin MP2 correlation energy  =   -0.149954963246233
+	Same-spin MP2 correlation energy      =   -0.050329619923065
+	MP2 correlation energy                =   -0.200284583169298
+      * MP2 total energy                      =  -76.222282459467721
 
-	Opposite-spin CCSD correlation energy =   -0.164400075252514
-	Same-spin CCSD correlation energy     =   -0.044590904126920
-	CCSD correlation energy               =   -0.208990979379472
-      * CCSD total energy                     =  -76.230988855677865
+	Opposite-spin CCSD correlation energy =   -0.164400075252097
+	Same-spin CCSD correlation energy     =   -0.044590904126823
+	CCSD correlation energy               =   -0.208990979379477
+      * CCSD total energy                     =  -76.230988855677907
 
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:27 2010
-	user time   =       0.42 seconds =       0.01 minutes
-	system time =       0.31 seconds =       0.01 minutes
-	total time  =          5 seconds =       0.08 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:44 2010
+	user time   =       0.58 seconds =       0.01 minutes
+	system time =       0.43 seconds =       0.01 minutes
+	total time  =          4 seconds =       0.07 minutes
 
   Job 5 is CCHBAR
 printed from execute_bp
@@ -698,8 +689,8 @@ printed from execute_bp
   WABEI_LOWDISK => FALSE        WFN           => CCSD      !
 
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:27 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:44 2010
 
 
 			**************************
@@ -709,10 +700,10 @@ printed from execute_bp
 			**************************
 
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:27 2010
-	user time   =       0.45 seconds =       0.01 minutes
-	system time =       0.35 seconds =       0.01 minutes
-	total time  =          0 seconds =       0.00 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:45 2010
+	user time   =       0.63 seconds =       0.01 minutes
+	system time =       0.49 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 
   Job 6 is CCLAMBDA
 printed from execute_bp
@@ -737,8 +728,8 @@ printed from execute_bp
   UNITS                => ANGSTROMS    WFN                  => CCSD      !
 
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:27 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:45 2010
 
 
 			**************************
@@ -748,10 +739,10 @@ printed from execute_bp
 
 	Nuclear Rep. energy (chkpt)   =    9.077238846803628
 	Reference           (chkpt)   = 0
-	SCF energy          (chkpt)   =  -76.021997876298428
-	Reference energy    (CC_INFO) =  -76.021997876298386
-	CCSD energy         (CC_INFO) =   -0.208990979379472
-	Total CCSD energy   (CC_INFO) =  -76.230988855677865
+	SCF energy          (chkpt)   =  -76.021997876298471
+	Reference energy    (CC_INFO) =  -76.021997876298428
+	CCSD energy         (CC_INFO) =   -0.208990979379477
+	Total CCSD energy   (CC_INFO) =  -76.230988855677907
 
 	Input parameters:
 	-----------------
@@ -769,55 +760,55 @@ printed from execute_bp
 	  1   0     0        Yes       0.0000000000   1.0000000000
 	Labels for eigenvector 1:
 	LIA 0 -1, Lia 0 -1, LIJAB 0 -1, Lijab 0 -1, LIjAb 0 -1, 2LIjAb - LIjbA 0 -1
-	Symmetry of left-hand state: A1 
-	Symmetry of left-hand eigenvector: A1 
+	Symmetry of left-hand state: A  
+	Symmetry of left-hand eigenvector: A  
 
 	          Solving Lambda Equations
 	          ------------------------
 	Iter     PseudoEnergy or Norm         RMS  
 	----     ---------------------     --------
-	   0        -0.209027786977453    0.000e+00
-	   1        -0.206495151796727    7.993e-03
-	   2        -0.206067352571806    1.345e-03
-	   3        -0.205981807555467    6.208e-04
-	   4        -0.205975115136720    2.062e-04
-	   5        -0.205978815277432    6.254e-05
-	   6        -0.205978783013926    1.506e-05
-	   7        -0.205978870950216    3.417e-06
-	   8        -0.205978900421594    5.200e-07
-	   9        -0.205978898467433    9.017e-08
+	   0        -0.209027786976935    0.000e+00
+	   1        -0.206495151795829    7.993e-03
+	   2        -0.206067352570742    1.345e-03
+	   3        -0.205981807554402    6.208e-04
+	   4        -0.205975115135679    2.062e-04
+	   5        -0.205978815276401    6.254e-05
+	   6        -0.205978783012896    1.506e-05
+	   7        -0.205978870949187    3.417e-06
+	   8        -0.205978900420565    5.200e-07
+	   9        -0.205978898466404    9.017e-08
 
 	Largest LIA Amplitudes:
-	          2   0         0.0072417840
-	          4  16         0.0050589414
-	          4  18         0.0046513000
-	          3  11        -0.0039991745
-	          2   5        -0.0036194743
-	          1   2         0.0032129567
-	          4  14        -0.0031907780
-	          1   3        -0.0025293234
-	          1   7         0.0021477525
-	          4  15         0.0021208235
+	          3   0        -0.0072417842
+	          2   6         0.0050589414
+	          2  13         0.0046513000
+	          4   5         0.0039991745
+	          3  11        -0.0036194743
+	          1   4        -0.0032129567
+	          2   1         0.0031907779
+	          1   7         0.0025293234
+	          1  17         0.0021477525
+	          2   2        -0.0021208235
 
 	Largest LIjAb Amplitudes:
-	  3   3  11  11        -0.0516330659
-	  4   4  14  14        -0.0384957106
-	  2   2   2   2        -0.0295153732
-	  4   4  15  15        -0.0280304863
-	  2   3   2  11         0.0250935208
-	  3   2  11   2         0.0250935208
-	  3   4  11  16        -0.0246412000
-	  4   3  16  11        -0.0246412000
-	  4   4  16  16        -0.0243635767
-	  3   4  11  14        -0.0241957706
+	  4   4   5   5        -0.0516330659
+	  2   2   1   1        -0.0384957106
+	  3   3   4   4        -0.0295153732
+	  2   2   2   2        -0.0280304863
+	  3   4   4   5        -0.0250935208
+	  4   3   5   4        -0.0250935208
+	  2   4   6   5         0.0246412000
+	  4   2   5   6         0.0246412000
+	  2   2   6   6        -0.0243635767
+	  2   4   1   5        -0.0241957706
 
 	Iterations converged.
 
-	Overlap <L|e^T> =        0.94273433760
+	Overlap <L|e^T> =        0.94273433759
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:27 2010
-	user time   =       0.54 seconds =       0.01 minutes
-	system time =       0.44 seconds =       0.01 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:45 2010
+	user time   =       0.80 seconds =       0.01 minutes
+	system time =       0.64 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   Job 7 is CCDENSITY
@@ -837,8 +828,8 @@ printed from execute_bp
   TOLERANCE        => 14           UNITS            => ANGSTROMS  
   WFN              => CCSD      !
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:27 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:45 2010
 
 
 			**************************
@@ -862,66 +853,66 @@ printed from execute_bp
 	Xi connected     = No
 
 	Nuclear Rep. energy (chkpt)   =    9.077238846803628
-	SCF energy          (chkpt)   =  -76.021997876298428
-	Reference energy    (file100) =  -76.021997876298386
-	CCSD energy         (CC_INFO) =   -0.208990979379472
-	Total CCSD energy   (CC_INFO) =  -76.230988855677865
+	SCF energy          (chkpt)   =  -76.021997876298471
+	Reference energy    (file100) =  -76.021997876298428
+	CCSD energy         (CC_INFO) =   -0.208990979379477
+	Total CCSD energy   (CC_INFO) =  -76.230988855677907
 	Number of States = 1
 
 	Ground?  State     EOM Energy       R0
-	  Yes     0A1     0.0000000000   1.00000000
+	  Yes     0A      0.0000000000   1.00000000
 
 	Energies re-computed from CC density:
 	-------------------------------------
-	One-electron energy        =    0.221186770616809
-	IJKL energy                =    0.041993248479873
-	IJKA energy                =   -0.001393402795598
-	IJAB energy                =   -0.412136965721247
-	IBJA energy                =   -0.101198069309178
-	CIAB energy                =   -0.000203578046853
-	ABCD energy                =    0.042761017134952
-	Total two-electron energy  =   -0.430177750258051
-	CCSD correlation energy    =   -0.208990979641242
-	Total CCSD energy          =  -76.230988855939628
+	One-electron energy        =    0.221186770619078
+	IJKL energy                =    0.041993248479884
+	IJKA energy                =   -0.001393402792919
+	IJAB energy                =   -0.412136965719248
+	IBJA energy                =   -0.101198069311500
+	CIAB energy                =   -0.000203578051664
+	ABCD energy                =    0.042761017135123
+	Total two-electron energy  =   -0.430177750260323
+	CCSD correlation energy    =   -0.208990979641246
+	Total CCSD energy          =  -76.230988855939671
 
 	Virial Theorem Data:
 	--------------------
-	Kinetic energy (ref)   =   75.764070729469410
-	Kinetic energy (corr)  =    0.151616947049739
-	Kinetic energy (total) =   75.915687676519156
-	-V/T (ref)             =    2.003404346471165
-	-V/T (corr)            =    2.378414375478167
-	-V/T (total)           =    2.004153307291403
+	Kinetic energy (ref)   =   75.764070728799126
+	Kinetic energy (corr)  =    0.151616947719476
+	Kinetic energy (total) =   75.915687676518601
+	-V/T (ref)             =    2.003404346480043
+	-V/T (corr)            =    2.378414369389335
+	-V/T (total)           =    2.004153307291411
 
 	Energies re-computed from Fock-adjusted CC density:
 	---------------------------------------------------
-	One-electron energy        =    0.258019450878554
-	IJKL energy                =   -0.672858072916463
-	IJKA energy                =   -0.059474667415514
-	IJAB energy                =   -0.412136965721247
-	IBJA energy                =    0.634901836445330
-	CIAB energy                =   -0.000203578046853
-	ABCD energy                =    0.042761017134952
-	Total two-electron energy  =   -0.467010430519795
-	CCSD correlation energy    =   -0.208990979641241
-	Total CCSD energy          =  -76.230988855939628
+	One-electron energy        =    0.258019450633126
+	IJKL energy                =   -0.672858072955384
+	IJKA energy                =   -0.059474667147537
+	IJAB energy                =   -0.412136965719248
+	IBJA energy                =    0.634901836464338
+	CIAB energy                =   -0.000203578051664
+	ABCD energy                =    0.042761017135123
+	Total two-electron energy  =   -0.467010430274371
+	CCSD correlation energy    =   -0.208990979641245
+	Total CCSD energy          =  -76.230988855939671
 
 	Energies re-computed from Mulliken density:
 	-------------------------------------------
-	One-electron energy        =    0.258019450878554
-	IJKL energy                =   -0.672858072916463
-	IJKA energy                =   -0.059474667415514
-	IJAB energy                =   -0.381058765741879
-	IBJA energy                =    0.603823636465961
-	CIAB energy                =   -0.000203578046853
-	ABCD energy                =    0.042761017134952
-	Total two-electron energy  =   -0.467010430519795
-	CCSD correlation energy    =   -0.208990979641242
-	Total CCSD energy          =  -76.230988855939628
+	One-electron energy        =    0.258019450633126
+	IJKL energy                =   -0.672858072955384
+	IJKA energy                =   -0.059474667147537
+	IJAB energy                =   -0.381058765740130
+	IBJA energy                =    0.603823636485219
+	CIAB energy                =   -0.000203578051664
+	ABCD energy                =    0.042761017135123
+	Total two-electron energy  =   -0.467010430274372
+	CCSD correlation energy    =   -0.208990979641246
+	Total CCSD energy          =  -76.230988855939671
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:28 2010
-	user time   =       0.62 seconds =       0.01 minutes
-	system time =       0.53 seconds =       0.01 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:46 2010
+	user time   =       1.01 seconds =       0.02 minutes
+	system time =       0.86 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   Job 8 is OEPROP
@@ -930,57 +921,33 @@ printed from execute_bp
 
   Options:
   ----------------------------------------------------------------------------
-  ASYMM_OPDM           => FALSE           
-  BASIS_PATH           => (empty)         
-  CHARGE               => 0               
-  CORREL_CORR          => 0               
-  DELETE_ZVEC          => 0               
-  DOCC                 => [ 3, 0, 1, 1 ] !
-  EDGRAD_LOGSCALE      => 5               
-  FINE_STRUCTURE_ALPHA => 1               
-  FREEZE_CORE          => FALSE           
-  GRID                 => 0               
-  GRID_FORMAT          => (empty)         
-  GRID_ORIGIN          => 0               
-  GRID_UNIT_X          => 0               
-  GRID_XY0             => [  ]            
-  GRID_XY1             => [  ]            
-  GRID_XYZ0            => [  ]            
-  GRID_XYZ1            => [  ]            
-  GRID_ZMAX            => 3               
-  GRID_ZMIN            => 0               
-  LM_REF_XYZ           => [  ]            
-  MO_TO_PLOT           => (empty)         
-  MPMAX                => 1               
-  MP_REF               => 0               
-  MP_REF_XYZ           => [  ]            
-  MULTP                => 1               
-  NIX                  => 0               
-  NIY                  => 0               
-  NIZ                  => 0               
-  NO_INPUT             => FALSE           
-  NUC_ESP              => TRUE            
-  NUM_ROOTS            => 1               
-  OPDM_BASIS           => MO              
-  OPDM_FILE            => 0               
-  OPDM_FORMAT          => SQUARE          
-  PRINT                => 1               
-  PRINT_NOS            => FALSE           
-  QED_DARWIN           => FALSE           
-  READ_OPDM            => TRUE            
-  REFERENCE            => RHF            !
-  ROOT                 => 1               
-  SOCC                 => [  ]            
-  SPIN_PROP            => FALSE           
-  TRANSITION_DENSITY   => FALSE           
-  UNITS                => ANGSTROMS       
-  WFN                  => CCSD           !
-  WRTNOS               => FALSE           
-  ZVEC_FILE            => 0               
+  ASYMM_OPDM           => FALSE        BASIS_PATH           => (empty)    
+  CHARGE               => 0            CORREL_CORR          => 0          
+  DELETE_ZVEC          => 0            DOCC                 => [ 5 ]     !
+  EDGRAD_LOGSCALE      => 5            FINE_STRUCTURE_ALPHA => 1          
+  FREEZE_CORE          => FALSE        GRID                 => 0          
+  GRID_FORMAT          => (empty)      GRID_ORIGIN          => 0          
+  GRID_UNIT_X          => 0            GRID_XY0             => [  ]       
+  GRID_XY1             => [  ]         GRID_XYZ0            => [  ]       
+  GRID_XYZ1            => [  ]         GRID_ZMAX            => 3          
+  GRID_ZMIN            => 0            LM_REF_XYZ           => [  ]       
+  MO_TO_PLOT           => (empty)      MPMAX                => 1          
+  MP_REF               => 0            MP_REF_XYZ           => [  ]       
+  MULTP                => 1            NIX                  => 0          
+  NIY                  => 0            NIZ                  => 0          
+  NO_INPUT             => FALSE        NUC_ESP              => TRUE       
+  NUM_ROOTS            => 1            OPDM_BASIS           => MO         
+  OPDM_FILE            => 0            OPDM_FORMAT          => SQUARE     
+  PRINT                => 1            PRINT_NOS            => FALSE      
+  QED_DARWIN           => FALSE        READ_OPDM            => TRUE       
+  REFERENCE            => RHF       !  ROOT                 => 1          
+  SOCC                 => [  ]         SPIN_PROP            => FALSE      
+  TRANSITION_DENSITY   => FALSE        UNITS                => ANGSTROMS  
+  WFN                  => CCSD      !  WRTNOS               => FALSE      
+  ZVEC_FILE            => 0          
 
-
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:28 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:46 2010
 
     **********************************************
     *                    OEPROP                  *
@@ -1005,10 +972,10 @@ printed from execute_bp
     # of molecular orbitals    =     25
     # of basis functions       =     25
     # of atomic orbitals       =     25
-    # of irreps                =      4
+    # of irreps                =      1
     Total charge               =      0
     # of unique shells         =     12
-    # of primitives            =     20
+    # of primitives            =     25
     Print level                =      1
 
   List of GRID PARAMETERS :
@@ -1033,28 +1000,28 @@ printed from execute_bp
      1      1          0        1.99517542
      1      2          0        0.90059193
      1      3          0        0.91088284
-     1      4          1        1.12486154
-     1      5          1        0.80206002
-     1      6          1        0.92416372
-     1      7          1        0.84108607
-     1      8          1        0.45175846
-     1      9          1        0.63755169
-     1     10          2        0.00184622
-     1     11          2        0.00493574
-     1     12          2        0.00689728
-     1     13          2        0.00801968
-     1     14          2        0.01843603
-     1     15          2        0.00123426
+     1      4          1        0.80206002
+     1      5          1        0.92416372
+     1      6          1        1.12486154
+     1      7          1        0.45175846
+     1      8          1        0.63755169
+     1      9          1        0.84108607
+     1     10          2        0.00801968
+     1     11          2        0.01843603
+     1     12          2        0.00493574
+     1     13          2        0.00123426
+     1     14          2        0.00689728
+     1     15          2        0.00184622
      2     16          0        0.48944658
      2     17          0        0.15482958
-     2     18          1        0.01135443
-     2     19          1        0.01606458
-     2     20          1        0.01355438
+     2     18          1        0.01606458
+     2     19          1        0.01355438
+     2     20          1        0.01135443
      3     21          0        0.48944658
      3     22          0        0.15482958
-     3     23          1        0.01135443
-     3     24          1        0.01606458
-     3     25          1        0.01355438
+     3     23          1        0.01606458
+     3     24          1        0.01355438
+     3     25          1        0.01135443
 
 
  -Atomic bond populations :
@@ -1084,13 +1051,13 @@ printed from execute_bp
  -Coordinates of the reference point (a.u.) :
            x                     y                     z
   --------------------  --------------------  --------------------
-          0.0000000000         -0.0000000000         -0.0000000000
+         -0.0000000000         -0.0000000000          0.0000000000
 
  -Electric dipole moment (expectation values) :
 
-    mu(X)  =  -0.00000 D  =  -1.04989967e-45 C*m  =  -0.00000000 a.u.
-    mu(Y)  =   0.00000 D  =   1.25014655e-45 C*m  =   0.00000000 a.u.
-    mu(Z)  =   2.10875 D  =   7.03404097e-30 C*m  =   0.82964662 a.u.
+    mu(X)  =   0.00000 D  =   1.94761802e-43 C*m  =   0.00000000 a.u.
+    mu(Y)  =   2.10875 D  =   7.03404097e-30 C*m  =   0.82964662 a.u.
+    mu(Z)  =  -0.00000 D  =  -9.17984003e-44 C*m  =  -0.00000000 a.u.
     |mu|   =   2.10875 D  =   7.03404097e-30 C*m  =   0.82964662 a.u.
 
 
@@ -1117,48 +1084,48 @@ printed from execute_bp
  -Coordinates of atomic centers (a.u.):
     #   Charge           x                     y                     z
    ---  ------  --------------------  --------------------  --------------------
-    1      8            0.0000000000          0.0000000000         -0.1277050126
-    2      1            0.0000000000          1.4345475237          1.0133856119
-    3      1           -0.0000000000         -1.4345475237          1.0133856119
+    1      8            0.0000000000         -0.1277050126          0.0000000000
+    2      1            1.4345475237          1.0133856119          0.0000000000
+    3      1           -1.4345475237          1.0133856119         -0.0000000000
 
 
  -Electrostatic potential and electric field (a.u.) :
 
     Center         phi            Ex             Ey           Ez
     ------    ------------   ------------  ------------  ------------
-       1      -22.29516584     0.00000000   -0.00000000   -0.12459314
-       2       -1.01097690     0.00000000    0.01132203    0.00035653
-       3       -1.01097690    -0.00000000   -0.01132203    0.00035653
+       1      -22.29516584     0.00000000   -0.12459314   -0.00000000
+       2       -1.01097690     0.01132203    0.00035653    0.00000000
+       3       -1.01097690    -0.01132203    0.00035653   -0.00000000
 
 
  -Electric field gradient (regular form) (a.u.):
 
     Center           XX                    YY                    ZZ
     ------  --------------------  --------------------  --------------------
-       1          -1214.93112063        -1218.26026032        -1217.03123468
-       2             -1.41920952           -1.91069647           -1.74021568
-       3             -1.41920952           -1.91069647           -1.74021568
+       1          -1218.26026032        -1217.03123468        -1214.93112063
+       2             -1.91069647           -1.74021568           -1.41920952
+       3             -1.91069647           -1.74021568           -1.41920952
 
     Center           XY                    XZ                    YZ
     ------  --------------------  --------------------  --------------------
-       1              0.00000000           -0.00000000            0.00000000
-       2             -0.00000000           -0.00000000            1.57565613
-       3             -0.00000000            0.00000000           -1.57565613
+       1             -0.00000000           -0.00000000           -0.00000000
+       2             -0.32276898            0.00000000            0.00000000
+       3              0.32276898           -0.00000000           -0.00000000
 
 
  -Electric field gradient (traceless tensor form) (a.u.):
 
     Center        XX - RR/3             YY - RR/3             ZZ - RR/3
     ------  --------------------  --------------------  --------------------
-       1              1.80975125           -1.51938845           -0.29036280
-       2              0.27083104           -0.22065591           -0.05017512
-       3              0.27083104           -0.22065591           -0.05017512
+       1             -1.51938845           -0.29036280            1.80975125
+       2             -0.22065591           -0.05017512            0.27083104
+       3             -0.22065591           -0.05017512            0.27083104
 
     Center           XY                    XZ                    YZ
     ------  --------------------  --------------------  --------------------
-       1              0.00000000           -0.00000000            0.00000000
-       2             -0.00000000           -0.00000000            1.57565613
-       3             -0.00000000            0.00000000           -1.57565613
+       1             -0.00000000           -0.00000000           -0.00000000
+       2             -0.32276898            0.00000000            0.00000000
+       3              0.32276898           -0.00000000           -0.00000000
 
 
  -Electron density (a.u.):
@@ -1176,14 +1143,14 @@ printed from execute_bp
 
  -Relativistic MVD one-electron corrections to the energy (a.u.):
 
-    Mass-velocity (p^4) term     :   -0.245471476446290
-    One-electron Darwin term     :   0.194446823493528
-    Total one-electron MVD terms :   -0.051024652952761
+    Mass-velocity (p^4) term     :   -0.245471476446297
+    One-electron Darwin term     :   0.194446823493533
+    Total one-electron MVD terms :   -0.051024652952764
 
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:28 2010
-	user time   =       0.63 seconds =       0.01 minutes
-	system time =       0.53 seconds =       0.01 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:46 2010
+	user time   =       1.02 seconds =       0.02 minutes
+	system time =       0.86 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   Job 9 is TRANSQT
@@ -1192,71 +1159,40 @@ printed from execute_bp
 
   Options:
   ----------------------------------------------------------------------------
-  AA_M_FILE            => 81              
-  AB_M_FILE            => 83              
-  AO_BASIS             => NONE            
-  BASIS_PATH           => (empty)         
-  BB_M_FILE            => 82              
-  CHARGE               => 0               
-  CHECK_C_ORTHONORM    => FALSE           
-  DELETE_AO            => TRUE            
-  DELETE_RESTR_DOCC    => TRUE            
-  DELETE_TPDM          => TRUE            
-  DERTYPE              => FIRST          !
-  DOCC                 => [ 3, 0, 1, 1 ] !
-  DO_ALL_TEI           => FALSE           
-  FIRST_TMP_FILE       => 150             
-  FREEZE_CORE          => FALSE           
-  FZC_A_FILE           => 35              
-  FZC_B_FILE           => 35              
-  FZC_FILE             => 35              
-  IVO                  => FALSE           
-  J_FILE               => 91              
-  KEEP_J               => FALSE           
-  KEEP_PRESORT         => FALSE           
-  LAGRAN_DOUBLE        => FALSE           
-  LAGRAN_HALVE         => FALSE           
-  LAG_IN_FILE          => 75              
-  MAX_BUCKETS          => 499             
-  MODE                 => TO_MO           
-  MOORDER              => [  ]            
-  MP2R12A              => MP2R12AERI      
-  MULTP                => 1               
-  M_FILE               => 0               
-  NO_INPUT             => FALSE           
-  OEI_A_FILE           => 35              
-  OEI_B_FILE           => 35              
-  OEI_FILE             => 35              
-  OPDM_IN_FILE         => 73              
-  OPDM_OUT_FILE        => 76              
-  PITZER               => FALSE           
-  PRESORT_FILE         => 41              
-  PRINT_LVL            => 1               
-  PRINT_MOS            => FALSE           
-  PRINT_OE_INTEGRALS   => FALSE           
-  PRINT_REORDER        => FALSE           
-  PRINT_SORTED_OE_INTS => FALSE           
-  PRINT_SORTED_TE_INTS => FALSE           
-  PRINT_TE_INTEGRALS   => FALSE           
-  PSIMRCC              => FALSE           
-  QRHF                 => FALSE           
-  REFERENCE            => RHF            !
-  REORDER              => FALSE           
-  SOCC                 => [  ]            
-  SORTED_TEI_FILE      => 72              
-  SO_S_FILE            => 35              
-  SO_TEI_FILE          => 72              
-  SO_T_FILE            => 35              
-  SO_V_FILE            => 35              
-  TOLERANCE            => 14              
-  TPDM_ADD_REF         => FALSE           
-  TPDM_FILE            => 74              
-  UNITS                => ANGSTROMS       
-  WFN                  => CCSD           !
+  AA_M_FILE            => 81            AB_M_FILE            => 83          
+  AO_BASIS             => NONE          BASIS_PATH           => (empty)     
+  BB_M_FILE            => 82            CHARGE               => 0           
+  CHECK_C_ORTHONORM    => FALSE         DELETE_AO            => TRUE        
+  DELETE_RESTR_DOCC    => TRUE          DELETE_TPDM          => TRUE        
+  DERTYPE              => FIRST      !  DOCC                 => [ 5 ]      !
+  DO_ALL_TEI           => FALSE         FIRST_TMP_FILE       => 150         
+  FREEZE_CORE          => FALSE         FZC_A_FILE           => 35          
+  FZC_B_FILE           => 35            FZC_FILE             => 35          
+  IVO                  => FALSE         J_FILE               => 91          
+  KEEP_J               => FALSE         KEEP_PRESORT         => FALSE       
+  LAGRAN_DOUBLE        => FALSE         LAGRAN_HALVE         => FALSE       
+  LAG_IN_FILE          => 75            MAX_BUCKETS          => 499         
+  MODE                 => TO_MO         MOORDER              => [  ]        
+  MP2R12A              => MP2R12AERI    MULTP                => 1           
+  M_FILE               => 0             NO_INPUT             => FALSE       
+  OEI_A_FILE           => 35            OEI_B_FILE           => 35          
+  OEI_FILE             => 35            OPDM_IN_FILE         => 73          
+  OPDM_OUT_FILE        => 76            PITZER               => FALSE       
+  PRESORT_FILE         => 41            PRINT_LVL            => 1           
+  PRINT_MOS            => FALSE         PRINT_OE_INTEGRALS   => FALSE       
+  PRINT_REORDER        => FALSE         PRINT_SORTED_OE_INTS => FALSE       
+  PRINT_SORTED_TE_INTS => FALSE         PRINT_TE_INTEGRALS   => FALSE       
+  PSIMRCC              => FALSE         QRHF                 => FALSE       
+  REFERENCE            => RHF        !  REORDER              => FALSE       
+  SOCC                 => [  ]          SORTED_TEI_FILE      => 72          
+  SO_S_FILE            => 35            SO_TEI_FILE          => 72          
+  SO_T_FILE            => 35            SO_V_FILE            => 35          
+  TOLERANCE            => 14            TPDM_ADD_REF         => FALSE       
+  TPDM_FILE            => 74            UNITS                => ANGSTROMS   
+  WFN                  => CCSD       !
 
-
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:28 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:46 2010
 
 
 	**************************************************
@@ -1309,16 +1245,13 @@ printed from execute_bp
 
 	Chkpt File Parameters:
 	------------------
-	Number of irreps = 4
+	Number of irreps = 1
 	Number of SOs    = 25
 	Number of MOs    = 25
 
 	Label	# SOs	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
 	-----	-----	-----	------	------	------	------	------
-	 A1 	   12	   12	    0	    3	    0	    9	    0
-	 A2 	   2	   2	    0	    0	    0	    2	    0
-	 B1 	   4	   4	    0	    1	    0	    3	    0
-	 B2 	   7	   7	    0	    1	    0	    6	    0
+	 A  	   25	   25	    0	    5	    0	    20	    0
 
 	Nuclear Repulsion Energy    =         9.0772388468
 	Total SCF Energy            =       -76.0219978763
@@ -1339,10 +1272,10 @@ printed from execute_bp
 	Transforming one-electron integrals...
 	One-pdm and lagrangian written to file76.
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:29 2010
-	user time   =       0.69 seconds =       0.01 minutes
-	system time =       0.56 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:46 2010
+	user time   =       1.07 seconds =       0.02 minutes
+	system time =       0.89 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   Job 10 is CINTS
 printed from execute_bp
@@ -1361,8 +1294,8 @@ printed from execute_bp
   UNITS                => ANGSTROMS     V_FILE               => 35          
   WFN                  => CCSD       !
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:29 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:46 2010
 
                   --------------------------------------------
                     CINTS: An integrals program written in C
@@ -1385,8 +1318,8 @@ printed from execute_bp
     Fine-structure alpha scaling =   0.0073
 
   -SYMMETRY INFORMATION;
-    Computational point group        = C2v
-    Number of irreps                 = 4
+    Computational point group        = C1 
+    Number of irreps                 = 1
   Rotational invariance condition satisfied.
   |X cross Grad| =  0.000000000000   (it is the accuracy of the computed forces)
   So long..
@@ -1395,20 +1328,30 @@ printed from execute_bp
   -CCSD forces in the reference frame (a.u.):
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000    -0.012246744489
-       2        0.000000000000     0.005967567295     0.006123372244
-       3        0.000000000000    -0.005967567295     0.006123372244
+       1       -0.000000000000    -0.012246744488     0.000000000000
+       2        0.005967567295     0.006123372244    -0.000000000000
+       3       -0.005967567295     0.006123372244    -0.000000000000
 
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:29 2010
-	user time   =       0.79 seconds =       0.01 minutes
-	system time =       0.57 seconds =       0.01 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:46 2010
+	user time   =       1.14 seconds =       0.02 minutes
+	system time =       0.89 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 
 			----------------------------------
 			 OPTKING: for geometry optimizations  
 			  - R.A. King,  Bethel University   
 			------------------------------------
+
+	Internal coordinates to be generated automatically.
+	---Fragment 1 Geometry and Gradient---
+	 O           0.0000000000       -0.1277050126        0.0000000000
+	 H           1.4345475237        1.0133856119        0.0000000000
+	 H          -1.4345475237        1.0133856119       -0.0000000000
+	            -0.0000000000       -0.0122467445        0.0000000000
+	             0.0059675673        0.0061233722       -0.0000000000
+	            -0.0059675673        0.0061233722       -0.0000000000
+
 	---Fragment 1 Bond Connectivity---
 	 1 : 2 3
 	 2 : 1
@@ -1420,31 +1363,21 @@ printed from execute_bp
 	 R(1,3)           =         1.833034	       0.970000
 	 A(2,1,3)         =         1.797689	     103.000000
 
-	---Fragment 1 Geometry and Gradient---
-	 O           0.0000000000        0.0000000000       -0.1277050126
-	 H           0.0000000000        1.4345475237        1.0133856119
-	 H          -0.0000000000       -1.4345475237        1.0133856119
-	             0.0000000000        0.0000000000       -0.0122467445
-	             0.0000000000        0.0059675673        0.0061233722
-	             0.0000000000       -0.0059675673        0.0061233722
 
+	Testing B-matrix numerically...
+		Maximum difference is 7.5e-10.  Passed.
 	Previous optimization step data not found.  Starting new optimization.
 
-	Generating empirical Hessian (Schlegel '84)
+	Current energy   :       -76.2309888557
+
+	Generating empirical Hessian (Schlegel '84) for each fragment.
 	Following RFO solution 1.
 	Projected energy change by RFO approximation:        -0.0001468800
 
 	Back-transformation to cartesian coordinates...
-	---------------------------------------------
-	 Iter     RMS difference    MAX difference   
-	---------------------------------------------
-	    1        6.8e-05          1.1e-04
-	    2        2.5e-09          2.6e-09
-	---------------------------------------------
-
 	Successfully converged to displaced geometry.
 
-	---Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG (3) ---
+	---Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG ---
 	 ----------------------------------------------------------------------
 	 Coordinate             Previous        Force       Change         New 
 	 ----------             --------       ------       ------       ------
@@ -1460,10 +1393,12 @@ printed from execute_bp
 	Energy Change      -7.6e+01        1.0e-06          no
 	MAX Displacement    1.6e-02        1.2e-03          no
 	----------------------------------------------------------
-Writing optimization data to psio file.
-(    8.0000000000    0.0000000000    0.0000000000   -0.1152595236) 
-(    1.0000000000    0.0000000000    1.4290587938    1.0071628674) 
-(    1.0000000000    0.0000000000   -1.4290587938    1.0071628674) 
+	Writing optimization data to binary file.
+	Structure for next step:
+	Cartesian Geometry (au)
+	    O    -0.0000000000  -0.1152595216   0.0000000000
+	    H     1.4290587929   1.0071628664   0.0000000000
+	    H    -1.4290587929   1.0071628664   0.0000000000
 			--------------------------
 			 OPTKING Finished Execution 
 			--------------------------
@@ -1497,8 +1432,8 @@ printed from execute_bp
   UNITS                => ANGSTROMS     V_FILE               => 35          
   WFN                  => CCSD       !
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:29 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:46 2010
 
                   --------------------------------------------
                     CINTS: An integrals program written in C
@@ -1521,19 +1456,19 @@ printed from execute_bp
     Fine-structure alpha scaling =   0.0073
 
   -SYMMETRY INFORMATION;
-    Computational point group        = C2v
-    Number of irreps                 = 4
+    Computational point group        = C1 
+    Number of irreps                 = 1
 
-    Wrote 13617 two-electron integrals to IWL file 33
-
-
-    Wrote 186874 first-derivative ERIs to IWL files [200, 208]
+    Wrote 25620 two-electron integrals to IWL file 33
 
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:29 2010
-	user time   =       1.04 seconds =       0.02 minutes
-	system time =       0.59 seconds =       0.01 minutes
-	total time  =          0 seconds =       0.00 minutes
+    Wrote 0 first-derivative ERIs to IWL files [200, 208]
+
+
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:47 2010
+	user time   =       1.30 seconds =       0.02 minutes
+	system time =       0.91 seconds =       0.02 minutes
+	total time  =          1 seconds =       0.02 minutes
 
   Job 1 is CSCF
 printed from execute_bp
@@ -1545,8 +1480,8 @@ printed from execute_bp
   MULTP      => 1            NO_INPUT   => FALSE      
   UNITS      => ANGSTROMS  
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:29 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:47 2010
 
              ------------------------------------------
 
@@ -1570,7 +1505,7 @@ printed from execute_bp
   maxiter      = 100
   guess        = AUTO
 
-  nuclear repulsion energy        9.1548682224987
+  nuclear repulsion energy        9.1548682354422
 
   using old vector from file30 as initial guess
   energy from old vector:   -76.02199788
@@ -1582,7 +1517,7 @@ printed from execute_bp
   iterations before extrapolation  = 0
   6 error matrices will be kept
 
-  keeping integrals in 114320 bytes of core
+  keeping integrals in 847680 bytes of core
 
   The lowest eigenvalue of the overlap matrix was 2.202969e-02
 
@@ -1590,57 +1525,56 @@ printed from execute_bp
   Using DOCC and SOCC to determine occupations
 
 
-  Symmetry block:   A1    A2    B1    B2   
-  DOCC:              3     0     1     1   
-  SOCC:              0     0     0     0   
+  Symmetry block:   A    
+  DOCC:              5   
+  SOCC:              0   
 
   reading integrals in the IWL format from files 33,35,36,37
-  wrote 6516 integrals to file92
+  wrote 25654 integrals to file92
 
   iter       total energy        delta E         delta P          diiser
-    1       -76.0227625611    8.517763e+01    0.000000e+00    0.000000e+00
-    2       -76.0228119789    4.941786e-05    1.478025e-04    2.747326e-03
-    3       -76.0228170139    5.034988e-06    4.099584e-05    1.302239e-03
-    4       -76.0228181105    1.096568e-06    2.136330e-05    4.320238e-04
-    5       -76.0228181983    8.784725e-08    7.894404e-06    1.165486e-04
-    6       -76.0228182033    4.974609e-09    2.249454e-06    2.614423e-05
-    7       -76.0228182035    1.853664e-10    4.261859e-07    3.748089e-06
-    8       -76.0228182035    3.666401e-12    3.831866e-08    5.958105e-07
-    9       -76.0228182035    1.705303e-13    9.371680e-09    1.528310e-07
-   10       -76.0228182035    8.526513e-14    1.576087e-09    1.474708e-08
-   11       -76.0228182035   -5.684342e-14    1.435616e-10    5.951931e-09
-   12       -76.0228182035    0.000000e+00    7.847403e-11    1.416658e-09
+    1       -76.0227625612    8.517763e+01    0.000000e+00    0.000000e+00
+    2       -76.0228119791    4.941788e-05    5.426876e-05    2.747326e-03
+    3       -76.0228170140    5.034990e-06    1.504393e-05    1.302240e-03
+    4       -76.0228181106    1.096568e-06    7.826270e-06    4.320239e-04
+    5       -76.0228181985    8.784724e-08    2.899848e-06    1.165486e-04
+    6       -76.0228182034    4.974595e-09    8.281966e-07    2.614424e-05
+    7       -76.0228182036    1.854232e-10    1.577395e-07    3.748089e-06
+    8       -76.0228182036    3.581135e-12    1.423725e-08    5.958105e-07
+    9       -76.0228182036    2.415845e-13    3.490292e-09    1.528311e-07
+   10       -76.0228182036   -8.526513e-14    5.848495e-10    1.474708e-08
+   11       -76.0228182036    7.105427e-14    5.279750e-11    5.951934e-09
 
  Correcting phases of orbitals.
 
 Orbital energies (a.u.):
 
   Doubly occupied orbitals
-   1A1    -20.561855     2A1     -1.338773     1B2     -0.699601  
-   3A1     -0.569614     1B1     -0.497173  
+   1A     -20.561855     2A      -1.338773     3A      -0.699601  
+   4A      -0.569614     5A      -0.497173  
 
 
   Unoccupied orbitals
-   4A1      0.211060     2B2      0.303532     3B2      0.999268  
-   5A1      1.085437     6A1      1.132288     2B1      1.168725  
-   4B2      1.294649     7A1      1.416808     1A2      1.804938  
-   8A1      1.811223     3B1      1.922343     9A1      2.565635  
-   5B2      2.576809     6B2      2.797447     2A2      2.970004  
-   4B1      2.990732    10A1      3.367728    11A1      3.699942  
-   7B2      3.922979    12A1      4.102150  
+   6A       0.211060     7A       0.303532     8A       0.999268  
+   9A       1.085437    10A       1.132288    11A       1.168725  
+  12A       1.294649    13A       1.416808    14A       1.804938  
+  15A       1.811223    16A       1.922343    17A       2.565635  
+  18A       2.576809    19A       2.797447    20A       2.970004  
+  21A       2.990732    22A       3.367728    23A       3.699942  
+  24A       3.922979    25A       4.102150  
 
 
-      * SCF total energy   =     -76.022818203509
-        kinetic energy     =      75.794777132454
-        nuc. attr. energy  =    -198.816118366661
-        elec. rep. energy  =      46.998523030697
-        potential energy   =    -151.817595335964
-        virial theorem     =       1.997000360202
+      * SCF total energy   =     -76.022818203622
+        kinetic energy     =      75.794777155919
+        nuc. attr. energy  =    -198.816118428943
+        elec. rep. energy  =      46.998523069401
+        potential energy   =    -151.817595359542
+        virial theorem     =       1.997000360509
         wavefunction norm  =       1.000000000000
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:29 2010
-	user time   =       1.05 seconds =       0.02 minutes
-	system time =       0.59 seconds =       0.01 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:47 2010
+	user time   =       1.31 seconds =       0.02 minutes
+	system time =       0.91 seconds =       0.02 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   Job 2 is TRANSQT2
@@ -1658,8 +1592,8 @@ printed from execute_bp
   UNITS      => ANGSTROMS    WFN        => CCSD      !
 
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:29 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:47 2010
 
 
 	**************************************************
@@ -1684,20 +1618,17 @@ printed from execute_bp
 	Cache Type      =	LRU
 	Chkpt Parameters:
 	--------------------
-	Number of irreps     = 4
+	Number of irreps     = 1
 	Number of SOs        = 25
 	Number of MOs        = 25
 	Number of active MOs = 25
 
 	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
 	-----	-----	------	------	------	------	------
-	 A1 	   12	    0	    3	    0	    9	    0
-	 A2 	   2	    0	    0	    0	    2	    0
-	 B1 	   4	    0	    1	    0	    3	    0
-	 B2 	   7	    0	    1	    0	    6	    0
+	 A  	   25	    0	    5	    0	    20	    0
 
-	Nuclear Rep. energy (chkpt) =      9.15486822249873
-	SCF energy          (chkpt) =    -76.02281820350949
+	Nuclear Rep. energy (chkpt) =      9.15486823544217
+	SCF energy          (chkpt) =    -76.02281820362228
 
 	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (pq,rs) nbuckets = 1
@@ -1707,9 +1638,9 @@ printed from execute_bp
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:29 2010
-	user time   =       1.07 seconds =       0.02 minutes
-	system time =       0.61 seconds =       0.01 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:47 2010
+	user time   =       1.36 seconds =       0.02 minutes
+	system time =       0.94 seconds =       0.02 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   Job 3 is CCSORT
@@ -1749,8 +1680,8 @@ printed from execute_bp
   WFN                  => CCSD           !
 
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:29 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:47 2010
 
 
 			**************************
@@ -1776,37 +1707,25 @@ printed from execute_bp
 
 	Chkpt Parameters:
 	--------------------
-	Number of irreps     = 4
+	Number of irreps     = 1
 	Number of MOs        = 25
 	Number of active MOs = 25
 
 	Label	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
 	-----	-----	------	------	------	------	------
-	 A1 	   12	    0	    3	    0	    9	    0
-	 A2 	   2	    0	    0	    0	    2	    0
-	 B1 	   4	    0	    1	    0	    3	    0
-	 B2 	   7	    0	    1	    0	    6	    0
+	 A  	   25	    0	    5	    0	    20	    0
 
-	Nuclear Rep. energy (chkpt) =      9.15486822249873
-	SCF energy          (chkpt) =    -76.02281820350949
+	Nuclear Rep. energy (chkpt) =      9.15486823544217
+	SCF energy          (chkpt) =    -76.02281820362228
 
-	Size of irrep 0 of <ab|cd> integrals:      0.017 (MW) /      0.135 (MB)
-	Size of irrep 1 of <ab|cd> integrals:      0.005 (MW) /      0.041 (MB)
-	Size of irrep 2 of <ab|cd> integrals:      0.006 (MW) /      0.049 (MB)
-	Size of irrep 3 of <ab|cd> integrals:      0.014 (MW) /      0.115 (MB)
-	Total:                                     0.043 (MW) /      0.341 (MB)
+	Size of irrep 0 of <ab|cd> integrals:      0.160 (MW) /      1.280 (MB)
+	Total:                                     0.160 (MW) /      1.280 (MB)
 
-	Size of irrep 0 of <ia|bc> integrals:      0.005 (MW) /      0.037 (MB)
-	Size of irrep 1 of <ia|bc> integrals:      0.001 (MW) /      0.009 (MB)
-	Size of irrep 2 of <ia|bc> integrals:      0.002 (MW) /      0.012 (MB)
-	Size of irrep 3 of <ia|bc> integrals:      0.003 (MW) /      0.028 (MB)
-	Total:                                     0.011 (MW) /      0.086 (MB)
+	Size of irrep 0 of <ia|bc> integrals:      0.040 (MW) /      0.320 (MB)
+	Total:                                     0.040 (MW) /      0.320 (MB)
 
-	Size of irrep 0 of tijab amplitudes:       0.001 (MW) /      0.011 (MB)
-	Size of irrep 1 of tijab amplitudes:       0.000 (MW) /      0.001 (MB)
-	Size of irrep 2 of tijab amplitudes:       0.000 (MW) /      0.004 (MB)
-	Size of irrep 3 of tijab amplitudes:       0.001 (MW) /      0.006 (MB)
-	Total:                                     0.003 (MW) /      0.022 (MB)
+	Size of irrep 0 of tijab amplitudes:       0.010 (MW) /      0.080 (MB)
+	Total:                                     0.010 (MW) /      0.080 (MB)
 
 
 	Sorting File: A <ij|kl> nbuckets = 1
@@ -1817,18 +1736,18 @@ printed from execute_bp
 	Sorting File: E <ai|jk> nbuckets = 1
 	Sorting File: F <ia|bc> nbuckets = 1
 	Sorting File: F <ai|bc> nbuckets = 1
-	One-electron energy          =   -123.02134123534731
-	Two-electron (AA) energy     =     14.44298093919953
-	Two-electron (BB) energy     =     14.44298093919953
-	Two-electron (AB) energy     =     23.40067387013962
-	Two-electron energy          =     37.84365480933914
+	One-electron energy          =   -123.02134125770937
+	Two-electron (AA) energy     =     14.44298094316461
+	Two-electron (BB) energy     =     14.44298094316461
+	Two-electron (AB) energy     =     23.40067387548031
+	Two-electron energy          =     37.84365481864491
 	Frozen-core energy (transqt) =      0.00000000000000
-	Reference energy             =    -76.02281820350943
+	Reference energy             =    -76.02281820362228
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:30 2010
-	user time   =       1.10 seconds =       0.02 minutes
-	system time =       0.64 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:47 2010
+	user time   =       1.39 seconds =       0.02 minutes
+	system time =       0.98 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   Job 4 is CCENERGY
 printed from execute_bp
@@ -1882,8 +1801,8 @@ printed from execute_bp
   WFN                 => CCSD           !
 
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:30 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:47 2010
 
 			**************************
 			*                        *
@@ -1891,9 +1810,9 @@ printed from execute_bp
 			*                        *
 			**************************
 
-	Nuclear Rep. energy (chkpt)   =    9.154868222498731
-	SCF energy          (chkpt)   =  -76.022818203509487
-	Reference energy    (file100) =  -76.022818203509431
+	Nuclear Rep. energy (chkpt)   =    9.154868235442169
+	SCF energy          (chkpt)   =  -76.022818203622279
+	Reference energy    (file100) =  -76.022818203622279
 
 	Input parameters:
 	-----------------
@@ -1926,61 +1845,61 @@ printed from execute_bp
 	            ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
   ----     ---------------------    ---------   ----------  ----------  ----------
-     0        -0.208851708603438    2.941e-08    0.005803    0.012514    0.012514
-     1        -0.208398891857949    5.308e-03    0.005934    0.013070    0.013070
-     2        -0.208398117006974    1.206e-03    0.005762    0.012505    0.012505
-     3        -0.208362547908146    3.591e-04    0.005721    0.012360    0.012360
-     4        -0.208354794464457    1.288e-04    0.005689    0.012234    0.012234
-     5        -0.208353720127134    3.645e-05    0.005681    0.012192    0.012192
-     6        -0.208354042699137    1.035e-05    0.005679    0.012179    0.012179
-     7        -0.208354121267032    1.977e-06    0.005678    0.012177    0.012177
-     8        -0.208354158891893    3.553e-07    0.005678    0.012177    0.012177
-     9        -0.208354159700521    7.884e-08    0.005678    0.012177    0.012177
+     0        -0.208851708569996    2.941e-08    0.005803    0.012514    0.012514
+     1        -0.208398891762324    5.308e-03    0.005934    0.013070    0.013070
+     2        -0.208398116908598    1.206e-03    0.005762    0.012505    0.012505
+     3        -0.208362547803830    3.591e-04    0.005721    0.012360    0.012360
+     4        -0.208354794358706    1.288e-04    0.005689    0.012234    0.012234
+     5        -0.208353720021412    3.645e-05    0.005681    0.012192    0.012192
+     6        -0.208354042593559    1.035e-05    0.005679    0.012179    0.012179
+     7        -0.208354121161478    1.977e-06    0.005678    0.012177    0.012177
+     8        -0.208354158786344    3.553e-07    0.005678    0.012177    0.012177
+     9        -0.208354159594973    7.884e-08    0.005678    0.012177    0.012177
 
 	Iterations converged.
 
 
 	Largest TIA Amplitudes:
-	          2   0         0.0104865399
-	          3  11        -0.0065664601
-	          4  14        -0.0062688211
-	          4  18         0.0052532548
-	          4  16         0.0046501207
-	          1   2         0.0042833880
-	          2   5        -0.0039592514
+	          3   0        -0.0104865398
+	          4   5         0.0065664599
+	          2   1         0.0062688211
+	          2  13         0.0052532548
+	          2   6         0.0046501206
+	          1   4        -0.0042833880
+	          3  11        -0.0039592514
 	          1   0        -0.0028591207
-	          1   7         0.0023706699
-	          2   1        -0.0022617371
+	          1  17         0.0023706700
+	          3   3         0.0022617371
 
 	Largest TIjAb Amplitudes:
-	  3   3  11  11        -0.0518800970
-	  4   4  14  14        -0.0381960299
-	  2   2   2   2        -0.0289863531
-	  4   4  15  15        -0.0286683540
-	  3   4  11  16        -0.0248107586
-	  4   3  16  11        -0.0248107586
-	  2   3   2  11         0.0246927194
-	  3   2  11   2         0.0246927194
-	  4   4  16  16        -0.0246705879
-	  3   4  11  14        -0.0242465593
+	  4   4   5   5        -0.0518800970
+	  2   2   1   1        -0.0381960297
+	  3   3   4   4        -0.0289863530
+	  2   2   2   2        -0.0286683540
+	  2   4   6   5         0.0248107586
+	  4   2   5   6         0.0248107586
+	  3   4   4   5        -0.0246927193
+	  4   3   5   4        -0.0246927193
+	  2   2   6   6        -0.0246705879
+	  2   4   1   5        -0.0242465593
 
-	SCF energy       (chkpt)              =  -76.022818203509487
-	Reference energy (file100)            =  -76.022818203509431
+	SCF energy       (chkpt)              =  -76.022818203622279
+	Reference energy (file100)            =  -76.022818203622279
 
-	Opposite-spin MP2 correlation energy  =   -0.149429157724599
-	Same-spin MP2 correlation energy      =   -0.050199554927347
-	MP2 correlation energy                =   -0.199628712651947
-      * MP2 total energy                      =  -76.222446916161374
+	Opposite-spin MP2 correlation energy  =   -0.149429157637128
+	Same-spin MP2 correlation energy      =   -0.050199554905033
+	MP2 correlation energy                =   -0.199628712542161
+      * MP2 total energy                      =  -76.222446916164444
 
-	Opposite-spin CCSD correlation energy =   -0.163785172357862
-	Same-spin CCSD correlation energy     =   -0.044568987342587
-	CCSD correlation energy               =   -0.208354159700521
-      * CCSD total energy                     =  -76.231172363209950
+	Opposite-spin CCSD correlation energy =   -0.163785172259045
+	Same-spin CCSD correlation energy     =   -0.044568987339142
+	CCSD correlation energy               =   -0.208354159594973
+      * CCSD total energy                     =  -76.231172363217254
 
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:34 2010
-	user time   =       1.33 seconds =       0.02 minutes
-	system time =       0.86 seconds =       0.01 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:51 2010
+	user time   =       1.71 seconds =       0.03 minutes
+	system time =       1.28 seconds =       0.02 minutes
 	total time  =          4 seconds =       0.07 minutes
 
   Job 5 is CCHBAR
@@ -1997,8 +1916,8 @@ printed from execute_bp
   WABEI_LOWDISK => FALSE        WFN           => CCSD      !
 
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:34 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:51 2010
 
 
 			**************************
@@ -2008,9 +1927,9 @@ printed from execute_bp
 			**************************
 
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:34 2010
-	user time   =       1.36 seconds =       0.02 minutes
-	system time =       0.90 seconds =       0.02 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:51 2010
+	user time   =       1.76 seconds =       0.03 minutes
+	system time =       1.33 seconds =       0.02 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   Job 6 is CCLAMBDA
@@ -2036,8 +1955,8 @@ printed from execute_bp
   UNITS                => ANGSTROMS    WFN                  => CCSD      !
 
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:34 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:51 2010
 
 
 			**************************
@@ -2045,12 +1964,12 @@ printed from execute_bp
 			**************************
 
 
-	Nuclear Rep. energy (chkpt)   =    9.154868222498731
+	Nuclear Rep. energy (chkpt)   =    9.154868235442169
 	Reference           (chkpt)   = 0
-	SCF energy          (chkpt)   =  -76.022818203509487
-	Reference energy    (CC_INFO) =  -76.022818203509431
-	CCSD energy         (CC_INFO) =   -0.208354159700521
-	Total CCSD energy   (CC_INFO) =  -76.231172363209950
+	SCF energy          (chkpt)   =  -76.022818203622279
+	Reference energy    (CC_INFO) =  -76.022818203622279
+	CCSD energy         (CC_INFO) =   -0.208354159594973
+	Total CCSD energy   (CC_INFO) =  -76.231172363217254
 
 	Input parameters:
 	-----------------
@@ -2068,55 +1987,55 @@ printed from execute_bp
 	  1   0     0        Yes       0.0000000000   1.0000000000
 	Labels for eigenvector 1:
 	LIA 0 -1, Lia 0 -1, LIJAB 0 -1, Lijab 0 -1, LIjAb 0 -1, 2LIjAb - LIjbA 0 -1
-	Symmetry of left-hand state: A1 
-	Symmetry of left-hand eigenvector: A1 
+	Symmetry of left-hand state: A  
+	Symmetry of left-hand eigenvector: A  
 
 	          Solving Lambda Equations
 	          ------------------------
 	Iter     PseudoEnergy or Norm         RMS  
 	----     ---------------------     --------
-	   0        -0.208390741083759    9.017e-08
-	   1        -0.205901944683537    7.970e-03
-	   2        -0.205479746700786    1.317e-03
-	   3        -0.205396127458855    6.049e-04
-	   4        -0.205389749657113    2.004e-04
-	   5        -0.205393301704265    6.080e-05
-	   6        -0.205393281213065    1.459e-05
-	   7        -0.205393362196185    3.274e-06
-	   8        -0.205393390446754    4.975e-07
-	   9        -0.205393388485758    8.465e-08
+	   0        -0.208390740980708    9.017e-08
+	   1        -0.205901944588299    7.970e-03
+	   2        -0.205479746606276    1.317e-03
+	   3        -0.205396127364864    6.049e-04
+	   4        -0.205389749563195    2.004e-04
+	   5        -0.205393301610312    6.080e-05
+	   6        -0.205393281119114    1.459e-05
+	   7        -0.205393362102232    3.274e-06
+	   8        -0.205393390352802    4.975e-07
+	   9        -0.205393388391806    8.465e-08
 
 	Largest LIA Amplitudes:
-	          2   0         0.0069794019
-	          4  16         0.0048526962
-	          4  18         0.0045368442
-	          3  11        -0.0038981442
-	          2   5        -0.0035251093
-	          4  14        -0.0031674458
-	          1   2         0.0031626888
-	          1   3        -0.0024527585
-	          1   7         0.0021770465
-	          4  15         0.0020554592
+	          3   0        -0.0069794018
+	          2   6         0.0048526961
+	          2  13         0.0045368443
+	          4   5         0.0038981440
+	          3  11        -0.0035251093
+	          2   1         0.0031674458
+	          1   4        -0.0031626888
+	          1   7         0.0024527585
+	          1  17         0.0021770465
+	          2   2        -0.0020554591
 
 	Largest LIjAb Amplitudes:
-	  3   3  11  11        -0.0515994661
-	  4   4  14  14        -0.0373195785
-	  2   2   2   2        -0.0286169360
-	  4   4  15  15        -0.0279584133
-	  3   4  11  16        -0.0246238640
-	  4   3  16  11        -0.0246238640
-	  2   3   2  11         0.0245416392
-	  3   2  11   2         0.0245416392
-	  4   4  16  16        -0.0244169857
-	  3   4  11  14        -0.0239889066
+	  4   4   5   5        -0.0515994661
+	  2   2   1   1        -0.0373195783
+	  3   3   4   4        -0.0286169359
+	  2   2   2   2        -0.0279584133
+	  2   4   6   5         0.0246238640
+	  4   2   5   6         0.0246238640
+	  3   4   4   5        -0.0245416391
+	  4   3   5   4        -0.0245416391
+	  2   2   6   6        -0.0244169857
+	  2   4   1   5        -0.0239889065
 
 	Iterations converged.
 
-	Overlap <L|e^T> =        0.94337468283
+	Overlap <L|e^T> =        0.94337468294
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:35 2010
-	user time   =       1.46 seconds =       0.02 minutes
-	system time =       0.99 seconds =       0.02 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:52 2010
+	user time   =       1.93 seconds =       0.03 minutes
+	system time =       1.48 seconds =       0.02 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   Job 7 is CCDENSITY
@@ -2136,8 +2055,8 @@ printed from execute_bp
   TOLERANCE        => 14           UNITS            => ANGSTROMS  
   WFN              => CCSD      !
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:35 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:52 2010
 
 
 			**************************
@@ -2160,67 +2079,67 @@ printed from execute_bp
 	Use Zeta         = No
 	Xi connected     = No
 
-	Nuclear Rep. energy (chkpt)   =    9.154868222498731
-	SCF energy          (chkpt)   =  -76.022818203509487
-	Reference energy    (file100) =  -76.022818203509431
-	CCSD energy         (CC_INFO) =   -0.208354159700521
-	Total CCSD energy   (CC_INFO) =  -76.231172363209950
+	Nuclear Rep. energy (chkpt)   =    9.154868235442169
+	SCF energy          (chkpt)   =  -76.022818203622279
+	Reference energy    (file100) =  -76.022818203622279
+	CCSD energy         (CC_INFO) =   -0.208354159594973
+	Total CCSD energy   (CC_INFO) =  -76.231172363217254
 	Number of States = 1
 
 	Ground?  State     EOM Energy       R0
-	  Yes     0A1     0.0000000000   1.00000000
+	  Yes     0A      0.0000000000   1.00000000
 
 	Energies re-computed from CC density:
 	-------------------------------------
-	One-electron energy        =    0.220458198446670
-	IJKL energy                =    0.041650946317650
-	IJKA energy                =   -0.001381396081984
-	IJAB energy                =   -0.410963055096569
-	IBJA energy                =   -0.100294648195356
-	CIAB energy                =   -0.000157863191011
-	ABCD energy                =    0.042333655574271
-	Total two-electron energy  =   -0.428812360672998
-	CCSD correlation energy    =   -0.208354162226329
-	Total CCSD energy          =  -76.231172365735759
+	One-electron energy        =    0.220458198325955
+	IJKL energy                =    0.041650946260535
+	IJKA energy                =   -0.001381396059641
+	IJAB energy                =   -0.410963054908362
+	IBJA energy                =   -0.100294648045877
+	CIAB energy                =   -0.000157863198443
+	ABCD energy                =    0.042333655505052
+	Total two-electron energy  =   -0.428812360446736
+	CCSD correlation energy    =   -0.208354162120780
+	Total CCSD energy          =  -76.231172365743063
 
 	Virial Theorem Data:
 	--------------------
-	Kinetic energy (ref)   =   75.794777133573419
-	Kinetic energy (corr)  =    0.148087284431715
-	Kinetic energy (total) =   75.942864418005129
-	-V/T (ref)             =    2.003008664693797
-	-V/T (corr)            =    2.406968603010582
-	-V/T (total)           =    2.003796379652181
+	Kinetic energy (ref)   =   75.794777137602495
+	Kinetic energy (corr)  =    0.148087284969102
+	Kinetic energy (total) =   75.942864422571603
+	-V/T (ref)             =    2.003008664641968
+	-V/T (corr)            =    2.406968597192157
+	-V/T (total)           =    2.003796379591918
 
 	Energies re-computed from Fock-adjusted CC density:
 	---------------------------------------------------
-	One-electron energy        =    0.258802425321009
-	IJKL energy                =   -0.667203589617197
-	IJKA energy                =   -0.060116249701970
-	IJAB energy                =   -0.410963055096569
-	IBJA energy                =    0.628950514485137
-	CIAB energy                =   -0.000157863191011
-	ABCD energy                =    0.042333655574271
-	Total two-electron energy  =   -0.467156587547338
-	CCSD correlation energy    =   -0.208354162226329
-	Total CCSD energy          =  -76.231172365735759
+	One-electron energy        =    0.258802424307503
+	IJKL energy                =   -0.667203588632118
+	IJKA energy                =   -0.060116248680847
+	IJAB energy                =   -0.410963054908362
+	IBJA energy                =    0.628950513486433
+	CIAB energy                =   -0.000157863198443
+	ABCD energy                =    0.042333655505052
+	Total two-electron energy  =   -0.467156586428284
+	CCSD correlation energy    =   -0.208354162120781
+	Total CCSD energy          =  -76.231172365743063
 
 	Energies re-computed from Mulliken density:
 	-------------------------------------------
-	One-electron energy        =    0.258802425321009
-	IJKL energy                =   -0.667203589617197
-	IJKA energy                =   -0.060116249701970
-	IJAB energy                =   -0.380033105318541
-	IBJA energy                =    0.598020564707109
-	CIAB energy                =   -0.000157863191011
-	ABCD energy                =    0.042333655574271
-	Total two-electron energy  =   -0.467156587547338
-	CCSD correlation energy    =   -0.208354162226329
-	Total CCSD energy          =  -76.231172365735759
+	One-electron energy        =    0.258802424307503
+	IJKL energy                =   -0.667203588632118
+	IJKA energy                =   -0.060116248680847
+	IJAB energy                =   -0.380033105154935
+	IBJA energy                =    0.598020563733005
+	CIAB energy                =   -0.000157863198443
+	ABCD energy                =    0.042333655505052
+	Total two-electron energy  =   -0.467156586428285
+	CCSD correlation energy    =   -0.208354162120782
+	Total CCSD energy          =  -76.231172365743063
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:36 2010
-	user time   =       1.54 seconds =       0.03 minutes
-	system time =       1.08 seconds =       0.02 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:53 2010
+	user time   =       2.14 seconds =       0.04 minutes
+	system time =       1.69 seconds =       0.03 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   Job 8 is OEPROP
@@ -2229,57 +2148,33 @@ printed from execute_bp
 
   Options:
   ----------------------------------------------------------------------------
-  ASYMM_OPDM           => FALSE           
-  BASIS_PATH           => (empty)         
-  CHARGE               => 0               
-  CORREL_CORR          => 0               
-  DELETE_ZVEC          => 0               
-  DOCC                 => [ 3, 0, 1, 1 ] !
-  EDGRAD_LOGSCALE      => 5               
-  FINE_STRUCTURE_ALPHA => 1               
-  FREEZE_CORE          => FALSE           
-  GRID                 => 0               
-  GRID_FORMAT          => (empty)         
-  GRID_ORIGIN          => 0               
-  GRID_UNIT_X          => 0               
-  GRID_XY0             => [  ]            
-  GRID_XY1             => [  ]            
-  GRID_XYZ0            => [  ]            
-  GRID_XYZ1            => [  ]            
-  GRID_ZMAX            => 3               
-  GRID_ZMIN            => 0               
-  LM_REF_XYZ           => [  ]            
-  MO_TO_PLOT           => (empty)         
-  MPMAX                => 1               
-  MP_REF               => 0               
-  MP_REF_XYZ           => [  ]            
-  MULTP                => 1               
-  NIX                  => 0               
-  NIY                  => 0               
-  NIZ                  => 0               
-  NO_INPUT             => FALSE           
-  NUC_ESP              => TRUE            
-  NUM_ROOTS            => 1               
-  OPDM_BASIS           => MO              
-  OPDM_FILE            => 0               
-  OPDM_FORMAT          => SQUARE          
-  PRINT                => 1               
-  PRINT_NOS            => FALSE           
-  QED_DARWIN           => FALSE           
-  READ_OPDM            => TRUE            
-  REFERENCE            => RHF            !
-  ROOT                 => 1               
-  SOCC                 => [  ]            
-  SPIN_PROP            => FALSE           
-  TRANSITION_DENSITY   => FALSE           
-  UNITS                => ANGSTROMS       
-  WFN                  => CCSD           !
-  WRTNOS               => FALSE           
-  ZVEC_FILE            => 0               
+  ASYMM_OPDM           => FALSE        BASIS_PATH           => (empty)    
+  CHARGE               => 0            CORREL_CORR          => 0          
+  DELETE_ZVEC          => 0            DOCC                 => [ 5 ]     !
+  EDGRAD_LOGSCALE      => 5            FINE_STRUCTURE_ALPHA => 1          
+  FREEZE_CORE          => FALSE        GRID                 => 0          
+  GRID_FORMAT          => (empty)      GRID_ORIGIN          => 0          
+  GRID_UNIT_X          => 0            GRID_XY0             => [  ]       
+  GRID_XY1             => [  ]         GRID_XYZ0            => [  ]       
+  GRID_XYZ1            => [  ]         GRID_ZMAX            => 3          
+  GRID_ZMIN            => 0            LM_REF_XYZ           => [  ]       
+  MO_TO_PLOT           => (empty)      MPMAX                => 1          
+  MP_REF               => 0            MP_REF_XYZ           => [  ]       
+  MULTP                => 1            NIX                  => 0          
+  NIY                  => 0            NIZ                  => 0          
+  NO_INPUT             => FALSE        NUC_ESP              => TRUE       
+  NUM_ROOTS            => 1            OPDM_BASIS           => MO         
+  OPDM_FILE            => 0            OPDM_FORMAT          => SQUARE     
+  PRINT                => 1            PRINT_NOS            => FALSE      
+  QED_DARWIN           => FALSE        READ_OPDM            => TRUE       
+  REFERENCE            => RHF       !  ROOT                 => 1          
+  SOCC                 => [  ]         SPIN_PROP            => FALSE      
+  TRANSITION_DENSITY   => FALSE        UNITS                => ANGSTROMS  
+  WFN                  => CCSD      !  WRTNOS               => FALSE      
+  ZVEC_FILE            => 0          
 
-
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:36 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:53 2010
 
     **********************************************
     *                    OEPROP                  *
@@ -2304,10 +2199,10 @@ printed from execute_bp
     # of molecular orbitals    =     25
     # of basis functions       =     25
     # of atomic orbitals       =     25
-    # of irreps                =      4
+    # of irreps                =      1
     Total charge               =      0
     # of unique shells         =     12
-    # of primitives            =     20
+    # of primitives            =     25
     Print level                =      1
 
   List of GRID PARAMETERS :
@@ -2332,28 +2227,28 @@ printed from execute_bp
      1      1          0        1.99515994
      1      2          0        0.89866144
      1      3          0        0.90655782
-     1      4          1        1.12425957
-     1      5          1        0.80501768
-     1      6          1        0.92983337
-     1      7          1        0.84107510
-     1      8          1        0.44796012
-     1      9          1        0.63988211
-     1     10          2        0.00194124
-     1     11          2        0.00494281
-     1     12          2        0.00692077
-     1     13          2        0.00791001
-     1     14          2        0.01842520
-     1     15          2        0.00091940
+     1      4          1        0.80501768
+     1      5          1        0.92983337
+     1      6          1        1.12425957
+     1      7          1        0.44796012
+     1      8          1        0.63988211
+     1      9          1        0.84107510
+     1     10          2        0.00791001
+     1     11          2        0.01842520
+     1     12          2        0.00494281
+     1     13          2        0.00091940
+     1     14          2        0.00692077
+     1     15          2        0.00194124
      2     16          0        0.49346465
      2     17          0        0.15002012
-     2     18          1        0.01165841
-     2     19          1        0.01639370
-     2     20          1        0.01372983
+     2     18          1        0.01639370
+     2     19          1        0.01372983
+     2     20          1        0.01165841
      3     21          0        0.49346465
      3     22          0        0.15002012
-     3     23          1        0.01165841
-     3     24          1        0.01639370
-     3     25          1        0.01372983
+     3     23          1        0.01639370
+     3     24          1        0.01372983
+     3     25          1        0.01165841
 
 
  -Atomic bond populations :
@@ -2383,14 +2278,14 @@ printed from execute_bp
  -Coordinates of the reference point (a.u.) :
            x                     y                     z
   --------------------  --------------------  --------------------
-          0.0000000000          0.0000000000          0.0103562360
+          0.0000000000          0.0103562378          0.0000000000
 
  -Electric dipole moment (expectation values) :
 
-    mu(X)  =   0.00000 D  =   0.00000000e+00 C*m  =   0.00000000 a.u.
-    mu(Y)  =   0.00000 D  =   3.01505933e-46 C*m  =   0.00000000 a.u.
-    mu(Z)  =   2.09539 D  =   6.98946327e-30 C*m  =   0.82438880 a.u.
-    |mu|   =   2.09539 D  =   6.98946327e-30 C*m  =   0.82438880 a.u.
+    mu(X)  =  -0.00000 D  =  -6.92294392e-43 C*m  =  -0.00000000 a.u.
+    mu(Y)  =   2.09539 D  =   6.98946326e-30 C*m  =   0.82438880 a.u.
+    mu(Z)  =  -0.00000 D  =  -1.03876711e-44 C*m  =  -0.00000000 a.u.
+    |mu|   =   2.09539 D  =   6.98946326e-30 C*m  =   0.82438880 a.u.
 
 
  --------------------------------------------------------------
@@ -2400,7 +2295,7 @@ printed from execute_bp
  -Coordinates of the reference point (a.u.) :
            x                     y                     z
   --------------------  --------------------  --------------------
-          0.0000000000          0.0000000000         -0.0310687081
+          0.0000000000         -0.0310687133          0.0000000000
 
  -Electronic angular momentum (expectation values) :
 
@@ -2416,48 +2311,48 @@ printed from execute_bp
  -Coordinates of atomic centers (a.u.):
     #   Charge           x                     y                     z
    ---  ------  --------------------  --------------------  --------------------
-    1      8            0.0000000000          0.0000000000         -0.1152595236
-    2      1            0.0000000000          1.4290587938          1.0071628674
-    3      1            0.0000000000         -1.4290587938          1.0071628674
+    1      8           -0.0000000000         -0.1152595216          0.0000000000
+    2      1            1.4290587929          1.0071628664          0.0000000000
+    3      1           -1.4290587929          1.0071628664          0.0000000000
 
 
  -Electrostatic potential and electric field (a.u.) :
 
     Center         phi            Ex             Ey           Ez
     ------    ------------   ------------  ------------  ------------
-       1      -22.29653228     0.00000000    0.00000000   -0.12551251
-       2       -1.01170429     0.00000000    0.01744911    0.00595618
-       3       -1.01170429     0.00000000   -0.01744911    0.00595618
+       1      -22.29653228    -0.00000000   -0.12551251    0.00000000
+       2       -1.01170429     0.01744911    0.00595618   -0.00000000
+       3       -1.01170429    -0.01744911    0.00595618    0.00000000
 
 
  -Electric field gradient (regular form) (a.u.):
 
     Center           XX                    YY                    ZZ
     ------  --------------------  --------------------  --------------------
-       1          -1214.86439237        -1218.17620341        -1216.91089361
-       2             -1.42693262           -1.94871866           -1.76142483
-       3             -1.42693262           -1.94871866           -1.76142483
+       1          -1218.17620340        -1216.91089359        -1214.86439236
+       2             -1.94871867           -1.76142484           -1.42693262
+       3             -1.94871867           -1.76142484           -1.42693262
 
     Center           XY                    XZ                    YZ
     ------  --------------------  --------------------  --------------------
-       1              0.00000000            0.00000000            0.00000000
-       2              0.00000000            0.00000000            1.60118463
-       3              0.00000000            0.00000000           -1.60118463
+       1              0.00000000           -0.00000000           -0.00000000
+       2             -0.34176476            0.00000000            0.00000000
+       3              0.34176476            0.00000000           -0.00000000
 
 
  -Electric field gradient (traceless tensor form) (a.u.):
 
     Center        XX - RR/3             YY - RR/3             ZZ - RR/3
     ------  --------------------  --------------------  --------------------
-       1              1.78610410           -1.52570695           -0.26039715
-       2              0.28542609           -0.23635996           -0.04906613
-       3              0.28542609           -0.23635996           -0.04906613
+       1             -1.52570695           -0.26039714            1.78610409
+       2             -0.23635996           -0.04906613            0.28542609
+       3             -0.23635996           -0.04906613            0.28542609
 
     Center           XY                    XZ                    YZ
     ------  --------------------  --------------------  --------------------
-       1              0.00000000            0.00000000            0.00000000
-       2              0.00000000            0.00000000            1.60118463
-       3              0.00000000            0.00000000           -1.60118463
+       1              0.00000000           -0.00000000           -0.00000000
+       2             -0.34176476            0.00000000            0.00000000
+       3              0.34176476            0.00000000           -0.00000000
 
 
  -Electron density (a.u.):
@@ -2475,14 +2370,14 @@ printed from execute_bp
 
  -Relativistic MVD one-electron corrections to the energy (a.u.):
 
-    Mass-velocity (p^4) term     :   -0.245456155594345
-    One-electron Darwin term     :   0.194433277006009
-    Total one-electron MVD terms :   -0.051022878588336
+    Mass-velocity (p^4) term     :   -0.245456155591868
+    One-electron Darwin term     :   0.194433277003795
+    Total one-electron MVD terms :   -0.051022878588073
 
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:36 2010
-	user time   =       1.55 seconds =       0.03 minutes
-	system time =       1.08 seconds =       0.02 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:53 2010
+	user time   =       2.14 seconds =       0.04 minutes
+	system time =       1.70 seconds =       0.03 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   Job 9 is TRANSQT
@@ -2491,71 +2386,40 @@ printed from execute_bp
 
   Options:
   ----------------------------------------------------------------------------
-  AA_M_FILE            => 81              
-  AB_M_FILE            => 83              
-  AO_BASIS             => NONE            
-  BASIS_PATH           => (empty)         
-  BB_M_FILE            => 82              
-  CHARGE               => 0               
-  CHECK_C_ORTHONORM    => FALSE           
-  DELETE_AO            => TRUE            
-  DELETE_RESTR_DOCC    => TRUE            
-  DELETE_TPDM          => TRUE            
-  DERTYPE              => FIRST          !
-  DOCC                 => [ 3, 0, 1, 1 ] !
-  DO_ALL_TEI           => FALSE           
-  FIRST_TMP_FILE       => 150             
-  FREEZE_CORE          => FALSE           
-  FZC_A_FILE           => 35              
-  FZC_B_FILE           => 35              
-  FZC_FILE             => 35              
-  IVO                  => FALSE           
-  J_FILE               => 91              
-  KEEP_J               => FALSE           
-  KEEP_PRESORT         => FALSE           
-  LAGRAN_DOUBLE        => FALSE           
-  LAGRAN_HALVE         => FALSE           
-  LAG_IN_FILE          => 75              
-  MAX_BUCKETS          => 499             
-  MODE                 => TO_MO           
-  MOORDER              => [  ]            
-  MP2R12A              => MP2R12AERI      
-  MULTP                => 1               
-  M_FILE               => 0               
-  NO_INPUT             => FALSE           
-  OEI_A_FILE           => 35              
-  OEI_B_FILE           => 35              
-  OEI_FILE             => 35              
-  OPDM_IN_FILE         => 73              
-  OPDM_OUT_FILE        => 76              
-  PITZER               => FALSE           
-  PRESORT_FILE         => 41              
-  PRINT_LVL            => 1               
-  PRINT_MOS            => FALSE           
-  PRINT_OE_INTEGRALS   => FALSE           
-  PRINT_REORDER        => FALSE           
-  PRINT_SORTED_OE_INTS => FALSE           
-  PRINT_SORTED_TE_INTS => FALSE           
-  PRINT_TE_INTEGRALS   => FALSE           
-  PSIMRCC              => FALSE           
-  QRHF                 => FALSE           
-  REFERENCE            => RHF            !
-  REORDER              => FALSE           
-  SOCC                 => [  ]            
-  SORTED_TEI_FILE      => 72              
-  SO_S_FILE            => 35              
-  SO_TEI_FILE          => 72              
-  SO_T_FILE            => 35              
-  SO_V_FILE            => 35              
-  TOLERANCE            => 14              
-  TPDM_ADD_REF         => FALSE           
-  TPDM_FILE            => 74              
-  UNITS                => ANGSTROMS       
-  WFN                  => CCSD           !
+  AA_M_FILE            => 81            AB_M_FILE            => 83          
+  AO_BASIS             => NONE          BASIS_PATH           => (empty)     
+  BB_M_FILE            => 82            CHARGE               => 0           
+  CHECK_C_ORTHONORM    => FALSE         DELETE_AO            => TRUE        
+  DELETE_RESTR_DOCC    => TRUE          DELETE_TPDM          => TRUE        
+  DERTYPE              => FIRST      !  DOCC                 => [ 5 ]      !
+  DO_ALL_TEI           => FALSE         FIRST_TMP_FILE       => 150         
+  FREEZE_CORE          => FALSE         FZC_A_FILE           => 35          
+  FZC_B_FILE           => 35            FZC_FILE             => 35          
+  IVO                  => FALSE         J_FILE               => 91          
+  KEEP_J               => FALSE         KEEP_PRESORT         => FALSE       
+  LAGRAN_DOUBLE        => FALSE         LAGRAN_HALVE         => FALSE       
+  LAG_IN_FILE          => 75            MAX_BUCKETS          => 499         
+  MODE                 => TO_MO         MOORDER              => [  ]        
+  MP2R12A              => MP2R12AERI    MULTP                => 1           
+  M_FILE               => 0             NO_INPUT             => FALSE       
+  OEI_A_FILE           => 35            OEI_B_FILE           => 35          
+  OEI_FILE             => 35            OPDM_IN_FILE         => 73          
+  OPDM_OUT_FILE        => 76            PITZER               => FALSE       
+  PRESORT_FILE         => 41            PRINT_LVL            => 1           
+  PRINT_MOS            => FALSE         PRINT_OE_INTEGRALS   => FALSE       
+  PRINT_REORDER        => FALSE         PRINT_SORTED_OE_INTS => FALSE       
+  PRINT_SORTED_TE_INTS => FALSE         PRINT_TE_INTEGRALS   => FALSE       
+  PSIMRCC              => FALSE         QRHF                 => FALSE       
+  REFERENCE            => RHF        !  REORDER              => FALSE       
+  SOCC                 => [  ]          SORTED_TEI_FILE      => 72          
+  SO_S_FILE            => 35            SO_TEI_FILE          => 72          
+  SO_T_FILE            => 35            SO_V_FILE            => 35          
+  TOLERANCE            => 14            TPDM_ADD_REF         => FALSE       
+  TPDM_FILE            => 74            UNITS                => ANGSTROMS   
+  WFN                  => CCSD       !
 
-
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:36 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:53 2010
 
 
 	**************************************************
@@ -2608,19 +2472,16 @@ printed from execute_bp
 
 	Chkpt File Parameters:
 	------------------
-	Number of irreps = 4
+	Number of irreps = 1
 	Number of SOs    = 25
 	Number of MOs    = 25
 
 	Label	# SOs	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
 	-----	-----	-----	------	------	------	------	------
-	 A1 	   12	   12	    0	    3	    0	    9	    0
-	 A2 	   2	   2	    0	    0	    0	    2	    0
-	 B1 	   4	   4	    0	    1	    0	    3	    0
-	 B2 	   7	   7	    0	    1	    0	    6	    0
+	 A  	   25	   25	    0	    5	    0	    20	    0
 
-	Nuclear Repulsion Energy    =         9.1548682225
-	Total SCF Energy            =       -76.0228182035
+	Nuclear Repulsion Energy    =         9.1548682354
+	Total SCF Energy            =       -76.0228182036
 
 	Pre-sorting two-electron ints...
 
@@ -2638,9 +2499,9 @@ printed from execute_bp
 	Transforming one-electron integrals...
 	One-pdm and lagrangian written to file76.
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:36 2010
-	user time   =       1.61 seconds =       0.03 minutes
-	system time =       1.11 seconds =       0.02 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:53 2010
+	user time   =       2.20 seconds =       0.04 minutes
+	system time =       1.72 seconds =       0.03 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   Job 10 is CINTS
@@ -2660,8 +2521,8 @@ printed from execute_bp
   UNITS                => ANGSTROMS     V_FILE               => 35          
   WFN                  => CCSD       !
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:36 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:53 2010
 
                   --------------------------------------------
                     CINTS: An integrals program written in C
@@ -2684,8 +2545,8 @@ printed from execute_bp
     Fine-structure alpha scaling =   0.0073
 
   -SYMMETRY INFORMATION;
-    Computational point group        = C2v
-    Number of irreps                 = 4
+    Computational point group        = C1 
+    Number of irreps                 = 1
   Rotational invariance condition satisfied.
   |X cross Grad| =  0.000000000000   (it is the accuracy of the computed forces)
   So long..
@@ -2694,20 +2555,30 @@ printed from execute_bp
   -CCSD forces in the reference frame (a.u.):
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000    -0.001330312081
-       2        0.000000000000     0.000027392927     0.000665156040
-       3        0.000000000000    -0.000027392927     0.000665156040
+       1       -0.000000000000    -0.001330310232     0.000000000000
+       2        0.000027391909     0.000665155116    -0.000000000000
+       3       -0.000027391909     0.000665155116    -0.000000000000
 
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:36 2010
-	user time   =       1.71 seconds =       0.03 minutes
-	system time =       1.11 seconds =       0.02 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:53 2010
+	user time   =       2.27 seconds =       0.04 minutes
+	system time =       1.73 seconds =       0.03 minutes
 	total time  =          0 seconds =       0.00 minutes
 
 			----------------------------------
 			 OPTKING: for geometry optimizations  
 			  - R.A. King,  Bethel University   
 			------------------------------------
+
+	Prevous internal coordinate definitions found.
+	---Fragment 1 Geometry and Gradient---
+	 O          -0.0000000000       -0.1152595216        0.0000000000
+	 H           1.4290587929        1.0071628664        0.0000000000
+	 H          -1.4290587929        1.0071628664        0.0000000000
+	            -0.0000000000       -0.0013303102        0.0000000000
+	             0.0000273919        0.0006651551       -0.0000000000
+	            -0.0000273919        0.0006651551       -0.0000000000
+
 	---Fragment 1 Bond Connectivity---
 	 1 : 2 3
 	 2 : 1
@@ -2719,36 +2590,30 @@ printed from execute_bp
 	 R(1,3)           =         1.817152	       0.961595
 	 A(2,1,3)         =         1.810009	     103.705853
 
-	---Fragment 1 Geometry and Gradient---
-	 O           0.0000000000        0.0000000000       -0.1152595236
-	 H           0.0000000000        1.4290587938        1.0071628674
-	 H           0.0000000000       -1.4290587938        1.0071628674
-	             0.0000000000        0.0000000000       -0.0013303121
-	             0.0000000000        0.0000273929        0.0006651560
-	             0.0000000000       -0.0000273929        0.0006651560
 
+	Testing B-matrix numerically...
+		Maximum difference is 7.9e-10.  Passed.
+
+	Current energy   :       -76.2311723632
+
+	Energy change for the previous step:
+		Projected    :        -0.0001468800
+		Actual       :        -0.0001835075
 
 	Performing BFGS update with previous 1 gradient(s).
 	Following RFO solution 1.
-	Projected energy change by RFO approximation:        -0.0000033364
+	Projected energy change by RFO approximation:        -0.0000034324
 
 	Back-transformation to cartesian coordinates...
-	---------------------------------------------
-	 Iter     RMS difference    MAX difference   
-	---------------------------------------------
-	    1        7.6e-06          8.9e-06
-	    2        1.1e-11          1.8e-11
-	---------------------------------------------
-
 	Successfully converged to displaced geometry.
 
-	---Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG (3) ---
+	---Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG ---
 	 ----------------------------------------------------------------------
 	 Coordinate             Previous        Force       Change         New 
 	 ----------             --------       ------       ------       ------
-	 R(1,2)          =      0.961595    -0.003562    -0.000555     0.961040
-	 R(1,3)          =      0.961595    -0.003562    -0.000555     0.961040
-	 A(2,1,3)        =    103.705853     0.000070     0.359133   104.064986
+	 R(1,2)          =      0.961595    -0.003562    -0.000602     0.960993
+	 R(1,3)          =      0.961595    -0.003562    -0.000602     0.960993
+	 A(2,1,3)        =    103.705853     0.000070     0.366311   104.072164
 	 ----------------------------------------------------------------------
 
 	Convergence Check Cycle    2:
@@ -2756,12 +2621,14 @@ printed from execute_bp
 	----------------------------------------------------------
 	MAX Force           9.2e-04        3.0e-04          no
 	Energy Change      -1.8e-04        1.0e-06          no
-	MAX Displacement    6.3e-03        1.2e-03          no
+	MAX Displacement    6.4e-03        1.2e-03          no
 	----------------------------------------------------------
-Writing optimization data to psio file.
-(    8.0000000000    0.0000000000    0.0000000000   -0.1118396699) 
-(    1.0000000000    0.0000000000    1.4317422163    1.0054529406) 
-(    1.0000000000    0.0000000000   -1.4317422163    1.0054529406) 
+	Writing optimization data to binary file.
+	Structure for next step:
+	Cartesian Geometry (au)
+	    O    -0.0000000000  -0.1117435210   0.0000000000
+	    H     1.4317423100   1.0054048661   0.0000000000
+	    H    -1.4317423100   1.0054048661   0.0000000000
 			--------------------------
 			 OPTKING Finished Execution 
 			--------------------------
@@ -2795,8 +2662,8 @@ printed from execute_bp
   UNITS                => ANGSTROMS     V_FILE               => 35          
   WFN                  => CCSD       !
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:36 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:53 2010
 
                   --------------------------------------------
                     CINTS: An integrals program written in C
@@ -2819,18 +2686,18 @@ printed from execute_bp
     Fine-structure alpha scaling =   0.0073
 
   -SYMMETRY INFORMATION;
-    Computational point group        = C2v
-    Number of irreps                 = 4
+    Computational point group        = C1 
+    Number of irreps                 = 1
 
-    Wrote 13617 two-electron integrals to IWL file 33
-
-
-    Wrote 186874 first-derivative ERIs to IWL files [200, 208]
+    Wrote 25620 two-electron integrals to IWL file 33
 
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:36 2010
-	user time   =       1.96 seconds =       0.03 minutes
-	system time =       1.14 seconds =       0.02 minutes
+    Wrote 0 first-derivative ERIs to IWL files [200, 208]
+
+
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:53 2010
+	user time   =       2.43 seconds =       0.04 minutes
+	system time =       1.75 seconds =       0.03 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   Job 1 is CSCF
@@ -2843,8 +2710,8 @@ printed from execute_bp
   MULTP      => 1            NO_INPUT   => FALSE      
   UNITS      => ANGSTROMS  
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:36 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:53 2010
 
              ------------------------------------------
 
@@ -2868,7 +2735,7 @@ printed from execute_bp
   maxiter      = 100
   guess        = AUTO
 
-  nuclear repulsion energy        9.1592999516319
+  nuclear repulsion energy        9.1597300031086
 
   using old vector from file30 as initial guess
   energy from old vector:   -76.02281820
@@ -2880,65 +2747,64 @@ printed from execute_bp
   iterations before extrapolation  = 0
   6 error matrices will be kept
 
-  keeping integrals in 114320 bytes of core
+  keeping integrals in 847680 bytes of core
 
-  The lowest eigenvalue of the overlap matrix was 2.201815e-02
+  The lowest eigenvalue of the overlap matrix was 2.201667e-02
 
 
   Using DOCC and SOCC to determine occupations
 
 
-  Symmetry block:   A1    A2    B1    B2   
-  DOCC:              3     0     1     1   
-  SOCC:              0     0     0     0   
+  Symmetry block:   A    
+  DOCC:              5   
+  SOCC:              0   
 
   reading integrals in the IWL format from files 33,35,36,37
-  wrote 6516 integrals to file92
+  wrote 25654 integrals to file92
 
   iter       total energy        delta E         delta P          diiser
-    1       -76.0228849031    8.518218e+01    0.000000e+00    0.000000e+00
-    2       -76.0228865297    1.626598e-06    2.957658e-05    5.144113e-04
-    3       -76.0228866489    1.192806e-07    7.635757e-06    1.723171e-04
-    4       -76.0228866675    1.853388e-08    2.477929e-06    5.912069e-05
-    5       -76.0228866694    1.932179e-09    1.184392e-06    1.747563e-05
-    6       -76.0228866695    7.665335e-11    3.137364e-07    3.113326e-06
-    7       -76.0228866695    7.673862e-13    2.152425e-08    3.150522e-07
-    8       -76.0228866695    4.263256e-14    3.249457e-09    5.387258e-08
-    9       -76.0228866695   -2.842171e-14    5.985817e-10    8.540708e-09
-   10       -76.0228866695   -2.842171e-14    1.129360e-10    1.414819e-09
-   11       -76.0228866695    5.684342e-14    1.355741e-11    1.571971e-10
+    1       -76.0228886686    8.518262e+01    0.000000e+00    0.000000e+00
+    2       -76.0228903933    1.724676e-06    1.138104e-05    5.263265e-04
+    3       -76.0228905215    1.282646e-07    2.931457e-06    1.789581e-04
+    4       -76.0228905421    2.056777e-08    9.597334e-07    6.204646e-05
+    5       -76.0228905442    2.089450e-09    4.544311e-07    1.806591e-05
+    6       -76.0228905443    8.178347e-11    1.196220e-07    3.208537e-06
+    7       -76.0228905443    9.237056e-13    8.259639e-09    3.255989e-07
+    8       -76.0228905443   -2.842171e-14    1.194659e-09    5.276179e-08
+    9       -76.0228905443    8.526513e-14    2.355594e-10    8.719965e-09
+   10       -76.0228905443    1.421085e-14    3.845753e-11    1.149323e-09
 
  Correcting phases of orbitals.
 
 Orbital energies (a.u.):
 
   Doubly occupied orbitals
-   1A1    -20.561551     2A1     -1.338744     1B2     -0.700562  
-   3A1     -0.568976     1B1     -0.497064  
+   1A     -20.561539     2A      -1.338761     3A      -0.700600  
+   4A      -0.568969     5A      -0.497064  
 
 
   Unoccupied orbitals
-   4A1      0.211233     2B2      0.303710     3B2      1.000873  
-   5A1      1.084848     6A1      1.132308     2B1      1.168821  
-   4B2      1.294687     7A1      1.415495     1A2      1.804210  
-   8A1      1.814058     3B1      1.923625     9A1      2.566075  
-   5B2      2.575075     6B2      2.799088     2A2      2.972851  
-   4B1      2.988948    10A1      3.369542    11A1      3.701460  
-   7B2      3.922513    12A1      4.104184  
+   6A       0.211244     7A       0.303723     8A       1.000922  
+   9A       1.084864    10A       1.132313    11A       1.168822  
+  12A       1.294689    13A       1.415475    14A       1.804199  
+  15A       1.814115    16A       1.923653    17A       2.566133  
+  18A       2.575082    19A       2.799199    20A       2.972951  
+  21A       2.988956    22A       3.369646    23A       3.701571  
+  24A       3.922558    25A       4.104250  
 
 
-      * SCF total energy   =     -76.022886669493
-        kinetic energy     =      75.796296965169
-        nuc. attr. energy  =    -198.826876961413
-        elec. rep. energy  =      47.007693326751
-        potential energy   =    -151.819183634662
-        virial theorem     =       1.997019454085
+      * SCF total energy   =     -76.022890544264
+        kinetic energy     =      75.796465635872
+        nuc. attr. energy  =    -198.827838259278
+        elec. rep. energy  =      47.008482079141
+        potential energy   =    -151.819356180136
+        virial theorem     =       1.997021621951
         wavefunction norm  =       1.000000000000
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:37 2010
-	user time   =       1.97 seconds =       0.03 minutes
-	system time =       1.14 seconds =       0.02 minutes
-	total time  =          1 seconds =       0.02 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:53 2010
+	user time   =       2.44 seconds =       0.04 minutes
+	system time =       1.75 seconds =       0.03 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   Job 2 is TRANSQT2
 printed from execute_bp
@@ -2955,8 +2821,8 @@ printed from execute_bp
   UNITS      => ANGSTROMS    WFN        => CCSD      !
 
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:37 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:53 2010
 
 
 	**************************************************
@@ -2981,20 +2847,17 @@ printed from execute_bp
 	Cache Type      =	LRU
 	Chkpt Parameters:
 	--------------------
-	Number of irreps     = 4
+	Number of irreps     = 1
 	Number of SOs        = 25
 	Number of MOs        = 25
 	Number of active MOs = 25
 
 	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
 	-----	-----	------	------	------	------	------
-	 A1 	   12	    0	    3	    0	    9	    0
-	 A2 	   2	    0	    0	    0	    2	    0
-	 B1 	   4	    0	    1	    0	    3	    0
-	 B2 	   7	    0	    1	    0	    6	    0
+	 A  	   25	    0	    5	    0	    20	    0
 
-	Nuclear Rep. energy (chkpt) =      9.15929995163193
-	SCF energy          (chkpt) =    -76.02288666949337
+	Nuclear Rep. energy (chkpt) =      9.15973000310865
+	SCF energy          (chkpt) =    -76.02289054426431
 
 	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (pq,rs) nbuckets = 1
@@ -3004,10 +2867,10 @@ printed from execute_bp
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:37 2010
-	user time   =       1.99 seconds =       0.03 minutes
-	system time =       1.15 seconds =       0.02 minutes
-	total time  =          0 seconds =       0.00 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:54 2010
+	user time   =       2.49 seconds =       0.04 minutes
+	system time =       1.78 seconds =       0.03 minutes
+	total time  =          1 seconds =       0.02 minutes
 
   Job 3 is CCSORT
 printed from execute_bp
@@ -3046,8 +2909,8 @@ printed from execute_bp
   WFN                  => CCSD           !
 
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:37 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:54 2010
 
 
 			**************************
@@ -3073,37 +2936,25 @@ printed from execute_bp
 
 	Chkpt Parameters:
 	--------------------
-	Number of irreps     = 4
+	Number of irreps     = 1
 	Number of MOs        = 25
 	Number of active MOs = 25
 
 	Label	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
 	-----	-----	------	------	------	------	------
-	 A1 	   12	    0	    3	    0	    9	    0
-	 A2 	   2	    0	    0	    0	    2	    0
-	 B1 	   4	    0	    1	    0	    3	    0
-	 B2 	   7	    0	    1	    0	    6	    0
+	 A  	   25	    0	    5	    0	    20	    0
 
-	Nuclear Rep. energy (chkpt) =      9.15929995163193
-	SCF energy          (chkpt) =    -76.02288666949337
+	Nuclear Rep. energy (chkpt) =      9.15973000310865
+	SCF energy          (chkpt) =    -76.02289054426431
 
-	Size of irrep 0 of <ab|cd> integrals:      0.017 (MW) /      0.135 (MB)
-	Size of irrep 1 of <ab|cd> integrals:      0.005 (MW) /      0.041 (MB)
-	Size of irrep 2 of <ab|cd> integrals:      0.006 (MW) /      0.049 (MB)
-	Size of irrep 3 of <ab|cd> integrals:      0.014 (MW) /      0.115 (MB)
-	Total:                                     0.043 (MW) /      0.341 (MB)
+	Size of irrep 0 of <ab|cd> integrals:      0.160 (MW) /      1.280 (MB)
+	Total:                                     0.160 (MW) /      1.280 (MB)
 
-	Size of irrep 0 of <ia|bc> integrals:      0.005 (MW) /      0.037 (MB)
-	Size of irrep 1 of <ia|bc> integrals:      0.001 (MW) /      0.009 (MB)
-	Size of irrep 2 of <ia|bc> integrals:      0.002 (MW) /      0.012 (MB)
-	Size of irrep 3 of <ia|bc> integrals:      0.003 (MW) /      0.028 (MB)
-	Total:                                     0.011 (MW) /      0.086 (MB)
+	Size of irrep 0 of <ia|bc> integrals:      0.040 (MW) /      0.320 (MB)
+	Total:                                     0.040 (MW) /      0.320 (MB)
 
-	Size of irrep 0 of tijab amplitudes:       0.001 (MW) /      0.011 (MB)
-	Size of irrep 1 of tijab amplitudes:       0.000 (MW) /      0.001 (MB)
-	Size of irrep 2 of tijab amplitudes:       0.000 (MW) /      0.004 (MB)
-	Size of irrep 3 of tijab amplitudes:       0.001 (MW) /      0.006 (MB)
-	Total:                                     0.003 (MW) /      0.022 (MB)
+	Size of irrep 0 of tijab amplitudes:       0.010 (MW) /      0.080 (MB)
+	Total:                                     0.010 (MW) /      0.080 (MB)
 
 
 	Sorting File: A <ij|kl> nbuckets = 1
@@ -3114,17 +2965,17 @@ printed from execute_bp
 	Sorting File: E <ai|jk> nbuckets = 1
 	Sorting File: F <ia|bc> nbuckets = 1
 	Sorting File: F <ai|bc> nbuckets = 1
-	One-electron energy          =   -123.03057999648509
-	Two-electron (AA) energy     =     14.44502485147581
-	Two-electron (BB) energy     =     14.44502485147581
-	Two-electron (AB) energy     =     23.40336852388399
-	Two-electron energy          =     37.84839337535979
+	One-electron energy          =   -123.03137262361138
+	Two-electron (AA) energy     =     14.44517824743919
+	Two-electron (BB) energy     =     14.44517824743919
+	Two-electron (AB) energy     =     23.40357382879933
+	Two-electron energy          =     37.84875207623852
 	Frozen-core energy (transqt) =      0.00000000000000
-	Reference energy             =    -76.02288666949336
+	Reference energy             =    -76.02289054426421
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:37 2010
-	user time   =       2.02 seconds =       0.03 minutes
-	system time =       1.19 seconds =       0.02 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:54 2010
+	user time   =       2.52 seconds =       0.04 minutes
+	system time =       1.82 seconds =       0.03 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   Job 4 is CCENERGY
@@ -3179,8 +3030,8 @@ printed from execute_bp
   WFN                 => CCSD           !
 
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:37 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:54 2010
 
 			**************************
 			*                        *
@@ -3188,9 +3039,9 @@ printed from execute_bp
 			*                        *
 			**************************
 
-	Nuclear Rep. energy (chkpt)   =    9.159299951631931
-	SCF energy          (chkpt)   =  -76.022886669493374
-	Reference energy    (file100) =  -76.022886669493360
+	Nuclear Rep. energy (chkpt)   =    9.159730003108645
+	SCF energy          (chkpt)   =  -76.022890544264314
+	Reference energy    (file100) =  -76.022890544264214
 
 	Input parameters:
 	-----------------
@@ -3223,61 +3074,61 @@ printed from execute_bp
 	            ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
   ----     ---------------------    ---------   ----------  ----------  ----------
-     0        -0.208322079185365    7.884e-08    0.005678    0.012177    0.012177
-     1        -0.208298446918408    2.012e-03    0.005678    0.012213    0.012213
-     2        -0.208292391154415    3.932e-04    0.005677    0.012210    0.012210
-     3        -0.208291779978023    9.344e-05    0.005671    0.012183    0.012183
-     4        -0.208291023211197    2.542e-05    0.005669    0.012172    0.012172
-     5        -0.208290871504839    8.173e-06    0.005668    0.012165    0.012165
-     6        -0.208290781602013    2.894e-06    0.005667    0.012161    0.012161
-     7        -0.208290791275514    7.294e-07    0.005667    0.012160    0.012160
-     8        -0.208290789269598    1.054e-07    0.005667    0.012160    0.012160
-     9        -0.208290790643005    2.009e-08    0.005667    0.012160    0.012160
+     0        -0.208321419595756    7.884e-08    0.005678    0.012177    0.012177
+     1        -0.208295008193670    2.025e-03    0.005679    0.012216    0.012216
+     2        -0.208288876036460    3.945e-04    0.005677    0.012210    0.012210
+     3        -0.208288079933909    9.389e-05    0.005671    0.012183    0.012183
+     4        -0.208287285836395    2.580e-05    0.005669    0.012171    0.012171
+     5        -0.208287121681982    8.377e-06    0.005667    0.012163    0.012163
+     6        -0.208287032088618    2.936e-06    0.005666    0.012159    0.012159
+     7        -0.208287042532534    7.290e-07    0.005666    0.012158    0.012158
+     8        -0.208287040723486    1.045e-07    0.005666    0.012158    0.012158
+     9        -0.208287042134446    2.007e-08    0.005666    0.012158    0.012158
 
 	Iterations converged.
 
 
 	Largest TIA Amplitudes:
-	          2   0         0.0104633021
-	          3  11        -0.0065532815
-	          4  14        -0.0062476635
-	          4  18         0.0052338428
-	          4  16         0.0046213784
-	          1   2         0.0043054556
-	          2   5        -0.0039488072
-	          1   0        -0.0028999685
-	          1   7         0.0023758806
-	          2   1        -0.0022507610
+	          3   0        -0.0104612953
+	          4   5         0.0065527225
+	          2   1         0.0062473363
+	          2  13         0.0052329366
+	          2   6         0.0046198066
+	          1   4        -0.0043052918
+	          3  11        -0.0039481703
+	          1   0        -0.0029012799
+	          1  17         0.0023760886
+	          3   3         0.0022508270
 
 	Largest TIjAb Amplitudes:
-	  3   3  11  11        -0.0518813371
-	  4   4  14  14        -0.0380304870
-	  2   2   2   2        -0.0295520096
-	  4   4  15  15        -0.0286636571
-	  2   3   2  11         0.0250268611
-	  3   2  11   2         0.0250268611
-	  3   4  11  16        -0.0247880138
-	  4   3  16  11        -0.0247880138
-	  4   4  16  16        -0.0246409815
-	  3   4  11  14        -0.0242228005
+	  4   4   5   5        -0.0518812477
+	  2   2   1   1        -0.0380229164
+	  3   3   4   4        -0.0295532762
+	  2   2   2   2        -0.0286631098
+	  3   4   4   5        -0.0250275283
+	  4   3   5   4        -0.0250275283
+	  2   4   6   5         0.0247876815
+	  4   2   5   6         0.0247876815
+	  2   2   6   6        -0.0246409252
+	  2   4   1   5        -0.0242215268
 
-	SCF energy       (chkpt)              =  -76.022886669493374
-	Reference energy (file100)            =  -76.022886669493360
+	SCF energy       (chkpt)              =  -76.022890544264314
+	Reference energy (file100)            =  -76.022890544264214
 
-	Opposite-spin MP2 correlation energy  =   -0.149375323255972
-	Same-spin MP2 correlation energy      =   -0.050185476357851
-	MP2 correlation energy                =   -0.199560799613823
-      * MP2 total energy                      =  -76.222447469107180
+	Opposite-spin MP2 correlation energy  =   -0.149372211908686
+	Same-spin MP2 correlation energy      =   -0.050184702000730
+	MP2 correlation energy                =   -0.199556913909415
+      * MP2 total energy                      =  -76.222447458173633
 
-	Opposite-spin CCSD correlation energy =   -0.163726029047027
-	Same-spin CCSD correlation energy     =   -0.044564761595879
-	CCSD correlation energy               =   -0.208290790643005
-      * CCSD total energy                     =  -76.231177460136365
+	Opposite-spin CCSD correlation energy =   -0.163722430189853
+	Same-spin CCSD correlation energy     =   -0.044564611944715
+	CCSD correlation energy               =   -0.208287042134446
+      * CCSD total energy                     =  -76.231177586398658
 
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:41 2010
-	user time   =       2.25 seconds =       0.04 minutes
-	system time =       1.40 seconds =       0.02 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:58 2010
+	user time   =       2.84 seconds =       0.05 minutes
+	system time =       2.12 seconds =       0.04 minutes
 	total time  =          4 seconds =       0.07 minutes
 
   Job 5 is CCHBAR
@@ -3294,8 +3145,8 @@ printed from execute_bp
   WABEI_LOWDISK => FALSE        WFN           => CCSD      !
 
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:41 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:58 2010
 
 
 			**************************
@@ -3305,10 +3156,10 @@ printed from execute_bp
 			**************************
 
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:42 2010
-	user time   =       2.28 seconds =       0.04 minutes
-	system time =       1.44 seconds =       0.02 minutes
-	total time  =          1 seconds =       0.02 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:58 2010
+	user time   =       2.89 seconds =       0.05 minutes
+	system time =       2.17 seconds =       0.04 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   Job 6 is CCLAMBDA
 printed from execute_bp
@@ -3333,8 +3184,8 @@ printed from execute_bp
   UNITS                => ANGSTROMS    WFN                  => CCSD      !
 
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:42 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:58 2010
 
 
 			**************************
@@ -3342,12 +3193,12 @@ printed from execute_bp
 			**************************
 
 
-	Nuclear Rep. energy (chkpt)   =    9.159299951631931
+	Nuclear Rep. energy (chkpt)   =    9.159730003108645
 	Reference           (chkpt)   = 0
-	SCF energy          (chkpt)   =  -76.022886669493374
-	Reference energy    (CC_INFO) =  -76.022886669493360
-	CCSD energy         (CC_INFO) =   -0.208290790643005
-	Total CCSD energy   (CC_INFO) =  -76.231177460136365
+	SCF energy          (chkpt)   =  -76.022890544264314
+	Reference energy    (CC_INFO) =  -76.022890544264214
+	CCSD energy         (CC_INFO) =   -0.208287042134446
+	Total CCSD energy   (CC_INFO) =  -76.231177586398658
 
 	Input parameters:
 	-----------------
@@ -3365,56 +3216,56 @@ printed from execute_bp
 	  1   0     0        Yes       0.0000000000   1.0000000000
 	Labels for eigenvector 1:
 	LIA 0 -1, Lia 0 -1, LIJAB 0 -1, Lijab 0 -1, LIjAb 0 -1, 2LIjAb - LIjbA 0 -1
-	Symmetry of left-hand state: A1 
-	Symmetry of left-hand eigenvector: A1 
+	Symmetry of left-hand state: A  
+	Symmetry of left-hand eigenvector: A  
 
 	          Solving Lambda Equations
 	          ------------------------
 	Iter     PseudoEnergy or Norm         RMS  
 	----     ---------------------     --------
-	   0        -0.208327349774298    8.465e-08
-	   1        -0.205842945681949    7.968e-03
-	   2        -0.205421350820550    1.314e-03
-	   3        -0.205337887813972    6.031e-04
-	   4        -0.205331524641512    2.000e-04
-	   5        -0.205335062924157    6.077e-05
-	   6        -0.205335043423086    1.457e-05
-	   7        -0.205335124038016    3.261e-06
-	   8        -0.205335152242860    4.953e-07
-	   9        -0.205335150284719    8.404e-08
+	   0        -0.208323600110942    8.465e-08
+	   1        -0.205839450718110    7.968e-03
+	   2        -0.205417888578092    1.314e-03
+	   3        -0.205334436418536    6.030e-04
+	   4        -0.205328074875554    2.000e-04
+	   5        -0.205331612295893    6.076e-05
+	   6        -0.205331592857722    1.457e-05
+	   7        -0.205331673437033    3.261e-06
+	   8        -0.205331701635509    4.952e-07
+	   9        -0.205331699677384    8.400e-08
 
 	Largest LIA Amplitudes:
-	          2   0         0.0069670730
-	          4  16         0.0048305173
-	          4  18         0.0045221152
-	          3  11        -0.0038827472
-	          2   5        -0.0035149291
-	          1   2         0.0031864740
-	          4  14        -0.0031504149
-	          1   3        -0.0024436032
-	          1   7         0.0021820414
-	          4  15         0.0020354438
+	          3   0        -0.0069656396
+	          2   6         0.0048292797
+	          2  13         0.0045213730
+	          4   5         0.0038820978
+	          3  11        -0.0035143639
+	          1   4        -0.0031864745
+	          2   1         0.0031501487
+	          1   7         0.0024431249
+	          1  17         0.0021822394
+	          2   2        -0.0020349263
 
 	Largest LIjAb Amplitudes:
-	  3   3  11  11        -0.0515992647
-	  4   4  14  14        -0.0371600779
-	  2   2   2   2        -0.0291785157
-	  4   4  15  15        -0.0279557465
-	  2   3   2  11         0.0248740331
-	  3   2  11   2         0.0248740331
-	  3   4  11  16        -0.0246019027
-	  4   3  16  11        -0.0246019027
-	  4   4  16  16        -0.0243888976
-	  3   4  11  14        -0.0239653789
+	  4   4   5   5        -0.0515990897
+	  2   2   1   1        -0.0371527631
+	  3   3   4   4        -0.0291797858
+	  2   2   2   2        -0.0279552761
+	  3   4   4   5        -0.0248746802
+	  4   3   5   4        -0.0248746802
+	  2   4   6   5         0.0246015970
+	  4   2   5   6         0.0246015970
+	  2   2   6   6        -0.0243888962
+	  2   4   1   5        -0.0239641147
 
 	Iterations converged.
 
-	Overlap <L|e^T> =        0.94343022770
+	Overlap <L|e^T> =        0.94343389007
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:42 2010
-	user time   =       2.38 seconds =       0.04 minutes
-	system time =       1.53 seconds =       0.03 minutes
-	total time  =          0 seconds =       0.00 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:52:59 2010
+	user time   =       3.06 seconds =       0.05 minutes
+	system time =       2.32 seconds =       0.04 minutes
+	total time  =          1 seconds =       0.02 minutes
 
   Job 7 is CCDENSITY
 printed from execute_bp
@@ -3433,8 +3284,8 @@ printed from execute_bp
   TOLERANCE        => 14           UNITS            => ANGSTROMS  
   WFN              => CCSD      !
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:42 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:52:59 2010
 
 
 			**************************
@@ -3457,67 +3308,67 @@ printed from execute_bp
 	Use Zeta         = No
 	Xi connected     = No
 
-	Nuclear Rep. energy (chkpt)   =    9.159299951631931
-	SCF energy          (chkpt)   =  -76.022886669493374
-	Reference energy    (file100) =  -76.022886669493360
-	CCSD energy         (CC_INFO) =   -0.208290790643005
-	Total CCSD energy   (CC_INFO) =  -76.231177460136365
+	Nuclear Rep. energy (chkpt)   =    9.159730003108645
+	SCF energy          (chkpt)   =  -76.022890544264314
+	Reference energy    (file100) =  -76.022890544264214
+	CCSD energy         (CC_INFO) =   -0.208287042134446
+	Total CCSD energy   (CC_INFO) =  -76.231177586398658
 	Number of States = 1
 
 	Ground?  State     EOM Energy       R0
-	  Yes     0A1     0.0000000000   1.00000000
+	  Yes     0A      0.0000000000   1.00000000
 
 	Energies re-computed from CC density:
 	-------------------------------------
-	One-electron energy        =    0.220391249969484
-	IJKL energy                =    0.041621819759165
-	IJKA energy                =   -0.001380360097852
-	IJAB energy                =   -0.410846236910800
-	IBJA energy                =   -0.100218985459001
-	CIAB energy                =   -0.000153223960001
-	ABCD energy                =    0.042294945740815
-	Total two-electron energy  =   -0.428682040927676
-	CCSD correlation energy    =   -0.208290790958192
-	Total CCSD energy          =  -76.231177460451548
+	One-electron energy        =    0.220387023048891
+	IJKL energy                =    0.041619865758831
+	IJKA energy                =   -0.001380293680657
+	IJAB energy                =   -0.410839318773060
+	IBJA energy                =   -0.100213837999196
+	CIAB energy                =   -0.000152957549179
+	ABCD energy                =    0.042292476718741
+	Total two-electron energy  =   -0.428674065524521
+	CCSD correlation energy    =   -0.208287042475630
+	Total CCSD energy          =  -76.231177586739847
 
 	Virial Theorem Data:
 	--------------------
-	Kinetic energy (ref)   =   75.796296965389743
-	Kinetic energy (corr)  =    0.147728388601848
-	Kinetic energy (total) =   75.944025353991591
-	-V/T (ref)             =    2.002989456123524
-	-V/T (corr)            =    2.409957778693324
-	-V/T (total)           =    2.003781101999878
+	Kinetic energy (ref)   =   75.796465635941928
+	Kinetic energy (corr)  =    0.147707457361277
+	Kinetic energy (total) =   75.944173093303206
+	-V/T (ref)             =    2.002987275282858
+	-V/T (corr)            =    2.410132202228613
+	-V/T (total)           =    2.003779150939505
 
 	Energies re-computed from Fock-adjusted CC density:
 	---------------------------------------------------
-	One-electron energy        =    0.258922882780728
-	IJKL energy                =   -0.666698010696633
-	IJKA energy                =   -0.060208260714349
-	IJAB energy                =   -0.410846236910800
-	IBJA energy                =    0.628397112802050
-	CIAB energy                =   -0.000153223960001
-	ABCD energy                =    0.042294945740815
-	Total two-electron energy  =   -0.467213673738919
-	CCSD correlation energy    =   -0.208290790958191
-	Total CCSD energy          =  -76.231177460451548
+	One-electron energy        =    0.258928010804780
+	IJKL energy                =   -0.666665538594301
+	IJKA energy                =   -0.060212369042643
+	IJAB energy                =   -0.410839318773060
+	IBJA energy                =    0.628362653960032
+	CIAB energy                =   -0.000152957549179
+	ABCD energy                =    0.042292476718741
+	Total two-electron energy  =   -0.467215053280411
+	CCSD correlation energy    =   -0.208287042475631
+	Total CCSD energy          =  -76.231177586739847
 
 	Energies re-computed from Mulliken density:
 	-------------------------------------------
-	One-electron energy        =    0.258922882780728
-	IJKL energy                =   -0.666698010696633
-	IJKA energy                =   -0.060208260714349
-	IJAB energy                =   -0.379929291263138
-	IBJA energy                =    0.597480167154388
-	CIAB energy                =   -0.000153223960001
-	ABCD energy                =    0.042294945740815
-	Total two-electron energy  =   -0.467213673738919
-	CCSD correlation energy    =   -0.208290790958191
-	Total CCSD energy          =  -76.231177460451548
+	One-electron energy        =    0.258928010804780
+	IJKL energy                =   -0.666665538594301
+	IJKA energy                =   -0.060212369042643
+	IJAB energy                =   -0.379923236765333
+	IBJA energy                =    0.597446571952304
+	CIAB energy                =   -0.000152957549179
+	ABCD energy                =    0.042292476718741
+	Total two-electron energy  =   -0.467215053280411
+	CCSD correlation energy    =   -0.208287042475632
+	Total CCSD energy          =  -76.231177586739847
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:43 2010
-	user time   =       2.46 seconds =       0.04 minutes
-	system time =       1.62 seconds =       0.03 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:53:00 2010
+	user time   =       3.27 seconds =       0.05 minutes
+	system time =       2.53 seconds =       0.04 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   Job 8 is OEPROP
@@ -3526,57 +3377,33 @@ printed from execute_bp
 
   Options:
   ----------------------------------------------------------------------------
-  ASYMM_OPDM           => FALSE           
-  BASIS_PATH           => (empty)         
-  CHARGE               => 0               
-  CORREL_CORR          => 0               
-  DELETE_ZVEC          => 0               
-  DOCC                 => [ 3, 0, 1, 1 ] !
-  EDGRAD_LOGSCALE      => 5               
-  FINE_STRUCTURE_ALPHA => 1               
-  FREEZE_CORE          => FALSE           
-  GRID                 => 0               
-  GRID_FORMAT          => (empty)         
-  GRID_ORIGIN          => 0               
-  GRID_UNIT_X          => 0               
-  GRID_XY0             => [  ]            
-  GRID_XY1             => [  ]            
-  GRID_XYZ0            => [  ]            
-  GRID_XYZ1            => [  ]            
-  GRID_ZMAX            => 3               
-  GRID_ZMIN            => 0               
-  LM_REF_XYZ           => [  ]            
-  MO_TO_PLOT           => (empty)         
-  MPMAX                => 1               
-  MP_REF               => 0               
-  MP_REF_XYZ           => [  ]            
-  MULTP                => 1               
-  NIX                  => 0               
-  NIY                  => 0               
-  NIZ                  => 0               
-  NO_INPUT             => FALSE           
-  NUC_ESP              => TRUE            
-  NUM_ROOTS            => 1               
-  OPDM_BASIS           => MO              
-  OPDM_FILE            => 0               
-  OPDM_FORMAT          => SQUARE          
-  PRINT                => 1               
-  PRINT_NOS            => FALSE           
-  QED_DARWIN           => FALSE           
-  READ_OPDM            => TRUE            
-  REFERENCE            => RHF            !
-  ROOT                 => 1               
-  SOCC                 => [  ]            
-  SPIN_PROP            => FALSE           
-  TRANSITION_DENSITY   => FALSE           
-  UNITS                => ANGSTROMS       
-  WFN                  => CCSD           !
-  WRTNOS               => FALSE           
-  ZVEC_FILE            => 0               
+  ASYMM_OPDM           => FALSE        BASIS_PATH           => (empty)    
+  CHARGE               => 0            CORREL_CORR          => 0          
+  DELETE_ZVEC          => 0            DOCC                 => [ 5 ]     !
+  EDGRAD_LOGSCALE      => 5            FINE_STRUCTURE_ALPHA => 1          
+  FREEZE_CORE          => FALSE        GRID                 => 0          
+  GRID_FORMAT          => (empty)      GRID_ORIGIN          => 0          
+  GRID_UNIT_X          => 0            GRID_XY0             => [  ]       
+  GRID_XY1             => [  ]         GRID_XYZ0            => [  ]       
+  GRID_XYZ1            => [  ]         GRID_ZMAX            => 3          
+  GRID_ZMIN            => 0            LM_REF_XYZ           => [  ]       
+  MO_TO_PLOT           => (empty)      MPMAX                => 1          
+  MP_REF               => 0            MP_REF_XYZ           => [  ]       
+  MULTP                => 1            NIX                  => 0          
+  NIY                  => 0            NIZ                  => 0          
+  NO_INPUT             => FALSE        NUC_ESP              => TRUE       
+  NUM_ROOTS            => 1            OPDM_BASIS           => MO         
+  OPDM_FILE            => 0            OPDM_FORMAT          => SQUARE     
+  PRINT                => 1            PRINT_NOS            => FALSE      
+  QED_DARWIN           => FALSE        READ_OPDM            => TRUE       
+  REFERENCE            => RHF       !  ROOT                 => 1          
+  SOCC                 => [  ]         SPIN_PROP            => FALSE      
+  TRANSITION_DENSITY   => FALSE        UNITS                => ANGSTROMS  
+  WFN                  => CCSD      !  WRTNOS               => FALSE      
+  ZVEC_FILE            => 0          
 
-
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:43 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:53:00 2010
 
     **********************************************
     *                    OEPROP                  *
@@ -3601,10 +3428,10 @@ printed from execute_bp
     # of molecular orbitals    =     25
     # of basis functions       =     25
     # of atomic orbitals       =     25
-    # of irreps                =      4
+    # of irreps                =      1
     Total charge               =      0
     # of unique shells         =     12
-    # of primitives            =     20
+    # of primitives            =     25
     Print level                =      1
 
   List of GRID PARAMETERS :
@@ -3626,40 +3453,40 @@ printed from execute_bp
 
   Center   AO          L          Q(AO)
   ------  ----        ---      -----------
-     1      1          0        1.99515659
-     1      2          0        0.89829336
-     1      3          0        0.90602989
-     1      4          1        1.12413955
-     1      5          1        0.80491779
-     1      6          1        0.93098069
-     1      7          1        0.84116570
-     1      8          1        0.44727943
-     1      9          1        0.64113843
-     1     10          2        0.00193110
-     1     11          2        0.00494508
-     1     12          2        0.00691172
-     1     13          2        0.00795387
-     1     14          2        0.01836960
-     1     15          2        0.00086238
-     2     16          0        0.49360089
-     2     17          0        0.14953755
-     2     18          1        0.01167599
-     2     19          1        0.01644597
-     2     20          1        0.01370202
-     3     21          0        0.49360089
-     3     22          0        0.14953755
-     3     23          1        0.01167599
-     3     24          1        0.01644597
-     3     25          1        0.01370202
+     1      1          0        1.99515648
+     1      2          0        0.89828001
+     1      3          0        0.90600277
+     1      4          1        0.80493164
+     1      5          1        0.93102018
+     1      6          1        1.12413544
+     1      7          1        0.44725345
+     1      8          1        0.64116271
+     1      9          1        0.84116646
+     1     10          2        0.00795376
+     1     11          2        0.01836895
+     1     12          2        0.00494514
+     1     13          2        0.00086027
+     1     14          2        0.00691173
+     1     15          2        0.00193144
+     2     16          0        0.49362215
+     2     17          0        0.14950923
+     2     18          1        0.01644814
+     2     19          1        0.01370259
+     2     20          1        0.01167768
+     3     21          0        0.49362215
+     3     22          0        0.14950923
+     3     23          1        0.01644814
+     3     24          1        0.01370259
+     3     25          1        0.01167768
 
 
  -Atomic bond populations :
 
                  1            2            3
 
-    1    7.1258441    0.2870296    0.2870296
-    2    0.2870296    0.3543081   -0.0262296
-    3    0.2870296   -0.0262296    0.3543081
+    1    7.1258172    0.2870504    0.2870504
+    2    0.2870504    0.3542923   -0.0262288
+    3    0.2870504   -0.0262288    0.3542923
 
 
 
@@ -3668,9 +3495,9 @@ printed from execute_bp
 
     Center    Atomic Population    Net Charge
     ------    -----------------    ----------
-       1            8.630075        -0.630075
-       2            0.684962        +0.315038
-       3            0.684962        +0.315038
+       1            8.630080        -0.630080
+       2            0.684960        +0.315040
+       3            0.684960        +0.315040
 
 
  --------------------------------------------------------------
@@ -3680,14 +3507,14 @@ printed from execute_bp
  -Coordinates of the reference point (a.u.) :
            x                     y                     z
   --------------------  --------------------  --------------------
-          0.0000000000          0.0000000000          0.0132019910
+          0.0000000000          0.0132819992          0.0000000000
 
  -Electric dipole moment (expectation values) :
 
-    mu(X)  =   0.00000 D  =   0.00000000e+00 C*m  =   0.00000000 a.u.
-    mu(Y)  =  -0.00000 D  =  -8.08918358e-46 C*m  =  -0.00000000 a.u.
-    mu(Z)  =   2.08977 D  =   6.97071821e-30 C*m  =   0.82217787 a.u.
-    |mu|   =   2.08977 D  =   6.97071821e-30 C*m  =   0.82217787 a.u.
+    mu(X)  =  -0.00000 D  =  -8.09389001e-43 C*m  =  -0.00000000 a.u.
+    mu(Y)  =   2.08965 D  =   6.97030039e-30 C*m  =   0.82212858 a.u.
+    mu(Z)  =   0.00000 D  =   1.26416865e-44 C*m  =   0.00000000 a.u.
+    |mu|   =   2.08965 D  =   6.97030039e-30 C*m  =   0.82212858 a.u.
 
 
  --------------------------------------------------------------
@@ -3697,7 +3524,7 @@ printed from execute_bp
  -Coordinates of the reference point (a.u.) :
            x                     y                     z
   --------------------  --------------------  --------------------
-          0.0000000000         -0.0000000000         -0.0396059730
+          0.0000000000         -0.0398459976          0.0000000000
 
  -Electronic angular momentum (expectation values) :
 
@@ -3713,57 +3540,57 @@ printed from execute_bp
  -Coordinates of atomic centers (a.u.):
     #   Charge           x                     y                     z
    ---  ------  --------------------  --------------------  --------------------
-    1      8            0.0000000000          0.0000000000         -0.1118396699
-    2      1            0.0000000000          1.4317422163          1.0054529406
-    3      1            0.0000000000         -1.4317422163          1.0054529406
+    1      8           -0.0000000000         -0.1117435210          0.0000000000
+    2      1            1.4317423100          1.0054048661          0.0000000000
+    3      1           -1.4317423100          1.0054048661          0.0000000000
 
 
  -Electrostatic potential and electric field (a.u.) :
 
     Center         phi            Ex             Ey           Ez
     ------    ------------   ------------  ------------  ------------
-       1      -22.29670760     0.00000000    0.00000000   -0.12551066
-       2       -1.01171087     0.00000000    0.01742904    0.00658719
-       3       -1.01171087     0.00000000   -0.01742904    0.00658719
+       1      -22.29671616    -0.00000000   -0.12551509    0.00000000
+       2       -1.01171419     0.01746032    0.00662181    0.00000000
+       3       -1.01171419    -0.01746032    0.00662181    0.00000000
 
 
  -Electric field gradient (regular form) (a.u.):
 
     Center           XX                    YY                    ZZ
     ------  --------------------  --------------------  --------------------
-       1          -1214.84529971        -1218.15945595        -1216.87876636
-       2             -1.42685548           -1.95195279           -1.76060801
-       3             -1.42685548           -1.95195279           -1.76060801
+       1          -1218.15887719        -1216.87785370        -1214.84478288
+       2             -1.95217836           -1.76070372           -1.42689227
+       3             -1.95217836           -1.76070372           -1.42689227
 
     Center           XY                    XZ                    YZ
     ------  --------------------  --------------------  --------------------
-       1              0.00000000            0.00000000            0.00000000
-       2              0.00000000            0.00000000            1.60060820
-       3              0.00000000            0.00000000           -1.60060820
+       1             -0.00000000           -0.00000000            0.00000000
+       2             -0.34280276            0.00000000           -0.00000000
+       3              0.34280276            0.00000000           -0.00000000
 
 
  -Electric field gradient (traceless tensor form) (a.u.):
 
     Center        XX - RR/3             YY - RR/3             ZZ - RR/3
     ------  --------------------  --------------------  --------------------
-       1              1.78254096           -1.53161528           -0.25092569
-       2              0.28628328           -0.23881403           -0.04746925
-       3              0.28628328           -0.23881403           -0.04746925
+       1             -1.53170594           -0.25068244            1.78238837
+       2             -0.23892024           -0.04744560            0.28636584
+       3             -0.23892024           -0.04744560            0.28636584
 
     Center           XY                    XZ                    YZ
     ------  --------------------  --------------------  --------------------
-       1              0.00000000            0.00000000            0.00000000
-       2              0.00000000            0.00000000            1.60060820
-       3              0.00000000            0.00000000           -1.60060820
+       1             -0.00000000           -0.00000000            0.00000000
+       2             -0.34280276            0.00000000           -0.00000000
+       3              0.34280276            0.00000000           -0.00000000
 
 
  -Electron density (a.u.):
 
     Center           rho
     ------  --------------------
-       1            290.44850212
-       2              0.40898175
-       3              0.40898175
+       1            290.44834231
+       2              0.40901025
+       3              0.40901025
 
 
  --------------------------------------------------------------
@@ -3772,14 +3599,14 @@ printed from execute_bp
 
  -Relativistic MVD one-electron corrections to the energy (a.u.):
 
-    Mass-velocity (p^4) term     :   -0.245451284469430
-    One-electron Darwin term     :   0.194429688805371
-    Total one-electron MVD terms :   -0.051021595664059
+    Mass-velocity (p^4) term     :   -0.245451161598076
+    One-electron Darwin term     :   0.194429586629972
+    Total one-electron MVD terms :   -0.051021574968104
 
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:43 2010
-	user time   =       2.47 seconds =       0.04 minutes
-	system time =       1.62 seconds =       0.03 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:53:00 2010
+	user time   =       3.27 seconds =       0.05 minutes
+	system time =       2.54 seconds =       0.04 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   Job 9 is TRANSQT
@@ -3788,71 +3615,40 @@ printed from execute_bp
 
   Options:
   ----------------------------------------------------------------------------
-  AA_M_FILE            => 81              
-  AB_M_FILE            => 83              
-  AO_BASIS             => NONE            
-  BASIS_PATH           => (empty)         
-  BB_M_FILE            => 82              
-  CHARGE               => 0               
-  CHECK_C_ORTHONORM    => FALSE           
-  DELETE_AO            => TRUE            
-  DELETE_RESTR_DOCC    => TRUE            
-  DELETE_TPDM          => TRUE            
-  DERTYPE              => FIRST          !
-  DOCC                 => [ 3, 0, 1, 1 ] !
-  DO_ALL_TEI           => FALSE           
-  FIRST_TMP_FILE       => 150             
-  FREEZE_CORE          => FALSE           
-  FZC_A_FILE           => 35              
-  FZC_B_FILE           => 35              
-  FZC_FILE             => 35              
-  IVO                  => FALSE           
-  J_FILE               => 91              
-  KEEP_J               => FALSE           
-  KEEP_PRESORT         => FALSE           
-  LAGRAN_DOUBLE        => FALSE           
-  LAGRAN_HALVE         => FALSE           
-  LAG_IN_FILE          => 75              
-  MAX_BUCKETS          => 499             
-  MODE                 => TO_MO           
-  MOORDER              => [  ]            
-  MP2R12A              => MP2R12AERI      
-  MULTP                => 1               
-  M_FILE               => 0               
-  NO_INPUT             => FALSE           
-  OEI_A_FILE           => 35              
-  OEI_B_FILE           => 35              
-  OEI_FILE             => 35              
-  OPDM_IN_FILE         => 73              
-  OPDM_OUT_FILE        => 76              
-  PITZER               => FALSE           
-  PRESORT_FILE         => 41              
-  PRINT_LVL            => 1               
-  PRINT_MOS            => FALSE           
-  PRINT_OE_INTEGRALS   => FALSE           
-  PRINT_REORDER        => FALSE           
-  PRINT_SORTED_OE_INTS => FALSE           
-  PRINT_SORTED_TE_INTS => FALSE           
-  PRINT_TE_INTEGRALS   => FALSE           
-  PSIMRCC              => FALSE           
-  QRHF                 => FALSE           
-  REFERENCE            => RHF            !
-  REORDER              => FALSE           
-  SOCC                 => [  ]            
-  SORTED_TEI_FILE      => 72              
-  SO_S_FILE            => 35              
-  SO_TEI_FILE          => 72              
-  SO_T_FILE            => 35              
-  SO_V_FILE            => 35              
-  TOLERANCE            => 14              
-  TPDM_ADD_REF         => FALSE           
-  TPDM_FILE            => 74              
-  UNITS                => ANGSTROMS       
-  WFN                  => CCSD           !
+  AA_M_FILE            => 81            AB_M_FILE            => 83          
+  AO_BASIS             => NONE          BASIS_PATH           => (empty)     
+  BB_M_FILE            => 82            CHARGE               => 0           
+  CHECK_C_ORTHONORM    => FALSE         DELETE_AO            => TRUE        
+  DELETE_RESTR_DOCC    => TRUE          DELETE_TPDM          => TRUE        
+  DERTYPE              => FIRST      !  DOCC                 => [ 5 ]      !
+  DO_ALL_TEI           => FALSE         FIRST_TMP_FILE       => 150         
+  FREEZE_CORE          => FALSE         FZC_A_FILE           => 35          
+  FZC_B_FILE           => 35            FZC_FILE             => 35          
+  IVO                  => FALSE         J_FILE               => 91          
+  KEEP_J               => FALSE         KEEP_PRESORT         => FALSE       
+  LAGRAN_DOUBLE        => FALSE         LAGRAN_HALVE         => FALSE       
+  LAG_IN_FILE          => 75            MAX_BUCKETS          => 499         
+  MODE                 => TO_MO         MOORDER              => [  ]        
+  MP2R12A              => MP2R12AERI    MULTP                => 1           
+  M_FILE               => 0             NO_INPUT             => FALSE       
+  OEI_A_FILE           => 35            OEI_B_FILE           => 35          
+  OEI_FILE             => 35            OPDM_IN_FILE         => 73          
+  OPDM_OUT_FILE        => 76            PITZER               => FALSE       
+  PRESORT_FILE         => 41            PRINT_LVL            => 1           
+  PRINT_MOS            => FALSE         PRINT_OE_INTEGRALS   => FALSE       
+  PRINT_REORDER        => FALSE         PRINT_SORTED_OE_INTS => FALSE       
+  PRINT_SORTED_TE_INTS => FALSE         PRINT_TE_INTEGRALS   => FALSE       
+  PSIMRCC              => FALSE         QRHF                 => FALSE       
+  REFERENCE            => RHF        !  REORDER              => FALSE       
+  SOCC                 => [  ]          SORTED_TEI_FILE      => 72          
+  SO_S_FILE            => 35            SO_TEI_FILE          => 72          
+  SO_T_FILE            => 35            SO_V_FILE            => 35          
+  TOLERANCE            => 14            TPDM_ADD_REF         => FALSE       
+  TPDM_FILE            => 74            UNITS                => ANGSTROMS   
+  WFN                  => CCSD       !
 
-
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:43 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:53:00 2010
 
 
 	**************************************************
@@ -3905,19 +3701,16 @@ printed from execute_bp
 
 	Chkpt File Parameters:
 	------------------
-	Number of irreps = 4
+	Number of irreps = 1
 	Number of SOs    = 25
 	Number of MOs    = 25
 
 	Label	# SOs	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
 	-----	-----	-----	------	------	------	------	------
-	 A1 	   12	   12	    0	    3	    0	    9	    0
-	 A2 	   2	   2	    0	    0	    0	    2	    0
-	 B1 	   4	   4	    0	    1	    0	    3	    0
-	 B2 	   7	   7	    0	    1	    0	    6	    0
+	 A  	   25	   25	    0	    5	    0	    20	    0
 
-	Nuclear Repulsion Energy    =         9.1592999516
-	Total SCF Energy            =       -76.0228866695
+	Nuclear Repulsion Energy    =         9.1597300031
+	Total SCF Energy            =       -76.0228905443
 
 	Pre-sorting two-electron ints...
 
@@ -3935,9 +3728,9 @@ printed from execute_bp
 	Transforming one-electron integrals...
 	One-pdm and lagrangian written to file76.
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:43 2010
-	user time   =       2.53 seconds =       0.04 minutes
-	system time =       1.65 seconds =       0.03 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:53:00 2010
+	user time   =       3.33 seconds =       0.06 minutes
+	system time =       2.56 seconds =       0.04 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   Job 10 is CINTS
@@ -3957,8 +3750,8 @@ printed from execute_bp
   UNITS                => ANGSTROMS     V_FILE               => 35          
   WFN                  => CCSD       !
 
-*** PSI4 called tstart() on mac8319.local
-*** at Fri Nov  5 18:09:43 2010
+*** tstart() called on mac8319.local
+*** at Thu Dec 16 18:53:00 2010
 
                   --------------------------------------------
                     CINTS: An integrals program written in C
@@ -3981,8 +3774,8 @@ printed from execute_bp
     Fine-structure alpha scaling =   0.0073
 
   -SYMMETRY INFORMATION;
-    Computational point group        = C2v
-    Number of irreps                 = 4
+    Computational point group        = C1 
+    Number of irreps                 = 1
   Rotational invariance condition satisfied.
   |X cross Grad| =  0.000000000000   (it is the accuracy of the computed forces)
   So long..
@@ -3991,20 +3784,30 @@ printed from execute_bp
   -CCSD forces in the reference frame (a.u.):
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000    -0.000001978178
-       2        0.000000000000     0.000087080572     0.000000989089
-       3        0.000000000000    -0.000087080572     0.000000989089
+       1        0.000000000000     0.000066472291    -0.000000000000
+       2        0.000057188594    -0.000033236146     0.000000000000
+       3       -0.000057188594    -0.000033236146    -0.000000000000
 
 
-*** PSI4 called tstop() on mac8319.local at Fri Nov  5 18:09:43 2010
-	user time   =       2.63 seconds =       0.04 minutes
-	system time =       1.65 seconds =       0.03 minutes
+*** tstop() called on mac8319.local at Thu Dec 16 18:53:00 2010
+	user time   =       3.40 seconds =       0.06 minutes
+	system time =       2.57 seconds =       0.04 minutes
 	total time  =          0 seconds =       0.00 minutes
 
 			----------------------------------
 			 OPTKING: for geometry optimizations  
 			  - R.A. King,  Bethel University   
 			------------------------------------
+
+	Prevous internal coordinate definitions found.
+	---Fragment 1 Geometry and Gradient---
+	 O          -0.0000000000       -0.1117435210        0.0000000000
+	 H           1.4317423100        1.0054048661        0.0000000000
+	 H          -1.4317423100        1.0054048661        0.0000000000
+	             0.0000000000        0.0000664723       -0.0000000000
+	             0.0000571886       -0.0000332361        0.0000000000
+	            -0.0000571886       -0.0000332361       -0.0000000000
+
 	---Fragment 1 Bond Connectivity---
 	 1 : 2 3
 	 2 : 1
@@ -4012,47 +3815,42 @@ printed from execute_bp
 
 	---Fragment 1 Intrafragment Coordinates---
 	 * Coordinate *           * BOHR/RAD *       * ANG/DEG *
-	 R(1,2)           =         1.816103	       0.961040
-	 R(1,3)           =         1.816103	       0.961040
-	 A(2,1,3)         =         1.816277	     104.064986
+	 R(1,2)           =         1.816014	       0.960993
+	 R(1,3)           =         1.816014	       0.960993
+	 A(2,1,3)         =         1.816402	     104.072164
 
-	---Fragment 1 Geometry and Gradient---
-	 O           0.0000000000        0.0000000000       -0.1118396699
-	 H           0.0000000000        1.4317422163        1.0054529406
-	 H           0.0000000000       -1.4317422163        1.0054529406
-	             0.0000000000        0.0000000000       -0.0000019782
-	             0.0000000000        0.0000870806        0.0000009891
-	             0.0000000000       -0.0000870806        0.0000009891
 
+	Testing B-matrix numerically...
+		Maximum difference is 8.0e-10.  Passed.
+
+	Current energy   :       -76.2311775864
+
+	Energy change for the previous step:
+		Projected    :        -0.0000034324
+		Actual       :        -0.0000052232
 
 	Performing BFGS update with previous 2 gradient(s).
 	Following RFO solution 1.
-	Projected energy change by RFO approximation:        -0.0000000326
+	Projected energy change by RFO approximation:        -0.0000000364
 
 	Back-transformation to cartesian coordinates...
-	---------------------------------------------
-	 Iter     RMS difference    MAX difference   
-	---------------------------------------------
-	    1        5.4e-08          6.3e-08
-	---------------------------------------------
-
 	Successfully converged to displaced geometry.
 
-	---Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG (3) ---
+	---Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG ---
 	 ----------------------------------------------------------------------
 	 Coordinate             Previous        Force       Change         New 
 	 ----------             --------       ------       ------       ------
-	 R(1,2)          =      0.961040    -0.000571    -0.000057     0.960983
-	 R(1,3)          =      0.961040    -0.000571    -0.000057     0.960983
-	 A(2,1,3)        =    104.064986    -0.000007    -0.030099   104.034887
+	 R(1,2)          =      0.960993    -0.000203    -0.000007     0.960986
+	 R(1,3)          =      0.960993    -0.000203    -0.000007     0.960986
+	 A(2,1,3)        =    104.072164    -0.000008    -0.037093   104.035071
 	 ----------------------------------------------------------------------
 
 	Convergence Check Cycle    3:
 	                    Actual        Tolerance     Converged?
 	----------------------------------------------------------
-	MAX Force           9.6e-05        3.0e-04         yes
-	Energy Change      -5.1e-06        1.0e-06          no
-	MAX Displacement    5.3e-04        1.2e-03         yes
+	MAX Force           1.1e-04        3.0e-04         yes
+	Energy Change      -5.2e-06        1.0e-06          no
+	MAX Displacement    6.5e-04        1.2e-03         yes
 	----------------------------------------------------------
 	 *** Geometry is converged!
 
@@ -4062,10 +3860,15 @@ printed from execute_bp
 	----------------------------------------------------------------------------
 	   1    -76.230988855700    -76.230988855700    8.48e-03     8.48e-03
 	   2    -76.231172363200     -0.000183507500    9.20e-04     9.20e-04
-	   3    -76.231177460100     -0.000005096900    9.59e-05     9.59e-05
+	   3    -76.231177586400     -0.000005223200    1.11e-04     1.11e-04
 	----------------------------------------------------------------------
 
-Writing optimization data to psio file.
+	Writing optimization data to binary file.
+	Final (next step) structure:
+	Cartesian Geometry (au)
+	    O     0.0000000000  -0.1120468966   0.0000000000
+	    H     1.4313699384   1.0055565539   0.0000000000
+	    H    -1.4313699384   1.0055565539   0.0000000000
 			--------------------------
 			 OPTKING Finished Execution 
 			--------------------------
