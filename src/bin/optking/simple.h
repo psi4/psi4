@@ -48,7 +48,7 @@ class SIMPLE {
     void unfreeze(void)  { s_frozen = false; }
 
     // do-nothing function overridden only by torsion class
-    virtual void fix_near_180(void) { return; }
+    virtual void fix_tors_near_180(GeomType geom) { return; }
 
     // do-nothing function overridden by stretch class 
     virtual bool is_hbond(void) { return false; }

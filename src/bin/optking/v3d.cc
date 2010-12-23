@@ -12,7 +12,8 @@ namespace opt { namespace v3d {
 
 // Compute angle in radians A-B-C (between vector B->A and vector B->C)
 // if points are absurdly close or far apart, returns false
-bool v3d_angle(const double *A, const double *B, const double *C, double & phi) {
+// tol is closeness of cos to 1/-1 that will count as exactly 0/pi
+bool v3d_angle(const double *A, const double *B, const double *C, double & phi, double tol) {
   double dotprod, eBA[3], eBC[3];
 
   // eBA
@@ -35,12 +36,12 @@ for (int i=0; i<3; ++i) fprintf(outfile,"%15.10lf", A[i]);
 
   dotprod = v3d_dot(eBA,eBC);
 
-  if (dotprod >= -1.0 && dotprod <= 1.0)
-    phi = acos(dotprod);
-  else if (dotprod > 1.0)
+  if (dotprod > 1.0-tol)
     phi = 0.0;
-  else
+  else if (dotprod < -1.0+tol)
     phi = acos(-1);
+  else
+    phi = acos(dotprod);
 
   return true;
 }

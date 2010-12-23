@@ -5,7 +5,7 @@
 
 #include "stre.h"
 
-#include <string>
+//#include <string>
 //#include <iostream>
 #include <sstream>
 

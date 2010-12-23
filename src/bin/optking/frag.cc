@@ -263,14 +263,23 @@ int FRAG::add_bend_by_connectivity(void) {
 int FRAG::add_tors_by_connectivity(void) {
   int nadded = 0;
   int i,j,k,l;
+  double phi;
+  double const pi = acos(-1);
 
+  // bonding i-j-k-l but i-j-k && j-k-l are not collinear
   for (i=0; i<natom; ++i)
     for (j=0; j<natom; ++j)
       if (connectivity[i][j])
         for (k=0; k<natom; ++k)
-          if ( connectivity[k][j] && k!=i )
-            for (l=i+1; l<natom; ++l)
+          if ( connectivity[k][j] && k!=i ) {
+            // ensure i-j-k is not collinear
+            if ( !v3d_angle(geom[i], geom[j], geom[k], phi) ) continue;
+            if (phi == pi) continue;
+            for (l=i+1; l<natom; ++l) {
               if ( connectivity[l][k] && l!=j) {
+                // ensure j-k-l is not collinear
+                if ( !v3d_angle(geom[j], geom[k], geom[l], phi) ) continue; // can't compute
+                if (phi == pi) continue;
                 TORS *one_tors = new TORS(i,j,k,l);
                 if (!present(one_tors)) {
                   intcos.push_back(one_tors);
@@ -279,7 +288,67 @@ int FRAG::add_tors_by_connectivity(void) {
                 else
                   delete one_tors;
               }
+           }
+         }
 
+  // search for additional torsions around collinear segments
+  bool I_found, L_found, more_found;
+  int I,J,K,L,m;
+  int nbonds;
+
+  // find collinear fragment j-m-k
+  for (j=0; j<natom; ++j)
+    for (m=0; m<natom; ++m)
+      if (connectivity[j][m])
+        for (k=j+1; k<natom; ++k)
+          if (connectivity[k][m]) {
+            if ( !v3d_angle(geom[j], geom[m], geom[k], phi) ) continue;
+            if (phi == pi) { // found j-m-k collinear
+
+              nbonds = 0;
+              for (int n=0; n<natom; ++n)
+                if (connectivity[n][m]) ++nbonds;
+              if (nbonds == 2) { // nothing else is bonded to j
+
+                // look for an 'I' for I-j-[m]-k-L such that I-J-K is not collinear
+                J = j;
+                for (i=0; i<natom; ++i) {
+                  if (connectivity[i][J] && i!=m) {
+                    if ( !v3d_angle(geom[i], geom[J], geom[k], phi) ) continue;
+                    if (phi == pi) {
+                      J = i;
+                      i = 0;
+                      continue;
+                    }
+                    else { // have I-J-K. Look for L
+                      I = i;
+                      K = k;
+                      for (l=0; l<natom; ++l) {
+                        if (connectivity[l][K] && l!=m) {
+                          if ( !v3d_angle(geom[l], geom[K], geom[J], phi) ) continue;
+                          if (phi == pi) {
+                            K = l;
+                            continue;
+                          }
+                          else { // have IJKL
+                            L = l;
+
+                            TORS *one_tors = new TORS(I,J,K,L);
+                            if (!present(one_tors)) {
+                              intcos.push_back(one_tors);
+                              ++nadded;
+                            }
+                            else
+                              delete one_tors;
+                          } // end have IJKL
+                        } // end l atom found
+                      } // loop over l
+                    } // end have IJK
+                  }
+                }
+              }
+            }
+          }
   return nadded;
 }
 
@@ -391,7 +460,7 @@ void FRAG::print_B(FILE *fp) const {
 void FRAG::fix_tors_near_180(void) {
   for (int i=0; i<intcos.size(); ++i) {
     if (intcos[i]->g_type() == tors_type)
-      intcos[i]->fix_near_180();
+      intcos[i]->fix_tors_near_180(geom);
   }
 }
 

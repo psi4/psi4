@@ -257,6 +257,8 @@ class MOLECULE {
   void fix_tors_near_180(void) {
     for (int f=0; f<fragments.size(); ++f)
       fragments[f]->fix_tors_near_180();
+    for (int I=0; I<interfragments.size(); ++I)
+      interfragments[I]->fix_tors_near_180();
   }
 
   void test_B(void);

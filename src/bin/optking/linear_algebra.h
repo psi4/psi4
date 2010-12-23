@@ -25,6 +25,7 @@ double ** symm_matrix_inv(double **A, int dim, bool redundant=true);
 
 // allocate memory and return a copy of a matrix
 double ** matrix_return_copy(double **A, int nr, int nc);
+bool ** matrix_return_copy(bool **A, int nr, int nc);
 
 void matrix_copy(double **from, double **to, int nr, int nc);
 

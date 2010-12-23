@@ -60,7 +60,9 @@ struct OPT_PARAMS {
   // this fraction of pi from 0 or from pi
   double tors_angle_lim;
 
-  double bend_collinear_tol; // as above, how close to 0 or pi counts as linear for angles
+  // as above, how fractionally close to 0 or pi counts as linear when deciding which
+  // atoms to avoid using in interfragment coordinates
+  double interfrag_collinear_tol;
 
   double tors_cos_tol; // cos(angle) must be this close to -1/+1 for angle to count as 0/pi
 
@@ -80,6 +82,13 @@ struct OPT_PARAMS {
 
   //1=default; 2=medium; 3=lots
   int print_lvl;
+
+  // Hessian update is avoided if the denominators (Dq*Dq) or (Dq*Dg) are smaller than this
+  double H_update_den_tol;
+  // Hessian update is avoided if any internal coordinate has changed by more than this amount
+  // in radians / au
+  double H_update_dq_tol;
+
 
   bool test_B; // whether to test B matrices
   bool test_derivative_B; // whether to test derivative B matrices
