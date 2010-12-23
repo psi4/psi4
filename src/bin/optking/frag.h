@@ -3,6 +3,8 @@
 
 #include <cstdio>
 #include <vector>
+#include <string>
+
 #include "intcos.h"
 
 namespace opt {
@@ -51,7 +53,7 @@ class FRAG {
     int n;
     n  = add_stre_by_connectivity();
     n += add_bend_by_connectivity();
-    n += add_tors_by_connectivity();
+    n += add_tors_by_connectivity(); // but check bond angles
     return n;
   }
 
