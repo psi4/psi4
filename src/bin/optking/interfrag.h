@@ -90,6 +90,12 @@ class INTERFRAG {
   // compute and return coordinate values - using given fragment geometries
   double *intco_values(GeomType new_geom_A, GeomType new_geom_B);
 
+  // check nearness to 180 and save value
+  void fix_tors_near_180(void) {
+    update_reference_points();
+    inter_frag->fix_tors_near_180();
+  }
+
   // returns B matrix from member geometries
   double **compute_B(void) {
     compute_B(A->geom, B->geom);

@@ -147,6 +147,16 @@ double ** matrix_return_copy(double **A, int nr, int nc) {
   return A_new;
 }
 
+// allocate memory and return a copy of a matrix
+bool ** matrix_return_copy(bool **A, int nr, int nc) {
+  bool ** A_new = init_bool_matrix(nr, nc);
+  int i, j;
+  for(i=0; i<nr; ++i)
+    for(j=0; j<nc; ++j)
+      A_new[i][j] = A[i][j];
+  return A_new;
+}
+
 void array_copy(double *v_from, double *v_to, int n) {
   for (int i=0; i<n; ++i)
     v_to[i] = v_from[i];

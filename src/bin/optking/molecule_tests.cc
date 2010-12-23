@@ -28,7 +28,7 @@ void MOLECULE::test_B(void) {
   int Nintco = g_nintco();
   const double disp_size = 0.01;
   // 5-point formula should be good to h^4; a few will be slightly worse
-  const double MAX_ERROR = 10*disp_size*disp_size*disp_size*disp_size;
+  const double MAX_ERROR = 50*disp_size*disp_size*disp_size*disp_size;
 
   fprintf(outfile,"\n\tTesting B-matrix numerically...\n");
 
@@ -45,6 +45,8 @@ void MOLECULE::test_B(void) {
 
   B_fd = init_matrix(Nintco, 3*Natom);
   coord = g_geom_2D(); // in au
+
+  try {
 
   for (int atom=0; atom<Natom; ++atom) {
     for (int xyz=0; xyz<3; ++xyz) {
@@ -66,6 +68,15 @@ void MOLECULE::test_B(void) {
     }
   }
 
+  } catch (const char *s) {
+    fprintf(outfile,"Unable to compute all internal coordinate values at displaced geometries.\n");
+    fprintf(outfile,"%s\n",s);
+    free_matrix(coord);
+    free_matrix(B_analytic);
+    free_matrix(B_fd);
+    return;
+  }
+
   free_matrix(coord);
   if (Opt_params.print_lvl >= 3) {
     fprintf(outfile,"\nNumerical B matrix in au, disp_size = %lf\n",disp_size);
@@ -73,17 +84,20 @@ void MOLECULE::test_B(void) {
     fflush(outfile);
   }
 
-  double max_error = 0.0;
+  double max_error = -1.0;
+  int max_error_intco = -1;
   for (int i=0; i<Nintco; ++i)
     for (int j=0; j<3*Natom; ++j)
-      if ( fabs(B_analytic[i][j] - B_fd[i][j]) > max_error )
+      if ( fabs(B_analytic[i][j] - B_fd[i][j]) > max_error ) {
         max_error = fabs(B_analytic[i][j] - B_fd[i][j]);
+        max_error_intco = i;
+      }
 
-  fprintf(outfile,"\t\tMaximum difference is %.1e.", max_error);
+  fprintf(outfile,"\t\tMaximum difference is %.1e for internal coordinate %d.\n",
+    max_error, max_error_intco+1);
   if (max_error > MAX_ERROR) {
-    fprintf(outfile, "\nUh-Oh.  Perhaps a bug or your angular coordinates are at a discontinuity.\n");
-    fprintf(outfile, "If the latter, restart your optimization at a new or updated geometry.\n");
-    fprintf(outfile, "Remove angular coordinates that are fixed by symmetry\n");
+    fprintf(outfile, "\t\tB-matrix could be in error.  However, numerical test will fail for ");
+    fprintf(outfile, "linear bond angles.  This is OK.\n");
   }
   else {
     fprintf(outfile,"  Passed.\n");

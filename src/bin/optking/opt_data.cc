@@ -193,10 +193,24 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
     }
     gq = array_dot(dq, dg, Nintco);
     qq = array_dot(dq, dq, Nintco);
+printf("dq\n"); 
+print_matrix(stdout, &dq, 1, Nintco);
 
-    // beware Hessian updates with very small denominators
-    if ( (fabs(gq) < 1e-6) ||(fabs(qq) < 1e-6) ) {
-      fprintf(outfile,"\nDenominators (dg)(dq) or (dq)(dq) are very small. Skipping Hessian update.\n");
+printf("Denominator gq %5.1e\n", gq);
+printf("Denominator qq %5.1e\n", qq);
+
+    // skip Hessian updates with very small denominators (dq)(dq) and (dq)(dg_q)
+    if ( (fabs(gq) < Opt_params.H_update_den_tol) ||(fabs(qq) < Opt_params.H_update_den_tol) ) {
+      fprintf(outfile,"\tDenominators (dg)(dq) or (dq)(dq) are very small.\n");
+      fprintf(outfile,"\t Skipping Hessian update for step %d.\n", i_step + 1);
+      continue;
+    }
+
+    // skip Hessian updates if a dq element is too large ; helps to avoid use of inapplicable data
+    // as well as torsional angles that stray too far from one side to the other of 180
+    if ( array_abs_max(dq, Nintco) > Opt_params.H_update_dq_tol ) {
+      fprintf(outfile,"\tChange in internal coordinate exceeds limit.\n");
+      fprintf(outfile,"\t Skipping Hessian update for step %d.\n", i_step + 1);
       continue;
     }
 

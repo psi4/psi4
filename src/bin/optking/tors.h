@@ -39,7 +39,7 @@ class TORS : public SIMPLE {
       const double dq, const double new_q, int atom_offset=0) const;
     bool operator==(const SIMPLE & s2) const;
 
-    void fix_near_180(GeomType geom);
+    void fix_tors_near_180(GeomType geom);
 };
 
 }

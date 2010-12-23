@@ -77,7 +77,8 @@ const double min_norm=1.0e-8, const double max_norm=1.0e15) {
 
 // Computed angle in radians A-B-C (between vector B->A and vector B->C)
 // if points are absurdly close or far apart, returns false
-bool v3d_angle(const double *A, const double *B, const double *C, double & phi);
+// tol is nearness of cos to 1/-1 to make angle 0/pi
+bool v3d_angle(const double *A, const double *B, const double *C, double & phi, double tol=1e-14);
 
 // Computed torsional angle in radians A-B-C-D
 // Returns false if bond angles ABC or BCD are too close to 0 or 180

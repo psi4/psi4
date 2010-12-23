@@ -20,7 +20,7 @@ void set_params(void) {
   // bond is assigned if interatomic distance is less than 1.3 * sum of covalent radii
   Opt_params.scale_connectivity = 1.3;
 
-  Opt_params.fragment_mode = OPT_PARAMS::SINGLE; // any of {SINGLE, MULTI}
+  Opt_params.fragment_mode = OPT_PARAMS::MULTI; // any of {SINGLE, MULTI}
 
   Opt_params.generate_intcos_only;
 
@@ -69,7 +69,7 @@ void set_params(void) {
   // only used for determining which atoms in a fragment are acceptable for use
   // as reference atoms.  We avoid collinear sets.
   // angle is 0/pi if the bond angle is within this fraction of pi from 0/pi
-  Opt_params.bend_collinear_tol = 0.01;   
+  Opt_params.interfrag_collinear_tol = 0.01;   
 
   // cos(torsional angle) must be this close to -1/+1 for angle to count as 0/pi
   Opt_params.tors_cos_tol = 1e-10;
@@ -83,7 +83,13 @@ void set_params(void) {
   Opt_params.bt_dx_conv_rms_change = 1.0e-12;
 
   // 1=default; 2=medium; 3=lots
-  Opt_params.print_lvl = 1;
+  Opt_params.print_lvl = 3;
+
+  // Hessian update is avoided if the denominators (Dq*Dq) or (Dq*Dg) are smaller than this
+  Opt_params.H_update_den_tol = 1e-7;
+  // Hessian update is avoided if any internal coordinate has changed by more than this amount
+  // in radians / au
+  Opt_params.H_update_dq_tol = 0.5;
 
   // whether to test B matrix and derivative B matrix numerically
   Opt_params.test_B = true;

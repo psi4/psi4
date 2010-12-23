@@ -214,7 +214,7 @@ printf("closest atoms between fragments is A %d, B %d\n", A1, B1);
     for (int iA=0; iA < nA; ++iA) {
       if (cA[iA][A1]) {
         if (v3d_angle(B[B1],A[A1],A[iA], tval)) {
-          if (tval > Opt_params.bend_collinear_tol*_pi && tval < (1-Opt_params.bend_collinear_tol)*_pi) {
+          if (tval > Opt_params.interfrag_collinear_tol*_pi && tval < (1-Opt_params.interfrag_collinear_tol)*_pi) {
             A2 = iA;
             ++ndA;
             break;
@@ -231,7 +231,7 @@ printf("closest atoms between fragments is A %d, B %d\n", A1, B1);
     for (int iB=0; iB < nB; ++iB) {
       if (cB[iB][B1]) {
         if (v3d_angle(A[A1],B[B1],B[iB],tval)) {
-          if (tval > Opt_params.bend_collinear_tol*_pi && tval < (1-Opt_params.bend_collinear_tol)*_pi) {
+          if (tval > Opt_params.interfrag_collinear_tol*_pi && tval < (1-Opt_params.interfrag_collinear_tol)*_pi) {
             B2 = iB;
             ++ndB;
             break;
@@ -249,7 +249,7 @@ printf("closest atoms between fragments is A %d, B %d\n", A1, B1);
       for (int iA=0; iA < nA; ++iA) {
         if (iA != A1 && cA[iA][A2]) {
           if (v3d_angle(A[A1],A[A2],A[iA], tval)) {
-            if (tval > Opt_params.bend_collinear_tol*_pi && tval < (1-Opt_params.bend_collinear_tol)*_pi) {
+            if (tval > Opt_params.interfrag_collinear_tol*_pi && tval < (1-Opt_params.interfrag_collinear_tol)*_pi) {
               A3 = iA;
               ++ndA;
               break;
@@ -262,7 +262,7 @@ printf("closest atoms between fragments is A %d, B %d\n", A1, B1);
         for (int iA=0; iA < nA; ++iA) {
           if (iA != A2 && cA[iA][A1]) {
             if (v3d_angle(A[A1],A[A2],A[iA], tval)) {
-              if (tval > Opt_params.bend_collinear_tol*_pi && tval < (1-Opt_params.bend_collinear_tol)*_pi) {
+              if (tval > Opt_params.interfrag_collinear_tol*_pi && tval < (1-Opt_params.interfrag_collinear_tol)*_pi) {
                 A3 = iA;
                 ++ndA;
                 break;
@@ -278,7 +278,7 @@ printf("closest atoms between fragments is A %d, B %d\n", A1, B1);
       for (int iB=0; iB < nB; ++iB) {
         if (iB != B1 && cB[iB][B2]) {
           if (v3d_angle(B[B1],B[B2],B[iB],tval)) {
-            if (tval > Opt_params.bend_collinear_tol*_pi && tval < (1-Opt_params.bend_collinear_tol)*_pi) {
+            if (tval > Opt_params.interfrag_collinear_tol*_pi && tval < (1-Opt_params.interfrag_collinear_tol)*_pi) {
               B3 = iB;
               ++ndB;          
               break;        
@@ -291,7 +291,7 @@ printf("closest atoms between fragments is A %d, B %d\n", A1, B1);
         for (int iB=0; iB < nB; ++iB) {
           if (iB != B2 && cB[iB][B1]) {
             if (v3d_angle(B[B1],B[B2],B[iB], tval)) {
-              if (tval > Opt_params.bend_collinear_tol*_pi && tval < (1-Opt_params.bend_collinear_tol)*_pi) {
+              if (tval > Opt_params.interfrag_collinear_tol*_pi && tval < (1-Opt_params.interfrag_collinear_tol)*_pi) {
                 B3 = iB;
                 ++ndB;
                 break;

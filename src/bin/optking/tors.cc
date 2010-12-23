@@ -5,8 +5,8 @@
 
 #include "tors.h"
 
-#include <string>
-#include <iostream>
+//#include <string>
+//#include <iostream>
 #include <sstream>
 
 #include "print.h"
@@ -45,7 +45,7 @@ TORS::TORS(int A_in, int B_in, int C_in, int D_in, bool freeze_in) : SIMPLE(tors
   near_180 = 0;
 }
 
-void TORS::fix_near_180(GeomType geom) {
+void TORS::fix_tors_near_180(GeomType geom) {
   double tval = value(geom);
   if ( tval > Opt_params.fix_tors_near_pi)
     near_180 = +1;
@@ -53,6 +53,9 @@ void TORS::fix_near_180(GeomType geom) {
     near_180 = -1;
   else
     near_180 = 0;
+
+printf("changed torsion fix  to %d \n", near_180);
+
   return;
 }
 
@@ -62,8 +65,6 @@ double TORS::value(GeomType geom) const {
 
   if (! v3d_tors(geom[s_atom[0]], geom[s_atom[1]], geom[s_atom[2]], geom[s_atom[3]], tau) )
     throw("TORS::compute_val: bond angles will not permit torsion computation");
-
-printf("v3d_tors %20.15lf\n", tau);
 
   // Extend domain of torsion angles by checking past
   // extend domain of torsions so delta(vals) can be calculated

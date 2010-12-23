@@ -554,6 +554,7 @@ void INTERFRAG::print_intco_dat(FILE *fp, int off_A, int off_B) const {
   }
 }
 
+
 // Make the initial Hessian guess for interfragment coordinates
 double ** INTERFRAG::H_guess(void) {
   double **H;
