@@ -46,6 +46,16 @@ J. M. Bofill, J. Comp. Chem., Vol. 15, pages 1-11 (1994).
 
 
 ** Format of intco.dat file **
+
+F fragment definition header
+
+R stretch
+H hydrogen-bond
+
+B bend
+D dihedral
+L linear bend complement to an ordinary bend
+
 Fragment[F]  1st_atom_of_fragment 2nd_atom_of_fragment
 Coordinate_Type[S,H,B,D]  
 representing stretch, hydrogen-bond, bend, dihedral

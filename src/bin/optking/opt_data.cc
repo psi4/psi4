@@ -193,11 +193,6 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
     }
     gq = array_dot(dq, dg, Nintco);
     qq = array_dot(dq, dq, Nintco);
-printf("dq\n"); 
-print_matrix(stdout, &dq, 1, Nintco);
-
-printf("Denominator gq %5.1e\n", gq);
-printf("Denominator qq %5.1e\n", qq);
 
     // skip Hessian updates with very small denominators (dq)(dq) and (dq)(dg_q)
     if ( (fabs(gq) < Opt_params.H_update_den_tol) ||(fabs(qq) < Opt_params.H_update_den_tol) ) {

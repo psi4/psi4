@@ -39,9 +39,9 @@ class STRE : public SIMPLE {
     bool operator==(const SIMPLE & s2) const;
 
     void make_hbond(void) { hbond = true; }
-    bool is_hbond(void) { return hbond; }
+    bool is_hbond(void) const { return hbond; }
     void make_inverse_stre(void) { inverse_stre = true; }
-    bool is_inverse_stre(void) { return inverse_stre; }
+    bool is_inverse_stre(void) const { return inverse_stre; }
 
 };
 

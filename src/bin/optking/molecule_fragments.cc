@@ -179,7 +179,7 @@ void MOLECULE::add_interfragment(void) {
   int A1, A2, A3, B1, B2, B3;
   double tval, min;
   int ndA, ndB; // num of reference atoms on each fragment
-  char *error_msg;
+  char error_msg[100];
   double **weight_A, **weight_B;
 
   if (fragments.size() == 1) return;
@@ -223,6 +223,7 @@ printf("closest atoms between fragments is A %d, B %d\n", A1, B1);
       }
     }
     if (ndA == 1 && nA > 1) {
+      fprintf(outfile, "Fragment A has >1 atoms but no non-collinear atom found bonded to %d", A1+1);
       sprintf(error_msg, "Fragment A has >1 atoms but no non-collinear atom found bonded to %d", A1+1);
       throw(error_msg);
     }
@@ -240,6 +241,7 @@ printf("closest atoms between fragments is A %d, B %d\n", A1, B1);
       }
     }
     if (ndB == 1 && nB > 1) {
+      fprintf(outfile, "Fragment B has >1 atoms but no non-collinear atom found bonded to %d", B1+1);
       sprintf(error_msg, "Fragment B has >1 atoms but no non-collinear atom found bonded to %d", B1+1);
       throw(error_msg);
     }

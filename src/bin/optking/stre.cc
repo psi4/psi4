@@ -142,9 +142,9 @@ void STRE::print_intco_dat(FILE *fp, int off) const {
   }
   else {
     if (s_frozen)
-      fprintf(fp, "S*%6d%6d\n", s_atom[0]+1+off, s_atom[1]+1+off);
+      fprintf(fp, "R*%6d%6d\n", s_atom[0]+1+off, s_atom[1]+1+off);
     else
-      fprintf(fp, "S %6d%6d\n", s_atom[0]+1+off, s_atom[1]+1+off);
+      fprintf(fp, "R %6d%6d\n", s_atom[0]+1+off, s_atom[1]+1+off);
   }
 }
 
@@ -171,8 +171,6 @@ void STRE::print_s(FILE *fp, GeomType geom) const {
 }
 
 bool STRE::operator==(const SIMPLE & s2) const {
-  fprintf(stdout,"STRE::==(SIMPLE &)\n");
-
   if (stre_type != s2.g_type())
     return false;
 

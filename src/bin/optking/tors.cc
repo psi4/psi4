@@ -53,9 +53,6 @@ void TORS::fix_tors_near_180(GeomType geom) {
     near_180 = -1;
   else
     near_180 = 0;
-
-printf("changed torsion fix  to %d \n", near_180);
-
   return;
 }
 
@@ -241,7 +238,7 @@ double ** TORS::Dq2Dx2(GeomType geom) const {
 
 void TORS::print(FILE *fp, GeomType geom, int off) const {
   ostringstream iss(ostringstream::out); // create stream; allow output to it
-  iss << "T(" << s_atom[0]+1+off << "," << s_atom[1]+1+off << "," << s_atom[2]+1+off << "," << s_atom[3]+1+off << ")";
+  iss << "D(" << s_atom[0]+1+off << "," << s_atom[1]+1+off << "," << s_atom[2]+1+off << "," << s_atom[3]+1+off << ")";
   double val = value(geom);
   if (!s_frozen)
     fprintf(fp,"\t %-15s  =  %15.6lf\t%15.6lf\n", iss.str().c_str(), val, val/_pi*180.0);
@@ -280,7 +277,6 @@ void TORS::print_s(FILE *fp, GeomType geom) const {
 }
 
 bool TORS::operator==(const SIMPLE & s2) const {
-  fprintf(stdout,"TORS::operator==\n");
   if (tors_type != s2.g_type())
     return false;
 
