@@ -100,7 +100,7 @@ void MOLECULE::test_B(void) {
     fprintf(outfile, "linear bond angles.  This is OK.\n");
   }
   else {
-    fprintf(outfile,"  Passed.\n");
+    fprintf(outfile,"\t...Passed.\n");
   }
 
   free_matrix(B_analytic);

@@ -240,12 +240,12 @@ int FRAG::add_hbonds(void) {
 // angles for all bonds present; return number added
 int FRAG::add_bend_by_connectivity(void) {
   int nadded = 0;
-  int i,j,k;
+  double phi;
 
-  for (i=0; i<natom; ++i)
-    for (j=0; j<natom; ++j)
+  for (int i=0; i<natom; ++i)
+    for (int j=0; j<natom; ++j)
       if (connectivity[i][j])
-        for (k=i+1; k<natom; ++k)
+        for (int k=i+1; k<natom; ++k)
           if (connectivity[j][k]) {
             BEND *one_bend = new BEND(i,j,k);
             if (!present(one_bend)) {
@@ -254,7 +254,21 @@ int FRAG::add_bend_by_connectivity(void) {
             }
             else
               delete one_bend;
-          }
+
+            // add linear bend complement if necessary
+            if (v3d_angle(geom[i], geom[j], geom[k], phi)) { // can be computed
+              if (phi > Opt_params.linear_bend_threshold) { // ~175 degrees
+                one_bend = new BEND(i,j,k);
+                one_bend->make_linear_bend();
+                if (!present(one_bend)) {
+                  intcos.push_back(one_bend);
+                  ++nadded;
+                }
+                else
+                  delete one_bend;
+              }
+            }
+          } // ijk
 
   return nadded;
 }
@@ -356,7 +370,7 @@ int FRAG::add_tors_by_connectivity(void) {
 bool FRAG::present(const SIMPLE *one) const {
   int k;
   for (k=0; k<intcos.size(); ++k) {
-    if (intcos.at(k) == one)
+    if (*one == *(intcos[k]))
       return true;
   }
   return false;
@@ -368,7 +382,7 @@ bool FRAG::present(const SIMPLE *one) const {
 int FRAG::find(const SIMPLE *one) const {
   int k;
   for (k=0; k<intcos.size(); ++k) {
-    if (intcos.at(k) == one)
+    if (*one == *(intcos[k]))
       return k;
   }
   return intcos.size();

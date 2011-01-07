@@ -51,10 +51,13 @@ class SIMPLE {
     virtual void fix_tors_near_180(GeomType geom) { return; }
 
     // do-nothing function overridden by stretch class 
-    virtual bool is_hbond(void) { return false; }
+    virtual bool is_hbond(void) const { return false; }
 
     // do-nothing function overridden by stretch class 
-    virtual bool is_inverse_stre(void) { return false; }
+    virtual bool is_inverse_stre(void) const { return false; }
+
+    // do-nothing function overridden by bend class
+    virtual bool is_linear_bend(void) const { return false; }
 
     // each internal coordinate type must provide the following virtual functions:
 

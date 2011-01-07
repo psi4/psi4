@@ -152,6 +152,9 @@ class OPT_DATA {
     // read in cartesian Hessian
     double ** read_cartesian_H(void) const;
 
+    // return number of steps present
+    int nsteps(void) const { return steps.size(); }
+
 };
 
 };

@@ -12,6 +12,9 @@ namespace opt {
 
 class BEND : public SIMPLE {
 
+    // if true, this bend is a secondary complement to another linear bend
+    bool linear_bend;
+
   public:
 
     BEND(int A_in, int B_in, int C_in, bool freeze_in=false);
@@ -32,6 +35,9 @@ class BEND : public SIMPLE {
     void print_disp(FILE *fp, const double old_q, const double f_q,
       const double dq, const double new_q, int atom_offset=0) const;
     bool operator==(const SIMPLE & s2) const;
+
+    void make_linear_bend(void) { linear_bend = true; }
+    bool is_linear_bend(void) const { return linear_bend; }
 
 };
 

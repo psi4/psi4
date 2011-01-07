@@ -327,19 +327,19 @@ bool FRAG::read_intco(vector<string> & s, int offset) {
   bool frozen=false;
   frozen = has_asterisk(s[0]); // removes asterisk
 
-  if ((s[0] == "S") || (s[0] == "H")) {
+  if ((s[0] == "R") || (s[0] == "H")) {
     if (s.size() != 3) {
-      error = "Format of stretch entry is \"S atom_1 atom_2\".\n";
+      error = "Format of stretch entry is \"R atom_1 atom_2\".\n";
       throw(error);
     }
     if ( !stoi(s[1], &a) || !stoi(s[2], &b) ) {
-      error = "Format of stretch entry is \"S atom_1 atom_2\".\n";
+      error = "Format of stretch entry is \"R atom_1 atom_2\".\n";
       throw(error);
     }
     --a; --b;
 
     STRE *one_stre = new STRE(a-offset, b-offset, frozen);
-    if (s[0] == "H") one_stre->is_hbond();
+    if (s[0] == "H") one_stre->make_hbond();
 
     if ( !present(one_stre) )
       intcos.push_back(one_stre);
@@ -348,7 +348,7 @@ bool FRAG::read_intco(vector<string> & s, int offset) {
 
     return true;
   }
-  else if (s[0] == "B") {
+  else if ((s[0] == "B") || (s[0] == "L")) {
     if (s.size() != 4) {
       error = "Format of bend entry is \"B atom_1 atom_2 atom_3\".\n";
       throw(error);
@@ -360,6 +360,7 @@ bool FRAG::read_intco(vector<string> & s, int offset) {
     --a; --b; --c;
 
     BEND *one_bend = new BEND(a-offset, b-offset, c-offset, frozen);
+    if (s[0] == "L") one_bend->make_linear_bend();
 
     if ( !present(one_bend) )
       intcos.push_back(one_bend);

@@ -49,6 +49,11 @@ struct OPT_PARAMS {
   // whether to use 1/R as the distance coordinate in interfragment stretching modes
   bool interfragment_distance_inverse;
 
+  // By default, optking prints and saves the last (previous) geometry at the end of an
+  // optimization, i.e., the one at which a gradient was computed.
+  // If true, then the structure obtained from the last anticipated step is printed and saved instead.
+  bool write_final_step_geometry;
+
   double maximum_H_bond_distance;
 
 // ** Unlikely to need modified **
@@ -65,6 +70,8 @@ struct OPT_PARAMS {
   double interfrag_collinear_tol;
 
   double tors_cos_tol; // cos(angle) must be this close to -1/+1 for angle to count as 0/pi
+
+  double linear_bend_threshold; // if bend exceeds this value, then also add linear bend complement
 
   // threshold for which entries in diagonalized redundant matrix are kept and inverted
   // while computing a generalized inverse of a matrix

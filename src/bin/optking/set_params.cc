@@ -28,6 +28,9 @@ void set_params(void) {
 
   Opt_params.interfragment_H = OPT_PARAMS::DEFAULT;
 
+  Opt_params.write_final_step_geometry = false; // if true, use final step geometry
+
+
   Opt_params.H_update = OPT_PARAMS::BFGS; // any of {NONE, BFGS, MS, POWELL, BOFILL}
   Opt_params.H_update_use_last = 6; // how many old Hessians to use (0=all)
 
@@ -74,6 +77,9 @@ void set_params(void) {
   // cos(torsional angle) must be this close to -1/+1 for angle to count as 0/pi
   Opt_params.tors_cos_tol = 1e-10;
 
+  // if bend exceeds this value, then also create linear bend complement
+  Opt_params.linear_bend_threshold = 3.05; // about 175 degrees
+
   // threshold for which entries in diagonalized redundant matrix are kept and inverted
   // while computing a generalized inverse of a matrix
   Opt_params.redundant_eval_tol = 1.0e-10;
@@ -83,7 +89,7 @@ void set_params(void) {
   Opt_params.bt_dx_conv_rms_change = 1.0e-12;
 
   // 1=default; 2=medium; 3=lots
-  Opt_params.print_lvl = 3;
+  Opt_params.print_lvl = 1;
 
   // Hessian update is avoided if the denominators (Dq*Dq) or (Dq*Dg) are smaller than this
   Opt_params.H_update_den_tol = 1e-7;

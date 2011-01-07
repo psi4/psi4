@@ -43,7 +43,8 @@ OptReturnType optking(void) {
   bool newly_generated_coordinates; // Are internal coordinates produced or read-in?
 
   print_title(outfile); // print header
-  //init_ioff(); // not used at present
+
+  try {
 
   set_params(); // set optimization parameters
 
@@ -110,8 +111,7 @@ OptReturnType optking(void) {
 
   // print geometry and gradient
   mol1->print_geom_grad(outfile);
-
-mol1->print_connectivity(outfile); fflush(outfile);
+  //mol1->print_connectivity(outfile); fflush(outfile);
 
   // print internal coordinate definitions and values
   mol1->print_intcos(outfile);
@@ -160,14 +160,27 @@ mol1->print_connectivity(outfile); fflush(outfile);
     mol1->rfo_step(); // puts dq in p_Opt_data->step
 
   if ( p_Opt_data->conv_check() ) {
-    printf("\t *** Geometry is converged!\n");
-    fprintf(outfile,"\t *** Geometry is converged!\n");
+    printf("\t\t **** Geometry is converged! ****\n");
+    fprintf(outfile,"\t **** Geometry is converged! ****\n");
     p_Opt_data->summary();
-    p_Opt_data->write();
-    mol1->write_geom(); // geometry to chkpt in PSI
+    p_Opt_data->write(); // save data to optimization binary file
+
+    if (Opt_params.write_final_step_geometry) {
+      fprintf(outfile,"\tFinal (next step) structure:\n");
+      mol1->print_geom();  // write geometry -> output file
+      fprintf(outfile,"\tSaving final (next step) structure.\n");
+      mol1->write_geom();  // write geometry -> chkpt file
+    }
+    else { // default - get last geometry and write that one
+      double *x = p_Opt_data->g_geom_const_pointer(p_Opt_data->nsteps()-1);
+      mol1->set_geom_array(x);
+      fprintf(outfile,"\tFinal (previous) structure:\n");
+      mol1->print_geom();  // write geometry -> output file
+      fprintf(outfile,"\tSaving final (previous) structure.\n");
+      mol1->write_geom();
+    }
+
     delete p_Opt_data;
-    fprintf(outfile,"\tFinal (next step) structure:\n");
-    mol1->print_geom(); // geometry to output file
     print_end(outfile);
     close_output_dat();
     return OptReturnEndloop;
@@ -181,9 +194,15 @@ mol1->print_connectivity(outfile); fflush(outfile);
   fprintf(outfile,"\tStructure for next step:\n"); fflush(outfile);
   mol1->print_geom(); // write geometry for next step to output file
 
+  } // end big try
+  catch (const char * str) {
+    fprintf(stderr, "%s\n", str);
+    fprintf(outfile, "%s\n", str);
+    return OptReturnFailure;
+  }
+
   print_end(outfile);
   close_output_dat();
-  //free_int_array(ioff); // not used at present
   return OptReturnSuccess;
 }
 
