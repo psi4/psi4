@@ -17,7 +17,7 @@ using namespace psi;
 
 namespace psi { 
 
-class TwoBodyInt;
+class TwoBodySOInt;
 class PSIO;
 class Chkpt;
 
@@ -63,7 +63,7 @@ protected:
     int max_domain_size_;
     int max_domain_pairs_;
 
-    boost::shared_ptr<TwoBodyInt> eri_;
+    boost::shared_ptr<TwoBodySOInt> eri_;
 
     double Drms_;
 

@@ -56,7 +56,7 @@ HF::~HF()
 
 void HF::common_init()
 {
-    scf_type_ = options_.get_str("SCF_TYPE");    
+    scf_type_ = options_.get_str("SCF_TYPE");
 
     S_.reset(factory_.create_matrix("S"));
     Shalf_.reset(factory_.create_matrix("S^-1/2"));
@@ -68,7 +68,7 @@ void HF::common_init()
 
     memset((void*) nsopi_, '\0', factory_.nirreps()*sizeof(int));
     memset((void*) nmopi_, '\0', factory_.nirreps()*sizeof(int));
-    nmo_ = 0;    
+    nmo_ = 0;
     nso_ = 0;
     nirreps_ = factory_.nirreps();
     int* dimpi = factory_.colspi();
@@ -200,14 +200,14 @@ void HF::common_init()
     //For HF algorithms, J and K are both required always.
     J_is_required_ = true;
     K_is_required_ = true;
-    
+
     //Use schwarz sieve? default no
     schwarz_ = 0.0;
     if (options_["SCHWARZ_CUTOFF"].has_changed())
     {
         schwarz_ = options_.get_double("SCHWARZ_CUTOFF");
     }
-    
+
     // Handle common diis info
     diis_enabled_ = true;
     min_diis_vectors_ = 4;
@@ -229,7 +229,7 @@ void HF::common_init()
     if (diis_enabled_)
         diis_manager_ = shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk, psio_));
 
-    initialized_diis_manager_ = false; 
+    initialized_diis_manager_ = false;
 
     // Save cartesian grid? Temporary until OEPROP is fully redone
     save_grid_ = false;
@@ -382,7 +382,7 @@ void HF::form_H()
     SharedMatrix potential(factory_.create_matrix("Potential Integrals"));
 
     // Form the multipole integrals
-    form_multipole_integrals();
+    //form_multipole_integrals();
 
     // Load in kinetic and potential matrices
     double *integrals = init_array(ioff[nso_]);
@@ -395,12 +395,15 @@ void HF::form_H()
         potential->set(integrals);
     }
     else {
-        IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
-        shared_ptr<OneBodyInt> T(integral.kinetic());
-        shared_ptr<OneBodyInt> V(integral.potential());
+        // Integral factory
+        shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+        shared_ptr<OneBodyInt>   aoT(integral->kinetic());
+        shared_ptr<OneBodySOInt> soT(new OneBodySOInt(aoT, integral));
+        shared_ptr<OneBodyInt>   aoV(integral->potential());
+        shared_ptr<OneBodySOInt> soV(new OneBodySOInt(aoV, integral));
 
-        T->compute(kinetic);
-        V->compute(potential);
+        soT->compute(kinetic);
+        soV->compute(potential);
     }
 
     if (debug_ > 2 && Communicator::world->me() == 0)
@@ -448,10 +451,11 @@ void HF::form_Shalf()
         free(integrals);
     }
     else {
-        IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
-        OneBodyInt *S = integral.overlap();
-        S->compute(S_);
-        delete S;
+        // Integral factory
+        shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+        shared_ptr<OneBodyInt>   overlap(integral->overlap());
+        shared_ptr<OneBodySOInt> so_overlap(new OneBodySOInt(overlap, integral));
+        so_overlap->compute(S_);
     }
     // Form S^(-1/2) matrix
     Matrix eigvec;
@@ -517,7 +521,7 @@ void HF::form_Shalf()
     //          CANONICAL ORTHOGONALIZATION
     //
     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    
+
     //If symmetric orthogonalization will work, use it
     //Unless the user wants canonical
     double S_cutoff = options_.get_double("S_MIN_EIGENVALUE");
@@ -531,7 +535,7 @@ void HF::form_Shalf()
         if (print_ && Communicator::world->me() == 0)
             fprintf(outfile,"  Using Canonical Orthogonalization with cutoff of %14.10E.\n",S_cutoff);
         canonical_X_ = true;
-        
+
         //Diagonalize S (or just get a fresh copy)
         eigvec.copy(eigvec_store);
         eigval.copy(eigval_store);
@@ -556,17 +560,17 @@ void HF::form_Shalf()
             for (int i=0; i<dimpi[h]-start_index; ++i) {
                 for (int m = 0; m < dimpi[h]; m++)
                     X_->set(h,m,i,eigvec.get(h,m,dimpi[h]-i-1));
-            } 
+            }
             //X_->print(outfile);
             if (print_>2 && Communicator::world->me() == 0)
                 fprintf(outfile,"  Irrep %d, %d of %d possible MOs eliminated.\n",h,start_index,nsopi_[h]);
-            
+
             delta_mos += start_index;
         }
 
         if (print_ && Communicator::world->me() == 0) {
             fprintf(outfile,"  Overall, %d of %d possible MOs eliminated.\n",delta_mos,nso_);
-        
+
         }
         orbital_e_->init(eigvec.nirreps(), nmopi_);
         C_->init(eigvec.nirreps(),nsopi_,nmopi_,"MO coefficients");

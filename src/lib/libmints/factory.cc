@@ -94,6 +94,7 @@ bool MatrixFactory::init_with(const Dimension& rows, const Dimension& cols)
     rowspi_ = new int[rows.n()];
     colspi_ = new int[cols.n()];
 
+    nso_ = 0;
     for (int i=0; i<nirreps_; ++i) {
         rowspi_[i] = rows[i];
         colspi_[i] = cols[i];
