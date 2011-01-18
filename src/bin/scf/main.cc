@@ -26,9 +26,10 @@ PsiReturnType scf(Options & options)
 {
     tstart();
 
-    shared_ptr<PSIO> psio(new PSIO);
-    psiopp_ipv1_config(psio);
+//    shared_ptr<PSIO> psio(new PSIO);
+//    psiopp_ipv1_config(psio);
 
+    shared_ptr<PSIO> psio = PSIO::shared_object();
     shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
 
     // Initialize the psi3 timer library.
@@ -47,11 +48,11 @@ PsiReturnType scf(Options & options)
 #endif
     }
     else {
-            HFEnergy hf(options, psio, chkpt); 
+            HFEnergy hf(options, psio, chkpt);
             // Compute the Hartree-Fock energy
             energy = hf.compute_energy();
     }
-    
+
     Process::environment.globals["SCF ENERGY"] = energy;
     Process::environment.globals["CURRENT ENERGY"] = energy;
 

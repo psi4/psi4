@@ -163,8 +163,12 @@ public:
 
     /// Convert SO shell and function number within shell to irrep.
     int irrep(int ishell, int ifunc) const;
+    /// Convert SO shell and function number within shell to irrep.
+    int irrep(int ifunc) const;
     /// Convert SO shell and function number to number within irrep.
     int function_within_irrep(int ishell, int ifunc) const;
+    /// Convert SO shell and function number to number within irrep.
+    int function_within_irrep(int ifunc) const;
 
     /// Return the SOTransform object for the given shell.
     const SOTransform &trans(int i) const { return trans_[i]; }
@@ -188,6 +192,11 @@ inline int SOBasis::irrep(int ishell, int ifunc) const
   return irrep_[func_[ishell]+ifunc];
 }
 
+inline int SOBasis::irrep(int ifunc) const
+{
+  return irrep_[ifunc];
+}
+
 inline int SOBasis::function_offset_for_irrep(int irrep) const
 {
   int r = 0;
@@ -200,6 +209,11 @@ inline int SOBasis::function_offset_for_irrep(int irrep) const
 inline int SOBasis::function_within_irrep(int ishell, int ifunc) const
 {
   return func_within_irrep_[func_[ishell]+ifunc];
+}
+
+inline int SOBasis::function_within_irrep(int ifunc) const
+{
+  return func_within_irrep_[ifunc];
 }
 
 inline int SOBasis::nfunction(int ishell, int iirrep) const
