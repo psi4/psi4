@@ -2063,9 +2063,9 @@ found_sigma:
         origin[i] = com[i];
     }
 
-    fprintf(outfile, "frame:\n");
-    frame.print(outfile);
-    fprintf(outfile, "origin: %s\n", origin.to_string().c_str());
+    //fprintf(outfile, "frame:\n");
+    //frame.print(outfile);
+    //fprintf(outfile, "origin: %s\n", origin.to_string().c_str());
 
 //    pg_bits = 0;
 //    if (c2axis[0] == 1.0)
