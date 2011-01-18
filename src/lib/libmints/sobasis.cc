@@ -134,7 +134,10 @@ SOBasis::SOBasis(const boost::shared_ptr<BasisSet> &basis, const boost::shared_p
 
     int nblocks = petite->nblocks();
     SO_block *soblocks = petite->aotoso_info();
-    soblocks->print("");
+    for (i=0; i<nblocks; ++i) {
+        fprintf(outfile, "soblock[%d]\n", i); fflush(outfile);
+        soblocks[i].print("");
+    }
 
     trans_ = new SOTransform[nshell_];
     for (i=0; i<nblocks; i++) {
@@ -152,6 +155,7 @@ SOBasis::SOBasis(const boost::shared_ptr<BasisSet> &basis, const boost::shared_p
     int nfuncall = 0;
     for (i=0; i<nblocks; i++) {
         int irrep = ct.which_irrep(i);
+        fprintf(outfile, "i = %d, irrep = %d...I think they should be equal.\n", i, irrep); fflush(outfile);
         for (j=0; j<soblocks[i].len; j++) {
             if (soblocks[i].so[j].length == 0) continue;
             int bfn0 = soblocks[i].so[j].cont[0].bfn;
@@ -180,7 +184,7 @@ SOBasis::SOBasis(const boost::shared_ptr<BasisSet> &basis, const boost::shared_p
                 }
 
                 fprintf(outfile, "\nabout to call add_transform(...): aoshellfunc = %d, bfn = %d\n", aoshellfunc, bfn);
-                trans_[soshell].add_transform(aoshell,irrep, coef,aoshellfunc,sofunc);
+                trans_[soshell].add_transform(aoshell, irrep, coef,aoshellfunc,sofunc);
             }
         }
     }

@@ -114,7 +114,7 @@ public:
      * @param rows Dimension object providing row information.
      * @param cols Dimension object providing column information.
      */
-    Matrix(std::string& name, const Dimension& rows, const Dimension& cols);
+    Matrix(const std::string& name, const Dimension& rows, const Dimension& cols);
 
     /// Destructor, frees memory
     ~Matrix();
@@ -284,7 +284,7 @@ public:
      * @param outfile File point to use, defaults to Psi4's outfile.
      * @param extra When printing the name of the 'extra' will be printing after the name.
      */
-    void print(FILE *out = outfile, char *extra=NULL);
+    void print(FILE *out = outfile, const char *extra=NULL);
 
     /**
      * Print the matrix with corresponding eigenvalues below each column
@@ -311,7 +311,7 @@ public:
         return nirreps_;
     }
     /// Set this to identity
-    void set_to_identity();
+    void identity();
     /// Zeros this out
     void zero();
     /// Zeros the diagonal
@@ -535,7 +535,7 @@ public:
     /// The number of columns
     int cols() const { return cols_; }
     /// Set matrix to identity
-    void set_to_identity();
+    void identity();
     /// Zero out the matrix
     void zero();
     /// Zero out the diagonal

@@ -935,3 +935,40 @@ SO_block* PetiteList::aotoso_info()
 
     return SOs;
 }
+
+Matrix* PetiteList::aotoso()
+{
+    Dimension aodim = AO_basisdim();
+    Dimension sodim = SO_basisdim();
+
+    Matrix* aoso = new Matrix("AO->SO matrix", aodim, sodim);
+
+    if (c1_) {
+        aoso->identity();
+        return aoso;
+    }
+
+    SO_block *sos = aotoso_info();
+
+    // There is an SO_block for each irrep
+    for (int h=0; h < nblocks(); ++h) {
+        // If the block is empty, don't do anything.
+        if (sodim[h] == 0)
+            continue;
+
+        SO_block& sob = sos[h];
+
+        for (int j=0; j<sob.len; ++j) {
+            SO& soj = sob.so[j];
+
+            for (int i=0; i<soj.len; ++i) {
+                int ii =  soj.cont[i].bfn;
+
+                aoso->set(h, ii, j, soj.cont[i].coef);
+            }
+        }
+    }
+
+    delete[] sos;
+    return aoso;
+}

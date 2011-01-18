@@ -47,9 +47,14 @@ public:
     /// Compute the integrals between basis function in the given shell pair.
     virtual void compute_shell(int, int) = 0;
     
-    /// Computes all integrals and stores them in result
+    /*! @{
+     * Computes all integrals and stores them in result
+     * @param result Shared matrix object that will hold the results.
+     */
     void compute(boost::shared_ptr<Matrix> result);
-    
+    void compute(boost::shared_ptr<SimpleMatrix> result);
+    /*! @} */
+
     /// Computes all integrals and stores them in result by default this method throws
     virtual void compute(std::vector<boost::shared_ptr<Matrix> > &result);
     /// Computes all integrals and stores them in result by default this method throws
