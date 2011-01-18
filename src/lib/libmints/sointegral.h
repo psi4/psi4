@@ -35,11 +35,25 @@ public:
     boost::shared_ptr<SOBasis> basis1() const;
     boost::shared_ptr<SOBasis> basis2() const;
 
+    /**
+     * Resulting integral buffer.
+     */
     const double* buffer() const { return buffer_; }
 
+    /**
+     * Computes a one-electron integral matrix. Only works for symmetric operators
+     * (multipole operators will not work).
+     */
     void compute(boost::shared_ptr<Matrix> result);
+
+    /**
+     * Compute a given SO shell doublet placing the result into buffer_
+     */
     virtual void compute_shell(int, int);
 
+    /**
+     * Currently these settings are ignored, placed in for future work.
+     */
     int only_totally_symmetric() const { return only_totally_symmetric_; }
     void set_only_totally_symmetric(int i) { only_totally_symmetric_ = i; }
 };

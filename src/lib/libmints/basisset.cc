@@ -15,6 +15,7 @@
 #include "vector3.h"
 #include "molecule.h"
 #include "basisset.h"
+#include "dimension.h"
 #include "sobasis.h"
 #include "integral.h"
 #include "symmetry.h"

@@ -258,7 +258,7 @@ Molecule& Molecule::operator=(const Molecule& other)
     geometryVariables_      = other.geometryVariables_;
     chargeSpecified_        = other.chargeSpecified_;
     multiplicitySpecified_  = other.multiplicitySpecified_;
-    
+
     // These are symmetry related variables, and are filled in by the following funtions
     pg_             = shared_ptr<PointGroup>();
     nunique_        = 0;
@@ -317,9 +317,9 @@ void Molecule::add_atom(int Z, double x, double y, double z,
     if (atom_at_position2(temp) == -1) {
         // Dummies go to full_atoms_, ghosts need to go to both.
         full_atoms_.push_back(shared_ptr<CoordEntry>(new CartesianEntry(full_atoms_.size(), Z, charge, mass, l,
-                                                                                             shared_ptr<CoordValue>(new NumberValue(x)),
-                                                                                             shared_ptr<CoordValue>(new NumberValue(y)),
-                                                                                             shared_ptr<CoordValue>(new NumberValue(z)))));
+                                                                        shared_ptr<CoordValue>(new NumberValue(x)),
+                                                                        shared_ptr<CoordValue>(new NumberValue(y)),
+                                                                        shared_ptr<CoordValue>(new NumberValue(z)))));
         if(strcmp(label, "X") && strcmp(label, "x")) atoms_.push_back(full_atoms_.back());
     }
     else {
@@ -340,11 +340,11 @@ std::string Molecule::label(int atom) const
     return atoms_[atom]->label();
 }
 
-int Molecule::atom_at_position1(double *xyz, double tol) const
+int Molecule::atom_at_position1(double *coord, double tol) const
 {
-    Vector3 b(xyz);
+    Vector3 b(coord);
     for (int i=0; i < natom(); ++i) {
-        Vector3 a(inputUnitsToAU_ * atoms_[i]->compute());
+        Vector3 a = xyz(i);
         if (b.distance(a) < tol)
             return i;
     }
@@ -354,7 +354,7 @@ int Molecule::atom_at_position1(double *xyz, double tol) const
 int Molecule::atom_at_position2(Vector3& b, double tol) const
 {
     for (int i=0; i < natom(); ++i) {
-        Vector3 a(inputUnitsToAU_ * atoms_[i]->compute());
+        Vector3 a = xyz(i);
         if (b.distance(a) < tol)
             return i;
     }
@@ -371,13 +371,26 @@ Vector3 Molecule::center_of_mass() const
 
     for (int i=0; i<natom(); ++i) {
         double m = mass(i);
-        ret += m * inputUnitsToAU_ * atoms_[i]->compute();
+        ret += m * xyz(i);
         total_m += m;
     }
 
     ret *= 1.0/total_m;
 
     return ret;
+}
+
+SimpleMatrix Molecule::distance_matrix()
+{
+    SimpleMatrix distance("Distances between atoms in Bohr", natom(), natom());
+
+    for (int i=0; i<natom(); ++i) {
+        for (int j=0; j<=i; ++j) {
+            distance(i, j) = distance(j, i) = xyz(i).distance(xyz(j));
+        }
+    }
+
+    return distance;
 }
 
 double Molecule::nuclear_repulsion_energy()
@@ -477,7 +490,7 @@ void Molecule::translate(const Vector3& r)
         temp = inputUnitsToAU_ * full_atoms_[i]->compute();
         temp += r;
         temp = temp/inputUnitsToAU_;
-        atoms_[i]->set_coordinates(temp[0], temp[1], temp[2]);
+        full_atoms_[i]->set_coordinates(temp[0], temp[1], temp[2]);
     }
 }
 
@@ -875,7 +888,6 @@ void Molecule::init_with_chkpt(shared_ptr<Chkpt> chkpt)
     Chkpt::free(geom);
 }
 
-// TODO: Make sure it isn't used.
 void Molecule::init_with_xyz(const std::string& xyzfilename)
 {
     Element_to_Z Z;
@@ -907,7 +919,6 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
         if (!from_string<int>(natom, what[1], std::dec))
             throw PSIEXCEPTION("Molecule::init_with_xyz: Unable to convert number of atoms from xyz file.");
 
-//        cout << "init_with_xyz: " << what.size() << endl;
         if (what.size() == 3) {
             string s(what[2].first, what[2].second);
             if (boost::iequals(bohr, s) || boost::iequals(au, s)) {
@@ -923,8 +934,7 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
 
     // Next line begins the useful information.
     // This is the regex for the remaining lines
-    rx.assign("(?:\\s*)([A-Z](?:[a-z])?)(?:\\s+)(-?\\d+\\.\\d+)(?:\\s+)(-?\\d+\\.\\d+)(?:\\s+)(-?\\d+\\.\\d+)(?:\\s*)",
-        boost::regbase::normal | boost::regbase::icase);
+    rx.assign("(?:\\s*)([A-Z](?:[a-z])?)(?:\\s+)(-?\\d+\\.\\d+)(?:\\s+)(-?\\d+\\.\\d+)(?:\\s+)(-?\\d+\\.\\d+)(?:\\s*)", boost::regbase::normal | boost::regbase::icase);
     for (int i=0; i<natom; ++i) {
         // Get an atom info line.
         getline(infile, line);
@@ -953,7 +963,7 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
             }
 
             // Add it to the molecule.
-            add_atom((int)Z[atomSym], x, y, z, atomSym.c_str(), atomic_masses[(int)Z[atomSym]]);
+            add_atom((int)Z[atomSym], x, y, z, atomSym.c_str(), an2masses[(int)Z[atomSym]]);
         }
         else {
             throw PSIEXCEPTION("Molecule::init_with_xyz: Malformed atom information line.\n"+line);
@@ -968,6 +978,9 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
 
     // chkpt is already in AU set the conversion to 1
     inputUnitsToAU_ = 1.0;
+
+    // Set the units to bohr since we did the conversion above, if needed.
+    units_ = Bohr;
 
     update_geometry();
 }
@@ -1230,6 +1243,7 @@ Molecule::update_geometry()
             if(full_atoms_[atom]->label() != "X") atoms_.push_back(full_atoms_[atom]);
         }
     }
+
     move_to_com();
     reorient();
 }
@@ -1448,8 +1462,8 @@ void Molecule::save_to_chkpt(shared_ptr<Chkpt> chkpt, std::string prefix)
     }
 
     for (int i=0; i<nallatom(); ++i) {
-    fgeom[i][0] = fx(i); geom[i][1] = fy(i); geom[i][2] = fz(i);
-    dummyflags[i] = fZ(i) > 0 ? 0 : 1;
+        fgeom[i][0] = fx(i); geom[i][1] = fy(i); geom[i][2] = fz(i);
+        dummyflags[i] = fZ(i) > 0 ? 0 : 1;
     }
 
     if(Communicator::world->me() == 0) {

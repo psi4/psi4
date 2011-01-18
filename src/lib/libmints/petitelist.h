@@ -15,16 +15,14 @@ class IntegralFactory;
 class Matrix;
 class Dimension;
 
-inline int64_t
-ij_offset64(int64_t i, int64_t j)
+inline int64_t ij_offset64(int64_t i, int64_t j)
 {
-  return (i>j) ? (((i*(i+1)) >> 1) + j) : (((j*(j+1)) >> 1) + i);
+    return (i>j) ? (((i*(i+1)) >> 1) + j) : (((j*(j+1)) >> 1) + i);
 }
 
-inline int64_t
-i_offset64(int64_t i)
+inline int64_t i_offset64(int64_t i)
 {
-  return ((i*(i+1)) >> 1);
+    return ((i*(i+1)) >> 1);
 }
 
 /////////////////////////////////////////////////////////////////////////////

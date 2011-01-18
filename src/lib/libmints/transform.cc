@@ -14,7 +14,7 @@ extern void solidharmonic(int l, SimpleMatrix& coefmat);
 void SphericalTransformComponent::init(int a, int b, int c, double coef,
                                        int cartindex, int pureindex)
 {
-    //printf("a = %d, b = %d, c = %d, coef = %f, cartindex = %d, pureindex = %d\n", a, b, c, coef, cartindex, pureindex);
+    fprintf(outfile, "a = %d, b = %d, c = %d, coef = %f, cartindex = %d, pureindex = %d\n", a, b, c, coef, cartindex, pureindex);
     a_ = a;
     b_ = b;
     c_ = c;
@@ -45,6 +45,8 @@ void SphericalTransform::init()
     // Compute the solid harmonic matrix elements
     solidharmonic(l_, coefmat);
 
+    coefmat.print();
+
     // Go through and grab the values.
     int pureindex = 0;
     int cartindex = 0;
@@ -52,7 +54,8 @@ void SphericalTransform::init()
     for (int i=1; i<=(l_-subl_)/2; ++i)
         pureindex += INT_NPURE(subl_+2*i);
 
-    //printf("l_ = %d, subl_ = %d\n", l_, subl_);
+    fprintf(outfile, "in SphericalTransform::init\n");
+    fprintf(outfile, "l_ = %d, subl_ = %d\n", l_, subl_);
 
     for (int p=0; p<INT_NPURE(subl_); ++p) {
         cartindex = 0;
@@ -61,6 +64,8 @@ void SphericalTransform::init()
             for (int jj=0; jj<=ii; ++jj) {
                 int b = ii - jj;
                 int c = jj;
+
+                fprintf(outfile, "a = %d b = %d c = %d\n", a, b, c);
                 int cart = INT_ICART(a, b, c);
 
                 double coef = coefmat(cart, p+pureindex);
