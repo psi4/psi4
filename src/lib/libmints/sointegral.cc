@@ -275,6 +275,9 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh)
                     const SOTransformShell &s4 = t4.aoshell[l];
                     tb_->compute_shell(s1.aoshell, s2.aoshell, s3.aoshell, s4.aoshell);
 
+                    fprintf(outfile, "ao: (%d %d %d %d)\n", s1.aoshell, s2.aoshell,
+                            s3.aoshell, s4.aoshell);
+
                     for (int z=0; z < INT_NPURE(tb_->basis1()->shell(s1.aoshell)->am()) *
                                       INT_NPURE(tb_->basis2()->shell(s2.aoshell)->am()) *
                                       INT_NPURE(tb_->basis3()->shell(s3.aoshell)->am()) *

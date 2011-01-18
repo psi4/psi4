@@ -11,8 +11,7 @@ static void transform2e_2(int, SphericalTransformIter&, double*, double*, int, i
 static void transform2e_3(int, SphericalTransformIter&, double*, double*, int, int, int);
 static void transform2e_4(int, SphericalTransformIter&, double*, double*, int, int);
 
-TwoBodyInt::TwoBodyInt(
-                       shared_ptr<BasisSet> bs1,
+TwoBodyInt::TwoBodyInt(shared_ptr<BasisSet> bs1,
                        shared_ptr<BasisSet> bs2,
                        shared_ptr<BasisSet> bs3,
                        shared_ptr<BasisSet> bs4,
@@ -20,6 +19,7 @@ TwoBodyInt::TwoBodyInt(
     : original_bs1_(bs1), original_bs2_(bs2), original_bs3_(bs3),
       original_bs4_(bs4), deriv_(deriv)
 {
+    // The derived classes allocate this memory.
     target_ = 0;
     tformbuf_ = 0;
     source_ = 0;
@@ -343,13 +343,11 @@ void TwoBodyInt::pure_transform(int sh1, int sh2, int sh3, int sh4, int nchunk)
     for (int ichunk=0; ichunk < nchunk; ++ichunk) {
         // Compute the offset in source_, and target
         size_t sourcechunkoffset = ichunk * (nao1 * nao2 * nao3 * nao4);
-//        size_t targetchunkoffset = ichunk * (nbf1 * nbf2 * nbf3 * nbf4);
         double *source1, *target1;
         double *source2, *target2;
         double *source3, *target3;
         double *source4, *target4;
         double *source = source_+sourcechunkoffset;
-//        double *target = target_+targetchunkoffset;
         double *target = target_+sourcechunkoffset;
         double *tmpbuf = tformbuf_;
 
