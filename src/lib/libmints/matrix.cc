@@ -134,6 +134,33 @@ Matrix::Matrix(std::string name, int l_nirreps, int *l_rowspi, int *l_colspi) : 
     alloc();
 }
 
+Matrix::Matrix(const std::string& name, const Dimension& rows, const Dimension& cols)
+{
+    matrix_ = NULL;
+
+    // This will happen in PetiteList::aotoso()
+    if (rows.n() == 1) {
+        nirreps_ = cols.n();
+        rowspi_ = new int[nirreps_];
+        colspi_ = new int[nirreps_];
+        for (int i=0; i<nirreps_; ++i) {
+            rowspi_[i] = rows[0];
+            colspi_[i] = cols[i];
+        }
+    }
+    else {
+        nirreps_ = rows.n();
+        rowspi_ = new int[nirreps_];
+        colspi_ = new int[nirreps_];
+        for (int i=0; i<nirreps_; ++i) {
+            rowspi_[i] = rows[i];
+            colspi_[i] = cols[i];
+        }
+    }
+
+    alloc();
+}
+
 Matrix::Matrix(dpdfile2 *inFile) : name_(inFile->label)
 {
     dpd_file2_mat_init(inFile);
@@ -463,7 +490,7 @@ L200:
     ::print_mat(a, m, n, out);
 }
 
-void Matrix::print(FILE *out, char *extra)
+void Matrix::print(FILE *out, const char *extra)
 {
     int h;
 
@@ -508,7 +535,7 @@ void Matrix::eivprint(shared_ptr<Vector> values, FILE *out)
     eivprint(values.get(), out);
 }
 
-void Matrix::set_to_identity()
+void Matrix::identity()
 {
     int h;
     size_t size;
@@ -1460,7 +1487,7 @@ void SimpleMatrix::eivprint(shared_ptr<SimpleVector> values, FILE *out)
     eivprint(values.get(), out);
 }
 
-void SimpleMatrix::set_to_identity()
+void SimpleMatrix::identity()
 {
     zero();
     for (int i=0; i<MIN(rows_, cols_); ++i)
