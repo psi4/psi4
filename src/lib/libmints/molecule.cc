@@ -1735,6 +1735,7 @@ int Molecule::atom_to_unique_offset(int iatom) const
 boost::shared_ptr<PointGroup> Molecule::find_point_group(double tol) const
 {
     int i, j;
+    unsigned int pg_bits = 0;
 
     Vector3 com = center_of_mass();
 
@@ -2007,7 +2008,6 @@ found_sigma:
         }
     }
 
-#ifdef DEBUG
     fprintf(outfile, "find point group:\n");
     fprintf(outfile, "  linear          = %s\n", linear          ? "true" : "false");
     fprintf(outfile, "  planar          = %s\n", planar          ? "true" : "false");
@@ -2025,7 +2025,6 @@ found_sigma:
         fprintf(outfile, "  sigmav          = %s\n", sigmav.to_string().c_str());
     if (have_sigma)
         fprintf(outfile, "  sigma           = %s\n", sigma.to_string().c_str());
-#endif
 
     // Find the three axes for the symmetry frame
     Vector3 xaxis = worldxaxis;
@@ -2063,6 +2062,20 @@ found_sigma:
         frame(i,2) = zaxis[i];
         origin[i] = com[i];
     }
+
+    fprintf(outfile, "frame:\n");
+    frame.print(outfile);
+    fprintf(outfile, "origin: %s\n", origin.to_string().c_str());
+
+//    pg_bits = 0;
+//    if (c2axis[0] == 1.0)
+//        pg_bits |= SymmOps::C2_x;
+//    if (c2axis[1] == 1.0)
+//        pg_bits |= SymmOps::C2_y;
+//    if (c2axis[2] == 1.0)
+//        pg_bits |= SymmOps::C2_z;
+//    if (have_inversion)
+//        pg_bits |= SymmOps::i;
 
     boost::shared_ptr<PointGroup> pg;
     if (have_inversion) {
@@ -2105,6 +2118,55 @@ found_sigma:
     fprintf(outfile, "\n  Molecular point group: %s\n\n", pg->symbol());
 
     return pg;
+}
+
+bool Molecule::has_symmetry_element(Vector3& op, double tol) const
+{
+    for (int i=0; i<natom(); ++i) {
+        Vector3 result = xyz(i) * op;
+        int atom = atom_at_position2(result, tol);
+
+        if (atom != -1) {
+            if (Z(atom) != Z(i) || mass(atom) != mass(i))
+                return false;
+        }
+        else
+            return false;
+    }
+
+    return true;
+}
+
+boost::shared_ptr<PointGroup> Molecule::find_point_group2(double tol) const
+{
+    Vector3 c2x(1, -1, -1);
+    Vector3 c2y(-1, 1, -1);
+    Vector3 c2z(-1, -1, 1);
+    Vector3 sxy(1, 1, -1);
+    Vector3 sxz(1, -1, 1);
+    Vector3 syz(-1, 1, 1);
+    Vector3 i(-1, -1, -1);
+
+    unsigned int bits = 0;
+
+    if (has_symmetry_element(c2x, tol))
+        bits |= SymmOps::C2_x;
+    if (has_symmetry_element(c2y, tol))
+        bits |= SymmOps::C2_y;
+    if (has_symmetry_element(c2z, tol))
+        bits |= SymmOps::C2_z;
+    if (has_symmetry_element(sxy, tol))
+        bits |= SymmOps::Sigma_xy;
+    if (has_symmetry_element(sxz, tol))
+        bits |= SymmOps::Sigma_xz;
+    if (has_symmetry_element(syz, tol))
+        bits |= SymmOps::Sigma_yz;
+    if (has_symmetry_element(i, tol))
+        bits |= SymmOps::i;
+
+    fprintf(outfile, "Point group: %s\n", PointGroup::bits_to_full_name(bits));
+
+    return shared_ptr<PointGroup>(new PointGroup(PointGroup::bits_to_basic_name(bits)));
 }
 
 void Molecule::release_symmetry_information()

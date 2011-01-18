@@ -313,6 +313,8 @@ public:
     ///
     /// Symmetry
     /// @{
+    bool has_symmetry_element(Vector3& op, double tol) const;
+
     boost::shared_ptr<PointGroup> point_group() const { return pg_; }
     void set_point_group(boost::shared_ptr<PointGroup> pg) {
         pg_ = pg;
@@ -329,6 +331,8 @@ public:
     void is_linear_planar(bool& linear, bool& planar, double tol) const;
     /// Find highest molecular point group
     boost::shared_ptr<PointGroup> find_point_group(double tol=1.0e-8) const;
+    /// Find highest molecular point group
+    boost::shared_ptr<PointGroup> find_point_group2(double tol=1.0e-8) const;
     /// Release symmetry information
     void release_symmetry_information();
     /// Initialize molecular specific symemtry information

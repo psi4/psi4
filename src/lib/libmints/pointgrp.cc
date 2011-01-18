@@ -157,6 +157,78 @@ PointGroup::equiv(const boost::shared_ptr<PointGroup> &grp, double tol) const
   return 1;
 }
 
+const char* PointGroup::bits_to_full_name(unsigned int bits)
+{
+    switch(bits) {
+    case PointGroups::C1:
+        return "C1";
+    case PointGroups::Ci:
+        return "Ci";
+    case PointGroups::C2X:
+        return "C2(x)";
+    case PointGroups::C2Y:
+        return "C2(y)";
+    case PointGroups::C2Z:
+        return "C2(z)";
+    case PointGroups::CsZ:
+        return "Cs(Z)";
+    case PointGroups::CsY:
+        return "Cs(Y)";
+    case PointGroups::CsX:
+        return "Cs(X)";
+    case PointGroups::D2:
+        return "D2";
+    case PointGroups::C2vX:
+        return "C2v(X)";
+    case PointGroups::C2vY:
+        return "C2v(Y)";
+    case PointGroups::C2vZ:
+        return "C2v(Z)";
+    case PointGroups::C2hX:
+        return "C2h(X)";
+    case PointGroups::C2hY:
+        return "C2h(Y)";
+    case PointGroups::C2hZ:
+        return "C2h(Z)";
+    case PointGroups::D2h:
+        return "D2h";
+    default:
+        throw PSIEXCEPTION("Unrecognized point group bits");
+    }
+}
+
+const char* PointGroup::bits_to_basic_name(unsigned int bits)
+{
+    switch(bits) {
+    case PointGroups::C1:
+        return "c1";
+    case PointGroups::Ci:
+        return "ci";
+    case PointGroups::C2X:
+    case PointGroups::C2Y:
+    case PointGroups::C2Z:
+        return "c2";
+    case PointGroups::CsZ:
+    case PointGroups::CsY:
+    case PointGroups::CsX:
+        return "cs";
+    case PointGroups::D2:
+        return "d2";
+    case PointGroups::C2vX:
+    case PointGroups::C2vY:
+    case PointGroups::C2vZ:
+        return "c2v";
+    case PointGroups::C2hX:
+    case PointGroups::C2hY:
+    case PointGroups::C2hZ:
+        return "c2h";
+    case PointGroups::D2h:
+        return "d2h";
+    default:
+        throw PSIEXCEPTION("Unrecognized point group bits");
+    }
+}
+
 // void
 // PointGroup::print(ostream &o) const
 // {

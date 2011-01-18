@@ -56,10 +56,42 @@
 #include <libmints/vector3.h>
 #include <string>
 #include <cstdio>
+#include <stdint.h>
+#include <vector>
+#include <map>
 
 namespace psi {
 
 extern FILE *outfile;
+
+#define NUM_TO_OPERATOR_ID(x) ((x) ? 1<<((x)-1) : 0)
+#define SKIP_THIS_OPERATOR(num,bit) ((bit) ? !((1<<((bit)-1)) & (num)) : 0 )
+
+namespace SymmOps {
+   enum Operations { E = 0, C2_z = 1, C2_y = 2, C2_x = 4, i = 8, Sigma_xy = 16, Sigma_xz = 32, Sigma_yz = 64 };
+}
+
+namespace PointGroups {
+enum Groups {
+    C1    = 0,
+    Ci    = SymmOps::i,
+    C2X   = SymmOps::C2_x ,
+    C2Y   = SymmOps::C2_y ,
+    C2Z   = SymmOps::C2_z ,
+    CsZ   = SymmOps::Sigma_xy ,
+    CsY   = SymmOps::Sigma_xz ,
+    CsX   = SymmOps::Sigma_yz ,
+    D2    = SymmOps::C2_x | SymmOps::C2_y | SymmOps::C2_z ,
+    C2vX  = SymmOps::C2_x | SymmOps::Sigma_xy | SymmOps::Sigma_xz ,
+    C2vY  = SymmOps::C2_y | SymmOps::Sigma_xy | SymmOps::Sigma_yz ,
+    C2vZ  = SymmOps::C2_z | SymmOps::Sigma_xz | SymmOps::Sigma_yz ,
+    C2hX  = SymmOps::C2_x | SymmOps::Sigma_yz | SymmOps::i ,
+    C2hY  = SymmOps::C2_y | SymmOps::Sigma_xz | SymmOps::i ,
+    C2hZ  = SymmOps::C2_z | SymmOps::Sigma_xy | SymmOps::i ,
+    D2h   = SymmOps::C2_x | SymmOps::C2_y | SymmOps::C2_z | SymmOps::i |
+            SymmOps::Sigma_xy | SymmOps::Sigma_xz | SymmOps::Sigma_yz
+};
+}
 
 // //////////////////////////////////////////////////////////////////
 
@@ -69,6 +101,7 @@ extern FILE *outfile;
 class SymmetryOperation {
   private:
     double d[3][3];
+    unsigned int bit_;
 
   public:
     SymmetryOperation();
@@ -100,6 +133,9 @@ class SymmetryOperation {
     /// This performs the transform r * this * r~
     SymmetryOperation transform(const SymmetryOperation& r) const;
 
+    /// Get the bit value.
+    unsigned int bit() const { return bit_; }
+
     /// Set equal to a unit matrix
     void unit() { zero(); d[0][0] = d[1][1] = d[2][2] = 1.0; }
 
@@ -107,26 +143,26 @@ class SymmetryOperation {
     void E() { unit(); }
 
     /// Set equal to an inversion
-    void i() { zero(); d[0][0] = d[1][1] = d[2][2] = -1.0; }
+    void i() { zero(); d[0][0] = d[1][1] = d[2][2] = -1.0; bit_ = SymmOps::i; }
 
     /// Set equal to reflection in xy plane
-    void sigma_h() { unit(); d[2][2] = -1.0; }
+    void sigma_h() { unit(); d[2][2] = -1.0; bit_ = SymmOps::Sigma_xy; }
 
     /// Set equal to reflection in xz plane
-    void sigma_xz() { unit(); d[1][1] = -1.0; }
+    void sigma_xz() { unit(); d[1][1] = -1.0; bit_ = SymmOps::Sigma_xz; }
 
     /// Set equal to reflection in yz plane
-    void sigma_yz() { unit(); d[0][0] = -1.0; }
+    void sigma_yz() { unit(); d[0][0] = -1.0; bit_ = SymmOps::Sigma_yz; }
 
     /// Set equal to a clockwise rotation by 2pi/n
     void rotation(int n);
     void rotation(double theta);
 
     /// Set equal to C2 about the x axis
-    void c2_x() { i(); d[0][0] = 1.0; }
+    void c2_x() { i(); d[0][0] = 1.0; bit_ = SymmOps::C2_x; }
 
     /// Set equal to C2 about the x axis
-    void c2_y() { i(); d[1][1] = 1.0; }
+    void c2_y() { i(); d[1][1] = 1.0; bit_ = SymmOps::C2_y; }
 
     void transpose();
 
@@ -323,18 +359,36 @@ class IrreducibleRepresentation {
  most published character tables. */
 class CharacterTable {
   public:
-    enum pgroups {C1, CS, CI, CN, CNV, CNH, DN, DND, DNH, SN, T, TH, TD, O,
-                  OH, I, IH};
+    enum pgroups {
+        C1,
+        CS,
+        CI,
+        CN,
+        CNV,
+        CNH,
+        DN,
+        DND,
+        DNH,
+        SN,
+        T,
+        TH,
+        TD,
+        O,
+        OH,
+        I,
+        IH
+    };
 
   private:
-    int g;                               // the order of the point group
-    int nt;                              // order of the princ rot axis
-    pgroups pg;                          // the class of the point group
-    int nirrep_;                         // the number of irreps in this pg
-    IrreducibleRepresentation *gamma_;   // an array of irreps
-    SymmetryOperation *symop;            // the matrices describing sym ops
-    int *_inv;                           // index of the inverse symop
-    char *symb;                          // the Schoenflies symbol for the pg
+    int g;                               //< the order of the point group
+    int nt;                              //< order of the princ rot axis
+    pgroups pg;                          //< the class of the point group
+    int nirrep_;                         //< the number of irreps in this pg
+    IrreducibleRepresentation *gamma_;   //< an array of irreps
+    SymmetryOperation *symop;            //< the matrices describing sym ops
+    int *_inv;                           //< index of the inverse symop
+    char *symb;                          //< the Schoenflies symbol for the pg
+    uint16_t bits_;                       //< code needed for Andy's bitwise DCR, only applicable to D2h and its subgroups
 
     /// this determines what type of point group we're dealing with
     int parse_symbol();
@@ -509,6 +563,9 @@ class PointGroup {
 
     /// Sets (or resets) the Schoenflies symbol.
     void set_symbol(const char*);
+
+    static const char* bits_to_full_name(unsigned int bits);
+    static const char* bits_to_basic_name(unsigned int bits);
 
     // void save_data_state(StateOut& so);
 

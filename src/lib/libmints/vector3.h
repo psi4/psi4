@@ -72,6 +72,13 @@ public:
         result.v_[2] = v_[2] - x.v_[2];
         return result;
     }
+    Vector3 operator*(const Vector3& x) const {
+        Vector3 result;
+        result.v_[0] = v_[0] * x.v_[0];
+        result.v_[1] = v_[1] * x.v_[1];
+        result.v_[2] = v_[2] * x.v_[2];
+        return result;
+    }
     Vector3 operator-() { return Vector3(-v_[0], -v_[1], -v_[2]); }
 
     double& operator[](int i) { return v_[i]; }
