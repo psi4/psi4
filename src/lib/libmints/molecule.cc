@@ -2083,7 +2083,7 @@ found_sigma:
 void Molecule::release_symmetry_information()
 {
     for (int i=0; i<nunique_; ++i) {
-    delete[] equiv_[i];
+        delete[] equiv_[i];
     }
     delete[] equiv_;
     delete[] nequiv_;
@@ -2097,7 +2097,7 @@ void Molecule::release_symmetry_information()
 void Molecule::form_symmetry_information(double tol)
 {
     if (equiv_)
-    release_symmetry_information();
+        release_symmetry_information();
 
     if (natom() == 0) {
         nunique_ = 0;

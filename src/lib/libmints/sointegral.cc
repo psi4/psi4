@@ -3,10 +3,106 @@
 #include "basisset.h"
 #include "gshell.h"
 #include "integral.h"
+#include "sobasis.h"
 
 #include <boost/shared_ptr.hpp>
 
+#define DEBUG
+
 namespace psi {
+
+OneBodySOInt::OneBodySOInt(const boost::shared_ptr<OneBodyInt> & ob,
+                           const boost::shared_ptr<IntegralFactory>& integral)
+    : ob_(ob)
+{
+    b1_ = boost::shared_ptr<SOBasis>(new SOBasis(ob->basis1(), integral));
+
+    b1_->print();
+
+    if (ob->basis2() == ob->basis1())
+        b2_ = b1_;
+    else
+        b2_ = boost::shared_ptr<SOBasis>(new SOBasis(ob->basis2(), integral));
+
+    only_totally_symmetric_ = 0;
+
+    buffer_ = new double[INT_NFUNC(ob->basis1()->has_puream(), ob->basis1()->max_am())
+                        *INT_NFUNC(ob->basis2()->has_puream(), ob->basis2()->max_am())];
+}
+
+OneBodySOInt::~OneBodySOInt()
+{
+    delete[] buffer_;
+}
+
+boost::shared_ptr<SOBasis> OneBodySOInt::basis() const
+{
+    return b1_;
+}
+
+boost::shared_ptr<SOBasis> OneBodySOInt::basis1() const
+{
+    return b1_;
+}
+
+boost::shared_ptr<SOBasis> OneBodySOInt::basis2() const
+{
+    return b2_;
+}
+
+void OneBodySOInt::compute_shell(int ish, int jsh)
+{
+    const double *aobuf = ob_->buffer();
+
+    const SOTransform &t1 = b1_->trans(ish);
+    const SOTransform &t2 = b2_->trans(jsh);
+
+    int nso1 = b1_->nfunction(ish);
+    int nso2 = b2_->nfunction(jsh);
+
+    memset(buffer_, 0, nso1*nso2*sizeof(double));
+
+    int nao2 = b2_->naofunction(jsh);
+
+    // loop through the AO shells that make up this SO shell
+    for (int i=0; i<t1.naoshell; ++i) {
+        const SOTransformShell &s1 = t1.aoshell[i];
+        for (int j=0; j<t2.naoshell; ++j) {
+            const SOTransformShell &s2 = t2.aoshell[j];
+
+            fprintf(outfile, "aoshells: 1 = %d   2 = %d\n", s1.aoshell, s2.aoshell);
+            ob_->compute_shell(s1.aoshell, s2.aoshell);
+
+            for (int itr=0; itr<s1.nfunc; ++itr) {
+                const SOTransformFunction &ifunc = s1.func[itr];
+                double icoef = ifunc.coef;
+                int iaofunc = ifunc.aofunc;
+                int isofunc = b1_->function_offset_within_shell(ish, ifunc.irrep) + ifunc.sofunc;
+                int iaooff = iaofunc;
+                int isooff = isofunc;
+
+                for (int jtr=0; jtr<s2.nfunc; ++jtr) {
+                    const SOTransformFunction &jfunc = s2.func[jtr];
+                    double jcoef = jfunc.coef * icoef;
+                    int jaofunc = jfunc.aofunc;
+                    int jsofunc = b2_->function_offset_within_shell(jsh, jfunc.irrep) + jfunc.sofunc;
+                    int jaooff = iaooff*nao2 + jaofunc;
+                    int jsooff = isooff*nso2 + jsofunc;
+
+                    buffer_[jsooff] += jcoef * aobuf[jaooff];
+
+#ifdef DEBUG
+                    if (fabs(aobuf[jaooff]*jcoef) > 1.0e-10) {
+                        fprintf(outfile, "(%d|%d) += %f * (%d|%d): %f -> %f  jsooff = %d\n",isofunc, jsofunc, jcoef, iaofunc, jaofunc, aobuf[jaooff], buffer_[jsooff], jsooff);
+                    }
+#endif
+                }
+            }
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 TwoBodySOInt::TwoBodySOInt(const boost::shared_ptr<TwoBodyInt> & tb)
     : tb_(tb)
