@@ -329,6 +329,14 @@ void SOBasis::print(FILE *out) const
     }
     fprintf(out, "]\n");
 
+    fprintf(out, "    funcoff           = [\n");
+    for (i=0; i<nshell_; i++) {
+        fprintf(out, "      %3d:", i);
+        for (j=0; j<nirrep_; j++)
+            fprintf(out, "  %3d", funcoff_[i][j]);
+        fprintf(out, "\n");
+    }
+
     fprintf(out, "    transform:\n");
     for (i=0; i<nshell_; i++) {
         if (i>0) fprintf(out, "\n");

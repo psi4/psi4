@@ -1,5 +1,6 @@
 #include <cmath>
 
+#include <libchkpt/Chkpt.hpp>
 #include "scf.h"
 
 namespace psi{ namespace mcscf{
