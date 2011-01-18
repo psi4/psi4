@@ -2166,7 +2166,10 @@ boost::shared_ptr<PointGroup> Molecule::find_point_group2(double tol) const
 
     fprintf(outfile, "Point group: %s\n", PointGroup::bits_to_full_name(bits));
 
-    return shared_ptr<PointGroup>(new PointGroup(PointGroup::bits_to_basic_name(bits)));
+    shared_ptr<PointGroup> pg(new PointGroup(PointGroup::bits_to_basic_name(bits)));
+    pg->set_bits(bits);
+
+    return pg;
 }
 
 void Molecule::release_symmetry_information()

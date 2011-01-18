@@ -1,4 +1,5 @@
 #include <iostream>
+#include <libchkpt/chkpt.hpp>
 #include "moinfo.h"
 
 extern FILE *infile, *outfile;

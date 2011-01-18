@@ -14,21 +14,26 @@
 
 #include <string>
 
-#include <psi4-dec.h>
+//#include <psi4-dec.h>
 #include <libutil/libutil.h>
-#include <liboptions/liboptions.h>
 #include "orbital_space.h"
 
 typedef std::vector<int>                    intvec;
 typedef std::vector<bool>                   boolvec;
 
+namespace boost {
+template<class T> class shared_ptr;
+}
+
 namespace psi {
 
 class Chkpt;
+class Options;
+
 
 class MOInfoBase{
 public:
-  MOInfoBase(Options& options_,shared_ptr<Chkpt> chkpt_,bool silent_ = false);
+  MOInfoBase(Options& options_, boost::shared_ptr<Chkpt> chkpt_,bool silent_ = false);
   ~MOInfoBase();
 
   double      get_nuclear_energy()               const {return(nuclear_energy);}
@@ -67,7 +72,7 @@ protected:
   void        compute_ioff();
 
   Options&    options;
-  shared_ptr<Chkpt> chkpt;
+  boost::shared_ptr<Chkpt> chkpt;
   int         nirreps;
   int         wfn_sym;
   int         charge;

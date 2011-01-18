@@ -38,22 +38,62 @@ using namespace psi;
 
 ////////////////////////////////////////////////////////////////////////
 
-SymmetryOperation::SymmetryOperation()
+SymmetryOperation::SymmetryOperation() : bit_(0)
 {
   zero();
 }
 
 SymmetryOperation::SymmetryOperation(const SymmetryOperation &so)
+    : bit_(so.bit_)
 {
-  for (int i=0; i<3; i++) {
-    for (int j=0; j<3; j++) {
-      d[i][j] = so.d[i][j];
+    for (int i=0; i<3; i++) {
+        for (int j=0; j<3; j++) {
+            d[i][j] = so.d[i][j];
+        }
     }
-  }
 }
 
 SymmetryOperation::~SymmetryOperation()
 {
+}
+
+SymmetryOperation & SymmetryOperation::operator = (SymmetryOperation const & so) // Assignment operator
+{
+    for (int i=0; i<3; i++) {
+        for (int j=0; j<3; j++) {
+            d[i][j] = so.d[i][j];
+        }
+    }
+    bit_ = so.bit_;
+}
+
+void SymmetryOperation::analyze_d()
+{
+#define EQUAL(x, y) (fabs((x) - (y)) < 1.0e-5)
+//    Vector3 c2x(1, -1, -1);
+//    Vector3 c2y(-1, 1, -1);
+//    Vector3 c2z(-1, -1, 1);
+//    Vector3 sxy(1, 1, -1);
+//    Vector3 sxz(1, -1, 1);
+//    Vector3 syz(-1, 1, 1);
+//    Vector3 i(-1, -1, -1);
+
+    if (EQUAL(d[0][0], 1.0) && EQUAL(d[1][1], 1.0) && EQUAL(d[2][2], 1.0))
+        bit_ == 0;
+    else if (EQUAL(d[0][0], 1.0) && EQUAL(d[1][1], -1.0) && EQUAL(d[2][2], -1.0))
+        bit_ == SymmOps::C2_x;
+    else if (EQUAL(d[0][0], -1.0) && EQUAL(d[1][1], 1.0) && EQUAL(d[2][2], -1.0))
+        bit_ == SymmOps::C2_y;
+    else if (EQUAL(d[0][0], -1.0) && EQUAL(d[1][1], -1.0) && EQUAL(d[2][2], 1.0))
+        bit_ == SymmOps::C2_z;
+    else if (EQUAL(d[0][0], 1.0) && EQUAL(d[1][1], 1.0) && EQUAL(d[2][2], -1.0))
+        bit_ == SymmOps::Sigma_xy;
+    else if (EQUAL(d[0][0], 1.0) && EQUAL(d[1][1], -1.0) && EQUAL(d[2][2], 1.0))
+        bit_ == SymmOps::Sigma_xz;
+    else if (EQUAL(d[0][0], -1.0) && EQUAL(d[1][1], 1.0) && EQUAL(d[2][2], 1.0))
+        bit_ == SymmOps::Sigma_yz;
+    else if (EQUAL(d[0][0], -1.0) && EQUAL(d[1][1], -1.0) && EQUAL(d[2][2], -1.0))
+        bit_ == SymmOps::i;
 }
 
 SymmetryOperation
@@ -67,6 +107,7 @@ SymmetryOperation::operate(const SymmetryOperation& r) const
         t += r.d[i][k]*d[k][j];
       ret.d[i][j] = t;
     }
+  ret.analyze_d();
   return ret;
 }
 
@@ -96,6 +137,7 @@ SymmetryOperation::transform(const SymmetryOperation& r) const
     }
   }
 
+  ret.analyze_d();
   return ret;
 }
 
@@ -122,8 +164,7 @@ SymmetryOperation::rotation(double theta)
   d[1][1] = ctheta;
   d[2][2] = 1.0;
 
-  if (theta == M_PI)
-      bit_ = SymmOps::C2_z;
+  analyze_d();
 }
 
 void
@@ -136,6 +177,7 @@ SymmetryOperation::transpose()
       d[j][i] = tmp;
     }
   }
+  analyze_d();
 }
 
 void
@@ -154,6 +196,7 @@ SymmetryOperation::print(FILE *out)
      fprintf(out, "%10.7f ", d[2][0]);
      fprintf(out, "%10.7f ", d[2][1]);
      fprintf(out, "%10.7f \n", d[2][2]);
+     fprintf(outfile, "bit_ = %d\n", bit_);
 }
 
 /////////////////////////////////////////////////////////////////////////////
