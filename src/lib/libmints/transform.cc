@@ -55,10 +55,6 @@ void SphericalTransform::init()
     // Compute the solid harmonic matrix elements
     solidharmonic(l_, coefmat);
 
-//    coefmat.set_name("SphericalTransform: COEFMAT");
-//    coefmat.print();
-//    fflush(outfile);
-
     // Go through and grab the values.
     int pureindex = 0;
     int cartindex = 0;
@@ -66,22 +62,17 @@ void SphericalTransform::init()
     for (int i=1; i<=(l_-subl_)/2; ++i)
         pureindex += npure(subl_+2*i);
 
-//    fprintf(outfile, "in SphericalTransform::init\n");
-//    fprintf(outfile, "l_ = %d, subl_ = %d\n", l_, subl_);
-
     for (int p=0; p<npure(subl_); ++p) {
         cartindex = 0;
-//        for (int ii=0; ii<=l_; ++ii) {
-//            int a = l_ - ii;
-//            for (int jj=0; jj<=ii; ++jj) {
-//                int b = ii - jj;
-//                int c = jj;
+        for (int ii=0; ii<=l_; ++ii) {
+            int a = l_ - ii;
+            for (int jj=0; jj<=ii; ++jj) {
+                int b = ii - jj;
+                int c = jj;
+//        for (int a=0; a<=l_; ++a) {
+//            for (int b=0; (a+b)<=l_; ++b) {
+//                int c = l_ - a -b;
 
-        for (int a=0; a<=l_; ++a) {
-            for (int b=0; (a+b)<=l_; ++b) {
-                int c = l_ - a -b;
-
-//                fprintf(outfile, "a = %d b = %d c = %d\n", a, b, c);
                 int cart1 = icart(a, b, c);
                 int cart2 = INT_CARTINDEX(a+b+c, a, b);
 
@@ -89,7 +80,6 @@ void SphericalTransform::init()
 
                 if (fabs(coef) > 1.0e-16) {
                     SphericalTransformComponent component;
-//                    component.init(a, b, c, coef, cartindex, p);
                     component.init(a, b, c, coef, cart2, p);
                     components_.push_back(component);
                 }
@@ -110,39 +100,22 @@ ISphericalTransform::ISphericalTransform()
 ISphericalTransform::ISphericalTransform(int l, int subl)
     : SphericalTransform(l, subl)
 {
-//    printf("in ISphericalTranform constructor\n");
     components_.clear();
     init();
 }
 
 void ISphericalTransform::init()
 {
-//    printf("in ISphericalTransform.init\n");
     int cartdim = ncart(l_);
     SimpleMatrix coefmat(cartdim, cartdim);
-//    SimpleMatrix coefmatI(cartdim, cartdim);
-//    SimpleMatrix temp(cartdim, cartdim);
     coefmat.zero();
 
     // Compute the solid harmonic matrix elements
     solidharmonic(l_, coefmat);
-//    solidharmonic(l_, coefmatI);
-
-//    coefmat.set_name("ISphericalTransform: Pre-inverted COEFMAT");
-//    coefmat.print();
 
     // Invert and transpose the coefficient matrix
     coefmat.invert();
-
-//    coefmat.print();
-//    temp.gemm(false, false, 1.0, &coefmat, &coefmatI, 0.0);
-//    temp.set_name("coefmat * coefmatI");
-//    temp.print();
-
     coefmat.transpose_this();
-
-//    coefmat.set_name("ISphericalTransform: COEFMAT");
-//    coefmat.print();
 
     // Go through and grab the values.
     int pureindex = 0;
@@ -151,18 +124,16 @@ void ISphericalTransform::init()
     for (int i=1; i<=(l_-subl_)/2; ++i)
         pureindex += npure(subl_+2*i);
 
-    //printf("l_ = %d, subl_ = %d\n", l_, subl_);
-
     for (int p=0; p<npure(subl_); ++p) {
         cartindex = 0;
-//        for (int ii=0; ii<=l_; ++ii) {
-//            int c = l_ - ii;
-//            for (int jj=0; jj<=ii; ++jj) {
-//                int b = ii - jj;
-//                int a = jj;
-        for (int a=0; a<=l_; ++a) {
-            for (int b=0; (a+b)<=l_; ++b) {
-                int c = l_ - a -b;
+        for (int ii=0; ii<=l_; ++ii) {
+            int c = l_ - ii;
+            for (int jj=0; jj<=ii; ++jj) {
+                int b = ii - jj;
+                int a = jj;
+//        for (int a=0; a<=l_; ++a) {
+//            for (int b=0; (a+b)<=l_; ++b) {
+//                int c = l_ - a -b;
 
                 int cart1 = icart(a, b, c);
                 int cart2 = INT_CARTINDEX(a+b+c, a, b);
@@ -171,7 +142,6 @@ void ISphericalTransform::init()
 
                 if (fabs(coef) > 1.0e-16) {
                     SphericalTransformComponent component;
-//                    component.init(a, b, c, coef, cartindex, p);
                     component.init(a, b, c, coef, cart2, p);
                     components_.push_back(component);
                 }
@@ -179,10 +149,4 @@ void ISphericalTransform::init()
             }
         }
     }
-
-//    std::vector<SphericalTransformComponent>::const_iterator iter = components_.begin();
-//    for (; iter != components_.end(); ++iter) {
-//        const SphericalTransformComponent& ip = *iter;
-//        fprintf(outfile, "%lf %d %d %d %d\n", ip.coef(), ip.pureindex(), ip.a(), ip.b(), ip.c());
-//    }
 }
