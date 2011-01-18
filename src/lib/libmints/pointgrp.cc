@@ -62,83 +62,37 @@ using namespace psi;
 ////////////////////////////////////////////////////////////////////////
 
 PointGroup::PointGroup()
-  : symb(0)
+    : symb(0)
 {
-  set_symbol("c1");
-  frame(0,0) = frame(1,1) = frame(2,2) = 1;
-  origin_[0] = origin_[1] = origin_[2] =0;
+    set_symbol("c1");
+    frame(0,0) = frame(1,1) = frame(2,2) = 1;
+    origin_[0] = origin_[1] = origin_[2] =0;
 }
 
 PointGroup::PointGroup(const char *s)
-  : symb(0)
+    : symb(0)
 {
-  set_symbol(s);
-  frame(0,0) = frame(1,1) = frame(2,2) = 1;
-  origin_[0] = origin_[1] = origin_[2] =0;
+    set_symbol(s);
+    frame(0,0) = frame(1,1) = frame(2,2) = 1;
+    origin_[0] = origin_[1] = origin_[2] =0;
 }
 
 PointGroup::PointGroup(const char *s, SymmetryOperation& so)
-  : symb(0)
+    : symb(0)
 {
-  set_symbol(s);
-  frame = so;
-  origin_[0] = origin_[1] = origin_[2] =0;
+    set_symbol(s);
+    frame = so;
+    origin_[0] = origin_[1] = origin_[2] =0;
 }
 
 PointGroup::PointGroup(const char *s, SymmetryOperation& so,
                        const Vector3& origin)
-  : symb(0)
+    : symb(0)
 {
-  set_symbol(s);
-  frame = so;
-  origin_ = origin;
+    set_symbol(s);
+    frame = so;
+    origin_ = origin;
 }
-
-// PointGroup::PointGroup(const boost::shared_ptr<KeyVal>& kv)
-//   : symb(0)
-// {
-//   if (kv->exists("symmetry")) {
-//     std::string tmp = kv->stringvalue("symmetry");
-//     set_symbol(tmp.c_str());
-//   }
-//   else
-//     set_symbol("c1");
-// 
-//   if (kv->exists("symmetry_frame")) {
-//     for (int i=0; i < 3; i++)
-//       for (int j=0; j < 3; j++) 
-//         frame(i,j) = kv->doublevalue("symmetry_frame",i,j);
-//   } else {
-//     frame(0,0) = frame(1,1) = frame(2,2) = 1;
-//   }
-// 
-//   if (kv->exists("origin")) {
-//     for (int i=0; i < 3; i++)
-//       origin_[i] = kv->doublevalue("origin",i);
-//   } else {
-//     origin_[0] = origin_[1] = origin_[2] =0;
-//   }
-// }
-// 
-// PointGroup::PointGroup(StateIn& si) :
-//   SavableState(si),
-//   symb(0)
-// {
-//   int i;
-//   if (si.version(::class_desc<PointGroup>()) < 2) {
-//     ExEnv::errn() << "PointGroup: checkpoint file is too old: cannot read"
-//                  << endl;
-//     abort();
-//   }
-//   else {
-//     for (i=0; i<3; i++) si.get(origin_[i]);
-//   }
-// 
-//   si.getstring(symb);
-//   for (i=0; i < 3; i++)
-//     for (int j=0; j < 3; j++)
-//       si.get(frame(i,j));
-// }
 
 PointGroup::PointGroup(const PointGroup& pg)
   : symb(0)
@@ -180,19 +134,6 @@ PointGroup::set_symbol(const char *sym)
   }
 }
 
-// void
-// PointGroup::save_data_state(StateOut& so)
-// {
-//   int i;
-//   for (i=0; i<3; i++) so.put(origin_[i]);
-// 
-//   so.putstring(symb);
-// 
-//   for (i=0; i < 3; i++)
-//     for (int j=0; j < 3; j++)
-//       so.put(frame(i,j));
-// }
-
 CharacterTable
 PointGroup::char_table() const
 {
@@ -220,9 +161,9 @@ PointGroup::equiv(const boost::shared_ptr<PointGroup> &grp, double tol) const
 // PointGroup::print(ostream &o) const
 // {
 //   int i,j;
-// 
+//
 //   o << indent << "symmetry = " << symb << endl;
-// 
+//
 //   int unit_frame = 1;
 //   int zero_origin = 1;
 //   for (i=0; i<3; i++) {
@@ -232,7 +173,7 @@ PointGroup::equiv(const boost::shared_ptr<PointGroup> &grp, double tol) const
 //     }
 //     if (fabs(origin_[i]) > 1.0e-10) zero_origin = 0;
 //   }
-// 
+//
 //   if (!unit_frame) {
 //     o << indent << "symmetry_frame = [";
 //     o << incindent;
@@ -247,7 +188,7 @@ PointGroup::equiv(const boost::shared_ptr<PointGroup> &grp, double tol) const
 //     o << "]" << endl;
 //     o << decindent;
 //   }
-// 
+//
 //   if (!zero_origin) {
 //     o << indent << "origin = [";
 //     for (i=0; i<3; i++) {

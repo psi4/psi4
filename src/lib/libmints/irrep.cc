@@ -49,9 +49,7 @@
 
 #include <stdlib.h>
 
-//#include <util/misc/newstring.h>
 #include <libmints/pointgrp.h>
-//#include <util/misc/formio.h>
 
 using namespace std;
 using namespace psi;
@@ -59,96 +57,95 @@ using namespace psi;
 /////////////////////////////////////////////////////////////////////////
 
 IrreducibleRepresentation::IrreducibleRepresentation() :
-  g(0), degen(0), nrot_(0), ntrans_(0), complex_(0), symb(0), rep(0), csymb(0)
+    g(0), degen(0), nrot_(0), ntrans_(0), complex_(0), symb(0), rep(0), csymb(0)
 {
 }
 
 IrreducibleRepresentation::IrreducibleRepresentation(
-  int order, int d, const char *lab, const char *clab) :
-  g(0), degen(0), nrot_(0), ntrans_(0), complex_(0), symb(0), rep(0), csymb(0)
+    int order, int d, const char *lab, const char *clab) :
+    g(0), degen(0), nrot_(0), ntrans_(0), complex_(0), symb(0), rep(0), csymb(0)
 {
-  init(order,d,lab,clab);
+    init(order,d,lab,clab);
 }
 
 
 IrreducibleRepresentation::IrreducibleRepresentation(
-  const IrreducibleRepresentation& ir) :
-  g(0), degen(0), nrot_(0), ntrans_(0), complex_(0), symb(0), rep(0), csymb(0)
+    const IrreducibleRepresentation& ir) :
+    g(0), degen(0), nrot_(0), ntrans_(0), complex_(0), symb(0), rep(0), csymb(0)
 {
-  *this = ir;
+    *this = ir;
 }
 
 IrreducibleRepresentation::~IrreducibleRepresentation()
 {
-  init();
+    init();
 }
 
 IrreducibleRepresentation&
 IrreducibleRepresentation::operator=(const IrreducibleRepresentation& ir)
 {
-  init(ir.g,ir.degen,ir.symb,ir.csymb);
+    init(ir.g,ir.degen,ir.symb,ir.csymb);
 
-  nrot_ = ir.nrot_;
-  ntrans_ = ir.ntrans_;
-  complex_ = ir.complex_;
-  
-  for (int i=0; i < g; i++)
-    rep[i]=ir.rep[i];
-  
-  return *this;
+    nrot_ = ir.nrot_;
+    ntrans_ = ir.ntrans_;
+    complex_ = ir.complex_;
+
+    for (int i=0; i < g; i++)
+        rep[i]=ir.rep[i];
+
+    return *this;
 }
 
 void
 IrreducibleRepresentation::init(int order, int d, const char *lab,
                                 const char *clab)
 {
-  g=order;
-  degen=d;
-  ntrans_=nrot_=complex_=0;
+    g=order;
+    degen=d;
+    ntrans_=nrot_=complex_=0;
 
-  free(symb);
-  if (lab)
-    symb = strdup(lab);
-  else
-    symb = NULL;
+    free(symb);
+    if (lab)
+        symb = strdup(lab);
+    else
+        symb = NULL;
 
-  free(csymb);
-  if (clab) csymb = strdup(clab);
-  else csymb = 0;
+    free(csymb);
+    if (clab) csymb = strdup(clab);
+    else csymb = 0;
 
-  if (rep) {
-    delete[] rep;
-    rep=0;
-  }
+    if (rep) {
+        delete[] rep;
+        rep=0;
+    }
 
-  if (g) {
-    rep = new SymRep[g];
-    for (int i=0; i < g; i++)
-      rep[i].set_dim(d);
-  }
+    if (g) {
+        rep = new SymRep[g];
+        for (int i=0; i < g; i++)
+            rep[i].set_dim(d);
+    }
 }
 
-//void
-//IrreducibleRepresentation::print(ostream& os) const
-//{
-//  if (!g)
-//    return;
-//
-//  int i,d;
-//  
-//  os << indent << scprintf("%-5s",symb);
-//
-//  for (i=0; i < g; i++)
-//    os << scprintf(" %6.3f",character(i));
-//  os << " | " << ntrans_ << " t, " << nrot_ << " R\n";
-//
-//  for (d=0; d < nproj(); d++) {
-//    os << indent << "     ";
-//    for (i=0; i < g; i++)
-//      os << scprintf(" %6.3f",p(d,i));
-//    os << endl;
-//  }
-//}
+void IrreducibleRepresentation::print(FILE *out) const
+{
+    if (!g)
+        return;
+
+    int i,d;
+
+    fprintf(out, "  %-5s", symb);
+
+    for (i=0; i < g; i++)
+        fprintf(out, " %6.3f", character(i));
+    fprintf(out, " | %d t, %d R\n", ntrans_, nrot_);
+
+    for (d=0; d < nproj(); d++) {
+        fprintf(out, "       ");
+        for (i=0; i < g; i++)
+            fprintf(out, " %6.3f", p(d,i));
+        fprintf(out, "\n");
+    }
+}
 
 /////////////////////////////////////////////////////////////////////////////
 
