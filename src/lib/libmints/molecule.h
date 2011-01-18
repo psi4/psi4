@@ -269,6 +269,9 @@ public:
      */
     void reorient();
 
+    /// Computes and returns a matrix depicting distances between atoms.
+    SimpleMatrix distance_matrix();
+
     /// Compute inertia tensor.
     SimpleMatrix* inertia_tensor();
 

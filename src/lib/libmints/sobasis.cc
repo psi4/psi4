@@ -4,6 +4,7 @@
 #include "molecule.h"
 #include "basisset.h"
 #include "gshell.h"
+#include "dimension.h"
 
 #include <psi4-dec.h>
 #include <cstdio>
@@ -33,6 +34,8 @@ void SOTransform::set_naoshell(int n)
 void SOTransform::add_transform(int aoshellnum, int irrep,
                                 double coef, int aofunc, int sofunc)
 {
+    fprintf(outfile, "SOTransform::add_transform(aoshellnum = %d, irrep = %d, coef = %lf, aofunc = %d, sofunc = %d)\n", aoshellnum, irrep, coef, aofunc, sofunc);
+
     int i;
     for (i=0; i<naoshell; i++) {
         if (aoshell[i].aoshell == aoshellnum) break;
@@ -74,7 +77,7 @@ void SOTransformShell::add_func(int irrep, double coef, int aofunc, int sofunc)
 ///////////////////////////////////////////////////////////////////////////////
 
 SOBasis::SOBasis(const boost::shared_ptr<BasisSet> &basis, const boost::shared_ptr<IntegralFactory> &integral)
-    : basis_(basis)
+    : basis_(basis), integral_(integral)
 {
     int i,j,k;
 
@@ -126,6 +129,8 @@ SOBasis::SOBasis(const boost::shared_ptr<BasisSet> &basis, const boost::shared_p
     }
 
     shared_ptr<PetiteList> petite = shared_ptr<PetiteList>(new PetiteList(basis_, integral));
+
+    petite->print();
 
     int nblocks = petite->nblocks();
     SO_block *soblocks = petite->aotoso_info();
@@ -274,6 +279,30 @@ void SOBasis::print(FILE *out) const
         fprintf(out, "\n");
     }
 
+    fprintf(out, "    irrep             = [");
+    for (i=0; i<basis_->nbf(); ++i) {
+        fprintf(out, " %4d", irrep_[i]);
+    }
+    fprintf(out, "]\n");
+
+    fprintf(out, "    func              = [");
+    for (i=0; i<nshell_; ++i) {
+        fprintf(out, " %4d", func_[i]);
+    }
+    fprintf(out, "]\n");
+
+    fprintf(out, "    func_within_irrep = [");
+    for (i=0; i<basis_->nbf(); ++i) {
+        fprintf(out, " %4d", func_within_irrep_[i]);
+    }
+    fprintf(out, "]\n");
+
+    fprintf(out, "    nfunc_in_irrep    = [");
+    for (i=0; i<nirrep_; ++i) {
+        fprintf(out, " %4d", nfunc_in_irrep_[i]);
+    }
+    fprintf(out, "]\n");
+
     fprintf(out, "    transform:\n");
     for (i=0; i<nshell_; i++) {
         if (i>0) fprintf(out, "\n");
@@ -294,3 +323,8 @@ void SOBasis::print(FILE *out) const
     }
 }
 
+Dimension SOBasis::dimension() const
+{
+    shared_ptr<PetiteList> petite = shared_ptr<PetiteList>(new PetiteList(basis_, integral_));
+    return petite->SO_basisdim();
+}

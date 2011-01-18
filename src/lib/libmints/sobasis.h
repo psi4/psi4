@@ -4,6 +4,8 @@
 #include <vector>
 #include <cstdio>
 
+#include "dimension.h"
+
 namespace boost {
 template<class T>
 class shared_ptr;
@@ -15,6 +17,7 @@ extern FILE *outfile;
 
 class BasisSet;
 class IntegralFactory;
+class Dimension;
 
 /*! \ingroup MINTS */
 /** SOTransformFunction describes how an AO function contributes to an SO
@@ -103,6 +106,7 @@ class SOBasis
 {
 protected:
     boost::shared_ptr<BasisSet> basis_;
+    boost::shared_ptr<IntegralFactory> integral_;
 
     int nshell_;
     int nirrep_;
@@ -157,6 +161,9 @@ public:
 
     /// Return the SOTransform object for the given shell.
     const SOTransform &trans(int i) const { return trans_[i]; }
+
+    /// Returns the dimension for each irrep.
+    Dimension dimension() const;
 
     void print(FILE *out = outfile) const;
 };

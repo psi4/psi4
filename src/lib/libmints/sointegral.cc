@@ -99,7 +99,10 @@ void OneBodySOInt::compute_shell(int ish, int jsh)
 
 #ifdef DEBUG
                     if (fabs(aobuf[jaooff]*jcoef) > 1.0e-10) {
-                        fprintf(outfile, "(%2d|%2d) += %+6f * (%2d|%2d): %+6f -> %+6f  jsooff = %2d\n",isofunc, jsofunc, jcoef, iaofunc, jaofunc, aobuf[jaooff], buffer_[jsooff], jsooff);
+                        fprintf(outfile, "(%2d|%2d) += %+6f * (%2d|%2d): %+6f -> %+6f iirrep = %d ifunc = %d, jirrep = %d jfunc = %d\n",
+                                isofunc, jsofunc, jcoef, iaofunc, jaofunc, aobuf[jaooff], buffer_[jsooff],
+                                ifunc.irrep, b1_->function_within_irrep(ish, isofunc),
+                                jfunc.irrep, b2_->function_within_irrep(jsh, jsofunc));
                     }
 #endif
                 }
@@ -110,26 +113,112 @@ void OneBodySOInt::compute_shell(int ish, int jsh)
 
 void OneBodySOInt::compute(boost::shared_ptr<Matrix> result)
 {
-    // Need to loop through unique SO shells from b1 and b2
-    // If b1 and b2 are the same SOBasis we should restrict the second for loop
-    // If not, we'll need to do everything.
+    // Do not worry about zeroing out result
+    int ns1 = b1_->nshell();
+    int ns2 = b2_->nshell();
+    const double *aobuf = ob_->buffer();
 
-    if (b1_ == b2_) {
-        // Do not worry about zeroing out result
-        int ns1 = b1_->nshell();
-        int ns2 = b2_->nshell();
+    // Loop over the unique AO shells.
+    for (int ish=0; ish<ns1; ++ish) {
+        for (int jsh=0; jsh<ns2; ++jsh) {
 
-        for (int i=0; i<ns1; ++i) {
-            for (int j=0; j<ns2; ++j) {
-                // Compute the shell SO shell pair.
-                //compute_shell(i, j);
-                // Transform the shell to SO basis
-                //so_transform(result, i, j);
+            fprintf(outfile, "computing ish = %d jsh = %d\n", ish, jsh);
+
+            const SOTransform &t1 = b1_->trans(ish);
+            const SOTransform &t2 = b2_->trans(jsh);
+
+            int nso1 = b1_->nfunction(ish);
+            int nso2 = b2_->nfunction(jsh);
+
+            memset(buffer_, 0, nso1*nso2*sizeof(double));
+
+            int nao2 = b2_->naofunction(jsh);
+
+            // I want to test only calling compute_shell for the first t1 and t2 aoshell pair
+            // and then using the transformation coefficients to obtain everything else.
+            // Otherwise using the petite list doesn't save us any computational time
+            // in computing the integrals, but does save us time when we use the integrals.
+
+            // loop through the AO shells that make up this SO shell
+            // by the end of these 4 for loops we will have our final integral in buffer_
+            for (int i=0; i<t1.naoshell; ++i) {
+                const SOTransformShell &s1 = t1.aoshell[i];
+                for (int j=0; j<t2.naoshell; ++j) {
+                    const SOTransformShell &s2 = t2.aoshell[j];
+
+                    fprintf(outfile, "aoshells: 1 = %d   2 = %d\n", s1.aoshell, s2.aoshell);
+                    ob_->compute_shell(s1.aoshell, s2.aoshell);
+
+                    for (int itr=0; itr<s1.nfunc; ++itr) {
+                        const SOTransformFunction &ifunc = s1.func[itr];
+                        double icoef = ifunc.coef;
+                        int iaofunc = ifunc.aofunc;
+                        int isofunc = b1_->function_offset_within_shell(ish, ifunc.irrep) + ifunc.sofunc;
+                        int iaooff = iaofunc;
+                        int isooff = isofunc;
+                        int iirrep = b1_->irrep(ish, isooff);
+
+                        for (int jtr=0; jtr<s2.nfunc; ++jtr) {
+                            const SOTransformFunction &jfunc = s2.func[jtr];
+                            double jcoef = jfunc.coef * icoef;
+                            int jaofunc = jfunc.aofunc;
+                            int jsofunc = b2_->function_offset_within_shell(jsh, jfunc.irrep) + jfunc.sofunc;
+                            int jaooff = iaooff*nao2 + jaofunc;
+                            int jsooff = isooff*nso2 + jsofunc;
+                            int jirrep = b2_->irrep(jsh, jsooff);
+
+                            buffer_[jsooff] += jcoef * aobuf[jaooff];
+
+                            // Check the irreps to ensure symmetric quantities.
+//                            if (fabs(buffer_[jsooff]) > 1.0e-10 && iirrep == jirrep) {
+//                                fprintf(outfile, "adding %f to (%d, %d, %d)\n", buffer_[jsooff], ifunc.irrep, b1_->function_within_irrep(ish, isofunc), b2_->function_within_irrep(jsh, jsofunc));
+//                                result->add(ifunc.irrep, b1_->function_within_irrep(ish, isofunc), b2_->function_within_irrep(jsh, jsofunc), buffer_[jsooff]);
+//                            }
+                        }
+                    }
+                }
+            }
+
+            // We need the only the first set to do the placement below.
+            const SOTransformShell &s1 = t1.aoshell[0];
+            const SOTransformShell &s2 = t2.aoshell[0];
+
+            // Need to go through these 2 loops (2 inner loops from the above 4 loops) for the final placement of the values.
+            for (int itr=0; itr<s1.nfunc; ++itr) {
+                const SOTransformFunction &ifunc = s1.func[itr];
+                double icoef = ifunc.coef;
+                int iaofunc = ifunc.aofunc;
+                int isofunc = b1_->function_offset_within_shell(ish, ifunc.irrep) + ifunc.sofunc;
+                int iaooff = iaofunc;
+                int isooff = isofunc;
+                int iirrep = b1_->irrep(ish, isooff);
+
+                for (int jtr=0; jtr<s2.nfunc; ++jtr) {
+                    const SOTransformFunction &jfunc = s2.func[jtr];
+                    double jcoef = jfunc.coef * icoef;
+                    int jaofunc = jfunc.aofunc;
+                    int jsofunc = b2_->function_offset_within_shell(jsh, jfunc.irrep) + jfunc.sofunc;
+                    int jaooff = iaooff*nao2 + jaofunc;
+                    int jsooff = isooff*nso2 + jsofunc;
+                    int jirrep = b2_->irrep(jsh, jsooff);
+
+                    // Check the irreps to ensure symmetric quantities.
+                    if (fabs(buffer_[jsooff]) > 1.0e-10 && iirrep == jirrep) {
+                        result->add(ifunc.irrep, b1_->function_within_irrep(ish, isofunc), b2_->function_within_irrep(jsh, jsofunc),
+                                    buffer_[jsooff]);
+                    }
+
+                    if (fabs(aobuf[jsooff]) > 1.0e-10) {
+#ifdef DEBUG
+                        fprintf(outfile, "(%2d|%2d) += %+6f * (%2d|%2d): %+6f -> %+6f iirrep = %d ifunc = %d, jirrep = %d jfunc = %d\n",
+                                isofunc, jsofunc, jcoef, iaofunc, jaofunc, aobuf[jaooff], buffer_[jsooff],
+                                iirrep, b1_->function_within_irrep(ish, isofunc),
+                                jirrep, b2_->function_within_irrep(jsh, jsofunc));
+#endif
+                    }
+                }
             }
         }
-    }
-    else {
-
     }
 }
 

@@ -344,7 +344,11 @@ public:
     /// Returns the rms of this
     double rms();
     /// Add val to an element of this
-    void add(int h, int m, int n, double val) { matrix_[h][m][n] += val; }
+    void add(int h, int m, int n, double val) {
+        if (h >= nirreps_ || m >= rowspi_[h] || n >= colspi_[h])
+            fprintf(stderr, "Out-of-bounds: h=%d m=%d n=%d\n", h, m, n);
+        matrix_[h][m][n] += val;
+    }
     /// Scale row m of irrep h by a
     void scale_row(int h, int m, double a);
     /// Scale column n of irrep h by a

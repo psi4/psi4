@@ -13,7 +13,7 @@
 
 
  using namespace psi;
- 
+
 MatrixFactory::MatrixFactory()
 {
     nirreps_ = 0;
@@ -26,7 +26,7 @@ MatrixFactory::MatrixFactory(const MatrixFactory& copy)
     nirreps_ = copy.nirreps_;
     rowspi_ = new int[nirreps_];
     colspi_ = new int[nirreps_];
-    
+
     memcpy(rowspi_, copy.rowspi_, sizeof(int) * nirreps_);
     memcpy(colspi_, copy.colspi_, sizeof(int) * nirreps_);
 }
@@ -73,14 +73,32 @@ bool MatrixFactory::init_with(int nirreps, int *rowspi, int *colspi)
     nirreps_ = nirreps;
     rowspi_ = new int[nirreps_];
     colspi_ = new int[nirreps_];
-        
+
     nso_ = 0;
     for (int i=0; i<nirreps_; ++i) {
         rowspi_[i] = rowspi[i];
         colspi_[i] = colspi[i];
         nso_ += rowspi_[i];
     }
-    
+
     return true;
 }
 
+bool MatrixFactory::init_with(const Dimension& rows, const Dimension& cols)
+{
+    nirreps_ = rows.n();
+
+    if (rows.n() != cols.n())
+        throw PSIEXCEPTION("MatrixFactory can only handle same symmetry for rows and cols.");
+
+    rowspi_ = new int[rows.n()];
+    colspi_ = new int[cols.n()];
+
+    for (int i=0; i<nirreps_; ++i) {
+        rowspi_[i] = rows[i];
+        colspi_[i] = cols[i];
+        nso_ += rowspi_[i];
+    }
+
+    return true;
+}
