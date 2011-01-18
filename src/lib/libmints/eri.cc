@@ -55,8 +55,8 @@ inline void calc_f(double *F, int n, double t)
     }
 }
 
-ERI::ERI(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet>bs2, shared_ptr<BasisSet>bs3, shared_ptr<BasisSet>bs4, int deriv, double schwarz)
-    : TwoBodyInt(bs1, bs2, bs3, bs4, deriv)
+ERI::ERI(const IntegralFactory* integral, int deriv, double schwarz)
+    : TwoBodyInt(integral, deriv)
 {
     // Initialize libint static data
     init_libint_base();
@@ -65,11 +65,11 @@ ERI::ERI(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet>bs2, shared_ptr<BasisSet>
 
     // Figure out some information to initialize libint/libderiv with
     // 1. Maximum angular momentum
-    int max_am = MAX(MAX(bs1->max_am(), bs2->max_am()), MAX(bs3->max_am(), bs4->max_am()));
+    int max_am = MAX(MAX(basis1()->max_am(), basis2()->max_am()), MAX(basis3()->max_am(), basis4()->max_am()));
     // 2. Maximum number of primitive combinations
-    int max_nprim = bs1->max_nprimitive() * bs2->max_nprimitive() * bs3->max_nprimitive() * bs4->max_nprimitive();
+    int max_nprim = basis1()->max_nprimitive() * basis2()->max_nprimitive() * basis3()->max_nprimitive() * basis4()->max_nprimitive();
     // 3. Maximum Cartesian class size
-    max_cart_ = ioff[bs1->max_am()+1] * ioff[bs2->max_am()+1] * ioff[bs3->max_am()+1] * ioff[bs4->max_am()+1];
+    max_cart_ = ioff[basis1()->max_am()+1] * ioff[basis2()->max_am()+1] * ioff[basis3()->max_am()+1] * ioff[basis4()->max_am()+1];
 
     // Make sure libint is compiled to handle our max AM
     if (max_am >= LIBINT_MAX_AM) {
@@ -98,8 +98,8 @@ ERI::ERI(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet>bs2, shared_ptr<BasisSet>
         fprintf(stderr, "Error allocating memory for libint/libderiv.\n");
         exit(EXIT_FAILURE);
     }
-    size_t size = INT_NCART(bs1->max_am()) * INT_NCART(bs2->max_am()) *
-                  INT_NCART(bs3->max_am()) * INT_NCART(bs4->max_am());
+    size_t size = INT_NCART(basis1()->max_am()) * INT_NCART(basis2()->max_am()) *
+                  INT_NCART(basis3()->max_am()) * INT_NCART(basis4()->max_am());
 
     // Used in pure_transform
     try {
@@ -133,7 +133,7 @@ ERI::ERI(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet>bs2, shared_ptr<BasisSet>
     memset(source_, 0, sizeof(double)*size);
 
     // The +1 is needed for derivatives to work.
-    fjt_ = new Taylor_Fjt(bs1->max_am() + bs2->max_am() + bs3->max_am() + bs4->max_am() + deriv_+1, 1e-15);
+    fjt_ = new Taylor_Fjt(basis1()->max_am() + basis2()->max_am() + basis3()->max_am() + basis4()->max_am() + deriv_+1, 1e-15);
 
     screen_ = false;
     if (schwarz != 0.0)

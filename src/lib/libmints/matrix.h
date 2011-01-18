@@ -247,7 +247,7 @@ public:
      * @param n Column
      * @returns value at position (h, m, n)
      */
-    double get(int h, int m, int n) { return matrix_[h][m][n]; }
+    double get(int h, int m, int n) const { return matrix_[h][m][n]; }
 
     /**
      * Returns a copy of the current matrix.
@@ -415,10 +415,12 @@ public:
     /// Diagonalize this places eigvectors and eigvalues must be created by caller.
     void diagonalize(Matrix& eigvectors, Vector& eigvalues);
 
+    /// @{
     /// Retrieves the i'th irrep
     double** operator[](int i) { return matrix_[i]; }
     double& operator()(int h, int i, int j) { return matrix_[h][i][j]; }
     const double& operator()(int h, int i, int j) const { return matrix_[h][i][j]; }
+    /// @}
 
     // Serializable pure virtual functions:
     void send(Communicator* comm);
@@ -427,6 +429,15 @@ public:
 
     /// Writes this to the dpdfile2 given
     void write_to_dpdfile2(dpdfile2 *outFile);
+
+    /// @{
+    /// Checks matrix equality.
+    /// @param rhs Matrix to compare to.
+    /// @returns true if equal, otherwise false.
+    bool equal(const Matrix& rhs);
+    bool equal(const boost::shared_ptr<Matrix>& rhs);
+    bool equal(const Matrix* rhs);
+    /// @}
 
     friend class Vector;
 };

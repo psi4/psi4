@@ -94,7 +94,7 @@ class ERI : public TwoBodyInt
 
 public:
     //! Constructor. Use an IntegralFactory to create this object.
-    ERI(shared_ptr<BasisSet>, shared_ptr<BasisSet>, shared_ptr<BasisSet>, shared_ptr<BasisSet>, int deriv=0, double schwarz = 0.0);
+    ERI(const IntegralFactory* integral, int deriv=0, double schwarz = 0.0);
 
     ~ERI();
 

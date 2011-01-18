@@ -1,14 +1,22 @@
 #include "vector3.h"
 #include "integral.h"
 #include "gshell.h"
-
+#include "sobasis.h"
+#include "sointegral.h"
 #include <boost/shared_ptr.hpp>
 
 using namespace boost;
 using namespace psi;
 
+namespace psi {
+template <class T>
+static void swap(T& x, T& y) {
+    T tmp=x; x = y; y = tmp;
+}
+}
+
 IntegralsIterator::IntegralsIterator(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2,
-                      shared_ptr<GaussianShell> s3, shared_ptr<GaussianShell> s4) 
+                                     shared_ptr<GaussianShell> s3, shared_ptr<GaussianShell> s4)
 {
     done = false;
     usi = s1;
@@ -19,12 +27,12 @@ IntegralsIterator::IntegralsIterator(shared_ptr<GaussianShell> s1, shared_ptr<Ga
     nj =usj->nfunction();
     nk =usk->nfunction();
     nl =usl->nfunction();
-    
+
     fii = usi->function_index();
     fij = usj->function_index();
     fik = usk->function_index();
     fil = usl->function_index();
-    
+
     iimax = ni - 1;
     if (usi == usj && usk == usl && usi == usk) {
         kkmax = 0;
@@ -41,16 +49,150 @@ IntegralsIterator::IntegralsIterator(shared_ptr<GaussianShell> s1, shared_ptr<Ga
         jjmax = (usi == usj) ? 0 : nj - 1;
         llmax = (usk == usl) ? 0 : nl - 1;
     }
-    
+
     ii = 0;
     jj = 0;
     kk = 0;
     ll = 0;
 }
 
+void IntegralsIterator::first()
+{
+    current.i = 0 + fii;
+    current.j = 0 + fij;
+    current.k = 0 + fik;
+    current.l = 0 + fil;
+    current.index = 0;
+    if (usi == usj && usk == usl && usi == usk) {     // (aa|aa) case
+    }
+    else if(usi== usk && usj == usl){
+        if (current.i < current.j) {
+            swap(current.i, current.j);
+            swap(current.k, current.l);
+        }
+        if (current.i < current.k) {
+            swap(current.i, current.k);
+            swap(current.j, current.l);
+        }
+    }
+    else{
+        if (current.i < current.j) {
+            swap(current.i, current.j);
+        }
+        if (current.k < current.l) {
+            swap(current.k, current.l);
+        }
+        if ((current.i < current.k) || (current.i == current.k && current.j < current.l)) {
+            swap(current.i, current.k);
+            swap(current.j, current.l);
+        }
+    }
+}
+
+void IntegralsIterator::next()
+{
+    if (usi == usj && usk == usl && usi == usk) {
+        ++ll;
+        if(ll > llmax){
+            ++kk;
+            ll = 0;
+            if(kk > kkmax){
+                kk = 0;
+                ++jj;
+                if(jj > jjmax){
+                    jj = 0;
+                    ++ii;
+                    if(ii > iimax){
+                        done = true;
+                    }
+                    jjmax = ii;
+                }
+                kkmax = ii;
+
+            }
+            llmax = (kk==ii) ? jj : kk;
+        }
+        current.i = ii + fii;
+        current.j = jj + fij;
+        current.k = kk + fik;
+        current.l = ll + fil;
+        current.index = ll+nl*(kk+nk*(jj+nj*ii));
+
+    }
+    else if(usi == usk && usj == usl){ //(ab|ab)
+        ++ll;
+        if(ll > llmax){
+            ++kk;
+            ll = 0;
+            if(kk > kkmax){
+                kk = 0;
+                ++jj;
+                if(jj > jjmax){
+                    jj = 0;
+                    ++ii;
+                    if(ii > iimax){
+                        done = true;
+                    }
+                }
+                kkmax = ii;
+            }
+            llmax = (kk == ii) ? jj : nl - 1;
+        }
+        current.i = ii + fii;
+        current.j = jj + fij;
+        current.k = kk + fik;
+        current.l = ll + fil;
+        current.index = ll+nl*(kk+nk*(jj+nj*ii));
+        if (current.i < current.j) {
+            swap(current.i, current.j);
+            swap(current.k, current.l);
+        }
+        if (current.i < current.k) {
+            swap(current.i, current.k);
+            swap(current.j, current.l);
+        }
+    }
+    else{
+        ++ll;
+        if(ll > llmax){
+            ++kk;
+            ll = 0;
+            if(kk > kkmax){
+                kk = 0;
+                ++jj;
+                if(jj > jjmax){
+                    jj = 0;
+                    ++ii;
+                    if(ii > iimax){
+                        done = true;
+                    }
+                    jjmax = (usi == usj) ? ii : nj - 1;
+                }
+            }
+            llmax = (usk==usl) ? kk : nl - 1;
+        }
+        current.i = ii + fii;
+        current.j = jj + fij;
+        current.k = kk + fik;
+        current.l = ll + fil;
+        current.index = ll+nl*(kk+nk*(jj+nj*ii));
+        if (current.i < current.j) {
+            swap(current.i, current.j);
+        }
+        if (current.k < current.l) {
+            swap(current.k, current.l);
+        }
+        if ((current.i < current.k) || (current.i == current.k && current.j < current.l)) {
+            swap(current.i, current.k);
+            swap(current.j, current.l);
+        }
+    }
+
+}
+
 ShellCombinationsIterator::ShellCombinationsIterator(shared_ptr<BasisSet>bs1, shared_ptr<BasisSet>bs2,
-                              shared_ptr<BasisSet>bs3, shared_ptr<BasisSet>bs4) :
-                       bs1_(bs1), bs2_(bs2), bs3_(bs3), bs4_(bs4)
+                                                     shared_ptr<BasisSet>bs3, shared_ptr<BasisSet>bs4) :
+    bs1_(bs1), bs2_(bs2), bs3_(bs3), bs4_(bs4)
 {
 
 }
@@ -61,12 +203,426 @@ ShellCombinationsIterator::ShellCombinationsIterator()
 }
 
 void ShellCombinationsIterator::init(shared_ptr<BasisSet>bs1, shared_ptr<BasisSet>bs2,
-            shared_ptr<BasisSet>bs3, shared_ptr<BasisSet>bs4)
-
+                                     shared_ptr<BasisSet>bs3, shared_ptr<BasisSet>bs4)
 {
-    bs1_=bs1; 
+    bs1_=bs1;
     bs2_=bs2;
-    bs3_=bs3; 
+    bs3_=bs3;
     bs4_=bs4;
 }
 
+void ShellCombinationsIterator::first()
+{
+    usii = usjj = uskk = usll = upk = 0;
+    done = false;
+
+    num_unique_pk = 1;
+    usi_arr[0] = usii; usj_arr[0] = usjj; usk_arr[0] = uskk; usl_arr[0] = usll;
+
+    int usi, usj, usk, usl;
+    usi = usi_arr[upk]; usj = usj_arr[upk]; usk = usk_arr[upk]; usl = usl_arr[upk];
+
+    // Sort shells based on AM, save ERI some work doing permutation resorting.
+    if (bs1_->shell(usi)->am() < bs2_->shell(usj)->am()) {
+        swap(usi, usj);
+    }
+    if (bs3_->shell(usk)->am() < bs4_->shell(usl)->am()) {
+        swap(usk, usl);
+    }
+    if (bs1_->shell(usi)->am() + bs2_->shell(usj)->am() >
+            bs3_->shell(usk)->am() + bs4_->shell(usl)->am()) {
+        swap(usi, usk);
+        swap(usj, usl);
+    }
+
+    current.P = usi; current.Q = usj; current.R = usk; current.S = usl; current.end_of_PK = false;
+
+    if (upk == num_unique_pk - 1) {
+        // If this is the last unique shell flag it as end of a pk block.
+        current.end_of_PK = true;
+    }
+    else{
+        current.end_of_PK = false;
+    }
+
+}
+
+void ShellCombinationsIterator::next()
+{
+    ++upk;
+    if(upk >= num_unique_pk){
+        upk = 0;
+        ++usll;
+        if (usll > uskk){
+            ++uskk;
+            usll = 0;
+            if(uskk > usjj){
+                ++usjj;
+                uskk = 0;
+                if(usjj > usii){
+                    ++usii;
+                    usjj = 0;
+                    if(usii >= bs1_->nshell()){
+                        done = true;
+                        return;
+                    }
+                }
+            }
+        }
+        usi_arr[0] = usii; usj_arr[0] = usjj; usk_arr[0] = uskk; usl_arr[0] = usll;
+        if (usii == usjj && usii == uskk || usjj == uskk && usjj == usll)
+            num_unique_pk = 1;
+        else if (usii == uskk || usjj == usll) {
+            num_unique_pk = 2;
+            usi_arr[1] = usii; usj_arr[1] = uskk; usk_arr[1] = usjj; usl_arr[1] = usll;
+        }
+        else if (usjj == uskk) {
+            num_unique_pk = 2;
+            usi_arr[1] = usii; usj_arr[1] = usll; usk_arr[1] = usjj; usl_arr[1] = uskk;
+        }
+        else if (usii == usjj || uskk == usll) {
+            num_unique_pk = 2;
+            usi_arr[1] = usii; usj_arr[1] = uskk; usk_arr[1] = usjj; usl_arr[1] = usll;
+        }
+        else {
+            num_unique_pk = 3;
+            usi_arr[1] = usii; usj_arr[1] = uskk; usk_arr[1] = usjj; usl_arr[1] = usll;
+            usi_arr[2] = usii; usj_arr[2] = usll; usk_arr[2] = usjj; usl_arr[2] = uskk;
+        }
+    }
+
+
+
+    int usi, usj, usk, usl;
+    usi = usi_arr[upk]; usj = usj_arr[upk]; usk = usk_arr[upk]; usl = usl_arr[upk];
+
+
+    // Sort shells based on AM, save ERI some work doing permutation resorting.
+    if (bs1_->shell(usi)->am() < bs2_->shell(usj)->am()) {
+        swap(usi, usj);
+    }
+    if (bs3_->shell(usk)->am() < bs4_->shell(usl)->am()) {
+        swap(usk, usl);
+    }
+    if (bs1_->shell(usi)->am() + bs2_->shell(usj)->am() >
+            bs3_->shell(usk)->am() + bs4_->shell(usl)->am()) {
+        swap(usi, usk);
+        swap(usj, usl);
+    }
+
+    current.P = usi; current.Q = usj; current.R = usk; current.S = usl; current.end_of_PK = false;
+
+    if (upk == num_unique_pk - 1) {
+        // If this is the last unique shell flag it as end of a pk block.
+        current.end_of_PK = true;
+    }
+    else{
+        current.end_of_PK = false;
+    }
+
+}
+
+#if 0
+SOShellCombinationsIterator::SOShellCombinationsIterator(shared_ptr<SOBasis>bs1, shared_ptr<SOBasis>bs2,
+                                                     shared_ptr<SOBasis>bs3, shared_ptr<SOBasis>bs4) :
+    bs1_(bs1), bs2_(bs2), bs3_(bs3), bs4_(bs4)
+{
+
+}
+
+SOShellCombinationsIterator::SOShellCombinationsIterator()
+{
+
+}
+
+void SOShellCombinationsIterator::init(shared_ptr<SOBasis>bs1, shared_ptr<SOBasis>bs2,
+                                     shared_ptr<SOBasis>bs3, shared_ptr<SOBasis>bs4)
+{
+    bs1_=bs1;
+    bs2_=bs2;
+    bs3_=bs3;
+    bs4_=bs4;
+}
+
+void SOShellCombinationsIterator::first()
+{
+    usii = usjj = uskk = usll = upk = 0;
+    done = false;
+
+    num_unique_pk = 1;
+    usi_arr[0] = usii; usj_arr[0] = usjj; usk_arr[0] = uskk; usl_arr[0] = usll;
+
+    int usi, usj, usk, usl;
+    usi = usi_arr[upk]; usj = usj_arr[upk]; usk = usk_arr[upk]; usl = usl_arr[upk];
+
+    current.P = usi; current.Q = usj; current.R = usk; current.S = usl; current.end_of_PK = false;
+
+    if (upk == num_unique_pk - 1) {
+        // If this is the last unique shell flag it as end of a pk block.
+        current.end_of_PK = true;
+    }
+    else{
+        current.end_of_PK = false;
+    }
+
+}
+
+SOIntegralsIterator SOShellCombinationsIterator::integrals_iterator()
+{
+    return SOIntegralsIterator(bs1_->shell(p()), bs2_->shell(q()), bs3_->shell(r()), bs4_->shell(s()));
+}
+
+void SOShellCombinationsIterator::next()
+{
+    ++upk;
+    if(upk >= num_unique_pk){
+        upk = 0;
+        ++usll;
+        if (usll > uskk){
+            ++uskk;
+            usll = 0;
+            if(uskk > usjj){
+                ++usjj;
+                uskk = 0;
+                if(usjj > usii){
+                    ++usii;
+                    usjj = 0;
+                    if(usii >= bs1_->nshell()){
+                        done = true;
+                        return;
+                    }
+                }
+            }
+        }
+        usi_arr[0] = usii; usj_arr[0] = usjj; usk_arr[0] = uskk; usl_arr[0] = usll;
+        if (usii == usjj && usii == uskk || usjj == uskk && usjj == usll)
+            num_unique_pk = 1;
+        else if (usii == uskk || usjj == usll) {
+            num_unique_pk = 2;
+            usi_arr[1] = usii; usj_arr[1] = uskk; usk_arr[1] = usjj; usl_arr[1] = usll;
+        }
+        else if (usjj == uskk) {
+            num_unique_pk = 2;
+            usi_arr[1] = usii; usj_arr[1] = usll; usk_arr[1] = usjj; usl_arr[1] = uskk;
+        }
+        else if (usii == usjj || uskk == usll) {
+            num_unique_pk = 2;
+            usi_arr[1] = usii; usj_arr[1] = uskk; usk_arr[1] = usjj; usl_arr[1] = usll;
+        }
+        else {
+            num_unique_pk = 3;
+            usi_arr[1] = usii; usj_arr[1] = uskk; usk_arr[1] = usjj; usl_arr[1] = usll;
+            usi_arr[2] = usii; usj_arr[2] = usll; usk_arr[2] = usjj; usl_arr[2] = uskk;
+        }
+    }
+
+
+
+    int usi, usj, usk, usl;
+    usi = usi_arr[upk]; usj = usj_arr[upk]; usk = usk_arr[upk]; usl = usl_arr[upk];
+
+
+    // Sort shells based on AM, save ERI some work doing permutation resorting.
+    if (bs1_->shell(usi)->am() < bs2_->shell(usj)->am()) {
+        swap(usi, usj);
+    }
+    if (bs3_->shell(usk)->am() < bs4_->shell(usl)->am()) {
+        swap(usk, usl);
+    }
+    if (bs1_->shell(usi)->am() + bs2_->shell(usj)->am() >
+            bs3_->shell(usk)->am() + bs4_->shell(usl)->am()) {
+        swap(usi, usk);
+        swap(usj, usl);
+    }
+
+    current.P = usi; current.Q = usj; current.R = usk; current.S = usl; current.end_of_PK = false;
+
+    if (upk == num_unique_pk - 1) {
+        // If this is the last unique shell flag it as end of a pk block.
+        current.end_of_PK = true;
+    }
+    else{
+        current.end_of_PK = false;
+    }
+
+}
+
+SOIntegralsIterator::SOIntegralsIterator(const SOTransform& s1,
+                                         const SOTransform& s2,
+                                         const SOTransform& s3,
+                                         const SOTransform& s4)
+    : s1_(s1), s2_(s2), s3_(s3), s4_(s4)
+{
+    done = false;
+    usi = s1;
+    usj = s2;
+    usk = s3;
+    usl = s4;
+    ni =usi->nfunction();
+    nj =usj->nfunction();
+    nk =usk->nfunction();
+    nl =usl->nfunction();
+
+    fii = usi->function_index();
+    fij = usj->function_index();
+    fik = usk->function_index();
+    fil = usl->function_index();
+
+    iimax = ni - 1;
+    if (usi == usj && usk == usl && usi == usk) {
+        kkmax = 0;
+        llmax = 0;
+        jjmax = 0;
+    }
+    else if(usi == usk && usj == usl){
+        kkmax = 0;
+        llmax = 0;
+        jjmax = nj - 1;
+    }
+    else{
+        kkmax = nk - 1;
+        jjmax = (usi == usj) ? 0 : nj - 1;
+        llmax = (usk == usl) ? 0 : nl - 1;
+    }
+
+    ii = 0;
+    jj = 0;
+    kk = 0;
+    ll = 0;
+}
+
+void SOIntegralsIterator::first()
+{
+    current.i = 0 + fii;
+    current.j = 0 + fij;
+    current.k = 0 + fik;
+    current.l = 0 + fil;
+    current.index = 0;
+    if (usi == usj && usk == usl && usi == usk) {     // (aa|aa) case
+    }
+    else if(usi== usk && usj == usl){
+        if (current.i < current.j) {
+            swap(current.i, current.j);
+            swap(current.k, current.l);
+        }
+        if (current.i < current.k) {
+            swap(current.i, current.k);
+            swap(current.j, current.l);
+        }
+    }
+    else{
+        if (current.i < current.j) {
+            swap(current.i, current.j);
+        }
+        if (current.k < current.l) {
+            swap(current.k, current.l);
+        }
+        if ((current.i < current.k) || (current.i == current.k && current.j < current.l)) {
+            swap(current.i, current.k);
+            swap(current.j, current.l);
+        }
+    }
+}
+
+void SOIntegralsIterator::next()
+{
+    if (usi == usj && usk == usl && usi == usk) {
+        ++ll;
+        if(ll > llmax){
+            ++kk;
+            ll = 0;
+            if(kk > kkmax){
+                kk = 0;
+                ++jj;
+                if(jj > jjmax){
+                    jj = 0;
+                    ++ii;
+                    if(ii > iimax){
+                        done = true;
+                    }
+                    jjmax = ii;
+                }
+                kkmax = ii;
+
+            }
+            llmax = (kk==ii) ? jj : kk;
+        }
+        current.i = ii + fii;
+        current.j = jj + fij;
+        current.k = kk + fik;
+        current.l = ll + fil;
+        current.index = ll+nl*(kk+nk*(jj+nj*ii));
+
+    }
+    else if(usi == usk && usj == usl){ //(ab|ab)
+        ++ll;
+        if(ll > llmax){
+            ++kk;
+            ll = 0;
+            if(kk > kkmax){
+                kk = 0;
+                ++jj;
+                if(jj > jjmax){
+                    jj = 0;
+                    ++ii;
+                    if(ii > iimax){
+                        done = true;
+                    }
+                }
+                kkmax = ii;
+            }
+            llmax = (kk == ii) ? jj : nl - 1;
+        }
+        current.i = ii + fii;
+        current.j = jj + fij;
+        current.k = kk + fik;
+        current.l = ll + fil;
+        current.index = ll+nl*(kk+nk*(jj+nj*ii));
+        if (current.i < current.j) {
+            swap(current.i, current.j);
+            swap(current.k, current.l);
+        }
+        if (current.i < current.k) {
+            swap(current.i, current.k);
+            swap(current.j, current.l);
+        }
+    }
+    else{
+        ++ll;
+        if(ll > llmax){
+            ++kk;
+            ll = 0;
+            if(kk > kkmax){
+                kk = 0;
+                ++jj;
+                if(jj > jjmax){
+                    jj = 0;
+                    ++ii;
+                    if(ii > iimax){
+                        done = true;
+                    }
+                    jjmax = (usi == usj) ? ii : nj - 1;
+                }
+            }
+            llmax = (usk==usl) ? kk : nl - 1;
+        }
+        current.i = ii + fii;
+        current.j = jj + fij;
+        current.k = kk + fik;
+        current.l = ll + fil;
+        current.index = ll+nl*(kk+nk*(jj+nj*ii));
+        if (current.i < current.j) {
+            swap(current.i, current.j);
+        }
+        if (current.k < current.l) {
+            swap(current.k, current.l);
+        }
+        if ((current.i < current.k) || (current.i == current.k && current.j < current.l)) {
+            swap(current.i, current.k);
+            swap(current.j, current.l);
+        }
+    }
+
+}
+
+#endif

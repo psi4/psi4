@@ -1254,6 +1254,40 @@ void Matrix::bcast(Communicator* comm, int broadcaster)
     }
 }
 
+bool Matrix::equal(const Matrix& rhs)
+{
+    return equal(&rhs);
+}
+
+bool Matrix::equal(const boost::shared_ptr<Matrix>& rhs)
+{
+    return equal(rhs.get());
+}
+
+bool Matrix::equal(const Matrix* rhs)
+{
+    // Check dimensions
+    if (rhs->nirreps() != nirreps())
+        return false;
+
+    for (int h=0; h<nirreps(); ++h)
+        if ((rowspi()[h] != rhs->rowspi()[h]) ||
+                (colspi()[h] != rhs->colspi()[h]))
+            return false;
+
+    // Check element by element
+    for (int h=0; h<nirreps(); ++h) {
+        for (int m = 0; m < rowspi()[h]; ++m) {
+            for (int n = 0; n < colspi()[h]; ++n) {
+                if (get(h, m, n) != rhs->get(h, m, n))
+                    return false;
+            }
+        }
+    }
+
+    return true;
+}
+
 //
 // SimpleMatrix
 //

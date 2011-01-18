@@ -109,7 +109,8 @@ public:
     /// Returns true if contraction is Cartesian
     bool is_cartesian() const  { return !puream_; }
     /// Returns true if contraction is pure
-    bool is_pure() const       { return puream_; }
+    bool is_pure() const       { return l_ < 2 ? false : puream_; }
+//    bool is_pure() const       { puream_; }
 
     /// Returns the center of the Molecule this shell is on
     Vector3 center() const;

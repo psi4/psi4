@@ -308,6 +308,8 @@ void ThreeCenterOverlapInt::pure_transform(shared_ptr<GaussianShell>& s1,
                                            shared_ptr<GaussianShell>& s3)
 {
     // Get the transforms from the basis set
+#pragma warn Get the SphericalTransformIter from the integral factory.
+#if 0
     SphericalTransformIter trans1(bs1_->spherical_transform(s1->am()));
     SphericalTransformIter trans2(bs2_->spherical_transform(s2->am()));
     SphericalTransformIter trans3(bs3_->spherical_transform(s3->am()));
@@ -403,4 +405,5 @@ void ThreeCenterOverlapInt::pure_transform(shared_ptr<GaussianShell>& s1,
         transform3c_1(am1, trans1, source1, target1, nbf2*nbf3);
         size *= nbf1;
     }
+#endif
 }

@@ -48,6 +48,8 @@ class RedundantCartesianIter;
 class RedundantCartesianSubIter;
 class ShellRotation;
 class SymmetryOperation;
+class SOTransform;
+class SOBasis;
 
 /*! \ingroup MINTS */
 class SphericalTransformComponent
@@ -124,11 +126,11 @@ public:
 class SphericalTransformIter
 {
 private:
-    SphericalTransform& trans_;
+    const SphericalTransform& trans_;
     int i_;
 
 public:
-    SphericalTransformIter(SphericalTransform& trans) : trans_(trans) { i_ = 0; }
+    SphericalTransformIter(const SphericalTransform& trans) : trans_(trans) { i_ = 0; }
 
     void first() { i_ = 0; }
     void next()  { i_++;   }
@@ -170,13 +172,52 @@ private:
 
     bool done;
 
-    //std::vector<Integral> unique_integrals_;
     int ii, iimax, jj, jjmax, kk, kkmax, ll, llmax;
     int ni, nj, nk, nl, fii, fij, fik, fil;
 
 public:
     IntegralsIterator(boost::shared_ptr<GaussianShell> s1, boost::shared_ptr<GaussianShell> s2,
                       boost::shared_ptr<GaussianShell> s3, boost::shared_ptr<GaussianShell> s4);
+
+    void first();
+    void next();
+    bool is_done() { return done; }
+
+    int i() const { return current.i; }
+    int j() const { return current.j; }
+    int k() const { return current.k; }
+    int l() const { return current.l; }
+    int index() const { return current.index;}
+};
+
+/*! \ingroup MINTS */
+class SOIntegralsIterator
+{
+private:
+    struct Integral {
+        int i;
+        int j;
+        int k;
+        int l;
+        unsigned int index;
+    };
+
+    Integral current;
+    const SOTransform& s1_;
+    const SOTransform& s2_;
+    const SOTransform& s3_;
+    const SOTransform& s4_;
+
+    bool done;
+
+    int ii, iimax, jj, jjmax, kk, kkmax, ll, llmax;
+    int ni, nj, nk, nl, fii, fij, fik, fil;
+
+public:
+    SOIntegralsIterator(const SOTransform& s1,
+                        const SOTransform& s2,
+                        const SOTransform& s3,
+                        const SOTransform& s4);
 
     void first();
     void next();
@@ -234,6 +275,50 @@ public:
     IntegralsIterator integrals_iterator();
 };
 
+class SOShellCombinationsIterator
+{
+private:
+    struct ShellQuartet {
+        int P;
+        int Q;
+        int R;
+        int S;
+        bool end_of_PK;
+    };
+
+    ShellQuartet current;
+    int usi_arr[3], usj_arr[3], usk_arr[3], usl_arr[3];
+    int usii, usjj, uskk, usll, upk;
+
+    int num_unique_pk;
+
+    bool done;
+
+    boost::shared_ptr<SOBasis> bs1_;
+    boost::shared_ptr<SOBasis> bs2_;
+    boost::shared_ptr<SOBasis> bs3_;
+    boost::shared_ptr<SOBasis> bs4_;
+
+public:
+    SOShellCombinationsIterator(boost::shared_ptr<SOBasis>bs1, boost::shared_ptr<SOBasis>bs2,
+                              boost::shared_ptr<SOBasis>bs3, boost::shared_ptr<SOBasis>bs4);
+    SOShellCombinationsIterator();
+    void init(boost::shared_ptr<SOBasis>bs1, boost::shared_ptr<SOBasis>bs2,
+            boost::shared_ptr<SOBasis>bs3, boost::shared_ptr<SOBasis>bs4);
+
+    void first();
+    void next();
+    bool is_done() { return done; }
+
+    int p() const { return current.P; }
+    int q() const { return current.Q; }
+    int r() const { return current.R; }
+    int s() const { return current.S; }
+    int end_of_PK() const { return current.end_of_PK; }
+
+    SOIntegralsIterator integrals_iterator();
+};
+
 /*! \ingroup MINTS */
 class IntegralFactory
 {
@@ -260,13 +345,13 @@ public:
     virtual ~IntegralFactory();
 
     /// Return the basis set on center 1.
-    boost::shared_ptr<BasisSet> basis1();
+    boost::shared_ptr<BasisSet> basis1() const;
     /// Return the basis set on center 2.
-    boost::shared_ptr<BasisSet> basis2();
+    boost::shared_ptr<BasisSet> basis2() const;
     /// Return the basis set on center 3.
-    boost::shared_ptr<BasisSet> basis3();
+    boost::shared_ptr<BasisSet> basis3() const;
     /// Return the basis set on center 4.
-    boost::shared_ptr<BasisSet> basis4();
+    boost::shared_ptr<BasisSet> basis4() const;
 
     /// Set the basis set for each center.
     virtual void set_basis(boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2,
@@ -309,7 +394,7 @@ public:
     virtual void init_spherical_harmonics(int max_am);
 
     /// Return spherical transform object for am
-    SphericalTransform* spherical_transform(int am) { return &(spherical_transforms_[am]); }
+    const SphericalTransform* spherical_transform(int am) const { return &(spherical_transforms_[am]); }
 
     // Return spherical transform object for am
     std::vector<SphericalTransform> spherical_transform() { return spherical_transforms_; }
