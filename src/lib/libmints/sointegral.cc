@@ -156,7 +156,7 @@ void OneBodySOInt::compute(boost::shared_ptr<Matrix> result)
                         int isofunc = b1_->function_offset_within_shell(ish, ifunc.irrep) + ifunc.sofunc;
                         int iaooff = iaofunc;
                         int isooff = isofunc;
-                        int iirrep = b1_->irrep(ish, isooff);
+                        int iirrep = ifunc.irrep;
 
                         for (int jtr=0; jtr<s2.nfunc; ++jtr) {
                             const SOTransformFunction &jfunc = s2.func[jtr];
@@ -165,18 +165,20 @@ void OneBodySOInt::compute(boost::shared_ptr<Matrix> result)
                             int jsofunc = b2_->function_offset_within_shell(jsh, jfunc.irrep) + jfunc.sofunc;
                             int jaooff = iaooff*nao2 + jaofunc;
                             int jsooff = isooff*nso2 + jsofunc;
-                            int jirrep = b2_->irrep(jsh, jsooff);
+                            int jirrep = jfunc.irrep;
 
                             buffer_[jsooff] += jcoef * aobuf[jaooff];
 
-                            // Check the irreps to ensure symmetric quantities.
-//                            if (fabs(buffer_[jsooff]) > 1.0e-10 && iirrep == jirrep) {
+                            if (fabs(buffer_[jsooff]) > 1.0e-10 && iirrep == jirrep) {
                                 fprintf(outfile, "(%2d|%2d) += %+6f * (%2d|%2d): %+6f -> %+6f iirrep = %d ifunc = %d, jirrep = %d jfunc = %d\n",
                                         isofunc, jsofunc, jcoef, iaofunc, jaofunc, aobuf[jaooff], buffer_[jsooff],
                                         ifunc.irrep, b1_->function_within_irrep(ish, isofunc),
                                         jfunc.irrep, b2_->function_within_irrep(jsh, jsofunc));
-//                                result->add(ifunc.irrep, b1_->function_within_irrep(ish, isofunc), b2_->function_within_irrep(jsh, jsofunc), jcoef * aobuf[jaooff]);
-//                            }
+                            }
+
+                            // Check the irreps to ensure symmetric quantities.
+                            if (ifunc.irrep == jfunc.irrep)
+                                result->add(ifunc.irrep, b1_->function_within_irrep(ish, isofunc), b2_->function_within_irrep(jsh, jsofunc), jcoef * aobuf[jaooff]);
                         }
                     }
                 }

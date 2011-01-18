@@ -556,6 +556,8 @@ public:
     void copy_lower_to_upper();
     void copy_upper_to_lower();
 
+    void lu_factorize();
+
     /// Add a matrix to this
     void add(const SimpleMatrix*);
     void add(boost::shared_ptr<SimpleMatrix>);
