@@ -495,7 +495,7 @@ void PetiteList::init()
             atom_map_[i][g] = mol.atom_at_position1(np, 0.05);
 
             if (atom_map_[i][g] == i) {
-                fprintf(outfile, "symmetry bit = %d\n", so.bit());
+//                fprintf(outfile, "symmetry bit = %d\n", so.bit());
                 stabilizer_[i] |= so.bit();
             }
             if (atom_map_[i][g] < 0) {

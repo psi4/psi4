@@ -294,8 +294,8 @@ int CharacterTable::make_table()
         }
 
         // Each symop, tell it to print.
-        for (i=0; i<nirrep_; ++i)
-            symop[i].print(outfile);
+        //for (i=0; i<nirrep_; ++i)
+        //    symop[i].print(outfile);
         break;
 
     case CNH:

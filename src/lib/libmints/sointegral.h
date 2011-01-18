@@ -201,7 +201,7 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
                                     int lsooff = ksooff*nso4 + lsofunc;
                                     buffer_[lsooff] += lcoef * aobuff[laooff];
 //                                    if (fabs(aobuff[laooff]*lcoef) > 1.0e-10) {
-//                                        fprintf(outfile, "(%d %d|%d %d) += %8.5lf * (%d %d|%d %d): %8.5lf (laoff = %d) -> %8.5lf (lsoff = %d)\n",
+//                                        fprintf(outfile, "!(%d %d|%d %d) += %8.5lf * (%d %d|%d %d): %8.5lf (laoff = %d) -> %8.5lf (lsoff = %d)\n",
 //                                                isofunc, jsofunc, ksofunc, lsofunc, lcoef,
 //                                                iaofunc, jaofunc, kaofunc, laofunc,
 //                                                aobuff[laooff], laooff,
@@ -221,50 +221,102 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
     const SOTransformShell &s3 = t3.aoshell[0];
     const SOTransformShell &s4 = t4.aoshell[0];
 
+    int iirrepoff[8];
+    int jirrepoff[8];
+    int kirrepoff[8];
+    int lirrepoff[8];
+
+    memset(iirrepoff, 0, sizeof(int) * 8);
+    memset(jirrepoff, 0, sizeof(int) * 8);
+    memset(kirrepoff, 0, sizeof(int) * 8);
+    memset(lirrepoff, 0, sizeof(int) * 8);
+
+    for (int h=1; h<b1_->nirrep(); ++h) {
+        iirrepoff[h] = iirrepoff[h-1] + b1_->nfunction_in_irrep(h);
+        jirrepoff[h] = jirrepoff[h-1] + b2_->nfunction_in_irrep(h);
+        kirrepoff[h] = kirrepoff[h-1] + b3_->nfunction_in_irrep(h);
+        lirrepoff[h] = lirrepoff[h-1] + b4_->nfunction_in_irrep(h);
+    }
+
     for (int itr=0; itr<s1.nfunc; itr++) {
         const SOTransformFunction &ifunc = s1.func[itr];
         double icoef = ifunc.coef;
         int iaofunc = ifunc.aofunc;
         int isofunc = b1_->function_offset_within_shell(ish,
-                                                        ifunc.irrep)
-                + ifunc.sofunc;
+                                                        ifunc.irrep);
+        int irel = b1_->function_within_irrep(ish, isofunc);
+        isofunc += ifunc.sofunc;
         int iaooff = iaofunc;
         int isooff = isofunc;
+        int iabs = iirrepoff[ifunc.irrep] + irel;
+
         for (int jtr=0; jtr<s2.nfunc; jtr++) {
             const SOTransformFunction &jfunc = s2.func[jtr];
             double jcoef = jfunc.coef * icoef;
             int jaofunc = jfunc.aofunc;
             int jsofunc = b2_->function_offset_within_shell(jsh,
-                                                            jfunc.irrep)
-                    + jfunc.sofunc;
+                                                            jfunc.irrep);
+            int jrel = b2_->function_within_irrep(jsh, jsofunc);
+            jsofunc += jfunc.sofunc;
             int jaooff = iaooff*nao2 + jaofunc;
             int jsooff = isooff*nso2 + jsofunc;
+            int jabs = jirrepoff[jfunc.irrep] + jrel;
+
             for (int ktr=0; ktr<s3.nfunc; ktr++) {
                 const SOTransformFunction &kfunc = s3.func[ktr];
                 double kcoef = kfunc.coef * jcoef;
                 int kaofunc = kfunc.aofunc;
                 int ksofunc = b3_->function_offset_within_shell(ksh,
-                                                                kfunc.irrep)
-                        + kfunc.sofunc;
+                                                                kfunc.irrep);
+                int krel = b3_->function_within_irrep(ksh, ksofunc);
+                ksofunc += kfunc.sofunc;
                 int kaooff = jaooff*nao3 + kaofunc;
                 int ksooff = jsooff*nso3 + ksofunc;
+                int kabs = kirrepoff[kfunc.irrep] + krel;
+
                 for (int ltr=0; ltr<s4.nfunc; ltr++) {
                     const SOTransformFunction &lfunc = s4.func[ltr];
                     double lcoef = lfunc.coef * kcoef;
                     int laofunc = lfunc.aofunc;
                     int lsofunc = b4_->function_offset_within_shell(lsh,
-                                                                    lfunc.irrep)
-                            + lfunc.sofunc;
+                                                                    lfunc.irrep);
+                    int lrel = b4_->function_within_irrep(lsh, lsofunc);
+                    lsofunc += lfunc.sofunc;
                     int laooff = kaooff*nao4 + laofunc;
                     int lsooff = ksooff*nso4 + lsofunc;
+                    int labs = lirrepoff[lfunc.irrep] + lrel;
 
-//                    buffer_[lsooff] += lcoef * aobuff[laooff];
-                    if (fabs(buffer_[lsooff]) > 1.0e-16)
-                        body(ifunc.irrep, isofunc,
-                             jfunc.irrep, jsofunc,
-                             kfunc.irrep, ksofunc,
-                             lfunc.irrep, lsofunc,
+                    if (fabs(buffer_[lsooff]) > 1.0e-16) {
+                        if (ish == jsh) {
+                            if (ksh == lsh) {
+                                if (iabs < jabs || kabs < labs ||
+                                        (iabs < kabs || jabs < labs))
+                                    continue;
+                            }
+                            else {
+                                if (iabs < jabs)
+                                    continue;
+                            }
+                        }
+                        else {
+                            if (ksh == lsh) {
+                                if (kabs < labs)
+                                    continue;
+                            }
+                            else {
+                                if (iabs < kabs ||
+                                        jabs < labs)
+                                    continue;
+                            }
+                        }
+                        // func off
+                        body(iabs, jabs, kabs, labs,
+                             ifunc.irrep, irel,
+                             jfunc.irrep, jrel,
+                             kfunc.irrep, krel,
+                             lfunc.irrep, lrel,
                              buffer_[lsooff]);
+                    }
                 }
             }
         }
