@@ -37,13 +37,11 @@ if(Communicator::world->me() == 0){
 
   using namespace std;
 
-  // Required for libmints, allocates and computes:
-  // ioff, fac, df, bc
-  Wavefunction::initialize_singletons();
-
   // Create a basis set object and initialize it using the checkpoint file.
-  shared_ptr<BasisSet>basis = shared_ptr<BasisSet > (new BasisSet(chkpt));
-  shared_ptr<BasisSet>ribasis = shared_ptr<BasisSet > (new BasisSet(chkpt, "DF_BASIS_MP2"));
+    // Create a basis set object and initialize it.
+    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+    shared_ptr<BasisSet> basis = BasisSet::construct(parser, Process::environment.molecule(), orbital_basis);
+    shared_ptr<BasisSet> ribasis = BasisSet::construct(parser, Process::environment.molecule(), ri_basis);
   //ribasis->print();
 
   shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
@@ -137,7 +135,7 @@ if(Communicator::world->me() == 0)  timer_off("Form J");
 
   ij_owner = get_ij_owner();
   ij_local = get_ij_local();
- 
+
   ij_map = get_ij_map();
   abs_ij_map = original_ij_map();
 
@@ -176,21 +174,21 @@ if(Communicator::world->me() == 0)  timer_off("Form J");
   }
 
   /* This suppose to map local i and j for given local ij
-   * Here *local* mean local to the given node 
+   * Here *local* mean local to the given node
    */
 
   int **proc_has_i = init_int_matrix(Communicator::world->nproc(),nocc);
-  int **i_local = init_int_matrix(Communicator::world->nproc(),nocc); 
+  int **i_local = init_int_matrix(Communicator::world->nproc(),nocc);
   int *i_local_count = init_int_array(Communicator::world->nproc());
   int proc, count;
 
   for(ij = 0; ij < ij_pairs; ij++) {
-    proc = ij_owner[ij]; 
+    proc = ij_owner[ij];
     i = ij_map[ij][0];
     j = ij_map[ij][1];
     proc_has_i[proc][i] = 1;
     proc_has_i[proc][j] = 1;
-  } 
+  }
 
   for(proc = 0; proc < Communicator::world->nproc(); proc++) {
     for(i = 0, count = 0; i < nocc; i++, count++) {
@@ -387,7 +385,7 @@ if(Communicator::world->me() == 0) timer_off("Form B_ir^P");
       if(Communicator::world->me() == ij_owner[ij])
         Ktilde[ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
     }
-  } 
+  }
   else {
     if(Communicator::world->me() < ij_pairs % Communicator::world->nproc()) {
       Ktilde = (double ***) malloc(((ij_pairs / Communicator::world->nproc()) + 1) * sizeof (double **));
@@ -395,7 +393,7 @@ if(Communicator::world->me() == 0) timer_off("Form B_ir^P");
         if(Communicator::world->me() == ij_owner[ij])
           Ktilde[ij_local[ij]] = block_matrix(pairdom_len[ij], pairdom_len[ij]);
       }
-    } 
+    }
     else {
       Ktilde = (double ***) malloc(ij_pairs / Communicator::world->nproc() * sizeof (double **));
       for(ij = 0; ij < ij_pairs; ij++) {

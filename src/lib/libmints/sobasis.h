@@ -14,6 +14,7 @@ namespace psi {
 extern FILE *outfile;
 
 class BasisSet;
+class IntegralFactory;
 
 /*! \ingroup MINTS */
 /** SOTransformFunction describes how an AO function contributes to an SO

@@ -84,6 +84,9 @@ void LMP2::get_params(Options &options) {
   scs_scale_os = options.get_double("SCALE_OS");
   scs_scale_ss = options.get_double("SCALE_SS");
 
+  orbital_basis = options.get_str("BASIS");
+  ri_basis = options.get_str("RI_BASIS_MP2");
+
   if(Communicator::world->me() == 0)
     print_params();
 }
