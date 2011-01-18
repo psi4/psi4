@@ -32,6 +32,8 @@
 
 #include "pairs.h"
 
+#include "rhf_functor.h"
+
 #define TIME_SCF
 #define _DEBUG
 
@@ -1440,248 +1442,82 @@ void RHF::form_G_from_PK()
     delete[](D_vector);
 }
 
+static int determine_unique_shell_quartets(int usii, int usjj, int uskk, int usll,
+                                           int* usi_arr,
+                                           int* usj_arr,
+                                           int* usk_arr,
+                                           int* usl_arr)
+{
+    //===--- Decide what shell quarters out of (ij|kl), (ik|jl), and (il|jk) are unique ---===
+    usi_arr[0] = usii; usj_arr[0] = usjj; usk_arr[0] = uskk; usl_arr[0] = usll;
+
+    if (usii == usjj && usii == uskk || usjj == uskk && usjj == usll)
+        return 1;
+    else if (usii == uskk || usjj == usll) {
+        usi_arr[1] = usii; usj_arr[1] = uskk; usk_arr[1] = usjj; usl_arr[1] = usll;
+        return 2;
+    }
+    else if (usjj == uskk) {
+        usi_arr[1] = usii; usj_arr[1] = usll; usk_arr[1] = usjj; usl_arr[1] = uskk;
+        return 2;
+    }
+    else if (usii == usjj || uskk == usll) {
+        usi_arr[1] = usii; usj_arr[1] = uskk; usk_arr[1] = usjj; usl_arr[1] = usll;
+        return 2;
+    }
+    else {
+        usi_arr[1] = usii; usj_arr[1] = uskk; usk_arr[1] = usjj; usl_arr[1] = usll;
+        usi_arr[2] = usii; usj_arr[2] = usll; usk_arr[2] = usjj; usl_arr[2] = uskk;
+        return 3;
+    }
+}
+
 void RHF::form_G_from_direct_integrals()
 {
     timer_on("form_G_from_direct_integrals");
-    double temp1, temp2, temp3, temp4, temp5, temp6;
-    int itype;
-
-    // Zero out the G matrix
-    G_->zero();
-
-    // Need to back-transform the density from SO to AO basis
-    SimpleMatrix *D = D_->to_simple_matrix();
-
-    // D->set_name("D (AO basis) pre-transform");
-    // D->print();
-    // D->back_transform(basisset_->uso_to_bf());
-    // D->set_name("D (AO basis) post-transform");
-    // D->print();
-
-    // Need a temporary G in the AO basis
-    SimpleMatrix G;
-    factory_.create_simple_matrix(G, "G (AO basis)");
-    G.zero();
-
-    // Initialize an integral object
-    // Begin factor ou
-
-    IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
-    if (eri_.get() == NULL) {
-        eri_ = shared_ptr<TwoBodyInt>(integral.eri());
+    if (!eri_) {
+        shared_ptr<IntegralFactory> integral = shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+        shared_ptr<TwoBodyInt> aoeri = shared_ptr<TwoBodyInt>(integral->eri());
+        eri_ = shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoeri, integral));
     }
-    ShellCombinationsIterator iter = integral.shells_iterator();
-    const double *buffer = eri_->buffer();
-    // End factor out
 
-    //fprintf(outfile, "      Computing integrals..."); fflush(outfile);
-    int P, Q, R, S;
-    int i, j, k, l;
-    int index;
-    double value;
+    G_->zero();
+    SOERI compute_G(D_, G_);
 
-    int count=0;
-    for (iter.first(); !iter.is_done(); iter.next()) {
-        P = iter.p();
-        Q = iter.q();
-        R = iter.r();
-        S = iter.s();
+    // Begin new iterator code...works for all centers being equal
+    int usi_arr[3], usj_arr[3], usk_arr[3], usl_arr[3];
 
-        // Compute quartet
-        timer_on("compute_shell");
-        eri_->compute_shell(P, Q, R, S);
-        timer_off("compute_shell");
+    int nsoshell = sobasisset_->nshell();
 
-        // From the quartet get all the integrals
-        IntegralsIterator int_iter = iter.integrals_iterator();
-        for (int_iter.first(); !int_iter.is_done(); int_iter.next()) {
-            i = int_iter.i();
-            j = int_iter.j();
-            k = int_iter.k();
-            l = int_iter.l();
-            index = int_iter.index();
-            value = buffer[index];
+    for (int usii=0; usii<nsoshell; ++usii) {
+        for (int usjj=0; usjj<=usii; ++usjj) {
+            for (int uskk=0; uskk<=usjj; ++uskk) {
+                for (int usll=0; usll<=uskk; ++usll) {
+                    int num_unique_pk = determine_unique_shell_quartets(usii, usjj, uskk, usll,
+                                                                        usi_arr, usj_arr, usk_arr, usl_arr);
 
-            // We only care about those greater that 1.0e-14
-            if (fabs(value) > 1.0e-14) {
-                itype = integral_type(i, j, k, l);
-                switch(itype) {
-                    case 1:
-                    temp1 = D->get(i, i) * value;
+                    // For each num_unique_pk we need to call TwoBodySOInt::compute
+                    for (int upk=0; upk<num_unique_pk; ++upk) {
+                        fprintf(outfile, "computing shell (%d %d %d %d)\n", usi_arr[upk],
+                                                 usj_arr[upk],
+                                                 usk_arr[upk],
+                                                 usl_arr[upk]);
+                        eri_->compute_shell(usi_arr[upk],
+                                                 usj_arr[upk],
+                                                 usk_arr[upk],
+                                                 usl_arr[upk],
+                                                 compute_G);
+                    }
 
-                    G.add(i, i, temp1);
-                    break;
-
-                    case 2:
-                    temp1 = D->get(k, k) * 2.0 * value;
-                    temp2 = D->get(i, k) * value;
-                    temp3 = D->get(i, i) * 2.0 * value;
-
-                    G.add(i, i, temp1);
-                    G.add(k, k, temp3);
-                    G.add(i, k, -temp2);
-                    G.add(k, i, -temp2);
-                    break;
-
-                    case 3:
-                    temp1 = D->get(i, i) * value;
-                    temp2 = D->get(i, l) * value * 2.0;
-
-                    G.add(i, l, temp1);
-                    G.add(l, i, temp1);
-                    G.add(i, i, temp2);
-                    break;
-
-                    case 4:
-                    temp1 = D->get(j, j) * value;
-                    temp2 = D->get(i, j) * value * 2.0;
-
-                    G.add(i, j, temp1);
-                    G.add(j, i, temp1);
-                    G.add(j, j, temp2);
-                    break;
-
-                    case 5:
-                    temp1 = D->get(i, j) * value * 3.0;
-                    G.add(i, j, temp1);
-                    G.add(j, i, temp1);
-
-                    temp2 = D->get(i, i) * value;
-                    temp3 = D->get(j, j) * value;
-                    G.add(j, j, -temp2);
-                    G.add(i, i, -temp3);
-                    break;
-
-                    case 6:
-                    temp1 = D->get(k, l) * value * 4.0;
-                    temp2 = D->get(i, l) * value;
-                    temp3 = D->get(i, i) * value * 2.0;
-                    temp4 = D->get(i, k) * value;
-
-                    G.add(i, i, temp1);
-                    G.add(i, k, -temp2);
-                    G.add(k, i, -temp2);
-                    G.add(k, l, temp3);
-                    G.add(l, k, temp3);
-                    G.add(i, l, -temp4);
-                    G.add(l, i, -temp4);
-                    break;
-
-                    case 7:
-                    temp1 = D->get(i, j) * value * 4.0;
-                    temp2 = D->get(j, k) * value;
-                    temp3 = D->get(i, k) * value;
-                    temp4 = D->get(k, k) * value * 2.0;
-
-                    G.add(k, k,  temp1);
-                    G.add(i, k, -temp2);
-                    G.add(k, i, -temp2);
-                    G.add(j, k, -temp3);
-                    G.add(k, j, -temp3);
-                    G.add(i, j,  temp4);
-                    G.add(j, i,  temp4);
-                    break;
-
-                    case 8:
-                    temp1 = D->get(k, k) * value * 2.0;
-                    temp2 = D->get(i, j) * value * 4.0;
-                    temp3 = D->get(j, k) * value;
-                    temp4 = D->get(i, k) * value;
-
-                    G.add(i, j, temp1);
-                    G.add(j, i, temp1);
-                    G.add(k, k, temp2);
-                    G.add(i, k, -temp3);
-                    G.add(k, i, -temp3);
-                    G.add(j, k, -temp4);
-                    G.add(k, j, -temp4);
-                    break;
-
-                    case 9:
-                    temp1 = D->get(i, l) * value * 3.0;
-                    temp2 = D->get(i, j) * value * 3.0;
-                    temp3 = D->get(j, l) * value * 2.0;
-                    temp4 = D->get(i, i) * value;
-
-                    G.add(i, j, temp1);
-                    G.add(j, i, temp1);
-                    G.add(i, l, temp2);
-                    G.add(l, i, temp2);
-                    G.add(i, i, -temp3);
-                    G.add(j, l, -temp4);
-                    G.add(l, j, -temp4);
-                    break;
-
-                    case 10:
-                    temp1 = D->get(j, l) * value * 3.0;
-                    temp2 = D->get(i, j) * value * 3.0;
-                    temp3 = D->get(j, j) * value;
-                    temp4 = D->get(i, l) * value * 2.0;
-
-                    G.add(i, j, temp1);
-                    G.add(j, i, temp1);
-                    G.add(j, l, temp2);
-                    G.add(l, j, temp2);
-                    G.add(i, l, -temp3);
-                    G.add(l, i, -temp3);
-                    G.add(j, j, -temp4);
-                    break;
-
-                    case 11:
-                    temp1 = D->get(k, j) * value * 3.0;
-                    temp2 = D->get(i, j) * value * 3.0;
-                    temp3 = D->get(j, j) * value;
-                    temp4 = D->get(i, k) * value * 2.0;
-
-                    G.add(i, j, temp1);
-                    G.add(j, i, temp1);
-                    G.add(k, j, temp2);
-                    G.add(j, k, temp2);
-                    G.add(i, k, -temp3);
-                    G.add(k, i, -temp3);
-                    G.add(j, j, -temp4);
-                    break;
-
-                    case 12:
-                    case 13:
-                    case 14:
-                    temp1 = D->get(k, l) * value * 4.0;
-                    temp2 = D->get(i, j) * value * 4.0;
-                    temp3 = D->get(j, l) * value;
-                    temp4 = D->get(i, k) * value;
-                    temp5 = D->get(j, k) * value;
-                    temp6 = D->get(i, l) * value;
-
-                    G.add(i, j, temp1);
-                    G.add(j, i, temp1);
-                    G.add(k, l, temp2);
-                    G.add(l, k, temp2);
-                    G.add(i, k, -temp3);
-                    G.add(k, i, -temp3);
-                    G.add(j, l, -temp4);
-                    G.add(l, j, -temp4);
-                    G.add(i, l, -temp5);
-                    G.add(l, i, -temp5);
-                    G.add(j, k, -temp6);
-                    G.add(k, j, -temp6);
-                    break;
-                };
-
-                count++;
+                    // If we are making a PK-matrix the end of this loop marks
+                    // the end of a PK block.
+                }
             }
         }
     }
-    fprintf(outfile, "done.  %d two-electron integrals.\n", count); fflush(outfile);
-//    delete eri;
 
+    fprintf(outfile, " computed %d integrals\n", compute_G.counter);
 
-    // Set RefMatrix to RefSimpleMatrix handling symmetry blocking, if needed
-    // Transform G back to symmetry blocking
-    // G.transform(basisset_->uso_to_bf());
-    // G.print();
-    G_->set(&G);
-    delete D;
-    // G_->print();
     timer_off("form_G_from_direct_integrals");
 }
 
@@ -2513,6 +2349,7 @@ void RHF::form_J_and_K()
 
 void RHF::form_J_and_K_from_direct_integrals()
 {
+#if 0
     double temp1, temp2, temp3, temp4, temp5, temp6;
     int itype;
 
@@ -2891,6 +2728,7 @@ void RHF::form_J_and_K_from_direct_integrals()
     K_->scale(-1.0);
     delete D;
     // G_->print();
+#endif
 }
 void RHF::save_sapt_info()
 {

@@ -8,6 +8,7 @@
 #include "sobasis.h"
 #include "gshell.h"
 #include "petitelist.h"
+#include "wavefunction.h"
 
 namespace boost {
 template <class T>
@@ -232,10 +233,10 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
     memset(lirrepoff, 0, sizeof(int) * 8);
 
     for (int h=1; h<b1_->nirrep(); ++h) {
-        iirrepoff[h] = iirrepoff[h-1] + b1_->nfunction_in_irrep(h);
-        jirrepoff[h] = jirrepoff[h-1] + b2_->nfunction_in_irrep(h);
-        kirrepoff[h] = kirrepoff[h-1] + b3_->nfunction_in_irrep(h);
-        lirrepoff[h] = lirrepoff[h-1] + b4_->nfunction_in_irrep(h);
+        iirrepoff[h] = iirrepoff[h-1] + b1_->nfunction_in_irrep(h-1);
+        jirrepoff[h] = jirrepoff[h-1] + b2_->nfunction_in_irrep(h-1);
+        kirrepoff[h] = kirrepoff[h-1] + b3_->nfunction_in_irrep(h-1);
+        lirrepoff[h] = lirrepoff[h-1] + b4_->nfunction_in_irrep(h-1);
     }
 
     for (int itr=0; itr<s1.nfunc; itr++) {
@@ -287,29 +288,31 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
                     int labs = lirrepoff[lfunc.irrep] + lrel;
 
                     if (fabs(buffer_[lsooff]) > 1.0e-16) {
+                        // Only check absolute indices
+//                        if (iabs >= jabs && kabs >= labs &&
+//                                INDEX2(iabs, jabs) >= INDEX2(kabs, labs))
+//                            body(iabs, jabs, kabs, labs,
+//                                 ifunc.irrep, irel,
+//                                 jfunc.irrep, jrel,
+//                                 kfunc.irrep, krel,
+//                                 lfunc.irrep, lrel,
+//                                 buffer_[lsooff]);
+
                         if (ish == jsh) {
-                            if (ksh == lsh) {
-                                if (iabs < jabs || kabs < labs ||
-                                        (iabs < kabs || jabs < labs))
-                                    continue;
-                            }
-                            else {
-                                if (iabs < jabs)
-                                    continue;
-                            }
+                            if (iabs < jabs)
+                                continue;
                         }
-                        else {
-                            if (ksh == lsh) {
-                                if (kabs < labs)
-                                    continue;
-                            }
-                            else {
-                                if (iabs < kabs ||
-                                        jabs < labs)
-                                    continue;
-                            }
+                        if (ksh == lsh) {
+                            if (kabs < labs)
+                                continue;
+
+//                            if (ish == jsh && ish == ksh && INDEX2(iabs, jabs) < INDEX2(kabs, labs))
+//                                continue;
                         }
-                        // func off
+                        if (ish == ksh && jsh == lsh && (iabs < kabs || jabs < labs))
+                            continue;
+
+                        // func off/on
                         body(iabs, jabs, kabs, labs,
                              ifunc.irrep, irel,
                              jfunc.irrep, jrel,

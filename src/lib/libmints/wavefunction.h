@@ -26,6 +26,7 @@ class Molecule;
 class BasisSet;
 class MatrixFactory;
 class Options;
+class SOBasis;
 
 /*! \ingroup MINTS
  *  \class Wavefunction
@@ -35,6 +36,7 @@ class Wavefunction {
 protected:
 
     shared_ptr<BasisSet> basisset_;
+    shared_ptr<SOBasis> sobasisset_;
     shared_ptr<Molecule> molecule_;
 	Options & options_;
 

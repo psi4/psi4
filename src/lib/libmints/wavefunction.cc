@@ -59,8 +59,12 @@ void Wavefunction::common_init()
         shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
         basisset_ = BasisSet::construct(parser, molecule_, options_.get_str("BASIS"));
 
-        int nbf[] = { basisset_->nbf() };
-        factory_.init_with(1, nbf, nbf);
+        shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+        sobasisset_ = shared_ptr<SOBasis>(new SOBasis(basisset_, integral));
+
+        const Dimension dimension = sobasisset_->dimension();
+        dimension.print(); fflush(outfile);
+        factory_.init_with(dimension, dimension);
 
         memory_ = Process::environment.get_memory();
 
