@@ -1982,23 +1982,23 @@ found_sigma:
         }
     }
 
-//    fprintf(outfile, "find point group:\n");
-//    fprintf(outfile, "  linear          = %s\n", linear          ? "true" : "false");
-//    fprintf(outfile, "  planar          = %s\n", planar          ? "true" : "false");
-//    fprintf(outfile, "  have_inversion  = %s\n", have_inversion  ? "true" : "false");
-//    fprintf(outfile, "  have_c2axis     = %s\n", have_c2axis     ? "true" : "false");
-//    fprintf(outfile, "  have_c2axisperp = %s\n", have_c2axisperp ? "true" : "false");
-//    fprintf(outfile, "  have_sigmav     = %s\n", have_sigmav     ? "true" : "false");
-//    fprintf(outfile, "  have_sigma      = %s\n", have_sigma      ? "true" : "false");
-//
-//    if (have_c2axis)
-//        fprintf(outfile, "  c2axis          = %s\n", c2axis.to_string().c_str());
-//    if (have_c2axisperp)
-//        fprintf(outfile, "  c2axisperp      = %s\n", c2axisperp.to_string().c_str());
-//    if (have_sigmav)
-//        fprintf(outfile, "  sigmav          = %s\n", sigmav.to_string().c_str());
-//    if (have_sigma)
-//        fprintf(outfile, "  sigma           = %s\n", sigma.to_string().c_str());
+    fprintf(outfile, "find point group:\n");
+    fprintf(outfile, "  linear          = %s\n", linear          ? "true" : "false");
+    fprintf(outfile, "  planar          = %s\n", planar          ? "true" : "false");
+    fprintf(outfile, "  have_inversion  = %s\n", have_inversion  ? "true" : "false");
+    fprintf(outfile, "  have_c2axis     = %s\n", have_c2axis     ? "true" : "false");
+    fprintf(outfile, "  have_c2axisperp = %s\n", have_c2axisperp ? "true" : "false");
+    fprintf(outfile, "  have_sigmav     = %s\n", have_sigmav     ? "true" : "false");
+    fprintf(outfile, "  have_sigma      = %s\n", have_sigma      ? "true" : "false");
+
+    if (have_c2axis)
+        fprintf(outfile, "  c2axis          = %s\n", c2axis.to_string().c_str());
+    if (have_c2axisperp)
+        fprintf(outfile, "  c2axisperp      = %s\n", c2axisperp.to_string().c_str());
+    if (have_sigmav)
+        fprintf(outfile, "  sigmav          = %s\n", sigmav.to_string().c_str());
+    if (have_sigma)
+        fprintf(outfile, "  sigma           = %s\n", sigma.to_string().c_str());
 
     // Find the three axes for the symmetry frame
     Vector3 xaxis = worldxaxis;
@@ -2024,9 +2024,9 @@ found_sigma:
     // the y is then -x cross z
     yaxis = -xaxis.cross(zaxis);
 
-//    fprintf(outfile, "  X: %s\n", xaxis.to_string().c_str());
-//    fprintf(outfile, "  Y: %s\n", yaxis.to_string().c_str());
-//    fprintf(outfile, "  Z: %s\n", zaxis.to_string().c_str());
+    fprintf(outfile, "  X: %s\n", xaxis.to_string().c_str());
+    fprintf(outfile, "  Y: %s\n", yaxis.to_string().c_str());
+    fprintf(outfile, "  Z: %s\n", zaxis.to_string().c_str());
 
     SymmetryOperation frame;
     Vector3 origin;
@@ -2075,7 +2075,7 @@ found_sigma:
         }
     }
 
-    //fprintf(outfile, "\n  Molecular point group: %s\n\n", pg->symbol());
+    fprintf(outfile, "\n  Molecular point group: %s\n\n", pg->symbol());
 
     return pg;
 }

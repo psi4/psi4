@@ -2,9 +2,13 @@
 srcdir = @srcdir@
 VPATH = @srcdir@
 
+FC_SYMBOL = @FC_SYMBOL@
+
 include ../MakeVars
 
 PSITARGET = $(top_objdir)/lib/libPSI_mints.a
+
+CXXDEF += -DFC_SYMBOL=$(FC_SYMBOL)
 
 CXXINC += $(PYTHON_INCLUDE)
 

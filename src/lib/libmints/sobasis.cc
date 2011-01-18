@@ -129,6 +129,7 @@ SOBasis::SOBasis(const boost::shared_ptr<BasisSet> &basis, const boost::shared_p
 
     int nblocks = petite->nblocks();
     SO_block *soblocks = petite->aotoso_info();
+    soblocks->print("");
 
     trans_ = new SOTransform[nshell_];
     for (i=0; i<nblocks; i++) {
@@ -252,4 +253,46 @@ int SOBasis::nfunction(int ishell) const
     return n;
 }
 
+void SOBasis::print(FILE *out) const
+{
+    int i,j,k;
+
+    fprintf(out, "  SOBasis:\n");
+    fprintf(out, "    nshell(SO) = %d\n", nshell_);
+    fprintf(out, "    nirrep = %d\n", nirrep_);
+
+    fprintf(out, "    ncomp = [");
+    for (i=0; i<nirrep_; i++)
+        fprintf(out, " %3d", ncomp_[i]);
+    fprintf(out, " ]\n");
+
+    fprintf(out, "    nfunc:\n");
+    for (i=0; i<nshell_; i++) {
+        fprintf(out, "      %3d:", i);
+        for (j=0; j<nirrep_; j++)
+            fprintf(out, "  %3d", nfunc_[i][j]);
+        fprintf(out, "\n");
+    }
+
+    fprintf(out, "    transform:\n");
+    for (i=0; i<nshell_; i++) {
+        if (i>0) fprintf(out, "\n");
+        for (j=0; j<trans_[i].naoshell; j++) {
+            for (k=0; k<trans_[i].aoshell[j].nfunc; k++) {
+                fprintf(out, "      SO(  0  0 0 [ 0]) +=   1.00000000 * AO(  0  0)
+
+                fprintf(out, "      SO(%3d %2d %d [%2d]) += % 12.8f * AO(%3d %2d)\n",
+                        i,
+                        trans_[i].aoshell[j].func[k].sofunc,
+                        trans_[i].aoshell[j].func[k].irrep,
+                        function_offset_within_shell(
+                            i, trans_[i].aoshell[j].func[k].irrep)
+                        + trans_[i].aoshell[j].func[k].sofunc,
+                        trans_[i].aoshell[j].func[k].coef,
+                        trans_[i].aoshell[j].aoshell,
+                        trans_[i].aoshell[j].func[k].aofunc);
+            }
+        }
+    }
+}
 

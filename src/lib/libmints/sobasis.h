@@ -2,6 +2,7 @@
 #define _psi_src_lib_libmints_sobasis_h_
 
 #include <vector>
+#include <cstdio>
 
 namespace boost {
 template<class T>
@@ -9,6 +10,8 @@ class shared_ptr;
 }
 
 namespace psi {
+
+extern FILE *outfile;
 
 class BasisSet;
 
@@ -154,7 +157,7 @@ public:
     /// Return the SOTransform object for the given shell.
     const SOTransform &trans(int i) const { return trans_[i]; }
 
-    //void print() const;
+    void print(FILE *out = outfile) const;
 };
 
 inline int SOBasis::function(int ishell)
