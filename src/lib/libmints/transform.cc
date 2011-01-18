@@ -24,7 +24,7 @@ static inline int ipure(int l, int m) { return m<0?2*-m:(m==0?0:2*m-1); }
 void SphericalTransformComponent::init(int a, int b, int c, double coef,
                                        int cartindex, int pureindex)
 {
-    fprintf(outfile, "a = %d, b = %d, c = %d, coef = %f, cartindex = %d, pureindex = %d\n", a, b, c, coef, cartindex, pureindex);
+//    fprintf(outfile, "a = %d, b = %d, c = %d, coef = %f, cartindex = %d, pureindex = %d\n", a, b, c, coef, cartindex, pureindex);
     a_ = a;
     b_ = b;
     c_ = c;
@@ -55,8 +55,8 @@ void SphericalTransform::init()
     // Compute the solid harmonic matrix elements
     solidharmonic(l_, coefmat);
 
-    fprintf(outfile, "SphericalTransform: l = %d\n", l_);
-    coefmat.print();
+//    fprintf(outfile, "SphericalTransform: l = %d\n", l_);
+//    coefmat.print();
 
     // Go through and grab the values.
     int pureindex = 0;

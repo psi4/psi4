@@ -97,8 +97,15 @@ class PetiteList
     int **shell_map_;
     char *lamij_;
     int *nbf_in_ir_;
+    int *stabilizer_;
+
+    int ***dcr_;
+    int **dcr_size_;
+    int **dcr_degeneracy_;
+    int **GnG_;
 
     void init();
+    void init_dcr();
 
 public:
     PetiteList(const boost::shared_ptr<BasisSet>&, const boost::shared_ptr<IntegralFactory>&);
@@ -125,6 +132,12 @@ public:
     int nblocks() const { return nblocks_; }
 
     void print(FILE *out=outfile);
+
+    int stabilizer(int atom) const { return stabilizer_[atom]; }
+    int dcr(int stab_i, int stab_j, int n) const { return dcr_[stab_i][stab_j][n]; }
+    int dcr_size(int stab_i, int stab_j) const { return dcr_size_[stab_i][stab_j]; }
+    int dcr_degeneracy(int stab_i, int stab_j) const { return dcr_degeneracy_[stab_i][stab_j]; }
+    int GnG(int stab_i, int stab_j) const { return GnG_[stab_i][stab_j]; }
 
     Dimension AO_basisdim();
     Dimension SO_basisdim();
