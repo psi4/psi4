@@ -19,6 +19,16 @@ namespace psi {
 
 class Matrix;
 
+template<typename T>
+void swap_index(T& a, T& b) {
+    T temp;
+    temp = b;
+    b = a;
+    a = temp;
+}
+
+#define SWAP_INDEX(a, b) swap_index(a ## abs, b ## abs); swap_index(a ## rel, b ## rel); swap_index(a ## irrep, b ## irrep);
+
 class OneBodySOInt
 {
 protected:
@@ -241,51 +251,54 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
 
     for (int itr=0; itr<s1.nfunc; itr++) {
         const SOTransformFunction &ifunc = s1.func[itr];
-        double icoef = ifunc.coef;
-        int iaofunc = ifunc.aofunc;
         int isofunc = b1_->function_offset_within_shell(ish,
                                                         ifunc.irrep);
         int irel = b1_->function_within_irrep(ish, isofunc);
         isofunc += ifunc.sofunc;
-        int iaooff = iaofunc;
         int isooff = isofunc;
         int iabs = iirrepoff[ifunc.irrep] + irel;
 
         for (int jtr=0; jtr<s2.nfunc; jtr++) {
             const SOTransformFunction &jfunc = s2.func[jtr];
-            double jcoef = jfunc.coef * icoef;
-            int jaofunc = jfunc.aofunc;
             int jsofunc = b2_->function_offset_within_shell(jsh,
                                                             jfunc.irrep);
             int jrel = b2_->function_within_irrep(jsh, jsofunc);
             jsofunc += jfunc.sofunc;
-            int jaooff = iaooff*nao2 + jaofunc;
             int jsooff = isooff*nso2 + jsofunc;
             int jabs = jirrepoff[jfunc.irrep] + jrel;
 
             for (int ktr=0; ktr<s3.nfunc; ktr++) {
                 const SOTransformFunction &kfunc = s3.func[ktr];
-                double kcoef = kfunc.coef * jcoef;
-                int kaofunc = kfunc.aofunc;
                 int ksofunc = b3_->function_offset_within_shell(ksh,
                                                                 kfunc.irrep);
                 int krel = b3_->function_within_irrep(ksh, ksofunc);
                 ksofunc += kfunc.sofunc;
-                int kaooff = jaooff*nao3 + kaofunc;
                 int ksooff = jsooff*nso3 + ksofunc;
                 int kabs = kirrepoff[kfunc.irrep] + krel;
 
                 for (int ltr=0; ltr<s4.nfunc; ltr++) {
                     const SOTransformFunction &lfunc = s4.func[ltr];
-                    double lcoef = lfunc.coef * kcoef;
-                    int laofunc = lfunc.aofunc;
                     int lsofunc = b4_->function_offset_within_shell(lsh,
                                                                     lfunc.irrep);
                     int lrel = b4_->function_within_irrep(lsh, lsofunc);
                     lsofunc += lfunc.sofunc;
-                    int laooff = kaooff*nao4 + laofunc;
                     int lsooff = ksooff*nso4 + lsofunc;
                     int labs = lirrepoff[lfunc.irrep] + lrel;
+
+                    int iiabs = iabs;
+                    int jjabs = jabs;
+                    int kkabs = kabs;
+                    int llabs = labs;
+
+                    int iiirrep = ifunc.irrep;
+                    int jjirrep = jfunc.irrep;
+                    int kkirrep = kfunc.irrep;
+                    int llirrep = lfunc.irrep;
+
+                    int iirel = irel;
+                    int jjrel = jrel;
+                    int kkrel = krel;
+                    int llrel = lrel;
 
                     if (fabs(buffer_[lsooff]) > 1.0e-16) {
                         // Only check absolute indices
@@ -298,26 +311,82 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
 //                                 lfunc.irrep, lrel,
 //                                 buffer_[lsooff]);
 
-                        if (ish == jsh) {
-                            if (iabs < jabs)
-                                continue;
-                        }
-                        if (ksh == lsh) {
-                            if (kabs < labs)
-                                continue;
+//                        if (ish == jsh) {
+//                            if (iabs < jabs)
+//                                continue;
+//                        }
+//                        if (ksh == lsh) {
+//                            if (kabs < labs)
+//                                continue;
 
 //                            if (ish == jsh && ish == ksh && INDEX2(iabs, jabs) < INDEX2(kabs, labs))
 //                                continue;
+//                        }
+//                        if (ish == ksh && jsh == lsh && (iabs < kabs || jabs < labs))
+//                            continue;
+
+
+                        if (ish == jsh) {
+                            if (iabs < jabs)
+                                continue;
+
+                            if (ksh == lsh) {
+                                if (kabs < labs)
+                                    continue;
+                                if (INDEX2(iabs, jabs) < INDEX2(kabs, labs)) {
+                                    if (ish == ksh)   // IIII case
+                                        continue;
+                                    else {            // IIJJ case
+                                        SWAP_INDEX(ii, kk);
+                                        SWAP_INDEX(jj, ll);
+                                    }
+                                }
+                            }
+                            else{                     // IIJK case
+                                if (labs > kabs) {
+                                    SWAP_INDEX(kk, ll);
+                                }
+                                if (INDEX2(iabs, jabs) < INDEX2(kabs, labs)) {
+                                    SWAP_INDEX(ii, kk);
+                                    SWAP_INDEX(jj, ll);
+                                }
+                            }
                         }
-                        if (ish == ksh && jsh == lsh && (iabs < kabs || jabs < labs))
-                            continue;
+                        else {
+                            if (ksh == lsh) {         // IJKK case
+                                if (kabs < labs)
+                                    continue;
+                                if (iabs < jabs) {
+                                    SWAP_INDEX(ii, jj);
+                                }
+                                if (INDEX2(iabs, jabs) < INDEX2(kabs, labs)) {
+                                    SWAP_INDEX(ii, kk);
+                                    SWAP_INDEX(jj, ll);
+                                }
+                            }
+                            else {                   // IJIJ case
+                                if (ish == ksh && jsh == lsh && INDEX2(iabs, jabs) < INDEX2(kabs, labs))
+                                    continue;
+                                                     // IJKL case
+                                if (iabs < jabs) {
+                                    SWAP_INDEX(ii, jj);
+                                }
+                                if (kabs < labs) {
+                                    SWAP_INDEX(kk, ll);
+                                }
+                                if (INDEX2(iabs, jabs) < INDEX2(kabs, labs)) {
+                                    SWAP_INDEX(ii, kk);
+                                    SWAP_INDEX(jj, ll);
+                                }
+                            }
+                        }
 
                         // func off/on
-                        body(iabs, jabs, kabs, labs,
-                             ifunc.irrep, irel,
-                             jfunc.irrep, jrel,
-                             kfunc.irrep, krel,
-                             lfunc.irrep, lrel,
+                        body(iiabs, jjabs, kkabs, llabs,
+                             iiirrep, iirel,
+                             jjirrep, jjrel,
+                             kkirrep, kkrel,
+                             llirrep, llrel,
                              buffer_[lsooff]);
                     }
                 }
