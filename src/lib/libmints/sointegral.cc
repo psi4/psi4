@@ -110,20 +110,26 @@ void OneBodySOInt::compute_shell(int ish, int jsh)
 
 void OneBodySOInt::compute(boost::shared_ptr<Matrix> result)
 {
-    // Do not worry about zeroing out result
-    int ns1 = b1_->nshell();
-    int ns2 = b2_->nshell();
-
     // Need to loop through unique SO shells from b1 and b2
     // If b1 and b2 are the same SOBasis we should restrict the second for loop
     // If not, we'll need to do everything.
-    for (int i=0; i<ns1; ++i) {
-        for (int j=0; j<ns2; ++j) {
-            // Compute the shell SO shell pair.
-            //compute_shell(i, j);
-            // Transform the shell to SO basis
-            //so_transform(result, i, j);
+
+    if (b1_ == b2_) {
+        // Do not worry about zeroing out result
+        int ns1 = b1_->nshell();
+        int ns2 = b2_->nshell();
+
+        for (int i=0; i<ns1; ++i) {
+            for (int j=0; j<ns2; ++j) {
+                // Compute the shell SO shell pair.
+                //compute_shell(i, j);
+                // Transform the shell to SO basis
+                //so_transform(result, i, j);
+            }
         }
+    }
+    else {
+
     }
 }
 

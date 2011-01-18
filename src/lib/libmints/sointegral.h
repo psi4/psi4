@@ -37,6 +37,7 @@ public:
 
     const double* buffer() const { return buffer_; }
 
+    void compute(boost::shared_ptr<Matrix> result);
     virtual void compute_shell(int, int);
 
     int only_totally_symmetric() const { return only_totally_symmetric_; }
