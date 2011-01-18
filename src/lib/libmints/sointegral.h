@@ -129,7 +129,7 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOFu
                 const SOTransformShell &s3 = t3.aoshell[k];
                 for (int l=0; l<t4.naoshell; l++) {
                     const SOTransformShell &s4 = t4.aoshell[l];
-//                    tb_->compute_shell(s1.aoshell, s2.aoshell, s3.aoshell, s4.aoshell);
+                    tb_->compute_shell(s1.aoshell, s2.aoshell, s3.aoshell, s4.aoshell);
 
                     fprintf(outfile, "ao: (%d %d %d %d)\n", s1.aoshell, s2.aoshell,
                             s3.aoshell, s4.aoshell);
