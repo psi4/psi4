@@ -24,7 +24,7 @@ static inline int ipure(int l, int m) { return m<0?2*-m:(m==0?0:2*m-1); }
 void SphericalTransformComponent::init(int a, int b, int c, double coef,
                                        int cartindex, int pureindex)
 {
-//    fprintf(outfile, "a = %d, b = %d, c = %d, coef = %f, cartindex = %d, pureindex = %d\n", a, b, c, coef, cartindex, pureindex);
+    fprintf(outfile, "a = %d, b = %d, c = %d, coef = %f, cartindex = %d, pureindex = %d\n", a, b, c, coef, cartindex, pureindex);
     a_ = a;
     b_ = b;
     c_ = c;
@@ -55,6 +55,9 @@ void SphericalTransform::init()
     // Compute the solid harmonic matrix elements
     solidharmonic(l_, coefmat);
 
+    fprintf(outfile, "SphericalTransform: l = %d\n", l_);
+    coefmat.print();
+
     // Go through and grab the values.
     int pureindex = 0;
     int cartindex = 0;
@@ -64,14 +67,14 @@ void SphericalTransform::init()
 
     for (int p=0; p<npure(subl_); ++p) {
         cartindex = 0;
-        for (int ii=0; ii<=l_; ++ii) {
-            int a = l_ - ii;
-            for (int jj=0; jj<=ii; ++jj) {
-                int b = ii - jj;
-                int c = jj;
-//        for (int a=0; a<=l_; ++a) {
-//            for (int b=0; (a+b)<=l_; ++b) {
-//                int c = l_ - a -b;
+//        for (int ii=0; ii<=l_; ++ii) {
+//            int a = l_ - ii;
+//            for (int jj=0; jj<=ii; ++jj) {
+//                int b = ii - jj;
+//                int c = jj;
+        for (int a=0; a<=l_; ++a) {
+            for (int b=0; (a+b)<=l_; ++b) {
+                int c = l_ - a -b;
 
                 int cart1 = icart(a, b, c);
                 int cart2 = INT_CARTINDEX(a+b+c, a, b);
@@ -126,14 +129,14 @@ void ISphericalTransform::init()
 
     for (int p=0; p<npure(subl_); ++p) {
         cartindex = 0;
-        for (int ii=0; ii<=l_; ++ii) {
-            int c = l_ - ii;
-            for (int jj=0; jj<=ii; ++jj) {
-                int b = ii - jj;
-                int a = jj;
-//        for (int a=0; a<=l_; ++a) {
-//            for (int b=0; (a+b)<=l_; ++b) {
-//                int c = l_ - a -b;
+//        for (int ii=0; ii<=l_; ++ii) {
+//            int c = l_ - ii;
+//            for (int jj=0; jj<=ii; ++jj) {
+//                int b = ii - jj;
+//                int a = jj;
+        for (int a=0; a<=l_; ++a) {
+            for (int b=0; (a+b)<=l_; ++b) {
+                int c = l_ - a -b;
 
                 int cart1 = icart(a, b, c);
                 int cart2 = INT_CARTINDEX(a+b+c, a, b);

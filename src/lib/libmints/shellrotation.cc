@@ -170,7 +170,7 @@ void ShellRotation::init_pure(int a, SymmetryOperation &so, IntegralFactory *int
     int lI[3];
     int m, iI;
 
-    SphericalTransform *st = ints->spherical_transform(am_);
+//    SphericalTransform *st = ints->spherical_transform(am_);
 
 //    printf("SphericalTransform: am = %d\n", am_);
 //    for (int z=0; z<st->n(); ++z) {

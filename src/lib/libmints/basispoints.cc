@@ -135,8 +135,8 @@ void BasisPoints::computePoints(SharedGridBlock grid)
     double *yg = grid->getY();
     double *zg = grid->getZ();
     int ntrue = grid->getTruePoints();
-    
-    true_size_ = ntrue;    
+
+    true_size_ = ntrue;
 
     for (int grid_index = 0; grid_index<ntrue; grid_index++) {
     // << OPEN MAIN LOOP OVER GRID POINTS
@@ -340,6 +340,8 @@ void BasisPoints::computePoints(SharedGridBlock grid)
             int ind_ao;
             int ind_so;
             //AO -> SO (fairly easy)
+#pragma warn Removed SphericalTransformIter from BasisSet, use the integral factory.
+#if 0
             SphericalTransformIter trans(basis_->spherical_transform(shell->am()));
             for (trans.first(); !trans.is_done();trans.next()) {
                 trans_coef = trans.coef();
@@ -366,6 +368,7 @@ void BasisPoints::computePoints(SharedGridBlock grid)
                 }
                 //fprintf(outfile,"Transforming AO shell index %d to SO total index %d, c = %14.10f\n",ind_ao,ind_so+start,trans_coef); fflush(outfile);
             }
+#endif
         }
         else {
             //AO -> AO (Easy) Thanks Jet!
@@ -392,7 +395,7 @@ void BasisPoints::computePoints(SharedGridBlock grid)
         }
     }
 //        for (int Q = 0; Q < basis_->nbf(); Q++)
-//            fprintf(outfile,"  pt = %d, Q = %d, val = %14.10f\n",grid_index,Q,points_[grid_index][Q]); 
+//            fprintf(outfile,"  pt = %d, Q = %d, val = %14.10f\n",grid_index,Q,points_[grid_index][Q]);
     // << CLOSE OUTER LOOP OVER GRID POINTS
     }
 }

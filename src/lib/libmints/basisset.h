@@ -75,12 +75,6 @@ class BasisSet
 
     //! Molecule object.
     boost::shared_ptr<Molecule> molecule_;
-    /** Symmetry orbital transformation (used in one-electron integrals)
-     *  NOTE: This will likely change.
-     */
-    boost::shared_ptr<SOTransform> sotransform_;
-    //! Spherical transfromation (used in two-electron integrals)
-    std::vector<SphericalTransform> sphericaltransforms_;
 
     //! No default constructor
     BasisSet();
@@ -182,12 +176,6 @@ public:
      *  @return A shared pointer to the GaussianShell object for the i'th shell.
      */
     boost::shared_ptr<GaussianShell> shell(int center, int si) const;
-
-    /** Returns the transformation object for a given angular momentum. Used in ERIs.
-     *  @param am Angular momentum
-     *  @return A SphericalTransform object that details how to transfrom from AO to BF.
-     */
-    SphericalTransform& spherical_transform(int am);
 
     /** Print the basis set.
      *  @param out The file stream to use for printing. Defaults to outfile.

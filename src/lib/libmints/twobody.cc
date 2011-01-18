@@ -11,13 +11,28 @@ static void transform2e_2(int, SphericalTransformIter&, double*, double*, int, i
 static void transform2e_3(int, SphericalTransformIter&, double*, double*, int, int, int);
 static void transform2e_4(int, SphericalTransformIter&, double*, double*, int, int);
 
-TwoBodyInt::TwoBodyInt(shared_ptr<BasisSet> bs1,
-                       shared_ptr<BasisSet> bs2,
-                       shared_ptr<BasisSet> bs3,
-                       shared_ptr<BasisSet> bs4,
-                       int deriv)
-    : original_bs1_(bs1), original_bs2_(bs2), original_bs3_(bs3),
-      original_bs4_(bs4), deriv_(deriv)
+//TwoBodyInt::TwoBodyInt(shared_ptr<BasisSet> bs1,
+//                       shared_ptr<BasisSet> bs2,
+//                       shared_ptr<BasisSet> bs3,
+//                       shared_ptr<BasisSet> bs4,
+//                       int deriv)
+//    : original_bs1_(bs1), original_bs2_(bs2), original_bs3_(bs3),
+//      original_bs4_(bs4), deriv_(deriv)
+//{
+//    // The derived classes allocate this memory.
+//    target_ = 0;
+//    tformbuf_ = 0;
+//    source_ = 0;
+//    natom_ = original_bs1_->molecule()->natom();  // This assumes the 4 bases come from the same molecule.
+//}
+
+TwoBodyInt::TwoBodyInt(const IntegralFactory* intsfactory, int deriv) :
+    integral_(intsfactory),
+    original_bs1_(integral_->basis1()),
+    original_bs2_(integral_->basis2()),
+    original_bs3_(integral_->basis3()),
+    original_bs4_(integral_->basis4()),
+    deriv_(deriv)
 {
     // The derived classes allocate this memory.
     target_ = 0;
@@ -312,10 +327,10 @@ void TwoBodyInt::pure_transform(int sh1, int sh2, int sh3, int sh4, int nchunk)
     s4 = bs4_->shell(sh4);
 
     // Get the transforms from the basis set
-    SphericalTransformIter trans1(bs1_->spherical_transform(s1->am()));
-    SphericalTransformIter trans2(bs2_->spherical_transform(s2->am()));
-    SphericalTransformIter trans3(bs3_->spherical_transform(s3->am()));
-    SphericalTransformIter trans4(bs4_->spherical_transform(s4->am()));
+    SphericalTransformIter trans1(*integral()->spherical_transform(s1->am()));
+    SphericalTransformIter trans2(*integral()->spherical_transform(s2->am()));
+    SphericalTransformIter trans3(*integral()->spherical_transform(s3->am()));
+    SphericalTransformIter trans4(*integral()->spherical_transform(s4->am()));
 
     // Get the angular momentum for each shell
     int am1 = s1->am();
@@ -466,22 +481,22 @@ void TwoBodyInt::pure_transform(int sh1, int sh2, int sh3, int sh4, int nchunk)
                 break;
         }
 
-        size_t size = 1;
+        size_t size = nbf1 * nbf2 * nbf3 * nbf4;
         if (is_pure4) {
             transform2e_4(am4, trans4, source4, target4, nao1*nao2*nao3,nao4);
-            size *= nbf4;
+//            size *= nbf4;
         }
         if (is_pure3) {
             transform2e_3(am3, trans3, source3, target3, nao1*nao2,nao3,nbf4);
-            size *= nbf3;
+//            size *= nbf3;
         }
         if (is_pure2) {
             transform2e_2(am2, trans2, source2, target2, nao1,nao2,nbf3*nbf4);
-            size *= nbf2;
+//            size *= nbf2;
         }
         if (is_pure1) {
             transform2e_1(am1, trans1, source1, target1, nbf2*nbf3*nbf4);
-            size *= nbf1;
+//            size *= nbf1;
         }
 
         // The permute indices routines depend on the integrals being in source_
@@ -501,6 +516,9 @@ static void transform2e_1(int am, SphericalTransformIter& sti, double *s, double
         double *sptr = s + sti.cartindex()*njkl;
         double *tptr = t + sti.pureindex()*njkl;
         double coef = sti.coef();
+
+        fprintf(outfile, "2e_1: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(), sti.coef());
+
         for(int jkl=0; jkl<njkl; jkl++)
             *(tptr++) += coef * *(sptr++);
     }
@@ -518,6 +536,9 @@ static void transform2e_2(int am, SphericalTransformIter& sti, double *s, double
         double *sptr = s + sti.cartindex()*nkl;
         double *tptr = t + sti.pureindex()*nkl;
         double coef = sti.coef();
+
+        fprintf(outfile, "2e_2: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(), sti.coef());
+
         for(int i=0; i<ni; i++,sptr+=sjkl,tptr+=tjkl) {
             for(int kl=0; kl<nkl; kl++)
                 tptr[kl] += coef * sptr[kl];
@@ -537,6 +558,9 @@ static void transform2e_3(int am, SphericalTransformIter& sti, double *s, double
         double *sptr = s + sti.cartindex()*nl;
         double *tptr = t + sti.pureindex()*nl;
         // printf("cartindex = %d, pureindex = %d\n", sti.cartindex(), sti.pureindex());
+
+        fprintf(outfile, "2e_3: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(), sti.coef());
+
         double coef = sti.coef();
         for(int ij=0; ij<nij; ij++,sptr+=skl,tptr+=tkl) {
             for(int l=0; l<nl; l++)
@@ -564,6 +588,8 @@ static void transform2e_4(int am, SphericalTransformIter& sti, double *s, double
         // Starting point in source and target buffers
         double *sptr = s + sti.cartindex();
         double *tptr = t + sti.pureindex();
+
+        fprintf(outfile, "2e_4: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(), sti.coef());
 
         // What's the coefficient we're using
         double coef = sti.coef();

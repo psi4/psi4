@@ -163,9 +163,6 @@ shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parse
     basisset->molecule_ = mol;
     parser->parse(basisset, basisnames);
 
-    for (int i=0; i<=basisset->max_am(); ++i)
-        basisset->sphericaltransforms_.push_back(SphericalTransform(i));
-
     return basisset;
 }
 
@@ -285,14 +282,6 @@ shared_ptr<BasisSet> BasisSet::atomic_basis_set(int center)
             break;
     }
 
-    // Initialize SphericalTransform
-    for (int i=0; i<=max_am_; ++i) {
-        bas->sphericaltransforms_.push_back(SphericalTransform(i));
-    }
-    //Initialize SOTransform
-    bas->sotransform_ = shared_ptr<SOTransform>(new SOTransform);
-    //bas->sotransform_->init(current_shells);           // <-- old style
-
     //Populate SOTransform
 #warning Sorry Rob, I probably broke SAD again.
 #if 0
@@ -315,10 +304,5 @@ shared_ptr<BasisSet> BasisSet::atomic_basis_set(int center)
 
     //And ... return
     return bas;
-}
-
-SphericalTransform& BasisSet::spherical_transform(int am)
-{
-    return sphericaltransforms_[am];
 }
 
