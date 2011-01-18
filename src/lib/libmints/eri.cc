@@ -657,6 +657,7 @@ void ERI::compute_shell(int sh1, int sh2, int sh3, int sh4)
         timer_off("memcpy - no resort");
 #endif
     }
+
 #ifdef MINTS_TIMER
     timer_off("ERI::compute_shell");
 #endif
@@ -737,18 +738,28 @@ void ERI::compute_quartet(int sh1, int sh2, int sh3, int sh4)
         nprim3 = s3->nprimitive();
         nprim4 = s4->nprimitive();
 
-        for (int p1=0; p1<nprim1; ++p1) {
-            for (int p2=0; p2<nprim2; ++p2) {
+//        for (int p1=0; p1<nprim1; ++p1) {
+//            for (int p2=0; p2<nprim2; ++p2) {
+        for (int p1=0; p1 < nprim1; ++p1) {
+            int max_p2 = (sh1 == sh2) ? p1+1: nprim2;
+            for (int p2=0; p2<max_p2; ++p2) {
+                int m = (1 + (sh1 == sh2 && p1 != p2));
                 double zeta = p12->gamma[p1][p2];
                 double overlap12 = p12->overlap[p1][p2];
+//                for (int p3=0; p3<nprim3; ++p3) {
+//                    for (int p4=0; p4<nprim4; ++p4) {
                 for (int p3=0; p3<nprim3; ++p3) {
-                    for (int p4=0; p4<nprim4; ++p4) {
+                    int max_p4 = (s3 == s4) ? p3+1 : nprim4;
+                    for (int p4=0; p4<max_p4; ++p4){
+                        int n = m * (1 + (s3 == s4 && p3 != p4));
+
+                        fprintf(outfile, "n = %d\n", n);
                         double eta  = p34->gamma[p3][p4];
                         double oozn = 1.0 / (zeta+eta);
                         libint_.PrimQuartet[nprim].poz = eta * oozn;
                         double rho = zeta * libint_.PrimQuartet[nprim].poz;
                         //                    double rho = (zeta*eta) * oozn;
-                        double coef1 = 2.0 * sqrt(rho*M_1_PI) * overlap12 * p34->overlap[p3][p4];
+                        double coef1 = double(n) * 2.0 * sqrt(rho*M_1_PI) * overlap12 * p34->overlap[p3][p4];
                         double PQ[3];
                         PQ[0] = p12->P[p1][p2][0] - p34->P[p3][p4][0];
                         PQ[1] = p12->P[p1][p2][1] - p34->P[p3][p4][1];
@@ -789,19 +800,20 @@ void ERI::compute_quartet(int sh1, int sh2, int sh3, int sh4)
                         libint_.PrimQuartet[nprim].U[5][1] = W[1] - p34->P[p3][p4][1];
                         libint_.PrimQuartet[nprim].U[5][2] = W[2] - p34->P[p3][p4][2];
 
-                        //                    fprintf(outfile, "----- %d\n", nprim);
-                        //                    fprintf(outfile, "poz = %lf\n", libint_.PrimQuartet[nprim].poz);
-                        //                    fprintf(outfile, "T   = %lf\n", T);
-                        //                    fprintf(outfile, "oo2zn = %lf\n", libint_.PrimQuartet[nprim].oo2zn);
-                        //                    fprintf(outfile, "pon = %lf\n", libint_.PrimQuartet[nprim].pon);
-                        //                    fprintf(outfile, "oo2z = %lf\n", libint_.PrimQuartet[nprim].oo2z);
-                        //                    fprintf(outfile, "oo2n = %lf\n", libint_.PrimQuartet[nprim].oo2n);
-                        //                    fprintf(outfile, "U[0] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[0][0], libint_.PrimQuartet[nprim].U[0][1], libint_.PrimQuartet[nprim].U[0][2]);
-                        //                    fprintf(outfile, "U[2] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[2][0], libint_.PrimQuartet[nprim].U[2][1], libint_.PrimQuartet[nprim].U[2][2]);
-                        //                    fprintf(outfile, "U[4] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[4][0], libint_.PrimQuartet[nprim].U[4][1], libint_.PrimQuartet[nprim].U[4][2]);
-                        //                    fprintf(outfile, "U[5] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[5][0], libint_.PrimQuartet[nprim].U[5][1], libint_.PrimQuartet[nprim].U[5][2]);
-                        //                    fprintf(outfile, "W = %lf %lf %lf\n", W[0], W[1], W[2]);
-                        //                    fprintf(outfile, "Q = %lf %lf %lf\n", Q[0], Q[1], Q[2]);
+                        fprintf(outfile, "----- %d\n", nprim);
+                        fprintf(outfile, "F[0] = %8.5f\n", libint_.PrimQuartet[nprim].F[0]);
+                        fprintf(outfile, "poz = %lf\n", libint_.PrimQuartet[nprim].poz);
+                        fprintf(outfile, "T   = %lf\n", T);
+                        fprintf(outfile, "oo2zn = %lf\n", libint_.PrimQuartet[nprim].oo2zn);
+                        fprintf(outfile, "pon = %lf\n", libint_.PrimQuartet[nprim].pon);
+                        fprintf(outfile, "oo2z = %lf\n", libint_.PrimQuartet[nprim].oo2z);
+                        fprintf(outfile, "oo2n = %lf\n", libint_.PrimQuartet[nprim].oo2n);
+                        fprintf(outfile, "U[0] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[0][0], libint_.PrimQuartet[nprim].U[0][1], libint_.PrimQuartet[nprim].U[0][2]);
+                        fprintf(outfile, "U[2] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[2][0], libint_.PrimQuartet[nprim].U[2][1], libint_.PrimQuartet[nprim].U[2][2]);
+                        fprintf(outfile, "U[4] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[4][0], libint_.PrimQuartet[nprim].U[4][1], libint_.PrimQuartet[nprim].U[4][2]);
+                        fprintf(outfile, "U[5] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[5][0], libint_.PrimQuartet[nprim].U[5][1], libint_.PrimQuartet[nprim].U[5][2]);
+                        fprintf(outfile, "W = %lf %lf %lf\n", W[0], W[1], W[2]);
+                        fprintf(outfile, "Q = %lf %lf %lf\n", p34->P[p3][p4][0], p34->P[p3][p4][1], p34->P[p3][p4][2]);
                         nprim++;
                     }
                 }
@@ -915,19 +927,19 @@ void ERI::compute_quartet(int sh1, int sh2, int sh3, int sh4)
                         for (int i=0; i<=am; ++i) {
                             libint_.PrimQuartet[nprim].F[i] = F[i] * val;
                         }
-//                        fprintf(outfile, "----- %d\n", nprim);
-//                        fprintf(outfile, "poz = %lf\n", libint_.PrimQuartet[nprim].poz);
-//                        fprintf(outfile, "T   = %lf\n", T);
-//                        fprintf(outfile, "oo2zn = %lf\n", libint_.PrimQuartet[nprim].oo2zn);
-//                        fprintf(outfile, "pon = %lf\n", libint_.PrimQuartet[nprim].pon);
-//                        fprintf(outfile, "oo2z = %lf\n", libint_.PrimQuartet[nprim].oo2z);
-//                        fprintf(outfile, "oo2n = %lf\n", libint_.PrimQuartet[nprim].oo2n);
-//                        fprintf(outfile, "U[0] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[0][0], libint_.PrimQuartet[nprim].U[0][1], libint_.PrimQuartet[nprim].U[0][2]);
-//                        fprintf(outfile, "U[2] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[2][0], libint_.PrimQuartet[nprim].U[2][1], libint_.PrimQuartet[nprim].U[2][2]);
-//                        fprintf(outfile, "U[4] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[4][0], libint_.PrimQuartet[nprim].U[4][1], libint_.PrimQuartet[nprim].U[4][2]);
-//                        fprintf(outfile, "U[5] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[5][0], libint_.PrimQuartet[nprim].U[5][1], libint_.PrimQuartet[nprim].U[5][2]);
-//                        fprintf(outfile, "W = %lf %lf %lf\n", W[0], W[1], W[2]);
-//                        fprintf(outfile, "Q = %lf %lf %lf\n", Q[0], Q[1], Q[2]);
+                        fprintf(outfile, "----- %d\n", nprim);
+                        fprintf(outfile, "poz = %lf\n", libint_.PrimQuartet[nprim].poz);
+                        fprintf(outfile, "T   = %lf\n", T);
+                        fprintf(outfile, "oo2zn = %lf\n", libint_.PrimQuartet[nprim].oo2zn);
+                        fprintf(outfile, "pon = %lf\n", libint_.PrimQuartet[nprim].pon);
+                        fprintf(outfile, "oo2z = %lf\n", libint_.PrimQuartet[nprim].oo2z);
+                        fprintf(outfile, "oo2n = %lf\n", libint_.PrimQuartet[nprim].oo2n);
+                        fprintf(outfile, "U[0] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[0][0], libint_.PrimQuartet[nprim].U[0][1], libint_.PrimQuartet[nprim].U[0][2]);
+                        fprintf(outfile, "U[2] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[2][0], libint_.PrimQuartet[nprim].U[2][1], libint_.PrimQuartet[nprim].U[2][2]);
+                        fprintf(outfile, "U[4] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[4][0], libint_.PrimQuartet[nprim].U[4][1], libint_.PrimQuartet[nprim].U[4][2]);
+                        fprintf(outfile, "U[5] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[5][0], libint_.PrimQuartet[nprim].U[5][1], libint_.PrimQuartet[nprim].U[5][2]);
+                        fprintf(outfile, "W = %lf %lf %lf\n", W[0], W[1], W[2]);
+                        fprintf(outfile, "Q = %lf %lf %lf\n", Q[0], Q[1], Q[2]);
                         nprim++;
                     }
                 }
@@ -958,6 +970,7 @@ void ERI::compute_quartet(int sh1, int sh2, int sh3, int sh4)
         for (size_t i=0; i<nprim_combination; ++i)
             temp += (double)libint_.PrimQuartet[i].F[0];
         source_[0] = temp;
+        fprintf(outfile, "s-functions = %8.5f\n", temp);
     }
 
 #ifdef MINTS_TIMER

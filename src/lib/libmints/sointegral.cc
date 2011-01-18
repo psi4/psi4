@@ -274,6 +274,14 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh)
                 for (int l=0; l<t4.naoshell; l++) {
                     const SOTransformShell &s4 = t4.aoshell[l];
                     tb_->compute_shell(s1.aoshell, s2.aoshell, s3.aoshell, s4.aoshell);
+
+                    for (int z=0; z < INT_NPURE(tb_->basis1()->shell(s1.aoshell)->am()) *
+                                      INT_NPURE(tb_->basis2()->shell(s2.aoshell)->am()) *
+                                      INT_NPURE(tb_->basis3()->shell(s3.aoshell)->am()) *
+                                      INT_NPURE(tb_->basis4()->shell(s4.aoshell)->am()); ++z) {
+                        fprintf(outfile, "raw: %d -> %8.5f\n", z, aobuff[z]);
+                    }
+
                     for (int itr=0; itr<s1.nfunc; itr++) {
                         const SOTransformFunction &ifunc = s1.func[itr];
                         double icoef = ifunc.coef;
@@ -312,11 +320,11 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh)
                                     int lsooff = ksooff*nso4 + lsofunc;
                                     buffer_[lsooff] += lcoef * aobuff[laooff];
                                     if (fabs(aobuff[laooff]*lcoef) > 1.0e-10) {
-                                        fprintf(outfile, "(%d %d|%d %d) += %8.5lf * (%d %d|%d %d): %8.5lf -> %8.5lf\n",
+                                        fprintf(outfile, "(%d %d|%d %d) += %8.5lf * (%d %d|%d %d): %8.5lf (laoff = %d) -> %8.5lf (lsoff = %d)\n",
                                                 isofunc, jsofunc, ksofunc, lsofunc, lcoef,
                                                 iaofunc, jaofunc, kaofunc, laofunc,
-                                                aobuff[laooff], buffer_[lsooff]);
-
+                                                aobuff[laooff], laooff,
+                                                buffer_[lsooff], lsooff);
                                     }
                                 }
                             }
