@@ -1,19 +1,36 @@
-%! RHF-CCSD 6-31G** all-electron optimization of the H2O molecule
+#%! RHF-CCSD 6-31G** all-electron optimization of the H2O molecule
 
-psi: (
-  label = "RHF CCSD gradient"
-  jobtype = opt
-  wfn = ccsd
-  reference = rhf
-  dertype = FIRST
-%  docc = (3 0 1 1)
-docc = (5)
-  basis = "6-31G**"
-subgroup = c1
-  zmat = (
+molecule h2o {
     O
-    H  1  0.97
-    H  1  0.97  2  103.0
-  )
-)
+    H 1 0.97
+    H 1 0.97 2 103.0
+}
+
+globals {
+    wfn ccsd
+    jobtype opt
+    dertype first
+    docc [3, 0, 1, 1]
+    basis 6-31G**
+}
+
+mints()
+energy('ccsd')
+
+#psi: (
+#  label = "RHF CCSD gradient"
+#  jobtype = opt
+#  wfn = ccsd
+#  reference = rhf
+#  dertype = FIRST
+#%  docc = (3 0 1 1)
+#docc = (5)
+#  basis = "6-31G**"
+#subgroup = c1
+#  zmat = (
+#    O
+#    H  1  0.97
+#    H  1  0.97  2  103.0
+#  )
+#)
 

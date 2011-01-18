@@ -963,6 +963,14 @@ SO_block* PetiteList::aotoso_info()
     return SOs;
 }
 
+Matrix* PetiteList::sotoao()
+{
+    Matrix *mat = aotoso();
+    Matrix* temp = mat->transpose();
+    delete mat;
+    return temp;
+}
+
 Matrix* PetiteList::aotoso()
 {
     Dimension aodim = AO_basisdim();
