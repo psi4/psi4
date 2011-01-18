@@ -172,6 +172,12 @@ public:
     }
     /** @} */
 
+    enum SaveType {
+        Full,
+        SubBlocks,
+        LowerTriangle
+    };
+
     /**
      * @{
      * Saves the block matrix to PSIO object with fileno and with the toc position of the name of the matrix
@@ -180,8 +186,8 @@ public:
      * @param fileno File to write to.
      * @param saveSubBlocks Save information suffixing point group label.
      */
-    void save(psi::PSIO* psio, unsigned int fileno, bool saveSubBlocks=true);
-    void save(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool saveSubBlocks=true);
+    void save(psi::PSIO* psio, unsigned int fileno, SaveType savetype=LowerTriangle);
+    void save(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, SaveType savetype=LowerTriangle);
     /** @} */
 
     /**

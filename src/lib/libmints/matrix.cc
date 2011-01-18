@@ -1193,7 +1193,7 @@ bool Matrix::load(shared_ptr<psi::PSIO> psio, unsigned int fileno, char *tocentr
     return true;
 }
 
-void Matrix::save(psi::PSIO* psio, unsigned int fileno, bool saveSubBlocks)
+void Matrix::save(psi::PSIO* psio, unsigned int fileno, SaveType st)
 {
     if(Communicator::world->me() == 0) {
         // Check to see if the file is open
@@ -1204,7 +1204,14 @@ void Matrix::save(psi::PSIO* psio, unsigned int fileno, bool saveSubBlocks)
             psio->open(fileno, PSIO_OPEN_OLD);
         }
 
-        if (saveSubBlocks) {
+        // Need to know the size
+        int sizer=0, sizec=0;
+        for (int h=0; h<nirreps_; ++h) {
+            sizer += rowspi_[h];
+            sizec += colspi_[h];
+        }
+
+        if (st == SubBlocks) {
             for (int h=0; h<nirreps_; ++h) {
                 std::string str(name_);
                 str += " Irrep " + to_string(h);
@@ -1213,29 +1220,33 @@ void Matrix::save(psi::PSIO* psio, unsigned int fileno, bool saveSubBlocks)
                 if (colspi_[h] > 0 && rowspi_[h] > 0)
                     psio->write_entry(fileno, const_cast<char*>(str.c_str()), (char*)matrix_[h][0], sizeof(double) * colspi_[h] * rowspi_[h]);
             }
-        } else {
+        }
+        else if (st == Full) {
             double **fullblock = to_block_matrix();
-            // Need to know the size
-            int sizer=0, sizec=0;
-            for (int h=0; h<nirreps_; ++h) {
-                sizer += rowspi_[h];
-                sizec += colspi_[h];
-            }
 
             // Write the full block
             if (sizer > 0 && sizec > 0)
                 psio->write_entry(fileno, const_cast<char*>(name_.c_str()), (char*)fullblock[0], sizeof(double) * sizer * sizec);
             Matrix::free(fullblock);
         }
+        else if (st == LowerTriangle) {
+            double *lower = to_lower_triangle();
 
+            if (sizer > 0)
+                psio->write_entry(fileno, const_cast<char*>(name_.c_str()), (char*)lower, sizeof(double)*ioff[sizer]);
+            delete[] lower;
+        }
+        else {
+            throw PSIEXCEPTION("Matrix::save: Unknown SaveType\n");
+        }
         if (!already_open)
             psio->close(fileno, 1);     // Close and keep
     }
 }
 
-void Matrix::save(shared_ptr<psi::PSIO> psio, unsigned int fileno, bool saveSubBlocks)
+void Matrix::save(shared_ptr<psi::PSIO> psio, unsigned int fileno, SaveType st)
 {
-    save(psio.get(), fileno, saveSubBlocks);
+    save(psio.get(), fileno, st);
 }
 
 void Matrix::send(Communicator* comm)

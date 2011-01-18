@@ -21,6 +21,7 @@
 #include "matrix.h"
 #include "pointgrp.h"
 #include "coordentry.h"
+#include "corrtab.h"
 
 #include <masses.h>
 #include <physconst.h>
@@ -1252,6 +1253,24 @@ Molecule::update_geometry()
 
     move_to_com();
     reorient();
+
+    // Check the point group of the molecule. If it is not set, set it.
+    if (!point_group()) {
+        shared_ptr<PointGroup> pg = find_point_group();
+        if (!symmetry_from_input().empty()) {
+            // If they're not the same
+            if (symmetry_from_input() != pg->symbol()) {
+                shared_ptr<PointGroup> user(new PointGroup(symmetry_from_input().c_str()));
+
+                // Make sure user is subgroup of pg
+                CorrelationTable corrtable(pg, user);
+
+                // If we make it here, the user specified is good.
+                pg = user;
+            }
+        }
+        set_point_group(pg);
+    }
 }
 
 /**
@@ -2014,23 +2033,23 @@ found_sigma:
         }
     }
 
-    fprintf(outfile, "find point group:\n");
-    fprintf(outfile, "  linear          = %s\n", linear          ? "true" : "false");
-    fprintf(outfile, "  planar          = %s\n", planar          ? "true" : "false");
-    fprintf(outfile, "  have_inversion  = %s\n", have_inversion  ? "true" : "false");
-    fprintf(outfile, "  have_c2axis     = %s\n", have_c2axis     ? "true" : "false");
-    fprintf(outfile, "  have_c2axisperp = %s\n", have_c2axisperp ? "true" : "false");
-    fprintf(outfile, "  have_sigmav     = %s\n", have_sigmav     ? "true" : "false");
-    fprintf(outfile, "  have_sigma      = %s\n", have_sigma      ? "true" : "false");
+//    fprintf(outfile, "find point group:\n");
+//    fprintf(outfile, "  linear          = %s\n", linear          ? "true" : "false");
+//    fprintf(outfile, "  planar          = %s\n", planar          ? "true" : "false");
+//    fprintf(outfile, "  have_inversion  = %s\n", have_inversion  ? "true" : "false");
+//    fprintf(outfile, "  have_c2axis     = %s\n", have_c2axis     ? "true" : "false");
+//    fprintf(outfile, "  have_c2axisperp = %s\n", have_c2axisperp ? "true" : "false");
+//    fprintf(outfile, "  have_sigmav     = %s\n", have_sigmav     ? "true" : "false");
+//    fprintf(outfile, "  have_sigma      = %s\n", have_sigma      ? "true" : "false");
 
-    if (have_c2axis)
-        fprintf(outfile, "  c2axis          = %s\n", c2axis.to_string().c_str());
-    if (have_c2axisperp)
-        fprintf(outfile, "  c2axisperp      = %s\n", c2axisperp.to_string().c_str());
-    if (have_sigmav)
-        fprintf(outfile, "  sigmav          = %s\n", sigmav.to_string().c_str());
-    if (have_sigma)
-        fprintf(outfile, "  sigma           = %s\n", sigma.to_string().c_str());
+//    if (have_c2axis)
+//        fprintf(outfile, "  c2axis          = %s\n", c2axis.to_string().c_str());
+//    if (have_c2axisperp)
+//        fprintf(outfile, "  c2axisperp      = %s\n", c2axisperp.to_string().c_str());
+//    if (have_sigmav)
+//        fprintf(outfile, "  sigmav          = %s\n", sigmav.to_string().c_str());
+//    if (have_sigma)
+//        fprintf(outfile, "  sigma           = %s\n", sigma.to_string().c_str());
 
     // Find the three axes for the symmetry frame
     Vector3 xaxis = worldxaxis;
@@ -2056,9 +2075,9 @@ found_sigma:
     // the y is then -x cross z
     yaxis = -xaxis.cross(zaxis);
 
-    fprintf(outfile, "  X: %s\n", xaxis.to_string().c_str());
-    fprintf(outfile, "  Y: %s\n", yaxis.to_string().c_str());
-    fprintf(outfile, "  Z: %s\n", zaxis.to_string().c_str());
+//    fprintf(outfile, "  X: %s\n", xaxis.to_string().c_str());
+//    fprintf(outfile, "  Y: %s\n", yaxis.to_string().c_str());
+//    fprintf(outfile, "  Z: %s\n", zaxis.to_string().c_str());
 
     SymmetryOperation frame;
     Vector3 origin;

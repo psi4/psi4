@@ -338,8 +338,13 @@ bool UHF::load_or_compute_initial_C()
 void UHF::save_information()
 {
     // Print the final docc vector
-    char **temp2 = chkpt_->rd_irr_labs();
-    int nso = chkpt_->rd_nso();
+    char **temp2 = molecule_->irrep_labels();
+    int nso = get_nso();
+
+    // Must remember to write the number of irreps before writing anything else.
+    chkpt_->wt_nirreps(factory_.nirreps());
+    chkpt_->wt_nso(nso);
+
     if(print_ > 1){
         fprintf(outfile, "\n  Final doubly occupied vector = (");
         for (int h=0; h<factory_.nirreps(); ++h) {
@@ -430,8 +435,9 @@ void UHF::save_information()
     chkpt_->wt_phase_check(0);
 
     // Figure out frozen core orbitals
-    int nfzc = chkpt_->rd_nfzc();
-    int nfzv = chkpt_->rd_nfzv();
+    int nfzc = molecule_->nfrozen_core("TRUE"); /*chkpt_->rd_nfzc();*/
+    // TODO: Need to handle frozen virtuals
+    int nfzv = 0;
     int *frzcpi = compute_fcpi(nfzc, eigvaluesa);
     int *frzvpi = compute_fvpi(nfzv, eigvaluesa);
     chkpt_->wt_frzcpi(frzcpi);

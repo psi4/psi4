@@ -21,13 +21,13 @@ namespace psi {
    */
   void psio_error(unsigned int unit, unsigned int errval) {
     int i;
-    
+
     fprintf(stderr, "PSIO_ERROR: unit = %d\n", unit);
     /* Try to save the TOCs for all open units */
     /* psio_tocwrite() does not call psio_error() so this is OK */
     for (i=0; i < PSIO_MAXUNIT; i++)
       psio_tocwrite(i);
-    
+
     switch (errval) {
       case PSIO_ERROR_INIT:
         fprintf(stderr, "PSIO_ERROR: %d (I/O inititalization failed)\n", PSIO_ERROR_INIT);
