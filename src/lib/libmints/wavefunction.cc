@@ -51,18 +51,7 @@ void Wavefunction::common_init()
     Wavefunction::initialize_singletons();
 
     if (options_.get_bool("NO_INPUT") == false) {
-
-        // Initialize the matrix factory
-        factory_.init_with_chkpt(chkpt_);
-
-        // Initialize the basis set object
-        basisset_ = shared_ptr<BasisSet>(new BasisSet(chkpt_));
-        
-        // Basis set object has reference to initialized molecule, grab it
-        molecule_ = basisset_->molecule();
-
-        // Read in the memory requirements from input
-        fndcor(&(memory_), infile, outfile);
+        throw PSIEXCEPTION("Wavefunction::common_init: You must set NO_INPUT = TRUE.");
     }
     else {
         // Take the molecule from the environment
@@ -73,7 +62,7 @@ void Wavefunction::common_init()
         int nbf[] = { basisset_->nbf() };
         factory_.init_with(1, nbf, nbf);
 
-        memory_ = Process::environment.get_memory();    
+        memory_ = Process::environment.get_memory();
 
         //fprintf(outfile,"  Using %ld bytes of core memory\n",memory_);
     }

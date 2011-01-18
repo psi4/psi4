@@ -739,6 +739,10 @@ namespace psi {
       return false;
     }
 
+    bool exists(std::string key) {
+        return exists_in_active(key) || exists_in_global(key);
+    }
+
     Data& get(std::string key) {
       to_upper(key);
       if (!exists_in_active(key)) {

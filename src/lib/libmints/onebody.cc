@@ -221,6 +221,7 @@ void OneBodyInt::spherical_transform(shared_ptr<GaussianShell> s1, shared_ptr<Ga
 // functions.
 void OneBodyInt::so_transform(shared_ptr<Matrix> result, int sh1, int sh2, int ichunk)
 {
+#if 0
     // Get the transforms from the basis sets
     SOTransformIter trans1(bs1_->so_transform(sh1));
     SOTransformIter trans2(bs2_->so_transform(sh2));
@@ -252,6 +253,7 @@ void OneBodyInt::so_transform(shared_ptr<Matrix> result, int sh1, int sh2, int i
             }
         }
     }
+#endif
 }
 
 // Converts the AO integrals stored in the buffer to SO integrals (plus spherical transform)
@@ -259,6 +261,7 @@ void OneBodyInt::so_transform(shared_ptr<Matrix> result, int sh1, int sh2, int i
 // functions.
 void OneBodyInt::so_transform(shared_ptr<SimpleMatrix> result, int sh1, int sh2, int ichunk)
 {
+#if 0
     // Get the transforms from the basis sets
     SOTransformIter trans1(bs1_->so_transform(sh1));
     SOTransformIter trans2(bs2_->so_transform(sh2));
@@ -284,6 +287,7 @@ void OneBodyInt::so_transform(shared_ptr<SimpleMatrix> result, int sh1, int sh2,
             result->add(sofunc1, sofunc2, val);
         }
     }
+#endif
 }
 
 void OneBodyInt::compute(shared_ptr<Matrix> result)

@@ -671,6 +671,298 @@ SO_block* PetiteList::aotoso_info()
     BasisSet& gbs = *basis_.get();
     Molecule& mol = *gbs.molecule().get();
 
+    // create the character table for the point group
+    CharacterTable ct = mol.point_group()->char_table();
+    SymmetryOperation so;
+
+    if (c1_) {
+        SO_block *SOs = new SO_block[1];
+        SOs[0].set_length(gbs.nbasis());
+        for (i=0; i < gbs.nbasis(); i++) {
+            SOs[0].so[i].set_length(1);
+            SOs[0].so[i].cont[0].bfn=i;
+            SOs[0].so[i].cont[0].coef=1.0;
+        }
+        return SOs;
+    }
+
+    // ncomp is the number of symmetry blocks we have. for point groups with
+    // complex E representations, this will be cut in two eventually
+    int ncomp=0;
+    for (i=0; i < nirrep_; i++)
+        ncomp += ct.gamma(i).degeneracy();
+
+    // saoelem is the current SO in a block
+    int *saoelem = new int[ncomp];
+    memset(saoelem,0,sizeof(int)*ncomp);
+
+    int *whichir = new int[ncomp];
+    int *whichcmp = new int[ncomp];
+    for (i=ii=0; i < nirrep_; i++) {
+        for (int j=0; j < ct.gamma(i).degeneracy(); j++,ii++) {
+            whichir[ii] = i;
+            whichcmp[ii] = j;
+        }
+    }
+
+    // SOs is an array of SO_blocks which holds the redundant SO's
+    SO_block *SOs = new SO_block[ncomp];
+
+    for (i=0; i < ncomp; i++) {
+        ir = whichir[i];
+        int len = (ct.gamma(ir).complex()) ? nbf_in_ir_[ir]/2 : nbf_in_ir_[ir];
+        SOs[i].set_length(len);
+    }
+
+    // loop over all unique shells
+    for (iuniq=0; iuniq < gbs.molecule()->nunique(); iuniq++) {
+        int nequiv = gbs.molecule()->nequivalent(iuniq);
+        i = gbs.molecule()->unique(iuniq);
+        for (s=0; s < gbs.nshell_on_center(i); s++) {
+            int shell_i = gbs.shell_on_center(i,s);
+
+            // test to see if there are any high am cartesian functions in this
+            // shell.  for now don't allow symmetry with cartesian functions...I
+            // just can't seem to get them working.
+            for (c=0; c < gbs(i,s).ncontraction(); c++) {
+                if (gbs(i,s).am(c) > 1 && gbs(i,s).is_cartesian(c)) {
+                    if (ng_ != nirrep_) {
+                        throw PSIEXCEPTION("PetiteList::asotoso: cannot yet handle symmetry for angular momentum >= 2");
+                    }
+                }
+            }
+
+            // the functions do not mix between contractions
+            // so the contraction loop can be done outside the symmetry
+            // operation loop
+            int bfn_offset_in_shell = 0;
+            for (c=0; c < gbs(i,s).ncontraction(); c++) {
+                int nfuncuniq = gbs(i,s).nfunction(c);
+                int nfuncall = nfuncuniq * nequiv;
+
+                // allocate an array to store linear combinations of orbitals
+                // this is destroyed by the SVD routine
+                double **linorb = new double*[nfuncuniq];
+                linorb[0] = new double[nfuncuniq*nfuncall];
+                for (j=1; j<nfuncuniq; j++) {
+                    linorb[j] = &linorb[j-1][nfuncall];
+                }
+
+                // a copy of linorb
+                double **linorbcop = new double*[nfuncuniq];
+                linorbcop[0] = new double[nfuncuniq*nfuncall];
+                for (j=1; j<nfuncuniq; j++) {
+                    linorbcop[j] = &linorbcop[j-1][nfuncall];
+                }
+
+                // allocate an array for the SVD routine
+                double **u = new double*[nfuncuniq];
+                u[0] = new double[nfuncuniq*nfuncuniq];
+                for (j=1; j<nfuncuniq; j++) {
+                    u[j] = &u[j-1][nfuncuniq];
+                }
+
+                // loop through each irrep to form the linear combination
+                // of orbitals of that symmetry
+                int irnum = 0;
+                for (ir=0; ir<ct.nirrep(); ir++) {
+                    int cmplx = (ct.complex() && ct.gamma(ir).complex());
+                    for (int comp=0; comp < ct.gamma(ir).degeneracy(); comp++) {
+                        memset(linorb[0], 0, nfuncuniq*nfuncall*sizeof(double));
+                        for (d=0; d < ct.gamma(ir).degeneracy(); d++) {
+                            // if this is a point group with a complex E representation,
+                            // then only do the first set of projections for E
+                            if (d && cmplx) break;
+
+                            // operate on each function in this contraction with each
+                            // symmetry operation to form symmetrized linear combinations
+                            // of orbitals
+
+                            for (g=0; g<ng_; g++) {
+                                // the character
+                                double ccdg = ct.gamma(ir).p(comp,d,g);
+
+                                so = ct.symm_operation(g);
+                                int equivatom = atom_map_[i][g];
+                                int atomoffset
+                                        = gbs.molecule()->atom_to_unique_offset(equivatom);
+
+                                ShellRotation rr
+                                        = ints_->shell_rotation(gbs(i,s).am(c),
+                                                                so,gbs(i,s).is_pure(c));
+
+                                for (ii=0; ii < rr.dim(); ii++) {
+                                    for (jj=0; jj < rr.dim(); jj++) {
+                                        linorb[ii][atomoffset*nfuncuniq+jj] += ccdg * rr(ii,jj);
+                                    }
+                                }
+                            }
+                        }
+                        // find the linearly independent SO's for this irrep/component
+                        memcpy(linorbcop[0], linorb[0], nfuncuniq*nfuncall*sizeof(double));
+                        double *singval = new double[nfuncuniq];
+                        double djunk=0; int ijunk=1;
+                        int lwork = 5*nfuncall;
+                        double *work = new double[lwork];
+                        int info;
+                        // solves At = V SIGMA Ut (since FORTRAN array layout is used)
+                        F77_DGESVD("N","A",&nfuncall,&nfuncuniq,linorb[0],&nfuncall,
+                                   singval, &djunk, &ijunk, u[0], &nfuncuniq,
+                                   work, &lwork, &info);
+                        // put the lin indep symm orbs into the so array
+                        for (j=0; j<nfuncuniq; j++) {
+                            if (singval[j] > 1.0e-6) {
+                                SO tso;
+                                tso.set_length(nfuncall);
+                                int ll = 0, llnonzero = 0;
+                                for (int k=0; k<nequiv; k++) {
+                                    for (int l=0; l<nfuncuniq; l++,ll++) {
+                                        double tmp = 0.0;
+                                        for (int m=0; m<nfuncuniq; m++) {
+                                            tmp += u[m][j] * linorbcop[m][ll] / singval[j];
+                                        }
+                                        if (fabs(tmp) > DBL_EPSILON) {
+                                            int equivatom = gbs.molecule()->equivalent(iuniq,k);
+                                            tso.cont[llnonzero].bfn
+                                                    = l
+                                                    + bfn_offset_in_shell
+                                                    + gbs.shell_to_function(gbs.shell_on_center(equivatom,
+                                                                                                s));
+                                            tso.cont[llnonzero].coef = tmp;
+                                            llnonzero++;
+                                        }
+                                    }
+                                }
+                                tso.reset_length(llnonzero);
+                                if (llnonzero == 0) {
+                                    ExEnv::errn() << "aotoso: internal error: no bfns in SO"
+                                                  << endl;
+                                    abort();
+                                }
+                                if (SOs[irnum+comp].add(tso,saoelem[irnum+comp])) {
+                                    saoelem[irnum+comp]++;
+                                }
+                                else {
+                                    ExEnv::errn() << "aotoso: internal error: "
+                                                  << "impossible duplicate SO"
+                                                  << endl;
+                                    abort();
+                                }
+                            }
+                        }
+                        delete[] singval;
+                        delete[] work;
+                    }
+                    irnum += ct.gamma(ir).degeneracy();
+                }
+                bfn_offset_in_shell += gbs(i,s).nfunction(c);
+
+                delete[] linorb[0];
+                delete[] linorb;
+                delete[] linorbcop[0];
+                delete[] linorbcop;
+                delete[] u[0];
+                delete[] u;
+            }
+        }
+    }
+
+    // Make sure all the nodes agree on what the symmetry orbitals are.
+    // (All the above work for me > 0 is ignored.)
+    Ref<MessageGrp> grp = MessageGrp::get_default_messagegrp();
+    for (i=0; i<ncomp; i++) {
+        int len = SOs[i].len;
+        grp->bcast(len);
+        SOs[i].reset_length(len);
+        for (j=0; j<len; j++) {
+            int solen = SOs[i].so[j].length;
+            grp->bcast(solen);
+            SOs[i].so[j].reset_length(solen);
+            for (int k=0; k<solen; k++) {
+                grp->bcast(SOs[i].so[j].cont[k].bfn);
+                grp->bcast(SOs[i].so[j].cont[k].coef);
+            }
+        }
+    }
+
+    for (i=0; i < ncomp; i++) {
+        ir = whichir[i];
+        int scal = ct.gamma(ir).complex() ? 2 : 1;
+
+        if (saoelem[i] < nbf_in_ir_[ir]/scal) {
+            // if we found too few, there are big problems
+
+            ExEnv::err0() << indent
+                          << scprintf("trouble making SO's for irrep %s\n",
+                                      ct.gamma(ir).symbol());
+            ExEnv::err0() << indent
+                          << scprintf("  only found %d out of %d SO's\n",
+                                      saoelem[i], nbf_in_ir_[ir]/scal);
+            SOs[i].print("");
+            abort();
+
+        } else if (saoelem[i] > nbf_in_ir_[ir]/scal) {
+            // there are some redundant so's left...need to do something to get
+            // the elements we want
+
+            ExEnv::err0() << indent
+                          << scprintf("trouble making SO's for irrep %s\n",
+                                      ct.gamma(ir).symbol());
+            ExEnv::err0() << indent
+                          << scprintf("  found %d SO's, but there should only be %d\n",
+                                      saoelem[i], nbf_in_ir_[ir]/scal);
+            SOs[i].print("");
+            abort();
+        }
+    }
+
+    if (ct.complex()) {
+        SO_block *nSOs = new SO_block[nblocks_];
+
+        int in=0;
+
+        for (i=ir=0; ir < nirrep_; ir++) {
+            if (ct.gamma(ir).complex()) {
+                nSOs[in].set_length(nbf_in_ir_[ir]);
+                int k;
+                for (k=0; k < SOs[i].len; k++)
+                    nSOs[in].add(SOs[i].so[k],k);
+                i++;
+
+                for (j=0; j < SOs[i].len; j++,k++)
+                    nSOs[in].add(SOs[i].so[j],k);
+
+                i++;
+                in++;
+            } else {
+                for (j=0; j < ct.gamma(ir).degeneracy(); j++,i++,in++) {
+                    nSOs[in].set_length(nbf_in_ir_[ir]);
+                    for (int k=0; k < SOs[i].len; k++)
+                        nSOs[in].add(SOs[i].so[k],k);
+                }
+            }
+        }
+
+        SO_block *tmp= SOs;
+        SOs = nSOs;
+        delete[] tmp;
+    }
+
+    delete[] saoelem;
+    delete[] whichir;
+    delete[] whichcmp;
+
+    return SOs;
+}
+
+#if 0
+SO_block* PetiteList::aotoso_info()
+{
+    int iuniq, i, j, d, ii, jj, g, s, c, ir;
+
+    BasisSet& gbs = *basis_.get();
+    Molecule& mol = *gbs.molecule().get();
+
     CharacterTable ct = mol.point_group()->char_table();
     SymmetryOperation so;
 
@@ -893,4 +1185,4 @@ SO_block* PetiteList::aotoso_info()
 
     return SOs;
 }
-
+#endif
