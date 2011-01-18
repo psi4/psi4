@@ -32,7 +32,16 @@ protected:
     int deriv_;
     int natom_;
 
+    int nchunk_;
+
     OneBodyInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int deriv=0);
+    virtual void compute_pair(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2) = 0;
+
+    void set_chunks(int nchunk) { nchunk_ = nchunk; }
+    void pure_transform(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>&, int=1);
+
+    /// Normalize Cartesian functions based on angular momentum
+    void normalize_am(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>&, int nchunk=1);
 
 public:
     virtual ~OneBodyInt();
@@ -48,7 +57,7 @@ public:
     const double *buffer() const;
 
     /// Compute the integrals between basis function in the given shell pair.
-    virtual void compute_shell(int, int) = 0;
+    void compute_shell(int, int);
 
     /*! @{
      * Computes all integrals and stores them in result
@@ -86,20 +95,6 @@ public:
 
     /// Returns a clone of this object. By default throws an exception.
     virtual OneBodyInt* clone();
-
-    /// Normalize Cartesian functions based on angular momentum
-    void normalize_am(boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>, int nchunk=1);
-
-    /// Transform Cartesian integrals to spherical harmonic ones.
-    /// Reads from buffer_ and stores results back in buffer_.
-    virtual void spherical_transform(boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>);
-
-    void do_transform(boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>, int=1);
-
-    /// Accumulates results into a Matrix
-    void so_transform(boost::shared_ptr<Matrix> result, int, int, int ichunk=0);
-    /// Accumulates results into a SimpleMatrix
-    void so_transform(boost::shared_ptr<SimpleMatrix> result, int, int, int ichunk=0);
 };
 
 }

@@ -20,6 +20,8 @@ ElectricFieldInt::ElectricFieldInt(vector<SphericalTransform>& spherical_transfo
     int maxnao2 = INT_NCART(maxam2);
 
     buffer_ = new double[3*natom_*maxnao1*maxnao2];
+
+    set_chunks(3*natom_);
 }
 
 ElectricFieldInt::~ElectricFieldInt()
@@ -27,13 +29,8 @@ ElectricFieldInt::~ElectricFieldInt()
     delete[] buffer_;
 }
 
-void ElectricFieldInt::compute_shell(int sh1, int sh2)
-{
-//    fprintf(outfile, "shell1 = %d  shell2 = %d\n", sh1, sh2);
-    compute_pair(bs1_->shell(sh1), bs2_->shell(sh2));
-}
-
-void ElectricFieldInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2)
+void ElectricFieldInt::compute_pair(const shared_ptr<GaussianShell>& s1,
+                                    const shared_ptr<GaussianShell>& s2)
 {
     int ao12;
     int am1 = s1->am();
@@ -148,27 +145,24 @@ void ElectricFieldInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<Gau
             }
         }
     }
-
-    // Integrals are done. Normalize for angular momentum
-    normalize_am(s1, s2, 3*natom_);
 }
 
-void ElectricFieldInt::compute(vector<shared_ptr<SimpleMatrix> > &result)
-{
-    if (result.size() < 3*natom_)
-        throw PSIEXCEPTION("ElectricFieldInt::compute: result array must be atleast 3 * number of atoms.");
+//void ElectricFieldInt::compute(vector<shared_ptr<SimpleMatrix> > &result)
+//{
+//    if (result.size() < 3*natom_)
+//        throw PSIEXCEPTION("ElectricFieldInt::compute: result array must be atleast 3 * number of atoms.");
 
-    // Do not worry about zeroing out result
-    int ns1 = bs1_->nshell();
-    int ns2 = bs2_->nshell();
+//    // Do not worry about zeroing out result
+//    int ns1 = bs1_->nshell();
+//    int ns2 = bs2_->nshell();
 
-    for (int i=0; i<ns1; ++i) {
-        for (int j=0; j<ns2; ++j) {
-            compute_shell(i, j);
+//    for (int i=0; i<ns1; ++i) {
+//        for (int j=0; j<ns2; ++j) {
+//            compute_shell(i, j);
 
-            for (int k=0; k<3*natom_; ++k)
-                so_transform(result[k], i, j, k);
-        }
-    }
-}
+//            for (int k=0; k<3*natom_; ++k)
+//                so_transform(result[k], i, j, k);
+//        }
+//    }
+//}
 

@@ -24,7 +24,7 @@ class DipoleInt : public OneBodyInt
     ObaraSaikaTwoCenterRecursion overlap_recur_;
 
     //! Computes the dipole between two gaussian shells.
-    void compute_pair(boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>);
+    void compute_pair(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>&);
     //! Computes the dipole derivative between two gaussian shells.
     void compute_pair_deriv1(boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>);
 
@@ -34,19 +34,17 @@ public:
     //! Virtual destructor
     virtual ~DipoleInt();
 
-    //! Compute dipole between two shells, result stored in buffer_.
-    void compute_shell(int, int);
     //! Compute dipole derivative between two shells, result stored in buffer_.
     void compute_shell_deriv1(int, int);
 
     /** Compute all dipole integrals and store them in an array of matrices.
      *  @param result Contains the dipole moment integrals. Order is [mu_x, mu_y, mu_].
      */
-    void compute(std::vector<boost::shared_ptr<SimpleMatrix> > &result);
+//    void compute(std::vector<boost::shared_ptr<SimpleMatrix> > &result);
     /** Compute all dipole derivatives and store them in an array of matrices.
      *  @param result Contains the dipole moment derivative integrals. Order is [mu_x(Aix,Aiy,Aiz...An), mu_y..., mu_z...]
      */
-    void compute_deriv1(std::vector<boost::shared_ptr<SimpleMatrix> > &result);
+//    void compute_deriv1(std::vector<boost::shared_ptr<SimpleMatrix> > &result);
 
     //! Does the method provide first derivatives?
     bool has_deriv1() { return true; }

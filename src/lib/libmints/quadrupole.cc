@@ -19,6 +19,7 @@ QuadrupoleInt::QuadrupoleInt(std::vector<SphericalTransform>& st, shared_ptr<Bas
 
     // Increase buffer size to handle xx, xy, xz, yy, yz, zz components
     buffer_ = new double[6*maxnao1*maxnao2];
+    set_chunks(6);
 }
 
 QuadrupoleInt::~QuadrupoleInt()
@@ -26,13 +27,8 @@ QuadrupoleInt::~QuadrupoleInt()
     delete[] buffer_;
 }
 
-void QuadrupoleInt::compute_shell(int sh1, int sh2)
-{
-    compute_pair(bs1_->shell(sh1), bs2_->shell(sh2));
-}
-
-// The engine only supports segmented basis sets
-void QuadrupoleInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2)
+void QuadrupoleInt::compute_pair(const shared_ptr<GaussianShell>& s1,
+                                 const shared_ptr<GaussianShell>& s2)
 {
     int ao12;
     int am1 = s1->am();
@@ -139,14 +135,6 @@ void QuadrupoleInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<Gaussi
             }
         }
     }
-
-    // Integrals are done. Normalize for angular momentum
-    normalize_am(s1, s2, 6);
-}
-
-void QuadrupoleInt::spherical_transform(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2)
-{
-    do_transform(s1, s2, 6);
 }
 
 void QuadrupoleInt::compute(std::vector<shared_ptr<Matrix> > & result)
@@ -160,12 +148,12 @@ void QuadrupoleInt::compute(std::vector<shared_ptr<Matrix> > & result)
             // Compute the shell
             compute_shell(i, j);
             // Transform the shell to SO basis
-            so_transform(result[0], i, j, 0);
-            so_transform(result[1], i, j, 1);
-            so_transform(result[2], i, j, 2);
-            so_transform(result[3], i, j, 3);
-            so_transform(result[4], i, j, 4);
-            so_transform(result[5], i, j, 5);
+//            so_transform(result[0], i, j, 0);
+//            so_transform(result[1], i, j, 1);
+//            so_transform(result[2], i, j, 2);
+//            so_transform(result[3], i, j, 3);
+//            so_transform(result[4], i, j, 4);
+//            so_transform(result[5], i, j, 5);
         }
     }
 }
@@ -181,12 +169,12 @@ void QuadrupoleInt::compute(std::vector<shared_ptr<SimpleMatrix> > & result)
             // Compute the shell
             compute_shell(i, j);
             // Transform the shell to SO basis
-            so_transform(result[0], i, j, 0);
-            so_transform(result[1], i, j, 1);
-            so_transform(result[2], i, j, 2);
-            so_transform(result[3], i, j, 3);
-            so_transform(result[4], i, j, 4);
-            so_transform(result[5], i, j, 5);
+//            so_transform(result[0], i, j, 0);
+//            so_transform(result[1], i, j, 1);
+//            so_transform(result[2], i, j, 2);
+//            so_transform(result[3], i, j, 3);
+//            so_transform(result[4], i, j, 4);
+//            so_transform(result[5], i, j, 5);
         }
     }
 }

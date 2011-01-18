@@ -29,18 +29,13 @@ KineticInt::~KineticInt()
     delete[] buffer_;
 }
 
-void KineticInt::compute_shell(int sh1, int sh2)
-{
-    compute_pair(bs1_->shell(sh1), bs2_->shell(sh2));
-}
-
 void KineticInt::compute_shell_deriv1(int sh1, int sh2)
 {
     compute_pair_deriv1(bs1_->shell(sh1), bs2_->shell(sh2));
 }
 
 // The engine only supports segmented basis sets
-void KineticInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2)
+void KineticInt::compute_pair(const shared_ptr<GaussianShell>& s1, const shared_ptr<GaussianShell>& s2)
 {
     int ao12;
     int am1 = s1->am();
@@ -134,9 +129,6 @@ void KineticInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<GaussianS
             }
         }
     }
-
-    // Integrals are done. Normalize for angular momentum
-    normalize_am(s1, s2);
 }
 
 static double ke_int(double **x, double **y, double **z, double a1, int l1, int m1, int n1,

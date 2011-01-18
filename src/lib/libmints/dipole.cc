@@ -21,11 +21,14 @@ DipoleInt::DipoleInt(std::vector<SphericalTransform>& spherical_transforms, shar
     int maxnao2 = (maxam2+1)*(maxam2+2)/2;
 
     // Increase buffer size to handle x, y, and z components
-    if (deriv_ == 0)
+    if (deriv_ == 0) {
         buffer_ = new double[3*maxnao1*maxnao2];
+        set_chunks(3);
+    }
     else if (deriv_ == 1) {
         natom_ = bs1_->molecule()->natom();
         buffer_ = new double[3*3*natom_*maxnao1*maxnao2]; // 3 * 3 * N * maxnao1 * maxnao2
+        set_chunks(3*3*natom_);
     }
 }
 
@@ -34,18 +37,13 @@ DipoleInt::~DipoleInt()
     delete[] buffer_;
 }
 
-void DipoleInt::compute_shell(int sh1, int sh2)
-{
-    compute_pair(bs1_->shell(sh1), bs2_->shell(sh2));
-}
-
 void DipoleInt::compute_shell_deriv1(int sh1, int sh2)
 {
     compute_pair_deriv1(bs1_->shell(sh1), bs2_->shell(sh2));
 }
 
 // The engine only supports segmented basis sets
-void DipoleInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2)
+void DipoleInt::compute_pair(const shared_ptr<GaussianShell>& s1, const shared_ptr<GaussianShell>& s2)
 {
     int ao12;
     int am1 = s1->am();
@@ -133,9 +131,6 @@ void DipoleInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<GaussianSh
             }
         }
     }
-
-    // Integrals are done. Normalize for angular momentum
-    normalize_am(s1, s2, 3);
 }
 
 // The engine only supports segmented basis sets
@@ -499,44 +494,41 @@ void DipoleInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<Gau
             }
         }
     }
-
-    // Integrals are done. Normalize for angular momentum
-    normalize_am(s1, s2, 3*3*natom_);
 }
 
-void DipoleInt::compute(std::vector<shared_ptr<SimpleMatrix> > &result)
-{
-    // Do not worry about zeroing out result
-    int ns1 = bs1_->nshell();
-    int ns2 = bs2_->nshell();
+//void DipoleInt::compute(std::vector<shared_ptr<SimpleMatrix> > &result)
+//{
+//    // Do not worry about zeroing out result
+//    int ns1 = bs1_->nshell();
+//    int ns2 = bs2_->nshell();
 
-    for (int i=0; i<ns1; ++i) {
-        for (int j=0; j<ns2; ++j) {
-            // Compute the shell
-            compute_shell(i, j);
+//    for (int i=0; i<ns1; ++i) {
+//        for (int j=0; j<ns2; ++j) {
+//            // Compute the shell
+//            compute_shell(i, j);
 
-            // Transform the shell to SO basis
-            so_transform(result[0], i, j, 0);
-            so_transform(result[1], i, j, 1);
-            so_transform(result[2], i, j, 2);
-        }
-    }
-}
+//            // Transform the shell to SO basis
+//            pure_transform(result[0], i, j, 0);
+//            pure_transform(result[1], i, j, 1);
+//            pure_transform(result[2], i, j, 2);
+//        }
+//    }
+//}
 
-void DipoleInt::compute_deriv1(std::vector<shared_ptr<SimpleMatrix> > &result)
-{
-    // Do not worry about zeroing out result
-    int ns1 = bs1_->nshell();
-    int ns2 = bs2_->nshell();
+//void DipoleInt::compute_deriv1(std::vector<shared_ptr<SimpleMatrix> > &result)
+//{
+//    // Do not worry about zeroing out result
+//    int ns1 = bs1_->nshell();
+//    int ns2 = bs2_->nshell();
 
-    for (int i=0; i<ns1; ++i) {
-        for (int j=0; j<ns2; ++j) {
-            // Compute the shell
-            compute_shell_deriv1(i, j);
-            // Transform the shell to SO basis
-            for (int k=0; k<3*3*natom_; ++k)
-                so_transform(result[k], i, j, k);
-        }
-    }
-}
+//    for (int i=0; i<ns1; ++i) {
+//        for (int j=0; j<ns2; ++j) {
+//            // Compute the shell
+//            compute_shell_deriv1(i, j);
+//            // Transform the shell to SO basis
+//            for (int k=0; k<3*3*natom_; ++k)
+//                so_transform(result[k], i, j, k);
+//        }
+//    }
+//}
 
