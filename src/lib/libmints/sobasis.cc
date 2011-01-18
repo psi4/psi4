@@ -142,12 +142,12 @@ SOBasis::SOBasis(const boost::shared_ptr<BasisSet> &basis, const boost::shared_p
         }
     }
 
-    shared_ptr<PetiteList> petite = shared_ptr<PetiteList>(new PetiteList(basis_, integral));
+    petite_ = shared_ptr<PetiteList>(new PetiteList(basis_, integral));
 
 //    petite->print();
 
-    int nblocks = petite->nblocks();
-    SO_block *soblocks = petite->aotoso_info();
+    int nblocks = petite_->nblocks();
+    SO_block *soblocks = petite_->aotoso_info();
 //    for (i=0; i<nblocks; ++i) {
 //        fprintf(outfile, "soblock[%d]\n", i); fflush(outfile);
 //        soblocks[i].print("");
@@ -353,4 +353,9 @@ Dimension SOBasis::dimension() const
 {
     shared_ptr<PetiteList> petite = shared_ptr<PetiteList>(new PetiteList(basis_, integral_));
     return petite->SO_basisdim();
+}
+
+const boost::shared_ptr<PetiteList> SOBasis::petitelist() const
+{
+    return petite_;
 }

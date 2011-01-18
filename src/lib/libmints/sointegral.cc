@@ -199,10 +199,23 @@ TwoBodySOInt::TwoBodySOInt(const boost::shared_ptr<TwoBodyInt> &tb,
                            const boost::shared_ptr<IntegralFactory>& integral)
     : tb_(tb)
 {
+    // Try to reduce some work:
     b1_ = boost::shared_ptr<SOBasis>(new SOBasis(tb->basis1(), integral));
-    b2_ = boost::shared_ptr<SOBasis>(new SOBasis(tb->basis2(), integral));
-    b3_ = boost::shared_ptr<SOBasis>(new SOBasis(tb->basis3(), integral));
-    b4_ = boost::shared_ptr<SOBasis>(new SOBasis(tb->basis4(), integral));
+
+    if (tb->basis1() == tb->basis2())
+        b2_ = b1_;
+    else
+        b2_ = boost::shared_ptr<SOBasis>(new SOBasis(tb->basis2(), integral));
+
+    if (tb->basis1() == tb->basis3())
+        b3_ = b1_;
+    else
+        b3_ = boost::shared_ptr<SOBasis>(new SOBasis(tb->basis3(), integral));
+
+    if (tb->basis3() == tb->basis4())
+        b4_ = b3_;
+    else
+        b4_ = boost::shared_ptr<SOBasis>(new SOBasis(tb->basis4(), integral));
 
     // Allocate accumulation buffer
     buffer_ = new double[16*INT_NCART(tb->basis1()->max_am())
