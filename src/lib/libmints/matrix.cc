@@ -934,7 +934,7 @@ void Matrix::copy_lower_to_upper()
     for (int h=0; h<nirreps_; ++h) {
         for (int m=0; m<rowspi_[h]; ++m) {
             for (int n=0; n<m; ++n) {
-                matrix_[h][m][n] = matrix_[h][n][m];
+                matrix_[h][n][m] = matrix_[h][m][n];
             }
         }
     }
@@ -945,7 +945,7 @@ void Matrix::copy_upper_to_lower()
     for (int h=0; h<nirreps_; ++h) {
         for (int m=0; m<rowspi_[h]; ++m) {
             for (int n=0; n<m; ++n) {
-                matrix_[h][n][m] = matrix_[h][m][n];
+                matrix_[h][m][n] = matrix_[h][n][m];
             }
         }
     }

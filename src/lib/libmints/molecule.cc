@@ -2007,6 +2007,7 @@ found_sigma:
         }
     }
 
+#ifdef DEBUG
     fprintf(outfile, "find point group:\n");
     fprintf(outfile, "  linear          = %s\n", linear          ? "true" : "false");
     fprintf(outfile, "  planar          = %s\n", planar          ? "true" : "false");
@@ -2024,6 +2025,7 @@ found_sigma:
         fprintf(outfile, "  sigmav          = %s\n", sigmav.to_string().c_str());
     if (have_sigma)
         fprintf(outfile, "  sigma           = %s\n", sigma.to_string().c_str());
+#endif
 
     // Find the three axes for the symmetry frame
     Vector3 xaxis = worldxaxis;

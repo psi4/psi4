@@ -970,7 +970,7 @@ void ERI::compute_quartet(int sh1, int sh2, int sh3, int sh4)
         for (size_t i=0; i<nprim_combination; ++i)
             temp += (double)libint_.PrimQuartet[i].F[0];
         source_[0] = temp;
-        fprintf(outfile, "s-functions = %8.5f\n", temp);
+//        fprintf(outfile, "s-functions = %8.5f\n", temp);
     }
 
 #ifdef MINTS_TIMER
@@ -982,8 +982,8 @@ void ERI::compute_quartet(int sh1, int sh2, int sh3, int sh4)
     // Normalize the integrals for angular momentum
     normalize_am(s1, s2, s3, s4);
 
-    for (int z=0; z<size; ++z)
-        fprintf(outfile, "pre-tranformed raw: %d -> %8.5f\n", z, source_[z]);
+//    for (int z=0; z<size; ++z)
+//        fprintf(outfile, "pre-tranformed raw: %d -> %8.5f\n", z, source_[z]);
 
     // Transform the integrals into pure angular momentum
     pure_transform(sh1, sh2, sh3, sh4, 1);
