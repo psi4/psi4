@@ -101,9 +101,6 @@ int CharacterTable::make_table()
 
         symop[0].E();
 
-        // Identity is implicitly assumed
-        bits_ = 0;
-
         break;
 
     case CI:
@@ -120,9 +117,6 @@ int CharacterTable::make_table()
 
         symop[0].E();
         symop[1].i();
-
-        bits_ = 0;
-        bits_ |= SymmOps::i;
 
         break;
 
@@ -299,6 +293,9 @@ int CharacterTable::make_table()
             trans[i+nt] = symop[i+nt].trace();
         }
 
+        // Each symop, tell it to print.
+        for (i=0; i<nirrep_; ++i)
+            symop[i].print(outfile);
         break;
 
     case CNH:

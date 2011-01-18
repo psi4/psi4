@@ -103,10 +103,14 @@ class SymmetryOperation {
     double d[3][3];
     unsigned int bit_;
 
+    void analyze_d();
+
   public:
     SymmetryOperation();
     SymmetryOperation(const SymmetryOperation &);
     ~SymmetryOperation();
+
+    SymmetryOperation & operator = (SymmetryOperation const & a); // Assignment operator
 
     /// returns the trace of the transformation matrix
     double trace() const { return d[0][0]+d[1][1]+d[2][2]; }
@@ -137,10 +141,10 @@ class SymmetryOperation {
     unsigned int bit() const { return bit_; }
 
     /// Set equal to a unit matrix
-    void unit() { zero(); d[0][0] = d[1][1] = d[2][2] = 1.0; }
+    void unit() { zero(); d[0][0] = d[1][1] = d[2][2] = 1.0;}
 
     /// Set equal to E
-    void E() { unit(); }
+    void E() { unit(); bit_ = SymmOps::E; }
 
     /// Set equal to an inversion
     void i() { zero(); d[0][0] = d[1][1] = d[2][2] = -1.0; bit_ = SymmOps::i; }
@@ -388,7 +392,6 @@ class CharacterTable {
     SymmetryOperation *symop;            //< the matrices describing sym ops
     int *_inv;                           //< index of the inverse symop
     char *symb;                          //< the Schoenflies symbol for the pg
-    uint16_t bits_;                       //< code needed for Andy's bitwise DCR, only applicable to D2h and its subgroups
 
     /// this determines what type of point group we're dealing with
     int parse_symbol();
@@ -491,6 +494,7 @@ class PointGroup {
     char *symb;
     SymmetryOperation frame;
     Vector3 origin_;
+    unsigned int bits_;
 
   public:
     PointGroup();
@@ -545,6 +549,11 @@ class PointGroup {
     ~PointGroup();
 
     PointGroup& operator=(const PointGroup&);
+
+    /// Set the bit representation of this group
+    void set_bits(unsigned int bits) { bits_ = bits; }
+    /// Get the bit representation of this group
+    unsigned int bits() const { return bits_; }
 
     /// Returns 1 if the point groups are equivalent, 0 otherwise.
     int equiv(const boost::shared_ptr<PointGroup> &, double tol = 1.0e-6) const;

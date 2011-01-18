@@ -406,23 +406,6 @@ PetiteList::~PetiteList()
     }
 
     delete[] stabilizer_;
-
-    if (dcr_size_)
-        free_int_matrix(dcr_size_);
-    if (dcr_) {
-        for (int i=0; i<nirrep_; ++i) {
-            for (int j=0; j<nirrep_; ++j) {
-                free(dcr_[i][j]);
-            }
-            free(dcr_[i]);
-        }
-        free(dcr_);
-    }
-    if (dcr_degeneracy_)
-        free_int_matrix(dcr_degeneracy_);
-    if (GnG_)
-        free_int_matrix(GnG_);
-
     stabilizer_=0;
     natom_=0;
     nshell_=0;
@@ -432,6 +415,7 @@ PetiteList::~PetiteList()
     p1_=0;
     atom_map_=0;
     shell_map_=0;
+
     lamij_=0;
     nbf_in_ir_=0;
 }
@@ -451,6 +435,8 @@ void PetiteList::init()
 
     // create the character table for the point group
     CharacterTable ct = mol.point_group()->char_table();
+
+    group_ = mol.point_group()->bits();
 
     // initialize private members
     c1_=0;
@@ -508,9 +494,10 @@ void PetiteList::init()
 
             atom_map_[i][g] = mol.atom_at_position1(np, 0.05);
 
-            if (atom_map_[i][g] == i)
+            if (atom_map_[i][g] == i) {
+                fprintf(outfile, "symmetry bit = %d\n", so.bit());
                 stabilizer_[i] |= so.bit();
-
+            }
             if (atom_map_[i][g] < 0) {
                 fprintf(outfile, "ERROR: Symmetry operation %d did not map atom %d to another atom:\n", g, i+1);
                 fprintf(outfile, "  Molecule:\n");
@@ -619,166 +606,6 @@ void PetiteList::init()
     }
 
     delete[] red_rep;
-
-    init_dcr();
-}
-
-void PetiteList::init_dcr()
-{
-    // grab references to the Molecule and BasisSet for convenience
-    BasisSet& gbs = *basis_.get();
-    Molecule& mol = *gbs.molecule().get();
-
-    // create the character table for the point group
-    CharacterTable ct = mol.point_group()->char_table();
-    const char *symlabel = mol.point_group()->symbol();
-
-    // start in a known state
-    dcr_ = 0;
-    dcr_degeneracy_ = 0;
-    dcr_size_ = 0;
-    GnG_ = 0;
-
-    // if C1 symmetry do nothing
-    if (!strcmp(symlabel, "c1"))
-        return;
-
-    // Memory allocation is based on nirrep_ (except for the inner index of dcr_)
-
-
-    // C2, Ci, and Cs cases are identical
-    //     0 -> E
-    //     1 -> C2/Ci/Cs
-    if (nirrep_ == 2
-        /*!strcmp(symlabel, "c2") ||
-          !strcmp(symlabel, "ci") ||
-          !strcmp(symlabel, "cs")*/) {
-
-        dcr_size_ = init_int_matrix(nirrep_, nirrep_);
-        dcr_degeneracy_ = init_int_matrix(nirrep_, nirrep_);
-        GnG_ = init_int_matrix(nirrep_, nirrep_);
-
-        dcr_size_[0][0] = 2;
-        dcr_size_[1][0] = dcr_size_[0][1] = dcr_size_[1][1] = 1;
-
-        dcr_ = (int ***) malloc(sizeof(int **)*nirrep_);
-        for(int u=0;u<nirrep_;u++) {
-            dcr_[u] = (int **) malloc(sizeof(int *)*nirrep_);
-            for(int v=0;v<nirrep_;v++)
-                dcr_[u][v] = (int *) malloc(sizeof(int)*dcr_size_[u][v]);
-        }
-
-        dcr_[0][0][0] = 0; dcr_[0][0][1] = 1;
-        dcr_[1][0][0] =    dcr_[0][1][0] =    dcr_[1][1][0] = 0;
-
-        dcr_degeneracy_[0][0] = dcr_degeneracy_[1][0] = dcr_degeneracy_[0][1] = 1;
-        dcr_degeneracy_[1][1] = 2;
-
-        GnG_[0][0] = GnG_[0][1] = GnG_[1][0] = 0;
-        GnG_[1][1] = 1;
-    }
-
-    /* Point groups with 4 irreps */
-    else if (!strcmp(symlabel, "c2v")) {
-        dcr_size_ = init_int_matrix(nirrep_, nirrep_);
-        dcr_degeneracy_ = init_int_matrix(nirrep_, nirrep_);
-        GnG_ = init_int_matrix(nirrep_, nirrep_);
-
-        dcr_size_[0][0] = 4;
-        dcr_size_[2][0] = dcr_size_[0][2] = dcr_size_[2][2] =
-                dcr_size_[3][0] = dcr_size_[0][3] = dcr_size_[3][3] = 2;
-        dcr_size_[1][0] = dcr_size_[0][1] =
-                dcr_size_[2][3] = dcr_size_[3][2] =
-                dcr_size_[2][1] = dcr_size_[1][2] =
-                dcr_size_[3][1] = dcr_size_[1][3] =
-                dcr_size_[1][1] = 1;
-
-        dcr_ = (int ***) malloc(sizeof(int **)*nirrep_);
-        for(int u=0;u<nirrep_;u++) {
-            dcr_[u] = (int **) malloc(sizeof(int *)*nirrep_);
-            for(int v=0;v<nirrep_;v++)
-                dcr_[u][v] = (int *) malloc(sizeof(int)*dcr_size_[u][v]);
-        }
-
-        dcr_degeneracy_[0][0] =
-                dcr_degeneracy_[2][0] = dcr_degeneracy_[0][2] =
-                dcr_degeneracy_[3][0] = dcr_degeneracy_[0][3] =
-                dcr_degeneracy_[1][0] = dcr_degeneracy_[0][1] =
-                dcr_degeneracy_[2][3] = dcr_degeneracy_[3][2] = 1;
-        dcr_degeneracy_[2][2] = dcr_degeneracy_[3][3] =
-                dcr_degeneracy_[2][1] = dcr_degeneracy_[1][2] =
-                dcr_degeneracy_[3][1] = dcr_degeneracy_[1][3] = 2;
-        dcr_degeneracy_[1][1] = 4;
-
-        GnG_[0][0] =
-                GnG_[0][2] = GnG_[2][0] =
-                GnG_[0][3] = GnG_[3][0] =
-                GnG_[0][1] = GnG_[1][0] =
-                GnG_[2][3] = GnG_[3][2] = 0;
-        GnG_[2][2] =
-                GnG_[2][1] = GnG_[1][2] = 1;
-        GnG_[3][3] =
-                GnG_[3][1] = GnG_[1][3] = 2;
-        GnG_[1][1] = 3;
-
-        /* DCR(C1,C1)         = E,C2,sig_xz,sig_yz */
-        dcr_[0][0][0] = 0; dcr_[0][0][1] = 1; dcr_[0][0][2] = 2; dcr_[0][0][3] = 3;
-        /* DCR(C1,Cs(xz))     = E,C2 */
-        dcr_[0][2][0] = 0; dcr_[0][2][1] = 1;
-        dcr_[2][0][0] = 0; dcr_[2][0][1] = 1;
-        /* DCR(C1,Cs(yz))     = E,C2 */
-        dcr_[0][3][0] = 0; dcr_[0][3][1] = 1;
-        dcr_[3][0][0] = 0; dcr_[3][0][1] = 1;
-        /* DCR(C1,C2v)        = E */
-        dcr_[0][1][0] = 0;
-        dcr_[1][0][0] = 0;
-        /* DCR(Cs(xz),Cs(xz)) = E,C2 */
-        dcr_[2][2][0] = 0; dcr_[2][2][1] = 1;
-        /* DCR(Cs(xz),Cs(yz)) = E */
-        dcr_[2][3][0] = 0;
-        dcr_[3][2][0] = 0;
-        /* DCR(Cs(xz),C2v)    = E */
-        dcr_[2][1][0] = 0;
-        dcr_[1][2][0] = 0;
-        /* DCR(Cs(yz),Cs(yz)) = E,C2 */
-        dcr_[3][3][0] = 0; dcr_[3][3][1] = 1;
-        /* DCR(Cs(yz),C2v)    = E */
-        dcr_[3][1][0] = 0;
-        dcr_[1][3][0] = 0;
-        /* DCR(C2v,C2v)       = E */
-        dcr_[1][1][0] = 0;
-    }
-
-    else if (!strcmp(symlabel, "c2h")) {
-
-    }
-
-    else if (!strcmp(symlabel, "d2")) {
-        dcr_size_ = init_int_matrix(5, 5);
-        dcr_degeneracy_ = init_int_matrix(5, 5);
-        GnG_ = init_int_matrix(5, 5);
-
-        dcr_size_[0][0] = 4;
-        dcr_size_[1][0] = dcr_size_[0][1] =
-                dcr_size_[2][0] = dcr_size_[0][2] =
-                dcr_size_[3][0] = dcr_size_[0][3] =
-                dcr_size_[1][1] = dcr_size_[2][2] = dcr_size_[3][3] = 2;
-        dcr_size_[4][0] = dcr_size_[0][4] =
-                dcr_size_[1][2] = dcr_size_[2][1] =
-                dcr_size_[1][3] = dcr_size_[3][1] =
-                dcr_size_[1][4] = dcr_size_[4][1] =
-                dcr_size_[2][3] = dcr_size_[3][2] =
-                dcr_size_[2][4] = dcr_size_[4][2] =
-                dcr_size_[3][4] = dcr_size_[4][3] =
-                dcr_size_[4][4] = 1;
-
-        dcr_ = (int ***) malloc(sizeof(int **)*nirrep_);
-        for(int u=0;u<nirrep_;u++) {
-            dcr_[u] = (int **) malloc(sizeof(int *)*nirrep_);
-            for(int v=0;v<nirrep_;v++)
-                dcr_[u][v] = (int *) malloc(sizeof(int)*dcr_size_[u][v]);
-        }
-    }
 }
 
 Dimension PetiteList::AO_basisdim()
@@ -866,16 +693,6 @@ void PetiteList::print(FILE *out)
     CharacterTable ct = basis_->molecule()->point_group()->char_table();
     for (i=0; i<nirrep_; ++i)
         fprintf(out, "%5d functions of %s symmetry\n", nbf_in_ir_[i], ct.gamma(i).symbol());
-
-    fprintf(outfile, "\n  dcr_size_:\n");
-    print_int_mat(dcr_size_, nirrep_, nirrep_, outfile);
-
-    fprintf(outfile, "\n  dcr_degeneracy_:\n");
-    print_int_mat(dcr_degeneracy_, nirrep_, nirrep_, outfile);
-
-    fprintf(outfile, "\n  GnG_:\n");
-    print_int_mat(GnG_, nirrep_, nirrep_, outfile);
-    fprintf(outfile, "\n");
 }
 
 SO_block* PetiteList::aotoso_info()

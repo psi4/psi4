@@ -3,8 +3,10 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include <map>
 #include <cstdio>
 #include <stdint.h>
+#include "pointgrp.h"
 
 namespace psi {
 
@@ -98,9 +100,9 @@ class PetiteList
     char *lamij_;
     int *nbf_in_ir_;
     unsigned int *stabilizer_;
+    unsigned int group_;
 
     void init();
-    void init_dcr();
 
 public:
     PetiteList(const boost::shared_ptr<BasisSet>&, const boost::shared_ptr<IntegralFactory>&);
@@ -128,12 +130,14 @@ public:
 
     void print(FILE *out=outfile);
 
+    unsigned int group() const { return group_; }
+
     unsigned int stabilizer(int atom) const { return stabilizer_[atom]; }
-    unsigned int dcr(int group, int subgroup1, int subgroup2) const {
+    unsigned int dcr(int subgroup1, int subgroup2) const {
         std::map<unsigned int,bool> uniqueCosets;
         for(int g = 0; g < 8; ++g){
             int coset = 0;
-            if(SKIP_THIS_OPERATOR(group, g)) continue;
+            if(SKIP_THIS_OPERATOR(group_, g)) continue;
             for(int mu = 0; mu < 8; ++mu){
                 if(SKIP_THIS_OPERATOR(subgroup1, mu)) continue;
                 for(int nu = 0; nu < 8; ++nu){
@@ -143,8 +147,8 @@ public:
             }
             uniqueCosets[coset] = 1;
         }
-        std::map<int, bool>::const_iterator iter = uniqueCosets.begin();
-        std::map<int, bool>::const_iterator stop = uniqueCosets.end();
+        std::map<unsigned int, bool>::const_iterator iter = uniqueCosets.begin();
+        std::map<unsigned int, bool>::const_iterator stop = uniqueCosets.end();
         int count = 0;
         unsigned int rOperators = 0;
         for(; iter != stop; ++iter){

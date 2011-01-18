@@ -346,19 +346,20 @@ void OneBodySOInt::compute_dcr(boost::shared_ptr<Matrix> result)
                 }
 
                 int atom_i = integral_->basis1()->shell(s1.aoshell)->ncenter();
-                int stab_i = petite->stabilizer(atom_i);
+                unsigned int stab_i = petite->stabilizer(atom_i);
 
                 for (int j=0; j<t2.naoshell; ++j) {
                     const SOTransformShell &s2 = t2.aoshell[j];
 
                     int atom_j = integral_->basis2()->shell(s2.aoshell)->ncenter();
-                    int stab_j = petite->stabilizer(atom_j);
+                    unsigned int stab_j = petite->stabilizer(atom_j);
 
-                    double lambda = petite->order() / petite->dcr_degeneracy(stab_i, stab_j);
+                    unsigned rOperator = petite->dcr(stab_i, stab_j);
+                    double lambda = petite->order() / petite->dcr_degeneracy(rOperator);
 
-                    fprintf(outfile, "i = %d, j = %d, in_p2 = %d stab_i = %d stab_j = %d lambda = %8.5f\n",
+                    fprintf(outfile, "i = %d, j = %d, in_p2 = %d stab_i = %d stab_j = %d lambda = %8.5f order = %d, degen = %d\n",
                             s1.aoshell, s2.aoshell, petite->in_p2(s1.aoshell, s2.aoshell),
-                            stab_i, stab_j, lambda);
+                            stab_i, stab_j, lambda, petite->order(), petite->dcr_degeneracy(rOperator));
 
                     ob_->compute_shell(s1.aoshell, s2.aoshell);
 
