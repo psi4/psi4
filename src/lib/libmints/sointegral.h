@@ -116,8 +116,8 @@ public:
     void compute_shell_smart(int, int, int, int, TwoBodySOIntFunctor& body);
 };
 
-template<typename TwoBodySOFunctor>
-void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOFunctor& body)
+template<typename TwoBodySOIntFunctor>
+void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIntFunctor& body)
 {
 //    fprintf(outfile, "computing shell (%d %d %d %d)\n", ish, jsh, ksh, lsh);
 
@@ -271,8 +271,8 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOFu
     }
 }
 
-template<typename TwoBodySOFunctor>
-void TwoBodySOInt::compute_shell_smart(int ish, int jsh, int ksh, int lsh, TwoBodySOFunctor& body)
+template<typename TwoBodySOIntFunctor>
+void TwoBodySOInt::compute_shell_smart(int ish, int jsh, int ksh, int lsh, TwoBodySOIntFunctor& body)
 {
     // ish ... are unique shells.
     fprintf(outfile, "\tcomputing SO shell quartet (%d %d %d %d)\n", ish, jsh, ksh, lsh);

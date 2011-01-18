@@ -488,8 +488,8 @@ void PetiteList::init()
     double np[3];
     SymmetryOperation so;
 
-    stabilizer_ = new int[natom_];
-    memset(stabilizer_, 0, sizeof(int)*natom_);
+    stabilizer_ = new unsigned int[natom_];
+    memset(stabilizer_, 0, sizeof(unsigned int)*natom_);
 
     // loop over all centers
     for (i=0; i < natom_; i++) {
@@ -508,9 +508,8 @@ void PetiteList::init()
 
             atom_map_[i][g] = mol.atom_at_position1(np, 0.05);
 
-            if (stabilizer_[i] == 0 && atom_map_[i][g] == i) {
-                stabilizer_[i] = g;
-            }
+            if (atom_map_[i][g] == i)
+                stabilizer_[i] |= so.bit();
 
             if (atom_map_[i][g] < 0) {
                 fprintf(outfile, "ERROR: Symmetry operation %d did not map atom %d to another atom:\n", g, i+1);

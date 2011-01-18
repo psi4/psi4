@@ -75,7 +75,7 @@ SymmetryOperation::transform(const SymmetryOperation& r) const
 {
   int i,j,k;
   SymmetryOperation ret,foo;
-  
+
   // foo = r * d
   for (i=0; i < 3; i++) {
     for (j=0; j < 3; j++) {
@@ -121,6 +121,9 @@ SymmetryOperation::rotation(double theta)
   d[1][0] = -stheta;
   d[1][1] = ctheta;
   d[2][2] = 1.0;
+
+  if (theta == M_PI)
+      bit_ = SymmOps::C2_z;
 }
 
 void

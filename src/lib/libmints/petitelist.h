@@ -97,12 +97,7 @@ class PetiteList
     int **shell_map_;
     char *lamij_;
     int *nbf_in_ir_;
-    int *stabilizer_;
-
-    int ***dcr_;
-    int **dcr_size_;
-    int **dcr_degeneracy_;
-    int **GnG_;
+    unsigned int *stabilizer_;
 
     void init();
     void init_dcr();
@@ -133,11 +128,50 @@ public:
 
     void print(FILE *out=outfile);
 
-    int stabilizer(int atom) const { return stabilizer_[atom]; }
-    int dcr(int stab_i, int stab_j, int n) const { return dcr_[stab_i][stab_j][n]; }
-    int dcr_size(int stab_i, int stab_j) const { return dcr_size_[stab_i][stab_j]; }
-    int dcr_degeneracy(int stab_i, int stab_j) const { return dcr_degeneracy_[stab_i][stab_j]; }
-    int GnG(int stab_i, int stab_j) const { return GnG_[stab_i][stab_j]; }
+    unsigned int stabilizer(int atom) const { return stabilizer_[atom]; }
+    unsigned int dcr(int group, int subgroup1, int subgroup2) const {
+        std::map<unsigned int,bool> uniqueCosets;
+        for(int g = 0; g < 8; ++g){
+            int coset = 0;
+            if(SKIP_THIS_OPERATOR(group, g)) continue;
+            for(int mu = 0; mu < 8; ++mu){
+                if(SKIP_THIS_OPERATOR(subgroup1, mu)) continue;
+                for(int nu = 0; nu < 8; ++nu){
+                    if(SKIP_THIS_OPERATOR(subgroup2, nu)) continue;
+                    coset |= NUM_TO_OPERATOR_ID(mu^g^nu);
+                }
+            }
+            uniqueCosets[coset] = 1;
+        }
+        std::map<int, bool>::const_iterator iter = uniqueCosets.begin();
+        std::map<int, bool>::const_iterator stop = uniqueCosets.end();
+        int count = 0;
+        unsigned int rOperators = 0;
+        for(; iter != stop; ++iter){
+            int coset = iter->first;
+            if(count++){
+                for(int op = 1; op < 8; ++op){
+                    if(SKIP_THIS_OPERATOR(coset, op)) continue;
+                    rOperators |= NUM_TO_OPERATOR_ID(op);
+                    break;
+                }
+            }
+        }
+        return rOperators;
+    }
+    /// Number of operators in the point group.
+    /// @param group Get this from dcr()
+    int dcr_degeneracy(unsigned int group) const {
+        int degeneracy = 0;
+        for(int op = 0; op < 8; ++op){
+            if(SKIP_THIS_OPERATOR(group, op)) continue;
+            ++degeneracy;
+        }
+        return degeneracy;
+    }
+    unsigned int GnG(unsigned int group1, unsigned int group2) const {
+         return group1 & group2;
+    }
 
     Dimension AO_basisdim();
     Dimension SO_basisdim();
