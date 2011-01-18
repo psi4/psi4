@@ -179,6 +179,7 @@ SOBasis::SOBasis(const boost::shared_ptr<BasisSet> &basis, const boost::shared_p
                     throw PSIEXCEPTION("SOBasis::SOBasis: shell changed");
                 }
 
+                fprintf(outfile, "\nabout to call add_transform(...): aoshellfunc = %d, bfn = %d\n", aoshellfunc, bfn);
                 trans_[soshell].add_transform(aoshell,irrep, coef,aoshellfunc,sofunc);
             }
         }

@@ -57,6 +57,7 @@ ShellRotation::ShellRotation(const ShellRotation& other)
 ShellRotation::ShellRotation(int a, SymmetryOperation& so, IntegralFactory* ints, int pure) :
     n_(0), am_(0), r_(0)
 {
+    fprintf(outfile, "ShellRotation: pure = %d\n", pure);
     if (a > 0 && pure)
         init_pure(a, so, ints);
     else
