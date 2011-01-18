@@ -56,6 +56,7 @@ namespace psi {
     namespace transqt2 { PsiReturnType transqt2(Options &); }
     namespace ccsort   { PsiReturnType ccsort(Options&);    }
     namespace ccenergy { PsiReturnType ccenergy(Options&);  }
+    namespace cctriples { PsiReturnType cctriples(Options&);  }
     namespace cchbar   { PsiReturnType cchbar(Options&);    }
     namespace cclambda { PsiReturnType cclambda(Options&);  }
     namespace ccdensity{ PsiReturnType ccdensity(Options&); }
@@ -269,6 +270,15 @@ double py_psi_ccenergy()
         return 0.0;
 }
 
+double py_psi_cctriples()
+{
+    if (cctriples::cctriples(Process::environment.options) == Success) {
+        return Process::environment.globals["CURRENT ENERGY"];
+    }
+    else
+        return 0.0;
+}
+
 double py_psi_cchbar()
 {
     cchbar::cchbar(Process::environment.options);
@@ -468,7 +478,7 @@ double py_psi_get_variable(const std::string & key)
 {
     string uppercase_key = key;
     transform(uppercase_key.begin(), uppercase_key.end(), uppercase_key.begin(), ::toupper);
-    return Process::environment.globals[key];
+    return Process::environment.globals[uppercase_key];
 }
 
 void py_psi_set_memory(unsigned long int mem)
@@ -546,6 +556,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("transqt2", py_psi_transqt2);
     def("ccsort", py_psi_ccsort);
     def("ccenergy", py_psi_ccenergy);
+    def("cctriples", py_psi_cctriples);
     def("cchbar", py_psi_cchbar);
     def("cclambda", py_psi_cclambda);
     def("ccdensity", py_psi_ccdensity);

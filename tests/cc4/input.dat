@@ -1,17 +1,50 @@
-%! RHF-CCSD(T) cc-pVQZ frozen-core energy of the BH molecule.
+#%! RHF-CCSD(T) cc-pVQZ frozen-core energy of the BH molecule.
 
-psi: (
-  label = "BH CCSD(T)"
-  jobtype = sp
-  wfn = ccsd_t
-  reference = rhf
-  dertype = none
-  docc = (3 0 0 0)
-  freeze_core = true
-  basis = "cc-pVQZ"
-  geometry = (
+refnuc = 2.645886245000000
+refscf = -25.103546873615137
+refccsd = -0.100265803802460
+ref_t   = -0.002090933428780
+reftotal = -25.205903610846349
+
+molecule bh {
     b      0.0000        0.0000        0.0000
     h      0.0000        0.0000        1.0000
-      )
-)
+}
 
+globals {
+   wfn ccsd_t
+   docc [3, 0, 0, 0]
+   basis cc-pvqz
+   freeze_core true
+   dertype none
+
+   convergence 10
+   e_converge 10
+   d_converge 10
+}
+
+activate(bh)
+mints()
+energy('ccsd(t)')
+
+compare_values(refnuc,   bh.nuclear_repulsion_energy(),  9, "Nuclear repulsion energy")
+compare_values(refscf,   get_variable("SCF energy"),     9, "SCF energy")
+compare_values(refccsd,  get_variable("CCSD energy"),    9, "CCSD contribution")
+compare_values(ref_t,    get_variable("(T) energy"),     9, "(T) contribution")
+compare_values(reftotal, get_variable("Current energy"), 9, "Total energy")
+
+#psi: (
+#  label = "BH CCSD(T)"
+#  jobtype = sp
+#  wfn = ccsd_t
+#  reference = rhf
+#  dertype = none
+#  docc = (3 0 0 0)
+#  freeze_core = true
+#  basis = "cc-pVQZ"
+#  geometry = (
+#    b      0.0000        0.0000        0.0000
+#    h      0.0000        0.0000        1.0000
+#      )
+#)
+#

@@ -102,6 +102,29 @@ def run_ccsd(name, **kwargs):
     PsiMod.ccsort()
     PsiMod.ccenergy()
 
+def run_ccsd_t(name, **kwargs):
+
+    molecule = PsiMod.get_active_molecule()
+    if (kwargs.has_key('molecule')):
+        molecule = kwargs.pop('molecule')
+
+    if not molecule:
+        raise ValueNotSet("no molecule found")
+
+    molecule.update_geometry()
+    PsiMod.set_active_molecule(molecule)
+
+    # For a CCSD energy, we need SCF to be run.
+    # Could we somehow do a check to see if SCF was run?
+    # This would be useful of the user had to do something special with SCF to get
+    # it to converge.
+    run_scf("scf", **kwargs);
+
+    PsiMod.transqt2()
+    PsiMod.ccsort()
+    PsiMod.ccenergy()
+    PsiMod.cctriples()
+
 def run_dfmp2(name, **kwargs):
 
     run_scf('RHF',**kwargs)
