@@ -2184,7 +2184,7 @@ void Molecule::form_symmetry_information(double tol)
     }
 
     // The first atom in the equiv list is considered the primary
-    // unique atom. Just to make things look pretty, amek the
+    // unique atom. Just to make things look pretty, make the
     // atom with the most zeros in its x, y, z coordinate the
     // unique atom. Nothing else should rely on this being done.
     double ztol=1.0e-5;
