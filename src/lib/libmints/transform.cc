@@ -71,24 +71,26 @@ void SphericalTransform::init()
 
     for (int p=0; p<npure(subl_); ++p) {
         cartindex = 0;
-        for (int ii=0; ii<=l_; ++ii) {
-            int a = l_ - ii;
-            for (int jj=0; jj<=ii; ++jj) {
-                int b = ii - jj;
-                int c = jj;
+//        for (int ii=0; ii<=l_; ++ii) {
+//            int a = l_ - ii;
+//            for (int jj=0; jj<=ii; ++jj) {
+//                int b = ii - jj;
+//                int c = jj;
 
-//        for (int a=0; a<=l_; ++a) {
-//            for (int b=0; (a+b)<=l_; ++b) {
-//                int c = l_ - a -b;
+        for (int a=0; a<=l_; ++a) {
+            for (int b=0; (a+b)<=l_; ++b) {
+                int c = l_ - a -b;
 
 //                fprintf(outfile, "a = %d b = %d c = %d\n", a, b, c);
-                int cart = icart(a, b, c);
+                int cart1 = icart(a, b, c);
+                int cart2 = INT_CARTINDEX(a+b+c, a, b);
 
-                double coef = coefmat(cart, p+pureindex);
+                double coef = coefmat(cart1, p+pureindex);
 
                 if (fabs(coef) > 1.0e-16) {
                     SphericalTransformComponent component;
-                    component.init(a, b, c, coef, cartindex, p);
+//                    component.init(a, b, c, coef, cartindex, p);
+                    component.init(a, b, c, coef, cart2, p);
                     components_.push_back(component);
                 }
                 cartindex++;
@@ -153,22 +155,24 @@ void ISphericalTransform::init()
 
     for (int p=0; p<npure(subl_); ++p) {
         cartindex = 0;
-        for (int ii=0; ii<=l_; ++ii) {
-            int c = l_ - ii;
-            for (int jj=0; jj<=ii; ++jj) {
-                int b = ii - jj;
-                int a = jj;
-//        for (int a=0; a<=l_; ++a) {
-//            for (int b=0; (a+b)<=l_; ++b) {
-//                int c = l_ - a -b;
+//        for (int ii=0; ii<=l_; ++ii) {
+//            int c = l_ - ii;
+//            for (int jj=0; jj<=ii; ++jj) {
+//                int b = ii - jj;
+//                int a = jj;
+        for (int a=0; a<=l_; ++a) {
+            for (int b=0; (a+b)<=l_; ++b) {
+                int c = l_ - a -b;
 
-                int cart = icart(a, b, c);
+                int cart1 = icart(a, b, c);
+                int cart2 = INT_CARTINDEX(a+b+c, a, b);
 
-                double coef = coefmat(cart, p+pureindex);
+                double coef = coefmat(cart1, p+pureindex);
 
                 if (fabs(coef) > 1.0e-16) {
                     SphericalTransformComponent component;
-                    component.init(a, b, c, coef, cartindex, p);
+//                    component.init(a, b, c, coef, cartindex, p);
+                    component.init(a, b, c, coef, cart2, p);
                     components_.push_back(component);
                 }
                 cartindex++;

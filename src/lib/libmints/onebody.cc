@@ -76,10 +76,12 @@ static void transform1e_1(int am, SphericalTransformIter& sti, double *s, double
         double *tptr = t + sti.pureindex()*nl;
         double coef = sti.coef();
 
-//        fprintf(outfile, "1e_1: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(), sti.coef());
+        fprintf(outfile, "1e_1: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(), sti.coef());
 
-        for(int l=0; l<nl; l++)
+        for(int l=0; l<nl; l++) {
+            fprintf(outfile, "\ttptr = %8.5f coef = %8.5f sptr = %8.5f\n", *tptr, coef, *sptr);
             *(tptr++) += coef * *(sptr++);
+        }
     }
 }
 
@@ -95,9 +97,10 @@ static void transform1e_2(int am, SphericalTransformIter& sti, double *s, double
         double *tptr = t + sti.pureindex();
         double coef = sti.coef();
 
-//        fprintf(outfile, "1e_2: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(), sti.coef());
+        fprintf(outfile, "1e_2: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(), sti.coef());
 
         for(int k=0; k<nk; k++,sptr+=sl,tptr+=tl) {
+            fprintf(outfile, "\ttptr = %8.5f coef = %8.5f sptr = %8.5f\n", *tptr, coef, *sptr);
             *(tptr) += coef * *(sptr);
         }
     }
