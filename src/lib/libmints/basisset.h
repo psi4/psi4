@@ -41,9 +41,9 @@ class BasisSet
     friend class BasisSetParser;
 
     //! Number of primitives.
-    int nprimitives_;
+    int nprimitive_;
     //! Number of shells.
-    int nshells_;
+    int nshell_;
     //! Number of atomic orbitals.
     int nao_;
     //! Number of basis functions (either cartesian or spherical)
@@ -51,20 +51,13 @@ class BasisSet
     //! Maximum angular momentum
     int max_am_;
     //! Maximum number of primitives.
-    int max_nprimitives_;
+    int max_nprimitive_;
     //! Shell number to first basis function index.
-    int *shell_first_basis_function_;
+    std::vector<int> shell_first_basis_function_;           // Is this used?
     //! Shell number to first atomic function index.
-    int *shell_first_ao_;
+    std::vector<int> shell_first_ao_;
     //! Shell number to atomic center.
-    int *shell_center_;
-    //! Not used, yet.
-    int max_stability_index_;
-    //! Unique symmetry orbitals to atomic orbitals.
-    double **uso2ao_;
-    boost::shared_ptr<SimpleMatrix> simple_mat_uso2ao_;
-    double **uso2bf_;
-    boost::shared_ptr<SimpleMatrix> simple_mat_uso2bf_;
+    std::vector<int> shell_center_;
 
     //! Map function number to shell
     std::vector<int> function_to_shell_;
@@ -79,9 +72,12 @@ class BasisSet
 
     //! Array of gaussian shells
     std::vector<boost::shared_ptr<GaussianShell> > shells_;
+
     //! Molecule object.
     boost::shared_ptr<Molecule> molecule_;
-    //! Symmetry orbital transformation (used in one-electron integrals)
+    /** Symmetry orbital transformation (used in one-electron integrals)
+     *  NOTE: This will likely change.
+     */
     boost::shared_ptr<SOTransform> sotransform_;
     //! Spherical transfromation (used in two-electron integrals)
     std::vector<SphericalTransform> sphericaltransforms_;
@@ -98,7 +94,7 @@ class BasisSet
         @param chkpt Checkpoint library object to read from.
         @param basiskey If reading non-default basis set information then this is set to the suffix of the TOC entries.
       */
-    void initialize_shells(boost::shared_ptr<psi::Chkpt> chkpt, std::string& basiskey);
+//    void initialize_shells(boost::shared_ptr<psi::Chkpt> chkpt, std::string& basiskey);
 
     // Has static information been initialized?
     static boost::once_flag initialized_shared_;
@@ -112,7 +108,7 @@ public:
      *  @param basiskey To load the default basis set leave this parameter empty.
      *                  If an RI-basis is wanted pass "DF"
      */
-    BasisSet(boost::shared_ptr<psi::Chkpt> chkpt, std::string basiskey = "");
+//    BasisSet(boost::shared_ptr<psi::Chkpt> chkpt, std::string basiskey = "");
 
     /** Copy constructor, currently errors if used. */
     BasisSet(const BasisSet&);
@@ -125,17 +121,17 @@ public:
     /** Number of primitives.
      *  @return The total number of primitives in all contractions.
      */
-    int nprimitive() const             { return nprimitives_; }
+    int nprimitive() const             { return nprimitive_; }
     /** Maximum number of primitives in a shell.
      *  Examines each shell and find the shell with the maximum number of primitives returns that
      *  number of primitives.
      *  @return Maximum number of primitives.
      */
-    int max_nprimitive() const         { return max_nprimitives_; }
+    int max_nprimitive() const         { return max_nprimitive_; }
     /** Number of shells.
      *  @return Number of shells.
      */
-    int nshell() const                 { return nshells_;     }
+    int nshell() const                 { return nshell_;     }
     /** Number of atomic orbitals (Cartesian).
      * @return The number of atomic orbitals (Cartesian orbitals).
      */
@@ -156,13 +152,16 @@ public:
      *  @return Shared pointer to the molecule for this basis set.
      */
     boost::shared_ptr<Molecule> molecule() const         { return molecule_;    }
-    /// Maximum stabilizer index
-    int max_stability_index() const    { return max_stability_index_; }
     /** Given a shell what is its first AO function
      *  @param i Shell number
      *  @return The function number for the first function for the i'th shell.
      */
     int shell_to_function(int i) const { return shell_first_ao_[i]; }
+    /** Given a shell what is its atomic center
+     *  @param i Shell number
+     *  @return The atomic center for the i'th shell.
+     */
+    int shell_to_center(int i) const { return shell_center_[i]; }
     /** Given a shell what is its first basis function (spherical) function
      *  @param i Shell number
      *  @return The function number for the first function for the i'th shell.
@@ -184,12 +183,6 @@ public:
      */
     boost::shared_ptr<GaussianShell> shell(int center, int si) const;
 
-    /** Returns i'th shell's transform object.
-     *  @param i Shell number
-     *  @return A SOTransformShell object that details how to transform from AO to SO.
-     */
-    SOTransformShell* so_transform(int i);
-
     /** Returns the transformation object for a given angular momentum. Used in ERIs.
      *  @param am Angular momentum
      *  @return A SphericalTransform object that details how to transfrom from AO to BF.
@@ -201,16 +194,6 @@ public:
      */
     void print(FILE *out = outfile) const;
 
-    /** Returns the uso2ao_ matrix.
-     *  @return The transformation matrix for USO to AO.
-     */
-    const boost::shared_ptr<SimpleMatrix> uso_to_ao() const { return simple_mat_uso2ao_; }
-
-    /** Returns the uso2bf_ matrix.
-     *  @return The transformation matrix for USO to BF.
-     */
-    const boost::shared_ptr<SimpleMatrix> uso_to_bf() const { return simple_mat_uso2bf_; }
-
     /** Refresh internal basis set data. Useful if someone has pushed to shells_.
      *  Pushing to shells_ happens in the BasisSetParsers, so the parsers will
      *  call refresh().
@@ -221,10 +204,6 @@ public:
     int nshell_on_center(int i) const { return center_to_nshell_[i]; }
     /// Return the overall shell number
     int shell_on_center(int center, int shell) const { return center_to_shell_[center] + shell; }
-
-    // Build AO transformation matrix. AOs transformed by symmetry operations of the point group of the molecule.
-    // Here for testing.
-    void build_ao_transformation_matrix();
 
     /** Return a BasisSet object containing all shells at center i
      *

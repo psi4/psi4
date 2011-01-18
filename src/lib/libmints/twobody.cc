@@ -24,10 +24,6 @@ TwoBodyInt::TwoBodyInt(
     tformbuf_ = 0;
     source_ = 0;
     natom_ = original_bs1_->molecule()->natom();  // This assumes the 4 bases come from the same molecule.
-
-    // compute the maximum number of unique quartets needed for a given i, by
-    // using the max_stability_index_ of j, k, and l.
-    max_unique_quartets_ = original_bs2_->max_stability_index() * original_bs3_->max_stability_index() * original_bs4_->max_stability_index();
 }
 
 TwoBodyInt::~TwoBodyInt()

@@ -1,6 +1,7 @@
 #include "sointegral.h"
 #include "twobody.h"
 #include "basisset.h"
+#include "gshell.h"
 #include "integral.h"
 
 #include <boost/shared_ptr.hpp>
@@ -64,10 +65,10 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh)
 {
     const double *aobuf = tb_->buffer();
 
-    SOTransformShell *t1 = b1_->so_transform(ish);
-    SOTransformShell *t2 = b2_->so_transform(jsh);
-    SOTransformShell *t3 = b3_->so_transform(ksh);
-    SOTransformShell *t4 = b4_->so_transform(lsh);
+//    SOTransformShell *t1 = b1_->so_transform(ish);
+//    SOTransformShell *t2 = b2_->so_transform(jsh);
+//    SOTransformShell *t3 = b3_->so_transform(ksh);
+//    SOTransformShell *t4 = b4_->so_transform(lsh);
 
     int nso1 = b1_->shell(ish)->nfunction();
     int nso2 = b2_->shell(jsh)->nfunction();

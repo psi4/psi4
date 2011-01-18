@@ -1,15 +1,15 @@
 #ifndef _psi_src_lib_libmints_sointegral_h_
 #define _psi_src_lib_libmints_sointegral_h_
 
+#include "twobody.h"
+#include "basisset.h"
+
 namespace boost {
 template <class T>
 class shared_ptr;
 }
 
 namespace psi {
-
-class TwoBodyInt;
-class BasisSet;
 
 class TwoBodySOInt
 {
