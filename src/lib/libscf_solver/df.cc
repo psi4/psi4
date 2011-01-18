@@ -1085,30 +1085,30 @@ void HF::form_W_Poisson()
             }
         }
     }
-    
+
     // == (AB) Block == //
     IntegralFactory rifactory_RP(ribasis_, poissonbasis_,  zero, zero);
-    shared_ptr<OneBodyInt> O(rifactory_RP.overlap());
+    shared_ptr<OneBodySOInt> O(rifactory_RP.so_overlap());
     SharedMatrix Omat(new Matrix(1, &nri, &npois));
     O->compute(Omat);
 
     for (int omu = 0; omu < ribasis_->nbf(); omu++) {
         for (int onu = ribasis_->nbf(); onu < ribasis_->nbf() + npois; onu++) {
             W_[omu][onu] = Omat->get(0,omu, onu - ribasis_->nbf());
-            W_[onu][omu] = W_[omu][onu]; 
+            W_[onu][omu] = W_[omu][onu];
         }
     }
 
     // == (A|T|B) Block == //
     IntegralFactory rifactory_P(poissonbasis_, poissonbasis_,  zero, zero);
-    shared_ptr<OneBodyInt> T(rifactory_P.kinetic());
+    shared_ptr<OneBodySOInt> T(rifactory_P.so_kinetic());
     SharedMatrix Tmat(new Matrix(1, &npois, &npois));
     T->compute(Tmat);
 
     for (int omu = ribasis_->nbf(); omu < ribasis_->nbf() + npois; omu++) {
         for (int onu = ribasis_->nbf(); onu < ribasis_->nbf() + npois; onu++) {
             W_[omu][onu] = 1.0/(2.0*M_PI)*Tmat->get(0,omu - ribasis_->nbf(), onu - ribasis_->nbf());
-            W_[onu][omu] = W_[omu][onu]; 
+            W_[onu][omu] = W_[omu][onu];
         }
     }
 
@@ -1301,7 +1301,7 @@ void HF::form_Wm12_fin()
     // Build RI basis, indexing, and W_
     if (options_.get_str("SCF_TYPE") == "POISSON") {
         //form_W_Poisson();
-        throw std::domain_error("Poisson fitting with canonical orthogonalization not implemented yet"); 
+        throw std::domain_error("Poisson fitting with canonical orthogonalization not implemented yet");
     } else
         form_W();
 
@@ -1311,7 +1311,7 @@ void HF::form_Wm12_fin()
     // Create integral factory for J_S (Overlap Matrix in form_B)
     shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
     IntegralFactory rifactory_JS(ribasis_, ribasis_, zero, zero);
-    OneBodyInt *S = rifactory_JS.overlap();
+    OneBodySOInt *S = rifactory_JS.so_overlap();
     MatrixFactory matJS;
     matJS.init_with(1,&naux_raw_,&naux_raw_);
 

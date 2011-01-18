@@ -14,6 +14,25 @@ namespace psi {
 
 OneBodySOInt::OneBodySOInt(const boost::shared_ptr<OneBodyInt> & ob,
                            const boost::shared_ptr<IntegralFactory>& integral)
+    : ob_(ob), integral_(integral.get())
+{
+    b1_ = boost::shared_ptr<SOBasis>(new SOBasis(ob->basis1(), integral));
+
+    //    b1_->print();
+
+    if (ob->basis2() == ob->basis1())
+        b2_ = b1_;
+    else
+        b2_ = boost::shared_ptr<SOBasis>(new SOBasis(ob->basis2(), integral));
+
+    only_totally_symmetric_ = 0;
+
+    buffer_ = new double[INT_NCART(ob->basis1()->max_am())
+            *INT_NCART(ob->basis2()->max_am())];
+}
+
+OneBodySOInt::OneBodySOInt(const boost::shared_ptr<OneBodyInt> & ob,
+                           const IntegralFactory* integral)
     : ob_(ob), integral_(integral)
 {
     b1_ = boost::shared_ptr<SOBasis>(new SOBasis(ob->basis1(), integral));
@@ -114,10 +133,10 @@ void OneBodySOInt::compute_shell(int ish, int jsh)
 void OneBodySOInt::compute(boost::shared_ptr<Matrix> result)
 {
     // Check symmetry.
-    if (b1_->nirrep() == 1) {
-        // Molecule has C1 symmetry. Need to use the ob_ object to get a SimpleMatrix.
-        throw FeatureNotImplemented("libmints", "OneBodySOInt with C1 symmetry. Need to direct the code to OneBodyInt.", __FILE__, __LINE__);
-    }
+//    if (b1_->nirrep() == 1) {
+//        // Molecule has C1 symmetry. Need to use the ob_ object to get a SimpleMatrix.
+//        throw FeatureNotImplemented("libmints", "OneBodySOInt with C1 symmetry. Need to direct the code to OneBodyInt.", __FILE__, __LINE__);
+//    }
 
     // Do not worry about zeroing out result
     int ns1 = b1_->nshell();
@@ -298,6 +317,7 @@ void OneBodySOInt::compute_petitelist(boost::shared_ptr<Matrix> result)
     }
 }
 
+#if 0
 void OneBodySOInt::compute_dcr(boost::shared_ptr<Matrix> result)
 {
     // Do not worry about zeroing out result
@@ -407,6 +427,7 @@ void OneBodySOInt::compute_dcr(boost::shared_ptr<Matrix> result)
 
     result->copy_lower_to_upper();
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 

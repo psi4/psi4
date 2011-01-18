@@ -2798,7 +2798,7 @@ void RHF::save_sapt_info()
     //print_mat(sapt_C,sapt_nso,sapt_nso,outfile);
     SharedMatrix potential(factory_.create_matrix("Potential Integrals"));
     IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
-    shared_ptr<OneBodyInt> V(integral.potential());
+    shared_ptr<OneBodySOInt> V(integral.so_potential());
     V->compute(potential);
     double *sapt_V_ints = potential->to_lower_triangle();
     double *sapt_S_ints = S_->to_lower_triangle();

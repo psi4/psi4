@@ -92,24 +92,24 @@ class PetiteList
     bool c1_;
 
     boost::shared_ptr<BasisSet> basis_;
-    boost::shared_ptr<IntegralFactory> integral_;
+    const IntegralFactory* integral_;
 
     char *p1_;
     int **atom_map_;
     int **shell_map_;
     char *lamij_;
     int *nbf_in_ir_;
-    unsigned int *stabilizer_;
     unsigned int group_;
 
     void init();
 
 public:
     PetiteList(const boost::shared_ptr<BasisSet>&, const boost::shared_ptr<IntegralFactory>&);
+    PetiteList(const boost::shared_ptr<BasisSet>&, const IntegralFactory*);
     ~PetiteList();
 
     boost::shared_ptr<BasisSet> basis() { return basis_; }
-    boost::shared_ptr<IntegralFactory> integral() { return integral_; }
+    const IntegralFactory* integral() { return integral_; }
     boost::shared_ptr<PetiteList> clone() { return boost::shared_ptr<PetiteList>(new PetiteList(basis_, integral_)); }
 
     int nirrep() const { return nirrep_; }
@@ -132,7 +132,6 @@ public:
 
     unsigned int group() const { return group_; }
 
-    unsigned int stabilizer(int atom) const { return stabilizer_[atom]; }
     unsigned int dcr(int subgroup1, int subgroup2) const {
         std::map<unsigned int,bool> uniqueCosets;
         for(int g = 0; g < 8; ++g){

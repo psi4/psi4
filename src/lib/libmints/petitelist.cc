@@ -377,6 +377,12 @@ void delete_shell_map(int **shell_map, const shared_ptr<BasisSet> &basis)
 ////////////////////////////////////////////////////////////////////////////
 
 PetiteList::PetiteList(const shared_ptr<BasisSet> &gbs, const shared_ptr<IntegralFactory> &ints)
+    : basis_(gbs), integral_(ints.get())
+{
+    init();
+}
+
+PetiteList::PetiteList(const shared_ptr<BasisSet> &gbs, const IntegralFactory* ints)
     : basis_(gbs), integral_(ints)
 {
     init();
@@ -405,8 +411,6 @@ PetiteList::~PetiteList()
         delete[] shell_map_;
     }
 
-    delete[] stabilizer_;
-    stabilizer_=0;
     natom_=0;
     nshell_=0;
     ng_=0;
@@ -474,9 +478,6 @@ void PetiteList::init()
     double np[3];
     SymmetryOperation so;
 
-    stabilizer_ = new unsigned int[natom_];
-    memset(stabilizer_, 0, sizeof(unsigned int)*natom_);
-
     // loop over all centers
     for (i=0; i < natom_; i++) {
         Vector3 ac(mol.xyz(i));
@@ -494,10 +495,6 @@ void PetiteList::init()
 
             atom_map_[i][g] = mol.atom_at_position1(np, 0.05);
 
-            if (atom_map_[i][g] == i) {
-//                fprintf(outfile, "symmetry bit = %d\n", so.bit());
-                stabilizer_[i] |= so.bit();
-            }
             if (atom_map_[i][g] < 0) {
                 fprintf(outfile, "ERROR: Symmetry operation %d did not map atom %d to another atom:\n", g, i+1);
                 fprintf(outfile, "  Molecule:\n");
@@ -580,7 +577,7 @@ void PetiteList::init()
                 if (am==0)
                     red_rep[g] += 1.0;
                 else {
-                    ShellRotation r(am,so,integral_.get(),gbs.shell(i,s)->is_pure());
+                    ShellRotation r(am,so,integral_,gbs.shell(i,s)->is_pure());
                     red_rep[g] += r.trace();
                 }
             }
@@ -663,10 +660,6 @@ void PetiteList::print(FILE *out)
             fprintf(out, "%5d ", atom_map_[i][g]);
         fprintf(outfile, "\n");
     }
-
-    fprintf(out, "  stabilizer_ = \n");
-    for (i=0; i<natom_; ++i)
-        fprintf(out, "    %5d -> %5d\n", i, stabilizer_[i]);
 
     fprintf(out, "  shell_map_ = \n");
     for (i=0; i<nshell_; ++i) {

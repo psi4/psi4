@@ -15,10 +15,12 @@ psimrcc_subdirs =
 
 scf_subdirs = scf1 scf2 scf3
 
-subdirs = \
+xsubdirs = \
 $(scf_subdirs) \
 $(dcft_subdirs) \
 $(cc_subdirs) \
+
+subdirs = scf1
 
 # the bare minimum
 quicktestdirs = 

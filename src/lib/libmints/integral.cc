@@ -57,9 +57,15 @@ void IntegralFactory::set_basis(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> b
     init_spherical_harmonics(max1234->max_am());
 }
 
-OneBodyInt* IntegralFactory::overlap(int deriv)
+OneBodyInt* IntegralFactory::ao_overlap(int deriv)
 {
     return new OverlapInt(spherical_transforms_, bs1_, bs2_, deriv);
+}
+
+OneBodySOInt* IntegralFactory::so_overlap(int deriv)
+{
+    shared_ptr<OneBodyInt> ao_int(ao_overlap(deriv));
+    return new OneBodySOInt(ao_int, this);
 }
 
 ThreeCenterOverlapInt* IntegralFactory::overlap_3c()
@@ -67,14 +73,26 @@ ThreeCenterOverlapInt* IntegralFactory::overlap_3c()
     return new ThreeCenterOverlapInt(spherical_transforms_, bs1_, bs2_, bs3_);
 }
 
-OneBodyInt* IntegralFactory::kinetic(int deriv)
+OneBodyInt* IntegralFactory::ao_kinetic(int deriv)
 {
     return new KineticInt(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
-OneBodyInt* IntegralFactory::potential(int deriv)
+OneBodySOInt* IntegralFactory::so_kinetic(int deriv)
+{
+    shared_ptr<OneBodyInt> ao_int(ao_kinetic(deriv));
+    return new OneBodySOInt(ao_int, this);
+}
+
+OneBodyInt* IntegralFactory::ao_potential(int deriv)
 {
     return new PotentialInt(spherical_transforms_, bs1_, bs2_, deriv);
+}
+
+OneBodySOInt* IntegralFactory::so_potential(int deriv)
+{
+    shared_ptr<OneBodyInt> ao_int(ao_potential(deriv));
+    return new OneBodySOInt(ao_int, this);
 }
 
 OneBodyInt* IntegralFactory::electrostatic()
@@ -120,28 +138,28 @@ IntegralsIterator IntegralFactory::integrals_iterator(int p, int q, int r, int s
     return IntegralsIterator(bs1_->shell(p), bs2_->shell(q), bs3_->shell(r), bs4_->shell(s));
 }
 
-CartesianIter* IntegralFactory::cartesian_iter(int l)
+CartesianIter* IntegralFactory::cartesian_iter(int l) const
 {
     return new CartesianIter(l);
 }
 
-RedundantCartesianIter* IntegralFactory::redundant_cartesian_iter(int l)
+RedundantCartesianIter* IntegralFactory::redundant_cartesian_iter(int l) const
 {
     return new RedundantCartesianIter(l);
 }
 
-RedundantCartesianSubIter* IntegralFactory::redundant_cartesian_sub_iter(int l)
+RedundantCartesianSubIter* IntegralFactory::redundant_cartesian_sub_iter(int l) const
 {
     return new RedundantCartesianSubIter(l);
 }
 
-ShellRotation IntegralFactory::shell_rotation(int am, SymmetryOperation &so, int pure)
+ShellRotation IntegralFactory::shell_rotation(int am, SymmetryOperation &so, int pure) const
 {
     ShellRotation r(am, so, this, pure);
     return r;
 }
 
-SphericalTransformIter* IntegralFactory::spherical_transform_iter(int am, int inv, int subl)
+SphericalTransformIter* IntegralFactory::spherical_transform_iter(int am, int inv, int subl) const
 {
     if (subl != -1)
         throw NotImplementedException("IntegralFactory::spherical_transform_iter: Not implemented for subl != -1.");

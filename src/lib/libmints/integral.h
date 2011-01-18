@@ -40,6 +40,7 @@ namespace psi {
 class BasisSet;
 class GaussianShell;
 class OneBodyInt;
+class OneBodySOInt;
 class TwoBodyInt;
 class ThreeCenterOverlapInt;
 class Symmetry;
@@ -231,7 +232,7 @@ public:
 };
 
 /*! \ingroup MINTS */
-class ShellCombinationsIterator
+class   ShellCombinationsIterator
 {
 private:
     struct ShellQuartet {
@@ -358,16 +359,21 @@ public:
         boost::shared_ptr<BasisSet> bs3, boost::shared_ptr<BasisSet> bs4);
 
     /// Returns an OneBodyInt that computes the overlap integral.
-    virtual OneBodyInt* overlap(int deriv=0);
+    virtual OneBodyInt* ao_overlap(int deriv=0);
+
+    /// Returns an OneBodyInt that computes the overlap integral.
+    virtual OneBodySOInt* so_overlap(int deriv=0);
 
     /// Returns a ThreeCenterOverlapINt that computes the overlap between three centers
     virtual ThreeCenterOverlapInt* overlap_3c();
 
     /// Returns an OneBodyInt that computes the kinetic energy integral.
-    virtual OneBodyInt* kinetic(int deriv=0);
+    virtual OneBodyInt* ao_kinetic(int deriv=0);
+    virtual OneBodySOInt* so_kinetic(int deriv=0);
 
     /// Returns an OneBodyInt that computes the nuclear attraction integral.
-    virtual OneBodyInt* potential(int deriv=0);
+    virtual OneBodyInt* ao_potential(int deriv=0);
+    virtual OneBodySOInt* so_potential(int deriv=0);
 
     /// Returns an OneBodyInt that computes the dipole integral.
     virtual OneBodyInt* dipole(int deriv=0);
@@ -400,17 +406,17 @@ public:
     std::vector<SphericalTransform> spherical_transform() { return spherical_transforms_; }
 
     /// Return a spherical transform iterator object for am
-    SphericalTransformIter* spherical_transform_iter(int am, int inv=0, int subl=-1);
+    SphericalTransformIter* spherical_transform_iter(int am, int inv=0, int subl=-1) const;
 
     /// Return a new Cartesian iterator
-    CartesianIter* cartesian_iter(int l);
+    CartesianIter* cartesian_iter(int l) const;
     /// Return a new rudundant Cartesian iterator
-    RedundantCartesianIter* redundant_cartesian_iter(int l);
+    RedundantCartesianIter* redundant_cartesian_iter(int l) const;
     /// Return a new rudundant Cartesian sub iterator
-    RedundantCartesianSubIter* redundant_cartesian_sub_iter(int l);
+    RedundantCartesianSubIter* redundant_cartesian_sub_iter(int l) const;
     /** Return the ShellRotation object for a shell of a given angular
         momentum. Pass nonzero to pure to do solid harmonics. */
-    ShellRotation shell_rotation(int am, SymmetryOperation&, int pure=0);
+    ShellRotation shell_rotation(int am, SymmetryOperation&, int pure=0) const;
 };
 
 }

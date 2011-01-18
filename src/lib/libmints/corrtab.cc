@@ -58,6 +58,7 @@ CorrelationTable::CorrelationTable(const boost::shared_ptr<PointGroup>& group,
         // ExEnv::err0()
         //     << "ERROR: CorrelationTable: " << error(rc) << endl;
         // abort();
+        fprintf(outfile, "CorrelationTable error: %s\n", error(rc));
         throw PSIEXCEPTION("ERROR: CorrelationTable");
     }
 }
@@ -227,10 +228,10 @@ int
 //     o << indent
 //         << "Correlation Table from "
 //         << group_->symbol() << " to " << subgroup_->symbol() << ":" << endl;
-// 
+//
 //     CharacterTable ct = group_->char_table();
 //     CharacterTable subct = subgroup_->char_table();
-// 
+//
 //     o << incindent;
 //     for (int i=0; i<n(); i++) {
 //         o << indent

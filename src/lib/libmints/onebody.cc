@@ -206,6 +206,11 @@ void OneBodyInt::compute(shared_ptr<Matrix> result)
     }
 }
 
+void OneBodyInt::compute(boost::shared_ptr<SimpleMatrix> result)
+{
+
+}
+
 void OneBodyInt::compute(std::vector<shared_ptr<Matrix> > &result)
 {
     throw FeatureNotImplemented("libmints", "OneBodyInt::compute(Array)", __FILE__, __LINE__);

@@ -202,6 +202,11 @@ ShellCombinationsIterator::ShellCombinationsIterator()
 
 }
 
+IntegralsIterator ShellCombinationsIterator::integrals_iterator()
+{
+    return IntegralsIterator(bs1_->shell(p()), bs2_->shell(q()), bs3_->shell(r()), bs4_->shell(s()));
+}
+
 void ShellCombinationsIterator::init(shared_ptr<BasisSet>bs1, shared_ptr<BasisSet>bs2,
                                      shared_ptr<BasisSet>bs3, shared_ptr<BasisSet>bs4)
 {

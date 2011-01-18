@@ -33,7 +33,7 @@ class OneBodySOInt
 {
 protected:
     boost::shared_ptr<OneBodyInt> ob_;
-    boost::shared_ptr<IntegralFactory> integral_;
+    const IntegralFactory* integral_;
 
     boost::shared_ptr<SOBasis> b1_;
     boost::shared_ptr<SOBasis> b2_;
@@ -43,6 +43,7 @@ protected:
     int only_totally_symmetric_;
 public:
     OneBodySOInt(const boost::shared_ptr<OneBodyInt>& , const boost::shared_ptr<IntegralFactory> &);
+    OneBodySOInt(const boost::shared_ptr<OneBodyInt>& , const IntegralFactory*);
     virtual ~OneBodySOInt();
 
     boost::shared_ptr<SOBasis> basis() const;

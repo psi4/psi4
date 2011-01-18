@@ -1,5 +1,5 @@
-/* 
- *  SAPT_DFT.CC 
+/*
+ *  SAPT_DFT.CC
  *
  */
 
@@ -56,9 +56,9 @@ SAPT_DFT::~SAPT_DFT()
 }
 
 double SAPT_DFT::compute_energy()
-{  
+{
     // THe obligatory
-    print_header(); 
+    print_header();
     // Allocate space
     allocate_arrays();
     // DF integrals for use with X
@@ -92,15 +92,15 @@ double SAPT_DFT::compute_energy()
 
     // Perform quadrature over imaginary frequencies
     fprintf(outfile, "\n");
-    fprintf(outfile, "  ---------------------------------------------------------------------------------------\n");       
-    fprintf(outfile, "   ===========================> CASIMIR-POLDER INTEGRATION <============================\n");       
-    fprintf(outfile, "  ---------------------------------------------------------------------------------------\n");       
-    fprintf(outfile, "   Point      Omega            Weight             E_UCHF [mH]            E_TDDFT [mH]\n");       
-    fprintf(outfile, "  ---------------------------------------------------------------------------------------\n");       
+    fprintf(outfile, "  ---------------------------------------------------------------------------------------\n");
+    fprintf(outfile, "   ===========================> CASIMIR-POLDER INTEGRATION <============================\n");
+    fprintf(outfile, "  ---------------------------------------------------------------------------------------\n");
+    fprintf(outfile, "   Point      Omega            Weight             E_UCHF [mH]            E_TDDFT [mH]\n");
+    fprintf(outfile, "  ---------------------------------------------------------------------------------------\n");
     fflush(outfile);
     int n = 0;
     for (quad->reset(); !quad->isDone(); quad->nextPoint() ) {
-    
+
         double omega = quad->getOmega();
         double weight = quad->getWeight();
 
@@ -112,25 +112,25 @@ double SAPT_DFT::compute_energy()
         compute_X_coup(omega);
         // TDDFT Dispersion
         double TDDFT = compute_TDDFT_disp();
-        
+
         n++;
         fprintf(outfile, "   %3d   %12.8E   %12.8E   %20.12f   %20.12f\n", \
-           n, omega, weight, UCHF*1000.0,TDDFT*1000.0);       
+           n, omega, weight, UCHF*1000.0,TDDFT*1000.0);
         E_UCHF_disp_ += weight*UCHF;
         E_TDDFT_disp_ += weight*TDDFT;
     }
-    fprintf(outfile, "  ---------------------------------------------------------------------------------------\n");       
+    fprintf(outfile, "  ---------------------------------------------------------------------------------------\n");
     fprintf(outfile, "    @ UCHF Dispersion Energy:  %18.12f [mH] %18.12f [kcal mol^-1]\n", E_UCHF_disp_*1000.0, \
-        E_UCHF_disp_*627.509);    
+        E_UCHF_disp_*627.509);
     fprintf(outfile, "    @ TDDFT Dispersion Energy: %18.12f [mH] %18.12f [kcal mol^-1]\n", E_TDDFT_disp_*1000.0, \
-        E_TDDFT_disp_*627.509);    
-    fprintf(outfile, "  ---------------------------------------------------------------------------------------\n");       
+        E_TDDFT_disp_*627.509);
+    fprintf(outfile, "  ---------------------------------------------------------------------------------------\n");
     fflush(outfile);
-        
-   
+
+
     // Free arrays
     free_arrays();
- 
+
     // More fun
     print_results();
 
@@ -152,7 +152,7 @@ void SAPT_DFT::print_header()
      fprintf(outfile,"          NOCC_B  = %9d\n",calc_info_.noccB);
      fprintf(outfile,"          NVIR_A  = %9d\n",calc_info_.nvirA);
      fprintf(outfile,"          NVIR_B  = %9d\n\n",calc_info_.nvirB);
-    
+
      #ifdef _OPENMP
      fprintf(outfile,"  Running SAPT_DFT with %d OMP threads\n\n",
        omp_get_max_threads());
@@ -248,9 +248,9 @@ void SAPT_DFT::print_header()
 } 
 double SAPT_DFT::print_results() {
     return 0.0;
-} 
+}
 void SAPT_DFT::allocate_arrays() {
-    
+
     int naux = calc_info_.nri;
     // Allocation of UCHF response params
     X0_A_ = block_matrix(naux,naux);
@@ -266,7 +266,7 @@ void SAPT_DFT::free_arrays() {
     free_block(XC_B_);
 }
 void SAPT_DFT::compute_J() {
-    
+
     int naux = calc_info_.nri;
     IntegralFactory rifactory_J(ribasis_, zero_, ribasis_, zero_);
 
@@ -297,24 +297,24 @@ void SAPT_DFT::compute_J() {
                     J_[onu][omu] = Jbuffer[index];
                 }
             }
-        }   
+        }
     }
 
-    
+
 
     Jinv_ = block_matrix(naux,naux);
     C_DCOPY(naux*(ULI)naux, J_[0], 1, Jinv_[0], 1);
 
     // Cholesky factorization
     int stat = C_DPOTRF('U',naux,Jinv_[0],naux);
-    // Inverse 
+    // Inverse
     stat = C_DPOTRI('U',naux,Jinv_[0],naux);
 
     // Rexpand J^-1 (Upper triangle)
     for (int P = 0; P < naux; P++)
         for (int Q = P+1; Q < naux; Q++)
             Jinv_[P][Q] = Jinv_[Q][P];
-    
+
     if (debug_) {
         fprintf(outfile,"J:\n");
         print_mat(J_,naux,naux,outfile);
@@ -451,7 +451,7 @@ void SAPT_DFT::compute_d()
             max_P_shell = quadbasis_->shell(Pshell)->nfunction();
 
     double** Amn = block_matrix(max_P_shell,norbs*(ULI)norbs);
-    
+
     // A bit naive at the moment (no sieves or threading)
     for (Pshell=0; Pshell < quadbasis_->nshell(); ++Pshell) {
         numP = quadbasis_->shell(Pshell)->nfunction();
@@ -566,7 +566,7 @@ void SAPT_DFT::compute_d()
         shared_ptr<Properties> props(new Properties(basisset_, options_.get_int("N_BLOCK")));
         shared_ptr<BasisPoints> points(new BasisPoints(ribasis_, options_.get_int("N_BLOCK")));
         shared_ptr<psi::scf::Integrator> integrator(new psi::scf::Integrator(basisset_->molecule(), options_));
-    
+
         const double* rhog = props->getDensity();
         double **basisg = points->getPoints();
 
@@ -727,9 +727,9 @@ void SAPT_DFT::compute_W()
 
 
     // =============== M -> Mprime ================//
-    
+
     IntegralFactory rifactory_JS(ribasis_, ribasis_, zero_,  zero_);
-    shared_ptr<OneBodyInt> Sint = shared_ptr<OneBodyInt>(rifactory_JS.overlap());
+    shared_ptr<OneBodySOInt> Sint = shared_ptr<OneBodySOInt>(rifactory_JS.so_overlap());
     MatrixFactory matJS;
     matJS.init_with(1,&naux,&naux);
 
@@ -745,7 +745,7 @@ void SAPT_DFT::compute_W()
     double **Vtemp = block_matrix(naux, naux);
     double **Vcopy = block_matrix(naux, naux);
     C_DCOPY(naux*(ULI)naux,S[0],1,Vtemp[0],1);
-    // Form V : V'SV = 1 
+    // Form V : V'SV = 1
     // First, diagonalize V
     // the C_DSYEV call replaces the original matrix J with its eigenvectors
     double* eigval = init_array(naux);
@@ -801,7 +801,7 @@ void SAPT_DFT::compute_W()
     }
 
     // =============== Apply functional kernel ================//
-   
+
     double** U = block_matrix(naux,naux);
 
     // Monomer A
@@ -890,7 +890,7 @@ void SAPT_DFT::compute_W()
         }
         C_DSCAL(naux, lambda[k], U[k], 1);
     }
-    if (warn)        
+    if (warn)
         fprintf(outfile, "  WARNING: Small/negative eigenvalue detected in (P|\\rho|Q)\n");
     if (debug_) {
         fprintf(outfile, "  lambda_B Coefficients:\n");
@@ -915,10 +915,10 @@ void SAPT_DFT::compute_W()
 
     free(lambda);
     free(work);
-       
+
     free_block(Temp1);
-    free_block(U); 
-    free_block(V); 
+    free_block(U);
+    free_block(V);
 
     if (debug_) {
         fprintf(outfile, "  WA (P|f_xc(\\rho)|Q):\n");
@@ -938,12 +938,11 @@ void SAPT_DFT::compute_W()
         fprintf(outfile, "  WB (P|1/r + f_xc(\\rho)|Q):\n");
         print_mat(WB_, naux, naux, outfile);
     } 
-
 }
-void SAPT_DFT::compute_X_0(double omega) { 
-    
+void SAPT_DFT::compute_X_0(double omega) {
+
     // Get my bearings
-    int naux = calc_info_.nri; 
+    int naux = calc_info_.nri;
     int norbs = calc_info_.nso;
     int noccA = calc_info_.noccA;
     int noccB = calc_info_.noccB;
@@ -952,7 +951,7 @@ void SAPT_DFT::compute_X_0(double omega) {
 
     double lambda, eps_ia;
     double omega2 = omega*omega;
-    double *eps_i, *eps_a; 
+    double *eps_i, *eps_a;
 
     // =============== MONOMER A ================//
     if (debug_)
@@ -970,7 +969,7 @@ void SAPT_DFT::compute_X_0(double omega) {
             fprintf(outfile, "   a = %d: eps = %20.14f\n", i, eps_a[i]);
     }
 
-    // Read the AR DF integrals 
+    // Read the AR DF integrals
     psio_address next_DF_AA = PSIO_ZERO;
     psio_->read(PSIF_SAPT_AA_DF_INTS, "AR Bare RI Integrals", (char*) \
         &A_ints[0][0], naux*nvirA*noccA*(ULI)sizeof(double), next_DF_AA, \
@@ -986,11 +985,11 @@ void SAPT_DFT::compute_X_0(double omega) {
         fprintf(outfile, "  Applying response, omega = %20.14f\n",omega);
     for (int i = 0; i < noccA; i++) {
         for (int a = 0; a < nvirA; a++) {
-            eps_ia = eps_a[a] - eps_i[i]; 
+            eps_ia = eps_a[a] - eps_i[i];
             lambda = 4.0 * eps_ia / (eps_ia*eps_ia + omega2);
             if (debug_)
                 fprintf(outfile, "   i = %d, a = %d, lambda = %20.14f\n", i, a, lambda);
-            C_DSCAL(naux, sqrt(lambda), &A_ints[0][i*nvirA + a], nvirA*(ULI)noccA); 
+            C_DSCAL(naux, sqrt(lambda), &A_ints[0][i*nvirA + a], nvirA*(ULI)noccA);
         }
     }
 
@@ -1008,7 +1007,7 @@ void SAPT_DFT::compute_X_0(double omega) {
         print_mat(X0_A_, naux, naux, outfile);
     }
 
-    free_block(A_ints);     
+    free_block(A_ints);
 
     // =============== MONOMER B ================//
     //fprintf(outfile, "  Monomer B X_0:\n");
@@ -1025,7 +1024,7 @@ void SAPT_DFT::compute_X_0(double omega) {
             fprintf(outfile, "   a = %d: eps = %20.14f\n", i, eps_a[i]);
     }
 
-    // Read the BS DF integrals 
+    // Read the BS DF integrals
     psio_address next_DF_BB = PSIO_ZERO;
     psio_->read(PSIF_SAPT_BB_DF_INTS, "BS Bare RI Integrals", (char*) \
         &B_ints[0][0], naux*nvirB*noccB*(ULI)sizeof(double), next_DF_BB, \
@@ -1041,11 +1040,11 @@ void SAPT_DFT::compute_X_0(double omega) {
         fprintf(outfile, "  Applying response, omega = %20.14f\n",omega);
     for (int i = 0; i < noccB; i++) {
         for (int a = 0; a < nvirB; a++) {
-            eps_ia = eps_a[a] - eps_i[i]; 
+            eps_ia = eps_a[a] - eps_i[i];
             lambda = 4.0 * eps_ia / (eps_ia*eps_ia + omega2);
             if (debug_)
                 fprintf(outfile, "   i = %d, a = %d, lambda = %20.14f\n", i, a, lambda);
-            C_DSCAL(naux, sqrt(lambda), &B_ints[0][i*nvirB + a], noccB*(ULI)nvirB); 
+            C_DSCAL(naux, sqrt(lambda), &B_ints[0][i*nvirB + a], noccB*(ULI)nvirB);
         }
     }
 
@@ -1063,12 +1062,12 @@ void SAPT_DFT::compute_X_0(double omega) {
         print_mat(X0_B_, naux, naux, outfile);
     }
 
-    free_block(B_ints);     
+    free_block(B_ints);
 }
-void SAPT_DFT::compute_X_coup(double omega) { 
-    
+void SAPT_DFT::compute_X_coup(double omega) {
+
     // Get my bearings
-    int naux = calc_info_.nri; 
+    int naux = calc_info_.nri;
 
     double ** Temp1 = block_matrix(naux,naux);
     double ** Temp2 = block_matrix(naux,naux);
@@ -1083,13 +1082,13 @@ void SAPT_DFT::compute_X_coup(double omega) {
     for (ULI k = 0; k < naux*(ULI)naux; k++)
         Temp1[0][k] = J_[0][k] - Temp2[0][k];
 
-    // Invert S - X_0 S^-1 W 
-    // LU factorization 
+    // Invert S - X_0 S^-1 W
+    // LU factorization
     int* piv = init_int_array(naux);
     int lwork = 3 * naux;
     double* work = init_array(lwork);
     int stat = C_DGETRF(naux,naux,Temp1[0],naux, piv);
-    // Inverse 
+    // Inverse
     stat = stat | C_DGETRI(naux,Temp1[0],naux,piv,work,lwork);
 
     if (stat) {
@@ -1101,7 +1100,7 @@ void SAPT_DFT::compute_X_coup(double omega) {
     // Form X_0 S^1 W (S - X_0 S^-1 W) ^ -1
     C_DGEMM('N','N', naux, naux, naux, 1.0, Temp2[0], naux, Temp1[0], naux, \
         0.0, Temp3[0], naux);
-    
+
     // Form XC = X_0 S^1 W (S - X_0 S^-1 W) ^ -1 X_0
     C_DGEMM('N','N', naux, naux, naux, 1.0, Temp3[0], naux, X0_A_[0], naux, \
         0.0, XC_A_[0], naux);
@@ -1110,7 +1109,7 @@ void SAPT_DFT::compute_X_coup(double omega) {
         fprintf(outfile, "  XC_A:\n");
         print_mat(XC_A_, naux, naux, outfile);
     }
-    
+
     // ========= XC_B ========== //
     // Form S - X_0 S^-1 W
     C_DGEMM('N','N', naux, naux, naux, 1.0, X0_B_[0], naux, Jinv_[0], naux, \
@@ -1120,10 +1119,10 @@ void SAPT_DFT::compute_X_coup(double omega) {
     for (ULI k = 0; k < naux*(ULI)naux; k++)
         Temp1[0][k] = J_[0][k] - Temp2[0][k];
 
-    // Invert S - X_0 S^-1 W 
-    // LU factorization 
+    // Invert S - X_0 S^-1 W
+    // LU factorization
     stat = C_DGETRF(naux,naux,Temp1[0],naux, piv);
-    // Inverse 
+    // Inverse
     stat = stat | C_DGETRI(naux,Temp1[0],naux,piv,work,lwork);
     free(work);
     free(piv);
@@ -1133,23 +1132,23 @@ void SAPT_DFT::compute_X_coup(double omega) {
         fprintf(outfile, "  (Buy him a beer when he fixes it).\n");
         exit(PSI_RETURN_FAILURE);
     }
-        
+
     // Form X_0 S^1 W (S - X_0 S^-1 W) ^ -1
     C_DGEMM('N','N', naux, naux, naux, 1.0, Temp2[0], naux, Temp1[0], naux, \
         0.0, Temp3[0], naux);
-    
+
     // Form XC = X_0 S^1 W (S - X_0 S^-1 W) ^ -1 X_0
     C_DGEMM('N','N', naux, naux, naux, 1.0, Temp3[0], naux, X0_B_[0], naux, \
         0.0, XC_B_[0], naux);
-    
+
     if (debug_) {
         fprintf(outfile, "  XC_B:\n");
         print_mat(XC_B_, naux, naux, outfile);
     }
-    
-    free_block(Temp1);    
-    free_block(Temp2);    
-    free_block(Temp3);    
+
+    free_block(Temp1);
+    free_block(Temp2);
+    free_block(Temp3);
 }
 double SAPT_DFT::compute_UCHF_disp() 
 {
@@ -1167,7 +1166,7 @@ double SAPT_DFT::compute_UCHF_disp()
     C_DGEMM('N','N', naux, naux, naux, 1.0, Jinv_[0], naux, X0_B_[0], naux, \
         0.0, Temp2[0], naux);
 
-    double contribution = -1.0/(2.0*M_PI)*C_DDOT(naux*(ULI)naux, Temp1[0], 1, Temp2[0],1); 
+    double contribution = -1.0/(2.0*M_PI)*C_DDOT(naux*(ULI)naux, Temp1[0], 1, Temp2[0],1);
 
     if (debug_) {
         fprintf(outfile,"  Q_A:\n");
@@ -1179,8 +1178,8 @@ double SAPT_DFT::compute_UCHF_disp()
         fprintf(outfile, "  Contribution: %20.14f\n", contribution);
     }
 
-    free_block(Temp1);    
-    free_block(Temp2);    
+    free_block(Temp1);
+    free_block(Temp2);
 
     return contribution;
 }
@@ -1200,7 +1199,7 @@ double SAPT_DFT::compute_TDDFT_disp()
     C_DGEMM('N','N', naux, naux, naux, 1.0, Jinv_[0], naux, XC_B_[0], naux, \
         0.0, Temp2[0], naux);
 
-    double contribution = -1.0/(2.0*M_PI)*C_DDOT(naux*(ULI)naux, Temp1[0], 1, Temp2[0],1); 
+    double contribution = -1.0/(2.0*M_PI)*C_DDOT(naux*(ULI)naux, Temp1[0], 1, Temp2[0],1);
 
     if (debug_) {
         fprintf(outfile,"  Q_A:\n");
@@ -1212,8 +1211,8 @@ double SAPT_DFT::compute_TDDFT_disp()
         fprintf(outfile, "  Contribution: %20.14f\n", contribution);
     }
 
-    free_block(Temp1);    
-    free_block(Temp2);    
+    free_block(Temp1);
+    free_block(Temp2);
 
     return contribution;
 }
@@ -1224,7 +1223,7 @@ OmegaQuadrature::OmegaQuadrature(int npoints) {
     w_ = init_array(npoints);
     omega_ = init_array(npoints);
 
-    // Compute Becke-style mapping 
+    // Compute Becke-style mapping
     // (Seems to span the space better)
     double x,temp;
     double xi = 1.0; // By default
@@ -1233,7 +1232,7 @@ OmegaQuadrature::OmegaQuadrature(int npoints) {
         x = cos(tau/(npoints+1.0)*M_PI);
         omega_[tau-1] = xi*(1.0-x)/(1.0+x);
         temp = sin(tau/(npoints+1.0)*M_PI);
-        w_[tau-1] = 2.0*M_PI/(npoints+1)*temp*temp*xi/((1.0+x)*(1.0+x)*sqrt(1.0-x*x));    
+        w_[tau-1] = 2.0*M_PI/(npoints+1)*temp*temp*xi/((1.0+x)*(1.0+x)*sqrt(1.0-x*x));
     }
 }
 OmegaQuadrature::~OmegaQuadrature() {

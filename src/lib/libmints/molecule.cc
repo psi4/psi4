@@ -67,6 +67,7 @@ namespace psi {
     boost::regex Molecule::chargeAndMultiplicity_("\\s*(-?\\d+)\\s+(\\d+)\\s*", boost::regbase::normal);
     boost::regex Molecule::fragmentMarker_("\\s*--\\s*", boost::regbase::normal);
     boost::regex Molecule::orientCommand_("\\s*no_?reorient\\s*", boost::regbase::normal| boost::regbase::icase);
+    boost::regex Molecule::symmetry_("\\s*symmetry\\s*(\\w+)\\s*", boost::regbase::normal| boost::regbase::icase);
     boost::smatch Molecule::reMatches_;
     /**
      * Interprets a string as an integer, throwing if it's unsuccesful.
@@ -1001,6 +1002,7 @@ Molecule::create_molecule_from_string(const std::string &text)
 
     shared_ptr<Molecule> mol(new Molecule);
     std::string units = Process::environment.options.get_str("UNITS");
+    std::string symtemp;
 
     if(boost::iequals(units, "ANG") || boost::iequals(units, "ANGSTROM") || boost::iequals(units, "ANGSTROMS")) {
         mol->set_units(Angstrom);
@@ -1053,6 +1055,10 @@ Molecule::create_molecule_from_string(const std::string &text)
         else if(regex_match(lines[lineNumber], reMatches, orientCommand_)) {
             // Fix the orientation
             mol->set_orientation_fixed(true);
+            lines.erase(lines.begin() + lineNumber);
+        }
+        else if(regex_match(lines[lineNumber], reMatches, symmetry_)) {
+            mol->symmetryFromInput_ = boost::to_lower_copy(reMatches[1].str());
             lines.erase(lines.begin() + lineNumber);
         }
         else if(regex_match(lines[lineNumber], reMatches, chargeAndMultiplicity_)) {

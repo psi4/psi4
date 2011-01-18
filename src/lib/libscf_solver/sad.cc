@@ -39,13 +39,13 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     int sad_print_ = options_.get_int("SAD_PRINT");
     //ONLY WORKS IN C1 at the moment
     //print_ = options_.get_int("PRINT");
-    shared_ptr<Molecule> mol = bas->molecule();    
-    
+    shared_ptr<Molecule> mol = bas->molecule();
+
     int nbeta = (nelec-nhigh)/2;
     int nalpha = nelec-nbeta;
     int natom = mol->natom();
     int norbs = bas->nbf();
-    
+
     if (sad_print_>1 && Communicator::world->me() == 0) {
         fprintf(outfile,"\n");
         bas->print(outfile);
@@ -55,7 +55,7 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     }
 
     if (natom != 1) {
-        throw std::domain_error("SAD Atomic UHF has been given a molecule, not an atom"); 
+        throw std::domain_error("SAD Atomic UHF has been given a molecule, not an atom");
     }
 
     //double xc = mol->x(0);
@@ -75,20 +75,20 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     double** Ca = block_matrix(norbs,norbs);
     double** Cb = block_matrix(norbs,norbs);
     double** Da = block_matrix(norbs,norbs);
-    double** Db = block_matrix(norbs,norbs);    
+    double** Db = block_matrix(norbs,norbs);
     double** Fa = block_matrix(norbs,norbs);
     double** Fb = block_matrix(norbs,norbs);
     double** Fa_old = block_matrix(norbs,norbs);
-    double** Fb_old = block_matrix(norbs,norbs);    
+    double** Fb_old = block_matrix(norbs,norbs);
     double** Ga = block_matrix(norbs,norbs);
-    double** Gb = block_matrix(norbs,norbs);    
+    double** Gb = block_matrix(norbs,norbs);
 
     IntegralFactory integral(bas, bas, bas, bas);
     MatrixFactory mat;
     mat.init_with(1,&norbs,&norbs);
-    OneBodyInt *S_ints = integral.overlap();
-    OneBodyInt *T_ints = integral.kinetic();
-    OneBodyInt *V_ints = integral.potential();
+    OneBodySOInt *S_ints = integral.so_overlap();
+    OneBodySOInt *T_ints = integral.so_kinetic();
+    OneBodySOInt *V_ints = integral.so_potential();
     TwoBodyInt *TEI = integral.eri();
 
     //Compute Shalf;
@@ -102,7 +102,7 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
         print_mat(S,norbs,norbs,outfile);
     }
     // S^{-1/2}
-    
+
     // First, diagonalize S
     // the C_DSYEV call replaces the original matrix J with its eigenvectors
     double* eigval = init_array(norbs);
@@ -115,9 +115,9 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
         exit(PSI_RETURN_FAILURE);
     }
     free(work);
-    
+
     double **S_copy = block_matrix(norbs, norbs);
-    C_DCOPY(norbs*norbs,S[0],1,S_copy[0],1); 
+    C_DCOPY(norbs*norbs,S[0],1,S_copy[0],1);
 
     // Now form S^{-1/2} = U(T)*s^{-1/2}*U,
     // where s^{-1/2} is the diagonal matrix of the inverse square roots
@@ -125,7 +125,7 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     for (int i=0; i<norbs; i++) {
         if (eigval[i] < 1.0E-10)
             eigval[i] = 0.0;
-        else 
+        else
             eigval[i] = 1.0 / sqrt(eigval[i]);
 
         // scale one set of eigenvectors by the diagonal elements s^{-1/2}
@@ -139,7 +139,7 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
 
     free_block(S);
     free_block(S_copy);
-    
+
     if (sad_print_>6 && Communicator::world->me() == 0) {
         fprintf(outfile,"  S^-1/2:\n");
         print_mat(Shalf,norbs,norbs,outfile);
@@ -155,11 +155,11 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     H_UHF->add(T_UHF);
     H_UHF->add(V_UHF);
     double** H = H_UHF->to_block_matrix();
-   
+
     delete S_ints;
     delete T_ints;
     delete V_ints;
- 
+
     if (sad_print_>6 && Communicator::world->me() == 0) {
         fprintf(outfile,"  H:\n");
         print_mat(H,norbs,norbs,outfile);
@@ -169,9 +169,9 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     atomicUHFHelperFormCandD(nalpha,norbs,Shalf,H,Ca,Da);
     //Compute initial Cb and Db from core guess
     atomicUHFHelperFormCandD(nbeta,norbs,Shalf,H,Cb,Db);
-    //Compute intial D  
+    //Compute intial D
     C_DCOPY(norbs*norbs,Da[0],1,D[0],1);
-    C_DAXPY(norbs*norbs,1.0,Db[0],1,D[0],1);   
+    C_DAXPY(norbs*norbs,1.0,Db[0],1,D[0],1);
     if (sad_print_>6 && Communicator::world->me() == 0) {
         fprintf(outfile,"  Ca:\n");
         print_mat(Ca,norbs,norbs,outfile);
@@ -190,10 +190,10 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     }
 
     //Compute inital E for reference
-    double E = C_DDOT(norbs*norbs,D[0],1,H[0],1); 
-    E += C_DDOT(norbs*norbs,Da[0],1,Fa[0],1); 
-    E += C_DDOT(norbs*norbs,Db[0],1,Fb[0],1); 
-    E *= 0.5;       
+    double E = C_DDOT(norbs*norbs,D[0],1,H[0],1);
+    E += C_DDOT(norbs*norbs,Da[0],1,Fa[0],1);
+    E += C_DDOT(norbs*norbs,Db[0],1,Fb[0],1);
+    E *= 0.5;
 
     const double* buffer = TEI->buffer();
 
@@ -205,7 +205,7 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     double E_old;
     int iteration = 0;
 
-    bool converged = false; 
+    bool converged = false;
     if (sad_print_>1 && Communicator::world->me() == 0) {
         fprintf(outfile, "\n  Initial Atomic UHF Energy:    %14.10f\n\n",E);
         fprintf(outfile, "                                         Total Energy            Delta E              Density RMS\n\n");
@@ -215,18 +215,18 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
 
         iteration++;
 
-        //Copy the old values over for error analysis 
-        E_old = E;    
+        //Copy the old values over for error analysis
+        E_old = E;
         //I'm only going to use the total for now, could be expanded later
-        C_DCOPY(norbs*norbs,D[0],1,Dold[0],1);    
+        C_DCOPY(norbs*norbs,D[0],1,Dold[0],1);
         //And old Fock matrices for level shift
-        C_DCOPY(norbs*norbs,Fa[0],1,Fa_old[0],1);    
-        C_DCOPY(norbs*norbs,Fb[0],1,Fb_old[0],1);    
+        C_DCOPY(norbs*norbs,Fa[0],1,Fa_old[0],1);
+        C_DCOPY(norbs*norbs,Fb[0],1,Fb_old[0],1);
 
         //Form Ga and Gb via integral direct
-        memset((void*) Ga[0], '\0',norbs*norbs*sizeof(double));    
-        memset((void*) Gb[0], '\0',norbs*norbs*sizeof(double));    
-    
+        memset((void*) Ga[0], '\0',norbs*norbs*sizeof(double));
+        memset((void*) Gb[0], '\0',norbs*norbs*sizeof(double));
+
         //At the moment this is 8-fold slower than it could be, we'll see if it is signficant
         for (int MU = 0; MU < bas->nshell(); MU++) {
         int numMU = bas->shell(MU)->nfunction();
@@ -248,39 +248,39 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
              //fprintf(outfile,"  Integral (%d, %d| %d, %d) = %14.10f\n",omu,onu,ola,osi,buffer[index]);
              Ga[omu][onu] += D[ola][osi]*buffer[index];
              //Ga[ola][osi] += D[omu][onu]*buffer[index];
-             Ga[omu][osi] -= Da[onu][ola]*buffer[index]; 
+             Ga[omu][osi] -= Da[onu][ola]*buffer[index];
              Gb[omu][onu] += D[ola][osi]*buffer[index];
              //Gb[ola][osi] += D[omu][onu]*buffer[index];
-             Gb[omu][osi] -= Db[onu][ola]*buffer[index]; 
-        } 
-        } 
-        } 
-        } 
-        }      
-        }      
-        }      
-        }      
+             Gb[omu][osi] -= Db[onu][ola]*buffer[index];
+        }
+        }
+        }
+        }
+        }
+        }
+        }
+        }
 
         //Form Fa and Fb
         C_DCOPY(norbs*norbs,H[0],1,Fa[0],1);
-        C_DAXPY(norbs*norbs,1.0,Ga[0],1,Fa[0],1);   
+        C_DAXPY(norbs*norbs,1.0,Ga[0],1,Fa[0],1);
         C_DCOPY(norbs*norbs,H[0],1,Fb[0],1);
-        C_DAXPY(norbs*norbs,1.0,Gb[0],1,Fb[0],1);   
-    
+        C_DAXPY(norbs*norbs,1.0,Gb[0],1,Fb[0],1);
+
         //Compute E
-        E = C_DDOT(norbs*norbs,D[0],1,H[0],1); 
-        E += C_DDOT(norbs*norbs,Da[0],1,Fa[0],1); 
-        E += C_DDOT(norbs*norbs,Db[0],1,Fb[0],1); 
-        E *= 0.5;       
- 
+        E = C_DDOT(norbs*norbs,D[0],1,H[0],1);
+        E += C_DDOT(norbs*norbs,Da[0],1,Fa[0],1);
+        E += C_DDOT(norbs*norbs,Db[0],1,Fb[0],1);
+        E *= 0.5;
+
         //Perform any required convergence stabilization
         //F-mixing (should help with oscillation)
         //20% old, 80% new Fock matrix for now
         if (iteration >= f_mixing_iteration) {
             C_DSCAL(norbs*norbs,0.8,Fa[0],1);
             C_DSCAL(norbs*norbs,0.8,Fb[0],1);
-            C_DAXPY(norbs*norbs,0.2,Fa_old[0],1,Fa[0],1); 
-            C_DAXPY(norbs*norbs,0.2,Fb_old[0],1,Fb[0],1); 
+            C_DAXPY(norbs*norbs,0.2,Fa_old[0],1,Fa[0],1);
+            C_DAXPY(norbs*norbs,0.2,Fb_old[0],1,Fb[0],1);
         }
 
         //Diagonalize Fa and Fb to from Ca and Cb and Da and Db
@@ -289,14 +289,14 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
 
         //Form D
         C_DCOPY(norbs*norbs,Da[0],1,D[0],1);
-        C_DAXPY(norbs*norbs,1.0,Db[0],1,D[0],1);  
+        C_DAXPY(norbs*norbs,1.0,Db[0],1,D[0],1);
 
         //Form delta D and Drms
         C_DAXPY(norbs*norbs,-1.0,D[0],1,Dold[0],1);
-        double Drms = sqrt(1.0/(1.0*norbs*norbs)*C_DDOT(norbs*norbs,Dold[0],1,Dold[0],1));  
+        double Drms = sqrt(1.0/(1.0*norbs*norbs)*C_DDOT(norbs*norbs,Dold[0],1,Dold[0],1));
 
-        double deltaE = fabs(E-E_old);        
-    
+        double deltaE = fabs(E-E_old);
+
         if (sad_print_>6 && Communicator::world->me() == 0) {
             fprintf(outfile,"  Fa:\n");
             print_mat(Fa,norbs,norbs,outfile);
@@ -336,12 +336,12 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
             break;
         }
 
-        //Check convergence 
+        //Check convergence
     } while (!converged);
     if (converged && print_ > 1 && Communicator::world->me() == 0)
         fprintf(outfile, "\n  @Atomic UHF Final Energy for atom %s: %20.14f", mol->label(0).c_str(),E);
-   
-    delete TEI; 
+
+    delete TEI;
     free_block(Dold);
     free_block(Ca);
     free_block(Cb);
@@ -363,21 +363,21 @@ void HF::atomicUHFHelperFormCandD(int nelec, int norbs,double** Shalf, double**F
     double **Temp = block_matrix(norbs,norbs);
     double **Fp = block_matrix(norbs,norbs);
     double **Cp = block_matrix(norbs,norbs);
-    
-    //Form F' = X'FX = XFX for symmetric orthogonalization 
-    C_DGEMM('N','N',norbs,norbs,norbs,1.0,Shalf[0],norbs,F[0],norbs,0.0,Temp[0],norbs);  
-    C_DGEMM('N','N',norbs,norbs,norbs,1.0,Temp[0],norbs,Shalf[0],norbs,0.0,Fp[0],norbs);  
+
+    //Form F' = X'FX = XFX for symmetric orthogonalization
+    C_DGEMM('N','N',norbs,norbs,norbs,1.0,Shalf[0],norbs,F[0],norbs,0.0,Temp[0],norbs);
+    C_DGEMM('N','N',norbs,norbs,norbs,1.0,Temp[0],norbs,Shalf[0],norbs,0.0,Fp[0],norbs);
 
     //Form C' = eig(F')
     double *eigvals = init_array(norbs);
     sq_rsp(norbs, norbs, Fp,  eigvals, 1, Cp, 1.0e-14);
-    free(eigvals);    
+    free(eigvals);
 
     //Form C = XC'
     C_DGEMM('N','N',norbs,norbs,norbs,1.0,Shalf[0],norbs,Cp[0],norbs,0.0,C[0],norbs);
 
     //Form D = Cocc*Cocc'
-    C_DGEMM('N','T',norbs,norbs,nelec,1.0,C[0],norbs,C[0],norbs,0.0,D[0],norbs); 
+    C_DGEMM('N','T',norbs,norbs,nelec,1.0,C[0],norbs,C[0],norbs,0.0,D[0],norbs);
 
     free_block(Temp);
     free_block(Cp);
@@ -441,8 +441,8 @@ void RHF::compute_SAD_guess()
 
     // Determine redundant atoms
     int* unique_indices = init_int_array(mol->natom()); // All atoms to representative unique atom
-    int* atomic_indices = init_int_array(mol->natom()); // unique atom to first representative atom 
-    int* offset_indices = init_int_array(mol->natom()); // unique atom index to rank 
+    int* atomic_indices = init_int_array(mol->natom()); // unique atom to first representative atom
+    int* offset_indices = init_int_array(mol->natom()); // unique atom index to rank
     int nunique = 0;
     for (int l = 0; l < mol->natom(); l++) {
         unique_indices[l] = l;
@@ -475,8 +475,8 @@ void RHF::compute_SAD_guess()
             if (atomic_bases[l]->has_puream() !=  atomic_bases[m]->has_puream())
                 continue;
 
-            //TODO check the basis rigorously            
-            
+            //TODO check the basis rigorously
+
             //Rigorous match obtained
             unique_indices[m] = l;
         }
@@ -486,14 +486,14 @@ void RHF::compute_SAD_guess()
             atomic_indices[nunique] = l;
             offset_indices[l] = nunique;
             nunique++;
-        }    
+        }
     }
 
     //printf(" Nunique = %d \n", nunique);
     //printf(" Unique Indices   Atomic Indices \n");
     //for (int l = 0; l < mol->natom(); l++) {
     //    printf(" %14d   %14d \n", unique_indices[l], atomic_indices[l]);
-    //}    
+    //}
 
     timer_on("Atomic UHF");
 
@@ -513,7 +513,7 @@ void RHF::compute_SAD_guess()
     }
     if (sad_print_)
         fprintf(outfile,"\n");
-    
+
     timer_off("Atomic UHF");
 
     //Add atomic_D into D (scale by 1/2, we like pairs in RHF)
@@ -556,7 +556,7 @@ void RHF::compute_SAD_guess()
         int numla = basisset_->shell(la)->nfunction();
         for (int si = 0; si < basisset_->nshell(); si++) {
         int numsi = basisset_->shell(si)->nfunction();
-    
+
         //j
         if (!tei->shell_is_zero(mu,nu,la,si)) {
         tei->compute_shell(mu,nu,la,si);
@@ -574,7 +574,7 @@ void RHF::compute_SAD_guess()
         }
         }
         }
-    
+
         //k
         if (!tei->shell_is_zero(la,mu,nu,si)) {
         tei->compute_shell(la,mu,nu,si);
@@ -593,26 +593,26 @@ void RHF::compute_SAD_guess()
         }
         }
         //fprintf(outfile,"  cholesky tensor: ntri_ = %d, ri_nbf_ = %d:\n",ntri_,ri_nbf_);
-    
+
         }
         }
         }
         }
         shell_offset+= atomic_bases[a]->nshell();
         }
-    
+
         F_->copy(H_);
         F_->add(G_);
-    
+
         //compute initial e for reference
         E_ = compute_E();
-    
+
         //form the c matrix from the rough fock matrix
         form_C();
         //form the d matrix from the resultant c matrix
         form_D();
         timer_off("sad fock");
-    
+
         if (sad_print_>7) {
             G_->print(outfile);
             F_->print(outfile);
@@ -673,7 +673,7 @@ void RHF::compute_SAD_guess()
             for (int i = 0; i<norbs; i++)
                 fprintf(outfile,"  Pivot %d is %d.\n",i,P[i]);
         }
-    
+
         //Cholesky Decomposition
         int rank = C_DPOTRF('U',norbs,D[0],norbs);
         if (rank < 0) {
@@ -687,7 +687,7 @@ void RHF::compute_SAD_guess()
             sad_nocc_ = norbs;
         } else {
             // Only a partial Cholesky completed (rank was deficient)
-            sad_nocc_ = rank - 1; //FORTRAN 
+            sad_nocc_ = rank - 1; //FORTRAN
         }
         for (int i = 0; i<norbs-1; i++)
             for (int j = i+1; j<norbs; j++)
@@ -719,7 +719,7 @@ void RHF::compute_SAD_guess()
         for (int m = 0; m<norbs; m++)
             for (int i = 0; i<sad_nocc_; i++)
                 C_->set(0,m,i,C[m][i]);
-        
+
         if (sad_print_ > 5) {
             fprintf(outfile,"\n  C Guess (Cholesky):\n");
             print_mat(C,norbs,sad_nocc_,outfile);
@@ -750,7 +750,7 @@ void RHF::compute_SAD_guess()
     //abort();
 }
 SharedMatrix HF::dualBasisProjection(SharedMatrix C_, int nocc, shared_ptr<BasisSet> old_basis, shared_ptr<BasisSet> new_basis) {
-    
+
     //Based on Werner's method from Mol. Phys. 102, 21-22, 2311
 
     //ALSO ONLY C1 at the moment
@@ -759,7 +759,7 @@ SharedMatrix HF::dualBasisProjection(SharedMatrix C_, int nocc, shared_ptr<Basis
 
     //sizes
     int old_norbs = old_basis->nbf();
-    int new_norbs = new_basis->nbf();        
+    int new_norbs = new_basis->nbf();
 
     //fprintf(outfile,"  Old norbs %d, New norbs %d, nocc %d\n",old_norbs,new_norbs,nocc);
 
@@ -767,9 +767,9 @@ SharedMatrix HF::dualBasisProjection(SharedMatrix C_, int nocc, shared_ptr<Basis
     IntegralFactory integralAB(old_basis, new_basis, old_basis, new_basis);
     MatrixFactory matAB;
     matAB.init_with(1,&old_norbs,&new_norbs);
-    
+
     //Overlap integrals (basisset to basisset)
-    OneBodyInt *SAB_ints = integralAB.overlap();
+    OneBodySOInt *SAB_ints = integralAB.so_overlap();
     SharedMatrix S_AB(matAB.create_matrix("S_AB"));
     SAB_ints->compute(S_AB);
     //S_AB->print(outfile);
@@ -779,14 +779,14 @@ SharedMatrix HF::dualBasisProjection(SharedMatrix C_, int nocc, shared_ptr<Basis
     IntegralFactory integralBB(new_basis, new_basis, new_basis, new_basis);
     MatrixFactory matBB;
     matBB.init_with(1,&new_norbs,&new_norbs);
-    
+
     //Overlap integrals (basisset to basisset)
-    OneBodyInt *SBB_ints = integralBB.overlap();
+    OneBodySOInt *SBB_ints = integralBB.so_overlap();
     SharedMatrix S_BB(matBB.create_matrix("S_BB"));
     SBB_ints->compute(S_BB);
     //S_BB->print(outfile);
     double** SBB = S_BB->to_block_matrix();
-    
+
     //Inverse overlap matrices
     //double** SAAM1 = block_matrix(old_norbs,old_norbs);
     double** SBBM1 = block_matrix(new_norbs,new_norbs);
@@ -798,7 +798,7 @@ SharedMatrix HF::dualBasisProjection(SharedMatrix C_, int nocc, shared_ptr<Basis
     int CholError = C_DPOTRF('L',new_norbs,SBBM1[0],new_norbs);
     if (CholError !=0 )
         throw std::domain_error("S_BB Matrix Cholesky failed!");
-    
+
     //Inversion (in place)
     int IError = C_DPOTRI('L',new_norbs,SBBM1[0],new_norbs);
     if (IError !=0 )
@@ -807,36 +807,36 @@ SharedMatrix HF::dualBasisProjection(SharedMatrix C_, int nocc, shared_ptr<Basis
     //LAPACK is smart and all, only uses half of the thing
     for (int m = 0; m<new_norbs; m++)
         for (int n = 0; n<m; n++)
-            SBBM1[m][n] = SBBM1[n][m]; 
+            SBBM1[m][n] = SBBM1[n][m];
 
     //fprintf(outfile,"  S_BB^-1:\n");
-    //print_mat(SBBM1,new_norbs,new_norbs,outfile);     
- 
-    //Form T 
+    //print_mat(SBBM1,new_norbs,new_norbs,outfile);
+
+    //Form T
     double** Temp1 = block_matrix(new_norbs,nocc);
     C_DGEMM('T','N',new_norbs,nocc,old_norbs,1.0,SAB[0],new_norbs,CA[0],old_norbs,0.0,Temp1[0],nocc);
 
     //fprintf(outfile," Temp1:\n");
-    //print_mat(Temp1,new_norbs,nocc,outfile);     
-    
-    double** Temp2 = block_matrix(new_norbs,nocc);  
+    //print_mat(Temp1,new_norbs,nocc,outfile);
+
+    double** Temp2 = block_matrix(new_norbs,nocc);
     C_DGEMM('N','N',new_norbs,nocc,new_norbs,1.0,SBBM1[0],new_norbs,Temp1[0],nocc,0.0,Temp2[0],nocc);
 
     //fprintf(outfile," Temp2:\n");
-    //print_mat(Temp2,new_norbs,nocc,outfile);     
-    
+    //print_mat(Temp2,new_norbs,nocc,outfile);
+
     double** Temp3 = block_matrix(old_norbs,nocc);
     C_DGEMM('N','N',old_norbs,nocc,new_norbs,1.0,SAB[0],new_norbs,Temp2[0],nocc,0.0,Temp3[0],nocc);
-    
+
     //fprintf(outfile," Temp3:\n");
-    //print_mat(Temp3,old_norbs,nocc,outfile);     
-    
+    //print_mat(Temp3,old_norbs,nocc,outfile);
+
     double** T = block_matrix(nocc,nocc);
     C_DGEMM('T','N',nocc,nocc,old_norbs,1.0,CA[0],old_norbs,Temp3[0],nocc,0.0,T[0],nocc);
-    
+
     //fprintf(outfile," T:\n");
-    //print_mat(T,nocc,nocc,outfile);     
-    
+    //print_mat(T,nocc,nocc,outfile);
+
     //Find T^-1/2
     // First, diagonalize T
     // the C_DSYEV call replaces the original matrix T with its eigenvectors
@@ -855,7 +855,7 @@ SharedMatrix HF::dualBasisProjection(SharedMatrix C_, int nocc, shared_ptr<Basis
     // Copy T to T_copy
     double **T_mhalf = block_matrix(nocc, nocc);
     double **T_copy = block_matrix(nocc, nocc);
-    C_DCOPY(nocc*nocc,T[0],1,T_copy[0],1); 
+    C_DCOPY(nocc*nocc,T[0],1,T_copy[0],1);
 
     // Now form T^{-1/2} = U(T)*t^{-1/2}*U,
     // where t^{-1/2} is the diagonal matrix of the inverse square roots
@@ -863,7 +863,7 @@ SharedMatrix HF::dualBasisProjection(SharedMatrix C_, int nocc, shared_ptr<Basis
     for (int i=0; i<nocc; i++) {
         if (eigval[i] < 1.0E-10)
             eigval[i] = 0.0;
-        else 
+        else
             eigval[i] = 1.0 / sqrt(eigval[i]);
 
         // scale one set of eigenvectors by the diagonal elements t^{-1/2}
@@ -878,31 +878,31 @@ SharedMatrix HF::dualBasisProjection(SharedMatrix C_, int nocc, shared_ptr<Basis
     //Form CB
     double** CB = block_matrix(new_norbs,nocc);
     C_DGEMM('N','N',new_norbs,nocc,nocc,1.0,Temp2[0],nocc,T_mhalf[0],nocc,0.0,CB[0],nocc);
-    
+
     //fprintf(outfile," T^-1/2:\n");
-    //print_mat(T_mhalf,nocc,nocc,outfile);     
-    
-    //Set occupied part of C_B; 
+    //print_mat(T_mhalf,nocc,nocc,outfile);
+
+    //Set occupied part of C_B;
     MatrixFactory matBI;
     matBI.init_with(1,&new_norbs,&nocc);
-    
-    SharedMatrix C_B(matBI.create_matrix("C_DB"));
-    for (int m = 0; m < new_norbs; m++) 
-        for (int i = 0; i<nocc; i++)
-            C_B->set(0,m,i,CB[m][i]); 
 
-    free_block(CA);   
-    free_block(SAB);   
-    free_block(SBB);   
-    free_block(SBBM1);   
-    free_block(Temp1);   
-    free_block(Temp2);   
-    free_block(Temp3);   
-    free_block(T);   
-    free_block(T_mhalf);   
-    free_block(T_copy);   
-    free_block(CB);   
- 
+    SharedMatrix C_B(matBI.create_matrix("C_DB"));
+    for (int m = 0; m < new_norbs; m++)
+        for (int i = 0; i<nocc; i++)
+            C_B->set(0,m,i,CB[m][i]);
+
+    free_block(CA);
+    free_block(SAB);
+    free_block(SBB);
+    free_block(SBBM1);
+    free_block(Temp1);
+    free_block(Temp2);
+    free_block(Temp3);
+    free_block(T);
+    free_block(T_mhalf);
+    free_block(T_copy);
+    free_block(CB);
+
     return C_B;
 }
 

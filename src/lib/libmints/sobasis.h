@@ -107,7 +107,7 @@ class SOBasis
 {
 protected:
     boost::shared_ptr<BasisSet> basis_;
-    boost::shared_ptr<IntegralFactory> integral_;
+    const IntegralFactory* integral_;
     boost::shared_ptr<PetiteList> petite_;
 
     int nshell_;
@@ -124,10 +124,15 @@ protected:
 
     SOTransform *trans_;
 
+    /// Handles initializing SOBasis
+    void init();
+
 public:
     /// Create an SOBasis object given a BasisSet and Integral objects.
     SOBasis(const boost::shared_ptr<BasisSet>&, const boost::shared_ptr<IntegralFactory>&);
+    SOBasis(const boost::shared_ptr<BasisSet>&, const IntegralFactory*);
     ~SOBasis();
+
     /// Return the number of shells.
     int nshell() const { return nshell_; }
     /// Return the number of irreps.

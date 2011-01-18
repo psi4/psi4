@@ -397,10 +397,8 @@ void HF::form_H()
     else {
         // Integral factory
         shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-        shared_ptr<OneBodyInt>   aoT(integral->kinetic());
-        shared_ptr<OneBodySOInt> soT(new OneBodySOInt(aoT, integral));
-        shared_ptr<OneBodyInt>   aoV(integral->potential());
-        shared_ptr<OneBodySOInt> soV(new OneBodySOInt(aoV, integral));
+        shared_ptr<OneBodySOInt>    soT(integral->so_kinetic());
+        shared_ptr<OneBodySOInt>    soV(integral->so_potential());
 
         soT->compute(kinetic);
         soV->compute(potential);
@@ -453,8 +451,7 @@ void HF::form_Shalf()
     else {
         // Integral factory
         shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-        shared_ptr<OneBodyInt>   overlap(integral->overlap());
-        shared_ptr<OneBodySOInt> so_overlap(new OneBodySOInt(overlap, integral));
+        shared_ptr<OneBodySOInt>   so_overlap(integral->so_overlap());
         so_overlap->compute(S_);
     }
     // Form S^(-1/2) matrix

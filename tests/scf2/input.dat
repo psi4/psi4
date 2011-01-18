@@ -1,22 +1,24 @@
-%! RI-SCF cc-pVTZ energy of water, with Z-matrix input and cc-pVTZ-RI auxilliary basis.
+#! RI-SCF cc-pVTZ energy of water, with Z-matrix input and cc-pVTZ-RI auxilliary basis.
 
-psi: (
-  exec = (input scf)
-  label = "H2O cc-pVTZ SCF"
-  jobtype = sp
-  wfn = scf
-  reference = rhf
-  dertype = none
+nucenergy = 8.801466202085710
+refenergy = -76.05098402733282
 
-  subgroup = c1  
-  basis = "cc-pVTZ"
-  scf_type = df
-  ri_basis_scf = "cc-pVTZ-RI"
-
-  zmat= (
+molecule h2o {
+    symmetry c1
     O
     H 1 1.0
     H 1 1.0 2 104.5
-  )
-)
+}
+
+globals {
+  basis cc-pVTZ
+  scf_type df
+  ri_basis_scf cc-pVTZ-RI
+  e_converge 10
+}
+
+thisenergy = energy('rhf')
+
+compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")
+compare_values(refenergy, thisenergy, 9, "Reference energy")
 

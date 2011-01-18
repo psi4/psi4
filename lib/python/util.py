@@ -13,3 +13,11 @@ def set_num_threads(nthread):
 
 def get_num_threads():
     return PsiMol.get_n_threads()
+
+# Test functions
+def compare_values(expected, computed, digits, label):
+    if (abs(expected-computed) > 10**(-digits)):
+        print "\t%s: computed value (%f) does not match (%f) to %d digits." % (label, expected, computed, digits)
+        sys.exit(1)
+
+    print "\t%s: matched." % (label)

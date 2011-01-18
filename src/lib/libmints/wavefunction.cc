@@ -47,7 +47,6 @@ Wavefunction::~Wavefunction()
 
 void Wavefunction::common_init()
 {
-
     Wavefunction::initialize_singletons();
 
     if (options_.get_bool("NO_INPUT") == false) {
@@ -56,12 +55,34 @@ void Wavefunction::common_init()
     else {
         // Take the molecule from the environment
         molecule_ = Process::environment.molecule();
+
+        // Check the point group of the molecule. If it is not set, set it.
+        if (!molecule_->point_group()) {
+            shared_ptr<PointGroup> pg = molecule_->find_point_group();
+            if (!molecule_->symmetry_from_input().empty()) {
+                // If they're not the same
+                if (molecule_->symmetry_from_input() != pg->symbol()) {
+                    shared_ptr<PointGroup> user(new PointGroup(molecule_->symmetry_from_input().c_str()));
+
+                    // Make sure user is subgroup of pg
+                    CorrelationTable corrtable(pg, user);
+
+                    // If we make it here user is good.
+                    pg = user;
+                }
+            }
+            molecule_->set_point_group(pg);
+        }
+
+        // Load in the basis set
         shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
         basisset_ = BasisSet::construct(parser, molecule_, options_.get_str("BASIS"));
 
+        // Create an SO basis...we need the point group for this part.
         shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
         sobasisset_ = shared_ptr<SOBasis>(new SOBasis(basisset_, integral));
 
+        // Obtain the dimension object to initialize the factory.
         const Dimension dimension = sobasisset_->dimension();
         dimension.print(); fflush(outfile);
         factory_.init_with(dimension, dimension);
@@ -127,7 +148,7 @@ void Wavefunction::initialize_singletons()
 
 shared_ptr<Molecule> Wavefunction::molecule() const
 {
-    return molecule_;
+    return molecule_    ;
 }
 
 boost::shared_ptr<BasisSet> Wavefunction::basisset() const

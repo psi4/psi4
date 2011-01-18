@@ -57,7 +57,7 @@ void  DFMP2::setup()
 {
   timer_on("Setup");
 
-  // Old chkpt stuff 
+  // Old chkpt stuff
 
   //// Form primary basis indexing
   //nirreps_ = chkpt_->rd_nirreps();
@@ -69,16 +69,16 @@ void  DFMP2::setup()
   //E_scf_ = chkpt_->rd_escf();
 
   //// Read in C coefficients
-  //double **vectors; 
+  //double **vectors;
   //vectors = chkpt_->rd_scf();
 
   //// Load in orbital energies
-  //double *orbital_energies; 
+  //double *orbital_energies;
   //orbital_energies = chkpt_->rd_evals();
 
-  //New Process::environment.reference_wavefunction() stuff 
+  //New Process::environment.reference_wavefunction() stuff
 
-  shared_ptr<Wavefunction> ref = Process::environment.reference_wavefunction(); 
+  shared_ptr<Wavefunction> ref = Process::environment.reference_wavefunction();
   E_scf_ = Process::environment.globals["SCF ENERGY"];
   nirreps_ = ref->get_nirreps();
   nso_ = ref->get_nso();
@@ -90,7 +90,7 @@ void  DFMP2::setup()
   SharedMatrix C = ref->get_Ca();
   SharedVector epsilon = ref->get_epsilon_a();
 
-  //End Process::environment.reference_wavefunction() stuff 
+  //End Process::environment.reference_wavefunction() stuff
 
   ndocc_ = 0;
   nvirt_ = 0;
@@ -107,7 +107,7 @@ void  DFMP2::setup()
       nact_virt_ += orbspi_[h] - frzvpi_[h] - clsdpi_[h];
   }
   nmo_ = ndocc_+nvirt_;
-  
+
   // Form ribasis object and auxiliary basis indexing:
   shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
   ribasis_ = BasisSet::construct(parser, molecule_, options_.get_str("RI_BASIS_MP2"));
@@ -148,9 +148,9 @@ void  DFMP2::setup()
   if (algorithm_type_ == "DEFAULT")
     if (core_memory < df_memory_)
         algorithm_type_ = "CORE";
-    else 
-        algorithm_type_ = "DISK"; 
- 
+    else
+        algorithm_type_ = "DISK";
+
   //Put the orbitals and C matrix into some nice arrays
   C_docc_   = block_matrix(nso_, nact_docc_);
   C_virt_   = block_matrix(nso_, nact_virt_);
@@ -234,17 +234,17 @@ void DFMP2::print_header()
 }
 DFMP2::~DFMP2()
 {
-   //free(clsdpi_); 
-   //free(orbspi_); 
-   //free(frzcpi_); 
-   //free(frzvpi_); 
-   free(sym_docc_); 
-   free(sym_virt_); 
-   free(eps_docc_); 
-   free(eps_virt_); 
-   free(schwarz_shell_pairs_); 
-   free_block(C_docc_); 
-   free_block(C_virt_); 
+   //free(clsdpi_);
+   //free(orbspi_);
+   //free(frzcpi_);
+   //free(frzvpi_);
+   free(sym_docc_);
+   free(sym_virt_);
+   free(eps_docc_);
+   free(eps_virt_);
+   free(schwarz_shell_pairs_);
+   free_block(C_docc_);
+   free_block(C_virt_);
 }
 double DFMP2::compute_energy()
 {
@@ -288,7 +288,7 @@ double DFMP2::compute_energy()
 }
 double DFMP2::compute_E_core()
 {
-    if (options_.get_bool("PARALLEL_DFMP2")) { 
+    if (options_.get_bool("PARALLEL_DFMP2")) {
         form_Qia_core();
         evaluate_contributions_core_parallel();
         free_Qia_core();
@@ -409,7 +409,7 @@ double** DFMP2::form_W_overlap(shared_ptr<BasisSet> bas)
   int naux = bas->nbf();
 
   IntegralFactory rifactory_JS(bas, bas, zero, zero);
-  shared_ptr<OneBodyInt> S = (shared_ptr<OneBodyInt>)rifactory_JS.overlap();
+  shared_ptr<OneBodySOInt> S = (shared_ptr<OneBodySOInt>)rifactory_JS.so_overlap();
 
   MatrixFactory matJS;
   matJS.init_with(1,&naux,&naux);
@@ -1029,9 +1029,9 @@ void DFMP2::evaluate_contributions_disk()
     }
 
     if (debug_) {
-        fprintf(outfile, "  Nblocks = %d, N_I = %d\n", nblocks, N_I);
+        fprintf(outfile, "  Nblocks = %ld, N_I = %ld\n", nblocks, N_I);
         for (int block = 0; block < nblocks; block++)
-            fprintf(outfile,"  Block %d, start = %d, size = %d, stop = %d\n",block+1, block_starts[block], block_sizes[block], block_stops[block]);
+            fprintf(outfile,"  Block %d, start = %ld, size = %d, stop = %d\n",block+1, block_starts[block], block_sizes[block], block_stops[block]);
         fflush(outfile);
     }
 
@@ -1539,7 +1539,7 @@ void DFMP2::evaluate_contributions_core_parallel()
   for (int r = 0 ; r<nthreads; r++) {
     I[r] = block_matrix(nact_virt_,nact_virt_);
   }
-  
+
   double iajb, ibja, denom, perm_scale;
   long double e_ss, e_os;
   int a, b, i, j;
@@ -1549,11 +1549,11 @@ void DFMP2::evaluate_contributions_core_parallel()
 
   #pragma omp parallel for private (rank, a, b, i, j, perm_scale, iajb, ibja, denom) reduction (+: e_ss, e_os) schedule (dynamic)
   for (i=0; i < nact_docc_; ++i) {
-   
+
     #ifdef _OPENMP
       rank = omp_get_thread_num();
     #endif
- 
+
     for (j=0; j <= i; ++j) {
 
       if (rank == 0) timer_on("(ia|jb)");
@@ -1580,13 +1580,13 @@ void DFMP2::evaluate_contributions_core_parallel()
         }
       }
       if (rank == 0) timer_off("T_MP2");
-    } 
+    }
   }
 
   for (int r = 0; r<nthreads; r++)
     free_block(I[r]);
   delete[] I;
- 
+
   #ifdef _MKL
     mkl_set_num_threads(mkl_nthreads);
   #endif

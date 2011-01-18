@@ -76,12 +76,21 @@ void SOTransformShell::add_func(int irrep, double coef, int aofunc, int sofunc)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-SOBasis::SOBasis(const boost::shared_ptr<BasisSet> &basis, const boost::shared_ptr<IntegralFactory> &integral)
+SOBasis::SOBasis(const boost::shared_ptr<BasisSet> &basis, const IntegralFactory *integral)
     : basis_(basis), integral_(integral)
 {
-    int i,j,k;
+    init();
+}
 
-    basis_ = basis;
+SOBasis::SOBasis(const boost::shared_ptr<BasisSet> &basis, const boost::shared_ptr<IntegralFactory> &integral)
+    : basis_(basis), integral_(integral.get())
+{
+    init();
+}
+
+void SOBasis::init()
+{
+    int i,j,k;
 
     boost::shared_ptr<Molecule> mol = basis_->molecule();
 
@@ -142,7 +151,7 @@ SOBasis::SOBasis(const boost::shared_ptr<BasisSet> &basis, const boost::shared_p
         }
     }
 
-    petite_ = shared_ptr<PetiteList>(new PetiteList(basis_, integral));
+    petite_ = shared_ptr<PetiteList>(new PetiteList(basis_, integral_));
 
 //    petite->print();
 
