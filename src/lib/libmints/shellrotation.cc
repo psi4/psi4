@@ -172,10 +172,10 @@ void ShellRotation::init_pure(int a, SymmetryOperation &so, IntegralFactory *int
 
     SphericalTransform *st = ints->spherical_transform(am_);
 
-    printf("SphericalTransform: am = %d\n", am_);
-    for (int z=0; z<st->n(); ++z) {
-        printf("a = %d, b = %d, c = %d\n", st->a(z), st->b(z), st->c(z));
-    }
+//    printf("SphericalTransform: am = %d\n", am_);
+//    for (int z=0; z<st->n(); ++z) {
+//        printf("a = %d, b = %d, c = %d\n", st->a(z), st->b(z), st->c(z));
+//    }
     n_ = INT_NPURE(am_);
 
     r_ = new double*[n_];
@@ -188,10 +188,10 @@ void ShellRotation::init_pure(int a, SymmetryOperation &so, IntegralFactory *int
         for (J.first(); !J.is_done(); J.next()) {
             double coef = I.coef()*J.coef();
             double tmp = 0.0;
-            fprintf(outfile, "J.a = %d J.b = %d J.c = %d\n", J.a(), J.b(), J.c());
-            fprintf(outfile, "I.coef = %lf, J.coef = %lf\n", I.coef(), J.coef());
+//            fprintf(outfile, "J.a = %d J.b = %d J.c = %d\n", J.a(), J.b(), J.c());
+//            fprintf(outfile, "I.coef = %lf, J.coef = %lf\n", I.coef(), J.coef());
             for (K.start(J.a(), J.b(), J.c()); K; K.next()) {
-                fprintf(outfile, "T(%d,%d) += %6.4f", I.pureindex(), J.pureindex(), coef);
+//                fprintf(outfile, "T(%d,%d) += %6.4f", I.pureindex(), J.pureindex(), coef);
                 double tmp2 = coef;
                 for (m=0; m<3; ++m)
                     lI[m] = I.l(m);
@@ -201,10 +201,10 @@ void ShellRotation::init_pure(int a, SymmetryOperation &so, IntegralFactory *int
                     lI[iI]--;
 
                     tmp2 *= so(K.axis(m), iI);
-                    fprintf(outfile, " * so(%d,%d) [=%4.2f]",
-                            iI,K.axis(m),so(iI,K.axis(m)));
+//                    fprintf(outfile, " * so(%d,%d) [=%4.2f]",
+//                            iI,K.axis(m),so(iI,K.axis(m)));
                 }
-                fprintf(outfile, " = %8.6f\n", tmp2);
+//                fprintf(outfile, " = %8.6f\n", tmp2);
                 tmp += tmp2;
             }
             r_[I.pureindex()][J.pureindex()] += tmp;

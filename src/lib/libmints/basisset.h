@@ -156,7 +156,7 @@ public:
      *  @param i Shell number
      *  @return The function number for the first function for the i'th shell.
      */
-    int shell_to_function(int i) const { return shell_first_ao_[i]; }
+    int shell_to_ao_function(int i) const { return shell_first_ao_[i]; }
     /** Given a shell what is its atomic center
      *  @param i Shell number
      *  @return The atomic center for the i'th shell.

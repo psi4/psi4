@@ -5,58 +5,100 @@
 
 using namespace psi;
 
-void do_copy1(double *source, double *target, int chunk,
-    int n1, int s1, int offset1,
-    int n2, int s2, int offset2)
-{
-    int i1, i2;
+//void do_copy1(double *source, double *target, int chunk,
+//    int n1, int s1, int offset1,
+//    int n2, int s2, int offset2)
+//{
+//    int i1, i2;
 
-    for (i1=0; i1<n1; i1++) {
-        int off = ((offset1 + i1)*s2 + offset2)*chunk;
-        for (i2=0; i2<n2*chunk; i2++, off++) {
-            target[off] = source[off];
-        }
+//    for (i1=0; i1<n1; i1++) {
+//        int off = ((offset1 + i1)*s2 + offset2)*chunk;
+//        for (i2=0; i2<n2*chunk; i2++, off++) {
+//            target[off] = source[off];
+//        }
+//    }
+//}
+
+//void do_sparse_transform11(double *source, double *target, int chunk,
+//    SphericalTransformIter& trans,
+//    int offsetcart1,
+//    int offsetpure1,
+//    int n2, int s2, int offset2)
+//{
+//    int i2;
+
+//    fprintf(outfile, "offsetcart1 = %d offsetpure1 = %d n2 = %d s2 = %d offset2 = %d\n",
+//            offsetcart1, offsetpure1, n2, s2, offset2);
+
+//    for (trans.first(); !trans.is_done(); trans.next()) {
+//        double coef = trans.coef();
+//        int pure = trans.pureindex();
+//        int cart = trans.cartindex();
+//        int offtarget = ((offsetpure1 + pure)*s2 + offset2)*chunk;
+//        int offsource = ((offsetcart1 + cart)*s2 + offset2)*chunk;
+//        for (i2=0; i2<n2*chunk; i2++) {
+//            target[offtarget++] += coef * source[offsource++];
+//        }
+//    }
+//}
+
+//void do_sparse_transform12(double *source, double *target, int chunk,
+//    SphericalTransformIter& trans,
+//    int n1, int offset1,
+//    int s2cart, int offsetcart2,
+//    int s2pure, int offsetpure2)
+//{
+//    int i1, ichunk;
+
+//    fprintf(outfile, "n1 = %d offset1 = %d s2cart = %d offsetcart2 = %d s2pure = %d offsetpure = %d\n",
+//            n1, offset1, s2cart, offsetcart2, s2pure, offsetpure2);
+
+//    for (trans.first(); !trans.is_done(); trans.next()) {
+//        double coef = trans.coef();
+//        int pure = trans.pureindex();
+//        int cart = trans.cartindex();
+//        for (i1=0; i1<n1; i1++) {
+//            int offtarget = ((offset1 + i1)*s2pure + offsetpure2 + pure)*chunk;
+//            int offsource = ((offset1 + i1)*s2cart + offsetcart2 + cart)*chunk;
+//            for (ichunk=0; ichunk<chunk; ichunk++) {
+//                target[offtarget++] += coef * source[offsource++];
+//            }
+//        }
+//    }
+//}
+
+static void transform1e_1(int am, SphericalTransformIter& sti, double *s, double *t, int nl)
+{
+    memset(t,0,INT_NPURE(am)*nl*sizeof(double));
+
+    for (sti.first(); !sti.is_done(); sti.next()) {
+        double *sptr = s + sti.cartindex()*nl;
+        double *tptr = t + sti.pureindex()*nl;
+        double coef = sti.coef();
+
+//        fprintf(outfile, "1e_1: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(), sti.coef());
+
+        for(int l=0; l<nl; l++)
+            *(tptr++) += coef * *(sptr++);
     }
 }
 
-void do_sparse_transform11(double *source, double *target, int chunk,
-    SphericalTransformIter& trans,
-    int offsetcart1,
-    int offsetpure1,
-    int n2, int s2, int offset2)
+static void transform1e_2(int am, SphericalTransformIter& sti, double *s, double *t, int nk, int nl)
 {
-    int i2;
+    const int sl = nl;
+    const int tl = INT_NPURE(am);
 
-    for (trans.first(); !trans.is_done(); trans.next()) {
-        double coef = trans.coef();
-        int pure = trans.pureindex();
-        int cart = trans.cartindex();
-        int offtarget = ((offsetpure1 + pure)*s2 + offset2)*chunk;
-        int offsource = ((offsetcart1 + cart)*s2 + offset2)*chunk;
-        for (i2=0; i2<n2*chunk; i2++) {
-            target[offtarget++] += coef * source[offsource++];
-        }
-    }
-}
+    memset(t,0,nk*tl*sizeof(double));
 
-void do_sparse_transform12(double *source, double *target, int chunk,
-    SphericalTransformIter& trans,
-    int n1, int offset1,
-    int s2cart, int offsetcart2,
-    int s2pure, int offsetpure2)
-{
-    int i1, ichunk;
+    for (sti.first(); !sti.is_done(); sti.next()) {
+        double *sptr = s + sti.cartindex();
+        double *tptr = t + sti.pureindex();
+        double coef = sti.coef();
 
-    for (trans.first(); !trans.is_done(); trans.next()) {
-        double coef = trans.coef();
-        int pure = trans.pureindex();
-        int cart = trans.cartindex();
-        for (i1=0; i1<n1; i1++) {
-            int offtarget = ((offset1 + i1)*s2pure + offsetpure2 + pure)*chunk;
-            int offsource = ((offset1 + i1)*s2cart + offsetcart2 + cart)*chunk;
-            for (ichunk=0; ichunk<chunk; ichunk++) {
-                target[offtarget++] += coef * source[offsource++];
-            }
+//        fprintf(outfile, "1e_2: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(), sti.coef());
+
+        for(int k=0; k<nk; k++,sptr+=sl,tptr+=tl) {
+            *(tptr) += coef * *(sptr);
         }
     }
 }
@@ -135,79 +177,57 @@ void OneBodyInt::normalize_am(shared_ptr<GaussianShell> s1, shared_ptr<GaussianS
 
 void OneBodyInt::do_transform(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2, int chunk)
 {
-    int i, j;
-    int ogc1, ogc2;
-    int ogc1pure, ogc2pure;
-    int am1, am2;
-    int pure1 = s1->is_pure();
-    int pure2 = s2->is_pure();
+    double *source1, *target1;
+    double *source2, *target2;
+    double *source = buffer_;
+    double *target = target_;
+    double *tmpbuf = tformbuf_;
+
+    int am1 = s1->am();
+    int is_pure1 = s1->is_pure() && am1 > 1;
     int ncart1 = s1->ncartesian();
+    int nbf1 = s1->nfunction();
+
+    int am2 = s2->am();
+    int is_pure2 = s2->is_pure() && am2 > 1;
     int ncart2 = s2->ncartesian();
-    int nfunc1 = s1->nfunction();
-    int nfunc2 = s2->nfunction();
-    int nfunci, nfuncj;
-    double *source;
+    int nbf2 = s2->nfunction();
 
-    if (!pure1 && !pure2) {
-        return;
+    int transform_index = 2*is_pure1 + is_pure2;
+    switch(transform_index) {
+    case 0:
+        break;
+    case 1:
+        source2 = source;
+        target2 = target;
+        break;
+    case 2:
+        source1 = source;
+        target1 = target;
+        break;
+    case 3:
+        source2 = source;
+        target2 = tmpbuf;
+        source1 = tmpbuf;
+        target1 = target;
+        break;
     }
 
-    if (pure1) {
-        source = new double[ncart1*ncart2*chunk];
-        memcpy(source, buffer_, sizeof(double)*ncart1*ncart2*chunk);
-        memset(buffer_, 0, sizeof(double)*nfunc1*ncart2*chunk);
-
-        ogc1 = 0;
-        ogc1pure = 1;
-        am1 = s1->am();
-        nfunci = s1->nfunction();
-        ogc2 = 0;
-        am2 = s2->am();
-        nfuncj = s2->nfunction();
-
-        if (s1->is_pure()) {
-            SphericalTransformIter trans(spherical_transforms_[s1->am()]);
-            do_sparse_transform11(source, buffer_, chunk,
-                                  trans,
-                                  ogc1,
-                                  ogc1pure,
-                                  INT_NCART(am2), ncart2, ogc2);
-        }
-        else {
-            do_copy1(source, buffer_, chunk,
-                     nfunci, nfunc1, ogc1pure,
-                     INT_NCART(am2), ncart2, ogc2);
-        }
-        delete[] source;
+    if (is_pure2) {
+        SphericalTransformIter stiter(spherical_transforms_[am2]);
+        transform1e_2(am2, stiter, source2, target2, ncart1, ncart2);
+    }
+    if (is_pure1) {
+        SphericalTransformIter stiter(spherical_transforms_[am1]);
+        transform1e_1(am1, stiter, source1, target1, nbf2);
     }
 
-    if (pure2) {
-        source = new double[nfunc1*ncart2*chunk];
-        memcpy(source, buffer_, nfunc1*ncart2*chunk);
-        memset(buffer_, 0, sizeof(double)*s1->nfunction()*s2->nfunction()*chunk);
-
-        ogc1 = 0;
-        am1 = s1->am();
-        nfunci = s1->nfunction();
-        ogc2 = 0;
-        ogc2pure = 0;
-        am2 = s2->am();
-        nfuncj = s2->nfunction();
-
-        if (s2->is_pure()) {
-            SphericalTransformIter trans(spherical_transforms_[s2->am()]);
-            do_sparse_transform12(source, buffer_, chunk,
-                                  trans,
-                                  INT_NPURE(am1), ogc1,
-                                  ncart2, ogc2,
-                                  s2->nfunction(), ogc2pure);
-        }
-        else {
-            do_copy1(source, buffer_, chunk,
-                     nfunci, nfunc1, ogc1,
-                     nfuncj, nfunc2, ogc2pure);
-        }
-        delete[] source;
+//    for (int z=0; z < ncart1*ncart2; ++z) {
+//        fprintf(outfile, "tform target: %d -> %8.5f\n", z, target_[z]);
+//        fprintf(outfile, "tform buffer: %d -> %8.5f\n", z, buffer_[z]);
+//    }
+    if (transform_index) {
+        memcpy(buffer_, target_, sizeof(double) * ncart1 * ncart2);
     }
 }
 

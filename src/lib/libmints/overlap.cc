@@ -17,8 +17,13 @@ OverlapInt::OverlapInt(std::vector<SphericalTransform>& st, shared_ptr<BasisSet>
     if (deriv > 2) {
         throw std::runtime_error("OverlapInt: does not support 3rd order derivatives and higher.");
     }
-    int maxnao1 = (maxam1+1)*(maxam1+2)/2;
-    int maxnao2 = (maxam2+1)*(maxam2+2)/2;
+//    int maxnao1 = (maxam1+1)*(maxam1+2)/2;
+//    int maxnao2 = (maxam2+1)*(maxam2+2)/2;
+    int maxnao1 = INT_NCART(maxam1);
+    int maxnao2 = INT_NCART(maxam2);
+
+    tformbuf_ = new double[maxnao1 * maxnao2];
+
     if (deriv == 1) {
         maxnao1 *= 3 * natom_;
         maxnao2 *= 3 * natom_;
@@ -27,10 +32,13 @@ OverlapInt::OverlapInt(std::vector<SphericalTransform>& st, shared_ptr<BasisSet>
         maxnao2 *= 9 * natom_;
     }
     buffer_ = new double[maxnao1*maxnao2];
+    target_ = new double[maxnao1*maxnao2];
 }
 
 OverlapInt::~OverlapInt()
 {
+    delete[] tformbuf_;
+    delete[] target_;
     delete[] buffer_;
 }
 
@@ -124,8 +132,17 @@ void OverlapInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<GaussianS
     // Integrals are done. Normalize for angular momentum
     normalize_am(s1, s2);
 
-    // Spherical harmonic transformation
-    // Wrapped up in the AO to SO transformation
+//    for (int z=0; z<INT_NCART(am1)*INT_NCART(am2); ++z) {
+//        fprintf(outfile, "pre-pure raw: %d -> %8.5f\n", z, buffer_[z]);
+//    }
+
+    // Pure angular momentum (6d->5d...) transformation
+    do_transform(s1, s2);
+
+    for (int z=0; z<INT_NPURE(am1)*INT_NPURE(am2); ++z) {
+        fprintf(outfile, "pure raw: %d -> %8.5f\n", z, buffer_[z]);
+    }
+
 }
 
 void OverlapInt::compute_shell_deriv1(int sh1, int sh2)

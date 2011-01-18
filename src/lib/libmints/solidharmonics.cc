@@ -126,13 +126,13 @@ void solidharmcontrib(int sign,
 // r2 is the number of factors of r^2 that are included
 void solidharm(unsigned int l, int m, unsigned int r2, SimpleMatrix& coefmat)
 {
-    printf("in solidharm(unsigned int l, int m, unsigned int r2, RefSCMatrix coefmat\n");
-    printf("l = %d, m = %d, r2 = %d\n", l, m, r2);
+//    printf("in solidharm(unsigned int l, int m, unsigned int r2, RefSCMatrix coefmat\n");
+//    printf("l = %d, m = %d, r2 = %d\n", l, m, r2);
 
     int pureindex = ipure(l,m);
-    printf("pureindex = %d\n", pureindex);
+//    printf("pureindex = %d\n", pureindex);
     for (unsigned int i=1; i<=r2; i++) pureindex += npure(l+2*i);
-    printf("pureindex = %d\n", pureindex);
+//    printf("pureindex = %d\n", pureindex);
 
     unsigned int absm = abs(m);
 
