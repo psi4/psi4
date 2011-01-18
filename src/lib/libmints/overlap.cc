@@ -139,10 +139,9 @@ void OverlapInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<GaussianS
     // Pure angular momentum (6d->5d...) transformation
     do_transform(s1, s2);
 
-    for (int z=0; z<INT_NPURE(am1)*INT_NPURE(am2); ++z) {
-        fprintf(outfile, "pure raw: %d -> %8.5f\n", z, buffer_[z]);
-    }
-
+//    for (int z=0; z<INT_NPURE(am1)*INT_NPURE(am2); ++z) {
+//        fprintf(outfile, "pure raw: %d -> %8.5f\n", z, buffer_[z]);
+//    }
 }
 
 void OverlapInt::compute_shell_deriv1(int sh1, int sh2)
