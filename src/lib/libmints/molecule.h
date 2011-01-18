@@ -311,7 +311,11 @@ public:
     /// Symmetry
     /// @{
     boost::shared_ptr<PointGroup> point_group() const { return pg_; }
-    void set_point_group(boost::shared_ptr<PointGroup> pg) { pg_ = pg; }
+    void set_point_group(boost::shared_ptr<PointGroup> pg) {
+        pg_ = pg;
+        // Call this here, the programmer will forget to call it, as I have many times.
+        form_symmetry_information();
+    }
     /// Does the molecule have an inversion center at origin
     bool has_inversion(Vector3& origin, double tol = 0.05) const;
     /// Is a plane?

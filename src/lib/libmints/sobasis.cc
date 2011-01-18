@@ -279,8 +279,6 @@ void SOBasis::print(FILE *out) const
         if (i>0) fprintf(out, "\n");
         for (j=0; j<trans_[i].naoshell; j++) {
             for (k=0; k<trans_[i].aoshell[j].nfunc; k++) {
-                fprintf(out, "      SO(  0  0 0 [ 0]) +=   1.00000000 * AO(  0  0)
-
                 fprintf(out, "      SO(%3d %2d %d [%2d]) += % 12.8f * AO(%3d %2d)\n",
                         i,
                         trans_[i].aoshell[j].func[k].sofunc,
