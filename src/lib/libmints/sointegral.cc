@@ -27,8 +27,8 @@ OneBodySOInt::OneBodySOInt(const boost::shared_ptr<OneBodyInt> & ob,
 
     only_totally_symmetric_ = 0;
 
-    buffer_ = new double[INT_NFUNC(ob->basis1()->has_puream(), ob->basis1()->max_am())
-                        *INT_NFUNC(ob->basis2()->has_puream(), ob->basis2()->max_am())];
+    buffer_ = new double[INT_NCART(ob->basis1()->max_am())
+                        *INT_NCART(ob->basis2()->max_am())];
 }
 
 OneBodySOInt::~OneBodySOInt()
@@ -146,8 +146,12 @@ void OneBodySOInt::compute(boost::shared_ptr<Matrix> result)
                 for (int j=0; j<t2.naoshell; ++j) {
                     const SOTransformShell &s2 = t2.aoshell[j];
 
-                    fprintf(outfile, "aoshells: 1 = %d   2 = %d\n", s1.aoshell, s2.aoshell);
+//                    fprintf(outfile, "aoshells: 1 = %d   2 = %d\n", s1.aoshell, s2.aoshell);
                     ob_->compute_shell(s1.aoshell, s2.aoshell);
+//                    for (int z=0; z < INT_NPURE(ob_->basis1()->shell(s1.aoshell)->am()) *
+//                         INT_NPURE(ob_->basis2()->shell(s2.aoshell)->am()); ++z) {
+//                        fprintf(outfile, "raw: %d -> %8.5f\n", z, aobuf[z]);
+//                    }
 
                     for (int itr=0; itr<s1.nfunc; ++itr) {
                         const SOTransformFunction &ifunc = s1.func[itr];
@@ -169,11 +173,13 @@ void OneBodySOInt::compute(boost::shared_ptr<Matrix> result)
 
                             buffer_[jsooff] += jcoef * aobuf[jaooff];
 
-                            if (fabs(buffer_[jsooff]) > 1.0e-10 && iirrep == jirrep) {
-                                fprintf(outfile, "(%2d|%2d) += %+6f * (%2d|%2d): %+6f -> %+6f iirrep = %d ifunc = %d, jirrep = %d jfunc = %d\n",
-                                        isofunc, jsofunc, jcoef, iaofunc, jaofunc, aobuf[jaooff], buffer_[jsooff],
-                                        ifunc.irrep, b1_->function_within_irrep(ish, isofunc),
-                                        jfunc.irrep, b2_->function_within_irrep(jsh, jsofunc));
+                            if (fabs(aobuf[jaooff]*jcoef) > 1.0e-10) {
+//                                fprintf(outfile, "(%2d|%2d) += %+6f * (%2d|%2d): %+6f -> %+6f iirrep = %d ifunc = %d, jirrep = %d jfunc = %d\n",
+//                                        isofunc, jsofunc, jcoef, iaofunc, jaofunc, aobuf[jaooff], buffer_[jsooff],
+//                                        ifunc.irrep, b1_->function_within_irrep(ish, isofunc),
+//                                        jfunc.irrep, b2_->function_within_irrep(jsh, jsofunc));
+                                fprintf(outfile, "(%d|%d) += %8.5f * (%d|%d): %8.5f -> %8.5f\n",
+                                        isofunc, jsofunc, jcoef, iaofunc, jaofunc, aobuf[jaooff], buffer_[jsooff]);
                             }
 
                             // Check the irreps to ensure symmetric quantities.

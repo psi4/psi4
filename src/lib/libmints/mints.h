@@ -32,3 +32,4 @@
 #include <libmints/wavefunction.h>
 #include <libmints/dimension.h>
 #include <libmints/3coverlap.h>
+#include <libmints/sointegral.h>

@@ -853,10 +853,12 @@ SO_block* PetiteList::aotoso_info()
                                         tso.cont[llnonzero].bfn
                                                 = l
                                                 + bfn_offset_in_shell
-                                                + gbs.shell_to_function(gbs.shell_on_center(equivatom,
+                                                + gbs.shell_to_basis_function(gbs.shell_on_center(equivatom,
                                                                                             s));
                                         tso.cont[llnonzero].coef = tmp;
-                                        fprintf(outfile, "tso.cont[%d].bfn = %d .coef = %lf\n", llnonzero, tso.cont[llnonzero].bfn, tso.cont[llnonzero].coef);
+                                        fprintf(outfile, "tso.cont[%d].bfn = %d .coef = %lf l = %d bfn_offset_in_shell = %d gbs.shell_to_function = %d\n",
+                                                llnonzero, tso.cont[llnonzero].bfn, tso.cont[llnonzero].coef,
+                                                l, bfn_offset_in_shell, gbs.shell_to_basis_function(gbs.shell_on_center(equivatom, s)));
                                         llnonzero++;
                                     }
                                 }
