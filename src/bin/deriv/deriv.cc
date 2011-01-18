@@ -25,9 +25,9 @@ Deriv::Deriv(reftype ref, shared_ptr<MatrixFactory>& factory, shared_ptr<BasisSe
     shared_ptr<IntegralFactory> integral(new IntegralFactory(basis_, basis_, basis_, basis_));
 
     // Create new one-electron integral evaluators telling them we want 1st derivatives (1)
-    shared_ptr<OneBodyInt> oei_dK(integral->kinetic(1));
-    shared_ptr<OneBodyInt> oei_dV(integral->potential(1));
-    shared_ptr<OneBodyInt> oei_dS(integral->overlap(1));
+    shared_ptr<OneBodyInt> oei_dK(integral->ao_kinetic(1));
+    shared_ptr<OneBodyInt> oei_dV(integral->ao_potential(1));
+    shared_ptr<OneBodyInt> oei_dS(integral->ao_overlap(1));
 
     // Allocate memory to store integrals.
     vector<SharedSimpleMatrix> dK;

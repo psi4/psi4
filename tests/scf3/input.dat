@@ -1,24 +1,28 @@
-%! UHF 6-31G** energy of the $^3B_1$ state of CH$_2$, with Z-matrix input.
+#! UHF 6-31G** energy of the $^3B_1$ state of CH$_2$, with Z-matrix input.
 
-psi: (
-  exec = (input cints scf)
-  label = "6-31G** UHF CH2 3B1"
-  jobtype = sp
-  wfn = scf
-  reference = uhf
-  dertype = none
-  basis = "6-31G**"
-  charge = 0
-  multp = 3
-  docc = (2 0 0 1)
-  socc = (1 0 1 0)
-  zmat = (
+nucenergy = 6.648419426607498
+refenergy = -38.91591816165388
+
+molecule ch2 {
+    0 3
     c
     h 1 b1
     h 1 b1 2 a1
-  )
-  zvars = (
-    b1  1.0
-    a1  125.0
-  )
-)
+
+    b1 = 1.0
+    a1 = 125.0
+}
+
+globals {
+    reference uhf
+    scf_type direct
+    basis 6-31G**
+    docc [2, 0, 0, 1]
+    socc [1, 0, 1, 0]
+}
+
+thisenergy = energy('uhf')
+
+compare_values(nucenergy, ch2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")
+compare_values(refenergy, thisenergy, 9, "Reference energy")
+

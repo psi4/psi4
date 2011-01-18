@@ -54,7 +54,7 @@ ShellRotation::ShellRotation(const ShellRotation& other)
     *this = other;
 }
 
-ShellRotation::ShellRotation(int a, SymmetryOperation& so, IntegralFactory* ints, int pure) :
+ShellRotation::ShellRotation(int a, SymmetryOperation& so, const IntegralFactory* ints, int pure) :
     n_(0), am_(0), r_(0)
 {
     if (a > 0 && pure)
@@ -98,7 +98,7 @@ void ShellRotation::done()
     n_=0;
 }
 
-void ShellRotation::init(int a, SymmetryOperation& so, IntegralFactory* ints)
+void ShellRotation::init(int a, SymmetryOperation& so, const IntegralFactory* ints)
 {
     done();
 
@@ -149,7 +149,7 @@ void ShellRotation::init(int a, SymmetryOperation& so, IntegralFactory* ints)
     delete jp;
 }
 
-void ShellRotation::init_pure(int a, SymmetryOperation &so, IntegralFactory *ints)
+void ShellRotation::init_pure(int a, SymmetryOperation &so, const IntegralFactory *ints)
 {
     if (a < 2) {
         init(a, so, ints);

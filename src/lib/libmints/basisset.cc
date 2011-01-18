@@ -89,14 +89,14 @@ shared_ptr<GaussianShell> BasisSet::shell(int center, int si) const
 #pragma warn BasisSet::zero_basis_set is broke.
 shared_ptr<BasisSet> BasisSet::zero_basis_set()
 {
-#if 0
     shared_ptr<BasisSet> new_basis(new BasisSet());
 
     // Setup all the parameters needed for a zero basis set
-    new_basis->shell_first_basis_function_ = NULL;
-    new_basis->shell_first_ao_ = NULL;
-    new_basis->shell_center_ = new int[1];
-    new_basis->shell_center_[0] = 0;
+//    new_basis->shell_first_basis_function_ = NULL;
+//    new_basis->shell_first_ao_ = NULL;
+//    new_basis->shell_center_ = new int[1];
+//    new_basis->shell_center_[0] = 0;
+    new_basis->shell_center_.push_back(0);
     new_basis->max_nprimitive_ = 1;
     new_basis->max_am_ = 0;
 
@@ -118,7 +118,7 @@ shared_ptr<BasisSet> BasisSet::zero_basis_set()
     new_basis->shells_.push_back(shared_ptr<GaussianShell>(new GaussianShell));
 
     // Spherical and SO-transforms are expected even if not used.
-    new_basis->sphericaltransforms_.push_back(SphericalTransform(0));
+//    new_basis->sphericaltransforms_.push_back(SphericalTransform(0));
 
     // Create out basis set arrays
     // null basis set
@@ -130,7 +130,6 @@ shared_ptr<BasisSet> BasisSet::zero_basis_set()
     new_basis->shells_[0]->init(1, &e, am, Cartesian, &c, 0, center, 0, Normalized);
 
     return new_basis;
-#endif
 }
 
 shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parser,

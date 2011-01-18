@@ -139,6 +139,8 @@ protected:
     static boost::regex fragmentMarker_;
     /// A regular expression to test if a string is a no_?reorient flag
     static boost::regex orientCommand_;
+    /// A regular expression to test if a string is a symmetry %s flag
+    static boost::regex symmetry_;
 
     /// A listing of the variables used to define the geometries
     std::map<std::string, double> geometryVariables_;
@@ -146,6 +148,8 @@ protected:
     std::vector<std::pair<int, int> > fragments_;
     /// A list describing how to handle each fragment
     std::vector<FragmentType> fragmentTypes_;
+    /// Symmetry string from geometry specification
+    std::string symmetryFromInput_;
 
 public:
     Molecule();
@@ -342,6 +346,7 @@ public:
     const char *sym_label();
     /// Returns the irrep labels
     char **irrep_labels();
+    const std::string& symmetry_from_input() const { return symmetryFromInput_; }
     /// @}
 
     static boost::shared_ptr<Molecule> create_molecule_from_string(const std::string &geom);

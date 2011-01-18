@@ -1,7 +1,7 @@
 $(TARGET):
-	@SRCDIR=$(SRCDIR) PSIDATADIR=$(SRC_PSIDATADIR) $(PERL) $(TEST_SCRIPT) $(TESTFLAGS)
+	@SRCDIR=$(SRCDIR) PSIDATADIR=$(SRC_PSIDATADIR) ../../bin/psi4 $(SRCDIR)/input.dat
 
 clean:
-	@SRCDIR=$(SRCDIR) PSIDATADIR=$(SRC_PSIDATADIR) $(PERL) $(TEST_SCRIPT) -c $(TESTFLAGS) && echo "Running psiclean"
+	@SRCDIR=$(SRCDIR) PSIDATADIR=$(SRC_PSIDATADIR) ../../bin/psi4 -w $(SRCDIR)/input.dat && echo "Running psiclean"
 	/bin/rm -f $(TARGET) $(GARBAGE)
 
