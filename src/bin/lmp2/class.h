@@ -5,6 +5,8 @@
 #ifndef _psi_src_bin_lmp2_h_
 #define _psi_src_bin_lmp2_h_
 
+#include <string>
+
 #include <libchkpt/chkpt.hpp>
 #include <libmints/basisset.h>
 //#include <libpsio/psio.hpp>
@@ -97,7 +99,7 @@ class LMP2 {
     double Escf;
     double DEmp2;
     double Drms;
-//    char *ri_basis, *orbital_basis;
+    std::string ri_basis, orbital_basis;
 
   public:
     /* Default constructr/destructor, does nothing */

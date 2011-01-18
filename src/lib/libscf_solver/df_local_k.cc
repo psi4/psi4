@@ -35,7 +35,8 @@ void HF::form_A()
         abort();
     } 
     int norbs = basisset_->nbf(); 
-    ribasis_ = shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_SCF"));
+    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
+    ribasis_ = BasisSet::construct(parser, molecule_, options_.get_str("RI_BASIS_SCF"));
     naux_fin_ = ribasis_->nbf();
     
     //Form the schwarz sieve

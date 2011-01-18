@@ -2,7 +2,7 @@
 *
 *       dfmp2.cc in psi4/src/bin/dfmp2
 *       By Rob Parrish, Ed Hohenstein, David Sherrill, CCMST Georgia Tech
-*       Justin Turney and Andy Simmonett CCQC University of Georgia 
+*       Justin Turney and Andy Simmonett CCQC University of Georgia
 *       contact: robparrish@gmail.com
 *       28 June 2010
 *
@@ -109,17 +109,13 @@ void  DFMP2::setup()
   nmo_ = ndocc_+nvirt_;
   
   // Form ribasis object and auxiliary basis indexing:
-  if (options_.get_bool("NO_INPUT") == false) {
-      ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_MP2"));
-  } else {
-     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
-     ribasis_ = BasisSet::construct(parser, molecule_, options_.get_str("RI_BASIS_MP2"));
-     //ribasis_->print();
-  }
+  shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
+  ribasis_ = BasisSet::construct(parser, molecule_, options_.get_str("RI_BASIS_MP2"));
+  //ribasis_->print();
   naux_raw_ = ribasis_->nbf();
   naux_fin_ = ribasis_->nbf(); //For now, may be pared later
   zerobasis_ = BasisSet::zero_basis_set();
-  
+
   // Form initial energy values
   E_ss_ = 0.0;
   E_os_ = 0.0;
@@ -133,21 +129,21 @@ void  DFMP2::setup()
   //Form scaling parameters
   os_scale_ = options_.get_double("SCALE_OS");
   ss_scale_ = options_.get_double("SCALE_SS");
-  
+
   // Form print level
   print_ = options_.get_int("PRINT");
 
   algorithm_type_ = options_.get_str("DFMP2_TYPE");
-   
+
   fitting_symmetry_ = options_.get_str("FITTING_SYMMETRY");
   fitting_conditioning_ = options_.get_str("FITTING_CONDITIONING");
   fitting_inversion_ = options_.get_str("FITTING_INVERSION");
 
- // Form the initial memory usage estimate  
-  df_memory_ = (unsigned long int)(options_.get_double("DFMP2_MEM_FACTOR")*memory_/sizeof(double)); 
+ // Form the initial memory usage estimate
+  df_memory_ = (unsigned long int)(options_.get_double("DFMP2_MEM_FACTOR")*memory_/sizeof(double));
 
   //Required core memory
-  unsigned long int core_memory = naux_raw_*nact_docc_*(ULI)nact_virt_ + naux_raw_*(ULI)naux_raw_;  
+  unsigned long int core_memory = naux_raw_*nact_docc_*(ULI)nact_virt_ + naux_raw_*(ULI)naux_raw_;
 
   if (algorithm_type_ == "DEFAULT")
     if (core_memory < df_memory_)
@@ -184,7 +180,6 @@ void  DFMP2::setup()
     }
     // Skip over the frozen virtual orbitals in this irrep
   }
-  
   schwarz_ = options_.get_double("SCHWARZ_CUTOFF");
   schwarz_shell_pairs_ = NULL;
   sig_shell_pairs_ = 0;
@@ -224,7 +219,7 @@ void DFMP2::print_header()
     #ifdef _OPENMP
         nthreads = omp_get_max_threads();
     #endif
- 
+
     fprintf(outfile, "\t********************************************************\n");
     fprintf(outfile, "\t*                                                      *\n");
     fprintf(outfile, "\t*                        DF-MP2                        *\n");
@@ -255,35 +250,35 @@ double DFMP2::compute_energy()
 {
     if (algorithm_type_ == "DISK")
         E_ = compute_E_disk();
-    else if (algorithm_type_ == "CORE") 
+    else if (algorithm_type_ == "CORE")
         E_ = compute_E_core();
-    else if (algorithm_type_ == "OLD") 
+    else if (algorithm_type_ == "OLD")
         E_ = compute_E_old();
-    
-    
+
+
     //Finish summing energies
     E_ = E_ss_ + E_os_;
-    E_sss_ = ss_scale_*E_ss_; 
+    E_sss_ = ss_scale_*E_ss_;
     E_sos_ = os_scale_*E_os_;
     E_scs_ = E_sss_ + E_sos_;
     E_tot_ = E_ + E_scf_;
-    E_tot_scs_ = E_scs_ + E_scf_;   
+    E_tot_scs_ = E_scs_ + E_scf_;
 
     //Display energies
     if (print_) {
         fprintf(outfile,"  DF-MP2 Energy Evaluation Complete:\n\n");
         fprintf(outfile,"   Canonical DF-MP2:\n");
-        fprintf(outfile,"    Same-Spin Energy:                %20.16Lf [H]\n",E_ss_); 
-        fprintf(outfile,"    Opposite-Spin Energy:            %20.16Lf [H]\n",E_os_); 
-        fprintf(outfile,"    DF-MP2 Correlation Energy:       %20.16f [H]\n",E_); 
-        fprintf(outfile,"    DF-MP2 Total Energy:             %20.16f [H]\n",E_tot_); 
+        fprintf(outfile,"    Same-Spin Energy:                %20.16Lf [H]\n",E_ss_);
+        fprintf(outfile,"    Opposite-Spin Energy:            %20.16Lf [H]\n",E_os_);
+        fprintf(outfile,"    DF-MP2 Correlation Energy:       %20.16f [H]\n",E_);
+        fprintf(outfile,"    DF-MP2 Total Energy:             %20.16f [H]\n",E_tot_);
         fprintf(outfile,"   SCS-DF-MP2 (Pss = %14.10f, Pos = %14.10f):\n",ss_scale_,os_scale_);
-        fprintf(outfile,"    SCS-Same-Spin Energy:            %20.16f [H]\n",E_sss_); 
-        fprintf(outfile,"    SCS-Opposite-Spin Energy:        %20.16f [H]\n",E_sos_); 
-        fprintf(outfile,"    SCS-DF-MP2 Correlation Energy:   %20.16f [H]\n",E_scs_); 
+        fprintf(outfile,"    SCS-Same-Spin Energy:            %20.16f [H]\n",E_sss_);
+        fprintf(outfile,"    SCS-Opposite-Spin Energy:        %20.16f [H]\n",E_sos_);
+        fprintf(outfile,"    SCS-DF-MP2 Correlation Energy:   %20.16f [H]\n",E_scs_);
         fprintf(outfile,"    SCS-DF-MP2 Total Energy:         %20.16f [H]\n",E_tot_scs_);
-        fflush(outfile); 
-    } 
+        fflush(outfile);
+    }
 
     Process::environment.globals["CURRENT ENERGY"] = E_tot_;
     Process::environment.globals["DF-MP2 ENERGY"] = E_tot_;
@@ -310,7 +305,7 @@ double DFMP2::compute_E_disk()
 
     form_Aia_disk();
     form_Qia_disk();
-    evaluate_contributions_disk();    
+    evaluate_contributions_disk();
 
     return E_;
 }
@@ -372,30 +367,30 @@ void DFMP2::form_Schwarz()
 double** DFMP2::form_W(shared_ptr<BasisSet> bas)
 {
   shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
-  
+
   IntegralFactory rifactory_J(bas, zero, bas, zero);
 
-  int naux = bas->nbf();    
+  int naux = bas->nbf();
 
   shared_ptr<TwoBodyInt> Jint = (shared_ptr<TwoBodyInt>)rifactory_J.eri();
   const double *Jbuffer = Jint->buffer();
-  
+
   double **J = block_matrix(naux, naux);
 
   int index = 0;
-    
+
   for (int MU=0; MU < bas->nshell(); ++MU) {
     int nummu = bas->shell(MU)->nfunction();
-        
+
     for (int NU=0; NU < bas->nshell(); ++NU) {
       int numnu = bas->shell(NU)->nfunction();
-    
+
       Jint->compute_shell(MU, 0, NU, 0);
-            
+
       index = 0;
       for (int mu=0; mu < nummu; ++mu) {
         int omu = bas->shell(MU)->function_index() + mu;
-                
+
         for (int nu=0; nu < numnu; ++nu, ++index) {
           int onu = bas->shell(NU)->function_index() + nu;
 
@@ -409,9 +404,9 @@ double** DFMP2::form_W(shared_ptr<BasisSet> bas)
 }
 double** DFMP2::form_W_overlap(shared_ptr<BasisSet> bas)
 {
-  
+
   shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
-  int naux = bas->nbf();    
+  int naux = bas->nbf();
 
   IntegralFactory rifactory_JS(bas, bas, zero, zero);
   shared_ptr<OneBodyInt> S = (shared_ptr<OneBodyInt>)rifactory_JS.overlap();
@@ -457,8 +452,8 @@ int DFMP2::matrix_power(double** J, int n, double power, double max_cond)
   // Now J contains the eigenvectors of the original J
   // Copy J to J_copy
   double **J2 = block_matrix(n, n);
-  C_DCOPY(n*(ULI)n,J1[0],1,J2[0],1); 
-  
+  C_DCOPY(n*(ULI)n,J1[0],1,J2[0],1);
+
   // Now form J^{-1/2} = U(T)*j^{-1/2}*U,
   // where j^{-1/2} is the diagonal matrix of the inverse square roots
   // of the eigenvalues, and U is the matrix of eigenvectors of J
@@ -483,7 +478,7 @@ int DFMP2::matrix_power(double** J, int n, double power, double max_cond)
 
   free_block(J1);
   free_block(J2);
-  
+
   if (print_>1) {
     fprintf(outfile,"  Smallest eigenvalue in the matrix is %14.10E.\n",min_J);
     fprintf(outfile,"  Largest eigenvalue in the matrix is %14.10E.\n",max_J);
@@ -491,7 +486,7 @@ int DFMP2::matrix_power(double** J, int n, double power, double max_cond)
     fprintf(outfile,"  %d columns removed to maintain a condition number of %14.10E.\n",clipped,max_cond);
     fflush(outfile);
   }
-  return clipped;  
+  return clipped;
 }
 void DFMP2::cholesky_decomposition(double** J, int n)
 {
@@ -526,7 +521,7 @@ void DFMP2::cholesky_inverse(double** J, int n)
   //LAPACK is smart and all, only uses half of the thing
   for (int m = 0; m<n; m++)
     for (int n = 0; n<m; n++)
-      J[n][m] = J[m][n]; 
+      J[n][m] = J[m][n];
 }
 double** DFMP2::form_X(double** W, int n, double max_cond, int* clipped)
 {
@@ -588,7 +583,7 @@ double** DFMP2::form_X(double** W, int n, double max_cond, int* clipped)
     for (int ind = 0; ind<naux_raw; ind++) {
 
         //Scale the column out to produce the porous X matrix in place
-        //(Columns are rows in this messed up LAPACK-ness 
+        //(Columns are rows in this messed up LAPACK-ness
         if (s_eigval[ind] > 0.0)
             C_DSCAL(naux_raw, s_eigval[ind], SJ[ind], 1);
     }
@@ -603,7 +598,7 @@ double** DFMP2::form_X(double** W, int n, double max_cond, int* clipped)
     double **X = block_matrix(naux_raw,naux_fin);
 
     //We'll put it in canonical (descending eigenvalue) order
-    #pragma omp parallel for schedule (static, 1) 
+    #pragma omp parallel for schedule (static, 1)
     for (int m = 0; m<naux_raw; m++)
         for (int n = 0; n<naux_fin; n++)
             X[m][n] = SJ[naux_raw-n-1][m];
@@ -611,7 +606,7 @@ double** DFMP2::form_X(double** W, int n, double max_cond, int* clipped)
     free_block(SJ);
     free(s_eigval);
 
-    *clipped = clip; 
+    *clipped = clip;
     return X;
 }
 void DFMP2::form_Wm12_fin()
@@ -622,11 +617,11 @@ void DFMP2::form_Wm12_fin()
     timer_on("Form W_S");
     double** SJ = form_W_overlap(ribasis_);
     timer_off("Form W_S");
-    
+
     int clipped = 0;
     double max_cond = options_.get_double("RI_MAX_COND");
     timer_on("Form X");
-    double** X = form_X(SJ, naux_raw_,max_cond, &clipped);    
+    double** X = form_X(SJ, naux_raw_,max_cond, &clipped);
     timer_off("Form X");
 
     naux_fin_ -= clipped;
@@ -635,7 +630,7 @@ void DFMP2::form_Wm12_fin()
     timer_on("Form W");
     double **J = form_W(ribasis_);
     timer_off("Form W");
-    
+
     timer_on("Form W'");
     //Tansform the J matrix to J'
     double **Jtemp1 = block_matrix(naux_fin_,naux_raw_);
@@ -653,7 +648,7 @@ void DFMP2::form_Wm12_fin()
 
     //Find J'^-1/2
     timer_on("W'^-1/2");
-    matrix_power(Jp, naux_fin_, -1.0/2.0); 
+    matrix_power(Jp, naux_fin_, -1.0/2.0);
     timer_off("W'^-1/2");
 
     timer_on("XW'^-1/2");
@@ -665,28 +660,28 @@ void DFMP2::form_Wm12_fin()
     free_block(Jp);
     free_block(X);
     timer_off("XW'^-1/2");
-  
+
     if (debug_) {
         fprintf(outfile,"  W:\n");
         print_mat(W_,naux_raw_,naux_fin_,outfile);
     }
 }
 void DFMP2::form_Wm12_raw()
-{ 
+{
   if (print_>1)
     fprintf(outfile,"  WARNING: No conditioning algorithm selected for fitting metric.\n");
- 
-  timer_on("Form W");  
+
+  timer_on("Form W");
   W_ = form_W(ribasis_);
-  timer_off("Form W");  
- 
+  timer_off("Form W");
+
   double max_cond = options_.get_double("RI_MAX_COND");
- 
-  timer_on("W^+1/2");  
+
+  timer_on("W^+1/2");
   matrix_power(W_, naux_raw_, -1.0/2.0,max_cond);
-  timer_off("W^+1/2");  
-  
-  
+  timer_off("W^+1/2");
+
+
   if (debug_) {
     fprintf(outfile,"  W:\n");
     print_mat(W_,naux_raw_,naux_fin_,outfile);
@@ -697,17 +692,17 @@ void DFMP2::form_Wp12_chol()
   if (print_>1)
     fprintf(outfile,"  Fitting metric conditioned by Cholesky decomposition.\n");
 
-  timer_on("Form W");  
+  timer_on("Form W");
   W_ = form_W(ribasis_);
-  timer_off("Form W");  
-  
-  timer_on("W^+1/2");  
+  timer_off("Form W");
+
+  timer_on("W^+1/2");
   matrix_power(W_, naux_raw_, 1.0/2.0);
-  timer_off("W^+1/2");  
-  
-  timer_on("Chol(W^+1/2)");  
-  cholesky_decomposition(W_,naux_raw_); 
-  timer_off("Chol(W^+1/2)");  
+  timer_off("W^+1/2");
+
+  timer_on("Chol(W^+1/2)");
+  cholesky_decomposition(W_,naux_raw_);
+  timer_off("Chol(W^+1/2)");
 
   if (debug_) {
     fprintf(outfile,"  W:\n");
@@ -728,7 +723,7 @@ void DFMP2::form_Aia_disk()
 
   int maxPshell = 0;
   for (int P = 0; P<ribasis_->nshell(); P++)
-    if (maxPshell < ribasis_->shell(P)->nfunctions()) 
+    if (maxPshell < ribasis_->shell(P)->nfunctions())
       maxPshell = ribasis_->shell(P)->nfunctions();
 
   //Max rows of A to pursue
@@ -770,16 +765,16 @@ void DFMP2::form_Aia_disk()
     p_sizes[nblocks] += ribasis_->shell(A)->nfunction();
     block_sizes[nblocks]++;
     fun_counter += ribasis_->shell(A)->nfunction();
-  } 
+  }
 
-  if (print_>1) { 
+  if (print_>1) {
 
     fprintf(outfile,"\n  Disk Formation of Aia, using %d blocks.\n",nblocks);
     //for (int b = 0; b<nblocks; b++)
     //  fprintf(outfile,"  block_starts = %d, block_stops  %d, block_sizes = %d, p_start = %d, p_sizes = %d.\n",
-    //    block_starts[b], block_stops[b], block_sizes[b], p_starts[b], p_sizes[b]);  
+    //    block_starts[b], block_stops[b], block_sizes[b], p_starts[b], p_sizes[b]);
   }
- 
+
   //Buffer tensors
   double** Amn = block_matrix(max_rows,norbs*norbs);
   double** Ami = block_matrix(max_rows,norbs*nact_docc);
@@ -794,7 +789,7 @@ void DFMP2::form_Aia_disk()
   #endif
   int rank = 0;
 
-  //Get an ERI object for the AO three-index integrals 
+  //Get an ERI object for the AO three-index integrals
   IntegralFactory rifactory(ribasis_,zerobasis_, basisset_, basisset_);
   //Get a TEI for each thread
   const double **buffer = new const double*[nthread];
@@ -809,21 +804,21 @@ void DFMP2::form_Aia_disk()
   psio_->open(PSIF_DFMP2_AIA,PSIO_OPEN_NEW);
   psio_address next_PSIF_DFMP2_AIA = PSIO_ZERO;
 
-  //indices for three-index integrals 
+  //indices for three-index integrals
   int P, MU, NU, nump, nummu, numnu, p, mu, nu, op, omu, onu, index;
- 
+
   //Loop over blocks of A
   for (int block = 0; block<nblocks; block++) {
     //Zero that guy out!
-    memset((void*)&Amn[0][0],'\0',p_sizes[block]*norbs*(ULI)norbs); 
-    
+    memset((void*)&Amn[0][0],'\0',p_sizes[block]*norbs*(ULI)norbs);
+
     //Form Amn ints
     timer_on("(A|mn)");
     #pragma omp parallel for private (P, MU, NU, p, mu, nu, nump, nummu, numnu, op, omu, onu, index, rank) schedule (dynamic) num_threads(nthread)
     for (P=block_starts[block]; P < block_stops[block]; ++P) {
       #ifdef _OPENMP
          rank = omp_get_thread_num();
-      #endif 
+      #endif
       nump = ribasis_->shell(P)->nfunction();
       for (MU=0; MU < basisset_->nshell(); ++MU) {
         nummu = basisset_->shell(MU)->nfunction();
@@ -842,9 +837,9 @@ void DFMP2::form_Aia_disk()
                 }
               }
             }
-          } 
-        } 
-      } 
+          }
+        }
+      }
     }
     timer_off("(A|mn)");
 
@@ -870,7 +865,7 @@ void DFMP2::form_Aia_disk()
     //Transform to Aia
     // (A|ia) = C_ma(A|mi)
     timer_on("(A|ia)");
-    #pragma omp parallel for  
+    #pragma omp parallel for
     for (int A = 0; A<p_sizes[block]; A++) {
       C_DGEMM('T', 'N', nact_docc, nact_virt, norbs, 1.0, &(Ami[A][0]),
         nact_docc, &(C_virt_[0][0]), nact_virt, 0.0, &(Aia[A][0]), nact_virt);
@@ -890,7 +885,7 @@ void DFMP2::form_Aia_disk()
     timer_off("(A|ia) Write");
 
   }
-  
+
   psio_->close(PSIF_DFMP2_AIA,1);
   delete[] buffer;
   delete[]eri;
@@ -933,7 +928,7 @@ void DFMP2::form_Qia_disk()
   psio_address next_PSIF_DFMP2_AIA = PSIO_ZERO;
   psio_->open(PSIF_DFMP2_QIA,PSIO_OPEN_NEW);
   psio_address next_PSIF_DFMP2_QIA = PSIO_ZERO;
-  
+
   //Prestripe
   timer_on("(Q|ia) Prestripe");
   double *Prestripe = init_array(nact_docc_*nact_virt_);
@@ -955,8 +950,8 @@ void DFMP2::form_Qia_disk()
     //How many columns in this pass?
     current_columns = max_cols;
     if (current_column+current_columns>=nact_docc_*nact_virt_)
-        current_columns = nact_docc_*nact_virt_-current_column;    
- 
+        current_columns = nact_docc_*nact_virt_-current_column;
+
     //Read Aia in
     timer_on("(A|ia) Read");
     for (int A = 0; A<naux_raw_; A++) {
@@ -971,9 +966,9 @@ void DFMP2::form_Qia_disk()
 
         #pragma omp parallel for schedule(static)
         for (int A = 0; A< naux_raw_; A++) {
-            C_DCOPY(current_columns, &Aia[A][0], 1, &Qia[0][A], naux_raw_);    
-        }   
-     
+            C_DCOPY(current_columns, &Aia[A][0], 1, &Qia[0][A], naux_raw_);
+        }
+
         int info = C_DPOTRS('U',naux_raw_,current_columns,&W_[0][0],naux_raw_,&Qia[0][0],naux_raw_);
 
     } else {
@@ -981,7 +976,7 @@ void DFMP2::form_Qia_disk()
     }
     timer_off("(Q|ia)");
 
-    //fprintf(outfile,"  Nblocks = %d, Max cols = %d, current_columns = %d, current_column = %d\n",nblocks, max_cols, current_columns, current_column); 
+    //fprintf(outfile,"  Nblocks = %d, Max cols = %d, current_columns = %d, current_column = %d\n",nblocks, max_cols, current_columns, current_column);
 
     //Write Qia out
     timer_on("(Q|ia) Write");
@@ -1025,8 +1020,8 @@ void DFMP2::evaluate_contributions_disk()
         block_starts[block] = N_I*block;
         if (block == nblocks - 1)
             block_sizes[block] = nact_docc_-block_starts[block];
-        else 
-            block_sizes[block] = N_I; 
+        else
+            block_sizes[block] = N_I;
     }
 
     for (int block = 0; block < nblocks; block++) {
@@ -1039,7 +1034,7 @@ void DFMP2::evaluate_contributions_disk()
             fprintf(outfile,"  Block %d, start = %d, size = %d, stop = %d\n",block+1, block_starts[block], block_sizes[block], block_stops[block]);
         fflush(outfile);
     }
- 
+
     //Integral buffers
     double **Qia = block_matrix(N_I*(ULI)nact_virt_, naux_fin_);
     double **Qjb = block_matrix(N_I*(ULI)nact_virt_, naux_fin_);
@@ -1065,8 +1060,8 @@ void DFMP2::evaluate_contributions_disk()
     //File handler to fitted integrals
     psio_->open(PSIF_DFMP2_QIA,PSIO_OPEN_OLD);
     psio_address next_PSIF_DFMP2_QIA = PSIO_ZERO;
-     
-    //Loop over blocks   
+
+    //Loop over blocks
     for (int block1 = 0; block1 < nblocks; block1++) {
 
         //Startup the first block
@@ -1076,10 +1071,10 @@ void DFMP2::evaluate_contributions_disk()
             psio_->read(PSIF_DFMP2_QIA,"Qia Three-Index Integrals",(char *)(&Qjb[0][0]),sizeof(double)*naux_fin_*nact_virt_*(ULI)block_sizes[block1],next_PSIF_DFMP2_QIA,&next_PSIF_DFMP2_QIA);
             timer_off("(Q|ia) Read");
         }
-       
-        //Copy Qjb up to Qia 
+
+        //Copy Qjb up to Qia
         C_DCOPY(naux_fin_*nact_virt_*(ULI)block_sizes[block1],Qjb[0],1,Qia[0],1);
-        
+
         //Same block contribution (ai|Q)(Q|ai)
         find_disk_contributions(Qia,Qjb,I,block_starts,block_sizes,block_stops,block1,block1);
 
@@ -1090,21 +1085,21 @@ void DFMP2::evaluate_contributions_disk()
             next_PSIF_DFMP2_QIA = psio_get_address(PSIO_ZERO,(ULI)(block_starts[block2]*nact_virt_*naux_fin_*(ULI)sizeof(double)));
             psio_->read(PSIF_DFMP2_QIA,"Qia Three-Index Integrals",(char *)(&Qjb[0][0]),sizeof(double)*naux_fin_*nact_virt_*(ULI)block_sizes[block2],next_PSIF_DFMP2_QIA,&next_PSIF_DFMP2_QIA);
             timer_off("(Q|ia) Read");
-        
+
             //Find the contributions
             find_disk_contributions(Qia,Qjb,I,block_starts,block_sizes,block_stops,block1,block2);
 
-        } 
+        }
     }
 
-    //Close 
+    //Close
     psio_->close(PSIF_DFMP2_QIA,1);
 
     //Frees
     for (int r = 0; r<nthreads; r++)
         free_block(I[r]);
     delete[] I;
- 
+
     free_block(Qia);
     free_block(Qjb);
     free(block_starts);
@@ -1115,7 +1110,7 @@ void DFMP2::evaluate_contributions_disk()
     #ifdef _MKL
         mkl_set_num_threads(mkl_nthreads);
     #endif
-    
+
 }
 void DFMP2::find_disk_contributions(double** Qia, double** Qjb, double***I, int* starts, int* sizes, int* stops, int block1, int block2)
 {
@@ -1129,11 +1124,11 @@ void DFMP2::find_disk_contributions(double** Qia, double** Qjb, double***I, int*
 
   #pragma omp parallel for private (rank, a, b, i, j, perm_scale, iajb, ibja, denom) reduction (+: e_ss, e_os) schedule (dynamic)
   for (j=starts[block2]; j < stops[block2]; ++j) {
-   
+
     #ifdef _OPENMP
       rank = omp_get_thread_num();
     #endif
- 
+
     for (i=starts[block1]; i < stops[block1] && i<= j ; ++i) {
 
       if (rank == 0) timer_on("(ia|jb)");
@@ -1160,15 +1155,15 @@ void DFMP2::find_disk_contributions(double** Qia, double** Qjb, double***I, int*
         }
       }
       if (rank == 0) timer_off("T_MP2");
-    } 
+    }
   }
-  
-  if (debug_) 
+
+  if (debug_)
     fprintf(outfile,"  Block1 = %d, Block2 = %d, e_ss = %20Lf, e_os = %20Lf\n",block1,block2, e_ss, e_os);
 
   E_ss_ += e_ss;
   E_os_ += e_os;
-    
+
 }
 double** DFMP2::form_Aia_core()
 {
@@ -1176,9 +1171,9 @@ double** DFMP2::form_Aia_core()
   int norbs =  nso_;
   int nact_docc =  nact_docc_;
   int nact_virt =  nact_virt_;
-  
+
   //Setup Schwarz sieve
-  form_Schwarz();  
+  form_Schwarz();
 
   //How much memory does Aia take?
   unsigned long int three_mem = naux_raw_*nact_docc_*(ULI)nact_virt_;
@@ -1191,7 +1186,7 @@ double** DFMP2::form_Aia_core()
 
   int maxPshell = 0;
   for (int P = 0; P<ribasis_->nshell(); P++)
-    if (maxPshell < ribasis_->shell(P)->nfunctions()) 
+    if (maxPshell < ribasis_->shell(P)->nfunctions())
       maxPshell = ribasis_->shell(P)->nfunctions();
 
   //Max rows of A to pursue
@@ -1233,18 +1228,18 @@ double** DFMP2::form_Aia_core()
     p_sizes[nblocks] += ribasis_->shell(A)->nfunction();
     block_sizes[nblocks]++;
     fun_counter += ribasis_->shell(A)->nfunction();
-  } 
+  }
 
-  if (print_>1) { 
+  if (print_>1) {
 
     fprintf(outfile,"\n  Core Formation of Aia, using %d blocks.\n",nblocks);
     if (debug_) {
       for (int b = 0; b<nblocks; b++)
         fprintf(outfile,"  block_starts = %d, block_stops  %d, block_sizes = %d, p_start = %d, p_sizes = %d.\n",
-          block_starts[b], block_stops[b], block_sizes[b], p_starts[b], p_sizes[b]);  
+          block_starts[b], block_stops[b], block_sizes[b], p_starts[b], p_sizes[b]);
     }
   }
- 
+
   double** Aia = block_matrix(naux_raw_,nact_docc_*(ULI)nact_virt_);
 
   //Buffer tensors
@@ -1260,7 +1255,7 @@ double** DFMP2::form_Aia_core()
   #endif
   int rank = 0;
 
-  //Get an ERI object for the AO three-index integrals 
+  //Get an ERI object for the AO three-index integrals
   IntegralFactory rifactory(ribasis_,zerobasis_, basisset_, basisset_);
   //Get a TEI for each thread
   const double **buffer = new const double*[nthread];
@@ -1270,21 +1265,21 @@ double** DFMP2::form_Aia_core()
     buffer[Q] = eri[Q]->buffer();
   }
 
-  //indices for three-index integrals 
+  //indices for three-index integrals
   int P, MU, NU, nump, nummu, numnu, p, mu, nu, op, omu, onu, index;
- 
+
   //Loop over blocks of A
   for (int block = 0; block<nblocks; block++) {
     //Zero that guy out!
     timer_on("(A|mn)");
-    memset((void*)&Amn[0][0],'\0',block_sizes[block]*norbs*norbs); 
-    
+    memset((void*)&Amn[0][0],'\0',block_sizes[block]*norbs*norbs);
+
     //Form Amn ints
     #pragma omp parallel for private (P, MU, NU, p, mu, nu, nump, nummu, numnu, op, omu, onu, index, rank) schedule (dynamic) num_threads(nthread)
     for (P=block_starts[block]; P < block_stops[block]; ++P) {
       #ifdef _OPENMP
          rank = omp_get_thread_num();
-      #endif 
+      #endif
 
       nump = ribasis_->shell(P)->nfunction();
       for (MU=0; MU < basisset_->nshell(); ++MU) {
@@ -1304,9 +1299,9 @@ double** DFMP2::form_Aia_core()
                 }
               }
             }
-          } 
-        } 
-      } 
+          }
+        }
+      }
     }
 
     if (debug_) {
@@ -1335,7 +1330,7 @@ double** DFMP2::form_Aia_core()
 
     //Transform to Aia
     // (A|ia) = C_ma(A|mi)
-    #pragma omp parallel for  
+    #pragma omp parallel for
     for (int A = 0; A<p_sizes[block]; A++) {
       C_DGEMM('T', 'N', nact_docc, nact_virt, norbs, 1.0, &(Ami[A][0]),
         nact_docc, &(C_virt_[0][0]), nact_virt, 0.0, &(Aia[p_starts[block]+A][0]), nact_virt_);
@@ -1350,7 +1345,7 @@ double** DFMP2::form_Aia_core()
   if (debug_) {
     fprintf(outfile, "  Aia\n");
     print_mat(Aia,naux_raw_,nact_docc*nact_virt, outfile);
-  }  
+  }
 
   delete[] buffer;
   delete[] eri;
@@ -1371,7 +1366,7 @@ void DFMP2::form_Qia_core()
   int norbs =  nso_;
   int nact_docc =  nact_docc_;
   int nact_virt =  nact_virt_;
-  
+
   Qia_ = form_Aia_core();
 
   //Setup fitting tensor
@@ -1381,16 +1376,16 @@ void DFMP2::form_Qia_core()
       form_Wm12_fin();
   else if (options_.get_str("RI_FITTING_TYPE") == "CHOLESKY")
       form_Wp12_chol();
-  
+
   unsigned long int three_mem = naux_raw_*nact_docc_*(ULI)nact_virt_;
   unsigned long int available_mem = df_memory_-three_mem-naux_raw_*(ULI)naux_fin_;
   unsigned long int max_cols = available_mem/(ULI)naux_raw_;
   if (max_cols > nact_docc_*(ULI)nact_virt_)
-    max_cols = nact_docc_*(ULI)nact_virt; 
+    max_cols = nact_docc_*(ULI)nact_virt;
   if (max_cols < 1)
     max_cols = 1;
 
-  unsigned long int nblocks = nact_docc_*(ULI)nact_virt_/max_cols; 
+  unsigned long int nblocks = nact_docc_*(ULI)nact_virt_/max_cols;
   if (nblocks*max_cols < nact_docc_*nact_virt_)
     nblocks++;
 
@@ -1405,7 +1400,7 @@ void DFMP2::form_Qia_core()
     column_sizes[block] = max_cols;
     column_starts[block+1] = column_starts[block] + column_sizes[block];
   }
-  
+
   //Apply fitting by blocks
   double** Abuffer;
   if (options_.get_str("RI_FITTING_TYPE") == "CHOLESKY") {
@@ -1420,19 +1415,19 @@ void DFMP2::form_Qia_core()
 
       #pragma omp parallel for schedule(static)
       for (int A = 0; A< naux_raw_; A++) {
-        C_DCOPY(column_sizes[block], &Qia_[A][column_starts[block]], 1, &Abuffer[0][A], naux_raw_);    
-      }        
+        C_DCOPY(column_sizes[block], &Qia_[A][column_starts[block]], 1, &Abuffer[0][A], naux_raw_);
+      }
 
       int info = C_DPOTRS('U',naux_raw_,column_sizes[block],&W_[0][0],naux_raw_,&Abuffer[0][0],naux_raw_);
-        
+
       #pragma omp parallel for schedule(static)
       for (int A = 0; A< naux_raw_; A++) {
-        C_DCOPY(column_sizes[block], &Abuffer[0][A], naux_raw_, &Qia_[A][column_starts[block]], 1);  
-      }  
+        C_DCOPY(column_sizes[block], &Abuffer[0][A], naux_raw_, &Qia_[A][column_starts[block]], 1);
+      }
     } else {
       #pragma omp parallel for schedule(static)
       for (int A = 0; A< naux_raw_; A++) {
-        C_DCOPY(column_sizes[block], &Qia_[A][column_starts[block]], 1, &Abuffer[A][0], 1);    
+        C_DCOPY(column_sizes[block], &Qia_[A][column_starts[block]], 1, &Abuffer[A][0], 1);
       }
 
       //Multiply back into Qia_ with tight striping
@@ -1442,10 +1437,10 @@ void DFMP2::form_Qia_core()
   timer_off("(Q|ia)");
 
   if (debug_) {
-    fprintf(outfile,"  Qia"); 
+    fprintf(outfile,"  Qia");
     print_mat(Qia_,naux_fin_,nact_docc_*nact_virt_,outfile);
   }
- 
+
   free_block(W_);
   free_block(Abuffer);
   free(column_sizes);
@@ -1469,7 +1464,7 @@ void DFMP2::evaluate_contributions_core_sym()
   for (int r = 0 ; r<nthreads; r++) {
     I[r] = block_matrix(nact_virt_,nact_virt_);
   }
-  
+
   double iajb, ibja, denom, perm_scale;
   long double e_ss, e_os;
   int a, b, i, j;
@@ -1479,11 +1474,11 @@ void DFMP2::evaluate_contributions_core_sym()
 
   #pragma omp parallel for private (rank, a, b, i, j, perm_scale, iajb, ibja, denom) reduction (+: e_ss, e_os) schedule (dynamic)
   for (i=0; i < nact_docc_; ++i) {
-   
+
     #ifdef _OPENMP
       rank = omp_get_thread_num();
     #endif
- 
+
     for (j=0; j <= i; ++j) {
 
       if (rank == 0) timer_on("(ia|jb)");
@@ -1510,13 +1505,13 @@ void DFMP2::evaluate_contributions_core_sym()
         }
       }
       if (rank == 0) timer_off("T_MP2");
-    } 
+    }
   }
 
   for (int r = 0; r<nthreads; r++)
     free_block(I[r]);
   delete[] I;
- 
+
   #ifdef _MKL
     mkl_set_num_threads(mkl_nthreads);
   #endif
@@ -1615,14 +1610,14 @@ double DFMP2::compute_E_old()
 
   //How many processes are we running on?
   int nproc = Communicator::world->nproc();
-  //What process number is this? 
+  //What process number is this?
   int rank = Communicator::world->me();
 
   fprintf(outfile,"\n\n  Running on %d processes.\n",nproc);
   fflush(outfile);
   // Required for libmints, allocates and computes:
 
-  int nirreps; 
+  int nirreps;
   int *clsdpi;
   int *orbspi;
   int *frzcpi;
@@ -1650,7 +1645,7 @@ double DFMP2::compute_E_old()
   }
 
 
-  double escf; 
+  double escf;
   escf = chkpt_->rd_escf();
 
   // Create a new matrix factory
@@ -1659,13 +1654,13 @@ double DFMP2::compute_E_old()
   // Initialize the factory with data from checkpoint
   factory->init_with_chkpt(chkpt_);
   //factory->init_with(nirreps,orbspi,orbspi);
-  
+
   // Read in C coefficients
-  double **vectors; 
+  double **vectors;
   vectors = chkpt_->rd_scf();
-  
+
   //Do some transform
-  SimpleMatrix *C_so = 
+  SimpleMatrix *C_so =
     factory->create_simple_matrix("MO coefficients (SO basisset_)");
   if (vectors == NULL) {
     fprintf(stderr, "Could not find MO coefficients. Run cscf first.\n");
@@ -1673,25 +1668,28 @@ double DFMP2::compute_E_old()
   }
   C_so->set(vectors);
   free_block(vectors);
-  double **Umat; 
+  double **Umat;
   Umat = chkpt_->rd_usotbf();
   SimpleMatrix *U = factory->create_simple_matrix("SO->BF");
   U->set(Umat);
   free_block(Umat);
   // Transfrom the eigenvectors from the SO to the AO basisset_
-  SimpleMatrix *C = 
+  SimpleMatrix *C =
     factory->create_simple_matrix("MO coefficients (AO basisset_)");
   C->gemm(true, false, 1.0, U, C_so, 0.0);
 
   // Load in orbital energies
-  double *orbital_energies; 
+  double *orbital_energies;
   orbital_energies = chkpt_->rd_evals();
-  
+
   // Form ribasis object:
-  shared_ptr<BasisSet> ribasis =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_MP2"));
+  // Create a basis set object and initialize it.
+  shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+  shared_ptr<BasisSet> ribasis = BasisSet::construct(parser, Process::environment.molecule(), options_.get_str("DF_BASIS_MP2"));
+
   int naux = ribasis->nbf();
   shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
-  
+
   //Put the orbitals and C matrix into some nice arrays
   double** Co   = block_matrix(norbs, nact_docc);
   double** Cv   = block_matrix(norbs, nact_virt);
@@ -1745,10 +1743,10 @@ double DFMP2::compute_E_old()
           norbs,naux,nfocc,ndocc,nact_docc,nact_virt,nvirt,nfvir);
   fprintf(outfile, "\t\t==============================================\n");
   fflush(outfile);
-  
-  // Taken from mp2 module, get_params.cc 
-  // get parameters related to SCS-MP2 or SCS-N-MP2 
-  // see papers by S. Grimme or J. Platz 
+
+  // Taken from mp2 module, get_params.cc
+  // get parameters related to SCS-MP2 or SCS-N-MP2
+  // see papers by S. Grimme or J. Platz
   int scs = options_.get_bool("SCS");
   int scsn= options_.get_bool("SCS_N");
   double scs_scale_os = 6.0/5.0;
@@ -1764,12 +1762,12 @@ double DFMP2::compute_E_old()
     fprintf(outfile,"\n  SCSN-RI-MP2 energies will be printed\n");
   }
   fflush(outfile);
-    
+
 
   // Create integral factory
   IntegralFactory rifactory(ribasis, zero, basisset_, basisset_);
   IntegralFactory rifactory_J(ribasis, zero, ribasis, zero);
-    
+
   TwoBodyInt* eri = rifactory.eri();
   TwoBodyInt* Jint = rifactory_J.eri();
   double **J = block_matrix(naux, naux);
@@ -1779,19 +1777,19 @@ double DFMP2::compute_E_old()
   timer_on("Form J");
 
   int index = 0;
-    
+
   for (int MU=0; MU < ribasis->nshell(); ++MU) {
     int nummu = ribasis->shell(MU)->nfunction();
-        
+
     for (int NU=0; NU < ribasis->nshell(); ++NU) {
       int numnu = ribasis->shell(NU)->nfunction();
-    
+
       Jint->compute_shell(MU, 0, NU, 0);
-            
+
       index = 0;
       for (int mu=0; mu < nummu; ++mu) {
         int omu = ribasis->shell(MU)->function_index() + mu;
-                
+
         for (int nu=0; nu < numnu; ++nu, ++index) {
           int onu = ribasis->shell(NU)->function_index() + nu;
 
@@ -1800,9 +1798,9 @@ double DFMP2::compute_E_old()
       }
     }
   }
-    
+
   // fprintf(outfile, "J:\n");
-  // print_mat(J, naux, naux, outfile);    
+  // print_mat(J, naux, naux, outfile);
   // Invert J matrix
   // invert_matrix(J, J_inverse, naux, outfile);
   // fprintf(outfile, "J^-1:\n");
@@ -1824,8 +1822,8 @@ double DFMP2::compute_E_old()
   // Now J contains the eigenvectors of the original J
   // Copy J to J_copy
   double **J_copy = block_matrix(naux, naux);
-  C_DCOPY(naux*naux,J[0],1,J_copy[0],1); 
-  
+  C_DCOPY(naux*naux,J[0],1,J_copy[0],1);
+
   // Now form J^{-1/2} = U(T)*j^{-1/2}*U,
   // where j^{-1/2} is the diagonal matrix of the inverse square roots
   // of the eigenvalues, and U is the matrix of eigenvectors of J
@@ -1856,7 +1854,7 @@ double DFMP2::compute_E_old()
   //print_mat(J_mhalf,naux,naux,outfile);
 
   const double *buffer = eri->buffer();
-  
+
 
   //How many doubles do we have?
   double doubles = memory_/(1.0*sizeof(double))*0.9;
@@ -1901,10 +1899,10 @@ double DFMP2::compute_E_old()
 
   //ao, three-index tensor (A|mn)
   double** ao_buffer = block_matrix(maxPshell,norbs*norbs);
-  //half-tansformed three-index tensor (A|mi) buffer  
+  //half-tansformed three-index tensor (A|mi) buffer
   double** half_buffer = block_matrix(maxPshell,norbs*nact_docc);
- 
-  //Transformed DF Integrals by blocks of a 
+
+  //Transformed DF Integrals by blocks of a
   double** Pia = block_matrix(naux,nact_docc*vir_blk_size);
   double** Pjb = block_matrix(naux,nact_docc*vir_blk_size);
 
@@ -1942,8 +1940,8 @@ for (block_A = 0; block_A < n_virt_blks; block_A++) {
   a_size = vir_blk_size;
   b_size = vir_blk_size;
   if (block_A == n_full_blks) {
-    a_size = gimp_blk_size; 
-    if (gimped_a == 0) { 
+    a_size = gimp_blk_size;
+    if (gimped_a == 0) {
       free_block(Pia);
       Pia = block_matrix(naux,nact_docc*a_size);
       gimped_a = 1;
@@ -1952,7 +1950,7 @@ for (block_A = 0; block_A < n_virt_blks; block_A++) {
 //    Qia = block_matrix(nact_docc * a_size, naux);
   }
   if (block_B == n_full_blks) {
-    b_size = gimp_blk_size;  
+    b_size = gimp_blk_size;
     free_block(Pjb);
     Pjb = block_matrix(naux,nact_docc*b_size);
 //    free_block(Qjb);
@@ -1968,8 +1966,8 @@ for (block_A = 0; block_A < n_virt_blks; block_A++) {
   for (Pshell=0; Pshell < ribasis->nshell(); ++Pshell) {
     numPshell = ribasis->shell(Pshell)->nfunction();
     //Zero that guy out!
-    memset((void*)&ao_buffer[0][0],'\0',maxPshell*norbs*norbs); 
- 
+    memset((void*)&ao_buffer[0][0],'\0',maxPshell*norbs*norbs);
+
     for (MU=0; MU < basisset_->nshell(); ++MU) {
       nummu = basisset_->shell(MU)->nfunction();
       for (NU=0; NU <= MU; ++NU) {
@@ -2000,7 +1998,7 @@ for (block_A = 0; block_A < n_virt_blks; block_A++) {
     if (debug_) {
       fprintf(outfile, "  Ami for shell %d\n",Pshell);
       print_mat(half_buffer,numPshell,norbs*ndocc,outfile);
-    }    
+    }
 
     for (int P=0, index=0; P < numPshell; ++P) {
       int oP = ribasis->shell(Pshell)->function_index() + P;
@@ -2009,13 +2007,13 @@ for (block_A = 0; block_A < n_virt_blks; block_A++) {
         nact_virt, &(half_buffer[P][0]), nact_docc, 0.0, &(Pia[oP][0]), nact_docc);
       C_DGEMM('T', 'N', b_size, nact_docc, norbs, 1.0, &(Cv[0][b_start]),
         nact_virt, &(half_buffer[P][0]), nact_docc, 0.0, &(Pjb[oP][0]), nact_docc);
-                    
+
     }
   } // end loop over P shells; done with forming MO basisset_ (P|ia)'s
-   
+
   if (debug_) {
     fprintf(outfile,"  Aai:\n");
-    print_mat(Pia,naux,nact_docc*nact_virt,outfile); 
+    print_mat(Pia,naux,nact_docc*nact_virt,outfile);
   }
 
   //Embed the fitting
@@ -2027,11 +2025,11 @@ for (block_A = 0; block_A < n_virt_blks; block_A++) {
   C_DGEMM('T','N',nact_docc*b_size,naux,naux,
     1.0, Pjb[0], nact_docc*b_size, J_mhalf[0], naux,
     0.0, Qjb[0], naux);
- 
+
   if (debug_) {
     fprintf(outfile,"  Qai:\n");
-    print_mat(Qia,nact_docc*nact_virt,naux,outfile); 
-  }  
+    print_mat(Qia,nact_docc*nact_virt,naux,outfile);
+  }
 
   for (int a=0; a < a_size; ++a) {
     for (int b=0; b < b_size; ++b) {
@@ -2060,7 +2058,7 @@ for (block_A = 0; block_A < n_virt_blks; block_A++) {
     //fprintf(outfile,"  Thread %d: Block A = %d, Block B = %d, Hash = %d, energy contribution = %14.10f\n",rank, block_A, block_B, hash, emp2_ab);
   //end inner loop
 }} // end outer loop (parallelization)
- 
+
   free_block(Qjb);
   free_block(Qia);
   free_block(Pia);
@@ -2083,9 +2081,9 @@ for (block_A = 0; block_A < n_virt_blks; block_A++) {
 //if (scsn) {
 //  fprintf(outfile,"      * SCSN-RI-MP2 total energy          = %20.15f\n\n",
 //    escf + 1.76*ss_mp2);
-//  } 
- 
-  // Get out 
+//  }
+
+  // Get out
   fflush(outfile);
   return emp2;
 

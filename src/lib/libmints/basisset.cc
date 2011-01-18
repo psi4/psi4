@@ -15,6 +15,7 @@
 #include "vector3.h"
 #include "molecule.h"
 #include "basisset.h"
+#include "sobasis.h"
 #include "integral.h"
 #include "symmetry.h"
 #include "gshell.h"
@@ -84,9 +85,10 @@ shared_ptr<GaussianShell> BasisSet::shell(int center, int si) const
     return shell(center_to_shell_[center] + si);
 }
 
-#if 0
+#pragma warn BasisSet::zero_basis_set is broke.
 shared_ptr<BasisSet> BasisSet::zero_basis_set()
 {
+#if 0
     shared_ptr<BasisSet> new_basis(new BasisSet());
 
     // Setup all the parameters needed for a zero basis set
@@ -127,8 +129,8 @@ shared_ptr<BasisSet> BasisSet::zero_basis_set()
     new_basis->shells_[0]->init(1, &e, am, Cartesian, &c, 0, center, 0, Normalized);
 
     return new_basis;
-}
 #endif
+}
 
 shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parser,
         const shared_ptr<Molecule>& mol,
@@ -288,21 +290,24 @@ shared_ptr<BasisSet> BasisSet::atomic_basis_set(int center)
     }
     //Initialize SOTransform
     bas->sotransform_ = shared_ptr<SOTransform>(new SOTransform);
-    bas->sotransform_->init(current_shells);
+    //bas->sotransform_->init(current_shells);           // <-- old style
 
     //Populate SOTransform
+#warning Sorry Rob, I probably broke SAD again.
+#if 0
     for (int i = 0; i< current_shells; i++) {
         //OK, this is the SOTransformShell in the full basis
         SOTransformShell* full_so = sotransform_->aoshell(shell_start+i);
         //and it must go into the SOTransform in the atomic basis, and the offset in shell, ao, and so must be respected
-        for (int ao = 0; ao < full_so->nfunc(); ao++) {
+        for (int ao = 0; ao < full_so->nfunc; ao++) {
             //printf("AO %d, AOStart %d, SOStart%d, i %d, shell_start %d.\n",ao,ao_start,so_start,i,shell_start);
-            bas->sotransform_->add_transform(i,full_so->func(ao)->irrep(),full_so->func(ao)->sofuncirrep()-so_start,full_so->func(ao)->coef(), \
-                full_so->func(ao)->aofunc(),full_so->func(ao)->sofunc()-so_start);
+            bas->sotransform_->add_transform(i,full_so->func[ao].irrep(),full_so->func[ao].sofuncirrep()-so_start,full_so->func[ao].coef(), \
+                full_so->func[ao].aofunc(),full_so->func[ao].sofunc()-so_start);
         }
         //ao_start += shells_[i+shell_start]->ncartesian();
         //so_start += shells_[i+shell_start]->nfunction();
     }
+#endif
 
     //Setup the indexing in the atomic basis
     bas->refresh();

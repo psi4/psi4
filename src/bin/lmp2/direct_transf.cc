@@ -39,12 +39,9 @@ void LMP2::direct_transformation() {
 
     //  ****  These are required to utilize libmints  ****
 
-    // Required for libmints, allocates and computes the following:
-    // ioff, fac, df, bc
-    Wavefunction::initialize_singletons();
-
-    // Create a basis set object and initialize it using the checkpoint file.
-    shared_ptr<BasisSet> basis(new BasisSet(chkpt));
+    // Create a basis set object and initialize it.
+    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+    shared_ptr<BasisSet> basis = BasisSet::construct(parser, Process::environment.molecule(), orbital_basis);
 
     // Initialize an integral factory
     shared_ptr<IntegralFactory> integral(new IntegralFactory(basis, basis, basis, basis));

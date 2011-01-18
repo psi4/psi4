@@ -593,14 +593,14 @@ void RHF::save_dual_basis_projection()
         fprintf(outfile,"\n  Computing dual basis set projection from %s to %s.\n  Results will be stored in File 100.\n",options_.get_str("BASIS").c_str(),options_.get_str("DUAL_BASIS_SCF").c_str());
 
     shared_ptr<BasisSet> dual_basis;
-    if (options_.get_bool("NO_INPUT") == false) {
-        dual_basis =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DUAL_BASIS_SCF"));
-    }
-    else {
+    //if (options_.get_bool("NO_INPUT") == false) {
+    //    dual_basis =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DUAL_BASIS_SCF"));
+    //}
+    //else {
         shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
         dual_basis = BasisSet::construct(parser, molecule_,
                                          options_.get_str("DUAL_BASIS_SCF"));
-    }
+    //}
 
     SharedMatrix C_2 = dualBasisProjection(C_,doccpi_[0],basisset_,dual_basis);
     //C_->print(outfile);
