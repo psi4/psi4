@@ -459,7 +459,7 @@ int ccenergy(Options &options)
   timer_done();
 #endif
 
-  Process::environment.globals["CCSD ENERGY"] = moinfo.ecc+moinfo.eref;
+  Process::environment.globals["CCSD ENERGY"] = moinfo.ecc;
   Process::environment.globals["CURRENT ENERGY"] = moinfo.ecc+moinfo.eref;
 
   exit_io();

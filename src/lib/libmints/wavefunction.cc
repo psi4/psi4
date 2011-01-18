@@ -84,7 +84,6 @@ void Wavefunction::common_init()
 
         // Obtain the dimension object to initialize the factory.
         const Dimension dimension = sobasisset_->dimension();
-        dimension.print(); fflush(outfile);
         factory_.init_with(dimension, dimension);
 
         memory_ = Process::environment.get_memory();
