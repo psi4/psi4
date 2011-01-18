@@ -318,7 +318,7 @@ void Molecule::add_atom(int Z, double x, double y, double z,
         // Dummies go to full_atoms_, ghosts need to go to both.
         full_atoms_.push_back(shared_ptr<CoordEntry>(new CartesianEntry(full_atoms_.size(), Z, charge, mass, l,
                                                                                              shared_ptr<CoordValue>(new NumberValue(x)),
-                                                                                             shared_ptr<CoordValue>(new NumberValue(y)), 
+                                                                                             shared_ptr<CoordValue>(new NumberValue(y)),
                                                                                              shared_ptr<CoordValue>(new NumberValue(z)))));
         if(strcmp(label, "X") && strcmp(label, "x")) atoms_.push_back(full_atoms_.back());
     }
@@ -959,6 +959,17 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
             throw PSIEXCEPTION("Molecule::init_with_xyz: Malformed atom information line.\n"+line);
         }
     }
+
+    // We need to make 1 fragment with all atoms
+    fragments_.push_back(std::make_pair(0, natom));
+    fragmentTypes_.push_back(Real);
+    fragmentMultiplicities_.push_back(0);
+    fragmentCharges_.push_back(0);
+
+    // chkpt is already in AU set the conversion to 1
+    inputUnitsToAU_ = 1.0;
+
+    update_geometry();
 }
 
 /**
@@ -1201,7 +1212,7 @@ Molecule::update_geometry()
         throw PSIEXCEPTION("Molecule::update_geometry: There are no fragments in this molecule.");
 
     atoms_.clear();
-    EntryVectorIter iter; 
+    EntryVectorIter iter;
     for (iter = full_atoms_.begin(); iter != full_atoms_.end(); ++iter){
         (*iter)->invalidate();
     }

@@ -256,7 +256,7 @@ shared_ptr<BasisSet> BasisSet::atomic_basis_set(int center)
     int ao_start = 0;
     int so_start = 0;
     for (int i = 0; i<nshell(); i++) {
-        if (shell_center_[i] < index_criteria) {
+        if (shell_center_[i] < center) {
             ao_start += shells_[i]->ncartesian();
             so_start += shells_[i]->nfunction();
         }
