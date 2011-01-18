@@ -31,9 +31,9 @@
     Given l and m compute a pure function offset.
 */
 #if PSI_INTEGRALS_STANDARD == 1
-  #define INT_IPURE(l, m) ((l)+(m))
+#define INT_IPURE(l, m) ((l)+(m))
 #else
-  #define INT_IPURE(l, m) ((m)<0?2*-(m):((m)==0?0:2*(m)-1))
+#define INT_IPURE(l, m) ((m)<0?2*-(m):((m)==0?0:2*(m)-1))
 #endif
 namespace psi {
 
@@ -116,7 +116,7 @@ class ISphericalTransform : public SphericalTransform
 {
 protected:
     ISphericalTransform();
-    void init();
+    virtual void init();
 public:
     ISphericalTransform(int l, int subl=-1);
 };

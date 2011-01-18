@@ -57,7 +57,6 @@ ShellRotation::ShellRotation(const ShellRotation& other)
 ShellRotation::ShellRotation(int a, SymmetryOperation& so, IntegralFactory* ints, int pure) :
     n_(0), am_(0), r_(0)
 {
-    fprintf(outfile, "ShellRotation: pure = %d\n", pure);
     if (a > 0 && pure)
         init_pure(a, so, ints);
     else
@@ -152,7 +151,7 @@ void ShellRotation::init(int a, SymmetryOperation& so, IntegralFactory* ints)
 
 void ShellRotation::init_pure(int a, SymmetryOperation &so, IntegralFactory *ints)
 {
-    if (a < 1) {
+    if (a < 2) {
         init(a, so, ints);
         return;
     }
@@ -171,7 +170,13 @@ void ShellRotation::init_pure(int a, SymmetryOperation &so, IntegralFactory *int
     int lI[3];
     int m, iI;
 
-    n_ = I.n();
+    SphericalTransform *st = ints->spherical_transform(am_);
+
+    printf("SphericalTransform: am = %d\n", am_);
+    for (int z=0; z<st->n(); ++z) {
+        printf("a = %d, b = %d, c = %d\n", st->a(z), st->b(z), st->c(z));
+    }
+    n_ = INT_NPURE(am_);
 
     r_ = new double*[n_];
     for (m=0; m<n_; ++m) {
@@ -183,7 +188,10 @@ void ShellRotation::init_pure(int a, SymmetryOperation &so, IntegralFactory *int
         for (J.first(); !J.is_done(); J.next()) {
             double coef = I.coef()*J.coef();
             double tmp = 0.0;
+            fprintf(outfile, "J.a = %d J.b = %d J.c = %d\n", J.a(), J.b(), J.c());
+            fprintf(outfile, "I.coef = %lf, J.coef = %lf\n", I.coef(), J.coef());
             for (K.start(J.a(), J.b(), J.c()); K; K.next()) {
+                fprintf(outfile, "T(%d,%d) += %6.4f", I.pureindex(), J.pureindex(), coef);
                 double tmp2 = coef;
                 for (m=0; m<3; ++m)
                     lI[m] = I.l(m);
@@ -193,7 +201,10 @@ void ShellRotation::init_pure(int a, SymmetryOperation &so, IntegralFactory *int
                     lI[iI]--;
 
                     tmp2 *= so(K.axis(m), iI);
+                    fprintf(outfile, " * so(%d,%d) [=%4.2f]",
+                            iI,K.axis(m),so(iI,K.axis(m)));
                 }
+                fprintf(outfile, " = %8.6f\n", tmp2);
                 tmp += tmp2;
             }
             r_[I.pureindex()][J.pureindex()] += tmp;
@@ -270,5 +281,6 @@ double ShellRotation::trace() const
 
 void ShellRotation::print() const
 {
+    fprintf(outfile, "ShellRotation\n");
     print_mat(r_, n_, n_, outfile);
 }

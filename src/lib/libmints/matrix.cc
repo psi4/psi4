@@ -1514,25 +1514,55 @@ double SimpleMatrix::trace() const
     return val;
 }
 
-void SimpleMatrix::invert()
+void SimpleMatrix::lu_factorize()
 {
     if (rows_) {
-        int err = C_DPOTRI('L', rows_, matrix_[0], rows_);
+        int *ipiv = new int[rows_];
+        int err = C_DGETRF(rows_, cols_, matrix_[0], rows_, ipiv);
         if (err != 0) {
             if (err < 0) {
-                fprintf(outfile, "invert: C_DPOTRI: argument %d has invalid paramter.\n", -err);
+                fprintf(outfile, "cholesky_factorize: C_DPOTRF: argument %d has invalid paramter.\n", -err);
                 fflush(outfile);
                 abort();
             }
             if (err > 1) {
-                fprintf(outfile, "invert: C_DPOTRI: the (%d,%d) element of the factor U or L is "
-                        "zero, and the inverse could not be computed.\n", err, err);
+                fprintf(outfile, "cholesky_factorize: C_DPOTRF: the leading minor of order %d is not "
+                        "positive definite, and the factorization could not be "
+                        "completed.", err);
                 fflush(outfile);
                 abort();
             }
         }
+        delete[] ipiv;
     }
-    copy_lower_to_upper();
+}
+
+void SimpleMatrix::invert()
+{
+    if (rows_) {
+        double **work = block_matrix(rows_, cols_);
+        invert_matrix(matrix_, work, rows_, outfile);
+        copy_from(work);
+        free_block(work);
+//        double *work = new double[rows_*cols_];
+//        int *ipiv = new int[rows_];
+//        int err = C_DGETRI(rows_, matrix_[0], rows_, ipiv, work, rows_*cols_);
+//        if (err != 0) {
+//            if (err < 0) {
+//                fprintf(outfile, "invert: C_DPOTRI: argument %d has invalid paramter.\n", -err);
+//                fflush(outfile);
+//                abort();
+//            }
+//            if (err > 1) {
+//                fprintf(outfile, "invert: C_DPOTRI: the (%d,%d) element of the factor U or L is "
+//                        "zero, and the inverse could not be computed.\n", err, err);
+//                fflush(outfile);
+//                abort();
+//            }
+//        }
+//        delete[] work;
+//        delete[] ipiv;
+    }
 }
 
 void SimpleMatrix::copy_lower_to_upper()
@@ -1558,7 +1588,7 @@ void SimpleMatrix::transpose_this()
     double temp;
 
     for (int i=0; i<rows_; ++i) {
-        for (int j=0; j<cols_; ++j) {
+        for (int j=0; j<i; ++j) {
             temp = matrix_[i][j];
             matrix_[i][j] = matrix_[j][i];
             matrix_[j][i] = temp;

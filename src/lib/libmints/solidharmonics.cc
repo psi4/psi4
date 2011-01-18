@@ -90,6 +90,16 @@ uint64_t powll(uint64_t n, unsigned long p)
     return result;
 }
 
+// there ordering here is arbitrary and doesn't have to match the
+// basis set ordering
+static inline int ncart(int l) { return (l>=0)?((((l)+2)*((l)+1))>>1):0; }
+static inline int npure(int l) { return 2*l+1; }
+static inline int icart(int a, int b, int c)
+{
+  return (((((a+b+c+1)<<1)-a)*(a+1))>>1)-b-1;
+}
+static inline int ipure(int l, int m) { return m<0?2*-m:(m==0?0:2*m-1); }
+
 void solidharmcontrib(int sign,
                       const uint64_t &bin,const uint64_t &den,
                       uint64_t norm2num,uint64_t norm2den,
@@ -107,7 +117,7 @@ void solidharmcontrib(int sign,
     else {
         double coef = sign*double(bin)/double(den);
         double norm = sqrt(double(norm2num)/double(norm2den));
-        coefmat.add(INT_ICART(x,y,z), pureindex, coef*norm);
+        coefmat.add(icart(x,y,z), pureindex, coef*norm);
     }
 }
 
@@ -116,8 +126,13 @@ void solidharmcontrib(int sign,
 // r2 is the number of factors of r^2 that are included
 void solidharm(unsigned int l, int m, unsigned int r2, SimpleMatrix& coefmat)
 {
-    int pureindex = INT_IPURE(l,m);
-    for (unsigned int i=1; i<=r2; i++) pureindex += INT_NPURE(l+2*i);
+    printf("in solidharm(unsigned int l, int m, unsigned int r2, RefSCMatrix coefmat\n");
+    printf("l = %d, m = %d, r2 = %d\n", l, m, r2);
+
+    int pureindex = ipure(l,m);
+    printf("pureindex = %d\n", pureindex);
+    for (unsigned int i=1; i<=r2; i++) pureindex += npure(l+2*i);
+    printf("pureindex = %d\n", pureindex);
 
     unsigned int absm = abs(m);
 

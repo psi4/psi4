@@ -157,68 +157,6 @@ SphericalTransformIter* IntegralFactory::spherical_transform_iter(int am, int in
     return new SphericalTransformIter(spherical_transforms_[am]);
 }
 
-/*
-void ShellCombinationsIterator::generate_combinations(BasisSet*bs1, BasisSet*bs2, BasisSet*bs3, BasisSet*bs4)
-{
-
-    for (usii=0; usii<bs1->nshell(); usii++) {
-        for (usjj=0; usjj<=usii; usjj++) {
-            for (uskk=0; uskk<=usjj; uskk++) {
-                for (usll=0; usll<=uskk; usll++) {
-                    // Decide what shell quartets out of (ij|kl), (ik|jl), and (il|jk) are unique
-                    usi_arr[0] = usii; usj_arr[0] = usjj; usk_arr[0] = uskk; usl_arr[0] = usll;
-                    if (usii == usjj && usii == uskk || usjj == uskk && usjj == usll)
-                        num_unique_pk = 1;
-                    else if (usii == uskk || usjj == usll) {
-                        num_unique_pk = 2;
-                        usi_arr[1] = usii; usj_arr[1] = uskk; usk_arr[1] = usjj; usl_arr[1] = usll;
-                    }
-                    else if (usjj == uskk) {
-                        num_unique_pk = 2;
-                        usi_arr[1] = usii; usj_arr[1] = usll; usk_arr[1] = usjj; usl_arr[1] = uskk;
-                    }
-                    else if (usii == usjj || uskk == usll) {
-                        num_unique_pk = 2;
-                        usi_arr[1] = usii; usj_arr[1] = uskk; usk_arr[1] = usjj; usl_arr[1] = usll;
-                    }
-                    else {
-                        num_unique_pk = 3;
-                        usi_arr[1] = usii; usj_arr[1] = uskk; usk_arr[1] = usjj; usl_arr[1] = usll;
-                        usi_arr[2] = usii; usj_arr[2] = usll; usk_arr[2] = usjj; usl_arr[2] = uskk;
-                    }
-
-                    // For each num_unique_pk
-                    for (int upk=0; upk < num_unique_pk; ++upk) {
-                        usi = usi_arr[upk]; usj = usj_arr[upk]; usk = usk_arr[upk]; usl = usl_arr[upk];
-
-                        // Sort shells based on AM, save ERI some work doing permutation resorting.
-                        if (bs1->shell(usi)->am() < bs2->shell(usj)->am()) {
-                            swap(usi, usj);
-                        }
-                        if (bs3->shell(usk)->am() < bs4->shell(usl)->am()) {
-                            swap(usk, usl);
-                        }
-                        if (bs1->shell(usi)->am() + bs2->shell(usj)->am() >
-                            bs3->shell(usk)->am() + bs4->shell(usl)->am()) {
-                            swap(usi, usk);
-                            swap(usj, usl);
-                        }
-
-                        ShellQuartet q;
-                        q.P = usi; q.Q = usj; q.R = usk; q.S = usl; q.end_of_PK = false;
-
-                        if (upk == num_unique_pk - 1) {
-                            // If this is the last unique shell flag it as end of a pk block.
-                            q.end_of_PK = true;
-                        }
-                        unique_quartets_.push_back(q);
-                    }
-                }
-            }
-        }
-    }
-}*/
-
 void ShellCombinationsIterator::first()
 {
     usii = usjj = uskk = usll = upk = 0;
