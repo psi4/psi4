@@ -190,25 +190,37 @@ void OneBodyInt::compute_shell(int sh1, int sh2)
     pure_transform(s1, s2, nchunk_);
 }
 
-void OneBodyInt::compute(shared_ptr<Matrix> result)
+void OneBodyInt::compute(boost::shared_ptr<SimpleMatrix> result)
 {
     // Do not worry about zeroing out result
     int ns1 = bs1_->nshell();
     int ns2 = bs2_->nshell();
 
+    int i_offset=0, j_offset=0;
+    double *location;
+
     for (int i=0; i<ns1; ++i) {
+        int ni = bs1_->shell(i)->nfunction();
+
         for (int j=0; j<ns2; ++j) {
-            // Compute the shell
+            int nj = bs2_->shell(j)->nfunction();
+
+            // Compute the shell (automatically transforms to pure am in needed)
             compute_shell(i, j);
-            // Transform the shell to SO basis
-//            pure_transform(result, i, j);
+
+            // For each integral that we got put in its contribution
+            location = buffer_;
+            for (int p=0; p<ni; ++p) {
+                for (int q=0; q<nj; ++q) {
+                    result->add(i_offset+p, j_offset+q, *location);
+                    location++;
+                }
+            }
+
+            j_offset += nj;
         }
+        i_offset += ni;
     }
-}
-
-void OneBodyInt::compute(boost::shared_ptr<SimpleMatrix> result)
-{
-
 }
 
 void OneBodyInt::compute(std::vector<shared_ptr<Matrix> > &result)
