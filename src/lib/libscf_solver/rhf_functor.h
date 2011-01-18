@@ -54,7 +54,7 @@ public:
         double temp1=0.0, temp2=0.0, temp3=0.0, temp4=0.0, temp5=0.0, temp6=0.0;
         int itype;
 
-        fprintf(outfile, " (%2d %2d %2d %2d) = %14.8lf\n", i, j, k, l, value);
+//        fprintf(outfile, " (%2d %2d %2d %2d) = %14.8lf\n", i, j, k, l, value);
 
         itype = integral_type(i, j, k, l);
         switch(itype) {
