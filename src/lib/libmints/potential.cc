@@ -31,18 +31,14 @@ PotentialInt::~PotentialInt()
     delete[] buffer_;
 }
 
-void PotentialInt::compute_shell(int sh1, int sh2)
-{
-    compute_pair(bs1_->shell(sh1), bs2_->shell(sh2));
-}
-
 void PotentialInt::compute_shell_deriv1(int sh1, int sh2)
 {
     compute_pair_deriv1(bs1_->shell(sh1), bs2_->shell(sh2));
 }
 
 // The engine only supports segmented basis sets
-void PotentialInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2)
+void PotentialInt::compute_pair(const shared_ptr<GaussianShell>& s1,
+                                const shared_ptr<GaussianShell>& s2)
 {
     int ao12;
     int am1 = s1->am();
@@ -139,12 +135,6 @@ void PotentialInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<Gaussia
             }
         }
     }
-
-    // Integrals are done. Normalize for angular momentum
-    normalize_am(s1, s2);
-
-    // Spherical harmonic transformation
-    // Wrapped up in the AO to SO transformation (I think)
 }
 
 // The engine only supports segmented basis sets

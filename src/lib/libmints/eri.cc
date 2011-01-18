@@ -969,7 +969,7 @@ void ERI::compute_quartet(int sh1, int sh2, int sh3, int sh4)
     // Normalize the integrals for angular momentum
     normalize_am(s1, s2, s3, s4);
 
-    // Transform the integrals to the spherical basis
+    // Transform the integrals into pure angular momentum
     pure_transform(sh1, sh2, sh3, sh4, 1);
 
     // Results are in source_

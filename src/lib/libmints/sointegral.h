@@ -63,29 +63,27 @@ class TwoBodySOInt
 protected:
     boost::shared_ptr<TwoBodyInt> tb_;
 
-    boost::shared_ptr<BasisSet> b1_;
-    boost::shared_ptr<BasisSet> b2_;
-    boost::shared_ptr<BasisSet> b3_;
-    boost::shared_ptr<BasisSet> b4_;
+    boost::shared_ptr<SOBasis> b1_;
+    boost::shared_ptr<SOBasis> b2_;
+    boost::shared_ptr<SOBasis> b3_;
+    boost::shared_ptr<SOBasis> b4_;
 
     double *buffer_;
 
 public:
-    TwoBodySOInt(const boost::shared_ptr<TwoBodyInt>& );
+    TwoBodySOInt(const boost::shared_ptr<TwoBodyInt>&,
+                 const boost::shared_ptr<IntegralFactory>&);
     virtual ~TwoBodySOInt();
 
-    boost::shared_ptr<BasisSet> basis() const;
-    boost::shared_ptr<BasisSet> basis1() const;
-    boost::shared_ptr<BasisSet> basis2() const;
-    boost::shared_ptr<BasisSet> basis3() const;
-    boost::shared_ptr<BasisSet> basis4() const;
+    boost::shared_ptr<SOBasis> basis() const;
+    boost::shared_ptr<SOBasis> basis1() const;
+    boost::shared_ptr<SOBasis> basis2() const;
+    boost::shared_ptr<SOBasis> basis3() const;
+    boost::shared_ptr<SOBasis> basis4() const;
 
     const double *buffer() const { return buffer_; }
 
     virtual void compute_shell(int, int, int, int);
-
-    /// Computes all integrals and stores them in result
-    void compute(boost::shared_ptr<Matrix> result);
 };
 
 }

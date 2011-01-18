@@ -20,6 +20,9 @@ namespace psi {
  */
 class ElectrostaticInt : public PotentialInt
 {
+    void compute_pair(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>&)
+    {}
+
 public:
     /// Constructor
     ElectrostaticInt(std::vector<SphericalTransform>&, shared_ptr<BasisSet>, shared_ptr<BasisSet>, int deriv=0);
@@ -31,7 +34,7 @@ public:
     /// Computes integrals between two shells.
     void compute_shell(int, int, Vector3&);
     /// Computes integrals between two shells.
-    void compute_pair(shared_ptr<GaussianShell>, shared_ptr<GaussianShell>, Vector3&);
+    void compute_pair(boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>, Vector3&);
 
     /// Does the method provide first derivatives?
     bool has_deriv1() { return false; }

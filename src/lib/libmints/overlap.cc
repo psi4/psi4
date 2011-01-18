@@ -22,8 +22,6 @@ OverlapInt::OverlapInt(std::vector<SphericalTransform>& st, shared_ptr<BasisSet>
     int maxnao1 = INT_NCART(maxam1);
     int maxnao2 = INT_NCART(maxam2);
 
-    tformbuf_ = new double[maxnao1 * maxnao2];
-
     if (deriv == 1) {
         maxnao1 *= 3 * natom_;
         maxnao2 *= 3 * natom_;
@@ -31,24 +29,17 @@ OverlapInt::OverlapInt(std::vector<SphericalTransform>& st, shared_ptr<BasisSet>
         maxnao1 *= 9 * natom_;
         maxnao2 *= 9 * natom_;
     }
-    buffer_ = new double[maxnao1*maxnao2];
-    target_ = new double[maxnao1*maxnao2];
+
+    buffer_ = new double[maxnao1 * maxnao2];
 }
 
 OverlapInt::~OverlapInt()
 {
-    delete[] tformbuf_;
-    delete[] target_;
     delete[] buffer_;
 }
 
-void OverlapInt::compute_shell(int sh1, int sh2)
-{
-    compute_pair(bs1_->shell(sh1), bs2_->shell(sh2));
-}
-
 // The engine only supports segmented basis sets
-void OverlapInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2)
+void OverlapInt::compute_pair(const shared_ptr<GaussianShell>& s1, const shared_ptr<GaussianShell>& s2)
 {
     int ao12;
     int am1 = s1->am();
@@ -128,20 +119,6 @@ void OverlapInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<GaussianS
             }
         }
     }
-
-    // Integrals are done. Normalize for angular momentum
-    normalize_am(s1, s2);
-
-//    for (int z=0; z<INT_NCART(am1)*INT_NCART(am2); ++z) {
-//        fprintf(outfile, "pre-pure raw: %d -> %8.5f\n", z, buffer_[z]);
-//    }
-
-    // Pure angular momentum (6d->5d...) transformation
-    do_transform(s1, s2);
-
-//    for (int z=0; z<INT_NPURE(am1)*INT_NPURE(am2); ++z) {
-//        fprintf(outfile, "pure raw: %d -> %8.5f\n", z, buffer_[z]);
-//    }
 }
 
 void OverlapInt::compute_shell_deriv1(int sh1, int sh2)

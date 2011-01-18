@@ -34,7 +34,7 @@ void SOTransform::set_naoshell(int n)
 void SOTransform::add_transform(int aoshellnum, int irrep,
                                 double coef, int aofunc, int sofunc)
 {
-    fprintf(outfile, "SOTransform::add_transform(aoshellnum = %d, irrep = %d, coef = %lf, aofunc = %d, sofunc = %d)\n", aoshellnum, irrep, coef, aofunc, sofunc);
+//    fprintf(outfile, "SOTransform::add_transform(aoshellnum = %d, irrep = %d, coef = %lf, aofunc = %d, sofunc = %d)\n", aoshellnum, irrep, coef, aofunc, sofunc);
 
     int i;
     for (i=0; i<naoshell; i++) {
@@ -95,8 +95,8 @@ SOBasis::SOBasis(const boost::shared_ptr<BasisSet> &basis, const boost::shared_p
     }
 
     //=----- Begin debug printing -----=
-    fprintf(outfile, "SOBasis:\n");
-    fprintf(outfile, "nshell_ = %d\n", nshell_);
+//    fprintf(outfile, "SOBasis:\n");
+//    fprintf(outfile, "nshell_ = %d\n", nshell_);
     //=-----  End debug printing  -----=
 
     // map each ao shell to an so shell
@@ -107,18 +107,18 @@ SOBasis::SOBasis(const boost::shared_ptr<BasisSet> &basis, const boost::shared_p
             for (k=0; k<mol->nequivalent(i); k++) {
                 int aoshell = basis_->shell_on_center(mol->equivalent(i,k),j);
                 aoshell_to_soshell[aoshell] = soshell;
-                fprintf(outfile, "i = %d j = %d k = %d aoshell = %d soshell = %d, mol->equivalent = %d\n",
-                        i, j, k, aoshell, soshell, mol->equivalent(i,k));
+//                fprintf(outfile, "i = %d j = %d k = %d aoshell = %d soshell = %d, mol->equivalent = %d\n",
+//                        i, j, k, aoshell, soshell, mol->equivalent(i,k));
             }
             soshell++;
         }
     }
 
     //=----- Begin debug printing -----=
-    fprintf(outfile, "Final aoshell_to_soshell:\n");
-    for (i = 0; i < basis_->nshell(); ++i) {
-        fprintf(outfile, "aoshell_to_soshell[%d] = %d\n", i, aoshell_to_soshell[i]);
-    }
+//    fprintf(outfile, "Final aoshell_to_soshell:\n");
+//    for (i = 0; i < basis_->nshell(); ++i) {
+//        fprintf(outfile, "aoshell_to_soshell[%d] = %d\n", i, aoshell_to_soshell[i]);
+//    }
     //=-----  End debug printing  -----=
 
     ncomp_ = new int[nirrep_];
@@ -144,14 +144,14 @@ SOBasis::SOBasis(const boost::shared_ptr<BasisSet> &basis, const boost::shared_p
 
     shared_ptr<PetiteList> petite = shared_ptr<PetiteList>(new PetiteList(basis_, integral));
 
-    petite->print();
+//    petite->print();
 
     int nblocks = petite->nblocks();
     SO_block *soblocks = petite->aotoso_info();
-    for (i=0; i<nblocks; ++i) {
-        fprintf(outfile, "soblock[%d]\n", i); fflush(outfile);
-        soblocks[i].print("");
-    }
+//    for (i=0; i<nblocks; ++i) {
+//        fprintf(outfile, "soblock[%d]\n", i); fflush(outfile);
+//        soblocks[i].print("");
+//    }
 
     trans_ = new SOTransform[nshell_];
     for (i=0; i<nblocks; i++) {
@@ -164,14 +164,14 @@ SOBasis::SOBasis(const boost::shared_ptr<BasisSet> &basis, const boost::shared_p
             int nequiv0 = mol->nequivalent(mol->atom_to_unique(atom0));
             trans_[soshell0].set_naoshell(nequiv0);
 
-            fprintf(outfile, "i = %d j = %d bfn0 = %d aoshell0 = %d soshell0 = %d atom0 = %d nequiv0 = %d\n", i, j, bfn0, aoshell0, soshell0, atom0, nequiv0);
+//            fprintf(outfile, "i = %d j = %d bfn0 = %d aoshell0 = %d soshell0 = %d atom0 = %d nequiv0 = %d\n", i, j, bfn0, aoshell0, soshell0, atom0, nequiv0);
         }
     }
 
     int nfuncall = 0;
     for (i=0; i<nblocks; i++) {
         int irrep = ct.which_irrep(i);
-        fprintf(outfile, "i = %d, irrep = %d...I think they should be equal.\n", i, irrep); fflush(outfile);
+//        fprintf(outfile, "i = %d, irrep = %d...I think they should be equal.\n", i, irrep); fflush(outfile);
         for (j=0; j<soblocks[i].len; j++) {
             if (soblocks[i].so[j].length == 0) continue;
             int bfn0 = soblocks[i].so[j].cont[0].bfn;
@@ -200,8 +200,8 @@ SOBasis::SOBasis(const boost::shared_ptr<BasisSet> &basis, const boost::shared_p
                     throw PSIEXCEPTION("SOBasis::SOBasis: shell changed");
                 }
 
-                fprintf(outfile, "add_transform(...): aoshell = %d irrep = %d coef = %lf aoshellfunc = %d sofunc = %d\n",
-                       aoshell,irrep, coef,aoshellfunc,sofunc);
+//                fprintf(outfile, "add_transform(...): aoshell = %d irrep = %d coef = %lf aoshellfunc = %d sofunc = %d\n",
+//                       aoshell,irrep, coef,aoshellfunc,sofunc);
                 trans_[soshell].add_transform(aoshell, irrep, coef,aoshellfunc,sofunc);
             }
         }
@@ -218,7 +218,7 @@ SOBasis::SOBasis(const boost::shared_ptr<BasisSet> &basis, const boost::shared_p
         funcoff_[i][0] = 0;
         for (j=1; j<nirrep_; j++) {
             funcoff_[i][j] = funcoff_[i][j-1] + nfunc_[i][j-1];
-            fprintf(outfile, "funcoff_[%d][%d] = %d\n", i, j, funcoff_[i][j]);
+//            fprintf(outfile, "funcoff_[%d][%d] = %d\n", i, j, funcoff_[i][j]);
         }
     }
 
@@ -233,7 +233,7 @@ SOBasis::SOBasis(const boost::shared_ptr<BasisSet> &basis, const boost::shared_p
         func_[0] = 0;
         for (i=1; i<nshell_; i++) {
             func_[i] = func_[i-1] + nfunction(i-1);
-            fprintf(outfile, "func_[%d] = %d\n", i, func_[i]);
+//            fprintf(outfile, "func_[%d] = %d\n", i, func_[i]);
         }
         int ibasis_ = 0;
         for (i=0; i<nshell_; i++) {
@@ -241,7 +241,7 @@ SOBasis::SOBasis(const boost::shared_ptr<BasisSet> &basis, const boost::shared_p
                 for (k=0; k<nfunc_[i][j]; k++,ibasis_++) {
                     irrep_[ibasis_] = j;
                     func_within_irrep_[ibasis_] = nfunc_in_irrep_[j]++;
-                    fprintf(outfile, "irrep_[%d] = %d func_within_irrep_[%d] = %d\n", ibasis_, j, ibasis_, func_within_irrep_[ibasis_]);
+//                    fprintf(outfile, "irrep_[%d] = %d func_within_irrep_[%d] = %d\n", ibasis_, j, ibasis_, func_within_irrep_[ibasis_]);
                 }
             }
         }

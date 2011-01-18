@@ -802,7 +802,7 @@ SO_block* PetiteList::aotoso_info()
                                     = integral_->shell_rotation(gbs.shell(i,s)->am(),
                                                             so,gbs.shell(i,s)->is_pure());
 
-                            rr.print();
+//                            rr.print();
 
                             for (ii=0; ii < rr.dim(); ii++) {
                                 for (jj=0; jj < rr.dim(); jj++) {
@@ -819,8 +819,8 @@ SO_block* PetiteList::aotoso_info()
                     double *work = new double[lwork];
                     int info;
 
-                    fprintf(outfile, "linorb before SVD call\n");
-                    print_mat(linorb, nfuncuniq, nfuncuniq, outfile);
+//                    fprintf(outfile, "linorb before SVD call\n");
+//                    print_mat(linorb, nfuncuniq, nfuncuniq, outfile);
 
                     // solves At = V SIGMA Ut (since FORTRAN array layout is used)
                     F_DGESVD("N","A",&nfuncall,&nfuncuniq,linorb[0],&nfuncall,
@@ -828,14 +828,14 @@ SO_block* PetiteList::aotoso_info()
                              work, &lwork, &info);
 //                    C_DGESVD('A', 'N', nfuncuniq, nfuncall, linorb[0], nfuncall, singval, u[0], nfuncuniq, &djunk, ijunk, work, lwork);
 
-                    fprintf(outfile, "U:\n");
-                    print_mat(u, nfuncuniq, nfuncuniq, outfile);
-                    fprintf(outfile, "linorbcop:\n");
-                    print_mat(linorbcop, nfuncuniq, nfuncuniq, outfile);
-                    fprintf(outfile, "singval:\n");
-                    for (int z=0; z<nfuncuniq; ++z)
-                        fprintf(outfile, "%lf ", singval[z]);
-                    fprintf(outfile, "\n");
+//                    fprintf(outfile, "U:\n");
+//                    print_mat(u, nfuncuniq, nfuncuniq, outfile);
+//                    fprintf(outfile, "linorbcop:\n");
+//                    print_mat(linorbcop, nfuncuniq, nfuncuniq, outfile);
+//                    fprintf(outfile, "singval:\n");
+//                    for (int z=0; z<nfuncuniq; ++z)
+//                        fprintf(outfile, "%lf ", singval[z]);
+//                    fprintf(outfile, "\n");
                     // put the lin indep symm orbs into the so array
                     for (j=0; j<nfuncuniq; j++) {
                         if (singval[j] > 1.0e-6) {
@@ -856,9 +856,9 @@ SO_block* PetiteList::aotoso_info()
                                                 + gbs.shell_to_basis_function(gbs.shell_on_center(equivatom,
                                                                                             s));
                                         tso.cont[llnonzero].coef = tmp;
-                                        fprintf(outfile, "tso.cont[%d].bfn = %d .coef = %lf l = %d bfn_offset_in_shell = %d gbs.shell_to_function = %d\n",
-                                                llnonzero, tso.cont[llnonzero].bfn, tso.cont[llnonzero].coef,
-                                                l, bfn_offset_in_shell, gbs.shell_to_basis_function(gbs.shell_on_center(equivatom, s)));
+//                                        fprintf(outfile, "tso.cont[%d].bfn = %d .coef = %lf l = %d bfn_offset_in_shell = %d gbs.shell_to_function = %d\n",
+//                                                llnonzero, tso.cont[llnonzero].bfn, tso.cont[llnonzero].coef,
+//                                                l, bfn_offset_in_shell, gbs.shell_to_basis_function(gbs.shell_on_center(equivatom, s)));
                                         llnonzero++;
                                     }
                                 }

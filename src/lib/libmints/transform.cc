@@ -24,7 +24,7 @@ static inline int ipure(int l, int m) { return m<0?2*-m:(m==0?0:2*m-1); }
 void SphericalTransformComponent::init(int a, int b, int c, double coef,
                                        int cartindex, int pureindex)
 {
-    fprintf(outfile, "a = %d, b = %d, c = %d, coef = %f, cartindex = %d, pureindex = %d\n", a, b, c, coef, cartindex, pureindex);
+//    fprintf(outfile, "a = %d, b = %d, c = %d, coef = %f, cartindex = %d, pureindex = %d\n", a, b, c, coef, cartindex, pureindex);
     a_ = a;
     b_ = b;
     c_ = c;
