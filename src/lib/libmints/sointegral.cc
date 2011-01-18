@@ -65,6 +65,11 @@ void OneBodySOInt::compute_shell(int ish, int jsh)
 
     int nao2 = b2_->naofunction(jsh);
 
+    // I want to test only calling compute_shell for the first t1 and t2 aoshell pair
+    // and then using the transformation coefficients to obtain everything else.
+    // Otherwise using the petite list doesn't save us any computational time
+    // in computing the integrals, but does save us time when we use the integrals.
+
     // loop through the AO shells that make up this SO shell
     for (int i=0; i<t1.naoshell; ++i) {
         const SOTransformShell &s1 = t1.aoshell[i];
@@ -109,12 +114,15 @@ void OneBodySOInt::compute(boost::shared_ptr<Matrix> result)
     int ns1 = b1_->nshell();
     int ns2 = b2_->nshell();
 
+    // Need to loop through unique SO shells from b1 and b2
+    // If b1 and b2 are the same SOBasis we should restrict the second for loop
+    // If not, we'll need to do everything.
     for (int i=0; i<ns1; ++i) {
         for (int j=0; j<ns2; ++j) {
-            // Compute the shell
-            compute_shell(i, j);
+            // Compute the shell SO shell pair.
+            //compute_shell(i, j);
             // Transform the shell to SO basis
-            so_transform(result, i, j);
+            //so_transform(result, i, j);
         }
     }
 }
