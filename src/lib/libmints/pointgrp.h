@@ -52,16 +52,14 @@
 #ifndef _math_symmetry_pointgrp_h
 #define _math_symmetry_pointgrp_h
 
-#include <iostream>
-
-// #include <util/class/class.h>
-// #include <util/state/state.h>
-// #include <util/keyval/keyval.h>
 #include <psi4-dec.h>
 #include <libmints/vector3.h>
 #include <string>
+#include <cstdio>
 
 namespace psi {
+
+extern FILE *outfile;
 
 // //////////////////////////////////////////////////////////////////
 
@@ -101,13 +99,13 @@ class SymmetryOperation {
 
     /// This performs the transform r * this * r~
     SymmetryOperation transform(const SymmetryOperation& r) const;
-    
+
     /// Set equal to a unit matrix
     void unit() { zero(); d[0][0] = d[1][1] = d[2][2] = 1.0; }
 
     /// Set equal to E
     void E() { unit(); }
-    
+
     /// Set equal to an inversion
     void i() { zero(); d[0][0] = d[1][1] = d[2][2] = -1.0; }
 
@@ -123,7 +121,7 @@ class SymmetryOperation {
     /// Set equal to a clockwise rotation by 2pi/n
     void rotation(int n);
     void rotation(double theta);
-    
+
     /// Set equal to C2 about the x axis
     void c2_x() { i(); d[0][0] = 1.0; }
 
@@ -132,7 +130,7 @@ class SymmetryOperation {
 
     void transpose();
 
-    /// print the matrix 
+    /// print the matrix
     void print(FILE *out);
 };
 
@@ -155,13 +153,13 @@ class SymRep {
 
     /// Cast to a SymmetryOperation.
     operator SymmetryOperation() const;
-    
+
     /// returns the trace of the transformation matrix
     inline double trace() const;
 
     /// set the dimension of d
     void set_dim(int i) { n=i; }
-    
+
     /// returns the i'th row of the transformation matrix
     double* operator[](int i) { return d[i]; }
     /// const version of the above
@@ -181,15 +179,15 @@ class SymRep {
 
     /// This performs the transform r * this * r~
     SymRep transform(const SymRep& r) const;
-    
+
     /// Set equal to a unit matrix
     void unit() {
       zero(); d[0][0] = d[1][1] = d[2][2] = d[3][3] = d[4][4] = 1.0;
     }
-    
+
     /// Set equal to the identity
     void E() { unit(); }
-    
+
     /// Set equal to an inversion
     void i() { zero(); d[0][0] = d[1][1] = d[2][2] = d[3][3] = d[4][4] = -1.0;}
 
@@ -205,14 +203,14 @@ class SymRep {
     /// Set equal to a clockwise rotation by 2pi/n
     void rotation(int n);
     void rotation(double theta);
-    
+
     /// Set equal to C2 about the x axis
     void c2_x();
 
     /// Set equal to C2 about the x axis
     void c2_y();
 
-    /// print the matrix 
+    /// print the matrix
     // void print(std::ostream& =ExEnv::out0()) const;
 };
 
@@ -265,7 +263,7 @@ class IrreducibleRepresentation {
 
     /// Initialize the order, degeneracy, and Mulliken symbol of the irrep.
     void init(int =0, int =0, const char* =0, const char* =0);
-    
+
     /// Returns the order of the group.
     int order() const { return g; }
 
@@ -300,7 +298,7 @@ class IrreducibleRepresentation {
 
     /// Returns the element (x1,x2) of the i'th representation matrix.
     double p(int x1, int x2, int i) const { return rep[i](x1,x2); }
-    
+
     /** Returns the character for the d'th contribution to the i'th
      representation matrix. */
     double p(int d, int i) const {
@@ -311,7 +309,7 @@ class IrreducibleRepresentation {
     /** This prints the irrep to the given file, or stdout if none is
      given.  The second argument is an optional string of spaces to offset
      by. */
-    // void print(std::ostream& =ExEnv::out0()) const;
+     void print(FILE *out=outfile) const;
 };
 
 // ///////////////////////////////////////////////////////////
@@ -389,7 +387,7 @@ class CharacterTable {
 
     /// Returns the index of the symop which is the inverse of symop[i].
     int inverse(int i) const { return _inv[i]; }
-    
+
     int ncomp() const {
       int ret=0;
       for (int i=0; i < nirrep_; i++) {
@@ -420,9 +418,9 @@ class CharacterTable {
       }
       return -1;
     }
-    
+
     /// This prints the irrep to the given file, or stdout if none is given.
-    // void print(std::ostream& =ExEnv::out0()) const;
+     void print(FILE *out=outfile) const;
 };
 
 // ///////////////////////////////////////////////////////////

@@ -119,30 +119,25 @@ CharacterTable&
     return *this;
 }
 
-// void
-// CharacterTable::print(ostream& os) const
-// {
-//   if (!g || !nirrep_) return;
-// 
-//   int i;
-// 
-//   os << indent << "point group " << symb << endl << endl;
-// 
-//   for (i=0; i < nirrep_; i++)
-//     gamma_[i].print(os);
-// 
-//   os << endl << indent << "symmetry operation matrices:"
-//      << endl << endl << incindent;
-//   for (i=0; i < g; i++)
-//     symop[i].print(os);
-// 
-//   os << decindent << indent << "inverse symmetry operation matrices:"
-//      << endl << endl << incindent;
-//   for (i=0; i < g; i++)
-//     symop[inverse(i)].print(os);
-// 
-//   os << decindent;
-// }
+void CharacterTable::print(FILE *out) const
+{
+    if (!g || !nirrep_) return;
+
+    int i;
+
+    fprintf(out, "  point group %s\n\n", symb);
+
+    for (i=0; i < nirrep_; i++)
+        gamma_[i].print(out);
+
+    fprintf(out, "\n  symmetry operation matrices:\n\n");
+    for (i=0; i < g; i++)
+        symop[i].print(out);
+
+    fprintf(out, "\n  inverse symmetry operation matrices:\n\n");
+    for (i=0; i < g; i++)
+        symop[inverse(i)].print(out);
+}
 
 CharacterTable::CharacterTable(const char *cpg, const SymmetryOperation& frame)
     : g(0), nt(0), pg(C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(0)
@@ -163,15 +158,10 @@ CharacterTable::CharacterTable(const char *cpg, const SymmetryOperation& frame)
     symb[i] = '\0';
 
     if (parse_symbol() < 0) {
-        // ExEnv::errn() << "CharacterTable::CharacterTable: invalid point group "
-        //             << cpg << endl;
-        // exit(1);
         throw PSIEXCEPTION("CharacterTable::CharacterTable: invalid point group");
     }
 
     if (make_table() < 0) {
-        // ExEnv::errn() << "CharacterTable::CharacterTable: could not make table" << endl;
-        // exit(1);
         throw PSIEXCEPTION("CharacterTable::CharacterTable: could not make table");
     }
 
@@ -212,8 +202,7 @@ CharacterTable::CharacterTable(const char *cpg)
     }
 }
 
-int
-    CharacterTable::parse_symbol()
+int CharacterTable::parse_symbol()
 {
   // default to C1 symmetry
     g=1; pg=C1; nt=1; nirrep_=1;

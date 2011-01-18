@@ -14,6 +14,8 @@ class shared_ptr;
 
 namespace psi {
 
+class Matrix;
+
 class OneBodySOInt
 {
 protected:
@@ -66,6 +68,9 @@ public:
     const double *buffer() const { return buffer_; }
 
     virtual void compute_shell(int, int, int, int);
+
+    /// Computes all integrals and stores them in result
+    void compute(boost::shared_ptr<Matrix> result);
 };
 
 }

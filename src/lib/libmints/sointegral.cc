@@ -4,6 +4,7 @@
 #include "gshell.h"
 #include "integral.h"
 #include "sobasis.h"
+#include "matrix.h"
 
 #include <boost/shared_ptr.hpp>
 
@@ -93,11 +94,27 @@ void OneBodySOInt::compute_shell(int ish, int jsh)
 
 #ifdef DEBUG
                     if (fabs(aobuf[jaooff]*jcoef) > 1.0e-10) {
-                        fprintf(outfile, "(%d|%d) += %f * (%d|%d): %f -> %f  jsooff = %d\n",isofunc, jsofunc, jcoef, iaofunc, jaofunc, aobuf[jaooff], buffer_[jsooff], jsooff);
+                        fprintf(outfile, "(%2d|%2d) += %+6f * (%2d|%2d): %+6f -> %+6f  jsooff = %2d\n",isofunc, jsofunc, jcoef, iaofunc, jaofunc, aobuf[jaooff], buffer_[jsooff], jsooff);
                     }
 #endif
                 }
             }
+        }
+    }
+}
+
+void OneBodySOInt::compute(boost::shared_ptr<Matrix> result)
+{
+    // Do not worry about zeroing out result
+    int ns1 = b1_->nshell();
+    int ns2 = b2_->nshell();
+
+    for (int i=0; i<ns1; ++i) {
+        for (int j=0; j<ns2; ++j) {
+            // Compute the shell
+            compute_shell(i, j);
+            // Transform the shell to SO basis
+            so_transform(result, i, j);
         }
     }
 }
