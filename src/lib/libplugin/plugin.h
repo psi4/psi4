@@ -1,19 +1,25 @@
-#include <psiconfig.h>
+#ifndef __psi4_src_lib_libplugin_plugin_h
+#define __psi4_src_lib_libplugin_plugin_h
+
 #include <psi4-dec.h>
-#include <libchkpt/chkpt.hpp>
-#include <libparallel/parallel.h>
+
+namespace boost {
+template<class T> class shared_ptr;
+}
 
 namespace psi {
+    class Chkpt;
+    class Communicator;
 
     // Useful typedef's
     typedef PsiReturnType (*plugin_t)(Options &);
     typedef int (*read_options_t)(std::string, Options&);
-    typedef void (*init_plugin_t)(const shared_ptr<Communicator>& comm, const Process::Environment& env,
-                                  const shared_ptr<Chkpt> &chkpt, const shared_ptr<PSIO> &psio);
+    typedef void (*init_plugin_t)(const boost::shared_ptr<Communicator>& comm, const Process::Environment& env,
+                                  const boost::shared_ptr<Chkpt> &chkpt, const boost::shared_ptr<PSIO> &psio);
 
     // The following lines are used in plugins
-    extern "C" void init_plugin(const shared_ptr<psi::Communicator>& comm, const psi::Process::Environment& env,
-                                const shared_ptr<Chkpt> &chkpt, const shared_ptr<PSIO> &psio);
+    extern "C" void init_plugin(const boost::shared_ptr<psi::Communicator>& comm, const psi::Process::Environment& env,
+                                const boost::shared_ptr<Chkpt> &chkpt, const boost::shared_ptr<PSIO> &psio);
     #define INIT_PLUGIN psi::init_plugin_t init_plugin_p = &psi::init_plugin;
 
     // The following lines are used by the PSI4 driver.
@@ -49,4 +55,6 @@ namespace psi {
     */
     void plugin_close(const plugin_info& plugin);
 }
+
+#endif
 
