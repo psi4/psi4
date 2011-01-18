@@ -1498,10 +1498,10 @@ void RHF::form_G_from_direct_integrals()
 
                     // For each num_unique_pk we need to call TwoBodySOInt::compute
                     for (int upk=0; upk<num_unique_pk; ++upk) {
-                        fprintf(outfile, "computing shell (%d %d %d %d)\n", usi_arr[upk],
-                                                 usj_arr[upk],
-                                                 usk_arr[upk],
-                                                 usl_arr[upk]);
+//                        fprintf(outfile, "computing shell (%d %d %d %d)\n", usi_arr[upk],
+//                                                 usj_arr[upk],
+//                                                 usk_arr[upk],
+//                                                 usl_arr[upk]);
                         eri_->compute_shell(usi_arr[upk],
                                                  usj_arr[upk],
                                                  usk_arr[upk],
@@ -1516,7 +1516,7 @@ void RHF::form_G_from_direct_integrals()
         }
     }
 
-    fprintf(outfile, " computed %d integrals\n", compute_G.counter);
+//    fprintf(outfile, " computed %d integrals\n", compute_G.counter);
 
     timer_off("form_G_from_direct_integrals");
 }

@@ -74,10 +74,10 @@ void Wavefunction::common_init()
     nso_ = basisset_->nbf();
     nmo_ = basisset_->nbf();
     for (int k = 0; k < 8; k++) {
-        nsopi_[k] = 0; 
+        nsopi_[k] = 0;
         nmopi_[k] = 0;
-        doccpi_[k] = 0; 
-        soccpi_[k] = 0; 
+        doccpi_[k] = 0;
+        soccpi_[k] = 0;
     }
 
     // Read in the debug flag
@@ -125,3 +125,17 @@ void Wavefunction::initialize_singletons()
     done = true;
 }
 
+shared_ptr<Molecule> Wavefunction::molecule() const
+{
+    return molecule_;
+}
+
+boost::shared_ptr<BasisSet> Wavefunction::basisset() const
+{
+    return basisset_;
+}
+
+boost::shared_ptr<SOBasis> Wavefunction::sobasisset() const
+{
+    return sobasisset_;
+}

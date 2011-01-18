@@ -35,14 +35,14 @@ class SOBasis;
 class Wavefunction {
 protected:
 
-    shared_ptr<BasisSet> basisset_;
-    shared_ptr<SOBasis> sobasisset_;
-    shared_ptr<Molecule> molecule_;
-	Options & options_;
+    boost::shared_ptr<BasisSet> basisset_;
+    boost::shared_ptr<SOBasis> sobasisset_;
+    boost::shared_ptr<Molecule> molecule_;
+    Options & options_;
 
     // PSI file access variables
-    shared_ptr<PSIO> psio_;
-    shared_ptr<Chkpt> chkpt_;
+    boost::shared_ptr<PSIO> psio_;
+    boost::shared_ptr<Chkpt> chkpt_;
 
     MatrixFactory factory_;
     long int memory_;
@@ -59,11 +59,11 @@ protected:
     /// Number of frozen virtuals per irrep
     int frzvpi_[8];
 
-    
+
     /// Number of so per irrep
     int nsopi_[8];
     /// Number of mo per irrep
-    int nmopi_[8];    
+    int nmopi_[8];
 
     int nso_;
     int nmo_;
@@ -84,9 +84,9 @@ private:
 
 public:
     /// Set the PSIO object. Note: Wavefunction assumes ownership of the object. DO NOT DELETE!
-    Wavefunction(Options & options, shared_ptr<PSIO> psio);
-    Wavefunction(Options & options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
-    
+    Wavefunction(Options & options, boost::shared_ptr<PSIO> psio);
+    Wavefunction(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
+
     virtual ~Wavefunction();
 
     /// Compute energy. Subclasses override this function to compute its energy.
@@ -95,7 +95,12 @@ public:
     /// Initialize internal variables from checkpoint file.
     void init_with_chkpt();
 
-    shared_ptr<Molecule> molecule() { return molecule_; }
+    /// Returns the molecule object that pertains to this wavefunction.
+    boost::shared_ptr<Molecule> molecule() const;
+    /// Returns the basis set object that pertains to this wavefunction.
+    boost::shared_ptr<BasisSet> basisset() const;
+    /// Returns the SO basis set object that pertains to this wavefunction.
+    boost::shared_ptr<SOBasis> sobasisset() const;
 
     static void initialize_singletons();
 
