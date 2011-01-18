@@ -16,7 +16,7 @@ class Chkpt;
 
 class MOInfoSCF : public MOInfoBase {
 public:
-  MOInfoSCF(Options& options_,shared_ptr<Chkpt> chkpt_,bool silent_ = false);
+  MOInfoSCF(Options& options_, boost::shared_ptr<Chkpt> chkpt_,bool silent_ = false);
   ~MOInfoSCF();
 private:
   void read_mo_spaces();

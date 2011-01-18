@@ -26,6 +26,7 @@
 #include <libmints/pointgrp.h>
 #include <libfunctional/superfunctional.h>
 #include <libplugin/plugin.h>
+#include <libparallel/parallel.h>
 #include <map>
 
 #include <libpsio/psio.hpp>

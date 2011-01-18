@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
 
+#include <libchkpt/chkpt.hpp>
 #include <libmoinfo/libmoinfo.h>
 #include <libciomr/libciomr.h>
 #include <libutil/libutil.h>

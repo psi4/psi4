@@ -11,16 +11,16 @@
 #include <iostream>
 #include <cstdlib>
 
+// PSI C++ libraries
+#include <libpsio/psio.hpp>
+#include <libchkpt/chkpt.hpp>
+
 // PSI libraries
 #include <psifiles.h>
 #include <libciomr/libciomr.h>
 #include <libmoinfo/libmoinfo.h>
 #include <liboptions/liboptions.h>
 #include <libutil/libutil.h>
-
-// PSI C++ libraries
-#include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.hpp>
 
 #include "mcscf.h"
 #include "git.h"

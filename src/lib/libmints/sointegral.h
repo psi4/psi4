@@ -109,6 +109,13 @@ protected:
 
     template<typename TwoBodySOIntFunctor>
     void provide_IIII(int, int, int, int, TwoBodySOIntFunctor& body);
+
+    template<typename TwoBodySOIntFunctor>
+    void provide_IIJJ(int, int, int, int, TwoBodySOIntFunctor& body);
+
+    template<typename TwoBodySOIntFunctor>
+    void provide_IJKL(int, int, int, int, TwoBodySOIntFunctor& body);
+
 public:
     TwoBodySOInt(const boost::shared_ptr<TwoBodyInt>&,
                  const boost::shared_ptr<IntegralFactory>&);
@@ -230,8 +237,11 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
     }
 
     // OK, I'm playing around here. The following ONLY WORKS if the basis sets are the same
-    if (ish == jsh && ish == ksh && ish == lsh)
-        provide_IIII(ish, jsh, ksh, lsh, body);
+//    if (ish == jsh && ish == ksh && ish == lsh)
+//        provide_IIII(ish, jsh, ksh, lsh, body);
+//    else if (ish == jsh && ksh == lsh)
+//        provide_IIJJ(ish, jsh, ksh, lsh, body);
+    provide_IJKL(ish, jsh, ksh, lsh, body);
 
 //    const SOTransformShell &s1 = t1.aoshell[0];
 //    const SOTransformShell &s2 = t2.aoshell[0];
@@ -483,9 +493,289 @@ void TwoBodySOInt::provide_IIII(int ish, int jsh, int ksh, int lsh, TwoBodySOInt
                     int llrel = lrel;
 
                     if (fabs(buffer_[lsooff]) > 1.0e-16) {
-                        fprintf(outfile, "!(%d %d|%d %d) : %8.5lf (lsoff = %d)\n",
-                                isofunc, jsofunc, ksofunc, lsofunc,
-                                buffer_[lsooff], lsooff);
+//                        fprintf(outfile, "!(%d %d|%d %d) : %8.5lf (lsoff = %d)\n",
+//                                isofunc, jsofunc, ksofunc, lsofunc,
+//                                buffer_[lsooff], lsooff);
+                        // func off/on
+                        body(iiabs, jjabs, kkabs, llabs,
+                             iiirrep, iirel,
+                             jjirrep, jjrel,
+                             kkirrep, kkrel,
+                             llirrep, llrel,
+                             buffer_[lsooff]);
+                    }
+                }
+            }
+        }
+    }
+}
+
+template<typename TwoBodySOIntFunctor>
+void TwoBodySOInt::provide_IIJJ(int ish, int jsh, int ksh, int lsh, TwoBodySOIntFunctor& body)
+{
+    const double *aobuff = tb_->buffer();
+
+    const SOTransform &t1 = b1_->trans(ish);
+    const SOTransform &t2 = b2_->trans(jsh);
+    const SOTransform &t3 = b3_->trans(ksh);
+    const SOTransform &t4 = b4_->trans(lsh);
+
+    int nso1 = b1_->nfunction(ish);
+    int nso2 = b2_->nfunction(jsh);
+    int nso3 = b3_->nfunction(ksh);
+    int nso4 = b4_->nfunction(lsh);
+
+    int nao1 = b1_->naofunction(ish);
+    int nao2 = b2_->naofunction(jsh);
+    int nao3 = b3_->naofunction(ksh);
+    int nao4 = b4_->naofunction(lsh);
+
+    const SOTransformShell &s1 = t1.aoshell[0];
+    const SOTransformShell &s3 = t3.aoshell[0];
+
+    int iirrepoff[8];
+    int jirrepoff[8];
+
+    memset(iirrepoff, 0, sizeof(int) * 8);
+    memset(jirrepoff, 0, sizeof(int) * 8);
+
+    for (int h=1; h<b1_->nirrep(); ++h) {
+        iirrepoff[h] = iirrepoff[h-1] + b1_->nfunction_in_irrep(h-1);
+        jirrepoff[h] = jirrepoff[h-1] + b3_->nfunction_in_irrep(h-1);
+    }
+
+    for (int itr=0; itr<s1.nfunc; itr++) {
+        const SOTransformFunction &ifunc = s1.func[itr];
+        int isofunc = b1_->function_offset_within_shell(ish,
+                                                        ifunc.irrep) + ifunc.sofunc;
+        int irel = b1_->function_within_irrep(ish, isofunc);
+//        isofunc += ifunc.sofunc;
+        int isooff = isofunc;
+        int iabs = iirrepoff[ifunc.irrep] + irel;
+
+        for (int jtr=0; jtr<=itr; jtr++) {
+            const SOTransformFunction &jfunc = s1.func[jtr];
+            int jsofunc = b2_->function_offset_within_shell(jsh,
+                                                            jfunc.irrep) + jfunc.sofunc;
+            int jrel = b2_->function_within_irrep(jsh, jsofunc);
+//            jsofunc += jfunc.sofunc;
+            int jsooff = isooff*nso2 + jsofunc;
+            int jabs = iirrepoff[jfunc.irrep] + jrel;
+
+            for (int ktr=0; ktr<s3.nfunc; ktr++) {
+                const SOTransformFunction &kfunc = s3.func[ktr];
+                int ksofunc = b3_->function_offset_within_shell(ksh,
+                                                                kfunc.irrep) + kfunc.sofunc;
+                int krel = b3_->function_within_irrep(ksh, ksofunc);
+//                ksofunc += kfunc.sofunc;
+                int ksooff = jsooff*nso3 + ksofunc;
+                int kabs = jirrepoff[kfunc.irrep] + krel;
+
+                for (int ltr=0; ltr<=ktr; ltr++) {
+                    const SOTransformFunction &lfunc = s3.func[ltr];
+                    int lsofunc = b4_->function_offset_within_shell(lsh,
+                                                                    lfunc.irrep) + lfunc.sofunc;
+                    int lrel = b4_->function_within_irrep(lsh, lsofunc);
+//                    lsofunc += lfunc.sofunc;
+                    int lsooff = ksooff*nso4 + lsofunc;
+                    int labs = jirrepoff[lfunc.irrep] + lrel;
+
+                    int iiabs = iabs;
+                    int jjabs = jabs;
+                    int kkabs = kabs;
+                    int llabs = labs;
+
+                    int iiirrep = ifunc.irrep;
+                    int jjirrep = jfunc.irrep;
+                    int kkirrep = kfunc.irrep;
+                    int llirrep = lfunc.irrep;
+
+                    int iirel = irel;
+                    int jjrel = jrel;
+                    int kkrel = krel;
+                    int llrel = lrel;
+
+                    fprintf(outfile, "ifunc.sofunc = %d\n", ifunc.sofunc);
+                    fprintf(outfile, "jfunc.sofunc = %d\n", jfunc.sofunc);
+                    fprintf(outfile, "kfunc.sofunc = %d\n", kfunc.sofunc);
+                    fprintf(outfile, "lfunc.sofunc = %d\n", lfunc.sofunc);
+
+                    if (fabs(buffer_[lsooff]) > 1.0e-16) {
+//                        fprintf(outfile, "!(%d %d|%d %d) : %8.5lf (lsoff = %d)\n",
+//                                isofunc, jsofunc, ksofunc, lsofunc,
+//                                buffer_[lsooff], lsooff);
+                        if (iiabs >= kkabs) {
+                            // func off/on
+                            body(iiabs, jjabs, kkabs, llabs,
+                                 iiirrep, iirel,
+                                 jjirrep, jjrel,
+                                 kkirrep, kkrel,
+                                 llirrep, llrel,
+                                 buffer_[lsooff]);
+                        }
+                        else {
+                            body(kkabs, llabs, iiabs, jjabs,
+                                 kkirrep, kkrel,
+                                 llirrep, llrel,
+                                 iiirrep, iirel,
+                                 jjirrep, jjrel,
+                                 buffer_[lsooff]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+template<typename TwoBodySOIntFunctor>
+void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOIntFunctor& body)
+{
+    const double *aobuff = tb_->buffer();
+
+    const SOTransform &t1 = b1_->trans(ish);
+    const SOTransform &t2 = b2_->trans(jsh);
+    const SOTransform &t3 = b3_->trans(ksh);
+    const SOTransform &t4 = b4_->trans(lsh);
+
+    int nso1 = b1_->nfunction(ish);
+    int nso2 = b2_->nfunction(jsh);
+    int nso3 = b3_->nfunction(ksh);
+    int nso4 = b4_->nfunction(lsh);
+
+    int nao1 = b1_->naofunction(ish);
+    int nao2 = b2_->naofunction(jsh);
+    int nao3 = b3_->naofunction(ksh);
+    int nao4 = b4_->naofunction(lsh);
+
+    const SOTransformShell &s1 = t1.aoshell[0];
+    const SOTransformShell &s2 = t2.aoshell[0];
+    const SOTransformShell &s3 = t3.aoshell[0];
+    const SOTransformShell &s4 = t4.aoshell[0];
+
+    int iirrepoff[8];
+    int jirrepoff[8];
+
+    memset(iirrepoff, 0, sizeof(int) * 8);
+    memset(jirrepoff, 0, sizeof(int) * 8);
+
+    for (int h=1; h<b1_->nirrep(); ++h) {
+        iirrepoff[h] = iirrepoff[h-1] + b1_->nfunction_in_irrep(h-1);
+        jirrepoff[h] = jirrepoff[h-1] + b3_->nfunction_in_irrep(h-1);
+    }
+
+    for (int itr=0; itr<s1.nfunc; itr++) {
+        const SOTransformFunction &ifunc = s1.func[itr];
+        int isofunc = b1_->function_offset_within_shell(ish,
+                                                        ifunc.irrep) + ifunc.sofunc;
+        int irel = b1_->function_within_irrep(ish, isofunc);
+//        isofunc += ifunc.sofunc;
+        int isooff = isofunc;
+        int iabs = iirrepoff[ifunc.irrep] + irel;
+
+        for (int jtr=0; jtr<s2.nfunc; jtr++) {
+            const SOTransformFunction &jfunc = s2.func[jtr];
+            int jsofunc = b2_->function_offset_within_shell(jsh,
+                                                            jfunc.irrep) + jfunc.sofunc;
+            int jrel = b2_->function_within_irrep(jsh, jsofunc);
+//            jsofunc += jfunc.sofunc;
+            int jsooff = isooff*nso2 + jsofunc;
+            int jabs = iirrepoff[jfunc.irrep] + jrel;
+
+            for (int ktr=0; ktr<s3.nfunc; ktr++) {
+                const SOTransformFunction &kfunc = s3.func[ktr];
+                int ksofunc = b3_->function_offset_within_shell(ksh,
+                                                                kfunc.irrep) + kfunc.sofunc;
+                int krel = b3_->function_within_irrep(ksh, ksofunc);
+//                ksofunc += kfunc.sofunc;
+                int ksooff = jsooff*nso3 + ksofunc;
+                int kabs = jirrepoff[kfunc.irrep] + krel;
+
+                for (int ltr=0; ltr<s4.nfunc; ltr++) {
+                    const SOTransformFunction &lfunc = s4.func[ltr];
+                    int lsofunc = b4_->function_offset_within_shell(lsh,
+                                                                    lfunc.irrep) + lfunc.sofunc;
+                    int lrel = b4_->function_within_irrep(lsh, lsofunc);
+//                    lsofunc += lfunc.sofunc;
+                    int lsooff = ksooff*nso4 + lsofunc;
+                    int labs = jirrepoff[lfunc.irrep] + lrel;
+
+                    int iiabs = iabs;
+                    int jjabs = jabs;
+                    int kkabs = kabs;
+                    int llabs = labs;
+
+                    int iiirrep = ifunc.irrep;
+                    int jjirrep = jfunc.irrep;
+                    int kkirrep = kfunc.irrep;
+                    int llirrep = lfunc.irrep;
+
+                    int iirel = irel;
+                    int jjrel = jrel;
+                    int kkrel = krel;
+                    int llrel = lrel;
+
+//                    fprintf(outfile, "ifunc.sofunc = %d\n", ifunc.sofunc);
+//                    fprintf(outfile, "jfunc.sofunc = %d\n", jfunc.sofunc);
+//                    fprintf(outfile, "kfunc.sofunc = %d\n", kfunc.sofunc);
+//                    fprintf(outfile, "lfunc.sofunc = %d\n", lfunc.sofunc);
+
+                    if (fabs(buffer_[lsooff]) > 1.0e-16) {
+                        if (ish == jsh) {
+                            if (iabs < jabs)
+                            continue;
+
+                            if (ksh == lsh) {
+                                if (kabs < labs)
+                                continue;
+                                if (INDEX2(iabs, jabs) < INDEX2(kabs, labs)) {
+                                    if (ish == ksh)   // IIII case
+                                    continue;
+                                    else {            // IIJJ case
+                                        SWAP_INDEX(ii, kk);
+                                        SWAP_INDEX(jj, ll);
+                                    }
+                                }
+                            }
+                            else{                     // IIJK case
+                                if (labs > kabs) {
+                                    SWAP_INDEX(kk, ll);
+                                }
+                                if (INDEX2(iabs, jabs) < INDEX2(kabs, labs)) {
+                                    SWAP_INDEX(ii, kk);
+                                    SWAP_INDEX(jj, ll);
+                                }
+                            }
+                        }
+                        else {
+                            if (ksh == lsh) {         // IJKK case
+                                if (kabs < labs)
+                                continue;
+                                if (iabs < jabs) {
+                                    SWAP_INDEX(ii, jj);
+                                }
+                                if (INDEX2(iabs, jabs) < INDEX2(kabs, labs)) {
+                                    SWAP_INDEX(ii, kk);
+                                    SWAP_INDEX(jj, ll);
+                                }
+                            }
+                            else {                   // IJIJ case
+                                if (ish == ksh && jsh == lsh && INDEX2(iabs, jabs) < INDEX2(kabs, labs))
+                                continue;
+                                // IJKL case
+                                if (iabs < jabs) {
+                                    SWAP_INDEX(ii, jj);
+                                }
+                                if (kabs < labs) {
+                                    SWAP_INDEX(kk, ll);
+                                }
+                                if (INDEX2(iabs, jabs) < INDEX2(kabs, labs)) {
+                                    SWAP_INDEX(ii, kk);
+                                    SWAP_INDEX(jj, ll);
+                                }
+                            }
+                        }
+
                         // func off/on
                         body(iiabs, jjabs, kkabs, llabs,
                              iiirrep, iirel,
