@@ -394,28 +394,28 @@ int ccenergy(Options &options)
   chkpt_close();
 
   /* Write pertinent data to energy.dat for Dr. Yamaguchi */
-  if( params.wfn == "CCSD" || params.wfn == "BCCD" ) {
-
-    chkpt_init(PSIO_OPEN_OLD);
-    natom = chkpt_rd_natom();
-    geom = chkpt_rd_geom();
-    zvals = chkpt_rd_zvals();
-    chkpt_close();
-
-    ffile(&efile, "energy.dat",1);
-    fprintf(efile, "*\n");
-    for(i=0; i < natom; i++)
-      fprintf(efile, " %4d   %5.2f     %13.10f    %13.10f    %13.10f\n",
-          i+1, zvals[i], geom[i][0], geom[i][1], geom[i][2]);
-    free_block(geom);  free(zvals);
-    fprintf(efile, "SCF(30)   %22.12f\n", moinfo.escf);
-    fprintf(efile, "REF(100)  %22.12f\n", moinfo.eref);
-    if( params.wfn == "CCSD" )
-      fprintf(efile, "CCSD      %22.12f\n", (moinfo.ecc+moinfo.eref));
-    else if( params.wfn == "BCCD" )
-      fprintf(efile, "BCCD      %22.12f\n", (moinfo.ecc+moinfo.eref));
-    fclose(efile);
-  }
+//  if( params.wfn == "CCSD" || params.wfn == "BCCD" ) {
+//
+//    chkpt_init(PSIO_OPEN_OLD);
+//    natom = chkpt_rd_natom();
+//    geom = chkpt_rd_geom();
+//    zvals = chkpt_rd_zvals();
+//    chkpt_close();
+//
+//    ffile(&efile, "energy.dat",1);
+//    fprintf(efile, "*\n");
+//    for(i=0; i < natom; i++)
+//      fprintf(efile, " %4d   %5.2f     %13.10f    %13.10f    %13.10f\n",
+//          i+1, zvals[i], geom[i][0], geom[i][1], geom[i][2]);
+//    free_block(geom);  free(zvals);
+//    fprintf(efile, "SCF(30)   %22.12f\n", moinfo.escf);
+//    fprintf(efile, "REF(100)  %22.12f\n", moinfo.eref);
+//    if( params.wfn == "CCSD" )
+//      fprintf(efile, "CCSD      %22.12f\n", (moinfo.ecc+moinfo.eref));
+//    else if( params.wfn == "BCCD" )
+//      fprintf(efile, "BCCD      %22.12f\n", (moinfo.ecc+moinfo.eref));
+//    fclose(efile);
+//  }
 
   /* Generate the spin-adapted RHF amplitudes for later codes */
   if(params.ref == 0) spinad_amps();

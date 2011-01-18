@@ -58,7 +58,8 @@ void get_moinfo(void)
   moinfo.orbspi = chkpt_rd_orbspi();
   moinfo.clsdpi = chkpt_rd_clsdpi();
   moinfo.openpi = chkpt_rd_openpi();
-  moinfo.usotao = chkpt_rd_usotao();
+  // TODO: Uncomment the following line.
+  //moinfo.usotao = chkpt_rd_usotao();
   if(params.ref == 0) moinfo.scf = chkpt_rd_scf();
 
   /* Dump the reference wave function ID to CC_INFO */

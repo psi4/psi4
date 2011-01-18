@@ -8,7 +8,7 @@ def run_scf(name, **kwargs):
     molecule = PsiMod.get_active_molecule()
     if (kwargs.has_key('molecule')):
         molecule = kwargs.pop('molecule')
- 
+
     if not molecule:
         raise ValueNotSet("no molecule found")
 
@@ -45,7 +45,7 @@ def scf_helper(name, **kwargs):
         PsiMod.set_option('DUAL_BASIS_SCF',basis)
         PsiMod.set_option('DUAL_BASIS',True)
         PsiMod.set_option('SCF_TYPE','DF')
-        
+
         PsiMod.print_out('\n')
         banner('Cast-up SCF Computation')
         PsiMod.print_out('\n')
@@ -54,7 +54,7 @@ def scf_helper(name, **kwargs):
         banner('3-21G/SAD Guess')
         PsiMod.print_out('\n')
 
-        PsiMod.scf()     
+        PsiMod.scf()
 
         PsiMod.IO.change_file_namespace(100,(namespace + ".guess"),namespace)
         PsiMod.IO.set_default_namespace(namespace)
@@ -72,12 +72,12 @@ def scf_helper(name, **kwargs):
         banner(name.upper())
         PsiMod.print_out('\n')
 
-        e_scf = PsiMod.scf()     
+        e_scf = PsiMod.scf()
     else:
 
         PsiMod.set_option("NO_INPUT",True)
         e_scf = PsiMod.scf()
-    
+
     return e_scf
 
 def run_ccsd(name, **kwargs):
@@ -98,7 +98,7 @@ def run_ccsd(name, **kwargs):
     # it to converge.
     run_scf("scf", **kwargs);
 
-    PsiMod.transqt()
+    PsiMod.transqt2()
     PsiMod.ccsort()
     PsiMod.ccenergy()
 

@@ -905,6 +905,11 @@ void RHF::save_information()
     // Print the final docc vector
     char **temp2 = molecule_->irrep_labels();
 
+    // TODO: Delete this as soon as possible!!!
+    // Can't believe I'm adding this...
+    chkpt_->wt_nirreps(factory_.nirreps());
+    chkpt_->wt_irr_labs(temp2);
+
     fprintf(outfile, "\n  Final occupation vector = (");
     for (int h=0; h<factory_.nirreps(); ++h) {
         fprintf(outfile, "%2d %3s ", doccpi_[h], temp2[h]);
@@ -965,7 +970,6 @@ void RHF::save_information()
         vec[i] = 0;
 
     if(Communicator::world->me() == 0) {
-        chkpt_->wt_nirreps(factory_.nirreps());
         chkpt_->wt_nmo(nmo_);
         chkpt_->wt_nso(basisset_->nbf());
         chkpt_->wt_nao(basisset_->nbf());
@@ -973,10 +977,12 @@ void RHF::save_information()
         chkpt_->wt_etot(E_);
         chkpt_->wt_escf(E_);
         chkpt_->wt_eref(E_);
+        chkpt_->wt_enuc(molecule_->nuclear_repulsion_energy());
         chkpt_->wt_orbspi(orbital_e_->dimpi());
         chkpt_->wt_clsdpi(doccpi_);
         chkpt_->wt_openpi(vec);
         chkpt_->wt_phase_check(0);
+        chkpt_->wt_sopi(nsopi_);
     }
 
     // Figure out frozen core orbitals
@@ -1026,6 +1032,11 @@ void RHF::save_information()
     if(Communicator::world->me() == 0)
         chkpt_->wt_scf(vectors);
     free_block(vectors);
+
+    // Close the chkpt file.
+    // TODO: Implement wavefunction close out.
+
+    psio_->close(PSIF_CHKPT, 1);
 }
 
 void RHF::save_fock()
