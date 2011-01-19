@@ -267,6 +267,7 @@ Molecule& Molecule::operator=(const Molecule& other)
     nequiv_         = 0;
     equiv_          = 0;
     atom_to_unique_ = 0;
+    symmetryFromInput_ = other.symmetryFromInput_;
     form_symmetry_information();
 
     atoms_.clear();
