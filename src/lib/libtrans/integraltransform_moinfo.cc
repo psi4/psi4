@@ -2,6 +2,8 @@
 #include <libchkpt/chkpt.hpp>
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
+#include <libmints/molecule.h>
+#include <libmints/wavefunction.h>
 #include <libqt/qt.h>
 #include <sstream>
 #include "mospace.h"
@@ -14,19 +16,20 @@ using namespace psi;
 void
 IntegralTransform::raid_checkpoint()
 {
-    _nirreps = _chkpt->rd_nirreps();
-    _nmo     = _chkpt->rd_nmo();
-    _nso     = _chkpt->rd_nso();
-    _nao     = _chkpt->rd_nao();
-    _labels  = _chkpt->rd_irr_labs();
-    _enuc    = _chkpt->rd_enuc();
-    _escf    = _chkpt->rd_escf();
-    _sopi    = _chkpt->rd_sopi();
-    _mopi    = _chkpt->rd_orbspi();
-    _clsdpi  = _chkpt->rd_clsdpi();
-    _openpi  = _chkpt->rd_openpi();
-    _frzcpi  = _chkpt->rd_frzcpi();
-    _frzvpi  = _chkpt->rd_frzvpi();
+    _labels  = Process::environment.molecule()->irrep_labels();
+    _nirreps = Process::environment.reference_wavefunction()->get_nirreps();
+    _nmo     = Process::environment.reference_wavefunction()->get_nmo();
+    _nso     = Process::environment.reference_wavefunction()->get_nso();
+    _sopi    = Process::environment.reference_wavefunction()->get_nsopi();
+    _mopi    = Process::environment.reference_wavefunction()->get_nmopi();
+    // TODO This is a temporary fix, so that the MO coefficients can be read from chkpt.
+    // Eventually they should just be read from Wavefunction
+    _chkpt->wt_sopi(_sopi);
+    _chkpt->wt_orbspi(_mopi);
+    _clsdpi  = Process::environment.reference_wavefunction()->get_doccpi();
+    _openpi  = Process::environment.reference_wavefunction()->get_soccpi();
+    _frzcpi  = Process::environment.reference_wavefunction()->get_frzcpi();
+    _frzvpi  = Process::environment.reference_wavefunction()->get_frzvpi();
     _nTriSo  = _nso * (_nso + 1) / 2;
     _nTriMo  = _nmo * (_nmo + 1) / 2;
     _sosym   = init_int_array(_nso);

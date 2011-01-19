@@ -225,8 +225,6 @@ class IntegralTransform{
         int _nTriSo;
         // The number of pairs of molecular orbitals
         int _nTriMo;
-        // The number of atomic orbitals
-        int _nao;
         // The number of frozen doubly occupied orbitals
         int _nfzc;
         // The number of frozen virtual orbitals
@@ -235,10 +233,6 @@ class IntegralTransform{
         char *_spaces;
         // An array containing labels for each irrep
         char **_labels;
-        // The nuclear repulsion energy
-        double _enuc;
-        // The SCF energy (from the checkpoint file)
-        double _escf;
         // The definition of zero
         double _tolerance;
         // The amount of memory, in MB
