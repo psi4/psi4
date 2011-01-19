@@ -31,7 +31,7 @@ Properties::~Properties()
 shared_ptr<Properties> Properties::get_testbed()
 {
     int npoints = 23;
-    Properties * props = new Properties(BasisSet::zero_basis_set(), npoints);
+    Properties * props = new Properties(BasisSet::zero_ao_basis_set(), npoints);
     props->setTrueSize(npoints);
     props->setToComputeDensity(true);
     props->setToComputeDensityGradient(true);
@@ -39,37 +39,37 @@ shared_ptr<Properties> Properties::get_testbed()
 
     int i = 0;
 
-    double* rho_a_ = props->rho_a_;    
-    double* rho_b_ = props->rho_b_;    
-    double* gamma_aa_ = props->gamma_aa_;    
-    double* gamma_ab_ = props->gamma_ab_;    
-    double* gamma_bb_ = props->gamma_bb_;    
-    double* tau_a_ = props->tau_a_;    
-    double* tau_b_ = props->tau_b_;    
+    double* rho_a_ = props->rho_a_;
+    double* rho_b_ = props->rho_b_;
+    double* gamma_aa_ = props->gamma_aa_;
+    double* gamma_ab_ = props->gamma_ab_;
+    double* gamma_bb_ = props->gamma_bb_;
+    double* tau_a_ = props->tau_a_;
+    double* tau_b_ = props->tau_b_;
 
-    rho_a_[i] = 0.17E+01; rho_b_[i] = 0.17E+01; gamma_aa_[i] = 0.81E-11; gamma_ab_[i] = 0.81E-11; gamma_bb_[i] = 0.81E-11; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++;  
-    rho_a_[i] = 0.17E+01; rho_b_[i] = 0.17E+01; gamma_aa_[i] = 0.17E+01; gamma_ab_[i] = 0.17E+01; gamma_bb_[i] = 0.17E+01; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++; 
-    rho_a_[i] = 0.15E+01; rho_b_[i] = 0.15E+01; gamma_aa_[i] = 0.36E+02; gamma_ab_[i] = 0.36E+02; gamma_bb_[i] = 0.36E+02; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++; 
-    rho_a_[i] = 0.88E-01; rho_b_[i] = 0.88E-01; gamma_aa_[i] = 0.87E-01; gamma_ab_[i] = 0.87E-01; gamma_bb_[i] = 0.87E-01; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++; 
-    rho_a_[i] = 0.18E+04; rho_b_[i] = 0.18E+04; gamma_aa_[i] = 0.55E+00; gamma_ab_[i] = 0.55E+00; gamma_bb_[i] = 0.55E+00; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++; 
-    rho_a_[i] = 0.18E+04; rho_b_[i] = 0.18E+04; gamma_aa_[i] = 0.86E+04; gamma_ab_[i] = 0.86E+04; gamma_bb_[i] = 0.86E+04; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++; 
-    rho_a_[i] = 0.16E+04; rho_b_[i] = 0.16E+04; gamma_aa_[i] = 0.37E+10; gamma_ab_[i] = 0.37E+10; gamma_bb_[i] = 0.37E+10; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++; 
-    rho_a_[i] = 0.26E+00; rho_b_[i] = 0.26E+00; gamma_aa_[i] = 0.28E+00; gamma_ab_[i] = 0.28E+00; gamma_bb_[i] = 0.28E+00; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++; 
-    rho_a_[i] = 0.53E+05; rho_b_[i] = 0.53E+05; gamma_aa_[i] = 0.96E+05; gamma_ab_[i] = 0.96E+05; gamma_bb_[i] = 0.96E+05; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++; 
-    rho_a_[i] = 0.47E+05; rho_b_[i] = 0.47E+05; gamma_aa_[i] = 0.29E+14; gamma_ab_[i] = 0.29E+14; gamma_bb_[i] = 0.29E+14; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++; 
-    rho_a_[i] = 0.15E+00; rho_b_[i] = 0.15E+00; gamma_aa_[i] = 0.16E+00; gamma_ab_[i] = 0.16E+00; gamma_bb_[i] = 0.16E+00; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++; 
-    rho_a_[i] = 0.35E+01; rho_b_[i] = 0.00E+00; gamma_aa_[i] = 0.46E-10; gamma_ab_[i] = 0.00E+00; gamma_bb_[i] = 0.00E+00; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++; 
-    rho_a_[i] = 0.35E+01; rho_b_[i] = 0.00E+00; gamma_aa_[i] = 0.34E+01; gamma_ab_[i] = 0.00E+00; gamma_bb_[i] = 0.00E+00; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++; 
-    rho_a_[i] = 0.30E+01; rho_b_[i] = 0.00E+00; gamma_aa_[i] = 0.20E+03; gamma_ab_[i] = 0.00E+00; gamma_bb_[i] = 0.00E+00; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++; 
-    rho_a_[i] = 0.58E-01; rho_b_[i] = 0.00E+00; gamma_aa_[i] = 0.47E-01; gamma_ab_[i] = 0.00E+00; gamma_bb_[i] = 0.00E+00; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++; 
-    rho_a_[i] = 0.82E+02; rho_b_[i] = 0.81E+02; gamma_aa_[i] = 0.49E+07; gamma_ab_[i] = 0.49E+07; gamma_bb_[i] = 0.49E+07; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++; 
-    rho_a_[i] = 0.39E+02; rho_b_[i] = 0.38E+02; gamma_aa_[i] = 0.81E+06; gamma_ab_[i] = 0.82E+06; gamma_bb_[i] = 0.82E+06; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++; 
-    rho_a_[i] = 0.13E+00; rho_b_[i] = 0.95E-01; gamma_aa_[i] = 0.15E+00; gamma_ab_[i] = 0.18E+00; gamma_bb_[i] = 0.22E+00; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++; 
-    rho_a_[i] = 0.78E-01; rho_b_[i] = 0.31E-01; gamma_aa_[i] = 0.41E-02; gamma_ab_[i] = 0.38E-02; gamma_bb_[i] = 0.36E-02; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++; 
-    rho_a_[i] = 0.50E+02; rho_b_[i] = 0.49E+02; gamma_aa_[i] = 0.11E+06; gamma_ab_[i] = 0.11E+06; gamma_bb_[i] = 0.11E+06; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++; 
-    rho_a_[i] = 0.40E+02; rho_b_[i] = 0.40E+02; gamma_aa_[i] = 0.99E+05; gamma_ab_[i] = 0.98E+05; gamma_bb_[i] = 0.98E+05; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++; 
-    rho_a_[i] = 0.12E+00; rho_b_[i] = 0.10E+00; gamma_aa_[i] = 0.12E+00; gamma_ab_[i] = 0.13E+00; gamma_bb_[i] = 0.14E+00; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++; 
-    rho_a_[i] = 0.48E-01; rho_b_[i] = 0.25E-01; gamma_aa_[i] = 0.46E-02; gamma_ab_[i] = 0.44E-02; gamma_bb_[i] = 0.41E-02; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++; 
+    rho_a_[i] = 0.17E+01; rho_b_[i] = 0.17E+01; gamma_aa_[i] = 0.81E-11; gamma_ab_[i] = 0.81E-11; gamma_bb_[i] = 0.81E-11; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++;
+    rho_a_[i] = 0.17E+01; rho_b_[i] = 0.17E+01; gamma_aa_[i] = 0.17E+01; gamma_ab_[i] = 0.17E+01; gamma_bb_[i] = 0.17E+01; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++;
+    rho_a_[i] = 0.15E+01; rho_b_[i] = 0.15E+01; gamma_aa_[i] = 0.36E+02; gamma_ab_[i] = 0.36E+02; gamma_bb_[i] = 0.36E+02; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++;
+    rho_a_[i] = 0.88E-01; rho_b_[i] = 0.88E-01; gamma_aa_[i] = 0.87E-01; gamma_ab_[i] = 0.87E-01; gamma_bb_[i] = 0.87E-01; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++;
+    rho_a_[i] = 0.18E+04; rho_b_[i] = 0.18E+04; gamma_aa_[i] = 0.55E+00; gamma_ab_[i] = 0.55E+00; gamma_bb_[i] = 0.55E+00; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++;
+    rho_a_[i] = 0.18E+04; rho_b_[i] = 0.18E+04; gamma_aa_[i] = 0.86E+04; gamma_ab_[i] = 0.86E+04; gamma_bb_[i] = 0.86E+04; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++;
+    rho_a_[i] = 0.16E+04; rho_b_[i] = 0.16E+04; gamma_aa_[i] = 0.37E+10; gamma_ab_[i] = 0.37E+10; gamma_bb_[i] = 0.37E+10; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++;
+    rho_a_[i] = 0.26E+00; rho_b_[i] = 0.26E+00; gamma_aa_[i] = 0.28E+00; gamma_ab_[i] = 0.28E+00; gamma_bb_[i] = 0.28E+00; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++;
+    rho_a_[i] = 0.53E+05; rho_b_[i] = 0.53E+05; gamma_aa_[i] = 0.96E+05; gamma_ab_[i] = 0.96E+05; gamma_bb_[i] = 0.96E+05; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++;
+    rho_a_[i] = 0.47E+05; rho_b_[i] = 0.47E+05; gamma_aa_[i] = 0.29E+14; gamma_ab_[i] = 0.29E+14; gamma_bb_[i] = 0.29E+14; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++;
+    rho_a_[i] = 0.15E+00; rho_b_[i] = 0.15E+00; gamma_aa_[i] = 0.16E+00; gamma_ab_[i] = 0.16E+00; gamma_bb_[i] = 0.16E+00; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++;
+    rho_a_[i] = 0.35E+01; rho_b_[i] = 0.00E+00; gamma_aa_[i] = 0.46E-10; gamma_ab_[i] = 0.00E+00; gamma_bb_[i] = 0.00E+00; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++;
+    rho_a_[i] = 0.35E+01; rho_b_[i] = 0.00E+00; gamma_aa_[i] = 0.34E+01; gamma_ab_[i] = 0.00E+00; gamma_bb_[i] = 0.00E+00; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++;
+    rho_a_[i] = 0.30E+01; rho_b_[i] = 0.00E+00; gamma_aa_[i] = 0.20E+03; gamma_ab_[i] = 0.00E+00; gamma_bb_[i] = 0.00E+00; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++;
+    rho_a_[i] = 0.58E-01; rho_b_[i] = 0.00E+00; gamma_aa_[i] = 0.47E-01; gamma_ab_[i] = 0.00E+00; gamma_bb_[i] = 0.00E+00; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++;
+    rho_a_[i] = 0.82E+02; rho_b_[i] = 0.81E+02; gamma_aa_[i] = 0.49E+07; gamma_ab_[i] = 0.49E+07; gamma_bb_[i] = 0.49E+07; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++;
+    rho_a_[i] = 0.39E+02; rho_b_[i] = 0.38E+02; gamma_aa_[i] = 0.81E+06; gamma_ab_[i] = 0.82E+06; gamma_bb_[i] = 0.82E+06; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++;
+    rho_a_[i] = 0.13E+00; rho_b_[i] = 0.95E-01; gamma_aa_[i] = 0.15E+00; gamma_ab_[i] = 0.18E+00; gamma_bb_[i] = 0.22E+00; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++;
+    rho_a_[i] = 0.78E-01; rho_b_[i] = 0.31E-01; gamma_aa_[i] = 0.41E-02; gamma_ab_[i] = 0.38E-02; gamma_bb_[i] = 0.36E-02; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++;
+    rho_a_[i] = 0.50E+02; rho_b_[i] = 0.49E+02; gamma_aa_[i] = 0.11E+06; gamma_ab_[i] = 0.11E+06; gamma_bb_[i] = 0.11E+06; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++;
+    rho_a_[i] = 0.40E+02; rho_b_[i] = 0.40E+02; gamma_aa_[i] = 0.99E+05; gamma_ab_[i] = 0.98E+05; gamma_bb_[i] = 0.98E+05; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++;
+    rho_a_[i] = 0.12E+00; rho_b_[i] = 0.10E+00; gamma_aa_[i] = 0.12E+00; gamma_ab_[i] = 0.13E+00; gamma_bb_[i] = 0.14E+00; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++;
+    rho_a_[i] = 0.48E-01; rho_b_[i] = 0.25E-01; gamma_aa_[i] = 0.46E-02; gamma_ab_[i] = 0.44E-02; gamma_bb_[i] = 0.41E-02; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++;
 
     return (shared_ptr<Properties>) props;
 }

@@ -59,7 +59,7 @@ void SAPT::get_ribasis()
       options_.get_str("BASIS_PATH")));
     ribasis_ = BasisSet::construct(parser, molecule_, options_.get_str(
       "RI_BASIS_SAPT"));
-    zero_ = BasisSet::zero_basis_set();
+    zero_ = BasisSet::zero_ao_basis_set();
 }
 
 void SAPT::get_params()

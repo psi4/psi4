@@ -33,12 +33,12 @@ void HF::form_A()
     {
         fprintf(outfile,"Local SCF must run in C1.\n"); fflush(outfile);
         abort();
-    } 
-    int norbs = basisset_->nbf(); 
+    }
+    int norbs = basisset_->nbf();
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
     ribasis_ = BasisSet::construct(parser, molecule_, options_.get_str("RI_BASIS_SCF"));
     naux_fin_ = ribasis_->nbf();
-    
+
     //Form the schwarz sieve
     timer_on("Schwarz Sieve");
 
@@ -48,7 +48,7 @@ void HF::form_A()
     schwarz_shell_pairs_ = init_int_array(basisset_->nshell()*(basisset_->nshell()+1)/2);
     schwarz_fun_pairs_ = init_int_array(norbs*(norbs+1)/2);
     if (schwarz_ > 0.0) {
-        
+
         double* max_shell_val = init_array(basisset_->nshell()*(basisset_->nshell()+1)/2);
         double* max_fun_val = init_array(norbs*(norbs+1)/2);
         double max_global_val;
@@ -69,7 +69,7 @@ void HF::form_A()
                     omu = basisset_->shell(MU)->function_index() + mu;
                     for (nu=0; nu < numnu; ++nu) {
                         onu = basisset_->shell(NU)->function_index() + nu;
-                       
+
                         if (omu>=onu) {
                             index = mu*(numnu*nummu*numnu+numnu)+nu*(nummu*numnu+1);
                             //int check = mu*numnu*nummu*numnu+nu*nummu*numnu+mu*numnu+nu;
@@ -84,7 +84,7 @@ void HF::form_A()
                     }
                 }
             }
-        }       
+        }
         for (int ij = 0; ij < norbs*(norbs+1)/2; ij ++)
             if (max_fun_val[ij]*max_global_val>=schwarz_*schwarz_){
                 schwarz_fun_pairs_[ij] = 1;
@@ -96,7 +96,7 @@ void HF::form_A()
                 sig_shell_pairs_++;
             }
 
-        if (print_>4) {        
+        if (print_>4) {
             for (int i = 0, ij = 0; i<norbs; i++)
                 for (int j = 0; j<=i; j++, ij++)
                     fprintf(outfile,"   Function pair %d = (%d,%d), Max val %14.10f, Max Integral %14.10f, Significant %s\n",ij,i,j,max_fun_val[ij],max_fun_val[ij]*max_global_val,(schwarz_fun_pairs_[ij])?"YES":"NO");
@@ -109,13 +109,13 @@ void HF::form_A()
 
         free(max_fun_val);
         free(max_shell_val);
-    
+
         ntri_naive_ = sig_fun_pairs_; //Matrix size for most of the algorithm
         ntri_ = ntri_naive_; //For now!
 
     } else {
-        ntri_ = norbs*(norbs+1)/2; //Yeah, eat it 
-        ntri_naive_ = norbs*(norbs+1)/2; 
+        ntri_ = norbs*(norbs+1)/2; //Yeah, eat it
+        ntri_naive_ = norbs*(norbs+1)/2;
         sig_fun_pairs_ = ntri_;
         sig_shell_pairs_ = basisset_->nshell()*(basisset_->nshell()+1)/2;
         for (int ij = 0; ij < basisset_->nshell()*(basisset_->nshell()+1)/2; ij++)
@@ -137,24 +137,24 @@ void HF::form_A()
         df_storage_ = disk;
     else if (storage_type == "DEFAULT")
     {
-    	//set df_storage_ semi-heuristically based on available memory
-    	if (((long)((memA)*(1.0+MEMORY_SAFETY_FACTOR)))<(memory_/sizeof(double)))
+        //set df_storage_ semi-heuristically based on available memory
+        if (((long)((memA)*(1.0+MEMORY_SAFETY_FACTOR)))<(memory_/sizeof(double)))
             df_storage_ = core; //K only in-core
-    	else
+        else
             df_storage_ = disk; //Disk
     } else {
         throw std::domain_error("For Form A, IN_CORE and DISK are the only valid storage options");
-    }	
+    }
 
     if (df_storage_ == core)
-        fprintf(outfile,"\n  Density Fitting Algorithm proceeding In Core.\n"); 
+        fprintf(outfile,"\n  Density Fitting Algorithm proceeding In Core.\n");
     else if (df_storage_ == disk)
-        fprintf(outfile,"\n  Density Fitting Algorithm proceeding on Disk.\n"); 
+        fprintf(outfile,"\n  Density Fitting Algorithm proceeding on Disk.\n");
     fflush(outfile);
 
-    //It takes a lot of work to get a null basis with Psi4 
-    shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
-    
+    //It takes a lot of work to get a null basis with Psi4
+    shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+
     // Create integral factory for J (Fitting Matrix in form_B)
     IntegralFactory rifactory_J(ribasis_, zero, ribasis_, zero);
     shared_ptr<TwoBodyInt> Jint = shared_ptr<TwoBodyInt>(rifactory_J.eri());
@@ -162,10 +162,10 @@ void HF::form_A()
     // Integral buffer
     const double *Jbuffer = Jint->buffer();
 
-    // J Matrix (will later hold Jinv, 
+    // J Matrix (will later hold Jinv,
     //LAPACK is in place
     Winv_ = block_matrix(naux_fin_, naux_fin_);
-    
+
     timer_on("Form J Matrix;");
     // J_{MN} = (0M|N0)
     int index = 0;
@@ -193,7 +193,7 @@ void HF::form_A()
     }
 
     W_ = block_matrix(naux_fin_,naux_fin_);
-    
+
     //Copy J to W_ for later use (elements of K)
     C_DCOPY(naux_fin_*naux_fin_,Winv_[0],1,W_[0],1);
 
@@ -204,7 +204,7 @@ void HF::form_A()
 
     timer_off("Form J Matrix;");
     timer_on("Form J^-1");
-    
+
     //fprintf(outfile,"  J\n");
     //print_mat(Winv_,naux_fin_,naux_fin_,outfile);
 
@@ -212,10 +212,10 @@ void HF::form_A()
     int CholError = C_DPOTRF('L',naux_fin_,Winv_[0],naux_fin_);
     if (CholError !=0 )
         throw std::domain_error("J Matrix Cholesky Decomposition Failed!");
-    
+
     //fprintf(outfile,"  Jchol\n");
     //print_mat(Winv_,naux_fin_,naux_fin_,outfile);
-    
+
     //Inversion (in place)
     int IError = C_DPOTRI('L',naux_fin_,Winv_[0],naux_fin_);
     if (IError !=0 )
@@ -224,7 +224,7 @@ void HF::form_A()
     //LAPACK is smart and all, only uses half of the thing
     for (int m = 0; m<naux_fin_; m++)
         for (int n = 0; n<m; n++)
-            Winv_[m][n] = Winv_[n][m]; 
+            Winv_[m][n] = Winv_[n][m];
 
     if (print_>4) {
         fprintf(outfile,"  J^-1\n");
@@ -234,20 +234,20 @@ void HF::form_A()
     timer_off("Form J^-1");
 
     timer_on("Overall (A|mn)");
-    
+
     //Use ri_pair_mu_ and ri_pair_nu_ to keep track of things
     //Across schwarz sieve and unfortunate shell indexing
     ri_pair_nu_ = init_int_array(ntri_naive_);
     ri_pair_mu_ = init_int_array(ntri_naive_);
-  
+
     //double three_index_cutoff = options_.get_double("THREE_INDEX_CUTOFF");
- 
+
     if (df_storage_ == core)
     {
-    	IntegralFactory rifactory(basisset_, basisset_, ribasis_, zero);
+        IntegralFactory rifactory(basisset_, basisset_, ribasis_, zero);
         shared_ptr<TwoBodyInt> eri = shared_ptr<TwoBodyInt>(rifactory.eri());
         const double *buffer = eri->buffer();
-        A_ia_P_ = block_matrix(naux_fin_,ntri_naive_); 
+        A_ia_P_ = block_matrix(naux_fin_,ntri_naive_);
 
         int numP,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu;
         int start_index, delta_index, l_index;
@@ -279,13 +279,13 @@ void HF::form_A()
                                         ri_pair_nu_[l_index] = onu;
                                     }
                                     l_index++;
-                                } 
+                                }
                             }
                         }
                     }
                     start_index+=delta_index;
                 }
-            } 
+            }
         }
         if (print_>4) {
             fprintf(outfile,"  3-Index Tensor:\n");
@@ -299,12 +299,12 @@ void HF::form_A()
             fprintf(outfile,"\n");
         }
         //fflush(outfile);
-    } 
+    }
     else if (df_storage_ == disk)
     {
         psio_->open(PSIF_DFSCF_BJI,PSIO_OPEN_NEW);
         psio_address next_PSIF_DFSCF_BJI = PSIO_ZERO;
-        
+
         IntegralFactory rifactory(basisset_, basisset_, ribasis_,zero);
         shared_ptr<TwoBodyInt> eri = shared_ptr<TwoBodyInt>(rifactory.eri());
         const double *buffer = eri->buffer();
@@ -343,7 +343,7 @@ void HF::form_A()
                                         ri_pair_nu_[l_index] = onu;
                                     }
                                     l_index++;
-                                } 
+                                }
                             }
                         }
                     }
@@ -352,7 +352,7 @@ void HF::form_A()
             timer_on("(A|mn) disk");
             psio_->write(PSIF_DFSCF_BJI,"(A|mn) Three-Index Integrals",(char *) Temp1,sizeof(double)*ntri_*numP,next_PSIF_DFSCF_BJI,&next_PSIF_DFSCF_BJI);
             timer_off("(A|mn) disk");
-        } 
+        }
         if (print_>5) {
             fprintf(outfile,"  Pair Indices:\n");
             for (int left = 0; left<ntri_; left++)
@@ -395,7 +395,7 @@ void RHF::form_G_from_RI_local_K()
 {
     timer_on("Overall G");
     //Get norbs
-    int norbs = basisset_->nbf();     
+    int norbs = basisset_->nbf();
     //Zero the J matrix
     if (J_is_required_)
         J_->zero();
@@ -404,18 +404,18 @@ void RHF::form_G_from_RI_local_K()
         K_->zero();
 
     //D_->print(outfile);
-    
+
     //Rearrange the D matrix as a vector in terms of ri_pair indices
     //Off diagonal elements get 2x weight due to permutational symmetry
     double* DD;
     //Number of double occupied orbitals, LOCAL occupation matrix (ndocc x norbs, weird, but it won't matter)
     int ndocc = doccpi_[0];
     double** Cocc;
-    
+
     if (J_is_required_) {
-        DD = init_array(ntri_); 
+        DD = init_array(ntri_);
         for (int ij = 0; ij<ntri_; ij++) {
-            DD[ij] = D_->get(0,ri_pair_mu_[ij],ri_pair_nu_[ij]); 
+            DD[ij] = D_->get(0,ri_pair_mu_[ij],ri_pair_nu_[ij]);
             if (ri_pair_mu_[ij] != ri_pair_nu_[ij])
                 DD[ij] *= 2.0;
                 //only A irrep at the moment!!
@@ -426,7 +426,7 @@ void RHF::form_G_from_RI_local_K()
         //Localize the canonical orbitals (or propagate guess)
         if ((iteration_-1)%options_.get_int("STEPS_PER_LOCALIZE") == 0) {
             timer_on("Pipek-Mekey");
-            fully_localize_mos();      
+            fully_localize_mos();
             timer_off("Pipek-Mekey");
         } else {
             timer_on("Localization Update");
@@ -435,13 +435,13 @@ void RHF::form_G_from_RI_local_K()
         }
         //Form the domain bookmarks
         timer_on("Lodwin Analysis");
-        localized_Lodwin_charges(); 
+        localized_Lodwin_charges();
         timer_off("Lodwin Analysis");
         //Form the domain bookmarks
         timer_on("Form Domains");
-        form_domains(); 
+        form_domains();
         timer_off("Form Domains");
-        
+
         //Get the L matrix (The local one!!!)
         Cocc = block_matrix(ndocc,norbs);
         for (int i=0; i<norbs; i++) {
@@ -497,7 +497,7 @@ void RHF::form_G_from_RI_local_K()
             //QS is a temp matrix to allow for DGEMV into E by C_iv
             double **QS = block_matrix(max_fit_size_,max_domain_size_);
             //C_local is a local vector of significant n corresponding to a given m and i
-            double *C_local = init_array(max_domain_size_); 
+            double *C_local = init_array(max_domain_size_);
 
             //Main loop over i. Working in the MO basis is awesome
             for (int i = 0; i<ndocc; i++) {
@@ -507,23 +507,23 @@ void RHF::form_G_from_RI_local_K()
                 //Form J for this domain
                 timer_on("Form Local J");
                for (int A = 0, Pl = 0; A<domain_atoms_[i]; A++)
-                    for (int P = fit_fun_start_[i][A]; P<fit_fun_start_[i][A]+fit_fun_length_[i][A]; P++, Pl++)    
+                    for (int P = fit_fun_start_[i][A]; P<fit_fun_start_[i][A]+fit_fun_length_[i][A]; P++, Pl++)
                         for (int B = 0, Ql = 0; B<domain_atoms_[i]; B++)
                             for (int Q = fit_fun_start_[i][B]; Q<fit_fun_start_[i][B]+fit_fun_length_[i][B]; Q++, Ql++)
-                                 J[Pl][Ql] = W_[P][Q]; 
+                                 J[Pl][Ql] = W_[P][Q];
                 timer_off("Form Local J");
 
                 //fprintf(outfile,"  Local J:\n");
                 //print_mat(J,fit_size_[i],fit_size_[i],outfile);
                 //fprintf(outfile,"\n");
-  
+
                 //Invert J for this domain
                 timer_on("Local J^-1");
                 //Cholesky facotrization (in place)
                 int CholError = C_DPOTRF('L',fit_size_[i],J[0],max_fit_size_);
                 if (CholError !=0 )
                     throw std::domain_error("J Matrix Cholesky Decomposition Failed!");
-    
+
                 //Inversion (in place)
                 int IError = C_DPOTRI('L',fit_size_[i],J[0],max_fit_size_);
                 if (IError !=0 )
@@ -532,10 +532,10 @@ void RHF::form_G_from_RI_local_K()
                 //LAPACK is smart and all, only uses half of the thing
                 for (int m = 0; m<fit_size_[i]; m++)
                     for (int n = 0; n<m; n++)
-                        J[m][n] = J[n][m]; 
-                //J now contains inverse local fitting metric 
+                        J[m][n] = J[n][m];
+                //J now contains inverse local fitting metric
                 timer_off("Local J^-1");
-                
+
                 //fprintf(outfile,"  Local J^-1:\n");
                 //print_mat(J,fit_size_[i],fit_size_[i],outfile);
                 //fprintf(outfile,"\n");
@@ -554,14 +554,14 @@ void RHF::form_G_from_RI_local_K()
                                     ij = m*(m+1)/2+n;
                                 if (ri_back_map_[ij] >= 0) {
 
-                                    C_local[counter] = Cocc[i][n];                                    
+                                    C_local[counter] = Cocc[i][n];
                                     for (int C = 0, Pl = 0; C<domain_atoms_[i]; C++)
                                         for (int P = fit_fun_start_[i][C]; P<fit_fun_start_[i][C]+fit_fun_length_[i][C]; P++, Pl++)
                                             QS[Pl][counter] = A_ia_P_[P][ri_back_map_[ij]];
                                     counter++;
                                 }
                             }
-                        //fprintf(outfile,"  m = %d:\n",m); 
+                        //fprintf(outfile,"  m = %d:\n",m);
                         //fprintf(outfile,"  C_local:\n");
                         //for (int dumm = 0; dumm<counter; dumm++)
                             //fprintf(outfile,"    C[%d] = %14.10f\n",dumm+1,C_local[dumm]);
@@ -569,10 +569,10 @@ void RHF::form_G_from_RI_local_K()
 
                         //fprintf(outfile,"  QS local:\n");
                         //print_mat(QS,fit_size_[i],domain_size_[i],outfile);
-                        //fprintf(outfile,"\n");                       
+                        //fprintf(outfile,"\n");
 
                         //The number of significant n corresponding to this m is in counter
-                        C_DGEMV('N',fit_size_[i],counter,1.0,QS[0],max_domain_size_,C_local,1,0.0,&E[0][ml],max_domain_size_);   
+                        C_DGEMV('N',fit_size_[i],counter,1.0,QS[0],max_domain_size_,C_local,1,0.0,&E[0][ml],max_domain_size_);
                     }
                 timer_off("Local E");
 
@@ -588,7 +588,7 @@ void RHF::form_G_from_RI_local_K()
                 //fprintf(outfile,"  Local D:\n");
                 //print_mat(D,fit_size_[i],domain_size_[i],outfile);
                 //fprintf(outfile,"\n");
-                
+
                 //Form K contributions
                 timer_on("Local E DGEMM");
                 C_DGEMM('T','N',domain_size_[i],domain_size_[i],fit_size_[i],1.0,E[0],max_domain_size_,D[0],max_domain_size_,0.0,K[0],max_domain_size_);
@@ -597,19 +597,19 @@ void RHF::form_G_from_RI_local_K()
                 //fprintf(outfile,"  Local K:\n");
                 //print_mat(K,domain_size_[i],domain_size_[i],outfile);
                 //fprintf(outfile,"\n");
-                
+
                 //Move the local K matrix back up to global scope
                 for (int A=0, ml=0; A<domain_atoms_[i];A++)
-                    for (int m=domain_fun_start_[i][A]; m<domain_fun_start_[i][A]+domain_fun_length_[i][A]; m++, ml++)  
+                    for (int m=domain_fun_start_[i][A]; m<domain_fun_start_[i][A]+domain_fun_length_[i][A]; m++, ml++)
                         for (int B=0, nl=0; B<domain_atoms_[i];B++)
                             for (int n=domain_fun_start_[i][B]; n<domain_fun_start_[i][B]+domain_fun_length_[i][B]; n++, nl++)
-                                Ktemp[m][n] += K[ml][nl];  
+                                Ktemp[m][n] += K[ml][nl];
             }
             //Load K_ and you're done
             for (int m = 0; m<norbs; m++)
                 for (int n = 0; n<norbs; n++)
                     K_->set(0,m,n,Ktemp[m][n]);
-        
+
             free(C_local);
             free_block(J);
             free_block(QS);
@@ -624,11 +624,11 @@ void RHF::form_G_from_RI_local_K()
         throw std::domain_error("Sepecified storage algorithm is not correct for L-DF-SCF");
     }
 
-    if (J_is_required_) 
+    if (J_is_required_)
         free(DD);
-    if (K_is_required_) 
+    if (K_is_required_)
         free_block(Cocc);
-    
+
     //J_->print(outfile);
     //K_->print(outfile);
 
@@ -650,34 +650,34 @@ void RHF::propagate_local_mos()
     {
         fprintf(outfile,"Must run in C1 for now.\n"); fflush(outfile);
         abort();
-    } 
+    }
     if (print_ > 1)
         fprintf(outfile,"\n  Computing extrapolation of local orbitals.\n");
-    
-    int norbs = basisset_->nbf(); 
-    //Get the C matrix (occupied only) 
+
+    int norbs = basisset_->nbf();
+    //Get the C matrix (occupied only)
     int ndocc = doccpi_[0];
     double **Cocc = block_matrix(norbs,ndocc);
-    for (int i=0; i<norbs; i++) 
+    for (int i=0; i<norbs; i++)
         for (int j=0; j<ndocc; j++)
             Cocc[i][j] = C_->get(0,i,j);
-    
+
     double **T = block_matrix(norbs,norbs);
     {
         SharedMatrix temp(factory_.create_matrix("Temp"));
         //T = S_{mn}L_{ni}
         temp->gemm(false,false,1.0,S_,Lref_,0.0);
 
-        for (int i=0; i<norbs; i++) 
+        for (int i=0; i<norbs; i++)
             for (int j=0; j<norbs; j++)
                 T[i][j] = temp->get(0,i,j);
     }
 
-    double **W = block_matrix(ndocc,norbs); 
+    double **W = block_matrix(ndocc,norbs);
     //W = W_{oi} = C'T = C_{om}T_{ni}
     C_DGEMM('T','N',ndocc,norbs,norbs,1.0,Cocc[0],ndocc,T[0],norbs,0.0,W[0],norbs);
     free_block(T);
-    
+
     double **Q = block_matrix(norbs,norbs);
     //Q = Q_{ii} = W'W = W_{io}W_{oi}
     C_DGEMM('T','N',norbs,norbs,ndocc,1.0,W[0],norbs,W[0],norbs,0.0,Q[0],norbs);
@@ -701,7 +701,7 @@ void RHF::propagate_local_mos()
     // Now Q contains the eigenvectors of the original Q
     // Copy Q to Q_copy
     double **Q_copy = block_matrix(norbs, norbs);
-    C_DCOPY(norbs*norbs,Q[0],1,Q_copy[0],1); 
+    C_DCOPY(norbs*norbs,Q[0],1,Q_copy[0],1);
 
     // Now form Q^{-1/2} = U(T)*q^{-1/2}*U,
     // where q^{-1/2} is the diagonal matrix of the inverse square roots
@@ -709,7 +709,7 @@ void RHF::propagate_local_mos()
     for (int i=0; i<norbs; i++) {
         if (fabs(eigval[i]) < 1.0E-10)
             eigval[i] = 0.0;
-        else 
+        else
             eigval[i] = 1.0 / sqrt(eigval[i]);
 
         // scale one set of eigenvectors by the diagonal elements q^{-1/2}
@@ -738,8 +738,8 @@ void RHF::propagate_local_mos()
 
     free_block(Cocc);
     free_block(U);
-    
-    for (int i=0; i<norbs; i++) 
+
+    for (int i=0; i<norbs; i++)
         for (int j=0; j<ndocc; j++)
             L_->set(0,i,j,L[i][j]);
     free_block(L);
@@ -748,13 +748,13 @@ void RHF::propagate_local_mos()
 }
 void RHF::fully_localize_mos()
 {
-  //Pipek-Mizey procedure ripped from DF-MP2, which in turn was ripped from 
+  //Pipek-Mizey procedure ripped from DF-MP2, which in turn was ripped from
   //Localize in Psi3
     if (factory_.nirreps() != 1)
     {
         fprintf(outfile,"Must run in C1 for now.\n"); fflush(outfile);
         abort();
-    } 
+    }
 
   //This one runs in O(N^3) after work in Summer 2009
   //Old localize had an O(N^5) step in the Givens rotations
@@ -776,7 +776,7 @@ void RHF::fully_localize_mos()
   for (int i = 0; i<norbs; i++)
     for (int j = 0; j<norbs; j++)
       C[i][j] = C_->get(0,i,j);
-  
+
   double **S = block_matrix(norbs,norbs);
   for (int i = 0; i<norbs; i++)
     for (int j = 0 ; j<norbs; j++)
@@ -794,7 +794,7 @@ void RHF::fully_localize_mos()
   //for (int q = 0; q< natom; q++)
   //  fprintf(outfile,"  Snuc %d is %d",q,snuc[q]);
   //fflush(outfile);
-  
+
   //fprintf(outfile, "Overlap Matrix");
   //print_mat(S, norbs, norbs, outfile);
 
@@ -813,7 +813,7 @@ void RHF::fully_localize_mos()
   int* aostop_shell = init_int_array(natom);
   stype = init_int_array(nshell);
   for (i=0; i<nshell; i++)
-    stype[i] = basisset_->shell(i)->am();  
+    stype[i] = basisset_->shell(i)->am();
 
   int nfun;
   int m = 0;
@@ -823,7 +823,7 @@ void RHF::fully_localize_mos()
    nfun = l_length[am];
 
    //fprintf(outfile, "  MU = %d, atom = %d, am = %d, nfun = %d, m = %d\n", MU, atom, am, nfun, m);
-   
+
    if (aostart[atom] == 0 && atom != 0) {
     aostart_shell[atom] = MU;
     aostart[atom] = m;
@@ -853,11 +853,11 @@ void RHF::fully_localize_mos()
   int max_iter = 200;
   double conv_tol = 1E-12;
   double angle_tol = 1E-9;
-  int tot_rotations, rotations; 
+  int tot_rotations, rotations;
 
   alphalast = 0.0;
   tot_rotations = 0;
-  
+
   for(iter=0; iter < max_iter; iter++) {
 
   P = 0.0;
@@ -935,7 +935,7 @@ void RHF::fully_localize_mos()
          }
          for (i = 0; i< nocc; i++)
          {
-          V[i][s] = svec[i]; 
+          V[i][s] = svec[i];
           V[i][t] = tvec[i];
          }
         }
@@ -991,12 +991,12 @@ void RHF::localized_Lodwin_charges()
     {
         fprintf(outfile,"Must run in C1 for now.\n"); fflush(outfile);
         abort();
-    } 
+    }
     int ndocc = doccpi_[0];
     int norbs = basisset_->nbf();
     int natom = basisset_->molecule()->natom();
-   
-    //Shalf_->print(outfile); 
+
+    //Shalf_->print(outfile);
     //Sphalf_->print(outfile);
 
     double **Q = block_matrix(norbs,ndocc);
@@ -1008,15 +1008,15 @@ void RHF::localized_Lodwin_charges()
             for (int o = 0; o<ndocc; o++)
                 Q[m][o] = temp->get(0,m,o);
         //temp->print(outfile);
-    }    
+    }
     //Q^2 = 2*[Q_{mo}]^2 //two for spin degeneracy
     for (int m = 0; m<norbs; m++)
         for (int o = 0; o<ndocc; o++)
             Q[m][o] = 2.0*Q[m][o]*Q[m][o];
-    
-    //Assume I_ is already initialized at natom x ndocc    
+
+    //Assume I_ is already initialized at natom x ndocc
     zero_mat(I_,natom,ndocc);
-    
+
     int atom_index, nummu, mu1,m;
     for (int MU = 0; MU<basisset_->nshell(); MU++) {
         atom_index = basisset_->shell(MU)->ncenter();
@@ -1027,9 +1027,9 @@ void RHF::localized_Lodwin_charges()
             for (int o = 0; o<ndocc; o++)
                 I_[atom_index][o] += Q[m][o];
     }
-    
+
     free_block(Q);
-    
+
     if (print_>2) {
         fprintf(outfile,"  Lodwin Atomic Charges (atoms x occ):\n");
         print_mat(I_,natom,ndocc,outfile);
@@ -1040,14 +1040,14 @@ void RHF::localized_Lodwin_charges()
 void RHF::form_domain_bookkeeping()
 {
     //Sets up all the crazy tables for local domains
-    //Must be called after form_A, as ribasis_ must be 
+    //Must be called after form_A, as ribasis_ must be
     //Initialized
 
     //Some sizes for clarity
     int ndocc = doccpi_[0];
     int norbs = basisset_->nbf();
     int natom = basisset_->molecule()->natom();
-   
+
     //Number of contributing atoms per i (hopefully<<natom)
     domain_atoms_ = init_int_array(ndocc);
 
@@ -1056,54 +1056,54 @@ void RHF::form_domain_bookkeeping()
     int* dummy_dss = init_int_array(ndocc*natom);
     for (int i = 0; i<ndocc; i++)
         domain_shell_start_[i] = &dummy_dss[i*natom];
- 
+
     //Array of primary domain function starts per i
     domain_fun_start_ = (int**)malloc(ndocc*sizeof(int*));
     int* dummy_dfs = init_int_array(ndocc*natom);
     for (int i = 0; i<ndocc; i++)
         domain_fun_start_[i] = &dummy_dfs[i*natom];
- 
+
     //Array of primary domain shell lengths per i
     domain_shell_length_ = (int**)malloc(ndocc*sizeof(int*));
     int* dummy_dsl = init_int_array(ndocc*natom);
     for (int i = 0; i<ndocc; i++)
         domain_shell_length_[i] = &dummy_dsl[i*natom];
- 
+
     //Array of primary domain function lengths per i
     domain_fun_length_ = (int**)malloc(ndocc*sizeof(int*));
     int* dummy_dfl = init_int_array(ndocc*natom);
     for (int i = 0; i<ndocc; i++)
         domain_fun_length_[i] = &dummy_dfl[i*natom];
-    
+
     //Array of primary fit shell starts per i
     fit_shell_start_ = (int**)malloc(ndocc*sizeof(int*));
     int* dummy_ass = init_int_array(ndocc*natom);
     for (int i = 0; i<ndocc; i++)
         fit_shell_start_[i] = &dummy_ass[i*natom]; //redundant no?
- 
+
     //Array of primary fit function starts per i
     fit_fun_start_ = (int**)malloc(ndocc*sizeof(int*));
     int* dummy_afs = init_int_array(ndocc*natom);
     for (int i = 0; i<ndocc; i++)
         fit_fun_start_[i] = &dummy_afs[i*natom];
- 
+
     //Array of primary fit shell lengths per i
     fit_shell_length_ = (int**)malloc(ndocc*sizeof(int*));
     int* dummy_asl = init_int_array(ndocc*natom);
     for (int i = 0; i<ndocc; i++)
         fit_shell_length_[i] = &dummy_asl[i*natom];
- 
+
     //Array of primary fit function lengths per i
     fit_fun_length_ = (int**)malloc(ndocc*sizeof(int*));
     int* dummy_afl = init_int_array(ndocc*natom);
     for (int i = 0; i<ndocc; i++)
         fit_fun_length_[i] = &dummy_afl[i*natom];
- 
+
     //Domain pair sizes (hopefully << norbs*(norbs+1)/2)
     domain_pairs_ = init_int_array(ndocc);
     //Biggest domain pair size, for memory allocation
     max_domain_pairs_ = 0;
-    
+
     //Domain sizes (hopefully << norbs)
     domain_size_ = init_int_array(ndocc);
     //Biggest domain size, for memory allocation
@@ -1117,19 +1117,19 @@ void RHF::form_domain_bookkeeping()
     //Has the atomic domain changed for this i?
     //If not, might be able to save a lot of work
     domain_changed_ = (bool*)malloc(ndocc*sizeof(bool));
-    
+
     //Flag-style array for primary/extended domains;
     atom_domains_ = (int**)malloc(natom*sizeof(int*));
     int* dummy3 = init_int_array(ndocc*natom);
     for (int A = 0; A<natom; A++)
         atom_domains_[A] = &dummy3[A*ndocc];
-    
+
     //Flag-style array for OLD primary/extended domains;
     old_atom_domains_ = (int**)malloc(natom*sizeof(int*));
     int* dummy4 = init_int_array(ndocc*natom);
     for (int A = 0; A<natom; A++)
         old_atom_domains_[A] = &dummy4[A*ndocc];
-   
+
     //atom to primary basis shell start index;
     primary_shell_start_ = init_int_array(natom);
     //atom to primary function start index;
@@ -1139,8 +1139,8 @@ void RHF::form_domain_bookkeeping()
     //atom to primary function length;
     primary_fun_length_ = init_int_array(natom);
     int this_atom = 0;
-    int this_shell_length = 0; 
-    int this_fun_length = 0; 
+    int this_shell_length = 0;
+    int this_fun_length = 0;
     for (int MU = 0; MU< basisset_->nshell(); MU++) {
         if (basisset_->shell(MU)->ncenter() == this_atom+1) {
             primary_fun_length_[this_atom] = this_fun_length;
@@ -1166,9 +1166,9 @@ void RHF::form_domain_bookkeeping()
     aux_shell_length_ = init_int_array(natom);
     //atom to aux function length;
     aux_fun_length_ = init_int_array(natom);
-    this_atom = 0; 
-    this_shell_length = 0; 
-    this_fun_length = 0; 
+    this_atom = 0;
+    this_shell_length = 0;
+    this_fun_length = 0;
     for (int MU = 0; MU< ribasis_->nshell(); MU++) {
         if (ribasis_->shell(MU)->ncenter() == this_atom+1) {
             aux_fun_length_[this_atom] = this_fun_length;
@@ -1185,12 +1185,12 @@ void RHF::form_domain_bookkeeping()
     }
     aux_fun_length_[this_atom] = this_fun_length;
     aux_shell_length_[this_atom] = this_shell_length;
-} 
+}
 void RHF::form_domains()
 {
     //Lodwin Atomic charge cutoff for primary domains
     double Q_cutoff = options_.get_double("CHARGE_CUTOFF");
-    
+
     //Extended pair domain radius
     double R_ext_ang = options_.get_double("R_EXT");
     double R_ext = R_ext_ang*1.889725989; //1.889752989 [bohr/ang]
@@ -1202,7 +1202,7 @@ void RHF::form_domains()
 
     //ATOM DOMAIN IDENTIFICATION
 
-    //PRIMARY DOMAIN 
+    //PRIMARY DOMAIN
     //For each i, set all elements of atom_domains_ to 1
     //if the Lodwin charge is big enough
     memset((void*)atom_domains_[0],'\0',ndocc*natom*sizeof(int));
@@ -1211,7 +1211,7 @@ void RHF::form_domains()
             if (I_[N][i] >= Q_cutoff)
                 atom_domains_[N][i] = 1; //Primary domain
 
-    //EXTENDED DOMAIN 
+    //EXTENDED DOMAIN
     //For each i, set all elements of atom_domains_ to 2
     //if they are not already 1 AND are within R_ext bohr
     //of a primary domain atom
@@ -1234,11 +1234,11 @@ void RHF::form_domains()
             } else if ((atom_domains_[N][i] == 0) && (old_atom_domains_[N][i] > 0)) {
                 domain_changed_[i] = true; continue;
             }
-        } 
+        }
 
     //Set old_atom_domains_ for next round
     memcpy((void*)old_atom_domains_[0],(void*)atom_domains_[0],ndocc*natom*sizeof(int));
-    
+
     //BASIS DOMAIN IDENTIFICATION
     memset((void*)domain_atoms_,'\0',ndocc*sizeof(int));
     int counter;
@@ -1255,7 +1255,7 @@ void RHF::form_domains()
                 fit_fun_start_[i][counter] = aux_fun_start_[N];
                 fit_shell_length_[i][counter] = aux_shell_length_[N];
                 fit_fun_length_[i][counter] = aux_fun_length_[N];
-                counter++; 
+                counter++;
             }
     }
     //Put -1 in non-used indices (will help with debugging)
@@ -1271,8 +1271,8 @@ void RHF::form_domains()
             fit_fun_length_[i][N] = -1;
         }
     }
-            
-    //PRIMARY BASIS DOMAIN SIZE IDENTIFICATION 
+
+    //PRIMARY BASIS DOMAIN SIZE IDENTIFICATION
     memset((void*)domain_pairs_,'\0',ndocc*sizeof(int));
     memset((void*)domain_size_,'\0',ndocc*sizeof(int));
     memset((void*)fit_size_,'\0',ndocc*sizeof(int));
@@ -1286,7 +1286,7 @@ void RHF::form_domains()
                 for (int B=0; B<=A; B++)
                     for (int n = domain_fun_start_[i][B]; n<domain_fun_start_[i][B]+domain_fun_length_[i][B] && n<=m; n++)
                         if (ri_back_map_[m*(m+1)/2+n] >= 0)
-                            domain_pairs_[i]++; 
+                            domain_pairs_[i]++;
 
         //Domain size is just total number of primary basis functions
         //Same for fit_size_
@@ -1307,7 +1307,7 @@ void RHF::form_domains()
         fprintf(outfile,"  Atomic Domain Selection (atoms x occ):\n");
         print_int_mat(atom_domains_,natom,ndocc,outfile);
         fprintf(outfile,"\n");
-        
+
         fprintf(outfile,"  Number of atoms in domain:\n");
         for (int i = 0; i<ndocc; i++)
             fprintf(outfile,"    Orbital %d, %d atoms\n",i+1,domain_atoms_[i]);
@@ -1320,7 +1320,7 @@ void RHF::form_domains()
         for (int i = 0; i<ndocc; i++)
             fprintf(outfile,"    Orbital %d, %s\n",i+1,(domain_changed_[i]?"Yes":"No"));
         fprintf(outfile,"\n");
-    
+
         fprintf(outfile,"  Primary Basis Domain Shell Starts (occ x involved atoms):\n");
         print_int_mat(domain_shell_start_,ndocc,natom,outfile);
         fprintf(outfile,"\n");
@@ -1393,7 +1393,7 @@ void RHF::free_domain_bookkeeping()
     free(fit_fun_start_);
     free(fit_fun_length_[0]);
     free(fit_fun_length_);
-    
+
     free(primary_shell_start_);
     free(primary_shell_length_);
     free(primary_fun_start_);
@@ -1407,8 +1407,8 @@ void RHF::free_domain_bookkeeping()
     free(old_atom_domains_);
     free(atom_domains_[0]);
     free(atom_domains_);
-    
-    free(domain_changed_);   
+
+    free(domain_changed_);
     free(domain_atoms_);
     free(domain_pairs_);
     free(domain_size_);

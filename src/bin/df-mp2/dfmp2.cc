@@ -114,7 +114,7 @@ void  DFMP2::setup()
   //ribasis_->print();
   naux_raw_ = ribasis_->nbf();
   naux_fin_ = ribasis_->nbf(); //For now, may be pared later
-  zerobasis_ = BasisSet::zero_basis_set();
+  zerobasis_ = BasisSet::zero_ao_basis_set();
 
   // Form initial energy values
   E_ss_ = 0.0;
@@ -366,7 +366,7 @@ void DFMP2::form_Schwarz()
 }
 double** DFMP2::form_W(shared_ptr<BasisSet> bas)
 {
-  shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
+  shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
 
   IntegralFactory rifactory_J(bas, zero, bas, zero);
 
@@ -405,7 +405,7 @@ double** DFMP2::form_W(shared_ptr<BasisSet> bas)
 double** DFMP2::form_W_overlap(shared_ptr<BasisSet> bas)
 {
 
-  shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
+  shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
   int naux = bas->nbf();
 
   IntegralFactory rifactory_JS(bas, bas, zero, zero);
@@ -1688,7 +1688,7 @@ double DFMP2::compute_E_old()
   shared_ptr<BasisSet> ribasis = BasisSet::construct(parser, Process::environment.molecule(), options_.get_str("DF_BASIS_MP2"));
 
   int naux = ribasis->nbf();
-  shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
+  shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
 
   //Put the orbitals and C matrix into some nice arrays
   double** Co   = block_matrix(norbs, nact_docc);

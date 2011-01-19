@@ -360,7 +360,7 @@ void HF::form_B_Poisson()
     fflush(outfile);
 
     //Zero basis
-    shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
+    shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
 
     //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     //

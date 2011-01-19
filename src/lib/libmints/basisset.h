@@ -28,6 +28,8 @@ namespace psi {
     class Matrix;
     class SimpleMatrix;
     class Vector3;
+    class SOBasis;
+    class IntegralFactory;
 
 /*! \ingroup MINTS */
 
@@ -208,7 +210,15 @@ public:
      *  at the origin with an exponent of 0.0 and contraction of 1.0.
      *  @return A new empty BasisSet object.
      */
-    static boost::shared_ptr<BasisSet> zero_basis_set();
+    static boost::shared_ptr<BasisSet> zero_ao_basis_set();
+
+    /** Returns an empty SO basis set object.
+     *
+     *  Returns an SOBasis object that actually has a single s-function
+     *  at the origin with an exponent of 0.0 and contraction of 1.0.
+     *  @return A new empty SOBasis object.
+     */
+    static boost::shared_ptr<SOBasis> zero_so_basis_set(const boost::shared_ptr<IntegralFactory>& factory);
 
     /** Returns a new BasisSet object.
      *

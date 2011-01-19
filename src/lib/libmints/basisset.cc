@@ -86,8 +86,7 @@ shared_ptr<GaussianShell> BasisSet::shell(int center, int si) const
     return shell(center_to_shell_[center] + si);
 }
 
-#pragma warn BasisSet::zero_basis_set is broke.
-shared_ptr<BasisSet> BasisSet::zero_basis_set()
+shared_ptr<BasisSet> BasisSet::zero_ao_basis_set()
 {
     shared_ptr<BasisSet> new_basis(new BasisSet());
 
@@ -130,6 +129,13 @@ shared_ptr<BasisSet> BasisSet::zero_basis_set()
     new_basis->shells_[0]->init(1, &e, am, Cartesian, &c, 0, center, 0, Normalized);
 
     return new_basis;
+}
+
+shared_ptr<SOBasis> BasisSet::zero_so_basis_set(const shared_ptr<IntegralFactory>& factory)
+{
+    shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+    shared_ptr<SOBasis> sozero(new SOBasis(zero, factory));
+    return sozero;
 }
 
 shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parser,

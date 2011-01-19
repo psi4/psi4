@@ -360,7 +360,7 @@ void HF::form_B()
     fflush(outfile);
 
     //Zero basis
-    shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
+    shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
 
     //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     //
@@ -966,7 +966,7 @@ void HF::free_B()
 void HF::form_W()
 {
     //It takes a lot of work to get a null basis with Psi4!
-    shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
+    shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
     //if (options_.get_bool("NO_INPUT") == false) {
     //    ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_SCF"));
     //} else {
@@ -1028,7 +1028,7 @@ void HF::form_W()
 void HF::form_W_Poisson()
 {
     //It takes a lot of work to get a null basis with Psi4!
-    shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
+    shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
 //    if (options_.get_bool("NO_INPUT") == false) {
 //        ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_SCF"));
 //        poissonbasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "POISSON_BASIS_SCF"));
@@ -1309,7 +1309,7 @@ void HF::form_Wm12_fin()
     //OK, integrals time. start with the fitting matrix J
 
     // Create integral factory for J_S (Overlap Matrix in form_B)
-    shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
+    shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
     IntegralFactory rifactory_JS(ribasis_, ribasis_, zero, zero);
     OneBodySOInt *S = rifactory_JS.so_overlap();
     MatrixFactory matJS;
