@@ -44,7 +44,7 @@ if(Communicator::world->me() == 0){
     shared_ptr<BasisSet> ribasis = BasisSet::construct(parser, Process::environment.molecule(), ri_basis);
   //ribasis->print();
 
-  shared_ptr<BasisSet> zero = BasisSet::zero_basis_set();
+  shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
 
   // Create integral factory
   IntegralFactory rifactory(ribasis, zero, basis, basis);
