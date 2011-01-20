@@ -14,11 +14,10 @@ KineticInt::KineticInt(std::vector<SphericalTransform>& st, shared_ptr<BasisSet>
     int maxam1 = bs1_->max_am();
     int maxam2 = bs2_->max_am();
 
-    int maxnao1 = (maxam1+1)*(maxam1+2)/2;
-    int maxnao2 = (maxam2+1)*(maxam2+2)/2;
-
-//    int maxnao1 = INT_NCART(maxam1);
-//    int maxnao2 = INT_NCART(maxam2);
+//    int maxnao1 = (maxam1+1)*(maxam1+2)/2;
+//    int maxnao2 = (maxam2+1)*(maxam2+2)/2;
+    int maxnao1 = INT_NCART(maxam1);
+    int maxnao2 = INT_NCART(maxam2);
 
     if (deriv == 1) {
         maxnao1 *= 3 * natom_;

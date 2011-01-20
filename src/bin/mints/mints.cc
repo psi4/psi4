@@ -59,6 +59,9 @@ PsiReturnType mints(Options & options)
     // Make sure molecule is valid.
     molecule->update_geometry();
 
+    // Print the molecule.
+    molecule->print();
+
     // Read in the basis set
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options.get_str("BASIS_PATH")));
     shared_ptr<BasisSet> basisset = BasisSet::construct(parser, molecule, options.get_str("BASIS"));

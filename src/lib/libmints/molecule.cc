@@ -1746,7 +1746,7 @@ int Molecule::atom_to_unique_offset(int iatom) const
     return -1;
 }
 
-boost::shared_ptr<PointGroup> Molecule::find_point_group(double tol) const
+boost::shared_ptr<PointGroup> Molecule::find_highest_point_group(double tol) const
 {
     int i, j;
     unsigned int pg_bits = 0;
@@ -2130,6 +2130,12 @@ found_sigma:
     }
 
     fprintf(outfile, "\n  Molecular point group: %s\n\n", pg->symbol());
+    return pg;
+}
+
+shared_ptr<PointGroup> Molecule::find_point_group(double tol) const
+{
+    shared_ptr<PointGroup> pg = find_highest_point_group(tol);
 
     if (!symmetry_from_input().empty()) {
         // If they're not the same
@@ -2162,41 +2168,6 @@ bool Molecule::has_symmetry_element(Vector3& op, double tol) const
     }
 
     return true;
-}
-
-boost::shared_ptr<PointGroup> Molecule::find_point_group2(double tol) const
-{
-    Vector3 c2x(1, -1, -1);
-    Vector3 c2y(-1, 1, -1);
-    Vector3 c2z(-1, -1, 1);
-    Vector3 sxy(1, 1, -1);
-    Vector3 sxz(1, -1, 1);
-    Vector3 syz(-1, 1, 1);
-    Vector3 i(-1, -1, -1);
-
-    unsigned int bits = 0;
-
-    if (has_symmetry_element(c2x, tol))
-        bits |= SymmOps::C2_x;
-    if (has_symmetry_element(c2y, tol))
-        bits |= SymmOps::C2_y;
-    if (has_symmetry_element(c2z, tol))
-        bits |= SymmOps::C2_z;
-    if (has_symmetry_element(sxy, tol))
-        bits |= SymmOps::Sigma_xy;
-    if (has_symmetry_element(sxz, tol))
-        bits |= SymmOps::Sigma_xz;
-    if (has_symmetry_element(syz, tol))
-        bits |= SymmOps::Sigma_yz;
-    if (has_symmetry_element(i, tol))
-        bits |= SymmOps::i;
-
-    fprintf(outfile, "Point group: %s\n", PointGroup::bits_to_full_name(bits));
-
-    shared_ptr<PointGroup> pg(new PointGroup(PointGroup::bits_to_basic_name(bits)));
-    pg->set_bits(bits);
-
-    return pg;
 }
 
 void Molecule::release_symmetry_information()

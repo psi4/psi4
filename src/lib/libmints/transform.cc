@@ -48,6 +48,7 @@ SphericalTransform::SphericalTransform(int l, int subl) : l_(l)
 
 void SphericalTransform::init()
 {
+//    fprintf(outfile, "spher\n");
     int cartdim = INT_NCART(l_);
     SimpleMatrix coefmat(cartdim, cartdim);
     coefmat.zero();
@@ -79,6 +80,7 @@ void SphericalTransform::init()
                 int cart1 = icart(a, b, c);
                 int cart2 = INT_CARTINDEX(a+b+c, a, b);
 
+//                fprintf(outfile, "cart1 = %d, p+pureindex=%d\n", cart1, p+pureindex);
                 double coef = coefmat(cart1, p+pureindex);
 
                 if (fabs(coef) > 1.0e-16) {
@@ -109,6 +111,7 @@ ISphericalTransform::ISphericalTransform(int l, int subl)
 
 void ISphericalTransform::init()
 {
+//    fprintf(outfile, "ispher\n");
     int cartdim = ncart(l_);
     SimpleMatrix coefmat(cartdim, cartdim);
     coefmat.zero();
