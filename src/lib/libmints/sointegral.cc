@@ -46,8 +46,7 @@ OneBodySOInt::OneBodySOInt(const boost::shared_ptr<OneBodyAOInt> & ob,
 
     only_totally_symmetric_ = 0;
 
-    buffer_ = new double[INT_NCART(ob->basis1()->max_am())
-            *INT_NCART(ob->basis2()->max_am())];
+    buffer_ = new double[b1_->max_nfunction_in_shell() * b2_->max_nfunction_in_shell()];
 }
 
 OneBodySOInt::~OneBodySOInt()
@@ -155,6 +154,7 @@ void OneBodySOInt::compute(boost::shared_ptr<Matrix> result)
             int nso1 = b1_->nfunction(ish);
             int nso2 = b2_->nfunction(jsh);
 
+//            printf("nso1 = %d, nso2 = %d\n", nso1, nso2);
             memset(buffer_, 0, nso1*nso2*sizeof(double));
 
             int nao2 = b2_->naofunction(jsh);
