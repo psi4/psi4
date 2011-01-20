@@ -6,6 +6,7 @@
 
 #include <cstdio>
 #include <cstring>
+#include <cstdlib>
 #include <cmath>
 #include <libciomr/libciomr.h>
 #include "qt.h"
