@@ -11,17 +11,17 @@
 #include "qt.h"
 
 namespace psi {
-	
+
 #define SMALL_DET 1.0E-10
 
 /*!
 ** INVERT_MATRIX(): The function takes the inverse of a matrix using the
-**    C routines in Numerical Recipes in C.  
-** 
+**    C routines in Numerical Recipes in C.
+**
 ** Matt Leininger, Summer 1994
 **
-** Parameters: 
-**    \param a       = matrix to take the inverse of 
+** Parameters:
+**    \param a       = matrix to take the inverse of
 **                     (is modified by invert_matrix())
 **    \param y       = the inverse matrix
 **    \param N       = the size of the matrices
@@ -29,8 +29,8 @@ namespace psi {
 **
 ** Other variables:
 **    col and indx are temporary arrays
-**    d is 1 or -1 
-** 
+**    d is 1 or -1
+**
 ** Returns: double (determinant)
 ** Note: The original matrix is modified by invert_matrix()
 ** \ingroup QT
@@ -46,7 +46,7 @@ double invert_matrix(double **a, double **y, int N, FILE *outfile)
 
    ludcmp(a,N,indx,&d) ;
    for (j=0; j<N; j++) d *= a[j][j];
-  
+
    /* fprintf(outfile,"detH0 in invert = %lf\n", fabs(d));
    fflush(outfile); */
 
@@ -63,6 +63,9 @@ double invert_matrix(double **a, double **y, int N, FILE *outfile)
        colptr = col;
        for (i=0; i<N; i++) y[i][j] = *colptr++;
        }
+
+   free(col);
+   free(indx);
 
    d = fabs(d);
    return(d);

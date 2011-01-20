@@ -236,6 +236,7 @@ Molecule::Molecule():
 Molecule::~Molecule()
 {
     clear();
+    release_symmetry_information();
 }
 
 Molecule& Molecule::operator=(const Molecule& other)
@@ -2292,7 +2293,7 @@ void Molecule::form_symmetry_information(double tol)
         }
         else {
             int *tmp = new int[nequiv_[i_equiv]+1];
-            memcpy(tmp, equiv_[i_equiv],nequiv_[i_equiv]*sizeof(int));
+            memcpy(tmp, equiv_[i_equiv], nequiv_[i_equiv]*sizeof(int));
             delete[] equiv_[i_equiv];
             equiv_[i_equiv] = tmp;
             equiv_[i_equiv][nequiv_[i_equiv]] = i;
@@ -2311,9 +2312,11 @@ void Molecule::form_symmetry_information(double tol)
         int jmaxzero = 0;
         for (int j=0; j<nequiv_[i]; ++j) {
             int nzero = 0;
-            for (int k=0; k<3; ++k)
-                if (fabs(xyz(equiv_[i][j], k)) < ztol)
+            for (int k=0; k<3; ++k) {
+                double tmp = equiv_[i][j];
+                if (fabs(xyz(tmp, k)) < ztol)
                     nzero++;
+            }
             if (nzero > maxzero) {
                 maxzero = nzero;
                 jmaxzero = j;
