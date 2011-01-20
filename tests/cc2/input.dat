@@ -1,0 +1,45 @@
+#% 6-31G** H2O Test CCSD optimization
+
+refnuc = 9.077238846804
+refscf = -76.0219978763
+refccsd = -0.208990979379479
+reftotal = -76.230988855677879
+
+molecule h2o {
+    o
+    h 1 0.97
+    h 1 0.97 2 103.0
+}
+
+globals {
+  wfn ccsd
+  reference rhf
+  basis 6-31G**
+
+  convergence 10
+  e_converge 10
+  d_converge 10
+}
+
+activate(h2o)
+mints()
+energy('ccsd')
+
+compare_values(refnuc,   h2o.nuclear_repulsion_energy(),  9, "Nuclear repulsion energy")
+compare_values(refscf,   get_variable("SCF energy"),     9, "SCF energy")
+compare_values(refccsd,  get_variable("CCSD energy"),    7, "CCSD contribution")
+compare_values(reftotal, get_variable("Current energy"), 7, "Total energy")
+
+#psi: (
+#  label = "6-31G** CCSD H2O"
+#  jobtype = opt
+#  wfn = ccsd
+#  reference = rhf
+#  dertype = none
+#  basis = "6-31G**"
+#  zmat = (
+#    o
+#    h 1 0.97
+#    h 1 0.97 2 103.0
+#  )
+#)
