@@ -48,8 +48,8 @@ void LMP2::direct_df_transformation3() {
 
   // Create an integral object for ERIs
 
-  TwoBodyInt* eri = rifactory.eri();
-  TwoBodyInt* Jint = rifactory_J.eri();
+  TwoBodyAOInt* eri = rifactory.eri();
+  TwoBodyAOInt* Jint = rifactory_J.eri();
   const double *Jbuffer = Jint->buffer();
 
   int i, j, ij, k, l, m, n, p, a, b, s, t, u, v;
@@ -241,7 +241,7 @@ for(i = 0; i < nocc; i++) {
   // Schwartz Screening
 
   IntegralFactory ao_eri_factory(basis, basis, basis, basis);
-  TwoBodyInt* ao_eri = ao_eri_factory.eri();
+  TwoBodyAOInt* ao_eri = ao_eri_factory.eri();
   const double *ao_buffer = ao_eri->buffer();
 
   double *Schwartz = init_array(basis->nshell() * (basis->nshell()+1) / 2);

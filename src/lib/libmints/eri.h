@@ -8,7 +8,7 @@ namespace psi {
 
     class BasisSet;
     class GaussianShell;
-    class TwoBodyInt;
+    class TwoBodyAOInt;
     class IntegralFactory;
     class SphericalTransform;
     class SimpleMatrix;
@@ -43,7 +43,7 @@ namespace psi {
  *  \class ERI
  *  \brief Capable of computing two-electron repulsion integrals.
  */
-class ERI : public TwoBodyInt
+class ERI : public TwoBodyAOInt
 {
     //! Libint object.
     Libint_t libint_;

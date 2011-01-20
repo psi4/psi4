@@ -131,10 +131,10 @@ shared_ptr<BasisSet> BasisSet::zero_ao_basis_set()
     return new_basis;
 }
 
-shared_ptr<SOBasis> BasisSet::zero_so_basis_set(const shared_ptr<IntegralFactory>& factory)
+shared_ptr<SOBasisSet> BasisSet::zero_so_basis_set(const shared_ptr<IntegralFactory>& factory)
 {
     shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    shared_ptr<SOBasis> sozero(new SOBasis(zero, factory));
+    shared_ptr<SOBasisSet> sozero(new SOBasisSet(zero, factory));
     return sozero;
 }
 

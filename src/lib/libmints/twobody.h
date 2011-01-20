@@ -14,7 +14,7 @@ class GaussianShell;
  *  \class TwoBodyInt
  *  \brief Two body integral base class.
  */
-class TwoBodyInt
+class TwoBodyAOInt
 {
 protected:
     const IntegralFactory* integral_;
@@ -57,10 +57,10 @@ protected:
 //               boost::shared_ptr<BasisSet> bs4,
 //               int deriv = 0);
 
-    TwoBodyInt(const IntegralFactory* intsfactory, int deriv=0);
+    TwoBodyAOInt(const IntegralFactory* intsfactory, int deriv=0);
 
 public:
-    virtual ~TwoBodyInt();
+    virtual ~TwoBodyAOInt();
 
     /// Basis set on center one
     boost::shared_ptr<BasisSet> basis();
@@ -98,7 +98,7 @@ public:
     virtual bool cloneable();
 
     /// Returns a clone of this object. By default throws an exception
-    virtual TwoBodyInt* clone();
+    virtual TwoBodyAOInt* clone();
 
     /// Results go back to buffer_
     void pure_transform(int, int, int, int, int nchunk);

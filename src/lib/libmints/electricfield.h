@@ -6,7 +6,7 @@ namespace psi {
     class BasisSet;
     class GaussianShell;
     class ObaraSaikaTwoCenterRecursion;
-    class OneBodyInt;
+    class OneBodyAOInt;
     class IntegralFactory;
     class SphericalTransform;
     class SimpleMatrix;
@@ -17,7 +17,7 @@ namespace psi {
  *
  *  Use an IntegralFactory to create this object.
  */
-class ElectricFieldInt : public OneBodyInt
+class ElectricFieldInt : public OneBodyAOInt
 {
     //! Obara and Saika recursion object to be used.
     ObaraSaikaTwoCenterElectricField efield_recur_;                 // Both ElectricField and VIDeriv should give the same result

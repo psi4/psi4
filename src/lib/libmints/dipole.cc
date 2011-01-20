@@ -12,7 +12,7 @@ using namespace boost;
 // Initialize overlap_recur_ to +1 basis set angular momentum, +1 on each center is sufficient
 // to compute the dipole derivatives
 DipoleInt::DipoleInt(std::vector<SphericalTransform>& spherical_transforms, shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2, int nderiv) :
-    OneBodyInt(spherical_transforms, bs1, bs2, nderiv), overlap_recur_(bs1->max_am()+1, bs2->max_am()+1)
+    OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv), overlap_recur_(bs1->max_am()+1, bs2->max_am()+1)
 {
     int maxam1 = bs1_->max_am();
     int maxam2 = bs2_->max_am();

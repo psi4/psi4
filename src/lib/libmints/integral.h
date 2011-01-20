@@ -39,9 +39,9 @@ namespace psi {
 
 class BasisSet;
 class GaussianShell;
-class OneBodyInt;
+class OneBodyAOInt;
 class OneBodySOInt;
-class TwoBodyInt;
+class TwoBodyAOInt;
 class ThreeCenterOverlapInt;
 class Symmetry;
 class CartesianIter;
@@ -50,7 +50,7 @@ class RedundantCartesianSubIter;
 class ShellRotation;
 class SymmetryOperation;
 class SOTransform;
-class SOBasis;
+class SOBasisSet;
 
 /*! \ingroup MINTS */
 class SphericalTransformComponent
@@ -295,17 +295,17 @@ private:
 
     bool done;
 
-    boost::shared_ptr<SOBasis> bs1_;
-    boost::shared_ptr<SOBasis> bs2_;
-    boost::shared_ptr<SOBasis> bs3_;
-    boost::shared_ptr<SOBasis> bs4_;
+    boost::shared_ptr<SOBasisSet> bs1_;
+    boost::shared_ptr<SOBasisSet> bs2_;
+    boost::shared_ptr<SOBasisSet> bs3_;
+    boost::shared_ptr<SOBasisSet> bs4_;
 
 public:
-    SOShellCombinationsIterator(boost::shared_ptr<SOBasis>bs1, boost::shared_ptr<SOBasis>bs2,
-                              boost::shared_ptr<SOBasis>bs3, boost::shared_ptr<SOBasis>bs4);
+    SOShellCombinationsIterator(boost::shared_ptr<SOBasisSet>bs1, boost::shared_ptr<SOBasisSet>bs2,
+                              boost::shared_ptr<SOBasisSet>bs3, boost::shared_ptr<SOBasisSet>bs4);
     SOShellCombinationsIterator();
-    void init(boost::shared_ptr<SOBasis>bs1, boost::shared_ptr<SOBasis>bs2,
-            boost::shared_ptr<SOBasis>bs3, boost::shared_ptr<SOBasis>bs4);
+    void init(boost::shared_ptr<SOBasisSet>bs1, boost::shared_ptr<SOBasisSet>bs2,
+            boost::shared_ptr<SOBasisSet>bs3, boost::shared_ptr<SOBasisSet>bs4);
 
     void first();
     void next();
@@ -359,7 +359,7 @@ public:
         boost::shared_ptr<BasisSet> bs3, boost::shared_ptr<BasisSet> bs4);
 
     /// Returns an OneBodyInt that computes the overlap integral.
-    virtual OneBodyInt* ao_overlap(int deriv=0);
+    virtual OneBodyAOInt* ao_overlap(int deriv=0);
 
     /// Returns an OneBodyInt that computes the overlap integral.
     virtual OneBodySOInt* so_overlap(int deriv=0);
@@ -368,27 +368,27 @@ public:
     virtual ThreeCenterOverlapInt* overlap_3c();
 
     /// Returns an OneBodyInt that computes the kinetic energy integral.
-    virtual OneBodyInt* ao_kinetic(int deriv=0);
+    virtual OneBodyAOInt* ao_kinetic(int deriv=0);
     virtual OneBodySOInt* so_kinetic(int deriv=0);
 
     /// Returns an OneBodyInt that computes the nuclear attraction integral.
-    virtual OneBodyInt* ao_potential(int deriv=0);
+    virtual OneBodyAOInt* ao_potential(int deriv=0);
     virtual OneBodySOInt* so_potential(int deriv=0);
 
     /// Returns an OneBodyInt that computes the dipole integral.
-    virtual OneBodyInt* dipole(int deriv=0);
+    virtual OneBodyAOInt* dipole(int deriv=0);
 
     /// Returns an OneBodyInt that computes the quadrupole integral.
-    virtual OneBodyInt* quadrupole();
+    virtual OneBodyAOInt* quadrupole();
 
     /// Returns an OneBodyInt that computes the electric field
-    virtual OneBodyInt *electric_field();
+    virtual OneBodyAOInt *electric_field();
 
     /// Returns an OneBodyInt that computes the point electrostatic potential
-    virtual OneBodyInt *electrostatic();
+    virtual OneBodyAOInt *electrostatic();
 
     /// Returns an ERI integral object
-    virtual TwoBodyInt* eri(int deriv=0, double schwarz = 0.0);
+    virtual TwoBodyAOInt* eri(int deriv=0, double schwarz = 0.0);
 
     /// Returns a general ERI iterator object for any (P Q | R S) in shells
     IntegralsIterator integrals_iterator(int p, int q, int r, int s);

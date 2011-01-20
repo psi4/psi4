@@ -67,10 +67,10 @@ PsiReturnType mints(Options & options)
     shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset, basisset, basisset, basisset));
 
     // Get the SO basis object.
-    shared_ptr<SOBasis> sobasis(new SOBasis(basisset, integral));
+    shared_ptr<SOBasisSet> sobasis(new SOBasisSet(basisset, integral));
 
     // Get ERI object
-    shared_ptr<TwoBodyInt> tb(integral->eri());
+    shared_ptr<TwoBodyAOInt> tb(integral->eri());
     shared_ptr<TwoBodySOInt> eri(new TwoBodySOInt(tb, integral));
 
     // Print out some useful information

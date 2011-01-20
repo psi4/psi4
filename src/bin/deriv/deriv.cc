@@ -25,9 +25,9 @@ Deriv::Deriv(reftype ref, shared_ptr<MatrixFactory>& factory, shared_ptr<BasisSe
     shared_ptr<IntegralFactory> integral(new IntegralFactory(basis_, basis_, basis_, basis_));
 
     // Create new one-electron integral evaluators telling them we want 1st derivatives (1)
-    shared_ptr<OneBodyInt> oei_dK(integral->ao_kinetic(1));
-    shared_ptr<OneBodyInt> oei_dV(integral->ao_potential(1));
-    shared_ptr<OneBodyInt> oei_dS(integral->ao_overlap(1));
+    shared_ptr<OneBodyAOInt> oei_dK(integral->ao_kinetic(1));
+    shared_ptr<OneBodyAOInt> oei_dV(integral->ao_potential(1));
+    shared_ptr<OneBodyAOInt> oei_dS(integral->ao_overlap(1));
 
     // Allocate memory to store integrals.
     vector<SharedSimpleMatrix> dK;
@@ -85,7 +85,7 @@ void Deriv::compute(SharedSimpleMatrix& C, SharedSimpleMatrix& Q, SharedSimpleMa
     ShellCombinationsIterator shells = integral->shells_iterator();
 
     // Initialize an ERI object requesting derivatives.
-    shared_ptr<TwoBodyInt> eri(integral->eri(1));
+    shared_ptr<TwoBodyAOInt> eri(integral->eri(1));
 
     // Gain access to the eri buffer
     double *buffer = const_cast<double*>(eri->buffer());

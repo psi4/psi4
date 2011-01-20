@@ -6,7 +6,7 @@ namespace psi {
     class BasisSet;
     class GaussianShell;
     class ObaraSaikaTwoCenterRecursion;
-    class OneBodyInt;
+    class OneBodyAOInt;
     class PotentialInt;
     class IntegralFactory;
     class SphericalTransform;

@@ -11,7 +11,7 @@ using namespace psi;
 using namespace std;
 
 ElectricFieldInt::ElectricFieldInt(vector<SphericalTransform>& spherical_transforms, shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2, int nderiv) :
-    OneBodyInt(spherical_transforms, bs1, bs2, nderiv), efield_recur_(bs1->max_am(), bs2->max_am()), natom_(bs1->molecule()->natom())
+    OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv), efield_recur_(bs1->max_am(), bs2->max_am()), natom_(bs1->molecule()->natom())
 {
     int maxam1 = bs1_->max_am();
     int maxam2 = bs2_->max_am();

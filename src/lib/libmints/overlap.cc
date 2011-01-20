@@ -9,7 +9,7 @@
 using namespace psi;
 
 OverlapInt::OverlapInt(std::vector<SphericalTransform>& st, shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2, int deriv) :
-    OneBodyInt(st, bs1, bs2, deriv), overlap_recur_(bs1->max_am()+deriv, bs2->max_am()+deriv)
+    OneBodyAOInt(st, bs1, bs2, deriv), overlap_recur_(bs1->max_am()+deriv, bs2->max_am()+deriv)
 {
     int maxam1 = bs1_->max_am();
     int maxam2 = bs2_->max_am();

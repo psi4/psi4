@@ -63,7 +63,7 @@ void LMP2::direct_transformation() {
     shared_ptr<IntegralFactory> integral(new IntegralFactory(basis, basis, basis, basis));
 
     // Create an integral object for ERIs
-    shared_ptr<TwoBodyInt> eri(integral->eri());
+    shared_ptr<TwoBodyAOInt> eri(integral->eri());
 
     // Get the storage buffer from the eri object
     const double *buffer = eri->buffer();

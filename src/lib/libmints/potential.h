@@ -10,7 +10,7 @@ namespace psi {
     class GaussianShell;
     class ObaraSaikaTwoCenterVIRecursion;
     class ObaraSaikaTwoCenterVIDerivRecursion;
-    class OneBodyInt;
+    class OneBodyAOInt;
     class IntegralFactory;
     class SphericalTransform;
 
@@ -19,7 +19,7 @@ namespace psi {
  *  \brief Computes potential integrals.
  * Use an IntegralFactory to create this object.
  */
-class PotentialInt : public OneBodyInt
+class PotentialInt : public OneBodyAOInt
 {
 
     /// Computes integrals between two shell objects.

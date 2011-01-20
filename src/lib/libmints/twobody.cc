@@ -26,7 +26,7 @@ static void transform2e_4(int, SphericalTransformIter&, double*, double*, int, i
 //    natom_ = original_bs1_->molecule()->natom();  // This assumes the 4 bases come from the same molecule.
 //}
 
-TwoBodyInt::TwoBodyInt(const IntegralFactory* intsfactory, int deriv) :
+TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory* intsfactory, int deriv) :
     integral_(intsfactory),
     original_bs1_(integral_->basis1()),
     original_bs2_(integral_->basis2()),
@@ -41,47 +41,47 @@ TwoBodyInt::TwoBodyInt(const IntegralFactory* intsfactory, int deriv) :
     natom_ = original_bs1_->molecule()->natom();  // This assumes the 4 bases come from the same molecule.
 }
 
-TwoBodyInt::~TwoBodyInt()
+TwoBodyAOInt::~TwoBodyAOInt()
 {
 
 }
 
-shared_ptr<BasisSet> TwoBodyInt::basis()
-{
-    return original_bs1_;
-}
-
-shared_ptr<BasisSet> TwoBodyInt::basis1()
+shared_ptr<BasisSet> TwoBodyAOInt::basis()
 {
     return original_bs1_;
 }
 
-shared_ptr<BasisSet> TwoBodyInt::basis2()
+shared_ptr<BasisSet> TwoBodyAOInt::basis1()
+{
+    return original_bs1_;
+}
+
+shared_ptr<BasisSet> TwoBodyAOInt::basis2()
 {
     return original_bs2_;
 }
 
-shared_ptr<BasisSet> TwoBodyInt::basis3()
+shared_ptr<BasisSet> TwoBodyAOInt::basis3()
 {
     return original_bs3_;
 }
 
-shared_ptr<BasisSet> TwoBodyInt::basis4()
+shared_ptr<BasisSet> TwoBodyAOInt::basis4()
 {
     return original_bs4_;
 }
 
-bool TwoBodyInt::cloneable()
+bool TwoBodyAOInt::cloneable()
 {
     return false;
 }
 
-TwoBodyInt* TwoBodyInt::clone()
+TwoBodyAOInt* TwoBodyAOInt::clone()
 {
     throw FeatureNotImplemented("libmints", "TwoBodyInt::clone()", __FILE__, __LINE__);
 }
 
-void TwoBodyInt::normalize_am(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2, shared_ptr<GaussianShell> s3, shared_ptr<GaussianShell> s4, int nchunk)
+void TwoBodyAOInt::normalize_am(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2, shared_ptr<GaussianShell> s3, shared_ptr<GaussianShell> s4, int nchunk)
 {
 #ifdef MINTS_TIMER
     timer_on("Angular momentum normalization");
@@ -141,7 +141,7 @@ void TwoBodyInt::normalize_am(shared_ptr<GaussianShell> s1, shared_ptr<GaussianS
 #endif
 }
 
-void TwoBodyInt::permute_target(double *s, double *t, int sh1, int sh2, int sh3, int sh4, bool p12, bool p34, bool p13p24)
+void TwoBodyAOInt::permute_target(double *s, double *t, int sh1, int sh2, int sh3, int sh4, bool p12, bool p34, bool p13p24)
 {
 #ifdef MINTS_TIMER
     timer_on("Permute target");
@@ -188,7 +188,7 @@ void TwoBodyInt::permute_target(double *s, double *t, int sh1, int sh2, int sh3,
 #endif
 }
 
-void TwoBodyInt::permute_1234_to_1243(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4)
+void TwoBodyAOInt::permute_1234_to_1243(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4)
 {
     int f1=nbf1;
     int f2=nbf2;
@@ -206,7 +206,7 @@ void TwoBodyInt::permute_1234_to_1243(double *s, double *t, int nbf1, int nbf2, 
     }
 }
 
-void TwoBodyInt::permute_1234_to_2134(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4)
+void TwoBodyAOInt::permute_1234_to_2134(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4)
 {
     int f1=nbf2;
     int f2=nbf1;
@@ -224,7 +224,7 @@ void TwoBodyInt::permute_1234_to_2134(double *s, double *t, int nbf1, int nbf2, 
     }
 }
 
-void TwoBodyInt::permute_1234_to_2143(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4)
+void TwoBodyAOInt::permute_1234_to_2143(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4)
 {
     int f1=nbf2;
     int f2=nbf1;
@@ -242,7 +242,7 @@ void TwoBodyInt::permute_1234_to_2143(double *s, double *t, int nbf1, int nbf2, 
     }
 }
 
-void TwoBodyInt::permute_1234_to_3412(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4)
+void TwoBodyAOInt::permute_1234_to_3412(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4)
 {
     int f1=nbf3;
     int f2=nbf4;
@@ -260,7 +260,7 @@ void TwoBodyInt::permute_1234_to_3412(double *s, double *t, int nbf1, int nbf2, 
     }
 }
 
-void TwoBodyInt::permute_1234_to_4312(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4)
+void TwoBodyAOInt::permute_1234_to_4312(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4)
 {
     int f1=nbf4;
     int f2=nbf3;
@@ -278,7 +278,7 @@ void TwoBodyInt::permute_1234_to_4312(double *s, double *t, int nbf1, int nbf2, 
     }
 }
 
-void TwoBodyInt::permute_1234_to_3421(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4)
+void TwoBodyAOInt::permute_1234_to_3421(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4)
 {
     int f1=nbf3;
     int f2=nbf4;
@@ -296,7 +296,7 @@ void TwoBodyInt::permute_1234_to_3421(double *s, double *t, int nbf1, int nbf2, 
     }
 }
 
-void TwoBodyInt::permute_1234_to_4321(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4)
+void TwoBodyAOInt::permute_1234_to_4321(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4)
 {
     int f1=nbf4;
     int f2=nbf3;
@@ -314,7 +314,7 @@ void TwoBodyInt::permute_1234_to_4321(double *s, double *t, int nbf1, int nbf2, 
     }
 }
 
-void TwoBodyInt::pure_transform(int sh1, int sh2, int sh3, int sh4, int nchunk)
+void TwoBodyAOInt::pure_transform(int sh1, int sh2, int sh3, int sh4, int nchunk)
 {
 #ifdef MINTS_TIMER
     timer_on("Pure transformation");

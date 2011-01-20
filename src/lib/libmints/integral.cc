@@ -57,14 +57,14 @@ void IntegralFactory::set_basis(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> b
     init_spherical_harmonics(max1234->max_am());
 }
 
-OneBodyInt* IntegralFactory::ao_overlap(int deriv)
+OneBodyAOInt* IntegralFactory::ao_overlap(int deriv)
 {
     return new OverlapInt(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
 OneBodySOInt* IntegralFactory::so_overlap(int deriv)
 {
-    shared_ptr<OneBodyInt> ao_int(ao_overlap(deriv));
+    shared_ptr<OneBodyAOInt> ao_int(ao_overlap(deriv));
     return new OneBodySOInt(ao_int, this);
 }
 
@@ -73,49 +73,49 @@ ThreeCenterOverlapInt* IntegralFactory::overlap_3c()
     return new ThreeCenterOverlapInt(spherical_transforms_, bs1_, bs2_, bs3_);
 }
 
-OneBodyInt* IntegralFactory::ao_kinetic(int deriv)
+OneBodyAOInt* IntegralFactory::ao_kinetic(int deriv)
 {
     return new KineticInt(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
 OneBodySOInt* IntegralFactory::so_kinetic(int deriv)
 {
-    shared_ptr<OneBodyInt> ao_int(ao_kinetic(deriv));
+    shared_ptr<OneBodyAOInt> ao_int(ao_kinetic(deriv));
     return new OneBodySOInt(ao_int, this);
 }
 
-OneBodyInt* IntegralFactory::ao_potential(int deriv)
+OneBodyAOInt* IntegralFactory::ao_potential(int deriv)
 {
     return new PotentialInt(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
 OneBodySOInt* IntegralFactory::so_potential(int deriv)
 {
-    shared_ptr<OneBodyInt> ao_int(ao_potential(deriv));
+    shared_ptr<OneBodyAOInt> ao_int(ao_potential(deriv));
     return new OneBodySOInt(ao_int, this);
 }
 
-OneBodyInt* IntegralFactory::electrostatic()
+OneBodyAOInt* IntegralFactory::electrostatic()
 {
     return new ElectrostaticInt(spherical_transforms_, bs1_, bs2_, 0);
 }
 
-OneBodyInt* IntegralFactory::dipole(int deriv)
+OneBodyAOInt* IntegralFactory::dipole(int deriv)
 {
     return new DipoleInt(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
-OneBodyInt* IntegralFactory::quadrupole()
+OneBodyAOInt* IntegralFactory::quadrupole()
 {
     return new QuadrupoleInt(spherical_transforms_, bs1_, bs2_);
 }
 
-OneBodyInt* IntegralFactory::electric_field()
+OneBodyAOInt* IntegralFactory::electric_field()
 {
     return new ElectricFieldInt(spherical_transforms_, bs1_, bs2_);
 }
 
-TwoBodyInt* IntegralFactory::eri(int deriv, double schwarz)
+TwoBodyAOInt* IntegralFactory::eri(int deriv, double schwarz)
 {
     return new ERI(this, deriv, schwarz);
 }

@@ -173,7 +173,7 @@ dfmp2(Options &options, int argc, char *argv[])
 
     shared_ptr<IntegralFactory>
             rifactory(new IntegralFactory(ribasis, zero, basis, basis));
-    shared_ptr<TwoBodyInt> eri(rifactory->eri());
+    shared_ptr<TwoBodyAOInt> eri(rifactory->eri());
     const double *buffer = eri->buffer();
 
     for(int Pshell=0; Pshell < ribasis->nshell(); ++Pshell){

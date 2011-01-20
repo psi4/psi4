@@ -32,23 +32,23 @@ void swap_index(T& a, T& b) {
 class OneBodySOInt
 {
 protected:
-    boost::shared_ptr<OneBodyInt> ob_;
+    boost::shared_ptr<OneBodyAOInt> ob_;
     const IntegralFactory* integral_;
 
-    boost::shared_ptr<SOBasis> b1_;
-    boost::shared_ptr<SOBasis> b2_;
+    boost::shared_ptr<SOBasisSet> b1_;
+    boost::shared_ptr<SOBasisSet> b2_;
 
     double *buffer_;
 
     int only_totally_symmetric_;
 public:
-    OneBodySOInt(const boost::shared_ptr<OneBodyInt>& , const boost::shared_ptr<IntegralFactory> &);
-    OneBodySOInt(const boost::shared_ptr<OneBodyInt>& , const IntegralFactory*);
+    OneBodySOInt(const boost::shared_ptr<OneBodyAOInt>& , const boost::shared_ptr<IntegralFactory> &);
+    OneBodySOInt(const boost::shared_ptr<OneBodyAOInt>& , const IntegralFactory*);
     virtual ~OneBodySOInt();
 
-    boost::shared_ptr<SOBasis> basis() const;
-    boost::shared_ptr<SOBasis> basis1() const;
-    boost::shared_ptr<SOBasis> basis2() const;
+    boost::shared_ptr<SOBasisSet> basis() const;
+    boost::shared_ptr<SOBasisSet> basis1() const;
+    boost::shared_ptr<SOBasisSet> basis2() const;
 
     /**
      * Resulting integral buffer.
@@ -98,13 +98,13 @@ public:
 class TwoBodySOInt
 {
 protected:
-    boost::shared_ptr<TwoBodyInt> tb_;
+    boost::shared_ptr<TwoBodyAOInt> tb_;
     boost::shared_ptr<IntegralFactory> integral_;
 
-    boost::shared_ptr<SOBasis> b1_;
-    boost::shared_ptr<SOBasis> b2_;
-    boost::shared_ptr<SOBasis> b3_;
-    boost::shared_ptr<SOBasis> b4_;
+    boost::shared_ptr<SOBasisSet> b1_;
+    boost::shared_ptr<SOBasisSet> b2_;
+    boost::shared_ptr<SOBasisSet> b3_;
+    boost::shared_ptr<SOBasisSet> b4_;
 
     double *buffer_;
 
@@ -118,15 +118,15 @@ protected:
     void provide_IJKL(int, int, int, int, TwoBodySOIntFunctor& body);
 
 public:
-    TwoBodySOInt(const boost::shared_ptr<TwoBodyInt>&,
+    TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt>&,
                  const boost::shared_ptr<IntegralFactory>&);
     virtual ~TwoBodySOInt();
 
-    boost::shared_ptr<SOBasis> basis() const;
-    boost::shared_ptr<SOBasis> basis1() const;
-    boost::shared_ptr<SOBasis> basis2() const;
-    boost::shared_ptr<SOBasis> basis3() const;
-    boost::shared_ptr<SOBasis> basis4() const;
+    boost::shared_ptr<SOBasisSet> basis() const;
+    boost::shared_ptr<SOBasisSet> basis1() const;
+    boost::shared_ptr<SOBasisSet> basis2() const;
+    boost::shared_ptr<SOBasisSet> basis3() const;
+    boost::shared_ptr<SOBasisSet> basis4() const;
 
     const double *buffer() const { return buffer_; }
 

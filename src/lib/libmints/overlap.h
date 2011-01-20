@@ -11,7 +11,7 @@ namespace psi {
     class BasisSet;
     class GaussianShell;
     class ObaraSaikaTwoCenterRecursion;
-    class OneBodyInt;
+    class OneBodyAOInt;
     class IntegralFactory;
     class SphericalTransform;
     class SimpleMatrix;
@@ -22,7 +22,7 @@ namespace psi {
  *  \brief This class computes overlap integrals and soon overlap integral derivatives.
  *  Use an IntegralFactory to create this object.
  */
-class OverlapInt : public OneBodyInt
+class OverlapInt : public OneBodyAOInt
 {
     /// Generic Obara Saika recursion object.
     ObaraSaikaTwoCenterRecursion overlap_recur_;

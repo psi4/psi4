@@ -9,7 +9,7 @@ namespace psi {
     class BasisSet;
     class GaussianShell;
     class ObaraSaikaTwoCenterRecursion;
-    class OneBodyInt;
+    class OneBodyAOInt;
     class IntegralFactory;
     class SphericalTransform;
     class SimpleMatrix;
@@ -20,7 +20,7 @@ namespace psi {
  *
  * Use an IntegralFactory to create this object.
  */
-class KineticInt : public OneBodyInt
+class KineticInt : public OneBodyAOInt
 {
     //! Obara and Saika recursion object to be used.
     ObaraSaikaTwoCenterRecursion overlap_recur_;

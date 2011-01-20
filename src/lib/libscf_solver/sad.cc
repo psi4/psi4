@@ -89,7 +89,7 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     OneBodySOInt *S_ints = integral.so_overlap();
     OneBodySOInt *T_ints = integral.so_kinetic();
     OneBodySOInt *V_ints = integral.so_potential();
-    TwoBodyInt *TEI = integral.eri();
+    TwoBodyAOInt *TEI = integral.eri();
 
     //Compute Shalf;
     //Fill S
@@ -545,7 +545,7 @@ void RHF::compute_SAD_guess()
         double sad_schwarz = options_.get_double("sad_schwarz_cutoff");
         G_->zero();
         IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
-        TwoBodyInt *tei = integral.eri(0, sad_schwarz);
+        TwoBodyAOInt *tei = integral.eri(0, sad_schwarz);
         const double* buffer = tei->buffer();
         for (int a = 0, shell_offset = 0; a<mol->natom(); a++) {
         for (int mu = shell_offset; mu < shell_offset+atomic_bases[a]->nshell(); mu++) {
