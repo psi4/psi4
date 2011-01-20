@@ -758,7 +758,7 @@ void ERI::compute_quartet(int sh1, int sh2, int sh3, int sh4)
                         libint_.PrimQuartet[nprim].poz = eta * oozn;
                         double rho = zeta * libint_.PrimQuartet[nprim].poz;
                         //                    double rho = (zeta*eta) * oozn;
-//                      double coef1 = double(n) * 2.0 * sqrt(rho*M_1_PI) * overlap12 * p34->overlap[p3][p4];
+//                        double coef1 = double(n) * 2.0 * sqrt(rho*M_1_PI) * overlap12 * p34->overlap[p3][p4];
                         double coef1 = 2.0 * sqrt(rho*M_1_PI) * overlap12 * p34->overlap[p3][p4];
                         double PQ[3];
                         PQ[0] = p12->P[p1][p2][0] - p34->P[p3][p4][0];
