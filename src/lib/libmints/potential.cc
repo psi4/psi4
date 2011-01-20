@@ -16,9 +16,9 @@ PotentialInt::PotentialInt(std::vector<SphericalTransform>& st, shared_ptr<Basis
     int maxam1 = bs1_->max_am();
     int maxam2 = bs2_->max_am();
 
+    // These are equivalent to INT_NCART
 //    int maxnao1 = (maxam1+1)*(maxam1+2)/2;
 //    int maxnao2 = (maxam2+1)*(maxam2+2)/2;
-
     int maxnao1 = INT_NCART(maxam1);
     int maxnao2 = INT_NCART(maxam2);
 

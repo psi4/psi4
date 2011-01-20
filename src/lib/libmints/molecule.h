@@ -333,10 +333,10 @@ public:
     bool is_axis(Vector3& origin, Vector3& axis, int order, double tol=0.05) const;
     /// Is the molecule linear, or planar?
     void is_linear_planar(bool& linear, bool& planar, double tol) const;
-    /// Find highest molecular point group
+    /// Find computational molecular point group, user can override this with the "symmetry" keyword
     boost::shared_ptr<PointGroup> find_point_group(double tol=1.0e-8) const;
     /// Find highest molecular point group
-    boost::shared_ptr<PointGroup> find_point_group2(double tol=1.0e-8) const;
+    boost::shared_ptr<PointGroup> find_highest_point_group(double tol=1.0e-8) const;
     /// Release symmetry information
     void release_symmetry_information();
     /// Initialize molecular specific symemtry information
