@@ -47,6 +47,7 @@ namespace psi {
     namespace mints    { PsiReturnType mints(Options &); }
     namespace deriv    { PsiReturnType deriv(Options &); }
     namespace cscf     { PsiReturnType cscf(Options &);  }
+    namespace mcscf    { PsiReturnType mcscf(Options &); }
     namespace scf      { PsiReturnType scf(Options &);   }
     namespace dfmp2    { PsiReturnType dfmp2(Options &); }
     namespace sapt     { PsiReturnType sapt(Options &);  }
@@ -205,6 +206,16 @@ int py_psi_cints()
 int py_psi_cscf()
 {
     return cscf::cscf(Process::environment.options);
+}
+
+double py_psi_mcscf()
+{
+  if (mcscf::mcscf(Process::environment.options) == Success) {
+    return Process::environment.globals["CURRENT ENERGY"];
+  }
+  else
+    return 0.0;
+
 }
 
 double py_psi_scf()
@@ -547,6 +558,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("mints", py_psi_mints);
     def("deriv", py_psi_deriv);
     def("cscf",  py_psi_cscf);
+    def("mcscf", py_psi_mcscf);
     def("scf",   py_psi_scf);
     def("dcft", py_psi_dcft);
     def("dfmp2", py_psi_dfmp2);

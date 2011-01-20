@@ -10,6 +10,7 @@ procedures = {'energy' : {
             'rohf'          : run_scf,
             'rks'           : run_scf,
             'uks'           : run_scf,
+            'mcscf'         : run_mcscf,
             'dfmp2'         : run_dfmp2,
             'scs-dfmp2'     : run_dfmp2,
             'sapt0'         : run_sapt,

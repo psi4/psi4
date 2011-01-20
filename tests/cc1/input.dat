@@ -1,5 +1,10 @@
 #%! RHF-CCSD 6-31G** all-electron optimization of the H2O molecule
 
+refnuc = 9.0772388468036
+refscf = -76.0219978763
+refccsd = -0.208990979379477
+reftotal = -76.230988855677907
+
 molecule h2o {
     O
     H 1 0.97
@@ -12,10 +17,20 @@ globals {
     dertype first
     docc [3, 0, 1, 1]
     basis 6-31G**
+
+    convergence 11
+    e_converge 11
+    d_converge 11
 }
 
+activate(h2o)
 mints()
 energy('ccsd')
+
+compare_values(refnuc,   h2o.nuclear_repulsion_energy(),  9, "Nuclear repulsion energy")
+compare_values(refscf,   get_variable("SCF energy"),     9, "SCF energy")
+compare_values(refccsd,  get_variable("CCSD energy"),    8, "CCSD contribution")
+compare_values(reftotal, get_variable("Current energy"), 8, "Total energy")
 
 #psi: (
 #  label = "RHF CCSD gradient"

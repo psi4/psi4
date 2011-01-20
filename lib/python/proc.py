@@ -20,6 +20,23 @@ def run_scf(name, **kwargs):
 # with a standard guess. This preserves previous SCF options
 # set by other procedures (eg. SAPT output file types for SCF)
 
+def run_mcscf(name, **kwargs):
+    molecule = PsiMod.get_active_molecule()
+    if (kwargs.has_key('molecule')):
+      molecule = kwargs.pop('molecule')
+
+    if not molecule:
+      raise ValueNotSet("no molecule found")
+
+    molecule.update_geometry()
+    PsiMod.set_default_options_for_module("MCSCF")
+    return PsiMod.mcscf()
+
+# SCF helper chooses whether to cast up or just run SCF
+# with a standard guess. This preserves previous SCF options
+# set by other procedures (eg. SAPT output file types for SCF)
+
+
 def scf_helper(name, **kwargs):
 
     cast = False
