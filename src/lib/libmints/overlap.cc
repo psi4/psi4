@@ -25,7 +25,7 @@ OverlapInt::OverlapInt(std::vector<SphericalTransform>& st, shared_ptr<BasisSet>
     if (deriv == 1) {
         maxnao1 *= 3 * natom_;
         maxnao2 *= 3 * natom_;
-    } else {
+    } else if (deriv == 2){
         maxnao1 *= 9 * natom_;
         maxnao2 *= 9 * natom_;
     }

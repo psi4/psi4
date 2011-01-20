@@ -196,12 +196,12 @@ void OneBodyAOInt::compute(boost::shared_ptr<SimpleMatrix> result)
     int ns1 = bs1_->nshell();
     int ns2 = bs2_->nshell();
 
-    int i_offset=0, j_offset=0;
+    int i_offset=0;
     double *location;
 
     for (int i=0; i<ns1; ++i) {
         int ni = bs1_->shell(i)->nfunction();
-
+        int j_offset=0;
         for (int j=0; j<ns2; ++j) {
             int nj = bs2_->shell(j)->nfunction();
 
