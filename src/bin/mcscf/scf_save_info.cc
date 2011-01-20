@@ -48,6 +48,9 @@ void SCF::save_info()
   chkpt_->wt_escf(total_energy);
   chkpt_->wt_eref(total_energy);
 
+  Process::environment.globals["MCSCF ENERGY"] = total_energy;
+  Process::environment.globals["CURRENT ENERGY"] = total_energy;
+
   // Write the orbitals per irreps arrays
   chkpt_->wt_orbspi(&sopi[0]);
   chkpt_->wt_clsdpi(&docc[0]);

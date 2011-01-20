@@ -1,20 +1,54 @@
-%! ROHF-CCSD(T) cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the CN radical, with Cartesian input.
+#%! ROHF-CCSD(T) cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the CN radical, with Cartesian input.
 
-psi: (
-  label = "ROHF-CCSD(T)/cc-pVDZ 2Sigma+ CN"
-  jobtype = sp
-  wfn = ccsd_t
-  reference = rohf
-  multi = 2
-  dertype = none
-  docc = (4 0 1 1)
-  socc = (1 0 0 0)
-  freeze_core = true
-  maxiter = 100
-  basis = "cc-pVDZ"
-  units = bohr
-  geometry = (
-     C  0.000000000000      0.000000000000      1.195736583480
-     N  0.000000000000      0.000000000000     -1.024692078304
-  )
-)
+refnuc = 18.9152665531957
+refscf = -92.1955565653
+refccsd = -0.281342908547054
+ref_t = -0.013974091470867
+reftotal = -92.490873565295587
+
+molecule CN {
+ C  0.000000000000      0.000000000000      1.195736583480
+ N  0.000000000000      0.000000000000     -1.024692078304
+}
+
+globals {
+  reference rohf
+  wfn ccsd_t
+  basis cc-pVDZ
+  docc [4, 0, 1, 1]
+  socc [1, 0, 0, 0]
+  freeze_core TRUE
+  
+  convergence 10
+  e_converge 10
+  d_converge 10
+}
+
+activate(CN)
+mints()
+energy('ccsd(t)')
+
+compare_values(refnuc,   CN.nuclear_repulsion_energy(),  9, "Nuclear repulsion energy")
+compare_values(refscf,   get_variable("SCF energy"),     9, "SCF energy")
+compare_values(refccsd,  get_variable("CCSD energy"),    9, "CCSD contribution")
+compare_values(ref_t,    get_variable("(T) energy"),     9, "(T) contribution")
+compare_values(reftotal, get_variable("Current energy"), 9, "Total energy")
+
+#psi: (
+#  label = "ROHF-CCSD(T)/cc-pVDZ 2Sigma+ CN"
+#  jobtype = sp
+#  wfn = ccsd_t
+#  reference = rohf
+#  multi = 2
+#  dertype = none
+#  docc = (4 0 1 1)
+#  socc = (1 0 0 0)
+#  freeze_core = true
+#  maxiter = 100
+#  basis = "cc-pVDZ"
+#  units = bohr
+#  geometry = (
+#     C  0.000000000000      0.000000000000      1.195736583480
+#     N  0.000000000000      0.000000000000     -1.024692078304
+#  )
+#)
