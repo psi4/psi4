@@ -737,7 +737,6 @@ SO_block* PetiteList::aotoso_info()
         int len = (ct.gamma(ir).complex()) ? nbf_in_ir_[ir]/2 : nbf_in_ir_[ir];
         SOs[i].set_length(len);
     }
-
     // loop over all unique shells
     for (iuniq=0; iuniq < mol.nunique(); iuniq++) {
         int nequiv = mol.nequivalent(iuniq);
@@ -842,7 +841,7 @@ SO_block* PetiteList::aotoso_info()
 //                    print_mat(u, nfuncuniq, nfuncuniq, outfile);
 //                    fprintf(outfile, "linorbcop:\n");
 //                    print_mat(linorbcop, nfuncuniq, nfuncuniq, outfile);
-//                    fprintf(outfile, "singval:\n");
+//                    fprintf(outfile, "singval:\n");fflush(outfile);
 //                    for (int z=0; z<nfuncuniq; ++z)
 //                        fprintf(outfile, "%lf ", singval[z]);
 //                    fprintf(outfile, "\n");

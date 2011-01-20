@@ -1255,22 +1255,9 @@ Molecule::update_geometry()
 
     move_to_com();
     reorient();
-
     // Check the point group of the molecule. If it is not set, set it.
     if (!point_group()) {
         shared_ptr<PointGroup> pg = find_point_group();
-        if (!symmetry_from_input().empty()) {
-            // If they're not the same
-            if (symmetry_from_input() != pg->symbol()) {
-                shared_ptr<PointGroup> user(new PointGroup(symmetry_from_input().c_str()));
-
-                // Make sure user is subgroup of pg
-                CorrelationTable corrtable(pg, user);
-
-                // If we make it here, the user specified is good.
-                pg = user;
-            }
-        }
         set_point_group(pg);
     }
 }
@@ -2144,6 +2131,19 @@ found_sigma:
 
     fprintf(outfile, "\n  Molecular point group: %s\n\n", pg->symbol());
 
+    if (!symmetry_from_input().empty()) {
+        // If they're not the same
+        if (symmetry_from_input() != pg->symbol()) {
+            shared_ptr<PointGroup> user(new PointGroup(symmetry_from_input().c_str()));
+
+            // Make sure user is subgroup of pg
+            CorrelationTable corrtable(pg, user);
+
+            // If we make it here, the user specified is good.
+            pg = user;
+        }
+    }
+
     return pg;
 }
 
@@ -2223,6 +2223,7 @@ void Molecule::form_symmetry_information(double tol)
         equiv_   = 0;
         nequiv_  = 0;
         atom_to_unique_ = 0;
+        fprintf(outfile, "No atoms detected, returning\n");fflush(outfile);
         return;
     }
 
@@ -2238,6 +2239,7 @@ void Molecule::form_symmetry_information(double tol)
             equiv_[i][0] = i;
             atom_to_unique_[i] = i;
         }
+        fprintf(outfile, "C1 detected, returning\n");fflush(outfile);
         return;
     }
 
