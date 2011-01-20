@@ -11,6 +11,7 @@
 #include "plugin.h"
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
+#include <libparallel/parallel.h>
 
 
 namespace psi {
@@ -78,7 +79,7 @@ plugin_info plugin_load(std::string& plugin_pathname)
 
 plugin_info plugin_load(std::string& plugin_path)
 {
-    fprintf(outfile, "Plugins are not supported on your platform.\n");
+    throw PSIEXCEPTION("Plugins are not supported on your platform.\n");
     return plugin_info();
 }
 
