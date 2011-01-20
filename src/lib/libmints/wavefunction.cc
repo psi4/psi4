@@ -56,27 +56,15 @@ void Wavefunction::common_init()
         // Take the molecule from the environment
         molecule_ = Process::environment.molecule();
 
-        // Check the point group of the molecule. If it is not set, set it.
-        if (!molecule_->point_group()) {
-            shared_ptr<PointGroup> pg = molecule_->find_point_group();
-            if (!molecule_->symmetry_from_input().empty()) {
-                // If they're not the same
-                if (molecule_->symmetry_from_input() != pg->symbol()) {
-                    shared_ptr<PointGroup> user(new PointGroup(molecule_->symmetry_from_input().c_str()));
-
-                    // Make sure user is subgroup of pg
-                    CorrelationTable corrtable(pg, user);
-
-                    // If we make it here user is good.
-                    pg = user;
-                }
-            }
-            molecule_->set_point_group(pg);
-        }
 
         // Load in the basis set
         shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
         basisset_ = BasisSet::construct(parser, molecule_, options_.get_str("BASIS"));
+
+        // Check the point group of the molecule. If it is not set, set it.
+        if (!molecule_->point_group()) {
+            molecule_->set_point_group(molecule_->find_point_group());
+        }
 
         // Create an SO basis...we need the point group for this part.
         shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
