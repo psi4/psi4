@@ -218,217 +218,6 @@ void OneBodySOInt::compute(boost::shared_ptr<Matrix> result)
     }
 }
 
-void OneBodySOInt::compute_petitelist(boost::shared_ptr<Matrix> result)
-{
-    // Do not worry about zeroing out result
-    int ns1 = b1_->nshell();
-    int ns2 = b2_->nshell();
-    const double *aobuf = ob_->buffer();
-
-    // Check symmetry.
-    if (b1_->nirrep() == 1) {
-        // Molecule has C1 symmetry. Need to use the ob_ object to get a SimpleMatrix.
-        throw FeatureNotImplemented("libmints", "OneBodySOInt with C1 symmetry. Need to direct the code to OneBodyInt.", __FILE__, __LINE__);
-    }
-
-    shared_ptr<PetiteList> petite = b1_->petitelist();
-
-    for (int ish=0; ish<ns1; ++ish) {
-        for (int jsh=0; jsh<=ish; ++jsh) {
-
-            const SOTransform &t1 = b1_->trans(ish);
-            const SOTransform &t2 = b2_->trans(jsh);
-
-            int nso1 = b1_->nfunction(ish);
-            int nso2 = b2_->nfunction(jsh);
-
-            memset(buffer_, 0, nso1*nso2*sizeof(double));
-
-            int nao2 = b2_->naofunction(jsh);
-
-            fprintf(outfile, "ish = %d, jsh = %d\n", ish, jsh);
-
-            // I want to test only calling compute_shell for the first t1 and t2 aoshell pair
-            // and then using the transformation coefficients to obtain everything else.
-            // Otherwise using the petite list doesn't save us any computational time
-            // in computing the integrals, but does save us time when we use the integrals.
-
-            // loop through the AO shells that make up this SO shell
-            // by the end of these 4 for loops we will have our final integral in buffer_
-            for (int i=0; i<t1.naoshell; ++i) {
-                const SOTransformShell &s1 = t1.aoshell[i];
-
-                if (!petite->in_p1(s1.aoshell)) {
-                    fprintf(outfile, "skipping i = %d\n", i);
-                    continue;
-                }
-
-                for (int j=0; j<t2.naoshell; ++j) {
-                    const SOTransformShell &s2 = t2.aoshell[j];
-
-                    double lambda = (double)petite->lambda(s1.aoshell, s2.aoshell);
-
-                    fprintf(outfile, "i = %d, j = %d, in_p2 = %d lambda = %8.5f\n",
-                            s1.aoshell, s2.aoshell, petite->in_p2(s1.aoshell, s2.aoshell),
-                            lambda);
-
-                    ob_->compute_shell(s1.aoshell, s2.aoshell);
-
-                    for (int itr=0; itr<s1.nfunc; ++itr) {
-                        const SOTransformFunction &ifunc = s1.func[itr];
-                        double icoef = ifunc.coef;
-                        int iaofunc = ifunc.aofunc;
-                        int isofunc = b1_->function_offset_within_shell(ish, ifunc.irrep) + ifunc.sofunc;
-                        int iaooff = iaofunc;
-                        int isooff = isofunc;
-                        int iirrep = ifunc.irrep;
-
-                        for (int jtr=0; jtr<s2.nfunc; ++jtr) {
-                            const SOTransformFunction &jfunc = s2.func[jtr];
-                            double jcoef = jfunc.coef * icoef;
-                            int jaofunc = jfunc.aofunc;
-                            int jsofunc = b2_->function_offset_within_shell(jsh, jfunc.irrep) + jfunc.sofunc;
-                            int jaooff = iaooff*nao2 + jaofunc;
-                            int jsooff = isooff*nso2 + jsofunc;
-                            int jirrep = jfunc.irrep;
-
-                            buffer_[jsooff] += jcoef * aobuf[jaooff] * lambda;
-
-                            if (fabs(aobuf[jaooff]*jcoef) > 1.0e-10) {
-//                                fprintf(outfile, "(%2d|%2d) += %+6f * (%2d|%2d): %+6f -> %+6f iirrep = %d ifunc = %d, jirrep = %d jfunc = %d\n",
-//                                        isofunc, jsofunc, jcoef, iaofunc, jaofunc, aobuf[jaooff], buffer_[jsooff],
-//                                        ifunc.irrep, b1_->function_within_irrep(ish, isofunc),
-//                                        jfunc.irrep, b2_->function_within_irrep(jsh, jsofunc));
-                                fprintf(outfile, "(%d|%d) += %8.5f * %8.5f * (%d|%d): %8.5f -> %8.5f\n",
-                                        isofunc, jsofunc, lambda, jcoef, iaofunc, jaofunc, aobuf[jaooff], buffer_[jsooff]);
-                            }
-
-                            // Check the irreps to ensure symmetric quantities.
-                            if (ifunc.irrep == jfunc.irrep)
-                                result->add(ifunc.irrep,
-                                            b1_->function_within_irrep(ish, isofunc),
-                                            b2_->function_within_irrep(jsh, jsofunc),
-                                            jcoef * aobuf[jaooff] * lambda);
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-#if 0
-void OneBodySOInt::compute_dcr(boost::shared_ptr<Matrix> result)
-{
-    // Do not worry about zeroing out result
-    int ns1 = b1_->nshell();
-    int ns2 = b2_->nshell();
-    const double *aobuf = ob_->buffer();
-
-    shared_ptr<PetiteList> petite = b1_->petitelist();
-
-    // Check symmetry.
-    if (b1_->nirrep() == 1) {
-        // Molecule has C1 symmetry. Need to use the ob_ object to get a SimpleMatrix.
-        throw FeatureNotImplemented("libmints", "OneBodySOInt with C1 symmetry. Need to direct the code to OneBodyInt.", __FILE__, __LINE__);
-    }
-
-    for (int usi=0; usi<ns1; ++usi) {
-
-        // Not sure if this check is needed.
-        for (int usj=0; usj<=usi; ++usj) {
-
-            const SOTransform &t1 = b1_->trans(usi);
-            const SOTransform &t2 = b2_->trans(usj);
-
-            int nso1 = b1_->nfunction(usi);
-            int nso2 = b2_->nfunction(usj);
-
-            memset(buffer_, 0, nso1*nso2*sizeof(double));
-
-            int nao2 = b2_->naofunction(usj);
-
-            fprintf(outfile, "ish = %d, jsh = %d\n", usi, usj);
-
-            // I want to test only calling compute_shell for the first t1 and t2 aoshell pair
-            // and then using the transformation coefficients to obtain everything else.
-            // Otherwise using the petite list doesn't save us any computational time
-            // in computing the integrals, but does save us time when we use the integrals.
-
-            // loop through the AO shells that make up this SO shell
-            // by the end of these 4 for loops we will have our final integral in buffer_
-            for (int i=0; i<t1.naoshell; ++i) {
-                const SOTransformShell &s1 = t1.aoshell[i];
-
-                if (!petite->in_p1(s1.aoshell)) {
-                    fprintf(outfile, "skipping i = %d\n", i);
-                    continue;
-                }
-
-                int atom_i = integral_->basis1()->shell(s1.aoshell)->ncenter();
-                unsigned int stab_i = petite->stabilizer(atom_i);
-
-                for (int j=0; j<t2.naoshell; ++j) {
-                    const SOTransformShell &s2 = t2.aoshell[j];
-
-                    int atom_j = integral_->basis2()->shell(s2.aoshell)->ncenter();
-                    unsigned int stab_j = petite->stabilizer(atom_j);
-
-                    unsigned rOperator = petite->dcr(stab_i, stab_j);
-                    double lambda = petite->order() / petite->dcr_degeneracy(rOperator);
-
-                    fprintf(outfile, "i = %d, j = %d, in_p2 = %d stab_i = %d stab_j = %d lambda = %8.5f order = %d, degen = %d\n",
-                            s1.aoshell, s2.aoshell, petite->in_p2(s1.aoshell, s2.aoshell),
-                            stab_i, stab_j, lambda, petite->order(), petite->dcr_degeneracy(rOperator));
-
-                    ob_->compute_shell(s1.aoshell, s2.aoshell);
-
-                    for (int itr=0; itr<s1.nfunc; ++itr) {
-                        const SOTransformFunction &ifunc = s1.func[itr];
-                        double icoef = ifunc.coef;
-                        int iaofunc = ifunc.aofunc;
-                        int isofunc = b1_->function_offset_within_shell(usi, ifunc.irrep) + ifunc.sofunc;
-                        int iaooff = iaofunc;
-                        int isooff = isofunc;
-                        int iirrep = ifunc.irrep;
-
-                        for (int jtr=0; jtr<s2.nfunc; ++jtr) {
-                            const SOTransformFunction &jfunc = s2.func[jtr];
-                            double jcoef = jfunc.coef * icoef;
-                            int jaofunc = jfunc.aofunc;
-                            int jsofunc = b2_->function_offset_within_shell(usj, jfunc.irrep) + jfunc.sofunc;
-                            int jaooff = iaooff*nao2 + jaofunc;
-                            int jsooff = isooff*nso2 + jsofunc;
-                            int jirrep = jfunc.irrep;
-
-                            buffer_[jsooff] += jcoef * aobuf[jaooff] * lambda;
-
-                            //                            if (fabs(aobuf[jaooff]*jcoef) > 1.0e-10) {
-                            //                                fprintf(outfile, "(%2d|%2d) += %+6f * (%2d|%2d): %+6f -> %+6f iirrep = %d ifunc = %d, jirrep = %d jfunc = %d\n",
-                            //                                        isofunc, jsofunc, jcoef, iaofunc, jaofunc, aobuf[jaooff], buffer_[jsooff],
-                            //                                        ifunc.irrep, b1_->function_within_irrep(ish, isofunc),
-                            //                                        jfunc.irrep, b2_->function_within_irrep(jsh, jsofunc));
-                            //                                fprintf(outfile, "(%d|%d) += %8.5f * (%d|%d): %8.5f -> %8.5f\n",
-                            //                                        isofunc, jsofunc, jcoef, iaofunc, jaofunc, aobuf[jaooff], buffer_[jsooff]);
-                            //                            }
-
-                            // Check the irreps to ensure symmetric quantities.
-                            if (ifunc.irrep == jfunc.irrep)
-                                result->add(ifunc.irrep,
-                                            b1_->function_within_irrep(usi, isofunc),
-                                            b2_->function_within_irrep(usj, jsofunc),
-                                            jcoef * aobuf[jaooff] * lambda);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    result->copy_lower_to_upper();
-}
-#endif
-
 ///////////////////////////////////////////////////////////////////////////////
 
 TwoBodySOInt::TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt> &tb,
@@ -458,6 +247,18 @@ TwoBodySOInt::TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt> &tb,
             *INT_NCART(tb->basis2()->max_am())
             *INT_NCART(tb->basis3()->max_am())
             *INT_NCART(tb->basis4()->max_am())];
+
+    ::memset(iirrepoff_, 0, sizeof(int) * 8);
+    ::memset(jirrepoff_, 0, sizeof(int) * 8);
+    ::memset(kirrepoff_, 0, sizeof(int) * 8);
+    ::memset(lirrepoff_, 0, sizeof(int) * 8);
+
+    for (int h=1; h<b1_->nirrep(); ++h) {
+        iirrepoff_[h] = iirrepoff_[h-1] + b1_->nfunction_in_irrep(h-1);
+        jirrepoff_[h] = jirrepoff_[h-1] + b2_->nfunction_in_irrep(h-1);
+        kirrepoff_[h] = kirrepoff_[h-1] + b3_->nfunction_in_irrep(h-1);
+        lirrepoff_[h] = lirrepoff_[h-1] + b4_->nfunction_in_irrep(h-1);
+    }
 }
 
 TwoBodySOInt::~TwoBodySOInt()
