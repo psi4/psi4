@@ -54,7 +54,7 @@ void HF::form_A()
         double max_global_val;
 
         IntegralFactory schwarzfactory(basisset_,basisset_,basisset_,basisset_);
-        shared_ptr<TwoBodyInt> eri = shared_ptr<TwoBodyInt>(schwarzfactory.eri());
+        shared_ptr<TwoBodyAOInt> eri = shared_ptr<TwoBodyAOInt>(schwarzfactory.eri());
         const double *buffer = eri->buffer();
 
         int MU, NU, mu, nu,omu,onu, nummu, numnu, index;
@@ -157,7 +157,7 @@ void HF::form_A()
 
     // Create integral factory for J (Fitting Matrix in form_B)
     IntegralFactory rifactory_J(ribasis_, zero, ribasis_, zero);
-    shared_ptr<TwoBodyInt> Jint = shared_ptr<TwoBodyInt>(rifactory_J.eri());
+    shared_ptr<TwoBodyAOInt> Jint = shared_ptr<TwoBodyAOInt>(rifactory_J.eri());
 
     // Integral buffer
     const double *Jbuffer = Jint->buffer();
@@ -245,7 +245,7 @@ void HF::form_A()
     if (df_storage_ == core)
     {
         IntegralFactory rifactory(basisset_, basisset_, ribasis_, zero);
-        shared_ptr<TwoBodyInt> eri = shared_ptr<TwoBodyInt>(rifactory.eri());
+        shared_ptr<TwoBodyAOInt> eri = shared_ptr<TwoBodyAOInt>(rifactory.eri());
         const double *buffer = eri->buffer();
         A_ia_P_ = block_matrix(naux_fin_,ntri_naive_);
 
@@ -306,7 +306,7 @@ void HF::form_A()
         psio_address next_PSIF_DFSCF_BJI = PSIO_ZERO;
 
         IntegralFactory rifactory(basisset_, basisset_, ribasis_,zero);
-        shared_ptr<TwoBodyInt> eri = shared_ptr<TwoBodyInt>(rifactory.eri());
+        shared_ptr<TwoBodyAOInt> eri = shared_ptr<TwoBodyAOInt>(rifactory.eri());
         const double *buffer = eri->buffer();
         int maxPfun = 0;
         for (int m = 0; m<ribasis_->nshell(); m++)

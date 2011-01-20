@@ -616,8 +616,8 @@ void HF::form_multipole_integrals()
     IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
 
     // Get a dipole integral object
-    OneBodyInt* dipole = integral.dipole();
-    OneBodyInt* quadrupole= integral.quadrupole();
+    OneBodyAOInt* dipole = integral.dipole();
+    OneBodyAOInt* quadrupole= integral.quadrupole();
 
     // Compute the dipole integrals
     dipole->compute(Dipole_);

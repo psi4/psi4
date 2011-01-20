@@ -319,7 +319,7 @@ void DFMP2::form_Schwarz()
         double max_global_val = 0.0;
 
         IntegralFactory schwarzfactory(basisset_,basisset_,basisset_,basisset_);
-        shared_ptr<TwoBodyInt> eri = shared_ptr<TwoBodyInt>(schwarzfactory.eri());
+        shared_ptr<TwoBodyAOInt> eri = shared_ptr<TwoBodyAOInt>(schwarzfactory.eri());
         const double *buffer = eri->buffer();
 
         int MU, NU, mu, nu,omu,onu, nummu, numnu, index;
@@ -372,7 +372,7 @@ double** DFMP2::form_W(shared_ptr<BasisSet> bas)
 
   int naux = bas->nbf();
 
-  shared_ptr<TwoBodyInt> Jint = (shared_ptr<TwoBodyInt>)rifactory_J.eri();
+  shared_ptr<TwoBodyAOInt> Jint = (shared_ptr<TwoBodyAOInt>)rifactory_J.eri();
   const double *Jbuffer = Jint->buffer();
 
   double **J = block_matrix(naux, naux);
@@ -793,9 +793,9 @@ void DFMP2::form_Aia_disk()
   IntegralFactory rifactory(ribasis_,zerobasis_, basisset_, basisset_);
   //Get a TEI for each thread
   const double **buffer = new const double*[nthread];
-  shared_ptr<TwoBodyInt> *eri = new shared_ptr<TwoBodyInt>[nthread];
+  shared_ptr<TwoBodyAOInt> *eri = new shared_ptr<TwoBodyAOInt>[nthread];
   for (int Q = 0; Q<nthread; Q++) {
-    eri[Q] = shared_ptr<TwoBodyInt>(rifactory.eri());
+    eri[Q] = shared_ptr<TwoBodyAOInt>(rifactory.eri());
     buffer[Q] = eri[Q]->buffer();
   }
 
@@ -1259,9 +1259,9 @@ double** DFMP2::form_Aia_core()
   IntegralFactory rifactory(ribasis_,zerobasis_, basisset_, basisset_);
   //Get a TEI for each thread
   const double **buffer = new const double*[nthread];
-  shared_ptr<TwoBodyInt> *eri = new shared_ptr<TwoBodyInt>[nthread];
+  shared_ptr<TwoBodyAOInt> *eri = new shared_ptr<TwoBodyAOInt>[nthread];
   for (int Q = 0; Q<nthread; Q++) {
-    eri[Q] = shared_ptr<TwoBodyInt>(rifactory.eri());
+    eri[Q] = shared_ptr<TwoBodyAOInt>(rifactory.eri());
     buffer[Q] = eri[Q]->buffer();
   }
 
@@ -1768,8 +1768,8 @@ double DFMP2::compute_E_old()
   IntegralFactory rifactory(ribasis, zero, basisset_, basisset_);
   IntegralFactory rifactory_J(ribasis, zero, ribasis, zero);
 
-  TwoBodyInt* eri = rifactory.eri();
-  TwoBodyInt* Jint = rifactory_J.eri();
+  TwoBodyAOInt* eri = rifactory.eri();
+  TwoBodyAOInt* Jint = rifactory_J.eri();
   double **J = block_matrix(naux, naux);
   double **J_mhalf = block_matrix(naux, naux);
   const double *Jbuffer = Jint->buffer();

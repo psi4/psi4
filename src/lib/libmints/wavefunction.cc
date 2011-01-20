@@ -80,7 +80,7 @@ void Wavefunction::common_init()
 
         // Create an SO basis...we need the point group for this part.
         shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-        sobasisset_ = shared_ptr<SOBasis>(new SOBasis(basisset_, integral));
+        sobasisset_ = shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral));
 
         // Obtain the dimension object to initialize the factory.
         const Dimension dimension = sobasisset_->dimension();
@@ -155,7 +155,7 @@ boost::shared_ptr<BasisSet> Wavefunction::basisset() const
     return basisset_;
 }
 
-boost::shared_ptr<SOBasis> Wavefunction::sobasisset() const
+boost::shared_ptr<SOBasisSet> Wavefunction::sobasisset() const
 {
     return sobasisset_;
 }

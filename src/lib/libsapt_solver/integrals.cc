@@ -51,7 +51,7 @@ void SAPT2B::df_ints()
   // Create integral factory
   IntegralFactory rifactory_J(ribasis_, zero_, ribasis_, zero_);
 
-  TwoBodyInt* Jint = rifactory_J.eri();
+  TwoBodyAOInt* Jint = rifactory_J.eri();
 //double **calc_info_.J = block_matrix(ribasis_->nbf(), ribasis_->nbf());
   double **J = block_matrix(ribasis_->nbf(), ribasis_->nbf());
   double **J_mhalf = block_matrix(ribasis_->nbf(),ribasis_->nbf());
@@ -135,7 +135,7 @@ void SAPT2B::df_ints()
   // Get Schwartz screening arrays
 
   IntegralFactory ao_eri_factory(basisset_, basisset_, basisset_, basisset_);
-  TwoBodyInt* ao_eri = ao_eri_factory.eri();
+  TwoBodyAOInt* ao_eri = ao_eri_factory.eri();
   const double *ao_buffer = ao_eri->buffer();
 
   double *Schwartz = init_array(basisset_->nshell() * (basisset_->nshell()+1) / 2);
@@ -175,7 +175,7 @@ void SAPT2B::df_ints()
 
   // find out the max number of P's in a P shell
   IntegralFactory rifactory(ribasis_, zero_, basisset_, basisset_);
-  TwoBodyInt** eri;
+  TwoBodyAOInt** eri;
   const double **buffer;
 
   int nthreads = 1;
@@ -184,7 +184,7 @@ void SAPT2B::df_ints()
   #endif
   int rank = 0;
 
-  eri = new TwoBodyInt*[nthreads];
+  eri = new TwoBodyAOInt*[nthreads];
   buffer = new const double*[nthreads];
   for(int i = 0;i < nthreads;++i){
     eri[i] = rifactory.eri();
@@ -834,7 +834,7 @@ void SAPT3B::df_ints()
   // Create integral factory
   IntegralFactory rifactory_J(ribasis_, zero_, ribasis_, zero_);
 
-  TwoBodyInt* Jint = rifactory_J.eri();
+  TwoBodyAOInt* Jint = rifactory_J.eri();
 //double **calc_info_.J = block_matrix(ribasis_->nbf(), ribasis_->nbf());
   double **J = block_matrix(ribasis_->nbf(), ribasis_->nbf());
   double **J_mhalf = block_matrix(ribasis_->nbf(),ribasis_->nbf());
@@ -918,7 +918,7 @@ void SAPT3B::df_ints()
   // Get Schwartz screening arrays
 
   IntegralFactory ao_eri_factory(basisset_, basisset_, basisset_, basisset_);
-  TwoBodyInt* ao_eri = ao_eri_factory.eri();
+  TwoBodyAOInt* ao_eri = ao_eri_factory.eri();
   const double *ao_buffer = ao_eri->buffer();
 
   double *Schwartz = init_array(basisset_->nshell() * (basisset_->nshell()+1) / 2);
@@ -958,7 +958,7 @@ void SAPT3B::df_ints()
 
   // find out the max number of P's in a P shell
   IntegralFactory rifactory(ribasis_, zero_, basisset_, basisset_);
-  TwoBodyInt** eri;
+  TwoBodyAOInt** eri;
   const double **buffer;
 
   int nthreads = 1;
@@ -967,7 +967,7 @@ void SAPT3B::df_ints()
   #endif
   int rank = 0;
 
-  eri = new TwoBodyInt*[nthreads];
+  eri = new TwoBodyAOInt*[nthreads];
   buffer = new const double*[nthreads];
   for(int i = 0;i < nthreads;++i){
     eri[i] = rifactory.eri();

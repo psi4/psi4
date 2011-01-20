@@ -30,9 +30,9 @@ integrals(Options &options, int argc, char *argv[])
             (basis, basis, basis, basis));
 
     // Form the one-electron integral objects from the integral factory
-    shared_ptr<OneBodyInt> sOBI(integral->overlap());
-    shared_ptr<OneBodyInt> tOBI(integral->kinetic());
-    shared_ptr<OneBodyInt> vOBI(integral->potential());
+    shared_ptr<OneBodyAOInt> sOBI(integral->overlap());
+    shared_ptr<OneBodyAOInt> tOBI(integral->kinetic());
+    shared_ptr<OneBodyAOInt> vOBI(integral->potential());
     // Form the one-electron integral matrices from the matrix factory
     shared_ptr<Matrix> sMat(factory->create_matrix("Overlap"));
     shared_ptr<Matrix> tMat(factory->create_matrix("Kinetic"));
@@ -62,7 +62,7 @@ integrals(Options &options, int argc, char *argv[])
         if(chkpt->rd_nso() > 99) 
             throw PsiException("This code can only handle fewer than 100 basis functions", __FILE__, __LINE__);
         // Now, the two-electron integrals
-        shared_ptr<TwoBodyInt> eri(integral->eri());
+        shared_ptr<TwoBodyAOInt> eri(integral->eri());
         // The buffer will hold the integrals for each shell, as they're computed
         const double *buffer = eri->buffer();
         // The iterator conveniently lets us iterate over functions within shells

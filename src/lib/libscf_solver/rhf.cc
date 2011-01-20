@@ -1488,7 +1488,7 @@ void RHF::form_G_from_direct_integrals()
     timer_on("form_G_from_direct_integrals");
     if (!eri_) {
         shared_ptr<IntegralFactory> integral = shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-        shared_ptr<TwoBodyInt> aoeri = shared_ptr<TwoBodyInt>(integral->eri());
+        shared_ptr<TwoBodyAOInt> aoeri = shared_ptr<TwoBodyAOInt>(integral->eri());
         eri_ = shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoeri, integral));
     }
 

@@ -103,7 +103,7 @@ class SOTransform {
 
 /** An SOBasis object describes the transformation from an atomic orbital basis
     to a symmetry orbital basis. */
-class SOBasis
+class SOBasisSet
 {
 protected:
     boost::shared_ptr<BasisSet> basis_;
@@ -129,9 +129,9 @@ protected:
 
 public:
     /// Create an SOBasis object given a BasisSet and Integral objects.
-    SOBasis(const boost::shared_ptr<BasisSet>&, const boost::shared_ptr<IntegralFactory>&);
-    SOBasis(const boost::shared_ptr<BasisSet>&, const IntegralFactory*);
-    ~SOBasis();
+    SOBasisSet(const boost::shared_ptr<BasisSet>&, const boost::shared_ptr<IntegralFactory>&);
+    SOBasisSet(const boost::shared_ptr<BasisSet>&, const IntegralFactory*);
+    ~SOBasisSet();
 
     /// Return the number of shells.
     int nshell() const { return nshell_; }
@@ -182,22 +182,22 @@ public:
     void print(FILE *out = outfile) const;
 };
 
-inline int SOBasis::function(int ishell)
+inline int SOBasisSet::function(int ishell)
 {
   return func_[ishell];
 }
 
-inline int SOBasis::irrep(int ishell, int ifunc) const
+inline int SOBasisSet::irrep(int ishell, int ifunc) const
 {
   return irrep_[func_[ishell]+ifunc];
 }
 
-inline int SOBasis::irrep(int ifunc) const
+inline int SOBasisSet::irrep(int ifunc) const
 {
   return irrep_[ifunc];
 }
 
-inline int SOBasis::function_offset_for_irrep(int irrep) const
+inline int SOBasisSet::function_offset_for_irrep(int irrep) const
 {
   int r = 0;
   for (int i=0; i<irrep; i++) {
@@ -206,22 +206,22 @@ inline int SOBasis::function_offset_for_irrep(int irrep) const
   return r;
 }
 
-inline int SOBasis::function_within_irrep(int ishell, int ifunc) const
+inline int SOBasisSet::function_within_irrep(int ishell, int ifunc) const
 {
   return func_within_irrep_[func_[ishell]+ifunc];
 }
 
-inline int SOBasis::function_within_irrep(int ifunc) const
+inline int SOBasisSet::function_within_irrep(int ifunc) const
 {
   return func_within_irrep_[ifunc];
 }
 
-inline int SOBasis::nfunction(int ishell, int iirrep) const
+inline int SOBasisSet::nfunction(int ishell, int iirrep) const
 {
   return nfunc_[ishell][iirrep];
 }
 
-inline int SOBasis::function_offset_within_shell(int ishell, int iirrep) const
+inline int SOBasisSet::function_offset_within_shell(int ishell, int iirrep) const
 {
   return funcoff_[ishell][iirrep];
 }

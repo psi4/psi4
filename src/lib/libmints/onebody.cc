@@ -44,7 +44,7 @@ static void transform1e_2(int am, SphericalTransformIter& sti, double *s, double
     }
 }
 
-OneBodyInt::OneBodyInt(std::vector<SphericalTransform> &spherical_transforms, shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2, int deriv)
+OneBodyAOInt::OneBodyAOInt(std::vector<SphericalTransform> &spherical_transforms, shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2, int deriv)
     : bs1_(bs1), bs2_(bs2), spherical_transforms_(spherical_transforms), deriv_(deriv), nchunk_(1)
 {
     buffer_ = 0;
@@ -56,43 +56,43 @@ OneBodyInt::OneBodyInt(std::vector<SphericalTransform> &spherical_transforms, sh
     target_ = new double[buffsize];
 }
 
-OneBodyInt::~OneBodyInt()
+OneBodyAOInt::~OneBodyAOInt()
 {
     delete[] tformbuf_;
     delete[] target_;
 }
 
-shared_ptr<BasisSet> OneBodyInt::basis()
+shared_ptr<BasisSet> OneBodyAOInt::basis()
 {
     return bs1_;
 }
 
-shared_ptr<BasisSet> OneBodyInt::basis1()
+shared_ptr<BasisSet> OneBodyAOInt::basis1()
 {
     return bs1_;
 }
 
-shared_ptr<BasisSet> OneBodyInt::basis2()
+shared_ptr<BasisSet> OneBodyAOInt::basis2()
 {
     return bs2_;
 }
 
-const double* OneBodyInt::buffer() const
+const double* OneBodyAOInt::buffer() const
 {
     return buffer_;
 }
 
-bool OneBodyInt::cloneable()
+bool OneBodyAOInt::cloneable()
 {
     return false;
 }
 
-OneBodyInt* OneBodyInt::clone()
+OneBodyAOInt* OneBodyAOInt::clone()
 {
     throw FeatureNotImplemented("libmints", "OneBodyInt::clone()", __FILE__, __LINE__);
 }
 
-void OneBodyInt::normalize_am(const shared_ptr<GaussianShell>& s1, const shared_ptr<GaussianShell>& s2, int nchunk)
+void OneBodyAOInt::normalize_am(const shared_ptr<GaussianShell>& s1, const shared_ptr<GaussianShell>& s2, int nchunk)
 {
     // Integrals are done. Normalize for angular momentum
     int am1 = s1->am();
@@ -122,7 +122,7 @@ void OneBodyInt::normalize_am(const shared_ptr<GaussianShell>& s1, const shared_
     }
 }
 
-void OneBodyInt::pure_transform(const shared_ptr<GaussianShell>& s1,
+void OneBodyAOInt::pure_transform(const shared_ptr<GaussianShell>& s1,
                                 const shared_ptr<GaussianShell>& s2, int chunk)
 {
     double *source1, *target1;
@@ -175,7 +175,7 @@ void OneBodyInt::pure_transform(const shared_ptr<GaussianShell>& s1,
     }
 }
 
-void OneBodyInt::compute_shell(int sh1, int sh2)
+void OneBodyAOInt::compute_shell(int sh1, int sh2)
 {
     const shared_ptr<GaussianShell> s1 = bs1_->shell(sh1);
     const shared_ptr<GaussianShell> s2 = bs2_->shell(sh2);
@@ -190,7 +190,7 @@ void OneBodyInt::compute_shell(int sh1, int sh2)
     pure_transform(s1, s2, nchunk_);
 }
 
-void OneBodyInt::compute(boost::shared_ptr<SimpleMatrix> result)
+void OneBodyAOInt::compute(boost::shared_ptr<SimpleMatrix> result)
 {
     // Do not worry about zeroing out result
     int ns1 = bs1_->nshell();
@@ -223,22 +223,22 @@ void OneBodyInt::compute(boost::shared_ptr<SimpleMatrix> result)
     }
 }
 
-void OneBodyInt::compute(std::vector<shared_ptr<Matrix> > &result)
+void OneBodyAOInt::compute(std::vector<shared_ptr<Matrix> > &result)
 {
     throw FeatureNotImplemented("libmints", "OneBodyInt::compute(Array)", __FILE__, __LINE__);
 }
 
-void OneBodyInt::compute(std::vector<shared_ptr<SimpleMatrix> > &result)
+void OneBodyAOInt::compute(std::vector<shared_ptr<SimpleMatrix> > &result)
 {
     throw FeatureNotImplemented("libmints", "OneBodyInt::compute(SimpleArray)", __FILE__, __LINE__);
 }
 
-void OneBodyInt::compute_deriv1(std::vector<shared_ptr<Matrix> > &result)
+void OneBodyAOInt::compute_deriv1(std::vector<shared_ptr<Matrix> > &result)
 {
     throw FeatureNotImplemented("libmints", "OneBodyInt::compute_deriv1(Array)", __FILE__, __LINE__);
 }
 
-void OneBodyInt::compute_deriv1(std::vector<shared_ptr<SimpleMatrix> > &result)
+void OneBodyAOInt::compute_deriv1(std::vector<shared_ptr<SimpleMatrix> > &result)
 {
     if (deriv_ < 1)
         throw SanityCheckError("OneBodyInt::compute_deriv1(result): integral object not created to handle derivatives.", __FILE__, __LINE__);
@@ -262,12 +262,12 @@ void OneBodyInt::compute_deriv1(std::vector<shared_ptr<SimpleMatrix> > &result)
     }
 }
 
-void OneBodyInt::compute_shell_deriv1(int, int)
+void OneBodyAOInt::compute_shell_deriv1(int, int)
 {
     throw FeatureNotImplemented("libmints", "OneBodyInt::compute_shell_deriv1(Array)", __FILE__, __LINE__);
 }
 
-void OneBodyInt::compute_deriv2(std::vector<shared_ptr<SimpleMatrix> > &result)
+void OneBodyAOInt::compute_deriv2(std::vector<shared_ptr<SimpleMatrix> > &result)
 {
     if (deriv_ < 2)
         throw SanityCheckError("OneBodyInt::compute_deriv1(result): integral object not created to handle derivatives.", __FILE__, __LINE__);
@@ -291,7 +291,7 @@ void OneBodyInt::compute_deriv2(std::vector<shared_ptr<SimpleMatrix> > &result)
     }
 }
 
-void OneBodyInt::compute_shell_deriv2(int, int)
+void OneBodyAOInt::compute_shell_deriv2(int, int)
 {
     throw FeatureNotImplemented("libmints", "OneBodyInt::compute_shell_deriv2(Array)", __FILE__, __LINE__);
 }

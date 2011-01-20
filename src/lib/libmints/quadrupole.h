@@ -6,7 +6,7 @@
 
 namespace psi {
 
-class OneBodyInt;
+class OneBodyAOInt;
 class ObaraSaikaTwoCenterRecursion;
 class GaussianShell;
 class SphericalTransform;
@@ -19,7 +19,7 @@ class SimpleMatrix;
  *  \brief Computes quadrupole integrals. At last check this may not be working.
  *  Use an IntegralFactory to create this object.
  */
-class QuadrupoleInt : public OneBodyInt
+class QuadrupoleInt : public OneBodyAOInt
 {
     ObaraSaikaTwoCenterRecursion overlap_recur_;
 

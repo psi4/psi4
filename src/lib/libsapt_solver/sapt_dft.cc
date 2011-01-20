@@ -270,7 +270,7 @@ void SAPT_DFT::compute_J() {
     int naux = calc_info_.nri;
     IntegralFactory rifactory_J(ribasis_, zero_, ribasis_, zero_);
 
-    TwoBodyInt* Jint = rifactory_J.eri();
+    TwoBodyAOInt* Jint = rifactory_J.eri();
     //double **calc_info_.J = block_matrix(ribasis_->nbf(), ribasis_->nbf());
     J_ = block_matrix(ribasis_->nbf(), ribasis_->nbf());
     const double *Jbuffer = Jint->buffer();
@@ -327,7 +327,7 @@ void SAPT_DFT::compute_Q() {
     int naux_quad = quadbasis_->nbf();
     IntegralFactory rifactory_J(quadbasis_, zero_, quadbasis_, zero_);
 
-    TwoBodyInt* Jint = rifactory_J.eri();
+    TwoBodyAOInt* Jint = rifactory_J.eri();
     //double **calc_info_.J = block_matrix(ribasis_->nbf(), ribasis_->nbf());
     Q_ = block_matrix(quadbasis_->nbf(), quadbasis_->nbf());
     const double *Jbuffer = Jint->buffer();
@@ -438,7 +438,7 @@ void SAPT_DFT::compute_d()
     IntegralFactory rifactory(basisset_, basisset_, quadbasis_, zero_);
 
     const double *buffer;
-    shared_ptr<TwoBodyInt> eri = shared_ptr<TwoBodyInt>(rifactory.eri());
+    shared_ptr<TwoBodyAOInt> eri = shared_ptr<TwoBodyAOInt>(rifactory.eri());
     buffer = eri->buffer();
 
     // Indexing for three-index AO tensors

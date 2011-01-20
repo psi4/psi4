@@ -38,7 +38,7 @@ void HF::form_CD()
 
   // Create integral factory
   IntegralFactory cdfactory(basisset_, basisset_, basisset_, basisset_);
-  TwoBodyInt* eri = cdfactory.eri();
+  TwoBodyAOInt* eri = cdfactory.eri();
 
   int ntri = basisset_->nbf()*(basisset_->nbf()+1)/2;
   int shelltri = basisset_->nshell()*(basisset_->nshell()+1)/2;

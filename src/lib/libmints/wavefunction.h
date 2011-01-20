@@ -26,7 +26,7 @@ class Molecule;
 class BasisSet;
 class MatrixFactory;
 class Options;
-class SOBasis;
+class SOBasisSet;
 
 /*! \ingroup MINTS
  *  \class Wavefunction
@@ -36,7 +36,7 @@ class Wavefunction {
 protected:
 
     boost::shared_ptr<BasisSet> basisset_;
-    boost::shared_ptr<SOBasis> sobasisset_;
+    boost::shared_ptr<SOBasisSet> sobasisset_;
     boost::shared_ptr<Molecule> molecule_;
     Options & options_;
 
@@ -100,7 +100,7 @@ public:
     /// Returns the basis set object that pertains to this wavefunction.
     boost::shared_ptr<BasisSet> basisset() const;
     /// Returns the SO basis set object that pertains to this wavefunction.
-    boost::shared_ptr<SOBasis> sobasisset() const;
+    boost::shared_ptr<SOBasisSet> sobasisset() const;
 
     static void initialize_singletons();
 

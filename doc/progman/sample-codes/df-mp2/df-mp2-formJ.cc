@@ -11,7 +11,7 @@ void formInvSqrtJ(double **&J_mhalf, shared_ptr<BasisSet> basis,
     // Create integral factories for the RI basis
     shared_ptr<IntegralFactory>
             rifactory_J(new IntegralFactory(ribasis, zero, ribasis, zero));
-    shared_ptr<TwoBodyInt> Jint(rifactory_J->eri());
+    shared_ptr<TwoBodyAOInt> Jint(rifactory_J->eri());
 
     double **J = block_matrix(ribasis->nbf(), ribasis->nbf());
     J_mhalf = block_matrix(ribasis->nbf(), ribasis->nbf());

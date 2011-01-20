@@ -17,7 +17,7 @@ class SphericalTransform;
  *  \class OneBodyInt
  *  \brief Basis class for all one-electron integrals.
  */
-class OneBodyInt
+class OneBodyAOInt
 {
 protected:
     boost::shared_ptr<BasisSet> bs1_;
@@ -34,7 +34,7 @@ protected:
 
     int nchunk_;
 
-    OneBodyInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int deriv=0);
+    OneBodyAOInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int deriv=0);
     virtual void compute_pair(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2) = 0;
 
     void set_chunks(int nchunk) { nchunk_ = nchunk; }
@@ -44,7 +44,7 @@ protected:
     void normalize_am(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>&, int nchunk=1);
 
 public:
-    virtual ~OneBodyInt();
+    virtual ~OneBodyAOInt();
 
     /// Basis set on center one.
     boost::shared_ptr<BasisSet> basis();
@@ -93,7 +93,7 @@ public:
     virtual bool cloneable();
 
     /// Returns a clone of this object. By default throws an exception.
-    virtual OneBodyInt* clone();
+    virtual OneBodyAOInt* clone();
 };
 
 }

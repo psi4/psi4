@@ -207,7 +207,7 @@ void HF::form_B_Poisson()
         double max_global_val = 0.0;
 
         IntegralFactory schwarzfactory(basisset_,basisset_,basisset_,basisset_);
-        shared_ptr<TwoBodyInt> eri = shared_ptr<TwoBodyInt>(schwarzfactory.eri());
+        shared_ptr<TwoBodyAOInt> eri = shared_ptr<TwoBodyAOInt>(schwarzfactory.eri());
         const double *buffer = eri->buffer();
 
         int MU, NU, mu, nu,omu,onu, nummu, numnu, index;
@@ -396,9 +396,9 @@ void HF::form_B_Poisson()
 
         //Get a TEI for each thread
         const double **buffer = new const double*[nthread];
-        shared_ptr<TwoBodyInt> *eri = new shared_ptr<TwoBodyInt>[nthread];
+        shared_ptr<TwoBodyAOInt> *eri = new shared_ptr<TwoBodyAOInt>[nthread];
         for (int Q = 0; Q<nthread; Q++) {
-            eri[Q] = shared_ptr<TwoBodyInt>(rifactory.eri());
+            eri[Q] = shared_ptr<TwoBodyAOInt>(rifactory.eri());
             buffer[Q] = eri[Q]->buffer();
         }
         //Get a TEI for each thread
@@ -585,9 +585,9 @@ void HF::form_B_Poisson()
         IntegralFactory rifactory(basisset_, basisset_, ribasis_,zero);
         //Get a TEI for each thread
         const double **buffer = new const double*[nthread];
-        shared_ptr<TwoBodyInt> *eri = new shared_ptr<TwoBodyInt>[nthread];
+        shared_ptr<TwoBodyAOInt> *eri = new shared_ptr<TwoBodyAOInt>[nthread];
         for (int Q = 0; Q<nthread; Q++) {
-            eri[Q] = shared_ptr<TwoBodyInt>(rifactory.eri());
+            eri[Q] = shared_ptr<TwoBodyAOInt>(rifactory.eri());
             buffer[Q] = eri[Q]->buffer();
         }
 

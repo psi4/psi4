@@ -206,8 +206,8 @@ int main(int argc, char * argv[]) {
   IntegralFactory rifactory(ribasis, zero, basis, basis);
   IntegralFactory rifactory_J(ribasis, zero, ribasis, zero);
     
-  TwoBodyInt* eri = rifactory.eri();
-  TwoBodyInt* Jint = rifactory_J.eri();
+  TwoBodyAOInt* eri = rifactory.eri();
+  TwoBodyAOInt* Jint = rifactory_J.eri();
   double **J = block_matrix(ribasis->nbf(), ribasis->nbf());
   double **J_mhalf = block_matrix(ribasis->nbf(), ribasis->nbf());
   const double *Jbuffer = Jint->buffer();

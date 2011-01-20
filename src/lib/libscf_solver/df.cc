@@ -207,7 +207,7 @@ void HF::form_B()
         double max_global_val = 0.0;
 
         IntegralFactory schwarzfactory(basisset_,basisset_,basisset_,basisset_);
-        shared_ptr<TwoBodyInt> eri = shared_ptr<TwoBodyInt>(schwarzfactory.eri());
+        shared_ptr<TwoBodyAOInt> eri = shared_ptr<TwoBodyAOInt>(schwarzfactory.eri());
         const double *buffer = eri->buffer();
 
         int MU, NU, mu, nu,omu,onu, nummu, numnu, index;
@@ -395,9 +395,9 @@ void HF::form_B()
 
         //Get a TEI for each thread
         const double **buffer = new const double*[nthread];
-        shared_ptr<TwoBodyInt> *eri = new shared_ptr<TwoBodyInt>[nthread];
+        shared_ptr<TwoBodyAOInt> *eri = new shared_ptr<TwoBodyAOInt>[nthread];
         for (int Q = 0; Q<nthread; Q++) {
-            eri[Q] = shared_ptr<TwoBodyInt>(rifactory.eri());
+            eri[Q] = shared_ptr<TwoBodyAOInt>(rifactory.eri());
             buffer[Q] = eri[Q]->buffer();
         }
 
@@ -583,9 +583,9 @@ void HF::form_B()
         IntegralFactory rifactory(basisset_, basisset_, ribasis_,zero);
         //Get a TEI for each thread
         const double **buffer = new const double*[nthread];
-        shared_ptr<TwoBodyInt> *eri = new shared_ptr<TwoBodyInt>[nthread];
+        shared_ptr<TwoBodyAOInt> *eri = new shared_ptr<TwoBodyAOInt>[nthread];
         for (int Q = 0; Q<nthread; Q++) {
-            eri[Q] = shared_ptr<TwoBodyInt>(rifactory.eri());
+            eri[Q] = shared_ptr<TwoBodyAOInt>(rifactory.eri());
             buffer[Q] = eri[Q]->buffer();
         }
 
@@ -988,7 +988,7 @@ void HF::form_W()
 
     //Next form J in the raw basis,
     IntegralFactory rifactory_J(ribasis_, zero, ribasis_, zero);
-    shared_ptr<TwoBodyInt> Jint(rifactory_J.eri());
+    shared_ptr<TwoBodyAOInt> Jint(rifactory_J.eri());
 
     // Integral buffer
     const double *Jbuffer = Jint->buffer();
@@ -1056,7 +1056,7 @@ void HF::form_W_Poisson()
 
     // == (A|B) Block == //
     IntegralFactory rifactory_J(ribasis_, zero, ribasis_, zero);
-    shared_ptr<TwoBodyInt> Jint(rifactory_J.eri());
+    shared_ptr<TwoBodyAOInt> Jint(rifactory_J.eri());
 
     // Integral buffer
     const double *Jbuffer = Jint->buffer();

@@ -52,8 +52,8 @@ if(Communicator::world->me() == 0){
 
   // Create an integral object for ERIs
 
-  TwoBodyInt* eri = rifactory.eri();
-  TwoBodyInt* Jint = rifactory_J.eri();
+  TwoBodyAOInt* eri = rifactory.eri();
+  TwoBodyAOInt* Jint = rifactory_J.eri();
   double **J = block_matrix(ribasis->nbf(), ribasis->nbf());
   double **J_mhalf = block_matrix(ribasis->nbf(), ribasis->nbf());
   const double *Jbuffer = Jint->buffer();
@@ -223,7 +223,7 @@ if(Communicator::world->me() == 0)  timer_off("Form J");
   }
 
   IntegralFactory ao_eri_factory(basis, basis, basis, basis);
-  TwoBodyInt* ao_eri = ao_eri_factory.eri();
+  TwoBodyAOInt* ao_eri = ao_eri_factory.eri();
   const double *ao_buffer = ao_eri->buffer();
 
   double *Schwartz = init_array(basis->nshell() * (basis->nshell()+1) / 2);

@@ -56,7 +56,7 @@ inline void calc_f(double *F, int n, double t)
 }
 
 ERI::ERI(const IntegralFactory* integral, int deriv, double schwarz)
-    : TwoBodyInt(integral, deriv)
+    : TwoBodyAOInt(integral, deriv)
 {
     // Initialize libint static data
     init_libint_base();

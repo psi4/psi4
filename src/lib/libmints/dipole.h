@@ -8,7 +8,7 @@ namespace psi {
     class BasisSet;
     class GaussianShell;
     class ObaraSaikaTwoCenterRecursion;
-    class OneBodyInt;
+    class OneBodyAOInt;
     class IntegralFactory;
     class SphericalTransform;
     class SimpleMatrix;
@@ -18,7 +18,7 @@ namespace psi {
  *  \brief Computes dipole integrals.
  *
  * Use an IntegralFactory to create this object. */
-class DipoleInt : public OneBodyInt
+class DipoleInt : public OneBodyAOInt
 {
     //! Obara and Saika recursion object to be used.
     ObaraSaikaTwoCenterRecursion overlap_recur_;

@@ -76,19 +76,19 @@ void SOTransformShell::add_func(int irrep, double coef, int aofunc, int sofunc)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-SOBasis::SOBasis(const boost::shared_ptr<BasisSet> &basis, const IntegralFactory *integral)
+SOBasisSet::SOBasisSet(const boost::shared_ptr<BasisSet> &basis, const IntegralFactory *integral)
     : basis_(basis), integral_(integral)
 {
     init();
 }
 
-SOBasis::SOBasis(const boost::shared_ptr<BasisSet> &basis, const boost::shared_ptr<IntegralFactory> &integral)
+SOBasisSet::SOBasisSet(const boost::shared_ptr<BasisSet> &basis, const boost::shared_ptr<IntegralFactory> &integral)
     : basis_(basis), integral_(integral.get())
 {
     init();
 }
 
-void SOBasis::init()
+void SOBasisSet::init()
 {
     int i,j,k;
 
@@ -257,7 +257,7 @@ void SOBasis::init()
     }
 }
 
-SOBasis::~SOBasis()
+SOBasisSet::~SOBasisSet()
 {
     for (int i=0; i<nshell_; i++) {
         delete[] nfunc_[i];
@@ -274,7 +274,7 @@ SOBasis::~SOBasis()
     delete[] nfunc_in_irrep_;
 }
 
-int SOBasis::max_nfunction_in_shell() const
+int SOBasisSet::max_nfunction_in_shell() const
 {
     int maxn = 0;
     for (int i=0; i<nshell_; i++) {
@@ -284,7 +284,7 @@ int SOBasis::max_nfunction_in_shell() const
     return maxn;
 }
 
-int SOBasis::nfunction(int ishell) const
+int SOBasisSet::nfunction(int ishell) const
 {
     int n=0;
     for (int i=0; i<nirrep_; i++) {
@@ -293,7 +293,7 @@ int SOBasis::nfunction(int ishell) const
     return n;
 }
 
-void SOBasis::print(FILE *out) const
+void SOBasisSet::print(FILE *out) const
 {
     int i,j,k;
 
@@ -366,13 +366,13 @@ void SOBasis::print(FILE *out) const
     }
 }
 
-Dimension SOBasis::dimension() const
+Dimension SOBasisSet::dimension() const
 {
     shared_ptr<PetiteList> petite = shared_ptr<PetiteList>(new PetiteList(basis_, integral_));
     return petite->SO_basisdim();
 }
 
-const boost::shared_ptr<PetiteList> SOBasis::petitelist() const
+const boost::shared_ptr<PetiteList> SOBasisSet::petitelist() const
 {
     return petite_;
 }

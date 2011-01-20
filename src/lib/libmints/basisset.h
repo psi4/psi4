@@ -28,7 +28,7 @@ namespace psi {
     class Matrix;
     class SimpleMatrix;
     class Vector3;
-    class SOBasis;
+    class SOBasisSet;
     class IntegralFactory;
 
 /*! \ingroup MINTS */
@@ -218,7 +218,7 @@ public:
      *  at the origin with an exponent of 0.0 and contraction of 1.0.
      *  @return A new empty SOBasis object.
      */
-    static boost::shared_ptr<SOBasis> zero_so_basis_set(const boost::shared_ptr<IntegralFactory>& factory);
+    static boost::shared_ptr<SOBasisSet> zero_so_basis_set(const boost::shared_ptr<IntegralFactory>& factory);
 
     /** Returns a new BasisSet object.
      *

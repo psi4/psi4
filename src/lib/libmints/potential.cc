@@ -10,7 +10,7 @@ using namespace psi;
 
 // Initialize potential_recur_ to +1 basis set angular momentum
 PotentialInt::PotentialInt(std::vector<SphericalTransform>& st, shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2, int deriv) :
-    OneBodyInt(st, bs1, bs2, deriv), potential_recur_(bs1->max_am()+1, bs2->max_am()+1),
+    OneBodyAOInt(st, bs1, bs2, deriv), potential_recur_(bs1->max_am()+1, bs2->max_am()+1),
     potential_deriv_recur_(bs1->max_am()+2, bs2->max_am()+2)
 {
     int maxam1 = bs1_->max_am();

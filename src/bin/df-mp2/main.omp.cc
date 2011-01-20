@@ -201,7 +201,7 @@ int main(int argc, char * argv[]) {
   IntegralFactory rifactory(ribasis, zero, basis, basis);
   IntegralFactory rifactory_J(ribasis, zero, ribasis, zero);
     
-  TwoBodyInt* Jint = rifactory_J.eri();
+  TwoBodyAOInt* Jint = rifactory_J.eri();
   double **J = block_matrix(ribasis->nbf(), ribasis->nbf());
   double **J_mhalf = block_matrix(ribasis->nbf(), ribasis->nbf());
   const double *Jbuffer = Jint->buffer();
@@ -347,13 +347,13 @@ int main(int argc, char * argv[]) {
 
 
 const double **buffer;
-TwoBodyInt **eri;
+TwoBodyAOInt **eri;
 
 #pragma omp parallel
 {
   if(omp_get_thread_num()==0){
     std::cout << "OMP_GET_NUM_THREADS=" << omp_get_num_threads() << std::endl;
-    eri = new TwoBodyInt*[omp_get_num_threads()];
+    eri = new TwoBodyAOInt*[omp_get_num_threads()];
     buffer = new const double*[omp_get_num_threads()];
       for(int i = 0;i < omp_get_num_threads();++i){
          eri[i] = rifactory.eri();

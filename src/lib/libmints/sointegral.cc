@@ -12,18 +12,18 @@
 
 namespace psi {
 
-OneBodySOInt::OneBodySOInt(const boost::shared_ptr<OneBodyInt> & ob,
+OneBodySOInt::OneBodySOInt(const boost::shared_ptr<OneBodyAOInt> & ob,
                            const boost::shared_ptr<IntegralFactory>& integral)
     : ob_(ob), integral_(integral.get())
 {
-    b1_ = boost::shared_ptr<SOBasis>(new SOBasis(ob->basis1(), integral));
+    b1_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(ob->basis1(), integral));
 
     //    b1_->print();
 
     if (ob->basis2() == ob->basis1())
         b2_ = b1_;
     else
-        b2_ = boost::shared_ptr<SOBasis>(new SOBasis(ob->basis2(), integral));
+        b2_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(ob->basis2(), integral));
 
     only_totally_symmetric_ = 0;
 
@@ -31,18 +31,18 @@ OneBodySOInt::OneBodySOInt(const boost::shared_ptr<OneBodyInt> & ob,
             *INT_NCART(ob->basis2()->max_am())];
 }
 
-OneBodySOInt::OneBodySOInt(const boost::shared_ptr<OneBodyInt> & ob,
+OneBodySOInt::OneBodySOInt(const boost::shared_ptr<OneBodyAOInt> & ob,
                            const IntegralFactory* integral)
     : ob_(ob), integral_(integral)
 {
-    b1_ = boost::shared_ptr<SOBasis>(new SOBasis(ob->basis1(), integral));
+    b1_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(ob->basis1(), integral));
 
     //    b1_->print();
 
     if (ob->basis2() == ob->basis1())
         b2_ = b1_;
     else
-        b2_ = boost::shared_ptr<SOBasis>(new SOBasis(ob->basis2(), integral));
+        b2_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(ob->basis2(), integral));
 
     only_totally_symmetric_ = 0;
 
@@ -55,17 +55,17 @@ OneBodySOInt::~OneBodySOInt()
     delete[] buffer_;
 }
 
-boost::shared_ptr<SOBasis> OneBodySOInt::basis() const
+boost::shared_ptr<SOBasisSet> OneBodySOInt::basis() const
 {
     return b1_;
 }
 
-boost::shared_ptr<SOBasis> OneBodySOInt::basis1() const
+boost::shared_ptr<SOBasisSet> OneBodySOInt::basis1() const
 {
     return b1_;
 }
 
-boost::shared_ptr<SOBasis> OneBodySOInt::basis2() const
+boost::shared_ptr<SOBasisSet> OneBodySOInt::basis2() const
 {
     return b2_;
 }
@@ -431,27 +431,27 @@ void OneBodySOInt::compute_dcr(boost::shared_ptr<Matrix> result)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-TwoBodySOInt::TwoBodySOInt(const boost::shared_ptr<TwoBodyInt> &tb,
+TwoBodySOInt::TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt> &tb,
                            const boost::shared_ptr<IntegralFactory>& integral)
     : tb_(tb), integral_(integral)
 {
     // Try to reduce some work:
-    b1_ = boost::shared_ptr<SOBasis>(new SOBasis(tb->basis1(), integral));
+    b1_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(tb->basis1(), integral));
 
     if (tb->basis1() == tb->basis2())
         b2_ = b1_;
     else
-        b2_ = boost::shared_ptr<SOBasis>(new SOBasis(tb->basis2(), integral));
+        b2_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(tb->basis2(), integral));
 
     if (tb->basis1() == tb->basis3())
         b3_ = b1_;
     else
-        b3_ = boost::shared_ptr<SOBasis>(new SOBasis(tb->basis3(), integral));
+        b3_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(tb->basis3(), integral));
 
     if (tb->basis3() == tb->basis4())
         b4_ = b3_;
     else
-        b4_ = boost::shared_ptr<SOBasis>(new SOBasis(tb->basis4(), integral));
+        b4_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(tb->basis4(), integral));
 
     // Allocate accumulation buffer
     buffer_ = new double[16*INT_NCART(tb->basis1()->max_am())
@@ -465,27 +465,27 @@ TwoBodySOInt::~TwoBodySOInt()
     delete[] buffer_;
 }
 
-boost::shared_ptr<SOBasis> TwoBodySOInt::basis() const
+boost::shared_ptr<SOBasisSet> TwoBodySOInt::basis() const
 {
     return b1_;
 }
 
-boost::shared_ptr<SOBasis> TwoBodySOInt::basis1() const
+boost::shared_ptr<SOBasisSet> TwoBodySOInt::basis1() const
 {
     return b1_;
 }
 
-boost::shared_ptr<SOBasis> TwoBodySOInt::basis2() const
+boost::shared_ptr<SOBasisSet> TwoBodySOInt::basis2() const
 {
     return b2_;
 }
 
-boost::shared_ptr<SOBasis> TwoBodySOInt::basis3() const
+boost::shared_ptr<SOBasisSet> TwoBodySOInt::basis3() const
 {
     return b3_;
 }
 
-boost::shared_ptr<SOBasis> TwoBodySOInt::basis4() const
+boost::shared_ptr<SOBasisSet> TwoBodySOInt::basis4() const
 {
     return b4_;
 }
