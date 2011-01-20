@@ -2,6 +2,8 @@
 #define __psi4_src_lib_libplugin_plugin_h
 
 #include <psi4-dec.h>
+#include <psiconfig.h>
+#include <libchkpt/chkpt.hpp>
 
 namespace boost {
 template<class T> class shared_ptr;

@@ -14,7 +14,7 @@ void print_version(FILE *myout)
   fprintf(myout, "    and W. D. Allen, J. Comput. Chem. 28, 1610-1616 (2007)\n");
   fprintf(myout, "\n");
   fprintf(myout, "                         Additional Contributions by\n");
-  fprintf(myout, "    Francesco Evangelista, Andrew Simmonett, Justin Turney, Jeremy Wilke\n");
+  fprintf(myout, "    Francesco Evangelista, Andrew Simmonett, Justin Turney, Jeremiah Wilke\n");
   fprintf(myout, "    -----------------------------------------------------------------------\n\n");
   Communicator::world->print(myout);
 }
