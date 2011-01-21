@@ -12,11 +12,11 @@
 
 namespace psi {
 
-void PSIO::get_filename(unsigned int unit, char **name) {
+void PSIO::get_filename(unsigned int unit, char **name, bool remove_namespace) {
   std::string kval;
   std::string dot(".");
 
-  std::string ns = (current_namespace_ == "") ? "" : dot + current_namespace_;
+  std::string ns = (default_namespace_ == "" || remove_namespace) ? "" : dot + default_namespace_;
   kval = filecfg_kwd("PSI", "NAME", unit);
   if (!kval.empty()) {
     kval = kval + ns;

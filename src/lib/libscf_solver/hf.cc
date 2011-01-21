@@ -225,10 +225,6 @@ void HF::common_init()
         diis_enabled_ = false;
     }
 
-    // Initialize DIIS manager
-    if (diis_enabled_)
-        diis_manager_ = shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk, psio_));
-
     initialized_diis_manager_ = false;
 
     // Save cartesian grid? Temporary until OEPROP is fully redone

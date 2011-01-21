@@ -290,6 +290,11 @@ double RHF::compute_energy()
     // Compute the final dipole.
     compute_multipole();
 
+    if (initialized_diis_manager_) {
+        diis_manager_.reset();
+        initialized_diis_manager_ = false;
+    }
+
     //fprintf(outfile,"\nComputation Completed\n");
     fflush(outfile);
     return E_;
@@ -441,6 +446,11 @@ double RHF::compute_energy_parallel()
 
     //fprintf(outfile,"\nComputation Completed\n");
     fflush(outfile);
+
+    if (initialized_diis_manager_) {
+        diis_manager_.reset();
+        initialized_diis_manager_ = false;
+    }
 
 #endif
 
@@ -1042,6 +1052,7 @@ void RHF::save_information()
 void RHF::save_fock()
 {
     if (initialized_diis_manager_ == false) {
+        diis_manager_ = shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk, psio_));
         diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, F_.get());
         diis_manager_->set_vector_size(1, DIISEntry::Matrix, F_.get());
         initialized_diis_manager_ = true;

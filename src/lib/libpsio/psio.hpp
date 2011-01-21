@@ -5,6 +5,7 @@
 #include <boost/thread/thread.hpp>
 #include <string>
 #include <map>
+#include <set>
 
 #include <libpsio/config.h>
 
@@ -15,7 +16,82 @@ namespace psi {
   extern FILE *outfile;
 
   class PSIO;
+  class PSIOManager;
   extern shared_ptr<PSIO> _default_psio_lib_;
+  extern shared_ptr<PSIOManager> _default_psio_manager_;
+
+  /**
+    PSIOManager is a class designed to be used as a static object to track all
+    PSIO operations in a given PSI4 computation
+    
+    This will allow PSICLEAN to be trivially executed.
+   */
+  class PSIOManager {
+        private:
+            /// Map of files, bool denotes open or closed
+            std::map<std::string, bool> files_;
+            /// Set of files to retain after psiclean
+            std::set<std::string> retained_files_;
+        public:
+            /// Default constructor (does nothing)
+            PSIOManager();
+            /// Default destrctor (does nothing)
+            ~PSIOManager();
+            /**
+            * Record the opening of a file  
+            * \param full_path filename
+            */ 
+            void open_file(const std::string & full_path);
+            /**
+            * Record the opening of a file  
+            * \param full_path filename
+            * \param keep TRUE : the file is closed and retained
+                          FALSE: the file is closed and deleted
+            */ 
+            void close_file(const std::string & full_path, bool keep);
+            /**
+            * Move a file from one location to another, retaining status
+            * Useful for changing namespaces
+            * \param old_full_path old filename
+            * \param new_full_path new filename
+            */
+            void move_file(const std::string & old_full_path, const std::string & new_full_path); 
+            /**
+            * Mark a file to be retained after a psiclean operation, ie for use in 
+            * a later computation
+            * \param full_path filename
+            */
+            void mark_file_for_retention(const std::string & full_path);
+            /**
+            * Override a retain operation, ie for use in 
+            * overriding .PSIRC defaults
+            * \param full_path filename
+            */
+            void mark_file_for_deletion(const std::string & full_path);
+            /**
+            * Print the current status of PSI4 files
+            * \param out, file to print fo
+            */
+            void print(FILE* out = outfile);
+            /**
+            * Print the current status of PSI4 files
+            * \param out, file to print fo
+            */
+            void print_out() { print(outfile); }
+            /**
+            * Execute the psiclean protocol, deleting all recorded files
+            * except for those currently marked for retention.
+            *
+            * Those files marked for retention are not deleted, and their
+            * traces in the files_ set and retained_files set remain.
+            * Deleted files are removed from the files_ set.
+            * 
+            * This is useful for intermediate calls to psiclean
+            */
+            void psiclean(); 
+            /// The one and (should be) only instance of PSIOManager for a PSI4 instance
+            static shared_ptr<PSIOManager> shared_object() { return _default_psio_manager_; }
+   };
 
   /**
    PSIO is an instance of libpsio library. Multiple instances of PSIO are supported.
@@ -124,12 +200,6 @@ namespace psi {
       /// Get the default namespace (for PREFIX.NAMESPACE.UNIT file numbering) 
       static std::string get_default_namespace() { return default_namespace_; }
       
-      /// Set the current namespace (for PREFIX.NAMESPACE.UNIT file numbering) 
-      void set_current_namespace(const std::string &_ns) { current_namespace_ = _ns; }
-
-      /// Get the current namespace (for PREFIX.NAMESPACE.UNIT file numbering) 
-      std::string get_current_namespace() { return current_namespace_; }
-
       /// Change file FILENO from NS1 to NS2
       static void change_file_namespace(unsigned int fileno, const std::string & ns1, const std::string & ns2);
 
@@ -155,9 +225,6 @@ namespace psi {
       /// Current default namespace (for PREFIX.NAMESPACE.UNIT numbering)
       static std::string default_namespace_; 
       
-      /// Current namespace (for PREFIX.NAMESPACE.UNIT numbering)
-      std::string current_namespace_; 
-      
       typedef std::map<std::string,std::string> KWDMap;
       /// library configuration is described by a set of keywords
       KWDMap files_keywords_;
@@ -170,7 +237,7 @@ namespace psi {
       /// Library state variable
       int state_;
       /// grab the filename of unit and strdup into name.
-      void get_filename(unsigned int unit, char **name);
+      void get_filename(unsigned int unit, char **name, bool remove_namespace = false);
       /// return the number of volumes over which unit will be striped
       unsigned int get_numvols(unsigned int unit);
       /// grab the path to volume of unit and strdup into path.

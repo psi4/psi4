@@ -75,6 +75,9 @@ void PSIO::open(unsigned int unit, int status) {
     this_unit->vol[i].path = strdup(fullpath);
     free(fullpath);
     
+    /* Register the file */
+    PSIOManager::shared_object()->open_file(std::string(this_unit->vol[i].path));
+
     /* Now open the volume */
     if (status == PSIO_OPEN_OLD) {
       this_unit->vol[i].stream = ::open(this_unit->vol[i].path,O_CREAT|O_RDWR,0644);

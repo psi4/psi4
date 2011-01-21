@@ -167,6 +167,10 @@ double UHF::compute_energy()
 
     // Compute the final dipole.
     if(print_ > 2) compute_multipole();
+    if (initialized_diis_manager_) {
+        diis_manager_.reset();
+        initialized_diis_manager_ = false;
+    }
 
     return E_;
 }
@@ -966,6 +970,7 @@ void UHF::save_fock()
 {
     static bool initialized_diis_manager = false;
     if (initialized_diis_manager == false) {
+        diis_manager_ = shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk, psio_));
         diis_manager_->set_error_vector_size(2,
                                              DIISEntry::Matrix, Fa_.get(),
                                              DIISEntry::Matrix, Fb_.get());

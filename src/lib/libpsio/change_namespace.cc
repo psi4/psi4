@@ -14,8 +14,8 @@ namespace psi {
 
 void PSIO::change_file_namespace(unsigned int unit, const std::string & ns1, const std::string & ns2) {
     char *old_name, *new_name, *path, *old_fullpath, *new_fullpath;
-    _default_psio_lib_->get_filename(unit, &old_name);
-    _default_psio_lib_->get_filename(unit, &new_name);
+    _default_psio_lib_->get_filename(unit, &old_name, true);
+    _default_psio_lib_->get_filename(unit, &new_name, true);
     _default_psio_lib_->get_volpath(unit, 0, &path);  
 
     old_fullpath = (char*) malloc( (strlen(path)+strlen(old_name)+80)*sizeof(char));
@@ -26,56 +26,10 @@ void PSIO::change_file_namespace(unsigned int unit, const std::string & ns1, con
     //printf("%s\n",old_fullpath);
     //printf("%s\n",new_fullpath);
 
+    PSIOManager::shared_object()->move_file(std::string(old_fullpath), std::string(new_fullpath)); 
+
     ::rename(old_fullpath,new_fullpath);
 }
-/**
-void PSIO::get_filename(unsigned int unit, char **name) {
-  std::string kval;
-  std::string module_name = module.gprgid();
-  std::string dot("."); 
 
-  std::string ns = (current_namespace_ == "") ? "" : dot + current_namespace_;
-  kval = filecfg_kwd(module_name.c_str(), "NAME", unit);
-  //printf("File namespace is %s\n",(current_namespace_).c_str());
-  if (!kval.empty()) {
-    kval = kval + ns;
-    *name = strdup(kval.c_str());
-    return;
-  }
-  kval = filecfg_kwd(module_name.c_str(), "NAME", -1);
-  if (!kval.empty()) {
-    kval = kval + ns;
-    *name = strdup(kval.c_str());
-    return;
-  }
-  kval = filecfg_kwd("PSI", "NAME", unit);
-  if (!kval.empty()) {
-    kval = kval + ns;
-    *name = strdup(kval.c_str());
-    return;
-  }
-  kval = filecfg_kwd("PSI", "NAME", -1);
-  if (!kval.empty()) {
-    kval = kval + ns;
-    *name = strdup(kval.c_str());
-    return;
-  }
-  kval = filecfg_kwd("DEFAULT", "NAME", unit);
-  if (!kval.empty()) {
-    kval = kval + ns;
-    *name = strdup(kval.c_str());
-    return;
-  }
-  kval = filecfg_kwd("DEFAULT", "NAME", -1);
-  if (!kval.empty()) {
-    kval = kval + ns;
-    *name = strdup(kval.c_str());
-    return;
-  }
-  
-  // assume that the default has been provided already
-  abort();
-}
-**/
 }
 
