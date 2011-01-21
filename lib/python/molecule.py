@@ -217,7 +217,7 @@ def geometry(geom, name = "default"):
 
 def activate(mol):
     PsiMod.set_active_molecule(mol)
-    PsiMod.IO.set_default_namespace(mol.get_name())
+    #PsiMod.IO.set_default_namespace(mol.get_name())
 
 
 

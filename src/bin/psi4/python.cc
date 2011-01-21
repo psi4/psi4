@@ -586,14 +586,20 @@ BOOST_PYTHON_MODULE(PsiMod)
         def( "tocwrite", &PSIO::tocwrite ).
         def( "shared_object", &PSIO::shared_object).
         staticmethod("shared_object").
-        def( "get_current_namespace", &PSIO::get_current_namespace).
         def( "get_default_namespace", &PSIO::get_default_namespace).
         staticmethod("get_default_namespace").
-        def( "set_current_namespace", &PSIO::set_current_namespace).
         def( "set_default_namespace", &PSIO::set_default_namespace).
         staticmethod("set_default_namespace").
         def( "change_file_namespace", &PSIO::change_file_namespace).
         staticmethod("change_file_namespace");
+
+    class_<PSIOManager, shared_ptr<PSIOManager> >( "IOManager" ).
+        def( "shared_object", &PSIOManager::shared_object ). 
+        staticmethod("shared_object").
+        def( "print_out", &PSIOManager::print_out ). 
+        def( "psiclean", &PSIOManager::psiclean ). 
+        def( "mark_file_for_retention", &PSIOManager::mark_file_for_retention ). 
+        def( "mark_file_for_deletion", &PSIOManager::mark_file_for_deletion ); 
 
     class_<Chkpt, shared_ptr<Chkpt> >( "Checkpoint", init<PSIO*, int>() ).
         add_property( "enuc", &Chkpt::rd_enuc, &Chkpt::wt_enuc).

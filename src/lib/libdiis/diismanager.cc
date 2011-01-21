@@ -459,7 +459,6 @@ DIISManager::reset_subspace()
     _subspace.clear();
 }
 
-
 DIISManager::~DIISManager()
 {
     if (_psio->open_check(PSIF_LIBDIIS))

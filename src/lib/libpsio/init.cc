@@ -14,6 +14,7 @@ namespace psi {
 
 /* Definition of global data */
 shared_ptr<PSIO> _default_psio_lib_;
+shared_ptr<PSIOManager> _default_psio_manager_;
 std::string PSIO::default_namespace_;
 
 int PSIO::_error_exit_code_ = 1;
@@ -46,7 +47,6 @@ PSIO::PSIO() {
     psio_unit[i].toclen = 0;
     psio_unit[i].toc = NULL;
   }
-  current_namespace_ = default_namespace_;
 }
 
   int psio_init(void) {
@@ -54,6 +54,14 @@ PSIO::PSIO() {
       shared_ptr<PSIO> temp(new PSIO);
       _default_psio_lib_ = temp;
       if (_default_psio_lib_ == 0) {
+        fprintf(stderr,"LIBPSIO::init() -- failed to allocate the memory");
+        exit(PSIO::_error_exit_code_);
+      }
+    }
+    if (_default_psio_manager_.get() == 0) {
+      shared_ptr<PSIOManager> temp(new PSIOManager);
+      _default_psio_manager_ = temp;
+      if (_default_psio_manager_ == 0) {
         fprintf(stderr,"LIBPSIO::init() -- failed to allocate the memory");
         exit(PSIO::_error_exit_code_);
       }
