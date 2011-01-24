@@ -97,6 +97,15 @@ namespace psi {
     }
 
     /**
+     * Returns the molecule's Schoenflies symbol, as a string
+     */
+    std::string
+    Molecule::schoenflies_symbol() const
+    {
+        return std::string(pg_->symbol());
+    }
+
+    /**
      * Attempts to interpret a string as an atom specifier in a zmatrix.
      *
      * @param str: the string to interpret.
