@@ -65,7 +65,6 @@ namespace psi {
 
     extern int read_options(const std::string &name, Options & options, bool call_ipv1 = true,
       bool suppress_printing = false);
-    extern void psiclean(void);
     extern FILE *outfile;
 }
 
@@ -321,7 +320,7 @@ char const* py_psi_version()
 
 void py_psi_clean()
 {
-    psiclean();
+    PSIOManager::shared_object()->psiclean();
 }
 
 bool py_psi_configure_psio(PSIO* obj)

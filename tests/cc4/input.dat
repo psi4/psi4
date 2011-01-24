@@ -31,22 +31,10 @@ compare_values(refccsd,  get_variable("CCSD energy"),    9, "CCSD contribution")
 compare_values(ref_t,    get_variable("(T) energy"),     9, "(T) contribution")
 compare_values(reftotal, get_variable("Current energy"), 9, "Total energy")
 
+#Here's a demonstration of how to print an manipulate the files used by Psi
 psioh = PsiMod.IOManager.shared_object()
 psioh.print_out()
 PsiMod.IO.change_file_namespace(32, 'bh', 'cool')
 psioh.print_out()
-#psi: (
-#  label = "BH CCSD(T)"
-#  jobtype = sp
-#  wfn = ccsd_t
-#  reference = rhf
-#  dertype = none
-#  docc = (3 0 0 0)
-#  freeze_core = true
-#  basis = "cc-pVQZ"
-#  geometry = (
-#    b      0.0000        0.0000        0.0000
-#    h      0.0000        0.0000        1.0000
-#      )
-#)
-#
+
+clean()

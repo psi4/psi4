@@ -1,5 +1,5 @@
 $(TARGET):
-	@SRCDIR=$(SRCDIR) PSIDATADIR=$(SRC_PSIDATADIR) ../../bin/psi4 $(SRCDIR)/input.dat && ../../bin/psi4 $(SRCDIR)/input.dat -w
+	@SRCDIR=$(SRCDIR) PSIDATADIR=$(SRC_PSIDATADIR) ../../bin/psi4 $(SRCDIR)/input.dat
 
 clean:
 	@SRCDIR=$(SRCDIR) PSIDATADIR=$(SRC_PSIDATADIR) ../../bin/psi4 -w $(SRCDIR)/input.dat && echo "Running psiclean"

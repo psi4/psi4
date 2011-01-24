@@ -30,16 +30,4 @@ compare_values(refscf,   get_variable("SCF energy"),     9, "SCF energy")
 compare_values(refccsd,  get_variable("CCSD energy"),    7, "CCSD contribution")
 compare_values(reftotal, get_variable("Current energy"), 7, "Total energy")
 
-#psi: (
-#  label = "6-31G** CCSD H2O"
-#  jobtype = opt
-#  wfn = ccsd
-#  reference = rhf
-#  dertype = none
-#  basis = "6-31G**"
-#  zmat = (
-#    o
-#    h 1 0.97
-#    h 1 0.97 2 103.0
-#  )
-#)
+clean()

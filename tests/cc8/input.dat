@@ -37,22 +37,4 @@ compare_values(refccsd,  get_variable("CCSD energy"),    9, "CCSD contribution")
 compare_values(ref_t,    get_variable("(T) energy"),     9, "(T) contribution")
 compare_values(reftotal, get_variable("Current energy"), 9, "Total energy")
 
-#psi: (
-#  label = "UHF-CCSD(T)/cc-pVDZ 2Sigma+ CN"
-#  jobtype = sp
-#  wfn = ccsd_t
-#  reference = uhf
-#  multi = 2
-#  dertype = none
-#  docc = (4 0 1 1)
-#  socc = (1 0 0 0)
-#  freeze_core = true
-#  basis = "cc-pVDZ"
-#  zmat = (
-#   C
-#   N 1 R
-#  )
-#  zvars = (
-#   R 1.175
-#  )
-#)
+clean()

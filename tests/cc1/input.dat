@@ -31,28 +31,4 @@ compare_values(refscf,   get_variable("SCF energy"),     9, "SCF energy")
 compare_values(refccsd,  get_variable("CCSD energy"),    8, "CCSD contribution")
 compare_values(reftotal, get_variable("Current energy"), 8, "Total energy")
 
-#psioh = PsiMod.IOManager.shared_object()
-#psioh.mark_file_for_retention('./psi.h2o.64')
-#psioh.mark_file_for_retention('./psi.h2o.32')
-#psioh.print_out()
-#psioh.mark_file_for_deletion('./psi.h2o.64')
-#psioh.psiclean()
-#psioh.psiclean()
-
-#psi: (
-#  label = "RHF CCSD gradient"
-#  jobtype = opt
-#  wfn = ccsd
-#  reference = rhf
-#  dertype = FIRST
-#%  docc = (3 0 1 1)
-#docc = (5)
-#  basis = "6-31G**"
-#subgroup = c1
-#  zmat = (
-#    O
-#    H  1  0.97
-#    H  1  0.97  2  103.0
-#  )
-#)
-
+clean()

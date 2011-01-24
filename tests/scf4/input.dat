@@ -1,0 +1,40 @@
+#%! RHF cc-pVDZ energy for water, automatically scanning the symmetric stretch and bending coordinates.
+refENuc = [ 9.785886586224326, 9.780670853323890, 8.807297927601891, 
+            8.802603767991497, 8.006634479638080, 8.002367061810450 ]
+
+refSCF  = [ -76.02132543096083, -76.02170971655210, -76.02148198312274, 
+            -76.02145797759667, -75.99010405718796, -75.98979581991821 ]
+
+molecule h2o {
+    O
+    H 1 R
+    H 1 R 2 A
+}
+
+Rvals = [ 0.9, 1.0, 1.1 ]
+Avals = range(102, 106, 2)
+
+count = 0
+
+global basis cc-pvdz
+set scf {
+    e_converge = 11
+}
+
+for R in Rvals:
+    h2o.R = R
+
+    for A in Avals:
+
+        h2o.A = A
+
+        mints()
+        thisenergy = scf()
+
+        compare_values(refENuc[count], h2o.nuclear_repulsion_energy(),
+                       10, "Nuclear repulsion energy %d" % count)
+        compare_values(refSCF[count], thisenergy, 10, "Reference energy %d" % count)
+
+        count = count + 1
+
+clean()
