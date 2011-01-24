@@ -39,8 +39,8 @@ void dgeev_eom(int L, double **G, double *lambda, double **alpha) {
       G[j][i] = temp;
     }
 
-  i = C_DGEEV(L, G, L, lambda, evals_i, left_evects,
-    L, alpha, L, work, lwork, info);
+  i = C_DGEEV('V', 'V', L, G[0], L, lambda, evals_i, left_evects[0],
+    L, alpha[0], L, work, lwork);
 
   for (i=0; i<L; ++i)
     for (j=0; j<i; ++j) {

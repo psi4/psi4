@@ -20,6 +20,7 @@
 
 #include <cstdio>
 #include <limits.h>
+#include <cmath>
 
 #if FC_SYMBOL==2
 #define F_DSWAP dswap_
@@ -33,6 +34,9 @@
 #define F_DSYMV dsymv_
 #define F_DSPMV dspmv_
 #define F_DDOT  ddot_
+#define F_DASUM  dasum_ 
+#define F_DNRM2  dnrm2_
+#define F_IDAMAX  idamax_
 #elif FC_SYMBOL==1
 #define F_DSWAP dswap
 #define F_DAXPY daxpy
@@ -45,6 +49,9 @@
 #define F_DSYMV dsymv
 #define F_DSPMV dspmv
 #define F_DDOT  ddot
+#define F_DASUM  dasum 
+#define F_DNRM2  dnrm2
+#define F_IDAMAX  idamax
 #elif FC_SYMBOL==3
 #define F_DSWAP DSWAP
 #define F_DAXPY DAXPY
@@ -57,6 +64,9 @@
 #define F_DSYMV DSYMV
 #define F_DSPMV DSPMV
 #define F_DDOT  DDOT
+#define F_DASUM  DASUM
+#define F_DNRM2  DNRM2
+#define F_IDAMAX  IDAMAX
 #elif FC_SYMBOL==4
 #define F_DSWAP DSWAP_
 #define F_DAXPY DAXPY_
@@ -69,6 +79,9 @@
 #define F_DSYMV DSYMV_
 #define F_DSPMV DSPMV_
 #define F_DDOT  DDOT_
+#define F_DASUM  DASUM_
+#define F_DNRM2  DNRM2_
+#define F_IDAMAX  IDAMAX_
 #endif
 
 extern "C" {
@@ -94,6 +107,9 @@ extern void F_DSYMV(char *uplo, int *n, double *alpha, double *A,
 extern void F_DSPMV(char *uplo, int *n, double *alpha, double *A, double *X,
   int *inc_x, double *beta, double *Y, int *inc_y);
 extern double F_DDOT(int *n, double *x, int *incx, double *y, int *incy);
+extern double F_DNRM2(int *n, double *x, int *incx);
+extern double F_DASUM(int *n, double *x, int *incx);
+extern int F_IDAMAX(int *n, double *x, int *incx);
 
 }
 
@@ -252,6 +268,96 @@ double C_DDOT(unsigned long int length, double *x, int inc_x, double *y, int inc
         double* y_s = &y[block*inc_y*(unsigned long int)INT_MAX];
         signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
         reg += ::F_DDOT(&length_s, x_s, &inc_x, y_s, &inc_y);
+    }
+
+    return reg;
+}
+/*!
+ * This function returns the square of the norm of this vector.
+ *
+ * \param length Number of elements in x.
+ * \param x      A pointer to the beginning of the data in x.
+ *               Must be of at least length (1+(N-1)*abs(inc_x).
+ * \param inc_x  how many places to skip to get to next element in x
+ *
+ * @returns the norm squared product
+ *
+ * \ingroup QT
+ */
+
+double C_DNRM2(unsigned long int length, double *x, int inc_x)
+{
+    if(length == 0) return 0.0;
+
+    double reg = 0.0;
+
+    int big_blocks = (int)(length / INT_MAX);
+    int small_size = (int)(length % INT_MAX);
+    for (int block = 0; block <= big_blocks; block++) {
+        double* x_s = &x[block*inc_x*(unsigned long int)INT_MAX];
+        signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
+        reg += ::F_DNRM2(&length_s, x_s, &inc_x);
+    }
+
+    return reg;
+}
+/*!
+ * This function returns the sum of the absolute value of this vector.
+ *
+ * \param length Number of elements in x.
+ * \param x      A pointer to the beginning of the data in x.
+ *               Must be of at least length (1+(N-1)*abs(inc_x).
+ * \param inc_x  how many places to skip to get to next element in x
+ *
+ * @returns the sum of the absolute value 
+ *
+ * \ingroup QT
+ */
+
+double C_DASUM(unsigned long int length, double *x, int inc_x)
+{
+    if(length == 0) return 0.0;
+
+    double reg = 0.0;
+
+    int big_blocks = (int)(length / INT_MAX);
+    int small_size = (int)(length % INT_MAX);
+    for (int block = 0; block <= big_blocks; block++) {
+        double* x_s = &x[block*inc_x*(unsigned long int)INT_MAX];
+        signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
+        reg += ::F_DASUM(&length_s, x_s, &inc_x);
+    }
+
+    return reg;
+}
+/*!
+ * This function returns the index of the largest absolute value compoment of this vector.
+ *
+ * \param length Number of elements in x.
+ * \param x      A pointer to the beginning of the data in x.
+ *               Must be of at least length (1+(N-1)*abs(inc_x).
+ * \param inc_x  how many places to skip to get to next element in x
+ *
+ * @returns the index of the largest absolute value 
+ *
+ * \ingroup QT
+ */
+
+unsigned long int C_IDAMAX(unsigned long int length, double *x, int inc_x)
+{
+    if(length == 0) return 0L;
+
+    unsigned long int reg = 0L;
+    unsigned long int reg2 = 0L;
+
+    int big_blocks = (int)(length / INT_MAX);
+    int small_size = (int)(length % INT_MAX);
+    for (int block = 0; block <= big_blocks; block++) {
+        double* x_s = &x[block*inc_x*(unsigned long int)INT_MAX];
+        signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
+        reg2 = ::F_IDAMAX(&length_s, x_s, &inc_x) + block*inc_x*(unsigned long int)INT_MAX;
+        if (fabs(x[reg]) > fabs(x[reg2]))
+            reg = reg2; 
     }
 
     return reg;
