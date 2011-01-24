@@ -42,7 +42,7 @@ def process_options(matchobj, command_string):
     result = []
     if module != "":
         set_command = "set_option"
-        result.append('PsiMod.set_default_options_for_module("%s")\n' % (module.upper()))
+        result.append('%sPsiMod.set_default_options_for_module("%s")\n' % (spaces, module.upper()))
     for line in command_lines:
         # Ignore blank/empty lines
         if (not line or line.isspace()):
@@ -209,15 +209,16 @@ set scf {
     DIIS on
 }
 
-globals freeze_core true
+    globals freeze_core true
 
 set docc =  [2, 0, 1, 1]
 set docc   [2, 0, 1, 1]
+    set docc   [2, 0, 1, 1]
 
-set mp2 {
-    print  5
-    print = 5
-}
+    set mp2 {
+        print  5
+        print = 5
+    }
 
 """)
 
