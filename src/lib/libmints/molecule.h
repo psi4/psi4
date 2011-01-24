@@ -320,6 +320,7 @@ public:
     bool has_symmetry_element(Vector3& op, double tol) const;
 
     boost::shared_ptr<PointGroup> point_group() const { return pg_; }
+    std::string schoenflies_symbol() const;
     void set_point_group(boost::shared_ptr<PointGroup> pg) {
         pg_ = pg;
         // Call this here, the programmer will forget to call it, as I have many times.
