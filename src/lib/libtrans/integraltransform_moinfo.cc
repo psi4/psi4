@@ -66,6 +66,10 @@ IntegralTransform::process_spaces()
 {
     std::vector<shared_ptr<MOSpace> >::const_iterator space;
 
+    for(int h = 0; h < _nirreps; ++h){
+        fprintf(outfile, "docc = %d socc = %d frzcpi = %d frvirt = %d, mopi = %d, sopi = %d\n",
+                _clsdpi[h], _openpi[h], _frzcpi[h], _frzvpi[h], _mopi[h], _sopi[h]);fflush(outfile);
+    }
     // Build the Pitzer -> Qt lookup, if needed
     int *aQT, *bQT;
     if(_moOrdering == QTOrder){

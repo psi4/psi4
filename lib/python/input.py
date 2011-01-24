@@ -1,74 +1,65 @@
 import re;
 
-yes = re.compile(r'^(yes|true|on)', re.IGNORECASE)
-no = re.compile(r'^(no|false|off)', re.IGNORECASE)
+yes = re.compile(r'^(yes|true|on|1)', re.IGNORECASE)
+no = re.compile(r'^(no|false|off|0)', re.IGNORECASE)
 
-def process_global_command(matchobj):
+def bad_option_syntax(line):
+    print 'Unsupported syntax:\n\n%s\n\n' % (line)
+    exit()
+
+def process_option(matchobj, option_string, line):
     spaces = matchobj.group(1)
     key   = matchobj.group(2).upper()
     value = matchobj.group(3).strip()
-
     temp = ""
     if re.match(r'^[-]?\d*\.?\d+$', value) or re.match(r'^\[.*\]$', value):
-        temp ='PsiMod.set_global_option("%s", %s)' % (key, value)
+        # This is a number
+        temp ='PsiMod.%s("%s", %s)' % (option_string, key, value)
     elif re.match(r'^\$', value):
-        # Assume the user as set the variable in value
-        temp = 'PsiMod.set_global_option("%s", %s)' % (key, value[1:])
+        # Assume the user has set the variable in value
+        temp = 'PsiMod.%s("%s", %s)' % (option_string, key, value[1:])
     else:
-        temp = 'PsiMod.set_global_option("%s", "%s")' % (key, value)
-
+        # This must contain only alphanumeric (plus -,* for basis sets) or it's bad
+        if re.match(r'^[-*\w]+$', value):
+            temp = 'PsiMod.%s("%s", "%s")' % (option_string, key, value)
+        else:
+            bad_option_syntax(line)
     return spaces + temp + "\n"
 
-def process_global_commands(matchobj):
-    spaces = matchobj.group(1)
-    commands = matchobj.group(3)
-    command_lines = re.split('\n', commands)
-    map(lambda x: x.strip(), command_lines)
-
-    result = []
-    for line in command_lines:
-        temp = re.sub(r'#.*', "", line)
-        result.append(re.sub(r'^\s*()(\w+)\s+(.*)($|#.*)', process_global_command, temp))
-
-    set_commands = spaces
-    set_commands += (spaces).join(result)
-
-    return set_commands
+def process_global_command(matchobj):
+    return process_option(matchobj, "set_global_option", matchobj.group(0))
 
 def process_set_command(matchobj):
-    spaces = matchobj.group(1)
-    key   = matchobj.group(2).upper()
-    value = matchobj.group(3).strip()
+    return process_option(matchobj, "set_option", matchobj.group(0)) 
 
-    if re.match(r'^[-]?\d*\.?\d+$', value) or re.match(r'^\[.*\]$', value):
-        return spaces + 'PsiMod.set_option("%s", %s)\n' % (key, value)
-    elif re.match(r'^\$', value):
-        # Assume the user as set the variable in value
-        return spaces + 'PsiMod.set_option("%s", %s)\n' % (key, value[1:])
-    else:
-        # Just place the value in quotes
-        return spaces + 'PsiMod.set_option("%s", "%s")\n' % (key, value)
-
-def process_set_commands(matchobj):
+def process_options(matchobj, command_string):
     spaces = matchobj.group(1)
     module = matchobj.group(2)
     commands = matchobj.group(3)
     command_lines = re.split('\n', commands)
-
+    map(lambda x: x.strip(), command_lines)
+    set_command = "set_global_option"
     result = []
-    for line in command_lines:
-        temp = re.sub(r'#.*', "", line)
-        result.append(re.sub(r'^\s*()(\w+)\s+(.*)($|#.*)', process_set_command, temp))
-
     if module != "":
-        x = 'PsiMod.set_default_options_for_module("%s")\n' % (module.upper())
-        result.insert(0, x)
-        result.insert(1, 'PsiMod.set_option("NO_INPUT", True)\n')
+        set_command = "set_option"
+        result.append('PsiMod.set_default_options_for_module("%s")\n' % (module.upper()))
+    for line in command_lines:
+        # Ignore blank/empty lines
+        if (not line or line.isspace()):
+            continue
+        matchobj = re.match(r'^\s*()(\w+)[\s=]+(.*?)$', line)
+        # Is the syntax correct? If so, process the line 
+        if matchobj:
+            result.append(process_option(matchobj, command_string,  line))
+        else:
+            bad_option_syntax(line)
+    return (spaces).join(result)
 
-    set_commands = spaces
-    set_commands += (spaces).join(result)
+def process_global_commands(matchobj):
+    return process_options(matchobj, "set_global_option")
 
-    return set_commands
+def process_set_commands(matchobj):
+    return process_options(matchobj, "set_option")
 
 def process_molecule_command(matchobj):
     spaces = matchobj.group(1)
@@ -139,7 +130,15 @@ def process_input(raw_input):
 
     # Nuke all comments
     comment = re.compile(r'#.*')
-    temp = re.sub(comment,'',raw_input)
+    temp = re.sub(comment, '', raw_input)
+
+    # First, remove everything from lines containing only spaces
+    blankline = re.compile(r'^\s*$')
+    temp = re.sub(blankline, '', temp, re.MULTILINE)
+ 
+    # Then remove repeated newlines
+    multiplenewlines = re.compile(r'\n+')
+    temp = re.sub(multiplenewlines, '\n', temp)
 
     # Process all "set name? { ... }"
     #set_commands = re.compile(r'^(\s*?)set\s*(\w*?)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
@@ -151,11 +150,11 @@ def process_input(raw_input):
     temp = re.sub(set_command, process_set_command, temp)
 
     # Process all "global(s) { ... }"
-    global_commands = re.compile(r'^(\s*?)(global|globals)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    global_commands = re.compile(r'^(\s*?)()globals?\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(global_commands, process_global_commands, temp)
 
     # Process all individual "global key value"
-    global_command = re.compile(r'(\s*?)global\s+(\w+)[\s=]+(.*?)($|#.*)', re.MULTILINE | re.IGNORECASE)
+    global_command = re.compile(r'^(\s*?)globals?\s+(\w+)[\s=]+(.*?)(\s*)$', re.MULTILINE | re.IGNORECASE)
     temp = re.sub(global_command, process_global_command, temp)
 
     # Process "molecule name? { ... }"
@@ -197,43 +196,28 @@ H 1 R
 R = .9
 }
 
-Rs = [ 0.9, 1.0, 1.1 ]
+#this is a comment
+globals {
+    RI_BASIS_SCF STO-3G
+}
+
+global ncycles = 5
 
 set scf {
-    SCF_TYPE DF
-    PRINT 2
-    BASIS 3-21G
-    RI_BASIS_SCF STO-3G
+    SCF_TYPE DF # test this too
     DOCC [3, 0, 1, 1]
     DIIS on
 }
 
-globals {
-    BASIS STO-3G
-    RI_BASIS_SCF STO-3G
+globals freeze_core true
+
+set docc =  [2, 0, 1, 1]
+set docc   [2, 0, 1, 1]
+
+set mp2 {
+    print  5
+    print = 5
 }
-
-set docc [2, 0, 1, 1]
-
-global print 1
-
-for val in Rs:
-    h2.R = val
-
-    set basis cc-pv(T+d)Z
-
-    for base in basissets:
-        set basis $base
-
-    set scf {
-        SCF_TYPE DF
-        PRINT 2
-        BASIS 3-21G
-        RI_BASIS_SCF STO-3G
-        DOCC [3, 0, 1, 1]
-    }
-
-    escf = scf()
 
 """)
 

@@ -444,6 +444,10 @@ void UHF::save_information()
     int nfzv = 0;
     int *frzcpi = compute_fcpi(nfzc, eigvaluesa);
     int *frzvpi = compute_fvpi(nfzv, eigvaluesa);
+    for (int k = 0; k < 8; k++) {
+        frzcpi_[k] = frzcpi[k];
+        frzvpi_[k] = frzvpi[k];
+    }
     chkpt_->wt_frzcpi(frzcpi);
     chkpt_->wt_frzvpi(frzvpi);
     delete[](frzcpi);
