@@ -126,6 +126,7 @@ namespace psi {
     void Molecule::set_variable(const std::string &str, double val)
     {
         geometryVariables_[str] = val;
+        fprintf(outfile, "Setting geometry variable %s to %f\n", str.c_str(), val);
         try {
             update_geometry();
         }

@@ -182,6 +182,9 @@ def process_input(raw_input):
     imports += 'from wrappers import *\n'    
     imports += 'from psiexceptions import *\n'    
     imports += 'from util import *\n'    
+  
+    # TODO remove this later!
+    imports += 'PsiMod.set_global_option("NO_INPUT", True)'
 
     temp = imports + temp
 

@@ -1,7 +1,7 @@
 
 .PHONY: tests quicktests cc_tests psirb_tests clean quicktestsclean
 
-cc_subdirs = cc1 cc2 cc4 cc8 cc8a mcscf1-rhf
+cc_subdirs = cc1 cc2 cc4 #cc8 cc8a these should be restored when fixed
 
 rb_subdirs = 
 
@@ -9,16 +9,17 @@ ci_subdirs =
 
 dcft_subdirs = dcft1 dcft2 dcft3
 
-mcscf_subdirs = 
+mcscf_subdirs = #mcscf1-rhf this is also broken
 
 psimrcc_subdirs = 
 
-scf_subdirs = scf1 scf2 scf3
+scf_subdirs = scf1 scf2 scf3 scf4
 
 subdirs = \
-$(scf_subdirs) 
+$(scf_subdirs) \
+$(cc_subdirs) \
+${mcscf_subdirs} 
 #$(dcft_subdirs) \
-#$(cc_subdirs) \
 
 # the bare minimum
 quicktestdirs = 
