@@ -13,9 +13,12 @@ mcscf_subdirs = #mcscf1-rhf this is also broken
 
 psimrcc_subdirs = 
 
+mints_subdirs = mints1
+
 scf_subdirs = scf1 scf2 scf3 scf4
 
 subdirs = \
+$(mints_subdirs) \
 $(scf_subdirs) \
 $(cc_subdirs) \
 ${mcscf_subdirs} 
@@ -44,6 +47,12 @@ cc_tests:
 
 ci_tests:
 	for dir in $(ci_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+mints_tests:
+	for dir in $(mints_subdirs); \
 	do \
 	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
 	done

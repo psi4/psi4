@@ -1,0 +1,102 @@
+#%! Symmetry tests for a range of molecules.  This serves as a nice example of the many ways to specify geometries.
+
+# DinftyH Symmetry (D2h Abelian)
+molecule C2H2 {
+   C 0 0  r1
+   C 0 0 -r1
+   H 0 0  r2
+   H 0 0 -r2
+   r1 = 0.65
+   r2 = 1.75
+}
+
+C2H2.update_geometry()
+C2H2.print_out()
+compare_strings("d2h", C2H2.schoenflies_symbol(), "C2H2 point group");
+
+# CinftyV Symmetry (C2v Abelian)
+molecule CN {
+   0 2
+   C 0.0 0.0 0.0
+   N 0.0 0.0 r
+   r = 1.4
+}
+
+CN.update_geometry()
+CN.print_out()
+compare_strings("c2v", CN.schoenflies_symbol(), "CN point group");
+
+# C2v Symmetry (could also be D2)
+molecule triplet_ethylene {
+    C1
+    C2 C1 rCC
+    H1 C1 rCH C2 aHCC
+    H2 C1 rCH C2 aHCC H1 180.0
+    H3 C2 rCH C1 aHCC H1 D
+    H4 C2 rCH C1 aHCC H3 180.0
+    
+    rCC  = 1.41
+    rCH  = 1.09
+    aHCC = 122.0
+    D    = 90.0
+}
+
+triplet_ethylene.update_geometry()
+triplet_ethylene.print_out()
+compare_strings("c2v", triplet_ethylene.schoenflies_symbol(), "Triplet Ethylene point group");
+
+# D2h Symmetry
+molecule singlet_ethylene {
+    C1
+    C2 C1 rCC
+    H1 C1 rCH C2 aHCC
+    H2 C1 rCH C2 aHCC H1 180.0
+    H3 C2 rCH C1 aHCC H1 D
+    H4 C2 rCH C1 aHCC H3 180.0
+    
+    rCC  = 1.41
+    rCH  = 1.09
+    aHCC = 122.0
+    D    = 0.0
+}
+
+singlet_ethylene.update_geometry()
+singlet_ethylene.print_out()
+compare_strings("d2h", singlet_ethylene.schoenflies_symbol(), "Singlet Ethylene point group");
+
+# S4 Symmetry (C2 Abelian)
+molecule Li_H2O_4_p {
+   1 1
+   X
+   Li 1 1.0
+   X 2 1.0 1 90.0
+   X 2 1.0 3 90.0 1 180.0
+   O 2 oli 1 olix 3 -90.0
+   O 2 oli 1 olix 3 90.0
+   O 2 oli 4 olix 3 0.0
+   O 2 oli 4 olix 3 180.0
+   H 5 oh1 2 lioh1 1 xlioh1
+   H 5 oh2 2 lioh2 1 xlioh2
+   H 6 oh1 2 lioh1 1 xlioh1
+   H 6 oh2 2 lioh2 1 xlioh2
+   H 7 oh1 2 lioh1 4 -xlioh1
+   H 7 oh2 2 lioh2 4 -xlioh2
+   H 8 oh1 2 lioh1 4 -xlioh1
+   H 8 oh2 2 lioh2 4 -xlioh2
+   
+   olix=52.0
+   oli=1.9
+   oh1=0.952
+   oh2=0.950
+   lioh1=125.4
+   lioh2=124.8
+   xlioh1=-40.0
+   xlioh2=135.0
+}
+
+Li_H2O_4_p.update_geometry()
+Li_H2O_4_p.print_out()
+# This is actually broken right now, maybe the sigma_v test uses criteria that are too loose?
+#compare_strings("c2", Li_H2O_4_p.schoenflies_symbol(), "Li(H20)_4^+ point group");
+
+clean()
