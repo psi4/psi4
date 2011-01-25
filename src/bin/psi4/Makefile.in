@@ -10,7 +10,7 @@ CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\" $(PYTHON_INCLUDE)
 
 # NOTE: Keep PSI_parallel last in the PSI library list (but before boost). It contains the fprintf override.
 PSILIBS = \
--lPSI_mints_wrapper -lPSI_dfmp2 -lPSI_scf -lPSI_ccenergy -lPSI_ccsort -lPSI_input3 -lPSI_cscf -lPSI_cints \
+-lPSI_mints_wrapper -lPSI_dfmp2 -lPSI_scf -lPSI_ccenergy -lPSI_ccsort \
 -lPSI_transqt2 -lPSI_cctriples -lPSI_mp2 -lPSI_lmp2 -lPSI_scf_solver -lPSI_mcscf -lPSI_psimrcc -lPSI_dcft \
 -lPSI_sapt -lPSI_sapt_solver -lPSI_cchbar -lPSI_cclambda -lPSI_ccdensity -lPSI_oeprop -lPSI_transqt \
 -lPSI_functional -lPSI_mints_deriv -lPSI_optking \
