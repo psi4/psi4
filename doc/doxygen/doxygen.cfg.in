@@ -306,9 +306,12 @@ RECURSIVE              = YES
 # excluded from the INPUT source files. This way you can easily exclude a
 # subdirectory from a directory tree whose root is specified with the INPUT tag.
 
-EXCLUDE                = @top_srcdir@/src/lib/libmathtools \
-                         @top_srcdir@/src/bin/psiclean \
-                         @top_srcdir@/include/boost
+EXCLUDE                = @top_srcdir@/src/bin/psiclean \
+                         @top_srcdir@/include/boost \
+                         @top_srcdir@/src/bin/input \
+                         @top_srcdir@/src/bin/input3 \
+                         @top_srcdir@/src/bin/cints \
+                         @top_srcdir@/src/bin/cscf
 
 # If the value of the INPUT tag contains directories, you can use the
 # EXCLUDE_PATTERNS tag to specify one or more wildcard patterns to exclude
