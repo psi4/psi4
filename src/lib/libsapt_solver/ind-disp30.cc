@@ -8,8 +8,6 @@
 #include <libiwl/iwl.h>
 #include <psifiles.h>
 #include <libchkpt/chkpt.h>
-#include <libipv1/ip_lib.h>
-#include <libipv1/ip_data.gbl>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "sapt2p3.h"
@@ -20,7 +18,7 @@ void SAPT2p3::ind_disp30()
 {
   double e1,e2,e3;
 
-  if (params_.print) 
+  if (params_.print)
     fprintf(outfile,"Begining Ind-Disp30 Calculation\n\n");
 
   ind_disp_ov("Ind-Disp30 AR Amplitudes","T(BS) AR",PSIF_SAPT_AA_DF_INTS,
@@ -75,8 +73,8 @@ void SAPT2p3::ind_disp30()
   }
 }
 
-void SAPT2p3::ind_disp_ov(char *amp_out, char *theta_label, int AAfile, 
-  char *AAlabel, char *RRlabel, double **sAR, double *evals, int nocc, 
+void SAPT2p3::ind_disp_ov(char *amp_out, char *theta_label, int AAfile,
+  char *AAlabel, char *RRlabel, double **sAR, double *evals, int nocc,
   int nvir)
 {
   double **iAR = block_matrix(nocc,nvir);

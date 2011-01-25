@@ -7,8 +7,8 @@
 #ifdef _OPENMP
 #include <omp.h>
 #endif
-    
-    
+
+
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
@@ -16,13 +16,12 @@
 #include <vector>
 #include <utility>
 #include <time.h>
-  
+
 #include <psifiles.h>
 #include <psi4-dec.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.hpp>
-#include <libipv1/ip_lib.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <psifiles.h>
@@ -98,7 +97,7 @@ void SAPT2B::df_ints()
   // Now J contains the eigenvectors of the original J
   // Copy J to J_copy
   double **J_copy = block_matrix(ribasis_->nbf(), ribasis_->nbf());
-  C_DCOPY(ribasis_->nbf()*ribasis_->nbf(),J[0],1,J_copy[0],1); 
+  C_DCOPY(ribasis_->nbf()*ribasis_->nbf(),J[0],1,J_copy[0],1);
 
   // Now form J^{-1/2} = U(T)*j^{-1/2}*U,
   // where j^{-1/2} is the diagonal matrix of the inverse square roots
@@ -216,34 +215,34 @@ void SAPT2B::df_ints()
         rank = omp_get_thread_num();
       #endif
       int MU = calc_info_.index2i[mn];
-      int NU = calc_info_.index2j[mn];  
+      int NU = calc_info_.index2j[mn];
       int nummu = basisset_->shell(MU)->nfunction();
       int numnu = basisset_->shell(NU)->nfunction();
 
       if (sqrt(Schwartz[mn]*DFSchwartz[Pshell])>params_.schwarz) {
         eri[rank]->compute_shell(Pshell, 0, MU, NU);
-  
+
         for (int P=0, index=0; P < numPshell; ++P) {
 
           for (int mu=0; mu < nummu; ++mu) {
             int omu = basisset_->shell(MU)->function_index() + mu;
-  
+
             for (int nu=0; nu < numnu; ++nu, ++index) {
               int onu = basisset_->shell(NU)->function_index() + nu;
 
               AO_RI[P][omu*norbs+onu] = buffer[rank][index];
               AO_RI[P][onu*norbs+omu] = buffer[rank][index];
             }
-          } 
+          }
         }
-    
+
       } // end Schwartz inequality
     } // end loop over MU,NU shells
 
     for (int P=0; P < numPshell; ++P) {
-      C_DGEMM('T', 'N', nmo, norbs, norbs, 1.0, calc_info_.CA[0], nmo, 
+      C_DGEMM('T', 'N', nmo, norbs, norbs, 1.0, calc_info_.CA[0], nmo,
         AO_RI[P], norbs, 0.0, halftrans, norbs);
-      C_DGEMM('N', 'N', nmo, nmo, norbs, 1.0, halftrans, norbs, 
+      C_DGEMM('N', 'N', nmo, nmo, norbs, 1.0, halftrans, norbs,
         calc_info_.CA[0], nmo, 0.0, MO_RI[P], nmo);
     }
 
@@ -251,7 +250,7 @@ void SAPT2B::df_ints()
       for (int P=0; P < numPshell; ++P) {
         for (int a=0; a < calc_info_.noccA; ++a) {
           psio_->write(PSIF_SAPT_AA_DF_INTS,"AR Bare RI Integrals",(char *)
-            &(MO_RI[P][a*nmo+calc_info_.noccA]),sizeof(double)*(ULI) 
+            &(MO_RI[P][a*nmo+calc_info_.noccA]),sizeof(double)*(ULI)
             calc_info_.nvirA,next_bare_AR,&next_bare_AR);
         }
       }
@@ -299,7 +298,7 @@ void SAPT2B::df_ints()
         sizeof(double)*(ULI) numP,next_DF_MO,&next_DF_MO);
       next_DF_MO = psio_get_address(next_DF_MO,(nmo*nmo-numP)*
         (ULI) sizeof(double));
-    } 
+    }
 
     temp_J = block_matrix(numP,calc_info_.nrio);
 
@@ -391,7 +390,7 @@ void SAPT2B::df_ints()
       for (int P=0; P < numPshell; ++P) {
         for (int b=0; b < calc_info_.noccB; ++b) {
           psio_->write(PSIF_SAPT_BB_DF_INTS,"BS Bare RI Integrals",(char *)
-            &(MO_RI[P][b*nmo+calc_info_.noccB]),sizeof(double)*(ULI) 
+            &(MO_RI[P][b*nmo+calc_info_.noccB]),sizeof(double)*(ULI)
             calc_info_.nvirB,next_bare_BS,&next_bare_BS);
         }
       }
@@ -473,11 +472,11 @@ void SAPT2B::df_ints()
   AO_RI = block_matrix(maxPshell,norbs*norbs);
   MO_RI = block_matrix(maxPshell,nmo*nmo);
 
-  next_DF_MO = PSIO_ZERO; 
+  next_DF_MO = PSIO_ZERO;
 
   for (int Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
     int numPshell = ribasis_->shell(Pshell)->nfunction();
- 
+
     #pragma omp for private(mn) schedule(guided)
     for (mn=0; mn < nshelltri; ++mn) {
       #ifdef _OPENMP
@@ -487,15 +486,15 @@ void SAPT2B::df_ints()
       int NU = calc_info_.index2j[mn];
       int nummu = basisset_->shell(MU)->nfunction();
       int numnu = basisset_->shell(NU)->nfunction();
-  
+
       if (sqrt(Schwartz[mn]*DFSchwartz[Pshell])>params_.schwarz) {
         eri[rank]->compute_shell(Pshell, 0, MU, NU);
 
         for (int P=0, index=0; P < numPshell; ++P) {
-  
+
           for (int mu=0; mu < nummu; ++mu) {
             int omu = basisset_->shell(MU)->function_index() + mu;
-  
+
             for (int nu=0; nu < numnu; ++nu, ++index) {
               int onu = basisset_->shell(NU)->function_index() + nu;
 
@@ -504,23 +503,23 @@ void SAPT2B::df_ints()
             }
           }
         }
-    
+
       } // end Schwartz inequality
     } // end loop over MU,NU shells
-  
+
     for (int P=0; P < numPshell; ++P) {
       C_DGEMM('T', 'N', nmo, norbs, norbs, 1.0, calc_info_.CA[0], nmo,
         AO_RI[P], norbs, 0.0, halftrans, norbs);
       C_DGEMM('N', 'N', nmo, nmo, norbs, 1.0, halftrans, norbs,
         calc_info_.CB[0], nmo, 0.0, MO_RI[P], nmo);
     }
- 
+
     psio_->write(PSIF_SAPT_TEMP,"MO RI Integrals",(char *) &(MO_RI[0][0]),
       sizeof(double)*numPshell*nmo*(ULI) nmo,next_DF_MO,&next_DF_MO);
- 
+
   }
-  
-  free_block(AO_RI); 
+
+  free_block(AO_RI);
   free_block(MO_RI);
 
   zero_disk(PSIF_SAPT_AB_DF_INTS,"AB RI Integrals",(char *) &(zeros[0]),
@@ -537,7 +536,7 @@ void SAPT2B::df_ints()
   for (int i=0,oP=0; oP < nmo*nmo; ++i, oP += numP) {
     if ((i+1)*temp_size < nmo*nmo) numP = temp_size;
     else numP = nmo*nmo - oP;
-      
+
     temp = block_matrix(nriorbs,numP);
 
     next_DF_MO = psio_get_address(PSIO_ZERO,oP*(ULI) sizeof(double));
@@ -593,7 +592,7 @@ void SAPT2B::df_ints()
 
   if (workflow_.save_Jmhalf)
     calc_info_.Jmhalf = J_mhalf;
-  else 
+  else
     free_block(J_mhalf);
 
   psio_->close(PSIF_SAPT_TEMP,0);
@@ -822,7 +821,7 @@ void SAPT2B::w_ints()
     free_block(B_p_SS);
 
   }
-  
+
 }
 
 void SAPT3B::df_ints()
@@ -881,7 +880,7 @@ void SAPT3B::df_ints()
   // Now J contains the eigenvectors of the original J
   // Copy J to J_copy
   double **J_copy = block_matrix(ribasis_->nbf(), ribasis_->nbf());
-  C_DCOPY(ribasis_->nbf()*ribasis_->nbf(),J[0],1,J_copy[0],1); 
+  C_DCOPY(ribasis_->nbf()*ribasis_->nbf(),J[0],1,J_copy[0],1);
 
   // Now form J^{-1/2} = U(T)*j^{-1/2}*U,
   // where j^{-1/2} is the diagonal matrix of the inverse square roots
@@ -998,34 +997,34 @@ void SAPT3B::df_ints()
         rank = omp_get_thread_num();
       #endif
       int MU = calc_info_.index2i[mn];
-      int NU = calc_info_.index2j[mn];  
+      int NU = calc_info_.index2j[mn];
       int nummu = basisset_->shell(MU)->nfunction();
       int numnu = basisset_->shell(NU)->nfunction();
 
       if (sqrt(Schwartz[mn]*DFSchwartz[Pshell])>params_.schwarz) {
         eri[rank]->compute_shell(Pshell, 0, MU, NU);
-  
+
         for (int P=0, index=0; P < numPshell; ++P) {
 
           for (int mu=0; mu < nummu; ++mu) {
             int omu = basisset_->shell(MU)->function_index() + mu;
-  
+
             for (int nu=0; nu < numnu; ++nu, ++index) {
               int onu = basisset_->shell(NU)->function_index() + nu;
 
               AO_RI[P][omu*norbs+onu] = buffer[rank][index];
               AO_RI[P][onu*norbs+omu] = buffer[rank][index];
             }
-          } 
+          }
         }
-    
+
       } // end Schwartz inequality
     } // end loop over MU,NU shells
 
     for (int P=0; P < numPshell; ++P) {
-      C_DGEMM('T', 'N', nmo, norbs, norbs, 1.0, calc_info_.CA[0], nmo, 
+      C_DGEMM('T', 'N', nmo, norbs, norbs, 1.0, calc_info_.CA[0], nmo,
         AO_RI[P], norbs, 0.0, halftrans, norbs);
-      C_DGEMM('N', 'N', nmo, nmo, norbs, 1.0, halftrans, norbs, 
+      C_DGEMM('N', 'N', nmo, nmo, norbs, 1.0, halftrans, norbs,
         calc_info_.CA[0], nmo, 0.0, MO_RI[P], nmo);
     }
 
@@ -1071,7 +1070,7 @@ void SAPT3B::df_ints()
         sizeof(double)*(ULI) numP,next_DF_MO,&next_DF_MO);
       next_DF_MO = psio_get_address(next_DF_MO,(nmo*nmo-numP)*
         (ULI) sizeof(double));
-    } 
+    }
 
     temp_J = block_matrix(numP,calc_info_.nrio);
 
@@ -1234,11 +1233,11 @@ void SAPT3B::df_ints()
   AO_RI = block_matrix(maxPshell,norbs*norbs);
   MO_RI = block_matrix(maxPshell,nmo*nmo);
 
-  next_DF_MO = PSIO_ZERO; 
+  next_DF_MO = PSIO_ZERO;
 
   for (int Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
     int numPshell = ribasis_->shell(Pshell)->nfunction();
- 
+
     #pragma omp for private(mn) schedule(guided)
     for (mn=0; mn < nshelltri; ++mn) {
       #ifdef _OPENMP
@@ -1248,15 +1247,15 @@ void SAPT3B::df_ints()
       int NU = calc_info_.index2j[mn];
       int nummu = basisset_->shell(MU)->nfunction();
       int numnu = basisset_->shell(NU)->nfunction();
-  
+
       if (sqrt(Schwartz[mn]*DFSchwartz[Pshell])>params_.schwarz) {
         eri[rank]->compute_shell(Pshell, 0, MU, NU);
 
         for (int P=0, index=0; P < numPshell; ++P) {
-  
+
           for (int mu=0; mu < nummu; ++mu) {
             int omu = basisset_->shell(MU)->function_index() + mu;
-  
+
             for (int nu=0; nu < numnu; ++nu, ++index) {
               int onu = basisset_->shell(NU)->function_index() + nu;
 
@@ -1265,23 +1264,23 @@ void SAPT3B::df_ints()
             }
           }
         }
-    
+
       } // end Schwartz inequality
     } // end loop over MU,NU shells
-  
+
     for (int P=0; P < numPshell; ++P) {
       C_DGEMM('T', 'N', nmo, norbs, norbs, 1.0, calc_info_.CC[0], nmo,
         AO_RI[P], norbs, 0.0, halftrans, norbs);
       C_DGEMM('N', 'N', nmo, nmo, norbs, 1.0, halftrans, norbs,
         calc_info_.CC[0], nmo, 0.0, MO_RI[P], nmo);
     }
- 
+
     psio_->write(PSIF_SAPT_TEMP,"MO RI Integrals",(char *) &(MO_RI[0][0]),
       sizeof(double)*numPshell*nmo*(ULI) nmo,next_DF_MO,&next_DF_MO);
- 
+
   }
-  
-  free_block(AO_RI); 
+
+  free_block(AO_RI);
   free_block(MO_RI);
 
   zero_disk(PSIF_3B_SAPT_CC_DF_INTS,"CC RI Integrals",(char *) &(zeros[0]),
@@ -1298,7 +1297,7 @@ void SAPT3B::df_ints()
   for (int i=0,oP=0; oP < nmo*nmo; ++i, oP += numP) {
     if ((i+1)*temp_size < nmo*nmo) numP = temp_size;
     else numP = nmo*nmo - oP;
-      
+
     temp = block_matrix(nriorbs,numP);
 
     next_DF_MO = psio_get_address(PSIO_ZERO,oP*(ULI) sizeof(double));
@@ -1366,31 +1365,31 @@ void SAPT3B::df_ints()
 void SAPT3B::oetrans()
 {
     double **Sij = block_matrix(calc_info_.nso,calc_info_.nso);
-  
+
     for (int i=0,ij=0; i<calc_info_.nso; i++) {
       for (int j=0; j<=i; j++,ij++) {
         Sij[i][j] = calc_info_.S[ij];
         Sij[j][i] = calc_info_.S[ij];
         }}
-  
+
     free(calc_info_.S);
 
     double **SiA = block_matrix(calc_info_.nso,calc_info_.nmo);
     double **SiB = block_matrix(calc_info_.nso,calc_info_.nmo);
     double **SiC = block_matrix(calc_info_.nso,calc_info_.nmo);
-  
+
     C_DGEMM('N','N',calc_info_.nso,calc_info_.nmo,calc_info_.nso,1.0,
             &(Sij[0][0]),calc_info_.nso,&(calc_info_.CA[0][0]),calc_info_.nmo,
             0.0,&(SiA[0][0]),calc_info_.nmo);
-  
+
     C_DGEMM('N','N',calc_info_.nso,calc_info_.nmo,calc_info_.nso,1.0,
             &(Sij[0][0]),calc_info_.nso,&(calc_info_.CB[0][0]),calc_info_.nmo,
             0.0,&(SiB[0][0]),calc_info_.nmo);
-  
+
     C_DGEMM('N','N',calc_info_.nso,calc_info_.nmo,calc_info_.nso,1.0,
             &(Sij[0][0]),calc_info_.nso,&(calc_info_.CC[0][0]),calc_info_.nmo,
             0.0,&(SiC[0][0]),calc_info_.nmo);
-  
+
     free_block(Sij);
 
     calc_info_.S_AB = block_matrix(calc_info_.nmo,calc_info_.nmo);
@@ -1399,31 +1398,31 @@ void SAPT3B::oetrans()
     calc_info_.S_BC = block_matrix(calc_info_.nmo,calc_info_.nmo);
     calc_info_.S_CA = block_matrix(calc_info_.nmo,calc_info_.nmo);
     calc_info_.S_CB = block_matrix(calc_info_.nmo,calc_info_.nmo);
-  
+
     C_DGEMM('T','N',calc_info_.nmo,calc_info_.nmo,calc_info_.nso,1.0,
             &(calc_info_.CA[0][0]),calc_info_.nmo,&(SiB[0][0]),calc_info_.nmo,
             0.0,&(calc_info_.S_AB[0][0]),calc_info_.nmo);
-  
+
     C_DGEMM('T','N',calc_info_.nmo,calc_info_.nmo,calc_info_.nso,1.0,
             &(calc_info_.CA[0][0]),calc_info_.nmo,&(SiC[0][0]),calc_info_.nmo,
             0.0,&(calc_info_.S_AC[0][0]),calc_info_.nmo);
-  
+
     C_DGEMM('T','N',calc_info_.nmo,calc_info_.nmo,calc_info_.nso,1.0,
             &(calc_info_.CB[0][0]),calc_info_.nmo,&(SiA[0][0]),calc_info_.nmo,
             0.0,&(calc_info_.S_BA[0][0]),calc_info_.nmo);
-  
+
     C_DGEMM('T','N',calc_info_.nmo,calc_info_.nmo,calc_info_.nso,1.0,
             &(calc_info_.CB[0][0]),calc_info_.nmo,&(SiC[0][0]),calc_info_.nmo,
             0.0,&(calc_info_.S_BC[0][0]),calc_info_.nmo);
-  
+
     C_DGEMM('T','N',calc_info_.nmo,calc_info_.nmo,calc_info_.nso,1.0,
             &(calc_info_.CC[0][0]),calc_info_.nmo,&(SiA[0][0]),calc_info_.nmo,
             0.0,&(calc_info_.S_CA[0][0]),calc_info_.nmo);
-  
+
     C_DGEMM('T','N',calc_info_.nmo,calc_info_.nmo,calc_info_.nso,1.0,
             &(calc_info_.CC[0][0]),calc_info_.nmo,&(SiB[0][0]),calc_info_.nmo,
             0.0,&(calc_info_.S_CB[0][0]),calc_info_.nmo);
-  
+
     free_block(SiA);
     free_block(SiB);
     free_block(SiC);
@@ -1461,7 +1460,7 @@ void SAPT3B::oetrans()
     C_DGEMM('T','N',calc_info_.nmo,calc_info_.nmo,calc_info_.nso,1.0,
             &(calc_info_.CC[0][0]),calc_info_.nmo,&(VAiC[0][0]),calc_info_.nmo,
             0.0,&(calc_info_.VACC[0][0]),calc_info_.nmo);
- 
+
     free_block(VAiB);
     free_block(VAiC);
 
@@ -1591,28 +1590,28 @@ void SAPT3B::w_ints()
       calc_info_.noccC,calc_info_.nvirC,calc_info_.noccB);
 }
 
-void SAPT3B::build_w(double **WBAA, double **WBAR, double **WBRR, 
+void SAPT3B::build_w(double **WBAA, double **WBAR, double **WBRR,
   double **VBAA, int A_file, char *AA_ints, char *AR_ints, char *RR_ints,
   int B_file, char *BB_ints, int noccA, int nvirA, int noccB)
 {
-    double **B_p_BB = get_DF_ints(B_file,BB_ints,noccB*noccB);  
+    double **B_p_BB = get_DF_ints(B_file,BB_ints,noccB*noccB);
     double *diagBB = init_array(calc_info_.nrio);
-      
+
     for(int b=0; b<noccB; b++){
       int bb = b*noccB + b;
       C_DAXPY(calc_info_.nrio,1.0,&(B_p_BB[bb][0]),1,diagBB,1);
     }
-  
+
     free_block(B_p_BB);
-  
+
     for(int a=0; a<noccA; a++){
       C_DCOPY(noccA,&(VBAA[a][0]),1,&(WBAA[a][0]),1);
     }
-  
+
     for(int a=0; a<noccA; a++){
       C_DCOPY(nvirA,&(VBAA[a][noccA]),1,&(WBAR[a][0]),1);
     }
-  
+
     for(int r=0; r<nvirA; r++){
       C_DCOPY(nvirA,&(VBAA[noccA+r][noccA]),1,&(WBRR[r][0]),1);
     }

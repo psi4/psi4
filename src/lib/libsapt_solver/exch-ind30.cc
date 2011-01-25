@@ -8,8 +8,6 @@
 #include <libiwl/iwl.h>
 #include <psifiles.h>
 #include <libchkpt/chkpt.h>
-#include <libipv1/ip_lib.h>
-#include <libipv1/ip_data.gbl>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "sapt2p3.h"
@@ -20,7 +18,7 @@ void SAPT2p3::exch_ind30()
 {
   double e10,e01,e11,e20,e02;
 
-  if (params_.print) 
+  if (params_.print)
     fprintf(outfile,"Begining Exch-Ind30 Calculation\n\n");
 
   double **X_AR = read_IJKL(PSIF_SAPT_AMPS,"Ind30 AR Amplitudes",
@@ -89,7 +87,7 @@ void SAPT2p3::exch_ind30()
     calc_info_.sA[0],1);
   t2 = C_DDOT(calc_info_.noccB*calc_info_.nvirB,X_BS[0],1,
     calc_info_.sB[0],1);
-  
+
   e11 += 8.0*t1*t2;
 
   free_block(X_AR);
@@ -142,7 +140,7 @@ double SAPT2p3::exch_ind30_20()
   double *Y = init_array(calc_info_.nrio);
 
   C_DGEMV('t',calc_info_.noccA*calc_info_.nvirA,calc_info_.nrio,1.0,
-	  &(B_p_AR[0][0]),calc_info_.nrio,calc_info_.sA[0],1,0.0,X,1);
+      &(B_p_AR[0][0]),calc_info_.nrio,calc_info_.sA[0],1,0.0,X,1);
 
   C_DGEMV('t',calc_info_.nvirA*calc_info_.noccB,calc_info_.nrio,1.0,
     &(B_p_RB[0][0]),calc_info_.nrio,xRB[0],1,0.0,Y,1);
@@ -259,7 +257,7 @@ double SAPT2p3::exch_ind30_02()
   double *Y = init_array(calc_info_.nrio);
 
   C_DGEMV('t',calc_info_.noccB*calc_info_.nvirB,calc_info_.nrio,1.0,
-	  &(B_p_BS[0][0]),calc_info_.nrio,calc_info_.sB[0],1,0.0,X,1);
+      &(B_p_BS[0][0]),calc_info_.nrio,calc_info_.sB[0],1,0.0,X,1);
 
   C_DGEMV('t',calc_info_.noccA*calc_info_.nvirB,calc_info_.nrio,1.0,
     &(B_p_AS[0][0]),calc_info_.nrio,xAS[0],1,0.0,Y,1);
@@ -306,7 +304,7 @@ double SAPT2p3::exch_ind30_02()
     &(calc_info_.sB[0][0]),calc_info_.nvirB,0.0,&(xAB[0][0]),
     calc_info_.noccB);
 
-  for (int a=0; a<calc_info_.noccA; a++) {  
+  for (int a=0; a<calc_info_.noccA; a++) {
     C_DGEMM('T','N',calc_info_.noccB,calc_info_.nrio,calc_info_.noccA,1.0,
       &(xAB[0][0]),calc_info_.noccB,&(B_p_AA[a*calc_info_.noccA][0]),
       calc_info_.nrio,0.0,&(C_p_AB[a*calc_info_.noccB][0]),calc_info_.nrio);

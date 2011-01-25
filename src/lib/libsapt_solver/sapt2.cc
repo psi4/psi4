@@ -1,5 +1,5 @@
-/* 
- *  SAPT0.CC 
+/*
+ *  SAPT0.CC
  *
  */
 
@@ -25,7 +25,6 @@
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.hpp>
-#include <libipv1/ip_lib.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <psifiles.h>
@@ -40,7 +39,7 @@ using namespace psi;
 
 namespace psi { namespace sapt {
 
-SAPT2::SAPT2(Options& options, shared_ptr<PSIO> psio, 
+SAPT2::SAPT2(Options& options, shared_ptr<PSIO> psio,
   shared_ptr<Chkpt> chkpt) : SAPT0(options, psio, chkpt)
 {
 }
@@ -50,8 +49,8 @@ SAPT2::~SAPT2()
 }
 
 double SAPT2::compute_energy()
-{  
-    print_header(); 
+{
+    print_header();
     compute_integrals();
     compute_amplitudes();
     elst10();
@@ -86,24 +85,24 @@ void SAPT2::print_header()
      fprintf(outfile,"    NVIR_B  = %9d\n",calc_info_.nvirB);
      fprintf(outfile,"    FOCC_A  = %9d\n",params_.foccA);
      fprintf(outfile,"    FOCC_B  = %9d\n\n",params_.foccB);
-    
+
      #ifdef _OPENMP
      fprintf(outfile,"Running SAPT with %d OMP threads\n\n",
        omp_get_max_threads());
-     #endif 
-    
+     #endif
+
      fflush(outfile);
-}   
+}
 
 double SAPT2::print_results()
 {
   double eHF = calc_info_.eHF_D - calc_info_.eHF_A - calc_info_.eHF_B;
   double exch_ind22 = results_.ind22*results_.exch_ind20/results_.ind20;
   double sapt0 = eHF + results_.disp20 + results_.exch_disp20;
-  double sapt2 = eHF + results_.disp20 + results_.exch_disp20 + 
+  double sapt2 = eHF + results_.disp20 + results_.exch_disp20 +
     results_.elst12 + results_.exch11 + results_.exch12 + results_.ind22 +
     exch_ind22;
-  double dHF = eHF - (results_.elst10 + results_.exch10 + results_.ind20 + 
+  double dHF = eHF - (results_.elst10 + results_.exch10 + results_.ind20 +
     results_.exch_ind20);
 
   fprintf(outfile,"    SAPT Results  \n");

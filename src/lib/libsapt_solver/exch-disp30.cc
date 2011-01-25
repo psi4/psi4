@@ -8,8 +8,6 @@
 #include <libiwl/iwl.h>
 #include <psifiles.h>
 #include <libchkpt/chkpt.h>
-#include <libipv1/ip_lib.h>
-#include <libipv1/ip_data.gbl>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "sapt2p3.h"
@@ -365,10 +363,10 @@ double SAPT2p3::exch_disp30_22()
 
   double **tARBS = read_IJKL(PSIF_SAPT_AMPS,"T ARBS Amplitudes",
     calc_info_.noccA*calc_info_.nvirA,calc_info_.nvirB*calc_info_.noccB);
- 
+
   double **tAS_RB = block_matrix(calc_info_.nvirA,calc_info_.noccB);
   double **tRB_AS = block_matrix(calc_info_.noccA,calc_info_.nvirB);
-  
+
   for (int a=0,ar=0; a<calc_info_.noccA; a++) {
     for (int r=0; r<calc_info_.nvirA; r++,ar++) {
       for (int b=0,bs=0; b<calc_info_.noccB; b++) {
@@ -441,7 +439,7 @@ double SAPT2p3::exch_disp30_22()
       &(xRR[0][0]),calc_info_.nvirA,&(B_p_AR[a*calc_info_.nvirA][0]),
       calc_info_.nrio,1.0,&(X_p_AR[a*calc_info_.nvirA][0]),calc_info_.nrio);
   }
-  
+
   energy += C_DDOT(calc_info_.noccA*calc_info_.nvirA*calc_info_.nrio,
     &(T_p_AR[0][0]),1,&(X_p_AR[0][0]),1);
 

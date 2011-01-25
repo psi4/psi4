@@ -12,8 +12,6 @@
 #include <libiwl/iwl.h>
 #include <psifiles.h>
 #include <libchkpt/chkpt.h>
-#include <libipv1/ip_lib.h>
-#include <libipv1/ip_data.gbl>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "structs.h"
@@ -134,9 +132,9 @@ void SAPT2p::disp22t()
   results_.disp22t = d220t + d202t;
 }
 
-double SAPT2p::disp220t(int AAnum, char *AA_label, char *AR_label, 
-  char *RR_label, int BBnum, char *BS_label, int ampnum, char *tarar, 
-  char *tbsar, double *evalsA, double *evalsB, int noccA, int nvirA, 
+double SAPT2p::disp220t(int AAnum, char *AA_label, char *AR_label,
+  char *RR_label, int BBnum, char *BS_label, int ampnum, char *tarar,
+  char *tbsar, double *evalsA, double *evalsB, int noccA, int nvirA,
   int foccA, int noccB, int nvirB, int foccB)
 {
   double energy;
@@ -169,10 +167,10 @@ double SAPT2p::disp220t(int AAnum, char *AA_label, char *AR_label,
 
   time_t start = time(NULL);
   time_t stop;
-  
+
   for(int b=0,bs=0; b<noccB; b++) {
   for(int s=0; s<nvirB; s++,bs++) {
-  
+
     psio_->read(BBnum,BS_label,(char *) &(B_p_bs[0]),sizeof(double)*
       calc_info_.nrio,next_DF_BS,&next_DF_BS);
     psio_->read(ampnum,tbsar,(char *) t_bsAR[0],sizeof(double)*
@@ -234,7 +232,7 @@ double SAPT2p::disp220t(int AAnum, char *AA_label, char *AR_label,
 
 void SAPT2p::fzn_triples(int AAnum, char *AA_label, char *AR_label,
   char *RR_label, int BBnum, char *BS_label, int ampnum, char *tarar,
-  char *tbsar, int noccA, int nvirA, int foccA, int noccB, int nvirB, 
+  char *tbsar, int noccA, int nvirA, int foccA, int noccB, int nvirB,
   int foccB)
 {
   psio_address next_psio;
@@ -324,15 +322,15 @@ void SAPT2p::fzn_triples(int AAnum, char *AA_label, char *AR_label,
 
 }
 
-void SAPT2p::natural_orbitalify_triples(int AAnum, char *AA_label, 
+void SAPT2p::natural_orbitalify_triples(int AAnum, char *AA_label,
   char *AR_label, char *RR_label, int BBnum, char *BS_label, char *tarar,
-  char *tbsar, double *evalsA, double *evalsB, double **mo2noA, 
-  double **mo2noB, int noccA, int nvirA, int foccA, int novirA, int noccB, 
+  char *tbsar, double *evalsA, double *evalsB, double **mo2noA,
+  double **mo2noB, int noccA, int nvirA, int foccA, int novirA, int noccB,
   int nvirB, int foccB, int novirB)
 {
   psio_address next_psio;
   double **B_p_AA = block_matrix(noccA*noccA,calc_info_.nrio);
-  
+
   psio_->read_entry(AAnum,AA_label,(char *) &(B_p_AA[0][0]),sizeof(double)*
       calc_info_.nrio*noccA*(ULI) noccA);
 
@@ -373,7 +371,7 @@ void SAPT2p::natural_orbitalify_triples(int AAnum, char *AA_label,
 
   double **B_p_AR = block_matrix((noccA-foccA)*nvirA,calc_info_.nrio);
 
-  next_psio = psio_get_address(PSIO_ZERO,foccA*nvirA*calc_info_.nrio*(ULI) 
+  next_psio = psio_get_address(PSIO_ZERO,foccA*nvirA*calc_info_.nrio*(ULI)
     sizeof(double));
   psio_->read(AAnum,AR_label,(char *) &(B_p_AR[0][0]),(noccA-foccA)*
     nvirA*calc_info_.nrio*(ULI) sizeof(double),next_psio,&next_psio);

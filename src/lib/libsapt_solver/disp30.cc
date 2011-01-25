@@ -8,8 +8,6 @@
 #include <libiwl/iwl.h>
 #include <psifiles.h>
 #include <libchkpt/chkpt.h>
-#include <libipv1/ip_lib.h>
-#include <libipv1/ip_data.gbl>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "sapt2p3.h"
@@ -177,7 +175,7 @@ void SAPT2p3::frzn_disp30_prep()
 
   double **B_p_SS = get_DF_ints(PSIF_SAPT_BB_DF_INTS,"SS RI Integrals",
     calc_info_.nvirB*calc_info_.nvirB);
-  
+
   psio_->write_entry(PSIF_SAPT_TEMP,"SS RI Integrals",(char *) &(B_p_SS[0][0]),
       calc_info_.nvirB*calc_info_.nvirB*calc_info_.nrio*(ULI) sizeof(double));
 
@@ -191,7 +189,7 @@ void SAPT2p3::frzn_disp30_prep()
     for (int r=0; r < calc_info_.nvirA; r++) {
       int ar = a*calc_info_.nvirA+r;
       for (int b=params_.foccB; b < calc_info_.noccB; b++) {
-      psio_->write(PSIF_SAPT_TEMP,"T ARBS Amplitudes",(char *) 
+      psio_->write(PSIF_SAPT_TEMP,"T ARBS Amplitudes",(char *)
         &(tARBS[ar][b*calc_info_.nvirB]),calc_info_.nvirB*(ULI) sizeof(double),
         next_psio,&next_psio);
   }}}
@@ -204,7 +202,7 @@ void SAPT2p3::natural_orbitalify_disp30()
   psio_address next_psio;
   double **B_p_AA = get_DF_ints(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",
     calc_info_.noccA*calc_info_.noccA);
-    
+
   next_psio = PSIO_ZERO;
   for(int a=params_.foccA; a<calc_info_.noccA; a++) {
     int aa = a*calc_info_.noccA + params_.foccA;
@@ -249,19 +247,19 @@ void SAPT2p3::natural_orbitalify_disp30()
       no_info_.nvirA,C_p_RR[r*calc_info_.nvirA],calc_info_.nrio,0.0,
       D_p_RR[r*no_info_.nvirA],calc_info_.nrio);
   }
-    
+
   psio_->write_entry(PSIF_SAPT_TEMP,"RR RI Integrals",(char *) &(D_p_RR[0][0]),
       no_info_.nvirA*no_info_.nvirA*calc_info_.nrio*(ULI) sizeof(double));
 
   free_block(C_p_RR);
   free_block(D_p_RR);
 
-  double **B_p_SS = get_DF_ints(PSIF_SAPT_BB_DF_INTS,"SS RI Integrals",    
+  double **B_p_SS = get_DF_ints(PSIF_SAPT_BB_DF_INTS,"SS RI Integrals",
     calc_info_.nvirB*calc_info_.nvirB);
-  
+
   double **C_p_SS = block_matrix(no_info_.nvirB*calc_info_.nvirB,
     calc_info_.nrio);
-  
+
   C_DGEMM('T','N',no_info_.nvirB,calc_info_.nvirB*calc_info_.nrio,
     calc_info_.nvirB,1.0,&(no_info_.CB[calc_info_.noccB][calc_info_.noccB]),
     calc_info_.noccB+no_info_.nvirB,B_p_SS[0],calc_info_.nvirB*calc_info_.nrio,
@@ -325,7 +323,7 @@ void SAPT2p3::natural_orbitalify_disp30()
   }
 
   free_block(B_p_BS);
- 
+
   double **tARBS = block_matrix((calc_info_.noccA-params_.foccA)*
     no_info_.nvirA,(calc_info_.noccB-params_.foccB)*no_info_.nvirB);
 

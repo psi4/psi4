@@ -6,8 +6,6 @@
 #include <libiwl/iwl.h>
 #include <psifiles.h>
 #include <libchkpt/chkpt.h>
-#include <libipv1/ip_lib.h>
-#include <libipv1/ip_data.gbl>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "structs.h"
@@ -30,9 +28,9 @@ double** SAPT::get_DF_ints(int filenum, char *label, int length)
   psio_->read_entry(filenum,label,(char *) A[0],
                   sizeof(double)*length*(ULI) (ribasis_->nbf()+3));
   return(A);
-} 
+}
 
-double** SAPT2B::get_AA_ints(int dress) 
+double** SAPT2B::get_AA_ints(int dress)
 {
 
   double enuc, NA, NB;
@@ -63,7 +61,7 @@ double** SAPT2B::get_AA_ints(int dress)
 
 }
 
-double** SAPT2B::get_diag_AA_ints(int dress) 
+double** SAPT2B::get_diag_AA_ints(int dress)
 {
 
   double enuc, NA, NB;
@@ -82,7 +80,7 @@ double** SAPT2B::get_diag_AA_ints(int dress)
       (ULI) sizeof(double));
     if (dress) {
       A[a][calc_info_.nrio-3] = 1.0;
-			A[a][calc_info_.nrio-2] = NB*calc_info_.VBAA[a][a];
+            A[a][calc_info_.nrio-2] = NB*calc_info_.VBAA[a][a];
       A[a][calc_info_.nrio-1] = enuc;
     }
   }
@@ -90,7 +88,7 @@ double** SAPT2B::get_diag_AA_ints(int dress)
   return(A);
 }
 
-double** SAPT2B::get_BB_ints(int dress) 
+double** SAPT2B::get_BB_ints(int dress)
 {
 
   double enuc, NA, NB;
@@ -121,7 +119,7 @@ double** SAPT2B::get_BB_ints(int dress)
 
 }
 
-double** SAPT2B::get_diag_BB_ints(int dress) 
+double** SAPT2B::get_diag_BB_ints(int dress)
 {
 
   double enuc, NA, NB;
@@ -148,7 +146,7 @@ double** SAPT2B::get_diag_BB_ints(int dress)
   return(A);
 }
 
-double** SAPT2B::get_AB_ints(int dress) 
+double** SAPT2B::get_AB_ints(int dress)
 {
 
   double enuc, NA, NB;
@@ -188,7 +186,7 @@ double** SAPT2B::get_AB_ints(int dress)
 
 }
 
-double** SAPT2B::get_AS_ints(int dress) 
+double** SAPT2B::get_AS_ints(int dress)
 {
 
   double enuc, NA, NB;
@@ -228,7 +226,7 @@ double** SAPT2B::get_AS_ints(int dress)
 
 }
 
-double** SAPT2B::get_RB_ints(int dress) 
+double** SAPT2B::get_RB_ints(int dress)
 {
 
   double enuc, NA, NB;
@@ -243,7 +241,7 @@ double** SAPT2B::get_RB_ints(int dress)
     &(A[0][0]),sizeof(double)*calc_info_.nvirA*calc_info_.noccB*
     (ULI) calc_info_.nrio);
 
-	if (dress == 1) {
+    if (dress == 1) {
     for (int r=0; r<calc_info_.nvirA; r++){
       for (int b=0; b<calc_info_.noccB; b++){
         int rb = r*calc_info_.noccB+b;
@@ -268,7 +266,7 @@ double** SAPT2B::get_RB_ints(int dress)
 
 }
 
-double** SAPT2B::get_AR_ints(int dress) 
+double** SAPT2B::get_AR_ints(int dress)
 {
 
   double enuc, NA, NB;
@@ -296,7 +294,7 @@ double** SAPT2B::get_AR_ints(int dress)
 
 }
 
-double** SAPT2B::get_BS_ints(int dress) 
+double** SAPT2B::get_BS_ints(int dress)
 {
 
   double enuc, NA, NB;
@@ -346,7 +344,7 @@ double** SAPT2B::get_RR_ints(int dress)
       A[rr][calc_info_.nrio-1] = enuc;
       for (int rp=0; rp<calc_info_.nvirA; rp++){
         int rrp = r*calc_info_.nvirA+rp;
-        A[rrp][calc_info_.nrio-2] = 
+        A[rrp][calc_info_.nrio-2] =
           NB*calc_info_.VBAA[r+calc_info_.noccA][rp+calc_info_.noccA];
       }
     }
@@ -378,7 +376,7 @@ double** SAPT2B::get_SS_ints(int dress)
       A[ss][calc_info_.nrio-1] = enuc;
       for (int sp=0; sp<calc_info_.nvirB; sp++){
         int ssp = s*calc_info_.nvirB+sp;
-        A[ssp][calc_info_.nrio-3] = 
+        A[ssp][calc_info_.nrio-3] =
           NA*calc_info_.VABB[s+calc_info_.noccB][sp+calc_info_.noccB];
       }
     }
@@ -388,7 +386,7 @@ double** SAPT2B::get_SS_ints(int dress)
 
 }
 
-double **SAPT::read_IJKL(int filenum, char *label, int length_IJ, 
+double **SAPT::read_IJKL(int filenum, char *label, int length_IJ,
   int length_KL)
 {
   double **A = block_matrix(length_IJ,length_KL);
@@ -408,7 +406,7 @@ void SAPT::write_IJKL(double **A, int filenum, char *label, int length_IJ,
   free_block(A);
 }
 
-double **SAPT::IJKL_ints(int IJfile, char *IJlabel, int IJlength, int KLfile, 
+double **SAPT::IJKL_ints(int IJfile, char *IJlabel, int IJlength, int KLfile,
   char *KLlabel, int KLlength)
 {
   double **IJKL = block_matrix(IJlength, KLlength);

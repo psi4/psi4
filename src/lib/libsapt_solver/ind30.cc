@@ -8,8 +8,6 @@
 #include <libiwl/iwl.h>
 #include <psifiles.h>
 #include <libchkpt/chkpt.h>
-#include <libipv1/ip_lib.h>
-#include <libipv1/ip_data.gbl>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "sapt2p3.h"
@@ -20,7 +18,7 @@ void SAPT2p3::ind30()
 {
   double e1,e2;
 
-  if (params_.print) 
+  if (params_.print)
     fprintf(outfile,"Begining Ind30 Calculation\n\n");
 
   ind30_amps("Ind30 AR Amplitudes","T ARBS Amplitudes",PSIF_SAPT_AA_DF_INTS,
@@ -41,7 +39,7 @@ void SAPT2p3::ind30()
     "BS RI Integrals",PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",calc_info_.sB,
     calc_info_.sA,calc_info_.WABB,calc_info_.WASS,calc_info_.WBAR,
     calc_info_.evalsB,calc_info_.noccB,calc_info_.nvirB,calc_info_.noccA,
-    calc_info_.nvirA); 
+    calc_info_.nvirA);
 
   double **X_BS = read_IJKL(PSIF_SAPT_AMPS,"Ind30 BS Amplitudes",
     calc_info_.noccB,calc_info_.nvirB);
@@ -58,9 +56,9 @@ void SAPT2p3::ind30()
   }
 }
 
-void SAPT2p3::ind30_amps(char *ind_out, char *T_amps, int AAfile, 
-  char *AR_label, int BBfile, char *BS_label, double **sAR, double **sBS, 
-  double **WBAA, double **WBRR, double **WABS, double *evalsA, int noccA, 
+void SAPT2p3::ind30_amps(char *ind_out, char *T_amps, int AAfile,
+  char *AR_label, int BBfile, char *BS_label, double **sAR, double **sBS,
+  double **WBAA, double **WBRR, double **WABS, double *evalsA, int noccA,
   int nvirA, int noccB, int nvirB)
 {
   double **uAR = block_matrix(noccA,nvirA);

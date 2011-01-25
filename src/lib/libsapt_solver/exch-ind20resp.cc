@@ -8,8 +8,6 @@
 #include <libiwl/iwl.h>
 #include <psifiles.h>
 #include <libchkpt/chkpt.h>
-#include <libipv1/ip_lib.h>
-#include <libipv1/ip_data.gbl>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "structs.h"
@@ -65,7 +63,7 @@ double SAPT0::exch_ind20respA_B()
          &(Y_AR[0][0]),1);
 
   free_block(B_p_AB);
- 
+
   if (params_.print) {
     fprintf(outfile,"EXCH1       Energy = %18.12lf  H\n",e1);
     fflush(outfile);
@@ -201,7 +199,7 @@ double SAPT0::exch_ind20respA_B()
     calc_info_.nrio,calc_info_.diagBB,1,0.0,&(Y_AR[0][0]),1);
 
   e11 = 2.0*C_DDOT(calc_info_.noccA*calc_info_.nvirA,&(X_AR[0][0]),1,
-             &(Y_AR[0][0]),1); 
+             &(Y_AR[0][0]),1);
 
   free_block(X_AR);
   free_block(Y_AR);
@@ -231,8 +229,8 @@ double SAPT0::exch_ind20respA_B()
 
   free_block(X_RB);
   free_block(Y_RB);
-	free_block(C_p_AB);
-	free_block(B_p_AR);
+    free_block(C_p_AB);
+    free_block(B_p_AR);
 
   if (params_.print) {
     fprintf(outfile,"EXCH13      Energy = %18.12lf  H\n",e13);
@@ -320,7 +318,7 @@ double SAPT0::exch_ind20respA_B()
       calc_info_.nrio,1.0,&(C_p_AB[a*calc_info_.noccB][0]),calc_info_.nrio);
   }
 
-	free_block(B_p_AA);
+    free_block(B_p_AA);
   double **D_p_AB = block_matrix(calc_info_.noccA*calc_info_.noccB,calc_info_.nrio);
 
   C_DGEMM('N','N',calc_info_.noccA,calc_info_.noccB*calc_info_.nrio,calc_info_.noccB,
@@ -332,11 +330,11 @@ double SAPT0::exch_ind20respA_B()
           &(D_p_AB[0][0]),1);
 
   free_block(X_AB);
-	free_block(B_p_BB);
-	free_block(C_p_AB);
-	free_block(D_p_AB);
+    free_block(B_p_BB);
+    free_block(C_p_AB);
+    free_block(D_p_AB);
 
-  if (params_.print) 
+  if (params_.print)
     fprintf(outfile,"EXCH12      Energy = %18.12lf  H\n\n",e12);
 
   return(-2.0*(e1+e2+e3-e4-e5+e6-e7-e8-e9-e10-e11+e12+e13));
@@ -640,7 +638,7 @@ double SAPT0::exch_ind20respB_A()
   free_block(C_p_AB);
   free_block(D_p_AB);
 
-  if (params_.print) 
+  if (params_.print)
     fprintf(outfile,"EXCH12      Energy = %18.12lf  H\n\n",e12);
 
   return(-2.0*(e1+e2+e3-e4-e5+e6-e7-e8-e9-e10-e11+e12+e13));
@@ -862,14 +860,14 @@ double SAPT2::exch_ind20respA_B()
 
   C_DAXPY(calc_info_.noccA*calc_info_.nvirA,-4.0,tempAR[0],1,uAR[0],1);
   C_DAXPY(calc_info_.noccA*calc_info_.nvirA,-2.0,tempAR[0],1,vAR[0],1);
- 
+
   free(C_p);
 
   double **X_AR = block_matrix(calc_info_.noccA,calc_info_.nvirA);
 
   C_DGEMV('n',calc_info_.noccA*calc_info_.nvirA,calc_info_.nrio,1.0,
     &(B_p_AR[0][0]),calc_info_.nrio,calc_info_.diagBB,1,0.0,&(X_AR[0][0]),1);
- 
+
   C_DGEMM('N','N',calc_info_.noccA,calc_info_.nvirA,calc_info_.noccA,1.0,
     &(S_AA[0][0]),calc_info_.noccA,&(X_AR[0][0]),calc_info_.nvirA,0.0,
     &(tempAR[0][0]),calc_info_.nvirA);
@@ -1148,14 +1146,14 @@ double SAPT2::exch_ind20respB_A()
 
   C_DAXPY(calc_info_.noccB*calc_info_.nvirB,-4.0,tempBS[0],1,uBS[0],1);
   C_DAXPY(calc_info_.noccB*calc_info_.nvirB,-2.0,tempBS[0],1,vBS[0],1);
- 
+
   free(C_p);
 
   double **X_BS = block_matrix(calc_info_.noccB,calc_info_.nvirB);
 
   C_DGEMV('n',calc_info_.noccB*calc_info_.nvirB,calc_info_.nrio,1.0,
     &(B_p_BS[0][0]),calc_info_.nrio,calc_info_.diagAA,1,0.0,&(X_BS[0][0]),1);
- 
+
   C_DGEMM('N','N',calc_info_.noccB,calc_info_.nvirB,calc_info_.noccB,1.0,
     &(S_BB[0][0]),calc_info_.noccB,&(X_BS[0][0]),calc_info_.nvirB,0.0,
     &(tempBS[0][0]),calc_info_.nvirB);

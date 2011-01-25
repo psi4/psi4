@@ -7,7 +7,7 @@
 #ifdef _OPENMP
 #include <omp.h>
 #endif
-    
+
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
@@ -15,13 +15,12 @@
 #include <vector>
 #include <utility>
 #include <time.h>
-  
+
 #include <psifiles.h>
 #include <psi4-dec.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.hpp>
-#include <libipv1/ip_lib.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <psifiles.h>
@@ -45,7 +44,7 @@ void SAPT2B::compute_amplitudes()
     t_arar(workflow_.mp2_opdm,workflow_.theta_ar_ar,workflow_.g_arar);
   }
 
-  if (workflow_.t_bsbs || workflow_.theta_bsbs) {  
+  if (workflow_.t_bsbs || workflow_.theta_bsbs) {
     if (params_.print) {
       fprintf(outfile,"Computing T BSBS Amplitudes...\n");
       fflush(outfile);
@@ -109,15 +108,15 @@ void SAPT2B::compute_amplitudes()
   }
 
   if (workflow_.Y3_ar) {
-    if (params_.print) { 
+    if (params_.print) {
       fprintf(outfile,"Computing Y3 AR Amplitudes...\n");
       fflush(outfile);
     }
     Y3_ar();
   }
-  
+
   if (workflow_.Y3_bs) {
-    if (params_.print) { 
+    if (params_.print) {
       fprintf(outfile,"Computing Y3 BS Amplitudes...\n");
       fflush(outfile);
     }
@@ -137,7 +136,7 @@ void SAPT2B::compute_amplitudes()
       fprintf(outfile,"Computing gBSBS x tARBS...\n");
       fflush(outfile);
     }
-    g_bsbs();  
+    g_bsbs();
   }
 
   fprintf(outfile,"\n");
@@ -203,18 +202,18 @@ void SAPT2B::t_arar(int opdm, int theta, int garar)
 
     double **xAA = block_matrix(calc_info_.noccA,calc_info_.noccA);
     double **xRR = block_matrix(calc_info_.nvirA,calc_info_.nvirA);
-  
+
     C_DGEMM('N','T',calc_info_.noccA,calc_info_.noccA,calc_info_.noccA*
       calc_info_.nvirA*calc_info_.nvirA,1.0,&(thetaARAR[0][0]),
       calc_info_.noccA*calc_info_.nvirA*calc_info_.nvirA,&(tARAR[0][0]),
       calc_info_.noccA*calc_info_.nvirA*calc_info_.nvirA,0.0,&(xAA[0][0]),
       calc_info_.noccA);
-    
+
     C_DGEMM('T','N',calc_info_.nvirA,calc_info_.nvirA,calc_info_.noccA*
       calc_info_.noccA*calc_info_.nvirA,1.0,&(thetaARAR[0][0]),
       calc_info_.nvirA,&(tARAR[0][0]),calc_info_.nvirA,0.0,&(xRR[0][0]),
       calc_info_.nvirA);
-  
+
     write_IJKL(xAA,PSIF_SAPT_AMPS,"AA MP2 OPDM",calc_info_.noccA,
       calc_info_.noccA);
     write_IJKL(xRR,PSIF_SAPT_AMPS,"RR MP2 OPDM",calc_info_.nvirA,
@@ -275,7 +274,7 @@ void SAPT2B::t_bsbs(int opdm, int theta, int gbsbs)
 
     write_IJKL(gBSBS,PSIF_SAPT_AMPS,"g BSBS Integrals",calc_info_.noccB*
       calc_info_.nvirB,calc_info_.noccB*calc_info_.nvirB);
-  
+
   }
 
   for (int b=0, bs=0; b < calc_info_.noccB; b++) {
@@ -306,18 +305,18 @@ void SAPT2B::t_bsbs(int opdm, int theta, int gbsbs)
 
     double **xBB = block_matrix(calc_info_.noccB,calc_info_.noccB);
     double **xSS = block_matrix(calc_info_.nvirB,calc_info_.nvirB);
-  
+
     C_DGEMM('N','T',calc_info_.noccB,calc_info_.noccB,calc_info_.noccB*
       calc_info_.nvirB*calc_info_.nvirB,1.0,&(thetaBSBS[0][0]),
       calc_info_.noccB*calc_info_.nvirB*calc_info_.nvirB,&(tBSBS[0][0]),
       calc_info_.noccB*calc_info_.nvirB*calc_info_.nvirB,0.0,&(xBB[0][0]),
       calc_info_.noccB);
-    
+
     C_DGEMM('T','N',calc_info_.nvirB,calc_info_.nvirB,calc_info_.noccB*
       calc_info_.noccB*calc_info_.nvirB,1.0,&(thetaBSBS[0][0]),
       calc_info_.nvirB,&(tBSBS[0][0]),calc_info_.nvirB,0.0,&(xSS[0][0]),
       calc_info_.nvirB);
-  
+
     write_IJKL(xBB,PSIF_SAPT_AMPS,"BB MP2 OPDM",calc_info_.noccB,
       calc_info_.noccB);
     write_IJKL(xSS,PSIF_SAPT_AMPS,"SS MP2 OPDM",calc_info_.nvirB,
@@ -370,7 +369,7 @@ void SAPT2B::t_arbs(int bsar)
         calc_info_.evalsB[s+calc_info_.noccB];
       tARBS[ar][bs] /= denom;
     }}
-  }} 
+  }}
 
   double **tAR_p_BS = block_matrix(calc_info_.noccB*calc_info_.nvirB,
     calc_info_.nrio);
@@ -417,15 +416,15 @@ void SAPT2B::t_arbs(int bsar)
     calc_info_.nvirA,calc_info_.noccB*calc_info_.nvirB);
 }
 
-void SAPT2B::Y2(char *Y2_out, char *T_out, char *VV_opdm, char *OO_opdm, 
-  char *theta_OV, int dfnum, char *OO_label, char *OV_label, char *VV_label, 
+void SAPT2B::Y2(char *Y2_out, char *T_out, char *VV_opdm, char *OO_opdm,
+  char *theta_OV, int dfnum, char *OO_label, char *OV_label, char *VV_label,
   double *evals, int nocc, int nvir)
 {
   double **Y2 = block_matrix(nocc,nvir);
 
   double **xRR = read_IJKL(PSIF_SAPT_AMPS,VV_opdm,nvir,nvir);
   double **xAA = read_IJKL(PSIF_SAPT_AMPS,OO_opdm,nocc,nocc);
-  
+
   double **T_p_AR = read_IJKL(PSIF_SAPT_AMPS,theta_OV,nocc*nvir,
     calc_info_.nrio);
 
@@ -488,7 +487,7 @@ void SAPT2B::Y2(char *Y2_out, char *T_out, char *VV_opdm, char *OO_opdm,
     &(B_p_AA[0][0]),nocc*calc_info_.nrio,0.0,&(C_p_AA[0][0]),nocc*
     calc_info_.nrio);
 
-  for (int a=0; a<nocc; a++) { 
+  for (int a=0; a<nocc; a++) {
     C_DGEMM('N','T',nocc,nvir,calc_info_.nrio,1.0,&(C_p_AA[a*nocc][0]),
       calc_info_.nrio,&(B_p_AR[a*nvir][0]),calc_info_.nrio,1.0,&(Y2[0][0]),
       nvir);
@@ -518,7 +517,7 @@ void SAPT2B::t2_arar(int theta)
       "RR RI Integrals",no_info_.evalsA,calc_info_.noccA,no_info_.nvirA,
       params_.foccA);
     double **S_VV = block_matrix(calc_info_.nvirA,calc_info_.nvirA);
-    for (int r=0; r < calc_info_.nvirA; r++) 
+    for (int r=0; r < calc_info_.nvirA; r++)
       S_VV[r][r] = 1.0;
     double **mo2no = block_matrix(calc_info_.nvirA,no_info_.nvirA);
     C_DGEMM('N','N',calc_info_.nvirA,no_info_.nvirA,calc_info_.nvirA,1.0,
@@ -528,7 +527,7 @@ void SAPT2B::t2_arar(int theta)
     free_block(S_VV);
     double *tempARAR = init_array((calc_info_.noccA-params_.foccA)*
       calc_info_.nvirA*(calc_info_.noccA-params_.foccA)*no_info_.nvirA);
-    for (int a=0; a < calc_info_.noccA-params_.foccA; a++) { 
+    for (int a=0; a < calc_info_.noccA-params_.foccA; a++) {
       C_DGEMM('N','N',calc_info_.nvirA,(calc_info_.noccA-params_.foccA)*
         no_info_.nvirA,no_info_.nvirA,1.0,&(mo2no[0][0]),no_info_.nvirA,
         &(frz_t2ARAR[a*(calc_info_.noccA-params_.foccA)*no_info_.nvirA*
@@ -606,16 +605,16 @@ void SAPT2B::t2_arar(int theta)
     double **B_p_AR = get_AR_ints(1);
     double **tAR_p_AR = block_matrix(calc_info_.noccA*calc_info_.nvirA,
       calc_info_.nrio);
-    
+
     C_DGEMM('N','N',calc_info_.noccA*calc_info_.nvirA,calc_info_.nrio,
       calc_info_.noccA*calc_info_.nvirA,1.0,&(thetaARAR[0][0]),
       calc_info_.noccA*calc_info_.nvirA,&(B_p_AR[0][0]),calc_info_.nrio,
       0.0,&(tAR_p_AR[0][0]),calc_info_.nrio);
-    
+
     write_IJKL(tAR_p_AR,PSIF_SAPT_AMPS,"Theta(2)(AR) AR",calc_info_.noccA*
       calc_info_.nvirA,calc_info_.nrio);
     free_block(B_p_AR);
-  
+
   }
 
   psio_->write_entry(PSIF_SAPT_AMPS,"T2 ARAR Amplitudes",(char *) &(t2ARAR[0]),
@@ -640,7 +639,7 @@ void SAPT2B::t2_bsbs(int theta)
       "SS RI Integrals",no_info_.evalsB,calc_info_.noccB,no_info_.nvirB,
       params_.foccB);
     double **S_VV = block_matrix(calc_info_.nvirB,calc_info_.nvirB);
-    for (int s=0; s < calc_info_.nvirB; s++) 
+    for (int s=0; s < calc_info_.nvirB; s++)
       S_VV[s][s] = 1.0;
     double **mo2no = block_matrix(calc_info_.nvirB,no_info_.nvirB);
     C_DGEMM('N','N',calc_info_.nvirB,no_info_.nvirB,calc_info_.nvirB,1.0,
@@ -650,7 +649,7 @@ void SAPT2B::t2_bsbs(int theta)
     free_block(S_VV);
     double *tempBSBS = init_array((calc_info_.noccB-params_.foccB)*
       calc_info_.nvirB*(calc_info_.noccB-params_.foccB)*no_info_.nvirB);
-    for (int b=0; b < calc_info_.noccB-params_.foccB; b++) { 
+    for (int b=0; b < calc_info_.noccB-params_.foccB; b++) {
       C_DGEMM('N','N',calc_info_.nvirB,(calc_info_.noccB-params_.foccB)*
         no_info_.nvirB,no_info_.nvirB,1.0,&(mo2no[0][0]),no_info_.nvirB,
         &(frz_t2BSBS[b*(calc_info_.noccB-params_.foccB)*no_info_.nvirB*
@@ -728,16 +727,16 @@ void SAPT2B::t2_bsbs(int theta)
     double **B_p_BS = get_BS_ints(1);
     double **tBS_p_BS = block_matrix(calc_info_.noccB*calc_info_.nvirB,
       calc_info_.nrio);
-    
+
     C_DGEMM('N','N',calc_info_.noccB*calc_info_.nvirB,calc_info_.nrio,
       calc_info_.noccB*calc_info_.nvirB,1.0,&(thetaBSBS[0][0]),
       calc_info_.noccB*calc_info_.nvirB,&(B_p_BS[0][0]),calc_info_.nrio,
       0.0,&(tBS_p_BS[0][0]),calc_info_.nrio);
-    
+
     write_IJKL(tBS_p_BS,PSIF_SAPT_AMPS,"Theta(2)(BS) BS",calc_info_.noccB*
       calc_info_.nvirB,calc_info_.nrio);
     free_block(B_p_BS);
-  
+
   }
 
   psio_->write_entry(PSIF_SAPT_AMPS,"T2 BSBS Amplitudes",(char *) &(t2BSBS[0]),
@@ -817,7 +816,7 @@ double *SAPT2B::t2_solver(int ampfile, char *T_amps, char *theta_OV, int dfnum,
           &(tOVOV[0]),nocc*nvir,1.0,&(t2ARAR[0]),nocc*nvir);
 
   free_block(OVOV);
- 
+
   double **B_p_OV = get_DF_ints(dfnum,OV_label,nocc*nvir);
   double **T_p_OV = read_IJKL(ampfile,theta_OV,nocc*nvir,
     calc_info_.nrio);
@@ -837,7 +836,7 @@ double *SAPT2B::t2_solver(int ampfile, char *T_amps, char *theta_OV, int dfnum,
       t2ARAR[a1r1ar] = tval;
       t2ARAR[ara1r1] = tval;
   }}
-    
+
   C_DSCAL(nocc*nvir,2.0,&(t2ARAR[0]),nocc*nvir+1);
 
   double **xVO = block_matrix(nvir,nocc);
@@ -916,8 +915,8 @@ double *SAPT2B::t2_solver(int ampfile, char *T_amps, char *theta_OV, int dfnum,
   return(t2ARAR);
 }
 
-void SAPT2B::frzn_t2_prep(char *T_amps, char *theta_amps, char *theta_out, 
-  int dfnum, char *OO_label, char *OV_label, char *VV_label, int nocc, 
+void SAPT2B::frzn_t2_prep(char *T_amps, char *theta_amps, char *theta_out,
+  int dfnum, char *OO_label, char *OV_label, char *VV_label, int nocc,
   int nvir, int focc)
 {
   psio_address next_psio;
@@ -936,13 +935,13 @@ void SAPT2B::frzn_t2_prep(char *T_amps, char *theta_amps, char *theta_out,
   free_block(B_p_AA);
 
   double **B_p_RR = block_matrix(nvir*nvir,calc_info_.nrio);
-  
+
   psio_->read_entry(dfnum,VV_label,(char *) &(B_p_RR[0][0]),sizeof(double)*
       calc_info_.nrio*nvir*(ULI) nvir);
 
   psio_->write_entry(PSIF_SAPT_TEMP,VV_label,(char *) &(B_p_RR[0][0]),
     sizeof(double)*calc_info_.nrio*nvir*(ULI) nvir);
-    
+
   free_block(B_p_RR);
 
   double **B_p_AR = block_matrix((nocc-focc)*nvir,calc_info_.nrio);
@@ -956,7 +955,7 @@ void SAPT2B::frzn_t2_prep(char *T_amps, char *theta_amps, char *theta_out,
     (nocc-focc)*nvir*calc_info_.nrio*(ULI) sizeof(double));
 
   double **tARAR = block_matrix((nocc-focc)*nvir,(nocc-focc)*nvir);
-  
+
   next_psio = PSIO_ZERO;
   for(int a=focc,abs=0; a<nocc; a++) {
     for(int r=0; r<nvir; r++,abs++) {
@@ -977,7 +976,7 @@ void SAPT2B::frzn_t2_prep(char *T_amps, char *theta_amps, char *theta_out,
       int ar = a*nvir+r;
       int aarr = focc*nvir;
       next_psio = psio_get_address(PSIO_ZERO,(ar*nocc*nvir+aarr)*(ULI)
-        sizeof(double)); 
+        sizeof(double));
       psio_->read(PSIF_SAPT_AMPS,theta_amps,(char *) &(tARAR[abs][0]),
         (nocc-focc)*nvir*(ULI) sizeof(double),next_psio,&next_psio);
   }}
@@ -987,7 +986,7 @@ void SAPT2B::frzn_t2_prep(char *T_amps, char *theta_amps, char *theta_out,
   C_DGEMM('N','N',(nocc-focc)*nvir,calc_info_.nrio,(nocc-focc)*nvir,1.0,
     &(tARAR[0][0]),(nocc-focc)*nvir,&(B_p_AR[0][0]),calc_info_.nrio,0.0,
     &(C_p_AR[0][0]),calc_info_.nrio);
- 
+
   free_block(tARAR);
   free_block(B_p_AR);
 
@@ -997,8 +996,8 @@ void SAPT2B::frzn_t2_prep(char *T_amps, char *theta_amps, char *theta_out,
   free_block(C_p_AR);
 }
 
-void SAPT2B::natural_orbitalify_t2(char *T_amps, char *theta_out, int dfnum, 
-  char *OO_label, char *OV_label, char *VV_label, double *evals, 
+void SAPT2B::natural_orbitalify_t2(char *T_amps, char *theta_out, int dfnum,
+  char *OO_label, char *OV_label, char *VV_label, double *evals,
   double **mo2no, int nocc, int nvir, int focc, int novir)
 {
   psio_address next_psio;
@@ -1115,7 +1114,7 @@ void SAPT2B::g_arar()
   double **B_p_AR = get_AR_ints(0);
   double **gARAR = block_matrix(calc_info_.noccA*calc_info_.nvirA,
     calc_info_.noccA*calc_info_.nvirA);
-  
+
   C_DGEMM('N','T',calc_info_.noccA*calc_info_.nvirA,calc_info_.noccA*
     calc_info_.nvirA,calc_info_.nrio,2.0,&(B_p_AR[0][0]),calc_info_.nrio,
     &(B_p_AR[0][0]),calc_info_.nrio,0.0,&(gARAR[0][0]),calc_info_.noccA*
@@ -1160,7 +1159,7 @@ void SAPT2B::g_bsbs()
   double **B_p_BS = get_BS_ints(0);
   double **gBSBS = block_matrix(calc_info_.noccB*calc_info_.nvirB,
     calc_info_.noccB*calc_info_.nvirB);
-  
+
   C_DGEMM('N','T',calc_info_.noccB*calc_info_.nvirB,calc_info_.noccB*
     calc_info_.nvirB,calc_info_.nrio,2.0,&(B_p_BS[0][0]),calc_info_.nrio,
     &(B_p_BS[0][0]),calc_info_.nrio,0.0,&(gBSBS[0][0]),calc_info_.noccB*
@@ -1200,7 +1199,7 @@ void SAPT2B::g_bsbs()
     calc_info_.noccA*calc_info_.nvirA,calc_info_.noccB*calc_info_.nvirB);
 }
 
-void SAPT2B::natural_orbitalify(char *OO_opdm, char *VV_opdm, double *evals, 
+void SAPT2B::natural_orbitalify(char *OO_opdm, char *VV_opdm, double *evals,
   double **scfvec, int occ, int vir, char monomer)
 {
   double **P = block_matrix(calc_info_.nmo,calc_info_.nmo);
@@ -1236,7 +1235,7 @@ void SAPT2B::natural_orbitalify(char *OO_opdm, char *VV_opdm, double *evals,
     else break;
   }
 
-  if (params_.print) 
+  if (params_.print)
     fprintf(outfile,"  Monomer %c: %d virtual orbitals dropped\n",monomer,
           vir-num_no_vir);
 
@@ -1305,7 +1304,7 @@ void SAPT2B::Y3_ar()
   Y3_1(Y3_AR,PSIF_SAPT_AA_DF_INTS,"AA RI Integrals","AR RI Integrals",
     "RR RI Integrals",PSIF_SAPT_AMPS,"Theta(2)(AR) AR",calc_info_.noccA,
     calc_info_.nvirA);
-  
+
   Y3_2(Y3_AR,PSIF_SAPT_AA_DF_INTS,"AA RI Integrals","AR RI Integrals",
     "RR RI Integrals",PSIF_SAPT_AMPS,"T ARAR Amplitudes",
     "T ARAR Antisym Amplitudes", "T2 ARAR Amplitudes",
@@ -1313,18 +1312,18 @@ void SAPT2B::Y3_ar()
 
   Y3_3(Y3_AR,PSIF_SAPT_AMPS,"T ARAR Amplitudes",PSIF_SAPT_AA_DF_INTS,
     "AA RI Integrals","AR RI Integrals",calc_info_.noccA,calc_info_.nvirA);
-  
+
   Y3_4(Y3_AR,PSIF_SAPT_AA_DF_INTS,"AR RI Integrals","RR RI Integrals",
     PSIF_SAPT_AMPS,"T ARAR Amplitudes",calc_info_.noccA,calc_info_.nvirA);
-  
+
   Y3_5(Y3_AR,PSIF_SAPT_AA_DF_INTS,"AA RI Integrals","AR RI Integrals",
     "RR RI Integrals",PSIF_SAPT_AMPS,"T ARAR Amplitudes",
     "T ARAR Antisym Amplitudes",calc_info_.noccA,calc_info_.nvirA);
-  
+
   Y3_6(Y3_AR,PSIF_SAPT_AA_DF_INTS,"AA RI Integrals","AR RI Integrals",
     "RR RI Integrals",PSIF_SAPT_AMPS,"T ARAR Amplitudes",
     calc_info_.noccA,calc_info_.nvirA);
-  
+
   write_IJKL(Y3_AR,PSIF_SAPT_AMPS,"Y3 AR Amplitudes",calc_info_.noccA,
              calc_info_.nvirA);
 }
@@ -1336,7 +1335,7 @@ void SAPT2B::Y3_bs()
   Y3_1(Y3_BS,PSIF_SAPT_BB_DF_INTS,"BB RI Integrals","BS RI Integrals",
     "SS RI Integrals",PSIF_SAPT_AMPS,"Theta(2)(BS) BS",calc_info_.noccB,
     calc_info_.nvirB);
-    
+
   Y3_2(Y3_BS,PSIF_SAPT_BB_DF_INTS,"BB RI Integrals","BS RI Integrals",
     "SS RI Integrals",PSIF_SAPT_AMPS,"T BSBS Amplitudes",
     "T BSBS Antisym Amplitudes", "T2 BSBS Amplitudes",
@@ -1344,18 +1343,18 @@ void SAPT2B::Y3_bs()
 
   Y3_3(Y3_BS,PSIF_SAPT_AMPS,"T BSBS Amplitudes",PSIF_SAPT_BB_DF_INTS,
     "BB RI Integrals","BS RI Integrals",calc_info_.noccB,calc_info_.nvirB);
-    
+
   Y3_4(Y3_BS,PSIF_SAPT_BB_DF_INTS,"BS RI Integrals","SS RI Integrals",
     PSIF_SAPT_AMPS,"T BSBS Amplitudes",calc_info_.noccB,calc_info_.nvirB);
-  
+
   Y3_5(Y3_BS,PSIF_SAPT_BB_DF_INTS,"BB RI Integrals","BS RI Integrals",
     "SS RI Integrals",PSIF_SAPT_AMPS,"T BSBS Amplitudes",
     "T BSBS Antisym Amplitudes",calc_info_.noccB,calc_info_.nvirB);
-  
+
   Y3_6(Y3_BS,PSIF_SAPT_BB_DF_INTS,"BB RI Integrals","BS RI Integrals",
     "SS RI Integrals",PSIF_SAPT_AMPS,"T BSBS Amplitudes",
     calc_info_.noccB,calc_info_.nvirB);
-      
+
   write_IJKL(Y3_BS,PSIF_SAPT_AMPS,"Y3 BS Amplitudes",calc_info_.noccB,
              calc_info_.nvirB);
 }
@@ -1385,7 +1384,7 @@ void SAPT2B::Y3_1(double **Y3, int dffile, char *AA_ints, char *AR_ints,
 }
 
 void SAPT2B::Y3_2(double **Y3, int dffile, char *AA_ints, char *AR_ints,
-  char *RR_ints, int ampfile, char *t_amps, char *t_anti, char *t2_amps, 
+  char *RR_ints, int ampfile, char *t_amps, char *t_anti, char *t2_amps,
   char *t2_anti, int nocc, int nvir)
 {
   double **t2ARAR = read_IJKL(ampfile,t2_anti,nocc*nvir,nocc*nvir);
@@ -1465,22 +1464,22 @@ void SAPT2B::Y3_2(double **Y3, int dffile, char *AA_ints, char *AR_ints,
   free(B_p);
 }
 
-void SAPT2B::Y3_3(double **Y3, int ampfile, char *t_phys, int dffile, 
+void SAPT2B::Y3_3(double **Y3, int ampfile, char *t_phys, int dffile,
   char *AA_ints, char *AR_ints, int nocc, int nvir)
 {
   double *tAARR = init_array(nocc*nocc*nvir*nvir);
 
   psio_->read_entry(ampfile,t_phys,(char *) &(tAARR[0]),
     sizeof(double)*nocc*nvir*nocc*nvir);
- 
+
   double **xRA = block_matrix(nvir,nocc);
-  
-  for(int a=0; a<nocc; a++) { 
+
+  for(int a=0; a<nocc; a++) {
     for(int r=0; r<nvir; r++) {
       C_DCOPY(nocc*nvir,&(tAARR[a*nvir*nocc*nvir+r]),nvir,xRA[0],1);
       for(int a1=0; a1<nocc; a1++) {
         int aa1 = a*nocc+a1;
-        int r1r = r; 
+        int r1r = r;
         int aa1r1r = aa1*nvir*nvir+r1r;
         C_DCOPY(nvir,&(xRA[0][a1]),nocc,&(tAARR[aa1r1r]),nvir);
   }}}
@@ -1528,7 +1527,7 @@ void SAPT2B::Y3_3(double **Y3, int ampfile, char *t_phys, int dffile,
   free_block(gAAAR);
 }
 
-void SAPT2B::Y3_4(double **Y3, int dffile, char *AR_ints, char *RR_ints, 
+void SAPT2B::Y3_4(double **Y3, int dffile, char *AR_ints, char *RR_ints,
   int ampfile, char *t_amps, int nocc, int nvir)
 {
   double **B_p_AR = get_DF_ints(dffile,AR_ints,nocc*nvir);
@@ -1538,10 +1537,10 @@ void SAPT2B::Y3_4(double **Y3, int dffile, char *AR_ints, char *RR_ints,
   double **X_RR = block_matrix(nvir,nvir);
 
   double *tAARR = init_array(nocc*nocc*nvir*nvir);
-  
+
   psio_->read_entry(ampfile,t_amps,(char *) &(tAARR[0]),
-    sizeof(double)*nocc*nvir*nocc*nvir); 
-    
+    sizeof(double)*nocc*nvir*nocc*nvir);
+
   double **xRA = block_matrix(nvir,nocc);
 
   for(int a=0; a<nocc; a++) {
@@ -1589,7 +1588,7 @@ void SAPT2B::Y3_4(double **Y3, int dffile, char *AR_ints, char *RR_ints,
   free(tAARR);
 }
 
-void SAPT2B::Y3_5(double **Y3, int dffile, char *AA_ints, char *AR_ints, 
+void SAPT2B::Y3_5(double **Y3, int dffile, char *AA_ints, char *AR_ints,
   char *RR_ints, int ampfile, char *t_amps, char *t_anti, int nocc, int nvir)
 {
   double **t2ARAR = read_IJKL(ampfile,t_anti,nocc*nvir,nocc*nvir);
@@ -1707,7 +1706,7 @@ void SAPT2B::Y3_5(double **Y3, int dffile, char *AA_ints, char *AR_ints,
   free_block(B_q_AA);
 }
 
-void SAPT2B::Y3_6(double **Y3, int dffile, char *AA_ints, char *AR_ints, 
+void SAPT2B::Y3_6(double **Y3, int dffile, char *AA_ints, char *AR_ints,
   char *RR_ints, int ampfile, char *t_amps, int nocc, int nvir)
 {
   double **t2ARAR = read_IJKL(ampfile,t_amps,nocc*nvir,nocc*nvir);
@@ -1754,11 +1753,11 @@ void SAPT2B::Y3_6(double **Y3, int dffile, char *AA_ints, char *AR_ints,
   double **C_p_AA = get_DF_ints(dffile,AA_ints,nocc*nocc);
   double **C_p_AR = get_DF_ints(dffile,AR_ints,nocc*nvir);
   double **AAAR = block_matrix(nocc*nocc,nocc*nvir);
-  
+
   C_DGEMM('N','T',nocc*nocc,nocc*nvir,calc_info_.nrio,1.0,&(C_p_AA[0][0]),
     calc_info_.nrio,&(C_p_AR[0][0]),calc_info_.nrio,0.0,&(AAAR[0][0]),
     nocc*nvir);
-  
+
   free_block(C_p_AA);
   free_block(C_p_AR);
 
@@ -1788,7 +1787,7 @@ void SAPT2B::Y3_6(double **Y3, int dffile, char *AA_ints, char *AR_ints,
   free_block(gAAAR);
 
   double **xRA = block_matrix(nvir,nocc);
-  
+
   for(int a=0; a<nocc; a++) {
     for(int r=0; r<nvir; r++) {
       C_DCOPY(nocc*nvir,&(g_ARAR[a*nvir*nocc*nvir+r]),nvir,xRA[0],1);
@@ -1812,20 +1811,20 @@ void SAPT2B::Y3_6(double **Y3, int dffile, char *AA_ints, char *AR_ints,
   free(g_ARAR);
 
   double **D_p_AR = get_DF_ints(dffile,AR_ints,nocc*nvir);
-  
+
   for(int a=0; a<nocc; a++) {
     C_DGEMM('N','T',nocc,nvir,calc_info_.nrio,-2.0,&(B_q_AA[a*nocc][0]),
             calc_info_.nrio,&(D_p_AR[a*nvir][0]),calc_info_.nrio,1.0,
             &(Y3[0][0]),nvir);
-  } 
+  }
 
   free_block(D_p_AR);
   free_block(B_q_AA);
 }
 
-double **SAPT2B::disp30_amps(int ampfile, char *amplabel, int AAintfile, 
+double **SAPT2B::disp30_amps(int ampfile, char *amplabel, int AAintfile,
   char *AAlabel, char *RRlabel, int BBintfile, char *BBlabel, char *SSlabel,
-  double *evalsA, double *evalsB, int noccA, int nvirA, int foccA, int noccB, 
+  double *evalsA, double *evalsB, int noccA, int nvirA, int foccA, int noccB,
   int nvirB, int foccB)
 {
   noccA -= foccA;
@@ -1973,7 +1972,7 @@ double **SAPT2B::disp30_amps(int ampfile, char *amplabel, int AAintfile,
 }
 
 void SAPT3B::compute_amplitudes()
-{ 
+{
   psio_->open(PSIF_3B_SAPT_AMPS,PSIO_OPEN_NEW);
 
   fprintf(outfile,"Computing T2 ARBS Amplitudes...\n");
@@ -2033,75 +2032,75 @@ void SAPT3B::compute_amplitudes()
     "T(BS) CT Intermediates",calc_info_.noccB,calc_info_.nvirB,
     calc_info_.noccC,calc_info_.nvirC);
 
-  if (options_.get_str("SAPT_LEVEL") == "SAPT3B_N6" || 
+  if (options_.get_str("SAPT_LEVEL") == "SAPT3B_N6" ||
     options_.get_str("SAPT_LEVEL") == "SAPT3B_N7") {
-  
+
     fprintf(outfile,"Computing Theta ARAR Amplitudes...\n");
     fflush(outfile);
     theta_amps(PSIF_3B_SAPT_AMPS,"Theta ARAR Amplitudes","G ARAR",
-      PSIF_3B_SAPT_AA_DF_INTS,"AA RI Integrals","AR RI Integrals",  
+      PSIF_3B_SAPT_AA_DF_INTS,"AA RI Integrals","AR RI Integrals",
       "RR RI Integrals",calc_info_.evalsA,calc_info_.noccA,calc_info_.nvirA);
-    
+
     fprintf(outfile,"Computing Theta BSBS Amplitudes...\n");
     fflush(outfile);
     theta_amps(PSIF_3B_SAPT_AMPS,"Theta BSBS Amplitudes","G BSBS",
       PSIF_3B_SAPT_BB_DF_INTS,"BB RI Integrals","BS RI Integrals",
       "SS RI Integrals",calc_info_.evalsB,calc_info_.noccB,calc_info_.nvirB);
-    
+
     fprintf(outfile,"Computing Theta CTCT Amplitudes...\n");
     fflush(outfile);
     theta_amps(PSIF_3B_SAPT_AMPS,"Theta CTCT Amplitudes","G CTCT",
       PSIF_3B_SAPT_CC_DF_INTS,"CC RI Integrals","CT RI Integrals",
       "TT RI Integrals",calc_info_.evalsC,calc_info_.noccC,calc_info_.nvirC);
-  
+
     fprintf(outfile,"Computing Theta(AR) AR Intermediates...\n");
     fflush(outfile);
     T_calc("Theta ARAR Amplitudes",'N',PSIF_3B_SAPT_AA_DF_INTS,
       "AR RI Integrals","Theta(AR) AR Intermediates",calc_info_.noccA,
       calc_info_.nvirA,calc_info_.noccA,calc_info_.nvirA);
-  
+
     fprintf(outfile,"Computing Theta(BS) BS Intermediates...\n");
     fflush(outfile);
     T_calc("Theta BSBS Amplitudes",'N',PSIF_3B_SAPT_BB_DF_INTS,
       "BS RI Integrals","Theta(BS) BS Intermediates",calc_info_.noccB,
       calc_info_.nvirB,calc_info_.noccB,calc_info_.nvirB);
-  
+
     fprintf(outfile,"Computing Theta(CT) CT Intermediates...\n");
     fflush(outfile);
     T_calc("Theta CTCT Amplitudes",'N',PSIF_3B_SAPT_CC_DF_INTS,
       "CT RI Integrals","Theta(CT) CT Intermediates",calc_info_.noccC,
       calc_info_.nvirC,calc_info_.noccC,calc_info_.nvirC);
-  
+
     fprintf(outfile,"Computing S(BS) AR Amplitudes...\n");
     fflush(outfile);
     S_amps("S(BS) AR Amplitudes","T(BS) AR Intermediates",
       PSIF_3B_SAPT_AA_DF_INTS,"AA RI Integrals","RR RI Integrals",
       calc_info_.noccA,calc_info_.nvirA);
-  
+
     fprintf(outfile,"Computing S(CT) AR Amplitudes...\n");
     fflush(outfile);
     S_amps("S(CT) AR Amplitudes","T(CT) AR Intermediates",
       PSIF_3B_SAPT_AA_DF_INTS,"AA RI Integrals","RR RI Integrals",
       calc_info_.noccA,calc_info_.nvirA);
-  
+
     fprintf(outfile,"Computing S(AR) BS Amplitudes...\n");
     fflush(outfile);
     S_amps("S(AR) BS Amplitudes","T(AR) BS Intermediates",
       PSIF_3B_SAPT_BB_DF_INTS,"BB RI Integrals","SS RI Integrals",
       calc_info_.noccB,calc_info_.nvirB);
-  
+
     fprintf(outfile,"Computing S(CT) BS Amplitudes...\n");
     fflush(outfile);
     S_amps("S(CT) BS Amplitudes","T(CT) BS Intermediates",
       PSIF_3B_SAPT_BB_DF_INTS,"BB RI Integrals","SS RI Integrals",
       calc_info_.noccB,calc_info_.nvirB);
-  
+
     fprintf(outfile,"Computing S(AR) CT Amplitudes...\n");
     fflush(outfile);
     S_amps("S(AR) CT Amplitudes","T(AR) CT Intermediates",
       PSIF_3B_SAPT_CC_DF_INTS,"CC RI Integrals","TT RI Integrals",
       calc_info_.noccC,calc_info_.nvirC);
-  
+
     fprintf(outfile,"Computing S(BS) CT Amplitudes...\n");
     fflush(outfile);
     S_amps("S(BS) CT Amplitudes","T(BS) CT Intermediates",
@@ -2114,14 +2113,14 @@ void SAPT3B::compute_amplitudes()
       PSIF_3B_SAPT_AA_DF_INTS,"AA RI Integrals","RR RI Integrals",
       PSIF_3B_SAPT_BB_DF_INTS,"BB RI Integrals","SS RI Integrals",
       calc_info_.noccA,calc_info_.nvirA,0,calc_info_.noccB,calc_info_.nvirB,0);
-  
+
     fprintf(outfile,"Computing K ARCT Amplitudes...\n");
     fflush(outfile);
     K1_amps("K ARCT Amplitudes",PSIF_3B_SAPT_AMPS,"T2 ARCT Amplitudes",
       PSIF_3B_SAPT_AA_DF_INTS,"AA RI Integrals","RR RI Integrals",
       PSIF_3B_SAPT_CC_DF_INTS,"CC RI Integrals","TT RI Integrals",
       calc_info_.noccA,calc_info_.nvirA,0,calc_info_.noccC,calc_info_.nvirC,0);
-  
+
     fprintf(outfile,"Computing K BSCT Amplitudes...\n");
     fflush(outfile);
     K1_amps("K BSCT Amplitudes",PSIF_3B_SAPT_AMPS,"T2 BSCT Amplitudes",
@@ -2135,14 +2134,14 @@ void SAPT3B::compute_amplitudes()
             "T(CT) BS Intermediates",PSIF_3B_SAPT_AA_DF_INTS,"AR RI Integrals",
             PSIF_3B_SAPT_BB_DF_INTS,"BS RI Integrals",calc_info_.noccA,
             calc_info_.nvirA,calc_info_.noccB,calc_info_.nvirB);
-  
+
     fprintf(outfile,"Computing K tilde ARCT Amplitudes...\n");
     fflush(outfile);
     K2_amps("K tilde ARCT Amplitudes","T(BS) AR Intermediates",
             "T(BS) CT Intermediates",PSIF_3B_SAPT_AA_DF_INTS,"AR RI Integrals",
             PSIF_3B_SAPT_CC_DF_INTS,"CT RI Integrals",calc_info_.noccA,
             calc_info_.nvirA,calc_info_.noccC,calc_info_.nvirC);
-  
+
     fprintf(outfile,"Computing K tilde BSCT Amplitudes...\n");
     fflush(outfile);
     K2_amps("K tilde BSCT Amplitudes","T(AR) BS Intermediates",
@@ -2155,31 +2154,31 @@ void SAPT3B::compute_amplitudes()
     K3_amps("K(BS) ARAR Amplitudes","T(BS) AR Intermediates",
             PSIF_3B_SAPT_AA_DF_INTS,"AR RI Integrals",calc_info_.noccA,
             calc_info_.nvirA);
-  
+
     fprintf(outfile,"Computing K(CT) ARAR Amplitudes...\n");
     fflush(outfile);
     K3_amps("K(CT) ARAR Amplitudes","T(CT) AR Intermediates",
             PSIF_3B_SAPT_AA_DF_INTS,"AR RI Integrals",calc_info_.noccA,
             calc_info_.nvirA);
-  
+
     fprintf(outfile,"Computing K(AR) BSBS Amplitudes...\n");
     fflush(outfile);
     K3_amps("K(AR) BSBS Amplitudes","T(AR) BS Intermediates",
             PSIF_3B_SAPT_BB_DF_INTS,"BS RI Integrals",calc_info_.noccB,
             calc_info_.nvirB);
-  
+
     fprintf(outfile,"Computing K(CT) BSBS Amplitudes...\n");
     fflush(outfile);
     K3_amps("K(CT) BSBS Amplitudes","T(CT) BS Intermediates",
             PSIF_3B_SAPT_BB_DF_INTS,"BS RI Integrals",calc_info_.noccB,
             calc_info_.nvirB);
-  
+
     fprintf(outfile,"Computing K(AR) CTCT Amplitudes...\n");
     fflush(outfile);
     K3_amps("K(AR) CTCT Amplitudes","T(AR) CT Intermediates",
             PSIF_3B_SAPT_CC_DF_INTS,"CT RI Integrals",calc_info_.noccC,
             calc_info_.nvirC);
-  
+
     fprintf(outfile,"Computing K(BS) CTCT Amplitudes...\n");
     fflush(outfile);
     K3_amps("K(BS) CTCT Amplitudes","T(BS) CT Intermediates",
@@ -2189,11 +2188,11 @@ void SAPT3B::compute_amplitudes()
   }
 
   fprintf(outfile,"\n");
-  
+
 }
 
-void SAPT3B::t2_amps(int ampfile, char *ampout, int AAfile, char *AR_ints, 
-  int BBfile, char *BS_ints, double *e_A, double *e_B, int occA, int virA, 
+void SAPT3B::t2_amps(int ampfile, char *ampout, int AAfile, char *AR_ints,
+  int BBfile, char *BS_ints, double *e_A, double *e_B, int occA, int virA,
   int occB, int virB)
 {
   double **tARBS = IJKL_ints(AAfile,AR_ints,occA*virA,BBfile,BS_ints,
@@ -2207,17 +2206,17 @@ void SAPT3B::t2_amps(int ampfile, char *ampout, int AAfile, char *AR_ints,
           tARBS[ar][bs] /= denom;
         }}
     }}
-  
-  write_IJKL(tARBS,ampfile,ampout,virA*occA,occB*virB);
-} 
 
-void SAPT3B::theta_amps(int ampfile, char *ampout, char *gout, int AAfile, 
+  write_IJKL(tARBS,ampfile,ampout,virA*occA,occB*virB);
+}
+
+void SAPT3B::theta_amps(int ampfile, char *ampout, char *gout, int AAfile,
   char *AA_ints, char *AR_ints, char *RR_ints, double *e_A, int occA, int virA)
 {
   double **ARAR = IJIJ_ints(AAfile,AR_ints,occA*virA);
   double **tARAR = block_matrix(occA*virA,virA*occA);
 
-  for (int a=0,ar=0; a<occA; a++) { 
+  for (int a=0,ar=0; a<occA; a++) {
     for (int r=0; r<virA; r++,ar++) {
       for (int ap=0,aprp=0; ap<occA; ap++) {
         for (int rp=0; rp<virA; rp++,aprp++) {
@@ -2249,9 +2248,9 @@ void SAPT3B::theta_amps(int ampfile, char *ampout, char *gout, int AAfile,
   write_IJKL(ARAR,ampfile,gout,virA*occA,occA*virA);
 }
 
-void SAPT3B::T_calc(char *T2label, char trans, int DFfilenum,char *DFlabel, 
+void SAPT3B::T_calc(char *T2label, char trans, int DFfilenum,char *DFlabel,
   char *Tout, int occA, int virA, int occB, int virB)
-{   
+{
   double **B_p_BS, **TBS_AR;
   double **tARBS = read_IJKL(PSIF_3B_SAPT_AMPS,T2label,virA*occA,occB*virB);
 
@@ -2303,7 +2302,7 @@ void SAPT3B::S_amps(char *S_out, char *T_AR_BS, int BBfile, char *BB_ints,
   write_IJKL(S_BS,PSIF_3B_SAPT_AMPS,S_out,occB,virB);
 }
 
-void SAPT3B::K1_amps(char *ampout, int ampfile, char *amplabel, int AAintfile, 
+void SAPT3B::K1_amps(char *ampout, int ampfile, char *amplabel, int AAintfile,
   char *AAlabel, char *RRlabel, int BBintfile, char *BBlabel, char *SSlabel,
   int noccA, int nvirA, int foccA, int noccB, int nvirB, int foccB)
 {
@@ -2450,7 +2449,7 @@ void SAPT3B::K1_amps(char *ampout, int ampfile, char *amplabel, int AAintfile,
 }
 
 void SAPT3B::K2_amps(char *K_out, char *T_CT_AR, char *T_CT_BS, int AAfile,
-  char *AR_ints, int BBfile, char *BS_ints, int occA, int virA, int occB, 
+  char *AR_ints, int BBfile, char *BS_ints, int occA, int virA, int occB,
   int virB)
 {
   double **kARBS = block_matrix(occA*virA,occB*virB);

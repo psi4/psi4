@@ -12,8 +12,6 @@
 #include <libiwl/iwl.h>
 #include <psifiles.h>
 #include <libchkpt/chkpt.h>
-#include <libipv1/ip_lib.h>
-#include <libipv1/ip_data.gbl>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "structs.h"
@@ -83,7 +81,7 @@ double SAPT2p::disp201()
   double **B_p_AR = get_AR_ints(0);
   double **T_p_BS = read_IJKL(PSIF_SAPT_AMPS,"Theta(BS) BS",calc_info_.noccB*
     calc_info_.nvirB,calc_info_.nrio);
-  
+
   C_DGEMM('N','T',calc_info_.noccA*calc_info_.nvirA,calc_info_.noccB*
     calc_info_.nvirB,calc_info_.nri,2.0,&(B_p_AR[0][0]),calc_info_.nrio,
     &(T_p_BS[0][0]),calc_info_.nrio,1.0,&(gARBS[0][0]),calc_info_.noccB*
@@ -97,7 +95,7 @@ double SAPT2p::disp201()
 
   energy += 4.0*C_DDOT(calc_info_.noccA*calc_info_.nvirA*calc_info_.noccB*
     calc_info_.nvirB,tARBS[0],1,gARBS[0],1);
-  
+
   free_block(gARBS);
   free_block(tARBS);
 

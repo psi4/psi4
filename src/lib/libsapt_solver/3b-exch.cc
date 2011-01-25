@@ -8,8 +8,6 @@
 #include <libiwl/iwl.h>
 #include <psifiles.h>
 #include <libchkpt/chkpt.h>
-#include <libipv1/ip_lib.h>
-#include <libipv1/ip_data.gbl>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "structs.h"
@@ -110,7 +108,7 @@ double SAPT3BN5::exch_s2(double **SAC, double **SBC, double **WB, double **WA,
 }
 
 double SAPT3BN5::exch_s3(double **SAB, double **SAC, double **SBC, double **WB,
-  double **WA, int AAfile, char *AA_ints, int BBfile, char *BB_ints, int occA, 
+  double **WA, int AAfile, char *AA_ints, int BBfile, char *BB_ints, int occA,
   int virA, int occB, int virB, int occC)
 {
   double energy = 0.0;
@@ -190,8 +188,8 @@ double SAPT3BN5::exch_s3(double **SAB, double **SAC, double **SBC, double **WB,
   return(energy);
 }
 
-double SAPT3BN5::exch_s4(double **SAB, double **SBA, double **SAC, 
-  double **SBC, double **WB, double **WA, int AAfile, char *AA_ints, 
+double SAPT3BN5::exch_s4(double **SAB, double **SBA, double **SAC,
+  double **SBC, double **WB, double **WA, int AAfile, char *AA_ints,
   int BBfile, char *BB_ints, int occA, int virA, int occB, int virB, int occC)
 {
   double energy = 0.0;
@@ -215,7 +213,7 @@ double SAPT3BN5::exch_s4(double **SAB, double **SBA, double **SAC,
 }
 
 
-double SAPT3BN5::exch_s4_1(double **SBC, double **WA, int occB, int virB, 
+double SAPT3BN5::exch_s4_1(double **SBC, double **WA, int occB, int virB,
   int occC)
 {
   double energy = 0.0;
@@ -244,7 +242,7 @@ double SAPT3BN5::exch_s4_1(double **SBC, double **WA, int occB, int virB,
   return(energy);
 }
 
-double SAPT3BN5::exch_s4_2(double **SAB, double **SAC, double **WB, int occA, 
+double SAPT3BN5::exch_s4_2(double **SAB, double **SAC, double **WB, int occA,
   int virA, int occB, int occC)
 {
   double energy = 0.0;
@@ -290,7 +288,7 @@ double SAPT3BN5::exch_s4_2(double **SAB, double **SAC, double **WB, int occA,
   return(energy);
 }
 
-double SAPT3BN5::exch_s4_3(double **SAB, double **SAC, double **WA, int occA, 
+double SAPT3BN5::exch_s4_3(double **SAB, double **SAC, double **WA, int occA,
   int occB, int virB, int occC)
 {
   double energy = 0.0;
@@ -319,7 +317,7 @@ double SAPT3BN5::exch_s4_3(double **SAB, double **SAC, double **WA, int occA,
   return(energy);
 }
 
-double SAPT3BN5::exch_s4_4(double **SAC, double **SBC, double **WB, int occA, 
+double SAPT3BN5::exch_s4_4(double **SAC, double **SBC, double **WB, int occA,
   int virA, int occB, int occC)
 {
   double energy = 0.0;
@@ -348,8 +346,8 @@ double SAPT3BN5::exch_s4_4(double **SAC, double **SBC, double **WB, int occA,
   return(energy);
 }
 
-double SAPT3BN5::exch_s4_5(double **SAB, double **SAC, int AAfile, 
-  char *AA_ints, int BBfile, char *BB_ints, int occA, int virA, int occB, 
+double SAPT3BN5::exch_s4_5(double **SAB, double **SAC, int AAfile,
+  char *AA_ints, int BBfile, char *BB_ints, int occA, int virA, int occB,
   int virB, int occC)
 {
   double energy = 0.0;
@@ -409,7 +407,7 @@ double SAPT3BN5::exch_s4_5(double **SAB, double **SAC, int AAfile,
   return(energy);
 }
 
-double SAPT3BN5::exch_s4_6(double **SAC, double **SBC, int AAfile, 
+double SAPT3BN5::exch_s4_6(double **SAC, double **SBC, int AAfile,
   char *AA_ints, int BBfile, char *BB_ints, int occA, int virA, int occB,
   int virB, int occC)
 {

@@ -9,8 +9,6 @@
 #include <libiwl/iwl.h>
 #include <psifiles.h>
 #include <libchkpt/chkpt.h>
-#include <libipv1/ip_lib.h>
-#include <libipv1/ip_data.gbl>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "structs.h"
@@ -49,12 +47,12 @@ void SAPT0::exch_disp20()
 }
 
 void SCS_SAPT::exch_disp20()
-{ 
+{
   theta_ar();
   theta_bs();
-  
+
   if (params_.print) {
-    fprintf(outfile,"Begining Exch-Disp20 Calculation\n\n"); 
+    fprintf(outfile,"Begining Exch-Disp20 Calculation\n\n");
     fflush(outfile);
   }
 
@@ -63,7 +61,7 @@ void SCS_SAPT::exch_disp20()
   results_.exch_disp20_os = exch_disp_2();
   results_.exch_disp20_os += exch_disp_3();
   results_.exch_disp20_os *= 0.5;
-  
+
   results_.exch_disp20_ss += results_.exch_disp20_os;
   results_.exch_disp20_ss += exch_disp_4();
   results_.exch_disp20_ss += exch_disp_5();
@@ -90,7 +88,7 @@ double SAPT0::exch_disp_1()
   double h1 = 0.0;
   double h3 = 0.0;
   double enuc, NA, NB;
-  
+
   NA = 1.0 / ((double) calc_info_.NA);
   NB = 1.0 / ((double) calc_info_.NB);
   enuc = sqrt((calc_info_.enuc_D - calc_info_.enuc_A - calc_info_.enuc_B)*
@@ -122,7 +120,7 @@ double SAPT0::exch_disp_1()
 
   for (int a=0; a<calc_info_.noccA; a++) {
 
-    psio_->read(PSIF_SAPT_AB_DF_INTS,"AS RI Integrals",(char *) 
+    psio_->read(PSIF_SAPT_AB_DF_INTS,"AS RI Integrals",(char *)
       &(B_p_aS[0][0]), sizeof(double)*calc_info_.nvirB*(ULI) calc_info_.nrio,
       next_PSIF_DF_AS, &next_PSIF_DF_AS);
 
@@ -149,7 +147,7 @@ double SAPT0::exch_disp_1()
               &(calc_info_.S_AB[a][calc_info_.noccB]),1);
         h3 += calc_info_.S_AB[r+calc_info_.noccA][b]*C_DDOT(calc_info_.nvirB,
               &(taRBS[r][b*calc_info_.nvirB]),1,&(Y_AS[a][0]),1);
-    }}      
+    }}
 
   }
 
@@ -165,7 +163,7 @@ double SAPT0::exch_disp_1()
     fprintf(outfile,"VTOT        Energy = %18.12lf  H\n",vtot);
     fprintf(outfile,"H1          Energy = %18.12lf  H\n",h1);
     fprintf(outfile,"H3          Energy = %18.12lf  H\n",h3);
-    fflush(outfile); 
+    fflush(outfile);
   }
 
   return(vtot + h1 + h3);
@@ -200,9 +198,9 @@ double SAPT0::exch_disp_2()
 
   h2 = C_DDOT(calc_info_.noccB*calc_info_.nvirB*calc_info_.nrio,&(C_p_BS[0][0]),1,
     &(theta_BS[0][0]),1);
- 
+
   h2 += C_DDOT(calc_info_.noccB*calc_info_.nvirB,&(Z_BS[0][0]),1,&(X_BS[0][0]),1);
- 
+
   free_block(theta_BS);
   free_block(C_p_BS);
   free_block(X_BS);
@@ -276,7 +274,7 @@ double SAPT0::exch_disp_4()
   psio_address next_PSIF_tARBS = PSIO_ZERO;
 
   for (int a=0; a<calc_info_.noccA; a++) {
-  
+
     psio_->read(PSIF_SAPT_AMPS,"T ARBS Amplitudes",(char *) &(taRBS[0][0]),
       sizeof(double)*calc_info_.nvirA*calc_info_.noccB*(ULI) calc_info_.nvirB,
       next_PSIF_tARBS,&next_PSIF_tARBS);
@@ -335,7 +333,7 @@ double SAPT0::exch_disp_5()
   psio_address next_PSIF_tARBS = PSIO_ZERO;
 
   for (int a=0; a<calc_info_.noccA; a++) {
-  
+
     psio_->read(PSIF_SAPT_AB_DF_INTS,"AS RI Integrals",(char *) &(B_p_aS[0][0]),
       sizeof(double)*calc_info_.nvirB*(ULI) calc_info_.nrio,next_PSIF_DF_AS,
       &next_PSIF_DF_AS);
@@ -472,7 +470,7 @@ double SAPT0::exch_disp_7()
   psio_address next_PSIF_tARBS = PSIO_ZERO;
 
   for (int a=0; a<calc_info_.noccA; a++) {
-  
+
     psio_->read(PSIF_SAPT_TEMP,"S_AB X B_BS^P",(char *) &(C_p_aS[0][0]),
       sizeof(double)*calc_info_.nvirB*(ULI) calc_info_.nrio,
       next_PSIF,&next_PSIF);
@@ -552,17 +550,17 @@ void SAPT0::H3(double **Y_AS)
 }
 
 void SAPT0::Q1(double **Y_AS)
-{ 
+{
   double **B_p_AA = get_AA_ints(1);
   double **C_p_BA = block_matrix(calc_info_.noccA*calc_info_.noccB,calc_info_.nrio);
-  
+
   C_DGEMM('T','N',calc_info_.noccB,calc_info_.noccA*calc_info_.nrio,calc_info_.noccA,
     1.0,&(calc_info_.S_AB[0][0]),calc_info_.nmo,
     &(B_p_AA[0][0]),calc_info_.noccA*calc_info_.nrio,
     0.0,&(C_p_BA[0][0]),calc_info_.noccA*calc_info_.nrio);
-  
+
   free_block(B_p_AA);
-  
+
   double **B_p_BS = get_BS_ints(1);
 
   for (int b=0; b<calc_info_.noccB; b++) {
@@ -696,7 +694,7 @@ void SAPT0::Q6(double **C_p_BS)
 void SAPT0::Q13(double **C_p_BS)
 {
   double **X_BB = block_matrix(calc_info_.noccB,calc_info_.noccB);
-  
+
   C_DGEMM('T','N',calc_info_.noccB,calc_info_.noccB,calc_info_.noccA,1.0,
     &(calc_info_.S_AB[0][0]),calc_info_.nmo,&(calc_info_.S_AB[0][0]),
     calc_info_.nmo,0.0,&(X_BB[0][0]),calc_info_.noccB);
@@ -719,15 +717,15 @@ void SAPT0::Q2(double **C_p_AR)
   C_DGEMM('N','T',calc_info_.noccA,calc_info_.nvirA,calc_info_.noccB,1.0,
     &(calc_info_.S_AB[0][0]),calc_info_.nmo,&(calc_info_.S_AB[calc_info_.noccA][0]),
     calc_info_.nmo,0.0,&(X_AR[0][0]),calc_info_.nvirA);
-  
+
   double **B_p_AA = get_AA_ints(1);
 
   for (int a=0; a<calc_info_.noccA; a++) {
     C_DGEMM('T','N',calc_info_.nvirA,calc_info_.nrio,calc_info_.noccA,-2.0,
       &(X_AR[0][0]),calc_info_.nvirA,&(B_p_AA[a*calc_info_.noccA][0]),
       calc_info_.nrio,1.0,&(C_p_AR[a*calc_info_.nvirA][0]),calc_info_.nrio);
-  } 
-    
+  }
+
   free_block(X_AR);
   free_block(B_p_AA);
 }
@@ -788,7 +786,7 @@ void SAPT0::theta_ar()
   if (params_.print)
     fprintf(outfile,"Forming Theta (BS) AR Intermediates\n");
 
-  long int temp_size = avail_mem / (sizeof(double)* 
+  long int temp_size = avail_mem / (sizeof(double)*
     (calc_info_.noccB*calc_info_.nvirB + (long int) calc_info_.nrio));
 
   if (temp_size < 1) {
@@ -796,7 +794,7 @@ void SAPT0::theta_ar()
     exit(0);
   }
 
-  if (temp_size > calc_info_.noccA*calc_info_.nvirA) 
+  if (temp_size > calc_info_.noccA*calc_info_.nvirA)
     temp_size = calc_info_.noccA*calc_info_.nvirA;
 
   double **B_p_BS = get_BS_ints(1);
@@ -857,7 +855,7 @@ void SAPT0::theta_bs()
     exit(0);
   }
 
-  if (temp_size > calc_info_.noccA*calc_info_.nvirA) 
+  if (temp_size > calc_info_.noccA*calc_info_.nvirA)
     temp_size = calc_info_.noccA*calc_info_.nvirA;
 
   double **B_p_AR = block_matrix(temp_size,calc_info_.nrio);
@@ -1169,7 +1167,7 @@ void SAPT2p3::exch_disp20()
       C_DAXPY(calc_info_.noccB*calc_info_.nvirB,4.0*X_AR[a][r],&(X_BS[0][0]),1,
         &(yARBS[ar][0]),1);
   }}
- 
+
   D_p_AS = block_matrix(calc_info_.noccA*calc_info_.nvirB,calc_info_.nrio);
   D_p_RB = block_matrix(calc_info_.nvirA*calc_info_.noccB,calc_info_.nrio);
 
@@ -1341,7 +1339,7 @@ void SAPT_DFT::exch_disp20()
   }
 
   psio_->open(PSIF_SAPT_TEMP,0);
-  
+
   // Sab Sa'b
   double **xAA = block_matrix(calc_info_.noccA,calc_info_.noccA);
 
@@ -1384,17 +1382,17 @@ void SAPT_DFT::exch_disp20()
 
   // Vabbs
   double **vAS = block_matrix(calc_info_.noccA,calc_info_.nvirB);
-  
+
   double **A_p_AB = get_AB_ints(1);
   double **B_p_BS = get_BS_ints(1);
-  
+
   for (int b=0; b<calc_info_.noccB; b++) {
     C_DGEMM('N','T',calc_info_.noccA,calc_info_.nvirB,calc_info_.nrio,1.0,
       &(A_p_AB[b][0]),calc_info_.noccB*calc_info_.nrio,
       &(B_p_BS[b*calc_info_.nvirB][0]),calc_info_.nrio,1.0,&(vAS[0][0]),
       calc_info_.nvirB);
   }
- 
+
   free_block(A_p_AB);
 
   // Sa'b Vaa'bs
@@ -1415,10 +1413,10 @@ void SAPT_DFT::exch_disp20()
       &(B_p_BS[b*calc_info_.nvirB][0]),calc_info_.nrio,1.0,&(wAS[0][0]),
       calc_info_.nvirB);
   }
-  
+
   free_block(X_p_BA);
 
-  // Sa's Vaa'bb 
+  // Sa's Vaa'bb
   double **xAS = block_matrix(calc_info_.noccA,calc_info_.nvirB);
 
   double **aAA = block_matrix(calc_info_.noccA,calc_info_.noccA);
@@ -1456,7 +1454,7 @@ void SAPT_DFT::exch_disp20()
 
   C_DGEMV('n',calc_info_.nvirA*calc_info_.noccB,calc_info_.nrio,1.0,
     &(B_p_RB[0][0]),calc_info_.nrio,calc_info_.diagAA,1,0.0,&(uRB[0][0]),1);
-    
+
   free_block(B_p_RB);
 
   // Varab
@@ -1606,7 +1604,7 @@ void SAPT_DFT::exch_disp20()
   psio_->write_entry(PSIF_SAPT_TEMP,"S_as x S_ab x B^p_bb",(char *)
     &(X_p_BS[0][0]),calc_info_.noccB*calc_info_.nvirB*calc_info_.nrio*
     (ULI) sizeof(double));
- 
+
   free_block(B_p_BB);
 
   // Sas (P|ab)
@@ -1832,11 +1830,11 @@ void SAPT_DFT::exch_disp20()
   // 4 Sa'b' Sa'b Varb's
   B_p_AR = block_matrix(calc_info_.noccA*calc_info_.nvirA,calc_info_.nrio);
   B_p_BS = get_BS_ints(0);
-  
+
   psio_->read_entry(PSIF_SAPT_TEMP,"S_ab x S_ab x B^p_ar",(char *)
     &(B_p_AR[0][0]),calc_info_.noccA*calc_info_.nvirA*calc_info_.nrio*
     (ULI) sizeof(double));
-  
+
   C_DGEMM('N','T',calc_info_.noccA*calc_info_.nvirA,
     calc_info_.noccB*calc_info_.nvirB,calc_info_.nrio,4.0,&(B_p_AR[0][0]),
     calc_info_.nrio,&(B_p_BS[0][0]),calc_info_.nrio,1.0,&(V_ARBS[0][0]),
@@ -1927,7 +1925,7 @@ void SAPT_DFT::exch_disp20()
       V_ARBS[ar][bs] -= 8.0*vAR[a][r]*xBS[b][s];
   }}}}
 
-  // -2 Sas Sa'b' Va'rbb' 
+  // -2 Sas Sa'b' Va'rbb'
   for (int a=0, ar=0; a<calc_info_.noccA; a++) {
   for (int r=0; r<calc_info_.nvirA; r++, ar++) {
     for (int b=0, bs=0; b<calc_info_.noccB; b++) {
@@ -1967,7 +1965,7 @@ void SAPT_DFT::exch_disp20()
       V_ARBS[ar][bs] -= 8.0*xAR[a][r]*vBS[b][s];
   }}}}
 
-  // -2 Sa'b' Srb Vaa'b's 
+  // -2 Sa'b' Srb Vaa'b's
   for (int a=0, ar=0; a<calc_info_.noccA; a++) {
   for (int r=0; r<calc_info_.nvirA; r++, ar++) {
     for (int b=0, bs=0; b<calc_info_.noccB; b++) {

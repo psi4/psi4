@@ -8,8 +8,6 @@
 #include <libiwl/iwl.h>
 #include <psifiles.h>
 #include <libchkpt/chkpt.h>
-#include <libipv1/ip_lib.h>
-#include <libipv1/ip_data.gbl>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "structs.h"
@@ -31,7 +29,7 @@ void SAPT3BN5::disp111()
 }
 
 void SAPT3BN6::disp3100()
-{ 
+{
   results_.disp3100 = disp3100_1("T(CT) AR Intermediates",
     "T(CT) BS Intermediates","Theta(AR) AR Intermediates",
     "T2 ARBS Amplitudes",'N',"G ARAR",PSIF_3B_SAPT_AA_DF_INTS,
@@ -117,7 +115,7 @@ void SAPT3BN6::disp3100()
   fflush(outfile);
 }
 
-void SAPT3BN6::disp211_D() 
+void SAPT3BN6::disp211_D()
 {
   results_.disp211d = disp211_D_1("K ARBS Amplitudes",
     "K tilde ARBS Amplitudes",calc_info_.evalsA,calc_info_.evalsB,
@@ -243,7 +241,7 @@ double SAPT3BN5::disp111_1(char *AA_ints, char *BB_ints, int occA, int virA)
   return(energy);
 }
 
-double SAPT3BN6::disp3100_1(char *T_1, char *T_2, char *Theta, char *t2, 
+double SAPT3BN6::disp3100_1(char *T_1, char *T_2, char *Theta, char *t2,
   char trans, char *g2, int AAfile, char *AR_ints, int BBfile, char *BS_ints,
   double *e_A, double *e_B, int occA, int virA, int occB, int virB)
 {
@@ -257,13 +255,13 @@ double SAPT3BN6::disp3100_1(char *T_1, char *T_2, char *Theta, char *t2,
   C_DGEMM('N','T',occA*virA,occB*virB,calc_info_.nrio,1.0,&(Th_AR[0][0]),
           calc_info_.nrio,&(B_p_BS[0][0]),calc_info_.nrio,0.0,&(Y_ARBS[0][0]),
           occB*virB);
-  
+
   free_block(Th_AR);
   free_block(B_p_BS);
-  
+
   double **gARAR = read_IJKL(PSIF_3B_SAPT_AMPS,g2,occA*virA,occA*virA);
   double **tARBS;
-  
+
   if (trans == 'N') {
     tARBS = read_IJKL(PSIF_3B_SAPT_AMPS,t2,occA*virA,occB*virB);
     C_DGEMM('N','N',occA*virA,occB*virB,occA*virA,1.0,&(gARAR[0][0]),
@@ -274,10 +272,10 @@ double SAPT3BN6::disp3100_1(char *T_1, char *T_2, char *Theta, char *t2,
     C_DGEMM('N','T',occA*virA,occB*virB,occA*virA,1.0,&(gARAR[0][0]),
             occA*virA,&(tARBS[0][0]),occA*virA,1.0,&(Y_ARBS[0][0]),occB*virB);
   }
-  
+
   free_block(tARBS);
   free_block(gARAR);
-  
+
   double **X_ARBS = block_matrix(occA*virA,occB*virB);
   double **T_AR = read_IJKL(PSIF_3B_SAPT_AMPS,T_1,occA*virA,calc_info_.nrio);
   B_p_BS = get_DF_ints(BBfile,BS_ints,occB*virB);
@@ -316,7 +314,7 @@ double SAPT3BN6::disp3100_1(char *T_1, char *T_2, char *Theta, char *t2,
   return(16.0*energy);
 }
 
-double SAPT3BN6::disp3100_2(char *theta, char *T_1, char *T_2, int occA, 
+double SAPT3BN6::disp3100_2(char *theta, char *T_1, char *T_2, int occA,
   int virA)
 {
   double energy = 0.0;
@@ -343,8 +341,8 @@ double SAPT3BN6::disp3100_2(char *theta, char *T_1, char *T_2, int occA,
   return(energy);
 }
 
-double SAPT3BN6::disp3100_3(char *t2a, char trans1, char *t2b, char trans2, 
-  char *t2c, char trans3, int AAfile, char *AR_ints, int occA, int virA, 
+double SAPT3BN6::disp3100_3(char *t2a, char trans1, char *t2b, char trans2,
+  char *t2c, char trans3, int AAfile, char *AR_ints, int occA, int virA,
   int occB, int virB, int occC, int virC)
 {
   double energy = 0.0;
@@ -454,29 +452,29 @@ double SAPT3BN6::disp211_D_1(char *K_1, char *K_2, double *e_A, double *e_B,
   int occA, int virA, int occB, int virB)
 {
   double energy = 0.0;
-  
+
   double **K1_ARBS = read_IJKL(PSIF_3B_SAPT_AMPS,K_1,occA*virA,occB*virB);
   double **K2_ARBS = read_IJKL(PSIF_3B_SAPT_AMPS,K_2,occA*virA,occB*virB);
-  
+
   double denom,tval;
-  
-  for (int a=0,ar=0; a<occA; a++) { 
-    for (int r=0; r<virA; r++,ar++) { 
-      for (int b=0,bs=0; b<occB; b++) { 
+
+  for (int a=0,ar=0; a<occA; a++) {
+    for (int r=0; r<virA; r++,ar++) {
+      for (int b=0,bs=0; b<occB; b++) {
         for (int s=0; s<virB; s++,bs++) {
           denom = e_A[a] + e_B[b] - e_A[r+occA] - e_B[s+occB];
           tval = K1_ARBS[ar][bs]*K2_ARBS[ar][bs];
           tval += K2_ARBS[ar][bs]*K2_ARBS[ar][bs];
           energy += tval/denom;
   }}}}
-  
+
   free_block(K1_ARBS);
   free_block(K2_ARBS);
-  
+
   return(16.0*energy);
 }
 
-double SAPT3BN6::disp220_S_1(char *BS_S, char *CT_S, double *e_A, int occA, 
+double SAPT3BN6::disp220_S_1(char *BS_S, char *CT_S, double *e_A, int occA,
   int virA)
 {
   double energy = 0.0;
@@ -498,7 +496,7 @@ double SAPT3BN6::disp220_S_1(char *BS_S, char *CT_S, double *e_A, int occA,
   return(16.0*energy);
 }
 
-double SAPT3BN6::disp220_D_1(char *K_1, char *K_2, double *e_A, int occA, 
+double SAPT3BN6::disp220_D_1(char *K_1, char *K_2, double *e_A, int occA,
   int virA)
 {
   double energy = 0.0;
@@ -529,7 +527,7 @@ double SAPT3BN6::disp220_D_1(char *K_1, char *K_2, double *e_A, int occA,
           tval += K1_ARBS[apr][arp]*K2_ARBS[ar][aprp];
           energy -= 4.0*tval/denom;
   }}}}
-    
+
   free_block(K1_ARBS);
   free_block(K2_ARBS);
 
@@ -562,7 +560,7 @@ double SAPT3BN6::disp220_Q_1(char *t2, char *T_1, char *T_2, int occA, int virA,
   return(energy);
 }
 
-double SAPT3BN6::disp220_Q_2(char *t2, char *T_1, int BBfile, char *BS_ints, 
+double SAPT3BN6::disp220_Q_2(char *t2, char *T_1, int BBfile, char *BS_ints,
   int occA, int virA, int occB, int virB)
 {
   double energy = 0.0;
@@ -608,7 +606,7 @@ double SAPT3BN6::disp220_Q_2(char *t2, char *T_1, int BBfile, char *BS_ints,
   return(energy);
 }
 
-double SAPT3BN6::disp220_Q_3(char *t2, char *T_1, int BBfile, char *BS_ints, 
+double SAPT3BN6::disp220_Q_3(char *t2, char *T_1, int BBfile, char *BS_ints,
   int occB, int virB, int occC, int virC)
 {
   double energy = 0.0;

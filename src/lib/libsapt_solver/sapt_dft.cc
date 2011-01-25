@@ -25,7 +25,6 @@
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.hpp>
-#include <libipv1/ip_lib.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <psifiles.h>
@@ -48,7 +47,7 @@ SAPT_DFT::SAPT_DFT(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> ch
     E_TDDFT_disp_ = 0.0;
     E_MP2C_delta_ = E_TDDFT_disp_ - E_UCHF_disp_;
     E_MP2C_int_ = E_MP2_int_ + E_MP2C_delta_;
-    get_quad_basis();    
+    get_quad_basis();
 }
 
 SAPT_DFT::~SAPT_DFT()
@@ -182,13 +181,13 @@ void SAPT_DFT::print_header()
         for (int b = 0; b < m; b++) {
             A[a][b] = random() / (double)RAND_MAX;
         }
-   
+
      for (int a = 0; a < m; a++)
         for (int b = 0; b < a; b++) {
             A[a][b] = (A[a][b] + A[b][a]) / 2.0;
             A[b][a] = A[a][b];
         }
-    
+
      C_DCOPY(m*m,A[0],1,Atemp[0],1);
 
      fprintf(outfile," A: \n");
@@ -213,9 +212,9 @@ void SAPT_DFT::print_header()
         for (int b = 0; b < a; b++)
             A[b][a] = 0.0;
 
-     fprintf(outfile, " AL:\n");   
+     fprintf(outfile, " AL:\n");
      print_mat(A,m,m,outfile);
- 
+
      C_DSYMM('L','L',m,n,alpha, A[0], m, B1[0], n, beta, C1[0], n);
 
      fprintf(outfile," A*B: \n");
@@ -231,9 +230,9 @@ void SAPT_DFT::print_header()
         for (int b = 0; b < a; b++)
             A[a][b] = 0.0;
 
-     fprintf(outfile, " AU:\n");   
+     fprintf(outfile, " AU:\n");
      print_mat(A,m,m,outfile);
- 
+
      C_DSYMM('L','U',m,n,alpha, A[0], m, B1[0], n, beta, C1[0], n);
 
      fprintf(outfile," A*B: \n");
@@ -245,7 +244,7 @@ void SAPT_DFT::print_header()
      print_mat(C2,n,m,outfile);
      fflush(outfile);
      **/
-} 
+}
 double SAPT_DFT::print_results() {
     return 0.0;
 }
@@ -323,7 +322,7 @@ void SAPT_DFT::compute_J() {
     }
 }
 void SAPT_DFT::compute_Q() {
-    
+
     int naux_quad = quadbasis_->nbf();
     IntegralFactory rifactory_J(quadbasis_, zero_, quadbasis_, zero_);
 
@@ -354,24 +353,24 @@ void SAPT_DFT::compute_Q() {
                     Q_[onu][omu] = Jbuffer[index];
                 }
             }
-        }   
+        }
     }
 
-    
+
 
     Qinv_ = block_matrix(naux_quad,naux_quad);
     C_DCOPY(naux_quad*(ULI)naux_quad, Q_[0], 1, Qinv_[0], 1);
 
     // Cholesky factorization
     int stat = C_DPOTRF('U',naux_quad,Qinv_[0],naux_quad);
-    // Inverse 
+    // Inverse
     stat = C_DPOTRI('U',naux_quad,Qinv_[0],naux_quad);
 
     // Rexpand J^-1 (Upper triangle)
     for (int P = 0; P < naux_quad; P++)
         for (int Q = P+1; Q < naux_quad; Q++)
             Qinv_[P][Q] = Qinv_[Q][P];
-    
+
     if (debug_) {
         fprintf(outfile,"Q:\n");
         print_mat(Q_,naux_quad,naux_quad,outfile);
@@ -390,12 +389,12 @@ void SAPT_DFT::get_quad_basis()
           "RI_BASIS_QUAD"));
     }
 }
-void SAPT_DFT::compute_d() 
+void SAPT_DFT::compute_d()
 {
     compute_Q();
 
     // Get my bearings
-    int naux = calc_info_.nri; 
+    int naux = calc_info_.nri;
     int naux_quad = quadbasis_->nbf();
     int norbs = calc_info_.nso;
     int nmo = calc_info_.nso;
@@ -471,9 +470,9 @@ void SAPT_DFT::compute_d()
                 }
             }
         }
-        C_DGEMV('n', numP, norbs*(ULI)norbs, 1.0, Amn[0], norbs*(ULI)norbs, &DA[0][0], 1, 0.0, \ 
+        C_DGEMV('n', numP, norbs*(ULI)norbs, 1.0, Amn[0], norbs*(ULI)norbs, &DA[0][0], 1, 0.0, \
             &c_A[quadbasis_->shell(Pshell)->function_index()], 1);
-        C_DGEMV('n', numP, norbs*(ULI)norbs, 1.0, Amn[0], norbs*(ULI)norbs, &DB[0][0], 1, 0.0, \ 
+        C_DGEMV('n', numP, norbs*(ULI)norbs, 1.0, Amn[0], norbs*(ULI)norbs, &DB[0][0], 1, 0.0, \
             &c_B[quadbasis_->shell(Pshell)->function_index()], 1);
     }
 
@@ -501,8 +500,8 @@ void SAPT_DFT::compute_d()
                 P, d_B_[P]);
     }
 
-    free(c_A);     
-    free(c_B);     
+    free(c_A);
+    free(c_B);
 
     // Test by forming Coulomb matrix
     if (debug_) {
@@ -526,9 +525,9 @@ void SAPT_DFT::compute_d()
                     }
                 }
             }
-            C_DGEMV('t', numP, norbs*(ULI)norbs, 1.0, Amn[0], norbs*(ULI)norbs, 
+            C_DGEMV('t', numP, norbs*(ULI)norbs, 1.0, Amn[0], norbs*(ULI)norbs,
                 &d_A_[quadbasis_->shell(Pshell)->function_index()], 1, 1.0, JA[0], 1);
-            C_DGEMV('t', numP, norbs*(ULI)norbs, 1.0, Amn[0], norbs*(ULI)norbs, 
+            C_DGEMV('t', numP, norbs*(ULI)norbs, 1.0, Amn[0], norbs*(ULI)norbs,
                 &d_B_[quadbasis_->shell(Pshell)->function_index()], 1, 1.0, JB[0], 1);
         }
         fprintf(outfile, "  Trial Coulomb (A):\n");
@@ -621,19 +620,19 @@ void SAPT_DFT::compute_d()
                         }
             }
         }
-        
+
         fprintf(outfile, "  Numerical Densities: A = %14.10f, B = %14.10f.\n", rho_A, rho_B);
-        fprintf(outfile, "  Numerical W_A (P|\\rho|Q)\n"); 
+        fprintf(outfile, "  Numerical W_A (P|\\rho|Q)\n");
         print_mat(WtestA, naux, naux, outfile);
-        fprintf(outfile, "  Numerical W_B (P|\\rho|Q)\n"); 
+        fprintf(outfile, "  Numerical W_B (P|\\rho|Q)\n");
         print_mat(WtestB, naux, naux, outfile);
-        fprintf(outfile, "  Numerical W_A (P|f_xc(\\rho)|Q)\n"); 
+        fprintf(outfile, "  Numerical W_A (P|f_xc(\\rho)|Q)\n");
         print_mat(WptestA, naux, naux, outfile);
-        fprintf(outfile, "  Numerical W_B (P|f_xc(\\rho)|Q)\n"); 
+        fprintf(outfile, "  Numerical W_B (P|f_xc(\\rho)|Q)\n");
         print_mat(WptestB, naux, naux, outfile);
 
-        //C_DCOPY(naux*(ULI)naux, WtestA[0], 1, WA_[0], 1); 
-        //C_DCOPY(naux*(ULI)naux, WtestB[0], 1, WB_[0], 1); 
+        //C_DCOPY(naux*(ULI)naux, WtestA[0], 1, WA_[0], 1);
+        //C_DCOPY(naux*(ULI)naux, WtestB[0], 1, WB_[0], 1);
         free_block(WtestA);
         free_block(WptestA);
         free_block(WtestB);
@@ -642,16 +641,16 @@ void SAPT_DFT::compute_d()
     free_block(DA);
     free_block(DB);
 }
-void SAPT_DFT::compute_W() 
+void SAPT_DFT::compute_W()
 {
-    int naux = calc_info_.nri; 
+    int naux = calc_info_.nri;
     int naux_quad = quadbasis_->nbf();
 
-    C_x_ = 3.0/8.0*pow(3.0,1.0/3.0)*pow(4.0,2.0/3.0)*pow(M_PI,-1.0/3.0); 
+    C_x_ = 3.0/8.0*pow(3.0,1.0/3.0)*pow(4.0,2.0/3.0)*pow(M_PI,-1.0/3.0);
     compute_d();
 
     // =============== Heavy Three-Index Tensor ================//
-    
+
     IntegralFactory PQRfactory(ribasis_, ribasis_, quadbasis_, zero_);
 
     int max_P_shell = 0;
@@ -704,7 +703,7 @@ void SAPT_DFT::compute_W()
                 for (q=0; q < numQ; ++q) {
                     oq = ribasis_->shell(Q)->function_index() + q;
                     //if (debug_) {
-                    //    fprintf(outfile, "    (%d | \\rho |%d)  = %14.10f, %14.10f\n", op, oq, TempA[p*numQ + q], TempB[p*numQ + q]); 
+                    //    fprintf(outfile, "    (%d | \\rho |%d)  = %14.10f, %14.10f\n", op, oq, TempA[p*numQ + q], TempB[p*numQ + q]);
                     //}
                     WA_[op][oq] = TempA[p*numQ + q];
                     WB_[op][oq] = TempB[p*numQ + q];
@@ -712,18 +711,18 @@ void SAPT_DFT::compute_W()
             }
         }
     }
-   
+
     if (debug_) {
         fprintf(outfile, "  W_A (P|\\rho|Q):\n");
         print_mat(WA_, naux, naux, outfile);
         fprintf(outfile, "  W_B (P|\\rho|Q):\n");
         print_mat(WB_, naux, naux, outfile);
-    } 
+    }
     free_block(PQR);
-    free(TempA);     
-    free(TempB);     
-    free(d_A_);     
-    free(d_B_);     
+    free(TempA);
+    free(TempB);
+    free(d_A_);
+    free(d_B_);
 
 
     // =============== M -> Mprime ================//
@@ -783,7 +782,7 @@ void SAPT_DFT::compute_W()
     }
 
     double** Temp1 = block_matrix(naux,naux);
-   
+
     C_DGEMM('T','N', naux, naux, naux, 1.0, V[0], naux, WA_[0], naux, \
         0.0, Temp1[0], naux);
     C_DGEMM('N','N', naux, naux, naux, 1.0, Temp1[0], naux, V[0], naux, \
@@ -792,7 +791,7 @@ void SAPT_DFT::compute_W()
         0.0, Temp1[0], naux);
     C_DGEMM('N','N', naux, naux, naux, 1.0, Temp1[0], naux, V[0], naux, \
         0.0, WB_[0], naux);
-    
+
     if (debug_) {
         fprintf(outfile, "  Wp A (V'*W*V):\n");
         print_mat(WA_, naux, naux, outfile);
@@ -806,7 +805,7 @@ void SAPT_DFT::compute_W()
 
     // Monomer A
     C_DCOPY(naux*(ULI)naux,WA_[0],1,U[0],1);
-    // Form V : V'SV = 1 
+    // Form V : V'SV = 1
     // First, diagonalize V
     // the C_DSYEV call replaces the original matrix J with its eigenvectors
     double* lambda = init_array(naux);
@@ -837,7 +836,7 @@ void SAPT_DFT::compute_W()
         }
         C_DSCAL(naux, lambda[k], U[k], 1);
     }
-    if (warn)        
+    if (warn)
         fprintf(outfile, "  WARNING: Small/negative eigenvalue detected in (P|\\rho|Q)\n");
     if (debug_) {
         fprintf(outfile, "  lambda_A Coefficients:\n");
@@ -860,7 +859,7 @@ void SAPT_DFT::compute_W()
 
     // Monomer B
     C_DCOPY(naux*(ULI)naux,WB_[0],1,U[0],1);
-    // Form V : V'SV = 1 
+    // Form V : V'SV = 1
     // First, diagonalize V
     // the C_DSYEV call replaces the original matrix J with its eigenvectors
     stat = C_DSYEV('v','u',naux,U[0],naux,lambda, work,lwork);
@@ -925,7 +924,7 @@ void SAPT_DFT::compute_W()
         print_mat(WA_, naux, naux, outfile);
         fprintf(outfile, "  WB (P|f_xc(\\rho)|Q):\n");
         print_mat(WB_, naux, naux, outfile);
-    } 
+    }
     for (P = 0; P < naux; P++) {
         for (Q = 0; Q < naux; Q++) {
             WA_[P][Q] += J_[P][Q];
@@ -937,7 +936,7 @@ void SAPT_DFT::compute_W()
         print_mat(WA_, naux, naux, outfile);
         fprintf(outfile, "  WB (P|1/r + f_xc(\\rho)|Q):\n");
         print_mat(WB_, naux, naux, outfile);
-    } 
+    }
 }
 void SAPT_DFT::compute_X_0(double omega) {
 
@@ -1150,7 +1149,7 @@ void SAPT_DFT::compute_X_coup(double omega) {
     free_block(Temp2);
     free_block(Temp3);
 }
-double SAPT_DFT::compute_UCHF_disp() 
+double SAPT_DFT::compute_UCHF_disp()
 {
 
     int naux = calc_info_.nri;
@@ -1183,7 +1182,7 @@ double SAPT_DFT::compute_UCHF_disp()
 
     return contribution;
 }
-double SAPT_DFT::compute_TDDFT_disp() 
+double SAPT_DFT::compute_TDDFT_disp()
 {
 
     int naux = calc_info_.nri;

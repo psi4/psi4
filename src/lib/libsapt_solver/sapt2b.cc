@@ -1,5 +1,5 @@
-/* 
- *  SAPT.CC 
+/*
+ *  SAPT.CC
  *
  */
 #include "sapt.h"
@@ -24,7 +24,6 @@
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.hpp>
-#include <libipv1/ip_lib.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <psifiles.h>
@@ -106,7 +105,7 @@ void SAPT2B::get_workflow()
       workflow_.theta_arar = 0;
       workflow_.t_bsbs = 0;
       workflow_.theta_bsbs = 0;
-      workflow_.Y2_ar = 0; 
+      workflow_.Y2_ar = 0;
       workflow_.Y2_bs = 0;
       workflow_.t_ar = 0;
       workflow_.t_bs = 0;
@@ -120,9 +119,9 @@ void SAPT2B::get_workflow()
       workflow_.theta2_ar_ar = 0;
       workflow_.theta2_bs_bs = 0;
       workflow_.g_arar = 0;
-      workflow_.g_bsbs = 0; 
+      workflow_.g_bsbs = 0;
       workflow_.t_arbs = 0;
-      workflow_.t_bsar = 0; 
+      workflow_.t_bsar = 0;
       workflow_.gt_ar_arbs = 0;
       workflow_.gt_bs_arbs = 0;
       workflow_.Y3_ar = 0;
@@ -212,9 +211,9 @@ void SAPT2B::get_workflow()
       workflow_.mp2_opdm = 1;
       workflow_.theta_ar_ar = 1;
       workflow_.theta_bs_bs = 1;
-      workflow_.t2_arar = 1; 
+      workflow_.t2_arar = 1;
       workflow_.theta2_arar = 1;
-      workflow_.t2_bsbs = 1; 
+      workflow_.t2_bsbs = 1;
       workflow_.theta2_bsbs = 1;
       workflow_.theta2_ar_ar = 1;
       workflow_.theta2_bs_bs = 1;
@@ -282,107 +281,107 @@ void SAPT2B::get_calc_info()
     psio_->open(PSIF_SAPT_DIMER,PSIO_OPEN_OLD);
 
     int errcod = 0;
-    psio_->read_entry(PSIF_SAPT_DIMER,"Dimer NSO",(char *) &calc_info_.nso, 
+    psio_->read_entry(PSIF_SAPT_DIMER,"Dimer NSO",(char *) &calc_info_.nso,
       sizeof(int));
-    psio_->read_entry(PSIF_SAPT_DIMER,"Dimer NMO",(char *) &calc_info_.nmo, 
+    psio_->read_entry(PSIF_SAPT_DIMER,"Dimer NMO",(char *) &calc_info_.nmo,
       sizeof(int));
-    psio_->read_entry(PSIF_SAPT_DIMER,"Dimer HF Energy",(char *) 
+    psio_->read_entry(PSIF_SAPT_DIMER,"Dimer HF Energy",(char *)
       &calc_info_.eHF_D, sizeof(double));
-    psio_->read_entry(PSIF_SAPT_DIMER,"Dimer Nuclear Repulsion Energy",(char *) 
+    psio_->read_entry(PSIF_SAPT_DIMER,"Dimer Nuclear Repulsion Energy",(char *)
       &calc_info_.enuc_D, sizeof(double));
-  
+
     calc_info_.nsotri = calc_info_.nso*(calc_info_.nso+1)/2;
     calc_info_.nmotri = calc_info_.nmo*(calc_info_.nmo+1)/2;
     calc_info_.ntei = calc_info_.nsotri*(calc_info_.nsotri+1)/2;
-  
+
     /* Store overlap integrals */
     calc_info_.S = init_array(calc_info_.nsotri);
-    psio_->read_entry(PSIF_SAPT_DIMER,"Dimer Overlap Integrals",(char *) 
+    psio_->read_entry(PSIF_SAPT_DIMER,"Dimer Overlap Integrals",(char *)
       &calc_info_.S[0], sizeof(double)*calc_info_.nsotri);
-  
+
     calc_info_.C = block_matrix(calc_info_.nso,calc_info_.nmo);
-    psio_->read_entry(PSIF_SAPT_DIMER,"Dimer HF Coefficients",(char *) 
+    psio_->read_entry(PSIF_SAPT_DIMER,"Dimer HF Coefficients",(char *)
       &(calc_info_.C[0][0]), sizeof(double)*calc_info_.nmo*calc_info_.nso);
 
     psio_->close(PSIF_SAPT_DIMER,1);
-  
+
     calc_info_.ioff = (int *) malloc (calc_info_.nsotri * sizeof(int));
     calc_info_.index2i = (int *) malloc (calc_info_.nsotri * sizeof(int));
     calc_info_.index2j = (int *) malloc (calc_info_.nsotri * sizeof(int));
-  
+
     calc_info_.ioff[0] = 0; // Create ioff array
-  
+
     for (int i=1; i < calc_info_.nsotri; i++) {
       calc_info_.ioff[i] = calc_info_.ioff[i-1] + i;
     }
-  
+
     for (int i=0; i<calc_info_.nso; i++) {
       for (int j=0; j<=i; j++) {
         calc_info_.index2i[INDEX(i,j)] = i;
         calc_info_.index2j[INDEX(i,j)] = j;
     }}
-  
+
     psio_->open(PSIF_SAPT_MONOMERA,PSIO_OPEN_OLD);
-  
-    psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer NSO",(char *) 
+
+    psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer NSO",(char *)
       &calc_info_.nso, sizeof(int));
-    psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer NMO",(char *) 
+    psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer NMO",(char *)
       &calc_info_.nmo, sizeof(int));
-    psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer NOCC",(char *) 
+    psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer NOCC",(char *)
       &calc_info_.noccA, sizeof(int));
-    psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer NVIR",(char *) 
+    psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer NVIR",(char *)
       &calc_info_.nvirA, sizeof(int));
-    psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer Number of Electrons",(char *) 
+    psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer Number of Electrons",(char *)
       &calc_info_.NA, sizeof(int));
-    psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer HF Energy",(char *) 
+    psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer HF Energy",(char *)
       &calc_info_.eHF_A, sizeof(double));
     psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer Nuclear Repulsion Energy",
       (char *) &calc_info_.enuc_A, sizeof(double));
-  
+
     calc_info_.evalsA = init_array(calc_info_.nmo);
-    psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer HF Eigenvalues",(char *) 
+    psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer HF Eigenvalues",(char *)
       &(calc_info_.evalsA[0]), sizeof(double)*calc_info_.nmo);
-  
+
     calc_info_.VA = init_array(calc_info_.nsotri);
     psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer Nuclear Attraction Integrals",
       (char *) &(calc_info_.VA[0]), sizeof(double)*calc_info_.nsotri);
-  
+
     calc_info_.CA = block_matrix(calc_info_.nso,calc_info_.nmo);
-    psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer HF Coefficients",(char *) 
+    psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer HF Coefficients",(char *)
       &(calc_info_.CA[0][0]), sizeof(double)*calc_info_.nmo*calc_info_.nso);
-  
+
     psio_->close(PSIF_SAPT_MONOMERA,1);
-  
+
     psio_->open(PSIF_SAPT_MONOMERB,PSIO_OPEN_OLD);
-  
-    psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer NOCC",(char *) 
+
+    psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer NOCC",(char *)
       &calc_info_.noccB, sizeof(int));
-    psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer NVIR",(char *) 
+    psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer NVIR",(char *)
       &calc_info_.nvirB, sizeof(int));
-    psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer Number of Electrons",(char *) 
+    psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer Number of Electrons",(char *)
       &calc_info_.NB, sizeof(int));
-    psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer HF Energy",(char *) 
+    psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer HF Energy",(char *)
       &calc_info_.eHF_B, sizeof(double));
     psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer Nuclear Repulsion Energy",
       (char *) &calc_info_.enuc_B, sizeof(double));
-  
+
     calc_info_.evalsB = init_array(calc_info_.nmo);
-    psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer HF Eigenvalues",(char *) 
+    psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer HF Eigenvalues",(char *)
       &(calc_info_.evalsB[0]), sizeof(double)*calc_info_.nmo);
-  
+
     calc_info_.VB = init_array(calc_info_.nsotri);
     psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer Nuclear Attraction Integrals",
       (char *) &(calc_info_.VB[0]), sizeof(double)*calc_info_.nsotri);
-  
+
     calc_info_.CB = block_matrix(calc_info_.nso,calc_info_.nmo);
-    psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer HF Coefficients",(char *) 
+    psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer HF Coefficients",(char *)
       &(calc_info_.CB[0][0]), sizeof(double)*calc_info_.nmo*calc_info_.nso);
-  
+
     psio_->close(PSIF_SAPT_MONOMERB,1);
 }
 
 void SAPT2B::cleanup_calc_info()
-{ 
+{
     free_block(calc_info_.C);
     free_block(calc_info_.CA);
     free_block(calc_info_.CB);
@@ -421,7 +420,7 @@ void SAPT2B::cleanup_calc_info()
     free(calc_info_.evalsB);
     free(calc_info_.ioff);
     free(calc_info_.index2i);
-    free(calc_info_.index2j);    
-} 
+    free(calc_info_.index2j);
+}
 
 }}

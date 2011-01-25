@@ -12,8 +12,6 @@
 #include <libiwl/iwl.h>
 #include <psifiles.h>
 #include <libchkpt/chkpt.h>
-#include <libipv1/ip_lib.h>
-#include <libipv1/ip_data.gbl>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "structs.h"
@@ -23,7 +21,7 @@ namespace psi { namespace sapt {
 
 void SAPT2::exch12()
 {
-  double ex111, ex120_k2u, ex102_k2u, ex120_k2f, ex102_k2f, ex120_k11u, 
+  double ex111, ex120_k2u, ex102_k2u, ex120_k2f, ex102_k2f, ex120_k11u,
     ex102_k11u;
 
   if (params_.print) {
@@ -53,14 +51,14 @@ void SAPT2::exch12()
   }
 
   ex120_k2f = exch120_k2f();
-  
+
   if (params_.print) {
     fprintf(outfile,"exch120_k2f        = %18.12lf  H\n",ex120_k2f);
     fflush(outfile);
   }
 
   ex102_k2f = exch102_k2f();
-  
+
   if (params_.print) {
     fprintf(outfile,"exch102_k2f        = %18.12lf  H\n",ex102_k2f);
     fflush(outfile);
@@ -94,7 +92,7 @@ void SAPT2::exch12()
     fflush(outfile);
   }
 
-  results_.exch12 = ex111 + ex120_k2u + ex102_k2u + ex120_k2f + ex102_k2f + 
+  results_.exch12 = ex111 + ex120_k2u + ex102_k2u + ex120_k2f + ex102_k2f +
     ex120_k11u + ex102_k11u;
 }
 
@@ -163,7 +161,7 @@ double SAPT2::exch111()
   free_block(T_p_AR);
   free_block(C_p_BR);
   free_block(C_p_AR);
- 
+
   return(e1+e2);
 }
 
@@ -241,7 +239,7 @@ double SAPT2::exch120_k2f()
     C_DGEMM('T','N',calc_info_.noccB,calc_info_.nrio,calc_info_.noccA,1.0,
       &(X_AB[0][0]),calc_info_.noccB,&(B_p_AA[a*calc_info_.noccA][0]),
       calc_info_.nrio,0.0,&(C_p_AB[a*calc_info_.noccB][0]),calc_info_.nrio);
-  }  
+  }
 
   e2 += 2.0*C_DDOT(calc_info_.noccA*calc_info_.noccB*calc_info_.nrio,
     B_p_AB[0],1,C_p_AB[0],1);
@@ -518,7 +516,7 @@ double SAPT2::exch120_k11u_1()
   for (int b=0; b<calc_info_.noccB; b++) {
     for (int r=0; r<calc_info_.nvirA; r++) {
       energy -= 8.0*xBR[b][r]*zRB[r][b];
-  }}  
+  }}
 
   free_block(xBR);
 
@@ -1275,13 +1273,13 @@ double SAPT2::exch120_k11u_3()
   double **B_BB_p = get_BB_ints(1);
   double **B_p_BB = block_matrix(calc_info_.nrio,calc_info_.noccB*
     calc_info_.noccB);
-    
+
   for(int b=0,bbp=0; b<calc_info_.noccB; b++) {
     for(int bp=0; bp<calc_info_.noccB; bp++,bbp++) {
       for(int P=0; P<calc_info_.nrio; P++) {
         B_p_BB[P][bbp] = B_BB_p[bbp][P];
   }}}
-  
+
   free_block(B_BB_p);
 
   double **yRBB = block_matrix(calc_info_.nvirA,calc_info_.noccB*
@@ -1436,7 +1434,7 @@ double SAPT2::exch102_k11u_3()
       for(int P=0; P<calc_info_.nrio; P++) {
         B_p_AA[P][aap] = B_AA_p[aap][P];
   }}}
-  
+
   free_block(B_AA_p);
 
   double **ySAA = block_matrix(calc_info_.nvirB,calc_info_.noccA*
@@ -1567,11 +1565,11 @@ double SAPT2::exch120_k11u_4()
 
   double *X = init_array(calc_info_.nrio);
   double **sAA = block_matrix(calc_info_.noccA,calc_info_.noccA);
-  
+
   C_DGEMM('N','T',calc_info_.noccA,calc_info_.noccA,calc_info_.noccB,1.0,
     &(calc_info_.S_AB[0][0]),calc_info_.nmo,&(calc_info_.S_AB[0][0]),
     calc_info_.nmo,0.0,&(sAA[0][0]),calc_info_.noccA);
-  
+
   C_DGEMV('t',calc_info_.noccA*calc_info_.noccA,calc_info_.nrio,1.0,
     C_p_AA[0],calc_info_.nrio,sAA[0],1,0.0,X,1);
 
@@ -1707,11 +1705,11 @@ double SAPT2::exch102_k11u_4()
 
   double *X = init_array(calc_info_.nrio);
   double **sBB = block_matrix(calc_info_.noccB,calc_info_.noccB);
-  
+
   C_DGEMM('T','N',calc_info_.noccB,calc_info_.noccB,calc_info_.noccA,1.0,
     &(calc_info_.S_AB[0][0]),calc_info_.nmo,&(calc_info_.S_AB[0][0]),
     calc_info_.nmo,0.0,&(sBB[0][0]),calc_info_.noccB);
-  
+
   C_DGEMV('t',calc_info_.noccB*calc_info_.noccB,calc_info_.nrio,1.0,
     C_p_BB[0],calc_info_.nrio,sBB[0],1,0.0,X,1);
 
@@ -1977,7 +1975,7 @@ double SAPT2::exch120_k11u_6()
   free_block(thetaARAR);
 
   double **xRA = block_matrix(calc_info_.nvirA,calc_info_.noccA);
-  
+
   for(int a=0; a<calc_info_.noccA; a++) {
     for(int r=0; r<calc_info_.nvirA; r++) {
       C_DCOPY(calc_info_.noccA*calc_info_.nvirA,&(T_ARAR[a*calc_info_.nvirA*
@@ -2101,7 +2099,7 @@ double SAPT2::exch120_k11u_6()
     T_p_AA[0],calc_info_.nrio,&(sAA[0][0]),1,0.0,X,1);
 
   energy -= 2.0*C_DDOT(calc_info_.nrio,X,1,calc_info_.diagBB,1);
-  
+
   C_DGEMV('t',calc_info_.nvirA*calc_info_.nvirA,calc_info_.nrio,1.0,
     T_p_RR[0],calc_info_.nrio,&(sRR[0][0]),1,0.0,X,1);
 
@@ -2158,7 +2156,7 @@ double SAPT2::exch102_k11u_6()
   free_block(thetaBSBS);
 
   double **xSB = block_matrix(calc_info_.nvirB,calc_info_.noccB);
-  
+
   for(int b=0; b<calc_info_.noccB; b++) {
     for(int s=0; s<calc_info_.nvirB; s++) {
       C_DCOPY(calc_info_.noccB*calc_info_.nvirB,&(T_BSBS[b*calc_info_.nvirB*
@@ -2276,7 +2274,7 @@ double SAPT2::exch102_k11u_6()
     T_p_BB[0],calc_info_.nrio,&(sBB[0][0]),1,0.0,X,1);
 
   energy -= 2.0*C_DDOT(calc_info_.nrio,X,1,calc_info_.diagAA,1);
-  
+
   C_DGEMV('t',calc_info_.nvirB*calc_info_.nvirB,calc_info_.nrio,1.0,
     T_p_SS[0],calc_info_.nrio,&(sSS[0][0]),1,0.0,X,1);
 

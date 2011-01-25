@@ -8,8 +8,6 @@
 #include <libiwl/iwl.h>
 #include <psifiles.h>
 #include <libchkpt/chkpt.h>
-#include <libipv1/ip_lib.h>
-#include <libipv1/ip_data.gbl>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "structs.h"
@@ -18,7 +16,7 @@
 namespace psi { namespace sapt {
 
 void SAPT3BN5::exch_disp200_s2()
-{ 
+{
   results_.exch_disp200_s2 = exch_disp200_s2_0(calc_info_.S_AC,calc_info_.S_BC,
     calc_info_.WABS,calc_info_.WBAR,"T(BS) AR Intermediates",
     "T(AR) BS Intermediates",PSIF_3B_SAPT_AA_DF_INTS,"AR RI Integrals",
@@ -49,7 +47,7 @@ void SAPT3BN5::exch_disp200_s2()
 }
 
 void SAPT3BN5::exch_disp110_s2()
-{ 
+{
   results_.exch_disp110_s2 = exch_disp110_s2_0(calc_info_.S_CA,calc_info_.S_CB,
     calc_info_.S_AB,calc_info_.S_AC,calc_info_.S_BA,calc_info_.WCBS,
     calc_info_.WBCT,"T2 ARCT Amplitudes",'N',"T2 ARBS Amplitudes",'N',
@@ -68,7 +66,7 @@ void SAPT3BN5::exch_disp110_s2()
     calc_info_.noccA,calc_info_.nvirA,calc_info_.noccB,calc_info_.nvirB,
     calc_info_.noccC,calc_info_.nvirC);
   fprintf(outfile,"exch_disp_101 S^2   = %18.12lf  H\n",
-    results_.exch_disp101_s2); 
+    results_.exch_disp101_s2);
   fflush(outfile);
   results_.exch_disp011_s2 = exch_disp110_s2_0(calc_info_.S_BC,
     calc_info_.S_BA,calc_info_.S_CA,calc_info_.S_CB,calc_info_.S_AC,
@@ -78,7 +76,7 @@ void SAPT3BN5::exch_disp110_s2()
     "AR RI Integrals",calc_info_.noccB,calc_info_.nvirB,calc_info_.noccC,
     calc_info_.nvirC,calc_info_.noccA,calc_info_.nvirA);
   fprintf(outfile,"exch_disp_011 S^2   = %18.12lf  H\n\n",
-    results_.exch_disp011_s2); 
+    results_.exch_disp011_s2);
   fflush(outfile);
 }
 
@@ -166,7 +164,7 @@ double SAPT3BN5::exch_disp200_s2_0(double **SAC, double **SBC, double **WABS,
   return(energy);
 }
 
-double SAPT3BN5::exch_disp200_s2_1(double **SAC, char *TBS_AR, int AAfile, 
+double SAPT3BN5::exch_disp200_s2_1(double **SAC, char *TBS_AR, int AAfile,
   char *AR_ints, int occA, int virA, int occC)
 {
   double energy = 0.0;
@@ -210,7 +208,7 @@ double SAPT3BN5::exch_disp200_s2_1(double **SAC, char *TBS_AR, int AAfile,
 }
 
 double SAPT3BN5::exch_disp200_s2_2(double **SAC, double **SBC, double **WABS,
-  double **WBAR, char *T2label, char trans, int occA, int virA, int occB, 
+  double **WBAR, char *T2label, char trans, int occA, int virA, int occB,
   int virB, int occC)
 {
   double energy = 0.0;
@@ -254,10 +252,10 @@ double SAPT3BN5::exch_disp200_s2_2(double **SAC, double **SBC, double **WABS,
   return(energy);
 }
 
-double SAPT3BN5::exch_disp110_s2_0(double **SAB, double **SAC, double **SBC, 
-  double **SBA, double **SCB, double **WACT, double **WCAR, char *T2ARBS, 
-  char trans1, char *T2BSCT, char trans2, char *TAR_BS, char *TCT_BS, 
-  int AAfile, char *AR_ints, int CCfile, char *CT_ints, int occA, int virA, 
+double SAPT3BN5::exch_disp110_s2_0(double **SAB, double **SAC, double **SBC,
+  double **SBA, double **SCB, double **WACT, double **WCAR, char *T2ARBS,
+  char trans1, char *T2BSCT, char trans2, char *TAR_BS, char *TCT_BS,
+  int AAfile, char *AR_ints, int CCfile, char *CT_ints, int occA, int virA,
   int occB, int virB, int occC, int virC)
 {
   double energy = 0.0;
@@ -270,7 +268,7 @@ double SAPT3BN5::exch_disp110_s2_0(double **SAB, double **SAC, double **SBC,
   return(energy);
 }
 
-double SAPT3BN5::exch_disp110_s2_1(double **SAB, char *TCT_BS, int AAfile, 
+double SAPT3BN5::exch_disp110_s2_1(double **SAB, char *TCT_BS, int AAfile,
   char *AR_ints, int occA, int virA, int occB, int virB)
 {
   double energy = 0.0;
@@ -306,7 +304,7 @@ double SAPT3BN5::exch_disp110_s2_1(double **SAB, char *TCT_BS, int AAfile,
 }
 
 double SAPT3BN5::exch_disp110_s2_2(double **SAB, double **SBC, double **WACT,
-  char *T2label, char trans, int occA, int virA, int occB, int virB, 
+  char *T2label, char trans, int occA, int virA, int occB, int virB,
   int occC, int virC)
 {
   double energy = 0.0;

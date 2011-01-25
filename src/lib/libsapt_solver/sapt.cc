@@ -1,5 +1,5 @@
-/* 
- *  SAPT.CC 
+/*
+ *  SAPT.CC
  *
  */
 #include "sapt.h"
@@ -24,7 +24,6 @@
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.hpp>
-#include <libipv1/ip_lib.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <psifiles.h>
@@ -70,7 +69,7 @@ void SAPT::get_params()
     params_.maxiter = options_.get_int("MAXITER");
     params_.diisvec = options_.get_int("DIISVECS");
 
-    //Print 
+    //Print
     params_.print = options_.get_int("PRINT");
 
     //Schwarz cutoff
@@ -113,7 +112,7 @@ void SAPT::get_params()
         ghostsC);
       params_.foccC = monomerC->nfrozen_core(options_.get_str("FREEZE_CORE"));
     }
-  }  
+  }
 
     //Natural Orbital Stuff
     params_.nat_orbs = options_.get_bool("NAT_ORBS");
