@@ -134,6 +134,8 @@
 #include "globals.h"
 #include "psi4-dec.h"
 
+#include <libmints/wavefunction.h>
+
 namespace psi { namespace transqt {
 
 int *ioff;
@@ -195,10 +197,10 @@ PsiReturnType transqt(Options & options)
       break;
   case MAKE_OGOG:
       if (params.tei_type == ERI ||
-	  params.tei_type == R12)
-	  transform_two_mp2r12a_gr();
+      params.tei_type == R12)
+      transform_two_mp2r12a_gr();
       else if (params.tei_type == R12T1)
-	  transform_two_mp2r12a_t();
+      transform_two_mp2r12a_t();
       break;
   }
 
@@ -210,7 +212,7 @@ PsiReturnType transqt(Options & options)
   return Success;
 }
 
-void init_io(Options & options) 
+void init_io(Options & options)
 {
   params.print_lvl = options.get_int("PRINT_LVL"); // default is 1
 
@@ -227,7 +229,7 @@ void init_io(Options & options)
   if (options["MP2R12A"].has_changed()) {
     // case 0: //--- transform ERIs ---
     if (tmpstring == "MP2R12AERI")
-	   params.runmode = MODE_MP2R12AERI;
+       params.runmode = MODE_MP2R12AERI;
     // case 1: //--- transform ints of r12
     else if (tmpstring == "MP2R12AR12")
       params.runmode = MODE_MP2R12AR12;
@@ -465,7 +467,7 @@ void get_parameters(Options & options)
   else
     params.treat_cor_as_fzc = 0;
 
-  
+
   params.fzc = options.get_bool("FREEZE_CORE");
   if (params.backtr) params.fzc = 0; /* can't freeze core for backtr */
 
@@ -478,7 +480,7 @@ void get_parameters(Options & options)
     params.fzc=0;
 
   /* remove restricted docc from RAS 1 ? */
-  
+
   params.del_restr_docc = options.get_bool("DELETE_RESTR_DOCC"); // default is true
   if (params.backtr) params.del_restr_docc = 0;
 
@@ -525,13 +527,13 @@ void print_parameters(void)
       fprintf(outfile,"\tReference orbitals     =  %s\n", params.ref.c_str());
       }
       fprintf(outfile,"\tBacktrans              =  %s\n",
-	                           params.backtr ? "Yes" : "No");
+                               params.backtr ? "Yes" : "No");
       fprintf(outfile,"\tPrint MOs              =  %s\n",
                                   (params.print_mos ? "Yes": "No"));
       fprintf(outfile,"\tFreeze Core            =  %s\n",
                                   (params.fzc ? "Yes" : "No"));
       fprintf(outfile,"\tDelete Restricted Docc =  %s\n",
-		                  (params.del_restr_docc ? "Yes" : "No"));
+                          (params.del_restr_docc ? "Yes" : "No"));
       fprintf(outfile,"\tDo All TEI             =  %s\n",
                                   (params.do_all_tei ? "Yes" : "No"));
       fprintf(outfile,"\tMemory (Mbytes)        =  %5.1f\n",params.maxcor/1e6);
@@ -689,8 +691,8 @@ void get_moinfo(Options & options)
     }
   }
 
-  moinfo.frdocc = get_frzcpi();
-  moinfo.fruocc = get_frzvpi();
+  moinfo.frdocc = Process::environment.reference_wavefunction()->get_frzcpi();
+  moinfo.fruocc = Process::environment.reference_wavefunction()->get_frzvpi();
 
   if (params.wfn == "CI" || params.wfn == "DETCI" || params.wfn == "GVVPT2"
       || params.wfn == "MCSCF" || params.wfn == "OOCCD" || params.wfn == "ZAPTN"
@@ -802,20 +804,20 @@ void get_moinfo(Options & options)
     fprintf(outfile,"\tNumber of SOs    = %d\n",moinfo.nso);
     fprintf(outfile,"\tNumber of MOs    = %d\n\n",moinfo.nmo);
     fprintf(outfile,
-	    "\tLabel\t# SOs\t# MOs\t# FZDC\t# DOCC\t# SOCC\t# VIRT\t# FZVR\n");
+        "\tLabel\t# SOs\t# MOs\t# FZDC\t# DOCC\t# SOCC\t# VIRT\t# FZVR\n");
     fprintf(outfile,
-	    "\t-----\t-----\t-----\t------\t------\t------\t------\t------\n");
+        "\t-----\t-----\t-----\t------\t------\t------\t------\t------\n");
     for(i=0; i < moinfo.nirreps; i++) {
       fprintf(outfile,
-	      "\t %s\t   %d\t   %d\t    %d\t    %d\t    %d\t    %d\t    %d\n",
-	      moinfo.labels[i],moinfo.sopi[i],moinfo.orbspi[i],moinfo.frdocc[i],
-	      moinfo.clsdpi[i],moinfo.openpi[i],moinfo.virtpi[i],
-	      moinfo.fruocc[i]);
+          "\t %s\t   %d\t   %d\t    %d\t    %d\t    %d\t    %d\t    %d\n",
+          moinfo.labels[i],moinfo.sopi[i],moinfo.orbspi[i],moinfo.frdocc[i],
+          moinfo.clsdpi[i],moinfo.openpi[i],moinfo.virtpi[i],
+          moinfo.fruocc[i]);
     }
     fprintf(outfile,"\n\tNuclear Repulsion Energy    = %20.10f\n",
-	    moinfo.enuc);
+        moinfo.enuc);
     fprintf(outfile,  "\tTotal SCF Energy            = %20.10f\n",
-	    moinfo.escf);
+        moinfo.escf);
   }
 
   /* Set up some other useful parameters */
@@ -933,46 +935,46 @@ void get_moinfo(Options & options)
     if (params.do_all_tei) {
 
       if(params.ref == "UHF") {
-	moinfo.evects_alpha = construct_evects("alpha", moinfo.nirreps, moinfo.orbspi,
-					       moinfo.sopi, moinfo.orbspi,
-					       moinfo.first_so, moinfo.last_so,
-					       moinfo.first, moinfo.last,
-					       moinfo.first, moinfo.last, params.print_mos);
+    moinfo.evects_alpha = construct_evects("alpha", moinfo.nirreps, moinfo.orbspi,
+                           moinfo.sopi, moinfo.orbspi,
+                           moinfo.first_so, moinfo.last_so,
+                           moinfo.first, moinfo.last,
+                           moinfo.first, moinfo.last, params.print_mos);
 
-	moinfo.evects_beta = construct_evects("beta", moinfo.nirreps, moinfo.orbspi,
-					      moinfo.sopi, moinfo.orbspi,
-					      moinfo.first_so, moinfo.last_so,
-					      moinfo.first, moinfo.last,
-					      moinfo.first, moinfo.last, params.print_mos);
+    moinfo.evects_beta = construct_evects("beta", moinfo.nirreps, moinfo.orbspi,
+                          moinfo.sopi, moinfo.orbspi,
+                          moinfo.first_so, moinfo.last_so,
+                          moinfo.first, moinfo.last,
+                          moinfo.first, moinfo.last, params.print_mos);
       }
       else {
-	moinfo.evects = construct_evects("RHF", moinfo.nirreps, moinfo.orbspi,
-					 moinfo.sopi, moinfo.orbspi,
-					 moinfo.first_so, moinfo.last_so,
-					 moinfo.first, moinfo.last,
-					 moinfo.first, moinfo.last, params.print_mos);
+    moinfo.evects = construct_evects("RHF", moinfo.nirreps, moinfo.orbspi,
+                     moinfo.sopi, moinfo.orbspi,
+                     moinfo.first_so, moinfo.last_so,
+                     moinfo.first, moinfo.last,
+                     moinfo.first, moinfo.last, params.print_mos);
 
       }
     }
     else {
       if(params.ref == "UHF") {
-	moinfo.evects_alpha = construct_evects("alpha", moinfo.nirreps, moinfo.active,
-					       moinfo.sopi, moinfo.orbspi,
-					       moinfo.first_so, moinfo.last_so,
-					       moinfo.first, moinfo.last,
-					       moinfo.fstact, moinfo.lstact, params.print_mos);
-	moinfo.evects_beta = construct_evects("beta", moinfo.nirreps, moinfo.active,
-					      moinfo.sopi, moinfo.orbspi,
-					      moinfo.first_so, moinfo.last_so,
-					      moinfo.first, moinfo.last,
-					      moinfo.fstact, moinfo.lstact, params.print_mos);
+    moinfo.evects_alpha = construct_evects("alpha", moinfo.nirreps, moinfo.active,
+                           moinfo.sopi, moinfo.orbspi,
+                           moinfo.first_so, moinfo.last_so,
+                           moinfo.first, moinfo.last,
+                           moinfo.fstact, moinfo.lstact, params.print_mos);
+    moinfo.evects_beta = construct_evects("beta", moinfo.nirreps, moinfo.active,
+                          moinfo.sopi, moinfo.orbspi,
+                          moinfo.first_so, moinfo.last_so,
+                          moinfo.first, moinfo.last,
+                          moinfo.fstact, moinfo.lstact, params.print_mos);
       }
       else {
-	moinfo.evects = construct_evects("RHF", moinfo.nirreps, moinfo.active,
-					 moinfo.sopi, moinfo.orbspi,
-					 moinfo.first_so, moinfo.last_so,
-					 moinfo.first, moinfo.last,
-					 moinfo.fstact, moinfo.lstact, params.print_mos);
+    moinfo.evects = construct_evects("RHF", moinfo.nirreps, moinfo.active,
+                     moinfo.sopi, moinfo.orbspi,
+                     moinfo.first_so, moinfo.last_so,
+                     moinfo.first, moinfo.last,
+                     moinfo.fstact, moinfo.lstact, params.print_mos);
 
       }
     }
@@ -1002,21 +1004,21 @@ void get_moinfo(Options & options)
 
       /* fill up a temporary SCF matrix with frozen virt columns deleted */
       for (h=0,offset=0; h < moinfo.nirreps; h++) {
-	if (h > 0) offset += moinfo.fruocc[h-1];
-	if (moinfo.first[h] < 0 || moinfo.lstact[h] < 0) continue;
-	for (p=moinfo.first_so[h]; p <= moinfo.last_so[h]; p++) {
-	  for (q=moinfo.first[h]; q <= moinfo.lstact[h]; q++) {
-	    tmpmat[p][q-offset] = moinfo.scf_vector_alpha[p][q];
-	  }
-	}
+    if (h > 0) offset += moinfo.fruocc[h-1];
+    if (moinfo.first[h] < 0 || moinfo.lstact[h] < 0) continue;
+    for (p=moinfo.first_so[h]; p <= moinfo.last_so[h]; p++) {
+      for (q=moinfo.first[h]; q <= moinfo.lstact[h]; q++) {
+        tmpmat[p][q-offset] = moinfo.scf_vector_alpha[p][q];
+      }
+    }
       }
 
       /* now that we have C, multiply it by the SO->AO transform matrix */
       mmult(so2ao,1,tmpmat,0,moinfo.evects_alpha[0],0,moinfo.nao,moinfo.nso,
-	    moinfo.nmo - moinfo.nfzv,0);
+        moinfo.nmo - moinfo.nfzv,0);
       if (params.print_mos) {
-	fprintf(outfile, "Alpha C matrix (including AO to SO)\n");
-	print_mat(moinfo.evects_alpha[0],moinfo.nao,moinfo.nmo-moinfo.nfzv,outfile);
+    fprintf(outfile, "Alpha C matrix (including AO to SO)\n");
+    print_mat(moinfo.evects_alpha[0],moinfo.nao,moinfo.nmo-moinfo.nfzv,outfile);
       }
 
       /*** beta SCF matrix ***/
@@ -1025,21 +1027,21 @@ void get_moinfo(Options & options)
 
       /* fill up a temporary SCF matrix with frozen virt columns deleted */
       for (h=0,offset=0; h < moinfo.nirreps; h++) {
-	if (h > 0) offset += moinfo.fruocc[h-1];
-	if (moinfo.first[h] < 0 || moinfo.lstact[h] < 0) continue;
-	for (p=moinfo.first_so[h]; p <= moinfo.last_so[h]; p++) {
-	  for (q=moinfo.first[h]; q <= moinfo.lstact[h]; q++) {
-	    tmpmat[p][q-offset] = moinfo.scf_vector_beta[p][q];
-	  }
-	}
+    if (h > 0) offset += moinfo.fruocc[h-1];
+    if (moinfo.first[h] < 0 || moinfo.lstact[h] < 0) continue;
+    for (p=moinfo.first_so[h]; p <= moinfo.last_so[h]; p++) {
+      for (q=moinfo.first[h]; q <= moinfo.lstact[h]; q++) {
+        tmpmat[p][q-offset] = moinfo.scf_vector_beta[p][q];
+      }
+    }
       }
 
       /* now that we have C, multiply it by the SO->AO transform matrix */
       mmult(so2ao,1,tmpmat,0,moinfo.evects_beta[0],0,moinfo.nao,moinfo.nso,
-	    moinfo.nmo - moinfo.nfzv,0);
+        moinfo.nmo - moinfo.nfzv,0);
       if (params.print_mos) {
-	fprintf(outfile, "Beta C matrix (including AO to SO)\n");
-	print_mat(moinfo.evects_beta[0],moinfo.nao,moinfo.nmo-moinfo.nfzv,outfile);
+    fprintf(outfile, "Beta C matrix (including AO to SO)\n");
+    print_mat(moinfo.evects_beta[0],moinfo.nao,moinfo.nmo-moinfo.nfzv,outfile);
       }
 
     }
@@ -1049,21 +1051,21 @@ void get_moinfo(Options & options)
 
       /* fill up a temporary SCF matrix with frozen virt columns deleted */
       for (h=0,offset=0; h < moinfo.nirreps; h++) {
-	if (h > 0) offset += moinfo.fruocc[h-1];
-	if (moinfo.first[h] < 0 || moinfo.lstact[h] < 0) continue;
-	for (p=moinfo.first_so[h]; p <= moinfo.last_so[h]; p++) {
-	  for (q=moinfo.first[h]; q <= moinfo.lstact[h]; q++) {
-	    tmpmat[p][q-offset] = moinfo.scf_vector[p][q];
-	  }
-	}
+    if (h > 0) offset += moinfo.fruocc[h-1];
+    if (moinfo.first[h] < 0 || moinfo.lstact[h] < 0) continue;
+    for (p=moinfo.first_so[h]; p <= moinfo.last_so[h]; p++) {
+      for (q=moinfo.first[h]; q <= moinfo.lstact[h]; q++) {
+        tmpmat[p][q-offset] = moinfo.scf_vector[p][q];
+      }
+    }
       }
 
       /* now that we have C, multiply it by the SO->AO transform matrix */
       mmult(so2ao,1,tmpmat,0,moinfo.evects[0],0,moinfo.nao,moinfo.nso,
-	    moinfo.nmo - moinfo.nfzv,0);
+        moinfo.nmo - moinfo.nfzv,0);
       if (params.print_mos) {
-	fprintf(outfile, "C matrix (including AO to SO)\n");
-	print_mat(moinfo.evects[0],moinfo.nao,moinfo.nmo-moinfo.nfzv,outfile);
+    fprintf(outfile, "C matrix (including AO to SO)\n");
+    print_mat(moinfo.evects[0],moinfo.nao,moinfo.nmo-moinfo.nfzv,outfile);
       }
     }
 
@@ -1128,7 +1130,7 @@ void get_reorder_array(void)
     if (!ras_set2(moinfo.nirreps, moinfo.nmo, params.fzc,
                  params.del_restr_docc, moinfo.orbspi,
                  moinfo.clsdpi, moinfo.openpi, moinfo.frdocc, moinfo.fruocc,
-		 moinfo.rstrdocc, moinfo.rstruocc, ras_opi, moinfo.order,
+         moinfo.rstrdocc, moinfo.rstruocc, ras_opi, moinfo.order,
                  params.ras_type, i)) {
       fprintf(outfile, "Error in ras_set().  Aborting.\n");
       abort();
@@ -1152,9 +1154,9 @@ void get_reorder_array(void)
 
   else { /* default (CC, MP2, other) */
     reorder_qt(moinfo.clsdpi, moinfo.openpi, moinfo.frdocc, moinfo.fruocc,
-	       moinfo.order, moinfo.orbspi, moinfo.nirreps);
+           moinfo.order, moinfo.orbspi, moinfo.nirreps);
     reorder_qt_uhf(moinfo.clsdpi, moinfo.openpi, moinfo.frdocc, moinfo.fruocc,
-		   moinfo.order_alpha, moinfo.order_beta, moinfo.orbspi,
+           moinfo.order_alpha, moinfo.order_beta, moinfo.orbspi,
                    moinfo.nirreps);
   }
 
@@ -1203,24 +1205,24 @@ void get_reorder_array(void)
     moinfo.corr2pitz_nofzv_b = init_int_array(moinfo.nmo - moinfo.nfzv);
     for (i=0,k=0; i<moinfo.nirreps; i++) {
       for (j=0; j<moinfo.orbspi[i]; j++,k++) {
-	if (j<moinfo.orbspi[i] - moinfo.fruocc[i]) {
-	  l = moinfo.order[k];
-	  moinfo.corr2pitz_nofzv[l] = k-fzv_offset;
+    if (j<moinfo.orbspi[i] - moinfo.fruocc[i]) {
+      l = moinfo.order[k];
+      moinfo.corr2pitz_nofzv[l] = k-fzv_offset;
 
-	  l = moinfo.order_alpha[k];
-	  moinfo.corr2pitz_nofzv_a[l] = k-fzv_offset;
+      l = moinfo.order_alpha[k];
+      moinfo.corr2pitz_nofzv_a[l] = k-fzv_offset;
 
-	  l = moinfo.order_beta[k];
-	  moinfo.corr2pitz_nofzv_b[l] = k-fzv_offset;
-	}
-	else fzv_offset++;
+      l = moinfo.order_beta[k];
+      moinfo.corr2pitz_nofzv_b[l] = k-fzv_offset;
+    }
+    else fzv_offset++;
       }
     }
 
     if (params.print_reorder) {
       fprintf(outfile, "\nCorrelated to Pitzer (no fzv) Reordering Array:\n");
       for (i=0; i<moinfo.nmo-moinfo.nfzv; i++) {
-	fprintf(outfile, "%3d ", moinfo.corr2pitz_nofzv[i]);
+    fprintf(outfile, "%3d ", moinfo.corr2pitz_nofzv[i]);
       }
       fprintf(outfile, "\n");
     }
@@ -1294,19 +1296,19 @@ void get_one_electron_integrals()
     if(params.ref == "UHF") {
       moinfo.fzc_density_alpha = init_array(moinfo.noeints);
       fzc_density(moinfo.nirreps, moinfo.frdocc, moinfo.fzc_density_alpha,
-		  moinfo.scf_vector_alpha, moinfo.first, moinfo.first_so, moinfo.last_so, ioff);
+          moinfo.scf_vector_alpha, moinfo.first, moinfo.first_so, moinfo.last_so, ioff);
       if (params.print_lvl > 2) {
-	fprintf(outfile, "\nAlpha frozen core density matrix:\n");
-	print_array(moinfo.fzc_density_alpha, moinfo.nso, outfile);
-	fprintf(outfile, "\n");
+    fprintf(outfile, "\nAlpha frozen core density matrix:\n");
+    print_array(moinfo.fzc_density_alpha, moinfo.nso, outfile);
+    fprintf(outfile, "\n");
       }
       moinfo.fzc_density_beta = init_array(moinfo.noeints);
       fzc_density(moinfo.nirreps, moinfo.frdocc, moinfo.fzc_density_beta,
-		  moinfo.scf_vector_beta, moinfo.first, moinfo.first_so, moinfo.last_so, ioff);
+          moinfo.scf_vector_beta, moinfo.first, moinfo.first_so, moinfo.last_so, ioff);
       if (params.print_lvl > 2) {
-	fprintf(outfile, "\nBeta frozen core density matrix:\n");
-	print_array(moinfo.fzc_density_beta, moinfo.nso, outfile);
-	fprintf(outfile, "\n");
+    fprintf(outfile, "\nBeta frozen core density matrix:\n");
+    print_array(moinfo.fzc_density_beta, moinfo.nso, outfile);
+    fprintf(outfile, "\n");
       }
     }
     else {
@@ -1321,9 +1323,9 @@ void get_one_electron_integrals()
                     moinfo.last_so, ioff);
 
       if (params.print_lvl > 2) {
-	fprintf(outfile, "\nFrozen core density matrix:\n");
-	print_array(moinfo.fzc_density, moinfo.nso, outfile);
-	fprintf(outfile, "\n");
+    fprintf(outfile, "\nFrozen core density matrix:\n");
+    print_array(moinfo.fzc_density, moinfo.nso, outfile);
+    fprintf(outfile, "\n");
       }
     }
   }
