@@ -23,7 +23,7 @@ namespace psi {
   /**
     PSIOManager is a class designed to be used as a static object to track all
     PSIO operations in a given PSI4 computation
-    
+
     This will allow PSICLEAN to be trivially executed.
    */
   class PSIOManager {
@@ -38,16 +38,16 @@ namespace psi {
             /// Default destrctor (does nothing)
             ~PSIOManager();
             /**
-            * Record the opening of a file  
+            * Record the opening of a file
             * \param full_path filename
-            */ 
+            */
             void open_file(const std::string & full_path);
             /**
-            * Record the opening of a file  
+            * Record the opening of a file
             * \param full_path filename
             * \param keep TRUE : the file is closed and retained
                           FALSE: the file is closed and deleted
-            */ 
+            */
             void close_file(const std::string & full_path, bool keep);
             /**
             * Move a file from one location to another, retaining status
@@ -55,15 +55,15 @@ namespace psi {
             * \param old_full_path old filename
             * \param new_full_path new filename
             */
-            void move_file(const std::string & old_full_path, const std::string & new_full_path); 
+            void move_file(const std::string & old_full_path, const std::string & new_full_path);
             /**
-            * Mark a file to be retained after a psiclean operation, ie for use in 
+            * Mark a file to be retained after a psiclean operation, ie for use in
             * a later computation
             * \param full_path filename
             */
             void mark_file_for_retention(const std::string & full_path);
             /**
-            * Override a retain operation, ie for use in 
+            * Override a retain operation, ie for use in
             * overriding .PSIRC defaults
             * \param full_path filename
             */
@@ -85,10 +85,10 @@ namespace psi {
             * Those files marked for retention are not deleted, and their
             * traces in the files_ set and retained_files set remain.
             * Deleted files are removed from the files_ set.
-            * 
+            *
             * This is useful for intermediate calls to psiclean
             */
-            void psiclean(); 
+            void psiclean();
             /// The one and (should be) only instance of PSIOManager for a PSI4 instance
             static shared_ptr<PSIOManager> shared_object() { return _default_psio_manager_; }
    };
@@ -119,7 +119,7 @@ namespace psi {
        the current executable). If unit is set to -1, this keyword will set the default for all units (this keyword
        can be further overridden for some units). To specify a keyword that works for a specific unit, set unit to the
        appropriate number between 0 to PSIO_MAXUNIT.
-       
+
        PSIO understands the following keywords: "name" (specifies the prefix for the filename,
        i.e. if name is set to "psi" then unit 35 will be named "psi.35"), "nvolume" (number of files over which
        to stripe this unit, cannot be greater than PSIO_MAXVOL), "volumeX", where X is a positive integer less than or equal to
@@ -181,7 +181,7 @@ namespace psi {
        */
       void rw(unsigned int unit, char *buffer, psio_address address, ULI size,
               int wrt);
-      
+
       /// Delete all TOC entries after the given key. If a blank key is given, the entire TOC will be wiped.
       void tocclean(unsigned int unit, const char *key);
       /// Print the table of contents for the given unit
@@ -193,13 +193,13 @@ namespace psi {
 
       /// Upon catastrophic failure, the library will exit() with this code. The default is 1, but can be overridden.
       static int _error_exit_code_;
-      
-      /// Set the current namespace (for PREFIX.NAMESPACE.UNIT file numbering) 
+
+      /// Set the current namespace (for PREFIX.NAMESPACE.UNIT file numbering)
       static void set_default_namespace(const std::string &_ns) { default_namespace_ = _ns; }
 
-      /// Get the default namespace (for PREFIX.NAMESPACE.UNIT file numbering) 
+      /// Get the default namespace (for PREFIX.NAMESPACE.UNIT file numbering)
       static std::string get_default_namespace() { return default_namespace_; }
-      
+
       /// Change file FILENO from NS1 to NS2
       static void change_file_namespace(unsigned int fileno, const std::string & ns1, const std::string & ns2);
 
@@ -223,8 +223,8 @@ namespace psi {
       psio_ud *psio_unit;
 
       /// Current default namespace (for PREFIX.NAMESPACE.UNIT numbering)
-      static std::string default_namespace_; 
-      
+      static std::string default_namespace_;
+
       typedef std::map<std::string,std::string> KWDMap;
       /// library configuration is described by a set of keywords
       KWDMap files_keywords_;
@@ -233,7 +233,7 @@ namespace psi {
       ULI *psio_readlen;
       ULI *psio_writlen;
 #endif
-      
+
       /// Library state variable
       int state_;
       /// grab the filename of unit and strdup into name.
@@ -270,11 +270,11 @@ namespace psi {
         /// Size argument
         ULI size_;
         /// Start address argument
-        psio_address start_; 
+        psio_address start_;
         /// End address pointer argument
-        psio_address *end_; 
+        psio_address *end_;
         /// PSIO object this AIO_Handler is built on
-        shared_ptr<PSIO> psio_; 
+        shared_ptr<PSIO> psio_;
         /// Thread this AIO_Handler is currently running on
         shared_ptr<boost::thread> thread_;
     public:
@@ -288,15 +288,15 @@ namespace psi {
         void synchronize();
         /// Asynchronous read, same as PSIO::read, but nonblocking
         void read(unsigned int unit, const char *key, char *buffer, ULI size,
-                psio_address start, psio_address *end); 
+                psio_address start, psio_address *end);
         /// Asynchronous write, same as PSIO::write, but nonblocking
         void write(unsigned int unit, const char *key, char *buffer, ULI size,
-                psio_address start, psio_address *end); 
+                psio_address start, psio_address *end);
         /// Asynchronous read_entry, same as PSIO::read_entry, but nonblocking
-        void read_entry(unsigned int unit, const char *key, char *buffer, ULI size); 
+        void read_entry(unsigned int unit, const char *key, char *buffer, ULI size);
         /// Asynchronous read_entry, same as PSIO::write_entry, but nonblocking
-        void write_entry(unsigned int unit, const char *key, char *buffer, ULI size); 
-        
+        void write_entry(unsigned int unit, const char *key, char *buffer, ULI size);
+
         /// Function bound to thread internally
         void call_read();
         /// Function bound to thread internally
@@ -305,10 +305,10 @@ namespace psi {
         void call_read_entry();
         /// Function bound to thread internally
         void call_write_entry();
-  }; 
- 
-  int psiopp_ipv1_config(shared_ptr<PSIO> psio_obj);
-  int psiopp_ipv1_config(PSIO *psio_obj);
+  };
+
+//  int psiopp_ipv1_config(shared_ptr<PSIO> psio_obj);
+//  int psiopp_ipv1_config(PSIO *psio_obj);
   extern shared_ptr<PSIO> _default_psio_lib_;
 }
 

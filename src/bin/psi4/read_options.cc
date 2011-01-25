@@ -2,7 +2,6 @@
     \defgroup PSI4
 */
 
-#include <libipv1/ip_lib.h>
 #include <liboptions/liboptions.h>
 #include <libparallel/parallel.h>
 #include <physconst.h>
@@ -23,12 +22,11 @@ namespace psi {
 int read_options(const std::string &name, Options & options, bool call_ipv1,
    bool suppress_printing)
 {
-
-  ip_cwk_clear();
-  ip_cwk_add(const_cast<char*>(":BASIS"));
-  ip_cwk_add(const_cast<char*>(":DEFAULT"));
-  ip_cwk_add(const_cast<char*>(":PSI"));
-  ip_set_uppercase(1);
+//  ip_cwk_clear();
+//  ip_cwk_add(const_cast<char*>(":BASIS"));
+//  ip_cwk_add(const_cast<char*>(":DEFAULT"));
+//  ip_cwk_add(const_cast<char*>(":PSI"));
+//  ip_set_uppercase(1);
 
   options.clear();
 
@@ -44,7 +42,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
   options.add_int("MULTP", 1);
 
   if (name == "INPUT"|| options.read_globals()) {
-    ip_cwk_add(const_cast<char*>(":INPUT"));
+//    ip_cwk_add(const_cast<char*>(":INPUT"));
     /*- The units used for the geometry -*/
     options.add_str("UNITS", "ANGSTROMS", "BOHR AU A.U. ANGSTROMS ANGSTROM");
     /*- Allow the user to specify the basis set file to use. -*/
@@ -98,7 +96,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_int("FREEZE_VIRT",0);
   }
   if (name == "SAPT"|| options.read_globals()) {
-    ip_cwk_add(":SAPT");
+//    ip_cwk_add(":SAPT");
     /*- The level of theory for SAPT -*/
     options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT_DFT SAPT2 SAPT2+ SAPT2+3 SCS_SAPT SAPT3B_N5 SAPT3B_N6 SAPT3B_N7");
     /*- The ubiquitous debug flag -*/
@@ -134,7 +132,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     /*- Schwarz cutoff -*/
     options.add_double("SCHWARZ_CUTOFF",1.0E-12);
     /*- Memory safety -*/
-    options.add_double("SAPT_MEM_SAFETY",0.9);  
+    options.add_double("SAPT_MEM_SAFETY",0.9);
     /*- SAPT DF Basis -*/
     options.add_str("RI_BASIS_SAPT", "");
     /*- SAPT Quadrature Basis (for functional kernels) -*/
@@ -159,7 +157,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_int("N_OMEGA",8);
   }
   if(name == "DCFT"|| options.read_globals()) {
-      ip_cwk_add(":DCFT");
+//      ip_cwk_add(":DCFT");
       /*- The amount of information printed
           to the output file -*/
       options.add_int("PRINT", 1);
@@ -214,7 +212,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
       options.add_str("BASIS","");
   }
   if (name == "CINTS"|| options.read_globals()) {
-    ip_cwk_add(const_cast<char*>(":CINTS"));
+//    ip_cwk_add(const_cast<char*>(":CINTS"));
     /*- The execution mode of cints, these were the command line arguments you could send -*/
     options.add_str("MODE", "", "FOCK OEINTS TEINTS DERIV1 DERIV1_INTS DERIV2 OEPROP MP2 R12INTS MP2R12 MKPT2 CC_BT2 GIAO_DERIV");
     /*- The wavefunction desired -*/
@@ -494,7 +492,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_bool("TPDM_ADD_REF", false);
 //    options.add_bool("FREEZE_CORE", true);
     /*- The scope of core orbitals to freeze in later correlated computations -*/
-#warning TransQT freeze_core keyword type was changed.
+//#warning TransQT freeze_core keyword type was changed.
     options.add_str("FREEZE_CORE","FALSE", \
       "FALSE TRUE SMALL LARGE");
     options.add_bool("DELETE_RESTR_DOCC", true);
@@ -525,7 +523,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_str("LOCAL_METHOD","WERNER");
     options.add_str("LOCAL_WEAKP","NONE");
     /*- The scope of core orbitals to freeze in later correlated computations -*/
-#warning CCSort freeze_core keyword type was changed.
+//#warning CCSort freeze_core keyword type was changed.
     options.add_str("FREEZE_CORE","FALSE", \
       "FALSE TRUE SMALL LARGE");
     options.add_str("LOCAL_PAIRDEF","BP");
@@ -557,7 +555,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_int("TOLERANCE",14);
     options.add_int("CACHELEV",2);
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
-#warning CCDensity ao_basis keyword type was changed.
+//#warning CCDensity ao_basis keyword type was changed.
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
     options.add_bool("AEL",false);
     options.add_str("GAUGE","LENGTH");
@@ -577,7 +575,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_bool("SEKINO",false);
     options.add_bool("DIIS",true);
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
-#warning CCLambda ao_basis keyword type was changed.
+//#warning CCLambda ao_basis keyword type was changed.
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
     options.add_str("ABCD","NEW");
     options.add_int("NUM_AMPS",10);
@@ -590,7 +588,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_bool("LOCAL_FILTER_SINGLES",true);
     options.add_double("LOCAL_CPHF_CUTOFF",0.10);
     /*- The scope of core orbitals to freeze in later correlated computations -*/
-#warning CCLambda freeze_core keyword type was changed.
+//#warning CCLambda freeze_core keyword type was changed.
     options.add_str("FREEZE_CORE","FALSE", \
       "FALSE TRUE SMALL LARGE");
     options.add_str("LOCAL_PAIRDEF","");
@@ -656,7 +654,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_double("FINE_STRUCTURE_ALPHA", 1.0);
     options.add_bool("QED_DARWIN", false);
     /*- The scope of core orbitals to freeze in later correlated computations -*/
-#warning OEProp freeze_core keyword type was changed.
+//#warning OEProp freeze_core keyword type was changed.
     options.add_str("FREEZE_CORE","FALSE", \
       "FALSE TRUE SMALL LARGE");
     options.add("DOCC", new ArrayType());
@@ -691,7 +689,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_bool("LOCAL_FILER_SINGLES", false);
     options.add_double("LOCAL_CPHF_CUTOFF",0.10);
     /*- The scope of core orbitals to freeze in later correlated computations -*/
-#warning CCREsponse freeze_core keyword type was changed.
+//#warning CCREsponse freeze_core keyword type was changed.
     options.add_str("FREEZE_CORE","FALSE", \
       "FALSE TRUE SMALL LARGE");
     options.add_str("LOCAL_PAIRDEF","NONE");
@@ -778,7 +776,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_bool("RESTART",1);
     options.add_bool("FORCE_RESTART", 0);
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
-#warning CCEnergy ao_basis keyword type was changed.
+//#warning CCEnergy ao_basis keyword type was changed.
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
     options.add_int("CACHELEV", 2);
     options.add_str("CACHETYPE", "LOW", "LOW LRU");
@@ -795,7 +793,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     //options.add_int("LOCAL_FILTER_SINGLES", 1);
     options.add_double("LOCAL_CPHF_CUTOFF", 0.10);
     /*- The scope of core orbitals to freeze in later correlated computations -*/
-#warning CCEnergy freeze_core keyword type was changed.
+//#warning CCEnergy freeze_core keyword type was changed.
     options.add_str("FREEZE_CORE","FALSE", \
       "FALSE TRUE SMALL LARGE");
     options.add_str("LOCAL_PAIRDEF", "BP", "BP RESPONSE");
@@ -952,13 +950,13 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_bool("NO_LINE_SEARCH", true); // whether to prevent any line searches; true is not yet implemented in psi4
   }
 
-  if (call_ipv1) {
-    options.read_ipv1();
-    //if (!suppress_printing && Communicator::world->me() == 0) {
-    //    fprintf(outfile, "printed from read_options\n");
-    //    options.print();
-    //}
-  }
+//  if (call_ipv1) {
+//    options.read_ipv1();
+//    //if (!suppress_printing && Communicator::world->me() == 0) {
+//    //    fprintf(outfile, "printed from read_options\n");
+//    //    options.print();
+//    //}
+//  }
 
   return true;
 }

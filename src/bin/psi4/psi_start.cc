@@ -11,7 +11,7 @@
 #include <boost/regex.hpp>
 #include <getopt.h>
 #include <psifiles.h>
-#include <libipv1/ip_lib.h>
+//#include <libipv1/ip_lib.h>
 #include <psiconfig.h>
 #include "psi4.h"
 
@@ -196,46 +196,9 @@ int psi_start(int argc, char *argv[])
     return(PSI_RETURN_FAILURE);
   }
 
-  /* initialize libipv1 */
-  ip_set_uppercase(1);
-  // initialize ipv1 only if we're not using a script
-  if (!script)
-    ip_initialize(infile, outfile);
-  ip_cwk_clear();
-
-  /* open user's PSI configuration file (default, $HOME/.psirc) */
-  cfname = getenv("PSI_RC");
-  if (cfname == NULL) {
-    userhome = getenv("HOME");
-    cfname = (char *) malloc((10+strlen(userhome))*sizeof(char));
-    sprintf(cfname, "%s%s", userhome, "/.psirc");
-    psirc = fopen(cfname, "r");
-    free(cfname);
-  }
-  else psirc = fopen(cfname, "r");
-  if(psirc != NULL) {
-    ip_append(psirc, stderr);
-    fclose(psirc);
-  }
-
-  /* lastly, everybody needs DEFAULT and PSI sections */
-  ip_cwk_add(const_cast<char*>(":DEFAULT"));
-  ip_cwk_add(const_cast<char*>(":PSI"));
-
   /* if prefix still NULL - check input file */
   if (fprefix.empty()) {
-    char *tmp_prefix = NULL;
-    errcod = ip_string(const_cast<char*>(":DEFAULT:FILES:DEFAULT:NAME"),&tmp_prefix,0);
-    if(tmp_prefix == NULL)
-      errcod = ip_string(const_cast<char*>(":DEFAULT:NAME"),&tmp_prefix,0);
-    if(tmp_prefix == NULL)
-      errcod = ip_string(const_cast<char*>(":PSI:FILES:DEFAULT:NAME"),&tmp_prefix,0);
-    if(tmp_prefix == NULL)
-      errcod = ip_string(const_cast<char*>(":PSI:NAME"),&tmp_prefix,0);
-    if(tmp_prefix == NULL)
-      tmp_prefix = PSI_DEFAULT_FILE_PREFIX;
-
-    fprefix = tmp_prefix;
+    fprefix = PSI_DEFAULT_FILE_PREFIX;
   }
 
   /* copy over file prefix, etc. into their appropriate variables */

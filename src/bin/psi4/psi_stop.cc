@@ -8,13 +8,12 @@
 #include <cstdlib>
 #include <cstring>
 #include <psifiles.h>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 
 namespace psi {
 
 /*!
-** psi_stop(): This function closes input and output files and 
+** psi_stop(): This function closes input and output files and
 ** deinitializes Input Parsing library.
 **
 ** Arguments: none
@@ -25,7 +24,6 @@ namespace psi {
 
 int psi_stop(FILE* infile, FILE* outfile, char* psi_file_prefix)
 {
-  ip_done();
   free(psi_file_prefix);
   fclose(outfile);
   fclose(infile);

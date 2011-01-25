@@ -3,7 +3,6 @@
  */
 #include <iostream>
 #include <fstream>              // file I/O support
-#include <libipv1/ip_lib.h>
 #include <libparallel/parallel.h>
 #include <psi4-dec.h>
 #include <string.h>
@@ -21,6 +20,8 @@ extern void psiclean(void);
 extern int read_options(const std::string &jobName, Options &options,
         bool call_ipv1 = true, bool suppress_printing = false);
 
+// TODO: Flagged for deletion.
+#if 0
 PsiReturnType execute_bp(std::string & bp, Options & options) {
     std::string calcType = bp;
 
@@ -183,6 +184,8 @@ PsiReturnType execute_bp(std::string & bp, Options & options) {
 
     return Success;
 }
+
+#endif
 
 } // Namespace
 
