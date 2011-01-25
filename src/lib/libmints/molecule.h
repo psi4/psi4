@@ -281,10 +281,6 @@ public:
     bool chargeSpecified() const { return chargeSpecified_; }
     /// Returns true if the user specified the multiplicity
     bool multiplicitySpecified() const { return multiplicitySpecified_; }
-    /// Returns the number of irreps
-    int nirrep() const { return nirreps_; }
-    /// Sets the number of irreps
-    void nirrep(int nirreps) { nirreps_ = nirreps; }
 
     /// Print the molecule
     void print();
