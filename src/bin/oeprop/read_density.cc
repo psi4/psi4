@@ -1,6 +1,6 @@
 /*! \file
     \ingroup OEPROP
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #define EXTERN
 #include <libiwl/iwl.h>
@@ -12,18 +12,20 @@
 #include <ccfiles.h>
 #define TOL 1E-14
 
+#include <libmints/wavefunction.h>
+
 namespace psi { namespace oeprop {
 
 void print_density_resort(double **Ptot, int dim, int *new_order, FILE *out);
 
 void read_density(Options & options)
-{ 
+{
   int i,j,k,l,dim_i,count,ibf;
   int fzc, *locs;
   double **psq_so, *tmp_arr, **tmp_mat, **psq_ao;
   int irrep, mo_offset, so_offset, i_ci, j_ci, max_opi, errcod;
   int populated_orbs;
-  int *docc, *socc, *frozen_docc, *frozen_uocc, *reorder, **ras_opi; 
+  int *docc, *socc, *frozen_docc, *frozen_uocc, *reorder, **ras_opi;
   int *rstr_docc, *rstr_uocc;
   int *reorder_a, *reorder_b;
   double **scfvec, **opdm_blk, **onepdm;
@@ -39,7 +41,7 @@ void read_density(Options & options)
   double **bopdm;  /* Beta OPDM */
   double **aopdm_blk;  /* Symmetry Blocked Alpha OPDM */
   double **bopdm_blk;  /* Symmetry Blocked Beta OPDM */
-  double **ascfvec; 
+  double **ascfvec;
   double **bscfvec;
   double **aPsq_so;
   double **bPsq_so;
@@ -57,7 +59,7 @@ void read_density(Options & options)
   int ntri;
   int irrep_dim;
   std::string id, tmpstring;
-  
+
   Ptot = init_array(natri);
   nso = nbfso;
   ntri = (nmo*(nmo+1))/2;
@@ -70,7 +72,7 @@ void read_density(Options & options)
     if (wfn == "MP2" || wfn == "CC2" || wfn == "EOM_CC2" ||
         wfn == "CCSD(T)" || wfn == "CC3" || wfn == "EOM_CC3")
       id = "UHF";
-    else 
+    else
       id = strdup("RHF");
   }
   else if(opdm_basis == "MO" && ref == "UHF") {
@@ -79,13 +81,13 @@ void read_density(Options & options)
 
   /* Read OPDM in MO-basis */
 
-  if (id == "RHF") {     
+  if (id == "RHF") {
     psq_so = block_matrix(nbfso,nbfso);
 
     max_opi = 0;
     for (irrep=0; irrep<nirreps; irrep++)
       if (sopi[irrep] > max_opi) max_opi = sopi[irrep];
-    opdm_blk = block_matrix(max_opi, max_opi); 
+    opdm_blk = block_matrix(max_opi, max_opi);
     tmp_mat = block_matrix(max_opi, max_opi);
 
     docc = init_int_array(nirreps);
@@ -105,7 +107,7 @@ void read_density(Options & options)
       frozen_docc = init_int_array(nirreps);
       frozen_uocc = init_int_array(nirreps);
       if (!ras_set2(nirreps, nmo, fzc, 1, orbspi, docc, socc,
-		   frozen_docc, frozen_uocc, rstr_docc, rstr_uocc,
+           frozen_docc, frozen_uocc, rstr_docc, rstr_uocc,
                    ras_opi, reorder, 1, 0) )
         throw PsiException("Error in ras_set()", __FILE__, __LINE__);
       /* treat restricted vir as frozen vir for now */
@@ -117,8 +119,8 @@ void read_density(Options & options)
       if (chkpt_rd_override_occ()) { /* ignore input occupations */
         docc = chkpt_rd_clsdpi();
         socc = chkpt_rd_openpi();
-        frozen_docc = chkpt_rd_frzcpi();
-        frozen_uocc = chkpt_rd_frzvpi();
+        frozen_docc = Process::environment.reference_wavefunction()->get_frzcpi();
+        frozen_uocc = Process::environment.reference_wavefunction()->get_frzvpi();
       }
       else { /* try to read input occupations if you can */
         if (options["DOCC"].has_changed())
@@ -131,8 +133,8 @@ void read_density(Options & options)
         else
           socc = chkpt_rd_openpi();
 
-        frozen_docc = get_frzcpi();
-        frozen_uocc = get_frzvpi();
+        frozen_docc = Process::environment.reference_wavefunction()->get_frzcpi();
+        frozen_uocc = Process::environment.reference_wavefunction()->get_frzvpi();
       }
 
       reorder_qt(docc, socc, frozen_docc, frozen_uocc,
@@ -158,7 +160,7 @@ void read_density(Options & options)
     populated_orbs * populated_orbs * sizeof(double)); */
     psio_close(opdm_file, 1);
 
-    if (print_lvl > 2) { 
+    if (print_lvl > 2) {
       fprintf(outfile, "\n  Density matrix read");
       fprintf(outfile, " for label %s:\n", opdm_lbl[irho]);
       print_mat(onepdm,populated_orbs,populated_orbs,outfile);
@@ -179,7 +181,7 @@ void read_density(Options & options)
 
       /*if (print_lvl >= PRINTOPDMLEVEL) {
         fprintf(outfile, "Irrep %d (MO basis)\n", irrep);
-        print_mat(opdm_blk,orbspi[irrep]-frozen_uocc[irrep], 
+        print_mat(opdm_blk,orbspi[irrep]-frozen_uocc[irrep],
                   orbspi[irrep]-frozen_uocc[irrep],outfile);
       }*/
 
@@ -231,7 +233,7 @@ void read_density(Options & options)
             new_order[cnt++] = sloc_new[i]+1-1;
             break;
           case 2:
-            new_order[cnt++] = sloc_new[i]+2-1; 
+            new_order[cnt++] = sloc_new[i]+2-1;
             new_order[cnt++] = sloc_new[i]+3-1; // check
             new_order[cnt++] = sloc_new[i]+1-1;
             new_order[cnt++] = sloc_new[i]+4-1;
@@ -248,7 +250,7 @@ void read_density(Options & options)
       fclose(fp_rho);
       free_block(psq_bf);
     }
-    
+
     free_block(onepdm);
     free_block(opdm_blk);
     free_block(tmp_mat);
@@ -269,7 +271,7 @@ void read_density(Options & options)
       for(i=0;i<nbfao;i++) {
         for(j=0;j<=i;j++) {
           Ptot[ioff[i]+j] = 0.5 * (psq_ao[i][j] + psq_ao[j][i]);
-	}
+    }
       }
     }
     else {
@@ -290,47 +292,47 @@ void read_density(Options & options)
         maxmopi = sopi[irrep];
       }
     }
-    
+
     reorder_a = init_int_array(nmo);
     reorder_b = init_int_array(nmo);
 
     mopi = chkpt_rd_orbspi();
     doccpi = chkpt_rd_clsdpi();
     soccpi = chkpt_rd_openpi();
-    fzdoccpi = get_frzcpi();
-    fzvirtpi = get_frzvpi();
-    
+    fzdoccpi = Process::environment.reference_wavefunction()->get_frzcpi();
+    fzvirtpi = Process::environment.reference_wavefunction()->get_frzvpi();
+
     /* Pitzer to QTS ordering */
     reorder_qt_uhf(doccpi,soccpi,fzdoccpi,fzvirtpi,reorder_a,reorder_b,
       mopi,nirreps);
-    
+
     aopdm = block_matrix(nmo,nmo);
     bopdm = block_matrix(nmo,nmo);
-    
+
     psio_open(PSIF_MO_OPDM, PSIO_OPEN_OLD);
-		psio_read_entry(PSIF_MO_OPDM, opdm_a_lbl[irho], (char *)aopdm[0],
+        psio_read_entry(PSIF_MO_OPDM, opdm_a_lbl[irho], (char *)aopdm[0],
                     sizeof(double)*nmo*nmo);
     psio_read_entry(PSIF_MO_OPDM, opdm_b_lbl[irho], (char *)bopdm[0],
                     sizeof(double)*nmo*nmo);
-		/* psio_read_entry(PSIF_MO_OPDM, "MO-basis Alpha OPDM", (char *)aopdm[0],
+        /* psio_read_entry(PSIF_MO_OPDM, "MO-basis Alpha OPDM", (char *)aopdm[0],
                     sizeof(double)*nmo*nmo);
     psio_read_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *)bopdm[0],
                     sizeof(double)*nmo*nmo); */
     psio_close(PSIF_MO_OPDM, 1);
-    
+
     if (print_lvl >= PRINTOPDMLEVEL) {
       fprintf(outfile, "Alpha OPDM (MO)\n");
       print_mat(aopdm,nmo,nmo,outfile);
       fprintf(outfile, "Beta OPDM (MO)\n");
       print_mat(bopdm,nmo,nmo,outfile);
     }
- 
+
     aPsq_so = block_matrix(nso,nso);
     bPsq_so = block_matrix(nso,nso);
-    
+
     mo_offset = 0;
     so_offset = 0;
-    
+
     aopdm_blk = block_matrix(maxmopi,maxmopi);
     bopdm_blk = block_matrix(maxmopi,maxmopi);
     tmp_mat = block_matrix(maxmopi,maxmopi);
@@ -343,67 +345,67 @@ void read_density(Options & options)
       if (mopi[irrep] == 0) {
         continue;
       }
-      
+
       for (i=0; i<mopi[irrep]; i++) {
         for (j=0; j<mopi[irrep]; j++) {
-	  aopdm_blk[i][j] = 
+      aopdm_blk[i][j] =
             aopdm[reorder_a[i+mo_offset]][reorder_a[j+mo_offset]];
-	  bopdm_blk[i][j] = 
+      bopdm_blk[i][j] =
             bopdm[reorder_b[i+mo_offset]][reorder_b[j+mo_offset]];
-	}
+    }
       }
-      
+
       /*fprintf(outfile,"Alpha OPDM Irrep %d (MO)\n",irrep);
       print_mat(aopdm_blk,mopi[irrep],mopi[irrep],outfile);
 
       fprintf(outfile,"Beta ODPM Irrep %d (MO)\n",irrep);
       print_mat(bopdm_blk,mopi[irrep],mopi[irrep],outfile);*/
-      
+
       ascfvec = chkpt_rd_alpha_scf_irrep(irrep);
       bscfvec = chkpt_rd_beta_scf_irrep(irrep);
-      
+
       if (print_lvl >= PRINTOPDMLEVEL) {
         fprintf(outfile, "Alpha SCF Vector\n");
         print_mat(ascfvec, sopi[irrep], mopi[irrep], outfile);
-      
+
         fprintf(outfile, "Beta SCF Vector\n");
         print_mat(bscfvec, sopi[irrep], mopi[irrep], outfile);
       }
- 
+
       mmult(aopdm_blk,0,ascfvec,1,tmp_mat,0,
             mopi[irrep],mopi[irrep],sopi[irrep],0);
       mmult(ascfvec,0,tmp_mat,0,aopdm_blk,0,
             sopi[irrep],mopi[irrep],sopi[irrep],0);
-      
+
       zero_mat(tmp_mat,maxmopi,maxmopi);
 
       mmult(bopdm_blk,0,bscfvec,1,tmp_mat,0,
             mopi[irrep],mopi[irrep],sopi[irrep],0);
       mmult(bscfvec,0,tmp_mat,0,bopdm_blk,0,
             sopi[irrep],mopi[irrep],sopi[irrep],0);
-     
+
       /*fprintf(outfile,"Alpha OPDM Irrep %d (SO)\n",irrep);
       print_mat(aopdm_blk,sopi[irrep],sopi[irrep],outfile);
-      
+
       fprintf(outfile,"Beta ODPM Irrep %d (SO)\n",irrep);
       print_mat(bopdm_blk,sopi[irrep],sopi[irrep],outfile);*/
-      
+
       for (i=0; i<sopi[irrep]; i++) {
         for (j=0; j<sopi[irrep]; j++) {
-	  aPsq_so[i+so_offset][j+so_offset] = aopdm_blk[i][j];
-	  bPsq_so[i+so_offset][j+so_offset] = bopdm_blk[i][j];
-	}
+      aPsq_so[i+so_offset][j+so_offset] = aopdm_blk[i][j];
+      bPsq_so[i+so_offset][j+so_offset] = bopdm_blk[i][j];
+    }
       }
-      
+
       mo_offset += mopi[irrep];
       so_offset += sopi[irrep];
-      
+
       free_block(ascfvec);
       free_block(bscfvec);
     }
 
     free_block(tmp_mat);
-    
+
     if (print_lvl >= PRINTOPDMLEVEL) {
       fprintf(outfile,"Alpha OPDM (SO)\n");
       print_mat(aPsq_so,nso,nso,outfile);
@@ -411,28 +413,28 @@ void read_density(Options & options)
       fprintf(outfile,"Beta ODPM (SO)\n");
       print_mat(bPsq_so,nso,nso,outfile);
     }
-   
+
     free(reorder_a);
     free(reorder_b);
     free_block(aopdm);
     free_block(aopdm_blk);
     free_block(bopdm);
     free_block(bopdm_blk);
-    
+
     P_so_tot = block_matrix(nso,nso);
-    
+
     for (i=0; i<nso; i++) {
       for (j=0; j<nso; j++) {
         P_so_tot[i][j] = aPsq_so[i][j] + bPsq_so[i][j];
       }
     }
-    
-    /* 
+
+    /*
        Two Cases:
        1.  Properties (AO)
        2.  Natural Orbitals (MO)
     */
-    
+
     if(wrtnos) {
       fprintf(outfile,"OPDM (SO)\n");
       print_mat(P_so_tot,nso,nso,outfile);
@@ -440,22 +442,22 @@ void read_density(Options & options)
       P_mo_tot = block_matrix(nmo, nmo);
       tmat = block_matrix(nmo, nmo);
       scfvec = chkpt_rd_alpha_scf();
-  
+
       Stri = init_array(ntri);
       Smat = block_matrix(nmo, nmo);
       iwl_rdone(PSIF_OEI, PSIF_SO_S, Stri, ntri, 0, 0, outfile);
       tri_to_sq(Stri, Smat, nmo);
       free(Stri);
- 
+
       /*  What is this? */
 
       mmult(P_so_tot, 0, Smat, 0, tmat, 0, nmo, nmo, nmo, 0);
       mmult(tmat, 0, scfvec, 0, P_so_tot, 0, nmo, nmo, nmo, 0);
       mmult(Smat, 0, P_so_tot, 0, tmat, 0, nmo, nmo, nmo, 0);
       mmult(scfvec, 1, tmat, 0, P_mo_tot, 0, nmo, nmo, nmo, 0);
-   
+
       fprintf(outfile, "OPM (alpha MO) \n");
-      print_mat(P_mo_tot, nmo, nmo, outfile); 
+      print_mat(P_mo_tot, nmo, nmo, outfile);
 
       P_eigvals = init_array(nmo);
       P_eigvecs = block_matrix(nmo,nmo);
@@ -473,11 +475,11 @@ void read_density(Options & options)
         for (i=0; i<irrep_dim; i++) {
           for (j=0; j<irrep_dim; j++) {
             i_ci = i+mo_offset;
-	    j_ci = j+mo_offset;
-	    P_mo_block[i][j] = P_mo_tot[i_ci][j_ci];
+        j_ci = j+mo_offset;
+        P_mo_block[i][j] = P_mo_tot[i_ci][j_ci];
           }
         }
-    
+
         fprintf(outfile, "%d Block of OPDM\n",irrep);
         print_mat(P_mo_block, irrep_dim, irrep_dim, outfile);
         fprintf(outfile, "\n");
@@ -487,7 +489,7 @@ void read_density(Options & options)
         fprintf(outfile, "%d NOs in terms of molecular orbitals\n",irrep);
         eivout(P_eigvecs, P_eigvals, irrep_dim, irrep_dim, outfile);
 
-        mmult(scfvec_irrep, 0, P_eigvecs, 0, P_so_block, 0, irrep_dim, 
+        mmult(scfvec_irrep, 0, P_eigvecs, 0, P_so_block, 0, irrep_dim,
               irrep_dim, irrep_dim, 0);
 
         fprintf(outfile, "%d NOs in terms of symmetry orbitals\n",irrep);
@@ -497,7 +499,7 @@ void read_density(Options & options)
         free_block(scfvec_irrep);
         mo_offset += mopi[irrep];
       }
-      
+
       fprintf(outfile, "NOs written to checkpoint file\n\n");
       chkpt_close();
 
@@ -523,7 +525,7 @@ void read_density(Options & options)
         for(i=0;i<nbfao;i++) {
           for(j=0;j<=i;j++) {
             Ptot[ioff[i]+j] = 0.5 * (psq_ao[i][j] + psq_ao[j][i]);
-	  }
+      }
         }
       }
       else {
@@ -540,7 +542,7 @@ void read_density(Options & options)
       psq_so = block_matrix(nbfso,nbfso);
       psio_open(opdm_file, PSIO_OPEN_OLD);
       psio_read_entry(opdm_file, "SO-basis OPDM", (char *) psq_so[0],
-	  nbfso*nbfso*sizeof(double));
+      nbfso*nbfso*sizeof(double));
       psio_close(opdm_file, 1);
     }
     else {
@@ -548,12 +550,12 @@ void read_density(Options & options)
       psq_so = init_matrix(nbfso,nbfso);
       psio_open(opdm_file, PSIO_OPEN_OLD);
       psio_read_entry(opdm_file, "SO-basis OPDM", (char *) tmp_arr,
-	  nstri*sizeof(double));
+      nstri*sizeof(double));
       psio_close(opdm_file, 1);
       tri_to_sq(tmp_arr,psq_so,nbfso);
       free(tmp_arr);
     }
-          
+
     tmp_mat = init_matrix(nbfso,nbfao);
     psq_ao = init_matrix(nbfao,nbfao);
     mmult(psq_so,0,usotao,0,tmp_mat,0,nbfso,nbfso,nbfao,0);
@@ -564,7 +566,7 @@ void read_density(Options & options)
       for(i=0; i<nbfao; i++) {
         for(j=0; j<=i; j++) {
           Ptot[ioff[i]+j] = 0.5 * (psq_ao[i][j] + psq_ao[j][i]);
-	}
+    }
       }
     }
     else {
@@ -585,7 +587,7 @@ void read_density(Options & options)
       psq_ao = block_matrix(nbfao,nbfao);
       psio_open(opdm_file, PSIO_OPEN_OLD);
       psio_read_entry(opdm_file, "AO-basis OPDM", (char *) psq_ao[0],
-	  nbfao*nbfao*sizeof(double));
+      nbfao*nbfao*sizeof(double));
       psio_close(opdm_file, 1);
       /* Antisymmetric OPDM */
       if (asymm_opdm) {
@@ -599,7 +601,7 @@ void read_density(Options & options)
       else {
         sq_to_tri(psq_ao,Ptot,nbfao);
       }
-      
+
       free_matrix(psq_ao,nbfao);
     }
     /* There is nothing for AO-basis in Diagonal form */
