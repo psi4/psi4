@@ -12,7 +12,6 @@
 #include <liboptions/liboptions.h>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.hpp>
-#include <libipv1/ip_lib.h>
 #include <libutil/libutil.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
@@ -217,8 +216,8 @@ void MOInfo::read_mo_spaces()
     focc_ref = read_chkpt_intvec(nirreps_ref,chkpt->rd_frzcpi());
     docc_ref = read_chkpt_intvec(nirreps_ref,chkpt->rd_clsdpi());
     actv_ref = read_chkpt_intvec(nirreps_ref,chkpt->rd_openpi());
-    fvir_ref.assign(nirreps_ref,0); 
-    actv_docc_ref.assign(nirreps_ref,0); 
+    fvir_ref.assign(nirreps_ref,0);
+    actv_docc_ref.assign(nirreps_ref,0);
 
     for (int h = 0; h < nirreps_ref; h++)
       docc_ref[h] -= focc_ref[h];

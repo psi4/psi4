@@ -8,7 +8,6 @@
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.h>
-#include <libipv1/ip_lib.h>
 #include <libiwl/iwl.h>
 #include <libqt/qt.h>
 
@@ -49,35 +48,28 @@ void Wavefunction::common_init()
 {
     Wavefunction::initialize_singletons();
 
-    if (options_.get_bool("NO_INPUT") == false) {
-        throw PSIEXCEPTION("Wavefunction::common_init: You must set NO_INPUT = TRUE.");
+    // Take the molecule from the environment
+    molecule_ = Process::environment.molecule();
+
+    // Load in the basis set
+    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
+    basisset_ = BasisSet::construct(parser, molecule_, options_.get_str("BASIS"));
+
+    // Check the point group of the molecule. If it is not set, set it.
+    if (!molecule_->point_group()) {
+        molecule_->set_point_group(molecule_->find_point_group());
     }
-    else {
-        // Take the molecule from the environment
-        molecule_ = Process::environment.molecule();
 
+    // Create an SO basis...we need the point group for this part.
+    shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+    sobasisset_ = shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral));
 
-        // Load in the basis set
-        shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
-        basisset_ = BasisSet::construct(parser, molecule_, options_.get_str("BASIS"));
+    // Obtain the dimension object to initialize the factory.
+    const Dimension dimension = sobasisset_->dimension();
+    factory_.init_with(dimension, dimension);
 
-        // Check the point group of the molecule. If it is not set, set it.
-        if (!molecule_->point_group()) {
-            molecule_->set_point_group(molecule_->find_point_group());
-        }
-
-        // Create an SO basis...we need the point group for this part.
-        shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-        sobasisset_ = shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral));
-
-        // Obtain the dimension object to initialize the factory.
-        const Dimension dimension = sobasisset_->dimension();
-        factory_.init_with(dimension, dimension);
-
-        memory_ = Process::environment.get_memory();
-
-        //fprintf(outfile,"  Using %ld bytes of core memory\n",memory_);
-    }
+    // Obtain memory amount from the environment
+    memory_ = Process::environment.get_memory();
 
     nso_ = basisset_->nbf();
     nmo_ = basisset_->nbf();
@@ -135,7 +127,7 @@ void Wavefunction::initialize_singletons()
 
 shared_ptr<Molecule> Wavefunction::molecule() const
 {
-    return molecule_    ;
+    return molecule_;
 }
 
 boost::shared_ptr<BasisSet> Wavefunction::basisset() const

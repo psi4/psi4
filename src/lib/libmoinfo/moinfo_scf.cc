@@ -5,7 +5,6 @@
 
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.hpp>
-#include <libipv1/ip_lib.h>
 #include <liboptions/liboptions.h>
 
 #include "moinfo_scf.h"
