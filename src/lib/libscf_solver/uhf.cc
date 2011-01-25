@@ -468,6 +468,9 @@ void UHF::save_information()
     vectors = Cb_->to_block_matrix();
     chkpt_->wt_beta_scf(vectors);
     free_block(vectors);
+
+    // TODO: Need to rework this.
+    psio_->close(PSIF_CHKPT, 1);
 }
 
 bool UHF::test_convergency()
