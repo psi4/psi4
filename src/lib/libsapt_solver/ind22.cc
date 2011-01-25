@@ -12,8 +12,6 @@
 #include <libiwl/iwl.h>
 #include <psifiles.h>
 #include <libchkpt/chkpt.h>
-#include <libipv1/ip_lib.h>
-#include <libipv1/ip_data.gbl>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "structs.h"
@@ -180,7 +178,7 @@ double SAPT2::ind22_2(double **iAR, double **wAA, double **wRR, char *t_label,
   return(4.0*energy);
 }
 
-double SAPT2::ind22_3(double **iAR, double **wAR, char *OO_label, 
+double SAPT2::ind22_3(double **iAR, double **wAR, char *OO_label,
   char *VV_label, int nocc, int nvir)
 {
   double energy = 0.0;
@@ -227,7 +225,7 @@ double SAPT2::ind22_4(double **iAR, char *theta_OV, int dfnum, char *OV_label,
     &(B_p_AR[0][0]),nvir*calc_info_.nrio,0.0,&(C_p_AR[0][0]),
     nvir*calc_info_.nrio);
 
-  free_block(yAA); 
+  free_block(yAA);
 
   double **yRR = block_matrix(nvir,nvir);
 
@@ -334,7 +332,7 @@ double SAPT2::ind22_6(double **iAR, char *t_label, int dfnum, char *OO_label,
   return(-4.0*energy);
 }
 
-double SAPT2::ind22_7(double **iBS, char *OOlabel, char *VVlabel, 
+double SAPT2::ind22_7(double **iBS, char *OOlabel, char *VVlabel,
   char *t_label, int AAnum, char *AA_label, char *AR_label, char *RR_label,
   int BBnum, char *BS_label, int noccA, int nvirA, int noccB, int nvirB)
 {

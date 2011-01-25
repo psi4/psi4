@@ -8,8 +8,6 @@
 #include <libiwl/iwl.h>
 #include <psifiles.h>
 #include <libchkpt/chkpt.h>
-#include <libipv1/ip_lib.h>
-#include <libipv1/ip_data.gbl>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "structs.h"
@@ -58,8 +56,8 @@ void SAPT3BN5::ind_disp210()
   fflush(outfile);
 }
 
-double SAPT3BN5::ind_disp210_0(double **CB_C, char *TAR_BS, int BBfile, 
-  char *BB_ints, char *SS_ints, char *T2label, char trans, double **WCSS, 
+double SAPT3BN5::ind_disp210_0(double **CB_C, char *TAR_BS, int BBfile,
+  char *BB_ints, char *SS_ints, char *T2label, char trans, double **WCSS,
   double **WCBB, int occA, int virA, int occB, int virB)
 {
   double energy = 0.0;
@@ -68,7 +66,7 @@ double SAPT3BN5::ind_disp210_0(double **CB_C, char *TAR_BS, int BBfile,
   return(energy);
 }
 
-double SAPT3BN5::ind_disp210_1(double **CB_C, char *TAR_BS, int BBfile, 
+double SAPT3BN5::ind_disp210_1(double **CB_C, char *TAR_BS, int BBfile,
   char *BB_ints, char *SS_ints, int occB, int virB)
 {
   double energy = 0.0;
@@ -103,7 +101,7 @@ double SAPT3BN5::ind_disp210_1(double **CB_C, char *TAR_BS, int BBfile,
   return(energy);
 }
 
-double SAPT3BN5::ind_disp210_2(char *T2label, char trans, double **WCSS, 
+double SAPT3BN5::ind_disp210_2(char *T2label, char trans, double **WCSS,
   double **WCBB, int occA, int virA, int occB, int virB)
 {
   double energy = 0.0;

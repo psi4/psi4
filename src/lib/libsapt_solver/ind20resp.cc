@@ -8,8 +8,6 @@
 #include <libiwl/iwl.h>
 #include <psifiles.h>
 #include <libchkpt/chkpt.h>
-#include <libipv1/ip_lib.h>
-#include <libipv1/ip_data.gbl>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "sapt0.h"

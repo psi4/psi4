@@ -12,8 +12,6 @@
 #include <libiwl/iwl.h>
 #include <psifiles.h>
 #include <libchkpt/chkpt.h>
-#include <libipv1/ip_lib.h>
-#include <libipv1/ip_data.gbl>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "structs.h"
@@ -40,7 +38,7 @@ void SAPT0::disp20()
     exit(0);
   }
 
-  if (temp_size > calc_info_.noccA*calc_info_.nvirA) 
+  if (temp_size > calc_info_.noccA*calc_info_.nvirA)
     temp_size = calc_info_.noccA*calc_info_.nvirA;
 
   double **B_p_AR = block_matrix(temp_size,calc_info_.nrio);
@@ -72,7 +70,7 @@ void SAPT0::disp20()
     C_DGEMM('N','T',ar_stop-ar_start,calc_info_.noccB*calc_info_.nvirB,
       calc_info_.nrio,1.0,&(B_p_AR[0][0]),calc_info_.nrio,&(B_p_BS[0][0]),
       calc_info_.nrio,0.0,&(ARBS[0][0]),calc_info_.noccB*calc_info_.nvirB);
-    
+
     #pragma omp for schedule(static)
       for (int ar=ar_start; ar<ar_stop; ar++) {
         int a = ar/calc_info_.nvirA;
@@ -99,7 +97,7 @@ void SAPT0::disp20()
   free_block(B_p_BS);
 
   results_.disp20 = energy*4.0;
-  
+
   if (params_.print) {
     fprintf(outfile,"Dispersion Energy     = %18.12lf mH\n\n",energy*4000.0);
     fflush(outfile);
@@ -119,12 +117,12 @@ void SAPT_DFT::disp20()
     calc_info_.noccB*calc_info_.nvirB);
   double **tARBS = block_matrix(calc_info_.noccA*calc_info_.nvirA,
     calc_info_.noccB*calc_info_.nvirB);
-    
+
   C_DGEMM('N','T',calc_info_.noccA*calc_info_.nvirA,calc_info_.noccB*
     calc_info_.nvirB,calc_info_.nrio,1.0,&(B_p_AR[0][0]),calc_info_.nrio,
     &(B_p_BS[0][0]),calc_info_.nrio,0.0,&(ARBS[0][0]),calc_info_.noccB*
     calc_info_.nvirB);
-  
+
   for (int a=0, ar=0; a < calc_info_.noccA; a++) {
   for (int r=0; r < calc_info_.nvirA; r++, ar++) {
     for (int b=0, bs=0; b < calc_info_.noccB; b++) {
@@ -134,7 +132,7 @@ void SAPT_DFT::disp20()
         calc_info_.evalsB[s+calc_info_.noccB];
       tARBS[ar][bs] = ARBS[ar][bs]/denom;
     }}
-  }} 
+  }}
 
   disp = 4.0*C_DDOT(calc_info_.noccA*calc_info_.nvirA*calc_info_.noccB*
     calc_info_.nvirB,&(tARBS[0][0]),1,&(ARBS[0][0]),1);
@@ -177,7 +175,7 @@ void SAPT2p::disp20()
   free_block(T_p_AR);
 
   results_.disp20 = energy*4.0;
-  
+
   if (params_.print) {
     fprintf(outfile,"Dispersion Energy     = %18.12lf mH\n\n",energy*4000.0);
     fflush(outfile);

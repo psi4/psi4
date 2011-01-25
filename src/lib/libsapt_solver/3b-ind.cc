@@ -8,8 +8,6 @@
 #include <libiwl/iwl.h>
 #include <psifiles.h>
 #include <libchkpt/chkpt.h>
-#include <libipv1/ip_lib.h>
-#include <libipv1/ip_data.gbl>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "structs.h"
@@ -97,7 +95,7 @@ void SAPT3BN5::ind210()
   fflush(outfile);
 }
 
-double SAPT3BN5::ind110_1(double **t_A, double **t_C, double **W_A, 
+double SAPT3BN5::ind110_1(double **t_A, double **t_C, double **W_A,
   double **W_C, int occB, int virB)
 {
   double energy = 0.0;
@@ -108,31 +106,31 @@ double SAPT3BN5::ind110_1(double **t_A, double **t_C, double **W_A,
   return(energy);
 }
 
-double SAPT3BN5::ind111_1(double **CA_C, double **CB_C, int AAfile, 
-  char *AA_ints, int BBfile, char *BB_ints, int occA, int virA, int occB, 
+double SAPT3BN5::ind111_1(double **CA_C, double **CB_C, int AAfile,
+  char *AA_ints, int BBfile, char *BB_ints, int occA, int virA, int occB,
   int virB)
 {
   double energy = 0.0;
 
   double **ARBS = IJKL_ints(AAfile,AA_ints,occA*virA,BBfile,BB_ints,occB*virB);
 
-  for (int a=0; a<occA; a++) { 
-    for (int r=0; r<virA; r++) { 
-      for (int b=0; b<occB; b++) { 
+  for (int a=0; a<occA; a++) {
+    for (int r=0; r<virA; r++) {
+      for (int b=0; b<occB; b++) {
         for (int s=0; s<virB; s++) {
           int ar = a*virA + r;
           int bs = b*virB + s;
           energy += 16.0*ARBS[ar][bs]*CA_C[a][r]*CB_C[b][s];
   }}}}
-  
+
   free_block(ARBS);
-  
+
   return(energy);
 }
 
-double SAPT3BN5::ind210_0(double **CA_B, double **CB_C, double **CB_A, 
-  double **WASS, double **WABB, double **WCSS, double **WCBB, int AAfile, 
-  char *AA_ints, int BBfile, char *BB_ints, int occA, int virA, int occB, 
+double SAPT3BN5::ind210_0(double **CA_B, double **CB_C, double **CB_A,
+  double **WASS, double **WABB, double **WCSS, double **WCBB, int AAfile,
+  char *AA_ints, int BBfile, char *BB_ints, int occA, int virA, int occB,
   int virB)
 {
   double energy = ind111_1(CA_B,CB_C,AAfile,AA_ints,BBfile,BB_ints,
@@ -142,7 +140,7 @@ double SAPT3BN5::ind210_0(double **CA_B, double **CB_C, double **CB_A,
   return(energy);
 }
 
-double SAPT3BN5::ind210_1(double **CB_A, double **CB_C, double **WASS, 
+double SAPT3BN5::ind210_1(double **CB_A, double **CB_C, double **WASS,
   double **WABB, int occB, int virB)
 {
   double energy = 0.0;
@@ -161,7 +159,7 @@ double SAPT3BN5::ind210_1(double **CB_A, double **CB_C, double **WASS,
   return(energy);
 }
 
-double SAPT3BN5::ind210_2(double **CB_A, double **WCSS, double **WCBB, 
+double SAPT3BN5::ind210_2(double **CB_A, double **WCSS, double **WCBB,
   int occB, int virB)
 {
   double energy = 0.0;

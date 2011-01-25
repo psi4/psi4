@@ -8,8 +8,6 @@
 #include <libiwl/iwl.h>
 #include <psifiles.h>
 #include <libchkpt/chkpt.h>
-#include <libipv1/ip_lib.h>
-#include <libipv1/ip_data.gbl>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "sapt2p3.h"
@@ -20,7 +18,7 @@ void SAPT2p3::exch_ind_disp30()
 {
   double e10,e01,e11,e21,e12;
 
-  if (params_.print) 
+  if (params_.print)
     fprintf(outfile,"Begining Exch-Ind-Disp30 Calculation\n\n");
 
   double **X_AR = read_IJKL(PSIF_SAPT_AMPS,"Ind-Disp30 AR Amplitudes",
@@ -143,7 +141,7 @@ double SAPT2p3::exch_ind_disp30_21()
 
   C_DGEMV('t',calc_info_.noccA*calc_info_.nvirA,calc_info_.nrio,1.0,
     &(B_p_AR[0][0]),calc_info_.nrio,calc_info_.sA[0],1,0.0,X,1);
-  
+
   C_DGEMV('t',calc_info_.nvirA*calc_info_.noccB,calc_info_.nrio,1.0,
     &(B_p_RB[0][0]),calc_info_.nrio,tAS_RB[0],1,0.0,Y,1);
 
@@ -236,11 +234,11 @@ double SAPT2p3::exch_ind_disp30_21()
       &(tRB_AS[0][0]),calc_info_.nvirB,&(B_p_BS[b*calc_info_.nvirB][0]),
       calc_info_.nrio,0.0,&(C_p_AB[b][0]),calc_info_.noccB*calc_info_.nrio);
   }
-    
+
   energy -= C_DDOT(calc_info_.noccA*calc_info_.noccB*calc_info_.nrio,
     B_p_AB[0],1,C_p_AB[0],1);
- 
-  free_block(xRB); 
+
+  free_block(xRB);
   free_block(B_p_AB);
   free_block(C_p_AB);
 
@@ -262,7 +260,7 @@ double SAPT2p3::exch_ind_disp30_21()
   C_DGEMM('T','N',calc_info_.nvirA,calc_info_.nvirA,calc_info_.noccA,1.0,
     &(xAR[0][0]),calc_info_.nvirA,&(calc_info_.sA[0][0]),calc_info_.nvirA,
     0.0,&(xRR[0][0]),calc_info_.nvirA);
-    
+
   double **C_p_AR = block_matrix(calc_info_.noccA*calc_info_.nvirA,
     calc_info_.nrio);
 
@@ -337,7 +335,7 @@ double SAPT2p3::exch_ind_disp30_21()
     &(B_p_BS[0][0]),calc_info_.nrio,xBS[0],1,0.0,Y,1);
 
   energy += 2.0*C_DDOT(calc_info_.nrio,X,1,Y,1);
-  
+
   free(X);
   free(Y);
   free_block(xBS);
@@ -596,12 +594,12 @@ double SAPT2p3::exch_ind_disp30_12()
   double **xRS = block_matrix(calc_info_.nvirA,calc_info_.nvirB);
   double **C_p_RB = block_matrix(calc_info_.nvirA*calc_info_.noccB,
     calc_info_.nrio);
-  
+
   C_DGEMM('N','N',calc_info_.nvirA,calc_info_.nvirB,calc_info_.noccB,1.0,
     &(calc_info_.S_AB[calc_info_.noccA][0]),calc_info_.nmo,
     &(calc_info_.sB[0][0]),calc_info_.nvirB,0.0,&(xRS[0][0]),
     calc_info_.nvirB);
-    
+
   for (int b=0; b<calc_info_.noccB; b++) {
     C_DGEMM('N','N',calc_info_.nvirA,calc_info_.nrio,calc_info_.nvirB,1.0,
       &(xRS[0][0]),calc_info_.nvirB,&(B_p_BS[b*calc_info_.nvirB][0]),
@@ -626,7 +624,7 @@ double SAPT2p3::exch_ind_disp30_12()
   double **B_p_AB = block_matrix(calc_info_.noccA*calc_info_.noccB,
     calc_info_.nrio);
   double **C_p_AB = block_matrix(calc_info_.noccA*calc_info_.noccB,
-    calc_info_.nrio); 
+    calc_info_.nrio);
 
   for (int b=0; b<calc_info_.noccB; b++) {
     C_DGEMM('N','N',calc_info_.noccA,calc_info_.nrio,calc_info_.nvirB,1.0,
@@ -738,17 +736,17 @@ double SAPT2p3::exch_ind_disp30_12()
       &(xAS[0][0]),calc_info_.nvirB,&(B_p_BS[b*calc_info_.nvirB][0]),
       calc_info_.nrio,0.0,&(B_p_AB[b][0]),calc_info_.noccB*calc_info_.nrio);
   }
-  
+
   for (int a=0; a<calc_info_.noccA; a++) {
     C_DGEMM('T','N',calc_info_.noccB,calc_info_.nrio,calc_info_.nvirA,1.0,
       &(tAS_RB[0][0]),calc_info_.noccB,&(B_p_AR[a*calc_info_.nvirA][0]),
       calc_info_.nrio,0.0,&(C_p_AB[a*calc_info_.noccB][0]),calc_info_.nrio);
-  } 
+  }
 
   energy -= C_DDOT(calc_info_.noccA*calc_info_.noccB*calc_info_.nrio,
     B_p_AB[0],1,C_p_AB[0],1);
-    
-  free_block(xAS); 
+
+  free_block(xAS);
   free_block(B_p_AB);
   free_block(C_p_AB);
 

@@ -1,5 +1,5 @@
-/* 
- *  SAPT0.CC 
+/*
+ *  SAPT0.CC
  *
  */
 
@@ -25,7 +25,6 @@
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.hpp>
-#include <libipv1/ip_lib.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <psifiles.h>
@@ -40,7 +39,7 @@ using namespace psi;
 
 namespace psi { namespace sapt {
 
-SAPT2p3::SAPT2p3(Options& options, shared_ptr<PSIO> psio, 
+SAPT2p3::SAPT2p3(Options& options, shared_ptr<PSIO> psio,
   shared_ptr<Chkpt> chkpt) : SAPT2p(options, psio, chkpt)
 {
 }
@@ -50,8 +49,8 @@ SAPT2p3::~SAPT2p3()
 }
 
 double SAPT2p3::compute_energy()
-{  
-    print_header(); 
+{
+    print_header();
     compute_integrals();
     compute_amplitudes();
     elst10();
@@ -96,14 +95,14 @@ void SAPT2p3::print_header()
      fprintf(outfile,"    NVIR_B  = %9d\n",calc_info_.nvirB);
      fprintf(outfile,"    FOCC_A  = %9d\n",params_.foccA);
      fprintf(outfile,"    FOCC_B  = %9d\n\n",params_.foccB);
-    
+
      #ifdef _OPENMP
      fprintf(outfile,"Running SAPT with %d OMP threads\n\n",
        omp_get_max_threads());
-     #endif 
-    
+     #endif
+
      fflush(outfile);
-}   
+}
 
 double SAPT2p3::print_results()
 {
@@ -112,13 +111,13 @@ double SAPT2p3::print_results()
   double sapt0 = eHF + results_.disp20 + results_.exch_disp20;
   double sapt2 = sapt0 + results_.elst12 + results_.exch11 + results_.exch12 +
     results_.ind22 + exch_ind22;
-  double sapt2p = sapt2 + results_.disp21 + results_.disp22sdq + 
+  double sapt2p = sapt2 + results_.disp21 + results_.disp22sdq +
     results_.disp22t;
   double sapt2p3 = sapt2p + results_.ind_disp30 + results_.exch_ind_disp30 +
     results_.disp30 + results_.exch_disp30 + results_.elst13;
-  double d2HF = eHF - (results_.elst10 + results_.exch10 + results_.ind20 + 
+  double d2HF = eHF - (results_.elst10 + results_.exch10 + results_.ind20 +
     results_.exch_ind20);
-  double d3HF = eHF - (results_.elst10 + results_.exch10 + results_.ind20 + 
+  double d3HF = eHF - (results_.elst10 + results_.exch10 + results_.ind20 +
     results_.exch_ind20 + results_.ind30 + results_.exch_ind30);
 
   fprintf(outfile,"    SAPT Results  \n");
@@ -183,9 +182,9 @@ double SAPT2p3::print_results()
   double tot_elst = results_.elst10 + results_.elst12 + results_.elst13;
   double tot_exch = results_.exch10 + results_.exch11 + results_.exch12;
   double tot_ind = results_.ind20 + results_.exch_ind20 + d3HF + results_.ind22
-		+ exch_ind22 + results_.ind30 + results_.exch_ind30;
+        + exch_ind22 + results_.ind30 + results_.exch_ind30;
   double tot_disp = results_.disp20 + results_.exch_disp20 + results_.disp21
-    + results_.disp22sdq + results_.disp22t + results_.disp30 
+    + results_.disp22sdq + results_.disp22t + results_.disp30
     + results_.exch_disp30;
   double tot_ind_disp = results_.ind_disp30 + results_.exch_ind_disp30;
 

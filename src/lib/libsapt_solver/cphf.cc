@@ -8,8 +8,6 @@
 #include <libiwl/iwl.h>
 #include <psifiles.h>
 #include <libchkpt/chkpt.h>
-#include <libipv1/ip_lib.h>
-#include <libipv1/ip_data.gbl>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "sapt2b.h"
@@ -27,13 +25,13 @@ void SAPT2B::cphf_induction()
       fflush(outfile);
     }
     calc_info_.CHFA = cphf_ind(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",
-      "AR RI Integrals", "RR RI Integrals", calc_info_.WBAR, calc_info_.sA, 
+      "AR RI Integrals", "RR RI Integrals", calc_info_.WBAR, calc_info_.sA,
       calc_info_.evalsA, calc_info_.noccA, calc_info_.nvirA);
   }
   if (!workflow_.save_s)
     free_block(calc_info_.sA);
 
-  calc_info_.sB = uchf_ind(calc_info_.WABS,calc_info_.evalsB,calc_info_.noccB, 
+  calc_info_.sB = uchf_ind(calc_info_.WABS,calc_info_.evalsB,calc_info_.noccB,
     calc_info_.nvirB);
   if (workflow_.save_chf) {
     if (params_.print) {
@@ -127,7 +125,7 @@ double **SAPT::uchf_ind(double **W, double *evals, int nocc, int nvir)
   return(S);
 }
 
-double **SAPT::cphf_ind(int dfnum, char *OO, char *OV, char *VV, double **W, 
+double **SAPT::cphf_ind(int dfnum, char *OO, char *OV, char *VV, double **W,
   double **S, double *evals, int nocc, int nvir)
 {
   int a,r,ar;
@@ -215,7 +213,7 @@ double **SAPT::cphf_ind(int dfnum, char *OO, char *OV, char *VV, double **W,
   return(C_old);
 }
 
-void SAPT::A_mat(int dfnum, char *OO, char *OV, char *VV, double **C_old, 
+void SAPT::A_mat(int dfnum, char *OO, char *OV, char *VV, double **C_old,
   double **C_new, int nocc, int nvir, int iter)
 {
   int nrio = ribasis_->nbf() + 3;
@@ -251,17 +249,17 @@ void SAPT::A_mat(int dfnum, char *OO, char *OV, char *VV, double **C_old,
   avail_mem -= 8*(nocc*nvir*(long int) nrio);
 
   long int temp_size = avail_mem / (8*nvir*(long int) nrio);
-  
+
   if (temp_size > nvir)
     temp_size = nvir;
 
   int blocks = (nvir)/temp_size;
   if ((nvir)%temp_size) blocks++;
-  
+
   if (temp_size < 1) {
     fprintf(outfile,"Not enough memory in A Matrix formation\n\n");
     exit(0);
-  } 
+  }
 
   double **B_p_RR = block_matrix(temp_size*nvir,nrio);
 
