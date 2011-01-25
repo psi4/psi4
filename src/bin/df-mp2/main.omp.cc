@@ -75,7 +75,7 @@ int main(int argc, char * argv[]) {
   Wavefunction::initialize_singletons();
 
   PSIO* psio = new PSIO;
-  psiopp_ipv1_config(psio);
+//  psiopp_ipv1_config(psio);
   Chkpt* chkpt = new Chkpt(psio, PSIO_OPEN_OLD);
 
   // Create a new matrix factory
@@ -103,29 +103,29 @@ int main(int argc, char * argv[]) {
       fprintf(outfile, "Error reading BASIS\n");
       return EXIT_FAILURE;
   }
-  fprintf(outfile, 
+  fprintf(outfile,
     "  Using the %s basis set for the orbitals, with the %s RI basis\n\n",
     orbital_basis,ri_basis);
   BasisSet* ribasis;
   if(ip_exist("RI_BASISFILE",0)){
     //User provided RI_BASISFILE
-  	char* ri_basisfile;
-  	errcod = ip_string("RI_BASISFILE", &(ri_basisfile),0);
-  	if (errcod) {
-  		fprintf(outfile,"Error reading RI_BASISFILE %s\n",ri_basisfile);
-  		return EXIT_FAILURE;
-  	} else {
-  		ribasis = new BasisSet(chkpt, ri_basisfile, ri_basis);
-  	}
+    char* ri_basisfile;
+    errcod = ip_string("RI_BASISFILE", &(ri_basisfile),0);
+    if (errcod) {
+        fprintf(outfile,"Error reading RI_BASISFILE %s\n",ri_basisfile);
+        return EXIT_FAILURE;
+    } else {
+        ribasis = new BasisSet(chkpt, ri_basisfile, ri_basis);
+    }
   } else {
-  	//Default RI_BASISFILE
-  	ribasis = new BasisSet(chkpt, "GENBAS", ri_basis); //find pbasis via the prefx
+    //Default RI_BASISFILE
+    ribasis = new BasisSet(chkpt, "GENBAS", ri_basis); //find pbasis via the prefx
   }
   BasisSet* zero = BasisSet::zero_basis_set();
-  
-  // Taken from mp2 module, get_params.cc 
-  // get parameters related to SCS-MP2 or SCS-N-MP2 
-  // see papers by S. Grimme or J. Platz 
+
+  // Taken from mp2 module, get_params.cc
+  // get parameters related to SCS-MP2 or SCS-N-MP2
+  // see papers by S. Grimme or J. Platz
   int scs = 0;
   int scsn = 0;
   double scs_scale_os = 6.0/5.0;
@@ -142,7 +142,7 @@ int main(int argc, char * argv[]) {
   if (scsn == 1) {
     fprintf(outfile,"\n  SCSN-RI-MP2 energies will be printed\n");
   }
-    
+
   int nirreps = chkpt->rd_nirreps();
   int *clsdpi = chkpt->rd_clsdpi();
   int *orbspi = chkpt->rd_orbspi();
@@ -176,7 +176,7 @@ int main(int argc, char * argv[]) {
 
   // Read in C coefficients
 
-  SimpleMatrix *C_so = 
+  SimpleMatrix *C_so =
     factory.create_simple_matrix("MO coefficients (SO basis)");
   double **vectors = chkpt->rd_scf();
   if (vectors == NULL) {
@@ -190,7 +190,7 @@ int main(int argc, char * argv[]) {
   U->set(Umat);
   free_block(Umat);
   // Transfrom the eigenvectors from the SO to the AO basis
-  SimpleMatrix *C = 
+  SimpleMatrix *C =
     factory.create_simple_matrix("MO coefficients (AO basis)");
   C->gemm(true, false, 1.0, U, C_so, 0.0);
 
@@ -200,7 +200,7 @@ int main(int argc, char * argv[]) {
   // Create integral factory
   IntegralFactory rifactory(ribasis, zero, basis, basis);
   IntegralFactory rifactory_J(ribasis, zero, ribasis, zero);
-    
+
   TwoBodyAOInt* Jint = rifactory_J.eri();
   double **J = block_matrix(ribasis->nbf(), ribasis->nbf());
   double **J_mhalf = block_matrix(ribasis->nbf(), ribasis->nbf());
@@ -212,19 +212,19 @@ int main(int argc, char * argv[]) {
 #endif
 
   int index = 0;
-    
+
   for (int MU=0; MU < ribasis->nshell(); ++MU) {
     int nummu = ribasis->shell(MU)->nfunction();
-        
+
     for (int NU=0; NU < ribasis->nshell(); ++NU) {
       int numnu = ribasis->shell(NU)->nfunction();
-    
+
       Jint->compute_shell(MU, 0, NU, 0);
-            
+
       index = 0;
       for (int mu=0; mu < nummu; ++mu) {
         int omu = ribasis->shell(MU)->function_index() + mu;
-                
+
         for (int nu=0; nu < numnu; ++nu, ++index) {
           int onu = ribasis->shell(NU)->function_index() + nu;
 
@@ -233,9 +233,9 @@ int main(int argc, char * argv[]) {
       }
     }
   }
-    
+
   // fprintf(outfile, "J:\n");
-  // print_mat(J, ribasis->nbf(), ribasis->nbf(), outfile);    
+  // print_mat(J, ribasis->nbf(), ribasis->nbf(), outfile);
   // Invert J matrix
   // invert_matrix(J, J_inverse, ribasis->nbf(), outfile);
   // fprintf(outfile, "J^-1:\n");
@@ -257,8 +257,8 @@ int main(int argc, char * argv[]) {
   // Now J contains the eigenvectors of the original J
   // Copy J to J_copy
   double **J_copy = block_matrix(ribasis->nbf(), ribasis->nbf());
-  C_DCOPY(ribasis->nbf()*ribasis->nbf(),J[0],1,J_copy[0],1); 
-  
+  C_DCOPY(ribasis->nbf()*ribasis->nbf(),J[0],1,J_copy[0],1);
+
   // Now form J^{-1/2} = U(T)*j^{-1/2}*U,
   // where j^{-1/2} is the diagonal matrix of the inverse square roots
   // of the eigenvalues, and U is the matrix of eigenvectors of J
@@ -285,7 +285,7 @@ int main(int argc, char * argv[]) {
 #endif
 
 //  const double *buffer = eri->buffer();
-  
+
   double** Co   = block_matrix(norbs, nact_docc);
   double** Cv   = block_matrix(norbs, nact_virt);
   double** half = block_matrix(nact_docc, norbs);
@@ -322,7 +322,7 @@ int main(int argc, char * argv[]) {
   }
   Chkpt::free(orbital_energies);
 
-#if DEBUG 
+#if DEBUG
   fprintf(outfile, "Co:\n");
   print_mat(Co, norbs, nact_docc, outfile);
   fprintf(outfile, "Cv:\n");
@@ -330,7 +330,7 @@ int main(int argc, char * argv[]) {
 #endif
 
   double **mo_p_ia = block_matrix(ribasis->nbf(),nact_docc*nact_virt);
-    
+
   // find out the max number of P's in a P shell
 
   int maxPshell = 0;
@@ -370,7 +370,7 @@ for (Pshell=0; Pshell < ribasis->nshell(); ++Pshell) {
     for (P=0; P<numPshell; ++P){
        zero_mat(temp[P], norbs, norbs);
     }
-    
+
 #pragma omp parallel
 {
 #pragma omp for private(MU,NU,P,mu,nu,nummu,numnu,omu,onu,index)
@@ -392,34 +392,34 @@ for (Pshell=0; Pshell < ribasis->nshell(); ++Pshell) {
         } // end loop over P in Pshell
       } // end loop over NU shell
     } // end loop over MU shell
-} //CLOSE OMP PARALLEL  
+} //CLOSE OMP PARALLEL
     std::cout << "WOOT!" << std::endl;
     // now we've gone through all P, mu, nu for a given Pshell
     // transform the integrals for all P in the given P shell
-            
+
     for (int P=0, index=0; P < numPshell; ++P) {
       int oP = ribasis->shell(Pshell)->function_index() + P;
-                    
+
       // Do transform
-      C_DGEMM('T', 'N', nact_docc, norbs, norbs, 1.0, Co[0], 
+      C_DGEMM('T', 'N', nact_docc, norbs, norbs, 1.0, Co[0],
         nact_docc, temp[P][0], norbs, 0.0, half[0], norbs);
       C_DGEMM('N', 'N', nact_docc, nact_virt, norbs, 1.0, half[0],
         norbs, Cv[0], nact_virt, 0.0, mo_p_ia[oP], nact_virt);
-         
+
     }
   } // end loop over P shells; done with forming MO basis (P|ia)'s
-   
+
   // should free temp here
   for (int P=0; P<maxPshell; P++) free_block(temp[P]);
   // destruct temp[] itself?
- 
+
 #ifdef TIME_DF_MP2
   timer_off("Form mo_p_ia");
 #endif
 
   // fprintf(outfile, "mo_p_ia:\n");
   // print_mat(mo_p_ia, ribasis->nbf(), nact_docc*nact_virt, outfile);
-    
+
 #ifdef TIME_DF_MP2
   timer_on("Form B_ia^P");
 #endif
@@ -446,11 +446,11 @@ for (Pshell=0; Pshell < ribasis->nshell(); ++Pshell) {
 #ifdef TIME_DF_MP2
   timer_on("Compute EMP2");
 #endif
-    
+
   double *I = init_array(nact_virt*nact_virt);
   double emp2 = 0.0;
   double os_mp2 = 0.0, ss_mp2 = 0.0;
-  
+
 
   // loop over i>=j pairs
   for (int i=0; i < nact_docc; ++i) {
@@ -478,8 +478,8 @@ for (Pshell=0; Pshell < ribasis->nshell(); ++Pshell) {
       #ifdef TIME_DF_MP2
         timer_off("Construct I");
       #endif
-	  double iajb, ibja, tval, denom;
-	  int ab, ba;
+      double iajb, ibja, tval, denom;
+      int ab, ba;
       for (int a=0,ab=0; a < nact_virt; ++a) {
         for (int b=0; b < nact_virt; ++b,ab++) {
           int ba = b * nact_virt + a;
@@ -488,7 +488,7 @@ for (Pshell=0; Pshell < ribasis->nshell(); ++Pshell) {
           denom = 1.0 /
             (epsilon_act_docc[i] + epsilon_act_docc[j] -
              epsilon_act_virt[a] - epsilon_act_virt[b]);
-          
+
           tval = ((i==j)?0.5:1.0) * (iajb * iajb + ibja * ibja) * denom;
           os_mp2 += tval;
           ss_mp2 += tval - ((i==j)?1.0:2.0)*(iajb*ibja)*denom;
@@ -519,14 +519,14 @@ for (Pshell=0; Pshell < ribasis->nshell(); ++Pshell) {
     fprintf(outfile,"      * SCSN-RI-MP2 total energy          = %20.15f\n\n",
       escf + 1.76*ss_mp2);
     }
-    
+
   // Shut down psi
     delete basis;
     delete ribasis;
     delete zero;
     delete chkpt;
     delete psio;
-    
+
   tstop(outfile);
   fflush(outfile);
   psi_stop(infile,outfile, psi_file_prefix);

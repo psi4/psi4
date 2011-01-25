@@ -27,7 +27,7 @@ PsiReturnType deriv(Options & options)
     tstart();
 
     shared_ptr<PSIO> psio(new PSIO);
-    psiopp_ipv1_config(psio);
+//    psiopp_ipv1_config(psio);
     shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
 
     fprintf(outfile, " DERIV: Wrapper to libmints.\n   by Justin Turney\n\n");

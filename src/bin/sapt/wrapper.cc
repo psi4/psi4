@@ -34,14 +34,14 @@ std::string to_string(const int val);   // In matrix.cpp
 PsiReturnType sapt(Options & options)
 {
     tstart();
-    
+
     Wavefunction::initialize_singletons();
-    
+
     shared_ptr<PSIO> psio(new PSIO);
-    psiopp_ipv1_config(psio);
-    
+//    psiopp_ipv1_config(psio);
+
     shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
-    
+
     // Initialize the psi3 timer library.
     timer_init();
 
@@ -65,7 +65,7 @@ PsiReturnType sapt(Options & options)
         SAPT2 sapt(options, psio, chkpt);
         sapt.compute_energy();
     }
-    
+
     if (options.get_str("SAPT_LEVEL") == "SAPT2+") {
         SAPT2p sapt(options, psio, chkpt);
         sapt.compute_energy();
@@ -75,7 +75,7 @@ PsiReturnType sapt(Options & options)
         SAPT2p3 sapt(options, psio, chkpt);
         sapt.compute_energy();
     }
- 
+
     if (options.get_str("SAPT_LEVEL") == "SAPT3B_N5") {
         SAPT3BN5 sapt(options, psio, chkpt);
         sapt.compute_energy();
@@ -85,17 +85,17 @@ PsiReturnType sapt(Options & options)
         SAPT3BN6 sapt(options, psio, chkpt);
         sapt.compute_energy();
     }
- 
+
     if (options.get_str("SAPT_LEVEL") == "SAPT3B_N7") {
         SAPT3BN7 sapt(options, psio, chkpt);
         sapt.compute_energy();
     }
- 
-    // Shut down psi. 
+
+    // Shut down psi.
     timer_done();
 
     tstop();
-    
+
     return Success;
 }
 

@@ -71,7 +71,7 @@ int main(int argc, char **argv, char **envp)
     #if HAVE_MADNESS == 1
         }
     #endif
-    
+
 #else
     // Initialize local communicator
     Communicator::world = shared_ptr<Communicator>(new LocalCommunicator);
@@ -99,12 +99,13 @@ int main(int argc, char **argv, char **envp)
     }
 
     // Okay, we might only need to make this function call if we're using IPV1
-    if (!script) {
-        psi4_driver();
-    }
-    else {
+    // TODO: Need to come up with a way to interface with optking
+//    if (!script) {
+//        psi4_driver();
+//    }
+//    else {
         Script::language->run(infile);
-    }
+//    }
 
     // Shut things down:
     psi_stop(infile, outfile, psi_file_prefix);

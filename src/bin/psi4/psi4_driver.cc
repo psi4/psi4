@@ -3,7 +3,6 @@
  */
 #include <iostream>
 #include <fstream>              // file I/O support
-#include <libipv1/ip_lib.h>
 #include <libparallel/parallel.h>
 #include <psi4-dec.h>
 #include <string.h>
@@ -23,6 +22,7 @@ extern int read_options(const std::string &jobName, Options &options, bool call_
         bool suppress_printing = false);
 extern void psiclean(void);
 
+#if 0
 int psi4_driver() {
     Options& options = Process::environment.options;
 
@@ -138,6 +138,8 @@ int psi4_driver() {
 
     return Success;
 }
+
+#endif
 
 } // Namespace
 

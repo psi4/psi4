@@ -44,7 +44,7 @@ PsiReturnType mcscf(Options& options)
 {
   using namespace psi;
   shared_ptr<PSIO> psio(new PSIO);
-  psiopp_ipv1_config(psio);
+//  psiopp_ipv1_config(psio);
   shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
 
   psio->open(PSIF_MCSCF,PSIO_OPEN_NEW);

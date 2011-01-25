@@ -323,10 +323,10 @@ void py_psi_clean()
     PSIOManager::shared_object()->psiclean();
 }
 
-bool py_psi_configure_psio(PSIO* obj)
-{
-    return psiopp_ipv1_config(obj);
-}
+//bool py_psi_configure_psio(PSIO* obj)
+//{
+//    return psiopp_ipv1_config(obj);
+//}
 
 void py_psi_set_default_options_for_module(std::string const & name)
 {
@@ -517,7 +517,7 @@ BOOST_PYTHON_MODULE(PsiMod)
 {
     def("version", py_psi_version);
     def("clean", py_psi_clean);
-    def("configure_io", py_psi_configure_psio);
+//    def("configure_io", py_psi_configure_psio);
 
     // Options
     def("set_default_options_for_module", py_psi_set_default_options_for_module);
@@ -593,12 +593,12 @@ BOOST_PYTHON_MODULE(PsiMod)
         staticmethod("change_file_namespace");
 
     class_<PSIOManager, shared_ptr<PSIOManager> >( "IOManager" ).
-        def( "shared_object", &PSIOManager::shared_object ). 
+        def( "shared_object", &PSIOManager::shared_object ).
         staticmethod("shared_object").
-        def( "print_out", &PSIOManager::print_out ). 
-        def( "psiclean", &PSIOManager::psiclean ). 
-        def( "mark_file_for_retention", &PSIOManager::mark_file_for_retention ). 
-        def( "mark_file_for_deletion", &PSIOManager::mark_file_for_deletion ); 
+        def( "print_out", &PSIOManager::print_out ).
+        def( "psiclean", &PSIOManager::psiclean ).
+        def( "mark_file_for_retention", &PSIOManager::mark_file_for_retention ).
+        def( "mark_file_for_deletion", &PSIOManager::mark_file_for_deletion );
 
     class_<Chkpt, shared_ptr<Chkpt> >( "Checkpoint", init<PSIO*, int>() ).
         add_property( "enuc", &Chkpt::rd_enuc, &Chkpt::wt_enuc).
