@@ -7,8 +7,6 @@
 #include <cstdlib>
 #include <string>
 
-#include <libipv1/ip_lib.h>
-
 #include "dfmp2_energy.h"
 #include "dfmp2.h"
 
