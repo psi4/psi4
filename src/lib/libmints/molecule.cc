@@ -227,7 +227,6 @@ namespace psi {
 }
 
 Molecule::Molecule():
-    nirreps_(0),
     nunique_(0),
     nequiv_(0),
     equiv_(0),
@@ -261,7 +260,6 @@ Molecule& Molecule::operator=(const Molecule& other)
     fragmentCharges_        = other.fragmentCharges_;
     fragmentMultiplicities_ = other.fragmentMultiplicities_;
     fix_orientation_        = other.fix_orientation_;
-    nirreps_                = other.nirreps_;
     molecularCharge_        = other.molecularCharge_;
     multiplicity_           = other.multiplicity_;
     units_                  = other.units_;
@@ -317,7 +315,6 @@ void Molecule::operator+=(const Molecule& other)
 
 void Molecule::clear()
 {
-    nirreps_ = 0;
     atoms_.empty();
     full_atoms_.empty();
 }
@@ -892,11 +889,6 @@ void Molecule::init_with_chkpt(shared_ptr<Chkpt> chkpt)
 
     // chkpt is already in AU set the conversion to 1
     inputUnitsToAU_ = 1.0;
-
-    if(Communicator::world->me() == 0)
-        nirreps_ = chkpt->rd_nirreps();
-    if(Communicator::world->nproc() > 1)
-        Communicator::world->raw_bcast(&nirreps_, sizeof(int), 0);
 
     Chkpt::free(zvals);
     Chkpt::free(geom);
