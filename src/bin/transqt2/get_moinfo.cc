@@ -470,8 +470,9 @@ namespace psi {
       free(moinfo.clsdpi);
       free(moinfo.openpi);
       free(moinfo.uoccpi);
-      free(moinfo.frdocc);
-      free(moinfo.fruocc);
+      // Wavefunction owns these two arrays
+//      free(moinfo.frdocc);
+//      free(moinfo.fruocc);
       free(moinfo.core);
     }
 
