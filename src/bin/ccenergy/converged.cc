@@ -5,7 +5,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
-#include <libipv1/ip_lib.h>
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include "MOInfo.h"

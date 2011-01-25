@@ -12,7 +12,6 @@
 #include <cmath>
 #include <sys/types.h>
 #include <unistd.h>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libdpd/dpd.h>
 #include <libchkpt/chkpt.h>
