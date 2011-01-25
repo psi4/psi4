@@ -8,7 +8,6 @@
 #include <cmath>
 //#include <iostream>
 //#include <fstream>              // file I/O support
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libmints/mints.h>
 #include <libparallel/parallel.h>
@@ -52,7 +51,7 @@ void LMP2::domains() {
     int *distant_pairs, weak;
     int num_entries, entry_len, orbital;
     int print_test;
-    double cutoff, dist;
+    double dist;
     double **X, **Y, *fR;
     double *eps_all; // All MO energies
     double *charge, *SR, *Z, tmp;
@@ -66,9 +65,6 @@ void LMP2::domains() {
     //}
 
     nfzc = get_frdocc();
-
-    cutoff = 0.02;
-    ip_data("LOCAL_CUTOFF", "%lf", &(cutoff), 0);
 
     nvir = nso - nocc;
 
@@ -208,6 +204,8 @@ void LMP2::domains() {
     }
 
     /* Allow user input of selected domains */
+    // TODO: Refactor this code to use liboptions
+#if 0
     if (ip_exist("DOMAINS", 0)) {
         ip_count("DOMAINS", &num_entries, 0);
         for (i = 0; i < num_entries; i++) {
@@ -225,6 +223,7 @@ void LMP2::domains() {
             }
         }
     }
+#endif
 
     /* Recheck Completeness */
     for (i = 0; i < nocc; i++) {
@@ -357,7 +356,8 @@ void LMP2::domains() {
     free(fR);
 
     print_test = 0;
-    ip_boolean("DOMAIN_PRINT", &(print_test), 0);
+    // TODO: Convert following line to liboption
+    //ip_boolean("DOMAIN_PRINT", &(print_test), 0);
     if (print_test) {
         //    if(Communicator::world->me() == 0);
         //    fprintf(outfile, "Printing of orbital domains requested...exiting.\n\n");
