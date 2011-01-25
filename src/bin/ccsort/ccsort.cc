@@ -288,8 +288,9 @@ void cleanup(void)
   free(moinfo.clsdpi);
   free(moinfo.openpi);
   free(moinfo.uoccpi);
-  free(moinfo.fruocc);
-  free(moinfo.frdocc);
+  // Wavefunction owns these arrays
+//  free(moinfo.fruocc);
+//  free(moinfo.frdocc);
   for(i=0; i < moinfo.nirreps; i++)
     free(moinfo.labels[i]);
   free(moinfo.labels);
