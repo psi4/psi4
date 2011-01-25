@@ -6,7 +6,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <libdpd/dpd.h>
-#include <libipv1/ip_lib.h>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
