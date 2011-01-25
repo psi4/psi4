@@ -27,8 +27,6 @@ mmult.cc \
 mxmb.cc \
 print_array.cc \
 print_mat.cc \
-psi_start.cc \
-psi_stop.cc \
 rsp.cc \
 sq_rsp.cc \
 sq_to_tri.cc \
