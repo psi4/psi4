@@ -18,7 +18,6 @@
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.hpp>
 #include <libparallel/parallel.h>
-#include <libipv1/ip_lib.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <psifiles.h>
