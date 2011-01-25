@@ -822,7 +822,6 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libpsio/Makefile
           src/lib/libqt/Makefile
           src/lib/libciomr/Makefile
-          src/lib/libipv1/Makefile
           src/lib/libchkpt/Makefile
           src/lib/libderiv/Makefile
           src/lib/libderiv/MakeVars
