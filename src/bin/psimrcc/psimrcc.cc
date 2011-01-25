@@ -13,7 +13,6 @@
 // PSI libraries
 #include <psifiles.h>
 #include <libciomr/libciomr.h>
-#include <libipv1/ip_lib.h>
 #include <libchkpt/chkpt.hpp>
 #include <libmoinfo/libmoinfo.h>
 #include <liboptions/liboptions.h>
