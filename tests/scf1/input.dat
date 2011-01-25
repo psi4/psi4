@@ -1,4 +1,4 @@
-#%! RHF cc-pVQZ energy for the BH molecule, with Cartesian input.
+#! RHF cc-pVQZ energy for the BH molecule, with Cartesian input.
 
 nucenergy = 2.645886245000000
 refenergy = -25.10354687361508
