@@ -11,8 +11,6 @@
 #include <cstdlib>
 #include <string>
 
-#include <libipv1/ip_lib.h>
-
 #include "hfenergy.h"
 #include <libparallel/parallel.h>
 #include "libscf_solver/rhf.cc"
