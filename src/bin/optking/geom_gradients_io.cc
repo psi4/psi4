@@ -14,6 +14,9 @@
 
 #if defined(OPTKING_PACKAGE_PSI)
 #include <libchkpt/chkpt.h>
+#include <psi4-dec.h>
+#include <libmints/molecule.h>
+#include <libmints/wavefunction.h>
 #endif
 
 namespace opt {
@@ -28,7 +31,7 @@ bool is_integer(const char *check) {
   return true;
 }
 
-// read the number of atoms 
+// read the number of atoms
 int read_natoms(void) {
   int natom=0;
 
@@ -160,9 +163,7 @@ void MOLECULE::write_geom(void) {
   double **geom_2D = g_geom_2D();
 
 #if defined(OPTKING_PACKAGE_PSI)
-  chkpt_init(PSIO_OPEN_OLD);
-  chkpt_wt_geom(geom_2D);
-  chkpt_close();
+  psi::Process::environment.molecule()->set_geometry(geom_2D);
 #elif defined(OPTKING_PACKAGE_QCHEM)
 
   printf("Need to add code to write new geometry to qchem here\n");

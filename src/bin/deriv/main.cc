@@ -27,8 +27,7 @@ PsiReturnType deriv(Options & options)
     tstart();
 
     shared_ptr<PSIO> psio(new PSIO);
-//    psiopp_ipv1_config(psio);
-    shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
+//    shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
 
     fprintf(outfile, " DERIV: Wrapper to libmints.\n   by Justin Turney\n\n");
 
@@ -43,12 +42,24 @@ PsiReturnType deriv(Options & options)
     // Create a new matrix factory
     shared_ptr<MatrixFactory> factory(new MatrixFactory);
 
-    // Initialize the factory with data from checkpoint
-    factory->init_with_chkpt(chkpt);
-
     // Read in the basis set
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options.get_str("BASIS_PATH")));
     shared_ptr<BasisSet> basisset = BasisSet::construct(parser, molecule, options.get_str("BASIS"));
+
+    // Initialize an integral object.
+    shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset, basisset, basisset, basisset));
+
+    // Create an SOBasisSet
+    shared_ptr<SOBasisSet> sobasisset(new SOBasisSet(basisset, integral));
+    SharedMatrix usotoao(sobasisset->petitelist()->sotoao());
+    SharedMatrix aotoso(sobasisset->petitelist()->aotoso());
+
+    const Dimension dimension = sobasisset->dimension();
+    // Initialize the factory
+    factory->init_with(dimension, dimension);
+
+    usotoao->print();
+    aotoso->print();
 
     // Print the molecule.
     basisset->molecule()->print();
@@ -63,47 +74,76 @@ PsiReturnType deriv(Options & options)
 
     // Form Q for RHF
     SharedSimpleMatrix Q(factory->create_simple_matrix("Q"));
-    int *clsdpi = chkpt->rd_clsdpi();
+    int *clsdpi = Process::environment.reference_wavefunction()->get_doccpi();
 
     // Read in C coefficients
-    SharedSimpleMatrix C(factory->create_simple_matrix("MO coefficients"));
-    double **vectors = chkpt->rd_scf();
-    if (vectors == NULL) {
-        fprintf(stderr, "Could not find MO coefficients. Run scf first.\n");
-        return Failure;
+    SharedMatrix Cso = Process::environment.reference_wavefunction()->get_Ca();
+    SharedSimpleMatrix simple_Cso(new SimpleMatrix("Cso",
+                                                   Process::environment.reference_wavefunction()->get_nso(),
+                                                   Process::environment.reference_wavefunction()->get_nmo()));
+
+    SharedSimpleMatrix simple_usotoao(new SimpleMatrix("USO -> AO",
+                                                       Process::environment.reference_wavefunction()->get_nso(),
+                                                       basisset->nbf()));
+    SharedSimpleMatrix Cao(new SimpleMatrix("Cao",
+                                            basisset->nbf(),
+                                            Process::environment.reference_wavefunction()->get_nmo()));
+
+    int sooffset = 0, mooffset = 0;
+    for (int h=0; h<Cso->nirreps(); ++h) {
+        for (int m=0; m<Cso->rowspi()[h]; ++m) {
+            for (int n=0; n<basisset->nbf(); ++n) {
+                simple_usotoao->set(sooffset+m, n, usotoao->get(h, m, n));
+            }
+            for (int n=0; n<Process::environment.reference_wavefunction()->get_nmopi()[h]; ++n) {
+                simple_Cso->set(sooffset+m, n+mooffset, Cso->get(h, m, n));
+            }
+        }
+        sooffset += Process::environment.reference_wavefunction()->get_nsopi()[h];
+        mooffset += Cso->rowspi()[h];
     }
-    C->set(vectors);
-    free_block(vectors);
+
+    simple_usotoao->print();
+    simple_Cso->print();
+
+    Cao->gemm(true, false, 1.0, simple_usotoao, simple_Cso, 0.0);
+    Cao->print();
 
     // Load in orbital energies
-    double *etmp = chkpt->rd_evals();
+    SharedVector etmp = Process::environment.reference_wavefunction()->get_epsilon_a();
     shared_ptr<SimpleMatrix> W(factory->create_simple_matrix("W"));
 
-    int nso = chkpt->rd_nso();
-    for (int m=0; m<nso; ++m) {
-        for (int n=0; n<nso; ++n) {
+    int nbf = basisset->nbf();
+    for (int m=0; m<nbf; ++m) {
+        for (int n=0; n<nbf; ++n) {
             double sum=0.0;
-            double qsum =0.0;
-            for (int i=0; i<clsdpi[0]; ++i) {
-                sum += C->get(m, i) * C->get(n, i) * etmp[i];
-                qsum += C->get(m, i) * C->get(n, i);
+            double qsum=0.0;
+
+            int mooffset = 0;
+            for (int h=0; h<sobasisset->nirrep(); ++h) {
+                for (int i=0; i<clsdpi[h]; ++i) {
+                    sum += Cao->get(m, i+mooffset) * Cao->get(n, i+mooffset) * etmp->get(h, i);
+                    qsum += Cao->get(m, i+mooffset) * Cao->get(n, i+mooffset);
+
+                    fprintf(outfile, "sum = %lf, qsum = %lf\n", sum, qsum);
+                }
+                mooffset += Process::environment.reference_wavefunction()->get_nmopi()[h];
             }
             W->set(m, n, sum);
             Q->set(m, n, qsum);
         }
     }
-    Chkpt::free(etmp);
 
-//    Q->print();
-//    fprintf(outfile, "AO-basis\n");
-//    W->print();
+    Q->print();
+    fprintf(outfile, "AO-basis\n");
+    W->print();
 
     SharedSimpleMatrix G;
     Deriv deriv(ref_rhf, factory, basisset);
     SharedSimpleMatrix WdS(deriv.overlap());
     SharedSimpleMatrix QdH(deriv.one_electron());
     SharedSimpleMatrix tb(deriv.two_body());
-    deriv.compute(C, Q, G, W);
+    deriv.compute(Q, G, W);
 
     SimpleMatrix enuc = basisset->molecule()->nuclear_repulsion_energy_deriv1();
 
@@ -128,8 +168,6 @@ PsiReturnType deriv(Options & options)
 
     // Shut down psi
     tstop();
-
-    Chkpt::free(clsdpi);
 
     return Success;
 }

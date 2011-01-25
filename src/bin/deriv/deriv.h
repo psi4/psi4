@@ -35,7 +35,7 @@ class Deriv
 public:
     Deriv(reftype ref, boost::shared_ptr<MatrixFactory>& factory, boost::shared_ptr<BasisSet>& basis);
 
-    void compute(SharedSimpleMatrix& C, SharedSimpleMatrix& Q, SharedSimpleMatrix& G, SharedSimpleMatrix& W);
+    void compute(SharedSimpleMatrix& Q, SharedSimpleMatrix& G, SharedSimpleMatrix& W);
 
     SharedSimpleMatrix& one_electron() {
         return QdH_;
