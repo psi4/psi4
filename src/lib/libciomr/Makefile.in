@@ -18,7 +18,6 @@ eigsort.cc \
 eivout.cc \
 ffile.cc \
 flin.cc \
-fndcor.cc \
 init_array.cc \
 init_matrix.cc \
 int_array.cc \
