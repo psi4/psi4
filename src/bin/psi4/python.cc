@@ -42,11 +42,11 @@ std::map<std::string, plugin_info> plugins;
 namespace opt      { psi::PsiReturnType optking(psi::Options &); }
 
 namespace psi {
-    namespace input    { PsiReturnType input(Options &); }
-    namespace cints    { PsiReturnType cints(Options &); }
+//    namespace input    { PsiReturnType input(Options &); }
+//    namespace cints    { PsiReturnType cints(Options &); }
     namespace mints    { PsiReturnType mints(Options &); }
     namespace deriv    { PsiReturnType deriv(Options &); }
-    namespace cscf     { PsiReturnType cscf(Options &);  }
+//    namespace cscf     { PsiReturnType cscf(Options &);  }
     namespace mcscf    { PsiReturnType mcscf(Options &); }
     namespace scf      { PsiReturnType scf(Options &);   }
     namespace dfmp2    { PsiReturnType dfmp2(Options &); }
@@ -182,10 +182,10 @@ int py_psi_optking()
     return opt::optking(Process::environment.options);
 }
 
-int py_psi_input()
-{
-    return input::input(Process::environment.options);
-}
+//int py_psi_input()
+//{
+//    return input::input(Process::environment.options);
+//}
 
 int py_psi_mints()
 {
@@ -197,15 +197,15 @@ int py_psi_deriv()
     return deriv::deriv(Process::environment.options);
 }
 
-int py_psi_cints()
-{
-    return cints::cints(Process::environment.options);
-}
+//int py_psi_cints()
+//{
+//    return cints::cints(Process::environment.options);
+//}
 
-int py_psi_cscf()
-{
-    return cscf::cscf(Process::environment.options);
-}
+//int py_psi_cscf()
+//{
+//    return cscf::cscf(Process::environment.options);
+//}
 
 double py_psi_mcscf()
 {
@@ -552,11 +552,11 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("plugin_close_all", py_psi_plugin_close_all);
 
     // modules
-    def("input", py_psi_input);
-    def("cints", py_psi_cints);
+//    def("input", py_psi_input);
+//    def("cints", py_psi_cints);
     def("mints", py_psi_mints);
     def("deriv", py_psi_deriv);
-    def("cscf",  py_psi_cscf);
+//    def("cscf",  py_psi_cscf);
     def("mcscf", py_psi_mcscf);
     def("scf",   py_psi_scf);
     def("dcft", py_psi_dcft);
