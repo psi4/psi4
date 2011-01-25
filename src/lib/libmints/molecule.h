@@ -92,8 +92,6 @@ protected:
     /// Whether the user spefified the multiplicity, or default was used
     bool multiplicitySpecified_;
 
-    /// Symmetry information about the molecule
-    int nirreps_;
     /// The molecular charge
     int molecularCharge_;
     /// The multiplicity (defined as 2Ms + 1)
