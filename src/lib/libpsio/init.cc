@@ -9,6 +9,7 @@
 #include <libpsio/psio.hpp>
 #include <boost/shared_ptr.hpp>
 #include <psi4-dec.h>
+#include <psifiles.h>
 
 namespace psi {
 
@@ -49,15 +50,15 @@ PSIO::PSIO() {
   }
 
   /* Open user's general .psirc file, if exists */
-  userhome = getenv("HOME");
-  filename = (char*) malloc((strlen(userhome)+8)*sizeof(char));
-  sprintf(filename, "%s%s", userhome, "/.psirc");
-  psirc = fopen(filename, "r");
-  if (psirc != NULL) {
-    ip_append(psirc, stdout);
-    fclose(psirc);
-  }
-  free(filename);
+//  char *userhome = getenv("HOME");
+//  char *filename = (char*) malloc((strlen(userhome)+8)*sizeof(char));
+//  sprintf(filename, "%s%s", userhome, "/.psirc");
+//  FILE *psirc = fopen(filename, "r");
+//  if (psirc != NULL) {
+//    ip_append(psirc, stdout);
+//    fclose(psirc);
+//  }
+//  free(filename);
 
   /*
    implement some default PSI3 behavior:
