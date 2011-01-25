@@ -7,7 +7,6 @@
 #include <cstring>
 #include <cmath>
 #include <string>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <psifiles.h>
 #define EXTERN
@@ -93,7 +92,7 @@ void get_params(Options & options)
     }
     else {
       fprintf(outfile, "\tReference wfn   =\t%s\n",
-	      (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
+          (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
     }
     if(params.dertype == 0) fprintf(outfile, "\tDerivative      =\tNone\n");
     else if(params.dertype == 1) fprintf(outfile, "\tDerivative      =\tFirst\n");
