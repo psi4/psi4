@@ -592,13 +592,13 @@ double Matrix::trace()
 
 Matrix* Matrix::transpose()
 {
-    Matrix *temp = new Matrix(this);
+    Matrix *temp = new Matrix(name_, nirreps_, colspi_, rowspi_);
 
     int h, i, j;
     for (h=0; h<nirreps_; ++h) {
         for (i=0; i<rowspi_[h]; ++i) {
             for (j=0; j<colspi_[h]; ++j) {
-                temp->matrix_[h][i][j] = matrix_[h][j][i];
+                temp->matrix_[h][j][i] = matrix_[h][i][j];
             }
         }
     }

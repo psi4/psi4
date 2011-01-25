@@ -76,7 +76,7 @@ Deriv::Deriv(reftype ref, shared_ptr<MatrixFactory>& factory, shared_ptr<BasisSe
 //        dV[i]->print();
 }
 
-void Deriv::compute(SharedSimpleMatrix& C, SharedSimpleMatrix& Q, SharedSimpleMatrix& G, SharedSimpleMatrix& W)
+void Deriv::compute(SharedSimpleMatrix& Q, SharedSimpleMatrix& G, SharedSimpleMatrix& W)
 {
     // Initialize an integral object.
     shared_ptr<IntegralFactory> integral(new IntegralFactory(basis_, basis_, basis_, basis_));
