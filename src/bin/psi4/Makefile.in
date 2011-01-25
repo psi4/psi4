@@ -21,10 +21,9 @@ PSILIBS = \
 
 CXXSRC = \
 set_memory.cc \
-psi4.cc psi4_driver.cc read_options.cc clean.cc \
-setup_driver.cc \
+psi4.cc read_options.cc clean.cc \
 psi_start.cc psi_stop.cc version.cc \
-script.cc python.cc execute_bp.cc
+script.cc python.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 

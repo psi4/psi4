@@ -91,7 +91,6 @@ int main(int argc, char **argv, char **envp)
     set_memory(outfile);
 
     psio_init();
-    psio_ipv1_config();
 
     if(clean_only) {
         psiclean();

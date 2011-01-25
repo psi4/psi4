@@ -298,7 +298,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_str("RI_BASIS_SCF", "");
     /*- The name of the poisson basis to be used in RI computations -*/
     options.add_str("POISSON_BASIS_SCF", "");
-    options.read_ipv1();
+//    options.read_ipv1();
 
 
     /*- Atomic Charge cutoff (for primary domain) -*/
@@ -831,7 +831,7 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
   if(name == "LMP2"|| options.read_globals()) {
     /*- The wavefunction desired -*/
     options.add_str("RI_BASIS_MP2", "NONE");
-    options.read_ipv1();
+//    options.read_ipv1();
     if(options.get_str("RI_BASIS_MP2") != "NONE")
       options.add_bool("RI_LMP2", true);
     else
