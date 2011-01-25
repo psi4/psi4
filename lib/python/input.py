@@ -184,7 +184,7 @@ def process_input(raw_input):
     imports += 'from util import *\n'    
   
     # TODO remove this later!
-    imports += 'PsiMod.set_global_option("NO_INPUT", True)'
+    imports += 'PsiMod.set_global_option("NO_INPUT", True)\n'
 
     temp = imports + temp
 
