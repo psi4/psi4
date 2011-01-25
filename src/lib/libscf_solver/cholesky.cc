@@ -9,7 +9,6 @@
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.hpp>
-#include <libipv1/ip_lib.h>
 #include <libiwl/iwl.hpp>
 #include <libparallel/parallel.h>
 #include <libqt/qt.h>
@@ -31,7 +30,7 @@ void HF::form_CD()
     {
         fprintf(outfile,"Must run in C1 for now.\n"); fflush(outfile);
         abort();
-    } 
+    }
 
   double tol = options_.get_double("CHOLESKY_CUTOFF");
   double schwartz_tol = options_.get_double("SCHWARZ_CUTOFF");
@@ -81,7 +80,7 @@ void HF::form_CD()
 
       for (int w=0;w<numw;w++) {
         int absw = basisset_->shell(P)->function_index()+w;
-        for(int x=0;x<numx;x++) { 
+        for(int x=0;x<numx;x++) {
           int absx = basisset_->shell(Q)->function_index()+x;
           int index = ( ( (w*numx + x) * numw + w) * numx + x);
           double tei = buffer[index];
@@ -103,7 +102,7 @@ void HF::form_CD()
   int numL = 0;
 
   for (int i=0; i<basisset_->nbf()*(basisset_->nbf()+1)/2; i++) {
-    if (sqrt(diag[i]*X_max) > tol) { 
+    if (sqrt(diag[i]*X_max) > tol) {
       numL++;                  // How many Cholesky vectors are neccesary
     }
   }
@@ -199,7 +198,7 @@ timer_on("Cholesky Decomp");
           int kl = INDEX2(k,l);
           if (Pstart+w>=Qstart+x && temp[wx][kl] > tol) {
 
-            if (L[pos] == NULL) 
+            if (L[pos] == NULL)
               L[pos] = init_array(ntri);
 
             double tval = temp[wx][kl];
@@ -243,29 +242,29 @@ timer_off("Cholesky Decomp");
   ntri_naive_ = ntri;
   ntri_ = ntri;
   int norbs = basisset_->nbf();
-  ri_back_map_ = init_int_array(norbs*(norbs+1)/2);  
-  ri_pair_mu_ = init_int_array(ntri_);  
-  ri_pair_nu_ = init_int_array(ntri_);  
+  ri_back_map_ = init_int_array(norbs*(norbs+1)/2);
+  ri_pair_mu_ = init_int_array(ntri_);
+  ri_pair_nu_ = init_int_array(ntri_);
   for (int i = 0, ij = 0; i < basisset_->nbf(); i++)
-    for (int j = 0; j<=i; j++, ij++) { 
+    for (int j = 0; j<=i; j++, ij++) {
         ri_pair_mu_[ij] = i;
         ri_pair_nu_[ij] = j;
         ri_back_map_[i*(i+1)/2+j] = ij;
     }
-  
+
   naux_fin_ = pos;
   naux_raw_ = pos;
   df_storage_ = core;
-	
+
   psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_NEW);
   psio_address next_PSIF_DFSCF_BJ = PSIO_ZERO;
-  
+
   for (int Q = 0; Q < naux_fin_; Q++) {
-    psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(L[Q][0]),sizeof(double)*ntri_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ); 
-    free(L[Q]);  
+    psio_->write(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(L[Q][0]),sizeof(double)*ntri_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
+    free(L[Q]);
   }
   free(L);
-  
+
   //Write the restart data, it's cheap
   next_PSIF_DFSCF_BJ = PSIO_ZERO;
   psio_->write(PSIF_DFSCF_BJ,"RI_PAIR_BACK",(char *) &(ri_back_map_[0]),sizeof(int)*(norbs*(norbs+1)/2),next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
@@ -282,13 +281,13 @@ timer_off("Cholesky Decomp");
   next_PSIF_DFSCF_BJ = PSIO_ZERO;
   psio_->write(PSIF_DFSCF_BJ,"N_AUX_FIN",(char *) &(naux_fin_),sizeof(int),next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
 
-  psio_->close(PSIF_DFSCF_BJ,1); 
+  psio_->close(PSIF_DFSCF_BJ,1);
 
   B_ia_P_ = block_matrix(naux_fin_,ntri_);
 
-  if (print_> 3) 
+  if (print_> 3)
     fprintf(outfile,"  Cholesky Tensor: ntri_ = %d, naux_fin_ = %d:\n",ntri_,naux_fin_);
-    
+
 
   if (print_ > 7) {
     print_mat(B_ia_P_,naux_fin_,ntri_,outfile);
@@ -296,17 +295,17 @@ timer_off("Cholesky Decomp");
 
   psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
   next_PSIF_DFSCF_BJ = PSIO_ZERO;
-  
+
   for (int Q = 0; Q < naux_fin_; Q++) {
-    psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(B_ia_P_[Q][0]),sizeof(double)*ntri_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);   
+    psio_->read(PSIF_DFSCF_BJ,"BJ Three-Index Integrals",(char *) &(B_ia_P_[Q][0]),sizeof(double)*ntri_,next_PSIF_DFSCF_BJ,&next_PSIF_DFSCF_BJ);
   }
-  
+
   psio_->close(PSIF_DFSCF_BJ,1);
 
   if (options_.get_bool("CHOLESKY_INTEGRALS_ONLY")) {
     fprintf(outfile,"  Integrals only required, exiting early");
     fflush(outfile);
-    exit(PSI_RETURN_SUCCESS); 
+    exit(PSI_RETURN_SUCCESS);
   }
 
 }

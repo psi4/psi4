@@ -10,7 +10,6 @@
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>
-#include <libipv1/ip_lib.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 
@@ -22,7 +21,7 @@ using namespace std;
 using namespace psi;
 
 namespace psi { namespace scf {
-    
+
 UKS::UKS(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) : UHF(options, psio, chkpt)
 {
 
@@ -36,7 +35,7 @@ UKS::~UKS()
 double UKS::compute_energy()
 {
     fprintf(outfile,"  In UKS by Rob Parrish.\n");
-	fprintf(outfile,"  Skeleton Functional, Method not complete.\n");
+    fprintf(outfile,"  Skeleton Functional, Method not complete.\n");
     return -1.0;
 }
 

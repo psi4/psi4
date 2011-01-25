@@ -12,7 +12,6 @@
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>
-#include <libipv1/ip_lib.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 
@@ -57,18 +56,18 @@ RKS::RKS(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) : RHF
     fprintf(outfile,"  Exchange Functional Citation:\n  %s\n",x_functional_->getCitation().c_str());
     fprintf(outfile,"  Exchange Functional Parameters:\n%s\n",x_functional_->getParametersString().c_str());
     fprintf(outfile,"  \n");
-    
+
     if (options.get_bool("TEST_FUNCTIONAL") ) {
         int n_test = properties_->get_RKS_GGA_Testbed_Size();
         properties_->get_RKS_GGA_Testbed(); //Please set block size bigger than 9 or risk a segfault!
         x_functional_->computeRKSFunctional(properties_);
-        
-        const double* rhoa = properties_->getDensity(); 
+
+        const double* rhoa = properties_->getDensity();
         const double* sigmaa = properties_->getDensityGradientSquared();
 
-        double *zk = x_functional_->getFunctional(); 
-        double *vrhoa = x_functional_->getV_RhoA(); 
-        double *vsigmaaa = x_functional_->getV_GammaAA(); 
+        double *zk = x_functional_->getFunctional();
+        double *vrhoa = x_functional_->getV_RhoA();
+        double *vsigmaaa = x_functional_->getV_GammaAA();
 
         fprintf(outfile, "  Testing Exchange Functional:\n");
         for (int k = 0; k<n_test; k++) {
@@ -87,18 +86,18 @@ RKS::RKS(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) : RHF
     fprintf(outfile,"  Correlation Functional Parameters:\n%s\n",c_functional_->getParametersString().c_str());
     fprintf(outfile,"  \n");
     fprintf(outfile,"%s\n",(integrator_->getString()).c_str());
-    
+
     if (options.get_bool("TEST_FUNCTIONAL") ) {
         int n_test = properties_->get_RKS_GGA_Testbed_Size();
         properties_->get_RKS_GGA_Testbed(); //Please set block size bigger than 9 or risk a segfault!
         c_functional_->computeRKSFunctional(properties_);
-        
-        const double* rhoa = properties_->getDensity(); 
+
+        const double* rhoa = properties_->getDensity();
         const double* sigmaa = properties_->getDensityGradientSquared();
 
-        double *zk = c_functional_->getFunctional(); 
-        double *vrhoa = c_functional_->getV_RhoA(); 
-        double *vsigmaaa = c_functional_->getV_GammaAA(); 
+        double *zk = c_functional_->getFunctional();
+        double *vrhoa = c_functional_->getV_RhoA();
+        double *vsigmaaa = c_functional_->getV_GammaAA();
 
         fprintf(outfile, "  Testing Correlation Functional:\n");
         for (int k = 0; k<n_test; k++) {
@@ -161,7 +160,7 @@ double RKS::compute_energy()
 
         form_V(); //Whoa, there's that Kohn-Sham stuff
         V_->print(outfile);
-    
+
         form_F();
         F_->print(outfile);
 
@@ -287,8 +286,8 @@ void RKS::form_F()
         F_->add(J_);
     //J_->scale(0.5);
     if (functional_->isHybrid()) {
-    	K_->scale(-functional_->getExactExchange());
-    	F_->add(K_);
+        K_->scale(-functional_->getExactExchange());
+        F_->add(K_);
     }
     //V_->scale(1.0);
     F_->add(V_);
@@ -318,9 +317,9 @@ void RKS::form_V()
     double *x_funGrad = functional_->getFunctional(0)->getV_RhoA();
 
     const double* rhog = properties_->getDensity();
-   
+
     double **basis_points = properties_->getPoints();
-    //End LSDA Setup    
+    //End LSDA Setup
 
     //GGA Setup (Pointers will only be accessed if functional is GGA)
     double GGA_val;
@@ -336,12 +335,12 @@ void RKS::form_V()
     double **basis_points_x = properties_->getGradientsX();
     double **basis_points_y = properties_->getGradientsY();
     double **basis_points_z = properties_->getGradientsZ();
-    //End of GGA setup    
- 
+    //End of GGA setup
+
     int nirreps = V_->nirreps();
     int* opi = V_->rowspi();
     double check; //numerical density contribution
-    
+
     for (integrator_->reset(); !integrator_->isDone(); ) {
         SharedGridBlock q = integrator_->getNextBlock();
         int ntrue = q->getTruePoints();
@@ -359,15 +358,15 @@ void RKS::form_V()
             functional_energy_ += 2.0*x_fun[grid_index]*wg[grid_index];
 
             //GGA contribution (2 \diff f / \diff s_aa \nabla \rho + \diff f / \diff s_ab \nabla \rho)
-            fun_x = 0.0;            
-            fun_y = 0.0;            
-            fun_z = 0.0;            
+            fun_x = 0.0;
+            fun_y = 0.0;
+            fun_z = 0.0;
             if (GGA) {
                 fun_x += (2.0*x_funGradAA[grid_index]+x_funGradAB[grid_index])*rho_x[grid_index];
                 fun_y += (2.0*x_funGradAA[grid_index]+x_funGradAB[grid_index])*rho_y[grid_index];
                 fun_z += (2.0*x_funGradAA[grid_index]+x_funGradAB[grid_index])*rho_z[grid_index];
             }
-        
+
             //fprintf(outfile,"  Point: <%14.10f,%14.10f,%14.10f>, w = %14.10f, rho = %14.10f\n",xg[grid_index],yg[grid_index],zg[grid_index],wg[grid_index],rhog[grid_index]);
             //fprintf(outfile,"    x_fun = %14.10f, c_fun = %14.10f, d_x_fun = %14.10f, d_c_fun = %14.10f\n",x_fun[grid_index],c_fun[grid_index],x_funGrad[grid_index],c_funGrad[grid_index]);
             if (GGA) {
@@ -385,13 +384,13 @@ void RKS::form_V()
 
                         if (i!=j)
                             V_->add(h,j,i,val);
-                        
+
                         //GGA Contribution
                         if (GGA) {
                             GGA_val = 0.0;
-                            GGA_val += fun_x*(basis_points_x[grid_index][i+h_offset]*basis_points[grid_index][j+h_offset]+basis_points[grid_index][i+h_offset]*basis_points_x[grid_index][j+h_offset]);    
-                            GGA_val += fun_y*(basis_points_y[grid_index][i+h_offset]*basis_points[grid_index][j+h_offset]+basis_points[grid_index][i+h_offset]*basis_points_y[grid_index][j+h_offset]);    
-                            GGA_val += fun_z*(basis_points_z[grid_index][i+h_offset]*basis_points[grid_index][j+h_offset]+basis_points[grid_index][i+h_offset]*basis_points_z[grid_index][j+h_offset]);    
+                            GGA_val += fun_x*(basis_points_x[grid_index][i+h_offset]*basis_points[grid_index][j+h_offset]+basis_points[grid_index][i+h_offset]*basis_points_x[grid_index][j+h_offset]);
+                            GGA_val += fun_y*(basis_points_y[grid_index][i+h_offset]*basis_points[grid_index][j+h_offset]+basis_points[grid_index][i+h_offset]*basis_points_y[grid_index][j+h_offset]);
+                            GGA_val += fun_z*(basis_points_z[grid_index][i+h_offset]*basis_points[grid_index][j+h_offset]+basis_points[grid_index][i+h_offset]*basis_points_z[grid_index][j+h_offset]);
                             GGA_val *= wg[grid_index];
                             V_->add(h,i,j,GGA_val);
                             if (i!=j)

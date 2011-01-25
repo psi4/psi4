@@ -28,7 +28,6 @@
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.hpp>
-#include <libipv1/ip_lib.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <psifiles.h>
@@ -838,7 +837,7 @@ void HF::form_B_Poisson()
                                     if(omu>=onu && schwarz_fun_pairs[omu*(omu+1)/2+onu] == 1) {
                                         for (P=0; P < numP; ++P) {
                                             PHI = poissonbasis_->shell(Pshell)->function_index() + P;
-                                            Amn[PHI + ribasis_->nbf()][ri_back_map_[omu*(omu+1)/2+onu]-porous_starts[block]] = 
+                                            Amn[PHI + ribasis_->nbf()][ri_back_map_[omu*(omu+1)/2+onu]-porous_starts[block]] =
                                                 pbuffer[rank][mu*numnu*numP+nu*numP+P];
                                         }
                                     }
