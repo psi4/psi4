@@ -183,6 +183,24 @@ public:
      *  @param out The file stream to use for printing. Defaults to outfile.
      */
     void print(FILE *out = outfile) const;
+    /** Print basis set information according to the level of detail in print_level
+     *  @param out The file stream to use for printing. Defaults to outfile.
+     *  @param print_level: < 1: Nothing
+                              1: Brief summary
+                              2: Summary and contraction details
+                            > 2: Full details
+                            Defaults to 2
+     */  
+    void print_by_level(FILE* out = outfile, int print_level = 2) const;  
+    /** Prints a short string summarizing the basis set
+     *  @param out The file stream to use for printing. Defaults to outfile.
+     */
+    void print_summary(FILE *out = outfile) const; 
+
+    /** Prints a detailed PSI3-style summary of the basis (per-atom)
+     *  @param out The file stream to use for printing. Defaults to outfile.
+     */
+    void print_detail(FILE *out = outfile) const;
 
     /** Refresh internal basis set data. Useful if someone has pushed to shells_.
      *  Pushing to shells_ happens in the BasisSetParsers, so the parsers will
@@ -220,6 +238,14 @@ public:
      */
     static boost::shared_ptr<SOBasisSet> zero_so_basis_set(const boost::shared_ptr<IntegralFactory>& factory);
 
+    /** Returns a shell-labeled test basis set object
+     *
+     * @param max_am maximum angular momentum to build
+     * @return pair containing shell labels and four-center
+     * test basis for use in benchmarking
+     * See libmints/benchmark.cc for details
+     */
+    static std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > test_basis_set(int max_am);
     /** Returns a new BasisSet object.
      *
      * Returns a new BasisSet object configured with the provided Molecule object.

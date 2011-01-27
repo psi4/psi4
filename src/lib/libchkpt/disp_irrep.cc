@@ -11,7 +11,7 @@
 
 using namespace psi;
 
-int Chkpt::rd_disp_irrep(void)
+int Chkpt::rd_disp_irrep()
 {
 	int h;
 	char *keyword;

@@ -11,7 +11,7 @@
 
 using namespace psi;
 
-char *Chkpt::rd_sym_label(void)
+char *Chkpt::rd_sym_label()
 {
 	char *sym_label;
 	char *keyword;

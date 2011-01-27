@@ -4,8 +4,7 @@
 #include <boost/algorithm/string.hpp>
 
 //MKL Header
-//#define _MKL
-#ifdef _MKL
+#ifdef HAVE_MKL
 #include <mkl.h>
 #endif
 

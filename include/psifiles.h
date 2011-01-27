@@ -139,6 +139,8 @@
 #define PSIF_MO_AB_R12SQ       219
 #define PSIF_MO_R12SQ          220
 
+#define PSIF_3INDEX            16  
+
 /* All of these one-electron quantities have been moved into PSIF_OEI
    Most integrals are real Hermitian hence only lower triangle of the matrix is written out */
 /* These macros give libpsio TOC strings for easy identification.     */

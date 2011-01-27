@@ -25,6 +25,7 @@ namespace psi {
 int psi_stop(FILE* infile, FILE* outfile, char* psi_file_prefix)
 {
   free(psi_file_prefix);
+  fflush(outfile);
   fclose(outfile);
   fclose(infile);
 

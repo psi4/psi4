@@ -844,6 +844,7 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libsapt_solver/Makefile
           src/lib/libfunctional/Makefile
           src/lib/libplugin/Makefile
+          src/lib/lib3index/Makefile
 
           src/util/tocprint/Makefile
           src/util/psiclean/Makefile

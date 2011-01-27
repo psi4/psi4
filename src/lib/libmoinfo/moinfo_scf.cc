@@ -12,6 +12,7 @@
 extern FILE *outfile;
 
 using namespace std;
+using namespace psi;
 
 namespace psi {
 

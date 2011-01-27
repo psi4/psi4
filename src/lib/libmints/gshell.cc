@@ -144,3 +144,6 @@ Vector3 GaussianShell::center() const
 { 
     return center_; 
 }
+const char *GaussianShell::amtypes = "spdfghiklmn";
+const char *GaussianShell::AMTYPES = "SPDFGHIKLMN";
+

@@ -11,7 +11,7 @@ CXXDEF += -DFC_SYMBOL=$(FC_SYMBOL)
 PSITARGET = $(top_objdir)/lib/libPSI_qt.a
 
 CXXSRC = \
-blas_intfc.cc       invert.cc     schmidt.cc \
+blas_intfc.cc       blas_intfc23.cc invert.cc     schmidt.cc \
 dirprd_block.cc     mat_in.cc     newmm_rking.cc  reorder_qt.cc    schmidt_add.cc \
 dot_block.cc        mat_print.cc  normalize.cc    \
 eri.cc              pople.cc        solve_pep.cc \

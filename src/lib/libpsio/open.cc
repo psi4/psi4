@@ -69,14 +69,17 @@ void PSIO::open(unsigned int unit, int status) {
   for (i=0; i < this_unit->numvols; i++) {
     char* fullpath;
     get_volpath(unit, i, &path);
+
+    #pragma warn A bit of a hack in psio open at the moment, breaks volumes and some error checking
+    const char* path2 = PSIOManager::shared_object()->get_file_path(unit).c_str(); 
     
-    fullpath = (char*) malloc( (strlen(path)+strlen(name)+80)*sizeof(char));
-    sprintf(fullpath, "%s%s.%u", path, name, unit);
+    fullpath = (char*) malloc( (strlen(path2)+strlen(name)+80)*sizeof(char));
+    sprintf(fullpath, "%s%s.%u", path2, name, unit);
     this_unit->vol[i].path = strdup(fullpath);
     free(fullpath);
     
     /* Register the file */
-    PSIOManager::shared_object()->open_file(std::string(this_unit->vol[i].path));
+    PSIOManager::shared_object()->open_file(std::string(this_unit->vol[i].path), unit);
 
     /* Now open the volume */
     if (status == PSIO_OPEN_OLD) {

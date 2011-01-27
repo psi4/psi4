@@ -24,6 +24,11 @@
 #include "liboptions/liboptions.h"
 #include <libmints/molecule.h>
 #include <libmints/pointgrp.h>
+#include <libmints/benchmark.h>
+#include <libmints/psimath.h>
+#include <libmints/vector.h>
+#include <libmints/matrix.h>
+#include <lib3index/3index.h>
 #include <libfunctional/superfunctional.h>
 #include <libplugin/plugin.h>
 #include <libparallel/parallel.h>
@@ -42,11 +47,8 @@ std::map<std::string, plugin_info> plugins;
 namespace opt      { psi::PsiReturnType optking(psi::Options &); }
 
 namespace psi {
-//    namespace input    { PsiReturnType input(Options &); }
-//    namespace cints    { PsiReturnType cints(Options &); }
     namespace mints    { PsiReturnType mints(Options &); }
     namespace deriv    { PsiReturnType deriv(Options &); }
-//    namespace cscf     { PsiReturnType cscf(Options &);  }
     namespace mcscf    { PsiReturnType mcscf(Options &); }
     namespace scf      { PsiReturnType scf(Options &);   }
     namespace dfmp2    { PsiReturnType dfmp2(Options &); }
@@ -182,11 +184,6 @@ int py_psi_optking()
     return opt::optking(Process::environment.options);
 }
 
-//int py_psi_input()
-//{
-//    return input::input(Process::environment.options);
-//}
-
 int py_psi_mints()
 {
     return mints::mints(Process::environment.options);
@@ -196,17 +193,6 @@ int py_psi_deriv()
 {
     return deriv::deriv(Process::environment.options);
 }
-
-//int py_psi_cints()
-//{
-//    return cints::cints(Process::environment.options);
-//}
-
-//int py_psi_cscf()
-//{
-//    return cscf::cscf(Process::environment.options);
-//}
-
 double py_psi_mcscf()
 {
   if (mcscf::mcscf(Process::environment.options) == Success) {
@@ -216,7 +202,6 @@ double py_psi_mcscf()
     return 0.0;
 
 }
-
 double py_psi_scf()
 {
     if (scf::scf(Process::environment.options) == Success) {
@@ -322,11 +307,6 @@ void py_psi_clean()
 {
     PSIOManager::shared_object()->psiclean();
 }
-
-//bool py_psi_configure_psio(PSIO* obj)
-//{
-//    return psiopp_ipv1_config(obj);
-//}
 
 void py_psi_set_default_options_for_module(std::string const & name)
 {
@@ -434,7 +414,7 @@ bool py_psi_set_global_option_array(std::string const & name, python::list value
     size_t n = len(values);
 
     // Reset the array to a known state (empty).
-//    Process::environment.options[name].reset();
+    // Process::environment.options[name].reset();
     Process::environment.options.get_global(name).reset();
 
     for (size_t i=0; i < n; ++i) {
@@ -495,7 +475,7 @@ void py_psi_set_memory(unsigned long int mem)
 {
     Process::environment.set_memory(mem);
     fprintf(outfile,"\n  Memory set to %7.3f %s by Python script.\n",(mem > 1000000000 ? mem/1.0E9 : mem/1.0E6), \
-        (mem > 1000000000 ? "GB" : "MB" ));
+        (mem > 1000000000 ? "GiB" : "MiB" ));
 }
 
 unsigned long int py_psi_get_memory()
@@ -517,7 +497,205 @@ BOOST_PYTHON_MODULE(PsiMod)
 {
     def("version", py_psi_version);
     def("clean", py_psi_clean);
-//    def("configure_io", py_psi_configure_psio);
+
+    // Benchmarks    
+    def("benchmark_blas1", &psi::benchmark_blas1);
+    def("benchmark_blas2", &psi::benchmark_blas2);
+    def("benchmark_blas3", &psi::benchmark_blas3);
+    def("benchmark_disk", &psi::benchmark_disk);
+    def("benchmark_math", &psi::benchmark_math);
+    def("benchmark_integrals", &psi::benchmark_integrals);
+   
+    // BLAS Static Wrappers 
+    def("DGBMV", &psi::PSI_DGBMV);
+    def("DGEMM", &psi::PSI_DGEMM);
+    def("DGEMV", &psi::PSI_DGEMV);
+    def("DGER", &psi::PSI_DGER);
+    def("DSBMV", &psi::PSI_DSBMV);
+    def("DSYMM", &psi::PSI_DSYMM);
+    def("DSYMV", &psi::PSI_DSYMV);
+    def("DSYR", &psi::PSI_DSYR);
+    def("DSYR2", &psi::PSI_DSYR2);
+    def("DSYR2K", &psi::PSI_DSYR2K);
+    def("DSYRK", &psi::PSI_DSYRK);
+    def("DTBMV", &psi::PSI_DTBMV);
+    def("DTBSV", &psi::PSI_DTBSV);
+    def("DTRMM", &psi::PSI_DTRMM);
+    def("DTRMV", &psi::PSI_DTRMV);
+    def("DTRSM", &psi::PSI_DTRSM);
+    def("DTRSV", &psi::PSI_DTRSV);
+    def("DROT", &psi::PSI_DROT);
+    def("DSWAP", &psi::PSI_DSWAP);
+    def("DSCAL", &psi::PSI_DSCAL);
+    def("DAXPY", &psi::PSI_DAXPY);
+    def("DCOPY", &psi::PSI_DCOPY);
+    def("DDOT", &psi::PSI_DDOT);
+    def("DNRM2", &psi::PSI_DNRM2);
+    def("DASUM", &psi::PSI_DASUM);
+    def("IDAMAX", &psi::PSI_IDAMAX);
+
+    // LAPACK static wrappers
+    
+    def("DGEEV", &psi::PSI_DGEEV);
+    def("DSYEV", &psi::PSI_DSYEV);
+    def("DSYSV", &psi::PSI_DSYSV);
+    def("DGETRF", &psi::PSI_DGETRF);
+    def("DGETRS", &psi::PSI_DGETRS);
+    def("DGETRI", &psi::PSI_DGETRI);
+    def("DPOTRF", &psi::PSI_DPOTRF);
+    def("DPOTRS", &psi::PSI_DPOTRS);
+    def("DPOTRI", &psi::PSI_DPOTRI);
+    /**
+    def("DBDSDC", &psi::PSI_DBDSDC);
+    def("DBDSQR", &psi::PSI_DBDSQR);
+    def("DDISNA", &psi::PSI_DDISNA);
+    def("DGBBRD", &psi::PSI_DGBBRD);
+    def("DGBCON", &psi::PSI_DGBCON);
+    def("DGBEQU", &psi::PSI_DGBEQU);
+    def("DGBRFS", &psi::PSI_DGBRFS);
+    def("DGBSV", &psi::PSI_DGBSV);
+    def("DGBSVX", &psi::PSI_DGBSVX);
+    def("DGBTRF", &psi::PSI_DGBTRF);
+    def("DGBTRS", &psi::PSI_DGBTRS);
+    def("DGEBAK", &psi::PSI_DGEBAK);
+    def("DGEBAL", &psi::PSI_DGEBAL);
+    def("DGEBRD", &psi::PSI_DGEBRD);
+    def("DGECON", &psi::PSI_DGECON);
+    def("DGEEQU", &psi::PSI_DGEEQU);
+    def("DGEES", &psi::PSI_DGEES);
+    def("DGEESX", &psi::PSI_DGEESX);
+    def("DGEEVX", &psi::PSI_DGEEVX);
+    def("DGEGS", &psi::PSI_DGEGS);
+    def("DGEGV", &psi::PSI_DGEGV);
+    def("DGEHRD", &psi::PSI_DGEHRD);
+    def("DGELQF", &psi::PSI_DGELQF);
+    def("DGELS", &psi::PSI_DGELS);
+    def("DGELSD", &psi::PSI_DGELSD);
+    def("DGELSS", &psi::PSI_DGELSS);
+    def("DGELSX", &psi::PSI_DGELSX);
+    def("DGELSY", &psi::PSI_DGELSY);
+    def("DGEQLF", &psi::PSI_DGEQLF);
+    def("DGEQP3", &psi::PSI_DGEQP3);
+    def("DGEQPF", &psi::PSI_DGEQPF);
+    def("DGERFS", &psi::PSI_DGERFS);
+    def("DGERQF", &psi::PSI_DGERQF);
+    def("DGESDD", &psi::PSI_DGESDD);
+    def("DGESV", &psi::PSI_DGESV);
+    def("DGESVX", &psi::PSI_DGESVX);
+    def("DGETRF", &psi::PSI_DGETRF);
+    def("DGETRI", &psi::PSI_DGETRI);
+    def("DGETRS", &psi::PSI_DGETRS);
+    def("DGGBAK", &psi::PSI_DGGBAK);
+    def("DGGBAL", &psi::PSI_DGGBAL);
+    def("DGGES", &psi::PSI_DGGES);
+    def("DGGESX", &psi::PSI_DGGESX);
+    def("DGGEV", &psi::PSI_DGGEV);
+    def("DGGEVX", &psi::PSI_DGGEVX);
+    def("DGGGLM", &psi::PSI_DGGGLM);
+    def("DGGHRD", &psi::PSI_DGGHRD);
+    def("DGGLSE", &psi::PSI_DGGLSE);
+    def("DGGQRF", &psi::PSI_DGGQRF);
+    def("DGGRQF", &psi::PSI_DGGRQF);
+    def("DGGSVD", &psi::PSI_DGGSVD);
+    def("DGGSVP", &psi::PSI_DGGSVP);
+    def("DGTCON", &psi::PSI_DGTCON);
+    def("DGTRFS", &psi::PSI_DGTRFS);
+    def("DGTSV", &psi::PSI_DGTSV);
+    def("DGTSVX", &psi::PSI_DGTSVX);
+    def("DGTTRF", &psi::PSI_DGTTRF);
+    def("DGTTRS", &psi::PSI_DGTTRS);
+    def("DHGEQZ", &psi::PSI_DHGEQZ);
+    def("DHSEIN", &psi::PSI_DHSEIN);
+    def("DHSEQR", &psi::PSI_DHSEQR);
+    def("DORGBR", &psi::PSI_DORGBR);
+    def("DORGHR", &psi::PSI_DORGHR);
+    def("DORGLQ", &psi::PSI_DORGLQ);
+    def("DORGQL", &psi::PSI_DORGQL);
+    def("DORGQR", &psi::PSI_DORGQR);
+    def("DORGRQ", &psi::PSI_DORGRQ);
+    def("DORGTR", &psi::PSI_DORGTR);
+    def("DORMBR", &psi::PSI_DORMBR);
+    def("DORMHR", &psi::PSI_DORMHR);
+    def("DORMLQ", &psi::PSI_DORMLQ);
+    def("DORMQL", &psi::PSI_DORMQL);
+    def("DORMQR", &psi::PSI_DORMQR);
+    def("DORMR3", &psi::PSI_DORMR3);
+    def("DORMRQ", &psi::PSI_DORMRQ);
+    def("DORMRZ", &psi::PSI_DORMRZ);
+    def("DORMTR", &psi::PSI_DORMTR);
+    def("DPBCON", &psi::PSI_DPBCON);
+    def("DPBEQU", &psi::PSI_DPBEQU);
+    def("DPBRFS", &psi::PSI_DPBRFS);
+    def("DPBSTF", &psi::PSI_DPBSTF);
+    def("DPBSV", &psi::PSI_DPBSV);
+    def("DPBSVX", &psi::PSI_DPBSVX);
+    def("DPBTRF", &psi::PSI_DPBTRF);
+    def("DPBTRS", &psi::PSI_DPBTRS);
+    def("DPOCON", &psi::PSI_DPOCON);
+    def("DPOEQU", &psi::PSI_DPOEQU);
+    def("DPORFS", &psi::PSI_DPORFS);
+    def("DPOSV", &psi::PSI_DPOSV);
+    def("DPOSVX", &psi::PSI_DPOSVX);
+    def("DPOTRF", &psi::PSI_DPOTRF);
+    def("DPOTRI", &psi::PSI_DPOTRI);
+    def("DPOTRS", &psi::PSI_DPOTRS);
+    def("DPTCON", &psi::PSI_DPTCON);
+    def("DPTEQR", &psi::PSI_DPTEQR);
+    def("DPTRFS", &psi::PSI_DPTRFS);
+    def("DPTSV", &psi::PSI_DPTSV);
+    def("DPTSVX", &psi::PSI_DPTSVX);
+    def("DPTTRF", &psi::PSI_DPTTRF);
+    def("DPTTRS", &psi::PSI_DPTTRS);
+    def("DSBEV", &psi::PSI_DSBEV);
+    def("DSBEVD", &psi::PSI_DSBEVD);
+    def("DSBEVX", &psi::PSI_DSBEVX);
+    def("DSBGST", &psi::PSI_DSBGST);
+    def("DSBGV", &psi::PSI_DSBGV);
+    def("DSBGVD", &psi::PSI_DSBGVD);
+    def("DSBGVX", &psi::PSI_DSBGVX);
+    def("DSBTRD", &psi::PSI_DSBTRD);
+    def("DSGESV", &psi::PSI_DSGESV);
+    def("DSTEBZ", &psi::PSI_DSTEBZ);
+    def("DSTEDC", &psi::PSI_DSTEDC);
+    def("DSTEGR", &psi::PSI_DSTEGR);
+    def("DSTEIN", &psi::PSI_DSTEIN);
+    def("DSTEQR", &psi::PSI_DSTEQR);
+    def("DSTERF", &psi::PSI_DSTERF);
+    def("DSTEV", &psi::PSI_DSTEV);
+    def("DSTEVD", &psi::PSI_DSTEVD);
+    def("DSTEVR", &psi::PSI_DSTEVR);
+    def("DSTEVX", &psi::PSI_DSTEVX);
+    def("DSYCON", &psi::PSI_DSYCON);
+    def("DSYGST", &psi::PSI_DSYGST);
+    def("DSYGV", &psi::PSI_DSYGV);
+    def("DSYGVD", &psi::PSI_DSYGVD);
+    def("DSYGVX", &psi::PSI_DSYGVX);
+    def("DSYRFS", &psi::PSI_DSYRFS);
+    def("DSYTRD", &psi::PSI_DSYTRD);
+    def("DSYTRF", &psi::PSI_DSYTRF);
+    def("DSYTRI", &psi::PSI_DSYTRI);
+    def("DSYTRS", &psi::PSI_DSYTRS);
+    def("DTBCON", &psi::PSI_DTBCON);
+    def("DTBRFS", &psi::PSI_DTBRFS);
+    def("DTBTRS", &psi::PSI_DTBTRS);
+    def("DTGEVC", &psi::PSI_DTGEVC);
+    def("DTGEXC", &psi::PSI_DTGEXC);
+    def("DTGSEN", &psi::PSI_DTGSEN);
+    def("DTGSJA", &psi::PSI_DTGSJA);
+    def("DTGSNA", &psi::PSI_DTGSNA);
+    def("DTGSYL", &psi::PSI_DTGSYL);
+    def("DTRCON", &psi::PSI_DTRCON);
+    def("DTREVC", &psi::PSI_DTREVC);
+    def("DTREXC", &psi::PSI_DTREXC);
+    def("DTRRFS", &psi::PSI_DTRRFS);
+    def("DTRSEN", &psi::PSI_DTRSEN);
+    def("DTRSNA", &psi::PSI_DTRSNA);
+    def("DTRSYL", &psi::PSI_DTRSYL);
+    def("DTRTRI", &psi::PSI_DTRTRI);
+    def("DTRTRS", &psi::PSI_DTRTRS);
+    def("DTZRQF", &psi::PSI_DTZRQF);
+    def("DTZRZF", &psi::PSI_DTZRZF);
+    **/
 
     // Options
     def("set_default_options_for_module", py_psi_set_default_options_for_module);
@@ -597,8 +775,11 @@ BOOST_PYTHON_MODULE(PsiMod)
         staticmethod("shared_object").
         def( "print_out", &PSIOManager::print_out ).
         def( "psiclean", &PSIOManager::psiclean ).
+        def( "crashclean", &PSIOManager::crashclean ).
         def( "mark_file_for_retention", &PSIOManager::mark_file_for_retention ).
-        def( "mark_file_for_deletion", &PSIOManager::mark_file_for_deletion );
+        def( "set_default_path", &PSIOManager::set_default_path ).
+        def( "set_specific_path", &PSIOManager::set_specific_path ).
+        def( "set_specific_retention", &PSIOManager::set_specific_retention );
 
     class_<Chkpt, shared_ptr<Chkpt> >( "Checkpoint", init<PSIO*, int>() ).
         add_property( "enuc", &Chkpt::rd_enuc, &Chkpt::wt_enuc).
@@ -614,6 +795,36 @@ BOOST_PYTHON_MODULE(PsiMod)
         add_property( "emp2", &Chkpt::rd_emp2, &Chkpt::wt_emp2).
         def( "shared_object", &Chkpt::shared_object).
         staticmethod("shared_object");
+
+    class_<Matrix, shared_ptr<Matrix> >( "Matrix").
+        def(init<int, int>()).
+        def("get", &Matrix::get).
+        def("set", &Matrix::set_python).
+        def("set_name", &Matrix::set_name).
+        def("print_out", &Matrix::print_out);
+    
+    class_<Vector, shared_ptr<Vector> >( "Vector").
+        def(init<int>()).
+        def("get", &Vector::get).
+        def("set", &Vector::set_python).
+        def("print_out", &Vector::print_out);
+
+    class_<IntVector, shared_ptr<IntVector> >( "IntVector").
+        def(init<int>()).
+        def("get", &IntVector::get).
+        def("set", &IntVector::set_python).
+        def("print_out", &IntVector::print_out);
+
+    /**
+    class_<DFTensor, shared_ptr<DFTensor> >( "DFTensor", no_init).
+        def("bootstrap", &DFTensor::bootstrap_DFTensor).
+        staticmethod("booststrap").
+        def("form_fitting_metric", &DFTensor::form_fitting_metric).
+        def("form_cholesky_metric", &DFTensor::form_cholesky_metric).
+        def("form_qr_metric", &DFTensor::form_qr_metric).
+        def("finalize", &DFTensor::finalize).
+        def("print_out", &DFTensor::print_python);
+    **/
 
     class_<Vector3>("Vector3").
         def(init<double>()).

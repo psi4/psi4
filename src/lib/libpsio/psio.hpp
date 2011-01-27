@@ -25,9 +25,17 @@ namespace psi {
     PSIO operations in a given PSI4 computation
 
     This will allow PSICLEAN to be trivially executed.
+    Now supports a .psirc and interactive file placement 
    */
   class PSIOManager {
         private:
+            /// Default path for unspec'd file numbers (defaults to /tmp/)
+            std::string default_path_;
+            /// Specific paths for arbitrary file numbers
+            std::map<int, std::string> specific_paths_;
+            /// Default retained files
+            std::set<int> specific_retains_;
+
             /// Map of files, bool denotes open or closed
             std::map<std::string, bool> files_;
             /// Set of files to retain after psiclean
@@ -35,20 +43,55 @@ namespace psi {
         public:
             /// Default constructor (does nothing)
             PSIOManager();
-            /// Default destrctor (does nothing)
+            /// Default destructor (does nothing)
             ~PSIOManager();
+          
+            /** 
+            * Mirror the current delete-able files to "psi.clean"
+            **/
+            void mirror_to_disk();
+            /** 
+            * Build from "psi.clean"
+            **/
+            void build_from_disk();
+
+            /**
+            * Set the default path for files to be stored
+            * \param path full path to scratch
+            */ 
+            void set_default_path(const std::string& path) { default_path_ = path; }
+            /**
+            * Set the path for specific file numbers
+            * \param fileno PSI4 file number
+            * \param path full path to file-specific scratch
+            */ 
+            void set_specific_path(int fileno, const std::string& path);
+            /**
+            * Set the the specific file number to be retained
+            * \param fileno PSI4 file number
+            * \param retain keep or not? (Allows override)
+            */ 
+            void set_specific_retention(int fileno, bool retain);
+            /**
+            * Get the path for a specific file number
+            * \param fileno PSI4 file number
+            * \return the appropriate full path
+            */ 
+            std::string get_file_path(int fileno); 
+
             /**
             * Record the opening of a file
             * \param full_path filename
             */
-            void open_file(const std::string & full_path);
+            void open_file(const std::string & full_path, int fileno);
             /**
             * Record the opening of a file
+            * \param fileno PSI4 file number
             * \param full_path filename
-            * \param keep TRUE : the file is closed and retained
-                          FALSE: the file is closed and deleted
+            * \param keep TRUE : the file is closed and retained by PSIO
+                          FALSE: the file is closed and deleted by PSIO
             */
-            void close_file(const std::string & full_path, bool keep);
+            void close_file(const std::string & full_path, int fileno, bool keep);
             /**
             * Move a file from one location to another, retaining status
             * Useful for changing namespaces
@@ -60,14 +103,9 @@ namespace psi {
             * Mark a file to be retained after a psiclean operation, ie for use in
             * a later computation
             * \param full_path filename
+            * \param retain keep or not? (Allows override)
             */
-            void mark_file_for_retention(const std::string & full_path);
-            /**
-            * Override a retain operation, ie for use in
-            * overriding .PSIRC defaults
-            * \param full_path filename
-            */
-            void mark_file_for_deletion(const std::string & full_path);
+            void mark_file_for_retention(const std::string & full_path, bool retain);
             /**
             * Print the current status of PSI4 files
             * \param out, file to print fo
@@ -89,6 +127,11 @@ namespace psi {
             * This is useful for intermediate calls to psiclean
             */
             void psiclean();
+            /**
+            * Clean from disk-mirrored image after crash
+            * NOT to be called during regular computation
+            **/
+            void crashclean();
             /// The one and (should be) only instance of PSIOManager for a PSI4 instance
             static shared_ptr<PSIOManager> shared_object() { return _default_psio_manager_; }
    };

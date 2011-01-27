@@ -33,3 +33,4 @@
 #include <libmints/dimension.h>
 #include <libmints/3coverlap.h>
 #include <libmints/sointegral.h>
+#include <libmints/mintshelper.h>

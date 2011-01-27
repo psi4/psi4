@@ -6,13 +6,13 @@
 
 using namespace psi;
 
-Vector::Vector() {
+IntVector::IntVector() {
     vector_ = NULL;
     dimpi_ = NULL;
     nirreps_ = 0;
 }
 
-Vector::Vector(const Vector& c) {
+IntVector::IntVector(const IntVector& c) {
     vector_ = NULL;
     nirreps_ = c.nirreps_;
     dimpi_ = new int[nirreps_];
@@ -22,7 +22,7 @@ Vector::Vector(const Vector& c) {
     copy_from(c.vector_);
 }
 
-Vector::Vector(int nirreps, int *dimpi) {
+IntVector::IntVector(int nirreps, int *dimpi) {
     vector_ = NULL;
     nirreps_ = nirreps;
     dimpi_ = new int[nirreps_];
@@ -30,7 +30,7 @@ Vector::Vector(int nirreps, int *dimpi) {
         dimpi_[h] = dimpi[h];
     alloc();
 }
-Vector::Vector(int dim) {
+IntVector::IntVector(int dim) {
     vector_ = NULL;
     nirreps_ = 1;
     dimpi_ = new int[nirreps_];
@@ -38,13 +38,13 @@ Vector::Vector(int dim) {
     alloc();
 }
 
-Vector::~Vector() {
+IntVector::~IntVector() {
     release();
     if (dimpi_)
         delete[] dimpi_;
 }
 
-void Vector::init(int nirreps, int *dimpi)
+void IntVector::init(int nirreps, int *dimpi)
 {
     if (dimpi_) delete[] dimpi_;
     nirreps_ = nirreps;
@@ -54,18 +54,18 @@ void Vector::init(int nirreps, int *dimpi)
     alloc();
 }
 
-void Vector::alloc() {
+void IntVector::alloc() {
     if (vector_)
         release();
     
-    vector_ = (double**)malloc(sizeof(double*) * nirreps_);
+    vector_ = (int**)malloc(sizeof(int*) * nirreps_);
     for (int h=0; h<nirreps_; ++h) {
         if (dimpi_[h])
-            vector_[h] = new double[dimpi_[h]];
+            vector_[h] = new int[dimpi_[h]];
     }
 }
 
-void Vector::release() {
+void IntVector::release() {
     if (!vector_)
         return;
     
@@ -77,16 +77,16 @@ void Vector::release() {
     vector_ = NULL;
 }
 
-void Vector::copy_from(double **c) {
+void IntVector::copy_from(int **c) {
     size_t size;
     for (int h=0; h<nirreps_; ++h) {
-        size = dimpi_[h] * sizeof(double);
+        size = dimpi_[h] * sizeof(int);
         if (size)
             memcpy(&(vector_[h][0]), &(c[h][0]), size);
     }
 }
 
-void Vector::copy(const Vector *rhs) {
+void IntVector::copy(const IntVector *rhs) {
     if (nirreps_ != rhs->nirreps_) {
         release();
         if (dimpi_)
@@ -99,7 +99,7 @@ void Vector::copy(const Vector *rhs) {
     }
     copy_from(rhs->vector_);
 }
-void Vector::copy(const Vector &rhs) {
+void IntVector::copy(const IntVector &rhs) {
     if (nirreps_ != rhs.nirreps_) {
         release();
         if (dimpi_)
@@ -113,7 +113,7 @@ void Vector::copy(const Vector &rhs) {
     copy_from(rhs.vector_);
 }
 
-void Vector::set(double *vec) {
+void IntVector::set(int *vec) {
     int h, i, ij;
     
     ij = 0;
@@ -124,22 +124,22 @@ void Vector::set(double *vec) {
     }
 }
 
-void Vector::print(FILE *out) {
+void IntVector::print(FILE *out) {
     int h;
     for (h=0; h<nirreps_; ++h) {
         fprintf(out, " Irrep: %d\n", h+1);
         for (int i=0; i<dimpi_[h]; ++i)
-            fprintf(out, "   %4d: %10.7f\n", i+1, vector_[h][i]);
+            fprintf(out, "   %4d: %10.7d\n", i+1, vector_[h][i]);
         fprintf(out, "\n");
     }
 }
 
-double *Vector::to_block_vector() {
+int *IntVector::to_block_vector() {
     size_t size=0;
     for (int h=0; h<nirreps_; ++h)
         size += dimpi_[h];
     
-    double *temp = new double[size];
+    int *temp = new int[size];
     size_t offset = 0;
     for (int h=0; h<nirreps_; ++h) {
         for (int i=0; i<dimpi_[h]; ++i) {
@@ -151,67 +151,40 @@ double *Vector::to_block_vector() {
     return temp;
 }
 
-void Vector::gemv(bool transa, double alpha, Matrix* A, Vector* X, double beta)
-{
-    char trans = transa ? 't' : 'n';
-
-    for (int h =0; h < nirreps_; ++h) {
-        C_DGEMV(trans, A->rowspi_[h], A->colspi_[h], alpha, &(A->matrix_[h][0][0]),
-                A->rowspi_[h], &(X->vector_[h][0]), 1, beta, &(vector_[h][0]), 1);
-    }
-}
-
-double Vector::dot(Vector* X)
-{
-    double tmp = 0.0;
-
-    for (int h=0; h<nirreps_; ++h) {
-        if (dimpi_[h] != X->dimpi_[h]) {
-            printf("Vector::dot: Vectors are not of the same size.\n");
-            return 0.0;
-        }
-        for (int i=0; i<dimpi_[h]; ++i) {
-            tmp += vector_[h][i] * X->vector_[h][i];
-        }
-    }
-
-    return tmp;
-}
-
 //
-// SimpleVector class
+// SimpleIntVector class
 //
-SimpleVector::SimpleVector() {
+SimpleIntVector::SimpleIntVector() {
     vector_ = NULL;
     dim_ = 0;
 }
 
-SimpleVector::SimpleVector(const SimpleVector& c) {
+SimpleIntVector::SimpleIntVector(const SimpleIntVector& c) {
     vector_ = NULL;
     dim_ = c.dim_;
     alloc();
     copy_from(c.vector_);
 }
 
-SimpleVector::SimpleVector(int dim) {
+SimpleIntVector::SimpleIntVector(int dim) {
     vector_ = NULL;
     dim_ = dim;
     alloc();
 }
 
-SimpleVector::~SimpleVector() {
+SimpleIntVector::~SimpleIntVector() {
     release();
 }
 
-void SimpleVector::alloc() {
+void SimpleIntVector::alloc() {
     if (vector_)
         release();
     
-    vector_ = new double[dim_];
-    memset(vector_, 0, sizeof(double) * dim_);
+    vector_ = new int[dim_];
+    memset(vector_, 0, sizeof(int) * dim_);
 }
 
-void SimpleVector::release() {
+void SimpleIntVector::release() {
     if (!vector_)
         return;
     
@@ -219,21 +192,21 @@ void SimpleVector::release() {
     vector_ = NULL;
 }
 
-void SimpleVector::copy_from(double *c) {
+void SimpleIntVector::copy_from(int *c) {
     size_t size;
-    size = dim_ * sizeof(double);
+    size = dim_ * sizeof(int);
     if (size)
         memcpy(&(vector_[0]), &(c[0]), size);
 }
 
-void SimpleVector::copy(const SimpleVector *rhs) {
+void SimpleIntVector::copy(const SimpleIntVector *rhs) {
     release();
     dim_ = rhs->dim_;
     alloc();
     copy_from(rhs->vector_);
 }
 
-void SimpleVector::set(double *vec) {
+void SimpleIntVector::set(int *vec) {
     int i;
     
     for (i=0; i<dim_; ++i) {
@@ -241,14 +214,14 @@ void SimpleVector::set(double *vec) {
     }
 }
 
-void SimpleVector::print(FILE *out) {
+void SimpleIntVector::print(FILE *out) {
     for (int i=0; i<dim_; ++i)
-        fprintf(out, "   %4d: %10.7f\n", i+1, vector_[i]);
+        fprintf(out, "   %4d: %10.df\n", i+1, vector_[i]);
     fprintf(out, "\n");
 }
 
-double *SimpleVector::to_block_vector() {
-    double *temp = new double[dim_];
+int *SimpleIntVector::to_block_vector() {
+    int *temp = new int[dim_];
     for (int i=0; i<dim_; ++i) {
         temp[i] = vector_[i];
     }
@@ -256,8 +229,4 @@ double *SimpleVector::to_block_vector() {
     return temp;
 }
 
-void SimpleVector::scale(double a) {
-    for (int i=0; i<dim_; ++i) {
-        vector_[i] *= a;
-    }
-}
+
