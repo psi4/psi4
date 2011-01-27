@@ -99,12 +99,8 @@ int main(int argc, char **argv, char **envp)
 
     // Okay, we might only need to make this function call if we're using IPV1
     // TODO: Need to come up with a way to interface with optking
-//    if (!script) {
-//        psi4_driver();
-//    }
-//    else {
-        Script::language->run(infile);
-//    }
+    // 
+    Script::language->run(infile);
 
     // Shut things down:
     psi_stop(infile, outfile, psi_file_prefix);

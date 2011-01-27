@@ -2,7 +2,7 @@
 .PHONY:	default all install depend clean dclean targetclean
 
 subdirs = libciomr libchkpt libqt libpsio libiwl libdpd \
-          libint libderiv libr12 libutil liboptions libfunctional libmoinfo \
+          libint libderiv libr12 libutil liboptions lib3index libmoinfo libfunctional \
           libmints libtrans libparallel libscf_solver libboost_python \
           libboost_regex libboost_thread libdiis libsapt_solver \
           libboost_filesystem libplugin

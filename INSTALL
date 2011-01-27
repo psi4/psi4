@@ -1,14 +1,8 @@
-Recent Changes (1/10)
+Recent Changes (1/11)
 ----------------------------------
 * Run aclocal before running configure
-* The code (temporarily) requires MPI.  Make sure you've installed a
-version of MPI (mpich2 recommended for Linux) and added the binaries
-to your path.  Then, when running configure, use the 
---with-cxx=mpicxx option.  Note: we have had trouble with header files
-when using mpich2-1.1.0.  Using mpich2-1.2.1 seems to fix it.
 * The code now requires Python.  You must have the Python developer's
 package installed, in addition to the base Python package
-
 
 
 Installation Instructions for PSI4
@@ -34,7 +28,6 @@ I. Compilation Prerequisites:
    * Optimized BLAS library (see recommendations below)
    * Optimized LAPACK library (see recommendations below)
    * POSIX threads (Pthreads) library (optional)
-   * Perl interpreter (5.005 or higher; needed for running test cases)
    * Python interpreter (2.4 or higher; needed for input files)
    * Python developer libraries corresponding to your interpreter.
    * A version of MPI is currently required; MPICH2 is recommended.
@@ -42,8 +35,6 @@ I. Compilation Prerequisites:
      seems to fix it.)
    * GNU utilities: (see http://www.gnu.org)
       ** make
-      ** flex
-      ** bison
       ** autoconf (version 2.52 or higher)
       ** aclocal
       ** fileutils (esp. install)
@@ -82,7 +73,7 @@ and install the executables in /usr/local/psi/bin:
    * autoconf
    * mkdir objdir
    * cd objdir
-   * ../configure --with-cxx=mpicxx [any additional options]
+   * ../configure [any additional options]
    * make
    * make tests (optional, but recommended)
    * make install
@@ -307,7 +298,9 @@ BLAS and LAPACK recommendations when building PSI4:
   DGEMM calls.  On Mac OS X systems, however, the vecLib package that comes
   with Xcode works well.  Note also that we have encountered problems with the
   version 10 of Intel's MKL, particularly for very large coupled cluster
-  calculations.
+  calculations. Addendum: Intel's 11.1 MKL appears to be a major overhaul,
+  and is been particularly effective at providing efficient multithreaded
+  parallelism to many modules in PSI4/  
 
   (3) PSI4 does not require a Fortran compiler, unless the resident BLAS
   and LAPACK libraries require Fortran-based system libraries.  If you see

@@ -116,29 +116,36 @@ void C_DAXPY(unsigned long int length, double a, double *x, int inc_x,
 double C_DDOT(unsigned long int n, double *X, int inc_x, double *Y, int inc_y);
 double C_DNRM2(unsigned long int n, double *X, int inc_x);
 double C_DASUM(unsigned long int n, double *X, int inc_x);
-double C_IDAMAX(unsigned long int n, double *X, int inc_x);
+unsigned long int C_IDAMAX(unsigned long int n, double *X, int inc_x);
+
+// BLAS 2 Double routines
+void C_DGBMV(char trans, int m, int n, int kl, int ku, double alpha, double* a, int lda, double* x, int incx, double beta, double* y, int incy);
+void C_DGEMV(char trans, int m, int n, double alpha, double* a, int lda, double* x, int incx, double beta, double* y, int incy);
+void C_DGER(int m, int n, double alpha, double* x, int incx, double* y, int incy, double* a, int lda);
+void C_DSBMV(char uplo, int n, int k, double alpha, double* a, int lda, double* x, int incx, double beta, double* y, int incy);
+void C_DSPMV(char uplo, int n, double alpha, double* ap, double* x, int incx, double beta, double* y, int incy);
+void C_DSPR(char uplo, int n, double alpha, double* x, int incx, double* ap);
+void C_DSPR2(char uplo, int n, double alpha, double* x, int incx, double* y, int incy, double* ap);
+void C_DSYMV(char uplo, int n, double alpha, double* a, int lda, double* x, int incx, double beta, double* y, int incy);
+void C_DSYR(char uplo, int n, double alpha, double* x, int incx, double* a, int lda);
+void C_DSYR2(char uplo, int n, double alpha, double* x, int incx, double* y, int incy, double* a, int lda);
+void C_DTBMV(char uplo, char trans, char diag, int n, int k, double* a, int lda, double* x, int incx);
+void C_DTBSV(char uplo, char trans, char diag, int n, int k, double* a, int lda, double* x, int incx);
+void C_DTPMV(char uplo, char trans, char diag, int n, double* ap, double* x, int incx);
+void C_DTPSV(char uplo, char trans, char diag, int n, double* ap, double* x, int incx);
+void C_DTRMV(char uplo, char trans, char diag, int n, double* a, int lda, double* x, int incx);
+void C_DTRSM(char side, char uplo, char transa, char diag, int m, int n, double alpha, double* a, int lda, double* b, int ldb);
+
+// BLAS 3 Double routines
+void C_DGEMM(char transa, char transb, int m, int n, int k, double alpha, double* a, int lda, double* b, int ldb, double beta, double* c, int ldc);
+void C_DSYMM(char side, char uplo, int m, int n, double alpha, double* a, int lda, double* b, int ldb, double beta, double* c, int ldc);
+void C_DTRMM(char side, char uplo, char transa, char diag, int m, int n, double alpha, double* a, int lda, double* b, int ldb);
+void C_DSYRK(char uplo, char trans, int n, int k, double alpha, double* a, int lda, double beta, double* c, int ldc);
+void C_DSYR2K(char uplo, char trans, int n, int k, double alpha, double* a, int lda, double* b, int ldb, double beta, double* c, int ldc);
+void C_DTRSV(char uplo, char trans, char diag, int n, double* a, int lda, double* x, int incx);
 
 
-
-
-void C_DGEMM(char transa, char transb, int m, int n, int k,
-             double alpha, double *A, int nca, double *B, int ncb,
-             double beta, double *C, int ncc);
-void C_DSYMM(char side, char uplo, int m, int n, 
-             double alpha, double *A, int nca, double *B, int ncb,
-             double beta, double *C, int ncc);
-void C_DGEMV(char transa, int m, int n, double alpha, double *A,
-             int nca, double *X, int inc_x, double beta, double *Y,
-             int inc_y);
-void C_DSYMV(char uplo, int n, double alpha, double *A,
-             int nca, double *X, int inc_x, double beta, double *Y,
-             int inc_y);
-void C_DSPMV(char uplo, int n, double alpha, double *A,
-             double *X, int inc_x, double beta, double *Y,
-             int inc_y);
-int C_DGETRF(int nrow, int ncol, double *a, int lda, int *ipiv);
-
-// All double precision LAPACK routines (188)
+// LAPACK 3.2 Double routines
 // Sorry guys, I know its rather epic
 int C_DBDSDC(char uplo, char compq, int n, double* d, double* e, double* u, int ldu, double* vt, int ldvt, double* q, int* iq, double* work, int* iwork);
 int C_DBDSQR(char uplo, int n, int ncvt, int nru, int ncc, double* d, double* e, double* vt, int ldvt, double* u, int ldu, double* c, int ldc, double* work);
@@ -330,4 +337,3 @@ int C_DTZRZF(int m, int n, double* a, int lda, double* tau, double* work, int lw
 }
 
 #endif /* _psi_src_lib_libqt_qt_h */
-

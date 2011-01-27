@@ -99,6 +99,25 @@ public:
      * @param colspi Array of length nirreps giving column dimensionality.
      */
     Matrix(std::string name, int nirreps, int *rowspi, int *colspi);
+    /**
+     * Constructor, sets up the matrix
+     * Convenience case for 1 irrep
+     * Note: You should be using SimpleMatrix
+     *
+     * @param rows Row dimensionality.
+     * @param cols Column dimensionality.
+     */
+    Matrix(int rows, int cols);
+    /**
+     * Constructor, sets up the matrix
+     * Convenience case for 1 irrep
+     * Note: You should be using SimpleMatrix
+     *
+     * @param name Name of the matrix.
+     * @param rows Row dimensionality.
+     * @param cols Column dimensionality.
+     */
+    Matrix(std::string, int rows, int cols);
 
     /**
      * Contructs a Matrix from a dpdfile2
@@ -233,6 +252,15 @@ public:
      * @param val Value
      */
     void set(int h, int m, int n, double val) { matrix_[h][m][n] = val; }
+    /**
+     * Set a single element of matrix_
+     *
+     * @param h Subblock to address
+     * @param m Row
+     * @param n Column
+     * @param val Value
+     */
+    void set_python(int h, int m, int n, double val) { matrix_[h][m][n] = val; }
 
     /**
      * @{
@@ -254,6 +282,19 @@ public:
      * @returns value at position (h, m, n)
      */
     double get(int h, int m, int n) const { return matrix_[h][m][n]; }
+    /**
+     * Returns the double** pointer to the h-th irrep block matrix
+     * NOTE: This method is provided for convenience in advanced 
+     * BLAS/LAPACK calls, and should be used with caution. In particular,
+     * operations performed with these pointers should be scoped to avoid
+     * erroneous alteration of the objects primitive data. Moreover, 
+     * the memory location/size of the double** obtained with this method
+     * should NEVER be resized, moved, or freed. 
+     *
+     * @param h Subblock
+     * @returns pointer to h-th subblock in block-matrix form
+     */
+    double** get_pointer(int h = 0) { return matrix_[h]; }     
 
     /**
      * Returns a copy of the current matrix.
@@ -283,6 +324,9 @@ public:
     void set_name(std::string name) {
         name_ = name;
     };
+
+    /// Python compatible printer
+    void print_out() { print(outfile); } 
 
     /**
      * Print the matrix using print_mat
@@ -525,6 +569,8 @@ public:
     void set(boost::shared_ptr<SimpleVector> vec);
     void set(double **mat);
 
+    double** get_pointer() { return matrix_; }
+
     /// Sets the diagonal of matrix_ to vec
     double get(int m, int n) { return matrix_[m][n]; }
     /// Returns matrix_
@@ -533,6 +579,9 @@ public:
     void set_name(std::string name) { name_ = name; }
     /// Returns the pointer to the matrix
     double* ptr() { return &matrix_[0][0]; }
+
+    /// Python compatible printer
+    void print_out() { print(outfile); } 
 
     /// Prints the matrix with print_mat
     void print(FILE *out = outfile);

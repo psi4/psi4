@@ -133,6 +133,26 @@ Matrix::Matrix(std::string name, int l_nirreps, int *l_rowspi, int *l_colspi) : 
     }
     alloc();
 }
+Matrix::Matrix(std::string name, int rows, int cols) : name_(name)
+{
+    matrix_ = NULL;
+    nirreps_ = 1;
+    rowspi_ = new int[nirreps_];
+    colspi_ = new int[nirreps_];
+    rowspi_[0] = rows;
+    colspi_[0] = cols;
+    alloc();
+}
+Matrix::Matrix(int rows, int cols) 
+{
+    matrix_ = NULL;
+    nirreps_ = 1;
+    rowspi_ = new int[nirreps_];
+    colspi_ = new int[nirreps_];
+    rowspi_[0] = rows;
+    colspi_[0] = cols;
+    alloc();
+}
 
 Matrix::Matrix(const std::string& name, const Dimension& rows, const Dimension& cols)
 {

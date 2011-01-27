@@ -1,4 +1,5 @@
 import re;
+import os;
 
 yes = re.compile(r'^(yes|true|on|1)', re.IGNORECASE)
 no = re.compile(r'^(no|false|off|0)', re.IGNORECASE)
@@ -182,11 +183,17 @@ def process_input(raw_input):
     imports += 'from wrappers import *\n'    
     imports += 'from psiexceptions import *\n'    
     imports += 'from util import *\n'    
-  
-    # TODO remove this later!
-    imports += 'PsiMod.set_global_option("NO_INPUT", True)\n'
-
-    temp = imports + temp
+ 
+    # psirc (a baby PSithon script that might live in ~/.psirc 
+    psirc = ''
+    homedir = os.path.expanduser('~')
+    psirc_file = homedir + '/.psirc'
+    if os.path.isfile(psirc_file):
+        fh = open(psirc_file)
+        psirc = fh.read()
+        fh.close() 
+ 
+    temp = imports + psirc + temp
 
     return temp
 

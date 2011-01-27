@@ -106,6 +106,8 @@ public:
     int am() const           { return l_; }
     /// The character symbol for the angular momentum of the given contraction
     char amchar() const      { return amtypes[l_]; }
+    /// The character symbol for the angular momentum of the given contraction (upper case)
+    char AMCHAR() const      { return AMTYPES[l_]; }
     /// Returns true if contraction is Cartesian
     bool is_cartesian() const  { return !puream_; }
     /// Returns true if contraction is pure

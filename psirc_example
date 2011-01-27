@@ -1,0 +1,15 @@
+# Get a pointer to the default PsiMod object
+psioh = PsiMod.IOManager.shared_object()
+
+# Set the default path for all PSI4 data files to '/scratch/parrish/'
+# be sure to include the trailing '/'
+psioh.set_default_path('/scratch/parrish/')
+
+# Set the path for files of a specific type
+# This keeps the chkpt on the NFS, while the heavies go to scratch
+psioh.set_specific_path(32, './')
+
+# Set a specific file number to be retained where it lies
+# and not be removed by psiclean
+psioh.set_specific_retention(32, True)
+
