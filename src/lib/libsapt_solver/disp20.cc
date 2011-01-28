@@ -206,7 +206,7 @@ void SAPT0::cholesky_denominator(double delta)
         for (int a = 0; a < nvirA; a++) {
             // minus means monomer A
             // and we're using FORTRAN indexing
-            eps_ia[i*nvirA + a] = make_pair(-(i*noccA + a + 1), calc_info_.evalsA[i] + calc_info_.evalsA[a + noccA]);
+            eps_ia[i*nvirA + a] = make_pair(-(i*noccA + a + 1), calc_info_.evalsA[a + noccA] - calc_info_.evalsA[i]);
         }
     }
 
