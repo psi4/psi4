@@ -90,6 +90,7 @@ struct calcinfo {
   int nvirB; // Number of virtual orbitals on monomer B
   int NA; // Number of electrons of monomer A
   int NB; // Number of electrons of monomer B
+  int ndelta; // Number of vectors for energy denominator
 
   int *ioff; // Standard ioff array
   int *index2i; // Maps a compound ij to the corresponding i
@@ -117,6 +118,9 @@ struct calcinfo {
   double **sB; // Approximate CPHF coefficients
   double **CHFA; // CPHF coefficients of monomer A
   double **CHFB; // CPHF coefficients of monomer B
+
+  double **Lar; // Cholesky decomposition of energy denominator (Monomer A) 
+  double **Lbs; // Cholesky decomposition of energy denominator (Monomer A) 
 
   double **S_AB; // Overlap integrals (first index in monomer A basis, second 
                  // index in monomer B basis)
