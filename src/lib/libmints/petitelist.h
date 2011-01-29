@@ -13,6 +13,7 @@ namespace psi {
 extern FILE *outfile;
 
 class BasisSet;
+class Molecule;
 class IntegralFactory;
 class Matrix;
 class Dimension;
@@ -30,8 +31,19 @@ inline int64_t i_offset64(int64_t i)
 /////////////////////////////////////////////////////////////////////////////
 // These are helper functions for PetiteList and GenericPetiteList4
 
-int **compute_atom_map(const boost::shared_ptr<BasisSet> &);
-void delete_atom_map(int **atom_map, const boost::shared_ptr<BasisSet> &);
+/*! Computes atom mappings during symmetry operations. Useful in generating
+ *  SO information and Cartesian displacement SALCs.
+ *
+ *  \param mol Molecule to form mapping matrix from.
+ *  \returns Integer matrix of dimension natoms X nirreps.
+ */
+int **compute_atom_map(const boost::shared_ptr<Molecule> &mol);
+/*! Frees atom mapping for created for a molecule by compute_atom_map.
+ *
+ *  \param atom_map Map to free.
+ *  \param mol Molecule used to create atom_map.
+ */
+void delete_atom_map(int **atom_map, const boost::shared_ptr<Molecule> &mol);
 
 int **compute_shell_map(int **atom_map, const boost::shared_ptr<BasisSet> &);
 void delete_shell_map(int **shell_map, const boost::shared_ptr<BasisSet> &);
