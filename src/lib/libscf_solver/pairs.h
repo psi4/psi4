@@ -23,7 +23,7 @@ class PARALLEL_G_BUILD_INFO {
         shared_ptr<madness::Spinlock> eri_lock;
         shared_ptr<BasisSet> basis_info;
         shared_ptr<IntegralFactory> integral;
-        shared_ptr<TwoBodyInt> eri_info;
+        shared_ptr<TwoBodyAOInt> eri_info;
         shared_ptr<SimpleMatrix> pG;
         shared_ptr<SimpleMatrix> pD;
         int nso;
@@ -43,7 +43,7 @@ class PARALLEL_G_BUILD_INFO {
                 integral = shared_ptr<IntegralFactory> (new IntegralFactory(basis_info, basis_info, basis_info, basis_info));
 
             if (eri_info.get() == NULL)
-                eri_info = shared_ptr<TwoBodyInt>(integral->eri());
+                eri_info = shared_ptr<TwoBodyAOInt>(integral->eri());
 
             if(pD.get() == NULL)
                 pD = shared_ptr<SimpleMatrix>(sh_D->to_simple_matrix());
