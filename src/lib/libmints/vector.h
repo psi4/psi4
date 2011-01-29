@@ -50,7 +50,7 @@ public:
     void set(double *vec);
 
     /// Returns a pointer to irrep h
-    double* get_pointer(int h) {
+    double* get_pointer(int h = 0) {
         return vector_[h];
     }    
 
@@ -69,6 +69,11 @@ public:
 
     /// Returns a copy of the vector_
     double *to_block_vector();
+
+    /// Returns the dimension per irrep h
+    int dim(int h = 0) const {
+        return dimpi_[h];
+    }
 
     /// Returns the dimension array
     int *dimpi() const {
@@ -205,7 +210,7 @@ public:
     void set(int *vec);
 
     /// Returns a pointer to irrep h
-    int* get_pointer(int h) {
+    int* get_pointer(int h = 0) {
         return vector_[h];
     }    
 
@@ -224,6 +229,11 @@ public:
 
     /// Returns a copy of the vector_
     int *to_block_vector();
+
+    /// Returns the dimension per irrep h
+    int dim(int h = 0) const {
+        return dimpi_[h];
+    }
 
     /// Returns the dimension array
     int *dimpi() const {

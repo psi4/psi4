@@ -66,7 +66,8 @@ void MOInfoSCF::read_mo_spaces()
   // For single-point geometry optimizations and frequencies
   char *current_displacement_label = chkpt->build_keyword(const_cast<char*>("Current Displacement Irrep"));
   if(chkpt->exist(current_displacement_label)){
-    int   disp_irrep  = chkpt->rd_disp_irrep();
+    int disp_irrep = 0;
+    // int   disp_irrep  = chkpt->rd_disp_irrep();
     char *save_prefix = chkpt->rd_prefix();
     int nirreps_ref;
 
@@ -75,7 +76,8 @@ void MOInfoSCF::read_mo_spaces()
     chkpt->reset_prefix();
     chkpt->commit_prefix();
 
-    char *ptgrp_ref = chkpt->rd_sym_label();
+    char *ptgrp_ref;
+    //char *ptgrp_ref = chkpt->rd_sym_label();
 
     // Lookup irrep correlation table
     int* correlation;

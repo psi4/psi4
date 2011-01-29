@@ -28,6 +28,7 @@
 #include <libmints/psimath.h>
 #include <libmints/vector.h>
 #include <libmints/matrix.h>
+#include <libmints/mintshelper.h>
 #include <lib3index/3index.h>
 #include <libfunctional/superfunctional.h>
 #include <libplugin/plugin.h>
@@ -801,19 +802,33 @@ BOOST_PYTHON_MODULE(PsiMod)
         def("get", &Matrix::get).
         def("set", &Matrix::set_python).
         def("set_name", &Matrix::set_name).
-        def("print_out", &Matrix::print_out);
+        def("print_out", &Matrix::print_out).
+        def("rows", &Matrix::rowdim).
+        def("cols", &Matrix::coldim).
+        def("nirreps", &Matrix::nirreps);
     
     class_<Vector, shared_ptr<Vector> >( "Vector").
         def(init<int>()).
         def("get", &Vector::get).
         def("set", &Vector::set_python).
-        def("print_out", &Vector::print_out);
+        def("print_out", &Vector::print_out).
+        def("dim", &Vector::dim).
+        def("nirreps", &Vector::nirreps);
 
     class_<IntVector, shared_ptr<IntVector> >( "IntVector").
         def(init<int>()).
         def("get", &IntVector::get).
         def("set", &IntVector::set_python).
-        def("print_out", &IntVector::print_out);
+        def("print_out", &IntVector::print_out).
+        def("dim", &IntVector::dim).
+        def("nirreps", &IntVector::nirreps);
+
+    class_<MintsHelper, shared_ptr<MintsHelper> >("MintsHelper").    
+        def("ao_overlap", &MintsHelper::ao_overlap).
+        def("ao_kinetic", &MintsHelper::ao_kinetic).
+        def("ao_potential", &MintsHelper::ao_potential).
+        def("ao_eri", &MintsHelper::ao_eri).
+        def("ao_erf_eri", &MintsHelper::ao_erf_eri);
 
     /**
     class_<DFTensor, shared_ptr<DFTensor> >( "DFTensor", no_init).
@@ -895,6 +910,7 @@ BOOST_PYTHON_MODULE(PsiMod)
         def("init_with_io", &Molecule::init_with_psio).
         def("add_atom", &Molecule::add_atom).
         def("natom", &Molecule::natom).
+        def("multiplicity", &Molecule::multiplicity).
         def("nfragments", &Molecule::num_fragments).
         def("print_out", &Molecule::print).
         def("update_geometry", &Molecule::update_geometry).
