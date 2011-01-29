@@ -1630,7 +1630,7 @@ void RHF::form_G_from_direct_integrals_parallel()
 
         IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
         if (eri_.get() == NULL) {
-            eri_ = shared_ptr<TwoBodyInt>(integral.eri());
+            eri_ = shared_ptr<TwoBodyAOInt>(integral.eri());
         }
         ShellCombinationsIterator iter = integral.shells_iterator();
         const double *buffer = eri_->buffer();
@@ -2405,7 +2405,7 @@ void RHF::form_J_and_K_from_direct_integrals()
     // Begin factor out
     IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
     if (eri_.get() == NULL) {
-        eri_ = shared_ptr<TwoBodyInt>(integral.eri());
+        eri_ = shared_ptr<TwoBodyAOInt>(integral.eri());
     }
     ShellCombinationsIterator iter = integral.shells_iterator();
     const double *buffer = eri_->buffer();
