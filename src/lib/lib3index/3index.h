@@ -10,7 +10,6 @@ namespace psi {
 
 class PSIO;
 class BasisSet;
-class TwoBodyInt;
 class Matrix;
 
 enum ThreeStorage { Disk, SemiDirect, Direct };
