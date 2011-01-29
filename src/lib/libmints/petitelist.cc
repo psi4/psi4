@@ -273,11 +273,10 @@ struct lin_comb {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int **compute_atom_map(const shared_ptr<BasisSet> &basis)
+int **compute_atom_map(const shared_ptr<Molecule> &molecule)
 {
-    // grab references to the Molecule and BasisSet for convenience
-    BasisSet& gbs = *basis.get();
-    Molecule& mol = *gbs.molecule().get();
+    // grab references to the Molecule
+    Molecule& mol = *molecule.get();
 
     // create the character table for the point group
     CharacterTable ct = mol.point_group()->char_table();
@@ -322,10 +321,10 @@ int **compute_atom_map(const shared_ptr<BasisSet> &basis)
     return atom_map;
 }
 
-void delete_atom_map(int **atom_map, const shared_ptr<BasisSet> &basis)
+void delete_atom_map(int **atom_map, const shared_ptr<Molecule> &molecule)
 {
     if (atom_map) {
-        int natom = basis->molecule()->natom();
+        int natom = molecule->natom();
         for (int i=0; i < natom; i++)
             delete[] atom_map[i];
         delete[] atom_map;
