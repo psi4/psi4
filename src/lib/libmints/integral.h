@@ -390,6 +390,9 @@ public:
     /// Returns an ERI integral object
     virtual TwoBodyAOInt* eri(int deriv=0, double schwarz = 0.0);
 
+    /// Returns an erf ERI integral object (omega integral)
+    virtual TwoBodyAOInt* erf_eri(double omega, double alpha, double beta, int deriv=0, double schwarz = 0.0);
+
     /// Returns a general ERI iterator object for any (P Q | R S) in shells
     IntegralsIterator integrals_iterator(int p, int q, int r, int s);
 

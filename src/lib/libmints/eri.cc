@@ -15,6 +15,32 @@
 
 using namespace psi;
 
+void ERIFundamentalFunctor::operator()(Libint_t &libint, Fjt* fjt, int nprim, double coef1, int max_am, double PQ2, double rho)
+{
+    double T = rho*PQ2;
+    double* F = fjt->values(max_am, T);
+    for (int i = 0; i <= max_am; i++) {
+        libint.PrimQuartet[nprim].F[i] = F[i] * coef1;
+    }
+}
+void ErfERIFundamentalFunctor::operator()(Libint_t &libint, Fjt* fjt, int nprim, double coef1, int max_am, double PQ2, double rho)
+{
+    double T = rho*PQ2;
+    double* F = fjt->values(max_am, T);
+    for (int i = 0; i <= max_am; i++) {
+        libint.PrimQuartet[nprim].F[i] = alpha_ * F[i];
+    }
+    double rho_w = omega2_*rho / (omega2_ + rho);
+    double T_w = rho_w*PQ2;
+    F = fjt->values(max_am, T_w);
+    double den = 1.0 / (rho + omega2_); 
+    double factor = sqrt(omega2_ * den);
+    for (int i = 0; i < max_am; i++) {
+        libint.PrimQuartet[nprim].F[i] += beta_ * factor * F[i];
+        libint.PrimQuartet[nprim].F[i] *= coef1;
+        factor *= omega2_ * den; 
+    }
+}
 inline void calc_f(double *F, int n, double t)
 {
     int i, m;
@@ -56,7 +82,7 @@ inline void calc_f(double *F, int n, double t)
 }
 
 ERI::ERI(const IntegralFactory* integral, int deriv, double schwarz)
-    : TwoBodyAOInt(integral, deriv)
+    : TwoBodyAOInt(integral, deriv), eri_functor_(new ERIFundamentalFunctor)
 {
     // Initialize libint static data
     init_libint_base();
@@ -164,6 +190,15 @@ ERI::~ERI()
         free(schwarz_norm_);
     free_shell_pairs12();
     free_shell_pairs34();       // This shouldn't do anything, but this might change in the future
+}
+
+ErfERI::ErfERI(const IntegralFactory* fact, double omega, double alpha, double beta, int deriv, double schwarz):
+    ERI(fact,deriv,schwarz)
+{
+    eri_functor_ = (static_cast<ERIFundamentalFunctor*> (new ErfERIFundamentalFunctor(omega, alpha, beta)));
+}
+ErfERI::~ErfERI()
+{
 }
 
 void ERI::init_shell_pairs12()
@@ -635,7 +670,7 @@ void ERI::compute_shell(int sh1, int sh2, int sh3, int sh4)
 #endif
 
     // s1, s2, s3, s4 contain the shells to do in libint order
-    compute_quartet(s1, s2, s3, s4);
+    compute_quartet(s1, s2, s3, s4, eri_functor_);
 
     // Permute integrals back, if needed
     if (p12_ || p34_ || p13p24_) {
@@ -662,8 +697,8 @@ void ERI::compute_shell(int sh1, int sh2, int sh3, int sh4)
     timer_off("ERI::compute_shell");
 #endif
 }
-
-void ERI::compute_quartet(int sh1, int sh2, int sh3, int sh4)
+template<typename FundamentalFunctor>
+void ERI::compute_quartet(int sh1, int sh2, int sh3, int sh4, FundamentalFunctor &functor)
 {
 #ifdef MINTS_TIMER
     timer_on("setup");
@@ -765,14 +800,18 @@ void ERI::compute_quartet(int sh1, int sh2, int sh3, int sh4)
                         PQ[1] = p12->P[p1][p2][1] - p34->P[p3][p4][1];
                         PQ[2] = p12->P[p1][p2][2] - p34->P[p3][p4][2];
                         double PQ2 = PQ[0]*PQ[0] + PQ[1]*PQ[1] + PQ[2]*PQ[2];
-                        double T = rho*PQ2;
 
-                        double *F = fjt_->values(am, T);
 
-                        // Modify F to include overlap of ab and cd, eqs 14, 15, 16 of libint manual
-                        for (int i=0; i<=am; ++i) {
-                            libint_.PrimQuartet[nprim].F[i] = F[i] * coef1;
-                        }
+                        // REPLACED by functor
+                        //double T = rho*PQ2;
+                        //double *F = fjt_->values(am, T);
+                        //// Modify F to include overlap of ab and cd, eqs 14, 15, 16 of libint manual
+                        //for (int i=0; i<=am; ++i) {
+                        //    libint_.PrimQuartet[nprim].F[i] = F[i] * coef1;
+                        //}
+        
+                        // Functor call
+                        (*functor)(libint_, fjt_, nprim, coef1, am, PQ2, rho);
 
                         libint_.PrimQuartet[nprim].oo2zn = 0.5 * oozn;
                         libint_.PrimQuartet[nprim].pon   = zeta * oozn;

@@ -120,6 +120,11 @@ TwoBodyAOInt* IntegralFactory::eri(int deriv, double schwarz)
     return new ERI(this, deriv, schwarz);
 }
 
+TwoBodyAOInt* IntegralFactory::erf_eri(double omega, double alpha, double beta, int deriv, double schwarz)
+{
+    return new ErfERI(this, omega, alpha, beta, deriv, schwarz);
+}
+
 void IntegralFactory::init_spherical_harmonics(int max_am)
 {
     for (int i=0; i<=max_am; ++i) {

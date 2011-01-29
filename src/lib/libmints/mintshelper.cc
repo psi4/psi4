@@ -19,6 +19,9 @@ namespace psi {
 MintsHelper::MintsHelper(Options & options): options_(options)
 {
 }
+MintsHelper::MintsHelper() : options_(Process::environment.options)
+{
+}
 MintsHelper::~MintsHelper()
 {
 }
@@ -229,6 +232,166 @@ void MintsHelper::integral_gradients()
 void MintsHelper::integral_hessians()
 {
     throw FeatureNotImplemented("libmints", "MintsHelper::integral_hessians", __FILE__, __LINE__);        
+}
+
+shared_ptr<Matrix> MintsHelper::ao_overlap()
+{
+    shared_ptr<Molecule> molecule = Process::environment.molecule(); 
+    if (molecule.get() == 0) {
+        fprintf(outfile, "  Active molecule not set!");
+        throw PSIEXCEPTION("Active molecule not set!");
+    }
+
+    molecule->update_geometry();
+    // Read in the basis set
+    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
+    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, options_.get_str("BASIS"));
+
+    int nbf = basis->nbf();
+    shared_ptr<Matrix> S(new Matrix("AO Overlap Integrals", nbf, nbf));
+
+    shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
+    shared_ptr<OneBodyAOInt> ints(fact->ao_overlap());
+    ints->compute(S); 
+
+    return S;
+
+}
+shared_ptr<Matrix> MintsHelper::ao_kinetic()
+{
+    shared_ptr<Molecule> molecule = Process::environment.molecule(); 
+    if (molecule.get() == 0) {
+        fprintf(outfile, "  Active molecule not set!");
+        throw PSIEXCEPTION("Active molecule not set!");
+    }
+
+    molecule->update_geometry();
+    // Read in the basis set
+    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
+    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, options_.get_str("BASIS"));
+
+    int nbf = basis->nbf();
+    shared_ptr<Matrix> S(new Matrix("AO Kinetic Integrals", nbf, nbf));
+
+    shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
+    shared_ptr<OneBodyAOInt> ints(fact->ao_kinetic());
+    ints->compute(S); 
+
+    return S;
+
+}
+shared_ptr<Matrix> MintsHelper::ao_potential()
+{
+    shared_ptr<Molecule> molecule = Process::environment.molecule(); 
+    if (molecule.get() == 0) {
+        fprintf(outfile, "  Active molecule not set!");
+        throw PSIEXCEPTION("Active molecule not set!");
+    }
+
+    molecule->update_geometry();
+    // Read in the basis set
+    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
+    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, options_.get_str("BASIS"));
+
+    int nbf = basis->nbf();
+    shared_ptr<Matrix> S(new Matrix("AO Potential Integrals", nbf, nbf));
+
+    shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
+    shared_ptr<OneBodyAOInt> ints(fact->ao_potential());
+    ints->compute(S); 
+
+    return S;
+
+}
+shared_ptr<Matrix> MintsHelper::ao_erf_eri(double omega, double alpha, double beta)
+{
+    shared_ptr<Molecule> molecule = Process::environment.molecule(); 
+    if (molecule.get() == 0) {
+        fprintf(outfile, "  Active molecule not set!");
+        throw PSIEXCEPTION("Active molecule not set!");
+    }
+
+    molecule->update_geometry();
+    // Read in the basis set
+    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
+    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, options_.get_str("BASIS"));
+
+    int nbf = basis->nbf();
+    shared_ptr<Matrix> I(new Matrix("AO ERF ERI Integrals", nbf*nbf, nbf*nbf));
+
+    shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
+    shared_ptr<TwoBodyAOInt> ints(fact->erf_eri(omega, alpha, beta));
+    double** Ip = I->get_pointer();
+    const double* buffer = ints->buffer();
+
+    for (int M = 0; M < basis->nshell(); M++) {
+    for (int N = 0; N < basis->nshell(); N++) {
+    for (int P = 0; P < basis->nshell(); P++) {
+    for (int Q = 0; Q < basis->nshell(); Q++) {
+
+    ints->compute_shell(M,N,P,Q);
+
+    for (int m = 0, index = 0; m < basis->shell(M)->nfunction(); m++) {
+    for (int n = 0; n < basis->shell(N)->nfunction(); n++) {
+    for (int p = 0; p < basis->shell(P)->nfunction(); p++) {
+    for (int q = 0; q < basis->shell(Q)->nfunction(); q++, index++) {
+
+    Ip[(basis->shell(M)->function_index() + m)*nbf + basis->shell(N)->function_index() + n]
+      [(basis->shell(P)->function_index() + p)*nbf + basis->shell(Q)->function_index() + q]
+        = buffer[index];
+
+    } } } }    
+
+    } } } }    
+ 
+
+    return I;
+
+}
+shared_ptr<Matrix> MintsHelper::ao_eri()
+{
+    shared_ptr<Molecule> molecule = Process::environment.molecule(); 
+    if (molecule.get() == 0) {
+        fprintf(outfile, "  Active molecule not set!");
+        throw PSIEXCEPTION("Active molecule not set!");
+    }
+
+    molecule->update_geometry();
+    // Read in the basis set
+    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
+    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, options_.get_str("BASIS"));
+
+    int nbf = basis->nbf();
+    shared_ptr<Matrix> I(new Matrix("AO ERI Integrals", nbf*nbf, nbf*nbf));
+
+    shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
+    shared_ptr<TwoBodyAOInt> ints(fact->eri());
+    double** Ip = I->get_pointer();
+    const double* buffer = ints->buffer();
+
+    for (int M = 0; M < basis->nshell(); M++) {
+    for (int N = 0; N < basis->nshell(); N++) {
+    for (int P = 0; P < basis->nshell(); P++) {
+    for (int Q = 0; Q < basis->nshell(); Q++) {
+
+    ints->compute_shell(M,N,P,Q);
+
+    for (int m = 0, index = 0; m < basis->shell(M)->nfunction(); m++) {
+    for (int n = 0; n < basis->shell(N)->nfunction(); n++) {
+    for (int p = 0; p < basis->shell(P)->nfunction(); p++) {
+    for (int q = 0; q < basis->shell(Q)->nfunction(); q++, index++) {
+
+    Ip[(basis->shell(M)->function_index() + m)*nbf + basis->shell(N)->function_index() + n]
+      [(basis->shell(P)->function_index() + p)*nbf + basis->shell(Q)->function_index() + q]
+        = buffer[index];
+
+    } } } }    
+
+    } } } }    
+ 
+
+    return I;
+
 }
 int MintsHelper::determine_unique_shell_quartets(int usii, int usjj, int uskk, int usll,
                                            int* usi_arr,

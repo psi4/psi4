@@ -348,6 +348,15 @@ public:
     /// Print the matrix with corresponding eigenvalues below each column
     void eivprint(boost::shared_ptr<Vector> values, FILE *out = outfile);
 
+    /// Returns the rows in irrep h
+    int rowdim(int h = 0) const {
+        return rowspi_[h];
+    }
+    /// Returns the cols in irrep h
+    int coldim(int h = 0) const {
+        return colspi_[h];
+    }
+
     /// Returns the rows per irrep array
     int *rowspi() const {
         return rowspi_;

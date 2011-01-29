@@ -45,6 +45,8 @@ class MintsHelper {
     public:
         /// Constructor, just lines references up
         MintsHelper(Options&);
+        /// Constructor, uses globals
+        MintsHelper();
         /// Destructor, does nothing
         ~MintsHelper();
         /// Molecular integrals (just like cints used to do)
@@ -55,6 +57,16 @@ class MintsHelper {
         void integral_gradients();
         /// Hessian integrals (not implemented)
         void integral_hessians();
+        /// AO Overlap Integrals
+        shared_ptr<Matrix> ao_overlap();
+        /// AO Kinetic Integrals
+        shared_ptr<Matrix> ao_kinetic();
+        /// AO Potential Integrals
+        shared_ptr<Matrix> ao_potential();
+        /// AO ERI Integrals (Full matrix, not recommended for large systems)
+        shared_ptr<Matrix> ao_eri();
+        /// AO ERI Omega Integrals (Full matrix, not recommended for large systems)
+        shared_ptr<Matrix> ao_erf_eri(double omega, double alpha, double beta);
 
 };
 

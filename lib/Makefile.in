@@ -25,9 +25,8 @@ MKDIRS = @MKDIRS@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 
-install: pbasis.dat psi.dat
+install: psi.dat
 	$(MKDIRS) $(DESTDIR)$(pkgdatadir)
-	$(INSTALL_DATA) $(srcdir)/pbasis.dat $(DESTDIR)$(pkgdatadir)
 	$(INSTALL_DATA) $(srcdir)/psi.dat $(DESTDIR)$(pkgdatadir)
 	for dir in $(subdirs); \
           do \
