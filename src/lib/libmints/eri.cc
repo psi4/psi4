@@ -26,19 +26,28 @@ void ERIFundamentalFunctor::operator()(Libint_t &libint, Fjt* fjt, int nprim, do
 void ErfERIFundamentalFunctor::operator()(Libint_t &libint, Fjt* fjt, int nprim, double coef1, int max_am, double PQ2, double rho)
 {
     double T = rho*PQ2;
-    double* F = fjt->values(max_am, T);
-    for (int i = 0; i <= max_am; i++) {
-        libint.PrimQuartet[nprim].F[i] = alpha_ * F[i];
-    }
     double rho_w = omega2_*rho / (omega2_ + rho);
     double T_w = rho_w*PQ2;
+
+    double prod1;
+    double prod2;
+    double factor1;
+    double factor2;
+    double* F;
+
+    F = fjt->values(max_am, T);
+    for (int i = 0; i <= max_am; i++) {
+        libint.PrimQuartet[nprim].F[i] = coef1 * alpha_ * F[i];
+    }
+    factor1 = 2.0*rho; 
+    prod1 = sqrt(factor1);
+    factor2 = 2.0*rho_w; 
+    prod2 = sqrt(factor2);
     F = fjt->values(max_am, T_w);
-    double den = 1.0 / (rho + omega2_); 
-    double factor = sqrt(omega2_ * den);
-    for (int i = 0; i < max_am; i++) {
-        libint.PrimQuartet[nprim].F[i] += beta_ * factor * F[i];
-        libint.PrimQuartet[nprim].F[i] *= coef1;
-        factor *= omega2_ * den; 
+    for (int i = 0; i <= max_am; i++) {
+        libint.PrimQuartet[nprim].F[i] += coef1 * beta_ * (factor2 / factor1) * F[i];
+        prod1 *= factor1;
+        prod2 *= factor2;
     }
 }
 inline void calc_f(double *F, int n, double t)
@@ -196,6 +205,10 @@ ErfERI::ErfERI(const IntegralFactory* fact, double omega, double alpha, double b
     ERI(fact,deriv,schwarz)
 {
     eri_functor_ = (static_cast<ERIFundamentalFunctor*> (new ErfERIFundamentalFunctor(omega, alpha, beta)));
+
+    //printf(" Omega = %14.10f\n", omega);
+    //printf(" Alpha = %14.10f\n", alpha);
+    //printf(" Beta = %14.10f\n", beta);
 }
 ErfERI::~ErfERI()
 {
