@@ -187,7 +187,7 @@ def process_input(raw_input):
     # psirc (a baby PSithon script that might live in ~/.psirc 
     psirc = ''
     homedir = os.path.expanduser('~')
-    psirc_file = homedir + '/.psirc'
+    psirc_file = homedir + '/.psi4rc'
     if os.path.isfile(psirc_file):
         fh = open(psirc_file)
         psirc = fh.read()
