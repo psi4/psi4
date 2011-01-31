@@ -50,7 +50,6 @@ namespace opt      { psi::PsiReturnType optking(psi::Options &); }
 namespace psi {
     namespace mints    { PsiReturnType mints(Options &); }
     namespace deriv    { PsiReturnType deriv(Options &); }
-    namespace mcscf    { PsiReturnType mcscf(Options &); }
     namespace scf      { PsiReturnType scf(Options &);   }
     namespace dfmp2    { PsiReturnType dfmp2(Options &); }
     namespace sapt     { PsiReturnType sapt(Options &);  }
@@ -193,15 +192,6 @@ int py_psi_mints()
 int py_psi_deriv()
 {
     return deriv::deriv(Process::environment.options);
-}
-double py_psi_mcscf()
-{
-  if (mcscf::mcscf(Process::environment.options) == Success) {
-    return Process::environment.globals["CURRENT ENERGY"];
-  }
-  else
-    return 0.0;
-
 }
 double py_psi_scf()
 {
@@ -499,15 +489,15 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("version", py_psi_version);
     def("clean", py_psi_clean);
 
-    // Benchmarks    
+    // Benchmarks
     def("benchmark_blas1", &psi::benchmark_blas1);
     def("benchmark_blas2", &psi::benchmark_blas2);
     def("benchmark_blas3", &psi::benchmark_blas3);
     def("benchmark_disk", &psi::benchmark_disk);
     def("benchmark_math", &psi::benchmark_math);
     def("benchmark_integrals", &psi::benchmark_integrals);
-   
-    // BLAS Static Wrappers 
+
+    // BLAS Static Wrappers
     def("DGBMV", &psi::PSI_DGBMV);
     def("DGEMM", &psi::PSI_DGEMM);
     def("DGEMV", &psi::PSI_DGEMV);
@@ -536,7 +526,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("IDAMAX", &psi::PSI_IDAMAX);
 
     // LAPACK static wrappers
-    
+
     def("DGEEV", &psi::PSI_DGEEV);
     def("DSYEV", &psi::PSI_DSYEV);
     def("DSYSV", &psi::PSI_DSYSV);
@@ -731,12 +721,8 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("plugin_close_all", py_psi_plugin_close_all);
 
     // modules
-//    def("input", py_psi_input);
-//    def("cints", py_psi_cints);
     def("mints", py_psi_mints);
     def("deriv", py_psi_deriv);
-//    def("cscf",  py_psi_cscf);
-    def("mcscf", py_psi_mcscf);
     def("scf",   py_psi_scf);
     def("dcft", py_psi_dcft);
     def("dfmp2", py_psi_dfmp2);
@@ -806,7 +792,7 @@ BOOST_PYTHON_MODULE(PsiMod)
         def("rows", &Matrix::rowdim).
         def("cols", &Matrix::coldim).
         def("nirreps", &Matrix::nirreps);
-    
+
     class_<Vector, shared_ptr<Vector> >( "Vector").
         def(init<int>()).
         def("get", &Vector::get).
@@ -823,7 +809,7 @@ BOOST_PYTHON_MODULE(PsiMod)
         def("dim", &IntVector::dim).
         def("nirreps", &IntVector::nirreps);
 
-    class_<MintsHelper, shared_ptr<MintsHelper> >("MintsHelper").    
+    class_<MintsHelper, shared_ptr<MintsHelper> >("MintsHelper").
         def("ao_overlap", &MintsHelper::ao_overlap).
         def("ao_kinetic", &MintsHelper::ao_kinetic).
         def("ao_potential", &MintsHelper::ao_potential).
