@@ -8,9 +8,9 @@ PSITARGET = $(top_objdir)/lib/libPSI_util.a
 
 TRUECSRC = 
 
-TRUECXXSRC = stl_string.cc combinations.cc exception.cc memory_manager.cc
+TRUECXXSRC = stl_string.cc combinations.cc exception.cc memory_manager.cc quad.cc
 
-INC = libutil.h ref.h class_macros.h memory_manager.h
+INC = libutil.h ref.h class_macros.h memory_manager.h quad.h
 
 LIBOBJ = $(TRUECSRC:%.c=%.o) $(TRUECXXSRC:%.cc=%.o)
 
