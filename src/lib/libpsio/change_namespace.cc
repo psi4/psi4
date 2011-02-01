@@ -13,10 +13,11 @@
 namespace psi {
 
 void PSIO::change_file_namespace(unsigned int unit, const std::string & ns1, const std::string & ns2) {
-    char *old_name, *new_name, *path, *old_fullpath, *new_fullpath;
+    char *old_name, *new_name, *old_fullpath, *new_fullpath;
     _default_psio_lib_->get_filename(unit, &old_name, true);
     _default_psio_lib_->get_filename(unit, &new_name, true);
-    _default_psio_lib_->get_volpath(unit, 0, &path);  
+    //_default_psio_lib_->get_volpath(unit, 0, &path);  
+    const char* path = PSIOManager::shared_object()->get_file_path(unit).c_str();
 
     old_fullpath = (char*) malloc( (strlen(path)+strlen(old_name)+80)*sizeof(char));
     new_fullpath = (char*) malloc( (strlen(path)+strlen(new_name)+80)*sizeof(char));

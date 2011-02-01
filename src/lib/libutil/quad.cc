@@ -8,7 +8,8 @@ using namespace psi;
 
 namespace psi {
 
-Quadrature::Quadrature(int npoints) {
+Quadrature::Quadrature(int npoints) 
+{
 
     npoints_ = npoints;
     index_ = 0;
@@ -16,13 +17,15 @@ Quadrature::Quadrature(int npoints) {
     t_ = new double[npoints]; 
 }
 
-Quadrature::~Quadrature() {
-		delete[] w_;
-		delete[] t_;
+Quadrature::~Quadrature() 
+{
+    delete[] w_;
+    delete[] t_;
 }
 
 ChebyshevIIQuadrature::ChebyshevIIQuadrature(int npoints, double t0) :
-  Quadrature(npoints) {
+  Quadrature(npoints) , center_(t0)
+{
     // Compute Becke-style mapping
     // (Seems to span the space better)
     double x,temp;
@@ -40,10 +43,11 @@ void ChebyshevIIQuadrature::print(FILE* out)
 {
     fprintf(out, "  Chebyshev Type II Quadrature of %d Points\n", npoints_);
     fprintf(out, "        for integration on [0, \\infty)\n");
+    fprintf(out, "           Center %14.10E\n", center_);
     fprintf(out, "\n");
-    fprintf(out, "  Index     Point     Weight\n");
+    fprintf(out, "  Index       Point         Weight\n");
     for (int k = 0; k < npoints_; k++)
-        fprintf(out, "   %d      %8.3E    %8.3E\n", k+1, t_[k], w_[k]);
+        fprintf(out, "   %3d      %8.3E    %8.3E\n", k+1, t_[k], w_[k]);
 }
 
 }

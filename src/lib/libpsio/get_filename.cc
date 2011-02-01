@@ -17,6 +17,11 @@ void PSIO::get_filename(unsigned int unit, char **name, bool remove_namespace) {
   std::string dot(".");
 
   std::string ns = (default_namespace_ == "" || remove_namespace) ? "" : dot + default_namespace_;
+  //std::string path = PSIOManager::shared_object()->get_file_path(unit);
+  //printf("%s %s: %d\n", path.c_str(), ns.c_str(), unit);
+  //*name = strdup((path + ns).c_str());
+  //return; 
+
   kval = filecfg_kwd("PSI", "NAME", unit);
   if (!kval.empty()) {
     kval = kval + ns;
@@ -42,6 +47,7 @@ void PSIO::get_filename(unsigned int unit, char **name, bool remove_namespace) {
     return;
   }
 
+  
   // assume that the default has been provided already
   abort();
 }

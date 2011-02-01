@@ -70,22 +70,6 @@ public:
 
 };
 
-class OmegaQuadrature {
-    protected:
-        int npoints_;
-        int index_;
-        double* omega_;
-        double* w_;
-    public:
-        OmegaQuadrature(int npoints);
-        virtual ~OmegaQuadrature();
-
-        double getWeight() { return w_[index_]; }
-        double getOmega() { return omega_[index_]; }
-        void nextPoint() { index_++; }
-        void reset() { index_ = 0; }
-        bool isDone() { return index_ >= npoints_; }
-};
 
 }}
 

@@ -14,6 +14,7 @@
 #include <libchkpt/chkpt.h>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
+#include <libutil/quad.h>
 #include "structs.h"
 #include "sapt0.h"
 #include "sapt_dft.h"
@@ -77,6 +78,9 @@ void SAPT0::disp20()
       calc_info_.nrio,1.0,&(B_p_AR[0][0]),calc_info_.nrio,&(B_p_BS[0][0]),
       calc_info_.nrio,0.0,&(ARBS[0][0]),calc_info_.noccB*calc_info_.nvirB);
 
+    //shared_ptr<Matrix> Delta(new Matrix(calc_info_.noccA*calc_info_.nvirA, calc_info_.noccB*calc_info_.nvirB));
+    //double** Delt = Delta->get_pointer();
+    
     #pragma omp for schedule(static)
       for (int ar=ar_start; ar<ar_stop; ar++) {
         int a = ar/calc_info_.nvirA;
@@ -86,8 +90,11 @@ void SAPT0::disp20()
             double denom = calc_info_.evalsA[a]+calc_info_.evalsB[b]-
                            calc_info_.evalsA[r]-calc_info_.evalsB[s];
             tARBS[ar-ar_start][bs] = ARBS[ar-ar_start][bs]/denom;
+            //Delt[a*calc_info_.nvirA + r - calc_info_.noccA][b*calc_info_.nvirB + s - calc_info_.noccB] = 1.0 / denom;
         }}
       }
+
+    //Delta->print();
 
     energy += C_DDOT((ar_stop-ar_start)*calc_info_.noccB*calc_info_.nvirB,
               &(ARBS[0][0]),1,&(tARBS[0][0]),1);
@@ -139,7 +146,6 @@ void SAPT_DFT::disp20()
       tARBS[ar][bs] = ARBS[ar][bs]/denom;
     }}
   }}
-
   disp = 4.0*C_DDOT(calc_info_.noccA*calc_info_.nvirA*calc_info_.noccB*
     calc_info_.nvirB,&(tARBS[0][0]),1,&(ARBS[0][0]),1);
 
@@ -199,132 +205,157 @@ void SAPT0::cholesky_denominator(double delta)
     int nvirB = calc_info_.nvirB;
     int nspan = noccA*nvirA + noccB*nvirB; 
 
-    std::vector<std::pair<int, double> > eps_ia(noccA*nvirA);    
-    std::vector<std::pair<int, double> > eps_jb(noccB*nvirB);    
+    std::vector<std::pair<int, double> > eps(nspan);    
+    std::vector<int> degenerate_index(nspan);
 
     for (int i = 0; i < noccA; i++) {
         for (int a = 0; a < nvirA; a++) {
             // minus means monomer A
-            // and we're using FORTRAN indexing
-            eps_ia[i*nvirA + a] = make_pair(-(i*noccA + a + 1), calc_info_.evalsA[a + noccA] - calc_info_.evalsA[i]);
+            // and we're using FORTRAN indexing. Woot!
+            eps[i*nvirA + a] = make_pair(-(i*nvirA + a + 1), calc_info_.evalsA[a + noccA] - calc_info_.evalsA[i]);
         }
     }
 
     for (int j = 0; j < noccB; j++) {
         for (int b = 0; b < nvirB; b++) {
             // Remember, we're using FORTRAN indexing
-            eps_jb[j*nvirB + b] = make_pair(j*noccB + b + 1, calc_info_.evalsB[b + noccB] - calc_info_.evalsB[j]);
+            eps[j*nvirB + b + noccA*nvirA] = make_pair(j*nvirB + b + 1, calc_info_.evalsB[b + noccB] - calc_info_.evalsB[j]);
         }
     }
 
-    std::sort(eps_ia.begin(), eps_ia.end(), &SAPT0::denominator_criteria);
-    std::sort(eps_jb.begin(), eps_jb.end(), &SAPT0::denominator_criteria);
+    std::sort(eps.begin(), eps.end(), &SAPT0::denominator_criteria);
 
-    double* w_ia = new double[nspan]; 
-    int* ind_ia = new int[nspan]; 
-    memset(static_cast<void*> (w_ia), '\0', nspan*sizeof(double)); 
-    memset(static_cast<void*> (ind_ia), '\0', nspan*sizeof(int)); 
-
-    int indA = 0;
-    int indB = 0;
-    int index = 0;
-    while (true) {
-        if (indA == nvirA*noccA && indB == nvirB*noccB)
+    double* w_ia = new double[nspan];
+    w_ia[0] = eps[0].second;
+    degenerate_index[0] = 0;
+    
+    int N = 1;
+    for (int k = 1; k < nspan; k++) {
+        if (fabs(eps[k].second - w_ia[N-1]) > 1.0E-12) {
+            w_ia[N] = eps[k].second;
+            N++;
+        }
+        degenerate_index[k] = N - 1;
+    }
+    
+    int Ndelta;
+    for (Ndelta = 1; Ndelta <= N; Ndelta++) {
+        bool OK = true;
+        for (int p = Ndelta; p < N; p++) {
+            double D = 1.0 / (2.0 * w_ia[p]);
+            double Q = 0.0;
+            for (int m = 0; m < Ndelta - 1; m++) {
+                Q = (w_ia[p] - w_ia[m]) / (w_ia[p] + w_ia[m]);
+                D *= Q * Q;
+            }
+            //printf("  D(%d)^%d = %14.10E\n", p, Ndelta, D);
+            if (fabs(D) > delta) {
+                OK = false;
+                break;
+            }
+        }
+        if (OK) 
             break;
-
-        if (indA == nvirA*noccA) {
-            w_ia[index] = eps_jb[indB].second;
-            ind_ia[index] = eps_jb[indB].first;
-            index++;
-            indB++;
-        }
-        else if (indA == nvirA*noccA) {
-            w_ia[index] = eps_ia[indA].second;
-            ind_ia[index] = eps_ia[indA].first;
-            index++;
-            indA++;
-        } else if (eps_ia[indA].second > eps_jb[indB].second) {
-            w_ia[index] = eps_jb[indB].second;
-            ind_ia[index] = eps_jb[indB].first;
-            index++;
-            indB++;
-        }
-        else { 
-            w_ia[index] = eps_ia[indA].second;
-            ind_ia[index] = eps_ia[indA].first;
-            index++;
-            indA++;
-        }   
-    }
-    eps_ia.clear();
-    eps_jb.clear();
-
-    int N = nspan;
-    int Ndelta = 0;
-
-    for (int p = 0; p < N; p++) {
-        
-        Ndelta++;
-
-        double Lpp = 1.0 / (2.0 * w_ia[p]);
-        double wp = w_ia[p];
-        double wm = 0.0;
-        double Q = 0.0;
-        for (int m = 0; m < p; m++) {
-            wm = w_ia[m];
-            Q = (wp - wm) / (wp + wm);
-            Lpp *= Q * Q;
-        }    
-        if (Lpp < delta)
-            break; 
     }
 
-    shared_ptr<Matrix> L(new Matrix("Cholesky L, Energy Denominator", nspan, Ndelta));
+
+    shared_ptr<Matrix> L(new Matrix("Cholesky L, Energy Denominator", N, Ndelta));
     double** Lp = L->get_pointer(0);
 
     for (int n = 0; n < Ndelta; n++) {
-        for (int p = n; p < nspan; p++) {
+        for (int p = n; p < N; p++) {
             double wn = w_ia[n];
             double wp = w_ia[p];
             double wm = 0.0;
             double Q = 0.0;
-            double Lpp = sqrt(2.0*wp) / (wp + wn);
+            double Lpp = sqrt(2.0*wn) / (wp + wn);
             for (int m = 0; m < n; m++) {
                 wm = w_ia[m];
                 Q = (wp - wm) / (wp + wm);
-                Lpp *= Q * Q;
+                Lpp *= Q;
             }
             Lp[p][n] = Lpp;
         }
     }
 
-    delete[] ind_ia;
     delete[] w_ia;
 
     fprintf(outfile, "  Energy Denominator Cholesky Decomposition\n");
     fprintf(outfile, "   Delta = %.3E [H^(-1/2)]\n", delta);
     fprintf(outfile, "   Number of vectors required = %d [vectors]\n", Ndelta);
     fprintf(outfile, "   Memory required = %ld [bytes]\n\n", Ndelta*nspan*8L);
-    L->print();
+    //L->print();
 
     double** Lar = block_matrix(Ndelta, noccA*nvirA); 
     double** Lbs = block_matrix(Ndelta, noccB*nvirB); 
 
-    for (int k = 0; k < N; k++) {
-        int ind = ind_ia[k];
-        if (ind  < 0) {
+    for (int k = 0; k < nspan; k++) {
+        int ind = eps[k].first;
+        if (ind < 0) {
             ind = -ind - 1;
-            C_DCOPY(Ndelta, Lp[k], 1, &Lar[0][ind], noccA*nvirA);
+            C_DCOPY(Ndelta, Lp[degenerate_index[k]], 1, &Lar[0][ind], noccA*nvirA);
         } else {
             ind = ind - 1;
-            C_DCOPY(Ndelta, Lp[k], 1, &Lbs[0][ind], noccB*nvirB);
+            C_DCOPY(Ndelta, Lp[degenerate_index[k]], 1, &Lbs[0][ind], noccB*nvirB);
         }
     }
+
+    //fprintf(outfile, " Lar\n");
+    //print_mat(Lar, Ndelta, noccA*nvirA, outfile);
+    //fprintf(outfile, " Lbs\n");
+    //print_mat(Lbs, Ndelta, noccA*nvirA, outfile);
+
+    //shared_ptr<Matrix> Delta(new Matrix(noccA*nvirA, noccB*nvirB));
+    //double** Delt = Delta->get_pointer();
+
+    //C_DGEMM('T','N', noccA*nvirA, noccB*nvirB, Ndelta, 1.0, Lar[0], noccA*nvirA, Lbs[0], noccB*nvirB, 0.0, Delt[0], noccB*nvirB); 
+    //Delta->print();
    
     calc_info_.Lar = Lar;
     calc_info_.Lbs = Lbs;
     calc_info_.ndelta = Ndelta;
  
+}
+void SAPT0::laplace_denominator(int npoint, double center)
+{
+    int noccA = calc_info_.noccA;    
+    int noccB = calc_info_.noccB;    
+    int nvirA = calc_info_.nvirA;    
+    int nvirB = calc_info_.nvirB;
+    int nspan = noccA*nvirA + noccB*nvirB; 
+
+    fprintf(outfile, "  Energy Denominator Laplace Decomposition\n");
+    fprintf(outfile, "   Number of vectors required = %d [vectors]\n", npoint);
+    fprintf(outfile, "   Memory required = %ld [bytes]\n\n", npoint*nspan*8L);
+    fprintf(outfile, "\n");
+    
+    double** Lar = block_matrix(npoint, noccA*nvirA); 
+    double** Lbs = block_matrix(npoint, noccB*nvirB); 
+
+    shared_ptr<ChebyshevIIQuadrature> quad(new ChebyshevIIQuadrature(npoint, center));
+    quad->print();  
+
+    int vec = 0;
+    for (quad->reset(); !quad->isDone(); quad->nextPoint()) {
+        double t = quad->getPoint();
+        double w = sqrt(quad->getWeight()); 
+        for (int i = 0; i < noccA; i++) {
+            for (int a = 0; a < nvirA; a++) {
+                Lar[vec][i * nvirA + a] = w * exp((calc_info_.evalsA[i] - calc_info_.evalsA[a + noccA]) * t);
+            }
+        } 
+        for (int i = 0; i < noccB; i++) {
+            for (int a = 0; a < nvirB; a++) {
+                Lbs[vec][i * nvirB + a] = w * exp((calc_info_.evalsB[i] - calc_info_.evalsB[a + noccB]) * t);
+            }
+        } 
+        vec++ ;
+    } 
+
+    calc_info_.Lar = Lar;
+    calc_info_.Lbs = Lbs;
+    calc_info_.ndelta = npoint;
+    
 }
 
 }}
