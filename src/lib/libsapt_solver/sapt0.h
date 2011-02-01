@@ -47,6 +47,7 @@ protected:
     virtual void exch_disp20();
     void ind20();
     void cholesky_denominator(double delta = 1.0E-6);
+    void laplace_denominator(int npoint = 8, double center = 1.0);
     virtual void exch_ind20();
     virtual double print_results();
 

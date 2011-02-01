@@ -42,6 +42,8 @@ class Quadrature {
 
 class ChebyshevIIQuadrature : public Quadrature {
     protected:
+        /// The center of the quadrature
+        double center_;
 
     public:
         /**!

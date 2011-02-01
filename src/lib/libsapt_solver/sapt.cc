@@ -44,6 +44,7 @@ namespace psi { namespace sapt {
 SAPT::SAPT(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
     : Wavefunction(options, psio, chkpt)
 {
+    basisset_->molecule()->update_geometry();
     get_params();
     get_ribasis();
 }

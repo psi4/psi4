@@ -3,7 +3,7 @@
  *
  */
 
-#ifdef _MKL
+#ifdef HAVE_MKL
 #include <mkl.h>
 #endif
 
@@ -27,6 +27,7 @@
 #include <libchkpt/chkpt.hpp>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
+#include <libutil/quad.h>
 #include <psifiles.h>
 
 #include <libmints/mints.h>
@@ -86,8 +87,8 @@ double SAPT_DFT::compute_energy()
 
 
     // Get a quadrature object for imaginary frequencies
-    shared_ptr<OmegaQuadrature> quad = shared_ptr<OmegaQuadrature> ( \
-        new OmegaQuadrature(options_.get_int("N_OMEGA")));
+    shared_ptr<ChebyshevIIQuadrature> quad = shared_ptr<ChebyshevIIQuadrature> ( \
+        new ChebyshevIIQuadrature(options_.get_int("N_OMEGA")));
 
     // Perform quadrature over imaginary frequencies
     fprintf(outfile, "\n");
@@ -100,7 +101,7 @@ double SAPT_DFT::compute_energy()
     int n = 0;
     for (quad->reset(); !quad->isDone(); quad->nextPoint() ) {
 
-        double omega = quad->getOmega();
+        double omega = quad->getPoint();
         double weight = quad->getWeight();
 
         // Uncoupled response functions
@@ -1215,29 +1216,5 @@ double SAPT_DFT::compute_TDDFT_disp()
 
     return contribution;
 }
-OmegaQuadrature::OmegaQuadrature(int npoints) {
-
-    npoints_ = npoints;
-    index_ = 0;
-    w_ = init_array(npoints);
-    omega_ = init_array(npoints);
-
-    // Compute Becke-style mapping
-    // (Seems to span the space better)
-    double x,temp;
-    double xi = 1.0; // By default
-    double INVLN2 = 1.0/log(2.0);
-    for (int tau = 1; tau<=npoints; tau++) {
-        x = cos(tau/(npoints+1.0)*M_PI);
-        omega_[tau-1] = xi*(1.0-x)/(1.0+x);
-        temp = sin(tau/(npoints+1.0)*M_PI);
-        w_[tau-1] = 2.0*M_PI/(npoints+1)*temp*temp*xi/((1.0+x)*(1.0+x)*sqrt(1.0-x*x));
-    }
-}
-OmegaQuadrature::~OmegaQuadrature() {
-    free(w_);
-    free(omega_);
-}
-
 
 }}

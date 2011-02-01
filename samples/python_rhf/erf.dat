@@ -1,12 +1,13 @@
 molecule mol {
-H
-H 1 1.0
+H 0.0 0.0 0.0
+H 0.0 1.0 0.0
+H 0.0 0.0 1.0
 angstrom
 symmetry c1
 }
 
 globals {
-basis sto-3g
+basis sto-3g 
 }
 
 mints = PsiMod.MintsHelper()
