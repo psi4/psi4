@@ -746,21 +746,16 @@ IntegralTransform::build_fzc_and_fock(int p, int q, int r, int s, double value,
 void
 IntegralTransform::idx_permute_presort(dpdfile4 *File, int &thisBucket, int **&bucketMap,
                                        int **&bucketOffset, int &p, int &q, int &r,
-                                       int &s, double value)
+                                       int &s, double value, bool symmetrize)
 {
     dpdparams4 *Params = File->params;
 
-    if(q > p){
-        int temp = p;
-        p = q;
-        q = temp;
+    if(symmetrize){
+        // Symmetrize the quantity (used in density matrix processing)
+        if(p!=q) value *= 0.5;
+        if(r!=s) value *= 0.5;
     }
-    if(s > r){
-        int temp = r;
-        r = s;
-        s = temp;
-    }
-//    fprintf(outfile, "p %d q %d r %d s %d\n",p,q,r,s); fflush(outfile);
+
     /* Get the orbital symmetries */
     int p_sym = Params->psym[p];
     int q_sym = Params->qsym[q];
@@ -769,7 +764,7 @@ IntegralTransform::idx_permute_presort(dpdfile4 *File, int &thisBucket, int **&b
     int pq_sym = p_sym^q_sym;
     int rs_sym = r_sym^s_sym;
 
-fprintf(outfile, "p %d q %d r %d s %d  (%16.10f) -> ", p, q, r, s, value);
+    //fprintf(outfile, "p %d q %d r %d s %d  (%16.10f) -> ", p, q, r, s, value);
 
     /* The allowed (Mulliken) permutations are very simple in this case */
     if(bucketMap[p][q] == thisBucket) {
@@ -779,25 +774,21 @@ fprintf(outfile, "p %d q %d r %d s %d  (%16.10f) -> ", p, q, r, s, value);
         int offset = bucketOffset[thisBucket][pq_sym];
         if((pq-offset >= Params->rowtot[pq_sym]) || (rs >= Params->coltot[rs_sym]))
             idx_error("MP Params_make: pq, rs", p,q,r,s,pq,rs,pq_sym,rs_sym);
-fprintf(outfile, "p %d q %d r %d s %d", p, q, r, s);
+        //fprintf(outfile, "p %d q %d r %d s %d", p, q, r, s);
         File->matrix[pq_sym][pq-offset][rs] += value;
     }
 
     // We also add in the bra-ket transposed value, as a result of the matrix
     // storage, but we need to make sure we don't duplicate "diagonal" values
-    if(bucketMap[r][s] == thisBucket && !(p==r&&q==s)) {
-
-fprintf(outfile, " + p %d q %d r %d s %d", r, s, p, q);
-
+    if(bucketMap[r][s] == thisBucket && (p!=r || q!=s)) {
         int rs = Params->rowidx[r][s];
         int pq = Params->colidx[p][q];
         int offset = bucketOffset[thisBucket][rs_sym];
         if((rs-offset >= Params->rowtot[rs_sym])||(pq >= Params->coltot[pq_sym]))
             idx_error("MP Params_make: rs, pq", p,q,r,s,rs,pq,rs_sym,pq_sym);
-
+        //fprintf(outfile, " + p %d q %d r %d s %d", r, s, p, q);
         File->matrix[rs_sym][rs-offset][pq] += value;
     }
-fprintf(outfile, "\n");
 }
 
 

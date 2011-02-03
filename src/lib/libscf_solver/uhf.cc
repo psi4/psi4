@@ -369,6 +369,9 @@ void UHF::save_information()
     Fa_->diagonalize(eigvectora, eigvaluesa);
     Fb_->diagonalize(eigvectorb, eigvaluesb);
 
+    epsilon_a_ = eigvaluesa;
+    epsilon_b_ = eigvaluesb;
+
     bool print_mos = options_.get_bool("PRINT_MOS");
     if (print_mos) {
         fprintf(outfile, "\n  Alpha Molecular orbitals:\n");
@@ -438,7 +441,7 @@ void UHF::save_information()
     chkpt_->wt_phase_check(0);
 
     // Figure out frozen core orbitals
-    int nfzc = molecule_->nfrozen_core("TRUE"); /*chkpt_->rd_nfzc();*/
+    int nfzc = molecule_->nfrozen_core(options_.get_str("FREEZE_CORE")); /*chkpt_->rd_nfzc();*/
     // TODO: Need to handle frozen virtuals
     int nfzv = 0;
     int *frzcpi = compute_fcpi(nfzc, eigvaluesa);
