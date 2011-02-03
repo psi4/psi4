@@ -322,31 +322,49 @@ DCFTSolver::dump_density()
     /*
      * The OVOV block
      */
-    dpdbuf4 Laaaa, Laabb, Labba, Lbaab, Lbbbb, Taa, Tab, Tba, Tbb, Gaa2, Laa2, Lab2;
+    dpdbuf4 Laaaa, Laabb, Labba, Lbaab, Lbbbb, Taa, Tab, Tba, Tbb, Gaa2, Laa2, Lab2, Lbb2;
 
-//    dpd_buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-//                  ID("[O,V]"), ID("[O,V]"), 0, "Lambda (OV|OV)");
-//    dpd_buf4_init(&Laa2, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-//                  ID("[O,V]"), ID("[O,V]"), 0, "Lambda (OV|OV)");
-////    dpd_buf4_copy(&Laa, PSIF_DCFT_DPD, "Temp (OV|OV)");
-//    dpd_buf4_init(&Taa, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-//                  ID("[O,V]"), ID("[O,V]"), 0, "Temp (OV|OV)");
-//    dpd_contract444(&Laa, &Laa2, &Taa, 0, 0, -1.0, 0.0);
-//    dpd_buf4_close(&Laa);
-//    dpd_buf4_close(&Laa2);
-//    dpd_buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[o,v]"),
-//                  ID("[O,V]"), ID("[o,v]"), 0, "Lambda (OV|ov)");
-////    dpd_buf4_copy(&Lab, PSIF_DCFT_DPD, "Temp (OV|ov)");
-//    dpd_buf4_init(&Lab2, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[o,v]"),
-//                  ID("[O,V]"), ID("[o,v]"), 0, "Lambda (OV|ov)");
-//    dpd_contract444(&Lab, &Lab2, &Gaa, 0, 0, -1.0, 1.0);
-//    dpd_buf4_close(&Lab);
-//    dpd_buf4_close(&Lab2);
-//    dpd_buf4_close(&Taa);
-//    dpd_buf4_init(&Taa, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-//                  ID("[O,V]"), ID("[O,V]"), 0, "Temp (OV|OV)");
-//    dpd_buf4_sort(&Taa, PSIF_DCFT_DENSITY, psrq, ID("[O,V]"), ID("[O,V]"), "Gamma <OV|OV>");
-//    dpd_buf4_close(&Taa);
+    dpd_buf4_init(&Gaa, PSIF_DCFT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "Gamma <OV|OV>");
+    dpd_buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "Lambda (OV|OV)");
+    dpd_buf4_init(&Laa2, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "Lambda (OV|OV)");
+    dpd_contract444(&Laa, &Laa2, &Gaa, 0, 0, -1.0, 0.0);
+    dpd_buf4_close(&Laa);
+    dpd_buf4_close(&Laa2);
+    dpd_buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+                  ID("[O,V]"), ID("[o,v]"), 0, "Lambda (OV|ov)");
+    dpd_buf4_init(&Lab2, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+                  ID("[O,V]"), ID("[o,v]"), 0, "Lambda (OV|ov)");
+    dpd_contract444(&Lab, &Lab2, &Gaa, 0, 0, -1.0, 1.0);
+    dpd_buf4_close(&Lab);
+    dpd_buf4_close(&Lab2);
+    for(int h = 0; h < _nIrreps; ++h){
+        dpd_buf4_mat_irrep_init(&Gaa, h);
+        dpd_buf4_mat_irrep_rd(&Gaa, h);
+        for(size_t ia = 0; ia < Gaa.params->rowtot[h]; ++ia){
+            size_t i = Gaa.params->roworb[h][ia][0];
+            int Gi = Gaa.params->psym[i];
+            i -= Gaa.params->poff[Gi];
+            size_t a = Gaa.params->roworb[h][ia][1];
+            int Ga = Gaa.params->qsym[a];
+            a -= Gaa.params->qoff[Ga];
+            for(size_t jb = 0; jb < Gaa.params->coltot[h]; ++jb){
+                size_t j = Gaa.params->colorb[h][jb][0];
+                int Gj = Gaa.params->rsym[j];
+                j -= Gaa.params->roff[Gj];
+                size_t b = Gaa.params->colorb[h][jb][1];
+                int Gb = Gaa.params->ssym[b];
+                b -= Gaa.params->soff[Gb];
+                if(Gi == Gj && Ga == Gb)
+                    Gaa.matrix[h][ia][jb] += aOccOPDM(Gi, i, j) * aVirOPDM(Ga, a, b);
+            }
+        }
+        dpd_buf4_mat_irrep_wrt(&Gaa, h);
+        dpd_buf4_mat_irrep_close(&Gaa, h);
+    }
+    dpd_buf4_close(&Gaa);
 
     dpd_buf4_init(&Tab, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[o,v]"),
                   ID("[O,V]"), ID("[o,v]"), 0, "Temp (OV|ov)");
@@ -374,62 +392,85 @@ DCFTSolver::dump_density()
     dpd_buf4_close(&Tba);
     dpd_buf4_init(&Tab, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[o,v]"),
                   ID("[O,V]"), ID("[o,v]"), 0, "Temp (OV|ov)");
-    dpd_buf4_print(&Tab, outfile, 1);
+//    dpd_buf4_print(&Tab, outfile, 1);
     dpd_buf4_sort(&Tab, PSIF_DCFT_DENSITY, psrq, ID("[O,v]"), ID("[o,V]"), "Gamma <Ov|oV>");
     dpd_buf4_close(&Tab);
     dpd_buf4_init(&Tba, PSIF_DCFT_DPD, 0, ID("[o,v]"), ID("[O,V]"),
                   ID("[o,v]"), ID("[O,V]"), 0, "Temp (ov|OV)");
-    dpd_buf4_print(&Tba, outfile, 1);
+//    dpd_buf4_print(&Tba, outfile, 1);
     dpd_buf4_sort(&Tba, PSIF_DCFT_DENSITY, psrq, ID("[o,V]"), ID("[O,v]"), "Gamma <oV|Ov>");
     dpd_buf4_close(&Tba);
-    dpd_buf4_init(&Tab, PSIF_DCFT_DENSITY, 0, ID("[O,v]"), ID("[o,V]"),
+    dpd_buf4_init(&Gab, PSIF_DCFT_DENSITY, 0, ID("[O,v]"), ID("[o,V]"),
                   ID("[O,v]"), ID("[o,V]"), 0, "Gamma <Ov|oV>");
 //    dpd_buf4_print(&Tab, outfile, 1);
-    dpd_buf4_close(&Tab);
+//    dpd_buf4_close(&Tab);
+    for(int h = 0; h < _nIrreps; ++h){
+        dpd_buf4_mat_irrep_init(&Gab, h);
+        dpd_buf4_mat_irrep_rd(&Gab, h);
+        for(size_t ia = 0; ia < Gab.params->rowtot[h]; ++ia){
+            size_t i = Gab.params->roworb[h][ia][0];
+            int Gi = Gab.params->psym[i];
+            i -= Gab.params->poff[Gi];
+            size_t a = Gab.params->roworb[h][ia][1];
+            int Ga = Gab.params->qsym[a];
+            a -= Gab.params->qoff[Ga];
+            for(size_t jb = 0; jb < Gab.params->coltot[h]; ++jb){
+                size_t j = Gab.params->colorb[h][jb][0];
+                int Gj = Gab.params->rsym[j];
+                j -= Gab.params->roff[Gj];
+                size_t b = Gab.params->colorb[h][jb][1];
+                int Gb = Gab.params->ssym[b];
+                b -= Gab.params->soff[Gb];
+                if(Gi == Gj && Ga == Gb)
+                    Gab.matrix[h][ia][jb] = -aOccOPDM(Gi, i, j) * bVirOPDM(Ga, a, b);
+            }
+        }
+        dpd_buf4_mat_irrep_wrt(&Gab, h);
+        dpd_buf4_mat_irrep_close(&Gab, h);
+    }
+    dpd_buf4_close(&Gab);
+
 
     dpd_buf4_init(&Gbb, PSIF_DCFT_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "Gamma <ov|ov>");
     dpd_buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "Lambda (ov|ov)");
-    dpd_buf4_copy(&Lbb, PSIF_DCFT_DPD, "Temp (ov|ov)");
-    dpd_buf4_init(&Tbb, PSIF_DCFT_DPD, 0, ID("[o,v]"), ID("[o,v]"),
-                  ID("[o,v]"), ID("[o,v]"), 0, "Temp (ov|ov)");
-    dpd_contract444(&Lbb, &Tbb, &Gbb, 0, 0, -1.0, 0.0);
+    dpd_buf4_init(&Lbb2, PSIF_DCFT_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+                  ID("[o,v]"), ID("[o,v]"), 0, "Lambda (ov|ov)");
+    dpd_contract444(&Lbb, &Lbb2, &Gbb, 0, 0, -1.0, 0.0);
     dpd_buf4_close(&Lbb);
-    dpd_buf4_close(&Tbb);
-    dpd_buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                  ID("[o,v]"), ID("[o,v]"), 0, "Lambda (OV|ov)");
-    dpd_buf4_copy(&Lab, PSIF_DCFT_DPD, "Temp (OV|ov)");
-    dpd_buf4_init(&Tab, PSIF_DCFT_DPD, 0, ID("[o,v]"), ID("[o,v]"),
-                  ID("[o,v]"), ID("[o,v]"), 0, "Temp (OV|ov)");
-    dpd_contract444(&Lab, &Tab, &Gbb, 1, 1, -1.0, 1.0);
+    dpd_buf4_close(&Lbb2);
+    dpd_buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+                  ID("[O,V]"), ID("[o,v]"), 0, "Lambda (OV|ov)");
+    dpd_buf4_init(&Lab2, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+                  ID("[O,V]"), ID("[o,v]"), 0, "Lambda (OV|ov)");
+    dpd_contract444(&Lab, &Lab2, &Gbb, 1, 1, -1.0, 1.0);
     dpd_buf4_close(&Lab);
-    dpd_buf4_close(&Tab);
-    dpd_buf4_print(&Gbb, outfile, 1);
-//    for(int h = 0; h < _nIrreps; ++h){
-//        dpd_buf4_mat_irrep_init(&Gbb, h);
-//        dpd_buf4_mat_irrep_rd(&Gbb, h);
-//        for(size_t ia = 0; ia < Gbb.params->rowtot[h]; ++ia){
-//            size_t i = Gbb.params->roworb[h][ia][0];
-//            int Gi = Gbb.params->psym[i];
-//            i -= Gbb.params->poff[Gi];
-//            size_t a = Gbb.params->roworb[h][ia][1];
-//            int Ga = Gbb.params->qsym[a];
-//            a -= Gbb.params->qoff[Ga];
-//            for(size_t jb = 0; jb < Gbb.params->coltot[h]; ++jb){
-//                size_t j = Gbb.params->colorb[h][jb][0];
-//                int Gj = Gbb.params->rsym[j];
-//                j -= Gbb.params->roff[Gj];
-//                size_t b = Gbb.params->colorb[h][jb][1];
-//                int Gb = Gbb.params->ssym[b];
-//                b -= Gbb.params->soff[Gb];
-//                if(Gi == Gj && Ga == Gb)
-//                    Gbb.matrix[h][ia][jb] -= bOccOPDM(Gi, i, j) * bVirOPDM(Ga, a, b);
-//            }
-//        }
-//        dpd_buf4_mat_irrep_wrt(&Gbb, h);
-//        dpd_buf4_mat_irrep_close(&Gbb, h);
-//    }
+    dpd_buf4_close(&Lab2);
+    for(int h = 0; h < _nIrreps; ++h){
+        dpd_buf4_mat_irrep_init(&Gbb, h);
+        dpd_buf4_mat_irrep_rd(&Gbb, h);
+        for(size_t ia = 0; ia < Gbb.params->rowtot[h]; ++ia){
+            size_t i = Gbb.params->roworb[h][ia][0];
+            int Gi = Gbb.params->psym[i];
+            i -= Gbb.params->poff[Gi];
+            size_t a = Gbb.params->roworb[h][ia][1];
+            int Ga = Gbb.params->qsym[a];
+            a -= Gbb.params->qoff[Ga];
+            for(size_t jb = 0; jb < Gbb.params->coltot[h]; ++jb){
+                size_t j = Gbb.params->colorb[h][jb][0];
+                int Gj = Gbb.params->rsym[j];
+                j -= Gbb.params->roff[Gj];
+                size_t b = Gbb.params->colorb[h][jb][1];
+                int Gb = Gbb.params->ssym[b];
+                b -= Gbb.params->soff[Gb];
+                if(Gi == Gj && Ga == Gb)
+                    Gbb.matrix[h][ia][jb] += bOccOPDM(Gi, i, j) * bVirOPDM(Ga, a, b);
+            }
+        }
+        dpd_buf4_mat_irrep_wrt(&Gbb, h);
+        dpd_buf4_mat_irrep_close(&Gbb, h);
+    }
     dpd_buf4_close(&Gbb);
 
     /*
@@ -559,6 +600,7 @@ fprintf(outfile, "testbb = %16.10f\n", 0.25*dpd_buf4_dot(&I, &L));
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
                       ID("[O,O]"), ID("[O,O]"), 1, "MO Ints <OO|OO>");
     OOOOEnergy += 0.25* dpd_buf4_dot(&I, &L);
+//dpd_buf4_print(&I, outfile, 1);
 fprintf(outfile, "testaa = %16.10f\n", 0.25*dpd_buf4_dot(&I, &L));
     dpd_buf4_close(&I);
     dpd_buf4_close(&L);
