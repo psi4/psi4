@@ -11,15 +11,18 @@ dcft_subdirs = dcft1 dcft2 dcft3
 
 mcscf_subdirs = #mcscf1-rhf this is also broken
 
+df_subdirs = sapt1 dfmp2
+
 psimrcc_subdirs = 
 
 mints_subdirs = mints1
 
-scf_subdirs = scf1 scf2 scf3 scf4
+scf_subdirs = scf1 scf2 scf3 scf4 sad1
 
 subdirs = \
 $(mints_subdirs) \
 $(scf_subdirs) \
+$(df_subdirs) \
 $(cc_subdirs) \
 ${mcscf_subdirs} 
 #$(dcft_subdirs) \
@@ -65,6 +68,12 @@ mcscf_tests:
 
 scf_tests:
 	for dir in $(scf_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+df_tests:
+	for dir in $(df_subdirs); \
 	do \
 	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
 	done

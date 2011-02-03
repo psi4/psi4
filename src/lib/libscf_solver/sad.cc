@@ -36,8 +36,6 @@ namespace psi { namespace scf {
 void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, double** D)
 {
     int sad_print_ = options_.get_int("SAD_PRINT");
-    //ONLY WORKS IN C1 at the moment
-    //print_ = options_.get_int("PRINT");
     shared_ptr<Molecule> mol = bas->molecule();
 
     int nbeta = (nelec-nhigh)/2;
@@ -57,18 +55,6 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
         throw std::domain_error("SAD Atomic UHF has been given a molecule, not an atom");
     }
 
-    //double xc = mol->x(0);
-    //double yc = mol->y(0);
-    //double zc = mol->z(0);
-
-    //Vector3 vb = bas->shell(0)->center();
-    //double xb = vb[0];
-    //double yb = vb[1];
-    //double zb = vb[2];
-
-    //fprintf(outfile, " Molecule center <%14.10f,%14.10f,%14.10f>, Basis center <%14.10f,%14.10f,%14.10f>.\n", \
-        xc, yc, zc, xb, yb, zb);
-
     double** Dold = block_matrix(norbs,norbs);
     double **Shalf = block_matrix(norbs, norbs);
     double** Ca = block_matrix(norbs,norbs);
@@ -85,9 +71,9 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     IntegralFactory integral(bas, bas, bas, bas);
     MatrixFactory mat;
     mat.init_with(1,&norbs,&norbs);
-    OneBodySOInt *S_ints = integral.so_overlap();
-    OneBodySOInt *T_ints = integral.so_kinetic();
-    OneBodySOInt *V_ints = integral.so_potential();
+    OneBodyAOInt *S_ints = integral.ao_overlap();
+    OneBodyAOInt *T_ints = integral.ao_kinetic();
+    OneBodyAOInt *V_ints = integral.ao_potential();
     TwoBodyAOInt *TEI = integral.eri();
 
     //Compute Shalf;
@@ -515,120 +501,82 @@ void RHF::compute_SAD_guess()
 
     timer_off("Atomic UHF");
 
+    timer_on("AO2USO SAD");
     //Add atomic_D into D (scale by 1/2, we like pairs in RHF)
-    D_->zero();
+    shared_ptr<Matrix> DAO = shared_ptr<Matrix>(new Matrix("D_SAD (AO)", nso_, nso_));
     for (int A = 0, offset = 0; A < mol->natom(); A++) {
         int norbs = atomic_bases[A]->nbf();
         int back_index = unique_indices[A];
         for (int m = 0; m<norbs; m++)
             for (int n = 0; n<norbs; n++)
-                D_->set(0,m+offset,n+offset,0.5*atomic_D[offset_indices[back_index]][m][n]);
+                DAO->set(0,m+offset,n+offset,0.5*atomic_D[offset_indices[back_index]][m][n]);
         offset+=norbs;
     }
     if (sad_print_>4)
-        D_->print(outfile);
+        DAO->print(outfile);
+
+    for (int A = 0; A<nunique; A++)
+        free_block(atomic_D[A]);
+    free(atomic_D);
+
+    free(nelec);
+    free(nhigh);
+    free(nalpha);
+    free(nbeta);
 
     free(atomic_indices);
     free(unique_indices);
     free(offset_indices);
-    //D_->print(outfile);
 
-    //A C matrix is needed. Do one of:
-    //   --An integral direct step (expensive)
-    //   --A Cholesky orbital approximation (cheap, should be preferred after the David Sherrill correction)
-    if (options_.get_str("SAD_C") == "ID") {
-        //compute a rough fock matrix via integral direct
-        //note, my convention is backwards, l and s are index variables
-        // m and n are zip variables
-        timer_on("sad fock");
-        double sad_schwarz = options_.get_double("sad_schwarz_cutoff");
-        G_->zero();
-        IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
-        TwoBodyAOInt *tei = integral.eri(0, sad_schwarz);
-        const double* buffer = tei->buffer();
-        for (int a = 0, shell_offset = 0; a<mol->natom(); a++) {
-        for (int mu = shell_offset; mu < shell_offset+atomic_bases[a]->nshell(); mu++) {
-        int nummu = basisset_->shell(mu)->nfunction();
-        for (int nu = shell_offset; nu < shell_offset+atomic_bases[a]->nshell() ; nu++) {
-        int numnu = basisset_->shell(nu)->nfunction();
-        for (int la = 0; la < basisset_->nshell(); la++) {
-        int numla = basisset_->shell(la)->nfunction();
-        for (int si = 0; si < basisset_->nshell(); si++) {
-        int numsi = basisset_->shell(si)->nfunction();
+    // Do a similarity transform to get D_USO(SAD)
+    if (D_->nirreps() == 0) {
+        D_->copy(DAO);
+    } else {
+        
+        shared_ptr<IntegralFactory> fact(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+        shared_ptr<PetiteList> pet(new PetiteList(basisset_, fact));
+        shared_ptr<Matrix> AO2USO(pet->aotoso());
+        Dimension dim = pet->SO_basisdim(); 
+        int nao = nso_;
 
-        //j
-        if (!tei->shell_is_zero(mu,nu,la,si)) {
-        tei->compute_shell(mu,nu,la,si);
-        for (int m = 0, index = 0; m<nummu; m++) {
-        int omu = basisset_->shell(mu)->function_index() + m;
-        for (int n = 0; n<numnu; n++) {
-        int onu = basisset_->shell(nu)->function_index() + n;
-        for (int l = 0; l<numla; l++) {
-        int ola = basisset_->shell(la)->function_index() + l;
-        for (int s = 0; s<numsi; s++,index++) {
-        int osi = basisset_->shell(si)->function_index() + s;
-            G_->add(0,ola,osi,2.0*D_->get(0,omu,onu)*buffer[index]);
-        }
-        }
-        }
-        }
-        }
+        for (int h = 0; h < D_->nirreps(); h++) {
+            double** DAOp = DAO->get_pointer(0);
+            double** D = D_->get_pointer(h);
+            double** U = AO2USO->get_pointer(h);
+            
+            int nuso = dim[h];
+        
+            if (nuso == 0 || nao == 0) continue;
 
-        //k
-        if (!tei->shell_is_zero(la,mu,nu,si)) {
-        tei->compute_shell(la,mu,nu,si);
-        for (int l = 0, index = 0; l<numla; l++) {
-        int ola = basisset_->shell(la)->function_index() + l;
-        for (int m = 0; m<nummu; m++) {
-        int omu = basisset_->shell(mu)->function_index() + m;
-        for (int n = 0; n<numnu; n++) {
-        int onu = basisset_->shell(nu)->function_index() + n;
-        for (int s = 0; s<numsi; s++,index++) {
-        int osi = basisset_->shell(si)->function_index() + s;
-            G_->add(0,ola,osi,-D_->get(0,omu,onu)*buffer[index]);
-        }
-        }
-        }
-        }
-        }
-        //fprintf(outfile,"  cholesky tensor: ntri_ = %d, ri_nbf_ = %d:\n",ntri_,ri_nbf_);
+            double** Temp = block_matrix(nuso, nao);
+            
+            C_DGEMM('T','N',nuso, nao, nao, 1.0, U[0], nuso, DAOp[0], nao, 0.0, Temp[0], nao); 
+            C_DGEMM('N','N',nuso, nuso, nao, 1.0, Temp[0], nao, U[0], nuso, 0.0, D[0], nuso); 
 
-        }
-        }
-        }
-        }
-        shell_offset+= atomic_bases[a]->nshell();
-        }
+            free_block(Temp); 
+    
+        } 
+    }
+    DAO.reset();
 
-        F_->copy(H_);
-        F_->add(G_);
+    timer_off("AO2USO SAD");
 
-        //compute initial e for reference
-        E_ = compute_E();
+    timer_on("SAD Cholesky");
+    if (sad_print_) {
+        fprintf(outfile,"\n  Approximating occupied orbitals via Partial Cholesky Decomposition.\n");
+        fprintf(outfile,"  NOTE: The zero-th SCF iteration will not be variational.\n");
+    }
+    int* dim = D_->colspi();
+    shared_ptr<Matrix> D2(factory_.create_matrix("D2"));
+    D2->copy(D_);
+    C_->zero();
+    for (int h = 0; h < D_->nirreps(); h++) {
+        int norbs = dim[h];
+        sad_nocc_[h] = 0;
 
-        //form the c matrix from the rough fock matrix
-        form_C();
-        //form the d matrix from the resultant c matrix
-        form_D();
-        timer_off("sad fock");
+        if (norbs == 0) continue;
 
-        if (sad_print_>7) {
-            G_->print(outfile);
-            F_->print(outfile);
-            C_->print(outfile);
-            D_->print(outfile);
-        }
-    } else if (options_.get_str("SAD_C") == "CHOLESKY") {
-        timer_on("SAD Cholesky");
-        if (sad_print_) {
-            fprintf(outfile,"\n  Approximating occupied orbitals via Partial Cholesky Decomposition.\n");
-            fprintf(outfile,"  NOTE: The zero-th SCF iteration will not be variational.\n");
-        }
-        int norbs = nso_;
-        int ndocc = nalpha_;
-        sad_nocc_ = 0;
-
-        double** D = D_->to_block_matrix();
+        double** D = D2->get_pointer(h);
         double* Temp = init_array(norbs);
         int* P = init_int_array(norbs);
         for (int i = 0; i<norbs; i++)
@@ -683,10 +631,10 @@ void RHF::compute_SAD_guess()
         else if (rank == 0) {
             //Full Cholesky completed, use the whole thing
             rank = norbs;
-            sad_nocc_ = norbs;
+            sad_nocc_[h] = norbs;
         } else {
             // Only a partial Cholesky completed (rank was deficient)
-            sad_nocc_ = rank - 1; //FORTRAN
+            sad_nocc_[h] = rank - 1; //FORTRAN
         }
         for (int i = 0; i<norbs-1; i++)
             for (int j = i+1; j<norbs; j++)
@@ -694,215 +642,169 @@ void RHF::compute_SAD_guess()
 
         if (sad_print_ > 5) {
             fprintf(outfile,"  C Guess (Cholesky Unpivoted) , rank is %d:\n", rank);
-            print_mat(D,norbs,sad_nocc_,outfile);
+            print_mat(D,norbs,sad_nocc_[h],outfile);
         }
 
         //Unpivot
-        double** C = block_matrix(norbs,sad_nocc_);
+        double** C = block_matrix(norbs,sad_nocc_[h]);
         for (int m = 0; m < norbs; m++) {
-            C_DCOPY(sad_nocc_,&D[m][0],1,&C[P[m]][0],1);
+            C_DCOPY(sad_nocc_[h],&D[m][0],1,&C[P[m]][0],1);
         }
 
-        //Eliminate the redundancies
-        //double chol_cutoff = options_.get_double("SAD_CHOL_CUTOFF");
-        //for (int i = ndocc; i<sad_nocc_; i++) {
-        //    if (sqrt(1.0/(norbs)*C_DDOT(norbs,&C[0][i],sad_nocc_,&C[0][i],sad_nocc_))<chol_cutoff)
-        //        sad_nocc_--;
-        //}
-
         if (sad_print_>1)
-            fprintf(outfile,"  %d of %d possible partial occupation vectors selected for C.\n",sad_nocc_,norbs);
+            fprintf(outfile,"  Irrep %2d: %5d of %5d possible partial occupation vectors selected for C.\n",h, sad_nocc_[h],norbs);
 
         //Set C
-        C_->zero();
         for (int m = 0; m<norbs; m++)
-            for (int i = 0; i<sad_nocc_; i++)
-                C_->set(0,m,i,C[m][i]);
+            for (int i = 0; i<sad_nocc_[h]; i++)
+                C_->set(h,m,i,C[m][i]);
 
         if (sad_print_ > 5) {
             fprintf(outfile,"\n  C Guess (Cholesky):\n");
-            print_mat(C,norbs,sad_nocc_,outfile);
+            print_mat(C,norbs,sad_nocc_[h],outfile);
         }
         //C_->print(outfile);
 
         free(P);
         free(Temp);
-        free_block(D);
         free_block(C);
 
-        E_ = 0.0; //For now
-        doccpi_[0] = nalpha_;//Also for now
-
-        timer_off("SAD Cholesky");
-
-    } else {
-        throw std::invalid_argument("ID or CHOLESKY are the only two C matrix generators at the moment");
     }
-    for (int A = 0; A<nunique; A++)
-        free_block(atomic_D[A]);
-    free(atomic_D);
-
-    free(nelec);
-    free(nhigh);
-    free(nalpha);
-    free(nbeta);
-    //abort();
+    
+    E_ = 0.0; // This is the -1th iteration 
+    timer_off("SAD Cholesky");
 }
-SharedMatrix HF::dualBasisProjection(SharedMatrix C_, int nocc, shared_ptr<BasisSet> old_basis, shared_ptr<BasisSet> new_basis) {
+SharedMatrix HF::dualBasisProjection(SharedMatrix C_A, int* noccpi, shared_ptr<BasisSet> old_basis, shared_ptr<BasisSet> new_basis) {
 
     //Based on Werner's method from Mol. Phys. 102, 21-22, 2311
+    shared_ptr<IntegralFactory> newfactory(new IntegralFactory(new_basis,new_basis,new_basis,new_basis));
+    shared_ptr<IntegralFactory> hybfactory(new IntegralFactory(old_basis,new_basis,old_basis,new_basis));
+    shared_ptr<OneBodySOInt> intBB(newfactory->so_overlap());   
+    shared_ptr<OneBodySOInt> intAB(hybfactory->so_overlap());   
 
-    //ALSO ONLY C1 at the moment
-    //The old C matrix
-    double** CA = C_->to_block_matrix();
+    shared_ptr<PetiteList> pet(new PetiteList(new_basis, newfactory));
+    shared_ptr<Matrix> AO2USO(pet->aotoso());
 
-    //sizes
-    int old_norbs = old_basis->nbf();
-    int new_norbs = new_basis->nbf();
+    shared_ptr<Matrix> SAB(new Matrix("S_AB", C_A->nirreps(), C_A->rowspi(), AO2USO->colspi()));
+    shared_ptr<Matrix> SBB(new Matrix("S_BB", C_A->nirreps(), AO2USO->colspi(), AO2USO->colspi()));
 
-    //fprintf(outfile,"  Old norbs %d, New norbs %d, nocc %d\n",old_norbs,new_norbs,nocc);
+    intAB->compute(SAB);
+    intBB->compute(SBB);
 
-    //AB Integral facotry (acts on first two elements)
-    IntegralFactory integralAB(old_basis, new_basis, old_basis, new_basis);
-    MatrixFactory matAB;
-    matAB.init_with(1,&old_norbs,&new_norbs);
+    newfactory.reset();
+    hybfactory.reset();
+    intAB.reset();
+    intBB.reset();
+    pet.reset();
 
-    //Overlap integrals (basisset to basisset)
-    OneBodySOInt *SAB_ints = integralAB.so_overlap();
-    SharedMatrix S_AB(matAB.create_matrix("S_AB"));
-    SAB_ints->compute(S_AB);
-    //S_AB->print(outfile);
-    double** SAB = S_AB->to_block_matrix();
+    // Constrained to the same symmetry at the moment, we can relax this soon
+    shared_ptr<Matrix> C_B(new Matrix("C_B", C_A->nirreps(),AO2USO->colspi(), noccpi));
+   
+    // Block over irreps (soon united irreps) 
+    for (int h = 0; h < C_A->nirreps(); h++) {
 
-    //BB Integral facotry (acts on first two elements)
-    IntegralFactory integralBB(new_basis, new_basis, new_basis, new_basis);
-    MatrixFactory matBB;
-    matBB.init_with(1,&new_norbs,&new_norbs);
+        int nocc = noccpi[h]; 
+        int na = C_A->rowspi()[h]; 
+        int nb = AO2USO->colspi()[h]; 
 
-    //Overlap integrals (basisset to basisset)
-    OneBodySOInt *SBB_ints = integralBB.so_overlap();
-    SharedMatrix S_BB(matBB.create_matrix("S_BB"));
-    SBB_ints->compute(S_BB);
-    //S_BB->print(outfile);
-    double** SBB = S_BB->to_block_matrix();
+        if (nocc == 0 || na == 0 || nb == 0) continue;
 
-    //Inverse overlap matrices
-    //double** SAAM1 = block_matrix(old_norbs,old_norbs);
-    double** SBBM1 = block_matrix(new_norbs,new_norbs);
+        double** Ca = C_A->get_pointer(h);
+        double** Cb = C_B->get_pointer(h);
+        double** Sab = SAB->get_pointer(h);
+        double** Sbb = SBB->get_pointer(h);
 
-    //Copy the values in
-    C_DCOPY(new_norbs*new_norbs,SBB[0],1,SBBM1[0],1);
+        int CholError = C_DPOTRF('L',nb,Sbb[0],nb);
+        if (CholError !=0 )
+            throw std::domain_error("S_BB Matrix Cholesky failed!");
 
-    //SBB^-1
-    int CholError = C_DPOTRF('L',new_norbs,SBBM1[0],new_norbs);
-    if (CholError !=0 )
-        throw std::domain_error("S_BB Matrix Cholesky failed!");
+        //Inversion (in place)
+        int IError = C_DPOTRI('L',nb,Sbb[0],nb);
+        if (IError !=0 )
+            throw std::domain_error("S_BB Inversion Failed!");
 
-    //Inversion (in place)
-    int IError = C_DPOTRI('L',new_norbs,SBBM1[0],new_norbs);
-    if (IError !=0 )
-        throw std::domain_error("S_BB Inversion Failed!");
+        //LAPACK is smart and all, only uses half of the thing
+        for (int m = 0; m<nb; m++)
+            for (int n = 0; n<m; n++)
+                Sbb[m][n] = Sbb[n][m];
+        
+        //Form T
+        double** Temp1 = block_matrix(nb,nocc);
+        C_DGEMM('T','N',nb,nocc,na,1.0,Sab[0],nb,Ca[0],na,0.0,Temp1[0],nocc);
 
-    //LAPACK is smart and all, only uses half of the thing
-    for (int m = 0; m<new_norbs; m++)
-        for (int n = 0; n<m; n++)
-            SBBM1[m][n] = SBBM1[n][m];
+        //fprintf(outfile," Temp1:\n");
+        //print_mat(Temp1,nb,nocc,outfile);
 
-    //fprintf(outfile,"  S_BB^-1:\n");
-    //print_mat(SBBM1,new_norbs,new_norbs,outfile);
+        double** Temp2 = block_matrix(nb,nocc);
+        C_DGEMM('N','N',nb,nocc,nb,1.0,Sbb[0],nb,Temp1[0],nocc,0.0,Temp2[0],nocc);
 
-    //Form T
-    double** Temp1 = block_matrix(new_norbs,nocc);
-    C_DGEMM('T','N',new_norbs,nocc,old_norbs,1.0,SAB[0],new_norbs,CA[0],old_norbs,0.0,Temp1[0],nocc);
+        //fprintf(outfile," Temp2:\n");
+        //print_mat(Temp2,nb,nocc,outfile);
 
-    //fprintf(outfile," Temp1:\n");
-    //print_mat(Temp1,new_norbs,nocc,outfile);
+        double** Temp3 = block_matrix(na,nocc);
+        C_DGEMM('N','N',na,nocc,nb,1.0,Sab[0],nb,Temp2[0],nocc,0.0,Temp3[0],nocc);
 
-    double** Temp2 = block_matrix(new_norbs,nocc);
-    C_DGEMM('N','N',new_norbs,nocc,new_norbs,1.0,SBBM1[0],new_norbs,Temp1[0],nocc,0.0,Temp2[0],nocc);
+        //fprintf(outfile," Temp3:\n");
+        //print_mat(Temp3,na,nocc,outfile);
 
-    //fprintf(outfile," Temp2:\n");
-    //print_mat(Temp2,new_norbs,nocc,outfile);
+        double** T = block_matrix(nocc,nocc);
+        C_DGEMM('T','N',nocc,nocc,na,1.0,Ca[0],na,Temp3[0],nocc,0.0,T[0],nocc);
 
-    double** Temp3 = block_matrix(old_norbs,nocc);
-    C_DGEMM('N','N',old_norbs,nocc,new_norbs,1.0,SAB[0],new_norbs,Temp2[0],nocc,0.0,Temp3[0],nocc);
+        //fprintf(outfile," T:\n");
+        //print_mat(T,nocc,nocc,outfile);
 
-    //fprintf(outfile," Temp3:\n");
-    //print_mat(Temp3,old_norbs,nocc,outfile);
+        //Find T^-1/2
+        // First, diagonalize T
+        // the C_DSYEV call replaces the original matrix T with its eigenvectors
+        double* eigval = init_array(nocc);
+        int lwork = nocc * 3;
+        double* work = init_array(lwork);
+        int stat = C_DSYEV('v','u',nocc,T[0],nocc,eigval, work,lwork);
+        if (stat != 0) {
+            if(Communicator::world->me() == 0)
+                fprintf(outfile, "C_DSYEV failed\n");
+            exit(PSI_RETURN_FAILURE);
+        }
+        free(work);
 
-    double** T = block_matrix(nocc,nocc);
-    C_DGEMM('T','N',nocc,nocc,old_norbs,1.0,CA[0],old_norbs,Temp3[0],nocc,0.0,T[0],nocc);
+        // Now T contains the eigenvectors of the original T
+        // Copy T to T_copy
+        double **T_mhalf = block_matrix(nocc, nocc);
+        double **T_copy = block_matrix(nocc, nocc);
+        C_DCOPY(nocc*nocc,T[0],1,T_copy[0],1);
 
-    //fprintf(outfile," T:\n");
-    //print_mat(T,nocc,nocc,outfile);
+        // Now form T^{-1/2} = U(T)*t^{-1/2}*U,
+        // where t^{-1/2} is the diagonal matrix of the inverse square roots
+        // of the eigenvalues, and U is the matrix of eigenvectors of T
+        for (int i=0; i<nocc; i++) {
+            if (eigval[i] < 1.0E-10)
+                eigval[i] = 0.0;
+            else
+                eigval[i] = 1.0 / sqrt(eigval[i]);
 
-    //Find T^-1/2
-    // First, diagonalize T
-    // the C_DSYEV call replaces the original matrix T with its eigenvectors
-    double* eigval = init_array(nocc);
-    int lwork = nocc * 3;
-    double* work = init_array(lwork);
-    int stat = C_DSYEV('v','u',nocc,T[0],nocc,eigval, work,lwork);
-    if (stat != 0) {
-        if(Communicator::world->me() == 0)
-            fprintf(outfile, "C_DSYEV failed\n");
-        exit(PSI_RETURN_FAILURE);
+            // scale one set of eigenvectors by the diagonal elements t^{-1/2}
+            C_DSCAL(nocc, eigval[i], T[i], 1);
+        }
+        free(eigval);
+
+        // T_mhalf = T_copy(T) * T
+        C_DGEMM('t','n',nocc,nocc,nocc,1.0,
+                T_copy[0],nocc,T[0],nocc,0.0,T_mhalf[0],nocc);
+
+        //Form CB
+        C_DGEMM('N','N',nb,nocc,nocc,1.0,Temp2[0],nocc,T_mhalf[0],nocc,0.0,Cb[0],nocc);
+
+        free_block(Temp1);       
+        free_block(Temp2);       
+        free_block(Temp3);       
+        free_block(T);       
+        free_block(T_copy);       
+        free_block(T_mhalf);       
+ 
     }
-    free(work);
-
-    // Now T contains the eigenvectors of the original T
-    // Copy T to T_copy
-    double **T_mhalf = block_matrix(nocc, nocc);
-    double **T_copy = block_matrix(nocc, nocc);
-    C_DCOPY(nocc*nocc,T[0],1,T_copy[0],1);
-
-    // Now form T^{-1/2} = U(T)*t^{-1/2}*U,
-    // where t^{-1/2} is the diagonal matrix of the inverse square roots
-    // of the eigenvalues, and U is the matrix of eigenvectors of T
-    for (int i=0; i<nocc; i++) {
-        if (eigval[i] < 1.0E-10)
-            eigval[i] = 0.0;
-        else
-            eigval[i] = 1.0 / sqrt(eigval[i]);
-
-        // scale one set of eigenvectors by the diagonal elements t^{-1/2}
-        C_DSCAL(nocc, eigval[i], T[i], 1);
-    }
-    free(eigval);
-
-    // T_mhalf = T_copy(T) * T
-    C_DGEMM('t','n',nocc,nocc,nocc,1.0,
-            T_copy[0],nocc,T[0],nocc,0.0,T_mhalf[0],nocc);
-
-    //Form CB
-    double** CB = block_matrix(new_norbs,nocc);
-    C_DGEMM('N','N',new_norbs,nocc,nocc,1.0,Temp2[0],nocc,T_mhalf[0],nocc,0.0,CB[0],nocc);
-
-    //fprintf(outfile," T^-1/2:\n");
-    //print_mat(T_mhalf,nocc,nocc,outfile);
-
-    //Set occupied part of C_B;
-    MatrixFactory matBI;
-    matBI.init_with(1,&new_norbs,&nocc);
-
-    SharedMatrix C_B(matBI.create_matrix("C_DB"));
-    for (int m = 0; m < new_norbs; m++)
-        for (int i = 0; i<nocc; i++)
-            C_B->set(0,m,i,CB[m][i]);
-
-    free_block(CA);
-    free_block(SAB);
-    free_block(SBB);
-    free_block(SBBM1);
-    free_block(Temp1);
-    free_block(Temp2);
-    free_block(Temp3);
-    free_block(T);
-    free_block(T_mhalf);
-    free_block(T_copy);
-    free_block(CB);
 
     return C_B;
+
 }
 
 }}

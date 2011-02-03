@@ -89,27 +89,39 @@ void HF::common_init()
     int nirreps = factory_.nirreps();
     int ndocc = 0, nsocc = 0;
     input_docc_ = false;
-    if (options_["DOCC"].has_changed()) {
-        input_docc_ = true;
-        for (int i=0; i<nirreps; ++i) {
-            doccpi_[i] = options_["DOCC"][i].to_integer();
-            ndocc += 2*doccpi_[i];
+    try {
+        if (options_["DOCC"][0].has_changed()) {
+            input_docc_ = true;
+            for (int i=0; i<nirreps; ++i) {
+                doccpi_[i] = options_["DOCC"][i].to_integer();
+                ndocc += 2*doccpi_[i];
+            }
+        } else {
+            for (int i=0; i<nirreps; ++i)
+                doccpi_[i] = 0;
         }
-    } else {
+    } catch (IndexException e) {
         for (int i=0; i<nirreps; ++i)
             doccpi_[i] = 0;
-    }
+    } 
+
+
     input_socc_ = false;
-    if (options_["SOCC"].has_changed()) {
-        input_socc_ = true;
-        for (int i=0; i<nirreps; ++i) {
-            soccpi_[i] = options_["SOCC"][i].to_integer();
-            nsocc += soccpi_[i];
+    try {
+        if (options_["SOCC"][0].has_changed()) {
+            input_socc_ = true;
+            for (int i=0; i<nirreps; ++i) {
+                soccpi_[i] = options_["SOCC"][i].to_integer();
+                nsocc += soccpi_[i];
+            }
+        } else {
+            for (int i=0; i<nirreps; ++i)
+                soccpi_[i] = 0;
         }
-    } else {
+    } catch (IndexException e) {
         for (int i=0; i<nirreps; ++i)
             soccpi_[i] = 0;
-    }
+    } 
 
     // Read information from checkpoint
     nuclearrep_ = molecule_->nuclear_repulsion_energy();
@@ -160,6 +172,13 @@ void HF::common_init()
 
     nbeta_  = (nElec_ - multiplicity_ + 1)/2;
     nalpha_ = nbeta_ + multiplicity_ - 1;
+
+    // implicit case
+    if (nirreps == 1) {
+        doccpi_[0] = nbeta_;
+        soccpi_[0] = nalpha_ - nbeta_;
+    }
+
 
 //  if (ndocc != 0 && nbeta_ != ndocc && nalpha_ != (ndocc + nsocc)) {
 //      char *str = "Your DOCC, SOCC, charge, and multiplicity does not make sense.\n";

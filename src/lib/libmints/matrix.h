@@ -194,6 +194,7 @@ public:
         save(filename.c_str(), append, saveLowerTriangle, saveSubBlocks);
     }
     /** @} */
+    void python_save(std::string filename) { save(filename.c_str(), false, false, false); }
 
     enum SaveType {
         Full,
@@ -211,6 +212,18 @@ public:
      */
     void save(psi::PSIO* psio, unsigned int fileno, SaveType savetype=LowerTriangle);
     void save(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, SaveType savetype=LowerTriangle);
+    /** @} */
+    /**
+     * @{
+     * Loads the block matrix from PSIO object with fileno and with the toc position of the name of the matrix
+     *  The matrix must be correctly sized and named for this to work
+     * 
+     * @param psio PSIO object to read with.
+     * @param fileno File to read from.
+     * @param saveSubBlocks Save information suffixing point group label.
+     */
+    void load(psi::PSIO* psio, unsigned int fileno, SaveType savetype=LowerTriangle);
+    void load(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, SaveType savetype=LowerTriangle);
     /** @} */
 
     /**

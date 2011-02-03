@@ -1,0 +1,653 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-alpha Driver
+    T. D. Crawford, C. D. Sherrill, E. F. Valeev, J. T. Fermann, R. A. King,
+    M. L. Leininger, S. T. Brown, C. L. Janssen, E. T. Seidl, J. P. Kenny,
+    and W. D. Allen, J. Comput. Chem. 28, 1610-1616 (2007)
+
+                         Additional Contributions by
+    Francesco Evangelista, Andrew Simmonett, Justin Turney, Jeremiah Wilke
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  Molecular point group: c2v
+
+
+*** tstart() called on compute-1-13.local
+*** at Thu Feb  3 00:32:55 2011
+
+	There are an even number of electrons - assuming singlet.
+	Specify the multiplicity with the MULTP option in the
+	input if this is incorrect
+
+ RHF: by Justin Turney and Rob Parrish
+
+  Release version.
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O         -0.000000000000    -0.176820723897    -0.000000000000
+           H         -0.707106781187     0.530286057289    -0.000000000000
+           H          0.707106781187     0.530286057289     0.000000000000
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  Nuclear repulsion =    8.841020805217546
+  Energy threshold  = 1.00e+00
+  Density threshold = 1.00e+00
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+
+  Minimum eigenvalue in the overlap matrix is 3.5753949568E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  SAD: Determining atomic occupations:
+  Atom 0, Z = 8, nelec = 8, nhigh = 2, nalpha = 5, nbeta = 3
+  Atom 1, Z = 1, nelec = 1, nhigh = 1, nalpha = 1, nbeta = 0
+  Atom 2, Z = 1, nelec = 1, nhigh = 1, nalpha = 1, nbeta = 0
+
+  Performing Atomic UHF Computations:
+
+  UHF Computation for Unique Atom 0 which is Atom 0:
+  Basis Set
+    Number of shells: 6
+    Number of basis function: 14
+    Number of Cartesian functions: 15
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  Occupation: nalpha = 5, nbeta = 3, norbs = 14
+
+  Atom:
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000     0.000000000000
+
+
+  Initial Atomic UHF Energy:    -54.6054704525
+
+                                         Total Energy            Delta E              Density RMS
+
+  @Atomic UHF iteration   1 energy:   -72.12807225545649      -17.52260180292657     0.26490711748993
+  @Atomic UHF iteration   2 energy:   -74.66441447266118       -2.53634221720469     0.04697816420933
+  @Atomic UHF iteration   3 energy:   -74.78430872423029       -0.11989425156911     0.01249483022576
+  @Atomic UHF iteration   4 energy:   -74.79169418909527       -0.00738546486498     0.00289904337939
+  @Atomic UHF iteration   5 energy:   -74.79213577901658       -0.00044158992131     0.00072795998807
+  @Atomic UHF iteration   6 energy:   -74.79216368018072       -0.00002790116415     0.00018201962189
+  @Atomic UHF iteration   7 energy:   -74.79216576278178       -0.00000208260106     0.00004267396539
+  @Atomic UHF iteration   8 energy:   -74.79216599951373       -0.00000023673195     0.00001413536416
+  @Atomic UHF iteration   9 energy:   -74.79216604374010       -0.00000004422637     0.00000388818589
+
+  UHF Computation for Unique Atom 1 which is Atom 1:
+  Basis Set
+    Number of shells: 3
+    Number of basis function: 5
+    Number of Cartesian functions: 5
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+  Occupation: nalpha = 1, nbeta = 0, norbs = 5
+
+  Atom:
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           H          0.000000000000     0.000000000000     0.000000000000
+
+
+  Initial Atomic UHF Energy:     -0.2496392017
+
+                                         Total Energy            Delta E              Density RMS
+
+  @Atomic UHF iteration   1 energy:    -0.49927840341958       -0.24963920170979     0.00000000000000
+  @Atomic UHF iteration   2 energy:    -0.49927840341958        0.00000000000000     0.00000000000000
+
+
+  Approximating occupied orbitals via Partial Cholesky Decomposition.
+  NOTE: The zero-th SCF iteration will not be variational.
+  Irrep  0:     5 of    11 possible partial occupation vectors selected for C.
+  Irrep  1:     1 of     2 possible partial occupation vectors selected for C.
+  Irrep  2:     2 of     7 possible partial occupation vectors selected for C.
+  Irrep  3:     3 of     4 possible partial occupation vectors selected for C.
+
+  Initial RHF energy:     0.00000000000000
+
+                                  Total Energy            Delta E              Density RMS
+
+  @RHF iteration   0 energy:   -75.84270782402365      -75.84270782402365     0.00000000000000  
+  @RHF iteration   1 energy:   -75.99572139678682       -0.15301357276317     0.04533108507077  
+
+  Energy converged.
+
+  @RHF Final Energy:   -75.99572139678682
+
+  Final occupation vector = ( 3  A1  0  A2  1  B1  1  B2 )
+
+  Orbital energies (a.u.):
+    Doubly occupied orbitals
+        -20.407415  A1     -1.288221  A1     -0.621666  B1     -0.537998  A1  
+         -0.450801  B2  
+
+    Unoccupied orbitals
+          0.174082  A1      0.250655  B1      0.721503  B1      0.866187  A1  
+          1.214711  A1      1.230907  B2      1.307160  B1      1.312374  A1  
+          1.509160  A2      1.579450  B2      1.887020  A1      1.956043  B1  
+          2.360276  B1      2.427983  A1      3.297312  A2      3.353197  B2  
+          3.457134  A1      3.841445  A1      4.192272  B1  
+
+  Electric dipole (a.u.):
+	              X	              Y	              Z
+    Nuclear part:
+	   0.0000000000	   0.0000000000	   0.0000000000
+
+    Electronic part:
+	   0.0000000000	   0.0000000000	   0.0000000000
+
+    Dipole moments:
+	   0.0000000000	   0.0000000000	   0.0000000000
+
+    Total dipole:    0.0000000000 a.u.     0.0000000000 Debye
+    Conversion: 1.0 a.u. =    2.5417500000 Debye
+
+*** tstop() called on compute-1-13.local at Thu Feb  3 00:32:56 2011
+	user time   =       0.69 seconds =       0.01 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on compute-1-13.local
+*** at Thu Feb  3 00:32:56 2011
+
+	There are an even number of electrons - assuming singlet.
+	Specify the multiplicity with the MULTP option in the
+	input if this is incorrect
+
+ RHF: by Justin Turney and Rob Parrish
+
+  Release version.
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O         -0.000000000000    -0.176820723897     0.000000000000
+           H          0.707106781187     0.530286057289     0.000000000000
+           H         -0.707106781187     0.530286057289     0.000000000000
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  Nuclear repulsion =    8.841020805217553
+  Energy threshold  = 1.00e-11
+  Density threshold = 1.00e-11
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+
+  Minimum eigenvalue in the overlap matrix is 3.5753949568E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  SAD: Determining atomic occupations:
+  Atom 0, Z = 8, nelec = 8, nhigh = 2, nalpha = 5, nbeta = 3
+  Atom 1, Z = 1, nelec = 1, nhigh = 1, nalpha = 1, nbeta = 0
+  Atom 2, Z = 1, nelec = 1, nhigh = 1, nalpha = 1, nbeta = 0
+
+  Performing Atomic UHF Computations:
+
+  UHF Computation for Unique Atom 0 which is Atom 0:
+  Basis Set
+    Number of shells: 6
+    Number of basis function: 14
+    Number of Cartesian functions: 15
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  Occupation: nalpha = 5, nbeta = 3, norbs = 14
+
+  Atom:
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000     0.000000000000
+
+
+  Initial Atomic UHF Energy:    -54.6054704525
+
+                                         Total Energy            Delta E              Density RMS
+
+  @Atomic UHF iteration   1 energy:   -72.12807225545649      -17.52260180292657     0.26490711748993
+  @Atomic UHF iteration   2 energy:   -74.66441447266118       -2.53634221720469     0.04697816420933
+  @Atomic UHF iteration   3 energy:   -74.78430872423029       -0.11989425156911     0.01249483022576
+  @Atomic UHF iteration   4 energy:   -74.79169418909527       -0.00738546486498     0.00289904337939
+  @Atomic UHF iteration   5 energy:   -74.79213577901658       -0.00044158992131     0.00072795998807
+  @Atomic UHF iteration   6 energy:   -74.79216368018072       -0.00002790116415     0.00018201962189
+  @Atomic UHF iteration   7 energy:   -74.79216576278178       -0.00000208260106     0.00004267396539
+  @Atomic UHF iteration   8 energy:   -74.79216599951373       -0.00000023673195     0.00001413536416
+  @Atomic UHF iteration   9 energy:   -74.79216604374010       -0.00000004422637     0.00000388818589
+
+  UHF Computation for Unique Atom 1 which is Atom 1:
+  Basis Set
+    Number of shells: 3
+    Number of basis function: 5
+    Number of Cartesian functions: 5
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+  Occupation: nalpha = 1, nbeta = 0, norbs = 5
+
+  Atom:
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           H          0.000000000000     0.000000000000     0.000000000000
+
+
+  Initial Atomic UHF Energy:     -0.2496392017
+
+                                         Total Energy            Delta E              Density RMS
+
+  @Atomic UHF iteration   1 energy:    -0.49927840341958       -0.24963920170979     0.00000000000000
+  @Atomic UHF iteration   2 energy:    -0.49927840341958        0.00000000000000     0.00000000000000
+
+
+  Approximating occupied orbitals via Partial Cholesky Decomposition.
+  NOTE: The zero-th SCF iteration will not be variational.
+  Irrep  0:     5 of    11 possible partial occupation vectors selected for C.
+  Irrep  1:     1 of     2 possible partial occupation vectors selected for C.
+  Irrep  2:     2 of     7 possible partial occupation vectors selected for C.
+  Irrep  3:     3 of     4 possible partial occupation vectors selected for C.
+
+  Initial RHF energy:     0.00000000000000
+
+                                  Total Energy            Delta E              Density RMS
+
+  @RHF iteration   0 energy:   -75.84270782402365      -75.84270782402365     0.00000000000000  
+  @RHF iteration   1 energy:   -75.99572139678689       -0.15301357276324     0.04533108507077  
+  @RHF iteration   2 energy:   -76.01189961381179       -0.01617821702490     0.00974375606515 DIIS
+  @RHF iteration   3 energy:   -76.01659804103429       -0.00469842722249     0.00368731870290 DIIS
+  @RHF iteration   4 energy:   -76.01676624498394       -0.00016820394966     0.00071980160570 DIIS
+  @RHF iteration   5 energy:   -76.01678769825094       -0.00002145326700     0.00034528892896 DIIS
+  @RHF iteration   6 energy:   -76.01678944537366       -0.00000174712272     0.00011043439470 DIIS
+  @RHF iteration   7 energy:   -76.01678948348447       -0.00000003811081     0.00001704230175 DIIS
+  @RHF iteration   8 energy:   -76.01678948410840       -0.00000000062393     0.00000203124972 DIIS
+  @RHF iteration   9 energy:   -76.01678948412517       -0.00000000001677     0.00000030537304 DIIS
+  @RHF iteration  10 energy:   -76.01678948412527       -0.00000000000010     0.00000002911862 DIIS
+  @RHF iteration  11 energy:   -76.01678948412534       -0.00000000000007     0.00000000297875 DIIS
+  @RHF iteration  12 energy:   -76.01678948412533        0.00000000000001     0.00000000045175 DIIS
+  @RHF iteration  13 energy:   -76.01678948412534       -0.00000000000001     0.00000000002454 DIIS
+
+  Energy converged.
+
+  @RHF Final Energy:   -76.01678948412534
+
+  Final occupation vector = ( 3  A1  0  A2  1  B1  1  B2 )
+
+  Orbital energies (a.u.):
+    Doubly occupied orbitals
+        -20.565310  A1     -1.327466  A1     -0.649287  B1     -0.588235  A1  
+         -0.495627  B2  
+
+    Unoccupied orbitals
+          0.174517  A1      0.250028  B1      0.722987  B1      0.866096  A1  
+          1.188877  A1      1.194192  B2      1.272413  B1      1.307412  A1  
+          1.520102  A2      1.583777  B2      1.852617  A1      1.969576  B1  
+          2.355205  B1      2.417130  A1      3.248648  A2      3.307189  B2  
+          3.411524  A1      3.798561  A1      4.147835  B1  
+
+  Electric dipole (a.u.):
+	              X	              Y	              Z
+    Nuclear part:
+	   0.0000000000	   0.0000000000	   0.0000000000
+
+    Electronic part:
+	   0.0000000000	   0.0000000000	   0.0000000000
+
+    Dipole moments:
+	   0.0000000000	   0.0000000000	   0.0000000000
+
+    Total dipole:    0.0000000000 a.u.     0.0000000000 Debye
+    Conversion: 1.0 a.u. =    2.5417500000 Debye
+
+*** tstop() called on compute-1-13.local at Thu Feb  3 00:32:58 2011
+	user time   =       1.87 seconds =       0.03 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+  Molecular point group: c2v
+
+C1 detected, returning
+
+*** tstart() called on compute-1-13.local
+*** at Thu Feb  3 00:32:58 2011
+
+	There are an even number of electrons - assuming singlet.
+	Specify the multiplicity with the MULTP option in the
+	input if this is incorrect
+
+ RHF: by Justin Turney and Rob Parrish
+
+  Release version.
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O         -0.000000000000    -0.176820723897    -0.000000000000
+           H         -0.707106781187     0.530286057289    -0.000000000000
+           H          0.707106781187     0.530286057289     0.000000000000
+
+    Number of unique atoms: 3
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+
+  Nuclear repulsion =    8.841020805217546
+  Energy threshold  = 1.00e+00
+  Density threshold = 1.00e+00
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+
+  Minimum eigenvalue in the overlap matrix is 3.5753949568E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  SAD: Determining atomic occupations:
+  Atom 0, Z = 8, nelec = 8, nhigh = 2, nalpha = 5, nbeta = 3
+  Atom 1, Z = 1, nelec = 1, nhigh = 1, nalpha = 1, nbeta = 0
+  Atom 2, Z = 1, nelec = 1, nhigh = 1, nalpha = 1, nbeta = 0
+
+  Performing Atomic UHF Computations:
+
+  UHF Computation for Unique Atom 0 which is Atom 0:
+  Basis Set
+    Number of shells: 6
+    Number of basis function: 14
+    Number of Cartesian functions: 15
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  Occupation: nalpha = 5, nbeta = 3, norbs = 14
+
+  Atom:
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000     0.000000000000
+
+
+  Initial Atomic UHF Energy:    -54.6054704525
+
+                                         Total Energy            Delta E              Density RMS
+
+  @Atomic UHF iteration   1 energy:   -72.12807225545649      -17.52260180292657     0.26490711748993
+  @Atomic UHF iteration   2 energy:   -74.66441447266118       -2.53634221720469     0.04697816420933
+  @Atomic UHF iteration   3 energy:   -74.78430872423029       -0.11989425156911     0.01249483022576
+  @Atomic UHF iteration   4 energy:   -74.79169418909527       -0.00738546486498     0.00289904337939
+  @Atomic UHF iteration   5 energy:   -74.79213577901658       -0.00044158992131     0.00072795998807
+  @Atomic UHF iteration   6 energy:   -74.79216368018072       -0.00002790116415     0.00018201962189
+  @Atomic UHF iteration   7 energy:   -74.79216576278178       -0.00000208260106     0.00004267396539
+  @Atomic UHF iteration   8 energy:   -74.79216599951373       -0.00000023673195     0.00001413536416
+  @Atomic UHF iteration   9 energy:   -74.79216604374010       -0.00000004422637     0.00000388818589
+
+  UHF Computation for Unique Atom 1 which is Atom 1:
+  Basis Set
+    Number of shells: 3
+    Number of basis function: 5
+    Number of Cartesian functions: 5
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+  Occupation: nalpha = 1, nbeta = 0, norbs = 5
+
+  Atom:
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           H          0.000000000000     0.000000000000     0.000000000000
+
+
+  Initial Atomic UHF Energy:     -0.2496392017
+
+                                         Total Energy            Delta E              Density RMS
+
+  @Atomic UHF iteration   1 energy:    -0.49927840341958       -0.24963920170979     0.00000000000000
+  @Atomic UHF iteration   2 energy:    -0.49927840341958        0.00000000000000     0.00000000000000
+
+
+  Approximating occupied orbitals via Partial Cholesky Decomposition.
+  NOTE: The zero-th SCF iteration will not be variational.
+  Irrep  0:     9 of    24 possible partial occupation vectors selected for C.
+
+  Initial RHF energy:     0.00000000000000
+
+                                  Total Energy            Delta E              Density RMS
+
+  @RHF iteration   0 energy:   -75.85513951903232      -75.85513951903232     0.00000000000000  
+  @RHF iteration   1 energy:   -75.99530767137554       -0.14016815234322     0.02628349124578  
+
+  Energy converged.
+
+  @RHF Final Energy:   -75.99530767137554
+
+  Final occupation vector = ( 5   A )
+
+  Orbital energies (a.u.):
+    Doubly occupied orbitals
+        -20.410317   A     -1.289307   A     -0.622559   A     -0.539059   A  
+         -0.451720   A  
+
+    Unoccupied orbitals
+          0.173998   A      0.250473   A      0.721264   A      0.865949   A  
+          1.213810   A      1.230177   A      1.306295   A      1.311939   A  
+          1.509082   A      1.579252   A      1.886085   A      1.956067   A  
+          2.359862   A      2.427441   A      3.296090   A      3.351982   A  
+          3.455953   A      3.840291   A      4.191103   A  
+
+  Electric dipole (a.u.):
+	              X	              Y	              Z
+    Nuclear part:
+	   0.0000000000	   0.0000000000	   0.0000000000
+
+    Electronic part:
+	   0.0000000000	   0.0000000000	   0.0000000000
+
+    Dipole moments:
+	   0.0000000000	   0.0000000000	   0.0000000000
+
+    Total dipole:    0.0000000000 a.u.     0.0000000000 Debye
+    Conversion: 1.0 a.u. =    2.5417500000 Debye
+
+*** tstop() called on compute-1-13.local at Thu Feb  3 00:32:59 2011
+	user time   =       2.51 seconds =       0.04 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on compute-1-13.local
+*** at Thu Feb  3 00:32:59 2011
+
+	There are an even number of electrons - assuming singlet.
+	Specify the multiplicity with the MULTP option in the
+	input if this is incorrect
+
+ RHF: by Justin Turney and Rob Parrish
+
+  Release version.
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O         -0.000000000000    -0.176820723897     0.000000000000
+           H          0.707106781187     0.530286057289     0.000000000000
+           H         -0.707106781187     0.530286057289     0.000000000000
+
+    Number of unique atoms: 3
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+
+  Nuclear repulsion =    8.841020805217553
+  Energy threshold  = 1.00e-11
+  Density threshold = 1.00e-11
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+
+  Minimum eigenvalue in the overlap matrix is 3.5753949568E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  SAD: Determining atomic occupations:
+  Atom 0, Z = 8, nelec = 8, nhigh = 2, nalpha = 5, nbeta = 3
+  Atom 1, Z = 1, nelec = 1, nhigh = 1, nalpha = 1, nbeta = 0
+  Atom 2, Z = 1, nelec = 1, nhigh = 1, nalpha = 1, nbeta = 0
+
+  Performing Atomic UHF Computations:
+
+  UHF Computation for Unique Atom 0 which is Atom 0:
+  Basis Set
+    Number of shells: 6
+    Number of basis function: 14
+    Number of Cartesian functions: 15
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  Occupation: nalpha = 5, nbeta = 3, norbs = 14
+
+  Atom:
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000     0.000000000000
+
+
+  Initial Atomic UHF Energy:    -54.6054704525
+
+                                         Total Energy            Delta E              Density RMS
+
+  @Atomic UHF iteration   1 energy:   -72.12807225545649      -17.52260180292657     0.26490711748993
+  @Atomic UHF iteration   2 energy:   -74.66441447266118       -2.53634221720469     0.04697816420933
+  @Atomic UHF iteration   3 energy:   -74.78430872423029       -0.11989425156911     0.01249483022576
+  @Atomic UHF iteration   4 energy:   -74.79169418909527       -0.00738546486498     0.00289904337939
+  @Atomic UHF iteration   5 energy:   -74.79213577901658       -0.00044158992131     0.00072795998807
+  @Atomic UHF iteration   6 energy:   -74.79216368018072       -0.00002790116415     0.00018201962189
+  @Atomic UHF iteration   7 energy:   -74.79216576278178       -0.00000208260106     0.00004267396539
+  @Atomic UHF iteration   8 energy:   -74.79216599951373       -0.00000023673195     0.00001413536416
+  @Atomic UHF iteration   9 energy:   -74.79216604374010       -0.00000004422637     0.00000388818589
+
+  UHF Computation for Unique Atom 1 which is Atom 1:
+  Basis Set
+    Number of shells: 3
+    Number of basis function: 5
+    Number of Cartesian functions: 5
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+  Occupation: nalpha = 1, nbeta = 0, norbs = 5
+
+  Atom:
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           H          0.000000000000     0.000000000000     0.000000000000
+
+
+  Initial Atomic UHF Energy:     -0.2496392017
+
+                                         Total Energy            Delta E              Density RMS
+
+  @Atomic UHF iteration   1 energy:    -0.49927840341958       -0.24963920170979     0.00000000000000
+  @Atomic UHF iteration   2 energy:    -0.49927840341958        0.00000000000000     0.00000000000000
+
+
+  Approximating occupied orbitals via Partial Cholesky Decomposition.
+  NOTE: The zero-th SCF iteration will not be variational.
+  Irrep  0:     9 of    24 possible partial occupation vectors selected for C.
+
+  Initial RHF energy:     0.00000000000000
+
+                                  Total Energy            Delta E              Density RMS
+
+  @RHF iteration   0 energy:   -75.85513951903232      -75.85513951903232     0.00000000000000  
+  @RHF iteration   1 energy:   -75.99530767137550       -0.14016815234318     0.02628349124578  
+  @RHF iteration   2 energy:   -76.01183401314410       -0.01652634176860     0.00557111014125 DIIS
+  @RHF iteration   3 energy:   -76.01649734110570       -0.00466332796161     0.00212132001064 DIIS
+  @RHF iteration   4 energy:   -76.01674190079487       -0.00024455968916     0.00051211553452 DIIS
+  @RHF iteration   5 energy:   -76.01678508785213       -0.00004318705726     0.00029152550422 DIIS
+  @RHF iteration   6 energy:   -76.01678936173137       -0.00000427387924     0.00011151189039 DIIS
+  @RHF iteration   7 energy:   -76.01678947856820       -0.00000011683683     0.00001924539633 DIIS
+  @RHF iteration   8 energy:   -76.01678948392302       -0.00000000535482     0.00000396764816 DIIS
+  @RHF iteration   9 energy:   -76.01678948411988       -0.00000000019686     0.00000075056140 DIIS
+  @RHF iteration  10 energy:   -76.01678948412506       -0.00000000000517     0.00000011004914 DIIS
+  @RHF iteration  11 energy:   -76.01678948412525       -0.00000000000020     0.00000001853962 DIIS
+  @RHF iteration  12 energy:   -76.01678948412530       -0.00000000000004     0.00000000225868 DIIS
+  @RHF iteration  13 energy:   -76.01678948412524        0.00000000000006     0.00000000072382 DIIS
+  @RHF iteration  14 energy:   -76.01678948412523        0.00000000000001     0.00000000026792 DIIS
+  @RHF iteration  15 energy:   -76.01678948412523        0.00000000000000     0.00000000007723 DIIS
+  @RHF iteration  16 energy:   -76.01678948412521        0.00000000000001     0.00000000001911 DIIS
+
+  Energy converged.
+
+  @RHF Final Energy:   -76.01678948412521
+
+  Final occupation vector = ( 5   A )
+
+  Orbital energies (a.u.):
+    Doubly occupied orbitals
+        -20.565310   A     -1.327466   A     -0.649287   A     -0.588235   A  
+         -0.495627   A  
+
+    Unoccupied orbitals
+          0.174517   A      0.250028   A      0.722987   A      0.866096   A  
+          1.188877   A      1.194192   A      1.272413   A      1.307412   A  
+          1.520102   A      1.583777   A      1.852617   A      1.969576   A  
+          2.355205   A      2.417130   A      3.248648   A      3.307189   A  
+          3.411524   A      3.798561   A      4.147835   A  
+
+  Electric dipole (a.u.):
+	              X	              Y	              Z
+    Nuclear part:
+	   0.0000000000	   0.0000000000	   0.0000000000
+
+    Electronic part:
+	   0.0000000000	   0.0000000000	   0.0000000000
+
+    Dipole moments:
+	   0.0000000000	   0.0000000000	   0.0000000000
+
+    Total dipole:    0.0000000000 a.u.     0.0000000000 Debye
+    Conversion: 1.0 a.u. =    2.5417500000 Debye
+
+*** tstop() called on compute-1-13.local at Thu Feb  3 00:33:00 2011
+	user time   =       3.78 seconds =       0.06 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes

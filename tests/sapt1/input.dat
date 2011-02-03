@@ -1,0 +1,49 @@
+Eref = [85.189070701792517, -0.0034454335830958, 0.0037022309965457, -0.0009201259859927, -0.0021703152891553, -0.0028336438616981]
+
+molecule ethene_ethyne {
+     0 1
+     C     0.000000    -0.667578    -2.124659
+     C     0.000000     0.667578    -2.124659
+     H     0.923621    -1.232253    -2.126185
+     H    -0.923621    -1.232253    -2.126185
+     H    -0.923621     1.232253    -2.126185
+     H     0.923621     1.232253    -2.126185
+     --
+     0 1
+     C     0.000000     0.000000     2.900503
+     C     0.000000     0.000000     1.693240
+     H     0.000000     0.000000     0.627352
+     H     0.000000     0.000000     3.963929
+     angstrom
+     no_reorient
+     symmetry c1
+}
+
+globals {
+    basis aug-cc-pvdz
+    ri_basis_scf aug-cc-pvdz-jkfit
+    ri_basis_sapt aug-cc-pvdz-ri
+    guess sad
+    scf_type df
+    sad_print 2
+    d_converge 11
+    puream true
+}
+
+energy('sapt0')
+
+Elst = PsiMod.get_variable("SAPT ELST ENERGY") 
+Eexch = PsiMod.get_variable("SAPT EXCH ENERGY") 
+Eind = PsiMod.get_variable("SAPT IND ENERGY") 
+Edisp = PsiMod.get_variable("SAPT DISP ENERGY") 
+ET = PsiMod.get_variable("SAPT SAPT0 ENERGY") 
+
+compare_values(Eref[0], ethene_ethyne.nuclear_repulsion_energy(), 9, "Nuclear Repulsion Energy")
+compare_values(Eref[1], Elst, 4, "SAPT0 Elst")
+compare_values(Eref[2], Eexch, 4, "SAPT0 Eexch")
+compare_values(Eref[3], Eind, 4, "SAPT0 Eind")
+compare_values(Eref[4], Edisp, 4, "SAPT0 Edisp")
+compare_values(Eref[5], ET, 4, "SAPT0 Etotal")
+
+
+clean()
