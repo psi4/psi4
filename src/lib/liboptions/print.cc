@@ -4,9 +4,6 @@
 #include <algorithm>
 
 #include <libutil/libutil.h>
-
-#include <libmints/mints.h>
-
 #include "liboptions.h"
 
 #include <psi4-dec.h>
