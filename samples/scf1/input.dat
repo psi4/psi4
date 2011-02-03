@@ -1,7 +1,5 @@
 #! RHF cc-pVQZ energy for the BH molecule, with Cartesian input.
 
-nucenergy =   2.645886245000000 #TEST
-refenergy = -25.10354687361508  #TEST
 
 molecule bh {
     b      0.0000        0.0000        0.0000
@@ -16,7 +14,5 @@ globals {
 
 thisenergy = energy('rhf')
 
-compare_values(nucenergy, bh.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
-compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST
 
 clean()

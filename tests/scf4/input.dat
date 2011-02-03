@@ -1,9 +1,12 @@
-#%! RHF cc-pVDZ energy for water, automatically scanning the symmetric stretch and bending coordinates.
-refENuc = [ 9.785886586224326, 9.780670853323890, 8.807297927601891, 
-            8.802603767991497, 8.006634479638080, 8.002367061810450 ]
+#! RHF cc-pVDZ energy for water, automatically scanning the symmetric stretch and bending coordinates
+#! using Python's built-in loop mechanisms.  The geometry is apecified using a Z-matrix with variables
+#! that are updated during the potential energy surface scan.
 
-refSCF  = [ -76.02132543096083, -76.02170971655210, -76.02148198312274, 
-            -76.02145797759667, -75.99010405718796, -75.98979581991821 ]
+refENuc = [ 9.785886586224326, 9.780670853323890, 8.807297927601891,     #TEST
+            8.802603767991497, 8.006634479638080, 8.002367061810450 ]    #TEST
+
+refSCF  = [ -76.02132543096083, -76.02170971655210, -76.02148198312274,  #TEST
+            -76.02145797759667, -75.99010405718796, -75.98979581991821 ] #TEST
 
 molecule h2o {
     O
@@ -30,9 +33,9 @@ for R in Rvals:
 
         thisenergy = scf()
 
-        compare_values(refENuc[count], h2o.nuclear_repulsion_energy(),
-                       10, "Nuclear repulsion energy %d" % count)
-        compare_values(refSCF[count], thisenergy, 10, "Reference energy %d" % count)
+        compare_values(refENuc[count], h2o.nuclear_repulsion_energy(),                 #TEST
+                       10, "Nuclear repulsion energy %d" % count)                      #TEST
+        compare_values(refSCF[count], thisenergy, 10, "Reference energy %d" % count)   #TEST
 
         count = count + 1
 

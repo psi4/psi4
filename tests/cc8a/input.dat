@@ -1,14 +1,14 @@
-#%! ROHF-CCSD(T) cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the CN radical, with Cartesian input.
+#! ROHF-CCSD(T) cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the CN radical, with Cartesian input.
 
-refnuc = 18.9152665531957
-refscf = -92.1955565653
-refccsd = -0.281342908547054
-ref_t = -0.013974091470867
-reftotal = -92.490873565295587
+refnuc   =  18.9152665531957    #TEST
+refscf   = -92.1955565653       #TEST
+refccsd  =  -0.281342908547054  #TEST
+ref_t    =  -0.013974091470867  #TEST
+reftotal = -92.490873565295587  #TEST
 
 molecule CN {
- C  0.000000000000      0.000000000000      1.195736583480
- N  0.000000000000      0.000000000000     -1.024692078304
+  C  0.000000000000      0.000000000000      1.195736583480
+  N  0.000000000000      0.000000000000     -1.024692078304
 }
 
 globals {
@@ -24,13 +24,12 @@ globals {
   d_converge 10
 }
 
-activate(CN)
 energy('ccsd(t)')
 
-compare_values(refnuc,   CN.nuclear_repulsion_energy(),  9, "Nuclear repulsion energy")
-compare_values(refscf,   get_variable("SCF energy"),     9, "SCF energy")
-compare_values(refccsd,  get_variable("CCSD energy"),    9, "CCSD contribution")
-compare_values(ref_t,    get_variable("(T) energy"),     9, "(T) contribution")
-compare_values(reftotal, get_variable("Current energy"), 9, "Total energy")
+compare_values(refnuc,   CN.nuclear_repulsion_energy(),  9, "Nuclear repulsion energy") #TEST
+compare_values(refscf,   get_variable("SCF energy"),     9, "SCF energy")               #TEST
+compare_values(refccsd,  get_variable("CCSD energy"),    9, "CCSD contribution")        #TEST
+compare_values(ref_t,    get_variable("(T) energy"),     9, "(T) contribution")         #TEST
+compare_values(reftotal, get_variable("Current energy"), 9, "Total energy")             #TEST
 
 clean()

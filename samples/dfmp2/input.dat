@@ -1,8 +1,6 @@
 #! Density fitted MP2 cc-PVDZ/cc-pVDZ-RI computation of formic acid dimer binding energy
 #! using automatic counterpoise correction.  Monomers are specified using Cartesian coordinates.
 
-Enuc = 235.946638332857646 #TEST 
-Ecp  = -0.0223399790       #TEST
 
 molecule formic_dim {
    0 1
@@ -33,7 +31,5 @@ globals {
 
 e_cp = cp('dfmp2')
 
-compare_values(Enuc, formic_dim.nuclear_repulsion_energy(), 9, "Nuclear Repulsion Energy") #TEST
-compare_values(Ecp, e_cp, 5, "CP Corrected cc-pVDZ/cc-pVDZ-RI DFMP2")                      #TEST
 
 clean()

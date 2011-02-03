@@ -1,8 +1,6 @@
 #! SAPT0 aug-cc-pVDZ computation of the ethane-ethyne binding energy, using the aug-cc-pVDZ-JKFIT RI basis for SCF
 #! and aug-cc-pVDZ-RI for SAPT.  Monomer geometries are specified using Cartesian coordinates.
 
-Eref = [ 85.189070701792517,  -0.0034454335830958,  0.0037022309965457, #TEST
-         -0.0009201259859927, -0.0021703152891553, -0.0028336438616981] #TEST
 
 molecule ethene_ethyne {
      0 1
@@ -42,11 +40,5 @@ Eind  = PsiMod.get_variable("SAPT IND ENERGY")
 Edisp = PsiMod.get_variable("SAPT DISP ENERGY") 
 ET    = PsiMod.get_variable("SAPT SAPT0 ENERGY") 
 
-compare_values(Eref[0], ethene_ethyne.nuclear_repulsion_energy(), 9, "Nuclear Repulsion Energy") #TEST
-compare_values(Eref[1], Elst, 4, "SAPT0 Elst")                                                   #TEST
-compare_values(Eref[2], Eexch, 4, "SAPT0 Eexch")                                                 #TEST
-compare_values(Eref[3], Eind, 4, "SAPT0 Eind")                                                   #TEST
-compare_values(Eref[4], Edisp, 4, "SAPT0 Edisp")                                                 #TEST
-compare_values(Eref[5], ET, 4, "SAPT0 Etotal")                                                   #TEST
 
 clean()

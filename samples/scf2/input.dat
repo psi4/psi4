@@ -1,8 +1,6 @@
 #! RI-SCF cc-pVTZ energy of water, with Z-matrix input and cc-pVTZ-RI auxilliary basis.
 #! This compuation runs in C1 symmetry, which is currently required for RI-SCF.
 
-nucenergy =   8.801466202085710  #TEST
-refenergy = -76.05098402733282   #TEST
 
 molecule h2o {
     symmetry c1
@@ -20,7 +18,5 @@ globals {
 
 thisenergy = energy('rhf')
 
-compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
-compare_values(refenergy, thisenergy, 9, "Reference energy")                             #TEST
 
 clean()

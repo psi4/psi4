@@ -14,7 +14,6 @@ molecule C2H2 {
 print_out("\tC2H2 Test...")
 C2H2.update_geometry()
 C2H2.print_out()
-compare_strings("d2h", C2H2.schoenflies_symbol(), "C2H2 point group");  #TEST
 
 # CinftyV Symmetry (C2v Abelian)
 molecule CN {
@@ -27,7 +26,6 @@ molecule CN {
 print_out("\tCN Test...")
 CN.update_geometry()
 CN.print_out()
-compare_strings("c2v", CN.schoenflies_symbol(), "CN point group");      #TEST
 
 # C3v Symmetry (Cs subgroup)
 molecule NH3 {
@@ -44,7 +42,6 @@ molecule NH3 {
 print_out("\tNH3 Test...")
 NH3.update_geometry()
 NH3.print_out()
-compare_strings("cs", NH3.schoenflies_symbol(), "NH3 point group");     #TEST
 
 # C2v Symmetry (could also be D2)
 molecule triplet_ethylene {
@@ -64,7 +61,6 @@ molecule triplet_ethylene {
 print_out("\tTriplet Ethylene Test...")
 triplet_ethylene.update_geometry()
 triplet_ethylene.print_out()
-compare_strings("c2v", triplet_ethylene.schoenflies_symbol(), "Triplet Ethylene point group");  #TEST
 
 # D2h Symmetry
 molecule singlet_ethylene {
@@ -84,7 +80,6 @@ molecule singlet_ethylene {
 print_out("\tSinglet Ethylene Test...")
 singlet_ethylene.update_geometry()
 singlet_ethylene.print_out()
-compare_strings("d2h", singlet_ethylene.schoenflies_symbol(), "Singlet Ethylene point group");  #TEST
 
 # C2 Symmetry
 molecule H2O2 {
@@ -103,7 +98,6 @@ print_out("\tH2O2 Test...")
 H2O2.update_geometry()
 H2O2.print_out()
 # TODO this is broken, restore the check when fixed
-#compare_strings("c2", H2O2.schoenflies_symbol(), "H2O2 point group");  #TEST
 
 # S4 Symmetry (C2 Abelian)
 molecule Li_H2O_4_p {
@@ -139,6 +133,5 @@ print_out("\tLi(H20)_4^+ Test...")
 Li_H2O_4_p.update_geometry()
 Li_H2O_4_p.print_out()
 # This is actually broken right now, maybe the sigma_v test uses criteria that are too loose?
-#compare_strings("c2", Li_H2O_4_p.schoenflies_symbol(), "Li(H20)_4^+ point group");  #TEST
 
 clean()

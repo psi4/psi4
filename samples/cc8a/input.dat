@@ -1,0 +1,25 @@
+#! ROHF-CCSD(T) cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the CN radical, with Cartesian input.
+
+
+molecule CN {
+  C  0.000000000000      0.000000000000      1.195736583480
+  N  0.000000000000      0.000000000000     -1.024692078304
+}
+
+globals {
+  reference rohf
+  wfn ccsd_t
+  basis cc-pVDZ
+  docc [4, 0, 1, 1]
+  socc [1, 0, 0, 0]
+  freeze_core TRUE
+  
+  convergence 10
+  e_converge 10
+  d_converge 10
+}
+
+energy('ccsd(t)')
+
+
+clean()
