@@ -1214,7 +1214,64 @@ bool Matrix::load(shared_ptr<psi::PSIO> psio, unsigned int fileno, char *tocentr
 
     return true;
 }
+void Matrix::load(psi::PSIO* psio, unsigned int fileno, SaveType st)
+{
+    // The matrix must be sized correctly first
+    if(Communicator::world->me() == 0) {
+        // Check to see if the file is open
+        bool already_open = false;
+        if (psio->open_check(fileno)) {
+            already_open = true;
+        } else {
+            psio->open(fileno, PSIO_OPEN_OLD);
+        }
 
+        // Need to know the size
+        int sizer=0, sizec=0;
+        for (int h=0; h<nirreps_; ++h) {
+            sizer += rowspi_[h];
+            sizec += colspi_[h];
+        }
+
+        if (st == SubBlocks) {
+            for (int h=0; h<nirreps_; ++h) {
+                std::string str(name_);
+                str += " Irrep " + to_string(h);
+
+                // Read the sub-blocks
+                if (colspi_[h] > 0 && rowspi_[h] > 0)
+                    psio->read_entry(fileno, const_cast<char*>(str.c_str()), (char*)matrix_[h][0], sizeof(double) * colspi_[h] * rowspi_[h]);
+            }
+        }
+        else if (st == Full) {
+
+            double **fullblock = to_block_matrix();
+
+            // Read the full block
+            if (sizer > 0 && sizec > 0)
+                psio->read_entry(fileno, const_cast<char*>(name_.c_str()), (char*)fullblock[0], sizeof(double) * sizer * sizec);
+            set(fullblock);
+            Matrix::free(fullblock);
+        }
+        else if (st == LowerTriangle) {
+            double *lower = to_lower_triangle();
+
+            if (sizer > 0)
+                psio->read_entry(fileno, const_cast<char*>(name_.c_str()), (char*)lower, sizeof(double)*ioff[sizer]);
+            set(lower);
+            delete[] lower;
+        }
+        else {
+            throw PSIEXCEPTION("Matrix::: Unknown SaveType\n");
+        }
+        if (!already_open)
+            psio->close(fileno, 1);     // Close and keep // Idempotent, win!
+    }
+}
+void Matrix::load(boost::shared_ptr<PSIO> psio, unsigned int fileno, SaveType st)
+{
+    load(psio.get(), fileno, st);
+}
 void Matrix::save(psi::PSIO* psio, unsigned int fileno, SaveType st)
 {
     if(Communicator::world->me() == 0) {

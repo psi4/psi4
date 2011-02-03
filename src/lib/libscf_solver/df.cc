@@ -1585,7 +1585,7 @@ void RHF::form_G_from_RI()
     //Get the C matrix (exchange messes things up)
     int ndocc = doccpi_[0];
     if (iteration_ == 0 && options_.get_str("GUESS") == "SAD" && options_.get_str("SAD_C") == "CHOLESKY")
-        ndocc = sad_nocc_;
+        ndocc = sad_nocc_[0];
     double** Cocc = block_matrix(ndocc,norbs);
     for (int i=0; i<norbs; i++) {
         for (int j=0; j<ndocc; j++)

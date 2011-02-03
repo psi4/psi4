@@ -1,0 +1,592 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-alpha Driver
+    T. D. Crawford, C. D. Sherrill, E. F. Valeev, J. T. Fermann, R. A. King,
+    M. L. Leininger, S. T. Brown, C. L. Janssen, E. T. Seidl, J. P. Kenny,
+    and W. D. Allen, J. Comput. Chem. 28, 1610-1616 (2007)
+
+                         Additional Contributions by
+    Francesco Evangelista, Andrew Simmonett, Justin Turney, Jeremiah Wilke
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  Molecular point group: d2h
+
+C1 detected, returning
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //      CP Computation: Complex.     //
+  //          Full Basis Set.          //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+
+*** tstart() called on compute-1-13.local
+*** at Thu Feb  3 00:50:46 2011
+
+ RHF: by Justin Turney and Rob Parrish
+
+  Release version.
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C         -1.888896000000    -0.179692000000     0.000000000000
+           O         -1.493280000000     1.073689000000     0.000000000000
+           O         -1.170435000000    -1.166590000000     0.000000000000
+           H         -2.979488000000    -0.258829000000     0.000000000000
+           H         -0.498833000000     1.107195000000     0.000000000000
+           C          1.888896000000     0.179692000000     0.000000000000
+           O          1.493280000000    -1.073689000000     0.000000000000
+           O          1.170435000000     1.166590000000     0.000000000000
+           H          2.979488000000     0.258829000000     0.000000000000
+           H          0.498833000000    -1.107195000000     0.000000000000
+
+    Number of unique atoms: 10
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+       unique atom 3: 3 
+       unique atom 4: 4 
+       unique atom 5: 5 
+       unique atom 6: 6 
+       unique atom 7: 7 
+       unique atom 8: 8 
+       unique atom 9: 9 
+
+  Nuclear repulsion =  235.946638332857646
+  Energy threshold  = 1.00e-10
+  Density threshold = 1.00e-11
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+
+  Minimum eigenvalue in the overlap matrix is 1.0051865348E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  Initial RHF energy:     0.00000000000000
+
+
+  Computing Integrals using Density Fitting
+
+  Density Fitting Algorithm proceeding on Core.
+                                  Total Energy            Delta E              Density RMS
+
+  @RHF iteration   0 energy:  -378.46641594324365     -378.46641594324365     0.00000000000000  
+  @RHF iteration   1 energy:  -377.22662666641645        1.23978927682720     0.01464024997048  
+  @RHF iteration   2 energy:  -377.47441454188629       -0.24778787546984     0.00562505480807 DIIS
+  @RHF iteration   3 energy:  -377.58068008642624       -0.10626554453995     0.00228883460096 DIIS
+  @RHF iteration   4 energy:  -377.58931997367677       -0.00863988725052     0.00086291770622 DIIS
+  @RHF iteration   5 energy:  -377.59100958860779       -0.00168961493102     0.00037856844358 DIIS
+  @RHF iteration   6 energy:  -377.59128494641959       -0.00027535781180     0.00016086736505 DIIS
+  @RHF iteration   7 energy:  -377.59132853682627       -0.00004359040668     0.00006578860111 DIIS
+  @RHF iteration   8 energy:  -377.59133445549423       -0.00000591866797     0.00002893282484 DIIS
+  @RHF iteration   9 energy:  -377.59133497893708       -0.00000052344285     0.00000842821394 DIIS
+  @RHF iteration  10 energy:  -377.59133502160739       -0.00000004267031     0.00000252128825 DIIS
+  @RHF iteration  11 energy:  -377.59133502379325       -0.00000000218586     0.00000060591354 DIIS
+  @RHF iteration  12 energy:  -377.59133502405325       -0.00000000026000     0.00000018218781 DIIS
+  @RHF iteration  13 energy:  -377.59133502409168       -0.00000000003843     0.00000007806934 DIIS
+  @RHF iteration  14 energy:  -377.59133502409486       -0.00000000000318     0.00000002306428 DIIS
+  @RHF iteration  15 energy:  -377.59133502409600       -0.00000000000114     0.00000000550239 DIIS
+  @RHF iteration  16 energy:  -377.59133502409520        0.00000000000080     0.00000000114658 DIIS
+  @RHF iteration  17 energy:  -377.59133502409520        0.00000000000000     0.00000000038610 DIIS
+  @RHF iteration  18 energy:  -377.59133502409463        0.00000000000057     0.00000000007805 DIIS
+  @RHF iteration  19 energy:  -377.59133502409509       -0.00000000000045     0.00000000002401 DIIS
+
+  Energy converged.
+
+  @RHF Final Energy:  -377.59133502409509
+
+  Final occupation vector = (24   A )
+
+  Orbital energies (a.u.):
+    Doubly occupied orbitals
+        -20.615017   A    -20.615015   A    -20.576904   A    -20.576904   A  
+        -11.412687   A    -11.412687   A     -1.483674   A     -1.470604   A  
+         -1.385239   A     -1.370887   A     -0.915300   A     -0.878709   A  
+         -0.764473   A     -0.728827   A     -0.719874   A     -0.689223   A  
+         -0.639415   A     -0.629638   A     -0.615371   A     -0.574362   A  
+         -0.499170   A     -0.490089   A     -0.488214   A     -0.467757   A  
+      
+
+    Unoccupied orbitals
+          0.161481   A      0.166691   A      0.204751   A      0.210348   A  
+          0.291321   A      0.318279   A      0.426613   A      0.432622   A  
+          0.466942   A      0.502557   A      0.631636   A      0.658682   A  
+          0.669806   A      0.712790   A      0.720426   A      0.742644   A  
+          0.804690   A      0.816213   A      0.889262   A      0.926103   A  
+          0.930519   A      0.944833   A      1.137295   A      1.148158   A  
+          1.177563   A      1.181786   A      1.219727   A      1.255289   A  
+          1.277047   A      1.283590   A      1.284114   A      1.348088   A  
+          1.363935   A      1.379273   A      1.428737   A      1.448644   A  
+          1.551929   A      1.605385   A      1.628260   A      1.647515   A  
+          1.675166   A      1.743098   A      1.757704   A      1.769863   A  
+          1.796082   A      1.902155   A      1.925699   A      1.963379   A  
+          1.976371   A      1.987763   A      2.020110   A      2.095125   A  
+          2.181556   A      2.215933   A      2.505710   A      2.579679   A  
+          2.621689   A      2.638885   A      2.674763   A      2.706889   A  
+          2.938486   A      2.952630   A      3.173322   A      3.188546   A  
+          3.190728   A      3.220425   A      3.252369   A      3.278303   A  
+          3.404508   A      3.500973   A      3.510488   A      3.527440   A  
+          3.585144   A      3.599060   A      3.812742   A      3.849101   A  
+          3.876018   A      3.927982   A      4.144740   A      4.168417   A  
+      
+
+  Electric dipole (a.u.):
+	              X	              Y	              Z
+    Nuclear part:
+	   0.0000000000	   0.0000000000	   0.0000000000
+
+    Electronic part:
+	   0.0000000000	   0.0000000000	   0.0000000000
+
+    Dipole moments:
+	   0.0000000000	   0.0000000000	   0.0000000000
+
+    Total dipole:    0.0000000000 a.u.     0.0000000000 Debye
+    Conversion: 1.0 a.u. =    2.5417500000 Debye
+
+*** tstop() called on compute-1-13.local at Thu Feb  3 00:50:50 2011
+	user time   =       9.17 seconds =       0.15 minutes
+	system time =       0.28 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //               DFMP2               //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+
+*** tstart() called on compute-1-13.local
+*** at Thu Feb  3 00:50:50 2011
+
+	********************************************************
+	*                                                      *
+	*                        DF-MP2                        *
+	*    2nd-Order Density-Fitted Moller-Plesset Theory    *
+	*             CORE Algorithm,   4 Threads              *
+	*                                                      *
+	*    Rob Parrish, Justin Turney, C. David Sherrill,    *
+	*        Andy Simmonett, and Edward Hohenstein         *
+	*                                                      *
+	********************************************************
+
+	  ==================================================
+	    NSO  NAUX  FOCC  DOCC  AOCC  AVIR  VIRT  FVIR 
+	   ------------------------------------------------
+	     104   392     0    24    24    80    80     0
+	  ==================================================
+  DF-MP2 Energy Evaluation Complete:
+
+   Canonical DF-MP2:
+    Same-Spin Energy:                 -0.2763041848017462 [H]
+    Opposite-Spin Energy:             -0.7433824247620337 [H]
+    DF-MP2 Correlation Energy:        -1.0196866095637800 [H]
+    DF-MP2 Total Energy:             -378.6110216336588792 [H]
+   SCS-DF-MP2 (Pss =   0.3333333333, Pos =   1.2000000000):
+    SCS-Same-Spin Energy:             -0.0921013949339154 [H]
+    SCS-Opposite-Spin Energy:         -0.8920589097144405 [H]
+    SCS-DF-MP2 Correlation Energy:    -0.9841603046483559 [H]
+    SCS-DF-MP2 Total Energy:         -378.5754953287434432 [H]
+
+*** tstop() called on compute-1-13.local at Thu Feb  3 00:50:51 2011
+	user time   =      11.70 seconds =       0.20 minutes
+	system time =       0.35 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
+No atoms detected, returning
+
+  Molecular point group: d2h
+
+C1 detected, returning
+No atoms detected, returning
+
+  Molecular point group: d2h
+
+C1 detected, returning
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     CP Computation: Monomer 1.    //
+  //           Full Basis Set.         //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+
+*** tstart() called on compute-1-13.local
+*** at Thu Feb  3 00:50:51 2011
+
+ RHF: by Justin Turney and Rob Parrish
+
+  Release version.
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C         -1.888896000000    -0.179692000000     0.000000000000
+           O         -1.493280000000     1.073689000000     0.000000000000
+           O         -1.170435000000    -1.166590000000     0.000000000000
+           H         -2.979488000000    -0.258829000000     0.000000000000
+           H         -0.498833000000     1.107195000000     0.000000000000
+           C(Gh)      1.888896000000     0.179692000000     0.000000000000
+           O(Gh)      1.493280000000    -1.073689000000     0.000000000000
+           O(Gh)      1.170435000000     1.166590000000     0.000000000000
+           H(Gh)      2.979488000000     0.258829000000     0.000000000000
+           H(Gh)      0.498833000000    -1.107195000000     0.000000000000
+
+    Number of unique atoms: 10
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+       unique atom 3: 3 
+       unique atom 4: 4 
+       unique atom 5: 5 
+       unique atom 6: 6 
+       unique atom 7: 7 
+       unique atom 8: 8 
+       unique atom 9: 9 
+
+  Nuclear repulsion =   70.115788657657447
+  Energy threshold  = 1.00e-10
+  Density threshold = 1.00e-11
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+
+  Minimum eigenvalue in the overlap matrix is 1.0051865348E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  Initial RHF energy:     0.00000000000000
+
+
+  Computing Integrals using Density Fitting
+
+  Density Fitting Algorithm proceeding on Core.
+                                  Total Energy            Delta E              Density RMS
+
+  @RHF iteration   0 energy:  -189.15519941192247     -189.15519941192247     0.00000000000000  
+  @RHF iteration   1 energy:  -188.58831437849693        0.56688503342554     0.01029530456304  
+  @RHF iteration   2 energy:  -188.70807922353038       -0.11976484503344     0.00437507987103 DIIS
+  @RHF iteration   3 energy:  -188.77779436355735       -0.06971514002697     0.00187422242247 DIIS
+  @RHF iteration   4 energy:  -188.78253015863231       -0.00473579507496     0.00060220752669 DIIS
+  @RHF iteration   5 energy:  -188.78379250771513       -0.00126234908282     0.00033712629112 DIIS
+  @RHF iteration   6 energy:  -188.78401242900094       -0.00021992128580     0.00015584515907 DIIS
+  @RHF iteration   7 energy:  -188.78404565073276       -0.00003322173183     0.00006282096744 DIIS
+  @RHF iteration   8 energy:  -188.78404968988332       -0.00000403915055     0.00002454421370 DIIS
+  @RHF iteration   9 energy:  -188.78405003033515       -0.00000034045183     0.00000687992694 DIIS
+  @RHF iteration  10 energy:  -188.78405006100041       -0.00000003066526     0.00000205223739 DIIS
+  @RHF iteration  11 energy:  -188.78405006426817       -0.00000000326776     0.00000066729005 DIIS
+  @RHF iteration  12 energy:  -188.78405006493398       -0.00000000066581     0.00000035477152 DIIS
+  @RHF iteration  13 energy:  -188.78405006496399       -0.00000000003001     0.00000008203927 DIIS
+  @RHF iteration  14 energy:  -188.78405006496513       -0.00000000000114     0.00000001191835 DIIS
+  @RHF iteration  15 energy:  -188.78405006496484        0.00000000000028     0.00000000393599 DIIS
+  @RHF iteration  16 energy:  -188.78405006496519       -0.00000000000034     0.00000000080717 DIIS
+  @RHF iteration  17 energy:  -188.78405006496502        0.00000000000017     0.00000000018461 DIIS
+  @RHF iteration  18 energy:  -188.78405006496502        0.00000000000000     0.00000000003685 DIIS
+  @RHF iteration  19 energy:  -188.78405006496507       -0.00000000000006     0.00000000001435 DIIS
+
+  Energy converged.
+
+  @RHF Final Energy:  -188.78405006496507
+
+  Final occupation vector = (12   A )
+
+  Orbital energies (a.u.):
+    Doubly occupied orbitals
+        -20.635949   A    -20.561594   A    -11.400663   A     -1.478875   A  
+         -1.365473   A     -0.896698   A     -0.725941   A     -0.705576   A  
+         -0.637631   A     -0.589462   A     -0.482447   A     -0.462604   A  
+      
+
+    Unoccupied orbitals
+          0.116289   A      0.174229   A      0.190354   A      0.214780   A  
+          0.253135   A      0.357327   A      0.361420   A      0.408311   A  
+          0.453534   A      0.467734   A      0.544996   A      0.647257   A  
+          0.651580   A      0.665088   A      0.712026   A      0.753107   A  
+          0.770334   A      0.827065   A      0.848913   A      0.864793   A  
+          0.924482   A      0.934261   A      0.961062   A      1.058075   A  
+          1.124323   A      1.185954   A      1.236473   A      1.245268   A  
+          1.264366   A      1.323952   A      1.353639   A      1.414659   A  
+          1.463597   A      1.606595   A      1.618529   A      1.631377   A  
+          1.687305   A      1.766454   A      1.818314   A      1.829312   A  
+          1.880587   A      1.922020   A      1.970895   A      2.016290   A  
+          2.043186   A      2.076011   A      2.149734   A      2.208973   A  
+          2.271115   A      2.341696   A      2.360275   A      2.407128   A  
+          2.467758   A      2.593310   A      2.595110   A      2.669663   A  
+          2.749053   A      2.768616   A      2.778280   A      2.976859   A  
+          3.130507   A      3.177129   A      3.233608   A      3.257420   A  
+          3.404141   A      3.456951   A      3.516532   A      3.534901   A  
+          3.589613   A      3.843560   A      3.929128   A      3.994744   A  
+          4.146859   A      4.238585   A      4.457207   A      4.569985   A  
+          4.618542   A      4.669447   A      4.749028   A      4.931618   A  
+          5.050690   A      5.291744   A      5.374536   A      5.420408   A  
+          5.437603   A      5.694663   A      6.238108   A      6.751465   A  
+          6.939220   A     18.463585   A     33.436094   A     33.538553   A  
+      
+
+  Electric dipole (a.u.):
+	              X	              Y	              Z
+    Nuclear part:
+	   0.0000000000	   0.0000000000	   0.0000000000
+
+    Electronic part:
+	   0.0000000000	   0.0000000000	   0.0000000000
+
+    Dipole moments:
+	   0.0000000000	   0.0000000000	   0.0000000000
+
+    Total dipole:    0.0000000000 a.u.     0.0000000000 Debye
+    Conversion: 1.0 a.u. =    2.5417500000 Debye
+
+*** tstop() called on compute-1-13.local at Thu Feb  3 00:50:55 2011
+	user time   =      19.71 seconds =       0.33 minutes
+	system time =       0.48 seconds =       0.01 minutes
+	total time  =          4 seconds =       0.07 minutes
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //               DFMP2               //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+
+*** tstart() called on compute-1-13.local
+*** at Thu Feb  3 00:50:55 2011
+
+	********************************************************
+	*                                                      *
+	*                        DF-MP2                        *
+	*    2nd-Order Density-Fitted Moller-Plesset Theory    *
+	*             CORE Algorithm,   4 Threads              *
+	*                                                      *
+	*    Rob Parrish, Justin Turney, C. David Sherrill,    *
+	*        Andy Simmonett, and Edward Hohenstein         *
+	*                                                      *
+	********************************************************
+
+	  ==================================================
+	    NSO  NAUX  FOCC  DOCC  AOCC  AVIR  VIRT  FVIR 
+	   ------------------------------------------------
+	     104   392     0    12    12    92    92     0
+	  ==================================================
+  DF-MP2 Energy Evaluation Complete:
+
+   Canonical DF-MP2:
+    Same-Spin Energy:                 -0.1370425641532872 [H]
+    Opposite-Spin Energy:             -0.3732481982239781 [H]
+    DF-MP2 Correlation Energy:        -0.5102907623772653 [H]
+    DF-MP2 Total Energy:             -189.2943408273423245 [H]
+   SCS-DF-MP2 (Pss =   0.3333333333, Pos =   1.2000000000):
+    SCS-Same-Spin Energy:             -0.0456808547177624 [H]
+    SCS-Opposite-Spin Energy:         -0.4478978378687737 [H]
+    SCS-DF-MP2 Correlation Energy:    -0.4935786925865361 [H]
+    SCS-DF-MP2 Total Energy:         -189.2776287575516108 [H]
+
+*** tstop() called on compute-1-13.local at Thu Feb  3 00:50:56 2011
+	user time   =      22.55 seconds =       0.38 minutes
+	system time =       0.54 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     CP Computation: Monomer 2.    //
+  //           Full Basis Set.         //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+
+*** tstart() called on compute-1-13.local
+*** at Thu Feb  3 00:50:57 2011
+
+ RHF: by Justin Turney and Rob Parrish
+
+  Release version.
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C(Gh)     -1.888896000000    -0.179692000000     0.000000000000
+           O(Gh)     -1.493280000000     1.073689000000     0.000000000000
+           O(Gh)     -1.170435000000    -1.166590000000     0.000000000000
+           H(Gh)     -2.979488000000    -0.258829000000     0.000000000000
+           H(Gh)     -0.498833000000     1.107195000000     0.000000000000
+           C          1.888896000000     0.179692000000     0.000000000000
+           O          1.493280000000    -1.073689000000     0.000000000000
+           O          1.170435000000     1.166590000000     0.000000000000
+           H          2.979488000000     0.258829000000     0.000000000000
+           H          0.498833000000    -1.107195000000     0.000000000000
+
+    Number of unique atoms: 10
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+       unique atom 3: 3 
+       unique atom 4: 4 
+       unique atom 5: 5 
+       unique atom 6: 6 
+       unique atom 7: 7 
+       unique atom 8: 8 
+       unique atom 9: 9 
+
+  Nuclear repulsion =   70.115788657657433
+  Energy threshold  = 1.00e-10
+  Density threshold = 1.00e-11
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+
+  Minimum eigenvalue in the overlap matrix is 1.0051865348E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  Initial RHF energy:     0.00000000000000
+
+
+  Computing Integrals using Density Fitting
+
+  Density Fitting Algorithm proceeding on Core.
+                                  Total Energy            Delta E              Density RMS
+
+  @RHF iteration   0 energy:  -189.15519941192275     -189.15519941192275     0.00000000000000  
+  @RHF iteration   1 energy:  -188.58831437849693        0.56688503342582     0.01029530456304  
+  @RHF iteration   2 energy:  -188.70807922353066       -0.11976484503373     0.00437507987103 DIIS
+  @RHF iteration   3 energy:  -188.77779436355763       -0.06971514002697     0.00187422242247 DIIS
+  @RHF iteration   4 energy:  -188.78253015863260       -0.00473579507496     0.00060220752669 DIIS
+  @RHF iteration   5 energy:  -188.78379250771519       -0.00126234908259     0.00033712629113 DIIS
+  @RHF iteration   6 energy:  -188.78401242900088       -0.00021992128569     0.00015584515907 DIIS
+  @RHF iteration   7 energy:  -188.78404565073271       -0.00003322173183     0.00006282096744 DIIS
+  @RHF iteration   8 energy:  -188.78404968988326       -0.00000403915055     0.00002454421370 DIIS
+  @RHF iteration   9 energy:  -188.78405003033544       -0.00000034045217     0.00000687992694 DIIS
+  @RHF iteration  10 energy:  -188.78405006100019       -0.00000003066475     0.00000205223739 DIIS
+  @RHF iteration  11 energy:  -188.78405006426817       -0.00000000326798     0.00000066729005 DIIS
+  @RHF iteration  12 energy:  -188.78405006493455       -0.00000000066638     0.00000035477152 DIIS
+  @RHF iteration  13 energy:  -188.78405006496445       -0.00000000002990     0.00000008203927 DIIS
+  @RHF iteration  14 energy:  -188.78405006496513       -0.00000000000068     0.00000001191835 DIIS
+  @RHF iteration  15 energy:  -188.78405006496547       -0.00000000000034     0.00000000393599 DIIS
+  @RHF iteration  16 energy:  -188.78405006496496        0.00000000000051     0.00000000080717 DIIS
+  @RHF iteration  17 energy:  -188.78405006496536       -0.00000000000040     0.00000000018461 DIIS
+  @RHF iteration  18 energy:  -188.78405006496536        0.00000000000000     0.00000000003685 DIIS
+  @RHF iteration  19 energy:  -188.78405006496524        0.00000000000011     0.00000000001435 DIIS
+
+  Energy converged.
+
+  @RHF Final Energy:  -188.78405006496524
+
+  Final occupation vector = (12   A )
+
+  Orbital energies (a.u.):
+    Doubly occupied orbitals
+        -20.635949   A    -20.561594   A    -11.400663   A     -1.478875   A  
+         -1.365473   A     -0.896698   A     -0.725941   A     -0.705576   A  
+         -0.637631   A     -0.589462   A     -0.482447   A     -0.462604   A  
+      
+
+    Unoccupied orbitals
+          0.116289   A      0.174229   A      0.190354   A      0.214780   A  
+          0.253135   A      0.357327   A      0.361420   A      0.408311   A  
+          0.453534   A      0.467734   A      0.544996   A      0.647257   A  
+          0.651580   A      0.665088   A      0.712026   A      0.753107   A  
+          0.770334   A      0.827065   A      0.848913   A      0.864793   A  
+          0.924482   A      0.934261   A      0.961062   A      1.058075   A  
+          1.124323   A      1.185954   A      1.236473   A      1.245268   A  
+          1.264366   A      1.323952   A      1.353639   A      1.414659   A  
+          1.463597   A      1.606595   A      1.618529   A      1.631377   A  
+          1.687305   A      1.766454   A      1.818314   A      1.829312   A  
+          1.880587   A      1.922020   A      1.970895   A      2.016290   A  
+          2.043186   A      2.076011   A      2.149734   A      2.208973   A  
+          2.271115   A      2.341696   A      2.360275   A      2.407128   A  
+          2.467758   A      2.593310   A      2.595110   A      2.669663   A  
+          2.749053   A      2.768616   A      2.778280   A      2.976859   A  
+          3.130507   A      3.177129   A      3.233608   A      3.257420   A  
+          3.404141   A      3.456951   A      3.516532   A      3.534901   A  
+          3.589613   A      3.843560   A      3.929128   A      3.994744   A  
+          4.146859   A      4.238585   A      4.457207   A      4.569985   A  
+          4.618542   A      4.669447   A      4.749028   A      4.931618   A  
+          5.050690   A      5.291744   A      5.374536   A      5.420408   A  
+          5.437603   A      5.694663   A      6.238108   A      6.751465   A  
+          6.939220   A     18.463585   A     33.436094   A     33.538553   A  
+      
+
+  Electric dipole (a.u.):
+	              X	              Y	              Z
+    Nuclear part:
+	   0.0000000000	   0.0000000000	   0.0000000000
+
+    Electronic part:
+	   0.0000000000	   0.0000000000	   0.0000000000
+
+    Dipole moments:
+	   0.0000000000	   0.0000000000	   0.0000000000
+
+    Total dipole:    0.0000000000 a.u.     0.0000000000 Debye
+    Conversion: 1.0 a.u. =    2.5417500000 Debye
+
+*** tstop() called on compute-1-13.local at Thu Feb  3 00:51:00 2011
+	user time   =      30.88 seconds =       0.51 minutes
+	system time =       0.80 seconds =       0.01 minutes
+	total time  =          3 seconds =       0.05 minutes
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //               DFMP2               //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+
+*** tstart() called on compute-1-13.local
+*** at Thu Feb  3 00:51:00 2011
+
+	********************************************************
+	*                                                      *
+	*                        DF-MP2                        *
+	*    2nd-Order Density-Fitted Moller-Plesset Theory    *
+	*             CORE Algorithm,   4 Threads              *
+	*                                                      *
+	*    Rob Parrish, Justin Turney, C. David Sherrill,    *
+	*        Andy Simmonett, and Edward Hohenstein         *
+	*                                                      *
+	********************************************************
+
+	  ==================================================
+	    NSO  NAUX  FOCC  DOCC  AOCC  AVIR  VIRT  FVIR 
+	   ------------------------------------------------
+	     104   392     0    12    12    92    92     0
+	  ==================================================
+  DF-MP2 Energy Evaluation Complete:
+
+   Canonical DF-MP2:
+    Same-Spin Energy:                 -0.1370425641532872 [H]
+    Opposite-Spin Energy:             -0.3732481982239805 [H]
+    DF-MP2 Correlation Energy:        -0.5102907623772678 [H]
+    DF-MP2 Total Energy:             -189.2943408273425234 [H]
+   SCS-DF-MP2 (Pss =   0.3333333333, Pos =   1.2000000000):
+    SCS-Same-Spin Energy:             -0.0456808547177624 [H]
+    SCS-Opposite-Spin Energy:         -0.4478978378687766 [H]
+    SCS-DF-MP2 Correlation Energy:    -0.4935786925865390 [H]
+    SCS-DF-MP2 Total Energy:         -189.2776287575517813 [H]
+
+*** tstop() called on compute-1-13.local at Thu Feb  3 00:51:02 2011
+	user time   =      33.68 seconds =       0.56 minutes
+	system time =       0.86 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //      CP Computation: Results.     //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+============= Hartree =============
+   System:  Energy (full):
+   Complex -378.6110216337
+ Monomer 1 -189.2943408273
+ Monomer 2 -189.2943408273
+Interaction   -0.0223399790
+=========== kcal*mol^-1 ===========
+   System:  Energy (full):
+   Complex-237582.2021853373
+ Monomer 1-118784.0918125656
+ Monomer 2-118784.0918125657
+Interaction  -14.0185602060

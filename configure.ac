@@ -895,6 +895,9 @@ AC_CONFIG_FILES([include/Makefile
           tests/scf2/Makefile
           tests/scf3/Makefile
           tests/scf4/Makefile
+          tests/sad1/Makefile
+          tests/sapt1/Makefile
+          tests/dfmp2/Makefile
           tests/cc1/Makefile
           tests/cc2/Makefile
           tests/cc4/Makefile

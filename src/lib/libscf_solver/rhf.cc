@@ -273,6 +273,7 @@ double RHF::compute_energy()
     } else {
         fprintf(outfile, "\n  Failed to converged.\n");
         E_ = 0.0;
+        psio_->close(PSIF_CHKPT, 1);
     }
 
     //often, we're close!
@@ -517,41 +518,32 @@ bool RHF::load_or_compute_initial_C()
         if (print_ && Communicator::world->me() == 0)
             fprintf(outfile, "  SCF Guess: Dual-Basis. Reading from File 100.\n\n");
 
-        double** C2 = block_matrix(basisset_->nbf(),nalpha_);
 
         psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_OLD);
-        psio_address next_PSIF = PSIO_ZERO;
-        psio_->read(PSIF_SCF_DB_MOS,"DB MO Integrals",(char *) &(C2[0][0]),sizeof(double)*basisset_->nbf()*nalpha_,next_PSIF,&next_PSIF);
-        next_PSIF = PSIO_ZERO;
-        psio_->read(PSIF_SCF_DB_MOS,"DB SCF Energy",(char *) &(E_),sizeof(double),next_PSIF,&next_PSIF);
-        psio_->close(PSIF_SCF_DB_MOS,1);
+        psio_->read_entry(PSIF_SCF_DB_MOS,"DB SCF Energy",(char *) &(E_),sizeof(double));
+        psio_->read_entry(PSIF_SCF_DB_MOS,"DB NIRREPS",(char *) &(nirreps_),sizeof(int));
+        psio_->read_entry(PSIF_SCF_DB_MOS,"DB DOCCPI",(char *) (doccpi_),8*sizeof(int));
+        psio_->read_entry(PSIF_SCF_DB_MOS,"DB SOCCPI",(char *) (soccpi_),8*sizeof(int));
+        psio_->read_entry(PSIF_SCF_DB_MOS,"DB NALPHAPI",(char *) (nalphapi_),8*sizeof(int));
+        psio_->read_entry(PSIF_SCF_DB_MOS,"DB NBETAPI",(char *) (nbetapi_),8*sizeof(int));
 
-        //fprintf(outfile, "nalpha_ = %d\n",nalpha_);
-        //print_mat(C2,basisset_->nbf(),nalpha_,outfile);
+        shared_ptr<Matrix> Ctemp(new Matrix("DUAL BASIS MOS", nirreps_, nsopi_, doccpi_));    
+        Ctemp->load(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks); 
 
         C_->zero();
-        for (int m = 0; m<basisset_->nbf(); m++)
-            for (int i = 0; i<nalpha_; i++)
-                C_->set(0,m,i,C2[m][i]);
-
-        free_block(C2);
+        for (int h = 0; h < nirreps_; h++) 
+            for (int m = 0; m<nsopi_[h]; m++)
+                for (int i = 0; i<doccpi_[h]; i++)
+                    C_->set(h,m,i,Ctemp->get(h,m,i));
 
         //C_->print(outfile);
 
-        memset((void*) doccpi_, '\0', factory_.nirreps()*sizeof(int));
-        memset((void*) soccpi_, '\0', factory_.nirreps()*sizeof(int));
-        memset((void*) nalphapi_, '\0', factory_.nirreps()*sizeof(int));
-        memset((void*) nbetapi_, '\0', factory_.nirreps()*sizeof(int));
-
-        doccpi_[0] = nalpha_;
-        nalphapi_[0] = nalpha_;
-        nbetapi_[0] = nalpha_;
-
-        // Read MOs from checkpoint and set C_ to them
+        // Build D from C 
         form_D();
 
         //D_->print(outfile);
 
+        psio_->close(PSIF_SCF_DB_MOS,1);
         ret = true;
 
     } else if (guess_type == "CORE" || guess_type == "") {
@@ -601,34 +593,27 @@ bool RHF::load_or_compute_initial_C()
 void RHF::save_dual_basis_projection()
 {
     if (print_)
-        fprintf(outfile,"\n  Computing dual basis set projection from %s to %s.\n  Results will be stored in File 100.\n",options_.get_str("BASIS").c_str(),options_.get_str("DUAL_BASIS_SCF").c_str());
+        fprintf(outfile,"\n  Computing dual basis set projection from %s to %s.\n  Results will be stored in File 100.\n", \ 
+            options_.get_str("BASIS").c_str(),options_.get_str("DUAL_BASIS_SCF").c_str());
 
-    shared_ptr<BasisSet> dual_basis;
-    //if (options_.get_bool("NO_INPUT") == false) {
-    //    dual_basis =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DUAL_BASIS_SCF"));
-    //}
-    //else {
-        shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-        dual_basis = BasisSet::construct(parser, molecule_,
-                                         options_.get_str("DUAL_BASIS_SCF"));
-    //}
+    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+    shared_ptr<BasisSet> dual_basis = BasisSet::construct(parser, molecule_,
+                                       options_.get_str("DUAL_BASIS_SCF"));
 
-    SharedMatrix C_2 = dualBasisProjection(C_,doccpi_[0],basisset_,dual_basis);
-    //C_->print(outfile);
+    SharedMatrix C_2 = dualBasisProjection(C_,doccpi_,basisset_,dual_basis);
+    C_2->set_name("DUAL BASIS MOS");
     if(print_>3)
         C_2->print(outfile);
-    //Write stuff to chkpt here
-    double** C2 = C_2->to_block_matrix();
-    //print_mat(C2,dual_basis->nbf(),doccpi_[0],outfile);
-    //fflush(outfile);
 
     psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_NEW);
-    psio_address next_PSIF = PSIO_ZERO;
-    psio_->write(PSIF_SCF_DB_MOS,"DB MO Integrals",(char *) &(C2[0][0]),sizeof(double)*dual_basis->nbf()*doccpi_[0],next_PSIF,&next_PSIF);
-    next_PSIF = PSIO_ZERO;
-    psio_->write(PSIF_SCF_DB_MOS,"DB SCF Energy",(char *) &(E_),sizeof(double),next_PSIF,&next_PSIF);
+    C_2->save(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);     
+    psio_->write_entry(PSIF_SCF_DB_MOS,"DB SCF Energy",(char *) &(E_),sizeof(double));
+    psio_->write_entry(PSIF_SCF_DB_MOS,"DB NIRREPS",(char *) &(nirreps_),sizeof(int));
+    psio_->write_entry(PSIF_SCF_DB_MOS,"DB DOCCPI",(char *) (doccpi_),8*sizeof(int));
+    psio_->write_entry(PSIF_SCF_DB_MOS,"DB SOCCPI",(char *) (soccpi_),8*sizeof(int));
+    psio_->write_entry(PSIF_SCF_DB_MOS,"DB NALPHAPI",(char *) (nalphapi_),8*sizeof(int));
+    psio_->write_entry(PSIF_SCF_DB_MOS,"DB NBETAPI",(char *) (nbetapi_),8*sizeof(int));
     psio_->close(PSIF_SCF_DB_MOS,1);
-    free_block(C2);
 }
 
 void RHF::compute_multipole()
