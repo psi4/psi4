@@ -28,7 +28,6 @@ globals {
 }
 
 activate(CN)
-mints()
 energy('ccsd(t)')
 
 compare_values(refnuc,   CN.nuclear_repulsion_energy(),  9, "Nuclear repulsion energy")

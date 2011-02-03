@@ -23,7 +23,6 @@ globals {
     d_converge 11
 }
 
-mints()
 energy('ccsd')
 
 compare_values(refnuc,   h2o.nuclear_repulsion_energy(),  9, "Nuclear repulsion energy")

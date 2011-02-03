@@ -14,8 +14,7 @@ globals {
     basis 3-21G
 }
 
-activate(ch2)
-mints()
+#activate(ch2)
 dcft()
 
 #psi: (

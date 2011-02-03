@@ -263,8 +263,11 @@ void HF::common_init()
 
     if(Communicator::world->me() == 0)
         print_header();
-    if (scf_type_ == "PK")
+    if (scf_type_ == "PK") {
         form_indexing();
+        shared_ptr<MintsHelper> mints (new MintsHelper());
+        mints->integrals();
+    }
 }
 
 void HF::find_occupation(Vector & evals)

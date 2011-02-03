@@ -28,7 +28,6 @@ for R in Rvals:
 
         h2o.A = A
 
-        mints()
         thisenergy = scf()
 
         compare_values(refENuc[count], h2o.nuclear_repulsion_energy(),
