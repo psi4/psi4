@@ -130,7 +130,6 @@ IntegralTransform::presort_mo_tpdm_restricted()
         fflush(outfile);
     }
 
-    for(int i = 0; i < _nmo; ++i) fprintf(outfile, "%d -> %d\n", i, qtToPitzer[i]);
     next = PSIO_ZERO;
     for(int n=0; n < nBuckets; ++n) { /* nbuckets = number of passes */
         /* Prepare target matrix */
@@ -154,7 +153,7 @@ IntegralTransform::presort_mo_tpdm_restricted()
                 int s = qtToPitzer[(int) lblptr[labelIndex++]];
                 double value = (double) valptr[index];
 //                fprintf(outfile, "%d %d %d %d -> %d %d %d %d\n",p,q,r,s,qtToPitzer[p],qtToPitzer[q],qtToPitzer[r],qtToPitzer[s]);
-                idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value);
+                idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value, true);
             } /* end loop through current buffer */
         } while(!lastbuf); /* end loop over reading buffers */
         iwl->set_keep_flag(1);

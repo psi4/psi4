@@ -8,8 +8,9 @@
 #include <cstdlib>
 #include <cstring>
 #include <psifiles.h>
+#include <psi4-dec.h>
 #include <libciomr/libciomr.h>
-
+#include <libplugin/plugin.h>
 namespace psi {
 
 /*!
@@ -32,6 +33,8 @@ int psi_stop(FILE* infile, FILE* outfile, char* psi_file_prefix)
   infile = NULL;
   outfile = NULL;
   psi_file_prefix = NULL;
+
+  psi::yetiEnv.free();
 
   return(PSI_RETURN_SUCCESS);
 }

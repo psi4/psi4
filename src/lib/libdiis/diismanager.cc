@@ -34,7 +34,8 @@ DIISManager::DIISManager(int maxSubspaceSize,
 }
 
 /**
- * Determines the size of the error vector from a list of input quantities
+ * Determines the size of the error vector from a list of input quantities.  This function should
+ * not be called until set_error_vector_size() has been called.
  */
 void
 DIISManager::set_vector_size(int numQuantities, ...)
@@ -95,8 +96,7 @@ DIISManager::set_vector_size(int numQuantities, ...)
 
 
 /**
- * Determines the size of the error vector from a list of input quantities.  This function should
- * not be called until set_vector_size() has been called.
+ * Determines the size of the error vector from a list of input quantities.
  */
 void
 DIISManager::set_error_vector_size(int numQuantities, ...)

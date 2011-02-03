@@ -13,6 +13,8 @@
 #include <psifiles.h>
 //#include <libipv1/ip_lib.h>
 #include <psiconfig.h>
+#include <libparallel/parallel.h>
+#include <libplugin/plugin.h>
 #include "psi4.h"
 
 using namespace std;
@@ -46,7 +48,7 @@ int psi_start(int argc, char *argv[])
   check_only          = false;
   clean_only          = false;
   verbose             = false;
-  script              = false;
+  script              = true;
 
   // A string listing of valid short option letters
   const char* const short_options = "ahvVcwo:p:i:sm";
@@ -165,23 +167,23 @@ int psi_start(int argc, char *argv[])
   }
 
   // Check the input for "psi:(" if found assume IPV1, if not assumes Python
-  boost::regex commentLine("\\s*(%|#).*", boost::regbase::normal | boost::regbase::icase);
-  boost::regex psicommand("^\\s*psi\\s*:\\s*\\(.*", boost::regbase::normal | boost::regbase::icase);
-  char line[256];
+//  boost::regex commentLine("\\s*(%|#).*", boost::regbase::normal | boost::regbase::icase);
+//  boost::regex psicommand("^\\s*psi\\s*:\\s*\\(.*", boost::regbase::normal | boost::regbase::icase);
+//  char line[256];
 
-  script = true;
-  smatch  matches;
-  while(fgets(line, sizeof(line), infile)) {
-      string fileline = line;
-      string nocomment = boost::regex_replace(fileline, commentLine, "");
-      if (boost::regex_match(nocomment, matches, psicommand)) {
-          script = false;
-          break;
-      }
-  }
+//  script = true;
+//  smatch  matches;
+//  while(fgets(line, sizeof(line), infile)) {
+//      string fileline = line;
+//      string nocomment = boost::regex_replace(fileline, commentLine, "");
+//      if (boost::regex_match(nocomment, matches, psicommand)) {
+//          script = false;
+//          break;
+//      }
+//  }
 
-  // Rewind the file since we've been reading from it.
-  fseek(infile, 0L, SEEK_SET);
+//  // Rewind the file since we've been reading from it.
+//  fseek(infile, 0L, SEEK_SET);
 
   if(append) {
     if(ofname == "stdout") outfile=stdout;
@@ -195,6 +197,12 @@ int psi_start(int argc, char *argv[])
     fprintf(stderr, "Error: could not open output file %s\n",ofname.c_str());
     return(PSI_RETURN_FAILURE);
   }
+
+  // Initialize Yeti's env
+  yetiEnv.init(Communicator::world->me(), ofname.c_str());
+  // This seems a bit daft, but it's necessary to make sure the compiler doesn't
+  // nuke it in the mistaken belief that it's unused; plugins may use it.
+  yeti::Env::out0() << "";
 
   /* if prefix still NULL - check input file */
   if (fprefix.empty()) {

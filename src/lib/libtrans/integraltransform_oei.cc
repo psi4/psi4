@@ -91,38 +91,52 @@ IntegralTransform::transform_oei(const shared_ptr<MOSpace> s1, const shared_ptr<
 * @param input - pointer to input integrals (the lower-triangle of a symmetric matrix)
 * @param pointer to output integrals (the lower-triangle of a symmetric matrix)
 * @param C transformation matrix (rectangular, m X n)
-* @param soOffset - the point in the full list of SOs where we want to start.  This is
-*                   useful for transforming integrals one irrep at a time and in this
-*                   case the offset would correspond to the position of the first
-*                   orbital in the current irrep.
+* @param offset - the point in the full list of SOs where we want to start.  This is
+*                 useful for transforming integrals one irrep at a time and in this
+*                 case the offset would correspond to the position of the first
+*                 orbital in the current irrep.
+* @param backtransform - whether this is a forward or backwards transformation
 * @param order - a reordering array to change the order of the output
 */
 
 void
 IntegralTransform::trans_one(int m, int n, double *input, double *output,
-                             double **C, int soOffset, int* order)
+                             double **C, int offset, int* order, bool backtransform)
 {
+    // TODO the order argument is actually not used right now.  I don't know that anybody will need it
+    // so I haven't bothered so far...
     int dim = (m > n) ? m : n;
-    int nc  = n;
     double **TMP0 = block_matrix(dim,dim);
     double **TMP1 = block_matrix(dim,dim);
 
     for(int p = 0; p < m; ++p){
         for(int q = 0; q <= p; ++q){
-            unsigned long int pq = INDEX((p + soOffset), (q + soOffset));
+            unsigned long int pq = INDEX((p + offset), (q + offset));
             TMP0[p][q] = TMP0[q][p] = input[pq];
         }
     }
 
-    if(m && n) {
-        C_DGEMM('n', 'n', m, n, m, 1.0, TMP0[0], dim, C[0], nc, 0.0, TMP1[0], dim);
-        C_DGEMM('t', 'n', n, n, m, 1.0, C[0], nc, TMP1[0], dim, 0.0, TMP0[0], dim);
+    if(backtransform){
+        int nc  = m;
+        if(m && n) {
+            C_DGEMM('n', 't', m, n, m, 1.0, TMP0[0], dim, C[0], nc, 0.0, TMP1[0], dim);
+            C_DGEMM('n', 'n', n, n, m, 1.0, C[0], nc, TMP1[0], dim, 0.0, TMP0[0], dim);
+        }
+    }else{
+        int nc  = n;
+        if(m && n) {
+            C_DGEMM('n', 'n', m, n, m, 1.0, TMP0[0], dim, C[0], nc, 0.0, TMP1[0], dim);
+            C_DGEMM('t', 'n', n, n, m, 1.0, C[0], nc, TMP1[0], dim, 0.0, TMP0[0], dim);
+        }
     }
 
+    unsigned long int pq = 0;
     for(int p = 0; p < n; ++p){
         for(int q = 0; q <= p; ++q) {
-            unsigned long int pq = INDEX(order[p], order[q]);
-            output[pq] = TMP0[p][q];
+            size_t P = order[p];
+            size_t Q = order[q];
+            size_t PQ = INDEX(P,Q);
+            output[PQ] = TMP0[p][q];
         }
     }
 

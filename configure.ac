@@ -845,7 +845,8 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libfunctional/Makefile
           src/lib/libplugin/Makefile
           src/lib/lib3index/Makefile
-
+          src/lib/libsmartptr/Makefile
+          src/lib/libyeti/Makefile
           src/util/tocprint/Makefile
           src/util/psiclean/Makefile
 
