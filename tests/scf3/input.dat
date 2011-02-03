@@ -16,11 +16,10 @@ molecule ch2 {
 globals {
     reference uhf
     basis 6-31G**
+    guess core
     docc [2, 0, 0, 1]
     socc [1, 0, 1, 0]
 }
-
-mints()
 
 thisenergy = energy('uhf')
 

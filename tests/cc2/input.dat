@@ -22,7 +22,6 @@ globals {
 }
 
 activate(h2o)
-mints()
 energy('ccsd')
 
 compare_values(refnuc,   h2o.nuclear_repulsion_energy(),  9, "Nuclear repulsion energy")
