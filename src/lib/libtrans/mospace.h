@@ -26,7 +26,7 @@ class MOSpace{
          *
          * The label associated with this space is 'o'
          */
-        #define MOSPACE_OCC 'o'
+        #define MOSPACE_OCC 'O'
         static shared_ptr<MOSpace> occ;
         /**
          * The MOSpace::vir space can be used to define the virtual space.  Frozen
@@ -37,7 +37,7 @@ class MOSpace{
          *
          * The label associated with this space is 'v'
          */
-        #define MOSPACE_VIR 'v'
+        #define MOSPACE_VIR 'V'
         static shared_ptr<MOSpace> vir;
         /**
          * The MOSpace::all space can be used to define the virtual space.  Frozen
@@ -46,7 +46,7 @@ class MOSpace{
          *
          * The label associated with this space is 'a'
          */
-        #define MOSPACE_ALL 'a'
+        #define MOSPACE_ALL 'A'
         static shared_ptr<MOSpace> all;
         /**
          * The MOSpace::nil space can be used to define the atomic orbital space.
