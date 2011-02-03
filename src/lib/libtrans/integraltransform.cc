@@ -32,7 +32,10 @@ IntegralTransform::IntegralTransform(shared_ptr<Chkpt> chkpt,
     _tolerance     = 1.0E-16;
     _keepDpdSoInts = false;
     _keepIwlSoInts = false;
+    _keepIwlMoTpdm = true;
+    _keepDpdMoTpdm = true;
     _keepHtInts    = true;
+    _keepHtTpdm    = true;
     _printTei      = _print > 5;
     _useIWL        = _outputType == IWLAndDPD || _outputType == IWLOnly;
     _useDPD        = _outputType == IWLAndDPD || _outputType == DPDOnly;

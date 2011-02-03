@@ -109,7 +109,8 @@ class IntegralTransform{
         void transform_tei_first_half(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace> s2);
         void transform_tei_second_half(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace> s2,
                                        const shared_ptr<MOSpace> s3, const shared_ptr<MOSpace> s4);
-
+        void backtransform_tpdm();
+        void backtransform_tpdm_restricted();
         void print_dpd_lookup();
 
         int DPD_ID(const char c);
@@ -160,14 +161,15 @@ class IntegralTransform{
         void raid_checkpoint();
         void process_eigenvectors();
         void process_spaces();
+        void presort_mo_tpdm_restricted();
 
         void trans_one(int m, int n, double *input, double *output, double **C, int soOffset, int *order);
         void build_fzc_and_fock(int p, int q, int r, int s, double value,
                           double *aFzcD, double *bFzcD, double *aFzcOp, double *bFzcOp,
                           double *aD, double *bD, double *aFock, double *bFock);
         void idx_permute_presort(dpdfile4 *File, int &thisBucket, int **&bucketMap,
-                                 int **&bucketOffset, int &p, int &q, int &r, int &s,
-                                 double &value);
+                                 int **&bucketOffset, int &p, int &q, int &r,
+                                 int &s, double value);
         void idx_error(const char *message, int p, int q, int r, int s,
                        int pq, int rs, int pq_sym, int rs_sym);
 
@@ -271,10 +273,16 @@ class IntegralTransform{
         double ***_Cb;
         // Whether to keep the IWL SO integral file after processing
         bool _keepIwlSoInts;
+        // Whether to keep the IWL MO two particle density matrix
+        bool _keepIwlMoTpdm;
         // Whether to keep the DPD SO integral file after processing
         bool _keepDpdSoInts;
+        // Whether to keep the DPD MO to particle density matrix after processing
+        bool _keepDpdMoTpdm;
         // Whether to keep the half-transformed two electron integrals
         bool _keepHtInts;
+        // Whether to keep the half-transformed TPDM
+        bool _keepHtTpdm;
         // Whether to print the two-electron integrals or not
         bool _printTei;
         // Whether to output the results to an IWL buffer

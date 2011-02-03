@@ -41,6 +41,7 @@
 #define PSIF_PSIMRCC_RESTART   51
 /* MCSCF files */
 #define PSIF_MCSCF             52
+#define PSIF_TPDM_HALFTRANS    53
 #define PSIF_DETCAS            60
 // The integral files used by libtrans
 #define PSIF_LIBTRANS_DPD      61 // All transformed integrals in DPD format are sent here by default
@@ -50,6 +51,7 @@
 // Storage file for libdiis
 #define PSIF_LIBDIIS           64
 
+#define PSIF_TPDM_PRESORT      71
 #define PSIF_MO_TEI            72
 #define PSIF_MO_OPDM           73
 #define PSIF_MO_TPDM           74
