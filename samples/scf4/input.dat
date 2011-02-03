@@ -1,0 +1,36 @@
+#! RHF cc-pVDZ energy for water, automatically scanning the symmetric stretch and bending coordinates
+#! using Python's built-in loop mechanisms.  The geometry is apecified using a Z-matrix with variables
+#! that are updated during the potential energy surface scan.
+
+
+
+molecule h2o {
+    O
+    H 1 R
+    H 1 R 2 A
+}
+
+Rvals = [ 0.9, 1.0, 1.1 ]
+Avals = range(102, 106, 2)
+
+count = 0
+
+global basis cc-pvdz
+set scf {
+    e_converge = 11
+}
+
+for R in Rvals:
+    h2o.R = R
+
+    for A in Avals:
+
+        h2o.A = A
+
+        mints()
+        thisenergy = scf()
+
+
+        count = count + 1
+
+clean()

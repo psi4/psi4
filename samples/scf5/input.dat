@@ -1,0 +1,27 @@
+#! RI-SCF cc-pVTZ energy of water, with Z-matrix input and cc-pVTZ-RI auxilliary basis.
+
+nucenergy = 8.801466202085710
+refenergy = -76.05098402733282
+
+molecule h2o {
+    O
+    H 1 1.0
+    H 1 1.0 2 104.5
+}
+
+globals {
+  basis sto-3g
+  scf_type direct
+  e_converge 10
+}
+
+thisenergy = energy('rhf')
+deriv()
+optking()
+
+h2o.print_to_output()
+
+#compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")
+#compare_values(refenergy, thisenergy, 9, "Reference energy")
+
+clean()

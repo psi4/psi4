@@ -3,9 +3,6 @@
 #! specify guess=sad to the SCF module's (or global) options in order to use a SAD guess. The
 #! test is first performed in C2v symmetry, and then in C1.
 
-Nref  =   8.841020805217546  #TEST
-E1ref = -75.99572139678682   #TEST
-Eref  = -76.01678948412534   #TEST
 
 molecule h2o {
     O
@@ -53,11 +50,5 @@ global e_converge 11
 global d_converge 11
 E_c1 = energy('rhf')
 
-compare_values(Nref, h2o_c1.nuclear_repulsion_energy(), 9, "C1  SAD Nuclear Repulsion Energy") #TEST
-compare_values(Nref, h2o.nuclear_repulsion_energy(), 9, "C2v SAD Nuclear Repulsion Energy")    #TEST
-compare_values(E1ref, E1_c1, 2, "C1  SAD Iteration 1 Energy")                                  #TEST
-compare_values(E1ref, E1,    2, "C2v SAD Iteration 1 Energy")                                  #TEST
-compare_values(Eref, E_c1, 9, "C1  SAD Iteration N Energy")                                    #TEST
-compare_values(Eref, E,    9, "C2v SAD Iteration N Energy")                                    #TEST
 
 clean()

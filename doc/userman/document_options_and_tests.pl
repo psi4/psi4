@@ -7,7 +7,10 @@ use warnings;
 # keywords expected by each module; b) looks for comments in each test case to identify
 # the type of calculation.  The results of this parsing is put into TeX files, which are
 # inlined into the manual.
-
+#
+# Then, we look at the test cases, using the specially formatted comments to add a listing
+# of samples in the users' manual; the tests are copied (sans validation stuff) to the appropriate
+# location in the samples folder.
 
 #
 # First, read the options for each module
@@ -29,7 +32,7 @@ while(<DRIVER>){
     my $Possibilities;
     # If we find a /*- it means the comment block has started, but we
     # don't know if it's a multi-line comment, let's find out
-    if(/\/\*-/){
+    if(/\/\*-/ and $CurrentModule){
         $CommentString = determine_comment($_);
         ($Keyword, $Type, $Default, $Possibilities) = determine_keyword_type_and_default();
         $Data{$CurrentModule}{$Keyword}{"Type"}    = $Type;
@@ -171,29 +174,52 @@ sub determine_keyword_type_and_default
 #
 
 my $TestsFolder = "../../tests";
+my $SamplesFolder = "../../samples";
 opendir(TESTS, $TestsFolder) or die "I can't read $TestsFolder\n";
-my $Out = "tests_descriptions.tex";
-open(OUT,">$Out") or die "I can't write to $Out\n";
-printf OUT "\\begin{tabular*}{\\textwidth}[tb]{p{0.15\\textwidth}p{0.75\\textwidth}}\n";
+my $TexSummary = "tests_descriptions.tex";
+# Create a plain-text summary in the samples directory
+my $Summary = $SamplesFolder."/SUMMARY";
+open(SUMMARY,">$Summary") or die "I can't write to $Summary\n";
+# Make a LaTeX version for the manual, too
+open(TEXSUMMARY,">$TexSummary") or die "I can't write to $TexSummary\n";
+printf TEXSUMMARY "\\begin{tabular*}{\\textwidth}[tb]{p{0.15\\textwidth}p{0.75\\textwidth}}\n";
 foreach my $Dir(readdir TESTS){
-    my $Input = join("/",$TestsFolder,$Dir,"input.dat");
+    my $Input = $TestsFolder."/".$Dir."/input.dat";
     # Look for an input file in each subdirectory, or move on
     open(INPUT, "<$Input") or next;
+    #
+    # Remember, we want to copy the test suite over to psi4/samples, omitting the test functions
+    #
+    my $SamplesDirectory = $SamplesFolder."/".$Dir;
+    unless(-d $SamplesDirectory){
+        # This directory doesn't exist in psi4/samples, make it now
+        mkdir $SamplesDirectory or die "\nI can't create $SamplesDirectory\n";
+    }
+    my $SampleInput = $SamplesDirectory."/input.dat";
+    open(SAMPLE, ">$SampleInput") or die "\nI can't write to $SampleInput\n";
     my $Description;
     while(<INPUT>){
-        next unless s/\%\!//;
+        # If this line isn't associated with testing, put it in the sample
+        print SAMPLE unless /\#TEST/;
+        # Now we only want to grab the comments.  Move on if this is not a comment.
+        next unless s/\#\!//;
         $Description .= $_;
         chomp $Description;
     }
     close INPUT;
+    close SAMPLE;
+
+    # Process the comment that we grabbed from the input.
     if($Description){
-        print OUT "{\\bf $Dir} & $Description\\\\\n";
+        print TEXSUMMARY "{\\bf $Dir} & $Description\\\\\n";
+        printf SUMMARY "%-12s %s\n\n\n", $Dir.":", $Description;
     }else{
         warn "Warning!!! Undocumented input: $Input\n";
     }
 }
-print OUT "\\end{tabular*}";
-close OUT;
+print TEXSUMMARY "\\end{tabular*}";
+close TEXSUMMARY;
+close SUMMARY;
 closedir TESTS;
 
 
