@@ -14,7 +14,7 @@
 
 using namespace boost;
 
-namespace psi { 
+namespace psi {
 
 MintsHelper::MintsHelper(Options & options): options_(options)
 {
@@ -227,16 +227,16 @@ void MintsHelper::one_electron_integrals()
 }
 void MintsHelper::integral_gradients()
 {
-    throw FeatureNotImplemented("libmints", "MintsHelper::integral_derivatives", __FILE__, __LINE__);        
+    throw FeatureNotImplemented("libmints", "MintsHelper::integral_derivatives", __FILE__, __LINE__);
 }
 void MintsHelper::integral_hessians()
 {
-    throw FeatureNotImplemented("libmints", "MintsHelper::integral_hessians", __FILE__, __LINE__);        
+    throw FeatureNotImplemented("libmints", "MintsHelper::integral_hessians", __FILE__, __LINE__);
 }
 
 shared_ptr<Matrix> MintsHelper::ao_overlap()
 {
-    shared_ptr<Molecule> molecule = Process::environment.molecule(); 
+    shared_ptr<Molecule> molecule = Process::environment.molecule();
     if (molecule.get() == 0) {
         fprintf(outfile, "  Active molecule not set!");
         throw PSIEXCEPTION("Active molecule not set!");
@@ -252,14 +252,14 @@ shared_ptr<Matrix> MintsHelper::ao_overlap()
 
     shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
     shared_ptr<OneBodyAOInt> ints(fact->ao_overlap());
-    ints->compute(S); 
+    ints->compute(S);
 
     return S;
 
 }
 shared_ptr<Matrix> MintsHelper::ao_kinetic()
 {
-    shared_ptr<Molecule> molecule = Process::environment.molecule(); 
+    shared_ptr<Molecule> molecule = Process::environment.molecule();
     if (molecule.get() == 0) {
         fprintf(outfile, "  Active molecule not set!");
         throw PSIEXCEPTION("Active molecule not set!");
@@ -275,14 +275,14 @@ shared_ptr<Matrix> MintsHelper::ao_kinetic()
 
     shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
     shared_ptr<OneBodyAOInt> ints(fact->ao_kinetic());
-    ints->compute(S); 
+    ints->compute(S);
 
     return S;
 
 }
 shared_ptr<Matrix> MintsHelper::ao_potential()
 {
-    shared_ptr<Molecule> molecule = Process::environment.molecule(); 
+    shared_ptr<Molecule> molecule = Process::environment.molecule();
     if (molecule.get() == 0) {
         fprintf(outfile, "  Active molecule not set!");
         throw PSIEXCEPTION("Active molecule not set!");
@@ -298,14 +298,14 @@ shared_ptr<Matrix> MintsHelper::ao_potential()
 
     shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
     shared_ptr<OneBodyAOInt> ints(fact->ao_potential());
-    ints->compute(S); 
+    ints->compute(S);
 
     return S;
 
 }
 shared_ptr<Matrix> MintsHelper::ao_erf_eri(double omega, double alpha, double beta)
 {
-    shared_ptr<Molecule> molecule = Process::environment.molecule(); 
+    shared_ptr<Molecule> molecule = Process::environment.molecule();
     if (molecule.get() == 0) {
         fprintf(outfile, "  Active molecule not set!");
         throw PSIEXCEPTION("Active molecule not set!");
@@ -340,17 +340,17 @@ shared_ptr<Matrix> MintsHelper::ao_erf_eri(double omega, double alpha, double be
       [(basis->shell(P)->function_index() + p)*nbf + basis->shell(Q)->function_index() + q]
         = buffer[index];
 
-    } } } }    
+    } } } }
 
-    } } } }    
- 
+    } } } }
+
 
     return I;
 
 }
 shared_ptr<Matrix> MintsHelper::ao_eri()
 {
-    shared_ptr<Molecule> molecule = Process::environment.molecule(); 
+    shared_ptr<Molecule> molecule = Process::environment.molecule();
     if (molecule.get() == 0) {
         fprintf(outfile, "  Active molecule not set!");
         throw PSIEXCEPTION("Active molecule not set!");
@@ -385,10 +385,10 @@ shared_ptr<Matrix> MintsHelper::ao_eri()
       [(basis->shell(P)->function_index() + p)*nbf + basis->shell(Q)->function_index() + q]
         = buffer[index];
 
-    } } } }    
+    } } } }
 
-    } } } }    
- 
+    } } } }
+
 
     return I;
 
@@ -421,6 +421,78 @@ int MintsHelper::determine_unique_shell_quartets(int usii, int usjj, int uskk, i
         usi_arr[2] = usii; usj_arr[2] = usll; usk_arr[2] = usjj; usl_arr[2] = uskk;
         return 3;
     }
+}
+
+shared_ptr<Matrix> MintsHelper::so_overlap()
+{
+    shared_ptr<Molecule> molecule = Process::environment.molecule();
+    if (molecule.get() == 0) {
+        fprintf(outfile, "  Active molecule not set!");
+        throw PSIEXCEPTION("Active molecule not set!");
+    }
+
+    molecule->update_geometry();
+    // Read in the basis set
+    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
+    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, options_.get_str("BASIS"));
+    shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
+    shared_ptr<SOBasisSet> sobasis(new SOBasisSet(basis, fact));
+    const Dimension& dim = sobasis->dimension();
+    shared_ptr<Matrix> S(new Matrix("SO Overlap Integrals", dim, dim));
+
+    shared_ptr<OneBodySOInt> ints(fact->so_overlap());
+    ints->compute(S);
+
+    return S;
+
+}
+
+shared_ptr<Matrix> MintsHelper::so_kinetic()
+{
+    shared_ptr<Molecule> molecule = Process::environment.molecule();
+    if (molecule.get() == 0) {
+        fprintf(outfile, "  Active molecule not set!");
+        throw PSIEXCEPTION("Active molecule not set!");
+    }
+
+    molecule->update_geometry();
+    // Read in the basis set
+    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
+    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, options_.get_str("BASIS"));
+    shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
+    shared_ptr<SOBasisSet> sobasis(new SOBasisSet(basis, fact));
+    const Dimension& dim = sobasis->dimension();
+    shared_ptr<Matrix> S(new Matrix("SO Kinetic Integrals", dim, dim));
+
+    shared_ptr<OneBodySOInt> ints(fact->so_kinetic());
+    ints->compute(S);
+
+    return S;
+
+}
+
+shared_ptr<Matrix> MintsHelper::so_potential()
+{
+    shared_ptr<Molecule> molecule = Process::environment.molecule();
+    if (molecule.get() == 0) {
+        fprintf(outfile, "  Active molecule not set!");
+        throw PSIEXCEPTION("Active molecule not set!");
+    }
+
+    molecule->update_geometry();
+    // Read in the basis set
+    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
+    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, options_.get_str("BASIS"));
+    shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
+    shared_ptr<SOBasisSet> sobasis(new SOBasisSet(basis, fact));
+    const Dimension& dim = sobasis->dimension();
+    shared_ptr<Matrix> S(new Matrix("SO Potential Integrals", dim, dim));
+
+    shared_ptr<OneBodySOInt> ints(fact->so_potential());
+    ints->compute(S);
+
+    return S;
+
 }
 
 }
