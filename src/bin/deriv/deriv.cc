@@ -82,7 +82,7 @@ void Deriv::compute(SharedSimpleMatrix& Q, SharedSimpleMatrix& G, SharedSimpleMa
     shared_ptr<IntegralFactory> integral(new IntegralFactory(basis_, basis_, basis_, basis_));
 
     // Initialize an integral iterator for computing two-electron integral derivatives.
-    ShellCombinationsIterator shells = integral->shells_iterator();
+    AOShellCombinationsIterator shells = integral->shells_iterator();
 
     // Initialize an ERI object requesting derivatives.
     shared_ptr<TwoBodyAOInt> eri(integral->eri(1));
@@ -133,7 +133,7 @@ void Deriv::compute(SharedSimpleMatrix& Q, SharedSimpleMatrix& G, SharedSimpleMa
             eri->compute_shell_deriv1(shell_p, shell_q, shell_r, shell_s);
             size_t size = cart_p * cart_q * cart_r * cart_s;
 
-            IntegralsIterator intsIter = shells.integrals_iterator();
+            AOIntegralsIterator intsIter = shells.integrals_iterator();
             for (intsIter.first(); intsIter.is_done() == false; intsIter.next()) {
                 int mu = intsIter.i();
                 int nu = intsIter.j();

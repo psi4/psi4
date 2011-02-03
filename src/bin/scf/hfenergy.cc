@@ -13,8 +13,8 @@
 
 #include "hfenergy.h"
 #include <libparallel/parallel.h>
-#include "libscf_solver/rhf.cc"
-#include "libscf_solver/rohf.h" 
+#include "libscf_solver/rhf.h"
+#include "libscf_solver/rohf.h"
 #include "libscf_solver/uhf.h"
 #include "libscf_solver/rks.h"
 #include "libscf_solver/uks.h"
@@ -23,11 +23,11 @@ using namespace std;
 using namespace psi;
 
 namespace psi { namespace scf {
-     
-HFEnergy::HFEnergy(Options & options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) 
+
+HFEnergy::HFEnergy(Options & options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
     : options_(options), psio_(psio), chkpt_(chkpt)
 {
-    
+
 }
 
 double HFEnergy::compute_energy()
@@ -60,7 +60,7 @@ double HFEnergy::compute_energy()
         energy = 0.0;
     }
     energy = scf->compute_energy();
-    
+
     Process::environment.set_reference_wavefunction(scf);
 
     return energy;

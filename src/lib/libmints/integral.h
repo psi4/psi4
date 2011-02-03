@@ -157,7 +157,7 @@ public:
 };
 
 /*! \ingroup MINTS */
-class IntegralsIterator
+class AOIntegralsIterator
 {
 private:
     struct Integral {
@@ -177,7 +177,7 @@ private:
     int ni, nj, nk, nl, fii, fij, fik, fil;
 
 public:
-    IntegralsIterator(boost::shared_ptr<GaussianShell> s1, boost::shared_ptr<GaussianShell> s2,
+    AOIntegralsIterator(boost::shared_ptr<GaussianShell> s1, boost::shared_ptr<GaussianShell> s2,
                       boost::shared_ptr<GaussianShell> s3, boost::shared_ptr<GaussianShell> s4);
 
     void first();
@@ -191,48 +191,9 @@ public:
     int index() const { return current.index;}
 };
 
-/*! \ingroup MINTS */
-class SOIntegralsIterator
-{
-private:
-    struct Integral {
-        int i;
-        int j;
-        int k;
-        int l;
-        unsigned int index;
-    };
-
-    Integral current;
-    const SOTransform& s1_;
-    const SOTransform& s2_;
-    const SOTransform& s3_;
-    const SOTransform& s4_;
-
-    bool done;
-
-    int ii, iimax, jj, jjmax, kk, kkmax, ll, llmax;
-    int ni, nj, nk, nl, fii, fij, fik, fil;
-
-public:
-    SOIntegralsIterator(const SOTransform& s1,
-                        const SOTransform& s2,
-                        const SOTransform& s3,
-                        const SOTransform& s4);
-
-    void first();
-    void next();
-    bool is_done() { return done; }
-
-    int i() const { return current.i; }
-    int j() const { return current.j; }
-    int k() const { return current.k; }
-    int l() const { return current.l; }
-    int index() const { return current.index;}
-};
 
 /*! \ingroup MINTS */
-class   ShellCombinationsIterator
+class AOShellCombinationsIterator
 {
 private:
     struct ShellQuartet {
@@ -257,9 +218,9 @@ private:
     boost::shared_ptr<BasisSet> bs4_;
 
 public:
-    ShellCombinationsIterator(boost::shared_ptr<BasisSet>bs1, boost::shared_ptr<BasisSet>bs2,
+    AOShellCombinationsIterator(boost::shared_ptr<BasisSet>bs1, boost::shared_ptr<BasisSet>bs2,
                               boost::shared_ptr<BasisSet>bs3, boost::shared_ptr<BasisSet>bs4);
-    ShellCombinationsIterator();
+    AOShellCombinationsIterator();
     void init(boost::shared_ptr<BasisSet>bs1, boost::shared_ptr<BasisSet>bs2,
             boost::shared_ptr<BasisSet>bs3, boost::shared_ptr<BasisSet>bs4);
 
@@ -273,7 +234,7 @@ public:
     int s() const { return current.S; }
     int end_of_PK() const { return current.end_of_PK; }
 
-    IntegralsIterator integrals_iterator();
+    AOIntegralsIterator integrals_iterator();
 };
 
 class SOShellCombinationsIterator
@@ -316,8 +277,6 @@ public:
     int r() const { return current.R; }
     int s() const { return current.S; }
     int end_of_PK() const { return current.end_of_PK; }
-
-    SOIntegralsIterator integrals_iterator();
 };
 
 /*! \ingroup MINTS */
@@ -394,10 +353,10 @@ public:
     virtual TwoBodyAOInt* erf_eri(double omega, double alpha, double beta, int deriv=0, double schwarz = 0.0);
 
     /// Returns a general ERI iterator object for any (P Q | R S) in shells
-    IntegralsIterator integrals_iterator(int p, int q, int r, int s);
+    AOIntegralsIterator integrals_iterator(int p, int q, int r, int s);
 
     /// Returns an ERI iterator object, only coded for standard ERIs
-    ShellCombinationsIterator shells_iterator();
+    AOShellCombinationsIterator shells_iterator();
 
     /// Initializes spherical harmonic transformations
     virtual void init_spherical_harmonics(int max_am);

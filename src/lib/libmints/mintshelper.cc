@@ -19,12 +19,15 @@ namespace psi {
 MintsHelper::MintsHelper(Options & options): options_(options)
 {
 }
+
 MintsHelper::MintsHelper() : options_(Process::environment.options)
 {
 }
+
 MintsHelper::~MintsHelper()
 {
 }
+
 void MintsHelper::integrals()
 {
     shared_ptr<PSIO> psio(new PSIO());
@@ -107,36 +110,12 @@ void MintsHelper::integrals()
     IWL ERIOUT(psio.get(), PSIF_SO_TEI, 0.0, 0, 0);
     IWLWriter writer(ERIOUT);
 
-    // How many SO shells do we have?
-    int nsoshell = sobasis->nshell();
-
     // Let the user know what we're doing.
     fprintf(outfile, "      Computing integrals..."); fflush(outfile);
 
-    // Begin new iterator code...works for all centers being equal
-    int usi_arr[3], usj_arr[3], usk_arr[3], usl_arr[3];
-
-    for (int usii=0; usii<nsoshell; ++usii) {
-        for (int usjj=0; usjj<=usii; ++usjj) {
-            for (int uskk=0; uskk<=usjj; ++uskk) {
-                for (int usll=0; usll<=uskk; ++usll) {
-                    int num_unique_pk = determine_unique_shell_quartets(usii, usjj, uskk, usll,
-                                                                        usi_arr, usj_arr, usk_arr, usl_arr);
-
-                    // For each num_unique_pk we need to call TwoBodySOInt::compute
-                    for (int upk=0; upk<num_unique_pk; ++upk) {
-                        eri->compute_shell(usi_arr[upk],
-                                           usj_arr[upk],
-                                           usk_arr[upk],
-                                           usl_arr[upk],
-                                           writer);
-                    }
-
-                    // If we are making a PK-matrix the end of this loop marks
-                    // the end of a PK block.
-                }
-            }
-        }
+    SOShellCombinationsIterator shellIter(sobasis, sobasis, sobasis, sobasis);
+    for (shellIter.first(); shellIter.is_done() == false; shellIter.next()) {
+        eri->compute_shell(shellIter, writer);
     }
 
     // Flush out buffers.

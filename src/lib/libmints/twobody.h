@@ -6,7 +6,7 @@
 namespace psi {
 
 class IntegralFactory;
-class ShellCombinationsIterator;
+class AOShellCombinationsIterator;
 class BasisSet;
 class GaussianShell;
 
@@ -80,7 +80,7 @@ public:
     const IntegralFactory* integral() const { return integral_; }
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
-    virtual void compute_shell(const ShellCombinationsIterator&) = 0;
+    virtual void compute_shell(const AOShellCombinationsIterator&) = 0;
 
     /// Compute the integrals
     virtual void compute_shell(int, int, int, int) = 0;

@@ -13,6 +13,7 @@ namespace psi {
     class SphericalTransform;
     class SimpleMatrix;
     class Fjt;
+    class AOShellCombinationsIterator;
 
 /**
  * \ingroup MINTS
@@ -25,7 +26,7 @@ class ERIFundamentalFunctor
 public:
     /// The fundamental ERI integral (effective contracted incomplete gamma function)
     virtual void operator()(Libint_t &libint, Fjt* fjt, int nprim, double coef1, int max_am, double PQ2, double rho);
-}; 
+};
 /**
  * \ingroup MINTS
  * Functor for fundamental erf ERIs
@@ -35,7 +36,7 @@ public:
 class ErfERIFundamentalFunctor : public ERIFundamentalFunctor
 {
 private:
-    /// Weight of the 1/r operator 
+    /// Weight of the 1/r operator
     double alpha_;
     /// Weight of the erf/r operator
     double beta_;
@@ -44,14 +45,14 @@ private:
     /// The square of the omega parameter
     double omega2_;
 public:
-    /** 
-    * Constructor for the ErfcERIFundamentalFunctor 
-    * 
+    /**
+    * Constructor for the ErfcERIFundamentalFunctor
+    *
     * The coefficients provided determine the type of integral evaluated
     * \param omega The $\omega$ parameter of the error function
     * \param alpha The coefficent of the $1/r$ operator
     * \param beta  The coefficient of the $\erf(\omega r)/r$ operator
-    * 
+    *
     * Integrals returned are of type:
     *  \alpha * 1/r + \beta * \erf(\omega r) / r
     * Which is equivalent to:
@@ -62,17 +63,17 @@ public:
     *  - $\alpha = 1.0, \beta = -1.0$:            $\erfc(\omega r)/r$ (Short range)
     *  - $\alpha = 1.0, \beta = \sqrt{2.0} -1.0$:                     (MHG's MOS-MP2 integrals)
     *  - $\alpha = 1.0, \beta = 0.0$:             $1/r$               (ERI)
-    */ 
+    */
     ErfERIFundamentalFunctor(double omega, double alpha, double beta) : omega_(omega), omega2_(omega*omega), alpha_(alpha), beta_(beta) {}
-    // Set the adjustable omega parameter (see above) 
+    // Set the adjustable omega parameter (see above)
     void set_omega(double omega) { omega_ = omega; omega2_ = omega*omega;}
-    // Set the adjustable alpha parameter (see above) 
+    // Set the adjustable alpha parameter (see above)
     void set_alpha(double alpha) { alpha_ = alpha; }
-    // Set the adjustable beta parameter (see above) 
+    // Set the adjustable beta parameter (see above)
     void set_beta(double beta) { beta_ = beta; }
     /// The fundamental ErfcERI integral (effective contracted incomplete gamma function)
     virtual void operator()(Libint_t &libint, Fjt* fjt, int nprim, double coef1, int max_am, double PQ2, double rho);
-}; 
+};
 
 /**
   * \ingroup MINTS
@@ -112,7 +113,7 @@ protected:
     Libderiv_t libderiv_;
 
     //! ERIFundamentalFunctor
-    ERIFundamentalFunctor *eri_functor_; 
+    ERIFundamentalFunctor *eri_functor_;
 
     //! Maximum cartesian class size.
     int max_cart_;
@@ -168,7 +169,7 @@ public:
     void form_sieve();
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
-    void compute_shell(const ShellCombinationsIterator&);
+    void compute_shell(const AOShellCombinationsIterator&);
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
     virtual void compute_shell(int, int, int, int);
@@ -184,7 +185,7 @@ public:
 };
 
 /** \ingroup MINTS
-* ErfERI - two-electron integrals involving error functions 
+* ErfERI - two-electron integrals involving error functions
 *
 * Integrals returned are of type:
 *  \alpha * 1/r + \beta * \erf(\omega r) / r
@@ -196,7 +197,7 @@ public:
 *  - $\alpha = 1.0, \beta = -1.0$:            $\erfc(\omega r)/r$ (Short range)
 *  - $\alpha = 1.0, \beta = \sqrt{2.0} -1.0$:                     (MHG's MOS-MP2 integrals)
 *  - $\alpha = 1.0, \beta = 0.0$:             $1/r$               (ERI)
-*/ 
+*/
 class ErfERI : public ERI {
 
 public:

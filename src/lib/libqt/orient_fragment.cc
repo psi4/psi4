@@ -1,4 +1,4 @@
-/*! \file 
+/*! \file
     \ingroup QT
     \brief function which places one fragment into the coordinate system of another
 
@@ -18,10 +18,6 @@
 #include <psifiles.h>
 
 namespace psi {
-
-double dot_prod(double *v1, double *v2);
-void cross_prod(double *v1, double *v2, double *out);
-void unit_vec(double *B, double *A, double *AB);
 
 void orient_fragment(int natom_A, int natom_B, int P_A, int P_B, double **geom_A, double **geom_B,
   double **ref_coeff_A, double **ref_coeff_B, double R_AB, double theta_A, double theta_B,
@@ -114,12 +110,12 @@ print_mat(ref_B_final,P_B,3,outfile);
     unit_vec(ref_B[1],       ref_B[0], e12);  /* v B1->B2 */
     unit_vec(ref_B_final[1], ref_B[0], e12b); /* v B1->B2_final */
     B_angle = acos(dot_prod(e12b,e12));
-    fprintf(outfile,"Rotation by %f degrees (to fix point B2)\n", 180.0*B_angle/_pi); 
+    fprintf(outfile,"Rotation by %f degrees (to fix point B2)\n", 180.0*B_angle/_pi);
     if (fabs(B_angle) > 1.0e-7) {
       cross_prod(e12,e12b,erot);
 
       /* Move B to put B1 at origin */
-      for (xyz=0; xyz<3; ++xyz) 
+      for (xyz=0; xyz<3; ++xyz)
         for (i=0; i<natom_B;++i)
           geom_B[i][xyz] -= ref_B[0][xyz];
 
@@ -127,7 +123,7 @@ print_mat(ref_B_final,P_B,3,outfile);
       rotate_vecs(erot, B_angle, geom_B, natom_B);
 
       /* Move B back to coordinate system of A */
-      for (xyz=0; xyz<3; ++xyz) 
+      for (xyz=0; xyz<3; ++xyz)
         for (i=0; i<natom_B;++i)
           geom_B[i][xyz] += ref_B[0][xyz];
 
@@ -182,17 +178,17 @@ print_mat(ref_B_final,P_B,3,outfile);
     B_angle *= sign;
 
     if (fabs(B_angle) > 1.0e-7) {
-      fprintf(outfile,"Rotation by %f degrees (to fix point B3)\n", 180.0*B_angle/_pi); 
+      fprintf(outfile,"Rotation by %f degrees (to fix point B3)\n", 180.0*B_angle/_pi);
 
       /* Move B to put B2 at origin */
-      for (xyz=0; xyz<3; ++xyz) 
+      for (xyz=0; xyz<3; ++xyz)
         for (i=0; i<natom_B;++i)
           geom_B[i][xyz] -= ref_B[1][xyz];
-  
+
       rotate_vecs(erot, B_angle, geom_B, natom_B);
-  
+
       /* Translate B1 back to coordinate system of A */
-      for (xyz=0; xyz<3; ++xyz) 
+      for (xyz=0; xyz<3; ++xyz)
         for (i=0; i<natom_B;++i)
           geom_B[i][xyz] += ref_B[1][xyz];
 
@@ -225,27 +221,4 @@ print_mat(ref_B_final,P_B,3,outfile);
   return;
 }
 
-double dot_prod(double *v1, double *v2) {
-  return v1[0]*v2[0]+ v1[1]*v2[1]+ v1[2]*v2[2];
 }
-void cross_prod(double *v1, double *v2, double *out) {
-  out[0] = v1[1]*v2[2]-v1[2]*v2[1];
-  out[1] = -v1[0]*v2[2]+v1[2]*v2[0];
-  out[2] = v1[0]*v2[1]-v1[1]*v2[0];
-  return;
-}
-void unit_vec(double *B, double *A, double *AB) {
-  double norm = 0.0;
-  int i;
-  
-  for (i=0; i<3; i++)
-    norm += (A[i]-B[i])*(A[i]-B[i]);
-  norm = sqrt(norm);
-  for (i=0; i<3; i++)
-    AB[i] = (B[i] - A[i]) / norm;
-  return;
-}
-
-}
-
-
