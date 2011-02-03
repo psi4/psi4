@@ -9,20 +9,20 @@
  */
 
 #include "integrator_defines.h"
+#include <libmints/gridblock.h>
 #include <stdlib.h>
 #include <vector>
 #include <string>
 using namespace psi;
 using namespace boost;
 
-namespace psi { 
+namespace psi {
 
 class Properties;
 class BasisPoints;
 class BasisSet;
 class Molecule;
 class Vector3;
-class GridBlock;
 class Options;
 
 namespace scf {
@@ -35,20 +35,20 @@ namespace scf {
 class Integrator {
 public:
     /** Factory Constructor, sets up Integrator associated with Molecule m,
-	* with grid preferences/defaults in Options opt
-	* @param m Molecule to be integrated over  
-	* @param opt Options object specifying grid type/make
-	* @ return SharedIntegtor type
-	*/
+    * with grid preferences/defaults in Options opt
+    * @param m Molecule to be integrated over
+    * @param opt Options object specifying grid type/make
+    * @ return SharedIntegtor type
+    */
     static boost::shared_ptr<Integrator> createIntegrator(shared_ptr<Molecule> m, Options & opt)
     {
         return boost::shared_ptr<Integrator>(new Integrator(m,opt));
     }
     /** Constructor, sets up Integrator associated with Molecule m,
-	* with grid preferences/defaults in Options opt
-	* @param m Molecule to be integrated over  
-	* @param opt Options object specifying grid type/make
-	*/
+    * with grid preferences/defaults in Options opt
+    * @param m Molecule to be integrated over
+    * @param opt Options object specifying grid type/make
+    */
     Integrator(shared_ptr<Molecule> m, Options & opt);
     /// Default Constructor, does nothing
     Integrator() {}
@@ -66,66 +66,66 @@ public:
     /// Restarts the integration traverse
     void reset();
     /** Is the integration traverse completed
-	* @return true if all points have been asked for by getNextBlock, false otherwise
-	*/
+    * @return true if all points have been asked for by getNextBlock, false otherwise
+    */
     bool isDone() {return done_; }
     /** The next integration grid block
     * @return the GridBlock object containing up to the next block_size_
         points
-	*/
+    */
     SharedGridBlock getNextBlock();
     /** The integration grid block corresponding to block number
     * THREAD SAFE, allows a single Integrator to be used by many threads
     * @param block_number index of block number
     * @param block the PREALLOCATED GridBlock object containing up to the next block_size_
         points
-	*/
+    */
     void getBlock(unsigned long int block_number, SharedGridBlock block);
     /** The number of blocks in the integrator
     * @return the number of blocks in the Integrator
     **/
     int getNumberOfBlocks();
     /** The molecule associated with this Integrator
-	* @return The molecule associated with this Integrator
-	*/
+    * @return The molecule associated with this Integrator
+    */
     shared_ptr<Molecule> getMolecule() const {return molecule_;}
     /** Number of radial points per atom
-	* @return The number of radial points per nucleus
-	*/
+    * @return The number of radial points per nucleus
+    */
     int getNRadial() const {return nradial_; }
     /** Number of spherical points per nucleus in the given sphere
-	* @return The number of spherical points per nucleus
-	* @param ind The index of the desired sphere
-	*/
+    * @return The number of spherical points per nucleus
+    * @param ind The index of the desired sphere
+    */
     int getNSpherical(int ind = 0) const {return nspherical_[ind];}
     /** Number of spheres
-	* @return The number of spheres in the pruned grid scheme
-	* (either 1 or 5 at the moment)
-	*/
+    * @return The number of spheres in the pruned grid scheme
+    * (either 1 or 5 at the moment)
+    */
     int getNSpheres() const {return nspheres_;}
     /** Number of points per block
-	* @return The number of points per block
-	*/
+    * @return The number of points per block
+    */
     int getBlockSize() const {return block_size_;}
     /** Selected nuclear scheme
-	* @return Nuclear grid scheme, such as Treutler
-	*/
+    * @return Nuclear grid scheme, such as Treutler
+    */
     nuclear_scheme getNuclearScheme() const {return nuclear_scheme_; }
     /** Selected radial scheme
-	* @return Radial grid scheme, such as Treutler
-	*/
+    * @return Radial grid scheme, such as Treutler
+    */
     radial_scheme getRadialScheme() const {return radial_scheme_; }
     /** Selected spherical scheme
-	* @return Spherical grid scheme, such as Lebedev
-	*/
+    * @return Spherical grid scheme, such as Lebedev
+    */
     spherical_scheme getSphericalScheme() const {return spherical_scheme_; }
     /** Selected special grid scheme
-	* @return Special grid scheme, such as SG1
-	*/
+    * @return Special grid scheme, such as SG1
+    */
     special_grid getSpecialGridScheme() const {return special_grid_; }
     /** String describing the grid setup
-	* @return descriptive string 
-	*/
+    * @return descriptive string
+    */
     std::string getString();
 protected:
     /// Returns the array of number of spherical grid points
@@ -137,7 +137,7 @@ protected:
     /// Number of spherical grids for pruned grids
     int nspheres_;
     /// Maximum number of grid points in a block
-    int block_size_; 
+    int block_size_;
     /// Selected nuclear weight scheme
     nuclear_scheme nuclear_scheme_;
     /// Selected spherical weight scheme
@@ -195,7 +195,7 @@ protected:
     /// Chi values (Becke or Treutler)
     double** chi_values_;
     /// Inverse distance map between atoms
-    double** inv_distance_map_; 
+    double** inv_distance_map_;
 };
 
 typedef shared_ptr<Integrator> SharedIntegrator;

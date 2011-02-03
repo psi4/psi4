@@ -133,14 +133,14 @@ void IntegralFactory::init_spherical_harmonics(int max_am)
     }
 }
 
-ShellCombinationsIterator IntegralFactory::shells_iterator()
+AOShellCombinationsIterator IntegralFactory::shells_iterator()
 {
-    return ShellCombinationsIterator(bs1_, bs2_, bs3_, bs4_);
+    return AOShellCombinationsIterator(bs1_, bs2_, bs3_, bs4_);
 }
 
-IntegralsIterator IntegralFactory::integrals_iterator(int p, int q, int r, int s)
+AOIntegralsIterator IntegralFactory::integrals_iterator(int p, int q, int r, int s)
 {
-    return IntegralsIterator(bs1_->shell(p), bs2_->shell(q), bs3_->shell(r), bs4_->shell(s));
+    return AOIntegralsIterator(bs1_->shell(p), bs2_->shell(q), bs3_->shell(r), bs4_->shell(s));
 }
 
 CartesianIter* IntegralFactory::cartesian_iter(int l) const

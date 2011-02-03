@@ -66,13 +66,13 @@ integrals(Options &options, int argc, char *argv[])
         // The buffer will hold the integrals for each shell, as they're computed
         const double *buffer = eri->buffer();
         // The iterator conveniently lets us iterate over functions within shells
-        ShellCombinationsIterator shellIter = integral->shells_iterator();
+        AOShellCombinationsIterator shellIter = integral->shells_iterator();
         int count=0;
         for (shellIter.first(); shellIter.is_done() == false; shellIter.next()) {
             // Compute quartet
             eri->compute_shell(shellIter);
             // From the quartet get all the integrals
-            IntegralsIterator intIter = shellIter.integrals_iterator();
+            AOIntegralsIterator intIter = shellIter.integrals_iterator();
             for (intIter.first(); intIter.is_done() == false; intIter.next()) {
                 int p = intIter.i();
                 int q = intIter.j();

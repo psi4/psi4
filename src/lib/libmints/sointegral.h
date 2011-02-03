@@ -115,6 +115,12 @@ public:
     const double *buffer() const { return buffer_; }
 
     template<typename TwoBodySOIntFunctor>
+    void compute_shell(const SOShellCombinationsIterator& shellIter, TwoBodySOIntFunctor& body) {
+        compute_shell(shellIter.p(), shellIter.q(), shellIter.r(), shellIter.s(),
+                      body);
+    }
+
+    template<typename TwoBodySOIntFunctor>
     void compute_shell(int, int, int, int, TwoBodySOIntFunctor& body);
 
     template<typename TwoBodySOIntFunctor>

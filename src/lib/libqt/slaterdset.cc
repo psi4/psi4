@@ -16,9 +16,9 @@
 #include "slaterdset.h"
 
 namespace psi {
-	
+
 #define PSIO_INIT if (!psio_state()) { \
-    psio_init(); psio_ipv1_config(); \
+    psio_init(); \
     need_to_init_psio = 1; \
   }
 
@@ -34,7 +34,7 @@ namespace psi {
     psio_done();
 
 
-/*! 
+/*!
 ** stringset_init(): Initialize a set of alpha/beta strings
 **
 ** \param sset       = pointer to StringSet (contains occs in Pitzer order)
@@ -59,17 +59,17 @@ void stringset_init(StringSet *sset, int size, int nelec, int nfzc,
   if (nfzc > 0) {
     sset->fzc_occ = (short int *) malloc(nfzc * sizeof(short int));
     for (i=0; i<nfzc; i++) {
-      sset->fzc_occ[i] = frozen_occ[i];  
+      sset->fzc_occ[i] = frozen_occ[i];
     }
   }
 }
 
 
-/*! 
+/*!
 ** stringset_delete(): Delete a StringSet
-** 
+**
 ** \param sset = pointer to StringSet to delete
-** 
+**
 ** Returns: none
 **
 ** \ingroup QT
@@ -84,8 +84,8 @@ void stringset_delete(StringSet *sset)
   sset->strings = NULL;
 }
 
-/*! 
-** stringset_add(): Add a string (in Pitzer order, given by Occ) to 
+/*!
+** stringset_add(): Add a string (in Pitzer order, given by Occ) to
 ** the StringSet, writing to position index.
 **
 ** \param sset  = StringSet to add to
@@ -110,7 +110,7 @@ void stringset_add(StringSet *sset, int index, unsigned char *Occ)
     s->occ[i] = Occ[i];
 }
 
-/*! 
+/*!
 ** stringset_reindex(): Remap orbital occupations from one ordering to
 ** another.
 **
@@ -175,7 +175,7 @@ PSIO_OPEN(unit,PSIO_OPEN_OLD)
   psio_write_entry( unit, nelec_key, (char *)&sset->nelec, sizeof(int));
   psio_write_entry( unit, nfzc_key, (char *)&sset->nfzc, sizeof(int));
   if (sset->nfzc) {
-    psio_write_entry( unit, fzc_occ_key, (char *)sset->fzc_occ, 
+    psio_write_entry( unit, fzc_occ_key, (char *)sset->fzc_occ,
       sset->nfzc*sizeof(short int));
   }
 
@@ -183,9 +183,9 @@ PSIO_OPEN(unit,PSIO_OPEN_OLD)
   size = sset->size;
   nact = sset->nelec - sset->nfzc;
   for(i=0; i<size; i++) {
-    psio_write( unit, strings_key, (char *) &(sset->strings[i].index), 
+    psio_write( unit, strings_key, (char *) &(sset->strings[i].index),
       sizeof(int), ptr, &ptr);
-    psio_write( unit, strings_key, (char *) sset->strings[i].occ, 
+    psio_write( unit, strings_key, (char *) sset->strings[i].occ,
       nact*sizeof(short int), ptr, &ptr);
   }
 
@@ -241,7 +241,7 @@ PSIO_OPEN(unit,PSIO_OPEN_OLD)
   psio_read_entry( unit, nfzc_key, (char *)&nfzc, sizeof(int));
   if (nfzc > 0) {
     fzc_occ = (short int *) malloc(nfzc*sizeof(short int));
-    psio_read_entry( unit, fzc_occ_key, (char *)fzc_occ, 
+    psio_read_entry( unit, fzc_occ_key, (char *)fzc_occ,
       nfzc*sizeof(short int));
   }
   else fzc_occ = NULL;
@@ -251,10 +251,10 @@ PSIO_OPEN(unit,PSIO_OPEN_OLD)
   nact = nelec - nfzc;
   ptr = PSIO_ZERO;
   for(i=0; i<size; i++) {
-    psio_read( unit, strings_key, (char *) &(sset->strings[i].index), 
+    psio_read( unit, strings_key, (char *) &(sset->strings[i].index),
       sizeof(int), ptr, &ptr);
     sset->strings[i].occ = (short int*) malloc(nact*sizeof(short int));
-    psio_read( unit, strings_key, (char *) sset->strings[i].occ, 
+    psio_read( unit, strings_key, (char *) sset->strings[i].occ,
       nact*sizeof(short int), ptr, &ptr);
   }
 
@@ -271,18 +271,18 @@ PSIO_DONE
 }
 
 
-/*! 
+/*!
 ** slaterdetset_init(): Initialize a Slater Determinant Set
 **
 ** \param sdset        = pointer to SlaterDetSet being initialized
 ** \param size         = number of SlaterDets to be held
 ** \param alphastrings = pointer to StringSet of alpha strings
 ** \param betastrings  = pointer to StringSet of beta strings
-** 
+**
 ** Returns: none
 ** \ingroup QT
 */
-void slaterdetset_init(SlaterDetSet *sdset, int size, StringSet *alphastrings, 
+void slaterdetset_init(SlaterDetSet *sdset, int size, StringSet *alphastrings,
   StringSet *betastrings)
 {
   sdset->size = size;
@@ -292,7 +292,7 @@ void slaterdetset_init(SlaterDetSet *sdset, int size, StringSet *alphastrings,
   sdset->betastrings = betastrings;
 }
 
-/*! 
+/*!
 ** slaterdetset_delete(): Delete a Slater Determinant Set.
 **
 ** Does not free the members alphastrings and betastrings.  See also:
@@ -314,7 +314,7 @@ void slaterdetset_delete(SlaterDetSet *sdset)
   sdset->betastrings = NULL;
 }
 
-/*! 
+/*!
 ** slaterdetset_delete_full(): De-allocate a Slater Determinant Set.
 **
 ** Frees memory including alpha and beta strings.  See
@@ -343,7 +343,7 @@ void slaterdetset_delete_full(SlaterDetSet *sdset)
   }
 }
 
-/*! 
+/*!
 ** slaterdetset_add(): Add info for a particular Slater determinant to
 ** a SlaterDetSet.
 **
@@ -355,7 +355,7 @@ void slaterdetset_delete_full(SlaterDetSet *sdset)
 ** Returns: none
 ** \ingroup QT
 */
-void slaterdetset_add(SlaterDetSet *sdset, int index, int alphastring, 
+void slaterdetset_add(SlaterDetSet *sdset, int index, int alphastring,
   int betastring)
 {
   SlaterDet *det;
@@ -377,7 +377,7 @@ void slaterdetset_add(SlaterDetSet *sdset, int index, int alphastring,
 **
 ** \param unit      = file number to write to
 ** \param prefix    = prefix string to come before libpsio entry keys
-** \param sdset     = pointer to SlaterDetSet to write  
+** \param sdset     = pointer to SlaterDetSet to write
 **
 ** Returns: none
 ** \ingroup QT
@@ -394,27 +394,27 @@ void slaterdetset_write(ULI unit, char *prefix, SlaterDetSet *sdset)
 PSIO_INIT
 PSIO_OPEN(unit,PSIO_OPEN_OLD)
 
-  alphaprefix = (char *) malloc( strlen(prefix) + 
+  alphaprefix = (char *) malloc( strlen(prefix) +
     strlen(SDSET_KEY_ALPHASTRINGS) + 2);
   sprintf(alphaprefix,"%s:%s",prefix,SDSET_KEY_ALPHASTRINGS);
-  betaprefix = (char *) malloc( strlen(prefix) + 
+  betaprefix = (char *) malloc( strlen(prefix) +
     strlen(SDSET_KEY_BETASTRINGS) + 2);
   sprintf(betaprefix,"%s:%s",prefix,SDSET_KEY_BETASTRINGS);
 
   stringset_write( unit, alphaprefix, sdset->alphastrings);
   stringset_write( unit, betaprefix, sdset->betastrings);
-  
+
   free(alphaprefix);
   free(betaprefix);
 
   size_key = (char *) malloc( strlen(prefix) + strlen(SDSET_KEY_SIZE) + 3);
   sprintf(size_key,":%s:%s",prefix,SDSET_KEY_SIZE);
-  set_key = (char *) malloc( strlen(prefix) + strlen(SDSET_KEY_DETERMINANTS) 
+  set_key = (char *) malloc( strlen(prefix) + strlen(SDSET_KEY_DETERMINANTS)
     + 3);
   sprintf(set_key,":%s:%s",prefix,SDSET_KEY_DETERMINANTS);
 
   psio_write_entry( unit, size_key, (char *)&sdset->size, sizeof(int));
-  psio_write_entry( unit, set_key, (char *)sdset->dets, 
+  psio_write_entry( unit, set_key, (char *)sdset->dets,
     sdset->size*sizeof(SlaterDet));
 
 PSIO_CLOSE(unit)
@@ -448,28 +448,28 @@ void slaterdetset_read(ULI unit, char *prefix, SlaterDetSet **slaterdetset)
 PSIO_INIT
 PSIO_OPEN(unit,PSIO_OPEN_OLD)
 
-  alphaprefix = (char *) malloc( strlen(prefix) + 
+  alphaprefix = (char *) malloc( strlen(prefix) +
     strlen(SDSET_KEY_ALPHASTRINGS) + 2);
   sprintf(alphaprefix,"%s:%s",prefix,SDSET_KEY_ALPHASTRINGS);
-  betaprefix = (char *) malloc( strlen(prefix) + 
+  betaprefix = (char *) malloc( strlen(prefix) +
     strlen(SDSET_KEY_BETASTRINGS) + 2);
   sprintf(betaprefix,"%s:%s",prefix,SDSET_KEY_BETASTRINGS);
 
   stringset_read( unit, alphaprefix, &alphastrings);
   stringset_read( unit, betaprefix, &betastrings);
-  
+
   free(alphaprefix);
   free(betaprefix);
 
   size_key = (char *) malloc( strlen(prefix) + strlen(SDSET_KEY_SIZE) + 3);
   sprintf(size_key,":%s:%s",prefix,SDSET_KEY_SIZE);
-  set_key = (char *) malloc( strlen(prefix) + strlen(SDSET_KEY_DETERMINANTS) 
+  set_key = (char *) malloc( strlen(prefix) + strlen(SDSET_KEY_DETERMINANTS)
     + 3);
   sprintf(set_key,":%s:%s",prefix,SDSET_KEY_DETERMINANTS);
 
   psio_read_entry( unit, size_key, (char *)&size, sizeof(int));
   slaterdetset_init(sdset,size,alphastrings,betastrings);
-  psio_read_entry( unit, set_key, (char *)sdset->dets, 
+  psio_read_entry( unit, set_key, (char *)sdset->dets,
     sdset->size*sizeof(SlaterDet));
 
 PSIO_CLOSE(unit)
@@ -482,10 +482,10 @@ PSIO_DONE
 }
 
 
-/*! 
+/*!
 ** slaterdetvector_init(): Initialize a vector of coefficients
-**   corresponding to a Slater Determinant set 
-** 
+**   corresponding to a Slater Determinant set
+**
 ** \param sdvector = pointer to SlaterDetVector to initialize (coeffs
 **   member will be allocated)
 ** \param sdset    = pointer to SlaterDetSet the vector is associated with
@@ -500,7 +500,7 @@ void slaterdetvector_init(SlaterDetVector *sdvector, SlaterDetSet *sdset)
   sdvector->coeffs = init_array(sdvector->size);
 }
 
-/*! 
+/*!
 ** slaterdetvector_delete(): De-allocate a SlaterDetVector
 **
 ** \param sdvector = pointer to SlaterDetVector to de-allocate
@@ -522,11 +522,11 @@ void slaterdetvector_delete(SlaterDetVector *sdvector)
 }
 
 
-/*! 
+/*!
 ** slaterdetvector_delete_full(): De-allocate a SlaterDetVector and its
-**   associated SlaterDetSet.  
+**   associated SlaterDetSet.
 **
-** To keep the SlaterDetSet itself, use similar function 
+** To keep the SlaterDetSet itself, use similar function
 ** slaterdetvector_delete().
 **
 ** \param sdvector = pointer to SlaterDetVector to delete
@@ -548,13 +548,13 @@ void slaterdetvector_delete_full(SlaterDetVector *sdvector)
 }
 
 
-/*! 
+/*!
 ** slaterdetvector_add(): Add a coefficient to a SlaterDetVector
 **
 ** \param sdvector = Pointer to SlaterDetVector to add to
 ** \param index    = location in vector for writing the coefficient
-** \param coeff    = the coefficient to write to location index 
-** 
+** \param coeff    = the coefficient to write to location index
+**
 ** Returns: none
 ** \ingroup QT
 */
@@ -566,7 +566,7 @@ void slaterdetvector_add(SlaterDetVector *sdvector, int index, double coeff)
 }
 
 
-/*! 
+/*!
 ** slaterdetvector_set(): Set a SlaterDetVector's vector to a set of
 **   coefficients supplied by array coeffs
 **
@@ -600,7 +600,7 @@ void slaterdetvector_set(SlaterDetVector *sdvector, double *coeffs)
 ** \param unit      = file number of the UNINITIALIZED PSIO file
 ** \param prefix    = prefix string to come before libpsio entry keys
 ** \param vector    = SlaterDetVector to write to disk
-** 
+**
 ** Returns: none
 ** \ingroup QT
 */
@@ -622,11 +622,11 @@ PSIO_DONE
 
 
 /*!
-** slaterdetset_write_vect(): Write to disk the coefficients for a single 
+** slaterdetset_write_vect(): Write to disk the coefficients for a single
 ** vector associated with a set of Slater determinants.
 **
 ** This function already assumes we've already called slaterdetset_write()
-** to write out the string and determinant information.  This is only 
+** to write out the string and determinant information.  This is only
 ** going to write out the coefficients.  This has been split out because
 ** we might want to write several roots for a given determinant setup.
 ** This does not actually dpend on the presence of a SlaterDetVector object
@@ -644,7 +644,7 @@ PSIO_DONE
 ** CDS 8/03
 ** \ingroup QT
 */
-void slaterdetset_write_vect(ULI unit, char *prefix, 
+void slaterdetset_write_vect(ULI unit, char *prefix,
   double *coeffs, int size, int vectnum)
 {
   int need_to_init_psio = 0;
@@ -703,7 +703,7 @@ PSIO_OPEN(unit,PSIO_OPEN_OLD)
 
 PSIO_CLOSE(unit)
 PSIO_DONE
-  
+
   *sdvector = vector;
 }
 
@@ -713,7 +713,7 @@ PSIO_DONE
 ** associated with a SlaterDetSet.
 **
 ** This function already assumes we've already called slaterdetset_read()
-** to read in the string and determinant information.  This is only 
+** to read in the string and determinant information.  This is only
 ** going to read in the coefficients.  This has been split out because
 ** we might want to read several roots for a given determinant setup.
 ** This does not actually depend on the presence of a SlaterDetVector
@@ -730,7 +730,7 @@ PSIO_DONE
 ** CDS 8/03
 ** \ingroup QT
 */
-void slaterdetset_read_vect(ULI unit, char *prefix, double *coeffs, 
+void slaterdetset_read_vect(ULI unit, char *prefix, double *coeffs,
   int size, int vectnum)
 {
   int need_to_init_psio = 0;
@@ -747,7 +747,7 @@ PSIO_OPEN(unit,PSIO_OPEN_OLD)
 
 PSIO_CLOSE(unit)
 PSIO_DONE
-  
+
   free(vector_key);
 
 }

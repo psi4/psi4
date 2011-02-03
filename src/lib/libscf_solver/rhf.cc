@@ -527,18 +527,18 @@ bool RHF::load_or_compute_initial_C()
         psio_->read_entry(PSIF_SCF_DB_MOS,"DB NALPHAPI",(char *) (nalphapi_),8*sizeof(int));
         psio_->read_entry(PSIF_SCF_DB_MOS,"DB NBETAPI",(char *) (nbetapi_),8*sizeof(int));
 
-        shared_ptr<Matrix> Ctemp(new Matrix("DUAL BASIS MOS", nirreps_, nsopi_, doccpi_));    
-        Ctemp->load(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks); 
+        shared_ptr<Matrix> Ctemp(new Matrix("DUAL BASIS MOS", nirreps_, nsopi_, doccpi_));
+        Ctemp->load(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
 
         C_->zero();
-        for (int h = 0; h < nirreps_; h++) 
+        for (int h = 0; h < nirreps_; h++)
             for (int m = 0; m<nsopi_[h]; m++)
                 for (int i = 0; i<doccpi_[h]; i++)
                     C_->set(h,m,i,Ctemp->get(h,m,i));
 
         //C_->print(outfile);
 
-        // Build D from C 
+        // Build D from C
         form_D();
 
         //D_->print(outfile);
@@ -593,7 +593,7 @@ bool RHF::load_or_compute_initial_C()
 void RHF::save_dual_basis_projection()
 {
     if (print_)
-        fprintf(outfile,"\n  Computing dual basis set projection from %s to %s.\n  Results will be stored in File 100.\n", \ 
+        fprintf(outfile,"\n  Computing dual basis set projection from %s to %s.\n  Results will be stored in File 100.\n", \
             options_.get_str("BASIS").c_str(),options_.get_str("DUAL_BASIS_SCF").c_str());
 
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
@@ -606,7 +606,7 @@ void RHF::save_dual_basis_projection()
         C_2->print(outfile);
 
     psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_NEW);
-    C_2->save(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);     
+    C_2->save(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
     psio_->write_entry(PSIF_SCF_DB_MOS,"DB SCF Energy",(char *) &(E_),sizeof(double));
     psio_->write_entry(PSIF_SCF_DB_MOS,"DB NIRREPS",(char *) &(nirreps_),sizeof(int));
     psio_->write_entry(PSIF_SCF_DB_MOS,"DB DOCCPI",(char *) (doccpi_),8*sizeof(int));
@@ -1490,38 +1490,11 @@ void RHF::form_G_from_direct_integrals()
     G_->zero();
     SOERI compute_G(D_, G_);
 
-    // Begin new iterator code...works for all centers being equal
-    int usi_arr[3], usj_arr[3], usk_arr[3], usl_arr[3];
+    SOShellCombinationsIterator shellIter(sobasisset_, sobasisset_, sobasisset_, sobasisset_);
 
-    int nsoshell = sobasisset_->nshell();
-
-    for (int usii=0; usii<nsoshell; ++usii) {
-        for (int usjj=0; usjj<=usii; ++usjj) {
-            for (int uskk=0; uskk<=usjj; ++uskk) {
-                for (int usll=0; usll<=uskk; ++usll) {
-                    int num_unique_pk = determine_unique_shell_quartets(usii, usjj, uskk, usll,
-                                                                        usi_arr, usj_arr, usk_arr, usl_arr);
-
-                    // For each num_unique_pk we need to call TwoBodySOInt::compute
-                    for (int upk=0; upk<num_unique_pk; ++upk) {
-//                        fprintf(outfile, "computing shell (%d %d %d %d)\n", usi_arr[upk],
-//                                                 usj_arr[upk],
-//                                                 usk_arr[upk],
-//                                                 usl_arr[upk]);
-                        eri_->compute_shell(usi_arr[upk],
-                                                 usj_arr[upk],
-                                                 usk_arr[upk],
-                                                 usl_arr[upk],
-                                                 compute_G);
-                    }
-
-                    // If we are making a PK-matrix the end of this loop marks
-                    // the end of a PK block.
-                }
-            }
-        }
+    for (shellIter.first(); shellIter.is_done() == false; shellIter.next()) {
+        eri_->compute_shell(shellIter, compute_G);
     }
-
 //    fprintf(outfile, " computed %d integrals\n", compute_G.counter);
 
     timer_off("form_G_from_direct_integrals");

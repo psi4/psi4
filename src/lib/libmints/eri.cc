@@ -39,9 +39,9 @@ void ErfERIFundamentalFunctor::operator()(Libint_t &libint, Fjt* fjt, int nprim,
     for (int i = 0; i <= max_am; i++) {
         libint.PrimQuartet[nprim].F[i] = coef1 * alpha_ * F[i];
     }
-    factor1 = 2.0*rho; 
+    factor1 = 2.0*rho;
     prod1 = sqrt(factor1);
-    factor2 = 2.0*rho_w; 
+    factor2 = 2.0*rho_w;
     prod2 = sqrt(factor2);
     F = fjt->values(max_am, T_w);
     for (int i = 0; i <= max_am; i++) {
@@ -551,7 +551,7 @@ size_t ERI::memory_to_store_shell_pairs(const shared_ptr<BasisSet> &bs1, const s
     return mem;
 }
 
-void ERI::compute_shell(const ShellCombinationsIterator& shellIter)
+void ERI::compute_shell(const AOShellCombinationsIterator& shellIter)
 {
     compute_shell(shellIter.p(), shellIter.q(), shellIter.r(), shellIter.s());
 }
@@ -822,7 +822,7 @@ void ERI::compute_quartet(int sh1, int sh2, int sh3, int sh4, FundamentalFunctor
                         //for (int i=0; i<=am; ++i) {
                         //    libint_.PrimQuartet[nprim].F[i] = F[i] * coef1;
                         //}
-        
+
                         // Functor call
                         (*functor)(libint_, fjt_, nprim, coef1, am, PQ2, rho);
 
