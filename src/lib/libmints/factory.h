@@ -82,6 +82,12 @@ public:
         return new Matrix(nirreps_, rowspi_, colspi_);
     }
 
+    /// Returns a new Matrix object with default dimensions
+    boost::shared_ptr<Matrix> create_shared_matrix()
+    {
+        return boost::shared_ptr<Matrix>(new Matrix(nirreps_, rowspi_, colspi_));
+    }
+
     void create_matrix(Matrix& mat)
     {
         mat.init(nirreps_, rowspi_, colspi_);
@@ -91,6 +97,11 @@ public:
     Matrix * create_matrix(std::string name)
     {
         return new Matrix(name, nirreps_, rowspi_, colspi_);
+    }
+
+    boost::shared_ptr<Matrix> create_shared_matrix(std::string name)
+    {
+        return boost::shared_ptr<Matrix>(new Matrix(name, nirreps_, rowspi_, colspi_));
     }
 
     void create_matrix(Matrix& mat, std::string name)
