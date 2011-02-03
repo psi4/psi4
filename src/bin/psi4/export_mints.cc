@@ -14,7 +14,9 @@ void export_mints()
         def("print_out", &Matrix::print_out).
         def("rows", &Matrix::rowdim).
         def("cols", &Matrix::coldim).
-        def("nirreps", &Matrix::nirreps);
+        def("nirreps", &Matrix::nirreps).
+        def("__getitem__", &Matrix::pyget).
+        def("__setitem__", &Matrix::pyset);
 
     class_<Vector, shared_ptr<Vector> >( "Vector").
         def(init<int>()).
@@ -36,6 +38,9 @@ void export_mints()
         def("ao_overlap", &MintsHelper::ao_overlap).
         def("ao_kinetic", &MintsHelper::ao_kinetic).
         def("ao_potential", &MintsHelper::ao_potential).
+        def("so_overlap", &MintsHelper::so_overlap).
+        def("so_kinetic", &MintsHelper::so_kinetic).
+        def("so_potential", &MintsHelper::so_potential).
         def("ao_eri", &MintsHelper::ao_eri).
         def("ao_erf_eri", &MintsHelper::ao_erf_eri);
 

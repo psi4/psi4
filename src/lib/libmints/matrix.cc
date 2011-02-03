@@ -14,14 +14,16 @@
 #include <libqt/qt.h>
 #include <libparallel/parallel.h>
 #include <libmints/integral.h>
+#include <libdpd/dpd.h>
 #include "factory.h"
 #include "wavefunction.h"
 #include "dimension.h"
 
-#include <libdpd/dpd.h>
-
 #include <cmath>
 #include <sstream>
+
+#include <boost/python.hpp>
+#include <boost/python/tuple.hpp>
 
  using namespace psi;
 
@@ -143,7 +145,7 @@ Matrix::Matrix(std::string name, int rows, int cols) : name_(name)
     colspi_[0] = cols;
     alloc();
 }
-Matrix::Matrix(int rows, int cols) 
+Matrix::Matrix(int rows, int cols)
 {
     matrix_ = NULL;
     nirreps_ = 1;
@@ -1317,6 +1319,21 @@ bool Matrix::equal(const Matrix* rhs)
     }
 
     return true;
+}
+
+double Matrix::pyget(const boost::python::tuple &key)
+{
+    return get(boost::python::extract<int>(key[0]),
+               boost::python::extract<int>(key[1]),
+               boost::python::extract<int>(key[2]));
+}
+
+void Matrix::pyset(const boost::python::tuple &key, double value)
+{
+    return set(boost::python::extract<int>(key[0]),
+               boost::python::extract<int>(key[1]),
+               boost::python::extract<int>(key[2]),
+               value);
 }
 
 //

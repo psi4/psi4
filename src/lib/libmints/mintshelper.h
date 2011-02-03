@@ -8,14 +8,14 @@ namespace psi {
 class Options;
 /**
 * IWLWriter functor for use with SO TEIs
-**/ 
+**/
 class IWLWriter {
     IWL& writeto_;
     size_t count_;
 
     public:
 
-    
+
     IWLWriter(IWL& writeto) : writeto_(writeto), count_(0)
       { }
 
@@ -27,6 +27,7 @@ class IWLWriter {
 
     size_t count() const { return count_; }
 };
+
 /**
 * The MintsHelper object, places molecular integrals
 * (and later derivative integrals) on disk
@@ -68,6 +69,12 @@ class MintsHelper {
         /// AO ERI Omega Integrals (Full matrix, not recommended for large systems)
         shared_ptr<Matrix> ao_erf_eri(double omega, double alpha, double beta);
 
+        /// AO Overlap Integrals
+        shared_ptr<Matrix> so_overlap();
+        /// AO Kinetic Integrals
+        shared_ptr<Matrix> so_kinetic();
+        /// AO Potential Integrals
+        shared_ptr<Matrix> so_potential();
 };
 
 }

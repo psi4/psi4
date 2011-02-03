@@ -10,7 +10,11 @@
 
 namespace boost {
 template<class T> class shared_ptr;
-}
+// Forward declarations for boost.python used in the extract_subsets
+
+namespace python{
+       class tuple;
+}}
 
 namespace psi {
 
@@ -282,19 +286,29 @@ public:
      * @returns value at position (h, m, n)
      */
     double get(int h, int m, int n) const { return matrix_[h][m][n]; }
+
+    /**
+     * Python wrapper for get
+     */
+    double pyget(const boost::python::tuple& key);
+    /**
+     * Python wrapper for set
+     */
+    void pyset(const boost::python::tuple& key, double value);
+
     /**
      * Returns the double** pointer to the h-th irrep block matrix
-     * NOTE: This method is provided for convenience in advanced 
+     * NOTE: This method is provided for convenience in advanced
      * BLAS/LAPACK calls, and should be used with caution. In particular,
      * operations performed with these pointers should be scoped to avoid
-     * erroneous alteration of the objects primitive data. Moreover, 
+     * erroneous alteration of the objects primitive data. Moreover,
      * the memory location/size of the double** obtained with this method
-     * should NEVER be resized, moved, or freed. 
+     * should NEVER be resized, moved, or freed.
      *
      * @param h Subblock
      * @returns pointer to h-th subblock in block-matrix form
      */
-    double** get_pointer(int h = 0) { return matrix_[h]; }     
+    double** get_pointer(int h = 0) { return matrix_[h]; }
 
     /**
      * Returns a copy of the current matrix.
@@ -326,7 +340,7 @@ public:
     };
 
     /// Python compatible printer
-    void print_out() { print(outfile); } 
+    void print_out() { print(outfile); }
 
     /**
      * Print the matrix using print_mat
@@ -590,7 +604,7 @@ public:
     double* ptr() { return &matrix_[0][0]; }
 
     /// Python compatible printer
-    void print_out() { print(outfile); } 
+    void print_out() { print(outfile); }
 
     /// Prints the matrix with print_mat
     void print(FILE *out = outfile);
