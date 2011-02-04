@@ -36,7 +36,7 @@ activate(C4NH4)
 mints()
 energy('ccsd(t)')
 
-compare_values(refnuc,   bh.nuclear_repulsion_energy(),  9, "Nuclear repulsion energy")
+compare_values(refnuc,   C4NH4.nuclear_repulsion_energy(),  9, "Nuclear repulsion energy")
 compare_values(refscf,   get_variable("SCF energy"),     9, "SCF energy")
 compare_values(refccsd,  get_variable("CCSD energy"),    9, "CCSD contribution")
 compare_values(ref_t,    get_variable("(T) energy"),     9, "(T) contribution")
