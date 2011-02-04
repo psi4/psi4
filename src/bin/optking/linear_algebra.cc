@@ -102,6 +102,8 @@ double ** symm_matrix_inv(double **A, int dim, bool redundant) {
   double * evals = init_array(dim);
   double ** A_evects = matrix_return_copy(A, dim, dim);
 
+  if (dim <= 0) return ( (double **) NULL);
+
   if (! opt_symm_matrix_eig(A_evects, dim, evals) )
      throw("symm_matrix_inv : opt_symm_matrix_eig could not diagonalize.\n");
   //for (i=0; i<dim; ++i) fprintf(outfile, "evals[%d] = %15.10lf\n", i, evals[i]);

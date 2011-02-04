@@ -124,6 +124,8 @@ INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
     if (B->Z[b] == 7 || B->Z[b] == 8 || B->Z[b] == 9 || B->Z[b] == 17)
       is_XB[b] = true;
 
+  if (!use_principal_axes) { // there are no weights in this case
+
   // Look for A[X]-A[H] ... B[Y]
   for (int h=0; h<A->natom; ++h) {
     if (weightA[0][h] != 0.0 && A->Z[h] == 1.0) { // H atom is (part of) A[0]
@@ -159,12 +161,15 @@ INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
       }
     }
   }
+
+  } // end !principal axes
+
   if (Opt_params.interfragment_distance_inverse) {
     one_stre->make_inverse_stre(); 
-printf("Using interfragment 1/R distance coordinate\n");
+//printf("Using interfragment 1/R distance coordinate\n");
   }
   if (one_stre->is_hbond())
-printf("Detected H-bonding interfragment coordinate\n");
+//printf("Detected H-bonding interfragment coordinate\n");
 
   if (one_stre  != NULL) inter_frag->intcos.push_back(one_stre);
   if (one_bend  != NULL) inter_frag->intcos.push_back(one_bend);
@@ -180,17 +185,31 @@ void INTERFRAG::update_reference_points(GeomType new_geom_A, GeomType new_geom_B
     for (int xyz=0; xyz<3; ++xyz)
       inter_frag->geom[i][xyz] = 0.0;
 
-  for (int xyz=0; xyz<3; ++xyz) {
-    for (int a=0; a<A->g_natom(); ++a) {
-      inter_frag->geom[0][xyz] += weightA[2][a] * new_geom_A[a][xyz];
-      inter_frag->geom[1][xyz] += weightA[1][a] * new_geom_A[a][xyz];
-      inter_frag->geom[2][xyz] += weightA[0][a] * new_geom_A[a][xyz];
+  if (!use_principal_axes) { // use fixed weights
+    for (int xyz=0; xyz<3; ++xyz) {
+      for (int a=0; a<A->g_natom(); ++a) {
+        inter_frag->geom[0][xyz] += weightA[2][a] * new_geom_A[a][xyz];
+        inter_frag->geom[1][xyz] += weightA[1][a] * new_geom_A[a][xyz];
+        inter_frag->geom[2][xyz] += weightA[0][a] * new_geom_A[a][xyz];
+      }
+      for (int b=0; b<B->g_natom(); ++b) {
+        inter_frag->geom[3][xyz] += weightB[0][b] * new_geom_B[b][xyz];
+        inter_frag->geom[4][xyz] += weightB[1][b] * new_geom_B[b][xyz];
+        inter_frag->geom[5][xyz] += weightB[2][b] * new_geom_B[b][xyz];
+      }
     }
-    for (int b=0; b<B->g_natom(); ++b) {
-      inter_frag->geom[3][xyz] += weightB[0][b] * new_geom_B[b][xyz];
-      inter_frag->geom[4][xyz] += weightB[1][b] * new_geom_B[b][xyz];
-      inter_frag->geom[5][xyz] += weightB[2][b] * new_geom_B[b][xyz];
-    }
+  }
+  else {
+
+    double *com_A = A->com();
+    double **I_A = A->inertia_tensor();
+
+
+    double *com_B = B->com();
+    double **I_B = B->inertia_tensor();
+
+    
+
   }
 }
 
@@ -536,6 +555,7 @@ void INTERFRAG::print_intcos(FILE *fp, int off_A, int off_B) const {
       fprintf(fp,"\n");
     }
   }
+  fflush(fp);
   inter_frag->print_intcos(fp);
 }
 
@@ -552,6 +572,7 @@ void INTERFRAG::print_intco_dat(FILE *fp, int off_A, int off_B) const {
       if (weightB[i][j] != 0.0) fprintf(fp," %d", j+1+off_B);
     fprintf(fp,"\n");
   }
+  fflush(fp);
 }
 
 

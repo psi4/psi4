@@ -1,0 +1,11 @@
+#!/bin/csh
+
+# copy all files from QChem to the psi4 directory and then execute this file
+# still under construction
+
+rm Make.opt2man
+rm opt2man.main  
+
+foreach FILE (`ls *.C | awk -F"."  '{print $1}'`)
+ mv $FILE.C $FILE.cc
+end

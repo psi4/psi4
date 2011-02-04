@@ -5,6 +5,8 @@
 
 #include "opt_data.h"
 
+#include <cmath>
+
 #define EXTERN
 #include "globals.h"
 
@@ -70,7 +72,7 @@ bool OPT_DATA::conv_check(void) const {
   if (g_iteration() > 1) DE = g_energy() - g_last_energy();
   else DE = g_energy();
 
-  fprintf(outfile, "\n\tConvergence Check Cycle %4d:\n", iteration);
+  fprintf(outfile, "\n\tConvergence Check Cycle %4d: (using internal coordinates in au)\n", iteration);
   fprintf(outfile, "\t                    Actual        Tolerance     Converged?\n");
   fprintf(outfile, "\t----------------------------------------------------------\n");
 
@@ -87,7 +89,6 @@ bool OPT_DATA::conv_check(void) const {
        ((max_disp < Opt_params.conv_max_disp) ? "yes" : "no"));
 
   fprintf(outfile, "\t----------------------------------------------------------\n");
-
   printf("\tMAX Force %10.1e : Energy Change %10.1e : MAX Displacment %10.1e\n", max_force, DE, max_disp);
 
   if ((max_force < Opt_params.conv_max_force) &&
@@ -147,7 +148,7 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
     return;
   }
 
-  int istep, step_start;
+  int i_step, step_start, i, j;
   int step_this = steps.size()-1;
 
   /*** Read/compute current internals and forces ***/
@@ -157,6 +158,7 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
 
   mol.set_geom_array(x);
   q = mol.intco_values();
+
   mol.fix_tors_near_180(); // fix configuration for torsions
 
   if (Opt_params.H_update_use_last == 0) { // use all available old gradients
@@ -168,7 +170,6 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
   }
   fprintf(outfile," with previous %d gradient(s).\n", step_this-step_start);
 
-  int i, j, i_step;
   double *f_old, *x_old, *q_old, *dq, *dg;
   double gq, qq, qz, zz, phi;
 
@@ -448,6 +449,7 @@ void OPT_DATA::write(void) {
     steps[i]->write(i+1, Nintco, Ncart);
   opt_io_close(1);
 
+  fflush(outfile);
   return;
 }
 

@@ -7,7 +7,6 @@
 #include "globals.h"
 #include "molecule.h"
 #include "print.h"
-
 #include "io.h"
 
 // Define the return types for optking.
@@ -16,33 +15,47 @@
   #define OptReturnEndloop (psi::Endloop)
   #define OptReturnSuccess (psi::Success)
   #define OptReturnFailure (psi::Failure)
-#elif QCHEM4
+#elif defined(OPTKING_PACKAGE_QCHEM)
   typedef int OptReturnType;
+  #define OptReturnFailure 2
   #define OptReturnEndloop 1
   #define OptReturnSuccess 0
+#endif
+
+#if defined(OPTKING_PACKAGE_QCHEM)
+//#include <stdlib.h>
+#include "qchem.h"
+
+namespace opt {
+  OptReturnType optking(void); // declare optking
+}
+OptReturnType opt2man_main(void) { opt::optking(); } // QCHEM wrapper/alias
+
 #endif
 
 namespace opt {
   void open_output_dat(void); // open/link outfile to text output
   void close_output_dat(void);// close above
-  void print_title(FILE *fp); // print header
-  void print_end(FILE *fp);   // print footer
+  void print_title(void); // print header
+  void print_end(void);   // print footer
   void set_params(void);      // set optimization parameters
   void init_ioff(void);
 
 #if defined(OPTKING_PACKAGE_PSI)
 OptReturnType optking(psi::Options & options) {
-#elif defined(QCHEM4)
+#elif defined(OPTKING_PACKAGE_QCHEM)
 OptReturnType optking(void) {
 #endif
 
+  using namespace std;
+  using namespace opt;
+
   open_output_dat();   // assign output.dat file pointer
 
-  using namespace std;
   MOLECULE *mol1;
   bool newly_generated_coordinates; // Are internal coordinates produced or read-in?
 
-  print_title(outfile); // print header
+  print_title(); // print header
 
   try {
 
@@ -53,7 +66,7 @@ OptReturnType optking(void) {
 
   if (if_intco.is_open()) { // old internal coordinates are present
 
-    fprintf(outfile,"\n\tPrevous internal coordinate definitions found.\n");
+    fprintf(outfile,"\n\tPrevous internal coordinate definitions found.\n"); fflush(outfile);
     newly_generated_coordinates = false;
 
     mol1 = new MOLECULE(0);    // make an empty molecule
@@ -71,7 +84,7 @@ OptReturnType optking(void) {
   }
   else { // automatically generate coordinates
 
-    fprintf(outfile,"\n\tInternal coordinates to be generated automatically.\n");
+    fprintf(outfile,"\n\tInternal coordinates to be generated automatically.\n"); fflush(outfile);
     newly_generated_coordinates = true;
 
     // read number of atoms ; make one fragment of that size ;
@@ -109,13 +122,26 @@ OptReturnType optking(void) {
 
   }
 
+#if defined(OPTKING_PACKAGE_QCHEM)
+  if (Opt_params.efp_fragments_only)
+    mol1 = new MOLECULE(0);       // construct an empty molecule
+  if (Opt_params.efp_fragments)
+    mol1->add_efp_fragments();    // add EFP fragments
+#endif
+
   // print geometry and gradient
   mol1->print_geom_grad(outfile);
   //mol1->print_connectivity(outfile); fflush(outfile);
 
+  // read binary file for previous steps ; history needed to compute EFP values
+  p_Opt_data = new OPT_DATA(mol1->g_nintco(), 3*mol1->g_natom());
+
+#if defined(OPTKING_PACKAGE_QCHEM)
+  mol1->update_efp_values(); // EFP values calculated from old opt_data
+#endif
+
   // print internal coordinate definitions and values
   mol1->print_intcos(outfile);
-  fflush(outfile);
 
   if (Opt_params.test_B)
     mol1->test_B();
@@ -123,25 +149,28 @@ OptReturnType optking(void) {
   if (Opt_params.test_derivative_B)
     mol1->test_derivative_B();
 
-  // read binary file for previous steps
-  p_Opt_data = new OPT_DATA(mol1->g_nintco(), 3*mol1->g_natom());
-
   // save geometry and energy
   double * x = mol1->g_geom_array();
   p_Opt_data->save_geom_energy(x, mol1->g_energy());
-  free_array(x);
+  if (x!=NULL) free_array(x);
 
+  // print out report on progress
   p_Opt_data->previous_step_report();
-
-  //double **H_int = mol1->cartesian_H_to_internals();
-  //free_matrix(H_int);
 
   // compute forces in internal coordinates from cartesian gradient
   mol1->forces(); // puts forces in p_Opt_data->step[last one]
 
-  if (p_Opt_data->g_iteration() == 1)
-    mol1->H_guess(); // puts Hessian guess in p_Opt_data->step[last one]
-  else {
+  if (p_Opt_data->g_iteration() == 1) { // 1st iteration -> put initial Hessian in p_Opt_data
+    bool worked = true;
+    if (Opt_params.read_cartesian_H)
+      worked = mol1->cartesian_H_to_internals(); // read and transform cartesian Hessian
+
+    if (!worked) fprintf(outfile,"\tUnable to read and transform Hessian.\n");
+
+    if ( (!Opt_params.read_cartesian_H) || (!worked) )
+      mol1->H_guess(); // empirical model guess Hessian
+  }
+  else { // do Hessian update
     try {
       p_Opt_data->H_update(*mol1);
     } catch (const char * str) {
@@ -154,13 +183,19 @@ OptReturnType optking(void) {
 
   mol1->project_f_and_H();
 
-  if (Opt_params.step_type == opt::OPT_PARAMS::NR)
+  if (Opt_params.step_type == OPT_PARAMS::NR)
     mol1->nr_step(); // puts dq in p_Opt_data->step
-  else if (Opt_params.step_type == opt::OPT_PARAMS::RFO)
+  else if (Opt_params.step_type == OPT_PARAMS::RFO)
     mol1->rfo_step(); // puts dq in p_Opt_data->step
 
-  if ( p_Opt_data->conv_check() ) {
-    printf("\t\t **** Geometry is converged! ****\n");
+  bool converged = p_Opt_data->conv_check();
+
+#if defined(OPTKING_PACKAGE_QCHEM)
+  rem_write((int) converged, REM_GEOM_OPT_CONVERGED); // tell QChem if converged (return value ignored for now)
+  rem_write(p_Opt_data->g_iteration(), REM_GEOM_OPT_CYCLE); // tell QChem current iteration number
+#endif
+
+  if ( converged ) {
     fprintf(outfile,"\t **** Geometry is converged! ****\n");
     p_Opt_data->summary();
     p_Opt_data->write(); // save data to optimization binary file
@@ -169,7 +204,6 @@ OptReturnType optking(void) {
       fprintf(outfile,"\tFinal (next step) structure:\n");
       mol1->print_geom();  // write geometry -> output file
       fprintf(outfile,"\tSaving final (next step) structure.\n");
-      mol1->write_geom();  // write geometry -> chkpt file
     }
     else { // default - get last geometry and write that one
       double *x = p_Opt_data->g_geom_const_pointer(p_Opt_data->nsteps()-1);
@@ -177,11 +211,12 @@ OptReturnType optking(void) {
       fprintf(outfile,"\tFinal (previous) structure:\n");
       mol1->print_geom();  // write geometry -> output file
       fprintf(outfile,"\tSaving final (previous) structure.\n");
-      mol1->write_geom();
     }
 
     delete p_Opt_data;
-    print_end(outfile);
+    mol1->write_geom();  // write geometry -> chkpt file (also output for QChem)
+    print_end();
+
     close_output_dat();
     return OptReturnEndloop;
   }
@@ -189,10 +224,13 @@ OptReturnType optking(void) {
   p_Opt_data->write();
   delete p_Opt_data;
 
-  mol1->write_geom(); // write geometry to package
-
-  fprintf(outfile,"\tStructure for next step:\n"); fflush(outfile);
+//#if defined(OPTKING_PACKAGE_PSI)
+  fprintf(outfile,"\tStructure for next step:\n");
   mol1->print_geom(); // write geometry for next step to output file
+//#endif
+
+  mol1->write_geom(); // write geometry -> chkpt (also output for QChem)
+  print_end();
 
   } // end big try
   catch (const char * str) {
@@ -201,7 +239,6 @@ OptReturnType optking(void) {
     return OptReturnFailure;
   }
 
-  print_end(outfile);
   close_output_dat();
   return OptReturnSuccess;
 }
@@ -210,31 +247,32 @@ OptReturnType optking(void) {
 // the standard text output file
 void open_output_dat(void) {
 #if defined (OPTKING_PACKAGE_PSI)
-  opt::outfile = psi::outfile;
+  outfile = psi::outfile;
 #elif defined (OPTKING_PACKAGE_QCHEM)
-  opt::outfile = fopen(FILENAME_OUTPUT_DAT,"a");
+  outfile = stdout;
 #endif
 }
 
 void close_output_dat(void) {
 #if defined(OPTKING_PACKAGE_QCHEM)
-  fclose(opt::outfile);
+  fflush(outfile);
 #endif
 }
 
-void print_title(FILE *fp) {
-  fprintf(fp, "\n\t\t\t----------------------------------\n");
-  fprintf(fp, "\t\t\t OPTKING: for geometry optimizations  \n");
-  fprintf(fp, "\t\t\t  - R.A. King,  Bethel University   \n");
-  fprintf(fp, "\t\t\t------------------------------------\n");
+void print_title(void) {
+  fprintf(outfile, "\n\t\t\t----------------------------------\n");
+  fprintf(outfile, "\t\t\t OPTKING: for geometry optimizations  \n");
+  fprintf(outfile, "\t\t\t  - R.A. King,  Bethel University   \n");
+  fprintf(outfile, "\t\t\t------------------------------------\n");
   fflush(outfile);
 }
 
-void print_end(FILE *fp) {
-  fprintf(fp, "\t\t\t--------------------------\n");
-  fprintf(fp, "\t\t\t OPTKING Finished Execution \n");
-  fprintf(fp, "\t\t\t--------------------------\n");
-  fflush(outfile);
+void print_end(void) {
+#if defined (OPTKING_PACKAGE_PSI)
+  fprintf(outfile, "\t\t\t--------------------------\n");
+  fprintf(outfile, "\t\t\t OPTKING Finished Execution \n");
+  fprintf(outfile, "\t\t\t--------------------------\n");
+#endif
 }
 
 void init_ioff(void)

@@ -2,6 +2,9 @@
 Package specific info 
 *********************
 
+package.h
+OPTKING_PACKAGE_PSI/QCHEM specifies package
+
 *io.h
 contains declarations for wrapper functions to read and write from the binary i/o file
 

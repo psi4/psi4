@@ -105,6 +105,7 @@ void MOLECULE::test_B(void) {
 
   free_matrix(B_analytic);
   free_matrix(B_fd);
+  fflush(outfile);
   return;
 }
 
@@ -199,6 +200,7 @@ void MOLECULE::test_derivative_B(void) {
   }
   fprintf(outfile,"\n");
   free_matrix(dq2dx2_fd);
+  fflush(outfile);
   return;
 }
 

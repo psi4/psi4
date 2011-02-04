@@ -14,6 +14,8 @@ class INTERFRAG;
 using std::vector;
 
 class FRAG {
+
+ protected: // private, except the efp derived class can access
   int natom;      // number of atoms in fragment
   double *Z;      // atomic numbers
   double **geom;   // cartesian coordinates
@@ -21,6 +23,7 @@ class FRAG {
   double *mass;   // nuclear masses
   bool   **connectivity; // connectivity matrix
   vector<SIMPLE *> intcos;
+  bool frozen; // whether to optimize
 
  public:
   friend class INTERFRAG;
@@ -103,6 +106,7 @@ class FRAG {
     fprintf(fp,"\t---S vectors for internals---\n");
     for(int i=0; i<intcos.size(); ++i)
       intcos.at(i)->print_s(fp, geom);
+    fflush(fp);
   }
 
   // compute and return values of internal coordinates from member geometry
@@ -135,7 +139,7 @@ class FRAG {
 
   double ** H_guess(void); 
   bool **g_connectivity(void) const;
-  const bool * const * const g_connectivity_pointer(void) const;
+  const bool * const * g_connectivity_pointer(void) const;
 
   bool read_intco(std::vector<std::string> & tokens, int first_atom_offset);
 
@@ -149,6 +153,16 @@ class FRAG {
   void intco_add(SIMPLE * i) {
     intcos.push_back(i);
   }
+
+  // relating to frozen fragments
+  bool is_frozen(void) const { return frozen; }
+  void freeze(void)   { frozen = true; }
+  void unfreeze(void) { frozen = false; }
+
+  double **inertia_tensor (double **in_geom);
+  double *com(double **in_geom);
+  double **inertia_tensor(void) { return (inertia_tensor(geom)); }
+  double *com(void) { return (com(geom)); }
 
 };
 

@@ -1,6 +1,7 @@
 /*! \file opt-params.h
     \ingroup OPT10
     \brief header for optimization parameters
+      variable meanings are described in more detail in set_params.cc
 */
 
 #ifndef _opt_opt_params_h_
@@ -15,7 +16,6 @@ struct OPT_PARAMS {
   double conv_max_DE;
   double conv_max_disp;
 
-  // variable meanings are described in more detail in set_params.cc
   double scale_connectivity;  
 
   enum FRAGMENT_MODE {SINGLE, MULTI} fragment_mode;
@@ -36,6 +36,8 @@ struct OPT_PARAMS {
   enum {NONE, BFGS, MS, POWELL, BOFILL} H_update;
   int H_update_use_last;
 
+  bool freeze_intrafragment; // freeze all fragments
+
   // related to step taken
   double intrafragment_step_limit;
 
@@ -55,6 +57,11 @@ struct OPT_PARAMS {
   bool write_final_step_geometry;
 
   double maximum_H_bond_distance;
+
+  bool read_cartesian_H;
+
+  bool efp_fragments;
+  bool efp_fragments_only;
 
 // ** Unlikely to need modified **
 

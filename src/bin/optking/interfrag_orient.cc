@@ -212,10 +212,12 @@ bool INTERFRAG::orient_fragment(double *q_target) {
 
   if (tval > 1.0e-8) {
     fprintf(outfile,"\tUnsuccessful at orienting fragments!\n");
+    fflush(outfile);
     return false;
   }
   else {
     fprintf(outfile,"\tSuccessfully oriented fragments.\n");
+    fflush(outfile);
     B->set_geom(B_geom);
     free_matrix(B_geom);
     return true;

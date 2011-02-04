@@ -79,7 +79,6 @@ bool MOLECULE::read_intcos(std::ifstream & fintco) {
   bool D_on[6];     // interfragment coordinates active
   bool D_frozen[6]; // interfragment coordinates frozen
   FRAG * frag1;
-  //FRAG * frag2;
   int first_atom, last_atom;
   int first_frag, second_frag;
   vector<string> vline;
@@ -98,7 +97,9 @@ int cnt =0;
 
   while (line_present) {
 
-    if (vline[0] == "F") { // read first and last atom for fragment
+    if ((vline[0] == "F") || (vline[0] == "F*")) { // read first and last atom for fragment
+      bool frozen = has_asterisk(vline[0]);
+       
       if (vline.size() != 3) {
         error << "Format of fragment line is \"F integer(1st_atom) integer(last_atom)\", line " << line_num << ".\n";
         throw(error.str());
@@ -116,6 +117,7 @@ int cnt =0;
 
       // create fragment
       frag1 = new FRAG(last_atom - first_atom + 1);
+      if (frozen) frag1->freeze();
       fragments.push_back(frag1);
 
       // now read all internal coordinates for that fragment
@@ -417,6 +419,7 @@ bool stob(string s, bool *a) {
    return false;
 }
 
+// removes asterisk and returns true if it was present
 bool has_asterisk(string & s) {
   if (s[s.size()-1] == '*') {
     s.erase(s.size()-1);

@@ -30,6 +30,7 @@ void zero_bool_array(bool *A, long int n) {
 }
 
 double *init_array(long int m) {
+  if (!m) return NULL;
   double *A = (double *) malloc(m * sizeof(double));
   zero_array(A,m);
   return A;
@@ -49,6 +50,7 @@ bool *init_bool_array(int m) {
 }
 
 void free_array(double *f) {
+  if (f == NULL) return;
   free(f);
 }
 
@@ -165,6 +167,7 @@ double *opt_init_array(long int m) {
 }
 
 void opt_free_array(double *f) {
+  if (f == NULL) return;
   free(f);
 }
 

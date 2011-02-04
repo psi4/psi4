@@ -238,12 +238,13 @@ double ** TORS::Dq2Dx2(GeomType geom) const {
 
 void TORS::print(FILE *fp, GeomType geom, int off) const {
   ostringstream iss(ostringstream::out); // create stream; allow output to it
-  iss << "D(" << s_atom[0]+1+off << "," << s_atom[1]+1+off << "," << s_atom[2]+1+off << "," << s_atom[3]+1+off << ")";
+  iss << "D(" << s_atom[0]+1+off << "," << s_atom[1]+1+off << "," << s_atom[2]+1+off << "," << s_atom[3]+1+off << ")" << std::flush;
   double val = value(geom);
   if (!s_frozen)
     fprintf(fp,"\t %-15s  =  %15.6lf\t%15.6lf\n", iss.str().c_str(), val, val/_pi*180.0);
   else
     fprintf(fp,"\t*%-15s  =  %15.6lf\t%15.6lf\n", iss.str().c_str(), val, val/_pi*180.0);
+  fflush(fp);
 }
 
 void TORS::print_disp(FILE *fp, const double q_old, const double f_q,
@@ -251,9 +252,10 @@ void TORS::print_disp(FILE *fp, const double q_old, const double f_q,
   ostringstream iss(ostringstream::out); // create stream; allow output to it
   if (s_frozen) iss << "*";
   iss << "D(" << s_atom[0]+atom_offset+1 << "," << s_atom[1]+atom_offset+1 << ","
-    << s_atom[2]+atom_offset+1 << "," << s_atom[3]+atom_offset+1 << ")";
+    << s_atom[2]+atom_offset+1 << "," << s_atom[3]+atom_offset+1 << ")" << std::flush;
   fprintf(fp,"\t %-15s = %13.6lf%13.6lf%13.6lf%13.6lf\n",
     iss.str().c_str(), q_old/_pi*180.0, f_q*_pi/180.0,dq/_pi*180.0, q_new/_pi*180.0);
+  fflush(fp);
 }
 
 void TORS::print_intco_dat(FILE *fp, int off) const {
@@ -263,6 +265,7 @@ void TORS::print_intco_dat(FILE *fp, int off) const {
   else
     fprintf(fp, "D %6d%6d%6d%6d\n", s_atom[0]+1+off, s_atom[1]+1+off,
       s_atom[2]+1+off, s_atom[3]+1+off);
+  fflush(fp);
 }
 
 void TORS::print_s(FILE *fp, GeomType geom) const {
@@ -274,6 +277,7 @@ void TORS::print_s(FILE *fp, GeomType geom) const {
   fprintf(fp, "Atom 3: %12.8f %12.8f,%12.8f\n", dqdx[2][0], dqdx[2][1], dqdx[2][2]);
   fprintf(fp, "Atom 4: %12.8f %12.8f,%12.8f\n", dqdx[3][0], dqdx[3][1], dqdx[3][2]);
   free_matrix(dqdx);
+  fflush(fp);
 }
 
 bool TORS::operator==(const SIMPLE & s2) const {
