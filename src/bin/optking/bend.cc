@@ -9,6 +9,7 @@
 #include "v3d.h"
 #include "physconst.h"
 #include <math.h>
+#include "linear_algebra.h"
 
 #include "print.h"
 #define EXTERN
@@ -117,17 +118,14 @@ double ** BEND::DqDx(GeomType geom) const {
     tvect[0] = 1; tvect[1] = -1; tvect[2] = 1;
     if (!v3d_is_parallel(u,tvect) && !v3d_is_parallel(v,tvect)) {
       v3d_cross_product(u,tvect,w);
-fprintf(outfile,"linear w 1\n");
     }
     else {
       tvect[0] = -1; tvect[1] = 1; tvect[2] = 1;
       v3d_cross_product(u,tvect,w);
-fprintf(outfile,"linear w 2\n");
     }
     if (linear_bend) { // use the complement vector w = w x u 
       v3d_cross_product(w,u,tvect);
       array_copy(tvect, w, 3);
-fprintf(outfile,"for linear bend\n\n");
     }
   }
   v3d_normalize(w);
@@ -226,13 +224,14 @@ void BEND::print(FILE *fp, GeomType geom, int off) const {
   else
     iss << "B(";
 
-  iss << s_atom[0]+1+off << "," << s_atom[1]+1+off << "," << s_atom[2]+1+off << ")" ;
+  iss << s_atom[0]+1+off << "," << s_atom[1]+1+off << "," << s_atom[2]+1+off << ")" << flush ;
 
   double val = value(geom);
   if (!s_frozen)
     fprintf(fp,"\t %-15s  =  %15.6lf\t%15.6lf\n", iss.str().c_str(), val, val/_pi*180.0);
   else
     fprintf(fp,"\t*%-15s  =  %15.6lf\t%15.6lf\n", iss.str().c_str(), val, val/_pi*180.0);
+  fflush(fp);
 }
 
 void BEND::print_disp(FILE *fp, const double q_old, const double f_q,
@@ -245,11 +244,12 @@ void BEND::print_disp(FILE *fp, const double q_old, const double f_q,
   else
     iss << "B(";
 
-  iss << s_atom[0]+atom_offset+1 << "," << s_atom[1]+atom_offset+1 << "," << s_atom[2]+atom_offset+1 << ")" ;
+  iss << s_atom[0]+atom_offset+1 << "," << s_atom[1]+atom_offset+1 << "," << s_atom[2]+atom_offset+1 << ")" << flush ;
 
   fprintf(fp,"\t %-15s = %13.6lf%13.6lf%13.6lf%13.6lf\n",
     iss.str().c_str(), q_old/_pi*180.0, f_q*_hartree2aJ*_pi/180.0,
       dq/_pi*180.0, q_new/_pi*180.0);
+  fflush(fp);
 }
 
 void BEND::print_intco_dat(FILE *fp, int off) const {
@@ -265,6 +265,7 @@ void BEND::print_intco_dat(FILE *fp, int off) const {
     else
       fprintf(fp, "B %6d%6d%6d\n", s_atom[0]+1+off, s_atom[1]+1+off, s_atom[2]+1+off);
   }
+  fflush(fp);
 }
 
 void BEND::print_s(FILE *fp, GeomType geom) const {
@@ -279,6 +280,7 @@ void BEND::print_s(FILE *fp, GeomType geom) const {
   fprintf(fp, "Atom 2: %12.8f %12.8f,%12.8f\n", dqdx[1][0], dqdx[1][1], dqdx[1][2]);
   fprintf(fp, "Atom 3: %12.8f %12.8f,%12.8f\n", dqdx[2][0], dqdx[2][1], dqdx[2][2]);
   free_matrix(dqdx);
+  fflush(fp);
 }
 
 bool BEND::operator==(const SIMPLE & s2) const {

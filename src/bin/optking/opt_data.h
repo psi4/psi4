@@ -1,7 +1,6 @@
 #ifndef _opt_opt_data_h_
 #define _opt_opt_data_h_
 
-#include <cmath>
 #include <fstream>
 #include <vector>
 
@@ -96,12 +95,13 @@ class OPT_DATA {
     double **g_H_pointer(void) { return H; }
     double g_energy(void) const { return steps[steps.size()-1]->g_energy(); }
     double *g_rfo_eigenvector_pointer(void) const { return rfo_eigenvector; }
+    // return dimension of Hessian matrix
+    int g_nintco(void) const { return Nintco; }
 
     void set_rfo_eigenvector(double *evect_in) {
       for (int i=0; i<Nintco+1; ++i)
         rfo_eigenvector[i] = evect_in[i];
     }
-        
 
     // step data
     double *g_forces_pointer(void) const {
@@ -157,6 +157,7 @@ class OPT_DATA {
 
 };
 
-};
+}
 
 #endif
+

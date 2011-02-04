@@ -17,6 +17,10 @@
 #define EXTERN
 #include "globals.h"
 
+#if defined (OPTKING_PACKAGE_QCHEM)
+#include "EFP.h"
+#endif
+
 namespace opt {
 
 using namespace std;
@@ -68,13 +72,24 @@ void MOLECULE::forces(void) {
   free_matrix(G_inv);
   free_array(temp_arr);
 
+#if defined(OPTKING_PACKAGE_QCHEM)
+  // append exernally determiend efp forces
+  double * efp_force;
+  for (int f=0; f<efp_fragments.size(); ++f) {
+    efp_force = efp_fragments[f]->get_forces_pointer();
+    for (int i=0; i<efp_fragments[f]->g_nintco(); ++i)
+      f_q[ g_efp_fragment_intco_offset(f) + i ] =  efp_force[i] ;
+  }
+#endif
+
   if (Opt_params.print_lvl >= 3) {
     fprintf(outfile,"Internal forces in au\n");
-    print_matrix(outfile, &f_q, 1, Nintco);
+    print_matrix(outfile, &f_q, 1, g_nintco()); fflush(outfile);
   }
 
-  if (Opt_params.print_lvl > 3) {
+/*
     // test by transforming f_q back to cartesian forces and compare
+  if (Opt_params.print_lvl > 3) {
     B = compute_B();
     temp_arr = init_array(Ncart);
     opt_matrix_mult(B, 1, &f_q, 1, &temp_arr, 1, Ncart, Nintco, 1, 0);
@@ -83,7 +98,9 @@ void MOLECULE::forces(void) {
     free_array(temp_arr);
     free_matrix(B);
   }
+*/
 
+  fflush(outfile);
   return ;
 }
 
@@ -99,6 +116,15 @@ void MOLECULE::project_f_and_H(void) {
   opt_matrix_mult(B, 0, B, 1, G, 0, Nintco, Ncart, Nintco, 0);
   free_matrix(B);
 
+  // leave 1's on diagonal for EFP coordinates
+  int I, i, j;
+#if defined (OPTKING_PACKAGE_QCHEM)
+  for (I=0; I<efp_fragments.size(); ++I) {
+    j = g_efp_fragment_intco_offset(I);
+    for (i=0; i<efp_fragments[i]->g_nintco(); ++i)
+      G[j+i][j+i] = 1.0;
+  }
+#endif
   // compute P = G G^-1
   double **G_inv = symm_matrix_inv(G, Nintco, 1);
   double **P = init_matrix(Nintco, Nintco);
@@ -125,8 +151,8 @@ void MOLECULE::project_f_and_H(void) {
   opt_matrix_mult(T3, 0,  T, 0, T2, 0, Nintco, Nintco, Nintco, 0);
   opt_matrix_mult( C, 0, T2, 0, T3, 0, Nintco, Nintco, Nintco, 0);
   opt_matrix_mult( P, 0, T3, 0, T2, 0, Nintco, Nintco, Nintco, 0);
-  for (int i=0; i<Nintco; ++i)
-    for (int j=0; j<Nintco; ++j)
+  for (i=0; i<Nintco; ++i)
+    for (j=0; j<Nintco; ++j)
       P[i][j] -= T2[i][j];
   free_matrix(T);
   free_matrix(T2);
@@ -140,11 +166,14 @@ void MOLECULE::project_f_and_H(void) {
   // f_q~ = P f_q
   double * temp_arr = init_array(Nintco);
   opt_matrix_mult(P, 0, &f_q, 1, &temp_arr, 1, Nintco, Nintco, 1, 0);
-  array_copy(temp_arr, f_q, Nintco);
+  array_copy(temp_arr, f_q, g_nintco());
   free_array(temp_arr);
+
   if (Opt_params.print_lvl >= 3) {
     fprintf(outfile,"\tInternal forces in au, after projection of redundancies and constraints.\n");
-    print_matrix(outfile, &f_q, 1, Nintco);
+    if (Opt_params.efp_fragments)
+      fprintf(outfile,"\tEFP external coordinates are not projected.\n");
+    print_matrix(outfile, &f_q, 1, g_nintco());
   }
 
   // Project redundances and constraints out of Hessian matrix
@@ -170,13 +199,17 @@ void MOLECULE::project_f_and_H(void) {
 
   if (Opt_params.print_lvl >= 2) {
     fprintf(outfile,"Projected (PHP) Hessian matrix\n");
+    if (Opt_params.efp_fragments)
+      fprintf(outfile,"EFP external coordinates are not projected.\n");
     print_matrix(outfile, H, g_nintco(), g_nintco());
   }
   free_matrix(P);
+  fflush(outfile);
 }
 
 void MOLECULE::print_geom(void) {
   fprintf(outfile,"\tCartesian Geometry (au)\n");
+  fflush(outfile);
   for (int i=0; i<fragments.size(); ++i)
     fragments[i]->print_geom(outfile);
 }
@@ -199,6 +232,7 @@ void MOLECULE::apply_intrafragment_step_limit(double * & dq) {
       for (i=0; i<fragments[f]->g_nintco(); ++i)
         dq[g_intco_offset(f)+i] *= scale;
   }
+  fflush(outfile);
 }
 
 // don't let any angles get smaller than 0.0
@@ -208,9 +242,7 @@ void MOLECULE::check_intrafragment_zero_angles(double const * const dq) {
 }
 
 void MOLECULE::H_guess(void) const {
-  double **H, **H_frag, **H_interfrag;
-
-  H = p_Opt_data->g_H_pointer();
+  double **H = p_Opt_data->g_H_pointer();
 
   if (Opt_params.intrafragment_H == OPT_PARAMS::SCHLEGEL)
     fprintf(outfile,"\tGenerating empirical Hessian (Schlegel '84) for each fragment.\n");
@@ -218,7 +250,7 @@ void MOLECULE::H_guess(void) const {
     fprintf(outfile,"\tGenerating empirical Hessian (Fischer & Almlof '92) for each fragment.\n");
 
   for (int f=0; f<fragments.size(); ++f) {
-    H_frag = fragments[f]->H_guess();
+    double **H_frag = fragments[f]->H_guess();
 
     for (int i=0; i<fragments[f]->g_nintco(); ++i)
       for (int j=0; j<fragments[f]->g_nintco(); ++j)
@@ -228,7 +260,7 @@ void MOLECULE::H_guess(void) const {
   }
 
   for (int I=0; I<interfragments.size(); ++I) {
-    H_interfrag = interfragments[I]->H_guess();
+    double **H_interfrag = interfragments[I]->H_guess();
 
     for (int i=0; i<interfragments[I]->g_nintco(); ++i)
       for (int j=0; j<interfragments[I]->g_nintco(); ++j)
@@ -238,16 +270,32 @@ void MOLECULE::H_guess(void) const {
     free_matrix(H_interfrag);
   }
 
+#if defined(OPTKING_PACKAGE_QCHEM)
+  for (int I=0; I<efp_fragments.size(); ++I) {
+    double **H_efp_frag = efp_fragments[I]->H_guess();
+
+    for (int i=0; i<efp_fragments[I]->g_nintco(); ++i)
+      for (int j=0; j<efp_fragments[I]->g_nintco(); ++j)
+        H[g_efp_fragment_intco_offset(I) + i][g_efp_fragment_intco_offset(I) + j] = H_efp_frag[i][j];
+
+    free_matrix(H_efp_frag);
+  }
+#endif
+
   if (Opt_params.print_lvl >= 2) {
     fprintf(outfile,"Initial Hessian guess\n");
     print_matrix(outfile, H, g_nintco(), g_nintco());
   }
+  fflush(outfile);
   return;
 }
 
-double ** MOLECULE::cartesian_H_to_internals(void) const {
+bool MOLECULE::cartesian_H_to_internals(void) const {
   int Nintco = g_nintco();
   int Ncart = 3*g_natom();
+  bool success = true; // to be dynamic later
+
+  double **H_int = p_Opt_data->g_H_pointer();
 
   // compute A = u B^t (B u B^t)^-1 where u=unit matrix and -1 is generalized inverse
   double **B = compute_B();
@@ -290,7 +338,7 @@ double ** MOLECULE::cartesian_H_to_internals(void) const {
   opt_matrix_mult(H_cart, 0, A, 0, temp_mat, 0, Ncart, Ncart, Nintco, 0);
   free_matrix(H_cart);
 
-  double **H_int = init_matrix(Nintco, Nintco);
+  //double **H_int = init_matrix(Nintco, Nintco);
   opt_matrix_mult(A, 1, temp_mat, 0, H_int, 0, Nintco, Ncart, Nintco, 0);
   free_matrix(temp_mat);
 
@@ -322,9 +370,10 @@ double ** MOLECULE::cartesian_H_to_internals(void) const {
   print_matrix(outfile, H_cart, Ncart, Ncart); fflush(outfile);
   free_matrix(B);
 */
-  return H_int;
+  return success;
 }
 
+// compute B matrix - leave rows for EFP coordinates empty
 double ** MOLECULE::compute_B(void) const {
   double **B, **B_frag, **B_inter;
   int i, j;
@@ -454,18 +503,18 @@ double ** MOLECULE::compute_derivative_B(int intco_index) const {
 void MOLECULE::print_intco_dat(FILE *fp_intco) {
   for (int i=0; i<fragments.size(); ++i) {
     int first = g_atom_offset(i);
-    fprintf(fp_intco,"F %d %d\n", first+1, first + fragments[i]->g_natom());
+    fprintf(fp_intco,"F %d %d\n", first+1, first + fragments[i]->g_natom()); fflush(outfile);
     fragments[i]->print_intco_dat(fp_intco, g_atom_offset(i));
   }
 
   for (int I=0; I<interfragments.size(); ++I) {
     int frag_a = interfragments[I]->g_A_index();
     int frag_b = interfragments[I]->g_B_index();
-    fprintf(fp_intco,"I %d %d\n", frag_a+1, frag_b+1);
+    fprintf(fp_intco,"I %d %d\n", frag_a+1, frag_b+1); fflush(outfile);
 
     for (int i=0; i<6; ++i) 
       fprintf(fp_intco," %d", (int) interfragments[I]->coordinate_on(i));
-    fprintf(fp_intco,"\n");
+    fprintf(fp_intco,"\n"); fflush(outfile);
 
     interfragments[I]->print_intco_dat(fp_intco, g_atom_offset(frag_a), g_atom_offset(frag_b));
   }
@@ -502,8 +551,57 @@ double ** MOLECULE::compute_constraints(void) {
     fprintf(outfile,"Constraint matrix\n");
     print_matrix(outfile, C, g_nintco(), g_nintco()); fflush(outfile);
   }
+  fflush(outfile);
   return C;
 }
+
+#if defined (OPTKING_PACKAGE_QCHEM)
+// add dummy efp fragments - this will only work (maybe:) for QChem
+void MOLECULE::add_efp_fragments(void) {
+
+  // get number of EFP fragments
+  int num_efp_frags = ::EFP::GetInstance()->NFragments();
+
+  // get energy
+  energy = ::EFP::GetInstance()->GetEnergy();
+
+  fprintf(outfile,"\tAdding %d EFP fragments.\n", num_efp_frags);
+
+  EFP_FRAG *one_frag;
+
+  for (int i=0; i<num_efp_frags; ++i) {
+    one_frag = new EFP_FRAG();
+    // add 6 intcos just to act as placeholders ;
+    // we read external forces and don't compute B matrix for these
+    one_frag->add_dummy_intcos(6);
+
+    // get gradient
+    double *g = init_array(6);
+    ::EFP::GetInstance()->GetGrad(i,g);
+    one_frag->set_forces(g);
+    free_array(g);
+
+    // values must be set after opt_data is read
+
+    efp_fragments.push_back(one_frag);
+  }
+}
+
+void MOLECULE::update_efp_values(void) {
+  for (int i=0; i<efp_fragments.size(); ++i) {
+    double *vals = init_array(6);
+
+    double *dq;
+    for (int iter=0; iter<p_Opt_data->g_iteration(); ++iter) {
+      dq = p_Opt_data->g_dq_pointer(iter);
+      for (int coord=0; coord < 6; ++coord)
+        vals[coord] += dq[g_efp_fragment_intco_offset(i)+coord] ;
+    }
+    efp_fragments[i]->set_values(vals);
+    free_array(vals);
+  }
+}
+#endif
 
 }
 

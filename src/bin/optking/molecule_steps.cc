@@ -17,8 +17,6 @@
 #define EXTERN
 #include "globals.h"
 
-using psi::outfile;
-
 namespace opt {
 
 // compute change in energy according to quadratic approximation
@@ -51,6 +49,15 @@ void MOLECULE::nr_step(void) {
   opt_matrix_mult(H_inv, 0, &f_q, 1, &dq, 1, Nintco, Nintco, 1, 0);
   free_matrix(H_inv);
 
+  // Zero steps for frozen fragment
+  for (f=0; f<fragments.size(); ++f) {
+    if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
+      fprintf(outfile,"\tZero'ing out displacements for frozen fragment %d\n", f+1);
+      for (i=0; i<fragments[f]->g_nintco(); ++i)
+        dq[ g_intco_offset(f) + i ] = 0.0;
+    }
+  }
+
   // applies maximum internal coordinate change
   apply_intrafragment_step_limit(dq);
 
@@ -71,8 +78,13 @@ void MOLECULE::nr_step(void) {
   fprintf(outfile,"\tProjected energy change by quadratic approximation: %20.10lf\n", DE_projected);
 
   // do displacements for each fragment separately
-  for (f=0; f<fragments.size(); ++f)
+  for (f=0; f<fragments.size(); ++f) {
+    if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
+      fprintf(outfile,"\tDisplacments for frozen fragment %d skipped.\n", f+1);
+      continue;
+    }
     fragments[f]->displace(&(dq[g_intco_offset(f)]), true, g_intco_offset(f));
+  }
 
   // do displacements for interfragment coordinates
   double *q_target;
@@ -87,10 +99,17 @@ void MOLECULE::nr_step(void) {
     free_array(q_target);
   }
 
+#if defined(OPTKING_PACKAGE_QCHEM)
+  // fix rotation matrix for rotations in QCHEM EFP code
+  for (int I=0; I<efp_fragments.size(); ++I)
+    efp_fragments[I]->displace( I, &(dq[g_efp_fragment_intco_offset(I)]) );
+#endif
+
   // save values in step data
   p_Opt_data->save_step_info(DE_projected, nr_u, nr_dqnorm, nr_g, nr_h);
 
   free_array(nr_u);
+  fflush(outfile);
 }
 
 // Take Rational Function Optimization step
@@ -182,6 +201,15 @@ void MOLECULE::rfo_step(void) {
   for (j=0; j<dim; ++j)
     dq[j] = rfo_mat[rfo_root][j]; // leave out last column
 
+  // Zero steps for frozen fragment
+  for (f=0; f<fragments.size(); ++f) {
+    if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
+      fprintf(outfile,"\tZero'ing out displacements for frozen fragment %d\n", f+1);
+      for (i=0; i<fragments[f]->g_nintco(); ++i)
+        dq[ g_intco_offset(f) + i ] = 0.0;
+    }
+  }
+
   apply_intrafragment_step_limit(dq);
   //check_intrafragment_zero_angles(dq);
 
@@ -202,8 +230,13 @@ void MOLECULE::rfo_step(void) {
   fprintf(outfile,"\tProjected energy change by RFO approximation: %20.10lf\n", DE_projected);
 
   // do displacements for each fragment separately
-  for (f=0; f<fragments.size(); ++f)
+  for (f=0; f<fragments.size(); ++f) {
+    if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
+      fprintf(outfile,"\tDisplacments for frozen fragment %d skipped.\n", f+1);
+      continue;
+    }
     fragments[f]->displace(&(dq[g_intco_offset(f)]), true, g_intco_offset(f));
+  }
 
   // do displacements for interfragment coordinates
   double *q_target;
@@ -218,10 +251,17 @@ void MOLECULE::rfo_step(void) {
     free_array(q_target);
   }
 
+#if defined(OPTKING_PACKAGE_QCHEM)
+  // fix rotation matrix for rotations in QCHEM EFP code
+  for (int I=0; I<efp_fragments.size(); ++I)
+    efp_fragments[I]->displace( I, &(dq[g_efp_fragment_intco_offset(I)]) );
+#endif
+
   // save values in step data
   p_Opt_data->save_step_info(DE_projected, rfo_u, rfo_dqnorm, rfo_g, rfo_h);
 
   free_array(rfo_u);
+  fflush(outfile);
 
 } // end take RFO step
 

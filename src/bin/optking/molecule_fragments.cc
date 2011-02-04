@@ -79,12 +79,12 @@ void MOLECULE::fragmentize(void) {
     }
   }
 
-for (i=0; i<nfrag; ++i) {
-  printf("Detected frag with atoms: ");
-  for (j=0; j<natom; ++j)
-    if (frag_atoms[i][j]) printf(" %d", j+1);
-  printf("\n"); 
-}
+  for (i=0; i<nfrag; ++i) {
+    fprintf(outfile, "\tDetected frag with atoms: ");
+    for (j=0; j<natom; ++j)
+      if (frag_atoms[i][j]) printf(" %d", j+1);
+    fprintf(outfile,"\n"); 
+  }
 
   // Do nothing.  Atoms are all happily connected.
   if (nfrag == 1) {
@@ -208,7 +208,7 @@ void MOLECULE::add_interfragment(void) {
     }
     ndA = ndB = 1;
 
-printf("closest atoms between fragments is A %d, B %d\n", A1, B1);
+    fprintf(outfile,"\tClosest atoms between fragments is A %d, B %d\n", A1, B1);
 
     // A2 is bonded to A1, but A2-A1-B1 must not be collinear
     for (int iA=0; iA < nA; ++iA) {
@@ -315,9 +315,9 @@ printf("closest atoms between fragments is A %d, B %d\n", A1, B1);
     weight_B[1][B2] = 1.0;
     weight_B[2][B3] = 1.0;
 
-fprintf(stdout, "ndA %d, ndB %d\n", ndA, ndB);
-fprintf(stdout, "A1 %d, A2 %d A3 %d \n", A1, A2, A3);
-fprintf(stdout, "B1 %d, B2 %d B3 %d \n", B1, B2, B3);
+    //fprintf(stdout, "ndA %d, ndB %d\n", ndA, ndB);
+    //fprintf(stdout, "A1 %d, A2 %d A3 %d \n", A1, A2, A3);
+    //fprintf(stdout, "B1 %d, B2 %d B3 %d \n", B1, B2, B3);
 
     INTERFRAG * one_IF = new INTERFRAG(fragments[frag_i], fragments[frag_i+1],
       frag_i, frag_i+1, weight_A, weight_B, ndA, ndB);
@@ -326,6 +326,7 @@ fprintf(stdout, "B1 %d, B2 %d B3 %d \n", B1, B2, B3);
 
   }
 
+  fflush(outfile);
 }
 
 } // namespace opt

@@ -51,6 +51,8 @@ class INTERFRAG {
   bool D_on[6]; // indicates which coordinates [0-5] are present;
                 // if ndA or ndB <3, then not all 6 coordinates are defined
 
+  bool use_principal_axes; // use principal axes to defined dA and DB reference points
+
   public:
 
   // memory provided by calling function
@@ -78,7 +80,8 @@ class INTERFRAG {
 
   // compute and return coordinate values - using fragment member geometries
   double *intco_values(void) {
-    intco_values(A->geom, B->geom);
+    double *q = intco_values(A->geom, B->geom);
+    return q;
   }
 
   // freeze coordinate i if D_freeze[i]; index runs 0->6 as does D_on
@@ -98,14 +101,16 @@ class INTERFRAG {
 
   // returns B matrix from member geometries
   double **compute_B(void) {
-    compute_B(A->geom, B->geom);
+    double **Bmat = compute_B(A->geom, B->geom);
+    return Bmat;
   }
   // returns B matrix (internals by 3*natomA + 3*natomB)
   double **compute_B(GeomType new_geom_A, GeomType new_geom_B);
 
   // returns derivative B matrix from member geometries
   double **compute_derivative_B(int intco_index) {
-    compute_derivative_B(intco_index, A->geom, B->geom);
+    double **Bder = compute_derivative_B(intco_index, A->geom, B->geom);
+    return Bder;
   }
   // returns derivative B matrix for one internal, returns 3*natomA x 3*natomA
   double **compute_derivative_B(int intco_index, GeomType new_geom_A, GeomType new_geom_B);

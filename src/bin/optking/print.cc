@@ -27,6 +27,7 @@ void print_matrix(const FILE *fp, double **A, const int nrow, const int ncol) {
     fprintf(const_cast<FILE *>(fp),"\n");
     col = 0;
   }
+  fflush(const_cast<FILE *>(fp));
 }
 
 void print_array(const FILE *fp, double *A, const int ncol) {
@@ -43,6 +44,7 @@ void print_array(const FILE *fp, double *A, const int ncol) {
     }
   }
   fprintf(const_cast<FILE *>(fp),"\n");
+  fflush(const_cast<FILE *>(fp));
 }
 
 }

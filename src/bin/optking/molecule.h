@@ -1,8 +1,11 @@
 #ifndef _opt_molecule_h_
 #define _opt_molecule_h_
 
+#include "package.h"
+
 #include "frag.h"
 #include "interfrag.h"
+#include "efp_frag.h"
 #include "print.h"
 
 #include <fstream>
@@ -13,6 +16,9 @@ class MOLECULE {
 
   vector<FRAG *> fragments;           // fragments with intrafragment coordinates
   vector<INTERFRAG *> interfragments; // interfragment coordinates
+#if defined(OPTKING_PACKAGE_QCHEM)
+  vector<EFP_FRAG *> efp_fragments;   // EFP fixed-body 'dummy' (for now) fragment
+#endif
   double energy;
 
  public:
@@ -27,6 +33,11 @@ class MOLECULE {
     for (int i=0; i<interfragments.size(); ++i)
       delete interfragments[i];
     interfragments.clear();
+#if defined(OPTKING_PACKAGE_QCHEM)
+    for (int i=0; i<efp_fragments.size(); ++i)
+      delete efp_fragments[i];
+    efp_fragments.clear();
+#endif
   }
 
   // if you have one fragment - make sure all atoms are bonded
@@ -36,6 +47,9 @@ class MOLECULE {
   void add_interfragment(void);
 
   int g_nfragment(void) const { return fragments.size(); };
+#if defined(OPTKING_PACKAGE_QCHEM)
+  int g_nefp_fragment(void) const { return efp_fragments.size(); };
+#endif
 
   int g_natom(void) const {
     int n = 0;
@@ -44,12 +58,16 @@ class MOLECULE {
     return n;
   }
 
-  int g_nintco(void) const {
+  int g_nintco(void) const { // excludes intcos for which there is no B-matrix (EFP fragments)
     int n=0;
     for (int f=0; f<fragments.size(); ++f)
       n += fragments[f]->g_nintco();
     for (int i=0; i<interfragments.size(); ++i)
       n += interfragments[i]->g_nintco();
+#if defined (OPTKING_PACKAGE_QCHEM)
+    for (int e=0; e<efp_fragments.size(); ++e)
+      n += efp_fragments[e]->g_nintco();
+#endif
     return n;
   }
 
@@ -66,6 +84,15 @@ class MOLECULE {
       n += interfragments[f]->g_nintco();
     return n;
   }
+
+#if defined (OPTKING_PACKAGE_QCHEM)
+  int g_nintco_efp_fragment(void) const {
+    int n=0;
+    for (int f=0; f<efp_fragments.size(); ++f)
+      n += efp_fragments[f]->g_nintco();
+    return n;
+  }
+#endif
 
   // given fragment index returns first atom in that fragment
   int g_atom_offset(int index) const {
@@ -90,6 +117,16 @@ class MOLECULE {
       n += interfragments[f-1]->g_nintco();
     return n;
   }
+
+  // given efp_fragment index tells which internal coordinate is first one for that set
+#if defined (OPTKING_PACKAGE_QCHEM)
+  int g_efp_fragment_intco_offset(int index) const {
+    int n = g_nintco_intrafragment() + g_nintco_interfragment();
+    for (int f=0; f<index; ++f)
+      n += efp_fragments[f]->g_nintco();
+    return n;
+  }
+#endif
 
   double g_energy(void) const { return energy; }
 
@@ -129,7 +166,18 @@ class MOLECULE {
       b = interfragments[i]->g_B_index();
       interfragments[i]->print_intcos(fout, g_atom_offset(a), g_atom_offset(b));
     }
+
+#if defined (OPTKING_PACKAGE_QCHEM)
+    for (int i=0; i<efp_fragments.size(); ++i) {
+      fprintf(fout,"\t---Fragment %d EFP fragment Coordinates---\n", i+1);
+      efp_fragments[i]->print_intcos(fout);
+    }
+#endif
   }
+
+#if defined (OPTKING_PACKAGE_QCHEM)
+  void update_efp_values(void);
+#endif
 
   void print_intco_dat(FILE *fp_intco);
 
@@ -147,7 +195,7 @@ class MOLECULE {
     return q;
   }
 
-  // compute intco values from given geometry
+  // compute intco values from given geometry ; empty space for EFP coordinates included
   double * intco_values(GeomType new_geom) const {
     double *q, *q_frag, *q_IF;
     q = init_array(g_nintco());
@@ -264,7 +312,7 @@ class MOLECULE {
   void test_B(void);
   void test_derivative_B(void);
 
-  double ** cartesian_H_to_internals(void) const;
+  bool cartesian_H_to_internals(void) const;
 
 
   bool read_intcos(std::ifstream & fin);
@@ -274,17 +322,11 @@ class MOLECULE {
   // tell whether internal coordinate is frozen
   double ** compute_constraints(void);
 
-/* // check nearness to 180 and save value
-  //print s vectors to output file
-  void print_s(const FILE *fp, double **geom) const {
-    fprintf(const_cast<FILE *>(fp),"\t---S vectors for internals---\n");
-    for(int i=0; i<intcos.size(); ++i)
-      intcos.at(i)->print_s(fp, geom);
-  }
-*/
+  void add_efp_fragments(void);
 
 };
 
 }
 
 #endif
+

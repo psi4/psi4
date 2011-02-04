@@ -5,6 +5,8 @@
 
 #include "frag.h"
 
+#include <cmath>
+
 #include "mem.h"
 #include "v3d.h"
 #include "atom_data.h"
@@ -26,6 +28,8 @@ FRAG::FRAG(int natom_in, double *Z_in, double **geom_in) {
   Z = Z_in;
   geom = geom_in;
 
+  frozen = false;
+
   grad = init_matrix(natom,3);
   connectivity = init_bool_matrix(natom,natom);
   mass = init_array(natom);
@@ -33,6 +37,8 @@ FRAG::FRAG(int natom_in, double *Z_in, double **geom_in) {
 
 FRAG::FRAG(int natom_in) {
   natom = natom_in;
+
+  frozen = false;
 
   Z = init_array(natom);
   geom = init_matrix(natom,3);
@@ -42,7 +48,6 @@ FRAG::FRAG(int natom_in) {
 }
 
 FRAG::~FRAG() {
-  //printf("Destructing fragment\n");
   free_array(Z);
   free_matrix(geom);
   free_matrix(grad);
@@ -74,6 +79,7 @@ void FRAG::print_geom(FILE *fp, const int id, bool print_masses) {
         Z_to_symbol[(int) Z[i]], geom[i][0], geom[i][1], geom[i][2]);
   }
   fprintf(fp, "\n");
+  fflush(fp);
 }
 
 void FRAG::print_geom_grad(FILE *fp, const int id, bool print_masses) {
@@ -92,12 +98,14 @@ void FRAG::print_geom_grad(FILE *fp, const int id, bool print_masses) {
   for (i=0; i<natom; ++i)
     fprintf(fp,"\t %24.10lf%20.10lf%20.10lf\n", grad[i][0], grad[i][1], grad[i][2]);
   fprintf(fp, "\n");
+  fflush(fp);
 }
 
 void FRAG::print_geom(FILE *fp_geom) {
   for (int i=0; i<natom; ++i)
     fprintf(fp_geom, "\t  %3s  %15.10lf%15.10lf%15.10lf\n",
       Z_to_symbol[(int) Z[i]], geom[i][0], geom[i][1], geom[i][2]);
+  fflush(fp_geom);
 }
 
 
@@ -168,6 +176,7 @@ void FRAG::print_connectivity(FILE *fp, const int id, const int offset) const {
     fprintf(fp,"\n");
   }
   fprintf(fp,"\n");
+  fflush(fp);
 }
 
 // automatically add bond stretch coodinates based on connectivity matrix
@@ -439,7 +448,6 @@ double ** FRAG::compute_constraints(void) const {
   for (int i=0; i<intcos.size(); ++i)
     if (intcos[i]->is_frozen())
       C[i][i] = 1.0;
-  //print_matrix(stdout, C, intcos.size(), intcos.size());
 
   return C;
 }
@@ -468,6 +476,7 @@ void FRAG::print_B(FILE *fp) const {
   fprintf(fp,"\t---B matrix---\n");
   print_matrix(fp, B, intcos.size(), 3*natom);
   fprintf(fp,"\n");
+  fflush(fp);
   free_matrix(B);
 }
 
@@ -552,8 +561,47 @@ bool ** FRAG::g_connectivity(void) const {
   return c;
 }
 
-const bool * const * const FRAG::g_connectivity_pointer(void) const {
+const bool * const * FRAG::g_connectivity_pointer(void) const {
   return connectivity;
+}
+
+double ** FRAG::inertia_tensor (double **in_geom) {
+  double **I = init_matrix(3,3);
+  double *center;
+
+  center = com(in_geom);
+
+  int atom, xyz, xyz2;
+  double tval;
+
+  for (int atom=0; atom<g_natom(); ++atom) {
+    tval = 0.0;
+    for (xyz=0; xyz<3; ++xyz) {
+      for (xyz2=0; xyz2<3; ++xyz2) {
+        if (xyz == xyz2)
+          tval += (in_geom[atom][xyz] - center[xyz]) * (in_geom[atom][xyz] - center[xyz]);
+        tval -=   (in_geom[atom][xyz] - center[xyz]) * (in_geom[atom][xyz2] - center[xyz2]);
+      }
+      I[xyz][xyz2] = tval;
+    }
+  }
+
+  free_array(center);
+  return I;
+}
+
+double * FRAG::com(double **in_geom) {
+  double *center = init_array(3);
+  double sum = 0.0;
+  for (int i=0; i<g_natom(); ++i) {
+    sum += mass[i];
+    for (int xyz=0; xyz<3; ++xyz) 
+      center[xyz] += mass[i] * in_geom[i][xyz];
+  }
+  for (int xyz=0; xyz<3; ++xyz) 
+    center[xyz] /= sum;
+
+  return center;
 }
 
 }

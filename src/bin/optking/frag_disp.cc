@@ -12,8 +12,6 @@
 #define EXTERN
 #include "globals.h"
 
-using psi::outfile;
-
 namespace opt {
 
 // dq - displacements to be performed
@@ -156,6 +154,7 @@ void FRAG::displace(double *dq, bool print_disp, int atom_offset) {
   free_array(q_target);
   free_array(q_orig);
 
+  fflush(outfile);
   return;
 }
 
