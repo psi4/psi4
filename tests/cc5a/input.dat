@@ -32,7 +32,15 @@ globals {
   d_converge 10
 }
 
+activate(C4NH4) 
+mints() 
 energy('ccsd(t)')
+
+compare_values(refnuc,   C4NH4.nuclear_repulsion_energy(),  9, "Nuclear repulsion energy") 
+compare_values(refscf,   get_variable("SCF energy"),     9, "SCF energy") 
+compare_values(refccsd,  get_variable("CCSD energy"),    9, "CCSD contribution") 
+compare_values(ref_t,    get_variable("(T) energy"),     9, "(T) contribution") 
+compare_values(reftotal, get_variable("Current energy"), 9, "Total energy") 
 
 #psi: (
 #label = "Planar C4NH4 cc-pVTZ+/CCSD(T)//cc-pVDZ/CCSD(T)"
