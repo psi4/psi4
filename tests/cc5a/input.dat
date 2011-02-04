@@ -32,6 +32,8 @@ globals {
   d_converge 10
 }
 
+energy('ccsd(t)')
+
 #psi: (
 #label = "Planar C4NH4 cc-pVTZ+/CCSD(T)//cc-pVDZ/CCSD(T)"
 #
