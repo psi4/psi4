@@ -1,6 +1,0 @@
-#!/bin/csh
-# copy all psi4 optking files to qchem directory and then run this file
-# still in progress
-foreach FILE (`ls *.cc | awk -F"."  '{print $1}'`)
- mv $FILE.cc $FILE.C
-end
