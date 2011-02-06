@@ -10,7 +10,7 @@
 using namespace psi;
 
 namespace psi { namespace scf {
-  
+
 class ROHF : public HF {
 protected:
     SharedMatrix S_;
@@ -24,14 +24,6 @@ protected:
     SharedMatrix Gc_;
     SharedMatrix Go_;
     SharedVector epsilon_;
-    
-    std::vector<SharedMatrix> diis_F_;
-    std::vector<SharedMatrix> diis_E_;
-
-    int num_diis_vectors_;
-    double **diis_B_;
-    int current_diis_fock_;
-    int diis_enabled_;
 
     int use_out_of_core_;
     double *pk_;
@@ -39,7 +31,7 @@ protected:
 
     int charge_;
     int multiplicity_;
-    
+
     void form_initialF();
     void form_initial_C();
     void form_C();
@@ -56,19 +48,19 @@ protected:
 
 //    void find_occupation(SharedMatrix);
     void save_fock();
-    void diis();
+    bool diis();
     void allocate_PK();
-    
+
     bool test_convergency();
 
     void save_information();
-    
+
     void common_init();
 public:
     ROHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
     ~ROHF();
 
-    double compute_energy();    
+    double compute_energy();
 };
 
 }}

@@ -982,7 +982,7 @@ void RHF::save_information()
     // Figure out frozen core orbitals
     //int nfzc = compute_nfzc();
     //int nfzv = compute_nfzv();
-    int nfzc = molecule_->nfrozen_core(options_.get_str("FREEZE_CORE"));
+    int nfzc = molecule_->nfrozen_core();
     int nfzv = options_.get_int("FREEZE_VIRT");
     if(Communicator::world->me() == 0) {
         chkpt_->wt_nfzc(nfzc);

@@ -88,9 +88,9 @@ protected:
     /// Reorient or not?
     bool fix_orientation_;
     /// Whether the user specified the charge, or default was used
-    bool chargeSpecified_;
+    bool charge_specified_;
     /// Whether the user spefified the multiplicity, or default was used
-    bool multiplicitySpecified_;
+    bool multiplicity_specified_;
 
     /// The molecular charge
     int molecularCharge_;
@@ -232,7 +232,7 @@ public:
     double fcharge(int atom) const;
 
     /// Number of frozen core for molecule given freezing state
-    int nfrozen_core(std::string depth);
+    int nfrozen_core(const std::string& depth="");
 
     /// Tests to see of an atom is at the passed position with a given tolerance
     int atom_at_position1(double *, double tol = 0.05) const;
@@ -278,9 +278,9 @@ public:
     SimpleMatrix* inertia_tensor();
 
     /// Returns true if the user specified the charge
-    bool chargeSpecified() const { return chargeSpecified_; }
+    bool charge_specified() const { return charge_specified_; }
     /// Returns true if the user specified the multiplicity
-    bool multiplicitySpecified() const { return multiplicitySpecified_; }
+    bool multiplicity_specified() const { return multiplicity_specified_; }
 
     /// Print the molecule
     void print();

@@ -16,6 +16,8 @@
 #include "rohf.h"
 #include <psi4-dec.h>
 
+#define _DEBUG
+
 using namespace std;
 using namespace psi;
 
@@ -28,7 +30,6 @@ ROHF::ROHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
 }
 
 ROHF::~ROHF() {
-    free_block(diis_B_);
     if (pk_)
         delete[](pk_);
     if (k_)
@@ -54,30 +55,6 @@ void ROHF::common_init()
     pk_ = NULL;
     k_ = NULL;
 
-    diis_B_ = NULL;
-    current_diis_fock_ = 0;
-
-    min_diis_vectors_ = options_.get_int("DIIS_VECTORS");
-    diis_enabled_ = options_.get_bool("DIIS");
-    diis_enabled_ = false;      // DIIS doesn't work, so don't bother.
-
-    // Don't perform DIIS is less than 2 vectors requested, or user requested a negative number
-    if (min_diis_vectors_ < 2) {
-        // disable diis
-        diis_enabled_ = false;
-    }
-
-    if (diis_enabled_ == true) {
-        // Allocate the memory
-        diis_B_ = block_matrix(min_diis_vectors_, min_diis_vectors_);
-
-        // Allocate space for diis_F_ and diis_E_
-        for (int i=0; i < min_diis_vectors_; ++i) {
-            diis_F_.push_back(SharedMatrix(factory_.create_matrix()));
-            diis_E_.push_back(SharedMatrix(factory_.create_matrix()));
-        }
-    }
-
     charge_ = options_.get_int("CHARGE");
     multiplicity_ = options_.get_int("MULTP");
 
@@ -102,6 +79,10 @@ void ROHF::form_initial_C()
     find_occupation(values);
     temp.gemm(false, false, 1.0, Shalf_, C_, 0.0);
     C_->copy(temp);
+
+#ifdef _DEBUG
+    C_->print(outfile, "initial C");
+#endif
 }
 
 double ROHF::compute_energy()
@@ -140,7 +121,7 @@ double ROHF::compute_energy()
             form_G_from_direct_integrals();
         else if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD")
             form_G_from_RI();
-        else if (scf_type_ == "OUT_OF_CORE");
+        else if (scf_type_ == "OUT_OF_CORE")
             form_G();
 
         form_F(); // Forms: Fc_, Fo_, Feff_
@@ -186,8 +167,14 @@ double ROHF::compute_energy()
 void ROHF::save_information()
 {
     // Print the final docc vector
-    char **temp2 = chkpt_->rd_irr_labs();
-    int nso = chkpt_->rd_nso();
+    char **temp2 = molecule_->irrep_labels();
+
+    // TODO: Delete this as soon as possible!!!
+    // Can't believe I'm adding this...
+    chkpt_->wt_nirreps(factory_.nirreps());
+    chkpt_->wt_irr_labs(temp2);
+
+    int nso = basisset_->nbf();
 
     fprintf(outfile, "\n  Final DOCC vector = (");
     for (int h=0; h<factory_.nirreps(); ++h) {
@@ -250,6 +237,7 @@ void ROHF::save_information()
         free(temp2[i]);
     free(temp2);
 
+    chkpt_->wt_nso(nso);
     chkpt_->wt_nmo(nso);
     chkpt_->wt_ref(2); // ROHF
     chkpt_->wt_etot(E_);
@@ -263,8 +251,8 @@ void ROHF::save_information()
     Feff_->save(psio_, 32);
 
     // Figure out frozen core orbitals
-    int nfzc = chkpt_->rd_nfzc();
-    int nfzv = chkpt_->rd_nfzv();
+    int nfzc = molecule_->nfrozen_core();
+    int nfzv = options_.get_int("FREEZE_VIRT");
     int *frzcpi = compute_fcpi(nfzc, epsilon_);
     int *frzvpi = compute_fvpi(nfzv, epsilon_);
     chkpt_->wt_frzcpi(frzcpi);
@@ -289,127 +277,44 @@ void ROHF::save_information()
     free_block(vectors);
 }
 
-void ROHF::save_fock() {
-#ifdef _DEBUG
-    if (debug_) {
-        fprintf(outfile, "  Saving current Fock matrix to %d.\n", current_diis_fock_);
+void ROHF::save_fock()
+{
+    if (initialized_diis_manager_ == false) {
+        diis_manager_ = shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk, psio_));
+        diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, Feff_.get());
+        diis_manager_->set_vector_size(1, DIISEntry::Matrix, Feff_.get());
+        initialized_diis_manager_ = true;
     }
-#endif
 
     // Save the effective Fock, back transform to AO, and orthonormalize
-    diis_F_[current_diis_fock_]->copy(Feff_);
-    diis_F_[current_diis_fock_]->back_transform(C_);
-    diis_F_[current_diis_fock_]->transform(Sphalf_);
+//    diis_F_[current_diis_fock_]->copy(Feff_);
+//    diis_F_[current_diis_fock_]->back_transform(C_);
+//    diis_F_[current_diis_fock_]->transform(Sphalf_);
 
-    // Determine error matrix for this Fock
-    diis_E_[current_diis_fock_]->copy(Feff_);
-    diis_E_[current_diis_fock_]->zero_diagonal();
-    diis_E_[current_diis_fock_]->back_transform(C_);
-    diis_E_[current_diis_fock_]->transform(Sphalf_);
+//    // Determine error matrix for this Fock
+//    diis_E_[current_diis_fock_]->copy(Feff_);
+//    diis_E_[current_diis_fock_]->zero_diagonal();
+//    diis_E_[current_diis_fock_]->back_transform(C_);
+//    diis_E_[current_diis_fock_]->transform(Sphalf_);
 
-#ifdef _DEBUG
-    if (debug_) {
-        fprintf(outfile, "  New error matrix:\n");
-        diis_E_[current_diis_fock_]->print(outfile);
-    }
-#endif
-    current_diis_fock_++;
-    if (current_diis_fock_ == min_diis_vectors_)
-        current_diis_fock_ = 0;
+//#ifdef _DEBUG
+//    if (debug_) {
+//        fprintf(outfile, "  New error matrix:\n");
+//        diis_E_[current_diis_fock_]->print(outfile);
+//    }
+//#endif
+//    current_diis_fock_++;
+//    if (current_diis_fock_ == min_diis_vectors_)
+//        current_diis_fock_ = 0;
 }
 
-void ROHF::diis() {
-    int i, j, matrix_size;
-
-    matrix_size = min_diis_vectors_ + 1;
-
-    // Construct the B matrix
-    // Assumes all the error matrices are available
-    SharedMatrix temp(factory_.create_matrix());
-    for (i=0; i<min_diis_vectors_; ++i) {
-        // diis_E_[i].print(outfile);
-        for (j=0; j<min_diis_vectors_; ++j) {
-//			temp.gemm(false, true, 1.0, diis_E_[i], diis_E_[j], 0.0);
-//			diis_B_[i][j] = temp.trace();
-            diis_B_[i][j] = diis_E_[i]->vector_dot(diis_E_[j]);
-        }
-    }
-
-#ifdef _DEBUG
-    if (debug_) {
-        fprintf(outfile, "  B matrix:\n");
-        print_mat(diis_B_, min_diis_vectors_, min_diis_vectors_, outfile);
-    }
-#endif
-
-    double **A = block_matrix(matrix_size, matrix_size);
-    double *b = init_array(matrix_size);
-    int *ipiv = init_int_array(matrix_size);
-
-    A[0][0] = 0.0;
-    b[0] = -1.0;
-    for (i=1; i<matrix_size; ++i) {
-        A[0][i] = -1.0;
-        A[i][0] = -1.0;
-        b[i] = 0.0;
-        for (j=1; j<matrix_size; ++j) {
-            A[i][j] = diis_B_[i-1][j-1];
-        }
-    }
-
-#ifdef _DEBUG
-    if (debug_) {
-        fprintf(outfile, "  A:\n");
-        print_mat(A, matrix_size, matrix_size, outfile);
-    }
-#endif
-
-    // Solve A * x = b
-    int errcode = C_DGESV(matrix_size, 1, &(A[0][0]), matrix_size, ipiv, b, matrix_size);
-
-#ifdef _DEBUG
-    if (debug_) {
-        fprintf(outfile, "  A:\n");
-        print_mat(A, matrix_size, matrix_size, outfile);
-        fprintf(outfile, "  x:\n");
-        for (i=0; i<matrix_size; ++i)
-        fprintf(outfile, "    %d: %20.16f\n", i, b[i]);
-    }
-#endif
-
-    // Extrapolate a new Fock matrix.
-    if (errcode == 0) {
-        Feff_->zero();
-        for (i=0; i<min_diis_vectors_; ++i) {
-            Matrix scaled;
-            scaled.copy(diis_F_[i]);
-            scaled.scale(b[i+1]);
-            Feff_->add(scaled);
-        }
-
-        // Feff_ is now in the orthogonal AO basis
-        // Transform back to MO basis for C construction
-        Feff_->back_transform(Sphalf_);
-        Feff_->transform(C_);
-
-        #ifdef _DEBUG
-            if (debug_) {
-                fprintf(outfile, "  Extrapolated Fock:\n");
-                Feff_->print(outfile);
-            }
-        #endif
-    } else if (errcode > 0) {
-        fprintf(outfile, "  DIIS: singularity detected, DIIS skipped this iteration (errcode = %d).\n", errcode);
-    } else {
-        fprintf(outfile, "  DIIS: DGESV argument #%d is illegal, DIIS skipped this iteration.\n", -errcode);
-    }
-
-    free_block(A);
-    free(b);
-    free(ipiv);
+bool ROHF::diis()
+{
+    return diis_manager_->extrapolate(1, Feff_.get());
 }
 
-bool ROHF::test_convergency() {
+bool ROHF::test_convergency()
+{
     double ediff = E_ - Eold_;
 
     if (fabs(ediff) < energy_threshold_)
@@ -418,7 +323,8 @@ bool ROHF::test_convergency() {
         return false;
 }
 
-void ROHF::allocate_PK() {
+void ROHF::allocate_PK()
+{
     // Figure out how many pair combinations yield A1 symmetry (done in above loop)
     //   num_pair_combinations_of_A1 = ioff[_opi[0]] + ioff[_opi[1]] + ioff[_opi[2]] + ...
     // Allocate memory for the PK matrix (using a vector)
@@ -453,7 +359,8 @@ void ROHF::allocate_PK() {
     }
 }
 
-void ROHF::form_initialF() {
+void ROHF::form_initialF()
+{
     // Form the initial Fock matrix, closed and open variants
     Fc_->copy(H_);
     Fo_->copy(H_);
@@ -466,14 +373,15 @@ void ROHF::form_initialF() {
 #ifdef _DEBUG
     if (debug_) {
         fprintf(outfile, "Initial closed Fock matrix:\n");
-        Fc_.print(outfile);
+        Fc_->print(outfile);
         fprintf(outfile, "Initial open Fock matrix:\n");
-        Fo_.print(outfile);
+        Fo_->print(outfile);
     }
 #endif
 }
 
-void ROHF::form_F() {
+void ROHF::form_F()
+{
     SharedMatrix Fct(factory_.create_matrix("Fock closed transformed"));
     SharedMatrix Fot(factory_.create_matrix("Fock open transformed"));
 
@@ -511,25 +419,26 @@ void ROHF::form_F() {
                 Feff_->set(h, j, i, val);
             }
             // Set the open/open portion
-//          for (int j=doccpi_[h]; j<doccpi_[h]+soccpi_[h]; ++j) {
-//              double val = Fot.get(h, i, j);
-//              Feff_.set(h, i, j, val);
-//              Feff_.set(h, j, i, val);
-//          }
+            for (int j=doccpi_[h]; j<doccpi_[h]+soccpi_[h]; ++j) {
+                double val = Fot.get(h, i, j);
+                Feff_.set(h, i, j, val);
+                Feff_.set(h, j, i, val);
+            }
         }
     }
 #ifdef _DEBUG
     if (debug_) {
-        Fc_.print(outfile);
-        Fo_.print(outfile);
+        Fc_->print(outfile);
+        Fo_->print(outfile);
         Fct->print(outfile);
         Fot->print(outfile);
-        Feff_.print(outfile);
+        Feff_->print(outfile);
     }
 #endif
 }
 
-void ROHF::form_C() {
+void ROHF::form_C()
+{
     SharedMatrix temp(factory_.create_matrix());
     SharedMatrix eigvec(factory_.create_matrix());
 
@@ -539,7 +448,7 @@ void ROHF::form_C() {
 
 #ifdef _DEBUG
     if (debug_) {
-        eigvec.eivprint(epsilon_);
+        eigvec->eivprint(epsilon_);
     }
 #endif
     temp->gemm(false, false, 1.0, C_, eigvec, 0.0);
@@ -547,12 +456,13 @@ void ROHF::form_C() {
 
 #ifdef _DEBUG
     if (debug_) {
-        C_.print(outfile);
+        C_->print(outfile);
     }
 #endif
 }
 
-void ROHF::form_D() {
+void ROHF::form_D()
+{
     int h, i, j, m;
     int *opi = Dc_->rowspi();
     int nirreps = Dc_->nirreps();
@@ -575,8 +485,8 @@ void ROHF::form_D() {
 
 #ifdef _DEBUG
     if (debug_) {
-        Dc_.print(outfile);
-        Do_.print(outfile);
+        Dc_->print(outfile);
+        Do_->print(outfile);
     }
 #endif
 }
@@ -712,7 +622,8 @@ void ROHF::form_PK() {
 #endif
 }
 
-void ROHF::form_G_from_PK() {
+void ROHF::form_G_from_PK()
+{
     int nirreps = factory_.nirreps();
     int *opi = factory_.rowspi();
     size_t ij;
@@ -749,11 +660,11 @@ void ROHF::form_G_from_PK() {
     if (debug_) {
         fprintf(outfile, "PK: ij = %lu\n", (unsigned long)ij);
         fflush(outfile);
-        Dc_.print(outfile);
+        Dc_->print(outfile);
         fprintf(outfile, "PK: Dc vector:\n");
         for (ij=0; ij<pk_pairs_; ++ij)
             fprintf(outfile, "PK: Dc vector [%lu] = %20.14f\n", (unsigned long)ij, Dc_vector[ij]);
-        Do_.print(outfile);
+        Do_->print(outfile);
         fprintf(outfile, "PK: Do vector:\n");
         for (ij=0; ij<pk_pairs_; ++ij)
             fprintf(outfile, "PK: Do vector [%lu] = %20.14f\n", (unsigned long)ij, Do_vector[ij]);
@@ -825,9 +736,9 @@ void ROHF::form_G_from_PK() {
 #ifdef _DEBUG
     if (debug_) {
         fprintf(outfile, "Gc from PK:\n");
-        Gc_.print(outfile);
+        Gc_->print(outfile);
         fprintf(outfile, "Go from PK:\n");
-        Go_.print(outfile);
+        Go_->print(outfile);
     }
 #endif
 
@@ -852,7 +763,7 @@ void ROHF::form_G() {
     int counter = 0;
 #endif
 
-    fprintf(stderr, "ROHF out-of-core algorithm is not implemented yet!\n");
+    fprintf(stderr, "ROHF out-of-core algorithm is not implemented yet!\nscf_type = %s\n", scf_type_.c_str());
     abort();
 
 #if 0
