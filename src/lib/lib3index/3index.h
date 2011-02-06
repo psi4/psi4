@@ -4,9 +4,7 @@
 #include <psi4-dec.h>
 #include <psiconfig.h>
 
-using namespace psi;
-
-namespace psi { 
+namespace psi {
 
 class PSIO;
 class BasisSet;
@@ -40,11 +38,11 @@ protected:
 
     double* schwarz_shell_vals_;
     double* schwarz_fun_vals_;
-    
+
     void form_schwarz_ints();
 
 public:
-    ThreeIndexTensor(shared_ptr<PSIO>, shared_ptr<BasisSet>);    
+    ThreeIndexTensor(shared_ptr<PSIO>, shared_ptr<BasisSet>);
     virtual ~ThreeIndexTensor();
     virtual void finalize();
 
@@ -66,21 +64,21 @@ public:
     // Canonical compound indexingi, -1 if not present
     long int* get_schwarz_shells_reverse() const { return schwarz_shells_reverse_; }
     long int* get_schwarz_funs_reverse() const { return schwarz_funs_reverse_; }
- 
-    shared_ptr<BasisSet> get_primary_basis() const { return primary_basis_; } 
+
+    shared_ptr<BasisSet> get_primary_basis() const { return primary_basis_; }
     // number of finished fitting vectors
     virtual int get_nfit() = 0;
     // number of raw fitting vectors
     virtual int get_nraw() = 0;
     // Convenience routines
     virtual void form_Qmn_disk() = 0;
-    virtual void form_Qmi_disk(shared_ptr<Matrix> C_act_virt) = 0; 
-    virtual void form_Qma_disk(shared_ptr<Matrix> C_act_virt) = 0; 
-    virtual void form_Qii_disk(shared_ptr<Matrix> C1_act_occ, shared_ptr<Matrix> C2_act_occ) = 0; 
-    virtual void form_Qia_disk(shared_ptr<Matrix> C_act_occ, shared_ptr<Matrix> C_act_virt) = 0; 
-    virtual void form_Qaa_disk(shared_ptr<Matrix> C1_act_virt, shared_ptr<Matrix> C2_act_virt) = 0; 
+    virtual void form_Qmi_disk(shared_ptr<Matrix> C_act_virt) = 0;
+    virtual void form_Qma_disk(shared_ptr<Matrix> C_act_virt) = 0;
+    virtual void form_Qii_disk(shared_ptr<Matrix> C1_act_occ, shared_ptr<Matrix> C2_act_occ) = 0;
+    virtual void form_Qia_disk(shared_ptr<Matrix> C_act_occ, shared_ptr<Matrix> C_act_virt) = 0;
+    virtual void form_Qaa_disk(shared_ptr<Matrix> C1_act_virt, shared_ptr<Matrix> C2_act_virt) = 0;
 
-}; 
+};
 
 class DFTensor : public ThreeIndexTensor {
 
@@ -97,43 +95,43 @@ protected:
     int nfin_;
 
 
-public: 
+public:
     DFTensor(shared_ptr<PSIO>, shared_ptr<BasisSet> primary, shared_ptr<BasisSet> auxiliary, shared_ptr<BasisSet> poisson);
     DFTensor(shared_ptr<PSIO>, shared_ptr<BasisSet> primary, shared_ptr<BasisSet> auxiliary);
     void common_init();
-    virtual ~DFTensor();   
+    virtual ~DFTensor();
 
     static shared_ptr<DFTensor> bootstrap_DFTensor();
     virtual void print(FILE* out);
 
     virtual int get_nfit();
-    virtual int get_nraw(); 
+    virtual int get_nraw();
 
     bool is_poisson() const { return poisson_; }
-    shared_ptr<BasisSet> get_auxiliary_basis() const { return auxiliary_basis_; } 
-    shared_ptr<BasisSet> get_poisson_basis() const { return poisson_basis_; } 
+    shared_ptr<BasisSet> get_auxiliary_basis() const { return auxiliary_basis_; }
+    shared_ptr<BasisSet> get_poisson_basis() const { return poisson_basis_; }
 
     shared_ptr<Matrix> form_fitting_metric();
     shared_ptr<Matrix> form_cholesky_metric();
     shared_ptr<Matrix> form_qr_metric(double max_cond = 1.0E-10);
 
     virtual void form_Qmn_disk();
-    virtual void form_Qmi_disk(shared_ptr<Matrix> C_act_virt); 
-    virtual void form_Qma_disk(shared_ptr<Matrix> C_act_virt); 
-    virtual void form_Qii_disk(shared_ptr<Matrix> C1_act_occ, shared_ptr<Matrix> C2_act_occ); 
-    virtual void form_Qia_disk(shared_ptr<Matrix> C_act_occ, shared_ptr<Matrix> C_act_virt); 
-    virtual void form_Qaa_disk(shared_ptr<Matrix> C1_act_virt, shared_ptr<Matrix> C2_act_virt); 
+    virtual void form_Qmi_disk(shared_ptr<Matrix> C_act_virt);
+    virtual void form_Qma_disk(shared_ptr<Matrix> C_act_virt);
+    virtual void form_Qii_disk(shared_ptr<Matrix> C1_act_occ, shared_ptr<Matrix> C2_act_occ);
+    virtual void form_Qia_disk(shared_ptr<Matrix> C_act_occ, shared_ptr<Matrix> C_act_virt);
+    virtual void form_Qaa_disk(shared_ptr<Matrix> C1_act_virt, shared_ptr<Matrix> C2_act_virt);
     virtual void form_Amn_disk();
-    virtual void form_Ami_disk(shared_ptr<Matrix> C_act_virt); 
-    virtual void form_Ama_disk(shared_ptr<Matrix> C_act_virt); 
-    virtual void form_Aii_disk(shared_ptr<Matrix> C1_act_occ, shared_ptr<Matrix> C2_act_occ); 
-    virtual void form_Aia_disk(shared_ptr<Matrix> C_act_occ, shared_ptr<Matrix> C_act_virt); 
-    virtual void form_Aaa_disk(shared_ptr<Matrix> C1_act_virt, shared_ptr<Matrix> C2_act_virt); 
+    virtual void form_Ami_disk(shared_ptr<Matrix> C_act_virt);
+    virtual void form_Ama_disk(shared_ptr<Matrix> C_act_virt);
+    virtual void form_Aii_disk(shared_ptr<Matrix> C1_act_occ, shared_ptr<Matrix> C2_act_occ);
+    virtual void form_Aia_disk(shared_ptr<Matrix> C_act_occ, shared_ptr<Matrix> C_act_virt);
+    virtual void form_Aaa_disk(shared_ptr<Matrix> C1_act_virt, shared_ptr<Matrix> C2_act_virt);
     void disk_tensor(shared_ptr<Matrix> C1, shared_ptr<Matrix> C2, bool, bool, bool, const std::string &);
 };
 
 class DFSCFTensor : public DFTensor {
-    
+
 protected:
 
 public:
@@ -141,8 +139,8 @@ public:
     DFSCFTensor(shared_ptr<PSIO>, shared_ptr<BasisSet> primary, shared_ptr<BasisSet> auxiliary);
 
     virtual ~DFSCFTensor();
-    
-    
+
+
 
 };
 
@@ -158,15 +156,15 @@ public:
     virtual void print(FILE* out);
 
     virtual int get_nfit();
-    virtual int get_nraw(); 
+    virtual int get_nraw();
     void form_Qia();
 
     virtual void form_Qmn_disk(){}
-    virtual void form_Qmi_disk(shared_ptr<Matrix> C_act_virt){} 
-    virtual void form_Qma_disk(shared_ptr<Matrix> C_act_virt){} 
-    virtual void form_Qii_disk(shared_ptr<Matrix> C1_act_occ, shared_ptr<Matrix> C2_act_occ){} 
-    virtual void form_Qia_disk(shared_ptr<Matrix> C_act_occ, shared_ptr<Matrix> C_act_virt){} 
-    virtual void form_Qaa_disk(shared_ptr<Matrix> C1_act_virt, shared_ptr<Matrix> C2_act_virt){} 
+    virtual void form_Qmi_disk(shared_ptr<Matrix> C_act_virt){}
+    virtual void form_Qma_disk(shared_ptr<Matrix> C_act_virt){}
+    virtual void form_Qii_disk(shared_ptr<Matrix> C1_act_occ, shared_ptr<Matrix> C2_act_occ){}
+    virtual void form_Qia_disk(shared_ptr<Matrix> C_act_occ, shared_ptr<Matrix> C_act_virt){}
+    virtual void form_Qaa_disk(shared_ptr<Matrix> C1_act_virt, shared_ptr<Matrix> C2_act_virt){}
 };
 
 }
