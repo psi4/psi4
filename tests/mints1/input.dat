@@ -88,22 +88,27 @@ compare_strings("d2h", singlet_ethylene.schoenflies_symbol(), "Singlet Ethylene 
 
 # C2 Symmetry
 molecule H2O2 {
-   O1
-   O2, O1, rOO
-   H1, O1, rOH, O2, aHOO
-   H2, O2, rOH, O1, aHOO, H1, D
+   #O1
+   #O2, O1, rOO
+   #H1, O1, rOH, O2, aHOO
+   #H2, O2, rOH, O1, aHOO, H1, D
 
-   rOO  = 1.4
-   rOH  = 1.1
-   aHOO = 105.
-   D    = 95
+   #rOO  = 1.4
+   #rOH  = 1.1
+   #aHOO = 105.
+   #D    = 95
+           O         -0.683288248744     0.00000    -0.102575909258
+           O          0.683288248744     0.00000    -0.102575909257
+           H         -1.131344101005     0.550786897106     0.615251123220
+           H          1.131344101005    -0.550786897108     0.615251123218
+bohr
+noreorient
 }
 
 print_out("\tH2O2 Test...")
 H2O2.update_geometry()
 H2O2.print_out()
-# TODO this is broken, restore the check when fixed
-#compare_strings("c2", H2O2.schoenflies_symbol(), "H2O2 point group");  #TEST
+compare_strings("c2", H2O2.schoenflies_symbol(), "H2O2 point group");  #TEST
 
 # S4 Symmetry (C2 Abelian)
 molecule Li_H2O_4_p {
@@ -138,7 +143,6 @@ molecule Li_H2O_4_p {
 print_out("\tLi(H20)_4^+ Test...")
 Li_H2O_4_p.update_geometry()
 Li_H2O_4_p.print_out()
-# This is actually broken right now, maybe the sigma_v test uses criteria that are too loose?
-#compare_strings("c2", Li_H2O_4_p.schoenflies_symbol(), "Li(H20)_4^+ point group");  #TEST
+compare_strings("c2", Li_H2O_4_p.schoenflies_symbol(), "Li(H20)_4^+ point group");  #TEST
 
 clean()
