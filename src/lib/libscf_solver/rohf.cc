@@ -420,9 +420,9 @@ void ROHF::form_F()
             }
             // Set the open/open portion
             for (int j=doccpi_[h]; j<doccpi_[h]+soccpi_[h]; ++j) {
-                double val = Fot.get(h, i, j);
-                Feff_.set(h, i, j, val);
-                Feff_.set(h, j, i, val);
+                double val = Fot->get(h, i, j);
+                Feff_->set(h, i, j, val);
+                Feff_->set(h, j, i, val);
             }
         }
     }
