@@ -1639,7 +1639,7 @@ bool Molecule::is_plane(Vector3& origin, Vector3& uperp, double tol) const
 {
     for (int i=0; i<natom(); ++i) {
         Vector3 A = xyz(i)-origin;
-        Vector3 Apar = uperp.dot(A)*origin;
+        Vector3 Apar = uperp.dot(A)*uperp;
         Vector3 Aperp = A - Apar;
         A = (Aperp- Apar) + origin;
         int atom = atom_at_position2(A, tol);
@@ -1755,7 +1755,6 @@ int Molecule::atom_to_unique_offset(int iatom) const
 boost::shared_ptr<PointGroup> Molecule::find_highest_point_group(double tol) const
 {
     int i, j;
-    unsigned int pg_bits = 0;
 
     Vector3 com = center_of_mass();
 
