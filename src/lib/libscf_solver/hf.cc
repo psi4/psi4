@@ -90,20 +90,29 @@ void HF::common_init()
     int ndocc = 0, nsocc = 0;
     input_docc_ = false;
     try {
+        // Try local space first.
         if (options_["DOCC"][0].has_changed()) {
             input_docc_ = true;
             for (int i=0; i<nirreps; ++i) {
                 doccpi_[i] = options_["DOCC"][i].to_integer();
                 ndocc += 2*doccpi_[i];
             }
-        } else {
+        }
+        else if (options_.get_global("DOCC").size() == nirreps) {
+            input_docc_ = true;
+            for (int i=0; i<nirreps; ++i) {
+                doccpi_[i] = options_.get_global("DOCC")[i].to_integer();
+                ndocc += 2*doccpi_[i];
+            }
+        }
+        else {
             for (int i=0; i<nirreps; ++i)
                 doccpi_[i] = 0;
         }
     } catch (IndexException e) {
         for (int i=0; i<nirreps; ++i)
             doccpi_[i] = 0;
-    } 
+    }
 
 
     input_socc_ = false;
@@ -114,14 +123,22 @@ void HF::common_init()
                 soccpi_[i] = options_["SOCC"][i].to_integer();
                 nsocc += soccpi_[i];
             }
-        } else {
+        }
+        else if (options_.get_global("SOCC").size() == nirreps) {
+            input_docc_ = true;
+            for (int i=0; i<nirreps; ++i) {
+                soccpi_[i] = options_.get_global("SOCC")[i].to_integer();
+                nsocc += 2*soccpi_[i];
+            }
+        }
+        else {
             for (int i=0; i<nirreps; ++i)
                 soccpi_[i] = 0;
         }
     } catch (IndexException e) {
         for (int i=0; i<nirreps; ++i)
             soccpi_[i] = 0;
-    } 
+    }
 
     // Read information from checkpoint
     nuclearrep_ = molecule_->nuclear_repulsion_energy();
@@ -134,7 +151,7 @@ void HF::common_init()
     nElec_ -= charge_;
 
     // If the user told us the multiplicity, read it from the input
-    if(molecule_->multiplicitySpecified()){
+    if(molecule_->multiplicity_specified()){
         multiplicity_ = molecule_->multiplicity();
     }else{
         if(nElec_%2){
@@ -311,9 +328,6 @@ void HF::find_occupation(Vector & evals)
 
 void HF::print_header()
 {
-    char *temp;
-    char **temp2;
-
     fprintf(outfile, " %s: by Justin Turney and Rob Parrish\n\n", options_.get_str("REFERENCE").c_str());
 
 #ifdef _DEBUG
@@ -324,28 +338,23 @@ void HF::print_header()
 
     molecule_->print();
 
-#ifdef OLD
     if(Communicator::world->me() == 0) {
-        temp = chkpt_->rd_sym_label();
-        fprintf(outfile, "  Running in %s symmetry.\n", temp);
-        free(temp);
+        fprintf(outfile, "  Running in %s symmetry.\n\n", molecule_->point_group()->symbol());
 
-        temp2 = chkpt_->rd_irr_labs();
+        CharacterTable ct = molecule_->point_group()->char_table();
+
         fprintf(outfile, "  Input DOCC vector = (");
         for (int h=0; h<factory_.nirreps(); ++h) {
-            fprintf(outfile, "%2d %3s ", doccpi_[h], temp2[h]);
+            fprintf(outfile, "%2d %3s ", doccpi_[h], ct.gamma(h).symbol());
         }
         fprintf(outfile, ")\n");
         fprintf(outfile, "  Input SOCC vector = (");
         for (int h=0; h<factory_.nirreps(); ++h) {
-            fprintf(outfile, "%2d %3s ", soccpi_[h], temp2[h]);
-            free(temp2[h]);
+            fprintf(outfile, "%2d %3s ", soccpi_[h], ct.gamma(h).symbol());
         }
-        free(temp2);
 
-        fprintf(outfile, ")\n");
+        fprintf(outfile, ")\n\n");
     }
-#endif
 
     fprintf(outfile, "  Nuclear repulsion = %20.15f\n", nuclearrep_);
 
