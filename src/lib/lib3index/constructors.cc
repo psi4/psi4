@@ -28,7 +28,7 @@
 using namespace std;
 using namespace psi;
 
-namespace psi { 
+namespace psi {
 
 ThreeIndexTensor::ThreeIndexTensor(shared_ptr<PSIO> psio, shared_ptr<BasisSet> primary) :
     psio_(psio), primary_basis_(primary)
@@ -40,7 +40,7 @@ ThreeIndexTensor::ThreeIndexTensor(shared_ptr<PSIO> psio, shared_ptr<BasisSet> p
     nthread_ = 1;
     print_ = 0;
     nbf_ = primary_basis_->nbf();
-    
+
     psio_->open(PSIF_3INDEX, PSIO_OPEN_OLD);
 
 }
@@ -58,15 +58,15 @@ void ThreeIndexTensor::finalize()
     psio_->close(PSIF_3INDEX, 1);
 }
 DFTensor::DFTensor(shared_ptr<PSIO> psio, shared_ptr<BasisSet> primary, \
-    shared_ptr<BasisSet> auxiliary, shared_ptr<BasisSet> poisson) : 
-    ThreeIndexTensor(psio, primary), auxiliary_basis_(auxiliary), 
+    shared_ptr<BasisSet> auxiliary, shared_ptr<BasisSet> poisson) :
+    ThreeIndexTensor(psio, primary), auxiliary_basis_(auxiliary),
     poisson_basis_(poisson)
 {
     poisson_ = true;
     common_init();
 }
 DFTensor::DFTensor(shared_ptr<PSIO> psio, shared_ptr<BasisSet> primary, \
-    shared_ptr<BasisSet> auxiliary) : 
+    shared_ptr<BasisSet> auxiliary) :
     ThreeIndexTensor(psio, primary), auxiliary_basis_(auxiliary)
 {
     poisson_ = false;
@@ -95,13 +95,13 @@ int DFTensor::get_nraw()
     return naux_;
 }
 DFSCFTensor::DFSCFTensor(shared_ptr<PSIO> psio, shared_ptr<BasisSet> primary, \
-    shared_ptr<BasisSet> auxiliary, shared_ptr<BasisSet> poisson) : 
-    DFTensor(psio, primary, auxiliary, poisson) 
+    shared_ptr<BasisSet> auxiliary, shared_ptr<BasisSet> poisson) :
+    DFTensor(psio, primary, auxiliary, poisson)
 {
 }
 DFSCFTensor::DFSCFTensor(shared_ptr<PSIO> psio, shared_ptr<BasisSet> primary, \
-    shared_ptr<BasisSet> auxiliary) : 
-    DFTensor(psio, primary, auxiliary) 
+    shared_ptr<BasisSet> auxiliary) :
+    DFTensor(psio, primary, auxiliary)
 {
 }
 DFSCFTensor::~DFSCFTensor()
@@ -125,10 +125,10 @@ int CDTensor::get_nraw()
 shared_ptr<DFTensor> DFTensor::bootstrap_DFTensor()
 {
     shared_ptr<PSIO> psio(new PSIO());
-    
-    Options& options = Process::environment.options; 
-    shared_ptr<Molecule> molecule = Process::environment.molecule(); 
-    
+
+    Options& options = Process::environment.options;
+    shared_ptr<Molecule> molecule = Process::environment.molecule();
+
     if (molecule.get() == 0) {
         fprintf(outfile, "  Active molecule not set!");
         throw PSIEXCEPTION("Active molecule not set!");
@@ -150,7 +150,7 @@ shared_ptr<DFTensor> DFTensor::bootstrap_DFTensor()
     shared_ptr<DFTensor> df;
     if (use_poisson)
         df = shared_ptr<DFTensor>(new DFTensor(psio, basis, auxiliary, poisson));
-    else 
+    else
         df = shared_ptr<DFTensor>(new DFTensor(psio, basis, auxiliary));
 
     return df;
@@ -185,7 +185,7 @@ void CDTensor::print(FILE* out)
     fprintf(out, "  ==>    Rob Parrish   <==\n");
     fprintf(out, "  ------------------------\n\n");
 
-    fprintf(outfile, "  Delta = %8.5E\n\n");
+    fprintf(outfile, "  Delta = %8.5E\n\n", delta_);
 
     fprintf(out, "  MOLECULE:\n\n");
     primary_basis_->molecule()->print();
