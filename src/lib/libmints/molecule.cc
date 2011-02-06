@@ -1851,7 +1851,7 @@ found_c2axis:
                 for (j=0; j<i; ++j) {
                     // the atoms must be identical
                     if (Z(i) != Z(j) || fabs(mass(i) - mass(j)) > tol) continue;
-                    Vector3 B = xyz(i) - com;
+                    Vector3 B = xyz(j) - com;
                     // the atoms must be the same distance from the com
                     if (fabs(AdotA - B.dot(B)) > tol) continue;
                     Vector3 axis= A+B;
