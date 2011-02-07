@@ -43,6 +43,8 @@ void idx_permute_presort(dpdfile4 *File, int this_bucket, int **bucket_map,
     if((pq >= Params->rowtot[pq_sym]) || (rs >= Params->coltot[rs_sym]))
       idx_error("MP Params_make: pq, rs", p,q,r,s,pq,rs,pq_sym,rs_sym,outfile);
 
+    //printf("p = %d, q = %d, pq_sym = %d, offset = %d, rs = %d, pq = %d\n", p,q,pq_sym, offset, rs, pq);
+
     offset = bucket_offset[this_bucket][pq_sym];
     File->matrix[pq_sym][pq-offset][rs] = value;
   }

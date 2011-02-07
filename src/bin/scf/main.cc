@@ -1,4 +1,4 @@
-#include <python.h>
+#include <boost/python.hpp>
 
 #include <cstdlib>
 #include <cstdio>

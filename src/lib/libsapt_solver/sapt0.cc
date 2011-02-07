@@ -51,8 +51,8 @@ SAPT0::~SAPT0()
 double SAPT0::compute_energy()
 {
     print_header();
-    cholesky_denominator(1.0E-8);
-    laplace_denominator(10);
+    //cholesky_denominator(1.0E-8);
+    //laplace_denominator(10);
     compute_integrals();
     compute_amplitudes();
     elst10();
