@@ -1448,36 +1448,6 @@ void RHF::form_G_from_PK()
     delete[](D_vector);
 }
 
-static int determine_unique_shell_quartets(int usii, int usjj, int uskk, int usll,
-                                           int* usi_arr,
-                                           int* usj_arr,
-                                           int* usk_arr,
-                                           int* usl_arr)
-{
-    //===--- Decide what shell quarters out of (ij|kl), (ik|jl), and (il|jk) are unique ---===
-    usi_arr[0] = usii; usj_arr[0] = usjj; usk_arr[0] = uskk; usl_arr[0] = usll;
-
-    if (usii == usjj && usii == uskk || usjj == uskk && usjj == usll)
-        return 1;
-    else if (usii == uskk || usjj == usll) {
-        usi_arr[1] = usii; usj_arr[1] = uskk; usk_arr[1] = usjj; usl_arr[1] = usll;
-        return 2;
-    }
-    else if (usjj == uskk) {
-        usi_arr[1] = usii; usj_arr[1] = usll; usk_arr[1] = usjj; usl_arr[1] = uskk;
-        return 2;
-    }
-    else if (usii == usjj || uskk == usll) {
-        usi_arr[1] = usii; usj_arr[1] = uskk; usk_arr[1] = usjj; usl_arr[1] = usll;
-        return 2;
-    }
-    else {
-        usi_arr[1] = usii; usj_arr[1] = uskk; usk_arr[1] = usjj; usl_arr[1] = usll;
-        usi_arr[2] = usii; usj_arr[2] = usll; usk_arr[2] = usjj; usl_arr[2] = uskk;
-        return 3;
-    }
-}
-
 void RHF::form_G_from_direct_integrals()
 {
     timer_on("form_G_from_direct_integrals");
