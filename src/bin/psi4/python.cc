@@ -50,25 +50,24 @@ extern std::map<std::string, plugin_info> plugins;
 namespace opt      { psi::PsiReturnType optking(psi::Options &); }
 
 namespace psi {
-    namespace mints    { PsiReturnType mints(Options &); }
-    namespace deriv    { PsiReturnType deriv(Options &); }
-    namespace scf      { PsiReturnType scf(Options &);   }
-    namespace dfmp2    { PsiReturnType dfmp2(Options &); }
-    namespace sapt     { PsiReturnType sapt(Options &);  }
-    namespace dcft     { PsiReturnType dcft(Options &);  }
+    namespace mints     { PsiReturnType mints(Options &); }
+    namespace deriv     { PsiReturnType deriv(Options &); }
+    namespace scf       { PsiReturnType scf(Options &, PyObject* pre, PyObject* post);   }
+    namespace dfmp2     { PsiReturnType dfmp2(Options &); }
+    namespace sapt      { PsiReturnType sapt(Options &);  }
+    namespace dcft      { PsiReturnType dcft(Options &);  }
 
-    namespace transqt  { PsiReturnType transqt(Options &);  }
-    namespace transqt2 { PsiReturnType transqt2(Options &); }
-    namespace ccsort   { PsiReturnType ccsort(Options&);    }
-    namespace ccenergy { PsiReturnType ccenergy(Options&);  }
-    namespace cctriples { PsiReturnType cctriples(Options&);  }
-    namespace cchbar   { PsiReturnType cchbar(Options&);    }
-    namespace cclambda { PsiReturnType cclambda(Options&);  }
-    namespace ccdensity{ PsiReturnType ccdensity(Options&); }
-    namespace oeprop   { PsiReturnType oeprop(Options&);    }
+    namespace transqt   { PsiReturnType transqt(Options &);  }
+    namespace transqt2  { PsiReturnType transqt2(Options &); }
+    namespace ccsort    { PsiReturnType ccsort(Options&);    }
+    namespace ccenergy  { PsiReturnType ccenergy(Options&);  }
+    namespace cctriples { PsiReturnType cctriples(Options&); }
+    namespace cchbar    { PsiReturnType cchbar(Options&);    }
+    namespace cclambda  { PsiReturnType cclambda(Options&);  }
+    namespace ccdensity { PsiReturnType ccdensity(Options&); }
+    namespace oeprop    { PsiReturnType oeprop(Options&);    }
 
-    extern int read_options(const std::string &name, Options & options, bool call_ipv1 = true,
-      bool suppress_printing = false);
+    extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
     extern FILE *outfile;
 }
 
@@ -86,9 +85,10 @@ int py_psi_deriv()
 {
     return deriv::deriv(Process::environment.options);
 }
-double py_psi_scf()
+
+double py_psi_scf(PyObject* precallback, PyObject* postcallback)
 {
-    if (scf::scf(Process::environment.options) == Success) {
+    if (scf::scf(Process::environment.options, precallback, postcallback) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
     else
@@ -495,7 +495,7 @@ void Python::run(FILE *input)
 
     // Setup globals options
     Process::environment.options.set_read_globals(true);
-    read_options("", Process::environment.options, false, true);
+    read_options("", Process::environment.options, true);
     Process::environment.options.set_read_globals(false);
 
     if (!Py_IsInitialized()) {

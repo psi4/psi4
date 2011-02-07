@@ -39,7 +39,7 @@ HF::HF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
       nuclear_dipole_contribution_(3),
       nuclear_quadrupole_contribution_(6),
       print_(3),
-      addExternalPotential_(false)
+      add_external_potential_(false)
 {
     common_init();
 }
@@ -145,16 +145,16 @@ void HF::common_init()
 
     // Determine the number of electrons in the system
     charge_ = molecule_->molecular_charge();
-    nElec_  = 0;
+    nelectron_  = 0;
     for (int i=0; i<molecule_->natom(); ++i)
-        nElec_ += (int)molecule_->Z(i);
-    nElec_ -= charge_;
+        nelectron_ += (int)molecule_->Z(i);
+    nelectron_ -= charge_;
 
     // If the user told us the multiplicity, read it from the input
     if(molecule_->multiplicity_specified()){
         multiplicity_ = molecule_->multiplicity();
     }else{
-        if(nElec_%2){
+        if(nelectron_%2){
             multiplicity_ = 2;
             molecule_->set_multiplicity(2);
             // There are an odd number of electrons
@@ -171,23 +171,23 @@ void HF::common_init()
     }
 
     // Make sure that the multiplicity is reasonable
-    if(multiplicity_ - 1 > nElec_){
+    if(multiplicity_ - 1 > nelectron_){
         char *str = new char[100];
         sprintf(str, "There are not enough electrons for multiplicity = %d, \n"
                      "please check your input and use the MULTP keyword", multiplicity_);
         throw SanityCheckError(str, __FILE__, __LINE__);
         delete [] str;
     }
-    if(multiplicity_%2 == nElec_%2){
+    if(multiplicity_%2 == nelectron_%2){
         char *str = new char[100];
         sprintf(str, "A multiplicity of %d with %d electrons is impossible.\n"
                      "Please check your input and use the MULTP and/or CHARGE keywords",
-                     multiplicity_, nElec_);
+                     multiplicity_, nelectron_);
         throw SanityCheckError(str, __FILE__, __LINE__);
         delete [] str;
     }
 
-    nbeta_  = (nElec_ - multiplicity_ + 1)/2;
+    nbeta_  = (nelectron_ - multiplicity_ + 1)/2;
     nalpha_ = nbeta_ + multiplicity_ - 1;
 
     // implicit case

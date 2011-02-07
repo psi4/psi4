@@ -102,7 +102,7 @@ double UHF::compute_energy()
         fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
     do {
         iter++;
-        iterationsNeeded_ = iter;
+        iterations_needed_ = iter;
         Dtold_->copy(Dt_);
         Eold_ = E_;
 
@@ -551,7 +551,7 @@ void UHF::form_F() {
     Fb_->copy(H_);
     Fb_->add(Gb_);
 
-    if(addExternalPotential_){
+    if(add_external_potential_){
         // If there's an external potential, its contribution has already been computed
         // in the form G routine and stored in pertF.  Now we need to add the rest of the
         // Fock matrix contribution
@@ -574,7 +574,7 @@ void UHF::form_C()
         factory_.create_matrix(eigvec);
         factory_.create_vector(eigval);
 
-        if(addExternalPotential_){
+        if(add_external_potential_){
             pertFa_->transform(Shalf_);
             pertFa_->diagonalize(eigvec, eigval);
         }else{
@@ -587,7 +587,7 @@ void UHF::form_C()
     // eigvec->eivprint(eigval);
     Ca_->gemm(false, false, 1.0, Shalf_, eigvec, 0.0);
 
-        if(addExternalPotential_){
+        if(add_external_potential_){
             pertFb_->transform(Shalf_);
             pertFb_->diagonalize(eigvec, eigval);
         }else{
@@ -796,7 +796,7 @@ void UHF::form_G_from_PK()
     double *Vb_vector = NULL;
     double *Fa_vector = NULL;
     double *Fb_vector = NULL;
-    if(addExternalPotential_){
+    if(add_external_potential_){
         Va_vector = new double[pk_pairs_];
         Vb_vector = new double[pk_pairs_];
         Fa_vector = new double[pk_pairs_];
@@ -823,14 +823,14 @@ void UHF::form_G_from_PK()
                     Da_vector[ij] = 2.0 * Da_->get(h, p, q);
                     Db_vector[ij] = 2.0 * Db_->get(h, p, q);
                     // Add in the external potential, if requested
-                    if(addExternalPotential_) Va_vector[ij] = 2.0 * Va_[h][p][q];
-                    if(addExternalPotential_) Vb_vector[ij] = 2.0 * Vb_[h][p][q];
+                    if(add_external_potential_) Va_vector[ij] = 2.0 * Va_[h][p][q];
+                    if(add_external_potential_) Vb_vector[ij] = 2.0 * Vb_[h][p][q];
 
                 } else {
                     Da_vector[ij] = Da_->get(h, p, q);
                     Db_vector[ij] = Db_->get(h, p, q);
-                    if(addExternalPotential_) Va_vector[ij] = Va_[h][p][q];
-                    if(addExternalPotential_) Vb_vector[ij] = Vb_[h][p][q];
+                    if(add_external_potential_) Va_vector[ij] = Va_[h][p][q];
+                    if(add_external_potential_) Vb_vector[ij] = Vb_[h][p][q];
                 }
                 ij++;
             }
@@ -882,7 +882,7 @@ void UHF::form_G_from_PK()
         Db_pq = Db_vector[pq];
         Db_rs = &Db_vector[0];
         Gb_rs = &Gb_vector[0];
-        if(addExternalPotential_){
+        if(add_external_potential_){
             Fa_pq = 0.0;
             Va_pq = Va_vector[pq];
             Va_rs = &Va_vector[0];
@@ -900,7 +900,7 @@ void UHF::form_G_from_PK()
 
             Gb_pq  += (*JK_block + *K_block) * (*Db_rs) + (*JK_block - *K_block) * (*Da_rs);
             *Gb_rs += (*JK_block + *K_block) * Db_pq    + (*JK_block - *K_block) * Da_pq;
-            if(addExternalPotential_){
+            if(add_external_potential_){
                 Fa_pq  += (*JK_block + *K_block) * (*Va_rs) + (*JK_block - *K_block) * (*Vb_rs);
                 *Fa_rs += (*JK_block + *K_block) * Va_pq    + (*JK_block - *K_block) * Vb_pq;
 
@@ -920,7 +920,7 @@ void UHF::form_G_from_PK()
         }
         Ga_vector[pq] += Ga_pq;
         Gb_vector[pq] += Gb_pq;
-        if(addExternalPotential_){
+        if(add_external_potential_){
             Fa_vector[pq] += Fa_pq;
             Fb_vector[pq] += Fb_pq;
         }
@@ -935,7 +935,7 @@ void UHF::form_G_from_PK()
                 Ga_->set(h, q, p, Ga_vector[ij]);
                 Gb_->set(h, p, q, Gb_vector[ij]);
                 Gb_->set(h, q, p, Gb_vector[ij]);
-                if(addExternalPotential_){
+                if(add_external_potential_){
                     pertFa_->set(h, p, q, Fa_vector[ij]);
                     pertFa_->set(h, q, p, Fa_vector[ij]);
                     pertFb_->set(h, p, q, Fb_vector[ij]);

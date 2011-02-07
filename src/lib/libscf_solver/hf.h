@@ -46,7 +46,7 @@ protected:
 
     /// Current Iteration
     int iteration_;
-    
+
     /// Nuclear repulsion energy
     double nuclearrep_;
 
@@ -106,7 +106,7 @@ protected:
 
     //Local K? (only with DF)
     bool local_K_;
-    
+
     /// do we need Coulomb?
     bool J_is_required_;
     /// do we need Exchange?
@@ -120,7 +120,7 @@ protected:
     shared_ptr<BasisSet> ribasis_;
     /// Poisson Basis
     shared_ptr<BasisSet> poissonbasis_;
-    
+
     /// Fitting metric (J-matrix) for DF-SCF
     double **W_;
     /// Fitting metric decomposition (varies by fitting algorithm)
@@ -129,8 +129,8 @@ protected:
     double schwarz_; //Current Schwarz magnitude (static for now)
     int ntri_; //Number of function pairs after schwarz sieve and subsequent sieves
     int ntri_naive_; //Number of function pairs after schwarz sieve
-   
-    
+
+
     /// save SCF Cartesian Grid
     bool save_grid_;
 
@@ -163,12 +163,12 @@ public:
     /// Formation of S^+1/2 and S^-1/2 are the same
     void form_Shalf();
 
-    /// Perform casting of basis set if desired. 
-    shared_ptr<Matrix> dualBasisProjection(SharedMatrix _C, int *_noccpi, shared_ptr<BasisSet> _old, shared_ptr<BasisSet> _new); 
+    /// Perform casting of basis set if desired.
+    shared_ptr<Matrix> dualBasisProjection(SharedMatrix _C, int *_noccpi, shared_ptr<BasisSet> _old, shared_ptr<BasisSet> _new);
 
-    /// UHF Atomic Density Matrix for SAD 
-    /// returns atomic_basis->nbf() x atomic_basis_->nbf() double array of approximate atomic density (summed over spin) 
-    void getUHFAtomicDensity(shared_ptr<BasisSet> atomic_basis, int n_electrons, int multiplicity, double** D); 
+    /// UHF Atomic Density Matrix for SAD
+    /// returns atomic_basis->nbf() x atomic_basis_->nbf() double array of approximate atomic density (summed over spin)
+    void getUHFAtomicDensity(shared_ptr<BasisSet> atomic_basis, int n_electrons, int multiplicity, double** D);
     // Computes the C and D matrix in place for SAD Atomic UHF
     void atomicUHFHelperFormCandD(int nelec, int norbs,double** Shalf, double**F, double** C, double** D);
 
@@ -176,7 +176,7 @@ public:
     void set_print(const int n) {print_ = n;}
 
     /// The number of iterations needed to reach convergence
-    int iterations_needed() {return iterationsNeeded_;}
+    int iterations_needed() {return iterations_needed_;}
 
     /// The RMS error in the density
     double rms_density_error() {return Drms_;}
@@ -204,7 +204,7 @@ protected:
     int print_;
 
     /// The number of electrons
-    int nElec_;
+    int nelectron_;
 
     /// The charge of the system
     int charge_;
@@ -213,10 +213,10 @@ protected:
     int multiplicity_;
 
     /// The number of iterations need to reach convergence
-    int iterationsNeeded_;
+    int iterations_needed_;
 
     /// Whether to add in an external potential to the fock matrix
-    bool addExternalPotential_;
+    bool add_external_potential_;
 
     /// Compute energy for the iteration.
     virtual double compute_E() = 0;
@@ -255,7 +255,7 @@ protected:
     void form_B_Poisson();
     /** Form B without metric transform for local K (makes J go crazy fast)*/
     void form_A();
-        
+
     /** Write tensor from memory to disk */
     void write_B();
     /** Free all memory associated with DF */
