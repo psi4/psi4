@@ -14,7 +14,7 @@ molecule C2H2 {
 print_out("\tC2H2 Test...")
 C2H2.update_geometry()
 C2H2.print_out()
-compare_strings("d2h", C2H2.schoenflies_symbol(), "C2H2 point group");  #TEST
+compare_strings("d2h", C2H2.point_group().symbol(), "C2H2 point group");  #TEST
 
 
 # C2h Symmetry

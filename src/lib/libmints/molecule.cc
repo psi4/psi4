@@ -70,6 +70,7 @@ namespace psi {
     boost::regex Molecule::orientCommand_("\\s*no_?reorient\\s*", boost::regbase::normal| boost::regbase::icase);
     boost::regex Molecule::symmetry_("\\s*symmetry\\s*(\\w+)\\s*", boost::regbase::normal| boost::regbase::icase);
     boost::smatch Molecule::reMatches_;
+
     /**
      * Interprets a string as an integer, throwing if it's unsuccesful.
      */
@@ -96,95 +97,6 @@ namespace psi {
         return d;
     }
 
-    /**
-     * Returns the molecule's Schoenflies symbol, as a string
-     */
-    std::string
-    Molecule::schoenflies_symbol() const
-    {
-        return std::string(pg_->symbol());
-    }
-
-    /**
-     * Attempts to interpret a string as an atom specifier in a zmatrix.
-     *
-     * @param str: the string to interpret.
-     * @param atoms: the list of atoms known so far
-     * @param line: the current line, for error message printing.
-     * @return the atom number (adjusted to zero-based counting)
-     */
-    int
-    Molecule::get_anchor_atom(const std::string &str, const std::vector<std::string> &atoms,
-                              const std::string &line)
-    {
-        if(regex_match(str, reMatches_, integerNumber_)){
-            // This is just a number, return it
-            return str_to_int(str) - 1;
-        }else{
-            // Look to see if this string is known
-            std::vector<std::string>::const_iterator iter = find(atoms.begin(), atoms.end(), str);
-            if(iter == atoms.end()){
-                throw PSIEXCEPTION("Illegal value " + str + " in atom specification"
-                                   + " on line " + line + "\n\n");
-            }else{
-                return distance(atoms.begin(), iter);
-            }
-        }
-    }
-
-    void Molecule::set_variable(const std::string &str, double val)
-    {
-        geometryVariables_[str] = val;
-        fprintf(outfile, "Setting geometry variable %s to %f\n", str.c_str(), val);
-        try {
-            update_geometry();
-        }
-        catch (...) {
-            // Update geometry might have added some atoms, delete them to be safe.
-            atoms_.clear();
-        }
-    }
-
-    double Molecule::get_variable(const std::string &str)
-    {
-        if(geometryVariables_.count(str)){
-            return geometryVariables_[str];
-        }else{
-            throw PSIEXCEPTION(str + " not known");
-        }
-    }
-
-    bool Molecule::is_variable(const std::string &str) const
-    {
-        return find(allVariables_.begin(), allVariables_.end(), str) != allVariables_.end();
-    }
-
-    /**
-     * Attempts to interpret a string as a double, if not it assumes it's a variable.
-     *
-     * @param str: the string to interpret.
-     * @return the CoordValue interpretation of the string.
-     */
-    CoordValue*
-    Molecule::get_coord_value(const std::string &str)
-    {
-        if(regex_match(str, reMatches_, realNumber_)){
-            // This is already a number
-            return new NumberValue(str_to_double(str));
-        }else{
-            // Register this as variable, whether it's defined or not
-            allVariables_.push_back(str);
-            // Make sure this special case is in the map
-            if(str == "TDA") geometryVariables_[str] = 360.0*atan(sqrt(2))/M_PI;
-            if(str[0] == '-'){
-                // This is negative; ignore the leading '-' and return minus the value
-                return new VariableValue(str.substr(1, str.size() - 1), geometryVariables_, true);
-            }else{
-                // This is positive; return the value using the string as-is
-                return new VariableValue(str, geometryVariables_);
-            }
-        }
-    }
 
     void if_to_invert_axis(const Vector3& v1, int& must_invert, int& should_invert, double& maxproj)
     {
@@ -224,7 +136,7 @@ namespace psi {
         }
     }
     extern FILE *outfile;
-}
+} // end explicit psi namespace
 
 Molecule::Molecule():
     nunique_(0),
@@ -234,7 +146,7 @@ Molecule::Molecule():
     multiplicity_(1),
     molecularCharge_(0),
     units_(Angstrom),
-    inputUnitsToAU_(0.0),
+    input_units_to_au_(0.0),
     fix_orientation_(false),
     charge_specified_(false),
     multiplicity_specified_(false),
@@ -254,19 +166,19 @@ Molecule& Molecule::operator=(const Molecule& other)
     if (this == &other)
         return *this;
 
-    name_                   = other.name_;
-    allVariables_           = other.allVariables_;
-    fragments_              = other.fragments_;
-    fragmentCharges_        = other.fragmentCharges_;
-    fragmentMultiplicities_ = other.fragmentMultiplicities_;
-    fix_orientation_        = other.fix_orientation_;
-    molecularCharge_        = other.molecularCharge_;
-    multiplicity_           = other.multiplicity_;
-    units_                  = other.units_;
-    inputUnitsToAU_         = other.inputUnitsToAU_;
-    allVariables_           = other.allVariables_;
-    fragmentTypes_          = other.fragmentTypes_;
-    geometryVariables_      = other.geometryVariables_;
+    name_                    = other.name_;
+    all_variables_           = other.all_variables_;
+    fragments_               = other.fragments_;
+    fragment_charges_        = other.fragment_charges_;
+    fragment_multiplicities_ = other.fragment_multiplicities_;
+    fix_orientation_         = other.fix_orientation_;
+    molecularCharge_         = other.molecularCharge_;
+    multiplicity_            = other.multiplicity_;
+    units_                   = other.units_;
+    input_units_to_au_       = other.input_units_to_au_;
+    all_variables_           = other.all_variables_;
+    fragment_types_          = other.fragment_types_;
+    geometry_variables_      = other.geometry_variables_;
     charge_specified_        = other.charge_specified_;
     multiplicity_specified_  = other.multiplicity_specified_;
 
@@ -276,14 +188,14 @@ Molecule& Molecule::operator=(const Molecule& other)
     nequiv_         = 0;
     equiv_          = 0;
     atom_to_unique_ = 0;
-    symmetryFromInput_ = other.symmetryFromInput_;
+    symmetry_from_input_ = other.symmetry_from_input_;
     form_symmetry_information();
 
     atoms_.clear();
     // Deep copy the map of variables
     std::vector<shared_ptr<CoordEntry> >::const_iterator iter = other.full_atoms_.begin();
     for(; iter != other.full_atoms_.end(); ++iter)
-         full_atoms_.push_back((*iter)->clone(full_atoms_, geometryVariables_));
+         full_atoms_.push_back((*iter)->clone(full_atoms_, geometry_variables_));
     // This is called here, so that the atoms list is populated
     update_geometry();
 
@@ -498,9 +410,9 @@ void Molecule::translate(const Vector3& r)
 {
     Vector3 temp;
     for (int i=0; i<nallatom(); ++i) {
-        temp = inputUnitsToAU_ * full_atoms_[i]->compute();
+        temp = input_units_to_au_ * full_atoms_[i]->compute();
         temp += r;
-        temp = temp/inputUnitsToAU_;
+        temp = temp/input_units_to_au_;
         full_atoms_[i]->set_coordinates(temp[0], temp[1], temp[2]);
     }
 }
@@ -522,6 +434,7 @@ SimpleMatrix Molecule::geometry()
 
     return geom;
 }
+
 SimpleMatrix Molecule::full_geometry()
 {
     SimpleMatrix geom(nallatom(), 3);
@@ -534,51 +447,39 @@ SimpleMatrix Molecule::full_geometry()
     return geom;
 }
 
-/**
- * Sets the geometry, given a matrix of coordinates (in Bohr).
- */
 void Molecule::set_geometry(double** geom)
 {
     for (int i=0; i<natom(); ++i) {
-        atoms_[i]->set_coordinates(geom[i][0] / inputUnitsToAU_,
-                                   geom[i][1] / inputUnitsToAU_,
-                                   geom[i][2] / inputUnitsToAU_);
+        atoms_[i]->set_coordinates(geom[i][0] / input_units_to_au_,
+                                   geom[i][1] / input_units_to_au_,
+                                   geom[i][2] / input_units_to_au_);
     }
 }
 
-/**
- * Sets the full geometry, given a matrix of coordinates (in Bohr).
- */
 void Molecule::set_full_geometry(double** geom)
 {
     for (int i=0; i<nallatom(); ++i) {
-        full_atoms_[i]->set_coordinates(geom[i][0] / inputUnitsToAU_,
-                                        geom[i][1] / inputUnitsToAU_,
-                                        geom[i][2] / inputUnitsToAU_);
+        full_atoms_[i]->set_coordinates(geom[i][0] / input_units_to_au_,
+                                        geom[i][1] / input_units_to_au_,
+                                        geom[i][2] / input_units_to_au_);
     }
 }
 
-/**
- * Sets the geometry, given a SimpleMatrix of coordinates (in Bohr).
- */
 void Molecule::set_geometry(SimpleMatrix& geom)
 {
     for (int i=0; i<natom(); ++i) {
-        atoms_[i]->set_coordinates(geom.get(i,0) / inputUnitsToAU_,
-                                   geom.get(i,1) / inputUnitsToAU_,
-                                   geom.get(i,2) / inputUnitsToAU_);
+        atoms_[i]->set_coordinates(geom.get(i,0) / input_units_to_au_,
+                                   geom.get(i,1) / input_units_to_au_,
+                                   geom.get(i,2) / input_units_to_au_);
     }
 }
 
-/**
- * Sets the full geometry, given a SimpleMatrix of coordinates (in Bohr).
- */
 void Molecule::set_full_geometry(SimpleMatrix& geom)
 {
     for (int i=0; i<nallatom(); ++i) {
-        full_atoms_[i]->set_coordinates(geom.get(i,0) / inputUnitsToAU_,
-                                        geom.get(i,1) / inputUnitsToAU_,
-                                        geom.get(i,2) / inputUnitsToAU_);
+        full_atoms_[i]->set_coordinates(geom.get(i,0) / input_units_to_au_,
+                                        geom.get(i,1) / input_units_to_au_,
+                                        geom.get(i,2) / input_units_to_au_);
     }
 }
 
@@ -881,7 +782,6 @@ void Molecule::init_with_chkpt(shared_ptr<Chkpt> chkpt)
         Communicator::world->raw_bcast(&(geom[0][0]), natoms*3*sizeof(double), 0);
     }
 
-
     for (int i=0; i<natoms; ++i) {
         //fprintf(outfile,"  Atom %d, Z = %d, x = %14.10f,%14.10f,%14.10f, Label , Mass, \n",i,(int)zvals[i],geom[i][0],geom[i][1],geom[i][2]); fflush(outfile);
         add_atom((int)zvals[i], geom[i][0], geom[i][1], geom[i][2], atomic_labels[(int)zvals[i]], an2masses[(int)zvals[i]]);
@@ -889,10 +789,10 @@ void Molecule::init_with_chkpt(shared_ptr<Chkpt> chkpt)
 
     // We need to make 1 fragment with all atoms
     fragments_.push_back(std::make_pair(0, natoms));
-    fragmentTypes_.push_back(Real);
+    fragment_types_.push_back(Real);
 
     // chkpt is already in AU set the conversion to 1
-    inputUnitsToAU_ = 1.0;
+    input_units_to_au_ = 1.0;
 
     Chkpt::free(zvals);
     Chkpt::free(geom);
@@ -982,12 +882,12 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
 
     // We need to make 1 fragment with all atoms
     fragments_.push_back(std::make_pair(0, natom));
-    fragmentTypes_.push_back(Real);
-    fragmentMultiplicities_.push_back(0);
-    fragmentCharges_.push_back(0);
+    fragment_types_.push_back(Real);
+    fragment_multiplicities_.push_back(0);
+    fragment_charges_.push_back(0);
 
     // chkpt is already in AU set the conversion to 1
-    inputUnitsToAU_ = 1.0;
+    input_units_to_au_ = 1.0;
 
     // Set the units to bohr since we did the conversion above, if needed.
     units_ = Bohr;
@@ -995,14 +895,7 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
     update_geometry();
 }
 
-/**
- * Given a string (including newlines to separate lines), builds a new molecule
- * and wraps it in a smart pointer
- *
- * @param text: a string providing the user's input
- */
-shared_ptr<Molecule>
-Molecule::create_molecule_from_string(const std::string &text)
+shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::string &text)
 {
     smatch reMatches;
     // Split the input at newlines, storing the result in "lines"
@@ -1034,12 +927,12 @@ Molecule::create_molecule_from_string(const std::string &text)
      * and remove them so that only the raw geometry remains.  Iterated backwards, as
      * elements are deleted as they are processed.
      */
-    for(int lineNumber = lines.size() - 1 ; lineNumber >= 0; --lineNumber) {
-        if(regex_match(lines[lineNumber], reMatches, variableDefinition_)) {
+    for (int lineNumber = lines.size() - 1 ; lineNumber >= 0; --lineNumber) {
+        if (regex_match(lines[lineNumber], reMatches, variableDefinition_)) {
             // A variable definition
             double value = (reMatches[2].str() == "TDA" ?
                                360.0*atan(sqrt(2))/M_PI : str_to_double(reMatches[2]));
-            mol->geometryVariables_[reMatches[1].str()] = value;
+            mol->geometry_variables_[reMatches[1].str()] = value;
             lines.erase(lines.begin() + lineNumber);
         }
         else if(regex_match(lines[lineNumber], reMatches, blankLine_)) {
@@ -1067,7 +960,7 @@ Molecule::create_molecule_from_string(const std::string &text)
             lines.erase(lines.begin() + lineNumber);
         }
         else if(regex_match(lines[lineNumber], reMatches, symmetry_)) {
-            mol->symmetryFromInput_ = boost::to_lower_copy(reMatches[1].str());
+            mol->symmetry_from_input_ = boost::to_lower_copy(reMatches[1].str());
             lines.erase(lines.begin() + lineNumber);
         }
         else if(regex_match(lines[lineNumber], reMatches, chargeAndMultiplicity_)) {
@@ -1089,9 +982,9 @@ Molecule::create_molecule_from_string(const std::string &text)
     unsigned int firstAtom  = 0;
     unsigned int atomCount = 0;
 
-    mol->inputUnitsToAU_ = mol->units_ == Bohr ? 1.0 : 1.0 / _bohr2angstroms;
-    mol->fragmentMultiplicities_.push_back(mol->multiplicity_);
-    mol->fragmentCharges_.push_back(mol->molecularCharge_);
+    mol->input_units_to_au_ = mol->units_ == Bohr ? 1.0 : 1.0 / _bohr2angstroms;
+    mol->fragment_multiplicities_.push_back(mol->multiplicity_);
+    mol->fragment_charges_.push_back(mol->molecularCharge_);
 
     for(unsigned int lineNumber = 0; lineNumber < lines.size(); ++lineNumber) {
         if(regex_match(lines[lineNumber], reMatches, fragmentMarker_)) {
@@ -1101,21 +994,21 @@ Molecule::create_molecule_from_string(const std::string &text)
 
             // Now we process the atom markers
             mol->fragments_.push_back(std::make_pair(firstAtom, atomCount));
-            mol->fragmentTypes_.push_back(Real);
+            mol->fragment_types_.push_back(Real);
             firstAtom = atomCount;
 
             // Figure out how to handle the multiplicity
             if(regex_match(lines[lineNumber+1], reMatches, chargeAndMultiplicity_)) {
                 // The user specified a charge/multiplicity for this fragment
-                mol->fragmentCharges_.push_back(str_to_int(reMatches[1]));
-                mol->fragmentMultiplicities_.push_back(str_to_int(reMatches[2]));
+                mol->fragment_charges_.push_back(str_to_int(reMatches[1]));
+                mol->fragment_multiplicities_.push_back(str_to_int(reMatches[2]));
                 // Don't forget to skip over the charge multiplicity line..
                 ++lineNumber;
             }
             else {
                 // The user didn't give us charge/multiplicity - use the molecule default
-                mol->fragmentCharges_.push_back(mol->molecularCharge_);
-                mol->fragmentMultiplicities_.push_back(mol->multiplicity_);
+                mol->fragment_charges_.push_back(mol->molecularCharge_);
+                mol->fragment_multiplicities_.push_back(mol->multiplicity_);
             }
         }
         else {
@@ -1123,7 +1016,7 @@ Molecule::create_molecule_from_string(const std::string &text)
         }
     }
     mol->fragments_.push_back(std::make_pair(firstAtom, atomCount));
-    mol->fragmentTypes_.push_back(Real);
+    mol->fragment_types_.push_back(Real);
 
     // Clean up the "--" and charge/multiplicity specifiers - they're no longer needed
     for(int lineNumber = lines.size() - 1 ; lineNumber >= 0; --lineNumber){
@@ -1143,7 +1036,7 @@ Molecule::create_molecule_from_string(const std::string &text)
     std::vector<std::string> atoms;
 
     std::vector<std::string>::iterator line = lines.begin();
-    for(; line != lines.end(); ++line){
+    for(; line != lines.end(); ++line) {
         // Trim leading and trailing whitespace
         boost::algorithm::trim(*line);
         boost::split(splitLine, *line, boost::is_any_of("\t ,"),token_compress_on);
@@ -1164,51 +1057,55 @@ Molecule::create_molecule_from_string(const std::string &text)
             mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new CartesianEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
                                                                                  atomic_masses[(int)zVals[atomSym]], atomSym,
                                                                                  xval, yval, zval)));
-        }else if(numEntries == 1){
+        }
+        else if(numEntries == 1) {
             // This is the first line of a Z-Matrix
             mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
                                                                                    atomic_masses[(int)zVals[atomSym]], atomSym)));
-        }else if(numEntries == 3){
+        }
+        else if(numEntries == 3) {
             // This is the second line of a Z-Matrix
             rTo = get_anchor_atom(splitLine[1], atoms, *line);
             if(rTo >= currentAtom)
-                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
-                                     + splitLine[1] + " has not been defined yet.");
+                throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
+                                   + splitLine[1] + " has not been defined yet.");
             shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
             mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], 0,
                                                                                atomic_masses[(int)zVals[atomSym]], atomSym,
                                                                                mol->full_atoms_[rTo], rval)));
-        }else if(numEntries == 5){
+        }
+        else if(numEntries == 5) {
             // This is the third line of a Z-Matrix
             rTo = get_anchor_atom(splitLine[1], atoms, *line);
             if(rTo >= currentAtom)
-                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
+                throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
                                      + splitLine[1] + " has not been defined yet.");
             aTo = get_anchor_atom(splitLine[3], atoms, *line);
             if(aTo >= currentAtom)
-                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
+                throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
                                      + splitLine[3] + " has not been defined yet.");
             if(aTo == rTo)
-                 throw PSIEXCEPTION("Atom used multiple times on line " + *line);
+                throw PSIEXCEPTION("Atom used multiple times on line " + *line);
             shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
             shared_ptr<CoordValue> aval(mol->get_coord_value(splitLine[4]));
             mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
                                                                                atomic_masses[(int)zVals[atomSym]], atomSym,
                                                                                mol->full_atoms_[rTo], rval, mol->full_atoms_[aTo], aval)));
-        }else if(numEntries == 7){
+        }
+        else if(numEntries == 7) {
             // This is line 4 onwards of a Z-Matrix
             rTo = get_anchor_atom(splitLine[1], atoms, *line);
             if(rTo >= currentAtom)
-                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
+                throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
                                      + splitLine[1] + " has not been defined yet.");
             aTo = get_anchor_atom(splitLine[3], atoms, *line);
             if(aTo >= currentAtom)
-                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
+                throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
                                      + splitLine[3] + " has not been defined yet.");
             dTo = get_anchor_atom(splitLine[5], atoms, *line);
             if(dTo >= currentAtom)
-                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
-                                     + splitLine[5] + " has not been defined yet.");
+                throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
+                                   + splitLine[5] + " has not been defined yet.");
             if(aTo == rTo || rTo == dTo /* for you star wars fans */ || aTo == dTo)
                  throw PSIEXCEPTION("Atom used multiple times on line " + *line);
 
@@ -1220,7 +1117,8 @@ Molecule::create_molecule_from_string(const std::string &text)
                                                                                atomic_masses[(int)zVals[atomSym]], atomSym,
                                                                                mol->full_atoms_[rTo], rval, mol->full_atoms_[aTo],
                                                                                aval, mol->full_atoms_[dTo], dval)));
-        } else {
+        }
+        else {
             throw PSIEXCEPTION("Illegal geometry specification line : " + lines[0] +
                            ".  You should provide either Z-Matrix or Cartesian input");
         }
@@ -1229,12 +1127,7 @@ Molecule::create_molecule_from_string(const std::string &text)
     return mol;
 }
 
-/**
- * Updates the geometry, by (re)interpreting the string used to create the molecule, and the current values
- * of the variables. The atoms list is cleared, and then rebuilt by this routine.
- */
-void
-Molecule::update_geometry()
+void Molecule::update_geometry()
 {
     if (fragments_.size() == 0)
         throw PSIEXCEPTION("Molecule::update_geometry: There are no fragments in this molecule.");
@@ -1247,14 +1140,15 @@ Molecule::update_geometry()
     molecularCharge_ = 0;
     multiplicity_    = 1;
     for(int fragment = 0; fragment < fragments_.size(); ++fragment){
-        if(fragmentTypes_[fragment] == Absent) continue;
-        if(fragmentTypes_[fragment] == Real){
-            molecularCharge_ += fragmentCharges_[fragment];
-            multiplicity_    += fragmentMultiplicities_[fragment] - 1;
+        if(fragment_types_[fragment] == Absent)
+            continue;
+        if(fragment_types_[fragment] == Real) {
+            molecularCharge_ += fragment_charges_[fragment];
+            multiplicity_    += fragment_multiplicities_[fragment] - 1;
         }
         for(int atom = fragments_[fragment].first; atom < fragments_[fragment].second; ++atom){
             full_atoms_[atom]->compute();
-            full_atoms_[atom]->set_ghosted(fragmentTypes_[fragment] == Ghost);
+            full_atoms_[atom]->set_ghosted(fragment_types_[fragment] == Ghost);
             if(full_atoms_[atom]->label() != "X") atoms_.push_back(full_atoms_[atom]);
         }
     }
@@ -1268,83 +1162,48 @@ Molecule::update_geometry()
     }
 }
 
-/**
- * Sets all fragments in the molecule to be active.
- */
-void
-Molecule::activate_all_fragments()
+void Molecule::activate_all_fragments()
 {
-    for(int i = 0; i < fragmentTypes_.size(); ++i){
-        fragmentTypes_[i] = Real;
+    for(int i = 0; i < fragment_types_.size(); ++i){
+        fragment_types_[i] = Real;
     }
 }
 
-/**
- * Sets all fragments in the molecule to be inactive.
- */
-void
-Molecule::deactivate_all_fragments()
+void Molecule::deactivate_all_fragments()
 {
-    for(int i = 0; i < fragmentTypes_.size(); ++i){
-        fragmentTypes_[i] = Absent;
+    for(int i = 0; i < fragment_types_.size(); ++i){
+        fragment_types_[i] = Absent;
     }
 }
 
-/**
- * Sets the specified list of fragments to be real.
- * @param reals: The list of real fragments.
- */
-void
-Molecule::set_active_fragments(boost::python::list reals)
+void Molecule::set_active_fragments(boost::python::list reals)
 {
     for(int i = 0; i < boost::python::len(reals); ++i){
         int fragment = boost::python::extract<int>(reals[i]);
-        fragmentTypes_[fragment - 1] = Real;
+        fragment_types_[fragment - 1] = Real;
     }
 }
 
-/**
- * Sets the specified fragment to be real.
- * @param fragment: The fragment to set.
- */
-void
-Molecule::set_active_fragment(int fragment)
+void Molecule::set_active_fragment(int fragment)
 {
-    fragmentTypes_[fragment - 1] = Real;
+    fragment_types_[fragment - 1] = Real;
 }
 
-/**
- * Sets the specified list of fragments to be ghosts.
- * @param ghosts: The list of ghosts fragments.
- */
-void
-Molecule::set_ghost_fragments(boost::python::list ghosts)
+void Molecule::set_ghost_fragments(boost::python::list ghosts)
 {
     for(int i = 0; i < boost::python::len(ghosts); ++i){
         int fragment = boost::python::extract<int>(ghosts[i]);
-        fragmentTypes_[fragment - 1] = Ghost;
+        fragment_types_[fragment - 1] = Ghost;
     }
 }
 
-/**
- * Sets the specified fragment to be a ghost.
- * @param fragment: The fragment to set.
- */
-void
-Molecule::set_ghost_fragment(int fragment)
+void Molecule::set_ghost_fragment(int fragment)
 {
-    fragmentTypes_[fragment - 1] = Ghost;
+    fragment_types_[fragment - 1] = Ghost;
 }
 
-/**
- * A wrapper to extract_subsets, callable from Boost
- * @param reals: A list containing the real atoms.
- * @param ghost: A list containing the ghost atoms.
- * @return The ref counted cloned molecule.
- */
-boost::shared_ptr<Molecule>
-Molecule::py_extract_subsets_1(boost::python::list reals,
-                             boost::python::list ghosts)
+boost::shared_ptr<Molecule> Molecule::py_extract_subsets_1(boost::python::list reals,
+                                                           boost::python::list ghosts)
 {
     std::vector<int> realVec;
     for(int i = 0; i < boost::python::len(reals); ++i)
@@ -1355,15 +1214,9 @@ Molecule::py_extract_subsets_1(boost::python::list reals,
 
     return extract_subsets(realVec, ghostVec);
 }
-/**
- * A wrapper to extract_subsets, callable from Boost
- * @param reals: A list containing the real atoms.
- * @param ghost: An int containing the ghost atoms.
- * @return The ref counted cloned molecule.
- */
-boost::shared_ptr<Molecule>
-Molecule::py_extract_subsets_2(boost::python::list reals,
-                             int ghost)
+
+boost::shared_ptr<Molecule> Molecule::py_extract_subsets_2(boost::python::list reals,
+                                                           int ghost)
 {
     std::vector<int> realVec;
     for(int i = 0; i < boost::python::len(reals); ++i)
@@ -1374,15 +1227,9 @@ Molecule::py_extract_subsets_2(boost::python::list reals,
 
     return extract_subsets(realVec, ghostVec);
 }
-/**
- * A wrapper to extract_subsets, callable from Boost
- * @param reals: An int containing the real atoms.
- * @param ghost: A list containing the ghost atoms.
- * @return The ref counted cloned molecule.
- */
-boost::shared_ptr<Molecule>
-Molecule::py_extract_subsets_3(int reals,
-                             boost::python::list ghost)
+
+boost::shared_ptr<Molecule> Molecule::py_extract_subsets_3(int reals,
+                                                           boost::python::list ghost)
 {
     std::vector<int> realVec;
     realVec.push_back(reals - 1);
@@ -1392,15 +1239,9 @@ Molecule::py_extract_subsets_3(int reals,
 
     return extract_subsets(realVec, ghostVec);
 }
-/**
- * A wrapper to extract_subsets, callable from Boost
- * @param reals: An int containing the real atoms.
- * @param ghost: An int containing the ghost atoms.
- * @return The ref counted cloned molecule.
- */
-boost::shared_ptr<Molecule>
-Molecule::py_extract_subsets_4(int reals,
-                             int ghost)
+
+boost::shared_ptr<Molecule> Molecule::py_extract_subsets_4(int reals,
+                                                           int ghost)
 {
     std::vector<int> realVec;
     realVec.push_back(reals -1 );
@@ -1410,36 +1251,18 @@ Molecule::py_extract_subsets_4(int reals,
 
     return extract_subsets(realVec, ghostVec);
 }
-/**
- * A wrapper to extract_subsets, callable from Boost
- * @param reals: A list containing the real atoms.
- * @return The ref counted cloned molecule.
- */
-boost::shared_ptr<Molecule>
-Molecule::py_extract_subsets_5(boost::python::list reals)
+
+boost::shared_ptr<Molecule> Molecule::py_extract_subsets_5(boost::python::list reals)
 {
     return py_extract_subsets_2(reals, -1);
 }
-/**
- * A wrapper to extract_subsets, callable from Boost
- * @param reals: An int containing the real atoms.
- * @return The ref counted cloned molecule.
- */
-boost::shared_ptr<Molecule>
-Molecule::py_extract_subsets_6(int reals)
+
+boost::shared_ptr<Molecule> Molecule::py_extract_subsets_6(int reals)
 {
     return py_extract_subsets_4(reals, -1);
 }
 
-/**
- * Makes a copy of the molecule, returning a new ref counted molecule with
- * only certain fragment atoms present as either ghost or real atoms
- * @param real_list: The list of fragments that should be present in the molecule as real atoms.
- * @param ghost_list: The list of fragments that should be present in the molecule as ghosts.
- * @return The ref counted cloned molecule
- */
-boost::shared_ptr<Molecule>
-Molecule::extract_subsets(const std::vector<int> &real_list, const std::vector<int> &ghost_list) const
+boost::shared_ptr<Molecule> Molecule::extract_subsets(const std::vector<int> &real_list, const std::vector<int> &ghost_list) const
 {
     if(ghost_list.size() + real_list.size() > fragments_.size())
         throw PSIEXCEPTION("The sum of real- and ghost-atom subsets is greater than the number of subsets");
@@ -2308,32 +2131,32 @@ void Molecule::form_symmetry_information(double tol)
 
 const char* Molecule::sym_label()
 {
-  if (pg_==NULL) set_point_group(find_point_group());
-  const char *symlabel;
-  symlabel = pg_->symbol();
-  return symlabel;
+    if (pg_==NULL) set_point_group(find_point_group());
+    const char *symlabel;
+    symlabel = pg_->symbol();
+    return symlabel;
 }
 
 char** Molecule::irrep_labels()
 {
-  if (pg_==NULL) set_point_group(find_point_group());
-  int nirreps = pg_->char_table().nirrep();
-  char **irreplabel = (char **) malloc(sizeof(char *)*nirreps);
-  for (int i=0; i<nirreps; i++) {
-    irreplabel[i] = (char *) malloc(sizeof(char)*5);
-    strcpy(irreplabel[i],pg_->char_table().gamma(i).symbol());
-  }
-  return irreplabel;
+    if (pg_==NULL) set_point_group(find_point_group());
+    int nirreps = pg_->char_table().nirrep();
+    char **irreplabel = (char **) malloc(sizeof(char *)*nirreps);
+    for (int i=0; i<nirreps; i++) {
+        irreplabel[i] = (char *) malloc(sizeof(char)*5);
+        strcpy(irreplabel[i],pg_->char_table().gamma(i).symbol());
+    }
+    return irreplabel;
 }
 
 Vector3 Molecule::xyz(int atom) const
 {
-    return inputUnitsToAU_ * atoms_[atom]->compute();
+    return input_units_to_au_ * atoms_[atom]->compute();
 }
 
 Vector3 Molecule::fxyz(int atom) const
 {
-    return inputUnitsToAU_ * full_atoms_[atom]->compute();
+    return input_units_to_au_ * full_atoms_[atom]->compute();
 }
 
 const double& Molecule::xyz(int atom, int _xyz) const
@@ -2353,32 +2176,32 @@ int Molecule::fZ(int atom) const
 
 double Molecule::x(int atom) const
 {
-    return inputUnitsToAU_ * atoms_[atom]->compute()[0];
+    return input_units_to_au_ * atoms_[atom]->compute()[0];
 }
 
 double Molecule::y(int atom) const
 {
-    return inputUnitsToAU_ * atoms_[atom]->compute()[1];
+    return input_units_to_au_ * atoms_[atom]->compute()[1];
 }
 
 double Molecule::z(int atom) const
 {
-    return inputUnitsToAU_ * atoms_[atom]->compute()[2];
+    return input_units_to_au_ * atoms_[atom]->compute()[2];
 }
 
 double Molecule::fx(int atom) const
 {
-    return inputUnitsToAU_ * full_atoms_[atom]->compute()[0];
+    return input_units_to_au_ * full_atoms_[atom]->compute()[0];
 }
 
 double Molecule::fy(int atom) const
 {
-    return inputUnitsToAU_ * full_atoms_[atom]->compute()[1];
+    return input_units_to_au_ * full_atoms_[atom]->compute()[1];
 }
 
 double Molecule::fz(int atom) const
 {
-    return inputUnitsToAU_ * full_atoms_[atom]->compute()[2];
+    return input_units_to_au_ * full_atoms_[atom]->compute()[2];
 }
 
 double Molecule::charge(int atom) const
@@ -2401,3 +2224,71 @@ std::string Molecule::flabel(int atom) const
     return full_atoms_[atom]->label();
 }
 
+int Molecule::get_anchor_atom(const std::string &str, const std::vector<std::string> &atoms,
+                              const std::string &line)
+{
+    if(regex_match(str, reMatches_, integerNumber_)) {
+        // This is just a number, return it
+        return str_to_int(str) - 1;
+    }
+    else{
+        // Look to see if this string is known
+        std::vector<std::string>::const_iterator iter = find(atoms.begin(), atoms.end(), str);
+        if(iter == atoms.end()) {
+            throw PSIEXCEPTION("Illegal value " + str + " in atom specification"
+                               + " on line " + line + "\n\n");
+        }
+        else{
+            return distance(atoms.begin(), iter);
+        }
+    }
+}
+
+void Molecule::set_variable(const std::string &str, double val)
+{
+    geometry_variables_[str] = val;
+    fprintf(outfile, "Setting geometry variable %s to %f\n", str.c_str(), val);
+    try {
+        update_geometry();
+    }
+    catch (...) {
+        // Update geometry might have added some atoms, delete them to be safe.
+        atoms_.clear();
+    }
+}
+
+double Molecule::get_variable(const std::string &str)
+{
+    if(geometry_variables_.count(str)) {
+        return geometry_variables_[str];
+    }
+    else{
+        throw PSIEXCEPTION(str + " not known");
+    }
+}
+
+bool Molecule::is_variable(const std::string &str) const
+{
+    return find(all_variables_.begin(), all_variables_.end(), str) != all_variables_.end();
+}
+
+CoordValue* Molecule::get_coord_value(const std::string &str)
+{
+    if(regex_match(str, reMatches_, realNumber_)) {
+        // This is already a number
+        return new NumberValue(str_to_double(str));
+    }
+    else {
+        // Register this as variable, whether it's defined or not
+        all_variables_.push_back(str);
+        // Make sure this special case is in the map
+        if(str == "TDA") geometry_variables_[str] = 360.0*atan(sqrt(2))/M_PI;
+        if(str[0] == '-'){
+            // This is negative; ignore the leading '-' and return minus the value
+            return new VariableValue(str.substr(1, str.size() - 1), geometry_variables_, true);
+        }else{
+            // This is positive; return the value using the string as-is
+            return new VariableValue(str, geometry_variables_);
+        }
+    }
+}
