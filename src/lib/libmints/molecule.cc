@@ -521,7 +521,7 @@ void Molecule::reorient()
     SimpleVector itensor_moments(3);
 
     // Diagonalize the tensor matrix
-    itensor->diagonalize(&itensor_axes, &itensor_moments);
+    itensor->diagonalize(&itensor_axes, &itensor_moments, 3);
 
     // Locate degeneracies
     int degen=0, deg_IM1=0, deg_IM2=0;
@@ -638,8 +638,8 @@ void Molecule::reorient()
     }
 
     if (degen == 0) {
-        rotate(itensor_axes);
-        rotate(R);
+        rotate_full(itensor_axes);
+        rotate_full(R);
     }
 
     if (degen == 1) {
@@ -689,7 +689,7 @@ void Molecule::reorient()
             R[1][1] = cos_phix;
             R[0][1] = sin_phix;
             R[1][0] = -sin_phix;
-            rotate(R);
+            rotate_full(R);
 
             R.zero();
             R[0][0] = 1.0;
@@ -697,7 +697,7 @@ void Molecule::reorient()
             R[2][2] = cos_theta;
             R[1][2] = sin_theta;
             R[2][1] = -sin_theta;
-            rotate(R);
+            rotate_full(R);
 
             R.zero();
             R[2][2] = 1.0;
@@ -705,7 +705,7 @@ void Molecule::reorient()
             R[1][1] = cos_phix;
             R[0][1] = -sin_phix;
             R[1][0] = sin_phix;
-            rotate(R);
+            rotate_full(R);
         }
     }
 
@@ -1155,11 +1155,23 @@ void Molecule::update_geometry()
 
     move_to_com();
     reorient();
-    // Check the point group of the molecule. If it is not set, set it.
-    if (!point_group()) {
-        shared_ptr<PointGroup> pg = find_point_group();
-        set_point_group(pg);
+    // Compute point group of the molecule.
+    set_point_group(find_point_group());
+    // Now we need to rotate the geometry to its symmetry frame
+    // to align the axes correctly for the point group
+    SimpleMatrix R(3,3);
+    // We actually ask for the highest point group here so that we can align
+    // the molecule according to its actual symmetry, rather than the symmetry
+    // the the user might have provided.
+    SymmetryOperation frame = find_highest_point_group()->symm_frame();
+    for(int i = 0; i < 3; ++i){
+        for(int j = 0; j < 3; ++j){
+            R.set(j, i, frame(i,j));
+        }
     }
+    rotate_full(R);
+    // Recompute point group of the molecule, so the symmetry info is updated to the new frame
+    set_point_group(find_point_group());
 }
 
 void Molecule::activate_all_fragments()
@@ -1331,6 +1343,7 @@ void Molecule::save_to_chkpt(shared_ptr<Chkpt> chkpt, std::string prefix)
 void Molecule::print()
 {
     if (natom()) {
+        if (pg_) fprintf(outfile,"    Molecular point group: %s\n\n", pg_->symbol());
         fprintf(outfile,"    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
                 units_ == Angstrom ? "Angstrom" : "Bohr", molecular_charge_, multiplicity_);
         fprintf(outfile,"       Center              X                  Y                   Z       \n");
@@ -1905,9 +1918,9 @@ found_sigma:
         origin[i] = com[i];
     }
 
-    //fprintf(outfile, "frame:\n");
-    //frame.print(outfile);
-    //fprintf(outfile, "origin: %s\n", origin.to_string().c_str());
+//    fprintf(outfile, "frame:\n");
+//    frame.print(outfile);
+//    fprintf(outfile, "origin: %s\n", origin.to_string().c_str());
 
 //    pg_bits = 0;
 //    if (c2axis[0] == 1.0)
@@ -1957,7 +1970,6 @@ found_sigma:
         }
     }
 
-    fprintf(outfile, "\n  Molecular point group: %s\n\n", pg->symbol());
     return pg;
 }
 
@@ -2038,7 +2050,6 @@ void Molecule::form_symmetry_information(double tol)
             equiv_[i][0] = i;
             atom_to_unique_[i] = i;
         }
-        fprintf(outfile, "C1 detected, returning\n");fflush(outfile);
         return;
     }
 
