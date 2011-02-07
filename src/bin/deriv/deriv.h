@@ -15,37 +15,48 @@ namespace psi { namespace deriv {
 
 class Deriv
 {
+    const boost::shared_ptr<BasisSet>& basis_;
+    int natom_;
+    const boost::shared_ptr<MatrixFactory>& factory_;
+
+    CdSalcList cdsalcs_;
+
+    // Reference type
+    reftype ref_;
+
+    std::vector<SharedMatrix> dH_;
+    std::vector<SharedMatrix> dS_;
+
+#if 0
+    // AO version of the code.
     std::vector<SharedSimpleMatrix> dH_;
     std::vector<SharedSimpleMatrix> dS_;
-
-    boost::shared_ptr<BasisSet> basis_;
-
-    int natom_;
-
-    boost::shared_ptr<MatrixFactory> factory_;
+#endif
 
     // Results go here.
     SharedSimpleMatrix QdH_;
     SharedSimpleMatrix WdS_;
     SharedSimpleMatrix tb_;
 
-    // Sharederence
-    reftype ref_;
-
 public:
-    Deriv(reftype ref, boost::shared_ptr<MatrixFactory>& factory, boost::shared_ptr<BasisSet>& basis);
+    Deriv(reftype ref, const boost::shared_ptr<MatrixFactory>& factory, const boost::shared_ptr<BasisSet>& basis);
 
+    void compute(const SharedMatrix& Q, const SharedMatrix& G, const SharedMatrix& W);
+
+#if 0
+    // AO version of the code
     void compute(SharedSimpleMatrix& Q, SharedSimpleMatrix& G, SharedSimpleMatrix& W);
+#endif
 
-    SharedSimpleMatrix& one_electron() {
+    const SharedSimpleMatrix& one_electron() {
         return QdH_;
     }
 
-    SharedSimpleMatrix& overlap() {
+    const SharedSimpleMatrix& overlap() {
         return WdS_;
     }
 
-    SharedSimpleMatrix& two_body() {
+    const SharedSimpleMatrix& two_body() {
         return tb_;
     }
 };
