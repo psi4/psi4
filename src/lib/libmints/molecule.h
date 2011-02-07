@@ -523,6 +523,9 @@ public:
     /// Set whether or not orientation is fixed
     void set_orientation_fixed(bool _fix = true) { fix_orientation_ = _fix; }
 
+    /// Returns the Schoenflies symbol
+    std::string schoenflies_symbol() const;
+
     /**
      * Updates the geometry, by (re)interpreting the string used to create the molecule, and the current values
      * of the variables. The atoms list is cleared, and then rebuilt by this routine.

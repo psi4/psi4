@@ -205,6 +205,7 @@ void export_mints()
             def("find_point_group", &Molecule::find_point_group).
             def("set_point_group", &Molecule::set_point_group).
             def("point_group", &Molecule::point_group).
+            def("schoenflies_symbol", &Molecule::schoenflies_symbol).
             def("form_symmetry_information", &Molecule::form_symmetry_information).
             def("create_molecule_from_string", &Molecule::create_molecule_from_string).
             staticmethod("create_molecule_from_string").

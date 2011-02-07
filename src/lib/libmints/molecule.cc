@@ -2292,3 +2292,8 @@ CoordValue* Molecule::get_coord_value(const std::string &str)
         }
     }
 }
+
+std::string Molecule::schoenflies_symbol() const
+{
+    return point_group()->symbol();
+}
