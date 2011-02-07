@@ -45,6 +45,8 @@ protected:
     int *colspi_;
     /// Name of the matrix
     std::string name_;
+    /// Symmetry of this matrix (in most cases this will be 0 [totally symmetric])
+    int symmetry_;
 
     /// Allocates matrix_
     void alloc();
@@ -78,7 +80,7 @@ public:
      *
      * @param name Name of the matrix, used in saving and printing.
      */
-    Matrix(std::string name);
+    Matrix(std::string name, int symmetry = 0);
     /// Explicit copy reference constructor
     explicit Matrix(const Matrix& copy);
     explicit Matrix(boost::shared_ptr<Matrix> copy);
@@ -93,7 +95,7 @@ public:
      * @param rowspi Array of length nirreps giving row dimensionality.
      * @param colspi Array of length nirreps giving column dimensionality.
      */
-    Matrix(int nirreps, int *rowspi, int *colspi);
+    Matrix(int nirreps, int *rowspi, int *colspi, int symmetry = 0);
     /**
      * Constructor, sets name_, and sets up the matrix
      *
@@ -102,7 +104,7 @@ public:
      * @param rowspi Array of length nirreps giving row dimensionality.
      * @param colspi Array of length nirreps giving column dimensionality.
      */
-    Matrix(std::string name, int nirreps, int *rowspi, int *colspi);
+    Matrix(std::string name, int nirreps, int *rowspi, int *colspi, int symmetry = 0);
     /**
      * Constructor, sets up the matrix
      * Convenience case for 1 irrep
@@ -137,7 +139,7 @@ public:
      * @param rows Dimension object providing row information.
      * @param cols Dimension object providing column information.
      */
-    Matrix(const std::string& name, const Dimension& rows, const Dimension& cols);
+    Matrix(const std::string& name, const Dimension& rows, const Dimension& cols, int symmetry = 0);
 
     /// Destructor, frees memory
     ~Matrix();
@@ -149,7 +151,7 @@ public:
      * @param rowspi Array of length nirreps giving row dimensionality.
      * @param colspi Array of length nirreps giving column dimensionality.
      */
-    void init(int nirreps, int *rowspi, int *colspi, std::string name = "");
+    void init(int nirreps, int *rowspi, int *colspi, std::string name = "", int symmetry = 0);
 
     /// Creates an exact copy of the matrix and returns it.
     Matrix* clone() const;
