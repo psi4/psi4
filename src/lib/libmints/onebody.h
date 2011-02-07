@@ -84,6 +84,9 @@ public:
     /// Does the method provide second derivatives?
     virtual bool has_deriv2() { return false; }
 
+    /// What order of derivative was requested?
+    int deriv() const { return deriv_; }
+
     /// Computes the first derivatives and stores them in result
     virtual void compute_deriv1(std::vector<boost::shared_ptr<Matrix> > &result);
     /// Computes the first derivatives and stores them in result
