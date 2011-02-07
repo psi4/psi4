@@ -228,12 +228,10 @@ void OneBodySOInt::compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result
     if (result.size() != cdsalcs.ncd())
         throw SanityCheckError("OneBodySOInt::compute_deriv1: result vector size does not match SALC size.", __FILE__, __LINE__);
 
+    Molecule& mol = *ob_->basis1()->molecule().get();
     int ns1 = b1_->nshell();
     int ns2 = b2_->nshell();
     const double *aobuf = ob_->buffer();
-    int i_offset = 0;
-    int natom = ob_->basis()->molecule()->natom();
-    int threenatom = 3*natom;
 
     // Loop over unique SO shells.
     for (int ish=0; ish<ns1; ++ish) {
@@ -243,7 +241,7 @@ void OneBodySOInt::compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result
 
 //        fprintf(outfile, "nso1 = %d, nao1 = %d\n", nso1, nao1);
 
-        for (int jsh=0; jsh<ns1; ++jsh) {
+        for (int jsh=0; jsh<ns2; ++jsh) {
             const SOTransform& t2= b2_->trans(jsh);
             int nso2 = b2_->nfunction(jsh);
             int nao2 = b2_->naofunction(jsh);
@@ -332,101 +330,123 @@ void OneBodySOInt::compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result
             // Ok, symmetrize the derivatives and add their contribution to the result matrix.
             // we'll go by components:
 
-            int atom1 = ob_->basis1()->shell(t1.aoshell[0].aoshell)->ncenter();
-            int atom2 = ob_->basis2()->shell(t2.aoshell[0].aoshell)->ncenter();
-
-            const CdSalcWRTAtom& cdsalc1 = cdsalcs.atom_salc(atom1);
-            const CdSalcWRTAtom& cdsalc2 = cdsalcs.atom_salc(atom2);
-
-            atom1 *= 3;
-            atom2 *= 3;
-
-            fprintf(outfile, "ish %d jsh %d atom1 %d atom2 %d aoshell1 %d aoshell2 %d\n",
-                    ish, jsh, atom1, atom2, t1.aoshell[0].aoshell, t2.aoshell[0].aoshell);
-            cdsalcs.print();
+            fprintf(outfile, "ish %d jsh %d aoshell1 %d aoshell2 %d\n",
+                    ish, jsh, t1.aoshell[0].aoshell, t2.aoshell[0].aoshell);
+//            cdsalcs.print();
             fflush(outfile);
 
-            for (int itr=0; itr<nso1; ++itr) {
+            for (int i=0; i<t1.naoshell; ++i) {
+                const SOTransformShell &s1 = t1.aoshell[i];
+                int atom1 = ob_->basis1()->shell(s1.aoshell)->ncenter();
+                const CdSalcWRTAtom& cdsalc1 = cdsalcs.atom_salc(atom1);
+                atom1 *= 3;
 
-                int ifunc = b1_->function(ish) + itr;
-                int iirrep = b1_->irrep(ifunc);
-                int irel = b1_->function_within_irrep(ifunc);
-                int isooff = itr;
+                for (int itr=0; itr<nso1; ++itr) {
 
-                for (int jtr=0; jtr<nso2; ++jtr) {
+                    int ifunc  = b1_->function(ish) + itr;
+                    int iirrep = b1_->irrep(ifunc);
+                    int irel   = b1_->function_within_irrep(ifunc);
+                    int isooff = itr;
 
-                    int jfunc = b2_->function(jsh) + jtr;
-                    int jirrep = b2_->irrep(jfunc);
-                    int jrel = b2_->function_within_irrep(jfunc);
-                    int jsooff = isooff*nso2 + jtr;
+                    for (int jtr=0; jtr<nso2; ++jtr) {
 
-                    // atom 1
-                    for (int nx=0; nx<cdsalc1.nx(); ++nx) {
-                        const CdSalcWRTAtom::Component element = cdsalc1.x(nx);
-                        double temp = element.coef * buffer_[jsooff + (atom1+0)*nso12];
+                        int jfunc  = b2_->function(jsh) + jtr;
+                        int jirrep = b2_->irrep(jfunc);
+                        int jrel   = b2_->function_within_irrep(jfunc);
+                        int jsooff = isooff*nso2 + jtr;
 
-                        fprintf(outfile, "x1 component temp %20.16f, iirrep %d, jirrep %d, salc symmetry %d\n",
-                                temp, iirrep, jirrep, element.irrep);
+                        // atom 1
+                        for (int nx=0; nx<cdsalc1.nx(); ++nx) {
+                            const CdSalcWRTAtom::Component element = cdsalc1.x(nx);
+                            double temp = element.coef * buffer_[jsooff + (atom1+0)*nso12];
 
-                        if ((iirrep ^ jirrep) == element.irrep && fabs(temp) > 1.0e-10) {
-                            fprintf(outfile, "\tiirrep %d, irel %d, jrel %d salc %d\n", iirrep, irel, jrel, element.salc);
-                            result[element.salc]->add(iirrep, irel, jrel, temp);
+                            fprintf(outfile, "x1 component temp %20.16f, coef %f buffer %f iirrep %d, jirrep %d, salc symmetry %d\n",
+                                    temp, element.coef, buffer_[jsooff + (atom1+0)*nso12], iirrep, jirrep, element.irrep);
+                            if ((iirrep ^ jirrep) == element.irrep && fabs(temp) > 1.0e-10) {
+                                fprintf(outfile, "\tadding iirrep %d, irel %d, jrel %d salc %d\n", iirrep, irel, jrel, element.salc);
+                                result[element.salc]->add(iirrep, irel, jrel, temp);
+                            }
+                            fflush(outfile);
                         }
-                        fflush(outfile);
-                    }
-                    for (int ny=0; ny<cdsalc1.ny(); ++ny) {
-                        const CdSalcWRTAtom::Component element = cdsalc1.y(ny);
-                        double temp = element.coef * buffer_[jsooff + (atom1+1)*nso12];
-                        fprintf(outfile, "y1 component temp %20.16f, coef %f buffer %f iirrep %d, jirrep %d, salc symmetry %d\n",
-                                temp, element.coef, buffer_[jsooff + (atom1+1)*nso12], iirrep, jirrep, element.irrep);
-                        if ((iirrep ^ jirrep) == element.irrep && fabs(temp) > 1.0e-14) {
-                            fprintf(outfile, "\tiirrep %d, irel %d, jrel %d salc %d\n", iirrep, irel, jrel, element.salc);
-                            result[element.salc]->add(iirrep, irel, jrel, temp);
+                        for (int ny=0; ny<cdsalc1.ny(); ++ny) {
+                            const CdSalcWRTAtom::Component element = cdsalc1.y(ny);
+                            double temp = element.coef * buffer_[jsooff + (atom1+1)*nso12];
+                            fprintf(outfile, "y1 component temp %20.16f, coef %f buffer %f iirrep %d, jirrep %d, salc symmetry %d\n",
+                                    temp, element.coef, buffer_[jsooff + (atom1+1)*nso12], iirrep, jirrep, element.irrep);
+                            if ((iirrep ^ jirrep) == element.irrep && fabs(temp) > 1.0e-14) {
+                                fprintf(outfile, "\tadding iirrep %d, irel %d, jrel %d salc %d\n", iirrep, irel, jrel, element.salc);
+                                result[element.salc]->add(iirrep, irel, jrel, temp);
+                            }
                         }
-                    }
-                    for (int nz=0; nz<cdsalc1.nz(); ++nz) {
-                        const CdSalcWRTAtom::Component element = cdsalc1.z(nz);
-                        double temp = element.coef * buffer_[jsooff + (atom1+2)*nso12];
-                        fprintf(outfile, "z1 component temp %20.16f, iirrep %d, jirrep %d, salc symmetry %d\n",
-                                temp, iirrep, jirrep, element.irrep);
-                        if ((iirrep ^ jirrep) == element.irrep && fabs(temp) > 1.0e-14) {
-                            fprintf(outfile, "\tiirrep %d, irel %d, jrel %d salc %d\n", iirrep, irel, jrel, element.salc);
-                            result[element.salc]->add(iirrep, irel, jrel, temp);
-                        }
-                    }
-
-                    // atom 2
-                    for (int nx=0; nx<cdsalc2.nx(); ++nx) {
-                        const CdSalcWRTAtom::Component element = cdsalc2.x(nx);
-                        double temp = element.coef * buffer_[jsooff + (atom2+0)*nso12];
-
-                        fprintf(outfile, "x2 component temp %20.16f, iirrep %d, jirrep %d, salc symmetry %d\n",
-                                temp, iirrep, jirrep, element.irrep);
-
-                        if ((iirrep ^ jirrep) == element.irrep && fabs(temp) > 1.0e-10) {
-                            fprintf(outfile, "\tiirrep %d, irel %d, jrel %d salc %d\n", iirrep, irel, jrel, element.salc);
-                            result[element.salc]->add(iirrep, irel, jrel, temp);
-                        }
-                        fflush(outfile);
-                    }
-                    for (int ny=0; ny<cdsalc2.ny(); ++ny) {
-                        const CdSalcWRTAtom::Component element = cdsalc2.y(ny);
-                        double temp = element.coef * buffer_[jsooff + (atom2+1)*nso12];
-                        fprintf(outfile, "y2 component temp %20.16f, iirrep %d, jirrep %d, salc symmetry %d\n",
-                                temp, iirrep, jirrep, element.irrep);
-                        if ((iirrep ^ jirrep) == element.irrep && fabs(temp) > 1.0e-14) {
-                            fprintf(outfile, "\tiirrep %d, irel %d, jrel %d salc %d\n", iirrep, irel, jrel, element.salc);
-                            result[element.salc]->add(iirrep, irel, jrel, temp);
+                        for (int nz=0; nz<cdsalc1.nz(); ++nz) {
+                            const CdSalcWRTAtom::Component element = cdsalc1.z(nz);
+                            double temp = element.coef * buffer_[jsooff + (atom1+2)*nso12];
+                            fprintf(outfile, "z1 component temp %20.16f, coef %f buffer %f iirrep %d, jirrep %d, salc symmetry %d\n",
+                                    temp, element.coef, buffer_[jsooff + (atom1+2)*nso12], iirrep, jirrep, element.irrep);
+                            if ((iirrep ^ jirrep) == element.irrep && fabs(temp) > 1.0e-14) {
+                                fprintf(outfile, "\tadding iirrep %d, irel %d, jrel %d salc %d\n", iirrep, irel, jrel, element.salc);
+                                result[element.salc]->add(iirrep, irel, jrel, temp);
+                            }
                         }
                     }
-                    for (int nz=0; nz<cdsalc2.nz(); ++nz) {
-                        const CdSalcWRTAtom::Component element = cdsalc2.z(nz);
-                        double temp = element.coef * buffer_[jsooff + (atom2+2)*nso12];
-                        fprintf(outfile, "z2 component temp %20.16f, iirrep %d, jirrep %d, salc symmetry %d\n",
-                                temp, iirrep, jirrep, element.irrep);
-                        if ((iirrep ^ jirrep) == element.irrep && fabs(temp) > 1.0e-14) {
-                            fprintf(outfile, "\tiirrep %d, irel %d, jrel %d salc %d\n", iirrep, irel, jrel, element.salc);
-                            result[element.salc]->add(iirrep, irel, jrel, temp);
+                }
+            }
+
+            // don't double add diagonals
+            if (ish == jsh) continue;
+
+            for (int j=0; j<t2.naoshell; ++j) {
+                const SOTransformShell &s2 = t2.aoshell[j];
+                int atom2 = ob_->basis2()->shell(s2.aoshell)->ncenter();
+                const CdSalcWRTAtom& cdsalc2 = cdsalcs.atom_salc(atom2);
+                atom2 *= 3;
+
+                for (int itr=0; itr<nso1; ++itr) {
+
+                    int ifunc  = b1_->function(ish) + itr;
+                    int iirrep = b1_->irrep(ifunc);
+                    int irel   = b1_->function_within_irrep(ifunc);
+                    int isooff = itr;
+
+                    for (int jtr=0; jtr<nso2; ++jtr) {
+
+                        int jfunc  = b2_->function(jsh) + jtr;
+                        int jirrep = b2_->irrep(jfunc);
+                        int jrel   = b2_->function_within_irrep(jfunc);
+                        int jsooff = isooff*nso2 + jtr;
+
+                        // atom 2
+                        for (int nx=0; nx<cdsalc2.nx(); ++nx) {
+                            const CdSalcWRTAtom::Component element = cdsalc2.x(nx);
+                            double temp = element.coef * buffer_[jsooff + (atom2+0)*nso12];
+
+                            fprintf(outfile, "x2 component temp %20.16f, coef %f buffer %f iirrep %d, jirrep %d, salc symmetry %d\n",
+                                    temp, element.coef, buffer_[jsooff + (atom2+0)*nso12], iirrep, jirrep, element.irrep);
+                            if ((iirrep ^ jirrep) == element.irrep && fabs(temp) > 1.0e-10) {
+                                fprintf(outfile, "\tadding iirrep %d, irel %d, jrel %d salc %d\n", iirrep, irel, jrel, element.salc);
+                                result[element.salc]->add(iirrep, irel, jrel, temp);
+                            }
+                            fflush(outfile);
+                        }
+                        for (int ny=0; ny<cdsalc2.ny(); ++ny) {
+                            const CdSalcWRTAtom::Component element = cdsalc2.y(ny);
+                            double temp = element.coef * buffer_[jsooff + (atom2+1)*nso12];
+                            fprintf(outfile, "y2 component temp %20.16f, coef %f buffer %f iirrep %d, jirrep %d, salc symmetry %d\n",
+                                    temp, element.coef, buffer_[jsooff + (atom2+1)*nso12], iirrep, jirrep, element.irrep);
+                            if ((iirrep ^ jirrep) == element.irrep && fabs(temp) > 1.0e-14) {
+                                fprintf(outfile, "\tadding iirrep %d, irel %d, jrel %d salc %d\n", iirrep, irel, jrel, element.salc);
+                                result[element.salc]->add(iirrep, irel, jrel, temp);
+                            }
+                        }
+                        for (int nz=0; nz<cdsalc2.nz(); ++nz) {
+                            const CdSalcWRTAtom::Component element = cdsalc2.z(nz);
+                            double temp = element.coef * buffer_[jsooff + (atom2+2)*nso12];
+                            fprintf(outfile, "z2 component temp %20.16f, coef %f buffer %f iirrep %d, jirrep %d, salc symmetry %d\n",
+                                    temp, element.coef, buffer_[jsooff + (atom2+2)*nso12], iirrep, jirrep, element.irrep);
+                            if ((iirrep ^ jirrep) == element.irrep && fabs(temp) > 1.0e-14) {
+                                fprintf(outfile, "\tadding iirrep %d, irel %d, jrel %d salc %d\n", iirrep, irel, jrel, element.salc);
+                                result[element.salc]->add(iirrep, irel, jrel, temp);
+                            }
                         }
                     }
                 }
