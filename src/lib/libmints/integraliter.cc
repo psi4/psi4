@@ -1,6 +1,7 @@
 #include "vector3.h"
 #include "integral.h"
 #include "gshell.h"
+#include "basisset.h"
 #include "sobasis.h"
 #include "sointegral.h"
 #include <boost/shared_ptr.hpp>
@@ -190,8 +191,11 @@ void AOIntegralsIterator::next()
 
 }
 
+// ===========================================================================
+//  AOShellCombinationsIterator
+// ===========================================================================
 AOShellCombinationsIterator::AOShellCombinationsIterator(shared_ptr<BasisSet>bs1, shared_ptr<BasisSet>bs2,
-                                                     shared_ptr<BasisSet>bs3, shared_ptr<BasisSet>bs4) :
+                                                         shared_ptr<BasisSet>bs3, shared_ptr<BasisSet>bs4) :
     bs1_(bs1), bs2_(bs2), bs3_(bs3), bs4_(bs4)
 {
 
@@ -327,8 +331,11 @@ void AOShellCombinationsIterator::next()
 
 }
 
+// ===========================================================================
+//  SOShellCombinationsIterator
+// ===========================================================================
 SOShellCombinationsIterator::SOShellCombinationsIterator(shared_ptr<SOBasisSet>bs1, shared_ptr<SOBasisSet>bs2,
-                                                     shared_ptr<SOBasisSet>bs3, shared_ptr<SOBasisSet>bs4) :
+                                                         shared_ptr<SOBasisSet>bs3, shared_ptr<SOBasisSet>bs4) :
     bs1_(bs1), bs2_(bs2), bs3_(bs3), bs4_(bs4)
 {
 
@@ -340,7 +347,7 @@ SOShellCombinationsIterator::SOShellCombinationsIterator()
 }
 
 void SOShellCombinationsIterator::init(shared_ptr<SOBasisSet>bs1, shared_ptr<SOBasisSet>bs2,
-                                     shared_ptr<SOBasisSet>bs3, shared_ptr<SOBasisSet>bs4)
+                                       shared_ptr<SOBasisSet>bs3, shared_ptr<SOBasisSet>bs4)
 {
     bs1_=bs1;
     bs2_=bs2;
