@@ -45,8 +45,8 @@ protected:
     double *buffer_;
 
 public:
-    OneBodySOInt(const boost::shared_ptr<OneBodyAOInt>& , const boost::shared_ptr<IntegralFactory> &, int deriv=0);
-    OneBodySOInt(const boost::shared_ptr<OneBodyAOInt>& , const IntegralFactory*, int deriv=0);
+    OneBodySOInt(const boost::shared_ptr<OneBodyAOInt>& , const boost::shared_ptr<IntegralFactory> &);
+    OneBodySOInt(const boost::shared_ptr<OneBodyAOInt>& , const IntegralFactory*);
     virtual ~OneBodySOInt();
 
     boost::shared_ptr<SOBasisSet> basis() const;

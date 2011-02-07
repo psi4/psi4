@@ -16,8 +16,7 @@
 namespace psi {
 
 OneBodySOInt::OneBodySOInt(const boost::shared_ptr<OneBodyAOInt> & ob,
-                           const boost::shared_ptr<IntegralFactory>& integral,
-                           int deriv)
+                           const boost::shared_ptr<IntegralFactory>& integral)
     : ob_(ob), integral_(integral.get()), deriv_(ob->deriv())
 {
     b1_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(ob->basis1(), integral));
@@ -43,9 +42,8 @@ OneBodySOInt::OneBodySOInt(const boost::shared_ptr<OneBodyAOInt> & ob,
 }
 
 OneBodySOInt::OneBodySOInt(const boost::shared_ptr<OneBodyAOInt> & ob,
-                           const IntegralFactory* integral,
-                           int deriv)
-    : ob_(ob), integral_(integral), deriv_(deriv)
+                           const IntegralFactory* integral)
+    : ob_(ob), integral_(integral), deriv_(ob->deriv())
 {
     b1_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(ob->basis1(), integral));
 
@@ -56,8 +54,12 @@ OneBodySOInt::OneBodySOInt(const boost::shared_ptr<OneBodyAOInt> & ob,
 
     size_t size = INT_NCART(ob->basis1()->max_am())
                  *INT_NCART(ob->basis2()->max_am());
-    if (deriv_ == 1)
+    if (deriv_ == 1) {
+        // Make sure the AOInt knows how to compute derivatives
+        if (!ob->has_deriv1())
+            throw PSIEXCEPTION("OneBodySOInt::OneBodySOInt: The AO integral object doesn't provide first derivatives.");
         size *= 3 * ob->basis1()->molecule()->natom();
+    }
     if (deriv_ > 1)
         throw FeatureNotImplemented("libmints", "Symmetrized integral derivatives greater than first order not implemented.",
                                     __FILE__, __LINE__);

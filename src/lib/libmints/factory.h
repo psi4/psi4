@@ -77,9 +77,9 @@ public:
     }
 
     /// Returns a new Matrix object with default dimensions
-    Matrix * create_matrix()
+    Matrix * create_matrix(int symmetry=0)
     {
-        return new Matrix(nirreps_, rowspi_, colspi_);
+        return new Matrix(nirreps_, rowspi_, colspi_, symmetry);
     }
 
     /// Returns a new Matrix object with default dimensions
@@ -88,15 +88,15 @@ public:
         return boost::shared_ptr<Matrix>(new Matrix(nirreps_, rowspi_, colspi_));
     }
 
-    void create_matrix(Matrix& mat)
+    void create_matrix(Matrix& mat, int symmetry=0)
     {
-        mat.init(nirreps_, rowspi_, colspi_);
+        mat.init(nirreps_, rowspi_, colspi_, "", symmetry);
     }
 
     /// Returns a new Matrix object named name with default dimensions
-    Matrix * create_matrix(std::string name)
+    Matrix * create_matrix(std::string name, int symmetry=0)
     {
-        return new Matrix(name, nirreps_, rowspi_, colspi_);
+        return new Matrix(name, nirreps_, rowspi_, colspi_, symmetry);
     }
 
     boost::shared_ptr<Matrix> create_shared_matrix(std::string name)
@@ -104,9 +104,9 @@ public:
         return boost::shared_ptr<Matrix>(new Matrix(name, nirreps_, rowspi_, colspi_));
     }
 
-    void create_matrix(Matrix& mat, std::string name)
+    void create_matrix(Matrix& mat, std::string name, int symmetry=0)
     {
-        mat.init(nirreps_, rowspi_, colspi_, name);
+        mat.init(nirreps_, rowspi_, colspi_, name, symmetry);
     }
 
     /// Returns a new Vector object with default dimensions

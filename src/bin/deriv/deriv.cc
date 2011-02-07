@@ -18,11 +18,57 @@ using namespace boost;
 
 namespace psi { namespace deriv {
 
-Deriv::Deriv(reftype ref, shared_ptr<MatrixFactory>& factory, shared_ptr<BasisSet>& basis)
-    : basis_(basis), natom_(basis->molecule()->natom()), factory_(factory), ref_(ref)
+Deriv::Deriv(reftype ref, const shared_ptr<MatrixFactory>& factory, const shared_ptr<BasisSet>& basis)
+    : basis_(basis), natom_(basis->molecule()->natom()),
+      factory_(factory), cdsalcs_(basis->molecule(), 1), ref_(ref)
 {
     // Initialize an integral object.
     shared_ptr<IntegralFactory> integral(new IntegralFactory(basis_, basis_, basis_, basis_));
+
+    // Create new one-electron integral evaluators telling them we want 1st derivatives (1)
+    shared_ptr<OneBodySOInt> oei_dS(integral->so_overlap(1));
+
+    // Allocate some temp memory to store integrals.
+    vector<SharedMatrix> dK;
+    vector<SharedMatrix> dV;
+
+    // Results go here.
+    QdH_ = SharedSimpleMatrix(factory_->create_simple_matrix("One-electron contribution to gradient", natom_, 3));
+    WdS_ = SharedSimpleMatrix(factory_->create_simple_matrix("Overlap contribution to gradient", natom_, 3));
+    tb_  = SharedSimpleMatrix(factory_->create_simple_matrix("Two-electron contribution to gradient", natom_, 3));
+
+    // Allocate memory dS, dK, dV, and dH
+    for (int i=0; i<cdsalcs_.ncd(); ++i) {
+        // Quick access to the irrep of this SALC....should always be 0 for gradients
+        // I'm leaving it variable for testing.
+        int irrep = cdsalcs_[i].irrep();
+
+        // Kinetic
+        string name = "dK - SO-basis SALC " + to_string(i);
+        dK.push_back(SharedMatrix(factory_->create_matrix(name, irrep)));
+
+        // Potential
+        name = "dV - SO-basis SALC " + to_string(i);
+        dV.push_back(SharedMatrix(factory_->create_matrix(name, irrep)));
+
+        // Hamiltonian
+        name = "dH - SO-basis SALC " + to_string(i);
+        dH_.push_back(SharedMatrix(factory_->create_matrix(name, irrep)));
+
+        // Overlap
+        name = "dS - SO-basis SALC " + to_string(i);
+        dS_.push_back(SharedMatrix(factory_->create_matrix(name, irrep)));
+    }
+
+    // Compute the one-body integral derivatives
+    oei_dS->compute_deriv1(dS_, cdsalcs_);
+
+    // Print.
+    for (int i=0; i<cdsalcs_.ncd(); ++i)
+        dS_[i]->print();
+
+#if 0
+    // AO version of the code
 
     // Create new one-electron integral evaluators telling them we want 1st derivatives (1)
     shared_ptr<OneBodyAOInt> oei_dK(integral->ao_kinetic(1));
@@ -74,10 +120,12 @@ Deriv::Deriv(reftype ref, shared_ptr<MatrixFactory>& factory, shared_ptr<BasisSe
 //        dK[i]->print();
 //    for (int i=0; i<3*natom_; ++i)
 //        dV[i]->print();
+#endif
 }
 
-void Deriv::compute(SharedSimpleMatrix& Q, SharedSimpleMatrix& G, SharedSimpleMatrix& W)
+void Deriv::compute(const SharedMatrix& Q, const SharedMatrix& G, const SharedMatrix& W)
 {
+#if 0
     // Initialize an integral object.
     shared_ptr<IntegralFactory> integral(new IntegralFactory(basis_, basis_, basis_, basis_));
 
@@ -181,6 +229,7 @@ void Deriv::compute(SharedSimpleMatrix& Q, SharedSimpleMatrix& G, SharedSimpleMa
     else if (ref_ == ref_rohf) {
 
     }
+#endif
 }
 
 }}

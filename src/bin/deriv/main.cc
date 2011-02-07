@@ -139,11 +139,12 @@ PsiReturnType deriv(Options & options)
     W->print();
 
     SharedSimpleMatrix G;
+
     Deriv deriv(ref_rhf, factory, basisset);
     SharedSimpleMatrix WdS(deriv.overlap());
     SharedSimpleMatrix QdH(deriv.one_electron());
     SharedSimpleMatrix tb(deriv.two_body());
-    deriv.compute(Q, G, W);
+//    deriv.compute(Q, G, W);
 
     SimpleMatrix enuc = basisset->molecule()->nuclear_repulsion_energy_deriv1();
 
