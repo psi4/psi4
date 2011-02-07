@@ -111,18 +111,18 @@ void BasisSet::print_summary(FILE* out) const
         memset((void*) nshells, '\0', (max_am_ + 1) * sizeof(int));
 
         fprintf(out, "    %4d    ", A+1);
-        fprintf(out, "%2s     ", molecule_->label(A).c_str());        
+        fprintf(out, "%2s     ", molecule_->label(A).c_str());
 
         int first_shell = center_to_shell_[A];
         int n_shell = center_to_nshell_[A];
         shared_ptr<GaussianShell> shell;
 
-        for (int Q = 0; Q < n_shell; Q++) { 
+        for (int Q = 0; Q < n_shell; Q++) {
             shell = shells_[Q + first_shell];
             nshells[shell->am()]++;
             nunique[shell->am()]+= shell->nprimitive();
             nprims [shell->am()]+= shell->nprimitive();
-            amtypes[shell->am()] = shell->amchar();            
+            amtypes[shell->am()] = shell->amchar();
         }
 
         // All Primitives
@@ -131,7 +131,7 @@ void BasisSet::print_summary(FILE* out) const
                 continue;
             fprintf(out, "%d%c ", nprims[l], amtypes[l]);
         }
-        // Shells       
+        // Shells
         fprintf(out, "// ");
         for (int l = 0; l < max_am_ + 1; l++) {
             if (nshells[l] == 0)
@@ -140,7 +140,7 @@ void BasisSet::print_summary(FILE* out) const
         }
 
         fprintf(out, "\n");
-    }   
+    }
 
     fprintf(out, "\n");
 }
@@ -148,29 +148,29 @@ void BasisSet::print_summary(FILE* out) const
 void BasisSet::print_detail(FILE* out) const
 {
     print_summary(out);
-   
+
     //TODO: Use unique atoms (C1 for now)
     for (int A = 0; A < molecule_->natom(); A++) {
-        fprintf(out, "  -Basis set on unique center %d: %s\n", A+1,molecule_->label(A).c_str()); 
+        fprintf(out, "  -Basis set on unique center %d: %s\n", A+1,molecule_->label(A).c_str());
 
         shared_ptr<GaussianShell> shell;
         int first_shell = center_to_shell_[A];
         int n_shell = center_to_nshell_[A];
 
-        for (int Q = 0; Q < n_shell; Q++) { 
+        for (int Q = 0; Q < n_shell; Q++) {
             shell = shells_[Q + first_shell];
-            
-            for (int K = 0; K < shell->nprimitive(); K++) { 
+
+            for (int K = 0; K < shell->nprimitive(); K++) {
                 if (K == 0)
                     fprintf(outfile, "     %c ", shell->AMCHAR());
-                else 
+                else
                     fprintf(outfile, "       ");
-                fprintf(outfile, "(%20.8f %20.8f)\n",shell->exp(K), shell->coef(K)); 
+                fprintf(outfile, "(%20.8f %20.8f)\n",shell->exp(K), shell->coef(K));
 
             }
         }
         fprintf(out, "\n");
-    } 
+    }
 }
 
 
@@ -330,20 +330,20 @@ void BasisSet::refresh()
 std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test_basis_set(int max_am)
 {
     int max_centers = 4;
-    int max_primitives = 10;   
+    int max_primitives = 10;
     int max_shells;
 
     std::vector<int> nprim;
-    nprim.push_back(10); 
-    nprim.push_back(1); 
-    nprim.push_back(6); 
-    nprim.push_back(1); 
-    nprim.push_back(2); 
-    nprim.push_back(1); 
-    nprim.push_back(1); 
-    nprim.push_back(1); 
-    nprim.push_back(1); 
-    nprim.push_back(1); 
+    nprim.push_back(10);
+    nprim.push_back(1);
+    nprim.push_back(6);
+    nprim.push_back(1);
+    nprim.push_back(2);
+    nprim.push_back(1);
+    nprim.push_back(1);
+    nprim.push_back(1);
+    nprim.push_back(1);
+    nprim.push_back(1);
 
     std::vector<int> am;
     am.push_back(0);
@@ -380,7 +380,7 @@ std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test
     e.push_back(new double[1]);
     e.push_back(new double[1]);
     e.push_back(new double[1]);
-  
+
     c[0][0] = 0.458878E-03;
     c[0][1] = 0.355070E-02;
     c[0][2] = 0.182618E-01;
@@ -477,25 +477,25 @@ std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test
         new_basis->molecule_->add_atom(0, x, x, x);
         x += 1.0;
     }
-        
+
     // Setup all the parameters needed for a zero basis set
     new_basis->shell_center_.resize(max_shells * max_centers);
     for (int A = 0; A < max_centers; A++)
         for (int Q = 0; Q < max_shells; Q++)
             new_basis->shell_center_[A*max_shells + Q] = A;
     new_basis->max_nprimitive_ = max_primitives;
-    new_basis->max_am_ = max_am; 
+    new_basis->max_am_ = max_am;
 
     // We'll time puream for now
     new_basis->puream_ = true;
 
     // Create shell array
-    for (int A = 0; A < max_centers; A++) 
+    for (int A = 0; A < max_centers; A++)
         for (int Q = 0; Q < max_shells; Q++)
             new_basis->shells_.push_back(shared_ptr<GaussianShell>(new GaussianShell));
     // Add shells
-    for (int A = 0; A < max_centers; A++) { 
-        Vector3 center = new_basis->molecule_->fxyz(A); 
+    for (int A = 0; A < max_centers; A++) {
+        Vector3 center = new_basis->molecule_->fxyz(A);
         for (int Q = 0; Q < max_shells; Q++) {
             new_basis->shells_[A*max_shells + Q]->init(nprim[Q], e[Q], am[Q], Pure, c[Q], A, center, 0, Normalized);
         }
@@ -506,7 +506,7 @@ std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test
     //    new_basis->sphericaltransforms_.push_back(SphericalTransform(i));
     //}
     //new_basis->refresh();
-    
+
     /**
     //Initialize SOTransform
     new_basis->sotransform_ = shared_ptr<SOTransform>(new SOTransform);
@@ -527,7 +527,7 @@ std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test
         }
     }
     **/
-    
+
     new_basis->refresh();
 
     for (int A = 0; A < e.size(); A++) {
@@ -596,23 +596,6 @@ shared_ptr<BasisSet> BasisSet::atomic_basis_set(int center)
         if (shell_center_[i] > center)
             break;
     }
-
-    //Populate SOTransform
-#warning Sorry Rob, I probably broke SAD again.
-#if 0
-    for (int i = 0; i< current_shells; i++) {
-        //OK, this is the SOTransformShell in the full basis
-        SOTransformShell* full_so = sotransform_->aoshell(shell_start+i);
-        //and it must go into the SOTransform in the atomic basis, and the offset in shell, ao, and so must be respected
-        for (int ao = 0; ao < full_so->nfunc; ao++) {
-            //printf("AO %d, AOStart %d, SOStart%d, i %d, shell_start %d.\n",ao,ao_start,so_start,i,shell_start);
-            bas->sotransform_->add_transform(i,full_so->func[ao].irrep(),full_so->func[ao].sofuncirrep()-so_start,full_so->func[ao].coef(), \
-                full_so->func[ao].aofunc(),full_so->func[ao].sofunc()-so_start);
-        }
-        //ao_start += shells_[i+shell_start]->ncartesian();
-        //so_start += shells_[i+shell_start]->nfunction();
-    }
-#endif
 
     //Setup the indexing in the atomic basis
     bas->refresh();

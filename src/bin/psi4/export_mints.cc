@@ -159,7 +159,7 @@ void export_mints()
 
     class_<Molecule, shared_ptr<Molecule> >("Molecule").
         def("set_name", &Molecule::set_name).
-        def("get_name", &Molecule::get_name).
+        def("name", &Molecule::name).
         def("fix_orientation", &Molecule::set_orientation_fixed).
         def("init_with_checkpoint", &Molecule::init_with_chkpt).
         def("save_to_checkpoint", &Molecule::save_to_chkpt).
@@ -167,7 +167,7 @@ void export_mints()
         def("add_atom", &Molecule::add_atom).
         def("natom", &Molecule::natom).
         def("multiplicity", &Molecule::multiplicity).
-        def("nfragments", &Molecule::num_fragments).
+        def("nfragments", &Molecule::nfragments).
         def("print_out", &Molecule::print).
         def("update_geometry", &Molecule::update_geometry).
         def("Z", &Molecule::Z).
