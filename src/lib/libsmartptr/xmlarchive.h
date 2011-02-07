@@ -286,35 +286,35 @@ class XMLArchive : public smartptr::Countable {
 
         void setValue(const std::string& value);
 
-        void getValue(void*& val, const std::string& val);
+        void getValue(void*& val, const std::string& name);
 
-        void getValue(int& val, const std::string& val);
+        void getValue(int& val, const std::string& name);
 
-        void getValue(long& val, const std::string& val);
+        void getValue(long& val, const std::string& name);
 
-        void getValue(unsigned int& val, const std::string& val);
+        void getValue(unsigned int& val, const std::string& name);
 
-        void getValue(unsigned long& val, const std::string& val);
+        void getValue(unsigned long& val, const std::string& name);
 
-        void getValue(double& val, const std::string& val);
+        void getValue(double& val, const std::string& name);
 
-        void getValue(bool& val, const std::string& val);
+        void getValue(bool& val, const std::string& name);
 
-        void getValue(std::string& value, const std::string& value);
+        void getValue(std::string& value, const std::string& name);
 
-        void setValue(void* val, const std::string& val);
+        void setValue(void* val, const std::string& name);
 
         void setValue(int val, const std::string& name);
 
         void setValue(long val, const std::string& name);
 
-        void setValue(unsigned int val, const std::string& val);
+        void setValue(unsigned int val, const std::string& name);
 
-        void setValue(unsigned long val, const std::string& val);
+        void setValue(unsigned long val, const std::string& name);
 
         void setValue(double val, const std::string& name);
 
-        void setValue(bool val, const std::string& val);
+        void setValue(bool val, const std::string& name);
 
         void setValue(const std::string& val, const std::string& name);
 

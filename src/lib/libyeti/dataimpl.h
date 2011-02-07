@@ -394,7 +394,7 @@ DataTemplate<data_t>::print(std::ostream& os) const
         if (i % print_width == 0 && i != 0)
             os << std::endl << Env::indent;
 
-        os << " " << stream_printf(TypeInfo<data_t>::printf_str, *dptr);
+        os << " " << std::stream_printf(TypeInfo<data_t>::printf_str, *dptr);
     }
 }
 

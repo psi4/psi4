@@ -23,7 +23,7 @@ transpose_print(
         data_t* dptr = data;
         for (size_t r=0; r < nrows; ++r, dptr += ncols)
         {
-            std::cout << " " << stream_printf(TypeInfo<data_t>::printf_str, *dptr);
+            std::cout << " " << std::stream_printf(TypeInfo<data_t>::printf_str, *dptr);
         }
         std::cout << std::endl;
     }
@@ -42,7 +42,7 @@ normal_print(
     {
         for (size_t c=0; c < ncols; ++c, ++data)
         {
-            std::cout << " " << stream_printf(TypeInfo<data_t>::printf_str, *data);
+            std::cout << " " << std::stream_printf(TypeInfo<data_t>::printf_str, *data);
         }
         std::cout << std::endl;
     }
