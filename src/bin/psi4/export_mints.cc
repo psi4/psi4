@@ -58,11 +58,11 @@ void export_mints()
     typedef void   (Matrix::*matrix_one)(boost::shared_ptr<Matrix>);
     typedef double (Matrix::*double_matrix_one)(boost::shared_ptr<Matrix>);
     typedef void   (Matrix::*matrix_two)(boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix>);
+    typedef void   (Matrix::*matrix_save)(std::string, bool, bool, bool);
+    typedef void   (Matrix::*matrix_set)(int, int, int, double);
 
     class_<Matrix, shared_ptr<Matrix> >("Matrix").
             def(init<int, int>()).
-            def("get", &Matrix::get).
-            def("set", &Matrix::set_python).
             def("set_name", &Matrix::set_name).
             def("print_out", &Matrix::print_out).
             def("rows", &Matrix::rowdim).
@@ -91,9 +91,10 @@ void export_mints()
             def("cholesky_factorize", &Matrix::cholesky_factorize).
             def("invert", &Matrix::invert).
             def("get", &Matrix::get).
-            def("set", &Matrix::set_python).
+            def("set", matrix_set(&Matrix::set)).
             def("__getitem__", &Matrix::pyget).
-            def("__setitem__", &Matrix::pyset);
+            def("__setitem__", &Matrix::pyset).
+            def("save", matrix_save(&Matrix::save));
 
     typedef shared_ptr<Matrix> (MatrixFactory::*create_shared_matrix)();
     typedef shared_ptr<Matrix> (MatrixFactory::*create_shared_matrix_name)(std::string);

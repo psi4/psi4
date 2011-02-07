@@ -196,7 +196,6 @@ public:
         save(filename.c_str(), append, saveLowerTriangle, saveSubBlocks);
     }
     /** @} */
-    void python_save(std::string filename) { save(filename.c_str(), false, false, false); }
 
     enum SaveType {
         Full,
@@ -271,15 +270,6 @@ public:
      * @param val Value
      */
     void set(int h, int m, int n, double val) { matrix_[h][m][n] = val; }
-    /**
-     * Set a single element of matrix_
-     *
-     * @param h Subblock to address
-     * @param m Row
-     * @param n Column
-     * @param val Value
-     */
-    void set_python(int h, int m, int n, double val) { matrix_[h][m][n] = val; }
 
     /**
      * @{
