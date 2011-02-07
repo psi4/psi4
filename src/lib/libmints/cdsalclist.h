@@ -85,6 +85,10 @@ public:
                bool project_out_rotations=true);
     virtual ~CdSalcList();
 
+    /*! Returns the number of combintations. It may not be 3n-5 or 3n-6.
+     *  The value returned depends on needed_irreps and the project_out*
+     *  settings.
+     */
     size_t ncd() const { return salcs_.size(); }
 
     char needed_irreps() const { return needed_irreps_; }

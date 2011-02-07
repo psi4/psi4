@@ -222,32 +222,6 @@ void OverlapInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<Ga
                             buffer_[center_i+(2*size)+ao12] += iz;
                             buffer_[center_j+(2*size)+ao12] -= iz;
 
-                            //OLD CODE
-                            // x on center i
-//                            buffer_[center_i+(0*size)+ao12] += 2.0*a1*over_pf*x[l1+1][l2]*y[m1][m2]*z[n1][n2];
-//                            if (l1)
-//                                buffer_[center_i+(0*size)+ao12] -= l1*over_pf*x[l1-1][l2]*y[m1][m2]*z[n1][n2];
-                            // y on center i
-//                            buffer_[center_i+(1*size)+ao12] += 2.0*a1*over_pf*x[l1][l2]*y[m1+1][m2]*z[n1][n2];
-//                            if (m1)
-//                                buffer_[center_i+(1*size)+ao12] -= m1*over_pf*x[l1][l2]*y[m1-1][m2]*z[n1][n2];
-                            // z on center i
-//                            buffer_[center_i+(2*size)+ao12] += 2.0*a1*over_pf*x[l1][l2]*y[m1][m2]*z[n1+1][n2];
-//                            if (n1)
-//                                buffer_[center_i+(2*size)+ao12] -= n1*over_pf*x[l1][l2]*y[m1][m2]*z[n1-1][n2];
-                            // x on center j
-//                            buffer_[center_j+(0*size)+ao12] += 2.0*a2*over_pf*x[l1][l2+1]*y[m1][m2]*z[n1][n2];
-//                            if (l2)
-//                                buffer_[center_j+(0*size)+ao12] -= l2*over_pf*x[l1][l2-1]*y[m1][m2]*z[n1][n2];
-                            // y on center j
-//                            buffer_[center_j+(1*size)+ao12] += 2.0*a2*over_pf*x[l1][l2]*y[m1][m2+1]*z[n1][n2];
-//                            if (m2)
-//                                buffer_[center_j+(1*size)+ao12] -= m2*over_pf*x[l1][l2]*y[m1][m2-1]*z[n1][n2];
-                            // z on center j
-//                            buffer_[center_j+(2*size)+ao12] += 2.0*a2*over_pf*x[l1][l2]*y[m1][m2]*z[n1][n2+1];
-//                            if (n2)
-//                                buffer_[center_j+(2*size)+ao12] -= n2*over_pf*x[l1][l2]*y[m1][m2]*z[n1][n2-1];
-
                             ao12++;
                         }
                     }
@@ -369,7 +343,7 @@ void OverlapInt::compute_pair_deriv2(shared_ptr<GaussianShell> s1, shared_ptr<Ga
     }
 
     // Integrals are done. Normalize for angular momentum
-    normalize_am(s1, s2, 3*natom_);
+    normalize_am(s1, s2, 9*natom_);
 
     // Spherical harmonic transformation
     // Wrapped up in the AO to SO transformation

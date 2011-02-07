@@ -9,6 +9,9 @@
 #include "gshell.h"
 #include "petitelist.h"
 #include "wavefunction.h"
+#include "cdsalclist.h"
+
+#include <vector>
 
 namespace boost {
 template <class T>
@@ -34,16 +37,16 @@ class OneBodySOInt
 protected:
     boost::shared_ptr<OneBodyAOInt> ob_;
     const IntegralFactory* integral_;
+    int deriv_;
 
     boost::shared_ptr<SOBasisSet> b1_;
     boost::shared_ptr<SOBasisSet> b2_;
 
     double *buffer_;
 
-    int only_totally_symmetric_;
 public:
-    OneBodySOInt(const boost::shared_ptr<OneBodyAOInt>& , const boost::shared_ptr<IntegralFactory> &);
-    OneBodySOInt(const boost::shared_ptr<OneBodyAOInt>& , const IntegralFactory*);
+    OneBodySOInt(const boost::shared_ptr<OneBodyAOInt>& , const boost::shared_ptr<IntegralFactory> &, int deriv=0);
+    OneBodySOInt(const boost::shared_ptr<OneBodyAOInt>& , const IntegralFactory*, int deriv=0);
     virtual ~OneBodySOInt();
 
     boost::shared_ptr<SOBasisSet> basis() const;
@@ -58,19 +61,24 @@ public:
     /**
      * Computes a one-electron integral matrix. Only works for symmetric operators
      * (multipole operators will not work).
+     *
+     * \param result Where the integrals are going.
      */
     void compute(boost::shared_ptr<Matrix> result);
+
+    /**
+     * Computes one-electron integral derivative matrices.
+     *
+     * \param result Where the integral derivatives are going.
+     * \param cdsalcs The Cartesian displacement SALCs that you are interested in.
+     */
+    void compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result,
+                        const CdSalcList& cdsalcs);
 
     /**
      * Compute a given SO shell doublet placing the result into buffer_
      */
     virtual void compute_shell(int, int);
-
-    /**
-     * Currently these settings are ignored, placed in for future work.
-     */
-    int only_totally_symmetric() const { return only_totally_symmetric_; }
-    void set_only_totally_symmetric(int i) { only_totally_symmetric_ = i; }
 };
 
 // Only include the following function if Doxygen is running to generate appropriate
