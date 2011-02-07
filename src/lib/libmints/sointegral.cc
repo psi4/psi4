@@ -1,3 +1,5 @@
+#include <psi4-dec.h>
+
 #include "sointegral.h"
 #include "twobody.h"
 #include "basisset.h"
@@ -5,6 +7,7 @@
 #include "integral.h"
 #include "sobasis.h"
 #include "matrix.h"
+#include "molecule.h"
 
 #include <boost/shared_ptr.hpp>
 
@@ -221,35 +224,43 @@ void OneBodySOInt::compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result
         throw SanityCheckError("OneBodySOInt::compute_deriv1: integral object not created to handle derivatives.", __FILE__, __LINE__);
 
     if (result.size() != cdsalcs.ncd())
-        throw SanityCheckError("OneBodySOInt::compute_deriv1: result vector size does not match SALC size.");
+        throw SanityCheckError("OneBodySOInt::compute_deriv1: result vector size does not match SALC size.", __FILE__, __LINE__);
 
     int ns1 = b1_->nshell();
     int ns2 = b2_->nshell();
     const double *aobuf = ob_->buffer();
     int i_offset = 0;
     int natom = ob_->basis()->molecule()->natom();
-    size_t buffer_size = 3*natom*nso1*nso2*sizeof(double);
+    int threenatom = 3*natom;
 
     // Loop over unique AO shells.
     for (int ish=0; ish<ns1; ++ish) {
         const SOTransform& t1 = b1_->trans(ish);
         int nso1 = b1_->nfunction(ish);
-        int j_offset=0;
+        int nao1 = b1_->naofunction(ish);
 
         for (int jsh=0; jsh<ns1; ++jsh) {
             const SOTransform& t2= b2_->trans(jsh);
             int nso2 = b2_->nfunction(jsh);
-
-            memset(buffer_, 0, buffer_size);
-
             int nao2 = b2_->naofunction(jsh);
+
+            int nao12 = nao1 * nao2;
+            int nso12 = nso1 * nso2;
+
+            // Clear out the memory we need.
+            memset(buffer_, 0, threenatom*nso1*nso2*sizeof(double));
 
             // loop through the AO shells that make up this SO shell
             // by the end of these 4 for loops we will have our final integral in buffer_
             for (int i=0; i<t1.naoshell; ++i) {
                 const SOTransformShell &s1 = t1.aoshell[i];
+
+                int atom1 = ob_->basis1()->shell(s1.aoshell)->ncenter();
+
                 for (int j=0; j<t2.naoshell; ++j) {
                     const SOTransformShell &s2 = t2.aoshell[j];
+
+                    int atom2 = ob_->basis2()->shell(s2.aoshell)->ncenter();
 
                     ob_->compute_shell(s1.aoshell, s2.aoshell);
 
@@ -271,19 +282,21 @@ void OneBodySOInt::compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result
                             int jsooff = isooff*nso2 + jsofunc;
                             int jirrep = jfunc.irrep;
 
-                            buffer_[jsooff] += jcoef * aobuf[jaooff];
+                            // atom 1
+                            //    x
+                            buffer_[jsooff + (atom1+0)*nso12] += jcoef * aobuf[jaooff + (atom1+0)*nao12];
+                            //    y
+                            buffer_[jsooff + (atom1+1)*nso12] += jcoef * aobuf[jaooff + (atom1+1)*nao12];
+                            //    z
+                            buffer_[jsooff + (atom1+2)*nso12] += jcoef * aobuf[jaooff + (atom1+2)*nao12];
 
-                            //                            if (fabs(aobuf[jaooff]*jcoef) > 1.0e-10) {
-                            //                                fprintf(outfile, "(%2d|%2d) += %+6f * (%2d|%2d): %+6f -> %+6f iirrep = %d ifunc = %d, jirrep = %d jfunc = %d\n",
-                            //                                        isofunc, jsofunc, jcoef, iaofunc, jaofunc, aobuf[jaooff], buffer_[jsooff],
-                            //                                        ifunc.irrep, b1_->function_within_irrep(ish, isofunc),
-                            //                                        jfunc.irrep, b2_->function_within_irrep(jsh, jsofunc));
-                            //                                fprintf(outfile, "(%d|%d) += %8.5f * (%d|%d): %8.5f -> %8.5f\n",
-                            //                                        isofunc, jsofunc, jcoef, iaofunc, jaofunc, aobuf[jaooff], buffer_[jsooff]);
-                            //                            }
-
-                            // Check the irreps to ensure symmetric quantities.
-                            result->add(ifunc.irrep, b1_->function_within_irrep(ish, isofunc), b2_->function_within_irrep(jsh, jsofunc), jcoef * aobuf[jaooff]);
+                            // atom 2
+                            //    x
+                            buffer_[jsooff + (atom2+0)*nso12] += jcoef * aobuf[jaooff + (atom2+0)*nao12];
+                            //    y
+                            buffer_[jsooff + (atom2+1)*nso12] += jcoef * aobuf[jaooff + (atom2+1)*nao12];
+                            //    z
+                            buffer_[jsooff + (atom2+2)*nso12] += jcoef * aobuf[jaooff + (atom2+2)*nao12];
                         }
                     }
                 }
