@@ -49,6 +49,7 @@ protected:
     void compute_multipole();
 public:
     UHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
+    UHF(Options& options, shared_ptr<PSIO> psio);
     virtual ~UHF();
 
     /// Add an external potential to the alpha and beta Fock matrices

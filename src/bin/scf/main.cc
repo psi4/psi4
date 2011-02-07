@@ -32,7 +32,6 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
     tstart();
 
     shared_ptr<PSIO> psio = PSIO::shared_object();
-    shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
 
     // Initialize the psi3 timer library.
     timer_init();
@@ -43,19 +42,19 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
     bool parallel = options.get_bool("PARALLEL");
 
     if (reference == "RHF") {
-        scf = shared_ptr<Wavefunction>(new RHF(options, psio, chkpt));
+        scf = shared_ptr<Wavefunction>(new RHF(options, psio));
     }
     else if (reference == "ROHF") {
-        scf = shared_ptr<Wavefunction>(new ROHF(options, psio, chkpt));
+        scf = shared_ptr<Wavefunction>(new ROHF(options, psio));
     }
     else if (reference == "UHF") {
-        scf = shared_ptr<Wavefunction>(new UHF(options, psio, chkpt));
+        scf = shared_ptr<Wavefunction>(new UHF(options, psio));
     }
     else if (reference == "RKS") {
-        scf = shared_ptr<Wavefunction>(new RKS(options, psio, chkpt));
+        scf = shared_ptr<Wavefunction>(new RKS(options, psio));
     }
     else if (reference == "UKS") {
-        scf = shared_ptr<Wavefunction>(new UKS(options, psio, chkpt));
+        scf = shared_ptr<Wavefunction>(new UKS(options, psio));
     }
     else {
         throw InputException("Unknown reference " + reference, "REFERENCE", __FILE__, __LINE__);

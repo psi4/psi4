@@ -27,6 +27,11 @@ UKS::UKS(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) : UHF
 
 }
 
+UKS::UKS(Options& options, shared_ptr<PSIO> psio) : UHF(options, psio)
+{
+
+}
+
 UKS::~UKS()
 {
 

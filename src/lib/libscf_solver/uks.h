@@ -10,12 +10,13 @@
 using namespace psi;
 
 namespace psi { namespace scf {
-    
+
 class UKS : public UHF {
 protected:
-    
+
 public:
     UKS(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
+    UKS(Options& options, shared_ptr<PSIO> psio);
     virtual ~UKS();
 
     double compute_energy();

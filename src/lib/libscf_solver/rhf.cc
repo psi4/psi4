@@ -76,6 +76,12 @@ RHF::RHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
     common_init();
 }
 
+RHF::RHF(Options& options, shared_ptr<PSIO> psio)
+    : HF(options, psio)
+{
+    common_init();
+}
+
 RHF::~RHF()
 {
     if (pk_)
@@ -910,6 +916,10 @@ void RHF::save_information()
 {
     // Print the final docc vector
     char **temp2 = molecule_->irrep_labels();
+
+    // Stupid hack...
+    if (!psio_->open_check(32))
+        psio_->open(32, PSIO_OPEN_OLD);
 
     // TODO: Delete this as soon as possible!!!
     // Can't believe I'm adding this...
