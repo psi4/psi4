@@ -548,9 +548,9 @@ void Matrix::print(FILE *out, const char *extra)
 
     if (name_.length()) {
         if (extra == NULL)
-            fprintf(out, "  ## %s ##\n", name_.c_str());
+            fprintf(out, "  ## %s (Symmetry %d) ##\n", name_.c_str(), symmetry_+1);
         else
-            fprintf(out, "  ## %s %s ##\n", name_.c_str(), extra);
+            fprintf(out, "  ## %s %s (Symmetry %d)##\n", name_.c_str(), extra, symmetry_+1);
     }
 
     for (h=0; h<nirreps_; ++h) {

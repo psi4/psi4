@@ -42,6 +42,7 @@ protected:
     boost::shared_ptr<SOBasisSet> b1_;
     boost::shared_ptr<SOBasisSet> b2_;
 
+    size_t size_;
     double *buffer_;
 
 public:

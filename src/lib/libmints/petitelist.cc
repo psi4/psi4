@@ -30,7 +30,6 @@
 #include "mints.h"
 
 using namespace boost;
-using namespace psi;
 
 #if FC_SYMBOL==2
     #define F_DGESVD dgesvd_
@@ -46,6 +45,8 @@ extern "C" {
 extern int F_DGESVD(const char *, const char *, int *, int *, double *, int *,
                     double *, double *, int *, double *, int *, double *, int *, int *);
 }
+
+namespace psi {
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1005,3 +1006,5 @@ Matrix* PetiteList::aotoso()
     delete[] sos;
     return aoso;
 }
+
+} // end namespace psi
