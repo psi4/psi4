@@ -323,7 +323,7 @@ public:
      * @param h Subblock
      * @returns pointer to h-th subblock in block-matrix form
      */
-    double** get_pointer(int h = 0) { return matrix_[h]; }
+    double** pointer(int h = 0) { return matrix_[h]; }
 
     /**
      * Returns a copy of the current matrix.
@@ -614,7 +614,7 @@ public:
     void set(boost::shared_ptr<SimpleVector> vec);
     void set(double **mat);
 
-    double** get_pointer() { return matrix_; }
+    double** pointer() { return matrix_; }
 
     /// Sets the diagonal of matrix_ to vec
     double get(int m, int n) { return matrix_[m][n]; }

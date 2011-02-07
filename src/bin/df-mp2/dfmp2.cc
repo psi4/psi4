@@ -723,8 +723,8 @@ void DFMP2::form_Aia_disk()
 
   int maxPshell = 0;
   for (int P = 0; P<ribasis_->nshell(); P++)
-    if (maxPshell < ribasis_->shell(P)->nfunctions())
-      maxPshell = ribasis_->shell(P)->nfunctions();
+    if (maxPshell < ribasis_->shell(P)->nfunction())
+      maxPshell = ribasis_->shell(P)->nfunction();
 
   //Max rows of A to pursue
   int max_rows = df_memory_/storage_per_row;
@@ -1186,8 +1186,8 @@ double** DFMP2::form_Aia_core()
 
   int maxPshell = 0;
   for (int P = 0; P<ribasis_->nshell(); P++)
-    if (maxPshell < ribasis_->shell(P)->nfunctions())
-      maxPshell = ribasis_->shell(P)->nfunctions();
+    if (maxPshell < ribasis_->shell(P)->nfunction())
+      maxPshell = ribasis_->shell(P)->nfunction();
 
   //Max rows of A to pursue
   int max_rows = available_mem/storage_per_row;

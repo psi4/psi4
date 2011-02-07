@@ -260,7 +260,7 @@ void SAPT0::cholesky_denominator(double delta)
 
 
     shared_ptr<Matrix> L(new Matrix("Cholesky L, Energy Denominator", N, Ndelta));
-    double** Lp = L->get_pointer(0);
+    double** Lp = L->pointer(0);
 
     for (int n = 0; n < Ndelta; n++) {
         for (int p = n; p < N; p++) {

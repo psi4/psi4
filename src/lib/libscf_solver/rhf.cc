@@ -931,13 +931,13 @@ void RHF::save_information()
 
     // Print out orbital energies.
     std::vector<std::pair<double, int> > pairs;
-    for (int h=0; h<orbital_e_->nirreps(); ++h) {
+    for (int h=0; h<orbital_e_->nirrep(); ++h) {
         for (int i=0; i<nmopi_[h]; ++i)
             pairs.push_back(make_pair(orbital_e_->get(h, i), h));
     }
     sort(pairs.begin(),pairs.end());
     int ndocc = 0;
-    for (int i=0; i<orbital_e_->nirreps(); ++i)
+    for (int i=0; i<orbital_e_->nirrep(); ++i)
         ndocc += doccpi_[i];
 
     fprintf(outfile, "\n  Orbital energies (a.u.):\n    Doubly occupied orbitals\n      ");
@@ -955,12 +955,12 @@ void RHF::save_information()
     }
     fprintf(outfile, "\n");
 
-    for (int i=0; i<orbital_e_->nirreps(); ++i)
+    for (int i=0; i<orbital_e_->nirrep(); ++i)
         free(temp2[i]);
     free(temp2);
 
-    int *vec = new int[orbital_e_->nirreps()];
-    for (int i=0; i<orbital_e_->nirreps(); ++i)
+    int *vec = new int[orbital_e_->nirrep()];
+    for (int i=0; i<orbital_e_->nirrep(); ++i)
         vec[i] = 0;
 
     if(Communicator::world->me() == 0) {

@@ -34,7 +34,7 @@ namespace psi {
 shared_ptr<Matrix> DFTensor::form_fitting_metric()
 {
     shared_ptr<Matrix> fitting_metric = shared_ptr<Matrix>(new Matrix("DF Metric", naux_, naux_)); 
-    double** W = fitting_metric->get_pointer(0);
+    double** W = fitting_metric->pointer(0);
 
     // == (A|B) Block == //
     IntegralFactory rifactory_J(auxiliary_basis_, zero_, auxiliary_basis_, zero_);
@@ -166,7 +166,7 @@ shared_ptr<Matrix> DFTensor::form_cholesky_metric()
         PSI_DPOTRF(h,'L', M->colspi()[h], M, M->colspi()[h]);
         // The result goes in the upper triangle 
         // Zero the lower triangle for stype 
-        double** Mp = M->get_pointer(h);
+        double** Mp = M->pointer(h);
         for (int A = 0; A < M->colspi()[h]; A++)
             for (int B = 0; B < A; B++)
                 Mp[A][B] = 0.0; 

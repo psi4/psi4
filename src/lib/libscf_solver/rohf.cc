@@ -196,13 +196,13 @@ void ROHF::save_information()
 
     // Print out orbital energies.
     std::vector<std::pair<double, int> > pairs;
-    for (int h=0; h<epsilon_->nirreps(); ++h) {
+    for (int h=0; h<epsilon_->nirrep(); ++h) {
         for (int i=0; i<epsilon_->dimpi()[h]; ++i)
             pairs.push_back(make_pair(epsilon_->get(h, i), h));
     }
     sort(pairs.begin(), pairs.end());
     int ndocc = 0, nsocc = 0;
-    for (int i=0; i<epsilon_->nirreps(); ++i) {
+    for (int i=0; i<epsilon_->nirrep(); ++i) {
         ndocc += doccpi_[i];
         nsocc += soccpi_[i];
     }
@@ -233,7 +233,7 @@ void ROHF::save_information()
     }
     fprintf(outfile, "\n");
 
-    for (int i=0; i<epsilon_->nirreps(); ++i)
+    for (int i=0; i<epsilon_->nirrep(); ++i)
         free(temp2[i]);
     free(temp2);
 
@@ -261,7 +261,7 @@ void ROHF::save_information()
     delete[](frzvpi);
 
     int nopenirreps = 0;
-    for (int i=0; i<epsilon_->nirreps(); ++i)
+    for (int i=0; i<epsilon_->nirrep(); ++i)
         if (soccpi_[i])
             nopenirreps++;
 

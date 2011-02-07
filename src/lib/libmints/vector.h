@@ -37,20 +37,20 @@ public:
     /// Copy constructor
     Vector(const Vector& copy);
     /// Constructor, allocates memory
-    Vector(int nirreps, int *dimpi);
+    Vector(int nirrep, int *dimpi);
     /// Constructor, convenience for 1 irrep
     Vector(int dim);
 
     /// Destructor, frees memory
     ~Vector();
 
-    void init(int nirreps, int *dimpi);
+    void init(int nirrep, int *dimpi);
 
     /// Sets the vector_ to the data in vec
     void set(double *vec);
 
     /// Returns a pointer to irrep h
-    double* get_pointer(int h = 0) {
+    double* pointer(int h = 0) {
         return vector_[h];
     }
 
@@ -76,7 +76,7 @@ public:
         return dimpi_;
     }
     /// Returns the number of irreps
-    int nirreps() const {
+    int nirrep() const {
         return nirrep_;
     }
 
@@ -130,7 +130,7 @@ public:
     /// Set vector_ to vec
     void set(double *vec);
     /// Returns a pointer to the vector's contents
-    double* get_pointer() {
+    double* pointer() {
         return vector_;
     }
     /// Returns an element value
@@ -175,7 +175,7 @@ protected:
     /// IntVector data
     int **vector_;
     /// Number of irreps
-    int nirreps_;
+    int nirrep_;
     /// Dimensions per irrep
     int *dimpi_;
 
@@ -193,20 +193,20 @@ public:
     /// Copy constructor
     IntVector(const IntVector& copy);
     /// Constructor, allocates memory
-    IntVector(int nirreps, int *dimpi);
+    IntVector(int nirrep, int *dimpi);
     /// Constructor, convenience for 1 irrep
     IntVector(int dim);
 
     /// Destructor, frees memory
     ~IntVector();
 
-    void init(int nirreps, int *dimpi);
+    void init(int nirrep, int *dimpi);
 
     /// Sets the vector_ to the data in vec
     void set(int *vec);
 
     /// Returns a pointer to irrep h
-    int* get_pointer(int h = 0) {
+    int* pointer(int h = 0) {
         return vector_[h];
     }
 
@@ -236,8 +236,8 @@ public:
         return dimpi_;
     }
     /// Returns the number of irreps
-    int nirreps() const {
-        return nirreps_;
+    int nirrep() const {
+        return nirrep_;
     }
 
     /// Python compatible printer
@@ -283,7 +283,7 @@ public:
     /// Set vector_ to vec
     void set(int *vec);
     /// Returns a pointer to the vector's contents
-    int* get_pointer() {
+    int* pointer() {
         return vector_;
     }
     /// Returns an element value

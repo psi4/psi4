@@ -290,37 +290,37 @@ void HF::common_init()
 void HF::find_occupation(Vector & evals)
 {
     std::vector<std::pair<double, int> > pairs;
-    for (int h=0; h<evals.nirreps(); ++h) {
+    for (int h=0; h<evals.nirrep(); ++h) {
         for (int i=0; i<evals.dimpi()[h]; ++i)
             pairs.push_back(make_pair(evals.get(h, i), h));
     }
     sort(pairs.begin(),pairs.end());
 
     if(!input_docc_){
-        memset(doccpi_, 0, sizeof(int) * evals.nirreps());
+        memset(doccpi_, 0, sizeof(int) * evals.nirrep());
         for (int i=0; i<nbeta_; ++i)
             doccpi_[pairs[i].second]++;
     }
     if(!input_socc_){
-        memset(soccpi_, 0, sizeof(int) * evals.nirreps());
+        memset(soccpi_, 0, sizeof(int) * evals.nirrep());
         for (int i=nbeta_; i<nalpha_; ++i)
             soccpi_[pairs[i].second]++;
     }
 
     if(print_>5 && Communicator::world->me() == 0){
         fprintf(outfile, "\tDOCC: [");
-        for (int h=0; h<evals.nirreps(); ++h){
+        for (int h=0; h<evals.nirrep(); ++h){
             fprintf(outfile, "%3d ", doccpi_[h]);
         }
         fprintf(outfile, "]\n");
         fprintf(outfile, "\tSOCC: [");
-        for (int h=0; h<evals.nirreps(); ++h){
+        for (int h=0; h<evals.nirrep(); ++h){
             fprintf(outfile, "%3d ", soccpi_[h]);
         }
         fprintf(outfile, "]\n");
     }
 
-    for (int i=0; i<evals.nirreps(); ++i) {
+    for (int i=0; i<evals.nirrep(); ++i) {
         nalphapi_[i] = doccpi_[i] + soccpi_[i];
         nbetapi_[i]  = doccpi_[i];
     }
@@ -502,7 +502,7 @@ void HF::form_Shalf()
     // Convert the eigenvales to 1/sqrt(eigenvalues)
     int *dimpi = eigval.dimpi();
     double min_S = fabs(eigval.get(0,0));
-    for (int h=0; h<eigval.nirreps(); ++h) {
+    for (int h=0; h<eigval.nirrep(); ++h) {
         for (int i=0; i<dimpi[h]; ++i) {
             if (min_S > eigval.get(h,i))
                 min_S = eigval.get(h,i);
@@ -522,7 +522,7 @@ void HF::form_Shalf()
     eigvec.copy(eigvec_store);
     eigval.copy(eigval_store);
     // Convert the eigenvalues to sqrt(eigenvalues)
-    for (int h=0; h<eigval.nirreps(); ++h) {
+    for (int h=0; h<eigval.nirrep(); ++h) {
         for (int i=0; i<dimpi[h]; ++i) {
             double scale = sqrt(eigval.get(h, i));
             eigval.set(h, i, scale);
@@ -563,7 +563,7 @@ void HF::form_Shalf()
         eigvec.copy(eigvec_store);
         eigval.copy(eigval_store);
         int delta_mos = 0;
-        for (int h=0; h<eigval.nirreps(); ++h) {
+        for (int h=0; h<eigval.nirrep(); ++h) {
             //in each irrep, scale significant cols i  by 1.0/sqrt(s_i)
             int start_index = 0;
             for (int i=0; i<dimpi[h]; ++i) {
@@ -602,10 +602,10 @@ void HF::form_Shalf()
 
 int *HF::compute_fcpi(int nfzc, SharedVector &eigvalues)
 {
-    int *frzcpi = new int[eigvalues->nirreps()];
+    int *frzcpi = new int[eigvalues->nirrep()];
     // Print out orbital energies.
     std::vector<std::pair<double, int> > pairs;
-    for (int h=0; h<eigvalues->nirreps(); ++h) {
+    for (int h=0; h<eigvalues->nirrep(); ++h) {
         for (int i=0; i<eigvalues->dimpi()[h]; ++i)
             pairs.push_back(make_pair(eigvalues->get(h, i), h));
         frzcpi[h] = 0;
@@ -620,10 +620,10 @@ int *HF::compute_fcpi(int nfzc, SharedVector &eigvalues)
 
 int *HF::compute_fvpi(int nfzv, SharedVector &eigvalues)
 {
-    int *frzvpi = new int[eigvalues->nirreps()];
+    int *frzvpi = new int[eigvalues->nirrep()];
     // Print out orbital energies.
     std::vector<std::pair<double, int> > pairs;
-    for (int h=0; h<eigvalues->nirreps(); ++h) {
+    for (int h=0; h<eigvalues->nirrep(); ++h) {
         for (int i=0; i<eigvalues->dimpi()[h]; ++i)
             pairs.push_back(make_pair(eigvalues->get(h, i), h));
         frzvpi[h] = 0;

@@ -9,14 +9,14 @@ using namespace psi;
 IntVector::IntVector() {
     vector_ = NULL;
     dimpi_ = NULL;
-    nirreps_ = 0;
+    nirrep_ = 0;
 }
 
 IntVector::IntVector(const IntVector& c) {
     vector_ = NULL;
-    nirreps_ = c.nirreps_;
-    dimpi_ = new int[nirreps_];
-    for (int h=0; h<nirreps_; ++h)
+    nirrep_ = c.nirrep_;
+    dimpi_ = new int[nirrep_];
+    for (int h=0; h<nirrep_; ++h)
         dimpi_[h] = c.dimpi_[h];
     alloc();
     copy_from(c.vector_);
@@ -24,16 +24,16 @@ IntVector::IntVector(const IntVector& c) {
 
 IntVector::IntVector(int nirreps, int *dimpi) {
     vector_ = NULL;
-    nirreps_ = nirreps;
-    dimpi_ = new int[nirreps_];
-    for (int h=0; h<nirreps_; ++h)
+    nirrep_ = nirreps;
+    dimpi_ = new int[nirrep_];
+    for (int h=0; h<nirrep_; ++h)
         dimpi_[h] = dimpi[h];
     alloc();
 }
 IntVector::IntVector(int dim) {
     vector_ = NULL;
-    nirreps_ = 1;
-    dimpi_ = new int[nirreps_];
+    nirrep_ = 1;
+    dimpi_ = new int[nirrep_];
     dimpi_[0] = dim;
     alloc();
 }
@@ -47,9 +47,9 @@ IntVector::~IntVector() {
 void IntVector::init(int nirreps, int *dimpi)
 {
     if (dimpi_) delete[] dimpi_;
-    nirreps_ = nirreps;
-    dimpi_ = new int[nirreps_];
-    for (int h=0; h<nirreps_; ++h)
+    nirrep_ = nirreps;
+    dimpi_ = new int[nirrep_];
+    for (int h=0; h<nirrep_; ++h)
         dimpi_[h] = dimpi[h];
     alloc();
 }
@@ -58,8 +58,8 @@ void IntVector::alloc() {
     if (vector_)
         release();
     
-    vector_ = (int**)malloc(sizeof(int*) * nirreps_);
-    for (int h=0; h<nirreps_; ++h) {
+    vector_ = (int**)malloc(sizeof(int*) * nirrep_);
+    for (int h=0; h<nirrep_; ++h) {
         if (dimpi_[h])
             vector_[h] = new int[dimpi_[h]];
     }
@@ -69,7 +69,7 @@ void IntVector::release() {
     if (!vector_)
         return;
     
-    for (int h=0; h<nirreps_; ++h) {
+    for (int h=0; h<nirrep_; ++h) {
         if (dimpi_[h])
             delete[] (vector_[h]);
     }
@@ -79,7 +79,7 @@ void IntVector::release() {
 
 void IntVector::copy_from(int **c) {
     size_t size;
-    for (int h=0; h<nirreps_; ++h) {
+    for (int h=0; h<nirrep_; ++h) {
         size = dimpi_[h] * sizeof(int);
         if (size)
             memcpy(&(vector_[h][0]), &(c[h][0]), size);
@@ -87,26 +87,26 @@ void IntVector::copy_from(int **c) {
 }
 
 void IntVector::copy(const IntVector *rhs) {
-    if (nirreps_ != rhs->nirreps_) {
+    if (nirrep_ != rhs->nirrep_) {
         release();
         if (dimpi_)
             delete[] dimpi_;
-        nirreps_ = rhs->nirreps_;
-        dimpi_ = new int[nirreps_];
-        for (int h=0; h<nirreps_; ++h)
+        nirrep_ = rhs->nirrep_;
+        dimpi_ = new int[nirrep_];
+        for (int h=0; h<nirrep_; ++h)
             dimpi_[h] = rhs->dimpi_[h];
         alloc();
     }
     copy_from(rhs->vector_);
 }
 void IntVector::copy(const IntVector &rhs) {
-    if (nirreps_ != rhs.nirreps_) {
+    if (nirrep_ != rhs.nirrep_) {
         release();
         if (dimpi_)
             delete[] dimpi_;
-        nirreps_ = rhs.nirreps_;
-        dimpi_ = new int[nirreps_];
-        for (int h=0; h<nirreps_; ++h)
+        nirrep_ = rhs.nirrep_;
+        dimpi_ = new int[nirrep_];
+        for (int h=0; h<nirrep_; ++h)
             dimpi_[h] = rhs.dimpi_[h];
         alloc();
     }
@@ -117,7 +117,7 @@ void IntVector::set(int *vec) {
     int h, i, ij;
     
     ij = 0;
-    for (h=0; h<nirreps_; ++h) {
+    for (h=0; h<nirrep_; ++h) {
         for (i=0; i<dimpi_[h]; ++i) {
             vector_[h][i] = vec[ij++];
         }
@@ -126,7 +126,7 @@ void IntVector::set(int *vec) {
 
 void IntVector::print(FILE *out) {
     int h;
-    for (h=0; h<nirreps_; ++h) {
+    for (h=0; h<nirrep_; ++h) {
         fprintf(out, " Irrep: %d\n", h+1);
         for (int i=0; i<dimpi_[h]; ++i)
             fprintf(out, "   %4d: %10.7d\n", i+1, vector_[h][i]);
@@ -136,12 +136,12 @@ void IntVector::print(FILE *out) {
 
 int *IntVector::to_block_vector() {
     size_t size=0;
-    for (int h=0; h<nirreps_; ++h)
+    for (int h=0; h<nirrep_; ++h)
         size += dimpi_[h];
     
     int *temp = new int[size];
     size_t offset = 0;
-    for (int h=0; h<nirreps_; ++h) {
+    for (int h=0; h<nirrep_; ++h) {
         for (int i=0; i<dimpi_[h]; ++i) {
             temp[i+offset] = vector_[h][i];
         }

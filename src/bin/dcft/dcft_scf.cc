@@ -1736,7 +1736,7 @@ namespace psi{ namespace dcft{
   DCFTSolver::find_occupation(Vector & evals, bool forcePrint)
   {
       std::vector<std::pair<double, int> > pairs;
-      for (int h=0; h<evals.nirreps(); ++h) {
+      for (int h=0; h<evals.nirrep(); ++h) {
           for (int i=0; i<evals.dimpi()[h]; ++i)
               pairs.push_back(make_pair(evals.get(h, i), h));
       }
@@ -1762,12 +1762,12 @@ namespace psi{ namespace dcft{
 
       if(_print > 1 || forcePrint){
           fprintf(outfile, "\t\t\t\tDOCC: [");
-          for (int h = 0; h < evals.nirreps(); ++h){
+          for (int h = 0; h < evals.nirrep(); ++h){
               fprintf(outfile, "%3d ", _nBOccPI[h]);
           }
           fprintf(outfile, "]\n");
           fprintf(outfile, "\t\t\t\tSOCC: [");
-          for (int h = 0; h < evals.nirreps(); ++h){
+          for (int h = 0; h < evals.nirrep(); ++h){
               fprintf(outfile, "%3d ", _nAOccPI[h] - _nBOccPI[h]);
           }
           fprintf(outfile, "]\n");

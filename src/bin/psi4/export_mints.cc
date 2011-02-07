@@ -34,7 +34,7 @@ shared_ptr<MatrixFactory> get_matrix_factory()
 
 void export_mints()
 {
-    typdef void (Vector::*vector_set)(int, int, double);
+    typedef void (Vector::*vector_set)(int, int, double);
     class_<Vector, shared_ptr<Vector> >( "Vector").
         def(init<int>()).
         def("get", &Vector::get).

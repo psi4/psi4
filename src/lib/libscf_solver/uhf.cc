@@ -342,11 +342,10 @@ void UHF::save_information()
 {
     // Print the final docc vector
     char **temp2 = molecule_->irrep_labels();
-    int nso = nso();
 
     // Must remember to write the number of irreps before writing anything else.
     chkpt_->wt_nirreps(factory_.nirrep());
-    chkpt_->wt_nso(nso);
+    chkpt_->wt_nso(nso());
 
     if(print_ > 1){
         fprintf(outfile, "\n  Final doubly occupied vector = (");
@@ -383,7 +382,7 @@ void UHF::save_information()
 
     // Print out orbital energies.
     std::vector<std::pair<double, int> > pairsa, pairsb;
-    for (int h=0; h<eigvaluesa->nirreps(); ++h) {
+    for (int h=0; h<eigvaluesa->nirrep(); ++h) {
         for (int i=0; i<eigvaluesa->dimpi()[h]; ++i) {
             pairsa.push_back(make_pair(eigvaluesa->get(h, i), h));
             pairsb.push_back(make_pair(eigvaluesb->get(h, i), h));
@@ -400,7 +399,7 @@ void UHF::save_information()
         }
         fprintf(outfile, "\n");
         fprintf(outfile, "\n    Alpha unoccupied\n      ");
-        for (int i=nalpha_+1; i<=nso; ++i) {
+        for (int i=nalpha_+1; i<=nso(); ++i) {
             fprintf(outfile, "%12.6f %3s  ", pairsa[i-1].first, temp2[pairsa[i-1].second]);
             if ((i-nalpha_) % 4 == 0)
                 fprintf(outfile, "\n      ");
@@ -415,22 +414,22 @@ void UHF::save_information()
         }
         fprintf(outfile, "\n");
         fprintf(outfile, "\n    Beta unoccupied\n      ");
-        for (int i=nalpha_+1; i<=nso; ++i) {
+        for (int i=nalpha_+1; i<=nso(); ++i) {
             fprintf(outfile, "%12.6f %3s  ", pairsb[i-1].first, temp2[pairsb[i-1].second]);
             if ((i-nbeta_) % 4 == 0)
                 fprintf(outfile, "\n      ");
         }
         fprintf(outfile, "\n");
     }
-    for (int i=0; i<eigvaluesa->nirreps(); ++i)
+    for (int i=0; i<eigvaluesa->nirrep(); ++i)
         free(temp2[i]);
     free(temp2);
 
-    int *vec = new int[eigvaluesa->nirreps()];
-    for (int i=0; i<eigvaluesa->nirreps(); ++i)
+    int *vec = new int[eigvaluesa->nirrep()];
+    for (int i=0; i<eigvaluesa->nirrep(); ++i)
         vec[i] = 0;
 
-    chkpt_->wt_nmo(nso);
+    chkpt_->wt_nmo(nso());
     chkpt_->wt_ref(1);        // UHF
     chkpt_->wt_etot(E_);
     chkpt_->wt_escf(E_);
