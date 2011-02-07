@@ -111,7 +111,6 @@ ERI::ERI(const IntegralFactory* integral, int deriv, double schwarz)
         fprintf(stderr, "ERROR: ERI - libint cannot handle angular momentum this high.\n" \
                         "       Recompile libint for higher angular momentum, then recompile this program.\n");
         throw LimitExceeded<int>("ERI - libint cannot handle angular momentum this high.\nRecompile libint for higher angular momentum, then recompile this program.", LIBINT_MAX_AM, max_am, __FILE__, __LINE__);
-        //abort();
     }
     if (deriv_ == 1 && max_am >= LIBDERIV_MAX_AM1) {
         fprintf(stderr, "ERROR: ERI - libderiv cannot handle angular momentum this high.\n" \
@@ -119,7 +118,6 @@ ERI::ERI(const IntegralFactory* integral, int deriv, double schwarz)
         throw LimitExceeded<int>("ERI - libderiv cannot handle angular momentum this high.\n"
                                  "Recompile libint for higher angular momentum, then recompile this program.",
                                  LIBDERIV_MAX_AM1, max_am, __FILE__, __LINE__);
-        //abort();
     }
 
     try {
@@ -1215,7 +1213,6 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
         double c1 = s1->coef(p1);
         int max_p2 = (sh1 == sh2) ? p1 + 1 : nprim2;
         for (int p2=0; p2<max_p2; ++p2) {
-//        for (int p2=0; p2<nprim2; ++p2) {
             double a2 = s2->exp(p2);
             double c2 = s2->coef(p2);
             double zeta = a1 + a2;
@@ -1244,7 +1241,6 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
                 double c3 = s3->coef(p3);
                 int max_p4 = (sh3 == sh4) ? p3 + 1 : nprim4;
                 for (int p4=0; p4<max_p4; ++p4) {
-//                for (int p4=0; p4<nprim4; ++p4) {
 
 //                    fprintf(outfile, "p1 = %d p2 = %d p3 = %d p4 = %d\n", p1, p2, p3, p4);
 

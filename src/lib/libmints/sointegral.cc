@@ -18,8 +18,6 @@ OneBodySOInt::OneBodySOInt(const boost::shared_ptr<OneBodyAOInt> & ob,
 {
     b1_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(ob->basis1(), integral));
 
-    //    b1_->print();
-
     if (ob->basis2() == ob->basis1())
         b2_ = b1_;
     else
@@ -131,12 +129,6 @@ void OneBodySOInt::compute_shell(int ish, int jsh)
 
 void OneBodySOInt::compute(boost::shared_ptr<Matrix> result)
 {
-    // Check symmetry.
-//    if (b1_->nirrep() == 1) {
-//        // Molecule has C1 symmetry. Need to use the ob_ object to get a SimpleMatrix.
-//        throw FeatureNotImplemented("libmints", "OneBodySOInt with C1 symmetry. Need to direct the code to OneBodyInt.", __FILE__, __LINE__);
-//    }
-
     // Do not worry about zeroing out result
     int ns1 = b1_->nshell();
     int ns2 = b2_->nshell();
