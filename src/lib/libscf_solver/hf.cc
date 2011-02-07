@@ -69,7 +69,7 @@ void HF::common_init()
     memset((void*) nmopi_, '\0', factory_.nirrep()*sizeof(int));
     nmo_ = 0;
     nso_ = 0;
-    nirreps_ = factory_.nirrep();
+    nirrep_ = factory_.nirrep();
     int* dimpi = factory_.colspi();
     for (int h = 0; h< factory_.nirrep(); h++){
         nsopi_[h] = dimpi[h];
@@ -595,8 +595,8 @@ void HF::form_Shalf()
             fprintf(outfile,"  Overall, %d of %d possible MOs eliminated.\n",delta_mos,nso_);
 
         }
-        orbital_e_->init(eigvec.nirreps(), nmopi_);
-        C_->init(eigvec.nirreps(),nsopi_,nmopi_,"MO coefficients");
+        orbital_e_->init(eigvec.nirrep(), nmopi_);
+        C_->init(eigvec.nirrep(),nsopi_,nmopi_,"MO coefficients");
     }
 }
 

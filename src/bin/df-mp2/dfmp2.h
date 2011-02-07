@@ -37,7 +37,7 @@ protected:
     shared_ptr<BasisSet> ribasis_;
     shared_ptr<BasisSet> zerobasis_;
     
-    int nirreps_;
+    int nirrep_;
     int ndocc_;
     int nvirt_;
     int nf_docc_;

@@ -76,7 +76,7 @@ shared_ptr<Properties> Properties::get_testbed()
 void Properties::computeProperties(SharedGridBlock grid, SharedMatrix D, SharedMatrix C)
 {
     int* rows = D->rowspi();
-    int nirreps = D->nirreps();
+    int nirreps = D->nirrep();
     computePoints(grid);
 
         double *xg = grid->getX();

@@ -74,32 +74,32 @@ PsiReturnType deriv(Options & options)
 
     // Form Q for RHF
     SharedSimpleMatrix Q(factory->create_simple_matrix("Q"));
-    int *clsdpi = Process::environment.reference_wavefunction()->get_doccpi();
+    int *clsdpi = Process::environment.reference_wavefunction()->doccpi();
 
     // Read in C coefficients
-    SharedMatrix Cso = Process::environment.reference_wavefunction()->get_Ca();
+    SharedMatrix Cso = Process::environment.reference_wavefunction()->Ca();
     SharedSimpleMatrix simple_Cso(new SimpleMatrix("Cso",
-                                                   Process::environment.reference_wavefunction()->get_nso(),
-                                                   Process::environment.reference_wavefunction()->get_nmo()));
+                                                   Process::environment.reference_wavefunction()->nso(),
+                                                   Process::environment.reference_wavefunction()->nmo()));
 
     SharedSimpleMatrix simple_usotoao(new SimpleMatrix("USO -> AO",
-                                                       Process::environment.reference_wavefunction()->get_nso(),
+                                                       Process::environment.reference_wavefunction()->nso(),
                                                        basisset->nbf()));
     SharedSimpleMatrix Cao(new SimpleMatrix("Cao",
                                             basisset->nbf(),
-                                            Process::environment.reference_wavefunction()->get_nmo()));
+                                            Process::environment.reference_wavefunction()->nmo()));
 
     int sooffset = 0, mooffset = 0;
-    for (int h=0; h<Cso->nirreps(); ++h) {
+    for (int h=0; h<Cso->nirrep(); ++h) {
         for (int m=0; m<Cso->rowspi()[h]; ++m) {
             for (int n=0; n<basisset->nbf(); ++n) {
                 simple_usotoao->set(sooffset+m, n, usotoao->get(h, m, n));
             }
-            for (int n=0; n<Process::environment.reference_wavefunction()->get_nmopi()[h]; ++n) {
+            for (int n=0; n<Process::environment.reference_wavefunction()->nmopi()[h]; ++n) {
                 simple_Cso->set(sooffset+m, n+mooffset, Cso->get(h, m, n));
             }
         }
-        sooffset += Process::environment.reference_wavefunction()->get_nsopi()[h];
+        sooffset += Process::environment.reference_wavefunction()->nsopi()[h];
         mooffset += Cso->rowspi()[h];
     }
 
@@ -110,7 +110,7 @@ PsiReturnType deriv(Options & options)
 //    Cao->print();
 
     // Load in orbital energies
-    SharedVector etmp = Process::environment.reference_wavefunction()->get_epsilon_a();
+    SharedVector etmp = Process::environment.reference_wavefunction()->epsilon_a();
     shared_ptr<SimpleMatrix> W(factory->create_simple_matrix("W"));
 
     int nbf = basisset->nbf();
@@ -127,7 +127,7 @@ PsiReturnType deriv(Options & options)
 
 //                    fprintf(outfile, "sum = %lf, qsum = %lf\n", sum, qsum);
                 }
-                mooffset += Process::environment.reference_wavefunction()->get_nmopi()[h];
+                mooffset += Process::environment.reference_wavefunction()->nmopi()[h];
             }
             W->set(m, n, sum);
             Q->set(m, n, qsum);

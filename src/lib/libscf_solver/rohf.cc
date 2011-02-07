@@ -404,7 +404,7 @@ void ROHF::form_F()
     //  Fc         2Fo         Fc
     int *opi = Fc_->rowspi();
     Feff_->copy(Fct);
-    for (int h=0; h<Feff_->nirreps(); ++h) {
+    for (int h=0; h<Feff_->nirrep(); ++h) {
         for (int i=doccpi_[h]; i<doccpi_[h]+soccpi_[h]; ++i) {
             // Set the open/closed portion
             for (int j=0; j<doccpi_[h]; ++j) {
@@ -465,7 +465,7 @@ void ROHF::form_D()
 {
     int h, i, j, m;
     int *opi = Dc_->rowspi();
-    int nirreps = Dc_->nirreps();
+    int nirreps = Dc_->nirrep();
     double val;
     for (h=0; h<nirreps; ++h) {
         for (i=0; i<opi[h]; ++i) {

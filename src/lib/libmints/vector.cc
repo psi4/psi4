@@ -9,14 +9,14 @@ using namespace psi;
 Vector::Vector() {
     vector_ = NULL;
     dimpi_ = NULL;
-    nirreps_ = 0;
+    nirrep_ = 0;
 }
 
 Vector::Vector(const Vector& c) {
     vector_ = NULL;
-    nirreps_ = c.nirreps_;
-    dimpi_ = new int[nirreps_];
-    for (int h=0; h<nirreps_; ++h)
+    nirrep_ = c.nirrep_;
+    dimpi_ = new int[nirrep_];
+    for (int h=0; h<nirrep_; ++h)
         dimpi_[h] = c.dimpi_[h];
     alloc();
     copy_from(c.vector_);
@@ -24,16 +24,16 @@ Vector::Vector(const Vector& c) {
 
 Vector::Vector(int nirreps, int *dimpi) {
     vector_ = NULL;
-    nirreps_ = nirreps;
-    dimpi_ = new int[nirreps_];
-    for (int h=0; h<nirreps_; ++h)
+    nirrep_ = nirreps;
+    dimpi_ = new int[nirrep_];
+    for (int h=0; h<nirrep_; ++h)
         dimpi_[h] = dimpi[h];
     alloc();
 }
 Vector::Vector(int dim) {
     vector_ = NULL;
-    nirreps_ = 1;
-    dimpi_ = new int[nirreps_];
+    nirrep_ = 1;
+    dimpi_ = new int[nirrep_];
     dimpi_[0] = dim;
     alloc();
 }
@@ -47,9 +47,9 @@ Vector::~Vector() {
 void Vector::init(int nirreps, int *dimpi)
 {
     if (dimpi_) delete[] dimpi_;
-    nirreps_ = nirreps;
-    dimpi_ = new int[nirreps_];
-    for (int h=0; h<nirreps_; ++h)
+    nirrep_ = nirreps;
+    dimpi_ = new int[nirrep_];
+    for (int h=0; h<nirrep_; ++h)
         dimpi_[h] = dimpi[h];
     alloc();
 }
@@ -58,8 +58,8 @@ void Vector::alloc() {
     if (vector_)
         release();
     
-    vector_ = (double**)malloc(sizeof(double*) * nirreps_);
-    for (int h=0; h<nirreps_; ++h) {
+    vector_ = (double**)malloc(sizeof(double*) * nirrep_);
+    for (int h=0; h<nirrep_; ++h) {
         if (dimpi_[h])
             vector_[h] = new double[dimpi_[h]];
     }
@@ -69,7 +69,7 @@ void Vector::release() {
     if (!vector_)
         return;
     
-    for (int h=0; h<nirreps_; ++h) {
+    for (int h=0; h<nirrep_; ++h) {
         if (dimpi_[h])
             delete[] (vector_[h]);
     }
@@ -79,7 +79,7 @@ void Vector::release() {
 
 void Vector::copy_from(double **c) {
     size_t size;
-    for (int h=0; h<nirreps_; ++h) {
+    for (int h=0; h<nirrep_; ++h) {
         size = dimpi_[h] * sizeof(double);
         if (size)
             memcpy(&(vector_[h][0]), &(c[h][0]), size);
@@ -87,26 +87,26 @@ void Vector::copy_from(double **c) {
 }
 
 void Vector::copy(const Vector *rhs) {
-    if (nirreps_ != rhs->nirreps_) {
+    if (nirrep_ != rhs->nirrep_) {
         release();
         if (dimpi_)
             delete[] dimpi_;
-        nirreps_ = rhs->nirreps_;
-        dimpi_ = new int[nirreps_];
-        for (int h=0; h<nirreps_; ++h)
+        nirrep_ = rhs->nirrep_;
+        dimpi_ = new int[nirrep_];
+        for (int h=0; h<nirrep_; ++h)
             dimpi_[h] = rhs->dimpi_[h];
         alloc();
     }
     copy_from(rhs->vector_);
 }
 void Vector::copy(const Vector &rhs) {
-    if (nirreps_ != rhs.nirreps_) {
+    if (nirrep_ != rhs.nirrep_) {
         release();
         if (dimpi_)
             delete[] dimpi_;
-        nirreps_ = rhs.nirreps_;
-        dimpi_ = new int[nirreps_];
-        for (int h=0; h<nirreps_; ++h)
+        nirrep_ = rhs.nirrep_;
+        dimpi_ = new int[nirrep_];
+        for (int h=0; h<nirrep_; ++h)
             dimpi_[h] = rhs.dimpi_[h];
         alloc();
     }
@@ -117,7 +117,7 @@ void Vector::set(double *vec) {
     int h, i, ij;
     
     ij = 0;
-    for (h=0; h<nirreps_; ++h) {
+    for (h=0; h<nirrep_; ++h) {
         for (i=0; i<dimpi_[h]; ++i) {
             vector_[h][i] = vec[ij++];
         }
@@ -126,7 +126,7 @@ void Vector::set(double *vec) {
 
 void Vector::print(FILE *out) {
     int h;
-    for (h=0; h<nirreps_; ++h) {
+    for (h=0; h<nirrep_; ++h) {
         fprintf(out, " Irrep: %d\n", h+1);
         for (int i=0; i<dimpi_[h]; ++i)
             fprintf(out, "   %4d: %10.7f\n", i+1, vector_[h][i]);
@@ -136,12 +136,12 @@ void Vector::print(FILE *out) {
 
 double *Vector::to_block_vector() {
     size_t size=0;
-    for (int h=0; h<nirreps_; ++h)
+    for (int h=0; h<nirrep_; ++h)
         size += dimpi_[h];
     
     double *temp = new double[size];
     size_t offset = 0;
-    for (int h=0; h<nirreps_; ++h) {
+    for (int h=0; h<nirrep_; ++h) {
         for (int i=0; i<dimpi_[h]; ++i) {
             temp[i+offset] = vector_[h][i];
         }
@@ -155,7 +155,7 @@ void Vector::gemv(bool transa, double alpha, Matrix* A, Vector* X, double beta)
 {
     char trans = transa ? 't' : 'n';
 
-    for (int h =0; h < nirreps_; ++h) {
+    for (int h =0; h < nirrep_; ++h) {
         C_DGEMV(trans, A->rowspi_[h], A->colspi_[h], alpha, &(A->matrix_[h][0][0]),
                 A->rowspi_[h], &(X->vector_[h][0]), 1, beta, &(vector_[h][0]), 1);
     }
@@ -165,7 +165,7 @@ double Vector::dot(Vector* X)
 {
     double tmp = 0.0;
 
-    for (int h=0; h<nirreps_; ++h) {
+    for (int h=0; h<nirrep_; ++h) {
         if (dimpi_[h] != X->dimpi_[h]) {
             printf("Vector::dot: Vectors are not of the same size.\n");
             return 0.0;

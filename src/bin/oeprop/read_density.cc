@@ -119,8 +119,8 @@ void read_density(Options & options)
       if (chkpt_rd_override_occ()) { /* ignore input occupations */
         docc = chkpt_rd_clsdpi();
         socc = chkpt_rd_openpi();
-        frozen_docc = Process::environment.reference_wavefunction()->get_frzcpi();
-        frozen_uocc = Process::environment.reference_wavefunction()->get_frzvpi();
+        frozen_docc = Process::environment.reference_wavefunction()->frzcpi();
+        frozen_uocc = Process::environment.reference_wavefunction()->frzvpi();
       }
       else { /* try to read input occupations if you can */
         if (options["DOCC"].has_changed())
@@ -133,8 +133,8 @@ void read_density(Options & options)
         else
           socc = chkpt_rd_openpi();
 
-        frozen_docc = Process::environment.reference_wavefunction()->get_frzcpi();
-        frozen_uocc = Process::environment.reference_wavefunction()->get_frzvpi();
+        frozen_docc = Process::environment.reference_wavefunction()->frzcpi();
+        frozen_uocc = Process::environment.reference_wavefunction()->frzvpi();
       }
 
       reorder_qt(docc, socc, frozen_docc, frozen_uocc,
@@ -299,8 +299,8 @@ void read_density(Options & options)
     mopi = chkpt_rd_orbspi();
     doccpi = chkpt_rd_clsdpi();
     soccpi = chkpt_rd_openpi();
-    fzdoccpi = Process::environment.reference_wavefunction()->get_frzcpi();
-    fzvirtpi = Process::environment.reference_wavefunction()->get_frzvpi();
+    fzdoccpi = Process::environment.reference_wavefunction()->frzcpi();
+    fzvirtpi = Process::environment.reference_wavefunction()->frzvpi();
 
     /* Pitzer to QTS ordering */
     reorder_qt_uhf(doccpi,soccpi,fzdoccpi,fzvirtpi,reorder_a,reorder_b,

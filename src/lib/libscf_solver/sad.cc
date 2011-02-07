@@ -529,7 +529,7 @@ void RHF::compute_SAD_guess()
     free(offset_indices);
 
     // Do a similarity transform to get D_USO(SAD)
-    if (D_->nirreps() == 0) {
+    if (D_->nirrep() == 0) {
         D_->copy(DAO);
     } else {
         
@@ -539,7 +539,7 @@ void RHF::compute_SAD_guess()
         Dimension dim = pet->SO_basisdim(); 
         int nao = nso_;
 
-        for (int h = 0; h < D_->nirreps(); h++) {
+        for (int h = 0; h < D_->nirrep(); h++) {
             double** DAOp = DAO->get_pointer(0);
             double** D = D_->get_pointer(h);
             double** U = AO2USO->get_pointer(h);
@@ -570,7 +570,7 @@ void RHF::compute_SAD_guess()
     shared_ptr<Matrix> D2(factory_.create_matrix("D2"));
     D2->copy(D_);
     C_->zero();
-    for (int h = 0; h < D_->nirreps(); h++) {
+    for (int h = 0; h < D_->nirrep(); h++) {
         int norbs = dim[h];
         sad_nocc_[h] = 0;
 
@@ -685,8 +685,8 @@ SharedMatrix HF::dualBasisProjection(SharedMatrix C_A, int* noccpi, shared_ptr<B
     shared_ptr<PetiteList> pet(new PetiteList(new_basis, newfactory));
     shared_ptr<Matrix> AO2USO(pet->aotoso());
 
-    shared_ptr<Matrix> SAB(new Matrix("S_AB", C_A->nirreps(), C_A->rowspi(), AO2USO->colspi()));
-    shared_ptr<Matrix> SBB(new Matrix("S_BB", C_A->nirreps(), AO2USO->colspi(), AO2USO->colspi()));
+    shared_ptr<Matrix> SAB(new Matrix("S_AB", C_A->nirrep(), C_A->rowspi(), AO2USO->colspi()));
+    shared_ptr<Matrix> SBB(new Matrix("S_BB", C_A->nirrep(), AO2USO->colspi(), AO2USO->colspi()));
 
     intAB->compute(SAB);
     intBB->compute(SBB);
@@ -698,10 +698,10 @@ SharedMatrix HF::dualBasisProjection(SharedMatrix C_A, int* noccpi, shared_ptr<B
     pet.reset();
 
     // Constrained to the same symmetry at the moment, we can relax this soon
-    shared_ptr<Matrix> C_B(new Matrix("C_B", C_A->nirreps(),AO2USO->colspi(), noccpi));
+    shared_ptr<Matrix> C_B(new Matrix("C_B", C_A->nirrep(),AO2USO->colspi(), noccpi));
    
     // Block over irreps (soon united irreps) 
-    for (int h = 0; h < C_A->nirreps(); h++) {
+    for (int h = 0; h < C_A->nirrep(); h++) {
 
         int nocc = noccpi[h]; 
         int na = C_A->rowspi()[h]; 

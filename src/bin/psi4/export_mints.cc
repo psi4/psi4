@@ -34,13 +34,14 @@ shared_ptr<MatrixFactory> get_matrix_factory()
 
 void export_mints()
 {
+    typdef void (Vector::*vector_set)(int, int, double);
     class_<Vector, shared_ptr<Vector> >( "Vector").
         def(init<int>()).
         def("get", &Vector::get).
-        def("set", &Vector::set_python).
+        def("set", vector_set(&Vector::set)).
         def("print_out", &Vector::print_out).
         def("dim", &Vector::dim).
-        def("nirreps", &Vector::nirreps);
+        def("nirrep", &Vector::nirrep);
 
     class_<IntVector, shared_ptr<IntVector> >( "IntVector").
         def(init<int>()).
@@ -48,7 +49,7 @@ void export_mints()
         def("set", &IntVector::set_python).
         def("print_out", &IntVector::print_out).
         def("dim", &IntVector::dim).
-        def("nirreps", &IntVector::nirreps);
+        def("nirrep", &IntVector::nirrep);
 
     typedef void (Matrix::*matrix_multiply)(bool, bool, double, boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix>, double);
     typedef void (Matrix::*matrix_diagonalize)(boost::shared_ptr<Matrix>, boost::shared_ptr<Vector>);
@@ -64,7 +65,7 @@ void export_mints()
         def("print_out", &Matrix::print_out).
         def("rows", &Matrix::rowdim).
         def("cols", &Matrix::coldim).
-        def("nirreps", &Matrix::nirreps).
+        def("nirrep", &Matrix::nirrep).
         def("identity", &Matrix::identity).
         def("zero", &Matrix::zero).
         def("zero_diagonal", &Matrix::zero_diagonal).

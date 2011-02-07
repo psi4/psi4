@@ -19,7 +19,7 @@ protected:
     /// Vector data
     double **vector_;
     /// Number of irreps
-    int nirreps_;
+    int nirrep_;
     /// Dimensions per irrep
     int *dimpi_;
 
@@ -45,14 +45,14 @@ public:
     ~Vector();
 
     void init(int nirreps, int *dimpi);
-    
+
     /// Sets the vector_ to the data in vec
     void set(double *vec);
 
     /// Returns a pointer to irrep h
     double* get_pointer(int h = 0) {
         return vector_[h];
-    }    
+    }
 
     /// Returns a single element value
     double get(int h, int m) {
@@ -60,10 +60,6 @@ public:
     }
     /// Sets a single element value
     void set(int h, int m, double val) {
-        vector_[h][m] = val;
-    }
-    /// Sets a single element value
-    void set_python(int h, int m, double val) {
         vector_[h][m] = val;
     }
 
@@ -81,11 +77,11 @@ public:
     }
     /// Returns the number of irreps
     int nirreps() const {
-        return nirreps_;
+        return nirrep_;
     }
 
     /// Python compatible printer
-    void print_out() { print(outfile); } 
+    void print_out() { print(outfile); }
 
     /// Prints the vector
     void print(FILE *);
@@ -133,10 +129,10 @@ public:
 
     /// Set vector_ to vec
     void set(double *vec);
-    /// Returns a pointer to the vector's contents 
+    /// Returns a pointer to the vector's contents
     double* get_pointer() {
         return vector_;
-    }    
+    }
     /// Returns an element value
     double get(int m) {
         return vector_[m];
@@ -161,7 +157,7 @@ public:
     }
 
     /// Python compatible printer
-    void print_out() { print(outfile); } 
+    void print_out() { print(outfile); }
 
     /// Prints the vector
     void print(FILE *);
@@ -170,7 +166,7 @@ public:
 
     /// Scale the vector
     void scale(double a);
-    
+
     friend class SimpleMatrix;
 };
 /*! \ingroup MINTS */
@@ -205,14 +201,14 @@ public:
     ~IntVector();
 
     void init(int nirreps, int *dimpi);
-    
+
     /// Sets the vector_ to the data in vec
     void set(int *vec);
 
     /// Returns a pointer to irrep h
     int* get_pointer(int h = 0) {
         return vector_[h];
-    }    
+    }
 
     /// Returns a single element value
     int get(int h, int m) {
@@ -245,7 +241,7 @@ public:
     }
 
     /// Python compatible printer
-    void print_out() { print(outfile); } 
+    void print_out() { print(outfile); }
 
     /// Prints the vector
     void print(FILE *);
@@ -286,10 +282,10 @@ public:
 
     /// Set vector_ to vec
     void set(int *vec);
-    /// Returns a pointer to the vector's contents 
+    /// Returns a pointer to the vector's contents
     int* get_pointer() {
         return vector_;
-    }    
+    }
     /// Returns an element value
     int get(int m) {
         return vector_[m];
@@ -314,7 +310,7 @@ public:
     }
 
     /// Python compatible printer
-    void print_out() { print(outfile); } 
+    void print_out() { print(outfile); }
 
     /// Prints the vector
     void print(FILE *);
