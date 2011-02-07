@@ -26,7 +26,7 @@ void HF::form_CD()
 {
     fprintf(outfile, "\n  Computing Integrals using Cholesky Decomposition\n");
     //TODO: Add support for molecular symmetry
-    if (factory_.nirreps() != 1)
+    if (factory_.nirrep() != 1)
     {
         fprintf(outfile,"Must run in C1 for now.\n"); fflush(outfile);
         abort();

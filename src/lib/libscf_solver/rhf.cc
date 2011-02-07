@@ -901,11 +901,11 @@ void RHF::save_information()
 
     // TODO: Delete this as soon as possible!!!
     // Can't believe I'm adding this...
-    chkpt_->wt_nirreps(factory_.nirreps());
+    chkpt_->wt_nirreps(factory_.nirrep());
     chkpt_->wt_irr_labs(temp2);
 
     fprintf(outfile, "\n  Final occupation vector = (");
-    for (int h=0; h<factory_.nirreps(); ++h) {
+    for (int h=0; h<factory_.nirrep(); ++h) {
         fprintf(outfile, "%2d %3s ", doccpi_[h], temp2[h]);
     }
     fprintf(outfile, ")\n");
@@ -1374,7 +1374,7 @@ void RHF::form_PK()
 
 void RHF::form_G_from_PK()
 {
-    int nirreps = factory_.nirreps();
+    int nirreps = factory_.nirrep();
     int *opi = factory_.rowspi();
     size_t ij;
     double *D_vector = new double[pk_pairs_];
@@ -2681,7 +2681,7 @@ void RHF::form_J_and_K_from_direct_integrals()
 }
 void RHF::save_sapt_info()
 {
-    if (factory_.nirreps() != 1)
+    if (factory_.nirrep() != 1)
     {
         fprintf(outfile,"Must run in C1. Period.\n"); fflush(outfile);
         abort();

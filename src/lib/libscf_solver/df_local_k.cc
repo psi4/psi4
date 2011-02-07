@@ -28,7 +28,7 @@ namespace psi { namespace scf {
 void HF::form_A()
 {
     fprintf(outfile, "\n  Computing Integrals using Density Fitting\n");
-    if (factory_.nirreps() != 1)
+    if (factory_.nirrep() != 1)
     {
         fprintf(outfile,"Local SCF must run in C1.\n"); fflush(outfile);
         abort();
@@ -645,7 +645,7 @@ void RHF::form_G_from_RI_local_K()
 }
 void RHF::propagate_local_mos()
 {
-    if (factory_.nirreps() != 1)
+    if (factory_.nirrep() != 1)
     {
         fprintf(outfile,"Must run in C1 for now.\n"); fflush(outfile);
         abort();
@@ -749,7 +749,7 @@ void RHF::fully_localize_mos()
 {
   //Pipek-Mizey procedure ripped from DF-MP2, which in turn was ripped from
   //Localize in Psi3
-    if (factory_.nirreps() != 1)
+    if (factory_.nirrep() != 1)
     {
         fprintf(outfile,"Must run in C1 for now.\n"); fflush(outfile);
         abort();
@@ -986,7 +986,7 @@ void RHF::localized_Lodwin_charges()
     //L_->print(outfile);
 
     //Compute Lodwin atomic charges of localized orbitals (for L-DF-SCF)
-    if (factory_.nirreps() != 1)
+    if (factory_.nirrep() != 1)
     {
         fprintf(outfile,"Must run in C1 for now.\n"); fflush(outfile);
         abort();

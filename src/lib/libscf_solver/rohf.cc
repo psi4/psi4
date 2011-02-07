@@ -171,19 +171,19 @@ void ROHF::save_information()
 
     // TODO: Delete this as soon as possible!!!
     // Can't believe I'm adding this...
-    chkpt_->wt_nirreps(factory_.nirreps());
+    chkpt_->wt_nirreps(factory_.nirrep());
     chkpt_->wt_irr_labs(temp2);
 
     int nso = basisset_->nbf();
 
     fprintf(outfile, "\n  Final DOCC vector = (");
-    for (int h=0; h<factory_.nirreps(); ++h) {
+    for (int h=0; h<factory_.nirrep(); ++h) {
         fprintf(outfile, "%2d %3s ", doccpi_[h], temp2[h]);
     }
     fprintf(outfile, ")\n");
 
     fprintf(outfile, "  Final SOCC vector = (");
-    for (int h=0; h<factory_.nirreps(); ++h) {
+    for (int h=0; h<factory_.nirrep(); ++h) {
         fprintf(outfile, "%2d %3s ", soccpi_[h], temp2[h]);
     }
     fprintf(outfile, ")\n");
@@ -624,7 +624,7 @@ void ROHF::form_PK() {
 
 void ROHF::form_G_from_PK()
 {
-    int nirreps = factory_.nirreps();
+    int nirreps = factory_.nirrep();
     int *opi = factory_.rowspi();
     size_t ij;
     double *Do_vector = new double[pk_pairs_];

@@ -14,7 +14,7 @@ using namespace psi;
 void GaussianShell::init(int nprm, double* e, int am, GaussianType pure,
     double* c, int nc, Vector3& center, int start, PrimitiveType pt)
 {
-    nprimitives_ = nprm;
+    nprimitive_ = nprm;
     nc_ = nc;
     center_ = center;
     start_ = start;
@@ -64,8 +64,8 @@ void GaussianShell::contraction_normalization()
     int i, j;
     double e_sum = 0.0, g, z;
 
-    for (i=0; i<nprimitives_; ++i) {
-        for (j=0; j<nprimitives_; ++j) {
+    for (i=0; i<nprimitive_; ++i) {
+        for (j=0; j<nprimitive_; ++j) {
             g = exp_[i] + exp_[j];
             z = pow(g, l_+1.5);
             e_sum += coef_[i] * coef_[j] / z;
@@ -76,20 +76,19 @@ void GaussianShell::contraction_normalization()
     double norm = sqrt(1.0 / (tmp*e_sum));
 
     // Set the normalization
-    for (i=0; i<nprimitives_; ++i)
+    for (i=0; i<nprimitive_; ++i)
         coef_[i] *= norm;
 
     if (std::isnan(norm))
-        for (i=0; i<nprimitives_; ++i)
+        for (i=0; i<nprimitive_; ++i)
             coef_[i] = 1.0;
 }
 
 void GaussianShell::normalize_shell()
 {
-    
-    int i, gs;
-    
-    for (i = 0; i < nprimitives_; ++i) {
+    int i;
+
+    for (i = 0; i < nprimitive_; ++i) {
         double normalization = primitive_normalization(i);
         coef_[i] *= normalization;
     }
@@ -103,8 +102,8 @@ int GaussianShell::nfunction() const
 
 void GaussianShell::init_data()
 {
-    ncartesians_ = INT_NCART(l_);
-    nfunctions_ = INT_NFUNC(puream_, l_);
+    ncartesian_ = INT_NCART(l_);
+    nfunction_ = INT_NFUNC(puream_, l_);
 }
 
 void GaussianShell::print(FILE *out) const
@@ -115,8 +114,8 @@ void GaussianShell::print(FILE *out) const
     fprintf(out, "      Angular momentum: %d\n", am());
     fprintf(out, "      Center: %d\n", nc_);
     fprintf(out, "      Start index: %d\n", start_);
-    fprintf(out, "      # Cartesians: %d\n", ncartesians_);
-    fprintf(out, "      # functions: %d\n", nfunctions_);
+    fprintf(out, "      # Cartesians: %d\n", ncartesian_);
+    fprintf(out, "      # functions: %d\n", nfunction_);
     fprintf(out, "      Exponent       ");
     fprintf(out, "\n");
     for(int p=0; p<nprimitive(); p++) {
@@ -141,8 +140,8 @@ double GaussianShell::normalize(int l, int m, int n)
 }
 
 Vector3 GaussianShell::center() const
-{ 
-    return center_; 
+{
+    return center_;
 }
 const char *GaussianShell::amtypes = "spdfghiklmn";
 const char *GaussianShell::AMTYPES = "SPDFGHIKLMN";

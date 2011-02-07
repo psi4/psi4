@@ -65,13 +65,13 @@ void HF::common_init()
     epsilon_a_.reset(factory_.create_vector());
     orbital_e_ = epsilon_a_;
 
-    memset((void*) nsopi_, '\0', factory_.nirreps()*sizeof(int));
-    memset((void*) nmopi_, '\0', factory_.nirreps()*sizeof(int));
+    memset((void*) nsopi_, '\0', factory_.nirrep()*sizeof(int));
+    memset((void*) nmopi_, '\0', factory_.nirrep()*sizeof(int));
     nmo_ = 0;
     nso_ = 0;
-    nirreps_ = factory_.nirreps();
+    nirreps_ = factory_.nirrep();
     int* dimpi = factory_.colspi();
-    for (int h = 0; h< factory_.nirreps(); h++){
+    for (int h = 0; h< factory_.nirrep(); h++){
         nsopi_[h] = dimpi[h];
         nmopi_[h] = nsopi_[h]; //For now
         nso_ += nsopi_[h];
@@ -86,7 +86,7 @@ void HF::common_init()
     maxiter_ = options_.get_int("MAXITER");
 
     // Read in DOCC and SOCC from memory
-    int nirreps = factory_.nirreps();
+    int nirreps = factory_.nirrep();
     int ndocc = 0, nsocc = 0;
     input_docc_ = false;
     try {
@@ -344,12 +344,12 @@ void HF::print_header()
         CharacterTable ct = molecule_->point_group()->char_table();
 
         fprintf(outfile, "  Input DOCC vector = (");
-        for (int h=0; h<factory_.nirreps(); ++h) {
+        for (int h=0; h<factory_.nirrep(); ++h) {
             fprintf(outfile, "%2d %3s ", doccpi_[h], ct.gamma(h).symbol());
         }
         fprintf(outfile, ")\n");
         fprintf(outfile, "  Input SOCC vector = (");
-        for (int h=0; h<factory_.nirreps(); ++h) {
+        for (int h=0; h<factory_.nirrep(); ++h) {
             fprintf(outfile, "%2d %3s ", soccpi_[h], ct.gamma(h).symbol());
         }
 
@@ -366,7 +366,7 @@ void HF::print_header()
 void HF::form_indexing()
 {
     int h, i, ij, offset, pk_size;
-    int nirreps = factory_.nirreps();
+    int nirreps = factory_.nirrep();
     int *opi = factory_.rowspi();
 
     so2symblk_ = new int[nso_];

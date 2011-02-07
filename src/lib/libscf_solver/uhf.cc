@@ -345,17 +345,17 @@ void UHF::save_information()
     int nso = get_nso();
 
     // Must remember to write the number of irreps before writing anything else.
-    chkpt_->wt_nirreps(factory_.nirreps());
+    chkpt_->wt_nirreps(factory_.nirrep());
     chkpt_->wt_nso(nso);
 
     if(print_ > 1){
         fprintf(outfile, "\n  Final doubly occupied vector = (");
-        for (int h=0; h<factory_.nirreps(); ++h) {
+        for (int h=0; h<factory_.nirrep(); ++h) {
             fprintf(outfile, "%2d %3s ", doccpi_[h], temp2[h]);
         }
         fprintf(outfile, ")\n");
         fprintf(outfile, "  Final singly occupied vector = (");
-        for (int h=0; h<factory_.nirreps(); ++h) {
+        for (int h=0; h<factory_.nirrep(); ++h) {
             fprintf(outfile, "%2d %3s ", soccpi_[h], temp2[h]);
         }
         fprintf(outfile, ")\n");
@@ -786,7 +786,7 @@ void UHF::form_PK()
 
 void UHF::form_G_from_PK()
 {
-    int nirreps = factory_.nirreps();
+    int nirreps = factory_.nirrep();
     int *opi = factory_.rowspi();
     size_t ij;
     double *Da_vector = new double[pk_pairs_];

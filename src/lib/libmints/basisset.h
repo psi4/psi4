@@ -7,8 +7,6 @@
 #include <boost/shared_ptr.hpp>
 
 // Need libint for maximum angular momentum
-
-// These probably should be remove and anything we need to be forward declared.
 #include <libint/libint.h>
 
 #include <boost/thread/once.hpp>
@@ -99,13 +97,6 @@ class BasisSet
 
 public:
 
-    /** Constructor, reads in the basis set from the checkpoint file using basiskey
-     *  @param chkpt Checkpoint library object that contains the basis set information.
-     *  @param basiskey To load the default basis set leave this parameter empty.
-     *                  If an RI-basis is wanted pass "DF"
-     */
-//    BasisSet(boost::shared_ptr<psi::Chkpt> chkpt, std::string basiskey = "");
-
     /** Copy constructor, currently errors if used. */
     BasisSet(const BasisSet&);
     /// Destructor
@@ -190,12 +181,12 @@ public:
                               2: Summary and contraction details
                             > 2: Full details
                             Defaults to 2
-     */  
-    void print_by_level(FILE* out = outfile, int print_level = 2) const;  
+     */
+    void print_by_level(FILE* out = outfile, int print_level = 2) const;
     /** Prints a short string summarizing the basis set
      *  @param out The file stream to use for printing. Defaults to outfile.
      */
-    void print_summary(FILE *out = outfile) const; 
+    void print_summary(FILE *out = outfile) const;
 
     /** Prints a detailed PSI3-style summary of the basis (per-atom)
      *  @param out The file stream to use for printing. Defaults to outfile.

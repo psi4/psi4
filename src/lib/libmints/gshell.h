@@ -19,7 +19,7 @@ class GaussianShell
 {
 private:
     /// number of primitives used in this contraction
-    int nprimitives_;
+    int nprimitive_;
     /// Angular momentum
     int l_;
     /// Flag for pure angular momentum
@@ -36,9 +36,9 @@ private:
     int start_;
 
     /// How many cartesian functions? (1=s, 3=p, 6=d, ...)
-    int ncartesians_;
+    int ncartesian_;
     /// How many functions? (1=s, 3=p, 6=d, ...)
-    int nfunctions_;
+    int nfunction_;
 
     /** Initializes some basic data about the GaussianShell
      *
@@ -97,11 +97,11 @@ public:
               PrimitiveType pt = Normalized);
 
     /// The number of primitive Gaussians
-    int nprimitive() const          { return nprimitives_; }
+    int nprimitive() const          { return nprimitive_; }
     /// Total number of basis functions
     int nfunction() const;
     /// Total number of functions if this shell was Cartesian
-    int ncartesian() const          { return ncartesians_; }
+    int ncartesian() const          { return ncartesian_; }
     /// The angular momentum of the given contraction
     int am() const           { return l_; }
     /// The character symbol for the angular momentum of the given contraction
@@ -112,7 +112,6 @@ public:
     bool is_cartesian() const  { return !puream_; }
     /// Returns true if contraction is pure
     bool is_pure() const       { return l_ < 2 ? false : puream_; }
-//    bool is_pure() const       { puream_; }
 
     /// Returns the center of the Molecule this shell is on
     Vector3 center() const;
@@ -137,8 +136,6 @@ public:
     /// Basis function index where this shell starts.
     int function_index() const { return start_; }
     void set_function_index(int i) { start_ = i; }
-    int ncartesians() const { return ncartesians_; }
-    int nfunctions() const { return nfunctions_; }
 };
 
 }
