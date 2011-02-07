@@ -26,6 +26,11 @@ UHF::UHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) : HF(
     common_init();
 }
 
+UHF::UHF(Options& options, shared_ptr<PSIO> psio) : HF(options, psio)
+{
+    common_init();
+}
+
 UHF::~UHF()
 {
     if (p_jk_)

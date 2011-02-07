@@ -29,6 +29,12 @@ ROHF::ROHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
     common_init();
 }
 
+ROHF::ROHF(Options& options, shared_ptr<PSIO> psio)
+    : HF(options, psio)
+{
+    common_init();
+}
+
 ROHF::~ROHF() {
     if (pk_)
         delete[](pk_);

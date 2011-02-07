@@ -128,6 +128,7 @@ protected:
     void common_init();
 public:
     RHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
+    RHF(Options& options, shared_ptr<PSIO> psio);
     virtual ~RHF();
 
     double compute_energy();

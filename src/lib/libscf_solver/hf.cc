@@ -44,6 +44,17 @@ HF::HF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
     common_init();
 }
 
+HF::HF(Options& options, shared_ptr<PSIO> psio)
+    : Wavefunction(options, psio),
+      df_storage_(disk),
+      nuclear_dipole_contribution_(3),
+      nuclear_quadrupole_contribution_(6),
+      print_(3),
+      add_external_potential_(false)
+{
+    common_init();
+}
+
 HF::~HF()
 {
     if (scf_type_ == "PK") {

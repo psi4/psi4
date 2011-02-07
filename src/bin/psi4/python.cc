@@ -86,13 +86,18 @@ int py_psi_deriv()
     return deriv::deriv(Process::environment.options);
 }
 
-double py_psi_scf(PyObject* precallback, PyObject* postcallback)
+double py_psi_scf_callbacks(PyObject* precallback, PyObject* postcallback)
 {
     if (scf::scf(Process::environment.options, precallback, postcallback) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
     else
         return 0.0;
+}
+
+double py_psi_scf()
+{
+    return py_psi_scf_callbacks(Py_None, Py_None);
 }
 
 double py_psi_dcft()
@@ -420,7 +425,12 @@ BOOST_PYTHON_MODULE(PsiMod)
     // modules
     def("mints", py_psi_mints);
     def("deriv", py_psi_deriv);
-    def("scf",   py_psi_scf);
+
+    typedef double (*scf_module_none)();
+    typedef double (*scf_module_two)(PyObject*, PyObject*);
+
+    def("scf", py_psi_scf_callbacks);
+    def("scf", py_psi_scf);
     def("dcft", py_psi_dcft);
     def("dfmp2", py_psi_dfmp2);
     def("sapt", py_psi_sapt);

@@ -112,6 +112,85 @@ RKS::RKS(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) : RHF
     **/
 }
 
+RKS::RKS(Options& options, shared_ptr<PSIO> psio) : RHF(options, psio)
+{
+    //x_functional_ = Functional::createFunctional(options.get_str("X_FUNCTIONAL"),options.get_int("N_BLOCK"));
+    //c_functional_ = Functional::createFunctional(options.get_str("C_FUNCTIONAL"),options.get_int("N_BLOCK"));
+
+    integrator_ = Integrator::createIntegrator(molecule_,options);
+    V_ = SharedMatrix (factory_.create_matrix("V"));
+    properties_ = SharedProperties(Properties::constructProperties(basisset_,options.get_int("N_BLOCK")));
+
+    /**
+
+    if (x_functional_->isGGA() || c_functional_-> isGGA() )
+    {
+        fprintf(outfile,"\n  Computing Point Gradients, X is %s, C is %s\n",(x_functional_->isGGA())?"GGA":"Not GGA",(c_functional_->isGGA())?"GGA":"Not GGA");
+        properties_->setToComputeDensityGradient(true); //Need this to be able to get to \nabla \rho
+    }
+
+    fprintf(outfile,"  \n");
+    fprintf(outfile,"  Exchange Functional Name: %s\n",x_functional_->getName().c_str());
+    fprintf(outfile,"  Exchange Functional Description:\n  %s\n",x_functional_->getDescription().c_str());
+    fprintf(outfile,"  Exchange Functional Citation:\n  %s\n",x_functional_->getCitation().c_str());
+    fprintf(outfile,"  Exchange Functional Parameters:\n%s\n",x_functional_->getParametersString().c_str());
+    fprintf(outfile,"  \n");
+
+    if (options.get_bool("TEST_FUNCTIONAL") ) {
+        int n_test = properties_->get_RKS_GGA_Testbed_Size();
+        properties_->get_RKS_GGA_Testbed(); //Please set block size bigger than 9 or risk a segfault!
+        x_functional_->computeRKSFunctional(properties_);
+
+        const double* rhoa = properties_->getDensity();
+        const double* sigmaa = properties_->getDensityGradientSquared();
+
+        double *zk = x_functional_->getFunctional();
+        double *vrhoa = x_functional_->getV_RhoA();
+        double *vsigmaaa = x_functional_->getV_GammaAA();
+
+        fprintf(outfile, "  Testing Exchange Functional:\n");
+        for (int k = 0; k<n_test; k++) {
+            fprintf(outfile, "   rhoa = %8.2E, sigmaa = %8.2E\n", rhoa[k], sigmaa[k]);
+            fprintf(outfile, "   zk = %15.11E\n",2.0*zk[k]);
+            fprintf(outfile, "   vrhoa = %15.11E\n",vrhoa[k]);
+            if (x_functional_->isGGA())
+                fprintf(outfile, "   vsimgaaa = %15.11E\n",vsigmaaa[k]);
+        }
+        fprintf(outfile, "  \n");
+    }
+
+    fprintf(outfile,"  Correlation Functional Name: %s\n",c_functional_->getName().c_str());
+    fprintf(outfile,"  Correlation Functional Description:\n  %s\n",c_functional_->getDescription().c_str());
+    fprintf(outfile,"  Correlation Functional Citation:\n  %s\n",c_functional_->getCitation().c_str());
+    fprintf(outfile,"  Correlation Functional Parameters:\n%s\n",c_functional_->getParametersString().c_str());
+    fprintf(outfile,"  \n");
+    fprintf(outfile,"%s\n",(integrator_->getString()).c_str());
+
+    if (options.get_bool("TEST_FUNCTIONAL") ) {
+        int n_test = properties_->get_RKS_GGA_Testbed_Size();
+        properties_->get_RKS_GGA_Testbed(); //Please set block size bigger than 9 or risk a segfault!
+        c_functional_->computeRKSFunctional(properties_);
+
+        const double* rhoa = properties_->getDensity();
+        const double* sigmaa = properties_->getDensityGradientSquared();
+
+        double *zk = c_functional_->getFunctional();
+        double *vrhoa = c_functional_->getV_RhoA();
+        double *vsigmaaa = c_functional_->getV_GammaAA();
+
+        fprintf(outfile, "  Testing Correlation Functional:\n");
+        for (int k = 0; k<n_test; k++) {
+            fprintf(outfile, "   rhoa = %8.2E, sigmaa = %8.2E\n", rhoa[k], sigmaa[k]);
+            fprintf(outfile, "   zk = %15.11E\n",2.0*zk[k]);
+            fprintf(outfile, "   vrhoa = %15.11E\n",vrhoa[k]);
+            if (c_functional_->isGGA())
+                fprintf(outfile, "   vsimgaaa = %15.11E\n",vsigmaaa[k]);
+        }
+        fprintf(outfile, "  \n");
+    }
+    **/
+}
+
 RKS::~RKS()
 {
 

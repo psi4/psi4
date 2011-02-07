@@ -312,6 +312,7 @@ protected:
     }
 public:
     HF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
+    HF(Options& options, shared_ptr<PSIO> psio);
 
     virtual ~HF();
 };
