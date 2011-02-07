@@ -28,6 +28,36 @@ void CdSalc::print() const
     }
 }
 
+void CdSalcWRTAtom::print() const
+{
+    fprintf(outfile, "\tx component, size = %ld\n", x_.size());
+    for (int i=0; i<x_.size(); ++i) {
+        fprintf(outfile, "\t\t%d: salc %d, irrep %d, coef %lf\n",
+                i,
+                x_[i].salc,
+                x_[i].irrep,
+                x_[i].coef);
+    }
+
+    fprintf(outfile, "\ty component, size = %ld\n", y_.size());
+    for (int i=0; i<y_.size(); ++i) {
+        fprintf(outfile, "\t\t%d: salc %d, irrep %d, coef %lf\n",
+                i,
+                y_[i].salc,
+                y_[i].irrep,
+                y_[i].coef);
+    }
+
+    fprintf(outfile, "\tz component, size = %ld\n", z_.size());
+    for (int i=0; i<z_.size(); ++i) {
+        fprintf(outfile, "\t\t%d: salc %d, irrep %d, coef %lf\n",
+                i,
+                z_[i].salc,
+                z_[i].irrep,
+                z_[i].coef);
+    }
+}
+
 CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
                        char needed_irreps,
                        bool project_out_translations,
@@ -44,6 +74,10 @@ CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
     // Ideally this could be 3n-5 or 3n-6.
     ncd_ = 3 * molecule_->natom();
     double *salc = new double[ncd_];
+
+    // We know how many atom_salcs_ we have.
+    for (int i=0; i<molecule_->natom(); ++i)
+        atom_salcs_.push_back(CdSalcWRTAtom());
 
     // Obtain handy reference to point group.
     PointGroup& pg = *molecule_->point_group().get();
@@ -120,8 +154,10 @@ CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
                     // Go through the salc and take the non-zero values
                     // push them onto the sparse salc transform object
                     for (int cd=0; cd<ncd_; ++cd) {
-                        if (fabs(salc[cd]) > 1e-10)
+                        if (fabs(salc[cd]) > 1e-10) {
                             new_salc.add(salc[cd], cd/3, xyz);
+                            atom_salcs_[cd/3].add(xyz, salc[cd], irrep, salcs_.size());
+                        }
                     }
 
                     // Save this salc.
@@ -143,7 +179,7 @@ CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
     }
 
     // Sort the salcs based on irrep
-    std::sort(salcs_.begin(), salcs_.end(), cdsalc_sort_predicate);
+//    std::sort(salcs_.begin(), salcs_.end(), cdsalc_sort_predicate);
 
     // TODO: I want to delete this, too. This was used in psi3's input.
     // In psi4 I'm using a sparse transform object...no need to store
@@ -197,6 +233,7 @@ CdSalcList::~CdSalcList()
 
 void CdSalcList::print() const
 {
+    fprintf(outfile, "By SALC:\n");
     fprintf(outfile, "Number of SALCs %ld, irreps = %d\n"
             "Project out translations %s (not programmed)\n"
             "Project out rotations %s (not programmed)\n",
@@ -206,6 +243,13 @@ void CdSalcList::print() const
 
     for (int i=0; i<salcs_.size(); ++i)
         salcs_[i].print();
+
+    fprintf(outfile, "By Atomic Center:\n");
+    fprintf(outfile, "Number of atomic centers %ld\n", atom_salcs_.size());
+    for (int i=0; i<atom_salcs_.size(); ++i) {
+        fprintf(outfile, "Atomic Center %d\n", i);
+        atom_salcs_[i].print();
+    }
 }
 
 }

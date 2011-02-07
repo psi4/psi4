@@ -17,19 +17,19 @@ class Molecule;
 
 class CdSalc {
 public:
-    class Element {
+    class Component {
     public:
         double coef;
         int atom;
         int xyz;
 
-        Element(double coef_, int atom_, int xyz_) :
+        Component(double coef_, int atom_, int xyz_) :
             coef(coef_), atom(atom_), xyz(xyz_) {}
     };
 
 private:
     /// All the components needed for this transformation
-    std::vector<Element> components_;
+    std::vector<Component> components_;
 
     /// Symmetry of this SALC compatible for ^ (A1 = 0)
     char irrep_;
@@ -38,12 +38,54 @@ public:
     CdSalc(char irrep) : irrep_(irrep) {}
 
     void add(double coef, int atom, int xyz) {
-        components_.push_back(Element(coef,atom, xyz));
+        components_.push_back(Component(coef,atom, xyz));
     }
 
     size_t ncomponent() const { return components_.size(); }
 
     char irrep() const { return irrep_; }
+    void print() const;
+};
+
+class CdSalcWRTAtom {
+public:
+    class Component {
+    public:
+        double coef;
+        int irrep;
+        int salc;
+
+        Component(double coef_, int irrep_, int salc_) :
+            coef(coef_), irrep(irrep_), salc(salc_) {}
+    };
+
+private:
+
+    /// We split the components up for simplicity
+    std::vector<Component> x_;
+    std::vector<Component> y_;
+    std::vector<Component> z_;
+
+public:
+    CdSalcWRTAtom() {}
+
+    void add(int xyz, double coef, int irrep, int salc) {
+        if (xyz == 0)
+            x_.push_back(Component(coef, irrep, salc));
+        else if (xyz == 1)
+            y_.push_back(Component(coef, irrep, salc));
+        else if (xyz == 2)
+            z_.push_back(Component(coef, irrep, salc));
+    }
+
+    int nx() const { return x_.size(); }
+    int ny() const { return y_.size(); }
+    int nz() const { return z_.size(); }
+
+    const Component& x(int n) const { return x_[n]; }
+    const Component& y(int n) const { return y_[n]; }
+    const Component& z(int n) const { return z_[n]; }
+
     void print() const;
 };
 
@@ -64,6 +106,7 @@ class CdSalcList
 
     /// Vector of all requested SALCs
     std::vector<CdSalc> salcs_;
+    std::vector<CdSalcWRTAtom> atom_salcs_;
 
 public:
     /*! Constructor for generating Cartesian displacement symmetry adapted
@@ -96,6 +139,8 @@ public:
     bool project_out_rotations() const { return project_out_rotations_; }
 
     const CdSalc& operator[](int i) const { return salcs_[i]; }
+
+    const CdSalcWRTAtom& atom_salc(int i) const { return atom_salcs_[i]; }
 
     void print() const;
 };

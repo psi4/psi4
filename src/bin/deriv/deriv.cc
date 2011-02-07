@@ -20,7 +20,7 @@ namespace psi { namespace deriv {
 
 Deriv::Deriv(reftype ref, const shared_ptr<MatrixFactory>& factory, const shared_ptr<BasisSet>& basis)
     : basis_(basis), natom_(basis->molecule()->natom()),
-      factory_(factory), cdsalcs_(basis->molecule(), 1), ref_(ref)
+      factory_(factory), cdsalcs_(basis->molecule(), 0xf), ref_(ref)
 {
     // Initialize an integral object.
     shared_ptr<IntegralFactory> integral(new IntegralFactory(basis_, basis_, basis_, basis_));
@@ -59,6 +59,11 @@ Deriv::Deriv(reftype ref, const shared_ptr<MatrixFactory>& factory, const shared
         name = "dS - SO-basis SALC " + to_string(i);
         dS_.push_back(SharedMatrix(factory_->create_matrix(name, irrep)));
     }
+
+    // Print.
+    for (int i=0; i<cdsalcs_.ncd(); ++i)
+        dS_[i]->print();
+    fflush(outfile);
 
     // Compute the one-body integral derivatives
     oei_dS->compute_deriv1(dS_, cdsalcs_);

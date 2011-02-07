@@ -58,8 +58,8 @@ PsiReturnType deriv(Options & options)
     // Initialize the factory
     factory->init_with(dimension, dimension);
 
-    usotoao->print();
-    aotoso->print();
+//    usotoao->print();
+//    aotoso->print();
 
     // Print the molecule.
     basisset->molecule()->print();
@@ -103,11 +103,11 @@ PsiReturnType deriv(Options & options)
         mooffset += Cso->rowspi()[h];
     }
 
-    simple_usotoao->print();
-    simple_Cso->print();
+//    simple_usotoao->print();
+//    simple_Cso->print();
 
     Cao->gemm(true, false, 1.0, simple_usotoao, simple_Cso, 0.0);
-    Cao->print();
+//    Cao->print();
 
     // Load in orbital energies
     SharedVector etmp = Process::environment.reference_wavefunction()->get_epsilon_a();
@@ -125,7 +125,7 @@ PsiReturnType deriv(Options & options)
                     sum += Cao->get(m, i+mooffset) * Cao->get(n, i+mooffset) * etmp->get(h, i);
                     qsum += Cao->get(m, i+mooffset) * Cao->get(n, i+mooffset);
 
-                    fprintf(outfile, "sum = %lf, qsum = %lf\n", sum, qsum);
+//                    fprintf(outfile, "sum = %lf, qsum = %lf\n", sum, qsum);
                 }
                 mooffset += Process::environment.reference_wavefunction()->get_nmopi()[h];
             }
@@ -134,9 +134,9 @@ PsiReturnType deriv(Options & options)
         }
     }
 
-    Q->print();
-    fprintf(outfile, "AO-basis\n");
-    W->print();
+//    Q->print();
+//    fprintf(outfile, "AO-basis\n");
+//    W->print();
 
     SharedSimpleMatrix G;
 
