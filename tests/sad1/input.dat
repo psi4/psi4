@@ -4,7 +4,7 @@
 #! test is first performed in C2v symmetry, and then in C1.
 
 Nref  =   8.841020805217546  #TEST
-E1ref = -75.99572139678682   #TEST
+E1ref = -75.973425           #TEST
 Eref  = -76.01678948412534   #TEST
 
 molecule h2o {
