@@ -43,21 +43,24 @@ Matrix::Matrix()
     rowspi_ = NULL;
     colspi_ = NULL;
     nirreps_ = 0;
+    symmetry_ = 0;
 }
 
-Matrix::Matrix(std::string name)
+Matrix::Matrix(std::string name, int symmetry)
 {
     matrix_ = NULL;
     rowspi_ = NULL;
     colspi_ = NULL;
     nirreps_ = 0;
     name = name_;
+    symmetry_ = symmetry;
 }
 
 Matrix::Matrix(const Matrix& c)
 {
     matrix_ = NULL;
     nirreps_ = c.nirreps_;
+    symmetry_ = c.symmetry_;
     rowspi_ = new int[nirreps_];
     colspi_ = new int[nirreps_];
     for (int i=0; i<nirreps_; ++i) {
@@ -72,6 +75,7 @@ Matrix::Matrix(shared_ptr<Matrix> c)
 {
     matrix_ = NULL;
     nirreps_ = c->nirreps_;
+    symmetry_ = c->symmetry_;
     rowspi_ = new int[nirreps_];
     colspi_ = new int[nirreps_];
     for (int i=0; i<nirreps_; ++i) {
@@ -86,6 +90,7 @@ Matrix::Matrix(Matrix& c)
 {
     matrix_ = NULL;
     nirreps_ = c.nirreps_;
+    symmetry_ = c.symmetry_;
     rowspi_ = new int[nirreps_];
     colspi_ = new int[nirreps_];
     for (int i=0; i<nirreps_; ++i) {
@@ -100,6 +105,7 @@ Matrix::Matrix(const Matrix* c)
 {
     matrix_ = NULL;
     nirreps_ = c->nirreps_;
+    symmetry_ = c->symmetry_;
     rowspi_ = new int[nirreps_];
     colspi_ = new int[nirreps_];
     for (int i=0; i<nirreps_; ++i) {
@@ -110,10 +116,11 @@ Matrix::Matrix(const Matrix* c)
     copy_from(c->matrix_);
 }
 
-Matrix::Matrix(int l_nirreps, int *l_rowspi, int *l_colspi)
+Matrix::Matrix(int l_nirreps, int *l_rowspi, int *l_colspi, int symmetry)
 {
     matrix_ = NULL;
     nirreps_ = l_nirreps;
+    symmetry_ = symmetry;
     rowspi_ = new int[nirreps_];
     colspi_ = new int[nirreps_];
     for (int i=0; i<nirreps_; ++i) {
@@ -123,10 +130,11 @@ Matrix::Matrix(int l_nirreps, int *l_rowspi, int *l_colspi)
     alloc();
 }
 
-Matrix::Matrix(std::string name, int l_nirreps, int *l_rowspi, int *l_colspi) : name_(name)
+Matrix::Matrix(std::string name, int l_nirreps, int *l_rowspi, int *l_colspi, int symmetry) : name_(name)
 {
     matrix_ = NULL;
     nirreps_ = l_nirreps;
+    symmetry_ = symmetry;
     rowspi_ = new int[nirreps_];
     colspi_ = new int[nirreps_];
     for (int i=0; i<nirreps_; ++i) {
@@ -156,9 +164,10 @@ Matrix::Matrix(int rows, int cols)
     alloc();
 }
 
-Matrix::Matrix(const std::string& name, const Dimension& rows, const Dimension& cols)
+Matrix::Matrix(const std::string& name, const Dimension& rows, const Dimension& cols, int symmetry)
 {
     matrix_ = NULL;
+    symmetry_ = symmetry;
 
     // This will happen in PetiteList::aotoso()
     if (rows.n() == 1) {
@@ -210,11 +219,12 @@ Matrix::~Matrix()
         delete[] colspi_;
 }
 
-void Matrix::init(int l_nirreps, int *l_rowspi, int *l_colspi, std::string name)
+void Matrix::init(int l_nirreps, int *l_rowspi, int *l_colspi, std::string name, int symmetry)
 {
     if (rowspi_) delete[] rowspi_;
     if (colspi_) delete[] colspi_;
     name_ = name;
+    symmetry_ = symmetry;
     nirreps_ = l_nirreps;
     rowspi_ = new int[nirreps_];
     colspi_ = new int[nirreps_];
@@ -235,7 +245,7 @@ void Matrix::copy(Matrix* cp)
 {
     // Make sure we are the same size as cp
     bool same = true;
-    if (nirreps_ != cp->nirreps_) {
+    if (nirreps_ != cp->nirreps_ || symmetry_ != cp->symmetry_) {
         same = false;
     } else {
         for (int h=0; h<nirreps_; ++h)
@@ -250,6 +260,7 @@ void Matrix::copy(Matrix* cp)
         if (colspi_)
             delete[] colspi_;
         nirreps_ = cp->nirreps_;
+        symmetry_ = cp->symmetry_;
         rowspi_ = new int[nirreps_];
         colspi_ = new int[nirreps_];
         for (int i=0; i<nirreps_; ++i) {
@@ -261,8 +272,8 @@ void Matrix::copy(Matrix* cp)
 
     // When here we are the same size
     for (int h=0; h<nirreps_; ++h) {
-        if (rowspi_[h] != 0 && colspi_[h] != 0)
-            memcpy(&(matrix_[h][0][0]), &(cp->matrix_[h][0][0]), rowspi_[h] * colspi_[h] * sizeof(double));
+        if (rowspi_[h] != 0 && colspi_[h^symmetry_] != 0)
+            memcpy(&(matrix_[h][0][0]), &(cp->matrix_[h][0][0]), rowspi_[h] * colspi_[h^symmetry_] * sizeof(double));
     }
 }
 
@@ -293,8 +304,8 @@ void Matrix::alloc()
 
     matrix_ = (double***)malloc(sizeof(double***) * nirreps_);
     for (int i=0; i<nirreps_; ++i) {
-        if (rowspi_[i] != 0 && colspi_[i] != 0)
-            matrix_[i] = Matrix::matrix(rowspi_[i], colspi_[i]);
+        if (rowspi_[i] != 0 && colspi_[i^symmetry_] != 0)
+            matrix_[i] = Matrix::matrix(rowspi_[i], colspi_[i^symmetry_]);
         else
             matrix_[i] = NULL;
     }
@@ -317,7 +328,7 @@ void Matrix::copy_from(double ***c) {
     int size;
 
     for (int h=0; h<nirreps_; ++h) {
-        size = rowspi_[h] * colspi_[h] * sizeof(double);
+        size = rowspi_[h] * colspi_[h^symmetry_] * sizeof(double);
         if (size)
             memcpy(&(matrix_[h][0][0]), &(c[h][0][0]), size);
     }
@@ -327,7 +338,7 @@ void Matrix::copy_from(double ***c) {
 void Matrix::set(double val)
 {
     for (int h=0; h < nirreps_; ++h) {
-        size_t size = rowspi_[h] * colspi_[h];
+        size_t size = rowspi_[h] * colspi_[h^symmetry_];
 
         for (size_t i=0; i<size; ++i) {
             matrix_[h][0][i] = val;
@@ -337,6 +348,9 @@ void Matrix::set(double val)
 
 void Matrix::set(const double *tri)
 {
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::set called on a non-totally symmetric matrix.");
+    }
     int h, i, j, ii, jj;
     int offset;
 
@@ -355,6 +369,10 @@ void Matrix::set(const double *tri)
 
 void Matrix::set(const double **sq)
 {
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::set called on a non-totally symmetric matrix.");
+    }
+
     int h, i, j, ii, jj;
     int offset;
 
@@ -379,6 +397,10 @@ void Matrix::set(const double **sq)
 
 void Matrix::set(double **sq)
 {
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::set called on a non-totally symmetric matrix.");
+    }
+
     int h, i, j, ii, jj;
     int offset;
 
@@ -413,6 +435,10 @@ void Matrix::set(shared_ptr<SimpleMatrix> sq)
 
 void Matrix::set(Vector* vec)
 {
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::set called on a non-totally symmetric matrix.");
+    }
+
     int h, i, size;
     zero();
     for (h=0; h<nirreps_; ++h) {
@@ -436,6 +462,10 @@ void Matrix::set(shared_ptr<Vector> vec)
 
 double *Matrix::to_lower_triangle() const
 {
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::set called on a non-totally symmetric matrix.");
+    }
+
     int sizer=0, sizec=0;
     for (int h=0; h<nirreps_; ++h) {
         sizer += rowspi_[h];
@@ -456,19 +486,19 @@ double **Matrix::to_block_matrix() const
     int sizer=0, sizec=0;
     for (int h=0; h<nirreps_; ++h) {
         sizer += rowspi_[h];
-        sizec += colspi_[h];
+        sizec += colspi_[h^symmetry_];
     }
 
     double **temp = block_matrix(sizer,sizec);
     int offsetr = 0, offsetc=0;
     for (int h=0; h <nirreps_; ++h) {
         for (int i=0; i<rowspi_[h]; ++i) {
-            for (int j=0; j<colspi_[h]; ++j) {
+            for (int j=0; j<colspi_[h^symmetry_]; ++j) {
                 temp[i+offsetr][j+offsetc] = matrix_[h][i][j];
             }
         }
         offsetr += rowspi_[h];
-        offsetc += colspi_[h];
+        offsetc += colspi_[h^symmetry_];
     }
 
     return temp;
@@ -525,7 +555,7 @@ void Matrix::print(FILE *out, const char *extra)
 
     for (h=0; h<nirreps_; ++h) {
         fprintf(out, "  Irrep: %d\n", h+1);
-        print_mat(matrix_[h], rowspi_[h], colspi_[h], out);
+        print_mat(matrix_[h], rowspi_[h], colspi_[h^symmetry_], out);
         fprintf(out, "\n");
     }
     fflush(out);
@@ -541,7 +571,7 @@ void Matrix::eivprint(Vector *values, FILE *out)
 
     for (h=0; h<nirreps_; ++h) {
         fprintf(out, " Irrep: %d\n", h+1);
-        eivout(matrix_[h], values->vector_[h], rowspi_[h], colspi_[h], out);
+        eivout(matrix_[h], values->vector_[h], rowspi_[h], colspi_[h^symmetry_], out);
         fprintf(out, "\n");
     }
     fflush(out);
@@ -559,6 +589,10 @@ void Matrix::eivprint(shared_ptr<Vector> values, FILE *out)
 
 void Matrix::identity()
 {
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::set called on a non-totally symmetric matrix.");
+    }
+
     int h;
     size_t size;
 
@@ -579,7 +613,7 @@ void Matrix::zero()
     int h;
 
     for (h=0; h<nirreps_; ++h) {
-        size = rowspi_[h] * colspi_[h] * sizeof(double);
+        size = rowspi_[h] * colspi_[h^symmetry_] * sizeof(double);
 
         if (size) {
             memset(&(matrix_[h][0][0]), 0, size);
@@ -589,6 +623,10 @@ void Matrix::zero()
 
 void Matrix::zero_diagonal()
 {
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::set called on a non-totally symmetric matrix.");
+    }
+
     int h, i;
 
     for (h=0; h<nirreps_; ++h) {
@@ -600,6 +638,10 @@ void Matrix::zero_diagonal()
 
 double Matrix::trace()
 {
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::set called on a non-totally symmetric matrix.");
+    }
+
     int i, h;
     double val = (double)0.0;
 
@@ -614,12 +656,12 @@ double Matrix::trace()
 
 Matrix* Matrix::transpose()
 {
-    Matrix *temp = new Matrix(name_, nirreps_, colspi_, rowspi_);
+    Matrix *temp = new Matrix(name_, nirreps_, colspi_, rowspi_, symmetry_);
 
     int h, i, j;
     for (h=0; h<nirreps_; ++h) {
         for (i=0; i<rowspi_[h]; ++i) {
-            for (j=0; j<colspi_[h]; ++j) {
+            for (j=0; j<colspi_[h^symmetry_]; ++j) {
                 temp->matrix_[h][j][i] = matrix_[h][i][j];
             }
         }
@@ -631,7 +673,7 @@ void Matrix::add(const Matrix* plus)
 {
     double *lhs, *rhs;
     for (int h=0; h<nirreps_; ++h) {
-        size_t size = rowspi_[h] * colspi_[h];
+        size_t size = rowspi_[h] * colspi_[h^symmetry_];
         if (size) {
             lhs = matrix_[h][0];
             rhs = plus->matrix_[h][0];
@@ -657,7 +699,7 @@ void Matrix::subtract(const Matrix* plus)
 {
     double *lhs, *rhs;
     for (int h=0; h<nirreps_; ++h) {
-        size_t size = rowspi_[h] * colspi_[h];
+        size_t size = rowspi_[h] * colspi_[h^symmetry_];
         if (size) {
             lhs = matrix_[h][0];
             rhs = plus->matrix_[h][0];
@@ -689,7 +731,7 @@ void Matrix::scale(double a)
     int h;
     size_t size;
     for (h=0; h<nirreps_; ++h) {
-        size = rowspi_[h] * colspi_[h];
+        size = rowspi_[h] * colspi_[h^symmetry_];
         if (size)
             C_DSCAL(size, a, &(matrix_[h][0][0]), 1);
     }
@@ -710,7 +752,7 @@ double Matrix::sum_of_squares()
     double sum = (double)0.0;
     for (int h=0; h<nirreps_; ++h) {
         for (int i=0; i<rowspi_[h]; ++i) {
-            for (int j=0; j<colspi_[h]; ++j) {
+            for (int j=0; j<colspi_[h^symmetry_]; ++j) {
                 sum += matrix_[h][i][j] * matrix_[h][i][j];
             }
         }
@@ -725,7 +767,7 @@ double Matrix::rms()
     long terms = 0;
     for (int h=0; h<nirreps_; ++h) {
         for (int i=0; i<rowspi_[h]; ++i) {
-            for (int j=0; j<colspi_[h]; ++j) {
+            for (int j=0; j<colspi_[h^symmetry_]; ++j) {
                 sum += matrix_[h][i][j] * matrix_[h][i][j];
                 terms++;
             }
@@ -825,6 +867,9 @@ void Matrix::back_transform(shared_ptr<Matrix> transformer)
 
 void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix* a, const Matrix* b, double beta)
 {
+    if (symmetry_ != a->symmetry_ || symmetry_ != b->symmetry_) {
+        throw PSIEXCEPTION("Matrix::gemm: symmetries of all matrices are not the same.");
+    }
     char ta = transa ? 't' : 'n';
     char tb = transb ? 't' : 'n';
     int h, m, n, k, nca, ncb, ncc;
@@ -832,7 +877,7 @@ void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix* a, const
     for (h=0; h<nirreps_; ++h) {
         m = rowspi_[h];
         n = colspi_[h];
-        k = transa ? a->rowspi_[h] : a->colspi_[h];
+        k = transa ? a->rowspi_[h] : a->colspi_[h^a->symmetry_];
         nca = transa ? m : k;
         ncb = transb ? k : n;
         ncc = n;
@@ -872,7 +917,7 @@ double Matrix::vector_dot(Matrix* rhs)
     size_t size;
 
     for (h=0; h<nirreps_; ++h) {
-        size = rowspi_[h] * colspi_[h];
+        size = rowspi_[h] * colspi_[h^symmetry_];
         if (size)
             sum += C_DDOT(size, (&matrix_[h][0][0]), 1, &(rhs->matrix_[h][0][0]), 1);
     }
@@ -887,6 +932,9 @@ double Matrix::vector_dot(shared_ptr<Matrix> rhs)
 
 void Matrix::diagonalize(Matrix* eigvectors, Vector* eigvalues)
 {
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::diagonalize: Matrix is non-totally symmetric.");
+    }
     int h;
     for (h=0; h<nirreps_; ++h) {
         if (rowspi_[h]) {
@@ -907,6 +955,9 @@ void Matrix::diagonalize(shared_ptr<Matrix> eigvectors, Vector& eigvalues)
 
 void Matrix::cholesky_factorize()
 {
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::cholesky_factorize: Matrix is non-totally symmetric.");
+    }
     for (int h=0; h<nirreps_; ++h) {
         if (rowspi_[h]) {
             int err = C_DPOTRF('L', rowspi_[h], matrix_[h][0], rowspi_[h]);
@@ -930,6 +981,10 @@ void Matrix::cholesky_factorize()
 
 void Matrix::invert()
 {
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::invert: Matrix is non-totally symmetric.");
+    }
+
     for (int h=0; h<nirreps_; ++h) {
         if (rowspi_[h]) {
             int err = C_DPOTRI('L', rowspi_[h], matrix_[h][0], rowspi_[h]);
@@ -953,6 +1008,10 @@ void Matrix::invert()
 
 void Matrix::copy_lower_to_upper()
 {
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::copy_lower_to_upper: Matrix is non-totally symmetric.");
+    }
+
     for (int h=0; h<nirreps_; ++h) {
         for (int m=0; m<rowspi_[h]; ++m) {
             for (int n=0; n<m; ++n) {
@@ -964,6 +1023,10 @@ void Matrix::copy_lower_to_upper()
 
 void Matrix::copy_upper_to_lower()
 {
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::copy_upper_to_lower: Matrix is non-totally symmetric.");
+    }
+
     for (int h=0; h<nirreps_; ++h) {
         for (int m=0; m<rowspi_[h]; ++m) {
             for (int n=0; n<m; ++n) {
@@ -1024,7 +1087,6 @@ void Matrix::diagonalize(Matrix& eigvectors, Vector& eigvalues)
 
 void Matrix::write_to_dpdfile2(dpdfile2 *outFile)
 {
-
     dpd_file2_mat_init(outFile);
 
     if(outFile->params->nirreps != nirreps_) {
@@ -1068,6 +1130,10 @@ void Matrix::write_to_dpdfile2(dpdfile2 *outFile)
 
 void Matrix::save(const char *filename, bool append, bool saveLowerTriangle, bool saveSubBlocks)
 {
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::save: Matrix is non-totally symmetric.");
+    }
+
     static const char *str_block_format = "%3d %3d %3d %20.15f\n";
     static const char *str_full_format  = "%3d %3d %20.15f\n";
 
@@ -1089,7 +1155,7 @@ void Matrix::save(const char *filename, bool append, bool saveLowerTriangle, boo
         int sizer=0, sizec=0;
         for (int h=0; h<nirreps_; ++h) {
             sizer += rowspi_[h];
-            sizec += colspi_[h];
+            sizec += colspi_[h^symmetry_];
         }
 
         if (saveLowerTriangle) {
@@ -1183,6 +1249,10 @@ void Matrix::save(const char *filename, bool append, bool saveLowerTriangle, boo
 
 bool Matrix::load(psi::PSIO* psio, unsigned int fileno, char *tocentry, int nso)
 {
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::load: Matrix is non-totally symmetric.");
+    }
+
     double *integrals = init_array(ioff[nso]);
 
     // If psi fails to read in the data this will abort out.
@@ -1200,6 +1270,10 @@ bool Matrix::load(psi::PSIO* psio, unsigned int fileno, char *tocentry, int nso)
 
 bool Matrix::load(shared_ptr<psi::PSIO> psio, unsigned int fileno, char *tocentry, int nso)
 {
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::load: Matrix is non-totally symmetric.");
+    }
+
     double *integrals = init_array(ioff[nso]);
 
     // If psi fails to read in the data this will abort out.
@@ -1274,6 +1348,10 @@ void Matrix::load(boost::shared_ptr<PSIO> psio, unsigned int fileno, SaveType st
 }
 void Matrix::save(psi::PSIO* psio, unsigned int fileno, SaveType st)
 {
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::save: Matrix is non-totally symmetric.");
+    }
+
     if(Communicator::world->me() == 0) {
         // Check to see if the file is open
         bool already_open = false;
@@ -1340,7 +1418,7 @@ void Matrix::bcast(Communicator* comm, int broadcaster)
 {
     // Assume the user allocated the matrix to the correct size first.
     for (int h=0; h<nirreps_; ++h) {
-        comm->bcast(matrix_[h][0], rowspi_[h] * colspi_[h], broadcaster);
+        comm->bcast(matrix_[h][0], rowspi_[h] * colspi_[h^symmetry_], broadcaster);
     }
 }
 
@@ -1360,6 +1438,9 @@ bool Matrix::equal(const Matrix* rhs)
     if (rhs->nirreps() != nirreps())
         return false;
 
+    if (symmetry_ != rhs->symmetry_)
+        return false;
+
     for (int h=0; h<nirreps(); ++h)
         if ((rowspi()[h] != rhs->rowspi()[h]) ||
                 (colspi()[h] != rhs->colspi()[h]))
@@ -1368,7 +1449,7 @@ bool Matrix::equal(const Matrix* rhs)
     // Check element by element
     for (int h=0; h<nirreps(); ++h) {
         for (int m = 0; m < rowspi()[h]; ++m) {
-            for (int n = 0; n < colspi()[h]; ++n) {
+            for (int n = 0; n < colspi()[h^symmetry_]; ++n) {
                 if (get(h, m, n) != rhs->get(h, m, n))
                     return false;
             }
