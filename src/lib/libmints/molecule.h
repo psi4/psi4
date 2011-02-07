@@ -41,32 +41,25 @@ extern FILE *outfile;
 class Molecule
 {
 public:
-//    struct atom_info {
-//        double x, y, z;
-//        int Z;				// if Z == dummy atom
-//        double charge;
-//        double mass;
-//        std::string label;
-//    };
-
     /**
      * The type of geometry provided in the input
-     * Cartesian - Cartesian coordinates
-     * ZMatrix   - Z matrix coordinates
      */
-    enum GeometryFormat {ZMatrix, Cartesian};
+    enum GeometryFormat {
+        ZMatrix,     /*!< Z-matrix coordinates */
+        Cartesian    /*!< Cartesian coordinates */
+    };
     /**
      * The Units used to define the geometry
      */
     enum GeometryUnits {Angstrom, Bohr};
     /**
      * How to handle each fragment
-     * Absent  - Neglect completely
-     * Real    - Include, as normal
-     * Ghost   - Include, but with ghost atoms
      */
-    enum FragmentType {Absent, Real, Ghost};
-
+    enum FragmentType {
+        Absent,  /*!< Neglect completely */
+        Real,    /*!< Include, as normal */
+        Ghost    /*!< Include, but with ghost atoms */
+    };
 
     typedef std::vector<boost::shared_ptr<CoordEntry> > EntryVector;
     typedef EntryVector::iterator EntryVectorIter;
@@ -93,7 +86,7 @@ protected:
     bool multiplicity_specified_;
 
     /// The molecular charge
-    int molecularCharge_;
+    int molecular_charge_;
     /// The multiplicity (defined as 2Ms + 1)
     int multiplicity_;
     /// The units used to define the geometry
@@ -108,7 +101,7 @@ protected:
     /**
      * Attempts to interpret a string as a double, if not it assumes it's a variable.
      *
-     * @param str: the string to interpret.
+     * @param str the string to interpret.
      * @return the CoordValue interpretation of the string.
      */
     CoordValue* get_coord_value(const std::string &str);
@@ -116,21 +109,24 @@ protected:
     /**
      * Attempts to interpret a string as an atom specifier in a zmatrix.
      *
-     * @param str: the string to interpret.
-     * @param atoms: the list of atoms known so far
-     * @param line: the current line, for error message printing.
+     * @param str the string to interpret.
+     * @param atoms the list of atoms known so far
+     * @param line the current line, for error message printing.
      * @return the atom number (adjusted to zero-based counting)
      */
     static int get_anchor_atom(const std::string &str, const std::vector<std::string> &atoms,
-                              const std::string &line);
+                               const std::string &line);
 
     /// Point group to use with this molecule.
     boost::shared_ptr<PointGroup> pg_;
 
     /// Number of unique atoms
     int nunique_;
+    /// Number of equivalent atoms per unique atom (length nunique_)
     int *nequiv_;
+    /// Equivalent atom mapping array
     int **equiv_;
+    /// Atom to unique atom mapping array (length natom)
     int *atom_to_unique_;
 
     /// A regular expression to test if a string looks like a floating point number
@@ -183,22 +179,43 @@ public:
     void operator+=(const Molecule& other);
     /// @}
 
-    /// Pull information from a chkpt object created from psio
+    /**
+     * Pull information from a chkpt object created from psio
+     * \param psio PSIO object to initialize with (will create Chkpt object).
+     */
     void init_with_psio(boost::shared_ptr<PSIO> psio);
-    /// Pull information from the chkpt object passed
+
+    /**
+     * Pull information from the chkpt object passed
+     * \param chkpt Chkpt object to initialize with
+     */
     void init_with_chkpt(boost::shared_ptr<Chkpt> chkpt);
-    /// Pull information from an XYZ file
+
+    /**
+     * Pull information from an XYZ file. Useful for debugging.
+     * \param xyzfilename Filename of xyz file.
+     */
     void init_with_xyz(const std::string& xyzfilename);
 
-    /// Add an atom to the molecule
+    /**
+     * Add an atom to the molecule
+     * \param Z atomic number
+     * \param x cartesian coordinate
+     * \param y cartesian coordinate
+     * \param z cartesian coordinate
+     * \param symb atomic symbol to use
+     * \param mass mass to use if non standard
+     * \param charge charge to use if non standard
+     * \param lineno line number when taken from a string
+     */
     void add_atom(int Z, double x, double y, double z,
-                  const char * = "", double mass = 0.0,
+                  const char *symb = "", double mass = 0.0,
                   double charge = 0.0, int lineno = -1);
 
     /// The number of fragments in the molecule
-    int num_fragments() const { return fragments_.size();}
+    int nfragments() const { return fragments_.size();}
     /// Get molecule name
-    const std::string get_name() const {return name_; }
+    const std::string name() const {return name_; }
     /// Set molecule name
     void set_name(const std::string &_name) { name_ = _name; }
     /// Number of atoms
@@ -221,14 +238,6 @@ public:
     double fy(int atom) const;
     /// z position of atom
     double fz(int atom) const;
-    /// Return reference to atom_info struct for atom
-//    const atom_info &r(int atom) const { return atoms_[atom]; }
-    /// Return copy of atom_info for atom
-//    atom_info r(int atom) { return atoms_[atom]; }
-    /// Return reference to atom_info struct for atom in full atoms
-//    const atom_info &fr(int atom) const { return full_atoms_[atom]; }
-    /// Return copy of atom_info for atom in full atoms
-//    atom_info fr(int atom) { return full_atoms_[atom]; }
     /// Returns a Vector3 with x, y, z position of atom
     Vector3 xyz(int atom) const;
     Vector3 fxyz(int atom) const;
@@ -250,15 +259,20 @@ public:
     /// Number of frozen core for molecule given freezing state
     int nfrozen_core(const std::string& depth="");
 
+    /// @{
     /// Tests to see of an atom is at the passed position with a given tolerance
     int atom_at_position1(double *, double tol = 0.05) const;
     int atom_at_position2(Vector3&, double tol = 0.05) const;
+    /// @}
 
+    /// Returns the geometry in a SimpleMatrix
     SimpleMatrix geometry();
+    /// Returns the full (dummies included) in a SimpleMatrix
     SimpleMatrix full_geometry();
 
     /**
      * Sets the geometry, given a matrix of coordinates (in Bohr).
+     * \param geom geometry matrix of dimension natom X 3
      */
     void set_geometry(double** geom);
 
@@ -276,6 +290,10 @@ public:
      * Sets the full geometry, given a SimpleMatrix of coordinates (in Bohr).
      */
     void set_full_geometry(SimpleMatrix& geom);
+
+    /**
+     * Rotates the molecule using rotation matrix R
+     */
     void rotate(SimpleMatrix& R);
     void rotate_full(SimpleMatrix& R);
 
@@ -297,7 +315,8 @@ public:
     void translate(const Vector3& r);
     /// Moves molecule to center of mass
     void move_to_com();
-    /** Reorient molecule to standard frame. See input/reorient.cc
+    /**
+     *  Reorient molecule to standard frame. See input/reorient.cc
      *  If you want the molecule to be reoriented about the center of mass
      *  make sure you call move_to_com() prior to calling reorient()
      */
@@ -487,9 +506,9 @@ public:
     bool is_variable(const std::string &str) const;
 
     /// Sets the molecular charge
-    void set_molecular_charge(int charge) {molecularCharge_ = charge;}
+    void set_molecular_charge(int charge) {molecular_charge_ = charge;}
     /// Gets the molecular charge
-    int molecular_charge() const {return molecularCharge_;}
+    int molecular_charge() const {return molecular_charge_;}
     /// Sets the multiplicity (defined as 2Ms + 1)
     void set_multiplicity(int mult) { multiplicity_ = mult; }
     /// Get the multiplicity (defined as 2Ms + 1)

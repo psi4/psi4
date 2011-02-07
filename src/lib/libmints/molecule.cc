@@ -144,7 +144,7 @@ Molecule::Molecule():
     equiv_(0),
     atom_to_unique_(0),
     multiplicity_(1),
-    molecularCharge_(0),
+    molecular_charge_(0),
     units_(Angstrom),
     input_units_to_au_(0.0),
     fix_orientation_(false),
@@ -172,7 +172,7 @@ Molecule& Molecule::operator=(const Molecule& other)
     fragment_charges_        = other.fragment_charges_;
     fragment_multiplicities_ = other.fragment_multiplicities_;
     fix_orientation_         = other.fix_orientation_;
-    molecularCharge_         = other.molecularCharge_;
+    molecular_charge_         = other.molecular_charge_;
     multiplicity_            = other.multiplicity_;
     units_                   = other.units_;
     input_units_to_au_       = other.input_units_to_au_;
@@ -759,7 +759,7 @@ void Molecule::init_with_chkpt(shared_ptr<Chkpt> chkpt)
 
     int natoms = 0;
     double *zvals, **geom;
-    molecularCharge_       = Process::environment.options.get_int("CHARGE");
+    molecular_charge_       = Process::environment.options.get_int("CHARGE");
     charge_specified_       = Process::environment.options["CHARGE"].has_changed();
     multiplicity_          = Process::environment.options.get_int("MULTP");
     multiplicity_specified_ = Process::environment.options["MULTP"].has_changed();
@@ -916,7 +916,7 @@ shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::string &te
         throw PSIEXCEPTION("Unit " + units + " is not recognized");
     }
 
-    mol->molecularCharge_ = Process::environment.options.get_int("CHARGE");
+    mol->molecular_charge_ = Process::environment.options.get_int("CHARGE");
     mol->charge_specified_ = Process::environment.options["CHARGE"].has_changed();
     mol->multiplicity_ = Process::environment.options.get_int("MULTP");
     mol->multiplicity_specified_ = Process::environment.options["MULTP"].has_changed();
@@ -969,7 +969,7 @@ shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::string &te
             if(lineNumber && !regex_match(lines[lineNumber-1], reMatches, fragmentMarker_)) {
                 // As long as this does not follow a "--", it's a global charge/multiplicity
                 // specifier, so we process it, then nuke it
-                mol->molecularCharge_       = tempCharge;
+                mol->molecular_charge_       = tempCharge;
                 mol->charge_specified_       = true;
                 mol->multiplicity_          = tempMultiplicity;
                 mol->multiplicity_specified_ = true;
@@ -984,7 +984,7 @@ shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::string &te
 
     mol->input_units_to_au_ = mol->units_ == Bohr ? 1.0 : 1.0 / _bohr2angstroms;
     mol->fragment_multiplicities_.push_back(mol->multiplicity_);
-    mol->fragment_charges_.push_back(mol->molecularCharge_);
+    mol->fragment_charges_.push_back(mol->molecular_charge_);
 
     for(unsigned int lineNumber = 0; lineNumber < lines.size(); ++lineNumber) {
         if(regex_match(lines[lineNumber], reMatches, fragmentMarker_)) {
@@ -1007,7 +1007,7 @@ shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::string &te
             }
             else {
                 // The user didn't give us charge/multiplicity - use the molecule default
-                mol->fragment_charges_.push_back(mol->molecularCharge_);
+                mol->fragment_charges_.push_back(mol->molecular_charge_);
                 mol->fragment_multiplicities_.push_back(mol->multiplicity_);
             }
         }
@@ -1137,13 +1137,13 @@ void Molecule::update_geometry()
     for (iter = full_atoms_.begin(); iter != full_atoms_.end(); ++iter){
         (*iter)->invalidate();
     }
-    molecularCharge_ = 0;
+    molecular_charge_ = 0;
     multiplicity_    = 1;
     for(int fragment = 0; fragment < fragments_.size(); ++fragment){
         if(fragment_types_[fragment] == Absent)
             continue;
         if(fragment_types_[fragment] == Real) {
-            molecularCharge_ += fragment_charges_[fragment];
+            molecular_charge_ += fragment_charges_[fragment];
             multiplicity_    += fragment_multiplicities_[fragment] - 1;
         }
         for(int atom = fragments_[fragment].first; atom < fragments_[fragment].second; ++atom){
@@ -1332,7 +1332,7 @@ void Molecule::print()
 {
     if (natom()) {
         fprintf(outfile,"    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
-                units_ == Angstrom ? "Angstrom" : "Bohr", molecularCharge_, multiplicity_);
+                units_ == Angstrom ? "Angstrom" : "Bohr", molecular_charge_, multiplicity_);
         fprintf(outfile,"       Center              X                  Y                   Z       \n");
         fprintf(outfile,"    ------------   -----------------  -----------------  -----------------\n");
 
