@@ -62,7 +62,7 @@ CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
     // Obtain atom mapping of atom * symm op to atom
     int **atom_map = compute_atom_map(molecule_);
 
-    print_int_mat(atom_map, molecule_->natom(), nirrep_, outfile);
+//    print_int_mat(atom_map, molecule_->natom(), nirrep_, outfile);
 
     for (int uatom=0; uatom < molecule_->nunique(); ++uatom) {
         int atom = molecule_->unique(uatom);
@@ -76,6 +76,7 @@ CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
                 memset(salc, 0, sizeof(double)*ncd_);
 
                 // This is the order of the atom stabilizer
+                // ...how many times the symmetry operation keeps the atom the same
                 int stab_order = 0;
 
                 // Apply the projection
@@ -85,9 +86,15 @@ CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
                     if (Gatom == atom)
                         ++stab_order;
 
+                    // compute position in the salc
                     int Gcd = 3*Gatom + xyz;
+
+                    // so(xyz, xyz) tells us how x, y, or z transforms in this
+                    // symmetry operation, then we multiply by the character of the
+                    // operation in the irrep
                     double coeff = so(xyz, xyz) * gamma.character(G);
 
+                    // Add this contribution to the salc.
                     salc[Gcd] += coeff;
                 }
 
@@ -110,6 +117,8 @@ CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
                 if (nonzero && (1 << irrep) & needed_irreps) {
                     CdSalc new_salc(irrep);
 
+                    // Go through the salc and take the non-zero values
+                    // push them onto the sparse salc transform object
                     for (int cd=0; cd<ncd_; ++cd) {
                         if (fabs(salc[cd]) > 1e-10)
                             new_salc.add(salc[cd], cd/3, xyz);
@@ -119,6 +128,8 @@ CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
                     salcs_.push_back(new_salc);
                 }
 
+                // TODO: I want to delete this, eventually. It's useful
+                // in debugging against psi3's input.
                 for (int i=0; i<ncd_; ++i) {
                     if (fabs(salc[i]) > 1e-10) {
                         salc_symblock_[irrep][cdsalcpi_[irrep]] = new double[ncd_];
@@ -134,6 +145,9 @@ CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
     // Sort the salcs based on irrep
     std::sort(salcs_.begin(), salcs_.end(), cdsalc_sort_predicate);
 
+    // TODO: I want to delete this, too. This was used in psi3's input.
+    // In psi4 I'm using a sparse transform object...no need to store
+    // all the zeros that are present.
     /* copy salc_symblk to cdsalc2cd */
     {
         int c = 0;
@@ -155,9 +169,8 @@ CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
     }
     fprintf(outfile,"\n");
 
-    fprintf(outfile,"    -Cartesian displacement SALCs:\n");
-    print_mat(cdsalc2cd_, ncd_, ncd_, outfile);
-    fprintf(outfile,"\n");
+    // Print out the salcs
+    print();
 
     // Free memory.
     delete[] salc;
@@ -166,6 +179,8 @@ CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
 
 CdSalcList::~CdSalcList()
 {
+    // TODO: I want to delete this. I don't use any of these variables
+    // they're useful in debugging with psi3's input.
     /* copy salc_symblk to cdsalc2cd */
     {
         int c = 0;
