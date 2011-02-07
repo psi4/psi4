@@ -156,6 +156,11 @@ CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
                     for (int cd=0; cd<ncd_; ++cd) {
                         if (fabs(salc[cd]) > 1e-10) {
                             new_salc.add(salc[cd], cd/3, xyz);
+
+                            // Find the unique atom.
+                            // How many equivalent atoms to this unique
+//                            int unique_atom = molecule_->atom_to_unique(cd/3);
+//                            double nequiv = (double)molecule_->nequivalent(unique_atom);
                             atom_salcs_[cd/3].add(xyz, salc[cd], irrep, salcs_.size());
                         }
                     }
