@@ -11,21 +11,6 @@ static void transform2e_2(int, SphericalTransformIter&, double*, double*, int, i
 static void transform2e_3(int, SphericalTransformIter&, double*, double*, int, int, int);
 static void transform2e_4(int, SphericalTransformIter&, double*, double*, int, int);
 
-//TwoBodyInt::TwoBodyInt(shared_ptr<BasisSet> bs1,
-//                       shared_ptr<BasisSet> bs2,
-//                       shared_ptr<BasisSet> bs3,
-//                       shared_ptr<BasisSet> bs4,
-//                       int deriv)
-//    : original_bs1_(bs1), original_bs2_(bs2), original_bs3_(bs3),
-//      original_bs4_(bs4), deriv_(deriv)
-//{
-//    // The derived classes allocate this memory.
-//    target_ = 0;
-//    tformbuf_ = 0;
-//    source_ = 0;
-//    natom_ = original_bs1_->molecule()->natom();  // This assumes the 4 bases come from the same molecule.
-//}
-
 TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory* intsfactory, int deriv) :
     integral_(intsfactory),
     original_bs1_(integral_->basis1()),

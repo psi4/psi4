@@ -1,6 +1,6 @@
 /*! \file cdsalc.cc
     \ingroup CINTS
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -43,7 +43,7 @@ void init_cdsalc()
       }
     }
   }
-  
+
   for(int cd=0; cd<num_cd; cd++) {
     cd2salc_map[cd].salcs = new int[cd2salc_map[cd].nsalcs];
     int salc_count = 0;
