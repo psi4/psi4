@@ -540,9 +540,9 @@ void RHF::compute_SAD_guess()
         int nao = nso_;
 
         for (int h = 0; h < D_->nirrep(); h++) {
-            double** DAOp = DAO->get_pointer(0);
-            double** D = D_->get_pointer(h);
-            double** U = AO2USO->get_pointer(h);
+            double** DAOp = DAO->pointer(0);
+            double** D = D_->pointer(h);
+            double** U = AO2USO->pointer(h);
             
             int nuso = dim[h];
         
@@ -576,7 +576,7 @@ void RHF::compute_SAD_guess()
 
         if (norbs == 0) continue;
 
-        double** D = D2->get_pointer(h);
+        double** D = D2->pointer(h);
         double* Temp = init_array(norbs);
         int* P = init_int_array(norbs);
         for (int i = 0; i<norbs; i++)
@@ -709,10 +709,10 @@ SharedMatrix HF::dualBasisProjection(SharedMatrix C_A, int* noccpi, shared_ptr<B
 
         if (nocc == 0 || na == 0 || nb == 0) continue;
 
-        double** Ca = C_A->get_pointer(h);
-        double** Cb = C_B->get_pointer(h);
-        double** Sab = SAB->get_pointer(h);
-        double** Sbb = SBB->get_pointer(h);
+        double** Ca = C_A->pointer(h);
+        double** Cb = C_B->pointer(h);
+        double** Sab = SAB->pointer(h);
+        double** Sbb = SBB->pointer(h);
 
         int CholError = C_DPOTRF('L',nb,Sbb[0],nb);
         if (CholError !=0 )

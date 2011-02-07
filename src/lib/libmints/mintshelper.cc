@@ -300,7 +300,7 @@ shared_ptr<Matrix> MintsHelper::ao_erf_eri(double omega, double alpha, double be
 
     shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
     shared_ptr<TwoBodyAOInt> ints(fact->erf_eri(omega, alpha, beta));
-    double** Ip = I->get_pointer();
+    double** Ip = I->pointer();
     const double* buffer = ints->buffer();
 
     for (int M = 0; M < basis->nshell(); M++) {
@@ -345,7 +345,7 @@ shared_ptr<Matrix> MintsHelper::ao_eri()
 
     shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
     shared_ptr<TwoBodyAOInt> ints(fact->eri());
-    double** Ip = I->get_pointer();
+    double** Ip = I->pointer();
     const double* buffer = ints->buffer();
 
     for (int M = 0; M < basis->nshell(); M++) {

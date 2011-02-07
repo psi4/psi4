@@ -81,7 +81,7 @@ DIISManager::set_vector_size(int numQuantities, ...)
                 break;
             case DIISEntry::Vector:
                 vector = va_arg(args, Vector*);
-                for(int h = 0; h < vector->nirreps(); ++h){
+                for(int h = 0; h < vector->nirrep(); ++h){
                     size += vector->dimpi()[h];
                 }
                 break;
@@ -139,7 +139,7 @@ DIISManager::set_error_vector_size(int numQuantities, ...)
                 break;
             case DIISEntry::Vector:
                 vector = va_arg(args, Vector*);
-                for(int h = 0; h < vector->nirreps(); ++h){
+                for(int h = 0; h < vector->nirrep(); ++h){
                     size += vector->dimpi()[h];
                 }
                 break;
