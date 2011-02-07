@@ -81,9 +81,9 @@ protected:
     /// Atom info vector (includes dummy atoms)
     EntryVector full_atoms_;
     /// The charge of each fragment
-    std::vector<int> fragmentCharges_;
+    std::vector<int> fragment_charges_;
     /// The multiplicity of each fragment
-    std::vector<int> fragmentMultiplicities_;
+    std::vector<int> fragment_multiplicities_;
 
     /// Reorient or not?
     bool fix_orientation_;
@@ -99,12 +99,28 @@ protected:
     /// The units used to define the geometry
     GeometryUnits units_;
     /// The conversion factor to take input units to Bohr
-    double inputUnitsToAU_;
+    double input_units_to_au_;
     /// A list of all variables known, whether they have been set or not.
-    std::vector<std::string> allVariables_;
+    std::vector<std::string> all_variables_;
     /// Zero it out
     void clear();
+
+    /**
+     * Attempts to interpret a string as a double, if not it assumes it's a variable.
+     *
+     * @param str: the string to interpret.
+     * @return the CoordValue interpretation of the string.
+     */
     CoordValue* get_coord_value(const std::string &str);
+
+    /**
+     * Attempts to interpret a string as an atom specifier in a zmatrix.
+     *
+     * @param str: the string to interpret.
+     * @param atoms: the list of atoms known so far
+     * @param line: the current line, for error message printing.
+     * @return the atom number (adjusted to zero-based counting)
+     */
     static int get_anchor_atom(const std::string &str, const std::vector<std::string> &atoms,
                               const std::string &line);
 
@@ -141,13 +157,13 @@ protected:
     static boost::regex symmetry_;
 
     /// A listing of the variables used to define the geometries
-    std::map<std::string, double> geometryVariables_;
+    std::map<std::string, double> geometry_variables_;
     /// The list of atom ranges defining each fragment from parent molecule
     std::vector<std::pair<int, int> > fragments_;
     /// A list describing how to handle each fragment
-    std::vector<FragmentType> fragmentTypes_;
+    std::vector<FragmentType> fragment_types_;
     /// Symmetry string from geometry specification
-    std::string symmetryFromInput_;
+    std::string symmetry_from_input_;
 
 public:
     Molecule();
@@ -240,9 +256,25 @@ public:
 
     SimpleMatrix geometry();
     SimpleMatrix full_geometry();
+
+    /**
+     * Sets the geometry, given a matrix of coordinates (in Bohr).
+     */
     void set_geometry(double** geom);
+
+    /**
+     * Sets the geometry, given a SimpleMatrix of coordinates (in Bohr).
+     */
     void set_geometry(SimpleMatrix& geom);
+
+    /**
+     * Sets the full geometry, given a matrix of coordinates (in Bohr).
+     */
     void set_full_geometry(double** geom);
+
+    /**
+     * Sets the full geometry, given a SimpleMatrix of coordinates (in Bohr).
+     */
     void set_full_geometry(SimpleMatrix& geom);
     void rotate(SimpleMatrix& R);
     void rotate_full(SimpleMatrix& R);
@@ -312,9 +344,7 @@ public:
     /// Symmetry
     /// @{
     bool has_symmetry_element(Vector3& op, double tol) const;
-
     boost::shared_ptr<PointGroup> point_group() const { return pg_; }
-    std::string schoenflies_symbol() const;
     void set_point_group(boost::shared_ptr<PointGroup> pg) {
         pg_ = pg;
         // Call this here, the programmer will forget to call it, as I have many times.
@@ -341,27 +371,109 @@ public:
     const char *sym_label();
     /// Returns the irrep labels
     char **irrep_labels();
-    const std::string& symmetry_from_input() const { return symmetryFromInput_; }
+    const std::string& symmetry_from_input() const { return symmetry_from_input_; }
     /// @}
 
+    /**
+     * Given a string (including newlines to separate lines), builds a new molecule
+     * and wraps it in a smart pointer
+     *
+     * @param text: a string providing the user's input
+     */
     static boost::shared_ptr<Molecule> create_molecule_from_string(const std::string &geom);
+
+    /**
+     * Sets all fragments in the molecule to be active.
+     */
     void activate_all_fragments();
+
+    /**
+     * Sets all fragments in the molecule to be inactive.
+     */
     void deactivate_all_fragments();
+
+    /**
+     * Sets the specified list of fragments to be real.
+     * @param reals: The list of real fragments.
+     */
     void set_active_fragments(boost::python::list reals);
+
+    /**
+     * Sets the specified fragment to be real.
+     * @param fragment: The fragment to set.
+     */
     void set_active_fragment(int fragment);
+
+    /**
+     * Sets the specified list of fragments to be ghosts.
+     * @param ghosts: The list of ghosts fragments.
+     */
     void set_ghost_fragments(boost::python::list ghosts);
+
+    /**
+     * Sets the specified fragment to be a ghost.
+     * @param fragment: The fragment to set.
+     */
     void set_ghost_fragment(int fragment);
+
+    /**
+     * Makes a copy of the molecule, returning a new ref counted molecule with
+     * only certain fragment atoms present as either ghost or real atoms
+     * @param real_list: The list of fragments that should be present in the molecule as real atoms.
+     * @param ghost_list: The list of fragments that should be present in the molecule as ghosts.
+     * @return The ref counted cloned molecule
+     */
     boost::shared_ptr<Molecule> extract_subsets(const std::vector<int> &real_list,
                                                 const std::vector<int> &ghost_list) const;
+
+    /**
+     * A wrapper to extract_subsets, callable from Boost
+     * @param reals: A list containing the real atoms.
+     * @param ghost: A list containing the ghost atoms.
+     * @return The ref counted cloned molecule.
+     */
     boost::shared_ptr<Molecule> py_extract_subsets_1(boost::python::list reals,
                                                    boost::python::list ghost);
+
+    /**
+     * A wrapper to extract_subsets, callable from Boost
+     * @param reals: A list containing the real atoms.
+     * @param ghost: An int containing the ghost atoms.
+     * @return The ref counted cloned molecule.
+     */
     boost::shared_ptr<Molecule> py_extract_subsets_2(boost::python::list reals,
                                                    int ghost = -1);
+
+    /**
+     * A wrapper to extract_subsets, callable from Boost
+     * @param reals: An int containing the real atoms.
+     * @param ghost: A list containing the ghost atoms.
+     * @return The ref counted cloned molecule.
+     */
     boost::shared_ptr<Molecule> py_extract_subsets_3(int reals,
                                                    boost::python::list ghost);
+
+    /**
+     * A wrapper to extract_subsets, callable from Boost
+     * @param reals: An int containing the real atoms.
+     * @param ghost: An int containing the ghost atoms.
+     * @return The ref counted cloned molecule.
+     */
     boost::shared_ptr<Molecule> py_extract_subsets_4(int reals,
                                                    int ghost = -1);
+
+    /**
+     * A wrapper to extract_subsets, callable from Boost
+     * @param reals: A list containing the real atoms.
+     * @return The ref counted cloned molecule.
+     */
     boost::shared_ptr<Molecule> py_extract_subsets_5(boost::python::list reals);
+
+    /**
+     * A wrapper to extract_subsets, callable from Boost
+     * @param reals: An int containing the real atoms.
+     * @return The ref counted cloned molecule.
+     */
     boost::shared_ptr<Molecule> py_extract_subsets_6(int reals);
 
     /// Assigns the value val to the variable labelled string in the list of geometry variables.
@@ -392,6 +504,10 @@ public:
     /// Set whether or not orientation is fixed
     void set_orientation_fixed(bool _fix = true) { fix_orientation_ = _fix; }
 
+    /**
+     * Updates the geometry, by (re)interpreting the string used to create the molecule, and the current values
+     * of the variables. The atoms list is cleared, and then rebuilt by this routine.
+     */
     void update_geometry();
 };
 
