@@ -19,7 +19,7 @@ namespace psi {
  */
 class MatrixFactory {
     /// Number of irreps
-    int nirreps_;
+    int nirrep_;
     /// Number of orbitals
     int nso_;
     /// Number of rows per irrep
@@ -41,14 +41,14 @@ public:
     bool init_with_chkpt(shared_ptr<psi::Chkpt> chkpt);
 
     /// Manually initialize the matrix factory
-    bool init_with(int nirreps, int *rowspi, int *colspi);
+    bool init_with(int nirrep, int *rowspi, int *colspi);
 
     /// Manually initialize the matrix factory with Dimension objects
     bool init_with(const Dimension& rows, const Dimension& cols);
 
     /// Returns number of irreps
-    int nirreps() const {
-        return nirreps_;
+    int nirrep() const {
+        return nirrep_;
     }
 
     /// Returns the rows per irrep array
@@ -57,7 +57,7 @@ public:
     }
 
     /// Returns the number of rows in irrep h
-    int nrows(int h) const {
+    int nrow(int h) const {
         return rowspi_[h];
     }
 
@@ -67,7 +67,7 @@ public:
     }
 
     /// Returns the number of columns in irrep h
-    int ncols(int h) const {
+    int ncol(int h) const {
         return colspi_[h];
     }
 
@@ -79,45 +79,45 @@ public:
     /// Returns a new Matrix object with default dimensions
     Matrix * create_matrix(int symmetry=0)
     {
-        return new Matrix(nirreps_, rowspi_, colspi_, symmetry);
+        return new Matrix(nirrep_, rowspi_, colspi_, symmetry);
     }
 
     /// Returns a new Matrix object with default dimensions
     boost::shared_ptr<Matrix> create_shared_matrix()
     {
-        return boost::shared_ptr<Matrix>(new Matrix(nirreps_, rowspi_, colspi_));
+        return boost::shared_ptr<Matrix>(new Matrix(nirrep_, rowspi_, colspi_));
     }
 
     void create_matrix(Matrix& mat, int symmetry=0)
     {
-        mat.init(nirreps_, rowspi_, colspi_, "", symmetry);
+        mat.init(nirrep_, rowspi_, colspi_, "", symmetry);
     }
 
     /// Returns a new Matrix object named name with default dimensions
     Matrix * create_matrix(std::string name, int symmetry=0)
     {
-        return new Matrix(name, nirreps_, rowspi_, colspi_, symmetry);
+        return new Matrix(name, nirrep_, rowspi_, colspi_, symmetry);
     }
 
     boost::shared_ptr<Matrix> create_shared_matrix(std::string name)
     {
-        return boost::shared_ptr<Matrix>(new Matrix(name, nirreps_, rowspi_, colspi_));
+        return boost::shared_ptr<Matrix>(new Matrix(name, nirrep_, rowspi_, colspi_));
     }
 
     void create_matrix(Matrix& mat, std::string name, int symmetry=0)
     {
-        mat.init(nirreps_, rowspi_, colspi_, name, symmetry);
+        mat.init(nirrep_, rowspi_, colspi_, name, symmetry);
     }
 
     /// Returns a new Vector object with default dimensions
     Vector * create_vector()
     {
-        return new Vector(nirreps_, rowspi_);
+        return new Vector(nirrep_, rowspi_);
     }
 
     void create_vector(Vector& vec)
     {
-        vec.init(nirreps_, rowspi_);
+        vec.init(nirrep_, rowspi_);
     }
 
     /// Returns a new SimpleMatrix object with default dimensions
