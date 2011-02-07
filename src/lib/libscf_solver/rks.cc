@@ -337,7 +337,7 @@ void RKS::form_V()
     double **basis_points_z = properties_->getGradientsZ();
     //End of GGA setup
 
-    int nirreps = V_->nirreps();
+    int nirreps = V_->nirrep();
     int* opi = V_->rowspi();
     double check; //numerical density contribution
 

@@ -38,7 +38,7 @@ protected:
     /// Matrix data
     double ***matrix_;
     /// Number of irreps
-    int nirreps_;
+    int nirrep_;
     /// Rows per irrep array
     int *rowspi_;
     /// Columns per irrep array
@@ -95,7 +95,7 @@ public:
      * @param rowspi Array of length nirreps giving row dimensionality.
      * @param colspi Array of length nirreps giving column dimensionality.
      */
-    Matrix(int nirreps, int *rowspi, int *colspi, int symmetry = 0);
+    Matrix(int nirrep, int *rowspi, int *colspi, int symmetry = 0);
     /**
      * Constructor, sets name_, and sets up the matrix
      *
@@ -104,7 +104,7 @@ public:
      * @param rowspi Array of length nirreps giving row dimensionality.
      * @param colspi Array of length nirreps giving column dimensionality.
      */
-    Matrix(std::string name, int nirreps, int *rowspi, int *colspi, int symmetry = 0);
+    Matrix(std::string name, int nirrep, int *rowspi, int *colspi, int symmetry = 0);
     /**
      * Constructor, sets up the matrix
      * Convenience case for 1 irrep
@@ -151,7 +151,7 @@ public:
      * @param rowspi Array of length nirreps giving row dimensionality.
      * @param colspi Array of length nirreps giving column dimensionality.
      */
-    void init(int nirreps, int *rowspi, int *colspi, std::string name = "", int symmetry = 0);
+    void init(int nirrep, int *rowspi, int *colspi, std::string name = "", int symmetry = 0);
 
     /// Creates an exact copy of the matrix and returns it.
     Matrix* clone() const;
@@ -219,7 +219,7 @@ public:
      * @{
      * Loads the block matrix from PSIO object with fileno and with the toc position of the name of the matrix
      *  The matrix must be correctly sized and named for this to work
-     * 
+     *
      * @param psio PSIO object to read with.
      * @param fileno File to read from.
      * @param saveSubBlocks Save information suffixing point group label.
@@ -352,7 +352,7 @@ public:
      */
     void set_name(std::string name) {
         name_ = name;
-    };
+    }
 
     /// Python compatible printer
     void print_out() { print(outfile); }
@@ -395,8 +395,8 @@ public:
         return colspi_;
     }
     /// Returns the number of irreps
-    int nirreps() const {
-        return nirreps_;
+    int nirrep() const {
+        return nirrep_;
     }
     /// Set this to identity
     void identity();

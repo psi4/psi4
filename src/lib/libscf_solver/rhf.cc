@@ -521,17 +521,17 @@ bool RHF::load_or_compute_initial_C()
 
         psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_OLD);
         psio_->read_entry(PSIF_SCF_DB_MOS,"DB SCF Energy",(char *) &(E_),sizeof(double));
-        psio_->read_entry(PSIF_SCF_DB_MOS,"DB NIRREPS",(char *) &(nirreps_),sizeof(int));
+        psio_->read_entry(PSIF_SCF_DB_MOS,"DB NIRREPS",(char *) &(nirrep_),sizeof(int));
         psio_->read_entry(PSIF_SCF_DB_MOS,"DB DOCCPI",(char *) (doccpi_),8*sizeof(int));
         psio_->read_entry(PSIF_SCF_DB_MOS,"DB SOCCPI",(char *) (soccpi_),8*sizeof(int));
         psio_->read_entry(PSIF_SCF_DB_MOS,"DB NALPHAPI",(char *) (nalphapi_),8*sizeof(int));
         psio_->read_entry(PSIF_SCF_DB_MOS,"DB NBETAPI",(char *) (nbetapi_),8*sizeof(int));
 
-        shared_ptr<Matrix> Ctemp(new Matrix("DUAL BASIS MOS", nirreps_, nsopi_, doccpi_));
+        shared_ptr<Matrix> Ctemp(new Matrix("DUAL BASIS MOS", nirrep_, nsopi_, doccpi_));
         Ctemp->load(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
 
         C_->zero();
-        for (int h = 0; h < nirreps_; h++)
+        for (int h = 0; h < nirrep_; h++)
             for (int m = 0; m<nsopi_[h]; m++)
                 for (int i = 0; i<doccpi_[h]; i++)
                     C_->set(h,m,i,Ctemp->get(h,m,i));
@@ -568,7 +568,7 @@ bool RHF::load_or_compute_initial_C()
         int h, i, j;
         S_->print(outfile);
         int *opi = S_->rowspi();
-        int nirreps = S_->nirreps();
+        int nirreps = S_->nirrep();
         for (h=0; h<nirreps; ++h) {
             for (i=0; i<opi[h]; ++i) {
                 for (j=0; j<opi[h]; ++j) {
@@ -608,7 +608,7 @@ void RHF::save_dual_basis_projection()
     psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_NEW);
     C_2->save(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
     psio_->write_entry(PSIF_SCF_DB_MOS,"DB SCF Energy",(char *) &(E_),sizeof(double));
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB NIRREPS",(char *) &(nirreps_),sizeof(int));
+    psio_->write_entry(PSIF_SCF_DB_MOS,"DB NIRREPS",(char *) &(nirrep_),sizeof(int));
     psio_->write_entry(PSIF_SCF_DB_MOS,"DB DOCCPI",(char *) (doccpi_),8*sizeof(int));
     psio_->write_entry(PSIF_SCF_DB_MOS,"DB SOCCPI",(char *) (soccpi_),8*sizeof(int));
     psio_->write_entry(PSIF_SCF_DB_MOS,"DB NALPHAPI",(char *) (nalphapi_),8*sizeof(int));
@@ -1152,7 +1152,7 @@ void RHF::form_C()
 
         C_->zero();
 
-        for (int h = 0; h<C_->nirreps(); h++) {
+        for (int h = 0; h<C_->nirrep(); h++) {
 
             int norbs = nsopi_[h];
             int nmos = nmopi_[h];
@@ -1214,7 +1214,7 @@ void RHF::form_D()
 {
     int h, i, j;
     int *opi = D_->rowspi();
-    int nirreps = D_->nirreps();
+    int nirreps = D_->nirrep();
     int norbs = basisset_->nbf();
 
     double** C = C_->to_block_matrix();

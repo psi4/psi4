@@ -80,15 +80,15 @@ void  DFMP2::setup()
 
   shared_ptr<Wavefunction> ref = Process::environment.reference_wavefunction();
   E_scf_ = Process::environment.globals["SCF ENERGY"];
-  nirreps_ = ref->get_nirreps();
-  nso_ = ref->get_nso();
-  clsdpi_ = ref->get_doccpi();
-  orbspi_ = ref->get_nmopi();
-  frzcpi_ = ref->get_frzcpi();
-  frzvpi_ = ref->get_frzvpi();
+  nirrep_ = ref->nirrep();
+  nso_ = ref->nso();
+  clsdpi_ = ref->doccpi();
+  orbspi_ = ref->nmopi();
+  frzcpi_ = ref->frzcpi();
+  frzvpi_ = ref->frzvpi();
 
-  SharedMatrix C = ref->get_Ca();
-  SharedVector epsilon = ref->get_epsilon_a();
+  SharedMatrix C = ref->Ca();
+  SharedVector epsilon = ref->epsilon_a();
 
   //End Process::environment.reference_wavefunction() stuff
 
@@ -98,7 +98,7 @@ void  DFMP2::setup()
   nf_virt_ = 0;
   nact_docc_ = 0;
   nact_virt_ = 0;
-  for(int h=0; h < nirreps_; ++h){
+  for(int h=0; h < nirrep_; ++h){
       nf_docc_     += frzcpi_[h];
       nf_virt_     += frzvpi_[h];
       ndocc_     += clsdpi_[h];
@@ -160,7 +160,7 @@ void  DFMP2::setup()
   sym_virt_ = init_int_array(nact_virt_);
   int act_docc_count  = 0;
   int act_virt_count  = 0;
-  for(int h=0; h<nirreps_; ++h){
+  for(int h=0; h<nirrep_; ++h){
     // Skip over the frozen core orbitals in this irrep
     // Copy over the info for active occupied orbitals
     for(int i=0; i<clsdpi_[h]-frzcpi_[h]; ++i){

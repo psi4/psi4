@@ -67,7 +67,7 @@ protected:
 
     int nso_;
     int nmo_;
-    int nirreps_;
+    int nirrep_;
 
     SharedMatrix Ca_;
     SharedMatrix Cb_;
@@ -104,21 +104,21 @@ public:
 
     static void initialize_singletons();
 
-    int* get_doccpi() const { return (int*)doccpi_; }
-    int* get_soccpi() const { return (int*)soccpi_; }
-    int* get_nsopi() const { return (int*)nsopi_; }
-    int* get_nmopi() const { return (int*)nmopi_; }
-    int* get_frzcpi() const { return (int*)frzcpi_; }
-    int* get_frzvpi() const { return (int*)frzvpi_; }
-    int get_nso() const { return nso_; }
-    int get_nmo() const { return nmo_; }
-    int get_nirreps() const { return nirreps_; }
-    SharedMatrix get_Ca() const { return Ca_; }
-    SharedMatrix get_Cb() const { return Cb_; }
-    SharedMatrix get_Fa() const { return Fa_; }
-    SharedMatrix get_Fb() const { return Fb_; }
-    SharedVector get_epsilon_a() const { return epsilon_a_; }
-    SharedVector get_epsilon_b() const { return epsilon_b_; }
+    int* doccpi() const { return (int*)doccpi_; }
+    int* soccpi() const { return (int*)soccpi_; }
+    int* nsopi() const { return (int*)nsopi_; }
+    int* nmopi() const { return (int*)nmopi_; }
+    int* frzcpi() const { return (int*)frzcpi_; }
+    int* frzvpi() const { return (int*)frzvpi_; }
+    int nso() const { return nso_; }
+    int nmo() const { return nmo_; }
+    int nirrep() const { return nirrep_; }
+    SharedMatrix Ca() const { return Ca_; }
+    SharedMatrix Cb() const { return Cb_; }
+    SharedMatrix Fa() const { return Fa_; }
+    SharedMatrix Fb() const { return Fb_; }
+    SharedVector epsilon_a() const { return epsilon_a_; }
+    SharedVector epsilon_b() const { return epsilon_b_; }
 
 };
 

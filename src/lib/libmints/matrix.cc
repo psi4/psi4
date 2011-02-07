@@ -42,7 +42,7 @@ Matrix::Matrix()
     matrix_ = NULL;
     rowspi_ = NULL;
     colspi_ = NULL;
-    nirreps_ = 0;
+    nirrep_ = 0;
     symmetry_ = 0;
 }
 
@@ -51,7 +51,7 @@ Matrix::Matrix(std::string name, int symmetry)
     matrix_ = NULL;
     rowspi_ = NULL;
     colspi_ = NULL;
-    nirreps_ = 0;
+    nirrep_ = 0;
     name = name_;
     symmetry_ = symmetry;
 }
@@ -59,11 +59,11 @@ Matrix::Matrix(std::string name, int symmetry)
 Matrix::Matrix(const Matrix& c)
 {
     matrix_ = NULL;
-    nirreps_ = c.nirreps_;
+    nirrep_ = c.nirrep_;
     symmetry_ = c.symmetry_;
-    rowspi_ = new int[nirreps_];
-    colspi_ = new int[nirreps_];
-    for (int i=0; i<nirreps_; ++i) {
+    rowspi_ = new int[nirrep_];
+    colspi_ = new int[nirrep_];
+    for (int i=0; i<nirrep_; ++i) {
         rowspi_[i] = c.rowspi_[i];
         colspi_[i] = c.colspi_[i];
     }
@@ -74,11 +74,11 @@ Matrix::Matrix(const Matrix& c)
 Matrix::Matrix(shared_ptr<Matrix> c)
 {
     matrix_ = NULL;
-    nirreps_ = c->nirreps_;
+    nirrep_ = c->nirrep_;
     symmetry_ = c->symmetry_;
-    rowspi_ = new int[nirreps_];
-    colspi_ = new int[nirreps_];
-    for (int i=0; i<nirreps_; ++i) {
+    rowspi_ = new int[nirrep_];
+    colspi_ = new int[nirrep_];
+    for (int i=0; i<nirrep_; ++i) {
         rowspi_[i] = c->rowspi_[i];
         colspi_[i] = c->colspi_[i];
     }
@@ -89,11 +89,11 @@ Matrix::Matrix(shared_ptr<Matrix> c)
 Matrix::Matrix(Matrix& c)
 {
     matrix_ = NULL;
-    nirreps_ = c.nirreps_;
+    nirrep_ = c.nirrep_;
     symmetry_ = c.symmetry_;
-    rowspi_ = new int[nirreps_];
-    colspi_ = new int[nirreps_];
-    for (int i=0; i<nirreps_; ++i) {
+    rowspi_ = new int[nirrep_];
+    colspi_ = new int[nirrep_];
+    for (int i=0; i<nirrep_; ++i) {
         rowspi_[i] = c.rowspi_[i];
         colspi_[i] = c.colspi_[i];
     }
@@ -104,11 +104,11 @@ Matrix::Matrix(Matrix& c)
 Matrix::Matrix(const Matrix* c)
 {
     matrix_ = NULL;
-    nirreps_ = c->nirreps_;
+    nirrep_ = c->nirrep_;
     symmetry_ = c->symmetry_;
-    rowspi_ = new int[nirreps_];
-    colspi_ = new int[nirreps_];
-    for (int i=0; i<nirreps_; ++i) {
+    rowspi_ = new int[nirrep_];
+    colspi_ = new int[nirrep_];
+    for (int i=0; i<nirrep_; ++i) {
         rowspi_[i] = c->rowspi_[i];
         colspi_[i] = c->colspi_[i];
     }
@@ -119,11 +119,11 @@ Matrix::Matrix(const Matrix* c)
 Matrix::Matrix(int l_nirreps, int *l_rowspi, int *l_colspi, int symmetry)
 {
     matrix_ = NULL;
-    nirreps_ = l_nirreps;
+    nirrep_ = l_nirreps;
     symmetry_ = symmetry;
-    rowspi_ = new int[nirreps_];
-    colspi_ = new int[nirreps_];
-    for (int i=0; i<nirreps_; ++i) {
+    rowspi_ = new int[nirrep_];
+    colspi_ = new int[nirrep_];
+    for (int i=0; i<nirrep_; ++i) {
         rowspi_[i] = l_rowspi[i];
         colspi_[i] = l_colspi[i];
     }
@@ -133,11 +133,11 @@ Matrix::Matrix(int l_nirreps, int *l_rowspi, int *l_colspi, int symmetry)
 Matrix::Matrix(std::string name, int l_nirreps, int *l_rowspi, int *l_colspi, int symmetry) : name_(name)
 {
     matrix_ = NULL;
-    nirreps_ = l_nirreps;
+    nirrep_ = l_nirreps;
     symmetry_ = symmetry;
-    rowspi_ = new int[nirreps_];
-    colspi_ = new int[nirreps_];
-    for (int i=0; i<nirreps_; ++i) {
+    rowspi_ = new int[nirrep_];
+    colspi_ = new int[nirrep_];
+    for (int i=0; i<nirrep_; ++i) {
         rowspi_[i] = l_rowspi[i];
         colspi_[i] = l_colspi[i];
     }
@@ -147,10 +147,10 @@ Matrix::Matrix(std::string name, int l_nirreps, int *l_rowspi, int *l_colspi, in
 Matrix::Matrix(std::string name, int rows, int cols) : name_(name)
 {
     matrix_ = NULL;
-    nirreps_ = 1;
+    nirrep_ = 1;
     symmetry_ = 0;
-    rowspi_ = new int[nirreps_];
-    colspi_ = new int[nirreps_];
+    rowspi_ = new int[nirrep_];
+    colspi_ = new int[nirrep_];
     rowspi_[0] = rows;
     colspi_[0] = cols;
     alloc();
@@ -159,10 +159,10 @@ Matrix::Matrix(std::string name, int rows, int cols) : name_(name)
 Matrix::Matrix(int rows, int cols)
 {
     matrix_ = NULL;
-    nirreps_ = 1;
+    nirrep_ = 1;
     symmetry_ = 0;
-    rowspi_ = new int[nirreps_];
-    colspi_ = new int[nirreps_];
+    rowspi_ = new int[nirrep_];
+    colspi_ = new int[nirrep_];
     rowspi_[0] = rows;
     colspi_[0] = cols;
     alloc();
@@ -175,19 +175,19 @@ Matrix::Matrix(const std::string& name, const Dimension& rows, const Dimension& 
 
     // This will happen in PetiteList::aotoso()
     if (rows.n() == 1) {
-        nirreps_ = cols.n();
-        rowspi_ = new int[nirreps_];
-        colspi_ = new int[nirreps_];
-        for (int i=0; i<nirreps_; ++i) {
+        nirrep_ = cols.n();
+        rowspi_ = new int[nirrep_];
+        colspi_ = new int[nirrep_];
+        for (int i=0; i<nirrep_; ++i) {
             rowspi_[i] = rows[0];
             colspi_[i] = cols[i];
         }
     }
     else {
-        nirreps_ = rows.n();
-        rowspi_ = new int[nirreps_];
-        colspi_ = new int[nirreps_];
-        for (int i=0; i<nirreps_; ++i) {
+        nirrep_ = rows.n();
+        rowspi_ = new int[nirrep_];
+        colspi_ = new int[nirrep_];
+        for (int i=0; i<nirrep_; ++i) {
             rowspi_[i] = rows[i];
             colspi_[i] = cols[i];
         }
@@ -202,10 +202,10 @@ Matrix::Matrix(dpdfile2 *inFile) : name_(inFile->label)
     dpd_file2_mat_rd(inFile);
     matrix_ = NULL;
     symmetry_ = inFile->my_irrep;
-    nirreps_ = inFile->params->nirreps;
-    rowspi_ = new int[nirreps_];
-    colspi_ = new int[nirreps_];
-    for (int i=0; i<nirreps_; ++i) {
+    nirrep_ = inFile->params->nirreps;
+    rowspi_ = new int[nirrep_];
+    colspi_ = new int[nirrep_];
+    for (int i=0; i<nirrep_; ++i) {
         rowspi_[i] = inFile->params->rowtot[i];
         colspi_[i] = inFile->params->coltot[i];
     }
@@ -230,10 +230,10 @@ void Matrix::init(int l_nirreps, int *l_rowspi, int *l_colspi, std::string name,
     if (colspi_) delete[] colspi_;
     name_ = name;
     symmetry_ = symmetry;
-    nirreps_ = l_nirreps;
-    rowspi_ = new int[nirreps_];
-    colspi_ = new int[nirreps_];
-    for (int i=0; i<nirreps_; ++i) {
+    nirrep_ = l_nirreps;
+    rowspi_ = new int[nirrep_];
+    colspi_ = new int[nirrep_];
+    for (int i=0; i<nirrep_; ++i) {
         rowspi_[i] = l_rowspi[i];
         colspi_[i] = l_colspi[i];
     }
@@ -250,10 +250,10 @@ void Matrix::copy(Matrix* cp)
 {
     // Make sure we are the same size as cp
     bool same = true;
-    if (nirreps_ != cp->nirreps_ || symmetry_ != cp->symmetry_) {
+    if (nirrep_ != cp->nirrep_ || symmetry_ != cp->symmetry_) {
         same = false;
     } else {
-        for (int h=0; h<nirreps_; ++h)
+        for (int h=0; h<nirrep_; ++h)
             if (colspi_[h] != cp->colspi_[h] || rowspi_[h] != cp->colspi_[h])
                 same = false;
     }
@@ -264,11 +264,11 @@ void Matrix::copy(Matrix* cp)
             delete[] rowspi_;
         if (colspi_)
             delete[] colspi_;
-        nirreps_ = cp->nirreps_;
+        nirrep_ = cp->nirrep_;
         symmetry_ = cp->symmetry_;
-        rowspi_ = new int[nirreps_];
-        colspi_ = new int[nirreps_];
-        for (int i=0; i<nirreps_; ++i) {
+        rowspi_ = new int[nirrep_];
+        colspi_ = new int[nirrep_];
+        for (int i=0; i<nirrep_; ++i) {
             rowspi_[i] = cp->rowspi_[i];
             colspi_[i] = cp->colspi_[i];
         }
@@ -276,7 +276,7 @@ void Matrix::copy(Matrix* cp)
     }
 
     // When here we are the same size
-    for (int h=0; h<nirreps_; ++h) {
+    for (int h=0; h<nirrep_; ++h) {
         if (rowspi_[h] != 0 && colspi_[h^symmetry_] != 0)
             memcpy(&(matrix_[h][0][0]), &(cp->matrix_[h][0][0]), rowspi_[h] * colspi_[h^symmetry_] * sizeof(double));
     }
@@ -307,8 +307,8 @@ void Matrix::alloc()
     if (matrix_)
         release();
 
-    matrix_ = (double***)malloc(sizeof(double***) * nirreps_);
-    for (int i=0; i<nirreps_; ++i) {
+    matrix_ = (double***)malloc(sizeof(double***) * nirrep_);
+    for (int i=0; i<nirrep_; ++i) {
         if (rowspi_[i] != 0 && colspi_[i^symmetry_] != 0)
             matrix_[i] = Matrix::matrix(rowspi_[i], colspi_[i^symmetry_]);
         else
@@ -321,7 +321,7 @@ void Matrix::release()
     if (!matrix_)
         return;
 
-    for (int h=0; h<nirreps_; ++h) {
+    for (int h=0; h<nirrep_; ++h) {
         if (matrix_[h])
             Matrix::free(matrix_[h]);
     }
@@ -332,7 +332,7 @@ void Matrix::release()
 void Matrix::copy_from(double ***c) {
     int size;
 
-    for (int h=0; h<nirreps_; ++h) {
+    for (int h=0; h<nirrep_; ++h) {
         size = rowspi_[h] * colspi_[h^symmetry_] * sizeof(double);
         if (size)
             memcpy(&(matrix_[h][0][0]), &(c[h][0][0]), size);
@@ -342,7 +342,7 @@ void Matrix::copy_from(double ***c) {
 // Sets all elements of matrix to val
 void Matrix::set(double val)
 {
-    for (int h=0; h < nirreps_; ++h) {
+    for (int h=0; h < nirrep_; ++h) {
         size_t size = rowspi_[h] * colspi_[h^symmetry_];
 
         for (size_t i=0; i<size; ++i) {
@@ -360,7 +360,7 @@ void Matrix::set(const double *tri)
     int offset;
 
     offset = 0;
-    for (h=0; h<nirreps_; ++h) {
+    for (h=0; h<nirrep_; ++h) {
         for (i=0; i<rowspi_[h]; ++i) {
             ii = i + offset;
             for (j=0; j<=i; ++j) {
@@ -387,7 +387,7 @@ void Matrix::set(const double **sq)
         return;
     }
     offset = 0;
-    for (h=0; h<nirreps_; ++h) {
+    for (h=0; h<nirrep_; ++h) {
         for (i=0; i<rowspi_[h]; ++i) {
             ii = i + offset;
             for (j=0; j<=i; ++j) {
@@ -415,7 +415,7 @@ void Matrix::set(double **sq)
         return;
     }
     offset = 0;
-    for (h=0; h<nirreps_; ++h) {
+    for (h=0; h<nirrep_; ++h) {
         for (i=0; i<rowspi_[h]; ++i) {
             ii = i + offset;
             for (j=0; j<=i; ++j) {
@@ -446,7 +446,7 @@ void Matrix::set(Vector* vec)
 
     int h, i, size;
     zero();
-    for (h=0; h<nirreps_; ++h) {
+    for (h=0; h<nirrep_; ++h) {
         size = rowspi_[h];
         if (size) {
             for (i=0; i<size; ++i)
@@ -472,7 +472,7 @@ double *Matrix::to_lower_triangle() const
     }
 
     int sizer=0, sizec=0;
-    for (int h=0; h<nirreps_; ++h) {
+    for (int h=0; h<nirrep_; ++h) {
         sizer += rowspi_[h];
         sizec += colspi_[h];
     }
@@ -489,14 +489,14 @@ double *Matrix::to_lower_triangle() const
 double **Matrix::to_block_matrix() const
 {
     int sizer=0, sizec=0;
-    for (int h=0; h<nirreps_; ++h) {
+    for (int h=0; h<nirrep_; ++h) {
         sizer += rowspi_[h];
         sizec += colspi_[h^symmetry_];
     }
 
     double **temp = block_matrix(sizer,sizec);
     int offsetr = 0, offsetc=0;
-    for (int h=0; h <nirreps_; ++h) {
+    for (int h=0; h <nirrep_; ++h) {
         for (int i=0; i<rowspi_[h]; ++i) {
             for (int j=0; j<colspi_[h^symmetry_]; ++j) {
                 temp[i+offsetr][j+offsetc] = matrix_[h][i][j];
@@ -558,7 +558,7 @@ void Matrix::print(FILE *out, const char *extra)
             fprintf(out, "  ## %s %s (Symmetry %d)##\n", name_.c_str(), extra, symmetry_+1);
     }
 
-    for (h=0; h<nirreps_; ++h) {
+    for (h=0; h<nirrep_; ++h) {
         fprintf(out, "  Irrep: %d\n", h+1);
         print_mat(matrix_[h], rowspi_[h], colspi_[h^symmetry_], out);
         fprintf(out, "\n");
@@ -574,7 +574,7 @@ void Matrix::eivprint(Vector *values, FILE *out)
         fprintf(out, "  ## %s with eigenvalues ##\n", name_.c_str());
     }
 
-    for (h=0; h<nirreps_; ++h) {
+    for (h=0; h<nirrep_; ++h) {
         fprintf(out, " Irrep: %d\n", h+1);
         eivout(matrix_[h], values->vector_[h], rowspi_[h], colspi_[h^symmetry_], out);
         fprintf(out, "\n");
@@ -601,7 +601,7 @@ void Matrix::identity()
     int h;
     size_t size;
 
-    for (h=0; h<nirreps_; ++h) {
+    for (h=0; h<nirrep_; ++h) {
         size = rowspi_[h] * colspi_[h] * sizeof(double);
 
         if (size) {
@@ -617,7 +617,7 @@ void Matrix::zero()
     size_t size;
     int h;
 
-    for (h=0; h<nirreps_; ++h) {
+    for (h=0; h<nirrep_; ++h) {
         size = rowspi_[h] * colspi_[h^symmetry_] * sizeof(double);
 
         if (size) {
@@ -634,7 +634,7 @@ void Matrix::zero_diagonal()
 
     int h, i;
 
-    for (h=0; h<nirreps_; ++h) {
+    for (h=0; h<nirrep_; ++h) {
         for (i=0; i<MIN(rowspi_[h], colspi_[h]); ++i) {
             matrix_[h][i][i] = 0.0;
         }
@@ -650,7 +650,7 @@ double Matrix::trace()
     int i, h;
     double val = (double)0.0;
 
-    for (h=0; h<nirreps_; ++h) {
+    for (h=0; h<nirrep_; ++h) {
         for (i=0; i<MIN(rowspi_[h], colspi_[h]); ++i) {
             val += matrix_[h][i][i];
         }
@@ -661,10 +661,10 @@ double Matrix::trace()
 
 Matrix* Matrix::transpose()
 {
-    Matrix *temp = new Matrix(name_, nirreps_, colspi_, rowspi_, symmetry_);
+    Matrix *temp = new Matrix(name_, nirrep_, colspi_, rowspi_, symmetry_);
 
     int h, i, j;
-    for (h=0; h<nirreps_; ++h) {
+    for (h=0; h<nirrep_; ++h) {
         for (i=0; i<rowspi_[h]; ++i) {
             for (j=0; j<colspi_[h^symmetry_]; ++j) {
                 temp->matrix_[h][j][i] = matrix_[h][i][j];
@@ -677,7 +677,7 @@ Matrix* Matrix::transpose()
 void Matrix::add(const Matrix* plus)
 {
     double *lhs, *rhs;
-    for (int h=0; h<nirreps_; ++h) {
+    for (int h=0; h<nirrep_; ++h) {
         size_t size = rowspi_[h] * colspi_[h^symmetry_];
         if (size) {
             lhs = matrix_[h][0];
@@ -703,7 +703,7 @@ void Matrix::add(shared_ptr<Matrix> plus)
 void Matrix::subtract(const Matrix* plus)
 {
     double *lhs, *rhs;
-    for (int h=0; h<nirreps_; ++h) {
+    for (int h=0; h<nirrep_; ++h) {
         size_t size = rowspi_[h] * colspi_[h^symmetry_];
         if (size) {
             lhs = matrix_[h][0];
@@ -735,7 +735,7 @@ void Matrix::scale(double a)
 {
     int h;
     size_t size;
-    for (h=0; h<nirreps_; ++h) {
+    for (h=0; h<nirrep_; ++h) {
         size = rowspi_[h] * colspi_[h^symmetry_];
         if (size)
             C_DSCAL(size, a, &(matrix_[h][0][0]), 1);
@@ -755,7 +755,7 @@ void Matrix::scale_column(int h, int n, double a)
 double Matrix::sum_of_squares()
 {
     double sum = (double)0.0;
-    for (int h=0; h<nirreps_; ++h) {
+    for (int h=0; h<nirrep_; ++h) {
         for (int i=0; i<rowspi_[h]; ++i) {
             for (int j=0; j<colspi_[h^symmetry_]; ++j) {
                 sum += matrix_[h][i][j] * matrix_[h][i][j];
@@ -770,7 +770,7 @@ double Matrix::rms()
 {
     double sum = (double)0.0;
     long terms = 0;
-    for (int h=0; h<nirreps_; ++h) {
+    for (int h=0; h<nirrep_; ++h) {
         for (int i=0; i<rowspi_[h]; ++i) {
             for (int j=0; j<colspi_[h^symmetry_]; ++j) {
                 sum += matrix_[h][i][j] * matrix_[h][i][j];
@@ -800,7 +800,7 @@ void Matrix::transform(Matrix* transformer)
     bool square = true;
     int h = 0;
 
-    while(h < nirreps_ && square){
+    while(h < nirrep_ && square){
         if(transformer->rowspi()[h] != transformer->colspi()[h]){
             square = false;
         }
@@ -813,8 +813,8 @@ void Matrix::transform(Matrix* transformer)
         gemm(true, false, 1.0, transformer, &temp, 0.0);
     }
     else{
-        Matrix temp(nirreps_, rowspi_, transformer->colspi());
-        Matrix result(nirreps_, transformer->colspi(), transformer->colspi());
+        Matrix temp(nirrep_, rowspi_, transformer->colspi());
+        Matrix result(nirrep_, transformer->colspi(), transformer->colspi());
         temp.gemm(false, false, 1.0, this, transformer, 0.0);
         result.gemm(true, false, 1.0, transformer, &temp, 0.0);
         copy(&result);
@@ -844,7 +844,7 @@ void Matrix::back_transform(Matrix* transformer)
     bool square = true;
     int h = 0;
 
-    while(h < nirreps_ && square){
+    while(h < nirrep_ && square){
         if(transformer->rowspi()[h] != transformer->colspi()[h]){
             square = false;
         }
@@ -857,8 +857,8 @@ void Matrix::back_transform(Matrix* transformer)
         gemm(false, false, 1.0, transformer, &temp, 0.0);
     }
     else{
-        Matrix temp(nirreps_, rowspi_, transformer->rowspi());
-        Matrix result(nirreps_, transformer->rowspi(), transformer->rowspi());
+        Matrix temp(nirrep_, rowspi_, transformer->rowspi());
+        Matrix result(nirrep_, transformer->rowspi(), transformer->rowspi());
         temp.gemm(false, true, 1.0, this, transformer, 0.0);
         result.gemm(false, false, 1.0, transformer, &temp, 0.0);
         copy(&result);
@@ -879,7 +879,7 @@ void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix* a, const
     char tb = transb ? 't' : 'n';
     int h, m, n, k, nca, ncb, ncc;
 
-    for (h=0; h<nirreps_; ++h) {
+    for (h=0; h<nirrep_; ++h) {
         m = rowspi_[h];
         n = colspi_[h];
         k = transa ? a->rowspi_[h] : a->colspi_[h^a->symmetry_];
@@ -921,7 +921,7 @@ double Matrix::vector_dot(Matrix* rhs)
     int h;
     size_t size;
 
-    for (h=0; h<nirreps_; ++h) {
+    for (h=0; h<nirrep_; ++h) {
         size = rowspi_[h] * colspi_[h^symmetry_];
         if (size)
             sum += C_DDOT(size, (&matrix_[h][0][0]), 1, &(rhs->matrix_[h][0][0]), 1);
@@ -941,7 +941,7 @@ void Matrix::diagonalize(Matrix* eigvectors, Vector* eigvalues)
         throw PSIEXCEPTION("Matrix::diagonalize: Matrix is non-totally symmetric.");
     }
     int h;
-    for (h=0; h<nirreps_; ++h) {
+    for (h=0; h<nirrep_; ++h) {
         if (rowspi_[h]) {
             sq_rsp(rowspi_[h], colspi_[h], matrix_[h], eigvalues->vector_[h], 1, eigvectors->matrix_[h], 1.0e-14);
         }
@@ -963,7 +963,7 @@ void Matrix::cholesky_factorize()
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix::cholesky_factorize: Matrix is non-totally symmetric.");
     }
-    for (int h=0; h<nirreps_; ++h) {
+    for (int h=0; h<nirrep_; ++h) {
         if (rowspi_[h]) {
             int err = C_DPOTRF('L', rowspi_[h], matrix_[h][0], rowspi_[h]);
             if (err != 0) {
@@ -990,7 +990,7 @@ void Matrix::invert()
         throw PSIEXCEPTION("Matrix::invert: Matrix is non-totally symmetric.");
     }
 
-    for (int h=0; h<nirreps_; ++h) {
+    for (int h=0; h<nirrep_; ++h) {
         if (rowspi_[h]) {
             int err = C_DPOTRI('L', rowspi_[h], matrix_[h][0], rowspi_[h]);
             if (err != 0) {
@@ -1017,7 +1017,7 @@ void Matrix::copy_lower_to_upper()
         throw PSIEXCEPTION("Matrix::copy_lower_to_upper: Matrix is non-totally symmetric.");
     }
 
-    for (int h=0; h<nirreps_; ++h) {
+    for (int h=0; h<nirrep_; ++h) {
         for (int m=0; m<rowspi_[h]; ++m) {
             for (int n=0; n<m; ++n) {
                 matrix_[h][n][m] = matrix_[h][m][n];
@@ -1032,7 +1032,7 @@ void Matrix::copy_upper_to_lower()
         throw PSIEXCEPTION("Matrix::copy_upper_to_lower: Matrix is non-totally symmetric.");
     }
 
-    for (int h=0; h<nirreps_; ++h) {
+    for (int h=0; h<nirrep_; ++h) {
         for (int m=0; m<rowspi_[h]; ++m) {
             for (int n=0; n<m; ++n) {
                 matrix_[h][m][n] = matrix_[h][n][m];
@@ -1083,7 +1083,7 @@ double Matrix::vector_dot(Matrix& rhs)
 void Matrix::diagonalize(Matrix& eigvectors, Vector& eigvalues)
 {
     int h;
-    for (h=0; h<nirreps_; ++h) {
+    for (h=0; h<nirrep_; ++h) {
         if (rowspi_[h]) {
             sq_rsp(rowspi_[h], colspi_[h], matrix_[h], eigvalues.vector_[h], 1, eigvectors.matrix_[h], 1.0e-14);
         }
@@ -1094,10 +1094,10 @@ void Matrix::write_to_dpdfile2(dpdfile2 *outFile)
 {
     dpd_file2_mat_init(outFile);
 
-    if(outFile->params->nirreps != nirreps_) {
+    if(outFile->params->nirreps != nirrep_) {
         char *str = new char[100];
         sprintf(str, "Irrep count mismatch.  Matrix class has %d irreps, but dpdfile2 has %d.",
-                nirreps_, outFile->params->nirreps);
+                nirrep_, outFile->params->nirreps);
         throw SanityCheckError(str, __FILE__, __LINE__);
     }
 
@@ -1106,7 +1106,7 @@ void Matrix::write_to_dpdfile2(dpdfile2 *outFile)
                 "Matrices whose irrep is not the symmetric one", __FILE__, __LINE__);
     }
 
-    for(int h = 0; h < nirreps_; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         if(outFile->params->rowtot[h] != rowspi_[h]){
             char *str = new char[100];
             sprintf(str, "Row count mismatch for irrep %d.  Matrix class has %d rows, but dpdfile2 has %d.",
@@ -1158,7 +1158,7 @@ void Matrix::save(const char *filename, bool append, bool saveLowerTriangle, boo
 
         // Need to know the size
         int sizer=0, sizec=0;
-        for (int h=0; h<nirreps_; ++h) {
+        for (int h=0; h<nirrep_; ++h) {
             sizer += rowspi_[h];
             sizec += colspi_[h^symmetry_];
         }
@@ -1205,7 +1205,7 @@ void Matrix::save(const char *filename, bool append, bool saveLowerTriangle, boo
         if (saveLowerTriangle) {
             // Count the number of non-zero elements
             int count=0;
-            for (int h=0; h<nirreps_; ++h) {
+            for (int h=0; h<nirrep_; ++h) {
                 for (int i=0; i<rowspi_[h]; ++i) {
                     for (int j=0; j<=i; ++j) {
                         if (fabs(matrix_[h][i][j]) > 1.0e-14) {
@@ -1215,7 +1215,7 @@ void Matrix::save(const char *filename, bool append, bool saveLowerTriangle, boo
                 }
             }
             fprintf(out, "%5d\n", count);
-            for (int h=0; h<nirreps_; ++h) {
+            for (int h=0; h<nirrep_; ++h) {
                 for (int i=0; i<rowspi_[h]; ++i) {
                     for (int j=0; j<=i; ++j) {
                         if (fabs(matrix_[h][i][j]) > 1.0e-14) {
@@ -1227,7 +1227,7 @@ void Matrix::save(const char *filename, bool append, bool saveLowerTriangle, boo
         } else {
             // Count the number of non-zero elements
             int count=0;
-            for (int h=0; h<nirreps_; ++h) {
+            for (int h=0; h<nirrep_; ++h) {
                 for (int i=0; i<rowspi_[h]; ++i) {
                     for (int j=0; j<colspi_[h]; ++j) {
                         if (fabs(matrix_[h][i][j]) > 1.0e-14) {
@@ -1237,7 +1237,7 @@ void Matrix::save(const char *filename, bool append, bool saveLowerTriangle, boo
                 }
             }
             fprintf(out, "%5d\n", count);
-            for (int h=0; h<nirreps_; ++h) {
+            for (int h=0; h<nirrep_; ++h) {
                 for (int i=0; i<rowspi_[h]; ++i) {
                     for (int j=0; j<colspi_[h]; ++j) {
                         if (fabs(matrix_[h][i][j]) > 1.0e-14) {
@@ -1307,13 +1307,13 @@ void Matrix::load(psi::PSIO* psio, unsigned int fileno, SaveType st)
 
         // Need to know the size
         int sizer=0, sizec=0;
-        for (int h=0; h<nirreps_; ++h) {
+        for (int h=0; h<nirrep_; ++h) {
             sizer += rowspi_[h];
             sizec += colspi_[h];
         }
 
         if (st == SubBlocks) {
-            for (int h=0; h<nirreps_; ++h) {
+            for (int h=0; h<nirrep_; ++h) {
                 std::string str(name_);
                 str += " Irrep " + to_string(h);
 
@@ -1368,13 +1368,13 @@ void Matrix::save(psi::PSIO* psio, unsigned int fileno, SaveType st)
 
         // Need to know the size
         int sizer=0, sizec=0;
-        for (int h=0; h<nirreps_; ++h) {
+        for (int h=0; h<nirrep_; ++h) {
             sizer += rowspi_[h];
             sizec += colspi_[h];
         }
 
         if (st == SubBlocks) {
-            for (int h=0; h<nirreps_; ++h) {
+            for (int h=0; h<nirrep_; ++h) {
                 std::string str(name_);
                 str += " Irrep " + to_string(h);
 
@@ -1422,7 +1422,7 @@ void Matrix::recv(Communicator* comm)
 void Matrix::bcast(Communicator* comm, int broadcaster)
 {
     // Assume the user allocated the matrix to the correct size first.
-    for (int h=0; h<nirreps_; ++h) {
+    for (int h=0; h<nirrep_; ++h) {
         comm->bcast(matrix_[h][0], rowspi_[h] * colspi_[h^symmetry_], broadcaster);
     }
 }
@@ -1440,19 +1440,19 @@ bool Matrix::equal(const boost::shared_ptr<Matrix>& rhs)
 bool Matrix::equal(const Matrix* rhs)
 {
     // Check dimensions
-    if (rhs->nirreps() != nirreps())
+    if (rhs->nirrep() != nirrep())
         return false;
 
     if (symmetry_ != rhs->symmetry_)
         return false;
 
-    for (int h=0; h<nirreps(); ++h)
+    for (int h=0; h<nirrep(); ++h)
         if ((rowspi()[h] != rhs->rowspi()[h]) ||
                 (colspi()[h] != rhs->colspi()[h]))
             return false;
 
     // Check element by element
-    for (int h=0; h<nirreps(); ++h) {
+    for (int h=0; h<nirrep(); ++h) {
         for (int m = 0; m < rowspi()[h]; ++m) {
             for (int n = 0; n < colspi()[h^symmetry_]; ++n) {
                 if (get(h, m, n) != rhs->get(h, m, n))
@@ -1537,7 +1537,7 @@ SimpleMatrix::SimpleMatrix(std::string name, int l_rows, int l_cols) : matrix_(0
 
 SimpleMatrix::SimpleMatrix(const Matrix* c) : matrix_(0), rows_(0), cols_(0)
 {
-    for (int i=0; i<c->nirreps(); ++i) {
+    for (int i=0; i<c->nirrep(); ++i) {
         rows_ += c->rowspi()[i];
         cols_ += c->colspi()[i];
     }
@@ -1546,7 +1546,7 @@ SimpleMatrix::SimpleMatrix(const Matrix* c) : matrix_(0), rows_(0), cols_(0)
 
 SimpleMatrix::SimpleMatrix(const Matrix& c) : matrix_(0), rows_(0), cols_(0)
 {
-    for (int i=0; i<c.nirreps(); ++i) {
+    for (int i=0; i<c.nirrep(); ++i) {
         rows_ += c.rowspi()[i];
         cols_ += c.colspi()[i];
     }
@@ -2198,7 +2198,7 @@ View::View(boost::shared_ptr<Matrix> matrix, int *rows, int *cols)
       rows_per_irrep_(0), cols_per_irrep_(0)
 
 {
-    nirrep_ = matrix_->nirreps();
+    nirrep_ = matrix_->nirrep();
 
     if (rows == 0)
         throw InputException("Array of row sizes is 0.", "rows", 0, __FILE__, __LINE__);
@@ -2224,7 +2224,7 @@ View::View(boost::shared_ptr<Matrix> matrix, int *rows, int *cols, int *row_offs
       rows_per_irrep_(0), cols_per_irrep_(0)
 
 {
-    nirrep_ = matrix_->nirreps();
+    nirrep_ = matrix_->nirrep();
 
     if (rows == 0)
         throw InputException("Array of row sizes is 0.", "rows", 0, __FILE__, __LINE__);

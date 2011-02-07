@@ -161,7 +161,7 @@ shared_ptr<Matrix> DFTensor::form_cholesky_metric()
 {
     // Grab the fitting metric
     shared_ptr<Matrix> M = form_fitting_metric();
-    for (int h = 0; h < M->nirreps(); h++) {
+    for (int h = 0; h < M->nirrep(); h++) {
         // Choleskify each irrep O(N^3/3), essentially free
         PSI_DPOTRF(h,'L', M->colspi()[h], M, M->colspi()[h]);
         // The result goes in the upper triangle 

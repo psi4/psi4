@@ -68,8 +68,8 @@ void get_moinfo(void)
   psio_write_entry(CC_INFO, "Reference Wavefunction",
            (char *) &(params.ref), sizeof(int));
 
-  moinfo.frdocc = Process::environment.reference_wavefunction()->get_frzcpi();
-  moinfo.fruocc = Process::environment.reference_wavefunction()->get_frzvpi();
+  moinfo.frdocc = Process::environment.reference_wavefunction()->frzcpi();
+  moinfo.fruocc = Process::environment.reference_wavefunction()->frzvpi();
   chkpt_close();
 
   moinfo.nfzc = moinfo.nfzv = 0;

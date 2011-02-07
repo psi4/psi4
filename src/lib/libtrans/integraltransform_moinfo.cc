@@ -17,19 +17,19 @@ void
 IntegralTransform::raid_checkpoint()
 {
     _labels  = Process::environment.molecule()->irrep_labels();
-    _nirreps = Process::environment.reference_wavefunction()->get_nirreps();
-    _nmo     = Process::environment.reference_wavefunction()->get_nmo();
-    _nso     = Process::environment.reference_wavefunction()->get_nso();
-    _sopi    = Process::environment.reference_wavefunction()->get_nsopi();
-    _mopi    = Process::environment.reference_wavefunction()->get_nmopi();
+    _nirreps = Process::environment.reference_wavefunction()->nirrep();
+    _nmo     = Process::environment.reference_wavefunction()->nmo();
+    _nso     = Process::environment.reference_wavefunction()->nso();
+    _sopi    = Process::environment.reference_wavefunction()->nsopi();
+    _mopi    = Process::environment.reference_wavefunction()->nmopi();
     // TODO This is a temporary fix, so that the MO coefficients can be read from chkpt.
     // Eventually they should just be read from Wavefunction
     _chkpt->wt_sopi(_sopi);
     _chkpt->wt_orbspi(_mopi);
-    _clsdpi  = Process::environment.reference_wavefunction()->get_doccpi();
-    _openpi  = Process::environment.reference_wavefunction()->get_soccpi();
-    _frzcpi  = Process::environment.reference_wavefunction()->get_frzcpi();
-    _frzvpi  = Process::environment.reference_wavefunction()->get_frzvpi();
+    _clsdpi  = Process::environment.reference_wavefunction()->doccpi();
+    _openpi  = Process::environment.reference_wavefunction()->soccpi();
+    _frzcpi  = Process::environment.reference_wavefunction()->frzcpi();
+    _frzvpi  = Process::environment.reference_wavefunction()->frzvpi();
     _nTriSo  = _nso * (_nso + 1) / 2;
     _nTriMo  = _nmo * (_nmo + 1) / 2;
     _sosym   = init_int_array(_nso);

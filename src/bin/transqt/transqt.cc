@@ -691,8 +691,8 @@ void get_moinfo(Options & options)
     }
   }
 
-  moinfo.frdocc = Process::environment.reference_wavefunction()->get_frzcpi();
-  moinfo.fruocc = Process::environment.reference_wavefunction()->get_frzvpi();
+  moinfo.frdocc = Process::environment.reference_wavefunction()->frzcpi();
+  moinfo.fruocc = Process::environment.reference_wavefunction()->frzvpi();
 
   if (params.wfn == "CI" || params.wfn == "DETCI" || params.wfn == "GVVPT2"
       || params.wfn == "MCSCF" || params.wfn == "OOCCD" || params.wfn == "ZAPTN"

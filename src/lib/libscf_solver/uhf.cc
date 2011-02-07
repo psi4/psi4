@@ -342,7 +342,7 @@ void UHF::save_information()
 {
     // Print the final docc vector
     char **temp2 = molecule_->irrep_labels();
-    int nso = get_nso();
+    int nso = nso();
 
     // Must remember to write the number of irreps before writing anything else.
     chkpt_->wt_nirreps(factory_.nirrep());
@@ -611,7 +611,7 @@ void UHF::form_D()
 {
     int h, i, j, m;
     int *opi = Da_->rowspi();
-    int nirreps = Da_->nirreps();
+    int nirreps = Da_->nirrep();
     double val;
     for (h=0; h<nirreps; ++h) {
     // fprintf(outfile, "irrep %d: nalpha = %d nbeta = %d\n", h, nalphapi_[h], nbetapi_[h]);
