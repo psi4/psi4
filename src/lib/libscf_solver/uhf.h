@@ -53,7 +53,7 @@ public:
 
     /// Add an external potential to the alpha and beta Fock matrices
     void set_external_potential(double ***Va, double ***Vb)
-                               {addExternalPotential_ = true; Va_ = Va;  Vb_ = Vb;}
+                               {add_external_potential_ = true; Va_ = Va;  Vb_ = Vb;}
 
     double compute_energy();
 };

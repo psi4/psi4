@@ -15,19 +15,10 @@ namespace psi {
  *
  * @param name    - the name of the module.
  * @param options - the liboptions module used in the computations.
- * @params call_ipv1 - boolean to specify whether to read input [true]
  * @param suppress_printing - boolean to specify whether to print to output file [false]
  */
-
-int read_options(const std::string &name, Options & options, bool call_ipv1,
-   bool suppress_printing)
+int read_options(const std::string &name, Options & options, bool suppress_printing)
 {
-//  ip_cwk_clear();
-//  ip_cwk_add(const_cast<char*>(":BASIS"));
-//  ip_cwk_add(const_cast<char*>(":DEFAULT"));
-//  ip_cwk_add(const_cast<char*>(":PSI"));
-//  ip_set_uppercase(1);
-
   options.clear();
 
   /*- Not using input module -*/
@@ -949,14 +940,6 @@ int read_options(const std::string &name, Options & options, bool call_ipv1,
     options.add_int("NOPT", 40);
     options.add_bool("NO_LINE_SEARCH", true); // whether to prevent any line searches; true is not yet implemented in psi4
   }
-
-//  if (call_ipv1) {
-//    options.read_ipv1();
-//    //if (!suppress_printing && Communicator::world->me() == 0) {
-//    //    fprintf(outfile, "printed from read_options\n");
-//    //    options.print();
-//    //}
-//  }
 
   return true;
 }

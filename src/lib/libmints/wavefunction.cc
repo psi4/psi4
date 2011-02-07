@@ -15,6 +15,9 @@
 
 #include <psi4-dec.h>
 
+#include <boost/python.hpp>
+#include <boost/python/call.hpp>
+
 using namespace psi;
 
 namespace psi {
@@ -138,4 +141,41 @@ boost::shared_ptr<BasisSet> Wavefunction::basisset() const
 boost::shared_ptr<SOBasisSet> Wavefunction::sobasisset() const
 {
     return sobasisset_;
+}
+
+SharedMatrix Wavefunction::Da() const
+{
+    throw NotImplementedException("Wavefunction::Da is not implemented.");
+}
+
+SharedMatrix Wavefunction::Db() const
+{
+    throw NotImplementedException("Wavefunction::Db is not implemented.");
+}
+
+void Wavefunction::add_preiteration_callback(PyObject *pyobject)
+{
+    if (pyobject != Py_None)
+        precallbacks_.push_back(pyobject);
+}
+
+void Wavefunction::add_postiteration_callback(PyObject *pyobject)
+{
+    if (pyobject != Py_None)
+        postcallbacks_.push_back(pyobject);
+}
+
+void Wavefunction::call_preiteration_callbacks()
+{
+    std::vector<void*>::const_iterator iter;
+    for (iter = precallbacks_.begin(); iter != precallbacks_.end(); ++iter) {
+        boost::python::call<void>((PyObject*)*iter, Process::environment.reference_wavefunction());
+    }
+}
+void Wavefunction::call_postiteration_callbacks()
+{
+    std::vector<void*>::const_iterator iter;
+    for (iter = postcallbacks_.begin(); iter != postcallbacks_.end(); ++iter) {
+        boost::python::call<void>((PyObject*)*iter, Process::environment.reference_wavefunction());
+    }
 }

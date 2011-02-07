@@ -1,8 +1,8 @@
-#include <iostream>
+#include <python.h>
+
 #include <cstdlib>
 #include <cstdio>
-#include <cmath>
-#include <sstream>
+#include <string>
 
 #include <psifiles.h>
 #include <libciomr/libciomr.h>
@@ -15,18 +15,21 @@
 #include <libqt/qt.h>
 
 #include <libmints/mints.h>
-#include "hfenergy.h"
-
 #include <psi4-dec.h>
+
+#include <libscf_solver/rhf.h>
+#include <libscf_solver/rohf.h>
+#include <libscf_solver/uhf.h>
+#include <libscf_solver/rks.h>
+#include <libscf_solver/uks.h>
+
+using namespace std;
 
 namespace psi { namespace scf {
 
-PsiReturnType scf(Options & options)
+PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
 {
     tstart();
-
-//    shared_ptr<PSIO> psio(new PSIO);
-//    psiopp_ipv1_config(psio);
 
     shared_ptr<PSIO> psio = PSIO::shared_object();
     shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
@@ -34,8 +37,38 @@ PsiReturnType scf(Options & options)
     // Initialize the psi3 timer library.
     timer_init();
 
+    string reference = options.get_str("REFERENCE");
+    shared_ptr<Wavefunction> scf;
     double energy;
     bool parallel = options.get_bool("PARALLEL");
+
+    if (reference == "RHF") {
+        scf = shared_ptr<Wavefunction>(new RHF(options, psio, chkpt));
+    }
+    else if (reference == "ROHF") {
+        scf = shared_ptr<Wavefunction>(new ROHF(options, psio, chkpt));
+    }
+    else if (reference == "UHF") {
+        scf = shared_ptr<Wavefunction>(new UHF(options, psio, chkpt));
+    }
+    else if (reference == "RKS") {
+        scf = shared_ptr<Wavefunction>(new RKS(options, psio, chkpt));
+    }
+    else if (reference == "UKS") {
+        scf = shared_ptr<Wavefunction>(new UKS(options, psio, chkpt));
+    }
+    else {
+        throw InputException("Unknown reference " + reference, "REFERENCE", __FILE__, __LINE__);
+        energy = 0.0;
+    }
+
+    // Set this early because the callback mechanism uses it.
+    Process::environment.set_reference_wavefunction(scf);
+
+    if (pre)
+        scf->add_preiteration_callback(pre);
+    if (post)
+        scf->add_postiteration_callback(post);
 
     if(parallel) {
 #if HAVE_MPI == 1
@@ -47,11 +80,11 @@ PsiReturnType scf(Options & options)
 #endif
     }
     else {
-            HFEnergy hf(options, psio, chkpt);
-            // Compute the Hartree-Fock energy
-            energy = hf.compute_energy();
+        // Compute the SCF energy
+        energy = scf->compute_energy();
     }
 
+    // Set some environment variables
     Process::environment.globals["SCF ENERGY"] = energy;
     Process::environment.globals["CURRENT ENERGY"] = energy;
 

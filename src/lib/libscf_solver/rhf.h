@@ -15,7 +15,7 @@
 
 using namespace psi;
 
-namespace psi { 
+namespace psi {
 
 class TwoBodySOInt;
 class PSIO;
@@ -26,7 +26,7 @@ namespace scf {
 class RHF : public HF {
 protected:
     SharedMatrix Lref_; //Formal local orbital coefficients (from last guess)
-    SharedMatrix L_; //Propagated local orbital coefficients
+    SharedMatrix L_;    //Propagated local orbital coefficients
     SharedMatrix F_;
     SharedMatrix D_;
     SharedMatrix Dold_;
@@ -78,15 +78,15 @@ protected:
     double compute_E();
 
     // Form G routines
-    double **G_vector_; // Used in form_G_from_PK to handle threading.
-    void form_G(); // Out of core (i think there is a bug here)
-    void form_G_from_PK(); // In core PK
-    void form_G_from_direct_integrals(); // Computes all ERIs each iteration.
-    void form_G_from_direct_integrals_parallel(); // Computes all ERIs in parallel each iteration
-    void form_G_from_RI(); //Uses two- and three- index integrals
-    void form_G_from_RI_local_K(); //Uses two- and three- index integrals
+    double **G_vector_;                                // Used in form_G_from_PK to handle threading.
+    void form_G();                                     // Out of core
+    void form_G_from_PK();                             // In core PK
+    void form_G_from_direct_integrals();               // Computes all ERIs each iteration.
+    void form_G_from_direct_integrals_parallel();      // Computes all ERIs in parallel each iteration
+    void form_G_from_RI();                             // Uses two- and three- index integrals
+    void form_G_from_RI_local_K();                     // Uses two- and three- index integrals
     void form_G_from_J_and_K(double scale_K_by = 1.0); // Computes G from J and K
-    void form_J_and_K();    // Computes J and K matrices from the ERIs
+    void form_J_and_K();                               // Computes J and K matrices from the ERIs
 
     void form_J_and_K_from_direct_integrals();
     void form_J_from_RI();
@@ -96,14 +96,14 @@ protected:
     void propagate_local_mos();
     void localized_Lodwin_charges();
 
-    //Zillions of baby index matrices    
+    //Zillions of baby index matrices
     void form_domain_bookkeeping();
     void free_domain_bookkeeping();
     void form_domains();
 
     //Some stuff for Ed Hohenstein's SAPT code
-    void save_sapt_info();    
-    
+    void save_sapt_info();
+
     //SAD Guess and propagation
     void compute_SAD_guess();
 
@@ -118,10 +118,10 @@ protected:
     void allocate_PK();
 
     //DOWN FOR MAINTENANCE
-    //void save_RHF_grid(Options &options, shared_ptr<BasisSet>  bas, SharedMatrix D, SharedMatrix C);    
+    //void save_RHF_grid(Options &options, shared_ptr<BasisSet>  bas, SharedMatrix D, SharedMatrix C);
     //double *getCartesianGridExtents(Options &options, shared_ptr<Molecule> m);
-    //int* getCartesianGridResolution(Options &options);    
-    
+    //int* getCartesianGridResolution(Options &options);
+
     bool test_convergency();
     void save_information();
 
@@ -132,6 +132,8 @@ public:
 
     double compute_energy();
     double compute_energy_parallel();
+
+    virtual SharedMatrix Da() const;
 };
 
 }}

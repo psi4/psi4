@@ -129,6 +129,11 @@ void RHF::common_init()
     }
 }
 
+SharedMatrix RHF::Da() const
+{
+    return D_;
+}
+
 double RHF::compute_energy()
 {
     //fprintf(outfile,"  Print = %d\n",print_);
@@ -191,6 +196,9 @@ double RHF::compute_energy()
         Dold_->copy(D_);  // Save previous density
         Eold_ = E_;       // Save previous energy
 
+        // Call any preiteration callbacks
+        call_preiteration_callbacks();
+
         //form_G_from_J_and_K(1.0);
         //D_->print(outfile);
 
@@ -251,6 +259,10 @@ double RHF::compute_energy()
         }
 
         converged = test_convergency();
+
+        // Call any postiteration callbacks
+        call_postiteration_callbacks();
+
     } while (!converged && iteration_ < maxiter_ );
 
     //Free the heavies pronto!

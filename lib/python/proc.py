@@ -43,6 +43,14 @@ def scf_helper(name, **kwargs):
     if (kwargs.has_key('cast_up')):
         cast = kwargs.pop('cast_up')
 
+    precallback = None
+    if (kwargs.has_key('precallback')):
+        precallback = kwargs.pop('precallback')
+
+    postcallback = None
+    if (kwargs.has_key('postcallback')):
+        postcallback = kwargs.pop('postcallback')
+
     if (cast):
 
         namespace = PsiMod.IO.get_default_namespace()
@@ -89,11 +97,11 @@ def scf_helper(name, **kwargs):
         banner(name.upper())
         PsiMod.print_out('\n')
 
-        e_scf = PsiMod.scf()
+        e_scf = PsiMod.scf(precallback, postcallback)
     else:
 
         PsiMod.set_option("NO_INPUT",True)
-        e_scf = PsiMod.scf()
+        e_scf = PsiMod.scf(precallback, postcallback)
 
     return e_scf
 
