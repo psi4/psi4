@@ -59,6 +59,7 @@ void get_params(Options & options)
   params.tolerance = 1e-14;
   tol = options.get_int("TOLERANCE");
   params.tolerance = 1.0*pow(10.0,(double) -tol);
+  printf(" Params.tol %20.16f\n", params.tolerance);
 
 //  params.memory = module.get_memory();
   params.memory = 100000000;

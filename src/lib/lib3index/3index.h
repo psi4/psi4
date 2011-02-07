@@ -9,6 +9,7 @@ namespace psi {
 class PSIO;
 class BasisSet;
 class Matrix;
+class IntVector;
 
 enum ThreeStorage { Disk, SemiDirect, Direct };
 enum ThreeAlgorithm { FitThenContract, ContractThenFit };
@@ -165,6 +166,69 @@ public:
     virtual void form_Qii_disk(shared_ptr<Matrix> C1_act_occ, shared_ptr<Matrix> C2_act_occ){}
     virtual void form_Qia_disk(shared_ptr<Matrix> C_act_occ, shared_ptr<Matrix> C_act_virt){}
     virtual void form_Qaa_disk(shared_ptr<Matrix> C1_act_virt, shared_ptr<Matrix> C2_act_virt){}
+};
+
+class FittingMetric {
+
+protected:
+    /// Pointer to the auxiliary basis set
+    shared_ptr<BasisSet> aux_;
+    /// Pointer to the poisson basis set
+    shared_ptr<BasisSet> pois_;
+    /// Is the metric poisson?
+    bool is_poisson_;
+
+    /// The fitting metric or symmetric inverse
+    shared_ptr<Matrix> metric_;
+    /// The indices (per irrep) of pivot 
+    shared_ptr<IntVector> pivots_;
+
+    /// The fitting algorithm selected 
+    std::string algorithm_;
+    /// Is the metric inverted or just a J matrix?
+    bool is_inverted_;
+
+public:
+
+    /// Default constructor, for python
+    FittingMetric();
+    /// DF Fitting Metric
+    FittingMetric(shared_ptr<BasisSet> aux);
+    /// Poisson Fitting Metric
+    FittingMetric(shared_ptr<BasisSet> aux, shared_ptr<BasisSet> pois);
+
+    /// Destructor
+    ~FittingMetric();
+   
+    /// What algorithm to use for symmetric inverse? 
+    std::string get_algorithm() const {return algorithm_; }
+    /// Are poisson functions used?
+    bool is_poisson() const {return is_poisson_; }
+    /// Is the metric inverted? 
+    bool is_inverted() const {return is_inverted_; }
+
+    /// The fitting metric or symmetric inverse
+    shared_ptr<Matrix> get_metric() const {return metric_; }
+    /// The vector of pivots (for stability)
+    shared_ptr<IntVector> get_pivots() const {return pivots_; }
+
+    /// The gaussian fitting basis
+    shared_ptr<BasisSet> get_auxiliary_basis() const {return aux_; }
+    /// The poisson fitting basis
+    shared_ptr<BasisSet> get_poisson_basis() const {return pois_; }
+
+    /// Build the raw fitting metric (sets up indices to canonical)
+    void form_fitting_metric();
+    /// Build the Cholesky half inverse metric (calls form_fitting_metric)
+    void form_cholesky_inverse();
+    /// Build the QR half inverse metric (calls form_fitting_metric)
+    void form_QR_inverse(double tol = 1.0E-10);
+    /// Build the eigendecomposed half inverse metric
+    void form_eig_inverse(double tol = 1.0E-10);
+    /// Build the SVD half inverse metric
+    void form_SVD_inverse(double tol = 1.0E-10);
+    /// Build the full inverse metric. NOT RECOMMENDED: Numerical stability
+    void form_full_inverse();
 };
 
 }
