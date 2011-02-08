@@ -1846,6 +1846,7 @@ void DFMP2::evaluate_contributions_core_parallel()
   int rank = 0;
 
     // Ben Seibert, your stuff goes here
+#if HAVE_MPI == 1
   int nprocs;
   MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -1924,6 +1925,7 @@ void DFMP2::evaluate_contributions_core_parallel()
 
   E_ss_ += e_ss;
   E_os_ += e_os;
+#endif
 }
 void DFMP2::free_Qia_core()
 {
