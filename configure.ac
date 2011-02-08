@@ -769,6 +769,17 @@ case $withval in
 esac
 ])
 
+# Handle plugins
+AC_ARG_WITH(plugins,[  --with-plugins          --with-plugins=yes compiles PSI4 with -fpic for creating shared libraries],[
+case $withval in
+  yes)
+     CXXFLAGS="$CXXFLAGS -fpic"
+     ;;
+  no)
+     ;;
+esac
+])
+
 # Adjust the flags dealing with strictness of the compilers.
 # The default is to disable strict language checks.
 AC_ARG_WITH(insanely-strict,[  --with-insanely-strict  --with-insanely-strict=yes to turn on strict compiler warnings (cover your eyes, it ain't pretty, for now)],[
