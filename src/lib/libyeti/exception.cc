@@ -1,6 +1,7 @@
 #include <libyeti/exception.h>
 #include <sstream>
 #include <iostream>
+#include <cstdlib>
 
 using namespace yeti;
 using namespace std;
