@@ -2,9 +2,9 @@
 
 refnuc   =  135.0921284884196   #TEST
 refscf   = -205.422369155359    #TEST
-refccsd  =   -0.345263555868298 #TEST
-ref_t    =   -0.007645878440281 #TEST
-reftotal = -205.775278589667323 #TEST
+refccsd  =   -0.345263564418438 #TEST
+ref_t    =   -0.007645878508210 #TEST
+reftotal = -205.775278598298456 #TEST
 
 molecule C4NH4 {
   -1 1
