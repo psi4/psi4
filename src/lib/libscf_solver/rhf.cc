@@ -1488,7 +1488,7 @@ void RHF::form_G_from_direct_integrals()
     for (shellIter.first(); shellIter.is_done() == false; shellIter.next()) {
         eri_->compute_shell(shellIter, compute_G);
     }
-//    fprintf(outfile, " computed %d integrals\n", compute_G.counter);
+    fprintf(outfile, " computed %ld integrals\n", compute_G.counter);
 
     timer_off("form_G_from_direct_integrals");
 }

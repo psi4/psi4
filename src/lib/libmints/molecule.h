@@ -357,6 +357,8 @@ public:
     /** Converts an atom number to the offset of this atom in the list of
         generated atoms. The unique atom itself is allowed offset 0. */
     int atom_to_unique_offset(int iatom) const;
+    /** Returns the maximum number of equivalent atoms. */
+    int max_nequivalent() const;
     /// @}
 
     ///

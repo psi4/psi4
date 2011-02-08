@@ -426,6 +426,7 @@ public:
         if (m > rowspi_[h] || n > colspi_[h^symmetry_]) {
             fprintf(outfile, "out of bounds: symmetry_ = %d, h = %d, m = %d, n = %d\n",
                     symmetry_, h, m, n);
+            fflush(outfile);
             return;
         }
         matrix_[h][m][n] += val;

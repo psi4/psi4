@@ -45,6 +45,8 @@ protected:
     size_t size_;
     double *buffer_;
 
+    void common_init();
+
 public:
     OneBodySOInt(const boost::shared_ptr<OneBodyAOInt>& , const boost::shared_ptr<IntegralFactory> &);
     OneBodySOInt(const boost::shared_ptr<OneBodyAOInt>& , const IntegralFactory*);
@@ -103,6 +105,7 @@ protected:
     boost::shared_ptr<SOBasisSet> b3_;
     boost::shared_ptr<SOBasisSet> b4_;
 
+    size_t size_;
     double *buffer_;
 
     int iirrepoff_[8], jirrepoff_[8], kirrepoff_[8], lirrepoff_[8];
@@ -160,7 +163,7 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
 
 //    fprintf(outfile, "nao1 = %d nao2 = %d nao3 = %d nao4 = %d\n", nao1, nao2, nao3, nao4);
 
-    memset(buffer_, 0, 16*nao1*nao2*nao3*nao4*sizeof(double));
+    memset(buffer_, 0, size_*sizeof(double));
     int irrepoff[8];
 
     memset(irrepoff, 0, sizeof(int) * 8);

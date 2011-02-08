@@ -1588,6 +1588,15 @@ int Molecule::atom_to_unique_offset(int iatom) const
     return -1;
 }
 
+int Molecule::max_nequivalent() const
+{
+    int max = 0;
+    for (int i=0; i<nunique(); ++i)
+        if (max < nequivalent(i))
+            max = nequivalent(i);
+    return max;
+}
+
 boost::shared_ptr<PointGroup> Molecule::find_highest_point_group(double tol) const
 {
     int i, j;
