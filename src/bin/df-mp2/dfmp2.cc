@@ -57,41 +57,46 @@ void  DFMP2::setup()
 {
   timer_on("Setup");
 
-  // Old chkpt stuff 
-
-  //// Form primary basis indexing
-  //nirreps_ = chkpt_->rd_nirreps();
-  //clsdpi_ = chkpt_->rd_clsdpi();
-  //orbspi_ = chkpt_->rd_orbspi();
-  //frzcpi_ = chkpt_->rd_frzcpi();
-  //frzvpi_ = chkpt_->rd_frzvpi();
-  //nso_ = chkpt_->rd_nso();
-  //E_scf_ = chkpt_->rd_escf();
-
-  //// Read in C coefficients
-  //double **vectors; 
-  //vectors = chkpt_->rd_scf();
-
-  //// Load in orbital energies
-  //double *orbital_energies; 
-  //orbital_energies = chkpt_->rd_evals();
-
-  //New Process::environment.reference_wavefunction() stuff 
-
   shared_ptr<Wavefunction> ref = Process::environment.reference_wavefunction(); 
-  E_scf_ = Process::environment.globals["SCF ENERGY"];
-  nirrep_ = ref->nirrep();
-  nso_ = ref->nso();
-  clsdpi_ = ref->doccpi();
-  orbspi_ = ref->nmopi();
-  frzcpi_ = ref->frzcpi();
-  frzvpi_ = ref->frzvpi();
+  shared_ptr<Matrix> C;
+  shared_ptr<Vector> epsilon;
 
-  SharedMatrix C = ref->Ca();
-  SharedVector epsilon = ref->epsilon_a();
+  if (ref.get() != NULL) {
+      E_scf_ = Process::environment.globals["SCF ENERGY"];
+      nirrep_ = ref->nirrep();
+      nso_ = ref->nso();
+      clsdpi_ = ref->doccpi();
+      orbspi_ = ref->nmopi();
+      frzcpi_ = ref->frzcpi();
+      frzvpi_ = ref->frzvpi();
 
-  //End Process::environment.reference_wavefunction() stuff 
+  } else {
+      // Form primary basis indexing
+      if (Communicator::world->me() == 0) {
+          E_scf_ = chkpt_->rd_escf();
+          nirrep_ = chkpt_->rd_nirreps();
+          clsdpi_ = chkpt_->rd_clsdpi();
+          orbspi_ = chkpt_->rd_orbspi();
+          frzcpi_ = chkpt_->rd_frzcpi();
+          frzvpi_ = chkpt_->rd_frzvpi();
+          nso_ = chkpt_->rd_nso();
 
+      }	else {
+	  // Leak a little memory in parallel
+          clsdpi_ = new int[8];
+          orbspi_ = new int[8];
+          frzcpi_ = new int[8];
+          frzvpi_ = new int[8];
+      }
+      Communicator::world->bcast(E_scf_, 0);
+      Communicator::world->bcast(nirrep_, 0);
+      Communicator::world->bcast(clsdpi_, nirrep_, 0);
+      Communicator::world->bcast(orbspi_, nirrep_, 0);
+      Communicator::world->bcast(frzcpi_, nirrep_, 0);
+      Communicator::world->bcast(frzvpi_, nirrep_, 0);
+      Communicator::world->bcast(nso_, 0);
+  }
+  
   ndocc_ = 0;
   nvirt_ = 0;
   nf_docc_ = 0;
@@ -108,7 +113,7 @@ void  DFMP2::setup()
   }
  // printf("nact_docc_ is %d before anything happens\n", nact_docc_);
   nmo_ = ndocc_+nvirt_;
-  
+
   // Form ribasis object and auxiliary basis indexing:
   shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
   ribasis_ = BasisSet::construct(parser, molecule_, options_.get_str("RI_BASIS_MP2"));
@@ -150,6 +155,36 @@ void  DFMP2::setup()
         algorithm_type_ = "CORE";
     else 
         algorithm_type_ = "DISK"; 
+ 
+  if (ref.get() != NULL) {
+      C = ref->Ca();
+      epsilon = ref->epsilon_a();
+  } else {
+      C = shared_ptr<Matrix>(new Matrix("C Matrix", nso_, nmo_));
+      epsilon = shared_ptr<Vector>(new Vector(nmo_));
+
+      if (Communicator::world->me() == 0) {
+      	double **vectors; 
+      	double *orbital_energies; 
+
+      	// Read in C coefficients
+      	vectors = chkpt_->rd_scf();
+
+      	// Load in orbital energies
+      	orbital_energies = chkpt_->rd_evals();
+
+        C_DCOPY(nso_*nmo_, vectors[0], 1, C->pointer()[0], 1);
+        C_DCOPY(nmo_, orbital_energies, 1, epsilon->pointer(), 1);
+	
+	// Ironically, I leak less memory
+	free(orbital_energies);
+	free_block(vectors);
+ 
+      }
+      Communicator::world->bcast(C->pointer()[0], nmo_*nso_, 0);
+      Communicator::world->bcast(epsilon->pointer(), nmo_, 0);
+
+  } 
  
   //Put the orbitals and C matrix into some nice arrays
   C_docc_   = block_matrix(nso_, nact_docc_);
@@ -1200,9 +1235,9 @@ double** DFMP2::form_Aia_core()
   int* block_sizes = init_int_array(nblocks);
 
   // How many functions per shell?
-  for (int P = 0; P < ribasis_->nshell(); P++) {
-    printf("RI shell %d has %d functions\n", P, ribasis_->shell(P)->nfunction());
-  }
+  //for (int P = 0; P < ribasis_->nshell(); P++) {
+  //  printf("RI shell %d has %d functions\n", P, ribasis_->shell(P)->nfunction());
+  //}
 
   //Determine block sizes
   nblocks = 0;
