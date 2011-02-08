@@ -17,10 +17,13 @@ psimrcc_subdirs =
 
 mints_subdirs = mints1
 
+matrix_subdirs = matrix1
+
 scf_subdirs = scf1 scf2 scf3 scf4 sad1
 
 subdirs = \
 $(mints_subdirs) \
+$(matrix_subdirs) \
 $(scf_subdirs) \
 $(df_subdirs) \
 $(cc_subdirs) \
@@ -56,6 +59,12 @@ ci_tests:
 
 mints_tests:
 	for dir in $(mints_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+matrix_tests:
+	for dir in $(matrix_subdirs); \
 	do \
 	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
 	done

@@ -28,3 +28,59 @@ def compare_strings(expected, computed, label):
         sys.exit(1)
 
     print "\t%s: matched." % (label)
+
+def compare_matrices(expected, computed, digits, label):
+    if (expected.nirrep() != computed.nirrep()):
+        print "\t%s has %d irreps, but %s has %d\n." % (expected.get_name(), expected.nirrep(), computed.get_name(), computed.nirrep())
+        sys.exit(1)
+    nirreps = expected.nirrep()
+    for irrep in range(nirreps):
+        if(expected.rows(irrep) != computed.rows(irrep)):
+            print "\t%s has %d rows in irrep %d, but %s has %d\n." % (expected.get_name(), expected.rows(irrep), irrep, computed.get_name(), computed.rows(irrep))
+            sys.exit(1)
+        if(expected.cols(irrep) != computed.cols(irrep)):
+            print "\t%s has %d columns in irrep, but %s has %d\n." % (expected.get_name(), expected.cols(irrep), irrep, computed.get_name(), computed.cols(irrep))
+            sys.exit(1)
+        rows = expected.rows(irrep)
+        cols = expected.cols(irrep)
+        failed = 0;
+        for row in range(rows):
+            for col in range(cols):
+                if(abs(expected.get(irrep, row, col) - computed.get(irrep, row, col)) > 10**(-digits)):
+                     print "\t%s: computed value (%s) does not match (%s)." % (label, expected.get(irrep, row, col) , computed.get(irrep, row, col))
+                     failed = 1
+                     break
+               
+        if(failed):
+            PsiMod.print_out("The Failed Test Matrices\n")
+            computed.print_out()
+            expected.print_out()
+            sys.exit(1)
+
+    print "\t%s: matched." % (label)
+
+def compare_vectors(expected, computed, digits, label):
+    if (expected.nirrep() != computed.nirrep()):
+        print "\t%s has %d irreps, but %s has %d\n." % (expected.get_name(), expected.nirrep(), computed.get_name(), computed.nirrep())
+        sys.exit(1)
+    nirreps = expected.nirrep()
+    for irrep in range(nirreps):
+        if(expected.dim(irrep) != computed.dim(irrep)):
+            print "\tThe reference has %d entries in irrep %d, but the computed vector has %d\n." % (expected.dim(irrep), irrep, computed.dim(irrep))
+            sys.exit(1)
+        dim = expected.dim(irrep)
+        failed = 0;
+        for entry in range(dim):
+            if(abs(expected.get(irrep, entry) - computed.get(irrep, entry)) > 10**(-digits)):
+                 print "\t%s: computed value (%s) does not match (%s)." % (label, expected.get(irrep, entry) , computed.get(irrep, entry))
+                 failed = 1
+                 break
+               
+        if(failed):
+            PsiMod.print_out("The computed vector\n")
+            computed.print_out()
+            PsiMod.print_out("The reference vector\n")
+            expected.print_out()
+            sys.exit(1)
+
+    print "\t%s: matched." % (label)
