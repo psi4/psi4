@@ -98,7 +98,8 @@ void RHF::common_init()
     Fa_   = SharedMatrix(factory_.create_matrix("F"));
     F_    = Fa_;
     Ca_   = SharedMatrix(factory_.create_matrix("C"));
-    C_    = Ca_;
+    C_    = Cb_ = Ca_;
+    epsilon_b_ = epsilon_a_;
     D_    = SharedMatrix(factory_.create_matrix("D"));
     Dold_ = SharedMatrix(factory_.create_matrix("D old"));
     G_    = SharedMatrix(factory_.create_matrix("G"));

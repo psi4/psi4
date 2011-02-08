@@ -214,6 +214,11 @@ void export_mints()
             def("get_variable", &Molecule::get_variable).
             def("update_geometry", &Molecule::update_geometry);
 
+    typedef void (BasisSet::*basis_print_out)() const;
+    class_<BasisSet, shared_ptr<BasisSet>, boost::noncopyable>("BasisSet", no_init).
+            def("print_out", basis_print_out(&BasisSet::print)).
+            def("print_detail_out", basis_print_out(&BasisSet::print_detail));
+
     class_<Wavefunction, shared_ptr<Wavefunction>, boost::noncopyable>("Wavefunction", no_init).
             def("nso", &Wavefunction::nso).
             def("nmo", &Wavefunction::nmo).
@@ -227,8 +232,13 @@ void export_mints()
             def("epsilon_a", &Wavefunction::epsilon_a).
             def("epsilon_b", &Wavefunction::epsilon_b).
             def("add_preiteration_callback", &Wavefunction::add_preiteration_callback).
-            def("add_postiteration_callback", &Wavefunction::add_postiteration_callback);
+            def("add_postiteration_callback", &Wavefunction::add_postiteration_callback).
+            def("basisset", &Wavefunction::basisset);
 
     class_<scf::HF, shared_ptr<scf::HF>, bases<Wavefunction>, boost::noncopyable>("HF", no_init);
     class_<scf::RHF, shared_ptr<scf::RHF>, bases<scf::HF> >("RHF", no_init);
+
+    class_<MoldenWriter, shared_ptr<MoldenWriter> >("MoldenWriter", no_init).
+            def(init<shared_ptr<Wavefunction> >()).
+            def("write", &MoldenWriter::write);
 }

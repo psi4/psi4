@@ -170,10 +170,14 @@ public:
      */
     boost::shared_ptr<GaussianShell> shell(int center, int si) const;
 
-    /** Print the basis set.
+    /** @{
+     *  Print the basis set.
      *  @param out The file stream to use for printing. Defaults to outfile.
      */
-    void print(FILE *out = outfile) const;
+    void print(FILE *out) const;
+    void print() const { print(outfile); }
+    /// @}
+
     /** Print basis set information according to the level of detail in print_level
      *  @param out The file stream to use for printing. Defaults to outfile.
      *  @param print_level: < 1: Nothing
@@ -191,7 +195,8 @@ public:
     /** Prints a detailed PSI3-style summary of the basis (per-atom)
      *  @param out The file stream to use for printing. Defaults to outfile.
      */
-    void print_detail(FILE *out = outfile) const;
+    void print_detail(FILE *out) const;
+    void print_detail() const { print_detail(outfile); }
 
     /** Refresh internal basis set data. Useful if someone has pushed to shells_.
      *  Pushing to shells_ happens in the BasisSetParsers, so the parsers will

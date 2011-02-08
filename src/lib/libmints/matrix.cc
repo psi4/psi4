@@ -170,6 +170,7 @@ Matrix::Matrix(int rows, int cols)
 
 Matrix::Matrix(const std::string& name, const Dimension& rows, const Dimension& cols, int symmetry)
 {
+    name_ = name;
     matrix_ = NULL;
     symmetry_ = symmetry;
 
@@ -553,9 +554,9 @@ void Matrix::print(FILE *out, const char *extra)
 
     if (name_.length()) {
         if (extra == NULL)
-            fprintf(out, "  ## %s (Symmetry %d) ##\n", name_.c_str(), symmetry_+1);
+            fprintf(out, "  ## %s (Symmetry %d) ##\n", name_.c_str(), symmetry_);
         else
-            fprintf(out, "  ## %s %s (Symmetry %d)##\n", name_.c_str(), extra, symmetry_+1);
+            fprintf(out, "  ## %s %s (Symmetry %d)##\n", name_.c_str(), extra, symmetry_);
     }
 
     for (h=0; h<nirrep_; ++h) {
