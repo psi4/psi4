@@ -918,6 +918,7 @@ AC_CONFIG_FILES([include/Makefile
           tests/cc8a/Makefile
           tests/mcscf1-rhf/Makefile
           tests/mints1/Makefile
+          tests/matrix1/Makefile
 
           bin/psi4-config
 ])

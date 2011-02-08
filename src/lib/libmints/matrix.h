@@ -344,6 +344,13 @@ public:
         name_ = name;
     }
 
+    /**
+     * Gets the name of the matrix.
+     */
+    std::string get_name() {
+        return name_;
+    }
+
     /// Python compatible printer
     void print_out() { print(outfile); }
 
