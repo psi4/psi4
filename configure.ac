@@ -773,7 +773,7 @@ esac
 AC_ARG_WITH(plugins,[  --with-plugins          --with-plugins=yes compiles PSI4 with -fpic for creating shared libraries],[
 case $withval in
   yes)
-     CXXFLAGS="$CXXFLAGS -fpic"
+     CXXOTH="$CXXOTH -fpic"
      ;;
   no)
      ;;
