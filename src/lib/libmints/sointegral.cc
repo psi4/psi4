@@ -19,57 +19,48 @@ OneBodySOInt::OneBodySOInt(const boost::shared_ptr<OneBodyAOInt> & ob,
                            const boost::shared_ptr<IntegralFactory>& integral)
     : ob_(ob), integral_(integral.get()), deriv_(ob->deriv())
 {
-    b1_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(ob->basis1(), integral));
+    common_init();
 
-    if (ob->basis2() == ob->basis1())
-        b2_ = b1_;
-    else
-        b2_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(ob->basis2(), integral));
-
-    size_t size = INT_NCART(ob->basis1()->max_am())
-                 *INT_NCART(ob->basis2()->max_am());
-    if (deriv_ == 1) {
-        // Make sure the AOInt knows how to compute derivatives
-        if (!ob->has_deriv1())
-            throw PSIEXCEPTION("OneBodySOInt::OneBodySOInt: The AO integral object doesn't provide first derivatives.");
-        size *= 3 * ob->basis1()->molecule()->natom();
-    }
-    if (deriv_ > 1)
-        throw FeatureNotImplemented("libmints", "Symmetrized integral derivatives greater than first order not implemented.",
-                                    __FILE__, __LINE__);
-
-    buffer_ = new double[size];
 }
 
 OneBodySOInt::OneBodySOInt(const boost::shared_ptr<OneBodyAOInt> & ob,
                            const IntegralFactory* integral)
     : ob_(ob), integral_(integral), deriv_(ob->deriv())
 {
-    b1_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(ob->basis1(), integral));
+    common_init();
+}
 
-    if (ob->basis2() == ob->basis1())
+OneBodySOInt::~OneBodySOInt()
+{
+    delete[] buffer_;
+}
+
+void OneBodySOInt::common_init()
+{
+    b1_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(ob_->basis1(), integral_));
+
+    if (ob_->basis2() == ob_->basis1())
         b2_ = b1_;
     else
-        b2_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(ob->basis2(), integral));
+        b2_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(ob_->basis2(), integral_));
 
-    size_ = INT_NCART(ob->basis1()->max_am())
-                 *INT_NCART(ob->basis2()->max_am());
+    int max1_nequivalent_atoms = ob_->basis1()->molecule()->max_nequivalent();
+    int max2_nequivalent_atoms = ob_->basis2()->molecule()->max_nequivalent();
+
+    size_ = max1_nequivalent_atoms*max2_nequivalent_atoms*
+            INT_NCART(ob_->basis1()->max_am())*INT_NCART(ob_->basis2()->max_am());
+
     if (deriv_ == 1) {
         // Make sure the AOInt knows how to compute derivatives
-        if (!ob->has_deriv1())
+        if (!ob_->has_deriv1())
             throw PSIEXCEPTION("OneBodySOInt::OneBodySOInt: The AO integral object doesn't provide first derivatives.");
-        size_ *= 3 * ob->basis1()->molecule()->natom();
+        size_ *= 3 * ob_->basis1()->molecule()->natom();
     }
     if (deriv_ > 1)
         throw FeatureNotImplemented("libmints", "Symmetrized integral derivatives greater than first order not implemented.",
                                     __FILE__, __LINE__);
 
     buffer_ = new double[size_];
-}
-
-OneBodySOInt::~OneBodySOInt()
-{
-    delete[] buffer_;
 }
 
 boost::shared_ptr<SOBasisSet> OneBodySOInt::basis() const
@@ -163,7 +154,7 @@ void OneBodySOInt::compute(boost::shared_ptr<Matrix> result)
             int nso1 = b1_->nfunction(ish);
             int nso2 = b2_->nfunction(jsh);
 
-            memset(buffer_, 0, nso1*nso2*sizeof(double));
+            memset(buffer_, 0, size_*sizeof(double));
 
             int nao2 = b2_->naofunction(jsh);
 
@@ -196,14 +187,16 @@ void OneBodySOInt::compute(boost::shared_ptr<Matrix> result)
 
                             buffer_[jsooff] += jcoef * aobuf[jaooff];
 
-                            //                            if (fabs(aobuf[jaooff]*jcoef) > 1.0e-10) {
-                            //                                fprintf(outfile, "(%2d|%2d) += %+6f * (%2d|%2d): %+6f -> %+6f iirrep = %d ifunc = %d, jirrep = %d jfunc = %d\n",
-                            //                                        isofunc, jsofunc, jcoef, iaofunc, jaofunc, aobuf[jaooff], buffer_[jsooff],
-                            //                                        ifunc.irrep, b1_->function_within_irrep(ish, isofunc),
-                            //                                        jfunc.irrep, b2_->function_within_irrep(jsh, jsofunc));
-                            //                                fprintf(outfile, "(%d|%d) += %8.5f * (%d|%d): %8.5f -> %8.5f\n",
-                            //                                        isofunc, jsofunc, jcoef, iaofunc, jaofunc, aobuf[jaooff], buffer_[jsooff]);
-                            //                            }
+//                            if (fabs(aobuf[jaooff]*jcoef) > 1.0e-10) {
+//                                fprintf(outfile, "(%2d|%2d) += %+6f * (%2d|%2d): %+6f -> %+6f iirrep = %d ifunc = %d, jirrep = %d jfunc = %d jaoff = %d jsooff = %d\n",
+//                                        isofunc, jsofunc, jcoef, iaofunc, jaofunc, aobuf[jaooff], buffer_[jsooff],
+//                                        ifunc.irrep, b1_->function_within_irrep(ish, isofunc),
+//                                        jfunc.irrep, b2_->function_within_irrep(jsh, jsofunc),
+//                                        jaooff, jsooff);
+//                                fprintf(outfile, "(%d|%d) += %8.5f * (%d|%d): %8.5f -> %8.5f\n",
+//                                        isofunc, jsofunc, jcoef, iaofunc, jaofunc, aobuf[jaooff], buffer_[jsooff]);
+//                                fflush(outfile);
+//                            }
 
                             // Check the irreps to ensure symmetric quantities.
                             if (ifunc.irrep == jfunc.irrep)
@@ -479,11 +472,19 @@ TwoBodySOInt::TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt> &tb,
     else
         b4_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(tb->basis4(), integral));
 
+    int max1_nequivalent_atoms = tb->basis1()->molecule()->max_nequivalent();
+    int max2_nequivalent_atoms = tb->basis2()->molecule()->max_nequivalent();
+    int max3_nequivalent_atoms = tb->basis3()->molecule()->max_nequivalent();
+    int max4_nequivalent_atoms = tb->basis4()->molecule()->max_nequivalent();
+
+    int max_nequivalent_atom = max1_nequivalent_atoms * max2_nequivalent_atoms * max3_nequivalent_atoms * max4_nequivalent_atoms;
+
     // Allocate accumulation buffer
-    buffer_ = new double[16*INT_NCART(tb->basis1()->max_am())
+    size_ = max_nequivalent_atom*INT_NCART(tb->basis1()->max_am())
             *INT_NCART(tb->basis2()->max_am())
             *INT_NCART(tb->basis3()->max_am())
-            *INT_NCART(tb->basis4()->max_am())];
+            *INT_NCART(tb->basis4()->max_am());
+    buffer_ = new double[size_];
 
     ::memset(iirrepoff_, 0, sizeof(int) * 8);
     ::memset(jirrepoff_, 0, sizeof(int) * 8);
