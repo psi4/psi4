@@ -137,17 +137,18 @@ Taylor_Fjt::Taylor_Fjt(unsigned int mmax, double accuracy) :
             double denom = (m+0.5);
             double term = 0.5*std::exp(-T)/denom;
             double sum = term;
-            double rel_error;
+//            double rel_error;
             double epsilon;
             do {
                 denom += 1.0;
                 term *= T/denom;
                 sum += term;
-                rel_error = term/sum;
+//                rel_error = term/sum;
                 // stop if adding a term smaller or equal to cutoff_/10 and smaller than relative_zero * sum
                 // When sum is small in absolute value, the second threshold is more important
-                epsilon = std::min(cutoff_o_10, sum*relative_zero_);
-            } while (term >epsilon);
+//                epsilon = std::min(cutoff_o_10, sum*relative_zero_);
+//            } while (term > epsilon);
+            } while (term > epsilon || term > sum*relative_zero_);
 
             grid_[T_idx][m] = sum;
         }
