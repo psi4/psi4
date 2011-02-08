@@ -20,7 +20,7 @@
 #include <sstream>
 #include "script.h"
 #include "liboptions/liboptions.h"
-#include <libmints/molecule.h>
+#include <libmints/mints.h>
 #include <libplugin/plugin.h>
 #include <libparallel/parallel.h>
 #include <map>
@@ -382,6 +382,11 @@ int py_psi_get_n_threads()
     return Process::environment.get_n_threads();
 }
 
+shared_ptr<Wavefunction> py_psi_reference_wavefunction()
+{
+    return Process::environment.reference_wavefunction();
+}
+
 BOOST_PYTHON_MODULE(PsiMod)
 {
     def("version", py_psi_version);
@@ -400,6 +405,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("set_default_options_for_module", py_psi_set_default_options_for_module);
     def("set_active_molecule", py_psi_set_active_molecule);
     def("get_active_molecule", &py_psi_get_active_molecule);
+    def("reference_wavefunction", py_psi_reference_wavefunction);
     def("set_memory", py_psi_set_memory);
     def("get_memory", py_psi_get_memory);
     def("set_n_threads", &py_psi_set_n_threads);
