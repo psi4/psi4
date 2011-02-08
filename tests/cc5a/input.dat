@@ -1,10 +1,10 @@
 #%! RHF CCSD(T) STO-3G frozen-core energy of C4NH4 Anion
 
-refnuc = 135.0921284884196
-refscf = -205.422369155359
-refccsd = -0.345263555868298
-ref_t   = -0.007645878440281
-reftotal = -205.775278589667323
+refnuc   =  135.0921284884196   #TEST
+refscf   = -205.422369155359    #TEST
+refccsd  =   -0.345263555868298 #TEST
+ref_t    =   -0.007645878440281 #TEST
+reftotal = -205.775278589667323 #TEST
 
 molecule C4NH4 {
   -1 1
@@ -21,50 +21,21 @@ molecule C4NH4 {
 }
 
 globals {
-  wfn ccsd_t
-  docc [10, 1, 4, 3]
-  basis aug-cc-pVTZ
+  wfn         ccsd_t
+  docc        [10, 1, 3, 4]
+  basis       STO-3G
   freeze_core true
-  dertype none
-
   convergence 10
-  e_converge 10
-  d_converge 10
+  e_converge  10
+  d_converge  10
 }
 
-activate(C4NH4) 
-mints() 
 energy('ccsd(t)')
 
-compare_values(refnuc,   C4NH4.nuclear_repulsion_energy(),  9, "Nuclear repulsion energy") 
-compare_values(refscf,   get_variable("SCF energy"),     9, "SCF energy") 
-compare_values(refccsd,  get_variable("CCSD energy"),    9, "CCSD contribution") 
-compare_values(ref_t,    get_variable("(T) energy"),     9, "(T) contribution") 
-compare_values(reftotal, get_variable("Current energy"), 9, "Total energy") 
+compare_values(refnuc,   C4NH4.nuclear_repulsion_energy(),  9, "Nuclear repulsion energy")  #TEST
+compare_values(refscf,   get_variable("SCF energy"),     9, "SCF energy")                   #TEST
+compare_values(refccsd,  get_variable("CCSD energy"),    9, "CCSD contribution")            #TEST
+compare_values(ref_t,    get_variable("(T) energy"),     9, "(T) contribution")             #TEST
+compare_values(reftotal, get_variable("Current energy"), 9, "Total energy")                 #TEST
 
-#psi: (
-#label = "Planar C4NH4 cc-pVTZ+/CCSD(T)//cc-pVDZ/CCSD(T)"
-#
-#wfn = ccsd_t
-#reference = rhf
-#charge = -1
-#dertype = none
-#memory = (1000.0 MB)
-#docc = (10 1 4 3)
-#freeze_core = true
-#print = 2
-#cachelev = 0
-#basis = "STO-3G"
-#units = bohr
-#geometry = (
-#  C         0.00000000     0.00000000     2.13868804
-#  N         0.00000000     0.00000000     4.42197911
-#  C         0.00000000     0.00000000    -0.46134192
-#  C        -1.47758582     0.00000000    -2.82593059
-#  C         1.47758582     0.00000000    -2.82593059
-#  H        -2.41269553    -1.74021190    -3.52915989
-#  H        -2.41269553     1.74021190    -3.52915989
-#  H         2.41269553     1.74021190    -3.52915989
-#  H         2.41269553    -1.74021190    -3.52915989
-#)
-#)
+clean()
