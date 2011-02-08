@@ -2,7 +2,7 @@
 #define yeti_class_h
 
 /** Macros for making class operations easier when using smart pointers */
-
+#include <typeinfo>
 #include <sstream>
 #include <cstring>
 #include <vector>
