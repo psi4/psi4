@@ -26,6 +26,10 @@ protected:
 
 public:
 protected:
+
+    int nproc_;
+    int rank_;
+
     unsigned long int df_memory_;
     
     int print_;
@@ -128,6 +132,10 @@ protected:
     void form_Qia_core();
     //Evaluate and sum the energy contributions
     void evaluate_contributions_core_sym();   
+    //Build Aia directly on corei (returns double** as transform might be in place)
+    double** form_Aia_core_parallel();
+    //Build Qia directly on core
+    void form_Qia_core_parallel();
     //Evaluate and sum the energy contributions NEW PARALLEL ALGORITHM
     void evaluate_contributions_core_parallel();   
     //Free Qia_ 
