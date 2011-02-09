@@ -129,6 +129,7 @@ void MintsHelper::integrals()
 
     fprintf(outfile, "      Computed %lu integrals.\n\n", writer.count());
 }
+
 void MintsHelper::one_electron_integrals()
 {
     shared_ptr<PSIO> psio(new PSIO());
@@ -204,10 +205,12 @@ void MintsHelper::one_electron_integrals()
     potential_mat->save(psio, PSIF_OEI);
 
 }
+
 void MintsHelper::integral_gradients()
 {
     throw FeatureNotImplemented("libmints", "MintsHelper::integral_derivatives", __FILE__, __LINE__);
 }
+
 void MintsHelper::integral_hessians()
 {
     throw FeatureNotImplemented("libmints", "MintsHelper::integral_hessians", __FILE__, __LINE__);
@@ -236,6 +239,7 @@ shared_ptr<Matrix> MintsHelper::ao_overlap()
     return S;
 
 }
+
 shared_ptr<Matrix> MintsHelper::ao_kinetic()
 {
     shared_ptr<Molecule> molecule = Process::environment.molecule();
@@ -259,6 +263,7 @@ shared_ptr<Matrix> MintsHelper::ao_kinetic()
     return S;
 
 }
+
 shared_ptr<Matrix> MintsHelper::ao_potential()
 {
     shared_ptr<Molecule> molecule = Process::environment.molecule();
@@ -282,6 +287,7 @@ shared_ptr<Matrix> MintsHelper::ao_potential()
     return S;
 
 }
+
 shared_ptr<Matrix> MintsHelper::ao_erf_eri(double omega, double alpha, double beta)
 {
     shared_ptr<Molecule> molecule = Process::environment.molecule();
@@ -327,6 +333,7 @@ shared_ptr<Matrix> MintsHelper::ao_erf_eri(double omega, double alpha, double be
     return I;
 
 }
+
 shared_ptr<Matrix> MintsHelper::ao_eri()
 {
     shared_ptr<Molecule> molecule = Process::environment.molecule();
@@ -371,35 +378,6 @@ shared_ptr<Matrix> MintsHelper::ao_eri()
 
     return I;
 
-}
-int MintsHelper::determine_unique_shell_quartets(int usii, int usjj, int uskk, int usll,
-                                           int* usi_arr,
-                                           int* usj_arr,
-                                           int* usk_arr,
-                                           int* usl_arr)
-{
-    //===--- Decide what shell quarters out of (ij|kl), (ik|jl), and (il|jk) are unique ---===
-    usi_arr[0] = usii; usj_arr[0] = usjj; usk_arr[0] = uskk; usl_arr[0] = usll;
-
-    if (usii == usjj && usii == uskk || usjj == uskk && usjj == usll)
-        return 1;
-    else if (usii == uskk || usjj == usll) {
-        usi_arr[1] = usii; usj_arr[1] = uskk; usk_arr[1] = usjj; usl_arr[1] = usll;
-        return 2;
-    }
-    else if (usjj == uskk) {
-        usi_arr[1] = usii; usj_arr[1] = usll; usk_arr[1] = usjj; usl_arr[1] = uskk;
-        return 2;
-    }
-    else if (usii == usjj || uskk == usll) {
-        usi_arr[1] = usii; usj_arr[1] = uskk; usk_arr[1] = usjj; usl_arr[1] = usll;
-        return 2;
-    }
-    else {
-        usi_arr[1] = usii; usj_arr[1] = uskk; usk_arr[1] = usjj; usl_arr[1] = usll;
-        usi_arr[2] = usii; usj_arr[2] = usll; usk_arr[2] = usjj; usl_arr[2] = uskk;
-        return 3;
-    }
 }
 
 shared_ptr<Matrix> MintsHelper::so_overlap()
