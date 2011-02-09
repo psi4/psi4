@@ -121,7 +121,7 @@ void MoldenWriter::write(const std::string &filename)
     Vector& Eb = *wavefunction_->epsilon_b().get();
 
     // get the "aotoso" transformation matrix, ao by so
-    Matrix* aotoso = sobasisset.petitelist()->aotoso();
+    SharedMatrix aotoso = sobasisset.petitelist()->aotoso();
     // need dimensions
     const Dimension aos = sobasisset.petitelist()->AO_basisdim();
     const Dimension sos = sobasisset.petitelist()->SO_basisdim();
@@ -134,14 +134,11 @@ void MoldenWriter::write(const std::string &filename)
     Matrix Cb_ao_mo("Cb AO x MO", aos, sos);
 
     // do the half transform
-    Ca_ao_mo.gemm(false, false, 1.0, *aotoso, Ca, 0.0);
-    Cb_ao_mo.gemm(false, false, 1.0, *aotoso, Cb, 0.0);
+    Ca_ao_mo.gemm(false, false, 1.0, aotoso, Ca, 0.0);
+    Cb_ao_mo.gemm(false, false, 1.0, aotoso, Cb, 0.0);
 
 //    Ca_ao_mo.print();
 //    Cb_ao_mo.print();
-
-    // be nice and delete
-    delete aotoso;
 
     CharacterTable ct = mol.point_group()->char_table();
 

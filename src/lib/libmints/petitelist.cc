@@ -962,20 +962,17 @@ SO_block* PetiteList::aotoso_info()
     return SOs;
 }
 
-Matrix* PetiteList::sotoao()
+shared_ptr<Matrix> PetiteList::sotoao()
 {
-    Matrix *mat = aotoso();
-    Matrix* temp = mat->transpose();
-    delete mat;
-    return temp;
+    return shared_ptr<Matrix>(aotoso()->transpose());
 }
 
-Matrix* PetiteList::aotoso()
+shared_ptr<Matrix> PetiteList::aotoso()
 {
     Dimension aodim = AO_basisdim();
     Dimension sodim = SO_basisdim();
 
-    Matrix* aoso = new Matrix("AO->SO matrix", aodim, sodim);
+    shared_ptr<Matrix> aoso(new Matrix("AO->SO matrix", aodim, sodim));
 
     if (c1_) {
         aoso->identity();
