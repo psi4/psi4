@@ -209,7 +209,7 @@ public:
         A function in the AO basis is obtained by \f$ X F_so \f$, where
         \f$ F_so \f$ is the function in the SO basis.
         */
-    Matrix* aotoso();
+    boost::shared_ptr<Matrix> aotoso();
 
     /** @return the SO->AO coefficient matrix (the inverse of AO->SO; for Abelian point groups it
         is a transpose of AO->SO matrix). The columns correspond to AOs (see AO_basisdim() )
@@ -223,7 +223,7 @@ public:
         A function in the SO basis is obtained by \f$ X F_ao \f$, where
         \f$ F_ao \f$ is the function in the AO basis.
         */
-    Matrix* sotoao();
+    boost::shared_ptr<Matrix> sotoao();
 };
 
 inline int
