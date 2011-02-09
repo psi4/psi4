@@ -31,15 +31,15 @@ def compare_strings(expected, computed, label):
 
 def compare_matrices(expected, computed, digits, label):
     if (expected.nirrep() != computed.nirrep()):
-        print "\t%s has %d irreps, but %s has %d\n." % (expected.get_name(), expected.nirrep(), computed.get_name(), computed.nirrep())
+        print "\t%s has %d irreps, but %s has %d\n." % (expected.name(), expected.nirrep(), computed.name(), computed.nirrep())
         sys.exit(1)
     nirreps = expected.nirrep()
     for irrep in range(nirreps):
         if(expected.rows(irrep) != computed.rows(irrep)):
-            print "\t%s has %d rows in irrep %d, but %s has %d\n." % (expected.get_name(), expected.rows(irrep), irrep, computed.get_name(), computed.rows(irrep))
+            print "\t%s has %d rows in irrep %d, but %s has %d\n." % (expected.name(), expected.rows(irrep), irrep, computed.name(), computed.rows(irrep))
             sys.exit(1)
         if(expected.cols(irrep) != computed.cols(irrep)):
-            print "\t%s has %d columns in irrep, but %s has %d\n." % (expected.get_name(), expected.cols(irrep), irrep, computed.get_name(), computed.cols(irrep))
+            print "\t%s has %d columns in irrep, but %s has %d\n." % (expected.name(), expected.cols(irrep), irrep, computed.name(), computed.cols(irrep))
             sys.exit(1)
         rows = expected.rows(irrep)
         cols = expected.cols(irrep)
@@ -50,7 +50,7 @@ def compare_matrices(expected, computed, digits, label):
                      print "\t%s: computed value (%s) does not match (%s)." % (label, expected.get(irrep, row, col) , computed.get(irrep, row, col))
                      failed = 1
                      break
-               
+
         if(failed):
             PsiMod.print_out("The Failed Test Matrices\n")
             computed.print_out()
@@ -61,7 +61,7 @@ def compare_matrices(expected, computed, digits, label):
 
 def compare_vectors(expected, computed, digits, label):
     if (expected.nirrep() != computed.nirrep()):
-        print "\t%s has %d irreps, but %s has %d\n." % (expected.get_name(), expected.nirrep(), computed.get_name(), computed.nirrep())
+        print "\t%s has %d irreps, but %s has %d\n." % (expected.name(), expected.nirrep(), computed.name(), computed.nirrep())
         sys.exit(1)
     nirreps = expected.nirrep()
     for irrep in range(nirreps):
@@ -75,7 +75,7 @@ def compare_vectors(expected, computed, digits, label):
                  print "\t%s: computed value (%s) does not match (%s)." % (label, expected.get(irrep, entry) , computed.get(irrep, entry))
                  failed = 1
                  break
-               
+
         if(failed):
             PsiMod.print_out("The computed vector\n")
             computed.print_out()

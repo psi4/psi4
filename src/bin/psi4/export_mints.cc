@@ -64,7 +64,7 @@ void export_mints()
     class_<Matrix, shared_ptr<Matrix> >("Matrix").
             def(init<int, int>()).
             def("set_name", &Matrix::set_name).
-            def("get_name", &Matrix::get_name).
+            def("name", &Matrix::name).
             def("print_out", &Matrix::print_out).
             def("rows", &Matrix::rowdim).
             def("cols", &Matrix::coldim).

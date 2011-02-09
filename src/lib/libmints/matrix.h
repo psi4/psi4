@@ -347,7 +347,7 @@ public:
     /**
      * Gets the name of the matrix.
      */
-    std::string get_name() {
+    std::string name() {
         return name_;
     }
 
