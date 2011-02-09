@@ -62,12 +62,7 @@ class MintsHelper {
 private:
     /// The Options reference for basis sets and things
     Options& options_;
-    /// Uniqueness forcer until SOShellCombinationsIterator is complete
-    static int determine_unique_shell_quartets(int usii, int usjj, int uskk, int usll,
-                                               int* usi_arr,
-                                               int* usj_arr,
-                                               int* usk_arr,
-                                               int* usl_arr);
+
 public:
     /// Constructor, just lines references up
     MintsHelper(Options&);
