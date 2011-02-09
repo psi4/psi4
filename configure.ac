@@ -770,10 +770,11 @@ esac
 ])
 
 # Handle plugins
-AC_ARG_WITH(plugins,[  --with-plugins          --with-plugins=yes compiles PSI4 with -fpic for creating shared libraries],[
+AC_ARG_WITH(plugins,[  --with-plugins          Compiles PSI4 to be compatible with plugins. Only needed on Linux systems.],[
 case $withval in
   yes)
      CXXOTH="$CXXOTH -fpic"
+     LDFLAGS="$LDFLAGS -Wl,-export-dynamic"
      ;;
   no)
      ;;
