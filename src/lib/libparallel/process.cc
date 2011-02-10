@@ -41,7 +41,7 @@ void Process::Environment::init(char **envp)
     nthread_ = 1;
 
     #ifdef _OPENMP
-        nthread_ = omp_get_max_threads(); 
+        nthread_ = omp_get_max_threads();
     #endif
 
     // For testing, print out the enviroment:
@@ -61,7 +61,9 @@ void Process::Environment::init(char **envp)
     #else
         if (Process::environment("COMMUNICATOR") != "LOCAL") {
             environment_["COMMUNICATOR"] = "LOCAL";
-            std::cout << "COMMUNICATOR was changed to LOCAL" << std::endl;
+
+            // If I don't have Madness and MPI...just make the communicator local.
+//            std::cout << "COMMUNICATOR was changed to LOCAL" << std::endl;
         }
     #endif
 #else
@@ -70,15 +72,13 @@ void Process::Environment::init(char **envp)
         std::cout << "COMMUNICATOR was changed to MPI" << std::endl;
     }
 #endif
-
-
 }
 
 void Process::Environment::set_n_threads(int nthread)
 {
     nthread_ = nthread;
     #ifdef _OPENMP
-        omp_set_num_threads(nthread_);        
+        omp_set_num_threads(nthread_);
     #endif
     #ifdef _MKL
         mkl_set_num_threads(nthread_);
