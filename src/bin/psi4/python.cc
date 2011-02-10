@@ -528,8 +528,10 @@ void Python::run(FILE *input)
         std::string psiDataDirName = Process::environment("PSIDATADIR") + "/python";
         boost::filesystem::path bf_path;
         bf_path = boost::filesystem::system_complete(psiDataDirName);
-        if(!boost::filesystem::is_directory(bf_path))
-            throw PSIEXCEPTION("Unable to read the Python folder - check the PSIDATADIR environmental variable");
+        if(!boost::filesystem::is_directory(bf_path)) {
+            throw PSIEXCEPTION("Unable to read the PSI4 Python folder - check the PSIDATADIR environmental variable\n"
+                               "      Current value of PSIDATADIR is " + Process::environment("PSIDATADIR"));
+        }
 
         // Add PSI library python path
         PyObject *path, *sysmod, *str;
