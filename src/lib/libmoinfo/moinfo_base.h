@@ -13,27 +13,20 @@
 #define IOFF 5000000
 
 #include <string>
-
-//#include <psi4-dec.h>
 #include <libutil/libutil.h>
+
 #include "orbital_space.h"
 
 typedef std::vector<int>                    intvec;
 typedef std::vector<bool>                   boolvec;
 
-namespace boost {
-template<class T> class shared_ptr;
-}
-
 namespace psi {
 
 class Chkpt;
-class Options;
-
 
 class MOInfoBase{
 public:
-  MOInfoBase(Options& options_, boost::shared_ptr<Chkpt> chkpt_,bool silent_ = false);
+  MOInfoBase(bool silent_ = false, bool use_liboptions_ = true);
   ~MOInfoBase();
 
   double      get_nuclear_energy()               const {return(nuclear_energy);}
@@ -71,8 +64,6 @@ protected:
   void        cleanup();
   void        compute_ioff();
 
-  Options&    options;
-  boost::shared_ptr<Chkpt> chkpt;
   int         nirreps;
   int         wfn_sym;
   int         charge;

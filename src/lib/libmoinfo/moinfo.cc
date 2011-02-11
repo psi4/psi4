@@ -12,6 +12,7 @@
 #include <liboptions/liboptions.h>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.hpp>
+#include <libipv1/ip_lib.h>
 #include <libutil/libutil.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
@@ -24,8 +25,7 @@ using namespace std;
 
 namespace psi {
 
-MOInfo::MOInfo(Options& options_,shared_ptr<Chkpt> chkpt_,bool silent_)
-: MOInfoBase(options_,chkpt_,silent_)
+MOInfo::MOInfo(bool silent_, bool use_liboptions_) : MOInfoBase(silent_,use_liboptions_)
 {
   /***************
     Set defaults
@@ -86,20 +86,20 @@ void MOInfo::read_info()
     Read Nuclear,SCF and other stuff
   ***********************************/
   read_chkpt_data();
-  nmo            = chkpt->rd_nmo();
+  nmo            = _default_chkpt_lib_->rd_nmo();
   compute_number_of_electrons();
-  scf_energy     = chkpt->rd_escf();
-  mopi           = read_chkpt_intvec(nirreps,chkpt->rd_orbspi());
-  scf            = chkpt->rd_scf();
+  scf_energy     = _default_chkpt_lib_->rd_escf();
+  mopi           = read_chkpt_intvec(nirreps,_default_chkpt_lib_->rd_orbspi());
+  scf            = _default_chkpt_lib_->rd_scf();
   scf_irrep      = new double**[nirreps];
   for(int i=0;i<nirreps;i++)
-    scf_irrep[i] = chkpt->rd_scf_irrep(i);
+    scf_irrep[i] = _default_chkpt_lib_->rd_scf_irrep(i);
 
   // Determine the wave function irrep
   if(use_liboptions){
     // The defalut irrep is 0 (A)
     wfn_sym = 0;
-    std::string wavefunction_sym_str = options.get_str("WFN_SYM");
+    string wavefunction_sym_str = options_get_str("WFN_SYM");
     to_lower(wavefunction_sym_str);
 
     for(int h = 0; h < nirreps; ++h){
@@ -115,7 +115,7 @@ void MOInfo::read_info()
       }
     }
     // The lowest root in the input is 1, here we subtract one
-    root = options.get_int("ROOT") - 1;
+    root = options_get_int("ROOT") - 1;
   }
 }
 
@@ -186,19 +186,19 @@ void MOInfo::read_mo_spaces()
   actv_docc.assign(nirreps,0);
 
   // For single-point geometry optimizations and frequencies
-  char* keyword = chkpt->build_keyword(const_cast<char *>("Current Displacement Irrep"));
+  char* keyword = _default_chkpt_lib_->build_keyword(const_cast<char *>("Current Displacement Irrep"));
 
-  if(chkpt->exist(keyword)){
-    int   disp_irrep  = chkpt->rd_disp_irrep();
-    char *save_prefix = chkpt->rd_prefix();
+  if(_default_chkpt_lib_->exist(keyword)){
+    int   disp_irrep  = _default_chkpt_lib_->rd_disp_irrep();
+    char *save_prefix = _default_chkpt_lib_->rd_prefix();
     int nirreps_ref;
 
     // read symmetry info and MOs for undisplaced geometry from
     // root section of checkpoint file
-    chkpt->reset_prefix();
-    chkpt->commit_prefix();
+    _default_chkpt_lib_->reset_prefix();
+    _default_chkpt_lib_->commit_prefix();
 
-    char *ptgrp_ref = chkpt->rd_sym_label();
+    char *ptgrp_ref = _default_chkpt_lib_->rd_sym_label();
 
     // Lookup irrep correlation table
     int* correlation;
@@ -213,11 +213,11 @@ void MOInfo::read_mo_spaces()
     // build orbital information for current point group
     // Read the values stored in the chkpt
     // override if the user defines values
-    focc_ref = read_chkpt_intvec(nirreps_ref,chkpt->rd_frzcpi());
-    docc_ref = read_chkpt_intvec(nirreps_ref,chkpt->rd_clsdpi());
-    actv_ref = read_chkpt_intvec(nirreps_ref,chkpt->rd_openpi());
-    fvir_ref.assign(nirreps_ref,0);
-    actv_docc_ref.assign(nirreps_ref,0);
+    focc_ref = read_chkpt_intvec(nirreps_ref,_default_chkpt_lib_->rd_frzcpi());
+    docc_ref = read_chkpt_intvec(nirreps_ref,_default_chkpt_lib_->rd_clsdpi());
+    actv_ref = read_chkpt_intvec(nirreps_ref,_default_chkpt_lib_->rd_openpi());
+    fvir_ref.assign(nirreps_ref,0); 
+    actv_docc_ref.assign(nirreps_ref,0); 
 
     for (int h = 0; h < nirreps_ref; h++)
       docc_ref[h] -= focc_ref[h];
@@ -241,16 +241,16 @@ void MOInfo::read_mo_spaces()
       actv_docc[ correlation[h] ] += actv_docc_ref[h];
     }
     wfn_sym = correlation[wfn_sym];
-    chkpt->set_prefix(save_prefix);
-    chkpt->commit_prefix();
+    _default_chkpt_lib_->set_prefix(save_prefix);
+    _default_chkpt_lib_->commit_prefix();
     free(save_prefix);
     free(ptgrp_ref);
     delete [] correlation;
   }else{
     // For a single-point only
-    focc = read_chkpt_intvec(nirreps,chkpt->rd_frzcpi());
-    docc = read_chkpt_intvec(nirreps,chkpt->rd_clsdpi());
-    actv = read_chkpt_intvec(nirreps,chkpt->rd_openpi());
+    focc = read_chkpt_intvec(nirreps,_default_chkpt_lib_->rd_frzcpi());
+    docc = read_chkpt_intvec(nirreps,_default_chkpt_lib_->rd_clsdpi());
+    actv = read_chkpt_intvec(nirreps,_default_chkpt_lib_->rd_openpi());
 
     for (int h = 0; h < nirreps; h++)
       docc[h] -= focc[h];
@@ -259,16 +259,16 @@ void MOInfo::read_mo_spaces()
     ndocc = std::accumulate( docc.begin(), docc.end(), 0 );
     nactv = std::accumulate( actv.begin(), actv.end(), 0 );
 
-    read_mo_space(nirreps,nfocc,focc,"CORR_FOCC FROZEN_DOCC");
-    read_mo_space(nirreps,ndocc,docc,"CORR_DOCC RESTRICTED_DOCC");
-    read_mo_space(nirreps,nactv,actv,"CORR_ACTV ACTIVE ACTV");
-    read_mo_space(nirreps,nfvir,fvir,"CORR_FVIR FROZEN_UOCC");
+    read_mo_space(nirreps,nfocc,focc,"CORR_FOCC");
+    read_mo_space(nirreps,ndocc,docc,"CORR_DOCC");
+    read_mo_space(nirreps,nactv,actv,"CORR_ACTV");
+    read_mo_space(nirreps,nfvir,fvir,"CORR_FVIR");
     read_mo_space(nirreps,nactv_docc,actv_docc,"ACTIVE_DOCC");
   }
 
   free(keyword);
 
-  // Compute the number of external orbitals
+  // Compute the number of external orbitals per irrep
   nextr = 0;
   for(int h = 0; h < nirreps; ++h){
      extr[h]= mopi[h] - focc[h] - docc[h] - actv[h] - fvir[h];
@@ -297,7 +297,7 @@ void MOInfo::read_mo_spaces()
   }
   if(active_space_problem){
     error_msg = "MOInfo found a problem with the definition of the active space:" + error_msg;
-    throw PSIEXCEPTION(error_msg);
+    print_error(outfile,error_msg,__FILE__,__LINE__,PSI_RETURN_FAILURE);
   }
 
 
@@ -336,6 +336,22 @@ void MOInfo::read_mo_spaces()
   // Set the mappings
   for(int i = 0; i < nall; ++i)
     mo_to_all[all_to_mo[i]]=i;
+
+//  /***************************************************************
+//    Build the array that connects the generalized occupied MOs
+//    to the non-frozen MOs (all).
+//  ****************************************************************/
+//  occ_to_all.resize(nocc);
+//  int index_occ = 0;
+//  index_all  = 0;
+//  for(int h = 0; h < nirreps; ++h){
+//    for(int i = 0; i < occ[h]; ++i){
+//      occ_to_all[index_occ] = index_all;
+//      index_all++;
+//      index_occ++;
+//    }
+//    index_all += extr[h];
+//  }
 }
 
 /**
@@ -370,7 +386,7 @@ void MOInfo::print_mo()
  */
 void MOInfo::free_memory()
 {
-  if(scf != NULL)
+  if(scf != NULL);
     free_block(scf);
   for(int i=0;i<nirreps;i++)
     free_block(scf_irrep[i]);

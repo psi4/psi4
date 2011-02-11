@@ -26,7 +26,7 @@ void MOInfo::print_model_space()
   fprintf(outfile,"\n  Model space");
   fprintf(outfile,"\n  ------------------------------------------------------------------------------");
   if(references.size() <= 20){
-    for(unsigned int i = 0; i < references.size(); ++i){
+    for(int i = 0; i < references.size(); ++i){
       fprintf(outfile,"\n  %2d  %s",i,references[i].get_label().c_str());
     }
   }else{
@@ -92,8 +92,8 @@ void MOInfo::build_model_space()
       alpha_combinations.push_back(vector<int>(0));
     if(beta_combinations.size()==0)
       beta_combinations.push_back(vector<int>(0));
-    for(unsigned int a=0;a<alpha_combinations.size();a++){
-      for(unsigned int b=0;b<beta_combinations.size();b++){
+    for(int a=0;a<alpha_combinations.size();a++){
+      for(int b=0;b<beta_combinations.size();b++){
         int sym = 0; // Symmetry of the determinant
         // Create a copy of the docc_det
         SlaterDeterminant det(docc_det);
@@ -118,9 +118,9 @@ void MOInfo::build_model_space()
             // Open-shell determinant
             bool add_it = true;
             int  spin_mirror = references.size();
-            if(options.get_bool("USE_SPIN_SYMMETRY")){
+            if(options_get_bool("USE_SPIN_SYMMETRY")){
               // Check if this is a spin-flipped determinant
-              for(unsigned int ref=0;ref<references.size();ref++){
+              for(int ref=0;ref<references.size();ref++){
                 if(references[ref].is_spin_flipped(det)){
                   add_it      = false;
                   spin_mirror = ref;
@@ -181,13 +181,13 @@ void MOInfo::make_internal_excitations()
     Build the mappings between references
     |m> = (+/-) ... b+ j a+ i |n>
   ****************************************/
-  for(unsigned int m = 0; m < references.size(); ++m){
+  for(int m = 0; m < references.size(); ++m){
     vector<vector<pair<int,int> > > alpha_internals_ref_m;
     vector<vector<pair<int,int> > >  beta_internals_ref_m;
     vector<double>                   sign_internals_ref_m;
 //       fprintf(outfile,"\n\n\tReference %s",references[m].get_label().c_str());
 //       fprintf(outfile," gives:");
-    for(unsigned int n=0;n<references.size();n++){
+    for(int n=0;n<references.size();n++){
       double sign=1.0;
       std::vector<pair<int,int> > alpha_operators;
       std::vector<pair<int,int> > beta_operators;
@@ -239,49 +239,49 @@ double  MOInfo::get_sign_internal_excitation(int i,int j)
  */
 int MOInfo::get_ref_number(int n, ReferenceType ref_type)
 {
-  int value = 0;
   if(ref_type == AllRefs) // a
-    value = all_refs[n];
+    return(all_refs[n]);
   if(ref_type == UniqueRefs) // u
-    value = unique_refs[n];
+    return(unique_refs[n]);
   if(ref_type == ClosedShellRefs) // c
-    value = closed_shell_refs[n];
+    return(closed_shell_refs[n]);
   if(ref_type == UniqueOpenShellRefs) // o
-    value = unique_open_shell_refs[n];
-  return(value);
+    return(unique_open_shell_refs[n]);
+  print_error(outfile,"MOInfo::get_ref_number(string str, int n) undefined space", __FILE__,__LINE__);
+  return(NULL);
 }
 
 /*!
     \fn MOInfo::get_ref_size(string str)
  */
-size_t MOInfo::get_ref_size(ReferenceType ref_type)
+int MOInfo::get_ref_size(ReferenceType ref_type)
 {
-  size_t value = 0;
   if(ref_type == AllRefs) // a
-    value = all_refs.size();
+    return(all_refs.size());
   if(ref_type == UniqueRefs) // u
-    value = unique_refs.size();
+    return(unique_refs.size());
   if(ref_type == ClosedShellRefs) // c
-    value = closed_shell_refs.size();
+    return(closed_shell_refs.size());
   if(ref_type == UniqueOpenShellRefs) // o
-    value = unique_open_shell_refs.size();
-  return(value);
+    return(unique_open_shell_refs.size());
+  print_error(outfile,"MOInfo::get_ref_size(string str) undefined space", __FILE__,__LINE__);
+  return(NULL);
 }
 
 vector<string> MOInfo::get_matrix_names(std::string str)
 {
   vector<string> names;
   if(str.find("{a}")!=string::npos){
-    for(unsigned int n=0;n<all_refs.size();n++)
+    for(int n=0;n<all_refs.size();n++)
       names.push_back(find_and_replace(str,"{a}","{" + to_string(all_refs[n]) +"}"));
   }else if(str.find("{u}")!=string::npos){
-    for(unsigned int n=0;n<unique_refs.size();n++)
+    for(int n=0;n<unique_refs.size();n++)
       names.push_back(find_and_replace(str,"{u}","{" + to_string(unique_refs[n]) +"}"));
   }else if(str.find("{c}")!=string::npos){
-    for(unsigned int n=0;n<closed_shell_refs.size();n++)
+    for(int n=0;n<closed_shell_refs.size();n++)
       names.push_back(find_and_replace(str,"{c}","{" + to_string(closed_shell_refs[n]) +"}"));
   }else if(str.find("{o}")!=string::npos){
-    for(unsigned int n=0;n<unique_open_shell_refs.size();n++)
+    for(int n=0;n<unique_open_shell_refs.size();n++)
       names.push_back(find_and_replace(str,"{o}","{" + to_string(unique_open_shell_refs[n]) +"}"));
   }else
     names.push_back(str);

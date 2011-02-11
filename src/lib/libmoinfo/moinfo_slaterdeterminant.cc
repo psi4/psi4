@@ -1,5 +1,4 @@
 #include <iostream>
-#include <libchkpt/chkpt.hpp>
 #include "moinfo.h"
 
 extern FILE *infile, *outfile;
@@ -174,7 +173,7 @@ vector<bool> MOInfo::SlaterDeterminant::get_is_aocc()
 {
   std::vector<int>  aocc = get_aocc();
   std::vector<bool> is_aocc(moinfo->get_nocc(),false);
-  for(unsigned int i = 0; i < aocc.size(); i++) is_aocc[aocc[i]]=true;
+  for(int i = 0; i < aocc.size(); i++) is_aocc[aocc[i]]=true;
   return(is_aocc);
 }
 
@@ -182,7 +181,7 @@ vector<bool> MOInfo::SlaterDeterminant::get_is_bocc()
 {
   std::vector<int>  bocc = get_bocc();
   std::vector<bool> is_bocc(moinfo->get_nocc(),false);
-  for(unsigned int i = 0; i < bocc.size(); i++) is_bocc[bocc[i]]=true;
+  for(int i = 0; i < bocc.size(); i++) is_bocc[bocc[i]]=true;
   return(is_bocc);
 }
 
@@ -190,7 +189,7 @@ vector<bool> MOInfo::SlaterDeterminant::get_is_avir()
 {
   std::vector<int>  avir = get_avir();
   std::vector<bool> is_avir(moinfo->get_nvir(),false);
-  for(unsigned int i = 0; i < avir.size(); i++) is_avir[avir[i]]=true;
+  for(int i = 0; i < avir.size(); i++) is_avir[avir[i]]=true;
   return(is_avir);
 }
 
@@ -198,7 +197,7 @@ vector<bool> MOInfo::SlaterDeterminant::get_is_bvir()
 {
   std::vector<int>  bvir = get_bvir();
   std::vector<bool> is_bvir(moinfo->get_nvir(),false);
-  for(unsigned int i = 0; i < bvir.size(); i++) is_bvir[bvir[i]]=true;
+  for(int i = 0; i < bvir.size(); i++) is_bvir[bvir[i]]=true;
   return(is_bvir);
 }
 

@@ -1,13 +1,10 @@
-#include <cstdio>
-#include <libchkpt/chkpt.hpp>
 #include <psifiles.h>
 
 #include "model_space.h"
 #include "moinfo.h"
+#include <cstdio>
 
 extern FILE *outfile;
-
-using namespace std;
 
 namespace psi{
 
@@ -72,8 +69,8 @@ void ModelSpace::build()
   if(beta_combinations.size()==0)
     beta_combinations.push_back(vector<int>(0));
 
-  for(unsigned int a = 0; a < alfa_combinations.size(); ++a){
-    for(unsigned int b = 0; b < beta_combinations.size(); ++b){
+  for(int a = 0; a < alfa_combinations.size(); ++a){
+    for(int b = 0; b < beta_combinations.size(); ++b){
       int alfa_sym = 0; // Symmetry of the alfa string
       int beta_sym = 0; // Symmetry of the beta string
 
@@ -116,7 +113,7 @@ void ModelSpace::build()
 
 void ModelSpace::classify()
 {
-  for(unsigned int mu = 0; mu < determinants.size(); ++mu){
+  for(int mu = 0; mu < determinants.size(); ++mu){
     if(determinants[mu].is_closed_shell()){
       closed_to_all.push_back(mu);
     }else{

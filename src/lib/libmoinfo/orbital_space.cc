@@ -5,7 +5,6 @@
 #include <cstdio>
 
 #include "orbital_space.h"
-#include <psi4-dec.h>
 #include <libutil/libutil.h>
 
 extern FILE *outfile;
@@ -30,7 +29,7 @@ OrbitalSpace::OrbitalSpace(std::string label_,std::string symbol_)
     std::string message = "Cannot create orbital space \"" + label_
                         + "\" with symbol \"" + symbol_
                         + "\". Please use only one character.";
-    throw PSIEXCEPTION(message);
+    print_error(outfile,message,__FILE__,__LINE__);
   }
 }
 

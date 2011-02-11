@@ -16,14 +16,14 @@ class Chkpt;
 
 class MOInfoSCF : public MOInfoBase {
 public:
-  MOInfoSCF(Options& options_, boost::shared_ptr<Chkpt> chkpt_,bool silent_ = false);
+  MOInfoSCF();
   ~MOInfoSCF();
 private:
   void read_mo_spaces();
   void print_mo();
 };
 
-extern MOInfoSCF* moinfo_scf;
+extern MOInfoSCF  *moinfo_scf;
 
 }
 

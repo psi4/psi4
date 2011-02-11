@@ -5,6 +5,7 @@
 
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.hpp>
+#include <libipv1/ip_lib.h>
 #include <liboptions/liboptions.h>
 
 #include "moinfo_scf.h"
@@ -12,12 +13,10 @@
 extern FILE *outfile;
 
 using namespace std;
-using namespace psi;
 
 namespace psi {
 
-MOInfoSCF::MOInfoSCF(Options& options_,shared_ptr<Chkpt> chkpt_,bool silent_)
-: MOInfoBase(options_,chkpt_,silent_)
+MOInfoSCF::MOInfoSCF() : MOInfoBase()
 {
   read_chkpt_data();
 
@@ -25,7 +24,7 @@ MOInfoSCF::MOInfoSCF(Options& options_,shared_ptr<Chkpt> chkpt_,bool silent_)
   if(use_liboptions){
     // The first irrep is 0
     wfn_sym = 0;
-    std::string wavefunction_sym_str = options.get_str("WFN_SYM");
+    string wavefunction_sym_str = options_get_str("WFN_SYM");
     to_lower(wavefunction_sym_str);
 
     for(int h = 0; h < nirreps; ++h){
@@ -64,20 +63,18 @@ void MOInfoSCF::read_mo_spaces()
   actv.resize(nirreps,0);
 
   // For single-point geometry optimizations and frequencies
-  char *current_displacement_label = chkpt->build_keyword(const_cast<char*>("Current Displacement Irrep"));
-  if(chkpt->exist(current_displacement_label)){
-    int disp_irrep = 0;
-    // int   disp_irrep  = chkpt->rd_disp_irrep();
-    char *save_prefix = chkpt->rd_prefix();
+  char *current_displacement_label = _default_chkpt_lib_->build_keyword(const_cast<char*>("Current Displacement Irrep"));
+  if(_default_chkpt_lib_->exist(current_displacement_label)){
+    int   disp_irrep  = _default_chkpt_lib_->rd_disp_irrep();
+    char *save_prefix = _default_chkpt_lib_->rd_prefix();
     int nirreps_ref;
 
     // read symmetry info and MOs for undisplaced geometry from
     // root section of checkpoint file
-    chkpt->reset_prefix();
-    chkpt->commit_prefix();
+    _default_chkpt_lib_->reset_prefix();
+    _default_chkpt_lib_->commit_prefix();
 
-    char *ptgrp_ref;
-    //char *ptgrp_ref = chkpt->rd_sym_label();
+    char *ptgrp_ref = _default_chkpt_lib_->rd_sym_label();
 
     // Lookup irrep correlation table
     int* correlation;
@@ -85,6 +82,8 @@ void MOInfoSCF::read_mo_spaces()
 
     intvec docc_ref;
     intvec actv_ref;
+    docc_ref.assign(nirreps_ref,0);
+    actv_ref.assign(nirreps_ref,0);
 
     // build orbital information for current point group
     read_mo_space(nirreps_ref,ndocc,docc_ref,"DOCC");
@@ -96,8 +95,8 @@ void MOInfoSCF::read_mo_spaces()
     }
 
     wfn_sym = correlation[wfn_sym];
-    chkpt->set_prefix(save_prefix);
-    chkpt->commit_prefix();
+    _default_chkpt_lib_->set_prefix(save_prefix);
+    _default_chkpt_lib_->commit_prefix();
     free(save_prefix);
     free(ptgrp_ref);
     delete [] correlation;
