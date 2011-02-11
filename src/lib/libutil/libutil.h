@@ -9,7 +9,6 @@
 #include <assert.h>
 #include "ref.h"
 
-#include "class_macros.h"
 #include "memory_manager.h"
 
 namespace psi {
