@@ -79,16 +79,18 @@ public:
 
 public:
   friend class SlaterDeterminant;
-  MOInfo(Options& options_,boost::shared_ptr<Chkpt> chkpt_,bool silent_ = false);
+  MOInfo(bool silent_ = false, bool use_liboptions_ = true);
   ~MOInfo();
 
   // DGEMM timing
   void        set_dgemm_timing(double value)           {dgemm_timing=value;}
   void        add_dgemm_timing(double value)           {dgemm_timing+=value;}
   double      get_dgemm_timing()                 const {return(dgemm_timing);}
+
   // Convergence Options
   double      get_no_damp_convergence()          const {return(no_damp_convergence);}
 
+  intvec      get_mo_sym()                       const {return(all_sym);}
   int         get_mo_sym(int i)                  const {return(all_sym[i]);}
   int         get_wfn_sym()                      const {return(wfn_sym);}
   int         get_root()                         const {return(root);}
@@ -133,6 +135,7 @@ public:
   intvec      get_occ_to_mo()                    const {return(occ_to_mo);}
   intvec      get_vir_to_mo()                    const {return(vir_to_mo);}
   intvec      get_all_to_mo()                    const {return(all_to_mo);}
+  intvec      get_mo_to_all()                    const {return(mo_to_all);}
   intvec      get_actv_to_occ()                  const {return(actv_to_occ);}
   intvec      get_actv_to_vir()                  const {return(actv_to_vir);}
   intvec      get_occ_to_actv()                  const {return(occ_to_actv);}
@@ -144,6 +147,8 @@ public:
   int         get_all_to_vir(int i)              const {return(all_to_vir[i]);}
   int         get_all_to_mo(int i)               const {return(all_to_mo[i]);}
 
+
+
   double      get_scf_energy()                   const {return(scf_energy);}
   double      get_fzcore_energy()                const {return(fzcore_energy);}
   void        set_fzcore_energy(double efzc)           {fzcore_energy=efzc;}
@@ -153,7 +158,7 @@ public:
   int         get_nrefs()                              {return(all_refs.size());};
   int         get_nunique()                            {return(unique_refs.size());};
   int         get_ref_number(int n, ReferenceType ref_type = AllRefs);
-  size_t      get_ref_size(ReferenceType ref_type);
+  int         get_ref_size(ReferenceType ref_type);
   std::string get_determinant_label(int i);
 
   strvec      get_matrix_names(std::string str);
@@ -243,6 +248,8 @@ private:
   intvec      actv_to_vir;
   intvec      occ_to_actv;
   intvec      vir_to_actv;
+  intvec      occ_to_all;
+  intvec      extr_to_all;
   boolvec     is_actv_in_occ;
   boolvec     is_actv_in_vir;
 
