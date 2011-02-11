@@ -32,7 +32,8 @@ void MkUpdater::update(int cycle,Hamiltonian* heff)
   // Setup the Tikhonow omega parameter
   double omega = 0;
   int    tikhonow_max   = options_get_int("TIKHONOW_MAX");
-  double tikhonow_omega = static_cast<double>(options_get_int("TIKHONOW_OMEGA")) / 1000.0;
+  double tikhonow_omega = static_cast<double>(options_get_int("TIKHONOW_OMEGA")) /  1000.0;
+  double small_cutoff   = static_cast<double>(options_get_int("SMALL_CUTOFF"))   / 10000.0;
 
   if(tikhonow_max == 0){  // Tikhonow always turned on
     omega = tikhonow_omega;
@@ -53,15 +54,41 @@ void MkUpdater::update(int cycle,Hamiltonian* heff)
   if(options_get_bool("COUPLING_TERMS")){
     for(int mu = 0; mu < moinfo->get_nunique(); ++mu){
       int mu_unique = moinfo->get_ref_number(mu,UniqueRefs);
+      std::string mu_str = to_string(mu_unique);
       double denominator_shift = heff->get_eigenvalue() - heff->get_matrix(mu_unique,mu_unique);
       std::string shift  = to_string(denominator_shift);
-      std::string mu_str = to_string(mu_unique);
+
+      // Shift the standard denominators
       blas->solve("d'1[o][v]{" + mu_str + "} += " + shift);
       blas->solve("d'1[O][V]{" + mu_str + "} += " + shift);
       blas->solve("d'2[oo][vv]{" + mu_str + "} += " + shift);
       blas->solve("d'2[oO][vV]{" + mu_str + "} += " + shift);
       blas->solve("d'2[OO][VV]{" + mu_str + "} += " + shift);
     }
+  }
+
+  // Scale the denominators and the single-reference contributions
+  for(int mu = 0; mu < moinfo->get_nunique(); ++mu){
+    int mu_unique = moinfo->get_ref_number(mu,UniqueRefs);
+    double c_mu = heff->get_right_eigenvector(mu_unique);
+    double cutoff_function = 0.0;
+    double c_mu_sign = c_mu > 0 ? 1.0 : -1.0;
+    if(std::fabs(c_mu) < small_cutoff){
+      // Compute (|c_mu|-a)^2 / a^2
+      cutoff_function = std::pow( (std::fabs(c_mu)-small_cutoff) / small_cutoff ,2.0);
+    }
+    double cutoff_factor = c_mu + c_mu_sign * cutoff_function;
+    // Scale the denominator by cutoff_factor = c_mu + ...
+    blas->scale("d'1[o][v]",mu_unique,cutoff_factor);
+    blas->scale("d'1[O][V]",mu_unique,cutoff_factor);
+    blas->scale("d'2[oo][vv]",mu_unique,cutoff_factor);
+    blas->scale("d'2[oO][vV]",mu_unique,cutoff_factor);
+    blas->scale("d'2[OO][VV]",mu_unique,cutoff_factor);
+    blas->scale("t1_eqns[o][v]",mu_unique,c_mu);
+    blas->scale("t1_eqns[O][V]",mu_unique,c_mu);
+    blas->scale("t2_eqns[oo][vv]",mu_unique,c_mu);
+    blas->scale("t2_eqns[oO][vV]",mu_unique,c_mu);
+    blas->scale("t2_eqns[OO][VV]",mu_unique,c_mu);
   }
 
   for(int i=0;i<moinfo->get_nunique();i++){
@@ -73,13 +100,18 @@ void MkUpdater::update(int cycle,Hamiltonian* heff)
         int unique_j = moinfo->get_ref_number(j);
         string j_str = to_string(unique_j);
 
-        double term = heff->get_right_eigenvector(j) * heff->get_right_eigenvector(unique_i) /
+//        double term = heff->get_right_eigenvector(j);
+
+        double term = heff->get_right_eigenvector(j) * std::pow(heff->get_right_eigenvector(unique_i),2.0) /
                       (std::pow(heff->get_right_eigenvector(unique_i),2.0) + std::pow(omega,2.0));
 
-        if(fabs(term) > 100.0) {
-          fprintf(outfile,"\n  Warning: c_nu/c_mu = %e ."
-              "\n  1) turn on Tikhonow regularization or increase omega (TIKHONOW_OMEGA > 0)",term);
-        }
+//        double term = heff->get_right_eigenvector(j) * heff->get_right_eigenvector(unique_i) /
+//                      (std::pow(heff->get_right_eigenvector(unique_i),2.0) + std::pow(omega,2.0));
+//
+//        if(fabs(term) > 100.0) {
+//          fprintf(outfile,"\n  Warning: c_nu/c_mu = %e ."
+//              "\n  1) turn on Tikhonow regularization or increase omega (TIKHONOW_OMEGA > 0)",term);
+//        }
 
         blas->set_scalar("factor_mk",unique_j,heff->get_matrix(unique_i,j) * term);
         if(unique_i!=j){
@@ -95,12 +127,13 @@ void MkUpdater::update(int cycle,Hamiltonian* heff)
     }
 
     // Update t1 for reference i
-    blas->solve("t1_delta[o][v]{" + i_str + "}  =   t1_eqns[o][v]{" + i_str + "} / d'1[o][v]{" + i_str + "} - t1[o][v]{" + i_str + "}");
-    blas->solve("t1_delta[O][V]{" + i_str + "}  =   t1_eqns[O][V]{" + i_str + "} / d'1[O][V]{" + i_str + "} - t1[O][V]{" + i_str + "}");
+    if(not options_get_bool("NOSINGLES")){
+      blas->solve("t1_delta[o][v]{" + i_str + "}  =   t1_eqns[o][v]{" + i_str + "} / d'1[o][v]{" + i_str + "} - t1[o][v]{" + i_str + "}");
+      blas->solve("t1_delta[O][V]{" + i_str + "}  =   t1_eqns[O][V]{" + i_str + "} / d'1[O][V]{" + i_str + "} - t1[O][V]{" + i_str + "}");
 
-    blas->solve("t1[o][v]{" + i_str + "} = t1_eqns[o][v]{" + i_str + "} / d'1[o][v]{" + i_str + "}");
-    blas->solve("t1[O][V]{" + i_str + "} = t1_eqns[O][V]{" + i_str + "} / d'1[O][V]{" + i_str + "}");
-
+      blas->solve("t1[o][v]{" + i_str + "} = t1_eqns[o][v]{" + i_str + "} / d'1[o][v]{" + i_str + "}");
+      blas->solve("t1[O][V]{" + i_str + "} = t1_eqns[O][V]{" + i_str + "} / d'1[O][V]{" + i_str + "}");
+    }
     zero_internal_amps();
 
     if(options_get_bool("COUPLING_TERMS")){
@@ -109,13 +142,18 @@ void MkUpdater::update(int cycle,Hamiltonian* heff)
         int unique_j = moinfo->get_ref_number(j);
         string j_str = to_string(unique_j);
 
-        double term = heff->get_right_eigenvector(j) * heff->get_right_eigenvector(unique_i) /
+//        double term = heff->get_right_eigenvector(j);
+
+        double term = heff->get_right_eigenvector(j) * std::pow(heff->get_right_eigenvector(unique_i),2.0) /
                       (std::pow(heff->get_right_eigenvector(unique_i),2.0) + std::pow(omega,2.0));
 
-        if(fabs(term) > 100.0) {
-          fprintf(outfile,"\n  Warning: c_nu/c_mu = %e ."
-              "\n  1) turn on Tikhonow regularization or increase omega (TIKHONOW_OMEGA > 0)",term);
-        }
+//        double term = heff->get_right_eigenvector(j) * heff->get_right_eigenvector(unique_i) /
+//                      (std::pow(heff->get_right_eigenvector(unique_i),2.0) + std::pow(omega,2.0));
+//
+//        if(fabs(term) > 100.0) {
+//          fprintf(outfile,"\n  Warning: c_nu/c_mu = %e ."
+//              "\n  1) turn on Tikhonow regularization or increase omega (TIKHONOW_OMEGA > 0)",term);
+//        }
 
         blas->set_scalar("factor_mk",unique_j,heff->get_matrix(unique_i,j) * term);
         if(unique_i!=j){
@@ -256,18 +294,3 @@ void MkUpdater::update(int cycle,Hamiltonian* heff)
 }
 
 }} /* End Namespaces */
-
-
-//#include <psifiles.h>
-
-  //#include <libpsio/psio.hpp>
-  //#include <libutil/libutil.h>
-  //
-
-  //#include "debugging.h"
-  //#include "index.h"
-  //#include "mrcc.h"
-  //#include "matrix.h"
-
-
-

@@ -164,6 +164,9 @@ void MRCCSD_T::compute_ooo_triples_restricted()
           Z[mu][ijk_sym]->contract(V_jk_c_m->get_block_matrix(ik_abs),T2_i_ab_j->get_block_matrix(j_abs,mu),1.0,1.0);
 
           W[mu][ijk_sym]->cyclical_permutation_1_2(Z[mu][ijk_sym],vvv,v,vv);
+
+
+
         }
       }
 

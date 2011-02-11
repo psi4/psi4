@@ -17,8 +17,6 @@
 #include "mrccsd_t.h"
 #include "special_matrices.h"
 
-#define SA_DEBUG 0
-
 extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
@@ -141,12 +139,10 @@ void MRCCSD_T::compute_ooo_triples()
         Z[mu][ijk_sym]->contract(T2_ij_a_b->get_block_matrix(ij_abs,mu),V_k_bc_e->get_block_matrix(k_abs),1.0,0.0);
         Z[mu][ijk_sym]->contract(T2_ij_a_b->get_block_matrix(kj_abs,mu),V_k_bc_e->get_block_matrix(i_abs),-1.0,1.0);
         Z[mu][ijk_sym]->contract(T2_ij_a_b->get_block_matrix(ik_abs,mu),V_k_bc_e->get_block_matrix(j_abs),-1.0,1.0);
-#if SA_DEBUG
-#else
         Z[mu][ijk_sym]->contract(V_jk_c_m->get_block_matrix(ij_abs),T2_i_ab_j->get_block_matrix(k_abs,mu),-1.0,1.0);
         Z[mu][ijk_sym]->contract(V_jk_c_m->get_block_matrix(kj_abs),T2_i_ab_j->get_block_matrix(i_abs,mu),1.0,1.0);
         Z[mu][ijk_sym]->contract(V_jk_c_m->get_block_matrix(ik_abs),T2_i_ab_j->get_block_matrix(j_abs,mu),1.0,1.0);
-#endif
+
         W[mu][ijk_sym]->cyclical_permutation_1_2(Z[mu][ijk_sym],vvv,v,vv);
       }
     }
