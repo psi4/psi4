@@ -70,7 +70,7 @@ protected:
         ::free(Block[0]);  ::free(Block);
     }
 
-    void print_mat(double **a, int m, int n, FILE *out);
+    void print_mat(double **a, int m, int n, FILE *out) const;
 
 public:
     /// Default constructor, zeros everything out
@@ -80,13 +80,12 @@ public:
      *
      * @param name Name of the matrix, used in saving and printing.
      */
-    Matrix(std::string name, int symmetry = 0);
-    /// Explicit copy reference constructor
-    explicit Matrix(const Matrix& copy);
-    explicit Matrix(boost::shared_ptr<Matrix> copy);
-    Matrix(Matrix& copy);
-
-    /// Explicit copy pointer constructor
+    Matrix(const std::string& name, int symmetry = 0);
+    /// copy reference constructor
+    Matrix(const Matrix& copy);
+    /// Explicit shared point copy constructor
+    explicit Matrix(const boost::shared_ptr<Matrix>& copy);
+    /// copy pointer constructor
     explicit Matrix(const Matrix* copy);
     /**
      * Constructor, sets up the matrix
@@ -95,7 +94,7 @@ public:
      * @param rowspi Array of length nirreps giving row dimensionality.
      * @param colspi Array of length nirreps giving column dimensionality.
      */
-    Matrix(int nirrep, int *rowspi, int *colspi, int symmetry = 0);
+    Matrix(int nirrep, const int *rowspi, const int *colspi, int symmetry = 0);
     /**
      * Constructor, sets name_, and sets up the matrix
      *
@@ -104,7 +103,7 @@ public:
      * @param rowspi Array of length nirreps giving row dimensionality.
      * @param colspi Array of length nirreps giving column dimensionality.
      */
-    Matrix(std::string name, int nirrep, int *rowspi, int *colspi, int symmetry = 0);
+    Matrix(const std::string& name, int nirrep, const int *rowspi, const int *colspi, int symmetry = 0);
     /**
      * Constructor, sets up the matrix
      * Convenience case for 1 irrep
@@ -123,7 +122,7 @@ public:
      * @param rows Row dimensionality.
      * @param cols Column dimensionality.
      */
-    Matrix(std::string, int rows, int cols);
+    Matrix(const std::string&, int rows, int cols);
 
     /**
      * Contructs a Matrix from a dpdfile2
@@ -151,7 +150,7 @@ public:
      * @param rowspi Array of length nirreps giving row dimensionality.
      * @param colspi Array of length nirreps giving column dimensionality.
      */
-    void init(int nirrep, int *rowspi, int *colspi, std::string name = "", int symmetry = 0);
+    void init(int nirrep, const int *rowspi, const int *colspi, const std::string& name = "", int symmetry = 0);
 
     /// Creates an exact copy of the matrix and returns it.
     Matrix* clone() const;
@@ -161,12 +160,16 @@ public:
      * Copies data onto this
      * @param cp Object to copy from.
      */
-    void copy(Matrix* cp);
-    void copy(Matrix& cp);
-    void copy(boost::shared_ptr<Matrix> cp);
+    void copy(const boost::shared_ptr<Matrix>& cp);
     void copy(const Matrix& cp);
     void copy(const Matrix* cp);
     /** @} */
+
+    enum SaveType {
+        Full,
+        SubBlocks,
+        LowerTriangle
+    };
 
     /**
      * @{
@@ -178,8 +181,25 @@ public:
      * @param nso Number of orbitals to use to read in.
      * @returns true if loaded, false otherwise.
      */
-    bool load(psi::PSIO* psio, unsigned int fileno, char *tocentry, int nso);
-    bool load(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, char *tocentry, int nso);
+    bool load(psi::PSIO* psio, unsigned int fileno, const std::string& tocentry, int nso);
+    bool load(boost::shared_ptr<psi::PSIO>& psio, unsigned int fileno, const std::string& tocentry, int nso) {
+        load(psio.get(), fileno, tocentry, nso);
+    }
+    /** @} */
+
+    /**
+     * @{
+     * Loads the block matrix from PSIO object with fileno and with the toc position of the name of the matrix
+     *  The matrix must be correctly sized and named for this to work
+     *
+     * @param psio PSIO object to read with.
+     * @param fileno File to read from.
+     * @param saveSubBlocks Save information suffixing point group label.
+     */
+    void load(psi::PSIO* const psio, unsigned int fileno, SaveType savetype=LowerTriangle);
+    void load(boost::shared_ptr<psi::PSIO>& psio, unsigned int fileno, SaveType savetype=LowerTriangle) {
+        load(psio.get(), fileno, savetype);
+    }
     /** @} */
 
     /**
@@ -191,17 +211,8 @@ public:
      * @param saveLowerTriangle Save only the lower triangle?
      * @param saveSubBlocks Save three index quantities denoting symmetry block (true), or convert to a full matrix and save that (false)?
      */
-    void save(const char *filename, bool append=true, bool saveLowerTriangle = true, bool saveSubBlocks=false);
-    void save(std::string filename, bool append=true, bool saveLowerTriangle = true, bool saveSubBlocks=false) {
-        save(filename.c_str(), append, saveLowerTriangle, saveSubBlocks);
-    }
+    void save(const std::string& filename, bool append=true, bool saveLowerTriangle = true, bool saveSubBlocks=false);
     /** @} */
-
-    enum SaveType {
-        Full,
-        SubBlocks,
-        LowerTriangle
-    };
 
     /**
      * @{
@@ -211,20 +222,10 @@ public:
      * @param fileno File to write to.
      * @param saveSubBlocks Save information suffixing point group label.
      */
-    void save(psi::PSIO* psio, unsigned int fileno, SaveType savetype=LowerTriangle);
-    void save(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, SaveType savetype=LowerTriangle);
-    /** @} */
-    /**
-     * @{
-     * Loads the block matrix from PSIO object with fileno and with the toc position of the name of the matrix
-     *  The matrix must be correctly sized and named for this to work
-     *
-     * @param psio PSIO object to read with.
-     * @param fileno File to read from.
-     * @param saveSubBlocks Save information suffixing point group label.
-     */
-    void load(psi::PSIO* psio, unsigned int fileno, SaveType savetype=LowerTriangle);
-    void load(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, SaveType savetype=LowerTriangle);
+    void save(psi::PSIO* const psio, unsigned int fileno, SaveType savetype=LowerTriangle);
+    void save(boost::shared_ptr<psi::PSIO>& psio, unsigned int fileno, SaveType savetype=LowerTriangle) {
+        save(psio.get(), fileno, savetype);
+    }
     /** @} */
 
     /**
@@ -239,7 +240,7 @@ public:
      *
      * @param tri Lower triangle matrix to set to.
      */
-    void set(const double *tri);
+    void set(const double * const tri);
 
     /**
      * @{
@@ -247,8 +248,7 @@ public:
      *
      * @param sq Double matrix to copy over.
      */
-    void set(const double **sq);
-    void set(double **sq);
+    void set(const double * const * const sq);
     /** @} */
 
     /**
@@ -257,8 +257,8 @@ public:
      *
      * @param sq SimpleMatrix object to set this matrix to.
      */
-    void set(SimpleMatrix *sq);
-    void set(boost::shared_ptr<SimpleMatrix> sq);
+    void set(const SimpleMatrix * const sq);
+    void set(const boost::shared_ptr<SimpleMatrix>& sq);
     /** @} */
 
     /**
@@ -277,9 +277,9 @@ public:
      *
      * @param vec Vector to apply to the diagonal.
      */
-    void set(Vector *vec);
-    void set(Vector& vec);
-    void set(boost::shared_ptr<Vector> vec);
+    void set(const Vector * const vec);
+    void set(const Vector& vec);
+    void set(const boost::shared_ptr<Vector>& vec);
     /** @} */
 
     /**
@@ -313,8 +313,8 @@ public:
      * @param h Subblock
      * @returns pointer to h-th subblock in block-matrix form
      */
-    double** pointer(int h = 0) { return matrix_[h]; }
-
+    double** pointer(int h = 0) const { return matrix_[h]; }
+    const double** const_pointer(int h=0) const { return const_cast<const double**>(matrix_[h]); }
     /**
      * Returns a copy of the current matrix.
      *
@@ -333,26 +333,26 @@ public:
      *
      * @returns The SimpleMatrix copy of the current matrix.
      */
-    SimpleMatrix *to_simple_matrix();
+    SimpleMatrix *to_simple_matrix() const;
 
     /**
      * Sets the name of the matrix, used in print(...) and save(...)
      *
      * @param name New name to use.
      */
-    void set_name(std::string name) {
+    void set_name(const std::string& name) {
         name_ = name;
     }
 
     /**
      * Gets the name of the matrix.
      */
-    std::string name() {
+    std::string name() const {
         return name_;
     }
 
     /// Python compatible printer
-    void print_out() { print(outfile); }
+    void print_out() const { print(outfile); }
 
     /**
      * Print the matrix using print_mat
@@ -360,7 +360,7 @@ public:
      * @param outfile File point to use, defaults to Psi4's outfile.
      * @param extra When printing the name of the 'extra' will be printing after the name.
      */
-    void print(FILE *out = outfile, const char *extra=NULL);
+    void print(FILE *out = outfile, const char *extra=NULL) const;
 
     /**
      * Print the matrix with corresponding eigenvalues below each column
@@ -368,11 +368,11 @@ public:
      * @param values Eigenvalues to print associated with eigenvectors.
      * @param out Where to print to, defaults to Psi4's outfile.
      */
-    void eivprint(Vector *values, FILE *out = outfile);
+    void eivprint(const Vector * const values, FILE *out = outfile);
     /// Print the matrix with corresponding eigenvalues below each column
-    void eivprint(Vector &values, FILE *out = outfile);
+    void eivprint(const Vector& values, FILE *out = outfile);
     /// Print the matrix with corresponding eigenvalues below each column
-    void eivprint(boost::shared_ptr<Vector> values, FILE *out = outfile);
+    void eivprint(const boost::shared_ptr<Vector>& values, FILE *out = outfile);
 
     /// Returns the rows in irrep h
     int rowdim(int h = 0) const {
@@ -395,6 +395,16 @@ public:
     int nirrep() const {
         return nirrep_;
     }
+
+    /**
+     * Returns the overall symmetry of the matrix.
+     * For a totally-symmetric matrix this will be 0.
+     * The value returned is compatible with bitwise XOR (^) math.
+     */
+    int symmetry() const {
+        return symmetry_;
+    }
+
     /// Set this to identity
     void identity();
     /// Zeros this out
@@ -409,19 +419,19 @@ public:
     Matrix *transpose();
 
     /// Adds a matrix to this
-    void add(const Matrix*);
+    void add(const Matrix* const);
     /// Adds a matrix to this
     void add(const Matrix&);
     /// Adds a matrix to this
-    void add(boost::shared_ptr<Matrix>);
+    void add(const boost::shared_ptr<Matrix>&);
 
     /// Subtracts a matrix from this
-    void subtract(const Matrix*);
+    void subtract(const Matrix* const);
     /// Subtracts a matrix from this
-    void subtract(boost::shared_ptr<Matrix>);
+    void subtract(const boost::shared_ptr<Matrix>&);
     /// Multiplies the two arguments and adds their result to this
-    void accumulate_product(const Matrix*, const Matrix*);
-    void accumulate_product(boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix>);
+    void accumulate_product(const Matrix* const, const Matrix* const);
+    void accumulate_product(const boost::shared_ptr<Matrix>&, const boost::shared_ptr<Matrix>&);
     /// Scales this matrix
     void scale(double);
     /// Returns the sum of the squares of this
@@ -443,31 +453,33 @@ public:
     /// Scale column n of irrep h by a
     void scale_column(int h, int n, double a);
     /// Transform a by transformer save result to this
-    void transform(Matrix* a, Matrix* transformer);
-    void transform(boost::shared_ptr<Matrix> a, boost::shared_ptr<Matrix> transformer);
+    void transform(const Matrix* const a, const Matrix* const transformer);
+    void transform(const boost::shared_ptr<Matrix>& a, const boost::shared_ptr<Matrix>& transformer);
     /// Transform this by transformer
-    void transform(Matrix* transformer);
-    void transform(boost::shared_ptr<Matrix> transformer);
+    void transform(const Matrix* const transformer);
+    void transform(const boost::shared_ptr<Matrix>& transformer);
     /// Back transform a by transformer save result to this
-    void back_transform(Matrix* a, Matrix* transformer);
-    void back_transform(boost::shared_ptr<Matrix> a, boost::shared_ptr<Matrix> transformer);
+    void back_transform(const Matrix* const a, const Matrix* const transformer);
+    void back_transform(const boost::shared_ptr<Matrix>& a, const boost::shared_ptr<Matrix>& transformer);
     /// Back transform this by transformer
-    void back_transform(Matrix* transformer);
-    void back_transform(boost::shared_ptr<Matrix> transformer);
+    void back_transform(const Matrix* const transformer);
+    void back_transform(const boost::shared_ptr<Matrix>& transformer);
 
     /// Returns the vector dot product of this by rhs
-    double vector_dot(Matrix* rhs);
-    double vector_dot(boost::shared_ptr<Matrix> rhs);
+    double vector_dot(const Matrix* const rhs);
+    double vector_dot(const boost::shared_ptr<Matrix>& rhs);
+    double vector_dot(const Matrix& rhs);
+
 
     /// General matrix multiply, saves result to this
-    void gemm(bool transa, bool transb, double alpha, const Matrix* a, const Matrix* b, double beta);
-    void gemm(bool transa, bool transb, double alpha, boost::shared_ptr<Matrix> a, boost::shared_ptr<Matrix> b, double beta);
-    void gemm(bool transa, bool transb, double alpha, boost::shared_ptr<Matrix> a, Matrix& b, double beta);
-    void gemm(bool transa, bool transb, double alpha, Matrix& a, boost::shared_ptr<Matrix> b, double beta);
+    void gemm(bool transa, bool transb, double alpha, const Matrix* const a, const Matrix* const b, double beta);
+    void gemm(bool transa, bool transb, double alpha, const boost::shared_ptr<Matrix>& a, const boost::shared_ptr<Matrix>& b, double beta);
+    void gemm(bool transa, bool transb, double alpha, const boost::shared_ptr<Matrix>& a, const Matrix& b, double beta);
+    void gemm(bool transa, bool transb, double alpha, const Matrix& a, const boost::shared_ptr<Matrix>& b, double beta);
     /// Diagonalize this places eigvectors and eigvalues must be created by caller.
     void diagonalize(Matrix* eigvectors, Vector* eigvalues);
-    void diagonalize(boost::shared_ptr<Matrix> eigvectors, boost::shared_ptr<Vector> eigvalues);
-    void diagonalize(boost::shared_ptr<Matrix> eigvectors, Vector& eigvalues);
+    void diagonalize(boost::shared_ptr<Matrix>& eigvectors, boost::shared_ptr<Vector>& eigvalues);
+    void diagonalize(boost::shared_ptr<Matrix>& eigvectors, Vector& eigvalues);
 
     /*! Computes the Cholesky factorization of a real symmetric
      *  positive definite matrix A.
@@ -488,16 +500,13 @@ public:
 
     // Reference versions of the above functions
     /// Transform a by transformer save result to this
-    void transform(Matrix& a, Matrix& transformer);
+    void transform(const Matrix& a, const Matrix& transformer);
     /// Transform this by transformer
-    void transform(Matrix& transformer);
+    void transform(const Matrix& transformer);
     /// Back transform a by transformer save result to this
-    void back_transform(Matrix& a, Matrix& transformer);
+    void back_transform(const Matrix& a, const Matrix& transformer);
     /// Back transform this by transformer
-    void back_transform(Matrix& transformer);
-
-    /// Returns the vector dot product of this by rhs
-    double vector_dot(Matrix& rhs);
+    void back_transform(const Matrix& transformer);
 
     /// General matrix multiply, saves result to this
     void gemm(bool transa, bool transb, double alpha, const Matrix& a, const Matrix& b, double beta);
@@ -612,7 +621,8 @@ public:
     void set(boost::shared_ptr<SimpleVector> vec);
     void set(double **mat);
 
-    double** pointer() { return matrix_; }
+    double** pointer() const { return matrix_; }
+    const double** const_pointer() const { return const_cast<const double**>(matrix_); }
 
     /// Sets the diagonal of matrix_ to vec
     double get(int m, int n) { return matrix_[m][n]; }

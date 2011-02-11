@@ -28,7 +28,7 @@ namespace psi { namespace dcft {
  */
 
 void
-DCFTSolver::half_transform(dpdbuf4 *SO, dpdbuf4 *MO, Matrix C1, Matrix C2,
+DCFTSolver::half_transform(dpdbuf4 *SO, dpdbuf4 *MO, Matrix& C1, Matrix& C2,
         int *mospi_left, int *mospi_right, int **so_row, int **mo_row,
         bool backwards, double alpha, double beta)
 {

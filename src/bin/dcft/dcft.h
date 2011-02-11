@@ -54,7 +54,7 @@ class DCFTSolver
     void mulliken_charges();
     void dpd_buf4_add(dpdbuf4 *A, dpdbuf4 *B, double alpha);
     void scf_guess();
-    void half_transform(dpdbuf4 *A, dpdbuf4 *B, Matrix C1, Matrix C2,
+    void half_transform(dpdbuf4 *A, dpdbuf4 *B, Matrix& C1, Matrix& C2,
             int *mospi_left, int *mospi_right, int **so_row, int **mo_row,
             bool backwards, double alpha, double beta);
     void file2_transform(dpdfile2 *A, dpdfile2 *B, Matrix *C, bool backwards);
