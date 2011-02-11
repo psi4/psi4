@@ -13,7 +13,8 @@
 #include "io.h"
 
 #if defined(OPTKING_PACKAGE_PSI)
-  #include <libchkpt/chkpt.h>
+  #include <psi4-dec.h>
+  #include <libmints/molecule.h>
 #elif defined(OPTKING_PACKAGE_QCHEM)
   #include <qchem.h> // typedefs INTEGER
   void get_carts(double** Carts, double** A, INTEGER** AtNo, INTEGER* NAtoms, bool noghosts);
@@ -31,7 +32,7 @@ bool is_integer(const char *check) {
   return true;
 }
 
-// read the number of atoms 
+// read the number of atoms
 int read_natoms(void) {
   int natom=0;
 
@@ -198,13 +199,9 @@ void MOLECULE::read_geom_grad(void) {
 void MOLECULE::write_geom(void) {
 
 #if defined(OPTKING_PACKAGE_PSI)
+
   double **geom_2D = g_geom_2D();
-
-  chkpt_init(PSIO_OPEN_OLD);
-  chkpt_wt_geom(geom_2D);
-  chkpt_close();
-
-  /* Process::environment.molecule()->set_geometry(geom_2D); */
+  psi::Process::environment.molecule()->set_geometry(geom_2D);
   free_matrix(geom_2D);
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
@@ -262,7 +259,7 @@ double ** OPT_DATA::read_cartesian_H(void) const {
   FileMan_Open_Read(FILE_NUCLEAR_HESSIAN);
   FileMan(FM_READ, FILE_NUCLEAR_HESSIAN, FM_DP, Ncart*Ncart, 0, FM_BEG, Hess);
   FileMan_Close(FILE_NUCLEAR_HESSIAN);
-  //print_matrix(outfile, &Hess, 1, Ncart * Ncart); 
+  //print_matrix(outfile, &Hess, 1, Ncart * Ncart);
 
 // instead read from $QCSCRATCH/scr_dir_name/HESS ?
 

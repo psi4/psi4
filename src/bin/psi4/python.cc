@@ -389,6 +389,13 @@ shared_ptr<Wavefunction> py_psi_reference_wavefunction()
 
 BOOST_PYTHON_MODULE(PsiMod)
 {
+    enum_<PsiReturnType>("PsiReturnType")
+            .value("Success", Success)
+            .value("Failure", Failure)
+            .value("Balk", Balk)
+            .value("EndLoop", EndLoop)
+            .export_values();
+
     def("version", py_psi_version);
     def("clean", py_psi_clean);
 

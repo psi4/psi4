@@ -22,6 +22,7 @@
 #include "pointgrp.h"
 #include "coordentry.h"
 #include "corrtab.h"
+#include "petitelist.h"
 
 #include <masses.h>
 #include <physconst.h>
@@ -505,8 +506,11 @@ void Molecule::rotate_full(SimpleMatrix& R)
     set_full_geometry(new_geom);
 }
 
+#if 0
 void Molecule::reorient()
 {
+    return;
+
     if (fix_orientation_)
         return;
 
@@ -711,7 +715,13 @@ void Molecule::reorient()
 
     // Delete the tensor matrix
     delete itensor;
+
+    fprintf(outfile, "after reorient should_invert %d %d %d must_invert %d %d %d:\n",
+            should_invert[0], should_invert[1], should_invert[2],
+            must_invert[0], must_invert[1], must_invert[2]);
+    print();
 }
+#endif
 
 int Molecule::nfrozen_core(const std::string& depth)
 {
@@ -1055,13 +1065,13 @@ shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::string &te
             shared_ptr<CoordValue> yval(mol->get_coord_value(splitLine[2]));
             shared_ptr<CoordValue> zval(mol->get_coord_value(splitLine[3]));
             mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new CartesianEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
-                                                                                 atomic_masses[(int)zVals[atomSym]], atomSym,
+                                                                                 an2masses[(int)zVals[atomSym]], atomSym,
                                                                                  xval, yval, zval)));
         }
         else if(numEntries == 1) {
             // This is the first line of a Z-Matrix
             mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
-                                                                                   atomic_masses[(int)zVals[atomSym]], atomSym)));
+                                                                                   an2masses[(int)zVals[atomSym]], atomSym)));
         }
         else if(numEntries == 3) {
             // This is the second line of a Z-Matrix
@@ -1071,7 +1081,7 @@ shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::string &te
                                    + splitLine[1] + " has not been defined yet.");
             shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
             mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], 0,
-                                                                               atomic_masses[(int)zVals[atomSym]], atomSym,
+                                                                               an2masses[(int)zVals[atomSym]], atomSym,
                                                                                mol->full_atoms_[rTo], rval)));
         }
         else if(numEntries == 5) {
@@ -1089,7 +1099,7 @@ shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::string &te
             shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
             shared_ptr<CoordValue> aval(mol->get_coord_value(splitLine[4]));
             mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
-                                                                               atomic_masses[(int)zVals[atomSym]], atomSym,
+                                                                               an2masses[(int)zVals[atomSym]], atomSym,
                                                                                mol->full_atoms_[rTo], rval, mol->full_atoms_[aTo], aval)));
         }
         else if(numEntries == 7) {
@@ -1114,7 +1124,7 @@ shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::string &te
             shared_ptr<CoordValue> aval(mol->get_coord_value(splitLine[4]));
             shared_ptr<CoordValue> dval(mol->get_coord_value(splitLine[6]));
             mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
-                                                                               atomic_masses[(int)zVals[atomSym]], atomSym,
+                                                                               an2masses[(int)zVals[atomSym]], atomSym,
                                                                                mol->full_atoms_[rTo], rval, mol->full_atoms_[aTo],
                                                                                aval, mol->full_atoms_[dTo], dval)));
         }
@@ -1154,9 +1164,9 @@ void Molecule::update_geometry()
     }
 
     move_to_com();
-    reorient();
+//    reorient();
     // Compute point group of the molecule.
-    set_point_group(find_point_group());
+//    set_point_group(find_point_group());
     // Now we need to rotate the geometry to its symmetry frame
     // to align the axes correctly for the point group
     SimpleMatrix R(3,3);
@@ -1166,12 +1176,15 @@ void Molecule::update_geometry()
     SymmetryOperation frame = find_highest_point_group()->symm_frame();
     for(int i = 0; i < 3; ++i){
         for(int j = 0; j < 3; ++j){
-            R.set(j, i, frame(i,j));
+            R.set(i, j, frame(i,j));
         }
     }
     rotate_full(R);
     // Recompute point group of the molecule, so the symmetry info is updated to the new frame
     set_point_group(find_point_group());
+
+    // Symmetrize the molecule to remove any noise.
+    symmetrize();
 }
 
 void Molecule::activate_all_fragments()
@@ -1340,7 +1353,7 @@ void Molecule::save_to_chkpt(shared_ptr<Chkpt> chkpt, std::string prefix)
     free_block(fgeom);
 }
 
-void Molecule::print()
+void Molecule::print() const
 {
     if (natom()) {
         if (pg_) fprintf(outfile,"    Molecular point group: %s\n\n", pg_->symbol());
@@ -2017,6 +2030,34 @@ bool Molecule::has_symmetry_element(Vector3& op, double tol) const
     }
 
     return true;
+}
+
+void Molecule::symmetrize()
+{
+    SimpleMatrix temp(natom(), 3);
+    CharacterTable ct = point_group()->char_table();
+
+    // Obtain atom mapping of atom * symm op to atom
+    int **atom_map = compute_atom_map(this);
+
+    // Symmetrize the molecule to remove any noise
+    for (int atom=0; atom<natom(); ++atom) {
+        for (int g=0; g<ct.order(); ++g) {
+
+            int Gatom = atom_map[atom][g];
+
+            SymmetryOperation so = ct.symm_operation(g);
+
+            temp.add(atom, 0, so(0, 0) * x(Gatom) / ct.order());
+            temp.add(atom, 1, so(1, 1) * y(Gatom) / ct.order());
+            temp.add(atom, 2, so(2, 2) * z(Gatom) / ct.order());
+        }
+    }
+
+    // Delete the atom map.
+    delete_atom_map(atom_map, this);
+    // Set the geometry to ensure z-matrix variables get updated
+    set_geometry(temp);
 }
 
 void Molecule::release_symmetry_information()

@@ -1014,7 +1014,7 @@ void RHF::save_information()
     int* frzcpi = compute_fcpi(nfzc, orbital_e_);
     int* frzvpi = compute_fvpi(nfzv, orbital_e_);
 
-    for (int k = 0; k < 8; k++) {
+    for (int k = 0; k < nirrep_; k++) {
         frzcpi_[k] = frzcpi[k];
         frzvpi_[k] = frzvpi[k];
     }

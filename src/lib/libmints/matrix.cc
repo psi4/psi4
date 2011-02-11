@@ -1902,12 +1902,12 @@ void SimpleMatrix::scale(double a)
 
 void SimpleMatrix::scale_row(int m, double a)
 {
-    C_DSCAL(rows_, a, &(matrix_[m][0]), 1);
+    C_DSCAL(cols_, a, &(matrix_[m][0]), 1);
 }
 
 void SimpleMatrix::scale_column(int n, double a)
 {
-    C_DSCAL(cols_, a, &(matrix_[0][n]), rows_);
+    C_DSCAL(rows_, a, &(matrix_[0][n]), cols_);
 }
 
 double SimpleMatrix::sum_of_squares()

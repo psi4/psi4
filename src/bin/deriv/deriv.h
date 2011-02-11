@@ -24,10 +24,10 @@ class Deriv
     // Reference type
     reftype ref_;
 
+#if SO
     std::vector<SharedMatrix> dH_;
     std::vector<SharedMatrix> dS_;
-
-#if 0
+#else
     // AO version of the code.
     std::vector<SharedSimpleMatrix> dH_;
     std::vector<SharedSimpleMatrix> dS_;
@@ -41,11 +41,11 @@ class Deriv
 public:
     Deriv(reftype ref, const boost::shared_ptr<MatrixFactory>& factory, const boost::shared_ptr<BasisSet>& basis);
 
+#if SO
     void compute(const SharedMatrix& Q, const SharedMatrix& G, const SharedMatrix& W);
-
-#if 0
+#else
     // AO version of the code
-    void compute(SharedSimpleMatrix& Q, SharedSimpleMatrix& G, SharedSimpleMatrix& W);
+    void compute(const SharedSimpleMatrix& Q, const SharedSimpleMatrix& G, const SharedSimpleMatrix& W);
 #endif
 
     const SharedSimpleMatrix& one_electron() {

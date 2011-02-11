@@ -12,7 +12,7 @@
 // Define the return types for optking.
 #if defined(OPTKING_PACKAGE_PSI)
   typedef psi::PsiReturnType OptReturnType;
-  #define OptReturnEndloop (psi::Endloop)
+  #define OptReturnEndloop (psi::EndLoop)
   #define OptReturnSuccess (psi::Success)
   #define OptReturnFailure (psi::Failure)
 #elif defined(OPTKING_PACKAGE_QCHEM)
@@ -103,7 +103,7 @@ OptReturnType optking(void) {
     if (Opt_params.fragment_mode == OPT_PARAMS::SINGLE) {
       mol1->add_intrafragment_simples_by_connectivity();
     }
-      
+
     // newly constructed fragments need connectivity generated
     if (Opt_params.fragment_mode == OPT_PARAMS::MULTI) {
       mol1->update_connectivity_by_distances();
