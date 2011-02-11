@@ -859,6 +859,7 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/lib3index/Makefile
           src/lib/libsmartptr/Makefile
           src/lib/libyeti/Makefile
+          src/lib/libdfcc_solver/Makefile
           src/util/tocprint/Makefile
           src/util/psiclean/Makefile
 
@@ -896,6 +897,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/mints/Makefile
           src/bin/deriv/Makefile
           src/bin/optking/Makefile
+          src/bin/df-cc/Makefile
 
           tests/Makefile
           tests/MakeVars
