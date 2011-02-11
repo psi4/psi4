@@ -22,7 +22,7 @@ molecule C4NH4 {
 
 globals {
   wfn         ccsd_t
-  docc        [10, 1, 3, 4]
+  docc        [10, 1, 4, 3]
   basis       STO-3G
   freeze_core true
   convergence 10

@@ -13,7 +13,7 @@ using namespace boost;
 
 namespace psi {
 
-  enum PsiReturnType {Success, Failure, Balk, Endloop};
+  enum PsiReturnType {Success, Failure, Balk, EndLoop};
 
   extern FILE *outfile;
   extern PSIO *psio;

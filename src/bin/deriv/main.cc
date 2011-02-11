@@ -52,7 +52,7 @@ PsiReturnType deriv(Options & options)
     // Create an SOBasisSet
     shared_ptr<SOBasisSet> sobasisset(new SOBasisSet(basisset, integral));
     SharedMatrix usotoao(sobasisset->petitelist()->sotoao());
-    SharedMatrix aotoso(sobasisset->petitelist()->aotoso());
+//    SharedMatrix aotoso(sobasisset->petitelist()->aotoso());
 
     const Dimension dimension = sobasisset->dimension();
     // Initialize the factory
@@ -85,9 +85,9 @@ PsiReturnType deriv(Options & options)
     SharedSimpleMatrix simple_usotoao(new SimpleMatrix("USO -> AO",
                                                        Process::environment.reference_wavefunction()->nso(),
                                                        basisset->nbf()));
-    SharedSimpleMatrix Cao(new SimpleMatrix("Cao",
-                                            basisset->nbf(),
-                                            Process::environment.reference_wavefunction()->nmo()));
+//    SharedSimpleMatrix Cao(new SimpleMatrix("Cao",
+//                                            basisset->nbf(),
+//                                            Process::environment.reference_wavefunction()->nmo()));
 
     int sooffset = 0, mooffset = 0;
     for (int h=0; h<Cso->nirrep(); ++h) {
@@ -105,8 +105,12 @@ PsiReturnType deriv(Options & options)
 
 //    simple_usotoao->print();
 //    simple_Cso->print();
+    int nso = Process::environment.reference_wavefunction()->nso();
 
-    Cao->gemm(true, false, 1.0, simple_usotoao, simple_Cso, 0.0);
+//    ShareSimpleMatrix Wso(new SharedSimpleMatrix("Wso", nso, nso));
+//    ShareSimpleMatrix Qso(new SharedSimpleMatrix("Qso", nso, nso));
+
+//    Cao->gemm(true, false, 1.0, simple_usotoao, simple_Cso, 0.0);
 //    Cao->print();
 
     // Load in orbital energies
@@ -122,8 +126,11 @@ PsiReturnType deriv(Options & options)
             int mooffset = 0;
             for (int h=0; h<sobasisset->nirrep(); ++h) {
                 for (int i=0; i<clsdpi[h]; ++i) {
-                    sum += Cao->get(m, i+mooffset) * Cao->get(n, i+mooffset) * etmp->get(h, i);
-                    qsum += Cao->get(m, i+mooffset) * Cao->get(n, i+mooffset);
+//                    sum += Cao->get(m, i+mooffset) * Cao->get(n, i+mooffset) * etmp->get(h, i);
+//                    qsum += Cao->get(m, i+mooffset) * Cao->get(n, i+mooffset);
+
+                    sum += simple_Cso->get(m, i+mooffset) * simple_Cso->get(n, i+mooffset) * etmp->get(h, i);
+                    qsum += simple_Cso->get(m, i+mooffset) * simple_Cso->get(n, i+mooffset);
 
 //                    fprintf(outfile, "sum = %lf, qsum = %lf\n", sum, qsum);
                 }
@@ -135,7 +142,12 @@ PsiReturnType deriv(Options & options)
     }
 
 //    Q->print();
-//    fprintf(outfile, "AO-basis\n");
+//    W->print();
+
+    Q->transform(simple_usotoao);
+    W->transform(simple_usotoao);
+
+//    Q->print();
 //    W->print();
 
     SharedSimpleMatrix G;
@@ -144,7 +156,7 @@ PsiReturnType deriv(Options & options)
     SharedSimpleMatrix WdS(deriv.overlap());
     SharedSimpleMatrix QdH(deriv.one_electron());
     SharedSimpleMatrix tb(deriv.two_body());
-//    deriv.compute(Q, G, W);
+    deriv.compute(Q, G, W);
 
     SimpleMatrix enuc = basisset->molecule()->nuclear_repulsion_energy_deriv1();
 
@@ -154,11 +166,35 @@ PsiReturnType deriv(Options & options)
     tb->print_atom_vector();
 
     SimpleMatrix scf_grad("SCF gradient", basisset->molecule()->natom(), 3);
-    scf_grad.add(&enuc);
-    scf_grad.add(QdH);
-    scf_grad.add(WdS);
-    scf_grad.add(tb);
+    SimpleMatrix temp("Temp SCF gradient", basisset->molecule()->natom(), 3);
+    temp.add(&enuc);
+    temp.add(QdH);
+    temp.add(WdS);
+    temp.add(tb);
 
+    CharacterTable ct = basisset->molecule()->point_group()->char_table();
+
+    // Obtain atom mapping of atom * symm op to atom
+    int **atom_map = compute_atom_map(basisset->molecule());
+
+    // Symmetrize the gradients to remove any noise
+    for (int atom=0; atom<basisset->molecule()->natom(); ++atom) {
+        for (int g=0; g<ct.order(); ++g) {
+
+            int Gatom = atom_map[atom][g];
+
+            SymmetryOperation so = ct.symm_operation(g);
+
+            scf_grad.add(atom, 0, so(0, 0) * temp.get(Gatom, 0) / ct.order());
+            scf_grad.add(atom, 1, so(1, 1) * temp.get(Gatom, 1) / ct.order());
+            scf_grad.add(atom, 2, so(2, 2) * temp.get(Gatom, 2) / ct.order());
+        }
+    }
+
+    // Delete the atom map.
+    delete_atom_map(atom_map, basisset->molecule());
+
+    // Print the atom vector
     scf_grad.print_atom_vector();
 
     GradientWriter grad(basisset->molecule(), scf_grad);

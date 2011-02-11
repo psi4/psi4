@@ -274,10 +274,10 @@ struct lin_comb {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int **compute_atom_map(const shared_ptr<Molecule> &molecule)
+int **compute_atom_map(const Molecule* molecule)
 {
     // grab references to the Molecule
-    Molecule& mol = *molecule.get();
+    const Molecule& mol = *molecule;
 
     // create the character table for the point group
     CharacterTable ct = mol.point_group()->char_table();
@@ -322,7 +322,12 @@ int **compute_atom_map(const shared_ptr<Molecule> &molecule)
     return atom_map;
 }
 
-void delete_atom_map(int **atom_map, const shared_ptr<Molecule> &molecule)
+int **compute_atom_map(const shared_ptr<Molecule> &molecule)
+{
+    return compute_atom_map(molecule.get());
+}
+
+void delete_atom_map(int **atom_map, const Molecule* molecule)
 {
     if (atom_map) {
         int natom = molecule->natom();
@@ -330,6 +335,11 @@ void delete_atom_map(int **atom_map, const shared_ptr<Molecule> &molecule)
             delete[] atom_map[i];
         delete[] atom_map;
     }
+}
+
+void delete_atom_map(int **atom_map, const shared_ptr<Molecule> &molecule)
+{
+    delete_atom_map(atom_map, molecule.get());
 }
 
 int **compute_shell_map(int **atom_map, const shared_ptr<BasisSet> &basis)
@@ -920,6 +930,32 @@ SO_block* PetiteList::aotoso_info()
             fprintf(stderr, "  found %d SO's, but there should only be %d\n", saoelem[i], nbf_in_ir_[ir]/scal);
             SOs[i].print("");
             throw PSIEXCEPTION("PetiteList::aotoso_info: trouble making SO's");
+        }
+    }
+
+    // Correct phases
+    Dimension sodim = SO_basisdim();
+    for (int h=0; h<nblocks_; ++h) {
+        // If the block is empty, skip
+        if (sodim[h] == 0)
+            continue;
+
+        SO_block& sob = SOs[h];
+        for (i=0; i<sob.len; ++i) {
+            SO& soi = sob.so[i];
+
+            // do the sum
+            double coefs = 0.0;
+            for (j=0; j<soi.len; ++j) {
+                coefs += soi.cont[j].coef;
+            }
+
+            // if less than 0 fix to be positive.
+            if (coefs < 0.0) {
+                for (j=0; j<soi.len; ++j) {
+                    soi.cont[j].coef *= -1.0;
+                }
+            }
         }
     }
 

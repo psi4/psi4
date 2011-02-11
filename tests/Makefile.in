@@ -19,12 +19,15 @@ mints_subdirs = mints1
 
 matrix_subdirs = matrix1
 
+opt_subdirs = scf5 scf6
+
 scf_subdirs = scf1 scf2 scf3 scf4 sad1
 
 subdirs = \
 $(mints_subdirs) \
 $(matrix_subdirs) \
 $(scf_subdirs) \
+$(opt_subdirs) \
 $(df_subdirs) \
 $(cc_subdirs) \
 ${mcscf_subdirs} 
@@ -35,6 +38,12 @@ quicktestdirs =
 
 tests:
 	for dir in $(subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+opttests:
+	for dir in $(opt_subdirs); \
 	do \
 	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
 	done

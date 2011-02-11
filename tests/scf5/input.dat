@@ -1,27 +1,39 @@
-#! RI-SCF cc-pVTZ energy of water, with Z-matrix input and cc-pVTZ-RI auxilliary basis.
+#! SCF STO-3G geometry optimzation, with Z-matrix input
 
-nucenergy = 8.801466202085710
-refenergy = -76.05098402733282
+# These values are from a tightly converged QChem run
+nucenergy = 8.9064890670                                                                     #TEST
+refenergy = -74.965901192                                                                    #TEST
 
 molecule h2o {
-    O
-    H 1 1.0
-    H 1 1.0 2 104.5
+     O
+     H 1 1.0
+     H 1 1.0 2 104.5
+# QChem optimized geometry
+#O           0.000000    0.000000    0.138167
+#H          -0.758081    0.000000   -0.497635
+#H           0.758081    0.000000   -0.497635
 }
 
 globals {
+  diis false
   basis sto-3g
-  scf_type direct
   e_converge 10
+  d_converge 10
 }
 
-thisenergy = energy('rhf')
-deriv()
-optking()
+# We need to tighten up the Optking convergence criteria, when this is available
+# Hack variables
+cycle = 0
+returnValue = 0
+thisenergy = 0.0
 
-h2o.print_to_output()
+while (cycle < 20 and returnValue != PsiReturnType.EndLoop):
+    thisenergy = energy('rhf')
+    deriv()
+    returnValue = optking()
+    cycle = cycle + 1
 
-#compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")
-#compare_values(refenergy, thisenergy, 9, "Reference energy")
+compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 3, "Nuclear repulsion energy")    #TEST
+compare_values(refenergy, thisenergy, 3, "Reference energy")                                #TEST
 
 clean()

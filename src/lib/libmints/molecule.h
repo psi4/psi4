@@ -320,7 +320,7 @@ public:
      *  If you want the molecule to be reoriented about the center of mass
      *  make sure you call move_to_com() prior to calling reorient()
      */
-    void reorient();
+//    void reorient();
 
     /// Computes and returns a matrix depicting distances between atoms.
     SimpleMatrix distance_matrix();
@@ -334,7 +334,7 @@ public:
     bool multiplicity_specified() const { return multiplicity_specified_; }
 
     /// Print the molecule
-    void print();
+    void print() const;
 
     /// Save information to checkpoint file.
     void save_to_chkpt(boost::shared_ptr<Chkpt> chkpt, std::string prefix = "");
@@ -393,6 +393,12 @@ public:
     /// Returns the irrep labels
     char **irrep_labels();
     const std::string& symmetry_from_input() const { return symmetry_from_input_; }
+
+    /**
+     * Force the molecule to have the symmetry specified in pg_.
+     * This is to handle noise coming in from optking.
+     */
+    void symmetrize();
     /// @}
 
     /**

@@ -25,6 +25,7 @@ Deriv::Deriv(reftype ref, const shared_ptr<MatrixFactory>& factory, const shared
     // Initialize an integral object.
     shared_ptr<IntegralFactory> integral(new IntegralFactory(basis_, basis_, basis_, basis_));
 
+#if SO   // Broken SO code.
     // Create new one-electron integral evaluators telling them we want 1st derivatives (1)
     shared_ptr<OneBodySOInt> oei_dS(integral->so_overlap(1));
 
@@ -71,8 +72,7 @@ Deriv::Deriv(reftype ref, const shared_ptr<MatrixFactory>& factory, const shared
     // Print.
     for (int i=0; i<cdsalcs_.ncd(); ++i)
         dS_[i]->print();
-
-#if 0
+#else
     // AO version of the code
 
     // Create new one-electron integral evaluators telling them we want 1st derivatives (1)
@@ -128,9 +128,10 @@ Deriv::Deriv(reftype ref, const shared_ptr<MatrixFactory>& factory, const shared
 #endif
 }
 
-void Deriv::compute(const SharedMatrix& Q, const SharedMatrix& G, const SharedMatrix& W)
+#if SO
+#else
+void Deriv::compute(const SharedSimpleMatrix& Q, const SharedSimpleMatrix& G, const SharedSimpleMatrix& W)
 {
-#if 0
     // Initialize an integral object.
     shared_ptr<IntegralFactory> integral(new IntegralFactory(basis_, basis_, basis_, basis_));
 

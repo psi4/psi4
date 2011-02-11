@@ -211,7 +211,7 @@ CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
     fprintf(outfile,"\n");
 
     // Print out the salcs
-    print();
+//    print();
 
     // Free memory.
     delete[] salc;
