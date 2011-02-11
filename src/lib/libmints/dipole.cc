@@ -37,6 +37,12 @@ DipoleInt::~DipoleInt()
     delete[] buffer_;
 }
 
+
+void DipoleInt::compute_shell(int sh1, int sh2)
+{
+    compute_pair(bs1_->shell(sh1), bs2_->shell(sh2));
+}
+
 void DipoleInt::compute_shell_deriv1(int sh1, int sh2)
 {
     compute_pair_deriv1(bs1_->shell(sh1), bs2_->shell(sh2));

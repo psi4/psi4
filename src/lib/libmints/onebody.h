@@ -63,14 +63,14 @@ public:
      * Computes all integrals and stores them in result
      * @param result Shared matrix object that will hold the results.
      */
-    void compute(boost::shared_ptr<SimpleMatrix> result);
+    void compute(boost::shared_ptr<SimpleMatrix>& result);
     /*! @} */
 
     /*! @{
      * Computes all integrals and stores them in result
      * @param result Shared matrix object that will hold the results.
      */
-    void compute(boost::shared_ptr<Matrix> result);
+    void compute(boost::shared_ptr<Matrix>& result);
     /*! @} */
 
     /// Computes all integrals and stores them in result by default this method throws

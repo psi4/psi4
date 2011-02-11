@@ -34,6 +34,9 @@ public:
     //! Virtual destructor
     virtual ~DipoleInt();
 
+    //! Compute dipole between two shells, result stored in buffer_.
+    void compute_shell(int, int);
+
     //! Compute dipole derivative between two shells, result stored in buffer_.
     void compute_shell_deriv1(int, int);
 
