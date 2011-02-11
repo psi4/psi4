@@ -460,34 +460,49 @@ SimpleMatrix *Matrix::to_simple_matrix() const
     return new SimpleMatrix(this);
 }
 
-void Matrix::print_mat(double **a, int m, int n, FILE *out) const
+void Matrix::print_mat(const double *const *const a, int m, int n, FILE *out) const
 {
-    int ii,jj,kk,nn,ll;
-    int i,j,k;
+    int num_frames = int(n/10);
+    int num_frames_rem = n%10; //adding one for changing 0->1 start
+    int num_frame_counter = 0;
+    //for each frame
+    for(num_frame_counter=0;num_frame_counter<num_frames;num_frame_counter++){
+        fprintf(out,"\n");
+        for(int j=10*num_frame_counter+1;j<10*num_frame_counter+11;j++){
+            if(j==10*num_frame_counter+1){ fprintf(out,"%18d",j); }
+            else{ fprintf(out,"        %5d",j); }
+        }
+        fprintf(out,"\n\n");
 
-    ii=0;jj=0;
-L200:
-    ii++;
-    jj++;
-    kk=10*jj;
-    nn=n;
-    if (nn > kk) nn=kk;
-    ll = 2*(nn-ii+1)+1;
-    fprintf (out,"\n");
-    for (i=ii; i <= nn; i++) fprintf(out,"       %5d",i);
-    fprintf (out,"\n");
-    for (i=0; i < m; i++) {
-       fprintf (out,"\n%5d",i+1);
-       for (j=ii-1; j < nn; j++) {
-          fprintf (out,"%20.15f",a[i][j]);
-          }
-       }
-    fprintf (out,"\n");
-    if (n <= kk) {
-       fflush(out);
-       return;
-       }
-    ii=kk; goto L200;
+        for(int k=1; k<=m; ++k){
+            for(int j=10*num_frame_counter+1;j<10*num_frame_counter+12;j++){
+                if(j==10*num_frame_counter+1){ fprintf(out,"%5d",k);}
+                else{ fprintf(out," %12.7f",a[k-1][j-2]); }
+            }
+            fprintf(out,"\n");
+        }
+    }
+
+    // ALREADY DID THE FULL FRAMES BY THIS POINT
+    // NEED TO TAKE CARE OF THE REMAINDER
+    if(num_frames_rem != 0){
+        fprintf(out,"\n");
+        for(int j=10*num_frame_counter+1;j<=n;j++){
+            if(j==10*num_frame_counter+1){ fprintf(out,"%18d",j); }
+            else{ fprintf(out,"        %5d",j); }
+        }
+        fprintf(out,"\n\n");
+
+        for(int k=1; k<=m; ++k){
+            for(int j=10*num_frame_counter+1;j<n+2;j++){
+                if(j==10*num_frame_counter+1){ fprintf(out,"%5d",k); }
+                else{ fprintf(out," %12.7f",a[k-1][j-2]); }
+            }
+            fprintf(out,"\n");
+        }
+    }
+    fprintf(out,"\n\n");
+    //R.I.P. goto statements - Aug 4th 2010 - MSM
 }
 
 void Matrix::print(FILE *out, const char *extra) const

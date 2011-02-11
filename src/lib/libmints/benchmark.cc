@@ -2394,7 +2394,7 @@ void benchmark_integrals(int max_am, double min_time)
     // Dipole Ints
     this_type = "2C Dipole";
     this_ncenter = 2; 
-    shared_ptr<OneBodyAOInt> d2c(bbbb->dipole());
+    shared_ptr<OneBodyAOInt> d2c(bbbb->ao_dipole());
     for (int P = 0, index = 0; P < max_shell; P++) {
         for (int Q = 0; Q < max_shell; Q++, index++) {
             T = 0.0;

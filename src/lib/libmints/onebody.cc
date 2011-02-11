@@ -190,7 +190,7 @@ void OneBodyAOInt::compute_shell(int sh1, int sh2)
     pure_transform(s1, s2, nchunk_);
 }
 
-void OneBodyAOInt::compute(boost::shared_ptr<Matrix> result)
+void OneBodyAOInt::compute(boost::shared_ptr<Matrix>& result)
 {
     // Do not worry about zeroing out result
     int ns1 = bs1_->nshell();
@@ -222,7 +222,7 @@ void OneBodyAOInt::compute(boost::shared_ptr<Matrix> result)
         i_offset += ni;
     }
 }
-void OneBodyAOInt::compute(boost::shared_ptr<SimpleMatrix> result)
+void OneBodyAOInt::compute(boost::shared_ptr<SimpleMatrix>& result)
 {
     // Do not worry about zeroing out result
     int ns1 = bs1_->nshell();
@@ -262,7 +262,41 @@ void OneBodyAOInt::compute(std::vector<shared_ptr<Matrix> > &result)
 
 void OneBodyAOInt::compute(std::vector<shared_ptr<SimpleMatrix> > &result)
 {
-    throw FeatureNotImplemented("libmints", "OneBodyInt::compute(SimpleArray)", __FILE__, __LINE__);
+    // Do not worry about zeroing out result
+    int ns1 = bs1_->nshell();
+    int ns2 = bs2_->nshell();
+    int i_offset = 0;
+    double *location = 0;
+
+    // Check the length of result, must be 3*natom_
+    if (result.size() != nchunk_) {
+        fprintf(stderr, "result length = %ld, nchunk = %d\n", result.size(), nchunk_);
+        throw SanityCheckError("OneBodyInt::compute_derv1(result): result incorrect length.", __FILE__, __LINE__);
+    }
+
+    for (int i=0; i<ns1; ++i) {
+        int ni = bs1_->shell(i)->nfunction();
+        int j_offset=0;
+        for (int j=0; j<ns2; ++j) {
+            int nj = bs2_->shell(j)->nfunction();
+
+            // Compute the shell
+            compute_shell(i, j);
+
+            // For each integral that we got put in its contribution
+            location = buffer_;
+            for (int r=0; r<nchunk_; ++r) {
+                for (int p=0; p<ni; ++p) {
+                    for (int q=0; q<nj; ++q) {
+                        result[r]->add(i_offset+p, j_offset+q, *location);
+                        location++;
+                    }
+                }
+            }
+            j_offset += nj;
+        }
+        i_offset += ni;
+    }
 }
 
 void OneBodyAOInt::compute_deriv1(std::vector<shared_ptr<Matrix> > &result)
@@ -313,7 +347,7 @@ void OneBodyAOInt::compute_deriv1(std::vector<shared_ptr<SimpleMatrix> > &result
 
 void OneBodyAOInt::compute_shell_deriv1(int, int)
 {
-    throw FeatureNotImplemented("libmints", "OneBodyInt::compute_shell_deriv1(Array)", __FILE__, __LINE__);
+    throw FeatureNotImplemented("libmints", "OneBodyInt::compute_shell_deriv1(int, int)", __FILE__, __LINE__);
 }
 
 void OneBodyAOInt::compute_deriv2(std::vector<shared_ptr<SimpleMatrix> > &result)

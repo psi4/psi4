@@ -70,7 +70,7 @@ protected:
         ::free(Block[0]);  ::free(Block);
     }
 
-    void print_mat(double **a, int m, int n, FILE *out) const;
+    void print_mat(const double *const *const a, int m, int n, FILE *out) const;
 
 public:
     /// Default constructor, zeros everything out

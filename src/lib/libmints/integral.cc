@@ -100,7 +100,7 @@ OneBodyAOInt* IntegralFactory::electrostatic()
     return new ElectrostaticInt(spherical_transforms_, bs1_, bs2_, 0);
 }
 
-OneBodyAOInt* IntegralFactory::dipole(int deriv)
+OneBodyAOInt* IntegralFactory::ao_dipole(int deriv)
 {
     return new DipoleInt(spherical_transforms_, bs1_, bs2_, deriv);
 }
