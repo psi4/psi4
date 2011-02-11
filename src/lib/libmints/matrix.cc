@@ -21,18 +21,20 @@
 
 #include <cmath>
 #include <sstream>
+#include <string>
 
 #include <boost/python.hpp>
 #include <boost/python/tuple.hpp>
 
  using namespace psi;
+ using namespace std;
 
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 
-std::string to_string(const int val)
+string to_string(const int val)
 {
-    std::stringstream strm;
+    stringstream strm;
     strm <<  val;
     return strm.str();
 }
@@ -46,14 +48,10 @@ Matrix::Matrix()
     symmetry_ = 0;
 }
 
-Matrix::Matrix(std::string name, int symmetry)
+Matrix::Matrix(const string& name, int symmetry)
+    : matrix_(0), rowspi_(0), colspi_(0), nirrep_(0),
+      name_(name), symmetry_(symmetry)
 {
-    matrix_ = NULL;
-    rowspi_ = NULL;
-    colspi_ = NULL;
-    nirrep_ = 0;
-    name = name_;
-    symmetry_ = symmetry;
 }
 
 Matrix::Matrix(const Matrix& c)
@@ -71,7 +69,7 @@ Matrix::Matrix(const Matrix& c)
     copy_from(c.matrix_);
 }
 
-Matrix::Matrix(shared_ptr<Matrix> c)
+Matrix::Matrix(const shared_ptr<Matrix>& c)
 {
     matrix_ = NULL;
     nirrep_ = c->nirrep_;
@@ -84,21 +82,6 @@ Matrix::Matrix(shared_ptr<Matrix> c)
     }
     alloc();
     copy_from(c->matrix_);
-}
-
-Matrix::Matrix(Matrix& c)
-{
-    matrix_ = NULL;
-    nirrep_ = c.nirrep_;
-    symmetry_ = c.symmetry_;
-    rowspi_ = new int[nirrep_];
-    colspi_ = new int[nirrep_];
-    for (int i=0; i<nirrep_; ++i) {
-        rowspi_[i] = c.rowspi_[i];
-        colspi_[i] = c.colspi_[i];
-    }
-    alloc();
-    copy_from(c.matrix_);
 }
 
 Matrix::Matrix(const Matrix* c)
@@ -116,7 +99,7 @@ Matrix::Matrix(const Matrix* c)
     copy_from(c->matrix_);
 }
 
-Matrix::Matrix(int l_nirreps, int *l_rowspi, int *l_colspi, int symmetry)
+Matrix::Matrix(int l_nirreps, const int *l_rowspi, const int *l_colspi, int symmetry)
 {
     matrix_ = NULL;
     nirrep_ = l_nirreps;
@@ -130,7 +113,7 @@ Matrix::Matrix(int l_nirreps, int *l_rowspi, int *l_colspi, int symmetry)
     alloc();
 }
 
-Matrix::Matrix(std::string name, int l_nirreps, int *l_rowspi, int *l_colspi, int symmetry) : name_(name)
+Matrix::Matrix(const string& name, int l_nirreps, const int *l_rowspi, const int *l_colspi, int symmetry) : name_(name)
 {
     matrix_ = NULL;
     nirrep_ = l_nirreps;
@@ -144,7 +127,7 @@ Matrix::Matrix(std::string name, int l_nirreps, int *l_rowspi, int *l_colspi, in
     alloc();
 }
 
-Matrix::Matrix(std::string name, int rows, int cols) : name_(name)
+Matrix::Matrix(const string& name, int rows, int cols) : name_(name)
 {
     matrix_ = NULL;
     nirrep_ = 1;
@@ -168,7 +151,7 @@ Matrix::Matrix(int rows, int cols)
     alloc();
 }
 
-Matrix::Matrix(const std::string& name, const Dimension& rows, const Dimension& cols, int symmetry)
+Matrix::Matrix(const string& name, const Dimension& rows, const Dimension& cols, int symmetry)
 {
     name_ = name;
     matrix_ = NULL;
@@ -225,7 +208,7 @@ Matrix::~Matrix()
         delete[] colspi_;
 }
 
-void Matrix::init(int l_nirreps, int *l_rowspi, int *l_colspi, std::string name, int symmetry)
+void Matrix::init(int l_nirreps, const int *l_rowspi, const int *l_colspi, const string& name, int symmetry)
 {
     if (rowspi_) delete[] rowspi_;
     if (colspi_) delete[] colspi_;
@@ -247,7 +230,7 @@ Matrix* Matrix::clone() const
     return temp;
 }
 
-void Matrix::copy(Matrix* cp)
+void Matrix::copy(const Matrix* cp)
 {
     // Make sure we are the same size as cp
     bool same = true;
@@ -283,24 +266,14 @@ void Matrix::copy(Matrix* cp)
     }
 }
 
-void Matrix::copy(Matrix& cp)
+void Matrix::copy(const Matrix& cp)
 {
     copy(&cp);
 }
 
-void Matrix::copy(shared_ptr<Matrix> cp)
+void Matrix::copy(const shared_ptr<Matrix>& cp)
 {
     copy(cp.get());
-}
-
-void Matrix::copy(const Matrix& cp)
-{
-    copy(const_cast<Matrix&>(cp));
-}
-
-void Matrix::copy(const Matrix* cp)
-{
-    copy(const_cast<Matrix*>(cp));
 }
 
 void Matrix::alloc()
@@ -352,7 +325,7 @@ void Matrix::set(double val)
     }
 }
 
-void Matrix::set(const double *tri)
+void Matrix::set(const double * const tri)
 {
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix::set called on a non-totally symmetric matrix.");
@@ -373,7 +346,7 @@ void Matrix::set(const double *tri)
     }
 }
 
-void Matrix::set(const double **sq)
+void Matrix::set(const double * const * const sq)
 {
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix::set called on a non-totally symmetric matrix.");
@@ -401,45 +374,17 @@ void Matrix::set(const double **sq)
     }
 }
 
-void Matrix::set(double **sq)
+void Matrix::set(const SimpleMatrix * const sq)
 {
-    if (symmetry_) {
-        throw PSIEXCEPTION("Matrix::set called on a non-totally symmetric matrix.");
-    }
-
-    int h, i, j, ii, jj;
-    int offset;
-
-    if (sq == NULL) {
-        zero();
-        // TODO: Need to throw an exception here.
-        return;
-    }
-    offset = 0;
-    for (h=0; h<nirrep_; ++h) {
-        for (i=0; i<rowspi_[h]; ++i) {
-            ii = i + offset;
-            for (j=0; j<=i; ++j) {
-                jj = j + offset;
-                matrix_[h][i][j] = sq[ii][jj];
-                matrix_[h][j][i] = sq[jj][ii];
-            }
-        }
-        offset += rowspi_[h];
-    }
+    set(sq->const_pointer());
 }
 
-void Matrix::set(SimpleMatrix *sq)
+void Matrix::set(const shared_ptr<SimpleMatrix>& sq)
 {
-    set(const_cast<const double**>(sq->matrix_));
+    set(sq->const_pointer());
 }
 
-void Matrix::set(shared_ptr<SimpleMatrix> sq)
-{
-    set(const_cast<const double**>(sq.get()->matrix_));
-}
-
-void Matrix::set(Vector* vec)
+void Matrix::set(const Vector * const vec)
 {
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix::set called on a non-totally symmetric matrix.");
@@ -456,12 +401,12 @@ void Matrix::set(Vector* vec)
     }
 }
 
-void Matrix::set(Vector& vec)
+void Matrix::set(const Vector& vec)
 {
     set(&vec);
 }
 
-void Matrix::set(shared_ptr<Vector> vec)
+void Matrix::set(const shared_ptr<Vector>& vec)
 {
     set(vec.get());
 }
@@ -510,14 +455,13 @@ double **Matrix::to_block_matrix() const
     return temp;
 }
 
-SimpleMatrix *Matrix::to_simple_matrix()
+SimpleMatrix *Matrix::to_simple_matrix() const
 {
     return new SimpleMatrix(this);
 }
 
-void Matrix::print_mat(double **a, int m, int n, FILE *out)
+void Matrix::print_mat(double **a, int m, int n, FILE *out) const
 {
-    #if 0
     int ii,jj,kk,nn,ll;
     int i,j,k;
 
@@ -544,11 +488,9 @@ L200:
        return;
        }
     ii=kk; goto L200;
-    #endif
-    ::print_mat(a, m, n, out);
 }
 
-void Matrix::print(FILE *out, const char *extra)
+void Matrix::print(FILE *out, const char *extra) const
 {
     int h;
 
@@ -567,7 +509,7 @@ void Matrix::print(FILE *out, const char *extra)
     fflush(out);
 }
 
-void Matrix::eivprint(Vector *values, FILE *out)
+void Matrix::eivprint(const Vector * const values, FILE *out)
 {
     int h;
 
@@ -583,12 +525,12 @@ void Matrix::eivprint(Vector *values, FILE *out)
     fflush(out);
 }
 
-void Matrix::eivprint(Vector& values, FILE *out)
+void Matrix::eivprint(const Vector& values, FILE *out)
 {
     eivprint(&values, out);
 }
 
-void Matrix::eivprint(shared_ptr<Vector> values, FILE *out)
+void Matrix::eivprint(const shared_ptr<Vector>& values, FILE *out)
 {
     eivprint(values.get(), out);
 }
@@ -675,7 +617,7 @@ Matrix* Matrix::transpose()
     return temp;
 }
 
-void Matrix::add(const Matrix* plus)
+void Matrix::add(const Matrix * const plus)
 {
     double *lhs, *rhs;
     for (int h=0; h<nirrep_; ++h) {
@@ -696,12 +638,12 @@ void Matrix::add(const Matrix& plus)
     add(&plus);
 }
 
-void Matrix::add(shared_ptr<Matrix> plus)
+void Matrix::add(const shared_ptr<Matrix>& plus)
 {
     add(plus.get());
 }
 
-void Matrix::subtract(const Matrix* plus)
+void Matrix::subtract(const Matrix* const plus)
 {
     double *lhs, *rhs;
     for (int h=0; h<nirrep_; ++h) {
@@ -717,17 +659,18 @@ void Matrix::subtract(const Matrix* plus)
     }
 }
 
-void Matrix::subtract(shared_ptr<Matrix> sub)
+void Matrix::subtract(const shared_ptr<Matrix>& sub)
 {
     subtract(sub.get());
 }
 
-void Matrix::accumulate_product(const Matrix* a, const Matrix* b)
+void Matrix::accumulate_product(const Matrix* const a, const Matrix* const b)
 {
     gemm(false, false, 1.0, a, b, 1.0);
 }
 
-void Matrix::accumulate_product(shared_ptr<Matrix> a, shared_ptr<Matrix> b)
+void Matrix::accumulate_product(const shared_ptr<Matrix>& a,
+                                const shared_ptr<Matrix>& b)
 {
     gemm(false, false, 1.0, a, b, 1.0);
 }
@@ -783,7 +726,7 @@ double Matrix::rms()
     return sqrt(sum/terms);
 }
 
-void Matrix::transform(Matrix* a, Matrix* transformer)
+void Matrix::transform(const Matrix* const a, const Matrix* const transformer)
 {
     Matrix temp(a);
 
@@ -791,12 +734,12 @@ void Matrix::transform(Matrix* a, Matrix* transformer)
     gemm(true, false, 1.0, transformer, &temp, 0.0);
 }
 
-void Matrix::transform(shared_ptr<Matrix> a, shared_ptr<Matrix> transformer)
+void Matrix::transform(const shared_ptr<Matrix>& a, const shared_ptr<Matrix>& transformer)
 {
     transform(a.get(), transformer.get());
 }
 
-void Matrix::transform(Matrix* transformer)
+void Matrix::transform(const Matrix* const transformer)
 {
     bool square = true;
     int h = 0;
@@ -822,12 +765,12 @@ void Matrix::transform(Matrix* transformer)
     }
 }
 
-void Matrix::transform(shared_ptr<Matrix> transformer)
+void Matrix::transform(const shared_ptr<Matrix>& transformer)
 {
     transform(transformer.get());
 }
 
-void Matrix::back_transform(Matrix* a, Matrix* transformer)
+void Matrix::back_transform(const Matrix* const a, const Matrix* const transformer)
 {
     Matrix temp(a);
 
@@ -835,12 +778,12 @@ void Matrix::back_transform(Matrix* a, Matrix* transformer)
     gemm(false, false, 1.0, transformer, &temp, 0.0);
 }
 
-void Matrix::back_transform(shared_ptr<Matrix> a, shared_ptr<Matrix> transformer)
+void Matrix::back_transform(const shared_ptr<Matrix>& a, const shared_ptr<Matrix>& transformer)
 {
     back_transform(a.get(), transformer.get());
 }
 
-void Matrix::back_transform(Matrix* transformer)
+void Matrix::back_transform(const Matrix* const transformer)
 {
     bool square = true;
     int h = 0;
@@ -866,12 +809,13 @@ void Matrix::back_transform(Matrix* transformer)
     }
 }
 
-void Matrix::back_transform(shared_ptr<Matrix> transformer)
+void Matrix::back_transform(const shared_ptr<Matrix>& transformer)
 {
     back_transform(transformer.get());
 }
 
-void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix* a, const Matrix* b, double beta)
+void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix* const a,
+                  const Matrix* const b, double beta)
 {
     if (symmetry_ != a->symmetry_ || symmetry_ != b->symmetry_) {
         throw PSIEXCEPTION("Matrix::gemm: symmetries of all matrices are not the same.");
@@ -896,27 +840,34 @@ void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix* a, const
     }
 }
 
-void Matrix::gemm(bool transa, bool transb, double alpha, shared_ptr<Matrix> a, shared_ptr<Matrix> b, double beta)
+void Matrix::gemm(bool transa, bool transb, double alpha,
+                  const shared_ptr<Matrix>& a, const shared_ptr<Matrix>& b,
+                  double beta)
 {
     gemm(transa, transb, alpha, a.get(), b.get(), beta);
 }
 
-void Matrix::gemm(bool transa, bool transb, double alpha, Matrix& a, shared_ptr<Matrix> b, double beta)
+void Matrix::gemm(bool transa, bool transb, double alpha,
+                  const Matrix& a, const shared_ptr<Matrix>& b,
+                  double beta)
 {
-    gemm(transa, transb, alpha, const_cast<const Matrix*>(&a), b.get(), beta);
+    gemm(transa, transb, alpha, &a, b.get(), beta);
 }
 
-void Matrix::gemm(bool transa, bool transb, double alpha, shared_ptr<Matrix> a, Matrix& b, double beta)
+void Matrix::gemm(bool transa, bool transb, double alpha,
+                  const shared_ptr<Matrix>& a, const Matrix& b,
+                  double beta)
 {
-    gemm(transa, transb, alpha, a.get(), const_cast<const Matrix*>(&b), beta);
+    gemm(transa, transb, alpha, a.get(), &b, beta);
 }
 
-void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix& a, const Matrix& b, double beta)
+void Matrix::gemm(bool transa, bool transb, double alpha,
+                  const Matrix& a, const Matrix& b, double beta)
 {
     gemm(transa, transb, alpha, &a, &b, beta);
 }
 
-double Matrix::vector_dot(Matrix* rhs)
+double Matrix::vector_dot(const Matrix* const rhs)
 {
     double sum = 0.0;
     int h;
@@ -931,7 +882,7 @@ double Matrix::vector_dot(Matrix* rhs)
     return sum;
 }
 
-double Matrix::vector_dot(shared_ptr<Matrix> rhs)
+double Matrix::vector_dot(const shared_ptr<Matrix>& rhs)
 {
     return vector_dot(rhs.get());
 }
@@ -949,12 +900,12 @@ void Matrix::diagonalize(Matrix* eigvectors, Vector* eigvalues)
     }
 }
 
-void Matrix::diagonalize(shared_ptr<Matrix> eigvectors, shared_ptr<Vector> eigvalues)
+void Matrix::diagonalize(shared_ptr<Matrix>& eigvectors, shared_ptr<Vector>& eigvalues)
 {
     diagonalize(eigvectors.get(), eigvalues.get());
 }
 
-void Matrix::diagonalize(shared_ptr<Matrix> eigvectors, Vector& eigvalues)
+void Matrix::diagonalize(shared_ptr<Matrix>& eigvectors, Vector& eigvalues)
 {
     diagonalize(eigvectors.get(), &eigvalues);
 }
@@ -1044,7 +995,7 @@ void Matrix::copy_upper_to_lower()
 
 // Reference versions of the above functions:
 
-void Matrix::transform(Matrix& a, Matrix& transformer)
+void Matrix::transform(const Matrix& a, const Matrix& transformer)
 {
     Matrix temp(a);
 
@@ -1052,7 +1003,7 @@ void Matrix::transform(Matrix& a, Matrix& transformer)
     gemm(true, false, 1.0, transformer, temp, 0.0);
 }
 
-void Matrix::transform(Matrix& transformer)
+void Matrix::transform(const Matrix& transformer)
 {
     Matrix temp(this);
 
@@ -1060,7 +1011,7 @@ void Matrix::transform(Matrix& transformer)
     gemm(true, false, 1.0, transformer, temp, 0.0);
 }
 
-void Matrix::back_transform(Matrix& a, Matrix& transformer)
+void Matrix::back_transform(const Matrix& a, const Matrix& transformer)
 {
     Matrix temp(a);
 
@@ -1068,7 +1019,7 @@ void Matrix::back_transform(Matrix& a, Matrix& transformer)
     gemm(false, false, 1.0, transformer, temp, 0.0);
 }
 
-void Matrix::back_transform(Matrix& transformer)
+void Matrix::back_transform(const Matrix& transformer)
 {
     Matrix temp(this);
 
@@ -1076,7 +1027,7 @@ void Matrix::back_transform(Matrix& transformer)
     gemm(false, false, 1.0, transformer, temp, 0.0);
 }
 
-double Matrix::vector_dot(Matrix& rhs)
+double Matrix::vector_dot(const Matrix& rhs)
 {
     return vector_dot(&rhs);
 }
@@ -1133,8 +1084,7 @@ void Matrix::write_to_dpdfile2(dpdfile2 *outFile)
     dpd_file2_mat_close(outFile);
 }
 
-
-void Matrix::save(const char *filename, bool append, bool saveLowerTriangle, bool saveSubBlocks)
+void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, bool saveSubBlocks)
 {
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix::save: Matrix is non-totally symmetric.");
@@ -1145,9 +1095,9 @@ void Matrix::save(const char *filename, bool append, bool saveLowerTriangle, boo
 
     FILE *out = NULL;
     if (append == true) {
-        out = fopen(filename, "a");
+        out = fopen(filename.c_str(), "a");
     } else {
-        out = fopen(filename, "w");
+        out = fopen(filename.c_str(), "w");
     }
 
     fprintf(out, "%s", name_.c_str());
@@ -1253,7 +1203,7 @@ void Matrix::save(const char *filename, bool append, bool saveLowerTriangle, boo
     fclose(out);
 }
 
-bool Matrix::load(psi::PSIO* psio, unsigned int fileno, char *tocentry, int nso)
+bool Matrix::load(psi::PSIO* const psio, unsigned int fileno, const string& tocentry, int nso)
 {
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix::load: Matrix is non-totally symmetric.");
@@ -1262,10 +1212,10 @@ bool Matrix::load(psi::PSIO* psio, unsigned int fileno, char *tocentry, int nso)
     double *integrals = init_array(ioff[nso]);
 
     // If psi fails to read in the data this will abort out.
-    if (tocentry != NULL)
-        psi::IWL::read_one(psio, fileno, tocentry, integrals, ioff[nso], 0, 0, outfile);
+    if (!tocentry.empty())
+        psi::IWL::read_one(psio, fileno, tocentry.c_str(), integrals, ioff[nso], 0, 0, outfile);
     else
-        psi::IWL::read_one(psio, fileno, const_cast<char*>(name_.c_str()), integrals, ioff[nso], 0, 0, outfile);
+        psi::IWL::read_one(psio, fileno, name_.c_str(), integrals, ioff[nso], 0, 0, outfile);
 
     set(integrals);
 
@@ -1274,27 +1224,7 @@ bool Matrix::load(psi::PSIO* psio, unsigned int fileno, char *tocentry, int nso)
     return true;
 }
 
-bool Matrix::load(shared_ptr<psi::PSIO> psio, unsigned int fileno, char *tocentry, int nso)
-{
-    if (symmetry_) {
-        throw PSIEXCEPTION("Matrix::load: Matrix is non-totally symmetric.");
-    }
-
-    double *integrals = init_array(ioff[nso]);
-
-    // If psi fails to read in the data this will abort out.
-    if (tocentry != NULL)
-        psi::IWL::read_one(psio.get(), fileno, tocentry, integrals, ioff[nso], 0, 0, outfile);
-    else
-        psi::IWL::read_one(psio.get(), fileno, const_cast<char*>(name_.c_str()), integrals, ioff[nso], 0, 0, outfile);
-
-    set(integrals);
-
-    ::free(integrals);
-
-    return true;
-}
-void Matrix::load(psi::PSIO* psio, unsigned int fileno, SaveType st)
+void Matrix::load(psi::PSIO* const psio, unsigned int fileno, SaveType st)
 {
     // The matrix must be sized correctly first
     if(Communicator::world->me() == 0) {
@@ -1315,12 +1245,12 @@ void Matrix::load(psi::PSIO* psio, unsigned int fileno, SaveType st)
 
         if (st == SubBlocks) {
             for (int h=0; h<nirrep_; ++h) {
-                std::string str(name_);
+                string str(name_);
                 str += " Irrep " + to_string(h);
 
                 // Read the sub-blocks
                 if (colspi_[h] > 0 && rowspi_[h] > 0)
-                    psio->read_entry(fileno, const_cast<char*>(str.c_str()), (char*)matrix_[h][0], sizeof(double) * colspi_[h] * rowspi_[h]);
+                    psio->read_entry(fileno, str.c_str(), (char*)matrix_[h][0], sizeof(double) * colspi_[h] * rowspi_[h]);
             }
         }
         else if (st == Full) {
@@ -1329,7 +1259,7 @@ void Matrix::load(psi::PSIO* psio, unsigned int fileno, SaveType st)
 
             // Read the full block
             if (sizer > 0 && sizec > 0)
-                psio->read_entry(fileno, const_cast<char*>(name_.c_str()), (char*)fullblock[0], sizeof(double) * sizer * sizec);
+                psio->read_entry(fileno, name_.c_str(), (char*)fullblock[0], sizeof(double) * sizer * sizec);
             set(fullblock);
             Matrix::free(fullblock);
         }
@@ -1337,7 +1267,7 @@ void Matrix::load(psi::PSIO* psio, unsigned int fileno, SaveType st)
             double *lower = to_lower_triangle();
 
             if (sizer > 0)
-                psio->read_entry(fileno, const_cast<char*>(name_.c_str()), (char*)lower, sizeof(double)*ioff[sizer]);
+                psio->read_entry(fileno, name_.c_str(), (char*)lower, sizeof(double)*ioff[sizer]);
             set(lower);
             delete[] lower;
         }
@@ -1348,11 +1278,8 @@ void Matrix::load(psi::PSIO* psio, unsigned int fileno, SaveType st)
             psio->close(fileno, 1);     // Close and keep // Idempotent, win!
     }
 }
-void Matrix::load(boost::shared_ptr<PSIO> psio, unsigned int fileno, SaveType st)
-{
-    load(psio.get(), fileno, st);
-}
-void Matrix::save(psi::PSIO* psio, unsigned int fileno, SaveType st)
+
+void Matrix::save(psi::PSIO* const psio, unsigned int fileno, SaveType st)
 {
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix::save: Matrix is non-totally symmetric.");
@@ -1376,7 +1303,7 @@ void Matrix::save(psi::PSIO* psio, unsigned int fileno, SaveType st)
 
         if (st == SubBlocks) {
             for (int h=0; h<nirrep_; ++h) {
-                std::string str(name_);
+                string str(name_);
                 str += " Irrep " + to_string(h);
 
                 // Write the sub-blocks
@@ -1405,11 +1332,6 @@ void Matrix::save(psi::PSIO* psio, unsigned int fileno, SaveType st)
         if (!already_open)
             psio->close(fileno, 1);     // Close and keep
     }
-}
-
-void Matrix::save(shared_ptr<psi::PSIO> psio, unsigned int fileno, SaveType st)
-{
-    save(psio.get(), fileno, st);
 }
 
 void Matrix::send(Communicator* comm)
@@ -1488,7 +1410,7 @@ SimpleMatrix::SimpleMatrix() : matrix_(0), rows_(0), cols_(0)
 
 }
 
-SimpleMatrix::SimpleMatrix(std::string name) :
+SimpleMatrix::SimpleMatrix(string name) :
         matrix_(0), rows_(0), cols_(0), name_(name)
 {
 
@@ -1528,7 +1450,7 @@ SimpleMatrix::SimpleMatrix(int l_rows, int l_cols) : matrix_(0)
     alloc();
 }
 
-SimpleMatrix::SimpleMatrix(std::string name, int l_rows, int l_cols) : matrix_(0)
+SimpleMatrix::SimpleMatrix(string name, int l_rows, int l_cols) : matrix_(0)
 {
     rows_ = l_rows;
     cols_ = l_cols;
@@ -1554,7 +1476,7 @@ SimpleMatrix::SimpleMatrix(const Matrix& c) : matrix_(0), rows_(0), cols_(0)
     matrix_ = c.to_block_matrix();
 }
 
-SimpleMatrix::SimpleMatrix(std::string& name, const Dimension& rows, const Dimension& cols)
+SimpleMatrix::SimpleMatrix(string& name, const Dimension& rows, const Dimension& cols)
 {
     name_ = name;
     rows_ = rows[0];
@@ -1567,7 +1489,7 @@ SimpleMatrix::~SimpleMatrix()
     release();
 }
 
-void SimpleMatrix::init(int rowspi, int colspi, std::string name)
+void SimpleMatrix::init(int rowspi, int colspi, string name)
 {
     rows_ = rowspi;
     cols_ = colspi;

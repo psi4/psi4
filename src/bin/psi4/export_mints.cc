@@ -53,12 +53,12 @@ void export_mints()
             def("dim", &IntVector::dim).
             def("nirrep", &IntVector::nirrep);
 
-    typedef void   (Matrix::*matrix_multiply)(bool, bool, double, boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix>, double);
-    typedef void   (Matrix::*matrix_diagonalize)(boost::shared_ptr<Matrix>, boost::shared_ptr<Vector>);
-    typedef void   (Matrix::*matrix_one)(boost::shared_ptr<Matrix>);
-    typedef double (Matrix::*double_matrix_one)(boost::shared_ptr<Matrix>);
-    typedef void   (Matrix::*matrix_two)(boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix>);
-    typedef void   (Matrix::*matrix_save)(std::string, bool, bool, bool);
+    typedef void   (Matrix::*matrix_multiply)(bool, bool, double, const boost::shared_ptr<Matrix>&, const boost::shared_ptr<Matrix>&, double);
+    typedef void   (Matrix::*matrix_diagonalize)(boost::shared_ptr<Matrix>&, boost::shared_ptr<Vector>&);
+    typedef void   (Matrix::*matrix_one)(const boost::shared_ptr<Matrix>&);
+    typedef double (Matrix::*double_matrix_one)(const boost::shared_ptr<Matrix>&);
+    typedef void   (Matrix::*matrix_two)(const boost::shared_ptr<Matrix>&, const boost::shared_ptr<Matrix>&);
+    typedef void   (Matrix::*matrix_save)(const std::string&, bool, bool, bool);
     typedef void   (Matrix::*matrix_set)(int, int, int, double);
 
     class_<Matrix, shared_ptr<Matrix> >("Matrix").
