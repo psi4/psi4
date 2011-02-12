@@ -54,7 +54,7 @@ Vector::Vector(const std::string& name, int dim) {
     dimpi_ = new int[nirrep_];
     dimpi_[0] = dim;
     alloc();
-    name = name_;
+    name_ = name;
 }
 
 Vector::~Vector() {

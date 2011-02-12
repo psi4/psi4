@@ -43,9 +43,9 @@ public:
     /// Constructor, convenience for 1 irrep
     Vector(int dim);
     /// Constructor, allocates memory
-    Vector(std::string name, int nirrep, int *dimpi);
+    Vector(const std::string& name, int nirrep, int *dimpi);
     /// Constructor, convenience for 1 irrep
-    Vector(std::string name, int dim);
+    Vector(const std::string& name, int dim);
 
     /// Destructor, frees memory
     ~Vector();
