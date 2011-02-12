@@ -22,7 +22,9 @@ private:
   void get_params();
   void get_ribasis();
 
-  void print_header();
+  // This class should print a general header containing orbital info,
+  // options, etc. We can print method specific headers later.
+  virtual void print_header(); 
 
 protected:
 

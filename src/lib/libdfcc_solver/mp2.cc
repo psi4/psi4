@@ -19,4 +19,8 @@ double MP2::compute_energy()
   return(0.0);
 }
 
+void MP2::print_header()
+{
+}
+
 }}

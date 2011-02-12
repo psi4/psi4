@@ -13,6 +13,7 @@ CC::CC(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
 {
   get_params();
   get_ribasis();
+  print_header();
 }
 
 CC::~CC()
@@ -63,20 +64,18 @@ void CC::get_params()
   double* evals_t = chkpt_->rd_evals();
   double** C_t = chkpt_->rd_scf();
 
-  evals_ = shared_ptr<Vector>(new Vector("Epsilon (full)", nmo_));
+  evals_ = shared_ptr<Vector>(new Vector(nmo_));
   evalsp_ = evals_->pointer();
   memcpy(static_cast<void*> (evalsp_), static_cast<void*> (evals_t), nmo_*sizeof(double));   
   C_ = shared_ptr<Matrix>(new Matrix("C (full)", nso_, nmo_));
   Cp_ = C_->pointer();
   memcpy(static_cast<void*> (Cp_[0]), static_cast<void*> (C_t[0]), nmo_*nso_*sizeof(double));   
 
-  free(evals_t);
-  free_block(C_t); 
-
   // Convenience matrices (may make it easier on the helper objects)
-  evals_aocc_ = shared_ptr<Vector>(new Vector("Epsilon (Active Occupied)", naocc_));
+  // ...because Rob is a pussy
+  evals_aocc_ = shared_ptr<Vector>(new Vector(naocc_));
   evals_aoccp_ = evals_aocc_->pointer();
-  evals_avir_ = shared_ptr<Vector>(new Vector("Epsilon (Active Virtual)", navir_));
+  evals_avir_ = shared_ptr<Vector>(new Vector(navir_));
   evals_avirp_ = evals_avir_->pointer();
 
   C_aocc_ = shared_ptr<Matrix>(new Matrix("C (Active Occupied)", nso_, naocc_));
@@ -92,7 +91,8 @@ void CC::get_params()
     memcpy(static_cast<void*> (C_avirp_[m]), static_cast<void*> (&C_t[m][naocc_]), naocc_*sizeof(double));   
   }
 
-
+  free(evals_t);
+  free_block(C_t); 
 }
 
 void CC::get_ribasis()
@@ -103,6 +103,23 @@ void CC::get_ribasis()
     "RI_BASIS_CC"));
   zero_ = BasisSet::zero_ao_basis_set();
   ndf_ = ribasis_->nbf();
+}
+
+void CC::print_header()
+{
+     fprintf(outfile,"    Orbital Information\n");
+     fprintf(outfile,"  -----------------------\n");
+     fprintf(outfile,"    NSO      = %8d\n",nso_);
+     fprintf(outfile,"    NMO      = %8d\n",nmo_);
+     fprintf(outfile,"    NOCC Tot = %8d\n",nocc_);
+     fprintf(outfile,"    NOCC Frz = %8d\n",nfocc_);
+     fprintf(outfile,"    NOCC Act = %8d\n",naocc_);
+     fprintf(outfile,"    NVIR Tot = %8d\n",nvir_);
+     fprintf(outfile,"    NVIR Frz = %8d\n",nfvir_);
+     fprintf(outfile,"    NVIR Act = %8d\n",navir_);
+     fprintf(outfile,"    NDF      = %8d\n",ndf_);
+     fprintf(outfile,"\n");
+     fflush(outfile);
 }
 
 }}
