@@ -22,6 +22,8 @@ protected:
     int nirrep_;
     /// Dimensions per irrep
     int *dimpi_;
+    /// Name
+    std::string name_;
 
     /// Allocates vector_
     void alloc();
@@ -40,6 +42,10 @@ public:
     Vector(int nirrep, int *dimpi);
     /// Constructor, convenience for 1 irrep
     Vector(int dim);
+    /// Constructor, allocates memory
+    Vector(std::string name, int nirrep, int *dimpi);
+    /// Constructor, convenience for 1 irrep
+    Vector(std::string name, int dim);
 
     /// Destructor, frees memory
     ~Vector();
@@ -78,6 +84,22 @@ public:
     /// Returns the number of irreps
     int nirrep() const {
         return nirrep_;
+    }
+
+    /**
+     * Sets the name of the vector, used in print(...) 
+     *
+     * @param name New name to use.
+     */
+    void set_name(const std::string& name) {
+        name_ = name;
+    }
+
+    /**
+     * Gets the name of the matrix.
+     */
+    std::string name() const {
+        return name_;
     }
 
     /// Python compatible printer
@@ -178,6 +200,8 @@ protected:
     int nirrep_;
     /// Dimensions per irrep
     int *dimpi_;
+    /// Name of the IntVector
+    std::string name_;
 
     /// Allocates vector_
     void alloc();
@@ -196,6 +220,10 @@ public:
     IntVector(int nirrep, int *dimpi);
     /// Constructor, convenience for 1 irrep
     IntVector(int dim);
+    /// Constructor, allocates memory
+    IntVector(const std::string& name, int nirrep, int *dimpi);
+    /// Constructor, convenience for 1 irrep
+    IntVector(const std::string& name, int dim);
 
     /// Destructor, frees memory
     ~IntVector();
@@ -240,6 +268,21 @@ public:
         return nirrep_;
     }
 
+    /**
+     * Sets the name of the vector, used in print(...) 
+     *
+     * @param name New name to use.
+     */
+    void set_name(const std::string& name) {
+        name_ = name;
+    }
+
+    /**
+     * Gets the name of the matrix.
+     */
+    std::string name() const {
+        return name_;
+    }
     /// Python compatible printer
     void print_out() { print(outfile); }
 

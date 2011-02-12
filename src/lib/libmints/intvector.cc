@@ -10,6 +10,7 @@ IntVector::IntVector() {
     vector_ = NULL;
     dimpi_ = NULL;
     nirrep_ = 0;
+    name_ = "";
 }
 
 IntVector::IntVector(const IntVector& c) {
@@ -20,6 +21,7 @@ IntVector::IntVector(const IntVector& c) {
         dimpi_[h] = c.dimpi_[h];
     alloc();
     copy_from(c.vector_);
+    name_ = c.name_;
 }
 
 IntVector::IntVector(int nirreps, int *dimpi) {
@@ -36,6 +38,23 @@ IntVector::IntVector(int dim) {
     dimpi_ = new int[nirrep_];
     dimpi_[0] = dim;
     alloc();
+}
+IntVector::IntVector(const std::string& name, int nirreps, int *dimpi) {
+    vector_ = NULL;
+    nirrep_ = nirreps;
+    dimpi_ = new int[nirrep_];
+    for (int h=0; h<nirrep_; ++h)
+        dimpi_[h] = dimpi[h];
+    alloc();
+    name_ = name;
+}
+IntVector::IntVector(const std::string& name, int dim) {
+    vector_ = NULL;
+    nirrep_ = 1;
+    dimpi_ = new int[nirrep_];
+    dimpi_[0] = dim;
+    alloc();
+    name_ = name;
 }
 
 IntVector::~IntVector() {
@@ -126,6 +145,7 @@ void IntVector::set(int *vec) {
 
 void IntVector::print(FILE *out) {
     int h;
+    fprintf(out, "\n # %s #\n", name_.c_str());
     for (h=0; h<nirrep_; ++h) {
         fprintf(out, " Irrep: %d\n", h+1);
         for (int i=0; i<dimpi_[h]; ++i)
