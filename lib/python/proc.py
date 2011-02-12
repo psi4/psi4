@@ -167,6 +167,19 @@ def run_dfmp2(name, **kwargs):
     elif (name.upper() == 'DFMP2'):
         return e_dfmp2
 
+def run_dfcc(name, **kwargs):
+
+    run_scf('RHF',**kwargs)
+
+    PsiMod.set_default_options_for_module("DFCC")
+    PsiMod.set_option("NO_INPUT",True)
+    
+    PsiMod.print_out("\n")
+    banner("DF-CC")
+    PsiMod.print_out("\n")
+    e_dfcc = PsiMod.dfcc()
+    return e_dfcc
+
 def run_sapt(name, **kwargs):
 
     molecule = PsiMod.get_active_molecule()
