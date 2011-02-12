@@ -1,8 +1,7 @@
 #include "cc.h"
 
 #include <libchkpt/chkpt.hpp>
-#include <libmints/basisset.h>
-#include <libmints/basisset_parser.h>
+#include <libmints/mints.h>
 
 using namespace std;
 using namespace psi;
@@ -10,7 +9,7 @@ using namespace psi;
 namespace psi { namespace dfcc {
 
 CC::CC(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
-  : Wavefunction(options, psio, chkpt)
+  : Wavefunction(options, psio, chkpt) 
 {
   get_params();
   get_ribasis();
@@ -27,6 +26,7 @@ void CC::get_options()
 void CC::get_params()
 {
   // Init with checkpoint until Rob gets bitchy
+  // RP: I'm bitchy. But not a bitch unless you want chinese food. 
   // MO basis info
   nirrep_ = chkpt_->rd_nirreps();
 
@@ -60,8 +60,39 @@ void CC::get_params()
 
   // Reference wavefunction info
   Eref_ = chkpt_->rd_escf();
-  evals_ = chkpt_->rd_evals();
-  C_ = chkpt_->rd_scf();
+  double* evals_t = chkpt_->rd_evals();
+  double** C_t = chkpt_->rd_scf();
+
+  evals_ = shared_ptr<Vector>(new Vector("Epsilon (full)", nmo_));
+  evalsp_ = evals_->pointer();
+  memcpy(static_cast<void*> (evalsp_), static_cast<void*> (evals_t), nmo_*sizeof(double));   
+  C_ = shared_ptr<Matrix>(new Matrix("C (full)", nso_, nmo_));
+  Cp_ = C_->pointer();
+  memcpy(static_cast<void*> (Cp_[0]), static_cast<void*> (C_t[0]), nmo_*nso_*sizeof(double));   
+
+  free(evals_t);
+  free_block(C_t); 
+
+  // Convenience matrices (may make it easier on the helper objects)
+  evals_aocc_ = shared_ptr<Vector>(new Vector("Epsilon (Active Occupied)", naocc_));
+  evals_aoccp_ = evals_aocc_->pointer();
+  evals_avir_ = shared_ptr<Vector>(new Vector("Epsilon (Active Virtual)", navir_));
+  evals_avirp_ = evals_avir_->pointer();
+
+  C_aocc_ = shared_ptr<Matrix>(new Matrix("C (Active Occupied)", nso_, naocc_));
+  C_aoccp_ = C_aocc_->pointer();
+  C_avir_ = shared_ptr<Matrix>(new Matrix("C (Active Virtual)", nso_, navir_));
+  C_avirp_ = C_avir_->pointer();
+
+  memcpy(static_cast<void*> (evals_aoccp_), static_cast<void*> (&evals_t[0]), naocc_*sizeof(double));   
+  memcpy(static_cast<void*> (evals_avirp_), static_cast<void*> (&evals_t[naocc_]), navir_*sizeof(double));  
+
+  for (int m = 0; m < nso_; m++) { 
+    memcpy(static_cast<void*> (C_aoccp_[m]), static_cast<void*> (&C_t[m][0]), naocc_*sizeof(double));   
+    memcpy(static_cast<void*> (C_avirp_[m]), static_cast<void*> (&C_t[m][naocc_]), naocc_*sizeof(double));   
+  }
+
+
 }
 
 void CC::get_ribasis()
