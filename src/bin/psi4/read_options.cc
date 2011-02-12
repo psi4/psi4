@@ -890,6 +890,28 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -Log10 of the density convergence criterion -*/
     options.add_int("D_CONVERGE", 8);
   }
+  if(name=="DFCC"|| options.read_globals()) {
+    /* Type of wavefunction */
+    options.add_str("WAVEFUNCTION","MP2","MP2");
+    /* MO basis */
+    options.add_str("BASIS","NONE");
+    /* DF basis for MO integrals */
+    options.add_str("RI_BASIS_CC","NONE");
+    /* Convergence of CC energy */
+    options.add_int("E_CONVERGE", 8);
+    /* Convergence of cluster amplitudes (RMS change) */
+    options.add_int("T_CONVERGE", 8);
+    /* Turn on DIIS */
+    options.add_bool("DIIS",true);
+    /* Minimum DIIS vectors */
+    options.add_int("MIN_DIIS_VECS", 2);
+    /* Maximum DIIS vectors */
+    options.add_int("MAX_DIIS_VECS", 6);
+    /* Print level */
+    options.add_int("PRINT",1);
+    /* Debugging information? */
+    options.add_bool("DEBUG",false);
+  }
   if(name == "PSIMRCC"|| options.read_globals()) {
     options.add_int("CORR_CHARGE",0);
     options.add_bool("DEBUG",false);

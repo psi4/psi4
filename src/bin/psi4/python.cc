@@ -54,6 +54,7 @@ namespace psi {
     namespace deriv     { PsiReturnType deriv(Options &); }
     namespace scf       { PsiReturnType scf(Options &, PyObject* pre, PyObject* post);   }
     namespace dfmp2     { PsiReturnType dfmp2(Options &); }
+    namespace dfcc      { PsiReturnType dfcc(Options &); }
     namespace sapt      { PsiReturnType sapt(Options &);  }
     namespace dcft      { PsiReturnType dcft(Options &);  }
 
@@ -112,6 +113,15 @@ double py_psi_dcft()
 double py_psi_dfmp2()
 {
     if (dfmp2::dfmp2(Process::environment.options) == Success) {
+        return Process::environment.globals["CURRENT ENERGY"];
+    }
+    else
+        return 0.0;
+}
+
+double py_psi_dfcc()
+{
+    if (dfcc::dfcc(Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
     else
@@ -446,6 +456,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("scf", py_psi_scf);
     def("dcft", py_psi_dcft);
     def("dfmp2", py_psi_dfmp2);
+    def("dfcc", py_psi_dfcc);
     def("sapt", py_psi_sapt);
     def("optking", py_psi_optking);
     def("transqt", py_psi_transqt);

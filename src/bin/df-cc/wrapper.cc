@@ -23,7 +23,7 @@ namespace psi { namespace dfcc {
 
 std::string to_string(const int val); 
 
-PsiReturnType df_cc(Options & options)
+PsiReturnType dfcc(Options & options)
 {
     tstart();
 

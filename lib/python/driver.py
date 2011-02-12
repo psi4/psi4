@@ -13,6 +13,7 @@ procedures = {'energy' : {
             'mcscf'         : run_mcscf,
             'dfmp2'         : run_dfmp2,
             'scs-dfmp2'     : run_dfmp2,
+            'dfcc'          : run_dfcc,
             'sapt0'         : run_sapt,
             'scs-sapt'      : run_sapt,
             'sapt2'         : run_sapt,

@@ -18,10 +18,10 @@ private:
 protected:
 
 public:
-    CCD(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
-    virtual ~CCD();
+  CCD(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
+  virtual ~CCD();
 
-    virtual double compute_energy();
+  virtual double compute_energy();
 
 };
 

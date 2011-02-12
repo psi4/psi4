@@ -7,7 +7,7 @@
 
 namespace psi { namespace dfcc {
 
-PsiReturnType df_cc(Options & options);
+PsiReturnType dfcc(Options & options);
 
 }}
 
