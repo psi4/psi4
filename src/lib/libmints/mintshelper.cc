@@ -10,6 +10,8 @@
 #include <libciomr/libciomr.h>
 #include "mints.h"
 
+#include <libqt/qt.h>
+
 #include <psi4-dec.h>
 
 using namespace boost;
@@ -30,6 +32,7 @@ MintsHelper::~MintsHelper()
 
 void MintsHelper::integrals()
 {
+    timer_init();
     shared_ptr<PSIO> psio(new PSIO());
 
     fprintf(outfile, " MINTS: Wrapper to libmints.\n   by Justin Turney\n\n");
@@ -128,6 +131,7 @@ void MintsHelper::integrals()
     fprintf(outfile, "done\n\n"); fflush(outfile);
 
     fprintf(outfile, "      Computed %lu integrals.\n\n", writer.count());
+    timer_done();
 }
 
 void MintsHelper::one_electron_integrals()
