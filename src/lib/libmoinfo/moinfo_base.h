@@ -14,7 +14,6 @@
 
 #include <string>
 #include <libutil/libutil.h>
-
 #include "orbital_space.h"
 
 typedef std::vector<int>                    intvec;
@@ -22,7 +21,7 @@ typedef std::vector<bool>                   boolvec;
 
 namespace psi {
 
-class Chkpt;
+class Options;
 
 class MOInfoBase{
 public:

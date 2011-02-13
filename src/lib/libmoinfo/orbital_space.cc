@@ -6,11 +6,12 @@
 
 #include "orbital_space.h"
 #include <libutil/libutil.h>
+#include <exception.h>
 
-extern FILE *outfile;
 
 namespace psi {
 
+extern FILE *outfile;
 using namespace std;
 
 // The default space is all
@@ -29,7 +30,7 @@ OrbitalSpace::OrbitalSpace(std::string label_,std::string symbol_)
     std::string message = "Cannot create orbital space \"" + label_
                         + "\" with symbol \"" + symbol_
                         + "\". Please use only one character.";
-    print_error(outfile,message,__FILE__,__LINE__);
+    throw PSIEXCEPTION(message);
   }
 }
 

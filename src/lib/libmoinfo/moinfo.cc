@@ -116,7 +116,7 @@ void MOInfo::read_info()
   if(use_liboptions){
     // The defalut irrep is 0 (A)
     wfn_sym = 0;
-    string wavefunction_sym_str = options_get_str("WFN_SYM");
+    string wavefunction_sym_str = options.get_str("WFN_SYM");
     to_lower(wavefunction_sym_str);
 
     for(int h = 0; h < nirreps; ++h){
@@ -132,7 +132,7 @@ void MOInfo::read_info()
       }
     }
     // The lowest root in the input is 1, here we subtract one
-    root = options_get_int("ROOT") - 1;
+    root = options.get_int("ROOT") - 1;
   }
 }
 
@@ -315,7 +315,7 @@ void MOInfo::read_mo_spaces()
   }
   if(active_space_problem){
     error_msg = "MOInfo found a problem with the definition of the active space:" + error_msg;
-    print_error(outfile,error_msg,__FILE__,__LINE__,PSI_RETURN_FAILURE);
+    throw PSIEXCEPTION(error_msg);
   }
 
 
