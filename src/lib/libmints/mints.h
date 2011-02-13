@@ -7,6 +7,7 @@
 #include <libmints/onebody.h>
 #include <libmints/twobody.h>
 #include <libmints/potential.h>
+#include <libmints/pseudopotential.h>
 #include <libmints/dipole.h>
 #include <libmints/electricfield.h>
 #include <libmints/electrostatic.h>
@@ -34,3 +35,4 @@
 #include <libmints/3coverlap.h>
 #include <libmints/sointegral.h>
 #include <libmints/mintshelper.h>
+#include <libmints/integrator.h>

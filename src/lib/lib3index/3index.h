@@ -11,162 +11,6 @@ class BasisSet;
 class Matrix;
 class IntVector;
 
-enum ThreeStorage { Disk, SemiDirect, Direct };
-enum ThreeAlgorithm { FitThenContract, ContractThenFit };
-enum ThreeFitting { Cholesky, QR };
-
-class ThreeIndexTensor {
-
-protected:
-    shared_ptr<BasisSet> primary_basis_;
-    shared_ptr<BasisSet> zero_;
-    shared_ptr<PSIO> psio_;
-    double schwarz_cutoff_;
-    unsigned long int memory_;
-    int print_;
-    int nthread_;
-
-    int nbf_;
-    unsigned long int nshell_pairs_;
-    unsigned long int nfun_pairs_;
-
-    double max_global_val_;
-    int* schwarz_shells_;
-    int* schwarz_funs_;
-
-    long int* schwarz_shells_reverse_;
-    long int* schwarz_funs_reverse_;
-
-    double* schwarz_shell_vals_;
-    double* schwarz_fun_vals_;
-
-    void form_schwarz_ints();
-
-public:
-    ThreeIndexTensor(shared_ptr<PSIO>, shared_ptr<BasisSet>);
-    virtual ~ThreeIndexTensor();
-    virtual void finalize();
-
-    // In doubles
-    void set_memory(unsigned long int mem) { memory_ = mem; }
-    void set_nthread(int nthread) { nthread_ = nthread; }
-    void set_print(int print) { print_ = print; }
-
-    virtual void print(FILE* out = outfile) = 0;
-    void print_python() { print(); };
-
-    void form_schwarz_sieve(double cutoff);
-    unsigned long int get_nshell_pairs() const { return nshell_pairs_; }
-    unsigned long int get_nfun_pairs() const { return nfun_pairs_; }
-    // I_global = arr[2*I_local], J_global = arr[2*I_local + 1]
-    // These are only defined up to nshell_pairs_ and nfun_pairs_, respectively
-    int* get_schwarz_shells() const { return schwarz_shells_; }
-    int* get_schwarz_funs() const { return schwarz_funs_; }
-    // Canonical compound indexingi, -1 if not present
-    long int* get_schwarz_shells_reverse() const { return schwarz_shells_reverse_; }
-    long int* get_schwarz_funs_reverse() const { return schwarz_funs_reverse_; }
-
-    shared_ptr<BasisSet> get_primary_basis() const { return primary_basis_; }
-    // number of finished fitting vectors
-    virtual int get_nfit() = 0;
-    // number of raw fitting vectors
-    virtual int get_nraw() = 0;
-    // Convenience routines
-    virtual void form_Qmn_disk() = 0;
-    virtual void form_Qmi_disk(shared_ptr<Matrix> C_act_virt) = 0;
-    virtual void form_Qma_disk(shared_ptr<Matrix> C_act_virt) = 0;
-    virtual void form_Qii_disk(shared_ptr<Matrix> C1_act_occ, shared_ptr<Matrix> C2_act_occ) = 0;
-    virtual void form_Qia_disk(shared_ptr<Matrix> C_act_occ, shared_ptr<Matrix> C_act_virt) = 0;
-    virtual void form_Qaa_disk(shared_ptr<Matrix> C1_act_virt, shared_ptr<Matrix> C2_act_virt) = 0;
-
-};
-
-class DFTensor : public ThreeIndexTensor {
-
-protected:
-    shared_ptr<BasisSet> auxiliary_basis_;
-    shared_ptr<BasisSet> poisson_basis_;
-
-    shared_ptr<Matrix> fitting_metric_;
-
-    bool poisson_;
-    int ngaussian_;
-    int npoisson_;
-    int naux_;
-    int nfin_;
-
-
-public:
-    DFTensor(shared_ptr<PSIO>, shared_ptr<BasisSet> primary, shared_ptr<BasisSet> auxiliary, shared_ptr<BasisSet> poisson);
-    DFTensor(shared_ptr<PSIO>, shared_ptr<BasisSet> primary, shared_ptr<BasisSet> auxiliary);
-    void common_init();
-    virtual ~DFTensor();
-
-    static shared_ptr<DFTensor> bootstrap_DFTensor();
-    virtual void print(FILE* out);
-
-    virtual int get_nfit();
-    virtual int get_nraw();
-
-    bool is_poisson() const { return poisson_; }
-    shared_ptr<BasisSet> get_auxiliary_basis() const { return auxiliary_basis_; }
-    shared_ptr<BasisSet> get_poisson_basis() const { return poisson_basis_; }
-
-    shared_ptr<Matrix> form_fitting_metric();
-    shared_ptr<Matrix> form_cholesky_metric();
-    shared_ptr<Matrix> form_qr_metric(double max_cond = 1.0E-10);
-
-    virtual void form_Qmn_disk();
-    virtual void form_Qmi_disk(shared_ptr<Matrix> C_act_virt);
-    virtual void form_Qma_disk(shared_ptr<Matrix> C_act_virt);
-    virtual void form_Qii_disk(shared_ptr<Matrix> C1_act_occ, shared_ptr<Matrix> C2_act_occ);
-    virtual void form_Qia_disk(shared_ptr<Matrix> C_act_occ, shared_ptr<Matrix> C_act_virt);
-    virtual void form_Qaa_disk(shared_ptr<Matrix> C1_act_virt, shared_ptr<Matrix> C2_act_virt);
-    virtual void form_Amn_disk();
-    virtual void form_Ami_disk(shared_ptr<Matrix> C_act_virt);
-    virtual void form_Ama_disk(shared_ptr<Matrix> C_act_virt);
-    virtual void form_Aii_disk(shared_ptr<Matrix> C1_act_occ, shared_ptr<Matrix> C2_act_occ);
-    virtual void form_Aia_disk(shared_ptr<Matrix> C_act_occ, shared_ptr<Matrix> C_act_virt);
-    virtual void form_Aaa_disk(shared_ptr<Matrix> C1_act_virt, shared_ptr<Matrix> C2_act_virt);
-    void disk_tensor(shared_ptr<Matrix> C1, shared_ptr<Matrix> C2, bool, bool, bool, const std::string &);
-};
-
-class DFSCFTensor : public DFTensor {
-
-protected:
-
-public:
-    DFSCFTensor(shared_ptr<PSIO>, shared_ptr<BasisSet> primary, shared_ptr<BasisSet> auxiliary, shared_ptr<BasisSet> poisson);
-    DFSCFTensor(shared_ptr<PSIO>, shared_ptr<BasisSet> primary, shared_ptr<BasisSet> auxiliary);
-
-    virtual ~DFSCFTensor();
-
-
-
-};
-
-class CDTensor : public ThreeIndexTensor {
-
-protected:
-    double delta_;
-
-public:
-    CDTensor(shared_ptr<PSIO>, shared_ptr<BasisSet>, double delta);
-    virtual ~CDTensor();
-
-    virtual void print(FILE* out);
-
-    virtual int get_nfit();
-    virtual int get_nraw();
-    void form_Qia();
-
-    virtual void form_Qmn_disk(){}
-    virtual void form_Qmi_disk(shared_ptr<Matrix> C_act_virt){}
-    virtual void form_Qma_disk(shared_ptr<Matrix> C_act_virt){}
-    virtual void form_Qii_disk(shared_ptr<Matrix> C1_act_occ, shared_ptr<Matrix> C2_act_occ){}
-    virtual void form_Qia_disk(shared_ptr<Matrix> C_act_occ, shared_ptr<Matrix> C_act_virt){}
-    virtual void form_Qaa_disk(shared_ptr<Matrix> C1_act_virt, shared_ptr<Matrix> C2_act_virt){}
-};
 
 class FittingMetric {
 
@@ -180,13 +24,18 @@ protected:
 
     /// The fitting metric or symmetric inverse
     shared_ptr<Matrix> metric_;
-    /// The indices (per irrep) of pivot 
+    /// The indices (per irrep) of pivots
     shared_ptr<IntVector> pivots_;
+    /// The indices (per irrep) of reverse pivots 
+    shared_ptr<IntVector> rev_pivots_;
 
     /// The fitting algorithm selected 
     std::string algorithm_;
     /// Is the metric inverted or just a J matrix?
     bool is_inverted_;
+
+    /// Fully pivot the fitting metric
+    void pivot();
 
 public:
 
@@ -209,8 +58,10 @@ public:
 
     /// The fitting metric or symmetric inverse
     shared_ptr<Matrix> get_metric() const {return metric_; }
-    /// The vector of pivots (for stability)
+    /// The vector of pivots (for stability) (pivoted->global)
     shared_ptr<IntVector> get_pivots() const {return pivots_; }
+    /// The vector of back pivots (for stability) (global->pivoted)
+    shared_ptr<IntVector> get_reverse_pivots() const {return rev_pivots_; }
 
     /// The gaussian fitting basis
     shared_ptr<BasisSet> get_auxiliary_basis() const {return aux_; }
@@ -223,13 +74,59 @@ public:
     void form_cholesky_inverse();
     /// Build the QR half inverse metric (calls form_fitting_metric)
     void form_QR_inverse(double tol = 1.0E-10);
-    /// Build the eigendecomposed half inverse metric
+    /// Build the eigendecomposed half inverse metric (calls form_fitting_metric)
     void form_eig_inverse(double tol = 1.0E-10);
-    /// Build the SVD half inverse metric
-    void form_SVD_inverse(double tol = 1.0E-10);
-    /// Build the full inverse metric. NOT RECOMMENDED: Numerical stability
+    /// Build the full inverse metric. NOT RECOMMENDED: Numerical stability (calls form_fitting_metric)
     void form_full_inverse();
+    /// Build the full metric's Cholesky factor. RECOMMENDED: Numerical stability
+    void form_cholesky_factor();
 };
+
+class SchwarzSieve {
+
+protected:
+
+    // The schwarz cutoff 
+    double schwarz_;
+
+    // Basis set for this schwarz
+    shared_ptr<BasisSet> basis_;  
+ 
+    // number of significant shell pairs 
+    unsigned long int nshell_pairs_;
+    // number of significant function pairs
+    unsigned long int nfun_pairs_;
+
+    double max_global_val_;
+    int* schwarz_shells_;
+    int* schwarz_funs_;
+
+    long int* schwarz_shells_reverse_;
+    long int* schwarz_funs_reverse_;
+
+    double* schwarz_shell_vals_;
+    double* schwarz_fun_vals_;
+
+    void form_schwarz_ints();
+
+public:
+    SchwarzSieve(shared_ptr<BasisSet>, double cutoff);
+    virtual ~SchwarzSieve();
+
+    void form_schwarz_sieve(double cutoff);
+    unsigned long int get_nshell_pairs() const { return nshell_pairs_; }
+    unsigned long int get_nfun_pairs() const { return nfun_pairs_; }
+    // I_global = arr[2*I_local], J_global = arr[2*I_local + 1]
+    // These are only defined up to nshell_pairs_ and nfun_pairs_, respectively
+    int* get_schwarz_shells() const { return schwarz_shells_; }
+    int* get_schwarz_funs() const { return schwarz_funs_; }
+    // Canonical compound indexingi, -1 if not present
+    long int* get_schwarz_shells_reverse() const { return schwarz_shells_reverse_; }
+    long int* get_schwarz_funs_reverse() const { return schwarz_funs_reverse_; }
+
+};
+
+
 
 }
 #endif

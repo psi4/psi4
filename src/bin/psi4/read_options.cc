@@ -299,7 +299,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Iterations per full Pipek-Mizey Localization -*/
     options.add_int("STEPS_PER_LOCALIZE",1);
 
-    options.add_str("SCF_TYPE","PK","PK OUT_OF_CORE DIRECT DF POISSON L_DF CD 1C_CD");
+    options.add_str("SCF_TYPE","PK","PK OUT_OF_CORE DIRECT DF PSEUDOSPECTRAL POISSON L_DF CD 1C_CD");
     /*- Whether to run in parallel or not -*/
     options.add_bool("PARALLEL", false);
 
@@ -901,7 +901,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if(name=="DFCC"|| options.read_globals()) {
     /* Type of wavefunction */
-    options.add_str("WAVEFUNCTION","MP2","MP2");
+    options.add_str("WAVEFUNCTION","MP2","MP2 CCD");
     /* MO basis */
     options.add_str("BASIS","NONE");
     /* DF basis for MO integrals */

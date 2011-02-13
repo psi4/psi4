@@ -95,6 +95,17 @@ OneBodySOInt* IntegralFactory::so_potential(int deriv)
     return new OneBodySOInt(ao_int, this);
 }
 
+OneBodyAOInt* IntegralFactory::ao_pseudopotential(int deriv)
+{
+    return new PseudopotentialInt(spherical_transforms_, bs1_, bs2_, deriv);
+}
+
+OneBodySOInt* IntegralFactory::so_pseudopotential(int deriv)
+{
+    shared_ptr<OneBodyAOInt> ao_int(ao_pseudopotential(deriv));
+    return new OneBodySOInt(ao_int, this);
+}
+
 OneBodyAOInt* IntegralFactory::electrostatic()
 {
     return new ElectrostaticInt(spherical_transforms_, bs1_, bs2_, 0);

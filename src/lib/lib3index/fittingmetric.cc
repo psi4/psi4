@@ -84,6 +84,7 @@ void FittingMetric::form_fitting_metric()
 
     int naux = 0;
     int ngaussian = 0;
+    int npoisson = 0;
     Dimension nauxpi(auxpet->nirrep(), "Fitting Metric Dimensions");
     for (int h = 0; h < auxpet->nirrep(); h++) {
         naux += auxpet->SO_basisdim()[h];
@@ -91,7 +92,8 @@ void FittingMetric::form_fitting_metric()
         nauxpi[h] = auxpet->SO_basisdim()[h];
         if (is_poisson_) {
             naux += poispet->SO_basisdim()[h];
-            nauxpi[h] = poispet->SO_basisdim()[h];
+            npoisson += poispet->SO_basisdim()[h];
+            nauxpi[h] += poispet->SO_basisdim()[h];
         } 
     }   
     Dimension ngauspi = auxpet->SO_basisdim();
@@ -228,40 +230,346 @@ void FittingMetric::form_fitting_metric()
         delete[] Tint; 
     }
 
-    // If C1, form indexing and exit immediately
+    // If C1, form indexing and exit immediately (multiplying by 1 is not so gratifying)
     if (auxpet->nirrep() == 1) {
         metric_ = AOmetric;
+        metric_->set_name("SO Basis Fitting Metric");
         pivots_ = shared_ptr<IntVector>(new IntVector(naux));
+        rev_pivots_ = shared_ptr<IntVector>(new IntVector(naux));
         int* piv = pivots_->pointer();
-        for (int Q = 0; Q < naux; Q++)
+        int* rpiv = pivots_->pointer();
+        for (int Q = 0; Q < naux; Q++) {
             piv[Q] = Q;
+            rpiv[Q] = Q;
+        }
         return;
     }    
+
+    // Get the similarity transform objects
+    shared_ptr<Matrix> auxAO2USO(auxpet->sotoao());
+    //auxAO2USO->print();
+    shared_ptr<Matrix> poisAO2USO;
+    if (is_poisson_) {
+        poisAO2USO = shared_ptr<Matrix>(poispet->sotoao());
+        //poisAO2USO->print();
+    }
+    
+    // Allocate the fitting metric
+    metric_ = shared_ptr<Matrix>(new Matrix("SO Basis Fitting Metric", nauxpi, nauxpi));
+    shared_ptr<Matrix> Temp;
+    double** Temp1;
+
+    // Transform AO to SO
+    for (int h = 0; h < auxpet->nirrep(); h++) {
+
+        // Gaussian-Gaussian part
+        double** J = metric_->pointer(h);
+        double** auxU = auxAO2USO->pointer(h);
+       
+        if (ngauspi[h] != 0) { 
+            Temp = shared_ptr<Matrix>(new Matrix("Temp", ngauspi[h], ngaussian));
+            Temp1 = Temp->pointer(); 
+            C_DGEMM('N', 'N', ngauspi[h], ngaussian, ngaussian, 1.0, auxU[0], ngaussian, W[0], naux, 0.0, Temp1[0], ngaussian); 
+            C_DGEMM('N', 'T', ngauspi[h], ngauspi[h], ngaussian, 1.0, Temp1[0], ngaussian, auxU[0], ngaussian, 0.0, J[0], nauxpi[h]);
+            Temp.reset();
+        }
+
+        if (is_poisson_ && poispet->SO_basisdim()[h] != 0) {
+           Dimension npoispi = poispet->SO_basisdim(); 
+           double** poisU = poisAO2USO->pointer(h);
+    
+            // Gaussian-Poisson part
+            if (ngauspi[h] != 0) {
+                Temp = shared_ptr<Matrix>(new Matrix("Temp", ngauspi[h], npoisson));
+                Temp1 = Temp->pointer(); 
+                C_DGEMM('N', 'N', ngauspi[h], npoisson, ngaussian, 1.0, auxU[0], ngaussian, &W[0][ngaussian], naux, 0.0, Temp1[0], npoisson); 
+                C_DGEMM('N', 'T', ngauspi[h], npoispi[h], npoisson, 1.0, Temp1[0], npoisson, poisU[0], npoisson, 0.0, &J[0][ngauspi[h]], nauxpi[h]); 
+                for (int Q = 0; Q < ngauspi[h]; Q++)
+                    for (int P =0; P < npoispi[h]; P++)
+                        J[P + ngauspi[h]][Q] = J[Q][P + ngauspi[h]];
+                Temp.reset();
+            }
+            
+            // Poisson-Poisson part
+            unsigned long int AOoffset = ngaussian*(unsigned long int)naux + (unsigned long int) ngaussian;    
+            unsigned long int SOoffset = ngauspi[h]*(unsigned long int)nauxpi[h] + (unsigned long int) ngauspi[h];    
+            Temp = shared_ptr<Matrix>(new Matrix("Temp", npoispi[h], npoisson));
+            Temp1 = Temp->pointer();
+            C_DGEMM('N', 'N', npoispi[h], npoisson, npoisson, 1.0, poisU[0], npoisson, &W[0][AOoffset], naux, 0.0, Temp1[0], npoisson); 
+            C_DGEMM('N', 'T', npoispi[h], npoispi[h], npoisson, 1.0, Temp1[0], npoisson, poisU[0], npoisson, 0.0, &J[0][SOoffset], nauxpi[h]);
+            Temp.reset();
+    
+        } 
+    }
+    
+    // Form indexing    
+    pivots_ = shared_ptr<IntVector>(new IntVector(nauxpi.n(), nauxpi.pointer()));
+    rev_pivots_ = shared_ptr<IntVector>(new IntVector(nauxpi.n(), nauxpi.pointer()));
+    for (int h = 0; h < auxpet->nirrep(); h++) {
+        int* piv = pivots_->pointer(h);
+        int* rpiv = pivots_->pointer(h);
+        for (int Q = 0; Q < nauxpi[h]; Q++) {
+            piv[Q] = Q;
+            rpiv[Q] = Q;
+        }
+    }
+            
+
 }
 void FittingMetric::form_cholesky_inverse()
 {
     is_inverted_ = true;
     algorithm_ = "CHOLESKY";
+
+    form_fitting_metric();
+
+    pivot();
+    for (int h = 0; h < metric_->nirrep(); h++) {
+
+        if (metric_->colspi()[h] == 0) continue;        
+
+        // Cholesky Decomposition
+        double** J = metric_->pointer(h);
+        int info = C_DPOTRF('L', metric_->colspi()[h], J[0], metric_->colspi()[h]);
+        for (int A = 0; A < metric_->colspi()[h]; A++)
+            for (int B = 0; B < A; B++)
+                J[A][B] = 0.0; 
+    }
+    metric_->set_name("SO Basis Fitting Inverse (Cholesky)");
 }
 void FittingMetric::form_QR_inverse(double tol)
 {
     is_inverted_ = true;
     algorithm_ = "QR";
+
+    form_fitting_metric();
+
+    pivot();
+    for (int h = 0; h < metric_->nirrep(); h++) {
+
+        if (metric_->colspi()[h] == 0) continue;        
+
+        metric_->print();
+
+        double** J = metric_->pointer(h);
+        int n = metric_->colspi()[h];
+
+        // Copy the J matrix to R (actually R') 
+        shared_ptr<Matrix> R(new Matrix("R", n, n));
+        double** Rp = R->pointer();
+        C_DCOPY(n*(unsigned long int)n, J[0], 1, Rp[0], 1);
+
+        // QR Decomposition
+        double* tau = new double[n];
+
+        // First, find out how much workspace to provide
+        double work_size;
+        C_DGEQRF(n,n,Rp[0],n,tau,&work_size, -1);  
+
+        // Now, do the QR decomposition
+        int lwork = (int)work_size;
+        double *work = new double[lwork];
+        C_DGEQRF(n,n,Rp[0],n,tau,work,lwork);  
+        delete[] work;
+
+        // Copy Jcopy to Q (actually Q')
+        shared_ptr<Matrix> Q(new Matrix("Q", n, n));
+        double** Qp = Q->pointer();
+        C_DCOPY(n*(unsigned long int)n, Rp[0], 1, Qp[0], 1);
+       
+        // Put R in the upper triangle where it belongs
+        for (int i = 1; i < n; i++)
+            for (int j = 0; j < i; j++) {
+                Rp[j][i] = 0.0;
+            }
+ 
+        // First, find out how much workspace to provide
+        C_DORGQR(n,n,n,Qp[0],n,tau,&work_size,-1); 
+
+        // Now, form Q
+        lwork = (int)work_size;
+        work = new double[lwork];
+        C_DORGQR(n,n,n,Qp[0],n,tau,work,lwork); 
+        delete[] work;
+
+        //Q->print();
+        //R->print();   
+
+        // Find the number of significant basis functions
+        int nsig = 0;
+        double R_max = fabs(Rp[0][0]);
+        for (int A = 0; A < n; A++) {
+            if ((fabs(Rp[A][A]) / R_max) < tol)
+                break;
+            nsig++;
+        }        
+
+        // Transform into the reduced basis
+        // Just use R's memory, don't need it anymore
+        C_DGEMM('N','N',nsig,n,n,1.0,Qp[0],n,J[0],n,0.0,Rp[0],n);
+        C_DGEMM('N','T',nsig,nsig,n,1.0,Rp[0],n,Qp[0],n,0.0,J[0],nsig);
+
+        // Find the Cholesky factor in the reduced basis
+        C_DPOTRF('L',nsig,J[0],nsig);
+
+        // Backsolve the triangular factor against the change of basis matrix
+        C_DTRSM('L','U','N','N',nsig,n,1.0,J[0],nsig,Qp[0],n);
+
+        // Zero out the metric
+        memset(static_cast<void*>(J[0]), '\0', n*(unsigned long int)n);
+
+        // Copy the top bit in
+        C_DCOPY(n*(unsigned long int)nsig, Qp[0], 1, J[0], 1);
+
+        delete[] tau;
+    }
+    metric_->set_name("SO Basis Fitting Inverse (QR)");
 }
 void FittingMetric::form_eig_inverse(double tol)
 {
     is_inverted_ = true;
     algorithm_ = "EIG";
-}
-void FittingMetric::form_SVD_inverse(double tol)
-{
-    is_inverted_ = true;
-    algorithm_ = "SVD";
+
+    form_fitting_metric();
+
+    metric_->print();
+
+    for (int h = 0; h < metric_->nirrep(); h++) {
+
+        if (metric_->colspi()[h] == 0) continue;        
+
+        double** J = metric_->pointer(h);
+        int n = metric_->colspi()[h];
+
+        // Copy J to W
+        shared_ptr<Matrix> W(new Matrix("W", n, n));
+        double** Wp = W->pointer();
+        C_DCOPY(n*(unsigned long int)n,J[0],1,Wp[0],1);
+
+        double* eigval = new double[n];
+        int lwork = n * 3;
+        double* work = new double[lwork];
+        int stat = C_DSYEV('v','u',n,Wp[0],n,eigval,work,lwork);
+        delete[] work;
+
+        shared_ptr<Matrix> Jcopy(new Matrix("Jcopy", n, n));
+        double** Jcopyp = Jcopy->pointer();
+
+        C_DCOPY(n*(unsigned long int)n,Wp[0],1,Jcopyp[0],1);
+
+        // Now form Jp^{-1/2} = U(T)*j'^{-1/2}*U,
+        // where j'^{-1/2} is the diagonal matrix of the inverse square roots
+        // of the eigenvalues, and U is the matrix of eigenvectors of J'
+        double max_J = eigval[n-1];
+
+        int nsig = 0;
+        for (int ind=0; ind<n; ind++) {
+            if (eigval[ind] / max_J < tol || eigval[ind] <= 0.0)
+                eigval[ind] = 0.0;
+            else {
+                nsig++;
+                eigval[ind] = 1.0 / sqrt(eigval[ind]);
+            }
+            // scale one set of eigenvectors by the diagonal elements j^{-1/2}
+            C_DSCAL(n, eigval[ind], Wp[ind], 1);
+        }
+        delete[] eigval;
+
+        C_DGEMM('T','N',n,n,n,1.0,Jcopyp[0],n,Wp[0],n,0.0,J[0],n);
+
+    } 
+    metric_->set_name("SO Basis Fitting Inverse (Eig)");
 }
 void FittingMetric::form_full_inverse()
 {
     is_inverted_ = true;
     algorithm_ = "FULL";
+
+    form_fitting_metric();
+
+    pivot();
+    for (int h = 0; h < metric_->nirrep(); h++) {
+
+        if (metric_->colspi()[h] == 0) continue;        
+
+        // Cholesky Decomposition
+        double** J = metric_->pointer(h);
+        int info = C_DPOTRF('L', metric_->colspi()[h], J[0], metric_->colspi()[h]);
+        // Inverse
+        info = C_DPOTRI('L', metric_->colspi()[h], J[0], metric_->colspi()[h]);
+
+        for (int A = 0; A < metric_->colspi()[h]; A++)
+            for (int B = 0; B < A; B++)
+                J[A][B] = J[B][A]; 
+    }
+    metric_->set_name("SO Basis Fitting Inverse (Full)");
+}
+void FittingMetric::form_cholesky_factor()
+{
+    is_inverted_ = true;
+    algorithm_ = "CHOLESKY";
+
+    form_fitting_metric();
+
+    pivot();
+    for (int h = 0; h < metric_->nirrep(); h++) {
+
+        if (metric_->colspi()[h] == 0) continue;        
+
+        // Cholesky Decomposition
+        double** J = metric_->pointer(h);
+        int info = C_DPOTRF('L', metric_->colspi()[h], J[0], metric_->colspi()[h]);
+
+        for (int A = 0; A < metric_->colspi()[h]; A++)
+            for (int B = 0; B < A; B++)
+                J[A][B] = J[B][A]; 
+    }
+    metric_->set_name("SO Basis Cholesky Factor (Full)");
+}
+void FittingMetric::pivot()
+{
+    for (int h = 0; h < metric_->nirrep(); h++) {
+
+        if (metric_->colspi()[h] == 0) continue;        
+
+        double** J = metric_->pointer(h);
+        int* P = pivots_->pointer(h);
+        int norbs = metric_->colspi()[h];        
+        double* Temp = new double[norbs];
+
+        // Pivot
+        double max;
+        int Temp_p;
+        int pivot;
+        for (int i = 0; i<norbs-1; i++) {
+            max = 0.0;
+            //Where's the pivot diagonal?
+            for (int j = i; j<norbs; j++)
+                if (max <= fabs(J[j][j])) {
+                    max = fabs(J[j][j]);
+                    pivot = j;
+                }
+
+            //Rows
+            C_DCOPY(norbs,&J[pivot][0],1,Temp,1);
+            C_DCOPY(norbs,&J[i][0],1,&J[pivot][0],1);
+            C_DCOPY(norbs,Temp,1,&J[i][0],1);
+
+            //Columns
+            C_DCOPY(norbs,&J[0][pivot],norbs,Temp,1);
+            C_DCOPY(norbs,&J[0][i],norbs,&J[0][pivot],norbs);
+            C_DCOPY(norbs,Temp,1,&J[0][i],norbs);
+
+            Temp_p = P[i];
+            P[i] = P[pivot];
+            P[pivot] = Temp_p;
+        }
+        delete[] Temp;
+        
+        int* R = rev_pivots_->pointer(h);
+        for (int i = 0; i < norbs; i++)
+            R[P[i]] = i;
+    }
 }
 
 }

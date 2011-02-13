@@ -31,7 +31,7 @@
 #include <psifiles.h>
 
 #include <libmints/mints.h>
-#include <libscf_solver/integrator.h>
+//#include <libscf_solver/integrator.h>
 
 #include "sapt_dft.h"
 
@@ -547,6 +547,7 @@ void SAPT_DFT::compute_d()
     // =============== Numerical Test ===============//
     if (debug_) {
 
+        /**
         double** WtestA = block_matrix(naux, naux);
         double** WptestA = block_matrix(naux, naux);
         double** WtestB = block_matrix(naux, naux);
@@ -621,7 +622,6 @@ void SAPT_DFT::compute_d()
                         }
             }
         }
-
         fprintf(outfile, "  Numerical Densities: A = %14.10f, B = %14.10f.\n", rho_A, rho_B);
         fprintf(outfile, "  Numerical W_A (P|\\rho|Q)\n");
         print_mat(WtestA, naux, naux, outfile);
@@ -638,6 +638,7 @@ void SAPT_DFT::compute_d()
         free_block(WptestA);
         free_block(WtestB);
         free_block(WptestB);
+        **/
     }
     free_block(DA);
     free_block(DB);

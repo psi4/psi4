@@ -9,126 +9,1101 @@
 #include <libpsio/psio.hpp>
 #include <libciomr/libciomr.h>
 #include <libmints/mints.h>
-#include "hf.h"
+#include <libqt/qt.h>
 #include <cmath>
 #include <math.h>
 #include <stdlib.h>
 #include "integrator.h"
 #include <vector>
 #include <string>
+
 using namespace psi;
 using namespace std;
 
-namespace psi { namespace scf {
+namespace psi { 
 
-double Integrator::getNuclearWeightNaive(Vector3 v, int nuc)
+Integrator::Integrator(shared_ptr<Molecule> mol, shared_ptr<PSIO> psio) : 
+    mol_(mol), psio_(psio)
 {
-	if (molecule_->natom()<=1)
-		return 1.0;
+    built_ = false;
+    
+    x_ = NULL;
+    y_ = NULL;
+    z_ = NULL;
+    w_ = NULL;
+    Z_ = NULL;
 
-	double numerator = 0.0;
-	double denominator = 0.0;
-	double prod;
-	double mu;
-	double s;
+    npoints_ = 0L;
+    nblocks_ = 0L;
+    block_size_ = 0;   
+ 
+    prune_type_ = constant_p;
+    nspherical_ = 590;
+    nradial_ = 99;
+    radial_type_ = treutler_r;
+    spherical_type_ = lebedev_s;
+    nuclear_type_ = becke_n;
+    voronoi_type_ = stratmann_v;
+    group_type_ = boxes_g;
+    coord_type_ = elliptical_c;
 
-	for (int i = 0; i<molecule_->natom(); i++) {
-		prod = 1.0;
-		for (int j = 0; j<molecule_->natom(); j++) {
-			if (i!=j) {
-				//Yo
-				mu = (v.distance(molecule_->xyz(i))-v.distance(molecule_->xyz(j)))*inv_distance_map_[i][j];
-				s = mu;
-			 	for (int k = 1; k<= 3; k++)
-  					s = 1.5*s-0.5*s*s*s;
-			 	s = 0.5*(1.0-s);
-				prod *= s;
-			}
-		}
-		if (i == nuc)
-			numerator = prod;
-		denominator += prod;
-	}
-	return numerator/denominator;
-	
+    stratmann_a_ = 0.64;
+    box_overage_ = 4.0;
+    box_delta_ = 4.0;
+    vor_a1_ = 1.5;
+    vor_a1_ = 3.0;
+
+    psio_->open(PSIF_DFT_GRID, PSIO_OPEN_NEW);
 }
-double Integrator::getNuclearWeightBecke(Vector3 v, int nuc)
+Integrator::~Integrator()
 {
-	if (molecule_->natom()<=1)
-		return 1.0;
-
-	double numerator = 0.0;
-	double denominator = 0.0;
-	double prod;
-	double mu,nu;
-	double s,chi,u,a;
-
-	for (int i = 0; i<molecule_->natom(); i++) {
-		prod = 1.0;
-		for (int j = 0; j<molecule_->natom(); j++) {
-			if (i!=j) {
-				//Yo
-				mu = (v.distance(molecule_->xyz(i))-v.distance(molecule_->xyz(j)))*inv_distance_map_[i][j];
-				//mu->nu
-				chi = chi_values_[i][j]; 
-				u = (chi-1.0)/(chi+1.0);
-				a = u/(u*u-1.0);
-				a = (a<-0.5?-0.5:a);
-				a = (a>0.5?0.5:a);
-				nu = mu+a*(1.0-mu*mu); 
-				s = nu;
-			 for (int k = 1; k<= 3; k++)
-  				s = 1.5*s-0.5*s*s*s;
-				s = 0.5*(1.0-s);
-				prod *= s;
-			}
-		}
-		if (i == nuc)
-			numerator = prod;
-		denominator += prod;
-	}
-	return numerator/denominator;
-	
+    psio_->close(PSIF_DFT_GRID, 1);
+    free_grid();
 }
-double Integrator::getNuclearWeightTreutler(Vector3 v, int nuc)
+shared_ptr<Integrator>  Integrator::build_integrator(shared_ptr<Molecule> molecule, shared_ptr<PSIO> psio, Options& options)
 {
-	if (molecule_->natom()<=1)
-		return 1.0;
+    shared_ptr<Integrator> integrator(new Integrator(molecule, psio)); 
+    std::string special = options.get_str("DFT_GRID_NAME"); 
+    if (special != "") {
+        if (special == "SG1")   
+            integrator->setNamedIntegrator(SG1);
+        else if (special == "SG0")   
+            integrator->setNamedIntegrator(SG0);
+        else 
+            throw std::domain_error("Unrecognized named grid"); 
+    }
+    else {
+        std::string rad_type = options.get_str("DFT_RADIAL_TYPE"); 
+        std::string sphere_type = options.get_str("DFT_SPHERICAL_TYPE"); 
+        std::string nuc_type = options.get_str("DFT_NUCLEAR_TYPE"); 
+        std::string v_type = options.get_str("DFT_VORONOI_TYPE"); 
+        int rad_n = options.get_int("DFT_RADIAL_POINTS"); 
+        int sphere_n = options.get_int("DFT_SPHERICAL_POINTS");
+        double alpha = options.get_double("DFT_STRATMANN_ALPHA");
 
-	double numerator = 0.0;
-	double denominator = 0.0;
-	double prod;
-	double mu,nu;
-	double s,chi,u,a;
+        if (rad_type == "EM")
+            integrator->setRadialQuadrature(em_r, rad_n); 
+        else if (rad_type == "TREUTLER")
+            integrator->setRadialQuadrature(treutler_r, rad_n); 
+        else if (rad_type == "BECKE")
+            integrator->setRadialQuadrature(becke_r, rad_n); 
+        else if (rad_type == "MULTI_EXP")
+            integrator->setRadialQuadrature(multi_exp_r, rad_n); 
+        else if (rad_type == "MURA")
+            integrator->setRadialQuadrature(mura_r, rad_n); 
+        else 
+            throw std::domain_error("Unrecognized radial quadrature type"); 
 
-	for (int i = 0; i<molecule_->natom(); i++) {
-		prod = 1.0;
-		for (int j = 0; j<molecule_->natom(); j++) {
-			if (i!=j) {
-				//Yo
-				mu = (v.distance(molecule_->xyz(i))-v.distance(molecule_->xyz(j)))*inv_distance_map_[i][j];
-				//mu->nu
-				chi = chi_values_[i][j];
-				u = (chi-1.0)/(chi+1.0);
-				a = u/(u*u-1.0);
-				a = (a<-0.5?-0.5:a);
-				a = (a>0.5?0.5:a);
-				nu = mu+a*(1.0-mu*mu); 
-				s = nu;
-			 for (int k = 1; k<= 3; k++)
-  			s = 1.5*s-0.5*s*s*s;
-				s = 0.5*(1.0-s);
-				prod *= s;
-			}
-		}
-		if (i == nuc)
-			numerator = prod;
-		denominator += prod;
-	}
-	return numerator/denominator;
-	
+        if (sphere_type == "LEBEDEV")
+            integrator->setSphericalQuadrature(lebedev_s, sphere_n); 
+        else if (sphere_type == "EM")
+            integrator->setSphericalQuadrature(em_s, sphere_n); 
+        else 
+            throw std::domain_error("Unrecognized spherical quadrature type"); 
+
+        if (nuc_type == "NAIVE")
+            integrator->setNuclearWeighting(naive_n); 
+        else if (nuc_type == "TREUTLER")
+            integrator->setNuclearWeighting(treutler_n); 
+        else if (nuc_type == "BECKE")
+            integrator->setNuclearWeighting(becke_n); 
+        else 
+            throw std::domain_error("Unrecognized nuclear weighting type"); 
+
+        if (v_type == "BECKE")
+            integrator->setVoronoiWeighting(becke_v); 
+        else if (v_type == "STRATMANN")
+            integrator->setVoronoiWeighting(stratmann_v, alpha); 
+        else 
+            throw std::domain_error("Unrecognized voronoi weighting type"); 
+    }
+    double delta_box = options.get_double("DFT_BOX_DELTA");
+    double over_box = options.get_double("DFT_BOX_OVERAGE");
+    integrator->setBoxParameters(delta_box, over_box);
+    double a1 = options.get_double("DFT_VORONOI_A1");
+    double a2 = options.get_double("DFT_VORONOI_A2");
+    integrator->setVoronoiParameters(a1, a2);
+
+    std::string group_type = options.get_str("DFT_GROUPING_TYPE");
+    if (group_type == "BOXES")
+        integrator->setPointGrouping(boxes_g);
+    else if (group_type == "VORONOI")
+        integrator->setPointGrouping(voronoi_g);
+    else 
+        throw std::domain_error("Unrecognized point grouping type"); 
+
+    std::string coord_type = options.get_str("DFT_COORDINATE_TYPE");
+    if (coord_type == "ELLIPTICAL")
+        integrator->setVoronoiCoordinates(elliptical_c);
+    else if (coord_type == "PROJECTION")
+        integrator->setVoronoiCoordinates(projection_c);
+    else 
+        throw std::domain_error("Unrecognized Voronoi Coordinate type"); 
+
+    std::string prune_type = options.get_str("DFT_PRUNING_TYPE");
+    if (prune_type == "NONE")
+        integrator->setPruningMode(constant_p);
+    else if (prune_type == "AUTOMATIC")
+        integrator->setPruningMode(automatic_p);
+    else 
+        throw std::domain_error("Unrecognized Pruning type"); 
+
+    if (special != "") {
+        if (special == "SG1")   
+            integrator->setPruningMode(SG1_p);
+        else if (special == "SG0")   
+            integrator->setPruningMode(SG0_p);
+    }
+
+    integrator->buildGrid(options.get_int("DFT_BLOCK_SIZE")); 
+    return integrator;
 }
-RadialQuadrature Integrator::getRadialQuadratureBecke(int n, double xi)
+void Integrator::setBoxParameters(double a, double b)
+{
+    box_delta_ = a;
+    box_overage_ = b;
+}
+void Integrator::setVoronoiParameters(double a, double b)
+{
+    vor_a1_ = a;
+    vor_a2_ = b;
+}
+void Integrator::setPruningMode(PruningScheme s)
+{
+    prune_type_ = s;
+}
+void Integrator::setVoronoiCoordinates(CoordinateScheme s)
+{
+    coord_type_ = s;
+}
+void Integrator::setPointGrouping(GroupingScheme s)
+{
+    group_type_ = s;
+}
+void Integrator::setRadialQuadrature(RadialScheme type, int npoints)
+{
+    radial_type_ = type;
+    nradial_ = npoints;
+}
+void Integrator::setSphericalQuadrature(SphericalScheme type, int npoints)
+{
+    spherical_type_ = type;
+    nspherical_ = npoints;
+}
+void Integrator::setNuclearWeighting(NuclearScheme type)
+{
+    nuclear_type_ = type;
+}
+void Integrator::setVoronoiWeighting(VoronoiScheme type, double alpha)
+{
+    voronoi_type_ = type;
+    stratmann_a_ = alpha;
+}
+void Integrator::setNamedIntegrator(SpecialScheme name)
+{
+    special_type_ = name;
+    if (name == SG1) {
+        prune_type_ = SG1_p;
+        nspherical_ = 194;
+        nradial_ = 50;
+        radial_type_ = em_r;
+        spherical_type_ = lebedev_s;
+        nuclear_type_ = becke_n;
+        voronoi_type_ = becke_v;
+        group_type_ = boxes_g;
+        coord_type_ = elliptical_c;
+    } else if (name == SG0) {
+        prune_type_ = SG0_p;
+        nspherical_ = 170;
+        nradial_ = 26;
+        radial_type_ = multi_exp_r;
+        spherical_type_ = lebedev_s;
+        nuclear_type_ = becke_n;
+        voronoi_type_ = stratmann_v;
+        group_type_ = boxes_g;
+        coord_type_ = elliptical_c;
+        prune_type_ = SG0_p;
+    }
+}
+shared_ptr<GridBlock> Integrator::getAddress(unsigned long int N)
+{
+    if (!built_)
+        buildGrid(block_size_);
+
+    shared_ptr<GridBlock> block(new GridBlock());
+    block->setMaxPoints(block_size_);
+    unsigned long int start = N;
+    if (block_size_ + start >= npoints_)
+        block->setTruePoints(npoints_ - start);
+    else 
+        block->setTruePoints(block_size_);
+    block->setGrid(&x_[start], &y_[start], &z_[start], &w_[start]);    
+    return block;
+}
+shared_ptr<GridBlock> Integrator::getBlock(int N)
+{
+    if (!built_)
+        buildGrid(block_size_);
+
+    unsigned long int start = block_starts_[N];
+    unsigned long int size = block_sizes_[N];
+    shared_ptr<GridBlock> block(new GridBlock());
+    block->setMaxPoints(block_size_);
+    block->setTruePoints(size);
+    block->setGrid(&x_[start], &y_[start], &z_[start], &w_[start]);    
+    return block;
+}
+int Integrator::buildGrid(int max_block_size)
+{
+    block_size_ = max_block_size;
+    
+    built_ = true;
+
+    std::vector<RadialQuadrature> radials;
+
+    for (int k = 0; k < mol_->natom(); k++) {
+
+        int Z = mol_->Z(k);
+
+        if (special_type_ == SG0) {
+            if (Z <= maxSG0Index_)
+                radials.push_back(getMultiExpRadial(SG0NRad_[Z], SG0Radii_[Z]));
+            else 
+                throw std::domain_error("Atoms this heavy not supported for SG0."); 
+        }
+
+        if (radial_type_ == becke_r) {
+            if (Z <= maxBraggSlaterIndex_)
+                radials.push_back(getBeckeRadial(nradial_, braggSlaterRadii_[Z]));
+            else 
+                throw std::domain_error("Atoms this heavy not supported for Becke Radial Quadrature."); 
+        } else if (radial_type_ == mura_r) {
+            if (Z <= maxTreutlerIndex_)
+                radials.push_back(getMuraRadial(nradial_,treutlerRadii_[Z]));
+            else 
+                throw std::domain_error("Atoms this heavy not supported for Mura Radial Quadrature."); 
+        } else if (radial_type_ == multi_exp_r) {
+            if (Z <= maxTreutlerIndex_)
+                radials.push_back(getMultiExpRadial(nradial_,treutlerRadii_[Z]));
+            else 
+                throw std::domain_error("Atoms this heavy not supported for Multi-Exp Radial Quadrature."); 
+        } else if (radial_type_ == treutler_r) {
+            if (Z <= maxTreutlerIndex_)
+                radials.push_back(getTreutlerRadial(nradial_,treutlerRadii_[Z]));
+            else 
+                throw std::domain_error("Atoms this heavy not supported for Treutler Radial Quadrature."); 
+        } else if (radial_type_ == em_r) {
+            if (Z <= maxSG1Index_)
+                radials.push_back(getEMRadial(nradial_, SG1Radii_[Z]));
+            else 
+                throw std::domain_error("Atoms this heavy not supported for E-M Radial Quadrature."); 
+        } else {
+            throw std::domain_error("Invalid radial quadrature type."); 
+        }
+    }
+
+    npoints_ = 0L;
+    for (int k = 0; k < mol_->natom(); k++) {
+
+        int Z = mol_->Z(k);
+        
+        for (int R = 0; R < radials[k].n; R++) {
+
+            if (prune_type_ == SG0_p) {
+                npoints_ += getSphericalOrderSG0(radials[k].r[R], R, Z, nspherical_);  
+            } else if (prune_type_ == SG1_p) {
+                npoints_ += getSphericalOrderSG1(radials[k].r[R], R, Z, nspherical_);  
+            } else if (prune_type_ == constant_p) {
+                npoints_ += getSphericalOrderConstant(radials[k].r[R], R, Z, nspherical_);  
+            } else if (prune_type_ == automatic_p) {
+                npoints_ += getSphericalOrderAutomatic(radials[k].r[R], R, Z, nspherical_);  
+            } 
+        }
+    }
+
+    x_ = init_array(npoints_);
+    y_ = init_array(npoints_);
+    z_ = init_array(npoints_);
+    w_ = init_array(npoints_);
+    Z_ = init_int_array(npoints_);
+
+    int order;
+    SphericalQuadrature sphere;
+    unsigned long int index = 0L;
+    double xc, yc, zc;
+    int Z;
+    double r, w_r;
+    for (int k = 0; k < mol_->natom(); k++) {
+
+        xc = mol_->x(k);
+        yc = mol_->y(k);
+        zc = mol_->z(k);
+        Z = mol_->Z(k);      
+        for (int R = 0; R < radials[k].n; R++) {
+
+            r = radials[k].r[R];
+            w_r = radials[k].w[R];
+
+            if (prune_type_ == SG0_p) {
+                order = getSphericalOrderSG0(radials[k].r[R], R, Z, nspherical_);  
+            } else if (prune_type_ == SG1_p) {
+                order = getSphericalOrderSG1(radials[k].r[R], R, Z, nspherical_);  
+            } else if (prune_type_ == constant_p) {
+                order = getSphericalOrderConstant(radials[k].r[R], R, Z, nspherical_);  
+            } else if (prune_type_ == automatic_p) {
+                order = getSphericalOrderAutomatic(radials[k].r[R], R, Z, nspherical_);  
+            } 
+            
+            if (spherical_type_ == lebedev_s)         
+                sphere = getLebedevSpherical(order);
+            else if (spherical_type_ == em_s)         
+                sphere = getEMSpherical(order);
+            else 
+                throw std::domain_error("Lebedev/EM are the only spherical types at the moment"); 
+
+            //TODO rotate grids
+
+            for (int Q = 0; Q < sphere.n; Q++) {
+                x_[index] = sphere.x[Q] * r + xc; 
+                y_[index] = sphere.y[Q] * r + yc; 
+                z_[index] = sphere.z[Q] * r + zc; 
+                w_[index] = sphere.w[Q] * w_r; 
+                Z_[index] = k;
+                index++;
+            }
+
+            free(sphere.x);
+            free(sphere.y);
+            free(sphere.z);
+            free(sphere.w);
+        }
+    }
+
+    for (int k = 0; k < mol_->natom(); k++)
+    {
+        free(radials[k].r);
+        free(radials[k].w);
+    }
+
+    psio_->write_entry(PSIF_DFT_GRID, "Raw_x", (char*) &x_[0], npoints_*sizeof(double));
+    psio_->write_entry(PSIF_DFT_GRID, "Raw_y", (char*) &y_[0], npoints_*sizeof(double));
+    psio_->write_entry(PSIF_DFT_GRID, "Raw_z", (char*) &z_[0], npoints_*sizeof(double));
+    psio_->write_entry(PSIF_DFT_GRID, "Raw_w", (char*) &w_[0], npoints_*sizeof(double));
+    psio_->write_entry(PSIF_DFT_GRID, "Raw_Z", (char*) &Z_[0], npoints_*sizeof(int));
+
+    applyNuclearWeights();
+
+    psio_->write_entry(PSIF_DFT_GRID, "Nuc_w", (char*) &w_[0], npoints_*sizeof(double));
+    psio_->write_entry(PSIF_DFT_GRID, "Nuc_Z", (char*) &Z_[0], npoints_*sizeof(int));
+
+    partitionGrid();
+
+    psio_->write_entry(PSIF_DFT_GRID, "Split_x", (char*) &x_[0], npoints_*sizeof(double));
+    psio_->write_entry(PSIF_DFT_GRID, "Split_y", (char*) &y_[0], npoints_*sizeof(double));
+    psio_->write_entry(PSIF_DFT_GRID, "Split_z", (char*) &z_[0], npoints_*sizeof(double));
+    psio_->write_entry(PSIF_DFT_GRID, "Split_w", (char*) &w_[0], npoints_*sizeof(double));
+    psio_->write_entry(PSIF_DFT_GRID, "Split_Z", (char*) &Z_[0], npoints_*sizeof(int));
+
+    return block_size_;
+}
+void Integrator::partitionGrid()
+{
+    if (mol_->natom() < 1)
+        return;
+
+    unsigned long int nzero = 0L;
+    for (unsigned long int Q = 0L; Q < npoints_; Q++) {
+        if (w_[Q] == 0.0)
+            nzero++;
+    }
+
+    unsigned long int rear_pointer = npoints_ - 1;
+    for (unsigned long int Q = 0L; Q < npoints_; Q++) {
+        if (Q == rear_pointer) {
+            break;
+        } else if (w_[Q] == 0.0) {
+            x_[Q] = x_[rear_pointer];
+            y_[Q] = y_[rear_pointer];
+            z_[Q] = z_[rear_pointer];
+            w_[Q] = w_[rear_pointer];
+            Z_[Q] = Z_[rear_pointer];
+            rear_pointer--;
+            Q--;
+        }
+    }     
+
+    fprintf(outfile, "  %ld out of %ld grid points eliminated, %6.3f%% elimination.\n", nzero, npoints_, nzero/(0.01*npoints_));
+    nblocks_ = npoints_ / block_size_ + (npoints_ % block_size_ == 0 ? 0L : 1L);
+    npoints_ -= nzero;
+   
+    if (group_type_ == boxes_g) 
+        groupPointsBoxes(); 
+    else if (group_type_ == voronoi_g)
+        groupPointsVoronoi();  
+ 
+}
+void Integrator::groupPointsVoronoi()
+{
+    double* x_mol = init_array(mol_->natom());    
+    double* y_mol = init_array(mol_->natom());    
+    double* z_mol = init_array(mol_->natom());    
+    int* Z_mol = init_int_array(mol_->natom());
+
+    int Z, ind;
+    double bsR2, R2;
+    double a1_2 = vor_a1_*vor_a1_;
+    double a2_2 = vor_a2_*vor_a2_;
+
+    unsigned long int* counters = (unsigned long int*) malloc(3 * mol_->natom() * sizeof(ULI));
+    unsigned long int* pointers = (unsigned long int*) malloc(3 * mol_->natom() * sizeof(ULI));
+
+    memset((void*) counters, '\0', 3 * mol_->natom() * sizeof(ULI));
+    memset((void*) pointers, '\0', 3 * mol_->natom() * sizeof(ULI));
+
+    for (int i = 0; i< mol_->natom(); i++) {
+        x_mol[i] = mol_->x(i);
+        y_mol[i] = mol_->y(i);
+        z_mol[i] = mol_->z(i);
+        Z_mol[i] = mol_->Z(i);
+    }
+    for (unsigned long int Q = 0L; Q < npoints_; Q++) {
+        Z = Z_[Q];
+        bsR2 = braggSlaterRadii_[Z_mol[Z]];
+        bsR2 *= bsR2;
+        R2 = (x_[Q] - x_mol[Z]) * (x_[Q] - x_mol[Z]) * \ 
+             (y_[Q] - y_mol[Z]) * (y_[Q] - y_mol[Z]) * \ 
+             (z_[Q] - z_mol[Z]) * (z_[Q] - z_mol[Z]);  
+        if (R2 < a1_2 * bsR2) {
+            ind = 3*Z_[Q] + 0;
+            counters[ind] ++ ;
+            Z_[Q] = ind;
+        } else if (R2 < a2_2 * bsR2) {
+            ind = 3*Z_[Q] + 1;
+            counters[ind] ++ ;
+            Z_[Q] = ind;
+        } else {
+            ind = 3*Z_[Q] + 2;
+            counters[ind] ++ ;
+            Z_[Q] = ind;
+        }
+    }
+
+    free(x_mol);
+    free(y_mol);
+    free(z_mol);
+    free(Z_mol);
+
+    int nbins = 3 * mol_->natom();
+    for (int K = 1; K < nbins; K++)
+        pointers[K] = pointers[K-1] + counters[K - 1];
+
+    //printf("Npoints is %ld\n", npoints_);
+    //for (int K = 0; K < nbins; K++)
+    //    printf("  Bin %3d: Pointer %5ld, Size %5ld\n", K, pointers[K], counters[K]);
+    //fflush(stdout);
+
+    // Double memory algorithm, can be done in place if grid memory is an issue
+    // (methinks not on ggate) 
+    double* xt = init_array(npoints_);
+    double* yt = init_array(npoints_);
+    double* zt = init_array(npoints_);
+    double* wt = init_array(npoints_);
+    int* Zt = init_int_array(npoints_);
+
+    unsigned long int index;
+    for (unsigned long int Q = 0L; Q < npoints_; Q++) {
+        index = pointers[Z_[Q]];
+        pointers[Z_[Q]] ++;
+        xt[index] = x_[Q];
+        yt[index] = y_[Q];
+        zt[index] = z_[Q];
+        wt[index] = w_[Q];
+        Zt[index] = Z_[Q];
+    }
+
+    memcpy((void*) x_, (void *) xt, npoints_*sizeof(double));
+    memcpy((void*) y_, (void *) yt, npoints_*sizeof(double));
+    memcpy((void*) z_, (void *) zt, npoints_*sizeof(double));
+    memcpy((void*) w_, (void *) wt, npoints_*sizeof(double));
+    memcpy((void*) Z_, (void *) Zt, npoints_*sizeof(int));
+
+    free(xt);
+    free(yt);
+    free(zt);
+    free(wt);
+    free(Zt);
+
+    pointers[0] = 0L;
+    for (int P = 1; P < nbins; P++)
+        pointers[P] = pointers[P-1] + counters[P-1];
+   
+    unsigned long int max_count = 0L;
+    for (int P = 0; P < nbins; P++) {
+        if (counters[P] > max_count)
+            max_count = counters[P];
+    }
+    block_size_ = (max_count < block_size_ ? max_count : block_size_);
+
+    nblocks_ = 0L;
+    for (int P = 0; P < nbins; P++) {
+        if (counters[P] == 0L)
+            continue;
+        nblocks_ += (counters[P] / block_size_) + (counters[P] % block_size_ == 0 ? 0 : 1);
+    }
+
+    block_starts_.resize(nblocks_);
+    block_sizes_.resize(nblocks_);
+
+    int counter = 0;
+    unsigned long int npoints, unit;
+    int nblocks, nfull, nlight;
+    for (int P = 0; P < nbins; P++) {
+        if (counters[P] == 0L)
+            continue;
+        nblocks = (counters[P] / block_size_) + (counters[P] % block_size_ == 0 ? 0 : 1);
+        npoints = counters[P];
+        nfull = npoints % nblocks;
+        nlight = nblocks - nfull;
+        unit = npoints /(ULI) nblocks;
+        for (int K = 0; K < nfull; K++) {
+            block_sizes_[counter] = unit + 1L;
+            counter++;
+        }
+        for (int K = 0; K < nlight; K++) {
+            block_sizes_[counter] = unit;
+            counter++;
+        }
+    }
+    block_starts_[0] = 0;
+    for (int P = 1; P < nblocks_; P++)
+        block_starts_[P] = block_starts_[P-1] + block_sizes_[P-1]; 
+
+    free(counters);
+    free(pointers);
+}
+void Integrator::groupPointsBoxes()
+{
+
+    // Bounding box
+    double max_x = mol_->x(0);
+    double min_x = mol_->x(0);
+    double max_y = mol_->y(0);
+    double min_y = mol_->y(0);
+    double max_z = mol_->z(0);
+    double min_z = mol_->z(0);
+    
+    for (int A = 0; A < mol_->natom(); A++) {
+        if (mol_->x(A) < min_x)
+            min_x = mol_->x(A);
+        if (mol_->x(A) > max_x)
+            max_x = mol_->x(A);
+        if (mol_->y(A) < min_y)
+            min_y = mol_->y(A);
+        if (mol_->y(A) > max_y)
+            max_y = mol_->y(A);
+        if (mol_->z(A) < min_z)
+            min_z = mol_->z(A);
+        if (mol_->z(A) > max_z)
+            max_z = mol_->z(A);
+    }
+
+    max_x += box_overage_;
+    min_x -= box_overage_;
+    max_y += box_overage_;
+    min_y -= box_overage_;
+    max_z += box_overage_;
+    min_z -= box_overage_;
+    
+    int n_x = (max_x - min_x) / box_delta_;
+    int n_y = (max_y - min_y) / box_delta_;
+    int n_z = (max_z - min_z) / box_delta_;
+
+    if (min_x + n_x * box_delta_ < max_x)
+        n_x ++;
+    if (min_y + n_y * box_delta_ < max_y)
+        n_y ++;
+    if (min_z + n_z * box_delta_ < max_z)
+        n_z ++;
+
+    //printf(" n_x = %d, n_y = %d, n_z = %d\n", n_x, n_y, n_z);
+    //fflush(stdout);
+
+    double dx = n_x * box_delta_ - (max_x - min_x);
+    double dy = n_y * box_delta_ - (max_y - min_y);
+    double dz = n_z * box_delta_ - (max_z - min_z);
+
+    min_x -= 0.5*dx;
+    max_x += 0.5*dx;
+    min_y -= 0.5*dy;
+    max_y += 0.5*dy;
+    min_z -= 0.5*dz;
+    max_z += 0.5*dz;
+
+    double tempX, tempY, tempZ, tempW;
+    int tempQ;
+    unsigned long int index;
+
+    unsigned long int* xpointers = (unsigned long int*) malloc((n_x + 2) * sizeof(unsigned long int));
+    unsigned long int* xcounters = (unsigned long int*) malloc((n_x + 2) * sizeof(unsigned long int));
+    unsigned long int* ypointers = (unsigned long int*) malloc((n_x + 2) * (n_y + 2) * sizeof(unsigned long int));
+    unsigned long int* ycounters = (unsigned long int*) malloc((n_x + 2) * (n_y + 2) * sizeof(unsigned long int));
+    unsigned long int* zpointers = (unsigned long int*) malloc((n_x + 2) * (n_y + 2) * (n_z + 2) * sizeof(unsigned long int));
+    unsigned long int* zcounters = (unsigned long int*) malloc((n_x + 2) * (n_y + 2) * (n_z + 2) * sizeof(unsigned long int));
+
+    memset((void*) xcounters, '\0', (n_x + 2) * sizeof(unsigned long int));
+    memset((void*) xpointers, '\0', (n_x + 2) * sizeof(unsigned long int));
+    memset((void*) ycounters, '\0', (n_x + 2) * (n_y + 2) * sizeof(unsigned long int));
+    memset((void*) ypointers, '\0', (n_x + 2) * (n_y + 2) * sizeof(unsigned long int));
+    memset((void*) zcounters, '\0', (n_x + 2) * (n_y + 2) * (n_z + 2) * sizeof(unsigned long int));
+    memset((void*) zpointers, '\0', (n_x + 2) * (n_y + 2) * (n_z + 2) * sizeof(unsigned long int));
+
+    // Double memory algorithm, can be done in place if grid memory is an issue
+    // (methinks not on ggate) 
+    double* xt = init_array(npoints_);
+    double* yt = init_array(npoints_);
+    double* zt = init_array(npoints_);
+    double* wt = init_array(npoints_);
+    int* Zt = init_int_array(npoints_);
+
+    // Sort X
+    for (unsigned long int Q = 0L; Q < npoints_; Q++) {
+        int box = floor((x_[Q] - min_x) / box_delta_);
+        if (box < 0)
+            box = -1;
+        if (box >= n_x)
+            box = n_x;
+        Z_[Q] = box + 1;
+        xcounters[box + 1] ++;
+    }
+    for (int P = 1; P < (n_x + 2); P++)
+        xpointers[P] = xpointers[P-1] + xcounters[P-1];
+
+    for (unsigned long int Q = 0L; Q < npoints_; Q++) {
+        index = xpointers[Z_[Q]];
+        xpointers[Z_[Q]] ++;
+        xt[index] = x_[Q];
+        yt[index] = y_[Q];
+        zt[index] = z_[Q];
+        wt[index] = w_[Q];
+        Zt[index] = Z_[Q];
+    }
+    xpointers[0] = 0L;
+    for (int P = 1; P < (n_x + 2); P++)
+        xpointers[P] = xpointers[P-1] + xcounters[P-1];
+
+    /**
+    for (int A = 0; A < n_x + 2; A++)
+        printf("  (%4d), xpointer = %8ld, xsize = %8ld\n", A, xpointers[A], xcounters[A]);
+    fflush(stdout);
+    **/
+
+
+    // Sort Y
+    for (int box_X = 0; box_X < (n_x + 2); box_X++) {
+        unsigned long int offset = box_X * (unsigned long int) (n_y + 2);
+        for (unsigned long int Q = xpointers[box_X]; Q < xpointers[box_X] + xcounters[box_X]; Q++) {
+            int box = floor((yt[Q] - min_y) / box_delta_);
+            if (box < 0)
+                box = -1;
+            if (box >= n_y)
+                box = n_y;
+            Zt[Q] = box + 1;
+            ycounters[offset + box + 1] ++;
+        }
+    
+        ypointers[offset] = xpointers[box_X];
+        for (int P = 1; P < (n_y + 2); P++)
+            ypointers[P + offset] = ypointers[offset + P-1] + ycounters[offset + P-1];
+
+        for (unsigned long int Q = xpointers[box_X]; Q < xpointers[box_X] + xcounters[box_X]; Q++) {
+            index = ypointers[offset + Zt[Q]];
+            ypointers[offset + Zt[Q]] ++;
+            x_[index] = xt[Q];
+            y_[index] = yt[Q];
+            z_[index] = zt[Q];
+            w_[index] = wt[Q];
+            Z_[index] = Zt[Q];
+        }
+        ypointers[offset] = xpointers[box_X];
+        for (int P = 1; P < (n_y + 2); P++)
+            ypointers[offset+ P] = ypointers[offset + P-1] + ycounters[offset + P-1];
+    }
+
+    /**
+    for (int A = 0; A < n_x + 2; A++)
+        for (int B = 0; B < n_y + 2; B++)
+            printf("  (%4d, %4d), ypointer = %8ld, ysize = %8ld\n", A, B, ypointers[A*(n_y + 2) + B], ycounters[A*(n_y + 2) + B]);
+    fflush(stdout);
+    **/
+
+    // Sort Z
+    for (int box_X = 0; box_X < (n_x + 2); box_X++) {
+        for (int box_Y = 0; box_Y < (n_y + 2); box_Y++) {
+            unsigned long int offsetY = box_X * (unsigned long int) (n_y + 2);
+            unsigned long int offsetZ = box_X * (unsigned long int) (n_y + 2) * (n_z + 2) + box_Y * (unsigned long int) (n_z + 2);
+            for (unsigned long int Q = ypointers[offsetY + box_Y]; Q < ypointers[offsetY + box_Y] + ycounters[offsetY + box_Y]; Q++) {
+                int box = floor((z_[Q] - min_z) / box_delta_);
+                if (box < 0)
+                    box = -1;
+                if (box >= n_z)
+                    box = n_z;
+                Z_[Q] = box + 1;
+                zcounters[offsetZ + box + 1] ++;
+            }
+    
+
+            zpointers[offsetZ] = ypointers[offsetY + box_Y];
+            for (int P = 1; P < (n_z + 2); P++)
+                zpointers[P + offsetZ] = zpointers[offsetZ + P-1] + zcounters[offsetZ + P-1];
+
+            for (unsigned long int Q = ypointers[offsetY + box_Y]; Q < ypointers[offsetY + box_Y] + ycounters[offsetY + box_Y]; Q++) {
+                index = zpointers[offsetZ + Z_[Q]];
+                zpointers[offsetZ + Z_[Q]] ++;
+                xt[index] = x_[Q];
+                yt[index] = y_[Q];
+                zt[index] = z_[Q];
+                wt[index] = w_[Q];
+                Zt[index] = Z_[Q];
+            } 
+
+            zpointers[offsetZ] = ypointers[offsetY + box_Y];
+            for (int P = 1; P < (n_z + 2); P++)
+                zpointers[offsetZ+ P] = zpointers[offsetZ + P-1] + zcounters[offsetZ + P-1];
+        }    
+    }
+    
+    /**
+    for (int A = 0; A < n_x + 2; A++)
+        for (int B = 0; B < n_y + 2; B++)
+            for (int C = 0; C < n_z + 2; C++) {
+                unsigned long int address = A * (n_y + 2) * (n_z + 2) + B * (n_z + 2) + C;
+                printf("  (%4d, %4d, %4d), zpointer = %8ld, zsize = %8ld\n", A, B, C, zpointers[address], zcounters[address]);
+            }
+    fflush(stdout);
+    **/
+
+    memcpy((void*) &x_[0], (void *) &xt[0], npoints_*sizeof(double));
+    memcpy((void*) &y_[0], (void *) &yt[0], npoints_*sizeof(double));
+    memcpy((void*) &z_[0], (void *) &zt[0], npoints_*sizeof(double));
+    memcpy((void*) &w_[0], (void *) &wt[0], npoints_*sizeof(double));
+    memcpy((void*) &Z_[0], (void *) &Zt[0], npoints_*sizeof(int));
+
+    free(xt);
+    free(yt);
+    free(zt);
+    free(wt);
+    free(Zt);
+
+    unsigned long int nbins = (n_x + 2) * (n_y + 2) * (ULI)(n_z + 2);
+    unsigned long int max_count = 0L;
+    for (ULI P = 0L; P < nbins; P++) {
+        if (zcounters[P] > max_count)
+            max_count = zcounters[P];
+    }
+    block_size_ = (max_count < block_size_ ? max_count : block_size_);
+
+    nblocks_ = 0L;
+    for (ULI P = 0L; P < nbins; P++) {
+        if (zcounters[P] == 0L)
+            continue;
+        nblocks_ += (zcounters[P] / block_size_) + (zcounters[P] % block_size_ == 0 ? 0 : 1);
+    }
+
+    //printf("N bins %ld, N points %ld\n", nblocks_, npoints_);
+    //fflush(stdout);
+
+    block_starts_.resize(nblocks_);
+    block_sizes_.resize(nblocks_);
+
+    int counter = 0;
+    unsigned long int npoints, unit;
+    int nblocks, nfull, nlight;
+    for (int P = 0; P < nbins; P++) {
+        if (zcounters[P] == 0L)
+            continue;
+        nblocks = (zcounters[P] / block_size_) + (zcounters[P] % block_size_ == 0 ? 0 : 1);
+        npoints = zcounters[P];
+        nfull = npoints % nblocks;
+        nlight = nblocks - nfull;
+        unit = npoints /(ULI) nblocks;
+        for (int K = 0; K < nfull; K++) {
+            block_sizes_[counter] = unit + 1L;
+            counter++;
+        }
+        for (int K = 0; K < nlight; K++) {
+            block_sizes_[counter] = unit;
+            counter++;
+        }
+    }
+    block_starts_[0] = 0;
+    for (int P = 1; P < nblocks_; P++)
+        block_starts_[P] = block_starts_[P-1] + block_sizes_[P-1]; 
+
+    free(zpointers);
+    free(zcounters);
+    free(ypointers);
+    free(ycounters);
+    free(xpointers);
+    free(xcounters);
+
+}
+void Integrator::free_grid()
+{
+    if (x_ == NULL)
+        return;
+    free(Z_);
+    free(x_);
+    free(y_);
+    free(z_);
+    free(w_);
+}
+void Integrator::applyNuclearWeights() 
+{
+    if (mol_->natom() < 2)
+        return;
+
+    double numerator = 0.0;
+    double denominator = 0.0;
+    double prod;
+    double mu,nu;
+    double s,chi,u,a;
+    double inv_a = 1.0 / stratmann_a_;
+    int parent_nuc;
+    int max_nuc;
+    double max_weight;
+
+    double* x_mol = init_array(mol_->natom());    
+    double* y_mol = init_array(mol_->natom());    
+    double* z_mol = init_array(mol_->natom());    
+
+    for (int i = 0; i< mol_->natom(); i++) {
+        x_mol[i] = mol_->x(i);
+        y_mol[i] = mol_->y(i);
+        z_mol[i] = mol_->z(i);
+    }
+
+    double* distance_map = init_array(mol_->natom());
+
+    double** inv_distance_map = block_matrix(mol_->natom(),mol_->natom());
+    for (int i = 0; i< mol_->natom(); i++)
+        for (int j = 0; j<i; j++) {
+            inv_distance_map[i][j] = 1.0/(mol_->xyz(i)).distance(mol_->xyz(j));
+            inv_distance_map[j][i] = inv_distance_map[i][j];
+        }
+
+    double** u_x;
+    double** u_y;
+    double** u_z;
+
+    if (coord_type_ == projection_c) {
+        double dist;
+        u_x = block_matrix(mol_->natom(), mol_->natom());
+        u_y = block_matrix(mol_->natom(), mol_->natom());
+        u_z = block_matrix(mol_->natom(), mol_->natom());
+        for (int i = 0; i< mol_->natom(); i++) {
+            for (int j = 0; j<i; j++) {
+                u_x[i][j] = x_mol[j] - x_mol[i];
+                u_y[i][j] = y_mol[j] - y_mol[i];
+                u_z[i][j] = z_mol[j] - z_mol[i];
+                dist = 1.0 / sqrt(u_x[i][j] * u_x[i][j] + \
+                            u_y[i][j] * u_y[i][j] + \
+                            u_z[i][j] * u_z[i][j]);
+                u_x[i][j] *= dist;
+                u_y[i][j] *= dist;
+                u_z[i][j] *= dist;
+                u_x[j][i] = - u_x[i][j]; 
+                u_y[j][i] = - u_y[i][j]; 
+                u_z[j][i] = - u_z[i][j]; 
+            }
+        }
+    }
+
+    double** chi_values = block_matrix(mol_->natom(),mol_->natom());
+    for (int i = 0; i< mol_->natom(); i++) {
+        if (mol_->Z(i) > maxBraggSlaterIndex_)
+            throw std::domain_error("Atoms this heavy not supported for Nuclear Weighting."); 
+        for (int j = 0; j<i; j++) {
+            if (nuclear_type_ == treutler_n) {
+                chi_values[i][j] = sqrt(braggSlaterRadii_[mol_->Z(i)]/braggSlaterRadii_[mol_->Z(j)]);
+                chi_values[j][i] = chi_values[i][j]; 
+            } else if (nuclear_type_ == becke_n) {
+                chi_values[i][j] = braggSlaterRadii_[mol_->Z(i)]/braggSlaterRadii_[mol_->Z(j)];
+                chi_values[j][i] = chi_values[i][j]; 
+            } else if (nuclear_type_ == naive_n) {
+                chi_values[i][j] = 1.0;
+                chi_values[j][i] = 1.0;
+            } else {
+                throw std::domain_error("Invalid nuclear weighting type."); 
+            }
+        }
+    }
+    for (int i = 0; i< mol_->natom(); i++) {
+        for (int j = 0; j<i; j++) {
+            chi_values[i][j] = (chi_values[i][j] - 1.0) / (chi_values[i][j] + 1.0);
+            chi_values[i][j] /= (chi_values[i][j] * chi_values[i][j] - 1.0);
+            chi_values[i][j] = (chi_values[i][j] < -0.5 ? -0.5 : chi_values[i][j]);
+            chi_values[i][j] = (chi_values[i][j] > 0.5 ? 0.5 : chi_values[i][j]);
+            chi_values[j][i] = chi_values[i][j];
+        }
+    }
+
+    if (coord_type_ == elliptical_c) { 
+        if (voronoi_type_ == becke_v) {
+            for (unsigned long int Q = 0; Q < npoints_; Q++) {
+                parent_nuc = Z_[Q];
+                max_weight = 0.0; 
+                for (int i =0; i < mol_->natom(); i++) {
+                    distance_map[i] = sqrt((x_[Q] - x_mol[i]) * (x_[Q] - x_mol[i]) + \ 
+                                      (y_[Q] - y_mol[i]) * (y_[Q] - y_mol[i]) + \ 
+                                      (z_[Q] - z_mol[i]) * (z_[Q] - z_mol[i])); 
+                }   
+                denominator = 0.0; 
+                for (int i =0; i < mol_->natom(); i++) {
+                    prod = 1.0;
+                    for (int j = 0; j < mol_->natom(); j++) {
+                        if (i == j)
+                            continue;
+                        mu = (distance_map[i] - distance_map[j])*inv_distance_map[i][j];
+                        nu = mu + chi_values[i][j]*(1.0-mu*mu);
+                        s = nu;
+                        s = 1.5*s - 0.5*s*s*s;
+                        s = 1.5*s - 0.5*s*s*s;
+                        s = 1.5*s - 0.5*s*s*s;
+                        s = 0.5*(1.0-s);
+                        prod *= s;
+                    }
+                    if (i == Z_[Q]) numerator = prod;
+                    if (prod >= max_weight) { max_weight = prod; max_nuc = i; }
+                    denominator += prod;
+                } 
+                w_[Q] *= numerator / denominator;  
+                Z_[Q] = max_nuc;
+            }
+        } else if (voronoi_type_ == stratmann_v) {
+            for (unsigned long int Q = 0; Q < npoints_; Q++) {
+                parent_nuc = Z_[Q];
+                max_weight = 0.0; 
+                for (int i =0; i < mol_->natom(); i++) {
+                    distance_map[i] = sqrt((x_[Q] - x_mol[i]) * (x_[Q] - x_mol[i]) + \ 
+                                      (y_[Q] - y_mol[i]) * (y_[Q] - y_mol[i]) + \ 
+                                      (z_[Q] - z_mol[i]) * (z_[Q] - z_mol[i])); 
+                }   
+                denominator = 0.0; 
+                for (int i =0; i < mol_->natom(); i++) {
+                    prod = 1.0;
+                    for (int j = 0; j < mol_->natom(); j++) {
+                        if (i == j)
+                            continue;
+                        mu = (distance_map[i] - distance_map[j])*inv_distance_map[i][j];
+                        nu = mu + chi_values[i][j]*(1.0-mu*mu);
+                        if (nu <= - stratmann_a_) {
+                            s = -1.0;    
+                        } else if (nu >= stratmann_a_) {
+                            s = 1.0;
+                        } else {
+                            nu *= inv_a;
+                            s = 0.0625 * (35.0 * nu - 35.0 * nu * nu *nu + \
+                                21.0 * nu * nu * nu * nu * nu - 5.0 * nu * nu * nu * nu * nu * nu * nu);     
+                        } 
+                        s = 0.5*(1.0-s);
+                        prod *= s;
+                    }
+                    if (i == parent_nuc) numerator = prod;
+                    if (prod >= max_weight) { max_weight = prod; max_nuc = i; }
+                    denominator += prod;
+                } 
+                w_[Q] *= numerator / denominator;  
+                Z_[Q] = max_nuc;
+             }
+        }
+    } else if (coord_type_ == projection_c) {
+        double d_a, d_b;
+        if (voronoi_type_ == becke_v) {
+            for (unsigned long int Q = 0; Q < npoints_; Q++) {
+                parent_nuc = Z_[Q];
+                max_weight = 0.0; 
+                denominator = 0.0; 
+                for (int i =0; i < mol_->natom(); i++) {
+                    prod = 1.0;
+                    for (int j = 0; j < mol_->natom(); j++) {
+                        if (i == j)
+                            continue;
+                        d_a = u_x[i][j] * (x_[Q] - x_mol[i]) + \
+                              u_y[i][j] * (y_[Q] - y_mol[i]) + \
+                              u_z[i][j] * (z_[Q] - z_mol[i]);
+                        d_b = u_x[i][j] * (x_[Q] - x_mol[j]) + \
+                              u_y[i][j] * (y_[Q] - y_mol[j]) + \
+                              u_z[i][j] * (z_[Q] - z_mol[j]);
+                        mu = (fabs(d_a) - fabs(d_b)) * inv_distance_map[i][j];
+                        nu = mu + chi_values[i][j]*(1.0-mu*mu);
+                        s = nu;
+                        s = 1.5*s - 0.5*s*s*s;
+                        s = 1.5*s - 0.5*s*s*s;
+                        s = 1.5*s - 0.5*s*s*s;
+                        s = 0.5*(1.0-s);
+                        prod *= s;
+                    }
+                    if (i == Z_[Q]) numerator = prod;
+                    if (prod >= max_weight) { max_weight = prod; max_nuc = i; }
+                    denominator += prod;
+                } 
+                w_[Q] *= numerator / denominator;  
+                Z_[Q] = max_nuc;
+            }
+        } else if (voronoi_type_ == stratmann_v) {
+            for (unsigned long int Q = 0; Q < npoints_; Q++) {
+                parent_nuc = Z_[Q];
+                max_weight = 0.0; 
+                denominator = 0.0; 
+                for (int i =0; i < mol_->natom(); i++) {
+                    prod = 1.0;
+                    for (int j = 0; j < mol_->natom(); j++) {
+                        if (i == j)
+                            continue;
+                        d_a = u_x[i][j] * (x_[Q] - x_mol[i]) + \
+                              u_y[i][j] * (y_[Q] - y_mol[i]) + \
+                              u_z[i][j] * (z_[Q] - z_mol[i]);
+                        d_b = u_x[i][j] * (x_[Q] - x_mol[j]) + \
+                              u_y[i][j] * (y_[Q] - y_mol[j]) + \
+                              u_z[i][j] * (z_[Q] - z_mol[j]);
+                        mu = (fabs(d_a) - fabs(d_b)) * inv_distance_map[i][j];
+                        nu = mu + chi_values[i][j]*(1.0-mu*mu);
+                        if (nu <= - stratmann_a_) {
+                            s = -1.0;    
+                        } else if (nu >= stratmann_a_) {
+                            s = 1.0;
+                        } else {
+                            nu *= inv_a;
+                            s = 0.0625 * (35.0 * nu - 35.0 * nu * nu *nu + \
+                                21.0 * nu * nu * nu * nu * nu - 5.0 * nu * nu * nu * nu * nu * nu * nu);     
+                        } 
+                        s = 0.5*(1.0-s);
+                        prod *= s;
+                    }
+                    if (i == parent_nuc) numerator = prod;
+                    if (prod >= max_weight) { max_weight = prod; max_nuc = i; }
+                    denominator += prod;
+                } 
+                w_[Q] *= numerator / denominator;  
+                Z_[Q] = max_nuc;
+             }
+        }
+    }
+
+    if (coord_type_ == projection_c) {
+        free_block(u_x);
+        free_block(u_y);
+        free_block(u_z);
+    }
+    free(distance_map);
+    free(x_mol);
+    free(y_mol);
+    free(z_mol);
+    free_block(inv_distance_map);
+    free_block(chi_values);
+
+}
+RadialQuadrature Integrator::getBeckeRadial(int n, double xi)
 {
 	RadialQuadrature rad;
 	rad.n = n;
@@ -150,7 +1125,19 @@ RadialQuadrature Integrator::getRadialQuadratureBecke(int n, double xi)
 	}
 	return rad;
 }
-RadialQuadrature Integrator::getRadialQuadratureEulerMaclaurin(int n, double xi)
+RadialQuadrature Integrator::getMultiExpRadial(int n, double xi)
+{
+    throw psi::FeatureNotImplemented("integrator","Integrator::getMulltiExpRadial",__FILE__,__LINE__);
+	//RadialQuadrature rad;
+	//return rad;
+}
+RadialQuadrature Integrator::getMuraRadial(int n, double xi)
+{
+    throw psi::FeatureNotImplemented("integrator","Integrator::getMuraRadial",__FILE__,__LINE__);
+	//RadialQuadrature rad;
+	//return rad;
+}
+RadialQuadrature Integrator::getEMRadial(int n, double xi)
 {
 	RadialQuadrature rad;
 	rad.n = n;
@@ -164,7 +1151,7 @@ RadialQuadrature Integrator::getRadialQuadratureEulerMaclaurin(int n, double xi)
 	}
 	return rad;
 }
-RadialQuadrature Integrator::getRadialQuadratureTreutler(int n, double xi, double alpha)
+RadialQuadrature Integrator::getTreutlerRadial(int n, double xi, double alpha)
 {
 	RadialQuadrature rad;
 	rad.n = n;
@@ -189,470 +1176,11 @@ RadialQuadrature Integrator::getRadialQuadratureTreutler(int n, double xi, doubl
 
 	return rad;	
 }
-double Integrator::getBraggSlaterRadius(int n)
+SphericalQuadrature Integrator::getEMSpherical(int degree)
 {
-	if (n>54){
-		throw std::domain_error("Error: Atoms heavier than Xe are not supported for Treutler radial integration\n");
-	}
-	return braggSlaterRadii_[n];
+    throw psi::FeatureNotImplemented("integrator","Integrator::getEMSpherical",__FILE__,__LINE__);
 }
-double Integrator::getTreutlerRadius(int n)
-{
-	if (n>36){
-		throw std::domain_error("Error: Atoms heavier than Kr are not supported for Treutler radial integration\n");
-	}
-	return treutlerRadii_[n];
-}
-double Integrator::getSG1Radius(int n)
-{
-	if (n>18){
-		throw std::domain_error("Error: Atoms heavier than Ar are not supported for SG1 Grids\n");
-	}
-	return SG1Radii_[n];
-}
-double Integrator::getSG1Alpha(int n, int index)
-{
-	if (index>3) {
-		throw std::domain_error("Error: There are only 4 alphas for SG1 grids\n");
-	}
-	if (n>18){
-		throw std::domain_error("Error: Atoms heavier than Ar are not supported for SG1 Grids\n");
-	}
-	int row = 0;
-	if (n>2)
-		row = 1;
-	if (n>10)
-		row = 2;
-	return SG1Alpha_[row*4+index];
-}
-Integrator::Integrator(shared_ptr<Molecule> m, Options & opt)
-{
-	started_ = false;
-	
-	molecule_ = m;
-	nnuclei_ = molecule_->natom();
-	
-	string spec = opt.get_str("GRID_STRING");
-	if (spec == "SG1") {
-		//Setup SG1
-		special_grid_ = SG1;
-		nspheres_ = 5;
-		nspherical_ = init_int_array(5);
-		for (int k = 0; k<5; k++)
-			nspherical_[k] = SG1GridOrders_[k];
-		spherical_scheme_ = lebedev_s;
-		nradial_ = 50;
-		radial_scheme_ = em_r;
-		nuclear_scheme_ = becke_n;
-		for (int k = 0; k<5; k++)
-			sphere_.push_back(getSphericalQuadrature(nspherical_[k]));
-	}
-	else if (spec == "") {
-		//Setup grid manually
-		special_grid_ = NONE;
-		
-		nspheres_ = 1;
-		nspherical_ = init_int_array(1);
-		nspherical_[0] = opt.get_int("N_SPHERICAL");
-		nradial_ = opt.get_int("N_RADIAL");
-		
-		string s = opt.get_str("SPHERICAL_TYPE");
-		if (s == "LEBEDEV")
-			spherical_scheme_ = lebedev_s;
-		else
-			throw std::domain_error("Error: Spherical Scheme not recognized");
-
-		s = opt.get_str("RADIAL_TYPE");
-		if (s == "TREUTLER")
-			radial_scheme_ = treutler_r; 
-		else if (s == "BECKE")
-			radial_scheme_ = becke_r; 
-		else if (s == "EULER-MACLAURIN")
-			radial_scheme_ = em_r; 
-		else 
-			throw std::domain_error("Error: Radial Scheme not recognized");
-		
-		s = opt.get_str("NUCLEAR_TYPE");
-		if (s == "TREUTLER")
-			nuclear_scheme_ = treutler_n; 
-		else if (s == "BECKE")
-			nuclear_scheme_ = becke_n; 
-		else if (s == "EULER-MACLAURIN")
-			nuclear_scheme_ = naive_n; 
-		else 
-			throw std::domain_error("Error: Nuclear Scheme not recognized");
-
-		if (spherical_scheme_ == lebedev_s)
-			sphere_.push_back(getSphericalQuadrature(nspherical_[0]));
-	}
-	else {
-		throw std::domain_error("Error: Special Grid String not recognized");
-	}
-
-        block_size_ = opt.get_int("N_BLOCK");
-        grid_block_ = SharedGridBlock(GridBlock::createGridBlock(block_size_));
-
-        inv_distance_map_ = block_matrix(molecule_->natom(),molecule_->natom());
-        for (int i = 0; i< molecule_->natom(); i++)
-            for (int j = 0; j<i; j++) {
-                inv_distance_map_[i][j] = 1.0/(molecule_->xyz(i)).distance(molecule_->xyz(j));
-                inv_distance_map_[j][i] = inv_distance_map_[i][j];
-            }
-
-        chi_values_ = block_matrix(molecule_->natom(),molecule_->natom());
-        for (int i = 0; i< molecule_->natom(); i++)
-            for (int j = 0; j<i; j++) {
-                if (nuclear_scheme_ == treutler_n) {
-                    chi_values_[i][j] = sqrt(getBraggSlaterRadius(molecule_->Z(i))/getBraggSlaterRadius(molecule_->Z(j)));
-                    chi_values_[j][i] = chi_values_[i][j]; 
-                } else if (nuclear_scheme_ == becke_n) {
-                    chi_values_[i][j] = getBraggSlaterRadius(molecule_->Z(i))/getBraggSlaterRadius(molecule_->Z(j));
-                    chi_values_[j][i] = chi_values_[i][j]; 
-                } else {
-                    chi_values_[i][j] = 1.0;
-                    chi_values_[j][i] = 1.0;
-                }
-            }
-	
-        reset();
-}
-Integrator::~Integrator()
-{
-	//Any frees go here
-	for (int k = 0; k<nspheres_; k++){
-		free(sphere_[k].x);
-		free(sphere_[k].y);
-		free(sphere_[k].z);
-		free(sphere_[k].w);
-	}
-	free(nspherical_);
-	if (started_) {
-		free(rad_.r);
-		free(rad_.w);
-	}
-        free_block(inv_distance_map_);
-        free_block(chi_values_);
-}
-void Integrator::reset()
-{
-	done_ = false;
-	nuclearIndex_ = 0;
-	sphereIndex_ = 0;
-	sphericalIndex_ = 0;
-	radialIndex_ = 0;
-}
-SharedGridBlock Integrator::getNextBlock()
-{
-    //Whoops, you messed up, we're already through. Call reset()!
-    if (done_)
-	throw std::domain_error("Error: all integration points already traversed");
-    
-    double * grid_x = grid_block_->getX();
-    double * grid_y = grid_block_->getY();
-    double * grid_z = grid_block_->getZ();
-    double * grid_w = grid_block_->getWeights();
-
-    //How many points were we able to assign?
-    int ntrue = 0;
-
-    //True to traverse through block_size_ number of points
-    // Break out of loop if end of quadrature is reached.
-    for (int i = 0; i < block_size_; i++) {
-        //Assign i-th point:
-    
-        //Line things up if new atom reached
-        if (radialIndex_ == 0 && sphericalIndex_ == 0 && sphereIndex_ == 0) {
-            if (started_) {
-                free(rad_.r);
-                free(rad_.w);
-            }
-	    if (radial_scheme_ == becke_r)
-                rad_ = getRadialQuadratureBecke(nradial_,getBraggSlaterRadius(molecule_->Z(nuclearIndex_)));
-            else if (radial_scheme_ == treutler_r)
-                rad_ = getRadialQuadratureTreutler(nradial_,getTreutlerRadius(molecule_->Z(nuclearIndex_)));
-            else if (radial_scheme_ == em_r)
-                rad_ = getRadialQuadratureEulerMaclaurin(nradial_,getSG1Radius(molecule_->Z(nuclearIndex_)));
-        }
-
-	//Where exactly are we operating?
-        //I hate to break this to you, but Starfleet operates in space. 
-        Vector3 v(sphere_[sphereIndex_].x[sphericalIndex_],sphere_[sphereIndex_].y[sphericalIndex_],sphere_[sphereIndex_].z[sphericalIndex_]);
-        v *= rad_.r[radialIndex_];
-        v += molecule_->xyz(nuclearIndex_);
-
-        //What's the nuclear weight look like out here?
-        //Maybe could be vectorized, difficult as the block could go over
-        //multiple atoms
-        double wnuc;
-        if (nuclear_scheme_ == naive_n)
-            wnuc = getNuclearWeightNaive(v,nuclearIndex_);
-        if (nuclear_scheme_ == becke_n)
-            wnuc = getNuclearWeightBecke(v,nuclearIndex_);
-        else if (nuclear_scheme_ == treutler_n)
-            wnuc = getNuclearWeightTreutler(v,nuclearIndex_);
-	
-        grid_x[i] = v[0];
-        grid_y[i] = v[1];
-        grid_z[i] = v[2];
-        grid_w[i] = sphere_[sphereIndex_].w[sphericalIndex_]*rad_.w[radialIndex_]*wnuc;
-
-        //Finished assigning i-th point, increment ntrue
-        ntrue++;
-        
-        //Increment quadrature, check if done
-	started_ = true;
-	if (special_grid_ == SG1) {
-		sphericalIndex_++;
-		if (sphericalIndex_>=nspherical_[sphereIndex_]){
-			sphericalIndex_ = 0;
-			radialIndex_++;
-			if (radialIndex_ >= nradial_) {
-				radialIndex_ = 0;
-				nuclearIndex_++;
-				if (nuclearIndex_ >= nnuclei_) {
-					done_ = true;
-				}
-			}
-			if (! done_) {
-				//Set the sphereIndex_ to the correct pruned grid
-				double rr = rad_.r[radialIndex_];
-				sphereIndex_ = 0;
-				for (int k=0; k<nspheres_-1; k++) {
-					if (rr>getSG1Alpha(molecule_->Z(nuclearIndex_),k)*getSG1Radius(molecule_->Z(nuclearIndex_)))
-						sphereIndex_ = k+1;
-				}	
-			}
-		}
-	}
-        else if (special_grid_ == NONE) {
-		sphericalIndex_++;
-		if (sphericalIndex_>=nspherical_[sphereIndex_]){
-			sphericalIndex_ = 0;
-			radialIndex_++;
-			if (radialIndex_ >= nradial_) {
-				radialIndex_ = 0;
-				nuclearIndex_++;
-				if (nuclearIndex_ >= nnuclei_) {
-					done_ = true;
-				}
-			}
-		}
-	}
-
-        //If done, leave block assignment early
-        if (done_)
-            break;
-
-    }
-
-    grid_block_->setTruePoints(ntrue);
-    return grid_block_;
-}
-void Integrator::getBlock(unsigned long int block_number, shared_ptr<GridBlock> block)
-{
-    //TODO
-    unsigned long int point_number = block_size_*block_number;
-    //atom_number = point_number/points_per_atom;    
-}
-int Integrator::getNumberOfBlocks()
-{
-    //TODO
-    int nblocks = 0; 
-    return nblocks; 
-}
-std::string Integrator::getString()
-{
-	string s("");
-	char temp[80];
-	if (special_grid_ == SG1) {
-		s+="  Standard Grid 1 (SG1): Defined by Gill et. al., Chem. Phys. Lett.,\n";
-		s+="  209, 1993, pp. 507.\n";
-		s+="  Spherical Grid Orders: 6,38,86,194,86\n";
-		s+="  Cutoffs defined by Gill by atomic row\n";
-	} else if (special_grid_ == NONE) {
-		s+="  Manual Grid: \n";
-		sprintf(temp,"  Spherical Grid Order: %d\n",nspherical_[0]);
-		s+=temp;
-	}
-	sprintf(temp,"  Radial Grid Order: %d\n",nradial_);
-	s+=temp;
-		
-	if (spherical_scheme_ == lebedev_s)
-		s+="  Spherical quadrature type is Lebedev\n";
-	
-	if (radial_scheme_ == becke_r)
-		s+="  Radial quadrature type is Becke\n";
-	else if (radial_scheme_ == treutler_r)
-		s+="  Radial quadrature type is Treutler\n";
-	else if (radial_scheme_ == em_r)
-		s+="  Radial quadrature type is Euler-Maclaurin\n";
-
-	if (nuclear_scheme_ == becke_n)
-		s+="  Heteroatom adjustment type is Becke\n";
-	else if (nuclear_scheme_ == treutler_n)
-		s+="  Heteroatom adjustment type is Treutler\n";
-	else if (nuclear_scheme_ == naive_n)
-		s+="  Heteroatom adjustment is Naive\n";
-		
-	return s;
-}
-void Integrator::checkSphericalIntegrators(FILE* out)
-{
-	int orders[] = { 6, 14, 26, 38, 50, 74, 86, 110, 146, 170, 194, 230, 266, 302, 350, 434, 590, 770, 974, 1202, 1454, 1730, 2030, 2354, 2702, 3074, 3470, 3890, 4334, 4802, 5294, 5810 };
-	int nradii[] = { 20, 40, 60, 80, 100};
-	int norders = 32;
-	int nradiis = 5;
-	double sigma = 1.0;
-	double xi = 1.0;
-        double norm = 1.0/pow(2.0*M_PI*sigma*sigma,1.5);
-	double fun;
-
-	//Check Becke Integrators
-	fprintf(out,"\n  Checking Becke Integrators (Integrating Nx^4exp(-r^2) = 3.0):\n");
-	for (int k=0; k<norders; k++) {
-		SphericalQuadrature leb = getSphericalQuadrature(orders[k]);
-		for (int l=0; l<nradiis; l++) {
-			RadialQuadrature becke = getRadialQuadratureBecke(nradii[l],xi);
-			double v = 0.0;
-			for (int s = 0; s<leb.n; s++)
-				for (int t = 0; t<becke.n; t++) {
-					Vector3 p(leb.x[s]*becke.r[t],leb.y[s]*becke.r[t],leb.z[s]*becke.r[t]);
-					fun = norm*p[0]*p[0]*p[0]*p[0]*exp(-(p[0]*p[0]+p[1]*p[1]+p[2]*p[2])/(2.0*sigma*sigma));
-					v += leb.w[s]*becke.w[t]*fun;
-				}
-			fprintf(out,"  (%3d,%4d): %14.10f\n",becke.n,leb.n,v); 
-			free(becke.r);
-			free(becke.w); 
-		}
-		free(leb.w);
-		free(leb.x);
-		free(leb.y);
-		free(leb.z);
-		
-	}	//End Checke Becke Integrators
-
-	//Check Euler-Maclaurin Integrators
-	fprintf(out,"\n  Checking Euler-Maclaurin Integrators (Integrating Nx^4exp(-r^2) = 3.0):\n");
-	for (int k=0; k<norders; k++) {
-		SphericalQuadrature leb = getSphericalQuadrature(orders[k]);
-		for (int l=0; l<nradiis; l++) {
-			RadialQuadrature becke = getRadialQuadratureEulerMaclaurin(nradii[l],xi);
-			double v = 0.0;
-			for (int s = 0; s<leb.n; s++)
-				for (int t = 0; t<becke.n; t++) {
-					Vector3 p(leb.x[s]*becke.r[t],leb.y[s]*becke.r[t],leb.z[s]*becke.r[t]);
-					fun = norm*p[0]*p[0]*p[0]*p[0]*exp(-(p[0]*p[0]+p[1]*p[1]+p[2]*p[2])/(2.0*sigma*sigma));
-					v += leb.w[s]*becke.w[t]*fun;
-				}
-			fprintf(out,"  (%3d,%4d): %14.10f\n",becke.n,leb.n,v); 
-			free(becke.r);
-			free(becke.w); 
-		}
-		free(leb.w);
-		free(leb.x);
-		free(leb.y);
-		free(leb.z);
-		
-	}	//End Checke Euler-Maclaurin Integrators
-	
-	//Check Treutler Integrators
-	fprintf(out,"\n  Checking Treutler Integrators (Integrating Nx^4exp(-r^2) = 3.0):\n");
-	for (int k=0; k<norders; k++) {
-		SphericalQuadrature leb = getSphericalQuadrature(orders[k]);
-		for (int l=0; l<nradiis; l++) {
-			RadialQuadrature treutler = getRadialQuadratureTreutler(nradii[l],xi);
-			double v = 0.0;
-			for (int s = 0; s<leb.n; s++)
-				for (int t = 0; t<treutler.n; t++) {
-					Vector3 p(leb.x[s]*treutler.r[t],leb.y[s]*treutler.r[t],leb.z[s]*treutler.r[t]);
-					fun = norm*p[0]*p[0]*p[0]*p[0]*exp(-(p[0]*p[0]+p[1]*p[1]+p[2]*p[2])/(2.0*sigma*sigma));
-					v += leb.w[s]*treutler.w[t]*fun;
-				}
-			fprintf(out,"  (%3d,%4d): %14.10f\n",treutler.n,leb.n,v); 
-			free(treutler.r);
-			free(treutler.w); 
-		}
-		free(leb.w);
-		free(leb.x);
-		free(leb.y);
-		free(leb.z);
-	}	
-}	//End Checke Becke Integrators
-void Integrator::checkMolecularIntegrators(FILE* out)
-{
-	double sigma = 1.0;
-        double norm = 1.0/pow(2.0*M_PI*sigma*sigma,1.5);
-	double fun;
-
-	SphericalQuadrature leb = getSphericalQuadrature(nspherical_[0]);
-	RadialQuadrature becke;
-	double v1 = 0.0;
-	double v2 = 0.0;
-	double v3 = 0.0;
-	double w1, w2, w3;
-	//Check Becke Nuclear Weights 
- fprintf(out,"\n  Checking Molecular Integrators (Integrating Nx^4exp(-r^2) = 3.0):\n");
-	for (int nuc = 0; nuc<nnuclei_; nuc++) {
-		becke = getRadialQuadratureBecke(nradial_,getBraggSlaterRadius(molecule_->Z(nuc)));
-		for (int s = 0; s<leb.n; s++) {
-			for (int t = 0; t<becke.n; t++) {
-				Vector3 p(leb.x[s]*becke.r[t],leb.y[s]*becke.r[t],leb.z[s]*becke.r[t]);
-				p = p+molecule_->xyz(nuc);
-				w1 = getNuclearWeightNaive(p,nuc);
-				w2 = getNuclearWeightBecke(p,nuc);
-				w3 = getNuclearWeightTreutler(p,nuc);
-				//fprintf(out,"  Integration Point: Nucleus: %d, <%14.10f,%14.10f,%14.10f>\t",nuc,p[0],p[1],p[2]);
-				//fprintf(out,"  Naive w: %12.10f, Becke w: %12.10f, Treutler w: %12.10f\n",w1,w2,w3);
-				fun = norm*p[0]*p[0]*p[0]*p[0]*exp(-(p[0]*p[0]+p[1]*p[1]+p[2]*p[2])/(2.0*sigma*sigma));
-				v1 += leb.w[s]*becke.w[t]*w1*fun;
-				v2 += leb.w[s]*becke.w[t]*w2*fun;
-				v3 += leb.w[s]*becke.w[t]*w3*fun;
-			}
-		}
-		free(becke.r);
-		free(becke.w);
-	}
-	fprintf(out,"  Grid Size:  (%3d,%4d):\n",becke.n,leb.n);
-	fprintf(out,"  Naive Partition: %14.10f\n",v1); 
-	fprintf(out,"  Becke Partition: %14.10f\n",v2); 
-	fprintf(out,"  Treutler Partition: %14.10f\n",v3); 
-
-	free(leb.w);
-	free(leb.x);
-	free(leb.y);
-	free(leb.z);
-		
-}
-void Integrator::checkLebedev(FILE* out)
-{
-	int orders[] = { 6, 14, 26, 38, 50, 74, 86, 110, 146, 170, 194, 230, 266, 302, 350, 434, 590, 770, 974, 1202, 1454, 1730, 2030, 2354, 2702, 3074, 3470, 3890, 4334, 4802, 5294, 5810 };
-	int norders = 32;
-	fprintf(out,"  Checking Lebedev Grids (All Integrals should be 1.0):\n");
-	for (int k = 0; k<norders; k++){
-		SphericalQuadrature leb = getSphericalQuadrature(orders[k]);
-		double v = 0.0;
-		for (int l=0; l<leb.n; l++)
-			v+=leb.w[l];
-                fprintf(out,"  Lebedev sphere of order %4d, Integral is %14.10f\n",orders[k],v/(4.0*M_PI));
-		free(leb.w);
-		free(leb.x);
-		free(leb.y);
-		free(leb.z);
-	}
-}
-void Integrator::printAvailableLebedevGrids(FILE* out)
-{
-	int orders[] = { 6, 14, 26, 38, 50, 74, 86, 110, 146, 170, 194, 230, 266, 302, 350, 434, 590, 770, 974, 1202, 1454, 1730, 2030, 2354, 2702, 3074, 3470, 3890, 4334, 4802, 5294, 5810 };
-	int ls[] = {3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,35,41,47,53,59,65,71,77,83,89,95,101,107,113,119,125,131};
-	int norders = 32;
-	fprintf(out,"  Available Lebedev Grids:\n");
-	for (int k = 0; k<norders; k++)
-		fprintf(out,"  Lebedev Grid %2d, l = %3d, n = %4d\n",k+1,ls[k],orders[k]);
-	fprintf(out,"\n  Citation: V.I. Lebedev, and D.N. Laikov \n  \"A quadrature formula for the sphere of the 131st algebraic order of accuracy\"\n  Doklady Mathematics, Vol. 59, No. 3, 1999, pp. 477-481.\n");
-
-	
-}
-SphericalQuadrature Integrator::getSphericalQuadrature(int degree)
+SphericalQuadrature Integrator::getLebedevSpherical(int degree)
 {
     //Get Lebedev sphere of number of points degree
     //Translated from FORTRAN code
@@ -662,8 +1190,8 @@ SphericalQuadrature Integrator::getSphericalQuadrature(int degree)
     double a = 0.0;
     double b = 0.0;
     double v = 0.0;
+
     SphericalQuadrature leb_tmp;
-    
     leb_tmp.x = init_array(degree);
     leb_tmp.y = init_array(degree);
     leb_tmp.z = init_array(degree);
@@ -675,7 +1203,7 @@ SphericalQuadrature Integrator::getSphericalQuadrature(int degree)
         leb_tmp.x[0] = 1.0;
         leb_tmp.y[0] = 0.0;
         leb_tmp.z[0] = 0.0;
-        leb_tmp.w[0] = 1.0;
+        leb_tmp.w[0] = 4*M_PI;
         break;
     	
     case 6:
@@ -5318,7 +5846,7 @@ SphericalQuadrature Integrator::getSphericalQuadrature(int degree)
     leb_tmp.n = degree;
     return leb_tmp;
 }
-int Integrator::getLebedevReccurencePoints(int type, int start, double a, double b, double v, SphericalQuadrature leb)
+int Integrator::getLebedevReccurencePoints(int type, int start, double a, double b, double v, const SphericalQuadrature & leb)
 {
 
     int end;
@@ -5969,7 +6497,59 @@ int Integrator::getLebedevReccurencePoints(int type, int start, double a, double
     }
     return end;
 }
+int Integrator::getSphericalOrderConstant(double R, int nR, int Z, int max_S)
+{
+    return max_S;
+}
+int Integrator::getSphericalOrderSG1(double R, int nR, int Z, int max_S)
+{
+    double alpha = R / SG1Radii_[Z];
+    if (Z < 3) {
+        if (alpha < 0.25)
+            return 6;
+        else if (alpha < 0.5)
+            return 38;
+        else if (alpha < 1.0)
+            return 86;
+        else if (alpha < 4.5) 
+            return 194;
+        else 
+            return 86; 
+    } else if (Z < 11) {
+        if (alpha < 0.1667)
+            return 6;
+        else if (alpha < 0.5)
+            return 38;
+        else if (alpha < 0.9)
+            return 86;
+        else if (alpha < 3.5) 
+            return 194;
+        else 
+            return 86; 
+    } else if (Z < 19) {
+        if (alpha < 0.10)
+            return 6;
+        else if (alpha < 0.4)
+            return 38;
+        else if (alpha < 0.8)
+            return 86;
+        else if (alpha < 2.5) 
+            return 194;
+        else 
+            return 86; 
+    } else {
+        throw std::domain_error("Atoms higher than Ar not currently supported with SG1");
+    }
+    
+}
+int Integrator::getSphericalOrderSG0(double R, int nR,  int Z, int max_S)
+{
+   return SG0Orders_[Z*26 + nR]; 
+}
+int Integrator::getSphericalOrderAutomatic(double R, int nR, int Z, int max_S)
+{
+    return 0;
+}
 
-
-}}
+}
 

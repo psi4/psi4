@@ -12,7 +12,7 @@
 #include "hf.h"
 #include "rhf.h"
 #include <libfunctional/superfunctional.h>
-#include "integrator.h"
+#include <libmints/integrator.h>
 #include <libmints/properties.h>
 using namespace psi;
 using namespace psi::functional;
