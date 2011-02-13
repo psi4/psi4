@@ -11,6 +11,10 @@
 #include "wavefunction.h"
 #include "cdsalclist.h"
 
+#ifdef MINTS_TIMER
+#include <libqt/qt.h>
+#endif
+
 #include <vector>
 
 namespace boost {
@@ -142,7 +146,15 @@ public:
 template<typename TwoBodySOIntFunctor>
 void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIntFunctor& body)
 {
+#ifdef MINTS_TIMER
+    timer_on("TwoBodySOInt::compute_shell overall");
+#endif
+
 //    fprintf(outfile, "computing shell (%d %d %d %d)\n", ish, jsh, ksh, lsh);
+
+#ifdef MINTS_TIMER
+    timer_on("TwoBodySOInt::compute_shell setup");
+#endif MINTS_TIMER
 
     const double *aobuff = tb_->buffer();
 
@@ -163,14 +175,32 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
 
 //    fprintf(outfile, "nao1 = %d nao2 = %d nao3 = %d nao4 = %d\n", nao1, nao2, nao3, nao4);
 
-    memset(buffer_, 0, size_*sizeof(double));
+//    memset(buffer_, 0, size_*sizeof(double));
     int irrepoff[8];
 
-    memset(irrepoff, 0, sizeof(int) * 8);
-
+    irrepoff[0] = 0;
     for (int h=1; h<b1_->nirrep(); ++h) {
         irrepoff[h] = irrepoff[h-1] + b1_->nfunction_in_irrep(h-1);
     }
+
+#ifdef MINTS_TIMER
+    timer_on("TwoBodySOInt::compute_shell zero buffer");
+#endif MINTS_TIMER
+
+    for (size_t i=0; i<size_; ++i) {
+        buffer_[i] = 0.0;
+    }
+#ifdef MINTS_TIMER
+    timer_off("TwoBodySOInt::compute_shell zero buffer");
+#endif MINTS_TIMER
+
+#ifdef MINTS_TIMER
+    timer_off("TwoBodySOInt::compute_shell setup");
+#endif MINTS_TIMER
+
+#ifdef MINTS_TIMER
+    timer_on("TwoBodySOInt::compute_shell full shell transform");
+#endif MINTS_TIMER
 
     // loop through the ao shells that make up this so shell
     for (int i=0; i<t1.naoshell; i++) {
@@ -181,7 +211,14 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
                 const SOTransformShell &s3 = t3.aoshell[k];
                 for (int l=0; l<t4.naoshell; l++) {
                     const SOTransformShell &s4 = t4.aoshell[l];
+
+#ifdef MINTS_TIMER
+    timer_on("TwoBodySOInt::compute_shell AO eri overhead");
+#endif MINTS_TIMER
                     tb_->compute_shell(s1.aoshell, s2.aoshell, s3.aoshell, s4.aoshell);
+#ifdef MINTS_TIMER
+    timer_off("TwoBodySOInt::compute_shell AO eri overhead");
+#endif MINTS_TIMER
 
 //                    fprintf(outfile, "ao: (%d %d %d %d)\n", s1.aoshell, s2.aoshell,
 //                            s3.aoshell, s4.aoshell);
@@ -192,6 +229,10 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
 //                                      INT_NPURE(tb_->basis4()->shell(s4.aoshell)->am()); ++z) {
 //                        fprintf(outfile, "raw: %d -> %8.5f\n", z, aobuff[z]);
 //                    }
+
+#ifdef MINTS_TIMER
+    timer_on("TwoBodySOInt::compute_shell AO->SO transform");
+#endif MINTS_TIMER
 
                     for (int itr=0; itr<s1.nfunc; itr++) {
                         const SOTransformFunction &ifunc = s1.func[itr];
@@ -247,17 +288,34 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
                             }
                         }
                     }
+
+#ifdef MINTS_TIMER
+    timer_off("TwoBodySOInt::compute_shell AO->SO transform");
+#endif MINTS_TIMER
+
                 }
             }
         }
     }
 
+#ifdef MINTS_TIMER
+    timer_off("TwoBodySOInt::compute_shell full shell transform");
+#endif MINTS_TIMER
+
     provide_IJKL(ish, jsh, ksh, lsh, body);
+
+#ifdef MINTS_TIMER
+    timer_off("TwoBodySOInt::compute_shell overall");
+#endif
 }
 
 template<typename TwoBodySOIntFunctor>
 void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOIntFunctor& body)
 {
+#ifdef MINTS_TIMER
+    timer_on("TwoBodySOInt::provide_IJKL overall");
+#endif
+
     const double *aobuff = tb_->buffer();
 
     const SOTransform &t1 = b1_->trans(ish);
@@ -388,6 +446,9 @@ void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOInt
                             }
                         }
 
+#ifdef MINTS_TIMER
+    timer_on("TwoBodySOInt::provide_IJKL functor");
+#endif
                         // func off/on
                         body(iiabs, jjabs, kkabs, llabs,
                              iiirrep, iirel,
@@ -395,11 +456,17 @@ void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOInt
                              kkirrep, kkrel,
                              llirrep, llrel,
                              buffer_[lsooff]);
+#ifdef MINTS_TIMER
+    timer_off("TwoBodySOInt::provide_IJKL functor");
+#endif
                     }
                 }
             }
         }
     }
+#ifdef MINTS_TIMER
+    timer_off("TwoBodySOInt::provide_IJKL overall");
+#endif
 }
 }
 

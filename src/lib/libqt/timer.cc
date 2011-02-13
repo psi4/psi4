@@ -28,7 +28,7 @@
 ** NB this code uses system functions ctime(), time(), and times(),
 ** which may not quite be standard on all machines.
 **
-** T. Daniel Crawford, August 1999.  
+** T. Daniel Crawford, August 1999.
 */
 
 #include <cstdio>
@@ -46,7 +46,7 @@
 #define HZ 60
 #endif
 
-#define TIMER_KEYLEN 32
+#define TIMER_KEYLEN 128
 #define TIMER_OFF 0
 #define TIMER_ON 1
 
@@ -87,7 +87,7 @@ void timer_init(void)
 ** timer_done(): Close down all timers and write results to timer.dat
 **
 ** \ingroup QT
-*/ 
+*/
 void timer_done(void)
 {
   FILE *timer_out;
@@ -109,24 +109,24 @@ void timer_done(void)
   fprintf(timer_out, "Timers On : %s", ctime(&timer_start));
   fprintf(timer_out, "Timers Off: %s", ctime(&timer_end));
   fprintf(timer_out, "\nWall Time:  %10.2f seconds\n\n",
-	  (double) timer_end - timer_start);
+          (double) timer_end - timer_start);
 
   this_timer = global_timer;
   while(this_timer != NULL) {
-      if(this_timer->calls > 1) 
-	  fprintf(timer_out, "%-12s: %10.2fu %10.2fs %10.2fw %6d calls\n",
-		  this_timer->key, this_timer->utime, this_timer->stime,
-		  this_timer->wtime, this_timer->calls);
+      if(this_timer->calls > 1)
+          fprintf(timer_out, "%-12s: %10.2fu %10.2fs %10.2fw %6d calls\n",
+                  this_timer->key, this_timer->utime, this_timer->stime,
+                  this_timer->wtime, this_timer->calls);
       else if(this_timer->calls == 1)
-	  fprintf(timer_out, "%-12s: %10.2fu %10.2fs %10.2fw %6d call\n",
-		  this_timer->key, this_timer->utime, this_timer->stime,
-		  this_timer->wtime, this_timer->calls);
+          fprintf(timer_out, "%-12s: %10.2fu %10.2fs %10.2fw %6d call\n",
+                  this_timer->key, this_timer->utime, this_timer->stime,
+                  this_timer->wtime, this_timer->calls);
       next_timer = this_timer->next;
       free(this_timer);
       this_timer = next_timer;
     }
 
-  fprintf(timer_out, 
+  fprintf(timer_out,
           "\n***********************************************************\n");
   fclose(timer_out);
 
@@ -148,7 +148,7 @@ struct timer *timer_scan(const char *key)
   struct timer *this_timer;
 
   this_timer = global_timer;
-  
+
   while(this_timer != NULL) {
       if(!strcmp(this_timer->key,key)) return(this_timer);
       this_timer = this_timer->next;
@@ -213,7 +213,7 @@ void timer_on(const char *key)
 
   this_timer->status = TIMER_ON;
   this_timer->calls++;
-  
+
   times(&(this_timer->ontime));
   this_timer->wall_start = time(NULL);
 }
