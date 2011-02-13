@@ -62,9 +62,9 @@ void SCF::save_info()
     epsilon_a_ = SharedVector(factory_.create_vector());
     epsilon_b_ = epsilon_a_;
     for(int h = 0; h < nirreps; ++h){
-        for(int so = 0; so < nsopi_[h]; ++h){
+        for(int so = 0; so < nsopi_[h]; ++so){
             epsilon_a_->set(h, so, epsilon->get(h, so));
-            for(int mo = 0; mo < nmopi_[h]; ++h){
+            for(int mo = 0; mo < nmopi_[h]; ++mo){
                 Ca_->set(h, so, mo, C->get(h, so, mo));
             }
         }
