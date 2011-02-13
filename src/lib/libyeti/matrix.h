@@ -23,7 +23,10 @@ namespace yeti {
     @class MatrixMap
     Encapsulates an array of matrices used for metadata layers of the matrix
 */
-class MatrixMap : public smartptr::Countable, public Malloc<MatrixMap> {
+class MatrixMap :
+    public smartptr::Countable,
+    public Malloc<MatrixMap>
+{
 
     private:
         uli nrows_;
@@ -89,6 +92,8 @@ class Matrix :
             as well as the permutational symmetry of the indices.
         */
         MatrixConfigurationPtr config_;
+
+        IndexRangeTuplePtr tuple_;
 
         /**
             The set of tiles that generate a matrix with a particular set of
@@ -257,22 +262,12 @@ class Matrix :
 
         void retrieve_as_product(uli threadnum);
 
+        void set_tuple(Tile* tile, Permutation* p);
+
     protected:
         void _retrieve(uli threadnum);
 
         void _release(uli threadnum);
-
-#if 0
-        void accumulate_data(
-            const MatrixPtr& rmatrix,
-            double scale
-        );
-
-        void accumulate_metadata(
-            const MatrixPtr& rmatrix,
-            double scale
-        );
-#endif
 
     public:
         /**
@@ -315,13 +310,6 @@ class Matrix :
         );
 
         ~Matrix();
-
-#if 0
-        void accumulate(
-            const MatrixPtr& matrix,
-            double scale
-        );
-#endif
 
         /**
             This can be called from within a thread
@@ -400,6 +388,8 @@ class Matrix :
             @return The underyling data block
         */
         DataBlock* get_data() const;
+
+        IndexRangeTuple* get_index_ranges() const;
 
         /**
             @return The matrix configuration specifying permutational symmetry and which

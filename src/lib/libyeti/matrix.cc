@@ -43,8 +43,10 @@ Matrix::Matrix(
     unique_tile_(false),
     tmpindices_(yeti_malloc_indexset()),
     constructed_(false),
-    maxlog_(0)
+    maxlog_(0),
+    tuple_(0)
 {
+    set_as_multiplicand();
 }
 
 Matrix::Matrix(
@@ -68,7 +70,8 @@ Matrix::Matrix(
     unique_tile_(false),
     tmpindices_(yeti_malloc_indexset()),
     constructed_(false),
-    maxlog_(tensor->max_log())
+    maxlog_(tensor->max_log()),
+    tuple_(0)
 {
     //this is a top level matrix so we must allocate the generators in construction
     allocate_generators(config->get_quotient_set()->order());
@@ -79,7 +82,7 @@ Matrix::Matrix(
     for ( ; it != stop; ++it)
         add_generator(tensor.get(), (*it).get());
 
-    yeti_register_new(lock_.get());
+    set_as_multiplicand();
 }
 
 Matrix::Matrix(
@@ -104,7 +107,8 @@ Matrix::Matrix(
     tmpindices_(yeti_malloc_indexset()),
     Imap_(0),
     constructed_(false),
-    maxlog_(0)
+    maxlog_(0),
+    tuple_(0)
 {
     //add generators for each permutation in the product set
     //these are the permutations that must be applied to the matrix blocks
@@ -132,7 +136,8 @@ Matrix::Matrix(
         NOT_THREADED
     );
 
-    yeti_register_new(lock_.get());
+    //register any new allocations
+    tensor->config()->get_data_factory()->allocate_blocks();
 }
 
 Matrix::~Matrix()
@@ -294,8 +299,11 @@ Matrix::accumulate_data_product(
     uli nlink = rmatrix->nrows();
 
 #if YETI_SANITY_CHECK
-    if (lmatrix->nrows() != nlink)
+    uli lmat_nrows = lmatrix->nrows();
+    if (lmat_nrows != nlink)
     {
+        cerr << lmatrix->get_unique_tile() << endl;
+        cerr << rmatrix->get_unique_tile() << endl;
         raise(SanityCheckError, "matrices not aligned for multiplication");
     }
 #endif
@@ -363,9 +371,6 @@ Matrix::accumulate_product(
     if (l_is_metadata != r_is_metadata)
         raise(SanityCheckError, "meta data depths not aligned for multiplication");
 
-    if (l_is_metadata != p_is_metadata)
-        raise(SanityCheckError, "meta data depths not aligned for accumulation");
-
     if (lmatrix->get_unique_tile()->config()->get_data_mode()->flag != DataMode::read)
         raise(SanityCheckerror, "left matrix not configured for read");
     if (rmatrix->get_unique_tile()->config()->get_data_mode()->flag != DataMode::read)
@@ -401,12 +406,10 @@ Matrix::accumulate_metadata_product(
 
     Matrix** ldata = lmatrix->get_map()->begin();
     Matrix** rdata = rmatrix->get_map()->begin();
-    Matrix** pdata = get_map()->begin();
 
     usi ldepth = lmatrix->depth();
     usi rdepth = rmatrix->depth();
     usi mydepth = depth();
-
 
     if (mydepth < ldepth && mydepth < rdepth) //don't iterate this matrix
     {
@@ -429,7 +432,20 @@ Matrix::accumulate_metadata_product(
             if (log_max_product < YetiRuntime::matrix_multiply_cutoff)
                 continue;
 
-            accumulate_product(*ldata, *rdata, cxn, threadnum);
+            if (mydepth == 0) //data task
+            {
+                cxn->add_task(l, r, this);
+                Tile* tile = get_unique_tile();
+                if (tile->get_data()->data()->null())
+                {
+                    tile->config()->get_data_factory()
+                        ->register_allocation(tile->get_data());
+                }
+            }
+            else
+            {
+                accumulate_product(l, r, cxn, threadnum);
+            }
         }
         return;
     }
@@ -438,7 +454,6 @@ Matrix::accumulate_metadata_product(
 #if YETI_SANITY_CHECK
     uli nrows_me = this->nrows();
     uli ncols_me = this->ncols();
-
     Tile* mytile = get_unique_tile();
     if (nrows_me != nrows || ncols_me != ncols)
     {
@@ -464,6 +479,7 @@ Matrix::accumulate_metadata_product(
     //now accumulate the contraction
 
     TileMap* tilemap = get_unique_tile()->get_map();
+    Matrix** pdata = get_map()->begin();
     for (uli link=0; link < nlink; ++link, ldata += nrows, rdata += ncols)
     {
         Matrix** lptr = ldata;
@@ -503,7 +519,7 @@ Matrix::accumulate_metadata_product(
                 }
 
                 //we have non-null product and non-null multiplicands
-                if (ldepth == DISTRIBUTION_DEPTH)
+                if (ldepth == DATA_DISTRIBUTION_DEPTH)
                 {
                     cxn->add_task(l, r, p);
                 }
@@ -527,13 +543,10 @@ Matrix::build_subproduct(
     Contraction* cxn
 )
 {
-
     float log_max_product = lmatrix->max_log() + rmatrix->max_log();
 
     if (log_max_product < YetiRuntime::matrix_multiply_cutoff)
     {
-        cout << lmatrix->max_log() << " + " << rmatrix->max_log() << " < "
-            << YetiRuntime::matrix_multiply_cutoff << endl;
         return 0;
     }
 
@@ -590,15 +603,25 @@ Matrix::build_subproduct(
             tuple->set(i, subindex);
         }
 
+        //create the tile
         tuple->permute(plowest);
+        uli* indexarr = yeti_malloc_indexset();
+        ::memcpy(indexarr, tmpindices_, nindex * sizeof(uli));
         newtile = new Tile(
             tuple,
-            tmpindices_,
+            indexarr,
             tile->get_map()
         );
-
+        newtile->retrieve(NOT_THREADED);
+        newtile->release(NOT_THREADED);
         tilemap->insert(newtile);
-        //tilemap->insert(composite_index, newtile);
+
+        //if this is a data tile, register its data block for allocation
+        if (tuple->maxdepth() == 0) //data tile
+        {
+            tile->config()->get_data_factory()
+                ->register_allocation(newtile->get_data());
+        }
     }
 
     for (usi i=0; i < ngenerator_; ++i)
@@ -653,6 +676,8 @@ Matrix::add_generator(
         if (max > maxlog_)
             maxlog_ = max;
     }
+
+    if (!tuple_) set_tuple(tile, p);
 
     tiles_[ngenerator_] = tile;
     perms_[ngenerator_] = p;
@@ -807,6 +832,12 @@ DataBlock*
 Matrix::get_data() const
 {
     return data_.get();
+}
+
+IndexRangeTuple*
+Matrix::get_index_ranges() const
+{
+    return tuple_.get();
 }
 
 MatrixConfiguration*
@@ -1155,7 +1186,9 @@ Matrix::print(ostream& os) const
     ++Env::indent;
     foreach_nonnull(m, Imap_, Matrix,
         os << endl;
+        m->retrieve(NOT_THREADED);
         m->print(os);
+        m->release(NOT_THREADED);
     )
     --Env::indent;
 }
@@ -1348,6 +1381,22 @@ Matrix::set_as_multiplicand()
 }
 
 void
+Matrix::set_tuple(
+    Tile* tile,
+    Permutation* p
+)
+{
+    if (p->is_identity())
+    {
+        tuple_ = tile->get_index_ranges();
+    }
+    else
+    {
+        tuple_ = tile->get_index_ranges()->copy(p);
+    }
+}
+
+void
 Matrix::set_generator(
     Tile* tile,
     Permutation* p
@@ -1361,6 +1410,8 @@ Matrix::set_generator(
 
     tiles_[0] = tile;
     perms_[0] = p;
+
+    if (!tuple_) set_tuple(tile, p);
 
     if (ngenerator_ == 0) //dimensions are not yet computed
         compute_dimensions();
@@ -1653,17 +1704,21 @@ MatrixIndex::init()
 #endif
 
     if (nrowindex_)
+    {
         rowindices_ = yeti_malloc_perm();
+    }
     if (ncolindex_)
+    {
         colindices_ = yeti_malloc_perm();
+    }
 
     usi* pmap = yeti_malloc_perm();
     if (rowtype_ == front)
     {
         for (usi i=0; i < nrowindex_; ++i)
         {
-            rowindices_[i] = i;
-            pmap[i] = i;
+            rowindices_[i] = i; //rowindices are offset by the number of params
+            pmap[i] = i; //parameters are only a single index and do not affect permutations
         }
         for (usi i=0; i < ncolindex_; ++i)
         {

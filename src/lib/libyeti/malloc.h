@@ -43,8 +43,6 @@ class FastMalloc {
 
         std::string name_;
 
-        std::map<const void*, std::string> tracker_;
-
         void search();
 
     public:
@@ -88,10 +86,6 @@ class FastMalloc {
         */
         void free(const void* ptr);
 
-        void* tracked_malloc(const char* file, int line);
-
-        void register_malloc(const void* ptr, const char* file, int line);
-
         /**
             Register a particular queue.  This is used in YetiRuntime
             sanity checks to ensure that a given memory pool is actually allocated.
@@ -118,7 +112,9 @@ class FastMalloc {
     @class MemoryAllocation
     Class encapsulating a memory pool which hands out blocks of data
 */
-class MemoryAllocation : public smartptr::Countable {
+class MemoryAllocation :
+    public smartptr::Countable
+{
 
     private:
         size_t size_;

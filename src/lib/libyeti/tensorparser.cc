@@ -7,6 +7,7 @@
 #include "matrix.h"
 #include "exception.h"
 #include "contraction.h"
+#include "dataimpl.h"
 
 #include <vector>
 
@@ -111,71 +112,53 @@ StringParser::substr(uli index) const
 
 YetiTensor::YetiTensor(
     const std::string& name,
-    const std::string& str
+    const std::string& str,
+    const PermutationRuntimeParserPtr& p1,
+    const PermutationRuntimeParserPtr& p2,
+    const PermutationRuntimeParserPtr& p3,
+    const PermutationRuntimeParserPtr& p4,
+    const PermutationRuntimeParserPtr& p5
 )
     : StringParser(str),
     tensor_(0),
     scale_(1.0),
     perm_(0),
-    tensor_name_(name)
+    tensor_name_(name),
+    iter_(0)
 {
     tokenize(", ");
     IndexRangeTuple* tuple = YetiRuntime::get_index_tuple(str_);
 
-    usi nindex = tuple->size();
+    usi nindex = tuple->nindex();
     PermutationGroup* grp = new PermutationGroup(nindex);
     perm_ = grp->get_identity();
+
+    incref();
+    if (p1) grp->add(p1->get_permutation(this));
+    if (p2) grp->add(p2->get_permutation(this));
+    if (p3) grp->add(p3->get_permutation(this));
+    if (p4) grp->add(p4->get_permutation(this));
+    if (p5) grp->add(p5->get_permutation(this));
+    decref();
+
+    grp->close();
+
     tensor_ = new Tensor(tensor_name_, tuple, grp);
 }
 
 YetiTensor::YetiTensor(
-    const std::string& name,
-    const std::string& idx1,
-    const std::string& idx2
-)
-    : StringParser(""),
-    tensor_(0),
-    scale_(1.0),
-    perm_(0),
-    tensor_name_(name)
+    const TensorPtr& tensor,
+    const PermutationPtr& perm,
+    double scale,
+    const std::string& str
+) : tensor_(tensor),
+    perm_(perm),
+    scale_(scale),
+    StringParser(str),
+    tensor_name_(tensor->config()->name),
+    iter_(0)
 {
-    str_ = idx1 + "," + idx2;
-    entries_.push_back(idx1);
-    entries_.push_back(idx2);
-    IndexRangeTuple* tuple = YetiRuntime::get_index_tuple(str_);
-
-    usi nindex = tuple->size();
-    PermutationGroup* grp = new PermutationGroup(nindex);
-    perm_ = grp->get_identity();
-    tensor_ = new Tensor(tensor_name_, tuple, grp);
 }
-
-YetiTensor::YetiTensor(
-    const std::string& name,
-    const std::string& idx1,
-    const std::string& idx2,
-    const std::string& idx3,
-    const std::string& idx4
-)
-    : StringParser(""),
-    tensor_(0),
-    scale_(1.0),
-    perm_(0),
-    tensor_name_(name)
-{
-    str_ = idx1 + "," + idx2 + "," + idx3 + "," + idx4;
-    entries_.push_back(idx1);
-    entries_.push_back(idx2);
-    entries_.push_back(idx3);
-    entries_.push_back(idx4);
-    IndexRangeTuple* tuple = YetiRuntime::get_index_tuple(str_);
-
-    usi nindex = tuple->size();
-    PermutationGroup* grp = new PermutationGroup(nindex);
-    perm_ = grp->get_identity();
-    tensor_ = new Tensor(tensor_name_, tuple, grp);
-}
-
 
 YetiTensor::YetiTensor(
     const YetiTensorPtr& tensor,
@@ -184,7 +167,8 @@ YetiTensor::YetiTensor(
     perm_(p),
     scale_(1.0),
     StringParser(tensor->str_),
-    tensor_name_(tensor->tensor_name_)
+    tensor_name_(tensor->tensor_name_),
+    iter_(0)
 {
     if (!tensor->perm_->is_identity())
     {
@@ -197,13 +181,46 @@ YetiTensor::YetiTensor(
     tokenize(", ");
 }
 
+YetiTensor::YetiTensor(const TensorPtr &tensor)
+    : StringParser(""),
+    tensor_(tensor),
+    perm_(tensor->get_permutation_grp()->get_identity()),
+    scale_(1.0),
+    tensor_name_(tensor->config()->name)
+{
+}
+
+YetiTensor::YetiTensor(const YetiTensorPtr& tensor)
+    : StringParser(tensor->str()),
+    tensor_(0),
+    perm_(0),
+    scale_(1.0),
+    tensor_name_(tensor->tensor_name_)
+{
+    tokenize(", ");
+    IndexRangeTuple* tuple = YetiRuntime::get_index_tuple(str_);
+
+    usi nindex = tuple->nindex();
+    PermutationGroupPtr grp = tensor->tensor_->get_permutation_grp();
+    perm_ = grp->get_identity();
+    TensorConfigurationPtr config
+        = tensor->tensor_->config()->copy(tensor_name_);
+    tensor_ = new Tensor(tensor_name_, tuple, grp, config);
+    tensor_->accumulate(
+                tensor->tensor_,
+                tensor->perm_,
+                tensor->scale_
+              );
+}
+
 YetiTensor::YetiTensor()
     :
     tensor_(0),
     StringParser(""),
     perm_(0),
     scale_(1.0),
-    tensor_name_("")
+    tensor_name_(""),
+    iter_(0)
 {
 }
 
@@ -213,13 +230,7 @@ YetiTensor::operator=(const YetiTensorPtr &tensor)
     if (tensor_name_ == tensor->tensor_name_)
         raise(SanityCheckError, "cannot copy tensors to same name");
 
-    if (tensor_->is_allocated())
-        raise(SanityCheckError, "cannot copy to already allocated tensor");
-
-    tensor_ = tensor->tensor_->copy(tensor_name_);
-
-    if (!tensor->perm_->is_identity())
-        tensor_->sort(tensor->perm_);
+    tensor_->accumulate(tensor->tensor_, tensor->perm_, tensor->scale_);
 }
 
 void
@@ -242,7 +253,8 @@ YetiTensor::YetiTensor(
     tensor_(t->tensor_),
     tensor_name_(t->tensor_name_),
     perm_(t->perm_),
-    scale_(1.0)
+    scale_(1.0),
+    iter_(0)
 {
     init_runtime_tensor();
 }
@@ -255,7 +267,8 @@ YetiTensor::YetiTensor(
     tensor_(t->tensor_),
     tensor_name_(name),
     perm_(t->perm_),
-    scale_(1.0)
+    scale_(1.0),
+    iter_(0)
 {
     init_runtime_tensor();
 }
@@ -271,7 +284,8 @@ YetiTensor::YetiTensor(
     tensor_(t->tensor_),
     tensor_name_(t->tensor_name_),
     perm_(t->perm_),
-    scale_(1.0)
+    scale_(1.0),
+    iter_(0)
 {
     str_ = idx1 + "," + idx2 + "," + idx3 + "," + idx4;
     entries_.push_back(idx1);
@@ -289,7 +303,8 @@ YetiTensor::YetiTensor(
     tensor_(t->tensor_),
     tensor_name_(t->tensor_name_),
     perm_(t->perm_),
-    scale_(1.0)
+    scale_(1.0),
+    iter_(0)
 {
     str_ = idx1 + "," + idx2;
     entries_.push_back(idx1);
@@ -310,7 +325,7 @@ YetiTensor::init_runtime_tensor()
     IndexRangeTuple::iterator it(tuple->begin());
     IndexRangeTuple::iterator stop(tuple->end());
     bool subtensor = false; //assume we are asking for the exact tensor
-    IndexRangeTuplePtr newtuple = new IndexRangeTuple(tuple->size());
+    IndexRangeTuplePtr newtuple = new IndexRangeTuple(tuple->nindex());
     usi idx = 0;
     for ( ; it != stop; ++it, ++itstring, ++idx)
     {
@@ -320,23 +335,6 @@ YetiTensor::init_runtime_tensor()
         if (subrange != parent_range)
         {
             subtensor = true;
-        #if 0
-            //validate that the index is actually a subindex
-            std::list<IndexRange*> sublist;
-            usi subdepth = parent_range->get_subdepth_alignment(subrange);
-            subrange->get_subranges(sublist, subdepth);
-
-            std::list<IndexRange*>::const_iterator it(sublist.begin());
-            std::list<IndexRange*>::const_iterator stop(sublist.end());
-            for ( ; it != stop; ++it)
-            {
-                bool check = parent_range->has_subrange(*it);
-                if (!check)
-                {
-                    raise(SanityCheckError, "tensor index passed to runtime parser is not a subindex");
-                }
-            }
-        #endif
         }
     }
 
@@ -348,12 +346,6 @@ YetiTensor::init_runtime_tensor()
                 << " must be the same as parent tensor name " << tensor_->name()
                 << endl;
            abort();
-        }
-
-        if (!tensor_->is_allocated())
-        {
-            cerr << "tensor must be allocated before retrieving a subset tensor block" << endl;
-            abort();
         }
 
         TensorPtr parent = tensor_;
@@ -419,6 +411,54 @@ YetiTensor::accumulate_tasks(const YetiContractionPtr& yeticxn)
     return cxn;
 }
 
+void
+YetiTensor::allocate_iterator()
+{
+    iter_ = tensor_->get_iterator();
+}
+
+Tile**
+YetiTensor::begin() const
+{
+    if (!iter_)
+    {
+        cerr << "iterator not yet allocated for yeti tensor" << endl;
+        abort();
+    }
+    return iter_->begin();
+}
+
+Tile**
+YetiTensor::end() const
+{
+    if (!iter_)
+    {
+        cerr << "iterator not yet allocated for yeti tensor" << endl;
+        abort();
+    }
+    return iter_->end();
+}
+
+usi
+YetiTensor::get_nindex_front(const std::string &str)
+{
+    StringParser parser(str);
+    parser.tokenize(", ");
+    usi nindex = parser.nentries();
+
+    for (usi i=0; i < parser.nentries(); ++i)
+    {
+        usi idxcheck = this->index(parser.substr(i));
+        if (idxcheck != i)
+        {
+            cerr << str << "does not specify front indices" << endl;
+            abort();
+        }
+    }
+
+    return nindex;
+}
+
 Tensor*
 YetiTensor::get_tensor() const
 {
@@ -429,6 +469,39 @@ PermutationPtr
 YetiTensor::get_permutation() const
 {
     return perm_;
+}
+
+TensorPtr
+YetiTensor::parameterize(const std::string& str)
+{
+    usi nindex = get_nindex_front(str);
+    TensorPtr param_tensor = tensor_->get_parameterized_tensor(nindex);
+    std::string newstr = register_new_tuple(param_tensor->get_index_ranges());
+    return param_tensor;
+}
+
+std::string
+YetiTensor::register_new_tuple(const IndexRangeTuplePtr &tuple)
+{
+    std::string new_tensor_str;
+    for (usi i=0; i < tuple->nindex(); ++i)
+    {
+        IndexRange* range = tuple->get(i);
+        std::string new_idx_str = stream_printf("index%p", range);
+        YetiRuntime::register_index_range(new_idx_str, range);
+
+        if (i==0)
+        {
+            new_tensor_str += new_idx_str;
+        }
+        else
+        {
+            new_tensor_str += ",";
+            new_tensor_str += new_idx_str;
+        }
+    }
+
+    return new_tensor_str;
 }
 
 void
@@ -483,6 +556,17 @@ YetiTensor::sort(const std::vector<std::string>& index_list)
     tensor_->sort(p);
 }
 
+TensorPtr
+YetiTensor::split(const std::string &str)
+{
+    usi nindex = get_nindex_front(str);
+
+    TensorPtr split_tensor = tensor_->split(nindex);
+    IndexRangeTuplePtr newtuple = split_tensor->get_index_ranges();
+    std::string new_tensor_str = register_new_tuple(newtuple);
+    return split_tensor;
+}
+
 Tensor*
 YetiTensor::operator ->() const
 {
@@ -508,8 +592,6 @@ YetiTensor::operator=(const YetiContractionPtr& yeticxn)
 void
 YetiTensor::operator+=(const YetiContractionPtr& yeticxn)
 {
-    tensor_->allocate();
-
     ContractionPtr cxn = accumulate_tasks(yeticxn);
 
     cxn->run();
@@ -519,8 +601,6 @@ YetiTensor::operator+=(const YetiContractionPtr& yeticxn)
 void
 YetiTensor::operator-=(const YetiContractionPtr& yeticxn)
 {
-    tensor_->allocate();
-
     yeticxn->scale *= -1;
     ContractionPtr cxn = accumulate_tasks(yeticxn);
 
@@ -549,71 +629,13 @@ YetiTensor::operator +=(const YetiTensorPtr& yt)
     tensor_->accumulate(yt->tensor_, yt->perm_, yt->scale_);
 }
 
-void
-YetiTensor::operator+=(const PermutationRuntimeParserPtr& parser)
-{
-    if (tensor_->is_allocated())
-    {
-        cerr << "Cannot add permutations to a tensor that has already been allocated" << endl;
-        abort();
-    }
-
-    incref();
-    PermutationPtr p = parser->get_permutation(this);
-    decref();
-
-    tensor_->get_permutation_grp()->add(p);
-}
-
 YetiTensorPtr
 YetiTensor::operator()(const std::string& str) const
 {
-    tensor_->allocate();
-
     return new YetiTensor(
         str,
         const_cast<YetiTensor*>(this) //this is safe - it keeps from passing a bazillion arguments
     );
-}
-
-YetiTensorPtr
-YetiTensor::operator()(
-    const std::string& idx1,
-    const std::string& idx2
-) const
-{
-    tensor_->allocate();
-
-    return new YetiTensor(
-        const_cast<YetiTensor*>(this),  //this is safe
-        idx1,
-        idx2
-   );
-}
-
-YetiTensorPtr
-YetiTensor::operator()(
-    const std::string& idx1,
-    const std::string& idx2,
-    const std::string& idx3,
-    const std::string& idx4
-) const
-{
-    tensor_->allocate();
-
-    return new YetiTensor(
-        const_cast<YetiTensor*>(this),
-        idx1,
-        idx2,
-        idx3,
-        idx4
-   );
-}
-
-void
-YetiTensor::operator<<(const IndexSubsetPtr& subset)
-{
-    tensor_->register_nonnull_tiles(subset->get_tuple());
 }
 
 MatrixPtr
@@ -621,6 +643,63 @@ YetiTensor::matrix(const std::string& rowstr, const std::string& colstr) const
 {
     StringParser rowparser(rowstr); rowparser.tokenize(", ");
     StringParser colparser(colstr); colparser.tokenize(", ");
+
+    if (rowparser.nentries() == 0)
+    {
+        raise(SanityCheckError, "cannot build matrix with no rows");
+    }
+    if (colparser.nentries() == 0)
+    {
+        raise(SanityCheckError, "cannot build matrix with no cols");
+    }
+
+    usi rowstart = this->index(rowparser.substr(0));
+    usi nrows = rowparser.nentries();
+    usi prev = rowstart;
+    for (usi i=1; i < nrows; ++i)
+    {
+        usi next = this->index(rowparser.substr(i));
+        if (next != prev + 1)
+        {
+            raise(SanityCheckError, "non-consecutive matrix indices in row declaration");
+        }
+        prev = next;
+    }
+
+
+    usi colstart = this->index(colparser.substr(0));
+    usi ncols = colparser.nentries();
+    prev = colstart;
+    for (usi i=1; i < ncols; ++i)
+    {
+        usi next = this->index(colparser.substr(i));
+        if (next != prev + 1)
+        {
+            raise(SanityCheckError, "non-consecutive matrix indices in column declaration");
+        }
+        prev = next;
+    }
+
+    if (nrows + ncols != this->nentries())
+        raise(SanityCheckError, "number of matrix indices is incorrect");
+
+
+    MatrixIndex::matrix_index_t rowtype = rowstart == 0 ? MatrixIndex::front : MatrixIndex::back;
+    MatrixIndex::matrix_index_t coltype = colstart == 0 ? MatrixIndex::front : MatrixIndex::back;
+
+    MatrixIndex* index = new MatrixIndex(rowtype, nrows, coltype, ncols);
+    MatrixConfiguration* config = new MatrixConfiguration(
+                                            index,
+                                            tensor_->get_permutation_grp(),
+                                            tensor_->get_permutation_grp()->get_identity()
+                                       );
+
+    PermutationGroupPtr cxngrp = config->get_full_row_permutation_grp();
+    config->configure_quotient_set(cxngrp);
+    config->configure_isotropy(cxngrp);
+    Matrix* matrix = new Matrix(tensor_, config);
+    matrix->set_as_multiplicand();
+    return matrix;
 }
 
 YetiTensorPtr::YetiTensorPtr(YetiTensor *t)
@@ -649,6 +728,13 @@ void
 YetiTensorPtr::operator-=(const YetiContractionPtr& yeticxn)
 {
     *(get()) -= yeticxn;
+}
+
+YetiTensorPtr&
+YetiTensorPtr::operator[](const std::string& str)
+{
+    get()->tensor_name_ = str;
+    return *this;
 }
 
 YetiSubsetTensor::YetiSubsetTensor(
@@ -826,6 +912,8 @@ yeti::get_matrix_index(
 
     usi nrows = nidx_cxn;
     usi ncols = nidx_target;
+
+    //if the tensor has parameter indices, these must be included in the col indices
     MatrixIndex* mindex = new MatrixIndex(rowtype, nrows, coltype, ncols);
 
     yeti_free_perm(cxn_indices);
@@ -905,19 +993,46 @@ YetiContractionPtr::operator=(const YetiTensorPtr& tensor)
     //do nothing
 }
 
-IndexSubset::IndexSubset(const std::string &str)
-    : StringParser(str)
+template <typename data_t>
+data_t
+YetiContractionPtr::dot_product()
 {
+    YetiContractionPtr yeticxn = get();
+    YetiTensor dotproduct("dot product", ""); //no index ranges
+    dotproduct->configure(new MemoryBlockFactory<data_t>);
+
+    dotproduct = yeticxn;
+
+    Tile* data_tile = 0;
+    if (dotproduct->depth() == 0)
+    {
+        data_tile = dotproduct.get_tensor();
+    }
+    else
+    {
+        TileIteratorPtr iter = dotproduct->get_iterator();
+        if (iter->ntiles() != 1)
+        {
+            cerr << "Dot product produces multiple data tiles" << endl;
+            abort();
+        }
+        data_tile = *(iter->begin());
+    }
+
+    DataBlock* dblock = data_tile->get_data();
+    dblock->retrieve(NOT_THREADED);
+    data_t* dataptr = dblock->data()->template get<data_t>();
+    dblock->release(NOT_THREADED);
+    data_t e = *dataptr;
+    return e;
 }
 
-IndexRangeTuplePtr
-IndexSubset::get_tuple() const
+YetiContractionPtr::operator double()
 {
-    return YetiRuntime::get_index_tuple(str_);
+    return dot_product<double>();
 }
 
-IndexSubsetPtr
-yeti::subset(const std::string &str)
+YetiContractionPtr::operator quad()
 {
-    return new IndexSubset(str);
+    return dot_product<quad>();
 }

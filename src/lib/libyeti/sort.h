@@ -19,6 +19,7 @@ class Sort :
 
     private:
         friend class SortTest;
+        friend class ThreadedSort;
 
         /**
          * The permutation generating the sort
@@ -26,17 +27,18 @@ class Sort :
         PermutationPtr p_;
 
         /** Array of length #nindex_ giving the length of each stride */
-        size_t* lengths_;
+        uli* lengths_;
 
         /** Array of length #nindex_ giving the number of strides on each index */
-        size_t* nstrides_;
+        uli* nstrides_;
 
         /** The total number of values in target/src arrays*/
-        size_t ntot_;
+        uli ntot_;
 
         /** The number of indices in the sort */
         usi nindex_;
 
+        Sort(const PermutationPtr& p);
 
     public:
         /**
@@ -112,6 +114,23 @@ class Sort :
 
 };
 
+
+class ThreadedSort :
+    public YetiRuntimeCountable
+{
+
+    private:
+        std::vector<SortPtr> sorters_;
+
+        PermutationPtr perm_;
+
+    public:
+        ThreadedSort(const PermutationPtr& p);
+
+        Sort* get_sorter(uli threadnum) const;
+
+        Permutation* get_permutation() const;
+};
 
 
 }

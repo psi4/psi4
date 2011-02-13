@@ -8,13 +8,16 @@
 #include "index.hpp"
 #include "filler.hpp"
 #include "data.hpp"
+#include "tile.hpp"
 
 #include "mallocimpl.h"
 
 namespace yeti {
 
 
-class TileEstimater : public smartptr::Countable {
+class TileEstimater :
+    public smartptr::Countable
+{
 
     private:
         static UnitEstimaterPtr unit_;
@@ -26,7 +29,9 @@ class TileEstimater : public smartptr::Countable {
 
 };
 
-class UnitEstimater : public TileEstimater {
+class UnitEstimater :
+    public TileEstimater
+{
 
     public:
         float max_log(const uli* indices) const;
@@ -52,7 +57,7 @@ class TileElementComputer :
             @return A copy of the element computer.  This must return a "thread-safe"
             copy for which calls to compute do not interfere between parent and copy.
         */
-        virtual TileElementComputer* copy() = 0;
+        virtual TileElementComputer* copy() const = 0;
 
         virtual void compute(Tile* tile, double* data);
 
@@ -70,11 +75,45 @@ class TileElementComputer :
 
         bool equals(Tile* tile, const float* data);
 
-        virtual TileEstimater* get_estimater(usi depth, usi nindex) const;
+        virtual TileEstimater* get_estimater(usi depth) const;
 
         void allocate_buffer(uli maxblocksize);
+};
+
+class MemsetElementComputer :
+    public TileElementComputer
+{
+
+    public:
+        void compute(Tile* tile, double* data);
+
+        void compute(Tile* tile, quad* data);
+
+        void compute(Tile* tile, int* data);
+
+        void compute(Tile* tile, float* data);
+
+        TileElementComputer* copy() const;
 
 };
+
+class NullElementComputer :
+    public TileElementComputer
+{
+    public:
+        void compute(Tile* tile, double* data);
+
+        void compute(Tile* tile, quad* data);
+
+        void compute(Tile* tile, int* data);
+
+        void compute(Tile* tile, float* data);
+
+        TileElementComputer* copy() const;
+
+};
+
+typedef NullElementComputer DiskReadElementComputer;
 
 class ThreadedTileElementComputer :
     public smartptr::Countable
@@ -82,6 +121,8 @@ class ThreadedTileElementComputer :
 
     protected:
         std::vector<TileElementComputerPtr> fillers_;
+
+        usi mindepth_;
 
     public:
         ThreadedTileElementComputer(const TileElementComputerPtr& comp);
@@ -96,11 +137,18 @@ class ThreadedTileElementComputer :
 
         void operator=(const TileElementComputerPtr& comp);
 
-        TileEstimater* get_estimater(usi depth, usi nindex) const;
+        TileElementComputer* get_thread_computer(uli threadnum) const;
+
+        TileEstimater* get_estimater(usi depth) const;
+
+        usi mindepth() const;
+
+        void set_mindepth(usi depth);
+
 
 };
 
-}
+} //end namespace yeti
 
 #endif
 

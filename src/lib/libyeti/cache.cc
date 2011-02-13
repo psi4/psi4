@@ -19,14 +19,15 @@ using namespace std;
 
 DECLARE_MALLOC(DataCacheEntry);
 
-DataCacheEntry::DataCacheEntry(char* d)
+DataCacheEntry::DataCacheEntry(
+    char* d,
+    uli posoffset
+)
     :
-    next(0),
-    prev(0),
     data(d),
-    owner(0)
+    owner(0),
+    offset(posoffset)
 {
-    yeti_register_new(lock_.get());
 }
 
 DataCacheEntry::~DataCacheEntry()
@@ -39,6 +40,12 @@ DataCacheEntry::clear()
 {
     if (owner)
     {
+        if (owner->is_retrieved())
+        {
+            cerr << "cannot clear retrieved owner!" << endl;
+            abort();
+        }
+
         owner->clear();
         owner = 0;
     }
@@ -61,64 +68,89 @@ DataCacheEntry::finalize_write()
 void
 DataCacheEntry::reassign(CachedDataBlock* block)
 {
-
     /** JJW 11/06/10
         On the off chance owner = d, owner must be zeroed first!
         Otherwise you assign the new pointer and then immediately zero it!
         ORDER MATTERS!
     */
-    if (owner) //let the owner know that data is gone
+    CachedDataBlock* old_owner = owner;
+    owner = block;
+    if (old_owner) //let the owner know that data is gone
     {
-        owner->clear();
+
+        old_owner->lock();
+        if (old_owner->cache_entry_ == this) //I am responsible for clearing
+        {
+            #if YETI_SANITY_CHECK
+            if (owner->is_retrieved())
+            {
+                void* entry = owner->cache_entry_;
+                cerr << "unlocked? " << trylock() << endl;
+                cerr << "old owner: " << (void*) owner << endl;
+                cerr << "new owner: " << (void*) block << endl;
+                cerr << "me: " << (void*) this << " owner:" << entry << endl;
+                cerr << "cannot clear retrieved owner!" << endl;
+                abort();
+            }
+            #endif
+            old_owner->clear();
+        }
+        old_owner->unlock();
     }
     block->data()->reference(data);
-    owner = block;
 }
 
 void
 DataCacheEntry::print(std::ostream& os) const
 {
-    os << stream_printf("Prev:%12p This:%12p Next:%12p Owner:%12p Data:%12p", prev, this, next, owner, data);
+    os << stream_printf("This:%12p Offset:%ld Owner:%12p Data:%12p",
+    this, offset, owner, data);
 }
 
+#define NCACHE_ENTRIES_MAX 100000
+
 DataCache::DataCache(
-    size_t blocksize,
+    uli blocksize,
     char *datastart
 ) :
-    first_(0),
-    last_(0),
-    n_(0),
-    blocksize_(blocksize)
+    nentries_(0),
+    blocksize_(blocksize),
+    entries_(new DataCacheEntry*[NCACHE_ENTRIES_MAX]),
+    next_offset_(0)
 {
-    yeti_register_new(lock_.get());
     init(datastart);
 }
 
 DataCache::~DataCache()
 {
     free();
+    delete[] entries_;
 }
 
 void
 DataCache::free()
 {
-    DataCacheEntry* next = first_;
-    while (next) //loop until hitting zero
-    {
-        DataCacheEntry* entry = next;
-        next = next->next; //grab the next element
-        delete entry;
-    }
+    for (uli i=0; i < nentries_; ++i)
+        delete entries_[i];
+    nentries_ = 0;
 }
 
 void
 DataCache::clear()
 {
-    DataCacheEntry* next = first_;
-    while (next) //loop until hitting zero
+    for (uli i=0; i < nentries_; ++i)
     {
-        DataCacheEntry* entry = next;
-        next = next->next; //grab the next element
+        DataCacheEntry* entry = entries_[i];
+        if (!entry)
+        {
+            cerr << "cache should not be cleared until all entries have been returned" << endl;
+            abort();
+        }
+        if (YetiRuntime::is_threaded_runtime() && entry->trylock())
+        {
+            cerr << "entry should not be unlocked!" << endl;
+            abort();
+        }
         entry->clear();
     }
 }
@@ -126,206 +158,129 @@ DataCache::clear()
 void
 DataCache::init(char* ptr)
 {
-    first_ = new DataCacheEntry(ptr);
-    last_ = first_;
-    first_->prev = 0; //points nowhere
-    first_->next = 0;
-    n_ = 1;
+    for (uli i=0; i < NCACHE_ENTRIES_MAX; ++i)
+        entries_[i] = 0;
+
+    allocate_block(ptr);
 }
 
 void
 DataCache::allocate_block(char *ptr)
 {
-    DataCacheEntry* entry = new DataCacheEntry(ptr);
-    entry->retrieve(); //"retrieve" the newly created entry for pushing back
-    //this will lock on push back
-    push_back(entry);
-    ++n_;
+    if (nentries_ > NCACHE_ENTRIES_MAX)
+    {
+        cerr << "Cannot allocate any further cache entries" << endl;
+        abort();
+    }
+    uli offset = nentries_;
+    DataCacheEntry* entry = new DataCacheEntry(ptr, offset);
+    entries_[nentries_] = entry;
+    ++nentries_;
+}
+
+DataCacheEntry**
+DataCache::entries() const
+{
+    return entries_;
 }
 
 DataCacheEntry*
-DataCache::pull(CachedDataBlock* block)
+DataCache::find_entry(uli offset)
 {
-    lock();
-
-    if (last_ == 0)
+    for (uli i=offset; i < nentries_; ++i)
     {
-        raise(SanityCheckError, "too many active cache blocks.  no more free blocks");
+        DataCacheEntry* entry = entries_[i];
+        if (entry && entry->trylock())
+        {
+            return entry;
+        }
     }
-
-    //grab temporary link to last value
-    DataCacheEntry* tmp = last_;
-
-    //move the last pointer back one and point it to the end
-    last_ = last_->prev;
-
-    if (last_) //only set to 0 if it still exists
-        last_->next = 0;
-    else
-        first_ = 0; //nothing left
-
-    tmp->reassign(block);
-    tmp->retrieve();
-
-    unlock();
-
-    return tmp;
+    return 0;
 }
 
-size_t
+DataCacheEntry*
+DataCache::pull(CachedDataBlock* block, uli offset)
+{
+    DataCacheEntry* entry = find_entry(offset);
+    if (!entry)
+        entry = find_entry(0); //look again starting from zero
+
+    if (!entry)
+    {
+        cerr << "too many active cache blocks.  no more free blocks" << endl;
+        abort();
+    }
+
+    if (YetiRuntime::is_threaded_runtime() && entry->trylock())
+    {
+        cerr << "The cache entry should have been locked!" << endl;
+        abort();
+    }
+
+    entry->reassign(block);
+    entries_[entry->offset] = 0;
+    return entry;
+}
+
+uli
 DataCache::ncache() const
 {
-    DataCacheEntry* next = first_;
-    size_t count = 0;
-    while (next) //loop until hitting zero
+    uli ntot = 0;
+    for (uli i=0; i < nentries_; ++i)
     {
-        next = next->next; //grab the next element
-        ++count;
+        DataCacheEntry* entry = entries_[i];
+        if (entry)
+            ++ntot;
+
     }
-    return count;
+    return ntot;
 }
 
-size_t
+uli
 DataCache::blocksize() const
 {
     return blocksize_;
 }
 
-size_t
+uli
 DataCache::ntotal() const
 {
-    return n_;
+    return nentries_;
 }
 
-size_t
+uli
 DataCache::nfree() const
 {
-    DataCacheEntry* next = first_;
-    size_t count = 0;
-    while (next) //loop until hitting zero
+    uli ntot = 0;
+    for (uli i=0; i < nentries_; ++i)
     {
-        if (next->owner == 0)
-            ++count;
-        next = next->next; //grab the next element
+        DataCacheEntry* entry = entries_[i];
+        if (entry && entry->owner == 0)
+            ++ntot;
     }
-    return count;
-}
-
-DataCacheEntry*
-DataCache::first() const
-{
-    return first_;
-}
-
-DataCacheEntry*
-DataCache::last() const
-{
-    return last_;
+    return ntot;
 }
 
 void
-DataCache::push_front(DataCacheEntry* entry)
+DataCache::insert(DataCacheEntry* entry)
 {
-    lock();
-    if (!entry->is_retrieved())
-    //another thread came in and did this while we were waiting
-    {
-        unlock();
-        return;
-    }
-
-    if (first_) //set the pointer
-    {
-        first_->prev = entry;
-        entry->next = first_;
-    }
-    else //this is now the only entry, first and last
-    {
-        last_ = entry;
-        entry->next = 0;
-    }
-
-    first_ = entry;
-    entry->prev = 0; //nothing ahead
-
-    entry->release();
-
-    unlock();
-}
-
-void
-DataCache::push_back(DataCacheEntry* entry)
-{
-    lock();
-    if (!entry->is_retrieved())
-    //another thread came in and did this while we were waiting
-    {
-        unlock();
-        return;
-    }
-
-    if (last_) //set the pointer
-    {
-        last_->next = entry;
-        entry->prev = last_;
-    }
-    else //this is now the only entry, first and last
-    {
-        first_ = entry;
-        entry->prev = 0;
-    }
-
-    last_ = entry;
-    entry->next = 0; //nothing ahead
-    entry->release();
-
-    unlock();
+    entries_[entry->offset] = entry;
 }
 
 
 void
 DataCache::pull(DataCacheEntry* entry)
 {
-    lock();
-    if (entry->is_retrieved())
-    {
-        unlock();
-        return;
-    }
-
-    //swap entries between around this entry so as to pull it from the list
-    if (entry == first_)
-    {
-        first_ = entry->next;
-    }
-    else
-    {
-        entry->prev->next = entry->next;
-    }
-
-    if (entry == last_)
-    {
-        last_ = entry->prev;
-    }
-    else
-    {
-        entry->next->prev = entry->prev;
-    }
-
-    entry->retrieve();
-
-    unlock();
+    entries_[entry->offset] = 0;
 }
 
 void
 DataCache::print(std::ostream &os) const
 {
-    os << Env::indent << "Data Cache " << n_ << " blocks of size " << blocksize_;
-    DataCacheEntry* next = first_;
-    while (next) //loop until hitting zero
+    os << Env::indent << "Data Cache " << nentries_ << " blocks of size " << blocksize_;
+    for (uli i=0; i < nentries_; ++i)
     {
-        DataCacheEntry* entry = next;
-        next = next->next; //grab the next element
+        DataCacheEntry* entry = entries_[i];
         os << endl << Env::indent;
         entry->print(os);
     }
@@ -389,7 +344,7 @@ LayeredDataCache::init()
         size_t size(*it);
         if (remaining_ < size)
         {
-            raise(SanityCheckError, "insufficient memory to allocate cache blocks");
+            raise(SanityCheckError, "insufficient memory to allocate cache bs");
         }
         DataCache* cache(new DataCache(size, next_));
         next_ += size;
@@ -428,7 +383,6 @@ LayeredDataCache::totalsize() const
 void
 LayeredDataCache::free()
 {
-    yeti_register_new(lock_.get());
     list<DataCache*>::iterator it(caches_.begin());
     list<DataCache*>::iterator stop(caches_.end());
     list<size_t>::iterator it_size(sizes_.begin());
@@ -460,21 +414,27 @@ LayeredDataCache::clear()
 }
 
 DataCache*
-LayeredDataCache::allocate_cache(size_t size)
+LayeredDataCache::allocate_cache(size_t size, uli& offset)
 {
-    lock();
     DataCache* cache = get_cache(size);
     //this is the correct cache size
 
-
-    if (cache && remaining_ > size) //we have enough space to allocate a new block
+    uli blocksize = cache->blocksize();
+    if (cache && remaining_ > blocksize) //we have enough space to allocate a new block
     {
         cache->allocate_block(next_);
-        next_ += size;
-        remaining_ -= size;
+        next_ += blocksize;
+        remaining_ -= blocksize;
     }
 
-    unlock();
+
+
+    if (cache)
+    {
+        offset = cache->next_offset_;
+        cache->next_offset_ = (offset + 1) % cache->nentries_;
+    }
+
     return cache;
 }
 
@@ -550,11 +510,14 @@ template <class T>
 void
 DataCache::cache_action()
 {
-    DataCacheEntry* next = first_;
-    while (next) //loop until hitting zero
+    for (uli i=0; i < nentries_; ++i)
     {
-        DataCacheEntry* entry = next;
-        next = next->next; //grab the next element
+        DataCacheEntry* entry = entries_[i];
+        if (!entry)
+        {
+            cerr << "Cannot perform action on cache in which all blocks have not been returned" << endl;
+            abort();
+        }
         T::action(entry);
     }
 }

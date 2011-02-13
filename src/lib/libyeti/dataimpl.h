@@ -161,17 +161,38 @@ class DataTemplate : public Data {
 
 };
 
+template <typename data_t>
+class BlockFactoryTemplate :
+    public DataBlockFactory
+{
+    public:
+        BlockFactoryTemplate();
 
-template <class data_t>
-class MemoryBlockFactory : public DataBlockFactory {
+        BlockFactoryTemplate(const TileElementComputerPtr& filler);
+
+        void allocate_blocks();
+};
+
+template <typename data_t>
+class MemoryBlockFactory :
+    public BlockFactoryTemplate<data_t>
+{
 
     private:
-        MemoryAllocationPtr mem_;
+        using BlockFactoryTemplate<data_t>::nblocks_;
+        using BlockFactoryTemplate<data_t>::blocks_;
+
+        std::list<MemoryAllocationPtr> mempools_;
+
+        MemoryAllocationPtr current_pool_;
+
+    protected:
+        void allocate(DataBlock* d);
+
+        void init_allocation();
 
     public:
         MemoryBlockFactory();
-
-        MemoryBlockFactory(uli storage);
 
         ~MemoryBlockFactory();
 
@@ -179,26 +200,24 @@ class MemoryBlockFactory : public DataBlockFactory {
 
         DataBlock* get_block(Tile* tile);
 
-        /**
-            Computes the total size of all memory blocks in the tensor and
-            allocated the pool of memory to be used for allocating blocks
-            @param tensor
-        */
-        void configure(Tensor *tensor);
-
-        void allocate(DataBlock* d);
-
         DataBlockFactory* copy() const;
 
 };
 
 template <class data_t>
-class LocalDiskBlockFactory : public DataBlockFactory {
+class LocalDiskBlockFactory :
+    public BlockFactoryTemplate<data_t>
+{
 
     private:
         DiskBufferPtr buffer_;
 
         uli offset_;
+
+    protected:
+        void allocate(DataBlock* block);
+
+        void init_allocation();
 
     public:
         LocalDiskBlockFactory();
@@ -209,16 +228,9 @@ class LocalDiskBlockFactory : public DataBlockFactory {
 
         DataBlock* get_block(Tile* tile);
 
-        /**
-            Computes the total size of all memory blocks in the tensor and
-            allocated the pool of memory to be used for allocating blocks
-            @param tensor
-        */
         void configure(Tensor *tensor);
 
         void open_buffer(const std::string& name);
-
-        void allocate(DataBlock* block);
 
         DataBlockFactory* copy() const;
 
@@ -226,26 +238,22 @@ class LocalDiskBlockFactory : public DataBlockFactory {
 
 template <class data_t>
 class RecomputedBlockFactory :
-    public DataBlockFactory
+    public BlockFactoryTemplate<data_t>
 {
 
-    private:
-        ThreadedTileElementComputerPtr filler_;
+    protected:
+        using BlockFactoryTemplate<data_t>::filler_;
+
+        void allocate(DataBlock* block);
+
+        void init_allocation();
 
     public:
-        RecomputedBlockFactory(
-            const ThreadedTileElementComputerPtr& filler
-        );
-
         RecomputedBlockFactory(const TileElementComputerPtr& filler);
-
-        RecomputedBlockFactory();
 
         Data::storage_t storage_type() const;
 
         DataBlock* get_block(Tile* tile);
-
-        void configure(Tensor *tensor);
 
         DataBlockFactory* copy() const;
 
@@ -874,13 +882,7 @@ DataTemplate<data_t>::type_name()
 
 template <typename data_t>
 MemoryBlockFactory<data_t>::MemoryBlockFactory()
-    : mem_(0)
-{
-}
-
-template <typename data_t>
-MemoryBlockFactory<data_t>::MemoryBlockFactory(uli mem)
-    : mem_(new MemoryAllocation(mem))
+    : current_pool_(0)
 {
 }
 
@@ -894,7 +896,7 @@ void
 MemoryBlockFactory<data_t>::allocate(DataBlock* block)
 {
     Data* d = block->data();
-    void* ptr = mem_->get(d->size());
+    void* ptr = current_pool_->get(d->size());
     d->reference(ptr);
     d->memset();
 }
@@ -903,16 +905,29 @@ template <typename data_t>
 DataBlockFactory*
 MemoryBlockFactory<data_t>::copy() const
 {
-    return new MemoryBlockFactory<data_t>(mem_->size());
+    return new MemoryBlockFactory<data_t>;
 }
 
 template <typename data_t>
 DataBlock*
 MemoryBlockFactory<data_t>::get_block(Tile* tile)
 {
-    DataBlock* block = new MemoryBlock(tile->config()->get_data_mode(), tile->ndata());
+    DataBlock* block = new MemoryBlock(tile->ndata());
     block->allocate<data_t>();
     return block;
+}
+
+template <typename data_t>
+void
+MemoryBlockFactory<data_t>::init_allocation()
+{
+    uli memtot = 0;
+    for (uli i=0; i < nblocks_; ++i)
+    {
+        memtot += blocks_[i]->data()->size();
+    }
+    current_pool_ = new MemoryAllocation(memtot);
+    mempools_.push_back(current_pool_);
 }
 
 template <typename data_t>
@@ -923,35 +938,9 @@ MemoryBlockFactory<data_t>::storage_type() const
 }
 
 template <typename data_t>
-void
-MemoryBlockFactory<data_t>::configure(Tensor* tensor)
-{
-    if (mem_)
-    {
-        std::cerr << "allocated tensor twice" << std::endl;
-        std::cerr << "make sure this is correct" << std::endl;
-        return;
-    }
-
-    uli size = tensor->total_data_block_size();
-    mem_ = new MemoryAllocation(size);
-}
-
-template <typename data_t>
-RecomputedBlockFactory<data_t>::RecomputedBlockFactory()
-    : filler_(0)
-{
-}
-
-template <typename data_t>
-RecomputedBlockFactory<data_t>::RecomputedBlockFactory(const ThreadedTileElementComputerPtr &filler)
-    : filler_(filler)
-{
-}
-
-template <typename data_t>
 RecomputedBlockFactory<data_t>::RecomputedBlockFactory(const TileElementComputerPtr &filler)
-    : filler_(new ThreadedTileElementComputer(filler))
+    :
+    BlockFactoryTemplate<data_t>(filler)
 {
 }
 
@@ -975,32 +964,34 @@ RecomputedBlockFactory<data_t>::storage_type() const
 }
 
 template <typename data_t>
-void
-RecomputedBlockFactory<data_t>::configure(Tensor *tensor)
-{
-}
-
-template <typename data_t>
 DataBlockFactory*
 RecomputedBlockFactory<data_t>::copy() const
 {
-    return new RecomputedBlockFactory<data_t>;
+    TileElementComputer* comp
+        = filler_->get_thread_computer(0)->copy();
+    return new RecomputedBlockFactory<data_t>(comp);
 }
 
 template <typename data_t>
-LocalDiskBlockFactory<data_t>::LocalDiskBlockFactory(
-)
+void
+RecomputedBlockFactory<data_t>::init_allocation()
+{
+    //do nothing
+}
+
+template <typename data_t>
+void
+RecomputedBlockFactory<data_t>::allocate(DataBlock* block)
+{
+    //do nothing
+}
+
+template <typename data_t>
+LocalDiskBlockFactory<data_t>::LocalDiskBlockFactory()
     :
     buffer_(0),
     offset_(0)
 {
-}
-
-template <typename data_t>
-void
-LocalDiskBlockFactory<data_t>::configure(Tensor *tensor)
-{
-    open_buffer(tensor->name());
 }
 
 template <typename data_t>
@@ -1040,6 +1031,13 @@ LocalDiskBlockFactory<data_t>::copy() const
 }
 
 template <typename data_t>
+void
+LocalDiskBlockFactory<data_t>::configure(Tensor* tensor)
+{
+    open_buffer(tensor->config()->name);
+}
+
+template <typename data_t>
 DataBlock*
 LocalDiskBlockFactory<data_t>::get_block(Tile* tile)
 {
@@ -1054,10 +1052,36 @@ LocalDiskBlockFactory<data_t>::get_block(Tile* tile)
 }
 
 template <typename data_t>
+void
+LocalDiskBlockFactory<data_t>::init_allocation()
+{
+    //do nothing
+}
+
+template <typename data_t>
 Data::storage_t
 LocalDiskBlockFactory<data_t>::storage_type() const
 {
     return Data::disk;
+}
+
+template <typename data_t>
+BlockFactoryTemplate<data_t>::BlockFactoryTemplate()
+    : DataBlockFactory()
+{
+}
+
+template <typename data_t>
+BlockFactoryTemplate<data_t>::BlockFactoryTemplate(const TileElementComputerPtr &filler)
+    : DataBlockFactory(filler)
+{
+}
+
+template <typename data_t>
+void
+BlockFactoryTemplate<data_t>::allocate_blocks()
+{
+    DataBlockFactory::allocate_blocks();
 }
 
 }

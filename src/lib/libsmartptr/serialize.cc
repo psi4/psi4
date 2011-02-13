@@ -164,6 +164,9 @@ SerialMap::add(unsigned long id, const ConstSerializablePtr& obj)
 std::ostream&
 smartptr::operator<< (std::ostream& os, Serializable* s)
 {
-    s->print(os);
+    if (s)
+        s->print(os);
+    else
+        os << "null object" << endl;
     return os;
 }

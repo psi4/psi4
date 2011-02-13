@@ -2,6 +2,7 @@
 #define yeti_class_h
 
 /** Macros for making class operations easier when using smart pointers */
+
 #include <typeinfo>
 #include <sstream>
 #include <cstring>
@@ -22,6 +23,7 @@
 
 #define MAX_DEPTH 10
 
+#undef heisenbug
 #define heisenbug std::cout << __FILE__ << " " << __LINE__ << std::endl
 
 #define findbug(x) std::cout << __FILE__ << " " << x << std::endl
@@ -35,6 +37,8 @@
 #define YETI_DEBUG_MALLOC 0
 
 #define NOT_THREADED 0
+
+#define DATA_DISTRIBUTION_DEPTH 1
 
 
 namespace yeti {
@@ -320,7 +324,6 @@ template <> class TestEquals<float> {
             return arrays_equal<float>(n, test, right);
         }
 
-
 };
 
 
@@ -335,8 +338,20 @@ template <> class TestEquals<double> {
             return fabs(test - right) < cutoff;
         }
 
+};
+
+template <> class TestEquals<quad> {
+
+    public:
+        static quad cutoff;
+
+        static bool equals(double test, double right)
+        {
+            return fabs(test - right) < cutoff;
+        }
 
 };
+
 
 template <class T> class TestEquals< std::vector<T> > {
 
@@ -389,20 +404,6 @@ output_str(const T& obj)
 
 
 }
-
-#ifdef CUSTOM_INTRUSIVE_PTR_FXN
-namespace boost {
-
-void intrusive_ptr_release(smartptr::Countable *obj);
-
-void intrusive_ptr_release(const smartptr::Countable *obj);
-
-void intrusive_ptr_add_ref(smartptr::Countable *obj);
-
-void intrusive_ptr_add_ref(const smartptr::Countable *obj);
-
-}
-#endif
 
 #endif
 

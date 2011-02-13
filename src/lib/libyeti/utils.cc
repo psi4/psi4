@@ -54,9 +54,6 @@ quicksort(usi* item, usi* index, usi n)
 {
     quicksort<usi,usi>(item, index, n);
 }
-
-float TestEquals<float>::cutoff = 1e-12;
-double TestEquals<double>::cutoff = 1e-12;
   
 }
 

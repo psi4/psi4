@@ -10,6 +10,7 @@
 #include "tensor.hpp"
 #include "matrix.hpp"
 #include "permutation.hpp"
+#include "tensorparser.hpp"
 
 
 namespace yeti {
@@ -31,6 +32,10 @@ class Tensor :
 
         uli memsize_;
 
+        usi nparams_;
+
+        uli* params_;
+
         PermutationGroupPtr pgrp_;
 
         /**
@@ -41,24 +46,24 @@ class Tensor :
 
         void finalize_mode();
 
-        std::list<IndexRangeTuplePtr> nonnull_tuples_;
+        void recurse_split(
+            Tile* src_tile,
+            Tile* dst_tile
+        );
 
-        TileRegistryPtr registry_;
+        void finalize_split(
+            Tile* src_tile,
+            Tile* dst_tile
+        );
 
     public:  //tensor configuration options
         typedef enum { alpha_tensor = 0, beta_tensor = 1, gamma_tensor = 2 } contraction_priority_t;
 
     protected:
-         /**
-          When computing location, push this tiles index set
-          on to specify the tile location at this tile level
-          @param loc
-         */
-        void push_location(const TileLocationPtr& loc) const;
 
-        Tensor(
-            const TensorConfigurationPtr& tensor
-        );
+        void _retrieve(uli threadnum);
+
+        void _release(uli threadnum);
 
     public:
         /**
@@ -77,7 +82,7 @@ class Tensor :
             Create a tile map based on the index ranges provided, but
             link to some parent tensor's configuration
             @param tuple  The index ranges definining the tensor's
-                          underlying #MetaDataTile structure
+                          underlying metadata tile structure
             @param pgrp   The permutation group defining equivalent quantities
         */
         Tensor(
@@ -85,6 +90,23 @@ class Tensor :
             const IndexRangeTuplePtr& tuple,
             const PermutationGroupPtr& pgrp,
             const TensorConfigurationPtr& config
+        );
+
+        /**
+            Create a tile map based on the index ranges provided, but
+            link to some parent tensor's configuration and with a custom
+            index set.
+            @param tuple  The index ranges definining the tensor's
+                          underlying #MetaDataTile structure
+            @param pgrp   The permutation group defining equivalent quantities
+        */
+        Tensor(
+            const std::string& name,
+            const IndexRangeTuplePtr& tuple,
+            const PermutationGroupPtr& pgrp,
+            const TensorConfigurationPtr& config,
+            uli* params,
+            usi nparams
         );
 
         /**
@@ -104,8 +126,6 @@ class Tensor :
 
         usi alignment_depth() const;
 
-        void allocate();
-
         static PermutationGroup*
         antisymmetric_permutation_group(
             const IndexRangeTuplePtr& bratuple,
@@ -118,7 +138,9 @@ class Tensor :
             IndexRange* range
         );
 
-        Tensor* copy(const std::string& name);
+        void configure(const DataBlockFactoryPtr& factory);
+
+        void copy_configuration(const YetiTensor& tensor);
 
         void distribute();
 
@@ -144,6 +166,8 @@ class Tensor :
 
         bool equals(const ThreadedTileElementComputerPtr& filler);
 
+        bool equals(const TileElementComputerPtr& filler);
+
         bool equals(const void* data);
 
         /**
@@ -158,21 +182,39 @@ class Tensor :
 
         void fill(const TileElementComputerPtr& val);
 
+        IndexRange* get_index(usi index) const;
+
+        void get_params(uli& i, uli& j) const;
+
+        /**
+            Given, for example, a Tensor T(i,j,a,b) returns a tensor
+            T(i,j) tiled so that only a single i,j index exists for a
+            given tile.  The subtiles at the bottom level are not data tiles
+            but rather tensors T(a,b) corresponding to the T(i,j,a,b) values from
+            the block.
+        */
+        Tensor* get_parameterized_tensor(usi nindex);
+
         /**
          * @return permutation group for the indices
          */
         PermutationGroup* get_permutation_grp() const;
 
+        bool is_empty() const;
+
         const std::string& name() const;
+
+        usi nparams() const;
 
         void print(std::ostream& os = std::cout) const;
 
         void reconfigure(const TensorConfigurationPtr& config);
 
-        /**
-            Inform the t
-        */
-        void register_nonnull_tiles(const IndexRangeTuplePtr& tuple);
+        void set_read_mode();
+
+        void set_write_mode();
+
+        void set_accumulate_mode();
 
         /**
             Determine the number of blocks of a given size
@@ -188,11 +230,15 @@ class Tensor :
         */
         void sort(const PermutationPtr& p);
 
-        void set_read_mode();
-
-        void set_write_mode();
-
-        void set_accumulate_mode();
+        /**
+            Split, starting with index 0, a given number of indices.
+            These indices will no longer be tiled, or, effectively, will
+            be tiled with tile size 1.  For example, given a tensor T(i,j,a,b),
+            calling split with nindex = 2 will split the i,j, indices reducing the
+            tensor structure to effectively pair blocks of a,b labeled by i,j.
+            @param nindex
+        */
+        Tensor* split(usi nindex);
 
         /**
             @return The total number of elements in the tensor at the data level assuming
@@ -214,8 +260,11 @@ class TensorConfiguration :
 
     private:
         friend class Tensor;
+        friend class Tile;
 
         DataMode* data_mode;
+
+        DataBlockFactoryPtr data_factory;
 
         TensorConfiguration();
 
@@ -226,10 +275,6 @@ class TensorConfiguration :
         );
 
         ~TensorConfiguration();
-
-        TensorConfigurationPtr copy(const std::string& name) const;
-
-        DataBlockFactoryPtr data_factory;
 
         Tile::distribution_t tile_distribution_type;
 
@@ -255,13 +300,11 @@ class TensorConfiguration :
 
         const DataMode* get_data_mode() const;
 
-};
+        DataBlockFactory* get_data_factory() const;
 
-class SpecificTileMapBuilder :
-    public TileMapBuilder
-{
-};
+        TensorConfigurationPtr copy(const std::string& name) const;
 
+};
 
 class SubtensorTileMapBuilder :
     public TileMapBuilder
@@ -270,8 +313,6 @@ class SubtensorTileMapBuilder :
         Tensor* tensor_;
 
         IndexRangeTuplePtr subtuple_;
-
-        TileRegistryPtr tile_registry_;
 
         usi subdepth_;
 

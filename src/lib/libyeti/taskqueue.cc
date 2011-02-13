@@ -11,7 +11,7 @@
 using namespace yeti;
 using namespace std;
 
-DECLARE_SUBMALLOC(Task,ContractionTask);
+DECLARE_SUBMALLOC(Task,AccumulateTask);
 
 TaskQueue* GlobalQueue::queue_ = 0;
 
@@ -20,7 +20,7 @@ static GlobalQueue global_queue;
 #define MAX_NTASKS 4000000
 #define MAX_NOWNERS 1000000
 
-#define DYNAMIC_LOAD_BALANCE_THREADS 1
+#define DYNAMIC_LOAD_BALANCE_THREADS 0
 #define RANDOMIZE_QUEUE 0
 #define SORT_QUEUE 1
 
@@ -210,7 +210,9 @@ TaskQueue::add(void* owner, Task* task)
 
     workspace_->task_owners[workspace_->ntasks] = reinterpret_cast<TaskOwner*>(owner);
     workspace_->tasks[workspace_->ntasks] = task;
+
     ++workspace_->ntasks;
+
 }
 
 void
@@ -259,16 +261,6 @@ TaskQueue::get_next(
     ntasks = workspace_->ntasks_per_owner[run_number_];
 
     ++run_number_;
-
-#if 0
-    YetiRuntime::lock_print();
-    cout << "run number=" << run_number_ << " out of " << workspace_->nowners << endl;
-    cout << "queue=" << (void*) workspace_->tasks << endl;
-    cout << "nlist=" << (void*) workspace_->ntasks_per_owner << endl;
-    cout << "passing offset=" << workspace_->task_offsets[run_number_]
-        << " and ntask=" << ntasks << endl;
-    YetiRuntime::unlock_print();
-#endif
 
     lock_->unlock();
 }
@@ -327,8 +319,18 @@ GlobalQueue::configure()
 void
 GlobalQueue::init()
 {
-        queue_ = new TaskQueue;
-        queue_->incref();
+    if (queue_)
+        delete queue_;
+
+    queue_ = new TaskQueue;
+    queue_->incref();
+}
+
+void
+GlobalQueue::finalize()
+{
+    if (queue_)
+        delete queue_;
 }
 
 void
@@ -400,11 +402,13 @@ TaskThread::run()
     }
 #else
     Task** tasks = queue_->get_tasks();
-    uli ntasks = queue_->ntasks();
+    uli ntasks_tot = queue_->ntasks();
     uli nowners = queue_->nowners();
     const uli* task_offsets = queue_->task_offsets();
     const uli* ntasks_per_owner = queue_->ntasks_per_owner();
     uli nthread = YetiRuntime::nthread();
+
+
     for (uli i=0; i < nowners; ++i)
     {
         if (i % nthread != threadnum_)
@@ -413,7 +417,9 @@ TaskThread::run()
         uli ntasks = ntasks_per_owner[i];
         Task** tasklist = tasks + task_offsets[i];
         for (uli i=0; i < ntasks; ++i)
+        {
             tasklist[i]->run(threadnum_);
+        }
     }
 #endif
 }

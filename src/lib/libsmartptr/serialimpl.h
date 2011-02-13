@@ -50,7 +50,7 @@
 #define SerialDeclare(x) \
 template<> std::string smartptr::SerialClass<x>::classname_ = ""; \
 template<> smartptr::SerialRuntime::create_function* smartptr::SerialClass<x>::fxn_ = smartptr::build<x>; \
-smartptr::SerialClass<x> x##_sc(#x); 
+smartptr::SerialClass<x> x##_sc(#x)
 
 namespace smartptr {
 
@@ -130,6 +130,79 @@ class SerialDecide {
             AssertNotHere<> test;
         }
 
+};
+
+template <class T>
+class SerialDecide<const T>
+{
+    public:
+        /**
+            Method for serializing arbitrary types. This creates
+            the xml node, writes the value, and returns to original archive
+            position.
+            @param arch
+            @param val The object to serialize
+            @param tagname The XML tagname to create
+        */
+        static void
+        serialize(
+            const XMLArchivePtr& arch,
+            const T& val,
+            const std::string& tagname
+        )
+        {
+            SerialDecide<T>::serialize(arch, val, tagname);
+        }
+
+        /**
+            Method for serializing arbitrary types. This writes the value
+            at the current XML node.
+            @param arch
+            @param val The object to serialize
+        */
+        static void
+        serialize(
+            const XMLArchivePtr& arch,
+            const T& val
+        )
+        {
+            SerialDecide<T>::serialize(arch, val);
+        }
+
+        /**
+            Method for deserializing arbitrary types. This creates
+            the xml node, reads the value, and returns to original archive
+            position.
+            @param arch
+            @param val The object to serialize
+            @param tagname The XML tagname to create
+        */
+        static void
+        deserialize(
+            const XMLArchivePtr& arch,
+            const T& val,
+            const std::string& tagname
+        )
+        {
+            T& unconst = const_cast<T&>(val);
+            SerialDecide<T>::deserialize(arch, val, tagname);
+        }
+
+        /**
+            Method for deserializing arbitrary types. This reads the value
+            at the current XML node.
+            @param arch
+            @param val The object to serialize
+        */
+        static void
+        deserialize(
+          const XMLArchivePtr& arch,
+          const T& val
+        )
+        {
+            T& unconst = const_cast<T&>(val);
+            SerialDecide<T>::deserialize(arch, val);
+        }
 };
 
 template <class T>
@@ -431,6 +504,39 @@ template <> class SerialDecide<x> { \
         } \
 }
 
+template <class T> class NonConst {};
+template <class T> class NonConst<const T> {
+    public:
+        typedef T element_type;
+};
+
+#define SerialDecideConstSubptr(x) \
+template <> class SerialDecide<x> { \
+    public: \
+        typedef NonConst<x::element_type>::element_type subtype; \
+        static void  \
+        serialize( \
+            const XMLArchivePtr& arch, \
+            const x & val, \
+            const std::string& tagname \
+        ) \
+        { \
+            boost::intrusive_ptr<subtype> tmp = const_cast<subtype*>(val.get()); \
+            arch->serialize_obj<subtype>(tmp, tagname); \
+        } \
+        static void  \
+        deserialize( \
+            const XMLArchivePtr& arch, \
+            x& val, \
+            const std::string& tagname \
+        ) \
+        { \
+            boost::intrusive_ptr<subtype> tmp = const_cast<subtype*>(val.get()); \
+            arch->deserialize_obj<subtype>(tmp, tagname); \
+            val = tmp.get(); \
+        } \
+}
+
 
 template <class T>
 void
@@ -606,7 +712,10 @@ class SerialMap : public Countable {
 template<class Y>
 std::ostream & operator<< (std::ostream & os, boost::intrusive_ptr<Y> const & p)
 {
-    p->print(os);
+    if (p)
+        p->print(os);
+    else
+        os << "null object" << std::endl;
     return os;
 }
 

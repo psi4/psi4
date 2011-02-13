@@ -53,8 +53,6 @@ class YetiRuntime {
 
         static void init_sizes();
 
-        static void init_index_ranges();
-
         static void init_malloc();
 
     public:
@@ -149,38 +147,24 @@ class YetiRuntime {
 
 };
 
-usi*
-usi_allocate(usi i, usi j);
+usi* usi_allocate(usi i, usi j);
 
-uli* _yeti_malloc_indexset();
-usi* _yeti_malloc_perm();
-void* _yeti_malloc_indexptr();
+uli* yeti_malloc_tile_location();
+uli* yeti_malloc_indexset();
+usi* yeti_malloc_perm();
+void* yeti_malloc_indexptr();
 void* yeti_malloc_matrix_generator();
 void* yeti_malloc_matrix_generator_set();
 
 void yeti_free_indexset(const uli* ptr);
 void yeti_free_perm(usi* ptr);
 void yeti_free_indexptr(void* ptr);
+void yeti_free_tile_location(void* ptr);
 
 void yeti_free_matrix_generator(void* ptr);
 void yeti_free_matrix_generator_set(void* ptr);
 
-uli* track_malloc_indexset(const char* file, int line);
-void track_free_indexset(void* ptr);
-void* track_malloc_indexptr(const char* file, int line);
-void track_free_indexptr(void* ptr);
-usi* track_malloc_perm(const char* file, int line);
-void track_free_perm(void* ptr);
 
-#if YETI_DEBUG_MALLOC
-#define yeti_malloc_indexset() track_malloc_indexset(__FILE__, __LINE__)
-#define yeti_malloc_perm() track_malloc_perm(__FILE__, __LINE__)
-#define yeti_malloc_indexptr() track_malloc_indexptr(__FILE__, __LINE__)
-#else
-#define yeti_malloc_indexset() _yeti_malloc_indexset()
-#define yeti_malloc_indexptr() _yeti_malloc_indexptr()
-#define yeti_malloc_perm() _yeti_malloc_perm()
-#endif
 
 }
 

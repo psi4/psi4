@@ -85,6 +85,8 @@ PermutationalSymmetryFilter::is_zero(
     //return not unique
     if (pgrp_->order() > 1)
         return !Tile::is_unique(indices, pgrp_, depth);
+    else
+        return false; //no symmetry
 }
 
 TileFilter*
@@ -127,22 +129,20 @@ TileMap::TileMap(
     image_(yeti_malloc_indexset()),
     offsets_(yeti_malloc_indexset()),
     nindices_(yeti_malloc_indexset()),
-    //parent_(parent.get()),
     tuple_(tuple),
     pgrp_(pgrp),
-    computed_(false),
-    nindex_(tuple->size()),
+    nindex_(tuple->nindex()),
     tiles_(0),
     tmptuple_(reinterpret_cast<IndexRange**>(yeti_malloc_indexptr())),
     filler_(0),
-    allocated_(false),
     maxdepth_(tuple->maxdepth()),
     mindepth_(tuple->mindepth()),
     parents_(reinterpret_cast<Tile**>(yeti_malloc_indexptr())),
     index_strides_(yeti_malloc_indexset()),
     is_tiled_index_(yeti_malloc_perm()),
     rigorously_zero_tiles_(0),
-    nparents_(1)
+    nparents_(1),
+    estimater_(0)
 {
     parents_[0] = parent.get();
 
@@ -187,6 +187,9 @@ TileMap::TileMap(
         index_strides_[i] = total_stride;
         total_stride *= nindices_[i];
     }
+
+    if (is_aligned())
+        iterate_zero_check(0);
 }
 
 TileMap::TileMap(
@@ -204,44 +207,20 @@ TileMap::TileMap(
     nparents_(1),
     tuple_(0),
     pgrp_(0),
-    computed_(true), //nothing to compute
     nindex_(0),
     tiles_(0),
     tmptuple_(0),
-    allocated_(false),
     maxdepth_(tile->depth() + 1),
     mindepth_(tile->depth() + 1),
     filler_(0),
-    rigorously_zero_tiles_(new char[1])
+    rigorously_zero_tiles_(new char[1]),
+    estimater_(0)
 {
     parents_[0] = parent;
     uli size = 1;
     tiles_ = new CountableArray<Tile>(size);
     tiles_->insert(0, tile);
     rigorously_zero_tiles_[0] = 0;
-}
-
-
-TileMap::TileMap()
-    : indexer_(0),
-    tmpindices_(0),
-    image_(0),
-    offsets_(0),
-    nindices_(0),
-    index_strides_(0),
-    is_tiled_index_(0),
-    parents_(reinterpret_cast<Tile**>(yeti_malloc_indexptr())),
-    nparents_(0),
-    tuple_(0),
-    pgrp_(0),
-    maxdepth_(0),
-    mindepth_(0),
-    computed_(false),
-    nindex_(0),
-    tiles_(0),
-    tmptuple_(0),
-    rigorously_zero_tiles_(0)
-{
 }
 
 TileMap::~TileMap()
@@ -267,69 +246,16 @@ TileMap::~TileMap()
     delete[] rigorously_zero_tiles_;
 }
 
+void
+TileMap::allow_all_tiles()
+{
+    ::memset(rigorously_zero_tiles_, 0, this->size() * sizeof(char));
+}
+
 TileMap::iterator
 TileMap::begin() const
 {
     return tiles_->begin();
-}
-
-TileMap*
-TileMap::copy(Tile* parent)
-{
-    TileMap* copy = new TileMap;
-    copy->incref();
-
-    copy->indexer_ = indexer_->copy();
-    copy->maxdepth_ = maxdepth_;
-    copy->computed_ = true;
-    copy->nindex_ = nindex_;
-    copy->tuple_ = tuple_;
-    copy->parents_[0] = parent;
-    copy->pgrp_ = pgrp_;
-    copy->allocated_ = allocated_;
-    copy->nparents_ = 1;
-
-    copy->tmptuple_ = reinterpret_cast<IndexRange**>(yeti_malloc_indexptr());
-    copy->image_ = yeti_malloc_indexset();
-
-
-    copy->tmpindices_ = yeti_malloc_indexset();
-    ::memcpy(copy->tmpindices_, tmpindices_, nindex_ * sizeof(uli));
-
-    copy->offsets_ = yeti_malloc_indexset();
-    ::memcpy(copy->offsets_, offsets_, nindex_ * sizeof(uli));
-
-    copy->nindices_ = yeti_malloc_indexset();
-    ::memcpy(copy->nindices_, nindices_, nindex_ * sizeof(uli));
-
-    copy->index_strides_ = yeti_malloc_indexset();
-    ::memcpy(copy->index_strides_, index_strides_, nindex_ * sizeof(uli));
-
-    copy->is_tiled_index_ = yeti_malloc_perm();
-    ::memcpy(copy->is_tiled_index_, is_tiled_index_, nindex_ * sizeof(usi));
-
-    copy->tiles_ = new CountableArray<Tile>(tiles_->size());
-
-    Tile** copyptr = copy->tiles_->begin();
-    uli n = 0;
-    for (Tile** next = begin(); next != end(); ++next, ++n)
-    {
-        Tile* tile = *next;
-        if (tile == 0)
-            continue;
-
-        tile->retrieve(NOT_THREADED);
-        Tile* newtile = tile->copy(copy);
-        tile->release(NOT_THREADED);
-        copy->tiles_->insert(n, newtile);
-    }
-
-    copy->rigorously_zero_tiles_ = new char[tiles_->size()];
-    ::memcpy(copy->rigorously_zero_tiles_, this->rigorously_zero_tiles_, tiles_->size());
-
-    copy->decref();
-
-    return copy;
 }
 
 TileMap::iterator
@@ -399,10 +325,14 @@ TileMap::exists(const size_t *indices) const
     return tiles_->get(indexer_->index(indices));
 }
 
-TilePtr
-TileMap::get(const constIndexSetPtr& indexset) const
+void
+TileMap::fill(const ThreadedTileElementComputerPtr& filler)
 {
-    return get(indexset->data());
+    filler_ = filler;
+    if (filler_)
+        estimater_ = filler_->get_estimater(maxdepth_);
+
+    iterate_fill(0);
 }
 
 IndexRangeTuplePtr
@@ -414,22 +344,39 @@ TileMap::get_index_ranges() const
 void
 TileMap::insert(Tile* tile)
 {
-    //once a tile gets insert, this must be flagged as computed
-    computed_ = true;
-
+#if YETI_SANITY_CHECK
     if (!tile) //cannot insert null tile
     {
         raise(SanityCheckError, "cannot insert null tile into tile map");
     }
+#endif
 
     uli idx = indexer_->index(tile->indices());
-    tiles_->insert(idx, tile);
+    insert(idx, tile);
 }
 
 void
 TileMap::insert(uli index, Tile* tile)
 {
+#if YETI_SANITY_CHECK
+    Tile* test = tiles_->get(index);
+    if (test)
+        raise(SanityCheckError, "cannot insert on occupied tile location");
+
+    if (rigorously_zero_tiles_[index])
+    {
+        cerr << "cannot insert rigorously zero tile" << endl;
+        abort();
+    }
+#endif
     tiles_->insert(index, tile);
+    tile->set_parent(this); //claim ownership
+}
+
+bool
+TileMap::is_aligned() const
+{
+    return maxdepth_ == mindepth_;
 }
 
 const usi*
@@ -439,7 +386,7 @@ TileMap::is_tiled_index() const
 }
 
 void
-TileMap::iterate(
+TileMap::iterate_fill(
     usi index
 )
 {
@@ -449,55 +396,35 @@ TileMap::iterate(
         return;
     }
 
-    //fetch the object for estimating tile values
-    TileEstimater* estimater = 0;
-    if (filler_)
-        estimater = filler_->get_estimater(maxdepth_, index + 1);
-
     uli idx = offsets_[index];
     uli stop = nindices_[index] + idx;
     IndexRange* range = tuple_->get(index);
     //maybe or maybe not recurse on this
     bool use_subindex = range->depth() >= maxdepth_;
-    for ( ; idx != stop; ++idx) //loop al index values within the given range
+    for ( ; idx != stop; ++idx) //loop all index values within the given range
     {
         //set the index number at the given index position
         tmpindices_[index] = idx;
 
         //set the IndexRange at the given index position
         tmptuple_[index] = use_subindex ? range->get_subindex(idx) : range;
-
-
-        //if there is no object for estimating the given number of indices
-        //and recursion depth, always build the tile
-        if (estimater == 0)
-        {
-            iterate(index + 1);
-        }
-        //if we have an object for estimating and the estimate is below the cutoff,
-        //do not create the next tile
-        else if (estimater->max_log(tmpindices_) > YetiRuntime::matrix_multiply_cutoff)
-        {
-            iterate(index + 1);
-        }
+        iterate_fill(index + 1);
     }
 }
 
 void
 TileMap::insert_new_tile()
 {
-    std::list<TileFilterPtr>::const_iterator it(config()->filters.begin());
-    std::list<TileFilterPtr>::const_iterator stop(config()->filters.end());
-    for ( ; it != stop; ++it)
-    {
-        bool is_zero = (*it)->is_zero(tmpindices_, maxdepth_);
-        if (is_zero)
-        {
-            uli index = indexer_->index(tmpindices_);
-            rigorously_zero_tiles_[index] = 1;
-            return;
-        }
-    }
+    uli index = indexer_->index(tmpindices_);
+    if (rigorously_zero_tiles_[index])
+        return;
+
+    if (estimater_ && estimater_->max_log(tmpindices_) < YetiRuntime::matrix_multiply_cutoff)
+        return;
+
+    Tile* tile = get(index);
+    if (tile) //already exists
+        return;
 
     //this corresponds to a permutationally unique block
     IndexRangeTuplePtr subtuple
@@ -508,8 +435,8 @@ TileMap::insert_new_tile()
     ::memcpy(indexarr, tmpindices_, nindex_ * sizeof(size_t));
 
     //make(idxset, IndexSet, indexarr, nindex_);
-    Tile* tile(new Tile(subtuple, indexarr, this));
-    insert(tile);
+    tile = new Tile(subtuple, indexarr, this);
+    insert(index, tile);
 }
 
 bool
@@ -524,6 +451,41 @@ bool
 TileMap::is_rigorously_zero(uli offset) const
 {
     return rigorously_zero_tiles_[offset];
+}
+
+void
+TileMap::tile_zero_check()
+{
+    std::list<TileFilterPtr>::const_iterator it(config()->filters.begin());
+    std::list<TileFilterPtr>::const_iterator stop(config()->filters.end());
+    for ( ; it != stop; ++it)
+    {
+        bool is_zero = (*it)->is_zero(tmpindices_, maxdepth_);
+        if (is_zero)
+        {
+            uli index = indexer_->index(tmpindices_);
+            rigorously_zero_tiles_[index] = 1;
+        }
+    }
+}
+
+void
+TileMap::iterate_zero_check(usi index)
+{
+    if (index == nindex_)
+    {
+        tile_zero_check();
+        return;
+    }
+
+    uli idx = offsets_[index];
+    uli stop = nindices_[index] + idx;
+    for ( ; idx != stop; ++idx) //loop all index values within the given range
+    {
+        //set the index number at the given index position
+        tmpindices_[index] = idx;
+        iterate_zero_check(index + 1);
+    }
 }
 
 bool
@@ -556,27 +518,29 @@ TileMap::offsets() const
     return offsets_;
 }
 
+
 void
 TileMap::print(ostream& os) const
 {
     if (tiles_->n() == 0)
         return; //nothing to print
 
-    os << Env::indent << "Tile Map at " << (void*) this;
+    os << Env::indent << "Tile Map at " << (void*) this << " nref=" << nref();
     for (usi i=0; i < nparents_; ++i)
     {
         os << endl << Env::indent << "Parent " << i << ": " << (void*) parents_[i];
     }
     os << endl << Env::indent << "Sizes: " << ClassOutput<const uli*>::str(nindex_, nindices());
     os << endl << Env::indent << "Offsets: " << ClassOutput<const uli*>::str(nindex_, offsets());
-    os << endl << indexer_;
+    //os << endl << indexer_;
 
     usi idx = 0;
     foreach_nonnull(tile, this, Tile,
         os << endl << Env::indent;
         ++Env::indent;
         tile->retrieve(NOT_THREADED);
-        os << idx << " -> "; tile->print(os);
+        os << idx << " -> ";
+        tile->print(os, false); //do not indent header
         tile->release(NOT_THREADED);
         --Env::indent;
         ++idx;
@@ -586,23 +550,11 @@ TileMap::print(ostream& os) const
 void
 TileMap::retrieve()
 {
-    if (computed_)
-        return;
-
-    //set up the filler object
-    filler_ = get_parent_tile()->config()->filler;
-
-    iterate(0);
-
-    computed_ = true;
 }
 
 void
 TileMap::release()
 {
-    //indexmap_->clear();
-    //tiles_.clear();
-    //computed_ = false;
 }
 
 size_t
@@ -637,6 +589,9 @@ TileMap::remove_parent(Tile* tile)
             break;
     }
 
+    if (idx == nparents_)
+        return;
+
     for ( ; idx < nparents_ - 1; ++idx)
         parents_[idx] = parents_[idx + 1];
 
@@ -660,27 +615,6 @@ uli
 TileMap::size() const
 {
     return tiles_->size();
-}
-
-void
-TileMap::allocate()
-{
-    if (allocated_)
-        return;
-
-    foreach_nonnull(tile, this, Tile,
-        tile->retrieve(NOT_THREADED);
-        tile->allocate();
-        tile->release(NOT_THREADED);
-    )
-
-    allocated_ = true;
-}
-
-bool
-TileMap::is_allocated() const
-{
-    return allocated_;
 }
 
 void
@@ -737,20 +671,14 @@ Tile::init()
 {
     if (is_parent())
     {
-        //construct the tile map
-        if (!tilemap_)
-        {
-            incref();
-            tilemap_ = config_->tile_map_builder->build_map(
-                                                    ranges_,
-                                                    this
-                                                 );
-            decref();
-
-        }
+        incref();
+        tilemap_ = config_->tile_map_builder->build_map(
+                ranges_,
+                this
+                );
+        decref();
     }
-
-    computed_ = true;
+    init_estimate();
 }
 
 Tile::Tile(
@@ -759,7 +687,6 @@ Tile::Tile(
     //const PermutationGroupPtr& pgrp,
     const TensorConfigurationPtr& config
 ) : ranges_(ranges),
-    computed_(false),
     //pgrp_(pgrp),
     indices_(indices),
     parent_(0),
@@ -769,8 +696,7 @@ Tile::Tile(
     data_(0),
     config_(config)
 {
-    init_estimate();
-    yeti_register_new(lock_.get());
+    init();
 }
 
 Tile::Tile(
@@ -780,7 +706,6 @@ Tile::Tile(
     TileMap* parent
 ) : ranges_(ranges),
     //pgrp_(pgrp),
-    computed_(false),
     indices_(indices),
     parent_(parent),
     owner_process_(0),
@@ -788,15 +713,13 @@ Tile::Tile(
     data_(0),
     config_(parent->config())
 {
-    yeti_register_new(lock_.get());
-    init_estimate();
+    init();
 }
 
 Tile::Tile(
     const IndexRangeTuplePtr& ranges,
     size_t* indices
 ) : ranges_(ranges),
-    computed_(false),
     indices_(indices),
     parent_(0),
     owner_process_(0),
@@ -804,8 +727,7 @@ Tile::Tile(
     data_(0),
     config_(0)
 {
-    init_estimate();
-    yeti_register_new(lock_.get());
+    init();
 }
 
 Tile::Tile(
@@ -821,8 +743,7 @@ Tile::Tile(
     has_owner_process_(false), //no owner... yet
     data_(0),
     config_(config),
-    indices_(0),
-    computed_(false)
+    indices_(0)
 {
     size_t* copy = yeti_malloc_indexset();
     ::memcpy(copy, indices, nidx * sizeof(size_t));
@@ -838,24 +759,10 @@ Tile::Tile(
         ranges_->set(i, range);
     }
 
+    init();
+
     estimate_.depth = 0;
     estimate_.maxlog = LOG_ZERO;
-
-    yeti_register_new(lock_.get());
-}
-
-Tile::Tile(const TensorConfigurationPtr& config)
-    :
-    //pgrp_(0),
-    ranges_(0),
-    parent_(0),
-    owner_process_(0),
-    has_owner_process_(false), //no owner... yet
-    data_(0),
-    config_(config),
-    indices_(0),
-    computed_(false)
-{
 }
 
 Tile::~Tile()
@@ -866,24 +773,30 @@ Tile::~Tile()
 }
 
 void
-Tile::allocate()
+Tile::add_tiles(const TileIteratorPtr& iter)
 {
-    if (tilemap_)
+    if (depth() == 1)
     {
-        tilemap_->retrieve();
-        tilemap_->allocate();
-        tilemap_->release();
+        foreach_nonnull(tile, tilemap_, Tile,
+            iter->add_tile(tile);
+        )
+    }
+    else if (tilemap_)
+    {
+        foreach_nonnull(tile, tilemap_, Tile,
+            tile->add_tiles(iter);
+        )
     }
     else
     {
-        config_->data_factory->allocate(data_.get());
+        raise(SanityCheckError, "Cannot add tiles in data tile");
     }
 }
 
 void
 Tile::accumulate(
-    const TilePtr &tile,
-    const SortPtr &sort,
+    const TilePtr& tile,
+    const ThreadedSortPtr& sort,
     double scale
 )
 {
@@ -902,15 +815,18 @@ Tile::accumulate(
         }
         else
         {
-            TileIteratorWorkspace* workspace = get_workspace<TileIteratorWorkspace>(NOT_THREADED);
+            Sort* sorter = sort->get_sorter(0);
+            TileIteratorWorkspace* workspace
+                = get_workspace<TileIteratorWorkspace>(NOT_THREADED);
             usi depth = tilemap_->maxdepth();
             Tile** sorted_tiles = reinterpret_cast<Tile**>(workspace->buffers[depth]);
-            sort->configure(tile->get_map()->nindices());
-            sort->sort_noscale<Tile*>(unsorted_tiles, sorted_tiles);
+            sorter->configure(tile->get_map()->nindices());
+            sorter->sort_noscale<Tile*>(unsorted_tiles, sorted_tiles);
             acc = sorted_tiles;
         }
 
-        for ( ; it != stop; ++it, ++acc)
+        uli idx = 0;
+        for ( ; it != stop; ++it, ++acc, ++idx)
         {
             Tile* tile_acc = *acc;
             if (!tile_acc) //nothing to accumulate
@@ -918,95 +834,198 @@ Tile::accumulate(
 
             tile_acc->retrieve(NOT_THREADED);
 
+            cout << "accumulating index " << idx << " at depth " << depth() << endl;
+
             Tile* tile_me = *it;
-            if (tile_me)
+            if (!tile_me)
             {
-                tile_me->retrieve(NOT_THREADED);
-                tile_me->accumulate(tile_acc, sort, scale);
-                tile_me->release(NOT_THREADED);
-            }
-            else if (tilemap_->is_rigorously_zero(it))
-            {
-                //this tile should never accumulate anything
-                continue;
-            }
-            else
-            {
-                //copy the given tile and insert it
-                tile_me = tile_acc->copy(tilemap_.get());
-                tile_me->sort(p);
+                if (tilemap_->is_rigorously_zero(it))
+                {
+                    cout << "tile rigorously zero" << endl;
+                    continue; //nothing to do here
+                }
+                else
+                {
+                    uli* newindices = yeti_malloc_indexset();
+                    ::memcpy(newindices, tile_acc->indices(), nindex());
+                    tile_me = new Tile(
+                            tile_acc->get_index_ranges(),
+                            newindices,
+                            config_
+                         );
+                    tilemap_->insert(idx, tile_me);
+                    cout << "accumulating new tile" << endl;
+                }
             }
 
+
+            tile_me->retrieve(NOT_THREADED);
+            tile_me->accumulate(tile_acc, sort, scale);
+            tile_me->release(NOT_THREADED);
 
             tile_acc->release(NOT_THREADED);
         }
     }
     else //data tile
     {
-        Data* me = data_->data();
-        Data* acc = tile->get_data()->data();
-        if (p->is_identity())
+
+        if (data_->data()->null()) //register my allocation
+            config_->data_factory->register_allocation(data_.get());
+
+        AccumulateTask* task = new AccumulateTask(
+            data_.get(),
+            tile->get_data(),
+            tile->get_index_ranges(),
+            sort,
+            scale
+        );
+
+        GlobalQueue::add(this, task);
+    }
+}
+
+void
+Tile::accumulate(
+    const MatrixPtr& matrix,
+    const ThreadedSortPtr& sort,
+    double scale
+)
+{
+    if (tilemap_)
+    {
+        uli* tmp = yeti_malloc_indexset();
+
+        Tile** it(tilemap_->begin());
+        Tile** stop(tilemap_->end());
+
+        Matrix** unsorted_blocks = matrix->get_map()->begin();
+        TileMap* srcmap = matrix->get_unique_tile()->get_map();
+        Permutation* src_perm = matrix->get_unique_permutation();
+
+        Matrix** acc;
+        if (sort->get_permutation()->is_identity())
         {
-            me->accumulate(acc, scale, 0);
+            acc = unsorted_blocks;
         }
         else
         {
-            //The acc block is the thing being sorted in the
-            //accumulation.  It is therefore very important
-            //that here we configure the sort for the acc tile
-            //and not for the this tile.
-            sort->configure(tile->get_index_ranges());
-            me->accumulate(acc, scale, sort);
+            Sort* sorter = sort->get_sorter(0);
+            TileIteratorWorkspace* workspace
+                = get_workspace<TileIteratorWorkspace>(NOT_THREADED);
+            usi depth = tilemap_->maxdepth();
+            Matrix** sorted_blocks = reinterpret_cast<Matrix**>(workspace->buffers[depth]);
+
+
+            src_perm->permute(srcmap->nindices(), tmp);
+            sorter->configure(tmp);
+            sorter->sort_noscale<Matrix*>(unsorted_blocks, sorted_blocks);
+            acc = sorted_blocks;
         }
+
+        uli idx = 0;
+        for ( ; it != stop; ++it, ++acc, ++idx)
+        {
+            Matrix* src = *acc;
+            if (!src) //nothing to accumulate
+                continue;
+
+            Tile* src_tile = src->get_unique_tile();
+            src->retrieve(NOT_THREADED);
+
+            Tile* dst = *it;
+            if (!dst)
+            {
+                if (tilemap_->is_rigorously_zero(it))
+                {
+                    continue; //nothing to do here
+                }
+                else
+                {
+                    uli* newindices = yeti_malloc_indexset();
+                    src->get_unique_permutation()
+                            ->permute(src_tile->indices(), newindices);
+                    dst = new Tile(
+                            src->get_index_ranges(),
+                            newindices,
+                            config_
+                         );
+                    tilemap_->insert(idx, dst);
+                }
+            }
+
+
+            dst->retrieve(NOT_THREADED);
+            dst->accumulate(src, sort, scale);
+            dst->release(NOT_THREADED);
+            src->release(NOT_THREADED);
+        }
+
+        yeti_free_indexset(tmp);
     }
+    else //data tile
+    {
+
+        if (data_->data()->null()) //register my allocation
+            config_->data_factory->register_allocation(data_.get());
+
+        AccumulateTask* task = new AccumulateTask(
+            data_.get(),
+            matrix->get_data(),
+            matrix->get_index_ranges(),
+            sort,
+            scale
+        );
+
+        GlobalQueue::add(this, task);
+    }
+}
+
+AccumulateTask::AccumulateTask(
+    DataBlock *dst,
+    DataBlock *src,
+    IndexRangeTuple* src_ranges,
+    const ThreadedSortPtr& sort,
+    double scale
+)
+    :
+  dst_(dst),
+  src_(src),
+  src_ranges_(src_ranges),
+  sort_(sort),
+  scale_(scale)
+{
+}
+
+void
+AccumulateTask::print(std::ostream &os) const
+{
+    os << "Accumulate Task" << endl;
+    os << "Destination: " << dst_ << endl;
+    os << "Source: " << src_;
+}
+
+void
+AccumulateTask::run(uli threadnum)
+{
+    src_->retrieve(threadnum);
+    dst_->retrieve(threadnum);
+
+    Data* src = src_->data();
+    Data* dst = dst_->data();
+
+    Sort* sorter = sort_->get_sorter(threadnum);
+    if (sorter)
+        sorter->configure(src_ranges_);
+    dst->accumulate(src, scale_, sorter);
+
+    src_->release(threadnum);
+    dst_->release(threadnum);
 }
 
 TensorConfiguration*
 Tile::config() const
 {
     return config_.get();
-}
-
-Tile*
-Tile::copy(TileMap* parent)
-{
-    Tile* copy = new Tile(parent->config());
-    copy->parent_ = parent;
-    copy_to(copy);
-
-    return copy;
-}
-
-void
-Tile::copy_to(Tile* copy)
-{
-    copy->ranges_ = ranges_;
-    copy->owner_process_ = owner_process_;
-    copy->has_owner_process_ = has_owner_process_;
-
-    copy->indices_ = yeti_malloc_indexset();
-    ::memcpy(copy->indices_, indices_, nindex() * sizeof(uli));
-
-    if (tilemap_)
-    {
-        tilemap_->retrieve();
-        copy->tilemap_ = tilemap_->copy(copy);
-        tilemap_->release();
-    }
-
-    if (data_)
-    {
-        copy->data_ = copy->config_->data_factory->get_block(copy);
-        copy->data_->allocate(data_->data()->type());
-        copy->config_->data_factory->allocate(copy->data_.get());
-        copy->data_->retrieve(NOT_THREADED);
-        copy->data_->data()->assign(data_->data());
-        copy->data_->release(NOT_THREADED);
-    }
-
-    copy->estimate_.depth = estimate_.depth;
-    copy->estimate_.maxlog = estimate_.maxlog;
-
 }
 
 uli
@@ -1075,7 +1094,7 @@ Tile::distribute(const TileDistributerPtr &distr)
         return; //no distribution of storage on this
 
     tilemap_->retrieve();
-    if (DISTRIBUTION_DEPTH == tilemap_->maxdepth()) //distribute here
+    if (DATA_DISTRIBUTION_DEPTH == tilemap_->maxdepth()) //distribute here
     {
         foreach_nonnull(tile, tilemap_, Tile,
             size_t procnum = distr->process_number(tile);
@@ -1110,14 +1129,25 @@ Tile::_equals(const char** data)
         if (data_)
         {
             data_->retrieve(NOT_THREADED);
-            bool eq = data_->data()->equals(*data);
-            (*data) += data_->data()->size();
+            bool eq = false;
+            if (data_->data()->nonnull())
+            {
+                eq = data_->data()->equals(*data);
+                (*data) += data_->data()->size();
+            }
             data_->release(NOT_THREADED);
             return eq;
         }
         else //must have data!
             return false;
     }
+}
+
+bool
+Tile::equals(const TileElementComputerPtr& filler)
+{
+    ThreadedTileElementComputerPtr thread_filler = new ThreadedTileElementComputer(filler);
+    return this->equals(thread_filler);
 }
 
 bool
@@ -1158,12 +1188,22 @@ Tile::equals(const void* data)
     return _equals(&cd);
 }
 
+bool
+Tile::exists(const uli *indices) const
+{
+    return tilemap_->exists(indices);
+}
+
 void
 Tile::fill()
 {
+    if (config_->filler->mindepth() > depth())
+        return; //we are done here
+
     if (tilemap_)
     {
         tilemap_->retrieve();
+        tilemap_->fill(config_->filler);
         foreach_nonnull(tile, tilemap_, Tile,
 
             //I don't need to do this tile
@@ -1176,24 +1216,43 @@ Tile::fill()
         )
         tilemap_->release();
     }
-    else //data tile
+    else if (storage_type() != Data::recomputed) //data tile
     {
-        if (config_->data_factory->storage_type() != Data::recomputed
-            && parent_->is_allocated()
-            && config_->filler)
-        {
-            //compute the data for the tile
-            data_->retrieve(NOT_THREADED);
-            config_->filler->compute(this, data_->data(), 0);
-            float maxlog = data_->data()->max_log();
-            data_->release(NOT_THREADED);
 
-            //setting log from min depth
-            estimate_.maxlog = maxlog;
-            estimate_.depth = 0;
-            parent_->set_max_log(maxlog, 0);
-        }
+        FillTask* task = new FillTask(this, config_->filler.get());
+        GlobalQueue::add(this, task);
+
+        if (data_->data()->null()) //register my allocation
+            config_->data_factory->register_allocation(data_.get());
+
     }
+}
+
+FillTask::FillTask(Tile *tile, ThreadedTileElementComputer *filler)
+    :
+  tile_(tile),
+  filler_(filler)
+{
+}
+
+void
+FillTask::run(uli threadnum)
+{
+    DataBlock* data = tile_->get_data();
+    data->retrieve(threadnum);
+    filler_->compute(tile_, data->data(), threadnum);
+    float maxlog = data->data()->max_log();
+    data->release(threadnum);
+
+    //setting log from min depth
+    tile_->set_max_log(maxlog, 0);
+}
+
+void
+FillTask::print(std::ostream &os) const
+{
+    os << "Fill Task" << endl;
+    os << tile_;
 }
 
 DataBlock*
@@ -1208,22 +1267,26 @@ Tile::get(const uli* indices) const
     return tilemap_->get(indices);
 }
 
-bool
-Tile::exists(const uli *indices) const
+TileMap*
+Tile::get_parent() const
+
 {
-    return tilemap_->exists(indices);
+    return parent_;
+}
+
+TileIteratorPtr
+Tile::get_iterator()
+{
+    uli ntiles = ntiles_nonnull();
+    TileIteratorPtr iter = new TileIterator(ntiles);
+    add_tiles(iter);
+    return iter;
 }
 
 IndexRangeTuple*
 Tile::get_index_ranges() const
 {
     return ranges_.get();
-}
-
-const size_t*
-Tile::indices() const
-{
-    return indices_;
 }
 
 TileMap*
@@ -1236,6 +1299,103 @@ const tile_estimate_t&
 Tile::get_max_log() const
 {
     return this->estimate_;
+}
+
+uli*
+Tile::get_location(const usi* subset, usi nsub) const
+{
+    uli* location = yeti_malloc_tile_location();
+    get_location(location, subset, nsub);
+    return location;
+}
+
+void
+Tile::get_location(uli* location, const usi* subset, usi nsub) const
+{
+    if (parent_)
+    {
+        Tile* parent_tile = parent_->get_parent_tile();
+        usi mydepth = depth();
+        if (subset)
+        {
+            const uli* sizes = parent_->nindices();
+            const uli* offsets = parent_->offsets();
+            const usi* subsetptr = subset + nsub - 1;
+            uli stride = 1;
+            uli index = 0;
+            for ( ; subsetptr >= subset; --subsetptr)
+            {
+                usi subidx = *subsetptr;
+                index += (indices_[subidx] - offsets[subidx]) * stride;
+                stride *= sizes[subidx];
+            }
+            location[mydepth] = index;
+        }
+        else
+        {
+            location[mydepth] = parent_->index(indices_);
+        }
+        parent_tile->get_location(location, subset, nsub);
+    }
+    else
+    {
+        return; //top level... do nothing
+    }
+}
+
+TileMap*
+Tile::get_tile_map(const uli* location, bool create_location)
+{
+    if (!tilemap_)
+    {
+        raise(SanityCheckError, "cannot call get tile on tile without tile map");
+    }
+
+    usi seekdepth = depth() - 1;
+    if (seekdepth == 0)
+    {
+        return tilemap_.get();
+    }
+
+    uli compidx = location[seekdepth];
+    Tile* parent = tilemap_->get(compidx);
+    if (!parent && create_location) //create the parent tile
+    {
+        usi nidx = nindex();
+        uli* indices = yeti_malloc_indexset();
+        tilemap_->compute_indices(compidx, indices);
+        IndexRangeTuplePtr tuple = new IndexRangeTuple(nidx);
+        for (usi i=0; i < nidx; ++i)
+        {
+            IndexRange* range =  ranges_->get(i)->get_subindex(indices[i]);
+            tuple->set(i, range);
+        }
+        parent = new Tile(tuple, indices, tilemap_.get());
+        tilemap_->insert(compidx, parent);
+    }
+
+    if (parent)
+    {
+        parent->retrieve(NOT_THREADED);
+        TileMap* tilemap = parent->get_tile_map(location, create_location);
+        parent->release(NOT_THREADED);
+        return tilemap;
+    }
+    else
+    {
+        return 0;
+    }
+
+}
+
+Tile*
+Tile::get_tile(const uli* location)
+{
+    TileMap* tilemap = get_tile_map(location, false); //do not create the location
+    if (tilemap)
+        return tilemap->get(location[0]);
+    else
+        return 0;
 }
 
 bool
@@ -1256,19 +1416,23 @@ Tile::index_offsets() const
     return tilemap_->offsets();
 }
 
+const size_t*
+Tile::indices() const
+{
+    return indices_;
+}
+
+void
+Tile::insert(const uli* location, Tile* tile)
+{
+    TileMap* tilemap = get_tile_map(location, true); //create the location
+    tilemap->insert(location[0], tile);
+}
+
 bool
 Tile::is_aligned() const
 {
     return tilemap_->depths_aligned();
-}
-
-bool
-Tile::is_allocated() const
-{
-    if (tilemap_)
-        return tilemap_->is_allocated();
-    else
-        return false; //no tile map, so no allocation
 }
 
 bool
@@ -1277,7 +1441,7 @@ Tile::is_equivalent(const TilePtr& tile) const
     if (type() != tile->type())
         return false;
 
-    if (get_index_ranges()->size() != tile->get_index_ranges()->size())
+    if (get_index_ranges()->nindex() != tile->get_index_ranges()->nindex())
         return false;
 
     {
@@ -1347,7 +1511,7 @@ Tile::is_grand_parent() const
 bool
 Tile::is_parent() const
 {
-    if (ranges_->size() == 0)
+    if (ranges_->nindex() == 0)
         return false;
 
     return ranges_->get(0)->is_parent();
@@ -1443,7 +1607,7 @@ Tile::ndata() const
 usi
 Tile::nindex() const
 {
-    ranges_->size();
+    ranges_->nindex();
 }
 
 uli
@@ -1482,20 +1646,47 @@ Tile::ntiles(usi depth)
 uli
 Tile::ntiles_max() const
 {
-    size_t nmax = 1;
+    uli nmax = 1;
     IndexRangeTuple::iterator it(ranges_->begin());
     IndexRangeTuple::iterator stop(ranges_->end());
     for ( ; it != stop; ++it)
     {
-        nmax *= (*it)->n();
+        IndexRange* range = *it;
+        uli n = range ? range->n() : 1;
+        nmax *= n;
     }
     return nmax;
 }
 
 uli
+Tile::ntiles_nonnull()
+{
+    if (depth() == 1)
+    {
+        uli ntiles = 0;
+        foreach_nonnull(tile, tilemap_, Tile,
+            ++ntiles;
+        )
+        return ntiles;
+    }
+    else if (tilemap_)
+    {
+        uli ntiles = 0;
+        foreach_nonnull(tile, tilemap_, Tile,
+            ntiles += tile->ntiles_nonnull();
+        )
+        return ntiles;
+    }
+    else
+    {
+        raise(SanityCheckError, "cannot call ntiles on data tile");
+    }
+}
+
+uli
 Tile::ntiles_owned()
 {
-    return ntiles_owned(DISTRIBUTION_DEPTH);
+    return ntiles_owned(DATA_DISTRIBUTION_DEPTH);
 }
 
 uli
@@ -1552,13 +1743,44 @@ Tile::owner_process() const
 }
 
 void
-Tile::print(ostream& os) const
+Tile::parameter_reduce(usi nparams)
 {
-    os << Env::indent << ClassOutput<const size_t*>::str(nindex(), indices_) << "  " << ranges_;
+    if (tilemap_)
+    {
+        raise(SanityCheckError, "cannot call parameter reduce on a tile with a tile map");
+    }
+
+
+    usi offset = nparams;
+    usi nidx = nindex() - nparams;
+    for (usi i=0; i < nidx; ++i)
+    {
+        indices_[i] = indices_[i + offset];
+    }
+
+    ranges_->slice_front(nparams);
+}
+
+void
+Tile::print(std::ostream &os) const
+{
+    print(os, true);
+}
+
+void
+Tile::print(ostream& os, bool indent_header) const
+{
+    if (indent_header)
+        os << Env::indent;
+
+    os << ClassOutput<const size_t*>::str(nindex(), indices_) << "  " << ranges_;
     if (has_owner_process_)
         os << " Node " << owner_process_;
 
-    os << Env::indent << "  Max: 10^(" << stream_printf("%8.4f", estimate_.maxlog) << ") from depth " << estimate_.depth    ;
+    os << "  Max: 10^(" << stream_printf("%8.4f", estimate_.maxlog)
+        << ") from depth " << estimate_.depth;
+
+    os << " nref=" << nref();
 
     if (tilemap_ && tilemap_->ntiles() != 0)
     {
@@ -1578,14 +1800,18 @@ Tile::print(ostream& os) const
 void
 Tile::_retrieve(uli threadnum)
 {
-    if (!computed_)
-    {
-        init();
-    }
-
     if (tilemap_) //metadata tile
     {
         tilemap_->retrieve();
+        if (config_->data_factory->storage_type() == Data::recomputed)
+        {
+            ThreadedTileElementComputer* filler =
+                config_->data_factory->get_element_computer();
+            usi predepth = filler->mindepth();
+            filler->set_mindepth(tilemap_->maxdepth());
+            tilemap_->fill(filler);
+            filler->set_mindepth(predepth);
+        }
     }
     else //fetch the data block
     {
@@ -1622,42 +1848,6 @@ Tile::element_op(const ElementOpPtr& op)
     }
 
     op->update(this);
-}
-
-void
-Tile::register_tiles(
-    const TileRegistryPtr& reg,
-    usi depth
-)
-{
-    if (!tilemap_)
-    {
-        cerr << "register tile called on data tile or tile without map" << endl;
-        abort();
-    }
-
-    Tile** it = tilemap_->begin();
-    Tile** stop = tilemap_->end();
-
-    for ( ; it != stop; ++it)
-    {
-        Tile* tile = *it;
-        if (tile == 0)
-            continue;
-
-        tile->retrieve(NOT_THREADED);
-        if (tile->is_aligned() && tile->depth() == depth)
-        {
-            //register a pointer to the tile
-            //so we can manipulate the tile map later
-            reg->register_tile(it);
-        }
-        else if (tile->depth() > depth)
-        {
-            tile->register_tiles(reg, depth);
-        }
-        tile->release(NOT_THREADED);
-    }
 }
 
 void
@@ -1713,6 +1903,12 @@ Tile::set_owner_process(size_t owner)
 }
 
 void
+Tile::set_parent(TileMap* tilemap)
+{
+    parent_ = tilemap;
+}
+
+void
 Tile::_sort(
     const SortPtr &sort,
     void *buffer
@@ -1730,14 +1926,16 @@ Tile::_sort(
     {
         sort->configure(ranges_);
         //data block
+        data_->retrieve(NOT_THREADED);
         data_->sort(sort, buffer);
+        data_->release(NOT_THREADED);
     }
 
     //now sort the index ranges
     IndexRange** rangeptr = ranges_->begin();
     IndexRange** rangebuf = reinterpret_cast<IndexRange**>(buffer);
     sort->get_permutation()->permute(rangeptr, rangebuf);
-    ::memcpy(rangeptr, rangebuf, ranges_->size() * sizeof(IndexRange*));
+    ::memcpy(rangeptr, rangebuf, ranges_->nindex() * sizeof(IndexRange*));
 
     //and the indices
     size_t* indexbuf = reinterpret_cast<size_t*>(buffer);
@@ -1749,10 +1947,21 @@ void
 Tile::sort(const PermutationPtr& p)
 {
     SortPtr s(new Sort(p, ranges_));
-    void* buffer = malloc(this->max_blocksize());
+
+    uli max_blocksize = this->max_blocksize();
+    uli index_size = YetiRuntime::max_nindex() * sizeof(void*);
+    uli buffer_size = max_blocksize > index_size ? max_blocksize : index_size;
+
+    void* buffer = malloc(buffer_size);
 
     _sort(s, buffer);
     free(buffer);
+}
+
+Data::storage_t
+Tile::storage_type() const
+{
+    return config_->data_factory->storage_type();
 }
 
 void
@@ -1762,7 +1971,7 @@ Tile::tally(const TileDistributerPtr &distr)
         raise(SanityCheckError, "cannot distribute on tile without data map");
 
     tilemap_->retrieve();
-    if (DISTRIBUTION_DEPTH == tilemap_->maxdepth()) //distribute here
+    if (DATA_DISTRIBUTION_DEPTH == tilemap_->maxdepth()) //distribute here
     {
         foreach_nonnull(tile, tilemap_, Tile,
             distr->tally(tile);
@@ -1807,117 +2016,35 @@ Tile::update()
     }
 }
 
-TileIterator::TileIterator(
-    Tile** link,
-    const TilePtr& parent,
-    bool local,
-    size_t me,
-    const PermutationPtr& p
-
-) :
-    tile_(0),
-    link_(link),
-    parent_(parent),
-    stops_(0),
-    iters_(0),
-    me_(me),
-    maxdepth_(parent->get_map()->maxdepth() - 1), //off by one problem
-    local_(local),
-    depth_(0),
-    done_(false),
-    perm_(p),
-    buffer_(0)
+TileIterator::TileIterator(uli n) :
+    tiles_(n),
+    count_(0)
 {
-    stops_ = new TileMap::iterator[maxdepth_];
-    iters_ = new TileMap::iterator[maxdepth_];
-
-#if 0
-    usi nbuffers = maxdepth_ + 1;
-    buffer_ = new Tile**[nbuffers];
-    for (usi i=0; i < nbuffers; ++i)
-    {
-        buffers_[i] = new Tile*[tile->maxsize()]
-    }
-#endif
 }
 
-TileIterator::~TileIterator()
+Tile**
+TileIterator::begin() const
 {
-    delete[] stops_;
-    delete[] iters_;
-    free(buffer_);
+    return tiles_.begin();
+}
+
+Tile**
+TileIterator::end() const
+{
+    return tiles_.end();
 }
 
 void
-TileIterator::start()
+TileIterator::add_tile(Tile *tile)
 {
-    depth_ = 0;
-    done_ = false;
-
-    stop_ = parent_->get_map()->end();
-    iter_ = parent_->get_map()->begin();
-    stops_[0] = stop_;
-    iters_[0] = iter_;
-
-    --iter_; //trick the iterator
-    next();
+    tiles_.insert(count_, tile);
+    ++count_;
 }
 
-void
-TileIterator::next()
+uli
+TileIterator::ntiles() const
 {
-    ++iter_;
-
-    if (iter_ == stop_)
-    {
-        --depth_;
-        if (depth_ == -1)
-        {
-            //off the end
-            done_ = true;
-            return;
-        }
-        iter_ = iters_[depth_];
-        stop_ = stops_[depth_];
-        next();
-    }
-
-    tile_ = *iter_;
-
-    while (tile_ == 0) //keep going until nonnull
-        next();
-
-    if (done_)
-        return;
-
-    if (local_ && tile_->has_owner_process() && tile_->owner_process() != me_)
-        next(); //move along
-
-    if (done_)
-        return;
-
-    //now we can go ahead and actually iterate
-    if (depth_ == maxdepth_)
-    {
-        (*link_) = tile_;
-        return;
-    }
-
-    //not yet at the final recursion depth
-    iters_[depth_] = iter_;
-
-    ++depth_;
-
-    iter_ = tile_->get_map()->begin();
-    stop_ = tile_->get_map()->end();
-    stops_[depth_] = stop_;
-    next();
-}
-
-bool
-TileIterator::done()
-{
-    return done_;
+    return tiles_.n();
 }
 
 TileIteratorWorkspace::TileIteratorWorkspace()
@@ -1959,87 +2086,3 @@ DefaultTileMapBuilder::build_map(
     return new TileMap(tuple, pgrp_, parent);
 }
 
-TileRegistry::TileRegistry()
-{
-}
-
-void
-TileRegistry::print(std::ostream &os) const
-{
-    os << "Tile Registry";
-    node_map::const_iterator it(tilemap_.begin());
-    node_map::const_iterator stop(tilemap_.end());
-    ++Env::indent;
-    for ( ; it != stop; ++it)
-    {
-        os << endl;
-        it->first->print(os);
-    }
-    --Env::indent;
-}
-
-void
-TileRegistry::register_tile(Tile** tileptr)
-{
-    Tile* tile = *tileptr;
-    IndexRangeLocationPtr loc = new IndexRangeLocation(tile->get_index_ranges());
-    tilemap_[loc] = tileptr;
-}
-
-Tile**
-TileRegistry::get_tile(const IndexRangeTuplePtr &tuple)
-{
-    IndexRangeLocationPtr loc = new IndexRangeLocation(tuple);
-    node_map::const_iterator it(tilemap_.find(loc));
-    if (it == tilemap_.end())
-    {
-        cerr << "Invalid index range: " << endl;
-        cerr << loc << endl;
-        cerr << "Valid index ranges: " << endl;
-        print(cerr); cerr << endl;
-        raise(SanityCheckError, "invalid index range location passed to registry");
-    }
-    return it->second;
-}
-
-bool
-TileRegistry::has_tile(const IndexRangeTuplePtr& tuple)
-{
-    IndexRangeLocationPtr loc = new IndexRangeLocation(tuple);
-    node_map::iterator it(tilemap_.find(loc));
-    return it != tilemap_.end();
-}
-
-void
-TileRegistry::remove_tile(const IndexRangeTuplePtr &tuple)
-{
-    IndexRangeLocationPtr loc = new IndexRangeLocation(tuple);
-    node_map::iterator it(tilemap_.find(loc));
-    if (it != tilemap_.end())
-        tilemap_.erase(it);
-}
-
-void
-TileRegistry::delete_tile(Tile** tileptr)
-{
-    boost::intrusive_ptr_release(*tileptr);
-    *tileptr = 0;
-}
-
-void
-TileRegistry::delete_tiles()
-{
-    node_map::const_iterator it = tilemap_.begin();
-    node_map::const_iterator stop = tilemap_.end();
-    for ( ; it != stop; ++it)
-    {
-        delete_tile(it->second);
-    }
-    tilemap_.clear();
-}
-
-uli
-TileRegistry::size() const
-{
-    return tilemap_.size();
-}

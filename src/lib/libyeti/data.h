@@ -388,8 +388,6 @@ class DataBlock :
     protected:
         Data* data_;
 
-        const DataMode* mode_;
-
         uli n_;
 
         /**
@@ -397,28 +395,17 @@ class DataBlock :
             allocated from malloc or the cache.  Init functions will expect memory
             to be available
         */
-        virtual void _retrieve(uli threadnum);
+        virtual void _retrieve(uli threadnum) = 0;
 
-        virtual void _release(uli threadnum);
+        virtual void _release(uli threadnum) = 0;
 
-        virtual void init_read(uli threadnum);
 
-        virtual void init_write(uli threadnum);
-
-        virtual void init_accumulate(uli threadnum);
-
-        virtual void finalize_read(uli threadnum);
-
-        virtual void finalize_write(uli threadnum);
-
-        virtual void finalize_accumulate(uli threadnum);
 
     public:
         /**
             @param n The number of elements in the data block
         */
         DataBlock(
-            const DataMode* mode,
             uli n
         );
 
@@ -472,7 +459,6 @@ class MemoryBlock : public DataBlock {
 
     public:
         MemoryBlock(
-            const DataMode* mode,
             uli n
         );
 
@@ -492,6 +478,8 @@ class CachedDataBlock : public DataBlock {
 
     protected:
         friend class DataCacheEntry;
+
+        const DataMode* mode_;
 
         LayeredDataCachePtr main_cache_;
 
@@ -513,6 +501,21 @@ class CachedDataBlock : public DataBlock {
 
         void finalize();
 
+        void init_block(uli threadnum);
+
+        virtual void init_read(uli threadnum);
+
+        virtual void init_write(uli threadnum);
+
+        virtual void init_accumulate(uli threadnum);
+
+        virtual void finalize_read(uli threadnum);
+
+        virtual void finalize_write(uli threadnum);
+
+        virtual void finalize_accumulate(uli threadnum);
+
+
     public:
         CachedDataBlock(
             const DataMode* mode,
@@ -525,6 +528,8 @@ class CachedDataBlock : public DataBlock {
         virtual ~CachedDataBlock();
 
         void clear();
+
+        bool in_cache() const;
 
         virtual void print(std::ostream &os = std::cout) const;
 
@@ -697,28 +702,69 @@ class LocalDiskBlock :
         void set_buffer(uli offset, const BufferPtr& buffer);
 };
 
+class SubsetDataBlock :
+    public DataBlock
+{
+    private:
+        DataBlockPtr parent_;
+
+        uli offset_;
+
+    protected:
+        void _retrieve(uli threadnum);
+
+        void _release(uli threadnum);
+
+    public:
+        SubsetDataBlock(
+            uli n
+        );
+
+        void configure(
+            const DataBlockPtr& parent,
+            uli offset
+        );
+
+        void sort(const SortPtr& sort, void* buffer);
+
+        void print(std::ostream& os) const;
+};
+
 
 /**
     @class DataBlockFactory
 */
-class DataBlockFactory : public smartptr::Serializable {
-
-    public:
-
-        virtual ~DataBlockFactory();
-
+class DataBlockFactory :
+    public smartptr::Serializable
+{
+    protected:
         /** Allocate the space for the acutal data to be held by the data block.
             By default, no space is allocated.  Generally, only data blocks held
             permantently in memory will have space allocated by this method.
             @param d The data block to allocate memory for
         */
-        virtual void allocate(DataBlock* d);
+        virtual void allocate(DataBlock* d) = 0;
 
-        /**
-            Depending on the tensor, certain aspects of the factory may need to be configured.
-            @param tensor
-        */
-        virtual void configure(Tensor* tensor) = 0;
+        virtual void init_allocation() = 0;
+
+        DataBlock** blocks_;
+
+        uli nblocks_;
+
+        ThreadedTileElementComputerPtr filler_;
+
+    public:
+        DataBlockFactory();
+
+        DataBlockFactory(const TileElementComputerPtr& filler);
+
+        virtual ~DataBlockFactory();
+
+        void register_allocation(DataBlock* dblock);
+
+        virtual void allocate_blocks();
+
+        virtual void configure(Tensor* tensor);
 
         virtual DataBlock* get_block(Tile* tile) = 0;
 
@@ -726,8 +772,39 @@ class DataBlockFactory : public smartptr::Serializable {
 
         virtual DataBlockFactory* copy() const = 0;
 
+        ThreadedTileElementComputer* get_element_computer() const;
 
 };
+
+
+class SubsetBlockFactory :
+    public DataBlockFactory
+{
+
+    private:
+        DataBlockFactoryPtr parent_;
+
+    protected:
+        void allocate(DataBlock* d);
+
+        void init_allocation();
+
+    public:
+        SubsetBlockFactory(const DataBlockFactoryPtr& parent);
+
+        ~SubsetBlockFactory();
+
+        Data::storage_t storage_type() const;
+
+        DataBlock* get_block(Tile* tile);
+
+        DataBlockFactory* copy() const;
+
+};
+
+
+
+
 
 
 }

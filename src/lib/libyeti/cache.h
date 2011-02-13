@@ -18,13 +18,11 @@ namespace yeti {
 */
 struct DataCacheEntry :
     public Malloc<DataCacheEntry>,
-    public YetiRuntimeObject
+    public YetiRuntimeCountable
 {
 
     public:
-        DataCacheEntry* next;
-
-        DataCacheEntry* prev;
+        uli offset;
 
         char* data;
 
@@ -36,7 +34,7 @@ struct DataCacheEntry :
             Create a data cache entry pointing at the given memory location
             @param d The memory location
         */
-        DataCacheEntry(char* d);
+        DataCacheEntry(char* d, uli offset);
 
         ~DataCacheEntry();
 
@@ -71,25 +69,22 @@ class DataCache :
     private:
         friend class LayeredDataCache;
 
-        /**
-            The front of the linked list of cache blocks.  This will be the last
-            block to popped off the queue for use.
-        */
-        DataCacheEntry* first_;
-
-        /**
-            The back of the linked list of cache blocks.  This will the first block
-            to be popped off the queue for use.
-        */
-        DataCacheEntry* last_;
+        DataCacheEntry** entries_;
 
         uli blocksize_;
 
-        uli n_;
+        uli nentries_;
 
         template <class T>
         void
         cache_action();
+
+        /**
+            Start looking for an open cache entry at the offset
+        */
+        DataCacheEntry* find_entry(uli offset);
+
+        uli next_offset_;
 
     public:
         /**
@@ -98,37 +93,22 @@ class DataCache :
             @param datastart A block of data for use in initializing the first cache entry
         */
         DataCache(
-            size_t blocksize,
+            uli blocksize,
             char* datastart
         );
 
         ~DataCache();
 
         /**
-            Put the entry on the front of the list.  This is
-            then the last block scheduled for reuse.
-            This method is thread-safe.
+            This method is not thread-safe and assumes
+            the cache entry has been locked.
             @param entry
         */
-        void push_front(DataCacheEntry* entry);
+        void insert(DataCacheEntry* entry);
 
         /**
-            Put the entry on the back of the list.  This is
-            then the first block scheduled for reuse.
-            This method is thread-safe.
-            @param entry
-        */
-        void push_back(DataCacheEntry* entry);
-
-        /**
-            Move this block to the front of the queue
-            @param entry
-        */
-        void reorder(DataCacheEntry* entry);
-
-        /**
-            Pull entry from the cache. The cache block cannot be
-            cleared while it is pulled out
+            This method is not thread-safe and assumes
+            the cache entry has been locked.
             @param entry
         */
         void pull(DataCacheEntry* entry);
@@ -136,23 +116,11 @@ class DataCache :
         /**
             Pull a new data cache entry and assign the given data block
             as an owner. The cache block cannot be cleared while it is
-            pulled
+            pulled and there assumes the block has been locked before being called.
             @param block The block to assign as owner to the new cache entry
             @return A new data cache entry
         */
-        DataCacheEntry* pull(CachedDataBlock* block);
-
-        /**
-            @return The first cache entry in the queue.  This would be the last
-                    entry to be allocated upon a pull.
-        */
-        DataCacheEntry* first() const;
-
-        /**
-            @return The first cache entry in the queue.  This would be the first
-                    entry to be allocated upon a pull.
-        */
-        DataCacheEntry* last() const;
+        DataCacheEntry* pull(CachedDataBlock* block, uli offset = 0);
 
         /**
             @return The number of available blocks in cache
@@ -202,6 +170,8 @@ class DataCache :
             @param data The data pointer beginning the new cache entry
         */
         void allocate_block(char* data);
+
+        DataCacheEntry** entries() const;
 
 };
 
@@ -295,7 +265,7 @@ class LayeredDataCache :
             any new slots.  Every data cache has at least one spot.
             @param The desired cache block size
         */
-        DataCache* allocate_cache(size_t n);
+        DataCache* allocate_cache(size_t size, uli& offset);
 
         /**
             @return The total size of the memory pool available to the data cache

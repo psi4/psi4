@@ -9,7 +9,7 @@ using namespace std;
 
 std::map<std::string, int>* FastMalloc::registration_queue_ = 0;
 
-#define MALLOC_FAST_MALLOC 0
+#define MALLOC_FAST_MALLOC 1
 
 FastMalloc::FastMalloc(
     size_t size,
@@ -80,13 +80,6 @@ FastMalloc::~FastMalloc()
     {
         cout << stream_printf("There are still %ld unfreed entries on malloc for %s",
                               nmalloc, this->name_.c_str()) << endl;
-
-        std::map<const void*, std::string>::iterator it(tracker_.begin());
-        std::map<const void*, std::string>::iterator end(tracker_.end());
-        for ( ; it != end; ++it)
-        {
-            cout << "malloc from " << it->second << " not freed" << endl;
-        }
     }
     else //everything is clear for deletion
     {
@@ -221,25 +214,6 @@ FastMalloc::check_queue()
             cerr << it->first << endl;
         abort();
     }
-}
-
-void*
-FastMalloc::tracked_malloc(const char *file, int line)
-{
-    void* ptr = malloc();
-    register_malloc(ptr, file, line);
-    return ptr;
-}
-
-void
-FastMalloc::register_malloc(
-    const void *ptr,
-    const char *file,
-    int line
-)
-{
-    std::string str = stream_printf("%s %d", file, line);
-    tracker_[ptr] = str;
 }
 
 MemoryAllocation::MemoryAllocation(size_t size)

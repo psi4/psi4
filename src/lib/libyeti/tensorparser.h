@@ -14,15 +14,6 @@
 
 namespace yeti {
 
-class YetiContractionPtr : public boost::intrusive_ptr<YetiContraction> {
-
-    public:
-        YetiContractionPtr(YetiContraction* cxn);
-
-        void operator=(const YetiTensorPtr& tensor);
-
-};
-
 /**
     @class StringParser
     Class for parsing/tokenizing strings
@@ -91,6 +82,36 @@ class StringParser : public smartptr::Countable {
         const std::vector<std::string>& entries() const;
 };
 
+template <class T>
+class YetiIterator {
+
+    protected:
+        Tile** tile_;
+
+    public:
+        YetiIterator(Tile** tile)
+            : tile_(tile)
+        {
+        }
+
+        boost::intrusive_ptr<T>
+        operator*() const
+        {
+            T* ptr = static_cast<T*>(*tile_);
+            return ptr;
+        }
+
+        bool operator!=(const YetiIterator<T>& it) const
+        {
+            return tile_ != it.tile_;
+        };
+
+        void operator++()
+        {
+            ++tile_;
+        }
+
+};
 
 /**
     @class YetiTensor
@@ -99,6 +120,10 @@ class StringParser : public smartptr::Countable {
 class YetiTensor : public StringParser {
 
     private:
+        friend class YetiTensorIterator;
+        friend class YetiTileIterator;
+        friend class YetiTensorPtr;
+
         TensorPtr tensor_;
 
         std::string tensor_name_;
@@ -113,6 +138,8 @@ class YetiTensor : public StringParser {
             Scale factor the tensor that will eventually be used in a contraction
         */
         double scale_;
+
+        TileIteratorPtr iter_;
 
         ContractionPtr accumulate_tasks(const YetiContractionPtr& cxn);
 
@@ -144,9 +171,17 @@ class YetiTensor : public StringParser {
 
         void init_runtime_tensor();
 
+        std::string register_new_tuple(const IndexRangeTuplePtr& tuple);
+
+        usi get_nindex_front(const std::string& str);
+
         void sort(const std::vector<std::string>& index_list);
 
     public:
+        typedef YetiIterator<Tensor> tensor_iterator;
+
+        typedef YetiIterator<Tile> tile_iterator;
+
         /**
             @name
             @str The list of indices, e.g. T("i,j,a,b") comma separated
@@ -154,24 +189,19 @@ class YetiTensor : public StringParser {
         */
         YetiTensor(
             const std::string& name,
-            const std::string& str
-        );
-
-        YetiTensor(
-            const std::string& name,
-            const std::string& idx1,
-            const std::string& idx2
-        );
-
-        YetiTensor(
-            const std::string& name,
-            const std::string& idx1,
-            const std::string& idx2,
-            const std::string& idx3,
-            const std::string& idx4
+            const std::string& str,
+            const PermutationRuntimeParserPtr& p1 = 0,
+            const PermutationRuntimeParserPtr& p2 = 0,
+            const PermutationRuntimeParserPtr& p3 = 0,
+            const PermutationRuntimeParserPtr& p4 = 0,
+            const PermutationRuntimeParserPtr& p5 = 0
         );
 
         YetiTensor();
+
+        YetiTensor(const TensorPtr& tensor);
+
+        YetiTensor(const YetiTensorPtr& tensor);
 
         YetiTensor(const TensorSubsetPtr& subset);
 
@@ -197,6 +227,13 @@ class YetiTensor : public StringParser {
             const PermutationPtr& perm
         );
 
+        YetiTensor(
+            const TensorPtr& tensor,
+            const PermutationPtr& p,
+            double scale,
+            const std::string& str
+        );
+
         void operator=(const YetiTensorPtr& tensor);
 
         void operator=(const YetiTensor& tensor);
@@ -220,16 +257,7 @@ class YetiTensor : public StringParser {
 
         PermutationPtr get_permutation() const;
 
-
         void operator*=(double scale);
-
-        /**
-            Add a permutation to the tensor permutation group.
-            This should be called before any major tensor operations
-            have been performed
-            @param p
-        */
-        void operator+=(const PermutationRuntimeParserPtr& p);
 
         /**
             Accumulate a contraction of two tensors into
@@ -271,17 +299,15 @@ class YetiTensor : public StringParser {
 
         MatrixPtr matrix(const std::string& rowstr, const std::string& colstr) const;
 
-        YetiTensorPtr operator()(
-            const std::string& idx1,
-            const std::string& idx2
-        ) const;
+        TensorPtr parameterize(const std::string& str);
 
-        YetiTensorPtr operator()(
-            const std::string& idx1,
-            const std::string& idx2,
-            const std::string& idx3,
-            const std::string& idx4
-        ) const;
+        tensor_iterator allocate_tensor_iterator();
+
+        void allocate_iterator();
+
+        Tile** begin() const;
+
+        Tile** end() const;
 
         /**
             Accumulate a contraction of two tensors into
@@ -289,6 +315,8 @@ class YetiTensor : public StringParser {
             @param cxn
         */
         void operator=(const YetiContractionPtr& cxn);
+
+        void name(const std::string& str);
 
         /**
             Parse the parameter string, determine the permutation specified,
@@ -304,9 +332,9 @@ class YetiTensor : public StringParser {
             const std::string &idx4
         );
 
-        void scale(double scale);
+        TensorPtr split(const std::string& str);
 
-        void operator<<(const IndexSubsetPtr& subset);
+        void scale(double scale);
 
         void free();
 };
@@ -325,6 +353,8 @@ class YetiTensorPtr :
         void operator+=(const YetiContractionPtr& cxn);
 
         void operator-=(const YetiContractionPtr& cxn);
+
+        YetiTensorPtr& operator[](const std::string& str);
 };
 
 class YetiSubsetTensor :
@@ -384,18 +414,24 @@ class YetiContraction :
 
 };
 
-class IndexSubset :
-    public StringParser
+class YetiContractionPtr :
+    public boost::intrusive_ptr<YetiContraction>
 {
-    public:
-        IndexSubset(const std::string& str);
+    private:
+        template <typename data_t>
+        data_t
+        dot_product();
 
-        IndexRangeTuplePtr get_tuple() const;
+    public:
+        YetiContractionPtr(YetiContraction* cxn);
+
+        void operator=(const YetiTensorPtr& tensor);
+
+        operator double();
+
+        operator quad();
 
 };
-
-IndexSubsetPtr
-subset(const std::string& str);
 
 PermutationRuntimeParserPtr
 P(const std::string& str);
@@ -442,6 +478,11 @@ operator*(const T& t, const U& u)
 
 std::ostream&
 operator<<(std::ostream& os, const YetiTensor& tensor);
+
+
+typedef YetiTensor::tensor_iterator tensor_iterator;
+
+typedef YetiTensor::tile_iterator tile_iterator;
 
 }
 

@@ -356,7 +356,7 @@ Permutation::permute(const IndexRangeTuplePtr &src) const
     if (is_identity())
         return src; //nothing new
 
-    make(tuple, IndexRangeTuple, src->size());
+    make(tuple, IndexRangeTuple, src->nindex());
     for (usi i=0; i < nindex_; ++i)
     {
         tuple->set(i, src->get(pmap_[i]));
@@ -943,12 +943,6 @@ PermutationSet::orbit(const PermutationPtr &p) const
     return newset;
 }
 
-PermutationSetPtr
-PermutationSet::isotropy_set(const IndexSetPtr& idxset) const
-{
-    return isotropy_set(idxset->data());
-}
-
 bool
 PermutationSet::contains(const PermutationSetPtr& p) const
 {
@@ -1194,15 +1188,6 @@ PermutationGroup::improves_sort(const size_t *indices) const
 
 PermutationGroupPtr
 PermutationGroup::isotropy_grp(const size_t* vals) const
-{
-    PermutationSetPtr set(this->isotropy_set(vals));
-    make(grp, PermutationGroup, set);
-    grp->closed_ = true;
-    return grp;
-}
-
-PermutationGroupPtr
-PermutationGroup::isotropy_grp(const IndexSetPtr& vals) const
 {
     PermutationSetPtr set(this->isotropy_set(vals));
     make(grp, PermutationGroup, set);

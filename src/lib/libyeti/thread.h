@@ -33,6 +33,8 @@ class ThreadLock :
 
         virtual bool trylock() = 0;
 
+        virtual void print(std::ostream& os = std::cout) const = 0;
+
 };
 
 class NullThreadLock : public ThreadLock {
@@ -43,6 +45,8 @@ class NullThreadLock : public ThreadLock {
         void unlock();
 
         bool trylock();
+
+        void print(std::ostream& os = std::cout) const;
 
 };
 
@@ -66,6 +70,7 @@ class pThreadLock : public ThreadLock {
 
         pthread_mutex_t* mutex();
 
+        void print(std::ostream& os = std::cout) const;
 };
 
 

@@ -130,7 +130,7 @@ class IndexRange :
         void increment_offset(usi depth, uli offset);
 
     public:
-        static IndexRangeTuplePtr scalar_tuple;
+        //static IndexRangeTuplePtr scalar_tuple;
 
         /**
          * Create a set of tile index as a composite of subindices
@@ -262,6 +262,8 @@ class IndexRange :
         */
         usi get_subdepth_alignment(IndexRange* range);
 
+        static uli* get_zero_set();
+
         uli index() const;
 
         void set_index(uli index);
@@ -288,6 +290,12 @@ class IndexRange :
         uli start(usi depth) const;
 
         /**
+            @return The index (not inclusive) that defines the end of the index range.
+                    Given three subranges (0-3), (6-8), (9-12) finish would be 13.
+        */
+        uli finish(usi depth) const;
+
+        /**
             @return The index number the range begins on
          */
         uli start() const;
@@ -305,6 +313,13 @@ class IndexRange :
         IndexRange* get_parent() const;
 
         IndexRange* get_first_child() const;
+
+        IndexRange* split_bottom_range() const;
+
+        /**
+            Create an index range in which
+        */
+        IndexRange* shift_bottom_range() const;
 
         void
         get_subindices(
@@ -353,9 +368,7 @@ class IndexRangeTuple :
 {
 
     private:
-        usi size_;
-
-        usi n_;
+        usi nindex_;
 
         IndexRange** indices_;
 
@@ -379,6 +392,8 @@ class IndexRangeTuple :
 
         IndexRange** begin() const;
 
+        IndexRangeTuple* copy(const PermutationPtr& p = 0) const;
+
         IndexRange** end() const;
 
         static IndexRangeTuple* get_unit_range(IndexRangeTuple* subrange);
@@ -394,9 +409,11 @@ class IndexRangeTuple :
 
         bool is_aligned() const;
 
+        void slice_front(usi nindex);
+
         void permute(Permutation* p);
 
-        usi size() const;
+        usi nindex() const;
 
         void set(usi idx, IndexRange* range);
 
@@ -432,188 +449,6 @@ class IndexRangeLocationCompare {
 };
 
 /**
-  * @param IndexSet encapsulates an index set
-  */
-class IndexSet : public smartptr::Serializable {
-
-    public:
-        typedef const size_t* iterator;
-
-    private:
-        /** The indices contained in the set */
-        size_t* indices_;
-
-        /** The number of indices in the set */
-        usi n_;
-
-    public:
-        /**
-            Transfers pointer ownership.
-          * @param indices The indices in the set
-          * @param n The number of indices
-          */
-       IndexSet(size_t* indices, usi n);
-
-        /**
-            Debug constructor for 2-indices
-        */
-        IndexSet(usi n, size_t i, size_t j);
-
-        /**
-            Debug constructor for 4-indices
-        */
-        IndexSet(usi n, uli i, uli j, size_t k, size_t l);
-
-       /**
-        * Construct a zero index of size n
-        * @param n The number of indices
-        */
-       IndexSet(usi n);
-
-        virtual ~IndexSet();
-
-       iterator begin() const;
-
-       iterator end() const;
-
-       IndexSetPtr permute(const PermutationPtr& p) const;
-
-       static IndexSetPtr build(const size_t* indices, usi n);
-
-       /**
-         * @return The number of indices in the set
-         */
-       uli index(usi n) const;
-
-       bool equals(const constIndexSetPtr& idx) const;
-
-       bool equals(size_t i, size_t j, size_t k, size_t l) const;
-
-       /**
-         * @return The array of indices
-         */
-       const uli* data() const;
-
-       /**
-         * @return The number of indices
-         */
-       usi n() const;
-
-       void print(std::ostream& os = std::cout) const;
-
-       /**
-         * @param n The number of indices in the set
-         * @return An index set of all zeros
-         */
-       //static IndexSetPtr get_zero_set(usi n);
-
-        static uli* get_zero_set();
-
-};
-
-/**
-  @class PermutationSparseIndexMap
-   Indexes blocks which are sparse,
-  but only by virtue of permutational symmetry.  The map is therefore optimized
-  for fast random access in situations in which nonzero elements compose at least
-  5% to 50% of the indices.  The storage overhead for allocating memory for
-  indices that will never be used is not considered relevant compared to the speed.
-  of index loopkups. This is
-  to be contrasted with a true sparse index map where the nonzero elements are extremely
-  sparse such that allocating memory for unused indices is a problem.
- */
-class IndexMap : public smartptr::Serializable {
-
-    private:
-        /**
-           The lookup array for mapped indices
-          */
-        uli* indexmap_;
-
-        /** The indexer for indices passed in */
-        IndexerPtr indexer_;
-
-        /** The total number of possible elements based on dense indexing */
-        uli ntot_;
-        
-        /**
-         * The actual number of elements in the map
-         */
-        uli n_;
-
-        /**
-            A vector of booleans which flag whether a dense index has been
-            mapped.
-          */
-        std::vector<int> flags_;
-
-        /**
-          * Private helper method.  Given a composite index and its mapped value,
-          * extract the original index set and print the info.
-          * @param os
-          * @param index The composite key index
-          * @param mapped The mapped index value of the key
-          */
-        void print_element(std::ostream& os, size_t index, size_t mapped) const;
-
-    public:
-        /**
-         * Constructor
-         * @param tuple The set of index descriptors describing
-         *              the set to be indexed
-         * @param pgrp  A permutation group describing equivalent index sets
-         */
-        IndexMap(
-                const IndexRangeTuplePtr& tuple
-        );
-
-        /**
-        * @param indexer A composite indexer for creating key index values
-        * @param pgrp The permutation group for the indices involved
-        */
-        IndexMap(
-                const IndexerPtr& indexer
-        );
-
-        virtual ~IndexMap();
-
-
-        /** Virtual overrides --- */
-        void insert(const size_t* indices, size_t val);
-
-        void insert(const constIndexSetPtr& indexset, size_t val);
-
-        void insert(size_t index, size_t val);
-
-        void insert(const IndexSetPtr& indexset);
-
-        virtual void insert(const size_t* indices);
-
-        void insert(size_t);
-
-        bool get(const size_t* indices, size_t& val) const;
-
-        bool get(const constIndexSetPtr& indexset, size_t& val) const;
-
-        bool get(size_t index, size_t& val) const;
-
-        void print(std::ostream& os = std::cout) const;
-
-        uli size() const;
-
-        uli index(const constIndexSetPtr& indexset) const;
-
-        IndexerPtr indexer() const;
-
-        void release();
-
-        void retrieve();
-
-        void clear();
-
-};
-
-/**
  @class CompositeIndexer
  Takes a complete set of indices and compute an index for them
 */
@@ -625,30 +460,30 @@ class Indexer : public smartptr::Serializable, public Malloc<Indexer> {
         usi nindex_;
 
         /** The total number of all possible index sets */
-        size_t nsets_;
+        uli nsets_;
 
         /** The array of cumulative total sizes.  If you have indices of size
             ni, nj, nk then the arr is narr = {nj * ni, nj, 1} */
-        size_t* cumulsizes_;
+        uli* cumulsizes_;
 
         /**
             The array of offsets for the indexer. For example, if
             offsets were {3, 0, 5}, the array {4, 2, 7} would be
             indexed as {1, 2, 2}.
         */
-        size_t* offsets_;
+        uli* offsets_;
 
         /**
             Workspace array used for computing permutations to
             avoid excessive malloc calls. This should be the size of
             the full index set, not just the index subset.
         */
-        size_t* permuted_;
+        uli* permuted_;
 
         /**
             Workspace array for grabbing desired indices from larger array
         */
-        size_t* tmpindices_;
+        uli* tmpindices_;
 
         /**
             When passed a set of indices, grab these out of the complete set.
@@ -725,20 +560,16 @@ class Indexer : public smartptr::Serializable, public Malloc<Indexer> {
          * @param indices The index set to index
          * @return The composite index
          */
-        size_t index(const size_t* indices) const;
+        uli index(const size_t* indices) const;
 
-        size_t index(const IndexSetPtr& indices) const;
-
-        size_t index(const IndexSetPtr &indices, const PermutationPtr& p) const;
-
-        size_t index(const TilePtr& tile) const;
+        uli index(const TilePtr& tile) const;
 
         /**
          * Given a composite index, extract the individual indices
          * @param index
          * @param indices
          */
-        void extract(size_t index, size_t** indices) const;
+        void extract(uli index, uli** indices) const;
 
         /**
          * @return The total number of indices in the composite index
@@ -753,47 +584,6 @@ class Indexer : public smartptr::Serializable, public Malloc<Indexer> {
         void print(std::ostream& os = std::cout) const;
 
         void permute(const PermutationPtr& p);
-
-};
-
-/**
-  @class IndexList
-  Defines the iteration range for an index
-*/
-class IndexList : public smartptr::Countable {
-
-    public:
-        typedef size_t* iterator;
-
-    private:
-        /** The set of indices to iterate */
-        size_t* indexlist_;
-        
-        /** The total number of indices to iterate */
-        size_t n_;
-
-        /** The first index in the iteration */
-        size_t start_;
-        
-    public:
-        /**
-         * Constructor for unrestricted index iterator
-         * @paran n
-         */
-        IndexList(size_t start, size_t n);
-
-        virtual ~IndexList();
-
-        /**
-         * @return The total number of indices
-         */
-        size_t n() const;
-
-        size_t start() const;
-
-        iterator end() const;
-
-        iterator begin() const;
 
 };
 
