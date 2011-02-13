@@ -27,8 +27,8 @@
 #include "scf.h"
 
 namespace psi{
-MemoryManager* memory_manager;
-MOInfoSCF*     moinfo_scf;
+MemoryManager* memory_manager = 0;
+MOInfoSCF*     moinfo_scf = 0;
 
 namespace mcscf{
 
@@ -47,25 +47,32 @@ PsiReturnType mcscf(Options& options)
 //  psiopp_ipv1_config(psio);
   shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
 
+  memory_manager  = new psi::MemoryManager();
+
   psio->open(PSIF_MCSCF,PSIO_OPEN_NEW);
   init_psi(options);
-
-  memory_manager  = new psi::MemoryManager();
-  moinfo_scf      = new psi::MOInfoSCF(options,chkpt);
 
   if(options.get_str("REFERENCE") == "RHF"  ||
      options.get_str("REFERENCE") == "ROHF" ||
      options.get_str("REFERENCE") == "UHF"  ||
-     options.get_str("REFERENCE") == "TWOCON"){
-    SCF scf(options,psio,chkpt);
-    scf.compute_energy();
+     options.get_str("REFERENCE") == "TWOCON")
+  {
+      // We need to start by generating some integrals
+      MintsHelper* mints = new MintsHelper;
+      mints->integrals();
+      delete mints;
+      // Now, set the reference wavefunction for subsequent codes to use
+      shared_ptr<Wavefunction> wfn(new SCF(options,psio,chkpt));
+      Process::environment.set_reference_wavefunction(wfn);
+      moinfo_scf      = new psi::MOInfoSCF(options);
+      wfn->compute_energy();
   }else if(options.get_str("REFERENCE") == "MCSCF"){
-    fprintf(outfile,"\n\nREFERENCE = MCSCF not implemented yet");
-    fflush(outfile);
-    return Failure;
+      fprintf(outfile,"\n\nREFERENCE = MCSCF not implemented yet");
+      fflush(outfile);
+      return Failure;
   }
-  delete moinfo_scf;
-  delete memory_manager;
+  if(moinfo_scf)     delete moinfo_scf;
+  if(memory_manager) delete memory_manager;
   close_psi(options);
   psio->close(PSIF_MCSCF,1);
   return Success;

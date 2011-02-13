@@ -12,8 +12,6 @@
 
 namespace psi {
 
-class Chkpt;
-
 enum    ReferenceType {AllRefs,UniqueRefs,ClosedShellRefs,UniqueOpenShellRefs};
 
 class MOInfo : public MOInfoBase
@@ -79,7 +77,7 @@ public:
 
 public:
   friend class SlaterDeterminant;
-  MOInfo(bool silent_ = false, bool use_liboptions_ = true);
+  MOInfo(Options& options_, bool silent_ = false);
   ~MOInfo();
 
   // DGEMM timing

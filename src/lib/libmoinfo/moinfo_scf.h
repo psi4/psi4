@@ -12,11 +12,9 @@
 
 namespace psi {
 
-class Chkpt;
-
 class MOInfoSCF : public MOInfoBase {
 public:
-  MOInfoSCF();
+  MOInfoSCF(Options& options_, bool silent_ = false);
   ~MOInfoSCF();
 private:
   void read_mo_spaces();

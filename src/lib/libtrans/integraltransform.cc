@@ -2,6 +2,9 @@
 #include "mospace.h"
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
+#include <psi4-dec.h>
+#include <libmints/matrix.h>
+#include <libmints/wavefunction.h>
 #define EXTERN
 #include <libdpd/dpd.gbl>
 
@@ -28,7 +31,7 @@ IntegralTransform::IntegralTransform(shared_ptr<Chkpt> chkpt,
     // is possible in case any of these variables need to be changed before setup.
     _myDPDNum      = 1;
     _print         = 1;
-    _memory        = 2000 * 1024 * 1024;
+    _memory        = 250 * 1024 * 1024;
     _tolerance     = 1.0E-16;
     _keepDpdSoInts = false;
     _keepIwlSoInts = false;
@@ -70,10 +73,13 @@ IntegralTransform::initialize()
 
     // We have to redefine the MO coefficients for a UHF-like treatment
     if(_transformationType == SemiCanonical){
+        SharedMatrix matCa = Process::environment.reference_wavefunction()->Ca();
+
         _Ca = new double**[_nirreps];
         _Cb = _Ca;
         for(int h = 0; h < _nirreps; ++h){
-            _Ca[h] = _chkpt->rd_scf_irrep(h);
+            _Ca[h] = block_matrix(_sopi[h], _mopi[h]);
+            ::memcpy(_Ca[h][0], matCa->pointer(h), _sopi[h]*_mopi[h]*sizeof(double));
         }
         // This will also build the UHF Fock matrix, which we need
         generate_oei();

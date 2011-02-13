@@ -748,6 +748,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("CANONICALIZE_INACTIVE_FAVG",false);
     options.add_bool("INTERNAL_ROTATIONS",true);
     options.add_bool("FORCE_TWOCON",false);
+    /*- The number of doubly occupied orbitals, per irrep -*/
+    options.add("DOCC", new ArrayType());
+    /*- The number of singly occupied orbitals, per irrep -*/
+    options.add("SOCC", new ArrayType());
+    /*- The number of active orbitals, per irrep -*/
+    options.add("ACTIVE", new ArrayType());
+    /*- The number of active orbitals, per irrep (alternative name for ACTIVE) -*/
+    options.add("ACTV", new ArrayType());
+
 
     options.add_str("REFERENCE","RHF","RHF ROHF UHF TWOCON MCSCF GENERAL");
     options.add_str("WFN_SYM","1","A AG AU AP APP A1 A2 B BG BU B1 B2 B3 B1G B2G B3G B1U B2U B3U 0 1 2 3 4 5 6 7 8");

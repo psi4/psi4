@@ -9,7 +9,7 @@ ci_subdirs =
 
 dcft_subdirs = dcft1 dcft2 dcft3
 
-mcscf_subdirs = #mcscf1-rhf this is also broken
+mcscf_subdirs = mcscf1 mcscf2 mcscf3
 
 df_subdirs = sapt1 dfmp2
 
