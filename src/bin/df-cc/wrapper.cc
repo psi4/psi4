@@ -14,6 +14,7 @@
 #include <libqt/qt.h>
 
 #include <libdfcc_solver/ccd.h>
+#include <libdfcc_solver/mp2.h>
 #include <libmints/mints.h>
 #include "wrapper.h"
 
@@ -34,8 +35,17 @@ PsiReturnType dfcc(Options & options)
 
     timer_init();
 
+    if (options.get_str("WAVEFUNCTION") == "CCD") {
+
     CCD ccd(options, psio, chkpt);
     ccd.compute_energy();
+    
+    } else if (options.get_str("WAVEFUNCTION") == "MP2") {   
+    
+    MP2 mp2(options, psio, chkpt);
+    mp2.compute_energy();
+
+    }
 
     timer_done();
 
