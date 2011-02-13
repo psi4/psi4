@@ -1,6 +1,8 @@
 #include <string.h>
 #include "dimension.h"
 
+#include <string.h>
+
 using namespace psi;
 
 Dimension::Dimension(int n, const std::string &name)
