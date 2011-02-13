@@ -8,6 +8,8 @@ namespace psi { namespace dfcc {
 MP2::MP2(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
   : CC(options, psio, chkpt)
 {
+  print_header();
+  CC::print_header();
 }
 
 MP2::~MP2()
@@ -30,7 +32,7 @@ void MP2::print_header()
     fprintf(outfile, "\t*            Rob Parrish and Ed Hohenstein             *\n");
     fprintf(outfile, "\t*                                                      *\n");
     fprintf(outfile, "\t********************************************************\n");
-
+    fprintf(outfile, "\n");
     //CC::print_header();
             
 }
