@@ -13,8 +13,10 @@ namespace psi { namespace dfcc {
 CCD::CCD(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
   : CC(options, psio, chkpt)
 {
+  print_header();
   psio_->open(DFCC_INT_FILE,PSIO_OPEN_NEW);
   df_integrals();
+  mo_integrals();
 }
 
 CCD::~CCD()
@@ -25,6 +27,22 @@ CCD::~CCD()
 double CCD::compute_energy()
 {
   return(0.0);
+}
+
+void CCD::print_header()
+{
+    fprintf(outfile, "\t********************************************************\n");
+    fprintf(outfile, "\t*                                                      *\n");
+    fprintf(outfile, "\t*                       DF-CCD                         *\n");
+    fprintf(outfile, "\t*               Coupled-Cluster Doubles                *\n");
+    fprintf(outfile, "\t*                with all sorts of shit                *\n");
+    fprintf(outfile, "\t*                                                      *\n");
+    fprintf(outfile, "\t*            Rob Parrish and Ed Hohenstein             *\n");
+    fprintf(outfile, "\t*                                                      *\n");
+    fprintf(outfile, "\t********************************************************\n");
+    fprintf(outfile, "\n");
+    CC::print_header();
+
 }
 
 void CCD::df_integrals()
@@ -50,7 +68,6 @@ void CCD::df_integrals()
 
         for (int nu=0; nu < numnu; ++nu, ++index) {
           int onu = ribasis_->shell(NU)->function_index() + nu;
-
 
           J[omu][onu] = Jbuffer[index];
         }
@@ -168,6 +185,118 @@ void CCD::df_integrals()
   }
 
   free_block(MO_RI_J);
+}
+
+void CCD::mo_integrals()
+{
+  double **B_p_OV = block_matrix(naocc_*navir_,ndf_);
+  double **vOVOV = block_matrix(naocc_*navir_,naocc_*navir_);
+
+  psio_->read_entry(DFCC_INT_FILE,"OV DF Integrals",(char *)
+      &(B_p_OV[0][0]),naocc_*navir_*ndf_*sizeof(double));
+
+  C_DGEMM('N','T',naocc_*navir_,naocc_*navir_,ndf_,1.0,B_p_OV[0],ndf_,
+    B_p_OV[0],ndf_,0.0,vOVOV[0],naocc_*navir_);
+
+  psio_->write_entry(DFCC_INT_FILE,"OVOV Integrals",(char *)
+    &(vOVOV[0][0]),naocc_*navir_*naocc_*navir_*sizeof(double));
+
+  double **gOVOV = block_matrix(naocc_*navir_,naocc_*navir_);
+
+  for (int i=0,ia=0; i<naocc_; i++) {
+  for (int a=0; a<navir_; a++,ia++) {
+    for (int j=0,jb=0; j<naocc_; j++) {
+    for (int b=0; b<navir_; b++,jb++) {
+      int ib = i*navir_+b;
+      int ja = j*navir_+a;
+      gOVOV[ia][jb] = 2.0*vOVOV[ia][jb] - vOVOV[ib][ja];
+  }}}}
+
+  psio_->write_entry(DFCC_INT_FILE,"G OVOV Integrals",(char *)
+    &(gOVOV[0][0]),naocc_*navir_*naocc_*navir_*sizeof(double));
+
+  for (int i=0,ia=0; i<naocc_; i++) {
+  for (int a=0; a<navir_; a++,ia++) {
+    for (int j=0,jb=0; j<naocc_; j++) {
+    for (int b=0; b<navir_; b++,jb++) {
+      double denom = evals_aoccp_[i]+evals_aoccp_[j]-evals_avirp_[a]-
+        evals_avirp_[b];
+      vOVOV[ia][jb] /= denom;
+      gOVOV[ia][jb] /= denom;
+  }}}}
+
+  psio_->write_entry(DFCC_INT_FILE,"T OVOV Amplitudes",(char *)
+    &(vOVOV[0][0]),naocc_*navir_*naocc_*navir_*sizeof(double));
+
+  psio_->write_entry(DFCC_INT_FILE,"Theta OVOV Amplitudes",(char *)
+    &(gOVOV[0][0]),naocc_*navir_*naocc_*navir_*sizeof(double));
+
+  free_block(B_p_OV);
+  free_block(vOVOV);
+  free_block(gOVOV);
+
+  double **B_p_OO = block_matrix(naocc_*naocc_,ndf_);
+
+  psio_->read_entry(DFCC_INT_FILE,"OO DF Integrals",(char *)
+      &(B_p_OO[0][0]),naocc_*naocc_*ndf_*sizeof(double));
+
+  double **vOOOO = block_matrix(naocc_*naocc_,naocc_*naocc_);
+
+  for (int i=0,ij=0; i<naocc_; i++) {
+    for (int j=0; j<naocc_; j++,ij++) {
+      C_DGEMM('N','T',naocc_,naocc_,ndf_,1.0,B_p_OO[i*naocc_],ndf_,
+        B_p_OO[j*naocc_],ndf_,0.0,vOOOO[ij],naocc_);
+  }}
+
+  psio_->write_entry(DFCC_INT_FILE,"T OOOO Amplitudes",(char *)
+    &(vOOOO[0][0]),naocc_*naocc_*naocc_*naocc_*sizeof(double));
+
+  free_block(vOOOO);
+
+  double **B_p_VV = block_matrix(navir_*navir_,ndf_);
+
+  psio_->read_entry(DFCC_INT_FILE,"VV DF Integrals",(char *)
+      &(B_p_VV[0][0]),navir_*navir_*ndf_*sizeof(double));
+
+  double **vOVVO = block_matrix(naocc_*navir_,naocc_*navir_);
+
+  for (int i=0,ia=0; i<naocc_; i++) {
+    for (int a=0; a<navir_; a++,ia++) {
+      C_DGEMM('N','T',naocc_,navir_,ndf_,1.0,B_p_OO[i*naocc_],ndf_,
+        B_p_VV[a*navir_],ndf_,0.0,vOVVO[ia],navir_);
+  }}
+
+  psio_->write_entry(DFCC_INT_FILE,"OOVV Integrals",(char *)
+    &(vOVVO[0][0]),naocc_*navir_*naocc_*navir_*sizeof(double));
+ 
+  double **gOVVO = block_matrix(naocc_*navir_,naocc_*navir_);
+
+  psio_->read_entry(DFCC_INT_FILE,"OVOV Integrals",(char *)
+    &(gOVVO[0][0]),naocc_*navir_*naocc_*navir_*sizeof(double));
+
+  C_DSCAL(naocc_*navir_*naocc_*navir_,2.0,gOVVO[0],1);
+  C_DAXPY(naocc_*navir_*naocc_*navir_,-1.0,vOVVO[0],1,gOVVO[0],1);
+
+  psio_->write_entry(DFCC_INT_FILE,"G OVVO Integrals",(char *)
+    &(gOVVO[0][0]),naocc_*navir_*naocc_*navir_*sizeof(double));
+
+  free_block(B_p_OO);
+  free_block(vOVVO);
+  free_block(gOVVO);
+
+  double **vVVVV = block_matrix(navir_*navir_,navir_*navir_);
+
+  for (int i=0,ia=0; i<naocc_; i++) {
+    for (int a=0; a<navir_; a++,ia++) {
+      C_DGEMM('N','T',naocc_,navir_,ndf_,1.0,B_p_OO[i*naocc_],ndf_,
+        B_p_VV[a*navir_],ndf_,0.0,vOVVO[ia],navir_);
+  }}
+    
+  psio_->write_entry(DFCC_INT_FILE,"OOVV Integrals",(char *)
+    &(vOVVO[0][0]),naocc_*navir_*naocc_*navir_*sizeof(double));
+
+  free_block(B_p_VV);
+  free_block(vVVVV);
 }
 
 }}

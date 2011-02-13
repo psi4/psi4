@@ -13,7 +13,6 @@ CC::CC(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
 {
   get_params();
   get_ribasis();
-//  print_header();
 }
 
 CC::~CC()
@@ -65,7 +64,7 @@ void CC::get_params()
   double* evals_t = chkpt_->rd_evals();
   double** C_t = chkpt_->rd_scf();
 
-  evals_ = shared_ptr<Vector>(new Vector(nmo_));
+  evals_ = shared_ptr<Vector>(new Vector("Epsilon (full)",nmo_));
   evalsp_ = evals_->pointer();
   memcpy(static_cast<void*> (evalsp_), static_cast<void*> (evals_t), nmo_*sizeof(double));   
   C_ = shared_ptr<Matrix>(new Matrix("C (full)", nso_, nmo_));
@@ -75,9 +74,9 @@ void CC::get_params()
   // Convenience matrices (may make it easier on the helper objects)
   // ...because Rob is a pussy
   // asshole
-  evals_aocc_ = shared_ptr<Vector>(new Vector(naocc_));
+  evals_aocc_ = shared_ptr<Vector>(new Vector("Epsilon (Active Occupied)",naocc_));
   evals_aoccp_ = evals_aocc_->pointer();
-  evals_avir_ = shared_ptr<Vector>(new Vector(navir_));
+  evals_avir_ = shared_ptr<Vector>(new Vector("Epsilon (Active Virtual)",navir_));
   evals_avirp_ = evals_avir_->pointer();
 
   C_aocc_ = shared_ptr<Matrix>(new Matrix("C (Active Occupied)", nso_, naocc_));
@@ -85,12 +84,12 @@ void CC::get_params()
   C_avir_ = shared_ptr<Matrix>(new Matrix("C (Active Virtual)", nso_, navir_));
   C_avirp_ = C_avir_->pointer();
 
-  memcpy(static_cast<void*> (evals_aoccp_), static_cast<void*> (&evals_t[0]), naocc_*sizeof(double));   
-  memcpy(static_cast<void*> (evals_avirp_), static_cast<void*> (&evals_t[naocc_]), navir_*sizeof(double));  
+  memcpy(static_cast<void*> (evals_aoccp_), static_cast<void*> (&evals_t[nfocc_]), naocc_*sizeof(double));   
+  memcpy(static_cast<void*> (evals_avirp_), static_cast<void*> (&evals_t[nocc_]), navir_*sizeof(double));  
 
   for (int m = 0; m < nso_; m++) { 
-    memcpy(static_cast<void*> (C_aoccp_[m]), static_cast<void*> (&C_t[m][0]), naocc_*sizeof(double));   
-    memcpy(static_cast<void*> (C_avirp_[m]), static_cast<void*> (&C_t[m][naocc_]), naocc_*sizeof(double));   
+    memcpy(static_cast<void*> (C_aoccp_[m]), static_cast<void*> (&C_t[m][nfocc_]), naocc_*sizeof(double));   
+    memcpy(static_cast<void*> (C_avirp_[m]), static_cast<void*> (&C_t[m][nocc_]), naocc_*sizeof(double));   
   }
 
   free(evals_t);
