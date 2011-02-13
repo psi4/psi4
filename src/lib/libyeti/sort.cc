@@ -21,7 +21,7 @@ Sort::Sort(
         ntot_(1),
         nindex_(p->nindex())
 {
-    if (p->nindex() != tuple->size())
+    if (p->nindex() != tuple->nindex())
         raise(SanityCheckError, "tuple and permutation have different number of indices");
 
     configure(tuple);
@@ -39,6 +39,17 @@ Sort::Sort(
         nindex_(p->nindex())
 {
     configure(sizes);
+}
+
+Sort::Sort(const PermutationPtr &p)
+    :
+    p_(p),
+    lengths_(yeti_malloc_indexset()),
+    nstrides_(yeti_malloc_indexset()),
+    ntot_(1),
+    nindex_(p->nindex())
+{
+    //do not configure
 }
 
 void
@@ -131,4 +142,30 @@ Permutation*
 Sort::get_permutation() const
 {
     return p_.get();
+}
+
+ThreadedSort::ThreadedSort(const PermutationPtr& p)
+    : perm_(p),
+   sorters_(YetiRuntime::nthread(), 0)
+{
+    if (!p->is_identity())
+    {
+        uli nthread = YetiRuntime::nthread();
+        for (uli i=0; i < nthread; ++i)
+        {
+            sorters_[i] = new Sort(p);
+        }
+    }
+}
+
+Sort*
+ThreadedSort::get_sorter(uli threadnum) const
+{
+    return sorters_[threadnum].get();
+}
+
+Permutation*
+ThreadedSort::get_permutation() const
+{
+    return perm_.get();
 }

@@ -216,6 +216,8 @@ class GlobalQueue : public smartptr::Countable {
 
         static void init();
 
+        static void finalize();
+
         static void clear();
 
         static void add(void* owner, Task* task);

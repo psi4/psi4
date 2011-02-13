@@ -22,7 +22,7 @@ class EmptyFiller : public TileElementComputer {
         {
         }
 
-        TileElementComputer* copy()
+        TileElementComputer* copy() const
         {
             return new EmptyFiller;
         }
@@ -61,7 +61,7 @@ class ModulusFiller :
         {
         }
 
-        TileElementComputer* copy()
+        TileElementComputer* copy() const
         {
             return new ModulusFiller(modulus_, offset_, denom_);
         }

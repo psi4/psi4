@@ -11,7 +11,7 @@ quicksort(int* item, int* index, int n);
 static void
 quicksort(usi* item, usi* index, usi n);
 
-};
+}
 
 #endif
 

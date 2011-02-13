@@ -42,6 +42,7 @@ class Countable {
 
 }
 
+
 namespace boost {
 
 /**
@@ -73,6 +74,9 @@ void
 intrusive_ptr_release(smartptr::Countable* c);
 
 }
+
+
+
 
 #include "boost/intrusive_ptr.hpp"
 

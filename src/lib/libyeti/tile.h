@@ -5,11 +5,12 @@
 
 #include "class.h"
 #include "index.h"
+#include "taskqueue.h"
+#include "data.h"
 
 #include "tile.hpp"
 #include "permutation.hpp"
 #include "contraction.hpp"
-#include "data.hpp"
 #include "tensor.hpp"
 #include "cache.hpp"
 #include "sort.hpp"
@@ -20,8 +21,6 @@
 #include "mallocimpl.h"
 #include "yetiobject.h"
 
-
-#define DISTRIBUTION_DEPTH 1
 
 namespace yeti {
 
@@ -34,6 +33,55 @@ struct tile_estimate_t {
     float maxlog;
 
     usi depth;
+
+};
+
+class AccumulateTask :
+    public Task
+{
+    private:
+        DataBlock* dst_;
+
+        DataBlock* src_;
+
+        IndexRangeTuple* src_ranges_;
+
+        ThreadedSortPtr sort_;
+
+        double scale_;
+
+    public:
+        AccumulateTask(
+            DataBlock* dst,
+            DataBlock* src,
+            IndexRangeTuple* src_ranges,
+            const ThreadedSortPtr& p,
+            double scale
+        );
+
+        void run(uli threadnum);
+
+        void print(std::ostream &os) const;
+
+};
+
+class FillTask :
+    public Task
+{
+    private:
+        Tile* tile_;
+
+        ThreadedTileElementComputer* filler_;
+
+    public:
+        FillTask(
+            Tile* tile,
+            ThreadedTileElementComputer* filler
+        );
+
+        void run(uli threadnum);
+
+        void print(std::ostream &os) const;
 
 };
 
@@ -149,6 +197,8 @@ class TileMap :
 
         ThreadedTileElementComputerPtr filler_;
 
+        TileEstimater* estimater_;
+
         /**
             Private variable used in recursive loop for
             generating all possible indices
@@ -197,12 +247,6 @@ class TileMap :
         usi mindepth_;
 
         /**
-        */
-        bool computed_;
-
-        bool allocated_;
-
-        /**
             The number of tile indices
         */
         uli nindex_;
@@ -212,16 +256,15 @@ class TileMap :
          * @param index The current index position in the recursion
          * @param idxmap The map being created
          */
-        void iterate(usi index);
+        void iterate_fill(usi index);
+
+        void iterate_zero_check(usi index);
+
+        void tile_zero_check();
 
         void insert_new_tile();
-        /**
-            Constructor used for making copies of a TileMap
-        */
-        TileMap();
 
     public:
-
         /**
             Build an empty tile map with indexing based
             on the provided index range tuple
@@ -248,36 +291,34 @@ class TileMap :
 
         ~TileMap();
 
-        void allocate();
-
-        bool is_allocated() const;
+        void add_parent(Tile* tile);
 
         /**
-            @return The number of elements tiled per index. For indices
-            that match the max metadata depth, this will be the number
-            of indices in an index range.  For indices which are
-            at a lower metadata depth, this will just be 1 since tiling
-            only occurs on nindices with the correct metadata depth
+            Declare that no tiles should be a priori be considered rigorusly zero
         */
-        const uli* nindices() const;
+        void allow_all_tiles();
+
+        iterator begin() const;
 
         /**
-            @return The offsets at which each index range begins
+            Given a composite index, compute the individual indices and place
+            them in the parameter array.
         */
-        const uli* offsets() const;
+        void compute_indices(uli comp_index, uli* index_arr);
 
-        const uli* index_strides() const;
+        TensorConfiguration* config() const;
 
-        const usi* is_tiled_index() const;
+        void fill(const ThreadedTileElementComputerPtr& filler);
 
         bool depths_aligned() const;
 
+        iterator end() const;
+
         /**
-          Compute a composite index, map it, and return tile
-          @param indexset
-          @return Tile specified by indexset.  May be NULL.
-         */
-        TilePtr get(const constIndexSetPtr& indexset) const;
+            @param A set of indices specifying a particular tile
+            @return Whether the tile exists
+        */
+        bool exists(const uli* indices) const;
 
         /**
             Map the index and return associated tile
@@ -301,42 +342,17 @@ class TileMap :
         */
         IndexRange* get_subrange(usi index_number, uli index) const;
 
-        /**
-            Given a composite index, compute the individual indices and place
-            them in the parameter array.
-        */
-        void compute_indices(uli comp_index, uli* index_arr);
-
         IndexRangeTuplePtr get_index_ranges() const;
-
-        /**
-            Create a copy of the current tile map linked to a new parent tile
-            @param parent The parent tile for the copied map
-            @return Tile map copy
-        */
-        TileMap* copy(Tile* parent);
 
         Tile* get_parent_tile() const;
 
-        TensorConfiguration* config() const;
+        uli index(const uli* indices) const;
 
-        /**
-            @param A set of indices specifying a particular tile
-            @return Whether the tile exists
-        */
-        bool exists(const uli* indices) const;
+        bool is_aligned() const;
 
-        void retrieve();
-
-        void release();
+        const uli* index_strides() const;
 
         void insert(uli index, Tile* tile);
-
-        bool is_rigorously_zero(uli index) const;
-
-        bool is_rigorously_zero(Tile** tile) const;
-
-        uli index(const uli* indices) const;
 
         /**
             Create a composite index, map the index, and append the
@@ -345,17 +361,25 @@ class TileMap :
         */
         void insert(Tile* tile);
 
-        void print(std::ostream& os = std::cout) const;
+        bool is_rigorously_zero(uli index) const;
+
+        bool is_rigorously_zero(Tile** tile) const;
+
+        const usi* is_tiled_index() const;
 
         /**
-         * @return The number of non-null tiles
-         */
-        uli ntiles() const;
-
-        /**
-            @return The maximum possible number of tiles
+            @return The maximum recursion depth of all index ranges tiled here
         */
-        uli size() const;
+        usi maxdepth() const;
+
+        /**
+            @return The number of elements tiled per index. For indices
+            that match the max metadata depth, this will be the number
+            of indices in an index range.  For indices which are
+            at a lower metadata depth, this will just be 1 since tiling
+            only occurs on nindices with the correct metadata depth
+        */
+        const uli* nindices() const;
 
         /**
             @param nindex The index number
@@ -364,13 +388,24 @@ class TileMap :
         uli nrange(usi nindex) const;
 
         /**
-            @return The maximum recursion depth of all index ranges tiled here
+         * @return The number of non-null tiles
+         */
+        uli ntiles() const;
+
+        /**
+            @return The offsets at which each index range begins
         */
-        usi maxdepth() const;
+        const uli* offsets() const;
 
-        iterator begin() const;
+        void print(std::ostream& os = std::cout) const;
 
-        iterator end() const;
+        void retrieve();
+
+        void release();
+
+        void remove_parent(Tile* tile);
+
+        void set_max_log(float log, usi depth);
 
         /**
             @param sort
@@ -381,65 +416,37 @@ class TileMap :
             void* buffer
         );
 
-        void set_max_log(float log, usi depth);
-
-        void add_parent(Tile* tile);
-
-        void remove_parent(Tile* tile);
+        /**
+            @return The maximum possible number of tiles
+        */
+        uli size() const;
         
 };
 
-class TileIterator : public smartptr::Countable {
+class TileIterator :
+    public smartptr::Countable
+{
 
     private:
-        TileMap::iterator* iters_;
+        CountableArray<Tile> tiles_;
 
-        TileMap::iterator* stops_;
-
-        TileMap::iterator stop_;
-
-        TileMap::iterator iter_;
-
-        PermutationPtr perm_;
-
-        void* buffer_;
-
-        Tile* tile_;
-
-        Tile** link_;
-
-        TilePtr parent_;
-
-        size_t me_;
-
-        usi maxdepth_;
-
-        int depth_;
-
-        bool done_;
-
-        bool local_;
+        uli count_;
 
     public:
-        TileIterator(
-            Tile** link,
-            const TilePtr& parent,
-            bool local,
-            size_t me,
-            const PermutationPtr& p = 0
-        );
+        typedef Tile** iterator;
 
-        ~TileIterator();
+        TileIterator(uli ntiles);
 
-        void start();
+        iterator end() const;
 
-        void next();
+        iterator begin() const;
 
-        bool done();
+        void add_tile(Tile* tile);
 
-        Tile* tile() const;
+        uli ntiles() const;
 
 };
+
 
 class TileIteratorWorkspace {
 
@@ -451,7 +458,6 @@ class TileIteratorWorkspace {
         char** buffers;
 
 };
-
 
 /**
     @class Tile
@@ -495,8 +501,6 @@ class Tile :
         /** Whether or not this tile belongs to a specific processor */
         bool has_owner_process_;
 
-        bool computed_;
-
         /** If the tile has an owner process, this is the process number */
         uli owner_process_;
 
@@ -504,12 +508,6 @@ class Tile :
         tile_estimate_t estimate_;
 
         bool _equals(const char** data);
-
-        /**
-            Used in making tile copies. Creates tile
-            with empty values that will be filled in later.
-        */
-        Tile(const TensorConfigurationPtr& config);
 
         /**
             Called from tensor constructor
@@ -521,11 +519,13 @@ class Tile :
             size_t* indices
          );
 
+        void add_tiles(const TileIteratorPtr& iter);
+
+        void assign_data(DataBlock* dblock);
+
         /**
-            Transfer copied valus to empty copy tile
-            @param tile
         */
-        void copy_to(Tile* tile);
+        void fill();
 
         /**
             Set up tile map or data block depending on whether
@@ -535,10 +535,9 @@ class Tile :
 
         void init_estimate();
 
-        void _release(uli threadnum);
+        virtual void _release(uli threadnum);
 
-        void _retrieve(uli threadnum);
-
+        virtual void _retrieve(uli threadnum);
 
     public:
 
@@ -592,34 +591,26 @@ class Tile :
         */
         void accumulate(
             const TilePtr& tile,
-            const SortPtr& sort,
+            const ThreadedSortPtr& sort,
             double scale = 1
         );
 
         /**
-            Create all metadata, compute the total data size of the tensor,
-            create a memory pool of the appropriate size, and distribute
-            memory blocks to all data tiles
+            Accumulate tile values, potentially following a sort and scale
+            @param tile
+            @param sort
+            @param scale
         */
-        void allocate();
-
-        /**
-            @return The total size in bytes of all data tiles owned by
-            the current processor
-        */
-        uli total_data_block_size();
+        void accumulate(
+            const MatrixPtr& matix,
+            const ThreadedSortPtr& sort,
+            double scale = 1
+        );
 
         /**
             @return The top level tensor which contains all the configuration information
         */
         TensorConfiguration* config() const;
-
-        /**
-            Create a copy of the current tile, but linked to a new parent tile
-            @param parent
-            @return Copy tile
-        */
-        Tile* copy(TileMap* parent);
 
         /**
             @return The maximum recursion depth of all index ranges tiled here
@@ -658,10 +649,10 @@ class Tile :
         bool equals(const ThreadedTileElementComputerPtr& filler);
 
         /**
-            Create all data blocks, but do not allocate or fill. Perform
-            fill operation but with "null" filler
+            @param filler
+            @return Whether the tile values match those generated by the filler
         */
-        void fill();
+        bool equals(const TileElementComputerPtr& filler);
 
         /**
             @param indices The indices specifying a given tile location
@@ -680,24 +671,31 @@ class Tile :
          */
         IndexRangeTuple* get_index_ranges() const;
 
-        /** Get the set of indices defining the tile locatio
-         * @return index set
-         */
-        const uli* indices() const;
+        TileIteratorPtr get_iterator();
 
-        bool is_allocated() const;
+        TileMap* get_parent() const;
 
         /**
          * Recursively walk through parents to get exact location
          * @return
          */
-        TileLocationPtr get_location() const;
+        uli* get_location(const usi* subset = 0, usi nsub = 0) const;
+
+        void get_location(uli* location, const usi* subset = 0, usi nsub = 0) const;
 
         /**
          * Return the map of subtiles. May be NULL
          * @return tile map
          */
         TileMap* get_map() const;
+
+        Tile* get_tile(const uli* location);
+
+        /**
+            Get the tile specified by the given location. If a null tile
+            is encountered, return null.
+        */
+        TileMap* get_tile_map(const uli* location, bool create_tile);
 
         const tile_estimate_t& get_max_log() const;
 
@@ -717,6 +715,13 @@ class Tile :
                     as whether a given index range is tiled depends on recursion depth.
         */
         const uli* index_offsets() const;
+
+        /** Get the set of indices defining the tile locatio
+         * @return index set
+         */
+        const uli* indices() const;
+
+        void insert(const uli* location, Tile* tile);
 
         bool is_aligned() const;
 
@@ -804,6 +809,8 @@ class Tile :
         */
         uli ntiles(usi depth);
 
+        uli ntiles_nonnull();
+
         /**
             @return The number of tiles owned on this processor by this tile
         */
@@ -823,15 +830,14 @@ class Tile :
 
         virtual void print(std::ostream& os = std::cout) const;
 
+        void parameter_reduce(usi nparams);
+
+        void print(std::ostream &os, bool indent_header) const;
+
         /**
             @return The process number that owns this tile
         */
         uli owner_process() const;
-
-        void register_tiles(
-            const TileRegistryPtr& reg,
-            usi depth
-        );
 
         /**
             @param sort
@@ -880,11 +886,21 @@ class Tile :
         */
         void set_owner_process(uli owner);
 
+        void set_parent(TileMap* tilemap);
+
+        Data::storage_t storage_type() const;
+
         /**
             Register this tile with a tile distributer to configure a tile distribution
             @param distr
         */
         void tally(const TileDistributerPtr& distr);
+
+        /**
+            @return The total size in bytes of all data tiles owned by
+            the current processor
+        */
+        uli total_data_block_size();
 
         /**
             Perform a variety of cleanup/compression operations.
@@ -924,38 +940,6 @@ class DefaultTileMapBuilder :
         );
 };
 
-class TileRegistry :
-    public smartptr::Countable
-{
-    private:
-        typedef std::map<IndexRangeLocationPtr, Tile**, IndexRangeLocationCompare> node_map;
-
-        node_map tilemap_;
-
-        void delete_tile(Tile** tileptr);
-
-    public:
-        TileRegistry();
-
-        void register_tile(Tile** tile);
-
-        Tile** get_tile(const IndexRangeTuplePtr& tuple);
-
-        bool has_tile(const IndexRangeTuplePtr& tuple);
-
-        void remove_tile(const IndexRangeTuplePtr& tuple);
-
-        void print(std::ostream& os = std::cout) const;
-
-        void delete_tiles();
-
-        uli size() const;
-
-};
-
-
 }
-
-//YETI_RUNTIME_HEADER(Tile)
 
 #endif

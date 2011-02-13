@@ -1,10 +1,11 @@
 #ifndef yeti_yeti_h
 #define yeti_yeti_h
 
+#include <libyeti/class.h>
+
 #include <libyeti/aobasis.h>
 #include <libyeti/mobasis.h>
 #include <libyeti/cache.h>
-#include <libyeti/class.h>
 #include <libyeti/contractionimpl.h>
 #include <libyeti/data.h>
 #include <libyeti/env.h>
@@ -25,6 +26,10 @@
 #include <libyeti/tensorparser.h>
 
 #include <libsmartptr/timer.h>
+
+#if HAVE_MPQC
+#include <libyeti/mpqc.h>
+#endif
 
 #endif
 

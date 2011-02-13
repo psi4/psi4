@@ -18,10 +18,10 @@ using namespace std;
 DECLARE_MALLOC(IndexRangeTuple);
 DECLARE_MALLOC(Indexer);
 
-IndexRangeTuplePtr IndexRange::scalar_tuple = 0;
+//IndexRangeTuplePtr IndexRange::scalar_tuple = 0;
 
 IndexRange::IndexRange(
-        size_t start,
+        uli start,
         const SubindexTuplePtr& tuple
 ) :
     index_(0),
@@ -97,9 +97,9 @@ IndexRange::IndexRange(
 }
 
 IndexRange::IndexRange(
-    size_t start,
+    uli start,
     const SubindexTuplePtr& tuple,
-    size_t nper
+    uli nper
 ) :
     index_(0),
     parent_(0),
@@ -115,8 +115,8 @@ IndexRange::IndexRange(
 
     //loop through and create an index range object for each subrange
     vector<size_t>::const_iterator it(sizes.begin());
-    size_t startidx = start;
-    size_t idx = 0;
+    uli startidx = start;
+    uli idx = 0;
     for ( ; it != sizes.end(); ++it, ++idx)
     {
         size_t n(*it);
@@ -143,8 +143,8 @@ IndexRange::IndexRange(
 
 IndexRange::IndexRange(
     usi depth,
-    size_t nper,
-    size_t start
+    uli nper,
+    uli start
 ) :
     index_(0),
     parent_(0),
@@ -263,6 +263,16 @@ IndexRange::~IndexRange()
 #endif
 }
 
+
+usi
+IndexRange::depth() const
+{
+    if (subranges_)
+        return subranges_->get(0)->depth() + 1;
+    else
+        return 0;
+}
+
 void
 IndexRange::expand_subrange_depth(usi depth)
 {
@@ -276,18 +286,262 @@ IndexRange::expand_subrange_depth(usi depth)
     }
 }
 
-void
-IndexRange::validate()
+bool
+IndexRange::equals(IndexRange* idx) const
 {
-    if (!subranges_)
-        return;
+    if (!(n_ == idx->n()))
+        return false;
+    if (!(start_ == idx->start()))
+        return false;
 
-    if (subranges_->size() == 0)
-        raise(SanityCheckError, "no subranges");
+    //check that they both have subranges
+    bool subme = subranges_;
+    bool subother = idx->get_subranges();
+    if (subme != subother) //incompatible subrange structure
+        return false;
 
-    if (n_ != subranges_->size())
-        throw ValuesNotEqual<size_t>("no. subranges", n_, subranges_->size(), __FILE__, __LINE__);
+    if (subranges_)
+    {
+        SubindexTuple::iterator itme(subranges_->begin());
+        SubindexTuple::iterator itother(idx->get_subranges()->begin());
+        for ( ; itme != subranges_->end(); ++itme, ++itother)
+        {
+            bool check = (*itme)->equals(*itother);
+            if (!check)
+                return false;
+        }
+    }
+
+    return true;
 }
+
+uli
+IndexRange::finish(usi depth) const
+{
+    usi mydepth = this->depth();
+    if (mydepth == depth)
+        return start_ + n_;
+    else if (mydepth < depth)
+        raise(SanityCheckError, "recursion depth exceeded in start");
+
+    //go to next level
+    usi lastindex = n_ - 1;
+    return subranges_->get(lastindex)->finish(depth);
+}
+
+
+void
+IndexRange::form_sizes(
+    uli n,
+    uli nper,
+    vector<size_t>& sizes
+)
+{
+    if (nper > n)
+        nper = n;
+
+    size_t nblocks = n / nper;
+    size_t nextra = n % nblocks; //these blocks will need one extra
+    for (size_t i=0; i < nextra; ++i)
+        sizes.push_back(nper + 1);
+    for (size_t i=nextra; i < nblocks; ++i)
+        sizes.push_back(nper);
+}
+
+IndexRange*
+IndexRange::get_first_child() const
+{
+    return subranges_->get(0);
+}
+
+
+SubindexTuplePtr
+IndexRange::get_subranges() const
+{
+    return subranges_;
+}
+
+IndexRange*
+IndexRange::get_parent() const
+{
+    return parent_;
+}
+
+IndexRange*
+IndexRange::get_subindex(uli i) const
+{
+    uli relative_index = i - start_;
+#if YETI_SANITY_CHECK
+    if (!subranges_)
+    {
+        //null! what are you doing?!?!?
+        raise(SanityCheckError, "index range has no sub ranges for subindex");
+    }
+
+    if (relative_index >= subranges_->size())
+    {
+        throw LimitExceeded<size_t>(
+                "index tuple size",
+                subranges_->size() - 1,
+                relative_index,
+                __FILE__, __LINE__
+              );
+    }
+#endif
+    return subranges_->get(relative_index);
+}
+
+void
+IndexRange::get_subindices(
+    std::list<IndexRange*>& ranges,
+    usi getdepth
+)
+{   usi mydepth = depth();
+    if (mydepth == getdepth)
+    {
+        ranges.push_back(this);
+    }
+    else if (mydepth > getdepth)
+    {
+        SubindexTuple::iterator it(subranges_->begin());
+        SubindexTuple::iterator stop(subranges_->end());
+        for ( ; it != stop; ++it)
+        {
+            (*it)->get_subindices(ranges, getdepth);
+        }
+    }
+    else
+    {
+        raise(SanityCheckError, "cannot retrieve at depth");
+    }
+}
+
+void
+IndexRange::get_subranges(std::list<IndexRange*>& sublist, usi getdepth)
+{
+    usi mydepth = depth();
+    if (mydepth == getdepth)
+    {
+        sublist.push_back(this);
+        return;
+    }
+
+    SubindexTuple::iterator it(subranges_->begin());
+    SubindexTuple::iterator stop(subranges_->end());
+    for ( ; it != stop; ++it)
+    {
+        (*it)->get_subranges(sublist, getdepth);
+    }
+}
+
+usi
+IndexRange::get_subdepth_alignment(IndexRange* range)
+{
+    if (this == range)
+        return depth();
+
+    usi mydepth = depth();
+    usi depth = range->depth();
+
+    if (depth > mydepth)
+        raise(SanityCheckError, "range of higher depth cannot exist as subrange");
+
+    if (depth == 0 || mydepth == 0)
+        raise(SanityCheckError, "cannot align index ranges of zero depth");
+
+    IndexRange* next = range;
+    while (next->depth() > 0)
+    {
+        bool found = has_subrange(next);
+        if (found)
+            return next->depth(); //this is the alignment depth
+
+        next = next->get_subranges()->get(0);
+    }
+
+    raise(SanityCheckError, "index ranges have no subindex alignment depth");
+}
+
+uli*
+IndexRange::get_zero_set()
+{
+    uli* indices = yeti_malloc_indexset();
+    ::memset(indices, 0, YetiRuntime::max_nindex() * sizeof(uli));
+    return indices;
+}
+
+bool
+IndexRange::has_subrange(IndexRange* range)
+{
+    usi mydepth = depth();
+    usi testdepth = range->depth();
+    //this cannot be a subrange because ranges are already aligned
+    if (mydepth == testdepth)
+        return false;
+
+    bool correct_depth = (mydepth == testdepth + 1);
+
+    SubindexTuple::iterator it = subranges_->begin();
+    SubindexTuple::iterator stop = subranges_->end();
+    for ( ; it != stop; ++it)
+    {
+        bool found = false;
+        IndexRange* test = *it;
+        if (correct_depth)
+            found = (test == range);
+        else
+            found = range->has_subrange(range);
+
+        if (found)
+            return true;
+    }
+    return false;
+}
+
+void
+IndexRange::increment_offsets()
+{
+    //set the offsets
+    SubindexTuple::iterator it = subranges_->begin();
+    SubindexTuple::iterator stop = subranges_->end();
+    IndexRange* prev = *it;
+    ++it;
+    for ( ; it != stop; )
+    {
+        IndexRange* current = *it;
+        current->increment_offsets(prev);
+
+        //move to next
+        prev = current;
+        ++it;
+    }
+}
+
+void
+IndexRange::increment_offsets(IndexRange *range)
+{
+    usi maxdepth = range->depth();
+    for (usi depth=0; depth <= maxdepth; ++depth)
+        increment_offset(depth, range->ntot(depth) + range->start(depth));
+}
+
+void
+IndexRange::increment_offset(usi depth, uli offset)
+{
+    if ( this->depth() == depth )
+        start_ += offset;
+    else //pass along to next range
+    {
+        SubindexTuple::iterator it(subranges_->begin());
+        SubindexTuple::iterator stop(subranges_->end());
+        for ( ; it != stop; ++it)
+        {
+            IndexRange* range = *it;
+            range->increment_offset(depth, offset);
+        }
+    }
+}
+
 
 void
 IndexRange::init(const vector<size_t>& subsizes)
@@ -309,28 +563,39 @@ IndexRange::init(const vector<size_t>& subsizes)
     decref();
 }
 
-void
-IndexRange::form_sizes(
-    uli n,
-    uli nper,
-    vector<size_t>& sizes
-)
+bool
+IndexRange::is_parent() const
 {
-    if (nper > n)
-        nper = n;
-
-    size_t nblocks = n / nper;
-    size_t nextra = n % nblocks; //these blocks will need one extra
-    for (size_t i=0; i < nextra; ++i)
-        sizes.push_back(nper + 1);
-    for (size_t i=nextra; i < nblocks; ++i)
-        sizes.push_back(nper);
+    bool isparent = subranges_;
+    return isparent;
 }
 
 uli
 IndexRange::n() const
 {
     return n_;
+}
+
+uli
+IndexRange::nsubranges(usi depth_level) const
+{
+    usi dpth = depth();
+    if (depth_level > dpth) //depth is too high
+        raise(SanityCheckError, "requested depth is too high");
+
+    if (depth_level == dpth)
+        return n_;
+
+    //loop subranges and return
+    SubindexTuple::iterator it(subranges_->begin());
+    SubindexTuple::iterator stop(subranges_->end());
+    size_t ntot = 0;
+    for ( ; it != stop; ++it)
+    {
+        IndexRange* range(*it);
+        ntot += range->nsubranges(depth_level);
+    }
+    return ntot;
 }
 
 uli
@@ -394,40 +659,11 @@ IndexRange::start(usi depth) const
     return subranges_->get(0)->start(depth);
 }
 
-uli
-IndexRange::start() const
-{
-    return start_;
-}
 
-bool
-IndexRange::equals(IndexRange* idx) const
-{
-    if (!(n_ == idx->n()))
-        return false;
-    if (!(start_ == idx->start()))
-        return false;
 
-    //check that they both have subranges
-    bool subme = subranges_;
-    bool subother = idx->get_subranges();
-    if (subme != subother) //incompatible subrange structure
-        return false;
 
-    if (subranges_)
-    {
-        SubindexTuple::iterator itme(subranges_->begin());
-        SubindexTuple::iterator itother(idx->get_subranges()->begin());
-        for ( ; itme != subranges_->end(); ++itme, ++itother)
-        {
-            bool check = (*itme)->equals(*itother);
-            if (!check)
-                return false;
-        }
-    }
 
-    return true;
-}
+
 
 void
 IndexRange::print(ostream& os) const
@@ -445,6 +681,82 @@ IndexRange::print(ostream& os) const
         --Env::indent;
     }
 
+}
+
+void
+IndexRange::set_index(uli index)
+{
+    index_ = index;
+}
+
+void
+IndexRange::set_parent(IndexRange *range)
+{
+    parent_ = range;
+}
+
+void
+IndexRange::set_offsets()
+{
+    //set the offsets
+    SubindexTuple::iterator it = subranges_->begin();
+    SubindexTuple::iterator stop = subranges_->end();
+    IndexRange* prev = *it;
+    ++it;
+    for ( ; it != stop; )
+    {
+        IndexRange* current = *it;
+        current->set_offsets(prev);
+
+        //move to next
+        prev = current;
+        ++it;
+    }
+}
+
+void
+IndexRange::set_offsets(IndexRange* prev)
+{
+    start_ = prev->start() + prev->n();
+}
+
+
+IndexRange*
+IndexRange::shift_bottom_range() const
+{
+    usi mydepth = depth();
+    if (mydepth == 1)
+    {
+        uli nsubranges = subranges_->size();
+        SubindexTuplePtr new_subranges = new SubindexTuple(nsubranges);
+        for (uli i=0; i < nsubranges; ++i)
+        {
+            IndexRange* subsubrange = subranges_->get(i);
+            uli nsubsubranges = 1;
+            SubindexTuplePtr subsubranges = new SubindexTuple(nsubsubranges);
+            subsubranges->set(0, subsubrange);
+            IndexRange* subrange = new IndexRange(start_ + i, subsubranges);
+            new_subranges->set(i, subrange);
+        }
+        IndexRange* range = new IndexRange(start_, new_subranges);
+        return range;
+    }
+    else if (mydepth == 0)
+    {
+        cerr << "Should not call shift bottom range on depth 0 index range" << endl;
+        abort();
+    }
+    else
+    {
+        uli nsubranges = subranges_->size();
+        SubindexTuplePtr newranges = new SubindexTuple(nsubranges);
+        for (uli i=0; i < nsubranges; ++i)
+        {
+            newranges->set(i, subranges_->get(i)->shift_bottom_range());
+        }
+        IndexRange* newrange = new IndexRange(start_, newranges);
+        return newrange;
+    }
 }
 
 void
@@ -477,266 +789,53 @@ IndexRange::split(uli range)
     }
 }
 
-void
-IndexRange::set_index(uli index)
-{
-    index_ = index;
-}
-
-void
-IndexRange::set_parent(IndexRange *range)
-{
-    parent_ = range;
-}
-
-bool
-IndexRange::is_parent() const
-{
-    bool isparent = subranges_;
-    return isparent;
-}
 
 IndexRange*
-IndexRange::get_first_child() const
-{
-    return subranges_->get(0);
-}
-
-IndexRange*
-IndexRange::get_subindex(uli i) const
-{
-    uli relative_index = i - start_;
-#if YETI_SANITY_CHECK
-    if (!subranges_)
-    {
-        //null! what are you doing?!?!?
-        raise(SanityCheckError, "index range has no sub ranges for subindex");
-    }
-
-    if (relative_index >= subranges_->size())
-    {
-        throw LimitExceeded<size_t>(
-                "index tuple size",
-                subranges_->size() - 1,
-                relative_index,
-                __FILE__, __LINE__
-              );
-    }
-#endif
-    return subranges_->get(relative_index);
-}
-
-usi
-IndexRange::depth() const
+IndexRange::split_bottom_range() const
 {
     if (subranges_)
-        return subranges_->get(0)->depth() + 1;
-    else
-        return 0;
-}
-
-SubindexTuplePtr
-IndexRange::get_subranges() const
-{
-    return subranges_;
-}
-
-IndexRange*
-IndexRange::get_parent() const
-{
-    return parent_;
-}
-
-void
-IndexRange::set_offsets()
-{
-    //set the offsets
-    SubindexTuple::iterator it = subranges_->begin();
-    SubindexTuple::iterator stop = subranges_->end();
-    IndexRange* prev = *it;
-    ++it;
-    for ( ; it != stop; )
     {
-        IndexRange* current = *it;
-        current->set_offsets(prev);
-
-        //move to next
-        prev = current;
-        ++it;
-    }
-}
-
-void
-IndexRange::set_offsets(IndexRange* prev)
-{
-    start_ = prev->start() + prev->n();
-}
-
-void
-IndexRange::increment_offsets()
-{
-    //set the offsets
-    SubindexTuple::iterator it = subranges_->begin();
-    SubindexTuple::iterator stop = subranges_->end();
-    IndexRange* prev = *it;
-    ++it;
-    for ( ; it != stop; )
-    {
-        IndexRange* current = *it;
-        current->increment_offsets(prev);
-
-        //move to next
-        prev = current;
-        ++it;
-    }
-}
-
-void
-IndexRange::increment_offsets(IndexRange *range)
-{
-    usi maxdepth = range->depth();
-    for (usi depth=0; depth <= maxdepth; ++depth)
-        increment_offset(depth, range->ntot(depth) + range->start(depth));
-}
-
-void
-IndexRange::increment_offset(usi depth, uli offset)
-{
-    if ( this->depth() == depth )
-        start_ += offset;
-    else //pass along to next range
-    {
-        SubindexTuple::iterator it(subranges_->begin());
-        SubindexTuple::iterator stop(subranges_->end());
-        for ( ; it != stop; ++it)
+        uli nsubranges = subranges_->size();
+        SubindexTuplePtr newranges = new SubindexTuple(nsubranges);
+        for (uli i=0; i < nsubranges; ++i)
         {
-            IndexRange* range = *it;
-            range->increment_offset(depth, offset);
+            newranges->set(i, subranges_->get(i)->split_bottom_range());
         }
-    }
-}
-
-void
-IndexRange::get_subindices(
-    std::list<IndexRange*>& ranges,
-    usi getdepth
-)
-{   usi mydepth = depth();
-    if (mydepth == getdepth)
-    {
-        ranges.push_back(this);
-    }
-    else if (mydepth > getdepth)
-    {
-        SubindexTuple::iterator it(subranges_->begin());
-        SubindexTuple::iterator stop(subranges_->end());
-        for ( ; it != stop; ++it)
-        {
-            (*it)->get_subindices(ranges, getdepth);
-        }
+        IndexRange* newrange = new IndexRange(start_, newranges);
+        return newrange;
     }
     else
     {
-        raise(SanityCheckError, "cannot retrieve at depth");
+        SubindexTuplePtr subranges = new SubindexTuple(n_);
+        uli nper = 1;
+        for (uli i=0; i < n_; ++i)
+        {
+            IndexRange* subrange = new IndexRange(i + start_, nper);
+            subranges->set(i, subrange);
+        }
+        IndexRange* newrange = new IndexRange(start_, subranges);
+        return newrange;
     }
 }
 
 uli
-IndexRange::nsubranges(usi depth_level) const
+IndexRange::start() const
 {
-    usi dpth = depth();
-    if (depth_level > dpth) //depth is too high
-        raise(SanityCheckError, "requested depth is too high");
-
-    if (depth_level == dpth)
-        return n_;
-
-    //loop subranges and return
-    SubindexTuple::iterator it(subranges_->begin());
-    SubindexTuple::iterator stop(subranges_->end());
-    size_t ntot = 0;
-    for ( ; it != stop; ++it)
-    {
-        IndexRange* range(*it);
-        ntot += range->nsubranges(depth_level);
-    }
-    return ntot;
-}
-
-bool
-IndexRange::has_subrange(IndexRange* range)
-{
-    usi mydepth = depth();
-    usi testdepth = range->depth();
-    //this cannot be a subrange because ranges are already aligned
-    if (mydepth == testdepth)
-        return false;
-
-    bool correct_depth = (mydepth == testdepth + 1);
-
-    SubindexTuple::iterator it = subranges_->begin();
-    SubindexTuple::iterator stop = subranges_->end();
-    for ( ; it != stop; ++it)
-    {
-        bool found = false;
-        IndexRange* test = *it;
-        if (correct_depth)
-            found = (test == range);
-        else
-            found = range->has_subrange(range);
-
-        if (found)
-            return true;
-    }
-    return false;
+    return start_;
 }
 
 void
-IndexRange::get_subranges(std::list<IndexRange*>& sublist, usi getdepth)
+IndexRange::validate()
 {
-    usi mydepth = depth();
-    if (mydepth == getdepth)
-    {
-        sublist.push_back(this);
+    if (!subranges_)
         return;
-    }
 
-    SubindexTuple::iterator it(subranges_->begin());
-    SubindexTuple::iterator stop(subranges_->end());
-    for ( ; it != stop; ++it)
-    {
-        (*it)->get_subranges(sublist, getdepth);
-    }
+    if (subranges_->size() == 0)
+        raise(SanityCheckError, "no subranges");
+
+    if (n_ != subranges_->size())
+        throw ValuesNotEqual<size_t>("no. subranges", n_, subranges_->size(), __FILE__, __LINE__);
 }
-
-usi
-IndexRange::get_subdepth_alignment(IndexRange* range)
-{
-    if (this == range)
-        return depth();
-
-    usi mydepth = depth();
-    usi depth = range->depth();
-
-    if (depth > mydepth)
-        raise(SanityCheckError, "range of higher depth cannot exist as subrange");
-
-    if (depth == 0 || mydepth == 0)
-        raise(SanityCheckError, "cannot align index ranges of zero depth");
-
-    IndexRange* next = range;
-    while (next->depth() > 0)
-    {
-        bool found = has_subrange(next);
-        if (found)
-            return next->depth(); //this is the alignment depth
-
-        next = next->get_subranges()->get(0);
-    }
-
-    raise(SanityCheckError, "index ranges have no subindex alignment depth");
-}
-
 
 IndexDescr::IndexDescr(
         const std::string& id,
@@ -775,157 +874,12 @@ IndexDescr::equals(const constIndexDescrPtr& descr) const
     return id_ == descr->id_;
 }
 
-
-IndexSet::IndexSet(uli* indices, usi n)
-    : n_(n),
-    indices_(indices)
-{
-    memcpy(indices_, indices, n * sizeof(size_t));
-}
-
-IndexSet::IndexSet(usi n, uli i, uli j)
-    :
-    n_(n),
-    indices_(yeti_malloc_indexset())
-{
-    if (n != 2)
-        raise(SanityCheckError, "invalid use of debug constructor");
-
-    indices_[0] = i;
-    indices_[1] = j;
-}
-
-IndexSet::IndexSet(usi n, size_t i, size_t j, uli k, uli l)
-    : n_(n), 
-    indices_(yeti_malloc_indexset())
-{
-    if (n != 4)
-        raise(SanityCheckError, "invalid use of debug constructor");
-
-    indices_[0] = i;
-    indices_[1] = j;
-    indices_[2] = k;
-    indices_[3] = l;
-}
-
-IndexSet::IndexSet(usi n)
-    : 
-    indices_(yeti_malloc_indexset()), 
-    n_(n)
-{
-    memset(indices_, 0, sizeof(size_t) * n);
-}
-
-IndexSet::~IndexSet()
-{
-    if (indices_)
-        yeti_free_indexset(indices_);
-}
-
-void
-IndexSet::print(ostream& os) const
-{
-    os << "(";
-    for (usi i=0; i < n_; ++i)
-        os << " " << indices_[i];
-    os << ")";
-}
-
-IndexSet::iterator
-IndexSet::begin() const
-{
-    return indices_;
-}
-
-IndexSet::iterator
-IndexSet::end() const
-{
-    return indices_ + n_;
-}
-
-size_t
-IndexSet::index(usi i) const
-{
-    return indices_[i];
-}
-
-IndexSetPtr
-IndexSet::build(const size_t *indices, usi n)
-{
-    size_t* copy = yeti_malloc_indexset();
-    ::memcpy(copy, indices, n * sizeof(size_t));
-    return new IndexSet(copy, n);
-}
-
-IndexSetPtr
-IndexSet::permute(const PermutationPtr &p) const
-{
-    make(indexset, IndexSet, n_);
-    p->permute(indices_, indexset->indices_);
-    return indexset;
-}
-
-bool
-IndexSet::equals(size_t i, size_t j, size_t k, size_t l) const
-{
-    if (n_ != 4)
-        return false;
-
-
-    bool eq =
-        indices_[0] == i &&
-        indices_[1] == j &&
-        indices_[2] == k &&
-        indices_[3] == l;
-
-    return eq;
-}
-
-bool
-IndexSet::equals(const constIndexSetPtr& idx) const
-{
-    if (idx->n() != n())
-        return false;
-
-    const size_t* ptrme = data();
-    const size_t* ptrother = idx->data();
-    for (usi i=0; i < n(); ++i, ++ptrme, ++ptrother)
-    {
-        if ( (*ptrme) != (*ptrother) )
-            return false;
-    }
-
-    //everything checks out
-    return true;
-}
-
-usi
-IndexSet::n() const
-{
-    return n_;
-}
-
-const uli*
-IndexSet::data() const
-{
-    return indices_;
-}
-
-//IndexSetPtr
-uli*
-IndexSet::get_zero_set()
-{
-    uli* indices = yeti_malloc_indexset();
-    ::memset(indices, 0, YetiRuntime::max_nindex() * sizeof(uli));
-    return indices;
-}
-
 Indexer::Indexer(
     const IndexRangeTuplePtr& tuple
 )
  : 
     cumulsizes_(yeti_malloc_indexset()),
-        nindex_(tuple->size()),
+        nindex_(tuple->nindex()),
         nsets_(1),
         permuted_(yeti_malloc_indexset()),
         tmpindices_(yeti_malloc_indexset()),
@@ -1148,22 +1102,6 @@ Indexer::index(const size_t* indices) const
     return idx;
 }
 
-size_t
-Indexer::index(const IndexSetPtr& indices, const PermutationPtr& p) const
-{
-    if (p->is_identity())
-        return index(indices);
-
-    p->permute(indices->data(), permuted_);
-    return index(permuted_);
-}
-
-size_t
-Indexer::index(const IndexSetPtr& indices) const
-{
-    return index(indices->data());
-}
-
 usi
 Indexer::nindex() const
 {
@@ -1200,215 +1138,6 @@ Indexer::extract(size_t index, size_t** indices) const
     }
 
     (*indices) = idxlist;
-}
-
-IndexMap::IndexMap(
-    const IndexRangeTuplePtr& tuple
-)
-    : indexer_(new Indexer(tuple)),
-        indexmap_(0),
-        n_(0),
-        ntot_(indexer_->nsets()),
-        flags_(ntot_, 0)
-{
-    if (ntot_ != flags_.size())
-        abort();
-}
-
-IndexMap::IndexMap(
-    const IndexerPtr& indexer
-)
-    : indexer_(indexer),
-        indexmap_(0),
-        n_(0),
-        ntot_(indexer_->nsets()),
-        flags_(ntot_, 0)
-{
-}
-
-IndexMap::~IndexMap()
-{
-    if (indexmap_)
-        delete[] indexmap_;
-}
-
-void
-IndexMap::retrieve()
-{
-    //use indexmap to see if we need to allocate
-    if (indexmap_)
-        return; //already done
-
-     indexmap_ = new size_t[ntot_];
-     memset(indexmap_, 0, sizeof(size_t) * ntot_);
-}
-
-void
-IndexMap::release()
-{
-    if (indexmap_)
-    {
-        delete[] indexmap_;
-        indexmap_ = 0;
-        n_ = 0;
-    }
-}
-
-void
-IndexMap::insert(const constIndexSetPtr& indices, size_t val)
-{
-    insert(indices->data(), val);
-}
-
-void
-IndexMap::insert(const size_t* indices, size_t val)
-{
-    size_t index = indexer_->index(indices);
-    insert(index, val);
-}
-
-void
-IndexMap::insert(size_t index)
-{
-    insert(index, n_);
-}
-
-void
-IndexMap::insert(const IndexSetPtr &indexset)
-{
-    insert(indexset, n_);
-}
-
-void
-IndexMap::insert(const size_t* indices)
-{
-    insert(indices, n_);
-}
-
-
-void
-IndexMap::insert(size_t index, size_t val)
-{
-    indexmap_[index] = val;
-    if (flags_[index] == 0) //element not yet inserted
-        ++n_;
-    flags_[index] = 1;
-}
-
-
-void
-IndexMap::print_element(
-    ostream& os,
-    size_t index,
-    size_t mapped_index
-) const
-{
-    size_t* indices;
-    indexer_->extract(index, &indices);
-    os << Env::indent << index << " -> " << mapped_index;
-    os << "  (";
-    for (usi i=0; i < indexer_->nindex(); ++i)
-        os << " " << indices[i];
-    os << " )" << endl;
-    delete[] indices;
-}
-
-
-void
-IndexMap::print(ostream& os) const
-{
-    print_element(os, 0, 0);
-    for (size_t i=1; i < ntot_; ++i)
-    {
-        size_t mapped = indexmap_[i];
-        if (mapped != 0) //real element
-            print_element(os, i, mapped);
-    }
-}
-
-bool
-IndexMap::get(const size_t* indices, size_t& val) const
-{
-    size_t index = indexer_->index(indices);
-    return get(index, val);
-}
-
-bool
-IndexMap::get(const constIndexSetPtr& indexset, size_t& val) const
-{
-    return get(indexset->data(), val);
-}
-
-bool
-IndexMap::get(size_t index, size_t& val) const
-{
-    bool flag = flags_[index];
-    if (flag == 0)
-        return false;
-
-    val = indexmap_[index];
-    return true;
-}
-
-IndexerPtr
-IndexMap::indexer() const
-{
-    return indexer_;
-}
-
-size_t
-IndexMap::size() const
-{
-    return n_;
-}
-
-size_t
-IndexMap::index(const constIndexSetPtr& indexset) const
-{
-    size_t index = indexer_->index(indexset->data());
-    return index;
-}
-
-void
-IndexMap::clear()
-{
-    //set all the flags to zero
-    for (size_t i=0; i < flags_.size(); ++i)
-        flags_[i] = 0;
-
-    memset(indexmap_, 0, ntot_ * sizeof(size_t));
-    n_ = 0;
-}
-
-IndexList::IndexList(size_t start, size_t n)
-  : n_(n), start_(start), indexlist_(new size_t[n])
-{
-    size_t val = start;
-    for (size_t i=0; i < n; ++i, ++val)
-        indexlist_[i] = val;
-}
-
-IndexList::~IndexList()
-{
-    delete[] indexlist_;
-}
-
-size_t
-IndexList::n() const
-{
-    return n_;
-}
-
-IndexList::iterator
-IndexList::begin() const
-{
-    return indexlist_;
-}
-
-IndexList::iterator
-IndexList::end() const
-{
-    return indexlist_ + n_;
 }
 
 std::ostream&
@@ -1449,18 +1178,17 @@ yeti::operator<<(std::ostream& os, const IndexRangeTuplePtr& tuple)
 
 IndexRangeTuple::IndexRangeTuple(usi size)
     :
-    size_(size),
-    indices_(reinterpret_cast<IndexRange**>(yeti_malloc_indexptr()) ),
-    n_(0)
+    nindex_(size),
+    indices_(reinterpret_cast<IndexRange**>(yeti_malloc_indexptr()) )
 {
-    ::memset(indices_, 0, size_ * sizeof(IndexRange*));
+    ::memset(indices_, 0, nindex_ * sizeof(IndexRange*));
 }
 
 IndexRangeTuple::IndexRangeTuple(
     usi size,
     IndexRange** ranges
-) : size_(size), 
-    n_(size),
+) :
+    nindex_(size),
     indices_(reinterpret_cast<IndexRange**>(yeti_malloc_indexptr()) )
 {
     for (usi i=0; i < size; ++i)
@@ -1471,11 +1199,10 @@ IndexRangeTuple::IndexRangeTuple(
 
 IndexRangeTuple::IndexRangeTuple(usi size, IndexRange *tmpl)
     :
-    size_(size),
-    indices_(reinterpret_cast<IndexRange**>( yeti_malloc_indexptr() ) ),
-    n_(0)
+    nindex_(size),
+    indices_(reinterpret_cast<IndexRange**>( yeti_malloc_indexptr() ) )
 {
-    for (usi i=0; i < size_; ++i)
+    for (usi i=0; i < nindex_; ++i)
     {
         indices_[i] = tmpl;
     }
@@ -1495,7 +1222,27 @@ IndexRangeTuple::begin() const
 IndexRangeTuple::iterator
 IndexRangeTuple::end() const
 {
-    return indices_ + size_;
+    return indices_ + nindex_;
+}
+
+IndexRangeTuple*
+IndexRangeTuple::copy(const PermutationPtr &p) const
+{
+    IndexRangeTuple* tuple = new IndexRangeTuple(nindex_);
+    if (p && !p->is_identity())
+    {
+        const usi* pmap = p->indexmap();
+        for (usi i=0; i < nindex_; ++i)
+        {
+            tuple->set(i, indices_[pmap[i]]);
+        }
+    }
+    else
+    {
+        for (usi i=0; i < nindex_; ++i)
+            tuple->set(i, indices_[i]);
+    }
+    return tuple;
 }
 
 bool
@@ -1555,7 +1302,7 @@ IndexRangeTuple::recurse_get_index_tuples(
     usi depth
 )
 {
-    if (index == size())
+    if (index == nindex())
     {
         IndexRangeTuplePtr newtuple
             = new IndexRangeTuple(index, ranges);
@@ -1604,7 +1351,7 @@ IndexRangeTuple::get_unit_range(IndexRangeTuple* subtuple)
 {
     uli start = 0; uli n = 1;
 
-    uli nindex = subtuple->size();
+    uli nindex = subtuple->nindex();
 
     IndexRangeTuple* tuple = new IndexRangeTuple(nindex);
     for (usi i=0; i < nindex; ++i)
@@ -1614,7 +1361,17 @@ IndexRangeTuple::get_unit_range(IndexRangeTuple* subtuple)
         tuple->set(i, range);
     }
     return tuple;
+}
 
+void
+IndexRangeTuple::slice_front(usi nindex)
+{
+    usi nidx_final = nindex_ - nindex;
+    for (usi i=0; i < nidx_final; ++i)
+    {
+        indices_[i] = indices_[i + nindex];
+    }
+    nindex_ = nidx_final;
 }
 
 void
@@ -1625,15 +1382,15 @@ IndexRangeTuple::permute(Permutation *p)
 
     IndexRange** tmp = reinterpret_cast<IndexRange**>(yeti_malloc_indexset());
     p->permute<IndexRange*>(indices_, tmp);
-    for (usi i=0; i < n_; ++i)
+    for (usi i=0; i < nindex_; ++i)
         indices_[i] = tmp[i];
     yeti_free_indexset(reinterpret_cast<uli*>(tmp));
 }
 
 usi
-IndexRangeTuple::size() const
+IndexRangeTuple::nindex() const
 {
-    return size_;
+    return nindex_;
 }
 
 SubindexTuplePtr
@@ -1677,7 +1434,7 @@ SubindexTuple::index(IndexRange *subidx) const
 
 IndexRangeLocation::IndexRangeLocation(const IndexRangeTuplePtr &tuple)
     :
-    n_(tuple->size()),
+    n_(tuple->nindex()),
     data_(yeti_malloc_indexset())
 {
     for (usi i=0; i < n_; ++i)

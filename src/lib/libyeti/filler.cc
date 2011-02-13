@@ -16,6 +16,7 @@ UnitEstimaterPtr TileEstimater::unit_ = new UnitEstimater;
 
 ThreadedTileElementComputer::ThreadedTileElementComputer(const TileElementComputerPtr& comp)
     :
+    mindepth_(0),
     fillers_(YetiRuntime::nthread(), 0) //create empty vector
 {
     fillers_[0] = comp;
@@ -28,11 +29,11 @@ ThreadedTileElementComputer::~ThreadedTileElementComputer()
 }
 
 TileEstimater*
-ThreadedTileElementComputer::get_estimater(usi depth, usi nindex) const
+ThreadedTileElementComputer::get_estimater(usi depth) const
 {
     TileElementComputer* comp = fillers_[0].get();
     if (comp)
-        return comp->get_estimater(depth, nindex);
+        return comp->get_estimater(depth);
     else
         return 0;
 }
@@ -49,6 +50,24 @@ ThreadedTileElementComputer::equals(Tile* tile, Data* data)
     return data->equals(tile, fillers_[0].get());
 }
 
+TileElementComputer*
+ThreadedTileElementComputer::get_thread_computer(uli threadnum) const
+{
+    return fillers_[threadnum].get();
+}
+
+void
+ThreadedTileElementComputer::set_mindepth(usi depth)
+{
+    mindepth_ = depth;
+}
+
+usi
+ThreadedTileElementComputer::mindepth() const
+{
+    return mindepth_;
+}
+
 TileElementComputer::TileElementComputer()
     : buffer_(0)
 {
@@ -61,7 +80,7 @@ TileElementComputer::~TileElementComputer()
 }
 
 TileEstimater*
-TileElementComputer::get_estimater(usi depth, usi nindex) const
+TileElementComputer::get_estimater(usi depth) const
 {
     return TileEstimater::get_unit_estimater();
 }
@@ -84,7 +103,14 @@ TileElementComputer::equals(Tile* tile, const data_t* data)
     for (size_t i=0; i < n; ++i)
     {
         if (!TestEquals<data_t>::equals(vals[i], data[i]))
+        {
+            cerr << vals[i] << " != " << data[i] << endl;
+            cout << tile << endl;
+            tile->get_data()->data()->reference(buffer_);
+            cout << tile << endl;
+            abort();
             return false;
+        }
     }
 
     return true;
@@ -156,5 +182,61 @@ float
 UnitEstimater::max_log(const uli *indices) const
 {
     return 0;
+}
+
+void
+MemsetElementComputer::compute(Tile *tile, double *data)
+{
+    ::memset(data, 0, tile->get_data()->data()->size());
+}
+
+void
+MemsetElementComputer::compute(Tile *tile, int *data)
+{
+    ::memset(data, 0, tile->get_data()->data()->size());
+}
+
+void
+MemsetElementComputer::compute(Tile *tile, float *data)
+{
+    ::memset(data, 0, tile->get_data()->data()->size());
+}
+
+void
+MemsetElementComputer::compute(Tile *tile, quad *data)
+{
+    ::memset(data, 0, tile->get_data()->data()->size());
+}
+
+TileElementComputer*
+MemsetElementComputer::copy() const
+{
+    return new MemsetElementComputer;
+}
+
+void
+NullElementComputer::compute(Tile *tile, double *data)
+{
+}
+
+void
+NullElementComputer::compute(Tile *tile, int *data)
+{
+}
+
+void
+NullElementComputer::compute(Tile *tile, float *data)
+{
+}
+
+void
+NullElementComputer::compute(Tile *tile, quad *data)
+{
+}
+
+TileElementComputer*
+NullElementComputer::copy() const
+{
+    return new NullElementComputer;
 }
 

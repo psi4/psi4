@@ -7,7 +7,7 @@
 
 #define DECLARE_STATIC_THREAD_WORKSPACE(x) \
 static ThreadWorkspaceAllocatorTemplate<x> thr_workspace_##x; \
-template<> x** ThreadWorkspaceAllocatorTemplate<x>::workspaces_ = 0;
+template<> x** ThreadWorkspaceAllocatorTemplate<x>::workspaces_ = 0
 
 
 namespace yeti {

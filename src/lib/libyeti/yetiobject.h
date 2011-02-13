@@ -99,17 +99,11 @@ class YetiRuntimeCountable :
 
 }
 
-#define USE_YETI_REFCOUNT 1
-#if USE_YETI_REFCOUNT
-
 namespace boost {
     void intrusive_ptr_add_ref(yeti::YetiRuntimeSerializable* obj);
     void intrusive_ptr_release(yeti::YetiRuntimeSerializable* obj);
     void intrusive_ptr_add_ref(yeti::YetiRuntimeCountable* obj);
     void intrusive_ptr_release(yeti::YetiRuntimeCountable* obj);
 }
-
-#endif
-
 
 #endif // YETIOBJECT_H

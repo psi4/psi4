@@ -56,6 +56,8 @@ foreach my $File (readdir DIR){
     open(FILE, "<$File") or die "I can't read $File\n";
     my $Contents;
     while(<FILE>){
+        # config.h
+        next if /config\.h/;
         # src/smartptr/src/... -> libsmartptr/...
         s/src\/smartptr\/src/libsmartptr/g;
         # src/... -> ...

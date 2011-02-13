@@ -33,14 +33,19 @@ ThreadLock* YetiRuntime::malloc_lock_ = 0;
 bool YetiRuntime::threaded_runtime_ = false;
 
 static FastMalloc matrix_generator_set_malloc("matrix generator set");
-
 static FastMalloc matrix_generator_malloc("matrix generator");
-
 static FastMalloc indexset_malloc("index set");
+static FastMalloc tile_location_malloc("tile location");
+static MallocOverride use_heap;
 
 IndexRangeTuple*
 YetiRuntime::get_index_tuple(const std::string& str)
 {
+    if (str.size() == 0)
+    {
+        return new IndexRangeTuple(0);
+    }
+
     vector<std::string> str_tuple(0);
     smartptr::split(str_tuple, str, ", ");
 
@@ -91,12 +96,9 @@ YetiRuntime::init(
     remaining_mem_ = memory;
     cache_mem_ = cache;
 
-    indexset_malloc.init(indexset_size, nindexset);
-
     init_sizes();
-    init_threads(nthread);
-    init_index_ranges();
     init_malloc();
+    init_threads(nthread);
 
     GlobalQueue::init();
 }
@@ -153,34 +155,13 @@ YetiRuntime::init_sizes()
 }
 
 void
-YetiRuntime::init_index_ranges()
+YetiRuntime::init_malloc()
 {
+    indexset_malloc.init(indexset_size, nindexset);
     IndexRangeTuple::init_malloc(NMALLOC_BLOCKS_DEBUG);
 
     #define NINDEXERS 100000
     Indexer::init_malloc(NINDEXERS);
-
-    {
-        size_t start = 0;
-        size_t n = 1;
-        size_t nper = 1;
-        IndexRange* scalar_range = new IndexRange(start, n, nper);
-        IndexRangeTuplePtr tuple = new IndexRangeTuple(1);
-        tuple->set(0, scalar_range);
-
-        IndexRange::scalar_tuple = tuple;
-    }
-
-    //register the "single element" index range for use in padding tensor
-    uli strt = 0;
-    uli n = 1;
-    IndexRange* one = new IndexRange(strt, n);
-    register_index_range("one", one);
-}
-
-void
-YetiRuntime::init_malloc()
-{
 
     Tile::init_malloc(NMALLOC_BLOCKS_DEBUG);
     TileMap::init_malloc(NMALLOC_BLOCKS_DEBUG / 5);
@@ -209,6 +190,9 @@ YetiRuntime::init_malloc()
     #define NMATRIX_GENERATORS 10000000
     matrix_generator_malloc.init(sizeof(void*), NMATRIX_GENERATORS);
 
+    #define NTILE_LOCATIONS 1000
+    tile_location_malloc.init(sizeof(uli) * MAX_DEPTH, NTILE_LOCATIONS);
+
     //make sure all mallocs have been configured
 #if USE_MALLOC_CLASS
     FastMalloc::check_queue();
@@ -230,20 +214,26 @@ YetiRuntime::set_threaded_runtime(bool flag)
 void
 YetiRuntime::init_threads(uli nthread)
 {
-    if (!threadgrp_) //initial
-    {
-        threadgrp_ = new pThreadGroup(nthread);
-        printlock_ = threadgrp_->get_lock();
-        malloc_lock_ = threadgrp_->get_lock();
-    }
-    else //overwriting previous thread initialization
+    if (threadgrp_) //overwriting previous thread initialization
     {
         ThreadEnvironment::deallocate();
+        /**
+        These were not allocated from the custom allocator classes
+        so calling delete in the middle of runtime is not defined.
+        Just leak the memory for now.
+        delete printlock_;
+        delete malloc_lock_;
+        delete threadgrp_;
+        */
+    }
+    else
+    {
+        printlock_ = new (use_heap) pThreadLock;
+        malloc_lock_ = new (use_heap) pThreadLock;
     }
 
+    threadgrp_ = new pThreadGroup(nthread);
     nthread_ = nthread;
-
-
 
     ThreadEnvironment::allocate();
 }
@@ -400,7 +390,7 @@ yeti::usi_allocate(usi i, usi j)
 }
 
 uli*
-yeti::_yeti_malloc_indexset()
+yeti::yeti_malloc_indexset()
 {
     return reinterpret_cast<uli*>(indexset_malloc.malloc());
 }
@@ -412,7 +402,7 @@ yeti::yeti_free_indexset(const uli* ptr)
 }
 
 void*
-yeti::_yeti_malloc_indexptr()
+yeti::yeti_malloc_indexptr()
 {
     return indexset_malloc.malloc();
 }
@@ -424,7 +414,7 @@ yeti::yeti_free_indexptr(void *ptr)
 }
 
 usi*
-yeti::_yeti_malloc_perm()
+yeti::yeti_malloc_perm()
 {
     return reinterpret_cast<usi*>(indexset_malloc.malloc());
 }
@@ -460,21 +450,15 @@ yeti::yeti_free_matrix_generator_set(void *ptr)
 }
 
 uli*
-yeti::track_malloc_indexset(const char *file, int line)
+yeti::yeti_malloc_tile_location()
 {
-    return reinterpret_cast<uli*>(indexset_malloc.tracked_malloc(file, line));
+    return reinterpret_cast<uli*>(tile_location_malloc.malloc());
 }
 
-usi*
-yeti::track_malloc_perm(const char *file, int line)
+void
+yeti::yeti_free_tile_location(void *ptr)
 {
-    return reinterpret_cast<usi*>(indexset_malloc.tracked_malloc(file, line));
-}
-
-void*
-yeti::track_malloc_indexptr(const char *file, int line)
-{
-    return indexset_malloc.tracked_malloc(file, line);
+    tile_location_malloc.free(ptr);
 }
 
 void
@@ -488,7 +472,14 @@ YetiRuntime::register_subrange(
 void
 YetiRuntime::finalize()
 {
+    GlobalQueue::finalize();
     ThreadEnvironment::deallocate();
+    if (printlock_) //these came off standard malloc heap
+        ::free(printlock_);
+    if (malloc_lock_)
+        ::free(malloc_lock_);
+    if (threadgrp_) //this came from operator new
+        delete threadgrp_;
 }
 
 

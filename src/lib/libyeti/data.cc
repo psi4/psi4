@@ -12,6 +12,8 @@
 
 #include <sys/fcntl.h>
 #include <sys/stat.h>
+#include <cerrno>
+#include <errno.h>
 
 using namespace yeti;
 using namespace std;
@@ -104,13 +106,11 @@ Data::reference(void* data)
 
 
 DataBlock::DataBlock(
-    const DataMode* mode,
     uli n
 )
     :
   n_(n),
-  data_(0),
-  mode_(mode)
+  data_(0)
 {
     yeti_register_new(lock_.get());
 }
@@ -119,28 +119,6 @@ DataBlock::~DataBlock()
 {
     if (data_)
         delete data_;
-}
-
-void
-DataBlock::_retrieve(uli threadnum)
-{
-    switch(mode_->flag)
-    {
-        case DataMode::read:        init_read(threadnum); break;
-        case DataMode::write:       init_write(threadnum); break;
-        case DataMode::accumulate:  init_accumulate(threadnum); break;
-    }
-}
-
-void
-DataBlock::_release(uli threadnum)
-{
-    switch(mode_->flag)
-    {
-        case DataMode::read:        finalize_read(threadnum); break;
-        case DataMode::write:       finalize_write(threadnum); break;
-        case DataMode::accumulate:  finalize_accumulate(threadnum); break;
-    }
 }
 
 void
@@ -180,44 +158,13 @@ DataBlock::data() const
 }
 
 void
-DataBlock::init_read(uli threadnum)
-{
-}
-
-void
-DataBlock::init_write(uli threadnum)
-{
-}
-
-void
-DataBlock::init_accumulate(uli threadnum)
-{
-}
-
-void
-DataBlock::finalize_read(uli threadnum)
-{
-}
-
-void
-DataBlock::finalize_write(uli threadnum)
-{
-}
-
-void
-DataBlock::finalize_accumulate(uli threadnum)
-{
-}
-
-void
 DataBlock::set_buffer(uli offset, const BufferPtr& buffer)
 {
 }
 
 MemoryBlock::MemoryBlock(
-    const DataMode* mode,
     uli n
-) : DataBlock(mode, n)
+) : DataBlock(n)
 {
 }
 
@@ -257,10 +204,11 @@ CachedDataBlock::CachedDataBlock(
     const DataMode* mode,
     uli n,
     const LayeredDataCachePtr& cache
-) : DataBlock(mode, n),
+) : DataBlock(n),
     main_cache_(cache),
     cache_entry_(0),
-    cache_(0) //no cache block until we allocate
+    cache_(0),
+    mode_(mode) //no cache block until we allocate
 {
 }
 
@@ -269,16 +217,22 @@ CachedDataBlock::finalize()
 {
     if (is_retrieved())
     {
-        //put the cache entry at the end
-        cache_->push_back(cache_entry_);
+        if (YetiRuntime::is_threaded_runtime() && cache_entry_->trylock())
+        {
+            cerr << "cache entry should not be unlocked" << endl;
+            abort();
+        }
+
         cache_entry_->clear(); //clear the data pointer
+        //put the cache entry at the end
+        cache_->insert(cache_entry_);
+        cache_entry_->unlock();
     }
-    else if (data_ && data_->nonnull())
+    else if (cache_entry_ && cache_entry_->trylock())
     {
-        //clear the ownership and make sure block is on front of queue
-        cache_->pull(cache_entry_);
-        cache_->push_back(cache_entry_);
-        cache_entry_->clear(); //make sure data is cleared
+        if (data_ && data_->nonnull())
+            cache_entry_->clear();
+        cache_entry_->unlock();
     }
 }
 
@@ -287,51 +241,101 @@ CachedDataBlock::~CachedDataBlock()
 }
 
 void
+CachedDataBlock::init_block(uli threadnum)
+{
+    switch(mode_->flag)
+    {
+        case DataMode::read:        init_read(threadnum); break;
+        case DataMode::write:       init_write(threadnum); break;
+        case DataMode::accumulate:  init_accumulate(threadnum); break;
+    }
+}
+
+bool
+CachedDataBlock::in_cache() const
+{
+    return (cache_entry_ && cache_entry_->owner == this);
+}
+
+void
 CachedDataBlock::_retrieve(uli threadnum)
 {
-    if (cache_ == 0) //fetch a cache object and cache entry
+    uli offset = 0;
+    if (cache_ == 0) //fetch a cache object
     {
-        cache_ = main_cache_->allocate_cache(data_->size());
+        //first time this block has been retrieved
+        main_cache_->lock();
+        cache_ = main_cache_->allocate_cache(data_->size(), offset);
         if (!cache_)
         {
             cerr << "No appropriate cache block found for size " << data_->size() << endl;
             abort();
         }
-        cache_entry_ = cache_->pull(this);
-        DataBlock::_retrieve(threadnum);
+        main_cache_->unlock();
+        cache_entry_ = cache_->pull(this, offset);
+        init_block(threadnum);
+        return;
     }
-    else if (data_->nonnull()) //I have a cache entry
+
+    if (data_->null())
     {
-        //pull it out so we don't lose the data
+            //do nothing... I have been cleared
+    }
+    else if (cache_entry_->owner == this
+             && cache_entry_->trylock()) //attempt to grab ownership!
+    {
+        //at this point we can guarantee the data is non-null
+        //and that we own the cache entry
+        //because the data block is locked
         cache_->pull(cache_entry_);
+        return;
     }
-    else //fetch a new cache block from wherever it need be
+    else
     {
-        cache_entry_ = cache_->pull(this);
-        if (!cache_entry_)
-        {
-            std::cerr << "Cache size not large enough for computation. Need more memory." << std::endl;
-            abort();
-        }
-        DataBlock::_retrieve(threadnum);
+        //I am not yet null, but I no longer own my cache entry
+        //the data block that now owns my cache entry
+        //is waiting to unlock me to clear my data
+        //this means that it is my responsibility
+        //to clear the data and move on
+        offset = cache_entry_->offset + 1;
+        clear();
+        cache_entry_ = 0;
     }
+
+    //this returns a locked cache entry
+    cache_entry_ = cache_->pull(this, offset);
+    init_block(threadnum);
 }
 
 void
 CachedDataBlock::clear()
 {
-    DataBlock::_release(NOT_THREADED);
+    if (is_retrieved())
+    {
+        cerr << "Cannot clear retrieved data block" << endl;
+        abort();
+    }
+
+    switch(mode_->flag)
+    {
+        case DataMode::read:        finalize_read(NOT_THREADED); break;
+        case DataMode::write:       finalize_write(NOT_THREADED); break;
+        case DataMode::accumulate:  finalize_accumulate(NOT_THREADED); break;
+    }
     data_->clear();
 }
 
 void
 CachedDataBlock::_release(uli threadnum)
 {
-    //do not yet release here! only when cache blocks get cleared should
-    //release be called
-
-    //put on the front so its the last to be reused
-    cache_->push_front(cache_entry_);
+    if (YetiRuntime::is_threaded_runtime() && cache_entry_->trylock())
+    {
+        cerr << "The cache entry should have been locked!" << endl;
+        abort();
+    }
+    //put the block back in the cache and unlock it
+    cache_->insert(cache_entry_);
+    cache_entry_->unlock();
 }
 
 void
@@ -339,6 +343,36 @@ CachedDataBlock::print(std::ostream& os) const
 {
     os << Env::indent << "Cache:" << cache_entry_ << " Data:" << data_->pointer() << std::endl;
     DataBlock::print(os);
+}
+
+void
+CachedDataBlock::init_read(uli threadnum)
+{
+}
+
+void
+CachedDataBlock::init_write(uli threadnum)
+{
+}
+
+void
+CachedDataBlock::init_accumulate(uli threadnum)
+{
+}
+
+void
+CachedDataBlock::finalize_read(uli threadnum)
+{
+}
+
+void
+CachedDataBlock::finalize_write(uli threadnum)
+{
+}
+
+void
+CachedDataBlock::finalize_accumulate(uli threadnum)
+{
 }
 
 RecomputedBlock::RecomputedBlock(
@@ -476,6 +510,60 @@ SortedBlock::finalize_accumulate(uli threadnum)
     parent_->release(threadnum);
 }
 
+SubsetDataBlock::SubsetDataBlock(uli n)
+    : DataBlock(n),
+    parent_(0),
+    offset_(0)
+{
+}
+
+void
+SubsetDataBlock::print(std::ostream &os) const
+{
+    os << Env::indent << "Subset Block at offset " << offset_
+        << " for parent " << (void*) parent_->data()->buffer()
+        << endl;
+    DataBlock::print(os);
+}
+
+void
+SubsetDataBlock::_release(uli threadnum)
+{
+    parent_->release(threadnum);
+}
+
+void
+SubsetDataBlock::_retrieve(uli threadnum)
+{
+    parent_->retrieve(threadnum);
+
+    char* dataptr = parent_->data()->buffer() + offset_;
+    data_->reference(dataptr);
+}
+
+void
+SubsetDataBlock::configure(
+    const DataBlockPtr &parent,
+    uli offset
+)
+{
+    if (parent_)
+    {
+        cerr << "Subset data block already configured" << endl;
+        abort();
+    }
+
+    parent_ = parent;
+    offset_ = offset;
+    allocate(parent_->data()->type());
+}
+
+void
+SubsetDataBlock::sort(const SortPtr &sort, void *buffer)
+{
+    data_->sort(sort, buffer);
+}
+
 DiskBuffer::DiskBuffer(const std::string &filename)
     :
     filename_(filename),
@@ -499,6 +587,17 @@ DiskBuffer::DiskBuffer(const std::string &filename)
         cerr << "Could not create file " << filename_ << endl;
         abort();
     }
+
+    //close and reopen to keep posix from complaining
+    //about the existence of the file
+    close(fileno_);
+    fileno_ = open(filename_.c_str(),O_RDWR,0644);
+    if (fileno_ == -1)
+    {
+        cerr << "Could not create file " << filename_ << endl;
+        abort();
+    }
+
 }
 
 DiskBuffer::~DiskBuffer()
@@ -519,7 +618,14 @@ DiskBuffer::read(
     char* data
 )
 {
-    lseek(fileno_, offset, SEEK_SET);
+    off_t pos = ::lseek(fileno_, offset, SEEK_SET);
+
+    if (pos != offset)
+    {
+        cerr << "failed to seek file position" << endl;
+        abort();
+    }
+
     uli amt = ::read(fileno_, data, size);
     if (amt != size)
     {
@@ -640,13 +746,106 @@ LocalDiskBlock::set_buffer(uli offset, const BufferPtr& buffer)
     buffer_->allocate_region(offset_, data_->size());
 }
 
-void
-DataBlockFactory::allocate(DataBlock* block)
+
+#define MAX_NBLOCKS_ALLOC_QUEUE 10000
+
+DataBlockFactory::DataBlockFactory()
+    : filler_(0),
+    blocks_(new DataBlock*[MAX_NBLOCKS_ALLOC_QUEUE]),
+    nblocks_(0)
 {
-    //do nothing
+    filler_ = new ThreadedTileElementComputer(new MemsetElementComputer);
+}
+
+DataBlockFactory::DataBlockFactory(const TileElementComputerPtr &filler)
+    :
+    filler_(new ThreadedTileElementComputer(filler)),
+    blocks_(new DataBlock*[MAX_NBLOCKS_ALLOC_QUEUE]),
+    nblocks_(0)
+{
+}
+
+void
+DataBlockFactory::allocate_blocks()
+{
+    init_allocation();
+    for (uli i=0; i < nblocks_; ++i)
+    {
+        allocate(blocks_[i]);
+    }
+    //all blocks have now been allocated!
+    nblocks_ = 0;
+}
+
+void
+DataBlockFactory::configure(Tensor *tensor)
+{
+    //do nothing by default
+}
+
+void
+DataBlockFactory::register_allocation(DataBlock *dblock)
+{
+    blocks_[nblocks_] = dblock;
+    ++nblocks_;
+
+    if (nblocks_ == MAX_NBLOCKS_ALLOC_QUEUE)
+        allocate_blocks();
 }
 
 DataBlockFactory::~DataBlockFactory()
 {
+    delete[] blocks_;
 }
+
+ThreadedTileElementComputer*
+DataBlockFactory::get_element_computer() const
+{
+    return filler_.get();
+}
+
+SubsetBlockFactory::SubsetBlockFactory(
+    const DataBlockFactoryPtr& parent
+) :
+    parent_(parent)
+{
+}
+
+SubsetBlockFactory::~SubsetBlockFactory()
+{
+}
+
+void
+SubsetBlockFactory::allocate(DataBlock* block)
+{
+    //do nothing
+}
+
+DataBlock*
+SubsetBlockFactory::get_block(Tile *tile)
+{
+    return new SubsetDataBlock(tile->ndata());
+}
+
+DataBlockFactory*
+SubsetBlockFactory::copy() const
+{
+    SubsetBlockFactory* factory
+        = new SubsetBlockFactory(parent_);
+    return factory;
+}
+
+void
+SubsetBlockFactory::init_allocation()
+{
+    //do nothing
+}
+
+Data::storage_t
+SubsetBlockFactory::storage_type() const
+{
+    return parent_->storage_type();
+}
+
+
 

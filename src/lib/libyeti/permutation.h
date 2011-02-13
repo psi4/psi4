@@ -416,13 +416,6 @@ class PermutationSet : public smartptr::Serializable {
         PermutationSetPtr isotropy_set(const size_t* vals) const;
 
         /**
-         * The set of permutations that fixes the vals
-         * @param vals the values
-         * @return the group
-         */
-        PermutationSetPtr isotropy_set(const IndexSetPtr& indexset) const;
-
-        /**
             Whether the group has the transposition of i and j
             @param i
             @param j
@@ -534,13 +527,6 @@ class PermutationGroup : public PermutationSet {
         bool improves_sort(const size_t* indices) const;
 
         PermutationPtr get_identity() const;
-
-        /**
-         * The set of permutations that fixes the vals
-         * @param vals the values
-         * @return the group
-         */
-        PermutationGroupPtr isotropy_grp(const IndexSetPtr& indexset) const;
 
         /**
             Builds a group of "unrelated" permutations where the relation is based

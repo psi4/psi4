@@ -171,25 +171,21 @@ Contraction::Contraction(
         product_tensor_->distribute();
         yeti_free_indexset(indexset);
     }
-    else if (!product_tensor_->is_allocated())
+    else if (product_tensor_->is_empty())
     {
-        //tensor already exists... just make sure the permutation group is correct
         product_tensor_->get_permutation_grp()->add(final_grp_);
         product_tensor_->get_permutation_grp()->close();
-
-        product_tensor_->retrieve(NOT_THREADED);
-
-        //distribute, but do not allocate
-        //allocation comes later
-        product_tensor_->distribute();
-        product_tensor_->release(NOT_THREADED);
     }
     else
     {
         //for now these permutation groups must be equal
         if (!product_tensor_->get_permutation_grp()->contains(final_grp_) ||
             !final_grp_->contains(product_tensor_->get_permutation_grp()) )
+        {
+            cerr << product_tensor_->get_permutation_grp() << endl;
+            cerr << final_grp_ << endl;
             raise(SanityCheckError, "Contraction cannot accumulate to tensor. Tensor permutation group is not correct.");
+        }
     }
 
     //configure the priorities for the contraction
@@ -257,7 +253,7 @@ Contraction::Contraction(
        && product_tensor_->depth() == 0
    ) //dot product
    {
-        product_tensor_ = new Tensor(product_tensor_);
+//        product_tensor_ = new Tensor(product_tensor_);
    }
 
     //configure the data mode for each tensor
@@ -273,10 +269,6 @@ Contraction::Contraction(
     incref();
     pmatrix_ = new Matrix(lmatrix_, rmatrix_, this);
     decref(); //ensure non-deletion
-
-    //now that the product tensor has been built up,
-    //allocate the actual memory for it
-    product_tensor_->allocate();
 
     ltmp_ = new char[ltensor_->max_blocksize()];
     rtmp_ = new char[rtensor_->max_blocksize()];

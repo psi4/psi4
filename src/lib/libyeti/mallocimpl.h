@@ -116,7 +116,7 @@ class Malloc {
             if (initialized_)
                 return FastMallocTemplate<T>::malloc->malloc();
             else
-                return ::malloc(size);
+                abort();
         }
 
         void* operator new(size_t size, MallocOverride& o)

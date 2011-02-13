@@ -64,6 +64,8 @@ YetiThreadedRuntimeObject::YetiThreadedRuntimeObject()
 
 YetiThreadedRuntimeObject::~YetiThreadedRuntimeObject()
 {
+    if (YetiRuntime::is_threaded_runtime())
+        lock_->unlock();
     delete lock_;
 }
 
@@ -114,7 +116,6 @@ YetiThreadedRuntimeObject::release(uli threadnum)
     unlock();
 }
 
-#if USE_YETI_REFCOUNT
 template <class T>
 void
 intrusive_ptr_incref(T* obj)
@@ -180,4 +181,3 @@ intrusive_ptr_release(yeti::YetiRuntimeSerializable *obj)
     intrusive_ptr_decref<YetiRuntimeSerializable>(obj);
 }
 
-#endif

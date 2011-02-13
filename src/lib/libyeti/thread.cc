@@ -118,6 +118,12 @@ pThreadLock::mutex()
     return &mutex_;
 }
 
+void
+pThreadLock::print(std::ostream &os) const
+{
+    os << "pThread Lock" << endl;
+}
+
 ThreadGroup::ThreadGroup(uli nthread)
   :
     nthread_max_(nthread),
@@ -228,7 +234,6 @@ pThreadGroup::get_lock()
     else
         lock = new NullThreadLock;
 
-    yeti_register_new(lock);
     return lock;
 }
 
@@ -247,6 +252,12 @@ bool
 NullThreadLock::trylock()
 {
     return true; //always free
+}
+
+void
+NullThreadLock::print(std::ostream &os) const
+{
+    os << "NullThreadLock" << endl;
 }
 
 Thread::Thread(uli threadnum)
