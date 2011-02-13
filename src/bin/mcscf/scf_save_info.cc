@@ -73,6 +73,7 @@ void SCF::save_info()
     Process::environment.globals["MCSCF ENERGY"] = total_energy;
     Process::environment.globals["CURRENT ENERGY"] = total_energy;
     reference_energy_ = total_energy;
+    psio_->close(PSIF_CHKPT, 1);
     cleanup();
 
     return;
