@@ -26,7 +26,7 @@ class Chkpt;
 
 class MOInfoBase{
 public:
-  MOInfoBase(bool silent_ = false, bool use_liboptions_ = true);
+  MOInfoBase(Options& options_, bool silent_ = false);
   ~MOInfoBase();
 
   double      get_nuclear_energy()               const {return(nuclear_energy);}
@@ -53,17 +53,18 @@ public:
   double      get_scf_mos(int i,int j)           const {if((i<nmo)&&(j<nso)) return(scf[i][j]); else return(0.0);}
   void        write_chkpt_mos();
 protected:
-  void        read_chkpt_data();
+  void        read_data();
   void        compute_number_of_electrons();
   void        correlate(char *ptgrp, int irrep, int& nirreps_old, int& nirreps_new,int*& correlation);
   void        read_mo_space(int nirreps_ref, int& n, intvec& mo, std::string labels);
   void        print_mo_space(int& nmo, intvec& mo, std::string labels);
-  intvec      read_chkpt_intvec(int n, int* array);
+  intvec      convert_int_array_to_vector(int n, const int* array);
 
   void        startup();
   void        cleanup();
   void        compute_ioff();
 
+  Options&    options;
   int         nirreps;
   int         wfn_sym;
   int         charge;

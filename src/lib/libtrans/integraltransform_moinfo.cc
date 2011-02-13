@@ -1,5 +1,4 @@
 #include "integraltransform.h"
-#include <libchkpt/chkpt.hpp>
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
 #include <libmints/molecule.h>
@@ -22,10 +21,6 @@ IntegralTransform::raid_checkpoint()
     _nso     = Process::environment.reference_wavefunction()->nso();
     _sopi    = Process::environment.reference_wavefunction()->nsopi();
     _mopi    = Process::environment.reference_wavefunction()->nmopi();
-    // TODO This is a temporary fix, so that the MO coefficients can be read from chkpt.
-    // Eventually they should just be read from Wavefunction
-    _chkpt->wt_sopi(_sopi);
-    _chkpt->wt_orbspi(_mopi);
     _clsdpi  = Process::environment.reference_wavefunction()->doccpi();
     _openpi  = Process::environment.reference_wavefunction()->soccpi();
     _frzcpi  = Process::environment.reference_wavefunction()->frzcpi();
@@ -329,12 +324,17 @@ IntegralTransform::process_eigenvectors()
 {
     std::vector<shared_ptr<MOSpace> >::const_iterator space;
 
+    // Read the orbitals from the reference wavefunction, in matrix form
+    SharedMatrix matCa = Process::environment.reference_wavefunction()->Ca();
+    SharedMatrix matCb = Process::environment.reference_wavefunction()->Cb();
+
     // Read the eigenvectors from the checkpoint file
     if(_transformationType == Restricted){
         // Set up for a restricted transformation
         if(_Ca == NULL) _Ca = new double**[_nirreps];
         for(int h = 0; h < _nirreps; ++h){
-            _Ca[h] = _chkpt->rd_scf_irrep(h);
+            _Ca[h] = block_matrix(_sopi[h], _mopi[h]);
+            ::memcpy(_Ca[h][0], matCa->pointer(h), _sopi[h]*_mopi[h]*sizeof(double));
         }
         _Cb = _Ca;
     }else if(_transformationType == Unrestricted){
@@ -343,8 +343,10 @@ IntegralTransform::process_eigenvectors()
         if(_Ca == NULL) _Ca = new double**[_nirreps];
         if(_Cb == NULL) _Cb = new double**[_nirreps];
         for(int h = 0; h < _nirreps; ++h){
-            _Ca[h] = _chkpt->rd_alpha_scf_irrep(h);
-            _Cb[h] = _chkpt->rd_beta_scf_irrep(h);
+            _Ca[h] = block_matrix(_sopi[h], _mopi[h]);
+            ::memcpy(_Ca[h][0], matCa->pointer(h), _sopi[h]*_mopi[h]*sizeof(double));
+            _Cb[h] = block_matrix(_sopi[h], _mopi[h]);
+            ::memcpy(_Cb[h][0], matCb->pointer(h), _sopi[h]*_mopi[h]*sizeof(double));
         }
     }
 

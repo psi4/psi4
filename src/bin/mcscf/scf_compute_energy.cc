@@ -12,6 +12,8 @@ double SCF::compute_energy()
 {
   fprintf(outfile,"\n\n  Running an SCF calculation");
 
+  startup();
+
   // Read the one electron integrals
   read_so_oei();
 

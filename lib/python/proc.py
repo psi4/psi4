@@ -20,7 +20,7 @@ def run_scf(name, **kwargs):
 # with a standard guess. This preserves previous SCF options
 # set by other procedures (eg. SAPT output file types for SCF)
 
-def run_mcscf(name, **kwargs):
+def run_mcscf(**kwargs):
     molecule = PsiMod.get_active_molecule()
     if (kwargs.has_key('molecule')):
       molecule = kwargs.pop('molecule')

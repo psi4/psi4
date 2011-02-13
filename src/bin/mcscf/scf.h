@@ -18,6 +18,7 @@ public:
   explicit SCF(Options& options_, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt_);
   ~SCF();
   double compute_energy();
+
 private:
   ReferenceType reference;
   static const int maxci   = 8;

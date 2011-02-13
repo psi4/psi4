@@ -71,17 +71,21 @@ void Wavefunction::common_init()
     const Dimension dimension = sobasisset_->dimension();
     factory_.init_with(dimension, dimension);
 
+    nirrep_ = dimension.n();
+
     // Obtain memory amount from the environment
     memory_ = Process::environment.get_memory();
 
     nso_ = basisset_->nbf();
     nmo_ = basisset_->nbf();
-    for (int k = 0; k < 8; k++) {
-        nsopi_[k] = 0;
+    for (int k = 0; k < nirrep_; k++) {
+        nsopi_[k] = dimension[k];
         nmopi_[k] = 0;
         doccpi_[k] = 0;
         soccpi_[k] = 0;
     }
+
+    reference_energy_ = 0.0;
 
     // Read in the debug flag
     debug_ = options_.get_int("DEBUG");

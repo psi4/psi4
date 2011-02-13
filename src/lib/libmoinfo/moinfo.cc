@@ -11,9 +11,11 @@
 // PSI Libraries
 #include <liboptions/liboptions.h>
 #include <libciomr/libciomr.h>
-#include <libchkpt/chkpt.hpp>
-#include <libipv1/ip_lib.h>
 #include <libutil/libutil.h>
+#include <psi4-dec.h>
+#include <libmints/matrix.h>
+#include <libmints/molecule.h>
+#include <libmints/wavefunction.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
 
@@ -25,7 +27,8 @@ using namespace std;
 
 namespace psi {
 
-MOInfo::MOInfo(bool silent_, bool use_liboptions_) : MOInfoBase(silent_,use_liboptions_)
+MOInfo::MOInfo(Options& options_, bool silent_)
+: MOInfoBase(options_, silent_)
 {
   /***************
     Set defaults
@@ -85,15 +88,29 @@ void MOInfo::read_info()
   /***********************************
     Read Nuclear,SCF and other stuff
   ***********************************/
-  read_chkpt_data();
-  nmo            = _default_chkpt_lib_->rd_nmo();
+  read_data();
+  nmo            = Process::environment.reference_wavefunction()->nmo();
   compute_number_of_electrons();
-  scf_energy     = _default_chkpt_lib_->rd_escf();
-  mopi           = read_chkpt_intvec(nirreps,_default_chkpt_lib_->rd_orbspi());
-  scf            = _default_chkpt_lib_->rd_scf();
+  scf_energy     = Process::environment.reference_wavefunction()->reference_energy();
+  mopi           = convert_int_array_to_vector(nirreps, Process::environment.reference_wavefunction()->nmopi());
+  SharedMatrix matCa = Process::environment.reference_wavefunction()->Ca();
+  scf            = block_matrix(nso, nmo);
+  unsigned int soOffset = 0;
+  unsigned int moOffset = 0;
+  for(int h = 0; h < nirreps; ++h){
+      for(int so = 0; so < sopi[h]; ++so){
+          for(int mo = 0; mo < mopi[h]; ++mo){
+              scf[so+soOffset][mo+moOffset] = matCa->get(h, so, mo);
+          }
+      }
+      soOffset += sopi[h];
+      moOffset += mopi[h];
+  }
   scf_irrep      = new double**[nirreps];
-  for(int i=0;i<nirreps;i++)
-    scf_irrep[i] = _default_chkpt_lib_->rd_scf_irrep(i);
+  for(int i=0;i<nirreps;i++){
+      scf_irrep[i] = block_matrix(sopi[i], mopi[i]);
+      ::memcpy(scf_irrep[i][0], matCa->pointer(i), mopi[i]*sopi[i]*sizeof(double));
+  }
 
   // Determine the wave function irrep
   if(use_liboptions){
@@ -185,72 +202,73 @@ void MOInfo::read_mo_spaces()
   all.assign(nirreps,0);
   actv_docc.assign(nirreps,0);
 
-  // For single-point geometry optimizations and frequencies
-  char* keyword = _default_chkpt_lib_->build_keyword(const_cast<char *>("Current Displacement Irrep"));
+  // For frequencies
+  //TODO restore this functionality, avoiding chkpt calls
+  const char* keyword = ""; //chkpt->build_keyword(const_cast<char *>("Current Displacement Irrep"));
 
-  if(_default_chkpt_lib_->exist(keyword)){
-    int   disp_irrep  = _default_chkpt_lib_->rd_disp_irrep();
-    char *save_prefix = _default_chkpt_lib_->rd_prefix();
-    int nirreps_ref;
+  if(0/*chkpt->exist(keyword)*/){
+//    int   disp_irrep  = chkpt->rd_disp_irrep();
+//    char *save_prefix = chkpt->rd_prefix();
+//    int nirreps_ref;
 
-    // read symmetry info and MOs for undisplaced geometry from
-    // root section of checkpoint file
-    _default_chkpt_lib_->reset_prefix();
-    _default_chkpt_lib_->commit_prefix();
+//    // read symmetry info and MOs for undisplaced geometry from
+//    // root section of checkpoint file
+//    chkpt->reset_prefix();
+//    chkpt->commit_prefix();
 
-    char *ptgrp_ref = _default_chkpt_lib_->rd_sym_label();
+//    char *ptgrp_ref = chkpt->rd_sym_label();
 
-    // Lookup irrep correlation table
-    int* correlation;
-    correlate(ptgrp_ref, disp_irrep, nirreps_ref, nirreps,correlation);
+//    // Lookup irrep correlation table
+//    int* correlation;
+//    correlate(ptgrp_ref, disp_irrep, nirreps_ref, nirreps,correlation);
 
-    intvec focc_ref;
-    intvec docc_ref;
-    intvec actv_ref;
-    intvec fvir_ref;
-    intvec actv_docc_ref;
+//    intvec focc_ref;
+//    intvec docc_ref;
+//    intvec actv_ref;
+//    intvec fvir_ref;
+//    intvec actv_docc_ref;
 
-    // build orbital information for current point group
-    // Read the values stored in the chkpt
-    // override if the user defines values
-    focc_ref = read_chkpt_intvec(nirreps_ref,_default_chkpt_lib_->rd_frzcpi());
-    docc_ref = read_chkpt_intvec(nirreps_ref,_default_chkpt_lib_->rd_clsdpi());
-    actv_ref = read_chkpt_intvec(nirreps_ref,_default_chkpt_lib_->rd_openpi());
-    fvir_ref.assign(nirreps_ref,0); 
-    actv_docc_ref.assign(nirreps_ref,0); 
+//    // build orbital information for current point group
+//    // Read the values stored in the chkpt
+//    // override if the user defines values
+//    focc_ref = convert_int_array_to_vector(nirreps_ref,chkpt->rd_frzcpi());
+//    docc_ref = convert_int_array_to_vector(nirreps_ref,chkpt->rd_clsdpi());
+//    actv_ref = convert_int_array_to_vector(nirreps_ref,chkpt->rd_openpi());
+//    fvir_ref.assign(nirreps_ref,0);
+//    actv_docc_ref.assign(nirreps_ref,0);
 
-    for (int h = 0; h < nirreps_ref; h++)
-      docc_ref[h] -= focc_ref[h];
+//    for (int h = 0; h < nirreps_ref; h++)
+//      docc_ref[h] -= focc_ref[h];
 
-    nfocc = std::accumulate( focc_ref.begin(), focc_ref.end(), 0 );
-    ndocc = std::accumulate( docc_ref.begin(), docc_ref.end(), 0 );
-    nactv = std::accumulate( actv_ref.begin(), actv_ref.end(), 0 );
+//    nfocc = std::accumulate( focc_ref.begin(), focc_ref.end(), 0 );
+//    ndocc = std::accumulate( docc_ref.begin(), docc_ref.end(), 0 );
+//    nactv = std::accumulate( actv_ref.begin(), actv_ref.end(), 0 );
 
-    read_mo_space(nirreps_ref,nfocc,focc_ref,"CORR_FOCC FROZEN_DOCC");
-    read_mo_space(nirreps_ref,ndocc,docc_ref,"CORR_DOCC RESTRICTED_DOCC");
-    read_mo_space(nirreps_ref,nactv,actv_ref,"CORR_ACTV ACTIVE ACTV");
+//    read_mo_space(nirreps_ref,nfocc,focc_ref,"CORR_FOCC FROZEN_DOCC");
+//    read_mo_space(nirreps_ref,ndocc,docc_ref,"CORR_DOCC RESTRICTED_DOCC");
+//    read_mo_space(nirreps_ref,nactv,actv_ref,"CORR_ACTV ACTIVE ACTV");
 
-    read_mo_space(nirreps_ref,nfvir,fvir_ref,"CORR_FVIR FROZEN_UOCC");
-    read_mo_space(nirreps_ref,nactv_docc,actv_docc_ref,"ACTIVE_DOCC");
+//    read_mo_space(nirreps_ref,nfvir,fvir_ref,"CORR_FVIR FROZEN_UOCC");
+//    read_mo_space(nirreps_ref,nactv_docc,actv_docc_ref,"ACTIVE_DOCC");
 
-    for (int h = 0; h < nirreps_ref; h++) {
-      focc[ correlation[h] ]      += focc_ref[h];
-      docc[ correlation[h] ]      += docc_ref[h];
-      actv[ correlation[h] ]      += actv_ref[h];
-      fvir[ correlation[h] ]      += fvir_ref[h];
-      actv_docc[ correlation[h] ] += actv_docc_ref[h];
-    }
-    wfn_sym = correlation[wfn_sym];
-    _default_chkpt_lib_->set_prefix(save_prefix);
-    _default_chkpt_lib_->commit_prefix();
-    free(save_prefix);
-    free(ptgrp_ref);
-    delete [] correlation;
+//    for (int h = 0; h < nirreps_ref; h++) {
+//      focc[ correlation[h] ]      += focc_ref[h];
+//      docc[ correlation[h] ]      += docc_ref[h];
+//      actv[ correlation[h] ]      += actv_ref[h];
+//      fvir[ correlation[h] ]      += fvir_ref[h];
+//      actv_docc[ correlation[h] ] += actv_docc_ref[h];
+//    }
+//    wfn_sym = correlation[wfn_sym];
+//    chkpt->set_prefix(save_prefix);
+//    chkpt->commit_prefix();
+//    free(save_prefix);
+//    free(ptgrp_ref);
+//    delete [] correlation;
   }else{
     // For a single-point only
-    focc = read_chkpt_intvec(nirreps,_default_chkpt_lib_->rd_frzcpi());
-    docc = read_chkpt_intvec(nirreps,_default_chkpt_lib_->rd_clsdpi());
-    actv = read_chkpt_intvec(nirreps,_default_chkpt_lib_->rd_openpi());
+    focc = convert_int_array_to_vector(nirreps, Process::environment.reference_wavefunction()->frzcpi());
+    docc = convert_int_array_to_vector(nirreps, Process::environment.reference_wavefunction()->doccpi());
+    actv = convert_int_array_to_vector(nirreps, Process::environment.reference_wavefunction()->soccpi());
 
     for (int h = 0; h < nirreps; h++)
       docc[h] -= focc[h];
@@ -266,7 +284,7 @@ void MOInfo::read_mo_spaces()
     read_mo_space(nirreps,nactv_docc,actv_docc,"ACTIVE_DOCC");
   }
 
-  free(keyword);
+//  free(keyword);
 
   // Compute the number of external orbitals per irrep
   nextr = 0;

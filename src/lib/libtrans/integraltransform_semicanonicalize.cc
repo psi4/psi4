@@ -30,7 +30,7 @@ IntegralTransform::semicanonicalize()
     for(int h = 0, moOffset = 0; h < _nirreps; ++h){
         if(_mopi[h] == 0) continue;
         C[h] = block_matrix(_sopi[h], _mopi[h]);
-        memcpy(C[h][0], _Ca[h][0], _sopi[h] * _mopi[h] * sizeof(double));
+        ::memcpy(C[h][0], _Ca[h][0], _sopi[h]*_mopi[h]*sizeof(double));
         // The Alpha occ-occ block
         int nOccOrbs = _clsdpi[h] + _openpi[h];
         if(nOccOrbs){

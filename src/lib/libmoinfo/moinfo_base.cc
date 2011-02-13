@@ -2,9 +2,8 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
-
-#include <libchkpt/chkpt.hpp>
-#include <libipv1/ip_lib.h>
+#include <psi4-dec.h>
+#include <libmints/mints.h>
 #include <liboptions/liboptions.h>
 #include <libutil/libutil.h>
 
@@ -16,13 +15,12 @@ using namespace std;
 
 namespace psi {
 
-MOInfoBase::MOInfoBase(bool silent_,bool use_liboptions_) : silent(silent_), use_liboptions(use_liboptions_)
+MOInfoBase::MOInfoBase(Options& options_, bool silent_)
+: options(options_), silent(silent_)
 {
-  startup();
-  if(use_liboptions){
-    charge       = options_get_int("CHARGE");
-    multiplicity = options_get_int("MULTP");
-  }
+    startup();
+    charge       = Process::environment.molecule()->molecular_charge();
+    multiplicity = Process::environment.molecule()->multiplicity();
 }
 
 MOInfoBase::~MOInfoBase()
@@ -49,45 +47,37 @@ void MOInfoBase::startup()
 
 void MOInfoBase::cleanup()
 {
-  for(int h = 0;h < nirreps;h++)
-    psi::Chkpt::free(irr_labs[h]);
-  free(irr_labs);
-
-  PSI_DELETE_ARRAY(ioff);
+    PSI_DELETE_ARRAY(ioff);
 }
 
-void MOInfoBase::read_chkpt_data()
+void MOInfoBase::read_data()
 {
-  nirreps  = _default_chkpt_lib_->rd_nirreps();
-  nso      = _default_chkpt_lib_->rd_nso();
+    if(!Process::environment.reference_wavefunction())
+        throw PSIEXCEPTION("The reference wavefunction does not exist yet");
 
-  // Read sopi from the chkpt and save as a STL vector
-  sopi = read_chkpt_intvec(nirreps,_default_chkpt_lib_->rd_sopi());
-
-  irr_labs = _default_chkpt_lib_->rd_irr_labs();
-
-  nuclear_energy = _default_chkpt_lib_->rd_enuc();
+    nirreps        = Process::environment.reference_wavefunction()->nirrep();
+    nso            = Process::environment.reference_wavefunction()->nso();
+    // Read sopi and save as a STL vector
+    sopi           = convert_int_array_to_vector(nirreps, Process::environment.reference_wavefunction()->nsopi());
+    irr_labs       = Process::environment.molecule()->irrep_labels();
+    nuclear_energy = Process::environment.molecule()->nuclear_repulsion_energy();
 }
 
 void MOInfoBase::compute_number_of_electrons()
 {
-  int     nel   = 0;
-  int     natom = _default_chkpt_lib_->rd_natom();
-  double* zvals = _default_chkpt_lib_->rd_zvals();
+    int nel   = 0;
+    int natom = Process::environment.molecule()->natom();
 
-  for(int i=0; i < natom;i++){
-    nel += static_cast<int>(zvals[i]);
-  }
-  nel -= charge;
+    for(int i=0; i < natom;i++){
+        nel += static_cast<int>(Process::environment.molecule()->Z(i));
+    }
+    nel -= charge;
 
   // Check if the multiplicity makes sense
   if( ((nel+1-multiplicity) % 2) != 0)
     print_error(outfile,"\n\n  MOInfoBase: Wrong multiplicity.\n\n",__FILE__,__LINE__);
-
-  nael = (nel + multiplicity -1)/2;
-  nbel =  nel - nael;
-
-  PSI_FREE(zvals);
+    nael = (nel + multiplicity -1)/2;
+    nbel =  nel - nael;
 }
 
 void MOInfoBase::compute_ioff()
@@ -100,35 +90,58 @@ void MOInfoBase::compute_ioff()
 
 void MOInfoBase::read_mo_space(int nirreps_ref, int& n, intvec& mo, string labels)
 {
-  bool read = false;
+    bool read = false;
 
-  vector<string> label_vec = split(labels);
-  for(int k = 0; k < label_vec.size(); ++k){
-    int size;
-    int stat = ip_count(const_cast<char *>(label_vec[k].c_str()),&size,0); // Cast to avoid warnings
-    if(stat == IPE_OK){
-      // Defaults is to set all to zero
-      mo.assign(nirreps_ref,0);
-      n = 0;
-      if(read){
-        fprintf(outfile,"\n\n  libmoinfo has found a redundancy in the input keywords %s , please fix it!",labels.c_str());
-        fflush(outfile);
-        exit(1);
-      }else{
-        read = true;
-      }
-      if(size==nirreps_ref){
-        for(int i=0;i<size;i++){
-          stat=ip_data(const_cast<char *>(label_vec[k].c_str()),const_cast<char *>("%d"),(&(mo)[i]),1,i); // Cast to avoid warnings
-          n += mo[i];
-        }
+    vector<string> label_vec = split(labels);
+    for(unsigned int k = 0; k < label_vec.size(); ++k){
+        // Does the array exist in the input?
+        const char *label = label_vec[k].c_str();
+        int localOption  = options.get(label).size();
+        int globalOption = options.get_global(label).size();
+        if(localOption || globalOption){
+            // Defaults is to set all to zero
+            mo.assign(nirreps_ref,0);
+            n = 0;
+            if(read){
+                fprintf(outfile,"\n\n  libmoinfo has found a redundancy in the input keywords %s , please fix it!",labels.c_str());
+                fflush(outfile);
+                exit(1);
+            }else{
+                read = true;
+            }
+            int size = globalOption;
+            if(localOption)  size = localOption;
+
+            if(localOption){
+                if(localOption==nirreps_ref){
+                    for(int i=0;i<size;i++){
+                        mo[i] = options[label][i].to_integer();
+                        n += mo[i];
+                    }
+                }else{
+                    fprintf(outfile,"\n\n  The size of the %s array (%d) does not match the number of irreps (%d), please fix the input file",label_vec[k].c_str(),size,nirreps_ref);
+                    fflush(outfile);
+                    exit(1);
+                }
+            }else if(globalOption){
+                if(globalOption==nirreps_ref){
+                    for(int i=0;i<size;i++){
+                        mo[i] = options.get_global(label)[i].to_integer();
+                        n += mo[i];
+                    }
+                }else{
+                    fprintf(outfile,"\n\n  The size of the %s array (%d) does not match the number of irreps (%d), please fix the input file",label_vec[k].c_str(),size,nirreps_ref);
+                    fflush(outfile);
+                    exit(1);
+                }
+            }
+         }
       }else{
         fprintf(outfile,"\n\n  The size of the %s array (%d) does not match the number of irreps (%d), please fix the input file",label_vec[k].c_str(),size,nirreps_ref);
         fflush(outfile);
         exit(1);
       }
     }
-  }
 }
 
 void MOInfoBase::print_mo_space(int& n, intvec& mo, std::string labels)
@@ -140,11 +153,6 @@ void MOInfoBase::print_mo_space(int& n, intvec& mo, std::string labels)
   for(int i=0;i<nirreps;i++)
     fprintf(outfile," %3d ",mo[i]);
   fprintf(outfile,"  %3d",n);
-}
-
-void MOInfoBase::write_chkpt_mos()
-{
-  _default_chkpt_lib_->wt_scf(scf);
 }
 
 void MOInfoBase::correlate(char *ptgrp, int irrep, int& nirreps_old, int& nirreps_new,int*& arr)
@@ -242,12 +250,11 @@ void MOInfoBase::correlate(char *ptgrp, int irrep, int& nirreps_old, int& nirrep
   return;
 }
 
-intvec MOInfoBase::read_chkpt_intvec(int n, int* array)
+intvec MOInfoBase::convert_int_array_to_vector(int n, const int* array)
 {
-  // Read an array from chkpt and save as a STL vector
-  intvec stl_vector(&array[0],&array[n]);
-  psi::Chkpt::free(array);
-  return(stl_vector);
+    // Read an integer array and save as a STL vector
+    intvec stl_vector(&array[0],&array[n]);
+    return(stl_vector);
 }
 
 }
