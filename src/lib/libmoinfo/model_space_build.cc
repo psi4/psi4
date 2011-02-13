@@ -65,9 +65,9 @@ void ModelSpace::build()
   generate_combinations(nactv,nactive_bel,beta_combinations);
 
   if(alfa_combinations.size()==0)
-    alfa_combinations.push_back(vector<int>(0));
+    alfa_combinations.push_back(std::vector<int>(0));
   if(beta_combinations.size()==0)
-    beta_combinations.push_back(vector<int>(0));
+    beta_combinations.push_back(std::vector<int>(0));
 
   for(int a = 0; a < alfa_combinations.size(); ++a){
     for(int b = 0; b < beta_combinations.size(); ++b){

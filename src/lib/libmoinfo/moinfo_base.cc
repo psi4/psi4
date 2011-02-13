@@ -73,9 +73,9 @@ void MOInfoBase::compute_number_of_electrons()
     }
     nel -= charge;
 
-  // Check if the multiplicity makes sense
-  if( ((nel+1-multiplicity) % 2) != 0)
-    print_error(outfile,"\n\n  MOInfoBase: Wrong multiplicity.\n\n",__FILE__,__LINE__);
+    // Check if the multiplicity makes sense
+    if( ((nel+1-multiplicity) % 2) != 0)
+        throw PSIEXCEPTION("\n\n  MOInfoBase: Wrong multiplicity.\n\n");
     nael = (nel + multiplicity -1)/2;
     nbel =  nel - nael;
 }
@@ -135,12 +135,7 @@ void MOInfoBase::read_mo_space(int nirreps_ref, int& n, intvec& mo, string label
                     exit(1);
                 }
             }
-         }
-      }else{
-        fprintf(outfile,"\n\n  The size of the %s array (%d) does not match the number of irreps (%d), please fix the input file",label_vec[k].c_str(),size,nirreps_ref);
-        fflush(outfile);
-        exit(1);
-      }
+        }
     }
 }
 

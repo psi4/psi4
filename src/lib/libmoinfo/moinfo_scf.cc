@@ -4,8 +4,6 @@
 #include <cstring>
 
 #include <libciomr/libciomr.h>
-#include <libchkpt/chkpt.hpp>
-#include <libipv1/ip_lib.h>
 #include <liboptions/liboptions.h>
 
 #include "moinfo_scf.h"
@@ -25,7 +23,7 @@ MOInfoSCF::MOInfoSCF(Options& options_, bool silent_)
   if(use_liboptions){
     // The first irrep is 0
     wfn_sym = 0;
-    string wavefunction_sym_str = options_get_str("WFN_SYM");
+    string wavefunction_sym_str = options.get_str("WFN_SYM");
     to_lower(wavefunction_sym_str);
 
     for(int h = 0; h < nirreps; ++h){
