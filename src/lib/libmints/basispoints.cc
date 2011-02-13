@@ -7,11 +7,16 @@
 #include "gshell.h"
 #include <cstdio>
 #include <cmath>
+#include <float.h>
 
+#include <libqt/qt.h>
 #include <libciomr/libciomr.h>
+#define DANGER_TOL 1.0E-25
 
 using namespace psi;
 using namespace boost;
+
+namespace psi {
 
 BasisPoints::BasisPoints(shared_ptr<BasisSet> bas, int block_size)
 {
@@ -25,17 +30,54 @@ BasisPoints::BasisPoints(shared_ptr<BasisSet> bas, int block_size)
     do_gradients_ = false;
     do_hessians_ = false;
     do_laplacians_ = false;
+    
+    // Setup the default cutoff radii squared (infinity)
+    cutoff_radii_2_ = init_array(basis_->nshell());
+    computeCutoffRadii2();
+
+    sig_shells_ = (bool*) malloc(basis_->nshell()*sizeof(bool));
+    false_shells_ = (bool*) malloc(basis_->nshell()*sizeof(bool));
+
+    rel2abs_shells_ = init_int_array(basis_->nshell());
+    abs2rel_shells_ = init_int_array(basis_->nshell());
+    rel2abs_functions_ = init_int_array(basis_->nbf());
+    abs2rel_functions_ = init_int_array(basis_->nbf());
+    nsig_shells_ = basis_->nshell();
+    nsig_functions_ = basis_->nbf();
+    block_efficiency_ = 1.0;
+
+    spherical_ = basis_->has_puream();
+    max_am_ = basis_->max_am();
+    max_carts_ = (max_am_ + 1)*(max_am_ + 2) / 2; 
+    max_prim_ = basis_->max_nprimitive();
+    nao_ = basis_->nao();
+    nso_ = basis_->nbf();
+    nshell_ = basis_->nshell();
+    nprim_per_shell_ = init_int_array(basis_->nshell());
+    ncart_per_shell_ = init_int_array(basis_->nshell());
+    nso_per_shell_ = init_int_array(basis_->nshell());
+    am_per_shell_ = init_int_array(basis_->nshell());
+    a_ = init_int_array(nao_);
+    b_ = init_int_array(nao_);
+    c_ = init_int_array(nao_);
+    xc_ = init_array(nshell_);
+    yc_ = init_array(nshell_);
+    zc_ = init_array(nshell_);
+    coef_ = block_matrix(nao_, max_prim_);
+    alpha_ = block_matrix(nshell_, max_prim_);
+    prims_ = block_matrix(nao_, max_prim_);
+    ex_ = init_array(max_prim_);
+    dx_pow_ = init_array(max_am_ + 1);
+    dy_pow_ = init_array(max_am_ + 1);
+    dz_pow_ = init_array(max_am_ + 1);
+
+    sotrans_count_ = init_int_array(max_am_ + 1);
+    sotrans_ao_ = (int**) malloc((max_am_ + 1)*sizeof(int*));
+    sotrans_so_ = (int**) malloc((max_am_ + 1)*sizeof(int*));
+    sotrans_coef_ = (double**) malloc((max_am_ + 1)*sizeof(double*));
+
     allocate();
-
-    int lmax = basis_->max_am();
-    Nam = init_array((lmax+1)*(lmax+2)>>1);
-    ang = init_array((lmax+1)*(lmax+2)>>1);
-    a = init_int_array((lmax+1)*(lmax+2)>>1);
-    b = init_int_array((lmax+1)*(lmax+2)>>1);
-    c = init_int_array((lmax+1)*(lmax+2)>>1);
-
-    prims = init_array(basis_->max_nprimitive());
-
+    init_basis_data();
 }
 BasisPoints::~BasisPoints()
 {
@@ -45,38 +87,153 @@ BasisPoints::~BasisPoints()
     do_laplacians_ = false;
     release();
 
-    free(Nam);
-    free(ang);
-    free(a);
-    free(b);
-    free(c);
+    free(cutoff_radii_2_);
+    free(sig_shells_);
+    free(false_shells_);
 
-    free(prims);
+    free(rel2abs_shells_);
+    free(abs2rel_shells_);
+    free(rel2abs_functions_);
+    free(abs2rel_functions_);
+    
+    free(nprim_per_shell_);
+    free(ncart_per_shell_);
+    free(nso_per_shell_);
+    free(am_per_shell_);
+
+    free(a_);
+    free(b_);
+    free(c_);
+    free(xc_);
+    free(yc_);
+    free(zc_);
+    free_block(coef_);
+    free_block(alpha_);
+    free_block(prims_);
+    free(ex_);
+    free(dx_pow_);
+    free(dy_pow_);
+    free(dz_pow_);
+
+    for (int L = 0; L <= max_am_; L++) {
+        free(sotrans_so_[L]);
+        free(sotrans_ao_[L]);
+        free(sotrans_coef_[L]);
+    }
+    free(sotrans_so_); 
+    free(sotrans_ao_); 
+    free(sotrans_coef_); 
+    free(sotrans_count_); 
+}
+void BasisPoints::init_basis_data()
+{
+    shared_ptr<IntegralFactory> fact(new IntegralFactory(basis_,basis_,basis_,basis_));
+
+    int offset = 0;
+    for (int P = 0; P < nshell_; P++) {
+        
+        // Grab the shell
+        shared_ptr<GaussianShell> shell = basis_->shell(P);
+        int l = shell->am(); 
+        int nao = shell->ncartesian();
+        int nprim = shell->nprimitive();
+        
+        // Shell center
+        Vector3 v = shell->center();
+        xc_[P] = v[0];
+        yc_[P] = v[1];
+        zc_[P] = v[2];
+
+        // Cartesians and Primitives in this shell
+        nprim_per_shell_[P] = shell->nprimitive();
+        ncart_per_shell_[P] = shell->ncartesian();
+        nso_per_shell_[P] = shell->nfunction();
+        am_per_shell_[P] = shell->am();
+
+        // Cartesian Exponents for each ao within the shell
+        int ao = 0;
+        for (int i=0; i<=l; ++i) {
+            int x = l-i;
+            for (int j=0; j<=i; ++j) {
+                int y = i-j;
+                int z = j;
+                a_[ao + offset] = x;
+                b_[ao + offset] = y;
+                c_[ao + offset] = z;
+                ao++;
+            }
+        }
+
+        // Contraction coefficients, standard normalization, and am normalization
+        for (int L = 0; L < nao; L++)
+            for (int K = 0; K < nprim; K++) {
+                coef_[offset + L][K] =  shell->coef(K) * \
+                    shell->normalize(a_[offset + L], b_[offset + L], c_[offset + L]);
+            }
+
+        // Alphas for each primitive in the shell
+        for (int K = 0; K < nprim; K++) {
+            alpha_[P][K] = shell->exp(K);
+        } 
+
+        offset += nao;   
+    }
+    for (int L = 0; L <= max_am_; L++) {
+        SphericalTransformIter* trans(fact->spherical_transform_iter(L));
+        int G = 0;
+        for (trans->first(); !trans->is_done();trans->next()) {
+            //double trans_coef = trans.coef();
+            //int ind_ao = trans.cartindex();
+            //int ind_so = trans.pureindex();
+            //fprintf(outfile,"  -L = %d, so = %d, ao = %d, val = %14.10f\n", L, ind_so, ind_ao, trans_coef);
+            G++;
+        }
+        sotrans_count_[L] = G;
+        sotrans_so_[L] = init_int_array(G); 
+        sotrans_ao_[L] =  init_int_array(G); 
+        sotrans_coef_[L] =  init_array(G); 
+
+        G = 0;
+        for (trans->first(); !trans->is_done();trans->next()) {
+            sotrans_so_[L][G] = trans->pureindex();
+            sotrans_ao_[L][G] = trans->cartindex();
+            sotrans_coef_[L][G] = trans->coef();
+            G++;
+        }
+        //fprintf(outfile, "  L = %d\n", L);
+        //print_mat(so_transforms_[L],2*L+1, (L+1)*(L+2)/2,outfile);
+    }
 }
 void BasisPoints::allocate()
 {
     int lmax = basis_->max_am();
     if (do_points_ && !have_points_) {
-        ao_points_ = init_array((lmax+1)*(lmax+2)>>1);
+        if (spherical_) {
+            ao_points_ = init_array(nao_);
+        }
         points_ = block_matrix(block_size_,basis_->nbf());
         have_points_ = true;
     }
-    if (do_gradients_ && !have_gradients_)	{
-        ao_gradX_ = init_array((lmax+1)*(lmax+2)>>1);
-        ao_gradY_ = init_array((lmax+1)*(lmax+2)>>1);
-        ao_gradZ_ = init_array((lmax+1)*(lmax+2)>>1);
+    if (do_gradients_ && !have_gradients_) {
+        if (spherical_) {
+            ao_gradX_ = init_array(nao_);
+            ao_gradY_ = init_array(nao_);
+            ao_gradZ_ = init_array(nao_);
+        }
         gradientsX_ = block_matrix(block_size_,basis_->nbf());
         gradientsY_ = block_matrix(block_size_,basis_->nbf());
         gradientsZ_ = block_matrix(block_size_,basis_->nbf());
         have_gradients_ = true;
     }
     if (do_hessians_ && !have_hessians_) {
-        ao_hessXY_ = init_array((lmax+1)*(lmax+2)>>1);
-        ao_hessXZ_ = init_array((lmax+1)*(lmax+2)>>1);
-        ao_hessYZ_ = init_array((lmax+1)*(lmax+2)>>1);
-        ao_hessXX_ = init_array((lmax+1)*(lmax+2)>>1);
-        ao_hessYY_ = init_array((lmax+1)*(lmax+2)>>1);
-        ao_hessZZ_ = init_array((lmax+1)*(lmax+2)>>1);
+        if (spherical_) {
+            ao_hessXY_ = init_array(nao_);
+            ao_hessXZ_ = init_array(nao_);
+            ao_hessYZ_ = init_array(nao_);
+            ao_hessXX_ = init_array(nao_);
+            ao_hessYY_ = init_array(nao_);
+            ao_hessZZ_ = init_array(nao_);
+        }
         hessiansXY_ = block_matrix(block_size_,basis_->nbf());
         hessiansXZ_ = block_matrix(block_size_,basis_->nbf());
         hessiansYZ_ = block_matrix(block_size_,basis_->nbf());
@@ -86,7 +243,9 @@ void BasisPoints::allocate()
         have_hessians_ = true;
     }
     if (do_laplacians_ && !have_laplacians_) {
-        ao_laplac_ = init_array((lmax+1)*(lmax+2)>>1);
+        if (spherical_) {
+            ao_laplac_ = init_array((lmax+1)*(lmax+2)>>1);
+        }
         laplacians_ = block_matrix(block_size_,basis_->nbf());
         have_laplacians_ = true;
     }
@@ -95,26 +254,32 @@ void BasisPoints::allocate()
 void BasisPoints::release()
 {
     if (have_points_ && !do_points_) {
-        free(ao_points_);
+        if (spherical_) {
+            free(ao_points_);
+        }
         free_block(points_);
         have_points_ = false;
     }
     if (have_gradients_ && !do_gradients_) {
-        free(ao_gradX_);
-        free(ao_gradY_);
-        free(ao_gradZ_);
+        if (spherical_) {
+            free(ao_gradX_);
+            free(ao_gradY_);
+            free(ao_gradZ_);
+        }
         free_block(gradientsX_);
         free_block(gradientsY_);
         free_block(gradientsZ_);
         have_gradients_ = false;
     }
     if (have_hessians_ && !do_hessians_) {
-        free(ao_hessXY_);
-        free(ao_hessXZ_);
-        free(ao_hessYZ_);
-        free(ao_hessXX_);
-        free(ao_hessYY_);
-        free(ao_hessZZ_);
+        if (spherical_) {
+            free(ao_hessXY_);
+            free(ao_hessXZ_);
+            free(ao_hessYZ_);
+            free(ao_hessXX_);
+            free(ao_hessYY_);
+            free(ao_hessZZ_);
+        }
         free_block(hessiansXY_);
         free_block(hessiansXZ_);
         free_block(hessiansYZ_);
@@ -124,284 +289,467 @@ void BasisPoints::release()
         have_hessians_ = false;
     }
     if (have_laplacians_ && !do_laplacians_) {
-        free(ao_laplac_);
+        if (spherical_) {
+            free(ao_laplac_);
+        }
         free_block(laplacians_);
         have_laplacians_ = false;
     }
 }
 void BasisPoints::computePoints(SharedGridBlock grid)
 {
+    // NOTE: I have elected not to support mixed spherical/
+    // cartesian basis sets at this time. I'm pretty sure libmints 
+    // dies on those anyways. Also, C1 for now as usual.
+
+    // Find out what's to be done first
+    timer_on("Point Sieve");
+    computeSignificantShells(grid);
+    timer_off("Point Sieve");
+
     double *xg = grid->getX();
     double *yg = grid->getY();
     double *zg = grid->getZ();
     int ntrue = grid->getTruePoints();
+    
+    true_size_ = ntrue;    
+  
+    dx_pow_[0] = 1.0; 
+    dy_pow_[0] = 1.0; 
+    dz_pow_[0] = 1.0; 
 
-    true_size_ = ntrue;
+    double x, y, z, dx, dy, dz, ang;
+    double reg, regX, regY, regZ, preX, preY, preZ; 
+    bool dangerX, dangerY, dangerZ;
+    int index, offset, offset_so, P, K, L, G, nK, nL, nG, l; 
 
-    for (int grid_index = 0; grid_index<ntrue; grid_index++) {
-    // << OPEN MAIN LOOP OVER GRID POINTS
+    int Prel;
 
-    Vector3 point(xg[grid_index],yg[grid_index],zg[grid_index]);
+    double trans_coef;
+    int ind_ao, ind_so, ind_rel;
 
-    if (do_points_) {
-        memset((void*)points_[grid_index], 0, sizeof(double)*basis_->nbf());
-    }
-    if (do_gradients_) {
-        memset((void*)gradientsX_[grid_index], 0, sizeof(double)*basis_->nbf());
-        memset((void*)gradientsY_[grid_index], 0, sizeof(double)*basis_->nbf());
-        memset((void*)gradientsZ_[grid_index], 0, sizeof(double)*basis_->nbf());
-    }
-    if (do_hessians_) {
-        memset((void*)hessiansXY_[grid_index], 0, sizeof(double)*basis_->nbf());
-        memset((void*)hessiansXZ_[grid_index], 0, sizeof(double)*basis_->nbf());
-        memset((void*)hessiansYZ_[grid_index], 0, sizeof(double)*basis_->nbf());
-        memset((void*)hessiansXX_[grid_index], 0, sizeof(double)*basis_->nbf());
-        memset((void*)hessiansYY_[grid_index], 0, sizeof(double)*basis_->nbf());
-        memset((void*)hessiansZZ_[grid_index], 0, sizeof(double)*basis_->nbf());
-    }
-    if (do_laplacians_) {
-        memset((void*)laplacians_[grid_index], 0, sizeof(double)*basis_->nbf());
-    }
-    int lmax = basis_->max_am();
-    int lmax_size = sizeof(double)*(lmax+1)*(lmax+2)>>1;
+    //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+    //          PUREAM  ALGORITHM         //
+    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-    //Run across all shells in the basis
-    for (int P = 0; P<basis_->nshell(); P++)
-    {
-        if (do_points_) {
-            memset((void*)ao_points_,0,lmax_size);
-        }
-        if (do_gradients_) {
-            memset((void*)ao_gradX_,0,lmax_size);
-            memset((void*)ao_gradY_,0,lmax_size);
-            memset((void*)ao_gradZ_,0,lmax_size);
-        }
-        if (do_hessians_) {
-            memset((void*)ao_hessXY_,0,lmax_size);
-            memset((void*)ao_hessXZ_,0,lmax_size);
-            memset((void*)ao_hessYZ_,0,lmax_size);
-            memset((void*)ao_hessXX_,0,lmax_size);
-            memset((void*)ao_hessYY_,0,lmax_size);
-            memset((void*)ao_hessZZ_,0,lmax_size);
-        }
-        if (do_laplacians_) {
-            memset((void*)ao_laplac_,0,lmax_size);
-        }
-        //Get a reference to the current Gaussian Shell object
-        shared_ptr<GaussianShell> shell = basis_->shell(P);
-        //Get center of current shell
-        Vector3 center = shell->center();
-        //Compute displacement
-        Vector3 r = point-center;
-        //Compute distance squared
-        double R2 = r.dot(r);
+    if (spherical_) {
+    
+        // Loop over grid points
+        for (index = 0; index < ntrue; index++) {
 
-        //Evaluate the Gaussian part (gaussian normalization, coef and exponent)
-        //for each primitive
-        for (int k = 0; k<shell->nprimitive(); k++) {
-            prims[k] = shell->coef(k)*exp(-shell->exp(k)*R2);
-            //printf("  Shell %d, Prim %d, Coef %14.10f, Alpha %14.10f, Val%14.10f\n",P,k,shell->coef(k),shell->exp(k),prims[k]);
-        }
-        int l = shell->am();
-        int l_size = sizeof(double)*(l+1)*(l+2)>>1;
+           // Evaluate primitives
+           x = xg[index];
+           y = yg[index];   
+           z = zg[index];  
+           offset = 0; 
+           for (Prel = 0; Prel < nsig_shells_; Prel++) {
+                P = rel2abs_shells_[Prel];
+                nK = nprim_per_shell_[P];                
+                nL = ncart_per_shell_[P];                
 
-        //Get the AO exponents and angular norms for this shell
-        //Multiply the angular part against the angular norm by m_c
-        //
-        int ao = 0;
-        for (int i=0; i<=l; ++i) {
-            int x = l-i;
-            for (int j=0; j<=i; ++j) {
-                int y = i-j;
-                int z = j;
-                a[ao] = x;
-                b[ao] = y;
-                c[ao] = z;
-                Nam[ao] = shell->normalize(x,y,z);
-                ang[ao] = pow(r[0],x)*pow(r[1],y)*pow(r[2],z);
-                ao++;
-            }
-        }
-        //Compute the AO basis functions in this shell
-        for (int mc = 0; mc<(l+1)*(l+2)>>1; mc++) {
-            if (do_points_) {
-                for (int k = 0; k<shell->nprimitive(); k++) {
-                    ao_points_[mc] += prims[k];
+                // Center displacement
+                dx = x - xc_[P];
+                dy = y - yc_[P];
+                dz = z - zc_[P];
+                
+                // All possible powers of \vec dR
+                for (L = 1; L < max_am_ + 1; L++) {
+                    dx_pow_[L] = dx_pow_[L - 1] * dx;
+                    dy_pow_[L] = dy_pow_[L - 1] * dy;
+                    dz_pow_[L] = dz_pow_[L - 1] * dz;
                 }
-                ao_points_[mc] *= Nam[mc]*ang[mc];
-                //fprintf(outfile, "AO basis function %d = %14.10f\n",mc,ao_points_[mc]);
+
+                // exponential
+                for (K = 0; K < nK; K++) {
+                    ex_[K] = exp(-alpha_[P][K]*(dx*dx+dy*dy+dz*dz));
+                }
+                // primitives
+                for (L = offset; L < offset + nL; L++) {
+                    ang = dx_pow_[a_[L]] * dy_pow_[b_[L]] * dz_pow_[c_[L]]; 
+                    for (K = 0; K < nK; K++) {
+                        prims_[L][K] = coef_[L][K] * ang * ex_[K];                         
+                    } 
+                }
+                offset += ncart_per_shell_[P];   
+            }
+            
+            // points
+            if (do_points_) {
+
+                offset = 0;
+                for (Prel = 0; Prel < nsig_shells_; Prel++) {
+                    P = rel2abs_shells_[Prel];
+                    nK = nprim_per_shell_[P];                
+                    nL = ncart_per_shell_[P];                
+                    for (L = offset; L < offset + nL; L++) {
+                        reg = prims_[L][0];
+                        for (K = 1; K < nK; K++) {
+                            reg += prims_[L][K];
+                        }
+                        ao_points_[L] = reg;
+                    } 
+                    offset += ncart_per_shell_[P];   
+                }
+            }           
+ 
+            // gradients 
+            if (do_gradients_) {
+
+                offset = 0;
+                for (Prel = 0; Prel < nsig_shells_; Prel++) {
+                    P = rel2abs_shells_[Prel];
+                    nK = nprim_per_shell_[P];                
+                    nL = ncart_per_shell_[P];
+                    
+                    dx = x - xc_[P];
+                    dy = y - yc_[P];
+                    dz = z - zc_[P];
+
+                    dangerX = fabs(dx) < DANGER_TOL;
+                    dangerY = fabs(dy) < DANGER_TOL;
+                    dangerZ = fabs(dz) < DANGER_TOL;
+                    
+                    for (L = offset; L < offset + nL; L++) {
+                        if (dangerX || a_[L] == 0) 
+                            preX = 0.0;
+                        else 
+                            preX = a_[L]/dx;
+                        if (dangerY || b_[L] == 0) 
+                            preY = 0.0;
+                        else 
+                            preY = b_[L]/dy;
+                        if (dangerZ || c_[L] == 0) 
+                            preZ = 0.0;
+                        else 
+                            preZ = c_[L]/dz;
+                        regX = (preX - 2.0*alpha_[P][0]*dx) * prims_[L][0]; 
+                        regY = (preY - 2.0*alpha_[P][0]*dy) * prims_[L][0]; 
+                        regZ = (preZ - 2.0*alpha_[P][0]*dz) * prims_[L][0]; 
+                        for (K = 1; K < nK; K++) {
+                            regX += (preX - 2.0*alpha_[P][K]*dx) * prims_[L][K]; 
+                            regY += (preY - 2.0*alpha_[P][K]*dy) * prims_[L][K]; 
+                            regZ += (preZ - 2.0*alpha_[P][K]*dz) * prims_[L][K]; 
+                        }
+                        ao_gradX_[L] = regX;
+                        ao_gradY_[L] = regY;
+                        ao_gradZ_[L] = regZ;
+                    } 
+                    offset += ncart_per_shell_[P];   
+                }
+            }
+            // TODO Laplacians 
+
+            //AO -> SO code (sparse/small enough to not merit DGEMM) 
+            if (do_points_) {
+                memset((void*) &points_[index][0], '\0', nsig_functions_*sizeof(double)); 
             }
             if (do_gradients_) {
-                for (int k = 0; k<shell->nprimitive(); k++) {
-                    if (a[mc] == 0)
-                        ao_gradX_[mc] += prims[k]*(-2.0*shell->exp(k)*r[0]*ang[mc]);
-                    else
-                        ao_gradX_[mc] += prims[k]*(a[mc]*pow(r[0],a[mc]-1)*pow(r[1],b[mc])*pow(r[2],c[mc])-2.0*shell->exp(k)*r[0]*ang[mc]);
-                    if (b[mc] == 0)
-                        ao_gradY_[mc] += prims[k]*(-2.0*shell->exp(k)*r[1]*ang[mc]);
-                    else
-                        ao_gradY_[mc] += prims[k]*(b[mc]*pow(r[0],a[mc])*pow(r[1],b[mc]-1)*pow(r[2],c[mc])-2.0*shell->exp(k)*r[1]*ang[mc]);
-                    if (c[mc] == 0)
-                        ao_gradZ_[mc] += prims[k]*(-2.0*shell->exp(k)*r[2]*ang[mc]);
-                    else
-                        ao_gradZ_[mc] += prims[k]*(c[mc]*pow(r[0],a[mc])*pow(r[1],b[mc])*pow(r[2],c[mc]-1)-2.0*shell->exp(k)*r[2]*ang[mc]);
-                }
-                ao_gradX_[mc] *= Nam[mc];
-                ao_gradY_[mc] *= Nam[mc];
-                ao_gradZ_[mc] *= Nam[mc];
-                //fprintf(outfile, "AO basis gradient %d = <%14.10f,%14.10f,%14.10f>\n",mc,ao_gradX_[mc],ao_gradY_[mc],ao_gradZ_[mc]);
-            }
-            if (do_hessians_) {
-                for (int k = 0; k<shell->nprimitive(); k++) {
-                    double q;
-                    q = 0.0;
-                    if (a[mc]>0 && b[mc]>0)
-                        q+= a[mc]*b[mc]*pow(r[0],a[mc]-1)*pow(r[1],b[mc]-1)*pow(r[2],c[mc]);
-                    if (a[mc]>0)
-                        q+= -2.0*shell->exp(k)*r[1]*a[mc]*pow(r[0],a[mc]-1)*pow(r[1],b[mc])*pow(r[2],c[mc]);
-                    if (b[mc]>0)
-                        q+= -2.0*shell->exp(k)*r[0]*b[mc]*pow(r[0],a[mc])*pow(r[1],b[mc]-1)*pow(r[2],c[mc]);
-                    q+= 4.0*(shell->exp(k))*(shell->exp(k))*r[0]*r[1]*ang[mc];
-                    ao_hessXY_[mc] += prims[k]*q;
-
-                    q = 0.0;
-                    if (a[mc]>0 && c[mc]>0)
-                        q+= a[mc]*c[mc]*pow(r[0],a[mc]-1)*pow(r[1],b[mc])*pow(r[2],c[mc]-1);
-                    if (a[mc]>0)
-                        q+= -2.0*shell->exp(k)*r[2]*a[mc]*pow(r[0],a[mc]-1)*pow(r[1],b[mc])*pow(r[2],c[mc]);
-                    if (c[mc]>0)
-                        q+= -2.0*shell->exp(k)*r[0]*c[mc]*pow(r[0],a[mc])*pow(r[1],b[mc])*pow(r[2],c[mc]-1);
-                    q+= 4.0*(shell->exp(k))*(shell->exp(k))*r[0]*r[2]*ang[mc];
-                    ao_hessXZ_[mc] += prims[k]*q;
-
-                    q = 0.0;
-                    if (b[mc]>0 && c[mc]>0)
-                        q+= b[mc]*c[mc]*pow(r[0],a[mc])*pow(r[1],b[mc]-1)*pow(r[2],c[mc]-1);
-                    if (b[mc]>0)
-                        q+= -2.0*shell->exp(k)*r[2]*b[mc]*pow(r[0],a[mc])*pow(r[1],b[mc]-1)*pow(r[2],c[mc]);
-                    if (c[mc]>0)
-                        q+= -2.0*shell->exp(k)*r[1]*c[mc]*pow(r[0],a[mc])*pow(r[1],b[mc])*pow(r[2],c[mc]-1);
-                    q+= 4.0*(shell->exp(k))*(shell->exp(k))*r[1]*r[2]*ang[mc];
-                    ao_hessYZ_[mc] += prims[k]*q;
-
-                    q = 0;
-                    if (a[mc]>1)
-                        q+= a[mc]*(a[mc]-1)*pow(r[0],a[mc]-2)*pow(r[1],b[mc])*pow(r[2],c[mc]);
-                    if (a[mc]>0)
-                        q+= -2.0*a[mc]*shell->exp(k)*ang[mc];
-                    q+= -2.0*shell->exp(k)*(a[mc]+1)*ang[mc]+4.0*(shell->exp(k))*(shell->exp(k))*r[0]*r[0]*ang[mc];
-                    ao_hessXX_[mc] += prims[k]*q;
-
-                    q = 0;
-                    if (b[mc]>1)
-                        q+= b[mc]*(b[mc]-1)*pow(r[0],a[mc])*pow(r[1],b[mc]-2)*pow(r[2],c[mc]);
-                    if (b[mc]>0)
-                        q+= -2.0*b[mc]*shell->exp(k)*ang[mc];
-                    q+= -2.0*shell->exp(k)*(b[mc]+1)*ang[mc]+4.0*(shell->exp(k))*(shell->exp(k))*r[1]*r[1]*ang[mc];
-                    ao_hessYY_[mc] += prims[k]*q;
-
-                    q = 0;
-                    if (c[mc]>1)
-                        q+= c[mc]*(c[mc]-1)*pow(r[0],a[mc])*pow(r[1],b[mc])*pow(r[2],c[mc]-2);
-                    if (a[mc]>0)
-                        q+= -2.0*c[mc]*shell->exp(k)*ang[mc];
-                    q+= -2.0*shell->exp(k)*(c[mc]+1)*ang[mc]+4.0*(shell->exp(k))*(shell->exp(k))*r[2]*r[2]*ang[mc];
-                    ao_hessZZ_[mc] += prims[k]*q;
-
-                }
-                ao_hessXY_[mc] *= Nam[mc];
-                ao_hessXZ_[mc] *= Nam[mc];
-                ao_hessYZ_[mc] *= Nam[mc];
-                ao_hessXX_[mc] *= Nam[mc];
-                ao_hessYY_[mc] *= Nam[mc];
-                ao_hessZZ_[mc] *= Nam[mc];
-                //fprintf(outfile, "AO basis Hessian %d = <%14.10f,%14.10f,%14.10f,%14.10f,%14.10f,%14.10f>\n",mc,ao_hessXY_[mc],ao_hessXZ_[mc],ao_jacobYZ[mc],ao_jacobXX[mc],ao_jacobYY[mc],ao_jacobZZ[mc]);
+                memset((void*) &gradientsX_[index][0], '\0', nsig_functions_*sizeof(double)); 
+                memset((void*) &gradientsY_[index][0], '\0', nsig_functions_*sizeof(double)); 
+                memset((void*) &gradientsZ_[index][0], '\0', nsig_functions_*sizeof(double)); 
             }
 
-            if (do_laplacians_) {
-                if (do_hessians_)
-                    ao_laplac_[mc] = ao_hessXX_[mc]+ao_hessYY_[mc]+ao_hessZZ_[mc];
-                else {
-                    for (int k = 0; k<shell->nprimitive(); k++) {
-                        ao_laplac_[mc] += prims[k]*((((a[mc]==0||r[0]==0.0)?0.0:-a[mc]/(r[0]*r[0]))-2.0*shell->exp(k))+(((a[mc]==0||r[0]==0.0)?0.0:a[mc]/r[0])-2.0*shell->exp(k)*r[0])*(((a[mc]==0||r[0]==0.0)?0.0:a[mc]/r[0])-2.0*shell->exp(k)*r[0]));
-                        ao_laplac_[mc] += prims[k]*((((b[mc]==0||r[1]==0.0)?0.0:-b[mc]/(r[1]*r[1]))-2.0*shell->exp(k))+(((b[mc]==0||r[1]==0.0)?0.0:b[mc]/r[1])-2.0*shell->exp(k)*r[1])*(((b[mc]==0||r[1]==0.0)?0.0:b[mc]/r[1])-2.0*shell->exp(k)*r[1]));
-                        ao_laplac_[mc] += prims[k]*((((c[mc]==0||r[2]==0.0)?0.0:-c[mc]/(r[2]*r[2]))-2.0*shell->exp(k))+(((c[mc]==0||r[2]==0.0)?0.0:c[mc]/r[2])-2.0*shell->exp(k)*r[2])*(((c[mc]==0||r[2]==0.0)?0.0:c[mc]/r[2])-2.0*shell->exp(k)*r[2]));
+            offset = 0;
+            offset_so = 0;
+            for (Prel = 0; Prel < nsig_shells_; Prel++) {
+                P = rel2abs_shells_[Prel];
 
+                l = am_per_shell_[P]; 
+                nG = sotrans_count_[l];
+
+                for (G = 0; G < nG; G++) {
+                    ind_so = sotrans_so_[l][G];
+                    ind_ao = sotrans_ao_[l][G];
+                    trans_coef = sotrans_coef_[l][G];
+
+                    if (do_points_) {
+                        points_[index][ind_so + offset_so] += trans_coef*ao_points_[ind_ao + offset];
                     }
-                    ao_laplac_[mc] *= Nam[mc]*ang[mc];
+                    if (do_gradients_) {
+                        gradientsX_[index][ind_so + offset_so] += trans_coef*ao_gradX_[ind_ao + offset];
+                        gradientsY_[index][ind_so + offset_so] += trans_coef*ao_gradY_[ind_ao + offset];
+                        gradientsZ_[index][ind_so + offset_so] += trans_coef*ao_gradZ_[ind_ao + offset];
+                    }
                 }
-                //fprintf(outfile, "AO basis Laplacian %d = %14.10f\n",mc,ao_laplac_[mc]);
+                
+                offset += ncart_per_shell_[P];   
+                offset_so += nso_per_shell_[P];   
             }
         }
-        int start = shell->function_index();
-        if (shell->is_pure()) {
-            //printf("PURE\n");
-            double trans_coef;
-            int ind_ao;
-            int ind_so;
-            //AO -> SO (fairly easy)
-#pragma warn Removed SphericalTransformIter from BasisSet, use the integral factory.
-#if 0
-            SphericalTransformIter trans(basis_->spherical_transform(shell->am()));
-            for (trans.first(); !trans.is_done();trans.next()) {
-                trans_coef = trans.coef();
-                ind_ao = trans.cartindex();
-                ind_so = trans.pureindex();
-                if (do_points_) {
-                    points_[grid_index][ind_so+start] += trans_coef*ao_points_[ind_ao];
+    
+    } else {
+
+    //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+    //       CARTESIAN  ALGORITHM         //
+    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+        // Loop over grid points
+        for (index = 0; index < ntrue; index++) {
+
+           // Evaluate primitives
+           x = xg[index];
+           y = yg[index];   
+           z = zg[index];  
+           offset = 0; 
+           for (Prel = 0; Prel < nsig_shells_; Prel++) {
+                P = rel2abs_shells_[Prel];
+                nK = nprim_per_shell_[P];                
+                nL = ncart_per_shell_[P];                
+
+                // Center displacement
+                dx = x - xc_[P];
+                dy = y - yc_[P];
+                dz = z - zc_[P];
+                
+                // All possible powers of \vec dR
+                for (L = 1; L < max_am_ + 1; L++) {
+                    dx_pow_[L] = dx_pow_[L - 1] * dx;
+                    dy_pow_[L] = dy_pow_[L - 1] * dy;
+                    dz_pow_[L] = dz_pow_[L - 1] * dz;
                 }
-                if (do_gradients_) {
-                    gradientsX_[grid_index][ind_so+start] += trans_coef*ao_gradX_[ind_ao];
-                    gradientsY_[grid_index][ind_so+start] += trans_coef*ao_gradY_[ind_ao];
-                    gradientsZ_[grid_index][ind_so+start] += trans_coef*ao_gradZ_[ind_ao];
+
+                // exponential
+                for (K = 0; K < nK; K++) {
+                    ex_[K] = exp(-alpha_[P][K]*(dx*dx+dy*dy+dz*dz));
                 }
-                if (do_hessians_) {
-                    hessiansXY_[grid_index][ind_so+start] += trans_coef*ao_hessXY_[ind_ao];
-                    hessiansXZ_[grid_index][ind_so+start] += trans_coef*ao_hessXZ_[ind_ao];
-                    hessiansYZ_[grid_index][ind_so+start] += trans_coef*ao_hessYZ_[ind_ao];
-                    hessiansXX_[grid_index][ind_so+start] += trans_coef*ao_hessXX_[ind_ao];
-                    hessiansYY_[grid_index][ind_so+start] += trans_coef*ao_hessYY_[ind_ao];
-                    hessiansZZ_[grid_index][ind_so+start] += trans_coef*ao_hessZZ_[ind_ao];
+                // primitives
+                for (L = offset; L < offset + nL; L++) {
+                    ang = dx_pow_[a_[L]] * dy_pow_[b_[L]] * dz_pow_[c_[L]]; 
+                    for (K = 0; K < nK; K++) {
+                        prims_[L][K] = coef_[L][K] * ang * ex_[K];                         
+                    } 
                 }
-                if (do_laplacians_) {
-                    laplacians_[grid_index][ind_so+start] += trans_coef*ao_laplac_[ind_ao];
-                }
-                //fprintf(outfile,"Transforming AO shell index %d to SO total index %d, c = %14.10f\n",ind_ao,ind_so+start,trans_coef); fflush(outfile);
+                offset += ncart_per_shell_[P];   
             }
-#endif
-        }
-        else {
-            //AO -> AO (Easy) Thanks Jet!
-            //printf("CART\n");
+            
+            // points
             if (do_points_) {
-                memcpy(points_[grid_index]+start, ao_points_, l_size);
+
+                offset = 0;
+                for (Prel = 0; Prel < nsig_shells_; Prel++) {
+                    P = rel2abs_shells_[Prel];
+                    nK = nprim_per_shell_[P];                
+                    nL = ncart_per_shell_[P];                
+                    for (L = offset; L < offset + nL; L++) {
+                        reg = prims_[L][0];
+                        for (K = 1; K < nK; K++) {
+                            reg += prims_[L][K];
+                        }
+                        points_[index][L] = reg;
+                    } 
+                    offset += ncart_per_shell_[P];   
+                }
             }
+            
+            // gradients 
             if (do_gradients_) {
-                memcpy(gradientsX_[grid_index]+start, ao_gradX_, l_size);
-                memcpy(gradientsY_[grid_index]+start, ao_gradY_, l_size);
-                memcpy(gradientsZ_[grid_index]+start, ao_gradZ_, l_size);
+
+                offset = 0;
+                for (Prel = 0; Prel < nsig_shells_; Prel++) {
+                    P = rel2abs_shells_[Prel];
+                    nK = nprim_per_shell_[P];                
+                    nL = ncart_per_shell_[P];
+                    
+                    dx = x - xc_[P];
+                    dy = y - yc_[P];
+                    dz = z - zc_[P];
+    
+                    dangerX = fabs(dx) < DANGER_TOL;
+                    dangerY = fabs(dy) < DANGER_TOL;
+                    dangerZ = fabs(dz) < DANGER_TOL;
+                    
+                    for (L = offset; L < offset + nL; L++) {
+                        if (dangerX || a_[L] == 0) 
+                            preX = 0.0;
+                        else 
+                            preX = a_[L]/dx;
+                        if (dangerY || b_[L] == 0) 
+                            preY = 0.0;
+                        else 
+                            preY = b_[L]/dy;
+                        if (dangerZ || c_[L] == 0) 
+                            preZ = 0.0;
+                        else 
+                            preZ = c_[L]/dz;
+                        regX = (preX - 2.0*alpha_[P][0]*dx) * prims_[L][0]; 
+                        regY = (preY - 2.0*alpha_[P][0]*dy) * prims_[L][0]; 
+                        regZ = (preZ - 2.0*alpha_[P][0]*dz) * prims_[L][0]; 
+                        for (K = 1; K < nK; K++) {
+                            regX += (preX - 2.0*alpha_[P][K]*dx) * prims_[L][K]; 
+                            regY += (preY - 2.0*alpha_[P][K]*dy) * prims_[L][K]; 
+                            regZ += (preZ - 2.0*alpha_[P][K]*dz) * prims_[L][K]; 
+                        }
+                        gradientsX_[index][L] = regX;
+                        gradientsY_[index][L] = regY;
+                        gradientsZ_[index][L] = regZ;
+                    } 
+                    offset += ncart_per_shell_[P];   
+                }
+    
             }
-            if (do_hessians_) {
-                memcpy(hessiansXY_[grid_index]+start, ao_hessXY_, l_size);
-                memcpy(hessiansXZ_[grid_index]+start, ao_hessXZ_, l_size);
-                memcpy(hessiansYZ_[grid_index]+start, ao_hessYZ_, l_size);
-                memcpy(hessiansXX_[grid_index]+start, ao_hessXX_, l_size);
-                memcpy(hessiansYY_[grid_index]+start, ao_hessYY_, l_size);
-                memcpy(hessiansZZ_[grid_index]+start, ao_hessZZ_, l_size);
-            }
-            if (do_laplacians_) {
-                memcpy(laplacians_[grid_index]+start, ao_laplac_, l_size);
-            }
+            // TODO Laplacians 
         }
-    }
-//        for (int Q = 0; Q < basis_->nbf(); Q++)
-//            fprintf(outfile,"  pt = %d, Q = %d, val = %14.10f\n",grid_index,Q,points_[grid_index][Q]);
-    // << CLOSE OUTER LOOP OVER GRID POINTS
     }
 }
+void BasisPoints::computeCutoffRadii2(double epsilon)
+{
+    cutoff_epsilon_ = epsilon;
+    //printf("Epsilon is %14.10E\n", epsilon);
 
+    if (epsilon == 0.0) {
+        for (int P = 0; P < basis_->nshell(); P++)
+            cutoff_radii_2_[P] = DBL_MAX;
+        return;
+    }
+
+    // Approximate basis functions as S gaussians
+    // This is a weak approximation
+    // Valid for epsilon << 1
+    for (int P = 0; P < basis_->nshell(); P++) {
+        
+        shared_ptr<GaussianShell> shell = basis_->shell(P);
+
+        double mean_alpha = 0;
+        for (int K = 0; K < shell->nprimitive(); K++)
+            mean_alpha += shell->exp(K);
+        mean_alpha /= (double) shell->nprimitive();
+
+        // Get some newton-raphson going
+        double sigma = sqrt(1.0/(2.0*mean_alpha));
+
+        double r_eps = 3.0*sigma; //Initial guess
+        double r_eps_old = 3.0*sigma; //Initial old guess
+        double phi = 0.0;
+        double del_phi = 0.0;
+        int iter = 0;
+        int l = shell->am();
+        double Nang = shell->normalize(l,0,0);
+
+        printf("Basis Shell %d\n", P);
+
+        do {
+            iter = iter + 1;
+
+            phi = 0.0;
+            del_phi = 0.0;
+
+            // Compute phi and del_phi
+            for (int k = 0; k < shell->nprimitive(); k++) {
+                phi += Nang*pow(r_eps,l)*shell->coef(k)*exp(-shell->exp(k)*r_eps*r_eps);
+                del_phi += Nang*pow(r_eps,l)*shell->coef(k)*exp(-shell->exp(k)*r_eps*r_eps)*(-2.0*shell->exp(k)*r_eps);
+                if (l > 0) {
+                    del_phi +=  Nang*l*pow(r_eps,l - 1)*shell->coef(k)*exp(-shell->exp(k)*r_eps*r_eps);
+                }
+            }
+            phi = phi - epsilon; // There's the tolerance
+
+            // Do the newton raphson iteration
+            r_eps_old = r_eps;
+            r_eps = -phi/del_phi + r_eps;
+
+            //printf("  Iteration %d: r_c = %14.10f, phi_c = %14.10f, r_c+1 = %14.10f\n", \
+                iter, r_eps_old, phi, r_eps); 
+            if (iter > 2000) {
+                // Convergence failure (should never happen)
+                printf("WARNING: Basis set cutoff radius computation did not converge.\n");
+                r_eps = DBL_MAX;
+                break;
+            }
+        } while (fabs(r_eps-r_eps_old) >= DBL_EPSILON*r_eps);
+        //cutoff radii squares are stored on a per-shell basis
+        cutoff_radii_2_[P] = r_eps*r_eps;
+        // prevent infinity
+        if (cutoff_radii_2_[P] > DBL_MAX)
+            cutoff_radii_2_[P] = DBL_MAX; 
+    }
+}
+void BasisPoints::computeSignificantShells(SharedGridBlock grid)
+{
+    double *xg = grid->getX();
+    double *yg = grid->getY();
+    double *zg = grid->getZ();
+
+    Vector3 shell_center;        
+    double R2, x, y, z;
+
+    memset(sig_shells_,'\0',nshell_*sizeof(bool));
+    for (int P = 0; P < nshell_; P++)
+        false_shells_[P] = true; 
+
+    //for (int Q = 0 ; Q < grid->getTruePoints(); Q ++)
+    //    printf(" Q = %6d: (%14.10f, %14.10f, %14.10f)\n", Q, xg[Q], yg[Q],zg[Q]); 
+    //for (int Q = 0 ; Q < nshell_; Q ++) 
+    //    printf(" Q = %6d: (%14.10f, %14.10f, %14.10f)\n", Q, xc_[Q], yc_[Q],zc_[Q]); 
+
+    // Activate significant shells in this grid block
+    // The objective is to keep the trues the same for as many shells as possible
+    // and to minimize the overall number of different trues within a block
+    //
+    //      01100000
+    //      01110000
+    //      11100000 is OK
+    //      
+    //      01100000
+    //      00011000
+    //      00000110 is not OK
+    for (int Q = 0 ; Q < grid->getTruePoints(); Q ++) {
+        for (int P = 0; P < nshell_; P++) {
+            R2 = (xc_[P]-xg[Q])*(xc_[P]-xg[Q]) + (yc_[P]-yg[Q])*(yc_[P]-yg[Q]) + (zc_[P]-zg[Q])*(zc_[P]-zg[Q]);
+            //printf(" Q = %d, P = %d, R2 = %14.10f\n", Q, P, R2);
+            if (cutoff_radii_2_[P] == DBL_MAX || R2 < cutoff_radii_2_[P])
+                sig_shells_[P] = true;
+            else
+                false_shells_[P] = false;
+        }  
+    }
+
+    // Setup indexing and compute block efficiency
+    int shell_counter = 0;
+    int local_counter = 0;
+    int function_counter = 0;
+    int misses = 0;
+    for (int P = 0; P < basis_->nshell(); P++ ) {
+        if (sig_shells_[P]) {
+            // Efficiency
+            if (!false_shells_[P])
+                misses++;
+
+            // Indexing
+            abs2rel_shells_[P] = shell_counter;
+            rel2abs_shells_[shell_counter] = P;
+            shell_counter++;
+            local_counter = 0;
+            for (int k = 0; k < basis_->shell(P)->nfunction(); k++) {
+                abs2rel_functions_[basis_->shell(P)->function_index() + local_counter] = function_counter;
+                rel2abs_functions_[function_counter] = basis_->shell(P)->function_index() + local_counter;
+                local_counter++;
+                function_counter++;
+            }
+        }
+    }
+    nsig_shells_ = shell_counter;
+    nsig_functions_ = function_counter;
+    block_efficiency_ = (nsig_shells_-misses)/(double)nsig_shells_; 
+    if (nsig_shells_ == 0)
+        block_efficiency_ = 1.0;
+    
+    printf("n_sig_shells = %d, nsig_functions = %d, block_efficiency = %8.5f\n", nsig_shells_, \
+        nsig_functions_, block_efficiency_);
+    /**
+    printf("Shells:\n");
+    for (int P = 0; P < basis_->nshell(); P++ ) {
+        printf("  P = %4d, sig = %3s, abs2rel = %4d, rel2abs = %4d\n", P, \
+            (sig_shells_[P] ? "Yes" : "No"), abs2rel_shells_[P], rel2abs_shells_[P]);
+    }
+    printf("Functions:\n");
+    for (int P = 0; P < basis_->nbf(); P++ ) {
+        printf("  Function = %4d, abs2rel = %4d, rel2abs = %4d\n", P, \
+            abs2rel_functions_[P], rel2abs_functions_[P]);
+    }*/
+}
 int BasisPoints::nbf()
 {
     return basis_->nbf();
 }
 
+}

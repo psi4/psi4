@@ -1,6 +1,7 @@
 #include <string>
 #include <boost/python.hpp>
 #include <libmints/mints.h>
+#include <lib3index/3index.h>
 #include <libscf_solver/hf.h>
 #include <libscf_solver/rhf.h>
 
@@ -116,6 +117,19 @@ void export_mints()
             def("ao_eri", &MintsHelper::ao_eri).
             def("ao_erf_eri", &MintsHelper::ao_erf_eri);
 
+    class_<FittingMetric, shared_ptr<FittingMetric> >("FittingMetric").
+        def("get_algorithm", &FittingMetric::get_algorithm).
+        def("is_poisson", &FittingMetric::is_poisson).
+        def("is_inverted", &FittingMetric::is_inverted).
+        def("get_metric", &FittingMetric::get_metric).
+        def("get_pivots", &FittingMetric::get_pivots).
+        def("get_reverse_pivots", &FittingMetric::get_reverse_pivots).
+        def("form_fitting_metric", &FittingMetric::form_fitting_metric).
+        def("form_cholesky_inverse", &FittingMetric::form_cholesky_inverse).
+        def("form_QR_inverse", &FittingMetric::form_QR_inverse).
+        def("form_eig_inverse", &FittingMetric::form_eig_inverse).
+        def("form_full_inverse", &FittingMetric::form_full_inverse);
+    
     class_<Vector3>("Vector3").
             def(init<double>()).
             def(init<double, double, double>()).

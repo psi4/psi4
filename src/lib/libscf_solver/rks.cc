@@ -22,7 +22,7 @@
 #include <libmints/basispoints.h>
 #include <libmints/properties.h>
 #include <libmints/molecule.h>
-#include "integrator.h"
+//#include "integrator.h"
 #include <libfunctional/functional.h>
 #include <libmints/matrix.h>
 #include "rks.h"
@@ -37,11 +37,11 @@ RKS::RKS(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) : RHF
 {
     //x_functional_ = Functional::createFunctional(options.get_str("X_FUNCTIONAL"),options.get_int("N_BLOCK"));
     //c_functional_ = Functional::createFunctional(options.get_str("C_FUNCTIONAL"),options.get_int("N_BLOCK"));
-
+/**
     integrator_ = Integrator::createIntegrator(molecule_,options);
     V_ = SharedMatrix (factory_.create_matrix("V"));
     properties_ = SharedProperties(Properties::constructProperties(basisset_,options.get_int("N_BLOCK")));
-
+**/
     /**
 
     if (x_functional_->isGGA() || c_functional_-> isGGA() )
@@ -116,11 +116,11 @@ RKS::RKS(Options& options, shared_ptr<PSIO> psio) : RHF(options, psio)
 {
     //x_functional_ = Functional::createFunctional(options.get_str("X_FUNCTIONAL"),options.get_int("N_BLOCK"));
     //c_functional_ = Functional::createFunctional(options.get_str("C_FUNCTIONAL"),options.get_int("N_BLOCK"));
-
+/**
     integrator_ = Integrator::createIntegrator(molecule_,options);
     V_ = SharedMatrix (factory_.create_matrix("V"));
     properties_ = SharedProperties(Properties::constructProperties(basisset_,options.get_int("N_BLOCK")));
-
+**/
     /**
 
     if (x_functional_->isGGA() || c_functional_-> isGGA() )
@@ -198,6 +198,7 @@ RKS::~RKS()
 
 double RKS::compute_energy()
 {
+/**
     bool converged = false, diis_iter = false;
     int iteration = 0;
 
@@ -304,6 +305,8 @@ double RKS::compute_energy()
         //fprintf(outfile,"\nComputation Completed\n");
         //fflush(outfile);
     return E_;
+**/
+    return 0.0;
 }
 
 void RKS::form_J()
@@ -379,6 +382,7 @@ void RKS::form_F()
 }
 void RKS::form_V()
 {
+/**
     V_->zero();
 
     bool GGA = functional_->isGGA();
@@ -493,9 +497,11 @@ void RKS::form_V()
     //fprintf(outfile, "  Dipole  Check: <%14.10f,%14.10f,%14.10f>\n",dipoleCheckX_,dipoleCheckY_,dipoleCheckZ_);
     //fprintf(outfile, "  Functional Check: %14.10f\n",check_functional);
 
+**/
 }
 void RKS::save_DFT_grid()
 {
+/**
  FILE * grid_file = fopen((options_.get_str("NUMERICAL_GRID_FILENAME")).c_str(),"w");
  shared_ptr<Molecule> mol = basisset_->molecule();
     fprintf(grid_file,"%d\n",mol->natom());
@@ -514,5 +520,6 @@ void RKS::save_DFT_grid()
 
 
     fclose(grid_file);
+**/
 }
 }}

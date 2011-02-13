@@ -42,13 +42,13 @@ std::string Functional::testFunctional(shared_ptr<Properties> props)
     std::stringstream s;
     
     int npoints = props->getTrueSize();
-    const double* rho_a = props->getDensityA();
-    const double* rho_b = props->getDensityB();
-    const double* gamma_aa = props->getDensityGradientSquaredAA();
-    const double* gamma_ab = props->getDensityGradientSquaredAB();
-    const double* gamma_bb = props->getDensityGradientSquaredBB();
-    const double* tau_a = props->getKEDensityA();
-    const double* tau_b = props->getKEDensityB();
+    const double* rho_a = props->getRhoA();
+    const double* rho_b = props->getRhoB();
+    const double* gamma_aa = props->getGammaAA();
+    const double* gamma_ab = props->getGammaAB();
+    const double* gamma_bb = props->getGammaBB();
+    const double* tau_a = props->getTauA();
+    const double* tau_b = props->getTauB();
 
     double* functional = getFunctional();
 

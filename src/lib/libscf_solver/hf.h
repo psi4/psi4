@@ -24,6 +24,8 @@ using namespace psi;
 
 namespace psi { namespace scf {
 
+class PseudospectralHF;
+
 class HF : public Wavefunction {
 protected:
     SharedMatrix C_;
@@ -86,6 +88,9 @@ protected:
     /// With what...
     enum perturb { nothing, dipole_x, dipole_y, dipole_z };
     perturb perturb_;
+
+    /// Pseudospectral stuff 
+    shared_ptr<PseudospectralHF> pseudospectral_;
 
     /// DF Storage Scheme
     enum df_storage { double_core, core, flip_B_core, flip_B_disk, k_incore, disk};

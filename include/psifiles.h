@@ -50,6 +50,8 @@
 
 // Storage file for libdiis
 #define PSIF_LIBDIIS           64
+// Storage file for DFT/pseudospectral grid
+#define PSIF_DFT_GRID          65
 
 #define PSIF_TPDM_PRESORT      71
 #define PSIF_MO_TEI            72

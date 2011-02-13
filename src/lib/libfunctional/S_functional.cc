@@ -46,12 +46,12 @@ void S_Functional::computeRKSFunctional(shared_ptr<Properties> prop)
     const double* gamma_aa;
     const double* tau_a;
 
-    rho_a = prop->getDensityA();
+    rho_a = prop->getRhoA();
     if (is_gga_) {
-        gamma_aa = prop->getDensityGradientSquaredAA();
+        gamma_aa = prop->getGammaAA();
     }
     if (is_meta_) {
-        tau_a = prop->getKEDensityA();
+        tau_a = prop->getTauA();
     }
 
     double c = params_[0].second;
@@ -165,16 +165,16 @@ void S_Functional::computeUKSFunctional(shared_ptr<Properties> prop)
     const double* tau_a;
     const double* tau_b;
 
-    rho_a = prop->getDensityA();
-    rho_b = prop->getDensityB();
+    rho_a = prop->getRhoA();
+    rho_b = prop->getRhoB();
     if (is_gga_) {
-        gamma_aa = prop->getDensityGradientSquaredAA();
-        gamma_ab = prop->getDensityGradientSquaredAB();
-        gamma_bb = prop->getDensityGradientSquaredBB();
+        gamma_aa = prop->getGammaAA();
+        gamma_ab = prop->getGammaAB();
+        gamma_bb = prop->getGammaBB();
     }
     if (is_meta_) {
-        tau_a = prop->getKEDensityA();
-        tau_b = prop->getKEDensityB();
+        tau_a = prop->getTauA();
+        tau_b = prop->getTauB();
     }
 
     double c = params_[0].second;
