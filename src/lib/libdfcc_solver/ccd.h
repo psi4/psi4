@@ -8,13 +8,15 @@
 
 #include "cc.h"
 
+#define DFCC_INT_FILE 56  // temporary
+
 using namespace psi;
 
 namespace psi { namespace dfcc {
 
 class CCD : public CC {
 private:
-  virtual void print_header();
+  void df_integrals();
 
 protected:
 

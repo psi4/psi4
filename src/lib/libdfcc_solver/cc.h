@@ -34,6 +34,7 @@ protected:
   // MO basis parameters
   int nso_; // Total basis functions (AO)
   int nmo_; // Total basis functions (MO)
+  int namo_; // Total active MO's
   int nocc_; // Total occupied orbitals
   int nvir_; // Total virtual orbitals
   int nfocc_; // Frozen occupieds

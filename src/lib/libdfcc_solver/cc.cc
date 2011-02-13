@@ -53,6 +53,7 @@ void CC::get_params()
   nfvir_ = frzvpi_[0];
   naocc_ = clsdpi_[0]-frzcpi_[0];
   navir_ = orbspi_[0]-clsdpi_[0]-frzvpi_[0];
+  namo_ = navir_ + naocc_; 
 
   delete[] clsdpi_;
   delete[] orbspi_;
@@ -110,7 +111,8 @@ void CC::print_header()
      fprintf(outfile,"    Orbital Information\n");
      fprintf(outfile,"  -----------------------\n");
      fprintf(outfile,"    NSO      = %8d\n",nso_);
-     fprintf(outfile,"    NMO      = %8d\n",nmo_);
+     fprintf(outfile,"    NMO Tot  = %8d\n",nmo_);
+     fprintf(outfile,"    NMO Act  = %8d\n",namo_);
      fprintf(outfile,"    NOCC Tot = %8d\n",nocc_);
      fprintf(outfile,"    NOCC Frz = %8d\n",nfocc_);
      fprintf(outfile,"    NOCC Act = %8d\n",naocc_);
