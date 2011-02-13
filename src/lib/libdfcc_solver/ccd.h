@@ -16,7 +16,10 @@ namespace psi { namespace dfcc {
 
 class CCD : public CC {
 private:
+  void print_header();
+
   void df_integrals();
+  void mo_integrals();
 
 protected:
 
