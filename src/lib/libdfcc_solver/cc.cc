@@ -13,7 +13,7 @@ CC::CC(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
 {
   get_params();
   get_ribasis();
-  print_header();
+//  print_header();
 }
 
 CC::~CC()

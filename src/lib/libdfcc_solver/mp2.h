@@ -14,7 +14,7 @@ namespace psi { namespace dfcc {
 
 class MP2 : public CC {
 private:
-  virtual void print_header();
+  void print_header();
 
 protected:
 

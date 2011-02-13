@@ -22,14 +22,11 @@ private:
   void get_params();
   void get_ribasis();
 
-  // This class should print a general header containing orbital info,
-  // options, etc. We can print method specific headers later.
-  virtual void print_header(); 
-
 protected:
-
   shared_ptr<BasisSet> ribasis_;
   shared_ptr<BasisSet> zero_;
+
+  virtual void print_header(); 
 
   // MO basis parameters
   int nso_; // Total basis functions (AO)
@@ -70,7 +67,7 @@ public:
   virtual ~CC();
 
   virtual double compute_energy()=0;
-};
+} ;
 
 }}
 
