@@ -74,6 +74,7 @@ void CC::get_params()
 
   // Convenience matrices (may make it easier on the helper objects)
   // ...because Rob is a pussy
+  // asshole
   evals_aocc_ = shared_ptr<Vector>(new Vector(naocc_));
   evals_aoccp_ = evals_aocc_->pointer();
   evals_avir_ = shared_ptr<Vector>(new Vector(navir_));
