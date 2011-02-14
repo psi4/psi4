@@ -7,7 +7,8 @@ using namespace std;
 
 namespace psi {
 
-MOInfo::SlaterDeterminant::SlaterDeterminant()
+MOInfo::SlaterDeterminant::SlaterDeterminant(const MOInfo *_moinfo)
+    : moinfo(_moinfo)
 {
 }
 

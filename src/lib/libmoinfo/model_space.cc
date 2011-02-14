@@ -2,9 +2,9 @@
 #include "moinfo.h"
 #include <cstdio>
 
-extern FILE *outfile;
-
 namespace psi {
+
+extern FILE *outfile;
 
 ModelSpace::ModelSpace(MOInfo* moinfo_obj_) : moinfo_obj(moinfo_obj_)
 {

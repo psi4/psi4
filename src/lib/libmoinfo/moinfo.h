@@ -44,9 +44,10 @@ public:
       STL vector
   *********************************************************/
   class SlaterDeterminant{
+      const MOInfo* moinfo;
   public:
     typedef std::bitset<size_det> bitdet;
-    SlaterDeterminant();
+    SlaterDeterminant(const MOInfo *);
     ~SlaterDeterminant();
     void        set(int n)                               {bits.set(n);}
     bool        test(int n)                        const {return(bits.test(n));}
@@ -74,7 +75,6 @@ public:
     bitdet      bits;
     std::string type;
   };
-
 public:
   friend class SlaterDeterminant;
   MOInfo(Options& options_, bool silent_ = false);
@@ -264,8 +264,6 @@ private:
   std::vector<int> closed_shell_refs;
   std::vector<int> unique_open_shell_refs;
 };
-
-extern MOInfo  *moinfo;
 
 }
 
