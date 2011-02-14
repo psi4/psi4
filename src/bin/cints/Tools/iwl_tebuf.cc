@@ -1,6 +1,6 @@
 /*! \file iwl_tebuf.cc
     \ingroup CINTS
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include<cmath>
 #include<libiwl/iwl.h>
@@ -38,7 +38,7 @@ void iwl_buf_wrt_struct_nocut(struct iwlbuf *Buf, struct tebuf *Tebuf, int size)
     lblptr[idx++] = (Label) Tebuf[i].k;
     lblptr[idx++] = (Label) Tebuf[i].l;
     valptr[Buf->idx] = (Value) Tebuf[i].val;
-      
+
     Buf->idx++;
 
     if (Buf->idx == Buf->ints_per_buf) {
@@ -81,18 +81,18 @@ void iwl_buf_wrt_struct(struct iwlbuf *Buf, struct tebuf *Tebuf, int size, doubl
       lblptr[idx++] = (Label) Tebuf[i].k;
       lblptr[idx++] = (Label) Tebuf[i].l;
       valptr[Buf->idx] = (Value) Tebuf[i].val;
-      
+
       Buf->idx++;
 
       if (Buf->idx == Buf->ints_per_buf) {
-	Buf->lastbuf = 0;
-	Buf->inbuf = Buf->idx;
-	iwl_buf_put(Buf);
-	Buf->idx = 0;
+    Buf->lastbuf = 0;
+    Buf->inbuf = Buf->idx;
+    iwl_buf_put(Buf);
+    Buf->idx = 0;
       }
     }
   } /* end loop over i */
-  
+
 }
 
 }}

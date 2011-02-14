@@ -864,9 +864,14 @@ void Matrix::back_transform(const shared_ptr<Matrix>& transformer)
 void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix* const a,
                   const Matrix* const b, double beta)
 {
-    if (symmetry_ != a->symmetry_ || symmetry_ != b->symmetry_) {
-        throw PSIEXCEPTION("Matrix::gemm: symmetries of all matrices are not the same.");
+    // Check symmetry
+    if (symmetry_ != (a->symmetry_ ^ b->symmetry_)) {
+        fprintf(outfile, "Matrix::gemm error: Input symmetries will not result in target symmetry.\n");
+        fprintf(outfile, " Asym %d ^ Bsym %d != Csym %d\n", a->symmetry(), b->symmetry(), symmetry());
+        fprintf(outfile, "Result is %d\n", a->symmetry_ ^ b->symmetry_);
+        throw PSIEXCEPTION("Matrix::gemm error: Input symmetries will not result in target symmetry.");
     }
+
     char ta = transa ? 't' : 'n';
     char tb = transb ? 't' : 'n';
     int h, m, n, k, nca, ncb, ncc;
@@ -874,7 +879,7 @@ void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix* const a,
     for (h=0; h<nirrep_; ++h) {
         m = rowspi_[h];
         n = colspi_[h];
-        k = transa ? a->rowspi_[h] : a->colspi_[h^a->symmetry_];
+        k = transa ? a->rowspi_[h] : a->colspi_[h];
         nca = transa ? m : k;
         ncb = transb ? k : n;
         ncc = n;
