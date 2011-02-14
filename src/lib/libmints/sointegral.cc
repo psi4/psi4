@@ -60,6 +60,9 @@ void OneBodySOInt::common_init()
         throw FeatureNotImplemented("libmints", "Symmetrized integral derivatives greater than first order not implemented.",
                                     __FILE__, __LINE__);
 
+    // Grab the number of chunks from the ao object and enlarge the buffer to handle
+    size_ *= ob_->nchunk();
+
     buffer_ = new double[size_];
 }
 
@@ -201,6 +204,86 @@ void OneBodySOInt::compute(boost::shared_ptr<Matrix> result)
                             // Check the irreps to ensure symmetric quantities.
                             if (ifunc.irrep == jfunc.irrep)
                                 result->add(ifunc.irrep, b1_->function_within_irrep(ish, isofunc), b2_->function_within_irrep(jsh, jsofunc), jcoef * aobuf[jaooff]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+void OneBodySOInt::compute(std::vector<boost::shared_ptr<Matrix> > results)
+{
+    // Do not worry about zeroing out result
+    int nchunk = ob_->nchunk();
+    int ns1 = b1_->nshell();
+    int ns2 = b2_->nshell();
+    const double *aobuf = ob_->buffer();
+
+    // results tells me exactly which symmetries I need.
+    // construct a cdsalc object with those symmetries.
+    CdSalcList cdsalc(ob_->basis()->molecule(), 0x1);
+    cdsalc.print();
+
+    // Loop over the unique AO shells.
+    for (int ish=0; ish<ns1; ++ish) {
+        for (int jsh=0; jsh<ns2; ++jsh) {
+
+            const SOTransform &t1 = b1_->trans(ish);
+            const SOTransform &t2 = b2_->trans(jsh);
+
+            int nso1 = b1_->nfunction(ish);
+            int nso2 = b2_->nfunction(jsh);
+            int nso = nso1*nso2;
+
+            // size_ includes nchunk
+            memset(buffer_, 0, size_*sizeof(double));
+
+            int nao1 = b1_->naofunction(ish);
+            int nao2 = b2_->naofunction(jsh);
+            int nao = nao1*nao2;
+
+            // loop through the AO shells that make up this SO shell
+            // by the end of these 4 for loops we will have our final integral in buffer_
+            for (int i=0; i<t1.naoshell; ++i) {
+                const SOTransformShell &s1 = t1.aoshell[i];
+                for (int j=0; j<t2.naoshell; ++j) {
+                    const SOTransformShell &s2 = t2.aoshell[j];
+
+                    ob_->compute_shell(s1.aoshell, s2.aoshell);
+
+                    for (int itr=0; itr<s1.nfunc; ++itr) {
+                        const SOTransformFunction &ifunc = s1.func[itr];
+                        double icoef = ifunc.coef;
+                        int iaofunc = ifunc.aofunc;
+                        int isofunc = b1_->function_offset_within_shell(ish, ifunc.irrep) + ifunc.sofunc;
+                        int iaooff = iaofunc;
+                        int isooff = isofunc;
+                        int iirrep = ifunc.irrep;
+
+                        for (int jtr=0; jtr<s2.nfunc; ++jtr) {
+                            const SOTransformFunction &jfunc = s2.func[jtr];
+                            double jcoef = jfunc.coef * icoef;
+                            int jaofunc = jfunc.aofunc;
+                            int jsofunc = b2_->function_offset_within_shell(jsh, jfunc.irrep) + jfunc.sofunc;
+                            int jaooff = iaooff*nao2 + jaofunc;
+                            int jsooff = isooff*nso2 + jsofunc;
+                            int jirrep = jfunc.irrep;
+
+                            // Handle chunks
+                            { int i=2;
+//                            for (int i=0; i<nchunk; ++i) {
+                                double temp = jcoef * aobuf[jaooff + (i*nso)];
+                                buffer_[jsooff + (i*nso)] += temp;
+
+                                int ijirrep = ifunc.irrep ^ jfunc.irrep;
+//                                if (ijirrep == results[i]->symmetry())
+                                if (fabs(temp) > 1.0e-14)
+                                    results[i]->add(ifunc.irrep,
+                                                    b1_->function_within_irrep(ish, isofunc),
+                                                    b2_->function_within_irrep(jsh, jsofunc),
+                                                    temp);
+                            }
                         }
                     }
                 }

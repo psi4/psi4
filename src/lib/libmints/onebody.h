@@ -53,6 +53,9 @@ public:
     /// Basis set on center two.
     boost::shared_ptr<BasisSet> basis2();
 
+    /// Number of chunks. Normally 1, but dipoles (3) quadrupoles (6).
+    int nchunk() const { return nchunk_; }
+
     /// Buffer where the integrals are placed.
     const double *buffer() const;
 
