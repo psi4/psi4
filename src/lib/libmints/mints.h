@@ -36,3 +36,4 @@
 #include <libmints/sointegral.h>
 #include <libmints/mintshelper.h>
 #include <libmints/integrator.h>
+#include <libmints/multipolesymmetry.h>

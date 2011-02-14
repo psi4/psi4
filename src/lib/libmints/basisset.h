@@ -92,8 +92,6 @@ class BasisSet
 
     // Has static information been initialized?
     static boost::once_flag initialized_shared_;
-    // Global arrays of x, y, z exponents
-    static std::vector<Vector3> exp_ao[];
 
 public:
 
@@ -267,6 +265,9 @@ public:
         const std::vector<std::string> &basisnames);
 
     friend class Gaussian94BasisSetParser;
+
+    /// Global arrays of x, y, z exponents
+    static std::vector<Vector3> exp_ao[];
 };
 
 }
