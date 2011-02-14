@@ -90,6 +90,8 @@ OptReturnType optking(void) {
     // read number of atoms ; make one fragment of that size ;
     mol1 = new MOLECULE( read_natoms() );
 
+fprintf(outfile,"read_natoms() %d\n", read_natoms()); fflush(outfile);
+
     // read geometry and gradient into fragment
     mol1->read_geom_grad();
 
@@ -196,9 +198,11 @@ OptReturnType optking(void) {
 #endif
 
   if ( converged ) {
-    fprintf(outfile,"\t **** Geometry is converged! ****\n");
+    fprintf(outfile,"\n\t **** Optimization is complete! ****\n");
     p_Opt_data->summary();
     p_Opt_data->write(); // save data to optimization binary file
+
+    fprintf(outfile,"\tFinal energy is %20.13lf\n", p_Opt_data->g_energy());
 
     if (Opt_params.write_final_step_geometry) {
       fprintf(outfile,"\tFinal (next step) structure:\n");

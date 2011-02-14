@@ -4,7 +4,7 @@
 #define EXTERN
 #include "globals.h"
 
-#if defined(OPTKING_PACKAGE_QCHEM)
+#if defined (OPTKING_PACKAGE_QCHEM)
 
 #include "EFP.h" // QChem's header for calling displace function
 namespace opt {

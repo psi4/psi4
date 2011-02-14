@@ -159,10 +159,15 @@ class FRAG {
   void freeze(void)   { frozen = true; }
   void unfreeze(void) { frozen = false; }
 
-  double **inertia_tensor (double **in_geom);
-  double *com(double **in_geom);
+  double **inertia_tensor (GeomType in_geom);
+  double *com(GeomType in_geom);
   double **inertia_tensor(void) { return (inertia_tensor(geom)); }
   double *com(void) { return (com(geom)); }
+
+  int principal_axes(GeomType geom, double **axes, double *evals);
+  int principal_axes(double **axes, double *evals) {
+    return (principal_axes(geom, axes, evals));
+  }
 
 };
 

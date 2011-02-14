@@ -13,11 +13,14 @@
 #include "io.h"
 
 #if defined(OPTKING_PACKAGE_PSI)
-  #include <psi4-dec.h>
-  #include <libmints/molecule.h>
+#include <psi4-dec.h>
+#include <libmints/molecule.h>
 #elif defined(OPTKING_PACKAGE_QCHEM)
-  #include <qchem.h> // typedefs INTEGER
-  void get_carts(double** Carts, double** A, INTEGER** AtNo, INTEGER* NAtoms, bool noghosts);
+
+#include <qchem.h> // typedefs INTEGER
+#include "EFP.h"
+void get_carts(double** Carts, double** A, INTEGER** AtNo, INTEGER* NAtoms, bool noghosts);
+
 #endif
 
 namespace opt {
@@ -60,7 +63,16 @@ int read_natoms(void) {
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
 
+  // read number of atoms from QChem
   natom = rem_read(REM_NATOMS);
+  fprintf(outfile, "Total number of atoms %d\n", natom);
+
+  // now substract out EFP fragment atoms
+  if (Opt_params.efp_fragments) {
+    int n = ::EFP::GetInstance()->GetNumEFPatoms();
+    natom -= n;
+    fprintf(outfile, "Number of atoms besides EFP fragments %d\n", natom);
+  }
 
 #endif
   return natom;
@@ -154,13 +166,22 @@ void MOLECULE::read_geom_grad(void) {
 
   ::get_carts(NULL, &QX, &QZ, &QNATOMS, Qnoghosts);
 
-  if (QNATOMS != g_natom())
-    QCrash("Number of atoms read inconsistent with REM variable.");
+  if (QNATOMS != g_natom()) {
+    fprintf(outfile,"read_geom_grad() QNATOMS=%d\n", QNATOMS); 
+    //QCrash("Number of atoms read inconsistent with REM variable.");
+  }
+
+fprintf(outfile, "QX read with get_carts()\n");
+print_array(outfile, QX, 3*QNATOMS);
 
   double* QGrad = init_array(3*QNATOMS);
   ::FileMan_Open_Read(FILE_NUCLEAR_GRADIENT);
   ::FileMan(FM_READ, FILE_NUCLEAR_GRADIENT, FM_DP, 3*QNATOMS, 0, FM_BEG, QGrad);
   ::FileMan_Close(FILE_NUCLEAR_GRADIENT);
+
+fprintf(outfile, "QGrad read with get_carts()\n");
+print_array(outfile, QGrad, 3*QNATOMS);
+
 
   int cnt=0;
   for (int f=0; f<nfrag; ++f) {

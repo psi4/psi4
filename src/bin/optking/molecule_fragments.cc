@@ -181,88 +181,87 @@ void MOLECULE::add_interfragment(void) {
   int ndA, ndB; // num of reference atoms on each fragment
   char error_msg[100];
   double **weight_A, **weight_B;
+  FRAG *Afrag, *Bfrag;
 
   if (fragments.size() == 1) return;
 
+  if (Opt_params.interfragment_mode == OPT_PARAMS::FIXED)
+    fprintf(outfile,"\tInterfragment coordinate reference points to be selected from closest atoms and neighbors.\n");
+  else if (Opt_params.interfragment_mode == OPT_PARAMS::PRINCIPAL_AXES)
+    fprintf(outfile,"\tPrincipal axes not yet working\n");
+    //fprintf(outfile,"\tInterfragment coordinate reference points to be determined by principal axes.\n");
+
   for (int frag_i=0; frag_i<(fragments.size()-1); ++frag_i) {
 
+    Afrag = fragments[frag_i];
+    Bfrag = fragments[frag_i+1];
+
     // A1 and B1 will be closest atoms between fragments
-    A  = fragments[frag_i]->g_geom_const_pointer();
-    nA = fragments[frag_i]->g_natom();
-    cA = fragments[frag_i]->g_connectivity_pointer();
+    A  = Afrag->g_geom_const_pointer();
+    nA = Afrag->g_natom();
+    cA = Afrag->g_connectivity_pointer();
 
-    B  = fragments[frag_i+1]->g_geom_const_pointer();
-    nB = fragments[frag_i+1]->g_natom();
-    cB = fragments[frag_i+1]->g_connectivity_pointer();
+    B  = Bfrag->g_geom_const_pointer();
+    nB = Bfrag->g_natom();
+    cB = Bfrag->g_connectivity_pointer();
 
-    min = 1e9;
-    for (int iA=0; iA < nA; ++iA) {
-      for (int iB=0; iB < nB; ++iB) {
-        tval = v3d_dist(A[iA],B[iB]);
-        if (tval < min) {
-          min = tval; 
-          A1 = iA;
-          B1 = iB;
-        }
-      }
-    }
-    ndA = ndB = 1;
+    if (Opt_params.interfragment_mode == OPT_PARAMS::FIXED) {
 
-    fprintf(outfile,"\tClosest atoms between fragments is A %d, B %d\n", A1, B1);
-
-    // A2 is bonded to A1, but A2-A1-B1 must not be collinear
-    for (int iA=0; iA < nA; ++iA) {
-      if (cA[iA][A1]) {
-        if (v3d_angle(B[B1],A[A1],A[iA], tval)) {
-          if (tval > Opt_params.interfrag_collinear_tol*_pi && tval < (1-Opt_params.interfrag_collinear_tol)*_pi) {
-            A2 = iA;
-            ++ndA;
-            break;
-          }
-        }
-      }
-    }
-    if (ndA == 1 && nA > 1) {
-      fprintf(outfile, "Fragment A has >1 atoms but no non-collinear atom found bonded to %d", A1+1);
-      sprintf(error_msg, "Fragment A has >1 atoms but no non-collinear atom found bonded to %d", A1+1);
-      throw(error_msg);
-    }
-
-    // B2 is bonded to B1, but A1-B1-B2 must not be collinear
-    for (int iB=0; iB < nB; ++iB) {
-      if (cB[iB][B1]) {
-        if (v3d_angle(A[A1],B[B1],B[iB],tval)) {
-          if (tval > Opt_params.interfrag_collinear_tol*_pi && tval < (1-Opt_params.interfrag_collinear_tol)*_pi) {
-            B2 = iB;
-            ++ndB;
-            break;
-          }
-        }
-      }
-    }
-    if (ndB == 1 && nB > 1) {
-      fprintf(outfile, "Fragment B has >1 atoms but no non-collinear atom found bonded to %d", B1+1);
-      sprintf(error_msg, "Fragment B has >1 atoms but no non-collinear atom found bonded to %d", B1+1);
-      throw(error_msg);
-    }
-
-    if (ndA == 2) { // we were able to locate a suitable A2
-      // A3 is bonded to A2, but A3-A2-A1 must not be collinear
+      min = 1e9;
       for (int iA=0; iA < nA; ++iA) {
-        if (iA != A1 && cA[iA][A2]) {
-          if (v3d_angle(A[A1],A[A2],A[iA], tval)) {
+        for (int iB=0; iB < nB; ++iB) {
+          tval = v3d_dist(A[iA],B[iB]);
+          if (tval < min) {
+            min = tval; 
+            A1 = iA;
+            B1 = iB;
+          }
+        }
+      }
+      ndA = ndB = 1;
+
+      fprintf(outfile,"\tClosest atoms between fragments is A %d, B %d\n", A1, B1);
+
+      // A2 is bonded to A1, but A2-A1-B1 must not be collinear
+      for (int iA=0; iA < nA; ++iA) {
+        if (cA[iA][A1]) {
+          if (v3d_angle(B[B1],A[A1],A[iA], tval)) {
             if (tval > Opt_params.interfrag_collinear_tol*_pi && tval < (1-Opt_params.interfrag_collinear_tol)*_pi) {
-              A3 = iA;
+              A2 = iA;
               ++ndA;
               break;
             }
           }
         }
       }
-      // if we couldn't find a 3rd atom bonded to A2, then look for a 3rd atom bonded to A1
-      if (ndA != 3) {
+      if (ndA == 1 && nA > 1) {
+        fprintf(outfile, "Fragment A has >1 atoms but no non-collinear atom found bonded to %d", A1+1);
+        sprintf(error_msg, "Fragment A has >1 atoms but no non-collinear atom found bonded to %d", A1+1);
+        throw(error_msg);
+      }
+  
+      // B2 is bonded to B1, but A1-B1-B2 must not be collinear
+      for (int iB=0; iB < nB; ++iB) {
+        if (cB[iB][B1]) {
+          if (v3d_angle(A[A1],B[B1],B[iB],tval)) {
+            if (tval > Opt_params.interfrag_collinear_tol*_pi && tval < (1-Opt_params.interfrag_collinear_tol)*_pi) {
+              B2 = iB;
+              ++ndB;
+              break;
+            }
+          }
+        }
+      }
+      if (ndB == 1 && nB > 1) {
+        fprintf(outfile, "Fragment B has >1 atoms but no non-collinear atom found bonded to %d", B1+1);
+        sprintf(error_msg, "Fragment B has >1 atoms but no non-collinear atom found bonded to %d", B1+1);
+        throw(error_msg);
+      }
+  
+      if (ndA == 2) { // we were able to locate a suitable A2
+        // A3 is bonded to A2, but A3-A2-A1 must not be collinear
         for (int iA=0; iA < nA; ++iA) {
-          if (iA != A2 && cA[iA][A1]) {
+          if (iA != A1 && cA[iA][A2]) {
             if (v3d_angle(A[A1],A[A2],A[iA], tval)) {
               if (tval > Opt_params.interfrag_collinear_tol*_pi && tval < (1-Opt_params.interfrag_collinear_tol)*_pi) {
                 A3 = iA;
@@ -272,58 +271,98 @@ void MOLECULE::add_interfragment(void) {
             }
           }
         }
-      }
-    }
-
-    if (ndB == 2) { // we were able to locate a suitable B2
-    // B3 is bonded to B2, but B3-B2-B1 must not be collinear
-      for (int iB=0; iB < nB; ++iB) {
-        if (iB != B1 && cB[iB][B2]) {
-          if (v3d_angle(B[B1],B[B2],B[iB],tval)) {
-            if (tval > Opt_params.interfrag_collinear_tol*_pi && tval < (1-Opt_params.interfrag_collinear_tol)*_pi) {
-              B3 = iB;
-              ++ndB;          
-              break;        
-            }
-          }
-        }
-      }
-      // if we couldn't find a 3rd atom bonded to B2, then look for a 3rd atom bonded to B1
-      if (ndB != 3) { 
-        for (int iB=0; iB < nB; ++iB) {
-          if (iB != B2 && cB[iB][B1]) {
-            if (v3d_angle(B[B1],B[B2],B[iB], tval)) {
-              if (tval > Opt_params.interfrag_collinear_tol*_pi && tval < (1-Opt_params.interfrag_collinear_tol)*_pi) {
-                B3 = iB;
-                ++ndB;
-                break;
+        // if we couldn't find a 3rd atom bonded to A2, then look for a 3rd atom bonded to A1
+        if (ndA != 3) {
+          for (int iA=0; iA < nA; ++iA) {
+            if (iA != A2 && cA[iA][A1]) {
+              if (v3d_angle(A[A1],A[A2],A[iA], tval)) {
+                if (tval > Opt_params.interfrag_collinear_tol*_pi && tval < (1-Opt_params.interfrag_collinear_tol)*_pi) {
+                  A3 = iA;
+                  ++ndA;
+                  break;
+                }
               }
             }
           }
         }
       }
-    }
+  
+      if (ndB == 2) { // we were able to locate a suitable B2
+      // B3 is bonded to B2, but B3-B2-B1 must not be collinear
+        for (int iB=0; iB < nB; ++iB) {
+          if (iB != B1 && cB[iB][B2]) {
+            if (v3d_angle(B[B1],B[B2],B[iB],tval)) {
+              if (tval > Opt_params.interfrag_collinear_tol*_pi && tval < (1-Opt_params.interfrag_collinear_tol)*_pi) {
+                B3 = iB;
+                ++ndB;          
+                break;        
+              }
+            }
+          }
+        }
+        // if we couldn't find a 3rd atom bonded to B2, then look for a 3rd atom bonded to B1
+        if (ndB != 3) { 
+          for (int iB=0; iB < nB; ++iB) {
+            if (iB != B2 && cB[iB][B1]) {
+              if (v3d_angle(B[B1],B[B2],B[iB], tval)) {
+                if (tval > Opt_params.interfrag_collinear_tol*_pi && tval < (1-Opt_params.interfrag_collinear_tol)*_pi) {
+                  B3 = iB;
+                  ++ndB;
+                  break;
+                }
+              }
+            }
+          }
+        }
+      }
+      // default weights are simply 1 to produce the reference points A1, A2, etc.
+      weight_A = init_matrix(3, nA);
+      weight_A[0][A1] = 1.0;
+      weight_A[1][A2] = 1.0;
+      weight_A[2][A3] = 1.0;
+  
+      weight_B = init_matrix(3, nB);
+      weight_B[0][B1] = 1.0;
+      weight_B[1][B2] = 1.0;
+      weight_B[2][B3] = 1.0;
+  
+      if (Opt_params.print_lvl >= 3) {
+        fprintf(outfile, "\tReference points are linear combination on fragment A\n");
+        print_matrix(outfile, weight_A, 3, nA);
+        fprintf(outfile, "\tReference points are linear combination on fragment B\n");
+        print_matrix(outfile, weight_B, 3, nB);
+      }
 
-    // default weights are simply 1 to produce the reference points A1, A2, etc.
-    weight_A = init_matrix(3, nA);
-    weight_A[0][A1] = 1.0;
-    weight_A[1][A2] = 1.0;
-    weight_A[2][A3] = 1.0;
+    } // fixed interfragment coordinates
+    /*else if (Opt_params.interfragment_mode == OPT_PARAMS::PRINCIPAL_AXES) {
 
-    weight_B = init_matrix(3, nB);
-    weight_B[0][B1] = 1.0;
-    weight_B[1][B2] = 1.0;
-    weight_B[2][B3] = 1.0;
+      double **A_u = init_matrix(3,3);
+      double *A_lambda = init_array(3);
+      nA_lambda = Afrag->principal_axes(A, A_u, A_lambda);
 
-    //fprintf(stdout, "ndA %d, ndB %d\n", ndA, ndB);
-    //fprintf(stdout, "A1 %d, A2 %d A3 %d \n", A1, A2, A3);
-    //fprintf(stdout, "B1 %d, B2 %d B3 %d \n", B1, B2, B3);
+      double **B_u = init_matrix(3,3);
+      double *B_lambda = init_array(3);
+      nB_lambda = Bfrag->principal_axes(B, B_u, B_lambda);
 
-    INTERFRAG * one_IF = new INTERFRAG(fragments[frag_i], fragments[frag_i+1],
-      frag_i, frag_i+1, weight_A, weight_B, ndA, ndB);
+      if (Opt_params.print_lvl >= 3) {
+        fprintf(outfile, "\tPrincipal axes on A\n");
+        print_matrix(outfile, A_u, ndA, 3);
+        fprintf(outfile, "\tPrincipal axes on B\n");
+        print_matrix(outfile, B_u, ndB, 3);
+      }
+      
+      free_matrix(A_u);
+      free_matrix(B_u);
+      free_array(A_lambda);
+      free_array(B_lambda);
+    }*/
+
+    INTERFRAG * one_IF = new INTERFRAG(Afrag, Bfrag, frag_i, frag_i+1, weight_A, weight_B, ndA, ndB);
+
+    //if (use_principal_axes)
+    //  one_IF->set_principal_axes(true);
 
     interfragments.push_back(one_IF);
-
   }
 
   fflush(outfile);

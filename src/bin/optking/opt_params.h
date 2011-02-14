@@ -20,6 +20,8 @@ struct OPT_PARAMS {
 
   enum FRAGMENT_MODE {SINGLE, MULTI} fragment_mode;
 
+  enum INTERFRAGMENT_MODE {FIXED, PRINCIPAL_AXES} interfragment_mode;
+
   bool generate_intcos_only;
 
   bool rfo_follow_root; // whether to do root following
