@@ -472,18 +472,26 @@ double **Matrix::to_block_matrix() const
         sizec += colspi_[h^symmetry_];
     }
 
+    int *col_offset = new int[nirrep_];
+    col_offset[0] = 0;
+    for (int h=1; h<nirrep_; ++h) {
+        col_offset[h] = col_offset[h-1] + colspi_[h-1];
+    }
+
     double **temp = block_matrix(sizer,sizec);
     int offsetr = 0, offsetc=0;
     for (int h=0; h <nirrep_; ++h) {
+        offsetc = col_offset[h^symmetry_];
         for (int i=0; i<rowspi_[h]; ++i) {
             for (int j=0; j<colspi_[h^symmetry_]; ++j) {
                 temp[i+offsetr][j+offsetc] = matrix_[h][i][j];
             }
         }
         offsetr += rowspi_[h];
-        offsetc += colspi_[h^symmetry_];
+//        offsetc += colspi_[h^symmetry_];
     }
 
+    delete[] col_offset;
     return temp;
 }
 
@@ -584,9 +592,8 @@ void Matrix::eivprint(const shared_ptr<Vector>& values, FILE *out)
 
 void Matrix::identity()
 {
-    if (symmetry_) {
-        throw PSIEXCEPTION("Matrix::set called on a non-totally symmetric matrix.");
-    }
+    if (symmetry_)
+        return;
 
     int h;
     size_t size;
@@ -618,9 +625,8 @@ void Matrix::zero()
 
 void Matrix::zero_diagonal()
 {
-    if (symmetry_) {
-        throw PSIEXCEPTION("Matrix::set called on a non-totally symmetric matrix.");
-    }
+    if (symmetry_)
+        return;
 
     int h, i;
 
@@ -633,9 +639,8 @@ void Matrix::zero_diagonal()
 
 double Matrix::trace()
 {
-    if (symmetry_) {
-        throw PSIEXCEPTION("Matrix::set called on a non-totally symmetric matrix.");
-    }
+    if (symmetry_)
+        return 0.0;
 
     int i, h;
     double val = (double)0.0;
@@ -735,12 +740,12 @@ void Matrix::scale(double a)
 
 void Matrix::scale_row(int h, int m, double a)
 {
-    C_DSCAL(colspi_[h], a, &(matrix_[h][m][0]), 1);
+    C_DSCAL(colspi_[h^symmetry_], a, &(matrix_[h][m][0]), 1);
 }
 
 void Matrix::scale_column(int h, int n, double a)
 {
-    C_DSCAL(rowspi_[h], a, &(matrix_[h][0][n]), colspi_[h]);
+    C_DSCAL(rowspi_[h], a, &(matrix_[h][0][n]), colspi_[h^symmetry_]);
 }
 
 double Matrix::sum_of_squares()
@@ -864,14 +869,6 @@ void Matrix::back_transform(const shared_ptr<Matrix>& transformer)
 void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix* const a,
                   const Matrix* const b, double beta)
 {
-    // Right now only all A1 works
-    if (symmetry_ != 0 ||
-            a->symmetry() != 0 ||
-            b->symmetry() != 0) {
-        fprintf(outfile, "Matrix::gemm: Only works for totally symmetric matrices.");
-        throw PSIEXCEPTION("Matrix::gemm: Only works for totally symemtric matrices.");
-    }
-
     // Check symmetry
     if (symmetry_ != (a->symmetry_ ^ b->symmetry_)) {
         fprintf(outfile, "Matrix::gemm error: Input symmetries will not result in target symmetry.\n");
@@ -880,22 +877,27 @@ void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix* const a,
         throw PSIEXCEPTION("Matrix::gemm error: Input symmetries will not result in target symmetry.");
     }
 
+    if (transa && a->symmetry_)
+        throw PSIEXCEPTION("Matrix::gemm error: a is non totally symmetric and you're trying to transpose it");
+    if (transb && b->symmetry_)
+        throw PSIEXCEPTION("Matrix::gemm error: b is non totally symmetric and you're trying to transpose it");
+
     char ta = transa ? 't' : 'n';
     char tb = transb ? 't' : 'n';
-    int h, m, n, k, nca, ncb, ncc;
+    int h, m, n, k, lda, ldb, ldc;
 
     for (h=0; h<nirrep_; ++h) {
         m = rowspi_[h];
         n = colspi_[h^symmetry_];
         k = transa ? a->rowspi_[h] : a->colspi_[h^a->symmetry_];
-        nca = transa ? m : k;
-        ncb = transb ? k : n;
-        ncc = n;
+        lda = transa ? m : k;
+        ldb = transb ? k : n;
+        ldc = n;
 
         if (m && n && k) {
             C_DGEMM(ta, tb, m, n, k, alpha, &(a->matrix_[h][0][0]),
-                    nca, &(b->matrix_[h][0][0]), ncb, beta, &(matrix_[h][0][0]),
-                    ncc);
+                    lda, &(b->matrix_[h^symmetry_^b->symmetry_][0][0]), ldb, beta, &(matrix_[h][0][0]),
+                    ldc);
         }
     }
 }
