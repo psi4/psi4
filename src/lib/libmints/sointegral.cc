@@ -220,11 +220,6 @@ void OneBodySOInt::compute(std::vector<boost::shared_ptr<Matrix> > results)
     int ns2 = b2_->nshell();
     const double *aobuf = ob_->buffer();
 
-    // results tells me exactly which symmetries I need.
-    // construct a cdsalc object with those symmetries.
-    CdSalcList cdsalc(ob_->basis()->molecule(), 0x1);
-    cdsalc.print();
-
     // Loop over the unique AO shells.
     for (int ish=0; ish<ns1; ++ish) {
         for (int jsh=0; jsh<ns2; ++jsh) {
@@ -237,7 +232,7 @@ void OneBodySOInt::compute(std::vector<boost::shared_ptr<Matrix> > results)
             int nso = nso1*nso2;
 
             // size_ includes nchunk
-            memset(buffer_, 0, size_*sizeof(double));
+            memset(buffer_, 0, nchunk*nso*sizeof(double));
 
             int nao1 = b1_->naofunction(ish);
             int nao2 = b2_->naofunction(jsh);
@@ -271,18 +266,30 @@ void OneBodySOInt::compute(std::vector<boost::shared_ptr<Matrix> > results)
                             int jirrep = jfunc.irrep;
 
                             // Handle chunks
-                            { int i=2;
-//                            for (int i=0; i<nchunk; ++i) {
-                                double temp = jcoef * aobuf[jaooff + (i*nso)];
+                            for (int i=0; i<nchunk; ++i) {
+                                double temp = jcoef * aobuf[jaooff + (i*nao)];
+
+                                // If I get the if statements working below the next line is not needed at all.
                                 buffer_[jsooff + (i*nso)] += temp;
 
                                 int ijirrep = ifunc.irrep ^ jfunc.irrep;
-//                                if (ijirrep == results[i]->symmetry())
-                                if (fabs(temp) > 1.0e-14)
+                                if (ijirrep == results[i]->symmetry() && fabs(temp) > 1.0e-14) {
+
+//                                    if (fabs(aobuf[jaooff]*jcoef) > 1.0e-10) {
+//                                        fprintf(outfile, "(%2d|%2d) += %+6f * (%2d|%2d): %+6f -> %+6f iirrep = %d ifunc = %d, jirrep = %d jfunc = %d jaoff = %d jsooff = %d\n",
+//                                                isofunc, jsofunc, jcoef, iaofunc, jaofunc, aobuf[jaooff + (i*nao)], buffer_[jsooff + (i*nso)],
+//                                                ifunc.irrep, b1_->function_within_irrep(ish, isofunc),
+//                                                jfunc.irrep, b2_->function_within_irrep(jsh, jsofunc),
+//                                                jaooff + (i*nao), jsooff + (i*nso));
+//                                        fflush(outfile);
+//                                    }
+
+                                    // Add the contribution to the matrix
                                     results[i]->add(ifunc.irrep,
                                                     b1_->function_within_irrep(ish, isofunc),
                                                     b2_->function_within_irrep(jsh, jsofunc),
                                                     temp);
+                                }
                             }
                         }
                     }
