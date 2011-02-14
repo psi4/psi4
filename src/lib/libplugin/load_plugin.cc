@@ -35,7 +35,7 @@ plugin_info plugin_load(std::string& plugin_pathname)
     if (dlsym_error1) {
         dlclose(info.plugin_handle);
 
-        std::string msg = "load_plugin: Cannot symbol: ";
+        std::string msg = "load_plugin: Cannot find symbol: init_plugin; ";
         msg += dlsym_error1;
         throw PSIEXCEPTION(msg);
     }
@@ -44,7 +44,7 @@ plugin_info plugin_load(std::string& plugin_pathname)
     const char *dlsym_error2 = dlerror();
     if (dlsym_error2) {
         dlclose(info.plugin_handle);
-        std::string msg = "load_plugin: Cannot symbol: ";
+        std::string msg = "load_plugin: Cannot find symbol: read_options; ";
         msg += dlsym_error2;
         throw PSIEXCEPTION(msg);
     }
@@ -56,7 +56,8 @@ plugin_info plugin_load(std::string& plugin_pathname)
     const char *dlsym_error3 = dlerror();
     if (dlsym_error3) {
         dlclose(info.plugin_handle);
-        std::string msg = "load_plugin: Cannot symbol: ";
+        std::string msg = "load_plugin: Cannot find symbol: ";
+        msg += info.name;
         msg += dlsym_error3;
         throw PSIEXCEPTION(msg);
     }

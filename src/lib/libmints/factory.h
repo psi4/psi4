@@ -99,9 +99,14 @@ public:
         return new Matrix(name, nirrep_, rowspi_, colspi_, symmetry);
     }
 
-    boost::shared_ptr<Matrix> create_shared_matrix(std::string name)
+    boost::shared_ptr<Matrix> create_shared_matrix(const std::string& name)
     {
         return boost::shared_ptr<Matrix>(new Matrix(name, nirrep_, rowspi_, colspi_));
+    }
+
+    boost::shared_ptr<Matrix> create_shared_matrix(const std::string& name, int symmetry)
+    {
+        return boost::shared_ptr<Matrix>(new Matrix(name, nirrep_, rowspi_, colspi_, symmetry));
     }
 
     void create_matrix(Matrix& mat, std::string name, int symmetry=0)

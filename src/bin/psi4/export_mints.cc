@@ -99,7 +99,7 @@ void export_mints()
             def("save", matrix_save(&Matrix::save));
 
     typedef shared_ptr<Matrix> (MatrixFactory::*create_shared_matrix)();
-    typedef shared_ptr<Matrix> (MatrixFactory::*create_shared_matrix_name)(std::string);
+    typedef shared_ptr<Matrix> (MatrixFactory::*create_shared_matrix_name)(const std::string&);
 
     class_<MatrixFactory, shared_ptr<MatrixFactory> >("MatrixFactory").
             def("shared_object", &get_matrix_factory).
