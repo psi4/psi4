@@ -102,7 +102,7 @@ void HF::common_init()
     input_docc_ = false;
     try {
         // Try local space first.
-        if (options_["DOCC"][0].has_changed()) {
+        if (options_.get("DOCC").size()) {
             input_docc_ = true;
             for (int i=0; i<nirreps; ++i) {
                 doccpi_[i] = options_["DOCC"][i].to_integer();

@@ -277,10 +277,10 @@ void UHF::compute_multipole()
     fprintf(outfile, "\n  Alpha Orbital extents (a.u.):\n");
     fprintf(outfile, "\t%3s%15s  %15s  %15s  %15s\n", "MO", "<x^2>", "<y^2>", "<z^2>", "<r^2>");
     SimpleMatrix Ca(Ca_->to_simple_matrix());
-    for (int i=0; i<Ca.rows(); ++i) {
+    for (int i=0; i<Ca.nrow(); ++i) {
         double sumx=0.0, sumy=0.0, sumz=0.0;
-        for (int k=0; k<Ca.cols(); ++k) {
-            for (int l=0; l<Ca.cols(); ++l) {
+        for (int k=0; k<Ca.ncol(); ++k) {
+            for (int l=0; l<Ca.ncol(); ++l) {
                 double tmp = Ca.get(k, i) * Ca.get(l, i);
                 sumx += Quadrupole_[0]->get(k, l) * tmp;
                 sumy += Quadrupole_[3]->get(k, l) * tmp;
@@ -294,10 +294,10 @@ void UHF::compute_multipole()
     fprintf(outfile, "\n  Beta Orbital extents (a.u.):\n");
     fprintf(outfile, "\t%3s%15s  %15s  %15s  %15s\n", "MO", "<x^2>", "<y^2>", "<z^2>", "<r^2>");
     SimpleMatrix Cb(Cb_->to_simple_matrix());
-    for (int i=0; i<Cb.rows(); ++i) {
+    for (int i=0; i<Cb.nrow(); ++i) {
         double sumx=0.0, sumy=0.0, sumz=0.0;
-        for (int k=0; k<Cb.cols(); ++k) {
-            for (int l=0; l<Cb.cols(); ++l) {
+        for (int k=0; k<Cb.ncol(); ++k) {
+            for (int l=0; l<Cb.ncol(); ++l) {
                 double tmp = Cb.get(k, i) * Cb.get(l, i);
                 sumx += Quadrupole_[0]->get(k, l) * tmp;
                 sumy += Quadrupole_[3]->get(k, l) * tmp;
