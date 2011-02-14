@@ -703,12 +703,12 @@ void Matrix::scale(double a)
 
 void Matrix::scale_row(int h, int m, double a)
 {
-    C_DSCAL(rowspi_[h], a, &(matrix_[h][m][0]), 1);
+    C_DSCAL(colspi_[h], a, &(matrix_[h][m][0]), 1);
 }
 
 void Matrix::scale_column(int h, int n, double a)
 {
-    C_DSCAL(colspi_[h], a, &(matrix_[h][0][n]), rowspi_[h]);
+    C_DSCAL(rowspi_[h], a, &(matrix_[h][0][n]), colspi_[h]);
 }
 
 double Matrix::sum_of_squares()
