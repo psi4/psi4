@@ -864,6 +864,14 @@ void Matrix::back_transform(const shared_ptr<Matrix>& transformer)
 void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix* const a,
                   const Matrix* const b, double beta)
 {
+    // Right now only all A1 works
+    if (symmetry_ != 0 ||
+            a->symmetry() != 0 ||
+            b->symmetry() != 0) {
+        fprintf(outfile, "Matrix::gemm: Only works for totally symmetric matrices.");
+        throw PSIEXCEPTION("Matrix::gemm: Only works for totally symemtric matrices.");
+    }
+
     // Check symmetry
     if (symmetry_ != (a->symmetry_ ^ b->symmetry_)) {
         fprintf(outfile, "Matrix::gemm error: Input symmetries will not result in target symmetry.\n");
@@ -878,8 +886,8 @@ void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix* const a,
 
     for (h=0; h<nirrep_; ++h) {
         m = rowspi_[h];
-        n = colspi_[h];
-        k = transa ? a->rowspi_[h] : a->colspi_[h];
+        n = colspi_[h^symmetry_];
+        k = transa ? a->rowspi_[h] : a->colspi_[h^a->symmetry_];
         nca = transa ? m : k;
         ncb = transb ? k : n;
         ncc = n;
