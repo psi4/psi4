@@ -151,6 +151,38 @@ Matrix::Matrix(int rows, int cols)
     alloc();
 }
 
+Matrix::Matrix(int nirrep, int rows, const int *colspi)
+{
+    matrix_ = NULL;
+    symmetry_ = 0;
+    nirrep_ = nirrep;
+
+    rowspi_ = new int[nirrep_];
+    colspi_ = new int[nirrep_];
+
+    for (int i=0; i<nirrep_; ++i) {
+        rowspi_[i] = rows;
+        colspi_[i] = colspi[i];
+    }
+    alloc();
+}
+
+Matrix::Matrix(int nirrep, const int *rowspi, int cols)
+{
+    matrix_ = NULL;
+    symmetry_ = 0;
+    nirrep_ = nirrep;
+
+    rowspi_ = new int[nirrep_];
+    colspi_ = new int[nirrep_];
+
+    for (int i=0; i<nirrep_; ++i) {
+        rowspi_[i] = rowspi[i];
+        colspi_[i] = cols;
+    }
+    alloc();
+}
+
 Matrix::Matrix(const string& name, const Dimension& rows, const Dimension& cols, int symmetry)
 {
     name_ = name;
@@ -1018,6 +1050,61 @@ void Matrix::transform(const Matrix& a, const Matrix& transformer)
     gemm(true, false, 1.0, transformer, temp, 0.0);
 }
 
+void Matrix::transform(const boost::shared_ptr<SimpleMatrix>& a, const boost::shared_ptr<Matrix>& transformer)
+{
+    // Check dimensions of the simple matrix and matrix
+    if (a->nrow() != transformer->rowdim(0)
+            || a->ncol() != transformer->ncol()) {
+        a->print();
+        transformer->print();
+        throw PSIEXCEPTION("Matrix::transform: simple to regular. Sizes are not compatible.\n");
+    }
+
+    // Create temporary matrix of proper size.
+    Matrix temp(nirrep(), a->nrow(), transformer->colspi());
+    temp.print();
+    fflush(outfile);
+
+    char ta = 'n';
+    char tb = 'n';
+    int h, m, n, k, nca, ncb, ncc;
+
+    // Solve F = T^ M T
+
+    // temp = M T
+    for(int h=0; h<nirrep_; ++h) {
+        m = temp.rowdim(h);
+        n = temp.coldim(h);
+        k = a->ncol();
+        nca = k;
+        ncb = n;
+        ncc = n;
+
+        if (m && n && k) {
+            C_DGEMM(ta, tb, m, n, k, 1.0, &(a->pointer()[0][0]),
+                    nca, &(transformer->matrix_[h][0][0]), ncb,
+                    0.0, &(temp.matrix_[h][0][0]), ncc);
+        }
+    }
+
+    // F = T^ temp
+    ta = 't';
+    for (int h=0; h<nirrep_; ++h) {
+        m = rowdim(h);
+        n = coldim(h);
+        k = transformer->rowdim(h);
+        nca = m;
+        ncb = n;
+        ncc = n;
+
+        if (m && n && k) {
+            C_DGEMM(ta, tb, m, n, k, 1.0, &(transformer->matrix_[h][0][0]),
+                    nca, &(temp.matrix_[h][0][0]), ncb, 0.0, &(matrix_[h][0][0]),
+                    ncc);
+        }
+    }
+}
+
 void Matrix::transform(const Matrix& transformer)
 {
     Matrix temp(this);
@@ -1627,7 +1714,7 @@ void SimpleMatrix::print_atom_vector(FILE *out)
     fprintf(out,"     Atom            X                  Y                   Z\n");
     fprintf(out,"    ------   -----------------  -----------------  -----------------\n");
 
-    for(i=0;i<rows();i++) {
+    for(i=0;i<nrow();i++) {
         fprintf(out,"    %4d   ",i+1);
         fprintf(out,"  %17.12lf  %17.12lf  %17.12lf", matrix_[i][0], matrix_[i][1], matrix_[i][2]);
         fprintf(out,"\n");

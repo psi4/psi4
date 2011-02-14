@@ -105,6 +105,22 @@ public:
      */
     Matrix(const std::string& name, int nirrep, const int *rowspi, const int *colspi, int symmetry = 0);
     /**
+     * Constructor, forms non-standard matrix.
+     * @param nirreps Number of blocks.
+     * @param rows Singular value. All blocks have same number of rows.
+     * @param colspi Array of length nirreps. Defines blocking scheme for columns.
+     */
+    Matrix(int nirrep, int rows, const int *colspi);
+
+    /**
+     * Constructor, forms non-standard matrix.
+     * @param nirreps Number of blocks.
+     * @param rowspi Array of length nirreps. Defines blocking scheme for rows.
+     * @param cols Singular value. All blocks have same number of columns.
+     */
+    Matrix(int nirrep, const int* rowspi, int cols);
+
+    /**
      * Constructor, sets up the matrix
      * Convenience case for 1 irrep
      * Note: You should be using SimpleMatrix
@@ -396,6 +412,22 @@ public:
         return nirrep_;
     }
 
+    /// Returns the total number of rows.
+    int nrow() const {
+        int rows = 0;
+        for (int h=0; h<nirrep(); ++h)
+            rows += rowdim(h);
+        return rows;
+    }
+
+    /// Returns the total number of columns.
+    int ncol() const {
+        int cols = 0;
+        for (int h=0; h<nirrep(); ++h)
+            cols += coldim(h);
+        return cols;
+    }
+
     /**
      * Returns the overall symmetry of the matrix.
      * For a totally-symmetric matrix this will be 0.
@@ -452,6 +484,14 @@ public:
     void scale_row(int h, int m, double a);
     /// Scale column n of irrep h by a
     void scale_column(int h, int n, double a);
+    /** Special function to transform a SimpleMatrix (no symmetry) into
+     *  a symmetry matrix.
+     *
+     *  \param a SimpleMatrix to transform
+     *  \param transformer Matrix from PetiteList to act as transformer
+     */
+    void transform(const boost::shared_ptr<SimpleMatrix>& a, const boost::shared_ptr<Matrix>& transformer);
+
     /// Transform a by transformer save result to this
     void transform(const Matrix* const a, const Matrix* const transformer);
     void transform(const boost::shared_ptr<Matrix>& a, const boost::shared_ptr<Matrix>& transformer);
@@ -469,7 +509,6 @@ public:
     double vector_dot(const Matrix* const rhs);
     double vector_dot(const boost::shared_ptr<Matrix>& rhs);
     double vector_dot(const Matrix& rhs);
-
 
     /// General matrix multiply, saves result to this
     void gemm(bool transa, bool transb, double alpha, const Matrix* const a, const Matrix* const b, double beta);
@@ -588,16 +627,16 @@ public:
     explicit SimpleMatrix(const SimpleMatrix* copy);
     explicit SimpleMatrix(boost::shared_ptr<SimpleMatrix> copy);
     /// Constructor, sets up the matrix
-    SimpleMatrix(int rows, int cols);
+    SimpleMatrix(int nrow, int ncol);
     /// Constructor, sets name_, and sets up the matrix
-    SimpleMatrix(std::string name, int rows, int cols);
+    SimpleMatrix(std::string name, int nrow, int ncol);
     /// Converts Matrix reference to SimpleMatrix
     SimpleMatrix(const Matrix& copy);
     /// Converts Matrix pointer to SimpleMatrix
     SimpleMatrix(const Matrix* copy);
 
     /// Constructor using Dimension's
-    SimpleMatrix(std::string& name, const Dimension& rows, const Dimension& cols);
+    SimpleMatrix(std::string& name, const Dimension& nrow, const Dimension& ncol);
 
     /// Destructor, frees memory
     ~SimpleMatrix();
@@ -646,9 +685,9 @@ public:
     void eivprint(SimpleVector *values, FILE *out = outfile);
     void eivprint(boost::shared_ptr<SimpleVector> values, FILE *out = outfile);
     /// The number of rows
-    int rows() const { return rows_; }
+    int nrow() const { return rows_; }
     /// The number of columns
-    int cols() const { return cols_; }
+    int ncol() const { return cols_; }
     /// Set matrix to identity
     void identity();
     /// Zero out the matrix

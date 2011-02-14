@@ -47,7 +47,7 @@ static void sort_rows_based_on_energies(SimpleMatrix* C, double *energies, int *
     unsigned int i, j;
     int itemp;
     double dtemp;
-    int length = C->rows();
+    int length = C->nrow();
 
     // Populate order_mapping with original ordering.
     for (i=0; i< length; ++i)
@@ -755,11 +755,11 @@ void RHF::compute_multipole()
         // fprintf(outfile, "\tQ3=%15.10f\tV3=(%15.10f %15.10f %15.10f)\n", evals.get(2), evecs.get(0, 2), evecs.get(1, 2), evecs.get(2, 2));
 
         // Compute orbital extents
-        SimpleMatrix orbital_extents("Orbital Extents", C->cols(), 4);
-        for (int i=0; i<C->cols(); ++i) {
+        SimpleMatrix orbital_extents("Orbital Extents", C->ncol(), 4);
+        for (int i=0; i<C->ncol(); ++i) {
             double sumx=0.0, sumy=0.0, sumz=0.0;
-            for (int k=0; k<C->rows(); ++k) {
-                for (int l=0; l<C->rows(); ++l) {
+            for (int k=0; k<C->nrow(); ++k) {
+                for (int l=0; l<C->nrow(); ++l) {
                     double tmp = C->get(k, i) * C->get(l, i);
                     sumx += Quadrupole_[0]->get(k, l) * tmp;
                     sumy += Quadrupole_[3]->get(k, l) * tmp;
@@ -775,13 +775,13 @@ void RHF::compute_multipole()
 
         // Sort orbital extent rows based on orbital energies
         double *orbital_energies = orbital_e_->to_block_vector();
-        int *order_mapping = new int[C->cols()];
+        int *order_mapping = new int[C->ncol()];
         sort_rows_based_on_energies(&orbital_extents, orbital_energies, order_mapping);
 
         fprintf(outfile, "\n  Orbital extents (a.u.):\n");
         fprintf(outfile, "\t%3s%15s  %15s  %15s  %15s\n", "MO", "<x^2>", "<y^2>", "<z^2>", "<r^2>");
 
-        for (int i=0; i<orbital_extents.rows(); ++i) {
+        for (int i=0; i<orbital_extents.nrow(); ++i) {
             fprintf(outfile, "\t%3d%15.10f  %15.10f  %15.10f  %15.10f\n", i+1,
                     orbital_extents.get(i, 0),orbital_extents.get(i, 1),orbital_extents.get(i, 2),orbital_extents.get(i, 3));
         }
