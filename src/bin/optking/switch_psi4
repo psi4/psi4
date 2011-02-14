@@ -1,11 +1,15 @@
 #!/bin/csh
 
-# copy all files from QChem to the psi4 directory and then execute this file
-# still under construction
+# copy all files from QChem opt2man to the psi4 optking directory
+# execute this file
+# then modify package.h
 
+# remove files unneeded by psi4
 rm Make.opt2man
 rm opt2man.main  
+rm switch_qchem
 
+# change file suffixes
 foreach FILE (`ls *.C | awk -F"."  '{print $1}'`)
  mv $FILE.C $FILE.cc
 end

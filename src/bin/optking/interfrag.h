@@ -51,7 +51,7 @@ class INTERFRAG {
   bool D_on[6]; // indicates which coordinates [0-5] are present;
                 // if ndA or ndB <3, then not all 6 coordinates are defined
 
-  bool use_principal_axes; // use principal axes to defined dA and DB reference points
+  //bool use_principal_axes;
 
   public:
 
@@ -101,8 +101,8 @@ class INTERFRAG {
 
   // returns B matrix from member geometries
   double **compute_B(void) {
-    double **Bmat = compute_B(A->geom, B->geom);
-    return Bmat;
+    double **bmat = compute_B(A->geom, B->geom);
+    return bmat;
   }
   // returns B matrix (internals by 3*natomA + 3*natomB)
   double **compute_B(GeomType new_geom_A, GeomType new_geom_B);
@@ -142,6 +142,9 @@ class INTERFRAG {
   bool orient_fragment(double *q_target);
 
   double ** compute_constraints(void) const;
+
+  //void set_principal_axes(bool b) { use_principal_axes = b; }
+  //bool use_principal_axes(void) { return use_principal_axes; }
 
 }; // class INTERFRAG
 

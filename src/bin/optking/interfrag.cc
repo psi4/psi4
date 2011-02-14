@@ -26,6 +26,7 @@ INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
   weightB = weightB_in;
   ndA = ndA_in;
   ndB = ndB_in;
+  //use_principal_axes = false; // default, change with set_principal_axes
 
   double **inter_geom = init_matrix(6,3); // some rows may be unused
 
@@ -110,6 +111,8 @@ INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
     throw("INTERFRAG::INTERFRAG Num. reference points on each fragment must be at least 1.");
   }
 
+  //if (!use_principal_axes) {
+
   // check if stretch is a H-bond or includes something H-bond like (remember stretch is
   // in general between linear combinations of atoms
   double ang;
@@ -123,8 +126,6 @@ INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
   for (int b=0; b<B->g_natom(); ++b)
     if (B->Z[b] == 7 || B->Z[b] == 8 || B->Z[b] == 9 || B->Z[b] == 17)
       is_XB[b] = true;
-
-  if (!use_principal_axes) { // there are no weights in this case
 
   // Look for A[X]-A[H] ... B[Y]
   for (int h=0; h<A->natom; ++h) {
@@ -162,7 +163,7 @@ INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
     }
   }
 
-  } // end !principal axes
+  //} // !use_principal axes
 
   if (Opt_params.interfragment_distance_inverse) {
     one_stre->make_inverse_stre(); 
@@ -181,11 +182,12 @@ INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
 
 // update location of reference points using given geometries
 void INTERFRAG::update_reference_points(GeomType new_geom_A, GeomType new_geom_B) {
+
   for (int i=0; i<6; ++i)
     for (int xyz=0; xyz<3; ++xyz)
       inter_frag->geom[i][xyz] = 0.0;
 
-  if (!use_principal_axes) { // use fixed weights
+  //if (!use_principal_axes) {
     for (int xyz=0; xyz<3; ++xyz) {
       for (int a=0; a<A->g_natom(); ++a) {
         inter_frag->geom[0][xyz] += weightA[2][a] * new_geom_A[a][xyz];
@@ -198,19 +200,46 @@ void INTERFRAG::update_reference_points(GeomType new_geom_A, GeomType new_geom_B
         inter_frag->geom[5][xyz] += weightB[2][b] * new_geom_B[b][xyz];
       }
     }
+  /* } else { // using principal axes
+    int i, xyz;
+
+    double **A_u = init_matrix(3,3);
+    double *A_lambda = init_array(3);
+    i = A->principal_axes(new_geom_A, A_u, A_lambda);
+
+    if (i != ndA) {
+      fprintf(outfile,"Number of unique principal axes for fragment has changed.\n");
+      throw("Number of principal axes for fragment has changed.");
+    }
+
+    double *A_com = A->com();
+
+    for (int xyz=0; xyz<3; ++xyz)
+      for (int i=0; i<ndA; ++i)
+        inter_frag->geom[2-i][xyz] = A_u[i][xyz] + A_com[xyz];
+
+    free_array(A_lambda);
+    free_matrix(A_u);
+
+    double **B_u = init_matrix(3,3);
+    double *B_lambda = init_array(3);
+    i = B->principal_axes(new_geom_B, B_u, B_lambda);
+
+    if (i != ndB) {
+      fprintf(outfile,"Number of unique principal axes for fragment has changed.\n");
+      throw("Number of principal axes for fragment has changed.");
+    }
+
+    double *B_com = B->com();
+
+    for (int xyz=0; xyz<3; ++xyz)
+      for (int i=0; i<ndB; ++i)
+        inter_frag->geom[3+i][xyz] = B_u[i][xyz] + B_com[xyz];
+
+    free_array(B_lambda);
+    free_matrix(B_u);
   }
-  else {
-
-    double *com_A = A->com();
-    double **I_A = A->inertia_tensor();
-
-
-    double *com_B = B->com();
-    double **I_B = B->inertia_tensor();
-
-    
-
-  }
+  */
 }
 
 int INTERFRAG::g_nintco(void) const {

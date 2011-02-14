@@ -42,6 +42,10 @@ void set_params(void) {
 // the interfragment coordinates are not redundant. {SINGLE, MULTI}
   Opt_params.fragment_mode = OPT_PARAMS::MULTI;
 
+// whether to use fixed linear combinations of atoms as reference points for
+//interfragment coordinates or whether to use principal axes {FIXED, PRINCIPAL_AXES}
+  Opt_params.interfragment_mode = OPT_PARAMS::PRINCIPAL_AXES ;
+
 // Whether to only generate the internal coordinates and then stop {true, false}
   Opt_params.generate_intcos_only;
 
@@ -141,7 +145,6 @@ void set_params(void) {
   else if (i == 1) Opt_params.interfragment_H = OPT_PARAMS::FISCHER_LIKE;
 
 // Whether to freeze all fragments rigid (default 0);
-fprintf(outfile,"REM_GEOM_OPT2_FREEZE_INTRAFRAGMENT %d\n", rem_read(REM_GEOM_OPT2_FREEZE_INTRAFRAGMENT));
   Opt_params.freeze_intrafragment = rem_read(REM_GEOM_OPT2_FREEZE_INTRAFRAGMENT);
 
 // write final step ; default (false);
@@ -195,17 +198,16 @@ fprintf(outfile,"REM_GEOM_OPT2_FREEZE_INTRAFRAGMENT %d\n", rem_read(REM_GEOM_OPT
 // read Hessian (default 0)
   Opt_params.read_cartesian_H = rem_read(REM_GEOM_OPT2_READ_CARTESIAN_H);
 
-printf("EFP %d\n", rem_read(REM_EFP) );
-printf("EFP_FRAGMENTS_ONLY %d\n", rem_read(REM_EFP_FRAGMENTS_ONLY) );
-
-// are EFP fragments present
+// This optimizer will not work unless only EFP fragments are present
+// Last I tried, I can't even get geometry data when running EFP_opt.in
   Opt_params.efp_fragments = rem_read(REM_EFP);
 
 // are ONLY EFP fragments present
   if(Opt_params.efp_fragments)
     Opt_params.efp_fragments_only = rem_read(REM_EFP_FRAGMENTS_ONLY);
-  else
+  else {
     Opt_params.efp_fragments_only = false;
+  }
 
 #endif
 
@@ -270,6 +272,11 @@ void print_params(void) {
   fprintf(outfile, "fragment_mode          = %18s\n", "single");
   else if (Opt_params.fragment_mode == OPT_PARAMS::MULTI)
   fprintf(outfile, "fragment_mode          = %18s\n", "multi");
+
+  if (Opt_params.interfragment_mode == OPT_PARAMS::FIXED)
+  fprintf(outfile, "interfragment_mode        = %18s\n", "fixed");
+  else if (Opt_params.interfragment_mode == OPT_PARAMS::PRINCIPAL_AXES)
+  fprintf(outfile, "interfragment_mode        = %18s\n", "principal axes");
 
   if (Opt_params.generate_intcos_only)
   fprintf(outfile, "generate_intcos_only   = %18s\n", "true");

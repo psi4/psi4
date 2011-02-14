@@ -14,6 +14,7 @@
 #include "print.h"
 #include "opt_data.h"
 #include "physconst.h"
+#include "linear_algebra.h"
 
 #define EXTERN
 #include "globals.h"
@@ -565,7 +566,7 @@ const bool * const * FRAG::g_connectivity_pointer(void) const {
   return connectivity;
 }
 
-double ** FRAG::inertia_tensor (double **in_geom) {
+double ** FRAG::inertia_tensor (GeomType in_geom) {
   double **I = init_matrix(3,3);
   double *center;
 
@@ -590,7 +591,7 @@ double ** FRAG::inertia_tensor (double **in_geom) {
   return I;
 }
 
-double * FRAG::com(double **in_geom) {
+double * FRAG::com(GeomType in_geom) {
   double *center = init_array(3);
   double sum = 0.0;
   for (int i=0; i<g_natom(); ++i) {
@@ -602,6 +603,31 @@ double * FRAG::com(double **in_geom) {
     center[xyz] /= sum;
 
   return center;
+}
+
+// calling program must allocate axes(3,3) and evals(3)
+// evals returned in ascending order (descending rotational constants), but zeroes are removed
+// from evals and evects;
+// axes are rows ; 
+// return number of principal axes
+// may have to order degenerate evals later
+int FRAG::principal_axes(GeomType in_geom, double **axes, double *evals) {
+
+  double **I = inertia_tensor(in_geom);
+  double *I_evals = init_array(3);
+  opt_symm_matrix_eig(I, 3, I_evals);
+
+  int cnt = 0;
+  for (int i=0; i<3; ++i) {
+    if (fabs(I_evals[i]) > 1.0e-14) {
+      evals[cnt] = I_evals[i];
+      axes[cnt][0] = I[i][0];
+      axes[cnt][1] = I[i][1];
+      axes[cnt][2] = I[i][2];
+      ++cnt;
+    }
+  }
+  return cnt;
 }
 
 }
