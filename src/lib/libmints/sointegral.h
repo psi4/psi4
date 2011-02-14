@@ -161,7 +161,7 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
 
 #ifdef MINTS_TIMER
     timer_on("TwoBodySOInt::compute_shell setup");
-#endif MINTS_TIMER
+#endif // MINTS_TIMER
 
     const double *aobuff = tb_->buffer();
 
@@ -192,22 +192,25 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
 
 #ifdef MINTS_TIMER
     timer_on("TwoBodySOInt::compute_shell zero buffer");
-#endif MINTS_TIMER
+#endif // MINTS_TIMER
 
-    for (size_t i=0; i<size_; ++i) {
-        buffer_[i] = 0.0;
-    }
+    memset(buffer_, 0, nso1*nso2*nso3*nso4*sizeof(double));
+
+//    for (size_t i=0; i<size_; ++i) {
+//        buffer_[i] = 0.0;
+//    }
+
 #ifdef MINTS_TIMER
     timer_off("TwoBodySOInt::compute_shell zero buffer");
-#endif MINTS_TIMER
+#endif // MINTS_TIMER
 
 #ifdef MINTS_TIMER
     timer_off("TwoBodySOInt::compute_shell setup");
-#endif MINTS_TIMER
+#endif // MINTS_TIMER
 
 #ifdef MINTS_TIMER
     timer_on("TwoBodySOInt::compute_shell full shell transform");
-#endif MINTS_TIMER
+#endif // MINTS_TIMER
 
     // loop through the ao shells that make up this so shell
     for (int i=0; i<t1.naoshell; i++) {
@@ -221,11 +224,11 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
 
 #ifdef MINTS_TIMER
     timer_on("TwoBodySOInt::compute_shell AO eri overhead");
-#endif MINTS_TIMER
+#endif // MINTS_TIMER
                     tb_->compute_shell(s1.aoshell, s2.aoshell, s3.aoshell, s4.aoshell);
 #ifdef MINTS_TIMER
     timer_off("TwoBodySOInt::compute_shell AO eri overhead");
-#endif MINTS_TIMER
+#endif // MINTS_TIMER
 
 //                    fprintf(outfile, "ao: (%d %d %d %d)\n", s1.aoshell, s2.aoshell,
 //                            s3.aoshell, s4.aoshell);
@@ -239,7 +242,7 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
 
 #ifdef MINTS_TIMER
     timer_on("TwoBodySOInt::compute_shell AO->SO transform");
-#endif MINTS_TIMER
+#endif // MINTS_TIMER
 
                     for (int itr=0; itr<s1.nfunc; itr++) {
                         const SOTransformFunction &ifunc = s1.func[itr];
@@ -298,7 +301,7 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
 
 #ifdef MINTS_TIMER
     timer_off("TwoBodySOInt::compute_shell AO->SO transform");
-#endif MINTS_TIMER
+#endif // MINTS_TIMER
 
                 }
             }
@@ -307,7 +310,7 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
 
 #ifdef MINTS_TIMER
     timer_off("TwoBodySOInt::compute_shell full shell transform");
-#endif MINTS_TIMER
+#endif // MINTS_TIMER
 
     provide_IJKL(ish, jsh, ksh, lsh, body);
 
