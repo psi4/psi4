@@ -74,6 +74,13 @@ public:
     void compute(boost::shared_ptr<Matrix> result);
 
     /**
+     * Computes one-electron integral matrices. Should be able to handle multipole operators
+     *
+     * \param results Where the integrals are going.
+     */
+    void compute(std::vector<boost::shared_ptr<Matrix> > results);
+
+    /**
      * Computes one-electron integral derivative matrices.
      *
      * \param result Where the integral derivatives are going.

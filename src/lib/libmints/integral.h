@@ -340,6 +340,7 @@ public:
     
     /// Returns an OneBodyInt that computes the dipole integral.
     virtual OneBodyAOInt* ao_dipole(int deriv=0);
+    virtual OneBodySOInt* so_dipole(int deriv=0);
 
     /// Returns an OneBodyInt that computes the quadrupole integral.
     virtual OneBodyAOInt* quadrupole();

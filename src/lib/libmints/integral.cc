@@ -116,6 +116,12 @@ OneBodyAOInt* IntegralFactory::ao_dipole(int deriv)
     return new DipoleInt(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
+OneBodySOInt* IntegralFactory::so_dipole(int deriv)
+{
+    shared_ptr<OneBodyAOInt> ao_int(ao_dipole(deriv));
+    return new OneBodySOInt(ao_int, this);
+}
+
 OneBodyAOInt* IntegralFactory::quadrupole()
 {
     return new QuadrupoleInt(spherical_transforms_, bs1_, bs2_);
