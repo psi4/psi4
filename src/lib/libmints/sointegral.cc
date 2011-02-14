@@ -562,19 +562,6 @@ TwoBodySOInt::TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt> &tb,
     else
         b4_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(tb->basis4(), integral));
 
-//    int max1_nequivalent_atoms = b1_->max_nfunction_in_shell();
-//    int max2_nequivalent_atoms = b2_->max_nfunction_in_shell();
-//    int max3_nequivalent_atoms = b3_->max_nfunction_in_shell();
-//    int max4_nequivalent_atoms = b4_->max_nfunction_in_shell();
-
-//    int max_nequivalent_atom = max1_nequivalent_atoms * max2_nequivalent_atoms * max3_nequivalent_atoms * max4_nequivalent_atoms;
-
-    // Allocate accumulation buffer
-//    size_ = max_nequivalent_atom*INT_NCART(tb->basis1()->max_am())
-//            *INT_NCART(tb->basis2()->max_am())
-//            *INT_NCART(tb->basis3()->max_am())
-//            *INT_NCART(tb->basis4()->max_am());
-
     size_ = b1_->max_nfunction_in_shell() *
             b2_->max_nfunction_in_shell() *
             b3_->max_nfunction_in_shell() *
