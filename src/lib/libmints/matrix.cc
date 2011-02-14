@@ -1062,8 +1062,6 @@ void Matrix::transform(const boost::shared_ptr<SimpleMatrix>& a, const boost::sh
 
     // Create temporary matrix of proper size.
     Matrix temp(nirrep(), a->nrow(), transformer->colspi());
-    temp.print();
-    fflush(outfile);
 
     char ta = 'n';
     char tb = 'n';
