@@ -4,9 +4,9 @@
 #include "moinfo.h"
 #include <cstdio>
 
-extern FILE *outfile;
-
 namespace psi{
+
+extern FILE *outfile;
 
 void ModelSpace::build()
 {

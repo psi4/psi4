@@ -47,7 +47,7 @@ void MOInfo::build_model_space()
      is assumed (see moinfo.cpp)
   ********************************************************/
   int index;
-  MOInfo::SlaterDeterminant docc_det;
+  MOInfo::SlaterDeterminant docc_det(this);
 
   /***********************************************
     Generate all combinations of active orbitals
