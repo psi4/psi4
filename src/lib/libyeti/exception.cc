@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <libyeti/exception.h>
 #include <sstream>
 #include <iostream>
