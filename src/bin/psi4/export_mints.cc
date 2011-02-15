@@ -1,5 +1,6 @@
 #include <string>
 #include <boost/python.hpp>
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <libmints/mints.h>
 #include <lib3index/3index.h>
 #include <libscf_solver/hf.h>
@@ -37,6 +38,9 @@ shared_ptr<MatrixFactory> get_matrix_factory()
 
 void export_mints()
 {
+    class_<std::vector<shared_ptr<Matrix> > >("matrix_vector").
+            def(vector_indexing_suite<std::vector<shared_ptr<Matrix> >, true >());
+
     typedef void (Vector::*vector_set)(int, int, double);
     class_<Vector, shared_ptr<Vector> >( "Vector").
             def(init<int>()).
@@ -111,9 +115,11 @@ void export_mints()
             def("ao_overlap", &MintsHelper::ao_overlap).
             def("ao_kinetic", &MintsHelper::ao_kinetic).
             def("ao_potential", &MintsHelper::ao_potential).
+//            def("ao_dipole", &MintsHelper::ao_dipole).
             def("so_overlap", &MintsHelper::so_overlap).
             def("so_kinetic", &MintsHelper::so_kinetic).
             def("so_potential", &MintsHelper::so_potential).
+            def("so_dipole", &MintsHelper::so_dipole).
             def("ao_eri", &MintsHelper::ao_eri).
             def("ao_erf_eri", &MintsHelper::ao_erf_eri);
 
@@ -129,7 +135,7 @@ void export_mints()
         def("form_QR_inverse", &FittingMetric::form_QR_inverse).
         def("form_eig_inverse", &FittingMetric::form_eig_inverse).
         def("form_full_inverse", &FittingMetric::form_full_inverse);
-    
+
     class_<Vector3>("Vector3").
             def(init<double>()).
             def(init<double, double, double>()).
@@ -264,4 +270,10 @@ void export_mints()
     class_<MoldenWriter, shared_ptr<MoldenWriter> >("MoldenWriter", no_init).
             def(init<shared_ptr<Wavefunction> >()).
             def("write", &MoldenWriter::write);
+
+    class_<MultipoleSymmetry, shared_ptr<MultipoleSymmetry> >("MultipoleSymmetry", no_init).
+            def(init<int, const boost::shared_ptr<Molecule>&,
+                const boost::shared_ptr<IntegralFactory>&,
+                const boost::shared_ptr<MatrixFactory>&>()).
+            def("create_matrices", &MultipoleSymmetry::create_matrices);
 }

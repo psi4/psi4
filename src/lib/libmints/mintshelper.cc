@@ -453,7 +453,36 @@ shared_ptr<Matrix> MintsHelper::so_potential()
     ints->compute(S);
 
     return S;
+}
 
+std::vector<shared_ptr<Matrix> > MintsHelper::so_dipole()
+{
+    shared_ptr<Molecule> molecule = Process::environment.molecule();
+    if (molecule.get() == 0) {
+        fprintf(outfile, "  Active molecule not set!");
+        throw PSIEXCEPTION("Active molecule not set!");
+    }
+
+    molecule->update_geometry();
+    // Read in the basis set
+    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
+    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, options_.get_str("BASIS"));
+    shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
+    shared_ptr<SOBasisSet> sobasis(new SOBasisSet(basis, fact));
+    const Dimension& dim = sobasis->dimension();
+
+    // The matrix factory can create matrices of the correct dimensions...
+    shared_ptr<MatrixFactory> factory(new MatrixFactory);
+    factory->init_with(dim, dim);
+
+    MultipoleSymmetry msymm(1, molecule, fact, factory);
+    // Create a vector of matrices with the proper symmetry
+    std::vector<SharedMatrix> dipole = msymm.create_matrices("SO Dipole");
+
+    shared_ptr<OneBodySOInt> ints(fact->so_dipole());
+    ints->compute(dipole);
+
+    return dipole;
 }
 
 }
