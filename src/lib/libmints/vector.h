@@ -87,7 +87,7 @@ public:
     }
 
     /**
-     * Sets the name of the vector, used in print(...) 
+     * Sets the name of the vector, used in print(...)
      *
      * @param name New name to use.
      */
@@ -178,6 +178,15 @@ public:
             vector_[i] = x.vector_[i];
     }
 
+    SimpleVector& operator+=(const SimpleVector& b) {
+        for (int i=0; i<dim_; ++i)
+            vector_[i] += b.vector_[i];
+        return *this;
+    }
+
+    /// Computes the magnitude of the vector.
+    double magnitude() const;
+
     /// Python compatible printer
     void print_out() { print(outfile); }
 
@@ -191,6 +200,7 @@ public:
 
     friend class SimpleMatrix;
 };
+
 /*! \ingroup MINTS */
 class IntVector {
 protected:
@@ -269,7 +279,7 @@ public:
     }
 
     /**
-     * Sets the name of the vector, used in print(...) 
+     * Sets the name of the vector, used in print(...)
      *
      * @param name New name to use.
      */

@@ -76,7 +76,7 @@ void Vector::init(int nirreps, int *dimpi)
 void Vector::alloc() {
     if (vector_)
         release();
-    
+
     vector_ = (double**)malloc(sizeof(double*) * nirrep_);
     for (int h=0; h<nirrep_; ++h) {
         if (dimpi_[h])
@@ -87,7 +87,7 @@ void Vector::alloc() {
 void Vector::release() {
     if (!vector_)
         return;
-    
+
     for (int h=0; h<nirrep_; ++h) {
         if (dimpi_[h])
             delete[] (vector_[h]);
@@ -134,7 +134,7 @@ void Vector::copy(const Vector &rhs) {
 
 void Vector::set(double *vec) {
     int h, i, ij;
-    
+
     ij = 0;
     for (h=0; h<nirrep_; ++h) {
         for (i=0; i<dimpi_[h]; ++i) {
@@ -158,7 +158,7 @@ double *Vector::to_block_vector() {
     size_t size=0;
     for (int h=0; h<nirrep_; ++h)
         size += dimpi_[h];
-    
+
     double *temp = new double[size];
     size_t offset = 0;
     for (int h=0; h<nirrep_; ++h) {
@@ -167,7 +167,7 @@ double *Vector::to_block_vector() {
         }
         offset += dimpi_[h];
     }
-    
+
     return temp;
 }
 
@@ -226,7 +226,7 @@ SimpleVector::~SimpleVector() {
 void SimpleVector::alloc() {
     if (vector_)
         release();
-    
+
     vector_ = new double[dim_];
     memset(vector_, 0, sizeof(double) * dim_);
 }
@@ -234,7 +234,7 @@ void SimpleVector::alloc() {
 void SimpleVector::release() {
     if (!vector_)
         return;
-    
+
     delete[] (vector_);
     vector_ = NULL;
 }
@@ -255,7 +255,7 @@ void SimpleVector::copy(const SimpleVector *rhs) {
 
 void SimpleVector::set(double *vec) {
     int i;
-    
+
     for (i=0; i<dim_; ++i) {
         vector_[i] = vec[i];
     }
@@ -272,7 +272,7 @@ double *SimpleVector::to_block_vector() {
     for (int i=0; i<dim_; ++i) {
         temp[i] = vector_[i];
     }
-    
+
     return temp;
 }
 
@@ -280,4 +280,12 @@ void SimpleVector::scale(double a) {
     for (int i=0; i<dim_; ++i) {
         vector_[i] *= a;
     }
+}
+
+double SimpleVector::magnitude() const
+{
+    double mag=0.0;
+    for (int i=0; i<dim_; ++i)
+        mag += (vector_[i] * vector_[i]);
+    return sqrt(mag);
 }

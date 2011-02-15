@@ -931,6 +931,9 @@ void Matrix::gemm(bool transa, bool transb, double alpha,
 
 double Matrix::vector_dot(const Matrix* const rhs)
 {
+    if (symmetry_ != rhs->symmetry_)
+        return 0.0;
+
     double sum = 0.0;
     int h;
     size_t size;

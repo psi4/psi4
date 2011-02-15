@@ -2,6 +2,7 @@
 #define _psi_src_lib_libmints_helper_h
 
 #include <libiwl/iwl.hpp>
+#include <vector>
 
 namespace psi {
 
@@ -79,22 +80,27 @@ public:
     /// Hessian integrals (not implemented)
     void integral_hessians();
     /// AO Overlap Integrals
-    shared_ptr<Matrix> ao_overlap();
+    boost::shared_ptr<Matrix> ao_overlap();
     /// AO Kinetic Integrals
-    shared_ptr<Matrix> ao_kinetic();
+    boost::shared_ptr<Matrix> ao_kinetic();
     /// AO Potential Integrals
-    shared_ptr<Matrix> ao_potential();
+    boost::shared_ptr<Matrix> ao_potential();
+    /// Vector AO Dipole Integrals
+//    std::vector<boost::shared_ptr<Matrix> > ao_dipole();
+
     /// AO ERI Integrals (Full matrix, not recommended for large systems)
-    shared_ptr<Matrix> ao_eri();
+    boost::shared_ptr<Matrix> ao_eri();
     /// AO ERI Omega Integrals (Full matrix, not recommended for large systems)
-    shared_ptr<Matrix> ao_erf_eri(double omega, double alpha, double beta);
+    boost::shared_ptr<Matrix> ao_erf_eri(double omega, double alpha, double beta);
 
     /// AO Overlap Integrals
-    shared_ptr<Matrix> so_overlap();
+    boost::shared_ptr<Matrix> so_overlap();
     /// AO Kinetic Integrals
-    shared_ptr<Matrix> so_kinetic();
+    boost::shared_ptr<Matrix> so_kinetic();
     /// AO Potential Integrals
-    shared_ptr<Matrix> so_potential();
+    boost::shared_ptr<Matrix> so_potential();
+    /// Vector SO Dipole Integrals
+    std::vector<boost::shared_ptr<Matrix> > so_dipole();
 };
 
 }
