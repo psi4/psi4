@@ -2220,9 +2220,9 @@ Vector3 Molecule::fxyz(int atom) const
     return input_units_to_au_ * full_atoms_[atom]->compute();
 }
 
-const double& Molecule::xyz(int atom, int _xyz) const
+double Molecule::xyz(int atom, int _xyz) const
 {
-    return xyz(atom)[_xyz];
+    return input_units_to_au_ * atoms_[atom]->compute()[_xyz];
 }
 
 int Molecule::Z(int atom) const

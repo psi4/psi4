@@ -20,7 +20,7 @@ molecule C4NH4 {
   bohr
 }
 
-globals {
+set globals {
   wfn         ccsd_t
   docc        [10, 1, 4, 3]
   basis       aug-cc-pVTZ

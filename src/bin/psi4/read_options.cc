@@ -19,10 +19,8 @@ namespace psi {
  */
 int read_options(const std::string &name, Options & options, bool suppress_printing)
 {
-  options.clear();
+//  options.clear();
 
-  /*- Not using input module -*/
-  options.add_bool("NO_INPUT", false);
   /*- Path to basis path -*/
   options.add_str_i("BASIS_PATH", "");
   /*- units to use (global) -*/

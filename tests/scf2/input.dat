@@ -11,7 +11,7 @@ molecule h2o {
     H 1 1.0 2 104.5
 }
 
-globals {
+set globals {
   basis        cc-pVTZ
   scf_type     df
   ri_basis_scf cc-pVTZ-RI

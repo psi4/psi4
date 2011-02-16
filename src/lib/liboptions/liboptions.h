@@ -29,7 +29,9 @@ namespace psi {
   class IndexException : public PsiException
   {
   public:
-    IndexException(const std::string& message) : PSIEXCEPTION("unable to find index " + message) { }
+      IndexException(const std::string& message) : PSIEXCEPTION("unable to find index " + message) { }
+      IndexException(const std::string& message, const std::string &module) :
+              PSIEXCEPTION("unable to find index " + message + " for module " + module) { }
   };
 
   class DuplicateKeyException : public PsiException
@@ -613,14 +615,19 @@ namespace psi {
   {
     bool edit_globals_;
 
+
+    /// The module that's active right now
+    std::string current_module_;
+
     /// "Active" set of options
-    std::map<std::string, Data> keyvals_;
+    std::map<std::string, std::map<std::string, Data> > locals_;
 
     /// "Global" set of options
     std::map<std::string, Data> globals_;
 
     typedef std::map<std::string, Data>::iterator iterator;
     typedef std::map<std::string, Data>::const_iterator const_iterator;
+    typedef std::map<std::string, std::map<std::string, Data> >::const_iterator const_mod_iterator;
 
   public:
     Options() :edit_globals_(false) { }
@@ -630,7 +637,7 @@ namespace psi {
       if (this == &rhs)
         return *this;
 
-      keyvals_ = rhs.keyvals_;
+      locals_ = rhs.locals_;
       globals_ = rhs.globals_;
 
       return *this;
@@ -638,6 +645,7 @@ namespace psi {
 
     bool read_globals() const { return edit_globals_; }
     void set_read_globals(bool _b) { edit_globals_ = _b; }
+    void set_current_module(const std::string s) { current_module_ = s; }
 
     void to_upper(std::string& str) {
       std::transform(str.begin(), str.end(), str.begin(), ::toupper);
@@ -646,12 +654,13 @@ namespace psi {
     void add(std::string key, DataType *data) {
       to_upper(key);
 
-      std::map<std::string, Data> & local = edit_globals_ ? globals_ : keyvals_;
+      std::map<std::string, Data> & local = edit_globals_ ? globals_ : locals_[current_module_];
 
       // Make sure the key isn't already there
       iterator pos = local.find(key);
       if (pos != local.end()) { // If it is there, make sure they are the same type
           if (pos->second.type() != data->type())
+              // TODO convert string to boolean, if needed
               throw DuplicateKeyException();
           return;
       }
@@ -691,17 +700,21 @@ namespace psi {
     void add_array(std::string key) {
       add(key, new ArrayType());
     }
-    void set_bool(std::string key, bool b) {
-      get(key).assign(b);
+    void set_bool(const std::string &module, const std::string &key, bool b) {
+        locals_[module][key] = new BooleanDataType(b);
+        locals_[module][key].changed();
     }
-    void set_int(std::string key, int i) {
-      get(key).assign(i);
+    void set_int(const std::string &module, const std::string &key, int i) {
+        locals_[module][key] = new IntDataType(i);
+        locals_[module][key].changed();
     }
-    void set_double(std::string key, double d) {
-      get(key).assign(d);
+    void set_double(const std::string & module, const std::string &key, double d) {
+        locals_[module][key] = new DoubleDataType(d);
+        locals_[module][key].changed();
     }
-    void set_str(std::string key, std::string s) {
-      get(key).assign(s);
+    void set_str(const std::string & module, const std::string &key, std::string s) {
+        locals_[module][key] = new StringDataType(s);
+        locals_[module][key].changed();
     }
 
     void set_global_bool(std::string key, bool b) {
@@ -718,15 +731,14 @@ namespace psi {
     }
 
     void clear(void) {
-      keyvals_.clear();
+      locals_.clear();
     }
 
     bool exists_in_active(std::string key) {
       to_upper(key);
 
-      iterator pos = keyvals_.find(key);
-      if (pos != keyvals_.end())
-        return true;
+      if(!locals_.count(current_module_)) return false;
+      return (locals_[current_module_].count(key));
       return false;
     }
 
@@ -749,7 +761,7 @@ namespace psi {
         // Key not found. Throw an error
         throw IndexException(key);
       }
-      return keyvals_[key];
+      return locals_[current_module_][key];
     }
 
     Data& get(std::map<std::string, Data>& m, std::string& key) {
@@ -771,15 +783,16 @@ namespace psi {
         to_upper(key);
 
         // edit globals being true overrides everything
-        if (edit_globals_)
+        if (edit_globals_){
             return get(globals_, key);
+        }
 
         if (!exists_in_active(key) && !exists_in_global(key))
             throw IndexException(key);
         else if (!exists_in_active(key) && exists_in_global(key))
             return get(globals_, key);
         else if (exists_in_active(key) && exists_in_global(key)) {
-            Data& active = get(keyvals_, key);
+            Data& active = get(locals_[current_module_], key);
 
             if (active.has_changed() == false) {
                 // Pull from globals
@@ -787,11 +800,11 @@ namespace psi {
             }
             else {
                 // Pull from keyvals
-                return get(keyvals_, key);
+                return get(locals_[current_module_], key);
             }
         }
         else
-            return get(keyvals_, key);
+            return get(locals_[current_module_], key);
     }
 
     bool get_bool(std::string key) {

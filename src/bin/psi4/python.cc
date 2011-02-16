@@ -73,23 +73,43 @@ namespace psi {
     extern FILE *outfile;
 }
 
+void py_psi_prepare_options_for_module(std::string const & name)
+{
+    // Tell the options object which module is about to run
+    Process::environment.options.set_current_module(name);
+    // Figure out the defaults for any options that have not been specified
+    read_options(name, Process::environment.options, false);
+
+    if (plugins.count(name)) {
+        // Easy reference
+        plugin_info& info = plugins[name];
+
+        // Tell the plugin to load in its options into the current environment.
+        info.read_options(info.name, Process::environment.options);
+    }
+}
+
 int py_psi_optking()
 {
+    py_psi_prepare_options_for_module("OPTKING");
     return opt::optking(Process::environment.options);
 }
 
 int py_psi_mints()
 {
+    py_psi_prepare_options_for_module("MINTS");
     return mints::mints(Process::environment.options);
 }
 
 int py_psi_deriv()
 {
+    py_psi_prepare_options_for_module("DERIV");
     return deriv::deriv(Process::environment.options);
 }
 
 double py_psi_scf_callbacks(PyObject* precallback, PyObject* postcallback)
 {
+    py_psi_prepare_options_for_module("SCF");
     if (scf::scf(Process::environment.options, precallback, postcallback) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
@@ -99,6 +119,7 @@ double py_psi_scf_callbacks(PyObject* precallback, PyObject* postcallback)
 
 double py_psi_mcscf()
 {
+    Process::environment.options.print();//TODO Remove
     if (mcscf::mcscf(Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
@@ -113,6 +134,7 @@ double py_psi_scf()
 
 double py_psi_dcft()
 {
+    py_psi_prepare_options_for_module("DCFT");
     if (dcft::dcft(Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
@@ -122,6 +144,7 @@ double py_psi_dcft()
 
 double py_psi_dfmp2()
 {
+    py_psi_prepare_options_for_module("DFMP2");
     if (dfmp2::dfmp2(Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
@@ -131,6 +154,7 @@ double py_psi_dfmp2()
 
 double py_psi_dfcc()
 {
+    py_psi_prepare_options_for_module("DFCC");
     if (dfcc::dfcc(Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
@@ -140,6 +164,7 @@ double py_psi_dfcc()
 
 double py_psi_sapt()
 {
+    py_psi_prepare_options_for_module("SAPT");
     if (sapt::sapt(Process::environment.options) == Success) {
         return Process::environment.globals["SAPT ENERGY"];
     }
@@ -149,24 +174,28 @@ double py_psi_sapt()
 
 double py_psi_transqt()
 {
+    py_psi_prepare_options_for_module("TRANSQT");
     transqt::transqt(Process::environment.options);
     return 0.0;
 }
 
 double py_psi_transqt2()
 {
+    py_psi_prepare_options_for_module("TRANSQT2");
     transqt2::transqt2(Process::environment.options);
     return 0.0;
 }
 
 double py_psi_ccsort()
 {
+    py_psi_prepare_options_for_module("CCSORT");
     ccsort::ccsort(Process::environment.options);
     return 0.0;
 }
 
 double py_psi_ccenergy()
 {
+    py_psi_prepare_options_for_module("CCENERGY");
     if (ccenergy::ccenergy(Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
@@ -176,6 +205,7 @@ double py_psi_ccenergy()
 
 double py_psi_cctriples()
 {
+    py_psi_prepare_options_for_module("CCTRIPLES");
     if (cctriples::cctriples(Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
@@ -185,24 +215,28 @@ double py_psi_cctriples()
 
 double py_psi_cchbar()
 {
+    py_psi_prepare_options_for_module("CCHBAR");
     cchbar::cchbar(Process::environment.options);
     return 0.0;
 }
 
 double py_psi_cclambda()
 {
+    py_psi_prepare_options_for_module("CCLAMBDA");
     cclambda::cclambda(Process::environment.options);
     return 0.0;
 }
 
 double py_psi_ccdensity()
 {
+    py_psi_prepare_options_for_module("CCDENSITY");
     ccdensity::ccdensity(Process::environment.options);
     return 0.0;
 }
 
 double py_psi_oeprop()
 {
+    py_psi_prepare_options_for_module("OEPROP");
     oeprop::oeprop(Process::environment.options);
     return 0.0;
 }
@@ -215,19 +249,6 @@ char const* py_psi_version()
 void py_psi_clean()
 {
     PSIOManager::shared_object()->psiclean();
-}
-
-void py_psi_set_default_options_for_module(std::string const & name)
-{
-    read_options(name, Process::environment.options, false);
-
-    if (plugins.count(name)) {
-        // Easy reference
-        plugin_info& info = plugins[name];
-
-        // Tell the plugin to load in its options into the current environment.
-        info.read_options(info.name, Process::environment.options);
-    }
 }
 
 void py_psi_print_options()
@@ -245,37 +266,21 @@ void py_psi_print_out(std::string s)
     fprintf(outfile,"%s",s.c_str());
 }
 
-bool py_psi_set_option_string(std::string const & name, std::string const & value)
+bool py_psi_set_option_string(std::string const & module, std::string const & key, std::string const & value)
 {
-    Process::environment.options.set_str(name, value);
-
-    string nonconst_key = name;
-    Data& data = Process::environment.options.use(nonconst_key);
-
-    if (data.type() == "string") {
-        Process::environment.options.set_str(name, value);
-    } else if (data.type() == "boolean") {
-        if (boost::to_upper_copy(value) == "TRUE" || boost::to_upper_copy(value) == "YES" || \
-          boost::to_upper_copy(value) == "ON")
-            Process::environment.options.set_int(name, true);
-        else if (boost::to_upper_copy(value) == "FALSE" || boost::to_upper_copy(value) == "NO" || \
-          boost::to_upper_copy(value) == "OFF")
-            Process::environment.options.set_int(name, false);
-        else
-            throw std::domain_error("Required option type is boolean, no boolean specified");
-    }
+    Process::environment.options.set_str(module, key, value);
     return true;
 }
 
-bool py_psi_set_option_int(std::string const & name, int value)
+bool py_psi_set_option_int(std::string const & module, std::string const & key, int value)
 {
-    Process::environment.options.set_int(name, value);
+    Process::environment.options.set_int(module, key, value);
     return true;
 }
 
 // Right now this can only handle arrays of integers.
 // Unable to handle strings.
-bool py_psi_set_option_array(std::string const & name, python::list values)
+bool py_psi_set_option_array(std::string const & module, std::string const & name, python::list values)
 {
     size_t n = len(values);
 
@@ -429,7 +434,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     export_plugins();
 
     // Options
-    def("set_default_options_for_module", py_psi_set_default_options_for_module);
+    def("prepare_options_for_module", py_psi_prepare_options_for_module);
     def("set_active_molecule", py_psi_set_active_molecule);
     def("get_active_molecule", &py_psi_get_active_molecule);
     def("reference_wavefunction", py_psi_reference_wavefunction);
@@ -442,9 +447,9 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("print_global_options", py_psi_print_global_options);
     def("print_out", py_psi_print_out);
 
-    def("set_option", py_psi_set_option_string);
-    def("set_option", py_psi_set_option_int);
-    def("set_option", py_psi_set_option_array);
+    def("set_local_option", py_psi_set_option_string);
+    def("set_local_option", py_psi_set_option_int);
+    def("set_local_option", py_psi_set_option_array);
 
     def("set_global_option", py_psi_set_global_option_string);
     def("set_global_option", py_psi_set_global_option_int);

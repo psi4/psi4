@@ -15,12 +15,13 @@ namespace psi {
     int linewidth = 0;
     int largest_key = 0, largest_value = 7;  // 7 for '(empty)'
 
-    for (const_iterator pos = keyvals_.begin(); pos != keyvals_.end(); ++pos) {
+    const std::map<std::string, Data> & keyvals = locals_.at(current_module_);
+    for (const_iterator pos = keyvals.begin(); pos != keyvals.end(); ++pos) {
         pos->first.size()  > largest_key   ? largest_key = pos->first.size() : 0;
         pos->second.to_string().size() > largest_value ? largest_value = pos->second.to_string().size() : 0;
     }
 
-    for (const_iterator pos = keyvals_.begin(); pos != keyvals_.end(); ++pos) {
+    for (const_iterator pos = keyvals.begin(); pos != keyvals.end(); ++pos) {
       std::stringstream line;
       std::string second_tmp = pos->second.to_string();
       if (second_tmp.length() == 0) {

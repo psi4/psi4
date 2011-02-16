@@ -11,7 +11,7 @@ molecule h2o {
     H 1 0.97 2 103.0
 }
 
-globals {
+set {
     wfn ccsd
     jobtype opt
     dertype first
