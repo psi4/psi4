@@ -2,8 +2,8 @@
 #! Results are tabulated using the built in table functions by using the default options and by specifiying the format.
 
 refnuc  = 0.587974721111111                           #TEST 
-refscf  = [ -1.11648888993031, -1.11873855931814 ]    #TEST
-refmp2  = [ -1.14425729480609, -1.15120553062166 ]    #TEST
+refscf  = [ -1.11639203481542, -1.11872757066568 ]    #TEST
+refmp2  = [ -1.14416515440344, -1.15119403817218 ]    #TEST
 
 molecule h2 {
    symmetry c1
@@ -33,9 +33,10 @@ basissets = ["cc-pVDZ", "cc-pVTZ"]
 count = 0                                                                             #TEST
 
 for basisset in basissets:
-    ribasis = basisset + "-ri"
     set basis        $basisset
-    set ri_basis_scf $ribasis
+    jkbasis = basisset + "-jkfit"
+    set ri_basis_scf $jkbasis
+    ribasis = basisset + "-ri"
     set ri_basis_mp2 $ribasis
     edfscf = scf()
     edfmp2 = dfmp2()
