@@ -119,7 +119,7 @@ double py_psi_scf_callbacks(PyObject* precallback, PyObject* postcallback)
 
 double py_psi_mcscf()
 {
-    Process::environment.options.print();//TODO Remove
+    py_psi_prepare_options_for_module("MCSCF");
     if (mcscf::mcscf(Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
@@ -280,18 +280,15 @@ bool py_psi_set_option_int(std::string const & module, std::string const & key, 
 
 // Right now this can only handle arrays of integers.
 // Unable to handle strings.
-bool py_psi_set_option_array(std::string const & module, std::string const & name, python::list values)
+bool py_psi_set_option_array(std::string const & module, std::string const & key, const python::list &values)
 {
+    std::vector<double> vector;
     size_t n = len(values);
+    for(int i = 0; i < n; ++i) vector.push_back(extract<double>(values[i]));
 
-    // Reset the array to a known state (empty).
-    Process::environment.options[name].reset();
-
-    for (size_t i=0; i < n; ++i) {
-        Process::environment.options[name].add(extract<double>(values[i]));
-    }
-
+    Process::environment.options.set_array(module, key, vector);
     return true;
+
 }
 
 bool py_psi_set_global_option_string(std::string const & name, std::string const & value)

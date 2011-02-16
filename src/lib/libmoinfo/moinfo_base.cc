@@ -95,46 +95,28 @@ void MOInfoBase::read_mo_space(int nirreps_ref, int& n, intvec& mo, string label
     vector<string> label_vec = split(labels);
     for(unsigned int k = 0; k < label_vec.size(); ++k){
         // Does the array exist in the input?
-        const char *label = label_vec[k].c_str();
-        int localOption  = options.get(label).size();
-        int globalOption = options.get_global(label).size();
-        if(localOption || globalOption){
-            // Defaults is to set all to zero
-            mo.assign(nirreps_ref,0);
-            n = 0;
-            if(read){
-                fprintf(outfile,"\n\n  libmoinfo has found a redundancy in the input keywords %s , please fix it!",labels.c_str());
-                fflush(outfile);
-                exit(1);
-            }else{
-                read = true;
+        std::string &label = label_vec[k];
+        if(!options.use(label).has_changed()) continue; // The user didn't specify this, it's just the default
+        int size  = options.use(label).size();
+        // Defaults is to set all to zero
+        mo.assign(nirreps_ref,0);
+        n = 0;
+        if(read){
+            fprintf(outfile,"\n\n  libmoinfo has found a redundancy in the input keywords %s , please fix it!",labels.c_str());
+            fflush(outfile);
+            exit(1);
+        }else{
+            read = true;
+        }
+        if(size==nirreps_ref){
+            for(int i=0;i<size;i++){
+                mo[i] = options[label][i].to_integer();
+                n += mo[i];
             }
-            int size = globalOption;
-            if(localOption)  size = localOption;
-
-            if(localOption){
-                if(localOption==nirreps_ref){
-                    for(int i=0;i<size;i++){
-                        mo[i] = options[label][i].to_integer();
-                        n += mo[i];
-                    }
-                }else{
-                    fprintf(outfile,"\n\n  The size of the %s array (%d) does not match the number of irreps (%d), please fix the input file",label_vec[k].c_str(),size,nirreps_ref);
-                    fflush(outfile);
-                    exit(1);
-                }
-            }else if(globalOption){
-                if(globalOption==nirreps_ref){
-                    for(int i=0;i<size;i++){
-                        mo[i] = options.get_global(label)[i].to_integer();
-                        n += mo[i];
-                    }
-                }else{
-                    fprintf(outfile,"\n\n  The size of the %s array (%d) does not match the number of irreps (%d), please fix the input file",label_vec[k].c_str(),size,nirreps_ref);
-                    fflush(outfile);
-                    exit(1);
-                }
-            }
+        }else{
+            fprintf(outfile,"\n\n  The size of the %s array (%d) does not match the number of irreps (%d), please fix the input file",label_vec[k].c_str(),size,nirreps_ref);
+            fflush(outfile);
+            exit(1);
         }
     }
 }

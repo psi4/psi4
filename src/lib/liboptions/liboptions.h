@@ -17,6 +17,7 @@
 #include <libutil/libutil.h> // Needed for Ref counting, string splitting, and conversions
 #include <boost/shared_ptr.hpp>
 
+
 namespace psi {
   extern FILE *outfile;
 
@@ -511,14 +512,14 @@ namespace psi {
     virtual Data& operator[](unsigned int i) {
       if (i >= array_.size())
         throw IndexException("out of range");
-      changed();
+//      changed();
       return array_[i];
     }
     virtual Data& operator[](std::string s) {
       unsigned int i = static_cast<unsigned int>(std::strtod(s.c_str(), NULL));
       if (i >= array_.size())
         throw IndexException("out of range");
-      changed();
+//      changed();
       return array_[i];
     }
     virtual bool is_array() const {
@@ -610,6 +611,7 @@ namespace psi {
       return str;
     }
   };
+
 
   class Options
   {
@@ -714,6 +716,19 @@ namespace psi {
     }
     void set_str(const std::string & module, const std::string &key, std::string s) {
         locals_[module][key] = new StringDataType(s);
+        locals_[module][key].changed();
+    }
+    void set_array(const std::string &module, const std::string &key, const std::vector<double> &values)
+    {
+        if(locals_.count(module) && locals_[module].count(key)){
+            locals_[module][key].reset();
+        }else{
+            locals_[module][key] = new ArrayType();
+        }
+        size_t n = values.size();
+        for (size_t i=0; i < n; ++i) {
+            locals_[module][key].add(values[i]);
+        }
         locals_[module][key].changed();
     }
 
