@@ -100,53 +100,29 @@ void HF::common_init()
     int nirreps = factory_.nirrep();
     int ndocc = 0, nsocc = 0;
     input_docc_ = false;
-    try {
-        // Try local space first.
-        if (options_.get("DOCC").size()) {
-            input_docc_ = true;
-            for (int i=0; i<nirreps; ++i) {
-                doccpi_[i] = options_["DOCC"][i].to_integer();
-                ndocc += 2*doccpi_[i];
-            }
+    if (options_["DOCC"].has_changed()) {
+        input_docc_ = true;
+        if(options_["DOCC"].size() != nirreps)
+            throw PSIEXCEPTION("The DOCC array has the wrong dimensions");
+        for (int i=0; i<nirreps; ++i) {
+            doccpi_[i] = options_["DOCC"][i].to_integer();
+            ndocc += 2*doccpi_[i];
         }
-        else if (options_.get_global("DOCC").size() == nirreps) {
-            input_docc_ = true;
-            for (int i=0; i<nirreps; ++i) {
-                doccpi_[i] = options_.get_global("DOCC")[i].to_integer();
-                ndocc += 2*doccpi_[i];
-            }
-        }
-        else {
-            for (int i=0; i<nirreps; ++i)
-                doccpi_[i] = 0;
-        }
-    } catch (IndexException e) {
+    } else {
         for (int i=0; i<nirreps; ++i)
             doccpi_[i] = 0;
     }
 
-
     input_socc_ = false;
-    try {
-        if (options_["SOCC"][0].has_changed()) {
-            input_socc_ = true;
-            for (int i=0; i<nirreps; ++i) {
-                soccpi_[i] = options_["SOCC"][i].to_integer();
-                nsocc += soccpi_[i];
-            }
+    if (options_["SOCC"].has_changed()) {
+        input_socc_ = true;
+        if(options_["SOCC"].size() != nirreps)
+            throw PSIEXCEPTION("The SOCC array has the wrong dimensions");
+        for (int i=0; i<nirreps; ++i) {
+            soccpi_[i] = options_["SOCC"][i].to_integer();
+            nsocc += soccpi_[i];
         }
-        else if (options_.get_global("SOCC").size() == nirreps) {
-            input_docc_ = true;
-            for (int i=0; i<nirreps; ++i) {
-                soccpi_[i] = options_.get_global("SOCC")[i].to_integer();
-                nsocc += 2*soccpi_[i];
-            }
-        }
-        else {
-            for (int i=0; i<nirreps; ++i)
-                soccpi_[i] = 0;
-        }
-    } catch (IndexException e) {
+    } else {
         for (int i=0; i<nirreps; ++i)
             soccpi_[i] = 0;
     }

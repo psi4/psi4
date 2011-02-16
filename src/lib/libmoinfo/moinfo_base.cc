@@ -96,8 +96,8 @@ void MOInfoBase::read_mo_space(int nirreps_ref, int& n, intvec& mo, string label
     for(unsigned int k = 0; k < label_vec.size(); ++k){
         // Does the array exist in the input?
         std::string &label = label_vec[k];
-        if(!options.use(label).has_changed()) continue; // The user didn't specify this, it's just the default
-        int size  = options.use(label).size();
+        if(!options[label].has_changed()) continue; // The user didn't specify this, it's just the default
+        int size  = options[label].size();
         // Defaults is to set all to zero
         mo.assign(nirreps_ref,0);
         n = 0;

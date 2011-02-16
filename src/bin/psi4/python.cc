@@ -288,7 +288,6 @@ bool py_psi_set_option_array(std::string const & module, std::string const & key
 
     Process::environment.options.set_array(module, key, vector);
     return true;
-
 }
 
 bool py_psi_set_global_option_string(std::string const & name, std::string const & value)
@@ -320,18 +319,13 @@ bool py_psi_set_global_option_int(std::string const & name, int value)
 }
 // Right now this can only handle arrays of integers.
 // Unable to handle strings.
-bool py_psi_set_global_option_array(std::string const & name, python::list values)
+bool py_psi_set_global_option_array(std::string const & key, python::list values)
 {
+    std::vector<double> vector;
     size_t n = len(values);
+    for(int i = 0; i < n; ++i) vector.push_back(extract<double>(values[i]));
 
-    // Reset the array to a known state (empty).
-    // Process::environment.options[name].reset();
-    Process::environment.options.get_global(name).reset();
-
-    for (size_t i=0; i < n; ++i) {
-        Process::environment.options.get_global(name).add(extract<double>(values[i]));
-    }
-
+    Process::environment.options.set_global_array(key, vector);
     return true;
 }
 
