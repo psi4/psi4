@@ -744,6 +744,16 @@ namespace psi {
     void set_global_str(std::string key, std::string s) {
       get_global(key).assign(s);
     }
+    void set_global_array(const std::string &key, const std::vector<double> &values)
+    {
+        Data &entry = get_global(key);
+        entry.reset();
+        size_t n = values.size();
+        for (size_t i=0; i < n; ++i) {
+            entry.add(values[i]);
+        }
+        entry.changed();
+    }
 
     void clear(void) {
       locals_.clear();
