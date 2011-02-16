@@ -2,7 +2,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
-
 #include <libutil/libutil.h>
 #include "liboptions.h"
 
@@ -94,4 +93,5 @@ namespace psi {
     fprintf(outfile, "\n  ----------------------------------------------------------------------------\n");
     fprintf(outfile, "%s\n", list.c_str());
   }
+
 }
