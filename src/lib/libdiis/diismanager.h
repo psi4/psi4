@@ -44,6 +44,7 @@ class DIISManager{
         bool add_entry(int numQuatities, ...);
         int remove_entry();
         void reset_subspace();
+        void delete_diis_file();
         /// The number of vectors currently in the subspace
         int subspace_size() {return _subspace.size();}
     protected:

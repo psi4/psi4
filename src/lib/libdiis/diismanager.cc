@@ -459,6 +459,18 @@ DIISManager::reset_subspace()
     _subspace.clear();
 }
 
+/**
+ * Deletes the DIIS scratch file
+ */
+void
+DIISManager::delete_diis_file()
+{
+    if (_psio->open_check(PSIF_LIBDIIS) == 0) {
+        _psio->open(PSIF_LIBDIIS, PSIO_OPEN_OLD);
+    }
+    _psio->close(PSIF_LIBDIIS, 0);
+}
+
 DIISManager::~DIISManager()
 {
     if (_psio->open_check(PSIF_LIBDIIS))

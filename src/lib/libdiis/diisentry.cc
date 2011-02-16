@@ -39,6 +39,14 @@ DIISEntry::open_psi_file()
 }
 
 void
+DIISEntry::close_psi_file()
+{
+    if (_psio->open_check(PSIF_LIBDIIS) == 1) {
+        _psio->close(PSIF_LIBDIIS, 1);
+    }
+}
+
+void
 DIISEntry::dump_vector_to_disk()
 {
     string label = _label + " vector";

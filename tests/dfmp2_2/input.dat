@@ -1,0 +1,57 @@
+#! Density fitted MP2 energy of H2, using density fitted reference and automatic looping over cc-pVDZ and cc-pVTZ basis sets.
+#! Results are tabulated using the built in table functions by using the default options and by specifiying the format.
+
+refnuc  = 0.587974721111111                           #TEST 
+refscf  = [ -1.11648888993031, -1.11873855931814 ]    #TEST
+refmp2  = [ -1.14425729480609, -1.15120553062166 ]    #TEST
+
+molecule h2 {
+   symmetry c1
+   0 1
+   H
+   H 1 0.9
+}
+
+set {
+   scf_type   df
+   guess      sad
+   d_converge 12
+   e_converge 12
+}
+
+# This is a table that uses just the default parameters
+table = Table(rows=("Basis"), cols=("E(DF-SCF)", "E(DF-MP2)"))
+
+# This is the same table, but with more explic control of column widths
+longtable = Table(rows=("Basis"), cols=("E(DF-SCF)", "E(DF-MP2)"),
+                  row_label_width=10,
+                  row_label_precision=4,
+                  width=20, precision=12)
+
+basissets = ["cc-pVDZ", "cc-pVTZ"]
+
+count = 0                                                                             #TEST
+
+for basisset in basissets:
+    ribasis = basisset + "-ri"
+    set basis        $basisset
+    set ri_basis_scf $ribasis
+    set ri_basis_mp2 $ribasis
+    edfscf = scf()
+    edfmp2 = dfmp2()
+    compare_values(edfscf, refscf[count], 10, basisset + " DF-SCF Energy")            #TEST
+    compare_values(edfmp2, refmp2[count], 10, basisset + " DF-MP2 Energy")            #TEST
+    count  = count + 1                                                                #TEST
+    # Store the computed values in the tables
+    table[basisset]     = [edfscf, edfmp2]
+    longtable[basisset] = [edfscf, edfmp2]
+    # We clean out the scratch files here because the dimensions of the basis set have
+    # changed, so we want to generate new files
+    clean()
+compare_values(refnuc, h2.nuclear_repulsion_energy(), 10, "Nuclear Repulsion Energy") #TEST
+
+print_out("\nSummary of results\n")
+print str(table)
+print_out("\nAnd again, but more precision\n")
+print str(longtable)
+

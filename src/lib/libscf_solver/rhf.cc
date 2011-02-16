@@ -1064,6 +1064,10 @@ void RHF::save_information()
     // TODO: Implement wavefunction close out.
 
     psio_->close(PSIF_CHKPT, 1);
+
+    // Clean up after DIIS
+    if(initialized_diis_manager_)
+        diis_manager_->delete_diis_file();
 }
 
 void RHF::save_fock()
