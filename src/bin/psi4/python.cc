@@ -268,7 +268,21 @@ void py_psi_print_out(std::string s)
 
 bool py_psi_set_option_string(std::string const & module, std::string const & key, std::string const & value)
 {
-    Process::environment.options.set_str(module, key, value);
+    string nonconst_key = key;
+    Data& data = Process::environment.options[nonconst_key];
+
+    if (data.type() == "string") {
+        Process::environment.options.set_str(module, key, value);
+    } else if (data.type() == "boolean") {
+        if (boost::to_upper_copy(value) == "TRUE" || boost::to_upper_copy(value) == "YES" || \
+          boost::to_upper_copy(value) == "ON")
+            Process::environment.options.set_int(module, key, true);
+        else if (boost::to_upper_copy(value) == "FALSE" || boost::to_upper_copy(value) == "NO" || \
+          boost::to_upper_copy(value) == "OFF")
+            Process::environment.options.set_int(module, key, false);
+        else
+            throw std::domain_error("Required option type is boolean, no boolean specified");
+    }
     return true;
 }
 
