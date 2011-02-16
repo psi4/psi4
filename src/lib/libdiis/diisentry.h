@@ -65,6 +65,8 @@ class DIISEntry{
         const double *vector() {read_vector_from_disk(); return _vector;}
         /// Open the psi file, if needed.
         void open_psi_file();
+        /// Close the psi file, if needed.
+        void close_psi_file();
     protected:
         /// The list of which dot products, with other DIISEntries, are known
         std::map<int, bool> _knownDotProducts;
