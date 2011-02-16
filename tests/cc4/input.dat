@@ -12,7 +12,7 @@ molecule bh {
     h      0.0000        0.0000        1.0000
 }
 
-globals {
+set {
    wfn ccsd_t
    docc [3, 0, 0, 0]
    basis cc-pvqz

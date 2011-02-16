@@ -9,11 +9,14 @@ molecule ozone {
    O 1 1.27450102 2 116.18610031
 }
 
-globals {
+set basis cc-pVDZ
+set docc [10, 1]
+set socc [ 0, 2]
+
+set mcscf {
     reference   twocon
     convergence 12
     ndiis       3
-    basis       cc-pVDZ
     docc        [10, 1]
     socc        [ 0, 2]
     maxiter 100

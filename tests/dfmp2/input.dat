@@ -22,7 +22,7 @@ molecule formic_dim {
    no_reorient
 }
 
-globals {
+set globals {
    basis cc-pvdz
    ri_basis_scf cc-pvdz-ri
    ri_basis_mp2 cc-pvdz-ri

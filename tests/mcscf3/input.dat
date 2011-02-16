@@ -9,7 +9,7 @@ molecule h2o {
     H  1  0.94306 2  105.96877
 }
 
-globals {
+set globals {
   reference rhf
   basis 6-31G**
   docc [3, 0, 1, 1]

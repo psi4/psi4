@@ -242,7 +242,7 @@ public:
     Vector3 xyz(int atom) const;
     Vector3 fxyz(int atom) const;
     /// Returns x, y, or z component of 'atom'
-    const double& xyz(int atom, int _xyz) const;
+    double xyz(int atom, int _xyz) const;
     /// Returns mass atom atom
     double mass(int atom) const;
     /// Returns label of atom

@@ -8,7 +8,7 @@ molecule bh {
     h      0.0000        0.0000        1.0000
 }
 
-globals {
+set globals = {
     scf_type   direct
     basis      cc-pVQZ
     e_converge 10

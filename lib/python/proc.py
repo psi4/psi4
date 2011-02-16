@@ -13,7 +13,6 @@ def run_scf(name, **kwargs):
         raise ValueNotSet("no molecule found")
 
     molecule.update_geometry()
-    PsiMod.set_default_options_for_module("SCF")
     return scf_helper(name, **kwargs)
 
 # SCF helper chooses whether to cast up or just run SCF
@@ -28,8 +27,6 @@ def run_mcscf(**kwargs):
     if not molecule:
       raise ValueNotSet("no molecule found")
 
-    molecule.update_geometry()
-    PsiMod.set_default_options_for_module("MCSCF")
     return PsiMod.mcscf()
 
 # SCF helper chooses whether to cast up or just run SCF
@@ -62,14 +59,13 @@ def scf_helper(name, **kwargs):
         PsiMod.set_global_option("PUREAM",puream)
 
         PsiMod.IO.set_default_namespace((namespace + ".guess"))
-        PsiMod.set_option("NO_INPUT",True)
 
-        PsiMod.set_option('GUESS','SAD')
-        PsiMod.set_option('BASIS','3-21G')
-        PsiMod.set_option('RI_BASIS_SCF','cc-pvdz-ri')
-        PsiMod.set_option('DUAL_BASIS_SCF',basis)
-        PsiMod.set_option('DUAL_BASIS',True)
-        PsiMod.set_option('SCF_TYPE','DF')
+        PsiMod.set_local_option('SCF','GUESS','SAD')
+        PsiMod.set_local_option('SCF','BASIS','3-21G')
+        PsiMod.set_local_option('SCF','RI_BASIS_SCF','cc-pvdz-ri')
+        PsiMod.set_local_option('SCF','DUAL_BASIS_SCF',basis)
+        PsiMod.set_local_option('SCF','DUAL_BASIS',True)
+        PsiMod.set_local_option('SCF','SCF_TYPE','DF')
 
         PsiMod.print_out('\n')
         banner('Cast-up SCF Computation')
@@ -84,14 +80,13 @@ def scf_helper(name, **kwargs):
         PsiMod.IO.change_file_namespace(100,(namespace + ".guess"),namespace)
         PsiMod.IO.set_default_namespace(namespace)
 
-        PsiMod.set_option("NO_INPUT",True)
 
-        PsiMod.set_option('GUESS','DUAL_BASIS')
-        PsiMod.set_option('BASIS',basis)
-        PsiMod.set_option('RI_BASIS_SCF',ri_basis_scf)
-        PsiMod.set_option('DUAL_BASIS_SCF','')
-        PsiMod.set_option('DUAL_BASIS',False)
-        PsiMod.set_option('SCF_TYPE',scf_type)
+        PsiMod.set_local_option('SCF','GUESS','DUAL_BASIS')
+        PsiMod.set_local_option('SCF','BASIS',basis)
+        PsiMod.set_local_option('SCF','RI_BASIS_SCF',ri_basis_scf)
+        PsiMod.set_local_option('SCF','DUAL_BASIS_SCF','')
+        PsiMod.set_local_option('SCF','DUAL_BASIS',False)
+        PsiMod.set_local_option('SCF','SCF_TYPE',scf_type)
 
         PsiMod.print_out('\n')
         banner(name.upper())
@@ -100,7 +95,6 @@ def scf_helper(name, **kwargs):
         e_scf = PsiMod.scf(precallback, postcallback)
     else:
 
-        PsiMod.set_option("NO_INPUT",True)
         e_scf = PsiMod.scf(precallback, postcallback)
 
     return e_scf
@@ -154,9 +148,6 @@ def run_dfmp2(name, **kwargs):
 
     run_scf('RHF',**kwargs)
 
-    PsiMod.set_default_options_for_module("DFMP2")
-    PsiMod.set_option("NO_INPUT",True)
-
     PsiMod.print_out("\n")
     banner("DFMP2")
     PsiMod.print_out("\n")
@@ -171,9 +162,6 @@ def run_dfcc(name, **kwargs):
 
     run_scf('RHF',**kwargs)
 
-    PsiMod.set_default_options_for_module("DFCC")
-    PsiMod.set_option("NO_INPUT",True)
-    
     PsiMod.print_out("\n")
     banner("DF-CC")
     PsiMod.print_out("\n")
@@ -196,9 +184,7 @@ def run_sapt(name, **kwargs):
     monomerB.set_name("monomerB")
 
     PsiMod.IO.set_default_namespace("dimer")
-    PsiMod.set_default_options_for_module("SCF")
-    PsiMod.set_option("NO_INPUT",True)
-    PsiMod.set_option("SAPT","2-dimer")
+    PsiMod.set_local_option("SCF","SAPT","2-dimer")
     PsiMod.print_out("\n")
     banner('Dimer HF')
     PsiMod.print_out("\n")
@@ -206,9 +192,7 @@ def run_sapt(name, **kwargs):
 
     activate(monomerA)
     PsiMod.IO.set_default_namespace("monomerA")
-    PsiMod.set_default_options_for_module("SCF")
-    PsiMod.set_option("NO_INPUT",True)
-    PsiMod.set_option("SAPT","2-monomer_A")
+    PsiMod.set_local_option("SCF","SAPT","2-monomer_A")
     PsiMod.print_out("\n")
     banner('Monomer A HF')
     PsiMod.print_out("\n")
@@ -216,9 +200,7 @@ def run_sapt(name, **kwargs):
 
     activate(monomerB)
     PsiMod.IO.set_default_namespace("monomerB")
-    PsiMod.set_default_options_for_module("SCF")
-    PsiMod.set_option("NO_INPUT",True)
-    PsiMod.set_option("SAPT","2-monomer_B")
+    PsiMod.set_local_option("SCF","SAPT","2-monomer_B")
     PsiMod.print_out("\n")
     banner('Monomer B HF')
     PsiMod.print_out("\n")
@@ -229,22 +211,20 @@ def run_sapt(name, **kwargs):
 
     activate(molecule)
     PsiMod.IO.set_default_namespace("dimer")
-    PsiMod.set_default_options_for_module("SAPT")
-    PsiMod.set_option("NO_INPUT",True)
-    PsiMod.set_option("E_CONVERGE",10)
-    PsiMod.set_option("D_CONVERGE",10)
+    PsiMod.set_local_option("SAPT","E_CONVERGE",10)
+    PsiMod.set_local_option("SAPT","D_CONVERGE",10)
     if (name.lower() == 'sapt0'):
-        PsiMod.set_option("SAPT_LEVEL","SAPT0")
+        PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT0")
     elif (name.lower() == 'scs-sapt'):
-        PsiMod.set_option("SAPT_LEVEL","SCS_SAPT")
+        PsiMod.set_local_option("SAPT","SAPT_LEVEL","SCS_SAPT")
     elif (name.lower() == 'sapt2'):
-        PsiMod.set_option("SAPT_LEVEL","SAPT2")
+        PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT2")
     elif (name.lower() == 'sapt2+'):
-        PsiMod.set_option("SAPT_LEVEL","SAPT2+")
+        PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT2+")
     elif (name.lower() == 'sapt2+3'):
-        PsiMod.set_option("SAPT_LEVEL","SAPT2+3")
+        PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT2+3")
     elif (name.lower() == 'sapt_dft'):
-        PsiMod.set_option("SAPT_LEVEL","SAPT_DFT")
+        PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT_DFT")
     PsiMod.print_out("\n")
     banner(name.upper())
     PsiMod.print_out("\n")
