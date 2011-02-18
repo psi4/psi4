@@ -15,10 +15,8 @@ Avals = range(102, 106, 2)
 
 count = 0
 
-global basis cc-pvdz
-set scf {
-    e_converge = 11
-}
+set basis cc-pvdz
+set scf e_converge = 11
 
 for R in Rvals:
     h2o.R = R
@@ -27,7 +25,6 @@ for R in Rvals:
 
         h2o.A = A
 
-        mints()
         thisenergy = scf()
 
 

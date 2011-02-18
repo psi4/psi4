@@ -6,7 +6,7 @@ molecule CN {
   N  0.000000000000      0.000000000000     -1.024692078304
 }
 
-globals {
+set globals {
   reference rohf
   wfn ccsd_t
   basis cc-pVDZ

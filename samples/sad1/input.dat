@@ -10,23 +10,23 @@ molecule h2o {
     H 1 1.0 2 90
 }
 
-globals {
+set globals {
     basis     cc-pvdz
     scf_type  direct
     guess     sad
     sad_print 2
 }
 
-global docc       [3, 0, 1, 1]
+set docc       [3, 0, 1, 1]
 
-global maxiter    1
-global e_converge 0
-global d_converge 0
+set maxiter    1
+set e_converge 0
+set d_converge 0
 E1 = energy('rhf')
 
-global maxiter    50
-global e_converge 11
-global d_converge 11
+set maxiter    50
+set e_converge 11
+set d_converge 11
 E = energy('rhf')
 
 molecule h2o_c1 {
@@ -38,16 +38,16 @@ molecule h2o_c1 {
 
 activate(h2o_c1)
 
-global docc [5]
+set docc [5]
 
-global maxiter 1
-global e_converge 0
-global d_converge 0
+set maxiter 1
+set e_converge 0
+set d_converge 0
 E1_c1 = energy('rhf')
 
-global maxiter 50
-global e_converge 11
-global d_converge 11
+set maxiter 50
+set e_converge 11
+set d_converge 11
 E_c1 = energy('rhf')
 
 

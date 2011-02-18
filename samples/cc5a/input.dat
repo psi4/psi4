@@ -1,10 +1,5 @@
 #! RHF CCSD(T) STO-3G frozen-core energy of C4NH4 Anion
 
-refnuc   =  135.0921284884196   #TEST
-refscf   = -205.422369155359    #TEST
-refccsd  =   -0.345263564418438 #TEST
-ref_t    =   -0.007645878508210 #TEST
-reftotal = -205.775278598298456 #TEST
 
 molecule C4NH4 {
   -1 1
@@ -32,10 +27,5 @@ set globals {
 
 energy('ccsd(t)')
 
-compare_values(refnuc,   C4NH4.nuclear_repulsion_energy(),  9, "Nuclear repulsion energy")  #TEST
-compare_values(refscf,   get_variable("SCF energy"),     9, "SCF energy")                   #TEST
-compare_values(refccsd,  get_variable("CCSD energy"),    9, "CCSD contribution")            #TEST
-compare_values(ref_t,    get_variable("(T) energy"),     9, "(T) contribution")             #TEST
-compare_values(reftotal, get_variable("Current energy"), 9, "Total energy")                 #TEST
 
 clean()

@@ -12,14 +12,16 @@ molecule ch2 {
     a1 = 125.0
 }
 
-globals {
+set global {
     reference uhf
     basis     6-31G**
     docc      [2, 0, 0, 1]
     socc      [1, 0, 1, 0]
 }
 
-mints()
+# Delete file 32 for now, because UHF has a bug in reading old MOs right now
+psioh = PsiMod.IOManager.shared_object()
+psioh.set_specific_retention(32, False)
 
 thisenergy = energy('uhf')
 
