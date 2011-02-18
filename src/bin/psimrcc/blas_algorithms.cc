@@ -3,7 +3,7 @@
 #include <cstdio>
 
 #include "blas.h"
-#include "libtens/debugging.h"
+#include "debugging.h"
 #include "matrix.h"
 
 
