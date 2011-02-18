@@ -14,7 +14,9 @@ namespace psi {
     int linewidth = 0;
     int largest_key = 0, largest_value = 7;  // 7 for '(empty)'
 
-    const std::map<std::string, Data> & keyvals = locals_.at(current_module_);
+    std::map<std::string, std::map<std::string, Data> >::const_iterator localmap = locals_.find(current_module_);
+    if (localmap == locals_.end()) return str.str(); // Nothing to print
+    const std::map<std::string, Data> &keyvals = localmap->second;
     for (const_iterator pos = keyvals.begin(); pos != keyvals.end(); ++pos) {
         pos->first.size()  > largest_key   ? largest_key = pos->first.size() : 0;
         pos->second.to_string().size() > largest_value ? largest_value = pos->second.to_string().size() : 0;
