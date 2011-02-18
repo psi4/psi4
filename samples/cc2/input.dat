@@ -7,7 +7,7 @@ molecule h2o {
     h 1 0.97 2 103.0
 }
 
-globals {
+set globals {
   wfn ccsd
   reference rhf
   basis 6-31G**

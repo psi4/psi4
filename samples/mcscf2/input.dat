@@ -1,0 +1,26 @@
+#! TCSCF cc-pVDZ  energy of asymmetrically displaced ozone, with Z-matrix input.
+
+
+molecule ozone {
+   O
+   O 1 1.29470102
+   O 1 1.27450102 2 116.18610031
+}
+
+set basis cc-pVDZ
+set docc [10, 1]
+set socc [ 0, 2]
+
+set mcscf {
+    reference   twocon
+    convergence 12
+    ndiis       3
+    docc        [10, 1]
+    socc        [ 0, 2]
+    maxiter 100
+}
+
+thisenergy = run_mcscf()
+
+
+clean()

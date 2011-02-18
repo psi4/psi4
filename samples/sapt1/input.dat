@@ -21,7 +21,7 @@ molecule ethene_ethyne {
      symmetry c1
 }
 
-globals {
+set globals {
     basis         aug-cc-pvdz
     ri_basis_scf  aug-cc-pvdz-jkfit
     ri_basis_sapt aug-cc-pvdz-ri
