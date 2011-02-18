@@ -15,12 +15,13 @@
 extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
+    extern MOInfo *moinfo;
 
 void MRCCSD_T::startup()
 {
-  if(options_get_str("TRIPLES_ALGORITHM") == "SPIN_ADAPTED"){
+  if(options_.get_str("TRIPLES_ALGORITHM") == "SPIN_ADAPTED"){
     triples_algorithm = SpinAdaptedTriples;
-  }else if(options_get_str("TRIPLES_ALGORITHM") == "RESTRICTED"){
+  }else if(options_.get_str("TRIPLES_ALGORITHM") == "RESTRICTED"){
     triples_algorithm = RestrictedTriples;
   }else{
     triples_algorithm = UnrestrictedTriples;
@@ -28,7 +29,7 @@ void MRCCSD_T::startup()
 
   nirreps   = moinfo->get_nirreps();
   nrefs     = moinfo->get_ref_size(AllRefs);
-  threshold = 0.1 * pow(10.0,-static_cast<double>(options_get_int("CONVERGENCE")));
+  threshold = 0.1 * pow(10.0,-static_cast<double>(options_.get_int("CONVERGENCE")));
 
   build_W_intermediates();
 
@@ -78,13 +79,13 @@ void MRCCSD_T::startup()
   form_V_jk_c_m(V_jK_c_M,0.0,1.0);  // = <jk|cm>
   form_V_jk_c_m(V_jK_C_m,1.0,0.0);  // = <jk|mc>
 
-  if(options_get_bool("FAVG_CCSD_T")){
+  if(options_.get_bool("FAVG_CCSD_T")){
     fprintf(outfile,"\n\n  Using the average Fock matrix for the all references\n");
     for(int mu = 0; mu < nrefs; ++mu){
       int unique_mu = moinfo->get_ref_number(mu,AllRefs);
       double c_mu_2 = h_eff->get_zeroth_order_eigenvector(unique_mu)
                     * h_eff->get_zeroth_order_eigenvector(unique_mu);
-      string factor = to_string(c_mu_2);
+      std::string factor = to_string(c_mu_2);
       blas->solve("epsilon[o][o]{u} += " + factor + " fock[o][o]{" +  to_string(unique_mu) + "}");
       blas->solve("epsilon[O][O]{u} += " + factor + " fock[O][O]{" +  to_string(unique_mu) + "}");
       blas->solve("epsilon[v][v]{u} += " + factor + " fock[v][v]{" +  to_string(unique_mu) + "}");
@@ -155,7 +156,7 @@ void MRCCSD_T::startup()
       F_ov.push_back(blas->get_MatTmp("fock[o][v]",unique_mu,none)->get_matrix());
       F_OV.push_back(blas->get_MatTmp("fock[O][V]",unique_mu,none)->get_matrix());
 
-      if(options_get_bool("HEFF4")){
+      if(options_.get_bool("HEFF4")){
         F2_ov.push_back(blas->get_MatTmp("F_me[o][v]",unique_mu,none)->get_matrix());
         F2_OV.push_back(blas->get_MatTmp("F_ME[O][V]",unique_mu,none)->get_matrix());
       }else{
@@ -237,7 +238,7 @@ void MRCCSD_T::startup()
       F_ov.push_back(blas->get_MatTmp("fock[O][V]",unique_mu,none)->get_matrix());
       F_OV.push_back(blas->get_MatTmp("fock[o][v]",unique_mu,none)->get_matrix());
 
-      if(options_get_bool("HEFF4")){
+      if(options_.get_bool("HEFF4")){
         F2_ov.push_back(blas->get_MatTmp("F_ME[O][V]",unique_mu,none)->get_matrix());
         F2_OV.push_back(blas->get_MatTmp("F_me[o][v]",unique_mu,none)->get_matrix());
       }else{
@@ -268,14 +269,14 @@ void MRCCSD_T::startup()
       is_avir.push_back(moinfo->get_is_bvir(unique_mu,AllRefs));
     }
 
-    if(options_get_str("CORR_CCSD_T") == "STANDARD"){
-      vector<double> factor_row;
+    if(options_.get_str("CORR_CCSD_T") == "STANDARD"){
+        std::vector<double> factor_row;
       for(int nu = 0; nu < nrefs; ++nu){
         double c_mu   = h_eff->get_right_eigenvector(mu);
         double c_nu   = h_eff->get_right_eigenvector(nu);
         double factor = h_eff->get_matrix(mu,nu) * c_nu / c_mu;
-        if(options_get_bool("TIKHONOW_TRIPLES")){
-          double omega  = static_cast<double>(options_get_int("TIKHONOW_OMEGA")) / 1000.0;
+        if(options_.get_bool("TIKHONOW_TRIPLES")){
+          double omega  = static_cast<double>(options_.get_int("TIKHONOW_OMEGA")) / 1000.0;
           factor = h_eff->get_matrix(mu,nu) * c_nu * c_mu / (pow(c_mu,2.0) + pow(omega,2.0));
         }
         factor_row.push_back(factor);
@@ -283,8 +284,8 @@ void MRCCSD_T::startup()
       Mk_factor.push_back(factor_row);
 
       Mk_shift.push_back(h_eff->get_eigenvalue() - h_eff->get_matrix(mu,mu));
-    }else if(options_get_str("CORR_CCSD_T") == "PITTNER"){
-      vector<double> factor_row;
+    }else if(options_.get_str("CORR_CCSD_T") == "PITTNER"){
+        std::vector<double> factor_row;
       for(int nu = 0; nu < nrefs; ++nu){
         factor_row.push_back(0.0);
       }
@@ -293,7 +294,7 @@ void MRCCSD_T::startup()
       Mk_shift.push_back(0.0);
     }
 
-    vector<double> d_h_eff_row;
+    std::vector<double> d_h_eff_row;
     for(int nu = 0; nu < nrefs; ++nu){
       d_h_eff_row.push_back(0.0);
     }
@@ -364,12 +365,12 @@ void MRCCSD_T::startup()
 
 void MRCCSD_T::check_intruders()
 {
-  vector<int> occ_to_mo =  moinfo->get_occ_to_mo();
-  vector<int> vir_to_mo =  moinfo->get_vir_to_mo();
+    std::vector<int> occ_to_mo =  moinfo->get_occ_to_mo();
+    std::vector<int> vir_to_mo =  moinfo->get_vir_to_mo();
   // Identify intruders
   for(int mu = 0; mu < nrefs; ++mu){
-    vector<pair<double,vector<short> > > aaa_sample;
-    vector<pair<double,vector<short> > > aab_sample;
+    std::vector<std::pair<double,std::vector<short> > > aaa_sample;
+    std::vector<std::pair<double,std::vector<short> > > aab_sample;
     // Loop over ijk
     CCIndexIterator  ijk("[ooo]");
     for(ijk.first(); !ijk.end(); ijk.next()){
@@ -392,7 +393,7 @@ void MRCCSD_T::check_intruders()
               double D_abc = e_vv[mu][a_abs] + e_vv[mu][b_abs] + e_vv[mu][c_abs];
               double denominator = D_ijk - D_abc;
               if(abs(denominator) < 0.1){
-                vector<short> T3;
+                std::vector<short> T3;
                 T3.push_back(i_abs);
                 T3.push_back(j_abs);
                 T3.push_back(k_abs);
@@ -413,7 +414,7 @@ void MRCCSD_T::check_intruders()
               double D_abc = e_vv[mu][a_abs] + e_vv[mu][b_abs] + e_VV[mu][c_abs];
               double denominator = D_ijk - D_abc;
               if(abs(denominator) < 0.1){
-                vector<short> T3;
+                std::vector<short> T3;
                 T3.push_back(i_abs);
                 T3.push_back(j_abs);
                 T3.push_back(k_abs);
@@ -428,7 +429,7 @@ void MRCCSD_T::check_intruders()
       }  // End loop over abc
     }  // End loop over allowed ijk
 
-    int max_aaa = min(10,static_cast<int>(aaa_sample.size()));
+    int max_aaa = std::min(10,static_cast<int>(aaa_sample.size()));
     if(max_aaa > 0){
       fprintf(outfile,"\n\n  Intruders diagnostics for reference %d, AAA triple excitations",mu);
       fprintf(outfile,"\n  has found the following denominators with absolute value < 0.1\n");
@@ -442,7 +443,7 @@ void MRCCSD_T::check_intruders()
       fprintf(outfile,"\n  please check your results.");
     }
 
-    int max_aab = min(10,static_cast<int>(aab_sample.size()));
+    int max_aab = std::min(10,static_cast<int>(aab_sample.size()));
     if(max_aab > 0){
       fprintf(outfile,"\n\n  Intruders diagnostics for reference %d, AAB triple excitations",mu);
       fprintf(outfile,"\n  has found the following denominators with absolute value < 0.1\n");
@@ -572,35 +573,35 @@ void MRCCSD_T::check_intruders()
 void MRCCSD_T::build_W_intermediates()
 {
   blas->solve("W_ijka[oo][ov]{u}  = <[oo]:[ov]>");
-  if(options_get_bool("HEFF4"))
+  if(options_.get_bool("HEFF4"))
     blas->solve("W_ijka[oo][ov]{u} += #4123# <[v]:[voo]> 1@2 t1[o][v]{u}");
 
   blas->solve("W_iJkA[oO][oV]{u}  = <[oo]|[ov]>");
-  if(options_get_bool("HEFF4"))
+  if(options_.get_bool("HEFF4"))
     blas->solve("W_iJkA[oO][oV]{u} += #4123# <[v]|[voo]> 1@2 t1[o][v]{u}");
 
   blas->solve("W_IjKa[Oo][Ov]{u}  = <[oo]|[ov]>");
-  if(options_get_bool("HEFF4"))
+  if(options_.get_bool("HEFF4"))
     blas->solve("W_IjKa[Oo][Ov]{u} += #4123# <[v]|[voo]> 1@2 t1[O][V]{u}");
 
   blas->solve("W_IJKA[OO][OV]{u}  = <[oo]:[ov]>");
-  if(options_get_bool("HEFF4"))
+  if(options_.get_bool("HEFF4"))
     blas->solve("W_IJKA[OO][OV]{u} += #4123# <[v]:[voo]> 1@2 t1[O][V]{u}");
 
   blas->solve("W_aibc[v][ovv]{u}  = <[v]:[ovv]>");
-  if(options_get_bool("HEFF4"))
+  if(options_.get_bool("HEFF4"))
     blas->solve("W_aibc[v][ovv]{u} += - t1[o][v]{u} 1@1 <[o]:[ovv]>");
 
   blas->solve("W_aIbC[v][OvV]{u}  = <[v]|[ovv]>");
-  if(options_get_bool("HEFF4"))
+  if(options_.get_bool("HEFF4"))
     blas->solve("W_aIbC[v][OvV]{u} += - t1[o][v]{u} 1@1 <[o]|[ovv]>");
 
   blas->solve("W_AiBc[V][oVv]{u}  = <[v]|[ovv]>");
-  if(options_get_bool("HEFF4"))
+  if(options_.get_bool("HEFF4"))
     blas->solve("W_AiBc[V][oVv]{u} += - t1[O][V]{u} 1@1 <[o]|[ovv]>");
 
   blas->solve("W_AIBC[V][OVV]{u}  = <[v]:[ovv]>");
-  if(options_get_bool("HEFF4"))
+  if(options_.get_bool("HEFF4"))
     blas->solve("W_AIBC[V][OVV]{u} += - t1[O][V]{u} 1@1 <[o]:[ovv]>");
 }
 

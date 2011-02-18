@@ -8,6 +8,7 @@
  ***************************************************************************/
 
 #include "manybody.h"
+#include <liboptions/liboptions.h>
 
 namespace psi{ namespace psimrcc{
 
@@ -19,7 +20,7 @@ class Updater;
 class IDMRPT2 : public CCManyBody
 {
 public:
-  IDMRPT2();
+  IDMRPT2(Options &options);
   virtual ~IDMRPT2();
   void compute_mrpt2_energy(Updater* updater);
 private:

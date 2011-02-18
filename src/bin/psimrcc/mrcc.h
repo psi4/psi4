@@ -1,6 +1,7 @@
 #ifndef _psi_src_bin_psimrcc_mrcc_h_
 #define _psi_src_bin_psimrcc_mrcc_h_
 
+#include "liboptions/liboptions.h"
 #include "manybody.h"
 #include "heff.h"
 
@@ -12,7 +13,7 @@ class CCMRCC : public CCManyBody
 {
 public:
   // Constructor and destructor
-  CCMRCC();
+  CCMRCC(Options &options);
   virtual ~CCMRCC();
 
   // CCSD
@@ -26,6 +27,8 @@ public:
   void perturbative_cbs();
 
 private:
+  Options &options_;
+
   bool ap_correction;
 
   void add_matrices();

@@ -4,16 +4,17 @@
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libutil/libutil.h>
-
+#include "exception.h"
 #include "blas.h"
 #include "index.h"
 #include "debugging.h"
 #include "matrix.h"
 
-extern FILE *outfile;
-
-namespace psi{ namespace psimrcc{
-
+namespace psi{
+    extern FILE *outfile;
+    namespace psimrcc{
+    extern MOInfo *moinfo;
+    extern MemoryManager *_memory_manager_;
 using namespace std;
 
 void CCBLAS::add_index(const char* cstr)
@@ -66,8 +67,7 @@ CCIndex* CCBLAS::get_index(const char* cstr)
   if(iter!=indices.end()){
     return(indices[str]);
   }
-  string err("\nCCBLAS::get_index() couldn't find index " + str);
-  print_error(outfile,err,__FILE__,__LINE__);
+  throw PSIEXCEPTION("\nCCBLAS::get_index() couldn't find index " + str);
   return(NULL);
 }
 
@@ -79,8 +79,7 @@ CCIndex* CCBLAS::get_index(string& str)
   if(iter!=indices.end()){
     return(indices[str]);
   }
-  string err("\nCCBLAS::get_index() couldn't find index " + str);
-  print_error(outfile,err,__FILE__,__LINE__);
+  throw PSIEXCEPTION("\nCCBLAS::get_index() couldn't find index " + str);
   return(NULL);
 }
 
@@ -141,8 +140,7 @@ CCMatrix* CCBLAS::get_Matrix(string& str)
   MatrixMap::iterator iter = matrices.find(str);
   if(iter!=matrices.end())
     return(matrices[str]);
-  string err("\nCCBLAS::get_matrix() couldn't find matrix " + str);
-  print_error(outfile,err,__FILE__,__LINE__);
+  throw PSIEXCEPTION("\nCCBLAS::get_matrix() couldn't find matrix " + str);
   return(NULL);
 }
 
@@ -153,8 +151,7 @@ CCMatrix* CCBLAS::get_Matrix(string& str, string& expression)
   if(iter!=matrices.end()){
     return(matrices[str]);
   }
-  string err("\n\nCCBLAS::parse() couldn't find the matrix " + str + " in the CCMatrix list\n\nwhile parsing the string:\n\t " + expression + "\n\n");
-  print_error(outfile,err,__FILE__,__LINE__);
+  throw PSIEXCEPTION("\n\nCCBLAS::parse() couldn't find the matrix " + str + " in the CCMatrix list\n\nwhile parsing the string:\n\t " + expression + "\n\n");
   return NULL;
 }
 
@@ -174,8 +171,7 @@ void CCBLAS::set_scalar(string& str,int reference,double value)
     iter->second->set_scalar(value);
     return;
   }
-  string err("\nCCBLAS::set_scalar() couldn't find matrix " + matrix_str);
-  print_error(outfile,err.c_str(),__FILE__,__LINE__);
+  throw PSIEXCEPTION("\nCCBLAS::set_scalar() couldn't find matrix " + matrix_str);
 }
 
 double CCBLAS::get_scalar(const char* cstr,int reference)
@@ -194,8 +190,7 @@ double CCBLAS::get_scalar(string& str,int reference)
     load(iter->second);
     return(iter->second->get_scalar());
   }
-  string err("\nCCBLAS::get_scalar() couldn't find matrix " + matrix_str);
-  print_error(outfile,err.c_str(),__FILE__,__LINE__);
+  throw PSIEXCEPTION("\nCCBLAS::get_scalar() couldn't find matrix " + matrix_str);
   return (0.0);
 }
 
@@ -207,8 +202,7 @@ double CCBLAS::get_scalar(string str)
     load(iter->second);
     return(iter->second->get_scalar());
   }
-  string err("\nCCBLAS::get_scalar() couldn't find matrix " + str);
-  print_error(outfile,err.c_str(),__FILE__,__LINE__);
+  throw PSIEXCEPTION("\nCCBLAS::get_scalar() couldn't find matrix " + str);
   return (0.0);
 }
 
@@ -216,7 +210,7 @@ void CCBLAS::load(CCMatrix* Matrix)
 {
   if(Matrix->is_allocated()){
     DEBUGGING(2,
-      fprintf(outfile,"\nCCBLAS::load(%s): matrix is in core.",Matrix->get_label().c_str());
+        fprintf(outfile,"\nCCBLAS::load(%s): matrix is in core.",Matrix->get_label().c_str());
     );
   }else{
     DEBUGGING(2,

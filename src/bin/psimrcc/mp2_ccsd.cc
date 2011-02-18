@@ -17,7 +17,8 @@ namespace psi{ namespace psimrcc{
 
 using namespace std;
 
-MP2_CCSD::MP2_CCSD():CCManyBody()
+MP2_CCSD::MP2_CCSD(Options &options):
+        CCManyBody(options)
 {
   triples_type = pt2;
   add_matrices();
@@ -68,7 +69,7 @@ void MP2_CCSD::compute_mp2_ccsd_energy()
     delta_energy   = current_energy - old_energy;
     old_energy = current_energy;
 
-    if(fabs(log10(fabs(delta_energy))) > options_get_int("CONVERGENCE")){
+    if(fabs(log10(fabs(delta_energy))) > options_.get_int("CONVERGENCE")){
       converged=true;
     }
 
@@ -120,13 +121,13 @@ void MP2_CCSD::compute_mp2_ccsd_energy()
     current_energy = compute_energy();
 
     delta_energy = current_energy-old_energy;
-    if(fabs(log10(fabs(delta_energy))) > options_get_int("CONVERGENCE")){
+    if(fabs(log10(fabs(delta_energy))) > options_.get_int("CONVERGENCE")){
       converged=true;
     }
     old_energy=current_energy;
 
-    if(cycle>options_get_int("MAXITER")){
-      fprintf(outfile,"\n\n\tThe calculation did not converge in %d cycles\n\tQuitting PSIMRCC\n",options_get_int("MAXITER"));
+    if(cycle>options_.get_int("MAXITER")){
+      fprintf(outfile,"\n\n\tThe calculation did not converge in %d cycles\n\tQuitting PSIMRCC\n",options_.get_int("MAXITER"));
       fflush(outfile);
       exit(1);
     }
@@ -219,7 +220,7 @@ void MP2_CCSD::compute_mp2_ccsd_components()
   blas->zero("t2_eqns[oO][vV]{u}");
 
   // Eliminate the (oa,aa) and (aa,va) blocks from the amplitudes
-  if(options_get_str("MP2_CCSD_METHOD")=="II"){
+  if(options_.get_str("MP2_CCSD_METHOD")=="II"){
     blas->expand_spaces("HiJaB[oA][aA]{u}","t2_eqns[oO][vV]{u}");
     blas->expand_spaces("HiJaB[aO][aA]{u}","t2_eqns[oO][vV]{u}");
     blas->expand_spaces("HiJaB[aA][vA]{u}","t2_eqns[oO][vV]{u}");
@@ -255,7 +256,7 @@ void MP2_CCSD::compute_mp2_ccsd_components()
   blas->solve("t2_eqns[oO][vV]{u} = t2_delta[oO][vV]{u}");
 
   // Eliminate the (oa,aa) and (aa,va) blocks from the amplitudes
-  if(options_get_str("MP2_CCSD_METHOD")=="II"){
+  if(options_.get_str("MP2_CCSD_METHOD")=="II"){
     blas->zero("HiJaB[oA][aA]{u}");
     blas->zero("HiJaB[aO][aA]{u}");
     blas->zero("HiJaB[aA][vA]{u}");

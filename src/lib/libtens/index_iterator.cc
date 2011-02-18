@@ -5,8 +5,9 @@
 #include "index_iterator.h"
 
 namespace psi{ namespace psimrcc{
+    extern MOInfo *moinfo;
 
-CCIndexIterator::CCIndexIterator(string str)
+CCIndexIterator::CCIndexIterator(std::string str)
 {
   nirreps = moinfo->get_nirreps();
   ccindex = blas->get_index(str);
@@ -20,7 +21,7 @@ CCIndexIterator::CCIndexIterator(CCIndex* index_)
   startup(0,nirreps);
 }
 
-CCIndexIterator::CCIndexIterator(string str,int select_irrep)
+CCIndexIterator::CCIndexIterator(std::string str,int select_irrep)
 {
   nirreps = moinfo->get_nirreps();
   ccindex = blas->get_index(str);

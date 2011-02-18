@@ -5,9 +5,9 @@
 #include "debugging.h"
 #include "matrix.h"
 
-extern FILE *outfile;
-
-namespace psi{ namespace psimrcc{
+namespace psi{
+    extern FILE *outfile;
+    namespace psimrcc{
 
 double* CCOperation::local_work = NULL;
 double* CCOperation::out_of_core_buffer = NULL;

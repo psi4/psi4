@@ -9,10 +9,10 @@
 #include "index.h"
 #include "matrix.h"
 
-extern FILE *outfile;
-
-namespace psi{ namespace psimrcc{
-
+namespace psi{
+    extern FILE *outfile;
+    namespace psimrcc{
+    extern MOInfo *moinfo;
 using namespace std;
 
 void CCOperation::sort()
@@ -27,7 +27,7 @@ void CCOperation::sort(CCIndex* T_left,CCIndex* T_right,double*** T_matrix,doubl
   // Setup reindexing_array
   // This assumes that the reindexing starts from 1 !!! This can cost you an headache
   if(reindexing.size()>6)
-    print_developing(outfile,"CCOperation::sort() doesn't support more that six indices",__FILE__,__LINE__);
+    throw FeatureNotImplemented("LIBTENS","CCOperation::sort() doesn't support more that six indices",__FILE__,__LINE__);
   short* reindexing_array = new short[6];
   for(size_t i = 0; i< reindexing.size(); i++)
     reindexing_array[i]=string_to_integer(reindexing.substr(i,1))-1;
@@ -423,22 +423,22 @@ void CCOperation::sort(CCIndex* T_left,CCIndex* T_right,double*** T_matrix,doubl
       short* pqrs = new short[4];
       // A[x][xxx] <- B[x][xxx]
       if((A_left_nelements == 1) && (T_left_nelements == 1)){
-        print_developing(outfile,"A[x][xxx] <- B[x][xxx] with expansion",__FILE__,__LINE__);
+        throw FeatureNotImplemented("LIBTENS","A[x][xxx] <- B[x][xxx] with expansion",__FILE__,__LINE__);
       }
 
       // A[xx][xx] <- B[x][xxx]
       if((A_left_nelements == 2) && (T_left_nelements == 1)){
-        print_developing(outfile,"A[xx][xx] <- B[x][xxx] with expansion",__FILE__,__LINE__);
+        throw FeatureNotImplemented("LIBTENS","A[xx][xx] <- B[x][xxx] with expansion",__FILE__,__LINE__);
       }
 
       // A[xxx][x] <- B[x][xxx]
       if((A_left_nelements == 3) && (T_left_nelements == 1)){
-        print_developing(outfile,"A[xxx][x] <- B[x][xxx] with expansion",__FILE__,__LINE__);
+        throw FeatureNotImplemented("LIBTENS","A[xxx][x] <- B[x][xxx] with expansion",__FILE__,__LINE__);
       }
 
       // A[x][xxx] <- B[xx][xx]
       if((A_left_nelements == 1) && (T_left_nelements == 2)){
-        print_developing(outfile,"A[x][xxx] <- B[xx][xx] with expansion",__FILE__,__LINE__);
+        throw FeatureNotImplemented("LIBTENS","A[x][xxx] <- B[xx][xx] with expansion",__FILE__,__LINE__);
       }
 
       // A[xx][xx] <- B[xx][xx]
@@ -473,22 +473,22 @@ void CCOperation::sort(CCIndex* T_left,CCIndex* T_right,double*** T_matrix,doubl
 
       // A[xxx][x] <- B[xx][xx]
       if((A_left_nelements == 3) && (T_left_nelements == 2)){
-        print_developing(outfile,"A[xxx][x] <- B[xx][xx] with expansion",__FILE__,__LINE__);
+        throw FeatureNotImplemented("LIBTENS","A[xxx][x] <- B[xx][xx] with expansion",__FILE__,__LINE__);
       }
 
       // A[x][xxx] <- B[xxx][x]
       if((A_left_nelements == 1) && (T_left_nelements == 3)){
-        print_developing(outfile,"A[x][xxx] <- B[xxx][x] with expansion",__FILE__,__LINE__);
+        throw FeatureNotImplemented("LIBTENS","A[x][xxx] <- B[xxx][x] with expansion",__FILE__,__LINE__);
       }
 
       // A[xx][xx] <- B[xxx][x]
       if((A_left_nelements == 2) && (T_left_nelements == 3)){
-        print_developing(outfile,"A[xx][xx] <- B[xxx][x] with expansion",__FILE__,__LINE__);
+        throw FeatureNotImplemented("LIBTENS","A[xx][xx] <- B[xxx][x] with expansion",__FILE__,__LINE__);
       }
 
       // A[xxx][x] <- B[xxx][x]
       if((A_left_nelements == 3) && (T_left_nelements == 3)){
-        print_developing(outfile,"A[xxx][x] <- B[xxx][x] with expansion",__FILE__,__LINE__);
+        throw FeatureNotImplemented("LIBTENS","A[xxx][x] <- B[xxx][x] with expansion",__FILE__,__LINE__);
       }
 
       delete[] pqrs;

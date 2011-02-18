@@ -4,7 +4,9 @@
 
 namespace psi{ namespace psimrcc{
 
-MRCCSD_T::MRCCSD_T(Hamiltonian* h_eff_) : h_eff(h_eff_)
+MRCCSD_T::MRCCSD_T(Options &options, Hamiltonian* h_eff_) :
+        options_(options),
+        h_eff(h_eff_)
 {
   startup();
   check_intruders();

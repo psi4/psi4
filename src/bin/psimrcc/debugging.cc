@@ -10,13 +10,14 @@
 
 namespace psi{ namespace psimrcc{
 
-Debugging::Debugging()
+        Debugging::Debugging(Options &options):
+                options_(options)
 {
   level = new bool[11];
   for(int n=0;n<=10;n++)
     level[n]=false;
 
-  int maxn = options_get_int("DEBUG");
+  int maxn = options_.get_int("DEBUG");
   if(maxn>10)
     maxn = 10;
   for(int n=0;n<=maxn;n++)

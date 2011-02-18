@@ -5,9 +5,9 @@
 #include <libutil/libutil.h>
 #include <algorithm>
 
-extern FILE *outfile;
-
-namespace psi{ namespace psimrcc{
+namespace psi{
+    extern FILE *outfile;
+    namespace psimrcc{
 
 typedef std::vector<std::string>            strvec;
 typedef std::vector<std::pair<int,int> >    intpairvec;
@@ -29,7 +29,7 @@ int CCBLAS::parse(std::string& str){
   // Store the A Matrix
   CCMatrix* A_Matrix = get_Matrix(split_str[0],str);
   // Check the assigment operator
-  string assignment(split_str[1]);
+  std::string assignment(split_str[1]);
   strvec::iterator strveciter(find(allowed_assignments.begin(),allowed_assignments.end(),assignment));
   if(strveciter==allowed_assignments.end())
     fprintf(outfile,"\n\nCCBLAS::parse() %s is not a proper assigment\n\nin the expression:\n\t%s\n\n",assignment.c_str(),str.c_str());
@@ -37,17 +37,17 @@ int CCBLAS::parse(std::string& str){
   // Eliminate the first two strings and store the rest of the terms
   strvec::iterator iter = split_str.begin();
   iter=split_str.erase(iter,iter+2);
-  string    reindexing;
-  string    operation;
-  CCMatrix* B_Matrix;
-  CCMatrix* C_Matrix;
+  std::string   reindexing;
+  std::string   operation;
+  CCMatrix*     B_Matrix;
+  CCMatrix*     C_Matrix;
 
   while(iter!=split_str.end()){
     double factor=1.0;
     C_Matrix = NULL;
     B_Matrix = NULL;
     // Read the reindexing
-    if(iter->find("#")!=string::npos){
+    if(iter->find("#")!=std::string::npos){
       reindexing = *iter;
       reindexing = reindexing.substr(1,reindexing.size()-2);
       ++iter;
@@ -112,10 +112,10 @@ bool CCBLAS::get_factor(const std::string& str,double& factor)
 
 bool is_number(const std::string& str){
   // Is the string str a number?
-  static const string numbers = "1234567890.-+/e";
+  static const std::string numbers = "1234567890.-+/e";
   bool numeric = true;
   for(int i=0;i<str.size();i++)
-    if(numbers.find(str[i])==string::npos) numeric = false;
+      if(numbers.find(str[i])==std::string::npos) numeric = false;
   // In case we have only a symbol (ex. "+")
   if((str.size()==1) && !isdigit(str[0])) numeric = false;
   return(numeric);
@@ -131,9 +131,9 @@ double get_number(const std::string& str){
       fraction_sign = i;
     }
   if(fraction){
-    string numerator   = str.substr(0,fraction_sign);
-    string denominator = str.substr(fraction_sign+1,str.size()-fraction_sign-1);
-    string unsigned_numerator = find_and_replace(numerator,"-","");
+    std::string numerator   = str.substr(0,fraction_sign);
+    std::string denominator = str.substr(fraction_sign+1,str.size()-fraction_sign-1);
+    std::string unsigned_numerator = find_and_replace(numerator,"-","");
     if(unsigned_numerator.size() * denominator.size()!=0){
       value=ToDouble(numerator)/ToDouble(denominator);
     }else{
@@ -154,7 +154,7 @@ bool is_operation(const std::string& str){
   strvec allowed_operations = split(". @ / * X");
   bool operation = false;
   for(int i=0;i<allowed_operations.size();i++)
-    if(str.find(allowed_operations[i])!=string::npos) operation = true;
+      if(str.find(allowed_operations[i])!=std::string::npos) operation = true;
   return(operation);
 }
 

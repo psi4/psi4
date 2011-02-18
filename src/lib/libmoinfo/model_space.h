@@ -31,7 +31,7 @@ private:
   MOInfo* moinfo_obj;
 };
 
-extern ModelSpace  *model_space;
+    extern ModelSpace  *model_space;
 
 }
 

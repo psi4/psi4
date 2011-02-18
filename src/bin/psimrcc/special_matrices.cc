@@ -11,6 +11,7 @@
 extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
+    extern MOInfo *moinfo;
 
 MatrixBase::MatrixBase(size_t nrows_, size_t ncols_) : nrows(nrows_),ncols(ncols_),matrix(0)
 {
@@ -420,14 +421,14 @@ IndexMatrix::~IndexMatrix()
 
 void IndexMatrix::add_block_matrix(size_t index,int ref,BlockMatrix* block_matrix)
 {
-  matrices[make_pair(index,ref)] = block_matrix;
+    matrices[std::make_pair(index,ref)] = block_matrix;
 }
 
 BlockMatrix* IndexMatrix::get_block_matrix(size_t index,int ref)
 {
-  BMMap::iterator iter = matrices.find(make_pair(index,ref));
+    BMMap::iterator iter = matrices.find(std::make_pair(index,ref));
   if(iter!=matrices.end()){
-    return matrices[make_pair(index,ref)];
+      return matrices[std::make_pair(index,ref)];
   }
 
   fprintf(outfile,"\n  Couldn't find element!");

@@ -12,6 +12,7 @@
 #include <map>
 #include <utility>
 
+#include "liboptions/liboptions.h"
 #include "matrixtmp.h"
 #include "operation.h"
 
@@ -36,8 +37,11 @@ public:
   typedef std::vector<std::pair<int,int> >    intpairvec;
   typedef std::deque<CCOperation>             OpDeque;
 
-  CCBLAS();
+
+  CCBLAS(Options &options);
   ~CCBLAS();
+
+  Options &options_;
   // Add routines
   void       add_Matrix(const char* cstr);
   void       add_Matrix(std::string str);

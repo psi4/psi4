@@ -9,9 +9,9 @@
 #include <functional>
 #include <utility>
 
-extern FILE *outfile;
-
-namespace psi{ namespace psimrcc{
+namespace psi{
+    extern FILE *outfile;
+    namespace psimrcc{
 
 void sort_eigensystem(int ndets,double*& real,double*& imaginary,double**& left,double**& right);
 
@@ -148,7 +148,7 @@ void sort_eigensystem(int ndets,double*& real,double*& imaginary,double**& left,
 {
   std::vector<std::pair<double, int> > pairs;
   for(int i=0;i<ndets;i++)
-    pairs.push_back(make_pair(real[i],i));
+      pairs.push_back(std::make_pair(real[i],i));
   sort(pairs.begin(),pairs.end());
 
   double*  tempv;

@@ -20,9 +20,11 @@
 #include "debugging.h"
 #include "updater.h"
 
-extern FILE *outfile;
+namespace psi{
+    extern FILE *outfile;
+    namespace psimrcc{
+    extern MOInfo *moinfo;
 
-namespace psi{ namespace psimrcc{
 
 /**
  * This is a generic coupled cluster cycle. By specifying the updater object you can get all the flavors of CC, single-reference, Mukherjee MRCC,...
@@ -72,8 +74,8 @@ void CCMRCC::compute_energy(Updater* updater)
       blas->diis(cycle,delta_energy,DiisCC);
     }
 
-    if(cycle>options_get_int("MAXITER")){
-      fprintf(outfile,"\n\n\tThe calculation did not converge in %d cycles\n\tQuitting PSIMRCC\n",options_get_int("MAXITER"));
+    if(cycle>options_.get_int("MAXITER")){
+      fprintf(outfile,"\n\n\tThe calculation did not converge in %d cycles\n\tQuitting PSIMRCC\n",options_.get_int("MAXITER"));
       fflush(outfile);
       exit(1);
     }
@@ -82,7 +84,7 @@ void CCMRCC::compute_energy(Updater* updater)
 
   fprintf(outfile,"\n\n  Timing for singles and doubles: %20.6f s",cc_timer.get());
 
-  if(options_get_str("CORR_WFN")=="CCSD_T"){
+  if(options_.get_str("CORR_WFN")=="CCSD_T"){
     compute_perturbative_triples();
   }
 

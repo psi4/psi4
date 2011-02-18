@@ -11,6 +11,7 @@
 extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
+    extern MOInfo *moinfo;
 
 using namespace std;
 
@@ -32,13 +33,13 @@ bool CCMRCC::build_diagonalize_Heff(int cycle, double time)
     old_energy=current_energy;
     current_energy=diagonalize_Heff(moinfo->get_root(),moinfo->get_nrefs(),Heff,right_eigenvector,left_eigenvector,false);
 
-    if(options_get_bool("PRINT_HEFF"))
+    if(options_.get_bool("PRINT_HEFF"))
       print_eigensystem(moinfo->get_nrefs(),Heff,right_eigenvector);
     DEBUGGING(3,
       print_eigensystem(moinfo->get_nrefs(),Heff,right_eigenvector);
     )
     double delta_energy = current_energy-old_energy;
-    if(fabs(log10(fabs(delta_energy))) > options_get_int("CONVERGENCE"))
+    if(fabs(log10(fabs(delta_energy))) > options_.get_int("CONVERGENCE"))
       converged = true;
 
 

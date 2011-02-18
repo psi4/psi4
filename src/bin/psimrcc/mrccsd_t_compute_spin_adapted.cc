@@ -70,11 +70,11 @@ void MRCCSD_T::compute_spin_adapted()
   for(int mu = 0; mu < nrefs; ++mu){
     for(int nu = 0; nu < nrefs; ++nu){
       if(mu != nu){
-        if(options_get_bool("OFFDIAGONAL_CCSD_T")){  // Option to add the diagonal correction
+        if(options_.get_bool("OFFDIAGONAL_CCSD_T")){  // Option to add the diagonal correction
           h_eff->add_matrix(mu,nu,2.0 * d_h_eff[mu][nu]);
         }
       }else{
-        if(options_get_bool("DIAGONAL_CCSD_T")){  // Option to add the off-diagonal correction
+        if(options_.get_bool("DIAGONAL_CCSD_T")){  // Option to add the off-diagonal correction
           h_eff->add_matrix(mu,nu,2.0 * E4_ooo[mu] + 2.0 * E4_ooO[mu]);
         }
       }
@@ -281,10 +281,10 @@ void MRCCSD_T::compute_ooO_triples_spin_adapted()
               }
 
               // Divide by the denominator
-              vector<double>& e_vv_mu  = e_vv[mu];
-              vector<double>& e_VV_mu  = e_VV[mu];
-              vector<bool>& is_avir_mu = is_avir[mu];
-              vector<bool>& is_bvir_mu = is_bvir[mu];
+              std::vector<double>& e_vv_mu  = e_vv[mu];
+              std::vector<double>& e_VV_mu  = e_VV[mu];
+              std::vector<bool>& is_avir_mu = is_avir[mu];
+              std::vector<bool>& is_bvir_mu = is_bvir[mu];
 
               CCIndexIterator  abc(vvv,ijk_sym);
               // Loop over abc
@@ -388,10 +388,10 @@ void MRCCSD_T::compute_ooO_triples_spin_adapted()
               }
 
               // Divide by the denominator
-              vector<double>& e_vv_mu  = e_vv[mu];
-              vector<double>& e_VV_mu  = e_VV[mu];
-              vector<bool>& is_avir_mu = is_avir[mu];
-              vector<bool>& is_bvir_mu = is_bvir[mu];
+              std::vector<double>& e_vv_mu  = e_vv[mu];
+              std::vector<double>& e_VV_mu  = e_VV[mu];
+              std::vector<bool>& is_avir_mu = is_avir[mu];
+              std::vector<bool>& is_bvir_mu = is_bvir[mu];
 
               CCIndexIterator  abc(vvv,ijk_sym);
               // Loop over abc
@@ -495,10 +495,10 @@ void MRCCSD_T::compute_ooO_triples_spin_adapted()
               }
 
               // Divide by the denominator
-              vector<double>& e_vv_mu  = e_vv[mu];
-              vector<double>& e_VV_mu  = e_VV[mu];
-              vector<bool>& is_avir_mu = is_avir[mu];
-              vector<bool>& is_bvir_mu = is_bvir[mu];
+              std::vector<double>& e_vv_mu  = e_vv[mu];
+              std::vector<double>& e_VV_mu  = e_VV[mu];
+              std::vector<bool>& is_avir_mu = is_avir[mu];
+              std::vector<bool>& is_bvir_mu = is_bvir[mu];
 
               CCIndexIterator  abc(vvv,ijk_sym);
               // Loop over abc
@@ -604,10 +604,10 @@ void MRCCSD_T::compute_ooO_triples_spin_adapted()
               }
 
               // Divide by the denominator
-              vector<double>& e_vv_mu  = e_vv[mu];
-              vector<double>& e_VV_mu  = e_VV[mu];
-              vector<bool>& is_avir_mu = is_avir[mu];
-              vector<bool>& is_bvir_mu = is_bvir[mu];
+              std::vector<double>& e_vv_mu  = e_vv[mu];
+              std::vector<double>& e_VV_mu  = e_VV[mu];
+              std::vector<bool>& is_avir_mu = is_avir[mu];
+              std::vector<bool>& is_bvir_mu = is_bvir[mu];
 
               CCIndexIterator  abc(vvv,ijk_sym);
               // Loop over abc

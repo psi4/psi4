@@ -20,6 +20,7 @@
 extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
+    extern MOInfo *moinfo;
 
 void MRCCSD_T::compute_restricted()
 {
@@ -79,7 +80,7 @@ void MRCCSD_T::compute_restricted()
     }
   }
 
-  if(not options_get_bool("DIAGONALIZE_HEFF")){
+  if(not options_.get_bool("DIAGONALIZE_HEFF")){
     double Heff_E = 0.0;
     for(int mu = 0; mu < nrefs; ++mu){
       for(int nu = 0; nu < nrefs; ++nu){
@@ -89,11 +90,11 @@ void MRCCSD_T::compute_restricted()
       }
     }
     double total = 0.0;
-    if(options_get_bool("DIAGONAL_CCSD_T")){
+    if(options_.get_bool("DIAGONAL_CCSD_T")){
       fprintf(outfile,"\n\n  Total     diagonal (T) correction: %17.12f",E4);
       total += E4;
     }
-    if(options_get_bool("OFFDIAGONAL_CCSD_T")){
+    if(options_.get_bool("OFFDIAGONAL_CCSD_T")){
       fprintf(outfile,"\n  Total off-diagonal (T) correction: %17.12f",Heff_E);
       total += Heff_E;
     }
@@ -103,11 +104,11 @@ void MRCCSD_T::compute_restricted()
   for(int mu = 0; mu < nrefs; ++mu){
     for(int nu = 0; nu < nrefs; ++nu){
       if(mu != nu){
-        if(options_get_bool("OFFDIAGONAL_CCSD_T")){  // Option to add the diagonal correction
+        if(options_.get_bool("OFFDIAGONAL_CCSD_T")){  // Option to add the diagonal correction
           h_eff->add_matrix(mu,nu,closed_shell_factor * d_h_eff[mu][nu]);
         }
       }else{
-        if(options_get_bool("DIAGONAL_CCSD_T")){  // Option to add the off-diagonal correction
+        if(options_.get_bool("DIAGONAL_CCSD_T")){  // Option to add the off-diagonal correction
           h_eff->add_matrix(mu,nu,closed_shell_factor * (E4_ooo[mu] + E4_ooO[mu] + E4_oOO[mu] + E4_OOO[mu]));
         }
       }
@@ -207,8 +208,8 @@ void MRCCSD_T::compute_ooo_triples_restricted()
             }
 
             // Divide by the denominator
-            vector<double>& e_vv_mu  = e_vv[mu];
-            vector<bool>& is_avir_mu = is_avir[mu];
+            std::vector<double>& e_vv_mu  = e_vv[mu];
+            std::vector<bool>& is_avir_mu = is_avir[mu];
 
             CCIndexIterator  abc(vvv,ijk_sym);
   //          abc.reset();
@@ -356,8 +357,8 @@ void MRCCSD_T::compute_OOO_triples_restricted()
             }
 
             // Divide by the denominator
-            vector<double>& e_VV_mu  = e_VV[mu];
-            vector<bool>& is_bvir_mu = is_bvir[mu];
+            std::vector<double>& e_VV_mu  = e_VV[mu];
+            std::vector<bool>& is_bvir_mu = is_bvir[mu];
 
             CCIndexIterator  abc(vvv,ijk_sym);
   //          abc.reset();
@@ -518,10 +519,10 @@ void MRCCSD_T::compute_ooO_triples_restricted()
             }
 
             // Divide by the denominator
-            vector<double>& e_vv_mu  = e_vv[mu];
-            vector<double>& e_VV_mu  = e_VV[mu];
-            vector<bool>& is_avir_mu = is_avir[mu];
-            vector<bool>& is_bvir_mu = is_bvir[mu];
+            std::vector<double>& e_vv_mu  = e_vv[mu];
+            std::vector<double>& e_VV_mu  = e_VV[mu];
+            std::vector<bool>& is_avir_mu = is_avir[mu];
+            std::vector<bool>& is_bvir_mu = is_bvir[mu];
 
             CCIndexIterator  abc(vvv,ijk_sym);
   //          abc.reset();
@@ -684,10 +685,10 @@ void MRCCSD_T::compute_oOO_triples_restricted()
             }
 
             // Divide by the denominator
-            vector<double>& e_vv_mu  = e_vv[mu];
-            vector<double>& e_VV_mu  = e_VV[mu];
-            vector<bool>& is_avir_mu = is_avir[mu];
-            vector<bool>& is_bvir_mu = is_bvir[mu];
+            std::vector<double>& e_vv_mu  = e_vv[mu];
+            std::vector<double>& e_VV_mu  = e_VV[mu];
+            std::vector<bool>& is_avir_mu = is_avir[mu];
+            std::vector<bool>& is_bvir_mu = is_bvir[mu];
 
             CCIndexIterator  abc(vvv,ijk_sym);
   //          abc.reset();

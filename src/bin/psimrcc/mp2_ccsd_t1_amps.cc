@@ -24,7 +24,7 @@ void MP2_CCSD::build_t1_ia_amplitudes()
   blas->solve("t1_eqns[o][v]{u} += -1/2 <[o]:[voo]> 2@2 t2[v][voo]{u}");
   blas->solve("t1_eqns[o][v]{u} += - <[o]|[voo]> 2@2 t2[v][VoO]{u}");
 
-  if(options_get_str("MP2_CCSD_METHOD")=="I"){
+  if(options_.get_str("MP2_CCSD_METHOD")=="I"){
     blas->reduce_spaces("t1_eqns[a][a]{u}","t1_eqns[o][v]{u}");
     blas->zero("t1_eqns[o][v]{u}");
     blas->expand_spaces("t1_eqns[a][a]{u}","t1_eqns[o][v]{u}");

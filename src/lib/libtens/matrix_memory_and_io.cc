@@ -17,10 +17,11 @@
 #include "debugging.h"
 #include "matrix.h"
 
-extern FILE *infile, *outfile;
-
-namespace psi{ namespace psimrcc{
-
+namespace psi{
+    extern FILE *outfile;
+    namespace psimrcc{
+    extern MOInfo *moinfo;
+    extern MemoryManager *_memory_manager_;
 using namespace std;
 
 

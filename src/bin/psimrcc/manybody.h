@@ -25,6 +25,7 @@
 #include <vector>
 #include <string>
 
+#include <liboptions/liboptions.h>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 
@@ -41,7 +42,7 @@ enum TriplesCouplingType  {nocoupling,linear,quadratic,cubic};
 */
 class CCManyBody{
 public:
-  CCManyBody();
+  CCManyBody(Options &options);
   virtual ~CCManyBody();
   void        generate_integrals();
   void        generate_denominators();
@@ -53,6 +54,7 @@ public:
 //  void        zero_t1_internal_amps();
 //  void        zero_internal_delta_amps();
 protected:
+  Options &options_;
   // Effective Hamiltonian and the correpsonding eigenvectors
   void        print_eigensystem(int ndets, double** Heff,double*& eigenvector);
   double      diagonalize_Heff(int root,int ndets, double** Heff,double*& right_eigenvector,double*& left_eigenvector, bool initial);

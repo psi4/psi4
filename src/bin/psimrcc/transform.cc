@@ -15,7 +15,6 @@
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>
-#include <libipv1/ip_lib.h>
 #include <libiwl/iwl.h>
 #include <libqt/qt.h>
 #include "psifiles.h"
@@ -29,6 +28,8 @@
 extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
+    extern MOInfo *moinfo;
+    extern MemoryManager *_memory_manager_;
 
 using namespace std;
 

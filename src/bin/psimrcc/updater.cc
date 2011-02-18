@@ -16,12 +16,14 @@
 #include "matrixtmp.h"
 #include "updater.h"
 
-extern FILE *outfile;
+namespace psi{
+    extern FILE *outfile;
+    namespace psimrcc{
+    extern MOInfo *moinfo;
 
-namespace psi{ namespace psimrcc{
 
-
-Updater::Updater()
+Updater::Updater(Options &options):
+        options_(options)
 {
 }
 
@@ -31,14 +33,14 @@ Updater::~Updater()
 
 void Updater::zero_internal_amps()
 {
-  if(options_get_bool("ZERO_INTERNAL_AMPS")){
+  if(options_.get_bool("ZERO_INTERNAL_AMPS")){
     // Zero internal amplitudes for unique reference i
     for(int i=0;i<moinfo->get_nunique();i++){
       int unique_i = moinfo->get_ref_number(i,UniqueRefs);
       // Loop over reference j
       for(int j=0;j<moinfo->get_ref_size(AllRefs);j++){
-        vector<pair<int,int> >  alpha_internal_excitation = moinfo->get_alpha_internal_excitation(unique_i,j);
-        vector<pair<int,int> >   beta_internal_excitation = moinfo->get_beta_internal_excitation(unique_i,j);
+        std::vector<std::pair<int,int> >  alpha_internal_excitation = moinfo->get_alpha_internal_excitation(unique_i,j);
+        std::vector<std::pair<int,int> >   beta_internal_excitation = moinfo->get_beta_internal_excitation(unique_i,j);
 
         // Zero alpha-alpha single excitations
         if((alpha_internal_excitation.size()==1)&&(beta_internal_excitation.size()==0)){
@@ -139,14 +141,14 @@ void Updater::zero_internal_amps()
 
 void Updater::zero_t1_internal_amps()
 {
-  if(options_get_bool("ZERO_INTERNAL_AMPS")){
+  if(options_.get_bool("ZERO_INTERNAL_AMPS")){
     // Zero internal amplitudes for unique reference i
     for(int i=0;i<moinfo->get_nunique();i++){
       int unique_i = moinfo->get_ref_number(i,UniqueRefs);
       // Loop over reference j
       for(int j=0;j<moinfo->get_ref_size(AllRefs);j++){
-        vector<pair<int,int> >  alpha_internal_excitation = moinfo->get_alpha_internal_excitation(unique_i,j);
-        vector<pair<int,int> >   beta_internal_excitation = moinfo->get_beta_internal_excitation(unique_i,j);
+        std::vector<std::pair<int,int> >  alpha_internal_excitation = moinfo->get_alpha_internal_excitation(unique_i,j);
+        std::vector<std::pair<int,int> >   beta_internal_excitation = moinfo->get_beta_internal_excitation(unique_i,j);
 
         // Zero alpha-alpha single excitations
         if((alpha_internal_excitation.size()==1)&&(beta_internal_excitation.size()==0))
@@ -176,14 +178,14 @@ void Updater::zero_t1_internal_amps()
 
 void Updater::zero_internal_delta_amps()
 {
-  if(options_get_bool("ZERO_INTERNAL_AMPS")){
+  if(options_.get_bool("ZERO_INTERNAL_AMPS")){
     // Zero internal amplitudes for unique reference i
     for(int i=0;i<moinfo->get_nunique();i++){
       int unique_i = moinfo->get_ref_number(i,UniqueRefs);
       // Loop over reference j
       for(int j=0;j<moinfo->get_ref_size(AllRefs);j++){
-        vector<pair<int,int> >  alpha_internal_excitation = moinfo->get_alpha_internal_excitation(unique_i,j);
-        vector<pair<int,int> >   beta_internal_excitation = moinfo->get_beta_internal_excitation(unique_i,j);
+        std::vector<std::pair<int,int> >  alpha_internal_excitation = moinfo->get_alpha_internal_excitation(unique_i,j);
+        std::vector<std::pair<int,int> >   beta_internal_excitation = moinfo->get_beta_internal_excitation(unique_i,j);
 
         // Zero alpha-alpha single excitations
         if((alpha_internal_excitation.size()==1)&&(beta_internal_excitation.size()==0))

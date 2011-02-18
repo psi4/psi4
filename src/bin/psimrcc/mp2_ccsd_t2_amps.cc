@@ -8,6 +8,7 @@
 extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
+    extern MOInfo *moinfo;
 
 void MP2_CCSD::build_mp2_t2_iJaB_amplitudes()
 {
@@ -68,7 +69,7 @@ void MP2_CCSD::build_t2_iJaB_amplitudes()
   blas->solve("HiJaB[aA][aA]{u} += #3412# - t1_ov[o][a]{u} 1@1 <[o]|[aaa]>");
   blas->solve("HiJaB[aA][aA]{u} += #4321# - t1_OV[O][A]{u} 1@1 <[o]|[aaa]>");
 
-  if(options_get_str("MP2_CCSD_METHOD")=="II"){
+  if(options_.get_str("MP2_CCSD_METHOD")=="II"){
     // RAAA case (CCSD)
     blas->solve("HiJaB[oA][aA]{u}  = <[oa]|[aa]>");
     blas->solve("HiJaB[oA][aA]{u} += #3214# t2_VvOo[V][aAo]{u} 1@2 F'_AE[A][V]{u}");

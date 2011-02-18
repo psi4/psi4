@@ -15,10 +15,11 @@
 extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
+    extern MOInfo *moinfo;
 
 using namespace std;
 
-IDMRPT2::IDMRPT2():CCManyBody()
+IDMRPT2::IDMRPT2(Options &options):CCManyBody(options)
 {
   triples_type = pt2;
   add_matrices();
@@ -93,14 +94,14 @@ void IDMRPT2::compute_mrpt2_energy(Updater* updater)
     // Compute the energy
     current_energy=c_H_c(moinfo->get_nrefs(),Heff_mrpt2,zeroth_order_eigenvector);
     delta_energy = current_energy - old_energy;
-    if(fabs(log10(fabs(delta_energy))) > options_get_int("CONVERGENCE")){
+    if(fabs(log10(fabs(delta_energy))) > options_.get_int("CONVERGENCE")){
       converged=true;
     }
     fprintf(outfile,"\n    @PT %5d   %20.15f  %11.4e",cycle,current_energy,delta_energy);
     old_energy=current_energy;
 
-    if(cycle>options_get_int("MAXITER")){
-      fprintf(outfile,"\n\n\tThe calculation did not converge in %d cycles\n\tQuitting PSIMRCC\n",options_get_int("MAXITER"));
+    if(cycle>options_.get_int("MAXITER")){
+      fprintf(outfile,"\n\n\tThe calculation did not converge in %d cycles\n\tQuitting PSIMRCC\n",options_.get_int("MAXITER"));
       fflush(outfile);
       exit(1);
     }
@@ -134,22 +135,22 @@ void IDMRPT2::compute_mrpt2_energy(Updater* updater)
 
   fprintf(outfile,"\n\n%6c* Mk-MRPT2 total energy         = %20.12f",' ',second_order_energy);
   fprintf(outfile,"\n%6c* relaxed Mk-MRPT2 total energy = %20.12f\n",' ',pseudo_second_order_energy);
-//  fprintf(outfile,"\n    @SCSPT@        %-5s%-10s  Energy = %-20.15f",options_get_str("CORR_ANSATZ").c_str(),options_get_str("CORR_WFN").c_str(),scs_second_order_energy);
-//  fprintf(outfile,"\n    @SCSPT-i@      %-5s%-10s  Energy = %-20.15f",options_get_str("CORR_ANSATZ").c_str(),options_get_str("CORR_WFN").c_str(),scs_pseudo_second_order_energy);
+//  fprintf(outfile,"\n    @SCSPT@        %-5s%-10s  Energy = %-20.15f",options_.get_str("CORR_ANSATZ").c_str(),options_.get_str("CORR_WFN").c_str(),scs_second_order_energy);
+//  fprintf(outfile,"\n    @SCSPT-i@      %-5s%-10s  Energy = %-20.15f",options_.get_str("CORR_ANSATZ").c_str(),options_.get_str("CORR_WFN").c_str(),scs_pseudo_second_order_energy);
 
-  if(options_get_str("PT_ENERGY")=="SECOND_ORDER"){
+  if(options_.get_str("PT_ENERGY")=="SECOND_ORDER"){
     chkpt_wt_etot(second_order_energy);
     fprintf(outfile,"\n\n  Wrote second order energy to checkpoint file");
   }
-  if(options_get_str("PT_ENERGY")=="SCS_SECOND_ORDER"){
+  if(options_.get_str("PT_ENERGY")=="SCS_SECOND_ORDER"){
     chkpt_wt_etot(scs_second_order_energy);
     fprintf(outfile,"\n\n  Wrote spin-component-scaled second order energy to checkpoint file");
   }
-  if(options_get_str("PT_ENERGY")=="PSEUDO_SECOND_ORDER"){
+  if(options_.get_str("PT_ENERGY")=="PSEUDO_SECOND_ORDER"){
     chkpt_wt_etot(pseudo_second_order_energy);
     fprintf(outfile,"\n\n  Wrote pseudo-second order energy to checkpoint file");
   }
-  if(options_get_str("PT_ENERGY")=="SCS_PSEUDO_SECOND_ORDER"){
+  if(options_.get_str("PT_ENERGY")=="SCS_PSEUDO_SECOND_ORDER"){
     chkpt_wt_etot(scs_pseudo_second_order_energy);
     fprintf(outfile,"\n\n  Wrote spin-component-scaled pseudo-second order energy to checkpoint file");
   }
