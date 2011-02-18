@@ -5,10 +5,10 @@ namespace psi{ namespace psimrcc{
 
 void run_psimrcc();
 void transform_integrals();
-void mrccsd();
-void mrpt2();
+void mrccsd(Options &options);
+void mrpt2(Options &options);
 void mrccsd_check();
-void mp2_ccsd();
+void mp2_ccsd(Options &options);
 
 }} /* End Namespaces */
 

@@ -11,7 +11,7 @@ namespace psi{ namespace psimrcc{
 class MP2_CCSD : public CCManyBody
 {
 public:
-  MP2_CCSD();
+  MP2_CCSD(Options &options);
   virtual ~MP2_CCSD();
   void compute_mp2_ccsd_energy();
 private:

@@ -10,9 +10,10 @@
 #include "debugging.h"
 #include <libmoinfo/libmoinfo.h>
 
-extern FILE *outfile;
-
-namespace psi{ namespace psimrcc{
+namespace psi{
+    extern FILE *outfile;
+    namespace psimrcc{
+    extern MOInfo *moinfo;
 
 /**
  * \brief Computes the contribution

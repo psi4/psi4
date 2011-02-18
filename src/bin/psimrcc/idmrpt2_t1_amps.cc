@@ -11,9 +11,9 @@
 #include "blas.h"
 #include "debugging.h"
 
-extern FILE *outfile;
-
-namespace psi{ namespace psimrcc{
+namespace psi{
+    extern FILE *outfile;
+    namespace psimrcc{
 
 /**
  * \brief Computes the contribution

@@ -7,9 +7,10 @@
 #include <functional>
 #include <utility>
 
-extern FILE *outfile;
-
-namespace psi{ namespace psimrcc{
+namespace psi{
+    extern FILE *outfile;
+    namespace psimrcc{
+    extern MOInfo *moinfo;
 
 Hamiltonian::Hamiltonian()
 {

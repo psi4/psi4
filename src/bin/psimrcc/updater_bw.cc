@@ -11,8 +11,10 @@
 extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
+    extern MOInfo *moinfo;
 
-BWUpdater::BWUpdater() : Updater()
+BWUpdater::BWUpdater(Options &options) :
+        Updater(options)
 {
 }
 
@@ -29,8 +31,8 @@ void BWUpdater::update(int cycle,Hamiltonian* heff)
   for(int mu = 0; mu < moinfo->get_nunique(); ++mu){
     int mu_unique = moinfo->get_ref_number(mu,UniqueRefs);
     double denominator_shift = heff->get_eigenvalue() - heff->get_matrix(mu_unique,mu_unique);
-    string shift = to_string(denominator_shift);
-    string mu_str = to_string(mu_unique);
+    std::string shift = to_string(denominator_shift);
+    std::string mu_str = to_string(mu_unique);
     blas->solve("d'2[oo][vv]{" + mu_str + "} += " + shift);
     blas->solve("d'2[oO][vV]{" + mu_str + "} += " + shift);
     blas->solve("d'2[OO][VV]{" + mu_str + "} += " + shift);

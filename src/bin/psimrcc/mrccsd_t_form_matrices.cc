@@ -18,6 +18,7 @@
 extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
+    extern MOInfo *moinfo;
 
 // Creates the matrix T2[ij][a][b] with irreps ordered according to b
 void MRCCSD_T::form_T2_ij_a_b(IndexMatrix* T2_ij_a_b,bool spin1,bool spin2,bool transpose)

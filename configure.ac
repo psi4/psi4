@@ -848,6 +848,7 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libmints/Makefile
           src/lib/libscf_solver/Makefile
           src/lib/libtrans/Makefile
+          src/lib/libtens/Makefile
           src/lib/libparallel/Makefile
           src/lib/libboost_python/Makefile
           src/lib/libboost_regex/Makefile

@@ -23,9 +23,10 @@
 #include "matrix.h"
 #include "sort.h"
 
-extern FILE *outfile;
-
-namespace psi{ namespace psimrcc{
+namespace psi{
+    extern FILE *outfile;
+    namespace psimrcc{
+    extern MOInfo *moinfo;
 
 using namespace std;
 
@@ -33,7 +34,8 @@ using namespace std;
  * Allocate the effective Hamiltonian matrices and eigenvectors
  * @todo wrap the current operations in an init() function
  */
-CCManyBody::CCManyBody()
+CCManyBody::CCManyBody(Options &options):
+        options_(options)
 {
   // Allocate memory for the eigenvector and the effective Hamiltonian
   allocate1(double,zeroth_order_eigenvector,moinfo->get_nrefs());
@@ -465,7 +467,7 @@ double CCManyBody::diagonalize_Heff(int root,int ndets, double** Heff,double*& r
     }
     energy = real[root];
     // Eliminate the triplet solution if required
-    if((options_get_bool("LOCK_SINGLET")==1)&&(ndets==4)){
+    if((options_.get_bool("LOCK_SINGLET")==1)&&(ndets==4)){
       if((fabs(right_eigenvector[0])<5.0e-2)&& (fabs(right_eigenvector[3])<5.0e-2) && ((right_eigenvector[1]/right_eigenvector[2])<-0.5)){
         fprintf(outfile,"\n\tSelecting root %d since original root is a triplet\n",root+1);
         root++;

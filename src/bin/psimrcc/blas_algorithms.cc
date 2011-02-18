@@ -3,12 +3,14 @@
 #include <cstdio>
 
 #include "blas.h"
-#include "debugging.h"
+#include "libtens/debugging.h"
 #include "matrix.h"
 
-extern FILE *outfile;
 
-namespace psi{ namespace psimrcc{
+namespace psi{
+    extern FILE *outfile;
+    namespace psimrcc{
+    extern MOInfo *moinfo;
 
 using namespace std;
 
@@ -84,8 +86,7 @@ void CCBLAS::scale(string& str,int reference,double value)
     iter->second->scale(value);
     return;
   }
-  string err("\nCCBLAS::scale() couldn't find matrix " + matrix_str);
-  print_error(outfile,err.c_str(),__FILE__,__LINE__);
+  throw PSIEXCEPTION("\nCCBLAS::scale() couldn't find matrix " + matrix_str);
 }
 
 void CCBLAS::reduce_spaces(const char* out,const char* in)
@@ -96,7 +97,7 @@ void CCBLAS::reduce_spaces(const char* out,const char* in)
   vector<string>  in_names = moinfo->get_matrix_names(in_str);
   vector<string> out_names = moinfo->get_matrix_names(out_str);
   if(in_names.size()!=out_names.size())
-    print_error(outfile,"CCBLAS::map_spaces, number of references mismatch",__FILE__,__LINE__);
+    throw PSIEXCEPTION("CCBLAS::map_spaces, number of references mismatch");
   for(size_t n = 0; n < in_names.size(); ++n){
     CCMatrix*  in_Matrix = get_Matrix(in_names[n]);
     CCMatrix* out_Matrix = get_Matrix(out_names[n]);
@@ -168,7 +169,7 @@ void CCBLAS::expand_spaces(const char* out,const char* in)
   vector<string>  in_names = moinfo->get_matrix_names(in_str);
   vector<string> out_names = moinfo->get_matrix_names(out_str);
   if(in_names.size()!=out_names.size())
-    print_error(outfile,"CCBLAS::map_spaces, number of references mismatch",__FILE__,__LINE__);
+    throw PSIEXCEPTION("CCBLAS::map_spaces, number of references mismatch");
   for(size_t n = 0; n < in_names.size(); ++n){
     CCMatrix*  in_Matrix = get_Matrix(in_names[n]);
     CCMatrix* out_Matrix = get_Matrix(out_names[n]);

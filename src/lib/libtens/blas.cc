@@ -11,14 +11,18 @@
 #include "index.h"
 #include "matrix.h"
 
-extern FILE *outfile;
-
-namespace psi{ namespace psimrcc{
-
+namespace psi{
+    extern FILE *outfile;
+    namespace psimrcc{
+    extern MOInfo *moinfo;
+    extern MemoryManager *_memory_manager_;
 using namespace std;
 
-CCBLAS::CCBLAS():
-full_in_core(false),work_size(0),buffer_size(0)
+CCBLAS::CCBLAS(Options &options):
+    options_(options),
+    full_in_core(false),
+    work_size(0),
+    buffer_size(0)
 {
   init();
 }
@@ -53,7 +57,7 @@ void CCBLAS::allocate_work()
       if(work[n]!=NULL)
         release1(work[n]);
 
-  for(int n=0;n<options_get_int("NUM_THREADS");n++)
+  for(int n=0;n<options_.get_int("NUM_THREADS");n++)
     work.push_back(NULL);
   // Compute the temporary work space size
   CCIndex* oo_pair = get_index("[oo]");
@@ -70,7 +74,7 @@ void CCBLAS::allocate_work()
     work_size += dimension[2] * dimension[1];
   }
   // Allocate the temporary work space
-  for(int n=0;n<options_get_int("NUM_THREADS");n++){
+  for(int n=0;n<options_.get_int("NUM_THREADS");n++){
     allocate1(double,work[n],work_size);
     zero_arr(work[n],work_size);
   }
@@ -85,7 +89,7 @@ void CCBLAS::allocate_buffer()
       if(buffer[n]!=NULL)
         release1(buffer[n]);
 
-  for(int n=0;n<options_get_int("NUM_THREADS");n++)
+  for(int n=0;n<options_.get_int("NUM_THREADS");n++)
     buffer.push_back(NULL);
   // Compute the temporary buffer space size, 101% of the actual strip size
   buffer_size = static_cast<size_t>(1.01 * CCMatrix::fraction_of_memory_for_buffer *
@@ -94,7 +98,7 @@ void CCBLAS::allocate_buffer()
   // The value used here , 0.05 is also used in
 
   // Allocate the temporary buffer space
-  for(int n=0;n<options_get_int("NUM_THREADS");n++){
+  for(int n=0;n<options_.get_int("NUM_THREADS");n++){
     allocate1(double,buffer[n],buffer_size);
     zero_arr(buffer[n],buffer_size);
   }
@@ -181,7 +185,7 @@ void CCBLAS::add_indices()
   add_index("[off]");
 
   // MP2-CCSD
-  if(options_get_str("CORR_WFN")=="MP2-CCSD"){
+  if(options_.get_str("CORR_WFN")=="MP2-CCSD"){
     add_index("[oav]");
     add_index("[ova]");
     add_index("[avo]");
@@ -192,7 +196,7 @@ void CCBLAS::add_indices()
     add_index("[aav]");
     add_index("[ava]");
   }
-  if(options_get_str("CORR_WFN")!="PT2"){
+  if(options_.get_str("CORR_WFN")!="PT2"){
     add_index("[vvv]");
   }
 
@@ -334,7 +338,7 @@ int CCBLAS::compute_storage_strategy()
     }else{
       fprintf(outfile,"\n    PSIMRCC will store all integrals and some other matrices out-of-core");
       strategy = 2;
-      print_error(outfile,"CCBLAS::compute_storage_strategy(): Strategy #2 is not implemented yet",__FILE__,__LINE__);
+      throw FeatureNotImplemented("CCBLAS::compute_storage_strategy()","Strategy #2",__FILE__,__LINE__);
     }
   }
   sort(integrals.begin(),integrals.end());

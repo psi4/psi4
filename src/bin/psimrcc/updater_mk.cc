@@ -15,11 +15,13 @@
 #include "heff.h"
 #include "updater.h"
 
-extern FILE *outfile;
+namespace psi{
+    extern FILE *outfile;
+    namespace psimrcc{
+    extern MOInfo *moinfo;
 
-namespace psi{ namespace psimrcc{
-
-MkUpdater::MkUpdater() : Updater()
+MkUpdater::MkUpdater(Options &options) :
+        Updater(options)
 {
 }
 
@@ -31,9 +33,9 @@ void MkUpdater::update(int cycle,Hamiltonian* heff)
 {
   // Setup the Tikhonow omega parameter
   double omega = 0;
-  int    tikhonow_max   = options_get_int("TIKHONOW_MAX");
-  double tikhonow_omega = static_cast<double>(options_get_int("TIKHONOW_OMEGA")) /  1000.0;
-  double small_cutoff   = static_cast<double>(options_get_int("SMALL_CUTOFF"))   / 10000.0;
+  int    tikhonow_max   = options_.get_int("TIKHONOW_MAX");
+  double tikhonow_omega = static_cast<double>(options_.get_int("TIKHONOW_OMEGA")) /  1000.0;
+  double small_cutoff   = static_cast<double>(options_.get_int("SMALL_CUTOFF"))   / 10000.0;
 
   if(tikhonow_max == 0){  // Tikhonow always turned on
     omega = tikhonow_omega;
@@ -51,7 +53,7 @@ void MkUpdater::update(int cycle,Hamiltonian* heff)
   blas->solve("d'2[OO][VV]{u}  = d2[OO][VV]{u}");
 
   // Shift the denominators
-  if(options_get_bool("COUPLING_TERMS")){
+  if(options_.get_bool("COUPLING_TERMS")){
     for(int mu = 0; mu < moinfo->get_nunique(); ++mu){
       int mu_unique = moinfo->get_ref_number(mu,UniqueRefs);
       std::string mu_str = to_string(mu_unique);
@@ -93,12 +95,12 @@ void MkUpdater::update(int cycle,Hamiltonian* heff)
 
   for(int i=0;i<moinfo->get_nunique();i++){
     int unique_i = moinfo->get_ref_number(i,UniqueRefs);
-    string i_str = to_string(unique_i);
+    std::string i_str = to_string(unique_i);
     // Form the coupling terms
-    if(options_get_bool("COUPLING_TERMS")){
+    if(options_.get_bool("COUPLING_TERMS")){
       for(int j=0;j<moinfo->get_nrefs();j++){
         int unique_j = moinfo->get_ref_number(j);
-        string j_str = to_string(unique_j);
+        std::string j_str = to_string(unique_j);
 
 //        double term = heff->get_right_eigenvector(j);
 
@@ -127,7 +129,7 @@ void MkUpdater::update(int cycle,Hamiltonian* heff)
     }
 
     // Update t1 for reference i
-    if(not options_get_bool("NOSINGLES")){
+    if(not options_.get_bool("NOSINGLES")){
       blas->solve("t1_delta[o][v]{" + i_str + "}  =   t1_eqns[o][v]{" + i_str + "} / d'1[o][v]{" + i_str + "} - t1[o][v]{" + i_str + "}");
       blas->solve("t1_delta[O][V]{" + i_str + "}  =   t1_eqns[O][V]{" + i_str + "} / d'1[O][V]{" + i_str + "} - t1[O][V]{" + i_str + "}");
 
@@ -136,11 +138,11 @@ void MkUpdater::update(int cycle,Hamiltonian* heff)
     }
     zero_internal_amps();
 
-    if(options_get_bool("COUPLING_TERMS")){
+    if(options_.get_bool("COUPLING_TERMS")){
       // Add the contribution from the other references
       for(int j=0;j<moinfo->get_nrefs();j++){
         int unique_j = moinfo->get_ref_number(j);
-        string j_str = to_string(unique_j);
+        std::string j_str = to_string(unique_j);
 
 //        double term = heff->get_right_eigenvector(j);
 
@@ -278,8 +280,8 @@ void MkUpdater::update(int cycle,Hamiltonian* heff)
     blas->solve("t2_delta[oO][vV]{" + i_str + "} = t2_eqns[oO][vV]{" + i_str + "} / d'2[oO][vV]{" + i_str + "} - t2[oO][vV]{" + i_str + "}");
     blas->solve("t2_delta[OO][VV]{" + i_str + "} = t2_eqns[OO][VV]{" + i_str + "} / d'2[OO][VV]{" + i_str + "} - t2[OO][VV]{" + i_str + "}");
 
-    string damp = to_string(double(options_get_int("DAMPING_FACTOR"))/1000.0);
-    string one_minus_damp = to_string(1.0-double(options_get_int("DAMPING_FACTOR"))/1000.0);
+    std::string damp = to_string(double(options_.get_int("DAMPING_FACTOR"))/1000.0);
+    std::string one_minus_damp = to_string(1.0-double(options_.get_int("DAMPING_FACTOR"))/1000.0);
     blas->solve("t2[oo][vv]{" + i_str + "} = " + one_minus_damp + " t2_eqns[oo][vv]{" + i_str + "} / d'2[oo][vv]{" + i_str + "}");
     blas->solve("t2[oO][vV]{" + i_str + "} = " + one_minus_damp + " t2_eqns[oO][vV]{" + i_str + "} / d'2[oO][vV]{" + i_str + "}");
     blas->solve("t2[OO][VV]{" + i_str + "} = " + one_minus_damp + " t2_eqns[OO][VV]{" + i_str + "} / d'2[OO][VV]{" + i_str + "}");

@@ -23,34 +23,16 @@ namespace psi{ namespace psimrcc{
 
 using namespace std;
 
-void run_psimrcc()
-{
-  blas   = new CCBLAS();
-  trans  = new CCTransform();
-
-  if(options_get_str("CORR_WFN")=="PT2"){
-    mrpt2();
-  }else if(options_get_str("CORR_WFN")=="MP2-CCSD"){
-    mp2_ccsd();
-  }else{
-    mrccsd();
-  }
-
-  delete sorter;
-  delete trans;
-  delete blas;
-}
-
 /*!
  * Runs a MRPT2 and a MRCCSD computation
  * @todo move this code in the CCMRCC class
  */
-void mrccsd()
+void mrccsd(Options & options)
 {
   // Initialize the mp2 module (integrals,fock matrix(ces),denominators)
-  CCMRCC        mrcc;
+  CCMRCC        mrcc(options);
 
-  if(options_get_bool("PERT_CBS") && options_get_bool("PERT_CBS_COUPLING")){
+  if(options.get_bool("PERT_CBS") && options.get_bool("PERT_CBS_COUPLING")){
     mrcc.compute_first_order_amps();
   }
 
@@ -58,15 +40,15 @@ void mrccsd()
   Updater* updater;
 //  if(options_get_str("CORR_ANSATZ")=="SR")
 //    updater = static_cast<Updater*>(new MkUpdater());
-  if(options_get_str("CORR_ANSATZ")=="MK")
-    updater = dynamic_cast<Updater*>(new MkUpdater());
-  if(options_get_str("CORR_ANSATZ")=="BW")
-    updater = dynamic_cast<Updater*>(new BWUpdater());
+  if(options.get_str("CORR_ANSATZ")=="MK")
+    updater = dynamic_cast<Updater*>(new MkUpdater(options));
+  if(options.get_str("CORR_ANSATZ")=="BW")
+    updater = dynamic_cast<Updater*>(new BWUpdater(options));
 
 	// Compute the energy
   mrcc.compute_energy(updater);
 
-  if(options_get_bool("PERT_CBS")){
+  if(options.get_bool("PERT_CBS")){
     mrcc.perturbative_cbs();
   }
 
@@ -76,10 +58,10 @@ void mrccsd()
 /*!
  * Runs a CCSD_MP2 computation
  */
-void mp2_ccsd()
+void mp2_ccsd(Options &options)
 {
   // Initialize the mp2 module (integrals,fock matrix(ces),denominators)
-  MP2_CCSD        mp2_ccsd;
+  MP2_CCSD        mp2_ccsd(options);
 
   // Compute the initial amplitudes and CCSD_MP2 energy
   mp2_ccsd.compute_mp2_ccsd_energy();
@@ -92,12 +74,12 @@ void mp2_ccsd()
 /*!
  * Runs a MRPT2 computation
  */
-void mrpt2()
+void mrpt2(Options &options)
 {
   // Initialize the mp2 module (integrals,fock matrix(ces),denominators)
-  IDMRPT2        idmrpt2;
+  IDMRPT2        idmrpt2(options);
 
-  Updater* updater = dynamic_cast<Updater*>(new MkUpdater());
+  Updater* updater = dynamic_cast<Updater*>(new MkUpdater(options));
 
   // Compute the initial amplitudes and MP2 energy
   idmrpt2.compute_mrpt2_energy(updater);

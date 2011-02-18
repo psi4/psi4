@@ -7,7 +7,7 @@
 extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
-
+    extern MOInfo *moinfo;
 using namespace std;
 
 /**

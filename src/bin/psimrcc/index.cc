@@ -1,3 +1,4 @@
+
 /***************************************************************************
  *  PSIMRCC : Copyright (C) 2007 by Francesco Evangelista and Andrew Simmonett
  *  frank@ccc.uga.edu   andysim@ccc.uga.edu
@@ -12,9 +13,11 @@
 
 #include "index.h"
 
-extern FILE *outfile;
+namespace psi{
+    extern FILE *outfile;
+    namespace psimrcc{
 
-namespace psi{ namespace psimrcc{
+extern MOInfo *moinfo;
 
 using namespace std;
 

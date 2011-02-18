@@ -14,10 +14,11 @@
 
 #include "matrixtmp.h"
 #include "operation.h"
+#include "liboptions/liboptions.h"
 
 #include "index_types.h"
 #include "matrix_types.h"
-#include "types.h"
+//#include "types.h"
 
 namespace psi{ namespace psimrcc{
 
@@ -35,8 +36,11 @@ public:
   typedef std::vector<int>                    intvec;
   typedef std::vector<std::pair<int,int> >    intpairvec;
   typedef std::deque<CCOperation>             OpDeque;
+  typedef std::vector<double*>                ArrayVec;
+  typedef std::map<std::string,double***>     SortMap;
 
-  CCBLAS();
+
+  CCBLAS(Options &options);
   ~CCBLAS();
   // Add routines
   void       add_Matrix(const char* cstr);
@@ -86,6 +90,7 @@ public:
   // These have to be improved
   MatrixMap& get_MatrixMap() {return(matrices);}
 private:
+  Options &options_;
   bool       full_in_core;
   size_t     work_size;
   size_t     buffer_size;

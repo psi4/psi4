@@ -26,9 +26,9 @@
 #include <libutil/libutil.h>
 #include <vector>
 
-extern FILE *infile, *outfile;
-
-namespace psi{ namespace psimrcc{
+namespace psi{
+    extern FILE *outfile;
+    namespace psimrcc{
 
 typedef std::vector<std::vector<int> > vecvecint;
 
@@ -37,7 +37,7 @@ typedef std::vector<std::vector<int> > vecvecint;
 */
 
 class CCIndex{
-  typedef vector<int*>         pIntVec;
+  typedef std::vector<int*>    pIntVec;
   typedef std::vector<size_t>  Size_tVec;
   typedef std::vector<size_t*> pSize_tVec;
 public:

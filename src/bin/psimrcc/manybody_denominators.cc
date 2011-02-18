@@ -19,9 +19,11 @@
 #include "matrix.h"
 #include "sort.h"
 
-extern FILE *outfile;
 
-namespace psi{ namespace psimrcc{
+namespace psi{
+    extern FILE *outfile;
+    namespace psimrcc{
+    extern MOInfo *moinfo;
 
 using namespace std;
 
@@ -35,7 +37,7 @@ void CCManyBody::generate_denominators()
   START_TIMER(1,"Generating Denominators");
 
   bool keep_denominators_in_core = false;
-  if(options_get_str("CORR_WFN")=="PT2")
+  if(options_.get_str("CORR_WFN")=="PT2")
     keep_denominators_in_core = true;
 
   MatrixMap& matrix_map = blas->get_MatrixMap();

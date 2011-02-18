@@ -2,9 +2,9 @@
 #include <libmoinfo/libmoinfo.h>
 #include "algebra_interface.h"
 
-extern FILE *infile, *outfile;
-
-namespace psi{ namespace mcscf{
+namespace psi{
+    extern FILE *outfile;
+ namespace mcscf{
 
 /*
 ** C_DGEMM_12()

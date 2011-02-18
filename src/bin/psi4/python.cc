@@ -59,6 +59,7 @@ namespace psi {
     namespace dcft      { PsiReturnType dcft(Options &);  }
     namespace mcscf     { PsiReturnType mcscf(Options &);  }
 
+    namespace psimrcc   { PsiReturnType psimrcc(Options &);  }
     namespace transqt   { PsiReturnType transqt(Options &);  }
     namespace transqt2  { PsiReturnType transqt2(Options &); }
     namespace ccsort    { PsiReturnType ccsort(Options&);    }
@@ -231,6 +232,13 @@ double py_psi_ccdensity()
 {
     py_psi_prepare_options_for_module("CCDENSITY");
     ccdensity::ccdensity(Process::environment.options);
+    return 0.0;
+}
+
+double py_psi_psimrcc()
+{
+    py_psi_prepare_options_for_module("PSIMRCC");
+    psimrcc::psimrcc(Process::environment.options);
     return 0.0;
 }
 
@@ -479,6 +487,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("dfcc", py_psi_dfcc);
     def("mcscf", py_psi_mcscf);
     def("sapt", py_psi_sapt);
+    def("psimrcc", py_psi_psimrcc);
     def("optking", py_psi_optking);
     def("transqt", py_psi_transqt);
     def("transqt2", py_psi_transqt2);

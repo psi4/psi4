@@ -15,7 +15,7 @@ class MRCCSD_T
 enum TriplesAlgorithm {UnrestrictedTriples,RestrictedTriples,SpinAdaptedTriples};
 public:
   // Constructor and destructor
-  MRCCSD_T(Hamiltonian* h_eff_);
+  MRCCSD_T(Options& options,Hamiltonian* h_eff_);
   ~MRCCSD_T();
 private:
   void startup();
@@ -79,6 +79,8 @@ private:
 
   void build_W_intermediates();
   void check_intruders();
+
+  Options &options_;
 
   int nirreps;
   int nrefs;

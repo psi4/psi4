@@ -13,9 +13,10 @@
 #include "matrix.h"
 #include "operation.h"
 
-extern FILE *outfile;
-
-namespace psi{ namespace psimrcc{
+namespace psi{
+    extern FILE *outfile;
+    namespace psimrcc{
+    extern MOInfo *moinfo;
 
 using namespace std;
 
@@ -84,7 +85,7 @@ void CCOperation::setup_contractions()
       }
     }
     if(B_on_disk && C_on_disk)
-      print_developing(outfile,"Both on disk matrix multiply",__FILE__,__LINE__);
+      throw FeatureNotImplemented("LIBTENS","Both on disk matrix multiply",__FILE__,__LINE__);
 
     //////////////////////////////////////////////////////////
     // Case I. A,B,C are in core. Perform direct a BLAS call
