@@ -301,8 +301,12 @@ shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parse
     // Map of GaussianShells
     map<string, vector<shared_ptr<GaussianShell> > > atomsymbol_to_shell;
 
-    BOOST_FOREACH(map_ss::value_type& i, atomsymbol_to_basisname)
+    bool found = false;
+    for (map_ss::iterator iter = atomsymbol_to_basisname.begin();
+         iter != atomsymbol_to_basisname.end(); /* iteration in loop */)
     {
+        map_ss::value_type& i = *iter;
+
         // For this one check to see if the user provided a basis set
         string name = make_filename(i.second);
 
@@ -315,13 +319,26 @@ shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parse
             // Does the user provided name match what we're looking for
             if (name == bf_path.filename().string()) {
                 fprintf(outfile, "found user basis set file that matches what we need\n");
+
                 // Load in the basis set and remove it from atomsymbol_to_basisname
                 vector<string> file = parser->load_file(bf_path.string());
 
-                // Need to wrap this is a try catch block
-                atomsymbol_to_shell[i.first] = parser->parse(i.first, file);
+                try {
+                    // Need to wrap this is a try catch block
+                    atomsymbol_to_shell[i.first] = parser->parse(i.first, file);
+                    found = true;
+                }
+                catch (BasisSetNotFound& e) {
+                    // This is thrown when load_file fails
+                    fprintf(outfile, "Unable to find ");
+                }
             }
         }
+
+        if (found)
+            atomsymbol_to_basisname.erase(iter++);
+        else
+            ++iter;
     }
 
 //    // Now the tricky logic

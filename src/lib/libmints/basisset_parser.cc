@@ -28,6 +28,20 @@ bool from_string(T& t,
     return !(iss >> f >> t).fail();
 }
 
+BasisSetFileNotFound::BasisSetFileNotFound(string message,
+                                   const char* _file,
+                                   int _line) throw()
+    : PsiException(message, _file, _line)
+{
+    stringstream sstr;
+    sstr << "sanity check failed! " << message;
+    rewrite_msg(sstr.str());
+}
+
+BasisSetFileNotFound::~BasisSetFileNotFound() throw()
+{
+}
+
 BasisSetNotFound::BasisSetNotFound(string message,
                                    const char* _file,
                                    int _line) throw()
@@ -62,7 +76,7 @@ vector<string> BasisSetParser::load_file(const std::string &filename)
     ifstream infile(filename.c_str());
 
     if (!infile)
-        throw PSIEXCEPTION("BasisSetParser::parse: Unable to open basis set file: " + filename);
+        throw BasisSetFileNotFound("BasisSetParser::parse: Unable to open basis set file: " + filename, __FILE__, __LINE__);
 
     while (infile.good()) {
         getline(infile, text);
