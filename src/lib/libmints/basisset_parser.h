@@ -16,6 +16,23 @@ namespace psi {
 
 class BasisSet;
 
+class BasisSetFileNotFound : public PsiException {
+public:
+    /**
+     * Constructor
+     * @param message The message that will be printed by exception
+     * @param file The file that threw the exception (use __FILE__ macro)
+     * @param line The line number that threw the exception (use __LINE__ macro)
+     */
+    BasisSetFileNotFound(
+        std::string message,
+        const char* file,
+        int line
+        ) throw();
+
+    virtual ~BasisSetFileNotFound() throw();
+};
+
 class BasisSetNotFound : public PsiException {
 public:
     /**
