@@ -18,7 +18,7 @@
 using namespace std;
 using namespace psi;
 
-namespace psi { namespace dfcc {
+namespace psi {
 // the third parameter of from_string() should be
 // one of std::hex, std::dec or std::oct
 template <class T>
@@ -623,4 +623,4 @@ void PseudoGrid::parse(const std::string& filename)
 }
 
 
-}}
+}
