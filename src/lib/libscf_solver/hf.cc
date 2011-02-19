@@ -57,11 +57,6 @@ HF::HF(Options& options, shared_ptr<PSIO> psio)
 
 HF::~HF()
 {
-    if (scf_type_ == "PK") {
-        delete[] so2symblk_;
-        delete[] so2index_;
-        delete[] pk_symoffset_;
-    }
 }
 
 void HF::common_init()
@@ -273,7 +268,31 @@ void HF::common_init()
         mints->integrals();
     }
 }
+void HF::finalize()
+{
+    if (scf_type_ == "PK") {
+        delete[] so2symblk_;
+        delete[] so2index_;
+        delete[] pk_symoffset_;
+    }
+    
+    S_.reset();
+    Shalf_.reset();
+    Sphalf_.reset();
+    X_.reset();
+    H_.reset();
+    Dipole_.clear();
+    Quadrupole_.clear();
 
+    // Clean up after DIIS
+    if(initialized_diis_manager_)
+        diis_manager_->delete_diis_file();
+    diis_manager_.reset();
+    initialized_diis_manager_ = false;
+
+    // Close the chkpt
+    psio_->close(PSIF_CHKPT, 1);
+}
 void HF::find_occupation(Vector & evals)
 {
     std::vector<std::pair<double, int> > pairs;

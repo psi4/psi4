@@ -12,7 +12,7 @@ class Options;
 class FittingMetric;
 class SchwarzSieve;
 class TwoBodyAOInt;
-class PseudopotentialInt;
+class PseudospectralInt;
 class PSIO;
 
 namespace scf {
@@ -25,7 +25,7 @@ class PseudospectralHF {
         // Threadsafe (A|mn) integral objects
         std::vector<shared_ptr<TwoBodyAOInt> > eri_;
         // Threadsafe (m|V|n) integral objects
-        std::vector<shared_ptr<PseudopotentialInt> > pot_;
+        std::vector<shared_ptr<PseudospectralInt> > pot_;
         // Inverse of fitting metric (Coulomb side)
         shared_ptr<FittingMetric> Jinv_;
         // X pseudospectral matrix

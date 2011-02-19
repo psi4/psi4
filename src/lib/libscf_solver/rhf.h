@@ -102,6 +102,9 @@ protected:
     void form_domains();
 
     //Some stuff for Ed Hohenstein's SAPT code
+    // TODO: This must be removed for a conforming SCF module
+    // The SAPT driver should save the three references and extract info from
+    // That point
     void save_sapt_info();
 
     //SAD Guess and propagation
@@ -117,15 +120,14 @@ protected:
     bool diis();
     void allocate_PK();
 
-    //DOWN FOR MAINTENANCE
-    //void save_RHF_grid(Options &options, shared_ptr<BasisSet>  bas, SharedMatrix D, SharedMatrix C);
-    //double *getCartesianGridExtents(Options &options, shared_ptr<Molecule> m);
-    //int* getCartesianGridResolution(Options &options);
-
     bool test_convergency();
     void save_information();
 
     void common_init();
+
+    // Finalize memory/files
+    virtual void finalize();
+
 public:
     RHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
     RHF(Options& options, shared_ptr<PSIO> psio);

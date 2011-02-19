@@ -1,5 +1,5 @@
-#ifndef _psi_src_lib_libmints_pseudopotential_h_
-#define _psi_src_lib_libmints_pseudopotential_h_
+#ifndef _psi_src_lib_libmints_pseudospectral_h_
+#define _psi_src_lib_libmints_pseudospectral_h_
 
 #include <vector>
 #include <boost/shared_ptr.hpp>
@@ -16,10 +16,10 @@ namespace psi {
 
 /*! \ingroup MINTS
  *  \class PotentialInt
- *  \brief Computes pseudopotential integrals.
+ *  \brief Computes pseudospectral integrals.
  * Use an IntegralFactory to create this object.
  */
-class PseudopotentialInt : public OneBodyAOInt
+class PseudospectralInt : public OneBodyAOInt
 {
 
     /// Computes integrals between two shell objects.
@@ -38,8 +38,8 @@ protected:
 
 public:
     /// Constructor
-    PseudopotentialInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, int deriv=0);
-    ~PseudopotentialInt();
+    PseudospectralInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, int deriv=0);
+    ~PseudospectralInt();
 
     /// Computes integrals between two shells.
     void compute_shell_deriv1(int, int);

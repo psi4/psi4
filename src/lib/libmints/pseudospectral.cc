@@ -9,7 +9,7 @@
 using namespace psi;
 
 // Initialize potential_recur_ to +1 basis set angular momentum
-PseudopotentialInt::PseudopotentialInt(std::vector<SphericalTransform>& st, shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2, int deriv) :
+PseudospectralInt::PseudospectralInt(std::vector<SphericalTransform>& st, shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2, int deriv) :
     OneBodyAOInt(st, bs1, bs2, deriv), potential_recur_(bs1->max_am()+1, bs2->max_am()+1),
     potential_deriv_recur_(bs1->max_am()+2, bs2->max_am()+2)
 {
@@ -31,18 +31,18 @@ PseudopotentialInt::PseudopotentialInt(std::vector<SphericalTransform>& st, shar
     buffer_ = new double[maxnao1*maxnao2];
 }
 
-PseudopotentialInt::~PseudopotentialInt()
+PseudospectralInt::~PseudospectralInt()
 {
     delete[] buffer_;
 }
 
-void PseudopotentialInt::compute_shell_deriv1(int sh1, int sh2)
+void PseudospectralInt::compute_shell_deriv1(int sh1, int sh2)
 {
     compute_pair_deriv1(bs1_->shell(sh1), bs2_->shell(sh2));
 }
 
 // The engine only supports segmented basis sets
-void PseudopotentialInt::compute_pair(const shared_ptr<GaussianShell>& s1,
+void PseudospectralInt::compute_pair(const shared_ptr<GaussianShell>& s1,
                                 const shared_ptr<GaussianShell>& s2)
 {
     int ao12;
@@ -128,7 +128,7 @@ void PseudopotentialInt::compute_pair(const shared_ptr<GaussianShell>& s1,
                             int iind = l1 * ixm + m1 * iym + n1 * izm;
                             int jind = l2 * jxm + m2 * jym + n2 * jzm;
 
-                            buffer_[ao12++] += -vi[iind][jind][0] * over_pf;
+                            buffer_[ao12++] += vi[iind][jind][0] * over_pf;
 
 //                            fprintf(outfile, "ao12=%d, vi[%d][%d][0] = %20.14f, over_pf = %20.14f, Z = %f\n", ao12-1, iind, jind, vi[iind][jind][0], over_pf, Z);
                         }
@@ -140,7 +140,7 @@ void PseudopotentialInt::compute_pair(const shared_ptr<GaussianShell>& s1,
 }
 
 // The engine only supports segmented basis sets
-void PseudopotentialInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2)
+void PseudospectralInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2)
 {
     int ao12;
     int am1 = s1->am();

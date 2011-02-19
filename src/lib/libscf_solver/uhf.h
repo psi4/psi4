@@ -45,6 +45,8 @@ protected:
     void save_information();
 
     void common_init();
+    // Finalize memory/files
+    virtual void finalize();
 
     void compute_multipole();
 public:

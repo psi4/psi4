@@ -54,6 +54,8 @@ protected:
     bool test_convergency();
 
     void save_information();
+    // Finalize memory/files
+    virtual void finalize();
 
     void common_init();
 public:

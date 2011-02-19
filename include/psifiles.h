@@ -52,6 +52,9 @@
 #define PSIF_LIBDIIS           64
 // Storage file for DFT/pseudospectral grid
 #define PSIF_DFT_GRID          65
+// DFCC 3-index files
+#define PSIF_DF_TENSOR         66 
+#define PSIF_PS_TENSOR         67 
 
 #define PSIF_TPDM_PRESORT      71
 #define PSIF_MO_TEI            72
