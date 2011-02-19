@@ -9,7 +9,7 @@ using namespace psi;
 namespace psi { namespace dfcc {
 
 CC::CC(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
-  : Wavefunction(options, psio, chkpt) 
+  : Wavefunction(options, psio, chkpt)
 {
   get_params();
   get_ribasis();
@@ -26,12 +26,12 @@ void CC::get_options()
 void CC::get_params()
 {
   // Init with checkpoint until Rob gets bitchy
-  // RP: I'm bitchy. But not a bitch unless you want chinese food. 
+  // RP: I'm bitchy. But not a bitch unless you want chinese food.
   // MO basis info
   nirrep_ = chkpt_->rd_nirreps();
 
   if (nirrep_ != 1)
-    throw PsiException("You want symmetry? Try ccenergy", __FILE__, 
+    throw PsiException("You want symmetry? Try ccenergy", __FILE__,
       __LINE__);
 
   int *clsdpi_ = new int[8];
@@ -52,7 +52,7 @@ void CC::get_params()
   nfvir_ = frzvpi_[0];
   naocc_ = clsdpi_[0]-frzcpi_[0];
   navir_ = orbspi_[0]-clsdpi_[0]-frzvpi_[0];
-  namo_ = navir_ + naocc_; 
+  namo_ = navir_ + naocc_;
 
   delete[] clsdpi_;
   delete[] orbspi_;
@@ -66,10 +66,10 @@ void CC::get_params()
 
   evals_ = shared_ptr<Vector>(new Vector("Epsilon (full)",nmo_));
   evalsp_ = evals_->pointer();
-  memcpy(static_cast<void*> (evalsp_), static_cast<void*> (evals_t), nmo_*sizeof(double));   
+  memcpy(static_cast<void*> (evalsp_), static_cast<void*> (evals_t), nmo_*sizeof(double));
   C_ = shared_ptr<Matrix>(new Matrix("C (full)", nso_, nmo_));
   Cp_ = C_->pointer();
-  memcpy(static_cast<void*> (Cp_[0]), static_cast<void*> (C_t[0]), nmo_*nso_*sizeof(double));   
+  memcpy(static_cast<void*> (Cp_[0]), static_cast<void*> (C_t[0]), nmo_*nso_*sizeof(double));
 
   // Convenience matrices (may make it easier on the helper objects)
   // ...because Rob is a pussy
@@ -84,22 +84,21 @@ void CC::get_params()
   C_avir_ = shared_ptr<Matrix>(new Matrix("C (Active Virtual)", nso_, navir_));
   C_avirp_ = C_avir_->pointer();
 
-  memcpy(static_cast<void*> (evals_aoccp_), static_cast<void*> (&evals_t[nfocc_]), naocc_*sizeof(double));   
-  memcpy(static_cast<void*> (evals_avirp_), static_cast<void*> (&evals_t[nocc_]), navir_*sizeof(double));  
+  memcpy(static_cast<void*> (evals_aoccp_), static_cast<void*> (&evals_t[nfocc_]), naocc_*sizeof(double));
+  memcpy(static_cast<void*> (evals_avirp_), static_cast<void*> (&evals_t[nocc_]), navir_*sizeof(double));
 
-  for (int m = 0; m < nso_; m++) { 
-    memcpy(static_cast<void*> (C_aoccp_[m]), static_cast<void*> (&C_t[m][nfocc_]), naocc_*sizeof(double));   
-    memcpy(static_cast<void*> (C_avirp_[m]), static_cast<void*> (&C_t[m][nocc_]), naocc_*sizeof(double));   
+  for (int m = 0; m < nso_; m++) {
+    memcpy(static_cast<void*> (C_aoccp_[m]), static_cast<void*> (&C_t[m][nfocc_]), naocc_*sizeof(double));
+    memcpy(static_cast<void*> (C_avirp_[m]), static_cast<void*> (&C_t[m][nocc_]), naocc_*sizeof(double));
   }
 
   free(evals_t);
-  free_block(C_t); 
+  free_block(C_t);
 }
 
 void CC::get_ribasis()
 {
-  shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(
-    options_.get_str("BASIS_PATH")));
+  shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
   ribasis_ = BasisSet::construct(parser, molecule_, options_.get_str(
     "RI_BASIS_CC"));
   zero_ = BasisSet::zero_ao_basis_set();

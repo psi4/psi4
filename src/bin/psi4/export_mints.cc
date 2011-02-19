@@ -24,7 +24,7 @@ shared_ptr<MatrixFactory> get_matrix_factory()
     }
 
     // Read in the basis set
-    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(Process::environment.options.get_str("BASIS_PATH")));
+    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser);
     shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, Process::environment.options.get_str("BASIS"));
     shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
     shared_ptr<SOBasisSet> sobasis(new SOBasisSet(basis, fact));
@@ -242,7 +242,9 @@ void export_mints()
     typedef void (BasisSet::*basis_print_out)() const;
     class_<BasisSet, shared_ptr<BasisSet>, boost::noncopyable>("BasisSet", no_init).
             def("print_out", basis_print_out(&BasisSet::print)).
-            def("print_detail_out", basis_print_out(&BasisSet::print_detail));
+            def("print_detail_out", basis_print_out(&BasisSet::print_detail)).
+            def("make_filename", &BasisSet::make_filename).
+            staticmethod("make_filename");
 
     class_<SOBasisSet, shared_ptr<SOBasisSet>, boost::noncopyable>("SOBasisSet", no_init).
             def("petite_list", &SOBasisSet::petitelist);

@@ -2,6 +2,7 @@
 #define psi_include_psi4_dec_h
 
 #include <string>
+#include <list>
 //#include x<libutil/libutil.h>
 #include <liboptions/liboptions.h>
 #include <exception.h>
@@ -16,7 +17,7 @@ namespace psi {
   enum PsiReturnType {Success, Failure, Balk, EndLoop};
 
   extern FILE *outfile;
-  extern PSIO *psio;
+//  extern PSIO *psio;
   extern char *psi_file_prefix;
   extern bool verbose;
 
@@ -63,6 +64,11 @@ namespace psi {
 
           /// Map containing current energies
           std::map<std::string, double> globals;
+
+          /** User specified basis files.
+           *  These are specific files:  ~/basis/dz.gbs, ~/basis/tz.gbs
+           */
+          std::list<std::string> user_basis_files;
 
           /// Number of threads per process
           int get_n_threads() const {return nthread_; }

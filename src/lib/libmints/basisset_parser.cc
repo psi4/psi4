@@ -6,6 +6,7 @@
 #include <boost/xpressive/xpressive.hpp>
 #include <boost/xpressive/regex_actions.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/trim.hpp>
 
 #include <cstdio>
 #include <fstream>
@@ -27,32 +28,60 @@ bool from_string(T& t,
     return !(iss >> f >> t).fail();
 }
 
-BasisSetParser::BasisSetParser(const std::string& _searchpath)
-   : searchpath_(_searchpath)
+BasisSetNotFound::BasisSetNotFound(string message,
+                                   const char* _file,
+                                   int _line) throw()
+    : PsiException(message, _file, _line)
 {
-    // If the search path is empty use either PSIDATADIR or INSTALLEDPSIDATADIR
-    if (searchpath_.empty()) {
-        searchpath_ = Process::environment("PSIDATADIR") + "/basis";
-    }
+    stringstream sstr;
+    sstr << "sanity check failed! " << message;
+    rewrite_msg(sstr.str());
+}
+
+BasisSetNotFound::~BasisSetNotFound() throw()
+{
+}
+
+BasisSetParser::BasisSetParser()
+{
 }
 
 BasisSetParser::~BasisSetParser()
 {
 }
 
-void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vector<string> &basisnames)
+vector<string> BasisSetParser::load_file(const std::string &filename)
 {
-    // Obtain hold of molecule object from the basis set, we'll need to walk through this
-    shared_ptr<Molecule> molecule = basisSet->molecule();
+    // Load in entire file.
+    vector<string> lines;
 
-    // Ensure that the number of atoms match the number of basis names
-    if (molecule->natom() != basisnames.size()) {
-        fprintf(outfile, "Gaussian94BasisSetParser::parse: Number of atoms does not match number of basis set names.\n");
-        fprintf(outfile, "molecule->natom() = %d     basisnames.size() = %lu\n", molecule->natom(), basisnames.size());
-        fflush(outfile);
-        throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Number of atoms does not match number of basis set names.");
+    // temp variable
+    string text;
+
+    // Stream to use
+    ifstream infile(filename.c_str());
+
+    if (!infile)
+        throw PSIEXCEPTION("BasisSetParser::parse: Unable to open basis set file: " + filename);
+
+    while (infile.good()) {
+        getline(infile, text);
+        lines.push_back(text);
     }
 
+    return lines;
+}
+
+vector<string> BasisSetParser::string_to_vector(const std::string &data)
+{
+    vector<string> lines;
+    boost::split(lines, data, boost::is_any_of("\n"));
+    return lines;
+}
+
+std::vector<boost::shared_ptr<GaussianShell> >
+Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::string> &lines)
+{
     // Regular expressions that we'll be checking for.
     regex cartesian("^cartesian", regbase::icase);
     regex spherical("^spherical", regbase::icase);
@@ -76,267 +105,217 @@ void Gaussian94BasisSetParser::parse(shared_ptr<BasisSet>& basisSet, const vecto
     // Hold the result of a regex_match
     smatch what;
 
-    for (int atom=0; atom<molecule->natom(); ++atom) {
-        // Basis type.
-        GaussianType gaussian_type = Pure;
+    // Basis type.
+    GaussianType gaussian_type = Pure;
 
-        // Pull atomic center location
-        Vector3 center = molecule->xyz(atom);
+    // Need a dummy center for the shell.
+    Vector3 center;
 
-        // Modify the name of the basis set to generate a filename: STO-3G -> sto-3g
-        string basisname = basisnames[atom];
-        // First make it lower case
-        transform(basisname.begin(), basisname.end(), basisname.begin(), ::tolower);
+    vector<shared_ptr<GaussianShell> > shell_list;
 
-        string format_underscore("_"); // empty string
-        // Replace all '(' with '_'
-        xpressive::sregex match_format = xpressive::as_xpr("(");
-        basisname = regex_replace(basisname, match_format, format_underscore);
+    int lineno = 0;
+    bool found = false;
 
-        // Replace all ')' with '_'
-        match_format = xpressive::as_xpr(")");
-        basisname = regex_replace(basisname, match_format, format_underscore);
+    while (lineno < lines.size()) {
+        string line = lines[lineno++];
 
-        // Replace all ',' with '_'
-        match_format = xpressive::as_xpr(",");
-        basisname = regex_replace(basisname, match_format, format_underscore);
+        // Ignore blank lines
+        if (line.empty())
+            continue;
 
-        // Replace all '*' with 's'
-        match_format = xpressive::as_xpr("*");
-        string format_star("s");
-        basisname = regex_replace(basisname, match_format, format_star);
-
-        // Replace all '+' with 'p'
-        match_format = xpressive::as_xpr("+");
-        string format_plus("p");
-        basisname = regex_replace(basisname, match_format, format_plus);
-
-//        cout << " basisname with '-' removed: " << basisname << endl;
-        string basis_filename = searchpath() + "/" + basisname + ".gbs";
-//        cout << " will attempt to read from: " << basis_filename << endl;
-
-        // Load in entire file.
-        vector<string> lines;
-        string text;
-        ifstream infile(basis_filename.c_str());
-        if (!infile)
-            throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to open basis set file: " + basis_filename);
-        while (infile.good()) {
-            getline(infile, text);
-            lines.push_back(text);
+        // Look for Cartesian or Spherical
+        if (regex_match(line, what, cartesian)) {
+            gaussian_type = Cartesian;
+            if (Process::environment.options.exists("PUREAM") && Process::environment.options.get_global("PUREAM").has_changed()) {
+                gaussian_type = ((Process::environment.options.get_global("PUREAM").to_integer()) ? Pure : Cartesian);
+            }
+            continue;
+        } else if (regex_match(line, what, spherical)) {
+            gaussian_type = Pure;
+            if (Process::environment.options.exists("PUREAM") && Process::environment.options.get_global("PUREAM").has_changed()) {
+                gaussian_type = ((Process::environment.options.get_global("PUREAM").to_integer()) ? Pure : Cartesian);
+            }
+            continue;
         }
 
-        int lineno = 0;
-        bool found = false;
-        while (lineno < lines.size()) {
-            string line = lines[lineno++];
+        // Do some matches
+        if (regex_match(line, what, comment)) {
+            continue;
+        }
+        if (regex_match(line, what, separator)) {
+            continue;
+        }
 
-            // Spit out the line for debugging.
-//            cout << line << endl;
+        // Match: H    0
+        // or:    H    O...     0
+        if (regex_match(line, what, atom_array)) {
 
-            // Ignore blank lines
-            if (line.empty())
-                continue;
+            // Check the captures and see if this basis set is for the atom we need.
+            found = false;
+            if (iequals(symbol, what[1].str())) {
+                found = true;
 
-            // Look for Cartesian or Spherical
-            if (regex_match(line, what, cartesian)) {
-                gaussian_type = Cartesian;
-                if (Process::environment.options.exists("PUREAM") && Process::environment.options.get_global("PUREAM").has_changed()) {
-                    gaussian_type = ((Process::environment.options.get_global("PUREAM").to_integer()) ? Pure : Cartesian);
-                }
-                continue;
-            } else if (regex_match(line, what, spherical)) {
-                gaussian_type = Pure;
-                if (Process::environment.options.exists("PUREAM") && Process::environment.options.get_global("PUREAM").has_changed()) {
-                    gaussian_type = ((Process::environment.options.get_global("PUREAM").to_integer()) ? Pure : Cartesian);
-                }
-                continue;
-            }
+                // Read in the next line
+                line = lines[lineno++];
 
-            // Do some matches
-            if (regex_match(line, what, comment)) {
-//                cout << " matched a comment line.\n";
-                continue;
-            }
-            if (regex_match(line, what, separator)) {
-//                cout << " matched a separator line.\n";
-                continue;
-            }
-            // Match: H    0
-            // or:    H    O...     0
-            if (regex_match(line, what, atom_array)) {
-//                cout << " matched a atom array line.\n";
-//                cout << " what.captures(1)" << what[1].str() << "\n";
+                // Need to do the following until we match a "****" which is the end of the basis set
+                while (!regex_match(line, what, separator)) {
+                    // Match shell information
+                    if (regex_match(line, what, shell)) {
+                        string shell_type(what[1].first, what[1].second);
+                        std::transform(shell_type.begin(), shell_type.end(), shell_type.begin(), ::toupper);
+                        int nprimitive;
+                        double scale;
+                        double exponent, contraction;
 
-                // Check the captures and see if this basis set is for the atom we need.
-                found = false;
-                if (iequals(molecule->label(atom), what[1].str())) {
-                    found = true;
+                        if (!from_string<int>(nprimitive, what[2], std::dec))
+                            throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to convert number of primitives:\n" + line);
+                        if (!from_string<double>(scale, what[3], std::dec))
+                            throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to convert scale factor:\n" + line);
 
-//                    cout << "found\n";
+                        if (shell_type.size() == 1) {
+                            int am = (int)shell_to_am[shell_type[0] - 'A'];
 
-                    // Read in the next line
-                    line = lines[lineno++];
+                            double *exponents = new double[nprimitive];
+                            double *contractions = new double[nprimitive];
 
-                    // Need to do the following until we match a "****" which is the end of the basis set
-                    while (!regex_match(line, what, separator)) {
-                        // Match shell information
-                        if (regex_match(line, what, shell)) {
-                            string shell_type(what[1].first, what[1].second);
-                            std::transform(shell_type.begin(), shell_type.end(), shell_type.begin(), ::toupper);
-                            int nprimitive;
-                            double scale;
-                            double exponent, contraction;
+                            for (int p=0; p<nprimitive; ++p) {
+                                line = lines[lineno++];
 
-                            if (!from_string<int>(nprimitive, what[2], std::dec))
-                                throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to convert number of primitives:\n" + line);
-                            if (!from_string<double>(scale, what[3], std::dec))
-                                throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to convert scale factor:\n" + line);
-
-                            if (shell_type.size() == 1) {
-                                int am = (int)shell_to_am[shell_type[0] - 'A'];
-
-                                double *exponents = new double[nprimitive];
-                                double *contractions = new double[nprimitive];
-
-                                for (int p=0; p<nprimitive; ++p) {
-                                    line = lines[lineno++];
-
-                                    int idx;
-                                    while((idx=line.find_first_of('D')) >= 0 ) {
-                                      line.replace( idx, 1, "e" );
-                                    }
-                                    while((idx=line.find_first_of('d')) >= 0 ) {
-                                      line.replace( idx, 1, "e" );
-                                    }
-
-                                    // Must match primitives1; will work on the others later
-                                    if (!regex_match(line, what, primitives1))
-                                        throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to match an exponent with one contraction:\n" + line);
-
-                                    if (!from_string<double>(exponent, what[1], std::dec))
-                                        throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to convert exponent:\n" + line);
-                                    if (!from_string<double>(contraction, what[2], std::dec))
-                                        throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to convert contraction:\n" + line);
-
-                                    // Scale the contraction
-                                    contraction *= scale;
-
-                                    // Save the information.
-                                    exponents[p] = exponent;
-                                    contractions[p] = contraction;
+                                int idx;
+                                while((idx=line.find_first_of('D')) >= 0 ) {
+                                    line.replace( idx, 1, "e" );
+                                }
+                                while((idx=line.find_first_of('d')) >= 0 ) {
+                                    line.replace( idx, 1, "e" );
                                 }
 
-//                                printf("Adding new shell. nprimitive = %d\n", nprimitive);
-                                // We have a full shell, push it to the basis set
-                                shared_ptr<GaussianShell> new_shell(new GaussianShell);
-                                new_shell->init(nprimitive,
-                                                exponents,
-                                                am,
-                                                gaussian_type,
-                                                contractions,
-                                                atom,
-                                                center,
-                                                0);
-                                new_shell->normalize_shell();
-                                basisSet->shells_.push_back(new_shell);
+                                // Must match primitives1; will work on the others later
+                                if (!regex_match(line, what, primitives1))
+                                    throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to match an exponent with one contraction:\n" + line);
 
-                                delete[] exponents;
-                                delete[] contractions;
+                                if (!from_string<double>(exponent, what[1], std::dec))
+                                    throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to convert exponent:\n" + line);
+                                if (!from_string<double>(contraction, what[2], std::dec))
+                                    throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to convert contraction:\n" + line);
+
+                                // Scale the contraction
+                                contraction *= scale;
+
+                                // Save the information.
+                                exponents[p] = exponent;
+                                contractions[p] = contraction;
                             }
-                            else if (shell_type.size() == 2) {
-                                // This is to handle instances of SP, PD, DF, FG, ...
-                                int am1 = (int)shell_to_am[shell_type[0] - 'A'];
-                                int am2 = (int)shell_to_am[shell_type[1] - 'A'];
 
-                                double *exponents = new double[nprimitive];
-                                double *contractions1 = new double[nprimitive];
-                                double *contractions2 = new double[nprimitive];
+                            //                                printf("Adding new shell. nprimitive = %d\n", nprimitive);
+                            // We have a full shell, push it to the basis set
+                            shared_ptr<GaussianShell> new_shell(new GaussianShell);
+                            new_shell->init(nprimitive,
+                                            exponents,
+                                            am,
+                                            gaussian_type,
+                                            contractions,
+                                            0,
+                                            center,
+                                            0);
+                            new_shell->normalize_shell();
+                            shell_list.push_back(new_shell);
 
-                                for (int p=0; p<nprimitive; ++p) {
-                                    line = lines[lineno++];
-
-                                    int idx;
-                                    while((idx=line.find_first_of('D')) >= 0 ) {
-                                      line.replace( idx, 1, "e" );
-                                    }
-                                    while((idx=line.find_first_of('d')) >= 0 ) {
-                                      line.replace( idx, 1, "e" );
-                                    }
-
-                                    // Must match primitivies2;
-                                    if (!regex_match(line, what, primitives2))
-                                        throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to match an exponent with two contractions:\n" + line);
-
-                                    if (!from_string<double>(exponent, what[1], std::dec))
-                                        throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to convert exponent:\n" + line);
-                                    if (!from_string<double>(contraction, what[2], std::dec))
-                                        throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to convert first contraction:\n" + line);
-
-                                    // Scale the contraction
-                                    contraction *= scale;
-
-                                    // Save the information
-                                    exponents[p] = exponent;
-                                    contractions1[p] = contraction;
-
-                                    // Do the other contraction
-                                    if (!from_string<double>(contraction, what[3], std::dec))
-                                        throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to convert second contraction:\n" + line);
-
-                                    // Scale the contraction
-                                    contraction *= scale;
-
-                                    // Save the information
-                                    contractions2[p] = contraction;
-                                }
-
-//                                printf("Adding 2 new shells. nprimitive = %d\n", nprimitive);
-                                shared_ptr<GaussianShell> new_shell(new GaussianShell);
-                                new_shell->init(nprimitive,
-                                                exponents,
-                                                am1,
-                                                gaussian_type,
-                                                contractions1,
-                                                atom,
-                                                center,
-                                                0);
-                                new_shell->normalize_shell();
-                                basisSet->shells_.push_back(new_shell);
-
-                                new_shell = shared_ptr<GaussianShell>(new GaussianShell);
-                                new_shell->init(nprimitive,
-                                                exponents,
-                                                am2,
-                                                gaussian_type,
-                                                contractions2,
-                                                atom,
-                                                center,
-                                                0);
-                                new_shell->normalize_shell();
-                                basisSet->shells_.push_back(new_shell);
-
-                                delete[] exponents;
-                                delete[] contractions1;
-                                delete[] contractions2;
-                            }
-                            else {
-                                throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to parse basis sets with spd, or higher grouping\n");
-                            }
-                        } else {
-                            throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Expected shell information, but got:\n" + line);
+                            delete[] exponents;
+                            delete[] contractions;
                         }
-                        line = lines[lineno++];
+                        else if (shell_type.size() == 2) {
+                            // This is to handle instances of SP, PD, DF, FG, ...
+                            int am1 = (int)shell_to_am[shell_type[0] - 'A'];
+                            int am2 = (int)shell_to_am[shell_type[1] - 'A'];
+
+                            double *exponents = new double[nprimitive];
+                            double *contractions1 = new double[nprimitive];
+                            double *contractions2 = new double[nprimitive];
+
+                            for (int p=0; p<nprimitive; ++p) {
+                                line = lines[lineno++];
+
+                                int idx;
+                                while((idx=line.find_first_of('D')) >= 0 ) {
+                                    line.replace( idx, 1, "e" );
+                                }
+                                while((idx=line.find_first_of('d')) >= 0 ) {
+                                    line.replace( idx, 1, "e" );
+                                }
+
+                                // Must match primitivies2;
+                                if (!regex_match(line, what, primitives2))
+                                    throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to match an exponent with two contractions:\n" + line);
+
+                                if (!from_string<double>(exponent, what[1], std::dec))
+                                    throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to convert exponent:\n" + line);
+                                if (!from_string<double>(contraction, what[2], std::dec))
+                                    throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to convert first contraction:\n" + line);
+
+                                // Scale the contraction
+                                contraction *= scale;
+
+                                // Save the information
+                                exponents[p] = exponent;
+                                contractions1[p] = contraction;
+
+                                // Do the other contraction
+                                if (!from_string<double>(contraction, what[3], std::dec))
+                                    throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to convert second contraction:\n" + line);
+
+                                // Scale the contraction
+                                contraction *= scale;
+
+                                // Save the information
+                                contractions2[p] = contraction;
+                            }
+
+                            //                                printf("Adding 2 new shells. nprimitive = %d\n", nprimitive);
+                            shared_ptr<GaussianShell> new_shell(new GaussianShell);
+                            new_shell->init(nprimitive,
+                                            exponents,
+                                            am1,
+                                            gaussian_type,
+                                            contractions1,
+                                            0,
+                                            center,
+                                            0);
+                            new_shell->normalize_shell();
+                            shell_list.push_back(new_shell);
+
+                            new_shell = shared_ptr<GaussianShell>(new GaussianShell);
+                            new_shell->init(nprimitive,
+                                            exponents,
+                                            am2,
+                                            gaussian_type,
+                                            contractions2,
+                                            0,
+                                            center,
+                                            0);
+                            new_shell->normalize_shell();
+                            shell_list.push_back(new_shell);
+
+                            delete[] exponents;
+                            delete[] contractions1;
+                            delete[] contractions2;
+                        }
+                        else {
+                            throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to parse basis sets with spd, or higher grouping\n");
+                        }
+                    } else {
+                        throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Expected shell information, but got:\n" + line);
                     }
-                    break;
+                    line = lines[lineno++];
                 }
+                break;
             }
         }
-        if (found == false)
-            throw PSIEXCEPTION("Gaussian94BasisSetParser::parser: Unable to find the basis set for " + molecule->label(atom));
     }
+    if (found == false)
+        throw BasisSetNotFound("Gaussian94BasisSetParser::parser: Unable to find the basis set for " + symbol, __FILE__, __LINE__);
 
-    // Have the basis set object refresh its internal data.
-    basisSet->refresh();
+    // The constructor, or the caller, should refresh the basis set.
+    return shell_list;
 }
 

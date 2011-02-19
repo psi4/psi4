@@ -3,11 +3,35 @@
 
 #include <vector>
 #include <string>
-#include <boost/shared_ptr.hpp>
+#include <psi4-dec.h>
+#include "gshell.h"
+
+// Forward declare boost shared_ptr
+namespace boost {
+template<class T> class shared_ptr;
+
+}
 
 namespace psi {
 
-    class BasisSet;
+class BasisSet;
+
+class BasisSetNotFound : public PsiException {
+public:
+    /**
+     * Constructor
+     * @param message The message that will be printed by exception
+     * @param file The file that threw the exception (use __FILE__ macro)
+     * @param line The line number that threw the exception (use __LINE__ macro)
+     */
+    BasisSetNotFound(
+        std::string message,
+        const char* file,
+        int line
+        ) throw();
+
+    virtual ~BasisSetNotFound() throw();
+};
 
 /*! @ingroup MINTS
     @class BasisSetParser
@@ -17,30 +41,33 @@ namespace psi {
 */
 class BasisSetParser
 {
-    //! Directory to start in when looking for basis set files. Will be PSIDATADIR if set, otherwise INSTALLPSIDATADIR.
-    std::string searchpath_;
 public:
-    /** Constructor.
-     *  @param searchpath Directory to start in when searching for basis set files.
-     */
-    BasisSetParser(const std::string& _searchpath = "");
+    BasisSetParser();
     virtual ~BasisSetParser();
 
-    /** Returns the directory to start looking in for basis set files.
-     *
-     *  Will be what the user provided into the constructor otherwise it will be PSIDATADIR if set, or INSTALLPSIDATADIR.
-     *  @return Directory path.
-     */
-    const std::string searchpath() const { return searchpath_; }
+    //! Load and return the file to be used by parse.
+    std::vector<std::string> load_file(const std::string& filename);
+
+    //! Take a multiline string and convert it to a vector of strings.
+    std::vector<std::string> string_to_vector(const std::string& data);
+
     /**
-     * Takes a basis set and the molecule associated with it and
-     * reads in the basis set information. Just basic shell information
-     * is to be constructed. The BasisSet object itself is responsible
-     * for symmetry adaptation.
-     * @param basisset Basis set object to be modified with the information.
-     * @param basisnames Array of basis set names. One basis set name for each atom.
+     * Given a string, parse for the basis set needed for atom.
+     * @param basisset object to add to
+     * @param atom atom index to look for in basisset->molecule()
+     * @param dataset data set to look through
      */
-    virtual void parse(boost::shared_ptr<BasisSet> &basisset, const std::vector<std::string> &basisnames) = 0;
+    virtual std::vector<boost::shared_ptr<GaussianShell> > parse(const std::string& symbol, const std::string& dataset) {
+        return parse(symbol, string_to_vector(dataset));
+    }
+
+    /**
+     * Given a string, parse for the basis set needed for atom.
+     * @param basisset object to add to
+     * @param atom atom index to look for in basisset->molecule()
+     * @param dataset data set to look through
+     */
+    virtual std::vector<boost::shared_ptr<GaussianShell> > parse(const std::string& symbol, const std::vector<std::string>& dataset) = 0;
 };
 
 /*! \class Gaussian94BasisSetParser
@@ -49,9 +76,9 @@ public:
 class Gaussian94BasisSetParser : public BasisSetParser
 {
 public:
-    Gaussian94BasisSetParser(const std::string& _searchpath = "") : BasisSetParser(_searchpath) {}
+    Gaussian94BasisSetParser() {}
 
-    void parse(boost::shared_ptr<BasisSet> &basisSet, const std::vector<std::string> &basisnames);
+    virtual std::vector<boost::shared_ptr<GaussianShell> > parse(const std::string& symbol, const std::vector<std::string>& dataset);
 };
 
 } /* end psi namespace */

@@ -160,6 +160,8 @@ protected:
     std::vector<FragmentType> fragment_types_;
     /// Symmetry string from geometry specification
     std::string symmetry_from_input_;
+    /// List of the original atom labels.
+    std::vector<std::string> original_atom_labels_;
 
 public:
     Molecule();
@@ -245,8 +247,10 @@ public:
     double xyz(int atom, int _xyz) const;
     /// Returns mass atom atom
     double mass(int atom) const;
-    /// Returns label of atom
+    /// Returns the cleaned up label of the atom (C2 => C, H4 = H)
     std::string label(int atom) const;
+    /// Returns the original label of the atom as given in the input file.
+    std::string original_label(int atom) const;
     /// Returns charge of atom
     double charge(int atom) const;
     /// Returns mass atom atom

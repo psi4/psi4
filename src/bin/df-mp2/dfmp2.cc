@@ -115,7 +115,7 @@ void  DFMP2::setup()
   nmo_ = ndocc_+nvirt_;
 
   // Form ribasis object and auxiliary basis indexing:
-  shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
+  shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
   ribasis_ = BasisSet::construct(parser, molecule_, options_.get_str("RI_BASIS_MP2"));
   naux_raw_ = ribasis_->nbf();
   naux_fin_ = ribasis_->nbf(); //For now, may be pared later

@@ -17,9 +17,6 @@
 #include <libciomr/libciomr.h>
 
 #include "vector3.h"
-#include "molecule.h"
-#include "matrix.h"
-#include "pointgrp.h"
 #include "coordentry.h"
 #include "corrtab.h"
 #include "petitelist.h"
@@ -262,6 +259,11 @@ double Molecule::mass(int atom) const
 std::string Molecule::label(int atom) const
 {
     return atoms_[atom]->label();
+}
+
+std::string Molecule::original_label(int atom) const
+{
+    return original_atom_labels_[atom];
 }
 
 int Molecule::atom_at_position1(double *coord, double tol) const
@@ -1057,6 +1059,9 @@ shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::string &te
         if(!regex_match(splitLine[0], reMatches, atomSymbol_))
             throw PSIEXCEPTION("Illegal atom symbol in geometry specification: " + splitLine[0]
                                + " on line\n" + *(line));
+
+        // Save the original atom labels
+        mol->original_atom_labels_.push_back(reMatches[1].str());
         atomSym = boost::to_upper_copy(reMatches[1].str());
 
         if(numEntries == 4){
