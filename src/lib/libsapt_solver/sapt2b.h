@@ -48,10 +48,8 @@ private:
       char *, double *, int, int);
     double *t2_solver(int, char *, char *, int, char *, char *, char *, 
       double *, int, int, int);
-    void frzn_t2_prep(char *, char *, char *, int, char *, char *, char *, 
-      int, int, int);
-    void natural_orbitalify_t2(char *, char *, int, char *, char *, char *,
-      double *, double **, int, int, int, int);
+    double *t2_solver_natorbs(int, char *, char *, int, char *, char *, 
+      char *, double *, int, int, int, char *, double **, int);
     void g_arar();
     void g_bsbs();
     void Y3_ar();
@@ -91,9 +89,6 @@ protected:
     double **get_BS_ints(int);
     double **get_RR_ints(int);
     double **get_SS_ints(int);
-
-    double **disp30_amps(int, char *, int, char *, char *, int, char *, char *,
-      double *, double *, int, int, int, int, int, int);
 
 public:
     SAPT2B(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);

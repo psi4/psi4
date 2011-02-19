@@ -168,7 +168,7 @@ double SAPT2p::disp211()
   return(energy);
 }
 
-double SAPT2p::disp22s(char *t_label, char *theta_label, int AAnum,
+double SAPT2p::disp22s(char *t_label, char *theta_label, int AAnum, 
   char *AA_label, char *RR_label, int nocc, int nvir)
 {
   double energy = 0.0;
@@ -272,7 +272,7 @@ double SAPT2p::disp220d()
       double tval = dARBS[ar][bs];
       energy += 4.0*tval*tval/denom;
     }}
-  }}
+  }} 
 
   free_block(dARBS);
   free_block(T_p_AR);
@@ -348,7 +348,7 @@ double SAPT2p::disp202d()
       double tval = dARBS[ar][bs];
       energy += 4.0*tval*tval/denom;
     }}
-  }}
+  }} 
 
   free_block(dARBS);
   free_block(T_p_BS);
@@ -357,7 +357,7 @@ double SAPT2p::disp202d()
   return(energy);
 }
 
-double SAPT2p::disp22q_1(char *label1, char *label2, char *label3, int nocc,
+double SAPT2p::disp22q_1(char *label1, char *label2, char *label3, int nocc, 
   int nvir)
 {
   double energy = 0.0;
@@ -383,7 +383,7 @@ double SAPT2p::disp22q_1(char *label1, char *label2, char *label3, int nocc,
   return(energy);
 }
 
-double SAPT2p::disp22q_2(char *OO_opdm, char *VV_opdm, char *T_label,
+double SAPT2p::disp22q_2(char *OO_opdm, char *VV_opdm, char *T_label, 
   int DFnum, char *OV_label, int nocc, int nvir)
 {
   double energy = 0.0;
@@ -423,7 +423,7 @@ double SAPT2p::disp22q_2(char *OO_opdm, char *VV_opdm, char *T_label,
   return(energy);
 }
 
-double SAPT2p::disp22q_3(char *t_label, char trans1, char trans2,
+double SAPT2p::disp22q_3(char *t_label, char trans1, char trans2, 
   char *g_label, char *th_label, int noccA, int nvirA, int noccB, int nvirB)
 {
   double energy = 0.0;
@@ -457,14 +457,14 @@ double SAPT2p::disp22q_3(char *t_label, char trans1, char trans2,
   return(energy);
 }
 
-double SAPT2p::disp22q_4(char *t_label, char *g_label, char *d_label,
+double SAPT2p::disp22q_4(char *t_label, char *g_label, char *d_label, 
     int noccA, int nvirA, int noccB, int nvirB)
 {
   double energy = 0.0;
 
   double **tARAR = read_IJKL(PSIF_SAPT_AMPS,t_label,noccA*nvirA,noccA*nvirA);
   double **gARAR = read_IJKL(PSIF_SAPT_AMPS,g_label,noccA*nvirA,noccA*nvirA);
-  double **xRR = block_matrix(nvirA,nvirA);
+  double **xRR = block_matrix(nvirA,nvirA); 
 
   C_DGEMM('T','N',nvirA,nvirA,noccA*nvirA*noccA,1.0,&(tARAR[0][0]),nvirA,
     &(gARAR[0][0]),nvirA,0.0,&(xRR[0][0]),nvirA);
@@ -487,7 +487,7 @@ double SAPT2p::disp22q_4(char *t_label, char *g_label, char *d_label,
   return(energy);
 }
 
-double SAPT2p::disp22q_5(char *t_label, char *g_label, char *d_label,
+double SAPT2p::disp22q_5(char *t_label, char *g_label, char *d_label, 
     int noccA, int nvirA, int noccB, int nvirB)
 {
   double energy = 0.0;
@@ -509,7 +509,7 @@ double SAPT2p::disp22q_5(char *t_label, char *g_label, char *d_label,
     nvirA*noccB*nvirB,&(tARBS[0][0]),nvirA*noccB*nvirB,0.0,&(yAA[0][0]),noccA);
 
   energy = -4.0*C_DDOT(noccA*noccA,xAA[0],1,yAA[0],1);
-
+  
   free_block(tARBS);
   free_block(xAA);
   free_block(yAA);

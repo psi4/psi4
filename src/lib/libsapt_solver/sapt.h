@@ -50,6 +50,9 @@ protected:
     double **IJKL_ints(int, char *, int, int, char *, int);
     double **IJIJ_ints(int, char *, int);
 
+    void MO_NO_ov_DF_trans(int, int, char *, char *, int, int, int, double **);
+    void MO_NO_vv_DF_trans(int, int, char *, char *, int, int, int, double **);
+
     double **uchf_ind(double **, double *, int, int);
     double **cphf_ind(int, char *, char *, char *, double **, double **,
       double *, int, int);
