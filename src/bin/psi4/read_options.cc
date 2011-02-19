@@ -29,6 +29,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_int("MULTP", 1);
   /*- Use pure angular momentum? -*/
   options.add_bool("PUREAM", true);
+  /*- Use pure angular momentum? -*/
+  options.add_int("PRINT", 0);
 
   if (name == "SAPT"|| options.read_globals()) {
 //    ip_cwk_add(":SAPT");

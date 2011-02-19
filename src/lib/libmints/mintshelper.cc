@@ -109,6 +109,12 @@ void MintsHelper::integrals()
     potential->compute(potential_mat);
     potential_mat->save(psio, PSIF_OEI);
 
+    if (Process::environment.options.get_int("PRINT") > 3) {
+        overlap_mat->print();
+        kinetic_mat->print();
+        potential_mat->print();
+    }
+
     // Open the IWL buffer where we will store the integrals.
     IWL ERIOUT(psio.get(), PSIF_SO_TEI, 0.0, 0, 0);
     IWLWriter writer(ERIOUT);
@@ -207,7 +213,6 @@ void MintsHelper::one_electron_integrals()
     shared_ptr<Matrix>       potential_mat(factory->create_matrix(PSIF_SO_V));
     potential->compute(potential_mat);
     potential_mat->save(psio, PSIF_OEI);
-
 }
 
 void MintsHelper::integral_gradients()

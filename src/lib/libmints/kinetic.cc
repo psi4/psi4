@@ -292,10 +292,4 @@ void KineticInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<Ga
             }
         }
     }
-
-    // Integrals are done. Normalize for angular momentum
-    normalize_am(s1, s2);
-
-    // Spherical harmonic transformation
-    // Wrapped up in the AO to SO transformation (I think)
 }

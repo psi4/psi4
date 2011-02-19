@@ -81,65 +81,6 @@ boost::shared_ptr<SOBasisSet> OneBodySOInt::basis2() const
     return b2_;
 }
 
-void OneBodySOInt::compute_shell(int ish, int jsh)
-{
-    const double *aobuf = ob_->buffer();
-
-    const SOTransform &t1 = b1_->trans(ish);
-    const SOTransform &t2 = b2_->trans(jsh);
-
-    int nso1 = b1_->nfunction(ish);
-    int nso2 = b2_->nfunction(jsh);
-
-    memset(buffer_, 0, nso1*nso2*sizeof(double));
-
-    int nao2 = b2_->naofunction(jsh);
-
-    // I want to test only calling compute_shell for the first t1 and t2 aoshell pair
-    // and then using the transformation coefficients to obtain everything else.
-    // Otherwise using the petite list doesn't save us any computational time
-    // in computing the integrals, but does save us time when we use the integrals.
-
-    // loop through the AO shells that make up this SO shell
-    for (int i=0; i<t1.naoshell; ++i) {
-        const SOTransformShell &s1 = t1.aoshell[i];
-        for (int j=0; j<t2.naoshell; ++j) {
-            const SOTransformShell &s2 = t2.aoshell[j];
-
-            ob_->compute_shell(s1.aoshell, s2.aoshell);
-
-            for (int itr=0; itr<s1.nfunc; ++itr) {
-                const SOTransformFunction &ifunc = s1.func[itr];
-                double icoef = ifunc.coef;
-                int iaofunc = ifunc.aofunc;
-                int isofunc = b1_->function_offset_within_shell(ish, ifunc.irrep) + ifunc.sofunc;
-                int iaooff = iaofunc;
-                int isooff = isofunc;
-
-                for (int jtr=0; jtr<s2.nfunc; ++jtr) {
-                    const SOTransformFunction &jfunc = s2.func[jtr];
-                    double jcoef = jfunc.coef * icoef;
-                    int jaofunc = jfunc.aofunc;
-                    int jsofunc = b2_->function_offset_within_shell(jsh, jfunc.irrep) + jfunc.sofunc;
-                    int jaooff = iaooff*nao2 + jaofunc;
-                    int jsooff = isooff*nso2 + jsofunc;
-
-                    buffer_[jsooff] += jcoef * aobuf[jaooff];
-
-#ifdef DEBUG
-                    //                    if (fabs(aobuf[jaooff]*jcoef) > 1.0e-10) {
-                    //                        fprintf(outfile, "(%2d|%2d) += %+6f * (%2d|%2d): %+6f -> %+6f iirrep = %d ifunc = %d, jirrep = %d jfunc = %d\n",
-                    //                                isofunc, jsofunc, jcoef, iaofunc, jaofunc, aobuf[jaooff], buffer_[jsooff],
-                    //                                ifunc.irrep, b1_->function_within_irrep(ish, isofunc),
-                    //                                jfunc.irrep, b2_->function_within_irrep(jsh, jsofunc));
-                    //                    }
-#endif
-                }
-            }
-        }
-    }
-}
-
 void OneBodySOInt::compute(boost::shared_ptr<Matrix> result)
 {
     // Do not worry about zeroing out result
@@ -203,7 +144,10 @@ void OneBodySOInt::compute(boost::shared_ptr<Matrix> result)
 
                             // Check the irreps to ensure symmetric quantities.
                             if (ifunc.irrep == jfunc.irrep)
-                                result->add(ifunc.irrep, b1_->function_within_irrep(ish, isofunc), b2_->function_within_irrep(jsh, jsofunc), jcoef * aobuf[jaooff]);
+                                result->add(ifunc.irrep,
+                                            b1_->function_within_irrep(ish, isofunc),
+                                            b2_->function_within_irrep(jsh, jsofunc),
+                                            jcoef * aobuf[jaooff]);
                         }
                     }
                 }
@@ -231,7 +175,6 @@ void OneBodySOInt::compute(std::vector<boost::shared_ptr<Matrix> > results)
             int nso2 = b2_->nfunction(jsh);
             int nso = nso1*nso2;
 
-            // size_ includes nchunk
             memset(buffer_, 0, nchunk*nso*sizeof(double));
 
             int nao1 = b1_->naofunction(ish);
@@ -273,7 +216,7 @@ void OneBodySOInt::compute(std::vector<boost::shared_ptr<Matrix> > results)
                                 buffer_[jsooff + (i*nso)] += temp;
 
                                 int ijirrep = ifunc.irrep ^ jfunc.irrep;
-                                if (ijirrep == results[i]->symmetry() && fabs(temp) > 1.0e-14) {
+                                if (ijirrep == results[i]->symmetry()) {
 
 //                                    if (fabs(aobuf[jaooff]*jcoef) > 1.0e-10) {
 //                                        fprintf(outfile, "(%2d|%2d) += %+6f * (%2d|%2d): %+6f -> %+6f iirrep = %d ifunc = %d, jirrep = %d jfunc = %d jaoff = %d jsooff = %d\n",
