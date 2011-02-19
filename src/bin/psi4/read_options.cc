@@ -816,6 +816,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("BASIS","NONE");
     /* DF basis for MO integrals */
     options.add_str("RI_BASIS_CC","NONE");
+    /* Dealias basis for PS integrals */
+    options.add_str("DEALIAS_BASIS_CC","NONE");
+    /* Filename to read grid from */
+    options.add_str_i("PS_GRID_FILE","");
+    /* File path to read grids from */
+    options.add_str_i("PS_GRID_PATH","");
     /* Convergence of CC energy */
     options.add_int("E_CONVERGE", 8);
     /* Convergence of cluster amplitudes (RMS change) */

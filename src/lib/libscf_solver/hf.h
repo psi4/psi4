@@ -189,6 +189,9 @@ protected:
     /// Common initializer
     void common_init();
 
+    /// Clears memory and closes files (Should they be open) prior to correlated code execution
+    virtual void finalize();
+
     /// Compute multipole integrals
     void form_multipole_integrals();
 

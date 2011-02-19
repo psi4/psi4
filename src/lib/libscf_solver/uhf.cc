@@ -33,10 +33,6 @@ UHF::UHF(Options& options, shared_ptr<PSIO> psio) : HF(options, psio)
 
 UHF::~UHF()
 {
-    if (p_jk_)
-        delete[](p_jk_);
-    if (p_k_)
-        delete[](p_k_);
 }
 
 void UHF::common_init()
@@ -69,7 +65,22 @@ void UHF::common_init()
     if (scf_type_ == "PK")
         allocate_PK();
 }
+void UHF::finalize()
+{
+    if (p_jk_)
+        delete[](p_jk_);
+    if (p_k_)
+        delete[](p_k_);
 
+    pertFa_.reset();
+    pertFb_.reset();
+    Dt_.reset();
+    Dtold_.reset();
+    Ga_.reset();
+    Gb_.reset();
+    
+    HF::finalize();
+}
 double UHF::compute_energy()
 {
     bool converged = false, diis_iter = false;
@@ -171,10 +182,8 @@ double UHF::compute_energy()
 
     // Compute the final dipole.
     if(print_ > 2) compute_multipole();
-    if (initialized_diis_manager_) {
-        diis_manager_.reset();
-        initialized_diis_manager_ = false;
-    }
+
+    finalize();
 
     return E_;
 }
@@ -476,8 +485,6 @@ void UHF::save_information()
     chkpt_->wt_beta_scf(vectors);
     free_block(vectors);
 
-    // TODO: Need to rework this.
-    psio_->close(PSIF_CHKPT, 1);
 }
 
 bool UHF::test_convergency()

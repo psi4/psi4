@@ -36,10 +36,6 @@ ROHF::ROHF(Options& options, shared_ptr<PSIO> psio)
 }
 
 ROHF::~ROHF() {
-    if (pk_)
-        delete[](pk_);
-    if (k_)
-        delete[](k_);
 }
 
 void ROHF::common_init()
@@ -68,6 +64,23 @@ void ROHF::common_init()
 
     if (scf_type_ == "PK")
         allocate_PK();
+}
+
+void ROHF::finalize()
+{
+    if (pk_)
+        delete[](pk_);
+    if (k_)
+        delete[](k_);
+   
+    Fc_.reset();
+    Fo_.reset();
+    Dc_old_.reset();
+    Do_old_.reset();
+    Gc_.reset();
+    Go_.reset(); 
+
+    HF::finalize();
 }
 
 void ROHF::form_initial_C()
@@ -159,15 +172,19 @@ double ROHF::compute_energy()
     {
         free_B();
     }
+
     // Return the final ROHF energy
     if (converged) {
         fprintf(outfile, "\n  Energy converged.\n");
         save_information();
-        return E_;
     } else {
         fprintf(outfile, "\n  Failed to converge.\n");
-        return 0.0;
+        E_ = 0.0;
     }
+    
+    finalize();
+
+    return E_;
 }
 
 void ROHF::save_information()
@@ -281,6 +298,7 @@ void ROHF::save_information()
     double **vectors = C_->to_block_matrix();
     chkpt_->wt_scf(vectors);
     free_block(vectors);
+
 }
 
 void ROHF::save_fock()

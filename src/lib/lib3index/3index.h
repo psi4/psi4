@@ -9,7 +9,9 @@ namespace psi {
 class PSIO;
 class BasisSet;
 class Matrix;
+class Vector;
 class IntVector;
+class GridBlock;
 
 
 class FittingMetric {
@@ -82,6 +84,29 @@ public:
     void form_cholesky_factor();
 };
 
+class PseudoGrid {
+
+protected:
+    /// The grid (in a Jeff Bridges voice)
+    shared_ptr<GridBlock> grid_;
+    /// Name (ie: cc-pVQZ-ultrafine)
+    std::string name_;
+    /// The molecule the grid is build on
+    shared_ptr<Molecule> molecule_;
+    
+public:
+    /// Construct a grid object from a molecule and name, then parse (or maybe autogen)
+    PseudoGrid(shared_ptr<Molecule> mol, const std::string& name);
+    /// Destructor, frees grid memory if created
+    ~PseudoGrid();
+
+    /// The GridBlock associated with this grid
+    shared_ptr<GridBlock> getBlock() const { return grid_; } 
+    /// Parse grid given full file path to G94-style grid file
+    void parse(const std::string& file);
+    
+};
+
 class SchwarzSieve {
 
 protected:
@@ -114,19 +139,206 @@ public:
     virtual ~SchwarzSieve();
 
     void form_schwarz_sieve(double cutoff);
+    // Sizes of the significant bra/ket pairs
     unsigned long int get_nshell_pairs() const { return nshell_pairs_; }
     unsigned long int get_nfun_pairs() const { return nfun_pairs_; }
     // I_global = arr[2*I_local], J_global = arr[2*I_local + 1]
     // These are only defined up to nshell_pairs_ and nfun_pairs_, respectively
     int* get_schwarz_shells() const { return schwarz_shells_; }
     int* get_schwarz_funs() const { return schwarz_funs_; }
-    // Canonical compound indexingi, -1 if not present
+    // Canonical compound indexing, -1 if not present
     long int* get_schwarz_shells_reverse() const { return schwarz_shells_reverse_; }
     long int* get_schwarz_funs_reverse() const { return schwarz_funs_reverse_; }
 
 };
 
+class ThreeIndexChunk {
+    
+    protected:
+        // Name
+        std::string name_;
+        // PSIO (for disk-based) 
+        shared_ptr<PSIO> psio_;
+        // PSIO address (for disk-based)
+        psio_address address_;
+        // Core tensor [0][0][0] pointer
+        double* core_tensor_;
 
+        // memory (doubles)
+        unsigned long int memory_;
+        // tensor size (doubles)
+        unsigned long int tensor_size_;
+        // max_rows permitted by memory
+        int max_rows_;  
+        // slow index total size
+        int slow_size_; 
+        // middle index total size
+        int middle_size_; 
+        // fast index total size
+        int fast_size_; 
+ 
+        // is this tensor core or disk?
+        bool is_core_;
+        // if disk, can we fully cache this tensor?
+        bool is_cached_;
+
+        // is this tensor finished?
+        bool is_done_;
+        // Starting slow index
+        int current_row_;
+        // Number of slow indices
+        int current_rows_;
+        // Tensor chunk
+        double*chunk_;
+
+
+    public:
+        // Disk algorithm constructor
+        ThreeIndexChunk(shared_ptr<PSIO> psio, 
+                        const std::string& name,
+                        int slow_size,
+                        int middle_size,
+                        int fast_size,
+                        unsigned long int memory 
+                        );
+        // Core algorithm constructor
+        ThreeIndexChunk(double* core_tensor, 
+                        const std::string& name,
+                        int slow_size,
+                        int middle_size,
+                        int fast_size,
+                        unsigned long int memory 
+                        );
+        ~ThreeIndexChunk();
+
+        void reset();
+        bool isDone() const { return is_done_; }       
+        void next();        
+        double* pointer() const { return chunk_; } 
+        int current_index() const { return current_row_; }
+        int current_rows() const { return current_rows_; }
+
+        bool is_core() const { return is_core_; }
+        std::string name() const { return name_; }
+        int slow_size() const { return slow_size_; }        
+        int middle_size() const { return middle_size_; }        
+        int fast_size() const { return fast_size_; }        
+        unsigned long int memory() const { return memory_; }
+        int max_rows() const { return max_rows_; } 
+};
+
+
+class DFTensor {
+
+protected:
+
+    // The fitting metric (if still needed)
+    shared_ptr<FittingMetric> metric_;
+    // The Schwarz sieve 
+    shared_ptr<SchwarzSieve> schwarz_;
+    
+    // The primary basis
+    shared_ptr<BasisSet> primary_;
+    // The auxiliary basis
+    shared_ptr<BasisSet> auxiliary_;
+
+    // The PSIO object
+    shared_ptr<PSIO> psio_;
+    // is this tensor core or disk
+    bool is_core_;
+
+    // Number of occupied orbitals
+    int nocc_;
+    // Number of virtual orbitals
+    int nvir_;
+
+public:
+    DFTensor(shared_ptr<PSIO>, shared_ptr<BasisSet> primary, shared_ptr<BasisSet> aux, double schwarz = 0.0);
+    virtual ~DFTensor();
+
+    void common_init();     
+    
+    shared_ptr<SchwarzSieve> get_schwarz() const { return schwarz_; }
+    shared_ptr<FittingMetric> get_metric() const { return metric_; }
+
+    // Form all MO integrals, disk algorithm, default striping Qov
+    void form_MO_disk(shared_ptr<Matrix> Cocc, shared_ptr<Matrix> Cvir, const std::string& algorithm, double cond);
+    
+    // Iterators to the various blocks of the MO DF integrals, 
+    // memory in doubles  
+    shared_ptr<ThreeIndexChunk> get_oo_iterator(unsigned long int memory);
+    shared_ptr<ThreeIndexChunk> get_vv_iterator(unsigned long int memory);
+    shared_ptr<ThreeIndexChunk> get_ov_iterator(unsigned long int memory);
+
+};
+
+class Pseudospectral {
+
+protected:
+    shared_ptr<BasisSet> primary_;
+    shared_ptr<BasisSet> dealias_;
+    shared_ptr<PseudoGrid> grid_;
+    int npoints_;
+    shared_ptr<PSIO> psio_;
+public:
+    Pseudospectral(shared_ptr<PSIO>, shared_ptr<BasisSet> primary, shared_ptr<BasisSet> dealias, shared_ptr<PseudoGrid> grid);
+    ~Pseudospectral();
+    
+    shared_ptr<Matrix> form_X();
+    shared_ptr<Matrix> form_X_dealias();
+    shared_ptr<Matrix> form_S();
+    shared_ptr<Matrix> form_S_dealias();
+    shared_ptr<Matrix> form_Q();
+    shared_ptr<Matrix> form_A();
+    void form_A_disk();
+    int npoints() const { return npoints_; }
+
+    shared_ptr<Matrix> form_I(); 
+
+};
+class Denominator {
+
+protected:
+    // Denominator (ia in columns, w in rows)
+    shared_ptr<Matrix> denominator_;
+
+    // Pointer to active occupied orbitals
+    shared_ptr<Vector> eps_occ_;
+    // Pointer to active virtual orbitals
+    shared_ptr<Vector> eps_vir_;
+
+    // Gauge reference (HOMO-LUMO splitting)
+    double gauge_;
+
+    virtual void decompose() = 0; 
+public:
+    Denominator(shared_ptr<Vector> eps_occ_, shared_ptr<Vector> eps_vir);
+    virtual ~Denominator();
+};
+
+class LaplaceDenominator : public Denominator {
+
+protected:
+    int nvector_;    
+    void decompose();
+public:
+    LaplaceDenominator(shared_ptr<Vector> eps_occ_, shared_ptr<Vector> eps_vir, int nvector);
+    ~LaplaceDenominator();
+
+};
+
+class CholeskyDenominator : public Denominator {
+
+protected:
+    double delta_;    
+    double degeneracy_multiplier_;    
+    void decompose();
+    static bool criteria(std::pair<int, double> a, std::pair<int, double> b);
+public:
+    CholeskyDenominator(shared_ptr<Vector> eps_occ_, shared_ptr<Vector> eps_vir, double delta, double degeneracy_multiplier = 100.0);
+    ~CholeskyDenominator();
+
+};
 
 }
 #endif

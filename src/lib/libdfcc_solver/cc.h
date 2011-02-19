@@ -21,9 +21,11 @@ private:
   void get_options();
   void get_params();
   void get_ribasis();
+  void get_dealiasbasis();
 
 protected:
   shared_ptr<BasisSet> ribasis_;
+  shared_ptr<BasisSet> dealias_;
   shared_ptr<BasisSet> zero_;
 
   virtual void print_header(); 
@@ -42,6 +44,7 @@ protected:
 
   // DF basis parameters
   int ndf_; // Number of DF auxiliary functions
+  int ndealias_; // Number of dealias functions
 
   // Reference wavefunction
   double Eref_; // HF Reference energy

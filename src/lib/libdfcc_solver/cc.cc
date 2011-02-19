@@ -13,6 +13,7 @@ CC::CC(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
 {
   get_params();
   get_ribasis();
+  get_dealiasbasis();
 }
 
 CC::~CC()
@@ -102,6 +103,16 @@ void CC::get_ribasis()
   ribasis_ = BasisSet::construct(parser, molecule_, "RI_BASIS_CC");
   zero_ = BasisSet::zero_ao_basis_set();
   ndf_ = ribasis_->nbf();
+}
+void CC::get_dealiasbasis()
+{
+  shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+  if (options_.get_str("DEALIAS_BASIS_CC") != "") {
+    dealias_ = BasisSet::construct(parser, molecule_, "DEALIAS_BASIS_CC"); 
+    ndealias_ = dealias_->nbf();
+  } else {
+    ndealias_ = 0;
+  } 
 }
 
 void CC::print_header()

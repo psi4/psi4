@@ -335,8 +335,8 @@ public:
     virtual OneBodySOInt* so_potential(int deriv=0);
 
     /// Returns the OneBodyInt that computes the pseudospectral grid integrals
-    virtual OneBodyAOInt* ao_pseudopotential(int deriv = 0);
-    virtual OneBodySOInt* so_pseudopotential(int deriv = 0);
+    virtual OneBodyAOInt* ao_pseudospectral(int deriv = 0);
+    virtual OneBodySOInt* so_pseudospectral(int deriv = 0);
     
     /// Returns an OneBodyInt that computes the dipole integral.
     virtual OneBodyAOInt* ao_dipole(int deriv=0);

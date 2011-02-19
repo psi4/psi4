@@ -80,8 +80,8 @@ void PseudospectralHF::common_init()
         fact.reset();
 
         shared_ptr<IntegralFactory> fact2(new IntegralFactory(primary_, primary_, zero, zero));
-        pot_[thread] = shared_ptr<PseudopotentialInt>(static_cast<PseudopotentialInt*>(fact2->ao_pseudopotential()));
-    }
+        pot_[thread] = shared_ptr<PseudospectralInt>(static_cast<PseudospectralInt*>(fact2->ao_pseudospectral()));  
+    } 
 
     // Build the peudospectral grid points and X matrix
     shared_ptr<Integrator> quad = Integrator::build_integrator(primary_->molecule(), psio_, options_);

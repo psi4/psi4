@@ -55,6 +55,8 @@ public:
     
     shared_ptr<GridBlock> getBlock(int N);
     shared_ptr<GridBlock> getAddress(unsigned long int n);
+    SphericalQuadrature getLebedevSpherical(int n);
+    SphericalQuadrature getEMSpherical(int n);
  
     std::string getString();
 
@@ -71,8 +73,6 @@ protected:
     RadialQuadrature getEMRadial(int n, double xi);
     RadialQuadrature getTreutlerRadial(int n, double xi, double alpha = 0.6);
 
-    SphericalQuadrature getEMSpherical(int n);
-    SphericalQuadrature getLebedevSpherical(int n);
     int getLebedevReccurencePoints(int type, int start, double a, double b, double v, const SphericalQuadrature & leb);
     
     int getSphericalOrderConstant(double, int, int, int);
