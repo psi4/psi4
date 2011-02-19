@@ -18,7 +18,7 @@
 using namespace std;
 using namespace psi;
 
-namespace psi { namespace dfcc {
+namespace psi {
 
 Pseudospectral::Pseudospectral(shared_ptr<PSIO> psio, shared_ptr<BasisSet> primary, shared_ptr<BasisSet> dealias, shared_ptr<PseudoGrid> g) :
     psio_(psio), primary_(primary), dealias_(dealias), grid_(g), npoints_(g->getBlock()->getTruePoints())
@@ -286,4 +286,4 @@ shared_ptr<Matrix> Pseudospectral::form_I()
 
 
 
-}}
+}
