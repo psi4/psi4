@@ -1170,22 +1170,24 @@ void Molecule::update_geometry()
     }
 
     move_to_com();
-//    reorient();
-    // Compute point group of the molecule.
-//    set_point_group(find_point_group());
-    // Now we need to rotate the geometry to its symmetry frame
-    // to align the axes correctly for the point group
-    SimpleMatrix R(3,3);
-    // We actually ask for the highest point group here so that we can align
-    // the molecule according to its actual symmetry, rather than the symmetry
-    // the the user might have provided.
-    SymmetryOperation frame = find_highest_point_group()->symm_frame();
-    for(int i = 0; i < 3; ++i){
-        for(int j = 0; j < 3; ++j){
-            R.set(i, j, frame(i,j));
+
+    // If the no_reorient command was given, don't reorient
+    if (fix_orientation_ == false) {
+        // Now we need to rotate the geometry to its symmetry frame
+        // to align the axes correctly for the point group
+        SimpleMatrix R(3,3);
+        // We actually ask for the highest point group here so that we can align
+        // the molecule according to its actual symmetry, rather than the symmetry
+        // the the user might have provided.
+        SymmetryOperation frame = find_highest_point_group()->symm_frame();
+        for(int i = 0; i < 3; ++i){
+            for(int j = 0; j < 3; ++j){
+                R.set(i, j, frame(i,j));
+            }
         }
+        rotate_full(R);
     }
-    rotate_full(R);
+
     // Recompute point group of the molecule, so the symmetry info is updated to the new frame
     set_point_group(find_point_group());
 

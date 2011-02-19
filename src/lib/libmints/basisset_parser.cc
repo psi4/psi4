@@ -104,7 +104,7 @@ vector<string> BasisSetParser::load_file(const std::string &filename, const std:
 
         // If the user gave a basisname AND text matches the basisname we want to trigger to retain
         if (given_basisname && regex_match(text, what, basis_separator)) {
-            if (what[1] == basisname)
+            if (boost::iequals(what[1].str(), basisname))
                 found_basisname = true;
         }
     }

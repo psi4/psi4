@@ -88,11 +88,6 @@ public:
      */
     void compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result,
                         const CdSalcList& cdsalcs);
-
-    /**
-     * Compute a given SO shell doublet placing the result into buffer_
-     */
-    virtual void compute_shell(int, int);
 };
 
 // Only include the following function if Doxygen is running to generate appropriate

@@ -65,7 +65,7 @@ void DipoleInt::compute_pair(const shared_ptr<GaussianShell>& s1, const shared_p
     B[2] = s2->center()[2];
 
     int ydisp = INT_NCART(am1) * INT_NCART(am2);
-    int zdisp = 2 * INT_NCART(am1) * INT_NCART(am2);
+    int zdisp = ydisp + INT_NCART(am1) * INT_NCART(am2);
 
     // compute intermediates
     double AB2 = 0.0;
@@ -73,7 +73,7 @@ void DipoleInt::compute_pair(const shared_ptr<GaussianShell>& s1, const shared_p
     AB2 += (A[1] - B[1]) * (A[1] - B[1]);
     AB2 += (A[2] - B[2]) * (A[2] - B[2]);
 
-    memset(buffer_, 0, 3 * s1->ncartesian() * s2->ncartesian() * sizeof(double));
+    memset(buffer_, 0, 3 * INT_NCART(am1) * INT_NCART(am2) * sizeof(double));
 
     double **x = overlap_recur_.x();
     double **y = overlap_recur_.y();
@@ -126,7 +126,8 @@ void DipoleInt::compute_pair(const shared_ptr<GaussianShell>& s1, const shared_p
                             double DAy = x00 * (y10 + y00*A[1]) * z00 * over_pf;
                             double DAz = x00 * y00 * (z10 + z00*A[2]) * over_pf;
 
-                            buffer_[ao12] -= (DAx);
+                            // Electrons have a negative charge
+                            buffer_[ao12]       -= (DAx);
                             buffer_[ao12+ydisp] -= (DAy);
                             buffer_[ao12+zdisp] -= (DAz);
 

@@ -52,6 +52,7 @@ namespace psi {
     fprintf(outfile, "\n\n  Options:");
     fprintf(outfile, "\n  ----------------------------------------------------------------------------\n");
     fprintf(outfile, "%s\n", list.c_str());
+    fflush(outfile);
   }
 
   std::string Options::globals_to_string() const {

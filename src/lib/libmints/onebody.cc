@@ -123,55 +123,61 @@ void OneBodyAOInt::normalize_am(const shared_ptr<GaussianShell>& s1, const share
 }
 
 void OneBodyAOInt::pure_transform(const shared_ptr<GaussianShell>& s1,
-                                  const shared_ptr<GaussianShell>& s2, int chunk)
+                                  const shared_ptr<GaussianShell>& s2, int chunks)
 {
-    double *source1, *target1;
-    double *source2, *target2;
-    double *source = buffer_;
-    double *target = target_;
-    double *tmpbuf = tformbuf_;
+    for (int chunk=0; chunk<chunks; ++chunk) {
+        int am1 = s1->am();
+        int is_pure1 = s1->is_pure() && am1 > 1;
+        int ncart1 = s1->ncartesian();
+        int nbf1 = s1->nfunction();
 
-    int am1 = s1->am();
-    int is_pure1 = s1->is_pure() && am1 > 1;
-    int ncart1 = s1->ncartesian();
-    int nbf1 = s1->nfunction();
+        int am2 = s2->am();
+        int is_pure2 = s2->is_pure() && am2 > 1;
+        int ncart2 = s2->ncartesian();
+        int nbf2 = s2->nfunction();
 
-    int am2 = s2->am();
-    int is_pure2 = s2->is_pure() && am2 > 1;
-    int ncart2 = s2->ncartesian();
-    int nbf2 = s2->nfunction();
+        int ncart12 = ncart1 * ncart2;
+        int nbf12 = nbf1 * nbf2;
 
-    int transform_index = 2*is_pure1 + is_pure2;
-    switch(transform_index) {
-    case 0:
-        break;
-    case 1:
-        source2 = source;
-        target2 = target;
-        break;
-    case 2:
-        source1 = source;
-        target1 = target;
-        break;
-    case 3:
-        source2 = source;
-        target2 = tmpbuf;
-        source1 = tmpbuf;
-        target1 = target;
-        break;
-    }
+        // Memory pointers that aid in transform
+        double *source1, *target1;
+        double *source2, *target2;
+        double *source = buffer_ + (chunk*ncart12);
+        double *target = target_;
+        double *tmpbuf = tformbuf_;
 
-    if (is_pure2) {
-        SphericalTransformIter stiter(spherical_transforms_[am2]);
-        transform1e_2(am2, stiter, source2, target2, ncart1, ncart2);
-    }
-    if (is_pure1) {
-        SphericalTransformIter stiter(spherical_transforms_[am1]);
-        transform1e_1(am1, stiter, source1, target1, nbf2);
-    }
+        int transform_index = 2*is_pure1 + is_pure2;
+        switch(transform_index) {
+        case 0:
+            break;
+        case 1:
+            source2 = source;
+            target2 = target;
+            break;
+        case 2:
+            source1 = source;
+            target1 = target;
+            break;
+        case 3:
+            source2 = source;
+            target2 = tmpbuf;
+            source1 = tmpbuf;
+            target1 = target;
+            break;
+        }
 
-    if (transform_index) {
-        memcpy(buffer_, target_, sizeof(double) * ncart1 * ncart2);
+        if (is_pure2) {
+            SphericalTransformIter stiter(spherical_transforms_[am2]);
+            transform1e_2(am2, stiter, source2, target2, ncart1, ncart2);
+        }
+        if (is_pure1) {
+            SphericalTransformIter stiter(spherical_transforms_[am1]);
+            transform1e_1(am1, stiter, source1, target1, nbf2);
+        }
+
+        if (transform_index) {
+            memcpy(buffer_+(chunk*nbf12), target_, sizeof(double) * nbf12);
+        }
     }
 }
 

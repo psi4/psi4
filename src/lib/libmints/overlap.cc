@@ -229,12 +229,6 @@ void OverlapInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<Ga
             }
         }
     }
-
-    // Integrals are done. Normalize for angular momentum
-    normalize_am(s1, s2, 3*natom_);
-
-    // Spherical harmonic transformation
-    // Wrapped up in the AO to SO transformation
 }
 
 void OverlapInt::compute_pair_deriv2(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2)
@@ -341,12 +335,6 @@ void OverlapInt::compute_pair_deriv2(shared_ptr<GaussianShell> s1, shared_ptr<Ga
             }
         }
     }
-
-    // Integrals are done. Normalize for angular momentum
-    normalize_am(s1, s2, 9*natom_);
-
-    // Spherical harmonic transformation
-    // Wrapped up in the AO to SO transformation
 }
 
 void OverlapInt::compute_shell_deriv2(int sh1, int sh2)
