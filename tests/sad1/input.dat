@@ -39,7 +39,7 @@ molecule h2o_c1 {
     H 1 1.0 2 90
 }
 
-activate(h2o_c1)
+set basis cc-pvdz
 
 set docc [5]
 

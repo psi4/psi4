@@ -50,7 +50,7 @@ void PseudospectralHF::common_init()
     // Build auxiliary basis from options
     shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    auxiliary_ = BasisSet::construct(parser, primary_->molecule(), options_.get_str("RI_BASIS_SCF"));
+    auxiliary_ = BasisSet::construct(parser, primary_->molecule(), "RI_BASIS_SCF");
     parser.reset();
 
     // Build a fitting metric object

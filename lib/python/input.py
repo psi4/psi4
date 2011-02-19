@@ -9,7 +9,6 @@ def bad_option_syntax(line):
     exit()
 
 def process_option(spaces, module, key, value, line):
-    key    = key.upper()
     value  = value.strip()
     temp   = ""
 
@@ -24,7 +23,7 @@ def process_option(spaces, module, key, value, line):
         # If it's really a global, we need slightly different syntax
         command_string = "PsiMod.set_global_option(\"%s\", " % (key)
 
-    if re.match(r'^[-]?\d*\.?\d+$', value) or re.match(r'^\[.*\]$', value.upper()):
+    if re.match(r'^[-]?\d*\.?\d+$', value) or re.match(r'^\[.*\]$', value):
         # This is a number
         temp ='%s %s)' % (command_string, value)
     elif re.match(r'^\$', value):
@@ -33,7 +32,7 @@ def process_option(spaces, module, key, value, line):
     else:
         # This must contain only alphanumeric (plus -,* for basis sets) or it's bad
         if re.match(r'^[-*\w]+$', value):
-            temp = '%s "%s")' % (command_string, value.upper())
+            temp = '%s "%s")' % (command_string, value)
         else:
             bad_option_syntax(line)
     return spaces + temp + "\n"

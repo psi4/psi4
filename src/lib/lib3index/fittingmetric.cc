@@ -45,9 +45,9 @@ FittingMetric::FittingMetric()
 
     // Grab the auxiliary bases (use the SCF tags for now)
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    aux_ = BasisSet::construct(parser, molecule, opt.get_str("RI_BASIS_SCF"));
+    aux_ = BasisSet::construct(parser, molecule, "RI_BASIS_SCF");
     if (opt.get_str("POISSON_BASIS_SCF") != "") {
-        pois_ =  BasisSet::construct(parser, molecule, opt.get_str("POISSON_BASIS_SCF"));
+        pois_ =  BasisSet::construct(parser, molecule, "POISSON_BASIS_SCF");
         is_poisson_ = true;
     } else {
         is_poisson_ = false;

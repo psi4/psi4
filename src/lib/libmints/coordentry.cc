@@ -9,15 +9,24 @@ using namespace psi;
 double
 VariableValue::compute()
 {
-    if(geometryVariables_.count(name_) == 0) 
+    if(geometryVariables_.count(name_) == 0)
         throw PSIEXCEPTION("Variable " + name_ + " used in geometry specification has not been defined");
     return negate_ ? -geometryVariables_[name_] : geometryVariables_[name_];
 }
 
-CoordEntry::CoordEntry(int entry_number, int Z, double charge, double mass, std::string label)
+CoordEntry::CoordEntry(int entry_number, int Z, double charge, double mass, const std::string& symbol, const std::string& label)
     : entry_number_(entry_number), computed_(false), Z_(Z),
-      charge_(charge), mass_(mass), label_(label), ghosted_(false)
+      charge_(charge), mass_(mass), symbol_(symbol), label_(label), ghosted_(false)
 {
+}
+
+CoordEntry::CoordEntry(int entry_number, int Z, double charge, double mass, const std::string& symbol,
+           const std::string& label, const std::map<std::string, std::string>& basis)
+    : entry_number_(entry_number), computed_(false), Z_(Z),
+      charge_(charge), mass_(mass), symbol_(symbol), label_(label), ghosted_(false),
+      basissets_(basis)
+{
+
 }
 
 CoordEntry::~CoordEntry()
@@ -25,9 +34,32 @@ CoordEntry::~CoordEntry()
 
 }
 
-CartesianEntry::CartesianEntry(int entry_number, int Z, double charge, double mass, std::string label, 
-                               boost::shared_ptr<CoordValue>(x), boost::shared_ptr<CoordValue>(y), boost::shared_ptr<CoordValue>(z))
-    : CoordEntry(entry_number, Z, charge, mass, label), x_(x), y_(y), z_(z)
+void CoordEntry::set_basisset(const std::string& name, const std::string& type)
+{
+    basissets_[type] = name;
+}
+
+const std::string& CoordEntry::basisset(const std::string& type) const
+{
+    std::map<std::string, std::string>::const_iterator iter = basissets_.find(type);
+
+    if (iter == basissets_.end())
+        throw PSIEXCEPTION("CoordEntry::basisset: Basisset not set for "+label_+" and type of " + type);
+
+    return (*iter).second;
+}
+
+
+CartesianEntry::CartesianEntry(int entry_number, int Z, double charge, double mass, const std::string& symbol, const std::string& label,
+                               boost::shared_ptr<CoordValue> x, boost::shared_ptr<CoordValue> y, boost::shared_ptr<CoordValue> z)
+    : CoordEntry(entry_number, Z, charge, mass, symbol, label), x_(x), y_(y), z_(z)
+{
+}
+
+CartesianEntry::CartesianEntry(int entry_number, int Z, double charge, double mass, const std::string& symbol, const std::string& label,
+               boost::shared_ptr<CoordValue> x, boost::shared_ptr<CoordValue> y, boost::shared_ptr<CoordValue> z,
+               const std::map<std::string, std::string>& basis)
+    : CoordEntry(entry_number, Z, charge, mass, symbol, label, basis), x_(x), y_(y), z_(z)
 {
 }
 
@@ -57,11 +89,26 @@ CartesianEntry::set_coordinates(double x, double y, double z)
     computed_ = true;
 }
 
-ZMatrixEntry::ZMatrixEntry(int entry_number, int Z, double charge, double mass, std::string label,
+ZMatrixEntry::ZMatrixEntry(int entry_number, int Z, double charge, double mass, const std::string& symbol, const std::string& label,
                            boost::shared_ptr<CoordEntry> rto, boost::shared_ptr<CoordValue> rval,
                            boost::shared_ptr<CoordEntry> ato, boost::shared_ptr<CoordValue> aval,
                            boost::shared_ptr<CoordEntry> dto, boost::shared_ptr<CoordValue> dval)
-    : CoordEntry(entry_number, Z, charge, mass, label),
+    : CoordEntry(entry_number, Z, charge, mass, symbol, label),
+      rto_(rto), rval_(rval),
+      ato_(ato), aval_(aval),
+      dto_(dto), dval_(dval)
+{
+}
+
+ZMatrixEntry::ZMatrixEntry(int entry_number, int Z, double charge, double mass, const std::string& symbol, const std::string& label,
+             const std::map<std::string, std::string>& basis,
+             boost::shared_ptr<CoordEntry> rto,
+             boost::shared_ptr<CoordValue> rval,
+             boost::shared_ptr<CoordEntry> ato,
+             boost::shared_ptr<CoordValue> aval,
+             boost::shared_ptr<CoordEntry> dto,
+             boost::shared_ptr<CoordValue> dval)
+    : CoordEntry(entry_number, Z, charge, mass, symbol, label, basis),
       rto_(rto), rval_(rval),
       ato_(ato), aval_(aval),
       dto_(dto), dval_(dval)

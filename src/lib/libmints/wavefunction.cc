@@ -56,7 +56,7 @@ void Wavefunction::common_init()
 
     // Load in the basis set
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    basisset_ = BasisSet::construct(parser, molecule_, options_.get_str("BASIS"));
+    basisset_ = BasisSet::construct(parser, molecule_, "BASIS");
 
     // Check the point group of the molecule. If it is not set, set it.
     if (!molecule_->point_group()) {
