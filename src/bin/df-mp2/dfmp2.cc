@@ -116,7 +116,7 @@ void  DFMP2::setup()
 
   // Form ribasis object and auxiliary basis indexing:
   shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-  ribasis_ = BasisSet::construct(parser, molecule_, options_.get_str("RI_BASIS_MP2"));
+  ribasis_ = BasisSet::construct(parser, molecule_, "RI_BASIS_MP2");
   naux_raw_ = ribasis_->nbf();
   naux_fin_ = ribasis_->nbf(); //For now, may be pared later
   zerobasis_ = BasisSet::zero_ao_basis_set();

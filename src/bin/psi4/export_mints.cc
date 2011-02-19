@@ -25,7 +25,7 @@ shared_ptr<MatrixFactory> get_matrix_factory()
 
     // Read in the basis set
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser);
-    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, Process::environment.options.get_str("BASIS"));
+    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, "BASIS");
     shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
     shared_ptr<SOBasisSet> sobasis(new SOBasisSet(basis, fact));
     const Dimension& dim = sobasis->dimension();
@@ -204,6 +204,7 @@ void export_mints()
             def("translate", &Molecule::translate).
             def("move_to_com", &Molecule::move_to_com).
             def("mass", &Molecule::mass).
+            def("symbol", &Molecule::symbol).
             def("label", &Molecule::label).
             def("charge", &Molecule::charge).
             def("molecular_charge", &Molecule::molecular_charge).
@@ -233,7 +234,10 @@ void export_mints()
             def("is_variable", &Molecule::is_variable).
             def("set_variable", &Molecule::set_variable).
             def("get_variable", &Molecule::get_variable).
-            def("update_geometry", &Molecule::update_geometry);
+            def("update_geometry", &Molecule::update_geometry).
+            def("set_basis_all_atoms", &Molecule::set_basis_all_atoms).
+            def("set_basis_by_symbol", &Molecule::set_basis_by_symbol).
+            def("set_basis_by_label", &Molecule::set_basis_by_label);
 
     class_<PetiteList, shared_ptr<PetiteList>, boost::noncopyable>("PetiteList", no_init).
             def("aotoso", &PetiteList::aotoso).

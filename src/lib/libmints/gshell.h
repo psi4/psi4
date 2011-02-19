@@ -97,7 +97,7 @@ public:
               PrimitiveType pt = Normalized);
 
     /// Make a copy of the GaussianShell.
-    GaussianShell* copy();
+    GaussianShell* copy(int nc, Vector3& c);
 
     /// The number of primitive Gaussians
     int nprimitive() const          { return nprimitive_; }

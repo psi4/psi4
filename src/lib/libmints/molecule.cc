@@ -30,6 +30,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/python.hpp>
+#include <boost/foreach.hpp>
 
 using namespace std;
 using namespace psi;
@@ -237,7 +238,7 @@ void Molecule::add_atom(int Z, double x, double y, double z,
 
     if (atom_at_position2(temp) == -1) {
         // Dummies go to full_atoms_, ghosts need to go to both.
-        full_atoms_.push_back(shared_ptr<CoordEntry>(new CartesianEntry(full_atoms_.size(), Z, charge, mass, l,
+        full_atoms_.push_back(shared_ptr<CoordEntry>(new CartesianEntry(full_atoms_.size(), Z, charge, mass, l, l,
                                                                         shared_ptr<CoordValue>(new NumberValue(x)),
                                                                         shared_ptr<CoordValue>(new NumberValue(y)),
                                                                         shared_ptr<CoordValue>(new NumberValue(z)))));
@@ -256,14 +257,14 @@ double Molecule::mass(int atom) const
     return an2masses[atoms_[atom]->Z()];
 }
 
+std::string Molecule::symbol(int atom) const
+{
+    return atoms_[atom]->symbol();
+}
+
 std::string Molecule::label(int atom) const
 {
     return atoms_[atom]->label();
-}
-
-std::string Molecule::original_label(int atom) const
-{
-    return original_atom_labels_[atom];
 }
 
 int Molecule::atom_at_position1(double *coord, double tol) const
@@ -1044,25 +1045,25 @@ shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::string &te
     Element_to_Z zVals;
     zVals.load_values();
     int currentAtom = 0, rTo, aTo, dTo;
-    string atomSym;
-    std::vector<std::string> atoms;
+    string atomSym, atomLabel;
 
     std::vector<std::string>::iterator line = lines.begin();
     for(; line != lines.end(); ++line) {
         // Trim leading and trailing whitespace
         boost::algorithm::trim(*line);
         boost::split(splitLine, *line, boost::is_any_of("\t ,"),token_compress_on);
-        atoms.push_back(splitLine[0]);
         int numEntries = splitLine.size();
 
+        // Grab the original label the user used. (H1)
+        atomLabel = boost::to_upper_copy(splitLine[0]);
+
         // Check that the atom symbol is valid
-        if(!regex_match(splitLine[0], reMatches, atomSymbol_))
-            throw PSIEXCEPTION("Illegal atom symbol in geometry specification: " + splitLine[0]
+        if(!regex_match(atomLabel, reMatches, atomSymbol_))
+            throw PSIEXCEPTION("Illegal atom symbol in geometry specification: " + atomLabel
                                + " on line\n" + *(line));
 
-        // Save the original atom labels
-        mol->original_atom_labels_.push_back(reMatches[1].str());
-        atomSym = boost::to_upper_copy(reMatches[1].str());
+        // Save the actual atom symbol (H1 => H)
+        atomSym = reMatches[1].str();
 
         if(numEntries == 4){
             // This is a Cartesian entry
@@ -1070,32 +1071,32 @@ shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::string &te
             shared_ptr<CoordValue> yval(mol->get_coord_value(splitLine[2]));
             shared_ptr<CoordValue> zval(mol->get_coord_value(splitLine[3]));
             mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new CartesianEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
-                                                                                 an2masses[(int)zVals[atomSym]], atomSym,
+                                                                                 an2masses[(int)zVals[atomSym]], atomSym, atomLabel,
                                                                                  xval, yval, zval)));
         }
         else if(numEntries == 1) {
             // This is the first line of a Z-Matrix
             mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
-                                                                                   an2masses[(int)zVals[atomSym]], atomSym)));
+                                                                                   an2masses[(int)zVals[atomSym]], atomSym, atomLabel)));
         }
         else if(numEntries == 3) {
             // This is the second line of a Z-Matrix
-            rTo = get_anchor_atom(splitLine[1], atoms, *line);
+            rTo = mol->get_anchor_atom(splitLine[1], *line);
             if(rTo >= currentAtom)
                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
                                    + splitLine[1] + " has not been defined yet.");
             shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
             mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], 0,
-                                                                               an2masses[(int)zVals[atomSym]], atomSym,
+                                                                               an2masses[(int)zVals[atomSym]], atomSym, atomLabel,
                                                                                mol->full_atoms_[rTo], rval)));
         }
         else if(numEntries == 5) {
             // This is the third line of a Z-Matrix
-            rTo = get_anchor_atom(splitLine[1], atoms, *line);
+            rTo = mol->get_anchor_atom(splitLine[1], *line);
             if(rTo >= currentAtom)
                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
                                      + splitLine[1] + " has not been defined yet.");
-            aTo = get_anchor_atom(splitLine[3], atoms, *line);
+            aTo = mol->get_anchor_atom(splitLine[3], *line);
             if(aTo >= currentAtom)
                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
                                      + splitLine[3] + " has not been defined yet.");
@@ -1104,20 +1105,20 @@ shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::string &te
             shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
             shared_ptr<CoordValue> aval(mol->get_coord_value(splitLine[4]));
             mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
-                                                                               an2masses[(int)zVals[atomSym]], atomSym,
+                                                                               an2masses[(int)zVals[atomSym]], atomSym, atomLabel,
                                                                                mol->full_atoms_[rTo], rval, mol->full_atoms_[aTo], aval)));
         }
         else if(numEntries == 7) {
             // This is line 4 onwards of a Z-Matrix
-            rTo = get_anchor_atom(splitLine[1], atoms, *line);
+            rTo = mol->get_anchor_atom(splitLine[1], *line);
             if(rTo >= currentAtom)
                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
                                      + splitLine[1] + " has not been defined yet.");
-            aTo = get_anchor_atom(splitLine[3], atoms, *line);
+            aTo = mol->get_anchor_atom(splitLine[3], *line);
             if(aTo >= currentAtom)
                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
                                      + splitLine[3] + " has not been defined yet.");
-            dTo = get_anchor_atom(splitLine[5], atoms, *line);
+            dTo = mol->get_anchor_atom(splitLine[5], *line);
             if(dTo >= currentAtom)
                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
                                    + splitLine[5] + " has not been defined yet.");
@@ -1129,7 +1130,7 @@ shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::string &te
             shared_ptr<CoordValue> aval(mol->get_coord_value(splitLine[4]));
             shared_ptr<CoordValue> dval(mol->get_coord_value(splitLine[6]));
             mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
-                                                                               an2masses[(int)zVals[atomSym]], atomSym,
+                                                                               an2masses[(int)zVals[atomSym]], atomSym, atomLabel,
                                                                                mol->full_atoms_[rTo], rval, mol->full_atoms_[aTo],
                                                                                aval, mol->full_atoms_[dTo], dval)));
         }
@@ -1369,7 +1370,7 @@ void Molecule::print() const
 
         for(int i = 0; i < natom(); ++i){
             Vector3 geom = atoms_[i]->compute();
-            fprintf(outfile, "    %8s%4s ",label(i).c_str(),Z(i) ? "" : "(Gh)"); fflush(outfile);
+            fprintf(outfile, "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)"); fflush(outfile);
             for(int j = 0; j < 3; j++)
                 fprintf(outfile, "  %17.12f", geom[j]);
             fprintf(outfile,"\n");
@@ -2280,6 +2281,34 @@ double Molecule::fcharge(int atom) const
     return full_atoms_[atom]->charge();
 }
 
+void Molecule::set_basis_all_atoms(const std::string& name, const std::string& type)
+{
+    BOOST_FOREACH(shared_ptr<CoordEntry> atom, full_atoms_) {
+        atom->set_basisset(name, type);
+    }
+}
+
+void Molecule::set_basis_by_symbol(const std::string& symbol, const std::string& name, const std::string& type)
+{
+    BOOST_FOREACH(shared_ptr<CoordEntry> atom, full_atoms_) {
+        if (atom->symbol() == symbol)
+            atom->set_basisset(name, type);
+    }
+}
+
+void Molecule::set_basis_by_label(const std::string& label, const std::string& name, const std::string& type)
+{
+    BOOST_FOREACH(shared_ptr<CoordEntry> atom, full_atoms_) {
+        if (atom->label() == label)
+            atom->set_basisset(name, type);
+    }
+}
+
+const boost::shared_ptr<CoordEntry>& Molecule::atom_entry(int atom) const
+{
+    return atoms_[atom];
+}
+
 double Molecule::fmass(int atom) const
 {
     return full_atoms_[atom]->mass();
@@ -2290,8 +2319,7 @@ std::string Molecule::flabel(int atom) const
     return full_atoms_[atom]->label();
 }
 
-int Molecule::get_anchor_atom(const std::string &str, const std::vector<std::string> &atoms,
-                              const std::string &line)
+int Molecule::get_anchor_atom(const std::string &str, const std::string &line)
 {
     if(regex_match(str, reMatches_, integerNumber_)) {
         // This is just a number, return it
@@ -2299,14 +2327,12 @@ int Molecule::get_anchor_atom(const std::string &str, const std::vector<std::str
     }
     else{
         // Look to see if this string is known
-        std::vector<std::string>::const_iterator iter = find(atoms.begin(), atoms.end(), str);
-        if(iter == atoms.end()) {
-            throw PSIEXCEPTION("Illegal value " + str + " in atom specification"
-                               + " on line " + line + "\n\n");
+        for (int i=0; i <nallatom(); ++i) {
+            if (full_atoms_[i]->label() == str)
+                return i;
         }
-        else{
-            return distance(atoms.begin(), iter);
-        }
+        throw PSIEXCEPTION("Illegal value " + str + " in atom specification"
+                           + " on line " + line + "\n\n");
     }
 }
 

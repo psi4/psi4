@@ -41,7 +41,7 @@ void LMP2::direct_transformation() {
 
     // Create a basis set object and initialize it.
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> basis = BasisSet::construct(parser, Process::environment.molecule(), orbital_basis);
+    shared_ptr<BasisSet> basis = BasisSet::construct(parser, Process::environment.molecule(), "BASIS");
 
     // Initialize an integral factory
     shared_ptr<IntegralFactory> integral(new IntegralFactory(basis, basis, basis, basis));
@@ -471,7 +471,7 @@ void LMP2::direct_transformation() {
         }
     }
 */
-    
+
     //  **** Third quarter integral transformation ****
     for (ij = 0; ij < ij_pairs; ij++) {
         i = ij_map[ij][0];

@@ -65,7 +65,7 @@ void MoldenWriter::write(const std::string &filename)
     for (atom=0; atom<mol.natom(); ++atom) {
         Vector3 coord = mol.xyz(atom);
         fprintf(molden, "%-2s  %2d  %3d   %20.12f %20.12f %20.12f\n",
-                mol.label(atom).c_str(), atom+1, mol.Z(atom), coord[0], coord[1], coord[2]);
+                mol.symbol(atom).c_str(), atom+1, mol.Z(atom), coord[0], coord[1], coord[2]);
     }
 
     // Dump the basis set using code adapted from psi2molden

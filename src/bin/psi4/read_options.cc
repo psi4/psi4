@@ -21,69 +21,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 {
 //  options.clear();
 
-  /*- Path to basis path -*/
-  options.add_str_i("BASIS_PATH", "");
   /*- units to use (global) -*/
   options.add_str("UNITS", "ANGSTROMS", "BOHR AU A.U. ANGSTROMS ANG ANGSTROM");
   /*- The molecular charge -*/
   options.add_int("CHARGE", 0);
   /*- (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
   options.add_int("MULTP", 1);
+  /*- Use pure angular momentum? -*/
+  options.add_bool("PUREAM", true);
 
-  if (name == "INPUT"|| options.read_globals()) {
-//    ip_cwk_add(const_cast<char*>(":INPUT"));
-    /*- The units used for the geometry -*/
-    options.add_str("UNITS", "ANGSTROMS", "BOHR AU A.U. ANGSTROMS ANGSTROM");
-    /*- Allow the user to specify the basis set file to use. -*/
-    options.add_str("BASIS_FILE", "");
-    /*- Whether to keep the checkpoint file. -*/
-    options.add_bool("KEEP_CHKPT",false);
-    /*- Read MOs from the checkpoint file and project onto new basis -*/
-    options.add_bool("CHKPT_MOS",false);
-    // these may be obseleted in psi4
-    /*- Read geometry from checkpoint file (in findif calculations) -*/
-    options.add_bool("CHKPT_GEOM",false);
-    /*- Don't project MOs but simply keep them -*/
-    options.add_bool("NOPROJECT",false);
-    /*- Read geometry from geom.dat file (in findif calculations) -*/
-    options.add_bool("GEOMDAT",false);
-    /*- No center of mass shift -*/
-    options.add_bool("NO_COM_SHIFT",false);
-    /*- Read MOs from checkpoint file and save to a separate file -*/
-    options.add_bool("SAVE_MOS",false);
-    /*- Don't overwrite the output file. -*/
-    options.add_bool("KEEP_OUTPUT",false);
-    /*- The wavefunction desired -*/
-    options.add_str("WFN", "");
-    /*- Whether to skip the orientation of the molecule to make its principle
-        axes cooincide with the Cartesian axes -*/
-    options.add_bool("NO_REORIENT",false);
-    /*- The label used when storing job information -*/
-    options.add_str("LABEL","Default PSI4 Label");
-    options.add_bool("SHOWNORM",false);
-    options.add_bool("NORMALIZE",true);
-    /*- Whether pure (spherical) angular momentum functions are to be used -*/
-    options.add_bool("PUREAM",false);
-    /*- Override some safety checks -*/
-    options.add_bool("EXPERT",false);
-    /*- The amount of information to print to the output -*/
-    options.add_int("PRINT",1);
-    /*- The Schoenflies symbol for the computational point group to be used -*/
-    options.add_str("SUBGROUP", "", "C1 C2 CS CI C2V C2H D2");
-    /*- The axis to treat as the main Cn axis in the point group used, if not
-        unambiguously determined -*/
-    options.add_str("UNIQUE_AXIS", "", "X Y Z");
-    /*- The number of fragments to consider in the inter-fragment optimization code -*/
-    options.add_int("NFRAGMENTS",1);
-    options.add_bool("KEEP_REF_FRAME",false);
-    options.add_bool("FRAGMENT_DISTANCE_INVERSE",false);
-    // input also does ip calls to read basis, geometry
-    /*- How many of the innermost orbitals to keep doubly-occupied in correlated computations -*/
-    options.add_str("FREEZE_CORE","FALSE", \
-      "FALSE NO TRUE YES SMALL LARGE");
-    /* The number of virtual orbitals to freeze in correlated computations -*/
-    options.add_int("FREEZE_VIRT",0);
-  }
   if (name == "SAPT"|| options.read_globals()) {
 //    ip_cwk_add(":SAPT");
     /*- The level of theory for SAPT -*/
@@ -199,37 +145,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if (name == "MINTS"|| options.read_globals()) {
       /*- primary basis set -*/
       options.add_str("BASIS","");
-  }
-  if (name == "CINTS"|| options.read_globals()) {
-//    ip_cwk_add(const_cast<char*>(":CINTS"));
-    /*- The execution mode of cints, these were the command line arguments you could send -*/
-    options.add_str("MODE", "", "FOCK OEINTS TEINTS DERIV1 DERIV1_INTS DERIV2 OEPROP MP2 R12INTS MP2R12 MKPT2 CC_BT2 GIAO_DERIV");
-    /*- The wavefunction desired -*/
-    options.add_str("WFN", "");
-    /*- The amount of information to pring to the output -*/
-    options.add_int("PRINT",1);
-    //*- The number of CPU cores to use on each node -*/
-    options.add_int("NUM_THREADS",1);
-    /*- -Log10 of the threshold below which integrals are assumed to be zero -*/
-    options.add_int("CUTOFF",15); // cutoff on integrals
-    /*- The fine-structure constant -*/
-    options.add_double("FINE_STRUCTURE_ALPHA", 1.0/(_c_au));
-    /*- Whether to compute two electron repusion integrals -*/
-    options.add_bool("MAKE_ERI", 1);
-    /*- Whether empirical dispersion terms will be used -*/
-    options.add_bool("EMPIRICAL_DISPERSION", 0);
-    /*- Whether this computation is a restart from a previous run -*/
-    options.add_bool("RESTART", 0);
-    options.add_int("RESTART_TASK", 0);
-    /*- The file to which the SO overlap integral will be written -*/
-    options.add_int("S_FILE", PSIF_OEI);
-    /*- The file to which the SO kinetic energy integrals will be written -*/
-    options.add_int("T_FILE", PSIF_OEI);
-    /*- The file to which the SO potential energy integrals will be written -*/
-    options.add_int("V_FILE", PSIF_OEI);
-    /*- The file to which the SO two electron repulsion integrals will be written -*/
-    options.add_int("ERI_FILE", PSIF_SO_TEI);
-
   }
   if (name == "SCF"|| options.read_globals()) {
     /*- The DFT grid specification, such as SG1 -*/
@@ -625,7 +540,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE", "RHF");
     options.add_bool("READ_OPDM", true);
     options.add_int("OPDM_FILE", 0);
-    options.add_str("OPDM_BASIS", "MO");
+    options.add_str("OPDM_BASIS", "MO", "AO MO");
     options.add_str("OPDM_FORMAT", "SQUARE");
     options.add_bool("WRTNOS", false);
     options.add_bool("ASYMM_OPDM", false);
@@ -758,9 +673,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     options.add_str("REFERENCE","RHF","RHF ROHF UHF TWOCON MCSCF GENERAL");
     options.add_str("WFN_SYM","1","A AG AU AP APP A1 A2 B BG BU B1 B2 B3 B1G B2G B3G B1U B2U B3U 0 1 2 3 4 5 6 7 8");
-  }
-  if(name == "EXTREMA"|| options.read_globals()) {
-    options.add_str("COORDINATES","foo");
   }
   if(name == "CCENERGY"|| options.read_globals()) {
     options.add_bool("NEWTRIPS", 1);

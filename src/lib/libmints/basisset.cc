@@ -35,6 +35,7 @@
 #include "basisset_parser.h"
 #include "pointgrp.h"
 #include "wavefunction.h"
+#include "coordentry.h"
 
 #include <boost/regex.hpp>
 #include <boost/xpressive/xpressive.hpp>
@@ -132,7 +133,7 @@ void BasisSet::print_summary(FILE* out) const
         memset((void*) nshells, '\0', (max_am_ + 1) * sizeof(int));
 
         fprintf(out, "    %4d    ", A+1);
-        fprintf(out, "%2s     ", molecule_->label(A).c_str());
+        fprintf(out, "%2s     ", molecule_->symbol(A).c_str());
 
         int first_shell = center_to_shell_[A];
         int n_shell = center_to_nshell_[A];
@@ -172,7 +173,7 @@ void BasisSet::print_detail(FILE* out) const
 
     //TODO: Use unique atoms (C1 for now)
     for (int A = 0; A < molecule_->natom(); A++) {
-        fprintf(out, "  -Basis set on unique center %d: %s\n", A+1,molecule_->label(A).c_str());
+        fprintf(out, "  -Basis set on unique center %d: %s\n", A+1,molecule_->symbol(A).c_str());
 
         shared_ptr<GaussianShell> shell;
         int first_shell = center_to_shell_[A];
@@ -253,25 +254,7 @@ shared_ptr<SOBasisSet> BasisSet::zero_so_basis_set(const shared_ptr<IntegralFact
 
 shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parser,
         const shared_ptr<Molecule>& mol,
-        const std::string& basisname)
-{
-    // Construct vector with the same basis name for each element and pass to
-    // the other version of construct
-    vector<string> basisnames;
-
-    // Update geometry in molecule, if there is a problem an exception is thrown
-    mol->update_geometry();
-
-    for (int i=0; i<mol->natom(); ++i) {
-        basisnames.push_back(basisname);
-    }
-
-    return construct(parser, mol, basisnames);
-}
-
-shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parser,
-        const shared_ptr<Molecule>& mol,
-        const std::vector<std::string>& basisnames)
+        const std::string& type)
 {
     shared_ptr<BasisSet> basisset(new BasisSet);
 
@@ -281,75 +264,80 @@ shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parse
     // Assign the molecule to the basis set
     basisset->molecule_ = mol;
 
-    // Form list of unique basis sets needed
-    typedef map<string, string> map_ss;
-    map_ss atomsymbol_to_basisname;
-    for (int atom=0; atom<mol->natom(); ++atom) {
-        atomsymbol_to_basisname[mol->original_label(atom)] = basisnames[atom];
-    }
-
-    fprintf(outfile, "Unique basis names:\n");
-    // Print out the map for right now
-    BOOST_FOREACH(map_ss::value_type& i, atomsymbol_to_basisname)
-    {
-        fprintf(outfile, "\t%s %s\n", i.first.c_str(), i.second.c_str());
-    }
-
     // For each one try to load the basis set
     const list<string>& user_list = Process::environment.user_basis_files;
 
     // Map of GaussianShells
-    map<string, vector<shared_ptr<GaussianShell> > > atomsymbol_to_shell;
+    //  basis           atom        gaussian shells
+    typedef map<string, map<string, vector<shared_ptr<GaussianShell> > > > map_ssv;
+    typedef map<string, vector<shared_ptr<GaussianShell> > > map_sv;
+    map_ssv basis_atom_shell;
 
-    bool found = false;
-    for (map_ss::iterator iter = atomsymbol_to_basisname.begin();
-         iter != atomsymbol_to_basisname.end(); /* iteration in loop */)
+    for (int atom=0; atom<mol->natom(); ++atom) {
+
+        const string& symbol = mol->atom_entry(atom)->symbol();
+        const string& basisname = mol->atom_entry(atom)->basisset(type);
+
+        if (basisname.empty())
+            throw PSIEXCEPTION("BasisSet::construct: No basis set specified for " +symbol+ " and " +type+" type.");
+
+        // Add basisname, symbol to the list by clearing the vector.
+        basis_atom_shell[basisname][symbol].clear();
+    }
+
+    BOOST_FOREACH(map_ssv::value_type& basis, basis_atom_shell)
     {
-        map_ss::value_type& i = *iter;
-
-        // For this one check to see if the user provided a basis set
-        string name = make_filename(i.second);
-
         BOOST_FOREACH(string user_file, user_list)
         {
-            // Track down the location of PSI4's python script directory.
             boost::filesystem::path bf_path;
             bf_path = boost::filesystem::system_complete(user_file);
 
-            // Does the user provided name match what we're looking for
-            if (name == bf_path.filename().string()) {
-                fprintf(outfile, "found user basis set file that matches what we need\n");
+            // Load in the basis set and remove it from atomsymbol_to_basisname
+            vector<string> file = parser->load_file(bf_path.string(), basis.first);
 
-                // Load in the basis set and remove it from atomsymbol_to_basisname
-                vector<string> file = parser->load_file(bf_path.string());
+            BOOST_FOREACH(map_sv::value_type& atom, basis.second) {
+                string symbol = atom.first;
 
                 try {
                     // Need to wrap this is a try catch block
-                    atomsymbol_to_shell[i.first] = parser->parse(i.first, file);
-                    found = true;
+                    basis_atom_shell[basis.first][symbol] = parser->parse(symbol, file);
+
+                    fprintf(outfile, "  Basis set for %s read from %s\n", symbol.c_str(), user_file.c_str());
                 }
                 catch (BasisSetNotFound& e) {
                     // This is thrown when load_file fails
-                    fprintf(outfile, "Unable to find ");
+                    fprintf(outfile, "Unable to find %s in %s will try next level.\n", symbol.c_str(), user_file.c_str());
                 }
             }
         }
 
-        if (found)
-            atomsymbol_to_basisname.erase(iter++);
-        else
-            ++iter;
+        string filename = make_filename(basis.first);
+        string path = Process::environment("PSIDATADIR");
+        vector<string> file = parser->load_file(path + "/basis/" + filename);
+        BOOST_FOREACH(map_sv::value_type& atom, basis.second) {
+            string symbol = atom.first;
+            if (atom.second.empty())
+                // If not found this will throw...let it.
+                basis_atom_shell[basis.first][symbol] = parser->parse(symbol, file);
+        }
     }
 
-//    // Now the tricky logic
-//    for (int atom=0; atom<mol->natom(); ++atom) {
+    // Go through the atoms and copy the shells to the basis set.
+    for (int atom=0; atom<mol->natom(); ++atom) {
+        string basis = mol->atom_entry(atom)->basisset(type);
+        string symbol = mol->atom_entry(atom)->symbol();
+        Vector3 center = mol->xyz(atom);
 
-//    }
+        vector<shared_ptr<GaussianShell> >& shells = basis_atom_shell[basis][symbol];
 
-//    // This step is very important. Without it the basis set is almost useless.
-//    basisset->refresh();
+        for (int i=0; i<shells.size(); ++i) {
+            shared_ptr<GaussianShell> temp(shells[i]->copy(atom, center));
+            basisset->shells_.push_back(temp);
+        }
+    }
 
-    throw PSIEXCEPTION("You're an idiot...we have no basis set");
+    // This step is very important. Without it the basis set is almost useless.
+    basisset->refresh();
 
     return basisset;
 }

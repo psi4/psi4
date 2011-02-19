@@ -970,7 +970,7 @@ void HF::form_W()
     //    ribasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_SCF"));
     //} else {
         shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-        ribasis_ = BasisSet::construct(parser, molecule_, options_.get_str("RI_BASIS_SCF"));
+        ribasis_ = BasisSet::construct(parser, molecule_, "RI_BASIS_SCF");
     //}
     naux_raw_ = ribasis_->nbf();
     naux_fin_ = naux_raw_;
@@ -1033,8 +1033,8 @@ void HF::form_W_Poisson()
 //        poissonbasis_ =shared_ptr<BasisSet>(new BasisSet(chkpt_, "POISSON_BASIS_SCF"));
 //    } else {
         shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-        ribasis_ = BasisSet::construct(parser, molecule_, options_.get_str("RI_BASIS_SCF"));
-        poissonbasis_ = BasisSet::construct(parser, molecule_, options_.get_str("POISSON_BASIS_SCF"));
+        ribasis_ = BasisSet::construct(parser, molecule_, "RI_BASIS_SCF");
+        poissonbasis_ = BasisSet::construct(parser, molecule_, "POISSON_BASIS_SCF");
 //    }
     naux_raw_ = ribasis_->nbf() + poissonbasis_->nbf();
     naux_fin_ = naux_raw_;

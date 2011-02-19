@@ -385,8 +385,7 @@ void SAPT_DFT::get_quad_basis()
         quadbasis_ = ribasis_;
     } else {
         shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-        quadbasis_ = BasisSet::construct(parser, molecule_, options_.get_str(
-          "RI_BASIS_QUAD"));
+        quadbasis_ = BasisSet::construct(parser, molecule_, "RI_BASIS_QUAD");
     }
 }
 void SAPT_DFT::compute_d()

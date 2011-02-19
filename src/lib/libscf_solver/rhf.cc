@@ -224,7 +224,7 @@ double RHF::compute_energy()
             G_->copy(J_);
             G_->scale(-1.0);
             G_->add(K_);
-            G_->scale(-1.0); 
+            G_->scale(-1.0);
         }
         else if (scf_type_ == "L_DF")
            form_G_from_RI_local_K();
@@ -626,8 +626,7 @@ void RHF::save_dual_basis_projection()
             options_.get_str("BASIS").c_str(),options_.get_str("DUAL_BASIS_SCF").c_str());
 
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> dual_basis = BasisSet::construct(parser, molecule_,
-                                       options_.get_str("DUAL_BASIS_SCF"));
+    shared_ptr<BasisSet> dual_basis = BasisSet::construct(parser, molecule_, "DUAL_BASIS_SCF");
 
     SharedMatrix C_2 = dualBasisProjection(C_,doccpi_,basisset_,dual_basis);
     C_2->set_name("DUAL BASIS MOS");

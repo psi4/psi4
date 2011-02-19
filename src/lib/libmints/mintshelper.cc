@@ -53,7 +53,7 @@ void MintsHelper::integrals()
 
     // Read in the basis set
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> basisset = BasisSet::construct(parser, molecule, options_.get_str("BASIS"));
+    shared_ptr<BasisSet> basisset = BasisSet::construct(parser, molecule, "BASIS");
 
     // Print the basis set
     basisset->print_detail();
@@ -156,7 +156,7 @@ void MintsHelper::one_electron_integrals()
 
     // Read in the basis set
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> basisset = BasisSet::construct(parser, molecule, options_.get_str("BASIS"));
+    shared_ptr<BasisSet> basisset = BasisSet::construct(parser, molecule, "BASIS");
 
     // Print the basis set
     basisset->print_detail();
@@ -231,7 +231,7 @@ shared_ptr<Matrix> MintsHelper::ao_overlap()
     molecule->update_geometry();
     // Read in the basis set
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, options_.get_str("BASIS"));
+    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, "BASIS");
 
     int nbf = basis->nbf();
     shared_ptr<Matrix> S(new Matrix("AO Overlap Integrals", nbf, nbf));
@@ -255,7 +255,7 @@ shared_ptr<Matrix> MintsHelper::ao_kinetic()
     molecule->update_geometry();
     // Read in the basis set
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, options_.get_str("BASIS"));
+    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, "BASIS");
 
     int nbf = basis->nbf();
     shared_ptr<Matrix> S(new Matrix("AO Kinetic Integrals", nbf, nbf));
@@ -279,7 +279,7 @@ shared_ptr<Matrix> MintsHelper::ao_potential()
     molecule->update_geometry();
     // Read in the basis set
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, options_.get_str("BASIS"));
+    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, "BASIS");
 
     int nbf = basis->nbf();
     shared_ptr<Matrix> S(new Matrix("AO Potential Integrals", nbf, nbf));
@@ -303,7 +303,7 @@ shared_ptr<Matrix> MintsHelper::ao_erf_eri(double omega, double alpha, double be
     molecule->update_geometry();
     // Read in the basis set
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, options_.get_str("BASIS"));
+    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, "BASIS");
 
     int nbf = basis->nbf();
     shared_ptr<Matrix> I(new Matrix("AO ERF ERI Integrals", nbf*nbf, nbf*nbf));
@@ -349,7 +349,7 @@ shared_ptr<Matrix> MintsHelper::ao_eri()
     molecule->update_geometry();
     // Read in the basis set
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, options_.get_str("BASIS"));
+    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, "BASIS");
 
     int nbf = basis->nbf();
     shared_ptr<Matrix> I(new Matrix("AO ERI Integrals", nbf*nbf, nbf*nbf));
@@ -395,7 +395,7 @@ shared_ptr<Matrix> MintsHelper::so_overlap()
     molecule->update_geometry();
     // Read in the basis set
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, options_.get_str("BASIS"));
+    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, "BASIS");
     shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
     shared_ptr<SOBasisSet> sobasis(new SOBasisSet(basis, fact));
     const Dimension& dim = sobasis->dimension();
@@ -419,7 +419,7 @@ shared_ptr<Matrix> MintsHelper::so_kinetic()
     molecule->update_geometry();
     // Read in the basis set
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, options_.get_str("BASIS"));
+    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, "BASIS");
     shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
     shared_ptr<SOBasisSet> sobasis(new SOBasisSet(basis, fact));
     const Dimension& dim = sobasis->dimension();
@@ -443,7 +443,7 @@ shared_ptr<Matrix> MintsHelper::so_potential()
     molecule->update_geometry();
     // Read in the basis set
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, options_.get_str("BASIS"));
+    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, "BASIS");
     shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
     shared_ptr<SOBasisSet> sobasis(new SOBasisSet(basis, fact));
     const Dimension& dim = sobasis->dimension();
@@ -466,7 +466,7 @@ std::vector<shared_ptr<Matrix> > MintsHelper::so_dipole()
     molecule->update_geometry();
     // Read in the basis set
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, options_.get_str("BASIS"));
+    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, "BASIS");
     shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
     shared_ptr<SOBasisSet> sobasis(new SOBasisSet(basis, fact));
     const Dimension& dim = sobasis->dimension();

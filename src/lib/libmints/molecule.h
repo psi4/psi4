@@ -110,12 +110,10 @@ protected:
      * Attempts to interpret a string as an atom specifier in a zmatrix.
      *
      * @param str the string to interpret.
-     * @param atoms the list of atoms known so far
      * @param line the current line, for error message printing.
      * @return the atom number (adjusted to zero-based counting)
      */
-    static int get_anchor_atom(const std::string &str, const std::vector<std::string> &atoms,
-                               const std::string &line);
+    int get_anchor_atom(const std::string &str, const std::string &line);
 
     /// Point group to use with this molecule.
     boost::shared_ptr<PointGroup> pg_;
@@ -160,8 +158,6 @@ protected:
     std::vector<FragmentType> fragment_types_;
     /// Symmetry string from geometry specification
     std::string symmetry_from_input_;
-    /// List of the original atom labels.
-    std::vector<std::string> original_atom_labels_;
 
 public:
     Molecule();
@@ -248,9 +244,9 @@ public:
     /// Returns mass atom atom
     double mass(int atom) const;
     /// Returns the cleaned up label of the atom (C2 => C, H4 = H)
+    std::string symbol(int atom) const;
+    /// Returns the original label of the atom as given in the input file (C2, H4).
     std::string label(int atom) const;
-    /// Returns the original label of the atom as given in the input file.
-    std::string original_label(int atom) const;
     /// Returns charge of atom
     double charge(int atom) const;
     /// Returns mass atom atom
@@ -259,6 +255,12 @@ public:
     std::string flabel(int atom) const;
     /// Returns charge of atom
     double fcharge(int atom) const;
+    /// Returns the CoordEntry for an atom
+    const boost::shared_ptr<CoordEntry>& atom_entry(int atom) const;
+
+    void set_basis_all_atoms(const std::string& name, const std::string& type="BASIS");
+    void set_basis_by_symbol(const std::string& symbol, const std::string& name, const std::string& type="BASIS");
+    void set_basis_by_label(const std::string& label, const std::string& name, const std::string& type="BASIS");
 
     /// Number of frozen core for molecule given freezing state
     int nfrozen_core(const std::string& depth="");

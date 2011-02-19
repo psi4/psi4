@@ -37,8 +37,8 @@ void LMP2::direct_df_transformation3() {
   // Create a basis set object and initialize it using the checkpoint file.
   // Create a basis set object and initialize it.
   shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-  shared_ptr<BasisSet> basis = BasisSet::construct(parser, Process::environment.molecule(), orbital_basis);
-  shared_ptr<BasisSet> ribasis = BasisSet::construct(parser, Process::environment.molecule(), ri_basis);
+  shared_ptr<BasisSet> basis = BasisSet::construct(parser, Process::environment.molecule(), "BASIS");
+  shared_ptr<BasisSet> ribasis = BasisSet::construct(parser, Process::environment.molecule(), "RI_BASIS_MP2");
   shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
 
   // Create integral factory

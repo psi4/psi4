@@ -99,8 +99,7 @@ void CC::get_params()
 void CC::get_ribasis()
 {
   shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-  ribasis_ = BasisSet::construct(parser, molecule_, options_.get_str(
-    "RI_BASIS_CC"));
+  ribasis_ = BasisSet::construct(parser, molecule_, "RI_BASIS_CC");
   zero_ = BasisSet::zero_ao_basis_set();
   ndf_ = ribasis_->nbf();
 }

@@ -50,10 +50,10 @@ void GaussianShell::copy_data(int l, double *exp, double *coef)
     }
 }
 
-GaussianShell* GaussianShell::copy()
+GaussianShell* GaussianShell::copy(int nc, Vector3& c)
 {
     GaussianShell* temp = new GaussianShell();
-    temp->init(nprimitive_, exp_, l_, GaussianType(puream_), coef_, nc_, center_, start_);
+    temp->init(nprimitive_, exp_, l_, GaussianType(puream_), coef_, nc, c, start_);
     return temp;
 }
 

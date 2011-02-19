@@ -240,17 +240,6 @@ public:
      * See libmints/benchmark.cc for details
      */
     static std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > test_basis_set(int max_am);
-    /** Returns a new BasisSet object.
-     *
-     * Returns a new BasisSet object configured with the provided Molecule object.
-     * @param parser The basis set parser object that will be used to interpret the basis set file.
-     * @param mol Molecule to construct basis set for.
-     * @param basisname Name of the basis set to search for in pbasis.dat
-     * @return A new basis set object constructed from the information passed in.
-     */
-    static boost::shared_ptr<BasisSet> construct(const boost::shared_ptr<BasisSetParser>& parser,
-        const boost::shared_ptr<Molecule>& mol,
-        const std::string &basisname);
 
     /** Returns a new BasisSet object.
      *
@@ -262,7 +251,7 @@ public:
      */
     static boost::shared_ptr<BasisSet> construct(const boost::shared_ptr<BasisSetParser>& parser,
         const boost::shared_ptr<Molecule>& mol,
-        const std::vector<std::string> &basisnames);
+        const std::string& type);
 
     /** Converts basis set name to a compatible filename.
      * @param basisname Basis name

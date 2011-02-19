@@ -88,11 +88,22 @@ protected:
     bool computed_;
     Vector3 coordinates_;
 
+    /// Atomic number of the atom
     int Z_;
     double charge_;
     double mass_;
+
+    /// Label of the atom minus any extra info (H1 => H)
+    std::string symbol_;
+    /// Original label from the molecule from the input file (H1)
     std::string label_;
+    /// Is this a ghost atom?
     bool ghosted_;
+
+    /// Different types of basis sets that can be assigned to this atom.
+    //       option name, basis name
+    std::map<std::string, std::string> basissets_;
+
     /// Computes the distance between two sets of coordinates
     static double r(const Vector3 &a1, const Vector3 &a2) { return a1.distance(a2); }
     /// Computes the angle (in rad.) between three sets of coordinates.
@@ -101,7 +112,7 @@ protected:
     /// Computes the dihedral (in rad.) between four sets of coordinates.
     static double d(const Vector3 &a1, const Vector3 &a2, const Vector3 &a3, const Vector3 &a4)
         { Vector3 eBA(a1-a2), eBC(a3-a2), eCD(a4-a3), eCB(a2-a3);
-          eBA.normalize(); eBC.normalize(); eCD.normalize(); eCB.normalize(); 
+          eBA.normalize(); eBC.normalize(); eCD.normalize(); eCB.normalize();
           Vector3 BAxBC(eBA.cross(eBC)), CBxCD(eCB.cross(eCD));
           double cosTau = BAxBC.dot(CBxCD)/(sin(a(a1,a2,a3))*sin(a(a2,a3,a4)));
           if(cosTau < -1.0) cosTau = -1.0; if(cosTau > 1.0) cosTau = 1.0; return acos(cosTau); }
@@ -113,7 +124,8 @@ public:
      * ZMatrixEntry: ZMatrix storage.
      */
     enum CoordEntryType {CartesianCoord, ZMatrixCoord};
-    CoordEntry(int entry_number, int Z, double charge, double mass, std::string label);
+    CoordEntry(int entry_number, int Z, double charge, double mass, const std::string& symbol, const std::string& label="");
+    CoordEntry(int entry_number, int Z, double charge, double mass, const std::string& symbol, const std::string& label, const std::map<std::string, std::string>& basis);
     virtual ~CoordEntry();
 
     /// Computes the values of the coordinates (in whichever units were inputted), returning them in a Vector.
@@ -142,9 +154,23 @@ public:
     /// The atomic mass of the current atom.
     double mass() const { return mass_; }
     /// The atomic symbol.
-    std::string label() const { return label_; }
+    const std::string& symbol() const { return symbol_; }
+    /// The atom label.
+    const std::string& label() const { return label_; }
     /// The order in which this appears in the full atom list.
     int entry_number() const { return entry_number_; }
+
+    /** Set the basis for this atom
+     * @param type Keyword from input file, basis, ri_basis, etc.
+     * @param name Value from input file
+     */
+    void set_basisset(const std::string& name, const std::string& type="BASIS");
+
+    /** Returns the basis name for the provided type.
+     * @param type Keyword from input file.
+     * @returns the value from input.
+     */
+    const std::string& basisset(const std::string& type="BASIS") const;
 };
 
 class CartesianEntry : public CoordEntry{
@@ -152,15 +178,18 @@ class CartesianEntry : public CoordEntry{
     boost::shared_ptr<CoordValue> y_;
     boost::shared_ptr<CoordValue> z_;
 public:
-    CartesianEntry(int entry_number, int Z, double charge, double mass, std::string label,
-                   boost::shared_ptr<CoordValue>(x), boost::shared_ptr<CoordValue>(y), boost::shared_ptr<CoordValue>(z));
+    CartesianEntry(int entry_number, int Z, double charge, double mass, const std::string& symbol, const std::string& label,
+                   boost::shared_ptr<CoordValue> x, boost::shared_ptr<CoordValue> y, boost::shared_ptr<CoordValue> z);
+    CartesianEntry(int entry_number, int Z, double charge, double mass, const std::string& symbol, const std::string& label,
+                   boost::shared_ptr<CoordValue> x, boost::shared_ptr<CoordValue> y, boost::shared_ptr<CoordValue> z, const std::map<std::string, std::string>& basis);
 
     const Vector3& compute();
     void set_coordinates(double x, double y, double z);
     CoordEntryType type() { return CartesianCoord; }
     void invalidate () { computed_ = false; x_->invalidate(); y_->invalidate(); z_->invalidate(); }
     shared_ptr<CoordEntry> clone( std::vector<shared_ptr<CoordEntry> > &atoms, std::map<std::string, double>& map){
-        return shared_ptr<CoordEntry>(new CartesianEntry(entry_number_, Z_, charge_, mass_, label_, x_->clone(map), y_->clone(map), z_->clone(map)));
+        shared_ptr<CoordEntry> temp(new CartesianEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, x_->clone(map), y_->clone(map), z_->clone(map), basissets_));
+        return temp;
     }
 };
 
@@ -174,35 +203,48 @@ class ZMatrixEntry : public CoordEntry
     boost::shared_ptr<CoordValue> dval_;
 
 public:
-    ZMatrixEntry(int entry_number, int Z, double charge, double mass, std::string label,
+    ZMatrixEntry(int entry_number, int Z, double charge, double mass, const std::string& symbol, const std::string& label,
                  boost::shared_ptr<CoordEntry> rto=boost::shared_ptr<CoordEntry>(),
                  boost::shared_ptr<CoordValue> rval=boost::shared_ptr<CoordValue>(),
                  boost::shared_ptr<CoordEntry> ato=boost::shared_ptr<CoordEntry>(),
                  boost::shared_ptr<CoordValue> aval=boost::shared_ptr<CoordValue>(),
                  boost::shared_ptr<CoordEntry> dto=boost::shared_ptr<CoordEntry>(),
                  boost::shared_ptr<CoordValue> dval=boost::shared_ptr<CoordValue>());
+    ZMatrixEntry(int entry_number, int Z, double charge, double mass, const std::string& symbol, const std::string& label,
+                 const std::map<std::string, std::string>& basis,
+                 boost::shared_ptr<CoordEntry> rto=boost::shared_ptr<CoordEntry>(),
+                 boost::shared_ptr<CoordValue> rval=boost::shared_ptr<CoordValue>(),
+                 boost::shared_ptr<CoordEntry> ato=boost::shared_ptr<CoordEntry>(),
+                 boost::shared_ptr<CoordValue> aval=boost::shared_ptr<CoordValue>(),
+                 boost::shared_ptr<CoordEntry> dto=boost::shared_ptr<CoordEntry>(),
+                 boost::shared_ptr<CoordValue> dval=boost::shared_ptr<CoordValue>());
+
     virtual ~ZMatrixEntry();
-    void invalidate () { computed_ = false; if(rval_ != 0) rval_->invalidate(); 
+    void invalidate () { computed_ = false; if(rval_ != 0) rval_->invalidate();
                                          if(aval_ != 0) aval_->invalidate();
                                          if(dval_ != 0) dval_->invalidate(); }
     const Vector3& compute();
     void set_coordinates(double x, double y, double z);
     CoordEntryType type() { return ZMatrixCoord; }
     shared_ptr<CoordEntry> clone( std::vector<shared_ptr<CoordEntry> > &atoms, std::map<std::string, double>& map){
+        shared_ptr<CoordEntry> temp;
         if(rto_ == 0 && ato_ == 0 && dto_ == 0){
-            return shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, label_));
+            temp = shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_));
         }else if(ato_ == 0 && dto_ == 0){
-            return shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, label_, 
+            temp = shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_,
                                           atoms[rto_->entry_number()], rval_->clone(map)));
         }else if(dto_ == 0){
-            return shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, label_, 
+            temp = shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_,
                                           atoms[rto_->entry_number()], rval_->clone(map),
                                           atoms[ato_->entry_number()], aval_->clone(map)));
         }
-        return shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, label_, 
+        else {
+            temp = shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_,
                                       atoms[rto_->entry_number()], rval_->clone(map),
                                       atoms[ato_->entry_number()], aval_->clone(map),
                                       atoms[dto_->entry_number()], dval_->clone(map)));
+        }
+        return temp;
     }
 };
 

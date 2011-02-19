@@ -17,6 +17,8 @@ using namespace psi;
 using namespace boost;
 using namespace std;
 
+boost::regex basis_separator("^\\s*\\[\\s*(.*?)\\s*\\]\\s*$");
+
 // the third parameter of from_string() should be
 // one of std::hex, std::dec or std::oct
 template <class T>
@@ -64,8 +66,10 @@ BasisSetParser::~BasisSetParser()
 {
 }
 
-vector<string> BasisSetParser::load_file(const std::string &filename)
+vector<string> BasisSetParser::load_file(const std::string &filename, const std::string& basisname)
 {
+    smatch what;
+
     // Load in entire file.
     vector<string> lines;
 
@@ -78,9 +82,31 @@ vector<string> BasisSetParser::load_file(const std::string &filename)
     if (!infile)
         throw BasisSetFileNotFound("BasisSetParser::parse: Unable to open basis set file: " + filename, __FILE__, __LINE__);
 
+    bool given_basisname = basisname.empty() ? false : true;
+    bool found_basisname = false;
+
     while (infile.good()) {
         getline(infile, text);
-        lines.push_back(text);
+
+        // If no basisname was given always save the line.
+        if (given_basisname == false)
+            lines.push_back(text);
+
+        if (found_basisname) {
+
+            // If we find another [*] we're done.
+            if (regex_match(text, what, basis_separator))
+                break;
+
+            lines.push_back(text);
+            continue;
+        }
+
+        // If the user gave a basisname AND text matches the basisname we want to trigger to retain
+        if (given_basisname && regex_match(text, what, basis_separator)) {
+            if (what[1] == basisname)
+                found_basisname = true;
+        }
     }
 
     return lines;
@@ -140,13 +166,13 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
         // Look for Cartesian or Spherical
         if (regex_match(line, what, cartesian)) {
             gaussian_type = Cartesian;
-            if (Process::environment.options.exists("PUREAM") && Process::environment.options.get_global("PUREAM").has_changed()) {
+            if (Process::environment.options.get_global("PUREAM").has_changed()) {
                 gaussian_type = ((Process::environment.options.get_global("PUREAM").to_integer()) ? Pure : Cartesian);
             }
             continue;
         } else if (regex_match(line, what, spherical)) {
             gaussian_type = Pure;
-            if (Process::environment.options.exists("PUREAM") && Process::environment.options.get_global("PUREAM").has_changed()) {
+            if (Process::environment.options.get_global("PUREAM").has_changed()) {
                 gaussian_type = ((Process::environment.options.get_global("PUREAM").to_integer()) ? Pure : Cartesian);
             }
             continue;
