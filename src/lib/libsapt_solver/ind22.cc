@@ -81,9 +81,9 @@ void SAPT2::ind22()
   results_.ind22 = ind220 + ind202;
 }
 
-double SAPT2::ind22_1(double **iAR, double **wAA, double **wRR, char *t_label,
-  int dfnum, char *OO_label, char *OV_label, char *VV_label, double *evals,
-  int nocc, int nvir)
+double SAPT2::ind22_1(double **iAR, double **wAA, double **wRR, 
+  const char *t_label, int dfnum, const char *OO_label, const char *OV_label, 
+  const char *VV_label, double *evals, int nocc, int nvir)
 {
   double energy = 0.0;
 
@@ -156,8 +156,8 @@ double SAPT2::ind22_1(double **iAR, double **wAA, double **wRR, char *t_label,
   return(energy);
 }
 
-double SAPT2::ind22_2(double **iAR, double **wAA, double **wRR, char *t_label,
-  int nocc, int nvir)
+double SAPT2::ind22_2(double **iAR, double **wAA, double **wRR, 
+  const char *t_label, int nocc, int nvir)
 {
   double energy = 0.0;
 
@@ -178,8 +178,8 @@ double SAPT2::ind22_2(double **iAR, double **wAA, double **wRR, char *t_label,
   return(4.0*energy);
 }
 
-double SAPT2::ind22_3(double **iAR, double **wAR, char *OO_label, 
-  char *VV_label, int nocc, int nvir)
+double SAPT2::ind22_3(double **iAR, double **wAR, const char *OO_label, 
+  const char *VV_label, int nocc, int nvir)
 {
   double energy = 0.0;
 
@@ -208,8 +208,8 @@ double SAPT2::ind22_3(double **iAR, double **wAR, char *OO_label,
   return(-2.0*energy);
 }
 
-double SAPT2::ind22_4(double **iAR, char *theta_OV, int dfnum, char *OV_label,
-  int nocc, int nvir)
+double SAPT2::ind22_4(double **iAR, const char *theta_OV, int dfnum, 
+  const char *OV_label, int nocc, int nvir)
 {
   double energy = 0.0;
 
@@ -252,7 +252,7 @@ double SAPT2::ind22_4(double **iAR, char *theta_OV, int dfnum, char *OV_label,
   return(-2.0*energy);
 }
 
-double SAPT2::ind22_5(double **iAR, char *t_label, double *evals,
+double SAPT2::ind22_5(double **iAR, const char *t_label, double *evals,
   int nocc, int nvir)
 {
   double energy = 0.0;
@@ -274,8 +274,9 @@ double SAPT2::ind22_5(double **iAR, char *t_label, double *evals,
   return(2.0*energy);
 }
 
-double SAPT2::ind22_6(double **iAR, char *t_label, int dfnum, char *OO_label,
-  char *OV_label, char *VV_label, int nocc, int nvir)
+double SAPT2::ind22_6(double **iAR, const char *t_label, int dfnum, 
+  const char *OO_label, const char *OV_label, const char *VV_label, 
+  int nocc, int nvir)
 {
   double energy = 0.0;
 
@@ -332,9 +333,10 @@ double SAPT2::ind22_6(double **iAR, char *t_label, int dfnum, char *OO_label,
   return(-4.0*energy);
 }
 
-double SAPT2::ind22_7(double **iBS, char *OOlabel, char *VVlabel, 
-  char *t_label, int AAnum, char *AA_label, char *AR_label, char *RR_label,
-  int BBnum, char *BS_label, int noccA, int nvirA, int noccB, int nvirB)
+double SAPT2::ind22_7(double **iBS, const char *OOlabel, const char *VVlabel, 
+  const char *t_label, int AAnum, const char *AA_label, const char *AR_label, 
+  const char *RR_label, int BBnum, const char *BS_label, int noccA, int nvirA,
+  int noccB, int nvirB)
 {
   double energy = 0.0;
 

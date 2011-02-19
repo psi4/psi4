@@ -41,6 +41,7 @@ private:
 protected:
     virtual void print_header();
     void elst10();
+    void exch10_s2();
     void exch10();
     virtual void disp20();
     virtual void exch_disp20();

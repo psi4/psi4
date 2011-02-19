@@ -20,8 +20,8 @@ namespace psi { namespace sapt {
 
 class SAPT2 : public SAPT0 {
 private:
-    double exch110(char *);
-    double exch101(char *);
+    double exch110(const char *);
+    double exch101(const char *);
     double exch111();
     double exch120_k2f();
     double exch102_k2f();
@@ -37,15 +37,17 @@ private:
     double exch102_k11u_4();
     double exch102_k11u_5();
     double exch102_k11u_6();
-    double ind22_1(double **, double **, double **, char *, int, char *, 
-      char *, char *, double *, int, int);
-    double ind22_2(double **, double **, double **, char *, int, int);
-    double ind22_3(double **, double **, char *, char *, int, int);
-    double ind22_4(double **, char *, int, char *, int, int);
-    double ind22_5(double **, char *, double *, int, int);
-    double ind22_6(double **, char *, int, char *, char *, char *, int, int);
-    double ind22_7(double **, char *, char *, char *, int, char *, char *, 
-      char *, int, char *, int, int, int, int);
+    double ind22_1(double **, double **, double **, const char *, int, 
+      const char *, const char *, const char *, double *, int, int);
+    double ind22_2(double **, double **, double **, const char *, int, int);
+    double ind22_3(double **, double **, const char *, const char *, int, int);
+    double ind22_4(double **, const char *, int, const char *, int, int);
+    double ind22_5(double **, const char *, double *, int, int);
+    double ind22_6(double **, const char *, int, const char *, const char *, 
+      const char *, int, int);
+    double ind22_7(double **, const char *, const char *, const char *, int, 
+      const char *, const char *, const char *, int, const char *, int, int, 
+      int, int);
 
     virtual double exch_ind20respA_B();
     virtual double exch_ind20respB_A();

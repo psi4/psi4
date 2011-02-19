@@ -27,10 +27,10 @@ protected:
     void elst13();
     virtual double print_results();
 
-    double disp30_1(int, char *, int, char *, int, char *, int, int, 
-      int, int);
-    double disp30_2(int, char *, int, char *, char *, int, char *, char *,
+    double disp30_1(int, const char *, int, const char *, int, const char *, 
       int, int, int, int);
+    double disp30_2(int, const char *, int, const char *, const char *, int, 
+      const char *, const char *, int, int, int, int);
 
 public:
     SAPT2p3(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);

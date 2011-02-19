@@ -44,28 +44,34 @@ private:
     void t_arbs(int);
     void t2_arar(int);
     void t2_bsbs(int);
-    void Y2(char *, char *, char *, char *, char *, int, char *, char *, 
-      char *, double *, int, int);
-    double *t2_solver(int, char *, char *, int, char *, char *, char *, 
-      double *, int, int, int);
-    double *t2_solver_natorbs(int, char *, char *, int, char *, char *, 
-      char *, double *, int, int, int, char *, double **, int);
+    void Y2(const char *, const char *, const char *, const char *, 
+      const char *, int, const char *, const char *, const char *, double *, 
+      int, int);
+    double *t2_solver(int, const char *, const char *, int, const char *, 
+      const char *, const char *, double *, int, int, int);
+    double *t2_solver_natorbs(int, const char *, const char *, int, 
+      const char *, const char *, const char *, double *, int, int, int, 
+      const char *, double **, int);
     void g_arar();
     void g_bsbs();
     void Y3_ar();
     void Y3_bs();
-    void Y3_1(double **, int, char *, char *, char *, int, char *, int, int);
-    void Y3_2(double **, int, char *, char *, char *, int, char *, char *,
-      char *, char *, int, int);
-    void Y3_3(double **, int, char *, int, char *, char *, int, int);
-    void Y3_4(double **, int, char *, char *, int, char *, int, int);
-    void Y3_5(double **, int, char *, char *, char *, int, char *, char *, 
+    void Y3_1(double **, int, const char *, const char *, const char *, int, 
+      const char *, int, int);
+    void Y3_2(double **, int, const char *, const char *, const char *, int, 
+      const char *, const char *, const char *, const char *, int, int);
+    void Y3_3(double **, int, const char *, int, const char *, const char *, 
       int, int);
-    void Y3_6(double **, int, char *, char *, char *, int, char *, int, int);
+    void Y3_4(double **, int, const char *, const char *, int, const char *, 
+      int, int);
+    void Y3_5(double **, int, const char *, const char *, const char *, int, 
+      const char *, const char *, int, int);
+    void Y3_6(double **, int, const char *, const char *, const char *, int, 
+      const char *, int, int);
 
     // Natural Orbital Functions
-    void natural_orbitalify(char *, char *, double *, double **, int, int,
-      char);
+    void natural_orbitalify(const char *, const char *, double *, double **, 
+      int, int, const char);
 
 protected:
     calcinfo calc_info_;
@@ -78,17 +84,17 @@ protected:
     void compute_amplitudes();
     void cphf_induction();
 
-    double **get_diag_AA_ints(int);
-    double **get_diag_BB_ints(int);
-    double **get_AA_ints(int);
-    double **get_BB_ints(int);
-    double **get_AB_ints(int);
-    double **get_AS_ints(int);
-    double **get_RB_ints(int);
-    double **get_AR_ints(int);
-    double **get_BS_ints(int);
-    double **get_RR_ints(int);
-    double **get_SS_ints(int);
+    double **get_diag_AA_ints(const int);
+    double **get_diag_BB_ints(const int);
+    double **get_AA_ints(const int);
+    double **get_BB_ints(const int);
+    double **get_AB_ints(const int);
+    double **get_AS_ints(const int);
+    double **get_RB_ints(const int);
+    double **get_AR_ints(const int);
+    double **get_BS_ints(const int);
+    double **get_RR_ints(const int);
+    double **get_SS_ints(const int);
 
 public:
     SAPT2B(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);

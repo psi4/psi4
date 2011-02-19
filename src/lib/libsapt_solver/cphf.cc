@@ -61,8 +61,8 @@ double **SAPT::uchf_ind(double **W, double *evals, int nocc, int nvir)
   return(S);
 }
 
-double **SAPT::cphf_ind(int dfnum, char *OO, char *OV, char *VV, double **W, 
-  double **S, double *evals, int nocc, int nvir)
+double **SAPT::cphf_ind(int dfnum, const char *OO, const char *OV, 
+  const char *VV, double **W, double **S, double *evals, int nocc, int nvir)
 {
   int a,r,ar;
   time_t start = time(NULL);
@@ -149,8 +149,8 @@ double **SAPT::cphf_ind(int dfnum, char *OO, char *OV, char *VV, double **W,
   return(C_old);
 }
 
-void SAPT::A_mat(int dfnum, char *OO, char *OV, char *VV, double **C_old, 
-  double **C_new, int nocc, int nvir, int iter)
+void SAPT::A_mat(int dfnum, const char *OO, const char *OV, const char *VV, 
+  double **C_old, double **C_new, int nocc, int nvir, int iter)
 {
   int nrio = ribasis_->nbf() + 3;
 

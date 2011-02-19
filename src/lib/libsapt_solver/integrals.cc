@@ -569,10 +569,7 @@ void SAPT2B::df_ints()
   free(zeros);
   free(halftrans);
 
-  if (workflow_.save_Jmhalf)
-    calc_info_.Jmhalf = J_mhalf;
-  else 
-    free_block(J_mhalf);
+  free_block(J_mhalf);
 
   psio_->close(PSIF_SAPT_TEMP,0);
 
