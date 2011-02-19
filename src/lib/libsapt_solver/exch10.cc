@@ -52,7 +52,7 @@ void SAPT0::exch10()
     C_DAXPY(calc_info_.nrio,1.0,&(C_p_AA[aa][0]),1,&(Ap_diag[0]),1);
   }
 
-  ex2 = 2.0*C_DDOT(calc_info_.nrio,calc_info_.diagAA,1,Ap_diag,1);
+  ex2 = 2.0*C_DDOT(calc_info_.nrio,calc_info_.diagAA,1,Ap_diag,1); 
   ex2 -= C_DDOT(calc_info_.noccA*calc_info_.noccA*calc_info_.nrio,
     &(B_p_AA[0][0]),1,&(C_p_AA[0][0]),1);
 
@@ -83,9 +83,9 @@ void SAPT0::exch10()
   C_DGEMM('N','T',calc_info_.noccA,calc_info_.noccA,calc_info_.noccB,1.0,
           &(X_AB[0][0]),calc_info_.noccB,&(X_AB[0][0]),calc_info_.noccB,
           0.0,&(X_AA[0][0]),calc_info_.noccA);
-
+  
   double **X_BB = block_matrix(calc_info_.noccB,calc_info_.noccB);
-
+  
   C_DGEMM('T','N',calc_info_.noccB,calc_info_.noccB,calc_info_.noccA,1.0,
           &(X_AB[0][0]),calc_info_.noccB,&(X_AB[0][0]),calc_info_.noccB,
           0.0,&(X_BB[0][0]),calc_info_.noccB);

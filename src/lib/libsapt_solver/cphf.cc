@@ -11,7 +11,6 @@
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "sapt2b.h"
-#include "sapt3b.h"
 
 namespace psi { namespace sapt {
 
@@ -25,13 +24,13 @@ void SAPT2B::cphf_induction()
       fflush(outfile);
     }
     calc_info_.CHFA = cphf_ind(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",
-      "AR RI Integrals", "RR RI Integrals", calc_info_.WBAR, calc_info_.sA,
+      "AR RI Integrals", "RR RI Integrals", calc_info_.WBAR, calc_info_.sA, 
       calc_info_.evalsA, calc_info_.noccA, calc_info_.nvirA);
   }
   if (!workflow_.save_s)
     free_block(calc_info_.sA);
 
-  calc_info_.sB = uchf_ind(calc_info_.WABS,calc_info_.evalsB,calc_info_.noccB,
+  calc_info_.sB = uchf_ind(calc_info_.WABS,calc_info_.evalsB,calc_info_.noccB, 
     calc_info_.nvirB);
   if (workflow_.save_chf) {
     if (params_.print) {
@@ -44,69 +43,6 @@ void SAPT2B::cphf_induction()
   }
   if (!workflow_.save_s)
     free_block(calc_info_.sB);
-}
-
-void SAPT3B::cphf_induction()
-{
-  calc_info_.sA_B = uchf_ind(calc_info_.WBAR,calc_info_.evalsA,
-    calc_info_.noccA,calc_info_.nvirA);
-  if (params_.print) {
-    fprintf(outfile,"Solving CHF equations: Monomer A <- Monomer B\n\n");
-    fflush(outfile);
-  }
-  calc_info_.CHFA_B = cphf_ind(PSIF_3B_SAPT_AA_DF_INTS,"AA RI Integrals",
-    "AR RI Integrals", "RR RI Integrals", calc_info_.WBAR, calc_info_.sA_B,
-    calc_info_.evalsA, calc_info_.noccA, calc_info_.nvirA);
-
-  calc_info_.sA_C = uchf_ind(calc_info_.WCAR,calc_info_.evalsA,
-    calc_info_.noccA,calc_info_.nvirA);
-  if (params_.print) {
-    fprintf(outfile,"Solving CHF equations: Monomer A <- Monomer C\n\n");
-    fflush(outfile);
-  }
-  calc_info_.CHFA_C = cphf_ind(PSIF_3B_SAPT_AA_DF_INTS,"AA RI Integrals",
-    "AR RI Integrals", "RR RI Integrals", calc_info_.WCAR, calc_info_.sA_C,
-    calc_info_.evalsA, calc_info_.noccA, calc_info_.nvirA);
-
-  calc_info_.sB_A = uchf_ind(calc_info_.WABS,calc_info_.evalsB,
-    calc_info_.noccB,calc_info_.nvirB);
-  if (params_.print) {
-    fprintf(outfile,"Solving CHF equations: Monomer B <- Monomer A\n\n");
-    fflush(outfile);
-  }
-  calc_info_.CHFB_A = cphf_ind(PSIF_3B_SAPT_BB_DF_INTS,"BB RI Integrals",
-    "BS RI Integrals", "SS RI Integrals", calc_info_.WABS, calc_info_.sB_A,
-    calc_info_.evalsB, calc_info_.noccB, calc_info_.nvirB);
-
-  calc_info_.sB_C = uchf_ind(calc_info_.WCBS,calc_info_.evalsB,
-    calc_info_.noccB,calc_info_.nvirB);
-  if (params_.print) {
-    fprintf(outfile,"Solving CHF equations: Monomer B <- Monomer C\n\n");
-    fflush(outfile);
-  }
-  calc_info_.CHFB_C = cphf_ind(PSIF_3B_SAPT_BB_DF_INTS,"BB RI Integrals",
-    "BS RI Integrals", "SS RI Integrals", calc_info_.WCBS, calc_info_.sB_C,
-    calc_info_.evalsB, calc_info_.noccB, calc_info_.nvirB);
-
-  calc_info_.sC_A = uchf_ind(calc_info_.WACT,calc_info_.evalsC,
-    calc_info_.noccC,calc_info_.nvirC);
-  if (params_.print) {
-    fprintf(outfile,"Solving CHF equations: Monomer C <- Monomer A\n\n");
-    fflush(outfile);
-  }
-  calc_info_.CHFC_A = cphf_ind(PSIF_3B_SAPT_CC_DF_INTS,"CC RI Integrals",
-    "CT RI Integrals", "TT RI Integrals", calc_info_.WACT, calc_info_.sC_A,
-    calc_info_.evalsC, calc_info_.noccC, calc_info_.nvirC);
-
-  calc_info_.sC_B = uchf_ind(calc_info_.WBCT,calc_info_.evalsC,
-    calc_info_.noccC,calc_info_.nvirC);
-  if (params_.print) {
-    fprintf(outfile,"Solving CHF equations: Monomer C <- Monomer B\n\n");
-    fflush(outfile);
-  }
-  calc_info_.CHFC_B = cphf_ind(PSIF_3B_SAPT_CC_DF_INTS,"CC RI Integrals",
-    "CT RI Integrals", "TT RI Integrals", calc_info_.WBCT, calc_info_.sC_B,
-    calc_info_.evalsC, calc_info_.noccC, calc_info_.nvirC);
 }
 
 double **SAPT::uchf_ind(double **W, double *evals, int nocc, int nvir)
@@ -125,7 +61,7 @@ double **SAPT::uchf_ind(double **W, double *evals, int nocc, int nvir)
   return(S);
 }
 
-double **SAPT::cphf_ind(int dfnum, char *OO, char *OV, char *VV, double **W,
+double **SAPT::cphf_ind(int dfnum, char *OO, char *OV, char *VV, double **W, 
   double **S, double *evals, int nocc, int nvir)
 {
   int a,r,ar;
@@ -173,7 +109,7 @@ double **SAPT::cphf_ind(int dfnum, char *OO, char *OV, char *VV, double **W,
 
     for (int a=0, i=0; a < nocc; a++) {
     for (int r=0; r < nvir; r++,i++) {
-      resC[i][iter % params_.diisvec] = fabs(C[a][r] - C_old[a][r]);
+      resC[i][iter % params_.diisvec] = C[a][r] - C_old[a][r];
       conv += pow(C[a][r] - C_old[a][r],2);
       }}
 
@@ -213,7 +149,7 @@ double **SAPT::cphf_ind(int dfnum, char *OO, char *OV, char *VV, double **W,
   return(C_old);
 }
 
-void SAPT::A_mat(int dfnum, char *OO, char *OV, char *VV, double **C_old,
+void SAPT::A_mat(int dfnum, char *OO, char *OV, char *VV, double **C_old, 
   double **C_new, int nocc, int nvir, int iter)
 {
   int nrio = ribasis_->nbf() + 3;
@@ -249,17 +185,17 @@ void SAPT::A_mat(int dfnum, char *OO, char *OV, char *VV, double **C_old,
   avail_mem -= 8*(nocc*nvir*(long int) nrio);
 
   long int temp_size = avail_mem / (8*nvir*(long int) nrio);
-
+  
   if (temp_size > nvir)
     temp_size = nvir;
 
   int blocks = (nvir)/temp_size;
   if ((nvir)%temp_size) blocks++;
-
+  
   if (temp_size < 1) {
     fprintf(outfile,"Not enough memory in A Matrix formation\n\n");
     exit(0);
-  }
+  } 
 
   double **B_p_RR = block_matrix(temp_size*nvir,nrio);
 

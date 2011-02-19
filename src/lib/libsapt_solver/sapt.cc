@@ -1,5 +1,5 @@
-/*
- *  SAPT.CC
+/* 
+ *  SAPT.CC 
  *
  */
 #include "sapt.h"
@@ -44,7 +44,6 @@ namespace psi { namespace sapt {
 SAPT::SAPT(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
     : Wavefunction(options, psio, chkpt)
 {
-    basisset_->molecule()->update_geometry();
     get_params();
     get_ribasis();
 }
@@ -68,7 +67,7 @@ void SAPT::get_params()
     params_.maxiter = options_.get_int("MAXITER");
     params_.diisvec = options_.get_int("DIISVECS");
 
-    //Print
+    //Print 
     params_.print = options_.get_int("PRINT");
 
     //Schwarz cutoff
@@ -83,7 +82,6 @@ void SAPT::get_params()
     options_["NFRZ_B"].has_changed()) {
     params_.foccA = options_.get_int("NFRZ_A");
     params_.foccB = options_.get_int("NFRZ_B");
-    params_.foccC = options_.get_int("NFRZ_C");
   }
   else {
     std::vector<int> realsA;
@@ -101,20 +99,11 @@ void SAPT::get_params()
     shared_ptr<Molecule> monomerB = molecule_->extract_subsets(realsB,
       ghostsB);
     params_.foccB = monomerB->nfrozen_core(options_.get_str("FREEZE_CORE"));
-
-    if (options_.get_str("SAPT_LEVEL") == "SAPT3B_N5") {
-      std::vector<int> realsC;
-      realsC.push_back(1);
-      std::vector<int> ghostsC;
-      ghostsC.push_back(0);
-      shared_ptr<Molecule> monomerC = molecule_->extract_subsets(realsC,
-        ghostsC);
-      params_.foccC = monomerC->nfrozen_core(options_.get_str("FREEZE_CORE"));
-    }
-  }
+  }  
 
     //Natural Orbital Stuff
     params_.nat_orbs = options_.get_bool("NAT_ORBS");
+    params_.nat_orbs_t2 = options_.get_bool("NAT_ORBS_T2");
     params_.occ_cutoff = options_.get_double("OCC_CUTOFF");
 }
 

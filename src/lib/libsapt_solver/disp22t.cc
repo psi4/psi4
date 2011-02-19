@@ -31,13 +31,13 @@ void SAPT2p::disp22t()
   if (params_.nat_orbs) {
     psio_->open(PSIF_SAPT_TEMP,0);
     natural_orbitalify_triples(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",
-      "AR RI Integrals","RR RI Integrals",PSIF_SAPT_BB_DF_INTS,
-      "BS RI Integrals","T ARAR Amplitudes","T BSAR Amplitudes",
+      "AR NO Integrals","RR NO Integrals",PSIF_SAPT_BB_DF_INTS,
+      "BS NO Integrals","T ARAR Amplitudes","T BSAR Amplitudes",
       no_info_.evalsA,no_info_.evalsB,no_info_.CA,no_info_.CB,
       calc_info_.noccA,calc_info_.nvirA,params_.foccA,no_info_.nvirA,
       calc_info_.noccB,calc_info_.nvirB,params_.foccB,no_info_.nvirB);
-    d220t = disp220t(PSIF_SAPT_TEMP,"AA RI Integrals","AR RI Integrals",
-      "RR RI Integrals",PSIF_SAPT_TEMP,"BS RI Integrals",PSIF_SAPT_TEMP,
+    d220t = disp220t(PSIF_SAPT_TEMP,"AA RI Integrals","AR NO Integrals",
+      "RR NO Integrals",PSIF_SAPT_TEMP,"BS NO Integrals",PSIF_SAPT_TEMP,
       "T ARAR Amplitudes","T BSAR Amplitudes",no_info_.evalsA,
       no_info_.evalsB,calc_info_.noccA,no_info_.nvirA,params_.foccA,
       calc_info_.noccB,no_info_.nvirB,params_.foccB);
@@ -78,13 +78,13 @@ void SAPT2p::disp22t()
   if (params_.nat_orbs) {
     psio_->open(PSIF_SAPT_TEMP,0);
     natural_orbitalify_triples(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",
-      "BS RI Integrals","SS RI Integrals",PSIF_SAPT_AA_DF_INTS,
-      "AR RI Integrals","T BSBS Amplitudes","T ARBS Amplitudes",
+      "BS NO Integrals","SS NO Integrals",PSIF_SAPT_AA_DF_INTS,
+      "AR NO Integrals","T BSBS Amplitudes","T ARBS Amplitudes",
       no_info_.evalsB,no_info_.evalsA,no_info_.CB,no_info_.CA,
       calc_info_.noccB,calc_info_.nvirB,params_.foccB,no_info_.nvirB,
       calc_info_.noccA,calc_info_.nvirA,params_.foccA,no_info_.nvirA);
-    d202t = disp220t(PSIF_SAPT_TEMP,"BB RI Integrals","BS RI Integrals",
-      "SS RI Integrals",PSIF_SAPT_TEMP,"AR RI Integrals",PSIF_SAPT_TEMP,
+    d202t = disp220t(PSIF_SAPT_TEMP,"BB RI Integrals","BS NO Integrals",
+      "SS NO Integrals",PSIF_SAPT_TEMP,"AR NO Integrals",PSIF_SAPT_TEMP,
       "T BSBS Amplitudes","T ARBS Amplitudes",no_info_.evalsB,
       no_info_.evalsA,calc_info_.noccB,no_info_.nvirB,params_.foccB,
       calc_info_.noccA,no_info_.nvirA,params_.foccA);
@@ -132,9 +132,9 @@ void SAPT2p::disp22t()
   results_.disp22t = d220t + d202t;
 }
 
-double SAPT2p::disp220t(int AAnum, char *AA_label, char *AR_label,
-  char *RR_label, int BBnum, char *BS_label, int ampnum, char *tarar,
-  char *tbsar, double *evalsA, double *evalsB, int noccA, int nvirA,
+double SAPT2p::disp220t(int AAnum, char *AA_label, char *AR_label, 
+  char *RR_label, int BBnum, char *BS_label, int ampnum, char *tarar, 
+  char *tbsar, double *evalsA, double *evalsB, int noccA, int nvirA, 
   int foccA, int noccB, int nvirB, int foccB)
 {
   double energy;
@@ -167,10 +167,10 @@ double SAPT2p::disp220t(int AAnum, char *AA_label, char *AR_label,
 
   time_t start = time(NULL);
   time_t stop;
-
+  
   for(int b=0,bs=0; b<noccB; b++) {
   for(int s=0; s<nvirB; s++,bs++) {
-
+  
     psio_->read(BBnum,BS_label,(char *) &(B_p_bs[0]),sizeof(double)*
       calc_info_.nrio,next_DF_BS,&next_DF_BS);
     psio_->read(ampnum,tbsar,(char *) t_bsAR[0],sizeof(double)*
@@ -232,7 +232,7 @@ double SAPT2p::disp220t(int AAnum, char *AA_label, char *AR_label,
 
 void SAPT2p::fzn_triples(int AAnum, char *AA_label, char *AR_label,
   char *RR_label, int BBnum, char *BS_label, int ampnum, char *tarar,
-  char *tbsar, int noccA, int nvirA, int foccA, int noccB, int nvirB,
+  char *tbsar, int noccA, int nvirA, int foccA, int noccB, int nvirB, 
   int foccB)
 {
   psio_address next_psio;
@@ -322,15 +322,15 @@ void SAPT2p::fzn_triples(int AAnum, char *AA_label, char *AR_label,
 
 }
 
-void SAPT2p::natural_orbitalify_triples(int AAnum, char *AA_label,
+void SAPT2p::natural_orbitalify_triples(int AAnum, char *AA_label, 
   char *AR_label, char *RR_label, int BBnum, char *BS_label, char *tarar,
-  char *tbsar, double *evalsA, double *evalsB, double **mo2noA,
-  double **mo2noB, int noccA, int nvirA, int foccA, int novirA, int noccB,
+  char *tbsar, double *evalsA, double *evalsB, double **mo2noA, 
+  double **mo2noB, int noccA, int nvirA, int foccA, int novirA, int noccB, 
   int nvirB, int foccB, int novirB)
 {
   psio_address next_psio;
   double **B_p_AA = block_matrix(noccA*noccA,calc_info_.nrio);
-
+  
   psio_->read_entry(AAnum,AA_label,(char *) &(B_p_AA[0][0]),sizeof(double)*
       calc_info_.nrio*noccA*(ULI) noccA);
 
@@ -343,68 +343,32 @@ void SAPT2p::natural_orbitalify_triples(int AAnum, char *AA_label,
 
   free_block(B_p_AA);
 
-  double **B_p_RR = block_matrix(nvirA*nvirA,calc_info_.nrio);
+  double **B_p_RR = block_matrix(novirA*novirA,calc_info_.nrio);
 
   psio_->read_entry(AAnum,RR_label,(char *) &(B_p_RR[0][0]),sizeof(double)*
-      calc_info_.nrio*nvirA*(ULI) nvirA);
+      calc_info_.nrio*novirA*(ULI) novirA);
 
-  double **C_p_RR = block_matrix(novirA*nvirA,calc_info_.nrio);
-
-  C_DGEMM('T','N',novirA,nvirA*calc_info_.nrio,nvirA,1.0,
-    &(mo2noA[noccA][noccA]),noccA+novirA,B_p_RR[0],nvirA*calc_info_.nrio,0.0,
-    C_p_RR[0],nvirA*calc_info_.nrio);
-
-  free_block(B_p_RR);
-  double **D_p_RR = block_matrix(novirA*novirA,calc_info_.nrio);
-
-  for(int r=0; r<novirA; r++) {
-    C_DGEMM('T','N',novirA,calc_info_.nrio,nvirA,1.0,&(mo2noA[noccA][noccA]),
-      noccA+novirA,C_p_RR[r*nvirA],calc_info_.nrio,0.0,D_p_RR[r*novirA],
-      calc_info_.nrio);
-  }
-
-  psio_->write_entry(PSIF_SAPT_TEMP,RR_label,(char *) &(D_p_RR[0][0]),
+  psio_->write_entry(PSIF_SAPT_TEMP,RR_label,(char *) &(B_p_RR[0][0]),
     sizeof(double)*calc_info_.nrio*novirA*(ULI) novirA);
 
-  free_block(C_p_RR);
-  free_block(D_p_RR);
-
-  double **B_p_AR = block_matrix((noccA-foccA)*nvirA,calc_info_.nrio);
-
-  next_psio = psio_get_address(PSIO_ZERO,foccA*nvirA*calc_info_.nrio*(ULI)
-    sizeof(double));
-  psio_->read(AAnum,AR_label,(char *) &(B_p_AR[0][0]),(noccA-foccA)*
-    nvirA*calc_info_.nrio*(ULI) sizeof(double),next_psio,&next_psio);
+  free_block(B_p_RR);
 
   double **C_p_AR = block_matrix((noccA-foccA)*novirA,calc_info_.nrio);
 
-  for(int a=0; a<noccA-foccA; a++) {
-    C_DGEMM('T','N',novirA,calc_info_.nrio,nvirA,1.0,&(mo2noA[noccA][noccA]),
-      noccA+novirA,B_p_AR[a*nvirA],calc_info_.nrio,0.0,C_p_AR[a*novirA],
-      calc_info_.nrio);
-  }
-
-  free_block(B_p_AR);
+  next_psio = psio_get_address(PSIO_ZERO,foccA*novirA*calc_info_.nrio*(ULI) 
+    sizeof(double));
+  psio_->read(AAnum,AR_label,(char *) &(C_p_AR[0][0]),(noccA-foccA)*
+    novirA*calc_info_.nrio*(ULI) sizeof(double),next_psio,&next_psio);
 
   psio_->write_entry(PSIF_SAPT_TEMP,AR_label,(char *) &(C_p_AR[0][0]),
     (noccA-foccA)*novirA*calc_info_.nrio*(ULI) sizeof(double));
 
-  double **B_p_BS = block_matrix((noccB-foccB)*nvirB,calc_info_.nrio);
-
-  next_psio = psio_get_address(PSIO_ZERO,foccB*nvirB*calc_info_.nrio*(ULI)
-    sizeof(double));
-  psio_->read(BBnum,BS_label,(char *) &(B_p_BS[0][0]),(noccB-foccB)*
-    nvirB*calc_info_.nrio*(ULI) sizeof(double),next_psio,&next_psio);
-
   double **C_p_BS = block_matrix((noccB-foccB)*novirB,calc_info_.nrio);
 
-  for(int b=0; b<noccB-foccB; b++) {
-    C_DGEMM('T','N',novirB,calc_info_.nrio,nvirB,1.0,&(mo2noB[noccB][noccB]),
-      noccB+novirB,B_p_BS[b*nvirB],calc_info_.nrio,0.0,C_p_BS[b*novirB],
-      calc_info_.nrio);
-  }
-
-  free_block(B_p_BS);
+  next_psio = psio_get_address(PSIO_ZERO,foccB*novirB*calc_info_.nrio*(ULI)
+    sizeof(double));
+  psio_->read(BBnum,BS_label,(char *) &(C_p_BS[0][0]),(noccB-foccB)*
+    novirB*calc_info_.nrio*(ULI) sizeof(double),next_psio,&next_psio);
 
   psio_->write_entry(PSIF_SAPT_TEMP,BS_label,(char *) &(C_p_BS[0][0]),
     (noccB-foccB)*novirB*calc_info_.nrio*(ULI) sizeof(double));

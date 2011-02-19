@@ -1,5 +1,5 @@
-/*
- *  SAPT0.CC
+/* 
+ *  SAPT0.CC 
  *
  */
 
@@ -49,10 +49,8 @@ SAPT0::~SAPT0()
 }
 
 double SAPT0::compute_energy()
-{
-    print_header();
-    //cholesky_denominator(1.0E-8);
-    //laplace_denominator(10);
+{  
+    print_header(); 
     compute_integrals();
     compute_amplitudes();
     elst10();
@@ -81,21 +79,21 @@ void SAPT0::print_header()
      fprintf(outfile,"    NOCC_B  = %9d\n",calc_info_.noccB);
      fprintf(outfile,"    NVIR_A  = %9d\n",calc_info_.nvirA);
      fprintf(outfile,"    NVIR_B  = %9d\n\n",calc_info_.nvirB);
-
+    
      #ifdef _OPENMP
      fprintf(outfile,"Running SAPT with %d OMP threads\n",
        omp_get_max_threads());
      fprintf(outfile,"Using version %d of OpenMP\n\n",_OPENMP);
-     #endif
-
+     #endif 
+    
      fflush(outfile);
-}
+}   
 
 double SAPT0::print_results()
 {
   double eHF = calc_info_.eHF_D - calc_info_.eHF_A - calc_info_.eHF_B;
   double sapt0 = eHF + results_.disp20 + results_.exch_disp20;
-  double dHF = eHF - (results_.elst10 + results_.exch10 + results_.ind20 +
+  double dHF = eHF - (results_.elst10 + results_.exch10 + results_.ind20 + 
     results_.exch_ind20);
 
   fprintf(outfile,"    SAPT Results  \n");
