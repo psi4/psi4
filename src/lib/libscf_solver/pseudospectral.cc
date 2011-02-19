@@ -32,7 +32,7 @@ using namespace psi;
 
 namespace psi { namespace scf {
 
-PseudospectralHF::PseudospectralHF(shared_ptr<BasisSet> basis, shared_ptr<Matrix> D, 
+PseudospectralHF::PseudospectralHF(shared_ptr<BasisSet> basis, shared_ptr<Matrix> D,
 shared_ptr<Matrix> J, shared_ptr<Matrix> K, shared_ptr<PSIO> psio, Options& opt) :
     primary_(basis), D_(D), J_(J), K_(K), psio_(psio), options_(opt)
 {
@@ -49,9 +49,9 @@ void PseudospectralHF::common_init()
 
     // Build auxiliary basis from options
     shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
+    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     auxiliary_ = BasisSet::construct(parser, primary_->molecule(), options_.get_str("RI_BASIS_SCF"));
-    parser.reset(); 
+    parser.reset();
 
     // Build a fitting metric object
     Jinv_ = shared_ptr<FittingMetric>(new FittingMetric(auxiliary_));
@@ -63,61 +63,61 @@ void PseudospectralHF::common_init()
     // Build a set of thread-local integrators
     int nthread = 1;
     #ifdef _OMP
-        nthread = omp_get_max_threads(); 
+        nthread = omp_get_max_threads();
     #endif
-    eri_.resize(nthread);   
-    pot_.resize(nthread);   
+    eri_.resize(nthread);
+    pot_.resize(nthread);
 
     #pragma omp parallel
     {
         int thread = 0;
         #ifdef _OMP
-            thread = omp_get_thread_num(); 
+            thread = omp_get_thread_num();
         #endif
-        
+
         shared_ptr<IntegralFactory> fact(new IntegralFactory(auxiliary_, zero, primary_, primary_));
-        eri_[thread] = shared_ptr<TwoBodyAOInt>(fact->eri());  
+        eri_[thread] = shared_ptr<TwoBodyAOInt>(fact->eri());
         fact.reset();
 
         shared_ptr<IntegralFactory> fact2(new IntegralFactory(primary_, primary_, zero, zero));
-        pot_[thread] = shared_ptr<PseudopotentialInt>(static_cast<PseudopotentialInt*>(fact2->ao_pseudopotential()));  
-    } 
+        pot_[thread] = shared_ptr<PseudopotentialInt>(static_cast<PseudopotentialInt*>(fact2->ao_pseudopotential()));
+    }
 
-    // Build the peudospectral grid points and X matrix 
+    // Build the peudospectral grid points and X matrix
     shared_ptr<Integrator> quad = Integrator::build_integrator(primary_->molecule(), psio_, options_);
     quad->buildGrid(5000);
     P_ = quad->getNPoints();
 
-    shared_ptr<BasisPoints> points(new BasisPoints(primary_, 5000));    
+    shared_ptr<BasisPoints> points(new BasisPoints(primary_, 5000));
     points->setToComputePoints(true);
     double** bpoints = points->getPoints();
 
     points_ = shared_ptr<Matrix>(new Matrix("Pseudospectral Points", P_, 3));
-    double** rp = points_->pointer(0);    
-    
+    double** rp = points_->pointer(0);
+
     X_ = shared_ptr<Matrix>(new Matrix("Pseudospectral X", P_, primary_->nbf()));
-    double** Xp = X_->pointer(0);    
+    double** Xp = X_->pointer(0);
 
     unsigned long int counter = 0L;
     for (int P = 0; P < quad->getNBlocks(); P++) {
         shared_ptr<GridBlock> block = quad->getBlock(P);
-        double* x = block->getX();  
-        double* y = block->getY();  
-        double* z = block->getZ(); 
-        double* w = block->getZ(); 
+        double* x = block->getX();
+        double* y = block->getY();
+        double* z = block->getZ();
+        double* w = block->getZ();
         int n = block->getTruePoints();
-       
+
         // Compute the basis points
         points->computePoints(block);
- 
+
         // Copy the points in
         for (int i = 0; i < n; i++) {
-            rp[counter][0] = x[i]; 
-            rp[counter][1] = y[i]; 
+            rp[counter][0] = x[i];
+            rp[counter][1] = y[i];
             rp[counter][2] = z[i];
             double weight = sqrt(w[i]);
             for (int Q = 0; Q < primary_->nbf(); Q++)
-                Xp[counter][Q] = weight * bpoints[i][Q]; 
+                Xp[counter][Q] = weight * bpoints[i][Q];
             counter++;
         }
     }
@@ -125,7 +125,7 @@ void PseudospectralHF::common_init()
 void PseudospectralHF::form_G_RHF()
 {
     form_J_DF_RHF();
-    form_K_PS_RHF();    
+    form_K_PS_RHF();
 }
 void PseudospectralHF::form_J_DF_RHF()
 {
@@ -133,7 +133,7 @@ void PseudospectralHF::form_J_DF_RHF()
     int max_p = 0;
     for (int P = 0; P < primary_->nshell(); P++)
         if (max_p < primary_->shell(P)->nfunction())
-            max_p = primary_->shell(P)->nfunction(); 
+            max_p = primary_->shell(P)->nfunction();
     int nca = max_p*max_p;
 
     int nthread = 1;
@@ -144,9 +144,9 @@ void PseudospectralHF::form_J_DF_RHF()
     double** Dp = D_->pointer();
     double** Jp = J_->pointer();
 
-    double** Db = new double*[nthread]; 
-    double** db = new double*[nthread]; 
-    double** A = new double*[nthread]; 
+    double** Db = new double*[nthread];
+    double** db = new double*[nthread];
+    double** A = new double*[nthread];
 
     bool allocated = false;
     int thread = 0;
@@ -192,7 +192,7 @@ void PseudospectralHF::form_J_DF_RHF()
             // Compute the integrals
             eri_[thread]->compute_shell(Ap, 0 , P, Q);
             int na = auxiliary_->shell(Ap)->nfunction();
-    
+
             memcpy(static_cast<void*>(&A[thread][offset]), buffer, np*nq*na*sizeof(double));
 
         }
@@ -201,21 +201,21 @@ void PseudospectralHF::form_J_DF_RHF()
         for (int p = 0; p < np; p++) {
             memcpy(static_cast<void*>(&Db[thread][p*nq]), static_cast<void*> (&Dp
                 [op + p][oq]), nq*sizeof(double));
-        }  
+        }
 
         // Permutational symmetry
         if (P != Q) C_DSCAL(np*nq, 2.0, Db[thread], 1);
 
         // do the GEMV
-        C_DGEMV('N', naux, np*nq, 1.0, A[thread], np*nq, Db[thread], 1, 1.0, db[thread], 1); 
+        C_DGEMV('N', naux, np*nq, 1.0, A[thread], np*nq, Db[thread], 1, 1.0, db[thread], 1);
 
-    } 
+    }
 
     #ifdef HAVE_MKL
         mkl_set_num_threads(mkl_n);
     #endif
-    
-    // Add all the threads into the one element 
+
+    // Add all the threads into the one element
     double* d = new double[naux];
     memset(static_cast<void*>(d), '\0', naux*sizeof(double));
     for (int t = 0; t < nthread; t++) {
@@ -268,20 +268,20 @@ void PseudospectralHF::form_J_DF_RHF()
             // Compute the integrals
             eri_[thread]->compute_shell(Ap, 0 , P, Q);
             int na = auxiliary_->shell(Ap)->nfunction();
-    
+
             memcpy(static_cast<void*>(&A[thread][offset]), buffer, np*nq*na*sizeof(double));
 
         }
 
         // do the GEMV
-        C_DGEMV('T', np*nq, naux, 1.0, A[thread], np*nq, db[thread], 1, 0.0, Db[thread], 1); 
+        C_DGEMV('T', np*nq, naux, 1.0, A[thread], np*nq, db[thread], 1, 0.0, Db[thread], 1);
 
         // Fill the relevant bit of the J matrix
         for (int p = 0; p < np; p++) {
             memcpy(static_cast<void*>(&Jp[op + p][oq]), static_cast<void*> (&Db[thread][p*nq]), nq*sizeof(double));
-        }  
+        }
 
-    } 
+    }
 
     for (int m = 1; m < primary_->nbf(); m++)
         for (int n = m; n < primary_->nbf(); n++)
@@ -302,19 +302,19 @@ void PseudospectralHF::form_K_PS_RHF()
     // We can exploit sparsity like crazy
     shared_ptr<Matrix> Q(new Matrix("Q", P_, primary_->nbf()));
 
-    C_DGEMM('N', 'N', P_, primary_->nbf(), primary_->nbf(), 1.0, X_->pointer()[0], primary_->nbf(), 
+    C_DGEMM('N', 'N', P_, primary_->nbf(), primary_->nbf(), 1.0, X_->pointer()[0], primary_->nbf(),
         D_->pointer()[0], primary_->nbf(), 0.0, Q->pointer()[0], primary_->nbf());
 
     int nthread = 1;
     #ifdef _OMP
         nthread = omp_get_max_threads();
     #endif
-    
+
     shared_ptr<Matrix> Z(new Matrix("Z", P_, primary_->nbf()));
-    std::vector<shared_ptr<Matrix> > A;   
+    std::vector<shared_ptr<Matrix> > A;
     A.resize(nthread);
 
-    #pragma omp parallel 
+    #pragma omp parallel
     {
         int thread = 0;
         #ifdef _OMP
@@ -332,24 +332,24 @@ void PseudospectralHF::form_K_PS_RHF()
     double** Zp = Z->pointer();
     double** Qp = Q->pointer();
 
-    #pragma omp parallel for schedule(guided) num_threads(nthread) 
+    #pragma omp parallel for schedule(guided) num_threads(nthread)
     for (unsigned long int P = 0L; P < P_; P++) {
 
         int thread = 0;
         #ifdef _OMP
             thread = omp_thread_num();
         #endif
-        
+
         pot_[thread]->set_point(Rp[P][0], Rp[P][1], Rp[P][2]);
         pot_[thread]->compute(A[thread]);
-        
+
         double** Ap = A[thread]->pointer();
-        C_DGEMV('N', primary_->nbf(), primary_->nbf(), 1.0, Ap[0], primary_->nbf(), Qp[P], 
-            1, 0.0, Zp[P], 1);            
-    }   
-    A.clear(); 
- 
-    C_DGEMM('T', 'N', primary_->nbf(), primary_->nbf(), P_, 1.0, Z->pointer()[0], primary_->nbf(), 
+        C_DGEMV('N', primary_->nbf(), primary_->nbf(), 1.0, Ap[0], primary_->nbf(), Qp[P],
+            1, 0.0, Zp[P], 1);
+    }
+    A.clear();
+
+    C_DGEMM('T', 'N', primary_->nbf(), primary_->nbf(), P_, 1.0, Z->pointer()[0], primary_->nbf(),
         X_->pointer()[0], primary_->nbf(), 0.0, K_->pointer()[0], primary_->nbf());
 
     double** Kp = K_->pointer();
@@ -358,12 +358,12 @@ void PseudospectralHF::form_K_PS_RHF()
             Kp[m][n] = 0.5 * Kp[n][m] + 0.5 * Kp[m][n];
             Kp[n][m] = Kp[m][n];
         }
-    }   
- 
+    }
+
     #ifdef HAVE_MKL
         mkl_set_num_threads(mkl_n);
     #endif
-        
+
 }
 
 }}

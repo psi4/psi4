@@ -55,8 +55,7 @@ SAPT::~SAPT()
 
 void SAPT::get_ribasis()
 {
-    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(
-      options_.get_str("BASIS_PATH")));
+    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     ribasis_ = BasisSet::construct(parser, molecule_, options_.get_str(
       "RI_BASIS_SAPT"));
     zero_ = BasisSet::zero_ao_basis_set();

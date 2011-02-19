@@ -264,6 +264,12 @@ public:
         const boost::shared_ptr<Molecule>& mol,
         const std::vector<std::string> &basisnames);
 
+    /** Converts basis set name to a compatible filename.
+     * @param basisname Basis name
+     * @return Compatible file name.
+     */
+    static std::string make_filename(const std::string& basisname);
+
     friend class Gaussian94BasisSetParser;
 
     /// Global arrays of x, y, z exponents

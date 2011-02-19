@@ -3,10 +3,21 @@
     \ingroup MINTS
 */
 
+#define BOOST_FILESYSTEM_VERSION 3
+
+//  As an example program, we don't want to use any deprecated features
+#ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+#  define BOOST_FILESYSTEM_NO_DEPRECATED
+#endif
+#ifndef BOOST_SYSTEM_NO_DEPRECATED
+#  define BOOST_SYSTEM_NO_DEPRECATED
+#endif
+
 #include <stdexcept>
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <map>
 
 #include <libciomr/libciomr.h>
 #include <libparallel/parallel.h>
@@ -24,6 +35,14 @@
 #include "basisset_parser.h"
 #include "pointgrp.h"
 #include "wavefunction.h"
+
+#include <boost/regex.hpp>
+#include <boost/xpressive/xpressive.hpp>
+#include <boost/xpressive/regex_actions.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/foreach.hpp>
+#include <boost/filesystem.hpp>
 
 using namespace std;
 using namespace psi;
@@ -73,6 +92,7 @@ void BasisSet::print(FILE *out) const
 //    for (int s=0; s<nshell(); ++s)
 //        shells_[s]->print(out);
 }
+
 void BasisSet::print_by_level(FILE* out, int level) const
 {
     if (level < 1)
@@ -84,6 +104,7 @@ void BasisSet::print_by_level(FILE* out, int level) const
     else if (level > 2)
         print_detail(out);
 }
+
 void BasisSet::print_summary(FILE* out) const
 {
     fprintf(out, "  -AO BASIS SET INFORMATION:\n");
@@ -173,7 +194,6 @@ void BasisSet::print_detail(FILE* out) const
     }
 }
 
-
 shared_ptr<GaussianShell> BasisSet::shell(int si) const
 {
     if (si < 0 || si > nshell())
@@ -191,10 +211,6 @@ shared_ptr<BasisSet> BasisSet::zero_ao_basis_set()
     shared_ptr<BasisSet> new_basis(new BasisSet());
 
     // Setup all the parameters needed for a zero basis set
-//    new_basis->shell_first_basis_function_ = NULL;
-//    new_basis->shell_first_ao_ = NULL;
-//    new_basis->shell_center_ = new int[1];
-//    new_basis->shell_center_[0] = 0;
     new_basis->shell_center_.push_back(0);
     new_basis->max_nprimitive_ = 1;
     new_basis->max_am_ = 0;
@@ -215,9 +231,6 @@ shared_ptr<BasisSet> BasisSet::zero_ao_basis_set()
 
     // Create shell array
     new_basis->shells_.push_back(shared_ptr<GaussianShell>(new GaussianShell));
-
-    // Spherical and SO-transforms are expected even if not used.
-//    new_basis->sphericaltransforms_.push_back(SphericalTransform(0));
 
     // Create out basis set arrays
     // null basis set
@@ -265,10 +278,100 @@ shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parse
     // Update geometry in molecule, if there is a problem an exception is thrown.
     mol->update_geometry();
 
+    // Assign the molecule to the basis set
     basisset->molecule_ = mol;
-    parser->parse(basisset, basisnames);
+
+    // Form list of unique basis sets needed
+    typedef map<string, string> map_ss;
+    map_ss atomsymbol_to_basisname;
+    for (int atom=0; atom<mol->natom(); ++atom) {
+        atomsymbol_to_basisname[mol->original_label(atom)] = basisnames[atom];
+    }
+
+    fprintf(outfile, "Unique basis names:\n");
+    // Print out the map for right now
+    BOOST_FOREACH(map_ss::value_type& i, atomsymbol_to_basisname)
+    {
+        fprintf(outfile, "\t%s %s\n", i.first.c_str(), i.second.c_str());
+    }
+
+    // For each one try to load the basis set
+    const list<string>& user_list = Process::environment.user_basis_files;
+
+    // Map of GaussianShells
+    map<string, vector<shared_ptr<GaussianShell> > > atomsymbol_to_shell;
+
+    BOOST_FOREACH(map_ss::value_type& i, atomsymbol_to_basisname)
+    {
+        // For this one check to see if the user provided a basis set
+        string name = make_filename(i.second);
+
+        BOOST_FOREACH(string user_file, user_list)
+        {
+            // Track down the location of PSI4's python script directory.
+            boost::filesystem::path bf_path;
+            bf_path = boost::filesystem::system_complete(user_file);
+
+            // Does the user provided name match what we're looking for
+            if (name == bf_path.filename().string()) {
+                fprintf(outfile, "found user basis set file that matches what we need\n");
+                // Load in the basis set and remove it from atomsymbol_to_basisname
+                vector<string> file = parser->load_file(bf_path.string());
+
+                // Need to wrap this is a try catch block
+                atomsymbol_to_shell[i.first] = parser->parse(i.first, file);
+            }
+        }
+    }
+
+//    // Now the tricky logic
+//    for (int atom=0; atom<mol->natom(); ++atom) {
+
+//    }
+
+//    // This step is very important. Without it the basis set is almost useless.
+//    basisset->refresh();
+
+    throw PSIEXCEPTION("You're an idiot...we have no basis set");
 
     return basisset;
+}
+
+std::string BasisSet::make_filename(const std::string& name)
+{
+    // Modify the name of the basis set to generate a filename: STO-3G -> sto-3g
+    string basisname = name;
+
+    // First make it lower case
+    transform(basisname.begin(), basisname.end(), basisname.begin(), ::tolower);
+
+    string format_underscore("_"); // empty string
+    // Replace all '(' with '_'
+    xpressive::sregex match_format = xpressive::as_xpr("(");
+    basisname = regex_replace(basisname, match_format, format_underscore);
+
+    // Replace all ')' with '_'
+    match_format = xpressive::as_xpr(")");
+    basisname = regex_replace(basisname, match_format, format_underscore);
+
+    // Replace all ',' with '_'
+    match_format = xpressive::as_xpr(",");
+    basisname = regex_replace(basisname, match_format, format_underscore);
+
+    // Replace all '*' with 's'
+    match_format = xpressive::as_xpr("*");
+    string format_star("s");
+    basisname = regex_replace(basisname, match_format, format_star);
+
+    // Replace all '+' with 'p'
+    match_format = xpressive::as_xpr("+");
+    string format_plus("p");
+    basisname = regex_replace(basisname, match_format, format_plus);
+
+    // Add file extension
+    basisname += ".gbs";
+
+    return basisname;
 }
 
 void BasisSet::refresh()
@@ -500,33 +603,6 @@ std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test
             new_basis->shells_[A*max_shells + Q]->init(nprim[Q], e[Q], am[Q], Pure, c[Q], A, center, 0, Normalized);
         }
     }
-
-    // Initialize SphericalTransform
-    //for (int i=0; i<=max_am; ++i) {
-    //    new_basis->sphericaltransforms_.push_back(SphericalTransform(i));
-    //}
-    //new_basis->refresh();
-
-    /**
-    //Initialize SOTransform
-    new_basis->sotransform_ = shared_ptr<SOTransform>(new SOTransform);
-    new_basis->sotransform_->init(new_basis->nshell());
-
-    int so_global=0;
-    int ao_global=0;
-    for (int i=0; i < new_basis->nshell(); ++i) {
-        SphericalTransform st(new_basis->shell(i)->am());
-        SphericalTransformIter iter(st);
-
-        ao_global = new_basis->shell_to_function(i);
-        so_global = new_basis->shell_to_basis_function(i);
-
-        for (iter.first(); !iter.is_done(); iter.next()) {
-            new_basis->sotransform_->add_transform(i, 0, iter.pureindex() + so_global, iter.coef(),
-                                                  iter.cartindex(), iter.pureindex() + so_global);
-        }
-    }
-    **/
 
     new_basis->refresh();
 

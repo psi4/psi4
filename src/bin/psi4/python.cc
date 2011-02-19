@@ -425,6 +425,11 @@ shared_ptr<Wavefunction> py_psi_reference_wavefunction()
     return Process::environment.reference_wavefunction();
 }
 
+void py_psi_add_user_specified_basis_file(const string& file)
+{
+    Process::environment.user_basis_files.push_front(file);
+}
+
 BOOST_PYTHON_MODULE(PsiMod)
 {
     enum_<PsiReturnType>("PsiReturnType")
@@ -472,6 +477,8 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("get_global_option", py_psi_get_global_option);
 
     def("get_variable", py_psi_get_variable);
+
+    def("add_user_basis_file", py_psi_add_user_specified_basis_file);
 
     // modules
     def("mints", py_psi_mints);

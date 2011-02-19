@@ -43,7 +43,7 @@ PsiReturnType deriv(Options & options)
     shared_ptr<MatrixFactory> factory(new MatrixFactory);
 
     // Read in the basis set
-    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(options.get_str("BASIS_PATH")));
+    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     shared_ptr<BasisSet> basisset = BasisSet::construct(parser, molecule, options.get_str("BASIS"));
 
     // Initialize an integral object.

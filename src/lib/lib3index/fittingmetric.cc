@@ -28,7 +28,7 @@
 using namespace std;
 using namespace psi;
 
-namespace psi { 
+namespace psi {
 
 FittingMetric::FittingMetric()
 {
@@ -44,7 +44,7 @@ FittingMetric::FittingMetric()
     molecule->update_geometry();
 
     // Grab the auxiliary bases (use the SCF tags for now)
-    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(opt.get_str("BASIS_PATH")));
+    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     aux_ = BasisSet::construct(parser, molecule, opt.get_str("RI_BASIS_SCF"));
     if (opt.get_str("POISSON_BASIS_SCF") != "") {
         pois_ =  BasisSet::construct(parser, molecule, opt.get_str("POISSON_BASIS_SCF"));
@@ -54,11 +54,11 @@ FittingMetric::FittingMetric()
     }
     is_inverted_ = false;
 }
-FittingMetric::FittingMetric(shared_ptr<BasisSet> aux) : 
+FittingMetric::FittingMetric(shared_ptr<BasisSet> aux) :
     aux_(aux), is_poisson_(false), is_inverted_(false)
 {
 }
-FittingMetric::FittingMetric(shared_ptr<BasisSet> aux, shared_ptr<BasisSet> pois) : 
+FittingMetric::FittingMetric(shared_ptr<BasisSet> aux, shared_ptr<BasisSet> pois) :
     aux_(aux), pois_(pois), is_poisson_(true), is_inverted_(false)
 {
 }
@@ -73,13 +73,13 @@ void FittingMetric::form_fitting_metric()
     algorithm_ = "NONE";
 
     // Sizing/symmetry indexing
-    shared_ptr<IntegralFactory> auxfact(new IntegralFactory(aux_, aux_, aux_, aux_));   
+    shared_ptr<IntegralFactory> auxfact(new IntegralFactory(aux_, aux_, aux_, aux_));
     shared_ptr<PetiteList> auxpet(new PetiteList(aux_, auxfact));
     shared_ptr<IntegralFactory> poisfact;
     shared_ptr<PetiteList> poispet;
     if (is_poisson_) {
         poisfact = shared_ptr<IntegralFactory>(new IntegralFactory(pois_, pois_, pois_, pois_));
-        poispet = shared_ptr<PetiteList>(new PetiteList(pois_, poisfact)); 
+        poispet = shared_ptr<PetiteList>(new PetiteList(pois_, poisfact));
     }
 
     int naux = 0;
@@ -94,12 +94,12 @@ void FittingMetric::form_fitting_metric()
             naux += poispet->SO_basisdim()[h];
             npoisson += poispet->SO_basisdim()[h];
             nauxpi[h] += poispet->SO_basisdim()[h];
-        } 
-    }   
+        }
+    }
     Dimension ngauspi = auxpet->SO_basisdim();
 
     // Build the full DF/Poisson matrix in the AO basis first
-    shared_ptr<Matrix> AOmetric(new Matrix("AO Basis DF Metric", naux, naux));  
+    shared_ptr<Matrix> AOmetric(new Matrix("AO Basis DF Metric", naux, naux));
     double** W = AOmetric->pointer(0);
     shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
 
@@ -120,10 +120,10 @@ void FittingMetric::form_fitting_metric()
         Jbuffer[Q] = Jint[Q]->buffer();
     }
 
-    #pragma omp parallel for schedule (dynamic) num_threads(nthread) 
+    #pragma omp parallel for schedule (dynamic) num_threads(nthread)
     for (int MU=0; MU < aux_->nshell(); ++MU) {
         int nummu = aux_->shell(MU)->nfunction();
-    
+
         int thread = 0;
         #ifdef _OPENMP
             thread = omp_get_thread_num();
@@ -147,9 +147,9 @@ void FittingMetric::form_fitting_metric()
             }
         }
     }
-    delete[] Jbuffer; 
-    delete[] Jint; 
-    
+    delete[] Jbuffer;
+    delete[] Jint;
+
     if (is_poisson_) {
         // == (AB) Block == //
         IntegralFactory rifactory_RP(pois_, aux_,  zero, zero);
@@ -160,7 +160,7 @@ void FittingMetric::form_fitting_metric()
             Obuffer[Q] = Oint[Q]->buffer();
         }
 
-        #pragma omp parallel for schedule (dynamic) num_threads(nthread) 
+        #pragma omp parallel for schedule (dynamic) num_threads(nthread)
         for (int NU=0; NU < pois_->nshell(); ++NU) {
             int numnu = pois_->shell(NU)->nfunction();
 
@@ -197,7 +197,7 @@ void FittingMetric::form_fitting_metric()
             Tbuffer[Q] = Tint[Q]->buffer();
         }
 
-        #pragma omp parallel for schedule (dynamic) num_threads(nthread) 
+        #pragma omp parallel for schedule (dynamic) num_threads(nthread)
         for (int MU=0; MU < pois_->nshell(); ++MU) {
             int nummu = pois_->shell(MU)->nfunction();
 
@@ -219,15 +219,15 @@ void FittingMetric::form_fitting_metric()
                         int onu = pois_->shell(NU)->function_index() + nu;
 
                         // These integrals are (A | -1/2 \nabla^2 | B), and should be (A | - 1 / (4 * pi) \nabla^2 |B)
-                        // So a factor of 1 / (2 * PI) is the difference 
+                        // So a factor of 1 / (2 * PI) is the difference
                         W[omu + ngaussian][onu + ngaussian] = 1.0 / (2.0 * M_PI) * Tbuffer[thread][index];
                         W[onu + ngaussian][omu + ngaussian] = 1.0 / (2.0 * M_PI) * Tbuffer[thread][index];
                     }
                 }
             }
         }
-        delete[] Tbuffer; 
-        delete[] Tint; 
+        delete[] Tbuffer;
+        delete[] Tint;
     }
 
     // If C1, form indexing and exit immediately (multiplying by 1 is not so gratifying)
@@ -243,7 +243,7 @@ void FittingMetric::form_fitting_metric()
             rpiv[Q] = Q;
         }
         return;
-    }    
+    }
 
     // Get the similarity transform objects
     shared_ptr<Matrix> auxAO2USO(auxpet->sotoao());
@@ -253,7 +253,7 @@ void FittingMetric::form_fitting_metric()
         poisAO2USO = shared_ptr<Matrix>(poispet->sotoao());
         //poisAO2USO->print();
     }
-    
+
     // Allocate the fitting metric
     metric_ = shared_ptr<Matrix>(new Matrix("SO Basis Fitting Metric", nauxpi, nauxpi));
     shared_ptr<Matrix> Temp;
@@ -265,44 +265,44 @@ void FittingMetric::form_fitting_metric()
         // Gaussian-Gaussian part
         double** J = metric_->pointer(h);
         double** auxU = auxAO2USO->pointer(h);
-       
-        if (ngauspi[h] != 0) { 
+
+        if (ngauspi[h] != 0) {
             Temp = shared_ptr<Matrix>(new Matrix("Temp", ngauspi[h], ngaussian));
-            Temp1 = Temp->pointer(); 
-            C_DGEMM('N', 'N', ngauspi[h], ngaussian, ngaussian, 1.0, auxU[0], ngaussian, W[0], naux, 0.0, Temp1[0], ngaussian); 
+            Temp1 = Temp->pointer();
+            C_DGEMM('N', 'N', ngauspi[h], ngaussian, ngaussian, 1.0, auxU[0], ngaussian, W[0], naux, 0.0, Temp1[0], ngaussian);
             C_DGEMM('N', 'T', ngauspi[h], ngauspi[h], ngaussian, 1.0, Temp1[0], ngaussian, auxU[0], ngaussian, 0.0, J[0], nauxpi[h]);
             Temp.reset();
         }
 
         if (is_poisson_ && poispet->SO_basisdim()[h] != 0) {
-           Dimension npoispi = poispet->SO_basisdim(); 
+           Dimension npoispi = poispet->SO_basisdim();
            double** poisU = poisAO2USO->pointer(h);
-    
+
             // Gaussian-Poisson part
             if (ngauspi[h] != 0) {
                 Temp = shared_ptr<Matrix>(new Matrix("Temp", ngauspi[h], npoisson));
-                Temp1 = Temp->pointer(); 
-                C_DGEMM('N', 'N', ngauspi[h], npoisson, ngaussian, 1.0, auxU[0], ngaussian, &W[0][ngaussian], naux, 0.0, Temp1[0], npoisson); 
-                C_DGEMM('N', 'T', ngauspi[h], npoispi[h], npoisson, 1.0, Temp1[0], npoisson, poisU[0], npoisson, 0.0, &J[0][ngauspi[h]], nauxpi[h]); 
+                Temp1 = Temp->pointer();
+                C_DGEMM('N', 'N', ngauspi[h], npoisson, ngaussian, 1.0, auxU[0], ngaussian, &W[0][ngaussian], naux, 0.0, Temp1[0], npoisson);
+                C_DGEMM('N', 'T', ngauspi[h], npoispi[h], npoisson, 1.0, Temp1[0], npoisson, poisU[0], npoisson, 0.0, &J[0][ngauspi[h]], nauxpi[h]);
                 for (int Q = 0; Q < ngauspi[h]; Q++)
                     for (int P =0; P < npoispi[h]; P++)
                         J[P + ngauspi[h]][Q] = J[Q][P + ngauspi[h]];
                 Temp.reset();
             }
-            
+
             // Poisson-Poisson part
-            unsigned long int AOoffset = ngaussian*(unsigned long int)naux + (unsigned long int) ngaussian;    
-            unsigned long int SOoffset = ngauspi[h]*(unsigned long int)nauxpi[h] + (unsigned long int) ngauspi[h];    
+            unsigned long int AOoffset = ngaussian*(unsigned long int)naux + (unsigned long int) ngaussian;
+            unsigned long int SOoffset = ngauspi[h]*(unsigned long int)nauxpi[h] + (unsigned long int) ngauspi[h];
             Temp = shared_ptr<Matrix>(new Matrix("Temp", npoispi[h], npoisson));
             Temp1 = Temp->pointer();
-            C_DGEMM('N', 'N', npoispi[h], npoisson, npoisson, 1.0, poisU[0], npoisson, &W[0][AOoffset], naux, 0.0, Temp1[0], npoisson); 
+            C_DGEMM('N', 'N', npoispi[h], npoisson, npoisson, 1.0, poisU[0], npoisson, &W[0][AOoffset], naux, 0.0, Temp1[0], npoisson);
             C_DGEMM('N', 'T', npoispi[h], npoispi[h], npoisson, 1.0, Temp1[0], npoisson, poisU[0], npoisson, 0.0, &J[0][SOoffset], nauxpi[h]);
             Temp.reset();
-    
-        } 
+
+        }
     }
-    
-    // Form indexing    
+
+    // Form indexing
     pivots_ = shared_ptr<IntVector>(new IntVector(nauxpi.n(), nauxpi.pointer()));
     rev_pivots_ = shared_ptr<IntVector>(new IntVector(nauxpi.n(), nauxpi.pointer()));
     for (int h = 0; h < auxpet->nirrep(); h++) {
@@ -313,7 +313,7 @@ void FittingMetric::form_fitting_metric()
             rpiv[Q] = Q;
         }
     }
-            
+
 
 }
 void FittingMetric::form_cholesky_inverse()
@@ -326,14 +326,14 @@ void FittingMetric::form_cholesky_inverse()
     pivot();
     for (int h = 0; h < metric_->nirrep(); h++) {
 
-        if (metric_->colspi()[h] == 0) continue;        
+        if (metric_->colspi()[h] == 0) continue;
 
         // Cholesky Decomposition
         double** J = metric_->pointer(h);
         int info = C_DPOTRF('L', metric_->colspi()[h], J[0], metric_->colspi()[h]);
         for (int A = 0; A < metric_->colspi()[h]; A++)
             for (int B = 0; B < A; B++)
-                J[A][B] = 0.0; 
+                J[A][B] = 0.0;
     }
     metric_->set_name("SO Basis Fitting Inverse (Cholesky)");
 }
@@ -347,14 +347,14 @@ void FittingMetric::form_QR_inverse(double tol)
     pivot();
     for (int h = 0; h < metric_->nirrep(); h++) {
 
-        if (metric_->colspi()[h] == 0) continue;        
+        if (metric_->colspi()[h] == 0) continue;
 
         metric_->print();
 
         double** J = metric_->pointer(h);
         int n = metric_->colspi()[h];
 
-        // Copy the J matrix to R (actually R') 
+        // Copy the J matrix to R (actually R')
         shared_ptr<Matrix> R(new Matrix("R", n, n));
         double** Rp = R->pointer();
         C_DCOPY(n*(unsigned long int)n, J[0], 1, Rp[0], 1);
@@ -364,36 +364,36 @@ void FittingMetric::form_QR_inverse(double tol)
 
         // First, find out how much workspace to provide
         double work_size;
-        C_DGEQRF(n,n,Rp[0],n,tau,&work_size, -1);  
+        C_DGEQRF(n,n,Rp[0],n,tau,&work_size, -1);
 
         // Now, do the QR decomposition
         int lwork = (int)work_size;
         double *work = new double[lwork];
-        C_DGEQRF(n,n,Rp[0],n,tau,work,lwork);  
+        C_DGEQRF(n,n,Rp[0],n,tau,work,lwork);
         delete[] work;
 
         // Copy Jcopy to Q (actually Q')
         shared_ptr<Matrix> Q(new Matrix("Q", n, n));
         double** Qp = Q->pointer();
         C_DCOPY(n*(unsigned long int)n, Rp[0], 1, Qp[0], 1);
-       
+
         // Put R in the upper triangle where it belongs
         for (int i = 1; i < n; i++)
             for (int j = 0; j < i; j++) {
                 Rp[j][i] = 0.0;
             }
- 
+
         // First, find out how much workspace to provide
-        C_DORGQR(n,n,n,Qp[0],n,tau,&work_size,-1); 
+        C_DORGQR(n,n,n,Qp[0],n,tau,&work_size,-1);
 
         // Now, form Q
         lwork = (int)work_size;
         work = new double[lwork];
-        C_DORGQR(n,n,n,Qp[0],n,tau,work,lwork); 
+        C_DORGQR(n,n,n,Qp[0],n,tau,work,lwork);
         delete[] work;
 
         //Q->print();
-        //R->print();   
+        //R->print();
 
         // Find the number of significant basis functions
         int nsig = 0;
@@ -402,7 +402,7 @@ void FittingMetric::form_QR_inverse(double tol)
             if ((fabs(Rp[A][A]) / R_max) < tol)
                 break;
             nsig++;
-        }        
+        }
 
         // Transform into the reduced basis
         // Just use R's memory, don't need it anymore
@@ -436,7 +436,7 @@ void FittingMetric::form_eig_inverse(double tol)
 
     for (int h = 0; h < metric_->nirrep(); h++) {
 
-        if (metric_->colspi()[h] == 0) continue;        
+        if (metric_->colspi()[h] == 0) continue;
 
         double** J = metric_->pointer(h);
         int n = metric_->colspi()[h];
@@ -477,7 +477,7 @@ void FittingMetric::form_eig_inverse(double tol)
 
         C_DGEMM('T','N',n,n,n,1.0,Jcopyp[0],n,Wp[0],n,0.0,J[0],n);
 
-    } 
+    }
     metric_->set_name("SO Basis Fitting Inverse (Eig)");
 }
 void FittingMetric::form_full_inverse()
@@ -490,7 +490,7 @@ void FittingMetric::form_full_inverse()
     pivot();
     for (int h = 0; h < metric_->nirrep(); h++) {
 
-        if (metric_->colspi()[h] == 0) continue;        
+        if (metric_->colspi()[h] == 0) continue;
 
         // Cholesky Decomposition
         double** J = metric_->pointer(h);
@@ -500,7 +500,7 @@ void FittingMetric::form_full_inverse()
 
         for (int A = 0; A < metric_->colspi()[h]; A++)
             for (int B = 0; B < A; B++)
-                J[A][B] = J[B][A]; 
+                J[A][B] = J[B][A];
     }
     metric_->set_name("SO Basis Fitting Inverse (Full)");
 }
@@ -514,7 +514,7 @@ void FittingMetric::form_cholesky_factor()
     pivot();
     for (int h = 0; h < metric_->nirrep(); h++) {
 
-        if (metric_->colspi()[h] == 0) continue;        
+        if (metric_->colspi()[h] == 0) continue;
 
         // Cholesky Decomposition
         double** J = metric_->pointer(h);
@@ -522,7 +522,7 @@ void FittingMetric::form_cholesky_factor()
 
         for (int A = 0; A < metric_->colspi()[h]; A++)
             for (int B = 0; B < A; B++)
-                J[A][B] = J[B][A]; 
+                J[A][B] = J[B][A];
     }
     metric_->set_name("SO Basis Cholesky Factor (Full)");
 }
@@ -530,11 +530,11 @@ void FittingMetric::pivot()
 {
     for (int h = 0; h < metric_->nirrep(); h++) {
 
-        if (metric_->colspi()[h] == 0) continue;        
+        if (metric_->colspi()[h] == 0) continue;
 
         double** J = metric_->pointer(h);
         int* P = pivots_->pointer(h);
-        int norbs = metric_->colspi()[h];        
+        int norbs = metric_->colspi()[h];
         double* Temp = new double[norbs];
 
         // Pivot
@@ -565,7 +565,7 @@ void FittingMetric::pivot()
             P[pivot] = Temp_p;
         }
         delete[] Temp;
-        
+
         int* R = rev_pivots_->pointer(h);
         for (int i = 0; i < norbs; i++)
             R[P[i]] = i;

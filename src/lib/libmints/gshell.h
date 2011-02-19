@@ -96,6 +96,9 @@ public:
               int start,
               PrimitiveType pt = Normalized);
 
+    /// Make a copy of the GaussianShell.
+    GaussianShell* copy();
+
     /// The number of primitive Gaussians
     int nprimitive() const          { return nprimitive_; }
     /// Total number of basis functions
@@ -103,15 +106,15 @@ public:
     /// Total number of functions if this shell was Cartesian
     int ncartesian() const          { return ncartesian_; }
     /// The angular momentum of the given contraction
-    int am() const           { return l_; }
+    int am() const                  { return l_; }
     /// The character symbol for the angular momentum of the given contraction
-    char amchar() const      { return amtypes[l_]; }
+    char amchar() const             { return amtypes[l_]; }
     /// The character symbol for the angular momentum of the given contraction (upper case)
-    char AMCHAR() const      { return AMTYPES[l_]; }
+    char AMCHAR() const             { return AMTYPES[l_]; }
     /// Returns true if contraction is Cartesian
-    bool is_cartesian() const  { return !puream_; }
+    bool is_cartesian() const       { return !puream_; }
     /// Returns true if contraction is pure
-    bool is_pure() const       { return l_ < 2 ? false : puream_; }
+    bool is_pure() const            { return l_ < 2 ? false : puream_; }
 
     /// Returns the center of the Molecule this shell is on
     Vector3 center() const;
@@ -119,13 +122,13 @@ public:
     int ncenter() const             { return nc_; }
 
     /// Returns the exponent of the given primitive
-    double exp(int prim) const { return exp_[prim]; }
+    double exp(int prim) const      { return exp_[prim]; }
     /// Return coefficient of pi'th primitive and ci'th contraction
-    double coef(int pi) const { return coef_[pi]; }
+    double coef(int pi) const       { return coef_[pi]; }
     /// Returns the exponent of the given primitive
-    double* exps() const { return exp_; }
+    double* exps() const            { return exp_; }
     /// Return coefficient of pi'th primitive and ci'th contraction
-    double* coefs() const { return coef_; }
+    double* coefs() const           { return coef_; }
 
     /// Print out the shell
     void print(FILE *out) const;
@@ -134,8 +137,8 @@ public:
     double normalize(int l, int m, int n);
 
     /// Basis function index where this shell starts.
-    int function_index() const { return start_; }
-    void set_function_index(int i) { start_ = i; }
+    int function_index() const      { return start_; }
+    void set_function_index(int i)  { start_ = i; }
 };
 
 }

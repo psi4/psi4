@@ -12,12 +12,12 @@ def process_option(spaces, module, key, value, line):
     key    = key.upper()
     value  = value.strip()
     temp   = ""
- 
-    global_options = False 
+
+    global_options = False
     module = module.upper()
     if(module == "GLOBALS" or module == "GLOBAL" or module == "" or module.isspace()):
         global_options = True
-    
+
     # Start by assuming that we're setting a local option
     command_string = "PsiMod.set_local_option(\"%s\", \"%s\", " % (module, key)
     if(global_options):
@@ -62,7 +62,7 @@ def process_set_commands(matchobj):
             if (not line or line.isspace()):
                 continue
             matchobj = re.match(r'^\s*(\w+)[\s=]+(.*?)$', line)
-            # Is the syntax correct? If so, process the line 
+            # Is the syntax correct? If so, process the line
             if matchobj:
                 result = result + process_option(spaces, module, matchobj.group(1), matchobj.group(2), line)
             else:
@@ -121,18 +121,38 @@ def process_memory_command(matchobj):
         memory_amount = val*1000000
     elif (units.upper() == 'GB'):
         memory_amount = val*1000000000
- 
+
     command = "%sPsiMod.set_memory(%d)\n" % (spacing,int(memory_amount))
     return command
 
+def process_basis_file(matchobj):
+
+    spacing = str(matchobj.group(1))
+    basisfile = str(matchobj.group(2)).strip()
+
+    command = "%sPsiMod.add_user_basis_file(\"%s\")" % (spacing, basisfile)
+
+    return command
+
+def process_basis_block(matchobj):
+
+    spacing = str(matchobj.group(1))
+    filename = str(matchobj.group(2))
+    block = str(matchobj.group(3))
+
+    # TODO: Rob's updated PSIOManager is going to be updated to make this easy.
+    command = "%s# do something with the block of basis set data for %s" % (spacing, filename)
+
+    return command
+
 def process_input(raw_input):
-    
+
     #NOTE: If adding mulitline data to the preprocessor, use ONLY the following syntax:
     #   function [objname] { ... }
     #   which has the regex capture group:
     #
     #   r'^(\s*?)FUNCTION\s*(\w*?)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE
-    # 
+    #
     #   your function is in capture group #1
     #   your objname is in capture group #2
     #   your data is in capture group #3
@@ -144,7 +164,7 @@ def process_input(raw_input):
     # First, remove everything from lines containing only spaces
     blankline = re.compile(r'^\s*$')
     temp = re.sub(blankline, '', temp, re.MULTILINE)
- 
+
     # Process all "set name? { ... }"
     set_commands = re.compile(r'^(\s*?)set\s+([-,\w]*?)[\s=]*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(set_commands, process_set_commands, temp)
@@ -170,28 +190,36 @@ def process_input(raw_input):
     temp = re.sub(print_string,process_print_command,temp)
 
     # Process "memory ... "
-    memory_string = re.compile(r'(\s*?)memory\s+([+-]?\d*\.?\d+)\s+([KMG]B)', re.IGNORECASE)   
+    memory_string = re.compile(r'(\s*?)memory\s+([+-]?\d*\.?\d+)\s+([KMG]B)', re.IGNORECASE)
     temp = re.sub(memory_string,process_memory_command,temp)
 
+    # Process "basis file ... "
+    basis_file = re.compile(r'(\s*?)basis\s+file\s*(\b.*\b)\s*$', re.MULTILINE | re.IGNORECASE)
+    temp = re.sub(basis_file,process_basis_file,temp)
+
+    # Process "basis name { ... }"
+    basis_block = re.compile(r'(\s*?)basis\s+([-\(\)\+\*\w]*)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    temp = re.sub(basis_block,process_basis_block,temp)
+
     # imports
-    imports  = 'from PsiMod import *\n'    
-    imports += 'from opt import *\n'    
-    imports += 'from molecule import *\n'    
-    imports += 'from driver import *\n'    
-    imports += 'from text import *\n'    
-    imports += 'from wrappers import *\n'    
-    imports += 'from psiexceptions import *\n'    
-    imports += 'from util import *\n'    
- 
-    # psirc (a baby PSithon script that might live in ~/.psirc 
+    imports  = 'from PsiMod import *\n'
+    imports += 'from opt import *\n'
+    imports += 'from molecule import *\n'
+    imports += 'from driver import *\n'
+    imports += 'from text import *\n'
+    imports += 'from wrappers import *\n'
+    imports += 'from psiexceptions import *\n'
+    imports += 'from util import *\n'
+
+    # psirc (a baby PSithon script that might live in ~/.psirc
     psirc = ''
     homedir = os.path.expanduser('~')
     psirc_file = homedir + '/.psi4rc'
     if os.path.isfile(psirc_file):
         fh = open(psirc_file)
         psirc = fh.read()
-        fh.close() 
- 
+        fh.close()
+
     temp = imports + psirc + temp
 
     return temp
@@ -231,6 +259,13 @@ set scf,ccsd  = {
         print  5
         print = 5
     }
+
+basis file ~/basis/sto3g.gbs
+basis file ~/basis sets/cc-pvdz.gbs
+
+basis sto-3g {
+ blah blah
+}
 
 """)
 
