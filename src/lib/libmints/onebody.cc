@@ -123,7 +123,7 @@ void OneBodyAOInt::normalize_am(const shared_ptr<GaussianShell>& s1, const share
 }
 
 void OneBodyAOInt::pure_transform(const shared_ptr<GaussianShell>& s1,
-                                const shared_ptr<GaussianShell>& s2, int chunk)
+                                  const shared_ptr<GaussianShell>& s2, int chunk)
 {
     double *source1, *target1;
     double *source2, *target2;
