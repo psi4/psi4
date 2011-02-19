@@ -168,8 +168,8 @@ double SAPT2p::disp211()
   return(energy);
 }
 
-double SAPT2p::disp22s(char *t_label, char *theta_label, int AAnum, 
-  char *AA_label, char *RR_label, int nocc, int nvir)
+double SAPT2p::disp22s(const char *t_label, const char *theta_label, int AAnum, 
+  const char *AA_label, const char *RR_label, int nocc, int nvir)
 {
   double energy = 0.0;
 
@@ -357,8 +357,8 @@ double SAPT2p::disp202d()
   return(energy);
 }
 
-double SAPT2p::disp22q_1(char *label1, char *label2, char *label3, int nocc, 
-  int nvir)
+double SAPT2p::disp22q_1(const char *label1, const char *label2, 
+  const char *label3, int nocc, int nvir)
 {
   double energy = 0.0;
 
@@ -383,8 +383,8 @@ double SAPT2p::disp22q_1(char *label1, char *label2, char *label3, int nocc,
   return(energy);
 }
 
-double SAPT2p::disp22q_2(char *OO_opdm, char *VV_opdm, char *T_label, 
-  int DFnum, char *OV_label, int nocc, int nvir)
+double SAPT2p::disp22q_2(const char *OO_opdm, const char *VV_opdm, 
+  const char *T_label, int DFnum, const char *OV_label, int nocc, int nvir)
 {
   double energy = 0.0;
 
@@ -423,8 +423,9 @@ double SAPT2p::disp22q_2(char *OO_opdm, char *VV_opdm, char *T_label,
   return(energy);
 }
 
-double SAPT2p::disp22q_3(char *t_label, char trans1, char trans2, 
-  char *g_label, char *th_label, int noccA, int nvirA, int noccB, int nvirB)
+double SAPT2p::disp22q_3(const char *t_label, const char trans1, 
+  const char trans2, const char *g_label, const char *th_label, int noccA, 
+  int nvirA, int noccB, int nvirB)
 {
   double energy = 0.0;
 
@@ -457,8 +458,8 @@ double SAPT2p::disp22q_3(char *t_label, char trans1, char trans2,
   return(energy);
 }
 
-double SAPT2p::disp22q_4(char *t_label, char *g_label, char *d_label, 
-    int noccA, int nvirA, int noccB, int nvirB)
+double SAPT2p::disp22q_4(const char *t_label, const char *g_label, 
+  const char *d_label, int noccA, int nvirA, int noccB, int nvirB)
 {
   double energy = 0.0;
 
@@ -487,8 +488,8 @@ double SAPT2p::disp22q_4(char *t_label, char *g_label, char *d_label,
   return(energy);
 }
 
-double SAPT2p::disp22q_5(char *t_label, char *g_label, char *d_label, 
-    int noccA, int nvirA, int noccB, int nvirB)
+double SAPT2p::disp22q_5(const char *t_label, const char *g_label, 
+  const char *d_label, int noccA, int nvirA, int noccB, int nvirB)
 {
   double energy = 0.0;
 

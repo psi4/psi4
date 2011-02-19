@@ -43,21 +43,23 @@ protected:
     void get_ribasis();
     void compute_integrals();
 
-    void zero_disk(int, char *, char *, int, int);
-    double **read_IJKL(int, char *, int, int);
-    void write_IJKL(double **, int, char *, int, int);
-    double **get_DF_ints(int,char *,int);
-    double **IJKL_ints(int, char *, int, int, char *, int);
-    double **IJIJ_ints(int, char *, int);
+    void zero_disk(int, const char *, char *, int, int);
+    double **read_IJKL(int, const char *, int, int);
+    void write_IJKL(double **, int, const char *, int, int);
+    double **get_DF_ints(int, const char *, int);
+    double **IJKL_ints(int, const char *, int, int, const char *, int);
+    double **IJIJ_ints(int, const char *, int);
 
-    void MO_NO_ov_DF_trans(int, int, char *, char *, int, int, int, double **);
-    void MO_NO_vv_DF_trans(int, int, char *, char *, int, int, int, double **);
+    void MO_NO_ov_DF_trans(int, int, const char *, const char *, int, int, 
+      int, double **);
+    void MO_NO_vv_DF_trans(int, int, const char *, const char *, int, int, 
+      int, double **);
 
     double **uchf_ind(double **, double *, int, int);
-    double **cphf_ind(int, char *, char *, char *, double **, double **,
-      double *, int, int);
-    void A_mat(int, char *, char *, char *, double **, double **, int, int,
-      int);
+    double **cphf_ind(int, const char *, const char *, const char *, 
+      double **, double **, double *, int, int);
+    void A_mat(int, const char *, const char *, const char *, double **, 
+      double **, int, int, int);
     void diis_update(double **, double **, double **, int, int);
 
 public:

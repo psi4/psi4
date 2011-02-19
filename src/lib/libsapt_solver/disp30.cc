@@ -37,9 +37,9 @@ void SAPT2p3::disp30()
   }
 }
 
-double SAPT2p3::disp30_1(int ampfile, char *amplabel, int AAintfile, 
-  char *RRlabel, int BBintfile, char *SSlabel, int noccA, int nvirA, 
-  int noccB, int nvirB)
+double SAPT2p3::disp30_1(int ampfile, const char *amplabel, int AAintfile, 
+  const char *RRlabel, int BBintfile, const char *SSlabel, int noccA, 
+  int nvirA, int noccB, int nvirB)
 {
   double **tARBS = read_IJKL(ampfile,amplabel,noccA*nvirA,noccB*nvirB);
   double **tRSAB = block_matrix(nvirA*nvirB,noccA*noccB);
@@ -112,9 +112,9 @@ double SAPT2p3::disp30_1(int ampfile, char *amplabel, int AAintfile,
   return(energy);
 }
 
-double SAPT2p3::disp30_2(int ampfile, char *amplabel, int AAintfile,
-  char *AAlabel, char *RRlabel, int BBintfile, char *BBlabel, char *SSlabel,
-  int noccA, int nvirA, int noccB, int nvirB)
+double SAPT2p3::disp30_2(int ampfile, const char *amplabel, int AAintfile,
+  const char *AAlabel, const char *RRlabel, int BBintfile, const char *BBlabel,
+  const char *SSlabel, int noccA, int nvirA, int noccB, int nvirB)
 {
   double **tARBS = read_IJKL(ampfile,amplabel,noccA*nvirA,noccB*nvirB);
   double **tABRS = block_matrix(noccA*noccB,nvirA*nvirB);

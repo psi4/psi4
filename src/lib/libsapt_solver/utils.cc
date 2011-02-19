@@ -13,7 +13,8 @@
 
 namespace psi { namespace sapt {
 
-void SAPT::zero_disk(int file, char *array, char *zero, int nri, int ijmax)
+void SAPT::zero_disk(int file, const char *array, char *zero, int nri, 
+  int ijmax)
 {
   psio_address next_PSIF = PSIO_ZERO;
 
@@ -22,7 +23,7 @@ void SAPT::zero_disk(int file, char *array, char *zero, int nri, int ijmax)
   }
 }
 
-double** SAPT::get_DF_ints(int filenum, char *label, int length)
+double** SAPT::get_DF_ints(int filenum, const char *label, int length)
 {
   double **A = block_matrix(length,ribasis_->nbf()+3);
   psio_->read_entry(filenum,label,(char *) A[0],
@@ -30,7 +31,7 @@ double** SAPT::get_DF_ints(int filenum, char *label, int length)
   return(A);
 } 
 
-double** SAPT2B::get_AA_ints(int dress) 
+double** SAPT2B::get_AA_ints(const int dress) 
 {
 
   double enuc, NA, NB;
@@ -61,7 +62,7 @@ double** SAPT2B::get_AA_ints(int dress)
 
 }
 
-double** SAPT2B::get_diag_AA_ints(int dress) 
+double** SAPT2B::get_diag_AA_ints(const int dress) 
 {
 
   double enuc, NA, NB;
@@ -88,7 +89,7 @@ double** SAPT2B::get_diag_AA_ints(int dress)
   return(A);
 }
 
-double** SAPT2B::get_BB_ints(int dress) 
+double** SAPT2B::get_BB_ints(const int dress) 
 {
 
   double enuc, NA, NB;
@@ -119,7 +120,7 @@ double** SAPT2B::get_BB_ints(int dress)
 
 }
 
-double** SAPT2B::get_diag_BB_ints(int dress) 
+double** SAPT2B::get_diag_BB_ints(const int dress) 
 {
 
   double enuc, NA, NB;
@@ -146,7 +147,7 @@ double** SAPT2B::get_diag_BB_ints(int dress)
   return(A);
 }
 
-double** SAPT2B::get_AB_ints(int dress) 
+double** SAPT2B::get_AB_ints(const int dress) 
 {
 
   double enuc, NA, NB;
@@ -186,7 +187,7 @@ double** SAPT2B::get_AB_ints(int dress)
 
 }
 
-double** SAPT2B::get_AS_ints(int dress) 
+double** SAPT2B::get_AS_ints(const int dress) 
 {
 
   double enuc, NA, NB;
@@ -226,7 +227,7 @@ double** SAPT2B::get_AS_ints(int dress)
 
 }
 
-double** SAPT2B::get_RB_ints(int dress) 
+double** SAPT2B::get_RB_ints(const int dress) 
 {
 
   double enuc, NA, NB;
@@ -266,7 +267,7 @@ double** SAPT2B::get_RB_ints(int dress)
 
 }
 
-double** SAPT2B::get_AR_ints(int dress) 
+double** SAPT2B::get_AR_ints(const int dress) 
 {
 
   double enuc, NA, NB;
@@ -294,7 +295,7 @@ double** SAPT2B::get_AR_ints(int dress)
 
 }
 
-double** SAPT2B::get_BS_ints(int dress) 
+double** SAPT2B::get_BS_ints(const int dress) 
 {
 
   double enuc, NA, NB;
@@ -322,7 +323,7 @@ double** SAPT2B::get_BS_ints(int dress)
 
 }
 
-double** SAPT2B::get_RR_ints(int dress)
+double** SAPT2B::get_RR_ints(const int dress)
 {
 
   double enuc, NA, NB;
@@ -354,7 +355,7 @@ double** SAPT2B::get_RR_ints(int dress)
 
 }
 
-double** SAPT2B::get_SS_ints(int dress)
+double** SAPT2B::get_SS_ints(const int dress)
 {
 
   double enuc, NA, NB;
@@ -386,7 +387,7 @@ double** SAPT2B::get_SS_ints(int dress)
 
 }
 
-double **SAPT::read_IJKL(int filenum, char *label, int length_IJ, 
+double **SAPT::read_IJKL(int filenum, const char *label, int length_IJ, 
   int length_KL)
 {
   double **A = block_matrix(length_IJ,length_KL);
@@ -397,8 +398,8 @@ double **SAPT::read_IJKL(int filenum, char *label, int length_IJ,
   return(A);
 }
 
-void SAPT::write_IJKL(double **A, int filenum, char *label, int length_IJ,
-  int length_KL)
+void SAPT::write_IJKL(double **A, int filenum, const char *label, 
+  int length_IJ, int length_KL)
 {
   psio_->write_entry(filenum,label,(char *) &(A[0][0]),
                   sizeof(double)*length_IJ*length_KL);
@@ -406,8 +407,8 @@ void SAPT::write_IJKL(double **A, int filenum, char *label, int length_IJ,
   free_block(A);
 }
 
-double **SAPT::IJKL_ints(int IJfile, char *IJlabel, int IJlength, int KLfile, 
-  char *KLlabel, int KLlength)
+double **SAPT::IJKL_ints(int IJfile, const char *IJlabel, int IJlength, 
+  int KLfile, const char *KLlabel, int KLlength)
 {
   double **IJKL = block_matrix(IJlength, KLlength);
   double **DF_p_IJ = get_DF_ints(IJfile, IJlabel, IJlength);
@@ -423,7 +424,7 @@ double **SAPT::IJKL_ints(int IJfile, char *IJlabel, int IJlength, int KLfile,
   return(IJKL);
 }
 
-double **SAPT::IJIJ_ints(int IJfile, char *IJlabel, int IJlength)
+double **SAPT::IJIJ_ints(int IJfile, const char *IJlabel, int IJlength)
 {
   double **IJIJ = block_matrix(IJlength, IJlength);
   double **DF_p_IJ = get_DF_ints(IJfile, IJlabel, IJlength);
@@ -437,8 +438,8 @@ double **SAPT::IJIJ_ints(int IJfile, char *IJlabel, int IJlength)
   return(IJIJ);
 }
 
-void SAPT::MO_NO_ov_DF_trans(int filein, int fileout, char *labelin, 
-  char *labelout, int nocc, int nvir, int novir, double **mo2no)
+void SAPT::MO_NO_ov_DF_trans(int filein, int fileout, const char *labelin, 
+  const char *labelout, int nocc, int nvir, int novir, double **mo2no)
 { 
   double **B_p_AR = block_matrix(nocc*nvir,ribasis_->nbf()+3);
   double **C_p_AR = block_matrix(nocc*novir,ribasis_->nbf()+3);
@@ -460,8 +461,8 @@ void SAPT::MO_NO_ov_DF_trans(int filein, int fileout, char *labelin,
   free_block(C_p_AR);
 } 
 
-void SAPT::MO_NO_vv_DF_trans(int filein, int fileout, char *labelin, 
-  char *labelout, int nocc, int nvir, int novir, double **mo2no)
+void SAPT::MO_NO_vv_DF_trans(int filein, int fileout, const char *labelin, 
+  const char *labelout, int nocc, int nvir, int novir, double **mo2no)
 {
   double **B_p_RR = block_matrix(nvir*nvir,ribasis_->nbf()+3);
   double **C_p_RR = block_matrix(novir*nvir,ribasis_->nbf()+3);

@@ -54,6 +54,7 @@ double SAPT2p3::compute_energy()
     compute_integrals();
     compute_amplitudes();
     elst10();
+    exch10_s2();
     exch10();
     disp20();
     disp30();
@@ -92,7 +93,7 @@ void SAPT2p3::print_header()
      fprintf(outfile,"    FOCC_B  = %9d\n\n",params_.foccB);
     
      #ifdef _OPENMP
-     fprintf(outfile,"Running SAPT with %d OMP threads\n\n",
+     fprintf(outfile,"  Running SAPT with %d OMP threads\n\n",
        omp_get_max_threads());
      #endif 
     
@@ -122,8 +123,10 @@ double SAPT2p3::print_results()
           results_.elst12*1000.0,results_.elst12*627.5095);
   fprintf(outfile,"    Elst13,r         %16.8lf mH %16.8lf kcal mol^-1\n",
           results_.elst13*1000.0,results_.elst13*627.5095);
-  fprintf(outfile,"    Exch10(S^2)      %16.8lf mH %16.8lf kcal mol^-1\n",
+  fprintf(outfile,"    Exch10           %16.8lf mH %16.8lf kcal mol^-1\n",
           results_.exch10*1000.0,results_.exch10*627.5095);
+  fprintf(outfile,"    Exch10(S^2)      %16.8lf mH %16.8lf kcal mol^-1\n",
+          results_.exch10_s2*1000.0,results_.exch10_s2*627.5095);
   fprintf(outfile,"    Exch11(S^2)      %16.8lf mH %16.8lf kcal mol^-1\n",
           results_.exch11*1000.0,results_.exch11*627.5095);
   fprintf(outfile,"    Exch12(S^2)      %16.8lf mH %16.8lf kcal mol^-1\n",

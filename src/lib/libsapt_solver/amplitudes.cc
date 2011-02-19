@@ -152,7 +152,9 @@ void SAPT2B::compute_amplitudes()
     g_bsbs();  
   }
 
-  fprintf(outfile,"\n");
+  if (params_.print) { 
+    fprintf(outfile,"\n");
+  }
 }
 
 void SAPT2B::t_arar(int opdm, int theta, int garar)
@@ -429,9 +431,10 @@ void SAPT2B::t_arbs(int bsar)
     calc_info_.nvirA,calc_info_.noccB*calc_info_.nvirB);
 }
 
-void SAPT2B::Y2(char *Y2_out, char *T_out, char *VV_opdm, char *OO_opdm, 
-  char *theta_OV, int dfnum, char *OO_label, char *OV_label, char *VV_label, 
-  double *evals, int nocc, int nvir)
+void SAPT2B::Y2(const char *Y2_out, const char *T_out, const char *VV_opdm, 
+  const char *OO_opdm, const char *theta_OV, int dfnum, const char *OO_label, 
+  const char *OV_label, const char *VV_label, double *evals, int nocc, 
+  int nvir)
 {
   double **Y2 = block_matrix(nocc,nvir);
 
@@ -629,9 +632,9 @@ void SAPT2B::t2_bsbs(int theta)
 
 }
 
-double *SAPT2B::t2_solver(int ampfile, char *T_amps, char *theta_OV, int dfnum,
-  char *OO_label, char *OV_label, char *VV_label, double *evals, int nocc,
-  int nvir, int focc)
+double *SAPT2B::t2_solver(int ampfile, const char *T_amps, 
+  const char *theta_OV, int dfnum, const char *OO_label, const char *OV_label, 
+  const char *VV_label, double *evals, int nocc, int nvir, int focc)
 {
   nocc -= focc;
 
@@ -796,9 +799,10 @@ double *SAPT2B::t2_solver(int ampfile, char *T_amps, char *theta_OV, int dfnum,
   return(t2ARAR);
 }
 
-double *SAPT2B::t2_solver_natorbs(int ampfile, char *T_amps, char *theta_OV, 
-  int dfnum, char *OO_label, char *OV_label, char *VV_label, double *evals, 
-  int nocc, int nvir, int focc, char *NO_VV_label, double **mo2no, int novir)
+double *SAPT2B::t2_solver_natorbs(int ampfile, const char *T_amps, 
+  const char *theta_OV, int dfnum, const char *OO_label, const char *OV_label, 
+  const char *VV_label, double *evals, int nocc, int nvir, int focc, 
+  const char *NO_VV_label, double **mo2no, int novir)
 {
   nocc -= focc;
 
@@ -1079,8 +1083,8 @@ void SAPT2B::g_bsbs()
     calc_info_.noccA*calc_info_.nvirA,calc_info_.noccB*calc_info_.nvirB);
 }
 
-void SAPT2B::natural_orbitalify(char *OO_opdm, char *VV_opdm, double *evals, 
-  double **scfvec, int occ, int vir, char monomer)
+void SAPT2B::natural_orbitalify(const char *OO_opdm, const char *VV_opdm, 
+  double *evals, double **scfvec, int occ, int vir, const char monomer)
 {
   double **P = block_matrix(calc_info_.nmo,calc_info_.nmo);
   double **xAA = read_IJKL(PSIF_SAPT_AMPS,OO_opdm,occ,occ);
@@ -1239,8 +1243,9 @@ void SAPT2B::Y3_bs()
              calc_info_.nvirB);
 }
 
-void SAPT2B::Y3_1(double **Y3, int dffile, char *AA_ints, char *AR_ints,
-  char *RR_ints, int ampfile, char *t_amps, int nocc, int nvir)
+void SAPT2B::Y3_1(double **Y3, int dffile, const char *AA_ints, 
+  const char *AR_ints, const char *RR_ints, int ampfile, const char *t_amps, 
+  int nocc, int nvir)
 {
   double **B_q_AR = read_IJKL(ampfile,t_amps,nocc*nvir,calc_info_.nrio);
   double **B_p_RR = get_DF_ints(dffile,RR_ints,nvir*nvir);
@@ -1263,9 +1268,10 @@ void SAPT2B::Y3_1(double **Y3, int dffile, char *AA_ints, char *AR_ints,
   free_block(B_p_AA);
 }
 
-void SAPT2B::Y3_2(double **Y3, int dffile, char *AA_ints, char *AR_ints,
-  char *RR_ints, int ampfile, char *t_amps, char *t_anti, char *t2_amps, 
-  char *t2_anti, int nocc, int nvir)
+void SAPT2B::Y3_2(double **Y3, int dffile, const char *AA_ints, 
+  const char *AR_ints, const char *RR_ints, int ampfile, const char *t_amps, 
+  const char *t_anti, const char *t2_amps, const char *t2_anti, int nocc, 
+  int nvir)
 {
   double **t2ARAR = read_IJKL(ampfile,t2_anti,nocc*nvir,nocc*nvir);
   double **tARAR = read_IJKL(ampfile,t_amps,nocc*nvir,nocc*nvir);
@@ -1344,8 +1350,8 @@ void SAPT2B::Y3_2(double **Y3, int dffile, char *AA_ints, char *AR_ints,
   free(B_p);
 }
 
-void SAPT2B::Y3_3(double **Y3, int ampfile, char *t_phys, int dffile, 
-  char *AA_ints, char *AR_ints, int nocc, int nvir)
+void SAPT2B::Y3_3(double **Y3, int ampfile, const char *t_phys, int dffile, 
+  const char *AA_ints, const char *AR_ints, int nocc, int nvir)
 {
   double *tAARR = init_array(nocc*nocc*nvir*nvir);
 
@@ -1407,8 +1413,8 @@ void SAPT2B::Y3_3(double **Y3, int ampfile, char *t_phys, int dffile,
   free_block(gAAAR);
 }
 
-void SAPT2B::Y3_4(double **Y3, int dffile, char *AR_ints, char *RR_ints, 
-  int ampfile, char *t_amps, int nocc, int nvir)
+void SAPT2B::Y3_4(double **Y3, int dffile, const char *AR_ints, 
+  const char *RR_ints, int ampfile, const char *t_amps, int nocc, int nvir)
 {
   double **B_p_AR = get_DF_ints(dffile,AR_ints,nocc*nvir);
   double **B_p_RR = get_DF_ints(dffile,RR_ints,nvir*nvir);
@@ -1468,8 +1474,9 @@ void SAPT2B::Y3_4(double **Y3, int dffile, char *AR_ints, char *RR_ints,
   free(tAARR);
 }
 
-void SAPT2B::Y3_5(double **Y3, int dffile, char *AA_ints, char *AR_ints, 
-  char *RR_ints, int ampfile, char *t_amps, char *t_anti, int nocc, int nvir)
+void SAPT2B::Y3_5(double **Y3, int dffile, const char *AA_ints, 
+  const char *AR_ints, const char *RR_ints, int ampfile, const char *t_amps, 
+  const char *t_anti, int nocc, int nvir)
 {
   double **t2ARAR = read_IJKL(ampfile,t_anti,nocc*nvir,nocc*nvir);
   double **tARAR = read_IJKL(ampfile,t_amps,nocc*nvir,nocc*nvir);
@@ -1586,8 +1593,9 @@ void SAPT2B::Y3_5(double **Y3, int dffile, char *AA_ints, char *AR_ints,
   free_block(B_q_AA);
 }
 
-void SAPT2B::Y3_6(double **Y3, int dffile, char *AA_ints, char *AR_ints, 
-  char *RR_ints, int ampfile, char *t_amps, int nocc, int nvir)
+void SAPT2B::Y3_6(double **Y3, int dffile, const char *AA_ints, 
+  const char *AR_ints, const char *RR_ints, int ampfile, const char *t_amps, 
+  int nocc, int nvir)
 {
   double **t2ARAR = read_IJKL(ampfile,t_amps,nocc*nvir,nocc*nvir);
   double **tARAR = block_matrix(nocc*nvir,nocc*nvir);

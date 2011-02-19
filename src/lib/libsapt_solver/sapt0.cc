@@ -54,6 +54,7 @@ double SAPT0::compute_energy()
     compute_integrals();
     compute_amplitudes();
     elst10();
+    exch10_s2();
     exch10();
     disp20();
     exch_disp20();
@@ -81,9 +82,8 @@ void SAPT0::print_header()
      fprintf(outfile,"    NVIR_B  = %9d\n\n",calc_info_.nvirB);
     
      #ifdef _OPENMP
-     fprintf(outfile,"Running SAPT with %d OMP threads\n",
+     fprintf(outfile,"  Running SAPT with %d OMP threads\n\n",
        omp_get_max_threads());
-     fprintf(outfile,"Using version %d of OpenMP\n\n",_OPENMP);
      #endif 
     
      fflush(outfile);
@@ -102,8 +102,10 @@ double SAPT0::print_results()
           eHF*1000.0,eHF*627.5095);
   fprintf(outfile,"    Elst10        %16.8lf mH %16.8lf kcal mol^-1\n",
           results_.elst10*1000.0,results_.elst10*627.5095);
-  fprintf(outfile,"    Exch10(S^2)   %16.8lf mH %16.8lf kcal mol^-1\n",
+  fprintf(outfile,"    Exch10        %16.8lf mH %16.8lf kcal mol^-1\n",
           results_.exch10*1000.0,results_.exch10*627.5095);
+  fprintf(outfile,"    Exch10(S^2)   %16.8lf mH %16.8lf kcal mol^-1\n",
+          results_.exch10_s2*1000.0,results_.exch10_s2*627.5095);
   fprintf(outfile,"    Ind20,r       %16.8lf mH %16.8lf kcal mol^-1\n",
           results_.ind20*1000.0,results_.ind20*627.5095);
   fprintf(outfile,"    Exch-Ind20,r  %16.8lf mH %16.8lf kcal mol^-1\n",

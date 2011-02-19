@@ -132,10 +132,10 @@ void SAPT2p::disp22t()
   results_.disp22t = d220t + d202t;
 }
 
-double SAPT2p::disp220t(int AAnum, char *AA_label, char *AR_label, 
-  char *RR_label, int BBnum, char *BS_label, int ampnum, char *tarar, 
-  char *tbsar, double *evalsA, double *evalsB, int noccA, int nvirA, 
-  int foccA, int noccB, int nvirB, int foccB)
+double SAPT2p::disp220t(int AAnum, const char *AA_label, const char *AR_label, 
+  const char *RR_label, int BBnum, const char *BS_label, int ampnum, 
+  const char *tarar, const char *tbsar, double *evalsA, double *evalsB, 
+  int noccA, int nvirA, int foccA, int noccB, int nvirB, int foccB)
 {
   double energy;
 
@@ -211,7 +211,9 @@ double SAPT2p::disp220t(int AAnum, char *AA_label, char *AR_label,
     }}
    }
   stop = time(NULL);
-  fprintf(outfile,"(i = %3d) %10ld seconds\n",b,stop-start);
+  if (params_.print) {
+    fprintf(outfile,"(i = %3d) %10ld seconds\n",b,stop-start);
+  }
   fflush(outfile);
   }
 
@@ -230,10 +232,10 @@ double SAPT2p::disp220t(int AAnum, char *AA_label, char *AR_label,
   return(energy);
 }
 
-void SAPT2p::fzn_triples(int AAnum, char *AA_label, char *AR_label,
-  char *RR_label, int BBnum, char *BS_label, int ampnum, char *tarar,
-  char *tbsar, int noccA, int nvirA, int foccA, int noccB, int nvirB, 
-  int foccB)
+void SAPT2p::fzn_triples(int AAnum, const char *AA_label, const char *AR_label,
+  const char *RR_label, int BBnum, const char *BS_label, int ampnum, 
+  const char *tarar, const char *tbsar, int noccA, int nvirA, int foccA, 
+  int noccB, int nvirB, int foccB)
 {
   psio_address next_psio;
   double **B_p_AA = block_matrix(noccA*noccA,calc_info_.nrio);
@@ -322,11 +324,11 @@ void SAPT2p::fzn_triples(int AAnum, char *AA_label, char *AR_label,
 
 }
 
-void SAPT2p::natural_orbitalify_triples(int AAnum, char *AA_label, 
-  char *AR_label, char *RR_label, int BBnum, char *BS_label, char *tarar,
-  char *tbsar, double *evalsA, double *evalsB, double **mo2noA, 
-  double **mo2noB, int noccA, int nvirA, int foccA, int novirA, int noccB, 
-  int nvirB, int foccB, int novirB)
+void SAPT2p::natural_orbitalify_triples(int AAnum, const char *AA_label, 
+  const char *AR_label, const char *RR_label, int BBnum, const char *BS_label, 
+  const char *tarar, const char *tbsar, double *evalsA, double *evalsB, 
+  double **mo2noA, double **mo2noB, int noccA, int nvirA, int foccA, 
+  int novirA, int noccB, int nvirB, int foccB, int novirB)
 {
   psio_address next_psio;
   double **B_p_AA = block_matrix(noccA*noccA,calc_info_.nrio);

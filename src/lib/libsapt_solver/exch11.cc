@@ -45,7 +45,7 @@ void SAPT2::exch11()
   results_.exch11 = ex110 + ex101;
 }
 
-double SAPT2::exch110(char *theta_label)
+double SAPT2::exch110(const char *theta_label)
 {
   double e1, e2, e3, e4;
 
@@ -127,7 +127,7 @@ double SAPT2::exch110(char *theta_label)
   return(e1+e2+e3+e4);
 }
 
-double SAPT2::exch101(char *theta_label)
+double SAPT2::exch101(const char *theta_label)
 {
   double e1, e2, e3, e4;
 

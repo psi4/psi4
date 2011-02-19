@@ -67,7 +67,6 @@ void SAPT2B::get_workflow()
       workflow_.W_vv = 0;
       workflow_.save_s = 0;
       workflow_.save_chf = 1;
-      workflow_.save_Jmhalf = 0;
       workflow_.t_arar = 0;
       workflow_.theta_arar = 0;
       workflow_.t_bsbs = 0;
@@ -100,7 +99,6 @@ void SAPT2B::get_workflow()
       workflow_.W_vv = 1;
       workflow_.save_s = 1;
       workflow_.save_chf = 1;
-      workflow_.save_Jmhalf = 0;
       workflow_.t_arar = 1;
       workflow_.theta_arar = 1;
       workflow_.t_bsbs = 1;
@@ -133,7 +131,6 @@ void SAPT2B::get_workflow()
       workflow_.W_vv = 1;
       workflow_.save_s = 1;
       workflow_.save_chf = 1;
-      workflow_.save_Jmhalf = 0;
       workflow_.t_arar = 1;
       workflow_.theta_arar = 1;
       workflow_.t_bsbs = 1;
@@ -166,7 +163,6 @@ void SAPT2B::get_workflow()
       workflow_.W_vv = 1;
       workflow_.save_s = 1;
       workflow_.save_chf = 1;
-      workflow_.save_Jmhalf = 0;
       workflow_.t_arar = 1;
       workflow_.theta_arar = 1;
       workflow_.t_bsbs = 1;
@@ -343,9 +339,6 @@ void SAPT2B::cleanup_calc_info()
     if (workflow_.W_vv) {
       free_block(calc_info_.WASS);
       free_block(calc_info_.WBRR);
-    }
-    if (workflow_.save_Jmhalf) {
-      free_block(calc_info_.Jmhalf);
     }
 
     free(calc_info_.diagAA);
