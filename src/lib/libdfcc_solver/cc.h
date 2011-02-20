@@ -65,12 +65,44 @@ protected:
   double **C_aoccp_;
   double **C_avirp_;
 
+  // Functions to permute array indices
+  void iajb_ibja(double *);
+  void iajb_ijab(double *);
+
 public:
   CC(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
   virtual ~CC();
 
   virtual double compute_energy()=0;
 } ;
+
+class DFCCDIIS {
+
+private:
+    int filenum_;
+    char *vec_label_;
+    char *err_label_;
+    int max_diis_vecs_;
+
+    int diis_file_;
+    int vec_length_;
+
+    int curr_vec_;
+    int num_vecs_;
+
+    char *get_err_label(int);
+    char *get_vec_label(int);
+
+protected:
+    shared_ptr<PSIO> psio_;
+
+public:
+    DFCCDIIS(int, int, char *, char *, int, int, shared_ptr<PSIO>);
+    ~DFCCDIIS();
+
+    void store_vectors();
+    void get_new_vector();
+};
 
 }}
 
