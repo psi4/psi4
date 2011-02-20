@@ -9,6 +9,7 @@
 #include "cc.h"
 
 #define DFCC_INT_FILE 56  // temporary
+#define DFCC_DIIS_FILE 42  // temporary
 
 using namespace psi;
 
@@ -22,6 +23,28 @@ private:
   void mo_integrals();
 
 protected:
+  double *tIAJB_;
+  double *t2IAJB_;
+
+  double *vIAJB_;
+  double *xIAJB_;
+
+  void apply_denom();
+  void symmetrize();
+  void term_1();
+  void term_2();
+  void term_3();
+  void term_4();
+  void term_5();
+  void term_6();
+  void term_7();
+  void term_8();
+  void term_9();
+  void term_10();
+  void term_11();
+  void term_12();
+
+  double energy();
 
 public:
   CCD(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
