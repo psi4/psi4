@@ -338,7 +338,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("SO_S_FILE", PSIF_OEI);
     options.add_int("SO_T_FILE", PSIF_OEI);
     options.add_int("SO_V_FILE", PSIF_OEI);
-    options.add_int("SO_TEI_FILE", PSIF_MO_TEI); // ?
+    options.add_int("SO_TEI_FILE", PSIF_SO_TEI); // ?
     options.add_int("FIRST_TMP_FILE", 150);
     options.add_int("OPDM_IN_FILE", PSIF_MO_OPDM);
     options.add_int("OPDM_OUT_FILE", PSIF_AO_OPDM);
@@ -854,6 +854,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WFN_SYM","1","A AG AU AP APP A1 A2 B BG BU B1 B2 B3 B1G B2G B3G B1U B2U B3U 0 1 2 3 4 5 6 7 8");
     options.add_str("TRIPLES_ALGORITHM","RESTRICTED","SPIN_ADAPTED RESTRICTED UNRESTRICTED");
     options.add_str("MP2_CCSD_METHOD","II","I IA II");
+    options.add("CORR_FOCC", new ArrayType());
+    options.add("FROZEN_DOCC", new ArrayType());
+    options.add("CORR_DOCC", new ArrayType());
+    options.add("RESTRICTED_DOCC", new ArrayType());
+    options.add("CORR_ACTV", new ArrayType());
+    options.add("ACTV", new ArrayType());
+    options.add("ACTIVE", new ArrayType());
+    options.add("CORR_FVIR", new ArrayType());
+    options.add("FROZEN_UOCC", new ArrayType());
+    options.add("ACTIVE_DOCC", new ArrayType());
   }
   if(name == "OPTKING"|| options.read_globals()) {
     /*- Maximum number of permitted steps in geometry optimization -*/

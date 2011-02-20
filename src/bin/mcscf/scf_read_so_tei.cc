@@ -120,6 +120,7 @@ void SCF::read_so_tei_form_PK()
     int ilsti,nbuf,fi,index;
 
     IWL ERIIN(psio_.get(), PSIF_SO_TEI, 0.0, 1, 1);
+    ERIIN.set_keep_flag(1);
     do {
       ilsti = ERIIN.last_buffer();
       nbuf  = ERIIN.buffer_count();
@@ -203,6 +204,7 @@ void SCF::read_so_tei_form_PK_and_K()
     int ilsti,nbuf,fi,index;
 
     IWL ERIIN(psio_.get(), PSIF_SO_TEI, 0.0, 1, 1);
+    ERIIN.set_keep_flag(1);
 
     do {
       ilsti = ERIIN.last_buffer();

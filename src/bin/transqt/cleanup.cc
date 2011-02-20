@@ -33,13 +33,13 @@ void cleanup(void)
   free(moinfo.corr2pitz);
   free(moinfo.corr2pitz_a);
   free(moinfo.corr2pitz_b);
-  free(moinfo.frdocc);
-  free(moinfo.fruocc);
+//  delete [] moinfo.frdocc;
+//  delete [] moinfo.fruocc;
   free(moinfo.rstrdocc);
   free(moinfo.rstruocc);
-  free(moinfo.sloc);
-  free(moinfo.stype);
-  free(moinfo.snuc);
+//  free(moinfo.sloc);
+//  free(moinfo.stype);
+//  free(moinfo.snuc);
   if (params.backtr) {
     free(moinfo.corr2pitz_nofzv);
     free(moinfo.corr2pitz_nofzv_a);
