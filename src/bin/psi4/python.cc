@@ -80,7 +80,6 @@ void py_psi_prepare_options_for_module(std::string const & name)
     Process::environment.options.set_current_module(name);
     // Figure out the defaults for any options that have not been specified
     read_options(name, Process::environment.options, false);
-
     if (plugins.count(name)) {
         // Easy reference
         plugin_info& info = plugins[name];
@@ -88,6 +87,8 @@ void py_psi_prepare_options_for_module(std::string const & name)
         // Tell the plugin to load in its options into the current environment.
         info.read_options(info.name, Process::environment.options);
     }
+    // Now we've read in the defaults, make sure that user-specified options are recognized by the current module
+    Process::environment.options.validate_options();
 }
 
 int py_psi_optking()
@@ -296,15 +297,15 @@ bool py_psi_set_option_string(std::string const & module, std::string const & ke
     Data& data = Process::environment.options[nonconst_key];
 
     if (data.type() == "string") {
-        Process::environment.options.set_str(module, key, value);
+        Process::environment.options.set_str(module, nonconst_key, value);
         check_for_basis(value, nonconst_key);
     } else if (data.type() == "boolean") {
         if (boost::to_upper_copy(value) == "TRUE" || boost::to_upper_copy(value) == "YES" || \
           boost::to_upper_copy(value) == "ON")
-            Process::environment.options.set_int(module, key, true);
+            Process::environment.options.set_int(module, nonconst_key, true);
         else if (boost::to_upper_copy(value) == "FALSE" || boost::to_upper_copy(value) == "NO" || \
           boost::to_upper_copy(value) == "OFF")
-            Process::environment.options.set_int(module, key, false);
+            Process::environment.options.set_int(module, nonconst_key, false);
         else
             throw std::domain_error("Required option type is boolean, no boolean specified");
     }
@@ -313,7 +314,8 @@ bool py_psi_set_option_string(std::string const & module, std::string const & ke
 
 bool py_psi_set_option_int(std::string const & module, std::string const & key, int value)
 {
-    Process::environment.options.set_int(module, key, value);
+    string nonconst_key = boost::to_upper_copy(key);
+    Process::environment.options.set_int(module, nonconst_key, value);
     return true;
 }
 
@@ -321,11 +323,12 @@ bool py_psi_set_option_int(std::string const & module, std::string const & key, 
 // Unable to handle strings.
 bool py_psi_set_option_array(std::string const & module, std::string const & key, const python::list &values)
 {
+    string nonconst_key = boost::to_upper_copy(key);
     std::vector<double> vector;
     size_t n = len(values);
     for(int i = 0; i < n; ++i) vector.push_back(extract<double>(values[i]));
 
-    Process::environment.options.set_array(module, key, vector);
+    Process::environment.options.set_array(module, nonconst_key, vector);
     return true;
 }
 
@@ -359,11 +362,13 @@ bool py_psi_set_global_option_int(std::string const & name, int value)
 // Unable to handle strings.
 bool py_psi_set_global_option_array(std::string const & key, python::list values)
 {
+    string nonconst_key = boost::to_upper_copy(key);
+
     std::vector<double> vector;
     size_t n = len(values);
     for(int i = 0; i < n; ++i) vector.push_back(extract<double>(values[i]));
 
-    Process::environment.options.set_global_array(key, vector);
+    Process::environment.options.set_global_array(nonconst_key, vector);
     return true;
 }
 
