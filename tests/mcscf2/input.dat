@@ -10,13 +10,6 @@ molecule ozone {
 }
 
 set basis cc-pVDZ
-set docc [10, 1]
-set socc [ 0, 2]
-
-set reference twocon
-set ndiis 3
-set maxiter 100
-set convergence 12
 
 set mcscf {
     reference   twocon

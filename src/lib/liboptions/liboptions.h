@@ -30,15 +30,17 @@ namespace psi {
   class IndexException : public PsiException
   {
   public:
-      IndexException(const std::string& message) : PSIEXCEPTION("unable to find index " + message) { }
+      IndexException(const std::string& message) : PSIEXCEPTION(message + " is not a valid option.") { }
       IndexException(const std::string& message, const std::string &module) :
-              PSIEXCEPTION("unable to find index " + message + " for module " + module) { }
+              PSIEXCEPTION(message + " is not a valid options for module " + module) { }
   };
 
   class DuplicateKeyException : public PsiException
   {
   public:
-    DuplicateKeyException() : PSIEXCEPTION("duplicate key found") { }
+      DuplicateKeyException(const std::string &key, const std::string &type1, const std::string &type2,
+                            const char *file, int line):
+              PsiException("Option " + key + " has been declared as a " + type1 + " and a " + type2, file, line) { }
   };
 
   class NotImplementedException : public PsiException
@@ -512,14 +514,14 @@ namespace psi {
     virtual Data& operator[](unsigned int i) {
       if (i >= array_.size())
         throw IndexException("out of range");
-//      changed();
+      changed();
       return array_[i];
     }
     virtual Data& operator[](std::string s) {
       unsigned int i = static_cast<unsigned int>(std::strtod(s.c_str(), NULL));
       if (i >= array_.size())
         throw IndexException("out of range");
-//      changed();
+      changed();
       return array_[i];
     }
     virtual bool is_array() const {
@@ -564,7 +566,7 @@ namespace psi {
 
       iterator pos = keyvals_.find(key);
       if (pos != keyvals_.end())
-        throw DuplicateKeyException();
+        throw DuplicateKeyException(key, data->type(), pos->second.type(), __FILE__, __LINE__);
       keyvals_[key] = Data(data);
     }
     virtual void add(std::string key, bool b) {
@@ -618,6 +620,8 @@ namespace psi {
     bool edit_globals_;
 
 
+    /// A temporary map used for validation of local options
+    std::map<std::string, Data> all_local_options_;
     /// The module that's active right now
     std::string current_module_;
 
@@ -647,10 +651,25 @@ namespace psi {
 
     bool read_globals() const { return edit_globals_; }
     void set_read_globals(bool _b) { edit_globals_ = _b; }
-    void set_current_module(const std::string s) { current_module_ = s; }
+    void set_current_module(const std::string s) { current_module_ = s; all_local_options_.clear(); }
 
     void to_upper(std::string& str) {
       std::transform(str.begin(), str.end(), str.begin(), ::toupper);
+    }
+
+    void validate_options()
+    {
+        std::map<std::string, Data>::const_iterator iter = locals_[current_module_].begin();
+        std::map<std::string, Data>::const_iterator stop = locals_[current_module_].end();
+        std::map<std::string, Data>::const_iterator not_found = all_local_options_.end();
+        for(; iter != stop; ++iter){
+            if(iter->second.has_changed()){
+                if(all_local_options_.find(iter->first) == not_found)
+                    throw PSIEXCEPTION("Option " + iter->first +
+                                       " is not recognized by the " + current_module_ + " module.");
+            }
+        }
+        all_local_options_.clear();
     }
 
     void add(std::string key, DataType *data) {
@@ -658,15 +677,17 @@ namespace psi {
 
       std::map<std::string, Data> & local = edit_globals_ ? globals_ : locals_[current_module_];
 
+      Data val(data);
+      all_local_options_[key] = val;
+
       // Make sure the key isn't already there
       iterator pos = local.find(key);
       if (pos != local.end()) { // If it is there, make sure they are the same type
           if (pos->second.type() != data->type())
-              // TODO convert string to boolean, if needed
-              throw DuplicateKeyException();
+              throw DuplicateKeyException(key, data->type(), pos->second.type(), __FILE__, __LINE__);
           return;
       }
-      local[key] = Data(data);
+      local[key] = val;
     }
     void add(std::string key, bool b) {
       add(key, new BooleanDataType(b));
@@ -732,16 +753,16 @@ namespace psi {
         locals_[module][key].changed();
     }
 
-    void set_global_bool(std::string key, bool b) {
+    void set_global_bool(const std::string &key, bool b) {
       get_global(key).assign(b);
     }
-    void set_global_int(std::string key, int i) {
+    void set_global_int(const std::string &key, int i) {
       get_global(key).assign(i);
     }
-    void set_global_double(std::string key, double d) {
+    void set_global_double(const std::string &key, double d) {
       get_global(key).assign(d);
     }
-    void set_global_str(std::string key, std::string s) {
+    void set_global_str(const std::string &key, const std::string &s) {
       get_global(key).assign(s);
     }
     void set_global_array(const std::string &key, const std::vector<double> &values)
@@ -819,13 +840,12 @@ namespace psi {
         else if (exists_in_active(key) && exists_in_global(key)) {
             Data& active = get(locals_[current_module_], key);
 
-            if (active.has_changed() == false) {
+            if (active.has_changed()) {
+                // Pull from keyvals
+                return active;
+            } else {
                 // Pull from globals
                 return get(globals_, key);
-            }
-            else {
-                // Pull from keyvals
-                return get(locals_[current_module_], key);
             }
         }
         else
