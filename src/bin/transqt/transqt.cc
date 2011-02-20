@@ -126,6 +126,7 @@
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
+#include <libmints/wavefunction.h>
 #include <libqt/qt.h>
 #include <libiwl/iwl.h>
 #include <psifiles.h>
@@ -135,6 +136,7 @@
 #include "psi4-dec.h"
 
 #include <libmints/wavefunction.h>
+#include <libmints/basisset.h>
 
 namespace psi { namespace transqt {
 
@@ -284,7 +286,7 @@ void get_parameters(Options & options)
   int tol, i;
 
   params.wfn = options.get_str("WFN");
-
+  params.backtr = options.get_str("MODE") == "MO_TO_SO";
   params.dertype = options.get_str("DERTYPE");
 
   /* The defaults below depend on what run mode we are in */
@@ -616,10 +618,10 @@ void get_moinfo(Options & options)
   moinfo.openpi = chkpt_rd_openpi();
   moinfo.enuc = chkpt_rd_enuc();
   moinfo.escf = chkpt_rd_escf();
-  moinfo.nshell = chkpt_rd_nshell();
-  moinfo.sloc = chkpt_rd_sloc();
-  moinfo.snuc = chkpt_rd_snuc();
-  moinfo.stype = chkpt_rd_stype();
+  moinfo.nshell = Process::environment.reference_wavefunction()->basisset()->nshell();
+//  moinfo.sloc = Process::environment.reference_wavefunction()->basisset()->;
+//  moinfo.snuc = chkpt_rd_snuc();
+//  moinfo.stype = chkpt_rd_stype();
   moinfo.rstrdocc = init_int_array(moinfo.nirreps);
   moinfo.rstruocc = init_int_array(moinfo.nirreps);
 
