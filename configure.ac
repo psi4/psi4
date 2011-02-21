@@ -943,6 +943,9 @@ AC_CONFIG_FILES([include/Makefile
           tests/plugin_sointegrals/Makefile
           tests/plugin_sointegrals/input.dat
           tests/plugin_sointegrals/sointegrals.cc
+          tests/plugin_backtrans/Makefile
+          tests/plugin_backtrans/input.dat
+          tests/plugin_backtrans/backtrans.cc
 
           bin/psi4-config
 ])
