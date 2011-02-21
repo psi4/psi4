@@ -1,0 +1,34 @@
+molecule {
+   bohr
+   O         0.000000000000     0.000000000000    -0.115871406941
+   H        -0.000000000000     1.349298382747     0.919481656977
+   H        -0.000000000000    -1.349298382747     0.919481656977
+}
+
+plugin_load("./plugin_backtrans.so")
+
+set  {
+   basis       sto-3g
+   print       1
+   wfn         ccsd
+   dertype     first
+   delete_tei  false
+   convergence 10
+   jobtype     sp
+   relax_opdm  true
+}
+
+set scf {
+    guess core
+    reference rhf
+}
+
+scf()
+transqt2()
+ccsort()
+ccenergy()
+cchbar()
+cclambda()
+ccdensity()
+
+plugin("plugin_backtrans.so")
