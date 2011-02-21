@@ -287,6 +287,8 @@ shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parse
 
     BOOST_FOREACH(map_ssv::value_type& basis, basis_atom_shell)
     {
+        bool not_found = false;
+
         BOOST_FOREACH(string user_file, user_list)
         {
             boost::filesystem::path bf_path;
@@ -306,19 +308,29 @@ shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parse
                 }
                 catch (BasisSetNotFound& e) {
                     // This is thrown when load_file fails
-                    fprintf(outfile, "Unable to find %s in %s will try next level.\n", symbol.c_str(), user_file.c_str());
+                    fprintf(outfile, "  Unable to find %s in %s will try next level.\n", symbol.c_str(), user_file.c_str());
+                    not_found = true;
                 }
             }
         }
 
         string filename = make_filename(basis.first);
         string path = Process::environment("PSIDATADIR");
-        vector<string> file = parser->load_file(path + "/basis/" + filename);
-        BOOST_FOREACH(map_sv::value_type& atom, basis.second) {
-            string symbol = atom.first;
-            if (atom.second.empty())
-                // If not found this will throw...let it.
-                basis_atom_shell[basis.first][symbol] = parser->parse(symbol, file);
+        vector<string> file;
+
+        try {
+            if (not_found) {
+                file = parser->load_file(path + "/basis/" + filename);
+                BOOST_FOREACH(map_sv::value_type& atom, basis.second) {
+                    string symbol = atom.first;
+                    if (atom.second.empty())
+                        // If not found this will throw...let it.
+                        basis_atom_shell[basis.first][symbol] = parser->parse(symbol, file);
+                }
+            }
+        }
+        catch (BasisSetFileNotFound& e) {
+            fprintf(outfile, "  Unable to load %s from the default Psi4 basis set library.", filename.c_str());
         }
     }
 
