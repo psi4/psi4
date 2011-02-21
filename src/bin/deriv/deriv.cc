@@ -119,12 +119,14 @@ Deriv::Deriv(reftype ref, const shared_ptr<MatrixFactory>& factory, const shared
 //    basis->uso_to_ao()->print();
 //    basis->uso_to_bf()->print();
 
-//    for (int i=0; i<3*natom_; ++i)
-//        dS_[i]->print();
-//    for (int i=0; i<3*natom_; ++i)
-//        dK[i]->print();
-//    for (int i=0; i<3*natom_; ++i)
-//        dV[i]->print();
+    if (Process::environment.options.get_int("PRINT") > 3) {
+        for (int i=0; i<3*natom_; ++i)
+            dS_[i]->print();
+        for (int i=0; i<3*natom_; ++i)
+            dK[i]->print();
+        for (int i=0; i<3*natom_; ++i)
+            dV[i]->print();
+    }
 #endif
 }
 
