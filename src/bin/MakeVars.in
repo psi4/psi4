@@ -92,6 +92,9 @@ LAPACK = @LAPACK@ $(BLAS)
 # where to find main for fortran programs
 vpath allocate.o $(top_objdir)/lib:$(libdir)
 
+# Whether we have plugins enabled
+HAVE_PLUGINS=@HAVE_PLUGINS@
+TARGET_OS=@TARGET_OS@
 # we are mostly compiling C programs here
 LDFLAGS = @LDFLAGS@
 LDLIBS = $(CLIBS) @LDLIBS@
