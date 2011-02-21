@@ -327,14 +327,15 @@ IntegralTransform::process_eigenvectors()
     // Read the orbitals from the reference wavefunction, in matrix form
     SharedMatrix matCa = Process::environment.reference_wavefunction()->Ca();
     SharedMatrix matCb = Process::environment.reference_wavefunction()->Cb();
-
     // Read the eigenvectors from the checkpoint file
     if(_transformationType == Restricted){
         // Set up for a restricted transformation
         if(_Ca == NULL) _Ca = new double**[_nirreps];
         for(int h = 0; h < _nirreps; ++h){
-            _Ca[h] = block_matrix(_sopi[h], _mopi[h]);
-            ::memcpy(_Ca[h][0], matCa->pointer(h), _sopi[h]*_mopi[h]*sizeof(double));
+            if(_sopi[h] && _mopi[h]){
+                _Ca[h] = block_matrix(_sopi[h], _mopi[h]);
+                ::memcpy(_Ca[h][0], matCa->const_pointer(h)[0], _sopi[h]*_mopi[h]*sizeof(double));
+            }
         }
         _Cb = _Ca;
     }else if(_transformationType == Unrestricted){
@@ -343,10 +344,12 @@ IntegralTransform::process_eigenvectors()
         if(_Ca == NULL) _Ca = new double**[_nirreps];
         if(_Cb == NULL) _Cb = new double**[_nirreps];
         for(int h = 0; h < _nirreps; ++h){
-            _Ca[h] = block_matrix(_sopi[h], _mopi[h]);
-            ::memcpy(_Ca[h][0], matCa->pointer(h), _sopi[h]*_mopi[h]*sizeof(double));
-            _Cb[h] = block_matrix(_sopi[h], _mopi[h]);
-            ::memcpy(_Cb[h][0], matCb->pointer(h), _sopi[h]*_mopi[h]*sizeof(double));
+            if(_sopi[h] && _mopi[h]){
+                _Ca[h] = block_matrix(_sopi[h], _mopi[h]);
+                ::memcpy(_Ca[h][0], matCa->const_pointer(h)[0], _sopi[h]*_mopi[h]*sizeof(double));
+                _Cb[h] = block_matrix(_sopi[h], _mopi[h]);
+                ::memcpy(_Cb[h][0], matCb->const_pointer(h)[0], _sopi[h]*_mopi[h]*sizeof(double));
+            }
         }
     }
 
