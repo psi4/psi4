@@ -177,8 +177,7 @@ molecule H2O2 {
 print_out("\tH2O2 Test...")
 H2O2.update_geometry()
 H2O2.print_out()
-# TODO this is broken, restore the check when fixed
-#compare_strings("c2", H2O2.schoenflies_symbol(), "H2O2 point group");  #TEST
+compare_strings("c2", H2O2.schoenflies_symbol(), "H2O2 point group");  #TEST
 
 # Ci Symmetry
 molecule C4H4Cl2F2 {
@@ -236,7 +235,6 @@ molecule Li_H2O_4_p {
 print_out("\tLi(H20)_4^+ Test...")
 Li_H2O_4_p.update_geometry()
 Li_H2O_4_p.print_out()
-# This is actually broken right now, maybe the sigma_v test uses criteria that are too loose?
-#compare_strings("c2", Li_H2O_4_p.schoenflies_symbol(), "Li(H20)_4^+ point group");  #TEST
+compare_strings("c2", Li_H2O_4_p.schoenflies_symbol(), "Li(H20)_4^+ point group");  #TEST
 
 clean()
