@@ -3,6 +3,7 @@
 
 #include <psi4-dec.h>
 #include <psiconfig.h>
+#include <libmints/matrix.h>
 
 namespace psi {
 
@@ -152,17 +153,15 @@ public:
 
 };
 
-class ThreeIndexChunk {
+class TensorChunk {
     
     protected:
         // Name
         std::string name_;
-        // PSIO (for disk-based) 
+        // PSIO 
         shared_ptr<PSIO> psio_;
-        // PSIO address (for disk-based)
-        psio_address address_;
-        // Core tensor [0][0][0] pointer
-        double* core_tensor_;
+        // PSIO unit number
+        unsigned int unit_;
 
         // memory (doubles)
         unsigned long int memory_;
@@ -172,58 +171,64 @@ class ThreeIndexChunk {
         int max_rows_;  
         // slow index total size
         int slow_size_; 
-        // middle index total size
-        int middle_size_; 
         // fast index total size
         int fast_size_; 
  
-        // is this tensor core or disk?
-        bool is_core_;
-        // if disk, can we fully cache this tensor?
-        bool is_cached_;
+        // Is a block read in?
+        bool touched_;
 
-        // is this tensor finished?
-        bool is_done_;
-        // Starting slow index
-        int current_row_;
-        // Number of slow indices
-        int current_rows_;
         // Tensor chunk
-        double*chunk_;
-
+        shared_ptr<Matrix> chunk_;
+    
+        // Block starts
+        std::vector<int> block_starts_;
+        // Block sizes
+        std::vector<int> block_sizes_;
+        // Current block
+        int block_;
 
     public:
         // Disk algorithm constructor
-        ThreeIndexChunk(shared_ptr<PSIO> psio, 
-                        const std::string& name,
-                        int slow_size,
-                        int middle_size,
-                        int fast_size,
-                        unsigned long int memory 
+        TensorChunk(shared_ptr<PSIO> psio,       // PSIO for this tensor 
+                        unsigned int unit,       // unit for this tensor (must be opened and closed by the driver)
+                        const std::string& name, // entry name of this tensor
+                        int slow_size,           // size of the slow index
+                        int fast_size,           // size of the fast index
+                        unsigned long int memory // memory available in double
                         );
-        // Core algorithm constructor
-        ThreeIndexChunk(double* core_tensor, 
-                        const std::string& name,
-                        int slow_size,
-                        int middle_size,
-                        int fast_size,
-                        unsigned long int memory 
-                        );
-        ~ThreeIndexChunk();
+        ~TensorChunk();
 
-        void reset();
-        bool isDone() const { return is_done_; }       
-        void next();        
-        double* pointer() const { return chunk_; } 
-        int current_index() const { return current_row_; }
-        int current_rows() const { return current_rows_; }
+        // Interaction operators:
+        // Number of blocks required for a complete traverse of the tensor
+        int nblock() const { return block_starts_.size(); }
+        // Pointer to the chunk 
+        shared_ptr<Matrix> chunk() const { return chunk_; }
+        // Pointer to the chunk pointer 
+        double** chunk_pointer() const { return chunk_->pointer(); }
+        // read in the chunk corresponding to block_number
+        // If you need read-only access, and the tensor is small enough to 
+        // fit in core under the memory provided (nblock is 1), setting
+        // keep_if_cached = true will forgo IO on repreated calls to this operation
+        // (e.g., core and disk algorithms are semi-similar) 
+        void read_block(int block_number, bool keep_if_cached = false);
+        // The starting slow index of the current block 
+        int block_start() const { return block_starts_[block_]; }
+        // The slow index size of the current block 
+        int block_size() const { return block_sizes_[block_]; }
+        // The current block index
+        int block() const { return block_; }
 
-        bool is_core() const { return is_core_; }
+        // PSIO unit number
+        unsigned int unit() const {return unit_;}
+        // Name (corresponds to entry name) 
         std::string name() const { return name_; }
+        // Slow index total size
         int slow_size() const { return slow_size_; }        
-        int middle_size() const { return middle_size_; }        
+        // Fast index total size
         int fast_size() const { return fast_size_; }        
+        // Memory allowed for this iterator 
         unsigned long int memory() const { return memory_; }
+        // Maximum size of slow index in chunk  
         int max_rows() const { return max_rows_; } 
 };
 
@@ -234,41 +239,74 @@ protected:
 
     // The fitting metric (if still needed)
     shared_ptr<FittingMetric> metric_;
-    // The Schwarz sieve 
-    shared_ptr<SchwarzSieve> schwarz_;
-    
+    // The algorithm to fit with
+    std::string fitting_algorithm_;
+    // The fitting condition to go for
+    double fitting_condition_;
+
     // The primary basis
     shared_ptr<BasisSet> primary_;
     // The auxiliary basis
     shared_ptr<BasisSet> auxiliary_;
 
+    // The cutoff for the schwarz sieve
+    double schwarz_cutoff_;
+
+    // The active occupied C matrix
+    shared_ptr<Matrix> Co_;
+    // The active virtual C matrix
+    shared_ptr<Matrix> Cv_;
+
+    // The amount of available memory for tensor formation, in doubles
+    unsigned long int memory_;
+
     // The PSIO object
     shared_ptr<PSIO> psio_;
-    // is this tensor core or disk
-    bool is_core_;
+    
+    // The striping decision (Qia if true, iaQ if false)
+    bool Qia_striping_;
 
     // Number of occupied orbitals
     int nocc_;
     // Number of virtual orbitals
     int nvir_;
+    // Number of atomic orbitals
+    int nao_;
+    // Number of fitting functions
+    int naux_;
+
+    // common startup stuff
+    void common_init();     
+    // forms the unfitted MO integrals
+    void form_Aia(bool do_all);
+    // applies the fitting (assumes the metric is formed)
+    void apply_fitting(const std::string& entry);
 
 public:
-    DFTensor(shared_ptr<PSIO>, shared_ptr<BasisSet> primary, shared_ptr<BasisSet> aux, double schwarz = 0.0);
+    DFTensor(shared_ptr<PSIO>, shared_ptr<BasisSet> primary, shared_ptr<BasisSet> aux);
     virtual ~DFTensor();
 
-    void common_init();     
-    
-    shared_ptr<SchwarzSieve> get_schwarz() const { return schwarz_; }
-    shared_ptr<FittingMetric> get_metric() const { return metric_; }
-
-    // Form all MO integrals, disk algorithm, default striping Qov
-    void form_MO_disk(shared_ptr<Matrix> Cocc, shared_ptr<Matrix> Cvir, const std::string& algorithm, double cond);
+    // Form all MO integrals 
+    void form_MO_integrals(unsigned long int memory_doubles, shared_ptr<Matrix> Co, shared_ptr<Matrix> Cv, bool Qia_striping, const std::string& fitting_algorithm,
+        double condition, double schwarz);
+    // Form only OV integrals 
+    void form_OV_integrals(unsigned long int memory_doubles, shared_ptr<Matrix> Co, shared_ptr<Matrix> Cv, bool Qia_striping, const std::string& fitting_algorithm,
+        double condition, double schwarz);
     
     // Iterators to the various blocks of the MO DF integrals, 
     // memory in doubles  
-    shared_ptr<ThreeIndexChunk> get_oo_iterator(unsigned long int memory);
-    shared_ptr<ThreeIndexChunk> get_vv_iterator(unsigned long int memory);
-    shared_ptr<ThreeIndexChunk> get_ov_iterator(unsigned long int memory);
+    shared_ptr<TensorChunk> get_oo_iterator(unsigned long int memory);
+    shared_ptr<TensorChunk> get_vv_iterator(unsigned long int memory);
+    shared_ptr<TensorChunk> get_ov_iterator(unsigned long int memory);
+
+    // Number of ao basis functions in this DF tensor
+    int nao() const { return nao_; }   
+    // Number of auxiliary basis functions in this DF tensor
+    int naux() const { return naux_; }   
+    // Number of occupied orbtials in this DF tensor
+    int nocc() const { return nocc_; }   
+    // Number of virtual orbitals in this DF tensor
+    int nvir() const { return nvir_; }   
 
 };
 
@@ -296,47 +334,60 @@ public:
     shared_ptr<Matrix> form_I(); 
 
 };
+
+// Denominator Factorizations (MP2-like for now)
 class Denominator {
 
 protected:
     // Denominator (ia in columns, w in rows)
     shared_ptr<Matrix> denominator_;
 
-    // Pointer to active occupied orbitals
+    // Pointer to active occupied orbital eigenvalues
     shared_ptr<Vector> eps_occ_;
-    // Pointer to active virtual orbitals
+    // Pointer to active virtual orbital eigenvalues
     shared_ptr<Vector> eps_vir_;
-
-    // Gauge reference (HOMO-LUMO splitting)
-    double gauge_;
+    // Number of vectors required to obtain given accuracy
+    int nvector_;   
+    // Maximum error norm allowed in denominator
+    double delta_; 
 
     virtual void decompose() = 0; 
 public:
-    Denominator(shared_ptr<Vector> eps_occ_, shared_ptr<Vector> eps_vir);
+    Denominator(shared_ptr<Vector> eps_occ_, shared_ptr<Vector> eps_vir, double delta);
     virtual ~Denominator();
+
+    double delta() const { return delta_; }
+    int nvector() const { return nvector_; }
+    virtual void debug();
+
 };
 
 class LaplaceDenominator : public Denominator {
 
 protected:
-    int nvector_;    
+    // Fully split denominator (w in rows, i in columns) 
+    shared_ptr<Matrix> denominator_occ_;
+    // Fully split denominator (w in rows, a in columns) 
+    shared_ptr<Matrix> denominator_vir_;
+
     void decompose();
 public:
-    LaplaceDenominator(shared_ptr<Vector> eps_occ_, shared_ptr<Vector> eps_vir, int nvector);
+    LaplaceDenominator(shared_ptr<Vector> eps_occ_, shared_ptr<Vector> eps_vir, double delta);
     ~LaplaceDenominator();
-
+    void debug();
+    
 };
 
 class CholeskyDenominator : public Denominator {
 
 protected:
-    double delta_;    
     double degeneracy_multiplier_;    
     void decompose();
     static bool criteria(std::pair<int, double> a, std::pair<int, double> b);
 public:
     CholeskyDenominator(shared_ptr<Vector> eps_occ_, shared_ptr<Vector> eps_vir, double delta, double degeneracy_multiplier = 100.0);
     ~CholeskyDenominator();
+    void debug();
 
 };
 

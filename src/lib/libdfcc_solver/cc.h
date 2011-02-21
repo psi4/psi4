@@ -30,6 +30,9 @@ protected:
 
   virtual void print_header(); 
 
+  // Available memory in doubles
+  unsigned long int doubles_;
+
   // MO basis parameters
   int nso_; // Total basis functions (AO)
   int nmo_; // Total basis functions (MO)
@@ -46,8 +49,24 @@ protected:
   int ndf_; // Number of DF auxiliary functions
   int ndealias_; // Number of dealias functions
 
-  // Reference wavefunction
+  // Energies
   double Eref_; // HF Reference energy
+  std::map<std::string, double> energies_; // Table of energies
+
+  // Spin Treatment Parameters
+  double sss_; // Same-spin scaling parameter
+  double oss_; // Opposite-spin scaling parameter
+
+  // Angles and dangles
+  std::string denominator_algorithm_;
+  double denominator_delta_;
+
+  // Schwarz cutoff 
+  double schwarz_cutoff_;
+
+  // Maximum allowed fitting metric condition
+  std::string fitting_algorithm_;
+  double fitting_condition_;
 
   // New libmints objects for HF information 
   shared_ptr<Vector> evals_; // HF eigenvalues (all)
