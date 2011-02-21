@@ -287,7 +287,7 @@ shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parse
 
     BOOST_FOREACH(map_ssv::value_type& basis, basis_atom_shell)
     {
-        bool not_found = false;
+        bool not_found = true;
 
         BOOST_FOREACH(string user_file, user_list)
         {
@@ -305,6 +305,7 @@ shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parse
                     basis_atom_shell[basis.first][symbol] = parser->parse(symbol, file);
 
                     fprintf(outfile, "  Basis set for %s read from %s\n", symbol.c_str(), user_file.c_str());
+                    not_found = false;
                 }
                 catch (BasisSetNotFound& e) {
                     // This is thrown when load_file fails
