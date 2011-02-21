@@ -61,7 +61,7 @@ install_target:: $(PSITARGET)
 else
 $(PSITARGET): $(BINOBJ) $(PSILIBS)
 	$(MKDIRS) `dirname $(PSITARGET)`
-	$(LD) $(LDFLAGS) -o $@ $^ $(FILTEREDLDLIBS)
+	$(LD) $(LDFLAGS) -o $@ $(START_EXPORT) $^ $(END_EXPORT) $(FILTEREDLDLIBS)
 
 install_target:: $(PSITARGET)
 	$(MKDIRS) $(DESTDIR)$(bindir)

@@ -22,6 +22,15 @@ PSILIBS = \
 -lPSI_deriv -lPSI_int -lPSI_util -lPSI_diis -lPSI_plugin -lPSI_parallel -lboost_python -lboost_regex -lboost_thread \
 -lboost_filesystem
 
+
+# The psilibs need a little extra handling for plugins on linux
+ifeq ($(HAVE_PLUGINS),yes)
+   ifeq ($(TARGET_OS),linux-gnu)
+       START_EXPORT = -Wl,--whole-archive
+       END_EXPORT   = -Wl,--no-whole-archive
+   endif
+endif
+
 CXXSRC = \
 set_memory.cc \
 psi4.cc read_options.cc clean.cc \

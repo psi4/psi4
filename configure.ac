@@ -769,6 +769,7 @@ case $withval in
 esac
 ])
 
+AC_SUBST(TARGET_OS, $target_os)
 # Handle plugins
 AC_ARG_WITH(plugins,[  --with-plugins          Compiles PSI4 to be compatible with plugins.],[
 case $withval in
