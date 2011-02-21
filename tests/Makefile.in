@@ -23,7 +23,7 @@ opt_subdirs = scf5 scf6
 
 scf_subdirs = scf1 scf2 scf3 scf4 sad1
 
-plugin_subdirs = aointegrals_plugin
+plugin_subdirs = plugin_aointegrals plugin_sointegrals
 subdirs = \
 $(mints_subdirs) \
 $(matrix_subdirs) \
@@ -52,6 +52,12 @@ tests:
 
 opttests:
 	for dir in $(opt_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+plugins:
+	for dir in $(plugin_subdirs); \
 	do \
 	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
 	done
