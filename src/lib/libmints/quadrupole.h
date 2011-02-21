@@ -23,16 +23,11 @@ class QuadrupoleInt : public OneBodyAOInt
 {
     ObaraSaikaTwoCenterRecursion overlap_recur_;
 
+    // This the work horse function.
     void compute_pair(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>&);
-
 public:
     QuadrupoleInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>);
     virtual ~QuadrupoleInt();
-
-    /// Computes all quadrupole integrals (Qxx, Qxy, Qxz, Qyy, Qyz, Qzz) result must be an array of enough
-    /// size to contain it.
-    void compute(std::vector<boost::shared_ptr<Matrix> > &result);
-    void compute(std::vector<boost::shared_ptr<SimpleMatrix> > &result);
 };
 
 }

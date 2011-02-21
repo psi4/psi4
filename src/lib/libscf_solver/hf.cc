@@ -275,7 +275,7 @@ void HF::finalize()
         delete[] so2index_;
         delete[] pk_symoffset_;
     }
-    
+
     S_.reset();
     Shalf_.reset();
     Sphalf_.reset();
@@ -649,7 +649,7 @@ void HF::form_multipole_integrals()
 
     // Get a dipole integral object
     OneBodyAOInt* dipole = integral.ao_dipole();
-    OneBodyAOInt* quadrupole= integral.quadrupole();
+    OneBodyAOInt* quadrupole= integral.ao_quadrupole();
 
     // Compute the dipole integrals
     dipole->compute(Dipole_);

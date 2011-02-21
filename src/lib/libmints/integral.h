@@ -337,13 +337,14 @@ public:
     /// Returns the OneBodyInt that computes the pseudospectral grid integrals
     virtual OneBodyAOInt* ao_pseudospectral(int deriv = 0);
     virtual OneBodySOInt* so_pseudospectral(int deriv = 0);
-    
+
     /// Returns an OneBodyInt that computes the dipole integral.
     virtual OneBodyAOInt* ao_dipole(int deriv=0);
     virtual OneBodySOInt* so_dipole(int deriv=0);
 
     /// Returns an OneBodyInt that computes the quadrupole integral.
-    virtual OneBodyAOInt* quadrupole();
+    virtual OneBodyAOInt* ao_quadrupole();
+    virtual OneBodySOInt* so_quadrupole();
 
     /// Returns an OneBodyInt that computes the electric field
     virtual OneBodyAOInt *electric_field();
