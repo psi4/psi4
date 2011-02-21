@@ -8,6 +8,9 @@ MODULE = false
 LDLIBS += $(LAPACK) $(BLAS) $(PYTHON_LDFLAGS) -lpthread
 CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\" $(PYTHON_INCLUDE)
 
+# gfortranbegin contains main, so we can't link it in or we'll get a linker freakout
+FILTEREDLDLIBS = $(filter-out -lgfortranbegin,$(LDLIBS))
+
 # NOTE: Keep PSI_parallel last in the PSI library list (but before boost). It contains the fprintf override.
 PSILIBS = \
 -lPSI_mints_wrapper -lPSI_dfmp2 -lPSI_scf -lPSI_ccenergy -lPSI_ccsort -lPSI_psimrcc\

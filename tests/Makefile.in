@@ -23,6 +23,7 @@ opt_subdirs = scf5 scf6
 
 scf_subdirs = scf1 scf2 scf3 scf4 sad1
 
+plugin_subdirs = aointegrals_plugin
 subdirs = \
 $(mints_subdirs) \
 $(matrix_subdirs) \
@@ -33,6 +34,13 @@ $(cc_subdirs) \
 ${mcscf_subdirs} 
 #$(dcft_subdirs) \
 
+# Compile the plugins, if we activated them
+HAVE_PLUGINS=@HAVE_PLUGINS@
+ifeq ($(HAVE_PLUGINS),yes)
+   subdirs += $(plugin_subdirs)
+endif
+
+ 
 # the bare minimum
 quicktestdirs = 
 
