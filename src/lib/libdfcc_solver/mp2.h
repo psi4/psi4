@@ -14,9 +14,19 @@ namespace psi { namespace dfcc {
 
 class MP2 : public CC {
 private:
-  void print_header();
 
 protected:
+  void print_header();
+  std::string mp2_algorithm_;
+  double E_MP2J_;
+  double E_MP2K_;  
+ 
+  void compute_DF_MP2();
+  void compute_OS_MP2();
+  void compute_PS_MP2();
+  void compute_PS2_MP2();
+  void compute_PS3_MP2();
+  void common_init();
 
 public:
   MP2(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);

@@ -91,7 +91,7 @@ double CCD::compute_energy()
 
     iter++;
   }
-  while(iter <= options_.get_int("MAX_ITER"));
+  while(iter <= options_.get_int("MAXITER"));
 
   fprintf(outfile,"\n");
   fprintf(outfile,"  Reference Energy            %18.10lf\n",Eref_);

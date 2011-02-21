@@ -783,31 +783,61 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("D_CONVERGE", 8);
   }
   if(name=="DFCC"|| options.read_globals()) {
-    /* Type of wavefunction */
+    /*- Type of wavefunction -*/
     options.add_str("WAVEFUNCTION","MP2","MP2 CCD");
-    /* MO basis */
+    /*- MO basis -*/
     options.add_str("BASIS","NONE");
-    /* DF basis for MO integrals */
+    /*- DF basis for MO integrals -*/
     options.add_str("RI_BASIS_CC","NONE");
-    /* Dealias basis for PS integrals */
+    /*- Fitting metric algorithm -*/
+    options.add_str("FITTING_TYPE", "EIG", "EIG CHOLESKY QR");
+    /*- Desired Fitting condition -*/
+    options.add_double("FITTING_CONDITION", 1.0E8);
+    /*- Dealias basis for PS integrals -*/
     options.add_str("DEALIAS_BASIS_CC","NONE");
-    /* Filename to read grid from */
+    /*- Filename to read grid from -*/
     options.add_str_i("PS_GRID_FILE","");
-    /* File path to read grids from */
+    /*- File path to read grids from -*/
     options.add_str_i("PS_GRID_PATH","");
-    /* Convergence of CC energy */
+    /*- Denominator algorithm for PT methods -*/
+    options.add_str("DENOMINATOR_ALGORITHM", "LAPLACE", "LAPLACE CHOLESKY");
+    /*- Maximum denominator error allowed (Max error norm in Delta tensor) -*/
+    options.add_double("DENOMINATOR_DELTA", 1.0E-6);
+   
+    /** MP2-Specific Options **/ 
+    /*- MP2 Algorithm
+    
+            Algorithm Keyword   MP2J          MP2K
+                DF               DF            DF
+                SOS              DF            -
+                MOS              DF(Omega)     -
+                PS               DF            PS
+                PS2              DF           PS/PS
+                PS3              PS           PS/PS
+    -*/ 
+    options.add_str("MP2_ALGORITHM", "DF", "DF SOS MOS PS PS2 PS3");
+    /*- OS Scale  -*/
+    options.add_double("SCALE_OS", 6.0/5.0);
+    /*- SS Scale  -*/
+    options.add_double("SCALE_SS", 1.0/3.0);
+ 
+    /*- Schwarz cutoff -*/
+    options.add_double("SCHWARZ_CUTOFF", 0.0);
+    /*- Convergence of CC energy -*/
     options.add_int("E_CONVERGE", 8);
-    /* Convergence of cluster amplitudes (RMS change) */
+    /*- Convergence of cluster amplitudes (RMS change) -*/
     options.add_int("T_CONVERGE", 8);
-    /* Turn on DIIS */
+    /*- Turn on DIIS -*/
     options.add_bool("DIIS",true);
-    /* Minimum DIIS vectors */
+    /*- Minimum DIIS vectors -*/
     options.add_int("MIN_DIIS_VECS", 2);
-    /* Maximum DIIS vectors */
+    /*- Maximum DIIS vectors -*/
     options.add_int("MAX_DIIS_VECS", 6);
-    /* Print level */
+    /*- The maximum number iterations allowed -*/
+    options.add_int("MAXITER", 40);
+    /*- Print level -*/
     options.add_int("PRINT",1);
-    /* Debugging information? */
+    /*- Debugging information? -*/
     options.add_bool("DEBUG",false);
   }
   if(name == "PSIMRCC"|| options.read_globals()) {

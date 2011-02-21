@@ -63,6 +63,7 @@ void CC::get_params()
 
   // Reference wavefunction info
   Eref_ = chkpt_->rd_escf();
+  energies_["Reference Energy"] = Eref_;
   double* evals_t = chkpt_->rd_evals();
   double** C_t = chkpt_->rd_scf();
 
@@ -96,6 +97,16 @@ void CC::get_params()
 
   free(evals_t);
   free_block(C_t);
+
+  sss_ = options_.get_double("SCALE_SS");
+  oss_ = options_.get_double("SCALE_SS");
+  denominator_algorithm_ = options_.get_str("DENOMINATOR_ALGORITHM");
+  denominator_delta_ = options_.get_double("DENOMINATOR_DELTA");
+ 
+  schwarz_cutoff_ = options_.get_double("SCHWARZ_CUTOFF");
+  fitting_condition_ = options_.get_double("FITTING_CONDITION"); 
+
+  doubles_ = memory_ / 8L;
 }
 
 void CC::get_ribasis()
