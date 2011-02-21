@@ -937,9 +937,12 @@ AC_CONFIG_FILES([include/Makefile
           tests/mcscf3/Makefile
           tests/mints1/Makefile
           tests/matrix1/Makefile
-          tests/aointegrals_plugin/Makefile
-          tests/aointegrals_plugin/input.dat
-          tests/aointegrals_plugin/aointegrals.cc
+          tests/plugin_aointegrals/Makefile
+          tests/plugin_aointegrals/input.dat
+          tests/plugin_aointegrals/aointegrals.cc
+          tests/plugin_sointegrals/Makefile
+          tests/plugin_sointegrals/input.dat
+          tests/plugin_sointegrals/sointegrals.cc
 
           bin/psi4-config
 ])
