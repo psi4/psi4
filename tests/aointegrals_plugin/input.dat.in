@@ -1,0 +1,19 @@
+molecule {
+H
+H 1 R
+
+R = .9
+}
+
+
+plugin_load("./aointegrals_plugin.so")
+
+set globals {
+  basis sto-3g
+}
+
+set aointegrals_plugin {
+  do_tei True
+}
+
+plugin("aointegrals_plugin.so")

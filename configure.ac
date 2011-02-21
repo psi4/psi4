@@ -770,13 +770,23 @@ esac
 ])
 
 # Handle plugins
-AC_ARG_WITH(plugins,[  --with-plugins          Compiles PSI4 to be compatible with plugins. Only needed on Linux systems.],[
+AC_ARG_WITH(plugins,[  --with-plugins          Compiles PSI4 to be compatible with plugins.],[
 case $withval in
   yes)
-     CXXOTH="$CXXOTH -fpic"
-     LDFLAGS="$LDFLAGS -Wl,-export-dynamic"
+     AC_SUBST(HAVE_PLUGINS, yes)
+     case $target_os in
+       linux*)
+         CXXOTH="$CXXOTH -fpic"
+         LDFLAGS="$LDFLAGS -Wl,-export-dynamic"
+         ;;
+       darwin*)
+         CXXOTH="$CXXOTH -fpic"
+         LDFLAGS="$LDFLAGS -all_load"
+         ;;
+     esac
      ;;
   no)
+     AC_SUBST(HAVE_PLUGINS, no)
      ;;
 esac
 ])
@@ -927,6 +937,9 @@ AC_CONFIG_FILES([include/Makefile
           tests/mcscf3/Makefile
           tests/mints1/Makefile
           tests/matrix1/Makefile
+          tests/aointegrals_plugin/Makefile
+          tests/aointegrals_plugin/input.dat
+          tests/aointegrals_plugin/aointegrals.cc
 
           bin/psi4-config
 ])
