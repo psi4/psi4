@@ -388,9 +388,7 @@ void Matrix::set(const double * const * const sq)
     int offset;
 
     if (sq == NULL) {
-        zero();
-        // TODO: Need to throw an exception here.
-        return;
+        throw PSIEXCEPTION("Matrix::set: Set call with a NULL double** matrix");
     }
     offset = 0;
     for (h=0; h<nirrep_; ++h) {
@@ -566,6 +564,9 @@ void Matrix::print(FILE *out, const char *extra) const
 
 void Matrix::eivprint(const Vector * const values, FILE *out)
 {
+    if (symmetry_)
+        throw PSIEXCEPTION("Matrix::eivprint: This print does not make sense for non-totally symmetric matrices.");
+
     int h;
 
     if (name_.length()) {
@@ -1204,12 +1205,12 @@ void Matrix::write_to_dpdfile2(dpdfile2 *outFile)
 
 void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, bool saveSubBlocks)
 {
-    if (symmetry_) {
-        throw PSIEXCEPTION("Matrix::save: Matrix is non-totally symmetric.");
-    }
-
     static const char *str_block_format = "%3d %3d %3d %20.15f\n";
     static const char *str_full_format  = "%3d %3d %20.15f\n";
+
+    // We can only save lower triangle if symmetry_ if 0
+    if (symmetry_ && saveLowerTriangle)
+        throw PSIEXCEPTION("Matrix::save: Unable to save lower triangle for non-totally symmetric matrix.");
 
     FILE *out = NULL;
     if (append == true) {
@@ -1218,8 +1219,8 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
         out = fopen(filename.c_str(), "w");
     }
 
-    fprintf(out, "%s", name_.c_str());
-    fprintf(out, "\n");
+    fprintf(out, "%s\n", name_.c_str());
+    fprintf(out, "symmetry %d\n", symmetry_);
 
     if (saveSubBlocks == false) {
         // Convert the matrix to a full matrix
@@ -1321,6 +1322,63 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
     fclose(out);
 }
 
+void Matrix::save(psi::PSIO* const psio, unsigned int fileno, SaveType st)
+{
+    if (symmetry_ && st == LowerTriangle)
+        throw PSIEXCEPTION("Matrix::save: Unable to save triangle of non-totally symmetric matrix.");
+
+    if(Communicator::world->me() == 0) {
+        // Check to see if the file is open
+        bool already_open = false;
+        if (psio->open_check(fileno)) {
+            already_open = true;
+        } else {
+            psio->open(fileno, PSIO_OPEN_OLD);
+        }
+
+        // Need to know the size
+        int sizer=0, sizec=0;
+        for (int h=0; h<nirrep_; ++h) {
+            sizer += rowspi_[h];
+            sizec += colspi_[h^symmetry_];
+        }
+
+        if (st == SubBlocks) {
+            for (int h=0; h<nirrep_; ++h) {
+                string str(name_);
+                str += " Symmetry " + to_string(symmetry_) + " Irrep " + to_string(h);
+
+                // Write the sub-blocks
+                if (colspi_[h^symmetry_] > 0 && rowspi_[h] > 0)
+                    psio->write_entry(fileno, const_cast<char*>(str.c_str()), (char*)matrix_[h][0],
+                                      sizeof(double) * colspi_[h^symmetry_] * rowspi_[h]);
+            }
+        }
+        else if (st == Full) {
+            double **fullblock = to_block_matrix();
+
+            // Write the full block
+            if (sizer > 0 && sizec > 0)
+                psio->write_entry(fileno, const_cast<char*>(name_.c_str()), (char*)fullblock[0],
+                                  sizeof(double) * sizer * sizec);
+
+            Matrix::free(fullblock);
+        }
+        else if (st == LowerTriangle) {
+            double *lower = to_lower_triangle();
+
+            if (sizer > 0)
+                psio->write_entry(fileno, const_cast<char*>(name_.c_str()), (char*)lower, sizeof(double)*ioff[sizer]);
+            delete[] lower;
+        }
+        else {
+            throw PSIEXCEPTION("Matrix::save: Unknown SaveType\n");
+        }
+        if (!already_open)
+            psio->close(fileno, 1);     // Close and keep
+    }
+}
+
 bool Matrix::load(psi::PSIO* const psio, unsigned int fileno, const string& tocentry, int nso)
 {
     if (symmetry_) {
@@ -1344,6 +1402,9 @@ bool Matrix::load(psi::PSIO* const psio, unsigned int fileno, const string& toce
 
 void Matrix::load(psi::PSIO* const psio, unsigned int fileno, SaveType st)
 {
+    if (symmetry_ && st == LowerTriangle)
+        throw PSIEXCEPTION("Matrix::load: Unable to read lower triangle of non-totally symmetric matrix.");
+
     // The matrix must be sized correctly first
     if(Communicator::world->me() == 0) {
         // Check to see if the file is open
@@ -1358,26 +1419,27 @@ void Matrix::load(psi::PSIO* const psio, unsigned int fileno, SaveType st)
         int sizer=0, sizec=0;
         for (int h=0; h<nirrep_; ++h) {
             sizer += rowspi_[h];
-            sizec += colspi_[h];
+            sizec += colspi_[h^symmetry_];
         }
 
         if (st == SubBlocks) {
             for (int h=0; h<nirrep_; ++h) {
                 string str(name_);
-                str += " Irrep " + to_string(h);
+                str += " Symmetry " + to_string(symmetry_) + " Irrep " + to_string(h);
 
                 // Read the sub-blocks
                 if (colspi_[h] > 0 && rowspi_[h] > 0)
-                    psio->read_entry(fileno, str.c_str(), (char*)matrix_[h][0], sizeof(double) * colspi_[h] * rowspi_[h]);
+                    psio->read_entry(fileno, str.c_str(), (char*)matrix_[h][0],
+                                     sizeof(double) * colspi_[h^symmetry_] * rowspi_[h]);
             }
         }
         else if (st == Full) {
-
             double **fullblock = to_block_matrix();
 
             // Read the full block
             if (sizer > 0 && sizec > 0)
                 psio->read_entry(fileno, name_.c_str(), (char*)fullblock[0], sizeof(double) * sizer * sizec);
+
             set(fullblock);
             Matrix::free(fullblock);
         }
@@ -1394,61 +1456,6 @@ void Matrix::load(psi::PSIO* const psio, unsigned int fileno, SaveType st)
         }
         if (!already_open)
             psio->close(fileno, 1);     // Close and keep // Idempotent, win!
-    }
-}
-
-void Matrix::save(psi::PSIO* const psio, unsigned int fileno, SaveType st)
-{
-    if (symmetry_) {
-        throw PSIEXCEPTION("Matrix::save: Matrix is non-totally symmetric.");
-    }
-
-    if(Communicator::world->me() == 0) {
-        // Check to see if the file is open
-        bool already_open = false;
-        if (psio->open_check(fileno)) {
-            already_open = true;
-        } else {
-            psio->open(fileno, PSIO_OPEN_OLD);
-        }
-
-        // Need to know the size
-        int sizer=0, sizec=0;
-        for (int h=0; h<nirrep_; ++h) {
-            sizer += rowspi_[h];
-            sizec += colspi_[h];
-        }
-
-        if (st == SubBlocks) {
-            for (int h=0; h<nirrep_; ++h) {
-                string str(name_);
-                str += " Irrep " + to_string(h);
-
-                // Write the sub-blocks
-                if (colspi_[h] > 0 && rowspi_[h] > 0)
-                    psio->write_entry(fileno, const_cast<char*>(str.c_str()), (char*)matrix_[h][0], sizeof(double) * colspi_[h] * rowspi_[h]);
-            }
-        }
-        else if (st == Full) {
-            double **fullblock = to_block_matrix();
-
-            // Write the full block
-            if (sizer > 0 && sizec > 0)
-                psio->write_entry(fileno, const_cast<char*>(name_.c_str()), (char*)fullblock[0], sizeof(double) * sizer * sizec);
-            Matrix::free(fullblock);
-        }
-        else if (st == LowerTriangle) {
-            double *lower = to_lower_triangle();
-
-            if (sizer > 0)
-                psio->write_entry(fileno, const_cast<char*>(name_.c_str()), (char*)lower, sizeof(double)*ioff[sizer]);
-            delete[] lower;
-        }
-        else {
-            throw PSIEXCEPTION("Matrix::save: Unknown SaveType\n");
-        }
-        if (!already_open)
-            psio->close(fileno, 1);     // Close and keep
     }
 }
 
