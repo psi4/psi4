@@ -1,9 +1,13 @@
 #include "ccd.h"
 
+#include <time.h>
 #include <libqt/qt.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libmints/mints.h>
+
+// This is a dirty hack...bite me
+#define INDEX(i,j) ((i>=j) ? (ioff[i] + j) : (ioff[j] + i))
 
 using namespace std;
 using namespace psi;
@@ -26,6 +30,13 @@ CCD::~CCD()
 
 double CCD::compute_energy()
 {
+  time_t start = time(NULL);
+  time_t stop;
+
+  if (options_.get_bool("DIIS")) 
+    diis_ = shared_ptr<DFCCDIIS>(new DFCCDIIS(DFCC_DIIS_FILE,naocc_*naocc_*
+      navir_*navir_,options_.get_int("MAX_DIIS_VECS"),psio_));
+
   tIAJB_ = init_array(naocc_*naocc_*navir_*(ULI) navir_);
   t2IAJB_ = init_array(naocc_*naocc_*navir_*(ULI) navir_);
   vIAJB_ = init_array(naocc_*naocc_*navir_*(ULI) navir_);
@@ -40,12 +51,14 @@ double CCD::compute_energy()
   fprintf(outfile,"  Reference Energy            %18.10lf\n",Eref_);
   fprintf(outfile,"  Correlation Energy          %18.10lf\n",emp2);
   fprintf(outfile,"  Total DF-MP2 Energy         %18.10lf\n\n",Eref_+emp2);
-  fprintf(outfile,"  Iter       Energy (H)          dE (H)             RMS (H)\n");
+  fprintf(outfile,"  Iter       Energy (H)          dE (H)             RMS (H)     Time (s)\n");
   fflush(outfile);
 
   int iter = 1;
+  int done = 0;
   double e_new;
   double e_old = emp2;
+  double rms;
 
   do {
 
@@ -58,10 +71,9 @@ double CCD::compute_energy()
     iajb_ibja(tIAJB_);
 
     term_6(); // t_ab^ij <- - t_ac^ik [2(kc|ld)-(kd|lc)] t_bd^lj
-    term_7(); // t_ab^ij <- - t_ac^ki (jb|kc)
+    term_7(); // t_ab^ij <- - t_ac^ki (jb|kc) 
               // t_ab^ij <- t_ac^ki (kc|ld) t_bd^lj
 
-    iajb_ibja(vIAJB_);
     iajb_ibja(t2IAJB_);
 
     term_8(); // t_ab^ij <- t_cb^il (kc|ld) t_da^jk
@@ -77,21 +89,40 @@ double CCD::compute_energy()
     term_11(); // t_ab^ij <- t_cd^ij (ac|bd)
     term_12(); // t_ab^ij <- t_cd^ij (kc|ld) t_ab^kl
 
-    iajb_ijab(tIAJB_);
-    iajb_ijab(t2IAJB_);
+    ijab_iajb(tIAJB_);
+    ijab_iajb(t2IAJB_);
 
     symmetrize(); // t_ab^ij <- 0.5*( t_ab^ij + t_ba^ji )
     apply_denom();
     e_new = energy();
+    rms = store_error_vecs();
 
-    fprintf(outfile,"  %4d %16.8lf %17.9lf %17.9lf\n",iter,e_new,e_old-e_new,0.0);
+    stop = time(NULL);
+
+    fprintf(outfile,"  %4d %16.8lf %17.9lf %17.9lf %12ld",iter,e_new,
+      e_old-e_new,rms,stop-start);
     fflush(outfile);
 
-    e_old = e_new;
+    if (options_.get_int("MIN_DIIS_VECS") <= iter && 
+        options_.get_bool("DIIS")) {
+      diis_->get_new_vector(tIAJB_,xIAJB_);
+      fprintf(outfile,"  DIIS\n");
+    }
+    else {
+      fprintf(outfile,"\n");
+    }
+    fflush(outfile);
 
     iter++;
+
+    if (iter > options_.get_int("MAXITER")) done = 1;
+    if (fabs(e_old-e_new) < pow(10.0,-(double) options_.get_int("E_CONVERGE")))
+      done = 1;
+    if (rms < pow(10.0,-(double) options_.get_int("T_CONVERGE"))) done = 1;
+
+    e_old = e_new;
   }
-  while(iter <= options_.get_int("MAXITER"));
+  while(!done);
 
   fprintf(outfile,"\n");
   fprintf(outfile,"  Reference Energy            %18.10lf\n",Eref_);
@@ -346,6 +377,7 @@ void CCD::mo_integrals()
   free_block(vOVVO);
   free_block(gOVVO);
 
+/* For testing only
   double **vVVVV = block_matrix(navir_*navir_,navir_*navir_);
 
   for (int a=0,ab=0; a<navir_; a++) {
@@ -359,6 +391,52 @@ void CCD::mo_integrals()
 
   free_block(B_p_VV);
   free_block(vVVVV);
+*/
+
+  int virtri = navir_*(navir_+1)/2;
+  int svirtri = navir_*(navir_-1)/2;
+  double **VV = block_matrix(navir_,navir_);
+  double *xVV = init_array(virtri);
+  double *yVV = init_array(svirtri);
+
+  zero_disk(DFCC_INT_FILE,"VVVV+ Integrals",(char *) &(xVV[0]),virtri,
+    virtri);
+  zero_disk(DFCC_INT_FILE,"VVVV- Integrals",(char *) &(yVV[0]),svirtri,
+    svirtri);
+
+  psio_address next_VVVVp = PSIO_ZERO;
+  psio_address next_VVVVm = PSIO_ZERO;
+
+  for (int a=0; a < navir_; a++) {
+  for (int b=0; b <= a; b++) {
+
+    C_DGEMM('N','T',navir_,navir_,ndf_,1.0,&(B_p_VV[a*navir_][0]),ndf_,
+      &(B_p_VV[b*navir_][0]),ndf_,0.0,&(VV[0][0]),navir_);
+
+    for (int c=0; c < navir_; c++) {
+    for (int d=0; d <= c; d++) {
+      int cd = INDEX(c,d);
+      xVV[cd] = VV[c][d] + VV[d][c];
+    }}
+    psio_->write(DFCC_INT_FILE,"VVVV+ Integrals",(char *) &(xVV[0]),
+      virtri*(ULI) sizeof(double),next_VVVVp,&next_VVVVp);
+
+    if (a != b) {
+      for (int c=0; c < navir_; c++) {
+      for (int d=0; d < c; d++) {
+        int cd = INDEX(c-1,d);
+        yVV[cd] = VV[c][d] - VV[d][c];
+      }}
+      psio_->write(DFCC_INT_FILE,"VVVV- Integrals",(char *) &(yVV[0]),
+        svirtri*(ULI) sizeof(double),next_VVVVm,&next_VVVVm);
+    }
+
+  }}
+
+  free(xVV);
+  free(yVV);
+  free_block(VV);
+  free_block(B_p_VV);
 }
 
 double CCD::energy()
@@ -370,9 +448,25 @@ double CCD::energy()
 
   energy = C_DDOT(naocc_*navir_*naocc_*(long int) navir_,t2IAJB_,1,vIAJB_,1);
 
+  C_DCOPY(naocc_*navir_*naocc_*(long int) navir_,tIAJB_,1,xIAJB_,1);
   C_DCOPY(naocc_*navir_*naocc_*(long int) navir_,t2IAJB_,1,tIAJB_,1);
 
   return(energy);
+}
+
+double CCD::store_error_vecs()
+{
+  double rms;
+
+  C_DAXPY(naocc_*navir_*naocc_*(long int) navir_,-1.0,t2IAJB_,1,xIAJB_,1);
+
+  if (options_.get_bool("DIIS"))
+    diis_->store_vectors(t2IAJB_,xIAJB_);
+
+  rms = C_DDOT(naocc_*navir_*naocc_*(long int) navir_,xIAJB_,1,xIAJB_,1);
+  rms /= naocc_*navir_*naocc_*(double) navir_;
+
+  return(sqrt(rms));
 }
 
 void CCD::apply_denom()
@@ -458,7 +552,7 @@ void CCD::term_6()
   C_DGEMM('N','T',naocc_*navir_,naocc_*navir_,naocc_*navir_,-2.0,
     xIAJB_,naocc_*navir_,tIAJB_,naocc_*navir_,1.0,t2IAJB_,naocc_*navir_);
 }
-
+/* Non-DF Factorization ... Remember to dick with the read in term_8
 void CCD::term_7()
 {
   psio_->read_entry(DFCC_INT_FILE,"OVOV Integrals",(char *)
@@ -472,9 +566,36 @@ void CCD::term_7()
   C_DGEMM('N','T',naocc_*navir_,naocc_*navir_,naocc_*navir_,1.0,
     xIAJB_,naocc_*navir_,tIAJB_,naocc_*navir_,1.0,t2IAJB_,naocc_*navir_);
 }
+*/
+
+void CCD::term_7()
+{
+  double *B_p_OV = init_array(naocc_*navir_*ndf_);
+  double *T_p_OV = init_array(naocc_*navir_*ndf_);
+
+  psio_->read_entry(DFCC_INT_FILE,"OV DF Integrals",(char *)
+      &(B_p_OV[0]),naocc_*navir_*ndf_*sizeof(double));
+
+  C_DGEMM('N','N',naocc_*navir_,ndf_,naocc_*navir_,1.0,
+    tIAJB_,naocc_*navir_,B_p_OV,ndf_,0.0,T_p_OV,ndf_);
+
+  C_DGEMM('N','T',naocc_*navir_,naocc_*navir_,ndf_,-2.0,T_p_OV,ndf_,
+    B_p_OV,ndf_,1.0,t2IAJB_,naocc_*navir_);
+
+  C_DGEMM('N','T',naocc_*navir_,naocc_*navir_,ndf_,1.0,T_p_OV,ndf_,
+    T_p_OV,ndf_,1.0,t2IAJB_,naocc_*navir_);
+
+  free(B_p_OV);
+  free(T_p_OV);
+}
 
 void CCD::term_8()
 {
+  psio_->read_entry(DFCC_INT_FILE,"OVOV Integrals",(char *)
+    &(vIAJB_[0]),naocc_*navir_*naocc_*navir_*sizeof(double));
+
+  iajb_ibja(vIAJB_);
+
   C_DGEMM('N','T',naocc_*navir_,naocc_*navir_,naocc_*navir_,1.0,
     tIAJB_,naocc_*navir_,vIAJB_,naocc_*navir_,0.0,xIAJB_,naocc_*navir_);
 
@@ -504,6 +625,7 @@ void CCD::term_10()
   free(vIJKL);
 }
 
+/* For testing only
 void CCD::term_11()
 {
   double *vABCD = init_array(navir_*navir_*navir_*(long int) navir_);
@@ -515,6 +637,164 @@ void CCD::term_11()
     navir_*navir_,vABCD,navir_*navir_,1.0,t2IAJB_,navir_*navir_);
 
   free(vABCD);
+}
+*/
+void CCD::term_11()
+{
+  int occtri = naocc_*(naocc_+1)/2;
+  int virtri = navir_*(navir_+1)/2;
+  int svirtri = navir_*(navir_-1)/2;
+
+  double **tpIJAB = block_matrix(occtri,virtri);
+  double **tmIJAB = block_matrix(occtri,svirtri);
+
+  for(int i=0; i<naocc_; i++) {
+  for(int j=0; j<=i; j++) {
+    for(int a=0; a<navir_; a++) {
+    for(int b=0; b<=a; b++) {
+      int ij = INDEX(i,j);
+      int ab = INDEX(a-1,b);
+      int cd = INDEX(a,b);
+      int ijab = i*naocc_*navir_*navir_ + j*navir_*navir_ + a*navir_ + b;
+      int jiab = j*naocc_*navir_*navir_ + i*navir_*navir_ + a*navir_ + b;
+      
+      if (a != b) {
+        tpIJAB[ij][cd] = 0.5*tIAJB_[ijab];
+        tpIJAB[ij][cd] += 0.5*tIAJB_[jiab];
+        tmIJAB[ij][ab] = 0.5*tIAJB_[ijab];
+        tmIJAB[ij][ab] -= 0.5*tIAJB_[jiab];
+      }
+      else {
+        tpIJAB[ij][cd] = 0.25*tIAJB_[ijab];
+        tpIJAB[ij][cd] += 0.25*tIAJB_[jiab];
+      }
+  }}}}
+
+  int blocksize;
+  int loopsize;
+
+  if (navir_ % 2 == 0) {
+    blocksize = navir_+1;
+    loopsize = virtri/blocksize;
+  }
+  else {
+    blocksize = navir_;
+    loopsize = virtri/blocksize;
+  }
+
+  double **sIJAB = block_matrix(occtri,virtri);
+  double **vVVVVp[2];
+  vVVVVp[0] = block_matrix(blocksize,virtri);
+  vVVVVp[1] = block_matrix(blocksize,virtri);
+
+  psio_address next_VVVVp = PSIO_ZERO;
+
+  shared_ptr<AIO_Handler> aio(new AIO_Handler(psio_));
+
+  psio_->read(DFCC_INT_FILE,"VVVV+ Integrals",(char *) &(vVVVVp[0][0][0]),
+        blocksize*virtri*(ULI) sizeof(double),next_VVVVp,&next_VVVVp);
+
+  for(int a_read=0; a_read<loopsize; a_read++) {
+    if (a_read < loopsize-1)
+      aio->read(DFCC_INT_FILE,"VVVV+ Integrals",(char *) 
+        &(vVVVVp[(a_read+1)%2][0][0]),blocksize*virtri*sizeof(double),
+        next_VVVVp,&next_VVVVp);
+
+    C_DGEMM('N','T',occtri,blocksize,virtri,1.0,tpIJAB[0],virtri,
+      vVVVVp[a_read%2][0],virtri,1.0,&(sIJAB[0][a_read*blocksize]),virtri);
+
+    if (a_read < loopsize-1)
+      aio->synchronize();
+  }
+
+  free_block(vVVVVp[0]);
+  free_block(vVVVVp[1]);
+  free_block(tpIJAB);
+
+  if (navir_ % 2 == 0) {
+    blocksize = navir_-1;
+    loopsize = svirtri/blocksize;
+  }
+  else {
+    blocksize = navir_;
+    loopsize = svirtri/blocksize;
+  }
+
+  double **aIJAB = block_matrix(occtri,svirtri);
+  double **vVVVVm[2];
+  vVVVVm[0] = block_matrix(blocksize,svirtri);
+  vVVVVm[1] = block_matrix(blocksize,svirtri);
+
+  psio_address next_VVVVm = PSIO_ZERO;
+
+  psio_->read(DFCC_INT_FILE,"VVVV- Integrals",(char *) &(vVVVVm[0][0][0]),
+        blocksize*svirtri*(ULI) sizeof(double),next_VVVVm,&next_VVVVm);
+
+  for(int a_read=0; a_read<loopsize; a_read++) {
+    if (a_read < loopsize-1)
+      aio->read(DFCC_INT_FILE,"VVVV- Integrals",(char *) 
+        &(vVVVVm[(a_read+1)%2][0][0]),
+        blocksize*svirtri*sizeof(double),next_VVVVm,&next_VVVVm);
+
+    C_DGEMM('N','T',occtri,blocksize,svirtri,1.0,tmIJAB[0],svirtri,
+      vVVVVm[a_read%2][0],svirtri,1.0,&(aIJAB[0][a_read*blocksize]),svirtri);
+
+    if (a_read < loopsize-1)
+      aio->synchronize();
+  }
+
+  free_block(vVVVVm[0]);
+  free_block(vVVVVm[1]);
+  free_block(tmIJAB);
+
+  for(int i=0,ij=0; i<naocc_; i++) {
+  for(int j=0; j<naocc_; j++,ij++) {
+    int kl = INDEX(i,j);
+    for(int a=0,ab=0; a<navir_; a++) {
+    for(int b=0; b<navir_; b++,ab++) {
+      int cd = INDEX(a,b);
+      int ijab = i*naocc_*navir_*navir_ + j*navir_*navir_ + a*navir_ + b;
+      vIAJB_[ijab] = sIJAB[kl][cd];
+  }}}}
+
+  for(int i=0; i<naocc_; i++) {
+  for(int j=0; j<i; j++) {
+    int ij = i*naocc_ + j;
+    int ji = j*naocc_ + i;
+    int kl = INDEX(i,j);
+    for(int a=0; a<navir_; a++) {
+    for(int b=0; b<a; b++) {
+      int ab = a*navir_ + b;
+      int ba = b*navir_ + a;
+      int cd = INDEX(a-1,b);
+      int ijab = i*naocc_*navir_*navir_ + j*navir_*navir_ + a*navir_ + b;
+      int jiba = j*naocc_*navir_*navir_ + i*navir_*navir_ + b*navir_ + a;
+      int ijba = i*naocc_*navir_*navir_ + j*navir_*navir_ + b*navir_ + a;
+      int jiab = j*naocc_*navir_*navir_ + i*navir_*navir_ + a*navir_ + b;
+      vIAJB_[ijab] += aIJAB[kl][cd];
+      vIAJB_[jiba] += aIJAB[kl][cd];
+      vIAJB_[ijba] -= aIJAB[kl][cd];
+      vIAJB_[jiab] -= aIJAB[kl][cd];
+  }}}}
+
+  for(int i=0; i<naocc_; i++) {
+    int ii = i*naocc_ + i;
+    int kk = INDEX(i,i);
+    for(int a=0; a<navir_; a++) {
+    for(int b=0; b<a; b++) {
+      int ab = a*navir_ + b;
+      int ba = b*navir_ + a;
+      int cd = INDEX(a-1,b);
+      int iiab = ii*navir_*navir_ + ab;
+      int iiba = ii*navir_*navir_ + ba;
+      vIAJB_[iiab] += aIJAB[kk][cd];
+      vIAJB_[iiba] -= aIJAB[kk][cd];
+  }}}
+
+  free_block(sIJAB);
+  free_block(aIJAB);
+
+  C_DAXPY(naocc_*navir_*naocc_*(long int) navir_,1.0,vIAJB_,1,t2IAJB_,1);
 }
 
 void CCD::term_12()
