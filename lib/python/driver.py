@@ -4,15 +4,8 @@ from proc import *
 #Procedure lookup tables
 procedures = {'energy' : {
             'scf'           : run_scf,
-            'hf'            : run_scf,
-            'rhf'           : run_scf,
-            'uhf'           : run_scf,
-            'rohf'          : run_scf,
-            'rks'           : run_scf,
-            'uks'           : run_scf,
             'mcscf'         : run_mcscf,
             'dfmp2'         : run_dfmp2,
-            'scs-dfmp2'     : run_dfmp2,
             'dfcc'          : run_dfcc,
             'sapt0'         : run_sapt,
             'sapt2'         : run_sapt,

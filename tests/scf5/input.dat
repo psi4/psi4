@@ -28,7 +28,7 @@ returnValue = 0
 thisenergy = 0.0
 
 while (cycle < 20 and returnValue != PsiReturnType.EndLoop):
-    thisenergy = energy('rhf')
+    thisenergy = energy('scf')
     deriv()
     returnValue = optking()
     cycle = cycle + 1

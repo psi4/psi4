@@ -14,7 +14,7 @@ set globals = {
     e_converge 10
 }
 
-thisenergy = energy('rhf')
+thisenergy = energy('scf')
 
 compare_values(nucenergy, bh.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST

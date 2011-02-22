@@ -25,7 +25,7 @@ set global {
 psioh = PsiMod.IOManager.shared_object()
 psioh.set_specific_retention(32, False)
 
-thisenergy = energy('uhf')
+thisenergy = energy('scf')
 
 compare_values(nucenergy, ch2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 compare_values(refenergy, thisenergy, 9, "Reference energy")                             #TEST
