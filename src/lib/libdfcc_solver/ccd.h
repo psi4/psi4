@@ -23,6 +23,8 @@ private:
   void mo_integrals();
 
 protected:
+  shared_ptr<DFCCDIIS> diis_;
+
   double *tIAJB_;
   double *t2IAJB_;
 
@@ -45,6 +47,7 @@ protected:
   void term_12();
 
   double energy();
+  double store_error_vecs();
 
 public:
   CCD(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);

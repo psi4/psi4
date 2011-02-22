@@ -87,6 +87,10 @@ protected:
   // Functions to permute array indices
   void iajb_ibja(double *);
   void iajb_ijab(double *);
+  void ijab_iajb(double *);
+
+  // Fun with disk I/O
+  void zero_disk(int, const char *, char *, int, int);
 
 public:
   CC(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
@@ -116,11 +120,11 @@ protected:
     shared_ptr<PSIO> psio_;
 
 public:
-    DFCCDIIS(int, int, char *, char *, int, int, shared_ptr<PSIO>);
+    DFCCDIIS(int, int, int, shared_ptr<PSIO>);
     ~DFCCDIIS();
 
-    void store_vectors();
-    void get_new_vector();
+    void store_vectors(double *, double *);
+    void get_new_vector(double *, double *);
 };
 
 }}

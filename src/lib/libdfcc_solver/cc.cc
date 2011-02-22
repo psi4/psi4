@@ -147,6 +147,21 @@ void CC::print_header()
 
 void CC::iajb_ibja(double *ijkl)
 {
+  double *X = init_array(naocc_*naocc_*navir_*navir_);
+
+  for (int i=0; i<naocc_; i++) {
+  for (int a=0; a<navir_; a++) {
+    for (int j=0; j<naocc_; j++) {
+    for (int b=0; b<navir_; b++) {
+      int iajb = i*navir_*naocc_*navir_ + a*naocc_*navir_ + j*navir_ + b; 
+      int ibja = i*navir_*naocc_*navir_ + b*naocc_*navir_ + j*navir_ + a; 
+      X[ibja] = ijkl[iajb];
+  }}}}
+
+  C_DCOPY(naocc_*naocc_*navir_*navir_,X,1,ijkl,1);
+
+  free(X);
+/*
   double *X = init_array(navir_);
 
   for (int i=0; i<naocc_; i++) {
@@ -162,10 +177,26 @@ void CC::iajb_ibja(double *ijkl)
   }}}
 
   free(X);
+*/
 }
 
 void CC::iajb_ijab(double *ijkl)
 {
+  double *X = init_array(naocc_*naocc_*navir_*navir_);
+
+  for (int i=0; i<naocc_; i++) {
+  for (int a=0; a<navir_; a++) {
+    for (int j=0; j<naocc_; j++) {
+    for (int b=0; b<navir_; b++) {
+      int iajb = i*navir_*naocc_*navir_ + a*naocc_*navir_ + j*navir_ + b;
+      int ijab = i*naocc_*navir_*navir_ + j*navir_*navir_ + a*navir_ + b;
+      X[ijab] = ijkl[iajb];
+  }}}}
+
+  C_DCOPY(naocc_*naocc_*navir_*navir_,X,1,ijkl,1);
+
+  free(X);
+/*
   double **X = block_matrix(navir_,naocc_);
 
   for (int i=0; i<naocc_; i++) {
@@ -175,24 +206,63 @@ void CC::iajb_ijab(double *ijkl)
     for (int j=0; j<naocc_; j++) {
       int ij = i*naocc_ + j;
       long int ijab = ij*navir_*(long int) navir_ + (long int) b;
-      C_DCOPY(navir_,&(ijkl[ijab]),navir_,&(X[0][j]),naocc_);
+      C_DCOPY(navir_,&(X[0][j]),naocc_,&(ijkl[ijab]),navir_);
     }
   }}
 
   free_block(X);
+*/
 }
 
-DFCCDIIS::DFCCDIIS(int diisfile, int ampfile, char *amplabel, char *errlabel, 
-  int length, int maxvec, shared_ptr<PSIO> psio) : psio_(psio)
+void CC::ijab_iajb(double *ijkl)
+{
+  double *X = init_array(naocc_*naocc_*navir_*navir_);
+
+  for (int i=0; i<naocc_; i++) {
+  for (int a=0; a<navir_; a++) {
+    for (int j=0; j<naocc_; j++) {
+    for (int b=0; b<navir_; b++) {
+      int iajb = i*navir_*naocc_*navir_ + a*naocc_*navir_ + j*navir_ + b;
+      int ijab = i*naocc_*navir_*navir_ + j*navir_*navir_ + a*navir_ + b;
+      X[iajb] = ijkl[ijab];
+  }}}}
+
+  C_DCOPY(naocc_*naocc_*navir_*navir_,X,1,ijkl,1);
+
+  free(X);
+/*
+  double **X = block_matrix(naocc_,navir_);
+
+  for (int i=0,ij=0; i<naocc_; i++) {
+  for (int j=0,jb=0; j<naocc_; j++,ij++) {
+    long int ijab = ij*navir_*(long int) navir_;
+    C_DCOPY(naocc_*navir_,&(ijkl[ijab]),navir_,X[0],1);
+    for (int b=0; b<navir_; b++,jb++) {
+      long int iajb = i*navir_*naocc_*(long int) navir_ + (long int) jb;
+      C_DCOPY(naocc_,&(X[0][b]),navir_,&(ijkl[iajb]),navir_);
+    }
+  }}
+
+  free_block(X);
+*/
+}
+
+void CC::zero_disk(int file, const char *array, char *zero, int nri, int ijmax)
+{
+  psio_address next_PSIF = PSIO_ZERO;
+
+  for (int ij=0; ij<ijmax; ij++) {
+    psio_->write(file,array,zero,sizeof(double)*(ULI) nri,next_PSIF,&next_PSIF);
+  }
+}
+
+DFCCDIIS::DFCCDIIS(int diisfile, int length, int maxvec, shared_ptr<PSIO> psio)
+  : psio_(psio)
 {   
     diis_file_ = diisfile;
     psio_->open(diis_file_,0);
     
     max_diis_vecs_ = maxvec;
-    
-    filenum_ = ampfile;
-    vec_label_ = amplabel;
-    err_label_ = errlabel;
     
     vec_length_ = length;
 
@@ -205,7 +275,7 @@ DFCCDIIS::~DFCCDIIS()
     psio_->close(diis_file_,0);
 }
 
-void DFCCDIIS::store_vectors()
+void DFCCDIIS::store_vectors(double *t_vec, double *err_vec)
 {
     char *diis_vec_label = get_vec_label(curr_vec_);
     char *diis_err_label = get_err_label(curr_vec_);
@@ -213,24 +283,17 @@ void DFCCDIIS::store_vectors()
     num_vecs_++;
     if (num_vecs_ > max_diis_vecs_) num_vecs_ = max_diis_vecs_;
   
-    double *vec = init_array(vec_length_);
-
-    psio_->read_entry(filenum_,vec_label_,(char *) &(vec[0]),
-      vec_length_*(ULI) sizeof(double));
-    psio_->write_entry(diis_file_,diis_vec_label,(char *) &(vec[0]),
+    psio_->write_entry(diis_file_,diis_vec_label,(char *) &(t_vec[0]),
       vec_length_*(ULI) sizeof(double));
 
-    psio_->read_entry(filenum_,err_label_,(char *) &(vec[0]),
-      vec_length_*(ULI) sizeof(double));
-    psio_->write_entry(diis_file_,diis_err_label,(char *) &(vec[0]),
+    psio_->write_entry(diis_file_,diis_err_label,(char *) &(err_vec[0]),
       vec_length_*(ULI) sizeof(double));
 
-    free(vec);
     free(diis_vec_label);
     free(diis_err_label);
 }
 
-void DFCCDIIS::get_new_vector()
+void DFCCDIIS::get_new_vector(double *vec_j, double *vec_i)
 {
     int *ipiv;
     double *Cvec;
@@ -239,9 +302,6 @@ void DFCCDIIS::get_new_vector()
     ipiv = init_int_array(num_vecs_+1);
     Bmat = block_matrix(num_vecs_+1,num_vecs_+1);
     Cvec = (double *) malloc((num_vecs_+1)*sizeof(double));
-
-    double *vec_i = init_array(vec_length_);
-    double *vec_j = init_array(vec_length_);
 
     for (int i=0; i<num_vecs_; i++) {
       char *err_label_i = get_err_label(i);
@@ -278,12 +338,6 @@ void DFCCDIIS::get_new_vector()
       C_DAXPY(vec_length_,Cvec[i],vec_i,1,vec_j,1);
       free(vec_label_i);
     }
-
-    psio_->write_entry(filenum_,vec_label_,(char *) &(vec_j[0]),
-      vec_length_*(ULI) sizeof(double));
-
-    free(vec_i);
-    free(vec_j);
 
     free(ipiv);
     free(Cvec);
