@@ -234,10 +234,10 @@ void OverlapInt::compute_pair_deriv1(const boost::shared_ptr<GaussianShell>& s1,
             }
         }
     }
-    fprintf(outfile, "buffer_\n");
-    for (int i=0; i<6*size; ++i) {
-        fprintf(outfile, "%d: %lf\n", i, buffer_[i]);
-    }
+//    fprintf(outfile, "buffer_\n");
+//    for (int i=0; i<6*size; ++i) {
+//        fprintf(outfile, "%d: %lf\n", i, buffer_[i]);
+//    }
 }
 
 void OverlapInt::compute_pair_deriv2(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2)
