@@ -12,16 +12,11 @@ namespace psi { namespace scf {
 
 class UHF : public HF {
 protected:
-    SharedMatrix pertFa_, pertFb_;
     SharedMatrix Da_, Db_, Dt_, Dtold_;
     SharedMatrix Ga_, Gb_;
 
     double *p_jk_;
     double *p_k_;
-
-    // The alpha and beta external potentials
-    double ***Va_;
-    double ***Vb_;
 
     void allocate_PK();
     void form_initialF();
@@ -53,10 +48,6 @@ public:
     UHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
     UHF(Options& options, shared_ptr<PSIO> psio);
     virtual ~UHF();
-
-    /// Add an external potential to the alpha and beta Fock matrices
-    void set_external_potential(double ***Va, double ***Vb)
-                               {add_external_potential_ = true; Va_ = Va;  Vb_ = Vb;}
 
     double compute_energy();
 };

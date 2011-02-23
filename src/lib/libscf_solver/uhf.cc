@@ -41,8 +41,6 @@ void UHF::common_init()
 
     Fa_     = SharedMatrix(factory_.create_matrix("F alpha"));
     Fb_     = SharedMatrix(factory_.create_matrix("F beta"));
-    pertFa_ = SharedMatrix(factory_.create_matrix("Perturbed Alpha Fock Matrix"));
-    pertFb_ = SharedMatrix(factory_.create_matrix("Perturbed Beta Fock Matrix"));
     Da_     = SharedMatrix(factory_.create_matrix("D alpha"));
     Db_     = SharedMatrix(factory_.create_matrix("D beta"));
     Dt_     = SharedMatrix(factory_.create_matrix("D total"));
@@ -52,10 +50,11 @@ void UHF::common_init()
     Ga_     = SharedMatrix(factory_.create_matrix("G alpha"));
     Gb_     = SharedMatrix(factory_.create_matrix("G beta"));
 
+    epsilon_a_ = SharedVector(factory_.create_vector());
+    epsilon_b_ = SharedVector(factory_.create_vector());
+
     p_jk_ = NULL;
     p_k_  = NULL;
-    Va_   = NULL;
-    Vb_   = NULL;
 
 //    if(print_ > 1) fprintf(outfile, "  DIIS not implemented for UHF, yet.\n\n");
 
@@ -72,8 +71,7 @@ void UHF::finalize()
     if (p_k_)
         delete[](p_k_);
 
-    pertFa_.reset();
-    pertFb_.reset();
+    reference_energy_ = E_;
     Dt_.reset();
     Dtold_.reset();
     Ga_.reset();
@@ -86,27 +84,34 @@ double UHF::compute_energy()
     bool converged = false, diis_iter = false;
     int iter = 0;
 
-    print_ = options_.get_int("PRINT");
-    // Do the initial work to give the iterations a starting point
+    form_Shalf();
     form_H();
-    // find_occupation(_H, _H);
+
+    if (load_or_compute_initial_C()){
+        fprintf(outfile, "  Read in previous MOs from file32.\n\n");
+    }else{
+        Fa_->copy(H_);
+        Fb_->copy(H_);
+        form_C();
+    }
+
+    // Do the initial work to give the iterations a starting point
+    find_occupation();
+
+    form_D();
+
 
     if (scf_type_ == "PK")
         form_PK();
     else if (scf_type_ == "DF")
         form_B();
 
-    form_Shalf();
-    form_initialF();
 
     if (print_>3) {
         H_->print(outfile);
         S_->print(outfile);
         Shalf_->print(outfile);
     }
-
-    if (load_or_compute_initial_C())
-        fprintf(outfile, "  Read in previous MOs from file32.\n\n");
 
     if (print_>2) {
         Ca_->print(outfile);
@@ -322,7 +327,8 @@ bool UHF::load_or_compute_initial_C()
     bool ret = false;
     string alpha(chkpt_->build_keyword(const_cast<char*>("Alpha MO coefficients")));
     string beta(chkpt_->build_keyword(const_cast<char*>("Beta MO coefficients")));
-    if (chkpt_->exist(const_cast<char*>(alpha.c_str())) &&
+    if (options_["GUESS"].has_changed() && options_.get_str("GUESS") != "READ" &&
+        chkpt_->exist(const_cast<char*>(alpha.c_str())) &&
         chkpt_->exist(const_cast<char*>(beta.c_str()))) {
         // Read alpha MOs from checkpoint and set C_ to them
         double **vectors = chkpt_->rd_alpha_scf();
@@ -334,18 +340,11 @@ bool UHF::load_or_compute_initial_C()
         Cb_->set(const_cast<const double**>(vectors));
         free_block(vectors);
 
-        form_D();
-
         // Read SCF energy from checkpoint file.
         E_ = chkpt_->rd_escf();
 
         ret = true;
     } else {
-        form_initial_C();
-        form_D();
-        // Compute an initial energy using H and D
-        E_ = compute_initial_E();
-
         ret = false;
     }
 
@@ -358,8 +357,8 @@ void UHF::save_information()
     char **temp2 = molecule_->irrep_labels();
 
     // Must remember to write the number of irreps before writing anything else.
-    chkpt_->wt_nirreps(factory_.nirrep());
-    chkpt_->wt_nso(nso());
+//    chkpt_->wt_nirreps(factory_.nirrep());
+//    chkpt_->wt_nso(nso());
 
     if(print_ > 1){
         fprintf(outfile, "\n  Final doubly occupied vector = (");
@@ -443,15 +442,15 @@ void UHF::save_information()
     for (int i=0; i<eigvaluesa->nirrep(); ++i)
         vec[i] = 0;
 
-    chkpt_->wt_nmo(nso());
-    chkpt_->wt_ref(1);        // UHF
-    chkpt_->wt_etot(E_);
-    chkpt_->wt_escf(E_);
-    chkpt_->wt_eref(E_);
-    chkpt_->wt_clsdpi(doccpi_);
-    chkpt_->wt_orbspi(eigvaluesa->dimpi());
-    chkpt_->wt_openpi(vec);
-    chkpt_->wt_phase_check(0);
+//    chkpt_->wt_nmo(nso());
+//    chkpt_->wt_ref(1);        // UHF
+//    chkpt_->wt_etot(E_);
+//    chkpt_->wt_escf(E_);
+//    chkpt_->wt_eref(E_);
+//    chkpt_->wt_clsdpi(doccpi_);
+//    chkpt_->wt_orbspi(eigvaluesa->dimpi());
+//    chkpt_->wt_openpi(vec);
+//    chkpt_->wt_phase_check(0);
 
     // Figure out frozen core orbitals
     int nfzc = molecule_->nfrozen_core(options_.get_str("FREEZE_CORE")); /*chkpt_->rd_nfzc();*/
@@ -463,27 +462,27 @@ void UHF::save_information()
         frzcpi_[k] = frzcpi[k];
         frzvpi_[k] = frzvpi[k];
     }
-    chkpt_->wt_frzcpi(frzcpi);
-    chkpt_->wt_frzvpi(frzvpi);
+//    chkpt_->wt_frzcpi(frzcpi);
+//    chkpt_->wt_frzvpi(frzvpi);
     delete[](frzcpi);
     delete[](frzvpi);
 
     // TODO: Figure out what chkpt_wt_iopen means for UHF
-    chkpt_->wt_iopen(0);
+//    chkpt_->wt_iopen(0);
 
     // Write eigenvectors and eigenvalue to checkpoint
-    double *values = eigvaluesa->to_block_vector();
-    chkpt_->wt_alpha_evals(values);
-    free(values);
-    double **vectors = Ca_->to_block_matrix();
-    chkpt_->wt_alpha_scf(vectors);
-    free_block(vectors);
-    values = eigvaluesb->to_block_vector();
-    chkpt_->wt_beta_evals(values);
-    free(values);
-    vectors = Cb_->to_block_matrix();
-    chkpt_->wt_beta_scf(vectors);
-    free_block(vectors);
+//    double *values = eigvaluesa->to_block_vector();
+//    chkpt_->wt_alpha_evals(values);
+//    free(values);
+//    double **vectors = Ca_->to_block_matrix();
+//    chkpt_->wt_alpha_scf(vectors);
+//    free_block(vectors);
+//    values = eigvaluesb->to_block_vector();
+//    chkpt_->wt_beta_evals(values);
+//    free(values);
+//    vectors = Cb_->to_block_matrix();
+//    chkpt_->wt_beta_scf(vectors);
+//    free_block(vectors);
 
 }
 
@@ -563,14 +562,6 @@ void UHF::form_F() {
     Fb_->copy(H_);
     Fb_->add(Gb_);
 
-    if(add_external_potential_){
-        // If there's an external potential, its contribution has already been computed
-        // in the form G routine and stored in pertF.  Now we need to add the rest of the
-        // Fock matrix contribution
-        pertFa_->add(Fa_);
-        pertFb_->add(Fb_);
-    }
-
 #ifdef _DEBUG
     if (debug_) {
         Fa_->print(outfile);
@@ -581,31 +572,17 @@ void UHF::form_F() {
 
 void UHF::form_C()
 {
-    Matrix eigvec;
-    Vector eigval;
-        factory_.create_matrix(eigvec);
-        factory_.create_vector(eigval);
+    SharedMatrix eigvec = factory_.create_shared_matrix();
 
-        if(add_external_potential_){
-            pertFa_->transform(Shalf_);
-            pertFa_->diagonalize(eigvec, eigval);
-        }else{
-            Fa_->transform(Shalf_);
-            Fa_->diagonalize(eigvec, eigval);
-        }
+    Fa_->transform(Shalf_);
+    Fa_->diagonalize(eigvec, epsilon_a_);
 
-        find_occupation(eigval);
     // fprintf(outfile, "Fa eigenvectors/values:\n");
     // eigvec->eivprint(eigval);
     Ca_->gemm(false, false, 1.0, Shalf_, eigvec, 0.0);
 
-        if(add_external_potential_){
-            pertFb_->transform(Shalf_);
-            pertFb_->diagonalize(eigvec, eigval);
-        }else{
-            Fb_->transform(Shalf_);
-            Fb_->diagonalize(eigvec, eigval);
-        }
+    Fb_->transform(Shalf_);
+    Fb_->diagonalize(eigvec, epsilon_b_);
     // fprintf(outfile, "Fb eigenvectors/values:\n");
     // eigvec->eivprint(eigval);
     Cb_->gemm(false, false, 1.0, Shalf_, eigvec, 0.0);
@@ -804,20 +781,6 @@ void UHF::form_G_from_PK()
     double *Db_vector = new double[pk_pairs_];
     double *Ga_vector = new double[pk_pairs_];
     double *Gb_vector = new double[pk_pairs_];
-    double *Va_vector = NULL;
-    double *Vb_vector = NULL;
-    double *Fa_vector = NULL;
-    double *Fb_vector = NULL;
-    if(add_external_potential_){
-        Va_vector = new double[pk_pairs_];
-        Vb_vector = new double[pk_pairs_];
-        Fa_vector = new double[pk_pairs_];
-        Fb_vector = new double[pk_pairs_];
-        memset(Va_vector, 0, sizeof(double) * pk_pairs_);
-        memset(Vb_vector, 0, sizeof(double) * pk_pairs_);
-        memset(Fa_vector, 0, sizeof(double) * pk_pairs_);
-        memset(Fb_vector, 0, sizeof(double) * pk_pairs_);
-    }
 
     Ga_->zero();
     Gb_->zero();
@@ -834,15 +797,9 @@ void UHF::form_G_from_PK()
                 if (p != q) {
                     Da_vector[ij] = 2.0 * Da_->get(h, p, q);
                     Db_vector[ij] = 2.0 * Db_->get(h, p, q);
-                    // Add in the external potential, if requested
-                    if(add_external_potential_) Va_vector[ij] = 2.0 * Va_[h][p][q];
-                    if(add_external_potential_) Vb_vector[ij] = 2.0 * Vb_[h][p][q];
-
                 } else {
                     Da_vector[ij] = Da_->get(h, p, q);
                     Db_vector[ij] = Db_->get(h, p, q);
-                    if(add_external_potential_) Va_vector[ij] = Va_[h][p][q];
-                    if(add_external_potential_) Vb_vector[ij] = Vb_[h][p][q];
                 }
                 ij++;
             }
@@ -894,16 +851,6 @@ void UHF::form_G_from_PK()
         Db_pq = Db_vector[pq];
         Db_rs = &Db_vector[0];
         Gb_rs = &Gb_vector[0];
-        if(add_external_potential_){
-            Fa_pq = 0.0;
-            Va_pq = Va_vector[pq];
-            Va_rs = &Va_vector[0];
-            Fa_rs = &Fa_vector[0];
-            Fb_pq = 0.0;
-            Vb_pq = Vb_vector[pq];
-            Vb_rs = &Vb_vector[0];
-            Fb_rs = &Fb_vector[0];
-        }
         for (rs = 0; rs <= pq; ++rs) {
             // D_{rs}^{c} * PK_{pqrs}         Also found in RHF
             // Doing F_mn_a about to add the K term
@@ -912,17 +859,6 @@ void UHF::form_G_from_PK()
 
             Gb_pq  += (*JK_block + *K_block) * (*Db_rs) + (*JK_block - *K_block) * (*Da_rs);
             *Gb_rs += (*JK_block + *K_block) * Db_pq    + (*JK_block - *K_block) * Da_pq;
-            if(add_external_potential_){
-                Fa_pq  += (*JK_block + *K_block) * (*Va_rs) + (*JK_block - *K_block) * (*Vb_rs);
-                *Fa_rs += (*JK_block + *K_block) * Va_pq    + (*JK_block - *K_block) * Vb_pq;
-
-                Fb_pq  += (*JK_block + *K_block) * (*Vb_rs) + (*JK_block - *K_block) * (*Va_rs);
-                *Fb_rs += (*JK_block + *K_block) * Vb_pq    + (*JK_block - *K_block) * Va_pq;
-                ++Fa_rs;
-                ++Fb_rs;
-                ++Va_rs;
-                ++Vb_rs;
-            }
             ++Da_rs;
             ++Ga_rs;
             ++Db_rs;
@@ -932,10 +868,6 @@ void UHF::form_G_from_PK()
         }
         Ga_vector[pq] += Ga_pq;
         Gb_vector[pq] += Gb_pq;
-        if(add_external_potential_){
-            Fa_vector[pq] += Fa_pq;
-            Fb_vector[pq] += Fb_pq;
-        }
     }
 
     // Convert G to a matrix
@@ -947,12 +879,6 @@ void UHF::form_G_from_PK()
                 Ga_->set(h, q, p, Ga_vector[ij]);
                 Gb_->set(h, p, q, Gb_vector[ij]);
                 Gb_->set(h, q, p, Gb_vector[ij]);
-                if(add_external_potential_){
-                    pertFa_->set(h, p, q, Fa_vector[ij]);
-                    pertFa_->set(h, q, p, Fa_vector[ij]);
-                    pertFb_->set(h, p, q, Fb_vector[ij]);
-                    pertFb_->set(h, q, p, Fb_vector[ij]);
-                }
                 ij++;
             }
         }
@@ -965,10 +891,6 @@ void UHF::form_G_from_PK()
     }
 #endif
 
-    if(Va_vector != NULL) delete[](Va_vector);
-    if(Vb_vector != NULL) delete[](Vb_vector);
-    if(Fa_vector != NULL) delete[](Fa_vector);
-    if(Fb_vector != NULL) delete[](Fb_vector);
     delete[](Da_vector);
     delete[](Db_vector);
     delete[](Ga_vector);

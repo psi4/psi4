@@ -206,6 +206,8 @@ class IntegralTransform{
         std::map<char, int* > _bIndices;
         // The lookup table for DPD indexing
         std::map<std::string, int> _dpdLookup;
+        // Whether the SO integrals have already been presorted
+        bool _alreadyPresorted;
         // The file to which DPD formatted integrals are written
         int _dpdIntFile;
         // The file containing alpha half-transformed integrals in DPD format

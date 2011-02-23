@@ -66,6 +66,8 @@ PsiReturnType mcscf(Options& options)
       Process::environment.set_reference_wavefunction(wfn);
       moinfo_scf      = new psi::MOInfoSCF(options);
       wfn->compute_energy();
+      Process::environment.globals["CURRENT ENERGY"] = wfn->reference_energy();
+      Process::environment.globals["SCF ENERGY"] = wfn->reference_energy();
   }else if(options.get_str("REFERENCE") == "MCSCF"){
       fprintf(outfile,"\n\nREFERENCE = MCSCF not implemented yet");
       fflush(outfile);
@@ -73,6 +75,7 @@ PsiReturnType mcscf(Options& options)
   }
   if(moinfo_scf)     delete moinfo_scf;
   if(memory_manager) delete memory_manager;
+
   close_psi(options);
   psio->close(PSIF_MCSCF,1);
   return Success;

@@ -23,6 +23,9 @@ IntegralTransform::semicanonicalize()
     double *work  = init_array(3 * _nmo);
     double *evals = init_array(_nmo);
     double *temp  = init_array(_nTriMo);
+    // TODO This needs to be removed eventually, but for now we need this to dump MOs to chkpt
+    _chkpt->wt_nmo(_nmo);
+    _chkpt->wt_nso(_nso);
 
     // The alpha MOs - the Fock matrix is on disk from the so TEI sort routine
     if(_print > 3) fprintf(outfile, "The alpha Fock matrix before semicanonicalization\n");

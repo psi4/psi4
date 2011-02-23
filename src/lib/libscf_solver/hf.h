@@ -34,7 +34,6 @@ protected:
     SharedMatrix Shalf_;
     SharedMatrix X_;
     SharedMatrix Sphalf_;
-    SharedVector orbital_e_;
 
     /// Previous iteration's energy and current energy
     double Eold_;
@@ -196,7 +195,7 @@ protected:
     void form_multipole_integrals();
 
     /// Figure out how to occupy the orbitals in the absence of DOCC and SOCC
-    void find_occupation(Vector& evals);
+    void find_occupation();
 
     /// Determine how many core and virtual orbitals to freeze
     int *compute_fcpi(int nfzc, SharedVector &eigvalues);
@@ -222,9 +221,6 @@ protected:
 
     /// The number of iterations need to reach convergence
     int iterations_needed_;
-
-    /// Whether to add in an external potential to the fock matrix
-    bool add_external_potential_;
 
     /// Compute energy for the iteration.
     virtual double compute_E() = 0;

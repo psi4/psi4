@@ -134,6 +134,7 @@ void BlockMatrix::cleanup()
       delete matrix_base_[h];
     }
     delete[] matrix_base_;
+    matrix_base_ = 0;
   }
   release1(rows_size_);
   release1(cols_size_);

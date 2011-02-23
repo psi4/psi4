@@ -14,11 +14,20 @@ public:
   SBlockVector();
   SBlockVector(std::string label, int nirreps, int*& rows_size);
   SBlockVector(std::string label, int nirreps, vecint& rows_size);
-  ~SBlockVector() {if(block_vector_) block_vector_->subtract_reference();}
+  ~SBlockVector() {if(block_vector_)
+                     if(block_vector_->subtract_reference())
+                          block_vector_ = 0;}
 
   // Manual allocation
   void allocate(std::string label, int nirreps, int*& rows_size);
   void allocate(std::string label, int nirreps, vecint& rows_size);
+
+  void subtract_reference(){
+      if(block_vector_){
+          if(block_vector_->subtract_reference())
+              block_vector_ = 0;
+      }
+  }
 
   // Copy constructor and assignment operator
   SBlockVector            (const   SBlockVector& src);
