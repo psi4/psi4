@@ -36,9 +36,6 @@ public:
     //! Virtual destructor.
     virtual ~KineticInt();
 
-    //! Compute kinetic derivative between two shells, result stored in buffer_.
-    void compute_shell_deriv1(int, int);
-
     /// Does the method provide first derivatives?
     bool has_deriv1() { return true; }
 };

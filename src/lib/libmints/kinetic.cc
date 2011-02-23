@@ -14,14 +14,15 @@ KineticInt::KineticInt(std::vector<SphericalTransform>& st, shared_ptr<BasisSet>
     int maxam1 = bs1_->max_am();
     int maxam2 = bs2_->max_am();
 
-//    int maxnao1 = (maxam1+1)*(maxam1+2)/2;
-//    int maxnao2 = (maxam2+1)*(maxam2+2)/2;
     int maxnao1 = INT_NCART(maxam1);
     int maxnao2 = INT_NCART(maxam2);
 
     if (deriv == 1) {
-        maxnao1 *= 3 * natom_;
-        maxnao2 *= 3 * natom_;
+        // We set chunk count for normalize_am and pure_transform
+        set_chunks(6);
+
+        maxnao1 *= 3;
+        maxnao2 *= 3;
     }
 
     buffer_ = new double[maxnao1*maxnao2];
@@ -30,11 +31,6 @@ KineticInt::KineticInt(std::vector<SphericalTransform>& st, shared_ptr<BasisSet>
 KineticInt::~KineticInt()
 {
     delete[] buffer_;
-}
-
-void KineticInt::compute_shell_deriv1(int sh1, int sh2)
-{
-    compute_pair_deriv1(bs1_->shell(sh1), bs2_->shell(sh2));
 }
 
 // The engine only supports segmented basis sets
@@ -164,10 +160,13 @@ static double ke_int(double **x, double **y, double **z, double a1, int l1, int 
 void KineticInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2)
 {
     int ao12;
-    int am1 = s1->am();
-    int am2 = s2->am();
-    int nprim1 = s1->nprimitive();
-    int nprim2 = s2->nprimitive();
+    const int am1 = s1->am();
+    const int am2 = s2->am();
+    const int nprim1 = s1->nprimitive();
+    const int nprim2 = s2->nprimitive();
+    const int ncenteri = s1->ncenter();
+    const int ncenterj = s2->ncenter();
+
     double A[3], B[3];
     A[0] = s1->center()[0];
     A[1] = s1->center()[1];
@@ -176,9 +175,10 @@ void KineticInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<Ga
     B[1] = s2->center()[1];
     B[2] = s2->center()[2];
 
-    size_t size = s1->ncartesian() * s2->ncartesian();
-    int center_i = s1->ncenter()*3*size;
-    int center_j = s2->ncenter()*3*size;
+    // size of the length of a perturbation
+    const size_t size = s1->ncartesian() * s2->ncartesian();
+    const int center_i_start = 0;       // always 0
+    const int center_j_start = 3*size;  // skip over x, y, z of center i
 
     // compute intermediates
     double AB2 = 0.0;
@@ -186,7 +186,7 @@ void KineticInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<Ga
     AB2 += (A[1] - B[1]) * (A[1] - B[1]);
     AB2 += (A[2] - B[2]) * (A[2] - B[2]);
 
-    memset(buffer_, 0, 3 * natom_ * s1->ncartesian() * s2->ncartesian() * sizeof(double));
+    memset(buffer_, 0, 6 * size * sizeof(double));
 
     double **x = overlap_recur_.x();
     double **y = overlap_recur_.y();
@@ -246,44 +246,14 @@ void KineticInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<Ga
                             if (n1)
                                 iz -= n1 * ke_int(x, y, z, a1, l1, m1, n1-1, a2, l2, m2, n2) * over_pf;
                             // x on center i,j
-                            buffer_[center_i+(0*size)+ao12] += ix;
-                            buffer_[center_j+(0*size)+ao12] -= ix;
+                            buffer_[center_i_start+(0*size)+ao12] += ix;
+                            buffer_[center_j_start+(0*size)+ao12] -= ix;
                             // y on center i,j
-                            buffer_[center_i+(1*size)+ao12] += iy;
-                            buffer_[center_j+(1*size)+ao12] -= iy;
+                            buffer_[center_i_start+(1*size)+ao12] += iy;
+                            buffer_[center_j_start+(1*size)+ao12] -= iy;
                             // z on center i,j
-                            buffer_[center_i+(2*size)+ao12] += iz;
-                            buffer_[center_j+(2*size)+ao12] -= iz;
-
-    //                        // x on center i
-    //                        buffer_[center_i+(0*size)+ao12] += 2.0 * a1 * ke_int(x, y, z, a1, l1+1, m1, n1, a2, l2, m2, n2) * over_pf;
-    //                        // y on center i
-    //                        buffer_[center_i+(1*size)+ao12] += 2.0 * a1 * ke_int(x, y, z, a1, l1, m1+1, n1, a2, l2, m2, n2) * over_pf;
-    //                        // x on center i
-    //                        buffer_[center_i+(0*size)+ao12] += 2.0 * a1 * ke_int(x, y, z, a1, l1+1, m1, n1, a2, l2, m2, n2) * over_pf;
-    //                        if (l1)
-    //                            buffer_[center_i+(0*size)+ao12] -= l1 * ke_int(x, y, z, a1, l1-1, m1, n1, a2, l2, m2, n2) * over_pf;
-    //                        // y on center i
-    //                        buffer_[center_i+(1*size)+ao12] += 2.0 * a1 * ke_int(x, y, z, a1, l1, m1+1, n1, a2, l2, m2, n2) * over_pf;
-    //                        if (m1)
-    //                            buffer_[center_i+(1*size)+ao12] -= m1 * ke_int(x, y, z, a1, l1, m1-1, n1, a2, l2, m2, n2) * over_pf;
-    //                        // z on center i
-    //                        buffer_[center_i+(2*size)+ao12] += 2.0 * a1 * ke_int(x, y, z, a1, l1, m1, n1+1, a2, l2, m2, n2) * over_pf;
-    //                        if (n1)
-    //                            buffer_[center_i+(2*size)+ao12] -= n1 * ke_int(x, y, z, a1, l1, m1, n1-1, a2, l2, m2, n2) * over_pf;
-//
-    //                        // x on center j
-    //                        buffer_[center_j+(0*size)+ao12] += 2.0 * a2 * ke_int(x, y, z, a1, l1, m1, n1, a2, l2+1, m2, n2) * over_pf;
-    //                        if (l2)
-    //                            buffer_[center_j+(0*size)+ao12] -= l2* ke_int(x, y, z, a1, l1, m1, n1, a2, l2-1, m2, n2) * over_pf;
-    //                        // y on center j
-    //                        buffer_[center_j+(1*size)+ao12] += 2.0 * a2 * ke_int(x, y, z, a1, l1, m1, n1, a2, l2, m2+1, n2) * over_pf;
-    //                        if (m2)
-    //                            buffer_[center_j+(1*size)+ao12] -= m2*ke_int(x, y, z, a1, l1, m1, n1, a2, l2, m2-1, n2) * over_pf;
-    //                        // z on center j
-    //                        buffer_[center_j+(2*size)+ao12] += 2.0 * a2 * ke_int(x, y, z, a1, l1, m1, n1, a2, l2, m2, n2+1) * over_pf;
-    //                        if (n2)
-    //                            buffer_[center_j+(2*size)+ao12] -= n2*ke_int(x, y, z, a1, l1, m1, n1, a2, l2, m2, n2-1) * over_pf;
+                            buffer_[center_i_start+(2*size)+ao12] += iz;
+                            buffer_[center_j_start+(2*size)+ao12] -= iz;
 
                             ao12++;
                         }
