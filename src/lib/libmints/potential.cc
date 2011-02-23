@@ -21,7 +21,7 @@ PotentialInt::PotentialInt(std::vector<SphericalTransform>& st, shared_ptr<Basis
 
     if (deriv == 1) {
         // We set chunk count for normalize_am and pure_transform
-        set_chunks(6);
+        set_chunks(3*bs1_->molecule()->natom());
 
         maxnao1 *= 3;
         maxnao2 *= 3;
