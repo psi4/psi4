@@ -1,4 +1,4 @@
-molecule f2 {
+molecule n2 {
   N
   N 1 R
 
@@ -19,7 +19,7 @@ plugin("plugin_mp2.so")
 eMP2Dimer = get_variable("MP2 ENERGY")
 clean()
 
-molecule f {
+molecule n {
   0 4
   N
 }
