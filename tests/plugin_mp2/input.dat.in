@@ -1,8 +1,8 @@
 molecule f2 {
-  F
-  F 1 R
+  N
+  N 1 R
 
-  R = 1.2
+  R = 1.11
 }
 
 plugin_load("./plugin_mp2.so")
@@ -20,8 +20,8 @@ eMP2Dimer = get_variable("MP2 ENERGY")
 clean()
 
 molecule f {
-  0 2
-  F
+  0 4
+  N
 }
 
 set {  
@@ -44,14 +44,15 @@ eROMP2Monomer = get_variable("MP2 ENERGY")
 clean()
 
 
-print "ROHF Binding energy  = %.2f kcal/mol\n" % (627.51*(eRHFDimer - 2.0*eROHFMonomer))
-print "UHF Binding energy   = %.2f kcal/mol\n" % (627.51*(eRHFDimer - 2.0*eUHFMonomer))
-print "ROMP2 Binding energy = %.2f kcal/mol\n" % (627.51*(eMP2Dimer - 2.0*eROMP2Monomer))
-print "UMP2 Binding energy  = %.2f kcal/mol\n" % (627.51*(eMP2Dimer - 2.0*eUMP2Monomer))
-
 print "E RHF   = %16.10f\n" % eRHFDimer
 print "E RMP2  = %16.10f\n" % eMP2Dimer
 print "E ROHF  = %16.10f\n" % eROHFMonomer
 print "E ROMP2 = %16.10f\n" % eROMP2Monomer
 print "E UHF   = %16.10f\n" % eUHFMonomer
 print "E UMP2  = %16.10f\n" % eUMP2Monomer
+
+print "ROHF Binding energy  = %7.2f kcal/mol\n" % (627.51*(eRHFDimer - 2.0*eROHFMonomer))
+print "UHF Binding energy   = %7.2f kcal/mol\n" % (627.51*(eRHFDimer - 2.0*eUHFMonomer))
+print "ROMP2 Binding energy = %7.2f kcal/mol\n" % (627.51*(eMP2Dimer - 2.0*eROMP2Monomer))
+print "UMP2 Binding energy  = %7.2f kcal/mol\n" % (627.51*(eMP2Dimer - 2.0*eUMP2Monomer))
+
