@@ -126,15 +126,15 @@ void OneBodyAOInt::pure_transform(const shared_ptr<GaussianShell>& s1,
                                   const shared_ptr<GaussianShell>& s2, int chunks)
 {
     for (int chunk=0; chunk<chunks; ++chunk) {
-        int am1 = s1->am();
-        int is_pure1 = s1->is_pure() && am1 > 1;
-        int ncart1 = s1->ncartesian();
-        int nbf1 = s1->nfunction();
+        const int am1 = s1->am();
+        const int is_pure1 = s1->is_pure() && am1 > 1;
+        const int ncart1 = s1->ncartesian();
+        const int nbf1 = s1->nfunction();
 
-        int am2 = s2->am();
-        int is_pure2 = s2->is_pure() && am2 > 1;
-        int ncart2 = s2->ncartesian();
-        int nbf2 = s2->nfunction();
+        const int am2 = s2->am();
+        const int is_pure2 = s2->is_pure() && am2 > 1;
+        const int ncart2 = s2->ncartesian();
+        const int nbf2 = s2->nfunction();
 
         int ncart12 = ncart1 * ncart2;
         int nbf12 = nbf1 * nbf2;
@@ -358,14 +358,14 @@ void OneBodyAOInt::compute_deriv1(std::vector<shared_ptr<SimpleMatrix> > &result
             // Compute the shell
             compute_shell_deriv1(i, j);
 
-            fprintf(outfile, "i %d j %d\n", i, j);
+//            fprintf(outfile, "i %d j %d\n", i, j);
 
             // Center i
             location = buffer_;
             for (int r=0; r<3; ++r) {
                 for (int p=0; p<ni; ++p) {
                     for (int q=0; q<nj; ++q) {
-                        fprintf(outfile, "i %d: r %d p %d q %d value %lf\n", center_i3, r, p, q, *location);
+//                        fprintf(outfile, "i %d: r %d p %d q %d value %lf\n", center_i3, r, p, q, *location);
                         result[center_i3+r]->add(i_offset+p, j_offset+q, *location);
                         location++;
                     }
@@ -376,7 +376,7 @@ void OneBodyAOInt::compute_deriv1(std::vector<shared_ptr<SimpleMatrix> > &result
             for (int r=0; r<3; ++r) {
                 for (int p=0; p<ni; ++p) {
                     for (int q=0; q<nj; ++q) {
-                        fprintf(outfile, "j %d: r %d p %d q %d value %lf\n", center_j3, r, p, q, *location);
+//                        fprintf(outfile, "j %d: r %d p %d q %d value %lf\n", center_j3, r, p, q, *location);
                         result[center_j3+r]->add(i_offset+p, j_offset+q, *location);
                         location++;
                     }
