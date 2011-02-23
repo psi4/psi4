@@ -24,13 +24,13 @@ void SAPT0::disp20()
 {
   double energy=0.0;
   long int avail_mem = params_.memory - sizeof(double)*calc_info_.noccB*
-    calc_info_.nvirB*(long int) calc_info_.nrio;
+    calc_info_.nvirB*calc_info_.nrio;
 
   if (params_.print)
     fprintf(outfile,"Begining Disp20 Calculation\n");
 
-  long int temp_size = avail_mem / (sizeof(double) * (2*calc_info_.noccB*
-    calc_info_.nvirB + (long int) calc_info_.nrio));
+  long int temp_size = avail_mem / (sizeof(double) * ((long int) 2*
+    calc_info_.noccB*calc_info_.nvirB + calc_info_.nrio));
 
   if (temp_size < 1) {
     fprintf(outfile,"Not enough memory in Disp20\n\n");
@@ -57,13 +57,13 @@ void SAPT0::disp20()
   psio_address next_PSIF_tARBS = PSIO_ZERO;
 
   for (int t_ar=0; t_ar<blocks; t_ar++) {
-    int ar_start = temp_size*t_ar;
-    int ar_stop = temp_size*(t_ar+1);
+    long int ar_start = temp_size*t_ar;
+    long int ar_stop = temp_size*(t_ar+1);
     if (ar_stop > calc_info_.noccA*calc_info_.nvirA)
       ar_stop = calc_info_.noccA*calc_info_.nvirA;
 
     psio_->read(PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",(char *) &(B_p_AR[0][0]),
-      sizeof(double)*(ar_stop-ar_start)*(ULI) calc_info_.nrio,next_PSIF_DF_AR,
+      sizeof(double)*(ar_stop-ar_start)*calc_info_.nrio,next_PSIF_DF_AR,
       &next_PSIF_DF_AR);
 
     C_DGEMM('N','T',ar_stop-ar_start,calc_info_.noccB*calc_info_.nvirB,
@@ -82,12 +82,12 @@ void SAPT0::disp20()
         }}
       }
 
-    energy += C_DDOT((ar_stop-ar_start)*calc_info_.noccB*calc_info_.nvirB,
-              &(ARBS[0][0]),1,&(tARBS[0][0]),1);
+    energy += C_DDOT((long int) (ar_stop-ar_start)*calc_info_.noccB*
+      calc_info_.nvirB,&(ARBS[0][0]),1,&(tARBS[0][0]),1);
 
     psio_->write(PSIF_SAPT_AMPS,"T ARBS Amplitudes",(char *) &(tARBS[0][0]),
       sizeof(double)*(ar_stop-ar_start)*calc_info_.noccB*
-      (ULI) calc_info_.nvirB,next_PSIF_tARBS,&next_PSIF_tARBS);
+      calc_info_.nvirB,next_PSIF_tARBS,&next_PSIF_tARBS);
   }
 
   free_block(ARBS);
@@ -114,7 +114,7 @@ void SAPT2p::disp20()
     calc_info_.nvirA,calc_info_.nrio);
   double **B_p_AR = get_AR_ints(1);
 
-  energy = C_DDOT(calc_info_.noccA*calc_info_.nvirA*calc_info_.nrio,
+  energy = C_DDOT((long int) calc_info_.noccA*calc_info_.nvirA*calc_info_.nrio,
     B_p_AR[0],1,T_p_AR[0],1);
 
   free_block(B_p_AR);

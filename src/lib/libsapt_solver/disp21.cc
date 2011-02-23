@@ -63,8 +63,8 @@ double SAPT2p::disp210()
   double **tARBS = read_IJKL(PSIF_SAPT_AMPS,"T ARBS Amplitudes",
     calc_info_.noccA*calc_info_.nvirA,calc_info_.noccB*calc_info_.nvirB);
 
-  energy += 4.0*C_DDOT(calc_info_.noccA*calc_info_.nvirA*calc_info_.noccB*
-    calc_info_.nvirB,tARBS[0],1,gARBS[0],1);
+  energy += 4.0*C_DDOT((long int) calc_info_.noccA*calc_info_.nvirA*
+    calc_info_.noccB*calc_info_.nvirB,tARBS[0],1,gARBS[0],1);
 
   free_block(gARBS);
   free_block(tARBS);
@@ -93,8 +93,8 @@ double SAPT2p::disp201()
   double **tARBS = read_IJKL(PSIF_SAPT_AMPS,"T ARBS Amplitudes",
     calc_info_.noccA*calc_info_.nvirA,calc_info_.noccB*calc_info_.nvirB);
 
-  energy += 4.0*C_DDOT(calc_info_.noccA*calc_info_.nvirA*calc_info_.noccB*
-    calc_info_.nvirB,tARBS[0],1,gARBS[0],1);
+  energy += 4.0*C_DDOT((long int) calc_info_.noccA*calc_info_.nvirA*
+    calc_info_.noccB*calc_info_.nvirB,tARBS[0],1,gARBS[0],1);
   
   free_block(gARBS);
   free_block(tARBS);

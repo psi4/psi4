@@ -159,8 +159,8 @@ double SAPT2p::disp211()
   double **tARBS = read_IJKL(PSIF_SAPT_AMPS,"T ARBS Amplitudes",
     calc_info_.noccA*calc_info_.nvirA,calc_info_.noccB*calc_info_.nvirB);
 
-  energy += 8.0*C_DDOT(calc_info_.noccA*calc_info_.nvirA*calc_info_.noccB*
-    calc_info_.nvirB,tARBS[0],1,pARBS[0],1);
+  energy += 8.0*C_DDOT((long int) calc_info_.noccA*calc_info_.nvirA*
+    calc_info_.noccB*calc_info_.nvirB,tARBS[0],1,pARBS[0],1);
 
   free_block(pARBS);
   free_block(tARBS);
@@ -375,7 +375,7 @@ double SAPT2p::disp22q_1(const char *label1, const char *label2,
 
   double **tARAR = read_IJKL(PSIF_SAPT_AMPS,label3,nocc*nvir,nocc*nvir);
 
-  energy = 4.0*C_DDOT(nocc*nvir*nocc*nvir,xARAR[0],1,tARAR[0],1);
+  energy = 4.0*C_DDOT((long int) nocc*nvir*nocc*nvir,xARAR[0],1,tARAR[0],1);
 
   free_block(xARAR);
   free_block(tARAR);
@@ -450,7 +450,8 @@ double SAPT2p::disp22q_3(const char *t_label, const char trans1,
 
   double **yARAR = read_IJKL(PSIF_SAPT_AMPS,th_label,noccA*nvirA,noccA*nvirA);
 
-  energy = 4.0*C_DDOT(noccA*nvirA*noccA*nvirA,xARAR[0],1,yARAR[0],1);
+  energy = 4.0*C_DDOT((long int) noccA*nvirA*noccA*nvirA,xARAR[0],1,
+    yARAR[0],1);
 
   free_block(xARAR);
   free_block(yARAR);

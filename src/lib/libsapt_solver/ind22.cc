@@ -244,7 +244,8 @@ double SAPT2::ind22_4(double **iAR, const char *theta_OV, int dfnum,
   double **T_p_AR = read_IJKL(PSIF_SAPT_AMPS,theta_OV,nocc*nvir,
     calc_info_.nrio);
 
-  energy = C_DDOT(nocc*nvir*calc_info_.nrio,C_p_AR[0],1,T_p_AR[0],1);
+  energy = C_DDOT((long int) nocc*nvir*calc_info_.nrio,C_p_AR[0],1,
+    T_p_AR[0],1);
 
   free_block(C_p_AR);
   free_block(T_p_AR);
@@ -325,7 +326,8 @@ double SAPT2::ind22_6(double **iAR, const char *t_label, int dfnum,
   free_block(C_p_AR);
   double **B_p_AA = get_DF_ints(dfnum,OO_label,nocc*nocc);
 
-  energy -= C_DDOT(nocc*nocc*calc_info_.nrio,B_p_AA[0],1,C_p_AA[0],1);
+  energy -= C_DDOT((long int) nocc*nocc*calc_info_.nrio,B_p_AA[0],1,
+    C_p_AA[0],1);
 
   free_block(B_p_AA);
   free_block(C_p_AA);

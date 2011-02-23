@@ -182,14 +182,14 @@ void SAPT::A_mat(int dfnum, const char *OO, const char *OV, const char *VV,
   memset(&(B_p_AR[0][0]),'\0',sizeof(double)*nocc*nvir*nrio);
 
   long int avail_mem = params_.memory;
-  avail_mem -= 8*(nocc*nvir*(long int) nrio);
+  avail_mem -= 8*((long int) nocc*nvir*nrio);
 
-  long int temp_size = avail_mem / (8*nvir*(long int) nrio);
+  long int temp_size = avail_mem / (sizeof(double)*nvir*nrio);
   
   if (temp_size > nvir)
     temp_size = nvir;
 
-  int blocks = (nvir)/temp_size;
+  long int blocks = (nvir)/temp_size;
   if ((nvir)%temp_size) blocks++;
   
   if (temp_size < 1) {
@@ -201,13 +201,13 @@ void SAPT::A_mat(int dfnum, const char *OO, const char *OV, const char *VV,
 
   psio_address next_PSIF = PSIO_ZERO;
   for (int t_r=0; t_r<blocks; t_r++) {
-    int r_start = temp_size*t_r;
-    int r_stop = temp_size*(t_r+1);
+    long int r_start = (long int) temp_size*t_r;
+    long int r_stop = (long int) temp_size*(t_r+1);
     if (r_stop > nvir)
       r_stop = nvir;
 
     psio_->read(dfnum,VV,(char *) &(B_p_RR[0][0]),sizeof(double)*
-      (r_stop-r_start)*nvir*(ULI) nrio,next_PSIF,&next_PSIF);
+      (r_stop-r_start)*nvir*nrio,next_PSIF,&next_PSIF);
     for (int r=r_start; r<r_stop; r++) {
       C_DGEMM('N','N',nocc,nrio,nvir,1.0,&(C_old[0][0]),nvir,
         &(B_p_RR[(r-r_start)*nvir][0]),nrio,1.0,&(B_p_AR[r][0]),

@@ -48,9 +48,9 @@ private:
       const char *, int, const char *, const char *, const char *, double *, 
       int, int);
     double *t2_solver(int, const char *, const char *, int, const char *, 
-      const char *, const char *, double *, int, int, int);
+      const char *, const char *, double *, int, int);
     double *t2_solver_natorbs(int, const char *, const char *, int, 
-      const char *, const char *, const char *, double *, int, int, int,
+      const char *, const char *, const char *, double *, int, int,
       const char *, double **, int);
     void g_arar();
     void g_bsbs();

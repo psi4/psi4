@@ -25,7 +25,7 @@ void SAPT0::exch10_s2()
   double **B_p_AB = get_AB_ints(1);
   double **B_q_AB = get_AB_ints(2);
 
-  ex1 = C_DDOT(calc_info_.noccA*calc_info_.noccB*calc_info_.nrio,
+  ex1 = C_DDOT((long int) calc_info_.noccA*calc_info_.noccB*calc_info_.nrio,
     &(B_p_AB[0][0]),1,&(B_q_AB[0][0]),1);
 
   double **B_p_AA = get_AA_ints(1);
@@ -53,7 +53,7 @@ void SAPT0::exch10_s2()
   }
 
   ex2 = 2.0*C_DDOT(calc_info_.nrio,calc_info_.diagAA,1,Ap_diag,1); 
-  ex2 -= C_DDOT(calc_info_.noccA*calc_info_.noccA*calc_info_.nrio,
+  ex2 -= C_DDOT((long int) calc_info_.noccA*calc_info_.noccA*calc_info_.nrio,
     &(B_p_AA[0][0]),1,&(C_p_AA[0][0]),1);
 
   double **C_p_BB = block_matrix(calc_info_.noccB*calc_info_.noccB,
@@ -72,7 +72,7 @@ void SAPT0::exch10_s2()
   }
 
   ex3 = 2.0*C_DDOT(calc_info_.nrio,calc_info_.diagBB,1,Bp_diag,1);
-  ex3 -= C_DDOT(calc_info_.noccB*calc_info_.noccB*calc_info_.nrio,
+  ex3 -= C_DDOT((long int) calc_info_.noccB*calc_info_.noccB*calc_info_.nrio,
     &(B_p_BB[0][0]),1,&(C_p_BB[0][0]),1);
 
   free_block(C_p_AA);
@@ -116,7 +116,7 @@ void SAPT0::exch10_s2()
     calc_info_.noccB*calc_info_.nrio,0.0,&(B_q_AB[0][0]),
     calc_info_.noccB*calc_info_.nrio);
 
-  ex6 = C_DDOT(calc_info_.noccA*calc_info_.noccB*calc_info_.nrio,
+  ex6 = C_DDOT((long int) calc_info_.noccA*calc_info_.noccB*calc_info_.nrio,
     &(B_p_AB[0][0]),1,&(B_q_AB[0][0]),1);
 
   free_block(X_AB);
@@ -190,8 +190,8 @@ void SAPT0::exch10()
   double **B_p_AA = get_AA_ints(1);
   double **A_p_BB = get_BB_ints(1);
 
-  ex1 = -2.0*C_DDOT(calc_info_.noccA*calc_info_.noccB*calc_info_.nrio,
-    &(B_p_AB[0][0]),1,&(A_p_AB[0][0]),1);
+  ex1 = -2.0*C_DDOT((long int) calc_info_.noccA*calc_info_.noccB*
+    calc_info_.nrio,&(B_p_AB[0][0]),1,&(A_p_AB[0][0]),1);
 
   double *X = init_array(calc_info_.nrio);
 
@@ -207,8 +207,8 @@ void SAPT0::exch10()
     calc_info_.noccA,1.0,pAA[0],calc_info_.noccA,B_p_AB[0],calc_info_.noccB*
     calc_info_.nrio,0.0,C_p_AB[0],calc_info_.noccB*calc_info_.nrio);
 
-  ex2 -= 2.0*C_DDOT(calc_info_.noccA*calc_info_.noccB*calc_info_.nrio,
-    A_p_AB[0],1,C_p_AB[0],1);
+  ex2 -= 2.0*C_DDOT((long int) calc_info_.noccA*calc_info_.noccB*
+    calc_info_.nrio,A_p_AB[0],1,C_p_AB[0],1);
 
   C_DGEMV('t',calc_info_.noccB*calc_info_.noccB,calc_info_.nrio,1.0,
     &(A_p_BB[0][0]),calc_info_.nrio,&(pBB[0][0]),1,0.0,X,1);
@@ -221,8 +221,8 @@ void SAPT0::exch10()
       C_p_AB[a1*calc_info_.noccB],calc_info_.nrio);
   }
 
-  ex3 -= 2.0*C_DDOT(calc_info_.noccA*calc_info_.noccB*calc_info_.nrio,
-    B_p_AB[0],1,C_p_AB[0],1);
+  ex3 -= 2.0*C_DDOT((long int) calc_info_.noccA*calc_info_.noccB*
+    calc_info_.nrio,B_p_AB[0],1,C_p_AB[0],1);
 
   C_DGEMV('t',calc_info_.noccA*calc_info_.noccB,calc_info_.nrio,1.0,
     &(A_p_AB[0][0]),calc_info_.nrio,&(pAB[0][0]),1,0.0,X,1);
@@ -235,8 +235,8 @@ void SAPT0::exch10()
       C_p_AB[a1*calc_info_.noccB],calc_info_.nrio);
   }
 
-  ex4 -= 2.0*C_DDOT(calc_info_.noccA*calc_info_.noccB*calc_info_.nrio,
-    A_p_AB[0],1,C_p_AB[0],1);
+  ex4 -= 2.0*C_DDOT((long int) calc_info_.noccA*calc_info_.noccB*
+    calc_info_.nrio,A_p_AB[0],1,C_p_AB[0],1);
 
   free_block(C_p_AB);
 
@@ -252,8 +252,8 @@ void SAPT0::exch10()
     calc_info_.noccA,1.0,pAB[0],calc_info_.noccB,B_p_AB[0],calc_info_.noccB*
     calc_info_.nrio,0.0,C_p_BB[0],calc_info_.noccB*calc_info_.nrio);
 
-  ex5 -= 2.0*C_DDOT(calc_info_.noccB*calc_info_.noccB*calc_info_.nrio,
-    A_p_BB[0],1,C_p_BB[0],1);
+  ex5 -= 2.0*C_DDOT((long int) calc_info_.noccB*calc_info_.noccB*
+    calc_info_.nrio,A_p_BB[0],1,C_p_BB[0],1);
 
   free_block(C_p_BB);
 
@@ -282,8 +282,8 @@ void SAPT0::exch10()
       E_p_AB[a1*calc_info_.noccB],calc_info_.nrio);
   }
 
-  ex6 -= 2.0*C_DDOT(calc_info_.noccA*calc_info_.noccB*calc_info_.nrio,
-    B_p_AB[0],1,E_p_AB[0],1);
+  ex6 -= 2.0*C_DDOT((long int) calc_info_.noccA*calc_info_.noccB*
+    calc_info_.nrio,B_p_AB[0],1,E_p_AB[0],1);
 
   C_DGEMV('t',calc_info_.noccA*calc_info_.noccB,calc_info_.nrio,1.0,
     &(A_p_AB[0][0]),calc_info_.nrio,&(pAB[0][0]),1,0.0,X,1);
@@ -303,8 +303,8 @@ void SAPT0::exch10()
     calc_info_.noccA,1.0,pAA[0],calc_info_.noccA,D_p_AB[0],calc_info_.noccB*
     calc_info_.nrio,0.0,E_p_AB[0],calc_info_.noccB*calc_info_.nrio);
 
-  ex7 -= 2.0*C_DDOT(calc_info_.noccA*calc_info_.noccB*calc_info_.nrio,
-    A_p_AB[0],1,E_p_AB[0],1);
+  ex7 -= 2.0*C_DDOT((long int) calc_info_.noccA*calc_info_.noccB*
+    calc_info_.nrio,A_p_AB[0],1,E_p_AB[0],1);
 
   C_DGEMV('t',calc_info_.noccA*calc_info_.noccA,calc_info_.nrio,1.0,
     &(B_p_AA[0][0]),calc_info_.nrio,&(pAA[0][0]),1,0.0,X,1);
@@ -324,8 +324,8 @@ void SAPT0::exch10()
       E_p_AB[a1*calc_info_.noccB],calc_info_.nrio);
   }
 
-  ex8 -= 2.0*C_DDOT(calc_info_.noccA*calc_info_.noccB*calc_info_.nrio,
-    A_p_AB[0],1,E_p_AB[0],1);
+  ex8 -= 2.0*C_DDOT((long int) calc_info_.noccA*calc_info_.noccB*
+    calc_info_.nrio,A_p_AB[0],1,E_p_AB[0],1);
 
   C_DGEMV('t',calc_info_.noccA*calc_info_.noccB,calc_info_.nrio,1.0,
     &(A_p_AB[0][0]),calc_info_.nrio,&(pAB[0][0]),1,0.0,X,1);
@@ -345,8 +345,8 @@ void SAPT0::exch10()
       E_p_AB[a1*calc_info_.noccB],calc_info_.nrio);
   }
 
-  ex9 -= 2.0*C_DDOT(calc_info_.noccA*calc_info_.noccB*calc_info_.nrio,
-    D_p_AB[0],1,E_p_AB[0],1);
+  ex9 -= 2.0*C_DDOT((long int) calc_info_.noccA*calc_info_.noccB*
+    calc_info_.nrio,D_p_AB[0],1,E_p_AB[0],1);
 
   free(X);
   free(Y);

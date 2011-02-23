@@ -241,13 +241,13 @@ void SAPT2p::fzn_triples(int AAnum, const char *AA_label, const char *AR_label,
   double **B_p_AA = block_matrix(noccA*noccA,calc_info_.nrio);
 
   psio_->read_entry(AAnum,AA_label,(char *) &(B_p_AA[0][0]),sizeof(double)*
-      calc_info_.nrio*noccA*(ULI) noccA);
+      calc_info_.nrio*noccA*noccA);
 
   next_psio = PSIO_ZERO;
   for(int a=foccA; a<noccA; a++) {
     int aa = a*noccA + foccA;
     psio_->write(PSIF_SAPT_TEMP,AA_label,(char *) &(B_p_AA[aa][0]),
-      (noccA-foccA)*calc_info_.nrio*(ULI) sizeof(double),next_psio,&next_psio);
+      sizeof(double)*(noccA-foccA)*calc_info_.nrio,next_psio,&next_psio);
   }
 
   free_block(B_p_AA);
@@ -255,13 +255,13 @@ void SAPT2p::fzn_triples(int AAnum, const char *AA_label, const char *AR_label,
   double **B_p_AR = block_matrix(noccA*nvirA,calc_info_.nrio);
 
   psio_->read_entry(AAnum,AR_label,(char *) &(B_p_AR[0][0]),sizeof(double)*
-      calc_info_.nrio*noccA*(ULI) nvirA);
+      calc_info_.nrio*noccA*nvirA);
 
   next_psio = PSIO_ZERO;
   for(int a=foccA; a<noccA; a++) {
     int ar = a*nvirA;
     psio_->write(PSIF_SAPT_TEMP,AR_label,(char *) &(B_p_AR[ar][0]),
-      nvirA*calc_info_.nrio*(ULI) sizeof(double),next_psio,&next_psio);
+      sizeof(double)*nvirA*calc_info_.nrio,next_psio,&next_psio);
   }
 
   free_block(B_p_AR);
@@ -269,23 +269,23 @@ void SAPT2p::fzn_triples(int AAnum, const char *AA_label, const char *AR_label,
   double **B_p_RR = block_matrix(nvirA*nvirA,calc_info_.nrio);
 
   psio_->read_entry(AAnum,RR_label,(char *) &(B_p_RR[0][0]),sizeof(double)*
-      calc_info_.nrio*nvirA*(ULI) nvirA);
+      calc_info_.nrio*nvirA*nvirA);
 
   psio_->write_entry(PSIF_SAPT_TEMP,RR_label,(char *) &(B_p_RR[0][0]),
-    sizeof(double)*calc_info_.nrio*nvirA*(ULI) nvirA);
+    sizeof(double)*calc_info_.nrio*nvirA*nvirA);
 
   free_block(B_p_RR);
 
   double **B_p_BS = block_matrix(noccB*nvirB,calc_info_.nrio);
 
   psio_->read_entry(BBnum,BS_label,(char *) &(B_p_BS[0][0]),sizeof(double)*
-      calc_info_.nrio*noccB*(ULI) nvirB);
+      calc_info_.nrio*noccB*nvirB);
 
   next_psio = PSIO_ZERO;
   for(int b=foccB; b<noccB; b++) {
     int bs = b*nvirB;
     psio_->write(PSIF_SAPT_TEMP,BS_label,(char *) &(B_p_BS[bs][0]),
-      nvirB*calc_info_.nrio*(ULI) sizeof(double),next_psio,&next_psio);
+      sizeof(double)*nvirB*calc_info_.nrio,next_psio,&next_psio);
   }
 
   free_block(B_p_BS);
@@ -293,7 +293,7 @@ void SAPT2p::fzn_triples(int AAnum, const char *AA_label, const char *AR_label,
   double **tARAR = block_matrix(noccA*nvirA,noccA*nvirA);
 
   psio_->read_entry(ampnum,tarar,(char *) &(tARAR[0][0]),sizeof(double)*
-      noccA*nvirA*noccA*(ULI) nvirA);
+      noccA*nvirA*noccA*nvirA);
 
   next_psio = PSIO_ZERO;
   for(int a=foccA; a<noccA; a++) {
@@ -301,7 +301,7 @@ void SAPT2p::fzn_triples(int AAnum, const char *AA_label, const char *AR_label,
       int ar = a*nvirA+r;
       int aarr = foccA*nvirA;
       psio_->write(PSIF_SAPT_TEMP,tarar,(char *) &(tARAR[ar][aarr]),
-        (noccA-foccA)*nvirA*(ULI) sizeof(double),next_psio,&next_psio);
+        sizeof(double)*(noccA-foccA)*nvirA,next_psio,&next_psio);
   }}
 
   free_block(tARAR);
@@ -309,7 +309,7 @@ void SAPT2p::fzn_triples(int AAnum, const char *AA_label, const char *AR_label,
   double **tBSAR = block_matrix(noccB*nvirB,noccA*nvirA);
 
   psio_->read_entry(ampnum,tbsar,(char *) &(tBSAR[0][0]),sizeof(double)*
-      noccB*nvirB*noccA*(ULI) nvirA);
+      noccB*nvirB*noccA*nvirA);
 
   next_psio = PSIO_ZERO;
   for(int b=foccB; b<noccB; b++) {
@@ -317,7 +317,7 @@ void SAPT2p::fzn_triples(int AAnum, const char *AA_label, const char *AR_label,
       int bs = b*nvirB+s;
       int ar = foccA*nvirA;
       psio_->write(PSIF_SAPT_TEMP,tbsar,(char *) &(tBSAR[bs][ar]),
-        (noccA-foccA)*nvirA*(ULI) sizeof(double),next_psio,&next_psio);
+        sizeof(double)*(noccA-foccA)*nvirA,next_psio,&next_psio);
   }}
 
   free_block(tBSAR);
@@ -334,13 +334,13 @@ void SAPT2p::natural_orbitalify_triples(int AAnum, const char *AA_label,
   double **B_p_AA = block_matrix(noccA*noccA,calc_info_.nrio);
   
   psio_->read_entry(AAnum,AA_label,(char *) &(B_p_AA[0][0]),sizeof(double)*
-      calc_info_.nrio*noccA*(ULI) noccA);
+      calc_info_.nrio*noccA*noccA);
 
   next_psio = PSIO_ZERO;
   for(int a=foccA; a<noccA; a++) {
     int aa = a*noccA + foccA;
     psio_->write(PSIF_SAPT_TEMP,AA_label,(char *) &(B_p_AA[aa][0]),
-      (noccA-foccA)*calc_info_.nrio*(ULI) sizeof(double),next_psio,&next_psio);
+      sizeof(double)*(noccA-foccA)*calc_info_.nrio,next_psio,&next_psio);
   }
 
   free_block(B_p_AA);
@@ -348,32 +348,32 @@ void SAPT2p::natural_orbitalify_triples(int AAnum, const char *AA_label,
   double **B_p_RR = block_matrix(novirA*novirA,calc_info_.nrio);
 
   psio_->read_entry(AAnum,RR_label,(char *) &(B_p_RR[0][0]),sizeof(double)*
-      calc_info_.nrio*novirA*(ULI) novirA);
+      calc_info_.nrio*novirA*novirA);
 
   psio_->write_entry(PSIF_SAPT_TEMP,RR_label,(char *) &(B_p_RR[0][0]),
-    sizeof(double)*calc_info_.nrio*novirA*(ULI) novirA);
+    sizeof(double)*calc_info_.nrio*novirA*novirA);
 
   free_block(B_p_RR);
 
   double **C_p_AR = block_matrix((noccA-foccA)*novirA,calc_info_.nrio);
 
-  next_psio = psio_get_address(PSIO_ZERO,foccA*novirA*calc_info_.nrio*(ULI) 
-    sizeof(double));
-  psio_->read(AAnum,AR_label,(char *) &(C_p_AR[0][0]),(noccA-foccA)*
-    novirA*calc_info_.nrio*(ULI) sizeof(double),next_psio,&next_psio);
+  next_psio = psio_get_address(PSIO_ZERO,sizeof(double)*foccA*novirA*
+    calc_info_.nrio);
+  psio_->read(AAnum,AR_label,(char *) &(C_p_AR[0][0]),sizeof(double)*
+    (noccA-foccA)*novirA*calc_info_.nrio,next_psio,&next_psio);
 
   psio_->write_entry(PSIF_SAPT_TEMP,AR_label,(char *) &(C_p_AR[0][0]),
-    (noccA-foccA)*novirA*calc_info_.nrio*(ULI) sizeof(double));
+    sizeof(double)*(noccA-foccA)*novirA*calc_info_.nrio);
 
   double **C_p_BS = block_matrix((noccB-foccB)*novirB,calc_info_.nrio);
 
-  next_psio = psio_get_address(PSIO_ZERO,foccB*novirB*calc_info_.nrio*(ULI)
-    sizeof(double));
-  psio_->read(BBnum,BS_label,(char *) &(C_p_BS[0][0]),(noccB-foccB)*
-    novirB*calc_info_.nrio*(ULI) sizeof(double),next_psio,&next_psio);
+  next_psio = psio_get_address(PSIO_ZERO,sizeof(double)*foccB*novirB*
+    calc_info_.nrio);
+  psio_->read(BBnum,BS_label,(char *) &(C_p_BS[0][0]),sizeof(double)*
+    (noccB-foccB)*novirB*calc_info_.nrio,next_psio,&next_psio);
 
   psio_->write_entry(PSIF_SAPT_TEMP,BS_label,(char *) &(C_p_BS[0][0]),
-    (noccB-foccB)*novirB*calc_info_.nrio*(ULI) sizeof(double));
+    sizeof(double)*(noccB-foccB)*novirB*calc_info_.nrio);
 
   double **tARAR = block_matrix((noccA-foccA)*novirA,(noccA-foccA)*novirA);
 
@@ -392,7 +392,7 @@ void SAPT2p::natural_orbitalify_triples(int AAnum, const char *AA_label,
   }}
 
   psio_->write_entry(PSIF_SAPT_TEMP,tarar,(char *) &(tARAR[0][0]),
-    (noccA-foccA)*novirA*(noccA-foccA)*novirA*(ULI) sizeof(double));
+    sizeof(double)*(noccA-foccA)*novirA*(noccA-foccA)*novirA);
 
   free_block(tARAR);
 
@@ -413,7 +413,7 @@ void SAPT2p::natural_orbitalify_triples(int AAnum, const char *AA_label,
   }}
 
   psio_->write_entry(PSIF_SAPT_TEMP,tbsar,(char *) &(tBSAR[0][0]),
-    (noccB-foccB)*novirB*(noccA-foccA)*novirA*(ULI) sizeof(double));
+    sizeof(double)*(noccB-foccB)*novirB*(noccA-foccA)*novirA);
 
   free_block(tBSAR);
 
@@ -429,8 +429,8 @@ double SAPT2p::nat_orb_disp20()
     calc_info_.nrio);
 
   psio_->read_entry(PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",
-    (char *) &(B_p_AR[0][0]),calc_info_.noccA*calc_info_.nvirA*
-    calc_info_.nrio*(ULI) sizeof(double));
+    (char *) &(B_p_AR[0][0]),sizeof(double)*calc_info_.noccA*calc_info_.nvirA*
+    calc_info_.nrio);
 
   double **C_p_AR = block_matrix(calc_info_.noccA*no_info_.nvirA,
     calc_info_.nrio);
@@ -448,8 +448,8 @@ double SAPT2p::nat_orb_disp20()
     calc_info_.nrio);
 
   psio_->read_entry(PSIF_SAPT_BB_DF_INTS,"BS RI Integrals",
-    (char *) &(B_p_BS[0][0]),calc_info_.noccB*calc_info_.nvirB*
-    calc_info_.nrio*(ULI) sizeof(double));
+    (char *) &(B_p_BS[0][0]),sizeof(double)*calc_info_.noccB*calc_info_.nvirB*
+    calc_info_.nrio);
 
   double **C_p_BS = block_matrix(calc_info_.noccB*no_info_.nvirB,
     calc_info_.nrio);

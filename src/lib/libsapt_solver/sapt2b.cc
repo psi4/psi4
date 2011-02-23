@@ -235,9 +235,9 @@ void SAPT2B::get_calc_info()
 
     psio_->close(PSIF_SAPT_DIMER,1);
   
-    calc_info_.ioff = (int *) malloc (calc_info_.nsotri * sizeof(int));
-    calc_info_.index2i = (int *) malloc (calc_info_.nsotri * sizeof(int));
-    calc_info_.index2j = (int *) malloc (calc_info_.nsotri * sizeof(int));
+    calc_info_.ioff = (int *) malloc (sizeof(int) * calc_info_.nsotri);
+    calc_info_.index2i = (int *) malloc (sizeof(int) * calc_info_.nsotri);
+    calc_info_.index2j = (int *) malloc (sizeof(int) * calc_info_.nsotri);
   
     calc_info_.ioff[0] = 0; // Create ioff array
   
