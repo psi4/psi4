@@ -21,10 +21,13 @@ PotentialInt::PotentialInt(std::vector<SphericalTransform>& st, shared_ptr<Basis
 
     if (deriv == 1) {
         // We set chunk count for normalize_am and pure_transform
-        set_chunks(3*bs1_->molecule()->natom());
+        // We can't use the trick of using less memory that I implemented in overlap & kinetic
+        // since potential integral derivatives also have a contribution to center c...which is
+        // over all atoms.
+        set_chunks(3*natom_);
 
-        maxnao1 *= 3;
-        maxnao2 *= 3;
+        maxnao1 *= 3*natom_;
+        maxnao2 *= 3*natom_;
     }
 
     buffer_ = new double[maxnao1*maxnao2];
@@ -33,11 +36,6 @@ PotentialInt::PotentialInt(std::vector<SphericalTransform>& st, shared_ptr<Basis
 PotentialInt::~PotentialInt()
 {
     delete[] buffer_;
-}
-
-void PotentialInt::compute_shell_deriv1(int sh1, int sh2)
-{
-    compute_pair_deriv1(bs1_->shell(sh1), bs2_->shell(sh2));
 }
 
 // The engine only supports segmented basis sets
@@ -142,7 +140,7 @@ void PotentialInt::compute_pair(const shared_ptr<GaussianShell>& s1,
 }
 
 // The engine only supports segmented basis sets
-void PotentialInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2)
+void PotentialInt::compute_pair_deriv1(const shared_ptr<GaussianShell>& s1, const shared_ptr<GaussianShell>& s2)
 {
     int ao12;
     const int am1 = s1->am();
@@ -162,15 +160,15 @@ void PotentialInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<
 
     // size of the length of a perturbation
     const size_t size = s1->ncartesian() * s2->ncartesian();
-    const int center_i_start = 0;       // always 0
-    const int center_j_start = 3*size;  // skip over x, y, z of center i
+    const int center_i = ncenteri * 3 * size;
+    const int center_j = ncenterj * 3 * size;
 
-    int izm1 = 1;
-    int iym1 = am1 + 1 + 1;  // extra 1 for derivative
-    int ixm1 = iym1 * iym1;
-    int jzm1 = 1;
-    int jym1 = am2 + 1 + 1;  // extra 1 for derivative
-    int jxm1 = jym1 * jym1;
+    const int izm1 = 1;
+    const int iym1 = am1 + 1 + 1;  // extra 1 for derivative
+    const int ixm1 = iym1 * iym1;
+    const int jzm1 = 1;
+    const int jym1 = am2 + 1 + 1;  // extra 1 for derivative
+    const int jxm1 = jym1 * jym1;
 
     // compute intermediates
     double AB2 = 0.0;
@@ -178,7 +176,7 @@ void PotentialInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<
     AB2 += (A[1] - B[1]) * (A[1] - B[1]);
     AB2 += (A[2] - B[2]) * (A[2] - B[2]);
 
-    memset(buffer_, 0, 3 * size * sizeof(double));
+    memset(buffer_, 0, 3 * natom_ * size * sizeof(double));
 
     double ***vi = potential_deriv_recur_.vi();
     double ***vx = potential_deriv_recur_.vx();
@@ -246,13 +244,13 @@ void PotentialInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<
                                 double temp = 2.0*a1*vi[iind+ixm1][jind][0];
                                 if (l1)
                                     temp -= l1*vi[iind-ixm1][jind][0];
-                                buffer_[center_i_start+(0*size)+ao12] -= temp * pfac;
+                                buffer_[center_i+(0*size)+ao12] -= temp * pfac;
                                 // printf("ix temp = %f ", temp);
 
                                 temp = 2.0*a2*vi[iind][jind+jxm1][0];
                                 if (l2)
                                     temp -= l2*vi[iind][jind-jxm1][0];
-                                buffer_[center_j_start+(0*size)+ao12] -= temp * pfac;
+                                buffer_[center_j+(0*size)+ao12] -= temp * pfac;
                                 // printf("jx temp = %f ", temp);
 
                                 buffer_[3*size*atom+ao12] -= vx[iind][jind][0] * pfac;
@@ -294,5 +292,46 @@ void PotentialInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<
                 }
             }
         }
+    }
+}
+
+void PotentialInt::compute_deriv1(std::vector<shared_ptr<SimpleMatrix> > &result)
+{
+    if (deriv_ < 1)
+        throw SanityCheckError("PotentialInt::compute_deriv1(result): integral object not created to handle derivatives.", __FILE__, __LINE__);
+
+    // Do not worry about zeroing out result
+    int ns1 = bs1_->nshell();
+    int ns2 = bs2_->nshell();
+    int result_size = result.size();
+    int i_offset = 0;
+    double *location = 0;
+
+    // Check the length of result, must be 3*natom_
+    if (result.size() != 3*natom_)
+        throw SanityCheckError("PotentialInt::compute_derv1(result): result must be 3 * natom in length.", __FILE__, __LINE__);
+
+    for (int i=0; i<ns1; ++i) {
+        int ni = bs1_->shell(i)->nfunction();
+        int j_offset=0;
+        for (int j=0; j<ns2; ++j) {
+            int nj = bs2_->shell(j)->nfunction();
+
+            // Compute the shell
+            compute_shell_deriv1(i, j);
+
+            // For each integral that we got put in its contribution
+            location = buffer_;
+            for (int r=0; r<result_size; ++r) {
+                for (int p=0; p<ni; ++p) {
+                    for (int q=0; q<nj; ++q) {
+                        result[r]->add(i_offset+p, j_offset+q, *location);
+                        location++;
+                    }
+                }
+            }
+            j_offset += nj;
+        }
+        i_offset += ni;
     }
 }

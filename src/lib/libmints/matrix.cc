@@ -270,7 +270,7 @@ void Matrix::copy(const Matrix* cp)
         same = false;
     } else {
         for (int h=0; h<nirrep_; ++h)
-            if (colspi_[h] != cp->colspi_[h] || rowspi_[h] != cp->colspi_[h])
+            if (colspi_[h] != cp->colspi_[h] || rowspi_[h] != cp->rowspi_[h])
                 same = false;
     }
 

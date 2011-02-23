@@ -345,7 +345,7 @@ void OneBodyAOInt::compute_deriv1(std::vector<shared_ptr<SimpleMatrix> > &result
 
     // Check the length of result, must be 3*natom_
     if (result.size() != 3*natom_)
-        throw SanityCheckError("OneBodyInt::compute_derv1(result): result must be 3 * natom in length.", __FILE__, __LINE__);
+        throw SanityCheckError("OneBodyInt::compute_deriv1(result): result must be 3 * natom in length.", __FILE__, __LINE__);
 
     for (int i=0; i<ns1; ++i) {
         int ni = bs1_->shell(i)->nfunction();
@@ -372,13 +372,15 @@ void OneBodyAOInt::compute_deriv1(std::vector<shared_ptr<SimpleMatrix> > &result
                 }
             }
 
-            // Center j
-            for (int r=0; r<3; ++r) {
-                for (int p=0; p<ni; ++p) {
-                    for (int q=0; q<nj; ++q) {
-//                        fprintf(outfile, "j %d: r %d p %d q %d value %lf\n", center_j3, r, p, q, *location);
-                        result[center_j3+r]->add(i_offset+p, j_offset+q, *location);
-                        location++;
+            // Center j -- only if center i != center j
+            if (center_i3 != center_j3) {
+                for (int r=0; r<3; ++r) {
+                    for (int p=0; p<ni; ++p) {
+                        for (int q=0; q<nj; ++q) {
+                            //                        fprintf(outfile, "j %d: r %d p %d q %d value %lf\n", center_j3, r, p, q, *location);
+                            result[center_j3+r]->add(i_offset+p, j_offset+q, *location);
+                            location++;
+                        }
                     }
                 }
             }
