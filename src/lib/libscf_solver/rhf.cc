@@ -522,11 +522,11 @@ bool RHF::load_or_compute_initial_C()
             orbitale = init_array(nmo_);
         Communicator::world->raw_bcast(&(orbitale[0]), nmo_*sizeof(double), 0);
 
-        orbital_e_->set(orbitale);
+        epsilon_a_->set(orbitale);
         delete[] orbitale;
 
         // Guess the occupation, if needed.
-        find_occupation(*orbital_e_);
+        find_occupation();
 
         form_D();
 
@@ -767,7 +767,7 @@ void RHF::compute_multipole()
         }
 
         // Sort orbital extent rows based on orbital energies
-        double *orbital_energies = orbital_e_->to_block_vector();
+        double *orbital_energies = epsilon_a_->to_block_vector();
         int *order_mapping = new int[C->ncol()];
         sort_rows_based_on_energies(&orbital_extents, orbital_energies, order_mapping);
 
@@ -820,18 +820,18 @@ void RHF::save_information()
     if (print_mos) {
         fprintf(outfile, "\n  Molecular orbitals:\n");
 
-        C_->eivprint(orbital_e_);
+        C_->eivprint(epsilon_a_);
     }
 
     // Print out orbital energies.
     std::vector<std::pair<double, int> > pairs;
-    for (int h=0; h<orbital_e_->nirrep(); ++h) {
+    for (int h=0; h<epsilon_a_->nirrep(); ++h) {
         for (int i=0; i<nmopi_[h]; ++i)
-            pairs.push_back(make_pair(orbital_e_->get(h, i), h));
+            pairs.push_back(make_pair(epsilon_a_->get(h, i), h));
     }
     sort(pairs.begin(),pairs.end());
     int ndocc = 0;
-    for (int i=0; i<orbital_e_->nirrep(); ++i)
+    for (int i=0; i<epsilon_a_->nirrep(); ++i)
         ndocc += doccpi_[i];
 
     fprintf(outfile, "\n  Orbital energies (a.u.):\n    Doubly occupied orbitals\n      ");
@@ -849,13 +849,15 @@ void RHF::save_information()
     }
     fprintf(outfile, "\n");
 
-    for (int i=0; i<orbital_e_->nirrep(); ++i)
+    for (int i=0; i<epsilon_a_->nirrep(); ++i)
         free(temp2[i]);
     free(temp2);
 
-    int *vec = new int[orbital_e_->nirrep()];
-    for (int i=0; i<orbital_e_->nirrep(); ++i)
+    int *vec = new int[epsilon_a_->nirrep()];
+    for (int i=0; i<epsilon_a_->nirrep(); ++i)
         vec[i] = 0;
+
+    reference_energy_ = E_;
 
     if(Communicator::world->me() == 0) {
         chkpt_->wt_nmo(nmo_);
@@ -866,7 +868,7 @@ void RHF::save_information()
         chkpt_->wt_escf(E_);
         chkpt_->wt_eref(E_);
         chkpt_->wt_enuc(molecule_->nuclear_repulsion_energy());
-        chkpt_->wt_orbspi(orbital_e_->dimpi());
+        chkpt_->wt_orbspi(epsilon_a_->dimpi());
         chkpt_->wt_clsdpi(doccpi_);
         chkpt_->wt_openpi(vec);
         chkpt_->wt_phase_check(0);
@@ -882,8 +884,8 @@ void RHF::save_information()
         chkpt_->wt_nfzc(nfzc);
         chkpt_->wt_nfzv(nfzv);
     }
-    int* frzcpi = compute_fcpi(nfzc, orbital_e_);
-    int* frzvpi = compute_fvpi(nfzv, orbital_e_);
+    int* frzcpi = compute_fcpi(nfzc, epsilon_a_);
+    int* frzvpi = compute_fvpi(nfzv, epsilon_a_);
 
     for (int k = 0; k < nirrep_; k++) {
         frzcpi_[k] = frzcpi[k];
@@ -911,7 +913,7 @@ void RHF::save_information()
 
     // Write eigenvectors and eigenvalue to checkpoint
 
-    double* values = orbital_e_->to_block_vector();
+    double* values = epsilon_a_->to_block_vector();
     if(Communicator::world->me() == 0)
         chkpt_->wt_evals(values);
     free(values);
@@ -1024,7 +1026,7 @@ void RHF::form_C()
         factory_.create_matrix(eigvec);
 
         F_->transform(Shalf_);
-        F_->diagonalize(eigvec, *orbital_e_);
+        F_->diagonalize(eigvec, *epsilon_a_);
 
         C_->gemm(false, false, 1.0, Shalf_, eigvec, 0.0);
 
@@ -1035,7 +1037,7 @@ void RHF::form_C()
 
 #ifdef _DEBUG
         if (debug_) {
-            C_->eivprint(orbital_e_);
+            C_->eivprint(epsilon_a_);
         }
 #endif
     } else {
@@ -1073,7 +1075,7 @@ void RHF::form_C()
             sq_rsp(nmos, nmos, Fp,  eigvals, 1, Cp, 1.0e-14);
 
             for (int i = 0; i<nmos; i++)
-                orbital_e_->set(h,i,eigvals[i]);
+                epsilon_a_->set(h,i,eigvals[i]);
 
             //fprintf(outfile,"  Canonical orbital eigenvalues");
             //for (int i = 0; i<nmos; i++)
@@ -1097,7 +1099,7 @@ void RHF::form_C()
         }
 
     }
-    find_occupation(*orbital_e_);
+    find_occupation();
 }
 
 void RHF::form_D()
@@ -2632,7 +2634,7 @@ void RHF::save_sapt_info()
     int sapt_ne = 2*sapt_nocc;
     double sapt_E_HF = E_;
     double sapt_E_nuc = nuclearrep_;
-    double *sapt_evals = orbital_e_->to_block_vector();
+    double *sapt_evals = epsilon_a_->to_block_vector();
     double **sapt_C = C_->to_block_matrix();
     //print_mat(sapt_C,sapt_nso,sapt_nso,outfile);
     SharedMatrix potential(factory_.create_matrix("Potential Integrals"));

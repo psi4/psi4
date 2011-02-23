@@ -1,0 +1,152 @@
+#include "psi4-dec.h"
+#include <liboptions/liboptions.h>
+#include <libmints/mints.h>
+#include <libpsio/psio.h>
+#include <libtrans/integraltransform.h>
+#include <libtrans/mospace.h>
+#include "ccfiles.h"
+#include "libiwl/iwl.hpp"
+#define EXTERN
+#include "globals.h"
+#include "libdpd/dpd.gbl"
+
+namespace psi{ namespace plugin_mp2{
+
+double plugin_mp2_unrestricted(Options &options, shared_ptr<Chkpt> chkpt)
+{
+    bool ROHF = options.get_str("REFERENCE") == "ROHF";
+
+    std::vector<shared_ptr<MOSpace> > spaces;
+    spaces.push_back(MOSpace::occ);
+    spaces.push_back(MOSpace::vir);
+    IntegralTransform ints(chkpt, spaces,
+                                ROHF ? IntegralTransform::SemiCanonical : IntegralTransform::Unrestricted);
+    ints.transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
+
+    dpdbuf4 K;
+    psio->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+
+    // Use the IntegralTransform object's DPD instance, for convenience
+    dpd_set_default(ints.get_dpd_id());
+    double aaE2 = 0.0, abE2 = 0.0 , bbE2 = 0.0, aE2 = 0.0, bE2 = 0.0, e2 = 0.0;
+    
+    // The alpha-alpha spin case
+    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
+    dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,O]"), ID("[V,V]"), "MO Ints <OO|VV>");
+    dpd_buf4_close(&K);
+    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), 
+                  ID("[O,O]"), ID("[V,V]"), 1, "MO Ints <OO|VV>");
+    for(int h = 0; h < nirreps; ++h){
+        dpd_buf4_mat_irrep_init(&K, h);
+        dpd_buf4_mat_irrep_rd(&K, h);
+        for(int ij = 0; ij < K.params->rowtot[h]; ++ij){
+            int i = K.params->roworb[h][ij][0];
+            int j = K.params->roworb[h][ij][1];
+            for(int ab = 0; ab < K.params->coltot[h]; ++ab){
+                int a = K.params->colorb[h][ab][0];
+                int b = K.params->colorb[h][ab][1];
+                aaE2 += pow(K.matrix[h][ij][ab], 2) / 
+                     ( aOccEvals[i] + aOccEvals[j] - aVirEvals[a] - aVirEvals[b]);
+            }
+        }
+        dpd_buf4_mat_irrep_close(&K, h);
+    }
+    dpd_buf4_close(&K);
+
+    // The alpha-beta spin case
+    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+                  ID("[O,V]"), ID("[o,v]"), 0, "MO Ints (OV|ov)");
+    dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,o]"), ID("[V,v]"), "MO Ints <Oo|Vv>");
+    dpd_buf4_close(&K);
+    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"), 
+                  ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
+    for(int h = 0; h < nirreps; ++h){
+        dpd_buf4_mat_irrep_init(&K, h);
+        dpd_buf4_mat_irrep_rd(&K, h);
+        for(int ij = 0; ij < K.params->rowtot[h]; ++ij){
+            int i = K.params->roworb[h][ij][0];
+            int j = K.params->roworb[h][ij][1];
+            for(int ab = 0; ab < K.params->coltot[h]; ++ab){
+                int a = K.params->colorb[h][ab][0];
+                int b = K.params->colorb[h][ab][1];
+                abE2 += pow(K.matrix[h][ij][ab], 2) / 
+                     ( aOccEvals[i] + bOccEvals[j] - aVirEvals[a] - bVirEvals[b]);
+            }
+        }
+        dpd_buf4_mat_irrep_close(&K, h);
+    }
+    dpd_buf4_close(&K);
+
+    // The beta-beta spin case
+    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints (ov|ov)");
+    dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[o,o]"), ID("[v,v]"), 
+                  "MO Ints <oo|vv>");
+    dpd_buf4_close(&K);
+    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), 
+                  ID("[o,o]"), ID("[v,v]"), 1, "MO Ints <oo|vv>");
+    for(int h = 0; h < nirreps; ++h){
+        dpd_buf4_mat_irrep_init(&K, h);
+        dpd_buf4_mat_irrep_rd(&K, h);
+        for(int ij = 0; ij < K.params->rowtot[h]; ++ij){
+            int i = K.params->roworb[h][ij][0];
+            int j = K.params->roworb[h][ij][1];
+            for(int ab = 0; ab < K.params->coltot[h]; ++ab){
+                int a = K.params->colorb[h][ab][0];
+                int b = K.params->colorb[h][ab][1];
+                bbE2 += pow(K.matrix[h][ij][ab], 2) / 
+                     ( bOccEvals[i] + bOccEvals[j] - bVirEvals[a] - bVirEvals[b]);
+            }
+        }
+        dpd_buf4_mat_irrep_close(&K, h);
+    }
+    dpd_buf4_close(&K);
+    
+    if(ROHF){
+        // The eigenvalues in the semicanonical basis are the diagonal Fock matrix elements
+        int nTriMo = nmo * (nmo + 1) / 2;
+        double *F = init_array(nTriMo);
+        // The alpha energy
+        IWL::read_one(psio.get(), PSIF_OEI, PSIF_MO_A_FOCK, F, nTriMo, 0, 0, outfile);
+        for(int h = 0, offset = 0; h < nirreps; ++h){
+            for(int i = 0; i < aOccOrbsPI[h]; ++i){
+                int ii = i + offset + frzcpi[h];
+                for(int a = clsdpi[h] + openpi[h] ; a < mopi[h]; ++a){
+                    int aa = a + offset;
+                    aE2 += pow(F[INDEX(ii,aa)], 2) / (F[INDEX(ii,ii)] - F[INDEX(aa,aa)]);
+                }
+            }
+            offset += mopi[h];
+        }
+        // The beta energy
+        IWL::read_one(psio.get(), PSIF_OEI, PSIF_MO_B_FOCK, F, nTriMo, 0, 0, outfile);
+        for(int h = 0, offset = 0; h < nirreps; ++h){
+            for(int i = 0; i < bOccOrbsPI[h]; ++i){
+                int ii = i + offset + frzcpi[h];
+                for(int a = clsdpi[h] ; a < mopi[h]; ++a){
+                    int aa = a + offset;
+                    bE2 += pow(F[INDEX(ii,aa)], 2) / (F[INDEX(ii,ii)] - F[INDEX(aa,aa)]);
+                }
+            }
+            offset += mopi[h];
+        }
+        free(F);
+        fprintf(outfile, "\n\t\t--------------------------------------------\n");
+        fprintf(outfile, "\t\tThe singles contributions\n");
+        fprintf(outfile, "\t\tA correlation energy  = %20.16f\n", aE2);
+        fprintf(outfile, "\t\tB correlation energy  = %20.16f\n", bE2);
+        fprintf(outfile, "\t\tTotal contribution    = %20.16f\n", aE2 + bE2);
+        fprintf(outfile, "\t\t--------------------------------------------\n");
+    }
+    e2 = aE2 + bE2 + aaE2 + abE2 + bbE2;
+    fprintf(outfile, "\n\n\t\tAA correlation energy = %20.16f\n", aaE2);
+    fprintf(outfile,     "\t\tAB correlation energy = %20.16f\n", abE2);
+    fprintf(outfile,     "\t\tBB correlation energy = %20.16f\n", bbE2);
+  
+    psio->close(PSIF_LIBTRANS_DPD, 1);
+
+    return e2;
+}
+
+}} // End Namespaces

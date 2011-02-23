@@ -22,6 +22,7 @@ IntegralTransform::IntegralTransform(shared_ptr<Chkpt> chkpt,
             _moOrdering(moOrdering),
             _outputType(outputType),
             _uniqueSpaces(spaces),
+            _alreadyPresorted(false),
             _frozenOrbitals(frozenOrbitals),
             _psio(_default_psio_lib_),
             _Ca(NULL),
@@ -78,8 +79,10 @@ IntegralTransform::initialize()
         _Ca = new double**[_nirreps];
         _Cb = _Ca;
         for(int h = 0; h < _nirreps; ++h){
-            _Ca[h] = block_matrix(_sopi[h], _mopi[h]);
-            ::memcpy(_Ca[h][0], matCa->pointer(h), _sopi[h]*_mopi[h]*sizeof(double));
+            if(_mopi[h] && _sopi[h]){
+                _Ca[h] = block_matrix(_sopi[h], _mopi[h]);
+                ::memcpy(_Ca[h][0], matCa->pointer(h)[0], _sopi[h]*_mopi[h]*sizeof(double));
+            }
         }
         // This will also build the UHF Fock matrix, which we need
         generate_oei();

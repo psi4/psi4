@@ -38,8 +38,7 @@ HF::HF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
       df_storage_(disk),
       nuclear_dipole_contribution_(3),
       nuclear_quadrupole_contribution_(6),
-      print_(3),
-      add_external_potential_(false)
+      print_(3)
 {
     common_init();
 }
@@ -49,8 +48,7 @@ HF::HF(Options& options, shared_ptr<PSIO> psio)
       df_storage_(disk),
       nuclear_dipole_contribution_(3),
       nuclear_quadrupole_contribution_(6),
-      print_(3),
-      add_external_potential_(false)
+      print_(3)
 {
     common_init();
 }
@@ -69,7 +67,7 @@ void HF::common_init()
     Sphalf_.reset(factory_.create_matrix("S^+1/2"));
     H_.reset(factory_.create_matrix("One-electron Hamiltonion"));
     epsilon_a_.reset(factory_.create_vector());
-    orbital_e_ = epsilon_a_;
+    epsilon_a_ = epsilon_a_;
 
     memset((void*) nsopi_, '\0', factory_.nirrep()*sizeof(int));
     memset((void*) nmopi_, '\0', factory_.nirrep()*sizeof(int));
@@ -291,42 +289,44 @@ void HF::finalize()
     initialized_diis_manager_ = false;
 
     // Close the chkpt
-    psio_->close(PSIF_CHKPT, 1);
+    if(psio_->open_check(PSIF_CHKPT))
+        psio_->close(PSIF_CHKPT, 1);
 }
-void HF::find_occupation(Vector & evals)
+void HF::find_occupation()
 {
+    // TODO fix this later for beta
     std::vector<std::pair<double, int> > pairs;
-    for (int h=0; h<evals.nirrep(); ++h) {
-        for (int i=0; i<evals.dimpi()[h]; ++i)
-            pairs.push_back(make_pair(evals.get(h, i), h));
+    for (int h=0; h<epsilon_a_->nirrep(); ++h) {
+        for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
+            pairs.push_back(make_pair(epsilon_a_->get(h, i), h));
     }
     sort(pairs.begin(),pairs.end());
 
     if(!input_docc_){
-        memset(doccpi_, 0, sizeof(int) * evals.nirrep());
+        memset(doccpi_, 0, sizeof(int) * epsilon_a_->nirrep());
         for (int i=0; i<nbeta_; ++i)
             doccpi_[pairs[i].second]++;
     }
     if(!input_socc_){
-        memset(soccpi_, 0, sizeof(int) * evals.nirrep());
+        memset(soccpi_, 0, sizeof(int) * epsilon_a_->nirrep());
         for (int i=nbeta_; i<nalpha_; ++i)
             soccpi_[pairs[i].second]++;
     }
 
     if(print_>5 && Communicator::world->me() == 0){
         fprintf(outfile, "\tDOCC: [");
-        for (int h=0; h<evals.nirrep(); ++h){
+        for (int h=0; h<epsilon_a_->nirrep(); ++h){
             fprintf(outfile, "%3d ", doccpi_[h]);
         }
         fprintf(outfile, "]\n");
         fprintf(outfile, "\tSOCC: [");
-        for (int h=0; h<evals.nirrep(); ++h){
+        for (int h=0; h<epsilon_a_->nirrep(); ++h){
             fprintf(outfile, "%3d ", soccpi_[h]);
         }
         fprintf(outfile, "]\n");
     }
 
-    for (int i=0; i<evals.nirrep(); ++i) {
+    for (int i=0; i<epsilon_a_->nirrep(); ++i) {
         nalphapi_[i] = doccpi_[i] + soccpi_[i];
         nbetapi_[i]  = doccpi_[i];
     }
@@ -601,7 +601,7 @@ void HF::form_Shalf()
             fprintf(outfile,"  Overall, %d of %d possible MOs eliminated.\n",delta_mos,nso_);
 
         }
-        orbital_e_->init(eigvec.nirrep(), nmopi_);
+        epsilon_a_->init(eigvec.nirrep(), nmopi_);
         C_->init(eigvec.nirrep(),nsopi_,nmopi_,"MO coefficients");
     }
 }

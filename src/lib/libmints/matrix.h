@@ -19,9 +19,12 @@ namespace python{
 namespace psi {
 
 class PSIO;
+class Matrix;
 class Vector;
 class SimpleVector;
 class MatrixFactory;
+typedef shared_ptr<Matrix> SharedMatrix ;
+typedef shared_ptr<Vector> SharedVector;
 class SimpleMatrix;
 class Dimension;
 
@@ -549,7 +552,7 @@ public:
 
     /// General matrix multiply, saves result to this
     void gemm(bool transa, bool transb, double alpha, const Matrix& a, const Matrix& b, double beta);
-    /// Diagonalize this places eigvectors and eigvalues must be created by caller.
+    /// Diagonalize. Eigvectors and eigvalues must be created by caller.
     void diagonalize(Matrix& eigvectors, Vector& eigvalues);
 
     /// @{

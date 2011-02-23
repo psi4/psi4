@@ -947,6 +947,10 @@ AC_CONFIG_FILES([include/Makefile
           tests/plugin_backtrans/Makefile
           tests/plugin_backtrans/input.dat
           tests/plugin_backtrans/backtrans.cc
+          tests/plugin_mp2/Makefile
+          tests/plugin_mp2/input.dat tests/plugin_mp2/globals.h
+          tests/plugin_mp2/plugin_mp2.cc tests/plugin_mp2/plugin_mp2_restricted.cc
+          tests/plugin_mp2/plugin_mp2_unrestricted.cc
 
           bin/psi4-config
 ])

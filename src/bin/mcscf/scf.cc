@@ -160,38 +160,38 @@ void SCF::cleanup()
   release2(pair);
   release2(pair_sym);
 
-  if(epsilon.is_allocated())    epsilon->subtract_reference();
-  if(C.is_allocated())          C->subtract_reference();
-  if(C_t.is_allocated())        C_t->subtract_reference();
-  if(C_T.is_allocated())        C_T->subtract_reference();
-  if(Dc.is_allocated())         Dc->subtract_reference();
-  if(Do.is_allocated())         Do->subtract_reference();
-  if(Fc.is_allocated())         Fc->subtract_reference();
-  if(Fc_t.is_allocated())       Fc_t->subtract_reference();
-  if(Fo.is_allocated())         Fo->subtract_reference();
-  if(Fo_t.is_allocated())       Fo_t->subtract_reference();
-  if(Favg.is_allocated())       Favg->subtract_reference();
-  if(Favg_t.is_allocated())     Favg_t->subtract_reference();
-  if(Feff_t.is_allocated())     Feff_t->subtract_reference();
-  if(Feff_t_old.is_allocated()) Feff_t_old->subtract_reference();
-  if(Feff_oAO.is_allocated())   Feff_oAO->subtract_reference();
-  if(G.is_allocated())          G->subtract_reference();
-  if(T.is_allocated())          T->subtract_reference();
-  if(H.is_allocated())          H->subtract_reference();
-  if(O.is_allocated())          O->subtract_reference();
-  if(S.is_allocated())          S->subtract_reference();
-  if(S_sqrt_inv.is_allocated()) S_sqrt_inv->subtract_reference();
-  if(S_sqrt.is_allocated())     S_sqrt->subtract_reference();
-  if(e.is_allocated())          e->subtract_reference();
+  if(epsilon.is_allocated())    epsilon.subtract_reference();
+  if(C.is_allocated())          C.subtract_reference();
+  if(C_t.is_allocated())        C_t.subtract_reference();
+  if(C_T.is_allocated())        C_T.subtract_reference();
+  if(Dc.is_allocated())         Dc.subtract_reference();
+  if(Do.is_allocated())         Do.subtract_reference();
+  if(Fc.is_allocated())         Fc.subtract_reference();
+  if(Fc_t.is_allocated())       Fc_t.subtract_reference();
+  if(Fo.is_allocated())         Fo.subtract_reference();
+  if(Fo_t.is_allocated())       Fo_t.subtract_reference();
+  if(Favg.is_allocated())       Favg.subtract_reference();
+  if(Favg_t.is_allocated())     Favg_t.subtract_reference();
+  if(Feff_t.is_allocated())     Feff_t.subtract_reference();
+  if(Feff_t_old.is_allocated()) Feff_t_old.subtract_reference();
+  if(Feff_oAO.is_allocated())   Feff_oAO.subtract_reference();
+  if(G.is_allocated())          G.subtract_reference();
+  if(T.is_allocated())          T.subtract_reference();
+  if(H.is_allocated())          H.subtract_reference();
+  if(O.is_allocated())          O.subtract_reference();
+  if(S.is_allocated())          S.subtract_reference();
+  if(S_sqrt_inv.is_allocated()) S_sqrt_inv.subtract_reference();
+  if(S_sqrt.is_allocated())     S_sqrt.subtract_reference();
+  if(e.is_allocated())          e.subtract_reference();
   for(int i = 0; i < maxci; ++i){
-      if(Ftc[i].is_allocated())   Ftc[i]->subtract_reference();
-      if(Ftc_t[i].is_allocated()) Ftc_t[i]->subtract_reference();
-      if(Dtc[i].is_allocated())   Dtc[i]->subtract_reference();
-      if(Dsum[i].is_allocated())  Dsum[i]->subtract_reference();
+      if(Ftc[i].is_allocated())   Ftc[i].subtract_reference();
+      if(Ftc_t[i].is_allocated()) Ftc_t[i].subtract_reference();
+      if(Dtc[i].is_allocated())   Dtc[i].subtract_reference();
+      if(Dsum[i].is_allocated())  Dsum[i].subtract_reference();
   }
   for(int i = 0; i < maxdiis; ++i){
-      if(diis_F[i].is_allocated()) diis_F[i]->subtract_reference();
-      if(diis_e[i].is_allocated()) diis_e[i]->subtract_reference();
+      if(diis_F[i].is_allocated()) diis_F[i].subtract_reference();
+      if(diis_e[i].is_allocated()) diis_e[i].subtract_reference();
   }
 
   if(reference == tcscf){

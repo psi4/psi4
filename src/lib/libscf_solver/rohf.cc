@@ -95,7 +95,7 @@ void ROHF::form_initial_C()
     temp.copy(H_);
     temp.transform(Shalf_);
     temp.diagonalize(C_, values);
-    find_occupation(values);
+    find_occupation();
     temp.gemm(false, false, 1.0, Shalf_, C_, 0.0);
     C_->copy(temp);
 
@@ -468,7 +468,7 @@ void ROHF::form_C()
 
     // Obtain new eigenvectors
     Feff_->diagonalize(eigvec, epsilon_);
-    find_occupation(*epsilon_.get());
+    find_occupation();
 
 #ifdef _DEBUG
     if (debug_) {

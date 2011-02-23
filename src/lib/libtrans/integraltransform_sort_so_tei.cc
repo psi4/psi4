@@ -20,9 +20,7 @@ using namespace psi;
 void
 IntegralTransform::presort_so_tei()
 {
-    static bool alreadyPresorted = false;
-
-    if(alreadyPresorted){
+    if(_alreadyPresorted){
         if(_print>5)
             fprintf(outfile, "\tSO integrals are already sorted, moving on...\n");
             return;
@@ -355,7 +353,7 @@ IntegralTransform::presort_so_tei()
 
     dpd_set_default(currentActiveDPD);
 
-    alreadyPresorted = true;
+    _alreadyPresorted = true;
 
     dpd_file4_close(&I);
     _psio->close(PSIF_SO_PRESORT, 1);
