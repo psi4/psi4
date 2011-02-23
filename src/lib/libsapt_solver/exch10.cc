@@ -128,7 +128,7 @@ void SAPT0::exch10_s2()
   results_.exch10_s2 = -2.0*(ex1+ex2+ex3-ex4-ex5+ex6);
 
   if (params_.print) {
-    fprintf(outfile,"exch10(s^2) Energy = %18.12lf  H\n\n",results_.exch10);
+    fprintf(outfile,"exch10(s^2) Energy = %18.12lf  H\n",results_.exch10_s2);
     fflush(outfile);
   }
 }
@@ -366,7 +366,7 @@ void SAPT0::exch10()
   results_.exch10 = ex1+ex2+ex3+ex4+ex5+ex6+ex7+ex8+ex9;
 
   if (params_.print) {
-    fprintf(outfile,"exch10      Energy = %18.12lf  H\n",results_.exch10);
+    fprintf(outfile,"exch10      Energy = %18.12lf  H\n\n",results_.exch10);
     fflush(outfile);
   }
 }
