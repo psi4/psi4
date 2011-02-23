@@ -25,7 +25,7 @@ class PotentialInt : public OneBodyAOInt
     /// Computes integrals between two shell objects.
     void compute_pair(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>&);
     /// Computes integrals between two shell objects.
-    void compute_pair_deriv1(boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>);
+    void compute_pair_deriv1(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>& );
 
 protected:
     /// Recursion object that does the heavy lifting.
