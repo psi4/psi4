@@ -28,7 +28,6 @@ class PseudospectralHF;
 
 class HF : public Wavefunction {
 protected:
-    SharedMatrix C_;
     SharedMatrix H_;
     SharedMatrix S_;
     SharedMatrix Shalf_;

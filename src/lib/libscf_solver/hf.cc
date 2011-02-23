@@ -66,8 +66,6 @@ void HF::common_init()
     X_.reset(factory_.create_matrix("X"));
     Sphalf_.reset(factory_.create_matrix("S^+1/2"));
     H_.reset(factory_.create_matrix("One-electron Hamiltonion"));
-    epsilon_a_.reset(factory_.create_vector());
-    epsilon_a_ = epsilon_a_;
 
     memset((void*) nsopi_, '\0', factory_.nirrep()*sizeof(int));
     memset((void*) nmopi_, '\0', factory_.nirrep()*sizeof(int));
@@ -602,7 +600,7 @@ void HF::form_Shalf()
 
         }
         epsilon_a_->init(eigvec.nirrep(), nmopi_);
-        C_->init(eigvec.nirrep(),nsopi_,nmopi_,"MO coefficients");
+        Ca_->init(eigvec.nirrep(),nsopi_,nmopi_,"MO coefficients");
     }
 }
 
@@ -688,7 +686,7 @@ bool HF::load_or_compute_initial_C()
             vectors = block_matrix(nso_, nmo_);
         Communicator::world->raw_bcast(&(vectors[0][0]), nso_*nmo_*sizeof(double));
 
-        C_->set(const_cast<const double**>(vectors));
+        Ca_->set(const_cast<const double**>(vectors));
         free_block(vectors);
 
         form_D();
