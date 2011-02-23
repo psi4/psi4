@@ -16,15 +16,15 @@ PotentialInt::PotentialInt(std::vector<SphericalTransform>& st, shared_ptr<Basis
     int maxam1 = bs1_->max_am();
     int maxam2 = bs2_->max_am();
 
-    // These are equivalent to INT_NCART
-//    int maxnao1 = (maxam1+1)*(maxam1+2)/2;
-//    int maxnao2 = (maxam2+1)*(maxam2+2)/2;
     int maxnao1 = INT_NCART(maxam1);
     int maxnao2 = INT_NCART(maxam2);
 
     if (deriv == 1) {
-        maxnao1 *= 3 * natom_;
-        maxnao2 *= 3 * natom_;
+        // We set chunk count for normalize_am and pure_transform
+        set_chunks(6);
+
+        maxnao1 *= 3;
+        maxnao2 *= 3;
     }
 
     buffer_ = new double[maxnao1*maxnao2];
@@ -145,10 +145,13 @@ void PotentialInt::compute_pair(const shared_ptr<GaussianShell>& s1,
 void PotentialInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2)
 {
     int ao12;
-    int am1 = s1->am();
-    int am2 = s2->am();
-    int nprim1 = s1->nprimitive();
-    int nprim2 = s2->nprimitive();
+    const int am1 = s1->am();
+    const int am2 = s2->am();
+    const int nprim1 = s1->nprimitive();
+    const int nprim2 = s2->nprimitive();
+    const int ncenteri = s1->ncenter();
+    const int ncenterj = s2->ncenter();
+
     double A[3], B[3];
     A[0] = s1->center()[0];
     A[1] = s1->center()[1];
@@ -157,9 +160,10 @@ void PotentialInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<
     B[1] = s2->center()[1];
     B[2] = s2->center()[2];
 
-    size_t size = s1->ncartesian() * s2->ncartesian();
-    int center_i = s1->ncenter()*3*size;
-    int center_j = s2->ncenter()*3*size;
+    // size of the length of a perturbation
+    const size_t size = s1->ncartesian() * s2->ncartesian();
+    const int center_i_start = 0;       // always 0
+    const int center_j_start = 3*size;  // skip over x, y, z of center i
 
     int izm1 = 1;
     int iym1 = am1 + 1 + 1;  // extra 1 for derivative
@@ -174,7 +178,7 @@ void PotentialInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<
     AB2 += (A[1] - B[1]) * (A[1] - B[1]);
     AB2 += (A[2] - B[2]) * (A[2] - B[2]);
 
-    memset(buffer_, 0, 3 * natom_ * s1->ncartesian() * s2->ncartesian() * sizeof(double));
+    memset(buffer_, 0, 3 * size * sizeof(double));
 
     double ***vi = potential_deriv_recur_.vi();
     double ***vx = potential_deriv_recur_.vx();
@@ -242,13 +246,13 @@ void PotentialInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<
                                 double temp = 2.0*a1*vi[iind+ixm1][jind][0];
                                 if (l1)
                                     temp -= l1*vi[iind-ixm1][jind][0];
-                                buffer_[center_i+(0*size)+ao12] -= temp * pfac;
+                                buffer_[center_i_start+(0*size)+ao12] -= temp * pfac;
                                 // printf("ix temp = %f ", temp);
 
                                 temp = 2.0*a2*vi[iind][jind+jxm1][0];
                                 if (l2)
                                     temp -= l2*vi[iind][jind-jxm1][0];
-                                buffer_[center_j+(0*size)+ao12] -= temp * pfac;
+                                buffer_[center_j_start+(0*size)+ao12] -= temp * pfac;
                                 // printf("jx temp = %f ", temp);
 
                                 buffer_[3*size*atom+ao12] -= vx[iind][jind][0] * pfac;
