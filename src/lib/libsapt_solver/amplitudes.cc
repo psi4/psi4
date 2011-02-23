@@ -526,13 +526,13 @@ void SAPT2B::t2_arar(int theta)
   if (params_.nat_orbs_t2) {
     t2ARAR = t2_solver_natorbs(PSIF_SAPT_AMPS,"T ARAR Amplitudes",
       "Theta(AR) AR",PSIF_SAPT_AA_DF_INTS,"AA RI Integrals","AR RI Integrals",
-      "RR RI Integrals",calc_info_.evalsA,calc_info_.noccA,calc_info_.nvirA,0,
+      "RR RI Integrals",calc_info_.evalsA,calc_info_.noccA,calc_info_.nvirA,
       "RR NO Integrals",no_info_.CA,no_info_.nvirA);
   }
   else {
     t2ARAR = t2_solver(PSIF_SAPT_AMPS,"T ARAR Amplitudes","Theta(AR) AR",
       PSIF_SAPT_AA_DF_INTS,"AA RI Integrals","AR RI Integrals",
-      "RR RI Integrals",calc_info_.evalsA,calc_info_.noccA,calc_info_.nvirA,0);
+      "RR RI Integrals",calc_info_.evalsA,calc_info_.noccA,calc_info_.nvirA);
   }
 
   double **thetaARAR = block_matrix(calc_info_.noccA*calc_info_.nvirA,
@@ -544,8 +544,8 @@ void SAPT2B::t2_arar(int theta)
     for (int rr=0; rr < calc_info_.nvirA; rr++, aarr++) {
       int aar = aa*calc_info_.nvirA + r;
       int arr = a*calc_info_.nvirA + rr;
-      int araarr = ar*calc_info_.noccA*calc_info_.nvirA+aarr;
-      int aararr = aar*calc_info_.noccA*calc_info_.nvirA+arr;
+      long int araarr = (long int) ar*calc_info_.noccA*calc_info_.nvirA+aarr;
+      long int aararr = (long int) aar*calc_info_.noccA*calc_info_.nvirA+arr;
       thetaARAR[ar][aarr] = 2.0*t2ARAR[araarr] - t2ARAR[aararr];
     }}
   }}
@@ -582,13 +582,13 @@ void SAPT2B::t2_bsbs(int theta)
   if (params_.nat_orbs_t2) {
     t2BSBS = t2_solver_natorbs(PSIF_SAPT_AMPS,"T BSBS Amplitudes",
       "Theta(BS) BS",PSIF_SAPT_BB_DF_INTS,"BB RI Integrals","BS RI Integrals",
-      "SS RI Integrals",calc_info_.evalsB,calc_info_.noccB,calc_info_.nvirB,0,
+      "SS RI Integrals",calc_info_.evalsB,calc_info_.noccB,calc_info_.nvirB,
       "SS NO Integrals",no_info_.CB,no_info_.nvirB);
   }
   else {
     t2BSBS = t2_solver(PSIF_SAPT_AMPS,"T BSBS Amplitudes","Theta(BS) BS",
       PSIF_SAPT_BB_DF_INTS,"BB RI Integrals","BS RI Integrals",
-      "SS RI Integrals",calc_info_.evalsB,calc_info_.noccB,calc_info_.nvirB,0);
+      "SS RI Integrals",calc_info_.evalsB,calc_info_.noccB,calc_info_.nvirB);
   }
 
   double **thetaBSBS = block_matrix(calc_info_.noccB*calc_info_.nvirB,
@@ -600,8 +600,8 @@ void SAPT2B::t2_bsbs(int theta)
     for (int ss=0; ss < calc_info_.nvirB; ss++, bbss++) {
       int bbs = bb*calc_info_.nvirB + s;
       int bss = b*calc_info_.nvirB + ss;
-      int bsbbss = bs*calc_info_.noccB*calc_info_.nvirB+bbss;
-      int bbsbss = bbs*calc_info_.noccB*calc_info_.nvirB+bss;
+      long int bsbbss = (long int) bs*calc_info_.noccB*calc_info_.nvirB+bbss;
+      long int bbsbss = (long int) bbs*calc_info_.noccB*calc_info_.nvirB+bss;
       thetaBSBS[bs][bbss] = 2.0*t2BSBS[bsbbss] - t2BSBS[bbsbss];
     }}
   }}
@@ -634,11 +634,9 @@ void SAPT2B::t2_bsbs(int theta)
 
 double *SAPT2B::t2_solver(int ampfile, const char *T_amps, 
   const char *theta_OV, int dfnum, const char *OO_label, const char *OV_label, 
-  const char *VV_label, double *evals, int nocc, int nvir, int focc)
+  const char *VV_label, double *evals, int nocc, int nvir)
 {
-  nocc -= focc;
-
-  double *t2ARAR = init_array(nocc*nvir*nocc*nvir);
+  double *t2ARAR = init_array((long int) nocc*nvir*nocc*nvir);
 
   double **B_p_AA = get_DF_ints(dfnum,OO_label,nocc*nocc);
   double **B_p_RR = get_DF_ints(dfnum,VV_label,nvir*nvir);
@@ -655,17 +653,17 @@ double *SAPT2B::t2_solver(int ampfile, const char *T_amps,
   free_block(B_p_AA);
   free_block(B_p_RR);
 
-  double *tOVOV = init_array(nocc*nvir*nocc*nvir);
-  psio_->read_entry(ampfile,T_amps,(char *) &(tOVOV[0]),
-    sizeof(double)*nocc*nvir*nocc*nvir);
+  double *tOVOV = init_array((long int) nocc*nvir*nocc*nvir);
+  psio_->read_entry(ampfile,T_amps,(char *) &(tOVOV[0]),sizeof(double)*nocc*
+    nvir*nocc*nvir);
 
   double *X = init_array(nvir);
 
   for(int a=0; a<nocc; a++) {
   for(int a1=0; a1<=a; a1++) {
     for(int r=0; r<nvir; r++) {
-      int ara1 = (a*nvir+r)*nocc*nvir+a1*nvir;
-      int a1ra = (a1*nvir+r)*nocc*nvir+a*nvir;
+      long int ara1 = ((long int) a*nvir+r)*nocc*nvir+a1*nvir;
+      long int a1ra = ((long int) a1*nvir+r)*nocc*nvir+a*nvir;
       C_DCOPY(nvir,&(tOVOV[ara1]),1,X,1);
       C_DCOPY(nvir,&(tOVOV[a1ra]),1,&(tOVOV[ara1]),1);
       C_DCOPY(nvir,X,1,&(tOVOV[a1ra]),1);
@@ -677,8 +675,8 @@ double *SAPT2B::t2_solver(int ampfile, const char *T_amps,
   for(int a=0; a<nocc; a++) {
   for(int a1=0; a1<=a; a1++) {
     for(int r=0; r<nvir; r++) {
-      int ara1 = (a*nvir+r)*nocc*nvir+a1*nvir;
-      int a1ra = (a1*nvir+r)*nocc*nvir+a*nvir;
+      long int ara1 = ((long int) a*nvir+r)*nocc*nvir+a1*nvir;
+      long int a1ra = ((long int) a1*nvir+r)*nocc*nvir+a*nvir;
       C_DCOPY(nvir,&(tOVOV[ara1]),1,X,1);
       C_DCOPY(nvir,&(tOVOV[a1ra]),1,&(tOVOV[ara1]),1);
       C_DCOPY(nvir,X,1,&(tOVOV[a1ra]),1);
@@ -687,8 +685,8 @@ double *SAPT2B::t2_solver(int ampfile, const char *T_amps,
   for(int a=0; a<nocc; a++) {
   for(int a1=0; a1<=a; a1++) {
     for(int r=0; r<nvir; r++) {
-      int ara1 = (a*nvir+r)*nocc*nvir+a1*nvir;
-      int a1ra = (a1*nvir+r)*nocc*nvir+a*nvir;
+      long int ara1 = ((long int) a*nvir+r)*nocc*nvir+a1*nvir;
+      long int a1ra = ((long int) a1*nvir+r)*nocc*nvir+a*nvir;
       C_DCOPY(nvir,&(t2ARAR[ara1]),1,X,1);
       C_DCOPY(nvir,&(t2ARAR[a1ra]),1,&(t2ARAR[ara1]),1);
       C_DCOPY(nvir,X,1,&(t2ARAR[a1ra]),1);
@@ -714,8 +712,8 @@ double *SAPT2B::t2_solver(int ampfile, const char *T_amps,
 
   for(int ar=0; ar<nocc*nvir; ar++) {
     for(int a1r1=0; a1r1<ar; a1r1++) {
-      int ara1r1 = ar*nocc*nvir + a1r1;
-      int a1r1ar = a1r1*nocc*nvir + ar;
+      long int ara1r1 = (long int) ar*nocc*nvir+a1r1;
+      long int a1r1ar = (long int) a1r1*nocc*nvir+ar;
       double tval = t2ARAR[ara1r1] + t2ARAR[a1r1ar];
       t2ARAR[a1r1ar] = tval;
       t2ARAR[ara1r1] = tval;
@@ -727,21 +725,23 @@ double *SAPT2B::t2_solver(int ampfile, const char *T_amps,
 
   for(int a=0; a<nocc; a++) {
     for(int r=0; r<nvir; r++) {
-      C_DCOPY(nocc*nvir,&(tOVOV[a*nvir*nocc*nvir+r]),nvir,xVO[0],1);
+      C_DCOPY(nocc*nvir,&(tOVOV[(long int) a*nvir*nocc*nvir+r]),nvir,
+        xVO[0],1);
       for(int a1=0; a1<nocc; a1++) {
         int aa1 = a*nocc+a1;
         int r1r = r;
-        int aa1r1r = aa1*nvir*nvir+r1r;
+        long int aa1r1r = (long int) aa1*nvir*nvir+r1r;
         C_DCOPY(nvir,&(xVO[0][a1]),nocc,&(tOVOV[aa1r1r]),nvir);
   }}}
 
   for(int a=0; a<nocc; a++) {
     for(int r=0; r<nvir; r++) {
-      C_DCOPY(nocc*nvir,&(t2ARAR[a*nvir*nocc*nvir+r]),nvir,xVO[0],1);
+      C_DCOPY(nocc*nvir,&(t2ARAR[(long int) a*nvir*nocc*nvir+r]),nvir,
+        xVO[0],1);
       for(int a1=0; a1<nocc; a1++) {
         int aa1 = a*nocc+a1;
         int r1r = r;
-        int aa1r1r = aa1*nvir*nvir+r1r;
+        long int aa1r1r = (long int) aa1*nvir*nvir+r1r;
         C_DCOPY(nvir,&(xVO[0][a1]),nocc,&(t2ARAR[aa1r1r]),nvir);
   }}}
 
@@ -783,14 +783,14 @@ double *SAPT2B::t2_solver(int ampfile, const char *T_amps,
 
   for(int a=0; a<nocc; a++) {
     for(int r=0; r<nvir; r++) {
-      C_DCOPY(nocc*nvir,&(t2ARAR[a*nocc*nvir*nvir+r]),nvir,xOV[0],1);
+      C_DCOPY(nocc*nvir,&(t2ARAR[(long int) a*nocc*nvir*nvir+r]),nvir,
+        xOV[0],1);
       for(int a1=0; a1<nocc; a1++) {
         for(int r1=0; r1<nvir; r1++) {
           int ar1 = a*nvir+r1;
           int a1r = a1*nvir+r;
-          int ar1a1r = ar1*nocc*nvir+a1r;
-          double denom = evals[a+focc]+evals[a1+focc]-evals[r+nocc+focc]-
-            evals[r1+nocc+focc];
+          long int ar1a1r = (long int) ar1*nocc*nvir+a1r;
+          double denom = evals[a]+evals[a1]-evals[r+nocc]-evals[r1+nocc];
           t2ARAR[ar1a1r] = xOV[a1][r1]/denom;
   }}}}
 
@@ -801,12 +801,10 @@ double *SAPT2B::t2_solver(int ampfile, const char *T_amps,
 
 double *SAPT2B::t2_solver_natorbs(int ampfile, const char *T_amps, 
   const char *theta_OV, int dfnum, const char *OO_label, const char *OV_label, 
-  const char *VV_label, double *evals, int nocc, int nvir, int focc, 
+  const char *VV_label, double *evals, int nocc, int nvir,
   const char *NO_VV_label, double **mo2no, int novir)
 {
-  nocc -= focc;
-
-  double *t2ARAR = init_array(nocc*nvir*nocc*nvir);
+  double *t2ARAR = init_array((long int) nocc*nvir*nocc*nvir);
 
   double **B_p_AA = get_DF_ints(dfnum,OO_label,nocc*nocc);
   double **B_p_RR = get_DF_ints(dfnum,VV_label,nvir*nvir);
@@ -823,7 +821,7 @@ double *SAPT2B::t2_solver_natorbs(int ampfile, const char *T_amps,
   free_block(B_p_AA);
   free_block(B_p_RR);
 
-  double *tOVOV = init_array(nocc*nvir*nocc*nvir);
+  double *tOVOV = init_array((long int) nocc*nvir*nocc*nvir);
   psio_->read_entry(ampfile,T_amps,(char *) &(tOVOV[0]),
     sizeof(double)*nocc*nvir*nocc*nvir);
 
@@ -832,8 +830,8 @@ double *SAPT2B::t2_solver_natorbs(int ampfile, const char *T_amps,
   for(int a=0; a<nocc; a++) {
   for(int a1=0; a1<=a; a1++) {
     for(int r=0; r<nvir; r++) {
-      int ara1 = (a*nvir+r)*nocc*nvir+a1*nvir;
-      int a1ra = (a1*nvir+r)*nocc*nvir+a*nvir;
+      long int ara1 = ((long int) a*nvir+r)*nocc*nvir+a1*nvir;
+      long int a1ra = ((long int) a1*nvir+r)*nocc*nvir+a*nvir;
       C_DCOPY(nvir,&(tOVOV[ara1]),1,X,1);
       C_DCOPY(nvir,&(tOVOV[a1ra]),1,&(tOVOV[ara1]),1);
       C_DCOPY(nvir,X,1,&(tOVOV[a1ra]),1);
@@ -845,8 +843,8 @@ double *SAPT2B::t2_solver_natorbs(int ampfile, const char *T_amps,
   for(int a=0; a<nocc; a++) {
   for(int a1=0; a1<=a; a1++) {
     for(int r=0; r<nvir; r++) {
-      int ara1 = (a*nvir+r)*nocc*nvir+a1*nvir;
-      int a1ra = (a1*nvir+r)*nocc*nvir+a*nvir;
+      long int ara1 = ((long int) a*nvir+r)*nocc*nvir+a1*nvir;
+      long int a1ra = ((long int) a1*nvir+r)*nocc*nvir+a*nvir;
       C_DCOPY(nvir,&(tOVOV[ara1]),1,X,1);
       C_DCOPY(nvir,&(tOVOV[a1ra]),1,&(tOVOV[ara1]),1);
       C_DCOPY(nvir,X,1,&(tOVOV[a1ra]),1);
@@ -855,8 +853,8 @@ double *SAPT2B::t2_solver_natorbs(int ampfile, const char *T_amps,
   for(int a=0; a<nocc; a++) {
   for(int a1=0; a1<=a; a1++) {
     for(int r=0; r<nvir; r++) {
-      int ara1 = (a*nvir+r)*nocc*nvir+a1*nvir;
-      int a1ra = (a1*nvir+r)*nocc*nvir+a*nvir;
+      long int ara1 = ((long int) a*nvir+r)*nocc*nvir+a1*nvir;
+      long int a1ra = ((long int) a1*nvir+r)*nocc*nvir+a*nvir;
       C_DCOPY(nvir,&(t2ARAR[ara1]),1,X,1);
       C_DCOPY(nvir,&(t2ARAR[a1ra]),1,&(t2ARAR[ara1]),1);
       C_DCOPY(nvir,X,1,&(t2ARAR[a1ra]),1);
@@ -882,8 +880,8 @@ double *SAPT2B::t2_solver_natorbs(int ampfile, const char *T_amps,
 
   for(int ar=0; ar<nocc*nvir; ar++) {
     for(int a1r1=0; a1r1<ar; a1r1++) {
-      int ara1r1 = ar*nocc*nvir + a1r1;
-      int a1r1ar = a1r1*nocc*nvir + ar;
+      long int ara1r1 = (long int) ar*nocc*nvir + a1r1;
+      long int a1r1ar = (long int) a1r1*nocc*nvir + ar;
       double tval = t2ARAR[ara1r1] + t2ARAR[a1r1ar];
       t2ARAR[a1r1ar] = tval;
       t2ARAR[ara1r1] = tval;
@@ -895,21 +893,23 @@ double *SAPT2B::t2_solver_natorbs(int ampfile, const char *T_amps,
 
   for(int a=0; a<nocc; a++) {
     for(int r=0; r<nvir; r++) {
-      C_DCOPY(nocc*nvir,&(tOVOV[a*nvir*nocc*nvir+r]),nvir,xVO[0],1);
+      C_DCOPY(nocc*nvir,&(tOVOV[(long int) a*nvir*nocc*nvir+r]),nvir,
+        xVO[0],1);
       for(int a1=0; a1<nocc; a1++) {
         int aa1 = a*nocc+a1;
         int r1r = r;
-        int aa1r1r = aa1*nvir*nvir+r1r;
+        long int aa1r1r = (long int) aa1*nvir*nvir+r1r;
         C_DCOPY(nvir,&(xVO[0][a1]),nocc,&(tOVOV[aa1r1r]),nvir);
   }}}
 
   for(int a=0; a<nocc; a++) {
     for(int r=0; r<nvir; r++) {
-      C_DCOPY(nocc*nvir,&(t2ARAR[a*nvir*nocc*nvir+r]),nvir,xVO[0],1);
+      C_DCOPY(nocc*nvir,&(t2ARAR[(long int) a*nvir*nocc*nvir+r]),nvir,
+        xVO[0],1);
       for(int a1=0; a1<nocc; a1++) {
         int aa1 = a*nocc+a1;
         int r1r = r;
-        int aa1r1r = aa1*nvir*nvir+r1r;
+        long int aa1r1r = (long int) aa1*nvir*nvir+r1r;
         C_DCOPY(nvir,&(xVO[0][a1]),nocc,&(t2ARAR[aa1r1r]),nvir);
   }}}
 
@@ -937,7 +937,7 @@ double *SAPT2B::t2_solver_natorbs(int ampfile, const char *T_amps,
 
   for (int a=0,aaa=0; a<nocc; a++) {
     for (int aa=0; aa<nocc; aa++,aaa++) {
-      C_DGEMM('N','N',nvir,novir,nvir,1.0,&(tOVOV[aaa*nvir*nvir]),
+      C_DGEMM('N','N',nvir,novir,nvir,1.0,&(tOVOV[(long int) aaa*nvir*nvir]),
         nvir,&(mo2no[nocc][nocc]),nocc+novir,0.0,&(Y_RR[0][0]),novir);
       C_DGEMM('T','N',novir,novir,nvir,1.0,&(mo2no[nocc][nocc]),nocc+novir,
         &(Y_RR[0][0]),novir,0.0,tOOVV[aaa],novir);
@@ -967,7 +967,8 @@ double *SAPT2B::t2_solver_natorbs(int ampfile, const char *T_amps,
       C_DGEMM('N','N',nvir,novir,novir,1.0,&(mo2no[nocc][nocc]),nocc+novir,
         t2AARR[aaa],novir,0.0,&(Y_RR[0][0]),novir);
       C_DGEMM('N','T',nvir,nvir,novir,1.0,&(Y_RR[0][0]),novir,
-        &(mo2no[nocc][nocc]),nocc+novir,1.0,&(t2ARAR[aaa*nvir*nvir]),nvir);
+        &(mo2no[nocc][nocc]),nocc+novir,1.0,
+        &(t2ARAR[(long int) aaa*nvir*nvir]),nvir);
   }}
 
   free_block(t2AARR);
@@ -977,14 +978,14 @@ double *SAPT2B::t2_solver_natorbs(int ampfile, const char *T_amps,
 
   for(int a=0; a<nocc; a++) {
     for(int r=0; r<nvir; r++) {
-      C_DCOPY(nocc*nvir,&(t2ARAR[a*nocc*nvir*nvir+r]),nvir,xOV[0],1);
+      C_DCOPY(nocc*nvir,&(t2ARAR[(long int) a*nocc*nvir*nvir+r]),nvir,
+        xOV[0],1);
       for(int a1=0; a1<nocc; a1++) {
         for(int r1=0; r1<nvir; r1++) {
           int ar1 = a*nvir+r1;
           int a1r = a1*nvir+r;
-          int ar1a1r = ar1*nocc*nvir+a1r;
-          double denom = evals[a+focc]+evals[a1+focc]-evals[r+nocc+focc]-
-            evals[r1+nocc+focc];
+          long int ar1a1r = (long int) ar1*nocc*nvir+a1r;
+          double denom = evals[a]+evals[a1]-evals[r+nocc]-evals[r1+nocc];
           t2ARAR[ar1a1r] = xOV[a1][r1]/denom;
   }}}}
 
@@ -1353,7 +1354,7 @@ void SAPT2B::Y3_2(double **Y3, int dffile, const char *AA_ints,
 void SAPT2B::Y3_3(double **Y3, int ampfile, const char *t_phys, int dffile, 
   const char *AA_ints, const char *AR_ints, int nocc, int nvir)
 {
-  double *tAARR = init_array(nocc*nocc*nvir*nvir);
+  double *tAARR = init_array((long int) nocc*nocc*nvir*nvir);
 
   psio_->read_entry(ampfile,t_phys,(char *) &(tAARR[0]),
     sizeof(double)*nocc*nvir*nocc*nvir);
@@ -1362,11 +1363,11 @@ void SAPT2B::Y3_3(double **Y3, int ampfile, const char *t_phys, int dffile,
   
   for(int a=0; a<nocc; a++) { 
     for(int r=0; r<nvir; r++) {
-      C_DCOPY(nocc*nvir,&(tAARR[a*nvir*nocc*nvir+r]),nvir,xRA[0],1);
+      C_DCOPY(nocc*nvir,&(tAARR[(long int) a*nvir*nocc*nvir+r]),nvir,xRA[0],1);
       for(int a1=0; a1<nocc; a1++) {
         int aa1 = a*nocc+a1;
         int r1r = r; 
-        int aa1r1r = aa1*nvir*nvir+r1r;
+        long int aa1r1r = (long int) aa1*nvir*nvir+r1r;
         C_DCOPY(nvir,&(xRA[0][a1]),nocc,&(tAARR[aa1r1r]),nvir);
   }}}
 
@@ -1425,7 +1426,7 @@ void SAPT2B::Y3_4(double **Y3, int dffile, const char *AR_ints,
   double **xRRR = block_matrix(nvir,nvir*nvir);
   double **X_RR = block_matrix(nvir,nvir);
 
-  double *tAARR = init_array(nocc*nocc*nvir*nvir);
+  double *tAARR = init_array((long int) nocc*nocc*nvir*nvir);
   
   psio_->read_entry(ampfile,t_amps,(char *) &(tAARR[0]),
     sizeof(double)*nocc*nvir*nocc*nvir); 
@@ -1434,11 +1435,11 @@ void SAPT2B::Y3_4(double **Y3, int dffile, const char *AR_ints,
 
   for(int a=0; a<nocc; a++) {
     for(int r=0; r<nvir; r++) {
-      C_DCOPY(nocc*nvir,&(tAARR[a*nvir*nocc*nvir+r]),nvir,xRA[0],1);
+      C_DCOPY(nocc*nvir,&(tAARR[(long int) a*nvir*nocc*nvir+r]),nvir,xRA[0],1);
       for(int a1=0; a1<nocc; a1++) {
         int aa1 = a*nocc+a1;
         int r1r = r;
-        int aa1r1r = aa1*nvir*nvir+r1r;
+        long int aa1r1r = (long int) aa1*nvir*nvir+r1r;
         C_DCOPY(nvir,&(xRA[0][a1]),nocc,&(tAARR[aa1r1r]),nvir);
   }}}
 
@@ -1450,10 +1451,10 @@ void SAPT2B::Y3_4(double **Y3, int dffile, const char *AR_ints,
  
   for (int r1=0,r1r2=0; r1 < nvir; r1++) {
   for (int r2=0; r2 <= r1; r2++,r1r2++) { 
-    next_DF_RR = psio_get_address(PSIO_ZERO,(r1*nvir+r2)*calc_info_.nrio*
-      (ULI) sizeof(double));
-    psio_->read(dffile,RR_ints,(char *) &(B_p_RR[r1r2][0]),calc_info_.nrio*
-      (ULI) sizeof(double),next_DF_RR,&next_DF_RR);
+    next_DF_RR = psio_get_address(PSIO_ZERO,sizeof(double)*(r1*nvir+r2)*
+      calc_info_.nrio);
+    psio_->read(dffile,RR_ints,(char *) &(B_p_RR[r1r2][0]),sizeof(double)*
+      calc_info_.nrio,next_DF_RR,&next_DF_RR);
   }}
 
   for(int a=0; a<nocc; a++) {
@@ -1473,9 +1474,11 @@ void SAPT2B::Y3_4(double **Y3, int dffile, const char *AR_ints,
 
   for(int a1=0,a1a2=0; a1<nocc; a1++) {
     for(int a2=0; a2<nocc; a2++,a1a2++) {
-      C_DCOPY(nvir*nvir,&(tAARR[a1a2*nvir*nvir]),1,&(X_RR[0][0]),1);
+      C_DCOPY(nvir*nvir,&(tAARR[(long int) a1a2*nvir*nvir]),1,
+        &(X_RR[0][0]),1);
       for(int r=0; r<nvir; r++) {
-        C_DCOPY(nvir,&(X_RR[0][r]),nvir,&(tAARR[a1a2*nvir*nvir+r*nvir]),1);
+        C_DCOPY(nvir,&(X_RR[0][r]),nvir,
+          &(tAARR[(long int) a1a2*nvir*nvir+r*nvir]),1);
       }
   }}
 
@@ -1497,7 +1500,7 @@ void SAPT2B::Y3_5(double **Y3, int dffile, const char *AA_ints,
 {
   double **t2ARAR = read_IJKL(ampfile,t_anti,nocc*nvir,nocc*nvir);
   double **tARAR = read_IJKL(ampfile,t_amps,nocc*nvir,nocc*nvir);
-  double *g_ARAR = init_array(nocc*nvir*nocc*nvir);
+  double *g_ARAR = init_array((long int) nocc*nvir*nocc*nvir);
 
   C_DGEMM('N','N',nocc*nvir,nocc*nvir,nocc*nvir,1.0,&(t2ARAR[0][0]),
           nocc*nvir,&(tARAR[0][0]),nocc*nvir,0.0,&(g_ARAR[0]),nocc*nvir);
@@ -1574,11 +1577,12 @@ void SAPT2B::Y3_5(double **Y3, int dffile, const char *AA_ints,
 
   for(int a=0; a<nocc; a++) {
     for(int r=0; r<nvir; r++) {
-      C_DCOPY(nocc*nvir,&(g_ARAR[a*nvir*nocc*nvir+r]),nvir,xRA[0],1);
+      C_DCOPY(nocc*nvir,&(g_ARAR[(long int) a*nvir*nocc*nvir+r]),nvir,
+        xRA[0],1);
       for(int a1=0; a1<nocc; a1++) {
         int aa1 = a*nocc+a1;
         int r1r = r;
-        int aa1r1r = aa1*nvir*nvir+r1r;
+        long int aa1r1r = (long int) aa1*nvir*nvir+r1r;
         C_DCOPY(nvir,&(xRA[0][a1]),nocc,&(g_ARAR[aa1r1r]),nvir);
   }}}
 
@@ -1626,7 +1630,7 @@ void SAPT2B::Y3_6(double **Y3, int dffile, const char *AA_ints,
 
   free_block(t2ARAR);
 
-  double *g_ARAR = init_array(nocc*nvir*nocc*nvir);
+  double *g_ARAR = init_array((long int) nocc*nvir*nocc*nvir);
 
   C_DGEMM('N','T',nocc*nvir,nocc*nvir,nocc*nvir,1.0,&(tARAR[0][0]),nocc*nvir,
           &(tARAR[0][0]),nocc*nvir,0.0,&(g_ARAR[0]),nocc*nvir);
@@ -1688,11 +1692,12 @@ void SAPT2B::Y3_6(double **Y3, int dffile, const char *AA_ints,
   
   for(int a=0; a<nocc; a++) {
     for(int r=0; r<nvir; r++) {
-      C_DCOPY(nocc*nvir,&(g_ARAR[a*nvir*nocc*nvir+r]),nvir,xRA[0],1);
+      C_DCOPY(nocc*nvir,&(g_ARAR[(long int) a*nvir*nocc*nvir+r]),nvir,
+        xRA[0],1);
       for(int a1=0; a1<nocc; a1++) {
         int aa1 = a*nocc+a1;
         int r1r = r;
-        int aa1r1r = aa1*nvir*nvir+r1r;
+        long int aa1r1r = (long int) aa1*nvir*nvir+r1r;
         C_DCOPY(nvir,&(xRA[0][a1]),nocc,&(g_ARAR[aa1r1r]),nvir);
   }}}
 

@@ -67,19 +67,19 @@ double SAPT2p3::disp30_1(int ampfile, const char *amplabel, int AAintfile,
 
   for (int r1=0,r1r2=0; r1 < nvirA; r1++) {
   for (int r2=0; r2 <= r1; r2++,r1r2++) {
-    next_DF_RR = psio_get_address(PSIO_ZERO,(r1*nvirA+r2)*(ribasis_->nbf()+3)*
-      (ULI) sizeof(double));
-    psio_->read(AAintfile,RRlabel,(char *) &(B_p_RR[r1r2][0]),
-      (ribasis_->nbf()+3)*(ULI) sizeof(double),next_DF_RR,&next_DF_RR);
+    next_DF_RR = psio_get_address(PSIO_ZERO,sizeof(double)*(r1*nvirA+r2)*
+      (ribasis_->nbf()+3));
+    psio_->read(AAintfile,RRlabel,(char *) &(B_p_RR[r1r2][0]),sizeof(double)*
+      (ribasis_->nbf()+3),next_DF_RR,&next_DF_RR);
     if (r1 != r2) C_DSCAL(ribasis_->nbf()+3,2.0,B_p_RR[r1r2],1);
   }}
 
   for (int s1=0,s1s2=0; s1 < nvirB; s1++) {
   for (int s2=0; s2 <= s1; s2++,s1s2++) {
-    next_DF_SS = psio_get_address(PSIO_ZERO,(s1*nvirB+s2)*(ribasis_->nbf()+3)*
-      (ULI) sizeof(double));
-    psio_->read(BBintfile,SSlabel,(char *) &(B_p_SS[s1s2][0]),
-      (ribasis_->nbf()+3)*(ULI) sizeof(double),next_DF_SS,&next_DF_SS);
+    next_DF_SS = psio_get_address(PSIO_ZERO,sizeof(double)*(s1*nvirB+s2)*
+      (ribasis_->nbf()+3));
+    psio_->read(BBintfile,SSlabel,(char *) &(B_p_SS[s1s2][0]),sizeof(double)*
+      (ribasis_->nbf()+3),next_DF_SS,&next_DF_SS);
     if (s1 != s2) C_DSCAL(ribasis_->nbf()+3,2.0,B_p_SS[s1s2],1);
   }}
 
@@ -221,8 +221,8 @@ double SAPT2p3::disp30_2(int ampfile, const char *amplabel, int AAintfile,
 
   free_block(ASAS);
 
-  double energy = 4.0*C_DDOT(noccA*noccB*nvirA*nvirB,&(tBRAS[0][0]),1,
-    &(t2BRAS[0][0]),1);
+  double energy = 4.0*C_DDOT((long int) noccA*noccB*nvirA*nvirB,
+    &(tBRAS[0][0]),1,&(t2BRAS[0][0]),1);
 
   free_block(tBRAS);
   free_block(t2BRAS);

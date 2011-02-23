@@ -63,8 +63,8 @@ double SAPT2::exch110(const char *theta_label)
 
   double **B_p_AB = get_AB_ints(2);
 
-  e1 = -2.0*C_DDOT(calc_info_.noccA*calc_info_.noccB*calc_info_.nrio,B_p_AB[0],
-    1,C_p_AB[0],1);
+  e1 = -2.0*C_DDOT((long int) calc_info_.noccA*calc_info_.noccB*
+    calc_info_.nrio,B_p_AB[0],1,C_p_AB[0],1);
 
   free_block(B_p_AB);
 
@@ -100,8 +100,8 @@ double SAPT2::exch110(const char *theta_label)
 
   double **B_p_BB = get_BB_ints(1);
 
-  e3 = 4.0*C_DDOT(calc_info_.noccB*calc_info_.noccB*calc_info_.nrio,B_p_BB[0],
-    1,C_p_BB[0],1);
+  e3 = 4.0*C_DDOT((long int) calc_info_.noccB*calc_info_.noccB*
+    calc_info_.nrio,B_p_BB[0],1,C_p_BB[0],1);
 
   free_block(B_p_BB);
   free_block(C_p_BB);
@@ -164,8 +164,8 @@ double SAPT2::exch101(const char *theta_label)
     &(B_p_AS[0][0]),calc_info_.nvirB*calc_info_.nrio,0.0,
     &(C_p_BS[0][0]),calc_info_.nvirB*calc_info_.nrio);
 
-  e2 = -2.0*C_DDOT(calc_info_.noccB*calc_info_.nvirB*calc_info_.nrio,
-    T_p_BS[0],1,C_p_BS[0],1);
+  e2 = -2.0*C_DDOT((long int) calc_info_.noccB*calc_info_.nvirB*
+    calc_info_.nrio,T_p_BS[0],1,C_p_BS[0],1);
 
   free_block(B_p_AS);
   free_block(C_p_BS);
@@ -182,8 +182,8 @@ double SAPT2::exch101(const char *theta_label)
 
   double **B_p_AA = get_AA_ints(1);
 
-  e3 = 4.0*C_DDOT(calc_info_.noccA*calc_info_.noccA*calc_info_.nrio,B_p_AA[0],
-    1,C_p_AA[0],1);
+  e3 = 4.0*C_DDOT((long int) calc_info_.noccA*calc_info_.noccA*
+    calc_info_.nrio,B_p_AA[0],1,C_p_AA[0],1);
 
   free_block(B_p_AA);
   free_block(C_p_AA);
