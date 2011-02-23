@@ -1413,13 +1413,16 @@ void SAPT2B::Y3_3(double **Y3, int ampfile, const char *t_phys, int dffile,
   free_block(gAAAR);
 }
 
+// Double check the sign on this term
 void SAPT2B::Y3_4(double **Y3, int dffile, const char *AR_ints, 
   const char *RR_ints, int ampfile, const char *t_amps, int nocc, int nvir)
 {
+  int virtri = nvir*(nvir+1)/2;
+
   double **B_p_AR = get_DF_ints(dffile,AR_ints,nocc*nvir);
-  double **B_p_RR = get_DF_ints(dffile,RR_ints,nvir*nvir);
-  double **ARAA = block_matrix(nocc*nvir,nocc*nocc);
-  double **RRR = block_matrix(nvir,nvir*nvir);
+  double **AAAR = block_matrix(nocc,nocc*nocc*nvir);
+  double **RRR = block_matrix(virtri,nvir);
+  double **xRRR = block_matrix(nvir,nvir*nvir);
   double **X_RR = block_matrix(nvir,nvir);
 
   double *tAARR = init_array(nocc*nocc*nvir*nvir);
@@ -1441,35 +1444,49 @@ void SAPT2B::Y3_4(double **Y3, int dffile, const char *AR_ints,
 
   free_block(xRA);
 
+  double **B_p_RR = block_matrix(virtri,calc_info_.nrio);
+ 
+  psio_address next_DF_RR = PSIO_ZERO;
+ 
+  for (int r1=0,r1r2=0; r1 < nvir; r1++) {
+  for (int r2=0; r2 <= r1; r2++,r1r2++) { 
+    next_DF_RR = psio_get_address(PSIO_ZERO,(r1*nvir+r2)*calc_info_.nrio*
+      (ULI) sizeof(double));
+    psio_->read(dffile,RR_ints,(char *) &(B_p_RR[r1r2][0]),calc_info_.nrio*
+      (ULI) sizeof(double),next_DF_RR,&next_DF_RR);
+  }}
+
   for(int a=0; a<nocc; a++) {
-    C_DGEMM('N','T',nvir*nvir,nvir,calc_info_.nrio,1.0,&(B_p_RR[0][0]),
+    C_DGEMM('N','T',virtri,nvir,calc_info_.nrio,1.0,&(B_p_RR[0][0]),
             calc_info_.nrio,&(B_p_AR[a*nvir][0]),calc_info_.nrio,0.0,
             &(RRR[0][0]),nvir);
 
     for(int r=0; r<nvir; r++) {
-      C_DCOPY(nvir*nvir,&(RRR[r][0]),1,&(X_RR[0][0]),1);
-      for(int r1=0; r1<nvir; r1++) {
-        C_DAXPY(nvir,-2.0,&(X_RR[0][r1]),nvir,&(RRR[r][r1*nvir]),1);
-    }}
+      for(int r1=0,r1r2=0; r1<nvir; r1++) {
+        for(int r2=0; r2<nvir; r2++,r1r2++) {
+          xRRR[r][r1r2] = RRR[INDEX(r,r1)][r2] - 2.0*RRR[INDEX(r,r2)][r1];
+    }}}
 
-    C_DGEMM('N','T',nvir,nocc*nocc,nvir*nvir,-1.0,&(RRR[0][0]),
-            nvir*nvir,&(tAARR[0]),nvir*nvir,1.0,
-            &(ARAA[a*nvir][0]),nocc*nocc);
+    C_DGEMM('N','T',nocc*nocc,nvir,nvir*nvir,1.0,&(tAARR[0]),nvir*nvir,
+      &(xRRR[0][0]),nvir*nvir,0.0,&(AAAR[a][0]),nvir);
   }
 
-  for(int a=0; a<nocc; a++) {
-    for(int r=0; r<nvir; r++) {
-      for(int r1=0; r1<nvir; r1++) {
-        int ar1 = a*nvir+r1;
-        int rr1 = r*nvir+r1;
-        Y3[a][r] -= C_DDOT(nocc*nocc,&(ARAA[ar1][0]),1,&(tAARR[rr1]),
-                           nvir*nvir);
-  }}}
+  for(int a1=0,a1a2=0; a1<nocc; a1++) {
+    for(int a2=0; a2<nocc; a2++,a1a2++) {
+      C_DCOPY(nvir*nvir,&(tAARR[a1a2*nvir*nvir]),1,&(X_RR[0][0]),1);
+      for(int r=0; r<nvir; r++) {
+        C_DCOPY(nvir,&(X_RR[0][r]),nvir,&(tAARR[a1a2*nvir*nvir+r*nvir]),1);
+      }
+  }}
+
+  C_DGEMM('N','N',nocc,nvir,nocc*nocc*nvir,1.0,&(AAAR[0][0]),nocc*nocc*nvir,
+        &(tAARR[0]),nvir,1.0,&(Y3[0][0]),nvir);
 
   free_block(B_p_AR);
   free_block(B_p_RR);
-  free_block(ARAA);
+  free_block(AAAR);
   free_block(RRR);
+  free_block(xRRR);
   free_block(X_RR);
   free(tAARR);
 }
@@ -1531,7 +1548,7 @@ void SAPT2B::Y3_5(double **Y3, int dffile, const char *AA_ints,
   free_block(C_p_AA);
   free_block(C_p_AR);
 
-  double **gAAAR = block_matrix(nocc*nocc,nocc*nvir);
+  double **gAAAR = block_matrix(nocc*nocc,nvir*nocc);
 
   for(int a=0; a<nocc; a++) {
     for(int a1=0; a1<nocc; a1++) {
@@ -1540,20 +1557,16 @@ void SAPT2B::Y3_5(double **Y3, int dffile, const char *AA_ints,
           int ar = a*nvir+r;
           int a2r = a2*nvir+r;
           int aa1 = a*nocc+a1;
+          int aa2 = a*nocc+a2;
           int a2a1 = a2*nocc+a1;
-          gAAAR[aa1][a2r] = 2.0*AAAR[aa1][a2r] - AAAR[a2a1][ar];
+          int ra1 = r*nocc+a1;
+          gAAAR[aa2][ra1] = 2.0*AAAR[aa1][a2r] - AAAR[a2a1][ar];
   }}}}
 
   free_block(AAAR);
 
-  for(int a=0; a<nocc; a++) {
-    for(int r=0; r<nvir; r++) {
-      for(int a1=0; a1<nocc; a1++) {
-        int a1r = a1*nvir+r;
-        int aa1 = a*nocc+a1;
-        Y3[a][r] -= C_DDOT(nocc*nvir,&(g_ARAR[a1r*nocc*nvir]),1,
-          &(gAAAR[aa1][0]),1);
-  }}}
+  C_DGEMM('N','N',nocc,nvir,nocc*nvir*nocc,-1.0,gAAAR[0],nocc*nvir*nocc,
+    g_ARAR,nvir,1.0,Y3[0],nvir);
 
   free_block(gAAAR);
 
@@ -1649,7 +1662,7 @@ void SAPT2B::Y3_6(double **Y3, int dffile, const char *AA_ints,
   free_block(C_p_AA);
   free_block(C_p_AR);
 
-  double **gAAAR = block_matrix(nocc*nocc,nocc*nvir);
+  double **gAAAR = block_matrix(nocc*nocc,nvir*nocc);
 
   for(int a=0; a<nocc; a++) {
     for(int a1=0; a1<nocc; a1++) {
@@ -1659,18 +1672,15 @@ void SAPT2B::Y3_6(double **Y3, int dffile, const char *AA_ints,
           int a2r = a2*nvir+r;
           int aa1 = a*nocc+a1;
           int a2a1 = a2*nocc+a1;
-          gAAAR[a2a1][ar] = 2.0*AAAR[aa1][a2r] - AAAR[a2a1][ar];
+          int a2a = a2*nocc+a;
+          int ra1 = r*nocc+a1;
+          gAAAR[a2a][ra1] = 2.0*AAAR[aa1][a2r] - AAAR[a2a1][ar];
   }}}}
 
   free_block(AAAR);
 
-  for(int a=0; a<nocc; a++) {
-    for(int r=0; r<nvir; r++) {
-      for(int a1=0; a1<nocc; a1++) {
-        int a1r = a1*nvir+r;
-        int aa1 = a*nocc+a1;
-        Y3[a][r] += C_DDOT(nocc*nvir,&(g_ARAR[a1r*nocc*nvir]),1,&(gAAAR[aa1][0]),1);
-  }}}
+  C_DGEMM('N','N',nocc,nvir,nocc*nvir*nocc,1.0,gAAAR[0],nocc*nvir*nocc,
+    g_ARAR,nvir,1.0,Y3[0],nvir);
 
   free_block(gAAAR);
 
