@@ -157,7 +157,7 @@ static double ke_int(double **x, double **y, double **z, double a1, int l1, int 
 }
 
 // The engine only supports segmented basis sets
-void KineticInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2)
+void KineticInt::compute_pair_deriv1(const shared_ptr<GaussianShell>& s1, const shared_ptr<GaussianShell>& s2)
 {
     int ao12;
     const int am1 = s1->am();
