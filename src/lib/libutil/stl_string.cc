@@ -141,7 +141,7 @@ std::string to_string(const int val)
 std::string to_string(const double val)
 {
     std::stringstream strm;
-    strm << setprecision(25) << setw(35)  << val;
+    strm << val;
     return strm.str();
 }
 

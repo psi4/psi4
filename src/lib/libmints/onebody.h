@@ -35,7 +35,9 @@ protected:
     int nchunk_;
 
     OneBodyAOInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int deriv=0);
+
     virtual void compute_pair(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2) = 0;
+    virtual void compute_pair_deriv1(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2);
 
     void set_chunks(int nchunk) { nchunk_ = nchunk; }
     void pure_transform(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>&, int=1);

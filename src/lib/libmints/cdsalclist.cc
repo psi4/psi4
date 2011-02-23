@@ -4,6 +4,7 @@
 #include <libmints/pointgrp.h>
 #include <libmints/petitelist.h>
 #include <libmints/cdsalclist.h>
+#include <libmints/factory.h>
 
 #include <algorithm>
 
@@ -59,10 +60,11 @@ void CdSalcWRTAtom::print() const
 }
 
 CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
+                       const boost::shared_ptr<MatrixFactory>& fact,
                        char needed_irreps,
                        bool project_out_translations,
                        bool project_out_rotations)
-    : molecule_(mol), needed_irreps_(needed_irreps),
+    : molecule_(mol), factory_(fact), needed_irreps_(needed_irreps),
       project_out_translations_(project_out_translations),
       project_out_rotations_(project_out_rotations)
 {
@@ -234,6 +236,40 @@ CdSalcList::~CdSalcList()
         }
         delete[] salc_symblock_;
     }
+}
+
+std::vector<shared_ptr<Matrix> > CdSalcList::create_matrices(const std::string &basename)
+{
+    std::vector<shared_ptr<Matrix> > matrices;
+    std::string name;
+
+    for (int i=0; i<salcs_.size(); ++i) {
+        name = basename + " " + name_of_component(i);
+        matrices.push_back(factory_->create_shared_matrix(name, salcs_[i].irrep()));
+    }
+
+    return matrices;
+}
+
+std::string CdSalcList::name_of_component(int component)
+{
+    std::string name;
+    CdSalc& salc = salcs_[component];
+
+    for (int i=0; i<salc.ncomponent(); ++i) {
+        const CdSalc::Component& com = salc.component(i);
+
+        name += to_string(com.coef) + " ";
+        name += molecule_->label(com.atom);
+        if (com.xyz == 0)
+            name += "-x";
+        else if (com.xyz == 1)
+            name += "-y";
+        else if (com.xyz == 2)
+            name += "-z";
+    }
+
+    return name;
 }
 
 void CdSalcList::print() const

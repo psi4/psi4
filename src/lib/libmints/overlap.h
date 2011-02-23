@@ -29,7 +29,7 @@ class OverlapInt : public OneBodyAOInt
 
     /// Computes the overlap between a given shell pair.
     void compute_pair(const boost::shared_ptr<GaussianShell>& , const boost::shared_ptr<GaussianShell> &);
-    void compute_pair_deriv1(boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>);
+    void compute_pair_deriv1(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2);
     void compute_pair_deriv2(boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>);
 
 public:
@@ -39,7 +39,7 @@ public:
 
     /// Compute overlap between 2 shells. Result is stored in buffer.
 //    void compute_shell(int, int);
-    void compute_shell_deriv1(int, int);
+//    void compute_shell_deriv1(int, int);
     void compute_shell_deriv2(int, int);
 
     /// Does the method provide first derivatives?
