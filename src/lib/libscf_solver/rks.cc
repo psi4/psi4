@@ -242,7 +242,7 @@ double RKS::compute_energy()
         V_->print(outfile);
 
         form_F();
-        F_->print(outfile);
+        Fa_->print(outfile);
 
         if (diis_enabled_)
             save_fock();
@@ -363,22 +363,22 @@ double RKS::compute_E()
 }
 void RKS::form_F()
 {
-    F_->copy(H_);
+    Fa_->copy(H_);
     J_->scale(2.0);
-        F_->add(J_);
+        Fa_->add(J_);
     //J_->scale(0.5);
     if (functional_->isHybrid()) {
         K_->scale(-functional_->getExactExchange());
-        F_->add(K_);
+        Fa_->add(K_);
     }
     //V_->scale(1.0);
-    F_->add(V_);
+    Fa_->add(V_);
     #ifdef _DEBUG
     if (debug_){
-        F_->print(outfile);
+        Fa_->print(outfile);
     }
     #endif
-    F_->scale(2.0);
+    Fa_->scale(2.0);
 }
 void RKS::form_V()
 {

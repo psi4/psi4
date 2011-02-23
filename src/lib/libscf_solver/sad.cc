@@ -569,7 +569,7 @@ void RHF::compute_SAD_guess()
     int* dim = D_->colspi();
     shared_ptr<Matrix> D2(factory_.create_matrix("D2"));
     D2->copy(D_);
-    C_->zero();
+    Ca_->zero();
     for (int h = 0; h < D_->nirrep(); h++) {
         int norbs = dim[h];
         sad_nocc_[h] = 0;
@@ -657,7 +657,7 @@ void RHF::compute_SAD_guess()
         //Set C
         for (int m = 0; m<norbs; m++)
             for (int i = 0; i<sad_nocc_[h]; i++)
-                C_->set(h,m,i,C[m][i]);
+                Ca_->set(h,m,i,C[m][i]);
 
         if (sad_print_ > 5) {
             fprintf(outfile,"\n  C Guess (Cholesky):\n");

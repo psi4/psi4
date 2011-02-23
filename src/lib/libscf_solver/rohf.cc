@@ -45,7 +45,7 @@ void ROHF::common_init()
     Fa_      = SharedMatrix(factory_.create_matrix("F effective (MO basis)"));
     Feff_    = Fa_;
     Ca_       = SharedMatrix(factory_.create_matrix("Moleular orbitals"));
-    C_    = Ca_;
+    Ca_    = Ca_;
     Dc_      = SharedMatrix(factory_.create_matrix("D closed"));
     Do_      = SharedMatrix(factory_.create_matrix("D open"));
     Dc_old_  = SharedMatrix(factory_.create_matrix("D closed old"));
@@ -94,13 +94,13 @@ void ROHF::form_initial_C()
     // matrix. Here we use H to generate the first C.
     temp.copy(H_);
     temp.transform(Shalf_);
-    temp.diagonalize(C_, values);
+    temp.diagonalize(Ca_, values);
     find_occupation();
-    temp.gemm(false, false, 1.0, Shalf_, C_, 0.0);
-    C_->copy(temp);
+    temp.gemm(false, false, 1.0, Shalf_, Ca_, 0.0);
+    Ca_->copy(temp);
 
 #ifdef _DEBUG
-    C_->print(outfile, "initial C");
+    Ca_->print(outfile, "initial C");
 #endif
 }
 
@@ -214,7 +214,7 @@ void ROHF::save_information()
     int print_mos = options_.get_bool("PRINT_MOS");
     if (print_mos) {
         fprintf(outfile, "\n  Molecular orbitals:\n");
-        C_->eivprint(epsilon_);
+        Ca_->eivprint(epsilon_);
     }
 
     // Print out orbital energies.
@@ -295,7 +295,7 @@ void ROHF::save_information()
     double *values = epsilon_->to_block_vector();
     chkpt_->wt_evals(values);
     free(values);
-    double **vectors = C_->to_block_matrix();
+    double **vectors = Ca_->to_block_matrix();
     chkpt_->wt_scf(vectors);
     free_block(vectors);
 
@@ -417,8 +417,8 @@ void ROHF::form_F()
     Fo_->add(Go_);
 
     // Transform Fc_ and Fo_ to MO basis
-    Fct->transform(Fc_, C_);
-    Fot->transform(Fo_, C_);
+    Fct->transform(Fc_, Ca_);
+    Fot->transform(Fo_, Ca_);
 
     // Form the effective Fock matrix, too
     // The effective Fock matrix has the following structure
@@ -475,12 +475,12 @@ void ROHF::form_C()
         eigvec->eivprint(epsilon_);
     }
 #endif
-    temp->gemm(false, false, 1.0, C_, eigvec, 0.0);
-    C_->copy(temp);
+    temp->gemm(false, false, 1.0, Ca_, eigvec, 0.0);
+    Ca_->copy(temp);
 
 #ifdef _DEBUG
     if (debug_) {
-        C_->print(outfile);
+        Ca_->print(outfile);
     }
 #endif
 }
@@ -496,12 +496,12 @@ void ROHF::form_D()
             for (j=0; j<opi[h]; ++j) {
                 val = 0.0;
                 for (m=0; m<doccpi_[h]; ++m)
-                    val += C_->get(h, i, m) * C_->get(h, j, m);
+                    val += Ca_->get(h, i, m) * Ca_->get(h, j, m);
                 Dc_->set(h, i, j, val);
 
                 val = 0.0;
                 for (m=doccpi_[h]; m<doccpi_[h]+soccpi_[h]; ++m)
-                    val += C_->get(h, i, m) * C_->get(h, j, m);
+                    val += Ca_->get(h, i, m) * Ca_->get(h, j, m);
                 Do_->set(h, i, j, val);
             }
         }

@@ -1589,7 +1589,7 @@ void RHF::form_G_from_RI()
     double** Cocc = block_matrix(ndocc,norbs);
     for (int i=0; i<norbs; i++) {
         for (int j=0; j<ndocc; j++)
-            Cocc[j][i] = C_->get(0,i,j);
+            Cocc[j][i] = Ca_->get(0,i,j);
         //only A irrep at the moment!!
     }
 

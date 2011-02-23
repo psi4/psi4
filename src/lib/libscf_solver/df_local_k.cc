@@ -659,7 +659,7 @@ void RHF::propagate_local_mos()
     double **Cocc = block_matrix(norbs,ndocc);
     for (int i=0; i<norbs; i++)
         for (int j=0; j<ndocc; j++)
-            Cocc[i][j] = C_->get(0,i,j);
+            Cocc[i][j] = Ca_->get(0,i,j);
 
     double **T = block_matrix(norbs,norbs);
     {
@@ -774,7 +774,7 @@ void RHF::fully_localize_mos()
   double **C = block_matrix(norbs,norbs);
   for (int i = 0; i<norbs; i++)
     for (int j = 0; j<norbs; j++)
-      C[i][j] = C_->get(0,i,j);
+      C[i][j] = Ca_->get(0,i,j);
 
   double **S = block_matrix(norbs,norbs);
   for (int i = 0; i<norbs; i++)

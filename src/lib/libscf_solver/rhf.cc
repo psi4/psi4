@@ -92,16 +92,17 @@ void RHF::common_init()
     Drms_ = 0.0;
 
     // Allocate matrix memory
-    Fa_   = SharedMatrix(factory_.create_matrix("F"));
-    F_    = Fa_;
-    Ca_   = SharedMatrix(factory_.create_matrix("C"));
-    C_    = Cb_ = Ca_;
+    Fa_        = SharedMatrix(factory_.create_matrix("F"));
+    Fb_        = Fa_;
+    Ca_        = SharedMatrix(factory_.create_matrix("C"));
+    Cb_        = Ca_;
+    epsilon_a_ = SharedVector(factory_.create_vector());
     epsilon_b_ = epsilon_a_;
-    D_    = SharedMatrix(factory_.create_matrix("D"));
-    Dold_ = SharedMatrix(factory_.create_matrix("D old"));
-    G_    = SharedMatrix(factory_.create_matrix("G"));
-    J_    = SharedMatrix(factory_.create_matrix("J"));
-    K_    = SharedMatrix(factory_.create_matrix("K"));
+    D_         = SharedMatrix(factory_.create_matrix("D"));
+    Dold_      = SharedMatrix(factory_.create_matrix("D old"));
+    G_         = SharedMatrix(factory_.create_matrix("G"));
+    J_         = SharedMatrix(factory_.create_matrix("J"));
+    K_         = SharedMatrix(factory_.create_matrix("K"));
 
     if (scf_type_ == "L_DF") {
         Lref_ = SharedMatrix(factory_.create_matrix("Lref"));
@@ -185,7 +186,7 @@ double RHF::compute_energy()
     }
     if (print_>2) {
         fprintf(outfile,"  Initial Guesses:\n");
-        C_->print(outfile);
+        Ca_->print(outfile);
         D_->print(outfile);
     }
 
@@ -252,7 +253,7 @@ double RHF::compute_energy()
 
         form_F();
         if (print_>3) {
-            F_->print(outfile);
+            Fa_->print(outfile);
         }
         if (diis_enabled_ && iteration_ > 0 && iteration_ >= diis_start_ )
             save_fock();
@@ -269,7 +270,7 @@ double RHF::compute_energy()
 
         if (print_>4 && diis_iter) {
             fprintf(outfile,"  After DIIS:\n");
-            F_->print(outfile);
+            Fa_->print(outfile);
         }
         fprintf(outfile, "  @RHF iteration %3d energy: %20.14f    %20.14f %20.14f %s\n", iteration_, E_, E_ - Eold_, Drms_, diis_iter == false ? " " : "DIIS");
         fflush(outfile);
@@ -280,7 +281,7 @@ double RHF::compute_energy()
         form_D();
 
         if (print_>2) {
-            C_->print(outfile);
+            Ca_->print(outfile);
             D_->print(outfile);
         }
 
@@ -404,7 +405,7 @@ double RHF::compute_energy_parallel()
         form_F();
 
         if (print_>3 && Communicator::world->me() == 0) {
-            F_->print(outfile);
+            Fa_->print(outfile);
         }
         if (diis_enabled_ && iteration_ > 0 && iteration_ >= diis_start_ )
             save_fock();
@@ -421,7 +422,7 @@ double RHF::compute_energy_parallel()
 
         if (print_>4 && diis_iter && Communicator::world->me() == 0) {
             fprintf(outfile,"  After DIIS:\n");
-            F_->print(outfile);
+            Fa_->print(outfile);
         }
         if(Communicator::world->me() == 0)
             fprintf(outfile, "  @RHF iteration %3d energy: %20.14f    %20.14f %20.14f %s\n", iteration_, E_, E_ - Eold_, Drms_, diis_iter == false ? " " : "DIIS");
@@ -511,7 +512,7 @@ bool RHF::load_or_compute_initial_C()
         else
             vectors = block_matrix(nso_,nmo_);
         Communicator::world->raw_bcast(&(vectors[0][0]), nso_*nmo_*sizeof(double), 0);
-        C_->set(const_cast<const double**>(vectors));
+        Ca_->set(const_cast<const double**>(vectors));
         free_block(vectors);
 
         // Read in orbital energies (needed to guess occupation)
@@ -553,11 +554,11 @@ bool RHF::load_or_compute_initial_C()
         shared_ptr<Matrix> Ctemp(new Matrix("DUAL BASIS MOS", nirrep_, nsopi_, doccpi_));
         Ctemp->load(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
 
-        C_->zero();
+        Ca_->zero();
         for (int h = 0; h < nirrep_; h++)
             for (int m = 0; m<nsopi_[h]; m++)
                 for (int i = 0; i<doccpi_[h]; i++)
-                    C_->set(h,m,i,Ctemp->get(h,m,i));
+                    Ca_->set(h,m,i,Ctemp->get(h,m,i));
 
         //C_->print(outfile);
 
@@ -573,7 +574,7 @@ bool RHF::load_or_compute_initial_C()
         //CORE is an old Psi standby, so we'll play this as spades
         if (print_)
             fprintf(outfile, "  SCF Guess: Core (One-Electron) Hamiltonian.\n\n");
-        F_->copy(H_); //Try the core Hamiltonian as the Fock Matrix
+        Fa_->copy(H_); //Try the core Hamiltonian as the Fock Matrix
         form_C();
         form_D();
         // Compute an initial energy using H and D
@@ -587,7 +588,7 @@ bool RHF::load_or_compute_initial_C()
         //Generalized Wolfsberg Helmholtz (Sounds cool, easy to code)
         if (print_)
             fprintf(outfile, "  SCF Guess: Generalized Wolfsberg-Helmholtz.\n\n");
-        F_->zero(); //Try F_{mn} = S_{mn} (H_{mm} + H_{nn})/2
+        Fa_->zero(); //Try Fa_{mn} = S_{mn} (H_{mm} + H_{nn})/2
         int h, i, j;
         S_->print(outfile);
         int *opi = S_->rowspi();
@@ -595,7 +596,7 @@ bool RHF::load_or_compute_initial_C()
         for (h=0; h<nirreps; ++h) {
             for (i=0; i<opi[h]; ++i) {
                 for (j=0; j<opi[h]; ++j) {
-                    F_->set(h,i,j,0.5*S_->get(h,i,j)*(H_->get(h,i,i)+H_->get(h,j,j)));
+                    Fa_->set(h,i,j,0.5*S_->get(h,i,j)*(H_->get(h,i,i)+H_->get(h,j,j)));
                 }
             }
         }
@@ -622,7 +623,7 @@ void RHF::save_dual_basis_projection()
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     shared_ptr<BasisSet> dual_basis = BasisSet::construct(parser, molecule_, "DUAL_BASIS_SCF");
 
-    SharedMatrix C_2 = dualBasisProjection(C_,doccpi_,basisset_,dual_basis);
+    SharedMatrix C_2 = dualBasisProjection(Ca_,doccpi_,basisset_,dual_basis);
     C_2->set_name("DUAL BASIS MOS");
     if(print_>3)
         C_2->print(outfile);
@@ -714,7 +715,7 @@ void RHF::compute_multipole()
     fprintf(outfile, "    Conversion: 1.0 a.u. = %15.10f Debye\n", _dipmom_au2debye);
 
     if (print_ > 1) {
-        SimpleMatrix *C = C_->to_simple_matrix();
+        SimpleMatrix *C = Ca_->to_simple_matrix();
         // Transform dipole integrals to MO basis
         Dipole_[0]->transform(C);
         Dipole_[1]->transform(C);
@@ -813,14 +814,14 @@ void RHF::save_information()
     //SharedMatrix eigvector(factory_.create_matrix());
     //SharedVector orbital_e_(factory_.create_vector());
 
-    //F_->diagonalize(eigvector, orbital_e_);
+    //Fa_->diagonalize(eigvector, orbital_e_);
 
     int print_mos = false;
     print_mos = options_.get_bool("PRINT_MOS");
     if (print_mos) {
         fprintf(outfile, "\n  Molecular orbitals:\n");
 
-        C_->eivprint(epsilon_a_);
+        Ca_->eivprint(epsilon_a_);
     }
 
     // Print out orbital energies.
@@ -900,9 +901,9 @@ void RHF::save_information()
     delete[](frzvpi);
 
     // Save the Fock matrix
-    // Need to recompute the Fock matrix as F_ is modified during the SCF interation
+    // Need to recompute the Fock matrix as Fa_ is modified during the SCF interation
     form_F();
-    double *ftmp = F_->to_lower_triangle();
+    double *ftmp = Fa_->to_lower_triangle();
     if(Communicator::world->me() == 0)
         chkpt_->wt_fock(ftmp);
     delete[](ftmp);
@@ -918,7 +919,7 @@ void RHF::save_information()
         chkpt_->wt_evals(values);
     free(values);
 
-    double** vectors = C_->to_block_matrix();
+    double** vectors = Ca_->to_block_matrix();
     if(Communicator::world->me() == 0)
         chkpt_->wt_scf(vectors);
     free_block(vectors);
@@ -929,8 +930,8 @@ void RHF::save_fock()
 {
     if (initialized_diis_manager_ == false) {
         diis_manager_ = shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk, psio_));
-        diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, F_.get());
-        diis_manager_->set_vector_size(1, DIISEntry::Matrix, F_.get());
+        diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, Fa_.get());
+        diis_manager_->set_vector_size(1, DIISEntry::Matrix, Fa_.get());
         initialized_diis_manager_ = true;
     }
 
@@ -938,11 +939,11 @@ void RHF::save_fock()
     SharedMatrix FDS(factory_.create_matrix()), DS(factory_.create_matrix());
     SharedMatrix SDF(factory_.create_matrix()), DF(factory_.create_matrix());
 
-    // FDS = F_ * D_ * S_;
+    // FDS = Fa_ * D_ * S_;
     DS->gemm(false, false, 1.0, D_, S_, 0.0);
-    FDS->gemm(false, false, 1.0, F_, DS, 0.0);
-    // SDF = S_ * D_ * F_;
-    DF->gemm(false, false, 1.0, D_, F_, 0.0);
+    FDS->gemm(false, false, 1.0, Fa_, DS, 0.0);
+    // SDF = S_ * D_ * Fa_;
+    DF->gemm(false, false, 1.0, D_, Fa_, 0.0);
     SDF->gemm(false, false, 1.0, S_, DF, 0.0);
 
     Matrix FDSmSDF;
@@ -957,12 +958,12 @@ void RHF::save_fock()
 
     //FDSmSDF.print(outfile);
 
-    diis_manager_->add_entry(2, &FDSmSDF, F_.get());
+    diis_manager_->add_entry(2, &FDSmSDF, Fa_.get());
 }
 
 bool RHF::diis()
 {
-    return diis_manager_->extrapolate(1, F_.get());
+    return diis_manager_->extrapolate(1, Fa_.get());
 }
 
 bool RHF::test_convergency()
@@ -1009,12 +1010,12 @@ void RHF::allocate_PK()
 
 void RHF::form_F()
 {
-    F_->copy(H_);
-    F_->add(G_);
+    Fa_->copy(H_);
+    Fa_->add(G_);
 
 #ifdef _DEBUG
     if (debug_) {
-        F_->print(outfile);
+        Fa_->print(outfile);
     }
 #endif
 }
@@ -1025,10 +1026,10 @@ void RHF::form_C()
         Matrix eigvec;
         factory_.create_matrix(eigvec);
 
-        F_->transform(Shalf_);
-        F_->diagonalize(eigvec, *epsilon_a_);
+        Fa_->transform(Shalf_);
+        Fa_->diagonalize(eigvec, *epsilon_a_);
 
-        C_->gemm(false, false, 1.0, Shalf_, eigvec, 0.0);
+        Ca_->gemm(false, false, 1.0, Shalf_, eigvec, 0.0);
 
         // Save C to checkpoint file.
         //double **vectors = C_->to_block_matrix();
@@ -1037,14 +1038,14 @@ void RHF::form_C()
 
 #ifdef _DEBUG
         if (debug_) {
-            C_->eivprint(epsilon_a_);
+            Ca_->eivprint(epsilon_a_);
         }
 #endif
     } else {
 
-        C_->zero();
+        Ca_->zero();
 
-        for (int h = 0; h<C_->nirrep(); h++) {
+        for (int h = 0; h<Ca_->nirrep(); h++) {
 
             int norbs = nsopi_[h];
             int nmos = nmopi_[h];
@@ -1059,7 +1060,7 @@ void RHF::form_C()
             double **F = block_matrix(norbs,norbs);
             for (int m = 0 ; m<norbs; m++)
                 for (int i = 0; i<norbs; i++)
-                    F[m][i] = F_->get(h,m,i);
+                    F[m][i] = Fa_->get(h,m,i);
 
             double **C = block_matrix(norbs,nmos);
             double **Temp = block_matrix(nmos,norbs);
@@ -1088,7 +1089,7 @@ void RHF::form_C()
 
             for (int m = 0 ; m<norbs; m++)
                 for (int i = 0; i<nmos; i++)
-                    C_->set(h,m,i,C[m][i]);
+                    Ca_->set(h,m,i,C[m][i]);
 
             free_block(X);
             free_block(F);
@@ -1109,7 +1110,7 @@ void RHF::form_D()
     int nirreps = D_->nirrep();
     int norbs = basisset_->nbf();
 
-    double** C = C_->to_block_matrix();
+    double** C = Ca_->to_block_matrix();
     double** D = block_matrix(norbs,norbs);
 
     int offset_R = 0;
@@ -1146,7 +1147,7 @@ double RHF::compute_E()
 {
     Matrix HplusF;
     HplusF.copy(H_);
-    HplusF.add(F_);
+    HplusF.add(Fa_);
     double Etotal = nuclearrep_ + D_->vector_dot(HplusF);
     return Etotal;
 }
@@ -2635,7 +2636,7 @@ void RHF::save_sapt_info()
     double sapt_E_HF = E_;
     double sapt_E_nuc = nuclearrep_;
     double *sapt_evals = epsilon_a_->to_block_vector();
-    double **sapt_C = C_->to_block_matrix();
+    double **sapt_C = Ca_->to_block_matrix();
     //print_mat(sapt_C,sapt_nso,sapt_nso,outfile);
     SharedMatrix potential(factory_.create_matrix("Potential Integrals"));
     IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
