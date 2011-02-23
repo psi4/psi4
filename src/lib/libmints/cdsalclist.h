@@ -14,6 +14,7 @@ namespace psi {
 extern FILE *outfile;
 
 class Molecule;
+class MatrixFactory;
 
 class CdSalc {
 public:
@@ -42,6 +43,8 @@ public:
     }
 
     size_t ncomponent() const { return components_.size(); }
+
+    const Component& component(int com) { return components_[com]; }
 
     char irrep() const { return irrep_; }
     void print() const;
@@ -92,6 +95,7 @@ public:
 class CdSalcList
 {
     const boost::shared_ptr<Molecule>& molecule_;
+    const boost::shared_ptr<MatrixFactory>& factory_;
 
     char needed_irreps_;
     bool project_out_translations_;
@@ -123,6 +127,7 @@ public:
      *  \param project_out_rotations Project out rotational SALCs
      */
     CdSalcList(const boost::shared_ptr<Molecule>& mol,
+               const boost::shared_ptr<MatrixFactory>& fact,
                char needed_irreps=0xF,
                bool project_out_translations=true,
                bool project_out_rotations=true);
@@ -133,6 +138,9 @@ public:
      *  settings.
      */
     size_t ncd() const { return salcs_.size(); }
+
+    std::vector<boost::shared_ptr<Matrix> > create_matrices(const std::string& basename);
+    std::string name_of_component(int component);
 
     char needed_irreps() const { return needed_irreps_; }
     bool project_out_translations() const { return project_out_translations_; }
