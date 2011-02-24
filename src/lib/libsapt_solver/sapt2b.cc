@@ -340,7 +340,12 @@ void SAPT2B::cleanup_calc_info()
       free_block(calc_info_.WASS);
       free_block(calc_info_.WBRR);
     }
-
+    if (params_.nat_orbs) {
+      free_block(no_info_.CA);
+      free_block(no_info_.CB);
+      free(no_info_.evalsA);
+      free(no_info_.evalsB);
+    }
     free(calc_info_.diagAA);
     free(calc_info_.diagBB);
     free(calc_info_.evalsA);
