@@ -115,6 +115,7 @@ void export_mints()
             def("ao_overlap", &MintsHelper::ao_overlap).
             def("ao_kinetic", &MintsHelper::ao_kinetic).
             def("ao_potential", &MintsHelper::ao_potential).
+            def("one_electron_integrals", &MintsHelper::one_electron_integrals).
 //            def("ao_dipole", &MintsHelper::ao_dipole).
             def("so_overlap", &MintsHelper::so_overlap).
             def("so_kinetic", &MintsHelper::so_kinetic).
