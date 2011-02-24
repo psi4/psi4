@@ -748,6 +748,9 @@ AX_OPENMP([
     LDFLAGS="$LDFLAGS $OPENMP_CXXFLAGS"
 ])
 
+# Check to see if the compiler supports __builtin_expect and __builtin_prefetch
+AX_BUILTINS()
+
 # Adjust the flags dealing with strictness of the compilers.
 # The default is to disable strict language checks.
 AC_ARG_WITH(strict,[  --with-strict           --with-strict=yes to turn on strict compiler warnings],[
