@@ -146,23 +146,3 @@ void ElectricFieldInt::compute_pair(const shared_ptr<GaussianShell>& s1,
         }
     }
 }
-
-//void ElectricFieldInt::compute(vector<shared_ptr<SimpleMatrix> > &result)
-//{
-//    if (result.size() < 3*natom_)
-//        throw PSIEXCEPTION("ElectricFieldInt::compute: result array must be atleast 3 * number of atoms.");
-
-//    // Do not worry about zeroing out result
-//    int ns1 = bs1_->nshell();
-//    int ns2 = bs2_->nshell();
-
-//    for (int i=0; i<ns1; ++i) {
-//        for (int j=0; j<ns2; ++j) {
-//            compute_shell(i, j);
-
-//            for (int k=0; k<3*natom_; ++k)
-//                so_transform(result[k], i, j, k);
-//        }
-//    }
-//}
-
