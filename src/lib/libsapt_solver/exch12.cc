@@ -258,6 +258,8 @@ double SAPT2::exch120_k2f()
       calc_info_.nrio,0.0,&(C_p_AA[a*calc_info_.noccA][0]),calc_info_.nrio);
   }
 
+  free_block(B_p_AR);
+
   double **C_p_BA = block_matrix(calc_info_.noccA*calc_info_.noccB,
     calc_info_.nrio);
 
@@ -384,6 +386,7 @@ double SAPT2::exch102_k2f()
   e2 += 2.0*C_DDOT((long int) calc_info_.noccA*calc_info_.noccB*
     calc_info_.nrio,B_p_AB[0],1,C_p_AB[0],1);
 
+  free_block(X_AB);
   free_block(B_p_AB);
   free_block(B_p_BB);
   free_block(C_p_AB);
@@ -1567,6 +1570,9 @@ double SAPT2::exch120_k11u_4()
 
   energy += 4.0*C_DDOT(calc_info_.nrio,X,1,calc_info_.diagBB,1);
 
+  free(X);
+  free_block(sAA);
+
   double **B_p_BB = get_BB_ints(1);
   double **C_p_AB = block_matrix(calc_info_.noccA*calc_info_.noccB,
     calc_info_.nrio);
@@ -1709,6 +1715,9 @@ double SAPT2::exch102_k11u_4()
     C_p_BB[0],calc_info_.nrio,sBB[0],1,0.0,X,1);
 
   energy += 4.0*C_DDOT(calc_info_.nrio,X,1,calc_info_.diagAA,1);
+
+  free(X);
+  free_block(sBB);
 
   double **B_p_AA = get_AA_ints(1);
   double **C_p_BA = block_matrix(calc_info_.noccA*calc_info_.noccB,

@@ -788,6 +788,8 @@ double SAPT2::exch_ind20respA_B()
   C_DAXPY(calc_info_.noccA*calc_info_.nvirA,-1.0,tempAR[0],1,uAR[0],1);
   C_DAXPY(calc_info_.noccA*calc_info_.nvirA,-1.0,tempAR[0],1,vAR[0],1);
 
+  free_block(B_p_AB);
+
   double **X_BB = block_matrix(calc_info_.noccB,calc_info_.noccB);
 
   C_DGEMV('n',calc_info_.noccB*calc_info_.noccB,calc_info_.nrio,1.0,
@@ -930,6 +932,7 @@ double SAPT2::exch_ind20respA_B()
     vAR[0],1);
 
   free_block(tempAR);
+  free_block(C_p_AA);
   free_block(C_p_BA);
   free_block(B_p_BB);
   free_block(B_p_AR);
@@ -1074,6 +1077,8 @@ double SAPT2::exch_ind20respB_A()
   C_DAXPY(calc_info_.noccB*calc_info_.nvirB,-1.0,tempBS[0],1,uBS[0],1);
   C_DAXPY(calc_info_.noccB*calc_info_.nvirB,-1.0,tempBS[0],1,vBS[0],1);
 
+  free_block(B_p_AB);
+
   double **X_AA = block_matrix(calc_info_.noccA,calc_info_.noccA);
 
   C_DGEMV('n',calc_info_.noccA*calc_info_.noccA,calc_info_.nrio,1.0,
@@ -1217,6 +1222,7 @@ double SAPT2::exch_ind20respB_A()
 
   free_block(tempBS);
   free_block(C_p_AB);
+  free_block(C_p_BB);
   free_block(B_p_AA);
   free_block(B_p_BS);
   free_block(S_AA);
