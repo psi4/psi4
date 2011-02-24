@@ -130,7 +130,7 @@ void DipoleInt::compute_pair(const shared_ptr<GaussianShell>& s1, const shared_p
 }
 
 // The engine only supports segmented basis sets
-void DipoleInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2)
+void DipoleInt::compute_pair_deriv1(const shared_ptr<GaussianShell>& s1, const shared_ptr<GaussianShell>& s2)
 {
     int ao12;
     int am1 = s1->am();

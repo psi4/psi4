@@ -43,7 +43,7 @@ void PseudospectralInt::compute_shell_deriv1(int sh1, int sh2)
 
 // The engine only supports segmented basis sets
 void PseudospectralInt::compute_pair(const shared_ptr<GaussianShell>& s1,
-                                const shared_ptr<GaussianShell>& s2)
+                                     const shared_ptr<GaussianShell>& s2)
 {
     int ao12;
     int am1 = s1->am();
@@ -102,7 +102,7 @@ void PseudospectralInt::compute_pair(const shared_ptr<GaussianShell>& s1,
             // Loop over atoms of basis set 1 (only works if bs1_ and bs2_ are on the same
             // molecule)
             double PC[3];
-    
+
             // C_ is the pseudospectral grid point
             PC[0] = P[0] - C_[0];
             PC[1] = P[1] - C_[1];
@@ -140,7 +140,7 @@ void PseudospectralInt::compute_pair(const shared_ptr<GaussianShell>& s1,
 }
 
 // The engine only supports segmented basis sets
-void PseudospectralInt::compute_pair_deriv1(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2)
+void PseudospectralInt::compute_pair_deriv1(const shared_ptr<GaussianShell>& s1, const shared_ptr<GaussianShell>& s2)
 {
     int ao12;
     int am1 = s1->am();

@@ -72,7 +72,7 @@ AC_CACHE_CHECK([for OpenMP flag of _AC_LANG compiler], ax_cv_[]_AC_LANG_ABBREV[]
 ax_cv_[]_AC_LANG_ABBREV[]_openmp=unknown
 # Flags to try:  -fopenmp (gcc), -openmp (icc), -mp (SGI & PGI),
 #                -xopenmp (Sun), -omp (Tru64), -qsmp=omp (AIX), none
-ax_openmp_flags="-fopenmp -openmp -mp -xopenmp -omp -qsmp=omp none"
+ax_openmp_flags="-openmp -fopenmp -mp -xopenmp -omp -qsmp=omp none"
 if test "x$OPENMP_[]_AC_LANG_PREFIX[]FLAGS" != x; then
   ax_openmp_flags="$OPENMP_[]_AC_LANG_PREFIX[]FLAGS $ax_openmp_flags"
 fi
@@ -84,7 +84,7 @@ for ax_openmp_flag in $ax_openmp_flags; do
 #  AC_TRY_LINK_FUNC(omp_set_num_threads,
 #	[ax_cv_[]_AC_LANG_ABBREV[]_openmp=$ax_openmp_flag; break])
   AC_TRY_LINK([#include <omp.h>], [ omp_get_num_threads(); return 0; ],
-	[ax_cv_[]_AC_LANG_ABBREV[]_openmp=$ax_openmp_flag; break])
+        [ax_cv_[]_AC_LANG_ABBREV[]_openmp=$ax_openmp_flag; break])
 done
 []_AC_LANG_PREFIX[]FLAGS=$save[]_AC_LANG_PREFIX[]FLAGS
 ])
