@@ -202,7 +202,7 @@ public:
      */
     bool load(psi::PSIO* psio, unsigned int fileno, const std::string& tocentry, int nso);
     bool load(boost::shared_ptr<psi::PSIO>& psio, unsigned int fileno, const std::string& tocentry, int nso) {
-        load(psio.get(), fileno, tocentry, nso);
+        return load(psio.get(), fileno, tocentry, nso);
     }
     /** @} */
 
