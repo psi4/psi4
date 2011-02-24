@@ -12,6 +12,7 @@
 # PARTICULAR PURPOSE.
 
 m4_include([m4/ac_prog_latex.m4])
+m4_include([m4/ax_builtins.m4])
 m4_include([m4/ax_openmp.m4])
 m4_include([m4/bibtex.m4])
 m4_include([m4/cxx_process_check.m4])
