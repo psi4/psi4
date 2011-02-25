@@ -79,6 +79,7 @@ PsiReturnType cclambda(Options& options)
   dpdfile2 L1;
 
   init_io();
+  timer_init();
   title();
   moinfo.iter=0;
   get_moinfo();
@@ -254,6 +255,7 @@ PsiReturnType cclambda(Options& options)
   else cachedone_rhf(cachelist);
   free(cachefiles);
 
+  timer_done();
   cleanup(); 
   exit_io();
   return Success;
