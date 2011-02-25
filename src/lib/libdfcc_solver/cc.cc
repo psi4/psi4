@@ -3,6 +3,7 @@
 #include <libqt/qt.h>
 #include <libchkpt/chkpt.hpp>
 #include <libmints/mints.h>
+#include <lib3index/3index.h>
 
 using namespace std;
 using namespace psi;
@@ -14,7 +15,8 @@ CC::CC(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
 {
   get_params();
   get_ribasis();
-//get_dealiasbasis(); // We don't always want this
+  get_dealiasbasis(); // Only builds one if defined
+  get_pseudogrid(); // Only builds one if defined
 }
 
 CC::~CC()
@@ -99,12 +101,14 @@ void CC::get_params()
   free_block(C_t);
 
   sss_ = options_.get_double("SCALE_SS");
-  oss_ = options_.get_double("SCALE_SS");
+  oss_ = options_.get_double("SCALE_OS");
+  // We're almost always using Laplace, but, just in case
   denominator_algorithm_ = options_.get_str("DENOMINATOR_ALGORITHM");
   denominator_delta_ = options_.get_double("DENOMINATOR_DELTA");
  
   schwarz_cutoff_ = options_.get_double("SCHWARZ_CUTOFF");
   fitting_condition_ = options_.get_double("FITTING_CONDITION"); 
+  fitting_algorithm_ = options_.get_str("FITTING_TYPE");
 
   doubles_ = memory_ / 8L;
 }
@@ -125,6 +129,13 @@ void CC::get_dealiasbasis()
   } else {
     ndealias_ = 0;
   } 
+}
+void CC::get_pseudogrid()
+{
+  if (options_.get_str("PS_GRID_FILE") != "") {
+    grid_ = shared_ptr<PseudoGrid>(new PseudoGrid(basisset_->molecule(), "File"));
+    grid_->parse(options_.get_str("PS_GRID_FILE"));
+  }
 }
 
 void CC::print_header()

@@ -13,6 +13,7 @@ class Matrix;
 class Vector; 
 class PSIO;
 class Options;
+class PseudoGrid;
 
 namespace dfcc {
 
@@ -22,11 +23,13 @@ private:
   void get_params();
   void get_ribasis();
   void get_dealiasbasis();
+  void get_pseudogrid();
 
 protected:
   shared_ptr<BasisSet> ribasis_;
   shared_ptr<BasisSet> dealias_;
   shared_ptr<BasisSet> zero_;
+  shared_ptr<PseudoGrid> grid_;
 
   virtual void print_header(); 
 

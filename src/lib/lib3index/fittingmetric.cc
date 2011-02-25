@@ -432,7 +432,7 @@ void FittingMetric::form_eig_inverse(double tol)
 
     form_fitting_metric();
 
-    metric_->print();
+    //metric_->print();
 
     for (int h = 0; h < metric_->nirrep(); h++) {
 

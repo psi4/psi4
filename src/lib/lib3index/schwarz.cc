@@ -31,18 +31,20 @@ using namespace psi;
 namespace psi { 
 
 SchwarzSieve::SchwarzSieve(shared_ptr<BasisSet> bas, double cut) :
-    basis_(bas), schwarz_(cut)
+    basis_(bas), schwarz_(cut), initialized_(false)
 {
     form_schwarz_sieve(cut);
 }
 SchwarzSieve::~SchwarzSieve()
 {
-    free(schwarz_shells_);
-    free(schwarz_funs_);
-    free(schwarz_shells_reverse_);
-    free(schwarz_funs_reverse_);
-    free(schwarz_shell_vals_);
-    free(schwarz_fun_vals_);
+    if (initialized_) {
+        free(schwarz_shells_);
+        free(schwarz_funs_);
+        free(schwarz_shells_reverse_);
+        free(schwarz_funs_reverse_);
+        free(schwarz_shell_vals_);
+        free(schwarz_fun_vals_);
+    }
 }
 void SchwarzSieve::form_schwarz_ints()
 {
@@ -77,12 +79,12 @@ void SchwarzSieve::form_schwarz_ints()
     
                     if (omu>=onu) {
                         index = mu*(numnu*nummu*numnu+numnu)+nu*(nummu*numnu+1);
-                        if (max_global_val_<abs(buffer[index]))
-                            max_global_val_ = abs(buffer[index]);
-                        if (schwarz_shell_vals_[MUNU]<abs(buffer[index]))
-                            schwarz_shell_vals_[MUNU] = abs(buffer[index]);
-                        if (schwarz_fun_vals_[omu*(omu+1)/2+onu]<abs(buffer[index]))
-                            schwarz_fun_vals_[omu*(omu+1)/2+onu] = abs(buffer[index]);
+                        if (max_global_val_ < fabs(buffer[index]))
+                            max_global_val_ = fabs(buffer[index]);
+                        if (schwarz_shell_vals_[MUNU] < fabs(buffer[index]))
+                            schwarz_shell_vals_[MUNU] = fabs(buffer[index]);
+                        if (schwarz_fun_vals_[omu*(omu+1)/2+onu] < fabs(buffer[index]))
+                            schwarz_fun_vals_[omu*(omu+1)/2+onu] = fabs(buffer[index]);
                     }
                 }
             }
@@ -95,7 +97,8 @@ void SchwarzSieve::form_schwarz_sieve(double cut)
     int nshell = basis_->nshell();
     int nbf = basis_->nbf();
 
-    if (schwarz_fun_vals_ == NULL) {
+    if (!initialized_) {
+        initialized_ = true;
         form_schwarz_ints();
         schwarz_shells_ = (int*) malloc(nshell * (nshell + 1L) * sizeof(int)); 
         schwarz_funs_ = (int*) malloc(nbf * (nbf + 1L) * sizeof(int)); 
