@@ -94,7 +94,7 @@ void CC::get_params()
 
   for (int m = 0; m < nso_; m++) {
     memcpy(static_cast<void*> (C_aoccp_[m]), static_cast<void*> (&C_t[m][nfocc_]), naocc_*sizeof(double));
-    memcpy(static_cast<void*> (C_avirp_[m]), static_cast<void*> (&C_t[m][nocc_]), naocc_*sizeof(double));
+    memcpy(static_cast<void*> (C_avirp_[m]), static_cast<void*> (&C_t[m][nocc_]), navir_*sizeof(double));
   }
 
   free(evals_t);
