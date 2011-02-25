@@ -28,6 +28,7 @@
 
 #include <libmints/mints.h>
 #include <libmints/basisset_parser.h>
+#include "integralfunctors.h"
 
 #include "pairs.h"
 #include "pseudospectral.h"
@@ -223,23 +224,31 @@ double RHF::compute_energy()
         //D_->print(outfile);
 
         timer_on("Form G");
-        if (scf_type_ == "PK")
+        if (scf_type_ == "PK"){
             form_G_from_PK();
-        else if (scf_type_ == "DIRECT")
-            form_G_from_direct_integrals();
-        else if (scf_type_ == "DF"||scf_type_ == "CD"||scf_type_ =="1C_CD" || scf_type_ == "POISSON")
-           form_G_from_RI();
-        else if (scf_type_ == "PSEUDOSPECTRAL") {
+        }else if (scf_type_ == "DIRECT"){
+//            form_G_from_direct_integrals();
+            J_K_Functor jk_builder(G_, K_, D_);
+            process_tei<J_K_Functor>(jk_builder);
+            G_->scale(2.0);
+            G_->subtract(K_);
+        }else if (scf_type_ == "DF"||scf_type_ == "CD"||scf_type_ =="1C_CD" || scf_type_ == "POISSON"){
+            form_G_from_RI();
+        }else if (scf_type_ == "PSEUDOSPECTRAL") {
             pseudospectral_->form_G_RHF();
             G_->copy(J_);
             G_->scale(-1.0);
             G_->add(K_);
             G_->scale(-1.0);
+        }else if (scf_type_ == "L_DF"){
+            form_G_from_RI_local_K();
+        }else if(scf_type_ == "OUT_OF_CORE"){
+            J_K_Functor jk_builder(G_, K_, D_);
+            process_tei<J_K_Functor>(jk_builder);
+            G_->scale(2.0);
+            G_->subtract(K_);
+//            form_G();
         }
-        else if (scf_type_ == "L_DF")
-           form_G_from_RI_local_K();
-        else if(scf_type_ == "OUT_OF_CORE")
-           form_G();
 
         timer_off("Form G");
 
