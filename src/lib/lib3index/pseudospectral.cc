@@ -277,16 +277,24 @@ void PSTensor::form_Aia(bool do_all)
         
     shared_ptr<Matrix> Amn(new Matrix("(A|mn) Pseudospectral Integrals", nthread, nao_*nao_));
     shared_ptr<Matrix> Ami(new Matrix("(A|mi) Pseudospectral Integrals", nthread, nao_*nocc_)); 
+    shared_ptr<Matrix> Ama;
+    if (do_all) 
+        Ama = shared_ptr<Matrix> (new Matrix("(A|ma) Pseudospectral Integrals", nthread, nao_*nvir_)); 
 
-    // TODO provide VV/OO integrals
-    unsigned long int scratch = (ULI)nthread*(nao_*nao_ + nao_*nocc_);
-    int max_rows = (memory_ - scratch)/ (nocc_ *(ULI) nvir_);
+    unsigned long int scratch = (ULI)nthread*(nao_*nao_ + nao_*nocc_ + (do_all ? nao_*nvir_: 0L));
+    int max_rows = (memory_ - scratch)/ (nocc_ *(ULI) nvir_ + (do_all ? nocc_*nocc_ + nvir_*nvir_ : 0L));
     if (max_rows > naux_)
         max_rows = naux_;
     if (max_rows < 1L)
         max_rows = 1L;
 
     shared_ptr<Matrix> Aia(new Matrix("(A|ia) Pseudospectral Integrals", max_rows, nvir_*nocc_)); 
+    shared_ptr<Matrix> Aii;
+    shared_ptr<Matrix> Aaa;
+    if (do_all) {
+        Aii = shared_ptr<Matrix>(new Matrix("(A|ii) Pseudospectral Integrals", max_rows, nocc_*nocc_));
+        Aaa = shared_ptr<Matrix>(new Matrix("(A|aa) Pseudospectral Integrals", max_rows, nvir_*nvir_));
+    }
 
     int nblocks = naux_ / max_rows;
     if (nblocks * max_rows != naux_)
@@ -325,6 +333,14 @@ void PSTensor::form_Aia(bool do_all)
     double** Amnp = Amn->pointer();
     double** Amip = Ami->pointer();
     double** Aiap = Aia->pointer();
+    double** Amap;
+    double** Aiip;
+    double** Aaap;
+    if (do_all) {
+        Amap = Ama->pointer();
+        Aiip = Aii->pointer();
+        Aaap = Aaa->pointer();
+    }
 
     double** Cop = Co_->pointer();
     double** Cvp = Cv_->pointer();
@@ -377,14 +393,29 @@ void PSTensor::form_Aia(bool do_all)
             C_DGEMM('N', 'N', nao_, nocc_, nao_, 1.0, &(Amnp[rank][0]),        
                 nao_, &(Cop[0][0]), nocc_, 0.0, &(Amip[rank][0]), nocc_);
  
+            if (do_all) {
+                C_DGEMM('N', 'N', nao_, nvir_, nao_, 1.0, &(Amnp[rank][0]),        
+                    nao_, &(Cvp[0][0]), nvir_, 0.0, &(Amap[rank][0]), nvir_);
+            }        
+
             // Second half transform 
             C_DGEMM('T', 'N', nocc_, nvir_, nao_, 1.0, &(Amip[rank][0]),
                 nocc_, &(Cvp[0][0]), nvir_, 0.0, &(Aiap[Q][0]), nvir_);
         
-            //TODO: Add VV/OO integrals    
+            if (do_all) {
+                C_DGEMM('T', 'N', nocc_, nocc_, nao_, 1.0, &(Amip[rank][0]),
+                    nocc_, &(Cop[0][0]), nocc_, 0.0, &(Aiip[Q][0]), nocc_);
+
+                C_DGEMM('T', 'N', nvir_, nvir_, nao_, 1.0, &(Amap[rank][0]),
+                    nvir_, &(Cvp[0][0]), nvir_, 0.0, &(Aaap[Q][0]), nvir_);
+            }
         }
         
         psio_->write(PSIF_DFMP2_AIA, "OV Integrals", (char*) Aiap[0], (ULI)size*nvir_*nocc_*sizeof(double), next_PSIF_PS_AIA, &next_PSIF_PS_AIA);
+        if (do_all) {
+            psio_->write(PSIF_DFMP2_AIA, "OO Integrals", (char*) Aiip[0], (ULI)size*nocc_*nocc_*sizeof(double), next_PSIF_PS_AII, &next_PSIF_PS_AII);
+            psio_->write(PSIF_DFMP2_AIA, "VV Integrals", (char*) Aaap[0], (ULI)size*nvir_*nvir_*sizeof(double), next_PSIF_PS_AAA, &next_PSIF_PS_AAA);
+        }
     }
     
     #ifdef _MKL

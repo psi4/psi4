@@ -69,7 +69,7 @@ double MP2::compute_energy()
 void MP2::compute_DF_MP2()
 {
     shared_ptr<DFTensor> df(new DFTensor(psio_, basisset_, ribasis_));
-    df->form_OV_integrals((ULI)(0.9*(double)doubles_), C_aocc_, C_avir_, true, fitting_algorithm_, fitting_condition_, schwarz_cutoff_);
+    df->form_OV_integrals((ULI)(0.9*(double)doubles_), C_aocc_, C_avir_, false, fitting_algorithm_, fitting_condition_, schwarz_cutoff_);
     int nocc = df->nocc();
     int nvir = df->nvir();
     int naux = df->naux();   
@@ -115,6 +115,7 @@ void MP2::compute_DF_MP2()
     // Outer loop is blocks
     for (int block1 = 0; block1 < nblock; block1++) {
         chunk1->read_block(block1);
+        Qia1->print();
         int istart = chunk1->block_start() / nvir;
         int isize  = chunk1->block_size()  / nvir;
     
@@ -200,6 +201,7 @@ void MP2::compute_OS_MP2()
 
     shared_ptr<LaplaceDenominator> denom(new LaplaceDenominator(evals_aocc_, evals_avir_, denominator_delta_));
     shared_ptr<Matrix> Tau = denom->denominator();
+    denom->debug();
     int nvector = denom->nvector();
 
     unsigned long int scratch = naux*(ULI)naux;
@@ -232,7 +234,7 @@ void MP2::compute_OS_MP2()
 
             C_DGEMM('T','N', naux, naux, size, 1.0, Qiawp[0], naux, Qiawp[0], naux, 0.0, Zp[0], naux);
             
-            E_MP2J -= 2.0 * C_DDOT(naux*(ULI)naux, Qiawp[0], 1, Qiawp[0], 1); 
+            E_MP2J -= 2.0 * C_DDOT(naux*(ULI)naux, Zp[0], 1, Zp[0], 1); 
         }
     }  
  
@@ -305,7 +307,7 @@ void MP2::compute_PS2_MP2()
 
             memcpy(static_cast<void*>(Awp[0]), static_cast<void*>(Ap[0]), size*(ULI)naux*sizeof(double));
             for (int ia = 0; ia < size; ia++)
-                C_DSCAL(naux, sqrt(Taup[w][ia + start]), Ap[ia], 1);  
+                C_DSCAL(naux, sqrt(Taup[w][ia + start]), Awp[ia], 1);  
 
             memcpy(static_cast<void*>(Xwp[0]), static_cast<void*>(Xp[0]), nvir*(ULI)naux*sizeof(double));
             for (int a = 0; a < nvir; a++)
@@ -316,12 +318,15 @@ void MP2::compute_PS2_MP2()
                 C_DSCAL(naux, sqrt(Tau_ip[w][i]), Qwp[i], 1);  
 
             C_DGEMM('T','N',naux,naux,nocc,1.0,Qwp[0],naux,Qwp[0],naux,0.0,Lp[0],naux);
+            L->print();
 
             for (int j = 0; j < isize; j++) {
                 C_DGEMM('T','N',naux,naux,nvir,1.0,Xwp[0],naux,Awp[j*nvir],naux,0.0,Zp[0],naux);
+                Z->print();
 
                 for (ULI QP = 0; QP < naux*(ULI)naux; QP++)
                     Zp[0][QP] *= Zp[0][QP];    
+                Z->print();
                 
                 E_MP2K += C_DDOT(naux*(ULI)naux, Zp[0], 1, Lp[0], 1);
             } 
@@ -396,7 +401,7 @@ void MP2::compute_PS3_MP2()
 
             memcpy(static_cast<void*>(Awp[0]), static_cast<void*>(Ap[0]), size*(ULI)naux*sizeof(double));
             for (int ia = 0; ia < size; ia++)
-                C_DSCAL(naux, sqrt(Taup[w][ia + start]), Ap[ia], 1);  
+                C_DSCAL(naux, sqrt(Taup[w][ia + start]), Awp[ia], 1);  
 
             memcpy(static_cast<void*>(Xwp[0]), static_cast<void*>(Xp[0]), nvir*(ULI)naux*sizeof(double));
             for (int a = 0; a < nvir; a++)

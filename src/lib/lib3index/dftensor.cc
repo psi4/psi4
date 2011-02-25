@@ -52,7 +52,7 @@ void DFTensor::form_Aia(bool do_all)
     double** Cvp = Cv_->pointer();
 
     //Storage required for each A
-    unsigned long int storage_per_row = nao_*nao_+nocc_*nao_+nocc_*nvir_ + (do_all ? nocc_*nocc_ + nvir_*nvir_ : 0L);
+    unsigned long int storage_per_row = nao_*nao_+nocc_*nao_+nocc_*nvir_ + (do_all ? nocc_*nocc_ + nvir_*nvir_  + nao_*nvir_: 0L);
 
     int maxPshell = 0;
     for (int P = 0; P<auxiliary_->nshell(); P++)
@@ -113,9 +113,11 @@ void DFTensor::form_Aia(bool do_all)
     double** Amn = block_matrix(max_rows,nao_*nao_);
     double** Ami = block_matrix(max_rows,nao_*nocc_);
     double** Aia = block_matrix(max_rows,nocc_*nvir_);
+    double** Ama;
     double** Aii;
     double** Aaa;
     if (do_all) {
+        Ama = block_matrix(max_rows,nao_*nvir_);
         Aii = block_matrix(max_rows,nocc_*nocc_);
         Aaa = block_matrix(max_rows,nvir_*nvir_);
     }
@@ -207,8 +209,8 @@ void DFTensor::form_Aia(bool do_all)
       }
       timer_off("(A|mn)");
 
-      //fprintf(outfile, "  Amn\n");
-      //print_mat(Amn,max_rows,nao_*nao_, outfile);
+      fprintf(outfile, "  Amn\n");
+      print_mat(Amn,max_rows,nao_*nao_, outfile);
 
       //Transform to Ami
       // (A|mi) = (Amn)C_ni
@@ -218,8 +220,8 @@ void DFTensor::form_Aia(bool do_all)
       timer_off("(A|mi)");
 
 
-      //fprintf(outfile, "  Ami\n");
-      //print_mat(Ami,max_rows,nocc_*nao_, outfile);
+      fprintf(outfile, "  Ami\n");
+      print_mat(Ami,max_rows,nocc_*nao_, outfile);
 
       #ifdef HAVE_MKL
          int mkl_nthreads = mkl_get_max_threads();
@@ -236,8 +238,8 @@ void DFTensor::form_Aia(bool do_all)
       }
       timer_off("(A|ia)");
          
-      //fprintf(outfile, "  Aia\n");
-      //print_mat(Aia,max_rows,nocc_*nvir_, outfile);
+      fprintf(outfile, "  Aia\n");
+      print_mat(Aia,max_rows,nocc_*nvir_, outfile);
 
       fflush(outfile);
 
@@ -265,11 +267,25 @@ void DFTensor::form_Aia(bool do_all)
           psio_->write(PSIF_DFMP2_AIA,"OO Integrals",(char *)(&Aii[0][0]),sizeof(double)*p_sizes[block]*nocc_*(ULI)nocc_,next_PSIF_DFMP2_AII,&next_PSIF_DFMP2_AII);
           timer_off("(A|ii) Write");
           
+          #ifdef HAVE_MKL
+             mkl_set_num_threads(mkl_nthreads);
+          #endif
+
+          timer_on("(A|ma)");
+          C_DGEMM('N', 'N', p_sizes[block]*nao_, nvir_, nao_, 1.0, &(Amn[0][0]),
+              nao_, &(Cvp[0][0]), nvir_, 0.0, &(Ama[0][0]), nvir_);
+          timer_off("(A|ma)");
+
+          #ifdef HAVE_MKL
+             int mkl_nthreads = mkl_get_max_threads();
+             mkl_set_num_threads(1);
+          #endif
+
           timer_on("(A|aa)");
           #pragma omp parallel for
           for (int A = 0; A<p_sizes[block]; A++) {
-            C_DGEMM('T', 'N', nvir_, nvir_, nao_, 1.0, &(Ami[A][0]),
-              nocc_, &(Cvp[0][0]), nvir_, 0.0, &(Aaa[A][0]), nvir_);
+            C_DGEMM('T', 'N', nvir_, nvir_, nao_, 1.0, &(Ama[A][0]),
+              nvir_, &(Cvp[0][0]), nvir_, 0.0, &(Aaa[A][0]), nvir_);
           }
           timer_off("(A|aa)");
          
@@ -301,6 +317,7 @@ void DFTensor::form_Aia(bool do_all)
     if (do_all) {
         free_block(Aii);
         free_block(Aaa);
+        free_block(Ama);
     }
 }
 void DFTensor::apply_fitting(const std::string& entry)
@@ -364,8 +381,8 @@ void DFTensor::apply_fitting(const std::string& entry)
 
     //metric_->get_metric()->print();
 
-    //fprintf(outfile, "  Aia\n");
-    //print_mat(Aia, naux_, max_cols, outfile);
+    fprintf(outfile, "  Aia\n");
+    print_mat(Aia, naux_, max_cols, outfile);
 
     //Embed fitting
     timer_on("(Q|ia)");
@@ -384,8 +401,8 @@ void DFTensor::apply_fitting(const std::string& entry)
     timer_off("(Q|ia)");
 
     //fprintf(outfile,"  Nblocks = %d, Max cols = %d, current_columns = %d, current_column = %d\n",nblocks, max_cols, current_columns, current_column);
-    //fprintf(outfile, "  Aia\n");
-    //print_mat(Qia, max_cols, naux_, outfile);
+    fprintf(outfile, "  Qia\n");
+    print_mat(Qia, max_cols, naux_, outfile);
 
     //Write Qia out
     timer_on("(Q|ia) Write");
