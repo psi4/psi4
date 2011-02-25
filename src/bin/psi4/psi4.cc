@@ -19,7 +19,6 @@
 #include "script.h"
 #include <physconst.h>
 #include <psifiles.h>
-#include <libyeti/yeti.h>
 //#include <molecular_system.h>
 
 #include <psi4-def.h>
