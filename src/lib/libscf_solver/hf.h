@@ -22,7 +22,9 @@
 
 using namespace psi;
 
-namespace psi { namespace scf {
+namespace psi {
+    class TwoBodySOInt;
+    namespace scf {
 
 class PseudospectralHF;
 
@@ -86,6 +88,13 @@ protected:
     /// With what...
     enum perturb { nothing, dipole_x, dipole_y, dipole_z };
     perturb perturb_;
+
+    /// The value below which integrals are neglected
+    double integral_threshold_;
+
+
+    /// The SO integral generator.  Only ever constructed if needed
+    boost::shared_ptr<TwoBodySOInt> eri_;
 
     /// Pseudospectral stuff 
     shared_ptr<PseudospectralHF> pseudospectral_;
@@ -258,6 +267,8 @@ protected:
     void form_B_Poisson();
     /** Form B without metric transform for local K (makes J go crazy fast)*/
     void form_A();
+    /** Computes the J and/or K matrices according to the scf_type keyword and the functor passed in*/
+    template <class JKFunctor> void process_tei(JKFunctor & functor);
 
     /** Write tensor from memory to disk */
     void write_B();
@@ -320,6 +331,6 @@ public:
     virtual ~HF();
 };
 
-}}
+}} // Namespaces
 
 #endif
