@@ -281,11 +281,13 @@ void HF::common_init()
 
     if(Communicator::world->me() == 0)
         print_header();
-    if (scf_type_ == "PK") {
-        form_indexing();
+
+    // We need some integrals on disk for these cases
+    if (scf_type_ == "PK" || scf_type_ == "OUT_OF_CORE"){
         shared_ptr<MintsHelper> mints (new MintsHelper());
         mints->integrals();
     }
+    if (scf_type_ == "PK") form_indexing();
 }
 
 void HF::finalize()
