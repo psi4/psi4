@@ -59,7 +59,7 @@ void export_mints()
             def("nirrep", &IntVector::nirrep);
 
     typedef void   (Matrix::*matrix_multiply)(bool, bool, double, const boost::shared_ptr<Matrix>&, const boost::shared_ptr<Matrix>&, double);
-    typedef void   (Matrix::*matrix_diagonalize)(boost::shared_ptr<Matrix>&, boost::shared_ptr<Vector>&);
+    typedef void   (Matrix::*matrix_diagonalize)(boost::shared_ptr<Matrix>&, boost::shared_ptr<Vector>&, int);
     typedef void   (Matrix::*matrix_one)(const boost::shared_ptr<Matrix>&);
     typedef double (Matrix::*double_matrix_one)(const boost::shared_ptr<Matrix>&);
     typedef void   (Matrix::*matrix_two)(const boost::shared_ptr<Matrix>&, const boost::shared_ptr<Matrix>&);

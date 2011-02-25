@@ -953,7 +953,7 @@ double Matrix::vector_dot(const shared_ptr<Matrix>& rhs)
     return vector_dot(rhs.get());
 }
 
-void Matrix::diagonalize(Matrix* eigvectors, Vector* eigvalues)
+void Matrix::diagonalize(Matrix* eigvectors, Vector* eigvalues, int nMatz)
 {
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix::diagonalize: Matrix is non-totally symmetric.");
@@ -961,19 +961,19 @@ void Matrix::diagonalize(Matrix* eigvectors, Vector* eigvalues)
     int h;
     for (h=0; h<nirrep_; ++h) {
         if (rowspi_[h]) {
-            sq_rsp(rowspi_[h], colspi_[h], matrix_[h], eigvalues->vector_[h], 1, eigvectors->matrix_[h], 1.0e-14);
+            sq_rsp(rowspi_[h], colspi_[h], matrix_[h], eigvalues->vector_[h], nMatz, eigvectors->matrix_[h], 1.0e-14);
         }
     }
 }
 
-void Matrix::diagonalize(shared_ptr<Matrix>& eigvectors, shared_ptr<Vector>& eigvalues)
+void Matrix::diagonalize(shared_ptr<Matrix>& eigvectors, shared_ptr<Vector>& eigvalues, int nMatz)
 {
-    diagonalize(eigvectors.get(), eigvalues.get());
+    diagonalize(eigvectors.get(), eigvalues.get(), nMatz);
 }
 
-void Matrix::diagonalize(shared_ptr<Matrix>& eigvectors, Vector& eigvalues)
+void Matrix::diagonalize(shared_ptr<Matrix>& eigvectors, Vector& eigvalues, int nMatz)
 {
-    diagonalize(eigvectors.get(), &eigvalues);
+    diagonalize(eigvectors.get(), &eigvalues, nMatz);
 }
 
 void Matrix::cholesky_factorize()
@@ -1151,12 +1151,12 @@ double Matrix::vector_dot(const Matrix& rhs)
     return vector_dot(&rhs);
 }
 
-void Matrix::diagonalize(Matrix& eigvectors, Vector& eigvalues)
+void Matrix::diagonalize(Matrix& eigvectors, Vector& eigvalues, int nMatz)
 {
     int h;
     for (h=0; h<nirrep_; ++h) {
         if (rowspi_[h]) {
-            sq_rsp(rowspi_[h], colspi_[h], matrix_[h], eigvalues.vector_[h], 1, eigvectors.matrix_[h], 1.0e-14);
+            sq_rsp(rowspi_[h], colspi_[h], matrix_[h], eigvalues.vector_[h], nMatz, eigvectors.matrix_[h], 1.0e-14);
         }
     }
 }
