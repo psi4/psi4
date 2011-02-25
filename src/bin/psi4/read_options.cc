@@ -217,7 +217,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- An array containing the number of singly-occupied orbitals per irrep (in Cotton order) -*/
     options.add("SOCC", new ArrayType());
     /*- The amount of information to print to the output -*/
-    options.add_int("PRINT", 3);
+    options.add_int("PRINT", 1);
     /*- Whether to perturb the Hamiltonian or not -*/
     options.add_bool("PERTURB_H", false);
     /*- How big is the perturbation? -*/

@@ -62,8 +62,6 @@ protected:
     int max_domain_size_;
     int max_domain_pairs_;
 
-    boost::shared_ptr<TwoBodySOInt> eri_;
-
     double Drms_;
 
     double *pk_;

@@ -12,6 +12,7 @@
 #include <libchkpt/chkpt.hpp>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
+#include "integralfunctors.h"
 
 #include <libmints/mints.h>
 #include "uhf.h"
@@ -49,6 +50,8 @@ void UHF::common_init()
     Cb_     = SharedMatrix(factory_.create_matrix("C beta"));
     Ga_     = SharedMatrix(factory_.create_matrix("G alpha"));
     Gb_     = SharedMatrix(factory_.create_matrix("G beta"));
+    Ka_     = SharedMatrix(factory_.create_matrix("K alpha"));
+    Kb_     = SharedMatrix(factory_.create_matrix("K beta"));
 
     epsilon_a_ = SharedVector(factory_.create_vector());
     epsilon_b_ = SharedVector(factory_.create_vector());
@@ -127,14 +130,24 @@ double UHF::compute_energy()
         Dtold_->copy(Dt_);
         Eold_ = E_;
 
-        if (scf_type_ == "PK")
+        if (scf_type_ == "PK"){
             form_G_from_PK();
-        else if (scf_type_ == "DIRECT")
-           form_G_from_direct_integrals();
-        else if (scf_type_ == "DF")
-           form_G_from_RI();
-        else if (scf_type_ == "OUT_OF_CORE")
-           form_G();
+        }else if (scf_type_ == "DIRECT"){
+//           form_G_from_direct_integrals();
+            Ja_Jb_Ka_Kb_Functor jk_builder(Ga_, Gb_, Ka_, Kb_, Da_, Db_);
+            process_tei<Ja_Jb_Ka_Kb_Functor>(jk_builder);
+            Ga_->subtract(Ka_);
+            Gb_->subtract(Kb_);
+        }else if (scf_type_ == "DF"){
+            form_G_from_RI();
+        }else if (scf_type_ == "OUT_OF_CORE"){
+            // This will build J (stored in G) and K
+            Ja_Jb_Ka_Kb_Functor jk_builder(Ga_, Gb_, Ka_, Kb_, Da_, Db_);
+            process_tei<Ja_Jb_Ka_Kb_Functor>(jk_builder);
+            Ga_->subtract(Ka_);
+            Gb_->subtract(Kb_);
+        }
+//           form_G();
 
         form_F();
 
@@ -373,74 +386,74 @@ void UHF::save_information()
         fprintf(outfile, ")\n");
     }
 
-    // Needed for a couple of places.
-    SharedMatrix eigvectora(factory_.create_matrix());
-    SharedMatrix eigvectorb(factory_.create_matrix());
-    SharedVector eigvaluesa(factory_.create_vector());
-    SharedVector eigvaluesb(factory_.create_vector());
-    Fa_->diagonalize(eigvectora, eigvaluesa);
-    Fb_->diagonalize(eigvectorb, eigvaluesb);
+//    // Needed for a couple of places.
+//    SharedMatrix eigvectora(factory_.create_matrix());
+//    SharedMatrix eigvectorb(factory_.create_matrix());
+//    SharedVector eigvaluesa(factory_.create_vector());
+//    SharedVector eigvaluesb(factory_.create_vector());
+//    Fa_->diagonalize(eigvectora, eigvaluesa);
+//    Fb_->diagonalize(eigvectorb, eigvaluesb);
 
-    epsilon_a_ = eigvaluesa;
-    epsilon_b_ = eigvaluesb;
+//    epsilon_a_ = eigvaluesa;
+//    epsilon_b_ = eigvaluesb;
 
-    bool print_mos = options_.get_bool("PRINT_MOS");
-    if (print_mos) {
-        fprintf(outfile, "\n  Alpha Molecular orbitals:\n");
-        Ca_->eivprint(eigvaluesa);
+//    bool print_mos = options_.get_bool("PRINT_MOS");
+//    if (print_mos) {
+//        fprintf(outfile, "\n  Alpha Molecular orbitals:\n");
+//        Ca_->eivprint(eigvaluesa);
 
-        fprintf(outfile, "\n  Beta Molecular orbitals:\n");
-        Cb_->eivprint(eigvaluesb);
-    }
+//        fprintf(outfile, "\n  Beta Molecular orbitals:\n");
+//        Cb_->eivprint(eigvaluesb);
+//    }
 
-    // Print out orbital energies.
-    std::vector<std::pair<double, int> > pairsa, pairsb;
-    for (int h=0; h<eigvaluesa->nirrep(); ++h) {
-        for (int i=0; i<eigvaluesa->dimpi()[h]; ++i) {
-            pairsa.push_back(make_pair(eigvaluesa->get(h, i), h));
-            pairsb.push_back(make_pair(eigvaluesb->get(h, i), h));
-        }
-    }
-    sort(pairsa.begin(),pairsa.end());
-    sort(pairsb.begin(),pairsb.end());
-    if(print_ > 1){
-        fprintf(outfile, "\n  Orbital energies (a.u.):\n    Alpha occupied\n      ");
-        for (int i=1; i<=nalpha_; ++i) {
-            fprintf(outfile, "%12.6f %3s  ", pairsa[i-1].first, temp2[pairsa[i-1].second]);
-            if (i % 4 == 0)
-                fprintf(outfile, "\n      ");
-        }
-        fprintf(outfile, "\n");
-        fprintf(outfile, "\n    Alpha unoccupied\n      ");
-        for (int i=nalpha_+1; i<=nso(); ++i) {
-            fprintf(outfile, "%12.6f %3s  ", pairsa[i-1].first, temp2[pairsa[i-1].second]);
-            if ((i-nalpha_) % 4 == 0)
-                fprintf(outfile, "\n      ");
-        }
-        fprintf(outfile, "\n");
+//    // Print out orbital energies.
+//    std::vector<std::pair<double, int> > pairsa, pairsb;
+//    for (int h=0; h<eigvaluesa->nirrep(); ++h) {
+//        for (int i=0; i<eigvaluesa->dimpi()[h]; ++i) {
+//            pairsa.push_back(make_pair(eigvaluesa->get(h, i), h));
+//            pairsb.push_back(make_pair(eigvaluesb->get(h, i), h));
+//        }
+//    }
+//    sort(pairsa.begin(),pairsa.end());
+//    sort(pairsb.begin(),pairsb.end());
+//    if(print_ > 1){
+//        fprintf(outfile, "\n  Orbital energies (a.u.):\n    Alpha occupied\n      ");
+//        for (int i=1; i<=nalpha_; ++i) {
+//            fprintf(outfile, "%12.6f %3s  ", pairsa[i-1].first, temp2[pairsa[i-1].second]);
+//            if (i % 4 == 0)
+//                fprintf(outfile, "\n      ");
+//        }
+//        fprintf(outfile, "\n");
+//        fprintf(outfile, "\n    Alpha unoccupied\n      ");
+//        for (int i=nalpha_+1; i<=nso(); ++i) {
+//            fprintf(outfile, "%12.6f %3s  ", pairsa[i-1].first, temp2[pairsa[i-1].second]);
+//            if ((i-nalpha_) % 4 == 0)
+//                fprintf(outfile, "\n      ");
+//        }
+//        fprintf(outfile, "\n");
 
-        fprintf(outfile, "\n    Beta occupied\n      ");
-        for (int i=1; i<=nbeta_; ++i) {
-            fprintf(outfile, "%12.6f %3s  ", pairsb[i-1].first, temp2[pairsb[i-1].second]);
-            if (i % 4 == 0)
-                fprintf(outfile, "\n      ");
-        }
-        fprintf(outfile, "\n");
-        fprintf(outfile, "\n    Beta unoccupied\n      ");
-        for (int i=nalpha_+1; i<=nso(); ++i) {
-            fprintf(outfile, "%12.6f %3s  ", pairsb[i-1].first, temp2[pairsb[i-1].second]);
-            if ((i-nbeta_) % 4 == 0)
-                fprintf(outfile, "\n      ");
-        }
-        fprintf(outfile, "\n");
-    }
-    for (int i=0; i<eigvaluesa->nirrep(); ++i)
-        free(temp2[i]);
-    free(temp2);
+//        fprintf(outfile, "\n    Beta occupied\n      ");
+//        for (int i=1; i<=nbeta_; ++i) {
+//            fprintf(outfile, "%12.6f %3s  ", pairsb[i-1].first, temp2[pairsb[i-1].second]);
+//            if (i % 4 == 0)
+//                fprintf(outfile, "\n      ");
+//        }
+//        fprintf(outfile, "\n");
+//        fprintf(outfile, "\n    Beta unoccupied\n      ");
+//        for (int i=nalpha_+1; i<=nso(); ++i) {
+//            fprintf(outfile, "%12.6f %3s  ", pairsb[i-1].first, temp2[pairsb[i-1].second]);
+//            if ((i-nbeta_) % 4 == 0)
+//                fprintf(outfile, "\n      ");
+//        }
+//        fprintf(outfile, "\n");
+//    }
+//    for (int i=0; i<eigvaluesa->nirrep(); ++i)
+//        free(temp2[i]);
+//    free(temp2);
 
-    int *vec = new int[eigvaluesa->nirrep()];
-    for (int i=0; i<eigvaluesa->nirrep(); ++i)
-        vec[i] = 0;
+//    int *vec = new int[eigvaluesa->nirrep()];
+//    for (int i=0; i<eigvaluesa->nirrep(); ++i)
+//        vec[i] = 0;
 
 //    chkpt_->wt_nmo(nso());
 //    chkpt_->wt_ref(1);        // UHF
@@ -456,8 +469,8 @@ void UHF::save_information()
     int nfzc = molecule_->nfrozen_core(options_.get_str("FREEZE_CORE")); /*chkpt_->rd_nfzc();*/
     // TODO: Need to handle frozen virtuals
     int nfzv = 0;
-    int *frzcpi = compute_fcpi(nfzc, eigvaluesa);
-    int *frzvpi = compute_fvpi(nfzv, eigvaluesa);
+    int *frzcpi = compute_fcpi(nfzc, epsilon_a_);
+    int *frzvpi = compute_fvpi(nfzv, epsilon_a_);
     for (int k = 0; k < 8; k++) {
         frzcpi_[k] = frzcpi[k];
         frzvpi_[k] = frzvpi[k];
@@ -834,10 +847,6 @@ void UHF::form_G_from_PK()
     double* Ga_rs;
     double* Db_rs;
     double* Gb_rs;
-    double* Fa_rs;
-    double* Fb_rs;
-    double* Va_rs;
-    double* Vb_rs;
     int pq, rs;
     double* JK_block = p_jk_;
     double* K_block = p_k_;

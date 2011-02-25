@@ -22,6 +22,7 @@
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <psifiles.h>
+#include "integralfunctors.h"
 
 #include <libmints/mints.h>
 
@@ -48,7 +49,7 @@ HF::HF(Options& options, shared_ptr<PSIO> psio)
       df_storage_(disk),
       nuclear_dipole_contribution_(3),
       nuclear_quadrupole_contribution_(6),
-      print_(3)
+      print_(1)
 {
     common_init();
 }
@@ -59,7 +60,13 @@ HF::~HF()
 
 void HF::common_init()
 {
+    integral_threshold_ = 1.0E-14;
+
     scf_type_ = options_.get_str("SCF_TYPE");
+//    if(scf_type_ == "OUT_OF_CORE"){
+//        integral_computer_ = shared_ptr<IntegralComputer>(
+//                new OutOfCoreComputer(psio_, so2symblk_, so2index_, 1.0E-14) );
+//    }
 
     S_.reset(factory_.create_matrix("S"));
     Shalf_.reset(factory_.create_matrix("S^-1/2"));
@@ -79,6 +86,21 @@ void HF::common_init()
         nso_ += nsopi_[h];
         nmo_ += nmopi_[h]; //For now (form_Shalf may change this, and will record things in the chkpt)
     }
+
+    // Formt the SO lookup information
+    so2symblk_ = new int[nso_];
+    so2index_  = new int[nso_];
+    size_t so_count = 0;
+    size_t offset = 0;
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int i = 0; i < nsopi_[h]; ++i) {
+            so2symblk_[so_count] = h;
+            so2index_[so_count] = so_count-offset;
+            ++so_count;
+        }
+        offset += nsopi_[h];
+    }
+
 
     Eold_    = 0.0;
     E_       = 0.0;
@@ -207,7 +229,8 @@ void HF::common_init()
     }
 
     // How much stuff shall we echo to the user?
-    print_ = options_.get_int("PRINT");
+    if(options_["PRINT"].has_changed())
+        print_ = options_.get_int("PRINT");
     //fprintf(outfile,"  Print = %d\n",print_);
 
     //For HF algorithms, J and K are both required always.
@@ -264,11 +287,12 @@ void HF::common_init()
         mints->integrals();
     }
 }
+
 void HF::finalize()
 {
+    delete[] so2symblk_;
+    delete[] so2index_;
     if (scf_type_ == "PK") {
-        delete[] so2symblk_;
-        delete[] so2index_;
         delete[] pk_symoffset_;
     }
 
@@ -290,6 +314,9 @@ void HF::finalize()
     if(psio_->open_check(PSIF_CHKPT))
         psio_->close(PSIF_CHKPT, 1);
 }
+
+
+
 void HF::find_occupation()
 {
     // TODO fix this later for beta
@@ -369,26 +396,12 @@ void HF::print_header()
 
 void HF::form_indexing()
 {
-    int h, i, ij, offset, pk_size;
+    int h, pk_size;
     int nirreps = factory_.nirrep();
     int *opi = factory_.rowspi();
 
-    so2symblk_ = new int[nso_];
-    so2index_  = new int[nso_];
-
-    ij = 0; offset = 0; pk_size = 0; pk_pairs_ = 0;
+    pk_size = 0; pk_pairs_ = 0;
     for (h=0; h<nirreps; ++h) {
-        for (i=0; i<opi[h]; ++i) {
-            so2symblk_[ij] = h;
-            so2index_[ij] = ij-offset;
-
-            if (debug_ > 3 && Communicator::world->me() == 0)
-                fprintf(outfile, "so2symblk_[%3d] = %3d, so2index_[%3d] = %3d\n", ij, so2symblk_[ij], ij, so2index_[ij]);
-
-            ij++;
-        }
-        offset += opi[h];
-
         // Add up possible pair combinations that yield A1 symmetry
         pk_pairs_ += ioff[opi[h]];
     }
