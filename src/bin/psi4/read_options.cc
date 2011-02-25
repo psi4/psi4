@@ -791,8 +791,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("RI_BASIS_CC","NONE");
     /*- Fitting metric algorithm -*/
     options.add_str("FITTING_TYPE", "EIG", "EIG CHOLESKY QR");
-    /*- Desired Fitting condition -*/
-    options.add_double("FITTING_CONDITION", 1.0E8);
+    /*- Desired Fitting condition (inverse of max condition number) -*/
+    options.add_double("FITTING_CONDITION", 1.0E-10);
     /*- Dealias basis for PS integrals -*/
     options.add_str("DEALIAS_BASIS_CC","NONE");
     /*- Filename to read grid from -*/

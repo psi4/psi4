@@ -19,7 +19,6 @@
 #endif
 
 //OpenMP Header
-//_OPENMP is defined by the compiler if it exists
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -107,6 +106,7 @@ void DFTensor::form_Aia(bool do_all)
     //  for (int b = 0; b<nblocks; b++)
     //    fprintf(outfile,"  block_starts = %d, block_stops  %d, block_sizes = %d, p_start = %d, p_sizes = %d.\n",
     //      block_starts[b], block_stops[b], block_sizes[b], p_starts[b], p_sizes[b]);
+    //  fflush(outfile);
     //}
 
     //Buffer tensors
@@ -165,10 +165,16 @@ void DFTensor::form_Aia(bool do_all)
     shared_ptr<SchwarzSieve> schwarz(new SchwarzSieve(primary_, schwarz_cutoff_));
     long int* schwarz_shell_pairs = schwarz->get_schwarz_shells_reverse();
 
+    //for (int Q = 0; Q < primary_->nshell(); Q++) {
+    //    for (int R = 0; R <= Q; R++) {
+    //        fprintf(outfile, "Schwarz back index (%3d,%3d) = %6Ld\n", Q, R, schwarz_shell_pairs[Q*(Q+1)/2 + R]);
+    //    }
+    //}
+
     //Loop over blocks of A
     for (int block = 0; block<nblocks; block++) {
       //Zero that guy out! (Schwarzing messes with it)
-      memset((void*)&Amn[0][0],'\0',p_sizes[block]*nao_*(ULI)nao_);
+      memset((void*)&Amn[0][0],'\0',p_sizes[block]*nao_*(ULI)nao_*sizeof(double));
 
       //Form Amn ints
       timer_on("(A|mn)");
@@ -233,12 +239,16 @@ void DFTensor::form_Aia(bool do_all)
       //fprintf(outfile, "  Aia\n");
       //print_mat(Aia,max_rows,nocc_*nvir_, outfile);
 
+      fflush(outfile);
+
       //Stripe to disk
       timer_on("(A|ia) Write");
       psio_->write(PSIF_DFMP2_AIA,"OV Integrals",(char *)(&Aia[0][0]),sizeof(double)*p_sizes[block]*nocc_*(ULI)nvir_,next_PSIF_DFMP2_AIA,&next_PSIF_DFMP2_AIA);
       timer_off("(A|ia) Write");
       
       if (do_all) { 
+          //TODO: fix VV/OO integrals
+
           timer_on("(A|ii)");
           #pragma omp parallel for
           for (int A = 0; A<p_sizes[block]; A++) {
@@ -322,12 +332,12 @@ void DFTensor::apply_fitting(const std::string& entry)
   psio_address next_PSIF_DF_TENSOR = PSIO_ZERO;
 
   //Prestripe
-  timer_on("(Q|ia) Prestripe");
+  //timer_on("(Q|ia) Prestripe");
   double *Prestripe = init_array(entry_size);
   for (int Q = 0; Q < naux_; Q++) {
        psio_->write(PSIF_DF_TENSOR,entry.c_str(),(char *) &(Prestripe[0]),sizeof(double)*entry_size,next_PSIF_DF_TENSOR,&next_PSIF_DF_TENSOR);
   }
-  timer_off("(Q|ia) Prestripe");
+  //timer_off("(Q|ia) Prestripe");
   free(Prestripe);
   next_PSIF_DF_TENSOR = PSIO_ZERO;
 
@@ -352,6 +362,11 @@ void DFTensor::apply_fitting(const std::string& entry)
     }
     timer_off("(A|ia) Read");
 
+    //metric_->get_metric()->print();
+
+    //fprintf(outfile, "  Aia\n");
+    //print_mat(Aia, naux_, max_cols, outfile);
+
     //Embed fitting
     timer_on("(Q|ia)");
     if (fitting_algorithm_ == "CHOLESKY") {
@@ -369,6 +384,8 @@ void DFTensor::apply_fitting(const std::string& entry)
     timer_off("(Q|ia)");
 
     //fprintf(outfile,"  Nblocks = %d, Max cols = %d, current_columns = %d, current_column = %d\n",nblocks, max_cols, current_columns, current_column);
+    //fprintf(outfile, "  Aia\n");
+    //print_mat(Qia, max_cols, naux_, outfile);
 
     //Write Qia out
     timer_on("(Q|ia) Write");
@@ -393,6 +410,11 @@ void DFTensor::apply_fitting(const std::string& entry)
 void DFTensor::form_MO_integrals(unsigned long int memory_doubles, shared_ptr<Matrix> Co, shared_ptr<Matrix> Cv, bool Qia_striping, const std::string& fitting_algorithm,
         double condition, double schwarz)
 {
+    fprintf(outfile, "\n  ==> DF Tensor OO/OV/VV Integrals <==\n\n");
+    fprintf(outfile, "  %s striping will be used for the fitted integrals.\n", (Qia_striping ? "(Q|ia)" : "(ia|Q)"));
+    fprintf(outfile, "  A %s algorithm will be used for fitting, with a target inverse condition of %7.3E.\n", fitting_algorithm.c_str(), condition);
+    fprintf(outfile, "  A Cauchy-Schwarz sieve with cutoff of %7.3E will be applied to AO integrals.\n", schwarz);
+    
     memory_ = memory_doubles;
     Co_ = Co;
     Cv_ = Cv;
@@ -423,6 +445,11 @@ void DFTensor::form_MO_integrals(unsigned long int memory_doubles, shared_ptr<Ma
 void DFTensor::form_OV_integrals(unsigned long int memory_doubles, shared_ptr<Matrix> Co, shared_ptr<Matrix> Cv, bool Qia_striping, const std::string& fitting_algorithm,
         double condition, double schwarz)
 {
+    fprintf(outfile, "\n  ==> DF Tensor OV Integrals <==\n\n");
+    fprintf(outfile, "  %s striping will be used for the fitted integrals.\n", (Qia_striping ? "(Q|ia)" : "(ia|Q)"));
+    fprintf(outfile, "  A %s algorithm will be used for fitting, with a target inverse condition of %7.3E.\n", fitting_algorithm.c_str(), condition);
+    fprintf(outfile, "  A Cauchy-Schwarz sieve with cutoff of %7.3E will be applied to AO integrals.\n", schwarz);
+
     memory_ = memory_doubles;
     Co_ = Co;
     Cv_ = Cv;
@@ -465,7 +492,8 @@ shared_ptr<TensorChunk> DFTensor::get_oo_iterator(unsigned long int memory)
             "OO Integrals",
             nocc_*nocc_,
             naux_,
-            memory
+            memory,
+            nocc_
         ));
 }
 shared_ptr<TensorChunk> DFTensor::get_ov_iterator(unsigned long int memory)
@@ -486,7 +514,8 @@ shared_ptr<TensorChunk> DFTensor::get_ov_iterator(unsigned long int memory)
             "OV Integrals",
             nocc_*nvir_,
             naux_,
-            memory
+            memory,
+            nvir_
         ));
 }
 shared_ptr<TensorChunk> DFTensor::get_vv_iterator(unsigned long int memory)
@@ -507,7 +536,8 @@ shared_ptr<TensorChunk> DFTensor::get_vv_iterator(unsigned long int memory)
             "VV Integrals",
             nvir_*nvir_,
             naux_,
-            memory
+            memory,
+            nvir_
         ));
 }
 

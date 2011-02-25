@@ -733,7 +733,7 @@ void BasisPoints::computeSignificantShells(SharedGridBlock grid)
     if (nsig_shells_ == 0)
         block_efficiency_ = 1.0;
     
-    printf("n_sig_shells = %d, nsig_functions = %d, block_efficiency = %8.5f\n", nsig_shells_, \
+    //printf("n_sig_shells = %d, nsig_functions = %d, block_efficiency = %8.5f\n", nsig_shells_, \
         nsig_functions_, block_efficiency_);
     /**
     printf("Shells:\n");

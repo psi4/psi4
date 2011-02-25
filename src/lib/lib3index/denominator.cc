@@ -188,7 +188,7 @@ void LaplaceDenominator::decompose()
  
     std::string quadfile = PSIDATADIR + "quadratures/1_x/" + st.str().c_str();
 
-    fprintf(outfile, "  ==> Laplace Denominator <==\n\n"); 
+    fprintf(outfile, "\n  ==> Laplace Denominator <==\n\n"); 
     fprintf(outfile, "  This system has an intrinsic R = (E_HUMO - E_LOMO)/(E_LUMO - E_HOMO) of %7.4E.\n", R);
     fprintf(outfile, "  A %d point minimax quadrature with R of %1.0E will be used for the denominator.\n", nvector_, R_availp[r]);
     fprintf(outfile, "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n", accuracy); 
@@ -401,7 +401,7 @@ void CholeskyDenominator::decompose()
 
     delete[] w_ia;
 
-    fprintf(outfile, "  ==> Cholesky Denominator <==\n\n"); 
+    fprintf(outfile, "\n  ==> Cholesky Denominator <==\n\n"); 
     fprintf(outfile, "  A %d point partial Cholesky decomposition will be used for the denominator.\n", nvector_);
     fprintf(outfile, "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n", max_error); 
 

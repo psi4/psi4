@@ -13,7 +13,7 @@ class Matrix;
 class Vector;
 class IntVector;
 class GridBlock;
-
+class PseudospectralInt;
 
 class FittingMetric {
 
@@ -117,6 +117,9 @@ protected:
 
     // Basis set for this schwarz
     shared_ptr<BasisSet> basis_;  
+
+    // Is the sieve initialized
+    bool initialized_;
  
     // number of significant shell pairs 
     unsigned long int nshell_pairs_;
@@ -153,6 +156,7 @@ public:
 
 };
 
+// Disk-based tensor random access TensorChunk iterator
 class TensorChunk {
     
     protected:
@@ -169,6 +173,8 @@ class TensorChunk {
         unsigned long int tensor_size_;
         // max_rows permitted by memory
         int max_rows_;  
+        // min_rows permitted by user (for instance, if all a are required for any i in an ia compound slow indeX)
+        int min_rows_;  
         // slow index total size
         int slow_size_; 
         // fast index total size
@@ -194,7 +200,8 @@ class TensorChunk {
                         const std::string& name, // entry name of this tensor
                         int slow_size,           // size of the slow index
                         int fast_size,           // size of the fast index
-                        unsigned long int memory // memory available in double
+                        unsigned long int memory,// memory available in double
+                        int min_rows = 1         // minimum rows allowed (i.e. the the grain size)
                         );
         ~TensorChunk();
 
@@ -230,6 +237,8 @@ class TensorChunk {
         unsigned long int memory() const { return memory_; }
         // Maximum size of slow index in chunk  
         int max_rows() const { return max_rows_; } 
+        // Minimum size of slow index in chunk (usually 1, unless slow index is compound)
+        int min_rows() const { return min_rows_; } 
 };
 
 
@@ -310,6 +319,137 @@ public:
 
 };
 
+class PSTensor {
+    
+protected:
+    // Pointer to the primary basis
+    shared_ptr<BasisSet> primary_;
+    // Pointer to the dealias basis 
+    shared_ptr<BasisSet> dealias_;
+    // Pointer to the pseudospectral grid
+    shared_ptr<PseudoGrid> grid_;
+    // Number of occupied orbitals
+    int nocc_;
+    // Number of virtual orbitals
+    int nvir_;
+    // Number of atomic orbitals
+    int nao_;
+    // Number of fitting functions (grid points)
+    int naux_;
+    // The psio object (for disk-based)
+    shared_ptr<PSIO> psio_;
+
+    // The cutoff for the schwarz sieve
+    double schwarz_cutoff_;
+    // The striping decision (Qia if true, iaQ if false)
+    bool Qia_striping_;
+    // Memory in doubles
+    unsigned long int memory_;
+
+    // The active occupied C matrix
+    shared_ptr<Matrix> Co_;
+    // The active virtual C matrix
+    shared_ptr<Matrix> Cv_;
+
+    // Helper routines (numerically ninja)    
+    shared_ptr<Matrix> form_X_AO();
+    shared_ptr<Matrix> form_X_dealias();
+    shared_ptr<Matrix> form_S();
+    shared_ptr<Matrix> form_S_dealias();
+    shared_ptr<Matrix> form_Q_AO();
+    void common_init();
+    // forms the unfitted MO integrals
+    void form_Aia(bool do_all);
+    void restripe(const std::string& entry);
+public:
+    PSTensor(shared_ptr<PSIO>, shared_ptr<BasisSet> primary, shared_ptr<BasisSet> aux, shared_ptr<PseudoGrid> grid);
+    virtual ~PSTensor();
+
+    // Form Q_i^P (Fitted matrix)
+    shared_ptr<Matrix> form_Q(shared_ptr<Matrix> Cocc);
+    // Form Q_a^P (Collocation matrix)
+    shared_ptr<Matrix> form_X(shared_ptr<Matrix> Cvir);
+
+    // Form all MO integrals 
+    void form_MO_integrals(unsigned long int memory_doubles, shared_ptr<Matrix> Co, shared_ptr<Matrix> Cv, bool Qia_striping, double schwarz);
+    // Form only OV integrals 
+    void form_OV_integrals(unsigned long int memory_doubles, shared_ptr<Matrix> Co, shared_ptr<Matrix> Cv, bool Qia_striping, double schwarz);
+    
+    // Iterators to the various blocks of the MO DF integrals, 
+    // memory in doubles  
+    shared_ptr<TensorChunk> get_oo_iterator(unsigned long int memory);
+    shared_ptr<TensorChunk> get_vv_iterator(unsigned long int memory);
+    shared_ptr<TensorChunk> get_ov_iterator(unsigned long int memory);
+
+    // Number of ao basis functions in this PS tensor
+    int nao() const { return nao_; }   
+    // Number of auxiliary basis functions (grid points) in this PS tensor
+    int naux() const { return naux_; }   
+    // Number of occupied orbtials in this PS tensor
+    int nocc() const { return nocc_; }   
+    // Number of virtual orbitals in this PS tensor
+    int nvir() const { return nvir_; }   
+
+};
+
+class DirectPSTensor : public PSTensor {
+
+protected:
+
+    // Memory (doubles)
+    unsigned long int memory_;
+    // Max rows 
+    int max_rows_;
+    // Block starts
+    std::vector<int> block_starts_;
+    // Block sizes
+    std::vector<int> block_sizes_;
+    // Current block
+    int block_;
+
+    // (A|mn) slices
+    shared_ptr<Matrix> Amn_;
+    // (A|mi) slices 
+    shared_ptr<Matrix> Ami_; 
+    // (A|ia)
+    shared_ptr<Matrix> Aia_;
+
+    // Schwarz sieve object
+    shared_ptr<SchwarzSieve> schwarz_;
+
+    // Pseudospectral integral objects (threaded)
+    std::vector<shared_ptr<PseudospectralInt> > ints_; 
+
+public:
+    DirectPSTensor(shared_ptr<PSIO>, shared_ptr<BasisSet> primary, shared_ptr<BasisSet> aux, shared_ptr<PseudoGrid> grid);
+    virtual ~DirectPSTensor();
+
+    // Initialization routine for (A|ia) striping (others to be added later)
+    void initialize_OV_integrals(shared_ptr<Matrix> Cocc, shared_ptr<Matrix> Cvir, unsigned long int memory, double schwarz_cutoff);
+
+    // Interaction operators:
+    // Number of blocks required for a complete traverse of the tensor
+    int nblock() const { return block_starts_.size(); }
+    // Pointer to the chunk (P| 
+    shared_ptr<Matrix> chunk() const { return Aia_; }
+    // Pointer to the chunk pointer 
+    double** chunk_pointer() const { return Aia_->pointer(); }
+    // Compute the desired block number 
+    void compute_block(int block_number);
+    // The starting slow index of the current block 
+    int block_start() const { return block_starts_[block_]; }
+    // The slow index size of the current block 
+    int block_size() const { return block_sizes_[block_]; }
+    // The current block index
+    int block() const { return block_; }
+
+    // Memory allowed for this iterator 
+    unsigned long int memory() const { return memory_; }
+    // Maximum size of slow index in chunk  
+    int max_rows() const { return max_rows_; } 
+
+};
+/**
 class Pseudospectral {
 
 protected:
@@ -334,12 +474,13 @@ public:
     shared_ptr<Matrix> form_I(); 
 
 };
+**/
 
 // Denominator Factorizations (MP2-like for now)
 class Denominator {
 
 protected:
-    // Denominator (ia in columns, w in rows)
+    // Denominator (w in rows, ia in column)
     shared_ptr<Matrix> denominator_;
 
     // Pointer to active occupied orbital eigenvalues
@@ -359,6 +500,7 @@ public:
     double delta() const { return delta_; }
     int nvector() const { return nvector_; }
     virtual void debug();
+    shared_ptr<Matrix> denominator() const { return denominator_; }
 
 };
 
@@ -375,6 +517,8 @@ public:
     LaplaceDenominator(shared_ptr<Vector> eps_occ_, shared_ptr<Vector> eps_vir, double delta);
     ~LaplaceDenominator();
     void debug();
+    shared_ptr<Matrix> denominator_occ() const { return denominator_occ_; }
+    shared_ptr<Matrix> denominator_vir() const { return denominator_vir_; }
     
 };
 

@@ -17,9 +17,8 @@ private:
 
 protected:
   void print_header();
+  void print_energies();
   std::string mp2_algorithm_;
-  double E_MP2J_;
-  double E_MP2K_;  
  
   void compute_DF_MP2();
   void compute_OS_MP2();
