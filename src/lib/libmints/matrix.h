@@ -519,9 +519,9 @@ public:
     void gemm(bool transa, bool transb, double alpha, const boost::shared_ptr<Matrix>& a, const Matrix& b, double beta);
     void gemm(bool transa, bool transb, double alpha, const Matrix& a, const boost::shared_ptr<Matrix>& b, double beta);
     /// Diagonalize this places eigvectors and eigvalues must be created by caller.
-    void diagonalize(Matrix* eigvectors, Vector* eigvalues);
-    void diagonalize(boost::shared_ptr<Matrix>& eigvectors, boost::shared_ptr<Vector>& eigvalues);
-    void diagonalize(boost::shared_ptr<Matrix>& eigvectors, Vector& eigvalues);
+    void diagonalize(Matrix* eigvectors, Vector* eigvalues, int nMatz = 1);
+    void diagonalize(boost::shared_ptr<Matrix>& eigvectors, boost::shared_ptr<Vector>& eigvalues, int nMatz = 1);
+    void diagonalize(boost::shared_ptr<Matrix>& eigvectors, Vector& eigvalues, int nMatz = 1);
 
     /*! Computes the Cholesky factorization of a real symmetric
      *  positive definite matrix A.
@@ -553,7 +553,7 @@ public:
     /// General matrix multiply, saves result to this
     void gemm(bool transa, bool transb, double alpha, const Matrix& a, const Matrix& b, double beta);
     /// Diagonalize. Eigvectors and eigvalues must be created by caller.
-    void diagonalize(Matrix& eigvectors, Vector& eigvalues);
+    void diagonalize(Matrix& eigvectors, Vector& eigvalues, int nMatz = 1);
 
     /// @{
     /// Retrieves the i'th irrep
