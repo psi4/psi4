@@ -55,8 +55,8 @@ E_c1 = energy('scf')
 
 compare_values(Nref, h2o_c1.nuclear_repulsion_energy(), 9, "C1  SAD Nuclear Repulsion Energy") #TEST
 compare_values(Nref, h2o.nuclear_repulsion_energy(), 9, "C2v SAD Nuclear Repulsion Energy")    #TEST
-compare_values(E1ref, E1_c1, 2, "C1  SAD Iteration 1 Energy")                                  #TEST
-compare_values(E1ref, E1,    2, "C2v SAD Iteration 1 Energy")                                  #TEST
+compare_values(E1ref, E1_c1, 1, "C1  SAD Iteration 1 Energy")                                  #TEST
+compare_values(E1ref, E1,    1, "C2v SAD Iteration 1 Energy")                                  #TEST
 compare_values(Eref, E_c1, 9, "C1  SAD Iteration N Energy")                                    #TEST
 compare_values(Eref, E,    9, "C2v SAD Iteration N Energy")                                    #TEST
 
