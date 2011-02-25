@@ -2,6 +2,7 @@
 #define _tiled_tensor_Env_h
 
 #include <iostream>
+#include <fstream>
 
 
 namespace yeti {
@@ -53,9 +54,53 @@ class Env {
  public:
    static IndentTracker& indent;
 
-   static void init(int me, const char *outFileName = "");
-   static void init(int me, std::ostream *stream);
-   static void free();
+   static void init(int me, const char *outFileName = "")
+{
+    if(initialized_) return;
+    me_ = me;
+    if(strcmp("", outFileName)){
+        out0_ = new std::ofstream(outFileName, std::ios_base::app | std::ios_base::out );
+        out0Allocated_ = true;
+    }else{
+        out0_ = &std::cout;
+    }
+    if(me){
+        outn_ = new std::ofstream("/dev/null");
+        outnAllocated_ = true;
+    }else{
+        outn_ = out0_;
+    }
+    initialized_ = 1;
+}
+
+   static void init(int me, std::ostream *stream)
+{
+    if(initialized_) return;
+    me_ = me;
+    out0_ = stream;
+    if(me){
+        outn_ = new std::ofstream("/dev/null");
+        outnAllocated_ = true;
+    }else{
+        outn_ = out0_;
+    }
+    initialized_ = 1;
+}
+   static void free()
+{
+    if(initialized_){
+        // We have to make sure that we allocated these before deleting
+        if(out0Allocated_){
+            delete out0_;
+            out0_ = 0;
+        }
+        if(outnAllocated_){
+            delete outn_;
+            outn_ = 0;
+        }
+        initialized_ = false;
+    }
+}
    /// Return nonzero if Env has been initialized.
    static int initialized() { return initialized_; }
    /// Return an ostream that writes from all nodes.
