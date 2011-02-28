@@ -123,7 +123,7 @@ void CC::get_ribasis()
 void CC::get_dealiasbasis()
 {
   shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-  if (options_.get_str("DEALIAS_BASIS_CC") != "") {
+  if (options_.get_str("DEALIAS_BASIS_CC") != "NONE") {
     dealias_ = BasisSet::construct(parser, molecule_, "DEALIAS_BASIS_CC"); 
     ndealias_ = dealias_->nbf();
   } else {

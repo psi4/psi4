@@ -15,6 +15,7 @@
 
 #include <libdfcc_solver/ccd.h>
 #include <libdfcc_solver/mp2.h>
+#include <libdfcc_solver/mp3.h>
 #include <libmints/mints.h>
 #include "wrapper.h"
 
@@ -44,6 +45,11 @@ PsiReturnType dfcc(Options & options)
     
     MP2 mp2(options, psio, chkpt);
     mp2.compute_energy();
+
+    } else if (options.get_str("WAVEFUNCTION") == "MP3") {
+
+    MP3 mp3(options, psio, chkpt);
+    mp3.compute_energy();
 
     }
 
