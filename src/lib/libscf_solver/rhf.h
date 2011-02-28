@@ -25,42 +25,11 @@ namespace scf {
 
 class RHF : public HF {
 protected:
-    SharedMatrix Lref_; //Formal local orbital coefficients (from last guess)
-    SharedMatrix L_;    //Propagated local orbital coefficients
     SharedMatrix D_;
     SharedMatrix Dold_;
     SharedMatrix G_;
     SharedMatrix J_;
     SharedMatrix K_;
-
-    //Local K stuff (sorry)
-    double** I_; //Lodwin Charges
-    int* domain_atoms_;
-    int** domain_shell_start_;
-    int** domain_shell_length_;
-    int** domain_fun_start_;
-    int** domain_fun_length_;
-    int** fit_shell_start_;
-    int** fit_shell_length_;
-    int** fit_fun_start_;
-    int** fit_fun_length_;
-    int* primary_shell_start_;
-    int* primary_shell_length_;
-    int* primary_fun_start_;
-    int* primary_fun_length_;
-    int* aux_shell_start_;
-    int* aux_shell_length_;
-    int* aux_fun_start_;
-    int* aux_fun_length_;
-    int* domain_pairs_;
-    int* domain_size_;
-    int* fit_size_;
-    bool* domain_changed_;
-    int** atom_domains_;
-    int** old_atom_domains_;
-    int max_fit_size_;
-    int max_domain_size_;
-    int max_domain_pairs_;
 
     double Drms_;
 
@@ -81,22 +50,12 @@ protected:
     void form_G_from_direct_integrals();               // Computes all ERIs each iteration.
     void form_G_from_direct_integrals_parallel();      // Computes all ERIs in parallel each iteration
     void form_G_from_RI();                             // Uses two- and three- index integrals
-    void form_G_from_RI_local_K();                     // Uses two- and three- index integrals
     void form_G_from_J_and_K(double scale_K_by = 1.0); // Computes G from J and K
     void form_J_and_K();                               // Computes J and K matrices from the ERIs
 
     void form_J_and_K_from_direct_integrals();
     void form_J_from_RI();
     void form_K_from_RI();
-
-    void fully_localize_mos();
-    void propagate_local_mos();
-    void localized_Lodwin_charges();
-
-    //Zillions of baby index matrices
-    void form_domain_bookkeeping();
-    void free_domain_bookkeeping();
-    void form_domains();
 
     //Some stuff for Ed Hohenstein's SAPT code
     // TODO: This must be removed for a conforming SCF module

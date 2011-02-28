@@ -105,11 +105,6 @@ void RHF::common_init()
     J_         = SharedMatrix(factory_.create_matrix("J"));
     K_         = SharedMatrix(factory_.create_matrix("K"));
 
-    if (scf_type_ == "L_DF") {
-        Lref_ = SharedMatrix(factory_.create_matrix("Lref"));
-        L_    = SharedMatrix(factory_.create_matrix("L"));
-    }
-
     // PK super matrix for fast G
     pk_ = NULL;
     G_vector_ = NULL;
@@ -201,11 +196,6 @@ double RHF::compute_energy()
         form_B_Poisson();
     else if (scf_type_ == "PSEUDOSPECTRAL")
         pseudospectral_ = shared_ptr<PseudospectralHF>(new PseudospectralHF(basisset_, D_, J_, K_, psio_, options_));
-    else if (scf_type_ == "L_DF") {
-        form_A();
-        I_ = block_matrix(basisset_->molecule()->natom(),doccpi_[0]);
-        form_domain_bookkeeping();
-    }
 
     fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
     fflush(outfile);
@@ -240,8 +230,6 @@ double RHF::compute_energy()
             G_->scale(-1.0);
             G_->add(K_);
             G_->scale(-1.0);
-        }else if (scf_type_ == "L_DF"){
-            form_G_from_RI_local_K();
         }else if(scf_type_ == "OUT_OF_CORE"){
             J_K_Functor jk_builder(G_, K_, D_);
             process_tei<J_K_Functor>(jk_builder);
@@ -264,17 +252,20 @@ double RHF::compute_energy()
         if (print_>3) {
             Fa_->print(outfile);
         }
-        if (diis_enabled_ && iteration_ > 0 && iteration_ >= diis_start_ )
-            save_fock();
 
         E_ = compute_E();
 
         timer_on("DIIS");
-        if (diis_enabled_ == true && iteration_ >= diis_start_ + min_diis_vectors_ - 1) {
-            diis_iter = diis();
-        } else {
-            diis_iter = false;
+        if (Communicator::world->me() == 0) {
+            if (diis_enabled_ && iteration_ > 0 && iteration_ >= diis_start_ )
+                save_fock();
+            if (diis_enabled_ == true && iteration_ >= diis_start_ + min_diis_vectors_ - 1) {
+                diis_iter = diis();
+            } else {
+                diis_iter = false;
+            }
         }
+        Fa_->bcast(Communicator::world.get(), 0);
         timer_off("DIIS");
 
         if (print_>4 && diis_iter) {
@@ -304,11 +295,6 @@ double RHF::compute_energy()
     //Free the heavies pronto!
     if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD")
         free_B();
-    else if (scf_type_ == "L_DF") {
-        free_A();
-        free_block(I_);
-        free_domain_bookkeeping();
-    }
 
     if (converged) {
         fprintf(outfile, "\n  Energy converged.\n");
@@ -873,7 +859,7 @@ void RHF::save_information()
         chkpt_->wt_nmo(nmo_);
         chkpt_->wt_nso(basisset_->nbf());
         chkpt_->wt_nao(basisset_->nbf());
-        chkpt_->wt_ref(0);        // Only RHF right now
+        chkpt_->wt_ref(0);  
         chkpt_->wt_etot(E_);
         chkpt_->wt_escf(E_);
         chkpt_->wt_eref(E_);

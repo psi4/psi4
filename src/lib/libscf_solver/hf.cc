@@ -306,12 +306,14 @@ void HF::finalize()
     Dipole_.clear();
     Quadrupole_.clear();
 
-    // Clean up after DIIS
-    if(initialized_diis_manager_)
-        diis_manager_->delete_diis_file();
-    diis_manager_.reset();
-    initialized_diis_manager_ = false;
+    if (Communicator::world->me() == 0) {
+        // Clean up after DIIS
+        if(initialized_diis_manager_)
+            diis_manager_->delete_diis_file();
+        diis_manager_.reset();
+        initialized_diis_manager_ = false;
 
+    }
     // Close the chkpt
     if(psio_->open_check(PSIF_CHKPT))
         psio_->close(PSIF_CHKPT, 1);
