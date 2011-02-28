@@ -23,8 +23,6 @@ class Matrix;
 class Vector;
 class SimpleVector;
 class MatrixFactory;
-typedef shared_ptr<Matrix> SharedMatrix ;
-typedef shared_ptr<Vector> SharedVector;
 class SimpleMatrix;
 class Dimension;
 
@@ -853,7 +851,7 @@ public:
 };
 
 
-typedef boost::shared_ptr<Matrix> SharedMatrix;
+typedef boost::shared_ptr<Matrix>       SharedMatrix;
 typedef boost::shared_ptr<SimpleMatrix> SharedSimpleMatrix;
 
 }
