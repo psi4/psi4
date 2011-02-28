@@ -102,11 +102,9 @@ public:
         return name_;
     }
 
-    /// Python compatible printer
-    void print_out() { print(outfile); }
-
     /// Prints the vector
-    void print(FILE *);
+    void print() const;
+
     /// Copies rhs to this
     void copy(const Vector* rhs);
     /// Copies rhs to this
@@ -187,11 +185,9 @@ public:
     /// Computes the magnitude of the vector.
     double magnitude() const;
 
-    /// Python compatible printer
-    void print_out() { print(outfile); }
-
     /// Prints the vector
-    void print(FILE *);
+    void print() const;
+
     /// Copy rhs to this
     void copy(const SimpleVector* rhs);
 
