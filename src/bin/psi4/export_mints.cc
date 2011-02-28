@@ -38,9 +38,20 @@ shared_ptr<MatrixFactory> get_matrix_factory()
 
 void export_mints()
 {
+    // This is needed to wrap an STL vector into Boost.Python. Since the vector
+    // is going to contain shared_ptr's we MUST set the no_proxy flag to true
+    // (as it is) to tell Boost.Python to not create a proxy class to handle
+    // the vector's data type.
     class_<std::vector<shared_ptr<Matrix> > >("matrix_vector").
             def(vector_indexing_suite<std::vector<shared_ptr<Matrix> >, true >());
 
+    // Use typedefs to explicitly tell Boost.Python which function in the class
+    // to use. In most cases, you should not be making Python specific versions
+    // of functions.
+
+    // For example in Vector there are 2 versions of set: a (double*) version and a
+    // (int, int, double) version. We create a typedef function pointer to tell
+    // Boost.Python we only want the (int, int, double) version.
     typedef void (Vector::*vector_set)(int, int, double);
     class_<Vector, shared_ptr<Vector> >( "Vector").
             def(init<int>()).
@@ -50,10 +61,11 @@ void export_mints()
             def("dim", &Vector::dim).
             def("nirrep", &Vector::nirrep);
 
+    typedef void  (IntVector::*int_vector_set)(int, int, double);
     class_<IntVector, shared_ptr<IntVector> >( "IntVector").
             def(init<int>()).
             def("get", &IntVector::get).
-            def("set", &IntVector::set_python).
+            def("set", int_vector_set(&IntVector::set)).
             def("print_out", &IntVector::print_out).
             def("dim", &IntVector::dim).
             def("nirrep", &IntVector::nirrep);
