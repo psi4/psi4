@@ -233,7 +233,7 @@ void  DFMP2::setup()
     fflush(outfile);
   }
   //diagnostics
-  //if (print_>3) {
+  if (print_>3) {
     fprintf(outfile, "  C_occ:\n");
     print_mat(C_docc_,nso_,nact_docc_,outfile);
     fprintf(outfile, "  C_virt:\n");
@@ -245,7 +245,7 @@ void  DFMP2::setup()
     for (int i = 0; i<nact_virt_; i++)
         fprintf(outfile,"  %5d: %14.10f\n", i+1+nact_docc_, eps_virt_[i]);
 
-  //}
+  }
   timer_off("Setup");
 
 }
@@ -1339,10 +1339,10 @@ double** DFMP2::form_Aia_core()
       }
     }
 
-    //if (debug_) {
+    if (debug_) {
       fprintf(outfile, "  Amn\n");
       print_mat(Amn,max_rows,norbs*norbs, outfile);
-    //}
+    }
     timer_off("(A|mn)");
 
     //Transform to Ami
@@ -1352,10 +1352,10 @@ double** DFMP2::form_Aia_core()
         norbs, &(C_docc_[0][0]), nact_docc, 0.0, &(Ami[0][0]), nact_docc);
     timer_off("(A|mi)");
 
-    //if (debug_) {
+    if (debug_) {
       fprintf(outfile, "  Ami\n");
       print_mat(Ami,max_rows,nact_docc*norbs, outfile);
-    //}
+    }
 
     timer_on("(A|ia)");
     #ifdef _MKL
@@ -1377,10 +1377,10 @@ double** DFMP2::form_Aia_core()
     timer_off("(A|ia)");
 
   }
-  //if (debug_) {
+  if (debug_) {
     fprintf(outfile, "  Aia\n");
     print_mat(Aia,naux_raw_,nact_docc*nact_virt, outfile);
-  //}
+  }
 
   delete[] buffer;
   delete[] eri;
@@ -1471,10 +1471,10 @@ void DFMP2::form_Qia_core()
   }
   timer_off("(Q|ia)");
 
-  //if (debug_) {
+  if (debug_) {
     fprintf(outfile,"  Qia");
     print_mat(Qia_,naux_fin_,nact_docc_*nact_virt_,outfile);
-  //}
+  }
 
   free_block(W_);
   free_block(Abuffer);
