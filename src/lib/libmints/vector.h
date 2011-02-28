@@ -256,10 +256,6 @@ public:
     void set(int h, int m, int val) {
         vector_[h][m] = val;
     }
-    /// Sets a single element value
-    void set_python(int h, int m, int val) {
-        vector_[h][m] = val;
-    }
 
     /// Returns a copy of the vector_
     int *to_block_vector();
