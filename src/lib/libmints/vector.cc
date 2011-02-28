@@ -6,14 +6,16 @@
 
 using namespace psi;
 
-Vector::Vector() {
+Vector::Vector()
+{
     vector_ = NULL;
     dimpi_ = NULL;
     nirrep_ = 0;
     name_ = "";
 }
 
-Vector::Vector(const Vector& c) {
+Vector::Vector(const Vector& c)
+{
     vector_ = NULL;
     nirrep_ = c.nirrep_;
     dimpi_ = new int[nirrep_];
@@ -24,7 +26,8 @@ Vector::Vector(const Vector& c) {
     name_ = c.name_;
 }
 
-Vector::Vector(int nirreps, int *dimpi) {
+Vector::Vector(int nirreps, int *dimpi)
+{
     vector_ = NULL;
     nirrep_ = nirreps;
     dimpi_ = new int[nirrep_];
@@ -32,14 +35,18 @@ Vector::Vector(int nirreps, int *dimpi) {
         dimpi_[h] = dimpi[h];
     alloc();
 }
-Vector::Vector(int dim) {
+
+Vector::Vector(int dim)
+{
     vector_ = NULL;
     nirrep_ = 1;
     dimpi_ = new int[nirrep_];
     dimpi_[0] = dim;
     alloc();
 }
-Vector::Vector(const std::string& name, int nirreps, int *dimpi) {
+
+Vector::Vector(const std::string& name, int nirreps, int *dimpi)
+{
     vector_ = NULL;
     nirrep_ = nirreps;
     dimpi_ = new int[nirrep_];
@@ -48,7 +55,9 @@ Vector::Vector(const std::string& name, int nirreps, int *dimpi) {
     alloc();
     name_ = name;
 }
-Vector::Vector(const std::string& name, int dim) {
+
+Vector::Vector(const std::string& name, int dim)
+{
     vector_ = NULL;
     nirrep_ = 1;
     dimpi_ = new int[nirrep_];
@@ -73,7 +82,8 @@ void Vector::init(int nirreps, int *dimpi)
     alloc();
 }
 
-void Vector::alloc() {
+void Vector::alloc()
+{
     if (vector_)
         release();
 
@@ -84,7 +94,8 @@ void Vector::alloc() {
     }
 }
 
-void Vector::release() {
+void Vector::release()
+{
     if (!vector_)
         return;
 
@@ -96,7 +107,8 @@ void Vector::release() {
     vector_ = NULL;
 }
 
-void Vector::copy_from(double **c) {
+void Vector::copy_from(double **c)
+{
     size_t size;
     for (int h=0; h<nirrep_; ++h) {
         size = dimpi_[h] * sizeof(double);
@@ -105,7 +117,8 @@ void Vector::copy_from(double **c) {
     }
 }
 
-void Vector::copy(const Vector *rhs) {
+void Vector::copy(const Vector *rhs)
+{
     if (nirrep_ != rhs->nirrep_) {
         release();
         if (dimpi_)
@@ -118,7 +131,9 @@ void Vector::copy(const Vector *rhs) {
     }
     copy_from(rhs->vector_);
 }
-void Vector::copy(const Vector &rhs) {
+
+void Vector::copy(const Vector &rhs)
+{
     if (nirrep_ != rhs.nirrep_) {
         release();
         if (dimpi_)
@@ -132,7 +147,8 @@ void Vector::copy(const Vector &rhs) {
     copy_from(rhs.vector_);
 }
 
-void Vector::set(double *vec) {
+void Vector::set(double *vec)
+{
     int h, i, ij;
 
     ij = 0;
@@ -143,14 +159,15 @@ void Vector::set(double *vec) {
     }
 }
 
-void Vector::print(FILE *out) {
+void Vector::print() const
+{
     int h;
-    fprintf(out, "\n # %s #\n", name_.c_str());
+    fprintf(outfile, "\n # %s #\n", name_.c_str());
     for (h=0; h<nirrep_; ++h) {
-        fprintf(out, " Irrep: %d\n", h+1);
+        fprintf(outfile, " Irrep: %d\n", h+1);
         for (int i=0; i<dimpi_[h]; ++i)
-            fprintf(out, "   %4d: %10.7f\n", i+1, vector_[h][i]);
-        fprintf(out, "\n");
+            fprintf(outfile, "   %4d: %10.7f\n", i+1, vector_[h][i]);
+        fprintf(outfile, "\n");
     }
 }
 
@@ -261,10 +278,10 @@ void SimpleVector::set(double *vec) {
     }
 }
 
-void SimpleVector::print(FILE *out) {
+void SimpleVector::print() const {
     for (int i=0; i<dim_; ++i)
-        fprintf(out, "   %4d: %10.7f\n", i+1, vector_[i]);
-    fprintf(out, "\n");
+        fprintf(outfile, "   %4d: %10.7f\n", i+1, vector_[i]);
+    fprintf(outfile, "\n");
 }
 
 double *SimpleVector::to_block_vector() {

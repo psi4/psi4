@@ -57,11 +57,11 @@ void export_mints()
             def(init<int>()).
             def("get", &Vector::get).
             def("set", vector_set(&Vector::set)).
-            def("print_out", &Vector::print_out).
+            def("print_out", &Vector::print).
             def("dim", &Vector::dim).
             def("nirrep", &Vector::nirrep);
 
-    typedef void  (IntVector::*int_vector_set)(int, int, double);
+    typedef void  (IntVector::*int_vector_set)(int, int, int);
     class_<IntVector, shared_ptr<IntVector> >( "IntVector").
             def(init<int>()).
             def("get", &IntVector::get).
