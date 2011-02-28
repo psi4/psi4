@@ -252,12 +252,6 @@ protected:
     /** Computes the initial energy. */
     virtual double compute_initial_E() { return 0.0; }
 
-    /** Perform full localization procedure */
-    virtual void fully_localize_mos() {}
-
-    /** Propagate previous localization guess a. la. R. Polly et. al. */
-    virtual void propagate_local_mos(){}
-
     void sort_cholesky(double*, int*, int);
     /** Form canonical three-index Cholesky tensor */
     void form_CD();
