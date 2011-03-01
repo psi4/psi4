@@ -23,6 +23,7 @@
 #include <libqt/qt.h>
 #include <psifiles.h>
 #include "integralfunctors.h"
+#include "pseudospectral.h"
 
 #include <libmints/mints.h>
 
@@ -286,7 +287,14 @@ void HF::common_init()
     if (scf_type_ == "PK" || scf_type_ == "OUT_OF_CORE"){
         shared_ptr<MintsHelper> mints (new MintsHelper());
         mints->integrals();
+    }else if (scf_type_ == "PSEUDOSPECTRAL"){
+        pseudospectral_ = shared_ptr<PseudospectralHF>(new PseudospectralHF(basisset_, psio_, options_));
+    }else if (scf_type_ == "DIRECT"){
+        shared_ptr<IntegralFactory> integral = shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+        shared_ptr<TwoBodyAOInt> aoeri = shared_ptr<TwoBodyAOInt>(integral->eri());
+        eri_ = shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoeri, integral));
     }
+
     if (scf_type_ == "PK") form_indexing();
 }
 

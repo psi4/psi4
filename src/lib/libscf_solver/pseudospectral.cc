@@ -32,12 +32,19 @@ using namespace psi;
 
 namespace psi { namespace scf {
 
-PseudospectralHF::PseudospectralHF(shared_ptr<BasisSet> basis, shared_ptr<Matrix> D,
-shared_ptr<Matrix> J, shared_ptr<Matrix> K, shared_ptr<PSIO> psio, Options& opt) :
-    primary_(basis), D_(D), J_(J), K_(K), psio_(psio), options_(opt)
+PseudospectralHF::PseudospectralHF(shared_ptr<BasisSet> basis, shared_ptr<Matrix> Da,
+shared_ptr<Matrix> Ja, shared_ptr<Matrix> Ka, shared_ptr<PSIO> psio, Options& opt) :
+    primary_(basis), Da_(Da), Ja_(Ja), Ka_(Ka), psio_(psio), options_(opt), restricted_(true)
 {
     common_init();
 }
+
+PseudospectralHF::PseudospectralHF(shared_ptr<BasisSet> basis, shared_ptr<PSIO> psio, Options& opt) :
+    primary_(basis), psio_(psio), options_(opt), restricted_(true)
+{
+    common_init();
+}
+
 PseudospectralHF::~PseudospectralHF()
 {
 }
@@ -141,8 +148,8 @@ void PseudospectralHF::form_J_DF_RHF()
         nthread = omp_get_max_threads();
     #endif
 
-    double** Dp = D_->pointer();
-    double** Jp = J_->pointer();
+    double** Dp = Da_->pointer();
+    double** Jp = Ja_->pointer();
 
     double** Db = new double*[nthread];
     double** db = new double*[nthread];
@@ -303,7 +310,7 @@ void PseudospectralHF::form_K_PS_RHF()
     shared_ptr<Matrix> Q(new Matrix("Q", P_, primary_->nbf()));
 
     C_DGEMM('N', 'N', P_, primary_->nbf(), primary_->nbf(), 1.0, X_->pointer()[0], primary_->nbf(),
-        D_->pointer()[0], primary_->nbf(), 0.0, Q->pointer()[0], primary_->nbf());
+        Da_->pointer()[0], primary_->nbf(), 0.0, Q->pointer()[0], primary_->nbf());
 
     int nthread = 1;
     #ifdef _OMP
@@ -350,9 +357,9 @@ void PseudospectralHF::form_K_PS_RHF()
     A.clear();
 
     C_DGEMM('T', 'N', primary_->nbf(), primary_->nbf(), P_, 1.0, Z->pointer()[0], primary_->nbf(),
-        X_->pointer()[0], primary_->nbf(), 0.0, K_->pointer()[0], primary_->nbf());
+        X_->pointer()[0], primary_->nbf(), 0.0, Ka_->pointer()[0], primary_->nbf());
 
-    double** Kp = K_->pointer();
+    double** Kp = Ka_->pointer();
     for (int m = 1; m < primary_->nbf(); m++) {
         for (int n = m; n < primary_->nbf(); n++) {
             Kp[m][n] = 0.5 * Kp[n][m] + 0.5 * Kp[m][n];
@@ -364,6 +371,16 @@ void PseudospectralHF::form_K_PS_RHF()
         mkl_set_num_threads(mkl_n);
     #endif
 
+}
+
+void PseudospectralHF::form_J_DF_UHF()
+{
+    return; // TODO implement UHF!
+}
+
+void PseudospectralHF::form_K_PS_UHF()
+{
+    return; // TODO implement UHF!
 }
 
 }}

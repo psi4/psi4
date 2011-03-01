@@ -121,7 +121,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if (name == "SCF"|| options.read_globals()) {
     /*- The DFT grid specification, such as SG1 -*/
-    options.add_str("GRID_STRING","","SG1");
+    options.add_str("DFT_GRID_NAME","","SG1");
     /*- The number of radial points in the DFT grid -*/
     options.add_int("N_RADIAL",99);
     /*- The number of spherical points in the DFT grid -*/
