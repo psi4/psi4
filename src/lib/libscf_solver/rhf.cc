@@ -194,13 +194,13 @@ double RHF::compute_energy()
         form_B();
     else if (scf_type_ == "POISSON")
         form_B_Poisson();
-    else if (scf_type_ == "PSEUDOSPECTRAL")
-        pseudospectral_ = shared_ptr<PseudospectralHF>(new PseudospectralHF(basisset_, D_, J_, K_, psio_, options_));
-    else if (scf_type_ == "L_DF") {
-        form_A();
-        I_ = block_matrix(basisset_->molecule()->natom(),doccpi_[0]);
-        form_domain_bookkeeping();
-    }
+//    else if (scf_type_ == "PSEUDOSPECTRAL")
+//        pseudospectral_ = shared_ptr<PseudospectralHF>(new PseudospectralHF(basisset_, D_, J_, K_, psio_, options_));
+//    else if (scf_type_ == "L_DF") {
+//        form_A();
+//        I_ = block_matrix(basisset_->molecule()->natom(),doccpi_[0]);
+//        form_domain_bookkeeping();
+//    }
 
     fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
     fflush(outfile);
@@ -239,8 +239,8 @@ double RHF::compute_energy()
             process_tei<J_K_Functor>(jk_builder);
             G_->scale(2.0);
             G_->subtract(K_);
-        }else if (scf_type_ == "L_DF"){
-            form_G_from_RI_local_K();
+//        }else if (scf_type_ == "L_DF"){
+//            form_G_from_RI_local_K();
         }else if(scf_type_ == "OUT_OF_CORE"){
             J_K_Functor jk_builder(G_, K_, D_);
             process_tei<J_K_Functor>(jk_builder);
