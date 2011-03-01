@@ -40,6 +40,38 @@ public:
 
 };
 
+class PSMP3 : public CC {
+private:
+  void print_header();
+
+protected:
+  shared_ptr<DFTensor> dfints_;
+
+  double *tIAJB_;
+  double *t2IAJB_;
+  double *vIAJB_;
+
+  void apply_denom(double *);
+  void symmetrize();
+  void term_1();
+  void term_2();
+  void term_3();
+  void term_4();
+  void term_5();
+  void term_6();
+
+  double energy(double *);
+
+  long int mem_; // Memory (in doubles)
+
+public:
+  PSMP3(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
+  virtual ~PSMP3();
+
+  virtual double compute_energy();
+
+};
+
 }}
 
 #endif
