@@ -1254,8 +1254,8 @@ void HF::process_tei(JKFunctor & functor)
         functor.initialize();
         functor(pseudospectral_);
         pseudospectral_->form_J_DF();
-        if(functor.k_required()) pseudospectral_->form_K_PS();
-        functor.finalize();
+        if(functor.k_required())
+            pseudospectral_->form_K_PS();
     }else{
         throw PSIEXCEPTION("SCF_TYPE " + scf_type_ + " is not supported in HF::process_tei");
     }
