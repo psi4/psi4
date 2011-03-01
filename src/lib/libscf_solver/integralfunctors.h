@@ -1,6 +1,7 @@
 #include  "hf.h"
 #include "libiwl/iwl.hpp"
 #include "libmints/mints.h"
+#include "pseudospectral.h"
 
 #ifndef INTEGRALFUNCTORS_H
 #define INTEGRALFUNCTORS_H
@@ -8,6 +9,24 @@
 // If you don't want the restriction that for (PQ|RS) P>=Q, R>=S and
 // PQ>=RS, simply define this value to be nonzero
 #define NONSTANDARD_ORDERING 0
+
+/*
+ * All functors MUST implement the following, or the code won't compile.
+ * bool k_required() const - just a boolean stating whether this functor requires K
+ *
+ * void initialize() this will always be called at the beginning and should do things
+ *                   like clear memory, if needed.  It can just do nothing.
+ * void finalize()   this will always be called at the end and should do things like
+ *                   free memory and copy data, if needed.  It can just do nothing.
+ * void operator()(int pabs, int qabs, int rabs, int sabs,
+ *                 int psym, int prel, int qsym, int qrel,
+ *                 int rsym, int rrel, int ssym, int srel, double value)
+ *                   this is called by the out-of-core and direct codes, and will take
+ *                   the relative (within irrep) and absolute values of p, q, r and s, along
+ *                   with their symmetries, to generate the J and K matrices.
+ * void operator()(shared_ptr<PseudospectralHF> psHF) which will set up a PSHF object
+ */
+
 
 namespace psi{ namespace scf{
 
@@ -25,6 +44,7 @@ class J_K_Functor
     shared_ptr<Matrix> &K_;
 
 public:
+    bool k_required() const {return true;}
     void initialize(){
         J_->zero();
         K_->zero();
@@ -39,9 +59,16 @@ public:
         : J_(J), K_(K), D_(D)
     { }
 
+    void operator()(shared_ptr<PseudospectralHF> pshf) {
+        pshf->set_restricted(true);
+        pshf->set_Ja(J_);
+        pshf->set_Da(D_);
+        pshf->set_Ka(K_);
+    }
+
     void operator()(int pabs, int qabs, int rabs, int sabs,
-                    int psym, int prel, int qsym, int qrel,
-                    int rsym, int rrel, int ssym, int srel, double value) {
+                int psym, int prel, int qsym, int qrel,
+                int rsym, int rrel, int ssym, int srel, double value) {
         /* (pq|rs) */
         if(rsym == ssym){
             J_->add(rsym, rrel, srel, D_->get(psym, prel, qrel) * value);
@@ -324,6 +351,8 @@ class J_Functor
     shared_ptr<Matrix> &J_;
 
 public:
+    bool k_required() const {return false;}
+
     void initialize(){
         J_->zero();
     }
@@ -335,6 +364,13 @@ public:
     J_Functor(shared_ptr<Matrix> J, const shared_ptr<Matrix> D)
         : J_(J), D_(D)
     { }
+
+    void operator()(shared_ptr<PseudospectralHF> pshf) {
+        pshf->set_restricted(true);
+        pshf->set_Ja(J_);
+        pshf->set_Da(D_);
+    }
+
 
     void operator()(int pabs, int qabs, int rabs, int sabs,
                     int psym, int prel, int qsym, int qrel,
@@ -543,6 +579,8 @@ class Ja_Jb_Ka_Kb_Functor
     shared_ptr<Matrix> &Kb_;
 
 public:
+    bool k_required() const {return true;}
+
     void initialize(){
         Ja_->zero();
         Jb_->zero();
@@ -561,6 +599,17 @@ public:
                shared_ptr<Matrix> Kb, const shared_ptr<Matrix> Da, const shared_ptr<Matrix> Db)
         : Ja_(Ja), Jb_(Jb), Ka_(Ka), Kb_(Kb), Da_(Da), Db_(Db)
     { }
+
+    void operator()(shared_ptr<PseudospectralHF> pshf) {
+        pshf->set_restricted(true);
+        pshf->set_Ja(Ja_);
+        pshf->set_Jb(Jb_);
+        pshf->set_Da(Da_);
+        pshf->set_Db(Db_);
+        pshf->set_Ka(Ka_);
+        pshf->set_Kb(Kb_);
+    }
+
 
     void operator()(int pabs, int qabs, int rabs, int sabs,
                     int psym, int prel, int qsym, int qrel,
@@ -906,6 +955,8 @@ class Ja_Jb_Functor
     shared_ptr<Matrix> &Jb_;
 
 public:
+    bool k_required() const {return false;}
+
     void initialize(){
         Ja_->zero();
         Jb_->zero();
@@ -918,6 +969,14 @@ Ja_Jb_Functor(shared_ptr<Matrix> Ja, shared_ptr<Matrix> Jb,
               const shared_ptr<Matrix> Da, const shared_ptr<Matrix> Db)
     : Ja_(Ja), Jb_(Jb), Da_(Da), Db_(Db)
 { }
+
+void operator()(shared_ptr<PseudospectralHF> pshf) {
+    pshf->set_restricted(true);
+    pshf->set_Ja(Ja_);
+    pshf->set_Jb(Jb_);
+    pshf->set_Da(Da_);
+    pshf->set_Db(Db_);
+}
 
 void operator()(int pabs, int qabs, int rabs, int sabs,
                 int psym, int prel, int qsym, int qrel,
@@ -1144,6 +1203,10 @@ void operator()(int pabs, int qabs, int rabs, int sabs,
 }
 };
 
+template <class JKFunctor> void form_J_DF(JKFunctor &functor)
+{
+
+}
 
 template <class JKFunctor>
 void HF::process_tei(JKFunctor & functor)
@@ -1181,17 +1244,17 @@ void HF::process_tei(JKFunctor & functor)
         functor.finalize();
         delete iwl;
     }else if (scf_type_ == "DIRECT"){
-        if (!eri_) {
-            shared_ptr<IntegralFactory> integral = shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-            shared_ptr<TwoBodyAOInt> aoeri = shared_ptr<TwoBodyAOInt>(integral->eri());
-            eri_ = shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoeri, integral));
-        }
-
         SOShellCombinationsIterator shellIter(sobasisset_, sobasisset_, sobasisset_, sobasisset_);
         functor.initialize();
         for (shellIter.first(); shellIter.is_done() == false; shellIter.next()) {
             eri_->compute_shell(shellIter, functor);
         }
+        functor.finalize();
+    }else if (scf_type_ == "PSEUDOSPECTRAL"){
+        functor.initialize();
+        functor(pseudospectral_);
+        pseudospectral_->form_J_DF();
+        if(functor.k_required()) pseudospectral_->form_K_PS();
         functor.finalize();
     }else{
         throw PSIEXCEPTION("SCF_TYPE " + scf_type_ + " is not supported in HF::process_tei");
