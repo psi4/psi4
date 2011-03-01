@@ -349,7 +349,7 @@ void FittingMetric::form_QR_inverse(double tol)
 
         if (metric_->colspi()[h] == 0) continue;
 
-        metric_->print();
+//        metric_->print();
 
         double** J = metric_->pointer(h);
         int n = metric_->colspi()[h];
