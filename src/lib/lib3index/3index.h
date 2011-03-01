@@ -243,6 +243,10 @@ class TensorChunk {
 
 
 class DFTensor {
+private:
+
+    // Should the integral file be deleted?
+    int keep_;
 
 protected:
 
@@ -293,6 +297,7 @@ protected:
 
 public:
     DFTensor(shared_ptr<PSIO>, shared_ptr<BasisSet> primary, shared_ptr<BasisSet> aux);
+    DFTensor(shared_ptr<PSIO>, shared_ptr<BasisSet> primary, shared_ptr<BasisSet> aux, bool);
     virtual ~DFTensor();
 
     // Form all MO integrals 

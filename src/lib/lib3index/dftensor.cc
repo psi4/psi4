@@ -33,10 +33,18 @@ DFTensor::DFTensor(shared_ptr<PSIO> psio, shared_ptr<BasisSet> primary, shared_p
     psio_(psio), primary_(primary), auxiliary_(aux), metric_(new FittingMetric(aux))
 {
     common_init(); 
+    keep_ = 0;
+}
+DFTensor::DFTensor(shared_ptr<PSIO> psio, shared_ptr<BasisSet> primary, shared_ptr<BasisSet> aux, bool keep) :
+    psio_(psio), primary_(primary), auxiliary_(aux), metric_(new FittingMetric(aux))
+{
+    common_init();
+    keep_ = 0;
+    if (keep) keep_ = 1;
 }
 DFTensor::~DFTensor()
 {
-    psio_->close(PSIF_DF_TENSOR, 0);
+    psio_->close(PSIF_DF_TENSOR, keep_);
 }
 void DFTensor::common_init()
 {
