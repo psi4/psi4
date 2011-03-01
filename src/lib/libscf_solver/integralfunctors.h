@@ -368,13 +368,12 @@ public:
 
     void initialize(){
         Ja_->zero();
-        Jb_->zero();
         Ka_->zero();
         Kb_->zero();
     }
     void finalize(){
         Ja_->copy_lower_to_upper();
-        Jb_->copy_lower_to_upper();
+        Jb_->copy(Ja_);
         Ka_->copy_lower_to_upper();
         Kb_->copy_lower_to_upper();
     }
@@ -399,13 +398,9 @@ public:
     void operator()(int pabs, int qabs, int rabs, int sabs,
                     int psym, int prel, int qsym, int qrel,
                     int rsym, int rrel, int ssym, int srel, double value) {
-        double temp;
-
         /* (pq|rs) */
         if(rsym == ssym){
-            temp = (Da_->get(psym, prel, qrel) + Db_->get(psym, prel, qrel)) * value;
-            Ja_->add(rsym, rrel, srel, temp);
-            Jb_->add(rsym, rrel, srel, temp);
+            Ja_->add(rsym, rrel, srel, (Da_->get(psym, prel, qrel) + Db_->get(psym, prel, qrel)) * value);
         }
         if(qabs >= rabs){
             if(qsym == rsym){
@@ -425,9 +420,7 @@ public:
 
             /* (qp|rs) */
             if(rsym == ssym){
-                temp = (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value;
-                Ja_->add(rsym, rrel, srel, temp);
-                Jb_->add(rsym, rrel, srel, temp);
+                Ja_->add(rsym, rrel, srel, (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value);
             }
 
             if(pabs >= rabs){
@@ -447,9 +440,7 @@ public:
 
             /* (rs|pq) */
             if(psym == qsym){
-                temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
-                Ja_->add(psym, prel, qrel, temp);
-                Jb_->add(psym, prel, qrel, temp);
+                Ja_->add(psym, prel, qrel, (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value);
             }
             if(sabs >= pabs){
                 if(ssym == psym){
@@ -460,9 +451,7 @@ public:
 
             /* (sr|pq) */
             if(psym == qsym){
-                temp = (Da_->get(ssym, srel, rrel) + Db_->get(ssym, srel, rrel)) * value;
-                Ja_->add(psym, prel, qrel, temp);
-                Jb_->add(psym, prel, qrel, temp);
+                Ja_->add(psym, prel, qrel, (Da_->get(ssym, srel, rrel) + Db_->get(ssym, srel, rrel)) * value);
             }
             if(rabs >= pabs){
                 if(rsym == psym){
@@ -496,9 +485,7 @@ public:
             }
             /* (qp|rs) */
             if(rsym == ssym){
-                temp = (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value;
-                Ja_->add(rsym, rrel, srel, temp);
-                Jb_->add(rsym, rrel, srel, temp);
+                Ja_->add(rsym, rrel, srel, (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value);
             }
             if(pabs >= rabs){
                 if(psym == rsym){
@@ -517,9 +504,7 @@ public:
         }else if(pabs!=qabs && rabs==sabs){
             /* (qp|rs) */
             if(rsym == ssym){
-                temp = (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value;
-                Ja_->add(rsym, rrel, srel, temp);
-                Jb_->add(rsym, rrel, srel, temp);
+                Ja_->add(rsym, rrel, srel, (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value);
             }
             if(pabs >= rabs){
                 if(qsym == rsym){
@@ -530,9 +515,7 @@ public:
 
             /* (rs|pq) */
             if(psym == qsym){
-                temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
-                Ja_->add(psym, prel, qrel, temp);
-                Jb_->add(psym, prel, qrel, temp);
+                Ja_->add(psym, prel, qrel, (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value);
             }
             if(sabs >= pabs){
                 if(ssym == psym){
@@ -559,9 +542,7 @@ public:
 
             /* (rs|pq) */
             if(psym == qsym){
-                temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
-                Ja_->add(psym, prel, qrel, temp);
-                Jb_->add(psym, prel, qrel, temp);
+                Ja_->add(psym, prel, qrel, (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value);
             }
             if(sabs >= pabs){
                 if(ssym == psym){
@@ -572,9 +553,7 @@ public:
 
             /* (sr|pq) */
             if(psym == qsym){
-                temp = (Da_->get(ssym, srel, rrel) + Db_->get(ssym, srel, rrel)) * value;
-                Ja_->add(psym, prel, qrel, temp);
-                Jb_->add(psym, prel, qrel, temp);
+                Ja_->add(psym, prel, qrel, (Da_->get(ssym, srel, rrel) + Db_->get(ssym, srel, rrel)) * value);
             }
             if(rabs >= pabs){
                 if(rsym == psym){
@@ -585,9 +564,7 @@ public:
         }else if(pabs==qabs && rabs==sabs && (pabs!=rabs || qabs!=sabs)){
             /* (rs|pq) */
             if(psym == qsym){
-                temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
-                Ja_->add(psym, prel, qrel, temp);
-                Jb_->add(psym, prel, qrel, temp);
+                Ja_->add(psym, prel, qrel, (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value);
             }
             if(sabs >= pabs){
                 if(ssym == psym){
@@ -619,11 +596,10 @@ public:
 
     void initialize(){
         Ja_->zero();
-        Jb_->zero();
     }
     void finalize(){
         Ja_->copy_lower_to_upper();
-        Jb_->copy_lower_to_upper();
+        Jb_->copy(Ja_);
     }
 Ja_Jb_Functor(shared_ptr<Matrix> Ja, shared_ptr<Matrix> Jb,
               const shared_ptr<Matrix> Da, const shared_ptr<Matrix> Db)
@@ -645,9 +621,7 @@ void operator()(int pabs, int qabs, int rabs, int sabs,
 
     /* (pq|rs) */
     if(rsym == ssym){
-        temp = (Da_->get(psym, prel, qrel) + Db_->get(psym, prel, qrel)) * value;
-        Ja_->add(rsym, rrel, srel, temp);
-        Jb_->add(rsym, rrel, srel, temp);
+        Ja_->add(rsym, rrel, srel, (Da_->get(psym, prel, qrel) + Db_->get(psym, prel, qrel)) * value);
     }
 
     if(pabs!=qabs && rabs!=sabs && (pabs!=rabs || qabs!=sabs)){
@@ -655,25 +629,19 @@ void operator()(int pabs, int qabs, int rabs, int sabs,
 
         /* (qp|rs) */
         if(rsym == ssym){
-            temp = (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value;
-            Ja_->add(rsym, rrel, srel, temp);
-            Jb_->add(rsym, rrel, srel, temp);
+            Ja_->add(rsym, rrel, srel, (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value);
         }
 
         /* (qp|sr) */
 
         /* (rs|pq) */
         if(psym == qsym){
-            temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
-            Ja_->add(psym, prel, qrel, temp);
-            Jb_->add(psym, prel, qrel, temp);
+            Ja_->add(psym, prel, qrel, (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value);
         }
 
         /* (sr|pq) */
         if(psym == qsym){
-            temp = (Da_->get(ssym, srel, rrel) + Db_->get(ssym, srel, rrel)) * value;
-            Ja_->add(psym, prel, qrel, temp);
-            Jb_->add(psym, prel, qrel, temp);
+            Ja_->add(psym, prel, qrel, (Da_->get(ssym, srel, rrel) + Db_->get(ssym, srel, rrel)) * value);
         }
 
         /* (rs|qp) */
@@ -685,25 +653,19 @@ void operator()(int pabs, int qabs, int rabs, int sabs,
 
         /* (qp|rs) */
         if(rsym == ssym){
-            temp = (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value;
-            Ja_->add(rsym, rrel, srel, temp);
-            Jb_->add(rsym, rrel, srel, temp);
+            Ja_->add(rsym, rrel, srel, (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value);
         }
 
         /* (qp|sr) */
     }else if(pabs!=qabs && rabs==sabs){
         /* (qp|rs) */
         if(rsym == ssym){
-            temp = (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value;
-            Ja_->add(rsym, rrel, srel, temp);
-            Jb_->add(rsym, rrel, srel, temp);
+            Ja_->add(rsym, rrel, srel, (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value);
         }
 
         /* (rs|pq) */
         if(psym == qsym){
-            temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
-            Ja_->add(psym, prel, qrel, temp);
-            Jb_->add(psym, prel, qrel, temp);
+            Ja_->add(psym, prel, qrel, (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value);
         }
 
         /* (rs|qp) */
@@ -713,23 +675,17 @@ void operator()(int pabs, int qabs, int rabs, int sabs,
 
         /* (rs|pq) */
         if(psym == qsym){
-            temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
-            Ja_->add(psym, prel, qrel, temp);
-            Jb_->add(psym, prel, qrel, temp);
+            Ja_->add(psym, prel, qrel, (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value);
         }
 
         /* (sr|pq) */
         if(psym == qsym){
-            temp = (Da_->get(ssym, srel, rrel) + Db_->get(ssym, srel, rrel)) * value;
-            Ja_->add(psym, prel, qrel, temp);
-            Jb_->add(psym, prel, qrel, temp);
+            Ja_->add(psym, prel, qrel, (Da_->get(ssym, srel, rrel) + Db_->get(ssym, srel, rrel)) * value);
         }
     }else if(pabs==qabs && rabs==sabs && (pabs!=rabs || qabs!=sabs)){
         /* (rs|pq) */
         if(psym == qsym){
-            temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
-            Ja_->add(psym, prel, qrel, temp);
-            Jb_->add(psym, prel, qrel, temp);
+            Ja_->add(psym, prel, qrel, (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value);
         }
     }
 }
