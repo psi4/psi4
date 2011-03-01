@@ -8,9 +8,6 @@
 
 #include "cc.h"
 
-#define DFCC_INT_FILE 56  // temporary
-#define DFCC_DIIS_FILE 42  // temporary
-
 using namespace psi;
 
 namespace psi { namespace dfcc {
@@ -19,15 +16,11 @@ class CCD : public CC {
 private:
   void print_header();
 
-  void df_integrals();
-  void mo_integrals();
-
 protected:
   shared_ptr<DFCCDIIS> diis_;
 
   double *tIAJB_;
   double *t2IAJB_;
-
   double *vIAJB_;
   double *xIAJB_;
 
