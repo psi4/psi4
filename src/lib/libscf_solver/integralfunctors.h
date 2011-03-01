@@ -1,14 +1,12 @@
+#ifndef INTEGRALFUNCTORS_H
+#define INTEGRALFUNCTORS_H
+
 #include  "hf.h"
 #include "libiwl/iwl.hpp"
 #include "libmints/mints.h"
 #include "pseudospectral.h"
 
-#ifndef INTEGRALFUNCTORS_H
-#define INTEGRALFUNCTORS_H
-
-// If you don't want the restriction that for (PQ|RS) P>=Q, R>=S and
-// PQ>=RS, simply define this value to be nonzero
-#define NONSTANDARD_ORDERING 0
+// We're assuming that for (PQ|RS) P>=Q, R>=S and PQ>=RS
 
 /*
  * All functors MUST implement the following, or the code won't compile.
@@ -81,13 +79,6 @@ public:
 
         if(pabs!=qabs && rabs!=sabs && (pabs!=rabs || qabs!=sabs)){
             /* (pq|sr) */
-#if NONSTANDARD_ORDERING
-            if(sabs >= rabs){
-                if(ssym == rsym){
-                    J_->add(ssym, srel, rrel, D_->get(psym, prel, qrel) * value);
-                }
-            }
-#endif
             if(qabs >= sabs){
                 if(qsym == ssym){
                     K_->add(qsym, qrel, srel, D_->get(psym, prel, rrel) * value);
@@ -95,15 +86,10 @@ public:
             }
 
             /* (qp|rs) */
-#if NONSTANDARD_ORDERING
-            if(rabs >= sabs){
-#endif
-                if(rsym == ssym){
-                    J_->add(rsym, rrel, srel, D_->get(qsym, qrel, prel) * value);
-                }
-#if NONSTANDARD_ORDERING
+            if(rsym == ssym){
+                J_->add(rsym, rrel, srel, D_->get(qsym, qrel, prel) * value);
             }
-#endif
+
             if(pabs >= rabs){
                 if(psym == rsym){
                     K_->add(psym, prel, rrel, D_->get(qsym, qrel, srel) * value);
@@ -111,13 +97,6 @@ public:
             }
 
             /* (qp|sr) */
-#if NONSTANDARD_ORDERING
-            if(sabs >= rabs){
-                if(ssym == rsym){
-                    J_->add(ssym, srel, rrel,  D_->get(qsym, qrel, prel) * value);
-                }
-            }
-#endif
             if(pabs >= sabs){
                 if(psym == ssym){
                     K_->add(psym, prel, srel, D_->get(qsym, qrel, rrel) * value);
@@ -125,15 +104,10 @@ public:
             }
 
             /* (rs|pq) */
-#if NONSTANDARD_ORDERING
-            if(pabs >= qabs){
-#endif
-                if(psym == qsym){
-                    J_->add(psym, prel, qrel, D_->get(rsym, rrel, srel) * value);
-                }
-#if NONSTANDARD_ORDERING
+            if(psym == qsym){
+                J_->add(psym, prel, qrel, D_->get(rsym, rrel, srel) * value);
             }
-#endif
+
             if(sabs >= pabs){
                 if(ssym == psym){
                     K_->add(ssym, srel, prel, D_->get(rsym, rrel, qrel) * value);
@@ -141,15 +115,10 @@ public:
             }
 
             /* (sr|pq) */
-#if NONSTANDARD_ORDERING
-            if(pabs >= qabs){
-#endif
-                if(psym == qsym){
-                    J_->add(psym, prel, qrel, D_->get(ssym, srel, rrel) * value);
-                }
-#if NONSTANDARD_ORDERING
+            if(psym == qsym){
+                J_->add(psym, prel, qrel, D_->get(ssym, srel, rrel) * value);
             }
-#endif
+
             if(rabs >= pabs){
                 if(rsym == psym){
                     K_->add(rsym, rrel, prel, D_->get(ssym, srel, qrel) * value);
@@ -157,13 +126,6 @@ public:
             }
 
             /* (rs|qp) */
-#if NONSTANDARD_ORDERING
-            if(qabs >= pabs){
-                if(qsym == psym){
-                    J_->add(qsym, qrel, prel, D_->get(rsym, rrel, srel) * value);
-                }
-            }
-#endif
             if(sabs >= qabs){
                 if(ssym == qsym){
                     K_->add(ssym, srel, qrel, D_->get(rsym, rrel, prel) * value);
@@ -171,13 +133,6 @@ public:
             }
 
             /* (sr|qp) */
-#if NONSTANDARD_ORDERING
-            if(qabs >= pabs){
-                if(qsym == psym){
-                    J_->add(qsym, qrel, prel, D_->get(ssym, srel, rrel) * value);
-                }
-            }
-#endif
             if(rabs >= qabs){
                 if(rsym == qsym){
                     K_->add(rsym, rrel, qrel, D_->get(ssym, srel, prel) * value);
@@ -185,28 +140,15 @@ public:
             }
         }else if(pabs!=qabs && rabs!=sabs && pabs==rabs && qabs==sabs){
             /* (pq|sr) */
-#if NONSTANDARD_ORDERING
-            if(sabs >= rabs){
-                if(ssym == rsym){
-                    J_->add(ssym, srel, rrel, D_->get(psym, prel, qrel) * value);
-                }
-            }
-#endif
             if(qabs >= sabs){
                 if(qsym == ssym){
                     K_->add(qsym, qrel, srel, D_->get(psym, prel, rrel) * value);
                 }
             }
             /* (qp|rs) */
-#if NONSTANDARD_ORDERING
-            if(rabs >= sabs){
-#endif
-                if(rsym == ssym){
-                    J_->add(rsym, rrel, srel, D_->get(qsym, qrel, prel) * value);
-                }
-#if NONSTANDARD_ORDERING
+            if(rsym == ssym){
+                J_->add(rsym, rrel, srel, D_->get(qsym, qrel, prel) * value);
             }
-#endif
             if(pabs >= rabs){
                 if(psym == rsym){
                     K_->add(psym, prel, rrel, D_->get(qsym, qrel, srel) * value);
@@ -214,13 +156,6 @@ public:
             }
 
             /* (qp|sr) */
-#if NONSTANDARD_ORDERING
-            if(sabs >= rabs){
-                if(ssym == rsym){
-                    J_->add(ssym, srel, rrel, D_->get(qsym, qrel, prel) * value);
-                }
-            }
-#endif
             if(pabs >= sabs){
                 if(psym == ssym){
                     K_->add(psym, prel, srel, D_->get(qsym, qrel, rrel) * value);
@@ -228,15 +163,10 @@ public:
             }
         }else if(pabs!=qabs && rabs==sabs){
             /* (qp|rs) */
-#if NONSTANDARD_ORDERING
-            if(rabs >= sabs){
-#endif
-                if(rsym == ssym){
-                    J_->add(rsym, rrel, srel, D_->get(qsym, qrel, prel) * value);
-                }
-#if NONSTANDARD_ORDERING
+            if(rsym == ssym){
+                J_->add(rsym, rrel, srel, D_->get(qsym, qrel, prel) * value);
             }
-#endif
+
             if(pabs >= rabs){
                 if(qsym == rsym){
                     K_->add(psym, prel, rrel, D_->get(qsym, qrel, srel) * value);
@@ -244,15 +174,10 @@ public:
             }
 
             /* (rs|pq) */
-#if NONSTANDARD_ORDERING
-            if(pabs >= qabs){
-#endif
-                if(psym == qsym){
-                    J_->add(psym, prel, qrel, D_->get(rsym, rrel, srel) * value);
-                }
-#if NONSTANDARD_ORDERING
+            if(psym == qsym){
+                J_->add(psym, prel, qrel, D_->get(rsym, rrel, srel) * value);
             }
-#endif
+
             if(sabs >= pabs){
                 if(ssym == psym){
                     K_->add(ssym, srel, prel, D_->get(rsym, rrel, qrel) * value);
@@ -260,13 +185,6 @@ public:
             }
 
             /* (rs|qp) */
-#if NONSTANDARD_ORDERING
-            if(qabs >= pabs){
-                if(qsym == psym){
-                    J_->add(qsym, qrel, prel, D_->get(rsym, rrel, srel) * value);
-                }
-            }
-#endif
             if(sabs >= qabs){
                 if(ssym == qsym){
                     K_->add(ssym, srel, qrel, D_->get(rsym, rrel, prel) * value);
@@ -274,13 +192,6 @@ public:
             }
         }else if(pabs==qabs && rabs!=sabs){
             /* (pq|sr) */
-#if NONSTANDARD_ORDERING
-            if(sabs >= rabs){
-                if(ssym == rsym){
-                    J_->add(ssym, srel, rrel, D_->get(psym, prel, qrel) * value);
-                }
-            }
-#endif
             if(qabs >= sabs){
                 if(qsym == ssym){
                     K_->add(qsym, qrel, srel, D_->get(psym, prel, rrel) * value);
@@ -288,15 +199,10 @@ public:
             }
 
             /* (rs|pq) */
-#if NONSTANDARD_ORDERING
-            if(pabs >= qabs){
-#endif
-                if(psym == qsym){
-                    J_->add(psym, prel, qrel, D_->get(rsym, rrel, srel) * value);
-                }
-#if NONSTANDARD_ORDERING
+            if(psym == qsym){
+                J_->add(psym, prel, qrel, D_->get(rsym, rrel, srel) * value);
             }
-#endif
+
             if(sabs >= pabs){
                 if(ssym == psym){
                     K_->add(ssym, srel, prel, D_->get(rsym, rrel, qrel) * value);
@@ -304,15 +210,10 @@ public:
             }
 
             /* (sr|pq) */
-#if NONSTANDARD_ORDERING
-            if(pabs >= qabs){
-#endif
-                if(psym == qsym){
-                    J_->add(psym, prel, qrel, D_->get(ssym, srel, rrel) * value);
-                }
-#if NONSTANDARD_ORDERING
+            if(psym == qsym){
+                J_->add(psym, prel, qrel, D_->get(ssym, srel, rrel) * value);
             }
-#endif
+
             if(rabs >= pabs){
                 if(rsym == psym){
                     K_->add(rsym, rrel, prel, D_->get(ssym, srel, qrel) * value);
@@ -320,15 +221,10 @@ public:
             }
         }else if(pabs==qabs && rabs==sabs && (pabs!=rabs || qabs!=sabs)){
             /* (rs|pq) */
-#if NONSTANDARD_ORDERING
-            if(pabs >= qabs){
-#endif
-                if(psym == qsym){
-                    J_->add(psym, prel, qrel, D_->get(rsym, rrel, srel) * value);
-                }
-#if NONSTANDARD_ORDERING
+            if(psym == qsym){
+                J_->add(psym, prel, qrel, D_->get(rsym, rrel, srel) * value);
             }
-#endif
+
             if(sabs >= pabs){
                 if(ssym == psym){
                     K_->add(ssym, srel, prel, D_->get(rsym, rrel, qrel) * value);
@@ -382,178 +278,67 @@ public:
 
         if(pabs!=qabs && rabs!=sabs && (pabs!=rabs || qabs!=sabs)){
             /* (pq|sr) */
-#if NONSTANDARD_ORDERING
-            if(sabs >= rabs){
-                if(ssym == rsym){
-                    J_->add(ssym, srel, rrel, D_->get(psym, prel, qrel) * value);
-                }
-            }
-#endif
 
             /* (qp|rs) */
-#if NONSTANDARD_ORDERING
-            if(rabs >= sabs){
-#endif
-                if(rsym == ssym){
-                    J_->add(rsym, rrel, srel, D_->get(qsym, qrel, prel) * value);
-                }
-#if NONSTANDARD_ORDERING
+            if(rsym == ssym){
+                J_->add(rsym, rrel, srel, D_->get(qsym, qrel, prel) * value);
             }
-#endif
 
             /* (qp|sr) */
-#if NONSTANDARD_ORDERING
-            if(sabs >= rabs){
-                if(ssym == rsym){
-                    J_->add(ssym, srel, rrel,  D_->get(qsym, qrel, prel) * value);
-                }
-            }
-#endif
 
             /* (rs|pq) */
-#if NONSTANDARD_ORDERING
-            if(pabs >= qabs){
-#endif
-                if(psym == qsym){
-                    J_->add(psym, prel, qrel, D_->get(rsym, rrel, srel) * value);
-                }
-#if NONSTANDARD_ORDERING
+            if(psym == qsym){
+                J_->add(psym, prel, qrel, D_->get(rsym, rrel, srel) * value);
             }
-#endif
 
             /* (sr|pq) */
-#if NONSTANDARD_ORDERING
-            if(pabs >= qabs){
-#endif
-                if(psym == qsym){
-                    J_->add(psym, prel, qrel, D_->get(ssym, srel, rrel) * value);
-                }
-#if NONSTANDARD_ORDERING
+            if(psym == qsym){
+                J_->add(psym, prel, qrel, D_->get(ssym, srel, rrel) * value);
             }
-#endif
 
             /* (rs|qp) */
-#if NONSTANDARD_ORDERING
-            if(qabs >= pabs){
-                if(qsym == psym){
-                    J_->add(qsym, qrel, prel, D_->get(rsym, rrel, srel) * value);
-                }
-            }
-#endif
 
             /* (sr|qp) */
-#if NONSTANDARD_ORDERING
-            if(qabs >= pabs){
-                if(qsym == psym){
-                    J_->add(qsym, qrel, prel, D_->get(ssym, srel, rrel) * value);
-                }
-            }
-#endif
         }else if(pabs!=qabs && rabs!=sabs && pabs==rabs && qabs==sabs){
             /* (pq|sr) */
-#if NONSTANDARD_ORDERING
-            if(sabs >= rabs){
-                if(ssym == rsym){
-                    J_->add(ssym, srel, rrel, D_->get(psym, prel, qrel) * value);
-                }
-            }
-#endif
 
             /* (qp|rs) */
-#if NONSTANDARD_ORDERING
-            if(rabs >= sabs){
-#endif
-                if(rsym == ssym){
-                    J_->add(rsym, rrel, srel, D_->get(qsym, qrel, prel) * value);
-                }
-#if NONSTANDARD_ORDERING
+            if(rsym == ssym){
+                J_->add(rsym, rrel, srel, D_->get(qsym, qrel, prel) * value);
             }
-#endif
 
             /* (qp|sr) */
-#if NONSTANDARD_ORDERING
-            if(sabs >= rabs){
-                if(ssym == rsym){
-                    J_->add(ssym, srel, rrel, D_->get(qsym, qrel, prel) * value);
-                }
-            }
-#endif
 
         }else if(pabs!=qabs && rabs==sabs){
             /* (qp|rs) */
-#if NONSTANDARD_ORDERING
-            if(rabs >= sabs){
-#endif
-                if(rsym == ssym){
-                    J_->add(rsym, rrel, srel, D_->get(qsym, qrel, prel) * value);
-                }
-#if NONSTANDARD_ORDERING
+            if(rsym == ssym){
+                J_->add(rsym, rrel, srel, D_->get(qsym, qrel, prel) * value);
             }
-#endif
 
             /* (rs|pq) */
-#if NONSTANDARD_ORDERING
-            if(pabs >= qabs){
-#endif
-                if(psym == qsym){
-                    J_->add(psym, prel, qrel, D_->get(rsym, rrel, srel) * value);
-                }
-#if NONSTANDARD_ORDERING
+            if(psym == qsym){
+                J_->add(psym, prel, qrel, D_->get(rsym, rrel, srel) * value);
             }
-#endif
 
             /* (rs|qp) */
-#if NONSTANDARD_ORDERING
-            if(qabs >= pabs){
-                if(qsym == psym){
-                    J_->add(qsym, qrel, prel, D_->get(rsym, rrel, srel) * value);
-                }
-            }
-#endif
 
         }else if(pabs==qabs && rabs!=sabs){
             /* (pq|sr) */
-#if NONSTANDARD_ORDERING
-            if(sabs >= rabs){
-                if(ssym == rsym){
-                    J_->add(ssym, srel, rrel, D_->get(psym, prel, qrel) * value);
-                }
-            }
-#endif
 
             /* (rs|pq) */
-#if NONSTANDARD_ORDERING
-            if(pabs >= qabs){
-#endif
-                if(psym == qsym){
-                    J_->add(psym, prel, qrel, D_->get(rsym, rrel, srel) * value);
-                }
-#if NONSTANDARD_ORDERING
+            if(psym == qsym){
+                J_->add(psym, prel, qrel, D_->get(rsym, rrel, srel) * value);
             }
-#endif
 
             /* (sr|pq) */
-#if NONSTANDARD_ORDERING
-            if(pabs >= qabs){
-#endif
-                if(psym == qsym){
-                    J_->add(psym, prel, qrel, D_->get(ssym, srel, rrel) * value);
-                }
-#if NONSTANDARD_ORDERING
+            if(psym == qsym){
+                J_->add(psym, prel, qrel, D_->get(ssym, srel, rrel) * value);
             }
-#endif
-
         }else if(pabs==qabs && rabs==sabs && (pabs!=rabs || qabs!=sabs)){
             /* (rs|pq) */
-#if NONSTANDARD_ORDERING
-            if(pabs >= qabs){
-#endif
-                if(psym == qsym){
-                    J_->add(psym, prel, qrel, D_->get(rsym, rrel, srel) * value);
-                }
-#if NONSTANDARD_ORDERING
+            if(psym == qsym){
+                J_->add(psym, prel, qrel, D_->get(rsym, rrel, srel) * value);
             }
-#endif
         }
     }
 };
@@ -631,15 +416,6 @@ public:
 
         if(pabs!=qabs && rabs!=sabs && (pabs!=rabs || qabs!=sabs)){
             /* (pq|sr) */
-#if NONSTANDARD_ORDERING
-            if(sabs >= rabs){
-                if(ssym == rsym){
-                    temp = (Da_->get(psym, prel, qrel) + Db_->get(psym, prel, qrel)) * value;
-                    Ja_->add(ssym, srel, rrel, temp);
-                    Jb_->add(ssym, srel, rrel, temp);
-                }
-            }
-#endif
             if(qabs >= sabs){
                 if(qsym == ssym){
                     Ka_->add(qsym, qrel, srel, Da_->get(psym, prel, rrel) * value);
@@ -648,17 +424,12 @@ public:
             }
 
             /* (qp|rs) */
-#if NONSTANDARD_ORDERING
-            if(rabs >= sabs){
-#endif
-                if(rsym == ssym){
-                    temp = (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value;
-                    Ja_->add(rsym, rrel, srel, temp);
-                    Jb_->add(rsym, rrel, srel, temp);
-                }
-#if NONSTANDARD_ORDERING
+            if(rsym == ssym){
+                temp = (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value;
+                Ja_->add(rsym, rrel, srel, temp);
+                Jb_->add(rsym, rrel, srel, temp);
             }
-#endif
+
             if(pabs >= rabs){
                 if(psym == rsym){
                     Ka_->add(psym, prel, rrel, Da_->get(qsym, qrel, srel) * value);
@@ -667,15 +438,6 @@ public:
             }
 
             /* (qp|sr) */
-#if NONSTANDARD_ORDERING
-            if(sabs >= rabs){
-                if(ssym == rsym){
-                    temp = (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value;
-                    Ja_->add(ssym, srel, rrel, temp);
-                    Jb_->add(ssym, srel, rrel, temp);
-                }
-            }
-#endif
             if(pabs >= sabs){
                 if(psym == ssym){
                     Ka_->add(psym, prel, srel, Da_->get(qsym, qrel, rrel) * value);
@@ -684,17 +446,11 @@ public:
             }
 
             /* (rs|pq) */
-#if NONSTANDARD_ORDERING
-            if(pabs >= qabs){
-#endif
-                if(psym == qsym){
-                    temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
-                    Ja_->add(psym, prel, qrel, temp);
-                    Jb_->add(psym, prel, qrel, temp);
-                }
-#if NONSTANDARD_ORDERING
+            if(psym == qsym){
+                temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
+                Ja_->add(psym, prel, qrel, temp);
+                Jb_->add(psym, prel, qrel, temp);
             }
-#endif
             if(sabs >= pabs){
                 if(ssym == psym){
                     Ka_->add(ssym, srel, prel, Da_->get(rsym, rrel, qrel) * value);
@@ -703,17 +459,11 @@ public:
             }
 
             /* (sr|pq) */
-#if NONSTANDARD_ORDERING
-            if(pabs >= qabs){
-#endif
-                if(psym == qsym){
-                    temp = (Da_->get(ssym, srel, rrel) + Db_->get(ssym, srel, rrel)) * value;
-                    Ja_->add(psym, prel, qrel, temp);
-                    Jb_->add(psym, prel, qrel, temp);
-                }
-#if NONSTANDARD_ORDERING
+            if(psym == qsym){
+                temp = (Da_->get(ssym, srel, rrel) + Db_->get(ssym, srel, rrel)) * value;
+                Ja_->add(psym, prel, qrel, temp);
+                Jb_->add(psym, prel, qrel, temp);
             }
-#endif
             if(rabs >= pabs){
                 if(rsym == psym){
                     Ka_->add(rsym, rrel, prel, Da_->get(ssym, srel, qrel) * value);
@@ -722,15 +472,6 @@ public:
             }
 
             /* (rs|qp) */
-#if NONSTANDARD_ORDERING
-            if(qabs >= pabs){
-                if(qsym == psym){
-                    temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
-                    Ja_->add(qsym, qrel, prel, temp);
-                    Jb_->add(qsym, qrel, prel, temp);
-                }
-            }
-#endif
             if(sabs >= qabs){
                 if(ssym == qsym){
                     Ka_->add(ssym, srel, qrel, Da_->get(rsym, rrel, prel) * value);
@@ -739,15 +480,6 @@ public:
             }
 
             /* (sr|qp) */
-#if NONSTANDARD_ORDERING
-            if(qabs >= pabs){
-                if(qsym == psym){
-                    temp = (Da_->get(ssym, srel, rrel) + Db_->get(ssym, srel, rrel)) * value;
-                    Ja_->add(qsym, qrel, prel, temp);
-                    Jb_->add(qsym, qrel, prel, temp);
-                }
-            }
-#endif
             if(rabs >= qabs){
                 if(rsym == qsym){
                     Ka_->add(rsym, rrel, qrel, Da_->get(ssym, srel, prel) * value);
@@ -756,15 +488,6 @@ public:
             }
         }else if(pabs!=qabs && rabs!=sabs && pabs==rabs && qabs==sabs){
             /* (pq|sr) */
-#if NONSTANDARD_ORDERING
-            if(sabs >= rabs){
-                if(ssym == rsym){
-                    temp = (Da_->get(psym, prel, qrel) + Db_->get(psym, prel, qrel)) * value;
-                    Ja_->add(ssym, srel, rrel, temp);
-                    Jb_->add(ssym, srel, rrel, temp);
-                }
-            }
-#endif
             if(qabs >= sabs){
                 if(qsym == ssym){
                     Ka_->add(qsym, qrel, srel, Da_->get(psym, prel, rrel) * value);
@@ -772,17 +495,11 @@ public:
                 }
             }
             /* (qp|rs) */
-#if NONSTANDARD_ORDERING
-            if(rabs >= sabs){
-#endif
-                if(rsym == ssym){
-                    temp = (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value;
-                    Ja_->add(rsym, rrel, srel, temp);
-                    Jb_->add(rsym, rrel, srel, temp);
-                }
-#if NONSTANDARD_ORDERING
+            if(rsym == ssym){
+                temp = (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value;
+                Ja_->add(rsym, rrel, srel, temp);
+                Jb_->add(rsym, rrel, srel, temp);
             }
-#endif
             if(pabs >= rabs){
                 if(psym == rsym){
                     Ka_->add(psym, prel, rrel, Da_->get(qsym, qrel, srel) * value);
@@ -791,15 +508,6 @@ public:
             }
 
             /* (qp|sr) */
-#if NONSTANDARD_ORDERING
-            if(sabs >= rabs){
-                if(ssym == rsym){
-                    temp = (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value;
-                    Ja_->add(ssym, srel, rrel, temp);
-                    Jb_->add(ssym, srel, rrel, temp);
-                }
-            }
-#endif
             if(pabs >= sabs){
                 if(psym == ssym){
                     Ka_->add(psym, prel, srel, Da_->get(qsym, qrel, rrel) * value);
@@ -808,17 +516,11 @@ public:
             }
         }else if(pabs!=qabs && rabs==sabs){
             /* (qp|rs) */
-#if NONSTANDARD_ORDERING
-            if(rabs >= sabs){
-#endif
-                if(rsym == ssym){
-                    temp = (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value;
-                    Ja_->add(rsym, rrel, srel, temp);
-                    Jb_->add(rsym, rrel, srel, temp);
-                }
-#if NONSTANDARD_ORDERING
+            if(rsym == ssym){
+                temp = (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value;
+                Ja_->add(rsym, rrel, srel, temp);
+                Jb_->add(rsym, rrel, srel, temp);
             }
-#endif
             if(pabs >= rabs){
                 if(qsym == rsym){
                     Ka_->add(psym, prel, rrel, Da_->get(qsym, qrel, srel) * value);
@@ -827,17 +529,11 @@ public:
             }
 
             /* (rs|pq) */
-#if NONSTANDARD_ORDERING
-            if(pabs >= qabs){
-#endif
-                if(psym == qsym){
-                    temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
-                    Ja_->add(psym, prel, qrel, temp);
-                    Jb_->add(psym, prel, qrel, temp);
-                }
-#if NONSTANDARD_ORDERING
+            if(psym == qsym){
+                temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
+                Ja_->add(psym, prel, qrel, temp);
+                Jb_->add(psym, prel, qrel, temp);
             }
-#endif
             if(sabs >= pabs){
                 if(ssym == psym){
                     Ka_->add(ssym, srel, prel, Da_->get(rsym, rrel, qrel) * value);
@@ -846,15 +542,6 @@ public:
             }
 
             /* (rs|qp) */
-#if NONSTANDARD_ORDERING
-            if(qabs >= pabs){
-                if(qsym == psym){
-                    temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
-                    Ja_->add(qsym, qrel, prel, temp);
-                    Jb_->add(qsym, qrel, prel, temp);
-                }
-            }
-#endif
             if(sabs >= qabs){
                 if(ssym == qsym){
                     Ka_->add(ssym, srel, qrel, Da_->get(rsym, rrel, prel) * value);
@@ -863,15 +550,6 @@ public:
             }
         }else if(pabs==qabs && rabs!=sabs){
             /* (pq|sr) */
-#if NONSTANDARD_ORDERING
-            if(sabs >= rabs){
-                if(ssym == rsym){
-                    temp = (Da_->get(psym, prel, qrel) + Db_->get(psym, prel, qrel)) * value;
-                    Ja_->add(ssym, srel, rrel, temp);
-                    Jb_->add(ssym, srel, rrel, temp);
-                }
-            }
-#endif
             if(qabs >= sabs){
                 if(qsym == ssym){
                     Ka_->add(qsym, qrel, srel, Da_->get(psym, prel, rrel) * value);
@@ -880,17 +558,11 @@ public:
             }
 
             /* (rs|pq) */
-#if NONSTANDARD_ORDERING
-            if(pabs >= qabs){
-#endif
-                if(psym == qsym){
-                    temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
-                    Ja_->add(psym, prel, qrel, temp);
-                    Jb_->add(psym, prel, qrel, temp);
-                }
-#if NONSTANDARD_ORDERING
+            if(psym == qsym){
+                temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
+                Ja_->add(psym, prel, qrel, temp);
+                Jb_->add(psym, prel, qrel, temp);
             }
-#endif
             if(sabs >= pabs){
                 if(ssym == psym){
                     Ka_->add(ssym, srel, prel, Da_->get(rsym, rrel, qrel) * value);
@@ -899,17 +571,11 @@ public:
             }
 
             /* (sr|pq) */
-#if NONSTANDARD_ORDERING
-            if(pabs >= qabs){
-#endif
-                if(psym == qsym){
-                    temp = (Da_->get(ssym, srel, rrel) + Db_->get(ssym, srel, rrel)) * value;
-                    Ja_->add(psym, prel, qrel, temp);
-                    Jb_->add(psym, prel, qrel, temp);
-                }
-#if NONSTANDARD_ORDERING
+            if(psym == qsym){
+                temp = (Da_->get(ssym, srel, rrel) + Db_->get(ssym, srel, rrel)) * value;
+                Ja_->add(psym, prel, qrel, temp);
+                Jb_->add(psym, prel, qrel, temp);
             }
-#endif
             if(rabs >= pabs){
                 if(rsym == psym){
                     Ka_->add(rsym, rrel, prel, Da_->get(ssym, srel, qrel) * value);
@@ -918,17 +584,11 @@ public:
             }
         }else if(pabs==qabs && rabs==sabs && (pabs!=rabs || qabs!=sabs)){
             /* (rs|pq) */
-#if NONSTANDARD_ORDERING
-            if(pabs >= qabs){
-#endif
-                if(psym == qsym){
-                    temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
-                    Ja_->add(psym, prel, qrel, temp);
-                    Jb_->add(psym, prel, qrel, temp);
-                }
-#if NONSTANDARD_ORDERING
+            if(psym == qsym){
+                temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
+                Ja_->add(psym, prel, qrel, temp);
+                Jb_->add(psym, prel, qrel, temp);
             }
-#endif
             if(sabs >= pabs){
                 if(ssym == psym){
                     Ka_->add(ssym, srel, prel, Da_->get(rsym, rrel, qrel) * value);
@@ -992,221 +652,88 @@ void operator()(int pabs, int qabs, int rabs, int sabs,
 
     if(pabs!=qabs && rabs!=sabs && (pabs!=rabs || qabs!=sabs)){
         /* (pq|sr) */
-#if NONSTANDARD_ORDERING
-        if(sabs >= rabs){
-            if(ssym == rsym){
-                temp = (Da_->get(psym, prel, qrel) + Db_->get(psym, prel, qrel)) * value;
-                Ja_->add(ssym, srel, rrel, temp);
-                Jb_->add(ssym, srel, rrel, temp);
-            }
-        }
-#endif
 
         /* (qp|rs) */
-#if NONSTANDARD_ORDERING
-        if(rabs >= sabs){
-#endif
-            if(rsym == ssym){
-                temp = (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value;
-                Ja_->add(rsym, rrel, srel, temp);
-                Jb_->add(rsym, rrel, srel, temp);
-            }
-#if NONSTANDARD_ORDERING
+        if(rsym == ssym){
+            temp = (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value;
+            Ja_->add(rsym, rrel, srel, temp);
+            Jb_->add(rsym, rrel, srel, temp);
         }
-#endif
 
         /* (qp|sr) */
-#if NONSTANDARD_ORDERING
-        if(sabs >= rabs){
-            if(ssym == rsym){
-                temp = (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value;
-                Ja_->add(ssym, srel, rrel, temp);
-                Jb_->add(ssym, srel, rrel, temp);
-            }
-        }
-#endif
 
         /* (rs|pq) */
-#if NONSTANDARD_ORDERING
-        if(pabs >= qabs){
-#endif
-            if(psym == qsym){
-                temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
-                Ja_->add(psym, prel, qrel, temp);
-                Jb_->add(psym, prel, qrel, temp);
-            }
-#if NONSTANDARD_ORDERING
+        if(psym == qsym){
+            temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
+            Ja_->add(psym, prel, qrel, temp);
+            Jb_->add(psym, prel, qrel, temp);
         }
-#endif
 
         /* (sr|pq) */
-#if NONSTANDARD_ORDERING
-        if(pabs >= qabs){
-#endif
-            if(psym == qsym){
-                temp = (Da_->get(ssym, srel, rrel) + Db_->get(ssym, srel, rrel)) * value;
-                Ja_->add(psym, prel, qrel, temp);
-                Jb_->add(psym, prel, qrel, temp);
-            }
-#if NONSTANDARD_ORDERING
+        if(psym == qsym){
+            temp = (Da_->get(ssym, srel, rrel) + Db_->get(ssym, srel, rrel)) * value;
+            Ja_->add(psym, prel, qrel, temp);
+            Jb_->add(psym, prel, qrel, temp);
         }
-#endif
 
         /* (rs|qp) */
-#if NONSTANDARD_ORDERING
-        if(qabs >= pabs){
-            if(qsym == psym){
-                temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
-                Ja_->add(qsym, qrel, prel, temp);
-                Jb_->add(qsym, qrel, prel, temp);
-            }
-        }
-#endif
 
         /* (sr|qp) */
-#if NONSTANDARD_ORDERING
-        if(qabs >= pabs){
-            if(qsym == psym){
-                temp = (Da_->get(ssym, srel, rrel) + Db_->get(ssym, srel, rrel)) * value;
-                Ja_->add(qsym, qrel, prel, temp);
-                Jb_->add(qsym, qrel, prel, temp);
-            }
-        }
-#endif
 
     }else if(pabs!=qabs && rabs!=sabs && pabs==rabs && qabs==sabs){
         /* (pq|sr) */
-#if NONSTANDARD_ORDERING
-        if(sabs >= rabs){
-            if(ssym == rsym){
-                temp = (Da_->get(psym, prel, qrel) + Db_->get(psym, prel, qrel)) * value;
-                Ja_->add(ssym, srel, rrel, temp);
-                Jb_->add(ssym, srel, rrel, temp);
-            }
-        }
-#endif
 
         /* (qp|rs) */
-#if NONSTANDARD_ORDERING
-        if(rabs >= sabs){
-#endif
-            if(rsym == ssym){
-                temp = (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value;
-                Ja_->add(rsym, rrel, srel, temp);
-                Jb_->add(rsym, rrel, srel, temp);
-            }
-#if NONSTANDARD_ORDERING
+        if(rsym == ssym){
+            temp = (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value;
+            Ja_->add(rsym, rrel, srel, temp);
+            Jb_->add(rsym, rrel, srel, temp);
         }
-#endif
 
         /* (qp|sr) */
-#if NONSTANDARD_ORDERING
-        if(sabs >= rabs){
-            if(ssym == rsym){
-                temp = (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value;
-                Ja_->add(ssym, srel, rrel, temp);
-                Jb_->add(ssym, srel, rrel, temp);
-            }
-        }
-#endif
-
     }else if(pabs!=qabs && rabs==sabs){
         /* (qp|rs) */
-#if NONSTANDARD_ORDERING
-        if(rabs >= sabs){
-#endif
-            if(rsym == ssym){
-                temp = (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value;
-                Ja_->add(rsym, rrel, srel, temp);
-                Jb_->add(rsym, rrel, srel, temp);
-            }
-#if NONSTANDARD_ORDERING
+        if(rsym == ssym){
+            temp = (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value;
+            Ja_->add(rsym, rrel, srel, temp);
+            Jb_->add(rsym, rrel, srel, temp);
         }
-#endif
 
         /* (rs|pq) */
-#if NONSTANDARD_ORDERING
-        if(pabs >= qabs){
-#endif
-            if(psym == qsym){
-                temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
-                Ja_->add(psym, prel, qrel, temp);
-                Jb_->add(psym, prel, qrel, temp);
-            }
-#if NONSTANDARD_ORDERING
+        if(psym == qsym){
+            temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
+            Ja_->add(psym, prel, qrel, temp);
+            Jb_->add(psym, prel, qrel, temp);
         }
-#endif
 
         /* (rs|qp) */
-#if NONSTANDARD_ORDERING
-        if(qabs >= pabs){
-            if(qsym == psym){
-                temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
-                Ja_->add(qsym, qrel, prel, temp);
-                Jb_->add(qsym, qrel, prel, temp);
-            }
-        }
-#endif
 
     }else if(pabs==qabs && rabs!=sabs){
         /* (pq|sr) */
-#if NONSTANDARD_ORDERING
-        if(sabs >= rabs){
-            if(ssym == rsym){
-                temp = (Da_->get(psym, prel, qrel) + Db_->get(psym, prel, qrel)) * value;
-                Ja_->add(ssym, srel, rrel, temp);
-                Jb_->add(ssym, srel, rrel, temp);
-            }
-        }
-#endif
 
         /* (rs|pq) */
-#if NONSTANDARD_ORDERING
-        if(pabs >= qabs){
-#endif
-            if(psym == qsym){
-                temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
-                Ja_->add(psym, prel, qrel, temp);
-                Jb_->add(psym, prel, qrel, temp);
-            }
-#if NONSTANDARD_ORDERING
+        if(psym == qsym){
+            temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
+            Ja_->add(psym, prel, qrel, temp);
+            Jb_->add(psym, prel, qrel, temp);
         }
-#endif
 
         /* (sr|pq) */
-#if NONSTANDARD_ORDERING
-        if(pabs >= qabs){
-#endif
-            if(psym == qsym){
-                temp = (Da_->get(ssym, srel, rrel) + Db_->get(ssym, srel, rrel)) * value;
-                Ja_->add(psym, prel, qrel, temp);
-                Jb_->add(psym, prel, qrel, temp);
-            }
-#if NONSTANDARD_ORDERING
+        if(psym == qsym){
+            temp = (Da_->get(ssym, srel, rrel) + Db_->get(ssym, srel, rrel)) * value;
+            Ja_->add(psym, prel, qrel, temp);
+            Jb_->add(psym, prel, qrel, temp);
         }
-#endif
-
     }else if(pabs==qabs && rabs==sabs && (pabs!=rabs || qabs!=sabs)){
         /* (rs|pq) */
-#if NONSTANDARD_ORDERING
-        if(pabs >= qabs){
-#endif
-            if(psym == qsym){
-                temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
-                Ja_->add(psym, prel, qrel, temp);
-                Jb_->add(psym, prel, qrel, temp);
-            }
-#if NONSTANDARD_ORDERING
+        if(psym == qsym){
+            temp = (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value;
+            Ja_->add(psym, prel, qrel, temp);
+            Jb_->add(psym, prel, qrel, temp);
         }
-#endif
     }
 }
 };
-
-template <class JKFunctor> void form_J_DF(JKFunctor &functor)
-{
-
-}
 
 template <class JKFunctor>
 void HF::process_tei(JKFunctor & functor)
