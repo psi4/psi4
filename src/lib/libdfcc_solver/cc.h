@@ -4,6 +4,12 @@
 #include <libmints/wavefunction.h>
 #include <psi4-dec.h>
 
+#define DFCC_INT_FILE 56  // temporary
+#define DFCC_DIIS_FILE 42  // temporary
+
+// This is a dirty hack...bite me
+#define INDEX(i,j) ((i>=j) ? (ioff[i] + j) : (ioff[j] + i))
+
 using namespace psi;
 
 namespace psi { 
@@ -86,6 +92,11 @@ protected:
   double **Cp_;
   double **C_aoccp_;
   double **C_avirp_;
+
+  // Simple function to compute DF integrals
+  // To be replaced with lib3index calls
+  void df_integrals();
+  void mo_integrals();
 
   // Functions to permute array indices
   void iajb_ibja(double *);

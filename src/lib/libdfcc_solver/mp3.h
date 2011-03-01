@@ -18,7 +18,19 @@ private:
   void print_header();
 
 protected:
-  shared_ptr<DFTensor> dfints_;
+  double *tIAJB_;
+  double *t2IAJB_;
+  double *vIAJB_;
+
+  void apply_denom(double *);
+  void symmetrize();
+  void term_1();
+  void term_2();
+  void term_3();
+  void term_4();
+  void term_5();
+
+  double energy(double *);
 
 public:
   MP3(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
