@@ -137,7 +137,8 @@ void DFTensor::form_Aia(bool do_all)
       eri[Q] = shared_ptr<TwoBodyAOInt>(rifactory->eri());
       buffer[Q] = eri[Q]->buffer();
     }
-    rifactory.reset();
+//  Seems to be cauing a seg fault...why was this being called anyway?
+//  rifactory.reset();
 
     psio_address next_PSIF_DFMP2_AIA = PSIO_ZERO;
     psio_address next_PSIF_DFMP2_AII = PSIO_ZERO;
@@ -209,8 +210,8 @@ void DFTensor::form_Aia(bool do_all)
       }
       timer_off("(A|mn)");
 
-      fprintf(outfile, "  Amn\n");
-      print_mat(Amn,max_rows,nao_*nao_, outfile);
+//    fprintf(outfile, "  Amn\n");
+//    print_mat(Amn,max_rows,nao_*nao_, outfile);
 
       //Transform to Ami
       // (A|mi) = (Amn)C_ni
@@ -220,8 +221,8 @@ void DFTensor::form_Aia(bool do_all)
       timer_off("(A|mi)");
 
 
-      fprintf(outfile, "  Ami\n");
-      print_mat(Ami,max_rows,nocc_*nao_, outfile);
+//    fprintf(outfile, "  Ami\n");
+//    print_mat(Ami,max_rows,nocc_*nao_, outfile);
 
       #ifdef HAVE_MKL
          int mkl_nthreads = mkl_get_max_threads();
@@ -238,8 +239,8 @@ void DFTensor::form_Aia(bool do_all)
       }
       timer_off("(A|ia)");
          
-      fprintf(outfile, "  Aia\n");
-      print_mat(Aia,max_rows,nocc_*nvir_, outfile);
+//    fprintf(outfile, "  Aia\n");
+//    print_mat(Aia,max_rows,nocc_*nvir_, outfile);
 
       fflush(outfile);
 
@@ -381,8 +382,8 @@ void DFTensor::apply_fitting(const std::string& entry)
 
     //metric_->get_metric()->print();
 
-    fprintf(outfile, "  Aia\n");
-    print_mat(Aia, naux_, max_cols, outfile);
+//  fprintf(outfile, "  Aia\n");
+//  print_mat(Aia, naux_, max_cols, outfile);
 
     //Embed fitting
     timer_on("(Q|ia)");
@@ -401,8 +402,8 @@ void DFTensor::apply_fitting(const std::string& entry)
     timer_off("(Q|ia)");
 
     //fprintf(outfile,"  Nblocks = %d, Max cols = %d, current_columns = %d, current_column = %d\n",nblocks, max_cols, current_columns, current_column);
-    fprintf(outfile, "  Qia\n");
-    print_mat(Qia, max_cols, naux_, outfile);
+//  fprintf(outfile, "  Qia\n");
+//  print_mat(Qia, max_cols, naux_, outfile);
 
     //Write Qia out
     timer_on("(Q|ia) Write");
