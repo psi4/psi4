@@ -108,6 +108,9 @@ public:
     /// Initialize internal variables from checkpoint file.
     void init_with_chkpt();
 
+    /// Is this a restricted wavefunction?
+    virtual bool restricted() const { return true; }
+
     /// Returns the molecule object that pertains to this wavefunction.
     boost::shared_ptr<Molecule> molecule() const;
     /// Returns the basis set object that pertains to this wavefunction.
