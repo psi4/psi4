@@ -169,7 +169,7 @@ def process_input(raw_input):
     temp = re.sub(set_commands, process_set_commands, temp)
 
     # Process all individual "set (module_list) key  {[value_list] or $value or value}"
-    set_command = re.compile(r'^(\s*?)set\s+(?:([-,\w]+)\s+)?(\w+)[\s=]+((\[.*\])|(\$?[-\.\w]+))\s*$', re.MULTILINE | re.IGNORECASE)
+    set_command = re.compile(r'^(\s*?)set\s+(?:([-,\w]+)\s+)?(\w+)[\s=]+((\[.*\])|(\$?[-*\.\w]+))\s*$', re.MULTILINE | re.IGNORECASE)
     temp = re.sub(set_command, process_set_command, temp)
 
     # Process "molecule name? { ... }"
@@ -231,6 +231,8 @@ H 1 R
 
 R = .9
 }
+
+set basis 6-31G**
 
 #this is a comment
 set globals {
