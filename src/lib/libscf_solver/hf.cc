@@ -456,7 +456,7 @@ void HF::form_H()
                 fprintf(outfile, "  WARNING: You requested mu(x) perturbation, but mu(x) is not symmetric.\n");
             }
             else {
-                fprintf(outfile, "  Perturbing H by %f Dmx.\n", lambda_);
+                fprintf(outfile, "  Perturbing H by %f mu(x).\n", lambda_);
                 dipoles[0]->scale(lambda_);
                 H_->add(dipoles[0]);
             }
@@ -465,7 +465,7 @@ void HF::form_H()
                 fprintf(outfile, "  WARNING: You requested mu(y) perturbation, but mu(y) is not symmetric.\n");
             }
             else {
-                fprintf(outfile, "  Perturbing H by %f Dmy.\n", lambda_);
+                fprintf(outfile, "  Perturbing H by %f mu(y).\n", lambda_);
                 dipoles[1]->scale(lambda_);
                 H_->add(dipoles[1]);
             }
@@ -474,12 +474,11 @@ void HF::form_H()
                 fprintf(outfile, "  WARNING: You requested mu(z) perturbation, but mu(z) is not symmetric.\n");
             }
             else {
-                fprintf(outfile, "  Perturbing H by %f Dmz.\n", lambda_);
+                fprintf(outfile, "  Perturbing H by %f mu(z).\n", lambda_);
                 dipoles[2]->scale(lambda_);
                 H_->add(dipoles[2]);
             }
         }
-        H_->print(outfile, "with perturbation");
     }
 }
 
