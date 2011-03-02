@@ -102,53 +102,6 @@ protected:
     /// DF stuff 
     shared_ptr<DFHF> df_;
 
-    /// DF Storage Scheme
-    enum df_storage { double_core, core, flip_B_core, flip_B_disk, k_incore, disk};
-    df_storage df_storage_;
-    unsigned long int df_memory_;
-
-    //Density Fitting?
-    int naux_raw_; //Number of functions in the raw auxiliary basis
-    int naux_fin_; //Number of functions in the finished auxiliary basis
-    int *ri_back_map_;
-    int *ri_pair_nu_;
-    int *ri_pair_mu_;
-    int sig_fun_pairs_;
-    int sig_shell_pairs_;
-
-    int *schwarz_shell_pairs_;
-    int *schwarz_fun_pairs_;
-
-    //Local K? (only with DF)
-    bool local_K_;
-
-    /// do we need Coulomb?
-    bool J_is_required_;
-    /// do we need Exchange?
-    bool K_is_required_;
-
-    /// Three Index tensor for DF-SCF
-    double **B_ia_P_;
-    double **A_ia_P_;
-
-    // RI Basis
-    shared_ptr<BasisSet> ribasis_;
-    /// Poisson Basis
-    shared_ptr<BasisSet> poissonbasis_;
-
-    /// Fitting metric (J-matrix) for DF-SCF
-    double **W_;
-    /// Fitting metric decomposition (varies by fitting algorithm)
-    double **Winv_;
-
-    double schwarz_; //Current Schwarz magnitude (static for now)
-    int ntri_; //Number of function pairs after schwarz sieve and subsequent sieves
-    int ntri_naive_; //Number of function pairs after schwarz sieve
-
-
-    /// save SCF Cartesian Grid
-    bool save_grid_;
-
     /// DIIS manager intiialized?
     bool initialized_diis_manager_;
     /// DIIS manager for all SCF wavefunctions
@@ -258,33 +211,8 @@ protected:
     void sort_cholesky(double*, int*, int);
     /** Form canonical three-index Cholesky tensor */
     void form_CD();
-    /** Form canonical three-index DF tensor */
-    void form_B();
-    /** Form three-index DF tensor with Poisson fitting */
-    void form_B_Poisson();
-    /** Form B without metric transform for local K (makes J go crazy fast)*/
-    void form_A();
     /** Computes the J and/or K matrices according to the scf_type keyword and the functor passed in*/
     template <class JKFunctor> void process_tei(JKFunctor & functor);
-
-    /** Write tensor from memory to disk */
-    void write_B();
-    /** Free all memory associated with DF */
-    void free_B();
-    /** Free all memory associated with DF */
-    void free_A();
-
-    /** Form DF fitting tensor **/
-    void form_W();
-    /** Form DF fitting tensor w/ Poisson fitting **/
-    void form_W_Poisson();
-    /** Form DF fitting tensor inverse square root without conditioning **/
-    void form_Wm12_raw();
-    /** Form DF fitting tensor inverse square root with preconditioning via change of basis **/
-    void form_Wm12_fin();
-    /** Form DF fitting tensor square root cholesky decomposition **/
-    void form_Wp12_chol();
-
 
     inline int integral_type(int i, int j, int k, int l)
     {

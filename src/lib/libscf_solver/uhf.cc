@@ -891,17 +891,6 @@ void UHF::form_G_from_PK()
     delete[](Gb_vector);
 }
 
-void UHF::form_G()
-{
-    fprintf(stderr, "UHF out-of-core algorithm is not implemented yet!\n");
-    abort();
-}
-void UHF::form_G_from_direct_integrals()
-{
-    fprintf(stderr, "UHF integral direct algorithm is not implemented yet!\n");
-    abort();
-}
-
 void UHF::save_fock()
 {
     initialized_diis_manager_ = false;

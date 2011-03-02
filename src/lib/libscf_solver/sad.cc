@@ -460,9 +460,7 @@ void RHF::compute_SAD_guess()
             if (atomic_bases[l]->has_puream() !=  atomic_bases[m]->has_puream())
                 continue;
 
-            //TODO check the basis rigorously
-
-            //Rigorous match obtained
+            // Semi-Rigorous match obtained
             unique_indices[m] = l;
         }
     }
@@ -670,7 +668,14 @@ void RHF::compute_SAD_guess()
         free_block(C);
 
     }
-    
+   
+    int temp_nocc;
+    for (int h = 0 ; h < D_->nirrep(); h++) {
+        temp_nocc = sad_nocc_[h];
+        sad_nocc_[h] = nalphapi_[h];    
+        nalphapi_[h] = temp_nocc;
+    } 
+
     E_ = 0.0; // This is the -1th iteration 
     timer_off("SAD Cholesky");
 }

@@ -38,7 +38,6 @@ namespace psi { namespace scf {
 
 HF::HF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
     : Wavefunction(options, psio, chkpt),
-      df_storage_(disk),
       nuclear_dipole_contribution_(3),
       nuclear_quadrupole_contribution_(6),
       print_(3)
@@ -48,7 +47,6 @@ HF::HF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
 
 HF::HF(Options& options, shared_ptr<PSIO> psio)
     : Wavefunction(options, psio),
-      df_storage_(disk),
       nuclear_dipole_contribution_(3),
       nuclear_quadrupole_contribution_(6),
       print_(1)
@@ -235,17 +233,6 @@ void HF::common_init()
         print_ = options_.get_int("PRINT");
     //fprintf(outfile,"  Print = %d\n",print_);
 
-    //For HF algorithms, J and K are both required always.
-    J_is_required_ = true;
-    K_is_required_ = true;
-
-    //Use schwarz sieve? default no
-    schwarz_ = 0.0;
-    if (options_["SCHWARZ_CUTOFF"].has_changed())
-    {
-        schwarz_ = options_.get_double("SCHWARZ_CUTOFF");
-    }
-
     // Handle common diis info
     diis_enabled_ = true;
     min_diis_vectors_ = 4;
@@ -265,11 +252,6 @@ void HF::common_init()
 
     initialized_diis_manager_ = false;
 
-    // Save cartesian grid? Temporary until OEPROP is fully redone
-    save_grid_ = false;
-    if (options_.get_bool("SAVE_CARTESIAN_GRID")) {
-        save_grid_ = true;
-    }
     // Alloc memory for multipoles
     Dipole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Dipole X SO-basis")));
     Dipole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Dipole Y SO-basis")));

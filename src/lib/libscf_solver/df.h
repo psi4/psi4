@@ -64,6 +64,15 @@ class DFHF {
 
         // memory in doubles
         unsigned long int memory_;
+
+        // Buffer A for AIO
+        shared_ptr<Matrix> QmnA_;
+        // Buffer B for AIO
+        shared_ptr<Matrix> QmnB_;
+        // Use A or B buffer for computation
+        bool aio_bufferA_;
+        // Current iteration disk order
+        bool aio_forward_; 
     
         // Helper methods
         void form_J_DF_RHF();

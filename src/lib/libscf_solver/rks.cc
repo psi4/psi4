@@ -311,6 +311,7 @@ double RKS::compute_energy()
 
 void RKS::form_J()
 {
+/**
     if (scf_type_ == "PK") {
         //form_J_from_PK();
     }
@@ -323,9 +324,11 @@ void RKS::form_J()
     else if (scf_type_ == "OUT_OF_CORE" ){
         //form_J_and_K_disk();
     }
+**/
 }
 void RKS::form_K()
 {
+/**
     if (scf_type_ == "PK") {
         //form_K_from_PK();
     }
@@ -338,6 +341,7 @@ void RKS::form_K()
     else {
         //Already formed
     }
+**/
 }
 double RKS::compute_E()
 {
