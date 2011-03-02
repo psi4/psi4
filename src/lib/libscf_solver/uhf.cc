@@ -904,8 +904,8 @@ void UHF::form_G_from_direct_integrals()
 
 void UHF::save_fock()
 {
-    static bool initialized_diis_manager = false;
-    if (initialized_diis_manager == false) {
+    initialized_diis_manager_ = false;
+    if (initialized_diis_manager_ == false) {
         diis_manager_ = shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk, psio_));
         diis_manager_->set_error_vector_size(2,
                                              DIISEntry::Matrix, Fa_.get(),
@@ -913,7 +913,7 @@ void UHF::save_fock()
         diis_manager_->set_vector_size(2,
                                        DIISEntry::Matrix, Fa_.get(),
                                        DIISEntry::Matrix, Fb_.get());
-        initialized_diis_manager = true;
+        initialized_diis_manager_ = true;
     }
 
     // Save the current Fock matrix
