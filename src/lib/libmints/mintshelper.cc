@@ -35,8 +35,8 @@ namespace psi {
         _molecule->print();
 
         // Read in the basis set
-        _parser = shared_ptr<BasisSetParser>(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
-        _basisset = shared_ptr<BasisSet>(BasisSet::construct(_parser, _molecule, options_.get_str("BASIS")));
+        shared_ptr<BasisSetParser> parser (new Gaussian94BasisSetParser());
+        _basisset = shared_ptr<BasisSet>(BasisSet::construct(parser, _molecule, "BASIS"));
 
         // Print the basis set
         _basisset->print_detail();
