@@ -84,6 +84,8 @@ public:
     double compute_energy_parallel();
 
     virtual SharedMatrix Da() const;
+
+    virtual bool restricted() const { return true; }
 };
 
 }}

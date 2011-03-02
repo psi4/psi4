@@ -47,6 +47,8 @@ public:
     virtual ~UHF();
 
     double compute_energy();
+
+    virtual bool restricted() const { return false; }
 };
 
 }}
