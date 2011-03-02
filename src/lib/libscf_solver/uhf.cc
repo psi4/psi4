@@ -79,7 +79,7 @@ void UHF::finalize()
     Dtold_.reset();
     Ga_.reset();
     Gb_.reset();
-    
+
     HF::finalize();
 }
 double UHF::compute_energy()
