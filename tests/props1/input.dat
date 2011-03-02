@@ -1,0 +1,63 @@
+# RHF cc-pVQZ energy for the BH molecule, with Cartesian input.  
+
+nucenergy =   8.90616217457958  #TEST
+posenergy = -74.96628820882303  #TEST
+negenergy = -74.96551669691421  #TEST
+elecmu    =  -0.385756          #TEST
+nucmu     =   1.058147          #TEST
+muau      =   0.672391          #TEST
+mudebye   =   1.709050          #TEST
+
+molecule h2o {
+0 1
+O
+H 1 r
+H 1 r 2 a
+
+r=0.98944
+a=100.047
+}
+
+lambdas = [0.001, -0.001]
+
+set {
+    scf_type     pk
+    basis        sto-3g
+    e_converge   10
+}
+
+energy('scf')
+
+energies = []
+for l in lambdas:
+    set scf perturb_h true
+    set scf perturb_with dipole_z
+    set scf lambda $l
+    energies.append(energy('scf'))
+
+mydmz=(energies[0]-energies[1])/(2.0*lambdas[0]) 
+
+print "positive disp = %f\n" % energies[0]
+print "negative disp = %f\n" % energies[1]
+print "electronic mu(z) = %f\n" % mydmz
+
+nuc = h2o.nuclear_dipole_contribution()
+nucz = nuc[0, 2]
+
+print "nuclear z component = %f\n" % nucz
+
+mydmz = mydmz + nucz
+
+print "mu(z) hartree = %f\n" % mydmz
+
+mydmz = mydmz * 2.54175
+
+print "mu(z) debye = %f\n" % mydmz
+
+compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(posenergy, energies[0], 9, "Positive lambda energy") #TEST
+compare_values(negenergy, energies[1], 9, "Positive lambda energy") #TEST
+compare_values(nucmu,     nucz,  4, "Nuclear contribution to the dipole moment") #TEST
+compare_values(mudebye,   mydmz, 4, "Numerically determined dipole moment") #TEST
+
+clean()

@@ -313,9 +313,9 @@ public:
     SimpleMatrix nuclear_repulsion_energy_deriv2();
 
     /// Returns the nuclear contribution to the dipole moment
-    SimpleVector nuclear_dipole_contribution();
+    boost::shared_ptr<Vector> nuclear_dipole_contribution();
     /// Returns the nuclear contribution to the quadrupole moment
-    SimpleVector nuclear_quadrupole_contribution();
+    boost::shared_ptr<Vector> nuclear_quadrupole_contribution();
 
     /// Translates molecule by r
     void translate(const Vector3& r);

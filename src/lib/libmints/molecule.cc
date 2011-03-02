@@ -1399,9 +1399,10 @@ void Molecule::print() const
         fprintf(outfile, "  No atoms in this molecule.\n");
 }
 
-SimpleVector Molecule::nuclear_dipole_contribution()
+shared_ptr<Vector> Molecule::nuclear_dipole_contribution()
 {
-    SimpleVector ret(3);
+    shared_ptr<Vector> sret(new Vector(3));
+    double *ret = sret->pointer();
 
     for(int i=0; i<natom(); ++i) {
         Vector3 geom = xyz(i);
@@ -1410,12 +1411,13 @@ SimpleVector Molecule::nuclear_dipole_contribution()
         ret[2] += Z(i) * geom[2];
     }
 
-    return ret;
+    return sret;
 }
 
-SimpleVector Molecule::nuclear_quadrupole_contribution()
+shared_ptr<Vector> Molecule::nuclear_quadrupole_contribution()
 {
-    SimpleVector ret(6);
+    shared_ptr<Vector> sret(new Vector(6));
+    double *ret = sret->pointer();
     double xx, xy, xz, yy, yz, zz;
 
     xx = xy = xz = yy = yz = zz = 0.0;
@@ -1430,7 +1432,7 @@ SimpleVector Molecule::nuclear_quadrupole_contribution()
         ret[5] += Z(i) * geom[2] * geom[2]; // zz
     }
 
-    return ret;
+    return sret;
 }
 
 SimpleMatrix* Molecule::inertia_tensor()

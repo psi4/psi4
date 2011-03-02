@@ -1,0 +1,462 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-alpha Driver
+    T. D. Crawford, C. D. Sherrill, E. F. Valeev, J. T. Fermann, R. A. King,
+    M. L. Leininger, S. T. Brown, C. L. Janssen, E. T. Seidl, J. P. Kenny,
+    and W. D. Allen, J. Comput. Chem. 28, 1610-1616 (2007)
+
+                         Additional Contributions by
+    Francesco Evangelista, Andrew Simmonett, Justin Turney, Jeremiah Wilke
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+*** tstart() called on h70-33-108-177.paws.uga.edu
+*** at Wed Mar  2 16:51:27 2011
+
+ RHF: by Justin Turney and Rob Parrish
+
+  Release version.
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.071143036192
+           H          0.000000000000     0.758215806856     0.564545805801
+           H          0.000000000000    -0.758215806856     0.564545805801
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  Running in c2v symmetry.
+
+  Input DOCC vector = ( 0  A1  0  A2  0  B1  0  B2 )
+  Input SOCC vector = ( 0  A1  0  A2  0  B1  0  B2 )
+
+  Nuclear repulsion =    8.906162174579583
+  Energy threshold  = 1.00e-10
+  Density threshold = 1.00e-08
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.071143036192
+           H          0.000000000000     0.758215806856     0.564545805801
+           H          0.000000000000    -0.758215806856     0.564545805801
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = FALSE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  -Basis set on unique center 1: O
+     S (        130.70932000           4.25194328)
+       (         23.80886100           4.11229372)
+       (          6.44360830           1.28162253)
+     S (          5.03315130          -0.23941300)
+       (          1.16959610           0.32023423)
+       (          0.38038900           0.24168557)
+     P (          5.03315130           1.67545012)
+       (          1.16959610           1.05356801)
+       (          0.38038900           0.16690290)
+
+  -Basis set on unique center 2: H
+     S (          3.42525091           0.27693436)
+       (          0.62391373           0.26783885)
+       (          0.16885540           0.08347367)
+
+  -Basis set on unique center 3: H
+     S (          3.42525091           0.27693436)
+       (          0.62391373           0.26783885)
+       (          0.16885540           0.08347367)
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:               5
+      Number of SO shells:               4
+      Number of primitives:             15
+      Number of atomic orbitals:         7
+      Number of basis functions:         7
+
+      Number of irreps:                  4
+      Number of functions per irrep: [   4    0    1    2 ]
+
+      Computing integrals...done
+
+      Computed 138 integrals.
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  Allocated 105 elements (14 pairs) for PK. ( 0.00 MiB)
+
+
+  Minimum eigenvalue in the overlap matrix is 3.6319976161E-01.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Reading previous MOs.
+
+
+  Initial RHF energy:   -74.96551669691416
+
+  Forming PK matrix.
+  Processed 138 two-electron integrals.
+
+                                  Total Energy            Delta E              Density RMS
+
+  @RHF iteration   1 energy:   -74.96589988926033       -0.00038319234616     0.00000000000000  
+  @RHF iteration   2 energy:   -74.96590113383988       -0.00000124457955     0.00033480907738 DIIS
+  @RHF iteration   3 energy:   -74.96590116600821       -0.00000003216833     0.00004357541393 DIIS
+  @RHF iteration   4 energy:   -74.96590117021003       -0.00000000420182     0.00002597370627 DIIS
+  @RHF iteration   5 energy:   -74.96590117037945       -0.00000000016942     0.00000549493890 DIIS
+  @RHF iteration   6 energy:   -74.96590117037947       -0.00000000000001     0.00000004726919 DIIS
+
+  Energy converged.
+
+  @RHF Final Energy:   -74.96590117037947
+
+  Final occupation vector = ( 3  A1  0  A2  1  B1  1  B2 )
+
+  Orbital energies (a.u.):
+    Doubly occupied orbitals
+        -20.251557  A1     -1.257513  A1     -0.593875  B2     -0.459679  A1  
+         -0.392602  B1  
+
+    Unoccupied orbitals
+          0.581735  A1      0.692693  B2  
+
+*** tstop() called on h70-33-108-177.paws.uga.edu at Wed Mar  2 16:51:27 2011
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on h70-33-108-177.paws.uga.edu
+*** at Wed Mar  2 16:51:27 2011
+
+ RHF: by Justin Turney and Rob Parrish
+
+  Release version.
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.071143036192
+           H          0.000000000000     0.758215806856     0.564545805801
+           H          0.000000000000    -0.758215806856     0.564545805801
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  Running in c2v symmetry.
+
+  Input DOCC vector = ( 0  A1  0  A2  0  B1  0  B2 )
+  Input SOCC vector = ( 0  A1  0  A2  0  B1  0  B2 )
+
+  Nuclear repulsion =    8.906162174579583
+  Energy threshold  = 1.00e-10
+  Density threshold = 1.00e-08
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.071143036192
+           H          0.000000000000     0.758215806856     0.564545805801
+           H          0.000000000000    -0.758215806856     0.564545805801
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = FALSE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  -Basis set on unique center 1: O
+     S (        130.70932000           4.25194328)
+       (         23.80886100           4.11229372)
+       (          6.44360830           1.28162253)
+     S (          5.03315130          -0.23941300)
+       (          1.16959610           0.32023423)
+       (          0.38038900           0.24168557)
+     P (          5.03315130           1.67545012)
+       (          1.16959610           1.05356801)
+       (          0.38038900           0.16690290)
+
+  -Basis set on unique center 2: H
+     S (          3.42525091           0.27693436)
+       (          0.62391373           0.26783885)
+       (          0.16885540           0.08347367)
+
+  -Basis set on unique center 3: H
+     S (          3.42525091           0.27693436)
+       (          0.62391373           0.26783885)
+       (          0.16885540           0.08347367)
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:               5
+      Number of SO shells:               4
+      Number of primitives:             15
+      Number of atomic orbitals:         7
+      Number of basis functions:         7
+
+      Number of irreps:                  4
+      Number of functions per irrep: [   4    0    1    2 ]
+
+      Computing integrals...done
+
+      Computed 138 integrals.
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  Allocated 105 elements (14 pairs) for PK. ( 0.00 MiB)
+
+  Perturbing H by 0.001000 mu(z).
+
+  Minimum eigenvalue in the overlap matrix is 3.6319976161E-01.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+
+  Initial RHF energy:   -54.58541053010649
+
+  Forming PK matrix.
+  Processed 138 two-electron integrals.
+
+                                  Total Energy            Delta E              Density RMS
+
+  @RHF iteration   1 energy:   -73.23950737436449      -18.65409684425800     0.00000000000000  
+  @RHF iteration   2 energy:   -74.93104992395445       -1.69154254958995     0.40173571098178 DIIS
+  @RHF iteration   3 energy:   -74.96489831053873       -0.03384838658428     0.05332559339574 DIIS
+  @RHF iteration   4 energy:   -74.96622870733525       -0.00133039679652     0.01393040981220 DIIS
+  @RHF iteration   5 energy:   -74.96628353801454       -0.00005483067929     0.00245742728672 DIIS
+  @RHF iteration   6 energy:   -74.96628817258292       -0.00000463456838     0.00084276519155 DIIS
+  @RHF iteration   7 energy:   -74.96628820882296       -0.00000003624004     0.00007691043866 DIIS
+  @RHF iteration   8 energy:   -74.96628820882303       -0.00000000000007     0.00000002310252 DIIS
+
+  Energy converged.
+
+  @RHF Final Energy:   -74.96628820882303 with 0.001000 perturbation
+
+  Final occupation vector = ( 3  A1  0  A2  1  B1  1  B2 )
+
+  Orbital energies (a.u.):
+    Doubly occupied orbitals
+        -20.252618  A1     -1.258168  A1     -0.594491  B2     -0.459951  A1  
+         -0.393092  B1  
+
+    Unoccupied orbitals
+          0.580686  A1      0.691863  B2  
+
+*** tstop() called on h70-33-108-177.paws.uga.edu at Wed Mar  2 16:51:27 2011
+	user time   =       0.20 seconds =       0.00 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on h70-33-108-177.paws.uga.edu
+*** at Wed Mar  2 16:51:27 2011
+
+ RHF: by Justin Turney and Rob Parrish
+
+  Release version.
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.071143036192
+           H          0.000000000000     0.758215806856     0.564545805801
+           H          0.000000000000    -0.758215806856     0.564545805801
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  Running in c2v symmetry.
+
+  Input DOCC vector = ( 0  A1  0  A2  0  B1  0  B2 )
+  Input SOCC vector = ( 0  A1  0  A2  0  B1  0  B2 )
+
+  Nuclear repulsion =    8.906162174579583
+  Energy threshold  = 1.00e-10
+  Density threshold = 1.00e-08
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.071143036192
+           H          0.000000000000     0.758215806856     0.564545805801
+           H          0.000000000000    -0.758215806856     0.564545805801
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = FALSE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  -Basis set on unique center 1: O
+     S (        130.70932000           4.25194328)
+       (         23.80886100           4.11229372)
+       (          6.44360830           1.28162253)
+     S (          5.03315130          -0.23941300)
+       (          1.16959610           0.32023423)
+       (          0.38038900           0.24168557)
+     P (          5.03315130           1.67545012)
+       (          1.16959610           1.05356801)
+       (          0.38038900           0.16690290)
+
+  -Basis set on unique center 2: H
+     S (          3.42525091           0.27693436)
+       (          0.62391373           0.26783885)
+       (          0.16885540           0.08347367)
+
+  -Basis set on unique center 3: H
+     S (          3.42525091           0.27693436)
+       (          0.62391373           0.26783885)
+       (          0.16885540           0.08347367)
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:               5
+      Number of SO shells:               4
+      Number of primitives:             15
+      Number of atomic orbitals:         7
+      Number of basis functions:         7
+
+      Number of irreps:                  4
+      Number of functions per irrep: [   4    0    1    2 ]
+
+      Computing integrals...done
+
+      Computed 138 integrals.
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  Allocated 105 elements (14 pairs) for PK. ( 0.00 MiB)
+
+  Perturbing H by -0.001000 mu(z).
+
+  Minimum eigenvalue in the overlap matrix is 3.6319976161E-01.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+
+  Initial RHF energy:   -54.58700250785914
+
+  Forming PK matrix.
+  Processed 138 two-electron integrals.
+
+                                  Total Energy            Delta E              Density RMS
+
+  @RHF iteration   1 energy:   -73.24256453058415      -18.65556202272501     0.00000000000000  
+  @RHF iteration   2 energy:   -74.93097919914425       -1.68841466856010     0.40128240615451 DIIS
+  @RHF iteration   3 energy:   -74.96415452680456       -0.03317532766032     0.05275215367617 DIIS
+  @RHF iteration   4 energy:   -74.96545893546914       -0.00130440866458     0.01376839417616 DIIS
+  @RHF iteration   5 energy:   -74.96551216401689       -0.00005322854774     0.00241863842508 DIIS
+  @RHF iteration   6 energy:   -74.96551666095722       -0.00000449694033     0.00082816294946 DIIS
+  @RHF iteration   7 energy:   -74.96551669691421       -0.00000003595699     0.00007640021338 DIIS
+  @RHF iteration   8 energy:   -74.96551669691421        0.00000000000000     0.00000002353800 DIIS
+
+  Energy converged.
+
+  @RHF Final Energy:   -74.96551669691421 with -0.001000 perturbation
+
+  Final occupation vector = ( 3  A1  0  A2  1  B1  1  B2 )
+
+  Orbital energies (a.u.):
+    Doubly occupied orbitals
+        -20.250498  A1     -1.256859  A1     -0.593259  B2     -0.459408  A1  
+         -0.392113  B1  
+
+    Unoccupied orbitals
+          0.582784  A1      0.693522  B2  
+
+*** tstop() called on h70-33-108-177.paws.uga.edu at Wed Mar  2 16:51:27 2011
+	user time   =       0.29 seconds =       0.00 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+positive disp = -74.966288
+negative disp = -74.965517
+electronic mu(z) = -0.385756
+nuclear z component = 1.058147
+mu(z) hartree = 0.672391
+mu(z) debye = 1.709050

@@ -53,12 +53,21 @@ void export_mints()
     // (int, int, double) version. We create a typedef function pointer to tell
     // Boost.Python we only want the (int, int, double) version.
     typedef void (Vector::*vector_set)(int, int, double);
+    typedef void (Vector::*vector_setitem_1)(int, double);
+    typedef double (Vector::*vector_getitem_1)(int);
+    typedef void (Vector::*vector_setitem_n)(const boost::python::tuple&, double);
+    typedef double (Vector::*vector_getitem_n)(const boost::python::tuple&);
+
     class_<Vector, shared_ptr<Vector> >( "Vector").
             def(init<int>()).
             def("get", &Vector::get).
             def("set", vector_set(&Vector::set)).
             def("print_out", &Vector::print).
             def("dim", &Vector::dim).
+            def("__getitem__", vector_getitem_1(&Vector::pyget)).
+            def("__setitem__", vector_setitem_1(&Vector::pyset)).
+            def("__getitem__", vector_getitem_n(&Vector::pyget)).
+            def("__setitem__", vector_setitem_n(&Vector::pyset)).
             def("nirrep", &Vector::nirrep);
 
     typedef void  (IntVector::*int_vector_set)(int, int, int);
@@ -128,7 +137,7 @@ void export_mints()
             def("ao_kinetic", &MintsHelper::ao_kinetic).
             def("ao_potential", &MintsHelper::ao_potential).
             def("one_electron_integrals", &MintsHelper::one_electron_integrals).
-//            def("ao_dipole", &MintsHelper::ao_dipole).
+            //            def("ao_dipole", &MintsHelper::ao_dipole).
             def("so_overlap", &MintsHelper::so_overlap).
             def("so_kinetic", &MintsHelper::so_kinetic).
             def("so_potential", &MintsHelper::so_potential).
@@ -137,17 +146,17 @@ void export_mints()
             def("ao_erf_eri", &MintsHelper::ao_erf_eri);
 
     class_<FittingMetric, shared_ptr<FittingMetric> >("FittingMetric").
-        def("get_algorithm", &FittingMetric::get_algorithm).
-        def("is_poisson", &FittingMetric::is_poisson).
-        def("is_inverted", &FittingMetric::is_inverted).
-        def("get_metric", &FittingMetric::get_metric).
-        def("get_pivots", &FittingMetric::get_pivots).
-        def("get_reverse_pivots", &FittingMetric::get_reverse_pivots).
-        def("form_fitting_metric", &FittingMetric::form_fitting_metric).
-        def("form_cholesky_inverse", &FittingMetric::form_cholesky_inverse).
-        def("form_QR_inverse", &FittingMetric::form_QR_inverse).
-        def("form_eig_inverse", &FittingMetric::form_eig_inverse).
-        def("form_full_inverse", &FittingMetric::form_full_inverse);
+            def("get_algorithm", &FittingMetric::get_algorithm).
+            def("is_poisson", &FittingMetric::is_poisson).
+            def("is_inverted", &FittingMetric::is_inverted).
+            def("get_metric", &FittingMetric::get_metric).
+            def("get_pivots", &FittingMetric::get_pivots).
+            def("get_reverse_pivots", &FittingMetric::get_reverse_pivots).
+            def("form_fitting_metric", &FittingMetric::form_fitting_metric).
+            def("form_cholesky_inverse", &FittingMetric::form_cholesky_inverse).
+            def("form_QR_inverse", &FittingMetric::form_QR_inverse).
+            def("form_eig_inverse", &FittingMetric::form_eig_inverse).
+            def("form_full_inverse", &FittingMetric::form_full_inverse);
 
     class_<Vector3>("Vector3").
             def(init<double>()).
@@ -236,7 +245,7 @@ void export_mints()
             def("atom_at_position", &Molecule::atom_at_position1).
             def("print_out", &Molecule::print).
             def("nuclear_repulsion_energy", &Molecule::nuclear_repulsion_energy).
-//            def("reorient", &Molecule::reorient).
+            def("nuclear_dipole_contribution", &Molecule::nuclear_dipole_contribution).
             def("find_point_group", &Molecule::find_point_group).
             def("set_point_group", &Molecule::set_point_group).
             def("point_group", &Molecule::point_group).
