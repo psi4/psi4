@@ -97,7 +97,7 @@ protected:
     /// The SO integral generator.  Only ever constructed if needed
     boost::shared_ptr<TwoBodySOInt> eri_;
 
-    /// Pseudospectral stuff 
+    /// Pseudospectral stuff
     shared_ptr<PseudospectralHF> pseudospectral_;
     /// DF stuff 
     shared_ptr<DFHF> df_;
@@ -117,10 +117,6 @@ protected:
     int diis_enabled_;
 
 public:
-    /// Exactly what their name says
-    std::vector<SharedSimpleMatrix> Dipole_;
-    std::vector<SharedSimpleMatrix> Quadrupole_;
-
     /// Nuclear contributions
     SimpleVector nuclear_dipole_contribution_;
     SimpleVector nuclear_quadrupole_contribution_;
@@ -154,9 +150,6 @@ protected:
 
     /// Clears memory and closes files (Should they be open) prior to correlated code execution
     virtual void finalize();
-
-    /// Compute multipole integrals
-    void form_multipole_integrals();
 
     /// Figure out how to occupy the orbitals in the absence of DOCC and SOCC
     void find_occupation();

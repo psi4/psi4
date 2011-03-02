@@ -28,7 +28,7 @@ namespace psi { namespace scf {
 void HF::form_A()
 {
     fprintf(outfile, "\n  Computing Integrals using Density Fitting\n");
-    if (factory_.nirrep() != 1)
+    if (factory_->nirrep() != 1)
     {
         fprintf(outfile,"Local SCF must run in C1.\n"); fflush(outfile);
         abort();
@@ -645,7 +645,7 @@ void RHF::form_G_from_RI_local_K()
 }
 void RHF::propagate_local_mos()
 {
-    if (factory_.nirrep() != 1)
+    if (factory_->nirrep() != 1)
     {
         fprintf(outfile,"Must run in C1 for now.\n"); fflush(outfile);
         abort();
@@ -663,7 +663,7 @@ void RHF::propagate_local_mos()
 
     double **T = block_matrix(norbs,norbs);
     {
-        SharedMatrix temp(factory_.create_matrix("Temp"));
+        SharedMatrix temp(factory_->create_matrix("Temp"));
         //T = S_{mn}L_{ni}
         temp->gemm(false,false,1.0,S_,Lref_,0.0);
 
@@ -749,7 +749,7 @@ void RHF::fully_localize_mos()
 {
   //Pipek-Mizey procedure ripped from DF-MP2, which in turn was ripped from
   //Localize in Psi3
-    if (factory_.nirrep() != 1)
+    if (factory_->nirrep() != 1)
     {
         fprintf(outfile,"Must run in C1 for now.\n"); fflush(outfile);
         abort();
@@ -986,7 +986,7 @@ void RHF::localized_Lodwin_charges()
     //L_->print(outfile);
 
     //Compute Lodwin atomic charges of localized orbitals (for L-DF-SCF)
-    if (factory_.nirrep() != 1)
+    if (factory_->nirrep() != 1)
     {
         fprintf(outfile,"Must run in C1 for now.\n"); fflush(outfile);
         abort();
@@ -1000,7 +1000,7 @@ void RHF::localized_Lodwin_charges()
 
     double **Q = block_matrix(norbs,ndocc);
     {
-        SharedMatrix temp(factory_.create_matrix("Temp"));
+        SharedMatrix temp(factory_->create_matrix("Temp"));
         //Q = Q_{mo} = S^{+1/2}C = S_{mn}^{+1/2}C_{mo}
         temp->gemm(false,false,1.0,Sphalf_,L_,0.0);
         for (int m = 0; m<norbs; m++)

@@ -57,9 +57,9 @@ void SCF::save_info()
     }
 
     // Store the information in wavefunction's objects, for later access
-    Ca_ = SharedMatrix(factory_.create_matrix("C"));
+    Ca_ = SharedMatrix(factory_->create_matrix("C"));
     Cb_ = Ca_;
-    epsilon_a_ = SharedVector(factory_.create_vector());
+    epsilon_a_ = SharedVector(factory_->create_vector());
     epsilon_b_ = epsilon_a_;
     for(int h = 0; h < nirreps; ++h){
         for(int so = 0; so < nsopi_[h]; ++so){

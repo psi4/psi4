@@ -40,19 +40,19 @@ ROHF::~ROHF() {
 
 void ROHF::common_init()
 {
-    Fc_      = SharedMatrix(factory_.create_matrix("F closed"));
-    Fo_      = SharedMatrix(factory_.create_matrix("F open"));
-    Fa_      = SharedMatrix(factory_.create_matrix("F effective (MO basis)"));
+    Fc_      = SharedMatrix(factory_->create_matrix("F closed"));
+    Fo_      = SharedMatrix(factory_->create_matrix("F open"));
+    Fa_      = SharedMatrix(factory_->create_matrix("F effective (MO basis)"));
     Feff_    = Fa_;
-    Ca_       = SharedMatrix(factory_.create_matrix("Moleular orbitals"));
+    Ca_       = SharedMatrix(factory_->create_matrix("Moleular orbitals"));
     Ca_    = Ca_;
-    Dc_      = SharedMatrix(factory_.create_matrix("D closed"));
-    Do_      = SharedMatrix(factory_.create_matrix("D open"));
-    Dc_old_  = SharedMatrix(factory_.create_matrix("D closed old"));
-    Do_old_  = SharedMatrix(factory_.create_matrix("D open old"));
-    Gc_      = SharedMatrix(factory_.create_matrix("G closed"));
-    Go_      = SharedMatrix(factory_.create_matrix("G open"));
-    epsilon_ = SharedVector(factory_.create_vector());
+    Dc_      = SharedMatrix(factory_->create_matrix("D closed"));
+    Do_      = SharedMatrix(factory_->create_matrix("D open"));
+    Dc_old_  = SharedMatrix(factory_->create_matrix("D closed old"));
+    Do_old_  = SharedMatrix(factory_->create_matrix("D open old"));
+    Gc_      = SharedMatrix(factory_->create_matrix("G closed"));
+    Go_      = SharedMatrix(factory_->create_matrix("G open"));
+    epsilon_ = SharedVector(factory_->create_vector());
 
     pk_ = NULL;
     k_ = NULL;
@@ -87,8 +87,8 @@ void ROHF::form_initial_C()
 {
     Matrix temp;
     Vector values;
-    factory_.create_matrix(temp);
-    factory_.create_vector(values);
+    factory_->create_matrix(temp);
+    factory_->create_vector(values);
 
     // In ROHF the creation of the C matrix depends on the previous iteration's C
     // matrix. Here we use H to generate the first C.
@@ -194,19 +194,19 @@ void ROHF::save_information()
 
     // TODO: Delete this as soon as possible!!!
     // Can't believe I'm adding this...
-    chkpt_->wt_nirreps(factory_.nirrep());
+    chkpt_->wt_nirreps(factory_->nirrep());
     chkpt_->wt_irr_labs(temp2);
 
     int nso = basisset_->nbf();
 
     fprintf(outfile, "\n  Final DOCC vector = (");
-    for (int h=0; h<factory_.nirrep(); ++h) {
+    for (int h=0; h<factory_->nirrep(); ++h) {
         fprintf(outfile, "%2d %3s ", doccpi_[h], temp2[h]);
     }
     fprintf(outfile, ")\n");
 
     fprintf(outfile, "  Final SOCC vector = (");
-    for (int h=0; h<factory_.nirrep(); ++h) {
+    for (int h=0; h<factory_->nirrep(); ++h) {
         fprintf(outfile, "%2d %3s ", soccpi_[h], temp2[h]);
     }
     fprintf(outfile, ")\n");
@@ -406,8 +406,8 @@ void ROHF::form_initialF()
 
 void ROHF::form_F()
 {
-    SharedMatrix Fct(factory_.create_matrix("Fock closed transformed"));
-    SharedMatrix Fot(factory_.create_matrix("Fock open transformed"));
+    SharedMatrix Fct(factory_->create_matrix("Fock closed transformed"));
+    SharedMatrix Fot(factory_->create_matrix("Fock open transformed"));
 
     // Form Fc_ and Fo_. See derivation notebook for equations.
     Fc_->copy(H_);
@@ -463,8 +463,8 @@ void ROHF::form_F()
 
 void ROHF::form_C()
 {
-    SharedMatrix temp(factory_.create_matrix());
-    SharedMatrix eigvec(factory_.create_matrix());
+    SharedMatrix temp(factory_->create_matrix());
+    SharedMatrix eigvec(factory_->create_matrix());
 
     // Obtain new eigenvectors
     Feff_->diagonalize(eigvec, epsilon_);
@@ -516,7 +516,7 @@ void ROHF::form_D()
 }
 
 double ROHF::compute_initial_E() {
-    SharedMatrix Ho(factory_.create_matrix());
+    SharedMatrix Ho(factory_->create_matrix());
     Ho->copy(H_);
     Ho->scale(0.5);
 
@@ -527,10 +527,10 @@ double ROHF::compute_initial_E() {
 }
 
 double ROHF::compute_E() {
-    SharedMatrix HFc(factory_.create_matrix());
+    SharedMatrix HFc(factory_->create_matrix());
     HFc->copy(H_);
     HFc->add(Fc_);
-    SharedMatrix HFo(factory_.create_matrix());
+    SharedMatrix HFo(factory_->create_matrix());
     HFo->copy(H_);
     HFo->scale(0.5);
     HFo->add(Fo_);
@@ -648,8 +648,8 @@ void ROHF::form_PK() {
 
 void ROHF::form_G_from_PK()
 {
-    int nirreps = factory_.nirrep();
-    int *opi = factory_.rowspi();
+    int nirreps = factory_->nirrep();
+    int *opi = factory_->rowspi();
     size_t ij;
     double *Do_vector = new double[pk_pairs_];
     double *Dc_vector = new double[pk_pairs_];

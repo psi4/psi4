@@ -51,7 +51,7 @@ protected:
     boost::shared_ptr<PSIO> psio_;
     boost::shared_ptr<Chkpt> chkpt_;
 
-    MatrixFactory factory_;
+    boost::shared_ptr<MatrixFactory> factory_;
     long int memory_;
     unsigned int debug_;
     double energy_threshold_;

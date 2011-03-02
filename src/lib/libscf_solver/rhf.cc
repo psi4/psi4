@@ -94,17 +94,17 @@ void RHF::common_init()
     Drms_ = 0.0;
 
     // Allocate matrix memory
-    Fa_        = SharedMatrix(factory_.create_matrix("F"));
+    Fa_        = SharedMatrix(factory_->create_matrix("F"));
     Fb_        = Fa_;
-    Ca_        = SharedMatrix(factory_.create_matrix("C"));
+    Ca_        = SharedMatrix(factory_->create_matrix("C"));
     Cb_        = Ca_;
-    epsilon_a_ = SharedVector(factory_.create_vector());
+    epsilon_a_ = SharedVector(factory_->create_vector());
     epsilon_b_ = epsilon_a_;
-    D_         = SharedMatrix(factory_.create_matrix("D"));
-    Dold_      = SharedMatrix(factory_.create_matrix("D old"));
-    G_         = SharedMatrix(factory_.create_matrix("G"));
-    J_         = SharedMatrix(factory_.create_matrix("J"));
-    K_         = SharedMatrix(factory_.create_matrix("K"));
+    D_         = SharedMatrix(factory_->create_matrix("D"));
+    Dold_      = SharedMatrix(factory_->create_matrix("D old"));
+    G_         = SharedMatrix(factory_->create_matrix("G"));
+    J_         = SharedMatrix(factory_->create_matrix("J"));
+    K_         = SharedMatrix(factory_->create_matrix("K"));
 
     // PK super matrix for fast G
     pk_ = NULL;
@@ -296,7 +296,7 @@ double RHF::compute_energy()
         save_sapt_info();
 
     // Compute the final dipole.
-    compute_multipole();
+//    compute_multipole();
 
     // Clean memory off, handle diis closeout, etc
     finalize();
@@ -604,6 +604,7 @@ void RHF::save_dual_basis_projection()
     psio_->close(PSIF_SCF_DB_MOS,1);
 }
 
+#if 0
 void RHF::compute_multipole()
 {
     // Begin dipole
@@ -749,7 +750,7 @@ void RHF::compute_multipole()
         delete C;
     }
 }
-
+#endif
 void RHF::save_information()
 {
     // Print the final docc vector
@@ -761,11 +762,11 @@ void RHF::save_information()
 
     // TODO: Delete this as soon as possible!!!
     // Can't believe I'm adding this...
-    chkpt_->wt_nirreps(factory_.nirrep());
+    chkpt_->wt_nirreps(factory_->nirrep());
     chkpt_->wt_irr_labs(temp2);
 
     fprintf(outfile, "\n  Final occupation vector = (");
-    for (int h=0; h<factory_.nirrep(); ++h) {
+    for (int h=0; h<factory_->nirrep(); ++h) {
         fprintf(outfile, "%2d %3s ", doccpi_[h], temp2[h]);
     }
     fprintf(outfile, ")\n");
@@ -776,8 +777,8 @@ void RHF::save_information()
     //is now protected member of RHF
 
     // Needed for a couple of places.
-    //SharedMatrix eigvector(factory_.create_matrix());
-    //SharedVector orbital_e_(factory_.create_vector());
+    //SharedMatrix eigvector(factory_->create_matrix());
+    //SharedVector orbital_e_(factory_->create_vector());
 
     //Fa_->diagonalize(eigvector, orbital_e_);
 
@@ -901,8 +902,8 @@ void RHF::save_fock()
     }
 
     // Determine error matrix for this Fock
-    SharedMatrix FDS(factory_.create_matrix()), DS(factory_.create_matrix());
-    SharedMatrix SDF(factory_.create_matrix()), DF(factory_.create_matrix());
+    SharedMatrix FDS(factory_->create_matrix()), DS(factory_->create_matrix());
+    SharedMatrix SDF(factory_->create_matrix()), DF(factory_->create_matrix());
 
     // FDS = Fa_ * D_ * S_;
     DS->gemm(false, false, 1.0, D_, S_, 0.0);
@@ -989,7 +990,7 @@ void RHF::form_C()
 {
     if (!canonical_X_) {
         Matrix eigvec;
-        factory_.create_matrix(eigvec);
+        factory_->create_matrix(eigvec);
 
         Fa_->transform(Shalf_);
         Fa_->diagonalize(eigvec, *epsilon_a_);
@@ -1232,8 +1233,8 @@ void RHF::form_PK()
 
 void RHF::form_G_from_PK()
 {
-    int nirreps = factory_.nirrep();
-    int *opi = factory_.rowspi();
+    int nirreps = factory_->nirrep();
+    int *opi = factory_->rowspi();
     size_t ij;
     double *D_vector = new double[pk_pairs_];
     int nthread = 1;
@@ -1319,7 +1320,7 @@ void RHF::form_G_from_direct_integrals_parallel()
 
         G_->zero();
 
-        g_info->initialize(basisset_, D_, factory_.nso());
+        g_info->initialize(basisset_, D_, factory_->nso());
 
         shared_ptr<mad_G> g_matrix(new mad_G(*Communicator::world->get_madworld()));
 
@@ -1386,7 +1387,7 @@ void RHF::form_G_from_direct_integrals_parallel()
 
         // Need a temporary G in the AO basis
         SimpleMatrix G_local;
-        factory_.create_simple_matrix(G_local, "G (AO basis)");
+        factory_->create_simple_matrix(G_local, "G (AO basis)");
         G_local.zero();
 
         // Initialize an integral object
@@ -1606,7 +1607,7 @@ void RHF::form_G_from_direct_integrals_parallel()
         SimpleMatrix G = G_local;
         int count;
 
-        Communicator::world->sum(G_local.ptr(), factory_.nso()*factory_.nso(), G.ptr(), -1);
+        Communicator::world->sum(G_local.ptr(), factory_->nso()*factory_->nso(), G.ptr(), -1);
         Communicator::world->sum(&count_local, 1, &count, 0);
 
         fprintf(outfile, "done.  %d two-electron integrals.\n", count); fflush(outfile);
@@ -1627,7 +1628,7 @@ void RHF::form_G_from_direct_integrals_parallel()
 
 void RHF::save_sapt_info()
 {
-    if (factory_.nirrep() != 1)
+    if (factory_->nirrep() != 1)
     {
         fprintf(outfile,"Must run in C1. Period.\n"); fflush(outfile);
         abort();
@@ -1691,7 +1692,7 @@ void RHF::save_sapt_info()
     double *sapt_evals = epsilon_a_->to_block_vector();
     double **sapt_C = Ca_->to_block_matrix();
     //print_mat(sapt_C,sapt_nso,sapt_nso,outfile);
-    SharedMatrix potential(factory_.create_matrix("Potential Integrals"));
+    SharedMatrix potential(factory_->create_matrix("Potential Integrals"));
     IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
     shared_ptr<OneBodySOInt> V(integral.so_potential());
     V->compute(potential);
