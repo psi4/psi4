@@ -829,7 +829,7 @@ void RHF::save_information()
         chkpt_->wt_nmo(nmo_);
         chkpt_->wt_nso(basisset_->nbf());
         chkpt_->wt_nao(basisset_->nbf());
-        chkpt_->wt_ref(0);  
+        chkpt_->wt_ref(0);
         chkpt_->wt_etot(E_);
         chkpt_->wt_escf(E_);
         chkpt_->wt_eref(E_);
@@ -1624,6 +1624,7 @@ void RHF::form_G_from_direct_integrals_parallel()
     }
 
 }
+
 void RHF::save_sapt_info()
 {
     if (factory_.nirrep() != 1)
