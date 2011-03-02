@@ -314,12 +314,12 @@ void HF::form_B_Poisson()
     //                  FORM FITTING METRIC
     //
     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    if (options_.get_str("RI_FITTING_TYPE") == "RAW")
-        form_Wm12_raw();
-    else if (options_.get_str("RI_FITTING_TYPE") == "FINISHED")
-        form_Wm12_fin();
-    else if (options_.get_str("RI_FITTING_TYPE") == "CHOLESKY")
-        form_Wp12_chol();
+//    if (options_.get_str("RI_FITTING_TYPE") == "RAW")
+//        form_Wm12_raw();
+//    else if (options_.get_str("RI_FITTING_TYPE") == "FINISHED")
+//        form_Wm12_fin();
+//    else if (options_.get_str("RI_FITTING_TYPE") == "CHOLESKY")
+//        form_Wp12_chol();
 
     //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     //
@@ -558,7 +558,7 @@ void HF::form_B_Poisson()
 
         if (options_.get_bool("RI_SCF_SAVE"))
         {
-            write_B();
+//            write_B();
         }
     }
     else if (df_storage_ == disk)
