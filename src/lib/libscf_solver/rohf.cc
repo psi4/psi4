@@ -114,11 +114,11 @@ double ROHF::compute_energy()
 
     if (scf_type_ == "PK")
         form_PK();
-    else if (scf_type_ == "DF")
-        form_B();
+    //else if (scf_type_ == "DF")
+    //    form_B();
 
-    if (scf_type_ == "PK")
-        form_PK();
+    //if (scf_type_ == "PK")
+    //    form_PK();
 
     form_Shalf();
     // Check to see if there are MOs already in the checkpoint file.
@@ -138,8 +138,8 @@ double ROHF::compute_energy()
             form_G_from_PK();
         else if (scf_type_ == "DIRECT")
             form_G_from_direct_integrals();
-        else if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD")
-            form_G_from_RI();
+        //else if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD")
+        //    form_G_from_RI();
         else if (scf_type_ == "OUT_OF_CORE")
             form_G();
 
@@ -168,10 +168,10 @@ double ROHF::compute_energy()
 
         converged = test_convergency();
     } while (!converged && iter < maxiter_);
-    if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD")
-    {
-        free_B();
-    }
+    //if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD")
+    //{
+    //    free_B();
+    //}
 
     // Return the final ROHF energy
     if (converged) {

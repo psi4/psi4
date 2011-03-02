@@ -106,9 +106,6 @@ double UHF::compute_energy()
 
     if (scf_type_ == "PK")
         form_PK();
-    else if (scf_type_ == "DF")
-        form_B();
-
 
     if (print_>3) {
         H_->print(outfile);
@@ -132,22 +129,14 @@ double UHF::compute_energy()
 
         if (scf_type_ == "PK"){
             form_G_from_PK();
-        }else if (scf_type_ == "DIRECT"){
-//           form_G_from_direct_integrals();
-            Ja_Jb_Ka_Kb_Functor jk_builder(Ga_, Gb_, Ka_, Kb_, Da_, Db_);
-            process_tei<Ja_Jb_Ka_Kb_Functor>(jk_builder);
-            Ga_->subtract(Ka_);
-            Gb_->subtract(Kb_);
-        }else if (scf_type_ == "DF"){
-            form_G_from_RI();
-        }else if (scf_type_ == "OUT_OF_CORE"){
+        } else { 
             // This will build J (stored in G) and K
-            Ja_Jb_Ka_Kb_Functor jk_builder(Ga_, Gb_, Ka_, Kb_, Da_, Db_);
-            process_tei<Ja_Jb_Ka_Kb_Functor>(jk_builder);
+            J_Ka_Kb_Functor jk_builder(Ga_, Ka_, Kb_, Da_, Db_, Ca_, Cb_, nalphapi_, nbetapi_);
+            process_tei<J_Ka_Kb_Functor>(jk_builder);
+            Gb_->copy(Ga_);
             Ga_->subtract(Ka_);
             Gb_->subtract(Kb_);
         }
-//           form_G();
 
         form_F();
 
@@ -184,10 +173,6 @@ double UHF::compute_energy()
         converged = test_convergency();
     } while (!converged && iter < maxiter_);
 
-    if (scf_type_ == "DF")
-    {
-        free_B();
-    }
     // Return the final RHF energy
     if (converged) {
         fprintf(outfile, "\n  Energy converged.\n");
