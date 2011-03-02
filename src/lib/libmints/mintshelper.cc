@@ -18,13 +18,55 @@ using namespace boost;
 
 namespace psi {
 
+    void MintsHelper::init_helper()
+    {
+        _psio = shared_ptr<PSIO>(new PSIO());
+        _molecule = shared_ptr<Molecule>(Process::environment.molecule());
+
+        if (_molecule.get() == 0) {
+            fprintf(outfile, "  Active molecule not set!");
+            throw PSIEXCEPTION("Active molecule not set!");
+        }
+
+        // Make sure molecule is valid.
+        _molecule->update_geometry();
+
+        // Print the molecule.
+        _molecule->print();
+
+        // Read in the basis set
+        _parser = shared_ptr<BasisSetParser>(new Gaussian94BasisSetParser(options_.get_str("BASIS_PATH")));
+        _basisset = shared_ptr<BasisSet>(BasisSet::construct(_parser, _molecule, options_.get_str("BASIS")));
+
+        // Print the basis set
+        _basisset->print_detail();
+
+        // Create integral factory
+        _integral = shared_ptr<IntegralFactory>(new IntegralFactory(_basisset, _basisset, _basisset, _basisset));
+
+        // Get the SO basis object.
+        _sobasis = shared_ptr<SOBasisSet>(new SOBasisSet(_basisset, _integral));
+
+        // Obtain dimensions from the sobasis
+        const Dimension dimension = _sobasis->dimension();
+
+        // Create a matrix factory and initialize it
+        _factory = shared_ptr<MatrixFactory>(new MatrixFactory());
+        _factory->init_with(dimension, dimension);
+
+    }
+
+
 MintsHelper::MintsHelper(Options & options): options_(options)
 {
+    MintsHelper::init_helper();
 }
 
 MintsHelper::MintsHelper() : options_(Process::environment.options)
 {
+    MintsHelper::init_helper();
 }
+
 
 MintsHelper::~MintsHelper()
 {
@@ -33,81 +75,47 @@ MintsHelper::~MintsHelper()
 void MintsHelper::integrals()
 {
     timer_init();
-    shared_ptr<PSIO> psio(new PSIO());
 
     fprintf(outfile, " MINTS: Wrapper to libmints.\n   by Justin Turney\n\n");
 
-    // We'll only be working with the active molecule.
-    shared_ptr<Molecule> molecule = Process::environment.molecule();
-
-    if (molecule.get() == 0) {
-        fprintf(outfile, "  Active molecule not set!");
-        throw PSIEXCEPTION("Active molecule not set!");
-    }
-
-    // Make sure molecule is valid.
-    molecule->update_geometry();
-
-    // Print the molecule.
-    molecule->print();
-
-    // Read in the basis set
-    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> basisset = BasisSet::construct(parser, molecule, "BASIS");
-
-    // Print the basis set
-    basisset->print_detail();
-
-    // Create integral factory
-    shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset, basisset, basisset, basisset));
-
-    // Get the SO basis object.
-    shared_ptr<SOBasisSet> sobasis(new SOBasisSet(basisset, integral));
-
     // Get ERI object
-    shared_ptr<TwoBodyAOInt> tb(integral->eri());
-    shared_ptr<TwoBodySOInt> eri(new TwoBodySOInt(tb, integral));
+    shared_ptr<TwoBodyAOInt> tb(_integral->eri());
+    shared_ptr<TwoBodySOInt> eri(new TwoBodySOInt(tb, _integral));
 
     // Print out some useful information
     fprintf(outfile, "   Calculation information:\n");
-    fprintf(outfile, "      Number of atoms:                %4d\n", molecule->natom());
-    fprintf(outfile, "      Number of AO shells:            %4d\n", basisset->nshell());
-    fprintf(outfile, "      Number of SO shells:            %4d\n", sobasis->nshell());
-    fprintf(outfile, "      Number of primitives:           %4d\n", basisset->nprimitive());
-    fprintf(outfile, "      Number of atomic orbitals:      %4d\n", basisset->nao());
-    fprintf(outfile, "      Number of basis functions:      %4d\n\n", basisset->nbf());
-    fprintf(outfile, "      Number of irreps:               %4d\n", sobasis->nirrep());
+    fprintf(outfile, "      Number of atoms:                %4d\n", _molecule->natom());
+    fprintf(outfile, "      Number of AO shells:            %4d\n", _basisset->nshell());
+    fprintf(outfile, "      Number of SO shells:            %4d\n", _sobasis->nshell());
+    fprintf(outfile, "      Number of primitives:           %4d\n", _basisset->nprimitive());
+    fprintf(outfile, "      Number of atomic orbitals:      %4d\n", _basisset->nao());
+    fprintf(outfile, "      Number of basis functions:      %4d\n\n", _basisset->nbf());
+    fprintf(outfile, "      Number of irreps:               %4d\n", _sobasis->nirrep());
     fprintf(outfile, "      Number of functions per irrep: [");
-    for (int i=0; i<sobasis->nirrep(); ++i) {
-        fprintf(outfile, "%4d ", sobasis->nfunction_in_irrep(i));
+    for (int i=0; i<_sobasis->nirrep(); ++i) {
+        fprintf(outfile, "%4d ", _sobasis->nfunction_in_irrep(i));
     }
     fprintf(outfile, "]\n\n");
 
     // Compute and dump one-electron SO integrals.
-    // Obtain dimensions from the sobasis
-    const Dimension dimension = sobasis->dimension();
-
-    // Create a matrix factory and initialize it
-    shared_ptr<MatrixFactory> factory(new MatrixFactory());
-    factory->init_with(dimension, dimension);
 
     // Overlap
-    shared_ptr<OneBodySOInt> overlap(integral->so_overlap());
-    shared_ptr<Matrix>       overlap_mat(factory->create_matrix(PSIF_SO_S));
+    shared_ptr<OneBodySOInt> overlap(_integral->so_overlap());
+    shared_ptr<Matrix>       overlap_mat(_factory->create_matrix(PSIF_SO_S));
     overlap->compute(overlap_mat);
-    overlap_mat->save(psio, PSIF_OEI);
+    overlap_mat->save(_psio, PSIF_OEI);
 
     // Kinetic
-    shared_ptr<OneBodySOInt> kinetic(integral->so_kinetic());
-    shared_ptr<Matrix>       kinetic_mat(factory->create_matrix(PSIF_SO_T));
+    shared_ptr<OneBodySOInt> kinetic(_integral->so_kinetic());
+    shared_ptr<Matrix>       kinetic_mat(_factory->create_matrix(PSIF_SO_T));
     kinetic->compute(kinetic_mat);
-    kinetic_mat->save(psio, PSIF_OEI);
+    kinetic_mat->save(_psio, PSIF_OEI);
 
     // Potential
-    shared_ptr<OneBodySOInt> potential(integral->so_potential());
-    shared_ptr<Matrix>       potential_mat(factory->create_matrix(PSIF_SO_V));
+    shared_ptr<OneBodySOInt> potential(_integral->so_potential());
+    shared_ptr<Matrix>       potential_mat(_factory->create_matrix(PSIF_SO_V));
     potential->compute(potential_mat);
-    potential_mat->save(psio, PSIF_OEI);
+    potential_mat->save(_psio, PSIF_OEI);
 
     if (Process::environment.options.get_int("PRINT") > 3) {
         overlap_mat->print();
@@ -116,13 +124,13 @@ void MintsHelper::integrals()
     }
 
     // Open the IWL buffer where we will store the integrals.
-    IWL ERIOUT(psio.get(), PSIF_SO_TEI, 0.0, 0, 0);
+    IWL ERIOUT(_psio.get(), PSIF_SO_TEI, 0.0, 0, 0);
     IWLWriter writer(ERIOUT);
 
     // Let the user know what we're doing.
     fprintf(outfile, "      Computing integrals..."); fflush(outfile);
 
-    SOShellCombinationsIterator shellIter(sobasis, sobasis, sobasis, sobasis);
+    SOShellCombinationsIterator shellIter(_sobasis, _sobasis, _sobasis, _sobasis);
     for (shellIter.first(); shellIter.is_done() == false; shellIter.next()) {
         eri->compute_shell(shellIter, writer);
     }
@@ -142,77 +150,43 @@ void MintsHelper::integrals()
 
 void MintsHelper::one_electron_integrals()
 {
-    shared_ptr<PSIO> psio(new PSIO());
 
     fprintf(outfile, " OEINTS: Wrapper to libmints.\n   by Justin Turney\n\n");
 
-    // We'll only be working with the active molecule.
-    shared_ptr<Molecule> molecule = Process::environment.molecule();
-
-    if (molecule.get() == 0) {
-        fprintf(outfile, "  Active molecule not set!");
-        throw PSIEXCEPTION("Active molecule not set!");
-    }
-
-    // Make sure molecule is valid.
-    molecule->update_geometry();
-
-    // Print the molecule.
-    molecule->print();
-
-    // Read in the basis set
-    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> basisset = BasisSet::construct(parser, molecule, "BASIS");
-
-    // Print the basis set
-    basisset->print_detail();
-
-    // Create integral factory
-    shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset, basisset, basisset, basisset));
-
-    // Get the SO basis object.
-    shared_ptr<SOBasisSet> sobasis(new SOBasisSet(basisset, integral));
-
     // Print out some useful information
     fprintf(outfile, "   Calculation information:\n");
-    fprintf(outfile, "      Number of atoms:                %4d\n", molecule->natom());
-    fprintf(outfile, "      Number of AO shells:            %4d\n", basisset->nshell());
-    fprintf(outfile, "      Number of SO shells:            %4d\n", sobasis->nshell());
-    fprintf(outfile, "      Number of primitives:           %4d\n", basisset->nprimitive());
-    fprintf(outfile, "      Number of atomic orbitals:      %4d\n", basisset->nao());
-    fprintf(outfile, "      Number of basis functions:      %4d\n\n", basisset->nbf());
-    fprintf(outfile, "      Number of irreps:               %4d\n", sobasis->nirrep());
+    fprintf(outfile, "      Number of atoms:                %4d\n", _molecule->natom());
+    fprintf(outfile, "      Number of AO shells:            %4d\n", _basisset->nshell());
+    fprintf(outfile, "      Number of SO shells:            %4d\n", _sobasis->nshell());
+    fprintf(outfile, "      Number of primitives:           %4d\n", _basisset->nprimitive());
+    fprintf(outfile, "      Number of atomic orbitals:      %4d\n", _basisset->nao());
+    fprintf(outfile, "      Number of basis functions:      %4d\n\n", _basisset->nbf());
+    fprintf(outfile, "      Number of irreps:               %4d\n", _sobasis->nirrep());
     fprintf(outfile, "      Number of functions per irrep: [");
-    for (int i=0; i<sobasis->nirrep(); ++i) {
-        fprintf(outfile, "%4d ", sobasis->nfunction_in_irrep(i));
+    for (int i=0; i<_sobasis->nirrep(); ++i) {
+        fprintf(outfile, "%4d ", _sobasis->nfunction_in_irrep(i));
     }
     fprintf(outfile, "]\n\n");
 
     // Compute and dump one-electron SO integrals.
-    // Obtain dimensions from the sobasis
-    const Dimension dimension = sobasis->dimension();
 
-    // Create a matrix factory and initialize it
-    shared_ptr<MatrixFactory> factory(new MatrixFactory());
-    factory->init_with(dimension, dimension);
-
-    // Overlap
-    shared_ptr<OneBodySOInt> overlap(integral->so_overlap());
-    shared_ptr<Matrix>       overlap_mat(factory->create_matrix(PSIF_SO_S));
+     // Overlap
+    shared_ptr<OneBodySOInt> overlap(_integral->so_overlap());
+    shared_ptr<Matrix>       overlap_mat(_factory->create_matrix(PSIF_SO_S));
     overlap->compute(overlap_mat);
-    overlap_mat->save(psio, PSIF_OEI);
+    overlap_mat->save(_psio, PSIF_OEI);
 
     // Kinetic
-    shared_ptr<OneBodySOInt> kinetic(integral->so_kinetic());
-    shared_ptr<Matrix>       kinetic_mat(factory->create_matrix(PSIF_SO_T));
+    shared_ptr<OneBodySOInt> kinetic(_integral->so_kinetic());
+    shared_ptr<Matrix>       kinetic_mat(_factory->create_matrix(PSIF_SO_T));
     kinetic->compute(kinetic_mat);
-    kinetic_mat->save(psio, PSIF_OEI);
+    kinetic_mat->save(_psio, PSIF_OEI);
 
     // Potential
-    shared_ptr<OneBodySOInt> potential(integral->so_potential());
-    shared_ptr<Matrix>       potential_mat(factory->create_matrix(PSIF_SO_V));
+    shared_ptr<OneBodySOInt> potential(_integral->so_potential());
+    shared_ptr<Matrix>       potential_mat(_factory->create_matrix(PSIF_SO_V));
     potential->compute(potential_mat);
-    potential_mat->save(psio, PSIF_OEI);
+    potential_mat->save(_psio, PSIF_OEI);
 }
 
 void MintsHelper::integral_gradients()
@@ -227,111 +201,58 @@ void MintsHelper::integral_hessians()
 
 shared_ptr<Matrix> MintsHelper::ao_overlap()
 {
-    shared_ptr<Molecule> molecule = Process::environment.molecule();
-    if (molecule.get() == 0) {
-        fprintf(outfile, "  Active molecule not set!");
-        throw PSIEXCEPTION("Active molecule not set!");
-    }
-
-    molecule->update_geometry();
-    // Read in the basis set
-    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, "BASIS");
-
-    int nbf = basis->nbf();
-    shared_ptr<Matrix> S(new Matrix("AO Overlap Integrals", nbf, nbf));
-
-    shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
-    shared_ptr<OneBodyAOInt> ints(fact->ao_overlap());
-    ints->compute(S);
-
-    return S;
+    // Overlap
+   shared_ptr<OneBodyAOInt> overlap(_integral->ao_overlap());
+   shared_ptr<Matrix>       overlap_mat(_factory->create_matrix(PSIF_AO_S));
+   overlap->compute(overlap_mat);
+   overlap_mat->save(_psio, PSIF_OEI);
 
 }
 
 shared_ptr<Matrix> MintsHelper::ao_kinetic()
 {
-    shared_ptr<Molecule> molecule = Process::environment.molecule();
-    if (molecule.get() == 0) {
-        fprintf(outfile, "  Active molecule not set!");
-        throw PSIEXCEPTION("Active molecule not set!");
-    }
 
-    molecule->update_geometry();
-    // Read in the basis set
-    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, "BASIS");
-
-    int nbf = basis->nbf();
-    shared_ptr<Matrix> S(new Matrix("AO Kinetic Integrals", nbf, nbf));
-
-    shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
-    shared_ptr<OneBodyAOInt> ints(fact->ao_kinetic());
-    ints->compute(S);
-
-    return S;
+    shared_ptr<OneBodyAOInt> T(_integral->ao_kinetic());
+    shared_ptr<Matrix>       kinetic_mat(_factory->create_matrix());
+    T->compute(kinetic_mat);
+    kinetic_mat->save(_psio, PSIF_OEI);
 
 }
 
 shared_ptr<Matrix> MintsHelper::ao_potential()
 {
-    shared_ptr<Molecule> molecule = Process::environment.molecule();
-    if (molecule.get() == 0) {
-        fprintf(outfile, "  Active molecule not set!");
-        throw PSIEXCEPTION("Active molecule not set!");
-    }
 
-    molecule->update_geometry();
-    // Read in the basis set
-    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, "BASIS");
-
-    int nbf = basis->nbf();
-    shared_ptr<Matrix> S(new Matrix("AO Potential Integrals", nbf, nbf));
-
-    shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
-    shared_ptr<OneBodyAOInt> ints(fact->ao_potential());
-    ints->compute(S);
-
-    return S;
+    shared_ptr<OneBodyAOInt> V(_integral->ao_potential());
+    shared_ptr<Matrix>       potential_mat(_factory->create_matrix());
+    V->compute(potential_mat);
+    potential_mat->save(_psio, PSIF_OEI);
 
 }
 
 shared_ptr<Matrix> MintsHelper::ao_erf_eri(double omega, double alpha, double beta)
 {
-    shared_ptr<Molecule> molecule = Process::environment.molecule();
-    if (molecule.get() == 0) {
-        fprintf(outfile, "  Active molecule not set!");
-        throw PSIEXCEPTION("Active molecule not set!");
-    }
 
-    molecule->update_geometry();
-    // Read in the basis set
-    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, "BASIS");
-
-    int nbf = basis->nbf();
+    int nbf = _basisset->nbf();
     shared_ptr<Matrix> I(new Matrix("AO ERF ERI Integrals", nbf*nbf, nbf*nbf));
 
-    shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
-    shared_ptr<TwoBodyAOInt> ints(fact->erf_eri(omega, alpha, beta));
+    shared_ptr<TwoBodyAOInt> ints(_integral->erf_eri(omega, alpha, beta));
     double** Ip = I->pointer();
     const double* buffer = ints->buffer();
 
-    for (int M = 0; M < basis->nshell(); M++) {
-    for (int N = 0; N < basis->nshell(); N++) {
-    for (int P = 0; P < basis->nshell(); P++) {
-    for (int Q = 0; Q < basis->nshell(); Q++) {
+    for (int M = 0; M < _basisset->nshell(); M++) {
+    for (int N = 0; N < _basisset->nshell(); N++) {
+    for (int P = 0; P < _basisset->nshell(); P++) {
+    for (int Q = 0; Q < _basisset->nshell(); Q++) {
 
     ints->compute_shell(M,N,P,Q);
 
-    for (int m = 0, index = 0; m < basis->shell(M)->nfunction(); m++) {
-    for (int n = 0; n < basis->shell(N)->nfunction(); n++) {
-    for (int p = 0; p < basis->shell(P)->nfunction(); p++) {
-    for (int q = 0; q < basis->shell(Q)->nfunction(); q++, index++) {
+    for (int m = 0, index = 0; m < _basisset->shell(M)->nfunction(); m++) {
+    for (int n = 0; n < _basisset->shell(N)->nfunction(); n++) {
+    for (int p = 0; p < _basisset->shell(P)->nfunction(); p++) {
+    for (int q = 0; q < _basisset->shell(Q)->nfunction(); q++, index++) {
 
-    Ip[(basis->shell(M)->function_index() + m)*nbf + basis->shell(N)->function_index() + n]
-      [(basis->shell(P)->function_index() + p)*nbf + basis->shell(Q)->function_index() + q]
+    Ip[(_basisset->shell(M)->function_index() + m)*nbf + _basisset->shell(N)->function_index() + n]
+      [(_basisset->shell(P)->function_index() + p)*nbf + _basisset->shell(Q)->function_index() + q]
         = buffer[index];
 
     } } } }
@@ -345,39 +266,28 @@ shared_ptr<Matrix> MintsHelper::ao_erf_eri(double omega, double alpha, double be
 
 shared_ptr<Matrix> MintsHelper::ao_eri()
 {
-    shared_ptr<Molecule> molecule = Process::environment.molecule();
-    if (molecule.get() == 0) {
-        fprintf(outfile, "  Active molecule not set!");
-        throw PSIEXCEPTION("Active molecule not set!");
-    }
 
-    molecule->update_geometry();
-    // Read in the basis set
-    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, "BASIS");
-
-    int nbf = basis->nbf();
+    int nbf = _basisset->nbf();
     shared_ptr<Matrix> I(new Matrix("AO ERI Integrals", nbf*nbf, nbf*nbf));
 
-    shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
-    shared_ptr<TwoBodyAOInt> ints(fact->eri());
+    shared_ptr<TwoBodyAOInt> ints(_integral->eri());
     double** Ip = I->pointer();
     const double* buffer = ints->buffer();
 
-    for (int M = 0; M < basis->nshell(); M++) {
-    for (int N = 0; N < basis->nshell(); N++) {
-    for (int P = 0; P < basis->nshell(); P++) {
-    for (int Q = 0; Q < basis->nshell(); Q++) {
+    for (int M = 0; M < _basisset->nshell(); M++) {
+    for (int N = 0; N < _basisset->nshell(); N++) {
+    for (int P = 0; P < _basisset->nshell(); P++) {
+    for (int Q = 0; Q < _basisset->nshell(); Q++) {
 
     ints->compute_shell(M,N,P,Q);
 
-    for (int m = 0, index = 0; m < basis->shell(M)->nfunction(); m++) {
-    for (int n = 0; n < basis->shell(N)->nfunction(); n++) {
-    for (int p = 0; p < basis->shell(P)->nfunction(); p++) {
-    for (int q = 0; q < basis->shell(Q)->nfunction(); q++, index++) {
+    for (int m = 0, index = 0; m < _basisset->shell(M)->nfunction(); m++) {
+    for (int n = 0; n < _basisset->shell(N)->nfunction(); n++) {
+    for (int p = 0; p < _basisset->shell(P)->nfunction(); p++) {
+    for (int q = 0; q < _basisset->shell(Q)->nfunction(); q++, index++) {
 
-    Ip[(basis->shell(M)->function_index() + m)*nbf + basis->shell(N)->function_index() + n]
-      [(basis->shell(P)->function_index() + p)*nbf + basis->shell(Q)->function_index() + q]
+    Ip[(_basisset->shell(M)->function_index() + m)*nbf + _basisset->shell(N)->function_index() + n]
+      [(_basisset->shell(P)->function_index() + p)*nbf + _basisset->shell(Q)->function_index() + q]
         = buffer[index];
 
     } } } }
@@ -391,100 +301,44 @@ shared_ptr<Matrix> MintsHelper::ao_eri()
 
 shared_ptr<Matrix> MintsHelper::so_overlap()
 {
-    shared_ptr<Molecule> molecule = Process::environment.molecule();
-    if (molecule.get() == 0) {
-        fprintf(outfile, "  Active molecule not set!");
-        throw PSIEXCEPTION("Active molecule not set!");
-    }
 
-    molecule->update_geometry();
-    // Read in the basis set
-    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, "BASIS");
-    shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
-    shared_ptr<SOBasisSet> sobasis(new SOBasisSet(basis, fact));
-    const Dimension& dim = sobasis->dimension();
-    shared_ptr<Matrix> S(new Matrix("SO Overlap Integrals", dim, dim));
-
-    shared_ptr<OneBodySOInt> ints(fact->so_overlap());
-    ints->compute(S);
-
-    return S;
+    shared_ptr<OneBodySOInt> S(_integral->so_overlap());
+    shared_ptr<Matrix>       overlap_mat(_factory->create_matrix(PSIF_SO_S));
+    S->compute(overlap_mat);
+    overlap_mat->save(_psio, PSIF_OEI);
 
 }
 
 shared_ptr<Matrix> MintsHelper::so_kinetic()
 {
-    shared_ptr<Molecule> molecule = Process::environment.molecule();
-    if (molecule.get() == 0) {
-        fprintf(outfile, "  Active molecule not set!");
-        throw PSIEXCEPTION("Active molecule not set!");
-    }
 
-    molecule->update_geometry();
-    // Read in the basis set
-    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, "BASIS");
-    shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
-    shared_ptr<SOBasisSet> sobasis(new SOBasisSet(basis, fact));
-    const Dimension& dim = sobasis->dimension();
-    shared_ptr<Matrix> S(new Matrix("SO Kinetic Integrals", dim, dim));
-
-    shared_ptr<OneBodySOInt> ints(fact->so_kinetic());
-    ints->compute(S);
-
-    return S;
+    shared_ptr<OneBodySOInt> T(_integral->so_kinetic());
+    shared_ptr<Matrix>       kinetic_mat(_factory->create_matrix(PSIF_SO_T));
+    T->compute(kinetic_mat);
+    kinetic_mat->save(_psio, PSIF_OEI);
 
 }
 
 shared_ptr<Matrix> MintsHelper::so_potential()
 {
-    shared_ptr<Molecule> molecule = Process::environment.molecule();
-    if (molecule.get() == 0) {
-        fprintf(outfile, "  Active molecule not set!");
-        throw PSIEXCEPTION("Active molecule not set!");
-    }
 
-    molecule->update_geometry();
-    // Read in the basis set
-    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, "BASIS");
-    shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
-    shared_ptr<SOBasisSet> sobasis(new SOBasisSet(basis, fact));
-    const Dimension& dim = sobasis->dimension();
-    shared_ptr<Matrix> S(new Matrix("SO Potential Integrals", dim, dim));
+    shared_ptr<OneBodySOInt> V(_integral->so_potential());
+    shared_ptr<Matrix>       potential_mat(_factory->create_matrix(PSIF_SO_V));
+    V->compute(potential_mat);
+    potential_mat->save(_psio, PSIF_OEI);
 
-    shared_ptr<OneBodySOInt> ints(fact->so_potential());
-    ints->compute(S);
-
-    return S;
 }
 
 std::vector<shared_ptr<Matrix> > MintsHelper::so_dipole()
 {
-    shared_ptr<Molecule> molecule = Process::environment.molecule();
-    if (molecule.get() == 0) {
-        fprintf(outfile, "  Active molecule not set!");
-        throw PSIEXCEPTION("Active molecule not set!");
-    }
-
-    molecule->update_geometry();
-    // Read in the basis set
-    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, "BASIS");
-    shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
-    shared_ptr<SOBasisSet> sobasis(new SOBasisSet(basis, fact));
-    const Dimension& dim = sobasis->dimension();
 
     // The matrix factory can create matrices of the correct dimensions...
-    shared_ptr<MatrixFactory> factory(new MatrixFactory);
-    factory->init_with(dim, dim);
 
-    MultipoleSymmetry msymm(1, molecule, fact, factory);
+    MultipoleSymmetry msymm(1, _molecule, _integral, _factory);
     // Create a vector of matrices with the proper symmetry
     std::vector<SharedMatrix> dipole = msymm.create_matrices("SO Dipole");
 
-    shared_ptr<OneBodySOInt> ints(fact->so_dipole());
+    shared_ptr<OneBodySOInt> ints(_integral->so_dipole());
     ints->compute(dipole);
 
     return dipole;
