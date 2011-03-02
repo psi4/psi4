@@ -32,6 +32,7 @@
 
 #include "pairs.h"
 #include "pseudospectral.h"
+#include "df.h"
 
 #include "rhf_functor.h"
 
@@ -188,12 +189,10 @@ double RHF::compute_energy()
 
     if (scf_type_ == "PK")
         form_PK();
-    else if (scf_type_ == "CD" || scf_type_ == "1C_CD")
-        form_CD();
-    else if (scf_type_ == "DF")
-        form_B();
-    else if (scf_type_ == "POISSON")
-        form_B_Poisson();
+    //else if (scf_type_ == "CD" || scf_type_ == "1C_CD")
+    //    form_CD();
+    //else if (scf_type_ == "POISSON")
+    //    form_B_Poisson();
 //    else if (scf_type_ == "PSEUDOSPECTRAL")
 //        pseudospectral_ = shared_ptr<PseudospectralHF>(new PseudospectralHF(basisset_, D_, J_, K_, psio_, options_));
 //    else if (scf_type_ == "L_DF") {
@@ -221,41 +220,19 @@ double RHF::compute_energy()
         timer_on("Form G");
         if (scf_type_ == "PK"){
             form_G_from_PK();
-        }else if (scf_type_ == "DIRECT"){
-//            form_G_from_direct_integrals();
-            J_K_Functor jk_builder(G_, K_, D_);
+        //}else if (scf_type_ == "CD"||scf_type_ =="1C_CD" || scf_type_ == "POISSON"){
+            //form_G_from_RI();
+        }else { 
+            J_K_Functor jk_builder(G_, K_, D_, Ca_, nalphapi_);
             process_tei<J_K_Functor>(jk_builder);
             G_->scale(2.0);
             G_->subtract(K_);
-        }else if (scf_type_ == "DF"||scf_type_ == "CD"||scf_type_ =="1C_CD" || scf_type_ == "POISSON"){
-            form_G_from_RI();
-        }else if (scf_type_ == "PSEUDOSPECTRAL") {
-//            pseudospectral_->form_G_RHF();
-//            G_->copy(J_);
-//            G_->scale(-1.0);
-//            G_->add(K_);
-//            G_->scale(-1.0);
-            J_K_Functor jk_builder(G_, K_, D_);
-            process_tei<J_K_Functor>(jk_builder);
-            G_->scale(2.0);
-            G_->subtract(K_);
-//        }else if (scf_type_ == "L_DF"){
-//            form_G_from_RI_local_K();
-        }else if(scf_type_ == "OUT_OF_CORE"){
-            J_K_Functor jk_builder(G_, K_, D_);
-            process_tei<J_K_Functor>(jk_builder);
-            G_->scale(2.0);
-            G_->subtract(K_);
-//            form_G();
         }
-
         timer_off("Form G");
 
         if (print_>3) {
             J_->print(outfile);
-
             K_->print(outfile);
-
             G_->print(outfile);
         }
 
@@ -304,8 +281,8 @@ double RHF::compute_energy()
     } while (!converged && iteration_ < maxiter_ );
 
     //Free the heavies pronto!
-    if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD")
-        free_B();
+    //if (scf_type_ == "CD" || scf_type_ == "1C_CD")
+    //    free_B();
 
     if (converged) {
         fprintf(outfile, "\n  Energy converged.\n");
@@ -2185,8 +2162,8 @@ void RHF::form_J_and_K()
         form_J_and_K_from_direct_integrals();
     }
     else if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD") {
-        form_J_from_RI();
-        form_K_from_RI();
+        //form_J_from_RI();
+        //form_K_from_RI();
     }
     else {
         //form_J();

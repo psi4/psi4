@@ -511,7 +511,7 @@ void FittingMetric::form_cholesky_factor()
 
     form_fitting_metric();
 
-    pivot();
+    //pivot();
     for (int h = 0; h < metric_->nirrep(); h++) {
 
         if (metric_->colspi()[h] == 0) continue;
@@ -519,10 +519,6 @@ void FittingMetric::form_cholesky_factor()
         // Cholesky Decomposition
         double** J = metric_->pointer(h);
         int info = C_DPOTRF('L', metric_->colspi()[h], J[0], metric_->colspi()[h]);
-
-        for (int A = 0; A < metric_->colspi()[h]; A++)
-            for (int B = 0; B < A; B++)
-                J[A][B] = J[B][A];
     }
     metric_->set_name("SO Basis Cholesky Factor (Full)");
 }

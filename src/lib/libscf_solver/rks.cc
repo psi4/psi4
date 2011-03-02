@@ -318,7 +318,7 @@ void RKS::form_J()
         form_J_and_K_from_direct_integrals();
     }
     else if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD") {
-        form_J_from_RI();
+        //form_J_from_RI();
     }
     else if (scf_type_ == "OUT_OF_CORE" ){
         //form_J_and_K_disk();
@@ -333,7 +333,7 @@ void RKS::form_K()
         //Already formed
     }
     else if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD") {
-        form_K_from_RI();
+        //form_K_from_RI();
     }
     else {
         //Already formed

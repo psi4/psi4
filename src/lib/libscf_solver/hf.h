@@ -27,6 +27,7 @@ namespace psi {
     namespace scf {
 
 class PseudospectralHF;
+class DFHF; 
 
 class HF : public Wavefunction {
 protected:
@@ -98,6 +99,8 @@ protected:
 
     /// Pseudospectral stuff 
     shared_ptr<PseudospectralHF> pseudospectral_;
+    /// DF stuff 
+    shared_ptr<DFHF> df_;
 
     /// DF Storage Scheme
     enum df_storage { double_core, core, flip_B_core, flip_B_disk, k_incore, disk};

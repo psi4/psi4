@@ -5,6 +5,7 @@
 #include "libiwl/iwl.hpp"
 #include "libmints/mints.h"
 #include "pseudospectral.h"
+#include "df.h"
 
 // We're assuming that for (PQ|RS) P>=Q, R>=S and PQ>=RS
 
@@ -22,7 +23,8 @@
  *                   this is called by the out-of-core and direct codes, and will take
  *                   the relative (within irrep) and absolute values of p, q, r and s, along
  *                   with their symmetries, to generate the J and K matrices.
- * void operator()(shared_ptr<PseudospectralHF> psHF) which will set up a PSHF object
+ * void operator()(shared_ptr<DFHF> dfhf, shared_ptr<PseudospectralHF> psHF) which will set up a PSHF object
+ * void operator()(shared_ptr<DSHF> dfHF) which will set up a DFHF object
  */
 
 
@@ -36,6 +38,10 @@ class J_K_Functor
 {
     /// The density matrix
     const shared_ptr<Matrix> D_;
+    /// The occupation matrix
+    const shared_ptr<Matrix> &C_;
+    /// The number of alpha (and beta) electrons 
+    const int* N_;
     /// The Coulomb matrix
     shared_ptr<Matrix> &J_;
     /// The exchange matrix
@@ -53,15 +59,29 @@ public:
     }
 
 
-    J_K_Functor(shared_ptr<Matrix> J, shared_ptr<Matrix> K, const shared_ptr<Matrix> D)
-        : J_(J), K_(K), D_(D)
+    J_K_Functor(shared_ptr<Matrix> J, shared_ptr<Matrix> K, const shared_ptr<Matrix> D,
+        const shared_ptr<Matrix> C, const int* N)
+        : J_(J), K_(K), D_(D), C_(C), N_(N)
     { }
 
-    void operator()(shared_ptr<PseudospectralHF> pshf) {
+    void operator()(shared_ptr<DFHF> dfhf, shared_ptr<PseudospectralHF> pshf) {
+        dfhf->set_restricted(true);
+        dfhf->set_jk(false);
+        dfhf->set_J(J_);
+        dfhf->set_Da(D_);
         pshf->set_restricted(true);
-        pshf->set_Ja(J_);
         pshf->set_Da(D_);
         pshf->set_Ka(K_);
+    }
+
+    void operator()(shared_ptr<DFHF> dfhf) {
+        dfhf->set_restricted(true);
+        dfhf->set_jk(true);
+        dfhf->set_J(J_);
+        dfhf->set_Ka(K_);
+        dfhf->set_Da(D_);
+        dfhf->set_Ca(C_);
+        dfhf->set_Na(N_);
     }
 
     void operator()(int pabs, int qabs, int rabs, int sabs,
@@ -261,12 +281,16 @@ public:
         : J_(J), D_(D)
     { }
 
-    void operator()(shared_ptr<PseudospectralHF> pshf) {
-        pshf->set_restricted(true);
-        pshf->set_Ja(J_);
-        pshf->set_Da(D_);
+    void operator()(shared_ptr<DFHF> dfhf, shared_ptr<PseudospectralHF> pshf) {
+        // Pseudospectral is exchange only, this does nothing
     }
 
+    void operator()(shared_ptr<DFHF> dfhf) {
+        dfhf->set_restricted(true);
+        dfhf->set_jk(false);
+        dfhf->set_J(J_);
+        dfhf->set_Da(D_);
+    }
 
     void operator()(int pabs, int qabs, int rabs, int sabs,
                     int psym, int prel, int qsym, int qrel,
@@ -318,8 +342,7 @@ public:
             /* (rs|pq) */
             if(psym == qsym){
                 J_->add(psym, prel, qrel, D_->get(rsym, rrel, srel) * value);
-            }
-
+            } 
             /* (rs|qp) */
 
         }else if(pabs==qabs && rabs!=sabs){
@@ -348,16 +371,22 @@ public:
   @brief This can be passed into the templated HF::process_tei() function
          and will compute alpha and beta Coulomb and exchange matrices
 */
-class Ja_Jb_Ka_Kb_Functor
+class J_Ka_Kb_Functor
 {
     /// The alpha density matrix
     const shared_ptr<Matrix> Da_;
     /// The beta density matrix
     const shared_ptr<Matrix> Db_;
+    /// The alpha occupation matrix
+    const shared_ptr<Matrix> Ca_;
+    /// The beta occupation matrix
+    const shared_ptr<Matrix> Cb_;
+    /// The number of alpha electrons 
+    const int* Na_;
+    /// The number of beta electrons 
+    const int* Nb_;
     /// The alpha Coulomb matrix
-    shared_ptr<Matrix> &Ja_;
-    /// The beta Coulomb matrix
-    shared_ptr<Matrix> &Jb_;
+    shared_ptr<Matrix> &J_;
     /// The alpha exchange matrix
     shared_ptr<Matrix> &Ka_;
     /// The beta exchange matrix
@@ -367,31 +396,47 @@ public:
     bool k_required() const {return true;}
 
     void initialize(){
-        Ja_->zero();
+        J_->zero();
         Ka_->zero();
         Kb_->zero();
     }
     void finalize(){
-        Ja_->copy_lower_to_upper();
-        Jb_->copy(Ja_);
+        J_->copy_lower_to_upper();
         Ka_->copy_lower_to_upper();
         Kb_->copy_lower_to_upper();
     }
 
 
-    Ja_Jb_Ka_Kb_Functor(shared_ptr<Matrix> Ja, shared_ptr<Matrix> Jb, shared_ptr<Matrix> Ka,
-               shared_ptr<Matrix> Kb, const shared_ptr<Matrix> Da, const shared_ptr<Matrix> Db)
-        : Ja_(Ja), Jb_(Jb), Ka_(Ka), Kb_(Kb), Da_(Da), Db_(Db)
+    J_Ka_Kb_Functor(shared_ptr<Matrix> J, shared_ptr<Matrix> Ka,
+               shared_ptr<Matrix> Kb, const shared_ptr<Matrix> Da, const shared_ptr<Matrix> Db, const shared_ptr<Matrix> Ca, const shared_ptr<Matrix> Cb, const int* Na, const int* Nb)
+        : J_(J), Ka_(Ka), Kb_(Kb), Da_(Da), Db_(Db), Ca_(Ca), Cb_(Cb), Na_(Na), Nb_(Nb)
     { }
 
-    void operator()(shared_ptr<PseudospectralHF> pshf) {
-        pshf->set_restricted(true);
-        pshf->set_Ja(Ja_);
-        pshf->set_Jb(Jb_);
+    void operator()(shared_ptr<DFHF> dfhf, shared_ptr<PseudospectralHF> pshf) {
+        pshf->set_restricted(false);
         pshf->set_Da(Da_);
         pshf->set_Db(Db_);
         pshf->set_Ka(Ka_);
         pshf->set_Kb(Kb_);
+        dfhf->set_restricted(false);
+        dfhf->set_jk(false);
+        dfhf->set_J(J_);
+        dfhf->set_Da(Da_);
+        dfhf->set_Db(Db_);
+    }
+
+    void operator()(shared_ptr<DFHF> dfhf) {
+        dfhf->set_restricted(false);
+        dfhf->set_jk(true);
+        dfhf->set_J(J_);
+        dfhf->set_Da(Da_);
+        dfhf->set_Db(Db_);
+        dfhf->set_Ca(Ca_);
+        dfhf->set_Cb(Cb_);
+        dfhf->set_Na(Na_);
+        dfhf->set_Nb(Nb_);
+        dfhf->set_Ka(Ka_);
+        dfhf->set_Kb(Kb_);
     }
 
 
@@ -400,7 +445,7 @@ public:
                     int rsym, int rrel, int ssym, int srel, double value) {
         /* (pq|rs) */
         if(rsym == ssym){
-            Ja_->add(rsym, rrel, srel, (Da_->get(psym, prel, qrel) + Db_->get(psym, prel, qrel)) * value);
+            J_->add(rsym, rrel, srel, (Da_->get(psym, prel, qrel) + Db_->get(psym, prel, qrel)) * value);
         }
         if(qabs >= rabs){
             if(qsym == rsym){
@@ -420,7 +465,7 @@ public:
 
             /* (qp|rs) */
             if(rsym == ssym){
-                Ja_->add(rsym, rrel, srel, (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value);
+                J_->add(rsym, rrel, srel, (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value);
             }
 
             if(pabs >= rabs){
@@ -440,7 +485,7 @@ public:
 
             /* (rs|pq) */
             if(psym == qsym){
-                Ja_->add(psym, prel, qrel, (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value);
+                J_->add(psym, prel, qrel, (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value);
             }
             if(sabs >= pabs){
                 if(ssym == psym){
@@ -451,7 +496,7 @@ public:
 
             /* (sr|pq) */
             if(psym == qsym){
-                Ja_->add(psym, prel, qrel, (Da_->get(ssym, srel, rrel) + Db_->get(ssym, srel, rrel)) * value);
+                J_->add(psym, prel, qrel, (Da_->get(ssym, srel, rrel) + Db_->get(ssym, srel, rrel)) * value);
             }
             if(rabs >= pabs){
                 if(rsym == psym){
@@ -485,7 +530,7 @@ public:
             }
             /* (qp|rs) */
             if(rsym == ssym){
-                Ja_->add(rsym, rrel, srel, (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value);
+                J_->add(rsym, rrel, srel, (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value);
             }
             if(pabs >= rabs){
                 if(psym == rsym){
@@ -504,7 +549,7 @@ public:
         }else if(pabs!=qabs && rabs==sabs){
             /* (qp|rs) */
             if(rsym == ssym){
-                Ja_->add(rsym, rrel, srel, (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value);
+                J_->add(rsym, rrel, srel, (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value);
             }
             if(pabs >= rabs){
                 if(qsym == rsym){
@@ -515,7 +560,7 @@ public:
 
             /* (rs|pq) */
             if(psym == qsym){
-                Ja_->add(psym, prel, qrel, (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value);
+                J_->add(psym, prel, qrel, (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value);
             }
             if(sabs >= pabs){
                 if(ssym == psym){
@@ -542,7 +587,7 @@ public:
 
             /* (rs|pq) */
             if(psym == qsym){
-                Ja_->add(psym, prel, qrel, (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value);
+                J_->add(psym, prel, qrel, (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value);
             }
             if(sabs >= pabs){
                 if(ssym == psym){
@@ -553,7 +598,7 @@ public:
 
             /* (sr|pq) */
             if(psym == qsym){
-                Ja_->add(psym, prel, qrel, (Da_->get(ssym, srel, rrel) + Db_->get(ssym, srel, rrel)) * value);
+                J_->add(psym, prel, qrel, (Da_->get(ssym, srel, rrel) + Db_->get(ssym, srel, rrel)) * value);
             }
             if(rabs >= pabs){
                 if(rsym == psym){
@@ -564,7 +609,7 @@ public:
         }else if(pabs==qabs && rabs==sabs && (pabs!=rabs || qabs!=sabs)){
             /* (rs|pq) */
             if(psym == qsym){
-                Ja_->add(psym, prel, qrel, (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value);
+                J_->add(psym, prel, qrel, (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value);
             }
             if(sabs >= pabs){
                 if(ssym == psym){
@@ -574,121 +619,6 @@ public:
             }
         }
     }
-};
-
-/**
-  @brief This can be passed into the templated HF::process_tei() function
-         and will compute just the alpha and beta Coulomb matrices
-*/
-class Ja_Jb_Functor
-{
-    /// The alpha density matrix
-    const shared_ptr<Matrix> Da_;
-    /// The beta density matrix
-    const shared_ptr<Matrix> Db_;
-    /// The alpha Coulomb matrix
-    shared_ptr<Matrix> &Ja_;
-    /// The beta Coulomb matrix
-    shared_ptr<Matrix> &Jb_;
-
-public:
-    bool k_required() const {return false;}
-
-    void initialize(){
-        Ja_->zero();
-    }
-    void finalize(){
-        Ja_->copy_lower_to_upper();
-        Jb_->copy(Ja_);
-    }
-Ja_Jb_Functor(shared_ptr<Matrix> Ja, shared_ptr<Matrix> Jb,
-              const shared_ptr<Matrix> Da, const shared_ptr<Matrix> Db)
-    : Ja_(Ja), Jb_(Jb), Da_(Da), Db_(Db)
-{ }
-
-void operator()(shared_ptr<PseudospectralHF> pshf) {
-    pshf->set_restricted(true);
-    pshf->set_Ja(Ja_);
-    pshf->set_Jb(Jb_);
-    pshf->set_Da(Da_);
-    pshf->set_Db(Db_);
-}
-
-void operator()(int pabs, int qabs, int rabs, int sabs,
-                int psym, int prel, int qsym, int qrel,
-                int rsym, int rrel, int ssym, int srel, double value) {
-    double temp;
-
-    /* (pq|rs) */
-    if(rsym == ssym){
-        Ja_->add(rsym, rrel, srel, (Da_->get(psym, prel, qrel) + Db_->get(psym, prel, qrel)) * value);
-    }
-
-    if(pabs!=qabs && rabs!=sabs && (pabs!=rabs || qabs!=sabs)){
-        /* (pq|sr) */
-
-        /* (qp|rs) */
-        if(rsym == ssym){
-            Ja_->add(rsym, rrel, srel, (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value);
-        }
-
-        /* (qp|sr) */
-
-        /* (rs|pq) */
-        if(psym == qsym){
-            Ja_->add(psym, prel, qrel, (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value);
-        }
-
-        /* (sr|pq) */
-        if(psym == qsym){
-            Ja_->add(psym, prel, qrel, (Da_->get(ssym, srel, rrel) + Db_->get(ssym, srel, rrel)) * value);
-        }
-
-        /* (rs|qp) */
-
-        /* (sr|qp) */
-
-    }else if(pabs!=qabs && rabs!=sabs && pabs==rabs && qabs==sabs){
-        /* (pq|sr) */
-
-        /* (qp|rs) */
-        if(rsym == ssym){
-            Ja_->add(rsym, rrel, srel, (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value);
-        }
-
-        /* (qp|sr) */
-    }else if(pabs!=qabs && rabs==sabs){
-        /* (qp|rs) */
-        if(rsym == ssym){
-            Ja_->add(rsym, rrel, srel, (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value);
-        }
-
-        /* (rs|pq) */
-        if(psym == qsym){
-            Ja_->add(psym, prel, qrel, (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value);
-        }
-
-        /* (rs|qp) */
-
-    }else if(pabs==qabs && rabs!=sabs){
-        /* (pq|sr) */
-
-        /* (rs|pq) */
-        if(psym == qsym){
-            Ja_->add(psym, prel, qrel, (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value);
-        }
-
-        /* (sr|pq) */
-        if(psym == qsym){
-            Ja_->add(psym, prel, qrel, (Da_->get(ssym, srel, rrel) + Db_->get(ssym, srel, rrel)) * value);
-        }
-    }else if(pabs==qabs && rabs==sabs && (pabs!=rabs || qabs!=sabs)){
-        /* (rs|pq) */
-        if(psym == qsym){
-            Ja_->add(psym, prel, qrel, (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value);
-        }
-    }
-}
 };
 
 template <class JKFunctor>
@@ -735,10 +665,17 @@ void HF::process_tei(JKFunctor & functor)
         functor.finalize();
     }else if (scf_type_ == "PSEUDOSPECTRAL"){
         functor.initialize();
-        functor(pseudospectral_);
-        pseudospectral_->form_J_DF();
+        functor(df_, pseudospectral_);
+        df_->form_J_DF();
         if(functor.k_required())
             pseudospectral_->form_K_PS();
+    }else if (scf_type_ == "DF"){
+        functor.initialize();
+        functor(df_);
+        if(functor.k_required())
+            df_->form_JK_DF();
+        else 
+            df_->form_J_DF();
     }else{
         throw PSIEXCEPTION("SCF_TYPE " + scf_type_ + " is not supported in HF::process_tei");
     }
