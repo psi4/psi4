@@ -37,7 +37,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT2 SAPT2+ SAPT2+3");
     /*- The ubiquitous debug flag -*/
     options.add_bool("DEBUG",false);
-    /*- The ubiquitous print flag -*/ 
+    /*- The ubiquitous print flag -*/
     options.add_int("PRINT",1);
     /*- E converge value -*/
     options.add_int("E_CONVERGE",10);
@@ -46,11 +46,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Max CPHF iterations -*/
     options.add_int("MAXITER",50);
     /*- DIIS vecs -*/
-    options.add_int("DIISVECS",5); 
+    options.add_int("DIISVECS",5);
     /*- Compute Natural Orbitals -*/
     options.add_bool("NAT_ORBS",false);
     /*- Use Natural Orbitals for T2's -*/
-    options.add_bool("NAT_ORBS_T2",false); 
+    options.add_bool("NAT_ORBS_T2",false);
     /*- Natural Orbital Occupation Cutoff -*/
     options.add_double("OCC_CUTOFF",1.0E-6);
     /*- Frozen Occupieds of Monomer A -*/
@@ -218,10 +218,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("SOCC", new ArrayType());
     /*- The amount of information to print to the output -*/
     options.add_int("PRINT", 1);
+
     /*- Whether to perturb the Hamiltonian or not -*/
     options.add_bool("PERTURB_H", false);
     /*- How big is the perturbation? -*/
     options.add_double("LAMBDA", 0.0);
+    /*- The operator used to perturb the Hamiltonian, if requested -*/
+    options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z");
+
     /*- The storage scheme for the three index tensors in density fitting -*/
     options.add_str("RI_SCF_STORAGE", "DEFAULT", "DEFAULT CORE DISK");
     /*- Should we make sure to save restart information for RI SCF? -*/
@@ -242,8 +246,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Minimum S matrix eigenvalue to be used before compensating for linear dependencies -*/
     options.add_double("S_MIN_EIGENVALUE",1E-7);
 
-    /*- The operator used to perturb the Hamiltonian, if requested -*/
-    options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z");
     /*- The minimum iteration to start storing DIIS vectors -*/
     options.add_int("START_DIIS_ITER", 1);
     /*- The minimum number of error vectors stored for DIIS extrapolation -*/
@@ -803,10 +805,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("DENOMINATOR_ALGORITHM", "LAPLACE", "LAPLACE CHOLESKY");
     /*- Maximum denominator error allowed (Max error norm in Delta tensor) -*/
     options.add_double("DENOMINATOR_DELTA", 1.0E-6);
-   
-    /** MP2-Specific Options **/ 
+
+    /** MP2-Specific Options **/
     /*- MP2 Algorithm
-    
+
             Algorithm Keyword   MP2J          MP2K
                 DF               DF            DF
                 SOS              DF            -
@@ -814,13 +816,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
                 PS               DF            PS
                 PS2              DF           PS/PS
                 PS3              PS           PS/PS
-    -*/ 
+    -*/
     options.add_str("MP2_ALGORITHM", "DF", "DF SOS MOS PS PS2 PS3");
     /*- OS Scale  -*/
     options.add_double("SCALE_OS", 6.0/5.0);
     /*- SS Scale  -*/
     options.add_double("SCALE_SS", 1.0/3.0);
- 
+
     /*- Schwarz cutoff -*/
     options.add_double("SCHWARZ_CUTOFF", 0.0);
     /*- Convergence of CC energy -*/

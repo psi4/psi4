@@ -358,6 +358,13 @@ bool py_psi_set_global_option_int(std::string const & name, int value)
     Process::environment.options.set_global_int(name, value);
     return true;
 }
+
+bool py_psi_set_global_option_float(std::string const & name, float value)
+{
+    Process::environment.options.set_global_double(name, value);
+    return true;
+}
+
 // Right now this can only handle arrays of integers.
 // Unable to handle strings.
 bool py_psi_set_global_option_array(std::string const & key, python::list values)
@@ -491,6 +498,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("set_local_option", py_psi_set_option_array);
 
     def("set_global_option", py_psi_set_global_option_string);
+    def("set_global_option", py_psi_set_global_option_float);
     def("set_global_option", py_psi_set_global_option_int);
     def("set_global_option", py_psi_set_global_option_array);
 
