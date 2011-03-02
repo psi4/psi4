@@ -40,7 +40,6 @@ protected:
     // Finalize memory/files
     virtual void finalize();
 
-    void compute_multipole();
 public:
     UHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
     UHF(Options& options, shared_ptr<PSIO> psio);

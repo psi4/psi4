@@ -40,21 +40,21 @@ void UHF::common_init()
 {
     Drms_ = 0.0;
 
-    Fa_     = SharedMatrix(factory_.create_matrix("F alpha"));
-    Fb_     = SharedMatrix(factory_.create_matrix("F beta"));
-    Da_     = SharedMatrix(factory_.create_matrix("D alpha"));
-    Db_     = SharedMatrix(factory_.create_matrix("D beta"));
-    Dt_     = SharedMatrix(factory_.create_matrix("D total"));
-    Dtold_  = SharedMatrix(factory_.create_matrix("D total old"));
-    Ca_     = SharedMatrix(factory_.create_matrix("C alpha"));
-    Cb_     = SharedMatrix(factory_.create_matrix("C beta"));
-    Ga_     = SharedMatrix(factory_.create_matrix("G alpha"));
-    Gb_     = SharedMatrix(factory_.create_matrix("G beta"));
-    Ka_     = SharedMatrix(factory_.create_matrix("K alpha"));
-    Kb_     = SharedMatrix(factory_.create_matrix("K beta"));
+    Fa_     = SharedMatrix(factory_->create_matrix("F alpha"));
+    Fb_     = SharedMatrix(factory_->create_matrix("F beta"));
+    Da_     = SharedMatrix(factory_->create_matrix("D alpha"));
+    Db_     = SharedMatrix(factory_->create_matrix("D beta"));
+    Dt_     = SharedMatrix(factory_->create_matrix("D total"));
+    Dtold_  = SharedMatrix(factory_->create_matrix("D total old"));
+    Ca_     = SharedMatrix(factory_->create_matrix("C alpha"));
+    Cb_     = SharedMatrix(factory_->create_matrix("C beta"));
+    Ga_     = SharedMatrix(factory_->create_matrix("G alpha"));
+    Gb_     = SharedMatrix(factory_->create_matrix("G beta"));
+    Ka_     = SharedMatrix(factory_->create_matrix("K alpha"));
+    Kb_     = SharedMatrix(factory_->create_matrix("K beta"));
 
-    epsilon_a_ = SharedVector(factory_.create_vector());
-    epsilon_b_ = SharedVector(factory_.create_vector());
+    epsilon_a_ = SharedVector(factory_->create_vector());
+    epsilon_b_ = SharedVector(factory_->create_vector());
 
     p_jk_ = NULL;
     p_k_  = NULL;
@@ -184,13 +184,14 @@ double UHF::compute_energy()
     }
 
     // Compute the final dipole.
-    if(print_ > 2) compute_multipole();
+//    if(print_ > 2) compute_multipole();
 
     finalize();
 
     return E_;
 }
 
+#if 0
 void UHF::compute_multipole()
 {
     // Begin dipole
@@ -319,6 +320,7 @@ void UHF::compute_multipole()
         fprintf(outfile, "\t%3d%15.10f  %15.10f  %15.10f  %15.10f\n", i+1, fabs(sumx), fabs(sumy), fabs(sumz), fabs(sumx + sumy + sumz));
     }
 }
+#endif
 
 bool UHF::load_or_compute_initial_C()
 {
@@ -355,27 +357,27 @@ void UHF::save_information()
     char **temp2 = molecule_->irrep_labels();
 
     // Must remember to write the number of irreps before writing anything else.
-//    chkpt_->wt_nirreps(factory_.nirrep());
+//    chkpt_->wt_nirreps(factory_->nirrep());
 //    chkpt_->wt_nso(nso());
 
     if(print_ > 1){
         fprintf(outfile, "\n  Final doubly occupied vector = (");
-        for (int h=0; h<factory_.nirrep(); ++h) {
+        for (int h=0; h<factory_->nirrep(); ++h) {
             fprintf(outfile, "%2d %3s ", doccpi_[h], temp2[h]);
         }
         fprintf(outfile, ")\n");
         fprintf(outfile, "  Final singly occupied vector = (");
-        for (int h=0; h<factory_.nirrep(); ++h) {
+        for (int h=0; h<factory_->nirrep(); ++h) {
             fprintf(outfile, "%2d %3s ", soccpi_[h], temp2[h]);
         }
         fprintf(outfile, ")\n");
     }
 
 //    // Needed for a couple of places.
-//    SharedMatrix eigvectora(factory_.create_matrix());
-//    SharedMatrix eigvectorb(factory_.create_matrix());
-//    SharedVector eigvaluesa(factory_.create_vector());
-//    SharedVector eigvaluesb(factory_.create_vector());
+//    SharedMatrix eigvectora(factory_->create_matrix());
+//    SharedMatrix eigvectorb(factory_->create_matrix());
+//    SharedVector eigvaluesa(factory_->create_vector());
+//    SharedVector eigvaluesb(factory_->create_vector());
 //    Fa_->diagonalize(eigvectora, eigvaluesa);
 //    Fb_->diagonalize(eigvectorb, eigvaluesb);
 
@@ -570,7 +572,7 @@ void UHF::form_F() {
 
 void UHF::form_C()
 {
-    SharedMatrix eigvec = factory_.create_shared_matrix();
+    SharedMatrix eigvec = factory_->create_shared_matrix();
 
     Fa_->transform(Shalf_);
     Fa_->diagonalize(eigvec, epsilon_a_);
@@ -772,8 +774,8 @@ void UHF::form_PK()
 
 void UHF::form_G_from_PK()
 {
-    int nirreps = factory_.nirrep();
-    int *opi = factory_.rowspi();
+    int nirreps = factory_->nirrep();
+    int *opi = factory_->rowspi();
     size_t ij;
     double *Da_vector = new double[pk_pairs_];
     double *Db_vector = new double[pk_pairs_];
@@ -909,10 +911,10 @@ void UHF::save_fock()
 //    diis_F_[current_diis_fock_]->copy(F_);
 
     // Determine error matrix for this Fock
-    SharedMatrix FaDaS(factory_.create_matrix()), DaS(factory_.create_matrix());
-    SharedMatrix SDaFa(factory_.create_matrix()), DaFa(factory_.create_matrix());
-    SharedMatrix FbDbS(factory_.create_matrix()), DbS(factory_.create_matrix());
-    SharedMatrix SDbFb(factory_.create_matrix()), DbFb(factory_.create_matrix());
+    SharedMatrix FaDaS(factory_->create_matrix()), DaS(factory_->create_matrix());
+    SharedMatrix SDaFa(factory_->create_matrix()), DaFa(factory_->create_matrix());
+    SharedMatrix FbDbS(factory_->create_matrix()), DbS(factory_->create_matrix());
+    SharedMatrix SDbFb(factory_->create_matrix()), DbFb(factory_->create_matrix());
 
     // FDS = F_ * D_ * S_; Alpha
     DaS->gemm(false, false, 1.0, Da_, S_, 0.0);

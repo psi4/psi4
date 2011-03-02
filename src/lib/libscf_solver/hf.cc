@@ -68,19 +68,19 @@ void HF::common_init()
 //                new OutOfCoreComputer(psio_, so2symblk_, so2index_, 1.0E-14) );
 //    }
 
-    S_.reset(factory_.create_matrix("S"));
-    Shalf_.reset(factory_.create_matrix("S^-1/2"));
-    X_.reset(factory_.create_matrix("X"));
-    Sphalf_.reset(factory_.create_matrix("S^+1/2"));
-    H_.reset(factory_.create_matrix("One-electron Hamiltonion"));
+    S_.reset(factory_->create_matrix("S"));
+    Shalf_.reset(factory_->create_matrix("S^-1/2"));
+    X_.reset(factory_->create_matrix("X"));
+    Sphalf_.reset(factory_->create_matrix("S^+1/2"));
+    H_.reset(factory_->create_matrix("One-electron Hamiltonion"));
 
-    memset((void*) nsopi_, '\0', factory_.nirrep()*sizeof(int));
-    memset((void*) nmopi_, '\0', factory_.nirrep()*sizeof(int));
+    memset((void*) nsopi_, '\0', factory_->nirrep()*sizeof(int));
+    memset((void*) nmopi_, '\0', factory_->nirrep()*sizeof(int));
     nmo_ = 0;
     nso_ = 0;
-    nirrep_ = factory_.nirrep();
-    int* dimpi = factory_.colspi();
-    for (int h = 0; h< factory_.nirrep(); h++){
+    nirrep_ = factory_->nirrep();
+    int* dimpi = factory_->colspi();
+    for (int h = 0; h< factory_->nirrep(); h++){
         nsopi_[h] = dimpi[h];
         nmopi_[h] = nsopi_[h]; //For now
         nso_ += nsopi_[h];
@@ -110,7 +110,7 @@ void HF::common_init()
     maxiter_ = options_.get_int("MAXITER");
 
     // Read in DOCC and SOCC from memory
-    int nirreps = factory_.nirrep();
+    int nirreps = factory_->nirrep();
     int ndocc = 0, nsocc = 0;
     input_docc_ = false;
     if (options_["DOCC"].has_changed()) {
@@ -252,17 +252,6 @@ void HF::common_init()
 
     initialized_diis_manager_ = false;
 
-    // Alloc memory for multipoles
-    Dipole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Dipole X SO-basis")));
-    Dipole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Dipole Y SO-basis")));
-    Dipole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Dipole Z SO-basis")));
-    Quadrupole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Quadrupole XX")));
-    Quadrupole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Quadrupole XY")));
-    Quadrupole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Quadrupole XZ")));
-    Quadrupole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Quadrupole YY")));
-    Quadrupole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Quadrupole YZ")));
-    Quadrupole_.push_back(SharedSimpleMatrix(factory_.create_simple_matrix("Quadrupole ZZ")));
-
     if(Communicator::world->me() == 0)
         print_header();
 
@@ -297,8 +286,6 @@ void HF::finalize()
     Sphalf_.reset();
     X_.reset();
     H_.reset();
-    Dipole_.clear();
-    Quadrupole_.clear();
 
     if (Communicator::world->me() == 0) {
         // Clean up after DIIS
@@ -373,12 +360,12 @@ void HF::print_header()
         CharacterTable ct = molecule_->point_group()->char_table();
 
         fprintf(outfile, "  Input DOCC vector = (");
-        for (int h=0; h<factory_.nirrep(); ++h) {
+        for (int h=0; h<factory_->nirrep(); ++h) {
             fprintf(outfile, "%2d %3s ", doccpi_[h], ct.gamma(h).symbol());
         }
         fprintf(outfile, ")\n");
         fprintf(outfile, "  Input SOCC vector = (");
-        for (int h=0; h<factory_.nirrep(); ++h) {
+        for (int h=0; h<factory_->nirrep(); ++h) {
             fprintf(outfile, "%2d %3s ", soccpi_[h], ct.gamma(h).symbol());
         }
 
@@ -395,8 +382,8 @@ void HF::print_header()
 void HF::form_indexing()
 {
     int h, pk_size;
-    int nirreps = factory_.nirrep();
-    int *opi = factory_.rowspi();
+    int nirreps = factory_->nirrep();
+    int *opi = factory_->rowspi();
 
     pk_size = 0; pk_pairs_ = 0;
     for (h=0; h<nirreps; ++h) {
@@ -419,11 +406,8 @@ void HF::form_indexing()
 
 void HF::form_H()
 {
-    SharedMatrix kinetic(factory_.create_matrix("Kinetic Integrals"));
-    SharedMatrix potential(factory_.create_matrix("Potential Integrals"));
-
-    // Form the multipole integrals
-    //form_multipole_integrals();
+    SharedMatrix kinetic(factory_->create_matrix("Kinetic Integrals"));
+    SharedMatrix potential(factory_->create_matrix("Potential Integrals"));
 
     // Load in kinetic and potential matrices
     double *integrals = init_array(ioff[nso_]);
@@ -459,19 +443,44 @@ void HF::form_H()
 
     free(integrals);
 
-    // if (perturb_h_) {
-    //     if (perturb_ == dipole_x) {
-    //         fprintf(outfile, "  Perturbing H by %f Dmx.\n", lambda_);
-    //         H_.add(lambda_ * Dipole_[0]);
-    //     } else if (perturb_ == dipole_y) {
-    //         fprintf(outfile, "  Perturbing H by %f Dmy.\n", lambda_);
-    //         H_.add(lambda_ * Dipole_[1]);
-    //     } else if (perturb_ == dipole_z) {
-    //         fprintf(outfile, "  Perturbing H by %f Dmz.\n", lambda_);
-    //         H_.add(lambda_ * Dipole_[2]);
-    //     }
-    //     H_.print(outfile, "with perturbation");
-    // }
+    if (perturb_h_) {
+        shared_ptr<IntegralFactory> ifact(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+        MultipoleSymmetry msymm(1, molecule_, ifact, factory_);
+        vector<SharedMatrix> dipoles = msymm.create_matrices("Dipole");
+
+        OneBodySOInt *so_dipole = ifact->so_dipole();
+        so_dipole->compute(dipoles);
+
+        if (perturb_ == dipole_x) {
+            if (msymm.component_symmetry(0) != 0){
+                fprintf(outfile, "  WARNING: You requested mu(x) perturbation, but mu(x) is not symmetric.\n");
+            }
+            else {
+                fprintf(outfile, "  Perturbing H by %f Dmx.\n", lambda_);
+                dipoles[0]->scale(lambda_);
+                H_->add(dipoles[0]);
+            }
+        } else if (perturb_ == dipole_y) {
+            if (msymm.component_symmetry(1) != 0){
+                fprintf(outfile, "  WARNING: You requested mu(y) perturbation, but mu(y) is not symmetric.\n");
+            }
+            else {
+                fprintf(outfile, "  Perturbing H by %f Dmy.\n", lambda_);
+                dipoles[1]->scale(lambda_);
+                H_->add(dipoles[1]);
+            }
+        } else if (perturb_ == dipole_z) {
+            if (msymm.component_symmetry(2) != 0){
+                fprintf(outfile, "  WARNING: You requested mu(z) perturbation, but mu(z) is not symmetric.\n");
+            }
+            else {
+                fprintf(outfile, "  Perturbing H by %f Dmz.\n", lambda_);
+                dipoles[2]->scale(lambda_);
+                H_->add(dipoles[2]);
+            }
+        }
+        H_->print(outfile, "with perturbation");
+    }
 }
 
 void HF::form_Shalf()
@@ -502,12 +511,12 @@ void HF::form_Shalf()
     Matrix eigvec_store;
     Vector eigval;
     Vector eigval_store;
-    factory_.create_matrix(eigvec, "L");
-    factory_.create_matrix(eigtemp, "Temp");
-    factory_.create_matrix(eigtemp2);
-    factory_.create_matrix(eigvec_store);
-    factory_.create_vector(eigval);
-    factory_.create_vector(eigval_store);
+    factory_->create_matrix(eigvec, "L");
+    factory_->create_matrix(eigtemp, "Temp");
+    factory_->create_matrix(eigtemp2);
+    factory_->create_matrix(eigvec_store);
+    factory_->create_vector(eigval);
+    factory_->create_vector(eigval_store);
 
     //Used to do this 3 times, now only once
     S_->diagonalize(eigvec, eigval);
@@ -649,39 +658,6 @@ int *HF::compute_fvpi(int nfzv, SharedVector &eigvalues)
         frzvpi[pairs[i].second]++;
 
     return frzvpi;
-}
-
-void HF::form_multipole_integrals()
-{
-    // Initialize an integral object
-    IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
-
-    // Get a dipole integral object
-    OneBodyAOInt* dipole = integral.ao_dipole();
-    OneBodyAOInt* quadrupole= integral.ao_quadrupole();
-
-    // Compute the dipole integrals
-    dipole->compute(Dipole_);
-    quadrupole->compute(Quadrupole_);
-
-    delete quadrupole;
-    delete dipole;
-
-    // Get the nuclear contribution to the dipole
-    nuclear_dipole_contribution_ = molecule_->nuclear_dipole_contribution();
-    nuclear_quadrupole_contribution_ = molecule_->nuclear_quadrupole_contribution();
-
-    // Save the dipole integrals
-    Dipole_[0]->save(psio_, PSIF_OEI);
-    Dipole_[1]->save(psio_, PSIF_OEI);
-    Dipole_[2]->save(psio_, PSIF_OEI);
-
-    Quadrupole_[0]->save(psio_, PSIF_OEI);
-    Quadrupole_[1]->save(psio_, PSIF_OEI);
-    Quadrupole_[2]->save(psio_, PSIF_OEI);
-    Quadrupole_[3]->save(psio_, PSIF_OEI);
-    Quadrupole_[4]->save(psio_, PSIF_OEI);
-    Quadrupole_[5]->save(psio_, PSIF_OEI);
 }
 
 bool HF::load_or_compute_initial_C()

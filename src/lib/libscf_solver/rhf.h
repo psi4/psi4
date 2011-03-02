@@ -35,8 +35,6 @@ protected:
 
     double *pk_;
 
-    void compute_multipole();
-
     bool load_or_compute_initial_C();
     void form_C();
     void form_D();

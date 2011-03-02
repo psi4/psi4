@@ -69,7 +69,8 @@ void Wavefunction::common_init()
 
     // Obtain the dimension object to initialize the factory.
     const Dimension dimension = sobasisset_->dimension();
-    factory_.init_with(dimension, dimension);
+    factory_ = shared_ptr<MatrixFactory>(new MatrixFactory);
+    factory_->init_with(dimension, dimension);
 
     nirrep_ = dimension.n();
 

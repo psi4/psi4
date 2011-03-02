@@ -39,7 +39,7 @@ RKS::RKS(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) : RHF
     //c_functional_ = Functional::createFunctional(options.get_str("C_FUNCTIONAL"),options.get_int("N_BLOCK"));
 /**
     integrator_ = Integrator::createIntegrator(molecule_,options);
-    V_ = SharedMatrix (factory_.create_matrix("V"));
+    V_ = SharedMatrix (factory_->create_matrix("V"));
     properties_ = SharedProperties(Properties::constructProperties(basisset_,options.get_int("N_BLOCK")));
 **/
     /**
@@ -118,7 +118,7 @@ RKS::RKS(Options& options, shared_ptr<PSIO> psio) : RHF(options, psio)
     //c_functional_ = Functional::createFunctional(options.get_str("C_FUNCTIONAL"),options.get_int("N_BLOCK"));
 /**
     integrator_ = Integrator::createIntegrator(molecule_,options);
-    V_ = SharedMatrix (factory_.create_matrix("V"));
+    V_ = SharedMatrix (factory_->create_matrix("V"));
     properties_ = SharedProperties(Properties::constructProperties(basisset_,options.get_int("N_BLOCK")));
 **/
     /**

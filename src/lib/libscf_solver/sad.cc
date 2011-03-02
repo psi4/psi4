@@ -565,7 +565,7 @@ void RHF::compute_SAD_guess()
         fprintf(outfile,"  NOTE: The zero-th SCF iteration will not be variational.\n");
     }
     int* dim = D_->colspi();
-    shared_ptr<Matrix> D2(factory_.create_matrix("D2"));
+    shared_ptr<Matrix> D2(factory_->create_matrix("D2"));
     D2->copy(D_);
     Ca_->zero();
     for (int h = 0; h < D_->nirrep(); h++) {
