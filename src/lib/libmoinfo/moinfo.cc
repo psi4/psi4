@@ -108,8 +108,10 @@ void MOInfo::read_info()
   }
   scf_irrep      = new double**[nirreps];
   for(int i=0;i<nirreps;i++){
-      scf_irrep[i] = block_matrix(sopi[i], mopi[i]);
-      ::memcpy(scf_irrep[i][0], matCa->pointer(i), mopi[i]*sopi[i]*sizeof(double));
+      if(sopi[i] && mopi[i]){
+          scf_irrep[i] = block_matrix(sopi[i], mopi[i]);
+          ::memcpy(scf_irrep[i][0], matCa->pointer(i), mopi[i]*sopi[i]*sizeof(double));
+      }
   }
 
   // Determine the wave function irrep
