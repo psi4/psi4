@@ -4,6 +4,9 @@
 #include "matrix.h"
 #include "vector.h"
 
+#include <boost/python.hpp>
+#include <boost/python/tuple.hpp>
+
 using namespace psi;
 
 Vector::Vector()
@@ -157,6 +160,36 @@ void Vector::set(double *vec)
             vector_[h][i] = vec[ij++];
         }
     }
+}
+
+double Vector::pyget(const boost::python::tuple &key)
+{
+    int h = 0, elem = 0;
+    h = python::extract<int>(key[0]);
+    elem = python::extract<int>(key[1]);
+
+    return get(h, elem);
+}
+
+void Vector::pyset(const boost::python::tuple &key, double value)
+{
+    int h = 0, elem = 0;
+    h = python::extract<int>(key[0]);
+    elem = python::extract<int>(key[1]);
+
+    set(h, elem, value);
+}
+
+double Vector::pyget(int key)
+{
+    int h = 0, elem = key;
+    return get(h, elem);
+}
+
+void Vector::pyset(int key, double value)
+{
+    int h = 0, elem = key;
+    set(h, elem, value);
 }
 
 void Vector::print() const

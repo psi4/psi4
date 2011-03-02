@@ -7,7 +7,10 @@
 
 namespace boost {
 template<class T> class shared_ptr;
-}
+
+namespace python {
+class tuple;
+}}
 
 namespace psi {
 
@@ -68,6 +71,11 @@ public:
     void set(int h, int m, double val) {
         vector_[h][m] = val;
     }
+
+    double pyget(const boost::python::tuple& key);
+    void pyset(const boost::python::tuple& key, double value);
+    double pyget(int key);
+    void pyset(int key, double value);
 
     /// Returns a copy of the vector_
     double *to_block_vector();
