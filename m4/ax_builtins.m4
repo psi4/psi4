@@ -46,4 +46,22 @@ AC_DEFUN([AX_BUILTINS], [
           [Whether C++ compiler supports __builtin_prefetch])
     AC_LANG_POP(C++)
 
+    # see if the C compiler supports __builtin_constant_p
+    AC_LANG_PUSH(C++)
+    AC_CACHE_CHECK([if $CXX supports __builtin_constant_p],
+        [_cv_cxx_supports___builtin_constant_p],
+        [AC_TRY_LINK([],
+          [int ptr=0;
+           __builtin_constant_p(ptr);],
+          [_cv_cxx_supports___builtin_constant_p="yes"],
+          [_cv_cxx_supports___builtin_constant_p="no"])])
+    if test "$_cv_cxx_supports___builtin_constant_p" = "yes" ; then
+        have_builtin_constant_p=1
+    else
+        have_builtin_constant_p=0
+    fi
+    AC_DEFINE_UNQUOTED([HAVE_BUILTIN_CONSTANT_P], [$have_builtin_constant_p],
+          [Whether C++ compiler supports __builtin_constant_p])
+    AC_LANG_POP(C++)
+
 ]) dnl AX_BUILTINS

@@ -42,8 +42,11 @@
 /* Compiler supports __builtin_expected */
 #undef HAVE_BUILTIN_EXPECT
 
-/* Compielr supports __builtin_prefetch */
+/* Compiler supports __builtin_prefetch */
 #undef HAVE_BUILTIN_PREFETCH
+
+/* Compiler supports __builtin_constant_p */
+#undef HAVE_BUILTIN_CONSTANT_P
 
 #endif /* _psi_src_psiconfig_h */
 
