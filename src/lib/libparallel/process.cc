@@ -80,7 +80,7 @@ void Process::Environment::set_n_threads(int nthread)
     #ifdef _OPENMP
         omp_set_num_threads(nthread_);
     #endif
-    #ifdef _MKL
+    #ifdef HAVE_MKL
         mkl_set_num_threads(nthread_);
     #endif
 }
