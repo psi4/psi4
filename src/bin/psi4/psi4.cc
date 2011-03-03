@@ -47,6 +47,10 @@ int main(int argc, char **argv, char **envp)
     Process::environment.init(envp);
     Process::environment.set_memory(256000000L);
 
+    // If no OMP thread variable is set, set nthreads to default to 1
+    if (Process::environment("OMP_NUM_THREADS") == "")
+        Process::environment.set_n_threads(1);
+
     std::string communicator = Process::environment("COMMUNICATOR");
 
 #if HAVE_MPI == 1
