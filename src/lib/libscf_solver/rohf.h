@@ -17,6 +17,8 @@ protected:
     SharedMatrix Feff_;
     SharedMatrix Fc_;
     SharedMatrix Fo_;
+    SharedMatrix Kc_;
+    SharedMatrix Ko_;
     SharedMatrix Dc_;
     SharedMatrix Do_;
     SharedMatrix Dc_old_;
@@ -35,6 +37,7 @@ protected:
     double compute_initial_E();
     double compute_E();
 
+    void form_G();
     void form_G_from_PK();
     void form_PK();
     void form_F();

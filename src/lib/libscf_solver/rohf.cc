@@ -11,6 +11,7 @@
 #include <libchkpt/chkpt.hpp>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
+#include "integralfunctors.h"
 
 #include <libmints/mints.h>
 #include "rohf.h"
@@ -48,6 +49,8 @@ void ROHF::common_init()
     Cb_        = Ca_;
     Dc_        = SharedMatrix(factory_->create_matrix("D closed"));
     Do_        = SharedMatrix(factory_->create_matrix("D open"));
+    Kc_        = SharedMatrix(factory_->create_matrix("K closed"));
+    Ko_        = SharedMatrix(factory_->create_matrix("K open"));
     Dc_old_    = SharedMatrix(factory_->create_matrix("D closed old"));
     Do_old_    = SharedMatrix(factory_->create_matrix("D open old"));
     Gc_        = SharedMatrix(factory_->create_matrix("G closed"));
@@ -112,6 +115,8 @@ double ROHF::compute_energy()
 
     if (scf_type_ == "PK")
         form_PK();
+    else
+        form_G();
     //else if (scf_type_ == "DF")
     //    form_B();
 
@@ -135,7 +140,7 @@ double ROHF::compute_energy()
         if (scf_type_ == "PK")
             form_G_from_PK();
         else{
-
+            form_G();
         }
         //else if (scf_type_ == "DIRECT")
         //    form_G_from_direct_integrals();
@@ -645,6 +650,33 @@ void ROHF::form_PK() {
         print_array(k_, pk_pairs_, outfile);
     }
 #endif
+}
+
+void ROHF::form_G()
+{
+    /*
+     * If we define
+     *
+     * Jpq = [Dc_rs + 0.5 Do_rs](pq|rs), Kc_pq = Dc_rs(pr|qs), and Ko_pq = 0.5 Do_rs(pr|qs)
+     *
+     * then the contributions we want are
+     *
+     * Gc = 2J - Kc - Ko, and Go = J - 0.5Kc - Ko
+     *
+     * So, if we temporarily scale Do, we can make this look just like a UHF G build.  Nice.
+     */
+    Do_->scale(0.5);
+
+    J_Ka_Kb_Functor jk_builder(Go_, Kc_, Ko_, Dc_, Do_, Ca_, Cb_, nalphapi_, nbetapi_);
+    process_tei<J_Ka_Kb_Functor>(jk_builder);
+    Kc_->scale(0.5);
+    Go_->subtract(Kc_);
+    Gc_->copy(Go_);
+    Gc_->scale(2.0);
+    Gc_->subtract(Ko_);
+    Go_->subtract(Ko_);
+
+    Do_->scale(2.0);
 }
 
 void ROHF::form_G_from_PK()
