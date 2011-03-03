@@ -40,19 +40,19 @@ ROHF::~ROHF() {
 
 void ROHF::common_init()
 {
-    Fc_        = SharedMatrix(factory_.create_matrix("F closed"));
-    Fo_        = SharedMatrix(factory_.create_matrix("F open"));
-    Fa_        = SharedMatrix(factory_.create_matrix("F effective (MO basis)"));
+    Fc_        = SharedMatrix(factory_->create_matrix("F closed"));
+    Fo_        = SharedMatrix(factory_->create_matrix("F open"));
+    Fa_        = SharedMatrix(factory_->create_matrix("F effective (MO basis)"));
     Feff_      = Fa_;
-    Ca_        = SharedMatrix(factory_.create_matrix("Moleular orbitals"));
+    Ca_        = SharedMatrix(factory_->create_matrix("Moleular orbitals"));
     Cb_        = Ca_;
-    Dc_        = SharedMatrix(factory_.create_matrix("D closed"));
-    Do_        = SharedMatrix(factory_.create_matrix("D open"));
-    Dc_old_    = SharedMatrix(factory_.create_matrix("D closed old"));
-    Do_old_    = SharedMatrix(factory_.create_matrix("D open old"));
-    Gc_        = SharedMatrix(factory_.create_matrix("G closed"));
-    Go_        = SharedMatrix(factory_.create_matrix("G open"));
-    epsilon_a_ = SharedVector(factory_.create_vector());
+    Dc_        = SharedMatrix(factory_->create_matrix("D closed"));
+    Do_        = SharedMatrix(factory_->create_matrix("D open"));
+    Dc_old_    = SharedMatrix(factory_->create_matrix("D closed old"));
+    Do_old_    = SharedMatrix(factory_->create_matrix("D open old"));
+    Gc_        = SharedMatrix(factory_->create_matrix("G closed"));
+    Go_        = SharedMatrix(factory_->create_matrix("G open"));
+    epsilon_a_ = SharedVector(factory_->create_vector());
     epsilon_b_ = epsilon_a_;
 
     pk_ = NULL;
