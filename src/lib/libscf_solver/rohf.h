@@ -23,14 +23,10 @@ protected:
     SharedMatrix Do_old_;
     SharedMatrix Gc_;
     SharedMatrix Go_;
-    SharedVector epsilon_;
 
     int use_out_of_core_;
     double *pk_;
     double *k_;             // Used in formation of _Fo
-
-    int charge_;
-    int multiplicity_;
 
     void form_initialF();
     void form_initial_C();
