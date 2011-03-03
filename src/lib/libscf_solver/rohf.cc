@@ -40,25 +40,23 @@ ROHF::~ROHF() {
 
 void ROHF::common_init()
 {
-    Fc_      = SharedMatrix(factory_->create_matrix("F closed"));
-    Fo_      = SharedMatrix(factory_->create_matrix("F open"));
-    Fa_      = SharedMatrix(factory_->create_matrix("F effective (MO basis)"));
-    Feff_    = Fa_;
-    Ca_       = SharedMatrix(factory_->create_matrix("Moleular orbitals"));
-    Ca_    = Ca_;
-    Dc_      = SharedMatrix(factory_->create_matrix("D closed"));
-    Do_      = SharedMatrix(factory_->create_matrix("D open"));
-    Dc_old_  = SharedMatrix(factory_->create_matrix("D closed old"));
-    Do_old_  = SharedMatrix(factory_->create_matrix("D open old"));
-    Gc_      = SharedMatrix(factory_->create_matrix("G closed"));
-    Go_      = SharedMatrix(factory_->create_matrix("G open"));
-    epsilon_ = SharedVector(factory_->create_vector());
+    Fc_        = SharedMatrix(factory_.create_matrix("F closed"));
+    Fo_        = SharedMatrix(factory_.create_matrix("F open"));
+    Fa_        = SharedMatrix(factory_.create_matrix("F effective (MO basis)"));
+    Feff_      = Fa_;
+    Ca_        = SharedMatrix(factory_.create_matrix("Moleular orbitals"));
+    Cb_        = Ca_;
+    Dc_        = SharedMatrix(factory_.create_matrix("D closed"));
+    Do_        = SharedMatrix(factory_.create_matrix("D open"));
+    Dc_old_    = SharedMatrix(factory_.create_matrix("D closed old"));
+    Do_old_    = SharedMatrix(factory_.create_matrix("D open old"));
+    Gc_        = SharedMatrix(factory_.create_matrix("G closed"));
+    Go_        = SharedMatrix(factory_.create_matrix("G open"));
+    epsilon_a_ = SharedVector(factory_.create_vector());
+    epsilon_b_ = epsilon_a_;
 
     pk_ = NULL;
     k_ = NULL;
-
-    charge_ = options_.get_int("CHARGE");
-    multiplicity_ = options_.get_int("MULTP");
 
     fprintf(outfile, "  DIIS %s.\n\n", diis_enabled_ ? "enabled" : "disabled");
 
@@ -136,6 +134,9 @@ double ROHF::compute_energy()
 
         if (scf_type_ == "PK")
             form_G_from_PK();
+        else{
+
+        }
         //else if (scf_type_ == "DIRECT")
         //    form_G_from_direct_integrals();
         //else if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD")
@@ -214,18 +215,18 @@ void ROHF::save_information()
     int print_mos = options_.get_bool("PRINT_MOS");
     if (print_mos) {
         fprintf(outfile, "\n  Molecular orbitals:\n");
-        Ca_->eivprint(epsilon_);
+        Ca_->eivprint(epsilon_a_);
     }
 
     // Print out orbital energies.
     std::vector<std::pair<double, int> > pairs;
-    for (int h=0; h<epsilon_->nirrep(); ++h) {
-        for (int i=0; i<epsilon_->dimpi()[h]; ++i)
-            pairs.push_back(make_pair(epsilon_->get(h, i), h));
+    for (int h=0; h<epsilon_a_->nirrep(); ++h) {
+        for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
+            pairs.push_back(make_pair(epsilon_a_->get(h, i), h));
     }
     sort(pairs.begin(), pairs.end());
     int ndocc = 0, nsocc = 0;
-    for (int i=0; i<epsilon_->nirrep(); ++i) {
+    for (int i=0; i<epsilon_a_->nirrep(); ++i) {
         ndocc += doccpi_[i];
         nsocc += soccpi_[i];
     }
@@ -256,7 +257,7 @@ void ROHF::save_information()
     }
     fprintf(outfile, "\n");
 
-    for (int i=0; i<epsilon_->nirrep(); ++i)
+    for (int i=0; i<epsilon_a_->nirrep(); ++i)
         free(temp2[i]);
     free(temp2);
 
@@ -267,7 +268,7 @@ void ROHF::save_information()
     chkpt_->wt_escf(E_);
     chkpt_->wt_eref(E_);
     chkpt_->wt_clsdpi(doccpi_);
-    chkpt_->wt_orbspi(epsilon_->dimpi());
+    chkpt_->wt_orbspi(epsilon_a_->dimpi());
     chkpt_->wt_openpi(soccpi_);
     chkpt_->wt_phase_check(0);
 
@@ -276,15 +277,15 @@ void ROHF::save_information()
     // Figure out frozen core orbitals
     int nfzc = molecule_->nfrozen_core();
     int nfzv = options_.get_int("FREEZE_VIRT");
-    int *frzcpi = compute_fcpi(nfzc, epsilon_);
-    int *frzvpi = compute_fvpi(nfzv, epsilon_);
+    int *frzcpi = compute_fcpi(nfzc, epsilon_a_);
+    int *frzvpi = compute_fvpi(nfzv, epsilon_a_);
     chkpt_->wt_frzcpi(frzcpi);
     chkpt_->wt_frzvpi(frzvpi);
     delete[](frzcpi);
     delete[](frzvpi);
 
     int nopenirreps = 0;
-    for (int i=0; i<epsilon_->nirrep(); ++i)
+    for (int i=0; i<epsilon_a_->nirrep(); ++i)
         if (soccpi_[i])
             nopenirreps++;
 
@@ -292,7 +293,7 @@ void ROHF::save_information()
     chkpt_->wt_iopen(nopenirreps * (nopenirreps + 1));
 
     // Write eigenvectors and eigenvalue to checkpoint
-    double *values = epsilon_->to_block_vector();
+    double *values = epsilon_a_->to_block_vector();
     chkpt_->wt_evals(values);
     free(values);
     double **vectors = Ca_->to_block_matrix();
@@ -467,12 +468,12 @@ void ROHF::form_C()
     SharedMatrix eigvec(factory_->create_matrix());
 
     // Obtain new eigenvectors
-    Feff_->diagonalize(eigvec, epsilon_);
+    Feff_->diagonalize(eigvec, epsilon_a_);
     find_occupation();
 
 #ifdef _DEBUG
     if (debug_) {
-        eigvec->eivprint(epsilon_);
+        eigvec->eivprint(epsilon_a_);
     }
 #endif
     temp->gemm(false, false, 1.0, Ca_, eigvec, 0.0);
