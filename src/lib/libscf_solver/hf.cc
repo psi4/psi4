@@ -194,6 +194,8 @@ void HF::common_init()
     if (nirreps == 1) {
         doccpi_[0] = nbeta_;
         soccpi_[0] = nalpha_ - nbeta_;
+        nalphapi_[0] = nalpha_;
+        nbetapi_[0] = nbeta_;
     }
 
 
@@ -344,7 +346,7 @@ void HF::find_occupation()
 
 void HF::print_header()
 {
-    fprintf(outfile, " %s: by Justin Turney and Rob Parrish\n\n", options_.get_str("REFERENCE").c_str());
+    fprintf(outfile, "\n %s: by Justin Turney and Rob Parrish\n\n", options_.get_str("REFERENCE").c_str());
 
 #ifdef _DEBUG
     fprintf(outfile, "  Debug version.\n\n");
@@ -663,7 +665,7 @@ bool HF::load_or_compute_initial_C()
 {
     bool ret = false;
     string prefix(chkpt_->build_keyword(const_cast<char*>("MO coefficients")));
-    if (chkpt_->exist(const_cast<char*>(prefix.c_str()))) {
+    if (options_.get_str("GUESS") == "READ" && chkpt_->exist(const_cast<char*>(prefix.c_str()))) {
         // Read MOs from checkpoint and set C_ to them
         double **vectors;
         if(Communicator::world->me() == 0)

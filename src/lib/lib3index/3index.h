@@ -366,6 +366,13 @@ protected:
     // forms the unfitted MO integrals
     void form_Aia(bool do_all);
     void restripe(const std::string& entry);
+    
+    // Debug purposes    
+    void form_I_AO();
+    // Also debug
+    shared_ptr<Matrix> form_A_AO();
+
+
 public:
     PSTensor(shared_ptr<PSIO>, shared_ptr<BasisSet> primary, shared_ptr<BasisSet> aux, shared_ptr<PseudoGrid> grid);
     virtual ~PSTensor();

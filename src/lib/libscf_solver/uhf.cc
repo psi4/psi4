@@ -132,6 +132,7 @@ double UHF::compute_energy()
         } else { 
             // This will build J (stored in G) and K
             J_Ka_Kb_Functor jk_builder(Ga_, Ka_, Kb_, Da_, Db_, Ca_, Cb_, nalphapi_, nbetapi_);
+
             process_tei<J_Ka_Kb_Functor>(jk_builder);
             Gb_->copy(Ga_);
             Ga_->subtract(Ka_);

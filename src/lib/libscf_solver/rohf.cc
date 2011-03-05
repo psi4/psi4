@@ -99,9 +99,10 @@ void ROHF::form_initial_C()
     find_occupation();
     temp.gemm(false, false, 1.0, Shalf_, Ca_, 0.0);
     Ca_->copy(temp);
+    Cb_->copy(temp);
 
 #ifdef _DEBUG
-    Ca_->print(outfile, "initial C");
+    //Ca_->print(outfile, "initial C");
 #endif
 }
 
@@ -127,7 +128,9 @@ double ROHF::compute_energy()
     // Check to see if there are MOs already in the checkpoint file.
     // If so, read them in instead of forming them.
     if (load_or_compute_initial_C())
-        fprintf(outfile, "  Read in previous MOs from file32.\n\n");
+        fprintf(outfile, "  SCF Guess: Read in previous MOs from file32.\n\n");
+    else 
+        fprintf(outfile, "  SCF Guess: Core (One-Electron) Hamiltonian.\n\n");
 
     fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
     do {
@@ -182,6 +185,7 @@ double ROHF::compute_energy()
     // Return the final ROHF energy
     if (converged) {
         fprintf(outfile, "\n  Energy converged.\n");
+        fprintf(outfile, "\n  @ROHF Final Energy: %20.14f", E_);
         save_information();
     } else {
         fprintf(outfile, "\n  Failed to converge.\n");
@@ -197,6 +201,10 @@ void ROHF::save_information()
 {
     // Print the final docc vector
     char **temp2 = molecule_->irrep_labels();
+
+    // Stupid hack...
+    if (!psio_->open_check(32))
+        psio_->open(32, PSIO_OPEN_OLD);
 
     // TODO: Delete this as soon as possible!!!
     // Can't believe I'm adding this...
@@ -268,6 +276,7 @@ void ROHF::save_information()
 
     chkpt_->wt_nso(nso);
     chkpt_->wt_nmo(nso);
+    chkpt_->wt_nao(nso);
     chkpt_->wt_ref(2); // ROHF
     chkpt_->wt_etot(E_);
     chkpt_->wt_escf(E_);
@@ -664,11 +673,35 @@ void ROHF::form_G()
      * Gc = 2J - Kc - Ko, and Go = J - 0.5Kc - Ko
      *
      * So, if we temporarily scale Do, we can make this look just like a UHF G build.  Nice.
+     *
+     * Addendum: To support DF/Direct algorithms wlog, the functor call builds (effectively)
+     *  Go_ = 2*J
+     *  Ka  = Kc + 2Ko
+     *  Kb  = Kc 
+     * These are then unwound to make Andy's canonical products above
      */
-    Do_->scale(0.5);
+    shared_ptr<Matrix> Da = shared_ptr<Matrix>(factory_->create_matrix("Da"));
+    shared_ptr<Matrix> Db = shared_ptr<Matrix>(factory_->create_matrix("Db"));
+    shared_ptr<Matrix> Ka = shared_ptr<Matrix>(factory_->create_matrix("Ka"));
+    shared_ptr<Matrix> Kb = shared_ptr<Matrix>(factory_->create_matrix("Kb"));
+    Da->copy(Do_);
+    Da->add(Dc_);
+    Db->copy(Dc_);    
 
-    J_Ka_Kb_Functor jk_builder(Go_, Kc_, Ko_, Dc_, Do_, Ca_, Cb_, nalphapi_, nbetapi_);
+    J_Ka_Kb_Functor jk_builder(Go_, Ka, Kb, Da, Db, Ca_, Cb_, nalphapi_, nbetapi_);
     process_tei<J_Ka_Kb_Functor>(jk_builder);
+
+    Go_->scale(0.5);
+    Kc_->copy(Kb);
+    Ko_->copy(Ka);
+    Ko_->scale(-1.0);
+    Ko_->add(Kb);
+    Ko_->scale(-0.5);
+
+    //Go_->print();
+    //Ka->print();
+    //Kb->print();
+
     Kc_->scale(0.5);
     Go_->subtract(Kc_);
     Gc_->copy(Go_);
@@ -676,7 +709,6 @@ void ROHF::form_G()
     Gc_->subtract(Ko_);
     Go_->subtract(Ko_);
 
-    Do_->scale(2.0);
 }
 
 void ROHF::form_G_from_PK()

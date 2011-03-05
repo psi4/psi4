@@ -849,6 +849,8 @@ void Integrator::groupPointsBoxes()
 }
 void Integrator::free_grid()
 {
+    if (!built_)
+        return;
     if (x_ == NULL)
         return;
     free(Z_);

@@ -35,6 +35,7 @@ PSTensor::PSTensor(shared_ptr<PSIO> psio, shared_ptr<BasisSet> primary,
                    psio_(psio), primary_(primary), dealias_(dealias), grid_(grid)
 {
     common_init(); 
+    form_I_AO();
 }
 PSTensor::~PSTensor()
 {
@@ -239,6 +240,69 @@ shared_ptr<Matrix> PSTensor::form_Q_AO()
     //Q->print();
 
     return Q;
+}
+shared_ptr<Matrix> PSTensor::form_A_AO()
+{
+    shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_, primary_, primary_, primary_));
+    shared_ptr<Matrix> A(new Matrix("A Integrals", naux_, primary_->nbf()*primary_->nbf()));
+    double** Ap = A->pointer();
+    shared_ptr<Matrix> T(new Matrix("Temp", primary_->nbf(), primary_->nbf()));
+    double** Tp = T->pointer();
+    
+    shared_ptr<PseudospectralInt> ints(static_cast<PseudospectralInt*>(fact->ao_pseudospectral()));
+    const double* buffer = ints->buffer();
+
+    shared_ptr<GridBlock> block = grid_->getBlock();
+    double* x = block->getX();
+    double* y = block->getY();
+    double* z = block->getZ();
+
+    for (int P = 0; P < naux_; P++) {
+        ints->set_point(x[P], y[P], z[P]);
+        T->zero();
+        ints->compute(T);
+    
+        fprintf(outfile, " Amn integrals for P = %d\n", P);
+        T->print(); 
+    
+        memcpy(static_cast<void*>(Ap[P]), static_cast<void*>(Tp[0]), primary_->nbf()*primary_->nbf()*sizeof(double));
+    }
+        
+    return A;
+}
+void PSTensor::form_I_AO()
+{
+    shared_ptr<Matrix> X = form_X_AO();
+    shared_ptr<Matrix> Q = form_Q_AO();
+    shared_ptr<Matrix> A = form_A_AO();
+
+    X->print();
+    Q->print();
+    A->print();
+
+    int nbf = primary_->nbf();
+
+    shared_ptr<Matrix> I(new Matrix("PS ERIs", nbf*nbf, nbf*nbf));
+
+    double** Xp = X->pointer();
+    double** Ap = A->pointer();
+    double** Qp = Q->pointer();
+    double** Ip = I->pointer();
+
+    shared_ptr<Matrix> temp(new Matrix("Temp", naux_, nbf*nbf));
+    double** Tp = temp->pointer();
+
+    for (int P = 0; P < naux_; P++) {
+        for (int m = 0; m < nbf; m++) {
+            for (int n = 0; n < nbf; n++) {
+                Tp[P][m*nbf + n] = Qp[m][P] * Xp[n][P];
+            }
+        }
+    } 
+
+    C_DGEMM('T', 'N', nbf*nbf, nbf*nbf, naux_, 1.0, Tp[0], nbf*nbf, Ap[0], nbf*nbf, 0.0, Ip[0], nbf*nbf);
+
+    I->print();
 }
 void PSTensor::form_Aia(bool do_all)
 {

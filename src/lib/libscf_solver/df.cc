@@ -430,7 +430,7 @@ void DFHF::compute_JK_block(shared_ptr<Matrix> Qmn, int nrows)
             mkl_set_num_threads(mkl_nthread);
         #endif
 
-        C_DGEMM('N','T',nbf,nbf,naux*nbeta,1.0,Ep[0],naux*nbeta,Ep[0],naux*nalpha,1.0,Kbp[0], nbf);
+        C_DGEMM('N','T',nbf,nbf,naux*nbeta,1.0,Ep[0],naux*nalpha,Ep[0],naux*nalpha,1.0,Kbp[0], nbf);
     }
     for (int thread = 0; thread < nthread; thread++) {
         free_block(QS[thread]);
