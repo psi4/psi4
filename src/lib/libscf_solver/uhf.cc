@@ -510,7 +510,7 @@ void UHF::compute_spin_contamination()
        
         double** Sp = S->pointer(h);
         double** Cap = Ca_->pointer(h); 
-        double** Cbp = Ca_->pointer(h); 
+        double** Cbp = Cb_->pointer(h); 
         double** Htp = Ht->pointer(0);
         double** Ftp = Ft->pointer(0);
         
