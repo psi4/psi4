@@ -262,9 +262,13 @@ void HF::common_init()
         shared_ptr<MintsHelper> mints (new MintsHelper());
         mints->integrals();
     }else if (scf_type_ == "PSEUDOSPECTRAL"){
+        if(nirrep_ > 1)
+            throw PSIEXCEPTION("SCF TYPE " + scf_type_ + " cannot use symmetry yet. Add 'symmetry c1' to the molecule specification");
         df_ = shared_ptr<DFHF>(new DFHF(basisset_, psio_, options_));
         pseudospectral_ = shared_ptr<PseudospectralHF>(new PseudospectralHF(basisset_, psio_, options_));
     }else if (scf_type_ == "DF"){
+        if(nirrep_ > 1)
+            throw PSIEXCEPTION("SCF TYPE " + scf_type_ + " cannot use symmetry yet. Add 'symmetry c1' to the molecule specification");
         df_ = shared_ptr<DFHF>(new DFHF(basisset_, psio_, options_));
     }else if (scf_type_ == "DIRECT"){
         shared_ptr<IntegralFactory> integral = shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
