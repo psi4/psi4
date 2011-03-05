@@ -40,6 +40,7 @@ set globals {
     basis cc-pvtz
     ri_basis_scf cc-pvtz-jkfit
     guess core
+    print 2
 }
 
 print_stdout('    -Singlet RHF:') #TEST
@@ -85,6 +86,7 @@ set globals {
     basis cc-pvtz
     ri_basis_scf cc-pvtz-jkfit
     guess core
+    print 2
 }
 
 print_stdout('    -Triplet UHF:') #TEST
