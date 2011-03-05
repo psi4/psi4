@@ -29,7 +29,7 @@ molecule triplet_o2 {
 singlet_o2.update_geometry()
 triplet_o2.update_geometry()
 
-print_stdout('   -Nuclear Respulsion:') #TEST
+print_stdout('   -Nuclear Repulsion:') #TEST
 compare_values(Eref_nuc, triplet_o2.nuclear_repulsion_energy(), 9, "Triplet nuclear repulsion energy")  #TEST
 compare_values(Eref_nuc, singlet_o2.nuclear_repulsion_energy(), 9, "Singlet nuclear repulsion energy")  #TEST
 
