@@ -11,7 +11,6 @@
 #include <boost/regex.hpp>
 #include <getopt.h>
 #include <psifiles.h>
-//#include <libipv1/ip_lib.h>
 #include <psiconfig.h>
 #include <libparallel/parallel.h>
 #include <libplugin/plugin.h>
@@ -72,7 +71,6 @@ int psi_start(int argc, char *argv[])
     { "output",  1, NULL, 'o' },
     { "prefix",  1, NULL, 'p' },
     { "input",   1, NULL, 'i' },
-//    { "script",  0, NULL, 's' },
     { "messy",   0, NULL, 'm' },
     { NULL,      0, NULL,  0  }
   };
@@ -121,10 +119,6 @@ int psi_start(int argc, char *argv[])
       outfile = stdout;
       append = true;
       break;
-
-//      case 's': // -s or --script
-//      script = true;
-//      break;
 
       case 'w': // -w or --wipe
       clean_only = true;
@@ -176,25 +170,6 @@ int psi_start(int argc, char *argv[])
     return(PSI_RETURN_FAILURE);
   }
 
-  // Check the input for "psi:(" if found assume IPV1, if not assumes Python
-//  boost::regex commentLine("\\s*(%|#).*", boost::regbase::normal | boost::regbase::icase);
-//  boost::regex psicommand("^\\s*psi\\s*:\\s*\\(.*", boost::regbase::normal | boost::regbase::icase);
-//  char line[256];
-
-//  script = true;
-//  smatch  matches;
-//  while(fgets(line, sizeof(line), infile)) {
-//      string fileline = line;
-//      string nocomment = boost::regex_replace(fileline, commentLine, "");
-//      if (boost::regex_match(nocomment, matches, psicommand)) {
-//          script = false;
-//          break;
-//      }
-//  }
-
-//  // Rewind the file since we've been reading from it.
-//  fseek(infile, 0L, SEEK_SET);
-
   if(append) {
     if(ofname == "stdout") outfile=stdout;
     else outfile = fopen(ofname.c_str(), "a");
@@ -234,14 +209,16 @@ int psi_start(int argc, char *argv[])
 void print_usage(void)
 {
   printf("Usage:  psi4 [options] inputfile\n");
+  printf(" -a  --append             Append results to output file. Default: Truncate first\n");
+  printf(" -c  --check              Run input checks (not implemented).\n");
   printf(" -h  --help               Display this usage information.\n");
+  printf(" -i  --input filename     Input file name. Default: input.dat\n");
+  printf(" -o  --output filename    Redirect output elsewhere. Default: output.dat\n");
+  printf(" -m  --messy              Leave temporary files after the run is completed.\n");
+  printf(" -p  --prefix prefix      Prefix name for psi files. Default: psi\n");
   printf(" -v  --verbose            Print a lot of information.\n");
   printf(" -V  --version            Print version information.\n");
-  printf(" -o  --output filename    Redirect output elsewhere. Default: output.dat\n");
-  printf(" -i  --input filename     Input file name. Default: input.dat\n");
-  printf(" -p  --prefix prefix      Prefix name for psi files. Default: psi\n");
-  printf(" -a  --append             Append results to output file. Default: Truncate first\n");
-  printf(" -s  --script             Assume input file is a Python script to execute\n");
+  printf(" -w  --wipe               Clean out your scratch area.\n");
 
   exit(EXIT_FAILURE);
 }
