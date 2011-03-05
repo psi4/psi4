@@ -374,6 +374,8 @@ void UHF::save_information()
         fprintf(outfile, ")\n");
     }
 
+    compute_spin_contamination();
+
 //    // Needed for a couple of places.
 //    SharedMatrix eigvectora(factory_->create_matrix());
 //    SharedMatrix eigvectorb(factory_->create_matrix());
@@ -486,7 +488,49 @@ void UHF::save_information()
 //    free_block(vectors);
 
 }
+void UHF::compute_spin_contamination()
+{
+    shared_ptr<Matrix> S = shared_ptr<Matrix>(factory_->create_matrix("S (Overlap)"));
+    shared_ptr<IntegralFactory> fact(new IntegralFactory(basisset_,basisset_, basisset_,basisset_));
+    shared_ptr<OneBodySOInt> so_overlap(fact->so_overlap());
+    so_overlap->compute(S);
 
+    double dN = 0.0;
+
+    for (int h =0; h < S->nirrep(); h++) {
+        int nbf = S->colspi()[h];
+        int nmo = nmopi_[h];
+        int na = nalphapi_[h];
+        int nb = nbetapi_[h];
+        if (na == 0 || nb == 0 || nbf == 0 || nmo == 0)
+            continue;
+    
+        shared_ptr<Matrix> Ht (new Matrix("H Temp", nbf, nb));
+        shared_ptr<Matrix> Ft (new Matrix("F Temp", na, nb));
+       
+        double** Sp = S->pointer(h);
+        double** Cap = Ca_->pointer(h); 
+        double** Cbp = Ca_->pointer(h); 
+        double** Htp = Ht->pointer(0);
+        double** Ftp = Ft->pointer(0);
+        
+        C_DGEMM('N','N',nbf,nb,nbf,1.0,Sp[0],nbf,Cbp[0],nmo,0.0,Htp[0],nb);
+        C_DGEMM('T','N',na,nb,nbf,1.0,Cap[0],nmo,Htp[0],nb,0.0,Ftp[0],nb);
+
+        for (long int ab = 0; ab < (long int)na*nb; ab++)
+            dN += Ftp[0][ab]*Ftp[0][ab]; 
+    }
+    
+    double dS = (double)nbeta_ - (double)dN;
+
+    double nm = (nalpha_ - nbeta_) / 2.0;
+    double S2 = nm * (nm + 1.0); 
+
+    fprintf(outfile, "\n  @Spin Contamination Metric: %7.4E\n", dS);
+      fprintf(outfile, "  @S^2 Expected:              %7.4E\n", S2);
+      fprintf(outfile, "  @S^2 Observed:              %7.4E\n", S2 + dS);
+
+}
 bool UHF::test_convergency()
 {
     double ediff = E_ - Eold_;
