@@ -31,11 +31,8 @@ protected:
     SharedMatrix J_;
     SharedMatrix K_;
 
-    double Drms_;
-
     double *pk_;
 
-    bool load_or_compute_initial_C();
     void form_C();
     void form_D();
     double compute_initial_E();
@@ -51,9 +48,6 @@ protected:
     // The SAPT driver should save the three references and extract info from
     // That point
     void save_sapt_info();
-
-    //SAD Guess and propagation
-    void compute_SAD_guess();
 
     //Save Dual Basis
     void save_dual_basis_projection();
@@ -81,7 +75,6 @@ public:
     RHF(Options& options, shared_ptr<PSIO> psio);
     virtual ~RHF();
 
-    double compute_energy();
     double compute_energy_parallel();
 
     virtual SharedMatrix Da() const;

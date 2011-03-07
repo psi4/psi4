@@ -148,16 +148,6 @@ boost::shared_ptr<SOBasisSet> Wavefunction::sobasisset() const
     return sobasisset_;
 }
 
-SharedMatrix Wavefunction::Da() const
-{
-    throw NotImplementedException("Wavefunction::Da is not implemented.");
-}
-
-SharedMatrix Wavefunction::Db() const
-{
-    throw NotImplementedException("Wavefunction::Db is not implemented.");
-}
-
 void Wavefunction::add_preiteration_callback(PyObject *pyobject)
 {
     if (pyobject != Py_None)

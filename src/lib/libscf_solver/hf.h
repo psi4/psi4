@@ -185,6 +185,9 @@ protected:
     /// Save the current density and energy.
     virtual void save_density_and_energy() = 0;
 
+    /// SAD Guess and propagation
+    void compute_SAD_guess();
+
     /** Read in C from checkpoint. Default implementation works for RHF and ROHF. UHF needs to read in additional C.
      *  If unable to load C from checkpoint, will call form_C to compute the value.
      *  If unable to load call compute_initial_E(), else loads SCF energy from checkpoint.
@@ -193,19 +196,40 @@ protected:
     virtual bool load_or_compute_initial_C();
 
     /** Computes the density matrix (D_) */
-    virtual void form_D() {}
+    virtual void form_D() =0;
 
     /** Compute the MO coefficients (C_) */
-    virtual void form_C() {}
+    virtual void form_C() =0;
+
+    /** Computes the Fock matrix */
+    virtual void form_F() =0;
 
     /** Computes the initial MO coefficients (default is to call form_C) */
     virtual void form_initial_C() { form_C(); }
 
     /** Forms the G matrix */
-    virtual void form_G() {}
+    virtual void form_G() =0;
 
     /** Computes the initial energy. */
     virtual double compute_initial_E() { return 0.0; }
+
+    /** Test convergence of the wavefunction */
+    virtual bool test_convergency() { return false; }
+
+    /** Saves information to the checkpoint file */
+    virtual void save_information() {}
+
+    /** Handles forming the PK matrix */
+    virtual void form_PK() {}
+
+    /** Save the Fock matrix to the DIIS object */
+    virtual void save_fock() {}
+
+    /** Performs DIIS extrapolation */
+    virtual bool diis() { return false; }
+
+    virtual void save_dual_basis_projection() {}
+    virtual void save_sapt_info() {}
 
     void sort_cholesky(double*, int*, int);
     /** Form canonical three-index Cholesky tensor */
@@ -253,6 +277,8 @@ public:
     HF(Options& options, shared_ptr<PSIO> psio);
 
     virtual ~HF();
+
+    virtual double compute_energy();
 };
 
 }} // Namespaces

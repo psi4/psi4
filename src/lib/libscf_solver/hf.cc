@@ -665,41 +665,350 @@ int *HF::compute_fvpi(int nfzv, SharedVector &eigvalues)
     return frzvpi;
 }
 
+
 bool HF::load_or_compute_initial_C()
 {
     bool ret = false;
-    string prefix(chkpt_->build_keyword(const_cast<char*>("MO coefficients")));
-    if (options_.get_str("GUESS") == "READ" && chkpt_->exist(const_cast<char*>(prefix.c_str()))) {
+    bool loaded = false;
+
+    //What does the user want?
+    //Options will be:
+    // ""-Either READ or CORE (try READ first)
+    // "READ"-try to read MOs from checkpoint (restart style)
+    // "BASIS2"-try to read MOs from checkpoint after basis cast up (in INPUT) NOT WORKING!
+    // "DUAL_BASIS"-real the results of the DB computation from File 100, Temporary hack
+    // "CORE"-CORE Hamiltonain
+    // "GWH"-Generalized Wolfsberg-Helmholtz
+    // "SAD"-Superposition of Atomic Denisties
+    string guess_type = options_.get_str("GUESS");
+    if (guess_type == "" || guess_type == "READ" || guess_type == "BASIS2") {
+
         // Read MOs from checkpoint and set C_ to them
         double **vectors;
-        if(Communicator::world->me() == 0)
-            vectors = chkpt_->rd_scf();
-        else
-            vectors = block_matrix(nso_, nmo_);
-        Communicator::world->raw_bcast(&(vectors[0][0]), nso_*nmo_*sizeof(double));
 
-        Ca_->set(const_cast<const double**>(vectors));
-        free_block(vectors);
+        if (restricted()) {
+            // Check to see if there are MOs already in the checkpoint file.
+            // If so, read them in instead of forming them.
+            string prefix(chkpt_->build_keyword(const_cast<char*>("MO coefficients")));
 
+            if (chkpt_->exist(const_cast<char*>(prefix.c_str()))) {
+
+                if (Communicator::world->me() == 0)
+                    vectors = chkpt_->rd_scf();
+                else
+                    vectors = block_matrix(nso_,nmo_);
+                Communicator::world->raw_bcast(&(vectors[0][0]), nso_*nmo_*sizeof(double), 0);
+                Ca_->set(const_cast<const double**>(vectors));
+                free_block(vectors);
+
+
+                double *orbitale;
+                if (Communicator::world->me() == 0)
+                    orbitale = chkpt_->rd_evals();
+                else
+                    orbitale = init_array(nmo_);
+                Communicator::world->raw_bcast(&(orbitale[0]), nmo_*sizeof(double), 0);
+                epsilon_a_->set(orbitale);
+                delete[] orbitale;
+
+                loaded = true;
+            }
+        }
+        else {
+            string prefix(chkpt_->build_keyword(const_cast<char*>("Alpha MO coefficients")));
+            if (chkpt_->exist(const_cast<char*>(prefix.c_str()))) {
+
+                if (Communicator::world->me() == 0)
+                    vectors = chkpt_->rd_alpha_scf();
+                else
+                    vectors = block_matrix(nso_, nmo_);
+                Communicator::world->raw_bcast(&(vectors[0][0]), nso_*nmo_*sizeof(double), 0);
+                Ca_->set(const_cast<const double**>(vectors));
+                free_block(vectors);
+
+                double *orbitale;
+                if (Communicator::world->me() == 0)
+                    orbitale = chkpt_->rd_alpha_evals();
+                else
+                    orbitale = init_array(nmo_);
+                Communicator::world->raw_bcast(&(orbitale[0]), nmo_*sizeof(double), 0);
+                epsilon_a_->set(orbitale);
+                delete[] orbitale;
+            }
+
+            prefix = chkpt_->build_keyword(const_cast<char*>("Beta MO coefficients"));
+            if (chkpt_->exist(const_cast<char*>(prefix.c_str()))) {
+                if (Communicator::world->me() == 0)
+                    vectors = chkpt_->rd_beta_scf();
+                else
+                    vectors = block_matrix(nso_, nmo_);
+                Communicator::world->raw_bcast(&(vectors[0][0]), nso_*nmo_*sizeof(double), 0);
+                Ca_->set(const_cast<const double**>(vectors));
+                free_block(vectors);
+
+                double *orbitale;
+                if (Communicator::world->me() == 0)
+                    orbitale = chkpt_->rd_beta_evals();
+                else
+                    orbitale = init_array(nmo_);
+                Communicator::world->raw_bcast(&(orbitale[0]), nmo_*sizeof(double), 0);
+                epsilon_b_->set(orbitale);
+                delete[] orbitale;
+
+                loaded = true;
+            }
+        }
+
+        if (loaded) {
+            //Try for existing MOs already. Deuces of loaded spades
+           if (print_)
+               fprintf(outfile, "  SCF Guess: Reading previous MOs.\n\n");
+
+           // Guess the occupation, if needed.
+           find_occupation();
+
+           form_D();
+
+           // Read SCF energy from checkpoint file.
+           if(Communicator::world->me() == 0)
+               E_ = chkpt_->rd_escf();
+           Communicator::world->bcast(E_);
+
+           ret = true;
+        }
+    }
+    else if (guess_type == "DUAL_BASIS") {
+         //Try for dual basis MOs,
+        if (print_ && Communicator::world->me() == 0)
+            fprintf(outfile, "  SCF Guess: Dual-Basis. Reading from File 100.\n\n");
+
+        psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_OLD);
+        psio_->read_entry(PSIF_SCF_DB_MOS,"DB SCF Energy",(char *) &(E_),sizeof(double));
+        psio_->read_entry(PSIF_SCF_DB_MOS,"DB NIRREPS",(char *) &(nirrep_),sizeof(int));
+        psio_->read_entry(PSIF_SCF_DB_MOS,"DB DOCCPI",(char *) (doccpi_),8*sizeof(int));
+        psio_->read_entry(PSIF_SCF_DB_MOS,"DB SOCCPI",(char *) (soccpi_),8*sizeof(int));
+        psio_->read_entry(PSIF_SCF_DB_MOS,"DB NALPHAPI",(char *) (nalphapi_),8*sizeof(int));
+        psio_->read_entry(PSIF_SCF_DB_MOS,"DB NBETAPI",(char *) (nbetapi_),8*sizeof(int));
+
+        shared_ptr<Matrix> Ctemp(new Matrix("DUAL BASIS MOS", nirrep_, nsopi_, doccpi_));
+        Ctemp->load(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
+
+        Ca_->zero();
+        for (int h = 0; h < nirrep_; h++)
+            for (int m = 0; m<nsopi_[h]; m++)
+                for (int i = 0; i<doccpi_[h]; i++)
+                    Ca_->set(h,m,i,Ctemp->get(h,m,i));
+
+        // Build D from C
         form_D();
 
-        // Read SCF energy from checkpoint file.
-        if(Communicator::world->me() == 0)
-            E_ = chkpt_->rd_escf();
-        Communicator::world->bcast(E_);
-
+        psio_->close(PSIF_SCF_DB_MOS,1);
         ret = true;
-    } else {
-        form_initial_C();
+
+    }
+    else if (guess_type == "SAD") {
+        if (print_)
+            fprintf(outfile, "  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.\n");
+
+        //Superposition of Atomic Density (will be preferred when we can figure it out)
+        compute_SAD_guess();
+    }
+    else if (guess_type == "GWH") {
+        //Generalized Wolfsberg Helmholtz (Sounds cool, easy to code)
+        if (print_)
+            fprintf(outfile, "  SCF Guess: Generalized Wolfsberg-Helmholtz.\n\n");
+
+        Fa_->zero(); //Try Fa_{mn} = S_{mn} (H_{mm} + H_{nn})/2
+        int h, i, j;
+        S_->print(outfile);
+        int *opi = S_->rowspi();
+        int nirreps = S_->nirrep();
+        for (h=0; h<nirreps; ++h) {
+            for (i=0; i<opi[h]; ++i) {
+                for (j=0; j<opi[h]; ++j) {
+                    Fa_->set(h,i,j,0.5*S_->get(h,i,j)*(H_->get(h,i,i)+H_->get(h,j,j)));
+                }
+            }
+        }
+
+        form_C();
         form_D();
+
         // Compute an initial energy using H and D
         E_ = compute_initial_E();
-
-        ret = false;
+    }
+    else if (guess_type == "READ" || guess_type == "BASIS2") {
+        throw std::invalid_argument("Checkpoint MOs requested, but do not exist!");
     }
 
+    // If the user specified CORE or we tried to READ and we couldn't find the coefficients.
+    if (guess_type == "CORE" || loaded == false) {
+        //CORE is an old Psi standby, so we'll play this as spades
+        if (print_)
+            fprintf(outfile, "  SCF Guess: Core (One-Electron) Hamiltonian.\n\n");
+
+        Fa_->copy(H_); //Try the core Hamiltonian as the Fock Matrix
+        Fb_->copy(H_);
+
+        form_C();
+        form_D();
+
+        // Compute an initial energy using H and D
+        E_ = compute_initial_E();
+    }
+
+    if (print_)
+        fprintf(outfile, "\n  Initial HF energy: %20.14f\n\n", E_);
+    fflush(outfile);
     return ret;
 }
 
+double HF::compute_energy()
+{
+    //fprintf(outfile,"  Print = %d\n",print_);
+    //print_ = options_.get_int("PRINT");
+    bool converged = false, diis_iter = false;
+    if (options_.get_str("GUESS") == "SAD")
+        iteration_ = -1;
+    else
+        iteration_ = 0;
+
+    // Do the initial work to get the iterations started.
+    timer_on("Core Hamiltonian");
+    form_H(); //Core Hamiltonian
+    timer_off("Core Hamiltonian");
+
+    timer_on("Overlap Matrix");
+    form_Shalf(); //Shalf Matrix
+    timer_off("Overlap Matrix");
+
+    // Form initial MO guess by user specified method
+    // Check to see if there are MOs already in the checkpoint file.
+    // If so, read them in instead of forming them, unless the user disagrees.
+    timer_on("Initial Guess");
+    load_or_compute_initial_C();
+    timer_off("Initial Guess");
+
+//    if (print_>3) {
+//        S_->print(outfile);
+//        Shalf_->print(outfile);
+//        if (canonical_X_)
+//            X_->print(outfile);
+//        H_->print(outfile);
+//    }
+//    if (print_>2) {
+//        fprintf(outfile,"  Initial Guesses:\n");
+//        Ca_->print(outfile);
+//        D_->print(outfile);
+//    }
+
+    if (scf_type_ == "PK")
+        form_PK();
+
+    fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
+    fflush(outfile);
+
+    // SCF iterations
+    do {
+        iteration_++;
+
+        save_density_and_energy();
+
+        // Call any preiteration callbacks
+        call_preiteration_callbacks();
+
+        //form_G_from_J_and_K(1.0);
+        //D_->print(outfile);
+
+        timer_on("Form G");
+        form_G();
+        timer_off("Form G");
+
+//        if (print_>3) {
+//            J_->print(outfile);
+//            K_->print(outfile);
+//            G_->print(outfile);
+//        }
+
+        if (options_.get_str("GUESS") == "SAD") {
+            for (int h = 0 ; h < nirrep(); h++) {
+                nalphapi_[h] = sad_nocc_[h];
+            }
+        }
+
+        form_F();
+//        if (print_>3) {
+//            Fa_->print(outfile);
+//        }
+
+        E_ = compute_E();
+
+        timer_on("DIIS");
+        if (Communicator::world->me() == 0) {
+            if (diis_enabled_ && iteration_ > 0 && iteration_ >= diis_start_ )
+                save_fock();
+            if (diis_enabled_ == true && iteration_ >= diis_start_ + min_diis_vectors_ - 1) {
+                diis_iter = diis();
+            } else {
+                diis_iter = false;
+            }
+        }
+//        Fa_->bcast(Communicator::world.get(), 0);
+        timer_off("DIIS");
+
+        if (print_>4 && diis_iter) {
+            fprintf(outfile,"  After DIIS:\n");
+//            Fa_->print(outfile);
+        }
+        fprintf(outfile, "  @RHF iteration %3d energy: %20.14f    %20.14f %20.14f %s\n", iteration_, E_, E_ - Eold_, Drms_, diis_iter == false ? " " : "DIIS");
+        fflush(outfile);
+
+        timer_on("Diagonalize H");
+        form_C();
+        timer_off("Diagonalize H");
+        form_D();
+
+//        if (print_>2) {
+//            Ca_->print(outfile);
+//            D_->print(outfile);
+//        }
+
+        converged = test_convergency();
+
+        // Call any postiteration callbacks
+        call_postiteration_callbacks();
+
+    } while (!converged && iteration_ < maxiter_ );
+
+    if (converged) {
+        fprintf(outfile, "\n  Energy converged.\n");
+        fprintf(outfile, "\n  @RHF Final Energy: %20.14f", E_);
+        if (perturb_h_) {
+            fprintf(outfile, " with %f perturbation", lambda_);
+        }
+        fprintf(outfile, "\n");
+        save_information();
+    } else {
+        fprintf(outfile, "\n  Failed to converged.\n");
+        E_ = 0.0;
+        psio_->close(PSIF_CHKPT, 1);
+    }
+
+    //often, we're close!
+    if (options_.get_bool("DUAL_BASIS"))
+        save_dual_basis_projection();
+    if (options_.get_str("SAPT") != "FALSE") //not a bool because it has types
+        save_sapt_info();
+
+    // Compute the final dipole.
+//    compute_multipole();
+
+    // Clean memory off, handle diis closeout, etc
+    finalize();
+
+    //fprintf(outfile,"\nComputation Completed\n");
+    fflush(outfile);
+    return E_;
+}
 
 }}

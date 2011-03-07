@@ -368,7 +368,7 @@ void HF::atomicUHFHelperFormCandD(int nelec, int norbs,double** Shalf, double**F
     free_block(Cp);
     free_block(Fp);
 }
-void RHF::compute_SAD_guess()
+void HF::compute_SAD_guess()
 {
     int sad_print_ = options_.get_int("SAD_PRINT");
 
@@ -527,33 +527,33 @@ void RHF::compute_SAD_guess()
     free(offset_indices);
 
     // Do a similarity transform to get D_USO(SAD)
-    if (D_->nirrep() == 0) {
-        D_->copy(DAO);
+    if (Da_->nirrep() == 0) {
+        Da_->copy(DAO);
     } else {
-        
+
         shared_ptr<IntegralFactory> fact(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
         shared_ptr<PetiteList> pet(new PetiteList(basisset_, fact));
         shared_ptr<Matrix> AO2USO(pet->aotoso());
-        Dimension dim = pet->SO_basisdim(); 
+        Dimension dim = pet->SO_basisdim();
         int nao = nso_;
 
-        for (int h = 0; h < D_->nirrep(); h++) {
+        for (int h = 0; h < Da_->nirrep(); h++) {
             double** DAOp = DAO->pointer(0);
-            double** D = D_->pointer(h);
+            double** D = Da_->pointer(h);
             double** U = AO2USO->pointer(h);
-            
+
             int nuso = dim[h];
-        
+
             if (nuso == 0 || nao == 0) continue;
 
             double** Temp = block_matrix(nuso, nao);
-            
-            C_DGEMM('T','N',nuso, nao, nao, 1.0, U[0], nuso, DAOp[0], nao, 0.0, Temp[0], nao); 
-            C_DGEMM('N','N',nuso, nuso, nao, 1.0, Temp[0], nao, U[0], nuso, 0.0, D[0], nuso); 
 
-            free_block(Temp); 
-    
-        } 
+            C_DGEMM('T','N',nuso, nao, nao, 1.0, U[0], nuso, DAOp[0], nao, 0.0, Temp[0], nao);
+            C_DGEMM('N','N',nuso, nuso, nao, 1.0, Temp[0], nao, U[0], nuso, 0.0, D[0], nuso);
+
+            free_block(Temp);
+
+        }
     }
     DAO.reset();
 
@@ -564,11 +564,11 @@ void RHF::compute_SAD_guess()
         fprintf(outfile,"\n  Approximating occupied orbitals via Partial Cholesky Decomposition.\n");
         fprintf(outfile,"  NOTE: The zero-th SCF iteration will not be variational.\n");
     }
-    int* dim = D_->colspi();
+    int* dim = Da_->colspi();
     shared_ptr<Matrix> D2(factory_->create_matrix("D2"));
-    D2->copy(D_);
+    D2->copy(Da_);
     Ca_->zero();
-    for (int h = 0; h < D_->nirrep(); h++) {
+    for (int h = 0; h < Da_->nirrep(); h++) {
         int norbs = dim[h];
         sad_nocc_[h] = 0;
 
@@ -668,15 +668,15 @@ void RHF::compute_SAD_guess()
         free_block(C);
 
     }
-   
-    int temp_nocc;
-    for (int h = 0 ; h < D_->nirrep(); h++) {
-        temp_nocc = sad_nocc_[h];
-        sad_nocc_[h] = nalphapi_[h];    
-        nalphapi_[h] = temp_nocc;
-    } 
 
-    E_ = 0.0; // This is the -1th iteration 
+    int temp_nocc;
+    for (int h = 0 ; h < Da_->nirrep(); h++) {
+        temp_nocc = sad_nocc_[h];
+        sad_nocc_[h] = nalphapi_[h];
+        nalphapi_[h] = temp_nocc;
+    }
+
+    E_ = 0.0; // This is the -1th iteration
     timer_off("SAD Cholesky");
 }
 SharedMatrix HF::dualBasisProjection(SharedMatrix C_A, int* noccpi, shared_ptr<BasisSet> old_basis, shared_ptr<BasisSet> new_basis) {
@@ -684,8 +684,8 @@ SharedMatrix HF::dualBasisProjection(SharedMatrix C_A, int* noccpi, shared_ptr<B
     //Based on Werner's method from Mol. Phys. 102, 21-22, 2311
     shared_ptr<IntegralFactory> newfactory(new IntegralFactory(new_basis,new_basis,new_basis,new_basis));
     shared_ptr<IntegralFactory> hybfactory(new IntegralFactory(old_basis,new_basis,old_basis,new_basis));
-    shared_ptr<OneBodySOInt> intBB(newfactory->so_overlap());   
-    shared_ptr<OneBodySOInt> intAB(hybfactory->so_overlap());   
+    shared_ptr<OneBodySOInt> intBB(newfactory->so_overlap());
+    shared_ptr<OneBodySOInt> intAB(hybfactory->so_overlap());
 
     shared_ptr<PetiteList> pet(new PetiteList(new_basis, newfactory));
     shared_ptr<Matrix> AO2USO(pet->aotoso());
@@ -704,13 +704,13 @@ SharedMatrix HF::dualBasisProjection(SharedMatrix C_A, int* noccpi, shared_ptr<B
 
     // Constrained to the same symmetry at the moment, we can relax this soon
     shared_ptr<Matrix> C_B(new Matrix("C_B", C_A->nirrep(),AO2USO->colspi(), noccpi));
-   
-    // Block over irreps (soon united irreps) 
+
+    // Block over irreps (soon united irreps)
     for (int h = 0; h < C_A->nirrep(); h++) {
 
-        int nocc = noccpi[h]; 
-        int na = C_A->rowspi()[h]; 
-        int nb = AO2USO->colspi()[h]; 
+        int nocc = noccpi[h];
+        int na = C_A->rowspi()[h];
+        int nb = AO2USO->colspi()[h];
 
         if (nocc == 0 || na == 0 || nb == 0) continue;
 
@@ -732,7 +732,7 @@ SharedMatrix HF::dualBasisProjection(SharedMatrix C_A, int* noccpi, shared_ptr<B
         for (int m = 0; m<nb; m++)
             for (int n = 0; n<m; n++)
                 Sbb[m][n] = Sbb[n][m];
-        
+
         //Form T
         double** Temp1 = block_matrix(nb,nocc);
         C_DGEMM('T','N',nb,nocc,na,1.0,Sab[0],nb,Ca[0],na,0.0,Temp1[0],nocc);
@@ -799,13 +799,13 @@ SharedMatrix HF::dualBasisProjection(SharedMatrix C_A, int* noccpi, shared_ptr<B
         //Form CB
         C_DGEMM('N','N',nb,nocc,nocc,1.0,Temp2[0],nocc,T_mhalf[0],nocc,0.0,Cb[0],nocc);
 
-        free_block(Temp1);       
-        free_block(Temp2);       
-        free_block(Temp3);       
-        free_block(T);       
-        free_block(T_copy);       
-        free_block(T_mhalf);       
- 
+        free_block(Temp1);
+        free_block(Temp2);
+        free_block(Temp3);
+        free_block(T);
+        free_block(T_copy);
+        free_block(T_mhalf);
+
     }
 
     return C_B;
