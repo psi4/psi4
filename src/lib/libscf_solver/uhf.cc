@@ -387,27 +387,27 @@ void UHF::compute_spin_contamination()
         int nb = nbetapi_[h];
         if (na == 0 || nb == 0 || nbf == 0 || nmo == 0)
             continue;
-    
+
         shared_ptr<Matrix> Ht (new Matrix("H Temp", nbf, nb));
         shared_ptr<Matrix> Ft (new Matrix("F Temp", na, nb));
-       
+
         double** Sp = S->pointer(h);
-        double** Cap = Ca_->pointer(h); 
-        double** Cbp = Cb_->pointer(h); 
+        double** Cap = Ca_->pointer(h);
+        double** Cbp = Cb_->pointer(h);
         double** Htp = Ht->pointer(0);
         double** Ftp = Ft->pointer(0);
-        
+
         C_DGEMM('N','N',nbf,nb,nbf,1.0,Sp[0],nbf,Cbp[0],nmo,0.0,Htp[0],nb);
         C_DGEMM('T','N',na,nb,nbf,1.0,Cap[0],nmo,Htp[0],nb,0.0,Ftp[0],nb);
 
         for (long int ab = 0; ab < (long int)na*nb; ab++)
-            dN += Ftp[0][ab]*Ftp[0][ab]; 
+            dN += Ftp[0][ab]*Ftp[0][ab];
     }
-    
+
     double dS = (double)nbeta_ - (double)dN;
 
     double nm = (nalpha_ - nbeta_) / 2.0;
-    double S2 = nm * (nm + 1.0); 
+    double S2 = nm * (nm + 1.0);
 
     fprintf(outfile, "\n  @Spin Contamination Metric: %7.4E\n", dS);
       fprintf(outfile, "  @S^2 Expected:              %7.4E\n", S2);
@@ -562,10 +562,7 @@ void UHF::form_D()
 // TODO: Once Dt_ is refactored to D_ the only difference between this and RHF::compute_initial_E is a factor of 0.5
 double UHF::compute_initial_E()
 {
-    double Etotal = nuclearrep_ + 0.5 * (Dt_->vector_dot(H_));
-    if(print_ > 2) fprintf(outfile, "\n  Initial UHF energy: %20.14f\n\n", Etotal);
-    fflush(outfile);
-    return Etotal;
+    return nuclearrep_ + 0.5 * (Dt_->vector_dot(H_));
 }
 
 double UHF::compute_E()

@@ -486,6 +486,9 @@ void HF::form_H()
             }
         }
     }
+
+    if (print_ > 3)
+        H_->print(outfile);
 }
 
 void HF::form_Shalf()
@@ -627,6 +630,13 @@ void HF::form_Shalf()
         epsilon_a_->init(eigvec.nirrep(), nmopi_);
         Ca_->init(eigvec.nirrep(),nsopi_,nmopi_,"MO coefficients");
     }
+
+    if (print_ > 3) {
+        S_->print(outfile);
+        Shalf_->print(outfile);
+        if (canonical_X_)
+            X_->print(outfile);
+    }
 }
 
 int *HF::compute_fcpi(int nfzc, SharedVector &eigvalues)
@@ -701,7 +711,6 @@ bool HF::load_or_compute_initial_C()
                 Ca_->set(const_cast<const double**>(vectors));
                 free_block(vectors);
 
-
                 double *orbitale;
                 if (Communicator::world->me() == 0)
                     orbitale = chkpt_->rd_evals();
@@ -764,11 +773,6 @@ bool HF::load_or_compute_initial_C()
            if (print_)
                fprintf(outfile, "  SCF Guess: Reading previous MOs.\n\n");
 
-           // Guess the occupation, if needed.
-           find_occupation();
-
-           form_D();
-
            // Read SCF energy from checkpoint file.
            if(Communicator::world->me() == 0)
                E_ = chkpt_->rd_escf();
@@ -799,12 +803,8 @@ bool HF::load_or_compute_initial_C()
                 for (int i = 0; i<doccpi_[h]; i++)
                     Ca_->set(h,m,i,Ctemp->get(h,m,i));
 
-        // Build D from C
-        form_D();
-
         psio_->close(PSIF_SCF_DB_MOS,1);
         ret = true;
-
     }
     else if (guess_type == "SAD") {
         if (print_)
@@ -832,10 +832,6 @@ bool HF::load_or_compute_initial_C()
         }
 
         form_C();
-        form_D();
-
-        // Compute an initial energy using H and D
-        E_ = compute_initial_E();
     }
     else if (guess_type == "READ" || guess_type == "BASIS2") {
         throw std::invalid_argument("Checkpoint MOs requested, but do not exist!");
@@ -850,16 +846,12 @@ bool HF::load_or_compute_initial_C()
         Fa_->copy(H_); //Try the core Hamiltonian as the Fock Matrix
         Fb_->copy(H_);
 
-        form_C();
-        form_D();
-
-        // Compute an initial energy using H and D
-        E_ = compute_initial_E();
+        if (options_.get_str("REFERENCE") == "ROHF")
+            form_initial_C();
+        else
+            form_C();
     }
 
-    if (print_)
-        fprintf(outfile, "\n  Initial HF energy: %20.14f\n\n", E_);
-    fflush(outfile);
     return ret;
 }
 
@@ -874,33 +866,24 @@ double HF::compute_energy()
         iteration_ = 0;
 
     // Do the initial work to get the iterations started.
-    timer_on("Core Hamiltonian");
     form_H(); //Core Hamiltonian
-    timer_off("Core Hamiltonian");
-
-    timer_on("Overlap Matrix");
     form_Shalf(); //Shalf Matrix
-    timer_off("Overlap Matrix");
 
     // Form initial MO guess by user specified method
     // Check to see if there are MOs already in the checkpoint file.
     // If so, read them in instead of forming them, unless the user disagrees.
-    timer_on("Initial Guess");
     load_or_compute_initial_C();
-    timer_off("Initial Guess");
 
-//    if (print_>3) {
-//        S_->print(outfile);
-//        Shalf_->print(outfile);
-//        if (canonical_X_)
-//            X_->print(outfile);
-//        H_->print(outfile);
-//    }
-//    if (print_>2) {
-//        fprintf(outfile,"  Initial Guesses:\n");
-//        Ca_->print(outfile);
-//        D_->print(outfile);
-//    }
+    // Guess the occupation, if needed.
+    find_occupation();
+
+    form_D();
+
+    // Compute an initial energy using H and D
+    E_ = compute_initial_E();
+    if (print_)
+        fprintf(outfile, "\n  Initial HF energy: %20.14f\n\n", E_);
+    fflush(outfile);
 
     if (scf_type_ == "PK")
         form_PK();
@@ -916,9 +899,6 @@ double HF::compute_energy()
 
         // Call any preiteration callbacks
         call_preiteration_callbacks();
-
-        //form_G_from_J_and_K(1.0);
-        //D_->print(outfile);
 
         timer_on("Form G");
         form_G();
@@ -956,16 +936,14 @@ double HF::compute_energy()
 //        Fa_->bcast(Communicator::world.get(), 0);
         timer_off("DIIS");
 
-        if (print_>4 && diis_iter) {
-            fprintf(outfile,"  After DIIS:\n");
+//        if (print_>4 && diis_iter) {
+//            fprintf(outfile,"  After DIIS:\n");
 //            Fa_->print(outfile);
-        }
-        fprintf(outfile, "  @RHF iteration %3d energy: %20.14f    %20.14f %20.14f %s\n", iteration_, E_, E_ - Eold_, Drms_, diis_iter == false ? " " : "DIIS");
+//        }
+        fprintf(outfile, "   @HF iteration %3d energy: %20.14f    %20.14f %20.14f %s\n", iteration_, E_, E_ - Eold_, Drms_, diis_iter == false ? " " : "DIIS");
         fflush(outfile);
 
-        timer_on("Diagonalize H");
         form_C();
-        timer_off("Diagonalize H");
         form_D();
 
 //        if (print_>2) {
@@ -982,7 +960,7 @@ double HF::compute_energy()
 
     if (converged) {
         fprintf(outfile, "\n  Energy converged.\n");
-        fprintf(outfile, "\n  @RHF Final Energy: %20.14f", E_);
+        fprintf(outfile, "\n  @HF Final Energy: %20.14f", E_);
         if (perturb_h_) {
             fprintf(outfile, " with %f perturbation", lambda_);
         }

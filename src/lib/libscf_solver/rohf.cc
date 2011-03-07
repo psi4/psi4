@@ -44,16 +44,20 @@ void ROHF::common_init()
     Fc_      = SharedMatrix(factory_->create_matrix("F closed"));
     Fo_      = SharedMatrix(factory_->create_matrix("F open"));
     Fa_      = SharedMatrix(factory_->create_matrix("F effective (MO basis)"));
+    Fb_      = Fa_;
     Feff_    = Fa_;
     Ca_      = SharedMatrix(factory_->create_matrix("Moleular orbitals"));
     Cb_      = Ca_;
     Dc_      = SharedMatrix(factory_->create_matrix("D closed"));
     Do_      = SharedMatrix(factory_->create_matrix("D open"));
+    Kc_      = SharedMatrix(factory_->create_matrix("K closed"));
+    Ko_      = SharedMatrix(factory_->create_matrix("K open"));
     Dc_old_  = SharedMatrix(factory_->create_matrix("D closed old"));
     Do_old_  = SharedMatrix(factory_->create_matrix("D open old"));
     Gc_      = SharedMatrix(factory_->create_matrix("G closed"));
     Go_      = SharedMatrix(factory_->create_matrix("G open"));
-    epsilon_ = SharedVector(factory_->create_vector());
+    epsilon_a_ = SharedVector(factory_->create_vector());
+    epsilon_b_ = epsilon_a_;
 
     pk_ = NULL;
     k_ = NULL;
@@ -107,18 +111,6 @@ void ROHF::save_density_and_energy()
     Dc_old_->copy(Dc_); // save previous density
     Do_old_->copy(Do_); // save previous density
     Eold_ = E_; // save previous energy
-}
-
-void ROHF::form_G()
-{
-    if (scf_type_ == "PK")
-        form_G_from_PK();
-    //else if (scf_type_ == "DIRECT")
-    //    form_G_from_direct_integrals();
-    //else if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD")
-    //    form_G_from_RI();
-    //else if (scf_type_ == "OUT_OF_CORE")
-    //    form_G();
 }
 
 void ROHF::save_information()
@@ -409,19 +401,17 @@ void ROHF::form_C()
     Feff_->diagonalize(eigvec, epsilon_a_);
     find_occupation();
 
-#ifdef _DEBUG
     if (debug_) {
+        fprintf(outfile, "In ROHF::form_C:\n");
+        Feff_->print();
         eigvec->eivprint(epsilon_a_);
     }
-#endif
     temp->gemm(false, false, 1.0, Ca_, eigvec, 0.0);
     Ca_->copy(temp);
 
-#ifdef _DEBUG
     if (debug_) {
         Ca_->print(outfile);
     }
-#endif
 }
 
 void ROHF::form_D()
@@ -446,23 +436,24 @@ void ROHF::form_D()
         }
     }
 
-#ifdef _DEBUG
     if (debug_) {
+        fprintf(outfile, "in ROHF::form_D:\n");
         Dc_->print(outfile);
         Do_->print(outfile);
     }
-#endif
 }
 
-double ROHF::compute_initial_E() {
+double ROHF::compute_initial_E()
+{
     SharedMatrix Ho(factory_->create_matrix());
     Ho->copy(H_);
     Ho->scale(0.5);
 
-    double Etotal = nuclearrep_ + Dc_->vector_dot(H_) + Do_->vector_dot(Ho);
-    fprintf(outfile, "\n  Initial ROHF energy: %20.14f\n\n", Etotal);
-    fflush(outfile);
-    return Etotal;
+    H_->print();
+    Dc_->print();
+    Do_->print();
+
+    return nuclearrep_ + Dc_->vector_dot(H_) + Do_->vector_dot(Ho);
 }
 
 double ROHF::compute_E() {
@@ -587,6 +578,11 @@ void ROHF::form_PK() {
 
 void ROHF::form_G()
 {
+    if (scf_type_ == "PK") {
+        form_G_from_PK();
+        return;
+    }
+
     /*
      * If we define
      *
@@ -601,7 +597,7 @@ void ROHF::form_G()
      * Addendum: To support DF/Direct algorithms wlog, the functor call builds (effectively)
      *  Go_ = 2*J
      *  Ka  = Kc + 2Ko
-     *  Kb  = Kc 
+     *  Kb  = Kc
      * These are then unwound to make Andy's canonical products above
      */
     shared_ptr<Matrix> Da = shared_ptr<Matrix>(factory_->create_matrix("Da"));
@@ -610,7 +606,7 @@ void ROHF::form_G()
     shared_ptr<Matrix> Kb = shared_ptr<Matrix>(factory_->create_matrix("Kb"));
     Da->copy(Do_);
     Da->add(Dc_);
-    Db->copy(Dc_);    
+    Db->copy(Dc_);
 
     J_Ka_Kb_Functor jk_builder(Go_, Ka, Kb, Da, Db, Ca_, Cb_, nalphapi_, nbetapi_);
     process_tei<J_Ka_Kb_Functor>(jk_builder);
