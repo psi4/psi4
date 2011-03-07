@@ -67,6 +67,7 @@ void UHF::common_init()
     if (scf_type_ == "PK")
         allocate_PK();
 }
+
 void UHF::finalize()
 {
     if (p_jk_)
@@ -82,6 +83,27 @@ void UHF::finalize()
 
     HF::finalize();
 }
+
+void UHF::save_density_and_energy()
+{
+    Dtold_->copy(Dt_);
+    Eold_ = E_;
+}
+
+void UHF::form_G()
+{
+    if (scf_type_ == "PK"){
+        form_G_from_PK();
+    } else {
+        // This will build J (stored in G) and K
+        J_Ka_Kb_Functor jk_builder(Ga_, Ka_, Kb_, Da_, Db_, Ca_, Cb_, nalphapi_, nbetapi_);
+        process_tei<J_Ka_Kb_Functor>(jk_builder);
+        Gb_->copy(Ga_);
+        Ga_->subtract(Ka_);
+        Gb_->subtract(Kb_);
+    }
+}
+
 double UHF::compute_energy()
 {
     bool converged = false, diis_iter = false;
@@ -124,21 +146,10 @@ double UHF::compute_energy()
     do {
         iter++;
         iterations_needed_ = iter;
-        Dtold_->copy(Dt_);
-        Eold_ = E_;
 
-        if (scf_type_ == "PK"){
-            form_G_from_PK();
-        } else { 
-            // This will build J (stored in G) and K
-            J_Ka_Kb_Functor jk_builder(Ga_, Ka_, Kb_, Da_, Db_, Ca_, Cb_, nalphapi_, nbetapi_);
+        save_density_and_energy();
 
-            process_tei<J_Ka_Kb_Functor>(jk_builder);
-            Gb_->copy(Ga_);
-            Ga_->subtract(Ka_);
-            Gb_->subtract(Kb_);
-        }
-
+        form_G();
         form_F();
 
         if (diis_enabled_)

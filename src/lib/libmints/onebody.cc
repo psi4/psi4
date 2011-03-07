@@ -299,7 +299,7 @@ void OneBodyAOInt::compute(std::vector<shared_ptr<SimpleMatrix> > &result)
     // There not an easy way of checking the size now.
     if (result.size() != nchunk_) {
         fprintf(stderr, "result length = %ld, nchunk = %d\n", result.size(), nchunk_);
-        throw SanityCheckError("OneBodyInt::compute_derv1(result): result incorrect length.", __FILE__, __LINE__);
+        throw SanityCheckError("OneBodyInt::compute(result): result incorrect length.", __FILE__, __LINE__);
     }
 
     for (int i=0; i<ns1; ++i) {

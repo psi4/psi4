@@ -53,6 +53,8 @@ protected:
     // Finalize memory/files
     virtual void finalize();
 
+    void save_density_and_energy();
+
     void common_init();
 public:
     ROHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
